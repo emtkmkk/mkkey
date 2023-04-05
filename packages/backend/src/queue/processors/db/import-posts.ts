@@ -49,7 +49,10 @@ export async function importPosts(
 					if (post.renoteId != null) {
 						continue;
 					}
-					const { text, cw, visibility, localOnly, createdAt } = Post.parse(post);
+					if (post.visibility !== "public") {
+						continue;
+					}
+					const { text, cw, localOnly, createdAt } = Post.parse(post);
 
 					logger.info(`Posting[${linenum}] ...`);
 
@@ -62,7 +65,7 @@ export async function importPosts(
 						renote: null,
 						cw: cw,
 						localOnly,
-						visibility: visibility,
+						visibility: "public",
 						visibleUsers: [],
 						channel: null,
 						apMentions: new Array(0),

@@ -64,7 +64,7 @@ export async function importPosts(
 						reply: null,
 						renote: null,
 						cw: cw,
-						localOnly,
+						localOnly: true,
 						visibility: "public",
 						visibleUsers: [],
 						channel: null,
@@ -80,12 +80,24 @@ export async function importPosts(
 			logger.info("Parsing animal style posts");
 			for (const post of parsed.orderedItems) {
 				try {
+					let urlstr = "";
 					linenum++;
 					if (post.object.inReplyTo != null) {
 						continue;
 					}
 					if (post.directMessage) {
 						continue;
+					}
+					if (post.attachment){
+						try{
+						    const att = JSON.parse(post.attachment);
+							for (const attt of att.orderedItems) {
+								urlstr = urlstr + " https://s3.ap-northeast-2.wasabisys.com" + attt.url;
+							}
+						} catch (e) {
+							logger.warn(`MediaError in line:${linenum} ${e}`);
+							continue;
+						}
 					}
 					if (job.data.signatureCheck) {
 						if (!post.signature) {
@@ -98,6 +110,7 @@ export async function importPosts(
 					} catch (e) {
 						continue;
 					}
+					text = text + urlstr;
 					logger.info(`Posting[${linenum}] ...`);
 
 					const note = await create(user, {
@@ -108,7 +121,7 @@ export async function importPosts(
 						reply: null,
 						renote: null,
 						cw: post.sensitive,
-						localOnly: false,
+						localOnly: true,
 						visibility: "public",
 						visibleUsers: [],
 						channel: null,

@@ -90,8 +90,7 @@ export async function importPosts(
 					}
 					if (post.attachment){
 						try{
-						    const att = JSON.parse(post.attachment);
-							for (const attt of att.orderedItems) {
+							for (const attt of post.attachment) {
 								urlstr = urlstr + " https://s3.ap-northeast-2.wasabisys.com" + attt.url;
 							}
 						} catch (e) {

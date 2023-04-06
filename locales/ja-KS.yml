@@ -1091,7 +1091,7 @@ _theme:
   install: "プラグインのインストール"
   manage: "プラグインの管理"
   code: "テーマコード"
-  description: "機械学習を使って自動でセンシティブなメディアを検出して、モデレーションに役立てることができるで。サーバーの負荷が少し増えてまうなあ。"
+  description: "説明"
   installed: "{name}をインストールしたで。"
   installedThemes: "インストールされとるテーマ"
   builtinThemes: "標準のテーマ"
@@ -1300,7 +1300,7 @@ _postForm:
 _profile:
   name: "名前"
   username: "ユーザー名"
-  description: "機械学習を使って自動でセンシティブなメディアを検出して、モデレーションに役立てることができるで。サーバーの負荷が少し増えてまうなあ。"
+  description: "自己紹介"
   youCanIncludeHashtags: "MFMやハッシュタグを含められます。"
   metadata: "追加情報"
   metadataEdit: "追加情報を編集"

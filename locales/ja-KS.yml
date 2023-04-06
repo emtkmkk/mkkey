@@ -1627,7 +1627,7 @@ _pages:
       _for:
         arg1: "テキスト"
         arg2: "文字の位置"
-    typeError: "スロット{slot}は\{expect}\"を受け付けますが、\"{actual}\"が入れられています！
+    typeError: "スロット{slot}は\{expect}\"を受け付けますが、\"{actual}\"が入れられています！"
     thereIsEmptySlot: "スロット{slot}が空っぽやで！"
     types:
       string: "テキスト"

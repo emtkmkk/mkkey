@@ -22,10 +22,10 @@
 
 			<div class="_gaps_m">
 				<MkPushNotificationAllowButton ref="allowButton" />
-				<MkSwitch
-					:disabled="!pushRegistrationInServer"
-					:model-value="sendReadMessage"
-					@update:model-value="onChangeSendReadMessage"
+				<FormSwitch
+				    :disabled="!pushRegistrationInServer"
+					:modelValue="sendReadMessage"
+					@update:modelValue="onChangeSendReadMessage"
 				>
 					<template #label>{{
 						i18n.ts.sendPushNotificationReadMessage
@@ -42,7 +42,7 @@
 							}}</template>
 						</I18n>
 					</template>
-				</MkSwitch>
+				</FormSwitch>
 			</div>
 		</FormSection>
 	</div>
@@ -54,6 +54,7 @@ import { notificationTypes } from "calckey-js";
 import FormButton from "@/components/MkButton.vue";
 import FormLink from "@/components/form/link.vue";
 import FormSection from "@/components/form/section.vue";
+import FormSwitch from "@/components/form/switch.vue";
 import * as os from "@/os";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";

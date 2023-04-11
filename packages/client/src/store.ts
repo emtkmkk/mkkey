@@ -13,9 +13,10 @@ const menuOptions = [
 	"followRequests",
 	"messaging",
 	"explore",
-	"favorites",
+	"clips",
 	"channels",
 	"search",
+	"announcements",
 ];
 
 // TODO: それぞれいちいちwhereとかdefaultというキーを付けなきゃいけないの冗長なのでなんとかする(ただ型定義が面倒になりそう)
@@ -56,7 +57,7 @@ export const defaultStore = markRaw(
 		},
 		keepOriginalUploading: {
 			where: "account",
-			default: false,
+			default: true,
 		},
 		memo: {
 			where: "account",
@@ -136,7 +137,7 @@ export const defaultStore = markRaw(
 		},
 		showLocalPostsInTimeline: {
 			where: "device",
-			default: "home" as "home" | "social",
+			default: "social" as "home" | "social",
 		},
 		serverDisconnectedBehavior: {
 			where: "device",
@@ -208,11 +209,11 @@ export const defaultStore = markRaw(
 		},
 		darkMode: {
 			where: "device",
-			default: false,
+			default: true,
 		},
 		instanceTicker: {
 			where: "device",
-			default: "remote" as "none" | "remote" | "always",
+			default: "always" as "none" | "remote" | "always",
 		},
 		reactionPickerSize: {
 			where: "device",
@@ -268,11 +269,11 @@ export const defaultStore = markRaw(
 		},
 		numberOfPageCache: {
 			where: "device",
-			default: 5,
+			default: 4,
 		},
 		enterSendsMessage: {
 			where: "device",
-			default: true,
+			default: false,
 		},
 		showUpdates: {
 			where: "device",

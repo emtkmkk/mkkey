@@ -79,6 +79,9 @@ import { version } from "@/config";
 import { $i } from "@/account";
 import * as os from "@/os";
 import { lookupUser } from "@/scripts/lookup-user";
+import { lookupFile } from "@/scripts/lookup-file";
+import { lookupInstance } from "@/scripts/lookup-instance";
+import { indexPosts } from "@/scripts/index-posts";
 import { defaultStore } from "@/store";
 import { useRouter } from "@/router";
 import {
@@ -158,6 +161,12 @@ const menuDef = $computed(() => [
 						},
 				  ]
 				: []),
+			{
+				type: "button",
+				icon: "ph-list-magnifying-glass ph-bold ph-lg",
+				text: i18n.ts.indexPosts,
+				action: indexPosts,
+			},
 		],
 	},
 	{
@@ -350,6 +359,31 @@ const invite = () => {
 		});
 };
 
+async function lookupNote() {
+	const { canceled, result: q } = await os.inputText({
+		title: i18n.ts.noteId,
+	});
+	if (canceled) return;
+
+	os.api(
+		"notes/show",
+		q.startsWith("http://") || q.startsWith("https://")
+			? { url: q.trim() }
+			: { noteId: q.trim() }
+	)
+		.then((note) => {
+			os.pageWindow(`/notes/${note.id}`);
+		})
+		.catch((err) => {
+			if (err.code === "NO_SUCH_NOTE") {
+				os.alert({
+					type: "error",
+					text: i18n.ts.notFound,
+				});
+			}
+		});
+}
+
 const lookup = (ev) => {
 	os.popupMenu(
 		[
@@ -364,21 +398,21 @@ const lookup = (ev) => {
 				text: i18n.ts.note,
 				icon: "ph-pencil ph-bold ph-lg",
 				action: () => {
-					alert("TODO");
+					lookupNote();
 				},
 			},
 			{
 				text: i18n.ts.file,
 				icon: "ph-cloud ph-bold ph-lg",
 				action: () => {
-					alert("TODO");
+					lookupFile();
 				},
 			},
 			{
 				text: i18n.ts.instance,
 				icon: "ph-planet ph-bold ph-lg",
 				action: () => {
-					alert("TODO");
+					lookupInstance();
 				},
 			},
 		],

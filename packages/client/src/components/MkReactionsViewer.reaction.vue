@@ -38,7 +38,7 @@ const props = defineProps<{
 
 const buttonRef = ref<HTMLElement>();
 
-const canToggle = computed(() => !props.reaction.match(/@\w/) && $i);
+const canToggle = computed(() => $i);
 
 const toggleReaction = () => {
 	if (!canToggle.value) return;

@@ -77,7 +77,8 @@ export async function toDbReaction(
 		return unicode;
 	}
 
-	const custom = reaction.match(/^:([\w+-]+)(?:@\.)?:$/);
+	const custom = reaction.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/);
+	// まずローカルで持ってこれるか試行する
 	if (custom) {
 		const name = custom[1];
 		const emoji = await Emojis.findOneBy({
@@ -86,6 +87,15 @@ export async function toDbReaction(
 		});
 
 		if (emoji) return reacterHost ? `:${name}@${reacterHost}:` : `:${name}:`;
+		
+		// 無理ならリモートから
+		const host = custom[2] || IsNull();
+		const emoji2 = await Emojis.findOneBy({
+			host,
+			name,
+		});
+											
+		if (emoji2) return `:${name}@${host}:`;
 	}
 
 	return await getFallbackReaction();

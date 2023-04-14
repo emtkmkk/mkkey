@@ -2,9 +2,9 @@ import config from "@/config/index.js";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 
 export const MAX_NOTE_TEXT_LENGTH =
-	config.maxNoteLength != null ? config.maxNoteLength : 3000; // <- should we increase this?
+	config.maxNoteLength != null ? config.maxNoteLength : 999; // <- should we increase this?
 export const MAX_CAPTION_TEXT_LENGTH = Math.min(
-	config.maxCaptionLength ?? 1500,
+	config.maxCaptionLength ?? 999,
 	DB_MAX_IMAGE_COMMENT_LENGTH,
 );
 
@@ -15,8 +15,14 @@ export const MIN = 60 * SEC; // why do we need this duplicate here?
 export const HOUR = 60 * MIN;
 export const DAY = 24 * HOUR;
 
-export const USER_ONLINE_THRESHOLD = 10 * MINUTE;
-export const USER_ACTIVE_THRESHOLD = 3 * DAY;
+export const USER_ONLINE_THRESHOLD = 150 * SEC;
+export const USER_HALFONLINE_THRESHOLD = 5 * MINUTE;
+export const USER_ACTIVE_THRESHOLD = 1 * HOUR;
+export const USER_ACTIVE2_THRESHOLD = 3 * HOUR;
+export const USER_HALFSLEEP_THRESHOLD = 1 * DAY;
+export const USER_SLEEP_THRESHOLD = 2 * DAY;
+export const USER_DEEPSLEEP_THRESHOLD = 7 * DAY;
+export const USER_SUPERSLEEP_THRESHOLD = 30 * DAY;
 
 // List of file types allowed to be viewed directly in the browser
 // Anything not included here will be responded as application/octet-stream

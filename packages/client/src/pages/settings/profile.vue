@@ -243,6 +243,7 @@ function save() {
 		birthday: profile.birthday || null,
 		lang: profile.lang || null,
 		isBot: !!profile.isBot,
+		hideOnlineStatus: !!profile.isBot,
 		isCat: !!profile.isCat,
 		speakAsCat: !!profile.speakAsCat,
 		showTimelineReplies: !!profile.showTimelineReplies,

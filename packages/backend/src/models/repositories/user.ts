@@ -9,7 +9,7 @@ import type { Promiseable } from "@/prelude/await-all.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import { populateEmojis } from "@/misc/populate-emojis.js";
 import { getAntennas } from "@/misc/antenna-cache.js";
-import { USER_ACTIVE_THRESHOLD, USER_ONLINE_THRESHOLD } from "@/const.js";
+import { USER_ACTIVE_THRESHOLD, USER_ACTIVE2_THRESHOLD, USER_HALFONLINE_THRESHOLD, USER_ONLINE_THRESHOLD, USER_HALFSLEEP_THRESHOLD, USER_SLEEP_THRESHOLD, USER_DEEPSLEEP_THRESHOLD, USER_SUPERSLEEP_THRESHOLD } from "@/const.js";
 import { Cache } from "@/misc/cache.js";
 import { db } from "@/db/postgre.js";
 import { isActor, getApId } from "@/remote/activitypub/type.js";
@@ -313,15 +313,27 @@ export const UserRepository = db.getRepository(User).extend({
 		return count > 0;
 	},
 
-	getOnlineStatus(user: User): "unknown" | "online" | "active" | "offline" {
-		if (user.hideOnlineStatus) return "unknown";
+	getOnlineStatus(user: User): "unknown" | "online" | "half-online" | "active" | "half-active" | "offline" | "half-sleeping" | "sleeping" | "deep-sleeping" | "never-sleeping" {
+		if (user.isBot) return "unknown";
 		if (user.lastActiveDate == null) return "unknown";
 		const elapsed = Date.now() - user.lastActiveDate.getTime();
 		return elapsed < USER_ONLINE_THRESHOLD
 			? "online"
+			: elapsed < USER_HALFONLINE_THRESHOLD
+			? "half-online"
 			: elapsed < USER_ACTIVE_THRESHOLD
 			? "active"
-			: "offline";
+			: elapsed < USER_ACTIVE2_THRESHOLD
+			? "half-active"
+			: elapsed < USER_HALFSLEEP_THRESHOLD
+			? "offline" 
+			: elapsed < USER_SLEEP_THRESHOLD
+			? "half-sleeping" 
+			: elapsed < USER_DEEPSLEEP_THRESHOLD
+			? "sleeping"
+			: elapsed < USER_SUPERSLEEP_THRESHOLD
+			? "deep-sleeping"
+			: "super-sleeping";
 	},
 
 	async getAvatarUrl(user: User): Promise<string> {

@@ -99,7 +99,7 @@ export const packedUserLiteSchema = {
 			format: "url",
 			nullable: true,
 			optional: false,
-			enum: ["unknown", "online", "active", "offline"],
+			enum: ["unknown" , "online" , "half-online" , "active" , "half-active" , "offline" , "half-sleeping" , "sleeping" , "deep-sleeping" , "super-sleeping"],
 		},
 	},
 } as const;

@@ -1,5 +1,5 @@
 import { MoreThan } from "typeorm";
-import { USER_ONLINE_THRESHOLD } from "@/const.js";
+import { USER_HALFONLINE_THRESHOLD } from "@/const.js";
 import { Users } from "@/models/index.js";
 import define from "../define.js";
 
@@ -18,7 +18,7 @@ export const paramDef = {
 
 export default define(meta, paramDef, async () => {
 	const count = await Users.countBy({
-		lastActiveDate: MoreThan(new Date(Date.now() - USER_ONLINE_THRESHOLD)),
+		lastActiveDate: MoreThan(new Date(Date.now() - USER_HALFONLINE_THRESHOLD)),
 	});
 
 	return {

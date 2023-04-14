@@ -11,7 +11,7 @@ export type UserLite = {
 	username: string;
 	host: string | null;
 	name: string;
-	onlineStatus: "online" | "active" | "offline" | "unknown";
+	onlineStatus: "unknown" | "online" | "half-online" | "active" | "half-active" | "offline" | "half-sleeping" | "sleeping" | "deep-sleeping" | "super-sleeping";
 	avatarUrl: string;
 	avatarBlurhash: string;
 	alsoKnownAs: string[];

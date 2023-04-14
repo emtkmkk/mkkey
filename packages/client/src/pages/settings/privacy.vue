@@ -43,16 +43,6 @@
 		</FormSelect>
 
 		<FormSwitch
-			v-model="hideOnlineStatus"
-			class="_formBlock"
-			@update:modelValue="save()"
-		>
-			{{ i18n.ts.hideOnlineStatus }}
-			<template #caption>{{
-				i18n.ts.hideOnlineStatusDescription
-			}}</template>
-		</FormSwitch>
-		<FormSwitch
 			v-model="noCrawle"
 			class="_formBlock"
 			@update:modelValue="save()"
@@ -163,7 +153,6 @@ function save() {
 		autoAcceptFollowed: !!autoAcceptFollowed,
 		noCrawle: !!noCrawle,
 		isExplorable: !!isExplorable,
-		hideOnlineStatus: !!hideOnlineStatus,
 		publicReactions: !!publicReactions,
 		ffVisibility: ffVisibility,
 	});

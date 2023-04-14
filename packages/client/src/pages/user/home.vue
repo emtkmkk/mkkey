@@ -200,12 +200,7 @@
 									{{ i18n.ts.registeredDate }}
 								</dt>
 								<dd class="value">
-									{{
-										new Date(
-											user.createdAt
-										).toLocaleString()
-									}}
-									(<MkTime :time="user.createdAt" />)
+									<MkTime :time="user.createdAt" mode="detail" />
 								</dd>
 							</dl>
 						</div>

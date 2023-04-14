@@ -24,10 +24,7 @@
 			<MkKeyValue class="_formBlock">
 				<template #key>{{ i18n.ts.registeredDate }}</template>
 				<template #value
-					>{{
-						new Date(report.targetUser.createdAt).toLocaleString()
-					}}
-					(<MkTime :time="report.targetUser.createdAt" />)</template
+					><MkTime :time="report.targetUser.createdAt" mode="detail" /></template
 				>
 			</MkKeyValue>
 		</div>

@@ -3,7 +3,7 @@
 		<template v-if="mode === 'relative'">{{ relative }}</template>
 		<template v-else-if="mode === 'absolute'">{{ absolute }}</template>
 		<template v-else-if="mode === 'detail'"
-			>{{ absolute }} ({{ relative }})</template
+			>{{ absolute }} ({{ relativeRaw }})</template
 		>
 	</time>
 </template>
@@ -27,7 +27,23 @@ const _time =
 const absolute = _time.toLocaleString();
 
 let now = $shallowRef(new Date());
+
 const relative = $computed(() => {
+	const ago = (now.getTime() - _time.getTime()) / 1000; /*ms*/
+	return now.getFullYear() !== _time.getFullYear()
+		? _time.toLocaleString([], { year:'numeric' , month: 'numeric' , day: 'numeric' , hour: 'numeric' , minute: 'numeric', hour12: false })
+		: now.toLocaleDateString([], { month: 'numeric', day: 'numeric' }) !== _time.toLocaleDateString([], { month: 'numeric', day: 'numeric' })
+		? _time.toLocaleString([], { month: 'numeric' , day: 'numeric' , hour: 'numeric' , minute: 'numeric', hour12: false })
+		: ago >= 3600
+		? _time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' , hour12: false })
+		: ago >= 60
+		? i18n.t("_ago.minutesAgo", { n: (~~(ago / 60)).toString() })
+		: ago >= 3
+		? i18n.t("_ago.secondsAgo", { n: (~~(ago % 60)).toString() })
+		: i18n.ts._ago.justNow;
+});
+
+const relativeRaw = $computed(() => {
 	const ago = (now.getTime() - _time.getTime()) / 1000; /*ms*/
 	return ago >= 31536000
 		? i18n.t("_ago.yearsAgo", { n: Math.round(ago / 31536000).toString() })
@@ -41,11 +57,9 @@ const relative = $computed(() => {
 		? i18n.t("_ago.hoursAgo", { n: Math.round(ago / 3600).toString() })
 		: ago >= 60
 		? i18n.t("_ago.minutesAgo", { n: (~~(ago / 60)).toString() })
-		: ago >= 10
+		: ago >= 3
 		? i18n.t("_ago.secondsAgo", { n: (~~(ago % 60)).toString() })
-		: ago >= -1
-		? i18n.ts._ago.justNow
-		: i18n.ts._ago.future;
+		: i18n.ts._ago.justNow;
 });
 
 function tick() {

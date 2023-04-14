@@ -353,15 +353,26 @@ useNoteCapture({
 
 function reply(viaKeyboard = false): void {
 	pleaseLogin();
-	os.post(
-		{
-			reply: appearNote,
-			animation: !viaKeyboard,
-		},
-		() => {
-			focus();
-		}
-	);
+	if (appearNote.user.isBot && (["public", "home"].includes(appearNote.visibility) || appearNote.userId === $i?.id)){	
+		os.post(
+			{
+				renote: appearNote,
+			},
+			() => {
+				focus();
+			}
+		);
+	} else {
+		os.post(
+			{
+				reply: appearNote,
+				animation: !viaKeyboard,
+			},
+			() => {
+				focus();
+			}
+		);
+	}
 }
 
 function react(viaKeyboard = false): void {

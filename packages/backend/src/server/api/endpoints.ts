@@ -161,6 +161,7 @@ import * as ep___gallery_posts_show from "./endpoints/gallery/posts/show.js";
 import * as ep___gallery_posts_unlike from "./endpoints/gallery/posts/unlike.js";
 import * as ep___gallery_posts_update from "./endpoints/gallery/posts/update.js";
 import * as ep___getOnlineUsersCount from "./endpoints/get-online-users-count.js";
+import * as ep___getOnlineUsersCount_detail from "./endpoints/get-online-users-count-detail.js";
 import * as ep___hashtags_list from "./endpoints/hashtags/list.js";
 import * as ep___hashtags_search from "./endpoints/hashtags/search.js";
 import * as ep___hashtags_show from "./endpoints/hashtags/show.js";
@@ -510,6 +511,7 @@ const eps = [
 	["gallery/posts/unlike", ep___gallery_posts_unlike],
 	["gallery/posts/update", ep___gallery_posts_update],
 	["get-online-users-count", ep___getOnlineUsersCount],
+	["get-online-users-count/detail", ep___getOnlineUsersCount_detail],
 	["hashtags/list", ep___hashtags_list],
 	["hashtags/search", ep___hashtags_search],
 	["hashtags/show", ep___hashtags_show],

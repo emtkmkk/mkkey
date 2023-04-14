@@ -1363,6 +1363,7 @@ _widgets:
   slideshow: "スライドショー"
   button: "ボタン"
   onlineUsers: "オンラインユーザー"
+  onlineUsersDetails: "オンラインユーザー（詳細）"
   jobQueue: "ジョブキュー"
   serverMetric: "サーバーメトリクス"
   aiscript: "AiScriptコンソール"

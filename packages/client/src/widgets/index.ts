@@ -70,6 +70,10 @@ export default function (app: App) {
 		defineAsyncComponent(() => import("./online-users.vue")),
 	);
 	app.component(
+		"MkwOnlineUsersDetails",
+		defineAsyncComponent(() => import("./online-users-details.vue")),
+	);
+	app.component(
 		"MkwJobQueue",
 		defineAsyncComponent(() => import("./job-queue.vue")),
 	);
@@ -111,6 +115,7 @@ export const widgets = [
 	"slideshow",
 	"serverMetric",
 	"onlineUsers",
+	"onlineUsersDetails",
 	"jobQueue",
 	"button",
 	"aiscript",

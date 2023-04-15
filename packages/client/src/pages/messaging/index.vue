@@ -9,23 +9,22 @@
 				:virtual="true"
 				:allow-touch-move="!(deviceKind === 'desktop' && !defaultStore.state.swipeOnDesktop)"
 				@swiper="setSwiperRef"
-				@slide-change="onSlideChange"
-			>
+				@slide-change="onSlideChange">
 				<swiper-slide>
-					<div class="_content yweeujhr dms">
-						<MkButton primary class="start" v-if="!isMobile" @click="startUser"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.startMessaging }}</MkButton>
-						<MkPagination v-slot="{items}" :pagination="dmsPagination">
+					<div class="_content yweeujhr groups">
+						<div v-if="!isMobile" class="groupsbuttons">
+							<MkButton primary class="start" @click="startGroup"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.startMessaging }}</MkButton>
+							<MkButton primary class="start" :link="true" to="/my/groups"><i class="ph-user-circle-gear ph-bold ph-lg"></i> {{ i18n.ts.manageGroups }}</MkButton>
+						</div>
+						<MkPagination v-slot="{items}" :pagination="groupsPagination">
 							<MkChatPreview v-for="message in items" :key="message.id" class="yweeujhr message _block" :message="message"/>
 						</MkPagination>
 					</div>
 				</swiper-slide>
 				<swiper-slide>
-					<div class="_content yweeujhr groups">
-						<div v-if="!isMobile" class="groupsbuttons">
-							<MkButton primary class="start" :link="true" to="/my/groups"><i class="ph-user-circle-gear ph-bold ph-lg"></i> {{ i18n.ts.manageGroups }}</MkButton>
-							<MkButton primary class="start" @click="startGroup"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.startMessaging }}</MkButton>
-						</div>
-						<MkPagination v-slot="{items}" :pagination="groupsPagination">
+					<div class="_content yweeujhr dms">
+						<MkButton primary class="start" v-if="!isMobile" @click="startUser"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.startMessaging }}</MkButton>
+						<MkPagination v-slot="{items}" :pagination="dmsPagination">
 							<MkChatPreview v-for="message in items" :key="message.id" class="yweeujhr message _block" :message="message"/>
 						</MkPagination>
 					</div>
@@ -60,7 +59,7 @@ const router = useRouter();
 let messages = $ref([]);
 let connection = $ref(null);
 
-const tabs = ['dms', 'groups'];
+const tabs = ['groups', 'dms'];
 let tab = $ref(tabs[0]);
 watch($$(tab), () => (syncSlide(tabs.indexOf(tab))));
 
@@ -77,14 +76,14 @@ const headerActions = $computed(() => [{
 	handler: startMenu,
 }]);
 
-const headerTabs = $computed(() => [{
-	key: 'dms',
-	title: i18n.ts._messaging.dms,
-	icon: 'ph-user ph-bold ph-lg',
-}, {
+const headerTabs = $computed(() => [ {
 	key: 'groups',
 	title: i18n.ts._messaging.groups,
 	icon: 'ph-users-three ph-bold ph-lg',
+},{
+	key: 'dms',
+	title: i18n.ts._messaging.dms,
+	icon: 'ph-user ph-bold ph-lg',
 }]);
 
 definePageMetadata({

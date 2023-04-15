@@ -5,3 +5,88 @@
 * With that said, GLHF!
 * This may eventuallly be replaced with a function in the admin panel.
  */
+/* 絵文字ピッカーで絵文字全体を表示する */
+.omfetrab>.emojis[data-v-c1db1596] section>.body>.item>.emoji {
+    object-fit: fill;
+    /* ここを変えると枠に対しての絵文字の幅が変わります */
+    max-width: 95%;
+}
+
+/* ハッシュタグを強調する */
+a[href*="/tags/"] {
+    color: var(--hashtag);
+    background-color: rgba(113, 136, 217, 0.1);
+    padding: 5px 7px 5px 7px;
+    border-radius: 8px;
+    border-style: dashed;
+    border-color: var(--hashtag);
+    border-width: 1px;
+}
+
+.wbrkwala>.tags>div>.tag>.a[data-v-30f02eb9] {
+    background-color: transparent;
+    padding: 0px;
+    border-radius: 0px;
+    border-style: none;
+}
+
+/* 公開範囲によって色をつける */
+.tkcbzcuz.qtqtichx:has(.ph-hand-fist) {
+    background-color: rgba(50, 120, 190, 0.2) !important;
+}
+
+.tkcbzcuz.qtqtichx:has(.ph-house) {
+    background-color: rgba(36, 190, 56, 0.2) !important;
+}
+
+.tkcbzcuz.qtqtichx:has(.ph-lock-simple-open) {
+    background-color: rgba(180, 55, 132, 0.2) !important;
+}
+
+.tkcbzcuz.qtqtichx:has(.ph-envelope-simple-open) {
+    background-color: rgba(190, 190, 50, 0.2) !important;
+}
+
+.lxwezrsl[data-v-794e90fb]:has(.ph-hand-fist) {
+    background-color: rgba(50, 120, 190, 0.2) !important;
+}
+
+.lxwezrsl[data-v-794e90fb]:has(.ph-house) {
+    background-color: rgba(36, 190, 56, 0.2) !important;
+}
+
+.lxwezrsl[data-v-794e90fb]:has(.ph-lock-simple-open) {
+    background-color: rgba(180, 55, 132, 0.2) !important;
+}
+
+.lxwezrsl[data-v-794e90fb]:has(.ph-envelope-simple-open) {
+    background-color: rgba(190, 190, 50, 0.2) !important;
+}
+
+span>i.ph-bold.ph-envelope-simple-open::before,
+span>i.ph-bold.ph-hand-fist::before {
+    color: var(--infoWarnFg);
+}
+
+.tkcbzcuz>.article>.main>.body>.content>.renote>*[data-v-e62009ed],
+.yohlumlk[data-v-db9cdae8] {
+    background-color: var(--panel) !important;
+}
+
+.tkcbzcuz>.article>.main>.body>.content>.renote>*[data-v-e62009ed]:has(.ph-house),
+.yohlumlk[data-v-db9cdae8]:has(.ph-house) {
+    background-color: rgba(36, 190, 56, 0) !important;
+}
+
+.mk-url-preview>.link[data-v-4135440a] {
+    background-color: var(--panel) !important;
+}
+
+.hkzvhatu.canToggle[data-v-5e23c6a5] {
+    background-color: var(--panel);
+}
+
+.hkzvhatu.reacted[data-v-5e23c6a5],
+.hkzvhatu.reacted[data-v-5e23c6a5]:hover {
+    background-color: var(--accentLighten);
+}

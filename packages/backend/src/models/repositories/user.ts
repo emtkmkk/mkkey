@@ -431,7 +431,7 @@ export const UserRepository = db.getRepository(User).extend({
 				  relation &&
 				  relation.isFollowing
 				? user.followingCount
-				: null;
+				: user.followingCount;
 
 		const followersCount =
 			profile == null
@@ -442,7 +442,7 @@ export const UserRepository = db.getRepository(User).extend({
 				  relation &&
 				  relation.isFollowing
 				? user.followersCount
-				: null;
+				: user.followersCount;
 
 		const falsy = opts.detail ? false : undefined;
 

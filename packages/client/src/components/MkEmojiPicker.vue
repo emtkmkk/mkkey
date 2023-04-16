@@ -415,7 +415,7 @@ function chosen(emoji: any, ev?: MouseEvent) {
 		let recents = defaultStore.state.recentlyUsedEmojis;
 		recents = recents.filter((emoji: any) => emoji !== key);
 		recents.unshift(key);
-		defaultStore.set("recentlyUsedEmojis", recents.splice(0, 32));
+		defaultStore.set("recentlyUsedEmojis", recents.splice(0, 48));
 	}
 }
 

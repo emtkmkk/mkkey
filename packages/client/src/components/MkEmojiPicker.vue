@@ -51,7 +51,7 @@
 				</div>
 			</section>
 
-			<div v-if="tab === 'index'" class="group index">
+			<div v-if="tab === 'index' && searchResultCustom.length <= 0" class="group index">
 				<section v-if="showPinned">
 					<div class="body">
 						<button
@@ -91,7 +91,7 @@
 					</div>
 				</section>
 			</div>
-			<div v-once class="group">
+			<div v-once v-if="searchResultUnicode.length <= 0" class="group">
 				<header>{{ i18n.ts.customEmojis }}</header>
 				<XSection
 					v-for="category in customEmojiCategories"
@@ -106,7 +106,7 @@
 					>{{ category || i18n.ts.other }}</XSection
 				>
 			</div>
-			<div v-once class="group">
+			<div v-once v-if="searchResultUnicode.length <= 0" class="group">
 				<header>{{ i18n.ts.emoji }}</header>
 				<XSection
 					v-for="category in categories"
@@ -228,7 +228,7 @@ watch(q, () => {
 	const newQ = q.value.replace(/:/g, "").toLowerCase();
 
 	const searchCustom = () => {
-		const max = 8;
+		const max = 32;
 		const emojis = customEmojis;
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 
@@ -300,7 +300,7 @@ watch(q, () => {
 	};
 
 	const searchUnicode = () => {
-		const max = 8;
+		const max = 32;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
 

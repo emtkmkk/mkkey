@@ -433,7 +433,9 @@ function done(query?: any): boolean | void {
 	const q2 = query.replaceAll(":", "");
 	if (q2.endsWith(' -f')) {
 		const emojiForceStd = q2.match(/(.*) \-f/);
-		emojiForceStd ? emojiForceStd[1] ? chosen(emojiForceStd[1]) : : ;
+		if (emojiForceStd && emojiForceStd[1]){
+			chosen(emojiForceStd[1])
+		}
 	}
 	const exactMatchCustom = customEmojis.find((emoji) => emoji.name === q2);
 	if (exactMatchCustom) {

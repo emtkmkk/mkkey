@@ -91,7 +91,7 @@
 					</div>
 				</section>
 			</div>
-			<div v-once v-if="searchResultUnicode.length <= 0" class="group">
+			<div v-once v-if="searchResultCustom.length <= 0" class="group">
 				<header>{{ i18n.ts.customEmojis }}</header>
 				<XSection
 					v-for="category in customEmojiCategories"
@@ -106,7 +106,7 @@
 					>{{ category || i18n.ts.other }}</XSection
 				>
 			</div>
-			<div v-once v-if="searchResultUnicode.length <= 0" class="group">
+			<div v-once v-if="searchResultCustom.length <= 0" class="group">
 				<header>{{ i18n.ts.emoji }}</header>
 				<XSection
 					v-for="category in categories"
@@ -430,13 +430,13 @@ function done(query?: any): boolean | void {
 	if (query == null) query = q.value;
 	if (query == null || typeof query !== "string") return;
 
-	const q2 = query.replaceAll(":", "");
-	if (q2.endsWith(' -f')) {
-		const emojiForceStd = q2.match(/(.*) \-f/);
+	if (query.endsWith(' -f')) {
+		const emojiForceStd = query.match(/(.*) \-f/);
 		if (emojiForceStd && emojiForceStd[1]){
 			chosen(emojiForceStd[1])
 		}
 	}
+	const q2 = query.replaceAll(":", "");
 	const exactMatchCustom = customEmojis.find((emoji) => emoji.name === q2);
 	if (exactMatchCustom) {
 		chosen(exactMatchCustom);

@@ -3,7 +3,7 @@ import define from "../define.js";
 
 export const meta = {
 	tags: ["meta"],
-	requireCredential: false,
+	requireCredential: true,
 	requireCredentialPrivateMode: false,
 } as const;
 

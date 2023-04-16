@@ -8,16 +8,16 @@
 	>
 
 		<span class="text" data-v-93ec8385="">
-		O: <b data-v-93ec8385="">{{ onlineUsersCount }}</b> / <b data-v-93ec8385="">{{ honlineUsersCount }}</b>
+		Onli: <b data-v-93ec8385="">{{ onlineUsersCount }}</b> / <b data-v-93ec8385="">{{ honlineUsersCount }}</b>
 		</span><br>
 		<span class="text" data-v-93ec8385="">
-		A: <b data-v-93ec8385="">{{ activeUsersCount }}</b> / <b data-v-93ec8385="">{{ hactiveUsersCount }}</b>
+		Away: <b data-v-93ec8385="">{{ activeUsersCount }}</b> / <b data-v-93ec8385="">{{ hactiveUsersCount }}</b>
 		</span><br>
 		<span class="text" data-v-93ec8385="">
-		F: <b data-v-93ec8385="">{{ offline1UsersCount }}</b> / <b data-v-93ec8385="">{{ offline2UsersCount }}</b> / <b data-v-93ec8385="">{{ offline3UsersCount }}</b>
+		Offl: <b data-v-93ec8385="">{{ offline1UsersCount }}</b> / <b data-v-93ec8385="">{{ offline2UsersCount }}</b> / <b data-v-93ec8385="">{{ offline3UsersCount }}</b>
 		</span><br>
 		<span class="text" data-v-93ec8385="">
-		S: <b data-v-93ec8385="">{{ sleepUsersCount }}</b> / <b data-v-93ec8385="">{{ dsleepUsersCount }}</b>
+		Slep: <b data-v-93ec8385="">{{ sleepUsersCount }}</b> / <b data-v-93ec8385="">{{ dsleepUsersCount }}</b>
 		</span>
 	</div>
 </template>

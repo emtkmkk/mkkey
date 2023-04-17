@@ -17,6 +17,13 @@ export const meta = {
 
 	requireCredential: true,
 
+	res: {
+		type: "object",
+		optional: false,
+		nullable: false,
+		ref: "DriveFile",
+	},
+
 	kind: "write:drive",
 } as const;
 
@@ -47,7 +54,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		force: ps.force,
 		comment: ps.comment,
 	}).then((file) => {
-		DriveFiles.pack(file, { self: true }).then((packedFile) => {
+		return DriveFiles.pack(file, { self: true }).then((packedFile) => {
 			publishMainStream(user.id, "urlUploadFinished", {
 				marker: ps.marker,
 				file: packedFile,

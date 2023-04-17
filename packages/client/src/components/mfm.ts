@@ -251,7 +251,7 @@ export default defineComponent({
 										: token.props.args.y
 										? "perspective(128px) rotateY"
 										: "rotate";
-									const degrees = parseInt(token.props.args.deg) || "90";
+									const degrees = parseFloat(token.props.args.deg ?? "90");
 									style = `transform: ${rotate}(${degrees}deg); transform-origin: center center;`;
 									break;
 								}

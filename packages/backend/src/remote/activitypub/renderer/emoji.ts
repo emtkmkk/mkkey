@@ -2,7 +2,7 @@ import config from "@/config/index.js";
 import type { Emoji } from "@/models/entities/emoji.js";
 
 export default (emoji: Emoji) => ({
-	id: `${config.url}/emojis/${emoji.name}`,
+	id: emoji.uri || `${config.url}/emojis/${emoji.name}`,
 	type: "Emoji",
 	name: `:${emoji.name}:`,
 	updated:

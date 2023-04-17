@@ -428,7 +428,7 @@ export type Endpoints = {
 			marker?: string | null;
 			force?: boolean;
 		};
-		res: null;
+		res: DriveFile;
 	};
 	"drive/folders": {
 		req: {

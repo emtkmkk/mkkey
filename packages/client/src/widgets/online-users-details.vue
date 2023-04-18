@@ -8,16 +8,16 @@
 	>
 
 		<span class="text" data-v-93ec8385="">
-		Onli: <b data-v-93ec8385="">{{ onlineUsersCount }}</b> / <b data-v-93ec8385="">{{ honlineUsersCount }}</b>
+		オンライン: <b data-v-93ec8385="">{{ onlineUsersCount }}</b> / <b data-v-93ec8385="">{{ honlineUsersCount }}</b>
 		</span><br>
 		<span class="text" data-v-93ec8385="">
-		Away: <b data-v-93ec8385="">{{ activeUsersCount }}</b> / <b data-v-93ec8385="">{{ hactiveUsersCount }}</b>
+		離席中: <b data-v-93ec8385="">{{ activeUsersCount }}</b> / <b data-v-93ec8385="">{{ hactiveUsersCount }}</b>
 		</span><br>
 		<span class="text" data-v-93ec8385="">
-		Offl: <b data-v-93ec8385="">{{ offline1UsersCount }}</b> / <b data-v-93ec8385="">{{ offline2UsersCount }}</b> / <b data-v-93ec8385="">{{ offline3UsersCount }}</b>
+		オフライン: <b data-v-93ec8385="">{{ offline1UsersCount }}</b> / <b data-v-93ec8385="">{{ offline2UsersCount }}</b> / <b data-v-93ec8385="">{{ offline3UsersCount }}</b>
 		</span><br>
 		<span class="text" data-v-93ec8385="">
-		Slep: <b data-v-93ec8385="">{{ sleepUsersCount }}</b> / <b data-v-93ec8385="">{{ dsleepUsersCount }}</b>
+		休眠中: <b data-v-93ec8385="">{{ sleepUsersCount }}</b> / <b data-v-93ec8385="">{{ dsleepUsersCount }}</b> / <b data-v-93ec8385="">{{ dsleep2UsersCount }}</b>
 		</span>
 	</div>
 </template>
@@ -70,6 +70,7 @@ const offline2UsersCount = ref(0);
 const offline3UsersCount = ref(0);
 const sleepUsersCount = ref(0);
 const dsleepUsersCount = ref(0);
+const dsleep2UsersCount = ref(0);
 
 const tick = () => {
 	os.api("get-online-users-count/detail").then((res) => {
@@ -81,7 +82,8 @@ const tick = () => {
 		offline2UsersCount.value = res.o12h;
 		offline3UsersCount.value = res.o24h;
 		sleepUsersCount.value = res.o2d;
-		dsleepUsersCount.value = res.sleepCount - res.o2d;
+		dsleepUsersCount.value = res.o3d + res.o4d + res.o7d;
+		dsleep2UsersCount.value = res.o14d + res.o30d + res.omore;
 	});
 };
 

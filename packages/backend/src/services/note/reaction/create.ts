@@ -126,6 +126,16 @@ export default async (
 			noteId: note.id,
 			reaction: reaction,
 		});
+			const webhooks = await getActiveWebhooks().then((webhooks) =>
+			webhooks.filter((x) => x.userId === user.id && x.on.includes("reaction")),
+			);
+
+			for (const webhook of webhooks) {
+				webhookDeliver(webhook, "reaction", {
+					note: await Notes.pack(note, user),
+				});
+			}
+
 	}
 
 	// Fetch watchers

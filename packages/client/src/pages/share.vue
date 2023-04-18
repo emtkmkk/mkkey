@@ -65,12 +65,12 @@ let visibleUsers = $ref([] as Misskey.entities.User[]);
 
 async function init() {
 	let noteText = "";
-	if (title) noteText += `[ ${title} ]\n`;
+	// if (title) noteText += `[ ${title} ]\n`;
 	// Googleニュース対策
 	if (text?.startsWith(`${title}.\n`))
 		noteText += text.replace(`${title}.\n`, "");
 	else if (text && title !== text) noteText += `${text}\n`;
-	if (url) noteText += `${url}`;
+	if (url) noteText += `[${title}](${url})`;
 	initialText = noteText.trim();
 
 	if (visibility === "specified") {

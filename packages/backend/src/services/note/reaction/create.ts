@@ -21,6 +21,8 @@ import deleteReaction from "./delete.js";
 import { isDuplicateKeyValueError } from "@/misc/is-duplicate-key-value-error.js";
 import type { NoteReaction } from "@/models/entities/note-reaction.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
+import { webhookDeliver } from "@/queue/index.js";
+import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 
 export default async (
 	user: { id: User["id"]; host: User["host"] },

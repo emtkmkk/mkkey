@@ -52,7 +52,7 @@ import { resolveImage } from "./image.js";
 const logger = apLogger;
 
 const nameLength = 128;
-const summaryLength = 2048;
+const summaryLength = 8192;
 
 /**
  * Validate and convert to actor object

@@ -21,6 +21,7 @@
 					/>
 				</div>
 			</div>
+			<MkButton full @click="whatIsNew">{{ i18n.ts.whatIsNew }}</MkButton>
 			<MkButton
 				:class="$style.gotIt"
 				primary
@@ -42,6 +43,11 @@ import { i18n } from "@/i18n";
 import * as os from "@/os";
 
 const modal = shallowRef<InstanceType<typeof MkModal>>();
+
+const whatIsNew = () => {
+	modal.value.close();
+	window.open(`https://codeberg.org/emtkmkk/calckey/src/branch/beta/patchnote.md`, '_blank');
+};
 
 let newRelease = $ref(false);
 let data = $ref(Object);

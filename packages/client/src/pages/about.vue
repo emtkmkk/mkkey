@@ -13,7 +13,6 @@
 				:virtual="true"
 				:allow-touch-move="
 					!(
-						deviceKind === 'desktop' &&
 						!defaultStore.state.swipeOnDesktop
 					)
 				"
@@ -59,6 +58,16 @@
 								<template #key>Calckey</template>
 								<template #value>{{ version }}</template>
 							</MkKeyValue>
+							<FormLink
+								to="https://codeberg.org/emtkmkk/calckey"
+								external
+							>
+								<template #icon
+									><i class="ph-code ph-bold ph-lg"></i
+								></template>
+								{{ i18n.ts._aboutMisskey.mkkeysource }}
+								<template #suffix>Codeberg</template>
+							</FormLink>
 							<FormLink to="/about-calckey">{{
 								i18n.ts.aboutMisskey
 							}}</FormLink>

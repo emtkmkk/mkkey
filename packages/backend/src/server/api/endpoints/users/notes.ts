@@ -119,7 +119,14 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	if (!ps.includeReplies) {
-		query.andWhere("note.replyId IS NULL");
+		query.andWhere(
+			new Brackets((qb) => {
+				qb.where(
+					// 返信が自分なら表示する
+					"note.replyId IS NULL",
+				).orWhere("note.replyUserId  = :userId", { userId: user.id });
+			}),
+		);
 	}
 
 	if (ps.includeMyRenotes === false) {

@@ -227,7 +227,7 @@ const render = () => {
 			})),
 		},
 		options: {
-			aspectRatio: props.aspectRatio || 2.5,
+			aspectRatio: props.aspectRatio || 2,
 			layout: {
 				padding: {
 					left: 0,
@@ -264,7 +264,7 @@ const render = () => {
 				y: {
 					position: "left",
 					stacked: props.stacked,
-					suggestedMax: 50,
+					suggestedMax: 10,
 					grid: {
 						color: gridColor,
 						borderColor: "rgb(0, 0, 0, 0)",

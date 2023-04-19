@@ -48,8 +48,8 @@ export function generateRepliesQuery(
 								qb.where(
 									// 返信だけどノート主、返信先をフォローしている
 									"note.replyId IS NOT NULL",
-								).andWhere("note.replyUserId IN (:followId)", { followId: following }
-								).andWhere("note.userId IN (:followId)", { followId: following });
+								).andWhere(`note.replyUserId IN (${following})`
+								).andWhere(`note.userId IN (${following})`);
 							}),
 						)
 				}),

@@ -35,7 +35,6 @@ export default class extends Channel {
 			const reply = note.reply;
 			// 「フォロー中同士の会話」でもなければ、「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
 			if (
-				!(this.following.has(reply.userId) && this.following.has(note.userId)) &&
 				reply.userId !== this.user!.id &&
 				note.userId !== this.user!.id &&
 				reply.userId !== note.userId

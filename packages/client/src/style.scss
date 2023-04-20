@@ -62,6 +62,10 @@ html {
 		}
 	}
 
+	&.f--1 {
+		font-size: 13px;
+	}
+
 	&.f-1 {
 		font-size: 15px;
 	}
@@ -72,6 +76,10 @@ html {
 
 	&.f-3 {
 		font-size: 17px;
+	}
+	
+	&.f-4 {
+		font-size: 18px;
 	}
 
 	&.useSystemFont {

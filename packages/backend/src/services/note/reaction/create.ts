@@ -129,7 +129,7 @@ export default async (
 			reaction: reaction,
 		});
 			const webhooks = await getActiveWebhooks().then((webhooks) =>
-			webhooks.filter((x) => x.userId === user.id && x.on.includes("reaction")),
+			webhooks.filter((x) => x.userId === note.userId && x.on.includes("reaction")),
 			);
 
 			for (const webhook of webhooks) {

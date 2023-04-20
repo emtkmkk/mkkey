@@ -701,7 +701,7 @@ async function onPaste(ev: ClipboardEvent) {
 	if (!props.renote && !quoteId && paste.startsWith(url + "/notes/")) {
 		ev.preventDefault();
 
-		os.yesno({
+		os.confirm({
 			type: "info",
 			text: i18n.ts.quoteQuestion,
 		}).then(({ canceled }) => {

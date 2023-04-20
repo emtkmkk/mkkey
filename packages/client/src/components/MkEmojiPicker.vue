@@ -9,7 +9,6 @@
 			v-model.trim="q"
 			class="search"
 			data-prevent-emoji-insert
-			:class="{ filled: q != null && q != '' }"
 			:placeholder="i18n.ts.search"
 			type="search"
 			@paste.stop="paste"
@@ -52,7 +51,7 @@
 			</section>
 
 			<div v-if="tab === 'index' && searchResultCustom.length <= 0" class="group index">
-				<section v-if="showPinned">
+				<section v-if="showPinned && searchResultCustom.length <= 0">
 					<div class="body">
 						<button
 							v-for="emoji in pinned"
@@ -70,7 +69,7 @@
 					</div>
 				</section>
 
-				<section>
+				<section v-if="searchResultCustom.length <= 0">
 					<header class="_acrylic">
 						<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
 						{{ i18n.ts.recentUsed }}
@@ -430,13 +429,19 @@ function done(query?: any): boolean | void {
 	if (query == null) query = q.value;
 	if (query == null || typeof query !== "string") return;
 
-	if (query.endsWith(' -f')) {
-		const emojiForceStd = query.match(/(.*) \-f/);
+	const q2 = query.replaceAll(":", "");
+	if (q2.endsWith(' -f')) {
+		const emojiForceStd = query.match(/([\w]*) \-f/);
 		if (emojiForceStd && emojiForceStd[1]){
-			chosen(emojiForceStd[1])
+			chosen(":" + emojiForceStd[1] + ":")
 		}
 	}
-	const q2 = query.replaceAll(":", "");
+	if (q2.endsWith('!')) {
+		const emojiForceStd = query.match(/([\w]*)!/);
+		if (emojiForceStd && emojiForceStd[1]){
+			chosen(":" + emojiForceStd[1] + ":")
+		}
+	}
 	const exactMatchCustom = customEmojis.find((emoji) => emoji.name === q2);
 	if (exactMatchCustom) {
 		chosen(exactMatchCustom);

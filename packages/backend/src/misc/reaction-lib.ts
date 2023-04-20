@@ -88,8 +88,8 @@ export async function toDbReaction(
 
 		if (emoji) return reacterHost ? `:${name}@${reacterHost}:` : `:${name}:`;
 		
-		// 無理ならリモートから
-		const host = custom[2] || IsNull();
+		// 無理ならリモートから （host情報がない場合、misskey.ioで試行してみる）
+		const host = custom[2] || "misskey.io";
 		const emoji2 = await Emojis.findOneBy({
 			host,
 			name,

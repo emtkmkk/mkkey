@@ -20,7 +20,7 @@ export async function pushUserToUserList(target: User, list: UserList) {
 	const localFollowersCount = Followings.createQueryBuilder("following")
 			.where("following.followeeId = :userId", { userId: target.id })
 			.andWhere("following.followerHost IS NULL")
-			.getCount()
+			.getCount();
 
 	// このインスタンス内にこのリモートユーザーをフォローしているユーザーがいなくても投稿を受け取るためにダミーのユーザーがフォローしたということにする
 	// 条件 : 対象のローカル内フォロワーが0人以下（ローカルからフォローされていない）

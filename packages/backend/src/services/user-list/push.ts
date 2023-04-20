@@ -17,7 +17,7 @@ export async function pushUserToUserList(target: User, list: UserList) {
 
 	publishUserListStream(list.id, "userAdded", await Users.pack(target));
 	
-	const localFollowersCount = Followings.createQueryBuilder("following")
+	const localFollowersCount = await Followings.createQueryBuilder("following")
 			.where("following.followeeId = :userId", { userId: target.id })
 			.andWhere("following.followerHost IS NULL")
 			.getCount();

@@ -305,9 +305,10 @@ let useCw = $ref(false);
 let showPreview = $ref(false);
 let cw = $ref<string | null>(null);
 let localOnly = $ref<boolean>(
-	props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility
+	($i.isAdmin || $i.isModerator) ? props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility
 		? defaultStore.state.localOnly
 		: defaultStore.state.defaultNoteLocalOnly
+		: false
 );
 let visibility = $ref(
 	props.initialVisibility ??
@@ -612,6 +613,7 @@ function setVisibility() {
 			currentVisibility: visibility,
 			currentLocalOnly: localOnly,
 			src: visibilityButton,
+			admin: $i.isAdmin || $i.isModerator,
 		},
 		{
 			changeVisibility: (v) => {

@@ -10,7 +10,7 @@ export const apiUrl = `${url}/api`;
 export const wsUrl = `${url
 	.replace("http://", "ws://")
 	.replace("https://", "wss://")}/streaming`;
-export const lang = localStorage.getItem("lang");
+export const lang = localStorage.getItem("lang") ?? "ja-JP";
 export const langs = _LANGS_;
 export const locale = JSON.parse(localStorage.getItem("locale"));
 export const version = _VERSION_;

@@ -9,6 +9,7 @@
 			v-model.trim="q"
 			class="search"
 			data-prevent-emoji-insert
+			:class="filled"
 			:placeholder="i18n.ts.search"
 			type="search"
 			@paste.stop="paste"

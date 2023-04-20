@@ -84,8 +84,9 @@
 					}}</span>
 				</div>
 			</button>
-			<div :class="$style.divider"></div>
+			<div v-if="admin" :class="$style.divider"></div>
 			<button
+			    v-if="admin"
 				key="localOnly"
 				class="_button"
 				:class="[
@@ -96,19 +97,20 @@
 				data-index="5"
 				@click="localOnly = !localOnly"
 			>
-				<div :class="$style.icon">
+				<div v-if="admin" :class="$style.icon">
 					<i class="ph-hand-fist ph-bold ph-lg"></i>
 				</div>
-				<div :class="$style.body">
-					<span :class="$style.itemTitle">{{
+				<div v-if="admin" :class="$style.body">
+					<span v-if="admin" :class="$style.itemTitle">{{
 						i18n.ts._visibility.localOnly
 					}}</span>
-					<span :class="$style.itemDescription">{{
+					<span v-if="admin" :class="$style.itemDescription">{{
 						i18n.ts._visibility.localOnlyDescription
 					}}</span>
 				</div>
-				<div :class="$style.toggle">
+				<div v-if="admin" :class="$style.toggle">
 					<i
+						v-if="admin"
 						:class="
 							localOnly
 								? 'ph-toggle-right ph-bold ph-lg'
@@ -134,6 +136,7 @@ const props = withDefaults(
 		currentVisibility: (typeof misskey.noteVisibilities)[number];
 		currentLocalOnly: boolean;
 		src?: HTMLElement;
+		admin?: boolean;
 	}>(),
 	{}
 );
@@ -149,6 +152,7 @@ const emit = defineEmits<{
 
 let v = $ref(props.currentVisibility);
 let localOnly = $ref(props.currentLocalOnly);
+let admin = props.admin || false;
 
 watch($$(localOnly), () => {
 	emit("changeLocalOnly", localOnly);

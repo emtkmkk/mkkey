@@ -24,7 +24,7 @@
 				<span
 					class="text-count"
 					:class="{ over: textLength > maxTextLength }"
-					>{{ maxTextLength - textLength }}</span
+					>{{ (maxTextLength - textLength) > 999 ? "999+" : maxTextLength - textLength }}</span
 				>
 				<span v-if="localOnly" class="local-only"
 					><i class="ph-hand-fist ph-bold ph-lg"></i

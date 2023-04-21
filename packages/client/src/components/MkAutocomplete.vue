@@ -200,7 +200,11 @@ const select = ref(-1);
 const zIndex = os.claimZIndex("high");
 
 function complete(type: string, value: any) {
-	emit("done", { type, value });
+	let completeValue = value;
+	if (type === 'mfmTag') {
+		completeValue = value.match(/(\w+) .+/)[1];
+	}
+	emit("done", { type, completeValue });
 	emit("closed");
 	if (type === "emoji") {
 		let recents = defaultStore.state.recentlyUsedEmojis;
@@ -336,11 +340,11 @@ function exec() {
 		emojis.value = matched;
 	} else if (props.type === "mfmTag") {
 		if (!props.q || props.q === "") {
-			mfmTags.value = MFM_TAGS;
+			mfmTags.value = MFM_TAGS_JP;
 			return;
 		}
 
-		mfmTags.value = MFM_TAGS.filter((tag) => tag.startsWith(props.q ?? ""));
+		mfmTags.value = MFM_TAGS_JP.filter((tag) => tag.startsWith(props.q ?? ""));
 	}
 }
 

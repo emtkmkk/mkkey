@@ -21,9 +21,9 @@ export const MFM_TAGS = [
 	"rotate",
 ];
 export const MFM_TAGS_JP = [
-	"x2 2倍",
-	"x3 3倍",
-	"x4 4倍",
+	"x2 サイズ2倍",
+	"x3 サイズ3倍",
+	"x4 サイズ4倍",
 	"blur ぼかし",
 	"rainbow ゲーミング",
 	"sparkle キラキラ",

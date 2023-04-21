@@ -50,12 +50,11 @@
 					></span>
 				</button>
 				<button
-					v-tooltip="i18n.ts.previewNoteText"
-					class="_button preview"
-					:class="{ active: showPreview }"
-					@click="showPreview = !showPreview"
+					v-tooltip="i18n.ts._mfm.cheatSheet"
+					class="_button"
+					@click="openCheatSheet"
 				>
-					<i class="ph-file-code ph-bold ph-lg"></i>
+					<i class="ph-question ph-bold ph-lg"></i>
 				</button>
 				<button
 					class="submit _buttonGradate"
@@ -203,11 +202,12 @@
 					<i class="ph-plug ph-bold ph-lg"></i>
 				</button>
 				<button
-					v-tooltip="i18n.ts._mfm.cheatSheet"
-					class="_button right"
-					@click="openCheatSheet"
+					v-tooltip="i18n.ts.previewNoteText"
+					class="_button preview right"
+					:class="{ active: showPreview }"
+					@click="showPreview = !showPreview"
 				>
-					<i class="ph-question ph-bold ph-lg"></i>
+					<i class="ph-file-code ph-bold ph-lg"></i>
 				</button>
 			</footer>
 			<datalist id="hashtags">
@@ -302,7 +302,7 @@ let poll = $ref<{
 	expiredAfter: string | null;
 } | null>(null);
 let useCw = $ref(false);
-let showPreview = $ref(false);
+let showPreview = $ref(true);
 let cw = $ref<string | null>(null);
 let localOnly = $ref<boolean>(
 	props.initialLocalOnly ?? ($i.isAdmin || $i.isModerator) ? defaultStore.state.rememberNoteVisibility
@@ -387,7 +387,7 @@ const maxTextLength = $computed((): number => {
 const canPost = $computed((): boolean => {
 	return (
 		!posting &&
-		(1 <= textLength || 1 <= files.length || !!poll || !!props.renote) &&
+		(1 <= textLength || 1 <= files.length || !!poll || !!props.renote || !!quoteId) &&
 		textLength <= maxTextLength &&
 		(!poll || poll.choices.length >= 2)
 	);

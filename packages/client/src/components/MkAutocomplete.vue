@@ -204,7 +204,7 @@ function complete(type: string, value: any) {
 	if (type === 'mfmTag') {
 		completeValue = value.match(/(\w+)\s/)[1];
 	}
-	emit("done", { type, completeValue });
+	emit("done", { type, value: completeValue });
 	emit("closed");
 	if (type === "emoji") {
 		let recents = defaultStore.state.recentlyUsedEmojis;

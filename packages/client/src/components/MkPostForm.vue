@@ -51,7 +51,7 @@
 				</button>
 				<button
 					v-tooltip="i18n.ts._mfm.cheatSheet"
-					class="_button"
+					class="_button preview"
 					@click="openCheatSheet"
 				>
 					<i class="ph-question ph-bold ph-lg"></i>
@@ -203,7 +203,7 @@
 				</button>
 				<button
 					v-tooltip="i18n.ts.previewNoteText"
-					class="_button preview right"
+					class="_button right"
 					:class="{ active: showPreview }"
 					@click="showPreview = !showPreview"
 				>

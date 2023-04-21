@@ -1216,7 +1216,7 @@ onMounted(() => {
 		}
 
 		> footer {
-			padding: 0 16px 16px 16px;
+			padding: 0 16px 0 16px;
 
 			> button {
 				display: inline-block;

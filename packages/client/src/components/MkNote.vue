@@ -319,6 +319,9 @@ const reactButton = ref<HTMLElement>();
 let appearNote = $computed(() =>
 	note.renote != null ? (note.renote as misskey.entities.Note) : note
 );
+let replyNote = $computed(() =>
+	note.reply != null ? (note.reply as misskey.entities.Note) : note
+);
 const isMyRenote = $i && $i.id === note.userId;
 const showContent = ref(false);
 const isLong =
@@ -327,7 +330,7 @@ const isLong =
 	(appearNote.text.split("\n").length > 9 || appearNote.text.length > 500);
 const collapsed = ref(appearNote.cw == null && isLong);
 const isDeleted = ref(false);
-const muted = ref(getWordMute(appearNote, $i, defaultStore.state.mutedWords) || getWordMute(note, $i, defaultStore.state.mutedWords));
+const muted = ref(getWordMute(appearNote, $i, defaultStore.state.mutedWords) || getWordMute(replyNote, $i, defaultStore.state.mutedWords) || getWordMute(note, $i, defaultStore.state.mutedWords));
 const translation = ref(null);
 const translating = ref(false);
 const urls = appearNote.text

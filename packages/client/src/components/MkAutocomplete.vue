@@ -97,7 +97,7 @@ import { char2filePath } from "@/scripts/twemoji-base";
 import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import { acct } from "@/filters/user";
 import * as os from "@/os";
-import { MFM_TAGS } from "@/scripts/mfm-tags";
+import { MFM_TAGS, MFM_TAGS_JP } from "@/scripts/mfm-tags";
 import { defaultStore } from "@/store";
 import { emojilist } from "@/scripts/emojilist";
 import { instance } from "@/instance";

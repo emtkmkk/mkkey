@@ -190,6 +190,8 @@
 					class="_button"
 					@click="insertEmoji"
 				>
+				    <i class="ph-smiley ph-bold ph-lg"></i>
+				</button>
 				<button
 					v-tooltip="i18n.ts.mfm"
 					class="_button"

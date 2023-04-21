@@ -146,7 +146,6 @@
 				@changeName="updateFileName"
 			/>
 			<XPollEditor v-if="poll" v-model="poll" @destroyed="poll = null" />
-			<XNotePreview v-if="showPreview" class="preview" :text="text" />
 			<footer>
 				<button
 					v-tooltip="i18n.ts.attachFile"
@@ -191,7 +190,12 @@
 					class="_button"
 					@click="insertEmoji"
 				>
-					<i class="ph-smiley ph-bold ph-lg"></i>
+				<button
+					v-tooltip="i18n.ts.mfm"
+					class="_button"
+					@click="insertMfm"
+				>
+					<i class="ph-magic-wand ph-bold ph-lg"></i>
 				</button>
 				<button
 					v-if="postFormActions.length > 0"
@@ -210,6 +214,7 @@
 					<i class="ph-file-code ph-bold ph-lg"></i>
 				</button>
 			</footer>
+			<XNotePreview v-if="showPreview" class="preview" :text="text" />
 			<datalist id="hashtags">
 				<option
 					v-for="hashtag in recentHashtags"
@@ -889,6 +894,10 @@ function insertMention() {
 
 async function insertEmoji(ev: MouseEvent) {
 	os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textareaEl);
+}
+
+function insertMfm() {
+	insertTextAtCursor(textareaEl, '$');
 }
 
 async function openCheatSheet(ev: MouseEvent) {

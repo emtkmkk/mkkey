@@ -309,6 +309,10 @@ const isRenote =
 	note.text == null &&
 	note.fileIds.length === 0 &&
 	note.poll == null;
+	
+const isQuote =
+    note.renote != null &&
+	!isRenote;
 
 const el = ref<HTMLElement>();
 const menuButton = ref<HTMLElement>();
@@ -317,8 +321,11 @@ const renoteButton = ref<InstanceType<typeof XRenoteButton>>();
 const renoteTime = ref<HTMLElement>();
 const reactButton = ref<HTMLElement>();
 let appearNote = $computed(() =>
-	note.renote != null ? (note.renote as misskey.entities.Note) : note
+	isRenote ? (note.renote as misskey.entities.Note) : note
 );
+let quoteNote = $computed(() =>
+    isQuote ? (note.renote as misskey.entities.Note) : note
+);	
 let replyNote = $computed(() =>
 	note.reply != null ? (note.reply as misskey.entities.Note) : note
 );
@@ -330,7 +337,7 @@ const isLong =
 	(appearNote.text.split("\n").length > 9 || appearNote.text.length > 500);
 const collapsed = ref(appearNote.cw == null && isLong);
 const isDeleted = ref(false);
-const muted = ref(getWordMute(appearNote, $i, defaultStore.state.mutedWords) || getWordMute(replyNote, $i, defaultStore.state.mutedWords) || getWordMute(note, $i, defaultStore.state.mutedWords));
+const muted = ref(getWordMute(appearNote, $i, defaultStore.state.mutedWords) || getWordMute(quoteNote, $i, defaultStore.state.mutedWords) || getWordMute(replyNote, $i, defaultStore.state.mutedWords) || getWordMute(note, $i, defaultStore.state.mutedWords));
 const translation = ref(null);
 const translating = ref(false);
 const urls = appearNote.text

@@ -4,6 +4,7 @@
 		<MkSpacer :content-max="800">
 			<div class="mwysmxbg">
 				<div>{{ i18n.ts._mfm.intro }}</div>
+				<Mfm text="[こちらで最新の構文を含め詳しく解説されています。](https://misskey.io/@hakohako_f2/pages/mfm-cheat-searchDescription)" />
 				<br />
 				<div class="section _block">
 					<div class="title">{{ i18n.ts._mfm.mention }}</div>

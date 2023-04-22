@@ -541,10 +541,10 @@ onBeforeUnmount(() => {
 		.emoji {
 			display: inline-block;
 			margin: 0 4px 0 0;
-			width: 24px;
+			min-width: 20px;
 
 			> img {
-				width: 24px;
+				height: 20px;
 				vertical-align: bottom;
 			}
 		}

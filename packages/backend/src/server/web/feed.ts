@@ -28,9 +28,9 @@ export default async function (user: User) {
 		updated: notes[0].createdAt,
 		generator: "Calckey",
 		description: `${user.notesCount} Notes, ${
-			profile.ffVisibility === "public" ? user.followingCount : "?"
+			user.followingCount
 		} Following, ${
-			profile.ffVisibility === "public" ? user.followersCount : "?"
+			user.followersCount
 		} Followers${profile.description ? ` · ${profile.description}` : ""}`,
 		link: author.link,
 		image: await Users.getAvatarUrl(user),

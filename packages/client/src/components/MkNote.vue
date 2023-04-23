@@ -388,7 +388,7 @@ function reply(viaKeyboard = false): void {
 function react(viaKeyboard = false): void {
 	pleaseLogin();
 	blur();
-	reactionPicker(asReactionPicker: true).show(
+	reactionPicker.show(
 		reactButton.value,
 		(reaction) => {
 			os.api("notes/reactions/create", {

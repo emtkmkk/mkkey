@@ -53,7 +53,7 @@ withDefaults(
 const emit = defineEmits<{
 	(ev: "done", v: any): void;
 	(ev: "close"): void;
-	(ev: "closed"): void;
+	(ev: "closed"): void;ふ
 }>();
 
 const modal = ref<InstanceType<typeof MkModal>>();
@@ -61,7 +61,7 @@ const picker = ref<InstanceType<typeof MkEmojiPicker>>();
 
 function chosen(emoji: any) {
 	emit("done", emoji);
-	if (defaultStore.state.notCloseEmojiPicker === false || asReactionPicker) {
+	if (defaultStore.state.notCloseEmojiPicker === false || props.asReactionPicker === true) {
 	    modal.value?.close();
 	}
 }

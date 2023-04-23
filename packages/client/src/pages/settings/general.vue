@@ -311,7 +311,7 @@ const enableInfiniteScroll = computed(
 const enterSendsMessage = computed(
 	defaultStore.makeGetterSetter("enterSendsMessage")
 );
-const enterSendsMessage = computed(
+const notCloseEmojiPicker = computed(
 	defaultStore.makeGetterSetter("notCloseEmojiPicker")
 );
 const useReactionPickerForContextMenu = computed(

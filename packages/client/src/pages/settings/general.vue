@@ -66,7 +66,10 @@
 			<FormSwitch v-model="enterSendsMessage" class="_formBlock">{{
 				i18n.ts.enterSendsMessage
 			}}</FormSwitch>
-			<FormSwitch v-model="disablePagesScript" class="_formBlock">{{
+			<FormSwitch v-model="notCloseEmojiPicker" class="_formBlock">{{
+				i18n.ts.notCloseEmojiPicker
+			}}</FormSwitch>
+			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript
 			}}</FormSwitch>
 
@@ -307,6 +310,9 @@ const enableInfiniteScroll = computed(
 );
 const enterSendsMessage = computed(
 	defaultStore.makeGetterSetter("enterSendsMessage")
+);
+const enterSendsMessage = computed(
+	defaultStore.makeGetterSetter("notCloseEmojiPicker")
 );
 const useReactionPickerForContextMenu = computed(
 	defaultStore.makeGetterSetter("useReactionPickerForContextMenu")

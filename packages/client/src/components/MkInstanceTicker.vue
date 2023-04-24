@@ -22,7 +22,7 @@ let ticker = $ref<HTMLElement | null>(null);
 
 // if no instance data is given, this is for the local instance
 const instance = props.instance ?? {
-	faviconUrl: Instance.iconUrl || Instance.faviconUrl || "/favicon.ico",
+	faviconUrl:  Instance.faviconUrl || Instance.iconUrl || "/favicon.ico",
 	name: instanceName,
 	themeColor: (
 		document.querySelector(
@@ -41,8 +41,8 @@ const bg = {
 
 function getInstanceIcon(instance): string {
 	return (
-		getProxiedImageUrlNullable(instance.iconUrl, "preview") ??
 		getProxiedImageUrlNullable(instance.faviconUrl, "preview") ??
+		getProxiedImageUrlNullable(instance.iconUrl, "preview") ??
 		"/client-assets/dummy.png"
 	);
 }

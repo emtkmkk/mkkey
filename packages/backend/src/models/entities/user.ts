@@ -237,6 +237,18 @@ export class User {
 	})
 	public showTimelineReplies: boolean;
 
+	@Column('boolean', {
+		default: true,
+		comment: 'Show local Accounts renotes in the public timeline.',
+	})
+	public localShowRenote: boolean;
+	
+	@Column('boolean', {
+		default: true,
+		comment: 'Show remote Accounts renotes in the public timeline.',
+	})
+	public remoteShowRenote: boolean;
+	
 	@Index({ unique: true })
 	@Column('char', {
 		length: 16, nullable: true, unique: true,

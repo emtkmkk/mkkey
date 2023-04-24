@@ -5,43 +5,26 @@
 			<option v-for="x in langs" :key="x[0]" :value="x[0]">
 				{{ x[1] }}
 			</option>
-			<template #caption>
-				<I18n :src="i18n.ts.i18nInfo" tag="span">
-					<template #link>
-						<MkLink url="https://hosted.weblate.org/engage/calckey/"
-							>Weblate</MkLink
-						>
-					</template>
-				</I18n>
-			</template>
 		</FormSelect>
 
-		<FormRadios v-model="overridedDeviceKind" class="_formBlock">
-			<template #label>{{ i18n.ts.overridedDeviceKind }}</template>
-			<option :value="null">{{ i18n.ts.auto }}</option>
-			<option value="smartphone">
-				<i class="ph-device-mobile ph-bold ph-lg" />
-				{{ i18n.ts.smartphone }}
-			</option>
-			<option value="tablet">
-				<i class="ph-device-tablet ph-bold ph-lg" />
-				{{ i18n.ts.tablet }}
-			</option>
-			<option value="desktop">
-				<i class="ph-desktop ph-bold ph-lg" /> {{ i18n.ts.desktop }}
-			</option>
-		</FormRadios>
-
 		<FormRadios v-model="showLocalPostsInTimeline" class="_formBlock">
-			<template #label>{{ i18n.ts.showLocalPosts }}</template>
+			<i class="ph-house ph-bold ph-lg" /><template #label>{{ i18n.ts.showLocalPosts }}</template>
 			<option value="home">
-				<i class="ph-house ph-bold ph-lg" /> {{ i18n.ts.homeTimeline }}
+				<i class="ph-handshake ph-bold ph-lg" /> {{ i18n.ts.homeTimeline }}
 			</option>
 			<option value="social">
-				<i class="ph-handshake ph-bold ph-lg" />
+				<i class="ph-house ph-bold ph-lg" />
 				{{ i18n.ts.socialTimeline }}
 			</option>
 		</FormRadios>
+		
+		<FormSwitch v-model="localShowRenote" class="_formBlock">{{
+			i18n.ts.localShowRenote
+		}}</FormSwitch>
+
+		<FormSwitch v-model="remoteShowRenote" class="_formBlock">{{
+			i18n.ts.remoteShowRenote
+		}}</FormSwitch>
 
 		<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
 			i18n.ts.showFixedPostForm
@@ -147,6 +130,25 @@
 				class="_formBlock"
 				>{{ i18n.ts.showAdminUpdates }}</FormSwitch
 			>
+			<FormSwitch v-model="showUpdates" class="_formBlock">{{
+				i18n.ts.showUpdates
+			}}</FormSwitch>
+
+			<FormRadios v-model="overridedDeviceKind" class="_formBlock">
+				<template #label>{{ i18n.ts.overridedDeviceKind }}</template>
+				<option :value="null">{{ i18n.ts.auto }}</option>
+				<option value="smartphone">
+					<i class="ph-device-mobile ph-bold ph-lg" />
+					{{ i18n.ts.smartphone }}
+				</option>
+				<option value="tablet">
+					<i class="ph-device-tablet ph-bold ph-lg" />
+					{{ i18n.ts.tablet }}
+				</option>
+				<option value="desktop">
+					<i class="ph-desktop ph-bold ph-lg" /> {{ i18n.ts.desktop }}
+				</option>
+			</FormRadios>
 
 			<FormRadios v-model="fontSize" class="_formBlock">
 				<template #label>{{ i18n.ts.fontSize }}</template>
@@ -296,6 +298,12 @@ const nsfw = computed(defaultStore.makeGetterSetter("nsfw"));
 const disablePagesScript = computed(
 	defaultStore.makeGetterSetter("disablePagesScript")
 );
+const localShowRenote = computed(
+	defaultStore.makeGetterSetter("localShowRenote")
+);
+const remoteShowRenote = computed(
+	defaultStore.makeGetterSetter("remoteShowRenote")
+);
 const showFixedPostForm = computed(
 	defaultStore.makeGetterSetter("showFixedPostForm")
 );
@@ -352,6 +360,8 @@ watch(useSystemFont, () => {
 
 watch(
 	[
+		localShowRenote,
+		remoteShowRenote,
 		lang,
 		fontSize,
 		useSystemFont,

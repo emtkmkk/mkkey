@@ -6,7 +6,7 @@
 * This may eventuallly be replaced with a function in the admin panel.
  */
 /* 絵文字ピッカーで絵文字全体を表示する */
-.omfetrab>.emojis[data-v-c1db1596] section>.body>.item>.emoji {
+.omfetrab>.emojis section>.body>.item>.emoji{
     object-fit: fill;
     /* ここを変えると枠に対しての絵文字の幅が変わります */
     max-width: 95%;
@@ -22,8 +22,7 @@ a[href*="/tags/"] {
     border-color: var(--hashtag);
     border-width: 1px;
 }
-
-.wbrkwala>.tags>div>.tag>.a[data-v-30f02eb9] {
+.wbrkwala>.tags>div>.tag>.a {
     background-color: transparent;
     padding: 0px;
     border-radius: 0px;
@@ -34,59 +33,147 @@ a[href*="/tags/"] {
 .tkcbzcuz.qtqtichx:has(.ph-hand-fist) {
     background-color: rgba(50, 120, 190, 0.2) !important;
 }
-
 .tkcbzcuz.qtqtichx:has(.ph-house) {
     background-color: rgba(36, 190, 56, 0.2) !important;
 }
-
 .tkcbzcuz.qtqtichx:has(.ph-lock-simple-open) {
     background-color: rgba(180, 55, 132, 0.2) !important;
 }
-
 .tkcbzcuz.qtqtichx:has(.ph-envelope-simple-open) {
     background-color: rgba(190, 190, 50, 0.2) !important;
 }
-
-.lxwezrsl[data-v-794e90fb]:has(.ph-hand-fist) {
+.lxwezrsl:has(.ph-hand-fist) {
     background-color: rgba(50, 120, 190, 0.2) !important;
 }
-
-.lxwezrsl[data-v-794e90fb]:has(.ph-house) {
+.lxwezrsl:has(.ph-house) {
     background-color: rgba(36, 190, 56, 0.2) !important;
 }
-
-.lxwezrsl[data-v-794e90fb]:has(.ph-lock-simple-open) {
+.lxwezrsl:has(.ph-lock-simple-open) {
     background-color: rgba(180, 55, 132, 0.2) !important;
 }
-
-.lxwezrsl[data-v-794e90fb]:has(.ph-envelope-simple-open) {
+.lxwezrsl:has(.ph-envelope-simple-open) {
     background-color: rgba(190, 190, 50, 0.2) !important;
 }
 
-span>i.ph-bold.ph-envelope-simple-open::before,
-span>i.ph-bold.ph-hand-fist::before {
+span > i.ph-bold.ph-envelope-simple-open::before,
+span > i.ph-bold.ph-hand-fist::before{
     color: var(--infoWarnFg);
 }
 
-.tkcbzcuz>.article>.main>.body>.content>.renote>*[data-v-e62009ed],
-.yohlumlk[data-v-db9cdae8] {
+.tkcbzcuz>.article>.main>.body>.content>.renote>*,
+.yohlumlk[data-v-db9cdae8]{
     background-color: var(--panel) !important;
 }
-
-.tkcbzcuz>.article>.main>.body>.content>.renote>*[data-v-e62009ed]:has(.ph-house),
+.tkcbzcuz>.article>.main>.body>.content>.renote>*:has(.ph-house),
 .yohlumlk[data-v-db9cdae8]:has(.ph-house) {
     background-color: rgba(36, 190, 56, 0) !important;
 }
-
-.mk-url-preview>.link[data-v-4135440a] {
-    background-color: var(--panel) !important;
+.mk-url-preview>.link{
+        background-color: var(--panel) !important;
 }
-
-.hkzvhatu.canToggle[data-v-5e23c6a5] {
-    background-color: var(--panel);
+.hkzvhatu.canToggle{
+        background-color: var(--panel);
 }
-
-.hkzvhatu.reacted[data-v-5e23c6a5],
-.hkzvhatu.reacted[data-v-5e23c6a5]:hover {
+.hkzvhatu.reacted, .hkzvhatu.reacted:hover{
     background-color: var(--accentLighten);
+}
+
+.hkzvhatu.canToggle {
+    background: rgba(0,0,0,.08);
+    border-radius: 6px !important;
+}
+
+.hkzvhatu {
+    height: 38px !important;
+    margin: 5px;
+    max-width: 100%;
+}
+button.hkzvhatu > .mk-emoji.custom.normal {
+    height: 1.6em !important;
+    vertical-align: -.6em !important;
+    max-width: 90%;
+    padding: 4px;
+}
+.hkzvhatu>.count {
+    font-size: 1.2em !important;
+    line-height: 32px !important;
+    margin: 0 0 0 8px !important;
+
+}
+.tdflqwzn {
+    margin-top: .5em !important;
+    margin-bottom: .3em !important;
+}
+
+/* 絵文字ピッカーの大きさを画面いっぱいに */
+:root {
+    /* 絵文字を表示するスペースの幅 */
+    /* 95dvwで、画面の95%のサイズになります */
+    --EmojiPickerWidth: 98dvw;
+}
+
+/* 全体サイズの指定 */
+.omfetrab.w1,
+.omfetrab.w2,
+.omfetrab.w3,
+.omfetrab.w4,
+.omfetrab.w5{
+    width: calc(var(--EmojiPickerWidth) + (8px * 2)) !important;
+}
+
+/* 1つあたりの絵文字のサイズの計算 */
+.omfetrab.w1{
+    --eachWidth: calc(var(--EmojiPickerWidth) / 5);
+}
+.omfetrab.w2{
+    --eachWidth: calc(var(--EmojiPickerWidth) / 6);
+}
+.omfetrab.w3{
+    --eachWidth: calc(var(--EmojiPickerWidth) / 7);
+}
+.omfetrab.w4{
+    --eachWidth: calc(var(--EmojiPickerWidth) / 8);
+}
+.omfetrab.w5{
+    --eachWidth: calc(var(--EmojiPickerWidth) / 16);
+}
+
+/* 上で計算したサイズの適用 */
+.omfetrab>.emojis section>.body>.item{
+    width: var(--eachWidth) !important;
+}
+
+/* 投稿画面のピッカーは絵文字サイズを縦横1:1にしようとするので縦に長くなってしまうのを修正 */
+.omfetrab.asDrawer>.emojis section>.body>.item{
+   height: var(--eachSize) !important;
+   aspect-ratio: auto !important;
+}
+
+.havbbuyv > .mk-emoji.custom {
+    height: 1.4em !important;
+    vertical-align: top !important;
+}
+.havbbuyv > span > .mk-emoji.custom {
+    height: 1.4em !important;
+    vertical-align: top !important;
+}
+.havbbuyv > span > span > .mk-emoji.custom {
+    height: 1.4em !important;
+    vertical-align: top !important;
+}
+.havbbuyv > span > span > span > .mk-emoji.custom {
+    height: 1.4em !important;
+    vertical-align: top !important;
+}
+span > span > span > span > .mk-emoji.custom {
+    height: 1.4em !important;
+    vertical-align: top !important;
+}
+
+html{
+    line-height: 1.4 !important;
+}
+
+.gafaadew>.form>.preview {
+    padding: 4px 16px 16px 16px !important;
 }

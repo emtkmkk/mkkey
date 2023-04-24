@@ -152,11 +152,11 @@
 			}}</template></FormSwitch
 		>
 		
-		<FormSwitch v-model="localShowRenote" class="_formBlock">{{
+		<FormSwitch v-model="profile.localShowRenote" class="_formBlock">{{
 			i18n.ts.localShowRenote
 		}}</FormSwitch>
 
-		<FormSwitch v-model="remoteShowRenote" class="_formBlock">{{
+		<FormSwitch v-model="profile.remoteShowRenote" class="_formBlock">{{
 			i18n.ts.remoteShowRenote
 		}}</FormSwitch>
 		

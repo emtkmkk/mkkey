@@ -59,9 +59,10 @@ const emit = defineEmits<{
 const modal = ref<InstanceType<typeof MkModal>>();
 const picker = ref<InstanceType<typeof MkEmojiPicker>>();
 
-const asReactionPickerFlg = $ref<boolean>(props.asReactionPicker || false)
+
 
 function chosen(emoji: any) {
+	const asReactionPickerFlg = $ref<boolean>(props.asReactionPicker)
 	emit("done", emoji);
 	if (asReactionPickerFlg) {
 	    modal.value?.close();

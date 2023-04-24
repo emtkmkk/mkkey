@@ -106,6 +106,8 @@ export const paramDef = {
 		isCat: { type: "boolean" },
 		speakAsCat: { type: "boolean" },
 		showTimelineReplies: { type: "boolean" },
+		localShowRenote: { type: "boolean" },
+		remoteShowRenote: { type: "boolean" },
 		injectFeaturedNote: { type: "boolean" },
 		receiveAnnouncementEmail: { type: "boolean" },
 		alwaysMarkNsfw: { type: "boolean" },
@@ -186,6 +188,10 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	if (typeof ps.isBot === "boolean") updates.isBot = ps.isBot;
 	if (typeof ps.showTimelineReplies === "boolean")
 		updates.showTimelineReplies = ps.showTimelineReplies;
+	if (typeof ps.localShowRenote === "boolean")
+		updates.localShowRenote = ps.localShowRenote;
+	if (typeof ps.remoteShowRenote === "boolean")
+		updates.remoteShowRenote = ps.remoteShowRenote;
 	if (typeof ps.carefulBot === "boolean")
 		profileUpdates.carefulBot = ps.carefulBot;
 	if (typeof ps.autoAcceptFollowed === "boolean")

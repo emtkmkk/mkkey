@@ -58,6 +58,11 @@ export default class extends Channel {
 
 		if (note.renote && !note.text && isUserRelated(note, this.renoteMuting))
 			return;
+		if (note.renote && !note.text && !note.userHost && !this.user!.localShowRenote)
+		    return;
+		if (note.renote && !note.text && note.userHost && !this.user!.remoteShowRenote)
+			return;
+				
 
 		// 流れてきたNoteがミュートすべきNoteだったら無視する
 		// TODO: 将来的には、単にMutedNoteテーブルにレコードがあるかどうかで判定したい(以下の理由により難しそうではある)

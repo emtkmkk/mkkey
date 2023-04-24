@@ -346,8 +346,6 @@ watch(useSystemFont, () => {
 
 watch(
 	[
-		localShowRenote,
-		remoteShowRenote,
 		lang,
 		fontSize,
 		useSystemFont,

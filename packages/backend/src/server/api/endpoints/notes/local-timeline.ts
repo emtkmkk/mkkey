@@ -102,12 +102,8 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user && !user.localShowRenote) {
 		query.andWhere(
 			new Brackets((qb) => {
-				qb.where(
-					new Brackets((qb) => {
-						qb.where("note.renoteId IS NULL");
-						qb.orWhere("note.text IS NOT NULL");
-					}),
-				)
+				qb.where("note.renoteId IS NULL");
+				qb.orWhere("note.text IS NOT NULL");
 			}),
 		);
 	}

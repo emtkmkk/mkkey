@@ -145,18 +145,27 @@
 				i18n.ts.flagSpeakAsCatDescription
 			}}</template></FormSwitch
 		>
+		<FormSwitch v-model="profile.isBot" class="_formBlock"
+			>{{ i18n.ts.flagAsBot
+			}}<template #caption>{{
+				i18n.ts.flagAsBotDescription
+			}}</template></FormSwitch
+		>
+		
+		<FormSwitch v-model="localShowRenote" class="_formBlock">{{
+			i18n.ts.localShowRenote
+		}}</FormSwitch>
+
+		<FormSwitch v-model="remoteShowRenote" class="_formBlock">{{
+			i18n.ts.remoteShowRenote
+		}}</FormSwitch>
+		
 		<FormSwitch v-model="profile.showTimelineReplies" class="_formBlock"
 			>{{ i18n.ts.flagShowTimelineReplies
 			}}<template #caption
 				>{{ i18n.ts.flagShowTimelineRepliesDescription }}
 				{{ i18n.ts.reflectMayTakeTime }}</template
 			></FormSwitch
-		>
-		<FormSwitch v-model="profile.isBot" class="_formBlock"
-			>{{ i18n.ts.flagAsBot
-			}}<template #caption>{{
-				i18n.ts.flagAsBotDescription
-			}}</template></FormSwitch
 		>
 		<div v-if="saveButton == true">
 			<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
@@ -191,6 +200,8 @@ const profile = reactive({
 	isCat: $i?.isCat,
 	speakAsCat: $i?.speakAsCat,
 	showTimelineReplies: $i?.showTimelineReplies,
+	localShowRenote: $i?.localShowRenote,
+	remoteShowRenote: $i?.remoteShowRenote,
 });
 
 const props = withDefaults(
@@ -247,6 +258,8 @@ function save() {
 		isCat: !!profile.isCat,
 		speakAsCat: !!profile.speakAsCat,
 		showTimelineReplies: !!profile.showTimelineReplies,
+		localShowRenote: !!profile.localShowRenote,
+		remoteShowRenote: !!profile.remoteShowRenote,
 	});
 }
 

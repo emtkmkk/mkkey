@@ -17,14 +17,6 @@
 				{{ i18n.ts.socialTimeline }}
 			</option>
 		</FormRadios>
-		
-		<FormSwitch v-model="localShowRenote" class="_formBlock">{{
-			i18n.ts.localShowRenote
-		}}</FormSwitch>
-
-		<FormSwitch v-model="remoteShowRenote" class="_formBlock">{{
-			i18n.ts.remoteShowRenote
-		}}</FormSwitch>
 
 		<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
 			i18n.ts.showFixedPostForm
@@ -297,12 +289,6 @@ const imageNewTab = computed(defaultStore.makeGetterSetter("imageNewTab"));
 const nsfw = computed(defaultStore.makeGetterSetter("nsfw"));
 const disablePagesScript = computed(
 	defaultStore.makeGetterSetter("disablePagesScript")
-);
-const localShowRenote = computed(
-	defaultStore.makeGetterSetter("localShowRenote")
-);
-const remoteShowRenote = computed(
-	defaultStore.makeGetterSetter("remoteShowRenote")
 );
 const showFixedPostForm = computed(
 	defaultStore.makeGetterSetter("showFixedPostForm")

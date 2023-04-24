@@ -98,6 +98,19 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user) generateMutedNoteQuery(query, user);
 	if (user) generateBlockedUserQuery(query, user);
 	if (user) generateMutedUserRenotesQueryForNotes(query, user);
+	
+	if (user && !user.localShowRenote) {
+		query.andWhere(
+			new Brackets((qb) => {
+				qb.where(
+					new Brackets((qb) => {
+						qb.where("note.renoteId IS NULL");
+						qb.orWhere("note.text IS NOT NULL");
+					}),
+				)
+			}),
+		);
+	}
 
 	if (ps.withFiles) {
 		query.andWhere("note.fileIds != '{}'");

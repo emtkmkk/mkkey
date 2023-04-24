@@ -444,6 +444,7 @@ export const UserRepository = db.getRepository(User).extend({
 				? user.followersCount
 				: user.followersCount;
 
+		const truthy = opts.detail ? true : undefined;
 		const falsy = opts.detail ? false : undefined;
 
 		const packed = {
@@ -573,8 +574,8 @@ export const UserRepository = db.getRepository(User).extend({
 						mutingNotificationTypes: profile!.mutingNotificationTypes,
 						emailNotificationTypes: profile!.emailNotificationTypes,
 						showTimelineReplies: user.showTimelineReplies || falsy,
-						localShowRenote: user.localShowRenote || falsy,
-						remoteShowRenote: user.remoteShowRenote || falsy,
+						localShowRenote: user.localShowRenote ?? truthy,
+						remoteShowRenote: user.remoteShowRenote ?? truthy,
 				  }
 				: {}),
 

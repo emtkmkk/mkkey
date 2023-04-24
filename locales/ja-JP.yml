@@ -517,6 +517,8 @@ objectStorageUseProxyDesc: "API接続にproxyを利用しない場合はオフ�
 objectStorageSetPublicRead: "アップロード時に'public-read'を設定する"
 serverLogs: "サーバーログ"
 deleteAll: "全て削除"
+localShowRenote: "公開TLにローカルのRTを表示する"
+remoteShowRenote: "公開TLにリモートのRTを表示する"
 showFixedPostForm: "タイムライン上部にトゥートフォームを表示する"
 newNoteRecived: "新着トゥートあり"
 sounds: "サウンド"

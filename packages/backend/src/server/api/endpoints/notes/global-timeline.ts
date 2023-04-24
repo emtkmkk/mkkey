@@ -1,3 +1,4 @@
+import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Notes } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
@@ -93,13 +94,9 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user && !user.localShowRenote) {
 		query.andWhere(
 			new Brackets((qb) => {
-				qb.where(
-					new Brackets((qb) => {
-						qb.where("note.renoteId IS NULL");
-						qb.orWhere("note.text IS NOT NULL");
-						qb.orWhere("note.userHost IS NOT NULL");
-					}),
-				)
+				qb.where("note.renoteId IS NULL");
+				qb.orWhere("note.text IS NOT NULL");
+				qb.orWhere("note.userHost IS NOT NULL");
 			}),
 		);
 	}
@@ -107,13 +104,9 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user && !user.remoteShowRenote) {
 		query.andWhere(
 			new Brackets((qb) => {
-				qb.where(
-					new Brackets((qb) => {
-						qb.where("note.renoteId IS NULL");
-						qb.orWhere("note.text IS NOT NULL");
-						qb.orWhere("note.userHost IS NULL");
-					}),
-				)
+				qb.where("note.renoteId IS NULL");
+				qb.orWhere("note.text IS NOT NULL");
+				qb.orWhere("note.userHost IS NULL");
 			}),
 		);
 	}

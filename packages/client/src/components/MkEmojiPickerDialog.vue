@@ -36,7 +36,7 @@ import MkModal from "@/components/MkModal.vue";
 import MkEmojiPicker from "@/components/MkEmojiPicker.vue";
 import { defaultStore } from "@/store";
 
-withDefaults(
+const props = withDefaults(
 	defineProps<{
 		manualShowing?: boolean | null;
 		src?: HTMLElement;
@@ -63,11 +63,7 @@ const picker = ref<InstanceType<typeof MkEmojiPicker>>();
 
 function chosen(emoji: any) {
 	emit("done", emoji);
-	const asReactionPickerFlg = props.asReactionPicker ?? false;
-	if (defaultStore.state.notCloseEmojiPicker === false) {
-	    modal.value?.close();
-	}
-	else if (asReactionPickerFlg) {
+	if (defaultStore.state.notCloseEmojiPicker === false || props.asReactionPicker) {
 	    modal.value?.close();
 	}
 }

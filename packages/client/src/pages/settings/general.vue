@@ -8,7 +8,7 @@
 		</FormSelect>
 
 		<FormRadios v-model="showLocalPostsInTimeline" class="_formBlock">
-			<i class="ph-house ph-bold ph-lg" /><template #label>{{ i18n.ts.showLocalPosts }}</template>
+			<template #label>{{ i18n.ts.showLocalPosts }}</template>
 			<option value="home">
 				<i class="ph-handshake ph-bold ph-lg" /> {{ i18n.ts.homeTimeline }}
 			</option>

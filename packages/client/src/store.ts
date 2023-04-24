@@ -68,7 +68,7 @@ export const defaultStore = markRaw(
 			default: [
 				"⭐",
 				"❤️",
-				"😆",
+				":iine:",
 				"🤔",
 				"😮",
 				"🎉",
@@ -88,6 +88,14 @@ export const defaultStore = markRaw(
 			default: [] as string[],
 		},
 		showAds: {
+			where: "account",
+			default: true,
+		},
+		localShowRenote: {
+			where: "account",
+			default: true,
+		},
+		remoteShowRenote: {
 			where: "account",
 			default: true,
 		},

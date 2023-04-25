@@ -195,10 +195,10 @@ export default async (
 		if (data.channel == null && !(user.isAdmin || user.isModerator)) data.localOnly = false;
 		if (data.channel != null) data.visibility = "public";
 		if (data.channel != null) data.visibleUsers = [];
-		if (data.channel != null || data.localOnly === false) {
+		if (data.channel != null && data.localOnly === false) {
 			//チャンネルで連合有りの場合、ハッシュタグを自動で付ける
-			data.text += " #" + data.channel.name;
-			data.apHashtags.push(data.channel.name);
+			data.text += " #" + data.channel!.name;
+			data.apHashtags.push(data.channel!.name);
 		}
 
 		// enforce silent clients on server

@@ -279,26 +279,6 @@ const headerTabs = $computed(() => [
 				},
 		  ]
 		: []),
-	...(isLocalTimelineAvailable &&
-	defaultStore.state.showLocalPostsInTimeline === "home"
-		? [
-				{
-					key: "home",
-					title: i18n.ts._timelines.social,
-					icon: "ph-handshake ph-bold ph-lg",
-					iconOnly: true,
-				},
-		  ]
-		: isLocalTimelineAvailable
-		? [
-				{
-					key: "social",
-					title: i18n.ts._timelines.social,
-					icon: "ph-handshake ph-bold ph-lg",
-					iconOnly: true,
-				},
-		  ]
-		: []),
 	...(isRecommendedTimelineAvailable
 		? [
 				{

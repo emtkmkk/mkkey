@@ -9,6 +9,7 @@
 		<div class="_popup" :class="$style.root">
 			<button
 				key="public"
+				v-if="canVisibilitySwitch"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'public' }]"
 				data-index="1"
@@ -28,6 +29,7 @@
 			</button>
 			<button
 				key="home"
+				v-if="canVisibilitySwitch"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'home' }]"
 				data-index="2"
@@ -47,6 +49,7 @@
 			</button>
 			<button
 				key="followers"
+				v-if="canVisibilitySwitch"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'followers' }]"
 				data-index="3"
@@ -66,6 +69,7 @@
 			</button>
 			<button
 				key="specified"
+				v-if="canVisibilitySwitch"
 				:disabled="localOnly"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'specified' }]"
@@ -84,9 +88,9 @@
 					}}</span>
 				</div>
 			</button>
-			<div v-if="admin" :class="$style.divider"></div>
+			<div v-if="canLocalSwitch && canVisibilitySwitch" :class="$style.divider"></div>
 			<button
-			    v-if="admin"
+			    v-if="canLocalSwitch"
 				key="localOnly"
 				class="_button"
 				:class="[
@@ -97,20 +101,20 @@
 				data-index="5"
 				@click="localOnly = !localOnly"
 			>
-				<div v-if="admin" :class="$style.icon">
+				<div v-if="canLocalSwitch" :class="$style.icon">
 					<i class="ph-hand-fist ph-bold ph-lg"></i>
 				</div>
-				<div v-if="admin" :class="$style.body">
-					<span v-if="admin" :class="$style.itemTitle">{{
+				<div v-if="canLocalSwitch" :class="$style.body">
+					<span v-if="canLocalSwitch" :class="$style.itemTitle">{{
 						i18n.ts._visibility.localOnly
 					}}</span>
-					<span v-if="admin" :class="$style.itemDescription">{{
+					<span v-if="canLocalSwitch" :class="$style.itemDescription">{{
 						i18n.ts._visibility.localOnlyDescription
 					}}</span>
 				</div>
-				<div v-if="admin" :class="$style.toggle">
+				<div v-if="canLocalSwitch" :class="$style.toggle">
 					<i
-						v-if="admin"
+						v-if="canLocalSwitch"
 						:class="
 							localOnly
 								? 'ph-toggle-right ph-bold ph-lg'
@@ -136,7 +140,8 @@ const props = withDefaults(
 		currentVisibility: (typeof misskey.noteVisibilities)[number];
 		currentLocalOnly: boolean;
 		src?: HTMLElement;
-		admin?: boolean;
+		canLocalSwitch?: boolean;
+		canVisibilitySwitch?: boolean;
 	}>(),
 	{}
 );
@@ -152,7 +157,8 @@ const emit = defineEmits<{
 
 let v = $ref(props.currentVisibility);
 let localOnly = $ref(props.currentLocalOnly);
-let admin = props.admin || false;
+let canLocalSwitch = props.canLocalSwitch || false;
+let canVisibilitySwitch = props.canVisibilitySwitch ?? true;
 
 watch($$(localOnly), () => {
 	emit("changeLocalOnly", localOnly);

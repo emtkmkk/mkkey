@@ -38,7 +38,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	const max = 30;
+	const max = 80;
 	const day = 1000 * 60 * 60 * 24 * ps.days;
 
 	const query = Notes.createQueryBuilder("note")

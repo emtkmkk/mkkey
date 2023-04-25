@@ -78,7 +78,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.untilDate,
 	)
 		.andWhere(
-			`(note.userHost = ANY ('{"${m.recommendedInstances.join('","')}"}'))`,
+			"note.fileIds != '{}'",
 		)
 		.andWhere("(note.visibility = 'public')")
 		.innerJoinAndSelect("note.user", "user")
@@ -99,7 +99,27 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user) generateMutedUserQuery(query, user);
 	if (user) generateMutedNoteQuery(query, user);
 	if (user) generateBlockedUserQuery(query, user);
-
+	
+	if (user && !user.localShowRenote) {
+		query.andWhere(
+			new Brackets((qb) => {
+				qb.where("note.renoteId IS NULL");
+				qb.orWhere("note.text IS NOT NULL");
+				qb.orWhere("note.userHost IS NOT NULL");
+			}),
+		);
+	}
+	
+	if (user && !user.remoteShowRenote) {
+		query.andWhere(
+			new Brackets((qb) => {
+				qb.where("note.renoteId IS NULL");
+				qb.orWhere("note.text IS NOT NULL");
+				qb.orWhere("note.userHost IS NULL");
+			}),
+		);
+	}
+	
 	if (ps.withFiles) {
 		query.andWhere("note.fileIds != '{}'");
 	}

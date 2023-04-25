@@ -198,10 +198,6 @@ export default async (
 		if (data.channel != null && data.localOnly === false) {
 			//チャンネルで連合有りの場合、ハッシュタグを自動で付ける
 			data.text += " #" + data.channel!.name;
-			if (data.apHashtags == null){
-				data.apHashtags = [];
-			}
-			data.apHashtags.push(data.channel!.name);
 		}
 
 		// enforce silent clients on server

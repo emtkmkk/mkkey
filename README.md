@@ -1,3 +1,22 @@
+**はろー！このレポジトリは[もこきー](https://mkkey.net)で使ってるCalckeyのフォークだよ！**<br>
+**変更内容 / リリースノートは [こちら](https://codeberg.org/emtkmkk/calckey/src/branch/beta/patchnote.md)**<br><br>
+**ここの変更はもちろん自由に使って大丈夫なんだけど、管理者が整理できない人間なのでコミットがグチャグチャになっているよ！**<br>
+**私のとこにもこの機能欲しいけどナニコレわけわかんないっていうのがあれば [emtk@mkkey.net](https://mkkey.net/@emtk) に連絡してもらえば悪い様にはしないのでぜひぜひ**<br>
+**機能の安全性という面についてはあんまり責任取れないのでそれはご容赦を……**
+
+<hr>
+
+**Hello! This repository is a fork of Calckey, which we use here at [mkkey.net](https://mkkey.net)!**
+**The changes / release notes are [here](https://codeberg.org/emtkmkk/calckey/src/branch/beta/patchnote.md).**<br><br>
+
+**you are free to use the changes you make here, but the commits are messed up because the admin is not a good organizer!**<br>
+**If you want a feature but don't understand the commits, please contact me at emtk@mkkey.net.**<br>
+**I can't be too responsible for the safety of that feature, so please don't let me know about that.**<br>
+
+<hr>
+
+**以下、フォーク元のReadmeです。 Here is the readme from the forked source.**<br><br>
+
 <div align="center">
 <a href="https://i.calckey.cloud/">
 	<img src="./title_float.svg" alt="Calckey logo" style="border-radius:50%" width="400"/>

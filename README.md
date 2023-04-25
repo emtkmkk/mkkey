@@ -6,11 +6,11 @@
 
 <hr>
 
-**Hello! This repository is a fork of Calckey, which we use here at [mkkey.net](https://mkkey.net)!**
+**Hello! This repository is a fork of Calckey, which we use here at [mkkey.net](https://mkkey.net)!**<br>
 **The changes / release notes are [here](https://codeberg.org/emtkmkk/calckey/src/branch/beta/patchnote.md).**<br><br>
 
 **you are free to use the changes you make here, but the commits are messed up because the admin is not a good organizer!**<br>
-**If you want a feature but don't understand the commits, please contact me at emtk@mkkey.net.**<br>
+**If you want a feature but don't understand the commits, please contact me at [emtk@mkkey.net](https://mkkey.net/@emtk).**<br>
 **I can't be too responsible for the safety of that feature, so please don't let me know about that.**<br>
 
 <hr>

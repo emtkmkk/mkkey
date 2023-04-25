@@ -67,9 +67,6 @@
 
 		<FormSection>
 			<template #label>{{ i18n.ts.appearance }}</template>
-			<FormSwitch v-model="showAds" class="_formBlock">{{
-				i18n.ts.showAds
-			}}</FormSwitch>
 			<FormSwitch v-model="disableAnimatedMfm" class="_formBlock">{{
 				i18n.ts.disableAnimatedMfm
 			}}</FormSwitch>
@@ -113,6 +110,9 @@
 			<FormSwitch v-model="disableDrawer" class="_formBlock">{{
 				i18n.ts.disableDrawer
 			}}</FormSwitch>
+			<FormSwitch v-model="showAds" class="_formBlock">{{
+				i18n.ts.showAds
+			}}</FormSwitch>
 			<FormSwitch v-model="showUpdates" class="_formBlock">{{
 				i18n.ts.showUpdates
 			}}</FormSwitch>
@@ -122,9 +122,6 @@
 				class="_formBlock"
 				>{{ i18n.ts.showAdminUpdates }}</FormSwitch
 			>
-			<FormSwitch v-model="showUpdates" class="_formBlock">{{
-				i18n.ts.showUpdates
-			}}</FormSwitch>
 
 			<FormRadios v-model="overridedDeviceKind" class="_formBlock">
 				<template #label>{{ i18n.ts.overridedDeviceKind }}</template>

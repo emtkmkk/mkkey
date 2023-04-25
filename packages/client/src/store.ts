@@ -235,6 +235,10 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: 3,
 		},
+		emojiPickerUseDrawerForMobile: {
+			where: "device",
+			default: true,
+		},
 		reactionPickerUseDrawerForMobile: {
 			where: "device",
 			default: true,

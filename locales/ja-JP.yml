@@ -338,7 +338,7 @@ connectService: "接続する"
 disconnectService: "切断する"
 enableLocalTimeline: "ローカルタイムラインを有効にする"
 enableGlobalTimeline: "グローバルタイムラインを有効にする"
-enableRecommendedTimeline: "おすすめタイムラインを有効にする"
+enableRecommendedTimeline: "メディアタイムラインを有効にする"
 disablingTimelinesInfo: "これらのタイムラインを無効化しても、利便性のため管理者およびモデレーターは引き続き利用できます。"
 registration: "登録"
 enableRegistration: "誰でも新規登録できるようにする"
@@ -1476,7 +1476,7 @@ _instanceCharts:
 _timelines:
   home: "ホーム"
   local: "もこきー"
-  recommended: "おすすめ"
+  recommended: "メディア"
   social: "ソーシャル"
   global: "グローバル"
 _pages:

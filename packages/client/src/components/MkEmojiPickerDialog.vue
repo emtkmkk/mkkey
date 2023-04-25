@@ -4,8 +4,10 @@
 		v-slot="{ type, maxHeight }"
 		:z-priority="'middle'"
 		:prefer-type="
-			asReactionPicker &&
-			defaultStore.state.reactionPickerUseDrawerForMobile === false
+			(asReactionPicker &&
+			defaultStore.state.reactionPickerUseDrawerForMobile === false) ||
+			(!asReactionPicker &&
+			defaultStore.state.emojiPickerUseDrawerForMobile === false) 
 				? 'popup'
 				: 'auto'
 		"

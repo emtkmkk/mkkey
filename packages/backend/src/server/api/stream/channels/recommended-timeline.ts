@@ -29,15 +29,12 @@ export default class extends Channel {
 	}
 
 	private async onNote(note: Packed<"Note">) {
-		// チャンネルの投稿ではなく、自分自身の投稿 または
-		// チャンネルの投稿ではなく、その投稿のユーザーをフォローしている または
-		// チャンネルの投稿ではなく、全体公開のローカルの投稿 または
-		// フォローしているチャンネルの投稿 の場合だけ
+		// ファイル添付なしで公開投稿のみ
 		const meta = await fetchMeta();
 		if (
 			!(
-				note.user.host != null &&
-				meta.recommendedInstances.includes(note.user.host) &&
+				note.fileIds &&
+				note.fileIds.length !== 0 &&
 				note.visibility === "public"
 			)
 		)
@@ -68,6 +65,11 @@ export default class extends Channel {
 		if (isUserRelated(note, this.muting)) return;
 		// 流れてきたNoteがブロックされているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.blocking)) return;
+		
+		if (note.renote && !note.text && !note.user.host && !this.user!.localShowRenote)
+            return;
+		if (note.renote && !note.text && note.user.host && !this.user!.remoteShowRenote)
+            return;
 
 		// 流れてきたNoteがミュートすべきNoteだったら無視する
 		// TODO: 将来的には、単にMutedNoteテーブルにレコードがあるかどうかで判定したい(以下の理由により難しそうではある)

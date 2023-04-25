@@ -1,4 +1,4 @@
-**はろー！このレポジトリは[もこきー](https://mkkey.net)で使ってるCalckeyのフォークだよ！**<br>
+**はろー！このリポジトリは[もこきー](https://mkkey.net)で使ってるCalckeyのフォークだよ！**<br>
 **変更内容 / リリースノートは [こちら](https://codeberg.org/emtkmkk/calckey/src/branch/beta/patchnote.md)**<br><br>
 **ここの変更はもちろん自由に使って大丈夫なんだけど、管理者が整理できない人間なのでコミットがグチャグチャになっているよ！**<br>
 **私のとこにもこの機能欲しいけどナニコレわけわかんないっていうのがあれば [emtk@mkkey.net](https://mkkey.net/@emtk) に連絡してもらえば悪い様にはしないのでぜひぜひ**<br>

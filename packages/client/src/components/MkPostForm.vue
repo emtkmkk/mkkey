@@ -33,7 +33,6 @@
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
-					:disabled="channel != null"
 					@click="setVisibility"
 				>
 					<span v-if="visibility === 'public'"
@@ -607,10 +606,6 @@ function upload(file: File, name?: string) {
 }
 
 function setVisibility() {
-	if (props.channel) {
-		// TODO: information dialog
-		return;
-	}
 
 	os.popup(
 		defineAsyncComponent(
@@ -620,7 +615,8 @@ function setVisibility() {
 			currentVisibility: visibility,
 			currentLocalOnly: localOnly,
 			src: visibilityButton,
-			admin: $i.isAdmin || $i.isModerator,
+			canLocalSwitch: $i.isAdmin || $i.isModerator || props.channel,
+			canVisibilitySwitch: !props.channel,
 		},
 		{
 			changeVisibility: (v) => {

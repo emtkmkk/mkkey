@@ -304,7 +304,7 @@ const headerTabs = $computed(() => [
 				{
 					key: "recommended",
 					title: i18n.ts._timelines.recommended,
-					icon: "ph-thumbs-up ph-bold ph-lg",
+					icon: "ph-images-square ph-bold ph-lg",
 					iconOnly: true,
 				},
 		  ]
@@ -333,7 +333,7 @@ definePageMetadata(
 				: src === "social"
 				? "ph-handshake ph-bold ph-lg"
 				: src === "recommended"
-				? "ph-thumbs-up ph-bold ph-lg"
+				? "ph-images-square ph-bold ph-lg"
 				: src === "global"
 				? "ph-planet ph-bold ph-lg"
 				: src === "home" &&

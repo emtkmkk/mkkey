@@ -22,6 +22,13 @@
 				v-else-if="state === 'posted'"
 				primary
 				class="close"
+				@click="goHome()"
+				>{{ i18n.ts.home }}</MkButton
+			>
+			<MkButton
+				v-else-if="state === 'posted'"
+				primary
+				class="close"
 				@click="close()"
 				>{{ i18n.ts.close }}</MkButton
 			>
@@ -183,6 +190,10 @@ function close(): void {
 	window.setTimeout(() => {
 		mainRouter.push("/");
 	}, 100);
+}
+
+function goHome(): void {
+	mainRouter.push("/");
 }
 
 const headerActions = $computed(() => []);

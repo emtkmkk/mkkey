@@ -162,6 +162,8 @@ export default async (
 		host: User["host"];
 		isSilenced: User["isSilenced"];
 		createdAt: User["createdAt"];
+		isAdmin: User["isAdmin"];
+		isModerator: User["isModerator"];
 	},
 	data: Option,
 	silent = false,
@@ -190,9 +192,14 @@ export default async (
 		if (data.createdAt == null) data.createdAt = new Date();
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
+		if (data.channel == null && !(user.isAdmin || user.isModerator)) data.localOnly = false;
 		if (data.channel != null) data.visibility = "public";
 		if (data.channel != null) data.visibleUsers = [];
-		if (data.channel != null) data.localOnly = true;
+		if (data.channel != null || data.localOnly === false) {
+			//チャンネルで連合有りの場合、ハッシュタグを自動で付ける
+			data.text += " #" + data.channel.name;
+			data.apHashtags.push(data.channel.name);
+		}
 
 		// enforce silent clients on server
 		if (

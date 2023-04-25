@@ -107,6 +107,9 @@
 					<Mfm :key="useOsNativeEmojis" text="🍮🍦🍭🍩🍰🍫🍬🥞🍪" />
 				</div>
 			</FormSwitch>
+			<FormSwitch v-model="emojiPickerUseDrawerForMobile" class="_formBlock">{{
+				i18n.ts.emojiPickerUseDrawerForMobile
+			}}</FormSwitch>
 			<FormSwitch v-model="disableDrawer" class="_formBlock">{{
 				i18n.ts.disableDrawer
 			}}</FormSwitch>
@@ -278,6 +281,7 @@ const useOsNativeEmojis = computed(
 	defaultStore.makeGetterSetter("useOsNativeEmojis")
 );
 const disableDrawer = computed(defaultStore.makeGetterSetter("disableDrawer"));
+const emojiPickerUseDrawerForMobile = computed(defaultStore.makeGetterSetter("emojiPickerUseDrawerForMobile"));
 const disableShowingAnimatedImages = computed(
 	defaultStore.makeGetterSetter("disableShowingAnimatedImages")
 );

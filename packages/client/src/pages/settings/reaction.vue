@@ -1,9 +1,9 @@
 <template>
 	<div class="_formRoot">
-		<FromSlot v-model="enableEmojiReactions" class="_formBlock">
-			{{ i18n.ts.reactionSettingDescription }}		
+		<FormSwitch v-model="enableEmojiReactions" class="_formBlock">
+			{{ i18n.ts.reactionSettingDescription }}
 		</FormSwitch>
-		
+
 		<div v-if="enableEmojiReactions">
 			<FromSlot class="_formBlock">
 				<template #label>{{
@@ -104,7 +104,7 @@
 				{{ i18n.ts.useDrawerReactionPickerForMobile }}
 				<template #caption>{{ i18n.ts.needReloadToApply }}</template>
 			</FormSwitch>
-	
+
 			<FormSection>
 				<div style="display: flex; gap: var(--margin); flex-wrap: wrap">
 					<FormButton inline @click="preview"

@@ -66,17 +66,31 @@ export const defaultStore = markRaw(
 		reactions: {
 			where: "account",
 			default: [
+				":iine:",
+				":igyo:",
+				":tiken:",
+				":wakarimi:",
+				":kusa:",
+				":comfyyes:",
+				":comfyno:",
+				":sore:",
+				":sorehasou:",
+				":soudane:",
+				":sore4:",
+				":arigato:",
+				":otukaresama:",
+				":kininaru:",
+				":tashikani:",
+				":yaruyan:",
+				":oremoonajikimochi:",
+				":ff14_BLU_1000Needles:",
+				":iina_:",
+				":oisisou:",
+				":ohayoo:",
+				":taikin:",
+				":oyasumi:",
 				"⭐",
 				"❤️",
-				":iine:",
-				"🤔",
-				"😮",
-				"🎉",
-				"💢",
-				"😥",
-				"😇",
-				"🥴",
-				"🍮",
 			],
 		},
 		mutedWords: {
@@ -169,7 +183,7 @@ export const defaultStore = markRaw(
 		},
 		loadRawImages: {
 			where: "device",
-			default: false,
+			default: true,
 		},
 		imageNewTab: {
 			where: "device",
@@ -193,11 +207,11 @@ export const defaultStore = markRaw(
 		},
 		useBlurEffectForModal: {
 			where: "device",
-			default: true,
+			default: false,
 		},
 		useBlurEffect: {
 			where: "device",
-			default: true,
+			default: false,
 		},
 		showFixedPostForm: {
 			where: "device",
@@ -213,7 +227,7 @@ export const defaultStore = markRaw(
 		},
 		showGapBetweenNotesInTimeline: {
 			where: "device",
-			default: true,
+			default: false,
 		},
 		darkMode: {
 			where: "device",
@@ -237,11 +251,11 @@ export const defaultStore = markRaw(
 		},
 		emojiPickerUseDrawerForMobile: {
 			where: "device",
-			default: true,
+			default: false,
 		},
 		reactionPickerUseDrawerForMobile: {
 			where: "device",
-			default: true,
+			default: false,
 		},
 		recentlyUsedEmojis: {
 			where: "device",
@@ -289,7 +303,7 @@ export const defaultStore = markRaw(
 		},
 		notCloseEmojiPicker: {
 			where: "device",
-			default: false,
+			default: true,
 		},
 		showUpdates: {
 			where: "device",

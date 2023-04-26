@@ -104,7 +104,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 
 	if (["public", "home"].includes(props.note.visibility)) {
 		buttonActions.push({
-			text: `${i18n.ts.renote} (${i18n.ts._visibility.home})`,
+			text: i18n.ts.renoteAsUnlisted,
 			icons: ["ph-repeat ph-bold ph-lg", "ph-house ph-bold ph-lg"],
 			danger: false,
 			action: () => {
@@ -130,7 +130,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 
 	if (props.note.visibility === "specified") {
 		buttonActions.push({
-			text: `${i18n.ts.renote} (${i18n.ts.recipient})`,
+			text: i18n.ts.renoteToRecipients,
 			icons: [
 				"ph-repeat ph-bold ph-lg",
 				"ph-envelope-simple-open ph-bold ph-lg",
@@ -158,7 +158,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 		});
 	} else {
 		buttonActions.push({
-			text: `${i18n.ts.renote} (${i18n.ts._visibility.followers})`,
+			text: i18n.ts.renoteToFollowers,
 			icons: [
 				"ph-repeat ph-bold ph-lg",
 				"ph-lock-simple-open ph-bold ph-lg",

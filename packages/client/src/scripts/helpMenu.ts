@@ -25,6 +25,26 @@ export function openHelpMenu_(ev: MouseEvent) {
 				to: "/about-calckey",
 			},
 			{
+				type: "button",
+				action: async () => {
+					os.api("admin/invite")
+						.then((x) => {
+							os.alert({
+								type: "info",
+								text: x.code,
+							});
+						})
+						.catch((err) => {
+							os.alert({
+								type: "error",
+								text: err,
+							});
+						});
+				},
+				text: i18n.ts.showInviteCode,
+				icon: "ph-user-plus ph-bold ph-lg",
+			},
+			{
 				type: "link",
 				text: i18n.ts._apps.apps,
 				icon: "ph-device-mobile ph-bold ph-lg",

@@ -105,49 +105,7 @@ button.hkzvhatu > .mk-emoji.custom.normal {
     margin-bottom: .3em !important;
 }
 
-/* 絵文字ピッカーの大きさを画面いっぱいに */
-:root {
-    /* 絵文字を表示するスペースの幅 */
-    /* 95dvwで、画面の95%のサイズになります */
-    --EmojiPickerWidth: 98dvw;
-}
-
-/* 全体サイズの指定 */
-.omfetrab.w1,
-.omfetrab.w2,
-.omfetrab.w3,
-.omfetrab.w4,
-.omfetrab.w5{
-    width: calc(var(--EmojiPickerWidth) + (8px * 2)) !important;
-}
-
-/* 1つあたりの絵文字のサイズの計算 */
-.omfetrab.w1{
-    --eachWidth: calc(var(--EmojiPickerWidth) / 5);
-}
-.omfetrab.w2{
-    --eachWidth: calc(var(--EmojiPickerWidth) / 6);
-}
-.omfetrab.w3{
-    --eachWidth: calc(var(--EmojiPickerWidth) / 7);
-}
-.omfetrab.w4{
-    --eachWidth: calc(var(--EmojiPickerWidth) / 8);
-}
-.omfetrab.w5{
-    --eachWidth: calc(var(--EmojiPickerWidth) / 16);
-}
-
-/* 上で計算したサイズの適用 */
-.omfetrab>.emojis section>.body>.item{
-    width: var(--eachWidth) !important;
-}
-
-/* 投稿画面のピッカーは絵文字サイズを縦横1:1にしようとするので縦に長くなってしまうのを修正 */
-.omfetrab.asDrawer>.emojis section>.body>.item{
-   height: var(--eachSize) !important;
-   aspect-ratio: auto !important;
-}
+/* 絵文字を小さくする */
 
 .havbbuyv > .mk-emoji.custom {
     height: 1.4em !important;

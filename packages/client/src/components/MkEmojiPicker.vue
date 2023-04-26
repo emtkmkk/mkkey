@@ -663,7 +663,6 @@ defineExpose({
 		height: 100%;
 		overflow-y: auto;
 		overflow-x: hidden;
-		width: var(--eachWidth);
 
 		scrollbar-width: none;
 
@@ -713,7 +712,7 @@ defineExpose({
 				> .item {
 					position: relative;
 					padding: 0;
-					width: var(--eachSize);
+					width: var(--eachWidth);
 					height: var(--eachSize);
 					contain: strict;
 					border-radius: 4px;

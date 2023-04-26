@@ -1,3 +1,4 @@
+import { isNull } from "typeorm";
 import define from "../../../define.js";
 import { Emojis } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
@@ -18,6 +19,11 @@ export const meta = {
 			message: "No such emoji.",
 			code: "NO_SUCH_EMOJI",
 			id: "e2785b66-dca3-4087-9cac-b93c541cc425",
+		},
+		alreadyRegistered: {
+			message: "Already Registered.",
+			code: "ALREADY_REGISTERED",
+			id: "e2785b66-dca3-4087-9cac-ad17432b63f1",
 		},
 	},
 
@@ -63,11 +69,19 @@ export default define(meta, paramDef, async (ps, me) => {
 	} catch (e) {
 		throw new ApiError();
 	}
+	
+	const emojiSearchName = await Emojis.findOneBy({ name: emoji.name , host: isNull() });
+	
+	const emojiSearchNamePlusHost = await Emojis.findOneBy({ name: emoji.name + "_" + emoji.host.replaceAll(/[^\w]/ig,"_") , host: isNull() });
 
+	if (emojiSearchNamePlusHost != null){
+		throw new ApiError(meta.errors.alreadyRegistered);
+	}
+	
 	const copied = await Emojis.insert({
 		id: genId(),
 		updatedAt: new Date(),
-		name: emoji.name,
+		name: emojiSearchName ? emoji.name + "_" + emoji.host.replaceAll(/[^\w]/ig,"_") : emoji.name,
 		host: null,
 		aliases: emoji.aliases ?? [],
 		originalUrl: driveFile.url,

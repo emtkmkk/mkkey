@@ -50,8 +50,8 @@
 				</div>
 			</section>
 
-			<div v-if="tab === 'index' && searchResultCustom.length <= 0" class="group index">
-				<section v-if="showPinned && searchResultCustom.length <= 0">
+			<div v-if="tab === 'index' && searchResultCustom.length <= 0 && (q.value == null || q.value === '')" class="group index">
+				<section v-if="showPinned && searchResultCustom.length <= 0 && (q.value == null || q.value === '')">
 					<div class="body">
 						<button
 							v-for="emoji in pinned"
@@ -69,7 +69,7 @@
 					</div>
 				</section>
 
-				<section v-if="searchResultCustom.length <= 0">
+				<section v-if="searchResultCustom.length <= 0 && (q.value == null || q.value === '')">
 					<header class="_acrylic">
 						<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
 						{{ i18n.ts.recentUsed }}
@@ -90,7 +90,7 @@
 					</div>
 				</section>
 			</div>
-			<div v-once v-if="searchResultCustom.length <= 0" class="group">
+			<div v-once v-if="searchResultCustom.length <= 0 && (q.value == null || q.value === '')" class="group">
 				<header>{{ i18n.ts.customEmojis }}</header>
 				<XSection
 					v-for="category in customEmojiCategories"
@@ -105,7 +105,7 @@
 					>{{ category || i18n.ts.other }}</XSection
 				>
 			</div>
-			<div v-once v-if="searchResultCustom.length <= 0" class="group">
+			<div v-once v-if="searchResultCustom.length <= 0  && (q.value == null || q.value === '')" class="group">
 				<header>{{ i18n.ts.emoji }}</header>
 				<XSection
 					v-for="category in categories"
@@ -227,7 +227,7 @@ watch(q, () => {
 	const newQ = q.value.replace(/:/g, "").toLowerCase();
 
 	const searchCustom = () => {
-		const max = 32;
+		const max = 64;
 		const emojis = customEmojis;
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 
@@ -237,15 +237,6 @@ watch(q, () => {
 		if (newQ.includes(" ")) {
 			// AND検索
 			const keywords = newQ.split(" ");
-
-			// 名前にキーワードが含まれている
-			for (const emoji of emojis) {
-				if (keywords.every((keyword) => emoji.name.includes(keyword))) {
-					matches.add(emoji);
-					if (matches.size >= max) break;
-				}
-			}
-			if (matches.size >= max) return matches;
 
 			// 名前またはエイリアスにキーワードが含まれている
 			for (const emoji of emojis) {
@@ -258,6 +249,15 @@ watch(q, () => {
 							)
 					)
 				) {
+					matches.add(emoji);
+					if (matches.size >= max) break;
+				}
+			}
+			if (matches.size >= max) return matches;
+
+			// 名前にキーワードが含まれている
+			for (const emoji of emojis) {
+				if (keywords.every((keyword) => emoji.name.includes(keyword))) {
 					matches.add(emoji);
 					if (matches.size >= max) break;
 				}
@@ -299,7 +299,7 @@ watch(q, () => {
 	};
 
 	const searchUnicode = () => {
-		const max = 32;
+		const max = 24;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
 
@@ -477,9 +477,10 @@ defineExpose({
 <style lang="scss" scoped>
 .omfetrab {
 	$pad: 8px;
-
 	display: flex;
 	flex-direction: column;
+	width: calc(var(--EmojiPickerWidth) + (#{$pad} * 2));
+	--EmojiPickerWidth: 98dvw;
 
 	&.s1 {
 		--eachSize: 40px;
@@ -492,29 +493,73 @@ defineExpose({
 	&.s3 {
 		--eachSize: 50px;
 	}
+	
+	&.s4 {
+		--eachSize: 55px;
+	}
+	
+	&.s5 {
+		--eachSize: 60px;
+	}
+	
+	&.s6 {
+		--eachSize: 65px;
+	}
+	
+	&.s7 {
+		--eachSize: 70px;
+	}
+	
+	&.s8 {
+		--eachSize: 75px;
+	}
+	
+	&.s9 {
+		--eachSize: 80px;
+	}
 
 	&.w1 {
-		width: calc((var(--eachSize) * 5) + (#{$pad} * 2));
+		--eachWidth: calc(var(--EmojiPickerWidth) / 5);
 		--columns: 1fr 1fr 1fr 1fr 1fr;
 	}
 
 	&.w2 {
-		width: calc((var(--eachSize) * 6) + (#{$pad} * 2));
+		--eachWidth: calc(var(--EmojiPickerWidth) / 6);
 		--columns: 1fr 1fr 1fr 1fr 1fr 1fr;
 	}
 
 	&.w3 {
-		width: calc((var(--eachSize) * 7) + (#{$pad} * 2));
+		--eachWidth: calc(var(--EmojiPickerWidth) / 7);
 		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	}
 
 	&.w4 {
-		width: calc((var(--eachSize) * 8) + (#{$pad} * 2));
+		--eachWidth: calc(var(--EmojiPickerWidth) / 8);
 		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	}
 
 	&.w5 {
-		width: calc((var(--eachSize) * 9) + (#{$pad} * 2));
+		--eachWidth: calc(var(--EmojiPickerWidth) / 9);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
+
+	&.w6 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 10);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
+
+	&.w7 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 11);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
+
+	&.w8 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 12);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
+
+	&.w9 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 13);
 		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	}
 
@@ -532,6 +577,26 @@ defineExpose({
 
 	&.h4 {
 		height: calc((var(--eachSize) * 10) + (#{$pad} * 2));
+	}
+	
+	&.h5 {
+		height: calc((var(--eachSize) * 12) + (#{$pad} * 2));
+	}
+	
+	&.h6 {
+		height: calc((var(--eachSize) * 14) + (#{$pad} * 2));
+	}
+	
+	&.h7 {
+		height: calc((var(--eachSize) * 16) + (#{$pad} * 2));
+	}
+	
+	&.h8 {
+		height: calc((var(--eachSize) * 18) + (#{$pad} * 2));
+	}
+	
+	&.h9 {
+		height: calc((var(--eachSize) * 20) + (#{$pad} * 2));
 	}
 
 	&.asDrawer {
@@ -552,9 +617,8 @@ defineExpose({
 					font-size: 30px;
 
 					> .item {
-						aspect-ratio: 1 / 1;
 						width: auto;
-						height: auto;
+   						height: var(--eachSize);
 						min-width: 0;
 					}
 				}
@@ -599,6 +663,7 @@ defineExpose({
 		height: 100%;
 		overflow-y: auto;
 		overflow-x: hidden;
+		width: var(--eachWidth);
 
 		scrollbar-width: none;
 

@@ -55,7 +55,7 @@
 								>Delete</MkButton
 							>
 						</div>
-						<div v-if="selectMode || selectedCount <= 0"
+						<div v-if="selectMode || selectedCount > 0"
 							>Select : {{ selectedCount }} </div
 						>
 						<MkPagination
@@ -92,6 +92,9 @@
 										<div class="body">
 											<div class="name _monospace">
 												{{ emoji.name }}
+											</div>
+											<div v-if="emoji.aliases.length === 0" class="info">
+												NotTag
 											</div>
 											<div class="info">
 												{{ emoji.category }}
@@ -186,6 +189,7 @@ const queryRemote = ref(null);
 const host = ref(null);
 const selectMode = ref(false);
 const selectedEmojis = ref<string[]>([]);
+const selectedCount = ref(selectedEmojis.value.length);
 
 const pagination = {
 	endpoint: "admin/emoji/list" as const,
@@ -207,7 +211,6 @@ const remotePagination = {
 	})),
 };
 
-const selectedCount = selectedEmojis.value.length;
 
 const selectAll = () => {
 	if (selectedEmojis.value.length <= 0) {

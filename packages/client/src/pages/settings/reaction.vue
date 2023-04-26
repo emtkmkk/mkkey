@@ -36,6 +36,13 @@
 
 		<FormRadios v-model="reactionPickerSize" class="_formBlock">
 			<template #label>{{ i18n.ts.size }}</template>
+			<option :value="-6">{{ i18n.ts.small }}-7</option>
+			<option :value="-5">{{ i18n.ts.small }}-6</option>
+			<option :value="-4">{{ i18n.ts.small }}-5</option>
+			<option :value="-3">{{ i18n.ts.small }}-4</option>
+			<option :value="-2">{{ i18n.ts.small }}-3</option>
+			<option :value="-1">{{ i18n.ts.small }}-2</option>
+			<option :value="0">{{ i18n.ts.small }}-1</option>
 			<option :value="1">{{ i18n.ts.small }}</option>
 			<option :value="2">{{ i18n.ts.medium }}</option>
 			<option :value="3">{{ i18n.ts.large }}</option>
@@ -48,6 +55,10 @@
 		</FormRadios>
 		<FormRadios v-model="reactionPickerWidth" class="_formBlock">
 			<template #label>{{ i18n.ts.numberOfColumn }}</template>
+			<option :value="-3">1</option>
+			<option :value="-2">2</option>
+			<option :value="-1">3</option>
+			<option :value="0">4</option>
 			<option :value="1">5</option>
 			<option :value="2">6</option>
 			<option :value="3">7</option>

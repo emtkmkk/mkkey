@@ -1,4 +1,4 @@
-import { isNull } from "typeorm";
+import { IsNull } from "typeorm";
 import define from "../../../define.js";
 import { Emojis } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
@@ -70,9 +70,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError();
 	}
 	
-	const emojiSearchName = await Emojis.findOneBy({ name: emoji.name , host: isNull() });
+	const emojiSearchName = await Emojis.findOneBy({ name: emoji.name , host: IsNull() });
 	
-	const emojiSearchNamePlusHost = await Emojis.findOneBy({ name: emoji.name + "_" + emoji.host.replaceAll(/[^\w]/ig,"_") , host: isNull() });
+	const emojiSearchNamePlusHost = await Emojis.findOneBy({ name: emoji.name + "_" + emoji.host.replaceAll(/[^\w]/ig,"_") , host: IsNull() });
 
 	if (emojiSearchNamePlusHost != null){
 		throw new ApiError(meta.errors.alreadyRegistered);

@@ -39,6 +39,12 @@
 			<option :value="1">{{ i18n.ts.small }}</option>
 			<option :value="2">{{ i18n.ts.medium }}</option>
 			<option :value="3">{{ i18n.ts.large }}</option>
+			<option :value="4">{{ i18n.ts.large }}+1</option>
+			<option :value="5">{{ i18n.ts.large }}+2</option>
+			<option :value="6">{{ i18n.ts.large }}+3</option>
+			<option :value="7">{{ i18n.ts.large }}+4</option>
+			<option :value="8">{{ i18n.ts.large }}+5</option>
+			<option :value="9">{{ i18n.ts.large }}+6</option>
 		</FormRadios>
 		<FormRadios v-model="reactionPickerWidth" class="_formBlock">
 			<template #label>{{ i18n.ts.numberOfColumn }}</template>
@@ -47,13 +53,22 @@
 			<option :value="3">7</option>
 			<option :value="4">8</option>
 			<option :value="5">9</option>
+			<option :value="6">10</option>
+			<option :value="7">11</option>
+			<option :value="8">12</option>
+			<option :value="9">13</option>
 		</FormRadios>
 		<FormRadios v-model="reactionPickerHeight" class="_formBlock">
 			<template #label>{{ i18n.ts.height }}</template>
 			<option :value="1">{{ i18n.ts.small }}</option>
 			<option :value="2">{{ i18n.ts.medium }}</option>
 			<option :value="3">{{ i18n.ts.large }}</option>
-			<option :value="4">{{ i18n.ts.large }}+</option>
+			<option :value="4">{{ i18n.ts.large }}+1</option>
+			<option :value="5">{{ i18n.ts.large }}+2</option>
+			<option :value="6">{{ i18n.ts.large }}+3</option>
+			<option :value="7">{{ i18n.ts.large }}+4</option>
+			<option :value="8">{{ i18n.ts.large }}+5</option>
+			<option :value="9">{{ i18n.ts.large }}+6</option>
 		</FormRadios>
 
 		<FormSwitch

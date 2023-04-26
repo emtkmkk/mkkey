@@ -87,6 +87,7 @@
 			<option :value="7">{{ i18n.ts.large }}+4</option>
 			<option :value="8">{{ i18n.ts.large }}+5</option>
 			<option :value="9">{{ i18n.ts.large }}+6</option>
+			<option :value="10">Auto(90%)</option>
 		</FormRadios>
 
 		<FormSwitch

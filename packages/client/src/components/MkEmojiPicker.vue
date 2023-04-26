@@ -480,7 +480,7 @@ defineExpose({
 	display: flex;
 	flex-direction: column;
 	width: calc(var(--EmojiPickerWidth) + (#{$pad} * 2));
-	--EmojiPickerWidth: 98dvw;
+	--EmojiPickerWidth: 95dvw;
 
 	&.s-6 {
 		--eachSize: 5px;

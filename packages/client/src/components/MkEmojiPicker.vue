@@ -610,6 +610,41 @@ defineExpose({
 		--eachWidth: calc(var(--EmojiPickerWidth) / 13);
 		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	}
+
+	&.w10 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 14);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
+
+	&.w11 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 15);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
+
+	&.w12 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 16);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
+
+	&.w13 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 17);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
+
+	&.w14 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 18);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
+
+	&.w15 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 19);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
+
+	&.w16 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 20);
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	}
 	
 	&.h1 {
 		height: calc((var(--eachSize) * 4) + (#{$pad} * 2));
@@ -665,7 +700,7 @@ defineExpose({
 					font-size: 30px;
 
 					> .item {
-						width: auto;
+						width: var(--eachWidth);
    						height: var(--eachSize);
 						min-width: 0;
 					}
@@ -781,7 +816,8 @@ defineExpose({
 					}
 
 					> .emoji {
-						height: 1.25em;
+						max-height: 1.25em;
+						height: 90%;
 						vertical-align: -0.25em;
 						pointer-events: none;
 					}

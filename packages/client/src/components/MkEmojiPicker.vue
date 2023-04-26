@@ -482,6 +482,34 @@ defineExpose({
 	width: calc(var(--EmojiPickerWidth) + (#{$pad} * 2));
 	--EmojiPickerWidth: 98dvw;
 
+	&.s-6 {
+		--eachSize: 5px;
+	}
+	
+	&.s-5 {
+		--eachSize: 10px;
+	}
+	
+	&.s-4 {
+		--eachSize: 15px;
+	}
+	
+	&.s-3 {
+		--eachSize: 20px;
+	}
+
+	&.s-2 {
+		--eachSize: 25px;
+	}
+
+	&.s-1 {
+		--eachSize: 30px;
+	}
+
+	&.s0 {
+		--eachSize: 35px;
+	}
+
 	&.s1 {
 		--eachSize: 40px;
 	}
@@ -518,6 +546,26 @@ defineExpose({
 		--eachSize: 80px;
 	}
 
+	&.w-3 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 1);
+		--columns: 1fr;
+	}
+	
+	&.w-2 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 2);
+		--columns: 1fr 1fr;
+	}
+	
+	&.w-1 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 3);
+		--columns: 1fr 1fr 1fr;
+	}
+	
+	&.w0 {
+		--eachWidth: calc(var(--EmojiPickerWidth) / 4);
+		--columns: 1fr 1fr 1fr 1fr;
+	}
+	
 	&.w1 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 5);
 		--columns: 1fr 1fr 1fr 1fr 1fr;
@@ -545,24 +593,24 @@ defineExpose({
 
 	&.w6 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 10);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	}
 
 	&.w7 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 11);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	}
 
 	&.w8 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 12);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	}
 
 	&.w9 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 13);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	}
-
+	
 	&.h1 {
 		height: calc((var(--eachSize) * 4) + (#{$pad} * 2));
 	}

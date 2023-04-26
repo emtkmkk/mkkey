@@ -484,66 +484,82 @@ defineExpose({
 
 	&.s-6 {
 		--eachSize: 5px;
+		--valign: 0em;
 	}
 	
 	&.s-5 {
 		--eachSize: 10px;
+		--valign: 0em;
 	}
 	
 	&.s-4 {
 		--eachSize: 15px;
+		--valign: 0em;
 	}
 	
 	&.s-3 {
 		--eachSize: 20px;
+		--valign: 0em;
 	}
 
 	&.s-2 {
 		--eachSize: 25px;
+		--valign: 0em;
 	}
 
 	&.s-1 {
 		--eachSize: 30px;
+		--valign: 0em;
 	}
 
 	&.s0 {
 		--eachSize: 35px;
+		--valign: -0.25em;
 	}
 
 	&.s1 {
 		--eachSize: 40px;
+		--valign: -0.25em;
 	}
 
 	&.s2 {
 		--eachSize: 45px;
+		--valign: -0.25em;
 	}
 
 	&.s3 {
 		--eachSize: 50px;
+		--valign: -0.25em;
 	}
 	
 	&.s4 {
 		--eachSize: 55px;
+		--valign: -0.25em;
 	}
 	
 	&.s5 {
 		--eachSize: 60px;
+		--valign: -0.25em;
 	}
 	
 	&.s6 {
 		--eachSize: 65px;
+		--valign: -0.25em;
 	}
 	
 	&.s7 {
 		--eachSize: 70px;
+		--valign: -0.25em;
 	}
 	
 	&.s8 {
 		--eachSize: 75px;
+		--valign: -0.25em;
 	}
 	
 	&.s9 {
 		--eachSize: 80px;
+		--valign: -0.25em;
 	}
 
 	&.w-3 {
@@ -681,9 +697,14 @@ defineExpose({
 	&.h9 {
 		height: calc((var(--eachSize) * 20) + (#{$pad} * 2));
 	}
+	
+	&.h10 {
+		height: 90dvh;
+	}
 
 	&.asDrawer {
 		width: 100% !important;
+		max-height: 90dvh;
 
 		> .emojis {
 			::v-deep(section) {
@@ -818,7 +839,7 @@ defineExpose({
 					> .emoji {
 						max-height: 1.25em;
 						height: 90%;
-						vertical-align: -0.25em;
+						vertical-align: var(--valign);
 						pointer-events: none;
 					}
 				}

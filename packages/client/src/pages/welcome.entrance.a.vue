@@ -22,8 +22,8 @@
 			<div class="main">
 				<img
 					:src="
-						$instance.iconUrl ||
 						$instance.faviconUrl ||
+						$instance.iconUrl ||
 						'/favicon.ico'
 					"
 					alt=""

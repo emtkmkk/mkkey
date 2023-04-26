@@ -88,7 +88,7 @@ export const defaultStore = markRaw(
 				":oisisou:",
 				":ohayoo:",
 				":taikin:",
-				":oyasumi:",
+				":oyasumi2:",
 				"⭐",
 				"❤️",
 			],

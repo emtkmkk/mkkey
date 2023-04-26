@@ -33,6 +33,9 @@
 							<MkButton inline @click="selectAll"
 								>Select all</MkButton
 							>
+							<MkButton inline @click="unSelectAll"
+								>UnSelect all</MkButton
+							>
 							<MkButton inline @click="setCategoryBulk"
 								>Set category</MkButton
 							>
@@ -52,6 +55,9 @@
 								>Delete</MkButton
 							>
 						</div>
+						<div v-if="selectMode || selectedCount <= 0"
+							>Select : {{ selectedCount }} </div
+						>
 						<MkPagination
 							ref="emojisPaginationComponent"
 							:pagination="pagination"
@@ -183,7 +189,7 @@ const selectedEmojis = ref<string[]>([]);
 
 const pagination = {
 	endpoint: "admin/emoji/list" as const,
-	limit: 30,
+	limit: 50,
 	params: computed(() => ({
 		query: query.value && query.value !== "" ? query.value : null,
 	})),
@@ -191,7 +197,7 @@ const pagination = {
 
 const remotePagination = {
 	endpoint: "admin/emoji/list-remote" as const,
-	limit: 30,
+	limit: 50,
 	params: computed(() => ({
 		query:
 			queryRemote.value && queryRemote.value !== ""
@@ -201,13 +207,17 @@ const remotePagination = {
 	})),
 };
 
+const selectedCount = selectedEmojis.value.length;
+
 const selectAll = () => {
+	if (selectedEmojis.value.length <= 0) {
+		selectedEmojis.value = emojisPaginationComponent.value.items.map(item => item.id);
+	}
+};
+
+const unSelectAll = () => {
 	if (selectedEmojis.value.length > 0) {
 		selectedEmojis.value = [];
-	} else {
-		selectedEmojis.value = emojisPaginationComponent.value.items.map(
-			(item) => item.id
-		);
 	}
 };
 
@@ -475,8 +485,8 @@ definePageMetadata(
 				}
 
 				> .img {
-					width: 42px;
-					height: 42px;
+					max-width: 40px;
+					height: 24px;
 				}
 
 				> .body {
@@ -521,8 +531,8 @@ definePageMetadata(
 				}
 
 				> .img {
-					width: 32px;
-					height: 32px;
+					max-width: 40px;
+					height: 24px;
 				}
 
 				> .body {

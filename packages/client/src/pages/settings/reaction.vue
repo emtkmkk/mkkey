@@ -68,6 +68,13 @@
 			<option :value="7">11</option>
 			<option :value="8">12</option>
 			<option :value="9">13</option>
+			<option :value="10">14</option>
+			<option :value="11">15</option>
+			<option :value="12">16</option>
+			<option :value="13">17</option>
+			<option :value="14">18</option>
+			<option :value="15">19</option>
+			<option :value="16">20</option>
 		</FormRadios>
 		<FormRadios v-model="reactionPickerHeight" class="_formBlock">
 			<template #label>{{ i18n.ts.height }}</template>

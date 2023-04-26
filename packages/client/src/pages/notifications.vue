@@ -15,7 +15,6 @@
 				:virtual="true"
 				:allow-touch-move="
 					!(
-						deviceKind === 'desktop' &&
 						!defaultStore.state.swipeOnDesktop
 					)
 				"

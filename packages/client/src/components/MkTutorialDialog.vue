@@ -19,17 +19,17 @@
 							>
 								<i class="ph-caret-left ph-bold ph-lg"></i>
 							</button>
-							<span>{{ tutorial + 1 }} / 6</span>
+							<span>{{ tutorial + 1 }} / 7</span>
 							<button
 								class="arrow _button"
-								:disabled="tutorial === 5"
+								:disabled="tutorial === 6"
 								@click="tutorial++"
 							>
 								<i class="ph-caret-right ph-bold ph-lg"></i>
 							</button>
 						</div>
 						<MkButton
-							v-if="tutorial === 5"
+							v-if="tutorial === 6"
 							class="ok"
 							primary
 							@click="close"
@@ -81,13 +81,7 @@
 							class="_content"
 						>
 							<h3>{{ i18n.ts._tutorial.step4_1 }}</h3>
-							<I18n :src="i18n.ts._tutorial.step4_2" tag="div">
-								<template #introduction>
-									<MkA class="_link" to="/tags/introduction"
-										>#introduction</MkA
-									>
-								</template>
-							</I18n>
+							<div>{{ i18n.ts._tutorial.step4_2 }}</div>
 							<br />
 							<XPostForm class="post-form _block" />
 						</div>
@@ -135,21 +129,9 @@
 										</template>
 									</I18n>
 								</li>
-								<li v-if="timelines.includes('social')">
-									<I18n
-										:src="i18n.ts._tutorial.step5_6"
-										tag="div"
-									>
-										<template #icon>
-											<i
-												class="ph-handshake ph-bold ph-lg"
-											/>
-										</template>
-									</I18n>
-								</li>
 								<li v-if="timelines.includes('global')">
 									<I18n
-										:src="i18n.ts._tutorial.step5_7"
+										:src="i18n.ts._tutorial.step5_6"
 										tag="div"
 									>
 										<template #icon>
@@ -169,17 +151,35 @@
 							<h3>{{ i18n.ts._tutorial.step6_1 }}</h3>
 							<div>{{ i18n.ts._tutorial.step6_2 }}</div>
 							<div>{{ i18n.ts._tutorial.step6_3 }}</div>
-							<br />
-							<MkSparkle>
-								<h3>
-									{{ i18n.ts._tutorial.step6_4 }}
-									<Mfm text="$[shake 🚀]"></Mfm>
-								</h3>
-							</MkSparkle>
+						</div>
+						<div
+							v-else-if="tutorial === 6"
+							key="7"
+							class="_content"
+						>
+							<h3>{{ i18n.ts._tutorial.step7_1 }}</h3>
+							<div>{{ i18n.ts._tutorial.step7_2 }}</div>
+							<pwa-install />
+							<MkButton
+								primary
+								rounded
+								inline
+								@click="installPwa"
+								>{{ i18n.ts._apps.pwa }}</MkButton
+							>
+							<div>{{ i18n.ts._tutorial.step7_3 }}</div>
 							<MkPushNotificationAllowButton
 								primary
 								show-only-to-register
 							/>
+							<div>{{ i18n.ts._tutorial.step7_4 }}</div>
+							<br />
+							<MkSparkle>
+								<h3>
+									{{ i18n.ts._tutorial.step7_5 }}
+									<Mfm text="$[shake 🚀]"></Mfm>
+								</h3>
+							</MkSparkle>
 						</div>
 					</Transition>
 				</div>
@@ -201,6 +201,7 @@ import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 import { $i } from "@/account";
 import { instance } from "@/instance";
+import "@khmyznikov/pwa-install";
 
 const isLocalTimelineAvailable =
 	!instance.disableLocalTimeline ||
@@ -219,9 +220,6 @@ if (isLocalTimelineAvailable) {
 }
 if (isRecommendedTimelineAvailable) {
 	timelines.push("recommended");
-}
-if (isLocalTimelineAvailable) {
-	timelines.push("social");
 }
 if (isGlobalTimelineAvailable) {
 	timelines.push("global");
@@ -247,6 +245,12 @@ function close(res) {
 	tutorial.value = -1;
 	dialog.close();
 }
+
+function installPwa(ev: MouseEvent) {
+	const pwaInstall = document.getElementsByTagName("pwa-install")[0];
+	pwaInstall.showDialog();
+}
+
 </script>
 
 <style lang="scss" scoped>

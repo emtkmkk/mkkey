@@ -33,8 +33,9 @@ export default class extends Channel {
 		const meta = await fetchMeta();
 		if (
 			!(
-				note.fileIds &&
-				note.fileIds.length !== 0 &&
+				(note.fileIds &&
+				note.fileIds.length !== 0) || 
+				(note.renote && note.renote.fileIds && note.renote.fileIds.length !== 0) &&
 				note.visibility === "public"
 			)
 		)

@@ -96,6 +96,11 @@ export default define(meta, paramDef, async (ps, user) => {
 	generateChannelQuery(query, user);
 	generateRepliesQuery(query, user);
 	generateVisibilityQuery(query, user);
+	
+	query.andWhere(
+		"note.renoteId IS NULL OR renote.fileIds != '{}' ",
+	)
+	
 	if (user) generateMutedUserQuery(query, user);
 	if (user) generateMutedNoteQuery(query, user);
 	if (user) generateBlockedUserQuery(query, user);

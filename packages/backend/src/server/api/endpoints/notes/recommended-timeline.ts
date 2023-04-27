@@ -78,7 +78,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.untilDate,
 	)
 		.andWhere(
-			"note.fileIds != '{}'",
+			"note.fileIds != '{}' OR (note.renoteId IS NOT NULL AND renote.fileIds != '{}')",
 		)
 		.andWhere("(note.visibility = 'public')")
 		.innerJoinAndSelect("note.user", "user")
@@ -96,10 +96,6 @@ export default define(meta, paramDef, async (ps, user) => {
 	generateChannelQuery(query, user);
 	generateRepliesQuery(query, user);
 	generateVisibilityQuery(query, user);
-	
-	query.andWhere(
-		"note.renoteId IS NULL OR renote.fileIds != '{}' ",
-	)
 	
 	if (user) generateMutedUserQuery(query, user);
 	if (user) generateMutedNoteQuery(query, user);

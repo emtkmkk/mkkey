@@ -229,7 +229,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		driveUsage: DriveFiles.calcDriveUsageOf(user),
 		notesPostDays: (await Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
-			.groupBy("FORMAT(note.createdAt, 'yyyy-MM-dd')")
+			.groupBy("date_trunc('day',note.createdAt)")
 			.getRawMany()).length(),
 	});
 	

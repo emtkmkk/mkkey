@@ -89,14 +89,14 @@ export async function importPosts(
 						continue;
 					}
 					if (post.attachment){
-						try{
 							for (const attt of post.attachment) {
-								urlstr = urlstr + " https://s3.ap-northeast-2.wasabisys.com" + attt.url;
+								try{
+									urlstr += " https://s3.ap-northeast-2.wasabisys.com" + attt.url;
+								} catch (e) {
+									logger.warn(`MediaError in line:${linenum} ${e}`);
+									continue;
+								}
 							}
-						} catch (e) {
-							logger.warn(`MediaError in line:${linenum} ${e}`);
-							continue;
-						}
 					}
 					if (job.data.signatureCheck) {
 						if (!post.signature) {
@@ -109,7 +109,7 @@ export async function importPosts(
 					} catch (e) {
 						continue;
 					}
-					text = text + urlstr;
+					text += urlstr;
 					logger.info(`Posting[${linenum}] ...`);
 
 					const note = await create(user, {

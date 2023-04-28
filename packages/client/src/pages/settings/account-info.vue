@@ -130,11 +130,11 @@
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.notesPostDays }}</template>
-				<template #value>{{ bytes(stats.notesPostDays) }}</template>
+				<template #value>{{ number(stats.notesPostDays) }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.power }}</template>
-				<template #value>{{ bytes(stats.power) }}</template>
+				<template #value>{{ number(stats.power) }}</template>
 			</MkKeyValue>
 		</FormSection>
 

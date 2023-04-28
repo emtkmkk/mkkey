@@ -250,7 +250,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		result.pageLikesCount * 5 +
 		result.pageLikedCount * 5 +
 		result.sentReactionsCount * 1 +
-		result.receivedReactionsCount * 1 +
+		result.receivedReactionsCount * 2 +
 		result.driveFilesCount * 2
 		) * ( 1 + 
 		result.followingCount * 0.0005 +

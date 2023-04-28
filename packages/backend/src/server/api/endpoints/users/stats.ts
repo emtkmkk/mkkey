@@ -239,19 +239,19 @@ export default define(meta, paramDef, async (ps, me) => {
 		result.localFollowersCount + result.remoteFollowersCount;
 		
 	result.power = 
-		Math.floor((result.notesPostDays * 276 +
-		result.notesCount * 24 +
-		result.repliesCount * 12 +
-		result.renotesCount * -20 +
-		result.repliedCount * 12 +
-		result.renotedCount * 7 +
-		result.pollVotesCount * 3 +
-		result.pollVotedCount * 2 +
-		result.pageLikesCount * 5 +
-		result.pageLikedCount * 5 +
-		result.sentReactionsCount * 1 +
-		result.receivedReactionsCount * 2 +
-		result.driveFilesCount * 2
+		Math.floor((result.notesPostDays * 482 +
+		result.notesCount * 18 +
+		result.repliesCount * 4 +
+		result.renotesCount * -14 +
+		result.repliedCount * 3 +
+		result.renotedCount * 3 +
+		result.pollVotesCount * 4 +
+		result.pollVotedCount * 3 +
+		result.pageLikesCount * 11 +
+		result.pageLikedCount * 9 +
+		result.sentReactionsCount * 4 +
+		result.receivedReactionsCount * 3 +
+		result.driveFilesCount * 6
 		) * ( 1 + 
 		result.followingCount * 0.0005 +
 		result.followersCount * 0.0015));

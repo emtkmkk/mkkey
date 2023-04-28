@@ -193,7 +193,7 @@
 											.replace("-", "/")
 											.replace("-", "/")
 									}}
-									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" ? "(" + i18n.t("yearsOld", { age }) + ")" : "" }})
+									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" ? "(" + i18n.t("yearsOld", { age }) + ")" : "" }}
 								</dd>
 							</dl>
 							<dl v-if="user.host == null" class="field">

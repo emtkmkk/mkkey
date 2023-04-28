@@ -193,10 +193,10 @@
 											.replace("-", "/")
 											.replace("-", "/")
 									}}
-									({{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" ? i18n.t("yearsOld", { age }) : "" }})
+									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" ? "(" + i18n.t("yearsOld", { age }) + ")" : "" }})
 								</dd>
 							</dl>
-							<dl class="field">
+							<dl v-if="user.host == null" lass="field">
 								<dt class="name">
 									<i
 										class="ph-calendar-blank ph-bold ph-lg ph-fw ph-lg"
@@ -327,6 +327,7 @@ import MkMoved from "@/components/MkMoved.vue";
 import { getScrollPosition } from "@/scripts/scroll";
 import { getUserMenu } from "@/scripts/get-user-menu";
 import number from "@/filters/number";
+import MkNumber from "@/components/MkNumber.vue";
 import { userPage } from "@/filters/user";
 import * as os from "@/os";
 import { useRouter } from "@/router";

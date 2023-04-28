@@ -227,11 +227,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			.where("file.userId = :userId", { userId: user.id })
 			.getCount(),
 		driveUsage: DriveFiles.calcDriveUsageOf(user),
-		notesPostDays: (await Notes.createQueryBuilder("note")
-			.select("date_trunc('day',note.\"createdAt\")")
+		notesPostDays: Notes.createQueryBuilder("note")
+			.select("count(count(date_trunc('day',note.\"createdAt\")))")
 			.where("note.userId = :userId", { userId: user.id })
 			.groupBy("date_trunc('day',note.\"createdAt\")")
-			.getRawMany()).length(),
+			.getRawOne(),
 	});
 	
 	result.followingCount =

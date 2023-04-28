@@ -128,6 +128,14 @@
 				<template #key>{{ i18n.ts.driveUsage }}</template>
 				<template #value>{{ bytes(stats.driveUsage) }}</template>
 			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.notesPostDays }}</template>
+				<template #value>{{ bytes(stats.notesPostDays) }}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.power }}</template>
+				<template #value>{{ bytes(stats.power) }}</template>
+			</MkKeyValue>
 		</FormSection>
 
 		<FormSection>

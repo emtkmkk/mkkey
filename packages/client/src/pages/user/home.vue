@@ -207,7 +207,7 @@
 									<MkTime :time="user.createdAt" mode="detail" />
 								</dd>
 							</dl>
-							<dl v-if="user.host == null" class="field">
+							<dl v-if="user.host == null && !user.isBot" class="field">
 								<dt class="name">
 									<i
 										class="ph-lightning ph-bold ph-lg ph-fw ph-lg"
@@ -215,7 +215,7 @@
 									{{ i18n.ts.power }}
 								</dt>
 								<dd class="value">
-									<MkNumber :value="number(stats.power)" />
+									{{ number(stats.power) }}
 								</dd>
 							</dl>
 						</div>

@@ -185,11 +185,15 @@
 								</dt>
 								<dd class="value">
 									{{
-										user.birthday
+										user.birthday.substring(0, 4) == "0000" || user.birthday.substring(0, 4) == "9999"  
+											? user.birthday
+											.replace("-", "/")
+											.replace("-", "/").substring(5)
+											: user.birthday
 											.replace("-", "/")
 											.replace("-", "/")
 									}}
-									({{ i18n.t("yearsOld", { age }) }})
+									({{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" ? i18n.t("yearsOld", { age }) }})
 								</dd>
 							</dl>
 							<dl class="field">
@@ -201,6 +205,17 @@
 								</dt>
 								<dd class="value">
 									<MkTime :time="user.createdAt" mode="detail" />
+								</dd>
+							</dl>
+							<dl class="field">
+								<dt class="name">
+									<i
+										class="ph-lightning ph-bold ph-lg ph-fw ph-lg"
+									></i>
+									{{ i18n.ts.power }}
+								</dt>
+								<dd class="value">
+									<MkNumber :value="stats.power" />
 								</dd>
 							</dl>
 						</div>
@@ -330,6 +345,7 @@ const props = withDefaults(
 );
 
 const router = useRouter();
+const stats = ref<any>({});
 
 let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);
@@ -410,9 +426,15 @@ function parallax() {
 	banner.style.backgroundPosition = `center calc(50% - ${pos}px)`;
 }
 
+
 onMounted(() => {
 	window.requestAnimationFrame(parallaxLoop);
 	narrow = rootEl!.clientWidth < 1000;
+	os.api("users/stats", {
+		userId: $i!.id,
+	}).then((response) => {
+		stats.value = response;
+	});
 });
 
 onUnmounted(() => {

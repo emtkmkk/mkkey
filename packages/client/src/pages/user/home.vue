@@ -347,7 +347,7 @@ const props = withDefaults(
 
 const router = useRouter();
 
-const stats = $ref<any>({});
+const stats = ref<any>({});
 
 let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);
@@ -429,13 +429,13 @@ function parallax() {
 }
 
 onMounted(() => {
-	window.requestAnimationFrame(parallaxLoop);
-	narrow = rootEl!.clientWidth < 1000;
 	os.api("users/stats", {
 		userId: props.user.id,
 	}).then((response) => {
 		stats.value = response;
 	});
+	window.requestAnimationFrame(parallaxLoop);
+	narrow = rootEl!.clientWidth < 1000;
 });
 
 onUnmounted(() => {

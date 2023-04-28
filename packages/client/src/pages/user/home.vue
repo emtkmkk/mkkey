@@ -431,7 +431,7 @@ onMounted(() => {
 	window.requestAnimationFrame(parallaxLoop);
 	narrow = rootEl!.clientWidth < 1000;
 	os.api("users/stats", {
-		userId: $i!.id,
+		userId: props.user.id,
 	}).then((response) => {
 		stats.value = response;
 	});

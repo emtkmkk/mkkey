@@ -134,6 +134,18 @@ export const meta = {
 				nullable: false,
 				description: "Drive usage in bytes",
 			},
+			notesPostDays: {
+				type: "integer",
+				optional: false,
+				nullable: false,
+				description: "Number of days you have posted one or more notes",
+			},
+			power: {
+				type: "integer",
+				optional: false,
+				nullable: false,
+				description: "powerrrrrrrrrrrrrr",
+			},
 		},
 	},
 } as const;
@@ -151,6 +163,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (user == null) {
 		throw new ApiError(meta.errors.noSuchUser);
 	}
+	
 
 	const result = await awaitAll({
 		notesCount: Notes.createQueryBuilder("note")
@@ -214,12 +227,34 @@ export default define(meta, paramDef, async (ps, me) => {
 			.where("file.userId = :userId", { userId: user.id })
 			.getCount(),
 		driveUsage: DriveFiles.calcDriveUsageOf(user),
+		notesPostDays: Notes.createQueryBuilder("note")
+			.where("note.userId = :userId", { userId: user.id })
+			.groupBy("date_trunc('day',note.createdAt)")
+			.getCount(),
 	});
-
+	
 	result.followingCount =
 		result.localFollowingCount + result.remoteFollowingCount;
 	result.followersCount =
 		result.localFollowersCount + result.remoteFollowersCount;
+		
+	result.power = 
+		Math.floor((result.notesPostDays * 276 +
+		result.notesCount * 24 +
+		result.repliesCount * 12 +
+		result.renotesCount * -20 +
+		result.repliedCount * 12 +
+		result.renotedCount * 7 +
+		result.pollVotesCount * 3 +
+		result.pollVotedCount * 2 +
+		result.pageLikesCount * 5 +
+		result.pageLikedCount * 5 +
+		result.sentReactionsCount * 1 +
+		result.receivedReactionsCount * 1 +
+		result.driveFilesCount * 2
+		) * ( 1 + 
+		result.followingCount * 0.0005 +
+		result.followersCount * 0.0015));
 
 	return result;
 });

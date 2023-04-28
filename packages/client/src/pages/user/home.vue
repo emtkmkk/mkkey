@@ -196,7 +196,7 @@
 									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" ? "(" + i18n.t("yearsOld", { age }) + ")" : "" }})
 								</dd>
 							</dl>
-							<dl v-if="user.host == null" lass="field">
+							<dl v-if="user.host == null" class="field">
 								<dt class="name">
 									<i
 										class="ph-calendar-blank ph-bold ph-lg ph-fw ph-lg"
@@ -215,7 +215,7 @@
 									{{ i18n.ts.power }}
 								</dt>
 								<dd class="value">
-									<MkNumber :value="stats.power" />
+									<MkNumber :value="Number(stats.power)" />
 								</dd>
 							</dl>
 						</div>
@@ -314,7 +314,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, onMounted, onUnmounted } from "vue";
+import { defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
 import calcAge from "s-age";
 import cityTimezones from "city-timezones";
 import XUserTimeline from "./index.timeline.vue";
@@ -346,6 +346,8 @@ const props = withDefaults(
 );
 
 const router = useRouter();
+
+const stats = $ref<any>({});
 
 let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);
@@ -425,8 +427,6 @@ function parallax() {
 	const pos = -(top / z);
 	banner.style.backgroundPosition = `center calc(50% - ${pos}px)`;
 }
-
-const stats = $ref<any>({});
 
 onMounted(() => {
 	window.requestAnimationFrame(parallaxLoop);

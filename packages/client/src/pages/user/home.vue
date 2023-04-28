@@ -207,7 +207,7 @@
 									<MkTime :time="user.createdAt" mode="detail" />
 								</dd>
 							</dl>
-							<dl class="field">
+							<dl v-if="user.host == null" class="field">
 								<dt class="name">
 									<i
 										class="ph-lightning ph-bold ph-lg ph-fw ph-lg"
@@ -345,7 +345,6 @@ const props = withDefaults(
 );
 
 const router = useRouter();
-const stats = ref<any>({});
 
 let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);
@@ -426,6 +425,7 @@ function parallax() {
 	banner.style.backgroundPosition = `center calc(50% - ${pos}px)`;
 }
 
+const stats = $ref<any>({});
 
 onMounted(() => {
 	window.requestAnimationFrame(parallaxLoop);

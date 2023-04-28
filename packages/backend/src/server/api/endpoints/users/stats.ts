@@ -228,9 +228,9 @@ export default define(meta, paramDef, async (ps, me) => {
 			.getCount(),
 		driveUsage: DriveFiles.calcDriveUsageOf(user),
 		notesPostDays: Notes.createQueryBuilder("note")
-			.select("count(distinct date_trunc('day',note.\"createdAt\"))")
+			.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
 			.where("note.userId = :userId", { userId: user.id })
-			.getRawOne(),
+			.getRawOne().count,
 	});
 	
 	result.followingCount =

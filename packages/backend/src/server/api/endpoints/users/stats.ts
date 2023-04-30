@@ -7,6 +7,7 @@ import {
 	PageLikes,
 	PollVotes,
 	Users,
+	MessagingMessages,
 } from "@/models/index.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import define from "../../define.js";
@@ -164,12 +165,12 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noSuchUser);
 	}
 	
-	const sendMessageCount = await Notes.createQueryBuilder("messaging_message")
+	const sendMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
 			.where("messaging_message.userId = :userId", { userId: user.id })
 			.getCount();
 			
-	const readMessageCount = await Notes.createQueryBuilder("messaging_message")
-			.where(" :userId  = ANY(reads) ", { userId: user.id })
+	const readMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
+			.where(" :userId  = ANY(messaging_message.reads) ", { userId: user.id })
 			.getCount();
 			
 	const result = await awaitAll({

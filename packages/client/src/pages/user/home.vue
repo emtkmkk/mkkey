@@ -185,7 +185,7 @@
 								</dt>
 								<dd class="value">
 									{{
-										user.birthday.substring(0, 4) == "0000" || user.birthday.substring(0, 4) == "9999"  
+										user.birthday.substring(0, 4) == "0000" || user.birthday.substring(0, 4) == "9999" || user.birthday.substring(0, 4) == "4000"  
 											? user.birthday
 											.replace("-", "/")
 											.replace("-", "/").substring(5)
@@ -193,7 +193,7 @@
 											.replace("-", "/")
 											.replace("-", "/")
 									}}
-									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" ? "(" + i18n.t("yearsOld", { age }) + ")" : "" }}
+									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" && user.birthday.substring(0, 4) != "4000" ? "(" + i18n.t("yearsOld", { age }) + ")" : "" }}
 								</dd>
 							</dl>
 							<dl v-if="user.host == null" class="field">
@@ -207,7 +207,7 @@
 									<MkTime :time="user.createdAt" mode="detail" />
 								</dd>
 							</dl>
-							<dl v-if="user.host == null && !user.isBot" class="field">
+							<dl v-if="($i && $i.id === user.id) || (user.host == null && !user.isBot)" class="field">
 								<dt class="name">
 									<i
 										class="ph-lightning ph-bold ph-lg ph-fw ph-lg"

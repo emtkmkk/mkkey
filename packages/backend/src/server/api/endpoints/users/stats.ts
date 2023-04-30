@@ -261,7 +261,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		result.receivedReactionsCount * 3 +
 		result.driveFilesCount * 6 + 
 		sendMessageCount * 8 +
-		readMessageCount * 1.5
+		readMessageCount * 2
 		) * ( 1 + 
 		result.followingCount * 0.0005 +
 		result.followersCount * 0.0015));

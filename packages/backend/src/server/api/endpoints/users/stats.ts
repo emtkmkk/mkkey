@@ -164,7 +164,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noSuchUser);
 	}
 	
-
+	const sendMessageCount = await Notes.createQueryBuilder("messaging_message")
+			.where("messaging_message.userId = :userId", { userId: user.id })
+			.getCount();
+			
+	const readMessageCount = await Notes.createQueryBuilder("messaging_message")
+			.where(":userId = ANY(messaging_message.reads)", { userId: user.id })
+			.getCount();
+			
 	const result = await awaitAll({
 		notesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
@@ -251,7 +258,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		result.pageLikedCount * 9 +
 		result.sentReactionsCount * 4 +
 		result.receivedReactionsCount * 3 +
-		result.driveFilesCount * 6
+		result.driveFilesCount * 6 + 
+		sendMessageCount * 8 +
+		readMessageCount * 1.5
 		) * ( 1 + 
 		result.followingCount * 0.0005 +
 		result.followersCount * 0.0015));

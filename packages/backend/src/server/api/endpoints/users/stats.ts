@@ -169,7 +169,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.getCount();
 			
 	const readMessageCount = await Notes.createQueryBuilder("messaging_message")
-			.where(":userId = ANY(messaging_message.reads)", { userId: user.id })
+			.where(" :userId  = ANY(reads) ", { userId: user.id })
 			.getCount();
 			
 	const result = await awaitAll({

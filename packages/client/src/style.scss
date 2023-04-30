@@ -245,10 +245,6 @@ hr {
 		pointer-events: none;
 	}
 
-	&:focus-visible {
-		outline: none;
-	}
-
 	&:disabled {
 		opacity: 0.5;
 		cursor: default;

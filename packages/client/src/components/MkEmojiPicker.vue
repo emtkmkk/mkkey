@@ -1,156 +1,159 @@
 <template>
-	<div
-		class="omfetrab"
-		:class="['s' + size, 'w' + width, 'h' + height, { asDrawer }]"
-		:style="{ maxHeight: maxHeight ? maxHeight + 'px' : undefined }"
-	>
-		<input
-			ref="search"
-			v-model.trim="q"
-			class="search filled"
-			data-prevent-emoji-insert
-			:placeholder="i18n.ts.search"
-			type="search"
-			@paste.stop="paste"
-			@keyup.enter="done()"
-		/>
-		<div ref="emojis" class="emojis">
-			<section class="result">
-				<div v-if="searchResultCustom.length > 0" class="body">
-					<button
-						v-for="emoji in searchResultCustom"
-						:key="emoji.id"
-						class="_button item"
-						:title="emoji.name"
-						tabindex="0"
-						@click="chosen(emoji, $event)"
-					>
-						<!--<MkEmoji v-if="emoji.char != null" :emoji="emoji.char"/>-->
-						<img
-							class="emoji"
-							:src="
-								disableShowingAnimatedImages
-									? getStaticImageUrl(emoji.url)
-									: emoji.url
-							"
-						/>
-					</button>
-				</div>
-				<div v-if="searchResultUnicode.length > 0" class="body">
-					<button
-						v-for="emoji in searchResultUnicode"
-						:key="emoji.name"
-						class="_button item"
-						:title="emoji.name"
-						tabindex="0"
-						@click="chosen(emoji, $event)"
-					>
-						<MkEmoji class="emoji" :emoji="emoji.char" />
-					</button>
-				</div>
-			</section>
-
-			<div v-if="tab === 'index' && searchResultCustom.length <= 0 && (q.value == null || q.value === '')" class="group index">
-				<section v-if="showPinned && searchResultCustom.length <= 0 && (q.value == null || q.value === '')">
-					<div class="body">
+	<FocusTrap v-bind:active="isActive">
+		<div
+			class="omfetrab"
+			:class="['s' + size, 'w' + width, 'h' + height, { asDrawer }]"
+			:style="{ maxHeight: maxHeight ? maxHeight + 'px' : undefined }"
+			tabindex="-1"
+		>
+			<input
+				ref="search"
+				v-model.trim="q"
+				class="search filled"
+				data-prevent-emoji-insert
+				:placeholder="i18n.ts.search"
+				type="search"
+				@paste.stop="paste"
+				@keyup.enter="done()"
+			/>
+			<div ref="emojis" class="emojis">
+				<section class="result">
+					<div v-if="searchResultCustom.length > 0" class="body">
 						<button
-							v-for="emoji in pinned"
-							:key="emoji"
+							v-for="emoji in searchResultCustom"
+							:key="emoji.id"
 							class="_button item"
+							:title="emoji.name"
 							tabindex="0"
 							@click="chosen(emoji, $event)"
 						>
-							<MkEmoji
+							<!--<MkEmoji v-if="emoji.char != null" :emoji="emoji.char"/>-->
+							<img
 								class="emoji"
-								:emoji="emoji"
-								:normal="true"
+								:src="
+									disableShowingAnimatedImages
+										? getStaticImageUrl(emoji.url)
+										: emoji.url
+								"
 							/>
 						</button>
 					</div>
-				</section>
-
-				<section v-if="searchResultCustom.length <= 0 && (q.value == null || q.value === '')">
-					<header class="_acrylic">
-						<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
-						{{ i18n.ts.recentUsed }}
-					</header>
-					<div class="body">
+					<div v-if="searchResultUnicode.length > 0" class="body">
 						<button
-							v-for="emoji in recentlyUsedEmojis"
-							:key="emoji"
+							v-for="emoji in searchResultUnicode"
+							:key="emoji.name"
 							class="_button item"
+							:title="emoji.name"
+							tabindex="0"
 							@click="chosen(emoji, $event)"
 						>
-							<MkEmoji
-								class="emoji"
-								:emoji="emoji"
-								:normal="true"
-							/>
+							<MkEmoji class="emoji" :emoji="emoji.char" />
 						</button>
 					</div>
 				</section>
+	
+				<div v-if="tab === 'index' && searchResultCustom.length <= 0 && (q.value == null || q.value === '')" class="group index">
+					<section v-if="showPinned && searchResultCustom.length <= 0 && (q.value == null || q.value === '')">
+						<div class="body">
+							<button
+								v-for="emoji in pinned"
+								:key="emoji"
+								class="_button item"
+								tabindex="0"
+								@click="chosen(emoji, $event)"
+							>
+								<MkEmoji
+									class="emoji"
+									:emoji="emoji"
+									:normal="true"
+								/>
+							</button>
+						</div>
+					</section>
+	
+					<section v-if="searchResultCustom.length <= 0 && (q.value == null || q.value === '')">
+						<header class="_acrylic">
+							<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
+							{{ i18n.ts.recentUsed }}
+						</header>
+						<div class="body">
+							<button
+								v-for="emoji in recentlyUsedEmojis"
+								:key="emoji"
+								class="_button item"
+								@click="chosen(emoji, $event)"
+							>
+								<MkEmoji
+									class="emoji"
+									:emoji="emoji"
+									:normal="true"
+								/>
+							</button>
+						</div>
+					</section>
+				</div>
+				<div v-once v-if="searchResultCustom.length <= 0 && (q.value == null || q.value === '')" class="group">
+					<header>{{ i18n.ts.customEmojis }}</header>
+					<XSection
+						v-for="category in customEmojiCategories"
+						:key="'custom:' + category"
+						:initial-shown="false"
+						:emojis="
+							customEmojis
+								.filter((e) => e.category === category)
+								.map((e) => ':' + e.name + ':')
+						"
+						@chosen="chosen"
+						>{{ category || i18n.ts.other }}</XSection
+					>
+				</div>
+				<div v-once v-if="searchResultCustom.length <= 0  && (q.value == null || q.value === '')" class="group">
+					<header>{{ i18n.ts.emoji }}</header>
+					<XSection
+						v-for="category in categories"
+						:key="category"
+						:emojis="
+							emojilist
+								.filter((e) => e.category === category)
+								.map((e) => e.char)
+						"
+						@chosen="chosen"
+						>{{ category }}</XSection
+					>
+				</div>
 			</div>
-			<div v-once v-if="searchResultCustom.length <= 0 && (q.value == null || q.value === '')" class="group">
-				<header>{{ i18n.ts.customEmojis }}</header>
-				<XSection
-					v-for="category in customEmojiCategories"
-					:key="'custom:' + category"
-					:initial-shown="false"
-					:emojis="
-						customEmojis
-							.filter((e) => e.category === category)
-							.map((e) => ':' + e.name + ':')
-					"
-					@chosen="chosen"
-					>{{ category || i18n.ts.other }}</XSection
+			<div class="tabs">
+				<button
+					class="_button tab"
+					:class="{ active: tab === 'index' }"
+					@click="tab = 'index'"
 				>
-			</div>
-			<div v-once v-if="searchResultCustom.length <= 0  && (q.value == null || q.value === '')" class="group">
-				<header>{{ i18n.ts.emoji }}</header>
-				<XSection
-					v-for="category in categories"
-					:key="category"
-					:emojis="
-						emojilist
-							.filter((e) => e.category === category)
-							.map((e) => e.char)
-					"
-					@chosen="chosen"
-					>{{ category }}</XSection
+					<i class="ph-asterisk ph-bold ph-lg ph-fw ph-lg"></i>
+				</button>
+				<button
+					class="_button tab"
+					:class="{ active: tab === 'custom' }"
+					@click="tab = 'custom'"
 				>
+					<i class="ph-smiley ph-bold ph-lg ph-fw ph-lg"></i>
+				</button>
+				<button
+					class="_button tab"
+					:class="{ active: tab === 'unicode' }"
+					@click="tab = 'unicode'"
+				>
+					<i class="ph-leaf ph-bold ph-lg ph-fw ph-lg"></i>
+				</button>
+				<button
+					class="_button tab"
+					:class="{ active: tab === 'tags' }"
+					@click="tab = 'tags'"
+				>
+					<i class="ph-hash ph-bold ph-lg ph-fw ph-lg"></i>
+				</button>
 			</div>
 		</div>
-		<div class="tabs">
-			<button
-				class="_button tab"
-				:class="{ active: tab === 'index' }"
-				@click="tab = 'index'"
-			>
-				<i class="ph-asterisk ph-bold ph-lg ph-fw ph-lg"></i>
-			</button>
-			<button
-				class="_button tab"
-				:class="{ active: tab === 'custom' }"
-				@click="tab = 'custom'"
-			>
-				<i class="ph-smiley ph-bold ph-lg ph-fw ph-lg"></i>
-			</button>
-			<button
-				class="_button tab"
-				:class="{ active: tab === 'unicode' }"
-				@click="tab = 'unicode'"
-			>
-				<i class="ph-leaf ph-bold ph-lg ph-fw ph-lg"></i>
-			</button>
-			<button
-				class="_button tab"
-				:class="{ active: tab === 'tags' }"
-				@click="tab = 'tags'"
-			>
-				<i class="ph-hash ph-bold ph-lg ph-fw ph-lg"></i>
-			</button>
-		</div>
-	</div>
+	</FocusTrap>
 </template>
 
 <script lang="ts" setup>
@@ -170,6 +173,7 @@ import { deviceKind } from "@/scripts/device-kind";
 import { emojiCategories, instance } from "@/instance";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
+import { FocusTrap } from 'focus-trap-vue';
 
 const props = withDefaults(
 	defineProps<{

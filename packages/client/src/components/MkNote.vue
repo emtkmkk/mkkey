@@ -84,6 +84,7 @@
 						:detailedView="detailedView"
 						:parentId="appearNote.parentId"
 						@push="(e) => router.push(notePage(e))"
+						@focusfooter="footerEl.focus()"
 					></MkSubNoteContent>
 					<div v-if="translating || translation" class="translation">
 						<MkLoading v-if="translating" mini />
@@ -117,7 +118,7 @@
 						<MkTime :time="appearNote.createdAt" mode="absolute" />
 					</MkA>
 				</div>
-				<footer ref="el" class="footer" @click.stop>
+				<footer ref="footerEl" class="footer" @click.stop tabindex="-1">
 					<XReactionsViewer
 						v-if="enableEmojiReactions"
 						ref="reactionsViewer"
@@ -282,6 +283,7 @@ const isQuote =
 	!isRenote;
 
 const el = ref<HTMLElement>();
+const footerEl = ref<HTMLElement>(); 
 const menuButton = ref<HTMLElement>();
 const starButton = ref<InstanceType<typeof XStarButton>>();
 const renoteButton = ref<InstanceType<typeof XRenoteButton>>();
@@ -308,8 +310,8 @@ const keymap = {
 	r: () => reply(true),
 	"e|a|plus": () => react(true),
 	q: () => renoteButton.value.renote(true),
-	"up|k|shift+tab": focusBefore,
-	"down|j|tab": focusAfter,
+	"up|k": focusBefore,
+	"down|j": focusAfter,
 	esc: blur,
 	"m|o": () => menu(true),
 	s: () => showContent.value !== showContent.value,

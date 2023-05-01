@@ -29,7 +29,7 @@ export default class extends Channel {
 	}
 
 	private async onNote(note: Packed<"Note">) {
-		if (note.channelId !== this.channelId) return;
+		// if (note.channelId !== this.channelId) return;
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.muting)) return;

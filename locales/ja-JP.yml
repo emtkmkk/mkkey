@@ -118,6 +118,9 @@ showEmojisInReactionNotifications: "自分の投稿に対するリアクショ�
 reactionSetting: "ピッカーに表示するリアクション"
 reactionSettingDescription2: "ドラッグして並び替え、クリックして削除、＋を押して追加します。"
 rememberNoteVisibility: "公開範囲を記憶する"
+buttonNone: "ボタン無し"
+secondPostButton: "2つ目の投稿ボタン"
+secondPostVisibility: "2つ目の投稿ボタンの公開範囲"
 attachCancel: "添付取り消し"
 markAsSensitive: "閲覧注意にする"
 unmarkAsSensitive: "閲覧注意を解除する"
@@ -1769,7 +1772,7 @@ _pages:
       _for:
         arg1: "回数"
         arg2: "処理"
-    typeError: "スロット{slot}は\"{expect}\"を受け付けますが、\"{actual}\"が入れられています！"
+    typeError: 'スロット{slot}は"{expect}"を受け付けますが、"{actual}"が入れられています！'
     thereIsEmptySlot: "スロット{slot}が空です！"
     types:
       string: "テキスト"
@@ -1864,5 +1867,5 @@ _apps:
   theDesk: "TheDesk"
   lesskey: "Lesskey"
 noteId: 投稿のID
-hiddenTagsDescription: 'トレンドと「みつける」から除外したいハッシュタグを（先頭の # を除いて）改行区切りで入力してください。この設定はトレンドと「みつける」以外には影響しません。'
+hiddenTagsDescription: "トレンドと「みつける」から除外したいハッシュタグを（先頭の # を除いて）改行区切りで入力してください。この設定はトレンドと「みつける」以外には影響しません。"
 hiddenTags: 非表示にするハッシュタグ

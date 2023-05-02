@@ -56,6 +56,7 @@
 					<i class="ph-question ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="!$store.state.secondPostButton"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -63,6 +64,44 @@
 				>
 					{{ submitText
 					}}<i
+						:class="
+							reply
+								? 'ph-arrow-u-up-left ph-bold ph-lg'
+								: renote
+									? 'ph-quotes ph-bold ph-lg'
+									: 'ph-paper-plane-tilt ph-bold ph-lg'
+						"
+					></i>
+				</button>
+				<button
+					v-if="$store.state.secondPostButton"
+					class="submit _buttonGradate"
+					:disabled="!canPost"
+					data-cy-open-post-form-submit
+					@click="postSecond"
+				>
+					2
+					<i
+						:class="
+							$store.state.secondPostVisibility === 'public'
+								? 'ph-planet ph-bold ph-lg'
+								: $store.state.secondPostVisibility === 'home'
+									? 'ph-house ph-bold ph-lg'
+									: $store.state.secondPostVisibility === 'followers'
+										? 'ph-lock-simple-open ph-bold ph-lg'
+										: 'ph-envelope-simple-open ph-bold ph-lg'
+						"
+					></i>
+				</button>
+				<button
+					v-if="$store.state.secondPostButton"
+					class="submit _buttonGradate"
+					:disabled="!canPost"
+					data-cy-open-post-form-submit
+					@click="post"
+				>
+					1
+					<i
 						:class="
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
@@ -792,7 +831,7 @@ function saveDraft() {
 			text: text,
 			useCw: useCw,
 			cw: cw,
-			visibility: visibility,
+			visibility: visibility,d
 			localOnly: localOnly,
 			files: files,
 			poll: poll,
@@ -808,6 +847,11 @@ function deleteDraft() {
 	delete draftData[draftKey];
 
 	localStorage.setItem("drafts", JSON.stringify(draftData));
+}
+
+async function postSecond() {
+	visibility = defaultStore.state.secondPostVisibility;
+	post();
 }
 
 async function post() {
@@ -1094,6 +1138,25 @@ onMounted(() => {
 			}
 
 			> .submit {
+				display: inline-flex;
+				align-items: center;
+				margin: 16px 16px 16px 0;
+				padding: 0 12px;
+				line-height: 34px;
+				font-weight: bold;
+				vertical-align: bottom;
+				border-radius: 4px;
+				font-size: 0.9em;
+
+				&:disabled {
+					opacity: 0.7;
+				}
+
+				> i {
+					margin-left: 6px;
+				}
+			}
+			> .submit_h {
 				display: inline-flex;
 				align-items: center;
 				margin: 16px 16px 16px 0;

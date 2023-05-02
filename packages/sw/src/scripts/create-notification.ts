@@ -312,6 +312,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						name: getUserName(data.body.user),
 					}),
 					{
+						body: data.body.text || "",
 						icon: data.body.user.avatarUrl,
 						badge: iconUrl("comments"),
 						tag: `messaging:user:${data.body.userId}`,
@@ -325,6 +326,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					name: data.body.group.name,
 				}),
 				{
+					body: data.body.text || "",
 					icon: data.body.user.avatarUrl,
 					badge: iconUrl("comments"),
 					tag: `messaging:group:${data.body.groupId}`,

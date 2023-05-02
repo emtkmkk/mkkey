@@ -249,18 +249,18 @@ export default define(meta, paramDef, async (ps, me) => {
 	result.power = 
 		Math.floor((result.notesPostDays * 482 +
 		result.notesCount * 18 +
-		result.repliesCount * 4 +
-		result.renotesCount * -14 +
+		result.repliesCount * 7 +
+		result.renotesCount * -11 +
 		result.repliedCount * 3 +
 		result.renotedCount * 3 +
-		result.pollVotesCount * 4 +
+		result.pollVotesCount * 7 +
 		result.pollVotedCount * 3 +
-		result.pageLikesCount * 11 +
-		result.pageLikedCount * 9 +
-		result.sentReactionsCount * 4 +
+		result.pageLikesCount * 33 +
+		result.pageLikedCount * 27 +
+		result.sentReactionsCount * 7 +
 		result.receivedReactionsCount * 3 +
 		result.driveFilesCount * 6 + 
-		sendMessageCount * 8 +
+		sendMessageCount * 11 +
 		readMessageCount * 2
 		) * ( 1 + 
 		result.followingCount * 0.0005 +

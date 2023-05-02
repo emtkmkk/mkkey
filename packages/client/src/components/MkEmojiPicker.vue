@@ -51,9 +51,9 @@
 						</button>
 					</div>
 				</section>
-	
-				<div v-if="tab === 'index' && searchResultCustom.length <= 0 && (q.value == null || q.value === '')" class="group index">
-					<section v-if="showPinned && searchResultCustom.length <= 0 && (q.value == null || q.value === '')">
+
+				<div v-if="tab === 'index' && searchResultCustom.length <= 0 && (q == null || q === '')" class="group index">
+					<section v-if="showPinned && searchResultCustom.length <= 0 && (q == null || q === '')">
 						<div class="body">
 							<button
 								v-for="emoji in pinned"
@@ -70,8 +70,8 @@
 							</button>
 						</div>
 					</section>
-	
-					<section v-if="searchResultCustom.length <= 0 && (q.value == null || q.value === '')">
+
+					<section v-if="searchResultCustom.length <= 0 && (q == null || q === '')">
 						<header class="_acrylic">
 							<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
 							{{ i18n.ts.recentUsed }}
@@ -92,7 +92,7 @@
 						</div>
 					</section>
 				</div>
-				<div v-once v-if="searchResultCustom.length <= 0 && (q.value == null || q.value === '')" class="group">
+				<div v-once v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
 					<header>{{ i18n.ts.customEmojis }}</header>
 					<XSection
 						v-for="category in customEmojiCategories"
@@ -107,7 +107,7 @@
 						>{{ category || i18n.ts.other }}</XSection
 					>
 				</div>
-				<div v-once v-if="searchResultCustom.length <= 0  && (q.value == null || q.value === '')" class="group">
+				<div v-once v-if="searchResultCustom.length <= 0  && (q == null || q === '')" class="group">
 					<header>{{ i18n.ts.emoji }}</header>
 					<XSection
 						v-for="category in categories"
@@ -490,17 +490,17 @@ defineExpose({
 		--eachSize: 5px;
 		--valign: 0em;
 	}
-	
+
 	&.s-5 {
 		--eachSize: 10px;
 		--valign: 0em;
 	}
-	
+
 	&.s-4 {
 		--eachSize: 15px;
 		--valign: 0em;
 	}
-	
+
 	&.s-3 {
 		--eachSize: 20px;
 		--valign: 0em;
@@ -535,32 +535,32 @@ defineExpose({
 		--eachSize: 50px;
 		--valign: -0.25em;
 	}
-	
+
 	&.s4 {
 		--eachSize: 55px;
 		--valign: -0.25em;
 	}
-	
+
 	&.s5 {
 		--eachSize: 60px;
 		--valign: -0.25em;
 	}
-	
+
 	&.s6 {
 		--eachSize: 65px;
 		--valign: -0.25em;
 	}
-	
+
 	&.s7 {
 		--eachSize: 70px;
 		--valign: -0.25em;
 	}
-	
+
 	&.s8 {
 		--eachSize: 75px;
 		--valign: -0.25em;
 	}
-	
+
 	&.s9 {
 		--eachSize: 80px;
 		--valign: -0.25em;
@@ -570,22 +570,22 @@ defineExpose({
 		--eachWidth: calc(var(--EmojiPickerWidth) / 1);
 		--columns: 1fr;
 	}
-	
+
 	&.w-2 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 2);
 		--columns: 1fr 1fr;
 	}
-	
+
 	&.w-1 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 3);
 		--columns: 1fr 1fr 1fr;
 	}
-	
+
 	&.w0 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 4);
 		--columns: 1fr 1fr 1fr 1fr;
 	}
-	
+
 	&.w1 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 5);
 		--columns: 1fr 1fr 1fr 1fr 1fr;
@@ -665,7 +665,7 @@ defineExpose({
 		--eachWidth: calc(var(--EmojiPickerWidth) / 20);
 		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	}
-	
+
 	&.h1 {
 		height: calc((var(--eachSize) * 4) + (#{$pad} * 2));
 	}
@@ -681,27 +681,27 @@ defineExpose({
 	&.h4 {
 		height: calc((var(--eachSize) * 10) + (#{$pad} * 2));
 	}
-	
+
 	&.h5 {
 		height: calc((var(--eachSize) * 12) + (#{$pad} * 2));
 	}
-	
+
 	&.h6 {
 		height: calc((var(--eachSize) * 14) + (#{$pad} * 2));
 	}
-	
+
 	&.h7 {
 		height: calc((var(--eachSize) * 16) + (#{$pad} * 2));
 	}
-	
+
 	&.h8 {
 		height: calc((var(--eachSize) * 18) + (#{$pad} * 2));
 	}
-	
+
 	&.h9 {
 		height: calc((var(--eachSize) * 20) + (#{$pad} * 2));
 	}
-	
+
 	&.h10 {
 		height: 90dvh;
 	}

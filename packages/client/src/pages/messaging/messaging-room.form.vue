@@ -17,6 +17,7 @@
 		<div class="buttons">
 			<button class="_button" @click="chooseFile"><i class="ph-upload ph-bold ph-lg"></i></button>
 			<button class="_button" @click="insertEmoji"><i class="ph-smiley ph-bold ph-lg"></i></button>
+			<button v-tooltip="i18n.ts.mfm" class="_button" @click="insertMfm"><i class="ph-magic-wand ph-bold ph-lg"></i></button>
 			<button class="send _button" :disabled="!canSend || sending" :title="i18n.ts.send" @click="send">
 				<template v-if="!sending"><i class="ph-paper-plane-tilt ph-bold ph-lg"></i></template><template v-if="sending"><i class="ph-circle-notch ph-bold ph-lg fa-pulse ph-fw ph-lg"></i></template>
 			</button>
@@ -30,7 +31,7 @@
 import { onMounted, watch } from 'vue';
 import * as Misskey from 'calckey-js';
 import autosize from 'autosize';
-//import insertTextAtCursor from 'insert-text-at-cursor';
+import insertTextAtCursor from 'insert-text-at-cursor';
 import { throttle } from 'throttle-debounce';
 import { Autocomplete } from '@/scripts/autocomplete';
 import { formatTimeString } from '@/scripts/format-time-string';
@@ -209,6 +210,10 @@ function deleteDraft() {
 
 async function insertEmoji(ev: MouseEvent) {
 	os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textEl);
+}
+
+function insertMfm() {
+	insertTextAtCursor(textEl, '$');
 }
 
 onMounted(() => {

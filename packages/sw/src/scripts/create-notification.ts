@@ -345,15 +345,6 @@ export async function createEmptyNotification() {
 		const i18n = (await swLang.i18n) as I18n<any>;
 		const { t } = i18n;
 
-		await self.registration.showNotification(
-			t("_notification.emptyPushNotificationMessage"),
-			{
-				silent: true,
-				badge: iconUrl("null"),
-				tag: "read_notification",
-			},
-		);
-
 		res();
 
 		setTimeout(async () => {

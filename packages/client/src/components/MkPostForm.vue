@@ -831,7 +831,7 @@ function saveDraft() {
 			text: text,
 			useCw: useCw,
 			cw: cw,
-			visibility: visibility,d
+			visibility: visibility,
 			localOnly: localOnly,
 			files: files,
 			poll: poll,

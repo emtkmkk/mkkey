@@ -149,6 +149,92 @@
 					</option>
 				</FormSelect>
 			</FormFolder>
+			<FormFolder class="_formBlock">
+				<template #label>{{ i18n.ts.secondPostButton }}</template>
+				<template v-if="secondPostButton == false" #suffix>{{
+					i18n.ts.buttonNone
+				}}</template>
+				<template v-if="secondPostButton == true && secondPostVisibility === 'public'" #suffix>{{
+					i18n.ts._visibility.public
+				}}</template>
+				<template
+					v-else-if="secondPostButton == true && secondPostVisibility === 'home'"
+					#suffix
+					>{{ i18n.ts._visibility.home }}</template
+				>
+				<template
+					v-else-if="secondPostButton == true && secondPostVisibility === 'followers'"
+					#suffix
+					>{{ i18n.ts._visibility.followers }}</template
+				>
+				<template
+					v-else-if="secondPostButton == true && secondPostVisibility === 'specified'"
+					#suffix
+					>{{ i18n.ts._visibility.specified }}</template
+				>
+
+				<FormSwitch v-model="secondPostButton" class="_formBlock">{{
+					i18n.ts.secondPostButton
+				}}</FormSwitch>
+
+				<FormSelect v-model="secondPostVisibility" class="_formBlock">
+					<option value="public">
+						{{ i18n.ts._visibility.public }}
+					</option>
+					<option value="home">
+						{{ i18n.ts._visibility.home }}
+					</option>
+					<option value="followers">
+						{{ i18n.ts._visibility.followers }}
+					</option>
+					<option value="specified">
+						{{ i18n.ts._visibility.specified }}
+					</option>
+				</FormSelect>
+			</FormFolder>
+			<FormFolder v-if="secondPostButton" class="_formBlock">
+				<template #label>{{ i18n.ts.secondPostButton }}</template>
+				<template v-if="thirdPostButton == false" #suffix>{{
+					i18n.ts.buttonNone
+				}}</template>
+				<template v-if="thirdPostButton == true && thirdPostVisibility === 'public'" #suffix>{{
+					i18n.ts._visibility.public
+				}}</template>
+				<template
+					v-else-if="thirdPostButton == true && thirdPostVisibility === 'home'"
+					#suffix
+					>{{ i18n.ts._visibility.home }}</template
+				>
+				<template
+					v-else-if="thirdPostButton == true && thirdPostVisibility === 'followers'"
+					#suffix
+					>{{ i18n.ts._visibility.followers }}</template
+				>
+				<template
+					v-else-if="thirdPostButton == true && thirdPostVisibility === 'specified'"
+					#suffix
+					>{{ i18n.ts._visibility.specified }}</template
+				>
+
+				<FormSwitch v-model="thirdPostButton" class="_formBlock">{{
+					i18n.ts.thirdPostButton
+				}}</FormSwitch>
+
+				<FormSelect v-model="thirdPostVisibility" class="_formBlock">
+					<option value="public">
+						{{ i18n.ts._visibility.public }}
+					</option>
+					<option value="home">
+						{{ i18n.ts._visibility.home }}
+					</option>
+					<option value="followers">
+						{{ i18n.ts._visibility.followers }}
+					</option>
+					<option value="specified">
+						{{ i18n.ts._visibility.specified }}
+					</option>
+				</FormSelect>
+			</FormFolder>
 		</FormSection>
 
 		<FormSwitch
@@ -194,6 +280,12 @@ let secondPostButton = $computed(
 );
 let secondPostVisibility = $computed(
 	defaultStore.makeGetterSetter("secondPostVisibility")
+);
+let thirdPostButton = $computed(
+	defaultStore.makeGetterSetter("thirdPostButton")
+);
+let thirdPostVisibility = $computed(
+	defaultStore.makeGetterSetter("thirdPostVisibility")
 );
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
 

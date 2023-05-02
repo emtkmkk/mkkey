@@ -74,6 +74,26 @@
 					></i>
 				</button>
 				<button
+					v-if="$store.state.secondPostButton && $store.state.thirdPostButton"
+					class="submit _buttonGradate"
+					:disabled="!canPost"
+					data-cy-open-post-form-submit
+					@click="postThird"
+				>
+					3
+					<i
+						:class="
+							$store.state.thirdPostVisibility === 'public'
+								? 'ph-planet ph-bold ph-lg'
+								: $store.state.thirdPostVisibility === 'home'
+									? 'ph-house ph-bold ph-lg'
+									: $store.state.thirdPostVisibility === 'followers'
+										? 'ph-lock-simple-open ph-bold ph-lg'
+										: 'ph-envelope-simple-open ph-bold ph-lg'
+						"
+					></i>
+				</button>
+				<button
 					v-if="$store.state.secondPostButton"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
@@ -851,6 +871,11 @@ function deleteDraft() {
 
 async function postSecond() {
 	visibility = defaultStore.state.secondPostVisibility;
+	post();
+}
+
+async function postThird() {
+	visibility = defaultStore.state.thirdPostVisibility;
 	post();
 }
 

@@ -127,7 +127,15 @@ export const defaultStore = markRaw(
 		},
 		secondPostVisibility: {
 			where: "deviceAccount",
-			default: "public" as "public" | "home" | "followers" | "specified"
+			default: "home" as "public" | "home" | "followers" | "specified"
+		},
+		thirdPostButton: {
+			where: "deviceAccount",
+			default: false,
+		},
+		thirdPostVisibility: {
+			where: "deviceAccount",
+			default: "followers" as "public" | "home" | "followers" | "specified"
 		},
 		localOnly: {
 			where: "deviceAccount",

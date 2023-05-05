@@ -35,7 +35,7 @@ export default class extends Channel {
 			!(
 				(note.fileIds &&
 				note.fileIds.length !== 0) || 
-				(note.renote && note.renote.fileIds && note.renote.fileIds.length !== 0) &&
+				(note.renote && !note.text && note.renote.fileIds && note.renote.fileIds.length !== 0) &&
 				note.visibility === "public"
 			)
 		)

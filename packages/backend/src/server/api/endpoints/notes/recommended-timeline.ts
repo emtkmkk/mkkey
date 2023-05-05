@@ -78,7 +78,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.untilDate,
 	)
 		.andWhere(
-			"note.fileIds != '{}' OR (note.renoteId IS NOT NULL AND renote.fileIds != '{}')",
+			"note.fileIds != '{}' OR (note.renoteId IS NOT NULL AND note.text IS NULL AND renote.fileIds != '{}')",
 		)
 		.andWhere("(note.visibility = 'public')")
 		.innerJoinAndSelect("note.user", "user")

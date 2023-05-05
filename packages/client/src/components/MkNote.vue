@@ -198,18 +198,18 @@
 		</article>
 	</div>
 	<div v-else class="muted" @click="muted.muted = false">
-		<I18n :src="i18n.ts.userSaysSomethingReason" tag="small">
+		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
 				<MkA
-					v-user-preview="appearNote.userId"
+					v-user-preview="note.userId"
 					class="name"
-					:to="userPage(appearNote.user)"
+					:to="userPage(note.user)"
 				>
-					<MkUserName :user="appearNote.user" />
+					<MkUserName :user="note.user" />
 				</MkA>
 			</template>
 			<template #reason>
-				<b class="_blur_text">{{ muted.matched.join(", ") }}</b>
+				{{ muted.matched.join(", ") }}
 			</template>
 		</I18n>
 	</div>
@@ -236,7 +236,7 @@ import MkUrlPreview from "@/components/MkUrlPreview.vue";
 import MkVisibility from "@/components/MkVisibility.vue";
 import { pleaseLogin } from "@/scripts/please-login";
 import { focusPrev, focusNext } from "@/scripts/focus";
-import { getWordMute } from "@/scripts/check-word-mute";
+import { getWordSoftMute } from "@/scripts/check-word-mute";
 import { useRouter } from "@/router";
 import { userPage } from "@/filters/user";
 import * as os from "@/os";
@@ -260,6 +260,16 @@ const props = defineProps<{
 const inChannel = inject("inChannel", null);
 
 let note = $ref(deepClone(props.note));
+
+const softMuteReasonI18nSrc = (what?: string) => {
+	if (what === "note") return i18n.ts.userSaysSomethingReason;
+	if (what === "reply") return i18n.ts.userSaysSomethingReasonReply;
+	if (what === "renote") return i18n.ts.userSaysSomethingReasonRenote;
+	if (what === "quote") return i18n.ts.userSaysSomethingReasonQuote;
+
+	// I don't think here is reachable, but just in case
+	return i18n.ts.userSaysSomething;
+};
 
 // plugin
 if (noteViewInterruptors.length > 0) {
@@ -301,7 +311,7 @@ let replyNote = $computed(() =>
 const isMyRenote = $i && $i.id === note.userId;
 const showContent = ref(false);
 const isDeleted = ref(false);
-const muted = ref(getWordMute(appearNote, $i, defaultStore.state.mutedWords) || getWordMute(quoteNote, $i, defaultStore.state.mutedWords) || getWordMute(replyNote, $i, defaultStore.state.mutedWords) || getWordMute(note, $i, defaultStore.state.mutedWords));
+const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords));
 const translation = ref(null);
 const translating = ref(false);
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
@@ -531,7 +541,7 @@ function readPromo() {
 				display: block;
 				margin-bottom: -10px;
 				margin-top: 16px;
-				border-left: 2px solid var(--divider);
+				border-left: 2px solid var(--X13);
 				margin-left: calc((var(--avatarSize) / 2) - 1px);
 			}
 		}
@@ -648,14 +658,11 @@ function readPromo() {
 
 			> .body {
 				margin-top: 0.7em;
-
-				> .content {
-					> .translation {
-						border: solid 0.5px var(--divider);
-						border-radius: var(--radius);
-						padding: 12px;
-						margin-top: 8px;
-					}
+				> .translation {
+					border: solid 0.5px var(--divider);
+					border-radius: var(--radius);
+					padding: 12px;
+					margin-top: 8px;
 				}
 				> .renote {
 					padding-top: 8px;

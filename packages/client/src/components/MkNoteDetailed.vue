@@ -39,14 +39,14 @@
 		/>
 	</div>
 	<div v-else class="_panel muted" @click="muted.muted = false">
-		<I18n :src="i18n.ts.userSaysSomethingReason" tag="small">
+		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
 				<MkA
-					v-user-preview="appearNote.userId"
+					v-user-preview="note.userId"
 					class="name"
-					:to="userPage(appearNote.user)"
+					:to="userPage(note.user)"
 				>
-					<MkUserName :user="appearNote.user" />
+					<MkUserName :user="note.user" />
 				</MkA>
 			</template>
 			<template #reason>
@@ -83,7 +83,7 @@ import MkUrlPreview from "@/components/MkUrlPreview.vue";
 import MkInstanceTicker from "@/components/MkInstanceTicker.vue";
 import MkVisibility from "@/components/MkVisibility.vue";
 import { pleaseLogin } from "@/scripts/please-login";
-import { getWordMute } from "@/scripts/check-word-mute";
+import { getWordSoftMute } from "@/scripts/check-word-mute";
 import { userPage } from "@/filters/user";
 import { notePage } from "@/filters/note";
 import { useRouter } from "@/router";
@@ -109,6 +109,16 @@ const props = defineProps<{
 const inChannel = inject("inChannel", null);
 
 let note = $ref(deepClone(props.note));
+
+const softMuteReasonI18nSrc = (what?: string) => {
+	if (what === "note") return i18n.ts.userSaysSomethingReason;
+	if (what === "reply") return i18n.ts.userSaysSomethingReasonReply;
+	if (what === "renote") return i18n.ts.userSaysSomethingReasonRenote;
+	if (what === "quote") return i18n.ts.userSaysSomethingReasonQuote;
+
+	// I don't think here is reachable, but just in case
+	return i18n.ts.userSaysSomething;
+};
 
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
 
@@ -142,7 +152,7 @@ let appearNote = $computed(() =>
 const isMyRenote = $i && $i.id === note.userId;
 const showContent = ref(false);
 const isDeleted = ref(false);
-const muted = ref(getWordMute(appearNote, $i, defaultStore.state.mutedWords));
+const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords));
 const translation = ref(null);
 const translating = ref(false);
 const urls = appearNote.text
@@ -174,15 +184,12 @@ useNoteCapture({
 
 function reply(viaKeyboard = false): void {
 	pleaseLogin();
-	os.post(
-		{
-			reply: appearNote,
-			animation: !viaKeyboard,
-		},
-		() => {
-			focus();
-		}
-	);
+	os.post({
+		reply: appearNote,
+		animation: !viaKeyboard,
+	}).then(() => {
+		focus();
+	});
 }
 
 function react(viaKeyboard = false): void {
@@ -309,19 +316,46 @@ if (appearNote.replyId) {
 	});
 }
 
-function onNoteReplied(noteData: NoteUpdatedEvent): void {
+async function onNoteUpdated(noteData: NoteUpdatedEvent): Promise<void> {
 	const { type, id, body } = noteData;
-	if (type === "replied" && id === appearNote.id) {
-		const { id: createdId } = body;
 
-		os.api("notes/show", {
-			noteId: createdId,
-		}).then((note) => {
-			if (note.replyId === appearNote.id) {
-				replies.value.unshift(note);
-				directReplies.value.unshift(note);
+	let found = -1;
+	if (id === appearNote.id) {
+		found = 0;
+	} else {
+		for (let i = 0; i < replies.value.length; i++) {
+			const reply = replies.value[i];
+			if (reply.id === id) {
+				found = i + 1;
+				break;
 			}
-		});
+		}
+	}
+
+	if (found === -1) {
+		return;
+	}
+
+	switch (type) {
+		case "replied":
+			const { id: createdId } = body;
+			const replyNote = await os.api("notes/show", {
+				noteId: createdId,
+			});
+
+			replies.value.splice(found, 0, replyNote);
+			if (found === 0) {
+				directReplies.value.unshift(replyNote);
+			}
+			break;
+
+		case "deleted":
+			if (found === 0) {
+				isDeleted.value = true;
+			} else {
+				replies.value.splice(found - 1, 1);
+			}
+			break;
 	}
 }
 
@@ -330,19 +364,19 @@ document.addEventListener("wheel", () => {
 });
 
 onMounted(() => {
-	stream.on("noteUpdated", onNoteReplied);
+	stream.on("noteUpdated", onNoteUpdated);
 	isScrolling = false;
-	noteEl.scrollIntoView();
+	noteEl?.scrollIntoView();
 });
 
 onUpdated(() => {
 	if (!isScrolling) {
-		noteEl.scrollIntoView();
+		noteEl?.scrollIntoView();
 	}
 });
 
 onUnmounted(() => {
-	stream.off("noteUpdated", onNoteReplied);
+	stream.off("noteUpdated", onNoteUpdated);
 });
 </script>
 

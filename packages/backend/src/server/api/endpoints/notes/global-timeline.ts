@@ -96,6 +96,10 @@ export default define(meta, paramDef, async (ps, user) => {
 			new Brackets((qb) => {
 				qb.where("note.renoteId IS NULL");
 				qb.orWhere("note.text IS NOT NULL");
+				qb.orWhere("note.fileIds != '{}'");
+				qb.orWhere(
+					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
+				);
 				qb.orWhere("note.userHost IS NOT NULL");
 			}),
 		);
@@ -106,6 +110,10 @@ export default define(meta, paramDef, async (ps, user) => {
 			new Brackets((qb) => {
 				qb.where("note.renoteId IS NULL");
 				qb.orWhere("note.text IS NOT NULL");
+				qb.orWhere("note.fileIds != '{}'");
+				qb.orWhere(
+					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
+				);
 				qb.orWhere("note.userHost IS NULL");
 			}),
 		);

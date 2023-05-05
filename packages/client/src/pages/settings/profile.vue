@@ -151,7 +151,7 @@
 				i18n.ts.flagAsBotDescription
 			}}</template></FormSwitch
 		>
-		
+
 		<FormSwitch v-model="profile.localShowRenote" class="_formBlock">{{
 			i18n.ts.localShowRenote
 		}}</FormSwitch>
@@ -159,7 +159,11 @@
 		<FormSwitch v-model="profile.remoteShowRenote" class="_formBlock">{{
 			i18n.ts.remoteShowRenote
 		}}</FormSwitch>
-		
+
+		<FormSwitch v-model="profile.showSelfRenoteToHome" class="_formBlock">{{
+			i18n.ts.showSelfRenoteToHome
+		}}</FormSwitch>
+
 		<FormSwitch v-model="profile.showTimelineReplies" class="_formBlock"
 			>{{ i18n.ts.flagShowTimelineReplies
 			}}<template #caption
@@ -202,6 +206,7 @@ const profile = reactive({
 	showTimelineReplies: $i?.showTimelineReplies,
 	localShowRenote: $i?.localShowRenote,
 	remoteShowRenote: $i?.remoteShowRenote,
+	showSelfRenoteToHome: $i?.showSelfRenoteToHome,
 });
 
 const props = withDefaults(
@@ -260,6 +265,7 @@ function save() {
 		showTimelineReplies: !!profile.showTimelineReplies,
 		localShowRenote: !!profile.localShowRenote,
 		remoteShowRenote: !!profile.remoteShowRenote,
+		showSelfRenoteToHome: !!profile.showSelfRenoteToHome,
 	});
 }
 

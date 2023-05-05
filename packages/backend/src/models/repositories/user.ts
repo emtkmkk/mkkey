@@ -575,7 +575,8 @@ export const UserRepository = db.getRepository(User).extend({
 						emailNotificationTypes: profile!.emailNotificationTypes,
 						showTimelineReplies: user.showTimelineReplies || falsy,
 						localShowRenote: user.localShowRenote ?? truthy,
-						remoteShowRenote: user.remoteShowRenote ?? truthy,
+						remoteShowRenote: user.remoteShowRenote || falsy,
+						showSelfRenoteToHome: user.showSelfRenoteToHome ?? truthy,
 				  }
 				: {}),
 

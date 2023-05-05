@@ -108,6 +108,7 @@ export const paramDef = {
 		showTimelineReplies: { type: "boolean" },
 		localShowRenote: { type: "boolean" },
 		remoteShowRenote: { type: "boolean" },
+		showSelfRenoteToHome: { type: "boolean" },
 		injectFeaturedNote: { type: "boolean" },
 		receiveAnnouncementEmail: { type: "boolean" },
 		alwaysMarkNsfw: { type: "boolean" },
@@ -192,6 +193,8 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		updates.localShowRenote = ps.localShowRenote;
 	if (typeof ps.remoteShowRenote === "boolean")
 		updates.remoteShowRenote = ps.remoteShowRenote;
+	if (typeof ps.showSelfRenoteToHome === "boolean")
+		updates.showSelfRenoteToHome = ps.showSelfRenoteToHome;
 	if (typeof ps.carefulBot === "boolean")
 		profileUpdates.carefulBot = ps.carefulBot;
 	if (typeof ps.autoAcceptFollowed === "boolean")

@@ -106,6 +106,20 @@ export default define(meta, paramDef, async (ps, user) => {
 	generateBlockedUserQuery(query, user);
 	generateMutedUserRenotesQueryForNotes(query, user);
 
+	if (user && !user.showSelfRenoteToHome) {
+		query.andWhere(
+			new Brackets((qb) => {
+				qb.orWhere("note.renoteUserId != note.userId");
+				qb.orWhere("note.renoteId IS NULL");
+				qb.orWhere("note.text IS NOT NULL");
+				qb.orWhere("note.fileIds != '{}'");
+				qb.orWhere(
+					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
+				);
+			}),
+		);
+	}
+
 	if (ps.includeMyRenotes === false) {
 		query.andWhere(
 			new Brackets((qb) => {

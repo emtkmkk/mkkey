@@ -67,6 +67,8 @@ export default class extends Channel {
 				return;
 		}
 
+		if (note.renote && !user.showSelfRenoteToHome && !note.text && note.renoteUserId == note.userId)
+			return;
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.muting)) return;
 		// 流れてきたNoteがブロックされているユーザーが関わるものだったら無視する

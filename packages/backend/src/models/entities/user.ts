@@ -249,6 +249,12 @@ export class User {
 	})
 	public remoteShowRenote: boolean;
 	
+	@Column('boolean', {
+		default: true,
+		comment: 'Show remote Accounts renotes in the public timeline.',
+	})
+	public showSelfRenoteToHome: boolean;
+	
 	@Index({ unique: true })
 	@Column('char', {
 		length: 16, nullable: true, unique: true,

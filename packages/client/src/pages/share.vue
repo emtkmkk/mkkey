@@ -73,16 +73,28 @@ let visibleUsers = $ref([] as Misskey.entities.User[]);
 async function init() {
 	let noteText = "";
 	let rText = text;
+	let rUrl = url;
+	let textToUrl = text.match(/^(.* )?(https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+)$/);
+	
+	if (!rUrl && textToUrl){
+		if(textToUrl.length == 2){
+			rUrl = textToUrl[1];
+			rText = ""
+		} else {
+			rUrl = textToUrl[2];
+			rText = textToUrl[1];
+		}
+	}
 	
 	if (rText && rText?.startsWith(`${title}.\n`)){
 		rText = rText.replace(`${title}.\n`, "");
 	}
 	
-	if (url){
-		if (title && rText) noteText += `[ [${title}](${url}) ]\n> ${rText}\n\n`;
-		else if (title) noteText += `[${title}](${url})\n\n`;
-		else if (rText) noteText += `[${rText}](${url})\n\n`;
-		else noteText += `${url}\n\n`;
+	if (rUrl){
+		if (title && rText) noteText += `[ [${title}](${rUrl}) ]\n> ${rText}\n\n`;
+		else if (title) noteText += `[${title}](${rUrl})\n\n`;
+		else if (rText) noteText += `[${rText}](${rUrl})\n\n`;
+		else noteText += `${rUrl}\n\n`;
 	} else {
 	    if (title && rText) noteText += `[ ${title} ]\n> ${rText}\n\n`;
 	    else if (title && !rText) noteText += `${title}\n\n`;

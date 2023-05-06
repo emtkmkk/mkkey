@@ -72,14 +72,23 @@ let visibleUsers = $ref([] as Misskey.entities.User[]);
 
 async function init() {
 	let noteText = "";
-	if (title && !url) noteText += `[ ${title} ]\n`;
-	// Googleニュース対策
-	if (text?.startsWith(`${title}.\n`))
-		noteText += text.replace(`${title}.\n`, "");
-	else if (text && title !== text && title) noteText += `${text}\n`;
-	if (title && url) noteText += `[${title}](${url})`;
-	else if (text && url) noteText += `[${text}](${url})`;
-	else if (url) noteText += `${url}`;
+	let rText = text;
+	
+	if (rText && rText?.startsWith(`${title}.\n`))
+		rText = rText.replace(`${title}.\n`, "");
+	}
+	
+	if (url){
+		if (title && rText) noteText += `[ [${title}](${url}) ]\n> ${rText}\n\n`;
+		else if (title) noteText += `[${title}](${url})\n\n`;
+		else if (rText) noteText += `[${rText}](${url})\n\n`;
+		else noteText += `${url}\n\n`;
+	} else {
+	    if (title && rText) noteText += `[ ${title} ]\n> ${rText}\n\n`;
+	    else if (title && !rText) noteText += `${title}\n\n`;
+		else if (!title && rText) noteText += `${rText}\n\n`;
+	}
+	
 	initialText = noteText.trim();
 
 	if (visibility === "specified") {

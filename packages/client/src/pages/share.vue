@@ -74,7 +74,7 @@ async function init() {
 	let noteText = "";
 	let rText = text;
 	
-	if (rText && rText?.startsWith(`${title}.\n`))
+	if (rText && rText?.startsWith(`${title}.\n`)){
 		rText = rText.replace(`${title}.\n`, "");
 	}
 	

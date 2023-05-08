@@ -92,6 +92,7 @@
 					class="_gap"
 					src="channel"
 					:channel="channelId"
+					:channelName="channel.name"
 					@before="before"
 					@after="after"
 				/>

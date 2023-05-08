@@ -1,6 +1,7 @@
 import Channel from "../channel.js";
 import { Users } from "@/models/index.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
+import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import type { User } from "@/models/entities/user.js";
 import type { StreamMessages } from "../types.js";
 import type { Packed } from "@/misc/schema.js";
@@ -32,7 +33,7 @@ export default class extends Channel {
 	}
 
 	private async onNote(note: Packed<"Note">) {
-		if (note.channelId !== this.channelId && (!this.channelName || !note.tag.includes(this.channelName))) return;
+		if (note.channelId !== this.channelId && (!this.channelName || !note.tag.includes(normalizeForSearch(this.channelName)))) return;
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.muting)) return;

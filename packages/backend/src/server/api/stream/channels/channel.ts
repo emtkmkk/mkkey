@@ -33,6 +33,7 @@ export default class extends Channel {
 	}
 
 	private async onNote(note: Packed<"Note">) {
+		if (note.visibility !== "public") return;
 		if (note.channelId !== this.channelId && (!this.channelName || !note.tag.includes(normalizeForSearch(this.channelName)))) return;
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する

@@ -172,6 +172,8 @@ export default async (
 ) =>
 	// rome-ignore lint/suspicious/noAsyncPromiseExecutor: FIXME
 	new Promise<Note>(async (res, rej) => {
+		const dontFederateInitially = data.localOnly || data.visibility === "hidden";
+
 		// If you reply outside the channel, match the scope of the target.
 		// TODO (I think it's a process that could be done on the client side, but it's server side for now.)
 		if (
@@ -202,6 +204,7 @@ export default async (
 			//チャンネルで連合有りの場合、ハッシュタグを自動で付ける
 			data.text += " #" + data.channel!.name;
 		}
+		if (data.visibility === "hidden") data.visibility = "public";
 
 		// enforce silent clients on server
 		if (
@@ -552,7 +555,7 @@ export default async (
 			});
 
 			//#region AP deliver
-			if (Users.isLocalUser(user)) {
+			if (Users.isLocalUser(user) && !dontFederateInitially) {
 				(async () => {
 					const noteActivity = await renderNoteOrRenoteActivity(data, note);
 					const dm = new DeliverManager(user, noteActivity);

@@ -156,7 +156,11 @@ export default async (
 	});
 
 	//#region deliver
-	if (Users.isLocalUser(user) && !note.localOnly) {
+	if (
+		Users.isLocalUser(user) &&
+		!note.localOnly &&
+		note.visibility !== "hidden"
+	) {
 		const content = renderActivity(await renderLike(record, note));
 		const dm = new DeliverManager(user, content);
 		if (note.userHost !== null) {

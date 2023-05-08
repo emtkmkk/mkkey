@@ -1080,6 +1080,7 @@ enableCustomKaTeXMacro: "Enable custom KaTeX macros"
 noteId: "Post ID"
 signupsDisabled: "Signups on this server are currently disabled, but you can always sign up at another server! If you have an invitation code for this server, please enter it below."
 findOtherInstance: "Find another server"
+apps: "Apps"
 
 _sensitiveMediaDetection:
   description: "Reduces the effort of server moderation through automatically recognizing\
@@ -1283,6 +1284,8 @@ _channel:
   following: "Followed"
   usersCount: "{n} Participants"
   notesCount: "{n} Posts"
+  nameAndDescription: "Name and description"
+  nameOnly: "Name only"
 _messaging:
   dms: "Private"
   groups: "Groups"
@@ -1996,20 +1999,3 @@ _deck:
     list: "List"
     mentions: "Mentions"
     direct: "Direct messages"
-_apps:
-  apps: "Apps"
-  crossPlatform: "Cross platform"
-  mobile: "Mobile"
-  firstParty: "First party"
-  firstClass: "First class"
-  secondClass: "Second class"
-  thirdClass: "Third class"
-  free: "Free"
-  paid: "Paid"
-  pwa: "Install PWA"
-  kaiteki: "Kaiteki"
-  milktea: "Milktea"
-  missLi: "MissLi"
-  mona: "Mona"
-  theDesk: "TheDesk"
-  lesskey: "Lesskey"

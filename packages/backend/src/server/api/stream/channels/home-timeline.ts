@@ -20,6 +20,7 @@ export default class extends Channel {
 	}
 
 	private async onNote(note: Packed<"Note">) {
+		if (note.visibility === "hidden") return;
 		if (note.channelId) {
 			// フォローしているチャンネルの場合は全員取得する
 			if (!this.followingChannels.has(note.channelId) && (this.user!.id !== note.userId && !this.following.has(note.userId))) return;

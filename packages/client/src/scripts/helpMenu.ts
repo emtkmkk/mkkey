@@ -45,10 +45,12 @@ export function openHelpMenu_(ev: MouseEvent) {
 				icon: "ph-user-plus ph-bold ph-lg",
 			},
 			{
-				type: "link",
+				type: "button",
 				text: i18n.ts._apps.apps,
 				icon: "ph-device-mobile ph-bold ph-lg",
-				to: "/apps",
+				action: () => {
+					window.open('https://calckey.org/', '_blank');
+				},			
 			},
 			{
 				type: "button",

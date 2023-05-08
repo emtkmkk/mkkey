@@ -29,6 +29,7 @@ export default class extends Channel {
 	}
 
 	private async onNote(note: Packed<"Note">) {
+		if (note.visibility === "hidden") return;
 		// 自分自身の投稿 または
 		// その投稿のユーザーをフォローしている または
 		// 全体公開のローカルの投稿 または

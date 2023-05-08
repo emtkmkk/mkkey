@@ -29,6 +29,7 @@ export default class extends Channel {
 	}
 
 	private async onNote(note: Packed<"Note">) {
+		if (note.visibility === "hidden") return;
 		// ファイル添付なしで公開投稿のみ
 		const meta = await fetchMeta();
 		if (

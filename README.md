@@ -18,11 +18,11 @@
 **以下、フォーク元のReadmeです。 Here is the readme from the forked source.**<br><br>
 
 <div align="center">
-<a href="https://i.calckey.cloud/">
+<a href="https://calckey.org/">
 	<img src="./title_float.svg" alt="Calckey logo" style="border-radius:50%" width="400"/>
 </a>
 
-**🌎 **[Calckey](https://i.calckey.cloud/)** is an open source, decentralized social media platform that's free forever! 🚀**
+**🌎 **[Calckey](https://calckey.org/)** is an open source, decentralized social media platform that's free forever! 🚀**
 
 [![no github badge](https://nogithub.codeberg.page/badge.svg)](https://nogithub.codeberg.page/)
 [![status badge](https://ci.codeberg.org/api/badges/calckey/calckey/status.svg)](https://ci.codeberg.org/calckey/calckey)
@@ -134,6 +134,17 @@ corepack prepare pnpm@latest --activate
 # To build without TensorFlow, append --no-optional
 pnpm i # --no-optional
 ```
+
+### pm2
+
+To install pm2 run:
+
+```
+npm i -g pm2
+pm2 install pm2-logrotate
+```
+
+[`pm2-logrotate`](https://github.com/keymetrics/pm2-logrotate/blob/master/README.md) ensures that log files don't infinitely gather size, as Calckey produces a lot of logs.
 
 ## 🐘 Create database
 

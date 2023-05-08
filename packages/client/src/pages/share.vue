@@ -91,14 +91,14 @@ async function init() {
 	}
 	
 	if (rUrl){
-		if (title && rText) noteText += `[ [${title}](${rUrl}) ]\n> ${rText}\n\n`;
+		if (title && rText) noteText += `[ [${title}](${rUrl}) ]\n${rText}\n\n`;
 		else if (title) noteText += `[${title}](${rUrl})\n\n`;
 		else if (rText) noteText += `[${rText}](${rUrl})\n\n`;
 		else noteText += `${rUrl}\n\n`;
 	} else {
-	    if (title && rText) noteText += `[ ${title} ]\n> ${rText}\n\n`;
-	    else if (title && !rText) noteText += `${title}\n\n`;
-		else if (!title && rText) noteText += `${rText}\n\n`;
+	    if (title && rText) noteText += `[ ${title} ]\n${rText}\n\n`;
+	    else if (title) noteText += `${title}\n\n`;
+		else if (rText) noteText += `${rText}\n\n`;
 	}
 	
 	initialText = noteText.trim();

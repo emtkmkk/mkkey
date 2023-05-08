@@ -7,6 +7,8 @@ export function generateChannelQuery(
 	q: SelectQueryBuilder<any>,
 	me?: { id: User["id"] } | null,
 ) {
+	// TODO チャンネル所属関係なく全員に見えるようにする、フォローしているタグ名と等しいハッシュタグを取得する
+	/*
 	if (me == null) {
 		q.andWhere("note.channelId IS NULL");
 	} else {
@@ -32,4 +34,5 @@ export function generateChannelQuery(
 
 		q.setParameters(channelFollowingQuery.getParameters());
 	}
+	*/
 }

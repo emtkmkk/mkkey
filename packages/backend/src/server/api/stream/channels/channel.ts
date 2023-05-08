@@ -11,7 +11,6 @@ export default class extends Channel {
 	public static shouldShare = false;
 	public static requireCredential = false;
 	private channelId: string;
-	private channelName: string;
 	private typers: Map<User["id"], Date> = new Map();
 	private emitTypersIntervalId: ReturnType<typeof setInterval>;
 
@@ -34,7 +33,7 @@ export default class extends Channel {
 
 	private async onNote(note: Packed<"Note">) {
 		if (note.visibility !== "public") return;
-		if (note.channelId !== this.channelId && (!this.channelName || !note.tag.includes(normalizeForSearch(this.channelName)))) return;
+		if (note.channelId !== this.channelId && (!note.channel || !note.tag.includes(normalizeForSearch(note.channel.name)))) return;
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.muting)) return;

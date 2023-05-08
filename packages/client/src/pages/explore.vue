@@ -21,10 +21,10 @@
 					@slide-change="onSlideChange"
 				>
 					<swiper-slide>
-						<XUsers />
+						<XFeatured />
 					</swiper-slide>
 					<swiper-slide>
-						<XFeatured />
+						<XUsers />
 					</swiper-slide>
 				</swiper>
 			</MkSpacer>

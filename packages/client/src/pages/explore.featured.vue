@@ -1,14 +1,16 @@
 <template>
 	<MkSpacer :content-max="800">
 		<MkTab v-model="tab" style="margin-bottom: var(--margin)">
+			<option value="combined">{{ i18n.ts.combined }}</option>
 			<option value="local">{{ i18n.ts.local }}</option>
-			<option value="remote">{{ i18n.ts.remote }}</option>
+			<option value="poll">{{ i18n.ts.poll }}</option>
 		</MkTab>
-		<XNotes v-if="tab === 'local'" :pagination="paginationForLocal" />
 		<XNotes
-			v-else-if="tab === 'remote'"
-			:pagination="paginationForRemote"
+			v-else-if="tab === 'combined'"
+			:pagination="paginationForCombined"
 		/>
+		<XNotes v-if="tab === 'local'" :pagination="paginationForLocal" />
+		<XNotes v-if="tab === 'poll'" :pagination="paginationForPoll" />
 	</MkSpacer>
 </template>
 
@@ -37,11 +39,21 @@ const paginationForRemote = {
 	},
 };
 
-// const paginationForRemote = {
-// 	endpoint: 'notes/polls/recommendation' as const,
-// 	limit: 10,
-// 	offsetMode: true,
-// };
+const paginationForCombined = {
+	endpoint: "notes/featured" as const,
+	limit: 20,
+	offsetMode: true,
+	params: {
+		origin: "combined",
+		days: 7,
+	},
+};
 
-let tab = $ref("local");
+const paginationForPoll = {
+	endpoint: 'notes/polls/recommendation' as const,
+	limit: 10,
+	offsetMode: true,
+};
+
+let tab = $ref("combined");
 </script>

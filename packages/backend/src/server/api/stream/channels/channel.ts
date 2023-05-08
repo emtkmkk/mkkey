@@ -15,9 +15,8 @@ export default class extends Channel {
 	private typers: Map<User["id"], Date> = new Map();
 	private emitTypersIntervalId: ReturnType<typeof setInterval>;
 
-	constructor(id: string, connection: Channel["connection"], name?: string) {
+	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
-		this.channelName = name || null;
 		this.onNote = this.withPackedNote(this.onNote.bind(this));
 		this.onEvent = this.onEvent.bind(this);
 		this.emitTypers = this.emitTypers.bind(this);
@@ -25,6 +24,7 @@ export default class extends Channel {
 
 	public async init(params: any) {
 		this.channelId = params.channelId as string;
+		this.channelName = params.channelName as string;
 
 		// Subscribe stream
 		this.subscriber.on("notesStream", this.onNote);

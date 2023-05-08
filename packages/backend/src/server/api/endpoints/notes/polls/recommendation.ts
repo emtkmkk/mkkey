@@ -63,6 +63,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const polls = await query
 		.orderBy("poll.userHost IS NULL", "DESC")
+		.addOrderBy("poll.expiresAt IS NULL", "ASC")
 		.addOrderBy("poll.expiresAt", "ASC")
 		.addOrderBy("poll.noteId", "DESC")
 		.take(ps.limit)
@@ -74,6 +75,10 @@ export default define(meta, paramDef, async (ps, user) => {
 	const notes = await Notes.find({
 		where: {
 			id: In(polls.map((poll) => poll.noteId)),
+		},
+		order: {
+			expiresAt: "ASC",
+			createdAt: "DESC",
 		},
 	});
 

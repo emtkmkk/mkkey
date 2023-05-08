@@ -31,8 +31,7 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, user) => {
 	const query = Polls.createQueryBuilder("poll")
-		.where("poll.userHost IS NULL")
-		.andWhere("poll.userId != :meId", { meId: user.id })
+		.where("poll.userId != :meId", { meId: user.id })
 		.andWhere("poll.noteVisibility = 'public'")
 		.andWhere(
 			new Brackets((qb) => {
@@ -63,7 +62,9 @@ export default define(meta, paramDef, async (ps, user) => {
 	//#endregion
 
 	const polls = await query
-		.orderBy("poll.noteId", "DESC")
+		.orderBy("poll.userHost IS NULL", "DESC")
+		.addOrderBy("poll.expiresAt", "ASC")
+		.addOrderBy("poll.noteId", "DESC")
 		.take(ps.limit)
 		.skip(ps.offset)
 		.getMany();
@@ -73,9 +74,6 @@ export default define(meta, paramDef, async (ps, user) => {
 	const notes = await Notes.find({
 		where: {
 			id: In(polls.map((poll) => poll.noteId)),
-		},
-		order: {
-			createdAt: "DESC",
 		},
 	});
 

@@ -14,7 +14,6 @@
 					:virtual="true"
 					:allow-touch-move="
 						!(
-							deviceKind === 'desktop' &&
 							!defaultStore.state.swipeOnDesktop
 						)
 					"
@@ -46,7 +45,7 @@ import { defaultStore } from "@/store";
 import "swiper/scss";
 import "swiper/scss/virtual";
 
-const tabs = ["users", "featured"];
+const tabs = ["featured", "users"];
 let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
@@ -54,14 +53,14 @@ const headerActions = $computed(() => []);
 
 const headerTabs = $computed(() => [
 	{
-		key: "users",
-		icon: "ph-users ph-bold ph-lg",
-		title: i18n.ts.users,
-	},
-	{
 		key: "featured",
 		icon: "ph-lightning ph-bold ph-lg",
 		title: i18n.ts.featured,
+	},
+	{
+		key: "users",
+		icon: "ph-users ph-bold ph-lg",
+		title: i18n.ts.users,
 	},
 ]);
 

@@ -10,11 +10,13 @@ export default class extends Channel {
 	public static shouldShare = false;
 	public static requireCredential = false;
 	private channelId: string;
+	private channelName: string;
 	private typers: Map<User["id"], Date> = new Map();
 	private emitTypersIntervalId: ReturnType<typeof setInterval>;
 
-	constructor(id: string, connection: Channel["connection"]) {
+	constructor(id: string, connection: Channel["connection"], name?: string) {
 		super(id, connection);
+		this.channelName = name || null;
 		this.onNote = this.withPackedNote(this.onNote.bind(this));
 		this.onEvent = this.onEvent.bind(this);
 		this.emitTypers = this.emitTypers.bind(this);
@@ -30,7 +32,7 @@ export default class extends Channel {
 	}
 
 	private async onNote(note: Packed<"Note">) {
-		if (note.channelId !== this.channelId) return;
+		if (note.channelId !== this.channelId && (!this.channelName || !note.tag.includes(this.channelName))) return;
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.muting)) return;

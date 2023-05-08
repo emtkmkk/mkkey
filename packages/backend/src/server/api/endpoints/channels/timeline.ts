@@ -1,6 +1,9 @@
 import define from "../../define.js";
+import { Brackets } from "typeorm";
 import { ApiError } from "../../error.js";
 import { Notes, Channels } from "@/models/index.js";
+import { safeForSql } from "@/misc/safe-for-sql.js";
+import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 
@@ -75,6 +78,16 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner")
 		.leftJoinAndSelect("note.channel", "channel");
 	//#endregion
+	
+	try {
+		if (channel.name) {
+			if (!safeForSql(normalizeForSearch(channel.name))) throw "Injection";
+			query.orWhere(`'{"${normalizeForSearch(channel.name)}"}' <@ note.tags AND note.visibility = 'public' AND !user."isBot"`);
+		}
+	} catch (e) {
+		if (e.message === "Injection") return [];
+		throw e;
+	}
 
 	const timeline = await query.take(ps.limit).getMany();
 

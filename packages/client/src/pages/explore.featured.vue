@@ -52,7 +52,7 @@ const paginationForCombined = {
 const paginationForPoll = {
 	endpoint: 'notes/polls/recommendation' as const,
 	limit: 10,
-	offsetMode: true,
+	offsetMode: false,
 };
 
 let tab = $ref("combined");

@@ -46,7 +46,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		.andWhere("note.score > 0")
 		.andWhere("note.createdAt > :date", { date: new Date(Date.now() - day) })
 		.andWhere("note.visibility = 'public'")
-		.andWhere("note.id = ANY (SELECT note2.id FROM note note2 WHERE note.score > 0 AND note2.\"userId\" = note.\"userId\" AND note2.\"createdAt\" >= date_trunc('day',note.\"createdAt\") AND note2.\"createdAt\" < date_add(date_trunc('day',note.\"createdAt\"),1) ORDER BY note2.score DESC LIMIT 2)")
+		.andWhere("note.id = ANY (SELECT note2.id FROM note note2 WHERE note.score > 0 AND note2.\"userId\" = note.\"userId\" AND note2.\"createdAt\" >= date_trunc('day',note.\"createdAt\") AND note2.\"createdAt\" < date_trunc('day',note.\"createdAt\") + cast( '1 days' as INTERVAL ) ORDER BY note2.score DESC LIMIT 2)")
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")

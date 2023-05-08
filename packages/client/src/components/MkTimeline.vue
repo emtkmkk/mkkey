@@ -21,6 +21,7 @@ const props = defineProps<{
 	antenna?: string;
 	channel?: string;
 	sound?: boolean;
+	channelName?: string;
 }>();
 
 const emit = defineEmits<{
@@ -131,6 +132,7 @@ if (props.src === "antenna") {
 	};
 	connection = stream.useChannel("channel", {
 		channelId: props.channel,
+		channelName: props.channelName,
 	});
 	connection.on("note", prepend);
 }

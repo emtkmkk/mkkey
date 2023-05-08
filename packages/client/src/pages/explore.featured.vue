@@ -6,7 +6,7 @@
 			<option value="poll">{{ i18n.ts.poll }}</option>
 		</MkTab>
 		<XNotes
-			v-else-if="tab === 'combined'"
+			v-if="tab === 'combined'"
 			:pagination="paginationForCombined"
 		/>
 		<XNotes v-if="tab === 'local'" :pagination="paginationForLocal" />

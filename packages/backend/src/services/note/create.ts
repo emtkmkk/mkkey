@@ -635,7 +635,7 @@ function incRenoteCount(renote: Note) {
 		.update()
 		.set({
 			renoteCount: () => '"renoteCount" + 1',
-			score: () => '"score" + 1',
+			score: () => '"score" + 3',
 		})
 		.where("id = :id", { id: renote.id })
 		.execute();

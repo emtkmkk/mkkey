@@ -43,11 +43,10 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const query = Notes.createQueryBuilder("note")
 		.addSelect("note.score")
-		.addSelect("ROW_NUMBER() OVER (PARTITION BY note.userId , date_trunc('day',note.createdAt) ORDER BY note.score DESC) AS userrank")
 		.andWhere("note.score > 0")
 		.andWhere("note.createdAt > :date", { date: new Date(Date.now() - day) })
 		.andWhere("note.visibility = 'public'")
-		.andWhere("userrank <= 2")
+		.andWhere("ROW_NUMBER() OVER (PARTITION BY note.userId , date_trunc('day',note.createdAt) ORDER BY note.score DESC) <= 2")
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")

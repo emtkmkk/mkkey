@@ -64,7 +64,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.sinceDate,
 		ps.untilDate,
 	)
-		.andWhere("note.channelId = :channelId", { channelId: channel.id })
+		.andWhere("note.visibility = 'public'")
+		.andWhere("user.isBot = false")
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")
@@ -77,17 +78,14 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner")
 		.leftJoinAndSelect("note.channel", "channel");
-	//#endregion
 	
-	try {
-		if (channel.name) {
-			if (!safeForSql(normalizeForSearch(channel.name))) throw "Injection";
-			query.orWhere(`'{"${normalizeForSearch(channel.name)}"}' <@ note.tags AND note.visibility = 'public' AND !user."isBot"`);
-		}
-	} catch (e) {
-		if (e.message === "Injection") return [];
-		throw e;
-	}
+	query.andWhere(
+		new Brackets((qb) => {
+			qb.orWhere("note.channelId = :channelId", { channelId: channel.id })
+			qb.orWhere(":channelName = ANY (note.tags)",{ channelName: normalizeForSearch(channel.name) });
+		}),
+	);
+	//#endregion
 
 	const timeline = await query.take(ps.limit).getMany();
 

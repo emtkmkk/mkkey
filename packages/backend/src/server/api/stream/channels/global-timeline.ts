@@ -28,7 +28,6 @@ export default class extends Channel {
 
 	private async onNote(note: Packed<"Note">) {
 		if (note.visibility !== "public") return;
-		if (note.channelId != null) return;
 
 		// 関係ない返信は除外
 		if (note.reply && !this.user!.showTimelineReplies) {

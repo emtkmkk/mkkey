@@ -76,10 +76,6 @@ export default define(meta, paramDef, async (ps, user) => {
 		where: {
 			id: In(polls.map((poll) => poll.noteId)),
 		},
-		order: {
-			expiresAt: "ASC",
-			createdAt: "DESC",
-		},
 	});
 
 	return await Notes.packMany(notes, user, {

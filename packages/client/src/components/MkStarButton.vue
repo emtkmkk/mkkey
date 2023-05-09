@@ -1,5 +1,6 @@
 <template>
 	<button
+		v-if="!defaultStore.state.favButtonReaction == 'hidden'"
 		v-tooltip.noDelay.bottom="i18n.ts._gallery.like"
 		class="skdfgljsdkf _button"
 		@click="star($event)"
@@ -57,7 +58,11 @@ function star(ev?: MouseEvent): void {
 		reaction:
 			defaultStore.state.woozyMode === true
 				? "🥴"
-				: instance.defaultReaction,
+				: defaultStore.state.favButtonReaction == "custom"
+					? defaultStore.state.favButtonReactionCustom
+					: defaultStore.state.favButtonReaction == ""
+						? instance.defaultReaction
+						: defaultStore.state.favButtonReaction,
 	});
 	const el =
 		ev &&

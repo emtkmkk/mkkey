@@ -353,6 +353,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: true,
 		},
+		favButtonReaction: {
+			where: "account",
+			default: "",
+		},
 	}),
 );
 

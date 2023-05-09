@@ -65,17 +65,26 @@ function toggleStar(ev?: MouseEvent): void {
 	pleaseLogin();
 
 	if (!props.reacted) {
-		os.api("notes/reactions/create", {
-			noteId: props.note.id,
-			reaction: 
-				defaultStore.state.woozyMode === true
-					? "🥴"
-					: defaultStore.state.favButtonReaction === "custom"
-						? defaultStore.state.favButtonReactionCustom
-						: defaultStore.state.favButtonReaction === ""
-							? instance.defaultReaction
-							: defaultStore.state.favButtonReaction,
-		});
+		if (defaultStore.state.favButtonReaction !== "favorite") {
+			os.api("notes/reactions/create", {
+				noteId: props.note.id,
+				reaction:
+					defaultStore.state.woozyMode === true
+						? "🥴"
+						: defaultStore.state.favButtonReaction === "custom"
+							? defaultStore.state.favButtonReactionCustom
+							: defaultStore.state.favButtonReaction === ""
+								? instance.defaultReaction
+								: defaultStore.state.favButtonReaction,
+			});
+		} else {
+			os.apiWithDialog(
+				"notes/favorites/create",
+				{
+					noteId: props.note.id,
+				},
+			);
+		}
 		const el =
 			ev &&
 			((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);

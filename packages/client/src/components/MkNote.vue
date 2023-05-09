@@ -155,7 +155,7 @@
 					<XStarButton
 						v-if="
 							enableEmojiReactions &&
-							appearNote.myReaction == null
+							(appearNote.myReaction == null || favButtonReactionIsFavorite)
 						"
 						ref="starButton"
 						class="button"
@@ -287,7 +287,7 @@ const isRenote =
 	note.text == null &&
 	note.fileIds.length === 0 &&
 	note.poll == null;
-	
+
 const isQuote =
     note.renote != null &&
 	!isRenote;
@@ -304,7 +304,7 @@ let appearNote = $computed(() =>
 );
 let quoteNote = $computed(() =>
     isQuote ? (note.renote as misskey.entities.Note) : note
-);	
+);
 let replyNote = $computed(() =>
 	note.reply != null ? (note.reply as misskey.entities.Note) : note
 );
@@ -315,6 +315,7 @@ const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords));
 const translation = ref(null);
 const translating = ref(false);
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
+const favButtonReactionIsFavorite = defaultStore.state.favButtonReaction === 'favorite';
 
 const keymap = {
 	r: () => reply(true),
@@ -335,7 +336,7 @@ useNoteCapture({
 
 function reply(viaKeyboard = false): void {
 	pleaseLogin();
-	if (appearNote.user.isBot && (["public", "home"].includes(appearNote.visibility) || appearNote.userId === $i?.id)){	
+	if (appearNote.user.isBot && (["public", "home"].includes(appearNote.visibility) || appearNote.userId === $i?.id)){
 		os.post(
 			{
 				renote: appearNote,

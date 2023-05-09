@@ -172,6 +172,11 @@
 						style="margin: 0 0 !important"
 					/>
 				</option>
+				<option value="favorite">
+				    {{
+						i18n.ts.favorite
+					}}
+				</option>
 				<option value="hidden">
 					{{
 						i18n.ts.hidden

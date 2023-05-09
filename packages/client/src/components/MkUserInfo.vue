@@ -23,7 +23,7 @@
 					user.isFollowed
 				"
 				class="followed"
-				>⭐</span
+				>   ⭐</span
 			>
 			<p class="username"><MkAcct :user="user" /></p>
 		</div>

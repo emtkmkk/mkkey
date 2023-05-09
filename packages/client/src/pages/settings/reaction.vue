@@ -1,7 +1,7 @@
 <template>
 	<div class="_formRoot">
 		<FormSwitch v-model="enableEmojiReactions" class="_formBlock">
-			{{ i18n.ts.reactionSettingDescription }}
+			{{ i18n.ts.enableEmojiReactions }}
 		</FormSwitch>
 
 		<div v-if="enableEmojiReactions">
@@ -106,57 +106,6 @@
 			</FormSwitch>
 			
 			<FormSection>
-				<MkRadios
-					v-model="favButtonReaction"
-					class="_formBlock"
-				>
-					<template #label>{{
-						i18n.ts.defaultReactionUser
-					}}</template>
-					<option value="">
-						<template #label>{{
-							i18n.ts.default
-						}}</template>
-					</option>
-					<option value="⭐">
-						<MkEmoji
-							class="emoji"
-							emoji="⭐"
-							style="height: 1.7em"
-						/>
-					</option>
-					<option value="👍">
-						<MkEmoji
-							class="emoji"
-							emoji="👍"
-							style="height: 1.7em"
-						/>
-					</option>
-					<option value="❤️">
-						<MkEmoji
-							class="emoji"
-							emoji="❤️"
-							style="height: 1.7em"
-						/>
-					</option>
-					<option value="custom">
-						<FormInput
-							v-model="favButtonReactionCustom"
-							class="_formBlock"
-							:small="true"
-							:placeholder="`:custom:`"
-							style="margin: 0 0 !important"
-						/>
-					</option>
-					<option value="hidden">
-						<template #label>{{
-							i18n.ts.hidden
-						}}</template>
-					</option>
-				</MkRadios>
-			</FormSection>
-
-			<FormSection>
 				<div style="display: flex; gap: var(--margin); flex-wrap: wrap">
 					<FormButton inline @click="preview"
 						><i class="ph-eye ph-bold ph-lg"></i>
@@ -179,6 +128,58 @@
 				{{ i18n.ts.showEmojisInReactionNotifications }}
 			</FormSwitch>
 		</div>
+		
+		<FormSection>
+			<MkRadios
+				v-model="favButtonReaction"
+				class="_formBlock"
+			>
+				<template #label>{{
+					i18n.ts.defaultReactionUser
+				}}</template>
+				<option value="">
+					<template #label>{{
+						i18n.ts.default
+					}}</template>
+				</option>
+				<option value="⭐">
+					<MkEmoji
+						class="emoji"
+						emoji="⭐"
+						style="height: 1.7em"
+					/>
+				</option>
+				<option value="👍">
+					<MkEmoji
+						class="emoji"
+						emoji="👍"
+						style="height: 1.7em"
+					/>
+				</option>
+				<option value="❤️">
+					<MkEmoji
+						class="emoji"
+						emoji="❤️"
+						style="height: 1.7em"
+					/>
+				</option>
+				<option value="custom">
+					<FormInput
+						v-model="favButtonReactionCustom"
+						class="_formBlock"
+						:small="true"
+						:placeholder="`:custom:`"
+						style="margin: 0 0 !important"
+					/>
+				</option>
+				<option value="hidden">
+					<template #label>{{
+						i18n.ts.hidden
+					}}</template>
+				</option>
+			</MkRadios>
+		</FormSection>
+
 	</div>
 </template>
 

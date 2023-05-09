@@ -130,7 +130,7 @@
 		</div>
 		
 		<FormSection>
-			<MkRadios
+			<FormRadios
 				v-model="favButtonReaction"
 				class="_formBlock"
 			>
@@ -177,7 +177,7 @@
 						i18n.ts.hidden
 					}}</template>
 				</option>
-			</MkRadios>
+			</FormRadios>
 		</FormSection>
 
 	</div>

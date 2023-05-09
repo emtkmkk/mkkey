@@ -26,8 +26,7 @@
 				>{{ i18n.ts.home }}</MkButton
 			>
 			<MkButton
-				v-else-if="state === 'posted'"
-				primary
+				v-if="state === 'posted'"
 				class="close"
 				@click="close()"
 				>{{ i18n.ts.close }}</MkButton
@@ -75,6 +74,8 @@ async function init() {
 	let rText = text;
 	let rUrl = url;
 	let textToUrl = text.match(/^(.* )?(https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+)$/);
+	
+	if (title = "undefined") title = null;
 	
 	if (!rUrl && textToUrl){
 		if(textToUrl.length == 2){

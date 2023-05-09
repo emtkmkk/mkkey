@@ -44,6 +44,15 @@
 					<MkA class="name" :to="userPage(user)"
 						><MkUserName :user="user" :nowrap="false"
 					/></MkA>
+					<span
+						v-if="
+							$i &&
+							$i.id != user.id &&
+							user.isFollowed
+						"
+						class="followed"
+						>{{ i18n.ts.followsYou }}</span
+					>
 					<p class="username"><MkAcct :user="user" /></p>
 				</div>
 				<div

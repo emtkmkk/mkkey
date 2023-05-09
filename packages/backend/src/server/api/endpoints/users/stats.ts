@@ -238,6 +238,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		notesPostDays: (await Notes.createQueryBuilder("note")
 			.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
 			.where("note.userId = :userId", { userId: user.id })
+			.andwhere("'misshaialert' <> ALL(note.tags)")
 			.getRawOne()).count,
 	});
 	

@@ -23,7 +23,7 @@
 					user.isFollowed
 				"
 				class="followed"
-				>{{ i18n.ts.followsYou }}</span
+				>⭐</span
 			>
 			<p class="username"><MkAcct :user="user" /></p>
 		</div>

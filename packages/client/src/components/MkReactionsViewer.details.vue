@@ -49,14 +49,15 @@ const emit = defineEmits<{
 <style lang="scss" scoped>
 .bqxuuuey {
 	display: flex;
+  flex-direction: column;
 
 	> .reaction {
-		max-width: 100px;
+		max-width: 100%;
 		text-align: center;
 
 		> .icon {
 			display: block;
-			width: 60px;
+			height: 25px !important;
 			font-size: 60px; // unicodeな絵文字についてはwidthが効かないため
 			margin: 0 auto;
 		}
@@ -70,11 +71,11 @@ const emit = defineEmits<{
 		flex: 1;
 		min-width: 0;
 		font-size: 0.95em;
-		border-left: solid 0.5px var(--divider);
-		padding-left: 10px;
-		margin-left: 10px;
-		margin-right: 14px;
-		text-align: left;
+		border-top: solid 0.5px var(--divider);
+		padding-top: 10px;
+		margin-top: 10px;
+		margin-bottom: 14px;
+		text-align: center;
 
 		> .user {
 			line-height: 24px;

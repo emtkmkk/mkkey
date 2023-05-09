@@ -1,6 +1,6 @@
 <template>
 	<button
-		v-if="!defaultStore.state.favButtonReaction === 'hidden'"
+		v-if="defaultStore.state.favButtonReaction !== 'hidden'"
 		v-tooltip.noDelay.bottom="i18n.ts._gallery.like"
 		class="_button"
 		:class="$style.root"

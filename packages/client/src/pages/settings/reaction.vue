@@ -137,33 +137,33 @@
 				<template #label>{{
 					i18n.ts.defaultReactionUser
 				}}</template>
-				<option :value="">
+				<option value="">
 					{{
 						i18n.ts.default
 					}}
 				</option>
-				<option :value="⭐">
+				<option value="⭐">
 					<MkEmoji
 						class="emoji"
 						emoji="⭐"
 						style="height: 1.7em"
 					/>
 				</option>
-				<option :value="👍">
+				<option value="👍">
 					<MkEmoji
 						class="emoji"
 						emoji="👍"
 						style="height: 1.7em"
 					/>
 				</option>
-				<option :value="❤️">
+				<option value="❤️">
 					<MkEmoji
 						class="emoji"
 						emoji="❤️"
 						style="height: 1.7em"
 					/>
 				</option>
-				<option :value="custom">
+				<option value="custom">
 					<FormInput
 						v-model="favButtonReactionCustom"
 						class="_formBlock"
@@ -172,7 +172,7 @@
 						style="margin: 0 0 !important"
 					/>
 				</option>
-				<option :value="hidden">
+				<option value="hidden">
 					{{
 						i18n.ts.hidden
 					}}

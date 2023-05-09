@@ -429,11 +429,13 @@ function parallax() {
 }
 
 onMounted(() => {
-	os.api("users/stats", {
-		userId: props.user.id,
-	}).then((response) => {
-		stats.value = response;
-	});
+	if (props.user.host == null) {
+		os.api("users/stats", {
+			userId: props.user.id,
+		}).then((response) => {
+			stats.value = response;
+		});
+	}
 	window.requestAnimationFrame(parallaxLoop);
 	narrow = rootEl!.clientWidth < 1000;
 });

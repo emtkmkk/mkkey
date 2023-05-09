@@ -18,6 +18,7 @@
 			<button class="_button" @click="chooseFile"><i class="ph-upload ph-bold ph-lg"></i></button>
 			<button class="_button" @click="insertEmoji"><i class="ph-smiley ph-bold ph-lg"></i></button>
 			<button v-tooltip="i18n.ts.mfm" class="_button" @click="insertMfm"><i class="ph-magic-wand ph-bold ph-lg"></i></button>
+			<button class="_button" @click="quickSizeUp"><i class="ph-arrow-fat-lines-up ph-bold ph-lg"></i></button>
 			<button class="send _button" :disabled="!canSend || sending" :title="i18n.ts.send" @click="send">
 				<template v-if="!sending"><i class="ph-paper-plane-tilt ph-bold ph-lg"></i></template><template v-if="sending"><i class="ph-circle-notch ph-bold ph-lg fa-pulse ph-fw ph-lg"></i></template>
 			</button>
@@ -214,6 +215,18 @@ async function insertEmoji(ev: MouseEvent) {
 
 function insertMfm() {
 	insertTextAtCursor(textEl, '$');
+}
+
+function quickSizeUp() {
+	if (textEl.value.startsWith("$[x4 ")){
+		textEl.value = "$[x2 " + textEl.value + "]"
+	} else if (textEl.value.startsWith("$[x2 ")){
+		textEl.value = textEl.value.replace("$[x2 ", "$[x3 ")
+	} else if (textEl.value.startsWith("$[x3 ")){
+		textEl.value = textEl.value.replace("$[x3 ", "$[x4 ")
+	} else {
+		textEl.value = "$[x2 " + textEl.value + "]"
+	}
 }
 
 onMounted(() => {

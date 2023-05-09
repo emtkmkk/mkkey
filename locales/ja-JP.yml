@@ -983,6 +983,7 @@ moveFromLabel: "引っ越し元のアカウント："
 moveFromDescription: "別のアカウントからこのアカウントにフォロワーを引き継いで引っ越したい場合、ここでエイリアスを作成しておく必要があります。必ず引っ越しを実行する前に作成してください！引っ越し元のアカウントをこのように入力してください：@person@instance.com"
 migrationConfirm: "本当にこのアカウントを {account} に引っ越しますか？一度引っ越しを行うと取り消せず、二度とこのアカウントを元の状態で使用できなくなります。\nまた、引っ越し先のアカウントでエイリアスを作成したことを確認してください。"
 defaultReaction: "リモートとローカルのトゥートに対するデフォルトの絵文字リアクション"
+defaultReactionUser: "☆ボタンで行う絵文字リアクション"
 license: "ライセンス"
 indexPosts: "トゥートをインデックス"
 indexFrom: "このトゥートID以降をインデックスする（空白で全てのトゥートを指定します）"
@@ -1875,6 +1876,7 @@ _apps:
   mona: "Mona"
   theDesk: "TheDesk"
   lesskey: "Lesskey"
-noteId: 投稿のID
+noteId: "投稿のID"
 hiddenTagsDescription: "トレンドと「みつける」から除外したいハッシュタグを（先頭の # を除いて）改行区切りで入力してください。この設定はトレンドと「みつける」以外には影響しません。"
-hiddenTags: 非表示にするハッシュタグ
+hiddenTags: "非表示にするハッシュタグ"
+hidden: "非表示"

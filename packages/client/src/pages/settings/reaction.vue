@@ -138,9 +138,9 @@
 					i18n.ts.defaultReactionUser
 				}}</template>
 				<option :value="">
-					<template #label>{{
+					{{
 						i18n.ts.default
-					}}</template>
+					}}
 				</option>
 				<option :value="⭐">
 					<MkEmoji
@@ -173,9 +173,9 @@
 					/>
 				</option>
 				<option :value="hidden">
-					<template #label>{{
+					{{
 						i18n.ts.hidden
-					}}</template>
+					}}
 				</option>
 			</FormRadios>
 		</FormSection>

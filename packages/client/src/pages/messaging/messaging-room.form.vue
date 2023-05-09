@@ -227,6 +227,7 @@ function quickSizeUp() {
 	} else {
 		textEl.value = "$[x2 " + textEl.value + "]";
 	}
+	text = textEl.value;
 }
 
 onMounted(() => {

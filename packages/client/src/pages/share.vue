@@ -75,7 +75,7 @@ async function init() {
 	let rUrl = url;
 	let textToUrl = text.match(/^(.* )?(https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+)$/);
 	
-	if (title = "undefined") title = null;
+	if (title === "undefined") title = null;
 	
 	if (!rUrl && textToUrl){
 		if(textToUrl.length == 2){

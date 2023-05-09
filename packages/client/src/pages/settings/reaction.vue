@@ -104,6 +104,57 @@
 				{{ i18n.ts.useDrawerReactionPickerForMobile }}
 				<template #caption>{{ i18n.ts.needReloadToApply }}</template>
 			</FormSwitch>
+			
+			<FormSection>
+				<MkRadios
+					v-model="favButtonReaction"
+					class="_formBlock"
+				>
+					<template #label>{{
+						i18n.ts.defaultReactionUser
+					}}</template>
+					<option value="">
+						<template #label>{{
+							i18n.ts.default
+						}}</template>
+					</option>
+					<option value="⭐">
+						<MkEmoji
+							class="emoji"
+							emoji="⭐"
+							style="height: 1.7em"
+						/>
+					</option>
+					<option value="👍">
+						<MkEmoji
+							class="emoji"
+							emoji="👍"
+							style="height: 1.7em"
+						/>
+					</option>
+					<option value="❤️">
+						<MkEmoji
+							class="emoji"
+							emoji="❤️"
+							style="height: 1.7em"
+						/>
+					</option>
+					<option value="custom">
+						<FormInput
+							v-model="favButtonReactionCustom"
+							class="_formBlock"
+							:small="true"
+							:placeholder="`:custom:`"
+							style="margin: 0 0 !important"
+						/>
+					</option>
+					<option value="hidden">
+						<template #label>{{
+							i18n.ts.hidden
+						}}</template>
+					</option>
+				</MkRadios>
+			</FormSection>
 
 			<FormSection>
 				<div style="display: flex; gap: var(--margin); flex-wrap: wrap">
@@ -176,6 +227,12 @@ const enableEmojiReactions = $computed(
 );
 const showEmojisInReactionNotifications = $computed(
 	defaultStore.makeGetterSetter("showEmojisInReactionNotifications")
+);
+const favButtonReaction = $computed(
+	defaultStore.makeGetterSetter("favButtonReaction")
+);
+const favButtonReactionCustom = $computed(
+	defaultStore.makeGetterSetter("favButtonReactionCustom")
 );
 
 function save() {

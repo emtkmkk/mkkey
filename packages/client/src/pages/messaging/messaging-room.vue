@@ -59,7 +59,7 @@
 									v-for="typer in typers"
 									:key="typer.id"
 									class="user"
-									>{{ typer.username }}</b
+									>{{ typer.name }}</b
 								>
 							</template>
 						</I18n>

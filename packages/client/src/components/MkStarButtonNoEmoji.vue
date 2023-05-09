@@ -1,5 +1,6 @@
 <template>
 	<button
+		v-if="!defaultStore.state.favButtonReaction == 'hidden'"
 		v-tooltip.noDelay.bottom="i18n.ts._gallery.like"
 		class="_button"
 		:class="$style.root"
@@ -66,7 +67,14 @@ function toggleStar(ev?: MouseEvent): void {
 	if (!props.reacted) {
 		os.api("notes/reactions/create", {
 			noteId: props.note.id,
-			reaction: instance.defaultReaction,
+			reaction: 
+				defaultStore.state.woozyMode === true
+					? "🥴"
+					: defaultStore.state.favButtonReaction == "custom"
+						? defaultStore.state.favButtonReactionCustom
+						: defaultStore.state.favButtonReaction == ""
+							? instance.defaultReaction
+							: defaultStore.state.favButtonReaction,
 		});
 		const el =
 			ev &&

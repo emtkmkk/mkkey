@@ -68,7 +68,7 @@ function checkMuteKeyword(
 	}
 	if (keyword.startsWith("from:")) {
 		const fromKeyword = keyword.replace("from:","");
-		return !note.user ? false : note.user.host ? note.user.name + "@" + note.user.host === fromKeyword : note.user.username === fromKeyword;
+		return !note.user ? false : note.user.host ? note.user.username + "@" + note.user.host === fromKeyword : note.user.username === fromKeyword;
 	}
 	if (keyword.startsWith("name:")) {
 		const nameKeyword = keyword.replace("name:","");

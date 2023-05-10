@@ -4,6 +4,10 @@
 			<option value="soft">{{ i18n.ts._wordMute.soft }}</option>
 			<option value="hard">{{ i18n.ts._wordMute.hard }}</option>
 		</MkTab>
+		<MkButton primary inline :disabled="!changed" @click="save()"
+			><i class="ph-floppy-disk-back ph-bold ph-lg"></i>
+			{{ i18n.ts.save }}</MkButton
+		>
 		<div class="_formBlock">
 			<div v-show="tab === 'soft'">
 				<MkInfo class="_formBlock">{{
@@ -13,7 +17,7 @@
 					<span>{{ i18n.ts._wordMute.muteWords }}</span>
 					<template #caption
 						>{{ i18n.ts._wordMute.muteWordsDescription }}<br />{{
-							i18n.ts._wordMute.muteWordsDescription2
+							i18n.ts._wordMute.muteWordsDescription2.replaceAll("\n","<br />")
 						}}</template
 					>
 				</FormTextarea>
@@ -27,7 +31,7 @@
 					<span>{{ i18n.ts._wordMute.muteWords }}</span>
 					<template #caption
 						>{{ i18n.ts._wordMute.muteWordsDescription }}<br />{{
-							i18n.ts._wordMute.muteWordsDescription2
+							i18n.ts._wordMute.muteWordsDescription2.replaceAll("\n", "<br />")
 						}}</template
 					>
 				</FormTextarea>

@@ -59,7 +59,7 @@
 									v-for="typer in typers"
 									:key="typer.id"
 									class="user"
-									>{{ typer.name }}</b
+									>{{ typer.name.replaceAll(/[\s　]?:\w+:/g,"") + " " }}</b
 								>
 							</template>
 						</I18n>

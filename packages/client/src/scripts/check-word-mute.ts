@@ -11,7 +11,7 @@ function checkWordMute(
 	mutedWords: Array<string | string[]>,
 ): Muted {
 	const text = ((note.cw ?? "") + " " + (note.text ?? "")).trim();
-	if (text === "") return NotMuted;
+	//if (text === "") return NotMuted;
 
 	let result = { muted: false, matched: [] };
 
@@ -22,10 +22,15 @@ function checkWordMute(
 
 			if (
 				keywords.length > 0 &&
-				keywords.every((keyword) => text.includes(keyword))
+				!(keywords[0].startsWith("pname:") && keywords.length == 1) &&
+				keywords.every((keyword, index) => checkMuteKeyword(note,text,keyword,index))
 			) {
 				result.muted = true;
-				result.matched.push(...keywords);
+				let pname = keywords;
+				if (keywords[0].startsWith("pname:")) {
+					pname = [keywords[0].replace("pname:","")];
+				}
+				result.matched.push(...pname);
 			}
 		} else {
 			// represents RegExp
@@ -50,6 +55,76 @@ function checkWordMute(
 
 	result.matched = [...new Set(result.matched)];
 	return result;
+}
+
+function checkMuteKeyword(
+	note: NoteLike,
+	text: string,
+	keyword: string,
+	index: number,
+): boolean {
+	if (keyword.startsWith("pname:")) {
+		return index === 0;
+	}
+	if (keyword.startsWith("from:")) {
+		const fromKeyword = keyword.replace("from:","");
+		return !note.user ? false : note.user.host ? note.user.name + "@" + note.user.host === fromKeyword : note.user.username === fromKeyword;
+	}
+	if (keyword.startsWith("name:")) {
+		const nameKeyword = keyword.replace("name:","");
+		return !note.user ? false : note.user.name.includes(nameKeyword);
+	}
+	if (keyword.startsWith("visibility:")) {
+		const visibilityKeyword = keyword.replace("visibility:","");
+		return note.visibility === visibilityKeyword;
+	}
+	if (keyword.startsWith("localOnly:")) {
+		const localOnlyKeyword = keyword.replace("localOnly:","");
+		return note.localOnly === localOnlyKeyword;
+	}
+	if (keyword.startsWith("filter:") || keyword.startsWith("-filter:")) {
+		let reverse = keyword.startsWith("-");
+		
+		const filterKeyword = keyword.replace("-filter:","").replace("filter:","");
+		if (filterKeyword.includes("mention")) {
+			const isMention = (note.mentions && !note.replyId);
+			return reverse ? !isMention : !!isMention;
+		}
+		if (filterKeyword.includes("reply")) {
+			const isReply = (note.replyId);
+			return reverse ? !isReply : !!isReply;
+		}
+		if (filterKeyword.includes("renote")) {
+			const isRenote = (note.renoteId && !note.text);
+			return reverse ? !isRenote : !!isRenote;
+		}
+		if (filterKeyword.includes("quote")) {
+			const isQuote = (note.renoteId && note.text);
+			return reverse ? !isQuote : !!isQuote;
+		}
+		if (filterKeyword.includes("media") || filterKeyword.includes("file") ) {
+			const isMedia = (note.fileIds && note.fileIds.length !== 0);
+			return reverse ? !isMedia : !!isMedia;
+		}
+		if (filterKeyword.includes("poll")) {
+			const isPoll = (note.hasPoll);
+			return reverse ? !isPoll : !!isPoll;
+		}
+		if (filterKeyword.includes("channel")) {
+			const isChannel = (note.channelId);
+			return reverse ? !isChannel : !!isChannel;
+		}
+		if (filterKeyword.includes("cw")) {
+			const isCw = (note.cw);
+			return reverse ? !isCw : !!isCw;
+		}
+		if (filterKeyword.includes("nsfw")) {
+			const isNsfw = (note.files && note.files.some((file) => file.isSensitive));
+			return reverse ? !isNsfw : !!isNsfw;
+		}
+		return false;
+	}
+	return text.includes(keyword);
 }
 
 export function getWordSoftMute(

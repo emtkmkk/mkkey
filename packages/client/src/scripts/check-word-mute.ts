@@ -63,8 +63,16 @@ function checkMuteKeyword(
 	keyword: string,
 	index: number,
 ): boolean {
+	if (!keyword.includes(":") || keyword.startsWith("include:")) {
+		const includeKeyword = keyword.replace("include:","");
+		return text.includes(includeKeyword);
+	}
 	if (keyword.startsWith("pname:")) {
 		return index === 0;
+	}
+	if (keyword.startsWith("exclude:")) {
+		const excludeKeyword = keyword.replace("exclude:","");
+		return !text.includes(excludeKeyword);
 	}
 	if (keyword.startsWith("from:")) {
 		const fromKeyword = keyword.replace("from:","");

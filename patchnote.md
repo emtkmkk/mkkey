@@ -3,13 +3,15 @@
 ## mkk29
 
 - ワードミュートに試験的に特殊ミュートを追加
-	- pname:xxx ミュートされた際に表示する文を設定できます。 行の一番左においた場合のみ動作します。
+	- pname:xxx ミュートされた際に表示する文章を設定できます。 行の一番左に指定した場合のみ動作します。
 	- from:xxx(@xxx) 指定したユーザーのノートをミュートします。
 	- name:xxx 名前にxxxが含まれているユーザーのノートをミュートします。
 	- visibility:xxx 公開範囲でミュートします。(public|home|hidden|followers|specified)
 	- filter:xxx ノートの種類でミュートします。
 	- -filter:にすると効果を反転させることが出来ます。
 	- (mention|reply|renote|quote|media|poll|channel|cw|nsfw)
+	- include:xxx xxxが含まれている文章をミュートします。xxx内のコマンドを通常文章扱いにします。
+	- exclude:xxx xxxが含まれている文章をミュート対象から除外します。
 
 
 ## mkk28

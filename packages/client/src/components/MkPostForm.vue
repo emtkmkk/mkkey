@@ -26,8 +26,11 @@
 					:class="{ over: textLength > maxTextLength }"
 					>{{ (maxTextLength - textLength) > 999 ? textLength : i18n.t('remainingLength', { n: maxTextLength - textLength }) }}</span
 				>
-				<span v-if="localOnly" class="local-only"
+				<span v-if="localOnly && isChannel" class="local-only"
 					><i class="ph-hand-fist ph-bold ph-lg"></i
+				></span>
+				<span v-if="localOnly && !isChannel" class="local-only"
+					><i class="ph-hand-heart ph-bold ph-lg"></i
 				></span>
 				<button
 					ref="visibilityButton"
@@ -397,6 +400,10 @@ const typing = throttle(3000, () => {
 	if (props.channel) {
 		stream.send("typingOnChannel", { channel: props.channel.id });
 	}
+});
+
+const isChannel = $computed((): boolean => {
+	return !!props.channel;
 });
 
 const draftKey = $computed((): string => {

@@ -74,8 +74,18 @@ function checkMuteKeyword(
 		const excludeKeyword = keyword.replace("exclude:","");
 		return !text.includes(excludeKeyword);
 	}
+	if (keyword.startsWith("or:")) {
+		const orKeywords = keyword.replace("or:","").split(",");
+		if (orKeywords.length > 12) return false;
+		return orKeywords.some((orKeyword) => text.includes(orKeyword));
+	}
+	if (keyword.startsWith("fuzzy:")) {
+		const fuzzyKeywords = keyword.replace("fuzzy:","").split("");
+		if (fuzzyKeywords.length > 12) return false;
+		return fuzzyKeywords.some((fuzzyKeyword) => text.includes(fuzzyKeyword));
+	}
 	if (keyword.startsWith("from:")) {
-		const fromKeyword = keyword.replace("from:","");
+		const fromKeyword = keyword.replace("from:","").replace("@mkkey.net","");
 		return !note.user ? false : note.user.host ? note.user.username + "@" + note.user.host === fromKeyword : note.user.username === fromKeyword;
 	}
 	if (keyword.startsWith("name:")) {
@@ -85,6 +95,10 @@ function checkMuteKeyword(
 	if (keyword.startsWith("visibility:")) {
 		const visibilityKeyword = keyword.replace("visibility:","");
 		return note.visibility === visibilityKeyword;
+	}
+	if (keyword.startsWith("-visibility:")) {
+		const visibilityKeyword = keyword.replace("-visibility:","");
+		return note.visibility !== visibilityKeyword;
 	}
 	if (keyword.startsWith("localOnly:")) {
 		const localOnlyKeyword = keyword.replace("localOnly:","");

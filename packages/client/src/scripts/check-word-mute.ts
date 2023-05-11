@@ -28,7 +28,7 @@ function checkWordMute(
 				result.muted = true;
 				let pname = keywords;
 				if (keywords[0].startsWith("pname:")) {
-					pname = [keywords[0].replace("pname:","")];
+					pname = [keywords[0].replace("pname:","").replace("<#id>",note.id)];
 				}
 				result.matched.push(...pname);
 			}

@@ -40,7 +40,7 @@ export default async function (
 		(await countSameRenotes(user.id, note.renoteId, note.id)) === 0
 	) {
 		Notes.decrement({ id: note.renoteId }, "renoteCount", 1);
-		Notes.decrement({ id: note.renoteId }, "score", 1);
+		Notes.decrement({ id: note.renoteId }, "score", 3);
 	}
 
 	if (note.replyId) {
@@ -53,7 +53,7 @@ export default async function (
 		});
 
 		//#region ローカルの投稿なら削除アクティビティを配送
-		if (Users.isLocalUser(user) && !note.localOnly) {
+		if (Users.isLocalUser(user) && !(note.localOnly && note.channelId)) {
 			let renote: Note | null = null;
 
 			// if deletd note is renote

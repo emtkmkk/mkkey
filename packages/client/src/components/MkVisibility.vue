@@ -16,9 +16,15 @@
 			class="ph-envelope-simple-open ph-bold ph-lg"
 		></i>
 	</span>
-	<span v-if="note.localOnly" :class="$style.localOnly"
+	<span v-if="note.localOnly && note.channelId" :class="$style.localOnly"
 		><i
 			class="ph-hand-fist ph-bold ph-lg"
+			v-tooltip="i18n.ts._visibility.localOnly"
+		></i
+	></span>
+	<span v-if="note.localOnly && !note.channelId" :class="$style.localOnly"
+		><i
+			class="ph-hand-heart ph-bold ph-lg"
 			v-tooltip="i18n.ts._visibility.localOnly"
 		></i
 	></span>
@@ -36,6 +42,7 @@ const props = defineProps<{
 		visibility: string;
 		localOnly?: boolean;
 		visibleUserIds?: string[];
+		channelId?: string;
 	};
 }>();
 

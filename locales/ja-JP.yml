@@ -1442,6 +1442,8 @@ _visibility:
   specifiedDescription: "指定したユーザーのみに公開"
   localOnly: "もこきーのみ"
   localOnlyDescription: "もこきーのみに公開"
+  localAndFollower: "もこきー＆フォロワー"
+  localAndFollowerDescription: "リモートでの二次拡散を拒否"
 _postForm:
   replyPlaceholder: "このトゥートに返信..."
   quotePlaceholder: "このトゥートを引用..."

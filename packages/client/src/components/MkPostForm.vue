@@ -373,10 +373,9 @@ let useCw = $ref(false);
 let showPreview = $ref(true);
 let cw = $ref<string | null>(null);
 let localOnly = $ref<boolean>(
-	props.initialLocalOnly ?? ($i.isAdmin || $i.isModerator) ? defaultStore.state.rememberNoteVisibility
-		? defaultStore.state.localOnly
-		: defaultStore.state.defaultNoteLocalOnly
-		: false
+	props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility
+		? defaultStore.state.LocalAndFollower
+		: defaultStore.state.defaultNoteLocalAndFollower
 );
 let visibility = $ref(
 	props.initialVisibility ??

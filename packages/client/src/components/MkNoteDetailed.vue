@@ -46,7 +46,7 @@
 					class="name"
 					:to="userPage(note.user)"
 				>
-					<MkUserName :user="note.user" :maxlength="10" />
+					<MkUserName :user="note.user" maxlength="10" />
 				</MkA>
 			</template>
 			<template #reason>

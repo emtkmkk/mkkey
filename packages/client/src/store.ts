@@ -149,6 +149,10 @@ export const defaultStore = markRaw(
 			where: "deviceAccount",
 			default: false,
 		},
+		localAndFollower: {
+			where: "deviceAccount",
+			default: false,
+		},
 		statusbars: {
 			where: "deviceAccount",
 			default: [] as {

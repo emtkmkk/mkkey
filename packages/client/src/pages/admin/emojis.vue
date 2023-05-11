@@ -189,7 +189,7 @@ const queryRemote = ref(null);
 const host = ref(null);
 const selectMode = ref(false);
 const selectedEmojis = ref<string[]>([]);
-const selectedCount = ref(selectedEmojis.value.length);
+const selectedCount = $computed(() => selectedEmojis.value.length);
 
 const pagination = {
 	endpoint: "admin/emoji/list" as const,

@@ -17,9 +17,10 @@
 					<span>{{ i18n.ts._wordMute.muteWords }}</span>
 					<template #caption
 						>{{ i18n.ts._wordMute.muteWordsDescription }}<br />{{
-							i18n.ts._wordMute.muteWordsDescription2.replaceAll("\n","<br />")
+							i18n.ts._wordMute.muteWordsDescription2
 						}}</template
 					>
+					<div class="description">{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
 				</FormTextarea>
 			</div>
 			<div v-show="tab === 'hard'">
@@ -31,9 +32,10 @@
 					<span>{{ i18n.ts._wordMute.muteWords }}</span>
 					<template #caption
 						>{{ i18n.ts._wordMute.muteWordsDescription }}<br />{{
-							i18n.ts._wordMute.muteWordsDescription2.replaceAll("\n", "<br />")
+							i18n.ts._wordMute.muteWordsDescription2
 						}}</template
 					>
+					<div class="description">{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
 				</FormTextarea>
 				<MkKeyValue
 					v-if="hardWordMutedNotesCount != null"

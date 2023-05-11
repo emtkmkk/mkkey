@@ -691,7 +691,7 @@ function setVisibility() {
 			currentVisibility: visibility,
 			currentLocalOnly: localOnly,
 			src: visibilityButton,
-			canLocalSwitch: $i.isAdmin || $i.isModerator || props.channel,
+			canLocalSwitch: props.channel,
 			canVisibilitySwitch: !props.channel,
 		},
 		{

@@ -51,7 +51,7 @@
 			{{ i18n.ts.save }}</MkButton
 		>
 		<br />
-		<div class="description">{{ i18n.ts._wordMute.muteWordsDescription3.replaceAll("\n","<br />") }}</div>
+		<div class="description" style="white-space: pre-line;">{{ i18n.ts._wordMute.muteWordsDescription3.replaceAll('"','').replaceAll("\n","<br />") }}</div>
 	</div>
 </template>
 

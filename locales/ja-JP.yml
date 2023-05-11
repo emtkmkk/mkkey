@@ -1179,7 +1179,8 @@ _menuDisplay:
 _wordMute:
   muteWords: "ミュートするワード"
   muteWordsDescription: "スペースで区切るとAND指定になり、改行で区切るとOR指定になります。"
-  muteWordsDescription2: "キーワードをスラッシュで囲むと正規表現になります。\n（以下は試験的機能です）\npname:xxx ミュートされた際に表示する文章を設定できます。 行の一番左に指定した場合のみ動作します。\nfrom:xxx(@xxx) 指定したユーザーのノートをミュートします。\nname:xxx 名前にxxxが含まれているユーザーのノートをミュートします。\nvisibility:xxx 公開範囲でミュートします。(public|home|hidden|followers|specified)\nfilter:xxx ノートの種類でミュートします。\n-filter:にすると効果を反転させることが出来ます。\n(mention|reply|renote|quote|media|poll|channel|cw|nsfw)\ninclude:xxx xxxが含まれている文章をミュートします。xxx内のコマンドを通常文章扱いにします。\nexclude:xxx xxxが含まれている文章をミュート対象から除外します。"
+  muteWordsDescription2: "キーワードをスラッシュで囲むと正規表現になります。"
+  muteWordsDescription3: "（以下は試験的機能です）\npname:xxx ミュートされた際に表示する文章を設定できます。 行の一番左に指定した場合のみ動作します。\nfrom:xxx(@xxx.xx) 指定したユーザーのノートをミュートします。\nname:xxx 名前にxxxが含まれているユーザーのノートをミュートします。\nvisibility:xxx 公開範囲でミュートします。vの前に-を付けると効果が反転します。(public|home|hidden|followers|specified)\nfilter:xxx ノートの種類でミュートします。fの前に-を付けると効果が反転します。\n(mention | reply | renote | quote | media | poll | channel | cw | nsfw)\ninclude:xxx xxxが含まれている文章をミュートします。xxx内のコマンドを通常文章扱いにします。\nexclude:xxx xxxが含まれている文章をミュート対象から除外します。\nor:xxx,yyy,zzz 指定した文章のどれかが含まれていた場合にミュートします。\nfuzzy:xxx 単語の全てが一続きでなくてもミュートします。"
   softDescription: "指定した条件のトゥートをタイムラインから隠します。"
   hardDescription: "指定した条件のトゥートをタイムラインに追加しないようにします。追加されなかったトゥートは、条件を変更しても除外されたままになります。"
   soft: "ソフト"

@@ -46,11 +46,11 @@
 					class="name"
 					:to="userPage(note.user)"
 				>
-					<MkUserName :user="note.user" />
+					<MkUserName :user="note.user" :maxlength="10" />
 				</MkA>
 			</template>
 			<template #reason>
-				<b class="_blur_text">{{ muted.matched.join(", ") }}</b>
+				{{ muted.matched.join(", ") }}
 			</template>
 		</I18n>
 	</div>

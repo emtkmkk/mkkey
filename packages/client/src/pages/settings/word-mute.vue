@@ -50,7 +50,8 @@
 			><i class="ph-floppy-disk-back ph-bold ph-lg"></i>
 			{{ i18n.ts.save }}</MkButton
 		>
-		<div class="description">{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
+		<br />
+		<div class="description">{{ i18n.ts._wordMute.muteWordsDescription3.replaceAll("\n","<br />") }}</div>
 	</div>
 </template>
 

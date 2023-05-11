@@ -1,7 +1,7 @@
 <template>
 	<Mfm
 		:class="$style.root"
-		:text="user.name || user.username"
+		:text="maxlength && (user.name || user.username).length > maxlength ? (user.name || user.username).slice(maxlength) + '…' : (user.name || user.username)"
 		:plain="true"
 		:nowrap="nowrap"
 		:custom-emojis="user.emojis"
@@ -16,9 +16,11 @@ const props = withDefaults(
 	defineProps<{
 		user: misskey.entities.User;
 		nowrap?: boolean;
+		maxlength?: number;
 	}>(),
 	{
 		nowrap: true,
+		maxlength: 0,
 	}
 );
 </script>

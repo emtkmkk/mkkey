@@ -197,11 +197,10 @@ export default async (
 		if (data.createdAt == null) data.createdAt = new Date();
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
-		if (data.channel == null && !(user.isAdmin || user.isModerator)) data.localOnly = false;
 		if (data.channel != null) data.visibility = "public";
 		if (data.channel != null) data.visibleUsers = [];
-		if (data.channel != null && data.localOnly === false) {
-			//チャンネルで連合有りの場合、ハッシュタグを自動で付ける
+		if (data.channel != null && data.localOnly === false && !data.reply && !data.text.endsWith(" #" + data.channel!.name)) {
+			//チャンネルで連合有りで返信でなく、すでに文末にタグが付いていない場合、ハッシュタグを自動で付ける
 			data.text += " #" + data.channel!.name;
 		}
 		if (data.visibility === "hidden") data.visibility = "public";

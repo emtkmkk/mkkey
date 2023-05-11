@@ -47,6 +47,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: false,
 		},
+		defaultNoteLocalAndFollower: {
+			where: "account",
+			default: false,
+		},
 		uploadFolder: {
 			where: "account",
 			default: null as string | null,

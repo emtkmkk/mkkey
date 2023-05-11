@@ -82,7 +82,7 @@ function checkMuteKeyword(
 	if (keyword.startsWith("fuzzy:")) {
 		const fuzzyKeywords = keyword.replace("fuzzy:","").split("");
 		if (fuzzyKeywords.length > 12) return false;
-		return fuzzyKeywords.some((fuzzyKeyword) => text.includes(fuzzyKeyword));
+		return fuzzyKeywords.every((fuzzyKeyword) => text.includes(fuzzyKeyword));
 	}
 	if (keyword.startsWith("from:")) {
 		const fromKeyword = keyword.replace("from:","").replace("@mkkey.net","");

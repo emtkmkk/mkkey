@@ -101,6 +101,9 @@
 						{{ i18n.ts._visibility.specified }}
 					</option>
 				</FormSelect>
+				<FormSwitch v-model="defaultNoteLocalAndFollower" class="_formBlock">{{
+					i18n.ts._visibility.localAndFollower
+				}}</FormSwitch>
 				<FormSwitch v-model="defaultNoteLocalOnly" class="_formBlock">{{
 					i18n.ts._visibility.localOnly
 				}}</FormSwitch>
@@ -228,6 +231,9 @@ let defaultNoteVisibility = $computed(
 );
 let defaultNoteLocalOnly = $computed(
 	defaultStore.makeGetterSetter("defaultNoteLocalOnly")
+);
+let defaultNoteLocalAndFollower = $computed(
+	defaultStore.makeGetterSetter("defaultNoteLocalAndFollower")
 );
 let rememberNoteVisibility = $computed(
 	defaultStore.makeGetterSetter("rememberNoteVisibility")

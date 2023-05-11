@@ -20,7 +20,6 @@
 							i18n.ts._wordMute.muteWordsDescription2
 						}}</template
 					>
-					<div class="description">{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
 				</FormTextarea>
 			</div>
 			<div v-show="tab === 'hard'">
@@ -35,7 +34,6 @@
 							i18n.ts._wordMute.muteWordsDescription2
 						}}</template
 					>
-					<div class="description">{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
 				</FormTextarea>
 				<MkKeyValue
 					v-if="hardWordMutedNotesCount != null"
@@ -52,6 +50,7 @@
 			><i class="ph-floppy-disk-back ph-bold ph-lg"></i>
 			{{ i18n.ts.save }}</MkButton
 		>
+		<div class="description">{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
 	</div>
 </template>
 

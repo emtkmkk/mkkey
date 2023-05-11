@@ -101,20 +101,52 @@
 				data-index="5"
 				@click="localOnly = !localOnly"
 			>
-				<div v-if="canLocalSwitch" :class="$style.icon">
+				<div :class="$style.icon">
 					<i class="ph-hand-fist ph-bold ph-lg"></i>
 				</div>
-				<div v-if="canLocalSwitch" :class="$style.body">
-					<span v-if="canLocalSwitch" :class="$style.itemTitle">{{
+				<div :class="$style.body">
+					<span :class="$style.itemTitle">{{
 						i18n.ts._visibility.localOnly
 					}}</span>
-					<span v-if="canLocalSwitch" :class="$style.itemDescription">{{
+					<span :class="$style.itemDescription">{{
 						i18n.ts._visibility.localOnlyDescription
 					}}</span>
 				</div>
-				<div v-if="canLocalSwitch" :class="$style.toggle">
+				<div :class="$style.toggle">
 					<i
-						v-if="canLocalSwitch"
+						:class="
+							localOnly
+								? 'ph-toggle-right ph-bold ph-lg'
+								: 'ph-toggle-left ph-bold ph-lg'
+						"
+					></i>
+				</div>
+			</button>
+			<button
+			    v-if="!canLocalSwitch"
+				key="localOnly"
+				class="_button"
+				:class="[
+					$style.item,
+					$style.localOnly,
+					{ [$style.active]: localOnly },
+				]"
+				data-index="5"
+				@click="localOnly = !localOnly"
+			>
+				<div :class="$style.icon">
+					<i class="ph-hand-heart ph-bold ph-lg"></i>
+				</div>
+				<div :class="$style.body">
+					<span :class="$style.itemTitle">{{
+						i18n.ts._visibility.localAndFollower
+					}}</span>
+					<span :class="$style.itemDescription">{{
+						i18n.ts._visibility.localAndFollowerDescription
+					}}</span>
+				</div>
+				<div :class="$style.toggle">
+					<i
 						:class="
 							localOnly
 								? 'ph-toggle-right ph-bold ph-lg'

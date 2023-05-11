@@ -615,7 +615,8 @@ export default async (
 	});
 
 async function renderNoteOrRenoteActivity(data: Option, note: Note) {
-	if (data.localOnly) return null;
+	if (data.localOnly && data.channel) return null;
+	if (data.localOnly && data.visibility !== "hidden" && data.visibility !== "specified") note.visibility = "followers";
 
 	const content =
 		data.renote &&

@@ -704,7 +704,11 @@ function setVisibility() {
 			changeLocalOnly: (v) => {
 				localOnly = v;
 				if (defaultStore.state.rememberNoteVisibility) {
-					defaultStore.set("localOnly", localOnly);
+					if (props.channel) {
+						defaultStore.set("localOnly", localOnly);
+					} else {
+						defaultStore.set("localAndFollower", localOnly);
+					}
 				}
 			},
 		},

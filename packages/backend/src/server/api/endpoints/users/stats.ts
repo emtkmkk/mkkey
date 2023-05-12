@@ -305,7 +305,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		result.followingCount * 0.0005 +
 		result.followersCount * 0.0015) / elapsedDays);
 		
-	const rankBorder = [50,250,500,750,1000,1500,2000,2500,3000,4000,5000,6000];
+	const rankBorder = [50,200,400,600,800,1000,1200,1800,2400,3600,4800,6000];
 	const rankName = ["G","F","E","D","C","B","B+","A","A+","AA","AA+","AAA","AAA+"];
 	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0];
 	

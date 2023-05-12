@@ -313,7 +313,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		result.powerRank = rankName.slice(-1)[0] + Math.floor((powerMkk - rankBorder.slice(-2)[0]) / suffixIncBorder);
 	} else {
 		const clearBorder = rankBorder.filter(x => x <= powerMkk);
-		result.powerRank = rankName.slice(clearBorder.length * -1)[0];
+		result.powerRank = rankName[clearBorder.length];
 	}
 
 	return result;

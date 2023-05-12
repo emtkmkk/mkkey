@@ -174,8 +174,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	let now = new Date();
 	let mkk = new Date(2023,4,5);
 	
-	const elapsedDays =  Math.min(Math.ceil((now.getTime() - user.createdAt.getTime()) / 86400),Math.ceil((now.getTime() - mkk.getTime()) / 86400));
-			
+	const elapsedDays =  Math.min(Math.ceil((now.getTime() - Date.parse(user.createdAt)) / 86400),Math.ceil((now.getTime() - mkk.getTime()) / 86400));
+
 	const sendMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
 			.where("messaging_message.userId = :userId", { userId: user.id })
 			.getCount();

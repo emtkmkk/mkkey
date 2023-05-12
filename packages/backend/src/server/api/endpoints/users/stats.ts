@@ -305,15 +305,15 @@ export default define(meta, paramDef, async (ps, me) => {
 		result.followingCount * 0.0005 +
 		result.followersCount * 0.0015) / elapsedDays);
 		
-	const rankBorder = [50,250,500,750,1000,1500,2000,2500,3000,4000,5000,6000]
-	const rankName = ["G","F","E","D","C","B","B+","A","A+","AA","AA+","AAA","AAA+"]
-	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0]
+	const rankBorder = [50,250,500,750,1000,1500,2000,2500,3000,4000,5000,6000];
+	const rankName = ["G","F","E","D","C","B","B+","A","A+","AA","AA+","AAA","AAA+"];
+	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0];
 	
 	if (powerMkk >= rankBorder.slice(-1)[0] + suffixIncBorder) {
-		result.powerRank = rankName.slice(-1)[0] + Math.floor((powerMkk - rankBorder.slice(-2)[0]) / suffixIncBorder)
+		result.powerRank = rankName.slice(-1)[0] + Math.floor((powerMkk - rankBorder.slice(-2)[0]) / suffixIncBorder);
 	} else {
-		const clearBorder = rankBorder.filter(x => x <= powerMkk)
-		result.powerRank = rankName.slice(clearBorder.length * -1)[0]
+		const clearBorder = rankBorder.filter(x => x <= powerMkk);
+		result.powerRank = rankName.slice(clearBorder.length * -1)[0];
 	}
 
 	return result;

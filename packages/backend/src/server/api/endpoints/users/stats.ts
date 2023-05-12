@@ -147,6 +147,12 @@ export const meta = {
 				nullable: false,
 				description: "powerrrrrrrrrrrrrr",
 			},
+			powerRank: {
+				type: "string",
+				optional: false,
+				nullable: false,
+				description: "powerrrrrrrrrrrrrr",
+			},
 		},
 	},
 } as const;
@@ -164,7 +170,12 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (user == null) {
 		throw new ApiError(meta.errors.noSuchUser);
 	}
+
+	let now = new Date();
+	let mkk = new Date(2023,4,5);
 	
+	const elapsedDays =  Math.min(Math.ceil(now.getTime() - user.createdAt / 86400),Math.ceil(now.getTime() - mkk.getTime() / 86400));
+			
 	const sendMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
 			.where("messaging_message.userId = :userId", { userId: user.id })
 			.getCount();
@@ -172,6 +183,13 @@ export default define(meta, paramDef, async (ps, me) => {
 	const readMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
 			.where(" :userId  = ANY(messaging_message.reads) ", { userId: user.id })
 			.getCount();
+			
+	const notesPostDaysMkk = (await Notes.createQueryBuilder("note")
+			.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
+			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.visibility <> 'hidden'")
+			.andWhere("'misshaialert' <> ALL(note.tags)")
+			.getRawOne()).count;
 			
 	const result = await awaitAll({
 		notesCount: Notes.createQueryBuilder("note")
@@ -266,6 +284,37 @@ export default define(meta, paramDef, async (ps, me) => {
 		) * ( 1 + 
 		result.followingCount * 0.0005 +
 		result.followersCount * 0.0015));
+		
+	const powerMkk = 
+		Math.floor((notesPostDaysMkk * 482 +
+		result.notesCount * 18 +
+		result.repliesCount * 7 +
+		result.renotesCount * -11 +
+		result.repliedCount * 3 +
+		result.renotedCount * 3 +
+		result.pollVotesCount * 7 +
+		result.pollVotedCount * 3 +
+		result.pageLikesCount * 33 +
+		result.pageLikedCount * 27 +
+		result.sentReactionsCount * 7 +
+		result.receivedReactionsCount * 3 +
+		result.driveFilesCount * 6 + 
+		sendMessageCount * 11 +
+		readMessageCount * 2
+		) * ( 1 + 
+		result.followingCount * 0.0005 +
+		result.followersCount * 0.0015) / elapsedDays);
+		
+	const rankBorder = [50,250,500,750,1000,1500,2000,2500,3000,4000,5000,6000]
+	const rankName = ["G","F","E","D","C","B","B+","A","A+","AA","AA+","AAA","AAA+"]
+	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0]
+	
+	if (powerMkk >= rankBorder.slice(-1)[0] + suffixIncBorder) {
+		result.powerRank = rankName.slice(-1)[0] + Math.floor((powerMkk - rankBorder.slice(-2)[0]) / suffixIncBorder)
+	} else {
+		const clearBorder = rankBorder.filter(x => x <= powerMkk)
+		result.powerRank = rankName.slice(clearBorder.length * -1)[0]
+	}
 
 	return result;
 });

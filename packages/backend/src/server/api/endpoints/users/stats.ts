@@ -302,8 +302,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		sendMessageCount * 11 +
 		readMessageCount * 2
 		) * ( 1 + 
-		result.followingCount * 0.0005 +
-		result.followersCount * 0.0015) / elapsedDays);
+		result.followingCount * 0 +
+		result.followersCount * 0) / elapsedDays);
 		
 	const rankBorder = [50,200,400,600,800,1000,1200,1800,2400,3600,4800,6000];
 	const rankName = ["G","F","E","D","C","B","B+","A","A+","AA","AA+","AAA","AAA+"];

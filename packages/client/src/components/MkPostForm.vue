@@ -913,14 +913,20 @@ async function post() {
 	};
 
 	if (withHashtags && hashtags && hashtags.trim() !== "") {
+		const textHashtags_ = mfm
+			.parse(postData.text)
+			.filter((x) => x.type === "hashtag")
+			.map((x) => x.props.hashtag.startsWith("#") ? x.props.hashtag : "#" + x.props.hashtag);
 		const hashtags_ = hashtags
 			.trim()
 			.split(" ")
-			.map((x) => (x.startsWith("#") ? x : "#" + x))
+			.map((x) => (x.startsWith("#") ? x : "#" + x));
+		const hashtags__ = hashtags_
+			.filter(x => !textHashtags_.includes(x))
 			.join(" ");
 		postData.text = postData.text
-			? `${postData.text} ${hashtags_}`
-			: hashtags_;
+			? `${postData.text} ${hashtags__}`
+			: hashtags__;
 	}
 
 	// plugin

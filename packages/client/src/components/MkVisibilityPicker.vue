@@ -88,7 +88,7 @@
 					}}</span>
 				</div>
 			</button>
-			<div v-if="canLocalSwitch && canVisibilitySwitch" :class="$style.divider"></div>
+			<div v-if="canVisibilitySwitch" :class="$style.divider"></div>
 			<button
 			    v-if="canLocalSwitch"
 				key="localOnly"

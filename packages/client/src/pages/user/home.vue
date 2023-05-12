@@ -215,8 +215,8 @@
 									{{ i18n.ts.power }}
 								</dt>
 								<dd class="value">
-									{{ stats.powerRank }} - 
-									<MkNumber :value="stats.power" />
+									{{ stats.powerRank }} [ 
+									<MkNumber :value="stats.power" /> ]
 								</dd>
 							</dl>
 						</div>

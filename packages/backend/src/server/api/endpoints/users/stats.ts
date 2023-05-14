@@ -153,6 +153,12 @@ export const meta = {
 				nullable: false,
 				description: "powerrrrrrrrrrrrrr",
 			},
+			nextRank: {
+				type: "string",
+				optional: false,
+				nullable: false,
+			    description: "powerrrrrrrrrrrrrr",
+			}
 		},
 	},
 } as const;
@@ -301,19 +307,19 @@ export default define(meta, paramDef, async (ps, me) => {
 		result.driveFilesCount * 6 + 
 		sendMessageCount * 11 +
 		readMessageCount * 2
-		) * ( 1 + 
-		result.followingCount * 0 +
-		result.followersCount * 0) / elapsedDays);
+		) / elapsedDays);
 		
-	const rankBorder = [50,200,400,600,800,1000,1200,1800,2400,3600,4800,6000];
+	const rankBorder = [50,200,400,550,700,850,1000,1500,2000,3000,4000,5000];
 	const rankName = ["G","F","E","D","C","B","B+","A","A+","AA","AA+","AAA","AAA+"];
 	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0];
 	
 	if (powerMkk >= rankBorder.slice(-1)[0] + suffixIncBorder) {
 		result.powerRank = rankName.slice(-1)[0] + Math.floor((powerMkk - rankBorder.slice(-2)[0]) / suffixIncBorder);
+	    result.nextRank = Math.round((powerMkk % suffixIncBorder) / suffixIncBorder * 100) + "%"
 	} else {
 		const clearBorder = rankBorder.filter(x => x <= powerMkk);
 		result.powerRank = rankName[clearBorder.length];
+	    result.nextRank = Math.round((powerMkk - clearBorder.slice(-1)[0]) / (rankBorder[clearBorder.length] - clearBorder.slice(-1)[0]) * 100) + "%"
 	}
 
 	return result;

@@ -315,11 +315,11 @@ export default define(meta, paramDef, async (ps, me) => {
 	
 	if (powerMkk >= rankBorder.slice(-1)[0] + suffixIncBorder) {
 		result.powerRank = rankName.slice(-1)[0] + Math.floor((powerMkk - rankBorder.slice(-2)[0]) / suffixIncBorder);
-	    result.nextRank = Math.round((powerMkk % suffixIncBorder) / suffixIncBorder * 100) + "%"
+	    result.nextRank = Math.floor((powerMkk % suffixIncBorder) / suffixIncBorder * 100) + "%"
 	} else {
 		const clearBorder = rankBorder.filter(x => x <= powerMkk);
 		result.powerRank = rankName[clearBorder.length];
-	    result.nextRank = Math.round((powerMkk - clearBorder.slice(-1)[0]) / (rankBorder[clearBorder.length] - clearBorder.slice(-1)[0]) * 100) + "%"
+	    result.nextRank = Math.floor((powerMkk - clearBorder.slice(-1)[0]) / (rankBorder[clearBorder.length] - clearBorder.slice(-1)[0]) * 100) + "%"
 	}
 
 	return result;

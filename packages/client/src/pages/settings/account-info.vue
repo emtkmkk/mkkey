@@ -136,6 +136,10 @@
 				<template #key>{{ i18n.ts.power }}</template>
 				<template #value>{{ number(stats.power) }}</template>
 			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.power }}</template>
+				<template #value>{{ stats.powerRank + " - " + stats.nextRank }}</template>
+			</MkKeyValue>
 		</FormSection>
 
 		<FormSection>

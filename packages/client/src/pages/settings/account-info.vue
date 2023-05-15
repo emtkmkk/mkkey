@@ -193,6 +193,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
 import FormSection from "@/components/form/section.vue";
+import FormLink from "@/components/form/link.vue";
 import MkKeyValue from "@/components/MkKeyValue.vue";
 import * as os from "@/os";
 import number from "@/filters/number";

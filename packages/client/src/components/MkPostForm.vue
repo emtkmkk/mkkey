@@ -1105,7 +1105,7 @@ onMounted(() => {
 	});
 });
 
-onUnmounted(() => if (!!defaultStore.state.powerMode) document.body.removeEventListener('input',powerMode););
+onUnmounted(() => document.body.removeEventListener('input',powerMode));
 </script>
 
 <style lang="scss" scoped>

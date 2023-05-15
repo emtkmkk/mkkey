@@ -197,7 +197,7 @@
 			</div>
 		</article>
 	</div>
-	<div v-else class="muted" @click="muted.muted = false">
+	<button v-else class="muted _button" @click="muted.muted = false">
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
 				<MkA
@@ -212,7 +212,7 @@
 				{{ muted.matched.join(", ") }}
 			</template>
 		</I18n>
-	</div>
+	</button>
 </template>
 
 <script lang="ts" setup>
@@ -769,5 +769,6 @@ function readPromo() {
 	padding: 8px;
 	text-align: center;
 	opacity: 0.7;
+	width: 100%;
 }
 </style>

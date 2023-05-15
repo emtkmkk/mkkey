@@ -211,7 +211,7 @@ export const defaultStore = markRaw(
 		},
 		animatedMfmWarnShown: {
 			where: "device",
-			default: true,
+			default: false,
 		},
 		loadRawImages: {
 			where: "device",

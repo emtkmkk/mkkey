@@ -319,7 +319,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	} else {
 		const clearBorder = rankBorder.filter(x => x <= powerMkk);
 		result.powerRank = rankName[clearBorder.length];
-	    result.nextRank = Math.floor((powerMkk - clearBorder.slice(-1)[0]) / (rankBorder[clearBorder.length] - clearBorder.slice(-1)[0]) * 100) + "%"
+		const clearBorderMax = clearBorder.slice(-1)[0] ?? 0
+	    result.nextRank = Math.floor((powerMkk - clearBorderMax) / (rankBorder[clearBorder.length] - clearBorderMax) * 100) + "%"
 	}
 
 	return result;

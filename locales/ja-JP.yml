@@ -1087,6 +1087,10 @@ _nsfw:
   ignore: "閲覧注意のメディアを隠さない"
   force: "常にメディアを隠す"
 _mfm:
+  play: "MFMを再生"
+  stop: "MFMを停止"
+  warn: "MFMには、動きの激しいアニメーションや派手なアニメーションが含まれる場合があります。"
+  alwaysPlay: "動きのあるMFMを自動再生する"
   cheatSheet: "MFMチートシート"
   intro: "MFMは、MisskeyやCalckey、Akkomaなどの様々な場所で使用できるマークアップ言語です。ここでは、MFMで使用可能な構文一覧が確認できます。"
   dummy: "CalckeyでFediverseの世界が広がります"

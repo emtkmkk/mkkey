@@ -211,7 +211,7 @@ export const defaultStore = markRaw(
 		},
 		animatedMfmWarnShown: {
 			where: "device",
-			default: false,
+			default: true,
 		},
 		loadRawImages: {
 			where: "device",
@@ -247,7 +247,7 @@ export const defaultStore = markRaw(
 		},
 		showFixedPostForm: {
 			where: "device",
-			default: false,
+			default: true,
 		},
 		enableInfiniteScroll: {
 			where: "device",
@@ -323,7 +323,7 @@ export const defaultStore = markRaw(
 		},
 		themeInitial: {
 			where: "device",
-			default: true,
+			default: false,
 		},
 		numberOfPageCache: {
 			where: "device",

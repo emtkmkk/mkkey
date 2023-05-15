@@ -232,7 +232,7 @@ const menuDef = computed(() => [
 			{
 				icon: "ph-dots-three-outline ph-bold ph-lg",
 				text: i18n.ts.other,
-				to: "/settings/other",
+				to: "/settings/account-info",
 				active: currentPage?.route.name === "other",
 			},
 		],

@@ -162,8 +162,8 @@
 							<h3>{{ i18n.ts._tutorial.step6_1 }}</h3>
 							<div>{{ i18n.ts._tutorial.step6_2 }}</div>
 							<div>{{ i18n.ts._tutorial.step6_3 }}</div>
-						</div>
-						<div
+						</section>
+						<section
 							v-else-if="tutorial === 6"
 							key="7"
 							class="_content"
@@ -191,7 +191,7 @@
 									<Mfm text="$[shake 🚀]"></Mfm>
 								</h3>
 							</MkSparkle>
-						</div>
+						</section>
 					</Transition>
 				</div>
 			</div>

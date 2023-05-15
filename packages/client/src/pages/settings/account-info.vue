@@ -19,8 +19,20 @@
 		<FormSection v-if="stats">
 			<template #label>{{ i18n.ts.statistics }}</template>
 			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.power }}</template>
+				<template #value>{{ number(stats.power) }}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.power }}</template>
+				<template #value>{{ stats.powerRank + " - " + stats.nextRank }}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.notesCount }}</template>
 				<template #value>{{ number(stats.notesCount) }}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.notesPostDays }}</template>
+				<template #value>{{ number(stats.notesPostDays) }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.repliesCount }}</template>
@@ -128,18 +140,6 @@
 				<template #key>{{ i18n.ts.driveUsage }}</template>
 				<template #value>{{ bytes(stats.driveUsage) }}</template>
 			</MkKeyValue>
-			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>{{ i18n.ts.notesPostDays }}</template>
-				<template #value>{{ number(stats.notesPostDays) }}</template>
-			</MkKeyValue>
-			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>{{ i18n.ts.power }}</template>
-				<template #value>{{ number(stats.power) }}</template>
-			</MkKeyValue>
-			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>{{ i18n.ts.power }}</template>
-				<template #value>{{ stats.powerRank + " - " + stats.nextRank }}</template>
-			</MkKeyValue>
 		</FormSection>
 
 		<FormSection>
@@ -181,6 +181,12 @@
 				}}</template>
 			</MkKeyValue>
 		</FormSection>
+
+		<FormLink to="/registry" class="_formBlock"
+			><template #icon><i class="ph-gear-six ph-bold ph-lg"></i></template
+			>{{ i18n.ts.registry }}</FormLink
+		>
+
 	</div>
 </template>
 

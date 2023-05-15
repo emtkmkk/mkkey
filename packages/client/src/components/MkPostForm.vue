@@ -294,7 +294,6 @@ import { inject, watch, nextTick, onMounted, defineAsyncComponent } from "vue";
 import * as mfm from "mfm-js";
 import * as misskey from "calckey-js";
 import insertTextAtCursor from "insert-text-at-cursor";
-import powerMode from "activate-power-mode";
 import { length } from "stringz";
 import { toASCII } from "punycode/";
 import * as Acct from "calckey-js/built/acct";
@@ -1053,12 +1052,6 @@ onMounted(() => {
 	new Autocomplete(textareaEl, $$(text));
 	new Autocomplete(cwInputEl, $$(cw));
 	new Autocomplete(hashtagsInputEl, $$(hashtags));
-	
-	if (!!defaultStore.state.powerMode){
-		powerMode.shake = !defaultStore.state.powerModeNoShake
-		powerMode.colorful =  !!defaultStore.state.powerModeColorful
-		document.body.addEventListener('input',powerMode);
-	}
 
 	nextTick(() => {
 		// 書きかけの投稿を復元
@@ -1104,8 +1097,6 @@ onMounted(() => {
 		nextTick(() => watchForDraft());
 	});
 });
-
-onUnmounted(() => document.body.removeEventListener('input',powerMode));
 </script>
 
 <style lang="scss" scoped>

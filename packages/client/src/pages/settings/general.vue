@@ -98,15 +98,6 @@
 			<FormSwitch v-model="seperateRenoteQuote" class="_formBlock">{{
 				i18n.ts.seperateRenoteQuote
 			}}</FormSwitch>
-			<FormSwitch v-model="powerMode" class="_formBlock">{{
-				i18n.ts.powerMode
-			}}</FormSwitch>
-			<FormSwitch v-model="powerModeColorful" class="_formBlock">{{
-				i18n.ts.powerModeColorful
-			}}</FormSwitch>
-			<FormSwitch v-model="powerModeNoShake" class="_formBlock">{{
-				i18n.ts.powerModeNoShake
-			}}</FormSwitch>
 			<FormSwitch v-model="useSystemFont" class="_formBlock">{{
 				i18n.ts.useSystemFont
 			}}</FormSwitch>
@@ -221,7 +212,6 @@
 			><template #icon><i class="ph-radical ph-bold ph-lg"></i></template
 			>{{ i18n.ts.customKaTeXMacro }}</FormLink
 		>
-		
 	</div>
 </template>
 
@@ -324,15 +314,6 @@ const useReactionPickerForContextMenu = computed(
 );
 const seperateRenoteQuote = computed(
 	defaultStore.makeGetterSetter("seperateRenoteQuote")
-);
-const powerMode = computed(
-	defaultStore.makeGetterSetter("powerMode")
-);
-const powerModeColorful = computed(
-	defaultStore.makeGetterSetter("powerModeColorful")
-);
-const powerModeNoShake = computed(
-	defaultStore.makeGetterSetter("powerModeNoShake")
 );
 const squareAvatars = computed(defaultStore.makeGetterSetter("squareAvatars"));
 const showUpdates = computed(defaultStore.makeGetterSetter("showUpdates"));

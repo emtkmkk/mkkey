@@ -291,7 +291,7 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, watch, nextTick, onMounted, defineAsyncComponent } from "vue";
+import { inject, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from "vue";
 import * as mfm from "mfm-js";
 import * as misskey from "calckey-js";
 import insertTextAtCursor from "insert-text-at-cursor";
@@ -1054,11 +1054,11 @@ onMounted(() => {
 	new Autocomplete(textareaEl, $$(text));
 	new Autocomplete(cwInputEl, $$(cw));
 	new Autocomplete(hashtagsInputEl, $$(hashtags));
-	
+
 	if (!!defaultStore.state.powerMode){
 		powerMode.shake = !defaultStore.state.powerModeNoShake
 		powerMode.colorful =  !!defaultStore.state.powerModeColorful
-		document.body.addEventListener('input',powerMode);
+		window.addEventListener('input',powerMode);
 	}
 
 	nextTick(() => {
@@ -1106,7 +1106,7 @@ onMounted(() => {
 	});
 });
 
-onUnmounted(() => document.body.removeEventListener('input',powerMode));
+onUnmounted(() => window.removeEventListener('input',powerMode));
 </script>
 
 <style lang="scss" scoped>

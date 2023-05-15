@@ -369,6 +369,18 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: "",
 		},
+		powerMode: {
+			where: "device",
+			default: false,
+		},
+		powerModeColorful: {
+			where: "device",
+			default: false,
+		},
+		powerModeNoShake: {
+			where: "device",
+			default: false,
+		},
 	}),
 );
 

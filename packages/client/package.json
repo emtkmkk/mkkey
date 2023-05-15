@@ -27,6 +27,7 @@
 		"@types/uuid": "8.3.4",
 		"@vitejs/plugin-vue": "4.0.0",
 		"@vue/compiler-sfc": "3.2.45",
+		"activate-power-mode": "https://github.com/emtkmkk/activate-power-mode.git#feature/common-js",
 		"autobind-decorator": "2.4.0",
 		"autosize": "5.0.2",
 		"blurhash": "1.1.5",

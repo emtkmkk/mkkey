@@ -30,7 +30,7 @@
 				<span v-if="localOnly && isChannel" class="local-only"
 					><i class="ph-hand-fist ph-bold ph-lg"></i
 				></span>
-				<span v-if="localOnly && !isChannel && (!$store.state.firstPostButtonVisibilityForce || visibility !== 'specified')" class="local-only"
+				<span v-if="localOnly && !isChannel && (!$store.state.firstPostButtonVisibilityForce || visibility === 'specified')" class="local-only"
 					><i class="ph-hand-heart ph-bold ph-lg"></i
 				></span>
 				<button

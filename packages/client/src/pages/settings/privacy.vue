@@ -111,6 +111,11 @@
 				<FormSwitch v-model="defaultNoteLocalOnly" class="_formBlock">{{
 					i18n.ts._visibility.localOnly
 				}}</FormSwitch>
+				<br />
+				<br />
+				<FormSwitch v-model="firstPostButtonVisibilityForce" class="_formBlock">{{
+					i18n.ts._visibility.firstPostButtonVisibilityForce
+				}}</FormSwitch>
 			</FormFolder>
 
 			<FormFolder class="_formBlock">
@@ -122,9 +127,19 @@
 					i18n.ts._visibility.public
 				}}</template>
 				<template
+					v-else-if="secondPostButton == true && secondPostVisibility === 'l-public'"
+					#suffix
+					>{{ i18n.ts._visibility.localAndFollower }}</template
+				>
+				<template
 					v-else-if="secondPostButton == true && secondPostVisibility === 'home'"
 					#suffix
 					>{{ i18n.ts._visibility.home }}</template
+				>
+				<template
+					v-else-if="secondPostButton == true && secondPostVisibility === 'l-home'"
+					#suffix
+					>{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}</template
 				>
 				<template
 					v-else-if="secondPostButton == true && secondPostVisibility === 'followers'"
@@ -145,8 +160,14 @@
 					<option value="public">
 						{{ i18n.ts._visibility.public }}
 					</option>
+					<option value="l-public">
+						{{ i18n.ts._visibility.localAndFollower }}
+					</option>
 					<option value="home">
 						{{ i18n.ts._visibility.home }}
+					</option>
+					<option value="l-home">
+						{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -165,9 +186,19 @@
 					i18n.ts._visibility.public
 				}}</template>
 				<template
+					v-else-if="thirdPostButton == true && thirdPostVisibility === 'l-public'"
+					#suffix
+					>{{ i18n.ts._visibility.localAndFollower }}</template
+				>
+				<template
 					v-else-if="thirdPostButton == true && thirdPostVisibility === 'home'"
 					#suffix
 					>{{ i18n.ts._visibility.home }}</template
+				>
+				<template
+					v-else-if="thirdPostButton == true && thirdPostVisibility === 'l-home'"
+					#suffix
+					>{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}</template
 				>
 				<template
 					v-else-if="thirdPostButton == true && thirdPostVisibility === 'followers'"
@@ -188,8 +219,14 @@
 					<option value="public">
 						{{ i18n.ts._visibility.public }}
 					</option>
+					<option value="l-public">
+						{{ i18n.ts._visibility.localAndFollower }}
+					</option>
 					<option value="home">
 						{{ i18n.ts._visibility.home }}
+					</option>
+					<option value="l-home">
+						{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -206,6 +243,12 @@
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.keepCw }}</FormSwitch
+		>
+		<FormSwitch
+			v-model="channelSecondPostButton"
+			class="_formBlock"
+			@update:modelValue="save()"
+			>{{ i18n.ts.channelSecondPostButton }}</FormSwitch
 		>
 	</div>
 </template>
@@ -243,6 +286,9 @@ let defaultNoteLocalAndFollower = $computed(
 let rememberNoteVisibility = $computed(
 	defaultStore.makeGetterSetter("rememberNoteVisibility")
 );
+let firstPostButtonVisibilityForce = $computed(
+	defaultStore.makeGetterSetter("firstPostButtonVisibilityForce")
+);
 let secondPostButton = $computed(
 	defaultStore.makeGetterSetter("secondPostButton")
 );
@@ -256,6 +302,9 @@ let thirdPostVisibility = $computed(
 	defaultStore.makeGetterSetter("thirdPostVisibility")
 );
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
+let channelSecondPostButton = $computed(
+	defaultStore.makeGetterSetter("channelSecondPostButton")
+);
 
 function save() {
 	os.api("i/update", {

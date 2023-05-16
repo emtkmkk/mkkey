@@ -30,11 +30,11 @@
 				<span v-if="localOnly && isChannel" class="local-only"
 					><i class="ph-hand-fist ph-bold ph-lg"></i
 				></span>
-				<span v-if="localOnly && !isChannel && (!$store.state.firstPostButtonVisibilityForce || visibility === 'specified')" class="local-only"
+				<span v-if="localOnly && !isChannel && (($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) || visibility === 'specified')" class="local-only"
 					><i class="ph-hand-heart ph-bold ph-lg"></i
 				></span>
 				<button
-					v-if="!$store.state.firstPostButtonVisibilityForce || isChannel || visibility === 'specified'"
+					v-if="($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) || isChannel || visibility === 'specified'"
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
@@ -62,7 +62,7 @@
 					<i class="ph-question ph-bold ph-lg"></i>
 				</button>
 				<button
-					v-if="(!$store.state.firstPostButtonVisibilityForce && !$store.state.secondPostButton) || (!$store.state.channelSecondPostButton && isChannel) || visibility === 'specified'"
+					v-if="(($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) && !$store.state.secondPostButton) || (!$store.state.channelSecondPostButton && isChannel) || visibility === 'specified'"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -80,7 +80,7 @@
 					></i>
 				</button>
 				<button
-					v-if="$store.state.firstPostButtonVisibilityForce && !$store.state.secondPostButton && !isChannel && visibility !== 'specified'"
+					v-if="(!$store.state.rememberNoteVisibility && $store.state.firstPostButtonVisibilityForce) && !$store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -114,7 +114,7 @@
 				<button
 					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
-					:disabled="!canPost"
+					:disabled="!canPost && $store.state.thirdPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postThird"
 				>
@@ -138,7 +138,7 @@
 				<button
 					v-if="$store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
-					:disabled="!canPost"
+					:disabled="!canPost && $store.state.secondPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postSecond"
 				>
@@ -160,7 +160,7 @@
 					></i>
 				</button>
 				<button
-					v-if="!$store.state.firstPostButtonVisibilityForce && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
+					v-if="($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -178,9 +178,9 @@
 					></i>
 				</button>
 				<button
-					v-if="$store.state.firstPostButtonVisibilityForce && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
+					v-if="(!$store.state.rememberNoteVisibility && $store.state.firstPostButtonVisibilityForce) && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
-					:disabled="!canPost"
+					:disabled="!canPost && $store.state.defaultNoteVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postFirst"
 				>
@@ -988,7 +988,9 @@ function deleteDraft() {
 async function postFirst() {
 	visibility = defaultStore.state.defaultNoteVisibility;
 	localOnly = defaultStore.state.defaultNoteLocalAndFollower;
-	post();
+	if (canPost) {
+		post();
+	}
 }
 
 async function postSecond() {
@@ -999,7 +1001,9 @@ async function postSecond() {
 		localOnly = false;
 		visibility = defaultStore.state.secondPostVisibility;
 	}
-	post();
+	if (canPost) {
+		post();
+	}
 }
 
 async function postSecondChannel() {
@@ -1015,7 +1019,9 @@ async function postThird() {
 		localOnly = false;
 		visibility = defaultStore.state.thirdPostVisibility;
 	}
-	post();
+	if (canPost) {
+		post();
+	}
 }
 
 async function post() {

@@ -216,7 +216,7 @@
 				>
 					2
 					<i
-						:class="ph-hand-fist ph-bold ph-lg"
+						class="ph-hand-fist ph-bold ph-lg"
 					></i>
 				</button>
 				<button

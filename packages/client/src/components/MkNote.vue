@@ -197,7 +197,7 @@
 			</div>
 		</article>
 	</div>
-	<button v-else class="muted _button" @click="muted.muted = false">
+	<button v-else-if="!hiddenSoftMutes" class="muted _button" @click="muted.muted = false">
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
 				<MkA
@@ -316,6 +316,7 @@ const translation = ref(null);
 const translating = ref(false);
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
 const favButtonReactionIsFavorite = defaultStore.state.favButtonReaction === 'favorite';
+const hiddenSoftMutes = defaultStore.state.hiddenSoftMutes;
 
 const keymap = {
 	r: () => reply(true),

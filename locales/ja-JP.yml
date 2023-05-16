@@ -564,6 +564,7 @@ scratchpadDescription: "スクラッチパッドは、AiScriptの実験環境を
 output: "出力"
 script: "スクリプト"
 disablePagesScript: "ページのスクリプトを無効にする"
+hiddenMFMHelp: "投稿時のMFMチートシートボタンを非表示にする"
 updateRemoteUser: "リモートユーザー情報の更新"
 deleteAllFiles: "すべてのファイルを削除"
 deleteAllFilesConfirm: "すべてのファイルを削除しますか？"

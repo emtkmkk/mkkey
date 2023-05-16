@@ -47,6 +47,9 @@
 			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript
 			}}</FormSwitch>
+			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock">{{
+				i18n.ts.hiddenMFMHelp
+			}}</FormSwitch>
 
 			<FormSelect v-model="serverDisconnectedBehavior" class="_formBlock">
 				<template #label>{{ i18n.ts.whenServerDisconnected }}</template>
@@ -327,6 +330,9 @@ const enterSendsMessage = computed(
 );
 const notCloseEmojiPicker = computed(
 	defaultStore.makeGetterSetter("notCloseEmojiPicker")
+);
+const hiddenMFMHelp = computed(
+	defaultStore.makeGetterSetter("hiddenMFMHelp")
 );
 const useReactionPickerForContextMenu = computed(
 	defaultStore.makeGetterSetter("useReactionPickerForContextMenu")

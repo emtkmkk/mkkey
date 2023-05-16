@@ -34,7 +34,7 @@
 					><i class="ph-hand-heart ph-bold ph-lg"></i
 				></span>
 				<button
-					v-if="!$store.state.firstPostButtonVisibilityForce || isChannel || v-if="visibility === 'specified'"
+					v-if="!$store.state.firstPostButtonVisibilityForce || isChannel || visibility === 'specified'"
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"

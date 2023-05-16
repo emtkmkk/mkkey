@@ -180,7 +180,7 @@ export const popups = ref([]) as Ref<
 >;
 
 const zIndexes = {
-	low: 1000000,
+	low: 999998,
 	middle: 2000000,
 	high: 3000000,
 };

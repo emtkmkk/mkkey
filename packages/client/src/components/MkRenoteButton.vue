@@ -130,7 +130,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 
 	if (["public", "home"].includes(props.note.visibility)) {
 		buttonActions.push({
-			text: i18n.ts.renoteToFollowers,
+			text: i18n.ts.renoteToLocalFollowers,
 			icons: [
 				"ph-repeat ph-bold ph-lg",
 				"ph-hand-heart ph-bold ph-lg",

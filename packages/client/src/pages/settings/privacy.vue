@@ -112,9 +112,8 @@
 					i18n.ts._visibility.localOnly
 				}}</FormSwitch>
 				<br />
-				<br />
 				<FormSwitch v-model="firstPostButtonVisibilityForce" class="_formBlock">{{
-					i18n.ts._visibility.firstPostButtonVisibilityForce
+					i18n.ts.firstPostButtonVisibilityForce
 				}}</FormSwitch>
 			</FormFolder>
 

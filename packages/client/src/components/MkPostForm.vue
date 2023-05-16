@@ -30,11 +30,11 @@
 				<span v-if="localOnly && isChannel" class="local-only"
 					><i class="ph-hand-fist ph-bold ph-lg"></i
 				></span>
-				<span v-if="localOnly && !isChannel && !$store.state.firstPostButtonVisibilityForce" class="local-only"
+				<span v-if="localOnly && !isChannel && (!$store.state.firstPostButtonVisibilityForce || visibility !== 'specified')" class="local-only"
 					><i class="ph-hand-heart ph-bold ph-lg"></i
 				></span>
 				<button
-					v-if="!$store.state.firstPostButtonVisibilityForce || isChannel"
+					v-if="!$store.state.firstPostButtonVisibilityForce || isChannel || v-if="visibility === 'specified'"
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
@@ -62,7 +62,7 @@
 					<i class="ph-question ph-bold ph-lg"></i>
 				</button>
 				<button
-					v-if="(!$store.state.firstPostButtonVisibilityForce && !$store.state.secondPostButton) || (!$store.state.channelSecondPostButton && isChannel)"
+					v-if="(!$store.state.firstPostButtonVisibilityForce && !$store.state.secondPostButton) || (!$store.state.channelSecondPostButton && isChannel) || visibility === 'specified'"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -80,7 +80,7 @@
 					></i>
 				</button>
 				<button
-					v-if="$store.state.firstPostButtonVisibilityForce && !$store.state.secondPostButton && !isChannel"
+					v-if="$store.state.firstPostButtonVisibilityForce && !$store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -112,7 +112,7 @@
 					></i>
 				</button>
 				<button
-					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && !isChannel"
+					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -136,7 +136,7 @@
 					></i>
 				</button>
 				<button
-					v-if="$store.state.secondPostButton && !isChannel"
+					v-if="$store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -160,7 +160,7 @@
 					></i>
 				</button>
 				<button
-					v-if="!$store.state.firstPostButtonVisibilityForce && $store.state.secondPostButton && !isChannel"
+					v-if="!$store.state.firstPostButtonVisibilityForce && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -178,7 +178,7 @@
 					></i>
 				</button>
 				<button
-					v-if="$store.state.firstPostButtonVisibilityForce && $store.state.secondPostButton && !isChannel"
+					v-if="$store.state.firstPostButtonVisibilityForce && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit

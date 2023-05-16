@@ -1294,7 +1294,7 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 			}
 
 			> .local-only {
-				margin: 0 0 0 4px;
+				margin: 0 8px 0 4px;
 				opacity: 0.7;
 			}
 

@@ -133,7 +133,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 			text: i18n.ts.renoteToLocalFollowers,
 			icons: [
 				"ph-repeat ph-bold ph-lg",
-				"ph-hand-heart ph-bold ph-lg",
+				"ph-hand-heart ph-bold ph-lg"
 			]
 			danger: false,
 			action: () => {

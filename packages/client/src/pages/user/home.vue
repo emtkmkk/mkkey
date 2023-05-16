@@ -738,40 +738,42 @@ onUnmounted(() => {
 					}
 					
 					> .role {
-						display: flex;
-						gap: 8px;
-						flex-wrap: wrap;
-						margin-top: 4px;
+						> .state {
+							display: flex;
+							gap: 8px;
+							flex-wrap: wrap;
+							margin-top: 4px;
 
-						&:empty {
-							display: none;
-						}
+							&:empty {
+								display: none;
+							}
 
-						> .suspended,
-						> .silenced,
-						> .moderator,
-						> .admin {
-							display: inline-block;
-							border: solid 1px;
-							border-radius: 6px;
-							padding: 2px 6px;
-							font-size: 85%;
-						}
+							> .suspended,
+							> .silenced,
+							> .moderator,
+							> .admin {
+								display: inline-block;
+								border: solid 1px;
+								border-radius: 6px;
+								padding: 2px 6px;
+								font-size: 85%;
+							}
 
-						> .suspended,
-						> .admin {
-							color: var(--error);
-							border-color: var(--error);
-						}
+							> .suspended,
+							> .admin {
+								color: var(--error);
+								border-color: var(--error);
+							}
 
-						> .silenced {
-							color: var(--warn);
-							border-color: var(--warn);
-						}
+							> .silenced {
+								color: var(--warn);
+								border-color: var(--warn);
+							}
 
-						> .moderator {
-							color: var(--success);
-							border-color: var(--success);
+							> .moderator {
+								color: var(--success);
+								border-color: var(--success);
+							}
 						}
 					}
 				}

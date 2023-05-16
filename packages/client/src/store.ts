@@ -133,13 +133,17 @@ export const defaultStore = markRaw(
 			where: "deviceAccount",
 			default: "public" as "public" | "home" | "followers" | "specified",
 		},
+		firstPostButtonVisibilityForce: {
+			where: "deviceAccount",
+			default: false,
+		},
 		secondPostButton: {
 			where: "deviceAccount",
 			default: false,
 		},
 		secondPostVisibility: {
 			where: "deviceAccount",
-			default: "home" as "public" | "home" | "followers" | "specified"
+			default: "home" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
 		},
 		thirdPostButton: {
 			where: "deviceAccount",
@@ -147,13 +151,21 @@ export const defaultStore = markRaw(
 		},
 		thirdPostVisibility: {
 			where: "deviceAccount",
-			default: "followers" as "public" | "home" | "followers" | "specified"
+			default: "followers" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
+		},
+		channelSecondPostButton: {
+			where: "deviceAccount",
+			default: false,
 		},
 		localOnly: {
 			where: "deviceAccount",
 			default: false,
 		},
 		localAndFollower: {
+			where: "deviceAccount",
+			default: false,
+		},
+		hiddenMFMHelp: {
 			where: "deviceAccount",
 			default: false,
 		},

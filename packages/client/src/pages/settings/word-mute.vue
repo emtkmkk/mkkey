@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from "vue";^
+import { computed, ref, watch } from "vue";
 import FormTextarea from "@/components/form/textarea.vue";
 import FormSwitch from "@/components/form/switch.vue";
 import MkKeyValue from "@/components/MkKeyValue.vue";

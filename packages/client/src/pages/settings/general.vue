@@ -129,6 +129,7 @@
 				class="_formBlock"
 				>{{ i18n.ts.showAdminUpdates }}</FormSwitch
 			>
+		</FormSection>
 		<FormSection>
 			<template #label>{{ i18n.ts.power }}</template>
 			<FormSwitch v-model="powerMode" class="_formBlock">{{

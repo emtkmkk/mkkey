@@ -30,10 +30,11 @@
 				<span v-if="localOnly && isChannel" class="local-only"
 					><i class="ph-hand-fist ph-bold ph-lg"></i
 				></span>
-				<span v-if="localOnly && !isChannel" class="local-only"
+				<span v-if="localOnly && !isChannel && !$store.state.firstPostButtonVisibilityForce" class="local-only"
 					><i class="ph-hand-heart ph-bold ph-lg"></i
 				></span>
 				<button
+					v-if="!$store.state.firstPostButtonVisibilityForce || isChannel"
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
@@ -53,6 +54,7 @@
 					></span>
 				</button>
 				<button
+					v-if="!$store.state.hiddenMFMHelp"
 					v-tooltip="i18n.ts._mfm.cheatSheet"
 					class="_button preview"
 					@click="openCheatSheet"
@@ -60,7 +62,7 @@
 					<i class="ph-question ph-bold ph-lg"></i>
 				</button>
 				<button
-					v-if="!$store.state.secondPostButton"
+					v-if="(!$store.state.firstPostButtonVisibilityForce && !$store.state.secondPostButton) || (!$store.state.channelSecondPostButton && isChannel)"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -78,7 +80,38 @@
 					></i>
 				</button>
 				<button
-					v-if="$store.state.secondPostButton && $store.state.thirdPostButton"
+					v-if="$store.state.firstPostButtonVisibilityForce && !$store.state.secondPostButton && !isChannel"
+					class="submit _buttonGradate"
+					:disabled="!canPost"
+					data-cy-open-post-form-submit
+					@click="postFirst"
+				>
+					{{ submitText
+					}}<i
+						:class="
+							$store.state.defaultNoteLocalAndFollower === true
+								? 'ph-hand-heart ph-bold ph-lg'
+								: $store.state.defaultNoteVisibility === 'public'
+									? 'ph-planet ph-bold ph-lg'
+									: $store.state.defaultNoteVisibility === 'home'
+										? 'ph-house ph-bold ph-lg'
+										: $store.state.defaultNoteVisibility === 'followers'
+											? 'ph-lock-simple-open ph-bold ph-lg'
+											: 'ph-envelope-simple-open ph-bold ph-lg'
+						"
+					></i>
+					<i
+						:class="
+							reply
+								? 'ph-arrow-u-up-left ph-bold ph-lg'
+								: renote
+									? 'ph-quotes ph-bold ph-lg'
+									: ''
+						"
+					></i>
+				</button>
+				<button
+					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && !isChannel"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -89,16 +122,20 @@
 						:class="
 							$store.state.thirdPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
-								: $store.state.thirdPostVisibility === 'home'
-									? 'ph-house ph-bold ph-lg'
-									: $store.state.thirdPostVisibility === 'followers'
-										? 'ph-lock-simple-open ph-bold ph-lg'
-										: 'ph-envelope-simple-open ph-bold ph-lg'
+								: $store.state.thirdPostVisibility === 'l-public'
+									? 'ph-hand-heart ph-bold ph-lg'
+									: $store.state.thirdPostVisibility === 'home'
+										? 'ph-house ph-bold ph-lg'
+										: $store.state.thirdPostVisibility === 'l-home'
+											? 'ph-hand-heart ph-bold ph-lg'
+											: $store.state.thirdPostVisibility === 'followers'
+												? 'ph-lock-simple-open ph-bold ph-lg'
+												: 'ph-envelope-simple-open ph-bold ph-lg'
 						"
 					></i>
 				</button>
 				<button
-					v-if="$store.state.secondPostButton"
+					v-if="$store.state.secondPostButton && !isChannel"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -109,16 +146,81 @@
 						:class="
 							$store.state.secondPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
-								: $store.state.secondPostVisibility === 'home'
-									? 'ph-house ph-bold ph-lg'
-									: $store.state.secondPostVisibility === 'followers'
-										? 'ph-lock-simple-open ph-bold ph-lg'
-										: 'ph-envelope-simple-open ph-bold ph-lg'
+								: $store.state.secondPostVisibility === 'l-public'
+									? 'ph-hand-heart ph-bold ph-lg'
+									: $store.state.secondPostVisibility === 'home'
+										? 'ph-house ph-bold ph-lg'
+										: $store.state.secondPostVisibility === 'l-home'
+											? 'ph-hand-heart ph-bold ph-lg'
+											: $store.state.secondPostVisibility === 'followers'
+												? 'ph-lock-simple-open ph-bold ph-lg'
+												: 'ph-envelope-simple-open ph-bold ph-lg'
 						"
 					></i>
 				</button>
 				<button
-					v-if="$store.state.secondPostButton"
+					v-if="!$store.state.firstPostButtonVisibilityForce && $store.state.secondPostButton && !isChannel"
+					class="submit _buttonGradate"
+					:disabled="!canPost"
+					data-cy-open-post-form-submit
+					@click="post"
+				>
+					1
+					<i
+						:class="
+							reply
+								? 'ph-arrow-u-up-left ph-bold ph-lg'
+								: renote
+								? 'ph-quotes ph-bold ph-lg'
+								: 'ph-paper-plane-tilt ph-bold ph-lg'
+						"
+					></i>
+				</button>
+				<button
+					v-if="$store.state.firstPostButtonVisibilityForce && $store.state.secondPostButton && !isChannel"
+					class="submit _buttonGradate"
+					:disabled="!canPost"
+					data-cy-open-post-form-submit
+					@click="postFirst"
+				>
+					1
+					<i
+						:class="
+							$store.state.defaultNoteLocalAndFollower === true
+								? 'ph-hand-heart ph-bold ph-lg'
+								: $store.state.defaultNoteVisibility === 'public'
+									? 'ph-planet ph-bold ph-lg'
+									: $store.state.defaultNoteVisibility === 'home'
+										? 'ph-house ph-bold ph-lg'
+										: $store.state.defaultNoteVisibility === 'followers'
+											? 'ph-lock-simple-open ph-bold ph-lg'
+											: 'ph-envelope-simple-open ph-bold ph-lg'
+						"
+					></i>
+					<i
+						:class="
+							reply
+								? 'ph-arrow-u-up-left ph-bold ph-lg'
+								: renote
+									? 'ph-quotes ph-bold ph-lg'
+									: ''
+						"
+					></i>
+				</button>
+				<button
+					v-if="$store.state.channelSecondPostButton && isChannel"
+					class="submit _buttonGradate"
+					:disabled="!canPost"
+					data-cy-open-post-form-submit
+					@click="postSecondChannel"
+				>
+					2
+					<i
+						:class="ph-hand-fist ph-bold ph-lg"
+					></i>
+				</button>
+				<button
+					v-if="$store.state.channelSecondPostButton && isChannel"
 					class="submit _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -881,13 +983,36 @@ function deleteDraft() {
 	localStorage.setItem("drafts", JSON.stringify(draftData));
 }
 
+async function postFirst() {
+	visibility = defaultStore.state.defaultNoteVisibility;
+	localOnly = defaultStore.state.defaultNoteLocalAndFollower;
+	post();
+}
+
 async function postSecond() {
-	visibility = defaultStore.state.secondPostVisibility;
+	if (defaultStore.state.secondPostVisibility.startsWith("l-")){
+		localOnly = true;
+		visibility = defaultStore.state.secondPostVisibility.replace("l-","");
+	} else {
+		localOnly = false;
+		visibility = defaultStore.state.secondPostVisibility;
+	}
+	post();
+}
+
+async function postSecondChannel() {
+	localOnly = true;
 	post();
 }
 
 async function postThird() {
-	visibility = defaultStore.state.thirdPostVisibility;
+	if (defaultStore.state.thirdPostVisibility.startsWith("l-")){
+		localOnly = true;
+		visibility = defaultStore.state.thirdPostVisibility.replace("l-","");
+	} else {
+		localOnly = false;
+		visibility = defaultStore.state.thirdPostVisibility;
+	}
 	post();
 }
 

@@ -21,6 +21,9 @@
 						}}</template
 					>
 				</FormTextarea>
+				<FormSwitch v-model="hiddenSoftMutes" class="_formBlock">{{
+					i18n.ts.hiddenSoftMutes
+				}}</FormSwitch>
 			</div>
 			<div v-show="tab === 'hard'">
 				<MkInfo class="_formBlock"
@@ -58,6 +61,7 @@
 <script lang="ts" setup>
 import { ref, watch } from "vue";
 import FormTextarea from "@/components/form/textarea.vue";
+import FormSwitch from "@/components/form/switch.vue";
 import MkKeyValue from "@/components/MkKeyValue.vue";
 import MkButton from "@/components/MkButton.vue";
 import MkInfo from "@/components/MkInfo.vue";
@@ -84,6 +88,9 @@ const tab = ref("soft");
 const softMutedWords = ref(render(defaultStore.state.mutedWords));
 const hardMutedWords = ref(render($i!.mutedWords));
 const hardWordMutedNotesCount = ref(null);
+const hiddenSoftMutes = computed(
+	defaultStore.makeGetterSetter("hiddenSoftMutes")
+);
 const changed = ref(false);
 
 os.api("i/get-word-muted-notes-count", {}).then((response) => {

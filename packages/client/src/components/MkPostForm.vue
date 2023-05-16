@@ -101,6 +101,7 @@
 						"
 					></i>
 					<i
+						v-if="reply || renote"
 						:class="
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
@@ -198,6 +199,7 @@
 						"
 					></i>
 					<i
+						v-if="reply || renote"
 						:class="
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
@@ -1278,12 +1280,13 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 			> .text-count {
 				opacity: 0.7;
 				line-height: 66px;
+				margin: 0 8px 0 0;
 			}
 
 			> .visibility {
 				height: 34px;
 				width: 34px;
-				margin: 0 0 0 8px;
+				margin: 0 0 0 0;
 
 				& + .localOnly {
 					margin-left: 0 !important;
@@ -1291,7 +1294,7 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 			}
 
 			> .local-only {
-				margin: 0 0 0 12px;
+				margin: 0 0 0 4px;
 				opacity: 0.7;
 			}
 

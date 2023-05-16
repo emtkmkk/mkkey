@@ -134,7 +134,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 			icons: [
 				"ph-repeat ph-bold ph-lg",
 				"ph-hand-heart ph-bold ph-lg"
-			]
+			],
 			danger: false,
 			action: () => {
 				os.api(

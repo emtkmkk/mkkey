@@ -152,6 +152,16 @@
 							</div>
 						</div>
 						<div class="description">
+							<div class="role">
+								<span class="state">
+									<span v-if="user.isAdmin" class="admin"
+										>{{ i18n.ts.isAdmin }}</span
+									>
+									<span v-if="!user.isAdmin && user.isModerator" class="moderator"
+										>{{ i18n.ts.isModerator }}</span
+									>
+								</span>
+							</div>
 							<Mfm
 								v-if="user.description"
 								:text="user.description"
@@ -725,6 +735,44 @@ onUnmounted(() => {
 					> .empty {
 						margin: 0;
 						opacity: 0.5;
+					}
+					
+					> .role {
+						display: flex;
+						gap: 8px;
+						flex-wrap: wrap;
+						margin-top: 4px;
+
+						&:empty {
+							display: none;
+						}
+
+						> .suspended,
+						> .silenced,
+						> .moderator,
+						> .admin {
+							display: inline-block;
+							border: solid 1px;
+							border-radius: 6px;
+							padding: 2px 6px;
+							font-size: 85%;
+						}
+
+						> .suspended,
+						> .admin {
+							color: var(--error);
+							border-color: var(--error);
+						}
+
+						> .silenced {
+							color: var(--warn);
+							border-color: var(--warn);
+						}
+
+						> .moderator {
+							color: var(--success);
+							border-color: var(--success);
+						}
 					}
 				}
 

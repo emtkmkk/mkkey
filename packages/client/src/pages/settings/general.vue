@@ -102,15 +102,6 @@
 			<FormSwitch v-model="seperateRenoteQuote" class="_formBlock">{{
 				i18n.ts.seperateRenoteQuote
 			}}</FormSwitch>
-			<FormSwitch v-model="powerMode" class="_formBlock">{{
-				i18n.ts.powerMode
-			}}</FormSwitch>
-			<FormSwitch v-model="powerModeColorful" class="_formBlock">{{
-				i18n.ts.powerModeColorful
-			}}</FormSwitch>
-			<FormSwitch v-model="powerModeNoShake" class="_formBlock">{{
-				i18n.ts.powerModeNoShake
-			}}</FormSwitch>
 			<FormSwitch v-model="useSystemFont" class="_formBlock">{{
 				i18n.ts.useSystemFont
 			}}</FormSwitch>
@@ -138,7 +129,21 @@
 				class="_formBlock"
 				>{{ i18n.ts.showAdminUpdates }}</FormSwitch
 			>
+		<FormSection>
+			<template #label>{{ i18n.ts.power }}</template>
+			<FormSwitch v-model="powerMode" class="_formBlock">{{
+				i18n.ts.powerMode
+			}}</FormSwitch>
+			<FormSwitch v-model="powerModeColorful" class="_formBlock">{{
+				i18n.ts.powerModeColorful
+			}}</FormSwitch>
+			<FormSwitch v-model="powerModeNoShake" class="_formBlock">{{
+				i18n.ts.powerModeNoShake
+			}}</FormSwitch>
+		</FormSection>
 
+		<FormSection>
+			<template #label></template>
 			<FormRadios v-model="overridedDeviceKind" class="_formBlock">
 				<template #label>{{ i18n.ts.overridedDeviceKind }}</template>
 				<option :value="null">{{ i18n.ts.auto }}</option>

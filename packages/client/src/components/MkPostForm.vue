@@ -632,7 +632,7 @@ if (props.reply && props.reply.text != null) {
 
 if (props.channel) {
 	visibility = "public";
-	localOnly = defaultStore.state.rememberNoteVisibility ? defaultStore.state.localOnly : defaultStore.state.defaultNoteLocalOnly;
+	localOnly = state.channelSecondPostButton ? false : defaultStore.state.rememberNoteVisibility ? defaultStore.state.localOnly : defaultStore.state.defaultNoteLocalOnly;
 }
 
 // 公開以外へのリプライ時は元の公開範囲を引き継ぐ
@@ -988,7 +988,7 @@ function deleteDraft() {
 async function postFirst() {
 	visibility = defaultStore.state.defaultNoteVisibility;
 	localOnly = defaultStore.state.defaultNoteLocalAndFollower;
-	if (canPost) {
+	if (canPost && visibility !== 'specified') {
 		post();
 	}
 }
@@ -1001,7 +1001,7 @@ async function postSecond() {
 		localOnly = false;
 		visibility = defaultStore.state.secondPostVisibility;
 	}
-	if (canPost) {
+	if (canPost && visibility !== 'specified') {
 		post();
 	}
 }
@@ -1019,7 +1019,7 @@ async function postThird() {
 		localOnly = false;
 		visibility = defaultStore.state.thirdPostVisibility;
 	}
-	if (canPost) {
+	if (canPost && visibility !== 'specified') {
 		post();
 	}
 }

@@ -73,7 +73,7 @@ async function init() {
 	let noteText = "";
 	let rText = text;
 	let rUrl = url;
-	let textToUrl = text.match(/^(.* )?(https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+)$/);
+	let textToUrl = text.match(/^(.* )?(https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+)+$/);
 	
 	if (title === "undefined") title = null;
 	
@@ -82,8 +82,12 @@ async function init() {
 			rUrl = textToUrl[1];
 			rText = ""
 		} else {
-			rUrl = textToUrl[2];
-			rText = textToUrl[1];
+			if(textToUrl.length == 3){
+				rUrl = textToUrl[2];
+				rText = textToUrl[1];
+			} else {
+				rText = textToUrl[0];
+			}
 		}
 	}
 	
@@ -91,10 +95,18 @@ async function init() {
 		rText = rText.replace(`${title}.\n`, "");
 	}
 	
+	if (rText.includes("https://twitter.com") || rText.includes("http://twitter.com")) {
+		rText = rText.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
+	}
+	
+	if (rUrl.includes("https://twitter.com") || rUrl.includes("http://twitter.com")) {
+		rUrl = rUrl.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
+	}
+	
 	if (rUrl){
-		if (title && rText) noteText += `[ [${title}](${rUrl}) ]\n${rText}\n\n`;
-		else if (title) noteText += `[${title}](${rUrl})\n\n`;
-		else if (rText) noteText += `[${rText}](${rUrl})\n\n`;
+		if (title && rText) noteText += `[ [${title.replaceAll("[","【").replaceAll("]","】")}](${rUrl}) ]\n${rText}\n\n`;
+		else if (title) noteText += `[${title.replaceAll("[","【").replaceAll("]","】")}](${rUrl})\n\n`;
+		else if (rText) noteText += `[${rText.replaceAll("[","【").replaceAll("]","】")}](${rUrl})\n\n`;
 		else noteText += `${rUrl}\n\n`;
 	} else {
 	    if (title && rText) noteText += `[ ${title} ]\n${rText}\n\n`;

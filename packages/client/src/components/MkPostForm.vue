@@ -632,7 +632,7 @@ if (props.reply && props.reply.text != null) {
 
 if (props.channel) {
 	visibility = "public";
-	localOnly = state.channelSecondPostButton ? false : defaultStore.state.rememberNoteVisibility ? defaultStore.state.localOnly : defaultStore.state.defaultNoteLocalOnly;
+	localOnly = defaultStore.state.channelSecondPostButton ? false : defaultStore.state.rememberNoteVisibility ? defaultStore.state.localOnly : defaultStore.state.defaultNoteLocalOnly;
 }
 
 // 公開以外へのリプライ時は元の公開範囲を引き継ぐ

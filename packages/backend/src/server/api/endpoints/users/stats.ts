@@ -267,9 +267,9 @@ export default define(meta, paramDef, async (ps, me) => {
 	});
 	
 	result.followingCount =
-		result.localFollowingCount + result.remoteFollowingCount;
+		user.host ? user.followingCount : result.localFollowingCount + result.remoteFollowingCount;
 	result.followersCount =
-		result.localFollowersCount + result.remoteFollowersCount;
+		user.host ? user.followersCount : result.localFollowersCount + result.remoteFollowersCount;
 		
 	result.power = 
 		Math.floor((result.notesPostDays * 482 +

@@ -58,7 +58,7 @@ export default async (ctx: Router.RouterContext) => {
 	const limit = 10;
 	const partOf = `${config.url}/users/${userId}/following`;
 
-	if (page && profile.ffVisibility !== "private" && profile.ffVisibility !== "followers") {
+	if (page) {
 		const query = {
 			followerId: user.id,
 		} as FindOptionsWhere<Following>;
@@ -69,11 +69,11 @@ export default async (ctx: Router.RouterContext) => {
 		}
 
 		// Get followings
-		const followings = await Followings.find({
+		const followings = profile.ffVisibility !== "private" && profile.ffVisibility !== "followers" ? await Followings.find({
 			where: query,
 			take: limit + 1,
 			order: { id: -1 },
-		});
+		}): [];
 
 		// Whether there is a "next page" or not
 		const inStock = followings.length === limit + 1;
@@ -106,7 +106,7 @@ export default async (ctx: Router.RouterContext) => {
 		const rendered = renderOrderedCollection(
 			partOf,
 			user.followingCount,
-			profile.ffVisibility !== "private" && profile.ffVisibility !== "followers" ? `${partOf}?page=true` : undefined,
+			`${partOf}?page=true`,
 		);
 		ctx.body = renderActivity(rendered);
 		setResponseType(ctx);

@@ -206,7 +206,7 @@ export default async (
 		if (data.visibility === "hidden") data.visibility = "public";
 		
 		// Twitterリンクの場合、?以降を取り除く
-		if (data.text.includes("https://twitter.com") || data.text.includes("http://twitter.com")) {
+		if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
 			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
 		}
 

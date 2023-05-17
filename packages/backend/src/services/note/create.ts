@@ -330,7 +330,10 @@ export default async (
 					await Users.findOneByOrFail({ id: data.reply!.userId }),
 				);
 			}
-			if (user.host && data.visibleUsers.every(async (x) => (x.host && x.host !== "mkkey.net") || !(await Users.getRelation(x.id,user.id)).isFollowed)){
+			
+			const localRelation = await Promise.all(data.visibleUsers.filter((x) => !x.host || x.host === "mkkey.net").map(async (x) => !(await Users.getRelation(x.id,user.id)).isFollowed));
+			
+			if (user.host && (localRelation.every((x) => x) ?? true)) {
 				data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi,"$1");
 			}
 		}

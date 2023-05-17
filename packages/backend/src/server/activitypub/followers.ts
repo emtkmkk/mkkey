@@ -69,19 +69,19 @@ export default async (ctx: Router.RouterContext) => {
 		}
 
 		// Get followers
-		const followings = await Followings.find({
+		const followings = profile.ffVisibility !== "private" && profile.ffVisibility !== "followers" ? await Followings.find({
 			where: query,
 			take: limit + 1,
 			order: { id: -1 },
-		});
+		}) : [];
 
 		// 「次のページ」があるかどうか
 		const inStock = followings.length === limit + 1;
 		if (inStock) followings.pop();
 
-		const renderedFollowers = profile.ffVisibility !== "private" && profile.ffVisibility !== "followers" ? await Promise.all(
+		const renderedFollowers = await Promise.all(
 			followings.map((following) => renderFollowUser(following.followerId)),
-		) : [];
+		);
 		const rendered = renderOrderedCollectionPage(
 			`${partOf}?${url.query({
 				page: "true",

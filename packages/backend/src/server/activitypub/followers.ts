@@ -58,7 +58,7 @@ export default async (ctx: Router.RouterContext) => {
 	const limit = 10;
 	const partOf = `${config.url}/users/${userId}/followers`;
 
-	if (page && profile.ffVisibility !== "private" && profile.ffVisibility !== "followers") {
+	if (page) {
 		const query = {
 			followeeId: user.id,
 		} as FindOptionsWhere<Following>;
@@ -79,9 +79,9 @@ export default async (ctx: Router.RouterContext) => {
 		const inStock = followings.length === limit + 1;
 		if (inStock) followings.pop();
 
-		const renderedFollowers = await Promise.all(
+		const renderedFollowers = profile.ffVisibility !== "private" && profile.ffVisibility !== "followers" ? await Promise.all(
 			followings.map((following) => renderFollowUser(following.followerId)),
-		);
+		) : [];
 		const rendered = renderOrderedCollectionPage(
 			`${partOf}?${url.query({
 				page: "true",
@@ -106,7 +106,7 @@ export default async (ctx: Router.RouterContext) => {
 		const rendered = renderOrderedCollection(
 			partOf,
 			user.followersCount,
-			profile.ffVisibility !== "private" && profile.ffVisibility !== "followers" ? `${partOf}?page=true` : undefined,
+			`${partOf}?page=true`,
 		);
 		ctx.body = renderActivity(rendered);
 		setResponseType(ctx);

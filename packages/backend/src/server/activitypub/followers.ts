@@ -106,7 +106,7 @@ export default async (ctx: Router.RouterContext) => {
 		const rendered = renderOrderedCollection(
 			partOf,
 			user.followersCount,
-			`${partOf}?page=true`,
+			profile.ffVisibility !== "private" && profile.ffVisibility !== "followers" ? `${partOf}?page=true` : undefined,
 		);
 		ctx.body = renderActivity(rendered);
 		setResponseType(ctx);

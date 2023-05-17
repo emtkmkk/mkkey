@@ -95,11 +95,11 @@ async function init() {
 		rText = rText.replace(`${title}.\n`, "");
 	}
 	
-	if (rText.includes("https://twitter.com") || rText.includes("http://twitter.com")) {
+	if (rText?.includes("https://twitter.com") || rText?.includes("http://twitter.com")) {
 		rText = rText.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
 	}
 	
-	if (rUrl.includes("https://twitter.com") || rUrl.includes("http://twitter.com")) {
+	if (rUrl?.includes("https://twitter.com") || rUrl?.includes("http://twitter.com")) {
 		rUrl = rUrl.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
 	}
 	

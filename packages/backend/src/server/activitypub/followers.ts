@@ -42,7 +42,7 @@ export default async (ctx: Router.RouterContext) => {
 
 	//#region Check ff visibility
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
-
+	/*
 	if (profile.ffVisibility === "private") {
 		ctx.status = 403;
 		ctx.set("Cache-Control", "public, max-age=30");
@@ -52,12 +52,13 @@ export default async (ctx: Router.RouterContext) => {
 		ctx.set("Cache-Control", "public, max-age=30");
 		return;
 	}
+	*/
 	//#endregion
 
 	const limit = 10;
 	const partOf = `${config.url}/users/${userId}/followers`;
 
-	if (page) {
+	if (page && profile.ffVisibility !== "private" && profile.ffVisibility !== "followers") {
 		const query = {
 			followeeId: user.id,
 		} as FindOptionsWhere<Following>;

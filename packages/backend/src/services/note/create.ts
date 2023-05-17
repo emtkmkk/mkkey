@@ -331,7 +331,7 @@ export default async (
 				);
 			}
 			if (user.host && data.visibleUsers.every((x) => x.host || !Users.getRelation(x.id,user.id).isFollowed)){
-				data.text = "** [ []内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。] **\n\n[ 以下、本文です ]/n/n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi,"$1");
+				data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi,"$1");
 			}
 		}
 

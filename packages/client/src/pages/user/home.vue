@@ -54,18 +54,18 @@
 									/></span>
 									<span
 										v-if="user.isAdmin"
-										:title="i18n.ts.isAdmin"
+										:title="i18n.ts.admin"
 										style="color: var(--badge)"
 										><i
-											class="ph-bookmark-simple ph-fill ph-lg"
+											class="ph-wrench ph-fill ph-lg"
 										></i
 									></span>
 									<span
 										v-if="!user.isAdmin && user.isModerator"
-										:title="i18n.ts.isModerator"
+										:title="i18n.ts.moderator"
 										style="color: var(--badge)"
 										><i
-											class="ph-bookmark-simple ph-bold"
+											class="ph-wrench ph-bold"
 										></i
 									></span>
 									<span
@@ -110,17 +110,17 @@
 								/></span>
 								<span
 									v-if="user.isAdmin"
-									:title="i18n.ts.isAdmin"
+									:title="i18n.ts.admin"
 									style="color: var(--badge)"
 									><i
-										class="ph-bookmark-simple ph-fill ph-lg"
+										class="ph-wrench ph-fill ph-lg"
 									></i
 								></span>
 								<span
 									v-if="!user.isAdmin && user.isModerator"
-									:title="i18n.ts.isModerator"
+									:title="i18n.ts.moderator"
 									style="color: var(--badge)"
-									><i class="ph-bookmark-simple ph-bold"></i
+									><i class="ph-wrench ph-bold"></i
 								></span>
 								<span
 									v-if="user.isLocked"
@@ -155,10 +155,10 @@
 							<div class="role">
 								<span class="state">
 									<span v-if="user.isAdmin" class="admin"
-										>{{ i18n.ts.isAdmin }}</span
+										>{{ i18n.ts.admin }}</span
 									>
 									<span v-if="!user.isAdmin && user.isModerator" class="moderator"
-										>{{ i18n.ts.isModerator }}</span
+										>{{ i18n.ts.moderator }}</span
 									>
 								</span>
 							</div>
@@ -739,7 +739,7 @@ onUnmounted(() => {
 					
 					> .role {
 						> .state {
-							display: flex;
+							display: none;
 							gap: 8px;
 							flex-wrap: wrap;
 							margin-top: 4px;

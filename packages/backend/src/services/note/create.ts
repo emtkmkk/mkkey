@@ -330,6 +330,9 @@ export default async (
 					await Users.findOneByOrFail({ id: data.reply!.userId }),
 				);
 			}
+			if (user.host && data.visibleUsers.every((x) => x.host || !Users.getRelation(x.id,user.id).isFollowed)){
+				data.text = "*** システムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。 ***\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi,"$1");
+			}
 		}
 
 		const note = await insertNote(user, data, tags, emojis, mentionedUsers);

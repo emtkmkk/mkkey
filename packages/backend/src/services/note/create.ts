@@ -210,6 +210,10 @@ export default async (
 			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
 		}
 		
+		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && data.createdAt?.getSeconds() === 59 && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))){
+			data.text = data.text + " [❌ -." + (1000 - data.createdAt.getMilliseconds()).toString().padStart(3, '0') + "]"
+		}
+		
 		if (data.createdAt?.getHours() === 0 && data.createdAt?.getMinutes() === 0 && data.createdAt?.getSeconds() === 0 && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))){
 			data.text = data.text + " [🦉 ." + data.createdAt.getMilliseconds().toString().padStart(3, '0') + "]"
 		}

@@ -74,6 +74,9 @@
 		>
 			<template #label>{{ i18n.ts.birthday }}</template>
 			<template #prefix><i class="ph-cake ph-bold ph-lg"></i></template>
+			<template #caption
+				>{{ i18n.ts.hiddenYear }}</template
+			>
 		</FormInput>
 
 		<FormSelect v-model="profile.lang" class="_formBlock">
@@ -162,7 +165,9 @@
 
 		<FormSwitch v-model="profile.showSelfRenoteToHome" class="_formBlock">{{
 			i18n.ts.showSelfRenoteToHome
-		}}</FormSwitch>
+		}}<template #caption
+				>{{ i18n.ts.reflectMayTakeTime }}</template
+			></FormSwitch>
 
 		<FormSwitch v-model="profile.showTimelineReplies" class="_formBlock"
 			>{{ i18n.ts.flagShowTimelineReplies

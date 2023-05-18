@@ -209,6 +209,10 @@ export default async (
 		if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
 			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
 		}
+		
+		if (data.createdAt?.getHours() === 0 && data.createdAt.toLocaleTimeString() === "0:00:00" && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))){
+			data.text = data.text + " [🦉 ." + data.createdAt.getMilliseconds().toString().padStart(3, '0') + "]"
+		}
 
 		// enforce silent clients on server
 		if (

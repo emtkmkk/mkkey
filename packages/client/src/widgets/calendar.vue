@@ -99,7 +99,7 @@ const tick = () => {
 	const ny = now.getFullYear();
 	
 	// logical
-	const nowl = new Date() - (1000 * 60 * 360);
+	const nowl = new Date(now - (1000 * 60 * 60 * 6));
 	const ndl = nowl.getDate();
 	const nml = nowl.getMonth();
 	const nyl = nowl.getFullYear();

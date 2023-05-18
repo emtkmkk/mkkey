@@ -107,6 +107,10 @@ button.hkzvhatu > .mk-emoji.custom.normal {
 
 /* 絵文字を小さくする */
 
+.havbbuyv .mk-emoji.custom {
+    height: 1.4em !important;
+    vertical-align: top !important;
+}
 .havbbuyv > .mk-emoji.custom {
     height: 1.4em !important;
     vertical-align: top !important;

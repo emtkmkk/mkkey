@@ -110,7 +110,7 @@ export default defineComponent({
 		},
 		ioShare() {
 			if (this.text !== "") {
-				window.open('https://misskey.io/share?text=' + encodeURIComponent(this.text.replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase()))), '_blank');
+				window.open('https://misskey.io/share?text=' + encodeURIComponent(this.text.replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase())).replaceAll("STAR","☆")), '_blank');
 			}
 		},
 	},

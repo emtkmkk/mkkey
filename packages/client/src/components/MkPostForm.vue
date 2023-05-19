@@ -801,7 +801,7 @@ function setVisibility() {
 			src: visibilityButton,
 			canLocalSwitch: props.channel,
 			canVisibilitySwitch: !props.channel && !isForce,
-			forceMode: isForce;
+			forceMode: isForce,
 		},
 		{
 			changeVisibility: (v) => {

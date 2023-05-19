@@ -9,7 +9,10 @@ export const noteViewInterruptors = [];
 export const notePostInterruptors = [];
 
 const menuOptions = [
+	"timeline",
+	"notifications",
 	"followRequests",
+	"messaging",
 	"explore",
 	"pages",
 	"clips",

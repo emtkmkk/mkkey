@@ -1,6 +1,7 @@
 <template>
 	<button
 		v-if="defaultStore.state.favButtonReaction !== 'hidden'"
+		ref="starButton"
 		v-tooltip.noDelay.bottom="i18n.ts._gallery.like"
 		class="skdfgljsdkf _button"
 		@click="star($event)"
@@ -51,9 +52,90 @@ const props = defineProps<{
 	note: Note;
 }>();
 
+const starButton = ref<HTMLElement>();
+
+async function clip(): Promise<void> {
+	const clips = await os.api("clips/list");
+	os.popupMenu(
+		[
+			{
+				icon: "ph-plus ph-bold ph-lg",
+				text: i18n.ts.createNew,
+				action: async () => {
+					const { canceled, result } = await os.form(i18n.ts.createNewClip, {
+						name: {
+							type: "string",
+							label: i18n.ts.name,
+						},
+						description: {
+							type: "string",
+							required: false,
+							multiline: true,
+							label: i18n.ts.description,
+						},
+						isPublic: {
+							type: "boolean",
+							label: i18n.ts.public,
+							default: false,
+						},
+					});
+					if (canceled) return;
+
+					const clip = await os.apiWithDialog("clips/create", result);
+
+					os.apiWithDialog("clips/add-note", {
+						clipId: clip.id,
+						noteId: appearNote.id,
+					});
+				},
+			},
+			null,
+			...clips.map((clip) => ({
+				text: clip.name,
+				action: () => {
+					os.promiseDialog(
+						os.api("clips/add-note", {
+							clipId: clip.id,
+							noteId: appearNote.id,
+						}),
+						null,
+						async (err) => {
+							if (err.id === "734806c4-542c-463a-9311-15c512803965") {
+								const confirm = await os.confirm({
+									type: "warning",
+									text: i18n.t("confirmToUnclipAlreadyClippedNote", {
+										name: clip.name,
+									}),
+								});
+								if (!confirm.canceled) {
+									os.apiWithDialog("clips/remove-note", {
+										clipId: clip.id,
+										noteId: appearNote.id,
+									});
+							} else {
+								os.alert({
+									type: "error",
+									text: err.message + "\n" + err.id,
+								});
+							}
+						},
+					);
+				},
+			})),
+		],
+		starButton,
+		{},
+	).then(focus);
+}
+
+
 function star(ev?: MouseEvent): void {
 	pleaseLogin();
-	if (defaultStore.state.favButtonReaction !== "favorite") {
+	
+	if(defaultStore.state.favButtonReaction === "clip"){
+		() => clip();
+	} 
+	else if (defaultStore.state.favButtonReaction !== "favorite") {
 		os.api("notes/reactions/create", {
 			noteId: props.note.id,
 			reaction:

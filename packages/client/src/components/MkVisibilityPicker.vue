@@ -110,7 +110,7 @@
 			</button>
 			<div v-if="canVisibilitySwitch" :class="$style.divider"></div>
 			<button
-			    v-if="canLocalSwitch && !forceMode"
+			    v-if="canLocalSwitch"
 				key="localOnly"
 				class="_button"
 				:class="[
@@ -143,7 +143,7 @@
 				</div>
 			</button>
 			<button
-			    v-if="!canLocalSwitch"
+			    v-if="!canLocalSwitch && !forceMode"
 				key="localOnly"
 				class="_button"
 				:class="[

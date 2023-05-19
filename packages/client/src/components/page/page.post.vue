@@ -2,6 +2,7 @@
 	<div class="ngbfujlo">
 		<MkTextarea :model-value="text" readonly style="margin: 0"></MkTextarea>
 		<MkButton
+			v-if="$i != null"
 			class="button"
 			primary
 			:disabled="posting || posted"
@@ -9,6 +10,18 @@
 		>
 			<i v-if="posted" class="ph-check ph-bold ph-lg"></i>
 			<i v-else class="ph-paper-plane-tilt ph-bold ph-lg"></i>
+		</MkButton>
+		<MkButton
+			v-if="$i == null"
+			class="button"
+			primary
+			@click="ioShare()"
+		>
+			<MkEmoji
+				class="emoji"
+				emoji=":io:"
+				style="height: 1em"
+			/>
 		</MkButton>
 	</div>
 </template>
@@ -19,6 +32,7 @@ import MkTextarea from "../form/textarea.vue";
 import MkButton from "../MkButton.vue";
 import { apiUrl } from "@/config";
 import * as os from "@/os";
+import { $i } from "@/account";
 import { PostBlock } from "@/scripts/hpml/block";
 import { Hpml } from "@/scripts/hpml/evaluator";
 
@@ -93,6 +107,11 @@ export default defineComponent({
 			}).then(() => {
 				this.posted = true;
 			});
+		},
+		ioShare() {
+			if (this.text !== "") {
+				window.open('https://misskey.io/share?text=' + encodeURIComponent(this.text.replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase()))), '_blank');
+			}
 		},
 	},
 });

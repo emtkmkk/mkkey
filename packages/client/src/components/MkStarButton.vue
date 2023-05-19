@@ -53,7 +53,7 @@ const props = defineProps<{
 	note: Note;
 }>();
 
-const starButton = ref<HTMLElement>();
+const starButton = Ref<HTMLElement>();
 
 async function clip(): Promise<void> {
 	const clips = await os.api("clips/list");

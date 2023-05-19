@@ -788,6 +788,8 @@ function upload(file: File, name?: string) {
 }
 
 function setVisibility() {
+	
+	const isForce = (!defaultStore.state.rememberNoteVisibility && defaultStore.state.firstPostButtonVisibilityForce);
 
 	os.popup(
 		defineAsyncComponent(
@@ -798,7 +800,8 @@ function setVisibility() {
 			currentLocalOnly: localOnly,
 			src: visibilityButton,
 			canLocalSwitch: props.channel,
-			canVisibilitySwitch: !props.channel,
+			canVisibilitySwitch: !props.channel && !isForce,
+			forceMode: isForce;
 		},
 		{
 			changeVisibility: (v) => {

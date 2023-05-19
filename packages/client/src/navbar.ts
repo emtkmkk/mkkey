@@ -11,10 +11,18 @@ import { host } from "@/config";
 import XTutorial from "@/components/MkTutorialDialog.vue";
 
 export const navbarItemDef = reactive({
+	timeline: {
+		title: "timeline",
+		icon: "ph-house ph-bold ph-lg",
+		onlyDesktop: true,
+		show: computed(() => $i != null),
+		to: "/",
+	},
 	notifications: {
 		title: "notifications",
 		icon: "ph-bell ph-bold ph-lg",
 		show: computed(() => $i != null),
+		onlyDesktop: true,
 		indicated: computed(() => $i?.hasUnreadNotification),
 		to: "/my/notifications",
 	},
@@ -22,6 +30,7 @@ export const navbarItemDef = reactive({
 		title: "messaging",
 		icon: "ph-chats-teardrop ph-bold ph-lg",
 		show: computed(() => $i != null),
+		onlyDesktop: true,
 		indicated: computed(() => $i?.hasUnreadMessagingMessage),
 		to: "/my/messaging",
 	},

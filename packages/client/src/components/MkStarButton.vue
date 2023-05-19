@@ -112,6 +112,7 @@ async function clip(): Promise<void> {
 										clipId: clip.id,
 										noteId: appearNote.id,
 									});
+								}
 							} else {
 								os.alert({
 									type: "error",

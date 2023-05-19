@@ -212,6 +212,7 @@ let v = $ref(props.currentVisibility);
 let localOnly = $ref(props.currentLocalOnly);
 let canLocalSwitch = props.canLocalSwitch || false;
 let canVisibilitySwitch = props.canVisibilitySwitch ?? true;
+let forceMode = props.forceMode ?? false;
 
 watch($$(localOnly), () => {
 	emit("changeLocalOnly", localOnly);

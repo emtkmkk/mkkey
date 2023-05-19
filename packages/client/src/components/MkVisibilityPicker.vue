@@ -9,6 +9,26 @@
 		<div class="_popup" :class="$style.root">
 			<button
 				key="public"
+				v-if="!canVisibilitySwitch && forceMode"
+				class="_button"
+				:class="[$style.item, { [$style.active]: v === 'public' }]"
+				data-index="1"
+				@click="choose('public')"
+			>
+				<div :class="$style.icon">
+					<i class="ph-arrow-arc-left ph-bold ph-lg"></i>
+				</div>
+				<div :class="$style.body">
+					<span :class="$style.itemTitle">{{
+						i18n.ts._visibility.exitDirectMode
+					}}</span>
+					<span :class="$style.itemDescription">{{
+						i18n.ts._visibility.exitDirectModeDescription
+					}}</span>
+				</div>
+			</button>
+			<button
+				key="public"
 				v-if="canVisibilitySwitch"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'public' }]"
@@ -69,7 +89,7 @@
 			</button>
 			<button
 				key="specified"
-				v-if="canVisibilitySwitch"
+				v-if="canVisibilitySwitch || forceMode"
 				:disabled="localOnly"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'specified' }]"
@@ -90,7 +110,7 @@
 			</button>
 			<div v-if="canVisibilitySwitch" :class="$style.divider"></div>
 			<button
-			    v-if="canLocalSwitch"
+			    v-if="canLocalSwitch && !forceMode"
 				key="localOnly"
 				class="_button"
 				:class="[
@@ -174,6 +194,7 @@ const props = withDefaults(
 		src?: HTMLElement;
 		canLocalSwitch?: boolean;
 		canVisibilitySwitch?: boolean;
+		forceMode?: boolean;
 	}>(),
 	{}
 );

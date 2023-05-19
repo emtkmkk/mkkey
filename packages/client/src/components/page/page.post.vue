@@ -20,7 +20,19 @@
 			<MkEmoji
 				class="emoji"
 				emoji=":io:"
-				style="height: 1em"
+				style="height: 1.3em"
+			/>
+		</MkButton>
+		<MkButton
+			v-if="$i == null"
+			class="button"
+			primary
+			@click="twitterShare()"
+		>
+			<MkEmoji
+				class="emoji"
+				emoji=":twitter:"
+				style="height: 1.3em"
 			/>
 		</MkButton>
 	</div>
@@ -28,6 +40,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
+import FormInput from "@/components/form/input.vue";
 import MkTextarea from "../form/textarea.vue";
 import MkButton from "../MkButton.vue";
 import { apiUrl } from "@/config";
@@ -40,6 +53,7 @@ export default defineComponent({
 	components: {
 		MkTextarea,
 		MkButton,
+		FormInput,
 	},
 	props: {
 		block: {
@@ -53,7 +67,7 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			text: this.hpml.interpolate(this.block.text),
+			text: $i == null ? this.hpml.interpolate(this.block.text).replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase())).replaceAll("STAR","☆") : this.hpml.interpolate(this.block.text),
 			posted: false,
 			posting: false,
 		};
@@ -61,7 +75,7 @@ export default defineComponent({
 	watch: {
 		"hpml.vars": {
 			handler() {
-				this.text = this.hpml.interpolate(this.block.text);
+				this.text = $i == null ? this.hpml.interpolate(this.block.text).replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase())).replaceAll("STAR","☆") : this.hpml.interpolate(this.block.text);
 			},
 			deep: true,
 		},
@@ -110,7 +124,12 @@ export default defineComponent({
 		},
 		ioShare() {
 			if (this.text !== "") {
-				window.open('https://misskey.io/share?text=' + encodeURIComponent(this.text.replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase())).replaceAll("STAR","☆")), '_blank');
+				window.open('https://misskey.io/share?text=' + encodeURIComponent(this.text), '_blank');
+			}
+		},
+		twitterShare() {
+			if (this.text !== "") {
+				window.open('https://twitter.com/share?text=' + encodeURIComponent(this.text), '_blank');
 			}
 		},
 	},

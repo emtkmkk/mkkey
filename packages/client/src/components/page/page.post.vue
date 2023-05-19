@@ -151,6 +151,7 @@ export default defineComponent({
 	
 	> .shareButton {
     	display: inline-block;
+		text-align: left;
 		
 		> .button {
     		display: inline-block !important;
@@ -167,6 +168,7 @@ export default defineComponent({
 		
 		> .shareButton {
     		display: inline-block;
+			text-align: left;
 			
 			> .button {
     			display: inline-block !important;

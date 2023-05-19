@@ -9,6 +9,7 @@ import copyToClipboard from "@/scripts/copy-to-clipboard";
 import { url } from "@/config";
 import { noteActions } from "@/store";
 import { shareAvailable } from "@/scripts/share-available";
+import { defaultStore } from "@/store";
 
 export function getNoteMenu(props: {
 	note: misskey.entities.Note;
@@ -41,6 +42,14 @@ export function getNoteMenu(props: {
 		});
 	}
 
+	function directReply(): void {
+		os.post({
+			initialVisibility: 'specified',
+			initialVisibleUsers: appearNote.user,
+			reply: appearNote.id,
+		});
+	}
+	
 	function delEdit(): void {
 		os.confirm({
 			type: "warning",
@@ -95,6 +104,11 @@ export function getNoteMenu(props: {
 
 	function copyLink(): void {
 		copyToClipboard(`${url}/notes/${appearNote.id}`);
+		os.success();
+	}
+
+	function copyRemoteLink(): void {
+		copyToClipboard(appearNote.url || appearNote.uri);
 		os.success();
 	}
 
@@ -263,6 +277,13 @@ export function getNoteMenu(props: {
 						null,
 				  ]
 				: []),
+			defaultStore.state.firstPostButtonVisibilityForce 
+				? {
+					icon: "ph-envelope-simple-open ph-bold ph-lg",
+					text: i18n.ts.directReply,
+					action: directReply,
+				  }
+				: undefined,
 			{
 				icon: "ph-smiley ph-bold ph-lg",
 				text: i18n.ts.reaction,
@@ -278,6 +299,13 @@ export function getNoteMenu(props: {
 				text: i18n.ts.copyLink,
 				action: copyLink,
 			},
+			appearNote.url || appearNote.uri
+				? {
+						icon: "ph-link ph-bold ph-lg",
+						text: i18n.ts.copyRemoteLink,
+						action: copyRemoteLink,
+				  }
+				: undefined,
 			appearNote.url || appearNote.uri
 				? {
 						icon: "ph-arrow-square-out ph-bold ph-lg",

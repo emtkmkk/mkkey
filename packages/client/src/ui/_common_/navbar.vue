@@ -23,17 +23,6 @@
 				</button>
 			</div>
 			<nav class="middle">
-				<MkA
-					v-click-anime
-					v-tooltip.noDelay.right="i18n.ts.timeline"
-					class="item index"
-					active-class="active"
-					to="/"
-					exact
-				>
-					<i class="icon ph-house ph-bold ph-fw ph-lg"></i
-					><span class="text">{{ i18n.ts.timeline }}</span>
-				</MkA>
 				<template v-for="item in menu">
 					<div v-if="item === '-'" class="divider"></div>
 					<component

@@ -11,30 +11,35 @@
 			<i v-if="posted" class="ph-check ph-bold ph-lg"></i>
 			<i v-else class="ph-paper-plane-tilt ph-bold ph-lg"></i>
 		</MkButton>
-		<MkButton
+		<div 
+			class="shareButton"
 			v-if="$i == null"
-			class="button"
-			primary
-			@click="ioShare()"
 		>
-			<MkEmoji
-				class="emoji"
-				emoji=":io:"
-				style="height: 1.3em"
-			/>
-		</MkButton>
-		<MkButton
-			v-if="$i == null"
-			class="button"
-			primary
-			@click="twitterShare()"
-		>
-			<MkEmoji
-				class="emoji"
-				emoji=":twitter:"
-				style="height: 1.3em"
-			/>
-		</MkButton>
+			<MkButton
+				v-if="$i == null"
+				class="button"
+				primary
+				@click="ioShare()"
+			>
+				<MkEmoji
+					class="emoji"
+					emoji=":io:"
+					style="height: 1.3em"
+				/>
+			</MkButton>
+			<MkButton
+				v-if="$i == null"
+				class="button"
+				primary
+				@click="twitterShare()"
+			>
+				<MkEmoji
+					class="emoji"
+					emoji=":twitter:"
+					style="height: 1.3em"
+				/>
+			</MkButton>
+		</div>
 	</div>
 </template>
 
@@ -143,14 +148,30 @@ export default defineComponent({
 	border-radius: 6px;
 	box-shadow: 0 2px 8px var(--shadow);
 	z-index: 1;
-
+	
+	> .shareButton {
+    	display: inline-block;
+		
+		> .button {
+			margin-top: 32px;
+		}
+	}
+	
 	> .button {
 		margin-top: 32px;
 	}
 
 	@media (max-width: 600px) {
 		padding: 16px;
-
+		
+		> .shareButton {
+    		display: inline-block;
+			
+			> .button {
+				margin-top: 16px;
+			}
+		}
+		
 		> .button {
 			margin-top: 16px;
 		}

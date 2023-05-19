@@ -44,9 +44,9 @@ export function getNoteMenu(props: {
 
 	function directReply(): void {
 		os.post({
-			initialVisibility: 'specified',
-			initialVisibleUsers: appearNote.user,
 			reply: appearNote,
+			initialVisibility: 'specified',
+			initialVisibleUsers: [appearNote.user,...appearNote.mentions],
 		});
 	}
 	

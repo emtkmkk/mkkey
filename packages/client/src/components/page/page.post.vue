@@ -150,7 +150,6 @@ export default defineComponent({
 	z-index: 1;
 	
 	> .shareButton {
-		display: inline-block;
 		text-align: left;
 		
 		> .button {
@@ -167,7 +166,6 @@ export default defineComponent({
 		padding: 16px;
 		
 		> .shareButton {
-			display: inline-block;
 			text-align: left;
 			
 			> .button {

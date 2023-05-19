@@ -40,6 +40,7 @@
 </template>
 
 <script lang="ts" setup>
+import { Ref, ref } from "vue";
 import type { Note } from "calckey-js/built/entities";
 import Ripple from "@/components/MkRipple.vue";
 import { pleaseLogin } from "@/scripts/please-login";

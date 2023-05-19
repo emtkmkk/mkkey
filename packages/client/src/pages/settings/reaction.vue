@@ -163,24 +163,29 @@
 						style="height: 1.7em"
 					/>
 				</option>
-				<option value="custom">
-					<FormInput
-						v-model="favButtonReactionCustom"
-						class="_formBlock"
-						:small="true"
-						:placeholder="`:custom:`"
-						style="margin: 0 0 !important"
-					/>
-				</option>
 				<option value="favorite">
 				    {{
 						i18n.ts.favorite
+					}}
+				</option>
+				<option value="clip">
+					{{
+						i18n.ts.clip
 					}}
 				</option>
 				<option value="hidden">
 					{{
 						i18n.ts.hidden
 					}}
+				</option>
+				<option value="custom">
+					<FormInput
+						v-model="favButtonReactionCustom"
+						class="_formBlock"
+						:small="true"
+						:placeholder="`:絵文字名:`"
+						style="margin: 0 0 !important"
+					/>
 				</option>
 			</FormRadios>
 		</FormSection>

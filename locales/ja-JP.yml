@@ -1463,6 +1463,8 @@ _visibility:
   localOnlyDescription: "もこきーのみに公開"
   localAndFollower: "もこきー＆フォロワー"
   localAndFollowerDescription: "リモートでの二次拡散を拒否"
+  exitDirectMode: "ダイレクトモード解除"
+  exitDirectModeDescription: "公開範囲強制状態に戻ります"
 _postForm:
   replyPlaceholder: "このトゥートに返信..."
   quotePlaceholder: "このトゥートを引用..."

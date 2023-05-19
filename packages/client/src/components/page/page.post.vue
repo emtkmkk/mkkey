@@ -150,11 +150,11 @@ export default defineComponent({
 	z-index: 1;
 	
 	> .shareButton {
-    	display: inline-block;
+		display: inline-block;
 		text-align: left;
 		
 		> .button {
-    		display: inline-block !important;
+			display: inline-block !important;
 			margin-top: 32px;
 		}
 	}
@@ -167,11 +167,11 @@ export default defineComponent({
 		padding: 16px;
 		
 		> .shareButton {
-    		display: inline-block;
+			display: inline-block;
 			text-align: left;
 			
 			> .button {
-    			display: inline-block !important;
+				display: inline-block !important;
 				margin-top: 16px;
 			}
 		}

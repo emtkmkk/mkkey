@@ -153,6 +153,7 @@ export default defineComponent({
     	display: inline-block;
 		
 		> .button {
+    		display: inline-block !important;
 			margin-top: 32px;
 		}
 	}
@@ -168,6 +169,7 @@ export default defineComponent({
     		display: inline-block;
 			
 			> .button {
+    			display: inline-block !important;
 				margin-top: 16px;
 			}
 		}

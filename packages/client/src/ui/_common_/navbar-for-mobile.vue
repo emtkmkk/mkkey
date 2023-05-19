@@ -39,7 +39,8 @@
 						:is="navbarItemDef[item].to ? 'MkA' : 'button'"
 						v-else-if="
 							navbarItemDef[item] &&
-							navbarItemDef[item].show !== false
+							navbarItemDef[item].show !== false &&
+							navbarItemDef[item].onlyDesktop !== true
 						"
 						v-click-anime
 						class="item _button"

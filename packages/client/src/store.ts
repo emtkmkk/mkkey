@@ -9,14 +9,14 @@ export const noteViewInterruptors = [];
 export const notePostInterruptors = [];
 
 const menuOptions = [
-	"notifications",
 	"followRequests",
-	"messaging",
 	"explore",
+	"pages",
 	"clips",
 	"channels",
 	"search",
 	"announcements",
+	"reload",
 ];
 
 // TODO: それぞれいちいちwhereとかdefaultというキーを付けなきゃいけないの冗長なのでなんとかする(ただ型定義が面倒になりそう)

@@ -54,7 +54,7 @@ const props = defineProps<{
 	note: Note;
 }>();
 
-const starButton = Ref<HTMLElement>();
+const starButton = ref<HTMLElement>();
 
 async function clip(): Promise<void> {
 	const clips = await os.api("clips/list");

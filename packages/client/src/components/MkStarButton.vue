@@ -126,7 +126,7 @@ async function clip(): Promise<void> {
 				},
 			})),
 		],
-		starButton,
+		starButton.value,
 		{},
 	).then(focus);
 }

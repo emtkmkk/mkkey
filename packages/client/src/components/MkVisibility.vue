@@ -3,29 +3,30 @@
 		<i
 			v-if="note.visibility === 'home'"
 			class="ph-house ph-bold ph-lg"
-			v-tooltip="i18n.ts._visibility.home"
+			v-tooltip="i18n.ts._visibility.homeTooltip"
 		></i>
 		<i
 			v-else-if="note.visibility === 'followers'"
 			class="ph-lock-simple-open ph-bold ph-lg"
-			v-tooltip="i18n.ts._visibility.followers"
+			v-tooltip="i18n.ts._visibility.followersTooltip"
 		></i>
 		<i
 			v-else-if="note.visibility === 'specified'"
 			ref="specified"
 			class="ph-envelope-simple-open ph-bold ph-lg"
+			v-tooltip="i18n.ts._visibility.specifiedTooltip"
 		></i>
 	</span>
 	<span v-if="note.localOnly && note.channelId" :class="$style.localOnly"
 		><i
 			class="ph-hand-fist ph-bold ph-lg"
-			v-tooltip="i18n.ts._visibility.localOnly"
+			v-tooltip="i18n.ts._visibility.localOnlyTooltip"
 		></i
 	></span>
 	<span v-if="note.localOnly && !note.channelId" :class="$style.localOnly"
 		><i
 			class="ph-hand-heart ph-bold ph-lg"
-			v-tooltip="i18n.ts._visibility.localOnly"
+			v-tooltip="i18n.ts._visibility.localAndFollowerTooltip"
 		></i
 	></span>
 </template>

@@ -185,7 +185,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 	});
 
 	const app = createApp(
-		window.location.search === "?zen"
+		window.location.search === "?zen" || (ui === 'deck' && location.pathname !== '/')
 			? defineAsyncComponent(() => import("@/ui/zen.vue"))
 			: !$i
 			? defineAsyncComponent(() => import("@/ui/visitor.vue"))

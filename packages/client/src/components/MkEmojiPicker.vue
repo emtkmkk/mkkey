@@ -435,13 +435,13 @@ function done(query?: any): boolean | void {
 
 	const q2 = query.replaceAll(":", "");
 	if (q2.endsWith(' -f')) {
-		const emojiForceStd = query.match(/([\w:.-@]*) \-f/);
+		const emojiForceStd = query.match(/([\w:\.\-@]*) \-f/);
 		if (emojiForceStd && emojiForceStd[1]){
 			chosen(":" + emojiForceStd[1] + ":")
 		}
 	}
 	if (q2.endsWith('!')) {
-		const emojiForceStd = query.match(/([\w:.-@]*)!/);
+		const emojiForceStd = query.match(/([\w:\.\-@]*)!/);
 		if (emojiForceStd && emojiForceStd[1]){
 			chosen(":" + emojiForceStd[1] + ":")
 		}

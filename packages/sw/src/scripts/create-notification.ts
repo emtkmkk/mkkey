@@ -24,7 +24,7 @@ export async function createNotification<
 		return self.registration.showNotification(...n);
 	} else {
 		console.error("Could not compose notification", data);
-		return createEmptyNotification();
+		return createEmptyNotification("Could not compose notification" + data);
 	}
 }
 
@@ -351,14 +351,14 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 	}
 }
 
-export async function createEmptyNotification() {
+export async function createEmptyNotification(data?) {
 	return new Promise<void>(async (res) => {
 		if (!swLang.i18n) swLang.fetchLocale();
 		const i18n = (await swLang.i18n) as I18n<any>;
 		const { t } = i18n;
 
 		await self.registration.showNotification(
-			t("_notification.emptyPushNotificationMessage"),
+			data ? data : t("_notification.emptyPushNotificationMessage"),
 			{
 				silent: true,
 				badge: iconUrl("null"),

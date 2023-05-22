@@ -103,7 +103,7 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 				//swLogger.info(err.statusCode);
 				//swLogger.info(err.headers);
 				//swLogger.info(err.body);
-
+				/*
 				if (err.statusCode === 410) {
 					SwSubscriptions.delete({
 						userId: userId,
@@ -112,6 +112,7 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 						publickey: subscription.publickey,
 					});
 				}
+				*/
 			});
 	}
 }

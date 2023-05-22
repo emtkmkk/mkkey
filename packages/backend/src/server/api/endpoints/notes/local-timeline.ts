@@ -88,7 +88,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")
-		.leftJoinAndSelect("note.reply", "reply")	
+		.leftJoinAndSelect("note.reply", "reply")
 		.leftJoinAndSelect("note.renote", "renote")
 		.leftJoinAndSelect("reply.user", "replyUser")
 		.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")

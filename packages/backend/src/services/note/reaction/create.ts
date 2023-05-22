@@ -25,7 +25,7 @@ import { webhookDeliver } from "@/queue/index.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 
 export default async (
-	user: { id: User["id"]; host: User["host"] },
+	user: { id: User["id"]; host: User["host"]; name: User["name"]; },
 	note: Note,
 	reaction?: string,
 ) => {
@@ -133,7 +133,7 @@ export default async (
 			);
 
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, "reaction", {
+				webhookDeliver(webhook, "reaction " + user.name + " から " + decodedReaction.name + " ", {
 					note: await Notes.pack(note, user),
 				});
 			}

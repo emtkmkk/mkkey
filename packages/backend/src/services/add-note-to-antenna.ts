@@ -4,6 +4,7 @@ import { AntennaNotes, Mutings, Notes } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
 import { publishAntennaStream, publishMainStream } from "@/services/stream.js";
+import { createNotification } from "../create-notification.js";
 import type { User } from "@/models/entities/user.js";
 
 export async function addNoteToAntenna(
@@ -47,7 +48,7 @@ export async function addNoteToAntenna(
 			return;
 		}
 
-		// 2秒経っても既読にならなかったら通知
+		// 3秒経っても既読にならなかったら通知
 		setTimeout(async () => {
 			const unread = await AntennaNotes.findOneBy({
 				antennaId: antenna.id,
@@ -55,7 +56,16 @@ export async function addNoteToAntenna(
 			});
 			if (unread) {
 				publishMainStream(antenna.userId, "unreadAntenna", antenna);
+				
+				// 通知を作成
+				createNotification(note.userId, "unreadAntenna", {
+					notifierId: noteUser,
+					note: note,
+					noteId: note.id,
+					antenna: antenna,
+				});
 			}
-		}, 2000);
+			
+		}, 3000);
 	}
 }

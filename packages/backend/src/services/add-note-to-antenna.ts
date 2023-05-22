@@ -4,7 +4,7 @@ import { AntennaNotes, Mutings, Notes } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
 import { publishAntennaStream, publishMainStream } from "@/services/stream.js";
-import { createNotification } from "../create-notification.js";
+import { createNotification } from "create-notification.js";
 import type { User } from "@/models/entities/user.js";
 
 export async function addNoteToAntenna(

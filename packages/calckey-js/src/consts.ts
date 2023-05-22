@@ -5,6 +5,7 @@ export const notificationTypes = [
 	"renote",
 	"quote",
 	"reaction",
+	"unreadAntenna",
 	"pollVote",
 	"pollEnded",
 	"receiveFollowRequest",

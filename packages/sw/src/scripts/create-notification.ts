@@ -110,6 +110,18 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						},
 					];
 
+				case "unreadAntenna":
+					return [
+						t("_notification.youUnreadAntenna", {
+							name: data.body.antenna.name,
+						}),
+						{
+							body: data.body.note.text || "",
+							icon: data.body.user.avatarUrl,
+							badge: iconUrl("comments"),
+							data,
+						},
+					];
 				case "renote":
 					return [
 						t("_notification.youRenoted", {

@@ -58,7 +58,7 @@ export async function addNoteToAntenna(
 				publishMainStream(antenna.userId, "unreadAntenna", antenna);
 				
 				// 通知を作成
-				createNotification(note.userId, "unreadAntenna", {
+				createNotification(antenna.userId, "unreadAntenna", {
 					notifierId: noteUser,
 					note: note,
 					noteId: note.id,

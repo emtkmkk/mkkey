@@ -45,6 +45,7 @@
 					<div class="about">
 						<div
 							class="desc"
+							style="white-space: pre-line;"
 							v-html="meta.description || i18n.ts.headlineMisskey"
 						></div>
 					</div>
@@ -70,7 +71,7 @@
 							rounded
 							style="margin-left: 12px; margin-top: 12px"
 							onclick="window.location.href='/explore'"
-							>Explore</MkButton
+							>覗いてみる</MkButton
 						>
 					</div>
 				</div>

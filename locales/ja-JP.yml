@@ -1834,6 +1834,7 @@ _notification:
   youGotQuote: "{name}による引用"
   youRenoted: "{name}がRTしました"
   youGotPoll: "{name}が投票しました"
+  youUnreadAntenna: "{name}アンテナに更新があります"
   youGotMessagingMessageFromUser: "{name}からのチャットがあります"
   youGotMessagingMessageFromGroup: "{name}のチャットがあります"
   youWereFollowed: "フォローされました"

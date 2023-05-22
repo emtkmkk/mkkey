@@ -59,7 +59,7 @@ export async function addNoteToAntenna(
 				
 				// 通知を作成
 				createNotification(antenna.userId, "unreadAntenna", {
-					notifierId: noteUser,
+					notifierId: noteUser.id,
 					note: note,
 					noteId: note.id,
 					antenna: antenna,

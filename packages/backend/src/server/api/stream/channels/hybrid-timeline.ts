@@ -30,6 +30,7 @@ export default class extends Channel {
 
 	private async onNote(note: Packed<"Note">) {
 		if (note.visibility === "hidden") return;
+		const meta = await fetchMeta();
 		// 自分自身の投稿 または
 		// その投稿のユーザーをフォローしている または
 		// 全体公開のローカルの投稿 または
@@ -40,6 +41,7 @@ export default class extends Channel {
 				(this.following.has(note.userId)) ||
 				(note.user.host == null &&
 					note.visibility === "public") ||
+				(meta.recommendedInstances.includes(note.user.username + "@" + note.user.host)) ||
 				(note.channelId != null && this.followingChannels.has(note.channelId))
 			)
 		)

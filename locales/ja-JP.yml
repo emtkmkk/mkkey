@@ -1850,6 +1850,7 @@ _notification:
     reply: "返信"
     renote: "RT"
     quote: "引用"
+    unreadAntenna: "未読アンテナ"
     reaction: "リアクション"
     pollVote: "アンケートに投票された"
     pollEnded: "アンケートが終了"

@@ -113,7 +113,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				case "unreadAntenna":
 					return [
 						t("_notification.youUnreadAntenna", {
-							name: data.body.antenna.name,
+							name: data.body.reaction,
 						}),
 						{
 							body: data.body.note.text || "",

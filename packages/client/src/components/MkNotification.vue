@@ -185,7 +185,7 @@
 				v-if="notification.type === 'unreadAntenna'"
 				class="text"
 				:to="notePage(notification.note)"
-				:title="notification.antenna.name"
+				:title="notification.reaction"
 			>
 				<Mfm
 					:text="getNoteSummary(notification.note)"

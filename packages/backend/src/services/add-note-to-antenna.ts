@@ -62,7 +62,7 @@ export async function addNoteToAntenna(
 					notifierId: noteUser.id,
 					note: note,
 					noteId: note.id,
-					antenna: antenna,
+					reaction: antenna.name,
 				});
 			}
 			

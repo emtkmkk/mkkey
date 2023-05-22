@@ -14,6 +14,7 @@ import {
 	UserGroupInvitations,
 	AccessTokens,
 	NoteReactions,
+	Antennas,
 } from "../index.js";
 
 export const NotificationRepository = db.getRepository(Notification).extend({
@@ -91,6 +92,19 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 				  }
 				: {}),
 			...(notification.type === "reaction"
+				? {
+						note: Notes.pack(
+							notification.note || notification.noteId!,
+							{ id: notification.notifieeId },
+							{
+								detail: true,
+								_hint_: options._hintForEachNotes_,
+							},
+						),
+						reaction: notification.reaction,
+				  }
+				: {}),
+			...(notification.type === "unreadAntenna"
 				? {
 						note: Notes.pack(
 							notification.note || notification.noteId!,

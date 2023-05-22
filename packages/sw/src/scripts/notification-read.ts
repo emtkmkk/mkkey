@@ -33,7 +33,8 @@ class SwNotificationReadManager {
 	public async read<K extends keyof pushNotificationDataMap>(
 		data: pushNotificationDataMap[K],
 	) {
-		if (data.type !== "notification" || !(data.userId in this.accounts)) return;
+		// 既読をサーバーに送信しない
+		if (data.type !== "notification" || !(data.userId in this.accounts) || true) return;
 
 		const account = this.accounts[data.userId];
 

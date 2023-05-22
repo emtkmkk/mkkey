@@ -15,8 +15,7 @@ import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-mu
 
 export const meta = {
 	tags: ["notes"],
-
-	requireCredential: true,
+	requireCredentialPrivateMode: true,
 
 	res: {
 		type: "array",

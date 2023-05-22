@@ -84,7 +84,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.untilDate,
 	)
 		.andWhere("(note.visibility = 'public')")
-		.andWhere(`(note.userHost IS NULL) OR (note.username || '@' || note."userHost" = ANY ('{"${m.recommendedInstances.join('","')}"}'))`)
+		.andWhere(`(note.userHost IS NULL) OR (user.username || '@' || note."userHost" = ANY ('{"${m.recommendedInstances.join('","')}"}'))`)
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")

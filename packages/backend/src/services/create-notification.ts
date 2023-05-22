@@ -75,14 +75,14 @@ export async function createNotification(
 
 	// Publish notification event
 	publishMainStream(notifieeId, "notification", packed);
+	// We execute this before, because the server side "read" check doesnt work well with push notifications, the app and service worker will decide themself
+	// when it is best to show push notifications
+	pushNotification(notifieeId, "notification", packed);
 
 	// 3秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
 	setTimeout(async () => {
 		const fresh = await Notifications.findOneBy({ id: notification.id });
 		if (fresh == null) return; // 既に削除されているかもしれない
-		// We execute this before, because the server side "read" check doesnt work well with push notifications, the app and service worker will decide themself
-		// when it is best to show push notifications
-		pushNotification(notifieeId, "notification", packed);
 		if (fresh.isRead) return;
 
 		//#region ただしミュートしているユーザーからの通知なら無視

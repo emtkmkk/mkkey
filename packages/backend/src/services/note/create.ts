@@ -160,6 +160,7 @@ export default async (
 	user: {
 		id: User["id"];
 		username: User["username"];
+		name: User["name"];
 		host: User["host"];
 		isSilenced: User["isSilenced"];
 		createdAt: User["createdAt"];
@@ -523,7 +524,7 @@ export default async (
 							(x) => x.userId === data.reply!.userId && x.on.includes("reply"),
 						);
 						for (const webhook of webhooks) {
-							webhookDeliver(webhook, "reply", {
+							webhookDeliver(webhook, "reply " + user.name + "から", {
 								note: packedReply,
 							});
 						}
@@ -563,7 +564,7 @@ export default async (
 						(x) => x.userId === data.renote!.userId && x.on.includes("renote"),
 					);
 					for (const webhook of webhooks) {
-						webhookDeliver(webhook, "renote", {
+						webhookDeliver(webhook, "renote " + user.name + "から", {
 							note: packedRenote,
 						});
 					}
@@ -860,7 +861,7 @@ async function createMentionedEvents(
 				(x) => x.userId === u.id && x.on.includes("mention"),
 			);
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, "mention", {
+				webhookDeliver(webhook, "mention " + detailPackedNote.user.name + "から", {
 					note: detailPackedNote,
 				});
 			}

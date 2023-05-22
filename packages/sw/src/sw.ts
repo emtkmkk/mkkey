@@ -71,7 +71,8 @@ self.addEventListener("push", (ev) => {
 								break;
 
 							// クライアントがあったらストリームに接続しているということなので通知しない
-							if (clients.length !== 0) break;
+							// クライアント接続中も通知する
+							// if (clients.length !== 0) break;
 
 							return createNotification(data);
 						case "readAllNotifications":

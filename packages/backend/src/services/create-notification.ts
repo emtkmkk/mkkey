@@ -25,7 +25,7 @@ export async function createNotification(
 
 	if (
 		data.notifierId &&
-		["mention", "reply", "renote", "quote", "reaction"].includes(type)
+		["mention", "reply", "renote", "quote", "reaction","unreadAntenna"].includes(type)
 	) {
 		const notifier = await Users.findOneBy({ id: data.notifierId });
 		// suppress if the notifier does not exist or is silenced.
@@ -76,7 +76,7 @@ export async function createNotification(
 	// Publish notification event
 	publishMainStream(notifieeId, "notification", packed);
 
-	// 2秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
+	// 3秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
 	setTimeout(async () => {
 		const fresh = await Notifications.findOneBy({ id: notification.id });
 		if (fresh == null) return; // 既に削除されているかもしれない
@@ -109,7 +109,7 @@ export async function createNotification(
 				notifieeId,
 				await Users.findOneByOrFail({ id: data.notifierId! }),
 			);
-	}, 2000);
+	}, 3000);
 
 	return notification;
 }

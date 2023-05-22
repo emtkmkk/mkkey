@@ -458,7 +458,7 @@ useTooltip(reactionRef, (showing) => {
 			&.follow,
 			&.followRequestAccepted,
 			&.receiveFollowRequest,
-			&.groupInvited
+			&.groupInvited,
 			&.unreadAntenna {
 				padding: 3px;
 				background: #31748f;

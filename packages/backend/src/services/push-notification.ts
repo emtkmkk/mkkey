@@ -64,12 +64,13 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 
 	for (const subscription of subscriptions) {
 		if (
-			[
+			/*[
 				"readNotifications",
 				"readAllNotifications",
 				"readAllMessagingMessages",
 				"readAllMessagingMessagesOfARoom",
-			].includes(type) &&
+			].includes(type) &&*/
+			type !== "notification" &&
 			!subscription.sendReadMessage
 		)
 			continue;

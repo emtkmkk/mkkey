@@ -213,7 +213,7 @@
 			</template>
 		</I18n>
 	</button>
-	<span v-if="hiddenSoftMutes" style="display: none;">
+	<span v-else-if="hiddenSoftMutes" style="display: none;">
 		<button class="muted _button" @click="muted.muted = false">
 			<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 				<template #name>

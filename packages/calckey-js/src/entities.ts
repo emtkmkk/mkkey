@@ -238,6 +238,13 @@ export type Notification = {
 			userId: User["id"];
 	  }
 	| {
+			type: "unreadAntenna";
+			antenna: Antenna;
+			user: User;
+			userId: User["id"];
+			note: Note;
+	  }
+	| {
 			type: "app";
 			header?: string | null;
 			body: string;

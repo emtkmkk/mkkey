@@ -228,15 +228,17 @@ export default async function (
 	
 	const followingRate = Number.isFinite(follower.followersCount) ? (follower.followingCount / follower.followersCount) : 0
 	const needRequestFR = 
-		follower.followingCount > 1000
-			? followingRate > 2
-				: follower.followingCount > 500
-				? followingRate > 3
-					: follower.followingCount > 300
-					? followingRate > 4
-						: follower.followingCount > 100
-							? followingRate > 5
-							: false;
+		follower.followingCount > 7500
+			? followingRate > 1.1
+			: follower.followingCount > 1000
+				? followingRate > 2
+					: follower.followingCount > 500
+					? followingRate > 3
+						: follower.followingCount > 300
+						? followingRate > 4
+							: follower.followingCount > 100
+								? followingRate > 5
+								: false;
 					
 
 	// フォロー対象が鍵アカウントである or
@@ -269,7 +271,7 @@ export default async function (
 		if (
 			!autoAccept &&
 			Users.isLocalUser(followee) &&
-			followeeProfile.autoAcceptFollowed
+			(followeeProfile.autoAcceptFollowed || !followee.isLocked)
 		) {
 			const followed = await Followings.findOneBy({
 				followerId: followee.id,

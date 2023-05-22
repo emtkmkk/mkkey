@@ -54,7 +54,7 @@
 				<i
 					v-else-if="notification.type === 'quote'"
 					class="ph-quotes ph-bold"
-				>
+				></i>
 				<i
 					v-else-if="notification.type === 'unreadAntenna'"
 					class="ph-flying-saucer ph-bold"

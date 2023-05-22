@@ -46,7 +46,7 @@
 							</div>
 						</div>
 
-						<MkKeyValue class="_formBlock">
+						<MkKeyValue class="_formBlock" style="white-space: pre-line;">
 							<template #key>{{ i18n.ts.description }}</template>
 							<template #value>{{
 								$instance.description

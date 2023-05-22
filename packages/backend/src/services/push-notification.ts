@@ -70,7 +70,7 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 				"readAllMessagingMessages",
 				"readAllMessagingMessagesOfARoom",
 			].includes(type) &&*/
-			type !== "notification" &&
+			type !== "notification" && type !== "unreadMessagingMessage" &&
 			!subscription.sendReadMessage
 		)
 			continue;

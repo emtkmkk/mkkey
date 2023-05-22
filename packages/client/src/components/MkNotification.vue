@@ -54,6 +54,10 @@
 				<i
 					v-else-if="notification.type === 'quote'"
 					class="ph-quotes ph-bold"
+				>
+				<i
+					v-else-if="notification.type === 'unreadAntenna'"
+					class="ph-flying-saucer ph-bold"
 				></i>
 				<i
 					v-else-if="notification.type === 'pollVote'"
@@ -169,6 +173,19 @@
 				class="text"
 				:to="notePage(notification.note)"
 				:title="getNoteSummary(notification.note)"
+			>
+				<Mfm
+					:text="getNoteSummary(notification.note)"
+					:plain="true"
+					:nowrap="!full"
+					:custom-emojis="notification.note.emojis"
+				/>
+			</MkA>
+			<MkA
+				v-if="notification.type === 'unreadAntenna'"
+				class="text"
+				:to="notePage(notification.note)"
+				:title="notification.antenna.name"
 			>
 				<Mfm
 					:text="getNoteSummary(notification.note)"

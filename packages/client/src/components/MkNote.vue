@@ -213,6 +213,24 @@
 			</template>
 		</I18n>
 	</button>
+	<span v-if="hiddenSoftMutes" style="display: none;">
+		<button class="muted _button" @click="muted.muted = false">
+			<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
+				<template #name>
+					<MkA
+						v-user-preview="note.userId"
+						class="name"
+						:to="userPage(note.user)"
+					>
+						<MkUserName :user="note.user" maxlength="8" />
+					</MkA>
+				</template>
+				<template #reason>
+					{{ muted.matched.join(", ") }}
+				</template>
+			</I18n>
+		</button>
+	</span>
 </template>
 
 <script lang="ts" setup>

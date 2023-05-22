@@ -116,7 +116,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 							name: data.body.reaction,
 						}),
 						{
-							body: data.body.note.text || "",
+							body: getUserName(data.body.user) + " : " + data.body.note.text || "",
 							icon: data.body.user.avatarUrl,
 							badge: iconUrl("comments"),
 							data,

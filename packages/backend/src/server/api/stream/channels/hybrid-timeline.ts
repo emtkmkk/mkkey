@@ -39,7 +39,7 @@ export default class extends Channel {
 			!(
 				(this.user!.id === note.userId) ||
 				(this.following.has(note.userId)) ||
-				((note.user.host == null  || !meta.recommendedInstances.includes(`${note.user.username}@${note.user.host}`)) &&
+				((note.user.host == null  || meta.recommendedInstances.includes(`${note.user.username}@${note.user.host}`)) &&
 					note.visibility === "public") ||
 				(meta.recommendedInstances.includes(`${note.user.username}@${note.user.host}`)) ||
 				(note.channelId != null && this.followingChannels.has(note.channelId))

@@ -189,7 +189,7 @@
 			>
 				<i class="ph-quotes ph-fill ph-lg"></i>
 				<Mfm
-					:text="getNoteSummary(notification.note)"
+					:text="notification.note.user.id === notification.user.id ? getNoteSummary(notification.note) : 'RT : ' + getNoteSummary(notification.note)"
 					:plain="true"
 					:nowrap="!full"
 					:custom-emojis="notification.note.emojis"

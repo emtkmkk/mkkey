@@ -26,9 +26,8 @@ export default class extends Channel {
 	}
 
 	private async onNote(note: Packed<"Note">) {
-		if (note.user.host !== null) return;
 		const meta = await fetchMeta();
-		if (!meta.recommendedInstances.includes(note.user.username + "@" + note.user.host)) return;
+		if (note.user.host !== null || !meta.recommendedInstances.includes(`${note.user.username}@${note.user.host}`)) return;
 		if (note.visibility !== "public") return;
 
 		// 関係ない返信は除外

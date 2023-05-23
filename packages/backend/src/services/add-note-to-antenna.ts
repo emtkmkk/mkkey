@@ -57,11 +57,13 @@ export async function addNoteToAntenna(
 			if (unread) {
 				publishMainStream(antenna.userId, "unreadAntenna", antenna);
 				
+				const __note = note.renoteId && !note.text ? _note.renote : note;
+				
 				// 通知を作成
 				createNotification(antenna.userId, "unreadAntenna", {
 					notifierId: noteUser.id,
-					note: note,
-					noteId: note.id,
+					note: __note,
+					noteId: __note.id,
 					reaction: antenna.name,
 				});
 			}

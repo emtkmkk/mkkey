@@ -187,12 +187,14 @@
 				:to="notePage(notification.note)"
 				:title="notification.reaction"
 			>
+				<i class="ph-quotes ph-fill ph-lg"></i>
 				<Mfm
 					:text="getNoteSummary(notification.note)"
 					:plain="true"
 					:nowrap="!full"
 					:custom-emojis="notification.note.emojis"
 				/>
+				<i class="ph-quotes ph-fill ph-lg"></i>
 			</MkA>
 			<MkA
 				v-if="notification.type === 'pollVote'"

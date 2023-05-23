@@ -65,7 +65,7 @@ export default class extends Channel {
 				reply.userId !== this.user!.id &&
 				note.userId !== this.user!.id &&
 				reply.userId !== note.userId &&
-				(reply.reply?.userId !== note.userId && !(this.following.has(reply.reply?.userId) && this.following.has(note.userId)))
+				(reply.reply && reply.reply.userId !== note.userId && !(this.following.has(reply.reply?.userId) && this.following.has(note.userId)))
 			)
 				return;
 		}

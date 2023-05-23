@@ -111,13 +111,13 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					];
 
 				case "unreadAntenna":
-					const text = data.body.user.id === data.body.note.user.id ? data.body.note.text : "RT " + getUserName(data.body.note.user) + " : " + data.body.note.text;
+					const bodyText = data.body.user.id !== data.body.note.userId ? "RT " + getUserName(data.body.note.user) + " : " + data.body.note.text : data.body.note.text;
 					return [
 						t("_notification.youUnreadAntenna", {
 							name: data.body.reaction,
 						}),
 						{
-							body: getUserName(data.body.user) + " : " + text || "",
+							body: getUserName(data.body.user) + " : " + bodyText || "",
 							icon: data.body.user.avatarUrl,
 							badge: iconUrl("comments"),
 							data,

@@ -24,7 +24,7 @@
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.power }}</template>
-				<template #value>{{ stats.powerRank + " - " + stats.nextRank }}</template>
+				<template #value>{{ stats.powerRank + " ( " + stats.nextRank + " )" }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.notesCount }}</template>

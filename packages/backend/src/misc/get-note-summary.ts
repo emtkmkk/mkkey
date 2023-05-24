@@ -13,7 +13,7 @@ export const getNoteSummary = (note: Packed<"Note">): string => {
 
 	// 本文
 	if (note.cw != null) {
-		summary += note.cw;
+		summary += note.cw + " (CW)";
 	} else {
 		summary += note.text ? note.text : "";
 	}

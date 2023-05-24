@@ -168,11 +168,6 @@
 						i18n.ts.favorite
 					}}
 				</option>
-				<option value="clip">
-					{{
-						i18n.ts.clip
-					}}
-				</option>
 				<option value="hidden">
 					{{
 						i18n.ts.hidden

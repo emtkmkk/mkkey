@@ -197,7 +197,7 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 			type: "link" as const,
 			text: antenna.name,
 			icon: "",
-			indicate: antenna.hasUnreadNote,
+			indicate: $i.mutingNotificationTypes.includes("unreadAntenna") && antenna.hasUnreadNote,
 			to: `/timeline/antenna/${antenna.id}`,
 		}))
 	);

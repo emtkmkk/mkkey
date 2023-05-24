@@ -11,7 +11,7 @@
 		接続中: <b data-v-93ec8385="">{{ onlineUsersCount + honlineUsersCount }}</b>
 		</span><br>
 		<span v-if="widgetProps.showAway && !widgetProps.superDetails" class="text" data-v-93ec8385="">
-		離席中: <b data-v-93ec8385="">{{ activeUsersCount + hactiveUsersCount }}
+		離席中: <b data-v-93ec8385="">{{ activeUsersCount + hactiveUsersCount }}</b>
 		</span><br>
 		<span v-if="widgetProps.showOffline && !widgetProps.superDetails" class="text" data-v-93ec8385="">
 		切断中: <b data-v-93ec8385="">{{ offline1UsersCount + offline2UsersCount + offline3UsersCount }}</b>

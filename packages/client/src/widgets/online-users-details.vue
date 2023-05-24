@@ -6,13 +6,12 @@
 			pad: !widgetProps.transparent,
 		}"
 	>
-
 		<span v-if="widgetProps.showOnline && !widgetProps.superDetails" class="text" data-v-93ec8385="">
 		接続中: <b data-v-93ec8385="">{{ onlineUsersCount + honlineUsersCount }}</b>  
-		<br v-if="!(widgetProps.showAway && widgetProps.showOffline && widgetProps.showSleep)"></span>
+		<br v-if="(!widgetProps.showAway && widgetProps.showOffline && widgetProps.showSleep) || (widgetProps.showAway && !widgetProps.showOffline && widgetProps.showSleep) || (widgetProps.showAway && widgetProps.showOffline && !widgetProps.showSleep))"></span>
 		<span v-if="widgetProps.showAway && !widgetProps.superDetails" class="text" data-v-93ec8385="">
 		離席中: <b data-v-93ec8385="">{{ activeUsersCount + hactiveUsersCount }}</b>  
-		<br v-if="widgetProps.showOffline && widgetProps.showSleep"></span>
+		<br v-if="widgetProps.showOnline && widgetProps.showOffline && widgetProps.showSleep"></span>
 		<span v-if="widgetProps.showOffline && !widgetProps.superDetails" class="text" data-v-93ec8385="">
 		切断中: <b data-v-93ec8385="">{{ offline1UsersCount + offline2UsersCount + offline3UsersCount }}</b>  
 		</span>

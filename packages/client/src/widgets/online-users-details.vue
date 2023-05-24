@@ -7,16 +7,28 @@
 		}"
 	>
 
-		<span class="text" data-v-93ec8385="">
-		オンライン: <b data-v-93ec8385="">{{ onlineUsersCount }}</b> / <b data-v-93ec8385="">{{ honlineUsersCount }}</b>
+		<span v-if="widgetProps.showOnline && !widgetProps.superDetails" class="text" data-v-93ec8385="">
+		接続中: <b data-v-93ec8385="">{{ onlineUsersCount + honlineUsersCount }}</b>
 		</span><br>
-		<span class="text" data-v-93ec8385="">
+		<span v-if="widgetProps.showAway && !widgetProps.superDetails" class="text" data-v-93ec8385="">
+		離席中: <b data-v-93ec8385="">{{ activeUsersCount + hactiveUsersCount }}
+		</span><br>
+		<span v-if="widgetProps.showOffline && !widgetProps.superDetails" class="text" data-v-93ec8385="">
+		切断中: <b data-v-93ec8385="">{{ offline1UsersCount + offline2UsersCount + offline3UsersCount }}</b>
+		</span><br>
+		<span v-if="widgetProps.showSleep && !widgetProps.superDetails" class="text" data-v-93ec8385="">
+		休眠中: <b data-v-93ec8385="">{{ sleepUsersCount + dsleepUsersCount + dsleep2UsersCount }}</b>
+		</span>
+		<span v-if="widgetProps.showOnline && widgetProps.superDetails" class="text" data-v-93ec8385="">
+		接続中: <b data-v-93ec8385="">{{ onlineUsersCount }}</b> / <b data-v-93ec8385="">{{ honlineUsersCount }}</b>
+		</span><br>
+		<span v-if="widgetProps.showAway && widgetProps.superDetails" class="text" data-v-93ec8385="">
 		離席中: <b data-v-93ec8385="">{{ activeUsersCount }}</b> / <b data-v-93ec8385="">{{ hactiveUsersCount }}</b>
 		</span><br>
-		<span class="text" data-v-93ec8385="">
-		オフライン: <b data-v-93ec8385="">{{ offline1UsersCount }}</b> / <b data-v-93ec8385="">{{ offline2UsersCount }}</b> / <b data-v-93ec8385="">{{ offline3UsersCount }}</b>
+		<span v-if="widgetProps.showOffline && widgetProps.superDetails" class="text" data-v-93ec8385="">
+		切断中: <b data-v-93ec8385="">{{ offline1UsersCount }}</b> / <b data-v-93ec8385="">{{ offline2UsersCount }}</b> / <b data-v-93ec8385="">{{ offline3UsersCount }}</b>
 		</span><br>
-		<span class="text" data-v-93ec8385="">
+		<span v-if="widgetProps.showSleep && widgetProps.superDetails" class="text" data-v-93ec8385="">
 		休眠中: <b data-v-93ec8385="">{{ sleepUsersCount }}</b> / <b data-v-93ec8385="">{{ dsleepUsersCount }}</b> / <b data-v-93ec8385="">{{ dsleep2UsersCount }}</b>
 		</span>
 	</div>
@@ -43,6 +55,26 @@ const widgetPropsDef = {
 	transparent: {
 		type: "boolean" as const,
 		default: true,
+	},
+	showOnline: {
+		type: "boolean" as const,
+		default: true,
+	},
+	showAway: {
+		type: "boolean" as const,
+		default: true,
+	},
+	showOffline: {
+		type: "boolean" as const,
+		default: true,
+	},
+	showSleep: {
+		type: "boolean" as const,
+		default: true,
+	},
+	superDetails: {
+		type: "boolean" as const,
+		default: false,
 	},
 };
 

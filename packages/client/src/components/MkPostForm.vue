@@ -337,6 +337,7 @@
 					<i class="ph-eye-slash ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="!$store.state.hiddenMentionButton"
 					v-tooltip="i18n.ts.mention"
 					class="_button"
 					@click="insertMention"
@@ -1119,9 +1120,13 @@ function cancel() {
 }
 
 function insertMention() {
-	os.selectUser().then((user) => {
-		insertTextAtCursor(textareaEl, "@" + Acct.toString(user) + " ");
-	});
+	if (defaultStore.state.openMentionWindow) {
+		os.selectUser().then((user) => {
+			insertTextAtCursor(textareaEl, "@" + Acct.toString(user) + " ");
+		});
+	} else {
+		insertTextAtCursor(textareaEl, '@');
+	}
 }
 
 async function insertEmoji(ev: MouseEvent) {

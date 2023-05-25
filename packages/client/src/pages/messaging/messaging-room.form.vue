@@ -210,7 +210,11 @@ function deleteDraft() {
 }
 
 async function insertEmoji(ev: MouseEvent) {
-	os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textEl);
+	if (defaultStore.state.openEmojiPicker) {
+		os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textEl);
+	} else {
+		insertTextAtCursor(textareaEl, ':');
+	}
 }
 
 function insertMfm() {

@@ -8,38 +8,41 @@
 			<template #label>URL</template>
 		</FormInput>
 
-		<FormInput v-model="secret" class="_formBlock">
+		<FormInput v-if="!discord_type" v-model="secret" class="_formBlock">
 			<template #prefix><i class="ph-lock ph-bold ph-lg"></i></template>
 			<template #label>Secret</template>
 		</FormInput>
+		<FormSwitch v-model="discord_type" class="_formBlock"
+			>Discordで表示できる形式で送信</FormSwitch
+		>
 
 		<FormSection>
-			<template #label>Events</template>
+			<template #label>送信タイミング</template>
 
 			<FormSwitch v-model="event_follow" class="_formBlock"
-				>Follow</FormSwitch
+				>フォローされた時</FormSwitch
 			>
 			<FormSwitch v-model="event_followed" class="_formBlock"
-				>Followed</FormSwitch
+				>フォロー成功時</FormSwitch
 			>
 			<FormSwitch v-model="event_note" class="_formBlock"
-				>Note</FormSwitch
+				>投稿時（自分）</FormSwitch
 			>
 			<FormSwitch v-model="event_reply" class="_formBlock"
-				>Reply</FormSwitch
+				>リプライ受取時</FormSwitch
 			>
 			<FormSwitch v-model="event_renote" class="_formBlock"
-				>Renote</FormSwitch
+				>RTされた時</FormSwitch
 			>
 			<FormSwitch v-model="event_reaction" class="_formBlock"
-				>Reaction</FormSwitch
+				>リアクションされた時</FormSwitch
 			>
 			<FormSwitch v-model="event_mention" class="_formBlock"
-				>Mention</FormSwitch
+				>メンション受取時</FormSwitch
 			>
 		</FormSection>
 
-		<FormSwitch v-model="active" class="_formBlock">Active</FormSwitch>
+		<FormSwitch v-model="active" class="_formBlock">有効化</FormSwitch>
 
 		<div
 			class="_formBlock"
@@ -76,6 +79,8 @@ let url = $ref(webhook.url);
 let secret = $ref(webhook.secret);
 let active = $ref(webhook.active);
 
+let discord_type = $ref(webhook.secret === "Discord");
+
 let event_follow = $ref(webhook.on.includes("follow"));
 let event_followed = $ref(webhook.on.includes("followed"));
 let event_note = $ref(webhook.on.includes("note"));
@@ -93,6 +98,8 @@ async function save(): Promise<void> {
 	if (event_renote) events.push("renote");
 	if (event_reaction) events.push("reaction");
 	if (event_mention) events.push("mention");
+
+	if (discord_type) secret = "Discord";
 
 	os.apiWithDialog("i/webhooks/update", {
 		name,

@@ -8,7 +8,7 @@
 			<template #label>URL</template>
 		</FormInput>
 
-		<FormInput v-model="secret" class="_formBlock">
+		<FormInput v-if="!discord_type" v-model="secret" class="_formBlock">
 			<template #prefix><i class="ph-lock ph-bold ph-lg"></i></template>
 			<template #label>Secret</template>
 		</FormInput>

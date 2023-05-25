@@ -228,6 +228,13 @@ function quickSizeUp() {
 		textEl.value = "$[x2 " + textEl.value + "]";
 	}
 	text = textEl.value;
+	
+	// キャレットを戻す
+	nextTick(() => {
+		textEl.focus();
+		const pos = text.length - text.match(/]+$/)[0].length;
+		textEl.setSelectionRange(pos, pos);
+	});
 }
 
 onMounted(() => {

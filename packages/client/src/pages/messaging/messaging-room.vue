@@ -1,13 +1,15 @@
 <template>
 	<div
-		ref="rootEl"
 		class="_section"
 		@dragover.prevent.stop="onDragover"
 		@drop.prevent.stop="onDrop"
 	>
 		<div class="_content mk-messaging-room">
 			<MkSpacer :content-max="800">
-				<div class="body">
+				<div 
+					ref="rootEl" 
+					class="body"
+				>
 					<MkPagination
 						v-if="pagination"
 						ref="pagingComponent"
@@ -136,6 +138,7 @@ let pagination: Paging | null = $ref(null);
 watch([() => props.userAcct, () => props.groupId], () => {
 	if (connection) connection.dispose();
 	fetch();
+	thisScrollToBottom();
 });
 
 async function fetch() {
@@ -189,9 +192,9 @@ async function fetch() {
 	document.addEventListener("visibilitychange", onVisibilitychange);
 
 	nextTick(() => {
-		thisScrollToBottom();
 		window.setTimeout(() => {
 			fetching = false;
+			thisScrollToBottom();
 		}, 300);
 	});
 }
@@ -397,7 +400,7 @@ XMessage:last-of-type {
 		z-index: 2;
 		bottom: 0;
 		padding-top: 8px;
-		bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+		bottom: calc(env(safe-area-inset-bottom, 0px) + var(--stickyBottom));
 
 		> .new-message {
 			width: 100%;

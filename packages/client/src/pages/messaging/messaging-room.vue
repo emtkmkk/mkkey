@@ -1,10 +1,11 @@
 <template>
 	<div
+		ref="rootEl"
 		class="_section"
 		@dragover.prevent.stop="onDragover"
 		@drop.prevent.stop="onDrop"
 	>
-		<div ref="rootEl" class="_content mk-messaging-room">
+		<div class="_content mk-messaging-room">
 			<MkSpacer :content-max="800">
 				<div class="body">
 					<MkPagination
@@ -353,7 +354,7 @@ XMessage:last-of-type {
 	position: relative;
 	overflow-y: auto;
 
-	> .body {
+	.body {
 		
 		.more {
 			display: block;
@@ -390,7 +391,7 @@ XMessage:last-of-type {
 		}
 	}
 
-	> footer {
+	footer {
 		width: 100%;
 		position: sticky;
 		z-index: 2;

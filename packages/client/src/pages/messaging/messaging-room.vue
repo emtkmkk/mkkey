@@ -297,7 +297,7 @@ function onDeleted(id) {
 
 function thisScrollToBottom() {
 	if (window.location.href.includes("my/messaging/")) {
-		scrollToBottom(rootEl.value, { behavior: "smooth" });
+		scrollToBottom($$(rootEl).value, { behavior: "smooth" });
 	}
 }
 
@@ -354,7 +354,7 @@ XMessage:last-of-type {
 	position: relative;
 	overflow-y: auto;
 
-	.body {
+	 .body {
 		
 		.more {
 			display: block;
@@ -391,7 +391,7 @@ XMessage:last-of-type {
 		}
 	}
 
-	footer {
+	 footer {
 		width: 100%;
 		position: sticky;
 		z-index: 2;

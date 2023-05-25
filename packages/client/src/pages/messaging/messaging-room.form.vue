@@ -213,7 +213,7 @@ async function insertEmoji(ev: MouseEvent) {
 	if (defaultStore.state.openEmojiPicker) {
 		os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textEl);
 	} else {
-		insertTextAtCursor(textareaEl, ':');
+		insertTextAtCursor(textEl, ':');
 	}
 }
 

@@ -4,9 +4,9 @@
 		@dragover.prevent.stop="onDragover"
 		@drop.prevent.stop="onDrop"
 	>
-		<div class="_content mk-messaging-room">
+		<div ref="rootEl" class="_content mk-messaging-room">
 			<MkSpacer :content-max="800">
-				<div ref="rootEl" class="body">
+				<div class="body">
 					<MkPagination
 						v-if="pagination"
 						ref="pagingComponent"
@@ -296,7 +296,7 @@ function onDeleted(id) {
 
 function thisScrollToBottom() {
 	if (window.location.href.includes("my/messaging/")) {
-		scrollToBottom($$(rootEl).value, { behavior: "smooth" });
+		scrollToBottom(rootEl.value, { behavior: "smooth" });
 	}
 }
 
@@ -351,9 +351,9 @@ XMessage:last-of-type {
 
 .mk-messaging-room {
 	position: relative;
+	overflow-y: auto;
 
 	> .body {
-		overflow-y: auto;
 		
 		.more {
 			display: block;

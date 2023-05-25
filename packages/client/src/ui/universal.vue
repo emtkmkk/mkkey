@@ -495,7 +495,7 @@ console.log(mainRouter.currentRoute.value.name);
 
 	> .postButton,
 	.widgetButton {
-		bottom: var(--stickyBottom);
+		bottom: calc(env(safe-area-inset-bottom, 0px) + var(--stickyBottom));
 		right: 1.5rem;
 		height: 4rem;
 		width: 4rem;

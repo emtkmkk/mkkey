@@ -44,20 +44,20 @@
 			<FormSwitch v-model="openEmojiPicker" class="_formBlock">{{
 				i18n.ts.openEmojiPicker
 			}}</FormSwitch>
-			<FormSwitch v-model="notCloseEmojiPicker" class="_formBlock">{{
+			<FormSwitch v-if="openEmojiPicker" v-model="notCloseEmojiPicker" class="_formBlock">{{
 				i18n.ts.notCloseEmojiPicker
-			}}</FormSwitch>
-			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
-				i18n.ts.smartMFMInputer
-			}}</FormSwitch>
-			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock">{{
-				i18n.ts.hiddenMFMHelp
 			}}</FormSwitch>
 			<FormSwitch v-model="hiddenMentionButton" class="_formBlock">{{
 				i18n.ts.hiddenMentionButton
 			}}</FormSwitch>
 			<FormSwitch v-if="!hiddenMentionButton" v-model="openMentionWindow" class="_formBlock">{{
 				i18n.ts.openMentionWindow
+			}}</FormSwitch>
+			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
+				i18n.ts.smartMFMInputer
+			}}</FormSwitch>
+			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock">{{
+				i18n.ts.hiddenMFMHelp
 			}}</FormSwitch>
 			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript

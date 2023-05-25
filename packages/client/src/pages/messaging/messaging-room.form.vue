@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, watch } from 'vue';
+import { nextTick, onMounted, watch } from 'vue';
 import * as Misskey from 'calckey-js';
 import autosize from 'autosize';
 import insertTextAtCursor from 'insert-text-at-cursor';

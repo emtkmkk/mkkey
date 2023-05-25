@@ -11,26 +11,42 @@ const logger = new Logger("webhook");
 export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 	try {
 		logger.debug(`delivering ${job.data.webhookId}`);
-
-		const res = await getResponse({
-			url: job.data.to,
-			method: "POST",
-			headers: {
-				"User-Agent": "Calckey-Hooks",
-				"X-Calckey-Host": config.host,
-				"X-Calckey-Hook-Id": job.data.webhookId,
-				"X-Calckey-Hook-Secret": job.data.secret,
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				hookId: job.data.webhookId,
-				userId: job.data.userId,
-				eventId: job.data.eventId,
-				createdAt: job.data.createdAt,
-				type: job.data.type,
-				body: job.data.content,
-			}),
-		});
+		let res;
+		if (job.data.secret === "Discord"){
+			res = await getResponse({
+				url: job.data.to,
+				method: "POST",
+				headers: {
+					"User-Agent": "Calckey-Hooks",
+					"X-Calckey-Host": config.host,
+					"X-Calckey-Hook-Id": job.data.webhookId,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					content: job.data.type,
+				}),
+			});
+		} else {
+			res = await getResponse({
+				url: job.data.to,
+				method: "POST",
+				headers: {
+					"User-Agent": "Calckey-Hooks",
+					"X-Calckey-Host": config.host,
+					"X-Calckey-Hook-Id": job.data.webhookId,
+					"X-Calckey-Hook-Secret": job.data.secret,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					hookId: job.data.webhookId,
+					userId: job.data.userId,
+					eventId: job.data.eventId,
+					createdAt: job.data.createdAt,
+					type: job.data.type,
+					body: job.data.content,
+				}),
+			});
+		}
 
 		Webhooks.update(
 			{ id: job.data.webhookId },

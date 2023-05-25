@@ -184,6 +184,14 @@ export const defaultStore = markRaw(
 			where: "deviceAccount",
 			default: false,
 		},
+		disableMentionButton: {
+			where: "deviceAccount",
+			default: false,
+		},
+		openMentionWindow: {
+			where: "deviceAccount",
+			default: true,
+		},
 		statusbars: {
 			where: "deviceAccount",
 			default: [] as {

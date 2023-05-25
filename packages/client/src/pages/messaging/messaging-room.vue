@@ -1,15 +1,13 @@
 <template>
 	<div
+		ref="rootEl" 
 		class="_section"
 		@dragover.prevent.stop="onDragover"
 		@drop.prevent.stop="onDrop"
 	>
 		<div class="_content mk-messaging-room">
 			<MkSpacer :content-max="800">
-				<div 
-					ref="rootEl" 
-					class="body"
-				>
+				<div class="body">
 					<MkPagination
 						v-if="pagination"
 						ref="pagingComponent"

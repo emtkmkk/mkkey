@@ -53,6 +53,12 @@
 			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock">{{
 				i18n.ts.hiddenMFMHelp
 			}}</FormSwitch>
+			<FormSwitch v-model="hiddenMentionButton" class="_formBlock">{{
+				i18n.ts.hiddenMentionButton
+			}}</FormSwitch>
+			<FormSwitch v-if="!hiddenMentionButton" v-model="openMentionWindow" class="_formBlock">{{
+				i18n.ts.openMentionWindow
+			}}</FormSwitch>
 			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript
 			}}</FormSwitch>
@@ -342,6 +348,12 @@ const notCloseEmojiPicker = computed(
 );
 const hiddenMFMHelp = computed(
 	defaultStore.makeGetterSetter("hiddenMFMHelp")
+);
+const hiddenMentionButton = computed(
+	defaultStore.makeGetterSetter("hiddenMentionButton")
+);
+const openMentionWindow = computed(
+	defaultStore.makeGetterSetter("openMentionWindow")
 );
 const useReactionPickerForContextMenu = computed(
 	defaultStore.makeGetterSetter("useReactionPickerForContextMenu")

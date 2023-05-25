@@ -159,7 +159,7 @@ export async function insertFollowingDoc(
 				(x) => x.userId === followee.id && x.on.includes("followed"),
 			);
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, "" + packed.name || packed.username + " のフォロー成功", {
+				webhookDeliver(webhook, "" + packed.name || packed.username + " のフォローに成功", {
 					user: packed,
 				});
 			}

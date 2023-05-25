@@ -236,7 +236,7 @@ function quickSizeUp() {
 	// キャレットを戻す
 	nextTick(() => {
 		textEl.focus();
-		const pos = text.length - text.match(/]+$/)[0].length;
+		const pos = textEl.value.length - textEl.value.match(/]*$/)[0].length;
 		textEl.setSelectionRange(pos, pos);
 	});
 }

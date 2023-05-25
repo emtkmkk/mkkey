@@ -66,13 +66,13 @@
 						<MkEllipsis />
 					</div>
 					<transition :name="animation ? 'fade' : ''">
-						<div v-show="showIndicator" class="new-message">
+						<div v-show="showIndicator || !isBottomVisible(rootEl, 64)" class="new-message">
 							<button
 								class="_buttonPrimary"
 								@click="onIndicatorClick"
 							>
 								<i
-									class="fas ph-fw ph-lg ph-arrow-circle-down-bold ph-lg"
+									class="fas ph-fw ph-lg ph-arrow-circle-down ph-bold ph-lg"
 								></i
 								>{{ i18n.ts.newMessageExists }}
 							</button>
@@ -298,7 +298,7 @@ function onDeleted(id) {
 
 function thisScrollToBottom() {
 	if (window.location.href.includes("my/messaging/")) {
-		scrollToBottom($$(rootEl).value, { behavior: "smooth" });
+		scrollToBottom(null, { behavior: "smooth" });
 	}
 }
 

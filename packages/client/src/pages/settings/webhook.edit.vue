@@ -102,6 +102,7 @@ async function save(): Promise<void> {
 	if (discord_type) secret = "Discord";
 
 	os.apiWithDialog("i/webhooks/update", {
+		webhookId: props.webhookId,
 		name,
 		url,
 		secret,

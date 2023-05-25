@@ -143,7 +143,7 @@ export async function insertFollowingDoc(
 				(x) => x.userId === follower.id && x.on.includes("follow"),
 			);
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, "" + (packed.name ? packed.name + " (" + packed.username + "@" + packed.host ?? "mkkey.net" + ")" : packed.username + "@" + packed.host ?? "mkkey.net") + " からのフォロー", {
+				webhookDeliver(webhook,  (packed.name || packed.username) + " のフォローに成功", {
 					user: packed,
 				});
 			}
@@ -159,7 +159,7 @@ export async function insertFollowingDoc(
 				(x) => x.userId === followee.id && x.on.includes("followed"),
 			);
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, "" + (packed.name || packed.username) + " のフォローに成功", {
+				webhookDeliver(webhook, (packed.name ? packed.name + " (" + packed.username + "@" + packed.host ?? "mkkey.net" + ")" : packed.username + "@" + packed.host ?? "mkkey.net") + " からのフォロー", {
 					user: packed,
 				});
 			}

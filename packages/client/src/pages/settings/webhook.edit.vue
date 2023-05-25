@@ -20,10 +20,10 @@
 			<template #label>送信タイミング</template>
 
 			<FormSwitch v-model="event_follow" class="_formBlock"
-				>フォローされた時</FormSwitch
+				>フォロー成功時</FormSwitch
 			>
 			<FormSwitch v-model="event_followed" class="_formBlock"
-				>フォロー成功時</FormSwitch
+				>フォローされた時</FormSwitch
 			>
 			<FormSwitch v-model="event_note" class="_formBlock"
 				>投稿時（自分）</FormSwitch

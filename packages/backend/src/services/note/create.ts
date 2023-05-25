@@ -490,7 +490,7 @@ export default async (
 			);
 
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, "note", {
+				webhookDeliver(webhook, "トゥートに成功", {
 					note: await Notes.pack(note, user),
 				});
 			}

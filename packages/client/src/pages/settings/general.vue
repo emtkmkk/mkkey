@@ -41,6 +41,9 @@
 			<FormSwitch v-model="enterSendsMessage" class="_formBlock">{{
 				i18n.ts.enterSendsMessage
 			}}</FormSwitch>
+			<FormSwitch v-model="openEmojiPicker" class="_formBlock">{{
+				i18n.ts.openEmojiPicker
+			}}</FormSwitch>
 			<FormSwitch v-model="notCloseEmojiPicker" class="_formBlock">{{
 				i18n.ts.notCloseEmojiPicker
 			}}</FormSwitch>
@@ -330,6 +333,9 @@ const enableInfiniteScroll = computed(
 );
 const enterSendsMessage = computed(
 	defaultStore.makeGetterSetter("enterSendsMessage")
+);
+const openEmojiPicker = computed(
+	defaultStore.makeGetterSetter("openEmojiPicker")
 );
 const notCloseEmojiPicker = computed(
 	defaultStore.makeGetterSetter("notCloseEmojiPicker")

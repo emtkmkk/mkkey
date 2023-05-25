@@ -10,7 +10,7 @@
 				<Mfm v-if="message.text" ref="text" class="text" :text="message.text" :i="$i"/>
 			</div>
 			<div v-else class="content">
-				<p class="is-deleted">{{ i18n.ts.deleted }}</p>
+				<p class="is-deleted">{{ i18n.ts.deletedChat }}</p>
 			</div>
 		</div>
 		<div v-if="message.file" class="file" width="400px">
@@ -126,6 +126,7 @@ function del(): void {
 
 			> .content {
 				max-width: 100%;
+				object-fit: contain;
 
 				> .is-deleted {
 					display: block;

@@ -184,7 +184,7 @@ export const defaultStore = markRaw(
 			where: "deviceAccount",
 			default: false,
 		},
-		disableMentionButton: {
+		hiddenMentionButton: {
 			where: "deviceAccount",
 			default: false,
 		},

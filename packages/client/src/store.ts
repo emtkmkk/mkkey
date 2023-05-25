@@ -364,6 +364,10 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 		},
+		openEmojiPicker: {
+			where: "device",
+			default: true,
+		},
 		notCloseEmojiPicker: {
 			where: "device",
 			default: true,

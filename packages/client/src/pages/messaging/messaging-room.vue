@@ -352,7 +352,7 @@ XMessage:last-of-type {
 
 .mk-messaging-room {
 	position: relative;
-	overflow: auto;
+	overflow-y: auto;
 
 	> .body {
 		.more {

@@ -352,9 +352,10 @@ XMessage:last-of-type {
 
 .mk-messaging-room {
 	position: relative;
-	overflow-y: auto;
 
 	> .body {
+		overflow-y: auto;
+		
 		.more {
 			display: block;
 			margin: 16px auto;

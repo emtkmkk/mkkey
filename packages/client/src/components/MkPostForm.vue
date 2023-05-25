@@ -1125,7 +1125,11 @@ function insertMention() {
 }
 
 async function insertEmoji(ev: MouseEvent) {
-	os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textareaEl);
+	if (defaultStore.state.openEmojiPicker) {
+		os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textareaEl);
+	} else {
+		insertTextAtCursor(textareaEl, ':');
+	}
 }
 
 function insertMfm() {

@@ -368,6 +368,10 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: true,
 		},
+		smartMFMInputer: {
+			where: "device",
+			default: true,
+		},
 		showUpdates: {
 			where: "device",
 			default: true,

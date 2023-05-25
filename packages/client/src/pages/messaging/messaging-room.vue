@@ -441,7 +441,7 @@ XMessage:last-of-type {
 
 		> .form {
 			max-height: 12em;
-			overflow-y: scroll;
+			overflow-y: auto;
 			border-top: solid 0.5px var(--divider);
 		}
 	}

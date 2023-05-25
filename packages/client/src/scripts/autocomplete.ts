@@ -2,6 +2,7 @@ import { nextTick, Ref, ref, defineAsyncComponent } from "vue";
 import getCaretCoordinates from "textarea-caret";
 import { toASCII } from "punycode/";
 import { popup } from "@/os";
+import { defaultStore } from "@/store";
 
 export class Autocomplete {
 	private suggestion: {
@@ -265,18 +266,34 @@ export class Autocomplete {
 			const source = this.text;
 
 			const before = source.substr(0, caret);
-			const trimmedBefore = before.substring(0, before.lastIndexOf("$"));
-			const after = source.substr(caret);
+			let trimmedBefore = before.substring(0, before.lastIndexOf("$"));
+			let after = source.substr(caret);
+			
+			if (defaultStore.state.smartMFMInputer && after === "]"){
+				trimmedBefore += "]";
+				after = "";
+			}
 
 			// 挿入
-			this.text = `${trimmedBefore}$[${value} ]${after}`;
+			if (defaultStore.state.smartMFMInputer) {
+				this.text = after.length === 0 ? `$[${value} ${trimmedBefore}]` : `${trimmedBefore}$[${value} ${after}]`;
 
-			// キャレットを戻す
-			nextTick(() => {
-				this.textarea.focus();
-				const pos = trimmedBefore.length + (value.length + 3);
-				this.textarea.setSelectionRange(pos, pos);
-			});
+				// キャレットを戻す
+				nextTick(() => {
+					this.textarea.focus();
+					const pos = after.length === 0 ? this.text.length - 1 : this.text.length - this.text.match(/]+$/)[0].length;
+					this.textarea.setSelectionRange(pos, pos);
+				});
+			} else {
+				this.text = `${trimmedBefore}$[${value} ]${after}`;
+				
+				// キャレットを戻す
+				nextTick(() => {
+					this.textarea.focus();
+					const pos = trimmedBefore.length + (value.length + 3);
+					this.textarea.setSelectionRange(pos, pos);
+				});
+			}
 		}
 	}
 }

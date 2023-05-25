@@ -44,11 +44,14 @@
 			<FormSwitch v-model="notCloseEmojiPicker" class="_formBlock">{{
 				i18n.ts.notCloseEmojiPicker
 			}}</FormSwitch>
-			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
-				i18n.ts.disablePagesScript
+			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
+				i18n.ts.smartMFMInputer
 			}}</FormSwitch>
 			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock">{{
 				i18n.ts.hiddenMFMHelp
+			}}</FormSwitch>
+			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
+				i18n.ts.disablePagesScript
 			}}</FormSwitch>
 
 			<FormSelect v-model="serverDisconnectedBehavior" class="_formBlock">
@@ -138,10 +141,10 @@
 			<FormSwitch v-model="powerMode" class="_formBlock">{{
 				i18n.ts.powerMode
 			}}</FormSwitch>
-			<FormSwitch v-model="powerModeColorful" class="_formBlock">{{
+			<FormSwitch v-if="powerMode" v-model="powerModeColorful" class="_formBlock">{{
 				i18n.ts.powerModeColorful
 			}}</FormSwitch>
-			<FormSwitch v-model="powerModeNoShake" class="_formBlock">{{
+			<FormSwitch v-if="powerMode" v-model="powerModeNoShake" class="_formBlock">{{
 				i18n.ts.powerModeNoShake
 			}}</FormSwitch>
 		</FormSection>
@@ -356,6 +359,9 @@ const swipeOnDesktop = computed(
 );
 const showAdminUpdates = computed(
 	defaultStore.makeGetterSetter("showAdminUpdates")
+);
+const smartMFMInputer = computed(
+	defaultStore.makeGetterSetter("smartMFMInputer")
 );
 
 watch(lang, () => {

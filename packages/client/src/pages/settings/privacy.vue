@@ -109,7 +109,7 @@
 					i18n.ts._visibility.localAndFollower
 				}}</FormSwitch>
 				<FormSwitch v-model="defaultNoteLocalOnly" class="_formBlock">{{
-					i18n.ts._visibility.localOnly
+					i18n.ts._visibility.localOnlyChannel
 				}}</FormSwitch>
 				<br />
 				<FormSwitch v-model="firstPostButtonVisibilityForce" class="_formBlock">{{
@@ -356,6 +356,12 @@
 		</FormSection>
 
 		<FormSwitch
+			v-model="keepPostCw"
+			class="_formBlock"
+			@update:modelValue="save()"
+			>{{ i18n.ts.keepPostCw }}</FormSwitch
+		>
+		<FormSwitch
 			v-model="keepCw"
 			class="_formBlock"
 			@update:modelValue="save()"
@@ -431,6 +437,7 @@ let fifthPostVisibility = $computed(
 	defaultStore.makeGetterSetter("fifthPostVisibility")
 );
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
+let keepPostCw = $computed(defaultStore.makeGetterSetter("keepPostCw"));
 let channelSecondPostButton = $computed(
 	defaultStore.makeGetterSetter("channelSecondPostButton")
 );

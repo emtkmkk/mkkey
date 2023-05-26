@@ -158,7 +158,7 @@ export const defaultStore = markRaw(
 		},
 		firstPostWideButton: {
 			where: "deviceAccount",
-			default: false
+			default: false,
 		},
 		secondPostButton: {
 			where: "deviceAccount",
@@ -166,11 +166,11 @@ export const defaultStore = markRaw(
 		},
 		secondPostVisibility: {
 			where: "deviceAccount",
-			default: "home" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
+			default: "home" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
 		},
 		secondPostWideButton: {
 			where: "deviceAccount",
-			default: false
+			default: false,
 		},
 		thirdPostButton: {
 			where: "deviceAccount",
@@ -178,11 +178,11 @@ export const defaultStore = markRaw(
 		},
 		thirdPostVisibility: {
 			where: "deviceAccount",
-			default: "l-public" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
+			default: "l-public" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
 		},
 		thirdPostWideButton: {
 			where: "deviceAccount",
-			default: false
+			default: false,
 		},
 		fourthPostButton: {
 			where: "deviceAccount",
@@ -190,11 +190,11 @@ export const defaultStore = markRaw(
 		},
 		fourthPostVisibility: {
 			where: "deviceAccount",
-			default: "followers" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
+			default: "followers" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
 		},
 		fourthPostWideButton: {
 			where: "deviceAccount",
-			default: false
+			default: false,
 		},
 		fifthPostButton: {
 			where: "deviceAccount",
@@ -202,11 +202,11 @@ export const defaultStore = markRaw(
 		},
 		fifthPostVisibility: {
 			where: "deviceAccount",
-			default: "specified" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
+			default: "specified" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
 		},
 		fifthPostWideButton: {
 			where: "deviceAccount",
-			default: false
+			default: false,
 		},
 		channelSecondPostButton: {
 			where: "deviceAccount",

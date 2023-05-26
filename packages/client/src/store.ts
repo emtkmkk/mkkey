@@ -480,6 +480,10 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 		},
+		developer: {
+			where: "account",
+			default: false,
+		},
 	}),
 );
 

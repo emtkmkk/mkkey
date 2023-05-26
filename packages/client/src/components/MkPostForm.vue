@@ -115,7 +115,7 @@
 				</button>
 				<button
 					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && $store.state.fourthPostButton && $store.state.fifthPostButton && !isChannel && visibility !== 'specified'"
-					class="submit _buttonGradate"
+					class="submit_h _buttonGradate"
 					:disabled="!canPost && $store.state.fifthPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postFifth"
@@ -139,7 +139,7 @@
 				</button>
 				<button
 					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && $store.state.fourthPostButton && !isChannel && visibility !== 'specified'"
-					class="submit _buttonGradate"
+					class="submit_h _buttonGradate"
 					:disabled="!canPost && $store.state.fourthPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postFourth"
@@ -163,7 +163,7 @@
 				</button>
 				<button
 					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && !isChannel && visibility !== 'specified'"
-					class="submit _buttonGradate"
+					class="submit_h _buttonGradate"
 					:disabled="!canPost && $store.state.thirdPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postThird"
@@ -187,7 +187,7 @@
 				</button>
 				<button
 					v-if="$store.state.secondPostButton && !isChannel && visibility !== 'specified'"
-					class="submit _buttonGradate"
+					class="submit_h _buttonGradate"
 					:disabled="!canPost && $store.state.secondPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postSecond"
@@ -211,7 +211,7 @@
 				</button>
 				<button
 					v-if="($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
-					class="submit _buttonGradate"
+					class="submit_h _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
 					@click="post"
@@ -229,7 +229,7 @@
 				</button>
 				<button
 					v-if="(!$store.state.rememberNoteVisibility && $store.state.firstPostButtonVisibilityForce) && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
-					class="submit _buttonGradate"
+					class="submit_h _buttonGradate"
 					:disabled="!canPost && $store.state.defaultNoteVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postFirst"
@@ -252,6 +252,7 @@
 					></i>
 					<i
 						v-if="reply || renote"
+						class="subPostIcon"
 						:class="
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
@@ -263,7 +264,7 @@
 				</button>
 				<button
 					v-if="$store.state.channelSecondPostButton && isChannel"
-					class="submit _buttonGradate"
+					class="submit_h _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
 					@click="postSecondChannel"
@@ -275,7 +276,7 @@
 				</button>
 				<button
 					v-if="$store.state.channelSecondPostButton && isChannel"
-					class="submit _buttonGradate"
+					class="submit_h _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
 					@click="post"
@@ -1450,8 +1451,8 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 				&:disabled {
 					opacity: 0.7;
 				}
-
-				> i {
+				
+				> .subPostIcon {
 					margin-left: 6px;
 				}
 			}

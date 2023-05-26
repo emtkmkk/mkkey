@@ -154,6 +154,12 @@
 				<FormSwitch v-model="secondPostButton" class="_formBlock">{{
 					i18n.ts.secondPostButton
 				}}</FormSwitch>
+				<FormSwitch v-if="secondPostButton" v-model="firstPostWideButton" class="_formBlock">{{
+					i18n.ts.wideFirstPostButton
+				}}</FormSwitch>
+				<FormSwitch v-if="secondPostButton" v-model="secondPostWideButton" class="_formBlock">{{
+					i18n.ts.widePostButton
+				}}</FormSwitch>
 
 				<FormSelect v-model="secondPostVisibility" class="_formBlock">
 					<option value="public">
@@ -212,6 +218,9 @@
 
 				<FormSwitch v-model="thirdPostButton" class="_formBlock">{{
 					i18n.ts.thirdPostButton
+				}}</FormSwitch>
+				<FormSwitch v-if="thirdPostButton" v-model="thirdPostWideButton" class="_formBlock">{{
+					i18n.ts.widePostButton
 				}}</FormSwitch>
 
 				<FormSelect v-model="thirdPostVisibility" class="_formBlock">
@@ -272,6 +281,9 @@
 				<FormSwitch v-model="fourthPostButton" class="_formBlock">{{
 					i18n.ts.fourthPostButton
 				}}</FormSwitch>
+				<FormSwitch v-if="fourthPostButton" v-model="fourthPostWideButton" class="_formBlock">{{
+					i18n.ts.widePostButton
+				}}</FormSwitch>
 
 				<FormSelect v-model="fourthPostVisibility" class="_formBlock">
 					<option value="public">
@@ -330,6 +342,9 @@
 
 				<FormSwitch v-model="fifthPostButton" class="_formBlock">{{
 					i18n.ts.fifthPostButton
+				}}</FormSwitch>
+				<FormSwitch v-if="fifthPostButton" v-model="fifthPostWideButton" class="_formBlock">{{
+					i18n.ts.widePostButton
 				}}</FormSwitch>
 
 				<FormSelect v-model="fifthPostVisibility" class="_formBlock">
@@ -412,11 +427,17 @@ let rememberNoteVisibility = $computed(
 let firstPostButtonVisibilityForce = $computed(
 	defaultStore.makeGetterSetter("firstPostButtonVisibilityForce")
 );
+let firstPostWideButton = $computed(
+	defaultStore.makeGetterSetter("firstPostWideButton")
+);
 let secondPostButton = $computed(
 	defaultStore.makeGetterSetter("secondPostButton")
 );
 let secondPostVisibility = $computed(
 	defaultStore.makeGetterSetter("secondPostVisibility")
+);
+let secondPostWideButton = $computed(
+	defaultStore.makeGetterSetter("secondPostWideButton")
 );
 let thirdPostButton = $computed(
 	defaultStore.makeGetterSetter("thirdPostButton")
@@ -424,17 +445,26 @@ let thirdPostButton = $computed(
 let thirdPostVisibility = $computed(
 	defaultStore.makeGetterSetter("thirdPostVisibility")
 );
+let thirdPostWideButton = $computed(
+	defaultStore.makeGetterSetter("thirdPostWideButton")
+);
 let fourthPostButton = $computed(
 	defaultStore.makeGetterSetter("fourthPostButton")
 );
 let fourthPostVisibility = $computed(
 	defaultStore.makeGetterSetter("fourthPostVisibility")
 );
+let fourthPostWideButton = $computed(
+	defaultStore.makeGetterSetter("fourthPostWideButton")
+);
 let fifthPostButton = $computed(
 	defaultStore.makeGetterSetter("fifthPostButton")
 );
 let fifthPostVisibility = $computed(
 	defaultStore.makeGetterSetter("fifthPostVisibility")
+);
+let fifthPostWideButton = $computed(
+	defaultStore.makeGetterSetter("fifthPostWideButton")
 );
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
 let keepPostCw = $computed(defaultStore.makeGetterSetter("keepPostCw"));

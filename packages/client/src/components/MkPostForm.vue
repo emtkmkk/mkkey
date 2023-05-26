@@ -122,7 +122,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.fifthPostWideButton ? 'widePostButton' : '') + 
+						:class="($store.state.fifthPostWideButton ? 'widePostButton ' : '') + 
 							$store.state.fifthPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.fifthPostVisibility === 'l-public'
@@ -146,7 +146,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.fourthPostWideButton ? 'widePostButton' : '') + 
+						:class="($store.state.fourthPostWideButton ? 'widePostButton ' : '') + 
 							$store.state.fourthPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.fourthPostVisibility === 'l-public'
@@ -170,7 +170,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.thirdPostWideButton ? 'widePostButton' : '') + 
+						:class="($store.state.thirdPostWideButton ? 'widePostButton ' : '') + 
 							$store.state.thirdPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.thirdPostVisibility === 'l-public'
@@ -194,7 +194,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.secondPostWideButton ? 'widePostButton' : '') + 
+						:class="($store.state.secondPostWideButton ? 'widePostButton ' : '') + 
 							$store.state.secondPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.secondPostVisibility === 'l-public'
@@ -218,7 +218,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.firstPostWideButton ? 'widePostButton' : '') + 
+						:class="($store.state.firstPostWideButton ? 'widePostButton ' : '') + 
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
 								: renote
@@ -236,7 +236,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.firstPostWideButton ? 'widePostButton_left' : '') + 
+						:class="($store.state.firstPostWideButton ? 'widePostButton_left ' : '') + 
 							$store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
 								? 'ph-hand-heart ph-bold ph-lg'
 								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
@@ -253,7 +253,7 @@
 					<i
 						v-if="reply || renote"
 						class="subPostIcon"
-						:class="($store.state.firstPostWideButton ? 'widePostButton_right' : '') + 
+						:class="($store.state.firstPostWideButton ? 'widePostButton_right ' : '') + 
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
 								: renote
@@ -1442,7 +1442,7 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 			> .submit_h {
 				display: inline-flex;
 				align-items: center;
-				margin: 16px 16px 16px 0;
+				margin: 16px 8px 16px 0;
 				padding: 0 12px;
 				line-height: 34px;
 				font-weight: bold;

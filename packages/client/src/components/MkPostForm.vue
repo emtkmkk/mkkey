@@ -530,7 +530,7 @@ let poll = $ref<{
 } | null>(null);
 let useCw = $ref(false);
 let showPreview = $ref(true);
-let cw = $ref<string | null>(null);
+let cw = !defaultStore.state.keepPostCw || (defaultStore.state.keepCw && props.reply && props.reply.cw) ? $ref<string | null>(null) : $computed(defaultStore.makeGetterSetter("postFormCw"));
 let localOnly = $ref<boolean>(
 	props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility
 		? defaultStore.state.LocalAndFollower
@@ -729,6 +729,10 @@ if (props.specified) {
 	pushVisibleUser(props.specified);
 }
 
+// keep post cw
+if (defaultStore.state.keepPostCw && cw) {
+	useCw = true;
+}
 // keep cw when reply
 if (defaultStore.state.keepCw && props.reply && props.reply.cw) {
 	useCw = true;

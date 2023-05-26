@@ -120,7 +120,7 @@
 					data-cy-open-post-form-submit
 					@click="postFifth"
 				>
-					5
+					&ZeroWidthSpace;
 					<i
 						:class="
 							$store.state.fifthPostVisibility === 'public'
@@ -144,7 +144,7 @@
 					data-cy-open-post-form-submit
 					@click="postFourth"
 				>
-					4
+					&ZeroWidthSpace;
 					<i
 						:class="
 							$store.state.fourthPostVisibility === 'public'
@@ -168,7 +168,7 @@
 					data-cy-open-post-form-submit
 					@click="postThird"
 				>
-					3
+					&ZeroWidthSpace;
 					<i
 						:class="
 							$store.state.thirdPostVisibility === 'public'
@@ -192,7 +192,7 @@
 					data-cy-open-post-form-submit
 					@click="postSecond"
 				>
-					2
+					&ZeroWidthSpace;
 					<i
 						:class="
 							$store.state.secondPostVisibility === 'public'
@@ -216,7 +216,7 @@
 					data-cy-open-post-form-submit
 					@click="post"
 				>
-					1
+					&ZeroWidthSpace;
 					<i
 						:class="
 							reply
@@ -234,7 +234,7 @@
 					data-cy-open-post-form-submit
 					@click="postFirst"
 				>
-					1
+					&ZeroWidthSpace;
 					<i
 						:class="
 							$store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
@@ -268,7 +268,7 @@
 					data-cy-open-post-form-submit
 					@click="postSecondChannel"
 				>
-					2
+					&ZeroWidthSpace;
 					<i
 						class="ph-hand-fist ph-bold ph-lg"
 					></i>
@@ -280,7 +280,7 @@
 					data-cy-open-post-form-submit
 					@click="post"
 				>
-					1
+					&ZeroWidthSpace;
 					<i
 						:class="
 							reply

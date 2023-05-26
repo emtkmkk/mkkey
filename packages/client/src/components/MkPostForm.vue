@@ -122,7 +122,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.fifthPostWideButton ? 'widePostButton ' : '') + 
+						:class="[
 							$store.state.fifthPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.fifthPostVisibility === 'l-public'
@@ -134,7 +134,7 @@
 											: $store.state.fifthPostVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
-						"
+						, $store.state.fifthPostWideButton ? 'widePostButton' : '']"
 					></i>
 				</button>
 				<button
@@ -146,7 +146,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.fourthPostWideButton ? 'widePostButton ' : '') + 
+						:class="[
 							$store.state.fourthPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.fourthPostVisibility === 'l-public'
@@ -158,7 +158,7 @@
 											: $store.state.fourthPostVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
-						"
+						, $store.state.fourthhPostWideButton ? 'widePostButton' : '']"
 					></i>
 				</button>
 				<button
@@ -170,7 +170,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.thirdPostWideButton ? 'widePostButton ' : '') + 
+						:class="[
 							$store.state.thirdPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.thirdPostVisibility === 'l-public'
@@ -182,7 +182,7 @@
 											: $store.state.thirdPostVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
-						"
+						, $store.state.thirdPostWideButton ? 'widePostButton' : '']"
 					></i>
 				</button>
 				<button
@@ -194,7 +194,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.secondPostWideButton ? 'widePostButton ' : '') + 
+						:class="[
 							$store.state.secondPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.secondPostVisibility === 'l-public'
@@ -206,7 +206,7 @@
 											: $store.state.secondPostVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
-						"
+						, $store.state.secondPostWideButton ? 'widePostButton' : '']"
 					></i>
 				</button>
 				<button
@@ -218,13 +218,13 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.firstPostWideButton ? 'widePostButton ' : '') + 
+						:class="[
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
 								: renote
 								? 'ph-quotes ph-bold ph-lg'
 								: 'ph-paper-plane-tilt ph-bold ph-lg'
-						"
+						, $store.state.firstPostWideButton ? 'widePostButton' : '']"
 					></i>
 				</button>
 				<button
@@ -236,7 +236,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="($store.state.firstPostWideButton ? 'widePostButton_left ' : '') + 
+						:class="[
 							$store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
 								? 'ph-hand-heart ph-bold ph-lg'
 								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
@@ -248,18 +248,18 @@
 											: $store.state.defaultNoteVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
-						"
+						, $store.state.firstPostWideButton ? 'widePostButton_left' : '']"
 					></i>
 					<i
 						v-if="reply || renote"
 						class="subPostIcon"
-						:class="($store.state.firstPostWideButton ? 'widePostButton_right ' : '') + 
+						:class="[
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
 								: renote
 									? 'ph-quotes ph-bold ph-lg'
 									: ''
-						"
+						, $store.state.firstPostWideButton ? 'widePostButton_right' : '']"""
 					></i>
 				</button>
 				<button

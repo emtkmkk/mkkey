@@ -122,7 +122,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="
+						:class="($store.state.fifthPostWideButton ? 'widePostButton' : '') + 
 							$store.state.fifthPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.fifthPostVisibility === 'l-public'
@@ -146,7 +146,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="
+						:class="($store.state.fourthPostWideButton ? 'widePostButton' : '') + 
 							$store.state.fourthPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.fourthPostVisibility === 'l-public'
@@ -170,7 +170,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="
+						:class="($store.state.thirdPostWideButton ? 'widePostButton' : '') + 
 							$store.state.thirdPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.thirdPostVisibility === 'l-public'
@@ -194,7 +194,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="
+						:class="($store.state.secondPostWideButton ? 'widePostButton' : '') + 
 							$store.state.secondPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
 								: $store.state.secondPostVisibility === 'l-public'
@@ -218,7 +218,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="
+						:class="($store.state.firstPostWideButton ? 'widePostButton' : '') + 
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
 								: renote
@@ -236,7 +236,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						:class="
+						:class="($store.state.firstPostWideButton ? 'widePostButton_left' : '') + 
 							$store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
 								? 'ph-hand-heart ph-bold ph-lg'
 								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
@@ -253,7 +253,7 @@
 					<i
 						v-if="reply || renote"
 						class="subPostIcon"
-						:class="
+						:class="($store.state.firstPostWideButton ? 'widePostButton_right' : '') + 
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
 								: renote
@@ -271,7 +271,7 @@
 				>
 					&ZeroWidthSpace;
 					<i
-						class="ph-hand-fist ph-bold ph-lg"
+						class="ph-hand-fist ph-bold ph-lg widePostButton"
 					></i>
 				</button>
 				<button
@@ -285,10 +285,10 @@
 					<i
 						:class="
 							reply
-								? 'ph-arrow-u-up-left ph-bold ph-lg'
+								? 'ph-arrow-u-up-left ph-bold ph-lg widePostButton'
 								: renote
-								? 'ph-quotes ph-bold ph-lg'
-								: 'ph-paper-plane-tilt ph-bold ph-lg'
+								? 'ph-quotes ph-bold ph-lg widePostButton'
+								: 'ph-paper-plane-tilt ph-bold ph-lg widePostButton'
 						"
 					></i>
 				</button>
@@ -1114,6 +1114,8 @@ async function postFifth() {
 
 async function post() {
 	const processedText = preprocess(text);
+	
+	if (cw && !useCw) cw = "";
 
 	let postData = {
 		text: processedText === "" ? undefined : processedText,
@@ -1455,6 +1457,20 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 				> .subPostIcon {
 					margin-left: 6px;
 				}
+				
+				> .widePostButton {
+					margin-left: 10px;
+					margin-right: 10px;
+				}
+				
+				> .widePostButton_left {
+					margin-left: 10px;
+				}
+				
+				> .widePostButton_right {
+					margin-right: 10px;
+				}
+			
 			}
 		}
 	}

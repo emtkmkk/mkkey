@@ -38,6 +38,7 @@
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
+					:class="{ addblank: !$store.state.hiddenMFMHelp }"
 					@click="setVisibility"
 				>
 					<span v-if="visibility === 'public'"
@@ -1419,6 +1420,10 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 					color: var(--accent);
 				}
 			}
+			
+			> .addblank {
+				margin: 0 8px 0 0;
+			}
 
 			> .submit {
 				display: inline-flex;
@@ -1625,7 +1630,7 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 				}
 
 				> .submit {
-					margin: 8px;
+					margin: 8px 8px 8px 0;
 				}
 				
 				> .submit_h {

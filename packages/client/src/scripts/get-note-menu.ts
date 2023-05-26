@@ -113,7 +113,7 @@ export function getNoteMenu(props: {
 	}
 
 	function copyId(): void {
-		copyToClipboard(appearNote.id);
+		copyToClipboard(props.note.id);
 		os.success();
 	}
 

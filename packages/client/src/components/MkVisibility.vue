@@ -23,7 +23,7 @@
 			v-tooltip="i18n.ts._visibility.localOnlyTooltip"
 		></i
 	></span>
-	<span v-if="note.localOnly && !note.channelId" :class="$style.localOnly"
+	<span v-if="note.localOnly && !note.channelId && note.visibility !== 'followers'" :class="$style.localOnly"
 		><i
 			class="ph-hand-heart ph-bold ph-lg"
 			v-tooltip="i18n.ts._visibility.localAndFollowerTooltip"

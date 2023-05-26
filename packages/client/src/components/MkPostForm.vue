@@ -248,7 +248,7 @@
 											: $store.state.defaultNoteVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
-						, $store.state.firstPostWideButton ? 'widePostButton_left' : '']"
+						, $store.state.firstPostWideButton ? !(reply || renote) ? 'widePostButton' : 'widePostButton_left' : '']"
 					></i>
 					<i
 						v-if="reply || renote"
@@ -1459,16 +1459,16 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 				}
 				
 				> .widePostButton {
-					margin-left: 10px;
-					margin-right: 10px;
+					margin-left: 8px;
+					margin-right: 8px;
 				}
 				
 				> .widePostButton_left {
-					margin-left: 10px;
+					margin-left: 8px;
 				}
 				
 				> .widePostButton_right {
-					margin-right: 10px;
+					margin-right: 8px;
 				}
 			
 			}

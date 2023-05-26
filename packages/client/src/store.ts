@@ -166,7 +166,23 @@ export const defaultStore = markRaw(
 		},
 		thirdPostVisibility: {
 			where: "deviceAccount",
+			default: "l-public" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
+		},
+		fourthPostButton: {
+			where: "deviceAccount",
+			default: false,
+		},
+		fourthPostVisibility: {
+			where: "deviceAccount",
 			default: "followers" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
+		},
+		fifthPostButton: {
+			where: "deviceAccount",
+			default: false,
+		},
+		fifthPostVisibility: {
+			where: "deviceAccount",
+			default: "specified" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
 		},
 		channelSecondPostButton: {
 			where: "deviceAccount",
@@ -181,6 +197,10 @@ export const defaultStore = markRaw(
 			default: false,
 		},
 		hiddenMFMHelp: {
+			where: "deviceAccount",
+			default: false,
+		},
+		hiddenCloseButton: {
 			where: "deviceAccount",
 			default: false,
 		},

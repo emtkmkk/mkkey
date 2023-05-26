@@ -235,6 +235,124 @@
 					</option>
 				</FormSelect>
 			</FormFolder>
+			<FormFolder v-if="secondPostButton && thirdPostButton" class="_formBlock">
+				<template #label>{{ i18n.ts.fourthPostButton }}</template>
+				<template v-if="fourthPostButton == false" #suffix>{{
+					i18n.ts.buttonNone
+				}}</template>
+				<template v-if="fourthPostButton == true && fourthPostVisibility === 'public'" #suffix>{{
+					i18n.ts._visibility.public
+				}}</template>
+				<template
+					v-else-if="fourthPostButton == true && fourthPostVisibility === 'l-public'"
+					#suffix
+					>{{ i18n.ts._visibility.localAndFollower }}</template
+				>
+				<template
+					v-else-if="fourthPostButton == true && fourthPostVisibility === 'home'"
+					#suffix
+					>{{ i18n.ts._visibility.home }}</template
+				>
+				<template
+					v-else-if="fourthPostButton == true && fourthPostVisibility === 'l-home'"
+					#suffix
+					>{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}</template
+				>
+				<template
+					v-else-if="fourthPostButton == true && fourthPostVisibility === 'followers'"
+					#suffix
+					>{{ i18n.ts._visibility.followers }}</template
+				>
+				<template
+					v-else-if="fourthPostButton == true && fourthPostVisibility === 'specified'"
+					#suffix
+					>{{ i18n.ts._visibility.specified }}</template
+				>
+
+				<FormSwitch v-model="fourthPostButton" class="_formBlock">{{
+					i18n.ts.fourthPostButton
+				}}</FormSwitch>
+
+				<FormSelect v-model="fourthPostVisibility" class="_formBlock">
+					<option value="public">
+						{{ i18n.ts._visibility.public }}
+					</option>
+					<option value="l-public">
+						{{ i18n.ts._visibility.localAndFollower }}
+					</option>
+					<option value="home">
+						{{ i18n.ts._visibility.home }}
+					</option>
+					<option value="l-home">
+						{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}
+					</option>
+					<option value="followers">
+						{{ i18n.ts._visibility.followers }}
+					</option>
+					<option value="specified">
+						{{ i18n.ts._visibility.specified }}
+					</option>
+				</FormSelect>
+			</FormFolder>
+			<FormFolder v-if="secondPostButton && thirdPostButton && fourthPostButton" class="_formBlock">
+				<template #label>{{ i18n.ts.fifthPostButton }}</template>
+				<template v-if="fifthPostButton == false" #suffix>{{
+					i18n.ts.buttonNone
+				}}</template>
+				<template v-if="fifthPostButton == true && fifthPostVisibility === 'public'" #suffix>{{
+					i18n.ts._visibility.public
+				}}</template>
+				<template
+					v-else-if="fifthPostButton == true && fifthPostVisibility === 'l-public'"
+					#suffix
+					>{{ i18n.ts._visibility.localAndFollower }}</template
+				>
+				<template
+					v-else-if="fifthPostButton == true && fifthPostVisibility === 'home'"
+					#suffix
+					>{{ i18n.ts._visibility.home }}</template
+				>
+				<template
+					v-else-if="fifthPostButton == true && fifthPostVisibility === 'l-home'"
+					#suffix
+					>{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}</template
+				>
+				<template
+					v-else-if="fifthPostButton == true && fifthPostVisibility === 'followers'"
+					#suffix
+					>{{ i18n.ts._visibility.followers }}</template
+				>
+				<template
+					v-else-if="fifthPostButton == true && fifthPostVisibility === 'specified'"
+					#suffix
+					>{{ i18n.ts._visibility.specified }}</template
+				>
+
+				<FormSwitch v-model="fifthPostButton" class="_formBlock">{{
+					i18n.ts.fifthPostButton
+				}}</FormSwitch>
+
+				<FormSelect v-model="fifthPostVisibility" class="_formBlock">
+					<option value="public">
+						{{ i18n.ts._visibility.public }}
+					</option>
+					<option value="l-public">
+						{{ i18n.ts._visibility.localAndFollower }}
+					</option>
+					<option value="home">
+						{{ i18n.ts._visibility.home }}
+					</option>
+					<option value="l-home">
+						{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}
+					</option>
+					<option value="followers">
+						{{ i18n.ts._visibility.followers }}
+					</option>
+					<option value="specified">
+						{{ i18n.ts._visibility.specified }}
+					</option>
+				</FormSelect>
+			</FormFolder>
 		</FormSection>
 
 		<FormSwitch
@@ -299,6 +417,18 @@ let thirdPostButton = $computed(
 );
 let thirdPostVisibility = $computed(
 	defaultStore.makeGetterSetter("thirdPostVisibility")
+);
+let fourthPostButton = $computed(
+	defaultStore.makeGetterSetter("fourthPostButton")
+);
+let fourthPostVisibility = $computed(
+	defaultStore.makeGetterSetter("fourthPostVisibility")
+);
+let fifthPostButton = $computed(
+	defaultStore.makeGetterSetter("fifthPostButton")
+);
+let fifthPostVisibility = $computed(
+	defaultStore.makeGetterSetter("fifthPostVisibility")
 );
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
 let channelSecondPostButton = $computed(

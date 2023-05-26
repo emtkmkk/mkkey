@@ -112,6 +112,11 @@ export function getNoteMenu(props: {
 		os.success();
 	}
 
+	function copyId(): void {
+		copyToClipboard(appearNote.id);
+		os.success();
+	}
+
 	function togglePin(pin: boolean): void {
 		os.apiWithDialog(
 			pin ? "i/pin" : "i/unpin",
@@ -443,6 +448,14 @@ export function getNoteMenu(props: {
 						},
 				  ]
 				: []),
+			...(defaultStore.state.developer ? [
+					{
+						icon: "ph-file-code ph-bold ph-lg",
+						text: i18n.ts.copyId,
+						action: copyId,
+					},
+				]
+			: []),
 		].filter((x) => x !== undefined);
 	} else {
 		menu = [

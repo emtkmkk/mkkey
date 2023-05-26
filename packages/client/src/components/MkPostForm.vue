@@ -1442,7 +1442,7 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 			> .submit_h {
 				display: inline-flex;
 				align-items: center;
-				margin: 16px 8px 16px 0;
+				margin: 16px 16px 16px 0;
 				padding: 0 12px;
 				line-height: 34px;
 				font-weight: bold;
@@ -1625,7 +1625,11 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 				}
 
 				> .submit {
-					margin: 8px;
+					margin: 8px 8px 8px 0;
+				}
+				
+				> .submit_h {
+					margin: 8px 8px 8px 0;
 				}
 			}
 		}

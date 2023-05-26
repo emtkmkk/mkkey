@@ -452,25 +452,55 @@ function menu(viaKeyboard = false): void {
 
 function showRenoteMenu(viaKeyboard = false): void {
 	if (!isMyRenote) return;
-	os.popupMenu(
-		[
-			{
-				text: i18n.ts.unrenote,
-				icon: "ph-trash ph-bold ph-lg",
-				danger: true,
-				action: () => {
-					os.api("notes/delete", {
-						noteId: note.id,
-					});
-					isDeleted.value = true;
+	if (defaultStore.state.developer){
+		os.popupMenu(
+			[
+				{
+					text: i18n.ts.copyId,
+					icon: "ph-file-code ph-bold ph-lg",
+					action: () => {
+						copyToClipboard(note.id);
+						os.success();
+					},
 				},
-			},
-		],
-		renoteTime.value,
-		{
-			viaKeyboard: viaKeyboard,
-		}
-	);
+				{
+					text: i18n.ts.unrenote,
+					icon: "ph-trash ph-bold ph-lg",
+					danger: true,
+					action: () => {
+						os.api("notes/delete", {
+							noteId: note.id,
+						});
+						isDeleted.value = true;
+					},
+				},
+			],
+			renoteTime.value,
+			{
+				viaKeyboard: viaKeyboard,
+			}
+		);
+	} else {
+		os.popupMenu(
+			[
+				{
+					text: i18n.ts.unrenote,
+					icon: "ph-trash ph-bold ph-lg",
+					danger: true,
+					action: () => {
+						os.api("notes/delete", {
+							noteId: note.id,
+						});
+						isDeleted.value = true;
+					},
+				},
+			],
+			renoteTime.value,
+			{
+				viaKeyboard: viaKeyboard,
+			}
+		);
+	}
 }
 
 function focus() {

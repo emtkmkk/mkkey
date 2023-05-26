@@ -53,11 +53,14 @@
 			<FormSwitch v-if="!hiddenMentionButton" v-model="openMentionWindow" class="_formBlock">{{
 				i18n.ts.openMentionWindow
 			}}</FormSwitch>
-			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
-				i18n.ts.smartMFMInputer
+			<FormSwitch v-model="hiddenCloseButton" class="_formBlock">{{
+				i18n.ts.hiddenCloseButton
 			}}</FormSwitch>
 			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock">{{
 				i18n.ts.hiddenMFMHelp
+			}}</FormSwitch>
+			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
+				i18n.ts.smartMFMInputer
 			}}</FormSwitch>
 			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript
@@ -351,6 +354,9 @@ const hiddenMFMHelp = computed(
 );
 const hiddenMentionButton = computed(
 	defaultStore.makeGetterSetter("hiddenMentionButton")
+);
+const hiddenCloseButton = computed(
+	defaultStore.makeGetterSetter("hiddenCloseButton")
 );
 const openMentionWindow = computed(
 	defaultStore.makeGetterSetter("openMentionWindow")

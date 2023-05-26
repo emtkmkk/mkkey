@@ -156,6 +156,10 @@ export const defaultStore = markRaw(
 			where: "deviceAccount",
 			default: false,
 		},
+		firstPostWideButton: {
+			where: "deviceAccount",
+			default: false
+		},
 		secondPostButton: {
 			where: "deviceAccount",
 			default: false,
@@ -163,6 +167,10 @@ export const defaultStore = markRaw(
 		secondPostVisibility: {
 			where: "deviceAccount",
 			default: "home" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
+		},
+		secondPostWideButton: {
+			where: "deviceAccount",
+			default: false
 		},
 		thirdPostButton: {
 			where: "deviceAccount",
@@ -172,6 +180,10 @@ export const defaultStore = markRaw(
 			where: "deviceAccount",
 			default: "l-public" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
 		},
+		thirdPostWideButton: {
+			where: "deviceAccount",
+			default: false
+		},
 		fourthPostButton: {
 			where: "deviceAccount",
 			default: false,
@@ -180,6 +192,10 @@ export const defaultStore = markRaw(
 			where: "deviceAccount",
 			default: "followers" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
 		},
+		fourthPostWideButton: {
+			where: "deviceAccount",
+			default: false
+		},
 		fifthPostButton: {
 			where: "deviceAccount",
 			default: false,
@@ -187,6 +203,10 @@ export const defaultStore = markRaw(
 		fifthPostVisibility: {
 			where: "deviceAccount",
 			default: "specified" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified"
+		},
+		fifthPostWideButton: {
+			where: "deviceAccount",
+			default: false
 		},
 		channelSecondPostButton: {
 			where: "deviceAccount",

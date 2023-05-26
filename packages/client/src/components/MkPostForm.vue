@@ -1464,11 +1464,11 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 				}
 				
 				> .widePostButton_left {
-					margin-left: 10px;
+					margin-left: 7px;
 				}
 				
 				> .widePostButton_right {
-					margin-right: 10px;
+					margin-right: 7px;
 				}
 			
 			}
@@ -1625,7 +1625,7 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 				}
 
 				> .submit {
-					margin: 8px 8px 8px 0;
+					margin: 8px;
 				}
 				
 				> .submit_h {

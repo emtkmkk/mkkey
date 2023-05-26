@@ -10,7 +10,7 @@
 		@drop.stop="onDrop"
 	>
 		<header>
-			<button v-if="!fixed && !hiddenCloseButton" class="cancel _button" @click="cancel">
+			<button v-if="!fixed && !$store.state.hiddenCloseButton" class="cancel _button" @click="cancel">
 				<i class="ph-x ph-bold ph-lg"></i>
 			</button>
 			<button

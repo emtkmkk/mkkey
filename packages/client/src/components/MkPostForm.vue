@@ -1072,7 +1072,6 @@ async function postSecondChannel() {
 	localOnly = true;
 	post();
 }
-
 async function postThird() {
 	if (defaultStore.state.thirdPostVisibility.startsWith("l-")){
 		localOnly = true;
@@ -1080,6 +1079,32 @@ async function postThird() {
 	} else {
 		localOnly = false;
 		visibility = defaultStore.state.thirdPostVisibility;
+	}
+	if (canPost && visibility !== 'specified') {
+		post();
+	}
+}
+
+async function postFourth() {
+	if (defaultStore.state.fourthPostVisibility.startsWith("l-")){
+		localOnly = true;
+		visibility = defaultStore.state.fourthPostVisibility.replace("l-","");
+	} else {
+		localOnly = false;
+		visibility = defaultStore.state.fourthPostVisibility;
+	}
+	if (canPost && visibility !== 'specified') {
+		post();
+	}
+}
+
+async function postFifth() {
+	if (defaultStore.state.fifthPostVisibility.startsWith("l-")){
+		localOnly = true;
+		visibility = defaultStore.state.fifthPostVisibility.replace("l-","");
+	} else {
+		localOnly = false;
+		visibility = defaultStore.state.fifthPostVisibility;
 	}
 	if (canPost && visibility !== 'specified') {
 		post();

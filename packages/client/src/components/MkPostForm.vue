@@ -259,7 +259,7 @@
 								: renote
 									? 'ph-quotes ph-bold ph-lg'
 									: ''
-						, $store.state.firstPostWideButton ? 'widePostButton_right' : '']"""
+						, $store.state.firstPostWideButton ? 'widePostButton_right' : '']"
 					></i>
 				</button>
 				<button

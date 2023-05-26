@@ -10,7 +10,7 @@
 		@drop.stop="onDrop"
 	>
 		<header>
-			<button v-if="!fixed" class="cancel _button" @click="cancel">
+			<button v-if="!fixed && !hiddenCloseButton" class="cancel _button" @click="cancel">
 				<i class="ph-x ph-bold ph-lg"></i>
 			</button>
 			<button
@@ -108,6 +108,54 @@
 								: renote
 									? 'ph-quotes ph-bold ph-lg'
 									: ''
+						"
+					></i>
+				</button>
+				<button
+					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && $store.state.fourthPostButton && $store.state.fifthPostButton && !isChannel && visibility !== 'specified'"
+					class="submit _buttonGradate"
+					:disabled="!canPost && $store.state.thirdPostVisibility !== 'specified'"
+					data-cy-open-post-form-submit
+					@click="postFifth"
+				>
+					5
+					<i
+						:class="
+							$store.state.thirdPostVisibility === 'public'
+								? 'ph-planet ph-bold ph-lg'
+								: $store.state.thirdPostVisibility === 'l-public'
+									? 'ph-hand-heart ph-bold ph-lg'
+									: $store.state.thirdPostVisibility === 'home'
+										? 'ph-house ph-bold ph-lg'
+										: $store.state.thirdPostVisibility === 'l-home'
+											? 'ph-hand-heart ph-bold ph-lg'
+											: $store.state.thirdPostVisibility === 'followers'
+												? 'ph-lock-simple-open ph-bold ph-lg'
+												: 'ph-envelope-simple-open ph-bold ph-lg'
+						"
+					></i>
+				</button>
+				<button
+					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && $store.state.fourthPostButton && !isChannel && visibility !== 'specified'"
+					class="submit _buttonGradate"
+					:disabled="!canPost && $store.state.thirdPostVisibility !== 'specified'"
+					data-cy-open-post-form-submit
+					@click="postFourth"
+				>
+					4
+					<i
+						:class="
+							$store.state.thirdPostVisibility === 'public'
+								? 'ph-planet ph-bold ph-lg'
+								: $store.state.thirdPostVisibility === 'l-public'
+									? 'ph-hand-heart ph-bold ph-lg'
+									: $store.state.thirdPostVisibility === 'home'
+										? 'ph-house ph-bold ph-lg'
+										: $store.state.thirdPostVisibility === 'l-home'
+											? 'ph-hand-heart ph-bold ph-lg'
+											: $store.state.thirdPostVisibility === 'followers'
+												? 'ph-lock-simple-open ph-bold ph-lg'
+												: 'ph-envelope-simple-open ph-bold ph-lg'
 						"
 					></i>
 				</button>

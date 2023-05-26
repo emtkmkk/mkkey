@@ -89,15 +89,17 @@
 					{{ submitText
 					}}<i
 						:class="
-							$store.state.defaultNoteLocalAndFollower === true
+							$store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
 								? 'ph-hand-heart ph-bold ph-lg'
-								: $store.state.defaultNoteVisibility === 'public'
-									? 'ph-planet ph-bold ph-lg'
-									: $store.state.defaultNoteVisibility === 'home'
-										? 'ph-house ph-bold ph-lg'
-										: $store.state.defaultNoteVisibility === 'followers'
-											? 'ph-lock-simple-open ph-bold ph-lg'
-											: 'ph-envelope-simple-open ph-bold ph-lg'
+								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
+									? 'ph-hand-heart ph-light ph-lg'
+									: $store.state.defaultNoteVisibility === 'public'
+										? 'ph-planet ph-bold ph-lg'
+										: $store.state.defaultNoteVisibility === 'home'
+											? 'ph-house ph-bold ph-lg'
+											: $store.state.defaultNoteVisibility === 'followers'
+												? 'ph-lock-simple-open ph-bold ph-lg'
+												: 'ph-envelope-simple-open ph-bold ph-lg'
 						"
 					></i>
 					<i
@@ -128,7 +130,7 @@
 									: $store.state.fifthPostVisibility === 'home'
 										? 'ph-house ph-bold ph-lg'
 										: $store.state.fifthPostVisibility === 'l-home'
-											? 'ph-hand-heart ph-bold ph-lg'
+											? 'ph-hand-heart ph-light ph-lg'
 											: $store.state.fifthPostVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
@@ -152,7 +154,7 @@
 									: $store.state.fourthPostVisibility === 'home'
 										? 'ph-house ph-bold ph-lg'
 										: $store.state.fourthPostVisibility === 'l-home'
-											? 'ph-hand-heart ph-bold ph-lg'
+											? 'ph-hand-heart ph-light ph-lg'
 											: $store.state.fourthPostVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
@@ -176,7 +178,7 @@
 									: $store.state.thirdPostVisibility === 'home'
 										? 'ph-house ph-bold ph-lg'
 										: $store.state.thirdPostVisibility === 'l-home'
-											? 'ph-hand-heart ph-bold ph-lg'
+											? 'ph-hand-heart ph-light ph-lg'
 											: $store.state.thirdPostVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
@@ -200,7 +202,7 @@
 									: $store.state.secondPostVisibility === 'home'
 										? 'ph-house ph-bold ph-lg'
 										: $store.state.secondPostVisibility === 'l-home'
-											? 'ph-hand-heart ph-bold ph-lg'
+											? 'ph-hand-heart ph-light ph-lg'
 											: $store.state.secondPostVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
@@ -235,15 +237,17 @@
 					1
 					<i
 						:class="
-							$store.state.defaultNoteLocalAndFollower === true
+							$store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
 								? 'ph-hand-heart ph-bold ph-lg'
-								: $store.state.defaultNoteVisibility === 'public'
-									? 'ph-planet ph-bold ph-lg'
-									: $store.state.defaultNoteVisibility === 'home'
-										? 'ph-house ph-bold ph-lg'
-										: $store.state.defaultNoteVisibility === 'followers'
-											? 'ph-lock-simple-open ph-bold ph-lg'
-											: 'ph-envelope-simple-open ph-bold ph-lg'
+								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
+									? 'ph-hand-heart ph-light ph-lg'
+									: $store.state.defaultNoteVisibility === 'public'
+										? 'ph-planet ph-bold ph-lg'
+										: $store.state.defaultNoteVisibility === 'home'
+											? 'ph-house ph-bold ph-lg'
+											: $store.state.defaultNoteVisibility === 'followers'
+												? 'ph-lock-simple-open ph-bold ph-lg'
+												: 'ph-envelope-simple-open ph-bold ph-lg'
 						"
 					></i>
 					<i

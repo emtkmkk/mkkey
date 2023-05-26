@@ -34,6 +34,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: true,
 		},
+		keepPostCw: {
+			where: "account",
+			default: true,
+		},
 		showFullAcct: {
 			where: "account",
 			default: false,

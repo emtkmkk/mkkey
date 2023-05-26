@@ -114,22 +114,22 @@
 				<button
 					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && $store.state.fourthPostButton && $store.state.fifthPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
-					:disabled="!canPost && $store.state.thirdPostVisibility !== 'specified'"
+					:disabled="!canPost && $store.state.fifthPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postFifth"
 				>
 					5
 					<i
 						:class="
-							$store.state.thirdPostVisibility === 'public'
+							$store.state.fifthPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
-								: $store.state.thirdPostVisibility === 'l-public'
+								: $store.state.fifthPostVisibility === 'l-public'
 									? 'ph-hand-heart ph-bold ph-lg'
-									: $store.state.thirdPostVisibility === 'home'
+									: $store.state.fifthPostVisibility === 'home'
 										? 'ph-house ph-bold ph-lg'
-										: $store.state.thirdPostVisibility === 'l-home'
+										: $store.state.fifthPostVisibility === 'l-home'
 											? 'ph-hand-heart ph-bold ph-lg'
-											: $store.state.thirdPostVisibility === 'followers'
+											: $store.state.fifthPostVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						"
@@ -138,22 +138,22 @@
 				<button
 					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && $store.state.fourthPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
-					:disabled="!canPost && $store.state.thirdPostVisibility !== 'specified'"
+					:disabled="!canPost && $store.state.fourthPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postFourth"
 				>
 					4
 					<i
 						:class="
-							$store.state.thirdPostVisibility === 'public'
+							$store.state.fourthPostVisibility === 'public'
 								? 'ph-planet ph-bold ph-lg'
-								: $store.state.thirdPostVisibility === 'l-public'
+								: $store.state.fourthPostVisibility === 'l-public'
 									? 'ph-hand-heart ph-bold ph-lg'
-									: $store.state.thirdPostVisibility === 'home'
+									: $store.state.fourthPostVisibility === 'home'
 										? 'ph-house ph-bold ph-lg'
-										: $store.state.thirdPostVisibility === 'l-home'
+										: $store.state.fourthPostVisibility === 'l-home'
 											? 'ph-hand-heart ph-bold ph-lg'
-											: $store.state.thirdPostVisibility === 'followers'
+											: $store.state.fourthPostVisibility === 'followers'
 												? 'ph-lock-simple-open ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						"

@@ -384,6 +384,10 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: "",
 		},
+		postFormCw: {
+			where: "device",
+			default: "",
+		},
 		themeInitial: {
 			where: "device",
 			default: false,

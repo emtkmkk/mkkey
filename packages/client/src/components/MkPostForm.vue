@@ -38,7 +38,7 @@
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
-					:class="{ addblank: !$store.state.hiddenMFMHelp }"
+					:class="{ addblank: $store.state.hiddenMFMHelp }"
 					@click="setVisibility"
 				>
 					<span v-if="visibility === 'public'"

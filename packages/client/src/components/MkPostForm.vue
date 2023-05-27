@@ -1422,7 +1422,7 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 			}
 			
 			> .addblank {
-				margin: 0 8px 0 0;
+				margin: 0 8px 0 0 !important;
 			}
 
 			> .submit {
@@ -1469,11 +1469,11 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 				}
 				
 				> .widePostButton_left {
-					margin-left: 7px;
+					margin-left: calc(7px - 0.45em);
 				}
 				
 				> .widePostButton_right {
-					margin-right: 7px;
+					margin-right: calc(7px - 0.45em);
 				}
 			
 			}

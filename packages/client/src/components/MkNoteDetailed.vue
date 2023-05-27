@@ -7,7 +7,7 @@
 		v-size="{ max: [500, 450, 350, 300] }"
 		class="lxwezrsl _block"
 		:tabindex="!isDeleted ? '-1' : null"
-		:class="{ renote: isRenote }"
+		:class="[{ renote: isRenote } , `v-${appearNote.visibility}` , { localOnly : appearNote.localOnly } ]"
 	>
 		<MkNoteSub
 			v-for="note in conversation"

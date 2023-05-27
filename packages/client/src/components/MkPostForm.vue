@@ -1464,16 +1464,16 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 				}
 				
 				> .widePostButton {
-					margin-left: 10px;
-					margin-right: 10px;
+					margin-left: 12px;
+					margin-right: 12px;
 				}
 				
 				> .widePostButton_left {
-					margin-left: calc(7px - 0.45em);
+					margin-left: calc(9px - 0.45em);
 				}
 				
 				> .widePostButton_right {
-					margin-right: calc(7px - 0.45em);
+					margin-right: calc(9px - 0.45em);
 				}
 			
 			}

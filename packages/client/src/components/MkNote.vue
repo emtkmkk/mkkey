@@ -33,8 +33,8 @@
 				>{{ i18n.ts.pinnedNote }}
 			</div>
 			<div v-if="isRenote" class="renote">
-				<i class="ph-repeat ph-bold ph-lg"></i>
-				<I18n :src="i18n.ts.renotedBy" tag="span">
+				<i v-if="!pinned" class="ph-repeat ph-bold ph-lg"></i>
+				<I18n v-if="!pinned" :src="i18n.ts.renotedBy" tag="span">
 					<template #user>
 						<MkA
 							v-user-preview="note.userId"
@@ -47,6 +47,7 @@
 					</template>
 				</I18n>
 				<div class="info">
+				    <i v-if="pinned" class="ph-repeat ph-bold ph-lg"></i>
 					<button
 						ref="renoteTime"
 						class="_button time"

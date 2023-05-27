@@ -410,7 +410,7 @@ export const defaultStore = markRaw(
 		},
 		themeInitial: {
 			where: "device",
-			default: false,
+			default: true,
 		},
 		numberOfPageCache: {
 			where: "device",
@@ -510,7 +510,7 @@ export class ColdDeviceStorage {
 	public static default = {
 		lightTheme,
 		darkTheme,
-		syncDeviceDarkMode: true,
+		syncDeviceDarkMode: false,
 		plugins: [] as Plugin[],
 		mediaVolume: 0.5,
 		sound_masterVolume: 0.3,

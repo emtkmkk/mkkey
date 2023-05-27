@@ -7,7 +7,7 @@
 		v-size="{ max: [500, 450, 350, 300] }"
 		class="tkcbzcuz"
 		:tabindex="!isDeleted ? '-1' : null"
-		:class="{ renote: isRenote }"
+		:class="[{ renote: isRenote } , appearNote.visibility ]"
 	>
 		<MkNoteSub
 			v-if="appearNote.reply && !detailedView"

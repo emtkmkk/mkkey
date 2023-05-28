@@ -120,7 +120,7 @@
 				</div>
 			</FormSection>
 		</div>
-		<div v-else>
+		<div v-if="!enableEmojiReactions">
 			<FormSwitch
 				v-model="showEmojisInReactionNotifications"
 				class="_formBlock"

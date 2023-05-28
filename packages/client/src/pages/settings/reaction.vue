@@ -4,7 +4,7 @@
 			{{ i18n.ts.enableEmojiReactions }}
 		</FormSwitch>
 
-		<div v-if="enableEmojiReactions">
+		<div>
 			<FromSlot class="_formBlock">
 				<template #label>{{
 					i18n.ts.reactionSettingDescription

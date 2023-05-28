@@ -66,21 +66,21 @@ function toggleStar(ev?: MouseEvent): void {
 	pleaseLogin();
 
 	if (!props.reacted) {
-	 	if (defaultStore.state.favButtonReaction === "picker") {
-				pleaseLogin();
-				blur();
-				reactionPicker.show(
-					buttonRef.value,
-					(reaction) => {
-						os.api("notes/reactions/create", {
-							noteId: props.note.id,
-							reaction: reaction,
-						});
-					},
-					() => {
-						focus();
-					}
-				);
+		if (defaultStore.state.favButtonReaction === "picker") {
+			pleaseLogin();
+			blur();
+			reactionPicker.show(
+				buttonRef.value,
+				(reaction) => {
+					os.api("notes/reactions/create", {
+						noteId: props.note.id,
+						reaction: reaction,
+					});
+				},
+				() => {
+					focus();
+				}
+			);
 		}
 		else if (defaultStore.state.favButtonReaction !== "favorite") {
 			os.api("notes/reactions/create", {
@@ -112,9 +112,18 @@ function toggleStar(ev?: MouseEvent): void {
 			os.popup(Ripple, { x, y }, {}, "end");
 		}
 	} else {
-		os.api("notes/reactions/delete", {
-			noteId: props.note.id,
-		});
+		if (defaultStore.state.favButtonReaction === "favorite") {
+			os.apiWithDialog(
+				"notes/favorites/create",
+				{
+					noteId: props.note.id,
+				},
+			);
+		} else {
+			os.api("notes/reactions/delete", {
+				noteId: props.note.id,
+			});
+		}
 	}
 }
 

@@ -138,7 +138,7 @@
 					<XRenoteButton
 						ref="renoteButton"
 						class="button"
-						:note="appearNote"
+						:note="developerRenote ? note : appearNote"
 						:count="appearNote.renoteCount"
 					/>
 					<XStarButtonNoEmoji
@@ -164,7 +164,7 @@
 					/>
 					<button
 						v-if="
-							(enableEmojiReactions || detailedView) &&
+							(enableEmojiReactions || detailedView || showEmojiButton) &&
 							appearNote.myReaction == null
 						"
 						ref="reactButton"
@@ -176,7 +176,7 @@
 					</button>
 					<button
 						v-if="
-							(enableEmojiReactions || detailedView) &&
+							(enableEmojiReactions || detailedView || (showEmojiButton && favButtonReactionIsFavorite)) &&
 							appearNote.myReaction != null
 						"
 						ref="reactButton"
@@ -185,7 +185,7 @@
 					>
 						<i class="ph-minus ph-bold ph-lg"></i>
 					</button>
-					<XQuoteButton class="button" :note="appearNote" />
+					<XQuoteButton class="button" :note="developerQuote ? note : appearNote" />
 					<button
 						ref="menuButton"
 						v-tooltip.noDelay.bottom="i18n.ts.more"
@@ -332,8 +332,12 @@ const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords));
 const translation = ref(null);
 const translating = ref(false);
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
+const showEmojiButton = defaultStore.state.showEmojiButton;
 const favButtonReactionIsFavorite = defaultStore.state.favButtonReaction === 'favorite';
 const hiddenSoftMutes = defaultStore.state.hiddenSoftMutes;
+const developerRenote = defaultStore.state.developerRenote;
+const developerQuote = defaultStore.state.developerQuote;
+const developerNoteMenu = defaultStore.state.developerNoteMenu;
 
 const keymap = {
 	r: () => reply(true),

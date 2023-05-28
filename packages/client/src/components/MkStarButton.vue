@@ -49,6 +49,7 @@ import * as os from "@/os";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 import { instance } from "@/instance";
+import { reactionPicker } from "@/scripts/reaction-picker";
 
 const props = defineProps<{
 	note: Note;
@@ -87,7 +88,7 @@ async function clip(): Promise<void> {
 
 					os.apiWithDialog("clips/add-note", {
 						clipId: clip.id,
-						noteId: appearNote.id,
+						noteId: props.note.id,
 					});
 				},
 			},
@@ -98,7 +99,7 @@ async function clip(): Promise<void> {
 					os.promiseDialog(
 						os.api("clips/add-note", {
 							clipId: clip.id,
-							noteId: appearNote.id,
+							noteId: props.note.id,
 						}),
 						null,
 						async (err) => {
@@ -112,7 +113,7 @@ async function clip(): Promise<void> {
 								if (!confirm.canceled) {
 									os.apiWithDialog("clips/remove-note", {
 										clipId: clip.id,
-										noteId: appearNote.id,
+										noteId: props.note.id,
 									});
 								}
 							} else {
@@ -134,10 +135,26 @@ async function clip(): Promise<void> {
 
 function star(ev?: MouseEvent): void {
 	pleaseLogin();
-	
-	if(defaultStore.state.favButtonReaction === "clip"){
+
+	if (defaultStore.state.favButtonReaction === "clip"){
 		() => clip();
-	} 
+	}
+	else if (defaultStore.state.favButtonReaction === "picker") {
+		pleaseLogin();
+		blur();
+		reactionPicker.show(
+			starButton.value,
+			(reaction) => {
+				os.api("notes/reactions/create", {
+					noteId: props.note.id,
+					reaction: reaction,
+				});
+			},
+			() => {
+				focus();
+			}
+		);
+	}
 	else if (defaultStore.state.favButtonReaction !== "favorite") {
 		os.api("notes/reactions/create", {
 			noteId: props.note.id,

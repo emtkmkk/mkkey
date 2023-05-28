@@ -456,6 +456,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: true,
 		},
+		showEmojiButton: {
+			where: "account",
+			default: true,
+		},
 		showEmojisInReactionNotifications: {
 			where: "account",
 			default: true,
@@ -481,6 +485,18 @@ export const defaultStore = markRaw(
 			default: false,
 		},
 		developer: {
+			where: "account",
+			default: false,
+		},
+		developerRenote: {
+			where: "account",
+			default: false,
+		},
+		developerQuote: {
+			where: "account",
+			default: false,
+		},
+		developerNoteMenu: {
 			where: "account",
 			default: false,
 		},

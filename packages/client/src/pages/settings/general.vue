@@ -65,6 +65,15 @@
 			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript
 			}}</FormSwitch>
+			<FormSwitch v-if="developer" v-model="developerRenote" class="_formBlock">{{
+				i18n.ts.developerRenote
+			}}</FormSwitch>
+			<FormSwitch v-if="developer" v-model="developerQuote" class="_formBlock">{{
+				i18n.ts.developerQuote
+			}}</FormSwitch>
+			<FormSwitch v-if="developer" v-model="developerNoteMenu" class="_formBlock">{{
+				i18n.ts.developerNoteMenu
+			}}</FormSwitch>
 
 			<FormSelect v-model="serverDisconnectedBehavior" class="_formBlock">
 				<template #label>{{ i18n.ts.whenServerDisconnected }}</template>
@@ -386,6 +395,18 @@ const showAdminUpdates = computed(
 );
 const smartMFMInputer = computed(
 	defaultStore.makeGetterSetter("smartMFMInputer")
+);
+const developer = computed(
+	defaultStore.makeGetterSetter("developer")
+);
+const developerRenote = computed(
+	defaultStore.makeGetterSetter("developerRenote")
+);
+const developerQuote = computed(
+	defaultStore.makeGetterSetter("developerQuote")
+);
+const developerNoteMenu = computed(
+	defaultStore.makeGetterSetter("developerNoteMenu")
 );
 
 watch(lang, () => {

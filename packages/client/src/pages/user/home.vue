@@ -174,7 +174,7 @@
 								{{ i18n.ts.noAccountDescription }}
 							</p>
 						</div>
-						<div class="fields system">
+						<div v-if="user.location || user.birthday || user.host == null || ($i && $i.id === user.id) || (user.host == null && !user.isBot)" class="fields system">
 							<dl v-if="user.location" class="field">
 								<dt class="name">
 									<i
@@ -195,7 +195,7 @@
 								</dt>
 								<dd class="value">
 									{{
-										user.birthday.substring(0, 4) == "0000" || user.birthday.substring(0, 4) == "9999" || user.birthday.substring(0, 4) == "4000"  
+										user.birthday.substring(0, 4) == "0000" || user.birthday.substring(0, 4) == "9999" || user.birthday.substring(0, 4) == "4000"
 											? user.birthday
 											.replace("-", "/")
 											.replace("-", "/").substring(5)
@@ -285,7 +285,15 @@
 				</div>
 
 				<div class="contents">
-					<div v-if="user.pinnedNotes.length > 0" class="_gap">
+					<template v-if="narrow">
+						<XPhotos :key="user.id" :user="user" />
+						<XActivity
+							:key="user.id"
+							:user="user"
+							style="margin-top: var(--margin)"
+						/>
+					</template>
+					<div v-if="user.pinnedNotes.length > 0 && narrow" class="_gap">
 						<XNote
 							v-for="note in user.pinnedNotes"
 							:key="note.id"
@@ -299,14 +307,6 @@
 						style="margin: 12px 0"
 						>{{ i18n.ts.userPagePinTip }}</MkInfo
 					>
-					<template v-if="narrow">
-						<XPhotos :key="user.id" :user="user" />
-						<XActivity
-							:key="user.id"
-							:user="user"
-							style="margin-top: var(--margin)"
-						/>
-					</template>
 				</div>
 				<div>
 					<XUserTimeline :user="user" />
@@ -319,6 +319,14 @@
 					:user="user"
 					style="margin-top: var(--margin)"
 				/>
+				<div v-if="user.pinnedNotes.length > 0" class="_gap">
+					<XNote
+						v-for="note in user.pinnedNotes"
+						:key="note.id"
+						class="note _block"
+						:note="note"
+						:pinned="true"
+					/>
 			</div>
 		</div>
 	</MkSpacer>
@@ -729,14 +737,14 @@ onUnmounted(() => {
 				> .description {
 					padding: 72px 12px 2px 24px;
 					font-size: 0.95em;
-					top: -65px;
+					top: -55px;
 					position: relative;
 
 					> .empty {
 						margin: 0;
 						opacity: 0.5;
 					}
-					
+
 					> .role {
 						> .state {
 							display: none;

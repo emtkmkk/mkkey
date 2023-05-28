@@ -3,6 +3,9 @@
 		<FormSwitch v-model="enableEmojiReactions" class="_formBlock">
 			{{ i18n.ts.enableEmojiReactions }}
 		</FormSwitch>
+		<FormSwitch v-if="!enableEmojiReactions" v-model="showEmojiButton" class="_formBlock">
+			{{ i18n.ts.showEmojiButton }}
+		</FormSwitch>
 
 		<div>
 			<FromSlot class="_formBlock">
@@ -104,7 +107,7 @@
 				{{ i18n.ts.useDrawerReactionPickerForMobile }}
 				<template #caption>{{ i18n.ts.needReloadToApply }}</template>
 			</FormSwitch>
-			
+
 			<FormSection>
 				<div style="display: flex; gap: var(--margin); flex-wrap: wrap">
 					<FormButton inline @click="preview"
@@ -128,7 +131,7 @@
 				{{ i18n.ts.showEmojisInReactionNotifications }}
 			</FormSwitch>
 		</div>
-		
+
 		<FormSection>
 			<FormRadios
 				v-model="favButtonReaction"
@@ -162,6 +165,11 @@
 						emoji="❤️"
 						style="height: 1.7em"
 					/>
+				</option>
+				<option value="picker">
+						{{
+							i18n.ts.picker
+						}}
 				</option>
 				<option value="favorite">
 				    {{
@@ -233,6 +241,9 @@ const enableEmojiReactions = $computed(
 );
 const showEmojisInReactionNotifications = $computed(
 	defaultStore.makeGetterSetter("showEmojisInReactionNotifications")
+);
+const showEmojiButton = $computed(
+	defaultStore.makeGetterSetter("showEmojiButton")
 );
 const favButtonReaction = $computed(
 	defaultStore.makeGetterSetter("favButtonReaction")

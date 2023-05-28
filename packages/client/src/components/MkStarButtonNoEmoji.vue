@@ -52,6 +52,7 @@ import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 import { instance } from "@/instance";
 import { useTooltip } from "@/scripts/use-tooltip";
+import { reactionPicker } from "@/scripts/reaction-picker";
 
 const props = defineProps<{
 	note: Note;
@@ -65,7 +66,23 @@ function toggleStar(ev?: MouseEvent): void {
 	pleaseLogin();
 
 	if (!props.reacted) {
-		if (defaultStore.state.favButtonReaction !== "favorite") {
+	 	if (defaultStore.state.favButtonReaction === "picker") {
+				pleaseLogin();
+				blur();
+				reactionPicker.show(
+					buttonRef.value,
+					(reaction) => {
+						os.api("notes/reactions/create", {
+							noteId: props.note.id,
+							reaction: reaction,
+						});
+					},
+					() => {
+						focus();
+					}
+				);
+		}
+		else if (defaultStore.state.favButtonReaction !== "favorite") {
 			os.api("notes/reactions/create", {
 				noteId: props.note.id,
 				reaction:

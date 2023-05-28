@@ -25,7 +25,7 @@ export function getNoteMenu(props: {
 		props.note.fileIds.length === 0 &&
 		props.note.poll == null;
 
-	const appearNote = isRenote
+	const appearNote = isRenote && !defaultStore.state.developerNoteMenu
 		? (props.note.renote as misskey.entities.Note)
 		: props.note;
 
@@ -49,7 +49,7 @@ export function getNoteMenu(props: {
 			initialVisibleUsers: appearNote.mentions ? [appearNote.user,...appearNote.mentions] : [appearNote.user],
 		});
 	}
-	
+
 	function delEdit(): void {
 		os.confirm({
 			type: "warning",
@@ -113,7 +113,7 @@ export function getNoteMenu(props: {
 	}
 
 	function copyId(): void {
-		copyToClipboard(props.note.id);
+		copyToClipboard(appearNote.id);
 		os.success();
 	}
 
@@ -282,7 +282,7 @@ export function getNoteMenu(props: {
 						null,
 				  ]
 				: []),
-			defaultStore.state.firstPostButtonVisibilityForce 
+			defaultStore.state.firstPostButtonVisibilityForce
 				? {
 					icon: "ph-envelope-simple-open ph-bold ph-lg",
 					text: i18n.ts.directReply,

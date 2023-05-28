@@ -121,7 +121,7 @@
 				</div>
 				<footer ref="footerEl" class="footer" @click.stop tabindex="-1">
 					<XReactionsViewer
-						v-if="enableEmojiReactions"
+						v-if="enableEmojiReactions || detailedView"
 						ref="reactionsViewer"
 						:note="appearNote"
 					/>
@@ -142,7 +142,7 @@
 						:count="appearNote.renoteCount"
 					/>
 					<XStarButtonNoEmoji
-						v-if="!enableEmojiReactions"
+						v-if="!enableEmojiReactions && !detailedView"
 						class="button"
 						:note="appearNote"
 						:count="
@@ -155,7 +155,7 @@
 					/>
 					<XStarButton
 						v-if="
-							enableEmojiReactions &&
+							(enableEmojiReactions || detailedView) &&
 							(appearNote.myReaction == null || favButtonReactionIsFavorite)
 						"
 						ref="starButton"
@@ -164,7 +164,7 @@
 					/>
 					<button
 						v-if="
-							enableEmojiReactions &&
+							(enableEmojiReactions || detailedView) &&
 							appearNote.myReaction == null
 						"
 						ref="reactButton"
@@ -176,7 +176,7 @@
 					</button>
 					<button
 						v-if="
-							enableEmojiReactions &&
+							(enableEmojiReactions || detailedView) &&
 							appearNote.myReaction != null
 						"
 						ref="reactButton"

@@ -327,6 +327,7 @@
 						:note="note"
 						:pinned="true"
 					/>
+				</div>
 			</div>
 		</div>
 	</MkSpacer>

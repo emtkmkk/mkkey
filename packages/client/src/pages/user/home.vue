@@ -855,6 +855,7 @@ onUnmounted(() => {
 		}
 
 		> .contents {
+			margin-top: var(--margin);
 			> .content {
 				margin-bottom: var(--margin);
 			}

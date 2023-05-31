@@ -5,11 +5,11 @@
 				<div class="mk-dialog">
 					<header>
 						<Mfm v-if="title" class="title" :text="title" />
-						<span
-							class="text-count"
-							:class="{ over: remainingLength < 0 }"
-							>{{ remainingLength }}</span
-						>
+							<span
+								class="text-count"
+								:class="{ over: remainingLength < 0 }"
+								>{{ remainingLength > 999 ? "" : i18n.t('remainingLength', { n: remainingLength }) }}</span
+							>
 						<br />
 					</header>
 					<textarea
@@ -34,9 +34,9 @@
 							@click="ok"
 							>{{ i18n.ts.ok }}</MkButton
 						>
-						<MkButton inline @click="caption">{{
+						<!-- <MkButton inline @click="caption">{{
 							i18n.ts.caption
-						}}</MkButton>
+						}}</MkButton> -->
 						<MkButton inline @click="cancel">{{
 							i18n.ts.cancel
 						}}</MkButton>

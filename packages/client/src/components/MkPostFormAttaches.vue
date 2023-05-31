@@ -143,10 +143,10 @@ export default defineComponent({
 				.popupMenu(
 					[
 						{
-							text: i18n.ts.renameFile,
-							icon: "ph-cursor-text ph-bold ph-lg",
+							text: i18n.ts.describeFile,
+							icon: "ph-subtitles ph-bold ph-lg",
 							action: () => {
-								this.rename(file);
+								this.describe(file);
 							},
 						},
 						{
@@ -161,10 +161,10 @@ export default defineComponent({
 							},
 						},
 						{
-							text: i18n.ts.describeFile,
-							icon: "ph-subtitles ph-bold ph-lg",
+							text: i18n.ts.renameFile,
+							icon: "ph-cursor-text ph-bold ph-lg",
 							action: () => {
-								this.describe(file);
+								this.rename(file);
 							},
 						},
 						{

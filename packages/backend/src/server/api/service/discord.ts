@@ -139,14 +139,14 @@ router.get("/dc/cb", async (ctx) => {
 		const sessid = ctx.cookies.get("signin_with_discord_sid");
 
 		if (!sessid) {
-			ctx.throw(400, "invalid session");
+			ctx.throw(400, "invalid session - 1");
 			return;
 		}
 
 		const code = ctx.query.code;
 
 		if (!code || typeof code !== "string") {
-			ctx.throw(400, "invalid session");
+			ctx.throw(400, "invalid session - 2");
 			return;
 		}
 
@@ -157,7 +157,7 @@ router.get("/dc/cb", async (ctx) => {
 		});
 
 		if (ctx.query.state !== state) {
-			ctx.throw(400, "invalid session");
+			ctx.throw(400, "invalid session - 3");
 			return;
 		}
 
@@ -199,7 +199,7 @@ router.get("/dc/cb", async (ctx) => {
 			typeof username !== "string" ||
 			typeof discriminator !== "string"
 		) {
-			ctx.throw(400, "invalid session");
+			ctx.throw(400, "invalid session - 4");
 			return;
 		}
 
@@ -239,7 +239,7 @@ router.get("/dc/cb", async (ctx) => {
 		const code = ctx.query.code;
 
 		if (!code || typeof code !== "string") {
-			ctx.throw(400, "invalid session");
+			ctx.throw(400, "invalid session - 5");
 			return;
 		}
 
@@ -250,7 +250,7 @@ router.get("/dc/cb", async (ctx) => {
 		});
 
 		if (ctx.query.state !== state) {
-			ctx.throw(400, "invalid session");
+			ctx.throw(400, "invalid session - 6");
 			return;
 		}
 
@@ -291,7 +291,7 @@ router.get("/dc/cb", async (ctx) => {
 			typeof username !== "string" ||
 			typeof discriminator !== "string"
 		) {
-			ctx.throw(400, "invalid session");
+			ctx.throw(400, "invalid session - 7");
 			return;
 		}
 

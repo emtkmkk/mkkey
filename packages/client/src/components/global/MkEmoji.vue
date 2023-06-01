@@ -71,6 +71,7 @@ const alt = computed(() =>
 
 	&.custom {
 		height: 1.4em;
+		max-width: 100%;
 		vertical-align: top;
 		object-fit: contain;
 		transition: transform 0.2s ease;
@@ -91,7 +92,9 @@ const alt = computed(() =>
 	
 	&.bigCustom {
 		height: 2.5em;
+		max-width: 100%;
 		vertical-align: middle;
+		object-fit: contain;
 		transition: transform 0.2s ease;
 
 		&:hover {

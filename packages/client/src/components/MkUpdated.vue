@@ -56,7 +56,7 @@ let data = $ref(Object);
 os.api("release").then((res) => {
 	data = res;
 	newRelease = version === data?.version;
-	newReleaseMini = version.slice(0,-1) === data?.version.slice(0,-1);
+	newReleaseMini = localStorage.getItem("lastVersion").slice(0,-1) === version.slice(0,-1);
 });
 
 console.log(`Version: ${version}`);

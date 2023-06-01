@@ -10,7 +10,7 @@
 		<p v-if="count > 0" class="count">{{ count }}</p>
 	</button>
 	<button v-else class="eddddedb _button">
-		<i class="ph-prohibit ph-bold ph-lg"></i>
+		<i class="ph-lock-simple ph-bold ph-lg"></i>
 	</button>
 </template>
 

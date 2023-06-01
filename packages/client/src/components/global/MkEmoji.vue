@@ -2,7 +2,7 @@
 	<img
 		v-if="customEmoji"
 		class="mk-emoji custom"
-		:class="{ normal, noStyle }"
+		:class="{ normal, noStyle, bigCustom }"
 		:src="url"
 		:alt="alt"
 		:title="alt"
@@ -37,6 +37,7 @@ const props = defineProps<{
 }>();
 
 const isCustom = computed(() => props.emoji.startsWith(":"));
+const bigCustom = computed(() => defaultStore.state.useBigCustom);
 const char = computed(() => (isCustom.value ? null : props.emoji));
 const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
@@ -69,6 +70,26 @@ const alt = computed(() =>
 	vertical-align: -0.25em;
 
 	&.custom {
+		height: 1.4em;
+		vertical-align: top;
+		object-fit: contain;
+		transition: transform 0.2s ease;
+
+		&:hover {
+			transform: scale(1.2);
+		}
+
+		&.normal {
+			height: 1.25em;
+			vertical-align: -0.25em;
+
+			&:hover {
+				transform: none;
+			}
+		}
+	}
+	
+	&.bigCustom {
 		height: 2.5em;
 		vertical-align: middle;
 		transition: transform 0.2s ease;

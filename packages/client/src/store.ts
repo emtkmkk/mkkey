@@ -440,6 +440,10 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: true,
 		},
+		showMiniUpdates: {
+			where: "device",
+			default: false,
+		},
 		swipeOnDesktop: {
 			where: "device",
 			default: false,

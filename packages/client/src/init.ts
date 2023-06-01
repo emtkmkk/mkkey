@@ -264,6 +264,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 			if (
 				lastVersion != null &&
 				compareVersions(version, lastVersion) === 1 &&
+				(defaultStore.state.showMiniUpdates || version.slice(0, -1) !== lastVersion.slice(0, -1)) &&
 				defaultStore.state.showUpdates
 			) {
 				// ログインしてる場合だけ

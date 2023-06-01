@@ -201,7 +201,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 			text: i18n.ts.renoteToFollowers,
 			icons: [
 				"ph-repeat ph-bold ph-lg",
-				"ph-lock-simple-open ph-bold ph-lg",
+				"ph-lock-simple ph-bold ph-lg",
 			],
 			danger: false,
 			action: () => {

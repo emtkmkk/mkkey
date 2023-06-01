@@ -316,6 +316,10 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 		},
+		useBigCustom: {
+			where: "device",
+			default: false,
+		},
 		disableDrawer: {
 			where: "device",
 			default: false,

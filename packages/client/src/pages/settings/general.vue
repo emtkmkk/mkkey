@@ -150,6 +150,9 @@
 			<FormSwitch v-model="showUpdates" class="_formBlock">{{
 				i18n.ts.showUpdates
 			}}</FormSwitch>
+			<FormSwitch v-if="developer" v-model="showMiniUpdates" class="_formBlock">{{
+				i18n.ts.showMiniUpdates
+			}}</FormSwitch>
 			<FormSwitch
 				v-if="$i?.isAdmin"
 				v-model="showAdminUpdates"

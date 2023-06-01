@@ -387,14 +387,31 @@ export default defineComponent({
 						}
 
 						case "emojiCode": {
-							return [
-								h(MkEmoji, {
-									key: Math.random(),
-									emoji: `:${token.props.name}:`,
-									customEmojis: this.customEmojis,
-									normal: this.plain,
-								}),
-							];
+							if (ast.length == 1){
+								return [h(
+									"span",
+									{
+										class: "mfm-x4",
+									},
+									[
+										h(MkEmoji, {
+											key: Math.random(),
+											emoji: `:${token.props.name}:`,
+											customEmojis: this.customEmojis,
+											normal: this.plain,
+										}),
+									],
+								)];
+							} else {
+								return [
+									h(MkEmoji, {
+										key: Math.random(),
+										emoji: `:${token.props.name}:`,
+										customEmojis: this.customEmojis,
+										normal: this.plain,
+									}),
+								];
+							}
 						}
 
 						case "unicodeEmoji": {

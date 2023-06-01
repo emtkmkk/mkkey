@@ -1,8 +1,8 @@
 <template>
 	<img
 		v-if="customEmoji"
-		class="mk-emoji custom"
-		:class="{ normal, noStyle, bigCustom }"
+		class="mk-emoji"
+		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="url"
 		:alt="alt"
 		:title="alt"

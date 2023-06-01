@@ -389,7 +389,7 @@ export default defineComponent({
 						}
 
 						case "emojiCode": {
-							if (firstAst.length == 1 && firstAst[0].token.type === "emojiCode"){
+							if (firstAst.length == 1 && firstAst[0].type === "emojiCode"){
 								return h(
 									"span",
 									{

@@ -53,6 +53,8 @@ export default defineComponent({
 
 		const ast = (isPlain ? mfm.parseSimple : mfm.parse)(this.text);
 
+        const firstAst = ast;
+
 		const validTime = (t: string | null | undefined) => {
 			if (t == null) return null;
 			return t.match(/^[0-9.]+s$/) ? t : null;
@@ -387,11 +389,11 @@ export default defineComponent({
 						}
 
 						case "emojiCode": {
-							if (ast.length == 1){
+							if (firstAst.length == 1){
 								return h(
 									"span",
 									{
-										class: "mfm-x4",
+										class: "mfm-x3",
 									},
 									[
 										h(MkEmoji, {

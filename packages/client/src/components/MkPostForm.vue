@@ -48,7 +48,7 @@
 						><i class="ph-house ph-bold ph-lg"></i
 					></span>
 					<span v-if="visibility === 'followers'"
-						><i class="ph-lock-simple-open ph-bold ph-lg"></i
+						><i class="ph-lock-simple ph-bold ph-lg"></i
 					></span>
 					<span v-if="visibility === 'specified'"
 						><i class="ph-envelope-simple-open ph-bold ph-lg"></i
@@ -99,7 +99,7 @@
 										: $store.state.defaultNoteVisibility === 'home'
 											? 'ph-house ph-bold ph-lg'
 											: $store.state.defaultNoteVisibility === 'followers'
-												? 'ph-lock-simple-open ph-bold ph-lg'
+												? 'ph-lock-simple ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						"
 					></i>
@@ -133,7 +133,7 @@
 										: $store.state.fifthPostVisibility === 'l-home'
 											? 'ph-hand-heart ph-bold ph-lg'
 											: $store.state.fifthPostVisibility === 'followers'
-												? 'ph-lock-simple-open ph-bold ph-lg'
+												? 'ph-lock-simple ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.fifthPostWideButton ? 'widePostButton' : '']"
 					></i>
@@ -157,7 +157,7 @@
 										: $store.state.fourthPostVisibility === 'l-home'
 											? 'ph-hand-heart ph-bold ph-lg'
 											: $store.state.fourthPostVisibility === 'followers'
-												? 'ph-lock-simple-open ph-bold ph-lg'
+												? 'ph-lock-simple ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.fourthhPostWideButton ? 'widePostButton' : '']"
 					></i>
@@ -181,7 +181,7 @@
 										: $store.state.thirdPostVisibility === 'l-home'
 											? 'ph-hand-heart ph-bold ph-lg'
 											: $store.state.thirdPostVisibility === 'followers'
-												? 'ph-lock-simple-open ph-bold ph-lg'
+												? 'ph-lock-simple ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.thirdPostWideButton ? 'widePostButton' : '']"
 					></i>
@@ -205,7 +205,7 @@
 										: $store.state.secondPostVisibility === 'l-home'
 											? 'ph-hand-heart ph-bold ph-lg'
 											: $store.state.secondPostVisibility === 'followers'
-												? 'ph-lock-simple-open ph-bold ph-lg'
+												? 'ph-lock-simple ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.secondPostWideButton ? 'widePostButton' : '']"
 					></i>
@@ -247,7 +247,7 @@
 										: $store.state.defaultNoteVisibility === 'home'
 											? 'ph-house ph-bold ph-lg'
 											: $store.state.defaultNoteVisibility === 'followers'
-												? 'ph-lock-simple-open ph-bold ph-lg'
+												? 'ph-lock-simple ph-bold ph-lg'
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.firstPostWideButton ? !(reply || renote) ? 'widePostButton' : 'widePostButton_left' : '']"
 					></i>

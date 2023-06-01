@@ -388,7 +388,7 @@ export default defineComponent({
 
 						case "emojiCode": {
 							if (ast.length == 1){
-								return [h(
+								return h(
 									"span",
 									{
 										class: "mfm-x4",
@@ -401,7 +401,7 @@ export default defineComponent({
 											normal: this.plain,
 										}),
 									],
-								)];
+								);
 							} else {
 								return [
 									h(MkEmoji, {

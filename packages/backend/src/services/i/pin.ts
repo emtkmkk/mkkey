@@ -43,18 +43,21 @@ export async function addPinned(
 	}
 
 	if (pinings.some((pining) => pining.noteId === note.id)) {
-		throw new IdentifiableError(
-			"23f0cf4e-59a3-4276-a91d-61a5891c1514",
-			"That note has already been pinned.",
-		);
+		// すでに登録済みの場合、上に持ってくるために登録日を更新
+		await UserNotePinings.update({
+			userId: user.id,
+			noteId: note.id,
+		},{
+			createdAt: new Date(),
+		} as UserNotePining);
+	} else {
+		await UserNotePinings.insert({
+			id: genId(),
+			createdAt: new Date(),
+			userId: user.id,
+			noteId: note.id,
+		} as UserNotePining);
 	}
-
-	await UserNotePinings.insert({
-		id: genId(),
-		createdAt: new Date(),
-		userId: user.id,
-		noteId: note.id,
-	} as UserNotePining);
 
 	// Deliver to remote followers
 	if (Users.isLocalUser(user)) {

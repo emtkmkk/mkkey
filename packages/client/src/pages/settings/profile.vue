@@ -78,13 +78,11 @@
 				>{{ i18n.ts.hiddenYear }}</template
 			>
 		</FormInput>
-		<FormSwitch 
-			:value="profile.birthday.slice(0,4) === '9999' || profile.birthday.slice(0,4) === '0000' || profile.birthday.slice(0,4) === '4000'"
-			@input="$event.target.value ? profile.birthday = '2000' + profile.birthday.slice(4) : profile.birthday = '9999' + profile.birthday.slice(4)" 
-			class="_formBlock"
+		<MkButton
+			@click="profile.birthday = '9999' + profile.birthday.slice(4)" class="_formBlock"
 		>{{
 			i18n.ts.hiddenYearSwitch
-		}}</FormSwitch>
+		}}</MkButton>
 
 		<FormSelect v-model="profile.lang" class="_formBlock">
 			<template #label>{{ i18n.ts.language }}</template>

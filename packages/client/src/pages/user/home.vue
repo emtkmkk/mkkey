@@ -333,9 +333,8 @@
 						<button v-if="user.pinnedNotes.length > 2 && !pinFull" class="_button" @click="pinFull = true">
 							{{ i18n.ts.moreShowPin }}
 						</button>
-					</div>
-					<div v-if="user.pinnedNotes.length > 2 && narrow && pinFull" class="_gap">
 						<XNote
+							v-if="pinFull"
 							v-for="note in user.pinnedNotes.slice(2)"
 							:key="note.id"
 							class="note _block"
@@ -414,7 +413,7 @@ let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
-let pinFull = $ref<boolean>(false);
+let pinFull = ref(false);
 
 const style = $computed(() => {
 	if (props.user.bannerUrl == null) return {};

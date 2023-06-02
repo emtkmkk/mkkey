@@ -312,39 +312,27 @@
 							style="margin-top: var(--margin)"
 						/>
 					</template>
-					<div v-if="user.pinnedNotes.length > 0 && narrow && ($i == null || ($i.id != user.id && !user.isFollowing))" class="_gap">
-						<XNote
-							v-for="note in user.pinnedNotes"
-							:key="note.id"
-							class="note _block"
-							:note="note"
-							:pinned="true"
-						/>
-					</div>
-					<div v-if="user.pinnedNotes.length > 0 && narrow && ($i != null && ($i.id == user.id || user.isFollowing))" class="_gap">
-						<template v-if="pinFull">
-							<template v-for="(note,index) in user.pinnedNotes" :key="note.id">
-								<XNote
-								    v-if="index <= 2"
-									class="note _block"
-									:note="note"
-									:pinned="true"
-								/>
+					<div v-if="user.pinnedNotes.length > 0 && narrow" class="_gap">
+							<template v-if="($i == null || ($i.id != user.id && !user.isFollowing))">
+									<XNote
+											v-for="note in user.pinnedNotes"
+											:key="note.id"
+											class="note _block"
+											:note="note"
+											:pinned="true"
+									/>
 							</template>
-							<button v-if="user.pinnedNotes.length > 2 && !pinFull" class="_button" @click="pinFull = true">
-								{{ i18n.ts.moreShowPin }}
-							</button>
-						</template>
-						<template v-else>
-							<XNote
-								v-for="note in user.pinnedNotes"
-								:key="note.id"
-								class="note _block"
-								:note="note"
-								:pinned="true"
-							/>
-						</template>
-					</div>
+							<template v-else>
+									<XNote
+											v-for="note in visiblePinnedNotes"
+											:key="note.id"
+											class="note _block"
+											:note="note"
+											:pinned="true"
+									/>
+									<MkButton v-if="user.pinnedNotes.length > 2 && !pinFull" @click="pinFull = true">{{ i18n.ts.moreShowPin }}</MkButton>
+							</template>
+						</div>
 					<MkInfo
 						v-if="user.pinnedNotes.length = 0 && $i && $i.id === user.id"
 						style="margin: 12px 0"
@@ -383,7 +371,8 @@ import cityTimezones from "city-timezones";
 import XUserTimeline from "./index.timeline.vue";
 import type * as misskey from "calckey-js";
 import XNote from "@/components/MkNote.vue";
-import MkFollowButton from "@/components/MkFollowButton.vue";
+import MkButton from "@/components/MkButton.vue";
+import MkFollowButton from "@/components/MkB.vue";
 import MkRemoteCaution from "@/components/MkRemoteCaution.vue";
 import MkInfo from "@/components/MkInfo.vue";
 import MkMoved from "@/components/MkMoved.vue";
@@ -417,6 +406,9 @@ let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
 const pinFull = ref(false);
+const visiblePinnedNotes = $computed(() => {
+	return pinFull.value ? props.user.pinnedNotes : props.user.pinnedNotes.slice(0, 2);
+});
 
 const style = $computed(() => {
 	if (props.user.bannerUrl == null) return {};
@@ -430,7 +422,7 @@ const age = $computed(() => {
 });
 
 const nextBirthday = $computed(() => {
-	
+
 	const birthday = new Date(props.user.birthday);
 	birthday.setHours(0);
 
@@ -439,10 +431,10 @@ const nextBirthday = $computed(() => {
 	today.setMinutes(0);
 	today.setSeconds(0);
 	today.setMilliseconds(0);
-	
+
 	birthday.setFullYear(today.getFullYear());
-	
-	return birthday >= today 
+
+	return birthday >= today
 			? Math.floor((birthday - today) / (24 * 60 * 60 * 1000))
 			: Math.floor((birthday.setFullYear(birthday.getFullYear() + 1) - today) / (24 * 60 * 60 * 1000));
 });

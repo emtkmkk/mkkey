@@ -333,14 +333,15 @@
 						<button v-if="user.pinnedNotes.length > 2 && !pinFull" class="_button" @click="pinFull = true">
 							{{ i18n.ts.moreShowPin }}
 						</button>
-						<XNote
-							v-if="pinFull"
-							v-for="note in user.pinnedNotes.slice(2)"
-							:key="note.id"
-							class="note _block"
-							:note="note"
-							:pinned="true"
-						/>
+						<template v-if="pinFull">
+							<XNote
+								v-for="note in user.pinnedNotes.slice(2)"
+								:key="note.id"
+								class="note _block"
+								:note="note"
+								:pinned="true"
+							/>
+						</template>
 					</div>
 					<MkInfo
 						v-if="user.pinnedNotes.length = 0 && $i && $i.id === user.id"

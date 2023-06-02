@@ -557,7 +557,7 @@ let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
 let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public"));
 let canHome = $ref((!props.reply || (props.reply.visibility === "public" || props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" || props.renote.visibility === "home")));
 let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified"));
-let canNotLocal = $ref((!props.reply || props.reply.localOnly == false) && (!props.renote || props.renote.localOnly == false));
+let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly));
 let imeText = $ref("");
 
 const publicIcon = $computed((): String => {

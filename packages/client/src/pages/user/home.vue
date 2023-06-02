@@ -223,7 +223,7 @@
 											.replace("-", "/")
 											.replace("-", "/")
 									}}
-									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" && user.birthday.substring(0, 4) != "4000" && age >= 0 && age <= 122 ? "(" + i18n.t("yearsOld", { age }) + ")" : "(" + nextBirthday === 0 ? i18n.ts.birthdayToday : i18n.t("nextBirthday", { nextBirthday }) + ")" }}
+									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" && user.birthday.substring(0, 4) != "4000" && age >= 0 && age <= 122 ? "(" + i18n.t("yearsOld", { age }) + ")" : "(" + (nextBirthday === 0 ? i18n.ts.birthdayToday : i18n.t("nextBirthday", { nextBirthday })) + ")" }}
 								</dd>
 							</dl>
 							<dl v-if="user.host == null" class="field">
@@ -430,6 +430,7 @@ const age = $computed(() => {
 const nextBirthday = $computed(() => {
 	
 	const birthday = new Date(props.user.birthday);
+	birthday.setHours(0);
 
 	const today = new Date();
 	today.setHours(0);

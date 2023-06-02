@@ -415,7 +415,7 @@ export const UserRepository = db.getRepository(User).extend({
 			? await UserNotePinings.createQueryBuilder("pin")
 					.where("pin.userId = :userId", { userId: user.id })
 					.innerJoinAndSelect("pin.note", "note")
-					.orderBy("pin.id", "DESC")
+					.orderBy("pin.createdAt", "DESC").addOrderBy("pin.id", "DESC")
 					.getMany()
 			: [];
 		const profile = opts.detail

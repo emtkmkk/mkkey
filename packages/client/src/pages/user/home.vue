@@ -223,7 +223,7 @@
 											.replace("-", "/")
 											.replace("-", "/")
 									}}
-									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" && user.birthday.substring(0, 4) != "4000" ? "(" + i18n.t("yearsOld", { age }) + ")" : "" }}
+									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" && user.birthday.substring(0, 4) != "4000" || age >= 0 || age <= 122 ? "(" + i18n.t("yearsOld", { age }) + ")" : "(" + nextBirthday === 0 ? i18n.ts.birthdayToday : i18n.t("nextBirthday", { nextBirthday }) + ")" }}
 								</dd>
 							</dl>
 							<dl v-if="user.host == null" class="field">
@@ -425,6 +425,23 @@ const style = $computed(() => {
 
 const age = $computed(() => {
 	return calcAge(props.user.birthday);
+});
+
+const nextBirthday = $computed(() => {
+	
+	const birthday = new Date(props.user.birthday);
+
+	const today = new Date();
+	today.setHours(0);
+	today.setMinutes(0);
+	today.setSeconds(0);
+	today.setMilliseconds(0);
+	
+	birthday.setFullYear(date2.getFullYear());
+	
+	return date1 >= date2 
+			? (date1 - date2) / (24 * 60 * 60 * 1000) 
+			: (date1.setFullYear(date1.getFullYear() + 1) - date2) / (24 * 60 * 60 * 1000);
 });
 
 const timeForThem = $computed(() => {

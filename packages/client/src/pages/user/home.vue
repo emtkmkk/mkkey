@@ -53,6 +53,16 @@
 										><MkAcct :user="user" :detail="true"
 									/></span>
 									<span
+										v-if="user.createdAt < new Date(2023,3,5)"
+										:title="i18n.ts.mkhb"
+										style="color: var(--badge)"
+										><MkEmoji
+											class="emoji"
+											emoji=":mkbms:"
+											style="height: 1.3em"
+										></MkEmoji
+									></span>
+									<span
 										v-if="user.isAdmin"
 										:title="i18n.ts.admin"
 										style="color: var(--badge)"
@@ -108,6 +118,16 @@
 								<span class="username"
 									><MkAcct :user="user" :detail="true"
 								/></span>
+								<span
+									v-if="user.createdAt < new Date(2023,3,5)"
+									:title="i18n.ts.mkhb"
+									style="color: var(--badge)"
+									><MkEmoji
+										class="emoji"
+										emoji=":mkbms:"
+										style="height: 1.3em"
+									></MkEmoji
+								></span>
 								<span
 									v-if="user.isAdmin"
 									:title="i18n.ts.admin"

@@ -269,7 +269,25 @@ export default async (
 		) {
 			data.visibility = "home";
 		}
+		
+		// If the reply target is followers, make it followers.
+		if (
+			data.reply &&
+			data.reply.visibility === "followers" &&
+			(data.visibility === "public" || data.visibility === "home")
+		) {
+			data.visibility = "followers";
+		}
 
+		// If the reply target is specified, make it specified.
+		if (
+			data.reply &&
+			data.reply.visibility === "specified" &&
+			data.visibility !== "specified"
+		) {
+			data.visibility = "specified";
+		}
+		
 		// Renote local only if you Renote local only.
 		if (data.renote?.localOnly && data.channel == null) {
 			data.localOnly = true;

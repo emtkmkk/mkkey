@@ -323,19 +323,23 @@
 						/>
 					</div>
 					<div v-if="user.pinnedNotes.length > 0 && narrow && ($i && ($i.id == user.id || user.isFollowing))" class="_gap">
-						<XNote
-							v-for="note in user.pinnedNotes.slice(0,2)"
-							:key="note.id"
-							class="note _block"
-							:note="note"
-							:pinned="true"
-						/>
-						<button v-if="user.pinnedNotes.length > 2 && !pinFull" class="_button" @click="pinFull = true">
-							{{ i18n.ts.moreShowPin }}
-						</button>
 						<template v-if="pinFull">
+							<template v-for="(note,index) in user.pinnedNotes"
+								<XNote
+									v-if="index <= 2"
+									:key="note.id"
+									class="note _block"
+									:note="note"
+									:pinned="true"
+								/>
+							</template>
+							<button v-if="user.pinnedNotes.length > 2 && !pinFull" class="_button" @click="pinFull = true">
+								{{ i18n.ts.moreShowPin }}
+							</button>
+						</template>
+						<template v-else>
 							<XNote
-								v-for="note in user.pinnedNotes.slice(2)"
+								v-for="note in user.pinnedNotes"
 								:key="note.id"
 								class="note _block"
 								:note="note"

@@ -417,7 +417,7 @@ let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
-let pinFull = ref(false);
+const pinFull = ref(false);
 
 const style = $computed(() => {
 	if (props.user.bannerUrl == null) return {};
@@ -444,8 +444,8 @@ const nextBirthday = $computed(() => {
 	birthday.setFullYear(today.getFullYear());
 	
 	return birthday >= today 
-			? (birthday - today) / (24 * 60 * 60 * 1000) 
-			: (birthday.setFullYear(birthday.getFullYear() + 1) - today) / (24 * 60 * 60 * 1000);
+			? Math.floor((birthday - today) / (24 * 60 * 60 * 1000))
+			: Math.floor((birthday.setFullYear(birthday.getFullYear() + 1) - today) / (24 * 60 * 60 * 1000));
 });
 
 const timeForThem = $computed(() => {

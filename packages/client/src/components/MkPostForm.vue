@@ -39,7 +39,7 @@
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
 					:class="{ addblank: $store.state.hiddenMFMHelp }"
-					:disabled="canFollower"
+					:disabled="!canFollower"
 					@click="setVisibility"
 				>
 					<span v-if="visibility === 'public'"

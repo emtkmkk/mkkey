@@ -313,7 +313,7 @@
 							style="margin-top: var(--margin)"
 						/>
 					</template>
-					<div v-if="user.pinnedNotes.length > 0 && narrow && !($i && $i.id != user.id && user.isFollowing)" class="_gap">
+					<div v-if="user.pinnedNotes.length > 0 && narrow && (!$i || ($i.id != user.id && !user.isFollowing))" class="_gap">
 						<XNote
 							v-for="note in user.pinnedNotes"
 							:key="note.id"

@@ -327,7 +327,8 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 	//#endregion
 
 	fetchInstanceMetaPromise.then(() => {
-		if (defaultStore.state.themeInitial) {
+		const reInit = darkTheme?.name === "Rosé Pine" && lightTheme?.name === "l-rosepinedawn"
+		if (defaultStore.state.themeInitial || (reInit && !defaultStore.state.completedInit)) {
 			if (instance.defaultLightTheme != null)
 				ColdDeviceStorage.set(
 					"lightTheme",
@@ -339,6 +340,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 					JSON5.parse(instance.defaultDarkTheme),
 				);
 			defaultStore.set("themeInitial", false);
+			defaultStore.set("completedInit", true);
 		}
 	});
 

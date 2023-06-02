@@ -1,9 +1,9 @@
 <template>
 	<MkSpacer :content-max="800">
 		<MkTab v-model="tab" style="margin-bottom: var(--margin)">
-			<option value="combined">{{ i18n.ts.combined }}</option>
+			<option v-if="$i != null" value="combined">{{ i18n.ts.combined }}</option>
 			<option value="local">{{ i18n.ts.local }}</option>
-			<option value="poll">{{ i18n.ts.poll }}</option>
+			<option v-if="$i != null" value="poll">{{ i18n.ts.poll }}</option>
 		</MkTab>
 		<XNotes
 			v-if="tab === 'combined'"
@@ -18,6 +18,7 @@
 import XNotes from "@/components/MkNotes.vue";
 import MkTab from "@/components/MkTab.vue";
 import { i18n } from "@/i18n";
+import { $i } from "@/account";
 
 const paginationForLocal = {
 	endpoint: "notes/featured" as const,
@@ -55,5 +56,5 @@ const paginationForPoll = {
 	offsetMode: false,
 };
 
-let tab = $ref("combined");
+let tab = $ref($i != null ? "combined" : "local");
 </script>

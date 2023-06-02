@@ -389,11 +389,26 @@ export default defineComponent({
 						}
 
 						case "emojiCode": {
-							if (firstAst.length == 1 && firstAst[0].type === "emojiCode"){
+							if (!isPlain && firstAst.length <= 3 && firstAst.every((x) => x.type === "emojiCode")){
 								return h(
 									"span",
 									{
 										class: "mfm-x3",
+									},
+									[
+										h(MkEmoji, {
+											key: Math.random(),
+											emoji: `:${token.props.name}:`,
+											customEmojis: this.customEmojis,
+											normal: this.plain,
+										}),
+									],
+								);
+							} else if (!isPlain && firstAst.length <= 7 && firstAst.every((x) => x.type === "emojiCode")){
+								return h(
+									"span",
+									{
+										class: "mfm-x2",
 									},
 									[
 										h(MkEmoji, {

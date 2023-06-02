@@ -238,17 +238,17 @@
 					&ZeroWidthSpace;
 					<i
 						:class="[
-							: $store.state.defaultNoteVisibility === 'public'
+							$store.state.defaultNoteVisibility === 'public'
 								? publicIcon
-								$store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
+								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
 									? localIcon
-										: $store.state.defaultNoteVisibility === 'home'
-											? homeIcon
-											: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
-												? localIcon
-												: $store.state.defaultNoteVisibility === 'followers'
-													? followerIcon
-													: 'ph-envelope-simple-open ph-bold ph-lg'
+									: $store.state.defaultNoteVisibility === 'home'
+										? homeIcon
+										: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
+											? localIcon
+											: $store.state.defaultNoteVisibility === 'followers'
+												? followerIcon
+												: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.firstPostWideButton ? !(reply || renote) ? 'widePostButton' : 'widePostButton_left' : '']"
 					></i>
 					<i

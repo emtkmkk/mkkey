@@ -260,15 +260,14 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 		localStorage.removeItem("theme");
 		
 		// スキップするバージョン
-		const skipVersion = ["14.0.0-dev10-mkk35.0"];
+		const skipVersion = ["14.0.0-dev10-mkk35."];
 
 		try {
 			// 変なバージョン文字列来るとcompareVersionsでエラーになるため
 			if (
 				lastVersion != null &&
 				compareVersions(version, lastVersion) === 1 &&
-				(defaultStore.state.showMiniUpdates || version.slice(0, -1) !== lastVersion.slice(0, -1)) &&
-				!skipVersion.includes(version) &&
+				(defaultStore.state.showMiniUpdates || (version.slice(0, -1) !== lastVersion.slice(0, -1) && !skipVersion.includes(version.slice(0, -1))) ) &&
 				defaultStore.state.showUpdates
 			) {
 				// ログインしてる場合だけ

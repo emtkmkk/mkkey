@@ -404,7 +404,7 @@ export default defineComponent({
 										}),
 									],
 								);
-							} else if (!isPlain && firstAst.length <= 7 && firstAst.every((x) => x.type === "emojiCode")){
+							} else if (!isPlain && firstAst.length <= 6 && firstAst.every((x) => x.type === "emojiCode")){
 								return h(
 									"span",
 									{

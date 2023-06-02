@@ -53,7 +53,7 @@
 										><MkAcct :user="user" :detail="true"
 									/></span>
 									<span
-										v-if="user.createdAt < new Date(2023,3,5)"
+										v-if="user.createdAt < new Date(2023,3,5) && user.host == null"
 										:title="i18n.ts.mkhb"
 										style="color: var(--badge)"
 										><MkEmoji
@@ -119,7 +119,7 @@
 									><MkAcct :user="user" :detail="true"
 								/></span>
 								<span
-									v-if="user.createdAt < new Date(2023,3,5)"
+									v-if="user.createdAt < new Date(2023,3,5) && user.host == null"
 									:title="i18n.ts.mkhb"
 									style="color: var(--badge)"
 									><MkEmoji
@@ -437,11 +437,11 @@ const nextBirthday = $computed(() => {
 	today.setSeconds(0);
 	today.setMilliseconds(0);
 	
-	birthday.setFullYear(date2.getFullYear());
+	birthday.setFullYear(today.getFullYear());
 	
-	return date1 >= date2 
-			? (date1 - date2) / (24 * 60 * 60 * 1000) 
-			: (date1.setFullYear(date1.getFullYear() + 1) - date2) / (24 * 60 * 60 * 1000);
+	return birthday >= today 
+			? (birthday - today) / (24 * 60 * 60 * 1000) 
+			: (birthday.setFullYear(birthday.getFullYear() + 1) - today) / (24 * 60 * 60 * 1000);
 });
 
 const timeForThem = $computed(() => {

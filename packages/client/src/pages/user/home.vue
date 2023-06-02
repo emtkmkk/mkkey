@@ -414,7 +414,7 @@ let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
-let pinFull = $ref(false);
+let pinFull = $ref<boolean>(false);
 
 const style = $computed(() => {
 	if (props.user.bannerUrl == null) return {};

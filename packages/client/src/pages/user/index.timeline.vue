@@ -5,6 +5,7 @@
 				<option :value="null">{{ i18n.ts.notes }}</option>
 				<option value="replies">{{ i18n.ts.notesAndReplies }}</option>
 				<option value="files">{{ i18n.ts.withFiles }}</option>
+				<option v-if="$i != null" value="visitor">{{ i18n.ts.showVisitor }}</option>
 			</MkTab>
 		</template>
 		<XNotes :no-gap="true" :pagination="pagination" />
@@ -18,6 +19,7 @@ import XNotes from "@/components/MkNotes.vue";
 import MkTab from "@/components/MkTab.vue";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
+import { $i } from "@/account";
 
 const props = defineProps<{
 	user: misskey.entities.UserDetailed;
@@ -32,6 +34,7 @@ const pagination = {
 		userId: props.user.id,
 		includeReplies: include.value === "replies",
 		withFiles: include.value === "files",
+		showVisitor: include.value === "visitor",
 	})),
 };
 </script>

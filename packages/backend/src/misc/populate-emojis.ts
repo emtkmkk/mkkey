@@ -67,8 +67,14 @@ export async function populateEmoji(
 			name,
 			host: host ?? IsNull(),
 		})) || null;
+	
+	const queryOrNullAllHost = async () =>
+		(await Emojis.findOneBy({
+			where: {name,},
+			order: {host: "DESC",},
+		})) || null;
 
-	const emoji = await cache.fetch(`${name} ${host}`, queryOrNull);
+	const emoji = await cache.fetch(`${name} ${host}`, queryOrNull) ?? queryOrNullAllHost;
 
 	if (emoji == null) return null;
 

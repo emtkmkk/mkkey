@@ -3,9 +3,9 @@
 		<template #header>
 			<MkTab v-model="include" :class="$style.tab">
 				<option :value="null">{{ i18n.ts.notes }}</option>
+				<option v-if="$i != null" value="visitor">{{ i18n.ts.showVisitor }}</option>
 				<option value="replies">{{ i18n.ts.notesAndReplies }}</option>
 				<option value="files">{{ i18n.ts.withFiles }}</option>
-				<option v-if="$i != null" value="visitor">{{ i18n.ts.showVisitor }}</option>
 			</MkTab>
 		</template>
 		<XNotes :no-gap="true" :pagination="pagination" />

@@ -9,7 +9,7 @@
 		<div class="_popup" :class="$style.root">
 			<button
 				key="public"
-				v-if="!canVisibilitySwitch && forceMode"
+				v-if="!canVisibilitySwitch && forceMode && canFollower"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'public' }]"
 				data-index="1"
@@ -29,7 +29,7 @@
 			</button>
 			<button
 				key="public"
-				v-if="canVisibilitySwitch"
+				v-if="canVisibilitySwitch && canPublic"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'public' }]"
 				data-index="1"
@@ -49,7 +49,7 @@
 			</button>
 			<button
 				key="home"
-				v-if="canVisibilitySwitch"
+				v-if="canVisibilitySwitch && canHome"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'home' }]"
 				data-index="2"
@@ -69,7 +69,7 @@
 			</button>
 			<button
 				key="followers"
-				v-if="canVisibilitySwitch"
+				v-if="canVisibilitySwitch && canFollower"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'followers' }]"
 				data-index="3"
@@ -108,9 +108,9 @@
 					}}</span>
 				</div>
 			</button>
-			<div v-if="canVisibilitySwitch" :class="$style.divider"></div>
+			<div v-if="canVisibilitySwitch && canNotLocal" :class="$style.divider"></div>
 			<button
-			    v-if="canLocalSwitch"
+			    v-if="canLocalSwitch && canNotLocal"
 				key="localOnly"
 				class="_button"
 				:class="[
@@ -143,7 +143,7 @@
 				</div>
 			</button>
 			<button
-			    v-if="!canLocalSwitch && !forceMode"
+			    v-if="!canLocalSwitch && !forceMode && canNotLocal"
 				key="localOnly"
 				class="_button"
 				:class="[
@@ -195,6 +195,10 @@ const props = withDefaults(
 		canLocalSwitch?: boolean;
 		canVisibilitySwitch?: boolean;
 		forceMode?: boolean;
+		canPublic?: boolean;
+		canHome?: boolean;
+		canFollower?: boolean;
+		canNotLocal?: boolean;
 	}>(),
 	{}
 );
@@ -213,6 +217,10 @@ let localOnly = $ref(props.currentLocalOnly);
 let canLocalSwitch = props.canLocalSwitch || false;
 let canVisibilitySwitch = props.canVisibilitySwitch ?? true;
 let forceMode = props.forceMode ?? false;
+let canPublic = props.canPublic ?? true;
+let canHome = props.canHome ?? true;
+let canFollower = props.canFollower ?? true;
+let canNotLocal = props.canNotLocal ?? true;
 
 watch($$(localOnly), () => {
 	emit("changeLocalOnly", localOnly);

@@ -223,7 +223,7 @@
 											.replace("-", "/")
 											.replace("-", "/")
 									}}
-									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" && user.birthday.substring(0, 4) != "4000" || age >= 0 || age <= 122 ? "(" + i18n.t("yearsOld", { age }) + ")" : "(" + nextBirthday === 0 ? i18n.ts.birthdayToday : i18n.t("nextBirthday", { nextBirthday }) + ")" }}
+									{{ user.birthday.substring(0, 4) != "0000" && user.birthday.substring(0, 4) != "9999" && user.birthday.substring(0, 4) != "4000" && age >= 0 && age <= 122 ? "(" + i18n.t("yearsOld", { age }) + ")" : "(" + nextBirthday === 0 ? i18n.ts.birthdayToday : i18n.t("nextBirthday", { nextBirthday }) + ")" }}
 								</dd>
 							</dl>
 							<dl v-if="user.host == null" class="field">

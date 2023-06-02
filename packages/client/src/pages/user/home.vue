@@ -324,10 +324,9 @@
 					</div>
 					<div v-if="user.pinnedNotes.length > 0 && narrow && ($i && ($i.id == user.id || user.isFollowing))" class="_gap">
 						<template v-if="pinFull">
-							<template v-for="(note,index) in user.pinnedNotes"
+							<template v-for="(note,index) in user.pinnedNotes" :key="note.id">
 								<XNote
 								    v-if="index <= 2"
-									:key="note.id"
 									class="note _block"
 									:note="note"
 									:pinned="true"

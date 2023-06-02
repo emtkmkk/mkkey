@@ -68,6 +68,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			break;
 	}
 
+	if (!user) query.andWhere("note.localOnly = false");
 	if (user) generateMutedUserQuery(query, user);
 	if (user) generateBlockedUserQuery(query, user);
 

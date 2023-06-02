@@ -322,7 +322,7 @@
 							:pinned="true"
 						/>
 					</div>
-					<div v-else-if="user.pinnedNotes.length > 0 && narrow" class="_gap">
+					<div v-if="user.pinnedNotes.length > 0 && narrow && ($i && ($i.id == user.id || user.isFollowing))" class="_gap">
 						<XNote
 							v-for="note in user.pinnedNotes.slice(0,2)"
 							:key="note.id"

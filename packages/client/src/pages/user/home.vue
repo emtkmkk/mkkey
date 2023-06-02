@@ -293,7 +293,7 @@
 							style="margin-top: var(--margin)"
 						/>
 					</template>
-					<div v-if="user.pinnedNotes.length > 0 && narrow" class="_gap">
+					<div v-if="user.pinnedNotes.length > 0 && narrow && !($i && $i.id != user.id && user.isFollowing)" class="_gap">
 						<XNote
 							v-for="note in user.pinnedNotes"
 							:key="note.id"
@@ -302,8 +302,29 @@
 							:pinned="true"
 						/>
 					</div>
+					<div v-else-if="user.pinnedNotes.length > 0 && narrow" class="_gap">
+						<XNote
+							v-for="note in user.pinnedNotes.slice(0,2)"
+							:key="note.id"
+							class="note _block"
+							:note="note"
+							:pinned="true"
+						/>
+						<button v-if="user.pinnedNotes.length > 2 && !pinFull" class="_button" @click="pinFull = true">
+							{{ i18n.ts.moreShowPin }}
+						</button>
+					</div>
+					<div v-if="user.pinnedNotes.length > 2 && narrow && pinFull" class="_gap">
+						<XNote
+							v-for="note in user.pinnedNotes.slice(2)"
+							:key="note.id"
+							class="note _block"
+							:note="note"
+							:pinned="true"
+						/>
+					</div>
 					<MkInfo
-						v-else-if="$i && $i.id === user.id"
+						v-if="user.pinnedNotes.length = 0 && $i && $i.id === user.id"
 						style="margin: 12px 0"
 						>{{ i18n.ts.userPagePinTip }}</MkInfo
 					>
@@ -373,6 +394,7 @@ let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
+let pinFull = $ref(false);
 
 const style = $computed(() => {
 	if (props.user.bannerUrl == null) return {};

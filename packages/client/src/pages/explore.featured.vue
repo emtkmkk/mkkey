@@ -1,10 +1,17 @@
 <template>
 	<MkSpacer :content-max="800">
-		<MkTab v-model="tab" style="margin-bottom: var(--margin)">
-			<option v-if="$i != null" value="combined">{{ i18n.ts.combined }}</option>
-			<option value="local">{{ i18n.ts.local }}</option>
-			<option v-if="$i != null" value="poll">{{ i18n.ts.poll }}</option>
-		</MkTab>
+		<template v-if="$i != null">
+			<MkTab v-model="tab" style="margin-bottom: var(--margin)">
+				<option value="combined">{{ i18n.ts.combined }}</option>
+				<option value="local">{{ i18n.ts.local }}</option>
+				<option value="poll">{{ i18n.ts.poll }}</option>
+			</MkTab>
+		</template>
+		<template v-else>
+			<MkTab v-model="tab" style="margin-bottom: var(--margin)">
+				<option value="local">{{ i18n.ts.local }}</option>
+			</MkTab>
+		</template>
 		<XNotes
 			v-if="tab === 'combined'"
 			:pagination="paginationForCombined"

@@ -260,7 +260,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 		localStorage.removeItem("theme");
 		
 		// スキップするバージョン
-		const skipVersion = ["14.0.0-dev10-mkk35.0"]
+		const skipVersion = ["14.0.0-dev10-mkk35.0"];
 
 		try {
 			// 変なバージョン文字列来るとcompareVersionsでエラーになるため

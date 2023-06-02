@@ -94,6 +94,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		generateMutedNoteQuery(query, user);
 		generateBlockedUserQuery(query, user);
 		generateMutedUserRenotesQueryForNotes(query, user);
+	} else {
+		query.andWhere("note.localOnly = false")
 	}
 	
 	if (user && !user.localShowRenote) {

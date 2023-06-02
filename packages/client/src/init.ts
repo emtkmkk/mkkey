@@ -258,6 +258,9 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 
 		// テーマリビルドするため
 		localStorage.removeItem("theme");
+		
+		// スキップするバージョン
+		const skipVersion = ["14.0.0-dev10-mkk35.0"]
 
 		try {
 			// 変なバージョン文字列来るとcompareVersionsでエラーになるため
@@ -265,6 +268,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 				lastVersion != null &&
 				compareVersions(version, lastVersion) === 1 &&
 				(defaultStore.state.showMiniUpdates || version.slice(0, -1) !== lastVersion.slice(0, -1)) &&
+				!skipVersion.includes(version) &&
 				defaultStore.state.showUpdates
 			) {
 				// ログインしてる場合だけ

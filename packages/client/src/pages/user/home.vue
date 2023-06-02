@@ -372,7 +372,7 @@ import XUserTimeline from "./index.timeline.vue";
 import type * as misskey from "calckey-js";
 import XNote from "@/components/MkNote.vue";
 import MkButton from "@/components/MkButton.vue";
-import MkFollowButton from "@/components/MkB.vue";
+import MkFollowButton from "@/components/MkFollowButton.vue";
 import MkRemoteCaution from "@/components/MkRemoteCaution.vue";
 import MkInfo from "@/components/MkInfo.vue";
 import MkMoved from "@/components/MkMoved.vue";

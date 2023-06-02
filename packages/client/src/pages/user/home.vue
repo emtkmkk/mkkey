@@ -53,7 +53,7 @@
 										><MkAcct :user="user" :detail="true"
 									/></span>
 									<span
-									    v-if="(user.createdAt < new Date("2023-04-05T0:00:00")) && user.host == null"
+									    v-if="user.createdAt < new Date("2023-04-05T0:00:00") && user.host == null"
 										:title="i18n.ts.mkhb"
 										style="color: var(--badge)"
 										><MkEmoji
@@ -119,7 +119,7 @@
 									><MkAcct :user="user" :detail="true"
 								/></span>
 								<span
-								    v-if="(user.createdAt < new Date("2023-04-05T0:00:00")) && user.host == null"
+								    v-if="user.createdAt < new Date("2023-04-05T0:00:00") && user.host == null"
 									:title="i18n.ts.mkhb"
 									><MkEmoji
 										class="emoji"

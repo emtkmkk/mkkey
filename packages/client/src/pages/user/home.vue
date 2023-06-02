@@ -53,7 +53,7 @@
 										><MkAcct :user="user" :detail="true"
 									/></span>
 									<span
-										v-if="user.createdAt < new Date(2023,3,5) && user.host == null"
+										v-if="(user.createdAt < new Date("2023-04-05 0:00:00")) && user.host == null"
 										:title="i18n.ts.mkhb"
 										style="color: var(--badge)"
 										><MkEmoji
@@ -119,9 +119,8 @@
 									><MkAcct :user="user" :detail="true"
 								/></span>
 								<span
-									v-if="user.createdAt < new Date(2023,3,5) && user.host == null"
+									v-if="(user.createdAt < new Date("2023-04-05 0:00:00")) && user.host == null"
 									:title="i18n.ts.mkhb"
-									style="color: var(--badge)"
 									><MkEmoji
 										class="emoji"
 										emoji=":mkbms:"
@@ -313,7 +312,7 @@
 							style="margin-top: var(--margin)"
 						/>
 					</template>
-					<div v-if="user.pinnedNotes.length > 0 && narrow && (!$i || ($i.id != user.id && !user.isFollowing))" class="_gap">
+					<div v-if="user.pinnedNotes.length > 0 && narrow && ($i == null || ($i.id != user.id && !user.isFollowing))" class="_gap">
 						<XNote
 							v-for="note in user.pinnedNotes"
 							:key="note.id"
@@ -322,7 +321,7 @@
 							:pinned="true"
 						/>
 					</div>
-					<div v-if="user.pinnedNotes.length > 0 && narrow && ($i && ($i.id == user.id || user.isFollowing))" class="_gap">
+					<div v-if="user.pinnedNotes.length > 0 && narrow && ($i != null && ($i.id == user.id || user.isFollowing))" class="_gap">
 						<template v-if="pinFull">
 							<template v-for="(note,index) in user.pinnedNotes" :key="note.id">
 								<XNote

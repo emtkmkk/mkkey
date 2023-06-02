@@ -414,6 +414,9 @@ const developerQuote = computed(
 const developerNoteMenu = computed(
 	defaultStore.makeGetterSetter("developerNoteMenu")
 );
+const showMiniUpdates = computed(
+	defaultStore.makeGetterSetter("showMiniUpdates")
+);
 
 watch(lang, () => {
 	localStorage.setItem("lang", lang.value as string);

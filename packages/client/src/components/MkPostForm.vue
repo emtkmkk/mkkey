@@ -34,11 +34,12 @@
 					><i class="ph-hand-heart ph-bold ph-lg"></i
 				></span>
 				<button
-					v-if="($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) || isChannel || (visibility === 'specified' && canFollower)"
+					v-if="($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) || isChannel || visibility === 'specified'"
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
 					:class="{ addblank: $store.state.hiddenMFMHelp }"
+					:disabled="canFollower"
 					@click="setVisibility"
 				>
 					<span v-if="visibility === 'public'"
@@ -97,7 +98,7 @@
 									: $store.state.defaultNoteVisibility === 'home'
 										? homeIcon
 										: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
-											? localIcon
+											? localHomeIcon
 											: $store.state.defaultNoteVisibility === 'followers'
 												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
@@ -131,7 +132,7 @@
 									: $store.state.fifthPostVisibility === 'home'
 										? homeIcon
 										: $store.state.fifthPostVisibility === 'l-home'
-											? localIcon
+											? localHomeIcon
 											: $store.state.fifthPostVisibility === 'followers'
 												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
@@ -155,7 +156,7 @@
 									: $store.state.fourthPostVisibility === 'home'
 										? homeIcon
 										: $store.state.fourthPostVisibility === 'l-home'
-											? localIcon
+											? localHomeIcon
 											: $store.state.fourthPostVisibility === 'followers'
 												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
@@ -179,7 +180,7 @@
 									: $store.state.thirdPostVisibility === 'home'
 										? homeIcon
 										: $store.state.thirdPostVisibility === 'l-home'
-											? localIcon
+											? localHomeIcon
 											: $store.state.thirdPostVisibility === 'followers'
 												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
@@ -203,7 +204,7 @@
 									: $store.state.secondPostVisibility === 'home'
 										? homeIcon
 										: $store.state.secondPostVisibility === 'l-home'
-											? localIcon
+											? localHomeIcon
 											: $store.state.secondPostVisibility === 'followers'
 												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
@@ -245,7 +246,7 @@
 									: $store.state.defaultNoteVisibility === 'home'
 										? homeIcon
 										: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
-											? localIcon
+											? localHomeIcon
 											: $store.state.defaultNoteVisibility === 'followers'
 												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
@@ -562,7 +563,11 @@ let imeText = $ref("");
 
 const publicIcon = $computed((): String => {
 	if (!canNotLocal && (canPublic || canHome)) {
-		return 'ph-hand-heart ph-bold ph-lg'
+		if (canPublic) {
+			return 'ph-hand-heart ph-bold ph-lg'
+		} else {
+			return 'ph-house-line ph-bold ph-lg'
+		}
 	} else if (canPublic) {
 		return 'ph-planet ph-bold ph-lg'
 	} else if (canHome) {
@@ -575,7 +580,9 @@ const publicIcon = $computed((): String => {
 });
 
 const homeIcon = $computed((): String => {
-	if (canHome) {
+	if (!canNotLocal && canHome) {
+		return 'ph-house-line ph-bold ph-lg'
+	} else if (canHome) {
 		return 'ph-house ph-bold ph-lg'
 	} else if (canFollower) {
 		return 'ph-lock-simple ph-bold ph-lg'
@@ -593,8 +600,20 @@ const followerIcon = $computed((): String => {
 });
 
 const localIcon = $computed((): String => {
-	if (canPublic || canHome) {
+	if (canPublic) {
 		return 'ph-hand-heart ph-bold ph-lg'
+	} else if (canHome) {
+		return 'ph-house-line ph-bold ph-lg'
+	} else if (canFollower) {
+		return 'ph-lock-simple ph-bold ph-lg'
+	} else {
+		return 'ph-envelope-simple-open ph-bold ph-lg'
+	}
+});
+
+const localHomeIcon = $computed((): String => {
+	if (canHome) {
+		return 'ph-house-line ph-bold ph-lg'
 	} else if (canFollower) {
 		return 'ph-lock-simple ph-bold ph-lg'
 	} else {
@@ -909,6 +928,10 @@ function setVisibility() {
 			canLocalSwitch: props.channel,
 			canVisibilitySwitch: !props.channel && !isForce,
 			forceMode: !props.channel && isForce,
+			canPublic,
+			canHome,
+			canFollower,
+			canNotLocal,
 		},
 		{
 			changeVisibility: (v) => {

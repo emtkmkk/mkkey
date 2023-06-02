@@ -34,7 +34,7 @@
 					><i class="ph-hand-heart ph-bold ph-lg"></i
 				></span>
 				<button
-					v-if="($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) || isChannel || visibility === 'specified'"
+					v-if="($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) || isChannel || (visibility === 'specified' && canFollower)"
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
@@ -90,16 +90,16 @@
 					{{ submitText
 					}}<i
 						:class="
-							$store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
-								? 'ph-hand-heart ph-bold ph-lg'
-								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
-									? 'ph-hand-heart ph-bold ph-lg'
-									: $store.state.defaultNoteVisibility === 'public'
-										? 'ph-planet ph-bold ph-lg'
-										: $store.state.defaultNoteVisibility === 'home'
-											? 'ph-house ph-bold ph-lg'
+							$store.state.defaultNoteVisibility === 'public'
+								? publicIcon
+								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
+									? localIcon
+									: $store.state.defaultNoteVisibility === 'home'
+										? homeIcon
+										: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
+											? localIcon
 											: $store.state.defaultNoteVisibility === 'followers'
-												? 'ph-lock-simple ph-bold ph-lg'
+												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						"
 					></i>
@@ -125,15 +125,15 @@
 					<i
 						:class="[
 							$store.state.fifthPostVisibility === 'public'
-								? 'ph-planet ph-bold ph-lg'
+								? publicIcon
 								: $store.state.fifthPostVisibility === 'l-public'
-									? 'ph-hand-heart ph-bold ph-lg'
+									? localIcon
 									: $store.state.fifthPostVisibility === 'home'
-										? 'ph-house ph-bold ph-lg'
+										? homeIcon
 										: $store.state.fifthPostVisibility === 'l-home'
-											? 'ph-hand-heart ph-bold ph-lg'
+											? localIcon
 											: $store.state.fifthPostVisibility === 'followers'
-												? 'ph-lock-simple ph-bold ph-lg'
+												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.fifthPostWideButton ? 'widePostButton' : '']"
 					></i>
@@ -149,15 +149,15 @@
 					<i
 						:class="[
 							$store.state.fourthPostVisibility === 'public'
-								? 'ph-planet ph-bold ph-lg'
+								? publicIcon
 								: $store.state.fourthPostVisibility === 'l-public'
-									? 'ph-hand-heart ph-bold ph-lg'
+									? localIcon
 									: $store.state.fourthPostVisibility === 'home'
-										? 'ph-house ph-bold ph-lg'
+										? homeIcon
 										: $store.state.fourthPostVisibility === 'l-home'
-											? 'ph-hand-heart ph-bold ph-lg'
+											? localIcon
 											: $store.state.fourthPostVisibility === 'followers'
-												? 'ph-lock-simple ph-bold ph-lg'
+												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.fourthhPostWideButton ? 'widePostButton' : '']"
 					></i>
@@ -173,15 +173,15 @@
 					<i
 						:class="[
 							$store.state.thirdPostVisibility === 'public'
-								? 'ph-planet ph-bold ph-lg'
+								? publicIcon
 								: $store.state.thirdPostVisibility === 'l-public'
-									? 'ph-hand-heart ph-bold ph-lg'
+									? localIcon
 									: $store.state.thirdPostVisibility === 'home'
-										? 'ph-house ph-bold ph-lg'
+										? homeIcon
 										: $store.state.thirdPostVisibility === 'l-home'
-											? 'ph-hand-heart ph-bold ph-lg'
+											? localIcon
 											: $store.state.thirdPostVisibility === 'followers'
-												? 'ph-lock-simple ph-bold ph-lg'
+												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.thirdPostWideButton ? 'widePostButton' : '']"
 					></i>
@@ -197,15 +197,15 @@
 					<i
 						:class="[
 							$store.state.secondPostVisibility === 'public'
-								? 'ph-planet ph-bold ph-lg'
+								? publicIcon
 								: $store.state.secondPostVisibility === 'l-public'
-									? 'ph-hand-heart ph-bold ph-lg'
+									? localIcon
 									: $store.state.secondPostVisibility === 'home'
-										? 'ph-house ph-bold ph-lg'
+										? homeIcon
 										: $store.state.secondPostVisibility === 'l-home'
-											? 'ph-hand-heart ph-bold ph-lg'
+											? localIcon
 											: $store.state.secondPostVisibility === 'followers'
-												? 'ph-lock-simple ph-bold ph-lg'
+												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.secondPostWideButton ? 'widePostButton' : '']"
 					></i>
@@ -238,17 +238,17 @@
 					&ZeroWidthSpace;
 					<i
 						:class="[
-							$store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
-								? 'ph-hand-heart ph-bold ph-lg'
-								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
-									? 'ph-hand-heart ph-bold ph-lg'
-									: $store.state.defaultNoteVisibility === 'public'
-										? 'ph-planet ph-bold ph-lg'
+							: $store.state.defaultNoteVisibility === 'public'
+								? publicIcon
+								$store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
+									? localIcon
 										: $store.state.defaultNoteVisibility === 'home'
-											? 'ph-house ph-bold ph-lg'
-											: $store.state.defaultNoteVisibility === 'followers'
-												? 'ph-lock-simple ph-bold ph-lg'
-												: 'ph-envelope-simple-open ph-bold ph-lg'
+											? homeIcon
+											: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
+												? localIcon
+												: $store.state.defaultNoteVisibility === 'followers'
+													? followerIcon
+													: 'ph-envelope-simple-open ph-bold ph-lg'
 						, $store.state.firstPostWideButton ? !(reply || renote) ? 'widePostButton' : 'widePostButton_left' : '']"
 					></i>
 					<i
@@ -554,7 +554,55 @@ let draghover = $ref(false);
 let quoteId = $ref(null);
 let hasNotSpecifiedMentions = $ref(false);
 let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
+let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public"));
+let canHome = $ref((!props.reply || (props.reply.visibility === "public" && props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" && props.renote.visibility === "home")));
+let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified"));
+let canNotLocal = $ref((!props.reply || props.reply.localOnly = false) && (!props.renote || props.renote.localOnly = false));
 let imeText = $ref("");
+
+const publicIcon = $computed((): String => {
+	if (!canNotLocal && (canPublic || canHome)) {
+		return 'ph-hand-heart ph-bold ph-lg'
+	} else if (canPublic) {
+		return 'ph-planet ph-bold ph-lg'
+	} else if (canHome) {
+		return 'ph-house ph-bold ph-lg'
+	} else if (canFollower) {
+		return 'ph-lock-simple ph-bold ph-lg'
+	} else {
+		return 'ph-envelope-simple-open ph-bold ph-lg'
+	}
+});
+
+const homeIcon = $computed((): String => {
+	if (!canNotLocal) {
+		return 'ph-hand-heart ph-bold ph-lg'
+	} else if (canHome) {
+		return 'ph-house ph-bold ph-lg'
+	} else if (canFollower) {
+		return 'ph-lock-simple ph-bold ph-lg'
+	} else {
+		return 'ph-envelope-simple-open ph-bold ph-lg'
+	}
+});
+
+const followerIcon = $computed((): String => {
+	if (canFollower) {
+		return 'ph-lock-simple ph-bold ph-lg'
+	} else {
+		return 'ph-envelope-simple-open ph-bold ph-lg'
+	}
+});
+
+const localIcon = $computed((): String => {
+	if (canPublic || canHome) {
+		return 'ph-hand-heart ph-bold ph-lg'
+	} else if (canFollower) {
+		return 'ph-lock-simple ph-bold ph-lg'
+	} else {
+		return 'ph-envelope-simple-open ph-bold ph-lg'
+	}
+});
 
 const typing = throttle(3000, () => {
 	if (props.channel) {

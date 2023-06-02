@@ -47,6 +47,7 @@ export const paramDef = {
 		untilDate: { type: "integer" },
 		includeMyRenotes: { type: "boolean", default: true },
 		withFiles: { type: "boolean", default: false },
+		showVisitor: { type: "boolean", default: false },
 		fileType: {
 			type: "array",
 			items: {
@@ -87,7 +88,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
 
-	generateVisibilityQuery(query, me);
+	generateVisibilityQuery(query, ps.showVisitor ? null : me);
 	if (me) {
 		generateMutedUserQuery(query, me, user);
 		generateBlockedUserQuery(query, me);

@@ -326,7 +326,7 @@
 						<template v-if="pinFull">
 							<template v-for="(note,index) in user.pinnedNotes"
 								<XNote
-									v-if="index <= 2"
+								    v-if="index <= 2"
 									:key="note.id"
 									class="note _block"
 									:note="note"

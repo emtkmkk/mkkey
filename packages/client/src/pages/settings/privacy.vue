@@ -2,6 +2,7 @@
 	<div class="_formRoot">
 		<FormSwitch
 			v-model="isLocked"
+			v-if="!isSilentLocked"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.makeFollowManuallyApprove
@@ -10,11 +11,49 @@
 			}}</template></FormSwitch
 		>
 		<FormSwitch
-			v-if="isLocked"
+			v-model="isSilentLocked"
+			v-if="!isLocked"
+			class="_formBlock"
+			@update:modelValue="save()"
+			>{{ i18n.ts.makeFollowManuallyApproveSilent
+			}}<template #caption>{{
+				i18n.ts.lockedAccountInfoSilent
+			}}</template></FormSwitch
+		>
+		<FormSwitch
+			v-if="isLocked || isSilentLocked"
 			v-model="autoAcceptFollowed"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.autoAcceptFollowed }}</FormSwitch
+		>
+		
+		<FormSwitch
+			v-model="blockPostPublic"
+			class="_formBlock"
+			@update:modelValue="save()"
+			>{{ i18n.ts.blockPostPublic
+			}}<template #caption>{{
+				i18n.ts.blockPostPublicDescription
+			}}</template></FormSwitch
+		>		
+		<FormSwitch
+			v-model="blockPostHome"
+			class="_formBlock"
+			@update:modelValue="save()"
+			>{{ i18n.ts.blockPostHome
+			}}<template #caption>{{
+				i18n.ts.blockPostHomeDescription
+			}}</template></FormSwitch
+		>		
+		<FormSwitch
+			v-model="blockPostNotLocal"
+			class="_formBlock"
+			@update:modelValue="save()"
+			>{{ i18n.ts.blockPostNotLocal
+			}}<template #caption>{{
+				i18n.ts.blockPostNotLocalDescription
+			}}</template></FormSwitch
 		>
 
 		<FormSwitch
@@ -404,6 +443,10 @@ import { $i } from "@/account";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
 let isLocked = $ref($i.isLocked);
+let isSilentLocked = $ref($i.isSilentLocked);
+let blockPostPublic = $ref($i.blockPostPublic);
+let blockPostHome = $ref($i.blockPostHome);
+let blockPostNotLocal = $ref($i.blockPostNotLocal);
 let autoAcceptFollowed = $ref($i.autoAcceptFollowed);
 let noCrawle = $ref($i.noCrawle);
 let isExplorable = $ref($i.isExplorable);
@@ -475,7 +518,11 @@ let channelSecondPostButton = $computed(
 function save() {
 	os.api("i/update", {
 		isLocked: !!isLocked,
+		isSilentLocked: !!isSilentLocked,
 		autoAcceptFollowed: !!autoAcceptFollowed,
+		blockPostPublic: !!blockPostPublic,
+		blockPostHome: !!blockPostHome,
+		blockPostNotLocal: !!blockPostNotLocal,
 		noCrawle: !!noCrawle,
 		isExplorable: !!isExplorable,
 		publicReactions: !!publicReactions,

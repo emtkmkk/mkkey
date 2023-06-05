@@ -312,7 +312,7 @@
 						/>
 					</template>
 					<div v-if="user.pinnedNotes.length > 0 && narrow" class="_gap">
-							<template v-if="($i == null || ($i.id != user.id && !user.isFollowing))">
+							<template v-if="($i == null || ($i.id != user.id && !user.isFollowing)) || pinFull">
 									<XNote
 											v-for="note in user.pinnedNotes"
 											:key="note.id"
@@ -329,7 +329,7 @@
 											:note="note"
 											:pinned="true"
 									/>
-									<MkButton v-if="user.pinnedNotes.length > 2 && !pinFull" @click="pinFull = true">{{ i18n.ts.moreShowPin }}</MkButton>
+									<MkButton style="text-align: center; margin: auto;" v-if="user.pinnedNotes.length > 2 && !pinFull" @click="pinFull = true">{{ i18n.t("moreShowPin", { count: user.pinnedNotes.length - 2 }) }}</MkButton>
 							</template>
 						</div>
 					<MkInfo

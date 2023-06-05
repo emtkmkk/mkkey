@@ -167,6 +167,9 @@ export default async (
 		isAdmin: User["isAdmin"];
 		isModerator: User["isModerator"];
 		isBot: User["isBot"];
+		blockPostPublic: User["blockPostPublic"];
+		blockPostHome: User["blockPostHome"];
+		blockPostNotLocal: User["blockPostNotLocal"];
 	},
 	data: Option,
 	silent = false,
@@ -200,6 +203,9 @@ export default async (
 		if (data.localOnly == null) data.localOnly = false;
 		if (data.channel != null) data.visibility = "public";
 		if (data.channel != null) data.visibleUsers = [];
+		if (user.blockPostPublic && data.visibility === "public") data.visibility = "home";
+		if (user.blockPostHome && data.visibility === "home") data.visibility = "followers";
+		if (user.blockPostNotLocal && data.localOnly === false) data.localOnly = true;
 		if (data.channel != null && data.localOnly === false && !data.reply && !data.text.endsWith(" #" + data.channel!.name)) {
 			//チャンネルで連合有りで返信でなく、すでに文末にタグが付いていない場合、ハッシュタグを自動で付ける
 			data.text += " #" + data.channel!.name;

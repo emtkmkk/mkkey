@@ -222,8 +222,10 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		updates.blockPostHome = ps.blockPostHome;
 	if (typeof ps.blockPostNotLocal === "boolean")
 		updates.blockPostNotLocal = ps.blockPostNotLocal;
-	if (typeof ps.isSilentLocked === "boolean")
+	if (typeof ps.isSilentLocked === "boolean"){
 		updates.isSilentLocked = ps.isSilentLocked;
+		updates.isLocked = false;
+	}
 	if (ps.emailNotificationTypes !== undefined)
 		profileUpdates.emailNotificationTypes = ps.emailNotificationTypes;
 

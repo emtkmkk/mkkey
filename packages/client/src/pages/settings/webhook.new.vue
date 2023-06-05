@@ -40,6 +40,9 @@
 			<FormSwitch v-model="event_mention" class="_formBlock"
 				>メンション受取時</FormSwitch
 			>
+			<FormSwitch v-model="event_antenna" class="_formBlock"
+				>アンテナ新着時</FormSwitch
+			>
 		</FormSection>
 
 		<div
@@ -77,6 +80,7 @@ let event_reply = $ref(true);
 let event_renote = $ref(true);
 let event_reaction = $ref(true);
 let event_mention = $ref(true);
+let event_antenna = $ref(false);
 
 async function create(): Promise<void> {
 	const events = [];
@@ -87,6 +91,7 @@ async function create(): Promise<void> {
 	if (event_renote) events.push("renote");
 	if (event_reaction) events.push("reaction");
 	if (event_mention) events.push("mention");
+	if (event_antenna) events.push("antenna");
 
 	if (discord_type) secret = "Discord";
 

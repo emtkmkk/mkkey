@@ -53,11 +53,11 @@ export default defineComponent({
 
 		const ast = (isPlain ? mfm.parseSimple : mfm.parse)(this.text);
 
-        const firstAst = ast;
+        let firstAst = ast;
 
-        const emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","center","mention","hashtag","link","url"].includes(x.type)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type)) : null;
+        let emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type)) : null;
 
-		const isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji","center"].includes(x.type))
+		let isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji"].includes(x.type));
 		
 		const validTime = (t: string | null | undefined) => {
 			if (t == null) return null;
@@ -280,6 +280,14 @@ export default defineComponent({
 						}
 
 						case "small": {
+							//ルート要素にあり、子要素に絵文字かsmallしかない場合x1で表示する
+							if(firstAst.length === 1 && firstAst === ast && token.children.every((x) => ["emojiCode","unicodeEmoji","small"].includes(x.type))){
+								return h(
+									"span", 
+									{}, 
+									genEl(token.children),
+								);
+							}
 							return [
 								h(
 									"small",
@@ -292,6 +300,12 @@ export default defineComponent({
 						}
 
 						case "center": {
+							//ルートでcenterしか使用していない場合、中で絵文字big判定をもう一度行う
+							if (firstAst.length === 1){
+								firstAst = token.children;
+								emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type)) : null;
+								isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji"].includes(x.type));
+							}
 							return [
 								h(
 									"div",

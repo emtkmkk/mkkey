@@ -329,7 +329,7 @@
 											:note="note"
 											:pinned="true"
 									/>
-									<MkButton style="text-align: center; margin: auto;" v-if="user.pinnedNotes.length > 2 && !pinFull" @click="pinFull = true">{{ i18n.t("moreShowPin", { count: user.pinnedNotes.length - 2 }) }}</MkButton>
+									<MkButton style="text-align: center; margin: auto; margin-top: calc(var(--margin) / 2);" v-if="user.pinnedNotes.length > 2 && !pinFull" @click="pinFull = true">{{ i18n.t("moreShowPin", { count: user.pinnedNotes.length - 2 }) }}</MkButton>
 							</template>
 						</div>
 					<MkInfo

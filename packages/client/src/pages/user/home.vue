@@ -333,7 +333,7 @@
 							</template>
 						</div>
 					<MkInfo
-						v-if="user.pinnedNotes.length = 0 && $i && $i.id === user.id"
+						v-if="user.pinnedNotes.length === 0 && $i && $i.id === user.id"
 						style="margin: 12px 0"
 						>{{ i18n.ts.userPagePinTip }}</MkInfo
 					>
@@ -405,7 +405,7 @@ let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
 const pinFull = $ref(false);
-const mkbBadge = $ref((props.user.createdAt < new Date('2023-04-05T00:00:00Z')) && props.user.host == null);
+const mkbBadge = $ref((new Date(props.user.createdAt) < new Date('2023-04-05T00:00:00Z')) && props.user.host == null);
 const visiblePinnedNotes = $computed(() => {
 	return pinFull.value ? props.user.pinnedNotes : props.user.pinnedNotes.slice(0, 2);
 });

@@ -255,6 +255,30 @@ export class User {
 	})
 	public showSelfRenoteToHome: boolean;
 	
+	@Column('boolean', {
+		default: false,
+		comment: 'Change public post to home post.',
+	})
+	public blockPostPublic: boolean;
+	
+	@Column('boolean', {
+		default: false,
+		comment: 'Change home post to followers post.',
+	})
+	public blockPostHome: boolean;
+	
+	@Column('boolean', {
+		default: false,
+		comment: 'Change not localonly post to localonly post.',
+	})
+	public blockPostNotLocal: boolean;
+	
+	@Column('boolean', {
+		default: true,
+		comment: 'The key will no longer be displayed.',
+	})
+	public isSilentLocked: boolean;
+	
 	@Index({ unique: true })
 	@Column('char', {
 		length: 16, nullable: true, unique: true,

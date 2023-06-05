@@ -31,11 +31,11 @@
 				v-if="$i == null"
 				class="button"
 				primary
-				@click="twitterShare()"
+				@click="misskeyShare()"
 			>
 				<MkEmoji
 					class="emoji"
-					emoji=":twitter:"
+					emoji=":misskey:"
 					style="height: 1.3em"
 				/>
 			</MkButton>
@@ -132,9 +132,9 @@ export default defineComponent({
 				window.open('https://misskey.io/share?text=' + encodeURIComponent(this.text), '_blank');
 			}
 		},
-		twitterShare() {
+		misskeyShare() {
 			if (this.text !== "") {
-				window.open('https://twitter.com/share?text=' + encodeURIComponent(this.text), '_blank');
+				window.open('https://misskeyshare.link/share.html?text=' + encodeURIComponent(this.text), '_blank');
 			}
 		},
 	},

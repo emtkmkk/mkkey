@@ -74,8 +74,8 @@ export async function addNoteToAntenna(
 				);
 
 				for (const webhook of webhooks) {
-					webhookDeliver(webhook, antenna.name + "アンテナ新着 " + (note.user.name || note.user.username) + " から", {
-						note: await Notes.pack(note, note.user),
+					webhookDeliver(webhook, antenna.name + "アンテナ新着 " + (note.user?.name || note.user?.username) + " から", {
+						note: await Notes.pack(note),
 					});
 				}
 			}

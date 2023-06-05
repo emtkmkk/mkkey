@@ -53,9 +53,8 @@
 										><MkAcct :user="user" :detail="true"
 									/></span>
 									<span
-									    v-if="(user.createdAt < new Date('2023-04-05T0:00:00')) && user.host == null"
+									    v-if="mkbBadge"
 										:title="i18n.ts.mkhb"
-										style="color: var(--badge)"
 										><MkEmoji
 											class="emoji"
 											emoji=":mkbms:"
@@ -119,7 +118,7 @@
 									><MkAcct :user="user" :detail="true"
 								/></span>
 								<span
-								    v-if="(user.createdAt < new Date('2023-04-05T0:00:00')) && user.host == null"
+								    v-if="mkbBadge"
 									:title="i18n.ts.mkhb"
 									><MkEmoji
 										class="emoji"
@@ -405,7 +404,8 @@ let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
-const pinFull = ref(false);
+const pinFull = $ref(false);
+const mkbBadge = $ref((user.createdAt < new Date('2023-04-05T00:00:00Z')) && user.host == null);
 const visiblePinnedNotes = $computed(() => {
 	return pinFull.value ? props.user.pinnedNotes : props.user.pinnedNotes.slice(0, 2);
 });

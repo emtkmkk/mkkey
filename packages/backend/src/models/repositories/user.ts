@@ -578,6 +578,10 @@ export const UserRepository = db.getRepository(User).extend({
 						localShowRenote: user.localShowRenote ?? truthy,
 						remoteShowRenote: user.remoteShowRenote || falsy,
 						showSelfRenoteToHome: user.showSelfRenoteToHome ?? truthy,
+						blockPostPublic: user.blockPostPublic || falsy,
+						blockPostHome: user.blockPostHome || falsy,
+						blockPostNotLocal: user.blockPostNotLocal || falsy,
+						isSilentLocked: user.isSilentLocked || falsy,
 				  }
 				: {}),
 

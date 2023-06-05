@@ -115,6 +115,10 @@ export const paramDef = {
 		alwaysMarkNsfw: { type: "boolean" },
 		autoSensitive: { type: "boolean" },
 		ffVisibility: { type: "string", enum: ["public", "followers", "private"] },
+		blockPostPublic: { type: "boolean" },
+		blockPostHome: { type: "boolean" },
+		blockPostNotLocal: { type: "boolean" },
+		isSilentLocked: { type: "boolean" },
 		pinnedPageId: { type: "string", format: "misskey:id", nullable: true },
 		mutedWords: { type: "array" },
 		mutedInstances: {
@@ -212,6 +216,14 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		profileUpdates.alwaysMarkNsfw = ps.alwaysMarkNsfw;
 	if (typeof ps.autoSensitive === "boolean")
 		profileUpdates.autoSensitive = ps.autoSensitive;
+	if (typeof ps.blockPostPublic === "boolean")
+		updates.blockPostPublic = ps.blockPostPublic;
+	if (typeof ps.blockPostHome === "boolean")
+		updates.blockPostHome = ps.blockPostHome;
+	if (typeof ps.blockPostNotLocal === "boolean")
+		updates.blockPostNotLocal = ps.blockPostNotLocal;
+	if (typeof ps.isSilentLocked === "boolean")
+		updates.isSilentLocked = ps.isSilentLocked;
 	if (ps.emailNotificationTypes !== undefined)
 		profileUpdates.emailNotificationTypes = ps.emailNotificationTypes;
 

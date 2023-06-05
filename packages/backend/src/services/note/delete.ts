@@ -113,6 +113,9 @@ export default async function (
 				instanceChart.updateNote(i.host, note, false);
 			});
 		}
+		
+		// ノート数を減らす
+		decNotesCountOfUser(user);
 	}
 
 	await Notes.delete({
@@ -182,4 +185,15 @@ async function deliverToConcerned(
 	for (const remoteUser of remoteUsers) {
 		deliverToUser(user, content, remoteUser);
 	}
+}
+
+function decNotesCountOfUser(user: { id: User["id"] }) {
+	Users.createQueryBuilder()
+		.update()
+		.set({
+			updatedAt: new Date(),
+			notesCount: () => '"notesCount" - 1',
+		})
+		.where("id = :id", { id: user.id })
+		.execute();
 }

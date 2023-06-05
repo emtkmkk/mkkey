@@ -39,6 +39,9 @@
 			>
 			<FormSwitch v-model="event_mention" class="_formBlock"
 				>メンション受取時</FormSwitch
+			>				
+			<FormSwitch v-model="event_antenna" class="_formBlock"
+				>アンテナ新着時</FormSwitch
 			>
 		</FormSection>
 
@@ -88,6 +91,7 @@ let event_reply = $ref(webhook.on.includes("reply"));
 let event_renote = $ref(webhook.on.includes("renote"));
 let event_reaction = $ref(webhook.on.includes("reaction"));
 let event_mention = $ref(webhook.on.includes("mention"));
+let event_antenna = $ref(webhook.on.includes("antenna"));
 
 async function save(): Promise<void> {
 	const events = [];
@@ -98,6 +102,7 @@ async function save(): Promise<void> {
 	if (event_renote) events.push("renote");
 	if (event_reaction) events.push("reaction");
 	if (event_mention) events.push("mention");
+	if (event_antenna) events.push("antenna");
 
 	if (discord_type) secret = "Discord";
 

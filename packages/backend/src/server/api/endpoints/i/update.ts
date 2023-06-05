@@ -317,13 +317,13 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	publishUserEvent(
 		user.id,
 		"updateUserProfile",
-		{ id: user.id },
+		await UserProfiles.findOneBy({ userId: user.id }),
 	);
 	
 	// Publish meUpdated event
 	publishInternalEvent(
 		"localUserUpdated",
-		await UserProfiles.findOneBy({ userId: user.id }),
+		{ id: user.id },
 	);
 
 	// 鍵垢を解除したとき、溜まっていたフォローリクエストがあるならすべて承認

@@ -1,6 +1,6 @@
 import RE2 from "re2";
 import * as mfm from "mfm-js";
-import { publishMainStream, publishUserEvent } from "@/services/stream.js";
+import { publishMainStream, publishUserEvent, publishInternalEvent } from "@/services/stream.js";
 import acceptAllFollowRequests from "@/services/following/requests/accept-all.js";
 import { publishToFollowers } from "@/services/i/update.js";
 import { extractCustomEmojisFromMfm } from "@/misc/extract-custom-emojis-from-mfm.js";
@@ -319,11 +319,20 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		"updateUserProfile",
 		await UserProfiles.findOneBy({ userId: user.id }),
 	);
+	
+	// Publish meUpdated event
+	publishInternalEvent(
+		"localUserUpdated",
+		await UserProfiles.findOneBy({ userId: user.id }),
+	);
 
 	// 鍵垢を解除したとき、溜まっていたフォローリクエストがあるならすべて承認
+	// しないで欲しいので回避
+	/*
 	if (user.isLocked && ps.isLocked === false) {
 		acceptAllFollowRequests(user);
 	}
+	*/
 
 	// フォロワーにUpdateを配信
 	publishToFollowers(user.id);

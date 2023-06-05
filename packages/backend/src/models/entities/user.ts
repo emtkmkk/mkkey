@@ -274,7 +274,7 @@ export class User {
 	public blockPostNotLocal: boolean;
 	
 	@Column('boolean', {
-		default: true,
+		default: false,
 		comment: 'The key will no longer be displayed.',
 	})
 	public isSilentLocked: boolean;

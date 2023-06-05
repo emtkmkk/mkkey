@@ -527,6 +527,10 @@ export const UserRepository = db.getRepository(User).extend({
 							: null,
 						publicReactions: profile!.publicReactions,
 						ffVisibility: profile!.ffVisibility,
+						blockPostPublic: user.blockPostPublic || falsy,
+						blockPostHome: user.blockPostHome || falsy,
+						blockPostNotLocal: user.blockPostNotLocal || falsy,
+						isSilentLocked: user.isSilentLocked || falsy,
 						twoFactorEnabled: profile!.twoFactorEnabled,
 						usePasswordLessLogin: profile!.usePasswordLessLogin,
 						securityKeys: profile!.twoFactorEnabled
@@ -578,10 +582,6 @@ export const UserRepository = db.getRepository(User).extend({
 						localShowRenote: user.localShowRenote ?? truthy,
 						remoteShowRenote: user.remoteShowRenote || falsy,
 						showSelfRenoteToHome: user.showSelfRenoteToHome ?? truthy,
-						blockPostPublic: user.blockPostPublic || falsy,
-						blockPostHome: user.blockPostHome || falsy,
-						blockPostNotLocal: user.blockPostNotLocal || falsy,
-						isSilentLocked: user.isSilentLocked || falsy,
 				  }
 				: {}),
 

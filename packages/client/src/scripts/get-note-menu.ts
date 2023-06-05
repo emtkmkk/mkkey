@@ -381,19 +381,23 @@ export function getNoteMenu(props: {
 							action: () => toggleThreadMute(true),
 					  },
 			),
-			appearNote.userId === $i.id
+			...(appearNote.userId === $i.id
 				? ($i.pinnedNoteIds || []).includes(appearNote.id)
-					? {
+					? [{
+							icon: "ph-caret-double-up ph-bold ph-lg",
+							text: i18n.ts.upperPin,
+							action: () => togglePin(true),
+					  },{
 							icon: "ph-push-pin ph-bold ph-lg",
 							text: i18n.ts.unpin,
 							action: () => togglePin(false),
-					  }
-					: {
+					  }]
+					: [{
 							icon: "ph-push-pin ph-bold ph-lg",
 							text: i18n.ts.pin,
 							action: () => togglePin(true),
-					  }
-				: undefined,
+					  }]
+				: []),
 			/*
 		...($i.isModerator || $i.isAdmin ? [
 			null,

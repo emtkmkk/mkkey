@@ -2,7 +2,7 @@ export class PreventAiLearning1683682889948 {
     name = 'PreventAiLearning1683682889948'
 
     async up(queryRunner) {
-        await queryRunner.query(`ALTER TABLE "user_profile" ADD "preventAiLearning" boolean NOT NULL DEFAULT true`);
+        await queryRunner.query(`ALTER TABLE "user_profile" ADD "preventAiLearning" boolean NOT NULL DEFAULT false`);
     }
 
     async down(queryRunner) {

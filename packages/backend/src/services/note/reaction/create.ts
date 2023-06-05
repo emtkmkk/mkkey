@@ -133,7 +133,7 @@ export default async (
 			);
 
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, ":" + decodedReaction.name + ": " + (user.name || user.username) + " から", {
+				webhookDeliver(webhook, (decodedReaction ? ":" + decodedReaction.name + ":" : reaction) + " " + (user.name || user.username) + " から", {
 					note: await Notes.pack(note, user),
 				});
 			}

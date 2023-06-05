@@ -92,7 +92,7 @@
 			<MkSwitch v-model="withFile" class="_formBlock">{{
 				i18n.ts.withFileAntenna
 			}}</MkSwitch>
-			<-- <MkSwitch v-model="followersOnly" class="_formBlock">{{
+			<!-- <MkSwitch v-model="followersOnly" class="_formBlock">{{
 				i18n.ts.followersOnly
 			}}</MkSwitch> -->
 			<MkSwitch v-model="notify" class="_formBlock">{{

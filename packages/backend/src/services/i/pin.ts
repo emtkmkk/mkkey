@@ -43,11 +43,12 @@ export async function addPinned(
 	}
 
 	if (pinings.some((pining) => pining.noteId === note.id)) {
-		// すでに登録済みの場合、上に持ってくるために登録日を更新
+		// すでに登録済みの場合、上に持ってくるためにID・登録日を更新
 		await UserNotePinings.update({
 			userId: user.id,
 			noteId: note.id,
 		},{
+			id: genId(),
 			createdAt: new Date(),
 		} as UserNotePining);
 	} else {

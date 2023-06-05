@@ -249,6 +249,7 @@ export default async function (
 	// 上記のいずれかに当てはまる場合はすぐフォローせずにフォローリクエストを発行しておく
 	if (
 		followee.isLocked ||
+		followee.isSilentLocked ||
 		follower.isSilenced ||
 		(followeeProfile.carefulBot && follower.isBot) ||
 		(Users.isLocalUser(follower) && Users.isRemoteUser(followee)) ||

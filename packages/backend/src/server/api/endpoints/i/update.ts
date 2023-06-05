@@ -317,7 +317,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	publishUserEvent(
 		user.id,
 		"updateUserProfile",
-		await UserProfiles.findOneBy({ userId: user.id }),
+		{ id: user.id },
 	);
 	
 	// Publish meUpdated event

@@ -55,6 +55,10 @@ export default defineComponent({
 
         const firstAst = ast;
 
+        const emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","center","mention","hashtag","link","url"].includes(x.type)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type)) : null;
+
+		const isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji","center"].includes(x.type))
+		
 		const validTime = (t: string | null | undefined) => {
 			if (t == null) return null;
 			return t.match(/^[0-9.]+s$/) ? t : null;
@@ -389,7 +393,7 @@ export default defineComponent({
 						}
 
 						case "emojiCode": {
-							if (!isPlain && firstAst.length <= 3 && firstAst.every((x) => x.type === "emojiCode")){
+							if (!isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
 								return h(
 									"span",
 									{
@@ -404,7 +408,7 @@ export default defineComponent({
 										}),
 									],
 								);
-							} else if (!isPlain && firstAst.length <= 6 && firstAst.every((x) => x.type === "emojiCode")){
+							} else if (!isPlain && emojiAst != null && emojiAst.length <= 6){
 								return h(
 									"span",
 									{
@@ -432,14 +436,46 @@ export default defineComponent({
 						}
 
 						case "unicodeEmoji": {
-							return [
-								h(MkEmoji, {
-									key: Math.random(),
-									emoji: token.props.emoji,
-									customEmojis: this.customEmojis,
-									normal: this.plain,
-								}),
-							];
+							if (!isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
+								return h(
+									"span",
+									{
+										class: "mfm-x3",
+									},
+									[
+										h(MkEmoji, {
+											key: Math.random(),
+											emoji: token.props.emoji,
+											customEmojis: this.customEmojis,
+											normal: this.plain,
+										}),
+									],
+								);
+							} else if (!isPlain && emojiAst != null && emojiAst.length <= 6){
+								return h(
+									"span",
+									{
+										class: "mfm-x2",
+									},
+									[
+										h(MkEmoji, {
+											key: Math.random(),
+											emoji: token.props.emoji,
+											customEmojis: this.customEmojis,
+											normal: this.plain,
+										}),
+									],
+								);
+							} else {
+								return [
+									h(MkEmoji, {
+										key: Math.random(),
+										emoji: token.props.emoji,
+										customEmojis: this.customEmojis,
+										normal: this.plain,
+									}),
+								];
+							}
 						}
 
 						case "mathInline": {

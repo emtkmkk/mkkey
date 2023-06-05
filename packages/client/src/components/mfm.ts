@@ -55,9 +55,9 @@ export default defineComponent({
 
         let firstAst = ast;
 
-        let emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type)) : null;
+        let emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type) || x.props?.text?.test(/^\s*$/)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type)) : null;
 
-		let isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji"].includes(x.type));
+		let isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji"].includes(x.type) || x.props?.text?.test(/^\s*$/));
 		
 		const validTime = (t: string | null | undefined) => {
 			if (t == null) return null;

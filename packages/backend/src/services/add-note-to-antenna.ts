@@ -5,6 +5,8 @@ import { genId } from "@/misc/gen-id.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
 import { publishAntennaStream, publishMainStream } from "@/services/stream.js";
 import { createNotification } from "@/services/create-notification.js";
+import { webhookDeliver } from "@/queue/index.js";
+import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import type { User } from "@/models/entities/user.js";
 
 export async function addNoteToAntenna(
@@ -66,6 +68,16 @@ export async function addNoteToAntenna(
 					noteId: __note.id,
 					reaction: antenna.name,
 				});
+				
+				const webhooks = await getActiveWebhooks().then((webhooks) =>
+				webhooks.filter((x) => x.userId === note.userId && x.on.includes("antenna")),
+				);
+
+				for (const webhook of webhooks) {
+					webhookDeliver(webhook, antenna.name + "アンテナ新着 " + (note.user.name || note.user.username) + " から", {
+						note: await Notes.pack(note, note.user),
+					});
+				}
 			}
 			
 		}, 3000);

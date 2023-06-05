@@ -55,7 +55,7 @@ export default defineComponent({
 
         let firstAst = ast;
 
-        let emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type) || (x.props?.text ? /^\s*$/.test(x.props?.text) : false)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type)) : null;
+        let emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type) || (x.props?.text ? /^\s*$/.test(x.props?.text) : false)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type) && !(x.props?.text ? /^\s*$/.test(x.props?.text) : false)) : null;
 
 		let isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji"].includes(x.type) || (x.props?.text ? /^\s*$/.test(x.props?.text) : false));
 		

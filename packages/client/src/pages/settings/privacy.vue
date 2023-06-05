@@ -12,7 +12,6 @@
 		>
 		<FormSwitch
 			v-model="isSilentLocked"
-			v-if="!isLocked"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.makeFollowManuallyApproveSilent

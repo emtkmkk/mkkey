@@ -92,6 +92,9 @@
 			<MkSwitch v-model="withFile" class="_formBlock">{{
 				i18n.ts.withFileAntenna
 			}}</MkSwitch>
+			<MkSwitch v-model="followersOnly" class="_formBlock">{{
+				i18n.ts.followersOnly
+			}}</MkSwitch>
 			<MkSwitch v-model="notify" class="_formBlock">{{
 				i18n.ts.notifyAntenna
 			}}</MkSwitch>
@@ -149,6 +152,7 @@ let excludeKeywords: string = $ref(
 let caseSensitive: boolean = $ref(props.antenna.caseSensitive);
 let withReplies: boolean = $ref(props.antenna.withReplies);
 let withFile: boolean = $ref(props.antenna.withFile);
+let followersOnly: boolean = $ref(props.antenna.followersOnly);
 let notify: boolean = $ref(props.antenna.notify);
 let userLists: any = $ref(null);
 let userGroups: any = $ref(null);
@@ -179,6 +183,7 @@ async function saveAntenna() {
 		withFile,
 		notify,
 		caseSensitive,
+		followersOnly,
 		users: users
 			.trim()
 			.split("\n")

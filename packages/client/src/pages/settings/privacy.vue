@@ -27,33 +27,45 @@
 			>{{ i18n.ts.autoAcceptFollowed }}</FormSwitch
 		>
 		
-		<FormSwitch
-			v-model="blockPostPublic"
-			class="_formBlock"
-			@update:modelValue="save()"
-			>{{ i18n.ts.blockPostPublic
-			}}<template #caption>{{
-				i18n.ts.blockPostPublicDescription
-			}}</template></FormSwitch
-		>		
-		<FormSwitch
-			v-model="blockPostHome"
-			class="_formBlock"
-			@update:modelValue="save()"
-			>{{ i18n.ts.blockPostHome
-			}}<template #caption>{{
-				i18n.ts.blockPostHomeDescription
-			}}</template></FormSwitch
-		>		
-		<FormSwitch
-			v-model="blockPostNotLocal"
-			class="_formBlock"
-			@update:modelValue="save()"
-			>{{ i18n.ts.blockPostNotLocal
-			}}<template #caption>{{
-				i18n.ts.blockPostNotLocalDescription
-			}}</template></FormSwitch
-		>
+		<FormSection>
+			<FormSwitch
+				v-model="blockPostPublic"
+				class="_formBlock"
+				@update:modelValue="save()"
+				>{{ i18n.ts.blockPostPublic
+				}}<template #caption>{{
+					i18n.ts.blockPostPublicDescription
+				}}</template></FormSwitch
+			>		
+			<FormSwitch
+				v-model="blockPostHome"
+				class="_formBlock"
+				@update:modelValue="save()"
+				>{{ i18n.ts.blockPostHome
+				}}<template #caption>{{
+					i18n.ts.blockPostHomeDescription
+				}}</template></FormSwitch
+			>		
+			<FormSwitch
+				v-model="blockPostNotLocal"
+				class="_formBlock"
+				@update:modelValue="save()"
+				>{{ i18n.ts.blockPostNotLocal
+				}}<template #caption>{{
+					i18n.ts.blockPostNotLocalDescription
+				}}</template></FormSwitch
+			>		
+			<FormSwitch
+				v-model="blockPostNotLocalPublic"
+				v-if="blockPostNotLocal"
+				class="_formBlock"
+				@update:modelValue="save()"
+				>{{ i18n.ts.blockPostNotLocalPublic
+				}}<template #caption>{{
+					i18n.ts.blockPostNotLocalPublicDescription
+				}}</template></FormSwitch
+			>
+		</FormSection>
 
 		<FormSwitch
 			v-model="publicReactions"
@@ -522,6 +534,7 @@ function save() {
 		blockPostPublic: !!blockPostPublic,
 		blockPostHome: !!blockPostHome,
 		blockPostNotLocal: !!blockPostNotLocal,
+		blockPostNotLocalPublic: !!blockPostNotLocalPublic,
 		noCrawle: !!noCrawle,
 		isExplorable: !!isExplorable,
 		publicReactions: !!publicReactions,

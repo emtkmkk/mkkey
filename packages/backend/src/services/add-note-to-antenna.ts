@@ -1,6 +1,6 @@
 import type { Antenna } from "@/models/entities/antenna.js";
 import type { Note } from "@/models/entities/note.js";
-import { AntennaNotes, Mutings, Notes } from "@/models/index.js";
+import { AntennaNotes, Mutings, Notes, Users } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
 import { publishAntennaStream, publishMainStream } from "@/services/stream.js";
@@ -49,6 +49,10 @@ export async function addNoteToAntenna(
 		if (isUserRelated(_note, new Set<string>(mutings.map((x) => x.muteeId)))) {
 			return;
 		}
+		
+		if (noteUser.id != null) {
+			_note.user = await Users.findOneByOrFail({ id: noteUser.id });
+		}
 
 		// 3秒経っても既読にならなかったら通知
 		setTimeout(async () => {
@@ -74,8 +78,8 @@ export async function addNoteToAntenna(
 				);
 
 				for (const webhook of webhooks) {
-					webhookDeliver(webhook, antenna.name + "アンテナ新着 " + (note.user?.name || note.user?.username) + " から", {
-						note: await Notes.pack(note),
+					webhookDeliver(webhook, antenna.name + "アンテナ新着 " + (_note.user?.name || _note.user?.username) + " から", {
+						note: await Notes.pack(__note),
 					});
 				}
 			}

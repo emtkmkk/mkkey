@@ -939,7 +939,7 @@ function setVisibility() {
 			canPublic,
 			canHome,
 			canFollower,
-			canNotLocal: canNotLocal && !$i.blockPostNotLocalPublic,
+			canNotLocal,
 		},
 		{
 			changeVisibility: (v) => {

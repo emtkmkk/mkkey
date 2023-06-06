@@ -108,7 +108,7 @@
 					}}</span>
 				</div>
 			</button>
-			<div v-if="canVisibilitySwitch && canNotLocal" :class="$style.divider"></div>
+			<div v-if="canVisibilitySwitch && (canPublic || canHome) && (canNotLocal || $i.blockPostNotLocalPublic)" :class="$style.divider"></div>
 			<button
 			    v-if="canLocalSwitch && canNotLocal"
 				key="localOnly"
@@ -143,7 +143,7 @@
 				</div>
 			</button>
 			<button
-			    v-if="!canLocalSwitch && !forceMode && (canNotLocal || $i.blockPostNotLocalPublic)"
+			    v-if="!canLocalSwitch && !forceMode && (canPublic || canHome) && (canNotLocal || $i.blockPostNotLocalPublic)"
 				key="localOnly"
 				class="_button"
 				:class="[

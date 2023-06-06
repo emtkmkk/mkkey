@@ -90,7 +90,6 @@
 			<button
 				key="specified"
 				v-if="canVisibilitySwitch || forceMode"
-				:disabled="localOnly"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'specified' }]"
 				data-index="4"
@@ -112,6 +111,7 @@
 			<button
 			    v-if="canLocalSwitch && canNotLocal"
 				key="localOnly"
+				:disabled="v === 'specified'"
 				class="_button"
 				:class="[
 					$style.item,

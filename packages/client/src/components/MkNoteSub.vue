@@ -8,10 +8,10 @@
 			children: depth > 1,
 			singleStart: replies.length == 1,
 			firstColumn: depth == 1 && conversation,
-		} , `v-${appearNote.visibility}` , { localOnly : appearNote.localOnly } ]"
+		}]"
 	>
 		<div v-if="conversation && depth > 1" class="line"></div>
-		<div class="main" @click="noteClick">
+		<div class="main" @click="noteClick" :class="[`v-${appearNote.visibility}` , { localOnly : appearNote.localOnly } ]>
 			<div class="avatar-container">
 				<MkAvatar class="avatar" :user="appearNote.user" />
 				<div

@@ -275,6 +275,12 @@ export class User {
 	
 	@Column('boolean', {
 		default: false,
+		comment: 'Change not localonly post to localonly post.',
+	})
+	public blockPostNotLocalPublic: boolean;
+	
+	@Column('boolean', {
+		default: false,
 		comment: 'The key will no longer be displayed.',
 	})
 	public isSilentLocked: boolean;

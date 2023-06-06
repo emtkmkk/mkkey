@@ -29,7 +29,7 @@
 			</button>
 			<button
 				key="public"
-				v-if="canVisibilitySwitch && canPublic"
+				v-if="canVisibilitySwitch && canPublic && (!$i.blockPostNotLocalPublic || localOnly)"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'public' }]"
 				data-index="1"
@@ -143,7 +143,7 @@
 				</div>
 			</button>
 			<button
-			    v-if="!canLocalSwitch && !forceMode && canNotLocal"
+			    v-if="!canLocalSwitch && !forceMode && (canNotLocal || $i.blockPostNotLocalPublic)"
 				key="localOnly"
 				class="_button"
 				:class="[
@@ -184,6 +184,7 @@ import { nextTick, watch } from "vue";
 import * as misskey from "calckey-js";
 import MkModal from "@/components/MkModal.vue";
 import { i18n } from "@/i18n";
+import { $i } from "@/account";
 
 const modal = $shallowRef<InstanceType<typeof MkModal>>();
 

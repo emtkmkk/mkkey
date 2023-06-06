@@ -116,7 +116,7 @@ function checkMuteKeyword(
 			const isReply = (note.replyId);
 			return reverse ? !isReply : !!isReply;
 		}
-		if (filterKeyword.includes("renote")) {
+		if (filterKeyword.includes("renote") || filterKeyword.includes("rt")) {
 			const isRenote = (note.renoteId && !note.text);
 			return reverse ? !isRenote : !!isRenote;
 		}

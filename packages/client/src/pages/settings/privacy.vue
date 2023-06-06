@@ -458,6 +458,7 @@ let isSilentLocked = $ref($i.isSilentLocked);
 let blockPostPublic = $ref($i.blockPostPublic);
 let blockPostHome = $ref($i.blockPostHome);
 let blockPostNotLocal = $ref($i.blockPostNotLocal);
+let blockPostNotLocalPublic = $ref($i.blockPostNotLocalPublic);
 let autoAcceptFollowed = $ref($i.autoAcceptFollowed);
 let noCrawle = $ref($i.noCrawle);
 let isExplorable = $ref($i.isExplorable);

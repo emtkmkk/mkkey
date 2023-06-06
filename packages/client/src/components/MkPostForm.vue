@@ -801,7 +801,7 @@ if (props.specified) {
 
 if (!canPublic && visibility === "public") visibility = "home";
 if (!canHome && visibility === "home") visibility = "followers";
-if (!canFollowers && visibility === "followers") visibility = "specified";
+if (!canFollower && visibility === "followers") visibility = "specified";
 if (!canNotLocal && localOnly === false) localOnly = true;
 
 // keep post cw

@@ -799,6 +799,11 @@ if (props.specified) {
 	pushVisibleUser(props.specified);
 }
 
+if (!canPublic && visibility === "public") visibility = "home";
+if (!canHome && visibility === "home") visibility = "followers";
+if (!canfollowers && visibility === "followers") visibility = "specified";
+if (!canNotLocal && localOnly === false) localOnly = true;
+
 // keep post cw
 if (defaultStore.state.keepPostCw && cw) {
 	useCw = true;
@@ -934,7 +939,7 @@ function setVisibility() {
 			canPublic,
 			canHome,
 			canFollower,
-			canNotLocal,
+			canNotLocal: canNotLocal && !$i.blockPostNotLocalPublic,
 		},
 		{
 			changeVisibility: (v) => {

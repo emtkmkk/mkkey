@@ -802,7 +802,7 @@ if (props.specified) {
 if (!canPublic && visibility === "public") visibility = "home";
 if (!canHome && visibility === "home") visibility = "followers";
 if (!canFollower && visibility === "followers") visibility = "specified";
-if (!canNotLocal && localOnly === false) localOnly = true;
+if (!canNotLocal && visibility !== "followers" && visibility !== "specified" && localOnly === false) localOnly = true;
 
 // keep post cw
 if (defaultStore.state.keepPostCw && cw) {
@@ -944,6 +944,7 @@ function setVisibility() {
 		{
 			changeVisibility: (v) => {
 				visibility = v;
+				if (v === "specified") localOnly = false;
 				if (defaultStore.state.rememberNoteVisibility) {
 					defaultStore.set("visibility", visibility);
 				}

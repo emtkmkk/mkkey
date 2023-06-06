@@ -118,6 +118,7 @@ export const paramDef = {
 		blockPostPublic: { type: "boolean" },
 		blockPostHome: { type: "boolean" },
 		blockPostNotLocal: { type: "boolean" },
+		blockPostNotLocalPublic: { type: "boolean" },
 		isSilentLocked: { type: "boolean" },
 		pinnedPageId: { type: "string", format: "misskey:id", nullable: true },
 		mutedWords: { type: "array" },
@@ -222,6 +223,8 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		updates.blockPostHome = ps.blockPostHome;
 	if (typeof ps.blockPostNotLocal === "boolean")
 		updates.blockPostNotLocal = ps.blockPostNotLocal;
+	if (typeof ps.blockPostNotLocalPublic === "boolean")
+		updates.blockPostNotLocalPublic = ps.blockPostNotLocalPublic;
 	if (typeof ps.isSilentLocked === "boolean"){
 		updates.isSilentLocked = ps.isSilentLocked;
 		updates.isLocked = false;

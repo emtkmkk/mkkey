@@ -7,7 +7,7 @@
 		v-size="{ max: [500, 450, 350, 300] }"
 		class="tkcbzcuz"
 		:tabindex="!isDeleted ? '-1' : null"
-		:class="[{ renote: isRenote } , `v-${appearNote.visibility}` , { localOnly : appearNote.localOnly } ]"
+		:class="[{ renote: isRenote }]"
 	>
 		<MkNoteSub
 			v-if="appearNote.reply && !detailedView"
@@ -28,11 +28,11 @@
 				<i class="ph-lightning ph-bold ph-lg"></i>
 				{{ i18n.ts.featured }}
 			</div>
-			<div v-if="pinned" class="info">
+			<div v-if="pinned" class="info" :class="[`v-${appearNote.visibility}` , { localOnly : appearNote.localOnly }]" >
 				<i class="ph-push-pin ph-bold ph-lg"></i
 				>{{ i18n.ts.pinnedNote }}
 			</div>
-			<div v-if="isRenote" class="renote">
+			<div v-if="isRenote" class="renote" :class="[`v-${note.visibility}` , { localOnly : note.localOnly }]">
 				<i v-if="!pinned" class="ph-repeat ph-bold ph-lg"></i>
 				<I18n v-if="!pinned" :src="i18n.ts.renotedBy" tag="span">
 					<template #user>
@@ -68,7 +68,7 @@
 			@contextmenu.stop="onContextmenu"
 			@click="noteClick"
 		>
-			<div class="main">
+			<div class="main" :class="[`v-${appearNote.visibility}` , { localOnly : appearNote.localOnly }]" >
 				<div class="header-container">
 					<MkAvatar class="avatar" :user="appearNote.user" />
 					<XNoteHeader

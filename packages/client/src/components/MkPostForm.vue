@@ -566,9 +566,12 @@ const publicIcon = $computed((): String => {
 		if (canPublic) {
 			return 'ph-hand-heart ph-bold ph-lg'
 		} else {
-			return 'ph-house-line ph-bold ph-lg'
+			if (!$i.blockPostNotLocalPublic) {
+				return 'ph-house-line ph-bold ph-lg'
+			}
 		}
-	} else if (canPublic) {
+	} 
+	if (canPublic) {
 		return 'ph-planet ph-bold ph-lg'
 	} else if (canHome) {
 		return 'ph-house ph-bold ph-lg'
@@ -580,7 +583,7 @@ const publicIcon = $computed((): String => {
 });
 
 const homeIcon = $computed((): String => {
-	if (!canNotLocal && canHome) {
+	if (!canNotLocal && canHome && !$i.blockPostNotLocalPublic) {
 		return 'ph-house-line ph-bold ph-lg'
 	} else if (canHome) {
 		return 'ph-house ph-bold ph-lg'

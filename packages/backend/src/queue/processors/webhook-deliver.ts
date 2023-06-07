@@ -49,7 +49,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			},
 			title: "投稿" + (body.note.visibility === "home" ? " : ホーム" : body.note.visibility === "followers" ? " : フォロワー限定" : body.note.visibility === "specified" ? " : ダイレクト" : ""),
 			url: "https://mkkey.net/notes/" + body.note.id,
-			description: getNoteSummary(body.note).length > 50 ? getNoteSummary(body.note).slice(0,50) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 55 ? " (CW)" : "") : getNoteSummary(body.note),
+			description: getNoteSummary(body.note).length > 50 ? getNoteSummary(body.note).slice(0,50) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 52 ? " (CW)" : "") : getNoteSummary(body.note),
 			timestamp: new Date(body.note.createdAt),
 			thumbnail: {
 				url: body.note.user?.avatarUrl,

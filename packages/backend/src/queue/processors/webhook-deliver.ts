@@ -49,11 +49,9 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			title: "投稿" + (body.note.visibility === "home" ? " : ホーム" : body.note.visibility === "followers" ? " : フォロワー限定" : body.note.visibility === "specified" ? " : ダイレクト" : ""),
 			url: "https://mkkey.net/notes/" + body.note.id,
 			description: (body.note.text ?? "") + (body.note.text && body.note.cw ? " " : "") + (body.note.cw ? "(CW)": ""),
+			timestamp: new Date(body.note.createdAt),
 			thumbnail: {
 				url: body.note.user?.avatarUrl,
-			},
-			footer: {
-				text: body.note.createdAt,
 			},
 			color: 16757683,
 		}) : undefined,

@@ -52,11 +52,11 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			description: getNoteSummary(body.note).length > 50 ? getNoteSummary(body.note).slice(0,50) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 52 ? " (CW)" : "") : getNoteSummary(body.note),
 			timestamp: new Date(body.note.createdAt),
 			thumbnail: {
-				url: body.note.user?.avatarUrl,
+				url: body.emoji ? body.emoji.publicUrl : body.note.user?.avatarUrl,
 			},
 			color: 16757683,
 		}) : undefined,
-		(body.user ? ({
+		body.user ? ({
 			title: "ユーザ",
 			url: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
 			description: body.user.name ? (body.user.name + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : "")),
@@ -64,7 +64,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 				url: body.user.avatarUrl,
 			},
 			color: 16757683,
-		}) : undefined),
+		}) : undefined,
 	].filter((x: DiscordEmbeds | undefined) => x !== undefined)
 }
 

@@ -8,6 +8,37 @@ import config from "@/config/index.js";
 
 const logger = new Logger("webhook");
 
+function toEmbeds(body: any) {
+	return [
+	body.note ? {
+   		author: {
+			name: body.note.user?.name || body.note.user?.username,
+			url: "https://mkkey.net/@" + body.note.user?.username + (body.note.user?.host ? "@" + body.note.user?.host : ""),
+			icon_url: body.note.user?.avatarUrl
+		},
+		title: "投稿" + (body.note.visibility === "home" ? " : ホーム" : body.note.visibility === "followers" ? " : フォロワー限定" : body.note.visibility === "specified" ? " : ダイレクト" : ""),
+    	url: "https://mkkey.net/notes/" + body.note.id,
+		description: (body.note.text ?? "") + (body.note.text && body.note.cw ? " " : "") + (body.note.cw ? "(CW)": ""),
+		thumbnail: {
+			url: body.note.user?.avatarUrl
+		},
+		footer: {
+			text: body.note.createdAt
+		},
+		color: 16757683,
+	} : undefined,
+	body.user ? {
+		title: "ユーザ",
+    	url: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
+		description: body.user.name ? (body.user.name + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : "")),
+		thumbnail: {
+			url: body.user.avatarUrl
+		},
+		color: 16757683,
+	} : undefined
+	].map((x) => x != undefined)
+}
+
 export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 	try {
 		logger.debug(`delivering ${job.data.webhookId}`);
@@ -24,6 +55,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 				},
 				body: JSON.stringify({
 					content: job.data.type,
+					embeds: toEmbeds(job.data.content),
 				}),
 			});
 		} else {

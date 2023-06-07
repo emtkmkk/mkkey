@@ -8,41 +8,72 @@ import config from "@/config/index.js";
 
 const logger = new Logger("webhook");
 
-function toEmbeds(body: any): Array<any> {
+interface DiscordEmbeds {
+	title?: String;
+	type?: String;
+	description?: String;
+	url?: String;
+	timestamp?: any;
+	color?: number;
+	footer?: {
+		text: string;
+		icon_url?: string;
+		proxy_icon_url?: string;
+	};
+	image?: any;
+	thumbnail?: {
+		url: string;
+		proxy_url?: string;
+		height?: number;
+		width?: number;
+	};
+	video?: any;
+	provider?: any;
+	author?: {
+		name: string;
+		url?: string;
+		icon_url?: string;
+		proxy_icon_url?: string;
+	};
+	fields?: Array<any>;
+}
+
+function toEmbeds(body: any): Array<DiscordEmbeds> {
 	return [
-	(body.note ? {
-		author: {
-			name: body.note.user?.name || body.note.user?.username,
-			url: "https://mkkey.net/@" + body.note.user?.username + (body.note.user?.host ? "@" + body.note.user?.host : ""),
-			icon_url: body.note.user?.avatarUrl,
-		},
-		title: "投稿" + (body.note.visibility === "home" ? " : ホーム" : body.note.visibility === "followers" ? " : フォロワー限定" : body.note.visibility === "specified" ? " : ダイレクト" : ""),
-		url: "https://mkkey.net/notes/" + body.note.id,
-		description: (body.note.text ?? "") + (body.note.text && body.note.cw ? " " : "") + (body.note.cw ? "(CW)": ""),
-		thumbnail: {
-			url: body.note.user?.avatarUrl,
-		},
-		footer: {
-			text: body.note.createdAt,
-		},
-		color: 16757683,
-	} : undefined),
-	(body.user ? {
-		title: "ユーザ",
-		url: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
-		description: body.user.name ? (body.user.name + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : "")),
-		thumbnail: {
-			url: body.user.avatarUrl,
-		},
-		color: 16757683,
-	} : undefined),
-	].map((x) => x != undefined)
+		body.note ? ({
+			author: {
+				name: body.note.user?.name || body.note.user?.username,
+				url: "https://mkkey.net/@" + body.note.user?.username + (body.note.user?.host ? "@" + body.note.user?.host : ""),
+				icon_url: body.note.user?.avatarUrl,
+			},
+			title: "投稿" + (body.note.visibility === "home" ? " : ホーム" : body.note.visibility === "followers" ? " : フォロワー限定" : body.note.visibility === "specified" ? " : ダイレクト" : ""),
+			url: "https://mkkey.net/notes/" + body.note.id,
+			description: (body.note.text ?? "") + (body.note.text && body.note.cw ? " " : "") + (body.note.cw ? "(CW)": ""),
+			thumbnail: {
+				url: body.note.user?.avatarUrl,
+			},
+			footer: {
+				text: body.note.createdAt,
+			},
+			color: 16757683,
+		}) : undefined,
+		(body.user ? ({
+			title: "ユーザ",
+			url: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
+			description: body.user.name ? (body.user.name + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : "")),
+			thumbnail: {
+				url: body.user.avatarUrl,
+			},
+			color: 16757683,
+		}) : undefined),
+	].filter((x: DiscordEmbeds | undefined) => x !== undefined)
 }
 
 export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 	try {
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
+		let embeds = toEmbeds(job.data.content);
 		if (job.data.secret === "Discord"){
 			res = await getResponse({
 				url: job.data.to,
@@ -53,9 +84,11 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 					"X-Calckey-Hook-Id": job.data.webhookId,
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({
+				body: embeds.length !== 0 ? JSON.stringify({
 					content: job.data.type,
-					embeds: toEmbeds(job.data.content),
+					embeds,
+				}) : JSON.stringify({
+					content: job.data.type,
 				}),
 			});
 		} else {

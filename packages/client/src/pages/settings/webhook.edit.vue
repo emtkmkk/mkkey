@@ -44,7 +44,6 @@
 				>アンテナ新着時</FormSwitch
 			>				
 			<template v-if="event_antenna && antennas.length > 0">
-				<template #label>送信するアンテナ</template>
 				<template v-for="antenna in antennas" :key="antenna.id">
 					<FormSwitch v-model="event_excludeAntennas" v-bind:value="{id: antenna.id}" class="_formBlock"
 						>{{ antenna.name }}</FormSwitch

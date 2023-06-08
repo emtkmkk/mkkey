@@ -99,7 +99,7 @@ let event_reaction = $ref(webhook.on.includes("reaction"));
 let event_mention = $ref(webhook.on.includes("mention"));
 let event_antenna = $ref(webhook.on.includes("antenna"));
 
-const antennas = await os.api("antennas/list");
+const antennas = (await os.api("antennas/list")).filter((x) => {x.notify});
 
 let event_excludeAntennas = $ref(antennas.map((x) => {!webhook.on.includes("exclude-" + x.id)}));
 

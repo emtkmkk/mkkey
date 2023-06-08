@@ -145,7 +145,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		);
 	}
 	
-	if (ps.followersOnly === true) {
+	if (ps.privateOnly === true) {
 		query.andWhere(
 			new Brackets((qb) => {
 				qb.orWhere("note.visibility = 'followers'");

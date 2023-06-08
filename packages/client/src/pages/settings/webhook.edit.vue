@@ -46,8 +46,8 @@
 			<template v-if="event_antenna && antennas.length > 0">
 				<FormSection>
 					<template #label>送信するアンテナ</template>
-					<template v-for="antenna in antennas" :key="antenna.id">
-						<FormSwitch v-model="event_excludeAntennas" v-bind:value="{id: antenna.id}" class="_formBlock"
+					<template v-for="(antenna,index) in antennas" :key="antenna.id" >
+						<FormSwitch v-model="event_excludeAntennas[index]" class="_formBlock"
 							>{{ antenna.name }}</FormSwitch
 						>
 					</template>
@@ -106,7 +106,7 @@ let event_reaction = $ref(webhook.on.includes("reaction"));
 let event_mention = $ref(webhook.on.includes("mention"));
 let event_antenna = $ref(webhook.on.includes("antenna"));
 
-let event_excludeAntennas = $ref(antennas.filter((x) => webhook.on.includes("exclude-" + x.id)).map((x) => {id: x.id}));
+let event_excludeAntennas = $ref(antennas.map((x) => {webhook.on.includes("exclude-" + x.id)}));
 
 async function save(): Promise<void> {
 	const events = [];
@@ -119,8 +119,10 @@ async function save(): Promise<void> {
 	if (event_mention) events.push("mention");
 	if (event_antenna) {
 		events.push("antenna");
-		event_excludeAntennas.forEach((x) => {
-			events.push("exclude-" + x.id);
+			event_excludeAntennas.forEach((x,index) => {
+			if (!x){
+				events.push("exclude-" + antennas[index].id);
+			}
 		});
 	}
 

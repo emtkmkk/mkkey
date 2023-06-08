@@ -93,7 +93,7 @@ let event_antenna = $ref(false);
 const antennasAll = await os.api("antennas/list");
 const antennas = antennasAll.filter((x) => x.notify);
 
-let event_excludeAntennas = antennas.map((x) => $ref(true)));
+let event_excludeAntennas = antennas.map((x) => $ref(true));
 
 async function create(): Promise<void> {
 	const events = [];

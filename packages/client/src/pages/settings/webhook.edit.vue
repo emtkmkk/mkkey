@@ -42,7 +42,13 @@
 			>				
 			<FormSwitch v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch
-			>
+			>				
+			<template v-if="event_antenna">
+				<template #label>送信するアンテナ</template>
+				<FormSwitch  v-for="(antenna, index) in antennas" v-model="event_excludeAntennas[index]" class="_formBlock"
+					>{{ antenna.name }}</FormSwitch
+				>
+			</template>
 		</FormSection>
 
 		<FormSwitch v-model="active" class="_formBlock">有効化</FormSwitch>
@@ -93,6 +99,10 @@ let event_reaction = $ref(webhook.on.includes("reaction"));
 let event_mention = $ref(webhook.on.includes("mention"));
 let event_antenna = $ref(webhook.on.includes("antenna"));
 
+const antennas = await os.api("antennas/list");
+
+let event_excludeAntennas = $ref(antennas.map((x) => {!webhook.on.includes("exclude-" + x.id)}));
+
 async function save(): Promise<void> {
 	const events = [];
 	if (event_follow) events.push("follow");
@@ -102,7 +112,14 @@ async function save(): Promise<void> {
 	if (event_renote) events.push("renote");
 	if (event_reaction) events.push("reaction");
 	if (event_mention) events.push("mention");
-	if (event_antenna) events.push("antenna");
+	if (event_antenna) {
+		events.push("antenna");
+		event_excludeAntennas.forEach((event_excludeAntenna,index) => {
+			if(!event_excludeAntenna) {
+				events.push("exclude-" + antennas[index].id);
+			}
+		});
+	}
 
 	if (discord_type) secret = "Discord";
 

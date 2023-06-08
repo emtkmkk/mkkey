@@ -40,10 +40,10 @@
 			<FormSwitch v-model="event_mention" class="_formBlock"
 				>メンション受取時</FormSwitch
 			>				
-			<FormSwitch v-model="event_antenna" class="_formBlock"
+			<FormSwitch v-if="antennas.length > 0" v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch
 			>				
-			<template v-if="event_antenna">
+			<template v-if="event_antenna && antennas.length > 0">
 				<template #label>送信するアンテナ</template>
 				<template v-for="antenna in antennas" :key="antenna.id">
 					<FormSwitch v-model="event_excludeAntennas" v-bind:value="{id: antenna.id}" class="_formBlock"

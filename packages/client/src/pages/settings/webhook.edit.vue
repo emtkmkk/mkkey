@@ -4,7 +4,7 @@
 			<template #label>Name</template>
 		</FormInput>
 
-		<FormInput v-model="url" class="_formBlock">
+		<FormInput v-model="url" type="url" class="_formBlock">
 			<template #label>URL</template>
 		</FormInput>
 
@@ -85,8 +85,8 @@ const webhook = await os.api("i/webhooks/show", {
 	webhookId: props.webhookId,
 });
 
-const antennas_all = await os.api("antennas/list");
-const antennas = antennas_all.filter((x) => x.notify )
+const antennasAll = await os.api("antennas/list");
+const antennas = antennasAll.filter((x) => x.notify);
 
 let name = $ref(webhook.name);
 let url = $ref(webhook.url);
@@ -104,7 +104,7 @@ let event_reaction = $ref(webhook.on.includes("reaction"));
 let event_mention = $ref(webhook.on.includes("mention"));
 let event_antenna = $ref(webhook.on.includes("antenna"));
 
-let event_excludeAntennas = $ref(antennas.map((x) => !webhook.on.includes("exclude-" + x.id)));
+let event_excludeAntennas = $ref<boolean[]>(antennas.map((x) => !webhook.on.includes("exclude-" + x.id)));
 
 async function save(): Promise<void> {
 	const events = [];
@@ -118,7 +118,7 @@ async function save(): Promise<void> {
 	if (event_antenna) {
 		events.push("antenna");
 		event_excludeAntennas.forEach((event_excludeAntenna,index) => {
-			if(!event_excludeAntenna) {
+			if (!event_excludeAntenna) {
 				events.push("exclude-" + antennas[index].id);
 			}
 		});

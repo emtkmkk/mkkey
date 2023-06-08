@@ -83,6 +83,9 @@ const webhook = await os.api("i/webhooks/show", {
 	webhookId: props.webhookId,
 });
 
+const antennas_all = await os.api("antennas/list");
+const antennas = antennas_all.filter((x) => x.notify )
+
 let name = $ref(webhook.name);
 let url = $ref(webhook.url);
 let secret = $ref(webhook.secret === "Discord" ? "" : webhook.secret);
@@ -99,10 +102,7 @@ let event_reaction = $ref(webhook.on.includes("reaction"));
 let event_mention = $ref(webhook.on.includes("mention"));
 let event_antenna = $ref(webhook.on.includes("antenna"));
 
-const antennas_all = await os.api("antennas/list");
-const antennas = antennas_all.filter((x) => {x.notity} )
-
-let event_excludeAntennas = $ref(antennas.map((x) => {!webhook.on.includes("exclude-" + x.id)}));
+let event_excludeAntennas = $ref(antennas.map((x) => !webhook.on.includes("exclude-" + x.id)));
 
 async function save(): Promise<void> {
 	const events = [];

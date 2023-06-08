@@ -88,7 +88,8 @@ let event_reaction = $ref(true);
 let event_mention = $ref(true);
 let event_antenna = $ref(false);
 
-const antennas = (await os.api("antennas/list")).filter((x) => {x.notify});
+const antennas_all = await os.api("antennas/list");
+const antennas = antennas_all.filter((x) => {x.notity} )
 
 let event_excludeAntennas = $ref(Array(antennas.length).fill(true));
 

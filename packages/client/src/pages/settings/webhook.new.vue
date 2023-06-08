@@ -4,7 +4,7 @@
 			<template #label>Name</template>
 		</FormInput>
 
-		<FormInput v-model="url" type="url" class="_formBlock">
+		<FormInput v-model="url" class="_formBlock">
 			<template #label>URL</template>
 		</FormInput>
 

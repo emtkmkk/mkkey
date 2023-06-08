@@ -1,12 +1,20 @@
 <template>
 	<MkStickyContainer>
 		<template #header>
-		  	<template v-if="$i != null">
+		  	<template v-if="$i != null && $i.id === user.id">
 			    <MkTab v-model="include" :class="$style.tab">
 				    <option :value="null">{{ i18n.ts.notes }}</option>
 				    <option value="visitor">{{ i18n.ts.showVisitor }}</option>
 				    <option value="replies">{{ i18n.ts.notesAndReplies }}</option>
 				    <option value="files">{{ i18n.ts.withFiles }}</option>
+			    </MkTab>
+			</template>
+			<template v-else-if="$i != null">
+		        <MkTab v-model="include" :class="$style.tab">
+				    <option :value="null">{{ i18n.ts.notes }}</option>
+				    <option value="private">{{ i18n.ts.privateOnly }}</option>
+			        <option value="replies">{{ i18n.ts.notesAndReplies }}</option>
+			        <option value="files">{{ i18n.ts.withFiles }}</option>
 			    </MkTab>
 			</template>
 			<template v-else>
@@ -44,6 +52,7 @@ const pagination = {
 		includeReplies: include.value === "replies",
 		withFiles: include.value === "files",
 		showVisitor: include.value === "visitor",
+		privateOnly: include.value === "private",
 	})),
 };
 </script>

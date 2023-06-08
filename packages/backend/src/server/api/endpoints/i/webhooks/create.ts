@@ -2,7 +2,6 @@ import define from "../../../define.js";
 import { genId } from "@/misc/gen-id.js";
 import { Webhooks } from "@/models/index.js";
 import { publishInternalEvent } from "@/services/stream.js";
-import { webhookEventTypes } from "@/models/entities/webhook.js";
 
 export const meta = {
 	tags: ["webhooks"],
@@ -22,7 +21,6 @@ export const paramDef = {
 			type: "array",
 			items: {
 				type: "string",
-				enum: webhookEventTypes,
 			},
 		},
 	},

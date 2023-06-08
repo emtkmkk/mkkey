@@ -45,7 +45,7 @@
 			>
 			<template v-if="event_antenna">
 				<template #label>送信するアンテナ</template>
-				<FormSwitch  v-for="(antenna, index) in antennas" v-model="event_excludeAntennas[index]" class="_formBlock"
+				<FormSwitch v-for="(antenna, index) in antennas" v-model="event_excludeAntennas[index]" class="_formBlock"
 					>{{ antenna.name }}</FormSwitch
 				>
 			</template>

@@ -104,7 +104,7 @@ let event_reaction = $ref(webhook.on.includes("reaction"));
 let event_mention = $ref(webhook.on.includes("mention"));
 let event_antenna = $ref(webhook.on.includes("antenna"));
 
-let event_excludeAntennas = antennas.map((x) => $ref(!webhook.on.includes("exclude-" + x.id))));
+let event_excludeAntennas = antennas.map((x) => $ref(!webhook.on.includes("exclude-" + x.id)));
 
 async function save(): Promise<void> {
 	const events = [];

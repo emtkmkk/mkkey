@@ -46,8 +46,8 @@
 			<template v-if="event_antenna && antennas.length > 0">
 				<FormSection>
 					<template #label>送信するアンテナ</template>
-					<template v-for="antenna in antennas" :key="antenna.id" >
-						<FormSwitch v-model="event_excludeAntennas" v-bind:value="{id: antenna.id}" class="_formBlock"
+					<template v-for="(antenna,index) in antennas" :key="antenna.id" >
+						<FormSwitch v-model="event_excludeAntennas[index]" class="_formBlock"
 							>{{ antenna.name }}</FormSwitch
 						>
 					</template>
@@ -95,7 +95,7 @@ let event_antenna = $ref(false);
 const antennasAll = await os.api("antennas/list") as Array<any>;
 const antennas = $ref(antennasAll.filter((x) => x.notify));
 
-let event_excludeAntennas = $ref([]);
+let event_excludeAntennas = $ref(antennas.map((x) => true));
 
 async function create(): Promise<void> {
 	const events = [];
@@ -108,8 +108,10 @@ async function create(): Promise<void> {
 	if (event_mention) events.push("mention");
 	if (event_antenna) {
 		events.push("antenna");
-		event_excludeAntennas.forEach((x) => {
-			events.push("exclude-" + x.id);
+		event_excludeAntennas.forEach((x,index) => {
+			if (!x){
+				events.push("exclude-" + antennas[index].id);
+			}
 		});
 	}
 

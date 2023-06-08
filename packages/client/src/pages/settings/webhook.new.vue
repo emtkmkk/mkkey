@@ -43,6 +43,12 @@
 			<FormSwitch v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch
 			>
+			<template v-if="event_antenna">
+				<template #label>送信するアンテナ</template>
+				<FormSwitch  v-for="(antenna, index) in antennas" v-model="event_excludeAntennas[index]" class="_formBlock"
+					>{{ antenna.name }}</FormSwitch
+				>
+			</template>
 		</FormSection>
 
 		<div
@@ -82,6 +88,10 @@ let event_reaction = $ref(true);
 let event_mention = $ref(true);
 let event_antenna = $ref(false);
 
+const antennas = await os.api("antennas/list");
+
+let event_excludeAntennas = $ref(Array(antennas.length).fill(true));
+
 async function create(): Promise<void> {
 	const events = [];
 	if (event_follow) events.push("follow");
@@ -91,7 +101,14 @@ async function create(): Promise<void> {
 	if (event_renote) events.push("renote");
 	if (event_reaction) events.push("reaction");
 	if (event_mention) events.push("mention");
-	if (event_antenna) events.push("antenna");
+	if (event_antenna) {
+		events.push("antenna");
+		event_excludeAntennas.forEach((event_excludeAntenna,index) => {
+			if(!event_excludeAntenna) {
+				events.push("exclude-" + antennas[index].id);
+			}
+		});
+	}
 
 	if (discord_type) secret = "Discord";
 

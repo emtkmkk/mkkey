@@ -9,7 +9,7 @@
 				    <option value="files">{{ i18n.ts.withFiles }}</option>
 			    </MkTab>
 			</template>
-			<template v-else-if="$i != null">
+			<template v-else-if="$i != null && user.isFollowing">
 		        <MkTab v-model="include" :class="$style.tab">
 				    <option :value="null">{{ i18n.ts.notes }}</option>
 				    <option value="private">{{ i18n.ts.privateOnly }}</option>

@@ -117,7 +117,7 @@ async function save(): Promise<void> {
 		events.push("antenna");
 		event_excludeAntennas.forEach((event_excludeAntenna,index) => {
 			if(!event_excludeAntenna) {
-				events.push("exclude-" + antennas[index.id);
+				events.push("exclude-" + antennas[index].id);
 			}
 		});
 	}

@@ -4,7 +4,7 @@
 			<template #label>Name</template>
 		</FormInput>
 
-		<FormInput v-model="url" class="_formBlock">
+		<FormInput v-model="url" type="url" class="_formBlock">
 			<template #label>URL</template>
 		</FormInput>
 
@@ -46,7 +46,7 @@
 			<template v-if="event_antenna">
 				<template #label>送信するアンテナ</template>
 				<template v-for="(antenna, index) in antennas" :key="antenna.id" >
-					<FormSwitch v-model="event_excludeAntennas[index]" class="_formBlock"
+					<FormSwitch v-model="event_excludeAntennas" v-bind:value="{id: antenna.id}" class="_formBlock"
 						>{{ antenna.name }}</FormSwitch
 					>
 				</template>
@@ -93,7 +93,7 @@ let event_antenna = $ref(false);
 const antennasAll = await os.api("antennas/list");
 const antennas = antennasAll.filter((x) => x.notify);
 
-let event_excludeAntennas = antennas.map((x) => $ref(true));
+let event_excludeAntennas = $ref([]);
 
 async function create(): Promise<void> {
 	const events = [];
@@ -106,10 +106,8 @@ async function create(): Promise<void> {
 	if (event_mention) events.push("mention");
 	if (event_antenna) {
 		events.push("antenna");
-		event_excludeAntennas.forEach((event_excludeAntenna,index) => {
-			if(!event_excludeAntenna) {
-				events.push("exclude-" + antennas[index].id);
-			}
+		event_excludeAntennas.forEach((x) => {
+			events.push("exclude-" + x.id);
 		});
 	}
 

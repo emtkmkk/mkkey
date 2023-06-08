@@ -48,6 +48,7 @@ export const paramDef = {
 		includeMyRenotes: { type: "boolean", default: true },
 		withFiles: { type: "boolean", default: false },
 		showVisitor: { type: "boolean", default: false },
+		privateOnly: { type: "boolean", default: false },
 		fileType: {
 			type: "array",
 			items: {
@@ -143,7 +144,16 @@ export default define(meta, paramDef, async (ps, me) => {
 			}),
 		);
 	}
-
+	
+	if (ps.followersOnly === true) {
+		query.andWhere(
+			new Brackets((qb) => {
+				qb.orWhere("note.visibility = 'followers'");
+				qb.orWhere("note.visibility = 'specified'");
+			}),
+		);
+	}
+	
 	//#endregion
 
 	const timeline = await query.take(ps.limit).getMany();

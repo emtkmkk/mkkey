@@ -45,7 +45,7 @@
 			>				
 			<template v-if="event_antenna">
 				<template #label>送信するアンテナ</template>
-				<FormSwitch  v-for="(antenna, index) in antennas" v-model="event_excludeAntennas[index]" class="_formBlock"
+				<FormSwitch v-for="(antenna, index) in antennas" v-model="event_excludeAntennas[index]" class="_formBlock"
 					>{{ antenna.name }}</FormSwitch
 				>
 			</template>
@@ -85,7 +85,7 @@ const webhook = await os.api("i/webhooks/show", {
 
 let name = $ref(webhook.name);
 let url = $ref(webhook.url);
-let secret = $ref(webhook.secret);
+let secret = $ref(webhook.secret === "Discord" ? "" : webhook.secret);
 let active = $ref(webhook.active);
 
 let discord_type = $ref(webhook.secret === "Discord");

@@ -54,7 +54,7 @@ export class Webhook {
 	@Column('varchar', {
 		length: 128, array: true, default: '{}',
 	})
-	public on: typeof webhookEventTypes[number][];
+	public on: string[];
 
 	@Column('varchar', {
 		length: 1024,

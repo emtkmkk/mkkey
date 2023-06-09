@@ -466,7 +466,7 @@ export function initHpmlLib(
 	randomSeed: string,
 	visitor?: any,
 ) {
-	let pageRndUUID = "";
+	let pageRndUUID = visitor ? visitor.id : "";
 	try {
 		if (!visitor && !localStorage.getItem("pageRndUUID")) {
 			localStorage.setItem("pageRndUUID",new Date().getTime().toString(16).slice(-7) + Math.floor(4095 * Math.random()).toString(16).padStart(3, '0'))

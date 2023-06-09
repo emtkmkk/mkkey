@@ -41,5 +41,5 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const pages = await query.take(ps.limit).getMany();
 
-	return await Pages.packMany(pages);
+	return await Pages.packMany(pages, user);
 });

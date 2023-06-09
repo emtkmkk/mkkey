@@ -227,7 +227,7 @@
 			
 			<FormRadios v-model="avatarSize" class="_formBlock">
 				<template #label>{{ i18n.ts.avatarSize }}</template>
-				<option :value="-2">
+				<option value="-2">
 					極小
 				</option>
 				<option value="-1">
@@ -242,10 +242,10 @@
 				<option value="2">
 					特大
 				</option>
-				<option :value="-3">
+				<option value="-3">
 					豆粒
 				</option>
-				<option :value="-4">
+				<option value="-4">
 					非表示
 				</option>
 				<option value="f-1">

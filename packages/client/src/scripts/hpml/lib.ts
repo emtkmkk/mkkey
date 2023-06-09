@@ -466,8 +466,17 @@ export function initHpmlLib(
 	randomSeed: string,
 	visitor?: any,
 ) {
+	let pageRndUUID = "";
+	try {
+		if (!visitor && !localStorage.getItem("pageRndUUID")) {
+			localStorage.setItem("pageRndUUID",new Date().getTime().toString(16).slice(-7) + Math.floor(4095 * Math.random()).toString(16).padStart(3, '0'))
+		}
+	 	pageRndUUID = visitor ? visitor.id : (localStorage.getItem("pageRndUUID") ?? navigator.userAgent + ":" + window.devicePixelRatio);
+	} catch(e) {
+		
+	}
 	const date = new Date();
-	const day = `${visitor ? visitor.id : ""} ${date.getFullYear()}/${
+	const day = `${pageRndUUID} ${date.getFullYear()}/${
 		date.getMonth() + 1
 	}/${date.getDate()}`;
 

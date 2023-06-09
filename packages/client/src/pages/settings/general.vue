@@ -62,6 +62,9 @@
 			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
 				i18n.ts.smartMFMInputer
 			}}</FormSwitch>
+			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{
+				i18n.ts.hiddenActivityChart
+			}}</FormSwitch>
 			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript
 			}}</FormSwitch>
@@ -416,6 +419,9 @@ const developerNoteMenu = computed(
 );
 const showMiniUpdates = computed(
 	defaultStore.makeGetterSetter("showMiniUpdates")
+);
+const hiddenActivityChart = computed(
+	defaultStore.makeGetterSetter("hiddenActivityChart")
 );
 
 watch(lang, () => {

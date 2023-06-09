@@ -306,6 +306,7 @@
 					<template v-if="narrow">
 						<XPhotos :key="user.id" :user="user" />
 						<XActivity
+							v-if="!$store.state.hiddenActivityChart"
 							:key="user.id"
 							:user="user"
 							style="margin-top: var(--margin)"
@@ -380,6 +381,7 @@ import { getUserMenu } from "@/scripts/get-user-menu";
 import number from "@/filters/number";
 import MkNumber from "@/components/MkNumber.vue";
 import { userPage } from "@/filters/user";
+import { defaultStore } from "@/store";
 import * as os from "@/os";
 import { useRouter } from "@/router";
 import { i18n } from "@/i18n";

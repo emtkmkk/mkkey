@@ -758,7 +758,6 @@ function readPromo() {
 	}
 
 	&.max-width_450px {
-		--avatarSize: 46px;
 		padding-top: 6px;
 		> .note-context {
 			padding-inline: 16px;
@@ -783,7 +782,6 @@ function readPromo() {
 	}
 
 	&.max-width_300px {
-		--avatarSize: 40px;
 	}
 }
 

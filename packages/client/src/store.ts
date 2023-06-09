@@ -508,6 +508,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: false,
 		},
+		developerTicker: {
+			where: "account",
+			default: false,
+		},
 		completedReInit: {
 			where: "device",
 			default: false,

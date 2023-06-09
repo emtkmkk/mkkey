@@ -138,13 +138,13 @@
 				<path d="M12 9v2m0 4v.01"></path>
 				<path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
 			</svg>
-			<h1>エラーが発生しました!</h1>
+			<h1>何かがおかしいようです…</h1>
 			<button class="button-big" onclick="location.reload(true);">
 				<span class="button-label-big">リロード</span>
 			</button>
-			<p class="dont-worry">心配しなくても、（たぶん）あなたのせいではありませんよ。</p>
-			<p>ブラウザが最新であること、AdBlockerがオフになっていることをご確認ください。</p>
-			<p>リロードしても問題が解決しない場合は、お使いのインスタンスの管理者にお問い合わせください。<br>また、以下のオプションもお試しください:</p>
+			<p class="dont-worry">（おそらく）あなたのせいではありません。</p>
+			<p>ブラウザが最新であること、広告ブロッカーがオフになっていることをご確認ください。</p>
+			<p>リロードしても問題が解決しない場合は、お使いのインスタンスの管理者にお問い合わせください。<br>また、以下のオプションもお試しください : </p>
 			<a href="/flush">
 				<button class="button-small">
 					<span class="button-label-small">環境設定とキャッシュをクリア</span>

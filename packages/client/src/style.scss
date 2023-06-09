@@ -115,40 +115,40 @@ html {
 	}
 
 	&.av-2 {
-		--avatarEm: 4;
+		--avatarEm: 4 !important;
 	}
 	
 	&.av-1 {
-		--avatarEm: 3.5;
+		--avatarEm: 3.5 !important;
 	}
 	
 	&.av--1 {
-		--avatarEm: 2.5;
+		--avatarEm: 2.5 !important;
 	}
 	
 	&.av--2 {
-		--avatarEm: 2;
+		--avatarEm: 2 !important;
 	}
 	
 	&.av--3 {
-		--avatarEm: 1;
+		--avatarEm: 1 !important;
 	}
 	
 	&.av--4 {
-		--avatarSize: 0px;
-		--avatarEm: 0;
+		--avatarSize: 0px !important;
+		--avatarEm: 0 !important;
 	}	
 	
 	&.av-f-1 {
-		--avatarSize: 40px;
+		--avatarSize: 38px !important;
 	}	
 	
 	&.av-f {
-		--avatarSize: 48px;
+		--avatarSize: 46px !important;
 	}	
 	
 	&.av-f1 {
-		--avatarSize: 56px;
+		--avatarSize: 54px !important;
 	}
 	
 	&.useSystemFont {

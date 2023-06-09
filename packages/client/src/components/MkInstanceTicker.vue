@@ -1,6 +1,16 @@
 <template>
 	<div
-		v-if="$store.state.developerTicker"
+		v-if="$store.state.developerTicker && instance.softwareVersion?.length > 13"
+		class="hpaizdrt"
+		v-tooltip="instance.name + '/' + capitalize((instance.softwareName || '???'))"
+		ref="ticker"
+		:style="bg"
+	>
+		<img class="icon" :src="getInstanceIcon(instance)" aria-hidden="true" />
+		<span class="name">{{ (instance.softwareVersion || '???') }}</span>
+	</div>
+	<div
+		v-else-if="$store.state.developerTicker"
 		class="hpaizdrt"
 		v-tooltip="instance.name"
 		ref="ticker"

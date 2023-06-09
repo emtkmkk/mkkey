@@ -511,7 +511,11 @@ export const defaultStore = markRaw(
 		completedReInit: {
 			where: "device",
 			default: false,
-		}
+		},
+		hiddenActivityChart: {
+			where: "device",
+			default: false,
+		},
 	}),
 );
 

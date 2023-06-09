@@ -73,7 +73,7 @@ async function init() {
 	let noteText = "";
 	let rText = text;
 	let rUrl = url;
-	let textToUrl = text.match(/^(.* )?(https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+)+$/);
+	let textToUrl = text ? text.match(/^(.* )?(https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+)+$/) : null;
 	
 	if (title === "undefined") title = null;
 	

@@ -224,6 +224,40 @@
 					<span style="font-size: 20px">+5</span>
 				</option>
 			</FormRadios>
+			
+			<FormRadios v-model="avatarSize" class="_formBlock">
+				<template #label>{{ i18n.ts.avatarSize }}</template>
+				<option :value="-2">
+					極小
+				</option>
+				<option value="-1">
+					小
+				</option>
+				<option value="null">
+					中
+				</option>
+				<option value="1">
+					大
+				</option>
+				<option value="2">
+					特大
+				</option>
+				<option :value="-3">
+					豆粒
+				</option>
+				<option :value="-4">
+					非表示
+				</option>
+				<option value="f-1">
+					固定（小）
+				</option>
+				<option value="f">
+					固定（中）
+				</option>
+				<option value="f1">
+					固定（大）
+				</option>
+			</FormRadios>
 		</FormSection>
 
 		<FormSelect v-model="instanceTicker" class="_formBlock">
@@ -293,6 +327,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 
 const lang = ref(localStorage.getItem("lang"));
 const fontSize = ref(localStorage.getItem("fontSize"));
+const avatarSize = ref(localStorage.getItem("avatarSize"));
 const useSystemFont = ref(localStorage.getItem("useSystemFont") != null);
 
 async function reloadAsk() {
@@ -444,6 +479,14 @@ watch(fontSize, () => {
 	}
 });
 
+watch(avatarSize, () => {
+	if (avatarSize.value == null) {
+		localStorage.removeItem("avatarSize");
+	} else {
+		localStorage.setItem("avatarSize", avatarSize.value);
+	}
+});
+
 watch(useSystemFont, () => {
 	if (useSystemFont.value) {
 		localStorage.setItem("useSystemFont", "t");
@@ -456,6 +499,7 @@ watch(
 	[
 		lang,
 		fontSize,
+		avatarSize,
 		useSystemFont,
 		enableInfiniteScroll,
 		squareAvatars,

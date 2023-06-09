@@ -802,7 +802,7 @@ if (props.specified) {
 if (!canPublic && visibility === "public") visibility = "home";
 if (!canHome && visibility === "home") visibility = "followers";
 if (!canFollower && visibility === "followers") visibility = "specified";
-if (!canNotLocal && visibility !== "followers" && visibility !== "specified" && localOnly === false) localOnly = true;
+if (!canNotLocal && visibility !== "followers" && visibility !== "specified" && localOnly === false && !$i.blockPostNotLocalPublic) localOnly = true;
 
 // keep post cw
 if (defaultStore.state.keepPostCw && cw) {

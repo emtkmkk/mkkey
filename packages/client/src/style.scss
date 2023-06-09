@@ -4,7 +4,8 @@
 	--radius: 12px;
 	--marginFull: 16px;
 	--marginHalf: 10px;
-	--avatarSize: 48px;
+	--avatarEm: 3;
+	--avatarSize: calc(1em * var(--avatarEm));
 	--fontSize: 16px;
 	--phIconSize: 14px;
 

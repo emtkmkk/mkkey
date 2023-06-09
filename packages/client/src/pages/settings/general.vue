@@ -233,6 +233,10 @@
 			<option value="always">{{ i18n.ts._instanceTicker.always }}</option>
 		</FormSelect>
 
+		<FormSwitch v-if="developer" v-model="developerTicker" class="_formBlock">{{
+			i18n.ts.developerTicker
+		}}</FormSwitch>
+		
 		<FormSelect v-model="nsfw" class="_formBlock">
 			<template #label>{{ i18n.ts.nsfw }}</template>
 			<option value="respect">{{ i18n.ts._nsfw.respect }}</option>
@@ -416,6 +420,9 @@ const developerQuote = computed(
 );
 const developerNoteMenu = computed(
 	defaultStore.makeGetterSetter("developerNoteMenu")
+);
+const developerTicker = computed(
+	defaultStore.makeGetterSetter("developerTicker")
 );
 const showMiniUpdates = computed(
 	defaultStore.makeGetterSetter("showMiniUpdates")

@@ -114,6 +114,43 @@ html {
 		font-size: calc(var(--fontSize) + 5px);
 	}
 
+	&.av-2 {
+		--avatarEm: 4;
+	}
+	
+	&.av-1 {
+		--avatarEm: 3.5;
+	}
+	
+	&.av--1 {
+		--avatarEm: 2.5;
+	}
+	
+	&.av--2 {
+		--avatarEm: 2;
+	}
+	
+	&.av--3 {
+		--avatarEm: 1;
+	}
+	
+	&.av--4 {
+		--avatarSize: 0px;
+		--avatarEm: 0;
+	}	
+	
+	&.av-f-1 {
+		--avatarSize: 40px;
+	}	
+	
+	&.av-f {
+		--avatarSize: 48px;
+	}	
+	
+	&.av-f1 {
+		--avatarSize: 56px;
+	}
+	
 	&.useSystemFont {
 		font-family: sans-serif;
 	}

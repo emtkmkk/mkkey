@@ -1,5 +1,16 @@
 <template>
 	<div
+		v-if="$store.state.developerTicker"
+		class="hpaizdrt"
+		v-tooltip="instance.name"
+		ref="ticker"
+		:style="bg"
+	>
+		<img class="icon" :src="getInstanceIcon(instance)" aria-hidden="true" />
+		<span class="name">{{ capitalize((instance.softwareName || '???')) + '/' + (instance.softwareVersion || '???') }}</span>
+	</div>
+	<div
+		v-else
 		class="hpaizdrt"
 		v-tooltip="capitalize((instance.softwareName || '???')) + '/' + (instance.softwareVersion || '???')"
 		ref="ticker"
@@ -14,6 +25,7 @@
 import { instanceName } from "@/config";
 import { instance as Instance } from "@/instance";
 import { getProxiedImageUrlNullable } from "@/scripts/media-proxy";
+import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	instance?: {
@@ -29,7 +41,7 @@ let ticker = $ref<HTMLElement | null>(null);
 
 // if no instance data is given, this is for the local instance
 const instance = props.instance ?? {
-	faviconUrl: Instance.faviconUrl || Instance.iconUrl || "/favicon.ico",
+	faviconUrl: defaultStore.state.developerTicker ? Instance.iconUrl || Instance.faviconUrl || "/favicon.ico" : Instance.faviconUrl || Instance.iconUrl || "/favicon.ico",
 	name: instanceName,
 	themeColor: (
 		document.querySelector(
@@ -54,6 +66,13 @@ function getInstanceIcon(instance): string {
 	return (
 		getProxiedImageUrlNullable(instance.faviconUrl, "preview") ??
 		getProxiedImageUrlNullable(instance.iconUrl, "preview") ??
+		"/client-assets/dummy.png"
+	);
+}
+function getInstanceIconAnother(instance): string {
+	return (
+		getProxiedImageUrlNullable(instance.iconUrl, "preview") ??
+		getProxiedImageUrlNullable(instance.faviconUrl, "preview") ??
 		"/client-assets/dummy.png"
 	);
 }

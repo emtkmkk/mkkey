@@ -419,13 +419,68 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 		const lastUsed = localStorage.getItem("lastUsed");
 		if (lastUsed) {
 			const lastUsedDate = parseInt(lastUsed, 10);
-			// 二時間以上前なら
-			if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 2) {
+			// 三日前以上前なら
+			if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 72) {
+				toast(
+					i18n.t("welcomeBackWithNameLong", {
+						days: Math.floor((Date.now() - lastUsedDate) / (1000 * 60 * 60 * 24)),
+						name: $i.name || $i.username,
+					}),
+				);
+			}
+			// 二日前以上前なら
+			else if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 48) {
+				toast(
+					i18n.t("welcomeBackWithNameSleep", {
+						name: $i.name || $i.username,
+					}),
+				);
+			}
+			// 一日前以上前なら
+			else if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 24) {
 				toast(
 					i18n.t("welcomeBackWithName", {
 						name: $i.name || $i.username,
 					}),
 				);
+			}
+			// 一時間半以上前なら
+			else if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 1.5) {
+				// 時間に合わせて挨拶
+				const now = new Date();
+				if (now.getHours() >= 5 && now.getHours() <= 10) {
+					toast(
+						i18n.t("welcomeBackWithNameMorning", {
+							name: $i.name || $i.username,
+						}),
+					);
+				} else if (now.getHours() >= 11 && now.getHours() <= 15) {
+					toast(
+						i18n.t("welcomeBackWithNameNoon", {
+							name: $i.name || $i.username,
+						}),
+					);
+				} else if (now.getHours() >= 16 && now.getHours() <= 18) {
+					if (now.getDay() >= 1 && now.getDay() <= 5){
+						toast(
+							i18n.t("welcomeBackWithNameEvening", {
+								name: $i.name || $i.username,
+							}),
+						);
+					} else {
+						toast(
+							i18n.t("welcomeBackWithNameNoon", {
+								name: $i.name || $i.username,
+							}),
+						);
+					}
+				} else {
+					toast(
+						i18n.t("welcomeBackWithNameNight", {
+							name: $i.name || $i.username,
+						}),
+					);
+				}
 			}
 		}
 		localStorage.setItem("lastUsed", Date.now().toString());

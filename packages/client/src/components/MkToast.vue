@@ -32,7 +32,7 @@ const emit = defineEmits<{
 const zIndex = os.claimZIndex("high");
 let showing = $ref(true);
 const toastMessageMatch = props.message.match(/.*[、？]/);
-const toastMessageLength = toastMessageMatch ? toastMessageMatch.length : 0;
+const toastMessageLength = toastMessageMatch ? toastMessageMatch[0].length : 0;
 
 onMounted(() => {
 	window.setTimeout(() => {

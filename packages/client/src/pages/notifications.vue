@@ -59,10 +59,10 @@
 					/>
 				</swiper-slide>
 				<swiper-slide>
-					<XNotes :pagination="mentionsPagination" />
+					<XNotes v-if="tab === 'mentions'" :pagination="mentionsPagination" />
 				</swiper-slide>
 				<swiper-slide>
-					<XNotes :pagination="directNotesPagination" />
+					<XNotes v-if="tab === 'directNotes'" :pagination="directNotesPagination" />
 				</swiper-slide>
 			</swiper>
 		</MkSpacer>
@@ -89,9 +89,8 @@ let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
 let includeTypes = $ref<string[] | null>(null);
-let includeTypesExcludeAntenna = $ref(includeTypes ? includeTypes.filter(x => x !== "unreadAntenna") : null);
 let typeUnreadAntenna = $ref(["unreadAntenna"]);
-let unreadOnly = $computed(() => tab === "unreadAntenna");
+let unreadOnly = $computed(() => tab === "unread");
 os.api("notifications/mark-all-as-read");
 
 const MOBILE_THRESHOLD = 500;

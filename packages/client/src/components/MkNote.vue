@@ -198,7 +198,7 @@
 			</div>
 		</article>
 	</div>
-	<button v-else-if="!hiddenSoftMutes && muted.matched.join('').length !== 0 && excludeMute" class="muted _button" @click="muted.muted = false">
+	<button v-else-if="(!hiddenSoftMutes && muted.matched.join('').length !== 0) || excludeMute" class="muted _button" @click="muted.muted = false">
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
 				<MkA

@@ -140,6 +140,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: true,
 		},
+		enableAntennaTab: {
+			where: "account",
+			default: false,
+		},
 		localShowRenote: {
 			where: "account",
 			default: true,

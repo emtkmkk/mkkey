@@ -52,6 +52,12 @@
 				</FormSwitch>
 			</div>
 		</FormSection>
+		<FormSection>
+		<FormLink to="/settings/webhook" class="_formBlock"
+			><template #icon><i class="ph-lightning ph-bold ph-lg"></i></template
+			>Webhookによる通知の受け取り設定 (Discordなど)</FormLink
+		>
+		</FormSection>
 	</div>
 </template>
 

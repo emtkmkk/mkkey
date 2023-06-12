@@ -97,6 +97,7 @@ const defaultStoreSaveKeys: (keyof (typeof defaultStore)["state"])[] = [
 	"hiddenCloseButton",
 	"hiddenMentionButton",
 	"openMentionWindow",
+	"hiddenActivityChart",
 	"statusbars",
 	"widgets",
 	"tl",
@@ -182,6 +183,7 @@ type Profile = {
 		hot: Record<keyof typeof defaultStoreSaveKeys, unknown>;
 		cold: Record<keyof typeof coldDeviceStorageSaveKeys, unknown>;
 		fontSize: string | null;
+		avatarSize: string | null;
 		useSystemFont: "t" | null;
 		wallpaper: string | null;
 	};
@@ -244,6 +246,7 @@ function getSettings(): Profile["settings"] {
 		hot,
 		cold,
 		fontSize: localStorage.getItem("fontSize"),
+		avatarSize: localStorage.getItem("avatarSize"),
 		useSystemFont: localStorage.getItem("useSystemFont") as "t" | null,
 		wallpaper: localStorage.getItem("wallpaper"),
 	};
@@ -363,6 +366,13 @@ async function applyProfile(id: string): Promise<void> {
 		localStorage.setItem("fontSize", settings.fontSize);
 	} else {
 		localStorage.removeItem("fontSize");
+	}
+	
+	// avatarSize
+	if (settings.avatarSize) {
+		localStorage.setItem("avatarSize", settings.avatarSize);
+	} else {
+		localStorage.removeItem("avatarSize");
 	}
 
 	// useSystemFont

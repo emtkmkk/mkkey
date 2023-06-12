@@ -20,15 +20,15 @@
 			<template v-else>
 				<p>{{ i18n.ts.newVersionOfClientAvailable }}</p>
 				<p>{{ i18n.ts.youShouldUpgradeClient }}</p>
-				<MkButton class="button primary" @click="reload">{{
-					i18n.ts.reload
-				}}</MkButton>
 			</template>
-			<p>
+			/*<p>
 				<MkA to="/docs/general/troubleshooting" class="_link">{{
 					i18n.ts.troubleshooting
 				}}</MkA>
-			</p>
+			</p>*/
+			<MkButton class="button primary" @click="reload">{{
+				i18n.ts.reload
+			}}</MkButton>
 			<p v-if="error" class="error">ERROR: {{ error }}</p>
 		</div>
 	</transition>

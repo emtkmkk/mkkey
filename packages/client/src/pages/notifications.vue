@@ -23,16 +23,37 @@
 			>
 				<swiper-slide>
 					<XNotifications
+						v-if="!defaultStore.state.enableAntennaTab"
 						class="notifications"
 						:include-types="includeTypes"
+						:unread-only="false"
+					/>
+					<XNotifications
+						v-else
+						class="notifications"
+						:include-types="includeTypesExcludeAntenna"
 						:unread-only="false"
 					/>
 				</swiper-slide>
 				<swiper-slide>
 					<XNotifications
+						v-if="!defaultStore.state.enableAntennaTab"
 						class="notifications"
 						:include-types="includeTypes"
 						:unread-only="true"
+					/>
+					<XNotifications
+						v-else
+						class="notifications"
+						:include-types="includeTypesExcludeAntenna"
+						:unread-only="true"
+					/>
+				</swiper-slide>
+				<swiper-slide v-if="defaultStore.state.enableAntennaTab">
+					<XNotifications
+						class="notifications"
+						:include-types="includeTypesAntennaOnly"
+						:unread-only="false"
 					/>
 				</swiper-slide>
 				<swiper-slide>
@@ -66,7 +87,9 @@ let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
 let includeTypes = $ref<string[] | null>(null);
-let unreadOnly = $computed(() => tab === "unread");
+let includeTypesExcludeAntenna = includeTypes.filter(x => x !== "unreadAntenna");
+let includeTypesAntennaOnly = $ref(["unreadAntenna"]);
+let unreadOnly = $computed(() => tab === "unreadAntenna");
 os.api("notifications/mark-all-as-read");
 
 const MOBILE_THRESHOLD = 500;
@@ -149,6 +172,11 @@ const headerTabs = $computed(() => [
 		title: i18n.ts.unread,
 		icon: "ph-circle-wavy-warning ph-bold ph-lg",
 	},
+	defaultStore.state.enableAntennaTab ? {
+		key: "antenna",
+		title: i18n.ts.antennas,
+		icon: "ph-flying-saucer ph-bold ph-lg",
+	} : undefined,
 	{
 		key: "mentions",
 		title: i18n.ts.mentions,
@@ -159,7 +187,7 @@ const headerTabs = $computed(() => [
 		title: i18n.ts.directNotes,
 		icon: "ph-envelope-simple-open ph-bold ph-lg",
 	},
-]);
+].filter(x => x !== undefined));
 
 definePageMetadata(
 	computed(() => ({

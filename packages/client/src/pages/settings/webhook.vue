@@ -1,7 +1,7 @@
 <template>
 	<div class="_formRoot">
 		<FormSection>
-			<FormLink :to="`/settings/webhook/new`"> Create webhook </FormLink>
+			<FormLink :to="`/settings/webhook/new`"> WebHookを新規作成 </FormLink>
 		</FormSection>
 
 		<FormSection>

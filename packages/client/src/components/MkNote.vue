@@ -226,7 +226,17 @@
 				</MkA>
 			</template>
 			<template #reason>
-				{{ muted.matched.join(", ") }}
+				{{ 
+					muted.matched.length === 0 
+						? isExcludeNotification
+							? "通知"
+							: ""
+						: muted.matched.join(", ") + 
+						( isExcludeNotification 
+							? " (通知)"
+							: ""
+						)
+				}}
 			</template>
 		</I18n>
 	</button>
@@ -338,7 +348,9 @@ const favButtonReactionIsFavorite = defaultStore.state.favButtonReaction === 'fa
 const hiddenSoftMutes = defaultStore.state.hiddenSoftMutes;
 const muteExcludeReplyQuote = defaultStore.state.muteExcludeReplyQuote;
 const muteExcludeNotification = defaultStore.state.muteExcludeNotification;
-const excludeMute = (muteExcludeReplyQuote && (muted.what === "reply" || muted.what === "renote")) || (muteExcludeNotification && props.notification)
+const isExcludeReplyQuote = muteExcludeReplyQuote && (muted.what === "reply" || muted.what === "renote");
+const isExcludeNotification = muteExcludeNotification && props.notification;
+const excludeMute = isExcludeReplyQuote || isExcludeNotification;
 const developerRenote = defaultStore.state.developerRenote;
 const developerQuote = defaultStore.state.developerQuote;
 const developerNoteMenu = defaultStore.state.developerNoteMenu;

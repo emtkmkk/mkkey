@@ -84,7 +84,7 @@ let sendReadMessage = $computed(
 	() => pushRegistrationInServer?.sendReadMessage || false
 );
 
-const enableAntennaTab = computed(
+const enableAntennaTab = $computed(
 	defaultStore.makeGetterSetter("enableAntennaTab")
 );
 

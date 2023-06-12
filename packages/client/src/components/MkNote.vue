@@ -1,6 +1,6 @@
 <template>
 	<div
-		v-if="!muted.muted"
+		v-if="!muted.muted || detailedView"
 		v-show="!isDeleted"
 		ref="el"
 		v-hotkey="keymap"
@@ -198,7 +198,7 @@
 			</div>
 		</article>
 	</div>
-	<button v-else-if="!hiddenSoftMutes && muted.matched.join(', ').length !== 0" class="muted _button" @click="muted.muted = false">
+	<button v-else-if="!hiddenSoftMutes && muted.matched.join('').length !== 0 && excludeMute" class="muted _button" @click="muted.muted = false">
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
 				<MkA
@@ -272,6 +272,7 @@ const props = defineProps<{
 	note: misskey.entities.Note;
 	pinned?: boolean;
 	detailedView?: boolean;
+	notification?: boolean;
 }>();
 
 const inChannel = inject("inChannel", null);
@@ -335,6 +336,9 @@ const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
 const showEmojiButton = defaultStore.state.showEmojiButton;
 const favButtonReactionIsFavorite = defaultStore.state.favButtonReaction === 'favorite';
 const hiddenSoftMutes = defaultStore.state.hiddenSoftMutes;
+const muteExcludeReplyQuote = defaultStore.state.muteExcludeReplyQuote;
+const muteExcludeNotification = defaultStore.state.muteExcludeNotification;
+const excludeMute = (muteExcludeReplyQuote && (muted.what === "reply" || muted.what === "renote")) || (muteExcludeNotification && props.notification)
 const developerRenote = defaultStore.state.developerRenote;
 const developerQuote = defaultStore.state.developerQuote;
 const developerNoteMenu = defaultStore.state.developerNoteMenu;

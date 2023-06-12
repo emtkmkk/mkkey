@@ -71,11 +71,12 @@ let visibleUsers = $ref([] as Misskey.entities.User[]);
 
 async function init() {
 	let noteText = "";
-	let rText = text;
-	let rUrl = url;
-	let textToUrl = text ? text.match(/^(.* )?(https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+)+$/) : null;
+	let rText = text ? text.trim() : null;
+	let rUrl = url ? url.trim() : null;
+	let textToUrl = text ? text.match(/^(.* )?(https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-ぁ-んァ-ヶｱ-ﾝﾞﾟ一-龠]+)+$/) : null;
 	
 	if (title === "undefined") title = null;
+	if (title) title = title.trim();
 	
 	if (!rUrl && textToUrl){
 		if(textToUrl.length == 2){
@@ -90,6 +91,8 @@ async function init() {
 			}
 		}
 	}
+	
+	if (rUrl) rUrl = encodeURIComponent(rUrl);
 	
 	if (rText && rText?.startsWith(`${title}.\n`)){
 		rText = rText.replace(`${title}.\n`, "");

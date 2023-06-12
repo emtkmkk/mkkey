@@ -63,6 +63,7 @@ import { i18n } from "@/i18n";
 const props = defineProps<{
 	includeTypes?: (typeof notificationTypes)[number][];
 	unreadOnly?: boolean;
+	excludeTypes?: (typeof notificationTypes)[number][];
 }>();
 
 const pagingComponent = ref<InstanceType<typeof MkPagination>>();
@@ -73,8 +74,8 @@ const pagination: Paging = {
 	params: computed(() => ({
 		includeTypes: props.includeTypes ?? undefined,
 		excludeTypes: props.includeTypes
-			? undefined
-			: $i.mutingNotificationTypes,
+			? props.excludeTypes ?? undefined
+			: $i.mutingNotificationTypes.concat(props.excludeTypes ?? []),
 		unreadOnly: props.unreadOnly,
 	})),
 };

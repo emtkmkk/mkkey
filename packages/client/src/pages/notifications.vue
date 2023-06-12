@@ -54,7 +54,7 @@
 				<swiper-slide v-if="defaultStore.state.enableAntennaTab">
 					<XNotifications
 						class="notifications"
-						:include-types="includeTypesAntennaOnly"
+						:include-types="typeUnreadAntenna"
 						:unread-only="false"
 					/>
 				</swiper-slide>

@@ -92,9 +92,9 @@ async function init() {
 		}
 	}
 	
-	if (rUrl && rUrl !== encodeURIComponent(rUrl)) {
+	if (rUrl && rUrl !== encodeURI(rUrl)) {
 		if (!title && !rText) rText = rUrl;
-		rUrl = encodeURIComponent(rUrl);
+		rUrl = encodeURI(rUrl);
 	}
 	
 	if (rText && rText?.startsWith(`${title}.\n`)){

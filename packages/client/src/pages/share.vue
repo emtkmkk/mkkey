@@ -224,9 +224,9 @@ function close(): void {
 	window.close();
 
 	// 閉じなければ100ms後タイムラインに
-	window.setTimeout(() => {
+	/*window.setTimeout(() => {
 		mainRouter.push("/");
-	}, 100);
+	}, 100);*/
 }
 
 function goHome(): void {

@@ -5,10 +5,10 @@
 			>{{ i18n.ts.notificationSetting }}</FormButton
 		>
 		<FormSwitch
-			v-model="EnableAntennaTab"
+			v-model="enableAntennaTab"
 		>
 			<template #label>{{
-				i18n.ts.EnableAntennaTab
+				i18n.ts.enableAntennaTab
 			}}</template>
 		</FormSwitch>
 		<FormSection>
@@ -78,8 +78,8 @@ let sendReadMessage = $computed(
 	() => pushRegistrationInServer?.sendReadMessage || false
 );
 
-const EnableAntennaTab = computed(
-	defaultStore.makeGetterSetter("EnableAntennaTab")
+const enableAntennaTab = computed(
+	defaultStore.makeGetterSetter("enableAntennaTab")
 );
 
 async function readAllUnreadNotes() {

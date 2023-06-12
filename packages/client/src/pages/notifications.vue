@@ -31,7 +31,8 @@
 					<XNotifications
 						v-else
 						class="notifications"
-						:include-types="includeTypesExcludeAntenna"
+						:include-types="includeTypes"
+						:exclude-types="typeUnreadAntenna"
 						:unread-only="false"
 					/>
 				</swiper-slide>
@@ -45,7 +46,8 @@
 					<XNotifications
 						v-else
 						class="notifications"
-						:include-types="includeTypesExcludeAntenna"
+						:include-types="includeTypes"
+						:exclude-types="typeUnreadAntenna"
 						:unread-only="true"
 					/>
 				</swiper-slide>
@@ -88,7 +90,7 @@ watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
 let includeTypes = $ref<string[] | null>(null);
 let includeTypesExcludeAntenna = $ref(includeTypes ? includeTypes.filter(x => x !== "unreadAntenna") : null);
-let includeTypesAntennaOnly = $ref(["unreadAntenna"]);
+let typeUnreadAntenna = $ref(["unreadAntenna"]);
 let unreadOnly = $computed(() => tab === "unreadAntenna");
 os.api("notifications/mark-all-as-read");
 

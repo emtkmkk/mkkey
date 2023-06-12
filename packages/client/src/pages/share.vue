@@ -92,7 +92,7 @@ async function init() {
 		}
 	}
 	
-	if (rUrl !== encodeURIComponent(rUrl)) {
+	if (rUrl && rUrl !== encodeURIComponent(rUrl)) {
 		if (!title && !rText) rText = rUrl;
 		rUrl = encodeURIComponent(rUrl);
 	}

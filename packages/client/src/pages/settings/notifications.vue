@@ -4,6 +4,13 @@
 			><template #icon><i class="ph-gear-six ph-bold ph-lg"></i></template
 			>{{ i18n.ts.notificationSetting }}</FormButton
 		>
+		<FormSwitch
+			v-model="EnableAntennaTab"
+		>
+			<template #label>{{
+				i18n.ts.EnableAntennaTab
+			}}</template>
+		</FormSwitch>
 		<FormSection>
 			<ForFormButtonmLink
 				class="_formBlock"
@@ -59,6 +66,7 @@ import * as os from "@/os";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { defaultStore } from "@/store";
 import MkPushNotificationAllowButton from "@/components/MkPushNotificationAllowButton.vue";
 
 let allowButton =
@@ -68,6 +76,10 @@ let pushRegistrationInServer = $computed(
 );
 let sendReadMessage = $computed(
 	() => pushRegistrationInServer?.sendReadMessage || false
+);
+
+const EnableAntennaTab = computed(
+	defaultStore.makeGetterSetter("EnableAntennaTab")
 );
 
 async function readAllUnreadNotes() {

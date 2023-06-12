@@ -124,6 +124,14 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: false,
 		},
+		muteExcludeReplyQuote: {
+			where: "account",
+			default: false,
+		},
+		muteExcludeNotification: {
+			where: "account",
+			default: false,
+		},
 		mutedAds: {
 			where: "account",
 			default: [] as string[],

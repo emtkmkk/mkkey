@@ -1,11 +1,11 @@
 <template>
 	<div class="_formRoot">
 		<FormInput v-model="name" class="_formBlock">
-			<template #label>Name</template>
+			<template #label>Webhookの名前</template>
 		</FormInput>
 
 		<FormInput v-model="url" type="url" class="_formBlock">
-			<template #label>URL</template>
+			<template #label>送信先のURL</template>
 		</FormInput>
 
 		<FormInput v-if="!discord_type" v-model="secret" class="_formBlock">
@@ -26,10 +26,10 @@
 				>フォローされた時</FormSwitch
 			>
 			<FormSwitch v-model="event_note" class="_formBlock"
-				>投稿時（自分）</FormSwitch
+				>自分の投稿時</FormSwitch
 			>
-			<FormSwitch v-model="event_reply" class="_formBlock"
-				>リプライ受取時</FormSwitch
+			<FormSwitch v-model="event_mention" class="_formBlock"
+				>呼びかけられた時</FormSwitch
 			>
 			<FormSwitch v-model="event_renote" class="_formBlock"
 				>RTされた時</FormSwitch
@@ -37,8 +37,8 @@
 			<FormSwitch v-model="event_reaction" class="_formBlock"
 				>リアクションされた時</FormSwitch
 			>
-			<FormSwitch v-model="event_mention" class="_formBlock"
-				>メンション受取時</FormSwitch
+			<FormSwitch v-model="event_reply" class="_formBlock"
+				>返信された時</FormSwitch
 			>
 			<FormSwitch v-if="antennas.length > 0" v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch
@@ -86,7 +86,7 @@ let discord_type = $ref(false);
 let event_follow = $ref(false);
 let event_followed = $ref(true);
 let event_note = $ref(false);
-let event_reply = $ref(true);
+let event_reply = $ref(false);
 let event_renote = $ref(true);
 let event_reaction = $ref(true);
 let event_mention = $ref(true);

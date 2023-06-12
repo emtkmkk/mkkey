@@ -24,6 +24,12 @@
 				<FormSwitch v-model="hiddenSoftMutes" class="_formBlock">{{
 					i18n.ts.hiddenSoftMutes
 				}}</FormSwitch>
+				<FormSwitch v-model="muteExcludeReplyQuote" class="_formBlock">{{
+					i18n.ts.muteExcludeReplyQuote
+				}}</FormSwitch>
+				<FormSwitch v-model="muteExcludeNotification" class="_formBlock">{{
+					i18n.ts.muteExcludeNotification
+				}}</FormSwitch>
 			</div>
 			<div v-show="tab === 'hard'">
 				<MkInfo class="_formBlock"
@@ -54,7 +60,7 @@
 			{{ i18n.ts.save }}</MkButton
 		>
 		<br />
-		<div class="description" style="white-space: pre-line;">{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
+		<div v-show="tab !== 'hard'" class="description" style="white-space: pre-line;"><br />{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
 	</div>
 </template>
 
@@ -90,6 +96,12 @@ const hardMutedWords = ref(render($i!.mutedWords));
 const hardWordMutedNotesCount = ref(null);
 const hiddenSoftMutes = computed(
 	defaultStore.makeGetterSetter("hiddenSoftMutes")
+);
+const muteExcludeReplyQuote = computed(
+	defaultStore.makeGetterSetter("muteExcludeReplyQuote")
+);
+const muteExcludeNotification = computed(
+	defaultStore.makeGetterSetter("muteExcludeNotification")
 );
 const changed = ref(false);
 

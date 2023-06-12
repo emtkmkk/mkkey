@@ -82,12 +82,12 @@ import { defaultStore } from "@/store";
 import "swiper/scss";
 import "swiper/scss/virtual";
 
-const tabs = ["all", "unread", "mentions", "directNotes"];
+const tabs = defaultStore.state.enableAntennaTab ?  ["all", "unread", "antenna" , "mentions", "directNotes"] : ["all", "unread", "mentions", "directNotes"];
 let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
 let includeTypes = $ref<string[] | null>(null);
-let includeTypesExcludeAntenna = includeTypes.filter(x => x !== "unreadAntenna");
+let includeTypesExcludeAntenna = $ref(includeTypes ? includeTypes.filter(x => x !== "unreadAntenna") : null);
 let includeTypesAntennaOnly = $ref(["unreadAntenna"]);
 let unreadOnly = $computed(() => tab === "unreadAntenna");
 os.api("notifications/mark-all-as-read");

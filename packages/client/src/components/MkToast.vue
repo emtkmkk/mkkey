@@ -31,11 +31,13 @@ const emit = defineEmits<{
 
 const zIndex = os.claimZIndex("high");
 let showing = $ref(true);
+const toastMessageMatch = props.message.match(/.*[、？]/);
+const toastMessageLength = toastMessageMatch ? toastMessageMatch.length : 0;
 
 onMounted(() => {
 	window.setTimeout(() => {
 		showing = false;
-	}, 4000);
+	}, 4000 + (toastMessageLength >= 6 ? (toastMessageLength - 5) * 500 : 0));
 });
 </script>
 

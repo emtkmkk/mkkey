@@ -26,6 +26,7 @@
 					"
 					:key="notification.id"
 					:note="notification.note"
+					:notification="true"
 				/>
 				<XNotification
 					v-else

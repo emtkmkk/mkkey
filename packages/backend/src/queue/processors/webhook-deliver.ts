@@ -52,7 +52,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			description: getNoteSummary(body.note).length > 50 ? getNoteSummary(body.note).slice(0,50) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 52 ? " (CW)" : "") : getNoteSummary(body.note),
 			timestamp: new Date(body.note.createdAt),
 			thumbnail: {
-				url: body.emoji ? body.emoji.publicUrl : (body.note.files && !body.note.cw && !body.note.files[0].isSensitive) ? body.note.files[0].thumbnailUrl : body.note.user?.avatarUrl,
+				url: body.emoji ? body.emoji.publicUrl : (body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive) ? body.note.files[0].thumbnailUrl : body.note.user?.avatarUrl,
 			},
 			color: 16757683,
 		}) : undefined,
@@ -88,7 +88,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
 		let embeds = toEmbeds(job.data.content);
-		const content = job.data.content.note ? getNoteSummary(job.data.content.note).slice(0,20) + (getNoteSummary(job.data.content.note).length > 20 ? "…" : "") : job.data.content.message.text?.slice(0,20) + (job.data.content.message.text?.length > 20 ? "…" : "");
+		const content = job.data.content.note ? " : " + getNoteSummary(job.data.content.note).slice(0,20) + (getNoteSummary(job.data.content.note).length > 20 ? "…" : "") : job.data.content.message ?  " : " + job.data.content.message.text?.slice(0,20) + (job.data.content.message.text?.length > 20 ? "…" : "") : "";
 		if (job.data.secret === "Discord"){
 			res = await getResponse({
 				url: job.data.to,
@@ -100,7 +100,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 					"Content-Type": "application/json",
 				},
 				body: embeds.length !== 0 ? JSON.stringify({
-					content: job.data.type + " : " + content,
+					content: job.data.type + content,
 					embeds,
 				}) : JSON.stringify({
 					content: job.data.type,

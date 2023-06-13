@@ -52,7 +52,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			description: getNoteSummary(body.note).length > 50 ? getNoteSummary(body.note).slice(0,50) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 52 ? " (CW)" : "") : getNoteSummary(body.note),
 			timestamp: new Date(body.note.createdAt),
 			thumbnail: {
-				url: body.emoji ? body.emoji.publicUrl : body.note.user?.avatarUrl,
+				url: body.emoji ? body.emoji.publicUrl : body.note.files && body.note.cw == null && !body.note.files[0].isSensitive ? body.note.files[0].thumbnailUrl : body.note.user?.avatarUrl,
 			},
 			color: 16757683,
 		}) : undefined,
@@ -62,6 +62,21 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			description: body.user.name ? (body.user.name + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : "")),
 			thumbnail: {
 				url: body.user.avatarUrl,
+			},
+			color: 16757683,
+		}) : undefined,
+		body.message ? ({
+			author: {
+				name: body.message.user?.name || body.message.user?.username,
+				url: "https://mkkey.net/@" + body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""),
+				icon_url: body.note.user?.avatarUrl,
+			},
+			title: "チャット",
+			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
+			description: body.message.text?.length > 50 ? body.message.text?.slice(0,50) + "…" : body.message.text ?? "",
+			timestamp: new Date(body.message.createdAt),
+			thumbnail: {
+				url: body.emoji ? body.emoji.publicUrl : body.message.file && !body.message.file.isSensitive ? body.message.file.thumbnailUrl : body.message.user?.avatarUrl,
 			},
 			color: 16757683,
 		}) : undefined,

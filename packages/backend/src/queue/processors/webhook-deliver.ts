@@ -71,7 +71,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 				url: "https://mkkey.net/@" + body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""),
 				icon_url: body.note.user?.avatarUrl,
 			},
-			title: "チャット",
+			title: (body.message.group ? body.message.group.name + " グループでの" : "個人宛の") + "チャット",
 			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
 			description: body.message.text?.length > 50 ? body.message.text?.slice(0,50) + "…" : body.message.text ?? "",
 			timestamp: new Date(body.message.createdAt),

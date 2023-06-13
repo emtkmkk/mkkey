@@ -208,6 +208,7 @@ export default async (
 		if (user.blockPostHome && data.visibility === "home") data.visibility = "followers";
 		if (user.blockPostNotLocal && data.localOnly === false && (!user.blockPostNotLocalPublic || data.visibility === "public")) data.localOnly = true;
 		if (data.visibility === "specified" && data.localOnly === true) data.localOnly = false;
+		if (data.channel != null && data.channel.description?.include("[localOnly]") && data.localOnly === false) data.localOnly = true;
 		if (data.channel != null && data.localOnly === false && !data.reply && !data.text.endsWith(" #" + data.channel!.name)) {
 			//チャンネルで連合有りで返信でなく、すでに文末にタグが付いていない場合、ハッシュタグを自動で付ける
 			data.text += " #" + data.channel!.name;
@@ -297,12 +298,12 @@ export default async (
 		}
 		
 		// Renote local only if you Renote local only.
-		if (data.renote?.localOnly && data.channel == null) {
+		if (data.renote?.localOnly) {
 			data.localOnly = true;
 		}
 
 		// If you reply to local only, make it local only.
-		if (data.reply?.localOnly && data.channel == null) {
+		if (data.reply?.localOnly) {
 			data.localOnly = true;
 		}
 

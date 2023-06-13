@@ -21,7 +21,7 @@
 import { onMounted, ref } from "vue";
 import * as os from "@/os";
 
-defineProps<{
+const props = defineProps<{
 	message: string;
 }>();
 

@@ -277,7 +277,7 @@
 					></i>
 				</button>
 				<button
-					v-if="$store.state.channelSecondPostButton && isChannel"
+					v-if="$store.state.channelSecondPostButton && isChannel && canNotLocal"
 					class="submit_h _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -558,7 +558,7 @@ let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
 let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public")  && !$i.blockPostPublic);
 let canHome = $ref((!props.reply || (props.reply.visibility === "public" || props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" || props.renote.visibility === "home")) && !$i.blockPostHome);
 let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified"));
-let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && !$i.blockPostNotLocal);
+let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && !$i.blockPostNotLocal && !props.channel?.description?.include("[localOnly]"));
 let imeText = $ref("");
 
 const publicIcon = $computed((): String => {
@@ -756,6 +756,7 @@ if (props.reply && props.reply.text != null) {
 if (props.channel) {
 	visibility = "public";
 	localOnly = defaultStore.state.channelSecondPostButton ? false : defaultStore.state.rememberNoteVisibility ? defaultStore.state.localOnly : defaultStore.state.defaultNoteLocalOnly;
+	if (canNotLocal) localOnly = true;
 }
 
 // 公開以外へのリプライ時は元の公開範囲を引き継ぐ

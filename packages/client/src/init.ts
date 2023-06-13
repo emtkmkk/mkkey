@@ -445,7 +445,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 				);
 			}
 			// 一時間半以上前なら
-			else if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 1.5) {
+			else if (Date.now() - lastUsedDate > 1000 * 60 * 90) {
 				// 時間に合わせて挨拶
 				const now = new Date();
 				if (now.getHours() >= 5 && now.getHours() <= 10) {

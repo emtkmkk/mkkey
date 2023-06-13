@@ -22,6 +22,8 @@ import renderNote from "@/remote/activitypub/renderer/note.js";
 import renderCreate from "@/remote/activitypub/renderer/create.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import { deliver } from "@/queue/index.js";
+import { webhookDeliver } from "@/queue/index.js";
+import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 
 export async function createMessage(
 	user: { id: User["id"]; host: User["host"] },
@@ -103,6 +105,18 @@ export async function createMessage(
 
 			publishMainStream(recipientUser.id, "unreadMessagingMessage", messageObj);
 			pushNotification(recipientUser.id, "unreadMessagingMessage", messageObj);
+			
+			//webhook
+			const webhooks = await getActiveWebhooks().then((webhooks) =>
+			webhooks.filter((x) => x.userId === recipientUser.id && x.on.includes("userMessage")),
+			);
+
+			for (const webhook of webhooks) {
+				webhookDeliver(webhook, (messageObj.user?.name || messageObj.user?.username) + " からのメッセージ", {
+					message: messageObj,
+				});
+			}
+			
 		} else if (recipientGroup) {
 			const joinings = await UserGroupJoinings.findBy({
 				userGroupId: recipientGroup.id,
@@ -112,6 +126,18 @@ export async function createMessage(
 				if (freshMessage.reads.includes(joining.userId)) return; // 既読
 				publishMainStream(joining.userId, "unreadMessagingMessage", messageObj);
 				pushNotification(joining.userId, "unreadMessagingMessage", messageObj);
+				
+				//webhook
+				const webhooks = await getActiveWebhooks().then((webhooks) =>
+				webhooks.filter((x) => x.userId === joining.userId && x.on.includes("groupMessage")),
+				);
+
+				for (const webhook of webhooks) {
+					webhookDeliver(webhook,recipientGroup.name + " グループで " + (messageObj.user?.name || messageObj.user?.username) + " からのメッセージ", {
+						message: messageObj,
+					});
+				}
+			
 			}
 		}
 	}, 2000);

@@ -13,20 +13,14 @@
 			<template #label>Secret</template>
 		</FormInput>
 		<FormSwitch v-model="discord_type" class="_formBlock"
-			>Discordで表示できる形式で送信</FormSwitch
+			>Discordに対応した形式で送信</FormSwitch
 		>
 
 		<FormSection>
 			<template #label>送信タイミング</template>
 
-			<FormSwitch v-model="event_follow" class="_formBlock"
-				>フォロー成功時</FormSwitch
-			>
 			<FormSwitch v-model="event_followed" class="_formBlock"
 				>フォローされた時</FormSwitch
-			>
-			<FormSwitch v-model="event_note" class="_formBlock"
-				>自分の投稿時</FormSwitch
 			>
 			<FormSwitch v-model="event_mention" class="_formBlock"
 				>呼びかけられた時</FormSwitch
@@ -39,6 +33,18 @@
 			>
 			<FormSwitch v-model="event_reply" class="_formBlock"
 				>返信された時</FormSwitch
+			>
+			<FormSwitch v-model="event_userMessage" class="_formBlock"
+				>個人宛のチャット受信時</FormSwitch
+			>
+			<FormSwitch v-model="event_groupMessage" class="_formBlock"
+				>グループチャット受信時</FormSwitch
+			>
+			<FormSwitch v-model="event_note" class="_formBlock"
+				>自分の投稿時</FormSwitch
+			>
+			<FormSwitch v-model="event_follow" class="_formBlock"
+				>フォロー成功時</FormSwitch
 			>
 			<FormSwitch v-if="antennas.length > 0" v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch
@@ -91,6 +97,8 @@ let event_renote = $ref(true);
 let event_reaction = $ref(true);
 let event_mention = $ref(true);
 let event_antenna = $ref(false);
+let event_userMessage = $ref(true);
+let event_groupMessage = $ref(true);
 
 const antennasAll = await os.api("antennas/list") as Array<any>;
 const antennas = $ref(antennasAll.filter((x) => x.notify));
@@ -106,6 +114,8 @@ async function create(): Promise<void> {
 	if (event_renote) events.push("renote");
 	if (event_reaction) events.push("reaction");
 	if (event_mention) events.push("mention");
+	if (event_userMessage) events.push("userMessage");
+	if (event_groupMessage) events.push("groupMessage");
 	if (event_antenna) {
 		events.push("antenna");
 		event_excludeAntennas.forEach((x,index) => {

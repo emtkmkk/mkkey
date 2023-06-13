@@ -13,23 +13,17 @@
 			<template #label>Secret</template>
 		</FormInput>
 		<FormSwitch v-model="discord_type" class="_formBlock"
-			>Discordで表示できる形式で送信</FormSwitch
+			>Discordに対応した形式で送信</FormSwitch
 		>
 
 		<FormSection>
 			<template #label>送信タイミング</template>
 
-			<FormSwitch v-model="event_follow" class="_formBlock"
-				>フォロー成功時</FormSwitch
-			>
 			<FormSwitch v-model="event_followed" class="_formBlock"
 				>フォローされた時</FormSwitch
 			>
-			<FormSwitch v-model="event_note" class="_formBlock"
-				>投稿時（自分）</FormSwitch
-			>
-			<FormSwitch v-model="event_reply" class="_formBlock"
-				>リプライ受取時</FormSwitch
+			<FormSwitch v-model="event_mention" class="_formBlock"
+				>呼びかけられた時</FormSwitch
 			>
 			<FormSwitch v-model="event_renote" class="_formBlock"
 				>RTされた時</FormSwitch
@@ -37,9 +31,21 @@
 			<FormSwitch v-model="event_reaction" class="_formBlock"
 				>リアクションされた時</FormSwitch
 			>
-			<FormSwitch v-model="event_mention" class="_formBlock"
-				>メンション受取時</FormSwitch
-			>				
+			<FormSwitch v-model="event_reply" class="_formBlock"
+				>返信された時</FormSwitch
+			>
+			<FormSwitch v-model="event_userMessage" class="_formBlock"
+				>個人宛のチャット受信時</FormSwitch
+			>
+			<FormSwitch v-model="event_groupMessage" class="_formBlock"
+				>グループチャット受信時</FormSwitch
+			>
+			<FormSwitch v-model="event_note" class="_formBlock"
+				>自分の投稿時</FormSwitch
+			>
+			<FormSwitch v-model="event_follow" class="_formBlock"
+				>フォロー成功時</FormSwitch
+			>
 			<FormSwitch v-if="antennas.length > 0 && event_excludeAntennas.length > 0" v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch
 			>				
@@ -105,6 +111,8 @@ let event_renote = $ref(webhook.on.includes("renote"));
 let event_reaction = $ref(webhook.on.includes("reaction"));
 let event_mention = $ref(webhook.on.includes("mention"));
 let event_antenna = $ref(webhook.on.includes("antenna"));
+let event_userMessage = $ref(webhook.on.includes("userMessage"));
+let event_groupMessage = $ref(webhook.on.includes("groupMessage"));
 
 let event_excludeAntennas = $ref(antennas.map((x) => !webhook.on.includes(`exclude-${x.id}`) ?? true));
 
@@ -117,6 +125,8 @@ async function save(): Promise<void> {
 	if (event_renote) events.push("renote");
 	if (event_reaction) events.push("reaction");
 	if (event_mention) events.push("mention");
+	if (event_userMessage) events.push("userMessage");
+	if (event_groupMessage) events.push("groupMessage");
 	if (event_antenna) {
 		events.push("antenna");
 			event_excludeAntennas.forEach((x,index) => {

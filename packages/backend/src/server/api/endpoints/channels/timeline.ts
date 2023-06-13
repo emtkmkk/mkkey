@@ -79,7 +79,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner")
 		.leftJoinAndSelect("note.channel", "channel");
 	
-	if (!channel.description?.include("[localOnly]")){
+	if (!channel.description?.includes("[localOnly]")){
 		query.andWhere(
 			new Brackets((qb) => {
 				qb.orWhere("note.channelId = :channelId", { channelId: channel.id })

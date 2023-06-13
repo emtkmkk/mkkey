@@ -88,6 +88,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
 		let embeds = toEmbeds(job.data.content);
+		const content = job.data.content.note ? getNoteSummary(job.data.content.note).slice(0,20) + (getNoteSummary(job.data.content.note).length > 20 ? "…" : "") : job.data.content.message.text?.slice(0,20) + (job.data.content.message.text?.length > 20 ? "…" : "");
 		if (job.data.secret === "Discord"){
 			res = await getResponse({
 				url: job.data.to,
@@ -99,7 +100,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 					"Content-Type": "application/json",
 				},
 				body: embeds.length !== 0 ? JSON.stringify({
-					content: job.data.type,
+					content: job.data.type + " : " + content,
 					embeds,
 				}) : JSON.stringify({
 					content: job.data.type,

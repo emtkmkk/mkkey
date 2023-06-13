@@ -69,7 +69,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			author: {
 				name: body.message.user?.name || body.message.user?.username,
 				url: "https://mkkey.net/@" + body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""),
-				icon_url: body.note.user?.avatarUrl,
+				icon_url: body.message.user?.avatarUrl,
 			},
 			title: (body.message.group ? body.message.group.name + " グループでの" : "個人宛の") + "チャット",
 			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),

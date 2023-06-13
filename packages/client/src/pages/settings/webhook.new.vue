@@ -31,9 +31,6 @@
 			<FormSwitch v-model="event_reaction" class="_formBlock"
 				>リアクションされた時</FormSwitch
 			>
-			<FormSwitch v-model="event_reply" class="_formBlock"
-				>返信された時</FormSwitch
-			>
 			<FormSwitch v-model="event_userMessage" class="_formBlock"
 				>個人宛のチャット受信時</FormSwitch
 			>
@@ -45,6 +42,9 @@
 			>
 			<FormSwitch v-model="event_follow" class="_formBlock"
 				>フォロー成功時</FormSwitch
+			>
+			<FormSwitch v-model="event_reply" class="_formBlock"
+				>返信された時</FormSwitch
 			>
 			<FormSwitch v-if="antennas.length > 0" v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch

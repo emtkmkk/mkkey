@@ -79,12 +79,14 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner")
 		.leftJoinAndSelect("note.channel", "channel");
 	
-	query.andWhere(
-		new Brackets((qb) => {
-			qb.orWhere("note.channelId = :channelId", { channelId: channel.id })
-			qb.orWhere(":channelName = ANY (note.tags)",{ channelName: normalizeForSearch(channel.name) });
-		}),
-	);
+	if (!channel.description?.include("[localOnly]")){
+		query.andWhere(
+			new Brackets((qb) => {
+				qb.orWhere("note.channelId = :channelId", { channelId: channel.id })
+				qb.orWhere(":channelName = ANY (note.tags)",{ channelName: normalizeForSearch(channel.name) });
+			}),
+		);
+	}
 	//#endregion
 
 	const timeline = await query.take(ps.limit).getMany();

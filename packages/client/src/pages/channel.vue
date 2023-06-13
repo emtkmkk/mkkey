@@ -92,7 +92,7 @@
 					class="_gap"
 					src="channel"
 					:channel="channelId"
-					:channelName="channel.description?.include("[localOnly]") ? '' : channel.name"
+					:channelName="channel.description?.include('[localOnly]') ? '' : channel.name"
 					@before="before"
 					@after="after"
 				/>

@@ -502,7 +502,7 @@ export default async (
 				}
 			}
 
-			if (!dontFederateInitially) {
+			if (data.visibility !== "hidden") {
 				publishNotesStream(note);
 			}
 			if (note.replyId != null) {

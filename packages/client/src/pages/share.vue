@@ -92,19 +92,28 @@ async function init() {
 		}
 	}
 	
-	if (rUrl && rUrl !== encodeURI(rUrl)) {
-		if (!title && !rText) rText = rUrl;
-		rUrl = encodeURI(rUrl);
+	if (rUrl){
+		// 二重エンコード・三重エンコード検知
+		if (rUrl !== decodeURI(rUrl)) rUrl = decodeURI(rUrl);
+		if (rUrl !== decodeURI(rUrl)) rUrl = decodeURI(rUrl);
+		
+		if (rUrl !== encodeURI(rUrl)) {
+			if (!title && !rText) rText = encodeURI(rUrl);
+			rUrl = encodeURI(rUrl);
+		}
 	}
 	
+	// Yahooニュース
 	if (rText && rText?.startsWith(`${title}.\n`)){
 		rText = rText.replace(`${title}.\n`, "");
 	}
 	
+	// Twitter
 	if (rText?.includes("https://twitter.com") || rText?.includes("http://twitter.com")) {
 		rText = rText.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
 	}
 	
+	// Twitter
 	if (rUrl?.includes("https://twitter.com") || rUrl?.includes("http://twitter.com")) {
 		rUrl = rUrl.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
 	}

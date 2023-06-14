@@ -98,7 +98,7 @@ async function init() {
 		if (rUrl !== decodeURI(rUrl)) rUrl = decodeURI(rUrl);
 		
 		if (rUrl !== encodeURI(rUrl)) {
-			if (!title && !rText) rText = encodeURI(rUrl);
+			if (!title && !rText) rText = rUrl;
 			rUrl = encodeURI(rUrl);
 		}
 	}

@@ -449,6 +449,7 @@ router.get("/posts/:note", async (ctx, next) => {
 			),
 			// TODO: Let locale changeable by instance setting
 			summary: getNoteSummary(_note),
+			userName: _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/,'')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`,
 			instanceName: meta.name || "Calckey",
 			icon: meta.iconUrl,
 			privateMode: meta.privateMode,

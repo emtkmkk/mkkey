@@ -51,9 +51,14 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			url: "https://mkkey.net/notes/" + body.note.id,
 			description: getNoteSummary(body.note).length > 50 ? getNoteSummary(body.note).slice(0,50) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 52 ? " (CW)" : "") : getNoteSummary(body.note),
 			timestamp: new Date(body.note.createdAt),
-			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive ? body.note.files[0].thumbnailUrl : undefined,
+			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive ? 
+			    {
+					url: body.note.files[0].thumbnailUrl,
+					height: body.note.files[0].properties?.height,
+					width: body.note.files[0].properties?.width,
+				} : undefined,
 			thumbnail: {
-				url: body.emoji ? body.emoji.publicUrl : (body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive) ? body.note.files[0].thumbnailUrl : body.note.user?.avatarUrl,
+				url: body.emoji ? body.emoji.publicUrl : (body.note.files?.length > 1 && !body.note.cw && !body.note.files[1].isSensitive) ? body.note.files[1].thumbnailUrl : body.note.user?.avatarUrl,
 			},
 			color: 16757683,
 		}) : undefined,
@@ -75,9 +80,15 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			title: (body.message.group ? body.message.group.name + " グループでの" : "個人宛の") + "チャット",
 			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
 			description: body.message.text?.length > 50 ? body.message.text?.slice(0,50) + "…" : body.message.text ?? "",
+			image: body.message.file && !body.message.file.isSensitive ? 
+			    {
+					url: body.message.file.thumbnailUrl,
+					height: body.message.file.properties?.height,
+					width: body.message.file.properties?.width,
+				} : undefined,
 			timestamp: new Date(body.message.createdAt),
 			thumbnail: {
-				url: body.emoji ? body.emoji.publicUrl : body.message.file && !body.message.file.isSensitive ? body.message.file.thumbnailUrl : body.message.user?.avatarUrl,
+				url: body.emoji ? body.emoji.publicUrl : body.message.user?.avatarUrl,
 			},
 			color: 16757683,
 		}) : undefined,
@@ -89,7 +100,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
 		let embeds = toEmbeds(job.data.content);
-		const content = job.data.content.note ? " : " + getNoteSummary(job.data.content.note).slice(0,20) + (getNoteSummary(job.data.content.note).length > 20 ? "…" : "") : job.data.content.message ?  " : " + job.data.content.message.text?.slice(0,20) + (job.data.content.message.text?.length > 20 ? "…" : "") : "";
+		const content = job.data.content.note ? " : " + getNoteSummary(job.data.content.note).slice(0,20) + (getNoteSummary(job.data.content.note).length > 20 ? "…" : "") : job.data.content.message?.text ?  " : " + job.data.content.message.text.slice(0,20) + (job.data.content.message.text.length > 20 ? "…" : "") : "";
 		if (job.data.secret === "Discord"){
 			res = await getResponse({
 				url: job.data.to,

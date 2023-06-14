@@ -119,12 +119,12 @@ async function init() {
 	}
 	
 	if (rUrl){
-		if (title && rText) noteText += `[ [${title.replaceAll("[","【").replaceAll("]","】")}](${rUrl}) ]\n${rText}\n\n`;
+		if (title && rText) noteText += `< [${title.replaceAll("[","【").replaceAll("]","】")}](${rUrl}) >\n${rText}\n\n`;
 		else if (title) noteText += `[${title.replaceAll("[","【").replaceAll("]","】")}](${rUrl})\n\n`;
 		else if (rText) noteText += `[${rText.replaceAll("[","【").replaceAll("]","】")}](${rUrl})\n\n`;
 		else noteText += rUrl.length > 31 ? `[${rUrl.slice(0,30)}…](${rUrl})\n\n` : `${rUrl}\n\n`;
 	} else {
-	    if (title && rText) noteText += `[ ${title} ]\n${rText}\n\n`;
+	    if (title && rText) noteText += `< ${title} >\n${rText}\n\n`;
 	    else if (title) noteText += `${title}\n\n`;
 		else if (rText) noteText += `${rText}\n\n`;
 	}

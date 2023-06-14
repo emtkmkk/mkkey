@@ -154,8 +154,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 		
 		motd.push("アカウントを作成してから " + eDay + " 日目です")
-		motd.push("あなたの現在のノート数は " + user.notesCount + " です")
-		if (eDay >= 7 && avePost >= 2) motd.push("あなたの一日平均ノート数は " + avePost + " です")
+		motd.push("あなたの現在の投稿数は " + user.notesCount + " です")
+		if (eDay >= 7 && avePost >= 2) motd.push("あなたの一日平均投稿数は " + avePost + " です")
 		
 		if (user.isCat && user.speakAsCat) motd.push("にゃー")
 		if (user.isCat && user.speakAsCat) motd.push("にゃー！")

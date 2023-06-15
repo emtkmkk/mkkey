@@ -133,9 +133,13 @@ export default async (
 			);
 
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, (decodedReaction.name ? ":" + decodedReaction.name + ":" : reaction) + " " + (user.name || user.username) + " から", {
+				webhookDeliver(webhook, "reaction", {
 					note: await Notes.pack(note, user),
-					emoji: decodedReaction.name ? emoji : null,
+					reaction: {
+						user: user,
+						emojiName: decodedReaction.name ? ":" + decodedReaction.name + ":" : reaction,
+						customEmoji: decodedReaction.name ? emoji : undefined,
+					}
 				});
 			}
 

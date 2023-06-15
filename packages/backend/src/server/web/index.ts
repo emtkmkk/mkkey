@@ -15,7 +15,7 @@ import { createBullBoard } from "@bull-board/api";
 import { BullAdapter } from "@bull-board/api/bullAdapter.js";
 import { KoaAdapter } from "@bull-board/koa";
 
-import { In, IsNull } from "typeorm";
+import { In, IsNull, Not } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import config from "@/config/index.js";
 import {
@@ -660,11 +660,16 @@ router.get("(.*)", async (ctx) => {
 				Math.floor(Math.random() * meta.customSplashIcons.length)
 			];
 	}
+	let usersCount = await Users.countBy({ host: IsNull() });
+	let notesCount = await Notes.countBy({ userHost: IsNull() });
+	let gUsersCount = await Users.countBy({ host: Not(IsNull()) });
+	let gNotesCount = await Notes.countBy({ userHost: Not(IsNull()) });
+	let nowDate = new Date().toLocaleDateString()
 	await ctx.render("base", {
-		img: meta.bannerUrl,
+		img: meta.iconUrl,
 		title: meta.name || "Calckey",
 		instanceName: meta.name || "Calckey",
-		desc: meta.description,
+		desc: "FediverseのSNSサーバーのもこきーです\n\n" + nowDate + "時点の\nユーザ数 : " + usersCount + "\n合計投稿数 : " + notesCount + "\n連合ユーザ数" + gUsersCount + "\n連合投稿数" + gNotesCount,
 		icon: meta.iconUrl,
 		splashIcon: splashIconUrl,
 		themeColor: meta.themeColor,

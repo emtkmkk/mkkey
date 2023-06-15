@@ -152,7 +152,9 @@ export async function insertFollowingDoc(
 
 	// Publish followed event
 	if (Users.isLocalUser(followee)) {
-		Users.pack(follower.id, followee).then(async (packed) => {
+		Users.pack(follower.id, followee, {
+			detail: true,
+		}).then(async (packed) => {
 			publishMainStream(followee.id, "followed", packed);
 
 			const webhooks = (await getActiveWebhooks()).filter(

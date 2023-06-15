@@ -46,6 +46,9 @@
 			<FormSwitch v-model="event_reply" class="_formBlock"
 				>返信された時</FormSwitch
 			>
+			<FormSwitch v-if="$store.state.developer" v-model="event_unfollow" class="_formBlock"
+				>【dev】フォロー解除された時</FormSwitch
+			>
 			<FormSwitch v-if="antennas.length > 0 && event_excludeAntennas.length > 0" v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch
 			>				
@@ -113,6 +116,7 @@ let event_mention = $ref(webhook.on.includes("mention"));
 let event_antenna = $ref(webhook.on.includes("antenna"));
 let event_userMessage = $ref(webhook.on.includes("userMessage"));
 let event_groupMessage = $ref(webhook.on.includes("groupMessage"));
+let event_unfollow = $ref(webhook.on.includes("unfollow"));
 
 let event_excludeAntennas = $ref(antennas.map((x) => !webhook.on.includes(`exclude-${x.id}`) ?? true));
 
@@ -127,6 +131,7 @@ async function save(): Promise<void> {
 	if (event_mention) events.push("mention");
 	if (event_userMessage) events.push("userMessage");
 	if (event_groupMessage) events.push("groupMessage");
+	if (event_unfollow) events.push("unfollow");
 	if (event_antenna) {
 		events.push("antenna");
 			event_excludeAntennas.forEach((x,index) => {

@@ -33,7 +33,7 @@ const relative = $computed(() => {
 	const ago = (now.getTime() - _time.getTime()) / 1000; /*ms*/
 	return now.getFullYear() !== _time.getFullYear()
 		? _time.toLocaleString([], { year:'numeric' , month: 'numeric' , day: 'numeric' , hour: 'numeric' , minute: 'numeric', hour12: false })
-		: now.toLocaleDateString([], { month: 'numeric', day: 'numeric' }) !== _time.toLocaleDateString([], { month: 'numeric', day: 'numeric' })
+		: ago >= (60 * 60 * 24)
 		? _time.toLocaleString([], { month: 'numeric' , day: 'numeric' , hour: 'numeric' , minute: 'numeric', hour12: false })
 		: ago >= 3600
 		? _time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' , hour12: false })

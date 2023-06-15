@@ -669,7 +669,7 @@ router.get("(.*)", async (ctx) => {
 		img: meta.iconUrl,
 		title: meta.name || "Calckey",
 		instanceName: meta.name || "Calckey",
-		desc: "FediverseのSNSサーバーのもこきーです\n\n" + nowDate + "時点の\nユーザ数 : " + usersCount + "\n合計投稿数 : " + notesCount + "\n連合ユーザ数" + gUsersCount + "\n連合投稿数" + gNotesCount,
+		desc: "FediverseのSNSサーバーのもこきーです\n\n" + nowDate + "時点の\nユーザ数 : " + usersCount + "\n合計投稿数 : " + notesCount + "\n連合ユーザ数 : " + gUsersCount + "\n連合投稿数 : " + gNotesCount,
 		icon: meta.iconUrl,
 		splashIcon: splashIconUrl,
 		themeColor: meta.themeColor,

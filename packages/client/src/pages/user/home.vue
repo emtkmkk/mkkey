@@ -235,7 +235,7 @@
 									<MkTime :time="user.createdAt" mode="detail" />
 								</dd>
 							</dl>
-							<dl v-if="($i && $i.id === user.id) || (user.host == null && !user.isBot)" class="field">
+							<dl v-if="($i && $i.id === user.id) || (user.host == null && !user.isBot) || ($i && !user.isBot)" class="field">
 								<dt class="name">
 									<i
 										class="ph-lightning ph-bold ph-lg ph-fw ph-lg"
@@ -245,7 +245,7 @@
 								<dd class="value" >
 									<Mfm
 										v-if="stats.powerRank?.startsWith('⭐')"
-										:text="'$[rainbow ⭐]' + stats.powerRank.slice(1) + ' '"
+										:text="'$[rainbow.speed=2s ⭐]' + stats.powerRank.slice(1) + ' '"
 										:is-note="false"
 										:author="user"
 										:i="$i"
@@ -514,7 +514,7 @@ function parallax() {
 }
 
 onMounted(() => {
-	if (props.user.host == null) {
+	if ($i || props.user.host == null) {
 		os.api("users/stats", {
 			userId: props.user.id,
 		}).then((response) => {

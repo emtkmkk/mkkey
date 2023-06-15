@@ -263,75 +263,75 @@ export default define(meta, paramDef, async (ps, me) => {
 	const rankResult = await awaitAll({
 		notesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
-			.addwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		repliesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.replyId IS NOT NULL")
-			.addwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		renotesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.renoteId IS NOT NULL")
-			.addwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		repliedCount: Notes.createQueryBuilder("note")
 			.where("note.replyUserId = :userId", { userId: user.id })
-			.addwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		renotedCount: Notes.createQueryBuilder("note")
 			.where("note.renoteUserId = :userId", { userId: user.id })
-			.addwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		pollVotesCount: PollVotes.createQueryBuilder("vote")
 			.where("vote.userId = :userId", { userId: user.id })
-			.addwhere("vote.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("vote.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		pollVotedCount: PollVotes.createQueryBuilder("vote")
 			.innerJoin("vote.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
-			.addwhere("vote.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("vote.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		sentReactionsCount: NoteReactions.createQueryBuilder("reaction")
 			.where("reaction.userId = :userId", { userId: user.id })
-			.addwhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		receivedReactionsCount: NoteReactions.createQueryBuilder("reaction")
 			.innerJoin("reaction.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
-			.addwhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		noteFavoritesCount: NoteFavorites.createQueryBuilder("favorite")
 			.where("favorite.userId = :userId", { userId: user.id })
-			.addwhere("favorite.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("favorite.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		pageLikesCount: PageLikes.createQueryBuilder("like")
 			.where("like.userId = :userId", { userId: user.id })
-			.addwhere("like.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("like.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		pageLikedCount: PageLikes.createQueryBuilder("like")
 			.innerJoin("like.page", "page")
 			.where("page.userId = :userId", { userId: user.id })
-			.addwhere("like.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("like.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		driveFilesCount: DriveFiles.createQueryBuilder("file")
 			.where("file.userId = :userId", { userId: user.id })
-			.addwhere("file.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("file.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		notesPostDays: (await Notes.createQueryBuilder("note")
 			.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.visibility <> 'hidden'")
 			.andWhere("'misshaialert' <> ALL(note.tags)")
-			.addwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getRawOne()).count,
 		sendMessageCount: await MessagingMessages.createQueryBuilder("messaging_message")
 			.where("messaging_message.userId = :userId", { userId: user.id })
-			.addwhere("messaging_message.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("messaging_message.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 		readMessageCount: await MessagingMessages.createQueryBuilder("messaging_message")
 			.where(" :userId  = ANY(messaging_message.reads) ", { userId: user.id })
-			.addwhere("messaging_message.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andwhere("messaging_message.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.getCount(),
 	});
 	

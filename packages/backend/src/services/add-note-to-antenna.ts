@@ -79,8 +79,13 @@ export async function addNoteToAntenna(
 
 				for (const webhook of webhooks) {
 					const antennaUser = await Users.findOneByOrFail({ id: antenna.userId });
-					webhookDeliver(webhook, antenna.name + "アンテナ新着 " + (_note.user?.name || _note.user?.username) + " から", {
+					webhookDeliver(webhook, "antenna", {
 						note: await Notes.pack(__note , antennaUser),
+						antenna: {
+							id: antenna.id,
+							name: antenna.name,
+							noteUser: _note.user,
+						}
 					});
 				}
 			}

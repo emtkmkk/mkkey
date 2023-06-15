@@ -244,7 +244,7 @@
 								</dt>
 								<dd class="value" >
 									<Mfm
-										v-if="stats.powerRank.startsWith('⭐')"
+										v-if="stats.powerRank?.startsWith('⭐')"
 										:text="'$[rainbow ⭐]' + stats.powerRank.slice(1) + ' '"
 										:is-note="false"
 										:author="user"

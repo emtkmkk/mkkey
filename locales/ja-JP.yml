@@ -1474,6 +1474,7 @@ _widgets:
   serverMetric: "サーバーメトリクス"
   aiscript: "AiScriptコンソール"
   userList: "ユーザーリスト"
+  tweets: "ツイート"
   _userList:
     chooseList: "リストを選択"
 _cw:

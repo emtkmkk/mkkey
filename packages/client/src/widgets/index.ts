@@ -93,6 +93,10 @@ export default function (app: App) {
 		"MkwUserList",
 		defineAsyncComponent(() => import("./user-list.vue")),
 	);
+	app.component(
+		"MkwTweets",
+		defineAsyncComponent(() => import("./tweets.vue")),
+	);
 }
 
 export const widgets = [
@@ -119,4 +123,5 @@ export const widgets = [
 	"jobQueue",
 	"button",
 	"aiscript",
+	"tweets",
 ];

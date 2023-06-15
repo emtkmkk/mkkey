@@ -58,7 +58,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 					width: body.note.files[0].properties?.width,
 				} : undefined,
 			thumbnail: {
-				url: body.emoji ? body.emoji.publicUrl : (body.note.files?.length > 1 && !body.note.cw && !body.note.files[1].isSensitive) ? body.note.files[1].thumbnailUrl : body.note.user?.avatarUrl,
+				url: body.reaction?.customEmoji ? body.reaction?.customEmoji.publicUrl : (body.note.files?.length > 1 && !body.note.cw && !body.note.files[1].isSensitive) ? body.note.files[1].thumbnailUrl : body.note.user?.avatarUrl,
 			},
 			color: 16757683,
 		}) : undefined,
@@ -95,12 +95,61 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 	].filter((x: DiscordEmbeds | undefined) => x !== undefined)
 }
 
+function getNoteContentSummary(note,userId): string {
+	return (
+		note.user?.id === userId 
+			? getNoteSummary(note).slice(0,10) + (getNoteSummary(note).length > 10 ? "…" : "") 
+			: getNoteSummary(note).slice(0,40) + (getNoteSummary(note).length > 40 ? "…" : "")
+	) 
+}
+
+function typeToContent(jobData: any): string {
+	const body = jobData.content;
+	
+	const noteUser = body.note ? (body.note.user?.name || body.note.user?.username) : undefined;
+	const userName = body.user ? body.user.name ? body.user.name + " (" + body.user.username + "@" + (body.user.host ?? "mkkey.net") + ")" : body.user.username + "@" + (body.user.host ?? "mkkey.net") : undefined;
+	const reactionUser = body.reaction ? (body.reaction.user?.name || body.reaction.user?.username) : undefined;
+	const antennaNoteUser = body.antenna ? (body.antenna.noteUser?.name || body.antenna.noteUser?.username) : undefined;
+	const messageUser = body.message ? (body.message.user?.name || body.message.user?.username) : undefined;
+	
+	const content = 
+		body.note 
+			? " : " + getNoteContentSummary(body.note.text ? body.note : body.note.renote, jobData.userId)
+			: body.message?.text 
+				?  " : " + body.message.text.slice(0,40) + (body.message.text.length > 40 ? "…" : "") 
+				: "";
+							
+	switch (jobData.type) {
+		case "mention":
+			return noteUser + " からの呼びかけ" + content;
+		case "unfollow":
+			return userName + " からリムーブされました"
+		case "follow":
+			return userName + " のフォローに成功"
+		case "followed":
+			return userName + " からフォローされました"
+		case "note":
+			return "投稿に成功しました" + content;
+		case "reply":
+			return noteUser + " からの返信" + content;
+		case "renote":
+			return noteUser + " からの" + (body.note.text ? "引用" : "RT") + content;
+		case "reaction":
+			return body.reaction?.emojiName + " " + reactionUser + " から" + content;
+		case "antenna":
+			return body.antenna?.name + "📡新着 " + antennaNoteUser + " から" + content;
+		case "userMessage":
+			return messageUser + " からのメッセージ" + content;
+		case "groupMessage":
+			return body.message.group.name + " グループで " + messageUser + " からのメッセージ" + content;
+	}
+}
+
 export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 	try {
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
 		let embeds = toEmbeds(job.data.content);
-		const content = job.data.content.note ? " : " + (job.data.content.note.user?.id === job.data.userId ? getNoteSummary(job.data.content.note).slice(0,10) + (getNoteSummary(job.data.content.note).length > 10 ? "…" : "") : getNoteSummary(job.data.content.note).slice(0,40) + (getNoteSummary(job.data.content.note).length > 40 ? "…" : "")) : job.data.content.message?.text ?  " : " + job.data.content.message.text.slice(0,40) + (job.data.content.message.text.length > 40 ? "…" : "") : "";
 		if (job.data.secret === "Discord"){
 			res = await getResponse({
 				url: job.data.to,
@@ -112,7 +161,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 					"Content-Type": "application/json",
 				},
 				body: embeds.length !== 0 ? JSON.stringify({
-					content: job.data.type + content,
+					content: typeToContent(job.data),
 					embeds,
 				}) : JSON.stringify({
 					content: job.data.type,

@@ -242,8 +242,17 @@
 									></i>
 									{{ i18n.ts.power }}
 								</dt>
-								<dd class="value">
-									{{ stats.powerRank ? stats.powerRank + " " : "" }}
+								<dd class="value" >
+									<Mfm
+										v-if="stats.powerRank.startsWith('⭐')"
+										:text="'$[rainbow ⭐]' + stats.powerRank.slice(1) + ' '"
+										:is-note="false"
+										:author="user"
+										:i="$i"
+									/>
+									<template v-else>
+										{{ stats.powerRank ? stats.powerRank + " " : "" }}
+									</template>
 									<MkNumber :value="stats.power" />
 								</dd>
 							</dl>

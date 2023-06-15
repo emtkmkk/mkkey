@@ -378,8 +378,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		rankResult.readMessageCount * 2
 		) / elapsedDays);
 		
-	const rankBorder = [50,200,400,550,700,850,1000,1500,2000,3000,4000,5000];
-	const rankName = ["G","F","E","D","C","B","B+","A","A+","AA","AA+","AAA","AAA+"];
+	const rankBorder = [50,125,200,300,400,500,600,700,800,1000,1200,1600,2000,2750,3500,4250,5000,6000];
+	const rankName = ["G","F","F+","E","E+","D","D+","C","C+","B","B+","A","A+","AA","AA+","AAA","AAA+","⭐","⭐+"];
 	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0];
 	
 	if (rankPower >= rankBorder.slice(-1)[0] + suffixIncBorder) {

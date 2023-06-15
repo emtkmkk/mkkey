@@ -51,13 +51,13 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			url: "https://mkkey.net/notes/" + body.note.id,
 			description: getNoteSummary(body.note).length > 100 ? getNoteSummary(body.note).slice(0,100) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 102 ? " (CW)" : "") : getNoteSummary(body.note),
 			timestamp: new Date(body.note.createdAt),
-			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.startsWith("image") ? 
+			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image") ? 
 			    {
 					url: body.note.files[0].url,
 					height: body.note.files[0].properties?.height,
 					width: body.note.files[0].properties?.width,
 				} : undefined,
-			video: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && (body.note.files[0].type?.startsWith("video") || body.note.files[0].type?.startsWith("audio")) ? 
+			video: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && (body.note.files[0].type?.toLowerCase().startsWith("video") || body.note.files[0].type?.toLowerCase().startsWith("audio")) ? 
 			    {
 					url: body.note.files[0].url,
 					height: body.note.files[0].properties?.height,
@@ -104,13 +104,13 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			title: (body.message.group ? body.message.group.name + " グループでの" : "個人宛の") + "チャット",
 			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
 			description: body.message.text?.length > 100 ? body.message.text?.slice(0,100) + "…" : body.message.text ?? "",
-			image: body.message.file && !body.message.file.isSensitive && body.message.file.type?.startsWith("image") ? 
+			image: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? 
 			    {
 					url: body.message.file.url,
 					height: body.message.file.properties?.height,
 					width: body.message.file.properties?.width,
 				} : undefined,
-			video: body.message.file && !body.message.file.isSensitive && (body.message.file.type?.startsWith("video") || body.message.file.type?.startsWith("audio")) ? 
+			video: body.message.file && !body.message.file.isSensitive && (body.message.file.type?.toLowerCase().startsWith("video") || body.message.file.type?.toLowerCase().startsWith("audio")) ? 
 			    {
 					url: body.message.file.url,
 					height: body.message.file.properties?.height,

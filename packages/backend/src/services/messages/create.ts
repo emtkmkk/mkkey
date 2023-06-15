@@ -112,7 +112,7 @@ export async function createMessage(
 			);
 
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, (messageObj.user?.name || messageObj.user?.username) + " からのメッセージ", {
+				webhookDeliver(webhook, "userMessage", {
 					message: messageObj,
 				});
 			}
@@ -133,7 +133,7 @@ export async function createMessage(
 				);
 
 				for (const webhook of webhooks) {
-					webhookDeliver(webhook,recipientGroup.name + " グループで " + (messageObj.user?.name || messageObj.user?.username) + " からのメッセージ", {
+					webhookDeliver(webhook, "groupMessage", {
 						message: messageObj,
 					});
 				}

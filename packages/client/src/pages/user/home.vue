@@ -192,7 +192,7 @@
 								{{ i18n.ts.noAccountDescription }}
 							</p>
 						</div>
-						<div v-if="user.location || user.birthday || user.host == null || ($i && $i.id === user.id) || (user.host == null && !user.isBot)" class="fields system">
+						<div v-if="user.location || user.birthday || $i || user.host == null" class="fields system">
 							<dl v-if="user.location" class="field">
 								<dt class="name">
 									<i
@@ -245,11 +245,11 @@
 								<dd class="value" >
 									<Mfm
 										v-if="stats.powerRank?.startsWith('⭐')"
-										:text="'$[rainbow.speed=2s ⭐]' + stats.powerRank.slice(1) + ' '"
+										:text="'$[rainbow.speed=2s ⭐]' + stats.powerRank.slice(1)"
 										:is-note="false"
 										:author="user"
 										:i="$i"
-									/>
+									/> 
 									<template v-else>
 										{{ stats.powerRank ? stats.powerRank + " " : "" }}
 									</template>

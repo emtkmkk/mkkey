@@ -103,7 +103,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			},
 			title: (body.message.group ? body.message.group.name + " グループでの" : "個人宛の") + "チャット",
 			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
-			description: body.message.text?.length > 100 ? body.message.text?.slice(0,100) + "…" : body.message.text ?? "",
+			description: (body.message.text?.length > 100 ? body.message.text?.slice(0,100) + "… " : body.message.text ?? "") + (body.message.file ? "(📎)" : ""),
 			image: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? 
 			    {
 					url: body.message.file.url,
@@ -118,7 +118,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 				} : undefined,
 			timestamp: new Date(body.message.createdAt),
 			thumbnail: {
-				url: body.emoji ? body.emoji.publicUrl : body.message.user?.avatarUrl,
+				url: body.emoji ? body.emoji.publicUrl : body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("video") ? body.message.file.thumbnailUrl : body.message.user?.avatarUrl,
 			},
 			color: 16757683,
 		}) : undefined,

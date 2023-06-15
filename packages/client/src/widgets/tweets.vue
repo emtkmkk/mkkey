@@ -57,7 +57,7 @@ const widthAdjust = 15;
 const widgetPropsDef = {
 	accounts: {
 		type: "string" as const,
-		default: "popn_team,FF_XIV_JP,IIDX_OFFICIAL"
+		default: "FF_XIV_JP,FFXIV_NEWS_JP,IIDX_OFFICIAL,popn_team"
 	},
 	height: {
 		type: "number" as const,

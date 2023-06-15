@@ -47,28 +47,52 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 				url: "https://mkkey.net/@" + body.note.user?.username + (body.note.user?.host ? "@" + body.note.user?.host : ""),
 				icon_url: body.note.user?.avatarUrl,
 			},
-			title: "投稿" + (body.note.visibility === "home" ? " : ホーム" : body.note.visibility === "followers" ? " : フォロワー限定" : body.note.visibility === "specified" ? " : ダイレクト" : ""),
+			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
 			url: "https://mkkey.net/notes/" + body.note.id,
 			description: getNoteSummary(body.note).length > 100 ? getNoteSummary(body.note).slice(0,100) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 102 ? " (CW)" : "") : getNoteSummary(body.note),
 			timestamp: new Date(body.note.createdAt),
-			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive ? 
+			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.startsWith("image") ? 
 			    {
-					url: body.note.files[0].thumbnailUrl,
+					url: body.note.files[0].url,
+					height: body.note.files[0].properties?.height,
+					width: body.note.files[0].properties?.width,
+				} : undefined,
+			video: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && (body.note.files[0].type?.startsWith("video") || body.note.files[0].type?.startsWith("audio")) ? 
+			    {
+					url: body.note.files[0].url,
 					height: body.note.files[0].properties?.height,
 					width: body.note.files[0].properties?.width,
 				} : undefined,
 			thumbnail: {
-				url: body.reaction?.customEmoji ? body.reaction?.customEmoji.publicUrl : (body.note.files?.length > 1 && !body.note.cw && !body.note.files[1].isSensitive) ? body.note.files[1].thumbnailUrl : body.note.user?.avatarUrl,
+				url: body.reaction?.customEmoji ? body.reaction?.customEmoji.publicUrl : (body.note.files?.length > 1 && !body.note.cw && !body.note.files[1].isSensitive && body.note.files[1].type?.startsWith("image")) ? body.note.files[1].thumbnailUrl : body.note.user?.avatarUrl,
 			},
 			color: 16757683,
 		}) : undefined,
 		body.user ? ({
-			title: "ユーザ",
+			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (body.user.name + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : ""))),
 			url: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
-			description: body.user.name ? (body.user.name + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : "")),
-			thumbnail: {
+			description: body.user.description ?? undefined,
+			fields: body.user.notesCount ? [
+				{
+					name: "投稿数",
+					value: body.user.notesCount
+				},
+				{
+					name: "フォロー",
+					value: body.user.followingCount ?? "N/A"
+				},
+				{
+					name: "フォロワー",
+					value: body.user.followersCount ?? "N/A"
+				},
+			] : undefined,
+			thumbnail: body.user.avatarUrl ? {
 				url: body.user.avatarUrl,
-			},
+			} : undefined,
+			image: body.user.bannerUrl ? 
+			    {
+					url: body.user.bannerUrl,
+				} : undefined,
 			color: 16757683,
 		}) : undefined,
 		body.message ? ({
@@ -80,9 +104,15 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			title: (body.message.group ? body.message.group.name + " グループでの" : "個人宛の") + "チャット",
 			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
 			description: body.message.text?.length > 100 ? body.message.text?.slice(0,100) + "…" : body.message.text ?? "",
-			image: body.message.file && !body.message.file.isSensitive ? 
+			image: body.message.file && !body.message.file.isSensitive && body.message.file.type?.startsWith("image") ? 
 			    {
-					url: body.message.file.thumbnailUrl,
+					url: body.message.file.url,
+					height: body.message.file.properties?.height,
+					width: body.message.file.properties?.width,
+				} : undefined,
+			video: body.message.file && !body.message.file.isSensitive && (body.message.file.type?.startsWith("video") || body.message.file.type?.startsWith("audio")) ? 
+			    {
+					url: body.message.file.url,
 					height: body.message.file.properties?.height,
 					width: body.message.file.properties?.width,
 				} : undefined,
@@ -142,6 +172,8 @@ function typeToContent(jobData: any): string {
 			return messageUser + " からのメッセージ" + content;
 		case "groupMessage":
 			return body.message.group.name + " グループで " + messageUser + " からのメッセージ" + content;
+		default:
+			return "type : " + jobData.type + content;
 	}
 }
 

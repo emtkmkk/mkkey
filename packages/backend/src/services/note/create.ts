@@ -517,7 +517,7 @@ export default async (
 			);
 
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, "トゥートに成功", {
+				webhookDeliver(webhook, "note", {
 					note: await Notes.pack(note, user),
 				});
 			}
@@ -551,7 +551,7 @@ export default async (
 							(x) => x.userId === data.reply!.userId && x.on.includes("reply"),
 						);
 						for (const webhook of webhooks) {
-							webhookDeliver(webhook, (user.name || user.username) + " からの返信", {
+							webhookDeliver(webhook, "reply", {
 								note: packedReply,
 							});
 						}
@@ -591,7 +591,7 @@ export default async (
 						(x) => x.userId === data.renote!.userId && x.on.includes("renote"),
 					);
 					for (const webhook of webhooks) {
-						webhookDeliver(webhook, (user.name || user.username) + " からのRT", {
+						webhookDeliver(webhook, "renote", {
 							note: packedRenote,
 						});
 					}
@@ -888,7 +888,7 @@ async function createMentionedEvents(
 				(x) => x.userId === u.id && x.on.includes("mention"),
 			);
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, (detailPackedNote.user.name || detailPackedNote.user.username) + " からの呼びかけ", {
+				webhookDeliver(webhook, "mention", {
 					note: detailPackedNote,
 				});
 			}

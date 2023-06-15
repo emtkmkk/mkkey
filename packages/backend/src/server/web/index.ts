@@ -676,7 +676,7 @@ router.get("(.*)", async (ctx) => {
 		randomMOTD: motd[Math.floor(Math.random() * motd.length)],
 		privateMode: meta.privateMode,
 	});
-	ctx.set("Cache-Control", "public, max-age=3");
+	ctx.set("Cache-Control", "public, max-age=15");
 });
 
 // Register router

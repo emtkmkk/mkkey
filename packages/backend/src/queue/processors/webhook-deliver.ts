@@ -49,7 +49,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			},
 			title: "投稿" + (body.note.visibility === "home" ? " : ホーム" : body.note.visibility === "followers" ? " : フォロワー限定" : body.note.visibility === "specified" ? " : ダイレクト" : ""),
 			url: "https://mkkey.net/notes/" + body.note.id,
-			description: getNoteSummary(body.note).length > 50 ? getNoteSummary(body.note).slice(0,50) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 52 ? " (CW)" : "") : getNoteSummary(body.note),
+			description: getNoteSummary(body.note).length > 100 ? getNoteSummary(body.note).slice(0,100) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 102 ? " (CW)" : "") : getNoteSummary(body.note),
 			timestamp: new Date(body.note.createdAt),
 			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive ? 
 			    {
@@ -79,7 +79,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			},
 			title: (body.message.group ? body.message.group.name + " グループでの" : "個人宛の") + "チャット",
 			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
-			description: body.message.text?.length > 50 ? body.message.text?.slice(0,50) + "…" : body.message.text ?? "",
+			description: body.message.text?.length > 100 ? body.message.text?.slice(0,100) + "…" : body.message.text ?? "",
 			image: body.message.file && !body.message.file.isSensitive ? 
 			    {
 					url: body.message.file.thumbnailUrl,
@@ -100,7 +100,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
 		let embeds = toEmbeds(job.data.content);
-		const content = job.data.content.note ? " : " + getNoteSummary(job.data.content.note).slice(0,20) + (getNoteSummary(job.data.content.note).length > 20 ? "…" : "") : job.data.content.message?.text ?  " : " + job.data.content.message.text.slice(0,20) + (job.data.content.message.text.length > 20 ? "…" : "") : "";
+		const content = job.data.content.note ? " : " + job.data.content.note.user?.id === job.data.userId ? getNoteSummary(job.data.content.note).slice(0,10) + (getNoteSummary(job.data.content.note).length > 10 ? "…" : "") : getNoteSummary(job.data.content.note).slice(0,40) + (getNoteSummary(job.data.content.note).length > 40 ? "…" : "") : job.data.content.message?.text ?  " : " + job.data.content.message.text.slice(0,40) + (job.data.content.message.text.length > 40 ? "…" : "") : "";
 		if (job.data.secret === "Discord"){
 			res = await getResponse({
 				url: job.data.to,

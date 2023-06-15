@@ -46,6 +46,9 @@
 			<FormSwitch v-model="event_reply" class="_formBlock"
 				>返信された時</FormSwitch
 			>
+			<FormSwitch v-if="$store.state.developer" v-model="event_unfollow" class="_formBlock"
+				>【dev】フォロー解除された時</FormSwitch
+			>
 			<FormSwitch v-if="antennas.length > 0" v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch
 			>
@@ -99,6 +102,7 @@ let event_mention = $ref(true);
 let event_antenna = $ref(false);
 let event_userMessage = $ref(true);
 let event_groupMessage = $ref(true);
+let event_unfollow = $ref(false);
 
 const antennasAll = await os.api("antennas/list") as Array<any>;
 const antennas = $ref(antennasAll.filter((x) => x.notify));
@@ -116,6 +120,7 @@ async function create(): Promise<void> {
 	if (event_mention) events.push("mention");
 	if (event_userMessage) events.push("userMessage");
 	if (event_groupMessage) events.push("groupMessage");
+	if (event_unfollow) events.push("unfollow");
 	if (event_antenna) {
 		events.push("antenna");
 		event_excludeAntennas.forEach((x,index) => {

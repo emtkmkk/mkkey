@@ -109,7 +109,9 @@ function checkMuteKeyword(
 		const relationKeyword = keyword.replace("-relation:","").replace("relation:","");
 		if (note.user.isFollowing != null) return false;
 		if (relationKeyword === "Follow" || relationKeyword === "Following") return reverse ? !note.user.isFollowing : note.user.isFollowing;
+		if (relationKeyword === "FollowOnly" || relationKeyword === "FollowingOnly") return reverse ? !(note.user.isFollowing && !note.user.isFollowed) : note.user.isFollowing && !note.user.isFollowed;
 		if (relationKeyword === "Follower" || relationKeyword === "Followed") return reverse ? !note.user.isFollowed : note.user.isFollowed;
+		if (relationKeyword === "FollowerOnly" || relationKeyword === "FollowedOnly") return reverse ? !(!note.user.isFollowing && note.user.isFollowed) : !note.user.isFollowing && note.user.isFollowed;
 		if (relationKeyword === "both") return reverse ? !(note.user.isFollowed && note.user.isFollowing) : note.user.isFollowed && note.user.isFollowing;
 		if (relationKeyword === "none") return reverse ? !(!note.user.isFollowed && !note.user.isFollowing) : !note.user.isFollowed && !note.user.isFollowing;
 		return false;

@@ -164,6 +164,13 @@ function onContextmenu(widget: Widget, ev: MouseEvent) {
 					configWidget(widget.id);
 				},
 			},
+			{
+				icon: "ph-gear-six ph-bold ph-lg",
+				text: "全体設定",
+				action: () => {
+					props.edit = true;
+				},
+			},
 		],
 		ev
 	);

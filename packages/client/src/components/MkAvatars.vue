@@ -21,7 +21,7 @@ const users = ref([]);
 onMounted(async () => {
 	const users = (await os.api("users/show", {
 		userIds: props.userIds,
-	})).filter((x) => props.hiddenOfflineSleep ? !(x.onlineStatus?.include("offline") || x.onlineStatus?.include("sleep")) : true);
+	})).filter((x) => props.hiddenOfflineSleep ? !(x.onlineStatus?.includes("offline") || x.onlineStatus?.includes("sleep")) : true);
 	const onlineStatus = ["online", "half-online", "active", "half-active", "offline", "half-sleeping", "sleeping", "deep-sleeping", "never-sleeping", "unknown"]
 	users.value = props.sortLastLogin 
 		? users.sort((a,b) => 

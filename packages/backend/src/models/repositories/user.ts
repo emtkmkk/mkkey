@@ -375,12 +375,14 @@ export const UserRepository = db.getRepository(User).extend({
 		me?: { id: User["id"] } | null | undefined,
 		options?: {
 			detail?: D;
+			relation?: D;
 			includeSecrets?: boolean;
 		},
 	): Promise<IsMeAndIsUserDetailed<ExpectsMe, D>> {
 		const opts = Object.assign(
 			{
 				detail: false,
+				relation: false,
 				includeSecrets: false,
 			},
 			options,
@@ -408,7 +410,7 @@ export const UserRepository = db.getRepository(User).extend({
 		const isMe = meId === user.id;
 
 		const relation =
-			meId && !isMe && opts.detail
+			meId && !isMe && (opts.detail || opts.relation)
 				? await this.getRelation(meId, user.id)
 				: null;
 		const pins = opts.detail
@@ -630,6 +632,7 @@ export const UserRepository = db.getRepository(User).extend({
 		me?: { id: User["id"] } | null | undefined,
 		options?: {
 			detail?: D;
+			relation?: D;
 			includeSecrets?: boolean;
 		},
 	): Promise<IsUserDetailed<D>[]> {

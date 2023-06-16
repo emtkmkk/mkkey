@@ -1,9 +1,7 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
-
-export class addUserSetting1683682889949 implements MigrationInterface {
+export class addUserSetting1683682889949 {
     name = 'addUserSetting1683682889949'
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
+    async up(queryRunner) {
         await queryRunner.query(`ALTER TABLE "user" ADD "blockPostPublic" boolean NOT NULL DEFAULT false`);
         await queryRunner.query(`ALTER TABLE "user" ADD "blockPostHome" boolean NOT NULL DEFAULT false`);
         await queryRunner.query(`ALTER TABLE "user" ADD "blockPostNotLocal" boolean NOT NULL DEFAULT false`);
@@ -11,7 +9,7 @@ export class addUserSetting1683682889949 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "user" ADD "isSilentLocked" boolean NOT NULL DEFAULT false`);
     }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
+    async down(queryRunner) {
         await queryRunner.query(`ALTER TABLE "user" DROP COLUMN "blockPostPublic"`);
         await queryRunner.query(`ALTER TABLE "user" DROP COLUMN "blockPostHome"`);
         await queryRunner.query(`ALTER TABLE "user" DROP COLUMN "blockPostNotLocal"`);

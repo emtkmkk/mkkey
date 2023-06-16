@@ -12,14 +12,26 @@ import * as os from "@/os";
 
 const props = defineProps<{
 	userIds: string[];
+	sortStatus?: boolean;
+	hiddenOfflineSleep?: boolean;
 }>();
 
 const users = ref([]);
 
 onMounted(async () => {
-	users.value = await os.api("users/show", {
+	const users = await os.api("users/show", {
 		userIds: props.userIds,
-	});
+	}).filter((x) => props.hiddenOfflineSleep ? !(x.onlineStatus?.include("offline") || x.onlineStatus?.include("sleep")) : true);
+	const onlineStatus = ["online", "half-online", "active", "half-active", "offline", "half-sleeping", "sleeping", "deep-sleeping", "never-sleeping", "unknown"]
+	users.value = props.sortLastLogin 
+		? users.sort((a,b) => 
+			onlineStatus.indexOf(a.onlineStatus) < onlineStatus.indexOf(b.onlineStatus) 
+				? -1 
+				: onlineStatus.indexOf(a.onlineStatus) === onlineStatus.indexOf(b.onlineStatus) 
+					? 0 
+					: 1
+		) 
+		: users
 });
 </script>
 

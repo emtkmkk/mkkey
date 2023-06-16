@@ -16,6 +16,8 @@
 			</div>
 			<div>
 				<div class="info">
+					<i v-if="note.isFollowing != null && note.isFollowing && !note.isFollowed" class="ph-heart-half ph-bold"></i>
+					<i v-if="note.isFollowing != null && !note.isFollowing && !note.isFollowed" class="ph-placeholder ph-bold"></i>
 					<MkA class="created-at" :to="notePage(note)">
 						<MkTime :time="note.createdAt" />
 						<MkTime

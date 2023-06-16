@@ -104,7 +104,7 @@ function checkMuteKeyword(
 		const localOnlyKeyword = keyword.replace("localOnly:","");
 		return note.localOnly === localOnlyKeyword;
 	}
-	if (keyword.startsWith("relation:")) {
+	if (keyword.startsWith("relation:") || keyword.startsWith("-relation:")) {
 		let reverse = keyword.startsWith("-");
 		const relationKeyword = keyword.replace("-relation:","").replace("relation:","");
 		if (note.user.isFollowing == null) return false;

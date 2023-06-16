@@ -154,6 +154,8 @@ function typeToContent(jobData: any): string {
 			return noteUser + " からの呼びかけ" + content;
 		case "unfollow":
 			return userName + " からリムーブされました"
+		case "silentUnfollow":
+			return "💬 " + userName + " からリムーブされました"
 		case "follow":
 			return userName + " のフォローに成功"
 		case "followed":

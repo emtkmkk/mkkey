@@ -208,6 +208,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			userId: note.userId,
 			user: Users.pack(note.user ?? note.userId, me, {
 				detail: false,
+				relation: true,
 			}),
 			text: text,
 			cw: note.cw,

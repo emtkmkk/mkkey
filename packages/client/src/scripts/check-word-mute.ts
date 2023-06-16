@@ -9,6 +9,7 @@ const NotMuted = { muted: false, matched: [] };
 function checkWordMute(
 	note: NoteLike,
 	mutedWords: Array<string | string[]>,
+	what?: string,
 ): Muted {
 	const text = ((note.cw ?? "") + " " + (note.text ?? "")).trim();
 	//if (text === "") return NotMuted;
@@ -23,7 +24,7 @@ function checkWordMute(
 			if (
 				keywords.length > 0 &&
 				!(keywords[0].startsWith("pname:") && keywords.length == 1) &&
-				keywords.every((keyword, index) => checkMuteKeyword(note,text,keyword,index))
+				keywords.every((keyword, index) => checkMuteKeyword(note,text,keyword,index,what ?? "note"))
 			) {
 				result.muted = true;
 				let pname = keywords;
@@ -62,6 +63,7 @@ function checkMuteKeyword(
 	text: string,
 	keyword: string,
 	index: number,
+	what: string,
 ): boolean {
 	if (!keyword.includes(":") || keyword.startsWith("include:")) {
 		const includeKeyword = keyword.replace("include:","");
@@ -79,10 +81,20 @@ function checkMuteKeyword(
 		if (orKeywords.length > 12) return false;
 		return orKeywords.some((orKeyword) => text.includes(orKeyword));
 	}
+	if (keyword.startsWith("-or:")) {
+		const orKeywords = keyword.replace("-or:","").split(",");
+		if (orKeywords.length > 12) return false;
+		return orKeywords.some((orKeyword) => !text.includes(orKeyword));
+	}
 	if (keyword.startsWith("fuzzy:")) {
 		const fuzzyKeywords = keyword.replace("fuzzy:","").split("");
 		if (fuzzyKeywords.length > 12) return false;
 		return fuzzyKeywords.every((fuzzyKeyword) => text.includes(fuzzyKeyword));
+	}
+	if (keyword.startsWith("-fuzzy:")) {
+		const fuzzyKeywords = keyword.replace("-fuzzy:","").split("");
+		if (fuzzyKeywords.length > 12) return false;
+		return fuzzyKeywords.every((fuzzyKeyword) => !text.includes(fuzzyKeyword));
 	}
 	if (keyword.startsWith("from:")) {
 		const fromKeyword = keyword.replace("from:","").replace("@mkkey.net","");
@@ -100,9 +112,17 @@ function checkMuteKeyword(
 		const visibilityKeyword = keyword.replace("-visibility:","");
 		return note.visibility !== visibilityKeyword;
 	}
-	if (keyword.startsWith("localOnly:")) {
-		const localOnlyKeyword = keyword.replace("localOnly:","");
+	if (keyword.startsWith("localOnly:") || keyword.startsWith("localAndFollower:")) {
+		const localOnlyKeyword = keyword.replace("localOnly:","").replace("localAndFollower:","");
 		return note.localOnly === localOnlyKeyword;
+	}
+	if (keyword.startsWith("what:")) {
+		const whatKeyword = keyword.replace("what:","").replace("rt","renote");
+		return what === whatKeyword;
+	}
+	if (keyword.startsWith("-what:")) {
+		const whatKeyword = keyword.replace("-what:","").replace("rt","renote");
+		return what !== whatKeyword;
 	}
 	if (keyword.startsWith("relation:") || keyword.startsWith("-relation:")) {
 		let reverse = keyword.startsWith("-");
@@ -172,14 +192,14 @@ export function getWordSoftMute(
 	}
 
 	if (mutedWords.length > 0) {
-		let noteMuted = checkWordMute(note, mutedWords);
+		let noteMuted = checkWordMute(note, mutedWords,"note");
 		if (noteMuted.muted) {
 			noteMuted.what = "note";
 			return noteMuted;
 		}
 
 		if (note.renote) {
-			let renoteMuted = checkWordMute(note.renote, mutedWords);
+			let renoteMuted = checkWordMute(note.renote, mutedWords, note.text == null ? "renote" : "quote");
 			if (renoteMuted.muted) {
 				renoteMuted.what = note.text == null ? "renote" : "quote";
 				return renoteMuted;
@@ -187,7 +207,7 @@ export function getWordSoftMute(
 		}
 
 		if (note.reply) {
-			let replyMuted = checkWordMute(note.reply, mutedWords);
+			let replyMuted = checkWordMute(note.reply, mutedWords , "reply");
 			if (replyMuted.muted) {
 				replyMuted.what = "reply";
 				return replyMuted;

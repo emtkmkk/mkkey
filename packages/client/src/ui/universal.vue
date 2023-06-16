@@ -248,19 +248,19 @@ document.documentElement.style.overflowY = "scroll";
 if (defaultStore.state.widgets.length === 0) {
 	defaultStore.set("widgets", [
 		{
-			name: "calendar",
+			name: "digitalClock",
 			id: "a",
 			place: "right",
 			data: {},
 		},
 		{
-			name: "notifications",
+			name: "calendar",
 			id: "b",
 			place: "right",
 			data: {},
 		},
 		{
-			name: "trends",
+			name: "notifications",
 			id: "c",
 			place: "right",
 			data: {},

@@ -21,7 +21,7 @@
 			</div>
 			<MkLoading v-else-if="fetching" />
 			<div v-else class="users">
-				<MkAvatars :user-ids="users" class="userAvatars" />
+				<MkAvatars :user-ids="users" :sortStatus="widgetProps.sortStatus" :hiddenOfflineSleep="widgetProps.hiddenOfflineSleep" class="userAvatars" />
 			</div>
 		</div>
 	</MkContainer>
@@ -42,6 +42,14 @@ const widgetPropsDef = {
 	showHeader: {
 		type: "boolean" as const,
 		default: true,
+	},
+	sortStatus: {
+		type: "boolean" as const,
+		default: false,
+	},
+	hiddenOfflineSleep: {
+		type: "boolean" as const,
+		default: false,
 	},
 	listId: {
 		type: "string" as const,

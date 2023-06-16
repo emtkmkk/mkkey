@@ -2,11 +2,11 @@ export class addUserSetting1683682889949 {
     name = 'addUserSetting1683682889949'
 
     async up(queryRunner) {
-        await queryRunner.query(`ALTER TABLE "user" ADD "blockPostPublic" boolean NOT NULL DEFAULT false`);
-        await queryRunner.query(`ALTER TABLE "user" ADD "blockPostHome" boolean NOT NULL DEFAULT false`);
-        await queryRunner.query(`ALTER TABLE "user" ADD "blockPostNotLocal" boolean NOT NULL DEFAULT false`);
-        await queryRunner.query(`ALTER TABLE "user" ADD "blockPostNotLocalPublic" boolean NOT NULL DEFAULT false`);
-        await queryRunner.query(`ALTER TABLE "user" ADD "isSilentLocked" boolean NOT NULL DEFAULT false`);
+        await queryRunner.query(`ALTER TABLE "user" ADD IF NOT EXISTS "blockPostPublic" boolean NOT NULL DEFAULT false`);
+        await queryRunner.query(`ALTER TABLE "user" ADD IF NOT EXISTS "blockPostHome" boolean NOT NULL DEFAULT false`);
+        await queryRunner.query(`ALTER TABLE "user" ADD IF NOT EXISTS "blockPostNotLocal" boolean NOT NULL DEFAULT false`);
+        await queryRunner.query(`ALTER TABLE "user" ADD IF NOT EXISTS "blockPostNotLocalPublic" boolean NOT NULL DEFAULT false`);
+        await queryRunner.query(`ALTER TABLE "user" ADD IF NOT EXISTS "isSilentLocked" boolean NOT NULL DEFAULT false`);
     }
 
     async down(queryRunner) {

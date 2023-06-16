@@ -19,19 +19,19 @@ const props = defineProps<{
 const users = ref([]);
 
 onMounted(async () => {
-	const users = (await os.api("users/show", {
+	const _users = (await os.api("users/show", {
 		userIds: props.userIds,
 	})).filter((x) => props.hiddenOfflineSleep ? !(x.onlineStatus?.includes("offline") || x.onlineStatus?.includes("sleep")) : true);
 	const onlineStatus = ["online", "half-online", "active", "half-active", "offline", "half-sleeping", "sleeping", "deep-sleeping", "never-sleeping", "unknown"]
-	users.value = props.sortLastLogin 
-		? users.sort((a,b) => 
+	users.value = props.sortStatus
+		? _users.sort((a,b) => 
 			onlineStatus.indexOf(a.onlineStatus) < onlineStatus.indexOf(b.onlineStatus) 
 				? -1 
 				: onlineStatus.indexOf(a.onlineStatus) === onlineStatus.indexOf(b.onlineStatus) 
 					? 0 
 					: 1
 		) 
-		: users
+		: _users
 });
 </script>
 

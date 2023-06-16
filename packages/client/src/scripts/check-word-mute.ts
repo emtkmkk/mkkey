@@ -104,6 +104,16 @@ function checkMuteKeyword(
 		const localOnlyKeyword = keyword.replace("localOnly:","");
 		return note.localOnly === localOnlyKeyword;
 	}
+	if (keyword.startsWith("relation:")) {
+		let reverse = keyword.startsWith("-");
+		const relationKeyword = keyword.replace("-relation:","").replace("relation:","");
+		if (note.user.isFollowing != null) return false;
+		if (relationKeyword === "Follow" || relationKeyword === "Following") return reverse ? !note.user.isFollowing : note.user.isFollowing;
+		if (relationKeyword === "Follower" || relationKeyword === "Followed") return reverse ? !note.user.isFollowed : note.user.isFollowed;
+		if (relationKeyword === "both") return reverse ? !(note.user.isFollowed && note.user.isFollowing) : note.user.isFollowed && note.user.isFollowing;
+		if (relationKeyword === "none") return reverse ? !(!note.user.isFollowed && !note.user.isFollowing) : !note.user.isFollowed && !note.user.isFollowing;
+		return false;
+	}
 	if (keyword.startsWith("filter:") || keyword.startsWith("-filter:")) {
 		let reverse = keyword.startsWith("-");
 		

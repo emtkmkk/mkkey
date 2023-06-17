@@ -58,7 +58,7 @@ export default async function (
 			if (!silent) publishMainStream(follower.id, "unfollow", packed);
 
 			const webhooks = (await getActiveWebhooks()).filter(
-				(x) => x.userId === follower.id && x.on.includes("unfollow"),
+				(x) => x.userId === followee.id && x.on.includes("unfollow"),
 			);
 			for (const webhook of webhooks) {
 				webhookDeliver(webhook, silent ? "silentUnfollow" : "unfollow", {

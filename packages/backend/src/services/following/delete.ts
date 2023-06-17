@@ -50,13 +50,28 @@ export default async function (
 	decrementFollowing(follower, followee);
 
 	// Publish unfollow event
-	if (Users.isLocalUser(follower)) {
+	if (!silent && Users.isLocalUser(follower)) {
 		Users.pack(followee.id, follower, {
 			detail: true,
 		}).then(async (packed) => {
-			if (!silent) publishUserEvent(follower.id, "unfollow", packed);
-			if (!silent) publishMainStream(follower.id, "unfollow", packed);
+			publishUserEvent(follower.id, "unfollow", packed);
+			publishMainStream(follower.id, "unfollow", packed);
 
+			/* const webhooks = (await getActiveWebhooks()).filter(
+				(x) => x.userId === followee.id && x.on.includes("unfollow"),
+			);
+			for (const webhook of webhooks) {
+				webhookDeliver(webhook, silent ? "silentUnfollow" : "unfollow", {
+					user: packed,
+				});
+			}*/
+		});
+	}
+	
+	if (Users.isLocalUser(followee)) {
+		Users.pack(followee.id, follower, {
+			detail: true,
+		}).then(async (packed) => {
 			const webhooks = (await getActiveWebhooks()).filter(
 				(x) => x.userId === followee.id && x.on.includes("unfollow"),
 			);

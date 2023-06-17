@@ -69,7 +69,7 @@ export default async function (
 	}
 	
 	if (Users.isLocalUser(followee)) {
-		Users.pack(followee.id, follower, {
+		Users.pack(follower.id, followee, {
 			detail: true,
 		}).then(async (packed) => {
 			const webhooks = (await getActiveWebhooks()).filter(

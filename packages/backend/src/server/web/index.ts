@@ -397,6 +397,7 @@ router.get("/notes/:note", async (ctx, next) => {
 	const note = await Notes.findOneBy({
 		id: ctx.params.note,
 		visibility: In(["public", "home"]),
+		localOnly: false,
 	});
 
 	try {
@@ -435,6 +436,7 @@ router.get("/posts/:note", async (ctx, next) => {
 	const note = await Notes.findOneBy({
 		id: ctx.params.note,
 		visibility: In(["public", "home"]),
+		localOnly: false,
 	});
 
 	if (note) {

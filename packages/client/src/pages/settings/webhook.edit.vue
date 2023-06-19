@@ -15,6 +15,11 @@
 		<FormSwitch v-model="discord_type" class="_formBlock"
 			>Discordに対応した形式で送信</FormSwitch
 		>
+		
+		<FormInput v-if="discord_type" v-model="secret" class="_formBlock">
+			<template #prefix><i class="ph-pencil-line ph-bold ph-lg"></i></template>
+			<template #label>表示する本文の最大文字数</template>
+		</FormInput>
 
 		<FormSection>
 			<template #label>送信タイミング</template>
@@ -101,10 +106,10 @@ const antennas = $ref(antennasAll.filter((x) => x.notify));
 
 let name = $ref(webhook.name);
 let url = $ref(webhook.url);
-let secret = $ref(webhook.secret === "Discord" ? "" : webhook.secret);
+let secret = $ref(webhook.secret.startsWith("Discord") ? webhook.secret.replaceAll("Discord","") : webhook.secret);
 let active = $ref(webhook.active);
 
-let discord_type = $ref(webhook.secret === "Discord");
+let discord_type = $ref(webhook.secret?.startsWith("Discord"));
 
 let event_follow = $ref(webhook.on.includes("follow"));
 let event_followed = $ref(webhook.on.includes("followed"));
@@ -141,7 +146,16 @@ async function save(): Promise<void> {
 		});
 	}
 
-	if (discord_type) secret = "Discord";
+	if (discord_type) {
+		if (Number.isInteger(secret)) {
+			if (secret > 8192) secret = 8192;
+			if (secret < 0) secret = 0;
+			secret = "Discord" + secret;
+		} else {
+			secret = "Discord";
+		}
+	}
+
 
 	os.apiWithDialog("i/webhooks/update", {
 		webhookId: props.webhookId,

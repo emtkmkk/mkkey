@@ -185,7 +185,17 @@ export default define(meta, paramDef, async (ps, me) => {
 	borderDate.setSeconds(0);
 	borderDate.setMilliseconds(0);
 	
-	const elapsedDays = Math.max(Math.min(Math.ceil((now.getTime() - Date.parse(user.createdAt)) / (1000 * 60 * 60 * 2.4)) / 10,RANK_TARGET_DAYS),1);
+	const firstLocalFollower = user.host ? Date.parse(Followings.createQueryBuilder("following")
+			.select("min(createdAt)")
+			.where("following.followeeId = :userId", { userId: user.id })
+			.andWhere("following.followerHost IS NULL")
+			.getRawOne()) ?? undefined : undefined;
+	
+	const userCreatedAtDate = firstLocalFollower ? firstLocalFollower : Date.parse(user.createdAt)
+	
+	if (firstLocalFollower && borderDate.valueOf() < firstLocalFollower) borderDate = new Date(firstLocalFollower);
+	
+	const elapsedDays = Math.max(Math.min(Math.ceil((now.getTime() - userCreatedAtDate) / (1000 * 60 * 60 * 2.4)) / 10,RANK_TARGET_DAYS),1);
 
 	const sendMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
 			.where("messaging_message.userId = :userId", { userId: user.id })
@@ -404,6 +414,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		const clearBorderMax = clearBorder.slice(-1)[0] ?? 0
 	    result.nextRank = Math.floor((rankPower - clearBorderMax) / ((rankBorder[clearBorder.length] ?? (clearBorder.slice(-1)[0] + suffixIncBorder)) - clearBorderMax) * 100) + "%"
 	}
+	
+	if (!firstLocalFollower && user.host) result.powerRank = result.powerRank + "?"
 
 	return result;
 });

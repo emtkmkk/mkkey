@@ -54,7 +54,7 @@
 			<FormSwitch v-if="$store.state.developer" v-model="event_unfollow" class="_formBlock"
 				>【dev】フォロー解除された時</FormSwitch
 			>
-			<FormSwitch v-if="antennas.length > 0" v-model="event_antenna" class="_formBlock"
+			<FormSwitch :disabled="antennas.length > 0" v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch
 			>
 			<template v-if="event_antenna && antennas.length > 0">

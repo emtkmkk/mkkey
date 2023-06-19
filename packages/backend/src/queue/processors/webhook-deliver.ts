@@ -125,16 +125,19 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 	].filter((x: DiscordEmbeds | undefined) => x !== undefined)
 }
 
-function getNoteContentSummary(note,userId): string {
+function getNoteContentSummary(note, userId, length?): string {
 	return (
-		note.user?.id === userId 
-			? getNoteSummary(note).slice(0,10) + (getNoteSummary(note).length > 10 ? "…" : "") 
-			: getNoteSummary(note).slice(0,40) + (getNoteSummary(note).length > 40 ? "…" : "")
+		length 
+		? getNoteSummary(note).slice(0, length) + (getNoteSummary(note).length > length ? "…" : "") 
+		: note.user?.id === userId 
+			? getNoteSummary(note).slice(0, 10) + (getNoteSummary(note).length > 10 ? "…" : "") 
+			: getNoteSummary(note).slice(0, 40) + (getNoteSummary(note).length > 40 ? "…" : "")
 	) 
 }
 
 function typeToContent(jobData: any): string {
 	const body = jobData.content;
+	const contentLength = jobData.secret?.replaceAll("Discord","") || undefined;
 	
 	const noteUser = body.note ? (body.note.user?.name || body.note.user?.username) : undefined;
 	const userName = body.user ? body.user.name ? body.user.name + " (" + body.user.username + "@" + (body.user.host ?? "mkkey.net") + ")" : body.user.username + "@" + (body.user.host ?? "mkkey.net") : undefined;
@@ -143,11 +146,13 @@ function typeToContent(jobData: any): string {
 	const messageUser = body.message ? (body.message.user?.name || body.message.user?.username) : undefined;
 	
 	const content = 
-		body.note 
-			? " : " + getNoteContentSummary(body.note.text ? body.note : body.note.renote, jobData.userId)
-			: body.message?.text 
-				?  " : " + body.message.text.slice(0,40) + (body.message.text.length > 40 ? "…" : "") 
-				: "";
+		contentLength !== 0
+			? body.note 
+				? " : " + getNoteContentSummary(body.note.text ? body.note : body.note.renote, jobData.userId, contentLength)
+				: body.message?.text 
+					?  " : " + body.message.text.slice(0,contentLength ?? 40) + (body.message.text.length > contentLength ?? 40 ? "…" : "") 
+					: ""
+			: "";
 							
 	switch (jobData.type) {
 		case "mention":
@@ -184,7 +189,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
 		let embeds = toEmbeds(job.data.content);
-		if (job.data.secret === "Discord"){
+		if (job.data.secret?.startsWith("Discord")){
 			res = await getResponse({
 				url: job.data.to,
 				method: "POST",

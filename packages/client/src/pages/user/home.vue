@@ -192,7 +192,7 @@
 								{{ i18n.ts.noAccountDescription }}
 							</p>
 						</div>
-						<div v-if="user.location || user.birthday || $i || user.host == null" class="fields system">
+						<div v-if=" $i || user.location || user.birthday || user.host == null" class="fields system">
 							<dl v-if="user.location" class="field">
 								<dt class="name">
 									<i
@@ -232,10 +232,10 @@
 									{{ i18n.ts.registeredDate }}
 								</dt>
 								<dd class="value">
-									<MkTime :time="user.createdAt" mode="detail" />
+									<MkTime :time="user.createdAt" mode="detail-dateOnly" />
 								</dd>
 							</dl>
-							<dl v-if="($i && $i.id === user.id) || (user.host == null && !user.isBot) || ($i && !user.isBot)" class="field">
+							<dl v-if="($i) || (user.host == null && !user.isBot)" class="field">
 								<dt class="name">
 									<i
 										class="ph-lightning ph-bold ph-lg ph-fw ph-lg"

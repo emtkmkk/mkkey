@@ -189,7 +189,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.select('min("createdAt")')
 			.where("following.followeeId = :userId", { userId: user.id })
 			.andWhere("following.followerHost IS NULL")
-			.getRawOne()) || undefined : undefined;
+			.getOne()) : undefined;
 	
 	const userCreatedAtDate = firstLocalFollower ? firstLocalFollower : Date.parse(user.createdAt);
 	

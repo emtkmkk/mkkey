@@ -5,6 +5,9 @@
 		<template v-else-if="mode === 'detail'"
 			>{{ absolute }} ({{ relativeRaw }})</template
 		>
+		<template v-else-if="mode === 'detail-dateOnly'"
+			>{{ absoluteDateOnly }} ({{ relativeRawDateOnly }})</template
+		>
 		<slot></slot>
 	</time>
 </template>
@@ -16,16 +19,18 @@ import { i18n } from "@/i18n";
 const props = withDefaults(
 	defineProps<{
 		time: Date | string;
-		mode?: "relative" | "absolute" | "detail" | "none";
+		mode?: "relative" | "absolute" | "detail" | "detail-dateOnly" | "none";
 	}>(),
 	{
 		mode: "relative",
 	}
 );
 
-const _time =
-	typeof props.time === "string" ? new Date(props.time) : props.time;
+const _time = props.mode === "detail-dateOnly" 
+				? typeof props.time === "string" ? new Date(new Date(props.time).setHours(0, 0, 0, 0)) : new Date(props.time.setHours(0, 0, 0, 0));
+				: typeof props.time === "string" ? new Date(props.time) : props.time;
 const absolute = _time.toLocaleString();
+const absoluteDateOnly = _time.toLocaleDateString();
 
 let now = $shallowRef(new Date());
 
@@ -47,20 +52,25 @@ const relative = $computed(() => {
 const relativeRaw = $computed(() => {
 	const ago = (now.getTime() - _time.getTime()) / 1000; /*ms*/
 	return ago >= 31536000
-		? i18n.t("_ago.yearsAgo", { n: Math.round(ago / 31536000).toString() })
+		? i18n.t("_ago.yearsAgo", { n: (~~(ago / 31536000)).toString() })
 		: ago >= 2592000
-		? i18n.t("_ago.monthsAgo", { n: Math.round(ago / 2592000).toString() })
+		? i18n.t("_ago.monthsAgo", { n: (~~(ago / 2592000)).toString() })
 		: ago >= 604800
-		? i18n.t("_ago.weeksAgo", { n: Math.round(ago / 604800).toString() })
+		? i18n.t("_ago.weeksAgo", { n: (~~(ago / 604800)).toString() })
 		: ago >= 86400
-		? i18n.t("_ago.daysAgo", { n: Math.round(ago / 86400).toString() })
+		? i18n.t("_ago.daysAgo", { n: (~~(ago / 86400)).toString() })
 		: ago >= 3600
-		? i18n.t("_ago.hoursAgo", { n: Math.round(ago / 3600).toString() })
+		? i18n.t("_ago.hoursAgo", { n: (~~(ago / 3600)).toString() })
 		: ago >= 60
 		? i18n.t("_ago.minutesAgo", { n: (~~(ago / 60)).toString() })
 		: ago >= 3
 		? i18n.t("_ago.secondsAgo", { n: (~~(ago % 60)).toString() })
 		: i18n.ts._ago.justNow;
+});
+
+const relativeRawDateOnly = $computed(() => {
+	const ago = (now.getTime() - _time.getTime()) / 1000; /*ms*/
+	return i18n.t("_ago.daysAgo", { n: (~~(ago / 86400)).toString() })
 });
 
 function tick() {
@@ -74,7 +84,7 @@ function tick() {
 
 let tickId: number;
 
-if (props.mode === "relative" || props.mode === "detail") {
+if (props.mode === "relative" || props.mode === "detail" || props.mode === "detail-dateOnly") {
 	tickId = window.requestAnimationFrame(tick);
 
 	onUnmounted(() => {

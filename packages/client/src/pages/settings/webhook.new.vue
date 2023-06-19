@@ -139,7 +139,7 @@ async function create(): Promise<void> {
 	
 	if (discord_type) {
 		if (text_length && isFinite(text_length)) {
-			if (text_length > 8192) text_length = 8192;
+			if (text_length > 1000) text_length = 1000;
 			if (text_length < 0) text_length = 0;
 			secret = "Discord" + parseInt(text_length);
 		} else {

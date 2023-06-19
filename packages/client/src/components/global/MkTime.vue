@@ -27,7 +27,7 @@ const props = withDefaults(
 );
 
 const _time = props.mode === "detail-dateOnly" 
-				? typeof props.time === "string" ? new Date(new Date(props.time).setHours(0, 0, 0, 0)) : new Date(props.time.setHours(0, 0, 0, 0));
+				? typeof props.time === "string" ? new Date(new Date(props.time).setHours(0, 0, 0, 0)) : new Date(props.time.setHours(0, 0, 0, 0))
 				: typeof props.time === "string" ? new Date(props.time) : props.time;
 const absolute = _time.toLocaleString();
 const absoluteDateOnly = _time.toLocaleDateString();

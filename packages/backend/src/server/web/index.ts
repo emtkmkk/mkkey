@@ -666,7 +666,7 @@ router.get("(.*)", async (ctx) => {
 	let notesCount = await Notes.countBy({ userHost: IsNull() });
 	let gUsersCount = await Users.countBy({ host: Not(IsNull()) });
 	let gNotesCount = await Notes.countBy({ userHost: Not(IsNull()) });
-	let nowDate = new Date().toLocaleDateString()
+	let nowDate = new Date().toLocaleDateString('ja-JP');
 	await ctx.render("base", {
 		img: meta.iconUrl,
 		title: meta.name || "Calckey",

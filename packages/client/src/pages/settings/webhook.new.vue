@@ -16,7 +16,7 @@
 			>Discordに対応した形式で送信</FormSwitch
 		>
 		
-		<FormInput v-if="discord_type" v-model="secret" class="_formBlock">
+		<FormInput v-if="discord_type" v-model="text_length" class="_formBlock">
 			<template #prefix><i class="ph-pencil-line ph-bold ph-lg"></i></template>
 			<template #label>表示する本文の最大文字数</template>
 		</FormInput>
@@ -97,6 +97,8 @@ let secret = $ref("");
 
 let discord_type = $ref(false);
 
+let text_length = $ref("");
+
 let event_follow = $ref(false);
 let event_followed = $ref(true);
 let event_note = $ref(false);
@@ -136,10 +138,10 @@ async function create(): Promise<void> {
 	}
 	
 	if (discord_type) {
-		if (Number.isInteger(secret)) {
-			if (secret > 8192) secret = 8192;
-			if (secret < 0) secret = 0;
-			secret = "Discord" + secret;
+		if (text_length && isFinite(text_length)) {
+			if (text_length > 8192) text_length = 8192;
+			if (text_length < 0) text_length = 0;
+			secret = "Discord" + parseInt(text_length);
 		} else {
 			secret = "Discord";
 		}

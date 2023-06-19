@@ -106,7 +106,7 @@ const antennas = $ref(antennasAll.filter((x) => x.notify));
 
 let name = $ref(webhook.name);
 let url = $ref(webhook.url);
-let secret = $ref(webhook.secret.startsWith("Discord") ? webhook.secret.replaceAll("Discord","") : webhook.secret);
+let secret = $ref(webhook.secret?.startsWith("Discord") ? webhook.secret.replaceAll("Discord","") : webhook.secret);
 let active = $ref(webhook.active);
 
 let discord_type = $ref(webhook.secret?.startsWith("Discord"));

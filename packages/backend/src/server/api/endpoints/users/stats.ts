@@ -191,7 +191,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.andWhere("following.followerHost IS NULL")
 			.getRawOne()) ?? undefined : undefined;
 	
-	const userCreatedAtDate = firstLocalFollower ? firstLocalFollower : Date.parse(user.createdAt)
+	const userCreatedAtDate = firstLocalFollower ? firstLocalFollower : Date.parse(user.createdAt);
 	
 	if (firstLocalFollower && borderDate.valueOf() < firstLocalFollower) borderDate = new Date(firstLocalFollower);
 	
@@ -395,10 +395,10 @@ export default define(meta, paramDef, async (ps, me) => {
 	let _rankPower = rankPower;
 		
 	if (elapsedDays < 14) {
-		_rankPower = Math.min(rankPower,4999)
-		if (elapsedDays < 4) _rankPower = Math.min(rankPower,1599)
-		else if (elapsedDays < 7) _rankPower = Math.min(rankPower,2749)
-		else if (elapsedDays < 10) _rankPower = Math.min(rankPower,4249)
+		_rankPower = Math.min(rankPower,4999);
+		if (elapsedDays < 4) _rankPower = Math.min(rankPower,1599);
+		else if (elapsedDays < 7) _rankPower = Math.min(rankPower,2749);
+		else if (elapsedDays < 10) _rankPower = Math.min(rankPower,4249);
 	}
 		
 	const rankBorder = [50,125,200,300,400,500,600,700,800,1000,1200,1600,2000,2750,3500,4250,5000,6000];
@@ -407,15 +407,15 @@ export default define(meta, paramDef, async (ps, me) => {
 	
 	if (_rankPower >= rankBorder.slice(-1)[0] + suffixIncBorder) {
 		result.powerRank = rankName.slice(-1)[0] + Math.floor((_rankPower - rankBorder.slice(-2)[0]) / suffixIncBorder);
-	    result.nextRank = Math.floor((rankPower % suffixIncBorder) / suffixIncBorder * 100) + "%"
+	    result.nextRank = Math.floor((rankPower % suffixIncBorder) / suffixIncBorder * 100) + "%";
 	} else {
 		const clearBorder = rankBorder.filter(x => x <= _rankPower);
 		result.powerRank = rankName[clearBorder.length];
-		const clearBorderMax = clearBorder.slice(-1)[0] ?? 0
-	    result.nextRank = Math.floor((rankPower - clearBorderMax) / ((rankBorder[clearBorder.length] ?? (clearBorder.slice(-1)[0] + suffixIncBorder)) - clearBorderMax) * 100) + "%"
+		const clearBorderMax = clearBorder.slice(-1)[0] ?? 0;
+	    result.nextRank = Math.floor((rankPower - clearBorderMax) / ((rankBorder[clearBorder.length] ?? (clearBorder.slice(-1)[0] + suffixIncBorder)) - clearBorderMax) * 100) + "%";
 	}
 	
-	if (!firstLocalFollower && user.host) result.powerRank = result.powerRank + "?"
+	if (!firstLocalFollower && user.host) result.powerRank = result.powerRank + "?";
 
 	return result;
 });

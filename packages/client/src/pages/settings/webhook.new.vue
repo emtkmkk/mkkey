@@ -138,6 +138,7 @@ async function create(): Promise<void> {
 	if (discord_type) {
 		if (Number.isInteger(secret)) {
 			if (secret > 8192) secret = 8192;
+			if (secret < 0) secret = 0;
 			secret = "Discord" + secret;
 		} else {
 			secret = "Discord";

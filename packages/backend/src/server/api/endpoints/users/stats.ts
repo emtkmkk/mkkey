@@ -179,7 +179,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	let now = new Date();
 	let borderDate = new Date();
-	borderDate.setDate(now.getDate() - 61);
+	borderDate.setDate(now.getDate() - 31);
 	
 	const elapsedDays = Math.max(Math.min(Math.ceil((now.getTime() - Date.parse(user.createdAt)) / (1000 * 60 * 60 * 2.4)) / 10,Math.ceil((now.getTime() - borderDate.getTime()) / (1000 * 60 * 60 * 2.4)) / 10),1);
 
@@ -377,16 +377,25 @@ export default define(meta, paramDef, async (ps, me) => {
 		rankResult.sendMessageCount * 11 +
 		rankResult.readMessageCount * 2
 		) / elapsedDays);
+	
+	let _rankPower = rankPower;
+		
+	if (elapsedDays < 14) {
+		_rankPower = Math.min(rankPower,4999)
+		if (elapsedDays < 4) _rankPower = Math.min(rankPower,1599)
+		else if (elapsedDays < 7) _rankPower = Math.min(rankPower,2749)
+		else if (elapsedDays < 10) _rankPower = Math.min(rankPower,4249)
+	}
 		
 	const rankBorder = [50,125,200,300,400,500,600,700,800,1000,1200,1600,2000,2750,3500,4250,5000,6000];
 	const rankName = ["G","F","F+","E","E+","D","D+","C","C+","B","B+","A","A+","AA","AA+","AAA","AAA+","⭐","⭐+"];
 	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0];
 	
-	if (rankPower >= rankBorder.slice(-1)[0] + suffixIncBorder) {
-		result.powerRank = rankName.slice(-1)[0] + Math.floor((rankPower - rankBorder.slice(-2)[0]) / suffixIncBorder);
+	if (_rankPower >= rankBorder.slice(-1)[0] + suffixIncBorder) {
+		result.powerRank = rankName.slice(-1)[0] + Math.floor((_rankPower - rankBorder.slice(-2)[0]) / suffixIncBorder);
 	    result.nextRank = Math.floor((rankPower % suffixIncBorder) / suffixIncBorder * 100) + "%"
 	} else {
-		const clearBorder = rankBorder.filter(x => x <= rankPower);
+		const clearBorder = rankBorder.filter(x => x <= _rankPower);
 		result.powerRank = rankName[clearBorder.length];
 		const clearBorderMax = clearBorder.slice(-1)[0] ?? 0
 	    result.nextRank = Math.floor((rankPower - clearBorderMax) / ((rankBorder[clearBorder.length] ?? (clearBorder.slice(-1)[0] + suffixIncBorder)) - clearBorderMax) * 100) + "%"

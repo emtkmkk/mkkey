@@ -185,11 +185,11 @@ export default define(meta, paramDef, async (ps, me) => {
 	borderDate.setSeconds(0);
 	borderDate.setMilliseconds(0);
 	
-	const firstLocalFollower = user.host ? Date.parse(await Followings.createQueryBuilder("following")
-			.select('min(following.\"createdAt\")')
+	const firstLocalFollower = user.host ? Date.parse((await Followings.createQueryBuilder("following")
+			.select('min(following.\"createdAt\")',"min")
 			.where("following.followeeId = :userId", { userId: user.id })
 			.andWhere("following.followerHost IS NULL")
-			.getOne()) : undefined;
+			.getRawOne()).min) : undefined;
 	
 	const userCreatedAtDate = firstLocalFollower ? firstLocalFollower : Date.parse(user.createdAt);
 	

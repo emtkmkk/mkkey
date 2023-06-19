@@ -54,7 +54,7 @@
 			<FormSwitch v-if="$store.state.developer" v-model="event_unfollow" class="_formBlock"
 				>【dev】フォロー解除された時</FormSwitch
 			>
-			<FormSwitch v-if="antennas.length > 0 && event_excludeAntennas.length > 0" v-model="event_antenna" class="_formBlock"
+			<FormSwitch :disabled="antennas.length > 0 && event_excludeAntennas.length > 0" v-model="event_antenna" class="_formBlock"
 				>アンテナ新着時</FormSwitch
 			>				
 			<template v-if="event_antenna && antennas.length > 0 && event_excludeAntennas.length > 0">
@@ -150,7 +150,7 @@ async function save(): Promise<void> {
 
 	if (discord_type) {
 		if (text_length && isFinite(text_length)) {
-			if (text_length > 8192) text_length = 8192;
+			if (text_length > 1000) text_length = 1000;
 			if (text_length < 0) text_length = 0;
 			secret = "Discord" + parseInt(text_length);
 		} else {

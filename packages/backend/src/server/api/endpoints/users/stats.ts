@@ -179,9 +179,13 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	let now = new Date();
 	let borderDate = new Date();
-	borderDate.setDate(now.getDate() - 31);
+	const RANK_TARGET_DAYS = 31;
+	borderDate.setDate(now.getDate() - RANK_TARGET_DAYS);
+	borderDate.setMinutes(0);
+	borderDate.setSeconds(0);
+	borderDate.setMilliseconds(0);
 	
-	const elapsedDays = Math.max(Math.min(Math.ceil((now.getTime() - Date.parse(user.createdAt)) / (1000 * 60 * 60 * 2.4)) / 10,Math.ceil((now.getTime() - borderDate.getTime()) / (1000 * 60 * 60 * 2.4)) / 10),1);
+	const elapsedDays = Math.max(Math.min(Math.ceil((now.getTime() - Date.parse(user.createdAt)) / (1000 * 60 * 60 * 2.4)) / 10,RANK_TARGET_DAYS),1);
 
 	const sendMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
 			.where("messaging_message.userId = :userId", { userId: user.id })

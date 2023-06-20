@@ -43,13 +43,13 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 	return [
 		body.note ? ({
 			author: {
-				name: body.note.user?.name || body.note.user?.username,
+				name: getUsername(body.note.user),
 				url: "https://mkkey.net/@" + body.note.user?.username + (body.note.user?.host ? "@" + body.note.user?.host : ""),
 				icon_url: body.note.user?.avatarUrl,
 			},
 			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
 			url: "https://mkkey.net/notes/" + body.note.id,
-			description: getNoteSummary(body.note).length > 100 ? getNoteSummary(body.note).slice(0,100) + "…" + (body.note.cw != null && getNoteSummary(body.note).length > 102 ? " (CW)" : "") : getNoteSummary(body.note),
+			description: excludeNotPlain(getNoteSummary(body.note)).length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0,100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note)).length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
 			timestamp: new Date(body.note.createdAt),
 			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image") ? 
 			    {
@@ -69,9 +69,9 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			color: 16757683,
 		}) : undefined,
 		body.user ? ({
-			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (body.user.name + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : ""))),
+			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (excludeNotPlain(body.user.name) + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : ""))),
 			url: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
-			description: body.user.description ?? undefined,
+			description: excludeNotPlain(body.user.description) ?? undefined,
 			fields: body.user.notesCount ? [
 				{
 					name: "投稿数",
@@ -97,13 +97,13 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 		}) : undefined,
 		body.message ? ({
 			author: {
-				name: body.message.user?.name || body.message.user?.username,
+				name: getUsername(body.message.user),
 				url: "https://mkkey.net/@" + body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""),
 				icon_url: body.message.user?.avatarUrl,
 			},
-			title: (body.message.group ? body.message.group.name + " グループでの" : "個人宛の") + "チャット",
+			title: (body.message.group ? body.message.group.name + " の" : "個人宛の") + "チャット",
 			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
-			description: (body.message.text?.length > 100 ? body.message.text?.slice(0,100) + "… " : body.message.text ?? "") + (body.message.file ? "(📎)" : ""),
+			description: (excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0,100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
 			image: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? 
 			    {
 					url: body.message.file.url,
@@ -125,13 +125,23 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 	].filter((x: DiscordEmbeds | undefined) => x !== undefined)
 }
 
+function excludeNotPlain(text): string {
+	// 絵文字を外す、<xxx>を消す、中身が空のMFMを消す（4階層まで）
+	return text ? text.replaceAll(/ ?:.*?:/,'').replaceAll(/<\/?\w*?>/,'').replaceAll(/(\$\[([^\s]*?)[\s](\$\[([^\s]*?)[\s](\$\[([^\s]*?)[\s](\$\[([^\s]*?)[\s]\])?\])?\])?\])/,'') : undefined;
+}
+
+function getUsername(user): string {
+	return user ? excludeNotPlain(user.name) || user.username : undefined;
+}
+
 function getNoteContentSummary(note, userId, length?): string {
+	const noteText = excludeNotPlain(getNoteSummary(note))
 	return (
 		length 
-		? getNoteSummary(note).slice(0, length) + (getNoteSummary(note).length > length ? "…" : "") 
+		? noteText.slice(0, length) + (noteText.length > length ? "…" : "") 
 		: note.user?.id === userId 
-			? getNoteSummary(note).slice(0, 10) + (getNoteSummary(note).length > 10 ? "…" : "") 
-			: getNoteSummary(note).slice(0, 40) + (getNoteSummary(note).length > 40 ? "…" : "")
+			? noteText.slice(0, 10) + (noteText.length > 10 ? "…" : "") 
+			: noteText.slice(0, 40) + (noteText.length > 40 ? "…" : "")
 	) 
 }
 
@@ -139,18 +149,18 @@ function typeToContent(jobData: any): string {
 	const body = jobData.content;
 	const contentLength = jobData.secret?.replaceAll("Discord","") || undefined;
 	
-	const noteUser = body.note ? (body.note.user?.name || body.note.user?.username) : undefined;
+	const noteUser = body.note ? getUsername(body.note.user) : undefined;
 	const userName = body.user ? body.user.name ? body.user.name + " (" + body.user.username + "@" + (body.user.host ?? "mkkey.net") + ")" : body.user.username + "@" + (body.user.host ?? "mkkey.net") : undefined;
-	const reactionUser = body.reaction ? (body.reaction.user?.name || body.reaction.user?.username) : undefined;
-	const antennaNoteUser = body.antenna ? (body.antenna.noteUser?.name || body.antenna.noteUser?.username) : undefined;
-	const messageUser = body.message ? (body.message.user?.name || body.message.user?.username) : undefined;
+	const reactionUser = body.reaction ? getUsername(body.reaction.user) : undefined;
+	const antennaNoteUser = body.antenna ? getUsername(body.antenna.noteUser) : undefined;
+	const messageUser = body.message ? getUsername(body.message.user) : undefined;
 	
 	const content = 
 		contentLength !== 0
 			? body.note 
 				? " : " + getNoteContentSummary(body.note.text ? body.note : body.note.renote, jobData.userId, contentLength)
 				: body.message?.text 
-					?  " : " + body.message.text.slice(0,contentLength ?? 40) + (body.message.text.length > contentLength ?? 40 ? "…" : "") 
+					?  " : " + excludeNotPlain(body.message.text).slice(0,contentLength ?? 40) + (excludeNotPlain(body.message.text).length > contentLength ?? 40 ? "…" : "") 
 					: ""
 			: "";
 							

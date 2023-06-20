@@ -33,7 +33,7 @@ for (localreaction in localReactions) {
 	mergeReactions.push(localreaction);
 }
 
-mergeReactions.push(_reaction);
+mergeReactions.concat(_reaction);
 
 const initialReactions = new Set(Object.keys(mergeReactions));
 

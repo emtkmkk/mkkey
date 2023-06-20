@@ -49,10 +49,12 @@ const toggleReaction = () => {
 			noteId: props.note.id,
 		}).then(() => {
 			if (oldReaction !== props.reaction) {
+				/*
 				os.api("notes/reactions/create", {
 					noteId: props.note.id,
 					reaction: props.reaction,
 				});
+				*/
 			}
 		});
 	} else {

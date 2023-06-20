@@ -21,7 +21,7 @@ const props = defineProps<{
 	note: misskey.entities.Note;
 }>();
 
-const localReactions = props.note.reactions.filter(x => x.type?.endsWith("@.") || !x.type?.includes("@"))
+const localReactions = props.note.reactions.filter(x => x.type?.endsWith("@.:") || !x.type?.includes("@"))
 
 let _reaction = props.note.reactions;
 let mergeReactions = [];

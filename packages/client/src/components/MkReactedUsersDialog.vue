@@ -91,7 +91,7 @@ let users = $ref();
 watch($$(tab), async () => {
 	const res = await os.api("notes/reactions", {
 		noteId: props.noteId,
-		type: tab,
+		type: tab.replace("@.:",":"),
 		limit: 30,
 	});
 

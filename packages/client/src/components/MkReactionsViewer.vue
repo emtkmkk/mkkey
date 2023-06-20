@@ -23,7 +23,7 @@ const props = defineProps<{
 
 const localReactions = Object.keys(props.note.reactions).filter(x => x.endsWith("@.:"));
 
-let _reactions = props.note.reactions?.filter(x => true);
+let _reactions = {...props.note.reactions};
 let mergeReactions = {};
 
 for (const localReaction in localReactions) {

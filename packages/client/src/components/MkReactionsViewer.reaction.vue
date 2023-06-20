@@ -55,7 +55,7 @@ const toggleReaction = () => {
 				});
 			}
 		});
-	} else {
+	} else if (!oldReaction) {
 		os.api("notes/reactions/create", {
 			noteId: props.note.id,
 			reaction: props.reaction,

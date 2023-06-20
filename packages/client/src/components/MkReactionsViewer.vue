@@ -1,7 +1,7 @@
 <template>
 	<div class="tdflqwzn" :class="{ isMe }">
 		<XReaction
-			v-for="(count, reaction) in mergeReactions"
+			v-for="(count, reaction) in reactions"
 			:key="reaction"
 			:reaction="reaction"
 			:count="count"
@@ -21,24 +21,26 @@ const props = defineProps<{
 	note: misskey.entities.Note;
 }>();
 
-const localReactions = Object.keys(props.note.reactions).filter(x => x.endsWith("@.:"));
 
-let _reactions = {...props.note.reactions};
-let mergeReactions = $ref({});
-
-localReactions.forEach((localReaction) => {
-	const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.replace(".:","")));
-	let totalCount = 0;
-	targetReactions.forEach(x => {
-		totalCount += _reactions[x];
-		delete _reactions[x];
+const reactions = computed(() => {
+	let _reactions = {...props.note.reactions};
+	const localReactions = Object.keys(_reactions).filter(x => x.endsWith("@.:"));
+	const mergeReactions = {};
+	
+	localReactions.forEach((localReaction) => {
+		const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.replace(".:","")));
+		let totalCount = 0;
+		targetReactions.forEach(x => {
+			totalCount += _reactions[x];
+			delete _reactions[x];
+		});
+		mergeReactions[localReaction] = totalCount;
 	});
-	mergeReactions[localReaction] = totalCount;
+	
+	return {...mergeReactions, ..._reactions};
 });
 
-mergeReactions = {...mergeReactions, ..._reactions};
-
-const initialReactions = new Set(Object.keys(mergeReactions));
+const initialReactions = new Set(Object.keys(reactions));
 
 const isMe = computed(() => $i && $i.id === props.note.userId);
 </script>

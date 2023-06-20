@@ -44,17 +44,15 @@ const toggleReaction = () => {
 	if (!canToggle.value) return;
 
 	const oldReaction = props.note.myReaction;
-	if (oldReaction) {
+	if (oldReaction && oldReaction === props.reaction) {
 		os.api("notes/reactions/delete", {
 			noteId: props.note.id,
 		}).then(() => {
 			if (oldReaction !== props.reaction) {
-				/*
 				os.api("notes/reactions/create", {
 					noteId: props.note.id,
 					reaction: props.reaction,
 				});
-				*/
 			}
 		});
 	} else {

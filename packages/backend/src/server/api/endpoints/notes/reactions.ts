@@ -64,7 +64,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (ps.type) {
 		// ローカルリアクションはホスト名が . とされているが
 		// DB 上ではそうではないので、必要に応じて変換
-		// ローカルなら他のすべての同名絵文字のリストを返す
+		// @.指定の場合、同名絵文字のリアクションを全て返す
 		const suffix = "@.:";
 		const type = ps.type.endsWith(suffix)
 			? Like(`${ps.type.slice(0, ps.type.length - suffix.length)}%:`)

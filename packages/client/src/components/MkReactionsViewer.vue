@@ -27,12 +27,12 @@ let _reactions = props.note.reactions;
 let mergeReactions = {};
 
 for (localReaction in localReactions) {
-	const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.type.slice(0,-1));
+	const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.slice(0,-1)));
 	let totalCount = 0;
 	targetReactions.forEach(x => {
 		totalCount += _reaction[x];
 		delete _reaction[x];
-	})
+	});
 	mergeReactions[localReaction] = totalCount;
 }
 

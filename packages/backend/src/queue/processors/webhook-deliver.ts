@@ -127,11 +127,11 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 
 function excludeNotPlain(text): string {
 	// 絵文字を外す、<xxx>を消す、中身が空のMFMを消す（4階層まで）
-	return text ? text.replaceAll(/ ?:.*?:/g,'').replaceAll(/<\/?\w*?>/g,'').replaceAll(/(\$\[([^\s]*?)\s+(\$\[([^\s]*?)\s+(\$\[([^\s]*?)\s+(\$\[([^\s]*?)\s+\])?\s*\])?\s*\])?\s*\])/g,'') : undefined;
+	return text ? text.replaceAll(/<\/?\w*?>/g,'').replaceAll(/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g,'') : undefined;
 }
 
 function getUsername(user): string {
-	return user ? excludeNotPlain(user.name) || user.username : undefined;
+	return user ? user.name.replaceAll(/ ?:.*?:/g,'') || user.username : undefined;
 }
 
 function getNoteContentSummary(note, userId, length?): string {

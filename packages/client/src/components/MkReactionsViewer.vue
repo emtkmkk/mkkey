@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from "vue";
+import { computed, unref } from "vue";
 import * as misskey from "calckey-js";
 import { $i } from "@/account";
 import XReaction from "@/components/MkReactionsViewer.reaction.vue";
@@ -40,7 +40,7 @@ const reactions = computed(() => {
 	return {...mergeReactions, ..._reactions};
 });
 
-const initialReactions = new Set(Object.keys(reactions));
+const initialReactions = new Set(Object.keys(unref(reactions)));
 
 const isMe = computed(() => $i && $i.id === props.note.userId);
 </script>

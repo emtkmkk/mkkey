@@ -24,7 +24,7 @@ const props = defineProps<{
 const localReactions = Object.keys(props.note.reactions).filter(x => x.endsWith("@.:"));
 
 let _reactions = {...props.note.reactions};
-let mergeReactions = {};
+let mergeReactions = $ref({});
 
 localReactions.forEach((localReaction) => {
 	const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.replace(".:","")));

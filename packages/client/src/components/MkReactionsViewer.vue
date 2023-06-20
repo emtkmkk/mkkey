@@ -26,11 +26,11 @@ const localReactions = props.note.reactions.filter(x => x.type?.endsWith("@.:") 
 let _reaction = props.note.reactions;
 let mergeReactions = [];
 
-for (localreaction in localReactions) {
-	const targetReactions = props.note.reactions.filter(x => x.type?.startsWith(localreaction.type));
-	_reaction = _reaction.filter(x => x.type !== targetReactions.type);
-	localreaction.count = targetReactions.reduce((acc,value) => acc + value.count);
-	mergeReactions.push(localreaction);
+for (localReaction in localReactions) {
+	const targetReactions = _reaction.filter(x => x.type?.startsWith(localReaction.type));
+	_reaction = _reaction.filter(x => !targetReactions.includes(x));
+	localReaction.count = targetReactions.reduce((acc,value) => acc + value.count, 0);
+	mergeReactions.push(localReaction);
 }
 
 mergeReactions.concat(_reaction);

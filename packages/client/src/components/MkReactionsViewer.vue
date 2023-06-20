@@ -30,8 +30,8 @@ for (const localReaction in localReactions) {
 	const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.slice(0,-1)));
 	let totalCount = 0;
 	targetReactions.forEach(x => {
-		totalCount += _reaction[x];
-		delete _reaction[x];
+		totalCount += __reactions[x];
+		delete _reactions[x];
 	});
 	mergeReactions[localReaction] = totalCount;
 }

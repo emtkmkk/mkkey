@@ -21,13 +21,13 @@ const props = defineProps<{
 	note: misskey.entities.Note;
 }>();
 
-const localReactions = Object.keys(props.note.reactions)?.filter(x => x.endsWith("@.:") || !x.includes("@"));
+const localReactions = Object.keys(props.note.reactions).filter(x => x.endsWith("@.:"));
 
-let _reactions = props.note.reactions;
+let _reactions = props.note.reactions.filter(x => true);
 let mergeReactions = {};
 
 for (const localReaction in localReactions) {
-	const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.slice(0,-1)));
+	const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.replace(".:","")));
 	let totalCount = 0;
 	targetReactions.forEach(x => {
 		totalCount += _reactions[x];
@@ -36,7 +36,7 @@ for (const localReaction in localReactions) {
 	mergeReactions[localReaction] = totalCount;
 }
 
-mergeReactions = {...mergeReactions,..._reactions};
+mergeReactions = {...mergeReactions, ..._reactions};
 
 const initialReactions = new Set(Object.keys(mergeReactions));
 

@@ -26,7 +26,7 @@ const localReactions = Object.keys(props.note.reactions).filter(x => x.endsWith(
 let _reactions = {...props.note.reactions};
 let mergeReactions = {};
 
-for (const localReaction in localReactions) {
+localReactions.forEach((localReaction) => {
 	const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.replace(".:","")));
 	let totalCount = 0;
 	targetReactions.forEach(x => {
@@ -34,7 +34,7 @@ for (const localReaction in localReactions) {
 		delete _reactions[x];
 	});
 	mergeReactions[localReaction] = totalCount;
-}
+});
 
 mergeReactions = {...mergeReactions, ..._reactions};
 

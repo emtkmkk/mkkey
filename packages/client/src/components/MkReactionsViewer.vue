@@ -1,7 +1,7 @@
 <template>
 	<div class="tdflqwzn" :class="{ isMe }">
 		<XReaction
-			v-for="(count, reaction) in note.reactions"
+			v-for="(count, reaction) in mergeReactions"
 			:key="reaction"
 			:reaction="reaction"
 			:count="count"
@@ -21,19 +21,19 @@ const props = defineProps<{
 	note: misskey.entities.Note;
 }>();
 
-const localReactions = props.note.reactions.filter(x => x.type?.endsWith("@.:") || !x.type?.includes("@"))
+const localReactions = props.note.reactions?.filter(x => x.type?.endsWith("@.:") || !x.type?.includes("@"));
 
-let _reaction = props.note.reactions;
+let _reactions = props.note.reactions;
 let mergeReactions = [];
 
 for (localReaction in localReactions) {
-	const targetReactions = _reaction.filter(x => x.type?.startsWith(localReaction.type));
-	_reaction = _reaction.filter(x => !targetReactions.includes(x));
+	const targetReactions = _reactions.filter(x => x.type?.startsWith(localReaction.type));
+	_reactions = _reactions.filter(x => !targetReactions.includes(x));
 	localReaction.count = targetReactions.reduce((acc,value) => acc + value.count, 0);
 	mergeReactions.push(localReaction);
 }
 
-mergeReactions.concat(_reaction);
+mergeReactions.concat(_reactions);
 
 const initialReactions = new Set(Object.keys(mergeReactions));
 

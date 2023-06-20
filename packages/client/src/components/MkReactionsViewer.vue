@@ -21,7 +21,21 @@ const props = defineProps<{
 	note: misskey.entities.Note;
 }>();
 
-const initialReactions = new Set(Object.keys(props.note.reactions));
+const localReactions = props.note.reactions.filter(x => x.type?.endsWith("@.") || !x.type?.includes("@"))
+
+let _reaction = props.note.reactions;
+let mergeReactions = [];
+
+for (localreaction in localReactions) {
+	const targetReactions = props.note.reactions.filter(x => x.type?.startsWith(localreaction.type));
+	_reaction = _reaction.filter(x => x.type !== targetReactions.type);
+	localreaction.count = targetReactions.reduce((acc,value) => acc + value.count);
+	mergeReactions.push(localreaction);
+}
+
+mergeReactions.push(_reaction);
+
+const initialReactions = new Set(Object.keys(mergeReactions));
 
 const isMe = computed(() => $i && $i.id === props.note.userId);
 </script>

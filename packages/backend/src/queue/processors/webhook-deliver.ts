@@ -131,7 +131,7 @@ function excludeNotPlain(text): string {
 }
 
 function getUsername(user): string {
-	return user ? user.name.replaceAll(/ ?:.*?:/g,'') || user.username : undefined;
+	return user ? user.name?.replaceAll(/ ?:.*?:/g,'') || user.username : undefined;
 }
 
 function getNoteContentSummary(note, userId, length?): string {

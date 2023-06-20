@@ -1,5 +1,5 @@
 import type { FindOptionsWhere } from "typeorm";
-import { DeepPartial } from "typeorm";
+import { DeepPartial, Like } from "typeorm";
 import { NoteReactions } from "@/models/index.js";
 import type { NoteReaction } from "@/models/entities/note-reaction.js";
 import define from "../../define.js";
@@ -64,9 +64,10 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (ps.type) {
 		// ローカルリアクションはホスト名が . とされているが
 		// DB 上ではそうではないので、必要に応じて変換
+		// ローカルなら他のすべての同名絵文字のリストを返す
 		const suffix = "@.:";
 		const type = ps.type.endsWith(suffix)
-			? `${ps.type.slice(0, ps.type.length - suffix.length)}:`
+			? Like(`${ps.type.slice(0, ps.type.length - suffix.length)}%:`)
 			: ps.type;
 		query.reaction = type;
 	}

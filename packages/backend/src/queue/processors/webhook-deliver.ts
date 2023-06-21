@@ -3,7 +3,7 @@ import type Bull from "bull";
 import Logger from "@/services/logger.js";
 import type { WebhookDeliverJobData } from "../types.js";
 import { getResponse, StatusError } from "@/misc/fetch.js";
-import { Webhooks } from "@/models/index.js";
+import { Users, Webhooks } from "@/models/index.js";
 import { getNoteSummary } from "@/misc/get-note-summary.js";
 import config from "@/config/index.js";
 
@@ -49,16 +49,16 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			},
 			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
 			url: "https://mkkey.net/notes/" + body.note.id,
-			description: excludeNotPlain(getNoteSummary(body.note)).length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0,100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note)).length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
+			description: excludeNotPlain(getNoteSummary(body.note)).length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note)).length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
 			timestamp: new Date(body.note.createdAt),
-			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image") ? 
-			    {
+			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image") ?
+				{
 					url: body.note.files[0].url,
 					height: body.note.files[0].properties?.height,
 					width: body.note.files[0].properties?.width,
 				} : undefined,
-			video: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && (body.note.files[0].type?.toLowerCase().startsWith("video") || body.note.files[0].type?.toLowerCase().startsWith("audio")) ? 
-			    {
+			video: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && (body.note.files[0].type?.toLowerCase().startsWith("video") || body.note.files[0].type?.toLowerCase().startsWith("audio")) ?
+				{
 					url: body.note.files[0].url,
 					height: body.note.files[0].properties?.height,
 					width: body.note.files[0].properties?.width,
@@ -89,8 +89,8 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			thumbnail: body.user.avatarUrl ? {
 				url: body.user.avatarUrl,
 			} : undefined,
-			image: body.user.bannerUrl ? 
-			    {
+			image: body.user.bannerUrl ?
+				{
 					url: body.user.bannerUrl,
 				} : undefined,
 			color: 16757683,
@@ -103,15 +103,15 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			},
 			title: (body.message.group ? body.message.group.name + " の" : "個人宛の") + "チャット",
 			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
-			description: (excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0,100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
-			image: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? 
-			    {
+			description: (excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0, 100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
+			image: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ?
+				{
 					url: body.message.file.url,
 					height: body.message.file.properties?.height,
 					width: body.message.file.properties?.width,
 				} : undefined,
-			video: body.message.file && !body.message.file.isSensitive && (body.message.file.type?.toLowerCase().startsWith("video") || body.message.file.type?.toLowerCase().startsWith("audio")) ? 
-			    {
+			video: body.message.file && !body.message.file.isSensitive && (body.message.file.type?.toLowerCase().startsWith("video") || body.message.file.type?.toLowerCase().startsWith("audio")) ?
+				{
 					url: body.message.file.url,
 					height: body.message.file.properties?.height,
 					width: body.message.file.properties?.width,
@@ -127,42 +127,42 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 
 function excludeNotPlain(text): string {
 	// 絵文字を外す、<xxx>を消す、中身が空のMFMを消す（4階層まで）
-	return text ? text.replaceAll(/<\/?\w*?>/g,'').replaceAll(/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g,'') : undefined;
+	return text ? text.replaceAll(/<\/?\w*?>/g, '').replaceAll(/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g, '') : undefined;
 }
 
 function getUsername(user): string {
-	return user ? user.name?.replaceAll(/ ?:.*?:/g,'') || user.username : undefined;
+	return user ? user.name?.replaceAll(/ ?:.*?:/g, '') || user.username : undefined;
 }
 
 function getNoteContentSummary(note, userId, length?): string {
 	const noteText = excludeNotPlain(getNoteSummary(note));
 	return (
-		length 
-		? noteText.slice(0, length) + (noteText.length > length ? "…" : "") 
-		: note.user?.id === userId 
-			? noteText.slice(0, 10) + (noteText.length > 10 ? "…" : "") 
-			: noteText.slice(0, 40) + (noteText.length > 40 ? "…" : "")
-	) 
+		length
+			? noteText.slice(0, length) + (noteText.length > length ? "…" : "")
+			: note.user?.id === userId
+				? noteText.slice(0, 10) + (noteText.length > 10 ? "…" : "")
+				: noteText.slice(0, 40) + (noteText.length > 40 ? "…" : "")
+	)
 }
 
-function typeToBody(jobData: any): any {
+async function typeToBody(jobData: any): Promise<any> {
 	const body = jobData.content;
-	const contentLength = jobData.secret?.replaceAll("Discord","") || undefined;
-	
+	const contentLength = jobData.secret?.replaceAll("Discord", "") || undefined;
+
 	const user = body.user ? body.user : body.antenna ? body.antenna.noteUser : body.reaction ? body.reaction.user : body.note ? body.note.user : body.message ? body.message.user : undefined;
 	const username = user ? getUsername(user) : undefined;
 	const fullUsername = user ? user.name ? user.name + " (" + user.username + "@" + (user.host ?? "mkkey.net") + ")" : user.username + "@" + (user.host ?? "mkkey.net") : undefined;
-	const avatar_url = user.avatarUrl;
-	
-	const content = 
+	const avatar_url = user ? user.avatarUrl ?? (await Users.findOneByOrFail({ id: user.id }))?.avatarUrl : undefined;
+
+	const content =
 		contentLength !== 0
-			? body.note 
+			? body.note
 				? " : " + getNoteContentSummary(body.note.text ? body.note : body.note.renote, jobData.userId, contentLength)
-				: body.message?.text 
-					?  " : " + excludeNotPlain(body.message.text).slice(0,contentLength ?? 40) + (excludeNotPlain(body.message.text).length > contentLength ?? 40 ? "…" : "") 
+				: body.message?.text
+					? " : " + excludeNotPlain(body.message.text).slice(0, contentLength ?? 40) + (excludeNotPlain(body.message.text).length > contentLength ?? 40 ? "…" : "")
 					: ""
 			: "";
-							
+
 	switch (jobData.type) {
 		case "mention":
 			return {
@@ -180,7 +180,7 @@ function typeToBody(jobData: any): any {
 			return {
 				fullUsername,
 				avatar_url,
-				content:"💬 リムーブされました",
+				content: "💬 リムーブされました",
 			};
 		case "follow":
 			return {
@@ -246,7 +246,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
 		let embeds = toEmbeds(job.data.content);
-		if (job.data.secret?.startsWith("Discord")){
+		if (job.data.secret?.startsWith("Discord")) {
 			res = await getResponse({
 				url: job.data.to,
 				method: "POST",
@@ -257,7 +257,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					...typeToBody(job.data),
+					...await typeToBody(job.data),
 					embeds,
 				}),
 			});

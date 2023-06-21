@@ -186,9 +186,9 @@ function typeToContent(jobData: any): string {
 		case "antenna":
 			return body.antenna?.name + "📡新着 " + antennaNoteUser + " から" + content;
 		case "userMessage":
-			return messageUser + " からのメッセージ" + content;
+			return messageUser + " からのチャット" + content;
 		case "groupMessage":
-			return body.message.group.name + " グループで " + messageUser + " からのメッセージ" + content;
+			return body.message.group.name + " で " + messageUser + " からのチャット" + content;
 		default:
 			return "type : " + jobData.type + content;
 	}

@@ -145,15 +145,14 @@ function getNoteContentSummary(note, userId, length?): string {
 	) 
 }
 
-function typeToContent(jobData: any): string {
+function typeToBody(jobData: any): any {
 	const body = jobData.content;
 	const contentLength = jobData.secret?.replaceAll("Discord","") || undefined;
 	
-	const noteUser = body.note ? getUsername(body.note.user) : undefined;
-	const userName = body.user ? body.user.name ? body.user.name + " (" + body.user.username + "@" + (body.user.host ?? "mkkey.net") + ")" : body.user.username + "@" + (body.user.host ?? "mkkey.net") : undefined;
-	const reactionUser = body.reaction ? getUsername(body.reaction.user) : undefined;
-	const antennaNoteUser = body.antenna ? getUsername(body.antenna.noteUser) : undefined;
-	const messageUser = body.message ? getUsername(body.message.user) : undefined;
+	const user = body.user ? body.user : body.antenna ? body.antenna.noteUser : body.reaction ? body.reaction.user : body.note ? body.note.user : body.message ? body.message.user : undefined;
+	const username = user ? getUsername(user) : undefined;
+	const fullUsername = user ? user.name ? user.name + " (" + user.username + "@" + (user.host ?? "mkkey.net") + ")" : user.username + "@" + (user.host ?? "mkkey.net") : undefined;
+	const avatar_url = user.avatarUrl;
 	
 	const content = 
 		contentLength !== 0
@@ -166,31 +165,79 @@ function typeToContent(jobData: any): string {
 							
 	switch (jobData.type) {
 		case "mention":
-			return noteUser + " からの呼びかけ" + content;
+			return {
+				username,
+				avatar_url,
+				content: "呼びかけ" + content,
+			};
 		case "unfollow":
-			return userName + " からリムーブされました"
+			return {
+				fullUsername,
+				avatar_url,
+				content: "リムーブされました",
+			};
 		case "silentUnfollow":
-			return "💬 " + userName + " からリムーブされました"
+			return {
+				fullUsername,
+				avatar_url,
+				content:"💬 リムーブされました",
+			};
 		case "follow":
-			return userName + " のフォローに成功"
+			return {
+				fullUsername,
+				avatar_url,
+				content: "フォローに成功",
+			};
 		case "followed":
-			return userName + " からフォローされました"
+			return {
+				fullUsername,
+				avatar_url,
+				content: "フォローされました",
+			};
 		case "note":
-			return "投稿に成功しました" + content;
+			return {
+				content: "投稿に成功しました" + content,
+			};
 		case "reply":
-			return noteUser + " からの返信" + content;
+			return {
+				username,
+				avatar_url,
+				content: "返信" + content,
+			};
 		case "renote":
-			return noteUser + " からの" + (body.note.text ? "引用" : "RT") + content;
+			return {
+				username,
+				avatar_url,
+				content: (body.note.text ? "引用" : "RT") + content,
+			};
 		case "reaction":
-			return body.reaction?.emojiName + " " + reactionUser + " から" + content;
+			return {
+				username,
+				avatar_url,
+				content: body.reaction?.emojiName + content,
+			};
 		case "antenna":
-			return body.antenna?.name + "📡新着 " + antennaNoteUser + " から" + content;
+			return {
+				username,
+				avatar_url,
+				content: body.antenna?.name + "📡新着" + (user.id !== body.note?.user?.id ? " RT " + getUsername(body.note?.user) : "") + content,
+			};
 		case "userMessage":
-			return messageUser + " からのチャット" + content;
+			return {
+				username,
+				avatar_url,
+				content: "個別チャット" + content,
+			};
 		case "groupMessage":
-			return body.message.group.name + " で " + messageUser + " からのチャット" + content;
+			return {
+				username,
+				avatar_url,
+				content: body.message.group.name + " でのチャット" + content,
+			};
 		default:
-			return "type : " + jobData.type + content;
+			return {
+				content: "type : " + jobData.type + content,
+			};
 	}
 }
 
@@ -209,11 +256,9 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 					"X-Calckey-Hook-Id": job.data.webhookId,
 					"Content-Type": "application/json",
 				},
-				body: embeds.length !== 0 ? JSON.stringify({
-					content: typeToContent(job.data),
+				body: JSON.stringify({
+					...typeToBody(job.data),
 					embeds,
-				}) : JSON.stringify({
-					content: job.data.type,
 				}),
 			});
 		} else {

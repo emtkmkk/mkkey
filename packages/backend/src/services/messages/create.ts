@@ -88,7 +88,7 @@ export async function createMessage(
 		}
 	}
 
-	// 2秒経っても(今回作成した)メッセージが既読にならなかったら「未読のメッセージがありますよ」イベントを発行する
+	// 3秒経っても(今回作成した)メッセージが既読にならなかったら「未読のメッセージがありますよ」イベントを発行する
 	setTimeout(async () => {
 		const freshMessage = await MessagingMessages.findOneBy({ id: message.id });
 		if (freshMessage == null) return; // メッセージが削除されている場合もある
@@ -127,9 +127,10 @@ export async function createMessage(
 				publishMainStream(joining.userId, "unreadMessagingMessage", messageObj);
 				pushNotification(joining.userId, "unreadMessagingMessage", messageObj);
 				
+				const targetUser = await Users.findOneByOrFail({ id: joining.userId });
 				//webhook
 				const webhooks = await getActiveWebhooks().then((webhooks) =>
-				webhooks.filter((x) => x.userId === joining.userId && x.on.includes("groupMessage")),
+				webhooks.filter((x) => x.userId === joining.userId && x.on.includes("groupMessage") && (!x.on.includes("groupMentionOnly") || messageObj.text?.includes("@" + targetUser.username))),
 				);
 
 				for (const webhook of webhooks) {
@@ -140,7 +141,7 @@ export async function createMessage(
 			
 			}
 		}
-	}, 2000);
+	}, 3000);
 
 	if (
 		recipientUser &&

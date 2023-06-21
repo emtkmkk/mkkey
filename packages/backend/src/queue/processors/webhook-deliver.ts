@@ -152,7 +152,7 @@ async function typeToBody(jobData: any): Promise<any> {
 	const user = body.user ? body.user : body.antenna ? body.antenna.noteUser : body.reaction ? body.reaction.user : body.note ? body.note.user : body.message ? body.message.user : undefined;
 	const username = user ? getUsername(user) : undefined;
 	const fullUsername = user ? user.name ? user.name + " (" + user.username + "@" + (user.host ?? "mkkey.net") + ")" : user.username + "@" + (user.host ?? "mkkey.net") : undefined;
-	const avatar_url = user ? user.avatarUrl ?? (await Users.findOneByOrFail({ id: user.id }))?.avatarUrl : undefined;
+	const avatar_url = user ? user.avatarUrl ?? (await Users.getAvatarUrl(user)) : undefined;
 
 	const content =
 		contentLength !== 0

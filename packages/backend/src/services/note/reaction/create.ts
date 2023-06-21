@@ -25,7 +25,7 @@ import { webhookDeliver } from "@/queue/index.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 
 export default async (
-	user: { id: User["id"]; host: User["host"]; username: User["username"]; name: User["name"]; avatarUrl: User["avatarUrl"] },
+	user: { id: User["id"]; host: User["host"]; username: User["username"]; name: User["name"]; avatarUrl: User["avatarUrl"]; },
 	note: Note,
 	reaction?: string,
 ) => {

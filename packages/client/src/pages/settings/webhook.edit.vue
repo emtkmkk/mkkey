@@ -42,6 +42,9 @@
 			<FormSwitch v-model="event_groupMessage" class="_formBlock"
 				>グループチャット受信時</FormSwitch
 			>
+			<FormSwitch v-if="event_groupMessage" v-model="event_groupMentionOnly" class="_formBlock"
+				>呼びかけられた時のみ</FormSwitch
+			>
 			<FormSwitch v-model="event_note" class="_formBlock"
 				>自分の投稿時</FormSwitch
 			>
@@ -123,6 +126,7 @@ let event_mention = $ref(webhook.on.includes("mention"));
 let event_antenna = $ref(webhook.on.includes("antenna"));
 let event_userMessage = $ref(webhook.on.includes("userMessage"));
 let event_groupMessage = $ref(webhook.on.includes("groupMessage"));
+let event_groupMentionOnly = $ref(webhook.on.includes("groupMentionOnly"));
 let event_unfollow = $ref(webhook.on.includes("unfollow"));
 
 let event_excludeAntennas = $ref(antennas.map((x) => !webhook.on.includes(`exclude-${x.id}`) ?? true));
@@ -138,6 +142,7 @@ async function save(): Promise<void> {
 	if (event_mention) events.push("mention");
 	if (event_userMessage) events.push("userMessage");
 	if (event_groupMessage) events.push("groupMessage");
+	if (event_groupMentionOnly) events.push("groupMentionOnly");
 	if (event_unfollow) events.push("unfollow");
 	if (event_antenna) {
 		events.push("antenna");

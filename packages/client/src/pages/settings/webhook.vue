@@ -1,6 +1,9 @@
 <template>
 	<div class="_formRoot">
 		<FormSection>
+			<FormLink :to="`/settings/webhook/new-simple`"> Discord通知転送簡単設定 </FormLink>
+		</FormSection>
+		<FormSection>
 			<FormLink :to="`/settings/webhook/new`"> WebHookを新規作成 </FormLink>
 		</FormSection>
 

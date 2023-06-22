@@ -96,7 +96,7 @@ async function create(): Promise<void> {
 		}
 	}
 	
-	const match = /^https://discord.com/api/webhooks/(.*?)/(.*?)$/.exec(url);
+	const match = /^https:\/\/discord.com\/api\/webhooks\/(.*?)\/(.*?)$/.exec(url);
 	
 	let webhookName = name || "Discord";
 	

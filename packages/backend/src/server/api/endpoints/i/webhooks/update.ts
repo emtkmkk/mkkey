@@ -54,6 +54,11 @@ export default define(meta, paramDef, async (ps, user) => {
 		on: ps.on,
 		active: ps.active,
 	});
-
-	publishInternalEvent("webhookUpdated", webhook);
+	
+	const afterUpdateWebhook = await Webhooks.findOneBy({
+		id: ps.webhookId,
+		userId: user.id,
+	});
+	
+	publishInternalEvent("webhookUpdated", afterUpdateWebhook);
 });

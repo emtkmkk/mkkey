@@ -1,5 +1,7 @@
 <template>
 	<div class="_formRoot">
+	<FormSection>
+	
 		<FormInput v-model="name" class="_formBlock">
 			<template #label>サーバー名(任意)</template>
 		</FormInput>

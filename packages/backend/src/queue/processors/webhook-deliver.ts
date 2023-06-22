@@ -166,33 +166,28 @@ async function typeToBody(jobData: any): Promise<any> {
 	switch (jobData.type) {
 		case "mention":
 			return {
-				username,
 				avatar_url,
-				content: "呼びかけ" + content,
+				content: username + " から 呼びかけ" + content,
 			};
 		case "unfollow":
 			return {
-				fullUsername,
 				avatar_url,
-				content: "リムーブされました",
+				content: fullUsername + " から リムーブされました",
 			};
 		case "silentUnfollow":
 			return {
-				fullUsername,
 				avatar_url,
-				content: "💬 リムーブされました",
+				content: "💬 " + fullUsername + " から リムーブされました",
 			};
 		case "follow":
 			return {
-				fullUsername,
 				avatar_url,
-				content: "フォローに成功",
+				content: fullUsername + " の フォローに成功",
 			};
 		case "followed":
 			return {
-				fullUsername,
 				avatar_url,
-				content: "フォローされました",
+				content: fullUsername + " から フォローされました",
 			};
 		case "note":
 			return {
@@ -200,39 +195,33 @@ async function typeToBody(jobData: any): Promise<any> {
 			};
 		case "reply":
 			return {
-				username,
 				avatar_url,
-				content: "返信" + content,
+				content: username + " から 返信" + content,
 			};
 		case "renote":
 			return {
-				username,
 				avatar_url,
-				content: (body.note.text ? "引用" : "RT") + content,
+				content: username + " から " + (body.note.text ? "引用" : "RT") + content,
 			};
 		case "reaction":
 			return {
-				username,
 				avatar_url,
-				content: body.reaction?.emojiName + content,
+				content: username + " から " + body.reaction?.emojiName + content,
 			};
 		case "antenna":
 			return {
-				username,
 				avatar_url,
-				content: body.antenna?.name + "📡新着" + (user.id !== body.note?.user?.id ? " RT " + getUsername(body.note?.user) : "") + content,
+				content: body.antenna?.name + "📡新着 : " + username + (user.id !== body.note?.user?.id ? " : RT " + getUsername(body.note?.user) : "") + content,
 			};
 		case "userMessage":
 			return {
-				username,
 				avatar_url,
-				content: "個別チャット" + content,
+				content: username + " から チャット" + content,
 			};
 		case "groupMessage":
 			return {
-				username,
 				avatar_url,
-				content: body.message.group.name + " でのチャット" + content,
+				content: body.message.group.name + " で " + username + " から チャット" + content,
 			};
 		default:
 			return {

@@ -28,7 +28,7 @@ function checkWordMute(
 					// 反転オプション：- or !
 					const reverse = keyword.startsWith("-") || keyword.startsWith("!");
 					const checkRet = checkMuteKeyword(note,text,keyword.replace(/^\-/,"").replace(/^\!/,""),index,what ?? "note");
-					reverse
+					return reverse
 						// エラーならば反転に関係なくfalse
 						? checkRet != null ? !checkRet : false
 						: checkRet ?? false

@@ -57,7 +57,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw err;
 	});
 
-	const query = {
+	let query = {
 		noteId: ps.noteId,
 	} as FindOptionsWhere<NoteReaction>;
 
@@ -66,10 +66,11 @@ export default define(meta, paramDef, async (ps, user) => {
 		// DB 上ではそうではないので、必要に応じて変換
 		// @.指定の場合、同名絵文字のリアクションを全て返す
 		const suffix = "@.:";
-		const type = ps.type.endsWith(suffix)
-			? Like(`${ps.type.slice(0, ps.type.length - suffix.length)}%:`)
-			: ps.type;
-		query.reaction = type;
+		if (ps.type.endsWith(suffix)){
+			query = [{...query,reaction: `${ps.type.slice(0, ps.type.length - suffix.length)}:`,},{...query,reaction: Like(`${ps.type.slice(0, ps.type.length - suffix.length)}@%:`)}];
+		} else {
+			query.reaction = ps.type
+		}
 	}
 
 	const reactions = await NoteReactions.find({

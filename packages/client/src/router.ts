@@ -201,6 +201,11 @@ export const routes = [
 				component: page(() => import("./pages/settings/apps.vue")),
 			},
 			{
+				path: "/webhook/new-simple",
+				name: "webhook",
+				component: page(() => import("./pages/settings/webhook.new.simple.vue")),
+			},
+			{
 				path: "/webhook/edit/:webhookId",
 				name: "webhook",
 				component: page(() => import("./pages/settings/webhook.edit.vue")),

@@ -1,5 +1,5 @@
 <template>
-	<div class="cbbedffa">
+	<div v-if="!$store.state.hiddenActivityChart" class="cbbedffa">
 		<canvas ref="chartEl"></canvas>
 		<div v-if="fetching" class="fetching">
 			<MkLoading />

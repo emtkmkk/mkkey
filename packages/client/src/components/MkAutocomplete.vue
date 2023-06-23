@@ -76,7 +76,7 @@
 				@click="complete(type, tag)"
 				@keydown="onKeydown"
 			>
-				<span class="tag">{{ tag }}</span>
+				<span class="tag">{{ tag.name + " " + tag.ja }}</span>
 			</li>
 		</ol>
 	</div>
@@ -195,7 +195,7 @@ const users = ref<any[]>([]);
 const hashtags = ref<any[]>([]);
 const emojis = ref<EmojiDef[]>([]);
 const items = ref<Element[] | HTMLCollection>([]);
-const mfmTags = ref<string[]>([]);
+const mfmTags = ref<any[]>([]);
 const select = ref(-1);
 const zIndex = os.claimZIndex("high");
 
@@ -344,7 +344,7 @@ function exec() {
 			return;
 		}
 
-		mfmTags.value = MFM_TAGS_JP.filter((tag) => tag.startsWith(props.q ?? ""));
+		mfmTags.value = MFM_TAGS_JP.filter((tag) => tag.name.startsWith(props.q ?? "") || tag.ja.startsWith(props.q ?? ""));
 	}
 }
 

@@ -269,12 +269,7 @@ export class Autocomplete {
 			let trimmedBefore = before.substring(0, before.lastIndexOf("$"));
 			let after = source.substr(caret);
 
-			if (defaultStore.state.smartMFMInputer && after === "]") {
-				trimmedBefore += "]";
-				after = "";
-			}
-
-			if (defaultStore.state.smartMFMInputer && /^(<\/(\w*)> | [*~`])$/.test(after)) {
+			if (defaultStore.state.smartMFMInputer && /^(<\/\w*>|\*\*|~~|\n```|\\\)|\\\]|[`\]])$/.test(after)) {
 				trimmedBefore += after;
 				after = "";
 			}
@@ -287,7 +282,7 @@ export class Autocomplete {
 				// キャレットを戻す
 				nextTick(() => {
 					this.textarea.focus();
-					const pos = after.length === 0 ? this.text.length - value.exportRight.length : this.text.match(/(<\/(\w*)> | [\]*~`])+$/) ? this.text.length - this.text.match(/(<\/(\w*)> | [\]*~`])+$/)[0].length : this.text.length - value.exportRight.length;
+					const pos = after.length === 0 ? this.text.length - value.exportRight.length : /\n?(<\/\w*>|\\\)|\\\]|[\]*~`])+$/.test(this.text) ? this.text.length - this.text.match(/\n?(<\/\w*>|\\\)|\\\]|[\]*~`])+$/)[0].length : this.text.length - value.exportRight.length;
 					this.textarea.setSelectionRange(pos, pos);
 				});
 			} else {

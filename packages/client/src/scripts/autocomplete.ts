@@ -273,24 +273,30 @@ export class Autocomplete {
 				trimmedBefore += "]";
 				after = "";
 			}
+			
+			if (defaultStore.state.smartMFMInputer && /^(<\/(\w*)> | [*~`])$/.test(after)){
+				trimmedBefore += after;
+				after = "";
+			}
 
 			// 挿入
+			const mfmValue = value.defaultOption ?? value.exportLeft
 			if (defaultStore.state.smartMFMInputer) {
-				this.text = after.length === 0 ? `$[${value} ${trimmedBefore}]` : `${trimmedBefore}$[${value} ${after}]`;
+				this.text = after.length === 0 ? `${mfmValue}${trimmedBefore}${value.exportRight}` : `${trimmedBefore}${mfmValue}${after}${value.exportRight}`;
 
 				// キャレットを戻す
 				nextTick(() => {
 					this.textarea.focus();
-					const pos = after.length === 0 ? this.text.length - 1 : this.text.length - this.text.match(/]+$/)[0].length;
+					const pos = after.length === 0 ? this.text.length - value.exportRight.length : this.text.match(/(<\/(\w*)> | [\]*~`])+$/) ? this.text.length - this.text.match(/(<\/(\w*)> | [\]*~`])+$/)[0].length : this.text.length - value.exportRight.length;
 					this.textarea.setSelectionRange(pos, pos);
 				});
 			} else {
-				this.text = `${trimmedBefore}$[${value} ]${after}`;
+				this.text = `${trimmedBefore}${mfmValue}${value.exportRight}${after}`;
 				
 				// キャレットを戻す
 				nextTick(() => {
 					this.textarea.focus();
-					const pos = trimmedBefore.length + (value.length + 3);
+					const pos = trimmedBefore.length + (mfmValue.length);
 					this.textarea.setSelectionRange(pos, pos);
 				});
 			}

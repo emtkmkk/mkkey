@@ -200,11 +200,7 @@ const select = ref(-1);
 const zIndex = os.claimZIndex("high");
 
 function complete(type: string, value: any) {
-	let completeValue = value;
-	if (type === 'mfmTag') {
-		completeValue = value.match(/(\w+)\s/)[1];
-	}
-	emit("done", { type, value: completeValue });
+	emit("done", { type, value });
 	emit("closed");
 	if (type === "emoji") {
 		let recents = defaultStore.state.recentlyUsedEmojis;

@@ -156,7 +156,7 @@
 				<swiper-slide>
 					<XEmojis />
 				</swiper-slide>
-				<swiper-slide>
+				<swiper-slide v-if="!defaultStore.state.hiddenActivityChart">
 					<MkInstanceStats :chart-limit="500" :detailed="true" />
 				</swiper-slide>
 				<swiper-slide>

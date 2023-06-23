@@ -268,13 +268,13 @@ export class Autocomplete {
 			const before = source.substr(0, caret);
 			let trimmedBefore = before.substring(0, before.lastIndexOf("$"));
 			let after = source.substr(caret);
-			
-			if (defaultStore.state.smartMFMInputer && after === "]"){
+
+			if (defaultStore.state.smartMFMInputer && after === "]") {
 				trimmedBefore += "]";
 				after = "";
 			}
-			
-			if (defaultStore.state.smartMFMInputer && /^(<\/(\w*)> | [*~`])$/.test(after)){
+
+			if (defaultStore.state.smartMFMInputer && /^(<\/(\w*)> | [*~`])$/.test(after)) {
 				trimmedBefore += after;
 				after = "";
 			}
@@ -292,7 +292,7 @@ export class Autocomplete {
 				});
 			} else {
 				this.text = `${trimmedBefore}${mfmValue}${value.exportRight}${after}`;
-				
+
 				// キャレットを戻す
 				nextTick(() => {
 					this.textarea.focus();

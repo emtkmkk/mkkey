@@ -17,7 +17,7 @@
 			</FormSplit>
 		</FormSection>
 
-		<FormSection>
+		<FormSection v-if="!$store.state.hiddenActivityChart">
 			<template #label>{{ i18n.ts.statistics }}</template>
 			<MkChart
 				src="per-user-drive"

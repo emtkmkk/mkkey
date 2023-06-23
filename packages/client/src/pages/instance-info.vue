@@ -220,7 +220,7 @@
 						</FormSection>
 					</div>
 				</swiper-slide>
-				<swiper-slide>
+				<swiper-slide v-if="!$store.state.hiddenActivityChart">
 					<div class="_formRoot">
 						<div class="cmhjzshl">
 							<div class="selects">
@@ -374,7 +374,8 @@ const props = defineProps<{
 }>();
 
 let tabs = ["overview"];
-if (iAmAdmin) tabs.push("chart", "users", "raw");
+if (iAmAdmin && !defaultStore.state.hiddenActivityChart) tabs.push("chart");
+if (iAmAdmin) tabs.push("users", "raw");
 let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
@@ -479,13 +480,17 @@ let theTabs = [
 	},
 ];
 
-if (iAmAdmin) {
+if (iAmAdmin && !defaultStore.state.hiddenActivityChart) {
 	theTabs.push(
 		{
 			key: "chart",
 			title: i18n.ts.charts,
 			icon: "ph-chart-bar ph-bold ph-lg",
 		},
+	);
+}
+if (iAmAdmin) {
+	theTabs.push(
 		{
 			key: "users",
 			title: i18n.ts.users,

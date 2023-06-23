@@ -608,11 +608,13 @@ const headerTabs = $computed(() =>
 				icon: "ph-chart-bar ph-bold ph-lg",
 			  }
 			: null,
-		{
+		defaultStore.state.developer 
+			? {
 			key: "raw",
 			title: "Raw",
 			icon: "ph-code ph-bold ph-lg",
-		},
+			  }
+			: null,
 	].filter((x) => x != null)
 );
 

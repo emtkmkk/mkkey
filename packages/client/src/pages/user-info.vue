@@ -364,6 +364,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
 import { iAmAdmin, iAmModerator } from "@/account";
 import { instance } from "@/instance";
+import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	userId: string;
@@ -600,11 +601,13 @@ const headerTabs = $computed(() =>
 					icon: "ph-shield ph-bold ph-lg",
 			  }
 			: null,
-		{
-			key: "chart",
-			title: i18n.ts.charts,
-			icon: "ph-chart-bar ph-bold ph-lg",
-		},
+		!defaultStore.state.hiddenActivityChart
+			? {
+				key: "chart",
+				title: i18n.ts.charts,
+				icon: "ph-chart-bar ph-bold ph-lg",
+			  }
+			: null,
 		{
 			key: "raw",
 			title: "Raw",

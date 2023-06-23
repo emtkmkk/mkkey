@@ -105,7 +105,7 @@ function checkMuteKeyword(
 		return !note.user ? undefined : hostKeyword === "mkkey.net" ? !note.user.host : note.user.host === hostKeyword;
 	}
 	if (keyword.startsWith("fuzzyHost:")) {
-		const hostKeyword = keyword.replace("host:", "") || "mkkey.net";
+		const hostKeyword = keyword.replace("fuzzyHost:", "") || "mkkey.net";
 		return !note.user ? undefined : ("mkkey.net".includes(hostKeyword) && !note.user.host) || note.user.host.includes(hostKeyword);
 	}
 	if (keyword.startsWith("username:")) {
@@ -113,7 +113,7 @@ function checkMuteKeyword(
 		return !note.user ? undefined : note.user.username === usernameKeyword;
 	}
 	if (keyword.startsWith("fuzzyUsername:")) {
-		const usernameKeyword = keyword.replace("username:", "");
+		const usernameKeyword = keyword.replace("fuzzyUsername:", "");
 		return !note.user ? undefined : note.user.username.includes(usernameKeyword);
 	}
 	if (keyword.startsWith("name:")) {
@@ -121,38 +121,38 @@ function checkMuteKeyword(
 		return !note.user ? undefined : note.user.name === nameKeyword;
 	}
 	if (keyword.startsWith("fuzzyName:")) {
-		const nameKeyword = keyword.replace("name:", "");
+		const nameKeyword = keyword.replace("fuzzyName:", "");
 		return !note.user ? undefined : note.user.name.includes(nameKeyword);
 	}
 	if (keyword.startsWith("visibility:")) {
-		const visibilityKeyword = keyword.replace("visibility:", "");
+		const visibilityKeyword = keyword.replace("visibility:", "").toLowerCase();
 		if (visibilityKeyword === "visitor") return ["public", "home", "hidden"].includes(note.visibility) && note.localOnly === false;
 		if (visibilityKeyword === "private") return ["followers", "specified"].includes(note.visibility);
 		return note.visibility === visibilityKeyword;
 	}
 	if (keyword.startsWith("localOnly:") || keyword.startsWith("localAndFollower:")) {
-		const localOnlyKeyword = keyword.replace("localOnly:", "").replace("localAndFollower:", "");
+		const localOnlyKeyword = keyword.replace("localOnly:", "").replace("localAndFollower:", "").toLowerCase();
 		if (["true", "yes", "on"].includes(localOnlyKeyword)) return note.localOnly;
 		if (["false", "no", "off"].includes(localOnlyKeyword)) return !note.localOnly;
 		return undefined;
 	}
 	if (keyword.startsWith("what:")) {
-		const whatKeyword = keyword.replace("what:", "").replace("rt", "renote");
+		const whatKeyword = keyword.replace("what:", "").replace("rt", "renote").toLowerCase();
 		return what === whatKeyword;
 	}
 	if (keyword.startsWith("relation:")) {
-		const relationKeyword = keyword.replace("relation:", "");
+		const relationKeyword = keyword.replace("relation:", "").toLowerCase();
 		if (note.user.isFollowing == null) return undefined;
 		if (["follow", "following"].includes(relationKeyword)) return note.user.isFollowing;
-		if (["FollowOnly", "followOnly", "FollowingOnly", "followingOnly"].includes(relationKeyword)) return note.user.isFollowing && !note.user.isFollowed;
-		if (["Follower", "follower", "Followed", "followed"].includes(relationKeyword)) return note.user.isFollowed;
-		if (["FollowerOnly", "followerOnly", "FollowedOnly", "followedOnly"].includes(relationKeyword)) return !note.user.isFollowing && note.user.isFollowed;
+		if (["followonly", "followingonly"].includes(relationKeyword)) return note.user.isFollowing && !note.user.isFollowed;
+		if (["follower", "followed"].includes(relationKeyword)) return note.user.isFollowed;
+		if (["followeronly", "followedonly"].includes(relationKeyword)) return !note.user.isFollowing && note.user.isFollowed;
 		if (relationKeyword === "both") return note.user.isFollowed && note.user.isFollowing;
 		if (relationKeyword === "none") return !note.user.isFollowed && !note.user.isFollowing;
 		return undefined;
 	}
 	if (keyword.startsWith("filter:")) {
-		const filterKeyword = keyword.replace("filter:", "");
+		const filterKeyword = keyword.replace("filter:", "").toLowerCase();
 		if (filterKeyword.includes("mention")) {
 			const isMention = (note.mentions && !note.replyId);
 			return !!isMention;

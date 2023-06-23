@@ -152,7 +152,7 @@ export default defineComponent({
 									break;
 								}
 								case "rainbow": {
-									const speed = validTime(token.props.args.speed) || "1s";
+									const speed = validTime(token.props.args.speed) || "2s";
 									style = `animation: mfm-rainbow ${speed} linear infinite;`;
 									break;
 								}

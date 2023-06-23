@@ -204,11 +204,12 @@ let stats = $ref(null);
 let instanceIcon = $ref<HTMLImageElement>();
 let instanceIconAnimation = "none";
 let iconClicks = 0;
-let tabs = ["overview", "emojis", "charts"];
+let tabs = ["overview", "emojis"];
 let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
-if (iAmModerator) tabs.push("federation");
+if (!defaultStore.state.hiddenActivityChart) tabs.push("charts");
+if (iAmModerator || defaultStore.state.developer) tabs.push("federation");
 
 const initStats = () =>
 	os.api("stats", {}).then((res) => {
@@ -228,14 +229,16 @@ let theTabs = [
 		title: i18n.ts.customEmojis,
 		icon: "ph-smiley ph-bold ph-lg",
 	},
-	{
+];
+
+if (!defaultStore.state.hiddenActivityChart) {
+	theTabs.push({
 		key: "charts",
 		title: i18n.ts.charts,
 		icon: "ph-chart-bar ph-bold ph-lg",
-	},
-];
-
-if (iAmModerator) {
+	});
+}
+if (iAmModerator || defaultStore.state.developer) {
 	theTabs.push({
 		key: "federation",
 		title: i18n.ts.federation,

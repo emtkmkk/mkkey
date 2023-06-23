@@ -47,7 +47,7 @@ export const MFM_TAGS_JP = [
 	{name:"blur", ja:"ぼかし", exportLeft:"$[blur ", exportRight:"]",},
 	{name:"search", ja:"検索欄", exportLeft:"", exportRight:" [Search]",},
 	{name:"serif", ja:"セリフフォント", exportLeft:"$[font.serif ", exportRight:"]",},
-	{name:"monospace", ja:"等幅フォント", exportLeft:"$[font.monospace ", exportRight:"]",},
+	{name:"mono", ja:"等幅フォント", exportLeft:"$[font.monospace ", exportRight:"]",},
 	{name:"cursive", ja:"筆記体", exportLeft:"$[font.cursive ", exportRight:"]",},
 	{name:"fantasy", ja:"ファンタジー", exportLeft:"$[font.fantasy ", exportRight:"]",},
 	{name:"emoji", ja:"絵文字フォント", exportLeft:"$[font.emoji ", exportRight:"]",},

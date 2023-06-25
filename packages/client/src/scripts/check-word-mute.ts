@@ -10,6 +10,7 @@ function checkWordMute(
 	note: NoteLike,
 	mutedWords: Array<string | string[]>,
 	what?: string,
+	endpoint?: string,
 ): Muted {
 	const text = ((note.cw ?? "") + " " + (note.text ?? "")).trim();
 	//if (text === "") return NotMuted;
@@ -27,7 +28,7 @@ function checkWordMute(
 				keywords.every((keyword, index) => {
 					// 反転オプション：- or !
 					const reverse = keyword.startsWith("-") || keyword.startsWith("!");
-					const checkRet = checkMuteKeyword(note, text, keyword.replace(/^\-/, "").replace(/^\!/, ""), index, what ?? "note");
+					const checkRet = checkMuteKeyword(note, text, keyword.replace(/^\-/, "").replace(/^\!/, ""), index, what ?? "note", endpoint);
 					return reverse
 						// エラーならば反転に関係なくfalse
 						? checkRet != null ? !checkRet : false
@@ -72,6 +73,7 @@ function checkMuteKeyword(
 	keyword: string,
 	index: number,
 	what: string,
+	endpoint?: string,
 ): boolean | undefined {
 	// undefined : エラーの場合 反転を無視してfalse
 	if (!keyword.includes(":") || keyword.startsWith("include:")) {
@@ -140,6 +142,21 @@ function checkMuteKeyword(
 		const whatKeyword = keyword.replace("what:", "").replace("rt", "renote").toLowerCase();
 		return what === whatKeyword;
 	}
+	if (keyword.startsWith("where:") || keyword.startsWith("timeline:") || keyword.startsWith("tl:")) {
+		if (!endpoint) return undefined;
+		let tlKeyword = keyword.replace("where:", "").replace("timeline:", "").replace("tl:", "").toLowerCase();
+		if (["home", "social"].includes(tlKeyword)) return ["notes/timeline", "notes/hybrid-timeline"].includes(endpoint);
+		if (["local", "global"].includes(tlKeyword)) return endpoint === "notes/" + tlKeyword + "-timeline";
+		if (["recommended", "media"].includes(tlKeyword)) return ["notes/recommended-timeline"].includes(endpoint);
+		if (["list"].includes(tlKeyword)) return ["notes/user-list-timeline"].includes(endpoint);
+		if (["antenna"].includes(tlKeyword)) return ["antennas/notes"].includes(endpoint);
+		if (["trend"].includes(tlKeyword)) return ["notes/featured", "notes/polls/recommendation"].includes(endpoint);
+		if (["channel"].includes(tlKeyword)) return ["channels/timeline"].includes(endpoint);
+		if (["notification"].includes(tlKeyword)) return ["notifications/read"].includes(endpoint);
+
+
+		return endpoint.startsWith(tlKeyword) || endpoint.startsWith("notes/" + tlKeyword);
+	}
 	if (keyword.startsWith("relation:")) {
 		const relationKeyword = keyword.replace("relation:", "").toLowerCase();
 		if (note.user.isFollowing == null) return undefined;
@@ -198,6 +215,7 @@ export function getWordSoftMute(
 	note: Record<string, any>,
 	me: Record<string, any> | null | undefined,
 	mutedWords: Array<string | string[]>,
+	endpoint?: string,
 ): Muted {
 	// 自分自身
 	if (me && note.userId === me.id) {
@@ -205,14 +223,14 @@ export function getWordSoftMute(
 	}
 
 	if (mutedWords.length > 0) {
-		let noteMuted = checkWordMute(note, mutedWords, "note");
+		let noteMuted = checkWordMute(note, mutedWords, "note", endpoint);
 		if (noteMuted.muted) {
 			noteMuted.what = "note";
 			return noteMuted;
 		}
 
 		if (note.renote) {
-			let renoteMuted = checkWordMute(note.renote, mutedWords, note.text == null ? "renote" : "quote");
+			let renoteMuted = checkWordMute(note.renote, mutedWords, note.text == null ? "renote" : "quote", endpoint);
 			if (renoteMuted.muted) {
 				renoteMuted.what = note.text == null ? "renote" : "quote";
 				return renoteMuted;
@@ -220,7 +238,7 @@ export function getWordSoftMute(
 		}
 
 		if (note.reply) {
-			let replyMuted = checkWordMute(note.reply, mutedWords, "reply");
+			let replyMuted = checkWordMute(note.reply, mutedWords, "reply", endpoint);
 			if (replyMuted.muted) {
 				replyMuted.what = "reply";
 				return replyMuted;

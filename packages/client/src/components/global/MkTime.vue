@@ -1,7 +1,7 @@
 <template>
 	<time :title="absolute">
 		<template v-if="mode === 'relative'">{{ relative }}</template>
-		<template v-else-if="mode === 'absolute'">{{ absolute }}</template>
+		<template v-else-if="mode === 'absolute'">{{ absolute }}<span style="font-size: 0.75em" v-if="milliseconds">{{ milliseconds }}<span></template>
 		<template v-else-if="mode === 'detail'"
 			>{{ absolute }} ({{ relativeRaw }})</template
 		>
@@ -29,7 +29,8 @@ const props = withDefaults(
 const _time = props.mode === "detail-dateOnly" 
 				? typeof props.time === "string" ? new Date(new Date(props.time).setHours(0, 0, 0, 0)) : new Date(props.time.setHours(0, 0, 0, 0))
 				: typeof props.time === "string" ? new Date(props.time) : props.time;
-const absolute = _time.toLocaleString() + "." + ("000" + _time.getMilliseconds()).slice(-3);
+const absolute = _time.toLocaleString();
+const milliseconds =_time.getMilliseconds !== 0 ? "." + ("000" + _time.getMilliseconds()).slice(-3) : "";
 const absoluteDateOnly = _time.toLocaleDateString();
 
 let now = $shallowRef(new Date());

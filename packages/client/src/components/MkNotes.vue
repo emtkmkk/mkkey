@@ -27,6 +27,7 @@
 						:key="note._featuredId_ || note._prId_ || note.id"
 						class="qtqtichx"
 						:note="note"
+						:endpoint="pagination.endpoint"
 					/>
 				</XList>
 			</div>

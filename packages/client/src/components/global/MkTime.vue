@@ -1,7 +1,7 @@
 <template>
 	<time :title="absolute">
 		<template v-if="mode === 'relative'">{{ relative }}</template>
-		<template v-else-if="mode === 'absolute'">{{ absolute }}<span style="font-size: 0.75em" v-if="milliseconds">{{ milliseconds }}<span></template>
+		<template v-else-if="mode === 'absolute'">{{ absolute }}<span style="font-size: 0.75em" v-if="milliseconds">{{ milliseconds }}</span></template>
 		<template v-else-if="mode === 'detail'"
 			>{{ absolute }} ({{ relativeRaw }})</template
 		>

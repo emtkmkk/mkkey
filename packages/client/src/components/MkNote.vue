@@ -340,7 +340,7 @@ let replyNote = $computed(() =>
 const isMyRenote = $i && $i.id === note.userId;
 const showContent = ref(false);
 const isDeleted = ref(false);
-const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords, endpoint));
+const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords, props.endpoint));
 const translation = ref(null);
 const translating = ref(false);
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;

@@ -48,12 +48,12 @@ type IsUserDetailed<Detailed extends boolean> = Detailed extends true
 type IsMeAndIsUserDetailed<
 	ExpectsMe extends boolean | null,
 	Detailed extends boolean,
-> = Detailed extends true
+	> = Detailed extends true
 	? ExpectsMe extends true
-		? Packed<"MeDetailed">
-		: ExpectsMe extends false
-		? Packed<"UserDetailedNotMe">
-		: Packed<"UserDetailed">
+	? Packed<"MeDetailed">
+	: ExpectsMe extends false
+	? Packed<"UserDetailedNotMe">
+	: Packed<"UserDetailed">
 	: Packed<"UserLite">;
 
 const ajv = new Ajv();
@@ -226,8 +226,8 @@ export const UserRepository = db.getRepository(User).extend({
 		const count = await Announcements.countBy(
 			reads.length > 0
 				? {
-						id: Not(In(reads.map((read) => read.announcementId))),
-				  }
+					id: Not(In(reads.map((read) => read.announcementId))),
+				}
 				: {},
 		);
 
@@ -261,9 +261,9 @@ export const UserRepository = db.getRepository(User).extend({
 		const unread =
 			myAntennas.length > 0
 				? await AntennaNotes.findOneBy({
-						antennaId: In(myAntennas.map((x) => x.id)),
-						read: false,
-				  })
+					antennaId: In(myAntennas.map((x) => x.id)),
+					read: false,
+				})
 				: null;
 
 		return unread != null;
@@ -275,9 +275,9 @@ export const UserRepository = db.getRepository(User).extend({
 		const unread =
 			channels.length > 0
 				? await NoteUnreads.findOneBy({
-						userId: userId,
-						noteChannelId: In(channels.map((x) => x.followeeId)),
-				  })
+					userId: userId,
+					noteChannelId: In(channels.map((x) => x.followeeId)),
+				})
 				: null;
 
 		return unread != null;
@@ -313,27 +313,27 @@ export const UserRepository = db.getRepository(User).extend({
 		return count > 0;
 	},
 
-	getOnlineStatus(user: User): "unknown" | "online" | "half-online" | "active" | "half-active" | "offline" | "half-sleeping" | "sleeping" | "deep-sleeping" | "never-sleeping" {
-		if (user.isBot) return "unknown";
+	getOnlineStatus(user: User, meId?: string): "unknown" | "online" | "half-online" | "active" | "half-active" | "offline" | "half-sleeping" | "sleeping" | "deep-sleeping" | "never-sleeping" {
+		if (user.isBot || !meId) return "unknown";
 		if (user.lastActiveDate == null) return "unknown";
 		const elapsed = Date.now() - user.lastActiveDate.getTime();
 		return elapsed < USER_ONLINE_THRESHOLD
 			? "online"
 			: elapsed < USER_HALFONLINE_THRESHOLD
-			? "half-online"
-			: elapsed < USER_ACTIVE_THRESHOLD
-			? "active"
-			: elapsed < USER_ACTIVE2_THRESHOLD
-			? "half-active"
-			: elapsed < USER_HALFSLEEP_THRESHOLD
-			? "offline" 
-			: elapsed < USER_SLEEP_THRESHOLD
-			? "half-sleeping" 
-			: elapsed < USER_DEEPSLEEP_THRESHOLD
-			? "sleeping"
-			: elapsed < USER_SUPERSLEEP_THRESHOLD
-			? "deep-sleeping"
-			: "super-sleeping";
+				? "half-online"
+				: elapsed < USER_ACTIVE_THRESHOLD
+					? "active"
+					: elapsed < USER_ACTIVE2_THRESHOLD
+						? "half-active"
+						: elapsed < USER_HALFSLEEP_THRESHOLD
+							? "offline"
+							: elapsed < USER_SLEEP_THRESHOLD
+								? "half-sleeping"
+								: elapsed < USER_DEEPSLEEP_THRESHOLD
+									? "sleeping"
+									: elapsed < USER_SUPERSLEEP_THRESHOLD
+										? "deep-sleeping"
+										: "super-sleeping";
 	},
 
 	async getAvatarUrl(user: User): Promise<string> {
@@ -370,14 +370,14 @@ export const UserRepository = db.getRepository(User).extend({
 	async pack<
 		ExpectsMe extends boolean | null = null,
 		D extends boolean = false,
-	>(
-		src: User["id"] | User,
-		me?: { id: User["id"] } | null | undefined,
-		options?: {
-			detail?: D;
-			relation?: D;
-			includeSecrets?: boolean;
-		},
+		>(
+			src: User["id"] | User,
+			me?: { id: User["id"] } | null | undefined,
+			options?: {
+				detail?: D;
+				relation?: D;
+				includeSecrets?: boolean;
+			},
 	): Promise<IsMeAndIsUserDetailed<ExpectsMe, D>> {
 		const opts = Object.assign(
 			{
@@ -415,10 +415,10 @@ export const UserRepository = db.getRepository(User).extend({
 				: null;
 		const pins = opts.detail
 			? await UserNotePinings.createQueryBuilder("pin")
-					.where("pin.userId = :userId", { userId: user.id })
-					.innerJoinAndSelect("pin.note", "note")
-					.orderBy("pin.createdAt", "DESC").addOrderBy("pin.id", "DESC")
-					.getMany()
+				.where("pin.userId = :userId", { userId: user.id })
+				.innerJoinAndSelect("pin.note", "note")
+				.orderBy("pin.createdAt", "DESC").addOrderBy("pin.id", "DESC")
+				.getMany()
 			: [];
 		const profile = opts.detail
 			? await UserProfiles.findOneByOrFail({ userId: user.id })
@@ -428,23 +428,23 @@ export const UserRepository = db.getRepository(User).extend({
 			profile == null
 				? null
 				: profile.ffVisibility === "public" || isMe
-				? user.followingCount
-				: profile.ffVisibility === "followers" &&
-				  relation &&
-				  relation.isFollowing
-				? user.followingCount
-				: user.followingCount;
+					? user.followingCount
+					: profile.ffVisibility === "followers" &&
+						relation &&
+						relation.isFollowing
+						? user.followingCount
+						: user.followingCount;
 
 		const followersCount =
 			profile == null
 				? null
 				: profile.ffVisibility === "public" || isMe
-				? user.followersCount
-				: profile.ffVisibility === "followers" &&
-				  relation &&
-				  relation.isFollowing
-				? user.followersCount
-				: user.followersCount;
+					? user.followersCount
+					: profile.ffVisibility === "followers" &&
+						relation &&
+						relation.isFollowing
+						? user.followersCount
+						: user.followersCount;
 
 		const truthy = opts.detail ? true : undefined;
 		const falsy = opts.detail ? false : undefined;
@@ -464,161 +464,161 @@ export const UserRepository = db.getRepository(User).extend({
 			speakAsCat: user.speakAsCat || falsy,
 			instance: user.host
 				? userInstanceCache
-						.fetch(
-							user.host,
-							() => Instances.findOneBy({ host: user.host! }),
-							(v) => v != null,
-						)
-						.then((instance) =>
-							instance
-								? {
-										name: instance.name,
-										softwareName: instance.softwareName,
-										softwareVersion: instance.softwareVersion,
-										iconUrl: instance.iconUrl,
-										faviconUrl: instance.faviconUrl,
-										themeColor: instance.themeColor,
-								  }
-								: undefined,
-						)
+					.fetch(
+						user.host,
+						() => Instances.findOneBy({ host: user.host! }),
+						(v) => v != null,
+					)
+					.then((instance) =>
+						instance
+							? {
+								name: instance.name,
+								softwareName: instance.softwareName,
+								softwareVersion: instance.softwareVersion,
+								iconUrl: instance.iconUrl,
+								faviconUrl: instance.faviconUrl,
+								themeColor: instance.themeColor,
+							}
+							: undefined,
+					)
 				: undefined,
 			emojis: populateEmojis(user.emojis, user.host),
-			onlineStatus: this.getOnlineStatus(user),
+			onlineStatus: this.getOnlineStatus(user, meId),
 			driveCapacityOverrideMb: user.driveCapacityOverrideMb,
 
 			...(opts.detail
 				? {
-						url: profile!.url,
-						uri: user.uri,
-						movedToUri: user.movedToUri
-							? await this.userFromURI(user.movedToUri)
-							: null,
-						alsoKnownAs: user.alsoKnownAs,
-						createdAt: user.createdAt.toISOString(),
-						updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null,
-						lastFetchedAt: user.lastFetchedAt
-							? user.lastFetchedAt.toISOString()
-							: null,
-						bannerUrl: user.banner
-							? DriveFiles.getPublicUrl(user.banner, false)
-							: null,
-						bannerBlurhash: user.banner?.blurhash || null,
-						bannerColor: null, // 後方互換性のため
-						isLocked: user.isLocked,
-						isSilenced: user.isSilenced || falsy,
-						isSuspended: user.isSuspended || falsy,
-						description: profile!.description,
-						location: profile!.location,
-						birthday: profile!.birthday,
-						lang: profile!.lang,
-						fields: profile!.fields,
-						followersCount: followersCount ?? "N/A",
-						followingCount: followingCount ?? "N/A",
-						notesCount: user.notesCount,
-						pinnedNoteIds: pins.map((pin) => pin.noteId),
-						pinnedNotes: Notes.packMany(
-							pins.map((pin) => pin.note!),
-							me,
-							{
-								detail: true,
-							},
-						),
-						pinnedPageId: profile!.pinnedPageId,
-						pinnedPage: profile!.pinnedPageId
-							? Pages.pack(profile!.pinnedPageId, me)
-							: null,
-						publicReactions: profile!.publicReactions,
-						ffVisibility: profile!.ffVisibility,
-						blockPostPublic: user.blockPostPublic || falsy,
-						blockPostHome: user.blockPostHome || falsy,
-						blockPostNotLocal: user.blockPostNotLocal || falsy,
-						blockPostNotLocalPublic: user.blockPostNotLocalPublic || falsy,
-						isSilentLocked: user.isSilentLocked || falsy,
-						twoFactorEnabled: profile!.twoFactorEnabled,
-						usePasswordLessLogin: profile!.usePasswordLessLogin,
-						securityKeys: profile!.twoFactorEnabled
-							? UserSecurityKeys.countBy({
-									userId: user.id,
-							  }).then((result) => result >= 1)
-							: false,
-				  }
+					url: profile!.url,
+					uri: user.uri,
+					movedToUri: user.movedToUri
+						? await this.userFromURI(user.movedToUri)
+						: null,
+					alsoKnownAs: user.alsoKnownAs,
+					createdAt: user.createdAt.toISOString(),
+					updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null,
+					lastFetchedAt: user.lastFetchedAt
+						? user.lastFetchedAt.toISOString()
+						: null,
+					bannerUrl: user.banner
+						? DriveFiles.getPublicUrl(user.banner, false)
+						: null,
+					bannerBlurhash: user.banner?.blurhash || null,
+					bannerColor: null, // 後方互換性のため
+					isLocked: user.isLocked,
+					isSilenced: user.isSilenced || falsy,
+					isSuspended: user.isSuspended || falsy,
+					description: profile!.description,
+					location: profile!.location,
+					birthday: profile!.birthday,
+					lang: profile!.lang,
+					fields: profile!.fields,
+					followersCount: followersCount ?? "N/A",
+					followingCount: followingCount ?? "N/A",
+					notesCount: user.notesCount,
+					pinnedNoteIds: pins.map((pin) => pin.noteId),
+					pinnedNotes: Notes.packMany(
+						pins.map((pin) => pin.note!),
+						me,
+						{
+							detail: true,
+						},
+					),
+					pinnedPageId: profile!.pinnedPageId,
+					pinnedPage: profile!.pinnedPageId
+						? Pages.pack(profile!.pinnedPageId, me)
+						: null,
+					publicReactions: profile!.publicReactions,
+					ffVisibility: profile!.ffVisibility,
+					blockPostPublic: user.blockPostPublic || falsy,
+					blockPostHome: user.blockPostHome || falsy,
+					blockPostNotLocal: user.blockPostNotLocal || falsy,
+					blockPostNotLocalPublic: user.blockPostNotLocalPublic || falsy,
+					isSilentLocked: user.isSilentLocked || falsy,
+					twoFactorEnabled: profile!.twoFactorEnabled,
+					usePasswordLessLogin: profile!.usePasswordLessLogin,
+					securityKeys: profile!.twoFactorEnabled
+						? UserSecurityKeys.countBy({
+							userId: user.id,
+						}).then((result) => result >= 1)
+						: false,
+				}
 				: {}),
 
 			...(opts.detail && isMe
 				? {
-						avatarId: user.avatarId,
-						bannerId: user.bannerId,
-						injectFeaturedNote: profile!.injectFeaturedNote,
-						receiveAnnouncementEmail: profile!.receiveAnnouncementEmail,
-						alwaysMarkNsfw: profile!.alwaysMarkNsfw,
-						autoSensitive: profile!.autoSensitive,
-						carefulBot: profile!.carefulBot,
-						autoAcceptFollowed: profile!.autoAcceptFollowed,
-						noCrawle: profile!.noCrawle,
-						preventAiLearning: profile!.preventAiLearning,
-						isExplorable: user.isExplorable,
-						isDeleted: user.isDeleted,
-						hideOnlineStatus: user.hideOnlineStatus,
-						hasUnreadSpecifiedNotes: NoteUnreads.count({
-							where: { userId: user.id, isSpecified: true },
-							take: 1,
-						}).then((count) => count > 0),
-						hasUnreadMentions: NoteUnreads.count({
-							where: { userId: user.id, isMentioned: true },
-							take: 1,
-						}).then((count) => count > 0),
-						hasUnreadAnnouncement: this.getHasUnreadAnnouncement(user.id),
-						hasUnreadAntenna: this.getHasUnreadAntenna(user.id),
-						hasUnreadChannel: this.getHasUnreadChannel(user.id),
-						hasUnreadMessagingMessage: this.getHasUnreadMessagingMessage(
-							user.id,
-						),
-						hasUnreadNotification: this.getHasUnreadNotification(user.id),
-						hasPendingReceivedFollowRequest:
-							this.getHasPendingReceivedFollowRequest(user.id),
-						integrations: profile!.integrations,
-						mutedWords: profile!.mutedWords,
-						mutedInstances: profile!.mutedInstances,
-						mutingNotificationTypes: profile!.mutingNotificationTypes,
-						emailNotificationTypes: profile!.emailNotificationTypes,
-						showTimelineReplies: user.showTimelineReplies || falsy,
-						localShowRenote: user.localShowRenote ?? truthy,
-						remoteShowRenote: user.remoteShowRenote || falsy,
-						showSelfRenoteToHome: user.showSelfRenoteToHome ?? truthy,
-				  }
+					avatarId: user.avatarId,
+					bannerId: user.bannerId,
+					injectFeaturedNote: profile!.injectFeaturedNote,
+					receiveAnnouncementEmail: profile!.receiveAnnouncementEmail,
+					alwaysMarkNsfw: profile!.alwaysMarkNsfw,
+					autoSensitive: profile!.autoSensitive,
+					carefulBot: profile!.carefulBot,
+					autoAcceptFollowed: profile!.autoAcceptFollowed,
+					noCrawle: profile!.noCrawle,
+					preventAiLearning: profile!.preventAiLearning,
+					isExplorable: user.isExplorable,
+					isDeleted: user.isDeleted,
+					hideOnlineStatus: user.hideOnlineStatus,
+					hasUnreadSpecifiedNotes: NoteUnreads.count({
+						where: { userId: user.id, isSpecified: true },
+						take: 1,
+					}).then((count) => count > 0),
+					hasUnreadMentions: NoteUnreads.count({
+						where: { userId: user.id, isMentioned: true },
+						take: 1,
+					}).then((count) => count > 0),
+					hasUnreadAnnouncement: this.getHasUnreadAnnouncement(user.id),
+					hasUnreadAntenna: this.getHasUnreadAntenna(user.id),
+					hasUnreadChannel: this.getHasUnreadChannel(user.id),
+					hasUnreadMessagingMessage: this.getHasUnreadMessagingMessage(
+						user.id,
+					),
+					hasUnreadNotification: this.getHasUnreadNotification(user.id),
+					hasPendingReceivedFollowRequest:
+						this.getHasPendingReceivedFollowRequest(user.id),
+					integrations: profile!.integrations,
+					mutedWords: profile!.mutedWords,
+					mutedInstances: profile!.mutedInstances,
+					mutingNotificationTypes: profile!.mutingNotificationTypes,
+					emailNotificationTypes: profile!.emailNotificationTypes,
+					showTimelineReplies: user.showTimelineReplies || falsy,
+					localShowRenote: user.localShowRenote ?? truthy,
+					remoteShowRenote: user.remoteShowRenote || falsy,
+					showSelfRenoteToHome: user.showSelfRenoteToHome ?? truthy,
+				}
 				: {}),
 
 			...(opts.includeSecrets
 				? {
-						email: profile!.email,
-						emailVerified: profile!.emailVerified,
-						securityKeysList: profile!.twoFactorEnabled
-							? UserSecurityKeys.find({
-									where: {
-										userId: user.id,
-									},
-									select: {
-										id: true,
-										name: true,
-										lastUsed: true,
-									},
-							  })
-							: [],
-				  }
+					email: profile!.email,
+					emailVerified: profile!.emailVerified,
+					securityKeysList: profile!.twoFactorEnabled
+						? UserSecurityKeys.find({
+							where: {
+								userId: user.id,
+							},
+							select: {
+								id: true,
+								name: true,
+								lastUsed: true,
+							},
+						})
+						: [],
+				}
 				: {}),
 
 			...(relation
 				? {
-						isFollowing: relation.isFollowing,
-						isFollowed: relation.isFollowed,
-						hasPendingFollowRequestFromYou:
-							relation.hasPendingFollowRequestFromYou,
-						hasPendingFollowRequestToYou: relation.hasPendingFollowRequestToYou,
-						isBlocking: relation.isBlocking,
-						isBlocked: relation.isBlocked,
-						isMuted: relation.isMuted,
-						isRenoteMuted: relation.isRenoteMuted,
-				  }
+					isFollowing: relation.isFollowing,
+					isFollowed: relation.isFollowed,
+					hasPendingFollowRequestFromYou:
+						relation.hasPendingFollowRequestFromYou,
+					hasPendingFollowRequestToYou: relation.hasPendingFollowRequestToYou,
+					isBlocking: relation.isBlocking,
+					isBlocked: relation.isBlocked,
+					isMuted: relation.isMuted,
+					isRenoteMuted: relation.isRenoteMuted,
+				}
 				: {}),
 		} as Promiseable<Packed<"User">> as Promiseable<
 			IsMeAndIsUserDetailed<ExpectsMe, D>

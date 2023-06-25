@@ -152,6 +152,7 @@ function checkMuteKeyword(
 		if (["antenna"].includes(tlKeyword)) return ["antennas/notes"].includes(endpoint);
 		if (["trend"].includes(tlKeyword)) return ["notes/featured", "notes/polls/recommendation"].includes(endpoint);
 		if (["channel"].includes(tlKeyword)) return ["channels/timeline"].includes(endpoint);
+		if (["user"].includes(tlKeyword)) return ["users/notes"].includes(endpoint);
 		if (["notification"].includes(tlKeyword)) return ["notifications/read"].includes(endpoint);
 
 

@@ -314,7 +314,7 @@ export const UserRepository = db.getRepository(User).extend({
 	},
 
 	getOnlineStatus(user: User, meId?: string): "unknown" | "online" | "half-online" | "active" | "half-active" | "offline" | "half-sleeping" | "sleeping" | "deep-sleeping" | "never-sleeping" {
-		if (user.isBot || !meId) return "unknown";
+		if (!meId) return "unknown";
 		if (user.lastActiveDate == null) return "unknown";
 		const elapsed = Date.now() - user.lastActiveDate.getTime();
 		return elapsed < USER_ONLINE_THRESHOLD

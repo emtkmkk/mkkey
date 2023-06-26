@@ -179,7 +179,10 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	let now = new Date();
 	let borderDate = new Date();
+
 	const RANK_TARGET_DAYS = 31;
+	const CACHE_TIME = 300 * 1000;
+
 	borderDate.setDate(now.getDate() - RANK_TARGET_DAYS);
 	borderDate.setMinutes(0);
 	borderDate.setSeconds(0);
@@ -189,6 +192,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		.select('min(following.\"createdAt\")', "min")
 		.where("following.followeeId = :userId", { userId: user.id })
 		.andWhere("following.followerHost IS NULL")
+		.cache(CACHE_TIME)
 		.getRawOne()).min) : undefined;
 
 	const userCreatedAtDate = firstLocalFollower ? firstLocalFollower : Date.parse(user.createdAt);
@@ -199,78 +203,98 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	const sendMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
 		.where("messaging_message.userId = :userId", { userId: user.id })
+		.cache(CACHE_TIME)
 		.getCount();
 
 	const readMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
 		.where(" :userId  = ANY(messaging_message.reads) ", { userId: user.id })
+		.cache(CACHE_TIME)
 		.getCount();
 
 	const result = await awaitAll({
 		notesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		repliesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.replyId IS NOT NULL")
+			.cache(CACHE_TIME)
 			.getCount(),
 		renotesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.renoteId IS NOT NULL")
+			.cache(CACHE_TIME)
 			.getCount(),
 		repliedCount: Notes.createQueryBuilder("note")
 			.where("note.replyUserId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		renotedCount: Notes.createQueryBuilder("note")
 			.where("note.renoteUserId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		pollVotesCount: PollVotes.createQueryBuilder("vote")
 			.where("vote.userId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		pollVotedCount: PollVotes.createQueryBuilder("vote")
 			.innerJoin("vote.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		localFollowingCount: Followings.createQueryBuilder("following")
 			.where("following.followerId = :userId", { userId: user.id })
 			.andWhere("following.followeeHost IS NULL")
+			.cache(CACHE_TIME)
 			.getCount(),
 		remoteFollowingCount: Followings.createQueryBuilder("following")
 			.where("following.followerId = :userId", { userId: user.id })
 			.andWhere("following.followeeHost IS NOT NULL")
+			.cache(CACHE_TIME)
 			.getCount(),
 		localFollowersCount: Followings.createQueryBuilder("following")
 			.where("following.followeeId = :userId", { userId: user.id })
 			.andWhere("following.followerHost IS NULL")
+			.cache(CACHE_TIME)
 			.getCount(),
 		remoteFollowersCount: Followings.createQueryBuilder("following")
 			.where("following.followeeId = :userId", { userId: user.id })
 			.andWhere("following.followerHost IS NOT NULL")
+			.cache(CACHE_TIME)
 			.getCount(),
 		sentReactionsCount: NoteReactions.createQueryBuilder("reaction")
 			.where("reaction.userId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		receivedReactionsCount: NoteReactions.createQueryBuilder("reaction")
 			.innerJoin("reaction.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		noteFavoritesCount: NoteFavorites.createQueryBuilder("favorite")
 			.where("favorite.userId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		pageLikesCount: PageLikes.createQueryBuilder("like")
 			.where("like.userId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		pageLikedCount: PageLikes.createQueryBuilder("like")
 			.innerJoin("like.page", "page")
 			.where("page.userId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		driveFilesCount: DriveFiles.createQueryBuilder("file")
 			.where("file.userId = :userId", { userId: user.id })
+			.cache(CACHE_TIME)
 			.getCount(),
 		driveUsage: DriveFiles.calcDriveUsageOf(user),
 		notesPostDays: (await Notes.createQueryBuilder("note")
 			.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("'misshaialert' <> ALL(note.tags)")
+			.cache(CACHE_TIME)
 			.getRawOne()).count,
 	});
 
@@ -278,59 +302,72 @@ export default define(meta, paramDef, async (ps, me) => {
 		notesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		repliesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.replyId IS NOT NULL")
 			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		renotesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.renoteId IS NOT NULL")
 			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		repliedCount: Notes.createQueryBuilder("note")
 			.where("note.replyUserId = :userId", { userId: user.id })
 			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		renotedCount: Notes.createQueryBuilder("note")
 			.where("note.renoteUserId = :userId", { userId: user.id })
 			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		pollVotesCount: PollVotes.createQueryBuilder("vote")
 			.where("vote.userId = :userId", { userId: user.id })
 			.andWhere("vote.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		pollVotedCount: PollVotes.createQueryBuilder("vote")
 			.innerJoin("vote.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("vote.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		sentReactionsCount: NoteReactions.createQueryBuilder("reaction")
 			.where("reaction.userId = :userId", { userId: user.id })
 			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		receivedReactionsCount: NoteReactions.createQueryBuilder("reaction")
 			.innerJoin("reaction.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		noteFavoritesCount: NoteFavorites.createQueryBuilder("favorite")
 			.where("favorite.userId = :userId", { userId: user.id })
 			.andWhere("favorite.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		pageLikesCount: PageLikes.createQueryBuilder("like")
 			.where("like.userId = :userId", { userId: user.id })
 			.andWhere("like.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		pageLikedCount: PageLikes.createQueryBuilder("like")
 			.innerJoin("like.page", "page")
 			.where("page.userId = :userId", { userId: user.id })
 			.andWhere("like.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		driveFilesCount: DriveFiles.createQueryBuilder("file")
 			.where("file.userId = :userId", { userId: user.id })
 			.andWhere("file.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		notesPostDays: (await Notes.createQueryBuilder("note")
 			.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
@@ -338,14 +375,17 @@ export default define(meta, paramDef, async (ps, me) => {
 			.andWhere("note.visibility <> 'hidden'")
 			.andWhere("'misshaialert' <> ALL(note.tags)")
 			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getRawOne()).count,
 		sendMessageCount: await MessagingMessages.createQueryBuilder("messaging_message")
 			.where("messaging_message.userId = :userId", { userId: user.id })
 			.andWhere("messaging_message.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 		readMessageCount: await MessagingMessages.createQueryBuilder("messaging_message")
 			.where(" :userId  = ANY(messaging_message.reads) ", { userId: user.id })
 			.andWhere("messaging_message.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
 			.getCount(),
 	});
 

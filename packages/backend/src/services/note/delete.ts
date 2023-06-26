@@ -114,11 +114,6 @@ export default async function (
 			});
 		}
 
-		// ノート削除時、ユーザの最終更新時刻を更新
-		Users.update(user.id, {
-			lastActiveDate: new Date(),
-		});
-
 	}
 
 	// ノート数を減らす

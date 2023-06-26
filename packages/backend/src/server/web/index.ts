@@ -607,8 +607,8 @@ router.get("/_info_card_", async (ctx) => {
 		version: config.version,
 		host: config.host,
 		meta: meta,
-		originalUsersCount: await Users.countBy({ host: IsNull() }),
-		originalNotesCount: await Notes.countBy({ userHost: IsNull() }),
+		originalUsersCount: await Users.countBy({ where: { host: IsNull() } , cache: 3600000 }), //1h
+		originalNotesCount: await Notes.countBy({ where: { userHost: IsNull() } , cache: 3600000 }), //1h
 	});
 });
 
@@ -662,10 +662,10 @@ router.get("(.*)", async (ctx) => {
 				Math.floor(Math.random() * meta.customSplashIcons.length)
 			];
 	}
-	let usersCount = await Users.countBy({ host: IsNull() });
-	let notesCount = await Notes.countBy({ userHost: IsNull() });
-	let gUsersCount = await Users.countBy({ host: Not(IsNull()) });
-	let gNotesCount = await Notes.countBy({ userHost: Not(IsNull()) });
+	let usersCount = await Users.countBy({ where: { host: IsNull() } , cache: 21600000 }); //6h
+	let notesCount = await Notes.countBy({ where: { userHost: IsNull() } , cache: 21600000 }); //6h
+	let gUsersCount = await Users.countBy({ where: { host: Not(IsNull()) } , cache: 21600000 }); //6h
+	let gNotesCount = await Notes.countBy({ where: { userHost: Not(IsNull()) } , cache: 21600000 }); //6h
 	let nowDate = new Date().toLocaleDateString('ja-JP');
 	await ctx.render("base", {
 		img: meta.iconUrl,

@@ -10,7 +10,7 @@
 	>
 		<img class="inner" :src="url" decoding="async" />
 		<MkUserOnlineIndicator
-			v-if="showIndicator && user.instance == null"
+			v-if="showIndicator && user.onlineStatus !== 'unknown'"
 			class="indicator"
 			:user="user"
 		/>
@@ -28,7 +28,7 @@
 	>
 		<img class="inner" :src="url" decoding="async" />
 		<MkUserOnlineIndicator
-			v-if="showIndicator && user.instance == null"
+			v-if="showIndicator && user.onlineStatus !== 'unknown'"
 			class="indicator"
 			:user="user"
 		/>

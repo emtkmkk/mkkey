@@ -268,24 +268,55 @@ export class Autocomplete {
 			const before = source.substr(0, caret);
 			let trimmedBefore = before.substring(0, before.lastIndexOf("$"));
 			let after = source.substr(caret);
+			let target = undefined;
 
-			if (defaultStore.state.smartMFMInputer && /^(<\/\w*>|\*\*|~~|\n```|\\\)|\\\]|[`\]])$/.test(after)) {
-				trimmedBefore += after;
-				after = "";
+			if (defaultStore.state.smartMFMInputer) {
+				// afterの中に1種類の終了タグのみ含まれている場合
+				// afterは指定していないことにする
+				if (/^(<\/\w*>|\*\*|~~|\n```|\\\)|\\\]|[`\]])$/.test(after)) {
+					trimmedBefore += after;
+					after = "";
+				}
+				// afterの中に改行が含まれる場合、そこまでを中に入れる対象とする
+				const regex = /^([^\n]*)\n([\S\s]*)$/.exec(after);
+				if (regex) {
+					target = regex[1];
+					after = "\n" + regex[2];
+				}
 			}
 
 			// 挿入
 			const mfmValue = value.defaultOption ?? value.exportLeft
 			if (defaultStore.state.smartMFMInputer) {
-				this.text = after.length === 0 ? `${mfmValue}${trimmedBefore}${value.exportRight}` : `${trimmedBefore}${mfmValue}${after}${value.exportRight}`;
+				// スマートモード
+				// 右に文字列無し : textを全て囲む
+				// 右に文字列有り : 右の文字列を改行まで全て囲む
+				this.text = after.length === 0
+					? `${mfmValue}${trimmedBefore}${value.exportRight}`
+					: target
+						? `${trimmedBefore}${mfmValue}${target}${value.exportRight}${after}`
+						: `${trimmedBefore}${mfmValue}${after}${value.exportRight}`;
 
 				// キャレットを戻す
+				// 末尾から閉じタグ以外の文字が出てくる後の文字に合わせる
+				const trimText = target
+					? `${mfmValue}${target}${value.exportRight}`
+					: `${mfmValue}${after}${value.exportRight}`;
+
 				nextTick(() => {
 					this.textarea.focus();
-					const pos = after.length === 0 ? this.text.length - value.exportRight.length : /\n?(<\/\w*>|\\\)|\\\]|[\]*~`])+$/.test(this.text) ? this.text.length - this.text.match(/\n?(<\/\w*>|\\\)|\\\]|[\]*~`])+$/)[0].length : this.text.length - value.exportRight.length;
+					const regex = /\n?(<\/\w*>|\\\)|\\\]|[\]*~`])+$/.exec(trimText);
+					const pos = regex
+						? trimmedBefore.length + (trimText.length - regex[0].length)
+						: trimmedBefore.length + trimText.length;
+
 					this.textarea.setSelectionRange(pos, pos);
 				});
+
 			} else {
+
+				// 通常モード
+				// キャレット位置に空白のタグを生成する
 				this.text = `${trimmedBefore}${mfmValue}${value.exportRight}${after}`;
 
 				// キャレットを戻す

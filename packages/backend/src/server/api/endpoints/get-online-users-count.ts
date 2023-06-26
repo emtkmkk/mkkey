@@ -20,6 +20,7 @@ export default define(meta, paramDef, async () => {
 	const count = await Users.countBy({
 		host: IsNull(),
 		lastActiveDate: MoreThan(new Date(Date.now() - USER_HALFONLINE_THRESHOLD)),
+		isBot: false,
 	});
 
 	return {

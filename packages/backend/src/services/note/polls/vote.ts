@@ -1,6 +1,7 @@
 import { publishNoteStream } from "@/services/stream.js";
 import type { CacheableUser } from "@/models/entities/user.js";
-import { User, Users } from "@/models/entities/user.js";
+import { User } from "@/models/entities/user.js";
+import { Users } from "@/models/index.js";
 import type { Note } from "@/models/entities/note.js";
 import { PollVotes, NoteWatchings, Polls, Blockings } from "@/models/index.js";
 import { Not } from "typeorm";

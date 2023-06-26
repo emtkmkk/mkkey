@@ -1,6 +1,6 @@
 import { publishNoteStream } from "@/services/stream.js";
 import type { CacheableUser } from "@/models/entities/user.js";
-import { User } from "@/models/entities/user.js";
+import { User, Users } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
 import { PollVotes, NoteWatchings, Polls, Blockings } from "@/models/index.js";
 import { Not } from "typeorm";
@@ -62,6 +62,11 @@ export default async function (
 	publishNoteStream(note.id, "pollVoted", {
 		choice: choice,
 		userId: user.id,
+	});
+	
+	// 投票時、ユーザの最終更新時刻を更新
+	Users.update(user.id, {
+		lastActiveDate: new Date(),
 	});
 
 	// Notify

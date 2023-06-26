@@ -177,10 +177,10 @@ export default async (
 ) =>
 	// rome-ignore lint/suspicious/noAsyncPromiseExecutor: FIXME
 	new Promise<Note>(async (res, rej) => {
-		
+
 		// 最初に投稿時刻を確定させる
 		if (data.createdAt == null) data.createdAt = new Date();
-		
+
 		const dontFederateInitially = (data.localOnly && data.channel) || data.visibility === "hidden";
 
 		// If you reply outside the channel, match the scope of the target.
@@ -217,22 +217,22 @@ export default async (
 			data.text += " #" + data.channel!.name;
 		}
 		if (data.visibility === "hidden") data.visibility = "public";
-		
+
 		// Twitterリンクの場合、?以降を取り除く
 		if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
-			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
+			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g, "$1");
 		}
-		
-		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))){
+
+		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {
 			if (data.createdAt?.getSeconds() === 59 && data.createdAt?.getMilliseconds() !== 0) {
 				data.text = data.text + " [❌ -." + (1000 - data.createdAt.getMilliseconds()).toString().padStart(3, '0') + "]"
 			} else {
 				data.text = data.text + " [❌ -" + (60 - data.createdAt?.getSeconds()).toString() + "s]"
 			}
 		}
-		
-		if (data.createdAt?.getHours() === 0 && data.createdAt?.getMinutes() === 0 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))){
-			if (data.createAt?.getMilliseconds() === 0){
+
+		if (data.createdAt?.getHours() === 0 && data.createdAt?.getMinutes() === 0 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {
+			if (data.createAt?.getMilliseconds() === 0) {
 				data.text = data.text + " [$[tada 🦉 .000]]"
 			} else if (data.createdAt?.getSeconds() === 0) {
 				data.text = data.text + " [🦉 ." + data.createdAt.getMilliseconds().toString().padStart(3, '0') + "]"
@@ -291,7 +291,7 @@ export default async (
 		) {
 			data.visibility = "home";
 		}
-		
+
 		// If the reply target is followers, make it followers.
 		if (
 			data.reply &&
@@ -309,7 +309,7 @@ export default async (
 		) {
 			data.visibility = "specified";
 		}
-		
+
 		// Renote local only if you Renote local only.
 		if (data.renote?.localOnly) {
 			data.localOnly = true;
@@ -379,11 +379,11 @@ export default async (
 					await Users.findOneByOrFail({ id: data.reply!.userId }),
 				);
 			}
-			
-			const localRelation = await Promise.all(data.visibleUsers.filter((x) => !x.host || x.host === "mkkey.net").map(async (x) => !(await Users.getRelation(user.id,x.id)).isFollowed));
-			
+
+			const localRelation = await Promise.all(data.visibleUsers.filter((x) => !x.host || x.host === "mkkey.net").map(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed));
+
 			if (user.id !== '9d7csvz8zd' && user.host && (localRelation.every((x) => x) ?? true)) {
-				data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi,"$1");
+				data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi, "$1");
 			}
 		}
 
@@ -687,15 +687,15 @@ async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 
 	const content =
 		data.renote &&
-		data.text == null &&
-		data.poll == null &&
-		(data.files == null || data.files.length === 0)
+			data.text == null &&
+			data.poll == null &&
+			(data.files == null || data.files.length === 0)
 			? renderAnnounce(
-					data.renote.uri
-						? data.renote.uri
-						: `${config.url}/notes/${data.renote.id}`,
-					note,
-			  )
+				data.renote.uri
+					? data.renote.uri
+					: `${config.url}/notes/${data.renote.id}`,
+				note,
+			)
 			: renderCreate(await renderNote(note, false), note);
 
 	return renderActivity(content);

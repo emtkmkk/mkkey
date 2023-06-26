@@ -651,13 +651,45 @@ router.get("/api/v1/streaming", async (ctx) => {
 // Render base html for all requests
 router.get("(.*)", async (ctx) => {
 	const meta = await fetchMeta();
+	let usersCount = await Users.count({ where: { host: IsNull() }, cache: 21600000 }); //6h
+	let notesCount = await Notes.count({ where: { userHost: IsNull() }, cache: 21600000 }); //6h
+	let gUsersCount = await Users.count({ where: { host: Not(IsNull()) }, cache: 21600000 }); //6h
+	let gNotesCount = await Notes.count({ where: { userHost: Not(IsNull()) }, cache: 21600000 }); //6h
 	let motd = ["Loading..."];
 	if (meta.customMOTD.length > 0) {
 		motd = meta.customMOTD;
 	}
-
-	//季節メッセージ
+	motd.push("もこきーのユーザ数は " + usersCount + " です");
+	motd.push("もこきーの合計投稿数は " + notesCount + " です");
+	motd.push("もこきーの連合ユーザ数は " + gUsersCount + " です");
+	motd.push("もこきーの連合投稿数は " + gNotesCount + " です");
 	const now = new Date();
+	let nowDate = new Date().toLocaleDateString('ja-JP');
+	motd.push("今日は " + nowDate + " です");
+	switch (now.getDay()){
+		case 0:
+		motd.push("今日は日曜日 すやすや");
+		break;
+		case 1:
+		motd.push("今日は月曜日 一週間のはじまり");
+		break;
+		case 2:
+		motd.push("今日は火曜日 エンジンかけてこ");
+		break;
+		case 3:
+		motd.push("今日は水曜日 すいすい");
+		break;
+		case 4:
+		motd.push("今日は木曜日 もくもく");
+		break;
+		case 5:
+		motd.push("今日は金曜日 今週もお疲れ様");
+		break;
+		case 6:
+		motd.push("今日は土曜日 一休みしよね");
+		break;
+	}
+	//季節メッセージ
 	if (now.getMonth() === 0) {
 		motd.push("冬ですね");
 		if (now.getDate() == 1) {
@@ -755,7 +787,6 @@ router.get("(.*)", async (ctx) => {
 		}
 	}
 	//季節メッセージ 終わり
-
 	let splashIconUrl = meta.iconUrl;
 	if (meta.customSplashIcons.length > 0) {
 		splashIconUrl =
@@ -763,11 +794,6 @@ router.get("(.*)", async (ctx) => {
 			Math.floor(Math.random() * meta.customSplashIcons.length)
 			];
 	}
-	let usersCount = await Users.count({ where: { host: IsNull() }, cache: 21600000 }); //6h
-	let notesCount = await Notes.count({ where: { userHost: IsNull() }, cache: 21600000 }); //6h
-	let gUsersCount = await Users.count({ where: { host: Not(IsNull()) }, cache: 21600000 }); //6h
-	let gNotesCount = await Notes.count({ where: { userHost: Not(IsNull()) }, cache: 21600000 }); //6h
-	let nowDate = new Date().toLocaleDateString('ja-JP');
 	await ctx.render("base", {
 		img: meta.iconUrl,
 		title: meta.name || "Calckey",

@@ -340,7 +340,12 @@ function exec() {
 			return;
 		}
 
-		mfmTags.value = MFM_TAGS_JP.filter((tag) => tag.name.startsWith(props.q ?? "") || tag.ja.startsWith(props.q ?? ""));
+		mfmTags.value = MFM_TAGS_JP.filter((tag) => tag.name.includes(props.q ?? "") || tag.ja.includes(props.q ?? ""));
+		
+		if (mfmTags.value.length === 0) {
+			mfmTags.value = MFM_TAGS_JP;
+			return;
+		}
 	}
 }
 

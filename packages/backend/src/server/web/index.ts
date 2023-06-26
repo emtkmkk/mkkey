@@ -88,11 +88,11 @@ app.use(
 				process.env.NODE_ENV === "production"
 					? config.clientEntry
 					: JSON.parse(
-							readFileSync(
-								`${_dirname}/../../../../../built/_client_dist_/manifest.json`,
-								"utf-8",
-							),
-					  )["src/init.ts"],
+						readFileSync(
+							`${_dirname}/../../../../../built/_client_dist_/manifest.json`,
+							"utf-8",
+						),
+					)["src/init.ts"],
 			config,
 		},
 	}),
@@ -357,8 +357,8 @@ const userPage: Router.Middleware = async (ctx, next) => {
 	const meta = await fetchMeta();
 	const me = profile.fields
 		? profile.fields
-				.filter((filed) => filed.value?.match(/^https?:/))
-				.map((field) => field.value)
+			.filter((filed) => filed.value?.match(/^https?:/))
+			.map((field) => field.value)
 		: [];
 
 	const userDetail = {
@@ -416,7 +416,7 @@ router.get("/notes/:note", async (ctx, next) => {
 				),
 				// TODO: Let locale changeable by instance setting
 				summary: getNoteSummary(_note),
-				userName: _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/,'')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`,
+				userName: _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/, '')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`,
 				instanceName: meta.name || "Calckey",
 				icon: meta.iconUrl,
 				privateMode: meta.privateMode,
@@ -427,7 +427,7 @@ router.get("/notes/:note", async (ctx, next) => {
 
 			return;
 		}
-	} catch {}
+	} catch { }
 
 	await next();
 });
@@ -451,7 +451,7 @@ router.get("/posts/:note", async (ctx, next) => {
 			),
 			// TODO: Let locale changeable by instance setting
 			summary: getNoteSummary(_note),
-			userName: _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/,'')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`,
+			userName: _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/, '')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`,
 			instanceName: meta.name || "Calckey",
 			icon: meta.iconUrl,
 			privateMode: meta.privateMode,
@@ -607,8 +607,8 @@ router.get("/_info_card_", async (ctx) => {
 		version: config.version,
 		host: config.host,
 		meta: meta,
-		originalUsersCount: await Users.countBy({ where: { host: IsNull() } , cache: 3600000 }), //1h
-		originalNotesCount: await Notes.countBy({ where: { userHost: IsNull() } , cache: 3600000 }), //1h
+		originalUsersCount: await Users.countBy({ where: { host: IsNull() }, cache: 3600000 }), //1h
+		originalNotesCount: await Notes.countBy({ where: { userHost: IsNull() }, cache: 3600000 }), //1h
 	});
 });
 
@@ -659,13 +659,13 @@ router.get("(.*)", async (ctx) => {
 	if (meta.customSplashIcons.length > 0) {
 		splashIconUrl =
 			meta.customSplashIcons[
-				Math.floor(Math.random() * meta.customSplashIcons.length)
+			Math.floor(Math.random() * meta.customSplashIcons.length)
 			];
 	}
-	let usersCount = await Users.countBy({ where: { host: IsNull() } , cache: 21600000 }); //6h
-	let notesCount = await Notes.countBy({ where: { userHost: IsNull() } , cache: 21600000 }); //6h
-	let gUsersCount = await Users.countBy({ where: { host: Not(IsNull()) } , cache: 21600000 }); //6h
-	let gNotesCount = await Notes.countBy({ where: { userHost: Not(IsNull()) } , cache: 21600000 }); //6h
+	let usersCount = await Users.countBy({ where: { host: IsNull() }, cache: 21600000 }); //6h
+	let notesCount = await Notes.countBy({ where: { userHost: IsNull() }, cache: 21600000 }); //6h
+	let gUsersCount = await Users.countBy({ where: { host: Not(IsNull()) }, cache: 21600000 }); //6h
+	let gNotesCount = await Notes.countBy({ where: { userHost: Not(IsNull()) }, cache: 21600000 }); //6h
 	let nowDate = new Date().toLocaleDateString('ja-JP');
 	await ctx.render("base", {
 		img: meta.iconUrl,

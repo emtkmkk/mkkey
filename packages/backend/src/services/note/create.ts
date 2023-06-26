@@ -177,6 +177,10 @@ export default async (
 ) =>
 	// rome-ignore lint/suspicious/noAsyncPromiseExecutor: FIXME
 	new Promise<Note>(async (res, rej) => {
+		
+		// 最初に投稿時刻を確定させる
+		if (data.createdAt == null) data.createdAt = new Date();
+		
 		const dontFederateInitially = (data.localOnly && data.channel) || data.visibility === "hidden";
 
 		// If you reply outside the channel, match the scope of the target.
@@ -199,7 +203,6 @@ export default async (
 			data.channel = await Channels.findOneBy({ id: data.reply.channelId });
 		}
 
-		if (data.createdAt == null) data.createdAt = new Date();
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
 		if (data.channel != null) data.visibility = "public";
@@ -220,12 +223,22 @@ export default async (
 			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
 		}
 		
-		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && data.createdAt?.getSeconds() === 59 && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))){
-			data.text = data.text + " [❌ -." + (1000 - data.createdAt.getMilliseconds()).toString().padStart(3, '0') + "]"
+		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))){
+			if (data.createdAt?.getSeconds() === 59 && data.createdAt?.getMilliseconds() !== 0) {
+				data.text = data.text + " [❌ -." + (1000 - data.createdAt.getMilliseconds()).toString().padStart(3, '0') + "]"
+			} else {
+				data.text = data.text + " [❌ -" + (60 - data.createdAt?.getSeconds()).toString() + "s]"
+			}
 		}
 		
-		if (data.createdAt?.getHours() === 0 && data.createdAt?.getMinutes() === 0 && data.createdAt?.getSeconds() === 0 && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))){
-			data.text = data.text + " [🦉 ." + data.createdAt.getMilliseconds().toString().padStart(3, '0') + "]"
+		if (data.createdAt?.getHours() === 0 && data.createdAt?.getMinutes() === 0 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))){
+			if (data.createAt?.getMilliseconds() === 0){
+				data.text = data.text + " [$[tada 🦉 .000]]"
+			} else if (data.createdAt?.getSeconds() === 0) {
+				data.text = data.text + " [🦉 ." + data.createdAt.getMilliseconds().toString().padStart(3, '0') + "]"
+			} else {
+				data.text = data.text + " [❌ +" + (data.createdAt?.getSeconds()).toString() + "s]"
+			}
 		}
 
 		// enforce silent clients on server

@@ -166,26 +166,31 @@ async function typeToBody(jobData: any): Promise<any> {
 	switch (jobData.type) {
 		case "mention":
 			return {
+				username,
 				avatar_url,
 				content: username + " から 呼びかけ" + content,
 			};
 		case "unfollow":
 			return {
+				username,
 				avatar_url,
 				content: fullUsername + " から リムーブされました",
 			};
 		case "silentUnfollow":
 			return {
+				username,
 				avatar_url,
 				content: "💬 " + fullUsername + " から リムーブされました",
 			};
 		case "follow":
 			return {
+				username,
 				avatar_url,
 				content: fullUsername + " の フォローに成功",
 			};
 		case "followed":
 			return {
+				username,
 				avatar_url,
 				content: fullUsername + " から フォローされました",
 			};
@@ -195,31 +200,37 @@ async function typeToBody(jobData: any): Promise<any> {
 			};
 		case "reply":
 			return {
+				username,
 				avatar_url,
 				content: username + " から 返信" + content,
 			};
 		case "renote":
 			return {
+				username,
 				avatar_url,
 				content: username + " から " + (body.note.text ? "引用" : "RT") + content,
 			};
 		case "reaction":
 			return {
+				username,
 				avatar_url,
 				content: username + " から " + body.reaction?.emojiName + content,
 			};
 		case "antenna":
 			return {
+				username,
 				avatar_url,
 				content: body.antenna?.name + "📡新着 : " + username + (user.id !== body.note?.user?.id ? " : RT " + getUsername(body.note?.user) : "") + content,
 			};
 		case "userMessage":
 			return {
+				username,
 				avatar_url,
 				content: username + " から チャット" + content,
 			};
 		case "groupMessage":
 			return {
+				username,
 				avatar_url,
 				content: body.message.group.name + " で " + username + " から チャット" + content,
 			};

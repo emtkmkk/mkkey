@@ -116,11 +116,11 @@ export default async (
 		emoji:
 			emoji != null
 				? {
-						name: emoji.host
-							? `${emoji.name}@${emoji.host}`
-							: `${emoji.name}@.`,
-						url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
-				  }
+					name: emoji.host
+						? `${emoji.name}@${emoji.host}`
+						: `${emoji.name}@.`,
+					url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
+				}
 				: null,
 		userId: user.id,
 	});
@@ -133,20 +133,20 @@ export default async (
 			noteId: note.id,
 			reaction: reaction,
 		});
-			const webhooks = await getActiveWebhooks().then((webhooks) =>
+		const webhooks = await getActiveWebhooks().then((webhooks) =>
 			webhooks.filter((x) => x.userId === note.userId && x.on.includes("reaction")),
-			);
+		);
 
-			for (const webhook of webhooks) {
-				webhookDeliver(webhook, "reaction", {
-					note: await Notes.pack(note, user),
-					reaction: {
-						user: user,
-						emojiName: decodedReaction.name ? ":" + decodedReaction.name + ":" : reaction,
-						customEmoji: decodedReaction.name ? emoji : undefined,
-					}
-				});
-			}
+		for (const webhook of webhooks) {
+			webhookDeliver(webhook, "reaction", {
+				note: await Notes.pack(note, user),
+				reaction: {
+					user: user,
+					emojiName: decodedReaction.name ? ":" + decodedReaction.name + ":" : reaction,
+					customEmoji: decodedReaction.name ? emoji : undefined,
+				}
+			});
+		}
 
 	}
 

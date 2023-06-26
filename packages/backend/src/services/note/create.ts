@@ -411,11 +411,13 @@ export default async (
 		// Increment notes count (user)
 		incNotesCountOfUser(user);
 
-		// 投稿時、ユーザの最終更新時刻を更新
+		// リモートユーザの投稿時、ユーザの最終更新時刻を更新
 		// TODO : 投稿時刻で更新したいが時刻が戻る可能性がある
-		Users.update(user.id, {
-			lastActiveDate: new Date(),
-		});
+		if (Users.isRemoteUser(user)){
+			Users.update(user.id, {
+				lastActiveDate: new Date(),
+			});
+		}
 
 		// Word mute
 		mutedWordsCache

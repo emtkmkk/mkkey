@@ -655,6 +655,107 @@ router.get("(.*)", async (ctx) => {
 	if (meta.customMOTD.length > 0) {
 		motd = meta.customMOTD;
 	}
+
+	//季節メッセージ
+	const now = new Date();
+	if (now.getMonth() === 0) {
+		motd.push("冬ですね");
+		if (now.getDate() == 1) {
+			motd = ["HAPPY NEW YEAR " + now.getFullYear() + " 🎉", "あけましておめでとうございます！"];
+		} else if (now.getDate() <= 3) {
+			motd.push("HAPPY NEW YEAR " + now.getFullYear() + " 🎉");
+			motd.push("あけましておめでとうございます！")
+		}
+	} else if (now.getMonth() == 1) {
+		motd.push("冬終盤ですね");
+		if (now.getDate() == 3) {
+			motd.push("鬼は外～");
+			motd.push("福は内～");
+		} else if (now.getDate() == 14) {
+			motd.push("今日はバレンタインです");
+		} else if (now.getDate() > 15) {
+			motd.push("確定申告、終わりましたか？");
+		}
+	} else if (now.getMonth() == 2) {
+		motd.push("春が始まりますね");
+		if (now.getDate() == 3) {
+			motd.push("明かりをつけましょぼんぼりに");
+		} else if (now.getDate() == 14) {
+			motd.push("今日はホワイトデーです");
+		} else if (now.getDate() == 29) {
+			motd.push("今日は閏日ですね");
+		}
+		if (now.getDate() <= 10) {
+			motd.push("確定申告、終わりましたか？");
+		}
+		if (now.getDate() >= 18 && now.getDate() <= 22) {
+			motd.push("大体このへんで昼と夜の長さが同じぐらいになるらしい");
+		}
+	} else if (now.getMonth() == 3) {
+		motd.push("春ですね");
+		if (now.getDate() == 1) {
+			motd.push("今日は嘘つきのボーナスタイムらしいです");
+		}
+	} else if (now.getMonth() == 4) {
+		motd.push("春ももうすぐ終わりですね");
+		if (now.getDate() == 5) {
+			motd.push("屋根より高い🎏");
+		}
+	} else if (now.getMonth() == 5) {
+		motd.push("梅雨の季節ですね");
+		if (now.getDate() == 6) {
+			motd.push("UFOがあっちいってこっちいって落っこちる日");
+		} else if (now.getDate() >= 19 && now.getDate() <= 23) {
+			motd.push("大体このへんで昼が最も長いらしい");
+		}
+	} else if (now.getMonth() == 6) {
+		motd.push("夏ですね");
+		if (now.getDate() == 7) {
+			motd.push("七夕ですね 今日は晴れてますか？");
+		} else if (now.getDate() > 20) {
+			motd.push("うなぎを食べる時期です");
+		}
+	} else if (now.getMonth() == 7) {
+		motd.push("本格的に夏ですね");
+		if (now.getDate() >= 11 && now.getDate() <= 15) {
+			motd.push("阿波踊りの季節です");
+		}
+	} else if (now.getMonth() == 8) {
+		motd.push("秋が始まりますね");
+		if (now.getDate() == 15) {
+			motd.push("今日は十五夜らしいです");
+		} else if (now.getDate() >= 24 && now.getDate() <= 28) {
+			motd.push("大体このへんで昼と夜の長さが同じぐらいになるらしい");
+		}
+	} else if (now.getMonth() == 9) {
+		motd.push("秋ですね");
+		if (now.getDate() == 31) {
+			motd.push("Halloweeeeeeen");
+		}
+	} else if (now.getMonth() == 10) {
+		motd.push("冬がやってきますね");
+		if (now.getDate() == 26) {
+			motd = ["今日はもこきー " + (now.getFullYear() - 2022) + " 周年の日です！🎉"];
+		}
+	} else if (now.getMonth() == 11) {
+		motd.push("冬が始まってきますね");
+		if (now.getDate() == 31 && now.getHours() >= 18) {
+			motd = [now.getFullYear() + "年もお疲れ様でした。来年も頑張りましょう"];
+		} else if (now.getDate() >= 19 && now.getDate() <= 23) {
+			motd.push("大体このへんで夜が最も長いらしい");
+			motd.push("お風呂にゆずを入れましょう");
+		} else if (now.getDate() == 24 || now.getDate() == 25) {
+			motd.push("クリスマスですね");
+		}
+		if (now.getDate() >= 30) {
+			motd.push(now.getFullYear() + "年がもうすぐ終わりますね");
+		}
+		if (now.getDate() == 31) {
+			motd.push("年越しそば、食べましたか？");
+		}
+	}
+	//季節メッセージ 終わり
+
 	let splashIconUrl = meta.iconUrl;
 	if (meta.customSplashIcons.length > 0) {
 		splashIconUrl =

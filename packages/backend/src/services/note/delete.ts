@@ -71,16 +71,16 @@ export default async function (
 			const content = renderActivity(
 				renote
 					? renderUndo(
-							renderAnnounce(
-								renote.uri || `${config.url}/notes/${renote.id}`,
-								note,
-							),
-							user,
-					  )
+						renderAnnounce(
+							renote.uri || `${config.url}/notes/${renote.id}`,
+							note,
+						),
+						user,
+					)
 					: renderDelete(
-							renderTombstone(`${config.url}/notes/${note.id}`),
-							user,
-					  ),
+						renderTombstone(`${config.url}/notes/${note.id}`),
+						user,
+					),
 			);
 
 			deliverToConcerned(user, note, content);
@@ -113,10 +113,16 @@ export default async function (
 				instanceChart.updateNote(i.host, note, false);
 			});
 		}
-		
-		// ノート数を減らす
-		decNotesCountOfUser(user);
+
+		// ノート削除時、ユーザの最終更新時刻を更新
+		Users.update(user.id, {
+			lastActiveDate: new Date(),
+		});
+
 	}
+
+	// ノート数を減らす
+	decNotesCountOfUser(user);
 
 	await Notes.delete({
 		id: note.id,

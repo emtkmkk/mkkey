@@ -95,6 +95,11 @@ export default async (
 
 	perUserReactionsChart.update(user, note);
 
+	// リアクション時、ユーザの最終更新時刻を更新
+	Users.update(user.id, {
+		lastActiveDate: new Date(),
+	});
+
 	// カスタム絵文字リアクションだったら絵文字情報も送る
 	const decodedReaction = decodeReaction(reaction);
 

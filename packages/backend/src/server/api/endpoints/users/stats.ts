@@ -414,7 +414,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		user.host ? user.followingCount : result.localFollowingCount + result.remoteFollowingCount;
 	result.followersCount =
 		user.host ? user.followersCount : result.localFollowersCount + result.remoteFollowersCount;
-		
+
 	result.averagePostCount = Math.floor(result.notesCount / result.notesPostDays * 10) / 10;
 	result.averageWordCount = Math.floor(result.totalWordCount / (result.notesCount - result.renotesCount) * 10) / 10;
 
@@ -467,8 +467,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		else if (elapsedDays < 10) _rankPower = Math.min(rankPower, 4249);
 	}
 
-	const rankBorder = [50, 125, 200, 300, 400, 500, 600, 700, 800, 1000, 1200, 1600, 2000, 2750, 3500, 4250, 5000, 6000];
-	const rankName = ["G", "F", "F+", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+", "AA", "AA+", "AAA", "AAA+", "⭐", "⭐+"];
+	const rankBorder = [16, 50, 125, 200, 300, 400, 500, 600, 700, 800, 1000, 1200, 1600, 2000, 2750, 3500, 4250, 5000, 6000];
+	const rankName = ["G", "F-", "F", "F+", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+", "AA", "AA+", "AAA", "AAA+", "⭐", "⭐+"];
 	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0];
 
 	if (_rankPower >= rankBorder.slice(-1)[0] + suffixIncBorder) {

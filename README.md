@@ -1,8 +1,12 @@
-**はろー！このリポジトリは[もこきー](https://mkkey.net)で使ってるCalckeyのフォークだよ！**<br>
+<div align="center">
+
+[![liberapay badge](https://img.shields.io/liberapay/receives/emtk?logo=liberapay)](https://liberapay.com/emtk)
+[![Codeberg badge](https://custom-icon-badges.demolab.com/badge/hosted%20on-codeberg-4793CC.svg?logo=codeberg&logoColor=white)](https://codeberg.org/emtkmkk/calckey/)
+
+**このリポジトリは[もこきー](https://mkkey.net)で使ってるCalckeyのフォークだよ！**<br>
 **変更内容 / リリースノートは [こちら](https://codeberg.org/emtkmkk/calckey/src/branch/beta/patchnote.md)**<br><br>
-**ここの変更はもちろん自由に使って大丈夫なんだけど、管理者が整理できない人間なのでコミットがグチャグチャになっているよ！**<br>
-**私のとこにもこの機能欲しいけどナニコレわけわかんないっていうのがあれば [emtk@mkkey.net](https://mkkey.net/@emtk) に連絡してもらえば悪い様にはしないのでぜひぜひ**<br>
-**機能の安全性という面についてはあんまり責任取れないのでそれはご容赦を……**
+**ここの変更は管理者が整理できない人間なのでコミットがグチャグチャになっているよ！**<br>
+**なにか不明な点などあれば [emtk@mkkey.net](https://mkkey.net/@emtk) に連絡してね**<br>
 
 <hr>
 
@@ -11,11 +15,12 @@
 
 **you are free to use the changes you make here, but the commits are messed up because the admin is not a good organizer!**<br>
 **If you want a feature but don't understand the commits, please contact me at [emtk@mkkey.net](https://mkkey.net/@emtk).**<br>
-**I can't be too responsible for the safety of that feature, so please don't let me know about that.**<br>
 
 <hr>
 
 **以下、フォーク元のReadmeです。 Here is the readme from the forked source.**<br><br>
+
+</div>
 
 <div align="center">
 <a href="https://calckey.org/">

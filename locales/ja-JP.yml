@@ -755,6 +755,7 @@ blockPostNotLocalDescription: "投稿時の設定に関わらず、連合先に�
 blockPostNotLocalPublicDescription: "上の設定を全公開だけに適用します。連合先のグローバルTLに乗らなくなります。ホームは通常の動作になります。"
 alwaysMarkSensitive: "デフォルトでメディアを閲覧注意にする"
 loadRawImages: "添付画像のサムネイルをオリジナル画質にする"
+showRelationMark: "フォロー関係を投稿にアイコン表示"
 disableShowingAnimatedImages: "アニメーション画像を再生しない"
 verificationEmailSent: "確認のメールを送信しました。メールに記載されたリンクにアクセスして、設定を完了してください。"
 notSet: "未設定"

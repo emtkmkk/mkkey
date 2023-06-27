@@ -380,6 +380,10 @@ export default async (
 				);
 			}
 
+			if (user.isSilenced && data.visibleUsers.some(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed)) {
+				throw new Error("サイレンス中はフォロワーでないユーザにダイレクトは送信できません。");
+			}
+			
 			const localRelation = await Promise.all(data.visibleUsers.filter((x) => !x.host || x.host === "mkkey.net").map(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed));
 
 			if (user.id !== '9d7csvz8zd' && user.host && (localRelation.every((x) => x) ?? true)) {
@@ -414,7 +418,7 @@ export default async (
 		// リモートユーザまたはbotの投稿時、ユーザの最終更新時刻を更新
 		// 6時間前以上の場合は更新しない
 		// TODO : 更新した時に時刻が戻る可能性あり
-		if (Users.isRemoteUser(user) || user.isBot || (new Date().valueOf() - data.createdAt.valueOf()) < 6 * 60 * 60 * 1000 ){
+		if (Users.isRemoteUser(user) || user.isBot || (new Date().valueOf() - data.createdAt.valueOf()) < 6 * 60 * 60 * 1000) {
 			Users.update(user.id, {
 				lastActiveDate: data.createdAt,
 			});

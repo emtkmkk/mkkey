@@ -3,9 +3,11 @@ import { instance } from "@/instance";
 import { host } from "@/config";
 import * as os from "@/os";
 import XTutorial from "../components/MkTutorialDialog.vue";
+import { $i } from "@/account";
 import { i18n } from "@/i18n";
 
 export function openHelpMenu_(ev: MouseEvent) {
+	const time = $i ? (Date.now() - new Date($i.createdAt).valueOf()) > 7 * 24 * 60 * 60 * 1000 : undefined;
 	os.popupMenu(
 		[
 			{
@@ -24,7 +26,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 				icon: "ph-lightbulb ph-bold ph-lg",
 				to: "/about-calckey",
 			},
-			{
+			$i && !$i.isSilenced && time ? {
 				type: "button",
 				action: async () => {
 					os.api("admin/invite")
@@ -43,7 +45,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 				},
 				text: i18n.ts.showInviteCode,
 				icon: "ph-user-plus ph-bold ph-lg",
-			},
+			} : undefined,
 			{
 				type: "button",
 				text: i18n.ts._apps.apps,
@@ -88,7 +90,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 					},
 				],
 			},
-		],
+		].filter(x => x !== undefined),
 		ev.currentTarget ?? ev.target,
 	);
 }

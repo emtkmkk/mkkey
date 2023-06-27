@@ -232,7 +232,7 @@ export default async (
 		}
 
 		if (data.createdAt?.getHours() === 0 && data.createdAt?.getMinutes() === 0 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {
-			if (data.createAt?.getMilliseconds() === 0) {
+			if (data.createdAt?.getMilliseconds() === 0) {
 				data.text = data.text + " [$[tada 🦉 .000]]"
 			} else if (data.createdAt?.getSeconds() === 0) {
 				data.text = data.text + " [🦉 ." + data.createdAt.getMilliseconds().toString().padStart(3, '0') + "]"
@@ -241,13 +241,13 @@ export default async (
 			}
 		}
 
-		// enforce silent clients on server
+		// サイレンスされている場合はフォロワー限定に
 		if (
 			user.isSilenced &&
-			data.visibility === "public" &&
-			data.channel == null
+			data.visibility !== "specified"
 		) {
-			data.visibility = "home";
+			data.visibility = "followers";
+			data.localOnly = true;
 		}
 
 		// Enforce home visibility if the user is in a silenced instance.

@@ -532,6 +532,10 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 		},
+		showRelationMark: {
+			where: "account",
+			default: false,
+		}
 	}),
 );
 

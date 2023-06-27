@@ -380,7 +380,9 @@ export default async (
 				);
 			}
 
-			if (user.isSilenced && data.visibleUsers.some(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed)) {
+			const relation = user.isSilenced ? await Promise.all(data.visibleUsers.map(async (x) => (await Users.getRelation(user.id, x.id)).isFollowed)) : undefined;
+
+			if (user.isSilenced && (!relation.every((x) => x) ?? true)) {
 				throw new Error("サイレンス中はフォロワーでないユーザにダイレクトは送信できません。");
 			}
 			

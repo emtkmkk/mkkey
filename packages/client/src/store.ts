@@ -486,11 +486,11 @@ export const defaultStore = markRaw(
 		},
 		favButtonReaction: {
 			where: "account",
-			default: "",
+			default: "custom",
 		},
 		favButtonReactionCustom: {
 			where: "account",
-			default: "",
+			default: ":iine:",
 		},
 		powerMode: {
 			where: "device",

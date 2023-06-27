@@ -31,7 +31,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 						.then((x) => {
 							os.alert({
 								type: "info",
-								text: x.code,
+								text: x.code + "\n\n" + "※有効期限 : 24時間",
 							});
 						})
 						.catch((err) => {

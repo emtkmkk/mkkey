@@ -38,7 +38,7 @@ const props = defineProps<{
 
 const buttonRef = ref<HTMLElement>();
 
-const canToggle = computed(() => $i);
+const canToggle = computed(() => $i && (!$i.isSilenced || note.user.isFollowed);
 
 const toggleReaction = () => {
 	if (!canToggle.value) return;

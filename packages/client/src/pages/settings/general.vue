@@ -118,6 +118,9 @@
 				class="_formBlock"
 				>{{ i18n.ts.showGapBetweenNotesInTimeline }}</FormSwitch
 			>
+			<FormSwitch v-model="showRelationMark" class="_formBlock">{{
+				i18n.ts.showRelationMark
+			}}</FormSwitch>
 			<FormSwitch v-model="loadRawImages" class="_formBlock">{{
 				i18n.ts.loadRawImages
 			}}</FormSwitch>
@@ -379,6 +382,7 @@ const emojiPickerUseDrawerForMobile = computed(defaultStore.makeGetterSetter("em
 const disableShowingAnimatedImages = computed(
 	defaultStore.makeGetterSetter("disableShowingAnimatedImages")
 );
+const showRelationMark = computed(defaultStore.makeGetterSetter("showRelationMark"));
 const loadRawImages = computed(defaultStore.makeGetterSetter("loadRawImages"));
 const imageNewTab = computed(defaultStore.makeGetterSetter("imageNewTab"));
 const nsfw = computed(defaultStore.makeGetterSetter("nsfw"));

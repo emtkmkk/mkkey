@@ -25,7 +25,7 @@ import { webhookDeliver } from "@/queue/index.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 
 export default async (
-	user: { id: User["id"]; host: User["host"]; username: User["username"]; name: User["name"]; avatarUrl: User["avatarUrl"]; },
+	user: { id: User["id"]; host: User["host"]; username: User["username"]; name: User["name"]; avatarUrl: User["avatarUrl"]; isSilenced: User["isSilenced"]; },
 	note: Note,
 	reaction?: string,
 ) => {
@@ -45,6 +45,13 @@ export default async (
 		throw new IdentifiableError(
 			"68e9d2d1-48bf-42c2-b90a-b20e09fd3d48",
 			"Note not accessible for you.",
+		);
+	}
+	
+	if (user.isSilenced && !note.user.isFollowed) {
+		throw new IdentifiableError(
+			"5ab2b45b-c2b5-0560-793d-2a670084cc92",
+			"サイレンス中はフォロワー以外にリアクション出来ません。",
 		);
 	}
 

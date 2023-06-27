@@ -1,5 +1,5 @@
 import rndstr from "rndstr";
-import { ApiError } from "../../../error.js";
+import { ApiError } from "../../error.js";
 import define from "../../define.js";
 import { RegistrationTickets } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";

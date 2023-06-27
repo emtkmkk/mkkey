@@ -48,7 +48,7 @@ export default async (
 		);
 	}
 	
-	if (user.isSilenced && !note.user.isFollowed) {
+	if (user.isSilenced && (!note.user.isFollowed && !(await Users.getRelation(user.id, note.user.id)).isFollowed)) {
 		throw new IdentifiableError(
 			"5ab2b45b-c2b5-0560-793d-2a670084cc92",
 			"サイレンス中はフォロワー以外にリアクション出来ません。",

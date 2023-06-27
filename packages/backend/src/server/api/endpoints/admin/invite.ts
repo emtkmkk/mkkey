@@ -1,4 +1,5 @@
 import rndstr from "rndstr";
+import { ApiError } from "../../../error.js";
 import define from "../../define.js";
 import { RegistrationTickets } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
@@ -32,7 +33,11 @@ export const paramDef = {
 	required: [],
 } as const;
 
-export default define(meta, paramDef, async () => {
+export default define(meta, paramDef, async (ps, me) => {
+	if (me.isSilenced || (Date.now() - new Date(me.createdAt).valueOf()) <= 7 * 24 * 60 * 60 * 1000) {
+		throw new ApiError();
+	}
+	
 	const code = rndstr({
 		length: 8,
 		chars: "2-9A-HJ-NP-Z", // [0-9A-Z] w/o [01IO] (32 patterns)

@@ -223,6 +223,13 @@ export default define(meta, paramDef, async (ps, me) => {
 			.getCount(),
 		renotesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.text IS NULL")
+			.andWhere("note.renoteId IS NOT NULL")
+			.cache(CACHE_TIME)
+			.getCount(),
+		quotesCount: Notes.createQueryBuilder("note")
+			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.text IS NOT NULL")
 			.andWhere("note.renoteId IS NOT NULL")
 			.cache(CACHE_TIME)
 			.getCount(),
@@ -312,6 +319,14 @@ export default define(meta, paramDef, async (ps, me) => {
 			.getCount(),
 		renotesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.text IS NULL")
+			.andWhere("note.renoteId IS NOT NULL")
+			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.cache(CACHE_TIME)
+			.getCount(),
+		quotesCount: Notes.createQueryBuilder("note")
+			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.text IS NOT NULL")
 			.andWhere("note.renoteId IS NOT NULL")
 			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.cache(CACHE_TIME)
@@ -399,6 +414,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			result.notesCount * 18 +
 			result.repliesCount * 7 +
 			result.renotesCount * -11 +
+			result.quotesCount * 7 +
 			result.repliedCount * 3 +
 			result.renotedCount * 3 +
 			result.pollVotesCount * 7 +
@@ -419,6 +435,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			rankResult.notesCount * 18 +
 			rankResult.repliesCount * 7 +
 			rankResult.renotesCount * -11 +
+			rankResult.quotesCount * 7 +
 			rankResult.repliedCount * 3 +
 			rankResult.renotedCount * 3 +
 			rankResult.pollVotesCount * 7 +

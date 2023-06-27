@@ -48,7 +48,9 @@ export default async (
 		);
 	}
 	
-	if (user.isSilenced && (!note.user.isFollowed && !(await Users.getRelation(user.id, note.user.id)).isFollowed)) {
+	const relation = user.isSilenced ? await Users.getRelation(user.id, note.user.id) : undefined;
+	
+	if (user.isSilenced && (!note.user.isFollowed && !relation.isFollowed)) {
 		throw new IdentifiableError(
 			"5ab2b45b-c2b5-0560-793d-2a670084cc92",
 			"サイレンス中はフォロワー以外にリアクション出来ません。",

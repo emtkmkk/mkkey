@@ -99,9 +99,9 @@ export default async (ctx: Koa.Context) => {
 
 		sendEmail(
 			emailAddress,
-			"Signup",
-			`To complete signup, please click this link:<br><a href="${link}">${link}</a>`,
-			`To complete signup, please click this link: ${link}`,
+			"もこきー メールアドレス確認",
+			`もこきーへの登録を完了するには、このリンクへアクセスしてください:<br><a href="${link}">${link}</a>`,
+			`もこきーへの登録を完了するには、このリンクへアクセスしてください: ${link}`,
 		);
 
 		ctx.status = 204;

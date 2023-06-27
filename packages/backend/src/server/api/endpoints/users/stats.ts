@@ -416,7 +416,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		user.host ? user.followersCount : result.localFollowersCount + result.remoteFollowersCount;
 		
 	result.averagePostCount = Math.floor(result.notesCount / result.notesPostDays * 10) / 10;
-	result.averageWordCount = Math.floor(result.totalWordCount / result.notesCount * 10) / 10;
+	result.averageWordCount = Math.floor(result.totalWordCount / (result.notesCount - result.renotesCount) * 10) / 10;
 
 	result.power =
 		Math.floor((result.notesPostDays * 482 +

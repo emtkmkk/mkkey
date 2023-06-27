@@ -199,7 +199,8 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (firstLocalFollower && borderDate.valueOf() < firstLocalFollower) borderDate = new Date(firstLocalFollower);
 
-	const elapsedDays = Math.max(Math.min(Math.ceil((now.getTime() - userCreatedAtDate) / (1000 * 60 * 60 * 2.4)) / 10, RANK_TARGET_DAYS), 1);
+	const elapsedDaysRaw = Math.ceil((now.getTime() - userCreatedAtDate) / (1000 * 60 * 60 * 2.4)) / 10;
+	const elapsedDays = Math.max(Math.min(elapsedDaysRaw, RANK_TARGET_DAYS), 1);
 
 	const sendMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
 		.where("messaging_message.userId = :userId", { userId: user.id })
@@ -301,6 +302,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("'misshaialert' <> ALL(note.tags)")
+			.cache(CACHE_TIME)
+			.getRawOne()).count,
+		totalWordCount: (await Notes.createQueryBuilder("note")
+			.select("sum(length(note.text)) + sum(length(note.cw)) count")
+			.where("note.userId = :userId", { userId: user.id })
 			.cache(CACHE_TIME)
 			.getRawOne()).count,
 	});
@@ -408,6 +414,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		user.host ? user.followingCount : result.localFollowingCount + result.remoteFollowingCount;
 	result.followersCount =
 		user.host ? user.followersCount : result.localFollowersCount + result.remoteFollowersCount;
+		
+	result.averagePostCount = Math.floor(result.notesCount / result.notesPostDays * 10) / 10;
+	result.averageWordCount = Math.floor(result.totalWordCount / result.notesCount * 10) / 10;
 
 	result.power =
 		Math.floor((result.notesPostDays * 482 +

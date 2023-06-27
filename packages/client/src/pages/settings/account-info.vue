@@ -23,7 +23,7 @@
 				<template #value>{{ number(stats.power) }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>{{ i18n.ts.power }}</template>
+				<template #key>{{ i18n.ts.powerRank }}</template>
 				<template #value>{{ stats.powerRank + " ( " + stats.nextRank + " )" }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
@@ -35,12 +35,24 @@
 				<template #value>{{ number(stats.notesPostDays) }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.averagePostCount }}</template>
+				<template #value>{{ number(stats.averagePostCount) }}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.averageWordCount }}</template>
+				<template #value>{{ number(stats.averageWordCount) }}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.repliesCount }}</template>
 				<template #value>{{ number(stats.repliesCount) }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.renotesCount }}</template>
 				<template #value>{{ number(stats.renotesCount) }}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.quotesCount }}</template>
+				<template #value>{{ number(stats.quotesCount) }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.repliedCount }}</template>

@@ -142,7 +142,7 @@
 						:count="appearNote.renoteCount"
 					/>
 					<XStarButtonNoEmoji
-						v-if="!enableEmojiReactions && !detailedView"
+						v-if="!enableEmojiReactions && !detailedView && (isCanAction || favButtonReactionIsFavorite)"
 						class="button"
 						:note="appearNote"
 						:count="
@@ -156,7 +156,8 @@
 					<XStarButton
 						v-if="
 							(enableEmojiReactions || detailedView) &&
-							(appearNote.myReaction == null || favButtonReactionIsFavorite)
+							(appearNote.myReaction == null || favButtonReactionIsFavorite) && 
+							(isCanAction || favButtonReactionIsFavorite)
 						"
 						ref="starButton"
 						class="button"
@@ -165,7 +166,7 @@
 					<button
 						v-if="
 							(enableEmojiReactions || detailedView || showEmojiButton) &&
-							appearNote.myReaction == null
+							appearNote.myReaction == null && isCanAction
 						"
 						ref="reactButton"
 						v-tooltip.noDelay.bottom="i18n.ts.reaction"
@@ -351,6 +352,7 @@ const muteExcludeReplyQuote = defaultStore.state.muteExcludeReplyQuote;
 const muteExcludeNotification = defaultStore.state.muteExcludeNotification;
 const isExcludeReplyQuote = muteExcludeReplyQuote && (muted.what === "reply" || muted.what === "renote");
 const isExcludeNotification = muteExcludeNotification && props.notification;
+const isCanAction = !$i.isSilenced || note.user.isFollowed;
 const excludeMute = isExcludeReplyQuote || isExcludeNotification;
 const developerRenote = defaultStore.state.developerRenote;
 const developerQuote = defaultStore.state.developerQuote;

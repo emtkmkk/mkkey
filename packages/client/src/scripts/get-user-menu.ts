@@ -312,8 +312,8 @@ export function getUserMenu(user, router: Router = mainRouter) {
 				action: reportAbuse,
 			},
 		]);
-
-		if (iAmModerator) {
+		// これここにいる？
+		if (iAmModerator && false) {
 			menu = menu.concat([
 				null,
 				{

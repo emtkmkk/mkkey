@@ -412,10 +412,11 @@ export default async (
 		incNotesCountOfUser(user);
 
 		// リモートユーザまたはbotの投稿時、ユーザの最終更新時刻を更新
-		// TODO : 投稿時刻で更新したいが時刻が戻る可能性がある
-		if (Users.isRemoteUser(user) || user.isBot){
+		// 6時間前以上の場合は更新しない
+		// TODO : 更新した時に時刻が戻る可能性あり
+		if (Users.isRemoteUser(user) || user.isBot || (new Date().valueOf() - data.createdAt.valueOf()) < 6 * 60 * 60 * 1000 ){
 			Users.update(user.id, {
-				lastActiveDate: new Date(),
+				lastActiveDate: data.createdAt,
 			});
 		}
 

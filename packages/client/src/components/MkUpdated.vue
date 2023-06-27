@@ -21,7 +21,7 @@
 					/>
 				</div>
 			</div>
-			<MkButton v-if="!newReleaseMini" full @click="whatIsNew">{{ i18n.ts.whatIsNew }}</MkButton>
+			<MkButton full @click="whatIsNew">{{ i18n.ts.whatIsNew }}</MkButton>
 			<MkButton
 				:class="$style.gotIt"
 				primary
@@ -50,13 +50,11 @@ const whatIsNew = () => {
 };
 
 let newRelease = $ref(false);
-let newReleaseMini = $ref(false);
 let data = $ref(Object);
 
 os.api("release").then((res) => {
 	data = res;
 	newRelease = version === data?.version;
-	newReleaseMini = localStorage.getItem("lastVersion").slice(0,-1) === version.slice(0,-1);
 });
 
 console.log(`Version: ${version}`);

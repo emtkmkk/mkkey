@@ -305,7 +305,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.cache(CACHE_TIME)
 			.getRawOne()).count,
 		totalWordCount: (await Notes.createQueryBuilder("note")
-			.select("sum(length(note.text)) + sum(length(note.cw)) count")
+			.select("coalesce(sum(length(note.text)),0) + coalesce(sum(length(note.cw)),0) count")
 			.where("note.userId = :userId", { userId: user.id })
 			.cache(CACHE_TIME)
 			.getRawOne()).count,

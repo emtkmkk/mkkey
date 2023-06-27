@@ -6,6 +6,14 @@
 		<FormSwitch v-if="!enableEmojiReactions" v-model="showEmojiButton" class="_formBlock">
 			{{ i18n.ts.showEmojiButton }}
 		</FormSwitch>
+		<div v-if="!enableEmojiReactions">
+			<FormSwitch
+				v-model="showEmojisInReactionNotifications"
+				class="_formBlock"
+			>
+				{{ i18n.ts.showEmojisInReactionNotifications }}
+			</FormSwitch>
+		</div>
 
 		<div>
 			<FromSlot class="_formBlock">
@@ -123,14 +131,6 @@
 				</div>
 			</FormSection>
 		</div>
-		<div v-if="!enableEmojiReactions">
-			<FormSwitch
-				v-model="showEmojisInReactionNotifications"
-				class="_formBlock"
-			>
-				{{ i18n.ts.showEmojisInReactionNotifications }}
-			</FormSwitch>
-		</div>
 
 		<FormSection>
 			<FormRadios
@@ -149,36 +149,26 @@
 					<MkEmoji
 						class="emoji"
 						emoji="⭐"
-						style="height: 1.7em"
+						style="height: 1.5em"
 					/>
 				</option>
 				<option value="👍">
 					<MkEmoji
 						class="emoji"
 						emoji="👍"
-						style="height: 1.7em"
+						style="height: 1.5em"
 					/>
 				</option>
 				<option value="❤️">
 					<MkEmoji
 						class="emoji"
 						emoji="❤️"
-						style="height: 1.7em"
+						style="height: 1.5em"
 					/>
 				</option>
 				<option value="picker">
-						{{
-							i18n.ts.picker
-						}}
-				</option>
-				<option value="favorite">
-				    {{
-						i18n.ts.favorite
-					}}
-				</option>
-				<option value="hidden">
 					{{
-						i18n.ts.hidden
+						i18n.ts.picker
 					}}
 				</option>
 				<option value="custom">
@@ -189,6 +179,16 @@
 						:placeholder="`:絵文字名:`"
 						style="margin: 0 0 !important"
 					/>
+				</option>
+				<option value="favorite">
+				    {{
+						i18n.ts.favorite
+					}}
+				</option>
+				<option value="hidden">
+					{{
+						i18n.ts.hidden
+					}}
 				</option>
 			</FormRadios>
 		</FormSection>

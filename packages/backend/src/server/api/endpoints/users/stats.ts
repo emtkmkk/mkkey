@@ -472,7 +472,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0];
 
 	if (_rankPower >= rankBorder.slice(-1)[0] + suffixIncBorder) {
-		result.powerRank = rankName.slice(-1)[0] + Math.floor((_rankPower - rankBorder.slice(-2)[0]) / suffixIncBorder);
+		const plusNum = Math.floor((_rankPower - rankBorder.slice(-2)[0]) / suffixIncBorder);
+		result.powerRank = plusNum >= 1000 ? "⭐+!!" : plusNum >= 100 ? rankName.slice(-2)[0] + plusNum : plusNum >= 4 ? rankName.slice(-1)[0] + plusNum : rankName.slice(-1)[0] + ("+").repeat(plusNum - 1);
 		result.nextRank = Math.floor((rankPower % suffixIncBorder) / suffixIncBorder * 100) + "%";
 	} else {
 		const clearBorder = rankBorder.filter(x => x <= _rankPower);

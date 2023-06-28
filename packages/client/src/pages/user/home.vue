@@ -517,6 +517,7 @@ onMounted(() => {
 	if ($i || props.user.host == null) {
 		os.api("users/stats", {
 			userId: props.user.id,
+			simple: true,
 		}).then((response) => {
 			stats.value = response;
 		});

@@ -305,7 +305,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.cache(CACHE_TIME)
 			.getRawOne()).count,
 		totalWordCount: (await Notes.createQueryBuilder("note")
-			.select("coalesce(sum(length(regexp_replace(regexp_replace(note.text,'(:\\w+?:)','☆', 'g'),'(<\\/?\\w+>|\\$\\[\\S+\\s|\\s?https?:\\/\\/[\\w\\/:%#\\$&@\\?\\(\\)~\\.=\\+\\-]+|\\s?@\\w+\\s?|\\s?#\\S+\\s?)','', 'ig'))),0) + coalesce(sum(length(regexp_replace(regexp_replace(note.cw,'(:\\w+?:)','☆', 'g'),'(<\\/?\\w+>|\\$\\[\\S+\\s|\\s?https?:\\/\\/[\\w\\/:%#\\$&@\\?\\(\\)~\\.=\\+\\-]+|\\s?@\\w+\\s?|\\s?#\\S+\\s?)','', 'ig'))),0) count")
+			.select("coalesce(sum(length(regexp_replace(regexp_replace(note.text,'(:\\w+?:)','☆', 'g'),'(<\\/?\\w+>|\\$\\[\\S+\\s|?https?:\\/\\/[\\w\\/:%#\\$&@\\?\\(\\)~\\.=\\+\\-]+|?@\\w+|#\\S+|\\s)','', 'ig'))),0) + coalesce(sum(length(regexp_replace(regexp_replace(note.cw,'(:\\w+?:)','☆', 'g'),'(<\\/?\\w+>|\\$\\[\\S+\\s|https?:\\/\\/[\\w\\/:%#\\$&@\\?\\(\\)~\\.=\\+\\-]+|@\\w+|#\\S+|\\s)','', 'ig'))),0) count")
 			.where("note.userId = :userId", { userId: user.id })
 			.cache(CACHE_TIME * 6)
 			.getRawOne()).count,

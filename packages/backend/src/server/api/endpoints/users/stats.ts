@@ -304,11 +304,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			.andWhere("'misshaialert' <> ALL(note.tags)")
 			.cache(CACHE_TIME)
 			.getRawOne()).count,
-		totalWordCount: (await Notes.createQueryBuilder("note")
+		totalWordCount: !ps.simple ? (await Notes.createQueryBuilder("note")
 			.select("coalesce(sum(length(regexp_replace(regexp_replace(note.text,'(:\\w+?:)','☆', 'g'),'(<\\/?\\w+>|\\$\\[\\S+\\s|https?:\\/\\/[\\w\\/:%#\\$&@\\?\\(\\)~\\.=\\+\\-]+|@\\w+|#\\S+|\\s+)','', 'ig'))),0) + coalesce(sum(length(regexp_replace(regexp_replace(note.cw,'(:\\w+?:)','☆', 'g'),'(<\\/?\\w+>|\\$\\[\\S+\\s|https?:\\/\\/[\\w\\/:%#\\$&@\\?\\(\\)~\\.=\\+\\-]+|@\\w+|#\\S+|\\s+)','', 'ig'))),0) count")
 			.where("note.userId = :userId", { userId: user.id })
 			.cache(CACHE_TIME * 2)
-			.getRawOne()).count,
+			.getRawOne()).count : undefined,
 	});
 
 	const rankResult = await awaitAll({
@@ -416,7 +416,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		user.host ? user.followersCount : result.localFollowersCount + result.remoteFollowersCount;
 
 	result.averagePostCount = Math.floor(result.notesCount / result.notesPostDays * 10) / 10;
-	result.averageWordCount = Math.floor(result.totalWordCount / (result.notesCount - result.renotesCount) * 10) / 10;
+	result.averageWordCount = !ps.simple ? Math.floor(result.totalWordCount / (result.notesCount - result.renotesCount) * 10) / 10 : undefined;
 
 	result.power =
 		Math.floor((result.notesPostDays * 482 +

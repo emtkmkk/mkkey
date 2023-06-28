@@ -49,7 +49,7 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 			},
 			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
 			url: "https://mkkey.net/notes/" + body.note.id,
-			description: excludeNotPlain(getNoteSummary(body.note)).length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note)).length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
+			description: excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
 			timestamp: new Date(body.note.createdAt),
 			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image") ?
 				{
@@ -131,17 +131,17 @@ function excludeNotPlain(text): string {
 }
 
 function getUsername(user): string {
-	return user ? user.name?.replaceAll(/ ?:.*?:/g, '') || user.username : undefined;
+	return user ? user.name?.replaceAll(/ ?:[\w_]+?:/g, '') || user.username : undefined;
 }
 
-function getNoteContentSummary(note, userId, length?): string {
+function getNoteContentSummary(note, userId, textLength?): string {
 	const noteText = excludeNotPlain(getNoteSummary(note));
 	return (
-		length
-			? noteText.slice(0, length) + (noteText.length > length ? "…" : "")
+		textLength
+			? noteText.slice(0, textLength) + (noteText?.length > textLength ? "…" : "")
 			: note.user?.id === userId
-				? noteText.slice(0, 10) + (noteText.length > 10 ? "…" : "")
-				: noteText.slice(0, 40) + (noteText.length > 40 ? "…" : "")
+				? noteText.slice(0, 10) + (noteText?.length > 10 ? "…" : "")
+				: noteText.slice(0, 40) + (noteText?.length > 40 ? "…" : "")
 	)
 }
 

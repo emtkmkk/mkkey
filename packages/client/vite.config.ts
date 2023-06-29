@@ -53,7 +53,7 @@ export default defineConfig(({ command, mode }) => {
 		},
 
 		define: {
-			_VERSION_: JSON.stringify(meta.version),
+			_VERSION_: process.env.COMMIT_HASH ? JSON.stringify(meta.version) + "+" + process.env.COMMIT_HASH : JSON.stringify(meta.version),
 			_LANGS_: JSON.stringify(
 				Object.entries(locales).map(([k, v]) => [k, v._lang_]),
 			),

@@ -53,6 +53,9 @@
 					<FormLink v-else class="_formBlock" :to="userPage(user)"
 						>Profile</FormLink
 					>
+					<FormLink v-if="iAmModerator && inviteUser" class="_formBlock" :to="userPage(user)"
+						>招待したUser ( {{ inviteUser.username + " - " + inviteUser.id }} )</FormLink
+					>
 
 					<FormLink
 						v-if="user.host"
@@ -373,6 +376,7 @@ const props = defineProps<{
 let tab = $ref("overview");
 let chartSrc = $ref("per-user-notes");
 let user = $ref<null | misskey.entities.UserDetailed>();
+let inviteUser = $ref<null | misskey.entities.UserDetailed>();
 let init = $ref<ReturnType<typeof createFetcher>>();
 let info = $ref();
 let ips = $ref(null);
@@ -409,6 +413,11 @@ function createFetcher() {
 				user = _user;
 				info = _info;
 				ips = _ips;
+				inviteUser = info.inviteUserId 
+					? await os.api("users/show", {
+						userId: info.inviteUserId,
+					}) 
+					: null;
 				moderator = info.isModerator;
 				silenced = info.isSilenced;
 				suspended = info.isSuspended;

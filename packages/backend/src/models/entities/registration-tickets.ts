@@ -15,7 +15,6 @@ export class RegistrationTicket {
 	})
 	public code: string;
 
-	@Index({ unique: true })
 	@Column('text', { nullable: true })
 	public inviteUserId: string;
 }

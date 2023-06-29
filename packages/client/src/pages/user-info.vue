@@ -414,11 +414,12 @@ function createFetcher() {
 				info = _info;
 				ips = _ips;
 				if (info.inviteUserId) {
-					new Promise(
+					async () => {
+						inviteUser = await 
 						os.api("users/show", {
 						userId: info.inviteUserId,
-						})
-					).then((_inviteUser) => inviteUser = _inviteUser);
+						});
+					}
 				}
 				moderator = info.isModerator;
 				silenced = info.isSilenced;

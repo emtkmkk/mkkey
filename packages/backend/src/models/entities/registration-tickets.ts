@@ -15,6 +15,9 @@ export class RegistrationTicket {
 	})
 	public code: string;
 
-	@Column('text', { nullable: true })
+	@Column('varchar', {
+		length: 10,
+		nullable: true 
+	})
 	public inviteUserId: string;
 }

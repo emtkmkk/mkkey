@@ -298,7 +298,10 @@ export class User {
 	})
 	public driveCapacityOverrideMb: number | null;
 	
-	@Column('text', { nullable: true })
+	@Column('varchar', { 
+		length: 10,
+		nullable: true 
+	})
 	public inviteUserId: string;
 
 	constructor(data: Partial<User>) {

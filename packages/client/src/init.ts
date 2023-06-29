@@ -266,7 +266,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 			// 変なバージョン文字列来るとcompareVersionsでエラーになるため
 			if (
 				lastVersion != null &&
-				compareVersions(version, lastVersion) === 1 &&
+				(defaultStore.state.showMiniUpdates || compareVersions(version, lastVersion) === 1) &&
 				defaultStore.state.showUpdates
 			) {
 				// ログインしてる場合だけ

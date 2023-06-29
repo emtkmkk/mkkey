@@ -14,4 +14,8 @@ export class RegistrationTicket {
 		length: 64,
 	})
 	public code: string;
+
+	@Index({ unique: true })
+	@Column('text', { nullable: true })
+	public inviteUserId: string;
 }

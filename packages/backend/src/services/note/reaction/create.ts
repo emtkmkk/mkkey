@@ -48,7 +48,7 @@ export default async (
 		);
 	}
 	
-	const relation = user.isSilenced ? await Users.getRelation(user.id, note.user.id) : undefined;
+	const relation = user.isSilenced ? await Users.getRelation(user.id, note.userId) : undefined;
 	
 	if (user.isSilenced && (!note.user.isFollowed && !relation.isFollowed)) {
 		throw new IdentifiableError(

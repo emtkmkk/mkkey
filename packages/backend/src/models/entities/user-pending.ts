@@ -29,4 +29,7 @@ export class UserPending {
 		length: 128,
 	})
 	public password: string;
+	
+	@Column('text', { nullable: true })
+	public inviteUserId: string;
 }

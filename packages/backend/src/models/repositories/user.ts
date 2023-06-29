@@ -604,6 +604,7 @@ export const UserRepository = db.getRepository(User).extend({
 							},
 						})
 						: [],
+					inviteUserId: user.inviteUserId,
 				}
 				: {}),
 

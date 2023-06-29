@@ -297,8 +297,8 @@
 
 			const meta = await res.json();
 
-			if (meta.version != v) {
-				localStorage.setItem("v", meta.version);
+			if ((meta.version + "+" + process.env.COMMIT_HASH) != v) {
+				localStorage.setItem("v", (meta.version + "+" + process.env.COMMIT_HASH));
 				refresh();
 			}
 		} catch (e) {

@@ -74,6 +74,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		isSuspended: user.isSuspended,
 		lastActiveDate: user.lastActiveDate,
 		moderationNote: profile.moderationNote,
+		inviteUserId: user.inviteUserId,
 		signins,
 	};
 });

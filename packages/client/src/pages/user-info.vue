@@ -413,11 +413,13 @@ function createFetcher() {
 				user = _user;
 				info = _info;
 				ips = _ips;
-				inviteUser = info.inviteUserId 
-					? await os.api("users/show", {
+				if (info.inviteUserId) {
+					Promise.all(
+						os.api("users/show", {
 						userId: info.inviteUserId,
-					}) 
-					: null;
+						})
+					).then((_inviteUser) => inviteUser = _inviteUser;)
+				}
 				moderator = info.isModerator;
 				silenced = info.isSilenced;
 				suspended = info.isSuspended;

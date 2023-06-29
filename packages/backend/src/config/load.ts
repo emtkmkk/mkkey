@@ -41,10 +41,8 @@ export default function load() {
 	config.url = url.origin;
 
 	config.port = config.port || parseInt(process.env.PORT || "", 10);
-	
-	config.version = process.env.COMMIT_HASH ? meta.version + "+" + process.env.COMMIT_HASH : meta.version;
 
-	mixin.version = config.version;
+	mixin.version = process.env.COMMIT_HASH ? meta.version + "+" + process.env.COMMIT_HASH : meta.version;
 	mixin.host = url.host;
 	mixin.hostname = url.hostname;
 	mixin.scheme = url.protocol.replace(/:$/, "");

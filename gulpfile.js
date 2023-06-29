@@ -10,6 +10,7 @@ const cssnano = require('gulp-cssnano');
 
 const locales = require('./locales');
 const meta = require('./package.json');
+const version = meta.version + "+" + process.env.COMMIT_HASH
 
 gulp.task('copy:backend:views', () =>
 	gulp.src('./packages/backend/src/server/web/views/**/*').pipe(gulp.dest('./packages/backend/built/server/web/views'))
@@ -27,10 +28,10 @@ gulp.task('copy:client:fonts', () =>
 gulp.task('copy:client:locales', cb => {
 	fs.mkdirSync('./built/_client_dist_/locales', { recursive: true });
 
-	const v = { '_version_': meta.version };
+	const v = { '_version_': version };
 
 	for (const [lang, locale] of Object.entries(locales)) {
-		fs.writeFileSync(`./built/_client_dist_/locales/${lang}.${meta.version}.json`, JSON.stringify({ ...locale, ...v }), 'utf-8');
+		fs.writeFileSync(`./built/_client_dist_/locales/${lang}.${version}.json`, JSON.stringify({ ...locale, ...v }), 'utf-8');
 	}
 
 	cb();

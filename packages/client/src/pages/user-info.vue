@@ -414,7 +414,7 @@ function createFetcher() {
 				info = _info;
 				ips = _ips;
 				if (info.inviteUserId) {
-					Promise.all(
+					new Promise(
 						os.api("users/show", {
 						userId: info.inviteUserId,
 						})

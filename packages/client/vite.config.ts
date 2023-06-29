@@ -26,7 +26,7 @@ export default defineConfig(({ command, mode }) => {
 	fs.mkdirSync(__dirname + "/../../built", { recursive: true });
 	fs.writeFileSync(
 		__dirname + "/../../built/meta.json",
-		JSON.stringify({ version: meta.version }),
+		JSON.stringify({ version: meta.version + "+" + process.env.COMMIT_HASH }),
 		"utf-8",
 	);
 

@@ -43,6 +43,7 @@ export default async (ctx: Koa.Context) => {
 		process.env.NODE_ENV === "test" ? body["host"] || null : null;
 	const invitationCode = body["invitationCode"];
 	const emailAddress = body["emailAddress"];
+	let ticketUserId = undefined;
 
 	if (config.reservedUsernames?.includes(username.toLowerCase())) {
 		ctx.status = 400;
@@ -85,6 +86,8 @@ export default async (ctx: Koa.Context) => {
 			ctx.status = 400;
 			return;
 		}
+		
+		ticketUserId = ticket.inviteUserId;
 
 	}
 
@@ -101,6 +104,7 @@ export default async (ctx: Koa.Context) => {
 			email: emailAddress,
 			username: username,
 			password: hash,
+			inviteUserId: ticketUserId,
 		});
 
 		const link = `${config.url}/signup-complete/${code}`;
@@ -119,6 +123,7 @@ export default async (ctx: Koa.Context) => {
 				username,
 				password,
 				host,
+				inviteUserId: ticketUserId,
 			});
 
 			const res = await Users.pack(account, account, {

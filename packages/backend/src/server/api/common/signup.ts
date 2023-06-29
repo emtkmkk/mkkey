@@ -18,8 +18,9 @@ export async function signup(opts: {
 	password?: string | null;
 	passwordHash?: UserProfile["password"] | null;
 	host?: string | null;
+	inviteUserId?: string | null;
 }) {
-	const { username, password, passwordHash, host } = opts;
+	const { username, password, passwordHash, host, inviteUserId } = opts;
 	let hash = passwordHash;
 
 	const userCount = await Users.countBy({
@@ -110,6 +111,7 @@ export async function signup(opts: {
 				usernameLower: username.toLowerCase(),
 				host: toPunyNullable(host),
 				token: secret,
+				inviteUserId,
 				isAdmin:
 					(await Users.countBy({
 						host: IsNull(),

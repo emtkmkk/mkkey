@@ -418,7 +418,7 @@ function createFetcher() {
 						os.api("users/show", {
 						userId: info.inviteUserId,
 						})
-					).then((_inviteUser) => inviteUser = _inviteUser;)
+					).then((_inviteUser) => inviteUser = _inviteUser);
 				}
 				moderator = info.isModerator;
 				silenced = info.isSilenced;

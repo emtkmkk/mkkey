@@ -30,6 +30,9 @@ export class UserPending {
 	})
 	public password: string;
 	
-	@Column('text', { nullable: true })
+	@Column('varchar', { 
+		length: 10,
+		nullable: true 
+	})
 	public inviteUserId: string;
 }

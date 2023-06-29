@@ -297,6 +297,9 @@ export class User {
 		comment: 'Overrides user drive capacity limit',
 	})
 	public driveCapacityOverrideMb: number | null;
+	
+	@Column('text', { nullable: true })
+	public inviteUserId: string;
 
 	constructor(data: Partial<User>) {
 		if (data == null) return;

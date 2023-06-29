@@ -47,6 +47,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		id: genId(),
 		createdAt: new Date(),
 		code,
+		createUserId: me.id,
 	});
 
 	return {

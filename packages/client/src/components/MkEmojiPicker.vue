@@ -561,7 +561,7 @@ function format_roomaji(
 	// それで良いのでafterの方が正しいぞという意味ではないです
 	
 	// 変換前が2文字
-	replaceDataBefore2 = [
+	const replaceDataBefore2 = [
 		{before:"fu", after:"hu"},
 		{before:"ja", after:"za"},
 		{before:"ji", after:"zi"},
@@ -588,7 +588,7 @@ function format_roomaji(
 	]
 	
 	// 変換前が3文字
-	replaceDataBefore3 = [
+	const replaceDataBefore3 = [
 		{before:"sha", after:"sa"},
 		{before:"shi", after:"si"},
 		{before:"shu", after:"su"},

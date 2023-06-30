@@ -345,13 +345,15 @@ watch(q, () => {
 				}
 			}
 
-			for (const emoji of emojis) {
-				if (emoji.aliases.some((alias) => format_roomaji(alias).startsWith(newQ))) {
-					if (beforeSort.size >= max) break;
-					beforeSort.add({
-						emoji: emoji,
-						key: format_roomaji(alias),
-					});
+			emojifor : for (const emoji of emojis) {
+				for (const alias of emoji.aliases) {
+					if (format_roomaji(alias).startsWith(newQ)) {
+						if (beforeSort.size >= max) break emojifor;
+						beforeSort.add({
+							emoji: emoji,
+							key: format_roomaji(alias),
+						});
+					}
 				}
 			}
 		}
@@ -441,15 +443,17 @@ watch(q, () => {
 				}
 			}
 
-			for (const emoji of emojis) {
-				if (
-					emoji.keywords.some((keyword) => format_roomaji(keyword).startsWith(newQ))
-				) {
-					if (beforeSort.size >= max) break;
-					beforeSort.add({
-						emoji: emoji,
-						key: format_roomaji(keyword),
-					});
+			emojifor : for (const emoji of emojis) {
+				for (const keyword of emoji.keywords)
+					if (
+						format_roomaji(keyword).startsWith(newQ)
+					) {
+						if (beforeSort.size >= max) break emojifor;
+						beforeSort.add({
+							emoji: emoji,
+							key: format_roomaji(keyword),
+						});
+					}
 				}
 			}
 		}

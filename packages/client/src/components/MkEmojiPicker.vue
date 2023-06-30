@@ -334,22 +334,29 @@ watch(q, () => {
 			// AND検索
 			return matches;
 		} else {
+			const beforeSort = new Set();
 			for (const emoji of emojis) {
 				if (emoji.name.startsWith(newQ)) {
-					matches.add(emoji);
-					if (matches.size >= max) break;
+					if (beforeSort.size >= max) break;
+					beforeSort.add({
+						emoji: emoji,
+						key: emoji.name,
+					});
 				}
 			}
-			if (matches.size >= max) return matches;
 
 			for (const emoji of emojis) {
 				if (emoji.aliases.some((alias) => alias.startsWith(newQ))) {
-					matches.add(emoji);
-					if (matches.size >= max) break;
+					if (beforeSort.size >= max) break;
+					beforeSort.add({
+						emoji: emoji,
+						key: emoji.name,
+					});
 				}
 			}
 		}
 
+		matches = new Set(Array.from(beforeSort).sort((a, b) => a.key.length - b.key.length).map((x) => x.emoji));
 		return matches;
 	};
 	
@@ -424,24 +431,31 @@ watch(q, () => {
 			// AND検索
 			return matches;
 		} else {
+			const beforeSort = new Set();
 			for (const emoji of emojis) {
 				if (emoji.name.startsWith(newQ)) {
-					matches.add(emoji);
-					if (matches.size >= max) break;
+					if (beforeSort.size >= max) break;
+					beforeSort.add({
+						emoji: emoji,
+						key: emoji.name,
+					});
 				}
 			}
-			if (matches.size >= max) return matches;
 
 			for (const emoji of emojis) {
 				if (
 					emoji.keywords.some((keyword) => keyword.startsWith(newQ))
 				) {
-					matches.add(emoji);
-					if (matches.size >= max) break;
+					if (beforeSort.size >= max) break;
+					beforeSort.add({
+						emoji: emoji,
+						key: emoji.name,
+					});
 				}
 			}
 		}
-
+		
+		matches = new Set(Array.from(beforeSort).sort((a, b) => a.key.length - b.key.length).map((x) => x.emoji));
 		return matches;
 	};
 

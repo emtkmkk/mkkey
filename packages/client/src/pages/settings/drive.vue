@@ -92,8 +92,8 @@ const fetching = ref(true);
 const usage = ref<any>(null);
 const capacity = ref<any>(null);
 const uploadFolder = ref<any>(null);
-const DEFAULT_CAPACITY = 5 * 1024 * 1024 * 1024
-const MAX_CAPACITY = 100 * 1024 * 1024 * 1024
+const DEFAULT_CAPACITY = 5 * 1024 * 1024 * 1024;
+const MAX_CAPACITY = 100 * 1024 * 1024 * 1024;
 let alwaysMarkNsfw = $ref($i.alwaysMarkNsfw);
 let autoSensitive = $ref($i.autoSensitive);
 

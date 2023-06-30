@@ -444,7 +444,7 @@ watch(q, () => {
 			}
 
 			emojifor : for (const emoji of emojis) {
-				for (const keyword of emoji.keywords)
+				for (const keyword of emoji.keywords) {
 					if (
 						format_roomaji(keyword).startsWith(newQ)
 					) {

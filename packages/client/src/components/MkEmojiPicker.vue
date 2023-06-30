@@ -326,6 +326,7 @@ watch(q, () => {
 		const max = 64;
 		const emojis = customEmojis;
 		const matches = new Set<Misskey.entities.CustomEmoji>();
+		const beforeSort = new Set();
 
 		const exactMatch = emojis.find((emoji) => emoji.name === newQ);
 		if (exactMatch) matches.add(exactMatch);
@@ -334,7 +335,6 @@ watch(q, () => {
 			// AND検索
 			return matches;
 		} else {
-			const beforeSort = new Set();
 			for (const emoji of emojis) {
 				if (format_roomaji(emoji.name).startsWith(newQ)) {
 					if (beforeSort.size >= max) break;
@@ -423,6 +423,7 @@ watch(q, () => {
 		const max = 24;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
+		const beforeSort = new Set();
 
 		const exactMatch = emojis.find((emoji) => format_roomaji(emoji.name) === newQ);
 		if (exactMatch) matches.add(exactMatch);
@@ -431,7 +432,6 @@ watch(q, () => {
 			// AND検索
 			return matches;
 		} else {
-			const beforeSort = new Set();
 			for (const emoji of emojis) {
 				if (format_roomaji(emoji.name).startsWith(newQ)) {
 					if (beforeSort.size >= max) break;

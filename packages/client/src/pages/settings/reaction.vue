@@ -16,7 +16,7 @@
 		</div>
 
 		<div>
-			<FromSlot class="_formBlock">
+			<FromSlot class="_formBlock" v-if="!hiddenReactionDeckAndRecent">
 				<template #label>{{
 					i18n.ts.reactionSettingDescription
 				}}</template>
@@ -51,7 +51,13 @@
 					</button></template
 				>
 			</FromSlot>
-
+			<FormSwitch
+				v-model="hiddenReactionDeckAndRecent"
+				class="_formBlock"
+			>
+				{{ i18n.ts.hiddenReactionDeckAndRecent }}
+			</FormSwitch>
+			
 			<FormRadios v-model="reactionPickerSize" class="_formBlock">
 				<template #label>{{ i18n.ts.size }}</template>
 				<option :value="-6">{{ i18n.ts.small }}-7</option>
@@ -223,7 +229,9 @@ async function reloadAsk() {
 }
 
 let reactions = $ref(deepClone(defaultStore.state.reactions));
-
+const hiddenReactionDeckAndRecent = $computed(
+	defaultStore.makeGetterSetter("hiddenReactionDeckAndRecent")
+);
 const reactionPickerSize = $computed(
 	defaultStore.makeGetterSetter("reactionPickerSize")
 );

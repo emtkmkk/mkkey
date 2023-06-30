@@ -8,7 +8,7 @@
 			<FormSplit>
 				<MkKeyValue class="_formBlock">
 					<template #key>{{ i18n.ts.capacity }}</template>
-					<template #value>{{ bytes(capacity, 1) + (capacity-(5 * 1024 * 1024) !== 0 ? ` (+${bytes(capacity-(5 * 1024 * 1024), 1)} ${~~((math.capacity-(5 * 1024 * 1024)) / (95 * 1024 * 1024))}% 拡張済み` : "") }}</template>
+					<template #value>{{ bytes(capacity, 1) + (capacity-(5 * 1024 * 1024) !== 0 ? ` (+${bytes(capacity-(5 * 1024 * 1024), 1)} ${~~((capacity-(5 * 1024 * 1024)) / (95 * 1024 * 1024))}% 拡張済み` : "") }}</template>
 				</MkKeyValue>
 				<MkKeyValue class="_formBlock">
 					<template #key>{{ i18n.ts.inUse }}</template>

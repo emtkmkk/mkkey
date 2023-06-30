@@ -265,7 +265,7 @@ watch(q, () => {
 	}
 
 	const newQ = format_roomaji(q.value.replace(/:/g, ""));
-	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/:/g, "")))
+	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/:/g, "")));
 
 	const searchCustom = () => {
 		const max = 64;
@@ -331,7 +331,7 @@ watch(q, () => {
 		const beforeSort = new Set();
 
 		const exactMatch = emojis.find((emoji) => emoji.name === roomajiQ);
-		if (exactMatch) matches.add(exactMatch);
+		if (exactMatch) beforeSort.add({emoji: exactMatch,key: format_roomaji(exactMatch.name),});
 
 		if (newQ.includes(" ")) {
 			// AND検索
@@ -410,9 +410,9 @@ watch(q, () => {
 
 			for (const emoji of emojis) {
 				if (
-					!emoji.keywords.some((keyword) => format_roomaji(keyword).startsWith(newQ))
+					!emoji.keywords.some((keyword) => format_roomaji(keyword).startsWith(roomajiQ))
 				) {
-					if (emoji.keywords.some((keyword) => format_roomaji(keyword).includes(newQ))) {
+					if (emoji.keywords.some((keyword) => format_roomaji(keyword).includes(roomajiQ))) {
 						matches.add(emoji);
 						if (matches.size >= max) break;
 					}
@@ -430,7 +430,7 @@ watch(q, () => {
 		const beforeSort = new Set();
 
 		const exactMatch = emojis.find((emoji) => format_roomaji(emoji.name) === roomajiQ);
-		if (exactMatch) matches.add(exactMatch);
+		if (exactMatch) beforeSort.add({emoji: exactMatch,key: format_roomaji(exactMatch.name),});
 
 		if (newQ.includes(" ")) {
 			// AND検索
@@ -449,7 +449,7 @@ watch(q, () => {
 			emojifor : for (const emoji of emojis) {
 				for (const keyword of emoji.keywords) {
 					if (
-						format_roomaji(keyword).startsWith(newQ)
+						format_roomaji(keyword).startsWith(roomajiQ)
 					) {
 						if (beforeSort.size >= max) break emojifor;
 						beforeSort.add({
@@ -623,10 +623,10 @@ function format_roomaji(
 }
 
 function ja_to_roomaji(
-	jaStr: string
+	str: string
 ): string {
 	
-	let _str = jaStr;
+	let _str = str;
 	
 	// ひらがなかカタカナだけでなければ終了
 	if (/^[ぁ-んァ-ンー\s]+$/.test(_str)){

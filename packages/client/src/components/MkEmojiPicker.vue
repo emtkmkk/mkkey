@@ -264,7 +264,7 @@ watch(q, () => {
 		return;
 	}
 
-	const newQ = q.value.replace(/:/g, "").toLowerCase();
+	const newQ = format_roomaji(q.value.replace(/:/g, "").toLowerCase());
 
 	const searchCustom = () => {
 		const max = 64;
@@ -280,9 +280,9 @@ watch(q, () => {
 				if (
 					keywords.every(
 						(keyword) =>
-							emoji.name.includes(keyword) ||
+							format_roomaji(emoji.name).includes(keyword) ||
 							emoji.aliases.some((alias) =>
-								alias.includes(keyword)
+								format_roomaji(alias).includes(keyword)
 							)
 					)
 				) {
@@ -294,15 +294,15 @@ watch(q, () => {
 
 			// 名前にキーワードが含まれている
 			for (const emoji of emojis) {
-				if (keywords.every((keyword) => emoji.name.includes(keyword))) {
+				if (keywords.every((keyword) => format_roomaji(emoji.name).includes(keyword))) {
 					matches.add(emoji);
 					if (matches.size >= max) break;
 				}
 			}
 		} else {
 			for (const emoji of emojis) {
-				if (!emoji.name.startsWith(newQ)) {
-					if (emoji.name.includes(newQ)) {
+				if (!format_roomaji(emoji.name).startsWith(newQ)) {
+					if (format_roomaji(emoji.name).includes(newQ)) {
 						matches.add(emoji);
 						if (matches.size >= max) break;
 					}
@@ -311,8 +311,8 @@ watch(q, () => {
 			if (matches.size >= max) return matches;
 
 			for (const emoji of emojis) {
-				if (!emoji.aliases.some((alias) => alias.startsWith(newQ))) {
-					if (emoji.aliases.some((alias) => alias.includes(newQ))) {
+				if (!emoji.aliases.some((alias) => format_roomaji(alias).startsWith(newQ))) {
+					if (emoji.aliases.some((alias) => format_roomaji(alias).includes(newQ))) {
 						matches.add(emoji);
 						if (matches.size >= max) break;
 					}
@@ -336,21 +336,21 @@ watch(q, () => {
 		} else {
 			const beforeSort = new Set();
 			for (const emoji of emojis) {
-				if (emoji.name.startsWith(newQ)) {
+				if (format_roomaji(emoji.name).startsWith(newQ)) {
 					if (beforeSort.size >= max) break;
 					beforeSort.add({
 						emoji: emoji,
-						key: emoji.name,
+						key: format_roomaji(emoji.name),
 					});
 				}
 			}
 
 			for (const emoji of emojis) {
-				if (emoji.aliases.some((alias) => alias.startsWith(newQ))) {
+				if (emoji.aliases.some((alias) => format_roomaji(alias).startsWith(newQ))) {
 					if (beforeSort.size >= max) break;
 					beforeSort.add({
 						emoji: emoji,
-						key: emoji.name,
+						key: format_roomaji(alias),
 					});
 				}
 			}
@@ -371,7 +371,7 @@ watch(q, () => {
 
 			// 名前にキーワードが含まれている
 			for (const emoji of emojis) {
-				if (keywords.every((keyword) => emoji.name.includes(keyword))) {
+				if (keywords.every((keyword) => format_roomaji(emoji.name).includes(keyword))) {
 					matches.add(emoji);
 					if (matches.size >= max) break;
 				}
@@ -383,9 +383,9 @@ watch(q, () => {
 				if (
 					keywords.every(
 						(keyword) =>
-							emoji.name.includes(keyword) ||
+							format_roomaji(emoji.name).includes(keyword) ||
 							emoji.keywords.some((alias) =>
-								alias.includes(keyword)
+								format_roomaji(alias).includes(keyword)
 							)
 					)
 				) {
@@ -395,8 +395,8 @@ watch(q, () => {
 			}
 		} else {
 			for (const emoji of emojis) {
-				if (!emoji.name.startsWith(newQ)) {
-					if (emoji.name.includes(newQ)) {
+				if (!format_roomaji(emoji.name).startsWith(newQ)) {
+					if (format_roomaji(emoji.name).includes(newQ)) {
 						matches.add(emoji);
 						if (matches.size >= max) break;
 					}
@@ -406,9 +406,9 @@ watch(q, () => {
 
 			for (const emoji of emojis) {
 				if (
-					!emoji.keywords.some((keyword) => keyword.startsWith(newQ))
+					!emoji.keywords.some((keyword) => format_roomaji(keyword).startsWith(newQ))
 				) {
-					if (emoji.keywords.some((keyword) => keyword.includes(newQ))) {
+					if (emoji.keywords.some((keyword) => format_roomaji(keyword).includes(newQ))) {
 						matches.add(emoji);
 						if (matches.size >= max) break;
 					}
@@ -424,7 +424,7 @@ watch(q, () => {
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
 
-		const exactMatch = emojis.find((emoji) => emoji.name === newQ);
+		const exactMatch = emojis.find((emoji) => format_roomaji(emoji.name) === newQ);
 		if (exactMatch) matches.add(exactMatch);
 
 		if (newQ.includes(" ")) {
@@ -433,23 +433,23 @@ watch(q, () => {
 		} else {
 			const beforeSort = new Set();
 			for (const emoji of emojis) {
-				if (emoji.name.startsWith(newQ)) {
+				if (format_roomaji(emoji.name).startsWith(newQ)) {
 					if (beforeSort.size >= max) break;
 					beforeSort.add({
 						emoji: emoji,
-						key: emoji.name,
+						key: format_roomaji(emoji.name),
 					});
 				}
 			}
 
 			for (const emoji of emojis) {
 				if (
-					emoji.keywords.some((keyword) => keyword.startsWith(newQ))
+					emoji.keywords.some((keyword) => format_roomaji(keyword).startsWith(newQ))
 				) {
 					if (beforeSort.size >= max) break;
 					beforeSort.add({
 						emoji: emoji,
-						key: emoji.name,
+						key: format_roomaji(keyword),
 					});
 				}
 			}
@@ -551,6 +551,70 @@ function done(query?: any): boolean | void {
 		chosen(searchResultUnicode.value[0]);
 		return true;
 	}
+}
+
+function format_roomaji(
+	roomaji: string
+): string {
+	
+	// 絵文字の突き合わせにのみ使うため同じ物として扱われれば
+	// それで良いのでafterの方が正しいぞという意味ではないです
+	
+	// 変換前が2文字
+	replaceDataBefore2 = [
+		{before:"fu", after:"hu"},
+		{before:"ja", after:"za"},
+		{before:"ji", after:"zi"},
+		{before:"ju", after:"zu"},
+		{before:"jo", after:"zo"},
+		{before:"ja", after:"jya"},
+		{before:"ju", after:"jyu"},
+		{before:"je", after:"jye"},
+		{before:"jo", after:"jyo"},
+		{before:"fa", after:"fya"},
+		{before:"fi", after:"fyi"},
+		{before:"fe", after:"fye"},
+		{before:"fo", after:"fyo"},
+		{before:"la", after:"xa"},
+		{before:"li", after:"xi"},
+		{before:"lu", after:"xu"},
+		{before:"le", after:"xe"},
+		{before:"lo", after:"xo"},
+		{before:"va", after:"ba"},
+		{before:"vi", after:"bi"},
+		{before:"vu", after:"bu"},
+		{before:"ve", after:"be"},
+		{before:"vo", after:"bo"},
+	]
+	
+	// 変換前が3文字
+	replaceDataBefore3 = [
+		{before:"sha", after:"sa"},
+		{before:"shi", after:"si"},
+		{before:"shu", after:"su"},
+		{before:"sho", after:"so"},
+		{before:"cha", after:"ta"},
+		{before:"chi", after:"ti"},
+		{before:"chu", after:"tu"},
+		{before:"cho", after:"to"},
+		{before:"thi", after:"ti"},
+		{before:"tsu", after:"tu"},
+		{before:"kwa", after:"kya"},
+		{before:"cya", after:"tya"},
+		{before:"cyi", after:"tyi"},
+		{before:"cyu", after:"tyu"},
+		{before:"cye", after:"tye"},
+		{before:"cyo", after:"tyo"},
+	]
+	
+	let str = roomaji
+	if (roomaji.length >= 3){
+		replaceDataBefore3.forEach((x) => str = str.replaceAll(x.before,x.after));
+	}
+	if (roomaji.length >= 2){
+		replaceDataBefore2.forEach((x) => str = str.replaceAll(x.before,x.after));
+	}
+	return str
 }
 
 onMounted(() => {

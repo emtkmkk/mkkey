@@ -356,8 +356,7 @@ watch(q, () => {
 			}
 		}
 
-		matches = new Set(Array.from(beforeSort).sort((a, b) => a.key.length - b.key.length).map((x) => x.emoji));
-		return matches;
+		return new Set(Array.from(beforeSort).sort((a, b) => a.key.length - b.key.length).map((x) => x.emoji));
 	};
 	
 	const searchUnicode = () => {
@@ -455,8 +454,7 @@ watch(q, () => {
 			}
 		}
 		
-		matches = new Set(Array.from(beforeSort).sort((a, b) => a.key.length - b.key.length).map((x) => x.emoji));
-		return matches;
+		return new Set(Array.from(beforeSort).sort((a, b) => a.key.length - b.key.length).map((x) => x.emoji));
 	};
 
 	searchResultCustom.value = Array.from(searchCustom());

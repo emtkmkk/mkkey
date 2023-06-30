@@ -8,7 +8,7 @@
 			<FormSplit>
 				<MkKeyValue class="_formBlock">
 					<template #key>{{ i18n.ts.capacity }}</template>
-					<template #value>{{ bytes(capacity, 1) + (capacity-(5 * 1024 * 1024) !== 0 ? ` (+${bytes(capacity-(5 * 1024 * 1024), 1)} ${~~((capacity-(5 * 1024 * 1024)) / (95 * 1024 * 1024))}% 拡張済み` : "") }}</template>
+					<template #value>{{ bytes(capacity, 1) + (capacity - DEFAULT_CAPACITY !== 0 ? ` (+${bytes(capacity - DEFAULT_CAPACITY, 1)} ${~~((capacity - DEFAULT_CAPACITY) / MAX_CAPACITY)}% 拡張済み` : "") }}</template>
 				</MkKeyValue>
 				<MkKeyValue class="_formBlock">
 					<template #key>{{ i18n.ts.inUse }}</template>
@@ -92,8 +92,11 @@ const fetching = ref(true);
 const usage = ref<any>(null);
 const capacity = ref<any>(null);
 const uploadFolder = ref<any>(null);
+const DEFAULT_CAPACITY = 5 * 1024 * 1024 * 1024
+const MAX_CAPACITY = 100 * 1024 * 1024 * 1024
 let alwaysMarkNsfw = $ref($i.alwaysMarkNsfw);
 let autoSensitive = $ref($i.autoSensitive);
+
 
 const meterStyle = computed(() => {
 	return {

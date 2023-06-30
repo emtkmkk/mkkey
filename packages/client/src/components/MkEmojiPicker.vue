@@ -629,7 +629,7 @@ function ja_to_roomaji(
 	const _str = jaStr;
 	
 	// ひらがなかカタカナだけでなければ終了
-	if (/^[ぁ-んァ-ンー\s]$/.test(_str)){
+	if (/^[ぁ-んァ-ンー\s]+$/.test(_str)){
 		
 		const replaceList = [
 			{before:"ぁ", after:"xa"},

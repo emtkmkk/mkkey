@@ -84,7 +84,7 @@
 					</div>
 				</section>
 
-				<div v-if="tab === 'index' && searchResultCustom.length <= 0 && (q == null || q === '')" class="group index">
+				<div v-if="!$store.state.hiddenReactionDeckAndRecent && tab === 'index' && searchResultCustom.length <= 0 && (q == null || q === '')" class="group index">
 					<section v-if="showPinned && searchResultCustom.length <= 0 && (q == null || q === '')">
 						<div class="body">
 							<button

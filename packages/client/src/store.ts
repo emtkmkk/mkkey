@@ -116,6 +116,10 @@ export const defaultStore = markRaw(
 				":ablobdj:",
 			],
 		},
+		hiddenReactionDeckAndRecent: {
+			where: "account",
+			default: false,
+		},
 		mutedWords: {
 			where: "account",
 			default: [],

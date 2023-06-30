@@ -626,7 +626,7 @@ function ja_to_roomaji(
 	jaStr: string
 ): string {
 	
-	const _str = jaStr;
+	let _str = jaStr;
 	
 	// ひらがなかカタカナだけでなければ終了
 	if (/^[ぁ-んァ-ンー\s]+$/.test(_str)){

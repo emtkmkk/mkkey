@@ -63,7 +63,7 @@
 	{ "category": "face", "char": "😖", "name": "confounded", "keywords": ["face", "confused", "sick", "unwell", "oops", ": S"] },
 	{ "category": "face", "char": "😫", "name": "tired_face", "keywords": ["sick", "whine", "upset", "frustrated"] },
 	{ "category": "face", "char": "😩", "name": "weary", "keywords": ["face", "tired", "sleepy", "sad", "frustrated", "upset"] },
-	{ "category": "face", "char": "🥺", "name": "pleading", "keywords": ["face", "begging", "mercy"] },
+	{ "category": "face", "char": "🥺", "name": "pleading", "keywords": ["face", "begging", "mercy", "pien"] },
 	{ "category": "face", "char": "😤", "name": "triumph", "keywords": ["face", "gas", "phew", "proud", "pride"] },
 	{ "category": "face", "char": "😮", "name": "open_mouth", "keywords": ["face", "surprise", "impressed", "wow", "whoa", ": O"] },
 	{ "category": "face", "char": "😱", "name": "scream", "keywords": ["face", "munch", "scared", "omg"] },

@@ -609,7 +609,7 @@ function format_roomaji(
 		{before:"cyo", after:"tyo"},
 	]
 	
-	let str = roomaji
+	let str = roomaji.toLowerCase()
 	if (roomaji.length >= 3){
 		replaceDataBefore3.forEach((x) => str = str.replaceAll(x.before,x.after));
 	}

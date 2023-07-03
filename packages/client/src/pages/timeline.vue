@@ -260,7 +260,7 @@ const headerTabs = $computed(() => [
 					iconOnly: true,
 				},
 		  ]
-		: [],
+		: []),
 	...(isLocalTimelineAvailable &&
 	(defaultStore.state.showLocalPostsInTimeline === "home" ||
 	defaultStore.state.showLocalPostsInTimeline === "both")
@@ -272,7 +272,7 @@ const headerTabs = $computed(() => [
 					iconOnly: true,
 				},
 		  ]
-		: [],
+		: []),
 	...(isLocalTimelineAvailable
 		? [
 				{

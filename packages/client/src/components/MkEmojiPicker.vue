@@ -125,6 +125,20 @@
 					</section>
 				</div>
 				<div v-once v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
+					<header>{{ i18n.ts.recentlyAddEmojis }}</header>
+					<XSection
+						key="custom:recentlyAddEmojis"
+						:initial-shown="false"
+						:emojis="
+							customEmojis
+								.slice(0,50)
+								.map((e) => ':' + e.name + ':')
+						"
+						@chosen="chosen"
+						>{{ i18n.ts.recentlyAddEmojis }}</XSection
+					>
+				</div>
+				<div v-once v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
 					<header>{{ i18n.ts.customEmojis }}</header>
 					<XSection
 						v-for="category in customEmojiCategories"
@@ -471,7 +485,7 @@ watch(q, () => {
 });
 
 function focus() {
-	if (!["smartphone", "tablet"].includes(deviceKind) && !isTouchUsing) {
+	if ((asReactionPicker && defaultStore.state.reactionAutoFocusSearchBar) || (!["smartphone", "tablet"].includes(deviceKind) && !isTouchUsing)) {
 		search.value?.focus({
 			preventScroll: true,
 		});

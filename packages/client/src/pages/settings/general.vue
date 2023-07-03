@@ -10,11 +10,17 @@
 		<FormRadios v-model="showLocalPostsInTimeline" class="_formBlock">
 			<template #label>{{ i18n.ts.showLocalPosts }}</template>
 			<option value="home">
-				<i class="ph-handshake ph-bold ph-lg" /> {{ i18n.ts.homeTimeline }}
+				<i class="ph-handshake ph-bold ph-lg" />
+				{{ i18n.ts.homeTimeline }}
 			</option>
 			<option value="social">
 				<i class="ph-house ph-bold ph-lg" />
 				{{ i18n.ts.socialTimeline }}
+			</option>
+			<option value="both">
+				<i class="ph-house ph-bold ph-lg" />
+				<i class="ph-handshake ph-bold ph-lg" />
+				{{ i18n.ts.bothTimeline }}
 			</option>
 		</FormRadios>
 

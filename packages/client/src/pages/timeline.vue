@@ -323,7 +323,7 @@ const headerTabs = $computed(() => [
 				},
 		  ]
 		: []),
-]).filter((x) => x !== undefined);
+]);
 
 definePageMetadata(
 	computed(() => ({

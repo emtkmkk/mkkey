@@ -86,6 +86,9 @@
 			<FormSwitch v-model="openEmojiPicker" class="_formBlock">{{
 				i18n.ts.openEmojiPicker
 			}}</FormSwitch>
+			<FormSwitch v-if="openEmojiPicker" v-model="postAutoFocusSearchBar" class="_formBlock">{{
+				i18n.ts.postAutoFocusSearchBar
+			}}</FormSwitch>
 			<FormSwitch v-if="openEmojiPicker" v-model="notCloseEmojiPicker" class="_formBlock">{{
 				i18n.ts.notCloseEmojiPicker
 			}}</FormSwitch>
@@ -103,6 +106,9 @@
 			}}</FormSwitch>
 			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
 				i18n.ts.smartMFMInputer
+			}}</FormSwitch>
+			<FormSwitch v-model="emojiPickerUseDrawerForMobile" class="_formBlock">{{
+				i18n.ts.emojiPickerUseDrawerForMobile
 			}}</FormSwitch>
 		</FormSection>
 
@@ -155,9 +161,6 @@
 					<Mfm :key="useOsNativeEmojis" text="🍮🍦🍭🍩🍰🍫🍬🥞🍪" />
 				</div>
 			</FormSwitch>
-			<FormSwitch v-model="emojiPickerUseDrawerForMobile" class="_formBlock">{{
-				i18n.ts.emojiPickerUseDrawerForMobile
-			}}</FormSwitch>
 			<FormSwitch v-model="disableDrawer" class="_formBlock">{{
 				i18n.ts.disableDrawer
 			}}</FormSwitch>
@@ -417,6 +420,9 @@ const enterSendsMessage = computed(
 );
 const openEmojiPicker = computed(
 	defaultStore.makeGetterSetter("openEmojiPicker")
+);
+const postAutoFocusSearchBar = computed(
+	defaultStore.makeGetterSetter("postAutoFocusSearchBar")
 );
 const notCloseEmojiPicker = computed(
 	defaultStore.makeGetterSetter("notCloseEmojiPicker")

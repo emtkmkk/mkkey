@@ -102,24 +102,22 @@ let timelines = [];
 
 if (
 	isLocalTimelineAvailable &&
-	defaultStore.state.showLocalPostsInTimeline === "home"
+	(defaultStore.state.showLocalPostsInTimeline === "social" ||
+	defaultStore.state.showLocalPostsInTimeline === "both")
 ) {
-	timelines.push("social");
-} else {
 	timelines.push("home");
-}
-
-if (isLocalTimelineAvailable) {
-	timelines.push("local");
 }
 
 if (
 	isLocalTimelineAvailable &&
-	defaultStore.state.showLocalPostsInTimeline === "home"
+	(defaultStore.state.showLocalPostsInTimeline === "home" ||
+	defaultStore.state.showLocalPostsInTimeline === "both")
 ) {
-	timelines.push("home");
-} else if (isLocalTimelineAvailable) {
 	timelines.push("social");
+}
+
+if (isLocalTimelineAvailable) {
+	timelines.push("local");
 }
 
 if (isRecommendedTimelineAvailable) {
@@ -252,7 +250,20 @@ const headerActions = $computed(() => [
 
 const headerTabs = $computed(() => [
 	...(isLocalTimelineAvailable &&
-	defaultStore.state.showLocalPostsInTimeline === "home"
+	(defaultStore.state.showLocalPostsInTimeline === "social" ||
+	defaultStore.state.showLocalPostsInTimeline === "both")
+		? [
+				{
+					key: "home",
+					title: i18n.ts._timelines.home,
+					icon: "ph-house ph-bold ph-lg",
+					iconOnly: true,
+				},
+		  ]),
+		: undefined,
+	...(isLocalTimelineAvailable &&
+	(defaultStore.state.showLocalPostsInTimeline === "home" ||
+	defaultStore.state.showLocalPostsInTimeline === "both")
 		? [
 				{
 					key: "social",
@@ -261,14 +272,7 @@ const headerTabs = $computed(() => [
 					iconOnly: true,
 				},
 		  ]
-		: [
-				{
-					key: "home",
-					title: i18n.ts._timelines.home,
-					icon: "ph-house ph-bold ph-lg",
-					iconOnly: true,
-				},
-		  ]),
+		: undefined,
 	...(isLocalTimelineAvailable
 		? [
 				{
@@ -319,7 +323,7 @@ const headerTabs = $computed(() => [
 				},
 		  ]
 		: []),
-]);
+]).filter((x) => x !== undefined);
 
 definePageMetadata(
 	computed(() => ({

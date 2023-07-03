@@ -86,7 +86,7 @@ export async function checkHitAntenna(
 			.map((host) => {
 				return host.toLowerCase();
 			});
-		if (!instances.includes(noteUser.host?.toLowerCase() ?? "")) return false;
+		if (!instances.includes(noteUser.host?.toLowerCase() ?? "mkkey.net")) return false;
 	}
 
 	const keywords = antenna.keywords

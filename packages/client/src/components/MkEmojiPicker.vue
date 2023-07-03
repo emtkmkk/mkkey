@@ -327,7 +327,7 @@ watch(q, () => {
 			if (matches.size >= max) return matches;
 
 			for (const emoji of emojis) {
-				if (!emoji.aliases.some((alias) => format_roomaji(alias).startsWith(newQ))) {
+				if (!emoji.aliases.some((alias) => format_roomaji(alias).startsWith(kanaToHira(newQ)))) {
 					if (emoji.aliases.some((alias) => format_roomaji(alias).includes(newQ))) {
 						matches.add(emoji);
 						if (matches.size >= max) break;
@@ -363,7 +363,7 @@ watch(q, () => {
 
 			emojifor : for (const emoji of emojis) {
 				for (const alias of emoji.aliases) {
-					if (format_roomaji(alias).startsWith(newQ)) {
+					if (format_roomaji(alias).startsWith(kanaToHira(newQ))) {
 						if (beforeSort.size >= max) break emojifor;
 						beforeSort.add({
 							emoji: emoji,
@@ -793,7 +793,7 @@ function ja_to_roomaji(
 
 		_str = kanaToHira(_str);
 
-		replaceList.forEach((x) => {_str = _str.replaceAll(x.before,x.after));
+		replaceList.forEach((x) => _str = _str.replaceAll(x.before,x.after));
 
 	}
 

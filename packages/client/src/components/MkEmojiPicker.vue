@@ -484,7 +484,7 @@ watch(q, () => {
 });
 
 function focus() {
-	if ((asReactionPicker && defaultStore.state.reactionAutoFocusSearchBar) || (!["smartphone", "tablet"].includes(deviceKind) && !isTouchUsing)) {
+	if ((props.asReactionPicker && defaultStore.state.reactionAutoFocusSearchBar) || (!["smartphone", "tablet"].includes(deviceKind) && !isTouchUsing)) {
 		search.value?.focus({
 			preventScroll: true,
 		});

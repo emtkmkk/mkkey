@@ -44,6 +44,42 @@
 			<FormSwitch v-model="swipeOnDesktop" class="_formBlock">{{
 				i18n.ts.swipeOnDesktop
 			}}</FormSwitch>
+			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{
+				i18n.ts.hiddenActivityChart
+			}}</FormSwitch>
+			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
+				i18n.ts.disablePagesScript
+			}}</FormSwitch>
+			<FormSwitch v-if="developer" v-model="developerRenote" class="_formBlock">{{
+				i18n.ts.developerRenote
+			}}</FormSwitch>
+			<FormSwitch v-if="developer" v-model="developerQuote" class="_formBlock">{{
+				i18n.ts.developerQuote
+			}}</FormSwitch>
+			<FormSwitch v-if="developer" v-model="developerNoteMenu" class="_formBlock">{{
+				i18n.ts.developerNoteMenu
+			}}</FormSwitch>
+
+			<FormSelect v-model="serverDisconnectedBehavior" class="_fo\emtkmkk\calckey\src\branch\beta\packages\client\src\pages\settings\general.vuermBlock">
+				<template #label>{{ i18n.ts.whenServerDisconnected }}</template>
+				<option value="reload">
+					{{ i18n.ts._serverDisconnectedBehavior.reload }}
+				</option>
+				<option value="dialog">
+					{{ i18n.ts._serverDisconnectedBehavior.dialog }}
+				</option>
+				<option value="quiet">
+					{{ i18n.ts._serverDisconnectedBehavior.quiet }}
+				</option>
+				<option value="nothing">
+					{{ i18n.ts._serverDisconnectedBehavior.nothing }}
+				</option>
+			</FormSelect>
+		</FormSection>
+		
+
+		<FormSection>
+			<template #label>{{ i18n.ts.postForm }}</template>
 			<FormSwitch v-model="enterSendsMessage" class="_formBlock">{{
 				i18n.ts.enterSendsMessage
 			}}</FormSwitch>
@@ -68,37 +104,6 @@
 			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
 				i18n.ts.smartMFMInputer
 			}}</FormSwitch>
-			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{
-				i18n.ts.hiddenActivityChart
-			}}</FormSwitch>
-			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
-				i18n.ts.disablePagesScript
-			}}</FormSwitch>
-			<FormSwitch v-if="developer" v-model="developerRenote" class="_formBlock">{{
-				i18n.ts.developerRenote
-			}}</FormSwitch>
-			<FormSwitch v-if="developer" v-model="developerQuote" class="_formBlock">{{
-				i18n.ts.developerQuote
-			}}</FormSwitch>
-			<FormSwitch v-if="developer" v-model="developerNoteMenu" class="_formBlock">{{
-				i18n.ts.developerNoteMenu
-			}}</FormSwitch>
-
-			<FormSelect v-model="serverDisconnectedBehavior" class="_formBlock">
-				<template #label>{{ i18n.ts.whenServerDisconnected }}</template>
-				<option value="reload">
-					{{ i18n.ts._serverDisconnectedBehavior.reload }}
-				</option>
-				<option value="dialog">
-					{{ i18n.ts._serverDisconnectedBehavior.dialog }}
-				</option>
-				<option value="quiet">
-					{{ i18n.ts._serverDisconnectedBehavior.quiet }}
-				</option>
-				<option value="nothing">
-					{{ i18n.ts._serverDisconnectedBehavior.nothing }}
-				</option>
-			</FormSelect>
 		</FormSection>
 
 		<FormSection>

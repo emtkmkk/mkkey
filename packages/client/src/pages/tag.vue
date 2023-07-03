@@ -78,7 +78,6 @@ const headerActions = $computed(() => [{
 		title: i18n.ts.postForm,
 		text: i18n.ts.postForm,
 		iconOnly: true,
-		handler: os.post({initialText: `#${props.tag}`}),
 	}]);
 
 const headerTabs = $computed(() => [

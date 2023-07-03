@@ -43,7 +43,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	// 84投稿 : 3日 100投稿 : 2日 116投稿 : 1日
 	
 	const eTime = (Date.now() - new Date(me.createdAt).valueOf());
-	const inviteBorder = Math.max(7 * 24 * 60 * 60 * 1000 - (me.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000);
+	const inviteBorder = eTime > 7 * 24 * 60 * 60 * 1000 ? 7 * 24 * 60 * 60 * 1000 : Math.max(7 * 24 * 60 * 60 * 1000 - (me.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000);
 	const canInvite = eTime > inviteBorder && me.notesCount >= 20;
 	
 	if (me.isSilenced || !canInvite) {

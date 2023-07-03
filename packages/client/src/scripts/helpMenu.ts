@@ -7,7 +7,14 @@ import { $i } from "@/account";
 import { i18n } from "@/i18n";
 
 export function openHelpMenu_(ev: MouseEvent) {
-	const time = $i ? (Date.now() - new Date($i.createdAt).valueOf()) > 7 * 24 * 60 * 60 * 1000 : undefined;
+	// 招待可能条件
+	// 登録から(7日-((投稿数-20)*1.5時間))経過
+	// ただし1日未満にはならない
+	// 投稿数が20以上
+	const eTime = $i ? (Date.now() - new Date($i.createdAt).valueOf()) : undefined;
+	const inviteBorder = eTime ? eTime > 7 * 24 * 60 * 60 * 1000 ? 7 * 24 * 60 * 60 * 1000 : Math.max(7 * 24 * 60 * 60 * 1000 - ($i.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000) : undefined;
+	const canInvite = $i ? eTime > inviteBorder && $i.notesCount >= 20 : false;
+
 	os.popupMenu(
 		[
 			{
@@ -26,7 +33,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 				icon: "ph-lightbulb ph-bold ph-lg",
 				to: "/about-calckey",
 			},
-			$i && !$i.isSilenced && time ? {
+			$i && !$i.isSilenced && canInvite ? {
 				type: "button",
 				action: async () => {
 					os.api("admin/invite")
@@ -45,6 +52,9 @@ export function openHelpMenu_(ev: MouseEvent) {
 				},
 				text: i18n.ts.showInviteCode,
 				icon: "ph-user-plus ph-bold ph-lg",
+			} : $i && $i.notesCount >= 20 ? {
+				text: "招待可能まで後" + (Math.ceil((inviteBorder - eTime) / 6 * 60 * 1000) / 10) + "時間",
+				type: "label",
 			} : undefined,
 			{
 				type: "button",
@@ -52,7 +62,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 				icon: "ph-device-mobile ph-bold ph-lg",
 				action: () => {
 					window.open("https://calckey.org/apps", "_blank");
-				},			
+				},
 			},
 			{
 				type: "button",

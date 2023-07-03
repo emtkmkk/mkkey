@@ -267,8 +267,8 @@ const headerTabs = $computed(() => [
 		? [
 				{
 					key: "social",
-					title: i18n.ts._timelines.home,
-					icon: "ph-house ph-bold ph-lg",
+					title: i18n.ts._timelines.social,
+					icon: "ph-handshake ph-bold ph-lg",
 					iconOnly: true,
 				},
 		  ]

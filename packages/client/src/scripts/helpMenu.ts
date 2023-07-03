@@ -52,7 +52,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 				},
 				text: i18n.ts.showInviteCode,
 				icon: "ph-user-plus ph-bold ph-lg",
-			} : $i && $i.notesCount >= 20 ? {
+			} : $i && !$i.isSilenced && $i.notesCount >= 20 ? {
 				text: "招待可能まで後" + (Math.ceil((inviteBorder - eTime) / 6 * 60 * 1000) / 10) + "時間",
 				type: "label",
 			} : undefined,

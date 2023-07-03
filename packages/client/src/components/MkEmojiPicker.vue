@@ -125,6 +125,7 @@
 					</section>
 				</div>
 				<div v-once v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
+					<header>{{ i18n.ts.customEmojis }}</header>
 					<XSection
 						key="custom:recentlyAddEmojis"
 						:initial-shown="false"
@@ -136,9 +137,6 @@
 						@chosen="chosen"
 						>{{ i18n.ts.recentlyAddEmojis }}</XSection
 					>
-				</div>
-				<div v-once v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
-					<header>{{ i18n.ts.customEmojis }}</header>
 					<XSection
 						v-for="category in customEmojiCategories"
 						:key="'custom:' + category"

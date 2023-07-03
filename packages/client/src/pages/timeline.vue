@@ -262,8 +262,18 @@ const headerTabs = $computed(() => [
 		  ]
 		: []),
 	...(isLocalTimelineAvailable &&
-	(defaultStore.state.showLocalPostsInTimeline === "home" ||
-	defaultStore.state.showLocalPostsInTimeline === "both")
+	defaultStore.state.showLocalPostsInTimeline === "home"
+		? [
+				{
+					key: "social",
+					title: i18n.ts._timelines.home,
+					icon: "ph-house ph-bold ph-lg",
+					iconOnly: true,
+				},
+		  ]
+		: []),
+	...(isLocalTimelineAvailable &&
+	defaultStore.state.showLocalPostsInTimeline === "both"
 		? [
 				{
 					key: "social",

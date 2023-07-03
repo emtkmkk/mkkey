@@ -213,6 +213,7 @@ provideMetadataReceiver((info) => {
 const menuIndicated = computed(() => {
 	for (const def in navbarItemDef) {
 		if (def === "notifications") continue; // 通知は下にボタンとして表示されてるから
+		if (def === "messaging") continue; // チャットは下にボタンとして表示されてるから
 		if (navbarItemDef[def].indicated) return true;
 	}
 	return false;

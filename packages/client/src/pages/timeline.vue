@@ -259,7 +259,7 @@ const headerTabs = $computed(() => [
 					icon: "ph-house ph-bold ph-lg",
 					iconOnly: true,
 				},
-		  ],
+		  ]
 		: [],
 	...(isLocalTimelineAvailable &&
 	(defaultStore.state.showLocalPostsInTimeline === "home" ||

@@ -44,6 +44,7 @@ import XUserList from "@/components/MkUserList.vue";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
+import * as os from "@/os";
 import "swiper/scss";
 import "swiper/scss/virtual";
 
@@ -77,7 +78,7 @@ const headerActions = $computed(() => [{
 		title: i18n.ts.postForm,
 		text: i18n.ts.postForm,
 		iconOnly: true,
-		handler: $os.post({initialText: `#${props.tag}`}),
+		handler: os.post({initialText: `#${props.tag}`}),
 	}]);
 
 const headerTabs = $computed(() => [

@@ -52,11 +52,78 @@
 				>
 			</FromSlot>
 			<FormSwitch
+				v-model="reactionAutoFocusSearchBar"
+				class="_formBlock"
+			>
+				{{ i18n.ts.reactionAutoFocusSearchBar }}
+			</FormSwitch>
+			<FormSwitch
 				v-model="hiddenReactionDeckAndRecent"
 				class="_formBlock"
 			>
 				{{ i18n.ts.hiddenReactionDeckAndRecent }}
 			</FormSwitch>
+			
+			<FormSection>
+				<FormRadios
+					v-model="favButtonReaction"
+					class="_formBlock"
+				>
+					<template #label>{{
+						i18n.ts.defaultReactionUser
+					}}</template>
+					<option value="">
+						{{
+							i18n.ts.default
+						}}
+					</option>
+					<option value="⭐">
+						<MkEmoji
+							class="emoji"
+							emoji="⭐"
+							style="height: 1.5em"
+						/>
+					</option>
+					<option value="👍">
+						<MkEmoji
+							class="emoji"
+							emoji="👍"
+							style="height: 1.5em"
+						/>
+					</option>
+					<option value="❤️">
+						<MkEmoji
+							class="emoji"
+							emoji="❤️"
+							style="height: 1.5em"
+						/>
+					</option>
+					<option value="picker">
+						{{
+							i18n.ts.picker
+						}}
+					</option>
+					<option value="custom">
+						<FormInput
+							v-model="favButtonReactionCustom"
+							class="_formBlock"
+							:small="true"
+							:placeholder="`:絵文字名:`"
+							style="margin: 0 0 !important"
+						/>
+					</option>
+					<option value="favorite">
+						{{
+							i18n.ts.favorite
+						}}
+					</option>
+					<option value="hidden">
+						{{
+							i18n.ts.hidden
+						}}
+					</option>
+				</FormRadios>
+			</FormSection>
 			
 			<FormRadios v-model="reactionPickerSize" class="_formBlock">
 				<template #label>{{ i18n.ts.size }}</template>
@@ -137,68 +204,6 @@
 				</div>
 			</FormSection>
 		</div>
-
-		<FormSection>
-			<FormRadios
-				v-model="favButtonReaction"
-				class="_formBlock"
-			>
-				<template #label>{{
-					i18n.ts.defaultReactionUser
-				}}</template>
-				<option value="">
-					{{
-						i18n.ts.default
-					}}
-				</option>
-				<option value="⭐">
-					<MkEmoji
-						class="emoji"
-						emoji="⭐"
-						style="height: 1.5em"
-					/>
-				</option>
-				<option value="👍">
-					<MkEmoji
-						class="emoji"
-						emoji="👍"
-						style="height: 1.5em"
-					/>
-				</option>
-				<option value="❤️">
-					<MkEmoji
-						class="emoji"
-						emoji="❤️"
-						style="height: 1.5em"
-					/>
-				</option>
-				<option value="picker">
-					{{
-						i18n.ts.picker
-					}}
-				</option>
-				<option value="custom">
-					<FormInput
-						v-model="favButtonReactionCustom"
-						class="_formBlock"
-						:small="true"
-						:placeholder="`:絵文字名:`"
-						style="margin: 0 0 !important"
-					/>
-				</option>
-				<option value="favorite">
-				    {{
-						i18n.ts.favorite
-					}}
-				</option>
-				<option value="hidden">
-					{{
-						i18n.ts.hidden
-					}}
-				</option>
-			</FormRadios>
-		</FormSection>
-
 	</div>
 </template>
 
@@ -258,6 +263,9 @@ const favButtonReaction = $computed(
 );
 const favButtonReactionCustom = $computed(
 	defaultStore.makeGetterSetter("favButtonReactionCustom")
+);
+const reactionAutoFocusSearchBar = $computed(
+	defaultStore.makeGetterSetter("reactionAutoFocusSearchBar")
 );
 
 function save() {

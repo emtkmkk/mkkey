@@ -72,7 +72,13 @@ const tabs = ["notes", "users"];
 let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
-const headerActions = $computed(() => []);
+const headerActions = $computed(() => [{
+		icon: "ph-note-pencil ph-bold ph-lg",
+		title: i18n.ts.postForm,
+		text: i18n.ts.postForm,
+		iconOnly: true,
+		handler: os.post({initialText: `#${props.tag}`}),
+	}]);
 
 const headerTabs = $computed(() => [
 	{

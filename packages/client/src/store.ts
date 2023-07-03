@@ -286,7 +286,7 @@ export const defaultStore = markRaw(
 		},
 		showLocalPostsInTimeline: {
 			where: "device",
-			default: "home" as "home" | "social",
+			default: "home" as "home" | "social" | "both",
 		},
 		serverDisconnectedBehavior: {
 			where: "device",

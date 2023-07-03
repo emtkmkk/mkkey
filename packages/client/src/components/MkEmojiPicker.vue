@@ -725,7 +725,6 @@ function ja_to_roomaji(
 			{before:"だ", after:"da"},
 			{before:"ち", after:"ti"},
 			{before:"ぢ", after:"di"},
-			{before:"っ", after:"っ"},
 			{before:"つ", after:"tu"},
 			{before:"づ", after:"du"},
 			{before:"て", after:"te"},
@@ -775,11 +774,12 @@ function ja_to_roomaji(
 			{before:"を", after:"wo"},
 			{before:"ん", after:"n"},
 			{before:"ー", after:"_"},
+			{before:/っ(\w)/g, after:"$1$1"},
 		];
 
 		_str = kanaToHira(_str);
 
-		replaceList.forEach((x) => _str = _str.replaceAll(x.before,x.after));
+		replaceList.forEach((x) => {_str = _str.replaceAll(x.before,x.after));
 
 	}
 

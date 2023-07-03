@@ -125,13 +125,12 @@
 					</section>
 				</div>
 				<div v-once v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
-					<header>{{ i18n.ts.recentlyAddEmojis }}</header>
 					<XSection
 						key="custom:recentlyAddEmojis"
 						:initial-shown="false"
 						:emojis="
 							customEmojis
-								.slice(0,50)
+								.filter((e) => e.updatedAt ? new Date().valueOf() - new Date(e.updatedAt).valueOf() < 7 * 24 * 60 * 60 * 1000 : false)
 								.map((e) => ':' + e.name + ':')
 						"
 						@chosen="chosen"
@@ -278,7 +277,7 @@ watch(q, () => {
 		return;
 	}
 
-	const newQ = format_roomaji(q.value.replace(/:/g, ""));
+	const newQ = kanaToHira(format_roomaji(q.value.replace(/:/g, "")));
 	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/:/g, "")));
 
 	const searchCustom = () => {
@@ -327,8 +326,8 @@ watch(q, () => {
 			if (matches.size >= max) return matches;
 
 			for (const emoji of emojis) {
-				if (!emoji.aliases.some((alias) => format_roomaji(alias).startsWith(kanaToHira(newQ)))) {
-					if (emoji.aliases.some((alias) => format_roomaji(alias).includes(newQ))) {
+				if (!emoji.aliases.some((alias) => kanaToHira(format_roomaji(alias)).startsWith(newQ))) {
+					if (emoji.aliases.some((alias) => kanaToHira(format_roomaji(alias)).includes(newQ))) {
 						matches.add(emoji);
 						if (matches.size >= max) break;
 					}
@@ -363,7 +362,7 @@ watch(q, () => {
 
 			emojifor : for (const emoji of emojis) {
 				for (const alias of emoji.aliases) {
-					if (format_roomaji(alias).startsWith(kanaToHira(newQ))) {
+					if (kanaToHira(format_roomaji(alias)).startsWith(newQ)) {
 						if (beforeSort.size >= max) break emojifor;
 						beforeSort.add({
 							emoji: emoji,

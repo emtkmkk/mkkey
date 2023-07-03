@@ -539,6 +539,10 @@ export const defaultStore = markRaw(
 		showRelationMark: {
 			where: "account",
 			default: false,
+		},
+		reactionAutoFocusSearchBar: {
+			where: "device",
+			default: false,
 		}
 	}),
 );

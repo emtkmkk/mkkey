@@ -41,6 +41,9 @@ export default function load() {
 	config.url = url.origin;
 
 	config.port = config.port || parseInt(process.env.PORT || "", 10);
+	
+	// 最大ユーザ数 この人数以上は登録不可になる
+	config.maxUserSignups = 128;
 
 	mixin.version = meta.version;
 	mixin.host = url.host;

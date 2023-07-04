@@ -37,7 +37,6 @@ export default define(meta, paramDef, async (ps) => {
 			id: In(ps.ids),
 		},
 		{
-			updatedAt: new Date(),
 			aliases: ps.aliases,
 		},
 	);

@@ -1,5 +1,6 @@
 import { reactive, ref } from "vue";
 import * as Misskey from "calckey-js";
+import * as os from "@/os";
 import { readAndCompressImage } from "browser-image-resizer";
 import { defaultStore } from "@/store";
 import { apiUrl } from "@/config";
@@ -42,6 +43,17 @@ export function uploadFile(
 
 		const reader = new FileReader();
 		reader.onload = async (ev) => {
+
+			const { canceled } = file.type === "video/quicktime" ? await os.yesno({
+				type: "question",
+				text: "このファイルはmov形式の為、iOS以外で正しく再生されない可能性があります。\nアップロードを続けますか？",
+			}) : { canceled: false };
+
+			if (canceled) {
+				reject();
+				return;
+			}
+
 			const ctx = reactive<Uploading>({
 				id: id,
 				name: name || file.name || "untitled",
@@ -67,9 +79,8 @@ export function uploadFile(
 					resizedImage = await readAndCompressImage(file, config);
 					ctx.name =
 						file.type !== imgConfig.mimeType
-							? `${ctx.name}.${
-									mimeTypeMap[compressTypeMap[file.type].mimeType]
-							  }`
+							? `${ctx.name}.${mimeTypeMap[compressTypeMap[file.type].mimeType]
+							}`
 							: ctx.name;
 				} catch (err) {
 					console.error("Failed to resize image", err);

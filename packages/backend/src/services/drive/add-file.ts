@@ -482,9 +482,9 @@ export async function addFile({
 	// detect name
 	// ローカルならファイル名を無視
 	const detectedName =
-		user?.host
-		? name || (info.type.ext ? `untitled.${info.type.ext}` : "untitled")
-		: (info.type.ext ? `${user.username}-${uuid()}.${info.type.ext}` : `${user.username}-${uuid()}`);
+		!user?.host && user?.username
+		? (info.type.ext ? `${user.username}-${uuid()}.${info.type.ext}` : `${user.username}-${uuid()}`)
+		: name || (info.type.ext ? `untitled.${info.type.ext}` : "untitled");
 
 	if (user && !force) {
 		// Check if there is a file with the same hash

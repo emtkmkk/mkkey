@@ -48,7 +48,6 @@ export default define(meta, paramDef, async (ps) => {
 	if (emoji == null) throw new ApiError(meta.errors.noSuchEmoji);
 
 	await Emojis.update(emoji.id, {
-		updatedAt: new Date(),
 		name: ps.name,
 		category: ps.category,
 		aliases: ps.aliases,

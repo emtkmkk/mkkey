@@ -150,6 +150,72 @@
 						@chosen="chosen"
 						>{{ category || i18n.ts.other }}</XSection
 					>
+					<XSection
+						key="custom:null/A-E"
+						:initial-shown="false"
+						:emojis="
+							customEmojis
+								.filter((e) => !e.category && /^[a-e]/i.test(e.name))
+								.map((e) => ':' + e.name + ':')
+						"
+						@chosen="chosen"
+						>{{ "未設定 / A-E" }}</XSection
+					>
+					<XSection
+						key="custom:null/F-J"
+						:initial-shown="false"
+						:emojis="
+							customEmojis
+								.filter((e) => !e.category && /^[f-j]/i.test(e.name))
+								.map((e) => ':' + e.name + ':')
+						"
+						@chosen="chosen"
+						>{{ "未設定 / F-J" }}</XSection
+					>
+					<XSection
+						key="custom:null/K-O"
+						:initial-shown="false"
+						:emojis="
+							customEmojis
+								.filter((e) => !e.category && /^[k-o]/i.test(e.name))
+								.map((e) => ':' + e.name + ':')
+						"
+						@chosen="chosen"
+						>{{ "未設定 / K-O" }}</XSection
+					>
+					<XSection
+						key="custom:null/P-T"
+						:initial-shown="false"
+						:emojis="
+							customEmojis
+								.filter((e) => !e.category && /^[p-t]/i.test(e.name))
+								.map((e) => ':' + e.name + ':')
+						"
+						@chosen="chosen"
+						>{{ "未設定 / P-T" }}</XSection
+					>
+					<XSection
+						key="custom:null/U-Z"
+						:initial-shown="false"
+						:emojis="
+							customEmojis
+								.filter((e) => !e.category && /^[u-z]/i.test(e.name))
+								.map((e) => ':' + e.name + ':')
+						"
+						@chosen="chosen"
+						>{{ "未設定 / U-Z" }}</XSection
+					>
+					<XSection
+						key="custom:null/etc"
+						:initial-shown="false"
+						:emojis="
+							customEmojis
+								.filter((e) => !e.category && !/^[a-z]/i.test(e.name))
+								.map((e) => ':' + e.name + ':')
+						"
+						@chosen="chosen"
+						>{{ "未設定 / その他" }}</XSection
+					>
 				</div>
 				<div v-once v-if="searchResultCustom.length <= 0  && (q == null || q === '')" class="group">
 					<header>{{ i18n.ts.emoji }}</header>

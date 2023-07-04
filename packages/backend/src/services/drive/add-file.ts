@@ -358,7 +358,7 @@ async function upload(
 		partSize:
 			s3.endpoint.hostname === "storage.googleapis.com"
 				? 500 * 1024 * 1024
-				: 8 * 1024 * 1024,
+				: 100 * 1024 * 1024,
 	});
 
 	const result = await upload.promise();

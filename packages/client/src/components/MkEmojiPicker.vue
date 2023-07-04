@@ -133,6 +133,7 @@
 							customEmojis
 								.filter((e) => e.updatedAt ? new Date().valueOf() - new Date(e.updatedAt).valueOf() < 7 * 24 * 60 * 60 * 1000 : false)
 								.sort((a,b) => new Date(b.updatedAt).valueOf() - new Date(a.updatedAt).valueOf())
+								.slice(0,255)
 								.map((e) => ':' + e.name + ':')
 						"
 						@chosen="chosen"

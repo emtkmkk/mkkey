@@ -394,6 +394,7 @@ type AddFileArgs = {
 	/** User who wish to add file */
 	user: {
 		id: User["id"];
+		username: User["username"];
 		host: User["host"];
 		driveCapacityOverrideMb: User["driveCapacityOverrideMb"];
 	} | null;
@@ -479,8 +480,11 @@ export async function addFile({
 	//}
 
 	// detect name
+	// ローカルならファイル名を無視
 	const detectedName =
-		name || (info.type.ext ? `untitled.${info.type.ext}` : "untitled");
+		user?.host
+		? name || (info.type.ext ? `untitled.${info.type.ext}` : "untitled")
+		: (info.type.ext ? `${user.username}-${uuid()}.${info.type.ext}` : `${user.username}-${uuid()}`);
 
 	if (user && !force) {
 		// Check if there is a file with the same hash

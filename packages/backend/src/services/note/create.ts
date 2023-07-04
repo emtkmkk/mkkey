@@ -220,7 +220,7 @@ export default async (
 
 		// Twitterリンクの場合、?以降を取り除く
 		if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
-			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g, "$1");
+			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?\S*)/g, "$1");
 		}
 
 		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {

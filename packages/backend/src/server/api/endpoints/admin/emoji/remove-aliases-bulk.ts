@@ -38,7 +38,6 @@ export default define(meta, paramDef, async (ps) => {
 
 	for (const emoji of emojis) {
 		await Emojis.update(emoji.id, {
-			updatedAt: new Date(),
 			aliases: emoji.aliases.filter((x) => !ps.aliases.includes(x)),
 		});
 	}

@@ -37,7 +37,7 @@ export const emojiCategories = computed(() => {
 	if (instance.emojis == null) return [];
 	const categories = new Set();
 	for (const emoji of instance.emojis) {
-		if (!emoji.catogory) continue;
+		if (!emoji.category) continue;
 		categories.add(emoji.category);
 	}
 	return Array.from(categories);

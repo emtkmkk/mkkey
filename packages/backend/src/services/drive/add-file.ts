@@ -483,7 +483,7 @@ export async function addFile({
 	// ローカルならファイル名を無視
 	const detectedName =
 		!user?.host && user?.username
-		? (info.type.ext ? `${user.username}-${uuid()}.${info.type.ext}` : `${user.username}-${uuid()}`)
+		? (info.type.ext ? `${user.username}-${uuid()}.${info.type.ext}` : name ?? `${user.username}-${uuid()}`)
 		: name || (info.type.ext ? `untitled.${info.type.ext}` : "untitled");
 
 	if (user && !force) {

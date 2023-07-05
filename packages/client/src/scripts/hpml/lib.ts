@@ -478,7 +478,7 @@ export function initHpmlLib(
 	const date = new Date();
 	const day = `${pageRndUUID} ${date.getFullYear()}/${
 		date.getMonth() + 1
-	}/${date.getDate()}`;
+	}/${date.getDate()} ${Math.floor(date.getHours()/8)}`;
 
 	// SHOULD be fine to ignore since it's intended + function shape isn't defined
 	const funcs: Record<string, Function> = {

@@ -467,6 +467,7 @@ const timeForThem = $computed(() => {
 			/[^A-Za-zÁĆÉǴÍḰĹḾŃÓṔŔŚÚÝŹáćéǵíḱĺḿńóṕŕśúýź].*/,
 			""
 		),
+		"Tokyo",
 	];
 
 	for (const city of maybeCityNames) {

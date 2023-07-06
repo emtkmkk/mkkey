@@ -429,7 +429,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			name: "ASC",
 		},
 		cache: {
-			id: "meta_emojis",
+			id: "meta_all_emojis",
 			milliseconds: 7200000, // 2 hour
 		},
 	}).filter((x) => !emojiNames.includes(x.name))

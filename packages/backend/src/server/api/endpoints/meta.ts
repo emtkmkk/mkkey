@@ -420,7 +420,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	const emojiNames = emojis.map((x) => x.name);
 	
 	const allEmojis = ps.allEmojis 
-	? await Emojis.find({
+	? (await Emojis.find({
 		where: {
 			host: Not(IsNull()),
 		},
@@ -432,7 +432,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_all_emojis",
 			milliseconds: 7200000, // 2 hour
 		},
-	}).filter((x) => !emojiNames.includes(x.name))
+	})).filter((x) => !emojiNames.includes(x.name))
 	: undefined;
 
 	const ads = await Ads.find({

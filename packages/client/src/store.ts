@@ -547,6 +547,14 @@ export const defaultStore = markRaw(
 		postAutoFocusSearchBar: {
 			where: "device",
 			default: false,
+		},
+		reactionShowUsername: {
+			where: "device",
+			default: false,
+		},
+		reactionShowShort: {
+			where: "device",
+			default: false,
 		}
 	}),
 );

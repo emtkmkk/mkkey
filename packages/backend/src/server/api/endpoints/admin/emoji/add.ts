@@ -1,3 +1,4 @@
+import { IsNull } from "typeorm";
 import define from "../../../define.js";
 import { Emojis, DriveFiles } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
@@ -35,9 +36,17 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (file == null) throw new ApiError(meta.errors.noSuchFile);
 
-	const name = file.name.split(".")[0].match(/^[a-z0-9_]+$/)
+	let name = file.name.split(".")?.[0]?.replaceAll(/[^A-Za-z0-9_]+/g,"") || `_${rndstr("a-z0-9", 8)}_`;
+	/*file.name.split(".")[0].match(/^[A-Za-z0-9_]+$/)
 		? file.name.split(".")[0]
-		: `_${rndstr("a-z0-9", 8)}_`;
+		: `_${rndstr("a-z0-9", 8)}_`;*/
+	
+	const emojiSearchName = await Emojis.findOneBy({ name: name , host: IsNull() });
+	
+	// 名前重複の場合
+	if (emojiSearchName) {
+		name = name + `_${rndstr("a-z0-9", 8)}`;
+	}
 
 	const emoji = await Emojis.insert({
 		id: genId(),

@@ -462,9 +462,11 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (elapsedDays < 14) {
 		_rankPower = Math.min(rankPower, 4999);
-		if (elapsedDays < 4) _rankPower = Math.min(rankPower, 1599);
-		else if (elapsedDays < 7) _rankPower = Math.min(rankPower, 2749);
-		else if (elapsedDays < 10) _rankPower = Math.min(rankPower, 4249);
+		if (elapsedDays < 1) _rankPower = Math.min(rankPower, 1599);
+		if (elapsedDays < 3) _rankPower = Math.min(rankPower, 1999);
+		else if (elapsedDays < 6) _rankPower = Math.min(rankPower, 2749);
+		else if (elapsedDays < 9) _rankPower = Math.min(rankPower, 3499);
+		else if (elapsedDays < 12) _rankPower = Math.min(rankPower, 4249);
 	}
 
 	const rankBorder = [16, 50, 125, 200, 300, 400, 500, 600, 700, 800, 1000, 1200, 1600, 2000, 2750, 3500, 4250, 5000, 6000];
@@ -473,7 +475,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (_rankPower >= rankBorder.slice(-1)[0] + suffixIncBorder) {
 		const plusNum = Math.floor((_rankPower - rankBorder.slice(-2)[0]) / suffixIncBorder);
-		result.powerRank = plusNum >= 1000 ? "⭐+!!" : plusNum >= 100 ? rankName.slice(-2)[0] + plusNum : plusNum >= 4 ? rankName.slice(-1)[0] + plusNum : rankName.slice(-1)[0] + ("+").repeat(plusNum - 1);
+		result.powerRank = plusNum >= 1000 ? "⭐!!!" : plusNum >= 100 ? rankName.slice(-2)[0] + plusNum : plusNum >= 4 ? rankName.slice(-1)[0] + plusNum : rankName.slice(-1)[0] + ("+").repeat(plusNum - 1);
 		result.nextRank = Math.floor((rankPower % suffixIncBorder) / suffixIncBorder * 100) + "%";
 	} else {
 		const clearBorder = rankBorder.filter(x => x <= _rankPower);

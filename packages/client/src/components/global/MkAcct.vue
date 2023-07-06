@@ -1,6 +1,6 @@
 <template>
 	<span class="mk-acct">
-		<span class="name">@{{ user.username }}</span>
+		<span class="name">@{{ maxlength && user.username.length > maxlength ? user.username.slice(0,maxlength) + '…' : user.username }}</span>
 		<span
 			v-if="user.host || detail || $store.state.showFullAcct"
 			class="host"
@@ -17,6 +17,7 @@ import { host as hostRaw } from "@/config";
 defineProps<{
 	user: misskey.entities.UserDetailed;
 	detail?: boolean;
+	maxlength?: boolean;
 }>();
 
 const host = toUnicode(hostRaw);

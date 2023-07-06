@@ -94,18 +94,10 @@
 								tabindex="0"
 								@click="chosen(emoji, $event)"
 							>
-								<!--<MkEmoji
+								<MkEmoji
 									class="emoji"
 									:emoji="emoji"
 									:normal="true"
-								/> -->
-								<img
-									class="emoji"
-									:src="
-										disableShowingAnimatedImages
-											? getStaticImageUrl(emoji.url)
-											: emoji.url
-									"
 								/>
 							</button>
 						</div>
@@ -123,18 +115,10 @@
 								class="_button item"
 								@click="chosen(emoji, $event)"
 							>
-								<!--<MkEmoji
+								<MkEmoji
 									class="emoji"
 									:emoji="emoji"
 									:normal="true"
-								/> -->
-								<img
-									class="emoji"
-									:src="
-										disableShowingAnimatedImages
-											? getStaticImageUrl(emoji.url)
-											: emoji.url
-									"
 								/>
 							</button>
 						</div>

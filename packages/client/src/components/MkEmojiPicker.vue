@@ -377,7 +377,7 @@ watch(q, () => {
 		return;
 	}
 
-	const isAllSearch = allEmojis ? q.value.endsWith("@") : false;
+	const isAllSearch = allCustomEmojis ? q.value.endsWith("@") : false;
 	const newQ = kanaToHira(format_roomaji(q.value.replace(/[:@]/g, "")));
 	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/[:@]/g, "")));
 

@@ -313,6 +313,7 @@ async function setDefault() {
 function chooseEmoji(ev: MouseEvent) {
 	os.pickEmoji(ev.currentTarget ?? ev.target, {
 		showPinned: false,
+		asReactionPicker: true,
 	}).then((emoji) => {
 		if (!reactions.includes(emoji)) {
 			reactions.push(emoji);

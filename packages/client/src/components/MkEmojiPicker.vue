@@ -18,6 +18,20 @@
 			/>
 			<div ref="emojis" class="emojis">
 				<section class="result">
+					<div v-if="!props.asReactionPicker && q.value.endsWith('@')">
+						<header>{{ "末尾@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
+					</div>
+					<div v-else>
+						<header v-if="!(q == null || q === '')">
+							{{ `検索結果 - 
+							${(searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
+								? `${searchResultCustomStart.length} / ${searchResultUnicodeStart.length} / ${searchResultCustom.length} / ${searchResultUnicode.length} 件` 
+								: props.asReactionPicker && !q.value.endsWith('@') 
+									? "0 件 (末尾@で他サーバー絵文字検索)" 
+									: "0 件"}
+							` }}
+						</header>
+					</div>
 					<div v-if="searchResultCustomStart.length > 0" class="body">
 						<button
 							v-for="emoji in searchResultCustomStart"
@@ -366,9 +380,13 @@ const searchResultUnicode = ref<UnicodeEmojiDef[]>([]);
 const searchResultUnicodeStart = ref<UnicodeEmojiDef[]>([]);
 const tab = ref<"index" | "custom" | "unicode" | "tags">("index");
 
-watch(q, () => {
+watch(q, (nQ, oQ) => {
 	if (emojis.value) emojis.value.scrollTop = 0;
-
+	
+	if (nQ.length + 1 === oQ.length ) {
+		// 消しただけの場合、更新しない
+		return;
+	}
 	if (q.value == null || q.value === "") {
 		searchResultCustom.value = [];
 		searchResultCustomStart.value = [];
@@ -475,9 +493,6 @@ watch(q, () => {
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 		const beforeSort = new Set();
 
-		const exactMatch = emojis.find((emoji) => emoji.name === roomajiQ);
-		if (exactMatch) beforeSort.add({emoji: exactMatch,key: format_roomaji(exactMatch.name),});
-
 		if (newQ.includes(" ")) {
 			// AND検索
 			return matches;
@@ -493,6 +508,8 @@ watch(q, () => {
 					}
 				}
 			} else {
+				const exactMatch = emojis.find((emoji) => emoji.name === roomajiQ);
+				if (exactMatch) beforeSort.add({emoji: exactMatch,key: format_roomaji(exactMatch.name),});
 				for (const emoji of emojis) {
 					if (format_roomaji(emoji.name).startsWith(roomajiQ)) {
 						if (beforeSort.size >= max) break;

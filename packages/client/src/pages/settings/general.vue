@@ -149,6 +149,18 @@
 			<FormSwitch v-model="squareAvatars" class="_formBlock">{{
 				i18n.ts.squareAvatars
 			}}</FormSwitch>
+			<FormSwitch
+				v-model="reactionShowUsername"
+				class="_formBlock"
+			>
+				{{ i18n.ts.reactionShowUsername }}
+			</FormSwitch>
+			<FormSwitch
+				v-model="reactionShowShort"
+				class="_formBlock"
+			>
+				{{ i18n.ts.reactionShowShort }}
+			</FormSwitch>
 			<FormSwitch v-model="seperateRenoteQuote" class="_formBlock">{{
 				i18n.ts.seperateRenoteQuote
 			}}</FormSwitch>
@@ -485,6 +497,12 @@ const showMiniUpdates = computed(
 );
 const hiddenActivityChart = computed(
 	defaultStore.makeGetterSetter("hiddenActivityChart")
+);
+const reactionShowUsername = $computed(
+	defaultStore.makeGetterSetter("reactionShowUsername")
+);
+const reactionShowShort = $computed(
+	defaultStore.makeGetterSetter("reactionShowShort")
 );
 
 watch(lang, () => {

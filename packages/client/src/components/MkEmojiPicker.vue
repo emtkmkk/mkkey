@@ -358,6 +358,7 @@ const height = computed(() =>
 );
 const customEmojiCategories = emojiCategories;
 const customEmojis = instance.emojis;
+const allCustomEmojis = props.asReactionPicker ? instance.allEmojis : undefined;
 const q = ref<string | null>(null);
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultCustomStart = ref<Misskey.entities.CustomEmoji[]>([]);
@@ -376,12 +377,14 @@ watch(q, () => {
 		return;
 	}
 
-	const newQ = kanaToHira(format_roomaji(q.value.replace(/:/g, "")));
-	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/:/g, "")));
+	const isAllSearch = allEmojis ? q.value.endsWith("@") : false;
+	const newQ = kanaToHira(format_roomaji(q.value.replace(/[:@]/g, "")));
+	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/[:@]/g, "")));
 
 	const searchCustom = () => {
 		const max = 64;
 		const emojis = customEmojis;
+		const allEmojis = allCustomEmojis;
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 
 		if (newQ.includes(" ")) {
@@ -390,6 +393,21 @@ watch(q, () => {
 			const roomajiKeywords = roomajiQ.split(" ");
 
 			// 名前またはエイリアスにキーワードが含まれている
+			if (isAllSearch) {
+				for (const emoji of allEmojis) {
+					if (
+						keywords.every(
+							(keyword) =>
+								format_roomaji(emoji.name).includes(roomajiKeywords)
+						)
+					) {
+						matches.add(emoji);
+						if (matches.size >= max) break;
+					}
+				}
+				if (matches.size >= max) return matches;
+			}
+			
 			for (const emoji of emojis) {
 				if (
 					keywords.every(
@@ -414,6 +432,17 @@ watch(q, () => {
 				}
 			}
 		} else {
+			if (isAllSearch) {
+				for (const emoji of allEmojis) {
+					if (!format_roomaji(emoji.name).startsWith(roomajiQ)) {
+						if (format_roomaji(emoji.name).includes(roomajiQ)) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
+					}
+				}
+				if (matches.size >= max) return matches;
+			}
 			for (const emoji of emojis) {
 				if (!format_roomaji(emoji.name).startsWith(roomajiQ)) {
 					if (format_roomaji(emoji.name).includes(roomajiQ)) {
@@ -449,6 +478,17 @@ watch(q, () => {
 			// AND検索
 			return matches;
 		} else {
+			if (isAllSearch) {
+				for (const emoji of allEmojis) {
+					if (format_roomaji(emoji.name).startsWith(roomajiQ)) {
+						if (beforeSort.size >= max) break;
+						beforeSort.add({
+							emoji: emoji,
+							key: format_roomaji(emoji.name),
+						});
+					}
+				}
+			}
 			for (const emoji of emojis) {
 				if (format_roomaji(emoji.name).startsWith(roomajiQ)) {
 					if (beforeSort.size >= max) break;
@@ -599,7 +639,7 @@ function reset() {
 function getKey(
 	emoji: string | Misskey.entities.CustomEmoji | UnicodeEmojiDef
 ): string {
-	return typeof emoji === "string" ? emoji : emoji.char || `:${emoji.name}:`;
+	return typeof emoji === "string" ? emoji : emoji.char || `:${emoji.name}${emoji.host ? "@" + emoji.host : ""}:`;
 }
 
 function chosen(emoji: any, ev?: MouseEvent) {
@@ -617,7 +657,7 @@ function chosen(emoji: any, ev?: MouseEvent) {
 	emit("chosen", key);
 
 	// 最近使った絵文字更新
-	if (!pinned.value.includes(key)) {
+	if (!pinned.value.includes(key) && !key.includes("@") ) {
 		let recents = defaultStore.state.recentlyUsedEmojis;
 		recents = recents.filter((emoji: any) => emoji !== key);
 		recents.unshift(key);
@@ -649,25 +689,28 @@ function done(query?: any): boolean | void {
 			chosen(":" + emojiForceStd[1] + ":")
 		}
 	}
-	const exactMatchCustom = customEmojis.find((emoji) => emoji.name === q2);
-	if (exactMatchCustom) {
-		chosen(exactMatchCustom);
-		return true;
-	}
-	const exactMatchUnicode = emojilist.find(
-		(emoji) => emoji.char === q2 || emoji.name === q2
-	);
-	if (exactMatchUnicode) {
-		chosen(exactMatchUnicode);
-		return true;
-	}
-	if (searchResultCustom.value.length > 0) {
-		chosen(searchResultCustom.value[0]);
-		return true;
-	}
-	if (searchResultUnicode.value.length > 0) {
-		chosen(searchResultUnicode.value[0]);
-		return true;
+	if (q2.endsWith(' -f') || q2.endsWith('!')) {
+		const q3 = query.replaceAll("( -f|!)$", "");
+		const exactMatchCustom = customEmojis.find((emoji) => emoji.name === q3);
+		if (exactMatchCustom) {
+			chosen(exactMatchCustom);
+			return true;
+		}
+		const exactMatchUnicode = emojilist.find(
+			(emoji) => emoji.char === q3 || emoji.name === q3
+		);
+		if (exactMatchUnicode) {
+			chosen(exactMatchUnicode);
+			return true;
+		}
+		if (searchResultCustom.value.length > 0) {
+			chosen(searchResultCustom.value[0]);
+			return true;
+		}
+		if (searchResultUnicode.value.length > 0) {
+			chosen(searchResultUnicode.value[0]);
+			return true;
+		}
 	}
 }
 
@@ -723,6 +766,11 @@ function format_roomaji(
 		{before:"cyu", after:"tyu"},
 		{before:"cye", after:"tye"},
 		{before:"cyo", after:"tyo"},
+		{before:"jya", after:"zya"},
+		{before:"jyi", after:"zyi"},
+		{before:"jyu", after:"zyu"},
+		{before:"jye", after:"zye"},
+		{before:"jyo", after:"zyo"},
 	]
 	
 	let str = roomaji.toLowerCase()

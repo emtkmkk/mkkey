@@ -460,20 +460,24 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	let _rankPower = rankPower;
 
+	// 経過日数によるランク制限
 	if (elapsedDays < 14) {
-		_rankPower = Math.min(rankPower, 4999);
-		if (elapsedDays < 1) _rankPower = Math.min(rankPower, 1599);
-		if (elapsedDays < 3) _rankPower = Math.min(rankPower, 1999);
-		else if (elapsedDays < 6) _rankPower = Math.min(rankPower, 2749);
-		else if (elapsedDays < 9) _rankPower = Math.min(rankPower, 3499);
-		else if (elapsedDays < 12) _rankPower = Math.min(rankPower, 4249);
+		_rankPower = Math.min(rankPower, 4999);	// AAA+
+		if (elapsedDays < 1) _rankPower = Math.min(rankPower, 1599); // A
+		if (elapsedDays < 3) _rankPower = Math.min(rankPower, 1999); // A+
+		else if (elapsedDays < 6) _rankPower = Math.min(rankPower, 2749); // AA
+		else if (elapsedDays < 9) _rankPower = Math.min(rankPower, 3499); // AA+
+		else if (elapsedDays < 12) _rankPower = Math.min(rankPower, 4249); // AAA
 	}
 
 	const rankBorder = [16, 50, 125, 200, 300, 400, 500, 600, 700, 800, 1000, 1200, 1600, 2000, 2750, 3500, 4250, 5000, 6000];
 	const rankName = ["G", "F-", "F", "F+", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+", "AA", "AA+", "AAA", "AAA+", "⭐", "⭐+"];
 	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0];
 
+	// 最大ランク+2以上かどうか
 	if (_rankPower >= rankBorder.slice(-1)[0] + suffixIncBorder) {
+		// 最大ランク+2以降は+0と+1の差を続ける
+		// +0が5000、+1が6000ならば +2は6000+1000の7000 +3は8000
 		const plusNum = Math.floor((_rankPower - rankBorder.slice(-2)[0]) / suffixIncBorder);
 		result.powerRank = plusNum >= 1000 ? "⭐!!!" : plusNum >= 100 ? rankName.slice(-2)[0] + plusNum : plusNum >= 4 ? rankName.slice(-1)[0] + plusNum : rankName.slice(-1)[0] + ("+").repeat(plusNum - 1);
 		result.nextRank = Math.floor((rankPower % suffixIncBorder) / suffixIncBorder * 100) + "%";

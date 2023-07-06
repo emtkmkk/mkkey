@@ -88,7 +88,7 @@
 					<section v-if="showPinned">
 						<div class="body">
 							<button
-								v-for="emoji in pinned.filter((x) => asReactionPicker ? true : !x.includes('@'))"
+								v-for="emoji in pinned.filter((x) => props.asReactionPicker || !x.includes('@'))"
 								:key="emoji"
 								class="_button item"
 								tabindex="0"
@@ -110,7 +110,7 @@
 						</header>
 						<div class="body">
 							<button
-								v-for="emoji in recentlyUsedEmojis.filter((x) => asReactionPicker ? true : !x.includes('@'))"
+								v-for="emoji in recentlyUsedEmojis.filter((x) => props.asReactionPicker || !x.includes('@'))"
 								:key="emoji"
 								class="_button item"
 								@click="chosen(emoji, $event)"

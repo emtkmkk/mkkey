@@ -18,8 +18,8 @@
 			<div class="users">
 				<div v-for="u in users" :key="u.id" class="user">
 					<MkAvatar class="avatar" :user="u" />
-					<MkUserName v-if="!$store.state.reactionShowUsername" class="name" :user="u" :max-length="$store.state.reactionShowShort ? 8 : 0" :nowrap="true" />
-					<MkAcct v-if="$store.state.reactionShowUsername" class="name" :user="u" :detail="!$store.state.reactionShowShort" :nowrap="true" />
+					<MkUserName v-if="!$store.state.reactionShowUsername" class="name" :user="u" :maxlength="$store.state.reactionShowShort ? 8 : 0" :nowrap="true" />
+					<MkAcct v-if="$store.state.reactionShowUsername" class="name" :user="u" :maxlength="$store.state.reactionShowShort ? 8 : 0" />
 				</div>
 				<div v-if="users.length > 10" class="omitted">
 					+{{ count - 10 }}

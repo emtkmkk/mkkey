@@ -21,6 +21,7 @@ import config from "@/config/index.js";
 import {
 	Users,
 	Notes,
+	Emojis,
 	UserProfiles,
 	Pages,
 	Channels,
@@ -655,6 +656,8 @@ router.get("(.*)", async (ctx) => {
 	let notesCount = await Notes.count({ where: { userHost: IsNull() }, cache: 21600000 }); //6h
 	let gUsersCount = await Users.count({ where: { host: Not(IsNull()) }, cache: 21600000 }); //6h
 	let gNotesCount = await Notes.count({ where: { userHost: Not(IsNull()) }, cache: 21600000 }); //6h
+	let emojisCount = await Emojis.count({ where: { host: IsNull() }, cache: 21600000 }); //6h
+	let gEmojisCount = await Emojis.count({ where: { host: Not(IsNull()) }, cache: 21600000 }); //6h
 	let motd = ["Loading..."];
 	if (meta.customMOTD.length > 0) {
 		motd = meta.customMOTD;
@@ -663,6 +666,8 @@ router.get("(.*)", async (ctx) => {
 	motd.push("もこきーの合計投稿数は " + notesCount + " です");
 	motd.push("もこきーの連合ユーザ数は " + gUsersCount + " です");
 	motd.push("もこきーの連合投稿数は " + gNotesCount + " です");
+	motd.push("もこきーの絵文字数は " + emojisCount + " です");
+	motd.push("使用できる全絵文字数は " + (emojisCount + gEmojisCount) + " です");
 	const now = new Date();
 	let nowDate = new Date().toLocaleDateString('ja-JP');
 	motd.push("今日は " + nowDate + " です");
@@ -798,7 +803,7 @@ router.get("(.*)", async (ctx) => {
 		img: meta.iconUrl,
 		title: meta.name || "Calckey",
 		instanceName: meta.name || "Calckey",
-		desc: "FediverseのSNSサーバーのもこきーです\n\n" + nowDate + "時点の\nユーザ数 : " + usersCount + "\n合計投稿数 : " + notesCount + "\n連合ユーザ数 : " + gUsersCount + "\n連合投稿数 : " + gNotesCount,
+		desc: "FediverseのSNSサーバーのもこきーです\n\n" + nowDate + "時点の\nユーザ数 : " + usersCount + "\n合計投稿数 : " + notesCount + "\n絵文字数 : " + emojisCount + "\n連合ユーザ数 : " + gUsersCount + "\n連合投稿数 : " + gNotesCount + "\n連合絵文字数 : " + gEmojisCount,
 		icon: meta.iconUrl,
 		splashIcon: splashIconUrl,
 		themeColor: meta.themeColor,

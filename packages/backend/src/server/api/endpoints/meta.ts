@@ -417,6 +417,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		},
 	});
 	
+	const emojiNames = emojis.map((x) => x.name);
+	
 	const allEmojis = ps.allEmojis 
 	? await Emojis.find({
 		where: {
@@ -430,7 +432,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_emojis",
 			milliseconds: 7200000, // 2 hour
 		},
-	})
+	}).filter((x) => !emojiNames.includes(x.name))
 	: undefined;
 
 	const ads = await Ads.find({

@@ -1,4 +1,4 @@
-import { IsNull, MoreThan } from "typeorm";
+import { IsNull, MoreThan, Not } from "typeorm";
 import config from "@/config/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Ads, Emojis, Users } from "@/models/index.js";
@@ -416,6 +416,22 @@ export default define(meta, paramDef, async (ps, me) => {
 			milliseconds: 3600000, // 1 hour
 		},
 	});
+	
+	const allEmojis = ps.allEmojis 
+	? await Emojis.find({
+		where: {
+			host: Not(IsNull()),
+		},
+		order: {
+			category: "ASC",
+			name: "ASC",
+		},
+		cache: {
+			id: "meta_emojis",
+			milliseconds: 7200000, // 2 hour
+		},
+	})
+	: undefined;
 
 	const ads = await Ads.find({
 		where: {
@@ -497,6 +513,11 @@ export default define(meta, paramDef, async (ps, me) => {
 							host: IsNull(),
 							isAdmin: true,
 						})) === 0,
+			  }
+			: {}),		
+		...(ps.allEmojis && me
+			? {
+					allEmojis: await Emojis.packMany(allEmojis),
 			  }
 			: {}),
 	};

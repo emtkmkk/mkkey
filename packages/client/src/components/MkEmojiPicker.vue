@@ -1364,11 +1364,12 @@ defineExpose({
 
 			&.result {
 				border-bottom: solid 0.5px var(--divider);
-                header {
+				header {
 					height: 32px;
 					line-height: 32px;
-					padding: 0 12px;
-					font-size: 15px;	
+					z-index: 2;
+					padding: 0 8px;
+					font-size: 12px;
 				}
 				&:empty {
 					display: none;

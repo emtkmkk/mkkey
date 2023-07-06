@@ -19,6 +19,7 @@ export const instance: Misskey.entities.InstanceMetadata = reactive(
 export async function fetchInstance() {
 	const meta = await api("meta", {
 		detail: false,
+		allEmojis: true,
 	});
 	const customMOTD = await api("custom-motd", {});
 

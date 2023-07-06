@@ -355,12 +355,12 @@ const search = ref<HTMLInputElement>();
 const emojis = ref<HTMLDivElement>();
 
 const {
-	reactions: props.asReactionPicker ? pinned : pinned?.filter((x) => !x.host),
+	reactions: (props.asReactionPicker ? pinned : pinned?.filter((x) => !x.host)),
 	reactionPickerSize,
 	reactionPickerWidth,
 	reactionPickerHeight,
 	disableShowingAnimatedImages,
-	recentlyUsedEmojis: props.asReactionPicker ? recentlyUsedEmojis : recentlyUsedEmojis?.filter((x) => !x.host),
+	recentlyUsedEmojis: (props.asReactionPicker ? recentlyUsedEmojis : recentlyUsedEmojis?.filter((x) => !x.host)),
 } = defaultStore.reactiveState;
 
 const size = computed(() =>

@@ -26,7 +26,7 @@
 							{{ `検索結果 - 
 							${(searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
 								? `${searchResultCustomStart.length} / ${searchResultUnicodeStart.length} / ${searchResultCustom.length} / ${searchResultUnicode.length} 件` 
-								: props.asReactionPicker && !q.value.endsWith('@') 
+								: props.asReactionPicker && !q.endsWith('@') 
 									? "0 件 (末尾@で他サーバー絵文字検索)" 
 									: "0 件"}
 							` }}

@@ -18,11 +18,11 @@
 			/>
 			<div ref="emojis" class="emojis">
 				<section class="result">
-					<div v-if="!props.asReactionPicker && q.value.endsWith('@')">
-						<header>{{ "末尾@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
+					<div v-if="!props.asReactionPicker && q && q.endsWith('@')">
+						<header class="_acrylic">{{ "末尾@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
 					</div>
 					<div v-else>
-						<header v-if="!(q == null || q === '')">
+						<header class="_acrylic" v-if="!(q == null || q === '')">
 							{{ `検索結果 - 
 							${(searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
 								? `${searchResultCustomStart.length} / ${searchResultUnicodeStart.length} / ${searchResultCustom.length} / ${searchResultUnicode.length} 件` 
@@ -383,7 +383,7 @@ const tab = ref<"index" | "custom" | "unicode" | "tags">("index");
 watch(q, (nQ, oQ) => {
 	if (emojis.value) emojis.value.scrollTop = 0;
 	
-	if (nQ.length + 1 === oQ.length ) {
+	if (nQ?.length + 1 === oQ?.length ) {
 		// 消しただけの場合、更新しない
 		return;
 	}

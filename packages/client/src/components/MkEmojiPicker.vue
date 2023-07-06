@@ -85,7 +85,7 @@
 				</section>
 
 				<div v-if="!$store.state.hiddenReactionDeckAndRecent && tab === 'index' && searchResultCustom.length <= 0 && (q == null || q === '')" class="group index">
-					<section v-if="showPinned && searchResultCustom.length <= 0 && (q == null || q === '')">
+					<section v-if="showPinned">
 						<div class="body">
 							<button
 								v-for="emoji in pinned"
@@ -94,16 +94,24 @@
 								tabindex="0"
 								@click="chosen(emoji, $event)"
 							>
-								<MkEmoji
+								<!--<MkEmoji
 									class="emoji"
 									:emoji="emoji"
 									:normal="true"
+								/> -->
+								<img
+									class="emoji"
+									:src="
+										disableShowingAnimatedImages
+											? getStaticImageUrl(emoji.url)
+											: emoji.url
+									"
 								/>
 							</button>
 						</div>
 					</section>
 
-					<section v-if="searchResultCustom.length <= 0 && (q == null || q === '')">
+					<section>
 						<header class="_acrylic">
 							<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
 							{{ i18n.ts.recentUsed }}
@@ -115,10 +123,18 @@
 								class="_button item"
 								@click="chosen(emoji, $event)"
 							>
-								<MkEmoji
+								<!--<MkEmoji
 									class="emoji"
 									:emoji="emoji"
 									:normal="true"
+								/> -->
+								<img
+									class="emoji"
+									:src="
+										disableShowingAnimatedImages
+											? getStaticImageUrl(emoji.url)
+											: emoji.url
+									"
 								/>
 							</button>
 						</div>
@@ -339,12 +355,12 @@ const search = ref<HTMLInputElement>();
 const emojis = ref<HTMLDivElement>();
 
 const {
-	reactions: pinned,
+	reactions: props.asReactionPicker ? pinned : pinned?.filter((x) => !x.host),
 	reactionPickerSize,
 	reactionPickerWidth,
 	reactionPickerHeight,
 	disableShowingAnimatedImages,
-	recentlyUsedEmojis,
+	recentlyUsedEmojis: props.asReactionPicker ? recentlyUsedEmojis : recentlyUsedEmojis?.filter((x) => !x.host),
 } = defaultStore.reactiveState;
 
 const size = computed(() =>
@@ -406,30 +422,32 @@ watch(q, () => {
 					}
 				}
 				if (matches.size >= max) return matches;
-			}
-			
-			for (const emoji of emojis) {
-				if (
-					keywords.every(
-						(keyword) =>
-							format_roomaji(emoji.name).includes(roomajiKeywords) ||
-							emoji.aliases.some((alias) =>
-								format_roomaji(alias).includes(keyword)
-							)
-					)
-				) {
-					matches.add(emoji);
-					if (matches.size >= max) break;
+			} else {
+				
+				for (const emoji of emojis) {
+					if (
+						keywords.every(
+							(keyword) =>
+								format_roomaji(emoji.name).includes(roomajiKeywords) ||
+								emoji.aliases.some((alias) =>
+									format_roomaji(alias).includes(keyword)
+								)
+						)
+					) {
+						matches.add(emoji);
+						if (matches.size >= max) break;
+					}
 				}
-			}
-			if (matches.size >= max) return matches;
+				if (matches.size >= max) return matches;
 
-			// 名前にキーワードが含まれている
-			for (const emoji of emojis) {
-				if (keywords.every((keyword) => format_roomaji(emoji.name).includes(roomajiKeywords))) {
-					matches.add(emoji);
-					if (matches.size >= max) break;
+				// 名前にキーワードが含まれている
+				for (const emoji of emojis) {
+					if (keywords.every((keyword) => format_roomaji(emoji.name).includes(roomajiKeywords))) {
+						matches.add(emoji);
+						if (matches.size >= max) break;
+					}
 				}
+				
 			}
 		} else {
 			if (isAllSearch) {
@@ -442,22 +460,23 @@ watch(q, () => {
 					}
 				}
 				if (matches.size >= max) return matches;
-			}
-			for (const emoji of emojis) {
-				if (!format_roomaji(emoji.name).startsWith(roomajiQ)) {
-					if (format_roomaji(emoji.name).includes(roomajiQ)) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
+			} else {
+				for (const emoji of emojis) {
+					if (!format_roomaji(emoji.name).startsWith(roomajiQ)) {
+						if (format_roomaji(emoji.name).includes(roomajiQ)) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
 					}
 				}
-			}
-			if (matches.size >= max) return matches;
+				if (matches.size >= max) return matches;
 
-			for (const emoji of emojis) {
-				if (!emoji.aliases.some((alias) => kanaToHira(format_roomaji(alias)).startsWith(newQ))) {
-					if (emoji.aliases.some((alias) => kanaToHira(format_roomaji(alias)).includes(newQ))) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
+				for (const emoji of emojis) {
+					if (!emoji.aliases.some((alias) => kanaToHira(format_roomaji(alias)).startsWith(newQ))) {
+						if (emoji.aliases.some((alias) => kanaToHira(format_roomaji(alias)).includes(newQ))) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
 					}
 				}
 			}
@@ -489,25 +508,26 @@ watch(q, () => {
 						});
 					}
 				}
-			}
-			for (const emoji of emojis) {
-				if (format_roomaji(emoji.name).startsWith(roomajiQ)) {
-					if (beforeSort.size >= max) break;
-					beforeSort.add({
-						emoji: emoji,
-						key: format_roomaji(emoji.name),
-					});
-				}
-			}
-
-			emojifor : for (const emoji of emojis) {
-				for (const alias of emoji.aliases) {
-					if (kanaToHira(format_roomaji(alias)).startsWith(newQ)) {
-						if (beforeSort.size >= max) break emojifor;
+			} else {
+				for (const emoji of emojis) {
+					if (format_roomaji(emoji.name).startsWith(roomajiQ)) {
+						if (beforeSort.size >= max) break;
 						beforeSort.add({
 							emoji: emoji,
-							key: format_roomaji(alias),
+							key: format_roomaji(emoji.name),
 						});
+					}
+				}
+
+				emojifor : for (const emoji of emojis) {
+					for (const alias of emoji.aliases) {
+						if (kanaToHira(format_roomaji(alias)).startsWith(newQ)) {
+							if (beforeSort.size >= max) break emojifor;
+							beforeSort.add({
+								emoji: emoji,
+								key: format_roomaji(alias),
+							});
+						}
 					}
 				}
 			}
@@ -520,7 +540,8 @@ watch(q, () => {
 		const max = 24;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
-
+		
+		if (isAllSearch) return matches;
 		if (newQ.includes(" ")) {
 			// AND検索
 			const keywords = newQ.split(" ");
@@ -582,6 +603,7 @@ watch(q, () => {
 		const matches = new Set<UnicodeEmojiDef>();
 		const beforeSort = new Set();
 
+		if (isAllSearch) return matches;
 		const exactMatch = emojis.find((emoji) => format_roomaji(emoji.name) === roomajiQ);
 		if (exactMatch) beforeSort.add({emoji: exactMatch,key: format_roomaji(exactMatch.name),});
 
@@ -658,7 +680,7 @@ function chosen(emoji: any, ev?: MouseEvent) {
 	emit("chosen", key);
 
 	// 最近使った絵文字更新
-	if (!pinned.value.includes(key) && !key.includes("@") ) {
+	if (!pinned.value.includes(key)) {
 		let recents = defaultStore.state.recentlyUsedEmojis;
 		recents = recents.filter((emoji: any) => emoji !== key);
 		recents.unshift(key);

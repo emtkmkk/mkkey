@@ -39,15 +39,21 @@ const props = defineProps<{
 const isCustom = computed(() => props.emoji.startsWith(":"));
 const bigCustom = computed(() => defaultStore.state.useBigCustom);
 const char = computed(() => (isCustom.value ? null : props.emoji));
+const hostmatch = props.emoji ? props.emoji.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/) : undefined;
 const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
 );
 const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
+const ace = computed(() => props.customEmojis ?? instance.allEmojis ?? []);
 const customEmoji = computed(() =>
 	isCustom.value
-		? ce.value.find(
-				(x) => x.name === props.emoji.substr(1, props.emoji.length - 2)
-		  )
+		? hostmatch?.[2] 
+			? ace.value.find(
+					(x) => x.name === hostmatch?.[1] && x.host === hostmatch?.[2]
+			)
+			: ce.value.find(
+					(x) => x.name === props.emoji.substr(1, props.emoji.length - 2)
+			)
 		: null
 );
 const url = computed(() => {
@@ -60,7 +66,7 @@ const url = computed(() => {
 	}
 });
 const alt = computed(() =>
-	customEmoji.value ? `:${customEmoji.value.name}:` : char.value
+	customEmoji.value ? `:${customEmoji.value.name}${hostmatch?.[2] ? "@" + hostmatch?.[2] : ""}:` : char.value
 );
 </script>
 

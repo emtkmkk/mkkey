@@ -468,6 +468,7 @@ watch(q, () => {
 	const searchCustomStart = () => {
 		const max = 64;
 		const emojis = customEmojis;
+		const allEmojis = allCustomEmojis;
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 		const beforeSort = new Set();
 

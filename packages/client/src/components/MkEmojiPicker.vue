@@ -383,22 +383,23 @@ const tab = ref<"index" | "custom" | "unicode" | "tags">("index");
 watch(q, (nQ, oQ) => {
 	if (emojis.value) emojis.value.scrollTop = 0;
 	
-	if (nQ?.length + 1 === oQ?.length ) {
-		// 消しただけの場合、更新しない
-		return;
-	}
-	if (q.value == null || q.value === "") {
+	if (q.value == null || q.value.replace(/[:@]/g,"") === "") {
 		searchResultCustom.value = [];
 		searchResultCustomStart.value = [];
 		searchResultUnicode.value = [];
 		searchResultUnicodeStart.value = [];
 		return;
 	}
+	
+	
+	if (nQ?.length + 1 === oQ?.length ) {
+		return;
+	}
 
 	const isAllSearch = allCustomEmojis ? q.value.endsWith("@") : false;
 	const newQ = kanaToHira(format_roomaji(q.value.replace(/[:@]/g, "")));
 	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/[:@]/g, "")));
-
+	
 	const searchCustom = () => {
 		const max = 64;
 		const emojis = customEmojis;
@@ -1220,6 +1221,7 @@ defineExpose({
 	&.asDrawer {
 		width: 100% !important;
 		max-height: 90dvh;
+	&
 
 		> .emojis {
 			::v-deep(section) {
@@ -1362,7 +1364,12 @@ defineExpose({
 
 			&.result {
 				border-bottom: solid 0.5px var(--divider);
-
+                header {
+					height: 32px;
+					line-height: 32px;
+					padding: 0 12px;
+					font-size: 15px;	
+				}
 				&:empty {
 					display: none;
 				}

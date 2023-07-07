@@ -542,6 +542,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		...((ps.plusEmojis || ps.allEmojis) && me
 			? {
 					remoteEmojiMode: ps.allEmojis ? "all" : "plus",
+					remoteEmojiCount: ps.allEmojis ? allEmojis.length : plusEmojis.length,
 					allEmojis: await Emojis.packMany(ps.allEmojis ? allEmojis : plusEmojis),
 			  }
 			: {}),

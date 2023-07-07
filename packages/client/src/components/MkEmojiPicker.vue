@@ -100,7 +100,7 @@
 					<section v-if="showPinned">
 						<div class="body">
 							<button
-								v-for="emoji in pinned.filter((x) => (remoteEmojiMode === 'all' && props.asReactionPicker) || (remoteEmojiMode === 'plus' && plusEmojiStr.includes(x)) || !x.includes('@'))"
+								v-for="emoji in pinned.filter((x) => (remoteEmojiMode === 'all' && props.asReactionPicker) || (remoteEmojiMode === 'plus' && plusEmojiStr.includes(x) && props.asReactionPicker) || !x.includes('@'))"
 								:key="emoji"
 								class="_button item"
 								tabindex="0"

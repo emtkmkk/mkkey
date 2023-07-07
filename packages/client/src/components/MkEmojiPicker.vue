@@ -23,7 +23,7 @@
 					</div>
 					<div v-else>
 						<header class="_acrylic" v-if="!(q == null || q === '')">
-							{{ `${q.endsWith('@') ? "他サーバー絵文字検索 " : "検索結果 "}
+							{{ `${q.endsWith('@') ? (remoteEmojiMode === "all" ? "他サーバー絵文字検索 " : "他サーバー絵文字検索(ミニ) ") : "検索結果 "}
 							${(searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
 								? `${(searchResultCustomStart.length + searchResultUnicodeStart.length) + " / " + (searchResultCustom.length + searchResultUnicode.length)} 件` 
 								: "0 件"}${allCustomEmojis && !q.endsWith('@') ? " (@で他サーバー絵文字検索)" : ""}
@@ -510,6 +510,7 @@ const height = computed(() =>
 const customEmojiCategories = emojiCategories;
 const customEmojis = instance.emojis;
 const allCustomEmojis = props.asReactionPicker ? instance.allEmojis : undefined;
+const remoteEmojiMode = instance.remoteEmojiMode;
 const q = ref<string | null>(null);
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultCustomStart = ref<Misskey.entities.CustomEmoji[]>([]);

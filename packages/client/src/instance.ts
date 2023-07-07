@@ -21,14 +21,9 @@ export async function fetchInstance() {
 		detail: false,
 		allEmojis: true,
 	});
-	const customMOTD = await api("custom-motd", {});
 
 	for (const [k, v] of Object.entries(meta)) {
-		if (k !== "customMOTD") {
 			instance[k] = v;
-		} else {
-			instance[k] = customMOTD;
-		}
 	}
 
 	localStorage.setItem("instance", JSON.stringify(instance));

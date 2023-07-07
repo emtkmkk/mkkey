@@ -170,7 +170,7 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[aiueo]/i.test(format_roomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.silce(0,1)) - sortWord.indexOf(b.silce(0,1)))
+									.sort((a,b) => sortWord.indexOf(a.name?.silce(0,1)) - sortWord.indexOf(b.name?.silce(0,1)))
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -182,8 +182,8 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[kg]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => ['k','g'].indexOf(a.silce(0,1)) - ['k','g'].indexOf(b.silce(0,1)))
-									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.sort((a,b) => ['k','g'].indexOf(a.name?.silce(0,1)) - ['k','g'].indexOf(b.name?.silce(0,1)))
+									.sort((a,b) => sortWord.indexOf(a.name?.silce(1,2)) - sortWord.indexOf(b.name?.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -195,8 +195,8 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[sz]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => ['s','z'].indexOf(a.silce(0,1)) - ['s','z'].indexOf(b.silce(0,1)))
-									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.sort((a,b) => ['s','z'].indexOf(a.name?.silce(0,1)) - ['s','z'].indexOf(b.name?.silce(0,1)))
+									.sort((a,b) => sortWord.indexOf(a.name?.silce(1,2)) - sortWord.indexOf(b.name?.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -208,8 +208,8 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[td]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => ['t','d'].indexOf(a.silce(0,1)) - ['t','d'].indexOf(b.silce(0,1)))
-									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.sort((a,b) => ['t','d'].indexOf(a.name?.silce(0,1)) - ['t','d'].indexOf(b.name?.silce(0,1)))
+									.sort((a,b) => sortWord.indexOf(a.name?.silce(1,2)) - sortWord.indexOf(b.name?.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -221,7 +221,7 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^n([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.sort((a,b) => sortWord.indexOf(a.name?.silce(1,2)) - sortWord.indexOf(b.name?.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -233,8 +233,8 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[hbp]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => ['h','b','p'].indexOf(a.silce(0,1)) - ['h','b','p'].indexOf(b.silce(0,1)))
-									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.sort((a,b) => ['h','b','p'].indexOf(a.name?.silce(0,1)) - ['h','b','p'].indexOf(b.name?.silce(0,1)))
+									.sort((a,b) => sortWord.indexOf(a.name?.silce(1,2)) - sortWord.indexOf(b.name?.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -246,7 +246,7 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^m([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.sort((a,b) => sortWord.indexOf(a.name?.silce(1,2)) - sortWord.indexOf(b.name?.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -258,7 +258,7 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[y]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.sort((a,b) => sortWord.indexOf(a.name?.silce(1,2)) - sortWord.indexOf(b.name?.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -270,7 +270,7 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[r]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.sort((a,b) => sortWord.indexOf(a.name?.silce(1,2)) - sortWord.indexOf(b.name?.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -282,7 +282,7 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^([w]([aiueo]|y[aiueo])|n([^aiueoy]))/i.test(format_roomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.sort((a,b) => sortWord.indexOf(a.name?.silce(1,2)) - sortWord.indexOf(b.name?.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"

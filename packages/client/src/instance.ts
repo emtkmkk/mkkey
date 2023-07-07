@@ -19,6 +19,18 @@ export const instance: Misskey.entities.InstanceMetadata = reactive(
 export async function fetchInstance() {
 	const meta = await api("meta", {
 		detail: false,
+	});
+
+	for (const [k, v] of Object.entries(meta)) {
+			instance[k] = v;
+	}
+
+	localStorage.setItem("instance", JSON.stringify(instance));
+}
+
+export async function fetchAllEmojiInstance() {
+	const meta = await api("meta", {
+		detail: false,
 		allEmojis: true,
 	});
 

@@ -299,7 +299,7 @@
 							@chosen="chosen"
 							>{{ "未設定 / その他" }}</XSection
 						>
-					<template>
+					</template>
 					<template v-else>
 						<XSection
 							key="custom:null/A-D"

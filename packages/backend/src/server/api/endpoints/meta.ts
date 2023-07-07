@@ -439,7 +439,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_plus_emojis",
 			milliseconds: 7200000, // 2 hour
 		},
-	})).filter((x) => !emojiNames.includes(x.name).slice(0,10000))
+	})).filter((x) => !emojiNames.includes(x.name)).slice(0,10000)
 	: undefined;
 
 	const allEmojis = ps.allEmojis 
@@ -454,7 +454,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_all_emojis",
 			milliseconds: 7200000, // 2 hour
 		},
-	})).filter((x) => !emojiNames.includes(x.name).slice(0,30000))
+	})).filter((x) => !emojiNames.includes(x.name)).slice(0,30000)
 	: undefined;
 
 	const ads = await Ads.find({

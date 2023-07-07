@@ -100,7 +100,7 @@
 					<section v-if="showPinned">
 						<div class="body">
 							<button
-								v-for="emoji in pinned.filter((x) => props.asReactionPicker || !x.includes('@'))"
+								v-for="emoji in pinned.filter((x) => (remoteEmojiMode === 'all' && props.asReactionPicker) || (remoteEmojiMode === 'plus' && plusEmojiStr.includes(x)) || !x.includes('@'))"
 								:key="emoji"
 								class="_button item"
 								tabindex="0"
@@ -122,7 +122,7 @@
 						</header>
 						<div class="body">
 							<button
-								v-for="emoji in recentlyUsedEmojis.filter((x) => props.asReactionPicker || !x.includes('@'))"
+								v-for="emoji in recentlyUsedEmojis.filter((x) => (remoteEmojiMode === 'all' && props.asReactionPicker) || (remoteEmojiMode === 'plus' && plusEmojiStr.includes(x)) || !x.includes('@'))"
 								:key="emoji"
 								class="_button item"
 								@click="chosen(emoji, $event)"
@@ -511,6 +511,7 @@ const customEmojiCategories = emojiCategories;
 const customEmojis = instance.emojis;
 const allCustomEmojis = props.asReactionPicker ? instance.allEmojis : undefined;
 const remoteEmojiMode = instance.remoteEmojiMode;
+const plusEmojiStr = remoteEmojiMode === "plus" ? allCustomEmojis.map((x) => ":" + x.name + "@" + x.host + ":") : undefined;
 const q = ref<string | null>(null);
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultCustomStart = ref<Misskey.entities.CustomEmoji[]>([]);

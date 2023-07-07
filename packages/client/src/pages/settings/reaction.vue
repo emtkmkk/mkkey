@@ -63,6 +63,12 @@
 			>
 				{{ i18n.ts.hiddenReactionDeckAndRecent }}
 			</FormSwitch>
+			<FormSwitch
+				v-model="japanCategory"
+				class="_formBlock"
+			>
+				{{ i18n.ts.japanCategory }}
+			</FormSwitch>
 			
 			<FormSection>
 				<FormRadios
@@ -266,6 +272,9 @@ const favButtonReactionCustom = $computed(
 );
 const reactionAutoFocusSearchBar = $computed(
 	defaultStore.makeGetterSetter("reactionAutoFocusSearchBar")
+);
+const japanCategory = $computed(
+	defaultStore.makeGetterSetter("japanCategory")
 );
 
 function save() {

@@ -41,7 +41,7 @@ import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i, refreshAccount, login, updateAccount, signout } from "@/account";
 import { defaultStore, ColdDeviceStorage } from "@/store";
-import { fetchInstance, instance } from "@/instance";
+import { fetchInstance, fetchAllEmojiInstance, instance } from "@/instance";
 import { makeHotkey } from "@/scripts/hotkey";
 import { search } from "@/scripts/search";
 import { deviceKind } from "@/scripts/device-kind";
@@ -175,14 +175,21 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 	}
 	//#endregion
 
-	const fetchInstanceMetaPromise = fetchInstance();
+	let fetchInstanceMetaPromise = fetchAllEmojiInstance();
 
+	fetchInstanceMetaPromise.catch(() => {
+		//保存に失敗した場合は軽量版instanceの取得を試行
+		fetchInstanceMetaPromise = fetchInstance();
+	});
+	
 	fetchInstanceMetaPromise.then(() => {
+		
 		localStorage.setItem("v", instance.version);
 
 		// Init service worker
 		initializeSw();
 	});
+	
 
 	const app = createApp(
 		window.location.search === "?zen"

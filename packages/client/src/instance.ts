@@ -28,6 +28,19 @@ export async function fetchInstance() {
 	localStorage.setItem("instance", JSON.stringify(instance));
 }
 
+export async function fetchPlusEmojiInstance() {
+	const meta = await api("meta", {
+		detail: false,
+		plusEmojis: true,
+	});
+
+	for (const [k, v] of Object.entries(meta)) {
+			instance[k] = v;
+	}
+
+	localStorage.setItem("instance", JSON.stringify(instance));
+}
+
 export async function fetchAllEmojiInstance() {
 	const meta = await api("meta", {
 		detail: false,

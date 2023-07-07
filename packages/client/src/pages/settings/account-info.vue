@@ -24,7 +24,7 @@
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.powerRank }}</template>
-				<template #value>{{ stats.powerRank + " ( " + stats.nextRank + " )" }}</template>
+				<template #value>{{ stats.powerRank ?? "N/A" + " ( " + stats.nextRank ?? "N/A" + " )" }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.notesCount }}</template>
@@ -157,37 +157,49 @@
 		<FormSection>
 			<template #label>{{ i18n.ts.other }}</template>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>emailVerified</template>
+				<template #key>他サーバー絵文字取得状態</template>
+				<template #value>{{
+					instance.remoteEmojiMode === "all" ? "完全" : instance.remoteEmojiMode === "plus" ? "ミニ" : "無し"
+				}}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>他サーバー絵文字取得数</template>
+				<template #value>{{
+					number(instance.remoteEmojiCount ?? 0)
+				}}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>メール認証</template>
 				<template #value>{{
 					$i.emailVerified ? i18n.ts.yes : i18n.ts.no
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>twoFactorEnabled</template>
+				<template #key>二段階認証</template>
 				<template #value>{{
 					$i.twoFactorEnabled ? i18n.ts.yes : i18n.ts.no
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>securityKeys</template>
+				<template #key>物理キー</template>
 				<template #value>{{
 					$i.securityKeys ? i18n.ts.yes : i18n.ts.no
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>usePasswordLessLogin</template>
+				<template #key>パスワードレス</template>
 				<template #value>{{
 					$i.usePasswordLessLogin ? i18n.ts.yes : i18n.ts.no
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>isModerator</template>
+				<template #key>モデレーター</template>
 				<template #value>{{
 					$i.isModerator ? i18n.ts.yes : i18n.ts.no
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>isAdmin</template>
+				<template #key>管理者</template>
 				<template #value>{{
 					$i.isAdmin ? i18n.ts.yes : i18n.ts.no
 				}}</template>
@@ -218,6 +230,7 @@ import bytes from "@/filters/bytes";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { instance } from "@/instance";
 
 const stats = ref<any>({});
 

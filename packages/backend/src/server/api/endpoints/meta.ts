@@ -419,20 +419,42 @@ export default define(meta, paramDef, async (ps, me) => {
 	
 	const emojiNames = emojis.map((x) => x.name);
 	
+	const plusEmojis = ps.plusEmojis 
+	? (await Emojis.find({
+		where: [
+			{
+				host: "misskey.io",
+			},
+			{
+				host: "fedibird.com",
+			},
+			{
+				host: "misskey.backspace.fm",
+			},
+		],
+		order: {
+			name: "ASC",
+		},
+		cache: {
+			id: "meta_plus_emojis",
+			milliseconds: 7200000, // 2 hour
+		},
+	})).filter((x) => !emojiNames.includes(x.name).slice(0,10000))
+	: undefined;
+
 	const allEmojis = ps.allEmojis 
 	? (await Emojis.find({
 		where: {
 			host: Not(IsNull()),
 		},
 		order: {
-			category: "ASC",
 			name: "ASC",
 		},
 		cache: {
 			id: "meta_all_emojis",
 			milliseconds: 7200000, // 2 hour
 		},
-	})).filter((x) => !emojiNames.includes(x.name))
+	})).filter((x) => !emojiNames.includes(x.name).slice(0,30000))
 	: undefined;
 
 	const ads = await Ads.find({
@@ -517,9 +539,10 @@ export default define(meta, paramDef, async (ps, me) => {
 						})) === 0,
 			  }
 			: {}),		
-		...(ps.allEmojis && me
+		...((ps.plusEmojis || ps.allEmojis) && me
 			? {
-					allEmojis: await Emojis.packMany(allEmojis),
+					remoteEmojiMode: ps.allEmojis ? "all" : "plus",
+					allEmojis: await Emojis.packMany(ps.allEmojis ? allEmojis : plusEmojis),
 			  }
 			: {}),
 	};

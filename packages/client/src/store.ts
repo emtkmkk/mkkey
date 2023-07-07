@@ -555,6 +555,10 @@ export const defaultStore = markRaw(
 		reactionShowShort: {
 			where: "device",
 			default: false,
+		},
+		japanCategory: {
+			where: "account",
+			default: true,
 		}
 	}),
 );

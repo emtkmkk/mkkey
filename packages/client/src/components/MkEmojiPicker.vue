@@ -19,16 +19,14 @@
 			<div ref="emojis" class="emojis">
 				<section class="result">
 					<div v-if="!props.asReactionPicker && q && q.endsWith('@')">
-						<header class="_acrylic">{{ "末尾@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
+						<header class="_acrylic">{{ "@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
 					</div>
 					<div v-else>
 						<header class="_acrylic" v-if="!(q == null || q === '')">
-							{{ `検索結果 - 
+							{{ `${q.endsWith('@') ? "他サーバー絵文字検索 " "検索結果 "}
 							${(searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
-								? `${searchResultCustomStart.length} / ${searchResultUnicodeStart.length} / ${searchResultCustom.length} / ${searchResultUnicode.length} 件` 
-								: props.asReactionPicker && !q.endsWith('@') 
-									? "0 件 (末尾@で他サーバー絵文字検索)" 
-									: "0 件"}
+								? `${(searchResultCustomStart.length + searchResultUnicodeStart.length) + " / " + (searchResultCustom.length + searchResultUnicode.length)} 件` 
+								: "0 件"}${props.asReactionPicker && !q.endsWith('@') ? " (@で他サーバー絵文字検索)" + ""}
 							` }}
 						</header>
 					</div>
@@ -37,7 +35,7 @@
 							v-for="emoji in searchResultCustomStart"
 							:key="emoji.id"
 							class="_button item"
-							:title="emoji.name"
+							:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
 							tabindex="0"
 							@click="chosen(emoji, $event)"
 						>
@@ -69,7 +67,7 @@
 							v-for="emoji in searchResultCustom"
 							:key="emoji.id"
 							class="_button item"
-							:title="emoji.name"
+							:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
 							tabindex="0"
 							@click="chosen(emoji, $event)"
 						>
@@ -165,105 +163,244 @@
 						@chosen="chosen"
 						>{{ category || i18n.ts.other }}</XSection
 					>
-					<XSection
-						key="custom:null/A-D"
-						:initial-shown="false"
-						:emojis="
-							customEmojis
-								.filter((e) => !e.category && /^[a-d]/i.test(e.name))
-								.map((e) => ':' + e.name + ':')
-						"
-						@chosen="chosen"
-						>{{ "未設定 / A-D" }}</XSection
-					>
-					<XSection
-						key="custom:null/E-G"
-						:initial-shown="false"
-						:emojis="
-							customEmojis
-								.filter((e) => !e.category && /^[e-g]/i.test(e.name))
-								.map((e) => ':' + e.name + ':')
-						"
-						@chosen="chosen"
-						>{{ "未設定 / E-G" }}</XSection
-					>
-					<XSection
-						key="custom:null/H-K"
-						:initial-shown="false"
-						:emojis="
-							customEmojis
-								.filter((e) => !e.category && /^[h-k]/i.test(e.name))
-								.map((e) => ':' + e.name + ':')
-						"
-						@chosen="chosen"
-						>{{ "未設定 / H-K" }}</XSection
-					>
-					<XSection
-						key="custom:null/L-N"
-						:initial-shown="false"
-						:emojis="
-							customEmojis
-								.filter((e) => !e.category && /^[l-n]/i.test(e.name))
-								.map((e) => ':' + e.name + ':')
-						"
-						@chosen="chosen"
-						>{{ "未設定 / L-N" }}</XSection
-					>
-					<XSection
-						key="custom:null/O-Q"
-						:initial-shown="false"
-						:emojis="
-							customEmojis
-								.filter((e) => !e.category && /^[o-q]/i.test(e.name))
-								.map((e) => ':' + e.name + ':')
-						"
-						@chosen="chosen"
-						>{{ "未設定 / O-Q" }}</XSection
-					>
-					<XSection
-						key="custom:null/R-T"
-						:initial-shown="false"
-						:emojis="
-							customEmojis
-								.filter((e) => !e.category && /^[r-t]/i.test(e.name))
-								.map((e) => ':' + e.name + ':')
-						"
-						@chosen="chosen"
-						>{{ "未設定 / R-T" }}</XSection
-					>
-					<XSection
-						key="custom:null/U-W"
-						:initial-shown="false"
-						:emojis="
-							customEmojis
-								.filter((e) => !e.category && /^[u-w]/i.test(e.name))
-								.map((e) => ':' + e.name + ':')
-						"
-						@chosen="chosen"
-						>{{ "未設定 / U-W" }}</XSection
-					>
-					<XSection
-						key="custom:null/X-Z"
-						:initial-shown="false"
-						:emojis="
-							customEmojis
-								.filter((e) => !e.category && /^[x-z]/i.test(e.name))
-								.map((e) => ':' + e.name + ':')
-						"
-						@chosen="chosen"
-						>{{ "未設定 / X-Z" }}</XSection
-					>
-					<XSection
-						key="custom:null/etc"
-						:initial-shown="false"
-						:emojis="
-							customEmojis
-								.filter((e) => !e.category && !/^[a-z]/i.test(e.name))
-								.map((e) => ':' + e.name + ':')
-						"
-						@chosen="chosen"
-						>{{ "未設定 / その他" }}</XSection
-					>
+					<template v-if="$store.state.japanCategory">
+						<XSection
+							key="custom:null/A"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[aiueo]/i.test(format_roomaji(e.name)))
+									.sort((a,b) => sortWord.indexOf(a.silce(0,1)) - sortWord.indexOf(b.silce(0,1)))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / あ行" }}</XSection
+						>
+						<XSection
+							key="custom:null/KG"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[kg]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
+									.sort((a,b) => ["k","g"].indexOf(a.silce(0,1)) - ["k","g"].indexOf(b.silce(0,1)))
+									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / か行" }}</XSection
+						>
+						<XSection
+							key="custom:null/SZ"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[sz]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
+									.sort((a,b) => ["s","z"].indexOf(a.silce(0,1)) - ["s","z"].indexOf(b.silce(0,1)))
+									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / さ行" }}</XSection
+						>
+						<XSection
+							key="custom:null/TD"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[td]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
+									.sort((a,b) => ["t","d"].indexOf(a.silce(0,1)) - ["t","d"].indexOf(b.silce(0,1)))
+									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / た行" }}</XSection
+						>
+						<XSection
+							key="custom:null/N"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^n([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
+									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / な行" }}</XSection
+						>
+						<XSection
+							key="custom:null/HBP"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[hbp]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
+									.sort((a,b) => ["h","b","p"].indexOf(a.silce(0,1)) - ["h","b","p"].indexOf(b.silce(0,1)))
+									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / は行" }}</XSection
+						>
+						<XSection
+							key="custom:null/M"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^m([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
+									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / ま行" }}</XSection
+						>
+						<XSection
+							key="custom:null/Y"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[y]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
+									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / や行" }}</XSection
+						>
+						<XSection
+							key="custom:null/R"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[r]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
+									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / ら行" }}</XSection
+						>
+						<XSection
+							key="custom:null/W"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^([w]([aiueo]|y[aiueo])|n([^aiueoy]))/i.test(format_roomaji(e.name)))
+									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / わ行" }}</XSection
+						>
+						<XSection
+							key="custom:null/jpetc"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && !/^(?![aiueo]|[kgsztdnhbpmyrwaiueo][aiueoy])/i.test(e.name))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / その他" }}</XSection
+						>
+					<template>
+					<template v-else>
+						<XSection
+							key="custom:null/A-D"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[a-d]/i.test(e.name))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / A-D" }}</XSection
+						>
+						<XSection
+							key="custom:null/E-G"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[e-g]/i.test(e.name))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / E-G" }}</XSection
+						>
+						<XSection
+							key="custom:null/H-K"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[h-k]/i.test(e.name))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / H-K" }}</XSection
+						>
+						<XSection
+							key="custom:null/L-N"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[l-n]/i.test(e.name))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / L-N" }}</XSection
+						>
+						<XSection
+							key="custom:null/O-Q"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[o-q]/i.test(e.name))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / O-Q" }}</XSection
+						>
+						<XSection
+							key="custom:null/R-T"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[r-t]/i.test(e.name))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / R-T" }}</XSection
+						>
+						<XSection
+							key="custom:null/U-W"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[u-w]/i.test(e.name))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / U-W" }}</XSection
+						>
+						<XSection
+							key="custom:null/X-Z"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && /^[x-z]/i.test(e.name))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / X-Z" }}</XSection
+						>
+						<XSection
+							key="custom:null/etc"
+							:initial-shown="false"
+							:emojis="
+								customEmojis
+									.filter((e) => !e.category && !/^[a-z]/i.test(e.name))
+									.map((e) => ':' + e.name + ':')
+							"
+							@chosen="chosen"
+							>{{ "未設定 / その他" }}</XSection
+						>
+					</template>
 				</div>
 				<div v-once v-if="searchResultCustom.length <= 0  && (q == null || q === '')" class="group">
 					<header>{{ i18n.ts.emoji }}</header>
@@ -379,8 +516,11 @@ const searchResultCustomStart = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultUnicode = ref<UnicodeEmojiDef[]>([]);
 const searchResultUnicodeStart = ref<UnicodeEmojiDef[]>([]);
 const tab = ref<"index" | "custom" | "unicode" | "tags">("index");
+const sortWord = ["a","i","u","e","o","y"];
 
 watch(q, (nQ, oQ) => {
+	if (q.value.endsWith("＠")) q.value = oQ + "@";
+	
 	if (emojis.value) emojis.value.scrollTop = 0;
 	
 	if (q.value == null || q.value.replace(/[:@]/g,"") === "") {
@@ -391,8 +531,7 @@ watch(q, (nQ, oQ) => {
 		return;
 	}
 	
-	
-	if (nQ?.length + 1 === oQ?.length ) {
+	if (nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) {
 		return;
 	}
 
@@ -488,7 +627,7 @@ watch(q, (nQ, oQ) => {
 		return matches;
 	};
 	const searchCustomStart = () => {
-		const max = 64;
+		const max = 99;
 		const emojis = customEmojis;
 		const allEmojis = allCustomEmojis;
 		const matches = new Set<Misskey.entities.CustomEmoji>();
@@ -539,7 +678,7 @@ watch(q, (nQ, oQ) => {
 	};
 	
 	const searchUnicode = () => {
-		const max = 24;
+		const max = 20;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
 		
@@ -600,7 +739,7 @@ watch(q, (nQ, oQ) => {
 	};
 	
 	const searchUnicodeStart = () => {
-		const max = 24;
+		const max = 40;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
 		const beforeSort = new Set();
@@ -749,10 +888,6 @@ function format_roomaji(
 	// 変換前が2文字
 	const replaceDataBefore2 = [
 		{before:"fu", after:"hu"},
-		{before:"ja", after:"za"},
-		{before:"ji", after:"zi"},
-		{before:"ju", after:"zu"},
-		{before:"jo", after:"zo"},
 		{before:"ja", after:"jya"},
 		{before:"ju", after:"jyu"},
 		{before:"je", after:"jye"},
@@ -760,6 +895,7 @@ function format_roomaji(
 		{before:"fa", after:"fya"},
 		{before:"fi", after:"fyi"},
 		{before:"fe", after:"fye"},
+		{before:"fu", after:"fyu"},
 		{before:"fo", after:"fyo"},
 		{before:"la", after:"xa"},
 		{before:"li", after:"xi"},
@@ -775,14 +911,10 @@ function format_roomaji(
 	
 	// 変換前が3文字
 	const replaceDataBefore3 = [
-		{before:"sha", after:"sa"},
-		{before:"shi", after:"si"},
-		{before:"shu", after:"su"},
-		{before:"sho", after:"so"},
-		{before:"cha", after:"ta"},
-		{before:"chi", after:"ti"},
-		{before:"chu", after:"tu"},
-		{before:"cho", after:"to"},
+		{before:"sha", after:"sya"},
+		{before:"shi", after:"syi"},
+		{before:"shu", after:"syu"},
+		{before:"sho", after:"syo"},
 		{before:"thi", after:"ti"},
 		{before:"tsu", after:"tu"},
 		{before:"kwa", after:"kya"},
@@ -796,6 +928,7 @@ function format_roomaji(
 		{before:"jyu", after:"zyu"},
 		{before:"jye", after:"zye"},
 		{before:"jyo", after:"zyo"},
+		{before:"ltu", after:"xtu"},
 	]
 	
 	let str = roomaji.toLowerCase()
@@ -961,6 +1094,7 @@ function ja_to_roomaji(
 			{before:"ん", after:"n"},
 			{before:"ー", after:"_"},
 			{before:/っ(\w)/g, after:"$1$1"},
+			{before:"っ", after:"xtu"},
 		];
 
 		_str = kanaToHira(_str);

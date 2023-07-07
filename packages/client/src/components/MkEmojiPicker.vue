@@ -23,7 +23,7 @@
 					</div>
 					<div v-else>
 						<header class="_acrylic" v-if="!(q == null || q === '')">
-							{{ `${q.endsWith('@') ? "他サーバー絵文字検索 " "検索結果 "}
+							{{ `${q.endsWith('@') ? "他サーバー絵文字検索 " : "検索結果 "}
 							${(searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
 								? `${(searchResultCustomStart.length + searchResultUnicodeStart.length) + " / " + (searchResultCustom.length + searchResultUnicode.length)} 件` 
 								: "0 件"}${props.asReactionPicker && !q.endsWith('@') ? " (@で他サーバー絵文字検索)" + ""}

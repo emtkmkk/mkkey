@@ -18,15 +18,15 @@
 			/>
 			<div ref="emojis" class="emojis">
 				<section class="result">
-					<div v-if="!props.asReactionPicker && q && q.endsWith('@')">
-						<header class="_acrylic">{{ "@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
+					<div v-if="!allCustomEmojis && q && q.endsWith('@')">
+						<header class="_acrylic">{{ props.asReactionPicker ? "他サーバー絵文字の取得に失敗した為、使用出来ません。" : "@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
 					</div>
 					<div v-else>
 						<header class="_acrylic" v-if="!(q == null || q === '')">
 							{{ `${q.endsWith('@') ? "他サーバー絵文字検索 " : "検索結果 "}
 							${(searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
 								? `${(searchResultCustomStart.length + searchResultUnicodeStart.length) + " / " + (searchResultCustom.length + searchResultUnicode.length)} 件` 
-								: "0 件"}${props.asReactionPicker && !q.endsWith('@') ? " (@で他サーバー絵文字検索)" : ""}
+								: "0 件"}${allCustomEmojis && !q.endsWith('@') ? " (@で他サーバー絵文字検索)" : ""}
 							` }}
 						</header>
 					</div>

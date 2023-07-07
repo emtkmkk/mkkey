@@ -182,7 +182,7 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[kg]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => ["k","g"].indexOf(a.silce(0,1)) - ["k","g"].indexOf(b.silce(0,1)))
+									.sort((a,b) => ['k','g'].indexOf(a.silce(0,1)) - ['k','g'].indexOf(b.silce(0,1)))
 									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
@@ -195,7 +195,7 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[sz]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => ["s","z"].indexOf(a.silce(0,1)) - ["s","z"].indexOf(b.silce(0,1)))
+									.sort((a,b) => ['s','z'].indexOf(a.silce(0,1)) - ['s','z'].indexOf(b.silce(0,1)))
 									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
@@ -208,7 +208,7 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[td]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => ["t","d"].indexOf(a.silce(0,1)) - ["t","d"].indexOf(b.silce(0,1)))
+									.sort((a,b) => ['t','d'].indexOf(a.silce(0,1)) - ['t','d'].indexOf(b.silce(0,1)))
 									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"
@@ -233,7 +233,7 @@
 							:emojis="
 								customEmojis
 									.filter((e) => !e.category && /^[hbp]([aiueo]|y[aiueo])/i.test(format_roomaji(e.name)))
-									.sort((a,b) => ["h","b","p"].indexOf(a.silce(0,1)) - ["h","b","p"].indexOf(b.silce(0,1)))
+									.sort((a,b) => ['h','b','p'].indexOf(a.silce(0,1)) - ['h','b','p'].indexOf(b.silce(0,1)))
 									.sort((a,b) => sortWord.indexOf(a.silce(1,2)) - sortWord.indexOf(b.silce(1,2)))
 									.map((e) => ':' + e.name + ':')
 							"

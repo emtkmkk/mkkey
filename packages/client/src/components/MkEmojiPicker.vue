@@ -917,7 +917,7 @@ function format_roomaji(
 		{before:"shi", after:"si"},
 		{before:"shu", after:"syu"},
 		{before:"sho", after:"syo"},
-		{before:"syi", after:"si"}
+		{before:"syi", after:"si"},
 		{before:"thi", after:"ti"},
 		{before:"tsu", after:"tu"},
 		{before:"kwa", after:"kya"},

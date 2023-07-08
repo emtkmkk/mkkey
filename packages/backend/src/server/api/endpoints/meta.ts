@@ -431,13 +431,16 @@ export default define(meta, paramDef, async (ps, me) => {
 			{
 				host: "misskey.backspace.fm",
 			},
+			{
+				host: "misskey.takehi.to"
+			},
 		],
 		order: {
 			name: "ASC",
 		},
 		cache: {
 			id: "meta_plus_emojis",
-			milliseconds: 7200000, // 2 hour
+			milliseconds: 3600000, // 1 hour
 		},
 	})).filter((x) => !emojiNames.includes(x.name)).slice(0,10000)
 	: undefined;
@@ -452,7 +455,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		},
 		cache: {
 			id: "meta_all_emojis",
-			milliseconds: 7200000, // 2 hour
+			milliseconds: 3600000, // 1 hour
 		},
 	})).filter((x) => !emojiNames.includes(x.name)).slice(0,30000)
 	: undefined;

@@ -914,9 +914,10 @@ function format_roomaji(
 	// 変換前が3文字
 	const replaceDataBefore3 = [
 		{before:"sha", after:"sya"},
-		{before:"shi", after:"syi"},
+		{before:"shi", after:"si"},
 		{before:"shu", after:"syu"},
 		{before:"sho", after:"syo"},
+		{before:"syi", after:"si"}
 		{before:"thi", after:"ti"},
 		{before:"tsu", after:"tu"},
 		{before:"kwa", after:"kya"},

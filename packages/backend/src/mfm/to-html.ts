@@ -156,7 +156,7 @@ export function toHtml(
 
 		search(node) {
 			const a = doc.createElement("a");
-			a.href = `https://search.annoyingorange.xyz/search?q=${node.props.query}`;
+			a.href = `https://google.com/search?q=${node.props.query}`;
 			a.textContent = node.props.content;
 			return a;
 		},

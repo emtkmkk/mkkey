@@ -559,7 +559,11 @@ export const defaultStore = markRaw(
 		japanCategory: {
 			where: "account",
 			default: true,
-		}
+		},
+		remoteEmojisFetch: {
+			where: "device",
+			default: "all" as "all" | "plus" | "none",
+		},
 	}),
 );
 

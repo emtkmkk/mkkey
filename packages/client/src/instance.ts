@@ -41,6 +41,7 @@ export async function fetchPlusEmoji() {
 
 	localStorage.setItem("remoteEmojiData", JSON.stringify(
 		{
+			emojiFetchDate: new Date(),
 			remoteEmojiMode: instance.remoteEmojiMode,
 			remoteEmojiCount: instance.remoteEmojiCount,
 			allEmojis: instance.allEmojis,
@@ -60,6 +61,7 @@ export async function fetchAllEmoji() {
 
 	localStorage.setItem("remoteEmojiData", JSON.stringify(
 		{
+			emojiFetchDate: new Date(),
 			remoteEmojiMode: instance.remoteEmojiMode,
 			remoteEmojiCount: instance.remoteEmojiCount,
 			allEmojis: instance.allEmojis,

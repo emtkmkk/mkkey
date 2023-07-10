@@ -41,7 +41,7 @@ import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i, refreshAccount, login, updateAccount, signout } from "@/account";
 import { defaultStore, ColdDeviceStorage } from "@/store";
-import { fetchInstance, fetchPlusEmojiInstance, fetchAllEmojiInstance, instance } from "@/instance";
+import { fetchInstance, fetchPlusEmoji, fetchAllEmoji, instance } from "@/instance";
 import { makeHotkey } from "@/scripts/hotkey";
 import { search } from "@/scripts/search";
 import { deviceKind } from "@/scripts/device-kind";
@@ -86,7 +86,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 	}
 
 	// タッチデバイスでCSSの:hoverを機能させる
-	document.addEventListener("touchend", () => {}, { passive: true });
+	document.addEventListener("touchend", () => { }, { passive: true });
 
 	// 一斉リロード
 	reloadChannel.addEventListener("message", (path) => {
@@ -175,37 +175,46 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 	}
 	//#endregion
 
-	let fetchInstanceMetaPromise = fetchAllEmojiInstance();
+	let fetchInstanceMetaPromise = fetchInstance();
 
-	fetchInstanceMetaPromise.catch(() => {
-		//保存に失敗した場合は軽量版instanceの取得を試行
-		fetchInstanceMetaPromise = fetchPlusEmojiInstance();
-	});
-	
-	fetchInstanceMetaPromise.catch(() => {
-		//保存に失敗した場合はリモートの絵文字がないinstanceの取得を試行
-		fetchInstanceMetaPromise = fetchInstance();
-	});
-	
 	fetchInstanceMetaPromise.then(() => {
-		
+
 		localStorage.setItem("v", instance.version);
+
+		const lastEmojiFetchDate = localStorage.getItem("remoteEmojiData") ? JSON.parse(localStorage.getItem("remoteEmojiData"))?.emojiFetchDate : undefined;
+		const emojiFetchDateInt = lastEmojiFetchDate ? parseInt(lastEmojiFetchDate, 10) : undefined
+
+		if (!lastEmojiFetchDate || Date.now() - emojiFetchDateInt > 1000 * 60 * 60) {
+			let fetchRemoteEmojiMetaPromise = fetchAllEmoji();
+			fetchRemoteEmojiMetaPromise.catch(() => {
+				//保存に失敗した場合は軽量版リモート絵文字の取得を試行
+				fetchInstanceMetaPromise = fetchPlusEmoji();
+			});
+			fetchRemoteEmojiMetaPromise.catch(() => {
+				//それもだめな場合は最終更新日だけ更新する
+				localStorage.setItem("remoteEmojiData", JSON.stringify(
+					{
+						emojiFetchDate: new Date(),
+					})
+				);
+			});
+		}
 
 		// Init service worker
 		initializeSw();
 	});
-	
+
 
 	const app = createApp(
 		window.location.search === "?zen"
 			? defineAsyncComponent(() => import("@/ui/zen.vue"))
 			: !$i
-			? defineAsyncComponent(() => import("@/ui/visitor.vue"))
-			: (ui === "deck" && location.pathname === '/')
-			? defineAsyncComponent(() => import("@/ui/deck.vue"))
-			: ui === "classic"
-			? defineAsyncComponent(() => import("@/ui/classic.vue"))
-			: defineAsyncComponent(() => import("@/ui/universal.vue")),
+				? defineAsyncComponent(() => import("@/ui/visitor.vue"))
+				: (ui === "deck" && location.pathname === '/')
+					? defineAsyncComponent(() => import("@/ui/deck.vue"))
+					: ui === "classic"
+						? defineAsyncComponent(() => import("@/ui/classic.vue"))
+						: defineAsyncComponent(() => import("@/ui/universal.vue")),
 	);
 
 	if (_DEV_) {
@@ -270,7 +279,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 
 		// テーマリビルドするため
 		localStorage.removeItem("theme");
-		
+
 		// スキップするバージョン
 		const skipVersion = ["14.0.0-dev10-mkk35."];
 
@@ -472,7 +481,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 						}),
 					);
 				} else if (now.getHours() >= 16 && now.getHours() <= 18) {
-					if (now.getDay() >= 1 && now.getDay() <= 5){
+					if (now.getDay() >= 1 && now.getDay() <= 5) {
 						toast(
 							i18n.t("welcomeBackWithNameEvening", {
 								name: $i.name || $i.username,

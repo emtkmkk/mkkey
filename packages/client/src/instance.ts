@@ -34,17 +34,17 @@ export async function fetchPlusEmoji() {
 		detail: false,
 		plusEmojis: true,
 	});
-
+	
 	for (const [k, v] of Object.entries(meta)) {
 			instance[k] = v;
 	}
 
 	localStorage.setItem("remoteEmojiData", JSON.stringify(
 		{
-			emojiFetchDate: new Date(),
-			remoteEmojiMode: instance.remoteEmojiMode,
-			remoteEmojiCount: instance.remoteEmojiCount,
-			allEmojis: instance.allEmojis,
+			emojiFetchDate: meta.emojiFetchDate,
+			remoteEmojiMode: meta.remoteEmojiMode,
+			remoteEmojiCount: meta.remoteEmojiCount,
+			allEmojis: meta.allEmojis,
 		})
 	);
 }
@@ -58,13 +58,13 @@ export async function fetchAllEmoji() {
 	for (const [k, v] of Object.entries(meta)) {
 			instance[k] = v;
 	}
-
+	
 	localStorage.setItem("remoteEmojiData", JSON.stringify(
 		{
-			emojiFetchDate: new Date(),
-			remoteEmojiMode: instance.remoteEmojiMode,
-			remoteEmojiCount: instance.remoteEmojiCount,
-			allEmojis: instance.allEmojis,
+			emojiFetchDate: meta.emojiFetchDate,
+			remoteEmojiMode: meta.remoteEmojiMode,
+			remoteEmojiCount: meta.remoteEmojiCount,
+			allEmojis: meta.allEmojis,
 		})
 	);
 }

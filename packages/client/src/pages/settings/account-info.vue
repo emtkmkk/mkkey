@@ -177,7 +177,7 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>最終取得</template>
 				<template #value>
-					<MkTime :time="new Date(instance.emojiFetchDate)" mode="relative"/>
+					<MkTime :time="instance.emojiFetchDate" mode="relative"/>
 				</template>
 			</MkKeyValue>
 		</FormSection>
@@ -249,7 +249,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { instance } from "@/instance";
 
 const stats = ref<any>({});
-const remoteEmojiSize = (localStorage.getItem("remoteEmojiData") ?? "").length;
+const remoteEmojiSize = JSON.stringify(instance)?.length;
 
 onMounted(() => {
 	os.api("users/stats", {

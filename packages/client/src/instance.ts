@@ -21,12 +21,12 @@ export async function fetchInstance() {
 	const meta = await api("meta", {
 		detail: false,
 	});
-
+	
 	for (const [k, v] of Object.entries(meta)) {
 			instance[k] = v;
 	}
 
-	localStorage.setItem("instance", JSON.stringify(instance));
+	localStorage.setItem("instance", JSON.stringify(meta));
 }
 
 export async function fetchPlusEmoji() {

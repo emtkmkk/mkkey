@@ -41,7 +41,7 @@ import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i, refreshAccount, login, updateAccount, signout } from "@/account";
 import { defaultStore, ColdDeviceStorage } from "@/store";
-import { fetchInstance, fetchPlusEmoji, fetchAllEmoji, instance } from "@/instance";
+import { fetchInstance, fetchPlusEmoji, fetchAllEmoji, fetchAllEmojiNoCache, instance } from "@/instance";
 import { makeHotkey } from "@/scripts/hotkey";
 import { search } from "@/scripts/search";
 import { deviceKind } from "@/scripts/device-kind";
@@ -423,9 +423,11 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, localStorage.getItem("emojiFetchAttemptDate") ? parseInt(localStorage.getItem("emojiFetchAttemptDate"), 10) : 0);
 			const fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
 
-			if (!emojiFetchDateInt || Date.now() - emojiFetchDateInt > 1000 * 60 * 120 || fetchModeMax != (localStorage.getItem("lastFetchModeMax") ?? "all")) {
-				// 最終取得日が無い or 前回取得から2時間以上 or 取得設定が前回と異なる場合取得
-				if (fetchModeMax === "all") {
+			if (fetchModeMax === "always" || !emojiFetchDateInt || Date.now() - emojiFetchDateInt > 1000 * 60 * 120 || fetchModeMax != (localStorage.getItem("lastFetchModeMax") ?? "all")) {
+				// 常に取得がon or 最終取得日が無い or 前回取得から2時間以上 or 取得設定が前回と異なる場合取得
+				if (fetchModeMax === "always") {
+					fetchAllEmojiNoCache();
+				} else if (fetchModeMax === "all") {
 					let fetchRemoteEmojiMetaPromise = fetchAllEmoji();
 					fetchRemoteEmojiMetaPromise.catch(() => {
 						// 保存に失敗した場合は軽量版リモート絵文字の取得を試行

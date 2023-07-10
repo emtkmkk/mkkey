@@ -177,7 +177,7 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>最終取得</template>
 				<template v-if="instance.emojiFetchDate" #value>
-					<MkTime :time="instance.emojiFetchDate" mode="relative"/>
+					<MkTime :time="instance.emojiFetchDate" mode="relative"/>{{ "  " + instance.emojiFetchDate }}
 				</template>
 				<template v-else #value>
 					{{ "N/A" }}

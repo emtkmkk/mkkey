@@ -426,15 +426,21 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 			if (fetchModeMax === "always" || !emojiFetchDateInt || (Date.now() - emojiFetchDateInt) > 1000 * 60 * 120 || fetchModeMax !== (localStorage.getItem("lastFetchModeMax") ?? "all")) {
 				// 常に取得がon or 最終取得日が無い or 前回取得から2時間以上 or 取得設定が前回と異なる場合取得
 				if (fetchModeMax === "always") {
-					fetchAllEmojiNoCache();
+					let fetchRemoteEmojiMetaPromise = fetchAllEmojiNoCache();
+					fetchRemoteEmojiMetaPromise.then()(() => {
+					});
 				} else if (fetchModeMax === "all") {
 					let fetchRemoteEmojiMetaPromise = fetchAllEmoji();
 					fetchRemoteEmojiMetaPromise.catch(() => {
 						// 保存に失敗した場合は軽量版リモート絵文字の取得を試行
 						fetchInstanceMetaPromise = fetchPlusEmoji();
 					});
+					fetchRemoteEmojiMetaPromise.then()(() => {
+					});
 				} else if (fetchModeMax === "plus") {
-					fetchPlusEmoji();
+					let fetchRemoteEmojiMetaPromise = fetchPlusEmoji();
+					fetchRemoteEmojiMetaPromise.then()(() => {
+					});
 				}
 				// 最終試行日を更新する
 				localStorage.setItem("emojiFetchAttemptDate", Date.now().toString());

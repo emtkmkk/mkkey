@@ -171,7 +171,7 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>サイズ</template>
 				<template #value>{{
-					bytes(instance.allEmojis?.length ?? 0)
+					remoteEmojiSize ? bytes(remoteEmojiSize) : "N/A"
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
@@ -249,6 +249,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { instance } from "@/instance";
 
 const stats = ref<any>({});
+const remoteEmojiSize = (localStorage.getItem("remoteEmojiData") ? "").length;
 
 onMounted(() => {
 	os.api("users/stats", {

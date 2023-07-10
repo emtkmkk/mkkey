@@ -35,8 +35,10 @@ export async function fetchPlusEmoji() {
 		plusEmojis: true,
 	});
 	
-	for (const [k, v] of Object.entries(meta)) {
-			instance[k] = v;
+	if (instance.remoteEmojiMode !== "all"){
+		for (const [k, v] of Object.entries(meta)) {
+				instance[k] = v;
+		}
 	}
 
 	localStorage.setItem("remoteEmojiData", JSON.stringify(

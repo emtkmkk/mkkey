@@ -5,7 +5,7 @@ import type * as Misskey from "calckey-js";
 // TODO: 他のタブと永続化されたstateを同期
 
 const instanceData = localStorage.getItem("instance");
-const remoteEmojiData = localStorage.getItem("remoteEmojiData");
+const remoteEmojiData = localStorage.getItem("remoteEmojiData") ?? "";
 
 // TODO: instanceをリアクティブにするかは再考の余地あり
 

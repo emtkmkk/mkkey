@@ -11,7 +11,7 @@ const remoteEmojiData = JSON.parse(localStorage.getItem("remoteEmojiData") ?? "{
 
 export const instance: Misskey.entities.InstanceMetadata = reactive(
 	instanceData
-		? {...JSON.parse(instanceData),...{...remoteEmojiData,emojiFetchDate: remoteEmojiData.emojiFetchDate ? new Date(remoteEmojiData.emojiFetchDate) : undefined}}
+		? {...JSON.parse(instanceData),...remoteEmojiData}
 		: {
 				// TODO: set default values
 		  },
@@ -35,14 +35,14 @@ export async function fetchPlusEmoji() {
 		plusEmojis: true,
 	});
 	
-	localStorage.setItem("remoteEmojiData", JSON.stringify(
-		{
+	const remoteEmojiData = {
 			emojiFetchDate: meta.emojiFetchDate,
 			remoteEmojiMode: meta.remoteEmojiMode,
 			remoteEmojiCount: meta.remoteEmojiCount,
 			allEmojis: meta.allEmojis,
-		})
-	);
+	};
+	
+	localStorage.setItem("remoteEmojiData", JSON.stringify(remoteEmojiData));
 	
 	for (const [k, v] of Object.entries(meta)) {
 			instance[k] = v;
@@ -56,14 +56,14 @@ export async function fetchAllEmoji() {
 		allEmojis: true,
 	});
 
-	localStorage.setItem("remoteEmojiData", JSON.stringify(
-		{
+	const remoteEmojiData = {
 			emojiFetchDate: meta.emojiFetchDate,
 			remoteEmojiMode: meta.remoteEmojiMode,
 			remoteEmojiCount: meta.remoteEmojiCount,
 			allEmojis: meta.allEmojis,
-		})
-	);
+		};
+
+	localStorage.setItem("remoteEmojiData", JSON.stringify(remoteEmojiData));
 	
 	for (const [k, v] of Object.entries(meta)) {
 			instance[k] = v;

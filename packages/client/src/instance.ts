@@ -35,10 +35,6 @@ export async function fetchPlusEmoji() {
 		plusEmojis: true,
 	});
 	
-	for (const [k, v] of Object.entries(meta)) {
-			instance[k] = v;
-	}
-	
 	localStorage.setItem("remoteEmojiData", JSON.stringify(
 		{
 			emojiFetchDate: meta.emojiFetchDate,
@@ -47,6 +43,11 @@ export async function fetchPlusEmoji() {
 			allEmojis: meta.allEmojis,
 		})
 	);
+	
+	for (const [k, v] of Object.entries(meta)) {
+			instance[k] = v;
+	}
+	
 }
 
 export async function fetchAllEmoji() {
@@ -55,10 +56,6 @@ export async function fetchAllEmoji() {
 		allEmojis: true,
 	});
 
-	for (const [k, v] of Object.entries(meta)) {
-			instance[k] = v;
-	}
-	
 	localStorage.setItem("remoteEmojiData", JSON.stringify(
 		{
 			emojiFetchDate: meta.emojiFetchDate,
@@ -67,6 +64,22 @@ export async function fetchAllEmoji() {
 			allEmojis: meta.allEmojis,
 		})
 	);
+	
+	for (const [k, v] of Object.entries(meta)) {
+			instance[k] = v;
+	}
+	
+}
+
+export async function fetchAllEmojiNoCache() {
+	const meta = await api("meta", {
+		detail: false,
+		allEmojis: true,
+	});
+
+	for (const [k, v] of Object.entries(meta)) {
+			instance[k] = v;
+	}
 }
 
 export const emojiCategories = computed(() => {

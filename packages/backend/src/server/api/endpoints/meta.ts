@@ -403,7 +403,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, me) => {
 	const instance = await fetchMeta(true);
 
-	const emojis = await Emojis.find({
+	let emojis = await Emojis.find({
 		where: {
 			host: IsNull(),
 		},
@@ -415,7 +415,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_emojis",
 			milliseconds: 3600000, // 1 hour
 		},
-	}).forEach((x) => delete x.license);
+	});
+	emojis.forEach((x) => delete x.license);
 	
 	const emojiNames = emojis.map((x) => x.name);
 	

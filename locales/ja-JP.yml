@@ -1160,9 +1160,10 @@ _aboutMisskey:
   morePatrons: "他にも多くの方が支援してくれています。ありがとうございます！ 🥰"
   patrons: "支援者"
 _remoteEmojisFetch:
-  all: "全て (通信量大)"
+  all: "全て (通信量中)"
   plus: "一部 (通信量小)"
   none: "更新しない (通信量最小)"
+  always: "常に全て (通信量特大、非推奨)"
 _nsfw:
   respect: "閲覧注意のメディアは隠す"
   ignore: "閲覧注意のメディアを隠さない"

@@ -423,7 +423,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, localStorage.getItem("emojiFetchAttemptDate") ? parseInt(localStorage.getItem("emojiFetchAttemptDate"), 10) : 0);
 			const fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
 
-			if (fetchModeMax === "always" || !emojiFetchDateInt || Date.now() - emojiFetchDateInt > 1000 * 60 * 120 || fetchModeMax != (localStorage.getItem("lastFetchModeMax") ?? "all")) {
+			if (fetchModeMax === "always" || !emojiFetchDateInt || (Date.now() - emojiFetchDateInt) > 1000 * 60 * 120 || fetchModeMax !== (localStorage.getItem("lastFetchModeMax") ?? "all")) {
 				// 常に取得がon or 最終取得日が無い or 前回取得から2時間以上 or 取得設定が前回と異なる場合取得
 				if (fetchModeMax === "always") {
 					fetchAllEmojiNoCache();
@@ -440,7 +440,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 				localStorage.setItem("emojiFetchAttemptDate", Date.now().toString());
 			}
 			// 取得設定を保存
-			localStorage.setItem("lastFetchModeMax", fetchModeMax)
+			localStorage.setItem("lastFetchModeMax", fetchModeMax);
 		});
 
 		const lastUsed = localStorage.getItem("lastUsed");

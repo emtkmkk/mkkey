@@ -6,15 +6,12 @@ import type * as Misskey from "calckey-js";
 
 const instanceData = localStorage.getItem("instance");
 const remoteEmojiData = JSON.parse(localStorage.getItem("remoteEmojiData") ?? "{}");
-if (remoteEmojiData.emojiFetchDate) {
-	remoteEmojiData.emojiFetchDate = new Date(remoteEmojiData.emojiFetchDate);	
-} 
 
 // TODO: instanceをリアクティブにするかは再考の余地あり
 
 export const instance: Misskey.entities.InstanceMetadata = reactive(
 	instanceData
-		? {...JSON.parse(instanceData),...remoteEmojiData}
+		? {...JSON.parse(instanceData),...{...remoteEmojiData,emojiFetchDate: remoteEmojiData.emojiFetchDate ? new Date(remoteEmojiData.emojiFetchDate) : undefined}}
 		: {
 				// TODO: set default values
 		  },
@@ -38,12 +35,10 @@ export async function fetchPlusEmoji() {
 		plusEmojis: true,
 	});
 	
-	if (instance.remoteEmojiMode !== "all"){
-		for (const [k, v] of Object.entries(meta)) {
-				instance[k] = v;
-		}
+	for (const [k, v] of Object.entries(meta)) {
+			instance[k] = v;
 	}
-
+	
 	localStorage.setItem("remoteEmojiData", JSON.stringify(
 		{
 			emojiFetchDate: meta.emojiFetchDate,

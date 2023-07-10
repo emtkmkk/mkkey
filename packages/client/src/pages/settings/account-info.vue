@@ -171,7 +171,7 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>サイズ</template>
 				<template #value>{{
-					bytes(localStorage.getItem("remoteEmojiData").length ?? 0))
+					bytes(localStorage.getItem("remoteEmojiData").length ?? 0)
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">

@@ -300,6 +300,13 @@
 			i18n.ts.developerTicker
 		}}</FormSwitch>
 		
+		<FormSelect v-model="remoteEmojisFetch" class="_formBlock">
+			<template #label>{{ i18n.ts.remoteEmojisFetch }}</template>
+			<option value="all">{{ i18n.ts._remoteEmojisFetch.all }}</option>
+			<option value="plus">{{ i18n.ts._remoteEmojisFetch.plus }}</option>
+			<option value="none">{{ i18n.ts._remoteEmojisFetch.none }}</option>
+		</FormSelect>
+		
 		<FormSelect v-model="nsfw" class="_formBlock">
 			<template #label>{{ i18n.ts.nsfw }}</template>
 			<option value="respect">{{ i18n.ts._nsfw.respect }}</option>

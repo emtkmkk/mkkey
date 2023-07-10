@@ -183,7 +183,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 
 		const lastEmojiFetchDate = localStorage.getItem("remoteEmojiData") ? JSON.parse(localStorage.getItem("remoteEmojiData"))?.emojiFetchDate : undefined;
 		const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? parseInt(lastEmojiFetchDate, 10) : 0, localStorage.getItem("emojiFetchAttemptDate") ? parseInt(localStorage.getItem("emojiFetchAttemptDate"), 10) : 0)
-		const fetchModeMax = localStorage.getItem("remoteEmojisFetch") ?? "";
+		const fetchModeMax = defaultStore.state.remoteEmojisFetch;
 
 		if (!emojiFetchDateInt || Date.now() - emojiFetchDateInt > 1000 * 60 * 120 || fetchModeMax != (localStorage.getItem("lastFetchModeMax") ?? "")) {
 			// 最終取得日が無い or 前回取得から2時間以上 or 取得設定が前回と異なる場合取得

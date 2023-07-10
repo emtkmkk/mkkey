@@ -176,9 +176,9 @@
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>最終取得</template>
-				<template #value>{{
+				<template #value>
 					<MkTime :time="instance.emojiFetchDate" mode="relative"/>
-				}}</template>
+				</template>
 			</MkKeyValue>
 		</FormSection>
 

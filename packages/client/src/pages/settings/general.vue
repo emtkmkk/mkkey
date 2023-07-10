@@ -511,6 +511,9 @@ const reactionShowUsername = $computed(
 const reactionShowShort = $computed(
 	defaultStore.makeGetterSetter("reactionShowShort")
 );
+const remoteEmojisFetch = $computed(
+	defaultStore.makeGetterSetter("remoteEmojisFetch")
+);
 
 watch(lang, () => {
 	localStorage.setItem("lang", lang.value as string);

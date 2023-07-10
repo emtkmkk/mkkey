@@ -511,7 +511,7 @@ const customEmojiCategories = emojiCategories;
 const customEmojis = instance.emojis;
 const allCustomEmojis = props.asReactionPicker ? instance.allEmojis : undefined;
 const remoteEmojiMode = instance.remoteEmojiMode;
-const emojiStr = props.asReactionPicker ? allCustomEmojis.map((x) => ":" + x.name + "@" + x.host + ":") : undefined;
+const emojiStr = props.asReactionPicker && allCustomEmojis ? allCustomEmojis.map((x) => ":" + x.name + "@" + x.host + ":") : undefined;
 const q = ref<string | null>(null);
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultCustomStart = ref<Misskey.entities.CustomEmoji[]>([]);

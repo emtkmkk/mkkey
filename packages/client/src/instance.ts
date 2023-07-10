@@ -5,12 +5,13 @@ import type * as Misskey from "calckey-js";
 // TODO: 他のタブと永続化されたstateを同期
 
 const instanceData = localStorage.getItem("instance");
+const remoteEmojiData = localStorage.getItem("remoteEmojiData");
 
 // TODO: instanceをリアクティブにするかは再考の余地あり
 
 export const instance: Misskey.entities.InstanceMetadata = reactive(
 	instanceData
-		? JSON.parse(instanceData)
+		? {...JSON.parse(instanceData),...JSON.parse(remoteEmojiData)}
 		: {
 				// TODO: set default values
 		  },
@@ -28,7 +29,7 @@ export async function fetchInstance() {
 	localStorage.setItem("instance", JSON.stringify(instance));
 }
 
-export async function fetchPlusEmojiInstance() {
+export async function fetchPlusEmoji() {
 	const meta = await api("meta", {
 		detail: false,
 		plusEmojis: true,
@@ -38,10 +39,16 @@ export async function fetchPlusEmojiInstance() {
 			instance[k] = v;
 	}
 
-	localStorage.setItem("instance", JSON.stringify(instance));
+	localStorage.setItem("remoteEmojiData", JSON.stringify(
+		{
+			remoteEmojiMode: instance.remoteEmojiMode,
+			remoteEmojiCount: instance.remoteEmojiCount,
+			allEmojis: instance.allEmojis,
+		})
+	);
 }
 
-export async function fetchAllEmojiInstance() {
+export async function fetchAllEmoji() {
 	const meta = await api("meta", {
 		detail: false,
 		allEmojis: true,
@@ -51,7 +58,13 @@ export async function fetchAllEmojiInstance() {
 			instance[k] = v;
 	}
 
-	localStorage.setItem("instance", JSON.stringify(instance));
+	localStorage.setItem("remoteEmojiData", JSON.stringify(
+		{
+			remoteEmojiMode: instance.remoteEmojiMode,
+			remoteEmojiCount: instance.remoteEmojiCount,
+			allEmojis: instance.allEmojis,
+		})
+	);
 }
 
 export const emojiCategories = computed(() => {

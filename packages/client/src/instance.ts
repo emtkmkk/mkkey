@@ -5,13 +5,16 @@ import type * as Misskey from "calckey-js";
 // TODO: 他のタブと永続化されたstateを同期
 
 const instanceData = localStorage.getItem("instance");
-const remoteEmojiData = localStorage.getItem("remoteEmojiData") ?? "{}";
+const remoteEmojiData = JSON.parse(localStorage.getItem("remoteEmojiData") ?? "{}");
+if (remoteEmojiData.emojiFetchDate) {
+	remoteEmojiData.emojiFetchDate = new Date(remoteEmojiData.emojiFetchDate);	
+} 
 
 // TODO: instanceをリアクティブにするかは再考の余地あり
 
 export const instance: Misskey.entities.InstanceMetadata = reactive(
 	instanceData
-		? {...JSON.parse(instanceData),...JSON.parse(remoteEmojiData)}
+		? {...JSON.parse(instanceData),...remoteEmojiData}
 		: {
 				// TODO: set default values
 		  },

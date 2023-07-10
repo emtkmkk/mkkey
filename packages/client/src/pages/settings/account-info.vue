@@ -249,7 +249,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { instance } from "@/instance";
 
 const stats = ref<any>({});
-const remoteEmojiSize = (localStorage.getItem("remoteEmojiData") ? "").length;
+const remoteEmojiSize = (localStorage.getItem("remoteEmojiData") ?? "").length;
 
 onMounted(() => {
 	os.api("users/stats", {

@@ -415,7 +415,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_emojis",
 			milliseconds: 3600000, // 1 hour
 		},
-	});
+	}).forEach((x) => delete x.license);
 	
 	const emojiNames = emojis.map((x) => x.name);
 	

@@ -153,21 +153,37 @@
 				<template #value>{{ bytes(stats.driveUsage) }}</template>
 			</MkKeyValue>
 		</FormSection>
-
+		
 		<FormSection>
-			<template #label>{{ i18n.ts.other }}</template>
+			<template #label>"他サーバー絵文字"</template>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>他サーバー絵文字取得状態</template>
+				<template #key>取得状態</template>
 				<template #value>{{
-					instance.remoteEmojiMode === "all" ? "完全" : instance.remoteEmojiMode === "plus" ? "ミニ" : "無し"
+					instance.remoteEmojiMode === "all" ? "全て" : instance.remoteEmojiMode === "plus" ? "一部" : "無し"
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>他サーバー絵文字取得数</template>
+				<template #key>取得数</template>
 				<template #value>{{
 					number(instance.remoteEmojiCount ?? 0)
 				}}</template>
 			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>サイズ</template>
+				<template #value>{{
+					bytes(localStorage.getItem("remoteEmojiData").length ?? 0))
+				}}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>最終取得</template>
+				<template #value>{{
+					<MkTime :time="instance.emojiFetchDate" mode="relative"/>
+				}}</template>
+			</MkKeyValue>
+		</FormSection>
+
+		<FormSection>
+			<template #label>{{ i18n.ts.other }}</template>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>メール認証</template>
 				<template #value>{{

@@ -171,13 +171,16 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>サイズ</template>
 				<template #value>{{
-					remoteEmojiSize ? bytes(remoteEmojiSize) : "N/A"
+					remoteEmojiSize ? bytes(remoteEmojiSize,2) : "N/A"
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>最終取得</template>
-				<template #value>
+				<template v-if="instance.emojiFetchDate" #value>
 					<MkTime :time="instance.emojiFetchDate" mode="relative"/>
+				</template>
+				<template v-else #value>
+					{{ "N/A" }}
 				</template>
 			</MkKeyValue>
 		</FormSection>

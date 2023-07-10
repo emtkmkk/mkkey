@@ -155,7 +155,7 @@
 		</FormSection>
 		
 		<FormSection>
-			<template #label>"他サーバー絵文字"</template>
+			<template #label>他サーバー絵文字</template>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>取得状態</template>
 				<template #value>{{
@@ -171,13 +171,13 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>サイズ</template>
 				<template #value>{{
-					bytes(localStorage.getItem("remoteEmojiData").length ?? 0)
+					bytes(instance.allEmojis?.length ?? 0)
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>最終取得</template>
 				<template #value>
-					<MkTime :time="instance.emojiFetchDate" mode="relative"/>
+					<MkTime :time="new Date(instance.emojiFetchDate)" mode="relative"/>
 				</template>
 			</MkKeyValue>
 		</FormSection>

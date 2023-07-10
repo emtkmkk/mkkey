@@ -434,10 +434,9 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 				} else if (fetchModeMax === "plus") {
 					fetchPlusEmoji();
 				}
+				// 最終試行日を更新する
+				localStorage.setItem("emojiFetchAttemptDate", Date.now().toString());
 			}
-
-			// 最終試行日を更新する
-			localStorage.setItem("emojiFetchAttemptDate", Date.now().toString());
 			// 取得設定を保存
 			localStorage.setItem("lastFetchModeMax", fetchModeMax)
 		});

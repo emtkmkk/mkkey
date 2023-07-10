@@ -305,6 +305,7 @@
 			<option value="all">{{ i18n.ts._remoteEmojisFetch.all }}</option>
 			<option value="plus">{{ i18n.ts._remoteEmojisFetch.plus }}</option>
 			<option value="none">{{ i18n.ts._remoteEmojisFetch.none }}</option>
+			<option value="always">{{ i18n.ts._remoteEmojisFetch.always }}</option>
 		</FormSelect>
 		
 		<FormSelect v-model="nsfw" class="_formBlock">

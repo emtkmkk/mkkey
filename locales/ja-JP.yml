@@ -708,6 +708,7 @@ openInSideView: "サイドビューで開く"
 defaultNavigationBehaviour: "デフォルトのナビゲーション"
 editTheseSettingsMayBreakAccount: "これらの設定を編集するとアカウントが破損する可能性があります。"
 instanceTicker: "投稿のサーバー情報"
+remoteEmojisFetch: "他サーバー絵文字の取得"
 waitingFor: "{x}を待っています"
 random: "ランダム"
 system: "システム"
@@ -1158,6 +1159,10 @@ _aboutMisskey:
   donate: "Calckeyに寄付"
   morePatrons: "他にも多くの方が支援してくれています。ありがとうございます！ 🥰"
   patrons: "支援者"
+_remoteEmojisFetch:
+  all: "全て (通信量大)"
+  plus: "一部 (通信量小)"
+  none: "無し (通信量最小)"
 _nsfw:
   respect: "閲覧注意のメディアは隠す"
   ignore: "閲覧注意のメディアを隠さない"

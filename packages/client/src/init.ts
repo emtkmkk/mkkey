@@ -183,22 +183,47 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 
 		const lastEmojiFetchDate = localStorage.getItem("remoteEmojiData") ? JSON.parse(localStorage.getItem("remoteEmojiData"))?.emojiFetchDate : undefined;
 		const emojiFetchDateInt = lastEmojiFetchDate ? parseInt(lastEmojiFetchDate, 10) : undefined
+		const fetchModeMax = defaultStore.state.remoteEmojisFetch;
+		
 
-		if (!lastEmojiFetchDate || Date.now() - emojiFetchDateInt > 1000 * 60 * 60) {
-			let fetchRemoteEmojiMetaPromise = fetchAllEmoji();
-			fetchRemoteEmojiMetaPromise.catch(() => {
-				//保存に失敗した場合は軽量版リモート絵文字の取得を試行
-				fetchInstanceMetaPromise = fetchPlusEmoji();
-			});
-			fetchRemoteEmojiMetaPromise.catch(() => {
-				//それもだめな場合は最終更新日だけ更新する
+		if (!lastEmojiFetchDate || Date.now() - emojiFetchDateInt > 1000 * 60 * 120 || fetchModeMax != (localStorage.getItem("lastFetchModeMax") ?? "")) {
+			// 最終取得日が無い or 前回取得から2時間以上 or 取得設定が前回と異なる場合取得
+			if (fetchModeMax === "all"){
+				let fetchRemoteEmojiMetaPromise = fetchAllEmoji();
+				fetchRemoteEmojiMetaPromise.catch(() => {
+					// 保存に失敗した場合は軽量版リモート絵文字の取得を試行
+					fetchInstanceMetaPromise = fetchPlusEmoji();
+				});
+				fetchRemoteEmojiMetaPromise.catch(() => {
+					// それもだめな場合は最終更新日だけ更新する
+					localStorage.setItem("remoteEmojiData", JSON.stringify(
+						{
+							emojiFetchDate: new Date(),
+						})
+					);
+				});
+			} else if (fetchModeMax === "plus"){
+				let fetchRemoteEmojiMetaPromise = fetchPlusEmoji();
+				fetchRemoteEmojiMetaPromise.catch(() => {
+					// だめな場合は最終更新日だけ更新する
+					localStorage.setItem("remoteEmojiData", JSON.stringify(
+						{
+							emojiFetchDate: new Date(),
+						})
+					);
+				});
+			} else {
+				// 最終更新日だけ更新する
 				localStorage.setItem("remoteEmojiData", JSON.stringify(
 					{
 						emojiFetchDate: new Date(),
 					})
 				);
-			});
+			}
 		}
+		
+		// 取得設定を保存
+		localStorage.setItem("lastFetchModeMax", fetchModeMax)
 
 		// Init service worker
 		initializeSw();

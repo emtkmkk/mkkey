@@ -426,7 +426,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 			if (fetchModeMax === "always" || (Date.now() - emojiFetchDateInt) > 1000 * 60 * 120 || fetchModeMax !== (localStorage.getItem("lastFetchModeMax") ?? fetchModeMax)) {
 				// 常に取得がon or 最終取得日が無い or 前回取得から2時間以上 or 取得設定が前回と異なる場合取得
 				//一度キャッシュを破棄
-				if (fetchModeMax !== "none") localStorage.setItem("remoteEmojiData", "");
+				if (fetchModeMax !== "keep") localStorage.setItem("remoteEmojiData", "");
 				// 取得設定を保存
 				localStorage.setItem("lastFetchModeMax", fetchModeMax);
 				// 最終試行日を更新する

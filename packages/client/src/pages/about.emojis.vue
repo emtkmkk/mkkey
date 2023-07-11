@@ -43,6 +43,23 @@
 				/>
 			</div>
 		</MkFolder>
+	
+		<MkFolder
+			:key="category:null"
+			class="emojis"
+		>
+			<template #header>{{ "カテゴリ未設定" }}</template>
+			<div class="zuvgdzyt">
+				<XEmoji
+					v-for="emoji in customEmojis.filter(
+						(e) => !e.category
+					)"
+					:key="emoji.name"
+					class="emoji"
+					:emoji="emoji"
+				/>
+			</div>
+		</MkFolder>
 	</div>
 </template>
 

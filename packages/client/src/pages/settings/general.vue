@@ -44,6 +44,9 @@
 			<FormSwitch v-model="swipeOnDesktop" class="_formBlock">{{
 				i18n.ts.swipeOnDesktop
 			}}</FormSwitch>
+			<FormSwitch v-model="enableDataSaverMode" class="_formBlock">{{
+				i18n.ts.dataSaver
+			}}</FormSwitch>
 			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{
 				i18n.ts.hiddenActivityChart
 			}}</FormSwitch>
@@ -537,6 +540,9 @@ const reactionShowShort = $computed(
 );
 const remoteEmojisFetch = $computed(
 	defaultStore.makeGetterSetter("remoteEmojisFetch")
+);
+const enableDataSaverMode = $computed(
+	defaultStore.makeGetterSetter("enableDataSaverMode")
 );
 
 watch(lang, () => {

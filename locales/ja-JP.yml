@@ -1163,8 +1163,13 @@ _aboutMisskey:
 _remoteEmojisFetch:
   all: "全て (通信量中)"
   plus: "一部 (通信量小)"
-  none: "更新しない (通信量最小)"
-  always: "常に全て (通信量特大、非推奨)"
+  none: "更新を停止 (通信量最小)"
+  always: "常に最新に (通信量特大、非推奨)"
+_remoteEmojisFetchForPc:
+  all: "全て"
+  plus: "一部"
+  none: "更新を停止"
+  always: "常に最新に"
 _nsfw:
   respect: "閲覧注意のメディアは隠す"
   ignore: "閲覧注意のメディアを隠さない"

@@ -192,6 +192,7 @@ const selectedFolders = ref<Misskey.entities.DriveFolder[]>([]);
 const uploadings = uploads;
 const connection = stream.useChannel("drive");
 const keepOriginal = ref<boolean>(defaultStore.state.keepOriginalUploading); // 外部渡しが多いので$refは使わないほうがよい
+const keepFileName = ref<boolean>(defaultStore.state.keepFileName); // 外部渡しが多いので$refは使わないほうがよい
 
 // ドロップされようとしているか
 const draghover = ref(false);
@@ -664,12 +665,6 @@ function fetchMoreFiles() {
 function getMenu() {
 	return [
 		{
-			type: "switch",
-			text: i18n.ts.keepOriginalUploading,
-			ref: keepOriginal,
-		},
-		null,
-		{
 			text: i18n.ts.addFile,
 			type: "label",
 		},
@@ -686,6 +681,17 @@ function getMenu() {
 			action: () => {
 				urlUpload();
 			},
+		},
+		null,
+		{
+			type: "switch",
+			text: i18n.ts.keepOriginalUploading,
+			ref: keepOriginal,
+		},
+		{
+			type: "switch",
+			text: i18n.ts.keepFileName,
+			ref: keepFileName,
 		},
 		null,
 		{

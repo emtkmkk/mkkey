@@ -564,6 +564,10 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: "all" as "all" | "plus" | "none" | "alwaysAll",
 		},
+		keepFileName: {
+			where: "account",
+			default: false,	
+		},
 	}),
 );
 

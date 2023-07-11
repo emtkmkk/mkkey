@@ -229,7 +229,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineAsyncComponent, watch } from "vue";
+import { defineAsyncComponent, watch } from "vue";
 import XDraggable from "vuedraggable";
 import FormInput from "@/components/form/input.vue";
 import FormSelect from "@/components/form/select.vue";
@@ -248,7 +248,7 @@ import { deviceKind } from "@/scripts/device-kind";
 
 const MOBILE_THRESHOLD = 500;
 
-const isMobile = ref(
+const isMobile = $ref(
 	deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD
 );
 window.addEventListener("resize", () => {

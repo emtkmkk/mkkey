@@ -14,7 +14,7 @@
 					{{ i18n.ts.sensitive }}</b
 				>
 				<b v-if="(defaultStore.state.enableDataSaverMode && image.size) || !image.isSensitive" style="display: block"
-					><i class="ph-photo ph-bold ph-lg"></i>
+					><i class="ph-image ph-bold ph-lg"></i>
 					{{ defaultStore.state.enableDataSaverMode && image.size ? bytes(image.size,2) : i18n.ts.image }}</b
 				>
 				<span style="display: block">{{ i18n.ts.clickToShow }}</span>

@@ -75,12 +75,14 @@
 				<option value="always">{{ i18n.ts._remoteEmojisFetchForPc.always }}</option>
 				<option value="all">{{ i18n.ts._remoteEmojisFetchForPc.all }}</option>
 				<option value="plus">{{ i18n.ts._remoteEmojisFetchForPc.plus }}</option>
+				<option value="keep">{{ i18n.ts._remoteEmojisFetchForPc.keep }}</option>
 				<option value="none">{{ i18n.ts._remoteEmojisFetchForPc.none }}</option>
 			</FormSelect>
 			<FormSelect v-else v-model="remoteEmojisFetch" class="_formBlock">
 				<template #label>{{ i18n.ts.remoteEmojisFetch }}</template>
 				<option value="all">{{ i18n.ts._remoteEmojisFetch.all }}</option>
 				<option value="plus">{{ i18n.ts._remoteEmojisFetch.plus }}</option>
+				<option value="keep">{{ i18n.ts._remoteEmojisFetch.keep }}</option>
 				<option value="none">{{ i18n.ts._remoteEmojisFetch.none }}</option>
 				<option value="always">{{ i18n.ts._remoteEmojisFetch.always }}</option>
 			</FormSelect>

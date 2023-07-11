@@ -5,12 +5,17 @@
 			:hash="image.blurhash"
 			:title="image.comment"
 			:alt="image.comment"
+			:force-blurhash="defaultStore.state.enableDataSaverMode"
 		/>
 		<div class="text">
 			<div class="wrapper">
-				<b style="display: block"
+				<b v-if="image.isSensitive" style="display: block"
 					><i class="ph-warning ph-bold ph-lg"></i>
 					{{ i18n.ts.sensitive }}</b
+				>
+				<b style="display: block"
+					><i class="ph-photo ph-bold ph-lg"></i>
+					{{ defaultStore.state.enableDataSaverMode && image.size ? bytes(image.size) : i18n.ts.image }}</b
 				>
 				<span style="display: block">{{ i18n.ts.clickToShow }}</span>
 			</div>
@@ -45,6 +50,7 @@ import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import ImgWithBlurhash from "@/components/MkImgWithBlurhash.vue";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
+import bytes from '@/filters/bytes';
 
 const props = defineProps<{
 	image: misskey.entities.DriveFile;
@@ -65,7 +71,7 @@ watch(
 	() => props.image,
 	() => {
 		hide =
-			defaultStore.state.nsfw === "force"
+			defaultStore.state.nsfw === "force" || defaultStore.state.enableDataSaverMode
 				? true
 				: props.image.isSensitive &&
 				  defaultStore.state.nsfw !== "ignore";

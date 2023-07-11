@@ -35,6 +35,7 @@ export function uploadFile(
 	folder?: any,
 	name?: string,
 	keepOriginal: boolean = defaultStore.state.keepOriginalUploading,
+	keepFileName: boolean = defaultStore.state.keepFileName,
 ): Promise<Misskey.entities.DriveFile> {
 	if (folder && typeof folder === "object") folder = folder.id;
 
@@ -53,10 +54,9 @@ export function uploadFile(
 				reject();
 				return;
 			}
-
 			const ctx = reactive<Uploading>({
 				id: id,
-				name: name || file.name || "untitled",
+				name: name || (keepFileName ? file.name : undefined) || $i.username + "-" + id.replaceAll(".",""),
 				progressMax: undefined,
 				progressValue: undefined,
 				img: window.URL.createObjectURL(file),

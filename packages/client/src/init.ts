@@ -422,8 +422,9 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 			const lastEmojiFetchDate = localStorage.getItem("remoteEmojiData") ? JSON.parse(localStorage.getItem("remoteEmojiData"))?.emojiFetchDate : undefined;
 			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, localStorage.getItem("emojiFetchAttemptDate") ? parseInt(localStorage.getItem("emojiFetchAttemptDate"), 10) : 0);
 			const fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
+			const fetchTimeBorder = defaultStore.state.enableDataSaverMode ? 1000 * 60 * 60 * 12 : 1000 * 60 * 60 * 2
 
-			if (fetchModeMax === "always" || (Date.now() - emojiFetchDateInt) > 1000 * 60 * 120 || fetchModeMax !== (localStorage.getItem("lastFetchModeMax") ?? fetchModeMax)) {
+			if (fetchModeMax === "always" || (Date.now() - emojiFetchDateInt) > fetchTimeBorder || fetchModeMax !== (localStorage.getItem("lastFetchModeMax") ?? fetchModeMax)) {
 				// 常に取得がon or 最終取得日が無い or 前回取得から2時間以上 or 取得設定が前回と異なる場合取得
 				//一度キャッシュを破棄
 				if (fetchModeMax !== "keep") localStorage.setItem("remoteEmojiData", "");

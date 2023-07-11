@@ -209,7 +209,7 @@
 				{{ i18n.ts.useDrawerReactionPickerForMobile }}
 				<template #caption>{{ i18n.ts.needReloadToApply }}</template>
 			</FormSwitch>
-
+			
 			<FormSection>
 				<div style="display: flex; gap: var(--margin); flex-wrap: wrap">
 					<FormButton inline @click="preview"
@@ -372,7 +372,7 @@ watch(
 
 watch([
 	enableEmojiReactions,
-	remoteEmojisFetch,
+	remoteEmojisFetch
 	],
 	async () => {
 		await reloadAsk();

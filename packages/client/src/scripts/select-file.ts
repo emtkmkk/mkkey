@@ -26,6 +26,7 @@ function select(
 						defaultStore.state.uploadFolder,
 						undefined,
 						keepOriginal.value,
+						keepFileName.value,
 					),
 				);
 

@@ -1,14 +1,14 @@
 <template>
 	<div class="xubzgfgb" :class="{ cover }" :title="title">
 		<canvas
-			v-if="!loaded"
+			v-if="!loaded || forceBlurhash"
 			ref="canvas"
 			:width="size"
 			:height="size"
 			:title="title"
 		/>
 		<img
-			v-if="src"
+			v-if="src && !forceBlurhash"
 			:src="src"
 			:title="title"
 			:type="type"
@@ -26,11 +26,12 @@ const props = withDefaults(
 	defineProps<{
 		src?: string | null;
 		hash?: string;
-		alt?: string;
+		alt?: string | null;
 		type?: string | null;
 		title?: string | null;
 		size?: number;
 		cover?: boolean;
+		forceBlurhash?: boolean;
 	}>(),
 	{
 		src: null,
@@ -39,6 +40,7 @@ const props = withDefaults(
 		title: null,
 		size: 64,
 		cover: true,
+		forceBlurhash: false,
 	}
 );
 

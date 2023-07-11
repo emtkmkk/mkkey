@@ -15,7 +15,7 @@
 			</FormSwitch>
 		</div>
 
-		<div>
+		<div
 			<FromSlot class="_formBlock" v-if="!hiddenReactionDeckAndRecent">
 				<template #label>{{
 					i18n.ts.reactionSettingDescription
@@ -229,7 +229,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, watch } from "vue";
+import { ref, defineAsyncComponent, watch } from "vue";
 import XDraggable from "vuedraggable";
 import FormInput from "@/components/form/input.vue";
 import FormSelect from "@/components/form/select.vue";

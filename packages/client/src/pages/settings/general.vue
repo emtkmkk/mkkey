@@ -583,6 +583,9 @@ watch(
 		swipeOnDesktop,
 		seperateRenoteQuote,
 		showAdminUpdates,
+		developerTicker,
+		hiddenActivityChart,
+		remoteEmojisFetch,
 	],
 	async () => {
 		await reloadAsk();

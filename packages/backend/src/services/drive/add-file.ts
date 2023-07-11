@@ -480,11 +480,8 @@ export async function addFile({
 	//}
 
 	// detect name
-	// ローカルならファイル名を無視
 	const detectedName =
-		!user?.host && user?.username
-		? (info.type.ext ? `${user.username}-${uuid()}.${info.type.ext}` : name ?? `${user.username}-${uuid()}`)
-		: name || (info.type.ext ? `untitled.${info.type.ext}` : "untitled");
+		name || (info.type.ext ? `${user.username}${user.host ? "-" + user.host.replaceAll(/\W+/,"_") : ""}-${uuid()}.${info.type.ext}` : "untitled");
 
 	if (user && !force) {
 		// Check if there is a file with the same hash

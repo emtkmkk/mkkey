@@ -815,7 +815,7 @@ if (defaultStore.state.keepPostCw && cw) {
 if (defaultStore.state.keepCw && props.reply && props.reply.cw) {
 	useCw = true;
 	const replyCwText = props.reply.cw?.replaceAll(/(@[^\s]+\s)?(Re:\s?)/ig,"") ?? "";
-	cw = "@" + props.reply.username + (props.reply.host ? "@" + props.reply.host : "") + " Re: " + replyCwText;
+	cw = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " Re: " + replyCwText;
 }
 
 function watchForDraft() {

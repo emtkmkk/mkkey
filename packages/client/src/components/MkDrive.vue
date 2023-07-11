@@ -443,6 +443,7 @@ function upload(
 			: null,
 		undefined,
 		keepOriginal.value
+		keepFileName.value
 	).then((res) => {
 		addFile(res, true);
 	});

@@ -45,7 +45,7 @@
 		</MkFolder>
 	
 		<MkFolder
-			:key="category:null"
+			key="category:null"
 			class="emojis"
 		>
 			<template #header>{{ "カテゴリ未設定" }}</template>

@@ -442,7 +442,7 @@ function upload(
 			? folderToUpload.id
 			: null,
 		undefined,
-		keepOriginal.value
+		keepOriginal.value,
 		keepFileName.value
 	).then((res) => {
 		addFile(res, true);

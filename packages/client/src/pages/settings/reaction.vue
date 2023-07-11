@@ -70,6 +70,21 @@
 				{{ i18n.ts.japanCategory }}
 			</FormSwitch>
 			
+			<FormSelect v-if="!isMobile" v-model="remoteEmojisFetch" class="_formBlock">
+				<template #label>{{ i18n.ts.remoteEmojisFetch }}</template>
+				<option value="always">{{ i18n.ts._remoteEmojisFetchForPc.always }}</option>
+				<option value="all">{{ i18n.ts._remoteEmojisFetchForPc.all }}</option>
+				<option value="plus">{{ i18n.ts._remoteEmojisFetchForPc.plus }}</option>
+				<option value="none">{{ i18n.ts._remoteEmojisFetchForPc.none }}</option>
+			</FormSelect>
+			<FormSelect v-else v-model="remoteEmojisFetch" class="_formBlock">
+				<template #label>{{ i18n.ts.remoteEmojisFetch }}</template>
+				<option value="all">{{ i18n.ts._remoteEmojisFetch.all }}</option>
+				<option value="plus">{{ i18n.ts._remoteEmojisFetch.plus }}</option>
+				<option value="none">{{ i18n.ts._remoteEmojisFetch.none }}</option>
+				<option value="always">{{ i18n.ts._remoteEmojisFetch.always }}</option>
+			</FormSelect>
+			
 			<FormSection>
 				<FormRadios
 					v-model="favButtonReaction"
@@ -217,6 +232,7 @@
 import { defineAsyncComponent, watch } from "vue";
 import XDraggable from "vuedraggable";
 import FormInput from "@/components/form/input.vue";
+import FormSelect from "@/components/form/select.vue";
 import FormRadios from "@/components/form/radios.vue";
 import FromSlot from "@/components/form/slot.vue";
 import FormButton from "@/components/MkButton.vue";
@@ -228,6 +244,17 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deepClone } from "@/scripts/clone";
 import { unisonReload } from "@/scripts/unison-reload";
+import { deviceKind } from "@/scripts/device-kind";
+
+const MOBILE_THRESHOLD = 500;
+
+const isMobile = ref(
+	deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD
+);
+window.addEventListener("resize", () => {
+	isMobile.value =
+		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
+});
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({
@@ -275,6 +302,9 @@ const reactionAutoFocusSearchBar = $computed(
 );
 const japanCategory = $computed(
 	defaultStore.makeGetterSetter("japanCategory")
+);
+const remoteEmojisFetch = $computed(
+	defaultStore.makeGetterSetter("remoteEmojisFetch")
 );
 
 function save() {
@@ -340,8 +370,12 @@ watch(
 	}
 );
 
-watch(enableEmojiReactions, async () => {
-	await reloadAsk();
+watch([
+	enableEmojiReactions,
+	remoteEmojisFetch,
+	],
+	async () => {
+		await reloadAsk();
 });
 
 const headerActions = $computed(() => []);

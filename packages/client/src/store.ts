@@ -568,6 +568,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: false,	
 		},
+		enableDataSaverMode: {
+			where: 'device',
+			default: false,
+		},
 	}),
 );
 

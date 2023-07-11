@@ -1161,14 +1161,16 @@ _aboutMisskey:
   morePatrons: "他にも多くの方が支援してくれています。ありがとうございます！ 🥰"
   patrons: "支援者"
 _remoteEmojisFetch:
-  all: "全て (通信量中)"
-  plus: "一部 (通信量小)"
-  none: "更新を停止 (通信量最小)"
-  always: "常に最新に (通信量特大、非推奨)"
+  all: "全て"
+  plus: "一部 (通信量削減)"
+  keep: "更新を停止 (データ保持)"
+  none: "取得しない (データ破棄)"
+  always: "常に最新に (通信量注意)"
 _remoteEmojisFetchForPc:
   all: "全て"
   plus: "一部"
-  none: "更新を停止"
+  keep: "更新を停止 (データ保持)"
+  none: "取得しない (データ破棄)"
   always: "常に最新に"
 _nsfw:
   respect: "閲覧注意のメディアは隠す"

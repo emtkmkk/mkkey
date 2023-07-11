@@ -55,7 +55,7 @@ export function uploadFile(
 				return;
 			}
 			
-			const ext = /.\w+$/.exec(file.name) ?? undefined;
+			const ext = /\.\w+$/.exec(file.name) ?? undefined;
 			
 			const ctx = reactive<Uploading>({
 				id: id,

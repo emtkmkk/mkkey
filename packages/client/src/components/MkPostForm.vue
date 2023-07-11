@@ -814,7 +814,8 @@ if (defaultStore.state.keepPostCw && cw) {
 // keep cw when reply
 if (defaultStore.state.keepCw && props.reply && props.reply.cw) {
 	useCw = true;
-	cw = props.reply.cw;
+	const replyCwText = props.reply.cw?.replaceAll(/(@[^\s]+\s)?(Re:\s?)/ig,"") ?? "";
+	cw = "@" + props.reply.username + (props.reply.host ? "@" + props.reply.host : "") + " Re: " + replyCwText;
 }
 
 function watchForDraft() {
@@ -1195,6 +1196,7 @@ async function postFifth() {
 async function post() {
 	const processedText = preprocess(text);
 	
+	if (!cw && useCw) cw = " ";
 	if (cw && !useCw) cw = "";
 
 	let postData = {

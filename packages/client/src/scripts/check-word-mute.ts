@@ -172,7 +172,7 @@ function checkMuteKeyword(
 	if (keyword.startsWith("filter:")) {
 		const filterKeyword = keyword.replace("filter:", "").toLowerCase();
 		if (filterKeyword.includes("mention")) {
-			const isMention = (note.mentions && !note.replyId);
+			const isMention = ((note.mentions || note.includes("@")) && !note.replyId);
 			return !!isMention;
 		}
 		if (filterKeyword.includes("reply")) {

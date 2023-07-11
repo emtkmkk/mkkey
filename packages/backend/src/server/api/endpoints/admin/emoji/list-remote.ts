@@ -99,7 +99,7 @@ export default define(meta, paramDef, async (ps) => {
 		q.andWhere("emoji.name like :query", { query: `%${ps.query}%` });
 	}
 
-	const emojis = await q.orderBy("emoji.id", "DESC").take(ps.limit).getMany();
+	const emojis = await ps.query ? q.orderBy("length(emoji.name)", "ASC").addOrderBy("emoji.id", "DESC").take(ps.limit).getMany() : q.orderBy("emoji.id", "DESC").take(ps.limit).getMany();
 
 	return Emojis.packMany(emojis);
 });

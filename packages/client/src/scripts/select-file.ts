@@ -13,6 +13,7 @@ function select(
 ): Promise<DriveFile | DriveFile[]> {
 	return new Promise((res, rej) => {
 		const keepOriginal = ref(defaultStore.state.keepOriginalUploading);
+		const keepFileName = ref(defaultStore.state.keepFileName);
 
 		const chooseFileFromPc = () => {
 			const input = document.createElement("input");
@@ -93,11 +94,6 @@ function select(
 					  }
 					: undefined,
 				{
-					type: "switch",
-					text: i18n.ts.keepOriginalUploading,
-					ref: keepOriginal,
-				},
-				{
 					text: i18n.ts.upload,
 					icon: "ph-upload-simple ph-bold ph-lg",
 					action: chooseFileFromPc,
@@ -111,6 +107,16 @@ function select(
 					text: i18n.ts.fromUrl,
 					icon: "ph-link-simple ph-bold ph-lg",
 					action: chooseFileFromUrl,
+				},
+				{
+					type: "switch",
+					text: i18n.ts.keepOriginalUploading,
+					ref: keepOriginal,
+				},
+				{
+					type: "switch",
+					text: i18n.ts.keepFileName,
+					ref: keepFileName,
 				},
 			],
 			src,

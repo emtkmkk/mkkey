@@ -13,7 +13,7 @@
 					><i class="ph-warning ph-bold ph-lg"></i>
 					{{ i18n.ts.sensitive }}</b
 				>
-				<b style="display: block"
+				<b v-if="(defaultStore.state.enableDataSaverMode && image.size) || !image.isSensitive" style="display: block"
 					><i class="ph-photo ph-bold ph-lg"></i>
 					{{ defaultStore.state.enableDataSaverMode && image.size ? bytes(image.size) : i18n.ts.image }}</b
 				>

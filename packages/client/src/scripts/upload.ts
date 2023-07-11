@@ -54,9 +54,12 @@ export function uploadFile(
 				reject();
 				return;
 			}
+			
+			const ext = /.\w+$/.exec(file.name) ?? undefined;
+			
 			const ctx = reactive<Uploading>({
 				id: id,
-				name: name || (keepFileName ? file.name : undefined) || $i.username + "-" + id.replaceAll(".",""),
+				name: name || (keepFileName ? file.name : undefined) || $i.username + "-" + id.replaceAll(".","") + (ext?.[0] ?? ""),
 				progressMax: undefined,
 				progressValue: undefined,
 				img: window.URL.createObjectURL(file),

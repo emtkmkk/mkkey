@@ -658,47 +658,51 @@ router.get("(.*)", async (ctx) => {
 	let gNotesCount = await Notes.count({ where: { userHost: Not(IsNull()) }, cache: 21600000 }); //6h
 	let emojisCount = await Emojis.count({ where: { host: IsNull() }, cache: 21600000 }); //6h
 	let gEmojisCount = await Emojis.count({ where: { host: Not(IsNull()) }, cache: 21600000 }); //6h
-	let motd = ["Loading..."];
+	let motd = [];
+	let motdd = []; //日付のmotd
+	let motdt = []; //統計のmotd
 	if (meta.customMOTD.length > 0) {
-		motd = meta.customMOTD;
+		motdt = meta.customMOTD;
 	}
-	motd.push("もこきーのユーザ数は " + usersCount + " です");
-	motd.push("もこきーの合計投稿数は " + notesCount + " です");
-	motd.push("もこきーの連合ユーザ数は " + gUsersCount + " です");
-	motd.push("もこきーの連合投稿数は " + gNotesCount + " です");
-	motd.push("もこきーの絵文字数は " + emojisCount + " です");
-	motd.push("使用できる全絵文字数は " + (emojisCount + gEmojisCount) + " です");
 	const now = new Date();
 	let nowDate = new Date().toLocaleDateString('ja-JP');
-	motd.push("今日は " + nowDate + " です");
+	motdd.push("今日は " + nowDate + " です");
 	switch (now.getDay()){
 		case 0:
-		motd.push("今日は日曜日 すやすや");
+		motdd.push("今日は日曜日 すやすや");
 		break;
 		case 1:
-		motd.push("今日は月曜日 一週間のはじまり");
+		motdd.push("今日は月曜日 一週間のはじまり");
 		break;
 		case 2:
-		motd.push("今日は火曜日 エンジンかけてこ");
+		motdd.push("今日は火曜日 エンジンかけてこ");
 		break;
 		case 3:
-		motd.push("今日は水曜日 すいすい");
+		motdd.push("今日は水曜日 すいすい");
 		break;
 		case 4:
-		motd.push("今日は木曜日 もくもく");
+		motdd.push("今日は木曜日 もくもく");
 		break;
 		case 5:
-		motd.push("今日は金曜日 今週もお疲れ様");
+		motdd.push("今日は金曜日 今週もお疲れ様");
 		break;
 		case 6:
-		motd.push("今日は土曜日 一休みしよね");
+		motdd.push("今日は土曜日 一休みしよね");
 		break;
 	}
+	motdt.push("もこきーのユーザ数は " + usersCount + " です");
+	motdt.push("もこきーの合計投稿数は " + notesCount + " です");
+	motdt.push("もこきーの連合ユーザ数は " + gUsersCount + " です");
+	motdt.push("もこきーの連合投稿数は " + gNotesCount + " です");
+	motdt.push("もこきーの絵文字数は " + emojisCount + " です");
+	motdt.push("もこきーの全絵文字数は " + (emojisCount + gEmojisCount) + " です");
 	//季節メッセージ
 	if (now.getMonth() === 0) {
 		motd.push("冬ですね");
 		if (now.getDate() == 1) {
 			motd = ["HAPPY NEW YEAR " + now.getFullYear() + " 🎉", "あけましておめでとうございます！"];
+			motdd = [];
+			motdt = [];
 		} else if (now.getDate() <= 3) {
 			motd.push("HAPPY NEW YEAR " + now.getFullYear() + " 🎉");
 			motd.push("あけましておめでとうございます！")
@@ -773,11 +777,15 @@ router.get("(.*)", async (ctx) => {
 		motd.push("冬がやってきますね");
 		if (now.getDate() == 26) {
 			motd = ["今日はもこきー " + (now.getFullYear() - 2022) + " 周年の日です！🎉"];
+			motdd = [];
+			motdt = [];
 		}
 	} else if (now.getMonth() == 11) {
 		motd.push("冬が始まってきますね");
 		if (now.getDate() == 31 && now.getHours() >= 18) {
 			motd = [now.getFullYear() + "年もお疲れ様でした。来年も頑張りましょう"];
+			motdd = [];
+			motdt = [];
 		} else if (now.getDate() >= 19 && now.getDate() <= 23) {
 			motd.push("大体このへんで夜が最も長いらしい");
 			motd.push("お風呂にゆずを入れましょう");
@@ -792,6 +800,8 @@ router.get("(.*)", async (ctx) => {
 		}
 	}
 	//季節メッセージ 終わり
+	//季節 : 6 , 日付 : 3 , 統計・その他 : 1
+	motd = [...motd,...motd,...motd,...motd,...motd,...motd,...motdd,...motdd,...motdd,...motdt,];
 	let splashIconUrl = meta.iconUrl;
 	if (meta.customSplashIcons.length > 0) {
 		splashIconUrl =

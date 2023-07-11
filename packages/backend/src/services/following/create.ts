@@ -245,6 +245,7 @@ export default async function (
 
 	// フォロー対象が鍵アカウントである or
 	// The follower is silenced, or
+	// フォロー対象がリモート配信を制限しており、フォロワーがリモートユーザー or
 	// フォロワーがBotであり、フォロー対象がBotからのフォローに慎重である or
 	// フォロワーがローカルユーザーであり、フォロー対象がリモートユーザーである or
 	// The follower is remote, the followee is local, and the follower is in a silenced instance.
@@ -252,6 +253,7 @@ export default async function (
 	if (
 		followee.isLocked ||
 		followee.isSilentLocked ||
+		(followee.blockPostNotLocal && Users.isRemoteUser(follower)) ||
 		follower.isSilenced ||
 		(followeeProfile.carefulBot && follower.isBot) ||
 		(Users.isLocalUser(follower) && Users.isRemoteUser(followee)) ||

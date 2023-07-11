@@ -300,7 +300,14 @@
 			i18n.ts.developerTicker
 		}}</FormSwitch>
 		
-		<FormSelect v-model="remoteEmojisFetch" class="_formBlock">
+		<FormSelect v-if="!isMobile" v-model="remoteEmojisFetch" class="_formBlock">
+			<template #label>{{ i18n.ts.remoteEmojisFetch }}</template>
+			<option value="always">{{ i18n.ts._remoteEmojisFetchForPc.always }}</option>
+			<option value="all">{{ i18n.ts._remoteEmojisFetchForPc.all }}</option>
+			<option value="plus">{{ i18n.ts._remoteEmojisFetchForPc.plus }}</option>
+			<option value="none">{{ i18n.ts._remoteEmojisFetchForPc.none }}</option>
+		</FormSelect>
+		<FormSelect v-else v-model="remoteEmojisFetch" class="_formBlock">
 			<template #label>{{ i18n.ts.remoteEmojisFetch }}</template>
 			<option value="all">{{ i18n.ts._remoteEmojisFetch.all }}</option>
 			<option value="plus">{{ i18n.ts._remoteEmojisFetch.plus }}</option>
@@ -361,6 +368,20 @@ import * as os from "@/os";
 import { unisonReload } from "@/scripts/unison-reload";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { deviceKind } from "@/scripts/device-kind";
+
+const DESKTOP_THRESHOLD = 1100;
+const MOBILE_THRESHOLD = 500;
+
+// デスクトップでウィンドウを狭くしたときモバイルUIが表示されて欲しいことはあるので deviceKind === 'desktop' の判定は行わない
+const isDesktop = ref(window.innerWidth >= DESKTOP_THRESHOLD);
+const isMobile = ref(
+	deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD
+);
+window.addEventListener("resize", () => {
+	isMobile.value =
+		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
+});
 
 const lang = ref(localStorage.getItem("lang"));
 const fontSize = ref(localStorage.getItem("fontSize"));

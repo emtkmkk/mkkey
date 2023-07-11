@@ -562,7 +562,7 @@ export const defaultStore = markRaw(
 		},
 		remoteEmojisFetch: {
 			where: "device",
-			default: "all" as "all" | "plus" | "none" | "alwaysAll",
+			default: "all" as "all" | "plus" | "keep" | "none" | "always",
 		},
 		keepFileName: {
 			where: "account",

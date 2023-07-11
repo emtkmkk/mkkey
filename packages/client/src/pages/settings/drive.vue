@@ -8,7 +8,7 @@
 			<FormSplit>
 				<MkKeyValue class="_formBlock">
 					<template #key>{{ i18n.ts.capacity }}</template>
-					<template #value>{{ bytes(capacity, 1) + (capacity - DEFAULT_CAPACITY !== 0 ? ` (+${bytes(capacity - DEFAULT_CAPACITY, 1)} ${~~(((capacity - DEFAULT_CAPACITY) / (MAX_CAPACITY - DEFAULT_CAPACITY)) * 100)}% 拡張済み)` : "") }}</template>
+					<template #value>{{ bytes(capacity, 1) + (capacity - DEFAULT_CAPACITY <= 0 ? ` (+${bytes(capacity - DEFAULT_CAPACITY, 1)} ${~~(((capacity - DEFAULT_CAPACITY) / (MAX_CAPACITY - DEFAULT_CAPACITY)) * 100)}% 拡張済み)` : "") }}</template>
 				</MkKeyValue>
 				<MkKeyValue class="_formBlock">
 					<template #key>{{ i18n.ts.inUse }}</template>
@@ -46,6 +46,9 @@
 				<template #caption>{{
 					i18n.ts.keepOriginalUploadingDescription
 				}}</template>
+			</FormSwitch>
+			<FormSwitch v-model="keepFileName" class="_formBlock">
+				<template #label>{{ i18n.ts.keepFileName }}</template>
 			</FormSwitch>
 			<FormSwitch
 				v-model="alwaysMarkNsfw"
@@ -111,6 +114,10 @@ const meterStyle = computed(() => {
 
 const keepOriginalUploading = computed(
 	defaultStore.makeGetterSetter("keepOriginalUploading")
+);
+
+const keepFileName = computed(
+	defaultStore.makeGetterSetter("keepFileName")
 );
 
 os.api("drive").then((info) => {

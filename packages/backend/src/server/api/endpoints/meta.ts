@@ -458,7 +458,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_all_emojis",
 			milliseconds: 3600000, // 1 hour
 		},
-	})).filter((x) => !emojiNames.includes(x.name) && (x.name?.length ?? 0) < 50 && (x.host?.length ?? 0) < 35 && (x.publicUrl?.length ?? 0) < 120) : undefined;
+	})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net"].includes(x.host) && (x.name?.length ?? 0) < 50 && (x.host?.length ?? 0) < 35 && (x.publicUrl?.length ?? 0) < 120) : undefined;
 
 	const ads = await Ads.find({
 		where: {

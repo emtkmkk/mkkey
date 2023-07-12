@@ -5,9 +5,11 @@ import type { User } from "@/models/entities/user.js";
 import { Notes, DriveFiles, UserProfiles, Users } from "@/models/index.js";
 
 export default async function (user: User) {
+	const username = user.name.replace(/ ?:.*?:/, '') || user.username;
+	
 	const author = {
 		link: `${config.url}/@${user.username}`,
-		name: user.name || user.username,
+		name: username,
 	};
 
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
@@ -17,6 +19,7 @@ export default async function (user: User) {
 			userId: user.id,
 			renoteId: IsNull(),
 			visibility: In(["public", "home"]),
+			localOnly: false,
 		},
 		order: { createdAt: -1 },
 		take: 20,
@@ -27,11 +30,11 @@ export default async function (user: User) {
 		title: `${author.name} (@${user.username}@${config.host})`,
 		updated: notes[0].createdAt,
 		generator: "Calckey",
-		description: `${user.notesCount} Notes, ${
+		description: `${user.notesCount} 投稿, ${
 			user.followingCount
-		} Following, ${
+		} フォロー, ${
 			user.followersCount
-		} Followers${profile.description ? ` · ${profile.description}` : ""}`,
+		} フォロワー${profile.description ? ` · ${profile.description}` : ""}`,
 		link: author.link,
 		image: await Users.getAvatarUrl(user),
 		feedLinks: {
@@ -39,7 +42,7 @@ export default async function (user: User) {
 			atom: `${author.link}.atom`,
 		},
 		author,
-		copyright: user.name || user.username,
+		copyright: username,
 	});
 
 	for (const note of notes) {
@@ -52,7 +55,7 @@ export default async function (user: User) {
 		const file = files.find((file) => file.type.startsWith("image/"));
 
 		feed.addItem({
-			title: `New note by ${author.name}`,
+			title: `新着投稿 : ${author.name}`,
 			link: `${config.url}/notes/${note.id}`,
 			date: note.createdAt,
 			description: note.cw || undefined,

@@ -1,11 +1,11 @@
 <template>
 	<div class="tdflqwzn" :class="{ isMe }">
 		<XReaction
-			v-for="(count, reaction) in reactions"
-			:key="reaction"
-			:reaction="reaction"
-			:count="count"
-			:is-initial="initialReactions.has(reaction)"
+			v-for="reaction in arrayReactions"
+			:key="reaction.name"
+			:reaction="reaction.name"
+			:count="reaction.count"
+			:is-initial="initialReactions.has(reaction.name)"
 			:note="note"
 		/>
 	</div>
@@ -38,6 +38,11 @@ const reactions = computed(() => {
 	});
 	
 	return {...mergeReactions, ..._reactions};
+});
+
+const sortedReactions = computed(() => {
+	const arrayReactions = Object.keys(reactions).map((x) => { name:x, count:reactions[x] }).sort((a,b) => b.count - a.count));
+	return arrayReactions;
 });
 
 const initialReactions = new Set(Object.keys(unref(reactions)));

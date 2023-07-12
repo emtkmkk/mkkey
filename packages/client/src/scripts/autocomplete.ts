@@ -305,7 +305,7 @@ export class Autocomplete {
 
 				nextTick(() => {
 					this.textarea.focus();
-					const regex = /\n?(<\/\w*>|\\\)|\\\]|[\]*~`])+$/.exec(trimText);
+					const regex = /\n?(<\/\w*>|\\\)|\\\]|\s\[Search\]|\s\[検索\]|[\]*~`])+$/.exec(trimText);
 					const pos = regex
 						? trimmedBefore.length + (trimText.length - regex[0].length)
 						: trimmedBefore.length + trimText.length;

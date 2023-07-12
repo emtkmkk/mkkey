@@ -1,10 +1,10 @@
 <template>
 	<div class="alqyeyti" :class="{ oneline }">
-		<div class="key">
-			<slot name="key" @click="$emit('keyClick')"></slot>
+		<div class="key" @click="$emit('keyClick')">
+			<slot name="key"></slot>
 		</div>
-		<div class="value">
-			<slot name="value" @click="$emit('valueClick')"></slot>
+		<div class="value" @click="$emit('valueClick')">
+			<slot name="value"></slot>
 			<button
 				v-if="copy"
 				v-tooltip="i18n.ts.copy"

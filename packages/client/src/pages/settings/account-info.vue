@@ -272,8 +272,8 @@ const headerActions = $computed(() => [{
 const headerTabs = $computed(() => []);
 
 function post() {
-	if (stats.value && stats.power.value && stats.powerRank.value) {
-		os.post({initialText: `<center>私のパワーは\n$[x2 $[tada ${number(stats.power.value)}]]\nです。\n\nランクは$[x2 $[tada ${stats.powerRank.value.replace("⭐","$[rainbow.speed=2s ⭐]")}]] ( ${stats.nextRank.value ?? "?%"} )\nです。</center>\n\n#もこきーパワー`});
+	if (stats.value && stats.value.power && stats.value.powerRank) {
+		os.post({initialText: `<center>私のパワーは\n$[x2 $[tada ${number(stats.value.power)}]]\nです。\n\nランクは$[x2 $[tada ${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}]] ( ${stats.value.nextRank ?? "?%"} )\nです。</center>\n\n#もこきーパワー`});
 	}
 }
 

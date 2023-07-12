@@ -159,7 +159,7 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>取得状態</template>
 				<template #value>{{
-					instance.remoteEmojiMode === "all" ? "全て" : instance.remoteEmojiMode === "plus" ? "一部" : "無し"
+					(instance.remoteEmojiMode === "all" ? "全て" : instance.remoteEmojiMode === "plus" ? "一部" : "無し") + (!instance.remoteEmojiMode || localStorage.getItem("remoteEmojiData") ? "" : " (キャッシュ無し)")
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">

@@ -24,6 +24,16 @@ const props = defineProps<{
 
 const reactions = computed(() => {
 	let _reactions = {...props.note.reactions};
+
+	if (note.tags && note.text?.includes("#ゴルベーザ四天王バトル")) {
+		if (!_reactions["🅰"]) {
+			_reactions["🅰"] = 0;
+		}
+		if (!_reactions["🅱"]) {
+			_reactions["🅱"] = 0;
+		}
+	}
+
 	const localReactions = Object.keys(_reactions).filter(x => x.endsWith("@.:"));
 	const mergeReactions = {};
 	
@@ -36,7 +46,6 @@ const reactions = computed(() => {
 		});
 		mergeReactions[localReaction] = totalCount;
 	});
-	
 	return {...mergeReactions, ..._reactions};
 });
 

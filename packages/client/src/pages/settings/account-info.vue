@@ -262,9 +262,20 @@ onMounted(() => {
 	});
 });
 
-const headerActions = $computed(() => []);
+const headerActions = $computed(() => [{
+		icon: "ph-note-pencil ph-bold ph-lg",
+		text: i18n.ts.postForm,
+		iconOnly: true,
+		handler: post,
+	}]);
 
 const headerTabs = $computed(() => []);
+
+function post() {
+	if (stats && stats.power && stats.powerRank) {
+		os.post({initialText: `<center>私のパワーは\n$[x2 $[tada ${number(stats.power)}]]\nです。\n\nランクは$[x2 $[tada ${stats.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}]] ( ${stats.nextRank ?? "?%"} )\nです。</center>\n\n#もこきーパワー`});
+	}
+}
 
 definePageMetadata({
 	title: i18n.ts.accountInfo,

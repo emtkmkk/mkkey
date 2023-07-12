@@ -25,7 +25,7 @@ const props = defineProps<{
 const reactions = computed(() => {
 	let _reactions = {...props.note.reactions};
 
-	if (note.tags && note.text?.includes("#ゴルベーザ四天王バトル")) {
+	if (props.note.tags && props.note.text?.includes("#ゴルベーザ四天王バトル")) {
 		if (!_reactions["🅰"]) {
 			_reactions["🅰"] = 0;
 		}

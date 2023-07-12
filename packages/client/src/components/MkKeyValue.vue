@@ -1,9 +1,9 @@
 <template>
 	<div class="alqyeyti" :class="{ oneline }">
-		<div class="key" @click="$emit('keyClick')">
+		<div class="key" @click="">
 			<slot name="key"></slot>
 		</div>
-		<div class="value" @click="$emit('valueClick')">
+		<div class="value">
 			<slot name="value"></slot>
 			<button
 				v-if="copy"
@@ -13,6 +13,15 @@
 				@click="copy_"
 			>
 				<i class="ph-clipboard-text ph-bold"></i>
+			</button>
+			<button
+				v-if="post"
+				v-tooltip="i18n.ts.postForm"
+				class="_textButton"
+				style="margin-left: 0.5em"
+				@click="$emit('postAction')"
+			>
+				<i class="ph-note-pencil ph-bold"></i>
 			</button>
 		</div>
 	</div>
@@ -28,10 +37,12 @@ const props = withDefaults(
 	defineProps<{
 		copy?: string | null;
 		oneline?: boolean;
+		post?: boolean;
 	}>(),
 	{
 		copy: null,
 		oneline: false,
+		post: false,
 	}
 );
 

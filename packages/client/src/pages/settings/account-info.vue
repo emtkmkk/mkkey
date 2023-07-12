@@ -18,11 +18,11 @@
 
 		<FormSection v-if="stats">
 			<template #label>{{ i18n.ts.statistics }}</template>
-			<MkKeyValue oneline style="margin: 1em 0">
+			<MkKeyValue oneline style="margin: 1em 0" @click="post">
 				<template #key>{{ i18n.ts.power }}</template>
 				<template #value>{{ number(stats.power) }}</template>
 			</MkKeyValue>
-			<MkKeyValue oneline style="margin: 1em 0">
+			<MkKeyValue oneline style="margin: 1em 0" @click="post">
 				<template #key>{{ i18n.ts.powerRank }}</template>
 				<template #value>{{ (stats.powerRank ?? "N/A") + " ( " + (stats.nextRank ?? "N/A") + " )" }}</template>
 			</MkKeyValue>

@@ -113,7 +113,7 @@ export const defaultStore = markRaw(
 				":taikin:",
 				":oyasumi2:",
 				":regretcar:",
-				":ablobdj:",
+				":tblob_avicii:",
 			],
 		},
 		hiddenReactionDeckAndRecent: {

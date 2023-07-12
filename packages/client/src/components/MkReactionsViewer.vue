@@ -1,7 +1,7 @@
 <template>
 	<div class="tdflqwzn" :class="{ isMe }">
 		<XReaction
-			v-for="reaction in arrayReactions"
+			v-for="reaction in sortedReactions"
 			:key="reaction.name"
 			:reaction="reaction.name"
 			:count="reaction.count"

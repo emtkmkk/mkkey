@@ -159,7 +159,7 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>取得状態</template>
 				<template #value>{{
-					(instance.remoteEmojiMode === "all" ? "全て" : instance.remoteEmojiMode === "plus" ? "一部" : "無し") + (!instance.remoteEmojiMode || localStorage.getItem("remoteEmojiData") ? "" : " (キャッシュ無し)")
+					(instance.remoteEmojiMode === "all" ? "全て" : instance.remoteEmojiMode === "plus" ? "一部" : "無し") + (!instance.remoteEmojiMode || true ? "" : " (キャッシュ無し)")
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
@@ -272,8 +272,8 @@ const headerActions = $computed(() => [{
 const headerTabs = $computed(() => []);
 
 function post() {
-	if (stats && stats.power && stats.powerRank) {
-		os.post({initialText: `<center>私のパワーは\n$[x2 $[tada ${number(stats.power)}]]\nです。\n\nランクは$[x2 $[tada ${stats.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}]] ( ${stats.nextRank ?? "?%"} )\nです。</center>\n\n#もこきーパワー`});
+	if (stats.value && stats.power.value && stats.powerRank.value) {
+		os.post({initialText: `<center>私のパワーは\n$[x2 $[tada ${number(stats.power.value)}]]\nです。\n\nランクは$[x2 $[tada ${stats.powerRank.value.replace("⭐","$[rainbow.speed=2s ⭐]")}]] ( ${stats.nextRank.value ?? "?%"} )\nです。</center>\n\n#もこきーパワー`});
 	}
 }
 

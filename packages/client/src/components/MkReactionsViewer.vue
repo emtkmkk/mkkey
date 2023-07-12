@@ -41,7 +41,7 @@ const reactions = computed(() => {
 });
 
 const sortedReactions = computed(() => {
-	const arrayReactions = Object.keys(reactions).map((x) => { name:x, count:reactions[x] }).sort((a,b) => b.count - a.count));
+	const arrayReactions = Object.keys(reactions).map((x) => { name:x, count:reactions[x] }).sort((a,b) => b.count - a.count);
 	return arrayReactions;
 });
 

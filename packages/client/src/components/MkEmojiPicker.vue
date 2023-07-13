@@ -855,6 +855,13 @@ function done(query?: any): boolean | void {
 			chosen(":" + emojiForceStd[1] + ":")
 		}
 	}
+	const exactMatchUnicode = emojilist.find(
+		(emoji) => emoji.char === q2 || emoji.name === q2
+	);
+	if (exactMatchUnicode) {
+		chosen(exactMatchUnicode);
+		return true;
+	}
 	if (q2.endsWith(' -f') || q2.endsWith('!')) {
 		const q3 = query.replace(/( -f|!)$/, "");
 		const exactMatchCustom = customEmojis.find((emoji) => emoji.name === q3);

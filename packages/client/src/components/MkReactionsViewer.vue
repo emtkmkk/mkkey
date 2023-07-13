@@ -38,7 +38,9 @@ const reactions = computed(() => {
 	const mergeReactions = {};
 	
 	localReactions.forEach((localReaction) => {
+		if (!_reactions || _reactions.length === 0) return;
 		const targetReactions = Object.keys(_reactions).filter(x => x.replaceAll("_","").startsWith(localReaction.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@")));
+		if (targetReactions?.length === 0) return;
 		let totalCount = 0;
 		let maxReaction = { reaction: localReaction, count: _reactions[localReaction] };
 		targetReactions.forEach(x => {

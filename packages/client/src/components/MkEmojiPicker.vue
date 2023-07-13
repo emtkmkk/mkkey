@@ -97,7 +97,7 @@
 				</section>
 
 				<div v-if="!$store.state.hiddenReactionDeckAndRecent && tab === 'index' && searchResultCustom.length <= 0 && (q == null || q === '')" class="group index">
-					<template v-if="!showPinned || (pinned2?.length + pinned3?.length + pinned4?.length + pinned5?.length) === 0">
+					<template v-if="!showPinned || ((pinned2?.length ?? 0) + (pinned3?.length ?? 0) + (pinned4?.length ?? 0) + (pinned5?.length ?? 0)) === 0">
 						<section v-if="showPinned">
 							<div class="body">
 								<button

@@ -42,7 +42,7 @@ const reactions = computed(() => {
 		let totalCount = 0;
 		let maxReaction = { reaction: localReaction, count: _reactions[localReaction] };
 		targetReactions.forEach(x => {
-			if (note.myReaction === x || (!localReaction.endsWith("@.:") && maxReaction.count < _reactions[x])) {
+			if (props.note.myReaction === x || (!localReaction.endsWith("@.:") && maxReaction.count < _reactions[x])) {
 				maxReaction = { reaction: x, count: _reactions[x] };
 			}
 			totalCount += _reactions[x];

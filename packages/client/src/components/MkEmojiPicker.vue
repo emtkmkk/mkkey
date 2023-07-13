@@ -145,7 +145,7 @@
 								pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ "ピン留め絵文字 : 1" }}</XSection
+							>{{ "ピン留め絵文字 : 1 " }}</XSection
 						>
 						<XSection
 							key="pinned:2"
@@ -154,7 +154,7 @@
 								pinned2.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ "ピン留め絵文字 : 2" }}</XSection
+							>{{ "ピン留め絵文字 : 2 " }}</XSection
 						>
 						<XSection
 							key="pinned:3"
@@ -163,7 +163,7 @@
 								pinned3.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ "ピン留め絵文字 : 3" }}</XSection
+							>{{ "ピン留め絵文字 : 3 " }}</XSection
 						>
 						<XSection
 							key="pinned:4"
@@ -172,7 +172,7 @@
 								pinned4.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ "ピン留め絵文字 : 4" }}</XSection
+							>{{ "ピン留め絵文字 : 4 " }}</XSection
 						>
 						<XSection
 							key="pinned:5"
@@ -181,7 +181,7 @@
 								pinned5.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ "ピン留め絵文字 : 5" }}</XSection
+							>{{ "ピン留め絵文字 : 5 " }}</XSection
 						>
 						<XSection
 							key="recentlyUsed"

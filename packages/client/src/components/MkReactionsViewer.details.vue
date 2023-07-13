@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts" setup>
-import {computed} from "vue";
+import { computed } from "vue";
 import MkTooltip from "./MkTooltip.vue";
 import XReactionIcon from "@/components/MkReactionIcon.vue";
 

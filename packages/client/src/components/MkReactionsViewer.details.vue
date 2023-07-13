@@ -44,7 +44,7 @@ const props = defineProps<{
 }>();
 
 const localUserOnly = computed(() => {
-	return !users.some((x) => x.host)
+	return !props.users.some((x) => x.host)
 });
 
 const emit = defineEmits<{

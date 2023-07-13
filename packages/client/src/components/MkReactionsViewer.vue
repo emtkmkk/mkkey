@@ -61,11 +61,11 @@ const sortedReactions = computed(() => {
 	}).sort((a,b) => {
 		//前回取得時に存在したものを左に（位置を変えない為）
 		//そうでない場合数順に
-		lastSortedReactions.has(a.name) && lastSortedReactions.has(b.name)
+		lastSortedReactions.includes(a.name) && lastSortedReactions.includes(b.name)
 			? 0 
-			: lastSortedReactions.has(a.name)
+			: lastSortedReactions.includes(a.name)
 				? -1
-				: lastSortedReactions.has(b.name)
+				: lastSortedReactions.includes(b.name)
 					? 1
 					: b.count - a.count
 	});

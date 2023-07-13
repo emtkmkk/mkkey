@@ -34,7 +34,7 @@ const reactions = computed(() => {
 		}
 	}
 
-	const localReactions = Object.keys(_reactions);
+	const localReactions = Object.keys(_reactions).filter((x) => x.includes("@"));
 	const mergeReactions = {};
 	
 	localReactions.forEach((localReaction) => {

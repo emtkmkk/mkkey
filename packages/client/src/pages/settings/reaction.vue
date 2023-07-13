@@ -419,7 +419,7 @@ const remoteEmojisFetch = $computed(
 	defaultStore.makeGetterSetter("remoteEmojisFetch")
 );
 
-const editPage = tab === 'reactions' 
+let editPage = tab === 'reactions' 
 		? reactions
 		: tab === 'reactions2' 
 			? reactions2

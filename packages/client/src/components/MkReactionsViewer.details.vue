@@ -13,7 +13,8 @@
 					class="icon"
 					:no-style="true"
 				/>
-				<div class="name">{{ localUserOnly ? reaction.replace("@.","") : reaction.replace(/@[\w:\.\-]+:$/,":") }}</div>
+				<div class="name">{{ reaction.replace(/@[\w:\.\-]+:$/,":") }}</div>
+				<div class="name" v-if="!reaction.endsWith("@.:")">{{ "Image : " + (/@([\w:\.\-]+):$/.exec(reaction)?.[1] ?? "???") }}</div>
 			</div>
 			<div class="users">
 				<div v-for="u in users" :key="u.id" class="user">

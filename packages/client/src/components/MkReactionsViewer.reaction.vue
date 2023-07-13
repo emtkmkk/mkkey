@@ -70,7 +70,7 @@ useTooltip(
 	async (showing) => {
 		const reactions = await os.apiGet("notes/reactions", {
 			noteId: props.note.id,
-			type: props.reaction.replace(/@[\w:\.\-]+:$/,"@."),
+			type: props.reaction.replace(/@[\w:\.\-]+:$/,""),
 			limit: 11,
 			_cacheKey_: props.count,
 		});

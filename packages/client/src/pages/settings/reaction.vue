@@ -419,8 +419,7 @@ const remoteEmojisFetch = $computed(
 	defaultStore.makeGetterSetter("remoteEmojisFetch")
 );
 
-const editPage = $computed(() => {
-	return tab === 'reactions' 
+const editPage = tab === 'reactions' 
 		? reactions
 		: tab === 'reactions2' 
 			? reactions2
@@ -429,8 +428,6 @@ const editPage = $computed(() => {
 				: tab === 'reactions4' 
 					? reactions4
 					: reactions5;
-						
-});
 
 function save() {
 	defaultStore.set("reactions", reactions);

@@ -856,7 +856,7 @@ function done(query?: any): boolean | void {
 		}
 	}
 	if (q2.endsWith(' -f') || q2.endsWith('!')) {
-		const q3 = query.replaceAll("( -f|!)$", "");
+		const q3 = query.replace(/( -f|!)$/, "");
 		const exactMatchCustom = customEmojis.find((emoji) => emoji.name === q3);
 		if (exactMatchCustom) {
 			chosen(exactMatchCustom);

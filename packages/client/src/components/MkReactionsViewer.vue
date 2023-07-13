@@ -55,7 +55,7 @@ const reactions = computed(() => {
 	return {...mergeReactions, ..._reactions};
 });
 
-let lastSortedReactions = [];
+let lastSortedReactions = ["🇦","🇧"];
 
 const sortedReactions = computed(() => {
 	const arrayReactions = Object.keys(reactions.value).map((x) => { 

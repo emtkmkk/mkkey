@@ -77,7 +77,7 @@ useTooltip(
 
 		const users = reactions.map((x) => x.user);
 		
-		const popupReaction = (reacted.value && props.not.myReaction !== props.reaction.value) 
+		const popupReaction = (reacted.value && props.note.myReaction !== props.reaction.value) 
 			? props.note.myReaction
 			: props.reaction;
 

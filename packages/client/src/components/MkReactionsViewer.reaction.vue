@@ -1,6 +1,6 @@
 <template>
 	<button
-		v-if="count > 0"
+		v-if="count >= 0"
 		ref="buttonRef"
 		v-ripple="canToggle"
 		class="hkzvhatu _button"
@@ -46,11 +46,11 @@ const toggleReaction = () => {
 	if (!canToggle.value) return;
 
 	const oldReaction = props.note.myReaction;
-	if (oldReaction && oldReaction === props.reaction) {
+	if (oldReaction && reacted) {
 		os.api("notes/reactions/delete", {
 			noteId: props.note.id,
 		}).then(() => {
-			if (oldReaction !== props.reaction) {
+			if (!reacted) {
 				os.api("notes/reactions/create", {
 					noteId: props.note.id,
 					reaction: props.reaction,

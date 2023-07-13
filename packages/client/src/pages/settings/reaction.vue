@@ -8,7 +8,7 @@
 		</FormSwitch>
 		<div v-if="!enableEmojiReactions">
 			<FormSwitch
-				v-model="showEmojisInReactionNotifications"
+				v-model="showEmojisInRectionNotifications"
 				class="_formBlock"
 			>
 				{{ i18n.ts.showEmojisInReactionNotifications }}
@@ -419,7 +419,8 @@ const remoteEmojisFetch = $computed(
 	defaultStore.makeGetterSetter("remoteEmojisFetch")
 );
 
-let editPage = tab === 'reactions' 
+const editPage = $computed(() => {
+		return tab === 'reactions' 
 		? reactions
 		: tab === 'reactions2' 
 			? reactions2
@@ -428,6 +429,7 @@ let editPage = tab === 'reactions'
 				: tab === 'reactions4' 
 					? reactions4
 					: reactions5;
+});
 
 function deleteReac(reaction){
 	if (tab === 'reactions') reactions = reactions.filter((x) => x !== reaction);

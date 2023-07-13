@@ -20,9 +20,112 @@
 				<template #label>{{
 					i18n.ts.reactionSettingDescription
 				}}</template>
-				<div v-panel style="border-radius: 6px">
+				<MkTab v-model="tab" class="_formBlock">
+					<option value="reactions">{{ "1" }}</option>
+					<option value="reactions2">{{ "2" }}</option>
+					<option value="reactions3">{{ "3" }}</option>
+					<option value="reactions4">{{ "4" }}</option>
+					<option value="reactions5">{{ "5" }}</option>
+				</MkTab>
+				<div v-panel v-if="tab === 'reactions'" style="border-radius: 6px">
 					<XDraggable
 						v-model="reactions"
+						class="zoaiodol"
+						:item-key="(item) => item"
+						animation="150"
+						delay="100"
+						delay-on-touch-only="true"
+					>
+						<template #item="{ element }">
+							<button
+								class="_button item"
+								@click="remove(element, $event)"
+							>
+								<MkEmoji :emoji="element" :normal="true" />
+							</button>
+						</template>
+						<template #footer>
+							<button class="_button add" @click="chooseEmoji">
+								<i class="ph-plus ph-bold ph-lg"></i>
+							</button>
+						</template>
+					</XDraggable>
+				</div>
+				<div v-panel v-if="tab === 'reactions2'" style="border-radius: 6px">
+					<XDraggable
+						v-model="reactions2"
+						class="zoaiodol"
+						:item-key="(item) => item"
+						animation="150"
+						delay="100"
+						delay-on-touch-only="true"
+					>
+						<template #item="{ element }">
+							<button
+								class="_button item"
+								@click="remove(element, $event)"
+							>
+								<MkEmoji :emoji="element" :normal="true" />
+							</button>
+						</template>
+						<template #footer>
+							<button class="_button add" @click="chooseEmoji">
+								<i class="ph-plus ph-bold ph-lg"></i>
+							</button>
+						</template>
+					</XDraggable>
+				</div>
+				<div v-panel v-if="tab === 'reactions3'" style="border-radius: 6px">
+					<XDraggable
+						v-model="reactions3"
+						class="zoaiodol"
+						:item-key="(item) => item"
+						animation="150"
+						delay="100"
+						delay-on-touch-only="true"
+					>
+						<template #item="{ element }">
+							<button
+								class="_button item"
+								@click="remove(element, $event)"
+							>
+								<MkEmoji :emoji="element" :normal="true" />
+							</button>
+						</template>
+						<template #footer>
+							<button class="_button add" @click="chooseEmoji">
+								<i class="ph-plus ph-bold ph-lg"></i>
+							</button>
+						</template>
+					</XDraggable>
+				</div>
+				<div v-panel v-if="tab === 'reactions4'" style="border-radius: 6px">
+					<XDraggable
+						v-model="reactions4"
+						class="zoaiodol"
+						:item-key="(item) => item"
+						animation="150"
+						delay="100"
+						delay-on-touch-only="true"
+					>
+						<template #item="{ element }">
+							<button
+								class="_button item"
+								@click="remove(element, $event)"
+							>
+								<MkEmoji :emoji="element" :normal="true" />
+							</button>
+						</template>
+						<template #footer>
+							<button class="_button add" @click="chooseEmoji">
+								<i class="ph-plus ph-bold ph-lg"></i>
+							</button>
+						</template>
+					</XDraggable>
+				</div>
+				<div v-panel v-if="tab === 'reactions5'" style="border-radius: 6px">
+					<XDraggable
+						v-model="reactions5"
 						class="zoaiodol"
 						:item-key="(item) => item"
 						animation="150"
@@ -240,6 +343,7 @@ import FromSlot from "@/components/form/slot.vue";
 import FormButton from "@/components/MkButton.vue";
 import FormSection from "@/components/form/section.vue";
 import FormSwitch from "@/components/form/switch.vue";
+import MkTab from "@/components/MkTab.vue";
 import * as os from "@/os";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
@@ -258,6 +362,8 @@ window.addEventListener("resize", () => {
 		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 
+const tab = ref("reaction");
+
 async function reloadAsk() {
 	const { canceled } = await os.confirm({
 		type: "info",
@@ -269,6 +375,10 @@ async function reloadAsk() {
 }
 
 let reactions = $ref(deepClone(defaultStore.state.reactions));
+let reactions2 = $ref(deepClone(defaultStore.state.reactions2));
+let reactions3 = $ref(deepClone(defaultStore.state.reactions3));
+let reactions4 = $ref(deepClone(defaultStore.state.reactions4));
+let reactions5 = $ref(deepClone(defaultStore.state.reactions5));
 const hiddenReactionDeckAndRecent = $computed(
 	defaultStore.makeGetterSetter("hiddenReactionDeckAndRecent")
 );
@@ -309,20 +419,72 @@ const remoteEmojisFetch = $computed(
 	defaultStore.makeGetterSetter("remoteEmojisFetch")
 );
 
+const editPage = $computed(() => {
+	return tab != 'reactions' 
+		? reactions
+		: tab != 'reactions2' 
+			? reactions2
+			: tab != 'reactions3' 
+				? reactions3
+				: tab != 'reactions4' 
+					? reactions4
+					: reactions5
+						
+});
+
 function save() {
 	defaultStore.set("reactions", reactions);
+	defaultStore.set("reactions2", reactions2);
+	defaultStore.set("reactions3", reactions3);
+	defaultStore.set("reactions4", reactions4);
+	defaultStore.set("reactions5", reactions5);
 }
 
 function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[
+			tab !== 'reactions' ? {
+				text: "1に移動",
+				action: () => {
+					editPage = editPage.filter((x) => x !== reaction);
+					reactions = reactions.push(reaction);
+				},
+			} : undefined,
+			tab !== 'reactions2' ? {
+				text: "2に移動",
+				action: () => {
+					editPage = editPage.filter((x) => x !== reaction);
+					reactions2 = reactions2.push(reaction);
+				},
+			} : undefined,
+			tab !== 'reactions3' ? {
+				text: "3に移動",
+				action: () => {
+					editPage = editPage.filter((x) => x !== reaction);
+					reactions3 = reactions3.push(reaction);
+				},
+			} : undefined,
+			tab !== 'reactions4' ? {
+				text: "4に移動",
+				action: () => {
+					editPage = editPage.filter((x) => x !== reaction);
+					reactions4 = reactions4.push(reaction);
+				},
+			} : undefined,
+			tab !== 'reactions5' ? {
+				text: "5に移動",
+				action: () => {
+					editPage = editPage.filter((x) => x !== reaction);
+					reactions5 = reactions5.push(reaction);
+				},
+			} : undefined,
 			{
 				text: i18n.ts.remove,
 				action: () => {
 					reactions = reactions.filter((x) => x !== reaction);
 				},
 			},
-		],
+		].filter((x) => x !== undefined),
 		ev.currentTarget ?? ev.target
 	);
 }

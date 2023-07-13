@@ -81,7 +81,7 @@ useTooltip(
 			XDetails,
 			{
 				showing,
-				reaction: props.reaction,
+				reaction: reacted && props.note.myReaction !== props.reaction ? props.note.myReaction : props.reaction,
 				emojis: props.note.emojis,
 				users,
 				count: props.count,

@@ -55,6 +55,11 @@ export async function signup(opts: {
 	if (preservedUsernames.includes(username.toLowerCase())){
 		throw new Error("USED_USERNAME");
 	}
+	
+	// ID 1文字はやめてほしい
+	if (username.length <= 1){
+		throw new Error("USED_USERNAME");
+	}
 
 	// Check username duplication
 	if (

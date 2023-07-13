@@ -29,8 +29,8 @@ const reactions = computed(() => {
 		if (_reactions["🇦"] == null) {
 			_reactions["🇦"] = 0;
 		}
-		if (_reactions["🇧"] == null) {
-			_reactions["🇧"] = 0;
+		if (_reactions["🅱️"] == null) {
+			_reactions["🅱️"] = 0;
 		}
 	}
 

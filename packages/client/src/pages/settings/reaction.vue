@@ -362,7 +362,7 @@ window.addEventListener("resize", () => {
 		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 
-const tab = ref("reaction");
+const tab = $ref("reaction");
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({

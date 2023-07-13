@@ -40,7 +40,7 @@ const buttonRef = ref<HTMLElement>();
 
 const canToggle = computed(() => $i && (!$i.isSilenced || props.note.user.isFollowed));
 
-const reacted = computed(() => props.note.myReaction.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@") == props.reaction.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@"));
+const reacted = computed(() => props.note.myReaction?.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@") == props.reaction?.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@"));
 
 const toggleReaction = () => {
 	if (!canToggle.value) return;

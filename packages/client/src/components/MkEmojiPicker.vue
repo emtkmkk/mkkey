@@ -97,44 +97,102 @@
 				</section>
 
 				<div v-if="!$store.state.hiddenReactionDeckAndRecent && tab === 'index' && searchResultCustom.length <= 0 && (q == null || q === '')" class="group index">
-					<section v-if="showPinned">
-						<div class="body">
-							<button
-								v-for="emoji in pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))"
-								:key="emoji"
-								class="_button item"
-								tabindex="0"
-								@click="chosen(emoji, $event)"
-							>
-								<MkEmoji
-									class="emoji"
-									:emoji="emoji"
-									:normal="true"
-								/>
-							</button>
-						</div>
-					</section>
+					<template v-if="!showPinned || (pinned2?.length + pinned3?.length + pinned4?.length + pinned5?.length) === 0">
+						<section v-if="showPinned">
+							<div class="body">
+								<button
+									v-for="emoji in pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))"
+									:key="emoji"
+									class="_button item"
+									tabindex="0"
+									@click="chosen(emoji, $event)"
+								>
+									<MkEmoji
+										class="emoji"
+										:emoji="emoji"
+										:normal="true"
+									/>
+								</button>
+							</div>
+						</section>
 
-					<section>
-						<header class="_acrylic">
-							<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
-							{{ i18n.ts.recentUsed }}
-						</header>
-						<div class="body">
-							<button
-								v-for="emoji in recentlyUsedEmojis.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))"
-								:key="emoji"
-								class="_button item"
-								@click="chosen(emoji, $event)"
-							>
-								<MkEmoji
-									class="emoji"
-									:emoji="emoji"
-									:normal="true"
-								/>
-							</button>
-						</div>
-					</section>
+						<section>
+							<header class="_acrylic">
+								<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
+								{{ i18n.ts.recentUsed }}
+							</header>
+							<div class="body">
+								<button
+									v-for="emoji in recentlyUsedEmojis.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))"
+									:key="emoji"
+									class="_button item"
+									@click="chosen(emoji, $event)"
+								>
+									<MkEmoji
+										class="emoji"
+										:emoji="emoji"
+										:normal="true"
+									/>
+								</button>
+							</div>
+						</section>
+					</template>
+					<template v-else>
+						<XSection
+							key="pinned:1"
+							:initial-shown="false"
+							:emojis="
+								pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+							"
+							@chosen="chosen"
+							>{{ "ピン留め絵文字 : 1" }}</XSection
+						>
+						<XSection
+							key="pinned:2"
+							:initial-shown="false"
+							:emojis="
+								pinned2.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+							"
+							@chosen="chosen"
+							>{{ "ピン留め絵文字 : 2" }}</XSection
+						>
+						<XSection
+							key="pinned:3"
+							:initial-shown="false"
+							:emojis="
+								pinned3.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+							"
+							@chosen="chosen"
+							>{{ "ピン留め絵文字 : 3" }}</XSection
+						>
+						<XSection
+							key="pinned:4"
+							:initial-shown="false"
+							:emojis="
+								pinned4.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+							"
+							@chosen="chosen"
+							>{{ "ピン留め絵文字 : 4" }}</XSection
+						>
+						<XSection
+							key="pinned:5"
+							:initial-shown="false"
+							:emojis="
+								pinned5.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+							"
+							@chosen="chosen"
+							>{{ "ピン留め絵文字 : 5" }}</XSection
+						>
+						<XSection
+							key="recentlyUsed"
+							:initial-shown="false"
+							:emojis="
+								recentlyUsedEmojis.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+							"
+							@chosen="chosen"
+							>{{ i18n.ts.recentUsed }}</XSection
+						>
+					</template>
 				</div>
 				<div v-once v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
 					<header>{{ i18n.ts.customEmojis }}</header>
@@ -491,6 +549,10 @@ const emojis = ref<HTMLDivElement>();
 
 const {
 	reactions: pinned,
+	reactions2: pinned2,
+	reactions3: pinned3,
+	reactions4: pinned4,
+	reactions5: pinned5,
 	reactionPickerSize,
 	reactionPickerWidth,
 	reactionPickerHeight,
@@ -823,7 +885,7 @@ function chosen(emoji: any, ev?: MouseEvent) {
 	emit("chosen", key);
 
 	// 最近使った絵文字更新
-	if (!pinned.value.includes(key)) {
+	if (!pinned.value.includes(key) && !pinned2.value.includes(key) && !pinned3.value.includes(key) && !pinned4.value.includes(key) && !pinned5.value.includes(key)) {
 		let recents = defaultStore.state.recentlyUsedEmojis;
 		recents = recents.filter((emoji: any) => emoji !== key);
 		recents.unshift(key);

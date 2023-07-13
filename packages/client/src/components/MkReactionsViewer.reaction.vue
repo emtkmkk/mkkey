@@ -5,7 +5,7 @@
 		v-ripple="canToggle"
 		class="hkzvhatu _button"
 		:class="{
-			reacted: note.myReaction == reaction,
+			reacted,
 			canToggle,
 			newlyAdded: !isInitial,
 		}"
@@ -13,7 +13,7 @@
 	>
 		<XReactionIcon
 			class="icon"
-			:reaction="reaction"
+			:reaction="reacted && note.myReaction !== reaction ? note.myReaction : reaction"
 			:custom-emojis="note.emojis"
 		/>
 		<span class="count">{{ count }}</span>
@@ -39,6 +39,8 @@ const props = defineProps<{
 const buttonRef = ref<HTMLElement>();
 
 const canToggle = computed(() => $i && (!$i.isSilenced || props.note.user.isFollowed));
+
+const reacted = computed(() => note.myReaction.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@") == reaction.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@")));
 
 const toggleReaction = () => {
 	if (!canToggle.value) return;

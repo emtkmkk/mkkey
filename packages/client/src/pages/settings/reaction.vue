@@ -429,6 +429,14 @@ let editPage = tab === 'reactions'
 					? reactions4
 					: reactions5;
 
+function deleteReac(reaction){
+	if (tab === 'reactions') reactions = reactions.filter((x) => x !== reaction);
+	if (tab === 'reactions2') reactions2 = reactions2.filter((x) => x !== reaction);
+	if (tab === 'reactions3') reactions3 = reactions3.filter((x) => x !== reaction);
+	if (tab === 'reactions4') reactions4 = reactions4.filter((x) => x !== reaction);
+	if (tab === 'reactions5') reactions5 = reactions5.filter((x) => x !== reaction);
+}
+
 function save() {
 	defaultStore.set("reactions", reactions);
 	defaultStore.set("reactions2", reactions2);
@@ -443,42 +451,42 @@ function remove(reaction, ev: MouseEvent) {
 			tab !== 'reactions' && !reactions.includes(reaction) ? {
 				text: "1に移動",
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					deleteReac(reaction);
 					reactions.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions2' && !reactions2.includes(reaction) ? {
 				text: "2に移動",
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					deleteReac(reaction);
 					reactions2.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions3' && !reactions3.includes(reaction) ? {
 				text: "3に移動",
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					deleteReac(reaction);
 					reactions3.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions4' && !reactions4.includes(reaction) ? {
 				text: "4に移動",
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					deleteReac(reaction);
 					reactions4.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions5' && !reactions5.includes(reaction) ? {
 				text: "5に移動",
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					deleteReac(reaction);
 					reactions5.push(reaction);
 				},
 			} : undefined,
 			{
 				text: i18n.ts.remove,
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					deleteReac(reaction);
 				},
 			},
 		].filter((x) => x !== undefined),

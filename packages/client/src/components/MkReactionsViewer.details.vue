@@ -44,10 +44,6 @@ const props = defineProps<{
 	targetElement: HTMLElement;
 }>();
 
-const localUserOnly = computed(() => {
-	return !props.users.some((x) => x.host)
-});
-
 const emit = defineEmits<{
 	(ev: "closed"): void;
 }>();

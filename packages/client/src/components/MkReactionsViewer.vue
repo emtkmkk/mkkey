@@ -26,8 +26,8 @@ const reactions = computed(() => {
 	let _reactions = {...props.note.reactions};
 
 	if (props.note.tags && props.note.text?.includes("#ゴルベーザ百天王バトル")) {
-		if (_reactions["🇦"] == null) {
-			_reactions["🇦"] = 0;
+		if (_reactions["🅰️"] == null) {
+			_reactions["🅰️"] = 0;
 		}
 		if (_reactions["🅱️"] == null) {
 			_reactions["🅱️"] = 0;

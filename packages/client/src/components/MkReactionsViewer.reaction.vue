@@ -13,7 +13,7 @@
 	>
 		<XReactionIcon
 			class="icon"
-			:reaction="reacted && note.myReaction != reaction ? note.myReaction : reaction"
+			:reaction="reacted && note.myReaction !== reaction ? note.myReaction : reaction"
 			:custom-emojis="note.emojis"
 		/>
 		<span class="count">{{ count }}</span>
@@ -40,7 +40,7 @@ const buttonRef = ref<HTMLElement>();
 
 const canToggle = computed(() => $i && (!$i.isSilenced || props.note.user.isFollowed));
 
-const reacted = computed(() => props.note.myReaction && props.note.myReaction?.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@") == props.reaction?.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@"));
+const reacted = computed(() => props.note.myReaction && props.note.myReaction?.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@") === props.reaction?.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@"));
 
 const toggleReaction = () => {
 	if (!canToggle.value) return;
@@ -76,12 +76,16 @@ useTooltip(
 		});
 
 		const users = reactions.map((x) => x.user);
+		
+		const popupReaction = (reacted && props.note.myReaction !== props.reaction) 
+			? props.note.myReaction
+			: props.reaction;
 
 		os.popup(
 			XDetails,
 			{
 				showing,
-				reaction: reacted && props.note.myReaction != props.reaction ? props.note.myReaction : props.reaction,
+				reaction: popupReaction,
 				emojis: props.note.emojis,
 				users,
 				count: props.count,

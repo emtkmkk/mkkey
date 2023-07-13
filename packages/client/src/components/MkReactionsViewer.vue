@@ -25,7 +25,7 @@ const props = defineProps<{
 const reactions = computed(() => {
 	let _reactions = {...props.note.reactions};
 
-	if (props.note.tags && props.note.text?.includes("#ゴルベーザ四天王バトル")) {
+	if (props.note.tags && props.note.text?.includes("#ゴルベーザ百天王バトル")) {
 		if (!_reactions["🅰"]) {
 			_reactions["🅰"] = 0;
 		}
@@ -34,23 +34,42 @@ const reactions = computed(() => {
 		}
 	}
 
-	const localReactions = Object.keys(_reactions).filter(x => x.endsWith("@.:"));
+	const localReactions = Object.keys(_reactions);
 	const mergeReactions = {};
 	
 	localReactions.forEach((localReaction) => {
-		const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.replace(".:","")));
+		const targetReactions = Object.keys(_reactions).filter(x => x.replaceAll("_","").startsWith(localReaction.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@")));
 		let totalCount = 0;
+		let maxReaction = { reaction: localReaction, count: _reactions[localReaction] };
 		targetReactions.forEach(x => {
+			if (!localReaction.endsWith("@.:") && maxReaction.count < _reactions[x]) {
+				maxReaction = { reaction: x, count: _reactions[x] };
+			}
 			totalCount += _reactions[x];
 			delete _reactions[x];
 		});
-		mergeReactions[localReaction] = totalCount;
+		mergeReactions[maxReaction.reaction] = totalCount;
 	});
 	return {...mergeReactions, ..._reactions};
 });
 
+let lastSortedReactions = [];
+
 const sortedReactions = computed(() => {
-	const arrayReactions = Object.keys(reactions.value).map((x) => { return {name:x, count:reactions.value[x],}; }).sort((a,b) => b.count - a.count);
+	const arrayReactions = Object.keys(reactions.value).map((x) => { 
+		return {name:x, count:reactions.value[x],}; 
+	}).sort((a,b) => {
+		//前回取得時に存在したものを左に（位置を変えない為）
+		//そうでない場合数順に
+		lastSortedReactions.has(a.name) && lastSortedReactions.has(b.name)
+			? 0 
+			: lastSortedReactions.has(a.name)
+				? -1
+				: lastSortedReactions.has(b.name)
+					? 1
+					: b.count - a.count
+	});
+	lastSortedReactions = [...arrayReactions];
 	return arrayReactions;
 });
 

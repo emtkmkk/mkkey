@@ -443,45 +443,45 @@ function save() {
 function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[
-			tab !== 'reactions' ? {
+			tab !== 'reactions' && !reactions.includes(reaction) ? {
 				text: "1に移動",
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					editPage.value = editPage.value.filter((x) => x !== reaction);
 					reactions.push(reaction);
 				},
 			} : undefined,
-			tab !== 'reactions2' ? {
+			tab !== 'reactions2' && !reactions2.includes(reaction) ? {
 				text: "2に移動",
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					editPage.value = editPage.value.filter((x) => x !== reaction);
 					reactions2.push(reaction);
 				},
 			} : undefined,
-			tab !== 'reactions3' ? {
+			tab !== 'reactions3' && !reactions3.includes(reaction) ? {
 				text: "3に移動",
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					editPage.value = editPage.value.filter((x) => x !== reaction);
 					reactions3.push(reaction);
 				},
 			} : undefined,
-			tab !== 'reactions4' ? {
+			tab !== 'reactions4' && !reactions4.includes(reaction) ? {
 				text: "4に移動",
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					editPage.value = editPage.value.filter((x) => x !== reaction);
 					reactions4.push(reaction);
 				},
 			} : undefined,
-			tab !== 'reactions5' ? {
+			tab !== 'reactions5' && !reactions5.includes(reaction) ? {
 				text: "5に移動",
 				action: () => {
-					editPage = editPage.filter((x) => x !== reaction);
+					editPage.value = editPage.value.filter((x) => x !== reaction);
 					reactions5.push(reaction);
 				},
 			} : undefined,
 			{
 				text: i18n.ts.remove,
 				action: () => {
-					reactions = reactions.filter((x) => x !== reaction);
+					editPage.value = editPage.value.filter((x) => x !== reaction);
 				},
 			},
 		].filter((x) => x !== undefined),

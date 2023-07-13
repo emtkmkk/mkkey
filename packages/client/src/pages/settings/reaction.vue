@@ -420,15 +420,15 @@ const remoteEmojisFetch = $computed(
 );
 
 const editPage = $computed(() => {
-	return tab.value === 'reactions' 
+	return tab === 'reactions' 
 		? reactions
-		: tab.value === 'reactions2' 
+		: tab === 'reactions2' 
 			? reactions2
-			: tab.value === 'reactions3' 
+			: tab === 'reactions3' 
 				? reactions3
-				: tab.value === 'reactions4' 
+				: tab === 'reactions4' 
 					? reactions4
-					: reactions5
+					: reactions5;
 						
 });
 
@@ -443,35 +443,35 @@ function save() {
 function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[
-			tab.value !== 'reactions' ? {
+			tab !== 'reactions' ? {
 				text: "1に移動",
 				action: () => {
 					editPage = editPage.filter((x) => x !== reaction);
 					reactions.push(reaction);
 				},
 			} : undefined,
-			tab.value !== 'reactions2' ? {
+			tab !== 'reactions2' ? {
 				text: "2に移動",
 				action: () => {
 					editPage = editPage.filter((x) => x !== reaction);
 					reactions2.push(reaction);
 				},
 			} : undefined,
-			tab.value !== 'reactions3' ? {
+			tab !== 'reactions3' ? {
 				text: "3に移動",
 				action: () => {
 					editPage = editPage.filter((x) => x !== reaction);
 					reactions3.push(reaction);
 				},
 			} : undefined,
-			tab.value !== 'reactions4' ? {
+			tab !== 'reactions4' ? {
 				text: "4に移動",
 				action: () => {
 					editPage = editPage.filter((x) => x !== reaction);
 					reactions4.push(reaction);
 				},
 			} : undefined,
-			tab.value !== 'reactions5' ? {
+			tab !== 'reactions5' ? {
 				text: "5に移動",
 				action: () => {
 					editPage = editPage.filter((x) => x !== reaction);
@@ -518,14 +518,14 @@ function chooseEmoji(ev: MouseEvent) {
 		showPinned: false,
 		asReactionPicker: true,
 	}).then((emoji) => {
-		if (!reactions.includes(emoji)) {
-			reactions.push(emoji);
+		if (!editPage.includes(emoji)) {
+			editPage.push(emoji);
 		}
 	});
 }
 
 watch(
-	$$(reactions),
+	[$$(reactions),$$(reactions2),$$(reactions3),$$(reactions4),$$(reactions5)],
 	() => {
 		save();
 	},

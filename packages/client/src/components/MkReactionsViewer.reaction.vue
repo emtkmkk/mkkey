@@ -40,7 +40,7 @@ const buttonRef = ref<HTMLElement>();
 
 const canToggle = computed(() => $i && (!$i.isSilenced || props.note.user.isFollowed));
 
-const reacted = computed(() => props.note.myReaction && props.note.myReaction?.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@") === props.reaction?.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@"));
+const reacted = computed(() => props.note.myReaction && props.note.myReaction.value?.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@") === props.reaction.value?.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@"));
 
 const toggleReaction = () => {
 	if (!canToggle.value) return;
@@ -77,7 +77,7 @@ useTooltip(
 
 		const users = reactions.map((x) => x.user);
 		
-		const popupReaction = (reacted && props.note.myReaction !== props.reaction) 
+		const popupReaction = (reacted && props.note.myReaction.value !== props.reaction.value) 
 			? props.note.myReaction
 			: props.reaction;
 

@@ -59,17 +59,20 @@ const sortedReactions = computed(() => {
 	const arrayReactions = Object.keys(reactions.value).map((x) => { 
 		return {name:x, count:reactions.value[x],}; 
 	}).sort((a,b) => {
+		//前回取得時の並びを維持
 		//前回取得時に存在したものを左に（位置を変えない為）
 		//そうでない場合数順に
-		lastSortedReactions.includes(a.name) && lastSortedReactions.includes(b.name)
-			? 0 
-			: lastSortedReactions.includes(a.name)
-				? -1
-				: lastSortedReactions.includes(b.name)
-					? 1
-					: b.count - a.count
+		const _a = a.name.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@");
+		const _b = b.name.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@");
+		return lastSortedReactions.includes(_a) && lastSortedReactions.includes(_b)
+					? lastSortedReactions.indexOf(_a) - lastSortedReactions.indexOf(_b)
+					: lastSortedReactions.includes(_a)
+						? -1
+						: lastSortedReactions.includes(_b)
+							? 1
+							: b.count - a.count;
 	});
-	lastSortedReactions = [...arrayReactions];
+	lastSortedReactions = arrayReactions.map((x) => x.name.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@"));
 	return arrayReactions;
 });
 

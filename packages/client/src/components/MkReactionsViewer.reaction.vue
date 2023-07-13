@@ -1,6 +1,6 @@
 <template>
 	<button
-		v-if="count >= 0"
+		v-if="count > 0 || ['🅰️','🅱️'].includes(reaction)"
 		ref="buttonRef"
 		v-ripple="canToggle"
 		class="hkzvhatu _button"
@@ -46,11 +46,11 @@ const toggleReaction = () => {
 	if (!canToggle.value) return;
 
 	const oldReaction = props.note.myReaction;
-	if (oldReaction && reacted) {
+	if (oldReaction && reacted.value) {
 		os.api("notes/reactions/delete", {
 			noteId: props.note.id,
 		}).then(() => {
-			if (!reacted) {
+			if (!reacted.value) {
 				os.api("notes/reactions/create", {
 					noteId: props.note.id,
 					reaction: props.reaction,
@@ -77,7 +77,7 @@ useTooltip(
 
 		const users = reactions.map((x) => x.user);
 		
-		const popupReaction = (reacted && props.note.myReaction !== props.reaction.value) 
+		const popupReaction = (reacted.value && props.not.myReaction !== props.reaction.value) 
 			? props.note.myReaction
 			: props.reaction;
 

@@ -116,6 +116,22 @@ export const defaultStore = markRaw(
 				":tblob_avicii:",
 			],
 		},
+		reactions2: {
+			where: "account",
+			default: [],
+		},
+		reactions3: {
+			where: "account",
+			default: [],
+		},
+		reactions4: {
+			where: "account",
+			default: [],
+		},
+		reactions5: {
+			where: "account",
+			default: [],
+		},
 		hiddenReactionDeckAndRecent: {
 			where: "account",
 			default: false,

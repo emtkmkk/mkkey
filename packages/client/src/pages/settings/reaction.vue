@@ -447,35 +447,35 @@ function remove(reaction, ev: MouseEvent) {
 				text: "1に移動",
 				action: () => {
 					editPage = editPage.filter((x) => x !== reaction);
-					reactions = reactions.push(reaction);
+					reactions.push(reaction);
 				},
 			} : undefined,
 			tab.value !== 'reactions2' ? {
 				text: "2に移動",
 				action: () => {
 					editPage = editPage.filter((x) => x !== reaction);
-					reactions2 = reactions2.push(reaction);
+					reactions2.push(reaction);
 				},
 			} : undefined,
 			tab.value !== 'reactions3' ? {
 				text: "3に移動",
 				action: () => {
 					editPage = editPage.filter((x) => x !== reaction);
-					reactions3 = reactions3.push(reaction);
+					reactions3.push(reaction);
 				},
 			} : undefined,
 			tab.value !== 'reactions4' ? {
 				text: "4に移動",
 				action: () => {
 					editPage = editPage.filter((x) => x !== reaction);
-					reactions4 = reactions4.push(reaction);
+					reactions4.push(reaction);
 				},
 			} : undefined,
 			tab.value !== 'reactions5' ? {
 				text: "5に移動",
 				action: () => {
 					editPage = editPage.filter((x) => x !== reaction);
-					reactions5 = reactions5.push(reaction);
+					reactions5.push(reaction);
 				},
 			} : undefined,
 			{

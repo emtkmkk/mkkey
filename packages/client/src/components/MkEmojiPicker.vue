@@ -140,6 +140,7 @@
 					<template v-else>
 						<XSection
 							key="pinned:1"
+							v-if="pinned?.length != 0"
 							:initial-shown="false"
 							:emojis="
 								pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
@@ -149,6 +150,7 @@
 						>
 						<XSection
 							key="pinned:2"
+							v-if="pinned2?.length != 0"
 							:initial-shown="false"
 							:emojis="
 								pinned2.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
@@ -157,6 +159,7 @@
 							>{{ "ピン留め絵文字 : 2 " }}</XSection
 						>
 						<XSection
+							v-if="pinned3?.length != 0"
 							key="pinned:3"
 							:initial-shown="false"
 							:emojis="
@@ -166,6 +169,7 @@
 							>{{ "ピン留め絵文字 : 3 " }}</XSection
 						>
 						<XSection
+							v-if="pinned4?.length != 0"
 							key="pinned:4"
 							:initial-shown="false"
 							:emojis="
@@ -175,6 +179,7 @@
 							>{{ "ピン留め絵文字 : 4 " }}</XSection
 						>
 						<XSection
+							v-if="pinned5?.length != 0"
 							key="pinned:5"
 							:initial-shown="false"
 							:emojis="
@@ -184,6 +189,7 @@
 							>{{ "ピン留め絵文字 : 5 " }}</XSection
 						>
 						<XSection
+							v-if="recentlyUsedEmojis?.length != 0"
 							key="recentlyUsed"
 							:initial-shown="false"
 							:emojis="

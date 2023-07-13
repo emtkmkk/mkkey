@@ -24,9 +24,8 @@ const props = defineProps<{
 
 const reactions = computed(() => {
 	let _reactions = {...props.note.reactions};
-	let _note = props.note.value;
 
-	if (_note.tags && _note.text?.includes("#ゴルベーザ百天王バトル")) {
+	if (props.note.tags && props.note.text?.includes("#ゴルベーザ百天王バトル")) {
 		if (!_reactions["🅰"]) {
 			_reactions["🅰"] = 0;
 		}
@@ -43,7 +42,7 @@ const reactions = computed(() => {
 		let totalCount = 0;
 		let maxReaction = { reaction: localReaction, count: _reactions[localReaction] };
 		targetReactions.forEach(x => {
-			if (_note.myReaction === x || (!localReaction.endsWith("@.:") && maxReaction.count < _reactions[x])) {
+			if (props.note.myReaction == x || (maxReaction.reaction != props.note.myReaction && !localReaction.endsWith("@.:") && maxReaction.count < _reactions[x])) {
 				maxReaction = { reaction: x, count: _reactions[x] };
 			}
 			totalCount += _reactions[x];

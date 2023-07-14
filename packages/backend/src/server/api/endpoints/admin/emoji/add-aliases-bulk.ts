@@ -38,6 +38,7 @@ export default define(meta, paramDef, async (ps) => {
 
 	for (const emoji of emojis) {
 		await Emojis.update(emoji.id, {
+			updatedAt: new Date(),
 			aliases: [...new Set(emoji.aliases.concat(ps.aliases))],
 		});
 	}

@@ -50,7 +50,7 @@ const toggleReaction = () => {
 		os.api("notes/reactions/delete", {
 			noteId: props.note.id,
 		}).then(() => {
-			if (!reacted.value) {
+			if (false) {
 				os.api("notes/reactions/create", {
 					noteId: props.note.id,
 					reaction: props.reaction,

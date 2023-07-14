@@ -459,8 +459,18 @@ export async function extractEmojis(
 		eomjiTags.map(async (tag) => {
 			const name = tag.name!.replace(/^:/, "").replace(/:$/, "");
 			tag.icon = toSingle(tag.icon);
+			
 			//タグ内にhost情報が含まれている場合はそのhostの絵文字として処理
-			const _host = tag.host && host !== toPuny(tag.host) ? toPuny(tag.host) : host;
+			//含まれてない場合はマストドンと同じ方法でhost判定を行う
+			let detectHost = undefined;
+  			try {
+				detectHost = tag.host || new URL(tag.id).host;
+			} catch (err) { 
+			}
+			
+			const _host = detectHost && host !== toPuny(detectHost)
+					? toPuny(detectHost)
+					: host;
 
 			const exists = await Emojis.findOneBy({
 				host: _host,
@@ -510,7 +520,7 @@ export async function extractEmojis(
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				aliases: tag.aliases || [],
-				license: tag.license || null
+				license: tag.license || null,
 			} as Partial<Emoji>).then((x) =>
 				Emojis.findOneByOrFail(x.identifiers[0]),
 			);

@@ -199,48 +199,48 @@ export async function createNote(
 	note.attachment = Array.isArray(note.attachment)
 		? note.attachment
 		: note.attachment
-		? [note.attachment]
-		: [];
+			? [note.attachment]
+			: [];
 	const files = note.attachment.map(
 		(attach) => (attach.sensitive = note.sensitive),
 	)
 		? (
-				await Promise.all(
-					note.attachment.map(
-						(x) => limit(() => resolveImage(actor, x)) as Promise<DriveFile>,
-					),
-				)
-		  ).filter((image) => image != null)
+			await Promise.all(
+				note.attachment.map(
+					(x) => limit(() => resolveImage(actor, x)) as Promise<DriveFile>,
+				),
+			)
+		).filter((image) => image != null)
 		: [];
 
 	// Reply
 	const reply: Note | null = note.inReplyTo
 		? await resolveNote(note.inReplyTo, resolver)
-				.then((x) => {
-					if (x == null) {
-						logger.warn("Specified inReplyTo, but nout found");
-						throw new Error("inReplyTo not found");
-					} else {
-						return x;
+			.then((x) => {
+				if (x == null) {
+					logger.warn("Specified inReplyTo, but nout found");
+					throw new Error("inReplyTo not found");
+				} else {
+					return x;
+				}
+			})
+			.catch(async (e) => {
+				// トークだったらinReplyToのエラーは無視
+				const uri = getApId(note.inReplyTo);
+				if (uri.startsWith(`${config.url}/`)) {
+					const id = uri.split("/").pop();
+					const talk = await MessagingMessages.findOneBy({ id });
+					if (talk) {
+						isTalk = true;
+						return null;
 					}
-				})
-				.catch(async (e) => {
-					// トークだったらinReplyToのエラーは無視
-					const uri = getApId(note.inReplyTo);
-					if (uri.startsWith(`${config.url}/`)) {
-						const id = uri.split("/").pop();
-						const talk = await MessagingMessages.findOneBy({ id });
-						if (talk) {
-							isTalk = true;
-							return null;
-						}
-					}
+				}
 
-					logger.warn(
-						`Error in inReplyTo ${note.inReplyTo} - ${e.statusCode || e}`,
-					);
-					throw e;
-				})
+				logger.warn(
+					`Error in inReplyTo ${note.inReplyTo} - ${e.statusCode || e}`,
+				);
+				throw e;
+			})
 		: null;
 
 	// Quote
@@ -251,12 +251,12 @@ export async function createNote(
 			uri: string,
 		): Promise<
 			| {
-					status: "ok";
-					res: Note | null;
-			  }
+				status: "ok";
+				res: Note | null;
+			}
 			| {
-					status: "permerror" | "temperror";
-			  }
+				status: "permerror" | "temperror";
+			}
 		> => {
 			if (typeof uri !== "string" || !uri.match(/^https?:/))
 				return { status: "permerror" };
@@ -457,20 +457,25 @@ export async function extractEmojis(
 
 	return await Promise.all(
 		eomjiTags.map(async (tag) => {
-			const name = tag.name!.replace(/^:/, "").replace(/:$/, "");
+			let name = tag.name!.replace(/^:/, "").replace(/:$/, "");
 			tag.icon = toSingle(tag.icon);
-			
+
 			//タグ内にhost情報が含まれている場合はそのhostの絵文字として処理
-			//含まれてない場合はfedibirdやmarunaiさんの実装と同じ方法でhost判定を行う
+			//含まれてない場合は
+			//1 : nameに@がある場合はその後ろの文字をhostとする
+			//2 : fedibirdやmarunaiさんの実装と同じ方法でhost判定を行う
 			let detectHost = undefined;
-  			try {
-				detectHost = tag.host || new URL(tag.id).host;
-			} catch (err) { 
+			try {
+				detectHost = tag.host || name.split('@')?.[1] || new URL(tag.id).host;
+			} catch (err) {
 			}
-			
+
+			//@以降はもう不要なので消す
+			name = name.split('@')?.[0] ?? name;
+
 			const _host = detectHost && host !== toPuny(detectHost)
-					? toPuny(detectHost)
-					: host;
+				? toPuny(detectHost)
+				: host;
 
 			const exists = await Emojis.findOneBy({
 				host: _host,

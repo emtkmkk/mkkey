@@ -9,13 +9,18 @@ export default async (actor: CacheableRemoteUser, activity: ILike) => {
 
 	const note = await fetchNote(targetUri);
 	if (!note) return `skip: target note not found ${targetUri}`;
-
-	await extractEmojis(activity.tag || [], actor.host).catch(() => null);
-
+	
+	const react = activity._misskey_reaction || activity.content || activity.name;
+	const reactName = react?.split("@")?.[0];
+	const reactHost = react?.split("@")?.[1] ?? undefined;
+	
+	const emoji = await extractEmojis(activity.tag || [], actor.host).catch(() => null);
+	const reactEmoji = emoji?.filter((x) => x.name === reactName && (!reactHost || x.host === reactHost));
+	
 	return await create(
 		actor,
 		note,
-		activity._misskey_reaction || activity.content || activity.name,
+		reactName + (reactEmoji?.[0]?.host ? "@" + reactEmoji[0].host : ""),
 	)
 		.catch((e) => {
 			if (e.id === "51c42bb4-931a-456b-bff7-e5a8a70dd298") {

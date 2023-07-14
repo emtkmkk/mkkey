@@ -909,6 +909,7 @@ function paste(event: ClipboardEvent) {
 function done(query?: any): boolean | void {
 	if (query == null) query = q.value;
 	if (query == null || typeof query !== "string") return;
+	
 
 	const q2 = query.replaceAll(":", "");
 	if (q2.endsWith(' -f')) {
@@ -952,6 +953,9 @@ function done(query?: any): boolean | void {
 			chosen(searchResultUnicode.value[0]);
 			return true;
 		}
+	} else {
+		q.value = query.slice(0, -1);
+		q.value = query;
 	}
 }
 

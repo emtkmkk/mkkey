@@ -54,7 +54,7 @@ export default async (
 	});
 
 	//#region 配信
-	if (Users.isLocalUser(user) && !note.localOnly) {
+	if (Users.isLocalUser(user) && !(note.channel && note.localOnly)) {
 		const content = renderActivity(
 			renderUndo(await renderLike(exist, note), user),
 		);

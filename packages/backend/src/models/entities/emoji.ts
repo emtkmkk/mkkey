@@ -10,6 +10,11 @@ export class Emoji {
 	@Column('timestamp with time zone', {
 		nullable: true,
 	})
+	public createdAt: Date | null;
+
+	@Column('timestamp with time zone', {
+		nullable: true,
+	})
 	public updatedAt: Date | null;
 
 	@Index()

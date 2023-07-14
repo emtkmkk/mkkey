@@ -72,7 +72,7 @@ export default async function (
 
 	// Notify
 	createNotification(note.userId, "pollVote", {
-		notifierId: user.id,
+		notifierId: note.userId,
 		noteId: note.id,
 		choice: choice,
 	});
@@ -84,7 +84,7 @@ export default async function (
 	}).then((watchers) => {
 		for (const watcher of watchers) {
 			createNotification(watcher.userId, "pollVote", {
-				notifierId: user.id,
+				notifierId: note.userId,
 				noteId: note.id,
 				choice: choice,
 			});

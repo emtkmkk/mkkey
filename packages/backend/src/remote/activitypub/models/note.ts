@@ -459,9 +459,11 @@ export async function extractEmojis(
 		eomjiTags.map(async (tag) => {
 			const name = tag.name!.replace(/^:/, "").replace(/:$/, "");
 			tag.icon = toSingle(tag.icon);
+			//タグ内にhost情報が含まれている場合はそのhostの絵文字として処理
+			const _host = tag.host && host !== toPuny(tag.host) ? toPuny(tag.host) : host;
 
 			const exists = await Emojis.findOneBy({
-				host,
+				host: _host,
 				name,
 			});
 
@@ -476,7 +478,7 @@ export async function extractEmojis(
 				) {
 					await Emojis.update(
 						{
-							host,
+							host: _host,
 							name,
 						},
 						{
@@ -488,7 +490,7 @@ export async function extractEmojis(
 					);
 
 					return (await Emojis.findOneBy({
-						host,
+						host: _host,
 						name,
 					})) as Emoji;
 				}
@@ -500,7 +502,7 @@ export async function extractEmojis(
 
 			return await Emojis.insert({
 				id: genId(),
-				host,
+				host: _host,
 				name,
 				uri: tag.id,
 				originalUrl: tag.icon!.url,

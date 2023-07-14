@@ -80,6 +80,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	
 	const copied = await Emojis.insert({
 		id: genId(),
+		createdAt: new Date(),
 		updatedAt: new Date(),
 		name: emojiSearchName ? emoji.name + "_" + emoji.host.replaceAll(/[^\w]/ig,"_") : emoji.name,
 		host: null,

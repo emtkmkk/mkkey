@@ -507,6 +507,7 @@ export async function extractEmojis(
 				uri: tag.id,
 				originalUrl: tag.icon!.url,
 				publicUrl: tag.icon!.url,
+				createdAt: new Date(),
 				updatedAt: new Date(),
 				aliases: [],
 			} as Partial<Emoji>).then((x) =>

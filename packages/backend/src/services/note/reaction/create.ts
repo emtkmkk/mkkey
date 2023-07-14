@@ -177,7 +177,7 @@ export default async (
 	//#region deliver
 	if (
 		Users.isLocalUser(user) &&
-		!note.localOnly &&
+		!(note.channel && note.localOnly) &&
 		note.visibility !== "hidden"
 	) {
 		const content = renderActivity(await renderLike(record, note));

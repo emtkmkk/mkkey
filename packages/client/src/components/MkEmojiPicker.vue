@@ -207,8 +207,8 @@
 						:initial-shown="false"
 						:emojis="
 							customEmojis
-								.filter((e) => e.updatedAt ? new Date().valueOf() - new Date(e.updatedAt).valueOf() < 7 * 24 * 60 * 60 * 1000 : false)
-								.sort((a,b) => new Date(b.updatedAt).valueOf() - new Date(a.updatedAt).valueOf())
+								.filter((e) => e.createdAt ? new Date().valueOf() - new Date(e.createdAt).valueOf() < 7 * 24 * 60 * 60 * 1000 : false)
+								.sort((a,b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf())
 								.slice(0,255)
 								.map((e) => ':' + e.name + ':')
 						"

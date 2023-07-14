@@ -473,7 +473,8 @@ export async function extractEmojis(
 			//@以降はもう不要なので消す
 			name = name.split('@')?.[0] ?? name;
 
-			const _host = detectHost && host !== toPuny(detectHost)
+			//3桁以下のホスト名は使用しない
+			const _host = detectHost?.length >= 4 && host !== toPuny(detectHost)
 				? toPuny(detectHost)
 				: host;
 

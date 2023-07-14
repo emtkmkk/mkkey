@@ -461,7 +461,7 @@ export async function extractEmojis(
 			tag.icon = toSingle(tag.icon);
 			
 			//タグ内にhost情報が含まれている場合はそのhostの絵文字として処理
-			//含まれてない場合はマストドンと同じ方法でhost判定を行う
+			//含まれてない場合はfedibirdやmarunaiさんの実装と同じ方法でhost判定を行う
 			let detectHost = undefined;
   			try {
 				detectHost = tag.host || new URL(tag.id).host;

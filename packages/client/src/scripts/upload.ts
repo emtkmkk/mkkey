@@ -47,7 +47,7 @@ export function uploadFile(
 
 			const { canceled } = file.type === "video/quicktime" ? await os.yesno({
 				type: "question",
-				text: "このファイルはmov形式の為、iOS以外で正しく再生されない可能性があります。\nアップロードを続けますか？",
+				text: "このファイルはmov形式の為、iOS端末以外で正しく再生されない可能性があります。\nアプリ「VideoConvert」を使用するか、LINEでアップロード後に再度保存するなどでmp4形式に変換する事をオススメします。\nアップロードを続けますか？",
 			}) : { canceled: false };
 
 			if (canceled) {

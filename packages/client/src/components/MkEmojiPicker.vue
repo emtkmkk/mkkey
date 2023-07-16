@@ -577,7 +577,7 @@ const height = computed(() =>
 );
 const customEmojiCategories = emojiCategories;
 const customEmojis = instance.emojis;
-const allCustomEmojis = props.asReactionPicker ? instance.allEmojis : undefined;
+let allCustomEmojis = props.asReactionPicker ? instance.allEmojis : undefined;
 const remoteEmojiMode = instance.remoteEmojiMode;
 const emojiStr = props.asReactionPicker && allCustomEmojis ? allCustomEmojis.map((x) => ":" + x.name + "@" + x.host + ":") : undefined;
 const q = ref<string | null>(null);
@@ -590,6 +590,10 @@ const sortWord = ["a","i","u","e","o","y"];
 
 watch(q, (nQ, oQ) => {
 	if (q.value.endsWith("＠")) q.value = oQ + "@";
+	if (nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","") + "@";
+	if (q.value.endsWith("@") && !allCustomEmojis && props.asReactionPicker){
+		allCustomEmojis = instance.allEmojis;
+	}
 	
 	if (emojis.value) emojis.value.scrollTop = 0;
 	
@@ -968,6 +972,11 @@ function format_roomaji(
 	
 	// 変換前が2文字
 	const replaceDataBefore2 = [
+		{before:"ca", after:"ka"},
+		{before:"ci", after:"ki"},
+		{before:"cu", after:"ku"},
+		{before:"ce", after:"ke"},
+		{before:"co", after:"ko"},
 		{before:"fu", after:"hu"},
 		{before:"ja", after:"jya"},
 		{before:"ju", after:"jyu"},

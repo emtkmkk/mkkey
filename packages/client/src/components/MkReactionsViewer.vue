@@ -74,7 +74,7 @@ const sortedReactions = computed(() => {
 							? 1
 							: b.count - a.count;
 	});
-	lastSortedReactions = arrayReactions.map((x) => x.name.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@"));
+	lastSortedReactions = arrayReactions.map((x) => x.name.replace(/@[\w:\.\-]+:$/,"@"));
 	return arrayReactions;
 });
 

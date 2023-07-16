@@ -39,7 +39,7 @@ const reactions = computed(() => {
 	
 	localReactions.forEach((localReaction) => {
 		if (!_reactions || _reactions.length === 0) return;
-		const targetReactions = Object.keys(_reactions).filter(x => x.replaceAll("_","").startsWith(localReaction.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@")));
+		const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.replace(/@[\w:\.\-]+:$/,"@")));
 		if (targetReactions?.length === 0) return;
 		let totalCount = 0;
 		let maxReaction = { reaction: localReaction, count: _reactions[localReaction] };
@@ -64,8 +64,8 @@ const sortedReactions = computed(() => {
 		//前回取得時の並びを維持
 		//前回取得時に存在したものを左に（位置を変えない為）
 		//そうでない場合数順に
-		const _a = a.name.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@");
-		const _b = b.name.replaceAll("_","").replace(/@[\w:\.\-]+:$/,"@");
+		const _a = a.name.replace(/@[\w:\.\-]+:$/,"@");
+		const _b = b.name.replace(/@[\w:\.\-]+:$/,"@");
 		return lastSortedReactions.includes(_a) && lastSortedReactions.includes(_b)
 					? lastSortedReactions.indexOf(_a) - lastSortedReactions.indexOf(_b)
 					: lastSortedReactions.includes(_a)

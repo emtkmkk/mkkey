@@ -223,7 +223,7 @@
 			>
 				<MkUserName :user="appearNote.user" maxlength="8" />
 			</MkA>
-			{{ " : " + getNoteSummary(notification.note).slice(0,10) + (getNoteSummary(notification.note)?.length > 10 ? "…" : "") }}
+			{{ " : " + getNoteSummary(appearNote).slice(0,10) + (getNoteSummary(appearNote)?.length > 10 ? "…" : "") }}
 		</div>
 	</button>
 	<button v-else-if="(!hiddenSoftMutes && muted.matched.join('').length !== 0) || excludeMute" class="muted _button" @click="muted.muted = false">

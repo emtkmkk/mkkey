@@ -33,7 +33,7 @@
 						class="_formBlock"
 						:small="true"
 						:placeholder="`フォルダ名 : 1`"
-						v-if="((pinned2?.length ?? 0) + (pinned3?.length ?? 0) + (pinned4?.length ?? 0) + (pinned5?.length ?? 0)) !== 0"
+						v-if="((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
 						style="margin: 0 0 !important"
 					/>
 					<XDraggable

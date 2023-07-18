@@ -388,7 +388,7 @@ const favButtonReactionIsFavorite = defaultStore.state.favButtonReaction === 'fa
 const hiddenSoftMutes = defaultStore.state.hiddenSoftMutes;
 const muteExcludeReplyQuote = defaultStore.state.muteExcludeReplyQuote;
 const muteExcludeNotification = defaultStore.state.muteExcludeNotification;
-const isExcludeReplyQuote = muteExcludeReplyQuote && (muted.what === "reply" || muted.what === "renote");
+const isExcludeReplyQuote = muteExcludeReplyQuote && (unref(muted)?.what === "reply" || unref(muted)?.what === "renote");
 const isExcludeNotification = muteExcludeNotification && props.notification;
 const isCanAction = !$i.isSilenced || note.user.isFollowed;
 const excludeMute = isExcludeReplyQuote || isExcludeNotification;
@@ -403,9 +403,9 @@ const isReactedRenote = $computed(() => muted.muted === false && defaultStore.st
 
 const isRecentRenote = $computed(() => {
 	// 設定がオフなのに謎データがあれば消去
-	if (muted.muted === false && !isReactedRenote && !defaultStore.state.recentRenoteHidden && isRenote && recentRenoteId?.length !== 0) recentRenoteId = [];
+	if (!unref(muted)?.muted && !isReactedRenote && !defaultStore.state.recentRenoteHidden && isRenote && recentRenoteId?.length !== 0) recentRenoteId = [];
 	// 設定がオンでリノート時に判定
-	if (muted.muted === false && !isReactedRenote && defaultStore.state.recentRenoteHidden && isRenote){
+	if (!unref(muted)?.muted && !isReactedRenote && defaultStore.state.recentRenoteHidden && isRenote){
 		//一時間以上前に確認したリノートを除外
 		recentRenoteId = recentRenoteId.filter((x) => (Date.now() - x.date) < 60 * 60 * 1000);
 		const targetRecentRenoteId = recentRenoteId.filter((x) => x.id === appearNote.id);

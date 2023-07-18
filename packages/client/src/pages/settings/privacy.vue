@@ -421,18 +421,6 @@
 		</FormSection>
 
 		<FormSwitch
-			v-model="keepPostCw"
-			class="_formBlock"
-			@update:modelValue="save()"
-			>{{ i18n.ts.keepPostCw }}</FormSwitch
-		>
-		<FormSwitch
-			v-model="keepCw"
-			class="_formBlock"
-			@update:modelValue="save()"
-			>{{ i18n.ts.keepCw }}</FormSwitch
-		>
-		<FormSwitch
 			v-model="channelSecondPostButton"
 			class="_formBlock"
 			@update:modelValue="save()"
@@ -521,8 +509,6 @@ let fifthPostVisibility = $computed(
 let fifthPostWideButton = $computed(
 	defaultStore.makeGetterSetter("fifthPostWideButton")
 );
-let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
-let keepPostCw = $computed(defaultStore.makeGetterSetter("keepPostCw"));
 let channelSecondPostButton = $computed(
 	defaultStore.makeGetterSetter("channelSecondPostButton")
 );

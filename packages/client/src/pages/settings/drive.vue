@@ -8,11 +8,11 @@
 			<FormSplit>
 				<MkKeyValue class="_formBlock">
 					<template #key>{{ i18n.ts.capacity }}</template>
-					<template #value>{{ bytes(capacity, 1) + (capacity - DEFAULT_CAPACITY <= 0 ? ` (+${bytes(capacity - DEFAULT_CAPACITY, 1)} ${~~(((capacity - DEFAULT_CAPACITY) / (MAX_CAPACITY - DEFAULT_CAPACITY)) * 100)}% 拡張済み)` : "") }}</template>
+					<template #value>{{ bytes(capacity, 2) + (capacity - DEFAULT_CAPACITY > 0 ? ` (+${bytes(capacity - DEFAULT_CAPACITY, 2)} ${~~(((capacity - DEFAULT_CAPACITY) / (MAX_CAPACITY - DEFAULT_CAPACITY)) * 100)}% 拡張済み)` : "") }}</template>
 				</MkKeyValue>
 				<MkKeyValue class="_formBlock">
 					<template #key>{{ i18n.ts.inUse }}</template>
-					<template #value>{{ bytes(usage, 1) }}</template>
+					<template #value>{{ bytes(usage, 2) }}</template>
 				</MkKeyValue>
 			</FormSplit>
 		</FormSection>

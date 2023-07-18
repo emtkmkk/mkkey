@@ -598,10 +598,10 @@ let showTimelineReplies = $ref($i.showTimelineReplies);
 
 function save() {
 	os.api("i/update", {
-		localShowRenote: !!profile.localShowRenote,
-		remoteShowRenote: !!profile.remoteShowRenote,
-		showSelfRenoteToHome: !!profile.showSelfRenoteToHome,
-		showTimelineReplies: !!profile.showTimelineReplies,
+		localShowRenote: !!localShowRenote,
+		remoteShowRenote: !!remoteShowRenote,
+		showSelfRenoteToHome: !!showSelfRenoteToHome,
+		showTimelineReplies: !!showTimelineReplies,
 	});
 }
 

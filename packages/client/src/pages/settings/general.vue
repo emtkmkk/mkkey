@@ -47,6 +47,12 @@
 			<FormSwitch v-model="enableDataSaverMode" class="_formBlock">{{
 				i18n.ts.dataSaver
 			}}</FormSwitch>
+			<FormSwitch v-model="recentRenoteHidden" class="_formBlock">{{
+				i18n.ts.recentRenoteHidden
+			}}</FormSwitch>
+			<FormSwitch v-model="reactedRenoteHidden" class="_formBlock">{{
+				i18n.ts.reactedRenoteHidden
+			}}</FormSwitch>
 			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{
 				i18n.ts.hiddenActivityChart
 			}}</FormSwitch>
@@ -543,6 +549,12 @@ const remoteEmojisFetch = $computed(
 );
 const enableDataSaverMode = $computed(
 	defaultStore.makeGetterSetter("enableDataSaverMode")
+);
+const recentRenoteHidden = $computed(
+	defaultStore.makeGetterSetter("recentRenoteHidden")
+);
+const reactedRenoteHidden = $computed(
+	defaultStore.makeGetterSetter("reactedRenoteHidden")
 );
 
 watch(lang, () => {

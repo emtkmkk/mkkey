@@ -21,11 +21,11 @@
 					i18n.ts.reactionSettingDescription
 				}}</template>
 				<MkTab v-model="tab" class="_formBlock">
-					<option value="reactions">{{ reactionsFolderName === "ピン留め絵文字 : 1" || !reactionsFolderName ? "1" : reactionsFolderName.slice(0,3) + (reactionsFolderName?.length > 3 ? "…" : "") }}</option>
-					<option value="reactions2">{{ reactionsFolderName2 === "ピン留め絵文字 : 2" || !reactionsFolderName2 ? "2" : reactionsFolderName2.slice(0,3) + (reactionsFolderName2?.length > 3 ? "…" : "") }}</option>
-					<option value="reactions3">{{ reactionsFolderName3 === "ピン留め絵文字 : 3" || !reactionsFolderName3 ? "3" : reactionsFolderName3.slice(0,3) + (reactionsFolderName3?.length > 3 ? "…" : "") }}</option>
-					<option value="reactions4">{{ reactionsFolderName4 === "ピン留め絵文字 : 4" || !reactionsFolderName4 ? "4" : reactionsFolderName4.slice(0,3) + (reactionsFolderName4?.length > 3 ? "…" : "") }}</option>
-					<option value="reactions5">{{ reactionsFolderName5 === "ピン留め絵文字 : 5" || !reactionsFolderName5 ? "5" : reactionsFolderName5.slice(0,3) + (reactionsFolderName5?.length > 3 ? "…" : "") }}</option>
+					<option value="reactions">{{ !reactionsFolderName ? "1" : reactionsFolderName.slice(0,3) + (reactionsFolderName?.length > 3 ? "…" : "") }}</option>
+					<option value="reactions2">{{ !reactionsFolderName2 ? "2" : reactionsFolderName2.slice(0,3) + (reactionsFolderName2?.length > 3 ? "…" : "") }}</option>
+					<option value="reactions3">{{ !reactionsFolderName3 ? "3" : reactionsFolderName3.slice(0,3) + (reactionsFolderName3?.length > 3 ? "…" : "") }}</option>
+					<option value="reactions4">{{ !reactionsFolderName4 ? "4" : reactionsFolderName4.slice(0,3) + (reactionsFolderName4?.length > 3 ? "…" : "") }}</option>
+					<option value="reactions5">{{ !reactionsFolderName5 ? "5" : reactionsFolderName5.slice(0,3) + (reactionsFolderName5?.length > 3 ? "…" : "") }}</option>
 				</MkTab>
 				<div v-panel v-if="tab === 'reactions'" style="border-radius: 6px">
 					<FormInput
@@ -513,35 +513,35 @@ function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[
 			tab !== 'reactions' && !reactions.includes(reaction) ? {
-				text: "1に移動",
+				text: (reactionsFolderName || "1")?.slice(0,6) + (reactionsFolderName?.length > 6 ? "…" : "") + "に移動",
 				action: () => {
 					deleteReac(reaction);
 					reactions.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions2' && !reactions2.includes(reaction) ? {
-				text: "2に移動",
+				text: (reactionsFolderName2 || "2")?.slice(0,6) + (reactionsFolderName2?.length > 6 ? "…" : "") + "に移動",
 				action: () => {
 					deleteReac(reaction);
 					reactions2.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions3' && !reactions3.includes(reaction) ? {
-				text: "3に移動",
+				text: (reactionsFolderName3 || "3")?.slice(0,6) + (reactionsFolderName3?.length > 6 ? "…" : "") + "に移動",
 				action: () => {
 					deleteReac(reaction);
 					reactions3.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions4' && !reactions4.includes(reaction) ? {
-				text: "4に移動",
+				text: (reactionsFolderName4 || "4")?.slice(0,6) + (reactionsFolderName4?.length > 6 ? "…" : "") + "に移動",
 				action: () => {
 					deleteReac(reaction);
 					reactions4.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions5' && !reactions5.includes(reaction) ? {
-				text: "5に移動",
+				text: (reactionsFolderName5 || "5")?.slice(0,6) + (reactionsFolderName5?.length > 6 ? "…" : "") + "に移動",
 				action: () => {
 					deleteReac(reaction);
 					reactions5.push(reaction);

@@ -14,7 +14,7 @@
 			:note="appearNote.reply"
 			class="reply-to"
 		/>
-		<div v-if="!detailedView" class="note-context" @click="noteClick">
+		<div v-if="!detailedView" class="note-context" @click="noteContextClick">
 			<div class="line"></div>
 			<div v-if="appearNote._prId_" class="info">
 				<i class="ph-megaphone-simple-bold ph-lg"></i>
@@ -395,36 +395,32 @@ const excludeMute = isExcludeReplyQuote || isExcludeNotification;
 const developerRenote = defaultStore.state.developerRenote;
 const developerQuote = defaultStore.state.developerQuote;
 const developerNoteMenu = defaultStore.state.developerNoteMenu;
-const recentRenoteIdGetterSetter = $computed(
+const recentRenoteId = $computed(
 	defaultStore.makeGetterSetter("recentRenoteId")
 );
-const recentRenoteId = [...recentRenoteIdGetterSetter];
 
 const isReactedRenote = $computed(() => muted.muted === false && defaultStore.state.reactedRenoteHidden && isRenote && appearNote.myReaction)
 
 const isRecentRenote = $computed(() => {
 	// 設定がオフなのに謎データがあれば消去
-	if (muted.muted === false && !isReactedRenote && !defaultStore.state.recentRenoteHidden && isRenote && recentRenoteId?.length !== 0) recentRenoteIdGetterSetter = [];
+	if (muted.muted === false && !isReactedRenote && !defaultStore.state.recentRenoteHidden && isRenote && recentRenoteId?.length !== 0) recentRenoteId = [];
 	// 設定がオンでリノート時に判定
 	if (muted.muted === false && !isReactedRenote && defaultStore.state.recentRenoteHidden && isRenote){
 		//一時間以上前に確認したリノートを除外
-		const recentRenoteIdFilter = recentRenoteId.filter((x) => (Date.now() - x.date) < 60 * 60 * 1000)
-		const targetRecentRenoteId = recentRenoteIdFilter.filter((x) => x.id === appearNote.id);
+		recentRenoteId = recentRenoteId.filter((x) => (Date.now() - x.date) < 60 * 60 * 1000);
+		const targetRecentRenoteId = recentRenoteId.filter((x) => x.id === appearNote.id);
 		//最近見たリノートリストに登録されているか
 		if (targetRecentRenoteId?.length !== 0){
-			//されている場合はリノートを除外したリストを保存したあとに判定
-			recentRenoteIdGetterSetter = recentRenoteIdFilter;
 			if (targetRecentRenoteId.some((x) => x.fid === note.id)) {
-				//前見たノートと同じの場合は何もせずにfalse
+				//登録時のノートと同じ場合は畳まない。falseを返す
 				return false;
 			} else {
-				//リノート先が同じでノートが異なる場合はtrue
+				//リノート先が同じでノートが異なる場合は畳む。trueを返す
 				return true;
 			}
 		} else {
 			//されていない場合はリノートを除外したリスト+現在の双方のノートidを保存した後、falseを返す
-			recentRenoteIdFilter.push({id: appearNote.id, fid: note.id, date: Date.now()});
-			recentRenoteIdGetterSetter = recentRenoteIdFilter;
+			recentRenoteId.push({id: appearNote.id, fid: note.id, date: Date.now()});
 			return false;
 		}
 
@@ -591,6 +587,14 @@ function focusAfter() {
 }
 
 function noteClick(e) {
+	if (!defaultStore.state.showDetailNoteClick || document.getSelection().type === "Range" || props.detailedView) {
+		e.stopPropagation();
+	} else {
+		router.push(notePage(appearNote));
+	}
+}
+
+function noteContextClick(e) {
 	if (document.getSelection().type === "Range" || props.detailedView) {
 		e.stopPropagation();
 	} else {

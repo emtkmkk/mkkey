@@ -1,6 +1,6 @@
 <template>
 	<div
-		v-if="!muted.muted || detailedView"
+		v-if="(!muted.muted && !summaryRenote) || detailedView"
 		v-show="!isDeleted"
 		ref="el"
 		v-hotkey="keymap"
@@ -199,6 +199,33 @@
 			</div>
 		</article>
 	</div>
+	<button v-else-if="summaryRenote" class="muted _button" @click="summaryRenote = false">
+		<div tag="small">
+			{{ "RT " }}
+			<MkA
+				v-user-preview="note.userId"
+				class="name"
+				:to="userPage(note.user)"
+			>
+				<MkUserName :user="note.user" maxlength="8" />
+			</MkA>
+				{{ 
+					isRecentRenote
+						? " : 最近表示したRT"
+						: " : 反応済のRT"
+				}}
+		</div>
+		<div tag="small">
+			<MkA
+				v-user-preview="appearNote.userId"
+				class="name"
+				:to="userPage(appearNote.user)"
+			>
+				<MkUserName :user="appearNote.user" maxlength="8" />
+			</MkA>
+			{{ " : " + getNoteSummary(notification.note).slice(0,10) + (getNoteSummary(notification.note)?.length > 10 ? "…" : "") }}
+		</div>
+	</button>
 	<button v-else-if="(!hiddenSoftMutes && muted.matched.join('').length !== 0) || excludeMute" class="muted _button" @click="muted.muted = false">
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
@@ -211,7 +238,17 @@
 				</MkA>
 			</template>
 			<template #reason>
-				{{ muted.matched.join(", ") }}
+				{{ 
+					muted.matched.length === 0 
+						? isExcludeNotification
+							? "通知"
+							: ""
+						: muted.matched.join(", ") + 
+						( isExcludeNotification 
+							? " (通知)"
+							: ""
+						)
+				}}
 			</template>
 		</I18n>
 	</button>
@@ -244,7 +281,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, onMounted, onUnmounted, reactive, ref } from "vue";
+import { unref, computed, inject, onMounted, onUnmounted, reactive, ref } from "vue";
 import * as mfm from "mfm-js";
 import type { Ref } from "vue";
 import type * as misskey from "calckey-js";
@@ -357,6 +394,35 @@ const excludeMute = isExcludeReplyQuote || isExcludeNotification;
 const developerRenote = defaultStore.state.developerRenote;
 const developerQuote = defaultStore.state.developerQuote;
 const developerNoteMenu = defaultStore.state.developerNoteMenu;
+const recentRenoteId = unref(defaultStore.state.recentRenoteId);
+
+const isReactedRenote = $computed(() => !muted.muted && defaultStore.state.reactedRenoteHidden && isRenote && appearNote.myReaction)
+
+const isRecentRenote = $computed(() => {
+	// 設定がオフなのに謎データがあれば消去
+	if (!muted.muted && !isReactedRenote && !defaultStore.state.recentRenoteHidden && isRenote && recentRenoteId?.length !== 0) defaultStore.state.recentRenoteId = [];
+	// 設定がオンでリノート時に判定
+	if (!muted.muted && !isReactedRenote && defaultStore.state.recentRenoteHidden && isRenote){
+		//一時間以上前に確認したリノートを除外
+		const recentRenoteIdFilter = recentRenoteId.filter((x) => (Date.now() - x.date) < 60 * 60 * 1000)
+		//最近見たリノートリストに登録されているか
+		if (recentRenoteIdFilter.some((x) => x.id === appearNote.id)){
+			//されている場合はリノートを除外したリストを保存した後、trueを返す
+			defaultStore.state.recentRenoteId = recentRenoteIdFilter;
+			return true;
+		} else {
+			//されていない場合はリノートを除外したリスト+現在のノートidを保存した後、falseを返す
+			recentRenoteIdFilter.push({id: appearNote.id, date: Date.now());
+			defaultStore.state.recentRenoteId = recentRenoteIdFilter;
+			return false;
+		}
+
+	} else {
+		return false;
+	}
+});
+
+const summaryRenote = ref(isReactedRenote || isRecentRenote);
 
 const keymap = {
 	r: () => reply(true),

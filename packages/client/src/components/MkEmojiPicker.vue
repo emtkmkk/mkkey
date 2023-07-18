@@ -116,7 +116,7 @@
 							</div>
 						</section>
 
-						<section>
+						<section v-if="!$store.state.hiddenRecent">
 							<header class="_acrylic">
 								<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
 								{{ i18n.ts.recentUsed }}

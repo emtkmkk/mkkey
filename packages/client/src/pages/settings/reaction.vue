@@ -197,6 +197,12 @@
 				{{ i18n.ts.reactionAutoFocusSearchBar }}
 			</FormSwitch>
 			<FormSwitch
+				v-model="doubleTapReaction"
+				class="_formBlock"
+			>
+				{{ i18n.ts.doubleTapReaction }}
+			</FormSwitch>
+			<FormSwitch
 				v-model="hiddenRecent"
 				class="_formBlock"
 				v-if="!hiddenReactionDeckAndRecent"
@@ -479,6 +485,9 @@ const japanCategory = $computed(
 );
 const remoteEmojisFetch = $computed(
 	defaultStore.makeGetterSetter("remoteEmojisFetch")
+);
+const doubleTapReaction = $computed(
+	defaultStore.makeGetterSetter("doubleTapReaction")
 );
 
 const editPage = $computed(() => {

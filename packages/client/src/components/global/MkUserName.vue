@@ -1,7 +1,7 @@
 <template>
 	<Mfm
 		:class="$style.root"
-		:text="maxlength && (user.name || user.username).length > maxlength ? (user.name?.replaceAll(/:\w+:/g,'') || user.username).slice(0,maxlength) + '…' : (user.name || user.username)"
+		:text="maxlength && (user.name || user.username).length > maxlength ? (user.name?.replaceAll(/\s?:\w+:/g,'') || user.username).slice(0,maxlength) + (user.name?.replaceAll(/\s?:\w+:/g,'')?.length > maxlength ? '…' : '') : (user.name || user.username)"
 		:plain="true"
 		:nowrap="nowrap"
 		:custom-emojis="user.emojis"

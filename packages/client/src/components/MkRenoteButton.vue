@@ -75,7 +75,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 
 	let buttonActions = [];
 
-	if (props.note.visibility === "public" && props.note.localOnly === false) {
+	if (props.note.visibility === "public" && !props.note.localOnly) {
 		buttonActions.push({
 			text: i18n.ts.renote,
 			textStyle: "font-weight: bold",
@@ -103,7 +103,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 		});
 	}
 
-	if (["public", "home"].includes(props.note.visibility) && props.note.localOnly === false) {
+	if (["public", "home"].includes(props.note.visibility) && !props.note.localOnly) {
 		buttonActions.push({
 			text: i18n.ts.renoteAsUnlisted,
 			icons: ["ph-repeat ph-bold ph-lg", "ph-house ph-bold ph-lg"],
@@ -163,7 +163,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 		});
 	}
 	
-	if (["public", "home"].includes(props.note.visibility) && props.note.localOnly === true) {
+	if (["public", "home"].includes(props.note.visibility) && props.note.localOnly) {
 		buttonActions.push({
 			text: i18n.ts.renoteToLFLFHome,
 			icons: [

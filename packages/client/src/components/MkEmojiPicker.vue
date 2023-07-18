@@ -589,6 +589,7 @@ const tab = ref<"index" | "custom" | "unicode" | "tags">("index");
 const sortWord = ["a","i","u","e","o","y"];
 
 watch(q, (nQ, oQ) => {
+	if (q.value.endsWith("*")) q.value = oQ;
 	if (q.value.endsWith("＠")) q.value = oQ + "@";
 	if (nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","") + "@";
 	if (q.value.endsWith("@") && !allCustomEmojis && props.asReactionPicker){
@@ -920,16 +921,18 @@ function done(query?: any): boolean | void {
 		const emojiForceStd = query.match(/([\w:\.\-@]*) \-f/);
 		if (emojiForceStd && emojiForceStd[1]){
 			chosen(":" + emojiForceStd[1] + ":")
+			return true;
 		}
 	}
 	if (q2.endsWith('!')) {
 		const emojiForceStd = query.match(/([\w:\.\-@]*)!/);
 		if (emojiForceStd && emojiForceStd[1]){
 			chosen(":" + emojiForceStd[1] + ":")
+			return true;
 		}
 	}
 	const exactMatchUnicode = emojilist.find(
-		(emoji) => emoji.char === q2 || emoji.name === q2
+		(emoji) => emoji.char === q2
 	);
 	if (exactMatchUnicode) {
 		chosen(exactMatchUnicode);
@@ -958,8 +961,7 @@ function done(query?: any): boolean | void {
 			return true;
 		}
 	} else {
-		q.value = query.slice(0, -1);
-		q.value = query;
+		q.value = query + "*";
 	}
 }
 

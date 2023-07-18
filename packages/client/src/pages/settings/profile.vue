@@ -160,27 +160,6 @@
 			}}</template></FormSwitch
 		>
 
-		<FormSwitch v-model="profile.localShowRenote" class="_formBlock">{{
-			i18n.ts.localShowRenote
-		}}</FormSwitch>
-
-		<FormSwitch v-model="profile.remoteShowRenote" class="_formBlock">{{
-			i18n.ts.remoteShowRenote
-		}}</FormSwitch>
-
-		<FormSwitch v-model="profile.showSelfRenoteToHome" class="_formBlock">{{
-			i18n.ts.showSelfRenoteToHome
-		}}<template #caption
-				>{{ i18n.ts.reflectMayTakeTime }}</template
-			></FormSwitch>
-
-		<FormSwitch v-model="profile.showTimelineReplies" class="_formBlock"
-			>{{ i18n.ts.flagShowTimelineReplies
-			}}<template #caption
-				>{{ i18n.ts.flagShowTimelineRepliesDescription }}
-				{{ i18n.ts.reflectMayTakeTime }}</template
-			></FormSwitch
-		>
 		<div v-if="saveButton == true">
 			<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 		</div>
@@ -213,10 +192,6 @@ const profile = reactive({
 	isBot: $i?.isBot,
 	isCat: $i?.isCat,
 	speakAsCat: $i?.speakAsCat,
-	showTimelineReplies: $i?.showTimelineReplies,
-	localShowRenote: $i?.localShowRenote,
-	remoteShowRenote: $i?.remoteShowRenote,
-	showSelfRenoteToHome: $i?.showSelfRenoteToHome,
 });
 
 const props = withDefaults(
@@ -272,10 +247,6 @@ function save() {
 		hideOnlineStatus: !!profile.isBot,
 		isCat: !!profile.isCat,
 		speakAsCat: !!profile.speakAsCat,
-		showTimelineReplies: !!profile.showTimelineReplies,
-		localShowRenote: !!profile.localShowRenote,
-		remoteShowRenote: !!profile.remoteShowRenote,
-		showSelfRenoteToHome: !!profile.showSelfRenoteToHome,
 	});
 }
 

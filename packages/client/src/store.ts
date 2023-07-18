@@ -612,6 +612,14 @@ export const defaultStore = markRaw(
 			where: 'device',
 			default: false,
 		},
+		recentRenoteHidden: {
+			where: 'account',
+			default: true,
+		},
+		reactedRenoteHidden: {
+			where: 'account',
+			default: true,
+		},
 	}),
 );
 

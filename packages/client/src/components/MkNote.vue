@@ -412,7 +412,7 @@ const isRecentRenote = $computed(() => {
 			return true;
 		} else {
 			//されていない場合はリノートを除外したリスト+現在のノートidを保存した後、falseを返す
-			recentRenoteIdFilter.push({id: appearNote.id, date: Date.now());
+			recentRenoteIdFilter.push({id: appearNote.id, date: Date.now()});
 			defaultStore.state.recentRenoteId = recentRenoteIdFilter;
 			return false;
 		}

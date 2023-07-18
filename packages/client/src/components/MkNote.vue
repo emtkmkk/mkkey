@@ -200,7 +200,7 @@
 		</article>
 	</div>
 	<button v-else-if="summaryRenote" class="muted _button" @click="summaryRenote = false">
-		<div tag="small">
+		<div tag="small" style="font-size:0.8em">
 			{{ "RT " }}
 			<MkA
 				v-user-preview="note.userId"
@@ -215,7 +215,7 @@
 						: " : 反応済のRT"
 				}}
 		</div>
-		<div tag="small">
+		<div tag="small" style="font-size:0.8em">
 			<MkA
 				v-user-preview="appearNote.userId"
 				class="name"
@@ -223,7 +223,7 @@
 			>
 				<MkUserName :user="appearNote.user" maxlength="8" />
 			</MkA>
-			{{ " : " + getNoteSummary(appearNote).slice(0,10) + (getNoteSummary(appearNote)?.length > 10 ? "…" : "") }}
+			{{ " : " + getNoteSummary(appearNote).slice(0,12) + (getNoteSummary(appearNote)?.length > 12 ? "…" : "") }}
 		</div>
 	</button>
 	<button v-else-if="(!hiddenSoftMutes && muted.matched.join('').length !== 0) || excludeMute" class="muted _button" @click="muted.muted = false">

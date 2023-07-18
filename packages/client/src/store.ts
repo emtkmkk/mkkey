@@ -612,6 +612,10 @@ export const defaultStore = markRaw(
 			where: 'device',
 			default: false,
 		},
+		recentRenoteId: {
+			where: 'device',
+			default: [],
+		},
 		recentRenoteHidden: {
 			where: 'account',
 			default: true,

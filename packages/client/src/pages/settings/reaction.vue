@@ -21,13 +21,21 @@
 					i18n.ts.reactionSettingDescription
 				}}</template>
 				<MkTab v-model="tab" class="_formBlock">
-					<option value="reactions">{{ "1" }}</option>
-					<option value="reactions2">{{ "2" }}</option>
-					<option value="reactions3">{{ "3" }}</option>
-					<option value="reactions4">{{ "4" }}</option>
-					<option value="reactions5">{{ "5" }}</option>
+					<option value="reactions">{{ reactionsFolderName === "ピン留め絵文字 : 1" || !reactionsFolderName ? "1" : reactionsFolderName.slice(0,3) + (reactionsFolderName?.length > 3 ? "…" : "") }}</option>
+					<option value="reactions2">{{ reactionsFolderName2 === "ピン留め絵文字 : 2" || !reactionsFolderName2 ? "2" : reactionsFolderName2.slice(0,3) + (reactionsFolderName2?.length > 3 ? "…" : "") }}</option>
+					<option value="reactions3">{{ reactionsFolderName3 === "ピン留め絵文字 : 3" || !reactionsFolderName3 ? "3" : reactionsFolderName3.slice(0,3) + (reactionsFolderName3?.length > 3 ? "…" : "") }}</option>
+					<option value="reactions4">{{ reactionsFolderName4 === "ピン留め絵文字 : 4" || !reactionsFolderName4 ? "4" : reactionsFolderName4.slice(0,3) + (reactionsFolderName4?.length > 3 ? "…" : "") }}</option>
+					<option value="reactions5">{{ reactionsFolderName5 === "ピン留め絵文字 : 5" || !reactionsFolderName5 ? "5" : reactionsFolderName5.slice(0,3) + (reactionsFolderName5?.length > 3 ? "…" : "") }}</option>
 				</MkTab>
 				<div v-panel v-if="tab === 'reactions'" style="border-radius: 6px">
+					<FormInput
+						v-model="reactionsFolderName"
+						class="_formBlock"
+						:small="true"
+						:placeholder="`フォルダ名 : 1`"
+						v-if="((pinned2?.length ?? 0) + (pinned3?.length ?? 0) + (pinned4?.length ?? 0) + (pinned5?.length ?? 0)) !== 0"
+						style="margin: 0 0 !important"
+					/>
 					<XDraggable
 						v-model="reactions"
 						class="zoaiodol"
@@ -52,6 +60,13 @@
 					</XDraggable>
 				</div>
 				<div v-panel v-if="tab === 'reactions2'" style="border-radius: 6px">
+					<FormInput
+						v-model="reactionsFolderName2"
+						class="_formBlock"
+						:small="true"
+						:placeholder="`フォルダ名 : 2`"
+						style="margin: 0 0 !important"
+					/>
 					<XDraggable
 						v-model="reactions2"
 						class="zoaiodol"
@@ -76,6 +91,13 @@
 					</XDraggable>
 				</div>
 				<div v-panel v-if="tab === 'reactions3'" style="border-radius: 6px">
+					<FormInput
+						v-model="reactionsFolderName3"
+						class="_formBlock"
+						:small="true"
+						:placeholder="`フォルダ名 : 3`"
+						style="margin: 0 0 !important"
+					/>
 					<XDraggable
 						v-model="reactions3"
 						class="zoaiodol"
@@ -100,6 +122,13 @@
 					</XDraggable>
 				</div>
 				<div v-panel v-if="tab === 'reactions4'" style="border-radius: 6px">
+					<FormInput
+						v-model="reactionsFolderName4"
+						class="_formBlock"
+						:small="true"
+						:placeholder="`フォルダ名 : 4`"
+						style="margin: 0 0 !important"
+					/>
 					<XDraggable
 						v-model="reactions4"
 						class="zoaiodol"
@@ -124,6 +153,13 @@
 					</XDraggable>
 				</div>
 				<div v-panel v-if="tab === 'reactions5'" style="border-radius: 6px">
+					<FormInput
+						v-model="reactionsFolderName5"
+						class="_formBlock"
+						:small="true"
+						:placeholder="`フォルダ名 : 5`"
+						style="margin: 0 0 !important"
+					/>
 					<XDraggable
 						v-model="reactions5"
 						class="zoaiodol"
@@ -161,8 +197,16 @@
 				{{ i18n.ts.reactionAutoFocusSearchBar }}
 			</FormSwitch>
 			<FormSwitch
+				v-model="hiddenRecent"
+				class="_formBlock"
+				v-if="!hiddenReactionDeckAndRecent"
+			>
+				{{ i18n.ts.hiddenRecent }}
+			</FormSwitch>
+			<FormSwitch
 				v-model="hiddenReactionDeckAndRecent"
 				class="_formBlock"
+				v-if="!hiddenRecent"
 			>
 				{{ i18n.ts.hiddenReactionDeckAndRecent }}
 			</FormSwitch>
@@ -379,6 +423,24 @@ let reactions2 = $ref(deepClone(defaultStore.state.reactions2));
 let reactions3 = $ref(deepClone(defaultStore.state.reactions3));
 let reactions4 = $ref(deepClone(defaultStore.state.reactions4));
 let reactions5 = $ref(deepClone(defaultStore.state.reactions5));
+const reactionsFolderName = $computed(
+	defaultStore.makeGetterSetter("reactionsFolderName")
+);
+const reactionsFolderName2 = $computed(
+	defaultStore.makeGetterSetter("reactionsFolderName2")
+);
+const reactionsFolderName3 = $computed(
+	defaultStore.makeGetterSetter("reactionsFolderName3")
+);
+const reactionsFolderName4 = $computed(
+	defaultStore.makeGetterSetter("reactionsFolderName4")
+);
+const reactionsFolderName5 = $computed(
+	defaultStore.makeGetterSetter("reactionsFolderName5")
+);
+const hiddenRecent = $computed(
+	defaultStore.makeGetterSetter("hiddenRecent")
+);
 const hiddenReactionDeckAndRecent = $computed(
 	defaultStore.makeGetterSetter("hiddenReactionDeckAndRecent")
 );

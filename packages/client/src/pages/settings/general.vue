@@ -7,26 +7,50 @@
 			</option>
 		</FormSelect>
 
-		<FormRadios v-model="showLocalPostsInTimeline" class="_formBlock">
-			<template #label>{{ i18n.ts.showLocalPosts }}</template>
-			<option value="home">
-				<i class="ph-handshake ph-bold ph-lg" />
-				{{ i18n.ts.homeTimeline }}
-			</option>
-			<option value="social">
-				<i class="ph-house ph-bold ph-lg" />
-				{{ i18n.ts.socialTimeline }}
-			</option>
-			<option value="both">
-				<i class="ph-house ph-bold ph-lg" />
-				<i class="ph-handshake ph-bold ph-lg" />
-				{{ i18n.ts.bothTimeline }}
-			</option>
-		</FormRadios>
-
-		<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
-			i18n.ts.showFixedPostForm
-		}}</FormSwitch>
+		<FormSection>
+			<template #label>{{ i18n.ts.timeline }}</template>
+			<FormRadios v-model="showLocalPostsInTimeline" class="_formBlock">
+				<template #label>{{ i18n.ts.showLocalPosts }}</template>
+				<option value="home">
+					<i class="ph-handshake ph-bold ph-lg" />
+					{{ i18n.ts.homeTimeline }}
+				</option>
+				<option value="social">
+					<i class="ph-house ph-bold ph-lg" />
+					{{ i18n.ts.socialTimeline }}
+				</option>
+				<option value="both">
+					<i class="ph-house ph-bold ph-lg" />
+					<i class="ph-handshake ph-bold ph-lg" />
+					{{ i18n.ts.bothTimeline }}
+				</option>
+			</FormRadios>
+			<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
+				i18n.ts.showFixedPostForm
+			}}</FormSwitch>
+			<FormSwitch v-model="recentRenoteHidden" class="_formBlock">{{
+				i18n.ts.recentRenoteHidden
+			}}</FormSwitch>
+			<FormSwitch v-model="reactedRenoteHidden" class="_formBlock">{{
+				i18n.ts.reactedRenoteHidden
+			}}</FormSwitch>
+			<FormSwitch v-model="localShowRenote" class="_formBlock" @update:modelValue="save()">{{
+				i18n.ts.localShowRenote
+			}}</FormSwitch>
+			<FormSwitch v-model="remoteShowRenote" class="_formBlock" @update:modelValue="save()">{{
+				i18n.ts.remoteShowRenote
+			}}</FormSwitch>
+			<FormSwitch v-model="showSelfRenoteToHome" class="_formBlock" @update:modelValue="save()">{{
+				i18n.ts.showSelfRenoteToHome
+			}}</FormSwitch>
+			<FormSwitch v-model="showTimelineReplies" class="_formBlock" @update:modelValue="save()"
+				>{{ i18n.ts.flagShowTimelineReplies
+				}}<template #caption
+					>{{ i18n.ts.flagShowTimelineRepliesDescription }}
+					{{ i18n.ts.reflectMayTakeTime }}</template
+				></FormSwitch
+			>
+		</FormSection>
 
 		<FormSection>
 			<template #label>{{ i18n.ts.behavior }}</template>
@@ -44,14 +68,11 @@
 			<FormSwitch v-model="swipeOnDesktop" class="_formBlock">{{
 				i18n.ts.swipeOnDesktop
 			}}</FormSwitch>
+			<FormSwitch v-model="showDetailNoteClick" class="_formBlock">{{
+				i18n.ts.showDetailNoteClick
+			}}</FormSwitch>
 			<FormSwitch v-model="enableDataSaverMode" class="_formBlock">{{
 				i18n.ts.dataSaver
-			}}</FormSwitch>
-			<FormSwitch v-model="recentRenoteHidden" class="_formBlock">{{
-				i18n.ts.recentRenoteHidden
-			}}</FormSwitch>
-			<FormSwitch v-model="reactedRenoteHidden" class="_formBlock">{{
-				i18n.ts.reactedRenoteHidden
 			}}</FormSwitch>
 			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{
 				i18n.ts.hiddenActivityChart
@@ -69,7 +90,7 @@
 				i18n.ts.developerNoteMenu
 			}}</FormSwitch>
 
-			<FormSelect v-model="serverDisconnectedBehavior" class="_fo\emtkmkk\calckey\src\branch\beta\packages\client\src\pages\settings\general.vuermBlock">
+			<FormSelect v-model="serverDisconnectedBehavior" class="_formBlock">
 				<template #label>{{ i18n.ts.whenServerDisconnected }}</template>
 				<option value="reload">
 					{{ i18n.ts._serverDisconnectedBehavior.reload }}
@@ -85,7 +106,6 @@
 				</option>
 			</FormSelect>
 		</FormSection>
-		
 
 		<FormSection>
 			<template #label>{{ i18n.ts.postForm }}</template>
@@ -116,6 +136,16 @@
 			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
 				i18n.ts.smartMFMInputer
 			}}</FormSwitch>
+			<FormSwitch
+				v-model="keepPostCw"
+				class="_formBlock"
+				>{{ i18n.ts.keepPostCw }}</FormSwitch
+			>
+			<FormSwitch
+				v-model="keepCw"
+				class="_formBlock"
+				>{{ i18n.ts.keepCw }}</FormSwitch
+			>
 			<FormSwitch v-model="emojiPickerUseDrawerForMobile" class="_formBlock">{{
 				i18n.ts.emojiPickerUseDrawerForMobile
 			}}</FormSwitch>
@@ -556,6 +586,24 @@ const recentRenoteHidden = $computed(
 const reactedRenoteHidden = $computed(
 	defaultStore.makeGetterSetter("reactedRenoteHidden")
 );
+const showDetailNoteClick = $computed(
+	defaultStore.makeGetterSetter("showDetailNoteClick")
+);
+let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
+let keepPostCw = $computed(defaultStore.makeGetterSetter("keepPostCw"));
+let localShowRenote = $ref($i.localShowRenote);
+let remoteShowRenote = $ref($i.remoteShowRenote);
+let showSelfRenoteToHome = $ref($i.showSelfRenoteToHome);
+let showTimelineReplies = $ref($i.showTimelineReplies);
+
+function save() {
+	os.api("i/update", {
+		localShowRenote: !!profile.localShowRenote,
+		remoteShowRenote: !!profile.remoteShowRenote,
+		showSelfRenoteToHome: !!profile.showSelfRenoteToHome,
+		showTimelineReplies: !!profile.showTimelineReplies,
+	});
+}
 
 watch(lang, () => {
 	localStorage.setItem("lang", lang.value as string);

@@ -3,12 +3,12 @@
 		<XNote
 			v-if="note && !block.detailed"
 			:key="note.id + ':normal'"
-			v-model:note="note"
+			:note="note"
 		/>
 		<XNoteDetailed
 			v-if="note && block.detailed"
 			:key="note.id + ':detail'"
-			v-model:note="note"
+			:note="note"
 		/>
 	</div>
 </template>

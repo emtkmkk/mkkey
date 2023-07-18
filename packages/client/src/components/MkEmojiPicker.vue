@@ -587,6 +587,8 @@ const searchResultUnicode = ref<UnicodeEmojiDef[]>([]);
 const searchResultUnicodeStart = ref<UnicodeEmojiDef[]>([]);
 const tab = ref<"index" | "custom" | "unicode" | "tags">("index");
 const sortWord = ["a","i","u","e","o","y"];
+let singleTapTime = undefined;
+let singleTapEmoji = undefined;
 
 watch(q, (nQ, oQ) => {
 	if (q.value.endsWith("*")) q.value = oQ;
@@ -886,6 +888,14 @@ function chosen(emoji: any, ev?: MouseEvent) {
 		ev &&
 		((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);
 	if (el) {
+		//誤爆防止ダブルタップリアクション機能
+		if (props.asReactionPicker && defaultStore.state.doubleTabReaction){
+			if (!singleTapTime || singleTapEmoji !== emoji || (Date.now() - singleTapTime) > 2 * 1000){
+				singleTapTime = Date.now();
+				singleTapEmoji = emoji;
+				return
+			}
+		}
 		const rect = el.getBoundingClientRect();
 		const x = rect.left + el.offsetWidth / 2;
 		const y = rect.top + el.offsetHeight / 2;

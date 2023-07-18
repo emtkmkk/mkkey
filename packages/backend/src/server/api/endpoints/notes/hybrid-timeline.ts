@@ -114,6 +114,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		query.andWhere(
 			new Brackets((qb) => {
 				qb.orWhere("note.renoteUserId != note.userId");
+				qb.orWhere("note.userId = :meId", { meId: user.id });
 				qb.orWhere("note.renoteId IS NULL");
 				qb.orWhere("note.text IS NOT NULL");
 				qb.orWhere("note.fileIds != '{}'");

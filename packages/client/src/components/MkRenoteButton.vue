@@ -75,7 +75,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 
 	let buttonActions = [];
 
-	if (props.note.visibility === "public") {
+	if (props.note.visibility === "public" && props.note.localOnly === false) {
 		buttonActions.push({
 			text: i18n.ts.renote,
 			textStyle: "font-weight: bold",
@@ -85,6 +85,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				os.api("notes/create", {
 					renoteId: props.note.id,
 					visibility: "public",
+					localOnly: false,
 				});
 				const el =
 					ev &&
@@ -102,7 +103,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 		});
 	}
 
-	if (["public", "home"].includes(props.note.visibility)) {
+	if (["public", "home"].includes(props.note.visibility) && props.note.localOnly === false) {
 		buttonActions.push({
 			text: i18n.ts.renoteAsUnlisted,
 			icons: ["ph-repeat ph-bold ph-lg", "ph-house ph-bold ph-lg"],
@@ -111,6 +112,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				os.api("notes/create", {
 					renoteId: props.note.id,
 					visibility: "home",
+					localOnly: false,
 				});
 				const el =
 					ev &&
@@ -128,9 +130,9 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 		});
 	}
 
-	if (["public", "home"].includes(props.note.visibility)) {
+	if (["public"].includes(props.note.visibility)) {
 		buttonActions.push({
-			text: i18n.ts.renoteToLocalFollowers,
+			text: props.note.localOnly && props.note.userId !== $i.id ? i18n.ts.renoteToLFLF : i18n.ts.renoteToLocalFollowers,
 			icons: [
 				"ph-repeat ph-bold ph-lg",
 				"ph-hand-heart ph-bold ph-lg"
@@ -139,16 +141,43 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 			action: () => {
 				os.api(
 					"notes/create",
-					props.note.visibility === "specified"
-						? {
+						  {
 								renoteId: props.note.id,
-								visibility: props.note.visibility,
-								visibleUserIds: props.note.visibleUserIds,
+								visibility: "public",
 								localOnly: true,
 						  }
-						: {
+				);
+				const el =
+					ev &&
+					((ev.currentTarget ?? ev.target) as
+						| HTMLElement
+						| null
+						| undefined);
+				if (el) {
+					const rect = el.getBoundingClientRect();
+					const x = rect.left + el.offsetWidth / 2;
+					const y = rect.top + el.offsetHeight / 2;
+					os.popup(Ripple, { x, y }, {}, "end");
+				}
+			},
+		});
+	}
+	
+	if (["public", "home"].includes(props.note.visibility) && props.note.localOnly === true) {
+		buttonActions.push({
+			text: i18n.ts.renoteToLFLFHome,
+			icons: [
+				"ph-repeat ph-bold ph-lg",
+				"ph-hand-heart ph-bold ph-lg",
+				"ph-house ph-bold ph-lg"
+			],
+			danger: false,
+			action: () => {
+				os.api(
+					"notes/create",
+						  {
 								renoteId: props.note.id,
-								visibility: props.note.visibility,
+								visibility: "home",
 								localOnly: true,
 						  }
 				);
@@ -198,8 +227,12 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 		});
 	} else {
 		buttonActions.push({
-			text: i18n.ts.renoteToFollowers,
-			icons: [
+			text: props.note.localOnly && props.note.userId !== $i.id ? i18n.ts.renoteToLFLFFollowers : i18n.ts.renoteToFollowers,
+			icons: props.note.localOnly && props.note.userId !== $i.id ? [
+				"ph-repeat ph-bold ph-lg",
+				"ph-hand-heart ph-bold ph-lg",
+				"ph-lock-simple ph-bold ph-lg",
+			] : [
 				"ph-repeat ph-bold ph-lg",
 				"ph-lock-simple ph-bold ph-lg",
 			],

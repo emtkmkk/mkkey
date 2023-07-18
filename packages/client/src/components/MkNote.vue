@@ -399,7 +399,7 @@ const recentRenoteId = $computed(
 	defaultStore.makeGetterSetter("recentRenoteId")
 );
 
-const isReactedRenote = $computed(() => unref(muted)?.muted === false && defaultStore.state.reactedRenoteHidden && isRenote && appearNote.myReaction)
+const isReactedRenote = $computed(() => !unref(muted)?.muted && defaultStore.state.reactedRenoteHidden && isRenote && appearNote.myReaction)
 
 const isRecentRenote = $computed(() => {
 	// 設定がオフなのに謎データがあれば消去

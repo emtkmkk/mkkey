@@ -313,6 +313,7 @@ import { getNoteMenu } from "@/scripts/get-note-menu";
 import { useNoteCapture } from "@/scripts/use-note-capture";
 import { notePage } from "@/filters/note";
 import { deepClone } from "@/scripts/clone";
+import { getNoteSummary } from "@/scripts/get-note-summary";
 
 const router = useRouter();
 

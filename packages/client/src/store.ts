@@ -160,6 +160,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: false,
 		},
+		doubleTapReaction: {
+			where: "account",
+			default: false,
+		},
 		mutedWords: {
 			where: "account",
 			default: [],

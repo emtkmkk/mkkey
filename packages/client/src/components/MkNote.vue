@@ -395,26 +395,36 @@ const excludeMute = isExcludeReplyQuote || isExcludeNotification;
 const developerRenote = defaultStore.state.developerRenote;
 const developerQuote = defaultStore.state.developerQuote;
 const developerNoteMenu = defaultStore.state.developerNoteMenu;
-const recentRenoteId = unref(defaultStore.state.recentRenoteId);
+const recentRenoteIdGetterSetter = $computed(
+	defaultStore.makeGetterSetter("recentRenoteId")
+);
+const recentRenoteId = [...recentRenoteIdGetterSetter];
 
-const isReactedRenote = $computed(() => !muted.muted && defaultStore.state.reactedRenoteHidden && isRenote && appearNote.myReaction)
+const isReactedRenote = $computed(() => muted.muted === false && defaultStore.state.reactedRenoteHidden && isRenote && appearNote.myReaction)
 
 const isRecentRenote = $computed(() => {
 	// 設定がオフなのに謎データがあれば消去
-	if (!muted.muted && !isReactedRenote && !defaultStore.state.recentRenoteHidden && isRenote && recentRenoteId?.length !== 0) defaultStore.state.recentRenoteId = [];
+	if (muted.muted === false && !isReactedRenote && !defaultStore.state.recentRenoteHidden && isRenote && recentRenoteId?.length !== 0) recentRenoteIdGetterSetter = [];
 	// 設定がオンでリノート時に判定
-	if (!muted.muted && !isReactedRenote && defaultStore.state.recentRenoteHidden && isRenote){
+	if (muted.muted === false && !isReactedRenote && defaultStore.state.recentRenoteHidden && isRenote){
 		//一時間以上前に確認したリノートを除外
 		const recentRenoteIdFilter = recentRenoteId.filter((x) => (Date.now() - x.date) < 60 * 60 * 1000)
+		const targetRecentRenoteId = recentRenoteIdFilter.filter((x) => x.id === appearNote.id);
 		//最近見たリノートリストに登録されているか
-		if (recentRenoteIdFilter.some((x) => x.id === appearNote.id)){
-			//されている場合はリノートを除外したリストを保存した後、trueを返す
-			defaultStore.state.recentRenoteId = recentRenoteIdFilter;
-			return true;
+		if (targetRecentRenoteId?.length !== 0){
+			//されている場合はリノートを除外したリストを保存したあとに判定
+			recentRenoteIdGetterSetter = recentRenoteIdFilter;
+			if (targetRecentRenoteId.some((x) => x.fid === note.id)) {
+				//前見たノートと同じの場合は何もせずにfalse
+				return false;
+			} else {
+				//リノート先が同じでノートが異なる場合はtrue
+				return true;
+			}
 		} else {
-			//されていない場合はリノートを除外したリスト+現在のノートidを保存した後、falseを返す
-			recentRenoteIdFilter.push({id: appearNote.id, date: Date.now()});
-			defaultStore.state.recentRenoteId = recentRenoteIdFilter;
+			//されていない場合はリノートを除外したリスト+現在の双方のノートidを保存した後、falseを返す
+			recentRenoteIdFilter.push({id: appearNote.id, fid: note.id, date: Date.now()});
+			recentRenoteIdGetterSetter = recentRenoteIdFilter;
 			return false;
 		}
 

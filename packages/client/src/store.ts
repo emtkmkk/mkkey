@@ -628,6 +628,10 @@ export const defaultStore = markRaw(
 			where: 'account',
 			default: true,
 		},
+		showDetailNoteClick: {
+			where: 'account',
+			default: true,
+		}
 	}),
 );
 

@@ -116,21 +116,45 @@ export const defaultStore = markRaw(
 				":tblob_avicii:",
 			],
 		},
+		reactionsFolderName: {
+			where: "account",
+			default: "",
+		},
 		reactions2: {
 			where: "account",
 			default: [],
+		},
+		reactionsFolderName2: {
+			where: "account",
+			default: "",
 		},
 		reactions3: {
 			where: "account",
 			default: [],
 		},
+		reactionsFolderName3: {
+			where: "account",
+			default: "",
+		},
 		reactions4: {
 			where: "account",
 			default: [],
 		},
+		reactionsFolderName4: {
+			where: "account",
+			default: "",
+		},
 		reactions5: {
 			where: "account",
 			default: [],
+		},
+		reactionsFolderName5: {
+			where: "account",
+			default: "",
+		},
+		hiddenRecent: {
+			where: "account",
+			default: false,
 		},
 		hiddenReactionDeckAndRecent: {
 			where: "account",

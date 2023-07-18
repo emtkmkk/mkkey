@@ -407,7 +407,9 @@ const isRecentRenote = $computed(() => {
 	// 設定がオンでリノート時に判定
 	if (!unref(muted)?.muted && !isReactedRenote && defaultStore.state.recentRenoteHidden && isRenote){
 		//一時間以上前に確認したリノートを除外
-		recentRenoteId = recentRenoteId.filter((x) => (Date.now() - x.date) < 60 * 60 * 1000);
+		const now = Date.now();
+		//無意味に書き込むことを回避
+		if (recentRenoteId.some((x) => (now - x.date) >= 60 * 60 * 1000)) recentRenoteId = recentRenoteId.filter((x) => (now - x.date) < 60 * 60 * 1000);
 		const targetRecentRenoteId = recentRenoteId.filter((x) => x.id === appearNote.id);
 		//最近見たリノートリストに登録されているか
 		if (targetRecentRenoteId?.length !== 0){
@@ -420,7 +422,7 @@ const isRecentRenote = $computed(() => {
 			}
 		} else {
 			//されていない場合はリノートを除外したリスト+現在の双方のノートidを保存した後、falseを返す
-			recentRenoteId.push({id: appearNote.id, fid: note.id, date: Date.now()});
+			recentRenoteId.push({id: appearNote.id, fid: note.id, date: now});
 			return false;
 		}
 

@@ -139,13 +139,14 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
 			value: excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
 			title_link: "https://mkkey.net/notes/" + body.note.id,
-			color: 16757683,
-			ts: new Date(body.note.createdAt),
+			color: "#f8bcba",
+			ts: new Date(body.note.createdAt).valueOf(),
 			image_url: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image")
 				? body.note.files[0].url 
 				: undefined,
 			thumb_url: body.reaction?.customEmoji ? body.reaction?.customEmoji.publicUrl : (body.note.files?.length > 1 && !body.note.cw && !body.note.files[1].isSensitive && body.note.files[1].type?.startsWith("image")) ? body.note.files[1].thumbnailUrl : body.note.user?.avatarUrl,
 			footer: "もこきー",
+			footer_icon: "https://s3.ap-northeast-2.wasabisys.com/mkkey/data/d2345d62-b667-4d27-b11a-f0c25746cbe5.png",
 		}) : undefined,
 		body.user ? ({
 			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (excludeNotPlain(body.user.name) + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : ""))),
@@ -171,8 +172,9 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			] : undefined,
 			image_url: body.user.bannerUrl ? body.user.bannerUrl : undefined,
 			thumb_url: body.user.avatarUrl ? body.user.avatarUrl : undefined,
-			color: 16757683,
+			color: "#f8bcba",
 			footer: "もこきー",
+			footer_icon: "https://s3.ap-northeast-2.wasabisys.com/mkkey/data/d2345d62-b667-4d27-b11a-f0c25746cbe5.png",
 		}) : undefined,
 		body.message ? ({
 			author_name: getUsername(body.message.user),
@@ -186,10 +188,11 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			title_link: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
 			value: (excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0, 100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
 			image_url: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? body.message.file.url : undefined,
-			ts: new Date(body.message.createdAt),
+			ts: new Date(body.message.createdAt).valueOf(),
 			thumb_url: body.emoji ? body.emoji.publicUrl : body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("video") ? body.message.file.thumbnailUrl : body.message.user?.avatarUrl,
-			color: 16757683,
+			color: "#f8bcba",
 			footer: "もこきー",
+			footer_icon: "https://s3.ap-northeast-2.wasabisys.com/mkkey/data/d2345d62-b667-4d27-b11a-f0c25746cbe5.png",
 		}) : undefined,
 	].filter((x) => x !== undefined)
 }

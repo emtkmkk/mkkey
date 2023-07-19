@@ -8,15 +8,18 @@
 			<template #label>送信先のURL</template>
 		</FormInput>
 
-		<FormInput v-if="!discord_type" v-model="secret" class="_formBlock">
+		<FormInput v-if="!discord_type && !slack_type" v-model="secret" class="_formBlock">
 			<template #prefix><i class="ph-lock ph-bold ph-lg"></i></template>
 			<template #label>Secret</template>
 		</FormInput>
-		<FormSwitch v-model="discord_type" class="_formBlock"
+		<FormSwitch v-if="!slack_type" v-model="discord_type" class="_formBlock"
 			>Discordに対応した形式で送信</FormSwitch
 		>
+		<FormSwitch v-if="!discord_type" v-model="slack_type" class="_formBlock"
+			>Slackに対応した形式で送信</FormSwitch
+		>
 		
-		<FormInput v-if="discord_type" v-model="text_length" class="_formBlock">
+		<FormInput v-if="discord_type || slack_type" v-model="text_length" class="_formBlock">
 			<template #prefix><i class="ph-pencil-line ph-bold ph-lg"></i></template>
 			<template #label>表示する本文の最大文字数</template>
 		</FormInput>
@@ -99,6 +102,7 @@ let url = $ref("");
 let secret = $ref("");
 
 let discord_type = $ref(false);
+let slack_type = $ref(false);
 
 let text_length = $ref("");
 
@@ -149,6 +153,16 @@ async function create(): Promise<void> {
 			secret = "Discord" + parseInt(text_length);
 		} else {
 			secret = "Discord";
+		}
+	}
+	
+	if (slack_type) {
+		if (text_length && isFinite(text_length)) {
+			if (text_length > 1000) text_length = 1000;
+			if (text_length < 0) text_length = 0;
+			secret = "Slack" + parseInt(text_length);
+		} else {
+			secret = "Slack";
 		}
 	}
 

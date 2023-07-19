@@ -38,7 +38,7 @@
 										:user="user"
 										:nowrap="true"
 									/>
-									<span
+									<div
 										v-if="
 											$i &&
 											$i.id != user.id &&
@@ -266,7 +266,8 @@
 								<dt class="name">
 									<Mfm
 										:text="field.name"
-										:plain="true"
+										:plain="false"
+										:is-note="false"
 										:custom-emojis="user.emojis"
 										:colored="false"
 									/>
@@ -276,6 +277,7 @@
 										:text="field.value"
 										:author="user"
 										:i="$i"
+										:is-note="false"
 										:custom-emojis="user.emojis"
 										:colored="false"
 									/>

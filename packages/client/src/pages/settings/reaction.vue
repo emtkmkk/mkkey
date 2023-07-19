@@ -236,7 +236,7 @@
 			<FormSwitch
 				v-model="recentlyUsedDefaultOpen"
 				class="_formBlock"
-				v-if="!hiddenRecent && !hiddenReactionDeckAndRecent"
+				v-if="((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0 && !hiddenRecent && !hiddenReactionDeckAndRecent"
 			>
 				{{ i18n.ts.recentlyUsedDefaultOpen }}
 			</FormSwitch>

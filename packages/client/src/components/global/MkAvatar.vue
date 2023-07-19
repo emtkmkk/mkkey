@@ -3,7 +3,7 @@
 		v-if="disableLink"
 		v-user-preview="disablePreview ? undefined : user.id"
 		class="eiwwqkts _noSelect"
-		:class="{ cat: user.isCat, square: user.isCat ? false : $store.state.squareAvatars }"
+		:class="{ cat: allowCat && user.isCat, square: allowCat && user.isCat ? false : $store.state.squareAvatars }"
 		:style="{ color }"
 		:title="acct(user)"
 		@click="onClick"
@@ -51,12 +51,14 @@ const props = withDefaults(
 		disableLink?: boolean;
 		disablePreview?: boolean;
 		showIndicator?: boolean;
+		allowCat?: boolean;
 	}>(),
 	{
 		target: null,
 		disableLink: false,
 		disablePreview: false,
 		showIndicator: false,
+		allowCat: true,
 	}
 );
 

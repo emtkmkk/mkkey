@@ -39,7 +39,7 @@ interface DiscordEmbeds {
 	fields?: Array<any>;
 }
 
-function toEmbeds(body: any): Array<DiscordEmbeds> {
+function toDiscordEmbeds(body: any): Array<DiscordEmbeds> {
 	return [
 		body.note ? ({
 			author: {
@@ -125,13 +125,82 @@ function toEmbeds(body: any): Array<DiscordEmbeds> {
 	].filter((x: DiscordEmbeds | undefined) => x !== undefined)
 }
 
+async function toSlackEmbeds(data: any): Promise<any[]> {
+	const body = await typeToBody(data)
+	return [
+		body.note ? ({
+			author_name: getUsername(body.note.user),
+			author_link: "https://mkkey.net/@" + body.note.user?.username + (body.note.user?.host ? "@" + body.note.user?.host : ""),
+			author_icon: body.note.user?.avatarUrl,
+			icon_url: body.avatar_url,
+			username: body.username,
+			fallback: body.content,
+            pretext: body.content,
+			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
+			value: excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
+			title_link: "https://mkkey.net/notes/" + body.note.id,
+			color: 16757683,
+			ts: new Date(body.note.createdAt),
+			image_url: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image")
+				? body.note.files[0].url 
+				: undefined,
+			thumb_url: body.reaction?.customEmoji ? body.reaction?.customEmoji.publicUrl : (body.note.files?.length > 1 && !body.note.cw && !body.note.files[1].isSensitive && body.note.files[1].type?.startsWith("image")) ? body.note.files[1].thumbnailUrl : body.note.user?.avatarUrl,
+			footer: "もこきー",
+		}) : undefined,
+		body.user ? ({
+			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (excludeNotPlain(body.user.name) + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : ""))),
+			title_link: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
+			value: excludeNotPlain(body.user.description) ?? undefined,
+			icon_url: body.avatar_url,
+			username: body.username,
+			fallback: body.content,
+            pretext: body.content,
+			fields: body.user.notesCount ? [
+				{
+					title: "投稿数",
+					value: body.user.notesCount
+				},
+				{
+					title: "フォロー",
+					value: body.user.followingCount ?? "N/A"
+				},
+				{
+					title: "フォロワー",
+					value: body.user.followersCount ?? "N/A"
+				},
+			] : undefined,
+			image_url: body.user.bannerUrl ? body.user.bannerUrl : undefined,
+			thumb_url: body.user.avatarUrl ? body.user.avatarUrl : undefined,
+			color: 16757683,
+			footer: "もこきー",
+		}) : undefined,
+		body.message ? ({
+			author_name: getUsername(body.message.user),
+			author_link: "https://mkkey.net/@" + body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""),
+			author_icon: body.message.user?.avatarUrl,
+			icon_url: body.avatar_url,
+			username: body.username,
+			fallback: body.content,
+            pretext: body.content,
+			title: (body.message.group ? body.message.group.name + " の" : "個人宛の") + "チャット",
+			title_link: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
+			value: (excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0, 100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
+			image_url: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? body.message.file.url : undefined,
+			ts: new Date(body.message.createdAt),
+			thumb_url: body.emoji ? body.emoji.publicUrl : body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("video") ? body.message.file.thumbnailUrl : body.message.user?.avatarUrl,
+			color: 16757683,
+			footer: "もこきー",
+		}) : undefined,
+	].filter((x) => x !== undefined)
+}
+
 function excludeNotPlain(text): string {
 	// 絵文字を外す、<xxx>を消す、中身が空のMFMを消す（4階層まで）
 	return text ? text.replaceAll(/<\/?\w*?>/g, '').replaceAll(/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g, '') : undefined;
 }
 
 function getUsername(user): string {
-	return user ? user.name?.replaceAll(/ ?:[\w_]+?:/g, '') || user.username : undefined;
+	return user ? user.name?.replaceAll(/\s?:[\w_]+?:/g, '') || user.username : undefined;
 }
 
 function getNoteContentSummary(note, userId, textLength?): string {
@@ -147,7 +216,7 @@ function getNoteContentSummary(note, userId, textLength?): string {
 
 async function typeToBody(jobData: any): Promise<any> {
 	const body = jobData.content;
-	const contentLength = jobData.secret?.replaceAll("Discord", "") || undefined;
+	const contentLength = jobData.secret?.replaceAll("Discord", "").replaceAll("Slack", "") || undefined;
 
 	const user = body.user ? body.user : body.antenna ? body.antenna.noteUser : body.reaction ? body.reaction.user : body.note ? body.note.user : body.message ? body.message.user : undefined;
 	const username = user ? getUsername(user) : undefined;
@@ -245,8 +314,8 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 	try {
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
-		let embeds = toEmbeds(job.data.content);
 		if (job.data.secret?.startsWith("Discord")) {
+			let embeds = toDiscordEmbeds(job.data.content);
 			res = await getResponse({
 				url: job.data.to,
 				method: "POST",
@@ -259,6 +328,21 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 				body: JSON.stringify({
 					...await typeToBody(job.data),
 					embeds,
+				}),
+			});
+		} else if (job.data.secret?.startsWith("Slack")) {
+			let attachments = await toSlackEmbeds(job.data);
+			res = await getResponse({
+				url: job.data.to,
+				method: "POST",
+				headers: {
+					"User-Agent": "Calckey-Hooks",
+					"X-Calckey-Host": config.host,
+					"X-Calckey-Hook-Id": job.data.webhookId,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					attachments,
 				}),
 			});
 		} else {

@@ -141,7 +141,7 @@
 						<XSection
 							key="pinned:1"
 							v-if="pinned?.length != 0"
-							:initial-shown="false"
+							:initial-shown="$store.state.reactionsDefaultOpen"
 							:emojis="
 								pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
@@ -151,7 +151,7 @@
 						<XSection
 							key="pinned:2"
 							v-if="pinned2?.length != 0"
-							:initial-shown="false"
+							:initial-shown="$store.state.reactions2DefaultOpen"
 							:emojis="
 								pinned2.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
@@ -161,7 +161,7 @@
 						<XSection
 							v-if="pinned3?.length != 0"
 							key="pinned:3"
-							:initial-shown="false"
+							:initial-shown="$store.state.reactions3DefaultOpen"
 							:emojis="
 								pinned3.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
@@ -171,7 +171,7 @@
 						<XSection
 							v-if="pinned4?.length != 0"
 							key="pinned:4"
-							:initial-shown="false"
+							:initial-shown="$store.state.reactions4DefaultOpen"
 							:emojis="
 								pinned4.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
@@ -181,7 +181,7 @@
 						<XSection
 							v-if="pinned5?.length != 0"
 							key="pinned:5"
-							:initial-shown="false"
+							:initial-shown="$store.state.reactions5DefaultOpen"
 							:emojis="
 								pinned5.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
@@ -191,7 +191,7 @@
 						<XSection
 							v-if="recentlyUsedEmojis?.length != 0 && !$store.state.hiddenRecent"
 							key="recentlyUsed"
-							:initial-shown="false"
+							:initial-shown="$store.state.recentlyUsedDefaultOpen"
 							:emojis="
 								recentlyUsedEmojis.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"

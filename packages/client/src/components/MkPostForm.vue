@@ -994,12 +994,49 @@ function clear() {
 }
 
 function onKeydown(ev: KeyboardEvent) {
+	let postValue = ((ev.ctrlKey || ev.metaKey) ? 1 : 0) + ((ev.altKey) ? 2 : 0) + ((ev.shiftKey) && ((ev.ctrlKey || ev.metaKey) || (ev.altKey)) ? 2 : 0)
 	if (
 		(ev.which === 10 || ev.which === 13) &&
-		(ev.ctrlKey || ev.metaKey) &&
+		postValue === 1 &&
 		canPost
 	)
-		post();
+		postFirst();
+	if (
+		(ev.which === 10 || ev.which === 13) &&
+		postValue === 2 &&
+		$store.state.secondPostButton &&
+		(canPost || $store.state.secondPostVisibility !== 'specified') &&
+		!isChannel &&
+		visibility !== 'specified'
+	)
+		postSecond();
+	if (
+		(ev.which === 10 || ev.which === 13) &&
+		postValue === 3 &&
+		$store.state.thirdPostButton &&
+		(canPost || $store.state.thirdPostVisibility !== 'specified') &&
+		!isChannel &&
+		visibility !== 'specified'
+	)
+		postThird();
+	if (
+		(ev.which === 10 || ev.which === 13) &&
+		postValue === 4 &&
+		$store.state.fourthPostButton &&
+		(canPost || $store.state.fourthPostVisibility !== 'specified') &&
+		!isChannel &&
+		visibility !== 'specified'
+	)
+		postFourth();
+	if (
+		(ev.which === 10 || ev.which === 13) &&
+		postValue === 5 &&
+		$store.state.fifthPostButton &&
+		(canPost || $store.state.fifthPostVisibility !== 'specified') &&
+		!isChannel &&
+		visibility !== 'specified'
+	)
+		postFifth();
 	if (ev.which === 27) emit("esc");
 	typing();
 }

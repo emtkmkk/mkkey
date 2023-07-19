@@ -516,7 +516,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, unref, computed, watch, onMounted } from "vue";
 import * as Misskey from "calckey-js";
 import XSection from "@/components/MkEmojiPicker.section.vue";
 import {

@@ -51,6 +51,8 @@ export default defineComponent({
 
 		const isPlain = this.plain;
 
+		const isNote = this.isNote;
+
 		const ast = (isPlain ? mfm.parseSimple : mfm.parse)(this.text);
 
         let firstAst = ast;
@@ -320,7 +322,7 @@ export default defineComponent({
 
 						case "small": {
 							//ルート要素にあり、子要素に絵文字かsmallしかない場合x1で表示する
-							if(firstAst.length === 1 && firstAst === ast && token.children.every((x) => ["emojiCode","unicodeEmoji","small"].includes(x.type))){
+							if(isNote && firstAst.length === 1 && firstAst === ast && token.children.every((x) => ["emojiCode","unicodeEmoji","small"].includes(x.type))){
 								return h(
 									"span", 
 									{}, 
@@ -340,7 +342,7 @@ export default defineComponent({
 
 						case "center": {
 							//ルートでcenterしか使用していない場合、中で絵文字big判定をもう一度行う
-							if (firstAst.length === 1){
+							if (isNote && firstAst.length === 1){
 								firstAst = token.children;
 								emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type)) : null;
 								isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji"].includes(x.type));
@@ -446,7 +448,7 @@ export default defineComponent({
 						}
 
 						case "emojiCode": {
-							if (!isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
+							if (isNote && !isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
 								return h(
 									"span",
 									{
@@ -461,7 +463,7 @@ export default defineComponent({
 										}),
 									],
 								);
-							} else if (!isPlain && emojiAst != null && emojiAst.length <= 6){
+							} else if (isNote && !isPlain && emojiAst != null && emojiAst.length <= 6){
 								return h(
 									"span",
 									{
@@ -489,7 +491,7 @@ export default defineComponent({
 						}
 
 						case "unicodeEmoji": {
-							if (!isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
+							if (isNote && !isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
 								return h(
 									"span",
 									{
@@ -504,7 +506,7 @@ export default defineComponent({
 										}),
 									],
 								);
-							} else if (!isPlain && emojiAst != null && emojiAst.length <= 6){
+							} else if (isNote && !isPlain && emojiAst != null && emojiAst.length <= 6){
 								return h(
 									"span",
 									{

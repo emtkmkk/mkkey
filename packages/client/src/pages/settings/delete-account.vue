@@ -1,6 +1,6 @@
 <template>
 	<div class="_formRoot">
-		<FormInfo warn class="_formBlock">{{
+	<!--<FormInfo warn class="_formBlock">{{
 			i18n.ts._accountDelete.mayTakeTime
 		}}</FormInfo>
 		<FormInfo class="_formBlock">{{
@@ -15,7 +15,7 @@
 		>
 		<FormButton v-else disabled>{{
 			i18n.ts._accountDelete.inProgress
-		}}</FormButton>
+		}}</FormButton>-->
 	</div>
 </template>
 

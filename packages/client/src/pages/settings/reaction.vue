@@ -58,13 +58,6 @@
 							</button>
 						</template>
 					</XDraggable>
-					<FormSwitch
-						v-model="reactionsDefaultOpen"
-						v-if="((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
-						class="_formBlock"
-					>
-						{{ i18n.ts.reactionsDefaultOpen }}
-					</FormSwitch>
 				</div>
 				<div v-panel v-if="tab === 'reactions2'" style="border-radius: 6px">
 					<FormInput
@@ -96,12 +89,6 @@
 							</button>
 						</template>
 					</XDraggable>
-					<FormSwitch
-						v-model="reactions2DefaultOpen"
-						class="_formBlock"
-					>
-						{{ i18n.ts.reactionsDefaultOpen }}
-					</FormSwitch>
 				</div>
 				<div v-panel v-if="tab === 'reactions3'" style="border-radius: 6px">
 					<FormInput
@@ -133,12 +120,6 @@
 							</button>
 						</template>
 					</XDraggable>
-					<FormSwitch
-						v-model="reactions3DefaultOpen"
-						class="_formBlock"
-					>
-						{{ i18n.ts.reactionsDefaultOpen }}
-					</FormSwitch>
 				</div>
 				<div v-panel v-if="tab === 'reactions4'" style="border-radius: 6px">
 					<FormInput
@@ -170,12 +151,6 @@
 							</button>
 						</template>
 					</XDraggable>
-					<FormSwitch
-						v-model="reactions4DefaultOpen"
-						class="_formBlock"
-					>
-						{{ i18n.ts.reactionsDefaultOpen }}
-					</FormSwitch>
 				</div>
 				<div v-panel v-if="tab === 'reactions5'" style="border-radius: 6px">
 					<FormInput
@@ -207,12 +182,6 @@
 							</button>
 						</template>
 					</XDraggable>
-					<FormSwitch
-						v-model="reactions5DefaultOpen"
-						class="_formBlock"
-					>
-						{{ i18n.ts.reactionsDefaultOpen }}
-					</FormSwitch>
 				</div>
 				<template #caption
 					>{{ i18n.ts.reactionSettingDescription2 }}
@@ -220,6 +189,41 @@
 						{{ i18n.ts.preview }}
 					</button></template
 				>
+				<FormSwitch
+					v-model="reactionsDefaultOpen"
+					v-if="tab === 'reactions' && ((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsDefaultOpen }}
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactions2DefaultOpen"
+					v-if="tab === 'reactions2'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsDefaultOpen }}
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactions3DefaultOpen"
+					v-if="tab === 'reactions3'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsDefaultOpen }}
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactions4DefaultOpen"
+					v-if="tab === 'reactions4'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsDefaultOpen }}
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactions5DefaultOpen"
+					v-if="tab === 'reactions5'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsDefaultOpen }}
+				</FormSwitch>
 			</FromSlot>
 			<FormSwitch
 				v-model="reactionAutoFocusSearchBar"

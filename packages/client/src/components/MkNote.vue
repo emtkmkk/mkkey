@@ -418,7 +418,15 @@ const isRecentRenote = $computed(() => {
 				return false;
 			} else {
 				//リノート先が同じでノートが異なる場合は畳む。trueを返す
-				return true;
+				//ただし自分のノートの場合は表示する
+				if (isMyRenote){
+					//タイムスタンプはそのままで自分のノートを登録
+					recentRenoteId = recentRenoteId.filter((x) => x.id !== appearNote.id);
+					recentRenoteId.push({id: appearNote.id, fid: note.id, date: targetRecentRenoteId[0]?.date});
+					return false;
+				} else {
+					return true;
+				}
 			}
 		} else {
 			//されていない場合はリノートを除外したリスト+現在の双方のノートidを保存した後、falseを返す

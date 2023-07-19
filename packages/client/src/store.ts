@@ -655,7 +655,11 @@ export const defaultStore = markRaw(
 		showDetailNoteClick: {
 			where: 'account',
 			default: true,
-		}
+		},
+		alwaysPostButton: {
+			where: 'device',
+			default: false,
+		},
 	}),
 );
 

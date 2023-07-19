@@ -586,7 +586,7 @@ const remoteEmojiMode = computed(() =>
 	instance.remoteEmojiMode
 );
 const emojiStr = computed(() => 
-	props.asReactionPicker && allCustomEmojis ? allCustomEmojis.map((x) => ":" + x.name + "@" + x.host + ":") : undefined
+	props.asReactionPicker && allCustomEmojis ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
 const q = ref<string | null>(null);
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);
@@ -627,14 +627,14 @@ watch(q, (nQ, oQ) => {
 		return;
 	}
 
-	const isAllSearch = allCustomEmojis ? q.value.endsWith("@") : false;
+	const isAllSearch = unref(allCustomEmojis) ? q.value.endsWith("@") : false;
 	const newQ = kanaToHira(format_roomaji(q.value.replace(/[:@]/g, "")));
 	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/[:@]/g, "")));
 	
 	const searchCustom = () => {
 		const max = 64;
-		const emojis = customEmojis;
-		const allEmojis = allCustomEmojis;
+		const emojis = unref(customEmojis);
+		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 
 		if (newQ.includes(" ")) {
@@ -720,8 +720,8 @@ watch(q, (nQ, oQ) => {
 	};
 	const searchCustomStart = () => {
 		const max = 99;
-		const emojis = customEmojis;
-		const allEmojis = allCustomEmojis;
+		const emojis = unref(customEmojis);
+		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 		const beforeSort = new Set();
 

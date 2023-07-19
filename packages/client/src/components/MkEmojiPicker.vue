@@ -589,7 +589,7 @@ const tab = ref<"index" | "custom" | "unicode" | "tags">("index");
 const sortWord = ["a","i","u","e","o","y"];
 let singleTapTime = undefined;
 let singleTapEmoji = undefined;
-let singleTapElement = undefined;
+let singleTapEl = undefined;
 
 watch(q, (nQ, oQ) => {
 	if (q.value.endsWith("*")) q.value = oQ;
@@ -895,11 +895,11 @@ function chosen(emoji: any, ev?: MouseEvent) {
 				singleTapTime = Date.now();
 				singleTapEmoji = emoji;
 				
-				if (!singleTapElement) {
-					singleTapElement.style.transition = '';
-					singleTapElement.style.backgroundColor = 'transparent';
+				if (singleTapEl) {
+					singleTapEl.style.transition = '';
+					singleTapEl.style.backgroundColor = 'transparent';
 				}
-				singleTapElement = element;
+				singleTapElement = el;
 				
 				//アニメーション
 				el.style.transition = '';

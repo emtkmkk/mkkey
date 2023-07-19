@@ -589,6 +589,7 @@ const tab = ref<"index" | "custom" | "unicode" | "tags">("index");
 const sortWord = ["a","i","u","e","o","y"];
 let singleTapTime = undefined;
 let singleTapEmoji = undefined;
+let singleTapElement = undefined;
 
 watch(q, (nQ, oQ) => {
 	if (q.value.endsWith("*")) q.value = oQ;
@@ -893,6 +894,21 @@ function chosen(emoji: any, ev?: MouseEvent) {
 			if (!singleTapTime || singleTapEmoji !== emoji || (Date.now() - singleTapTime) > 2 * 1000){
 				singleTapTime = Date.now();
 				singleTapEmoji = emoji;
+				
+				if (!singleTapElement) {
+					singleTapElement.style.transition = '';
+					singleTapElement.style.backgroundColor = 'transparent';
+				}
+				singleTapElement = element;
+				
+				//アニメーション
+				el.style.transition = '';
+				el.style.backgroundColor = 'var(--accent)';
+				setTimeout(() => {
+					el.style.transition = 'background-color 1s';
+    				el.style.backgroundColor = 'transparent';
+  				}, 1000);
+				
 				return
 			}
 		}
@@ -1567,6 +1583,10 @@ defineExpose({
 				position: relative;
 				padding: $pad;
 
+				> .single {
+					background: var(--accent);
+				}
+				
 				> .item {
 					position: relative;
 					padding: 0;

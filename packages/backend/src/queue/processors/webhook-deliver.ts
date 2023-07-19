@@ -138,10 +138,10 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			fallback: content.content,
             pretext: content.content,
 			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
-			value: excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
+			text: excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
 			title_link: "https://mkkey.net/notes/" + body.note.id,
 			color: "#f8bcba",
-			ts: new Date(body.note.createdAt).valueOf(),
+			ts: new Date(body.note.createdAt),
 			image_url: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image")
 				? body.note.files[0].url 
 				: undefined,
@@ -152,7 +152,7 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 		body.user ? ({
 			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (excludeNotPlain(body.user.name) + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : ""))),
 			title_link: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
-			value: excludeNotPlain(body.user.description) ?? undefined,
+			text: excludeNotPlain(body.user.description) ?? undefined,
 			icon_url: content.avatar_url,
 			username: content.username,
 			fallback: content.content,
@@ -187,9 +187,9 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
             pretext: content.content,
 			title: (body.message.group ? body.message.group.name + " の" : "個人宛の") + "チャット",
 			title_link: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
-			value: (excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0, 100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
+			text: (excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0, 100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
 			image_url: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? body.message.file.url : undefined,
-			ts: new Date(body.message.createdAt).valueOf(),
+			ts: new Date(body.message.createdAt),
 			thumb_url: body.emoji ? body.emoji.publicUrl : body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("video") ? body.message.file.thumbnailUrl : body.message.user?.avatarUrl,
 			color: "#f8bcba",
 			footer: "もこきー",
@@ -287,7 +287,7 @@ async function typeToBody(jobData: any): Promise<any> {
 			return {
 				username,
 				avatar_url,
-				content: username + " から " + body.reaction?.emojiName + content,
+				content: username + " から " + body.reaction?.emojiName.replaceAll(":","") + content,
 			};
 		case "antenna":
 			return {

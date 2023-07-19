@@ -120,6 +120,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: "",
 		},
+		reactionsDefaultOpen: {
+			where: 'account',
+			default: false,
+		},
 		reactions2: {
 			where: "account",
 			default: [],
@@ -127,6 +131,10 @@ export const defaultStore = markRaw(
 		reactionsFolderName2: {
 			where: "account",
 			default: "",
+		},
+		reactionsDefaultOpen2: {
+			where: 'account',
+			default: false,
 		},
 		reactions3: {
 			where: "account",
@@ -136,6 +144,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: "",
 		},
+		reactionsDefaultOpen3: {
+			where: 'account',
+			default: false,
+		},
 		reactions4: {
 			where: "account",
 			default: [],
@@ -144,6 +156,10 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: "",
 		},
+		reactionsDefaultOpen4: {
+			where: 'account',
+			default: false,
+		},
 		reactions5: {
 			where: "account",
 			default: [],
@@ -151,6 +167,14 @@ export const defaultStore = markRaw(
 		reactionsFolderName5: {
 			where: "account",
 			default: "",
+		},
+		reactionsDefaultOpen5: {
+			where: 'account',
+			default: false,
+		},
+		recentlyUsedDefaultOpen: {
+			where: 'account',
+			default: false,
 		},
 		hiddenRecent: {
 			where: "account",

@@ -186,6 +186,9 @@ import { $i } from "@/account";
 import { langmap } from "@/scripts/langmap";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
+const descriptionareaEl = $ref(null);
+const nameareaEl = $ref(null);
+
 const profile = reactive({
 	name: $i?.name,
 	description: $i?.description,

@@ -36,6 +36,7 @@
 
 		<FormInput
 			v-model="profile.name"
+			ref="nameareaEl"
 			:max="30"
 			manual-save
 			class="_formBlock"
@@ -45,6 +46,7 @@
 
 		<FormTextarea
 			v-model="profile.description"
+			ref="descriptionareaEl"
 			:max="500"
 			tall
 			manual-save
@@ -176,6 +178,7 @@ import FormSelect from "@/components/form/select.vue";
 import FormSplit from "@/components/form/split.vue";
 import FormFolder from "@/components/form/folder.vue";
 import FormSlot from "@/components/form/slot.vue";
+import { Autocomplete } from "@/scripts/autocomplete";
 import { selectFile } from "@/scripts/select-file";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
@@ -202,6 +205,11 @@ const props = withDefaults(
 );
 
 let saveButton = $ref(props.saveButton ?? false);
+
+onMounted(() => {
+	new Autocomplete(nameareaEl, $$(profile.name));
+	new Autocomplete(descriptionareaEl, $$(profile.description));
+}
 
 watch(
 	() => profile,

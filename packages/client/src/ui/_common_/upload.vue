@@ -34,8 +34,8 @@
 							class="percentage"
 							>{{
 								Math.floor(
-									(ctx.progressValue / ctx.progressMax) * 100
-								)
+									(ctx.progressValue / ctx.progressMax) * 999.9
+								) / 10
 							}}</span
 						>
 					</p>
@@ -68,7 +68,7 @@ const zIndex = os.claimZIndex("high");
 .mk-uploader {
 	position: fixed;
 	right: 16px;
-	width: 260px;
+	width: 300px;
 	top: 32px;
 	padding: 16px 20px;
 	pointer-events: none;

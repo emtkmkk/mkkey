@@ -577,10 +577,10 @@ const height = computed(() =>
 );
 const customEmojiCategories = emojiCategories;
 const customEmojis = computed(() => 
-	instance.emojis;
+	instance.emojis
 );
 let allCustomEmojis = computed(() => 
-	props.asReactionPicker ? instance.allEmojis : undefined;
+	props.asReactionPicker ? instance.allEmojis : undefined
 );
 const remoteEmojiMode = computed(() => 
 	instance.remoteEmojiMode

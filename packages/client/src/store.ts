@@ -122,7 +122,7 @@ export const defaultStore = markRaw(
 		},
 		reactionsDefaultOpen: {
 			where: 'account',
-			default: false,
+			default: true,
 		},
 		reactions2: {
 			where: "account",
@@ -174,7 +174,7 @@ export const defaultStore = markRaw(
 		},
 		recentlyUsedDefaultOpen: {
 			where: 'account',
-			default: false,
+			default: true,
 		},
 		hiddenRecent: {
 			where: "account",

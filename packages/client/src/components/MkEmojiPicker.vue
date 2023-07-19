@@ -907,7 +907,7 @@ function chosen(emoji: any, ev?: MouseEvent) {
 				setTimeout(() => {
 					el.style.transition = 'background-color 1s';
     				el.style.backgroundColor = 'transparent';
-  				}, 1000);
+  				}, 1500);
 				
 				return
 			}

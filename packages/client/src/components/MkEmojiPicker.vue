@@ -899,7 +899,7 @@ function chosen(emoji: any, ev?: MouseEvent) {
 					singleTapEl.style.transition = '';
 					singleTapEl.style.backgroundColor = 'transparent';
 				}
-				singleTapElement = el;
+				singleTapEl = el;
 				
 				//アニメーション
 				el.style.transition = '';

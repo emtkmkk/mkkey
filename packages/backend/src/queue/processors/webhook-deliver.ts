@@ -126,16 +126,17 @@ function toDiscordEmbeds(body: any): Array<DiscordEmbeds> {
 }
 
 async function toSlackEmbeds(data: any): Promise<any[]> {
-	const body = await typeToBody(data)
+	const content = await typeToBody(data)
+	const body = data.content;
 	return [
 		body.note ? ({
 			author_name: getUsername(body.note.user),
 			author_link: "https://mkkey.net/@" + body.note.user?.username + (body.note.user?.host ? "@" + body.note.user?.host : ""),
 			author_icon: body.note.user?.avatarUrl,
-			icon_url: body.avatar_url,
-			username: body.username,
-			fallback: body.content,
-            pretext: body.content,
+			icon_url: content.avatar_url,
+			username: content.username,
+			fallback: content.content,
+            pretext: content.content,
 			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
 			value: excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
 			title_link: "https://mkkey.net/notes/" + body.note.id,
@@ -152,10 +153,10 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (excludeNotPlain(body.user.name) + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : ""))),
 			title_link: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
 			value: excludeNotPlain(body.user.description) ?? undefined,
-			icon_url: body.avatar_url,
-			username: body.username,
-			fallback: body.content,
-            pretext: body.content,
+			icon_url: content.avatar_url,
+			username: content.username,
+			fallback: content.content,
+            pretext: content.content,
 			fields: body.user.notesCount ? [
 				{
 					title: "投稿数",
@@ -180,10 +181,10 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			author_name: getUsername(body.message.user),
 			author_link: "https://mkkey.net/@" + body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""),
 			author_icon: body.message.user?.avatarUrl,
-			icon_url: body.avatar_url,
-			username: body.username,
-			fallback: body.content,
-            pretext: body.content,
+			icon_url: content.avatar_url,
+			username: content.username,
+			fallback: content.content,
+            pretext: content.content,
 			title: (body.message.group ? body.message.group.name + " の" : "個人宛の") + "チャット",
 			title_link: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
 			value: (excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0, 100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),

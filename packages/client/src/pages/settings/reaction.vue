@@ -58,6 +58,13 @@
 							</button>
 						</template>
 					</XDraggable>
+					<FormSwitch
+						v-model="reactionsDefaultOpen"
+						v-if="((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
+						class="_formBlock"
+					>
+						{{ i18n.ts.reactionsDefaultOpen }}
+					</FormSwitch>
 				</div>
 				<div v-panel v-if="tab === 'reactions2'" style="border-radius: 6px">
 					<FormInput
@@ -89,6 +96,12 @@
 							</button>
 						</template>
 					</XDraggable>
+					<FormSwitch
+						v-model="reactions2DefaultOpen"
+						class="_formBlock"
+					>
+						{{ i18n.ts.reactionsDefaultOpen }}
+					</FormSwitch>
 				</div>
 				<div v-panel v-if="tab === 'reactions3'" style="border-radius: 6px">
 					<FormInput
@@ -120,6 +133,12 @@
 							</button>
 						</template>
 					</XDraggable>
+					<FormSwitch
+						v-model="reactions3DefaultOpen"
+						class="_formBlock"
+					>
+						{{ i18n.ts.reactionsDefaultOpen }}
+					</FormSwitch>
 				</div>
 				<div v-panel v-if="tab === 'reactions4'" style="border-radius: 6px">
 					<FormInput
@@ -151,6 +170,12 @@
 							</button>
 						</template>
 					</XDraggable>
+					<FormSwitch
+						v-model="reactions4DefaultOpen"
+						class="_formBlock"
+					>
+						{{ i18n.ts.reactionsDefaultOpen }}
+					</FormSwitch>
 				</div>
 				<div v-panel v-if="tab === 'reactions5'" style="border-radius: 6px">
 					<FormInput
@@ -182,6 +207,12 @@
 							</button>
 						</template>
 					</XDraggable>
+					<FormSwitch
+						v-model="reactions5DefaultOpen"
+						class="_formBlock"
+					>
+						{{ i18n.ts.reactionsDefaultOpen }}
+					</FormSwitch>
 				</div>
 				<template #caption
 					>{{ i18n.ts.reactionSettingDescription2 }}
@@ -201,6 +232,13 @@
 				class="_formBlock"
 			>
 				{{ i18n.ts.doubleTapReaction }}
+			</FormSwitch>
+			<FormSwitch
+				v-model="recentlyUsedDefaultOpen"
+				class="_formBlock"
+				v-if="!hiddenRecent && !hiddenReactionDeckAndRecent"
+			>
+				{{ i18n.ts.recentlyUsedDefaultOpen }}
 			</FormSwitch>
 			<FormSwitch
 				v-model="hiddenRecent"
@@ -443,6 +481,24 @@ const reactionsFolderName4 = $computed(
 );
 const reactionsFolderName5 = $computed(
 	defaultStore.makeGetterSetter("reactionsFolderName5")
+);
+const reactionsDefaultOpen = $computed(
+	defaultStore.makeGetterSetter("reactionsDefaultOpen")
+);
+const reactions2DefaultOpen = $computed(
+	defaultStore.makeGetterSetter("reactions2DefaultOpen")
+);
+const reactions3DefaultOpen = $computed(
+	defaultStore.makeGetterSetter("reactions3DefaultOpen")
+);
+const reactions4DefaultOpen = $computed(
+	defaultStore.makeGetterSetter("reactions4DefaultOpen")
+);
+const reactions5DefaultOpen = $computed(
+	defaultStore.makeGetterSetter("reactions5DefaultOpen")
+);
+const recentlyUsedDefaultOpen = $computed(
+	defaultStore.makeGetterSetter("recentlyUsedDefaultOpen")
 );
 const hiddenRecent = $computed(
 	defaultStore.makeGetterSetter("hiddenRecent")

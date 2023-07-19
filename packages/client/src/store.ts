@@ -132,7 +132,7 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: "",
 		},
-		reactionsDefaultOpen2: {
+		reactions2DefaultOpen: {
 			where: 'account',
 			default: false,
 		},
@@ -144,7 +144,7 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: "",
 		},
-		reactionsDefaultOpen3: {
+		reactions3DefaultOpen: {
 			where: 'account',
 			default: false,
 		},
@@ -156,7 +156,7 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: "",
 		},
-		reactionsDefaultOpen4: {
+		reactions4DefaultOpen: {
 			where: 'account',
 			default: false,
 		},
@@ -168,7 +168,7 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: "",
 		},
-		reactionsDefaultOpen5: {
+		reactions5DefaultOpen: {
 			where: 'account',
 			default: false,
 		},

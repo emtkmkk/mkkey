@@ -65,6 +65,9 @@
 				class="_formBlock"
 				>{{ i18n.ts.useReactionPickerForContextMenu }}</FormSwitch
 			>
+			<FormSwitch v-model="alwaysPostButton" class="_formBlock">{{
+				i18n.ts.alwaysPostButton
+			}}</FormSwitch>
 			<FormSwitch v-model="swipeOnDesktop" class="_formBlock">{{
 				i18n.ts.swipeOnDesktop
 			}}</FormSwitch>
@@ -588,6 +591,9 @@ const reactedRenoteHidden = $computed(
 );
 const showDetailNoteClick = $computed(
 	defaultStore.makeGetterSetter("showDetailNoteClick")
+);
+const alwaysPostButton = $computed(
+	defaultStore.makeGetterSetter("alwaysPostButton")
 );
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
 let keepPostCw = $computed(defaultStore.makeGetterSetter("keepPostCw"));

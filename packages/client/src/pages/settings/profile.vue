@@ -209,7 +209,7 @@ let saveButton = $ref(props.saveButton ?? false);
 onMounted(() => {
 	new Autocomplete(nameareaEl, $$(profile.name));
 	new Autocomplete(descriptionareaEl, $$(profile.description));
-}
+});
 
 watch(
 	() => profile,

@@ -45,7 +45,7 @@
 											user.isFollowed
 										"
 										class="followed"
-										>{{ i18n.ts.followsYou }}</span
+										>{{ i18n.ts.followsYou }}</div
 									>
 								</div>
 								<div class="bottom">
@@ -103,14 +103,14 @@
 									:user="user"
 									:nowrap="true"
 								/>
-								<span
+								<div
 									v-if="
 										$i &&
 										$i.id != user.id &&
 										user.isFollowed
 									"
 									class="followed"
-									>{{ i18n.ts.followsYou }}</span
+									>{{ i18n.ts.followsYou }}</div
 								>
 							</div>
 							<div class="bottom">

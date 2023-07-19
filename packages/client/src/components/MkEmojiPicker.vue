@@ -586,7 +586,7 @@ const remoteEmojiMode = computed(() =>
 	instance.remoteEmojiMode
 );
 const emojiStr = computed(() => 
-	props.asReactionPicker && allCustomEmojis ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
+	props.asReactionPicker && unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
 const q = ref<string | null>(null);
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);

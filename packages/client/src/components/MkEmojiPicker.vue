@@ -576,10 +576,18 @@ const height = computed(() =>
 	props.asReactionPicker ? reactionPickerHeight.value : 2
 );
 const customEmojiCategories = emojiCategories;
-const customEmojis = instance.emojis;
-let allCustomEmojis = props.asReactionPicker ? instance.allEmojis : undefined;
-const remoteEmojiMode = instance.remoteEmojiMode;
-const emojiStr = props.asReactionPicker && allCustomEmojis ? allCustomEmojis.map((x) => ":" + x.name + "@" + x.host + ":") : undefined;
+const customEmojis = computed(() => 
+	instance.emojis;
+);
+let allCustomEmojis = computed(() => 
+	props.asReactionPicker ? instance.allEmojis : undefined;
+);
+const remoteEmojiMode = computed(() => 
+	instance.remoteEmojiMode
+);
+const emojiStr = computed(() => 
+	props.asReactionPicker && allCustomEmojis ? allCustomEmojis.map((x) => ":" + x.name + "@" + x.host + ":") : undefined
+);
 const q = ref<string | null>(null);
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultCustomStart = ref<Misskey.entities.CustomEmoji[]>([]);
@@ -595,9 +603,15 @@ watch(q, (nQ, oQ) => {
 	if (q.value.endsWith("*")) q.value = oQ;
 	if (q.value.endsWith("＠")) q.value = oQ + "@";
 	if (nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","") + "@";
+	/*
+	// computedにしたので恐らくコレはいらないはず
 	if (q.value.endsWith("@") && !allCustomEmojis && props.asReactionPicker){
+		//絵文字取得失敗時に@が指定された場合は再度読込直す
 		allCustomEmojis = instance.allEmojis;
+		remoteEmojiMode = instance.remoteEmojiMode;
+		emojiStr = props.asReactionPicker && allCustomEmojis ? allCustomEmojis.map((x) => ":" + x.name + "@" + x.host + ":") : undefined;
 	}
+	*/
 	
 	if (emojis.value) emojis.value.scrollTop = 0;
 	

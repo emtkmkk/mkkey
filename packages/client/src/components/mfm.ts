@@ -55,6 +55,8 @@ export default defineComponent({
 		const isPlain = this.plain;
 
 		const isNote = this.isNote;
+		
+		const noteHost = this.noteHost || this.author.host;
 
 		const ast = (isPlain ? mfm.parseSimple : mfm.parse)(this.text);
 
@@ -463,7 +465,7 @@ export default defineComponent({
 											emoji: `:${token.props.name}:`,
 											customEmojis: this.customEmojis,
 											normal: this.plain,
-											noteHost: this.noteHost,
+											noteHost: noteHost,
 										}),
 									],
 								);
@@ -479,7 +481,7 @@ export default defineComponent({
 											emoji: `:${token.props.name}:`,
 											customEmojis: this.customEmojis,
 											normal: this.plain,
-											noteHost: this.noteHost,
+											noteHost: noteHost,
 										}),
 									],
 								);
@@ -490,7 +492,7 @@ export default defineComponent({
 										emoji: `:${token.props.name}:`,
 										customEmojis: this.customEmojis,
 										normal: this.plain,
-										noteHost: this.noteHost,
+										noteHost: noteHost,
 									}),
 								];
 							}

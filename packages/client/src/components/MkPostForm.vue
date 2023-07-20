@@ -342,6 +342,7 @@
 				v-model="cw"
 				class="cw"
 				:placeholder="i18n.ts.annotation"
+				@keyup="onKeyup"
 				@keydown="onKeydown"
 			/>
 			<textarea
@@ -352,6 +353,7 @@
 				:disabled="posting"
 				:placeholder="placeholder"
 				data-cy-post-form-text
+				@keyup="onKeyup"
 				@keydown="onKeydown"
 				@paste="onPaste"
 				@compositionupdate="onCompositionUpdate"
@@ -999,6 +1001,23 @@ function clear() {
 	files = [];
 	poll = null;
 	quoteId = null;
+}
+
+function onKeyup(ev: KeyboardEvent) {
+	let postButtonMax = (
+		defaultStore.state.secondPostButton 
+		? defaultStore.state.thirdPostButton
+			? defaultStore.state.fourthPostButton
+				? defaultStore.state.fifthPostButton
+					? 5
+					: 4
+				: 3
+			: 2
+		: 1);
+	let postValue = Math.min(((ev.ctrlKey || ev.metaKey) ? 1 : 0) + ((ev.altKey) ? 2 : 0) + ((ev.shiftKey) && (ev.ctrlKey || ev.metaKey || ev.altKey) ? 2 : 0),postButtonMax);
+	if (postValue !== unref(shortcutKeyValue) && !isChannel){
+		shortcutKeyValue = postValue;
+	}
 }
 
 function onKeydown(ev: KeyboardEvent) {

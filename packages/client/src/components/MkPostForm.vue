@@ -84,6 +84,7 @@
 				<button
 					v-if="(!$store.state.rememberNoteVisibility && $store.state.firstPostButtonVisibilityForce) && !$store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit _buttonGradate"
+					:class="{ shortcutTarget: shortcutKeyValue === 1 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 1 }"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
 					@click="postFirst"
@@ -118,6 +119,7 @@
 				<button
 					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && $store.state.fourthPostButton && $store.state.fifthPostButton && !isChannel && visibility !== 'specified'"
 					class="submit_h _buttonGradate"
+					:class="{ shortcutTarget: shortcutKeyValue === 5 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 5 }"
 					:disabled="!canPost && $store.state.fifthPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postFifth"
@@ -142,6 +144,7 @@
 				<button
 					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && $store.state.fourthPostButton && !isChannel && visibility !== 'specified'"
 					class="submit_h _buttonGradate"
+					:class="{ shortcutTarget: shortcutKeyValue === 4 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 4 }"
 					:disabled="!canPost && $store.state.fourthPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postFourth"
@@ -166,6 +169,7 @@
 				<button
 					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && !isChannel && visibility !== 'specified'"
 					class="submit_h _buttonGradate"
+					:class="{ shortcutTarget: shortcutKeyValue === 3 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 3 }"
 					:disabled="!canPost && $store.state.thirdPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postThird"
@@ -190,6 +194,7 @@
 				<button
 					v-if="$store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit_h _buttonGradate"
+					:class="{ shortcutTarget: shortcutKeyValue === 2 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 2 }"
 					:disabled="!canPost && $store.state.secondPostVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postSecond"
@@ -214,6 +219,7 @@
 				<button
 					v-if="($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit_h _buttonGradate"
+					:class="{ shortcutTarget: shortcutKeyValue === 1 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 1  }"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
 					@click="post"
@@ -232,6 +238,7 @@
 				<button
 					v-if="(!$store.state.rememberNoteVisibility && $store.state.firstPostButtonVisibilityForce) && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
 					class="submit_h _buttonGradate"
+					:class="{ shortcutTarget: shortcutKeyValue === 1  , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 1 }"
 					:disabled="!canPost && $store.state.defaultNoteVisibility !== 'specified'"
 					data-cy-open-post-form-submit
 					@click="postFirst"
@@ -451,7 +458,7 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from "vue";
+import { unref, inject, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from "vue";
 import * as mfm from "mfm-js";
 import * as misskey from "calckey-js";
 import insertTextAtCursor from "insert-text-at-cursor";
@@ -560,6 +567,7 @@ let canHome = $ref((!props.reply || (props.reply.visibility === "public" || prop
 let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified"));
 let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]")  && !$i.isSilenced);
 let imeText = $ref("");
+let shortcutKeyValue = $ref(0);
 
 const publicIcon = $computed((): String => {
 	if (!canNotLocal && (canPublic || canHome)) {
@@ -994,7 +1002,20 @@ function clear() {
 }
 
 function onKeydown(ev: KeyboardEvent) {
-	let postValue = ((ev.ctrlKey || ev.metaKey) ? 1 : 0) + ((ev.altKey) ? 2 : 0) + ((ev.shiftKey) && (ev.ctrlKey || ev.metaKey || ev.altKey) ? 2 : 0);
+	let postButtonMax = (
+		defaultStore.state.secondPostButton 
+		? defaultStore.state.thirdPostButton
+			? defaultStore.state.fourthPostButton
+				? defaultStore.state.fifthPostButton
+					? 5
+					: 4
+				: 3
+			: 2
+		: 1);
+	let postValue = Math.min(((ev.ctrlKey || ev.metaKey) ? 1 : 0) + ((ev.altKey) ? 2 : 0) + ((ev.shiftKey) && (ev.ctrlKey || ev.metaKey || ev.altKey) ? 2 : 0),postButtonMax);
+	if (postValue !== unref(shortcutKeyValue) && !isChannel){
+		shortcutKeyValue = postValue;
+	}
 	if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue === 1 &&
@@ -1562,6 +1583,7 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 					margin-left: 6px;
 				}
 			}
+			
 			> .submit_h {
 				display: inline-flex;
 				align-items: center;
@@ -1595,6 +1617,14 @@ onUnmounted(() => window.removeEventListener('input',powerMode));
 				}
 			
 			}
+			
+			> .shortcutTarget::before {
+				content: "⏎";
+			}
+			
+			> .notShortcutTarget {
+				opacity: 0.7;
+			} 
 		}
 	}
 

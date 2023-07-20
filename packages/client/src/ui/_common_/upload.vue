@@ -33,9 +33,9 @@
 							v-if="ctx.progressValue !== undefined"
 							class="percentage"
 							>{{
-								Math.floor(
+								(Math.floor(
 									(ctx.progressValue / ctx.progressMax) * 999.9
-								) / 10
+								) / 10).toFixed(1)
 							}}</span
 						>
 					</p>

@@ -135,13 +135,13 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			author_icon: body.note.user?.avatarUrl,
 			icon_url: content.avatar_url,
 			username: content.username,
-			fallback: content.content,
-            pretext: content.content,
+			fallback: emojiEscape(content.content),
+            pretext: emojiEscape(content.content),
 			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
-			text: excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
+			text: emojiEscape(excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note))),
 			title_link: "https://mkkey.net/notes/" + body.note.id,
 			color: "#f8bcba",
-			ts: new Date(body.note.createdAt),
+			ts: new Date(body.note.createdAt).valueOf() / 1000,
 			image_url: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image")
 				? body.note.files[0].url 
 				: undefined,
@@ -152,11 +152,11 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 		body.user ? ({
 			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (excludeNotPlain(body.user.name) + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : ""))),
 			title_link: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
-			text: excludeNotPlain(body.user.description) ?? undefined,
+			text: emojiEscape(excludeNotPlain(body.user.description)) ?? undefined,
 			icon_url: content.avatar_url,
 			username: content.username,
-			fallback: content.content,
-            pretext: content.content,
+			fallback: emojiEscape(content.content),
+            pretext: emojiEscape(content.content),
 			fields: body.user.notesCount ? [
 				{
 					title: "投稿数",
@@ -183,13 +183,13 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			author_icon: body.message.user?.avatarUrl,
 			icon_url: content.avatar_url,
 			username: content.username,
-			fallback: content.content,
-            pretext: content.content,
+			fallback: emojiEscape(content.content),
+            pretext: emojiEscape(content.content),
 			title: (body.message.group ? body.message.group.name + " の" : "個人宛の") + "チャット",
 			title_link: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
-			text: (excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0, 100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
+			text: emojiEscape((excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0, 100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : "")),
 			image_url: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? body.message.file.url : undefined,
-			ts: new Date(body.message.createdAt),
+			ts: new Date(body.message.createdAt).valueOf() / 1000,
 			thumb_url: body.emoji ? body.emoji.publicUrl : body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("video") ? body.message.file.thumbnailUrl : body.message.user?.avatarUrl,
 			color: "#f8bcba",
 			footer: "もこきー",
@@ -199,8 +199,13 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 }
 
 function excludeNotPlain(text): string {
-	// 絵文字を外す、<xxx>を消す、中身が空のMFMを消す（4階層まで）
+	// <xxx>を消す、中身が空のMFMを消す（4階層まで）
 	return text ? text.replaceAll(/<\/?\w*?>/g, '').replaceAll(/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g, '') : undefined;
+}
+
+function emojiEscape(text): string {
+	// 絵文字をエスケープする
+	return text ? text.replaceAll(/:([\w_]+):/g, ': $1 :') : undefined;
 }
 
 function getUsername(user): string {

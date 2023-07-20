@@ -166,9 +166,9 @@ const init = async (): Promise<void> => {
 				}
 				if (
 					!props.pagination.noPaging &&
-					res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? (props.pagination.limit || 10) : 0)
+					res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? (props.pagination.limit || 10) : 1)
 				) {
-					//res.pop();
+					res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse()
 						: res;
@@ -274,7 +274,7 @@ const fetchMore = async (): Promise<void> => {
 						if (i === 10) item._shouldInsertAd_ = true;
 					}
 				}
-				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 0)) {
+				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 1) && items.value[0].id !== res[0].id) {
 					res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse().concat(items.value)
@@ -328,7 +328,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 		})
 		.then(
 			(res) => {
-				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 0)) {
+				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 1)) {
 					res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse().concat(items.value)

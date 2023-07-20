@@ -311,7 +311,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		newField.forEach((x) => {
 			const nameTokens = mfm.parseSimple(x.name);
 			emojis = emojis.concat(extractCustomEmojisFromMfm(nameTokens!));
-			const valueTokens = mfm.parse(x.value);
+			const valueTokens = mfm.parseSimple(x.value);
 			emojis = emojis.concat(extractCustomEmojisFromMfm(valueTokens!));
 		});
 

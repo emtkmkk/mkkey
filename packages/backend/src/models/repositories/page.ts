@@ -84,11 +84,13 @@ export const PageRepository = db.getRepository(Page).extend({
 					await Promise.all(attachedFiles)
 				).filter((x): x is DriveFile => x != null),
 			),
-			likedCount: page.likedCount,
+			likedCount: page.likedCount ?? 0,
 			isLiked: meId
-				? await PageLikes.findOneBy({ pageId: page.id, userId: meId }).then(
-						(x) => x != null,
-				  )
+				? page.likedCount
+					? (await PageLikes.findOneBy({ pageId: page.id, userId: meId }).then(
+							(x) => x != null,
+				 	 )) ?? false
+					: false
 				: undefined,
 		});
 	},

@@ -59,14 +59,14 @@
 								<template #value>{{ version }}</template>
 							</MkKeyValue>
 							<FormLink
-								to="https://codeberg.org/emtkmkk/calckey"
+								to="https://code.naskya.net/emtkmkk/mkkey"
 								external
 							>
 								<template #icon
 									><i class="ph-code ph-bold ph-lg"></i
 								></template>
 								{{ i18n.ts._aboutMisskey.mkkeysource }}
-								<template #suffix>Codeberg</template>
+								<template #suffix></template>
 							</FormLink>
 							<FormLink to="/about-calckey">{{
 								i18n.ts.aboutMisskey

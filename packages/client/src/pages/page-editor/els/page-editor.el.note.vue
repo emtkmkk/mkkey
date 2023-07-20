@@ -35,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-import { watch } from "vue";
+import { unref, watch } from "vue";
 import XContainer from "../page-editor.container.vue";
 import MkInput from "@/components/form/input.vue";
 import MkSwitch from "@/components/form/switch.vue";
@@ -62,15 +62,16 @@ let note: any = $ref(null);
 watch(
 	id,
 	async () => {
-		if (id && (id.startsWith("http://") || id.startsWith("https://"))) {
-			props.value.note = (id.endsWith("/") ? id.slice(0, -1) : id)
+		const unrefId = unref(id);
+		if (unrefId && (unrefId.startsWith("http://") || unrefId.startsWith("https://"))) {
+			props.value.note = (unrefId.endsWith("/") ? unrefId.slice(0, -1) : unrefId)
 				.split("/")
 				.pop();
 		} else {
-			props.value.note = id;
+			props.value.note = unrefId;
 		}
 
-		note = await os.api("notes/show", { noteId: props.value.note });
+		note = props.value.note?.length === 10 ? await os.api("notes/show", { noteId: props.value.note }) : undefined;
 	},
 	{
 		immediate: true,

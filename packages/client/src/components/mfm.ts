@@ -56,7 +56,7 @@ export default defineComponent({
 
 		const isNote = this.isNote;
 		
-		const noteHost = this.noteHost || this.author.host;
+		const noteHost = this.noteHost || this.author?.host;
 
 		const ast = (isPlain ? mfm.parseSimple : mfm.parse)(this.text);
 

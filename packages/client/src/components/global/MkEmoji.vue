@@ -52,9 +52,9 @@ const customEmoji = computed(() =>
 			? ace.value.find(
 					(x) => x.name === hostmatch?.[1] && x.host === hostmatch?.[2]
 			)
-			: noteHost && !props.customEmojis
+			: props.noteHost && !props.customEmojis
 				? ace.value.find(
-					(x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.host === noteHost
+					(x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.host === props.noteHost
 				)
 				: ce.value.find(
 						(x) => x.name === props.emoji.substr(1, props.emoji.length - 2)

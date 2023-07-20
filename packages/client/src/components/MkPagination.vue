@@ -166,7 +166,7 @@ const init = async (): Promise<void> => {
 				}
 				if (
 					!props.pagination.noPaging &&
-					res.length > (props.pagination.limit || 10)
+					res.length > (0 ?? props.pagination.limit || 10)
 				) {
 					res.pop();
 					items.value = props.pagination.reversed
@@ -274,7 +274,7 @@ const fetchMore = async (): Promise<void> => {
 						if (i === 10) item._shouldInsertAd_ = true;
 					}
 				}
-				if (res.length > SECOND_FETCH_LIMIT) {
+				if (res.length > 0 ?? SECOND_FETCH_LIMIT) {
 					res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse().concat(items.value)
@@ -290,6 +290,7 @@ const fetchMore = async (): Promise<void> => {
 				moreFetching.value = false;
 			},
 			(err) => {
+				more.value = false;
 				moreFetching.value = false;
 			}
 		);
@@ -327,7 +328,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 		})
 		.then(
 			(res) => {
-				if (res.length > SECOND_FETCH_LIMIT) {
+				if (res.length > 0 ?? SECOND_FETCH_LIMIT) {
 					res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse().concat(items.value)
@@ -343,6 +344,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 				moreFetching.value = false;
 			},
 			(err) => {
+				more.value = false;
 				moreFetching.value = false;
 			}
 		);

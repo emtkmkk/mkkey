@@ -34,6 +34,7 @@ const props = defineProps<{
 	noStyle?: boolean;
 	customEmojis?: CustomEmoji[];
 	isReaction?: boolean;
+	noteHost?: string;
 }>();
 
 const isCustom = computed(() => props.emoji.startsWith(":"));
@@ -47,13 +48,17 @@ const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
 const ace = computed(() => props.customEmojis ?? instance.allEmojis ?? []);
 const customEmoji = computed(() =>
 	isCustom.value
-		? hostmatch?.[2] 
+		? hostmatch?.[2]
 			? ace.value.find(
 					(x) => x.name === hostmatch?.[1] && x.host === hostmatch?.[2]
 			)
-			: ce.value.find(
-					(x) => x.name === props.emoji.substr(1, props.emoji.length - 2)
-			)
+			: noteHost && !props.customEmojis
+				? ace.value.find(
+					(x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.host === noteHost
+				)
+				: ce.value.find(
+						(x) => x.name === props.emoji.substr(1, props.emoji.length - 2)
+				)
 		: null
 );
 const url = computed(() => {

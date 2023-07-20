@@ -29,6 +29,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, me) => {
 	const query = Pages.createQueryBuilder("page")
 		.where("page.visibility = 'public'")
+		.andWhere("page.isPublic = true")
 		.andWhere("page.likedCount > 0")
 		.orderBy("page.likedCount", "DESC");
 

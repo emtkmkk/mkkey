@@ -285,6 +285,8 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		profileUpdates.description === undefined
 			? profile.description
 			: profileUpdates.description;
+	const newLocation = profileUpdates.location === undefined ? profile.location : profileUpdates.location;
+	const newField = profileUpdates.fields === undefined ? profile.fields : profileUpdates.fields;
 
 	if (newName != null) {
 		const tokens = mfm.parseSimple(newName);
@@ -297,6 +299,22 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		tags = extractHashtags(tokens!)
 			.map((tag) => normalizeForSearch(tag))
 			.splice(0, 32);
+	}
+
+	if (newLocation != null) {
+		const tokens = mfm.parseSimple(newLocation);
+		emojis = emojis.concat(extractCustomEmojisFromMfm(tokens!));
+	}
+
+	if (newField != null) {
+		
+		newField.forEach((x) => {
+			const nameTokens = mfm.parseSimple(x.name);
+			emojis = emojis.concat(extractCustomEmojisFromMfm(nameTokens!));
+			const valueTokens = mfm.parse(x.value);
+			emojis = emojis.concat(extractCustomEmojisFromMfm(valueTokens!));
+		});
+
 	}
 
 	updates.emojis = emojis;

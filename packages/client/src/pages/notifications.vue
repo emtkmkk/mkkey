@@ -59,10 +59,10 @@
 					/>
 				</swiper-slide>
 				<swiper-slide>
-					<XNotes v-if="tab === 'mentions'" :pagination="mentionsPagination" />
+					<XNotes key="mentions" v-if="tab === 'mentions'" :pagination="mentionsPagination" />
 				</swiper-slide>
 				<swiper-slide>
-					<XNotes v-if="tab === 'directNotes'" :pagination="directNotesPagination" />
+					<XNotes key="directNotes" v-if="tab === 'directNotes'" :pagination="directNotesPagination" />
 				</swiper-slide>
 			</swiper>
 		</MkSpacer>

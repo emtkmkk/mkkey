@@ -61,14 +61,13 @@ let note: any = $ref(null);
 
 watch(
 	id,
-	async () => {
-		const unrefId = unref(id);
-		if (unrefId && (unrefId.startsWith("http://") || unrefId.startsWith("https://"))) {
-			props.value.note = (unrefId.endsWith("/") ? unrefId.slice(0, -1) : unrefId)
+	async (newId) => {
+		if (newId && (newId.startsWith("http://") || newId.startsWith("https://"))) {
+			props.value.note = (newId.endsWith("/") ? newId.slice(0, -1) : newId)
 				.split("/")
 				.pop();
 		} else {
-			props.value.note = unrefId;
+			props.value.note = newId;
 		}
 
 		note = props.value.note?.length === 10 ? await os.api("notes/show", { noteId: props.value.note }) : undefined;

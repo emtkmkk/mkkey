@@ -44,6 +44,9 @@ export default defineComponent({
 			type: Boolean,
 			default: true,
 		},
+		noteHost: {
+			required: false,
+		},
 	},
 
 	render() {
@@ -460,6 +463,7 @@ export default defineComponent({
 											emoji: `:${token.props.name}:`,
 											customEmojis: this.customEmojis,
 											normal: this.plain,
+											noteHost: this.noteHost,
 										}),
 									],
 								);
@@ -475,6 +479,7 @@ export default defineComponent({
 											emoji: `:${token.props.name}:`,
 											customEmojis: this.customEmojis,
 											normal: this.plain,
+											noteHost: this.noteHost,
 										}),
 									],
 								);
@@ -485,6 +490,7 @@ export default defineComponent({
 										emoji: `:${token.props.name}:`,
 										customEmojis: this.customEmojis,
 										normal: this.plain,
+										noteHost: this.noteHost,
 									}),
 								];
 							}

@@ -22,6 +22,7 @@
 				<swiper-slide>
 					<div class="rknalgpo">
 						<MkPagination
+							v-if="tab === 'featured'"
 							v-slot="{ items }"
 							:pagination="featuredPagesPagination"
 						>
@@ -37,6 +38,7 @@
 				<swiper-slide>
 					<div class="rknalgpo liked">
 						<MkPagination
+							v-if="tab === 'liked'"
 							v-slot="{ items }"
 							:pagination="likedPagesPagination"
 						>
@@ -58,6 +60,7 @@
 							>
 						</div>
 						<MkPagination
+							v-if="tab === 'my'"
 							v-slot="{ items }"
 							:pagination="myPagesPagination"
 						>

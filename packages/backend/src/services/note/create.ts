@@ -202,39 +202,52 @@ export default async (
 		if (data.reply && data.channel == null && data.reply.channelId) {
 			data.channel = await Channels.findOneBy({ id: data.reply.channelId });
 		}
-
+		
+		//指定がなければpublicでlocalOnlyOFF
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
+		//チャンネル投稿ならpublic
 		if (data.channel != null) data.visibility = "public";
 		if (data.channel != null) data.visibleUsers = [];
+		//publicをブロックする設定でpublic設定ならhomeに設定
 		if (user.blockPostPublic && data.visibility === "public") data.visibility = "home";
+		//homeをブロックする設定でhome設定ならfollowersに設定
 		if (user.blockPostHome && data.visibility === "home") data.visibility = "followers";
+		//非localOnlyをブロックする設定で非localOnly設定ならlocalOnlyに設定
 		if (user.blockPostNotLocal && data.localOnly === false && (!user.blockPostNotLocalPublic || data.visibility === "public")) data.localOnly = true;
+		//ただしspecifiedならlocalOnlyOFF
 		if (data.visibility === "specified" && data.localOnly === true) data.localOnly = false;
+		//チャンネルに[localOnly]が含まれている場合はlocalOnlyON
 		if (data.channel != null && data.channel.description?.includes("[localOnly]") && data.localOnly === false) data.localOnly = true;
-		if (data.channel != null && data.localOnly === false && !data.reply && !data.text.endsWith(" #" + data.channel!.name)) {
-			//チャンネルで連合有りで返信でなく、すでに文末にタグが付いていない場合、ハッシュタグを自動で付ける
+		if (!user.host && data.channel != null && data.localOnly === false && !data.reply && !data.text.includes("#" + data.channel!.name)) {
+			//ローカル投稿でチャンネルで連合有りで返信でなく、
+			//すでにタグが含まれていない場合はハッシュタグを自動で付ける
 			data.text += " #" + data.channel!.name;
 		}
 		if (data.visibility === "hidden") data.visibility = "public";
 
-		// Twitterリンクの場合、?以降を取り除く
+		// Twitterのstatusリンクの場合、?以降を取り除く
 		if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
 			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?\S*)/g, "$1");
 		}
-
+		
+		//23:59の間によるほを含む投稿をした場合
 		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {
 			if (data.createdAt?.getSeconds() === 59 && data.createdAt?.getMilliseconds() !== 0) {
+				//誤差がミリ秒単位の場合
 				data.text = data.text + " [❌ -." + (1000 - data.createdAt.getMilliseconds()).toString().padStart(3, '0') + "]"
 			} else {
 				data.text = data.text + " [❌ -" + (60 - data.createdAt?.getSeconds()).toString() + "s]"
 			}
 		}
 
+		//0:00の間によるほを含む投稿をした場合
 		if (data.createdAt?.getHours() === 0 && data.createdAt?.getMinutes() === 0 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {
 			if (data.createdAt?.getMilliseconds() === 0) {
+				//ジャストの場合
 				data.text = data.text + " [$[tada 🦉 .000]]"
 			} else if (data.createdAt?.getSeconds() === 0) {
+				//誤差がミリ秒単位の場合
 				data.text = data.text + " [🦉 ." + data.createdAt.getMilliseconds().toString().padStart(3, '0') + "]"
 			} else {
 				data.text = data.text + " [❌ +" + (data.createdAt?.getSeconds()).toString() + "s]"
@@ -387,7 +400,8 @@ export default async (
 			}
 			
 			const localRelation = await Promise.all(data.visibleUsers.filter((x) => !x.host || x.host === "mkkey.net").map(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed));
-
+			
+			//9d7csvz8zd はログインボーナスbot 環境によって変わるはず
 			if (user.id !== '9d7csvz8zd' && user.host && (localRelation.every((x) => x) ?? true)) {
 				data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi, "$1");
 			}
@@ -658,6 +672,7 @@ export default async (
 						dm.addFollowersRecipe();
 					}
 
+					//リレーに配送
 					if (["public"].includes(note.visibility)) {
 						deliverToRelays(user, noteActivity);
 					}

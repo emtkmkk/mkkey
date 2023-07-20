@@ -13,7 +13,6 @@
 				:virtual="true"
 				:allow-touch-move="
 					!(
-						deviceKind === 'desktop' &&
 						!defaultStore.state.swipeOnDesktop
 					)
 				"
@@ -27,10 +26,10 @@
 							:pagination="featuredPagesPagination"
 						>
 							<MkPagePreview
-								v-for="page in items"
-								:key="page.id"
+								v-for="item in items"
+								:key="item?.page?.id ?? item?.id"
 								class="ckltabjg"
-								:page="page"
+								:page="item?.page ?? item"
 							/>
 						</MkPagination>
 					</div>
@@ -43,9 +42,9 @@
 						>
 							<MkPagePreview
 								v-for="like in items"
-								:key="like.page.id"
+								:key="like.page.id ?? like.id"
 								class="ckltabjg"
-								:page="like.page"
+								:page="like.page ?? like"
 							/>
 						</MkPagination>
 					</div>
@@ -63,10 +62,10 @@
 							:pagination="myPagesPagination"
 						>
 							<MkPagePreview
-								v-for="page in items"
-								:key="page.id"
+								v-for="item in items"
+								:key="item?.page?.id ?? item?.id"
 								class="ckltabjg"
-								:page="page"
+								:page="item?.page ?? item"
 							/>
 						</MkPagination>
 					</div>

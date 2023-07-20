@@ -166,9 +166,9 @@ const init = async (): Promise<void> => {
 				}
 				if (
 					!props.pagination.noPaging &&
-					res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? (props.pagination.limit || 10) : 1)
+					res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? (props.pagination.limit || 10) : 0)
 				) {
-					//res.pop();
+					if (res.length > (props.pagination.limit || 10)) res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse()
 						: res;
@@ -274,16 +274,18 @@ const fetchMore = async (): Promise<void> => {
 						if (i === 10) item._shouldInsertAd_ = true;
 					}
 				}
-				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 1) && items.value[0].id !== res[0].id) {
-					res.pop();
+				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 0) && items.value[0].id !== res[0].id) {
+					if (res.length > SECOND_FETCH_LIMIT) res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse().concat(items.value)
 						: items.value.concat(res);
 					more.value = true;
 				} else {
-					items.value = props.pagination.reversed
-						? [...res].reverse().concat(items.value)
-						: items.value.concat(res);
+					if (items.value[0].id !== res[0].id){
+						items.value = props.pagination.reversed
+							? [...res].reverse().concat(items.value)
+							: items.value.concat(res);
+					}
 					more.value = false;
 				}
 				offset.value += res.length;
@@ -328,8 +330,8 @@ const fetchMoreAhead = async (): Promise<void> => {
 		})
 		.then(
 			(res) => {
-				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 1)) {
-					res.pop();
+				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 0)) {
+					if (res.length > SECOND_FETCH_LIMIT) res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse().concat(items.value)
 						: items.value.concat(res);

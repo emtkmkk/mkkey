@@ -168,7 +168,7 @@ const init = async (): Promise<void> => {
 					!props.pagination.noPaging &&
 					res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? (props.pagination.limit || 10) : 1)
 				) {
-					res.pop();
+					//res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse()
 						: res;

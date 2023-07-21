@@ -13,15 +13,15 @@
 			<template #label>Secret</template>
 		</FormInput>
 		<FormSwitch v-if="!slack_type" v-model="discord_type" class="_formBlock"
-			>Discordに対応した形式で送信</FormSwitch
+			>Discordに対応した形式で送信<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 		>
 		<FormSwitch v-if="!discord_type" v-model="slack_type" class="_formBlock"
-			>Slackに対応した形式で送信</FormSwitch
+			>Slackに対応した形式で送信<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 		>
 		
 		<FormInput v-if="discord_type || slack_type" v-model="text_length" class="_formBlock">
 			<template #prefix><i class="ph-pencil-line ph-bold ph-lg"></i></template>
-			<template #label>表示する本文の最大文字数</template>
+			<template #label>表示する本文の最大文字数<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 		</FormInput>
 
 		<FormSection>
@@ -37,13 +37,13 @@
 				>RTされた時</FormSwitch
 			>
 			<FormSwitch v-model="event_reaction" class="_formBlock"
-				>リアクションされた時</FormSwitch
+				>リアクションされた時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 			>
 			<FormSwitch v-model="event_userMessage" class="_formBlock"
-				>個人宛のチャット受信時</FormSwitch
+				>個人宛のチャット受信時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 			>
 			<FormSwitch v-model="event_groupMessage" class="_formBlock"
-				>グループチャット受信時</FormSwitch
+				>グループチャット受信時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 			>
 			<FormSwitch v-if="event_groupMessage" v-model="event_groupMentionOnly" class="_formBlock"
 				>呼びかけられた時のみ</FormSwitch
@@ -58,14 +58,14 @@
 				>返信された時</FormSwitch
 			>
 			<FormSwitch v-if="$store.state.developer" v-model="event_unfollow" class="_formBlock"
-				>【dev】フォロー解除された時</FormSwitch
+				>【dev】フォロー解除された時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 			>
 			<FormSwitch :disabled="antennas.length <= 0" v-model="event_antenna" class="_formBlock"
-				>アンテナ新着時</FormSwitch
+				>アンテナ新着時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 			>
 			<template v-if="event_antenna && antennas.length > 0">
 				<FormSection>
-					<template #label>送信するアンテナ</template>
+					<template #label>送信するアンテナ<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 					<template v-for="(antenna,index) in antennas" :key="antenna.id" >
 						<FormSwitch v-model="event_excludeAntennas[index]" class="_formBlock"
 							>{{ antenna.name }}</FormSwitch
@@ -96,6 +96,10 @@ import FormButton from "@/components/MkButton.vue";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+
+const showMkkeySettingTips = $computed(
+	defaultStore.makeGetterSetter("showMkkeySettingTips")
+);
 
 let name = $ref("");
 let url = $ref("");

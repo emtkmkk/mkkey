@@ -84,7 +84,7 @@
 			@click="profile.birthday = '9999' + profile.birthday.slice(4)" class="_formBlock"
 		>{{
 			i18n.ts.hiddenYearSwitch
-		}}</MkButton>
+		}}</MkButton><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 
 		<FormSelect v-model="profile.lang" class="_formBlock">
 			<template #label>{{ i18n.ts.language }}</template>
@@ -208,6 +208,10 @@ const props = withDefaults(
 );
 
 let saveButton = $ref(props.saveButton ?? false);
+
+const showMkkeySettingTips = $computed(
+	defaultStore.makeGetterSetter("showMkkeySettingTips")
+);
 
 onMounted(() => {
 	new Autocomplete(nameareaEl, $$(profile.name));

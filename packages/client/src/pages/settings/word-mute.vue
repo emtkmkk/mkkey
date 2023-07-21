@@ -24,13 +24,13 @@
 				</FormTextarea>
 				<FormSwitch v-model="hiddenSoftMutes" class="_formBlock">{{
 					i18n.ts.hiddenSoftMutes
-				}}</FormSwitch>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 				<FormSwitch v-model="muteExcludeReplyQuote" class="_formBlock">{{
 					i18n.ts.muteExcludeReplyQuote
-				}}</FormSwitch>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 				<FormSwitch v-model="muteExcludeNotification" class="_formBlock">{{
 					i18n.ts.muteExcludeNotification
-				}}</FormSwitch>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			</div>
 			<div v-show="tab === 'hard'">
 				<MkInfo class="_formBlock"
@@ -58,7 +58,7 @@
 			<div v-show="tab === 'reaction'">
 				<MkInfo class="_formBlock">{{
 					i18n.ts._wordMute.reactionDescription
-				}}</MkInfo>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></MkInfo>
 				<FormTextarea v-model="reactionMutedWords" class="_formBlock">
 					<span>{{ i18n.ts._wordMute.muteWords }}</span>
 					<template #caption
@@ -74,7 +74,7 @@
 			{{ i18n.ts.save }}</MkButton
 		>
 		<br />
-		<div v-show="tab !== 'hard'" class="description" style="white-space: pre-line;"><br />{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
+		<div v-show="tab === 'soft'" class="description" style="white-space: pre-line;"><br /><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
 	</div>
 </template>
 
@@ -103,6 +103,10 @@ const render = (mutedWords) =>
 			}
 		})
 		.join("\n");
+		
+const showMkkeySettingTips = $computed(
+	defaultStore.makeGetterSetter("showMkkeySettingTips")
+);
 
 const tab = ref("soft");
 const softMutedWords = ref(render(defaultStore.state.mutedWords));

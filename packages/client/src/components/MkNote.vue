@@ -120,9 +120,10 @@
 						<MkTime :time="appearNote.createdAt" mode="absolute" />
 					</MkA>
 				</div>
-				<footer v-show="showContent" ref="footerEl" class="footer" @click.stop tabindex="-1">
+				<footer ref="footerEl" class="footer" @click.stop tabindex="-1">
 					<XReactionsViewer
 						v-if="enableEmojiReactions || detailedView"
+						v-show="showContent"
 						ref="reactionsViewer"
 						:note="appearNote"
 					/>
@@ -143,7 +144,7 @@
 						:count="appearNote.renoteCount"
 					/>
 					<XStarButtonNoEmoji
-						v-if="!enableEmojiReactions && !detailedView && (isCanAction || favButtonReactionIsFavorite)"
+						v-if="((!enableEmojiReactions && !detailedView) || !showContent) && (isCanAction || favButtonReactionIsFavorite)"
 						class="button"
 						:note="appearNote"
 						:count="
@@ -158,7 +159,8 @@
 						v-if="
 							(enableEmojiReactions || detailedView) &&
 							(appearNote.myReaction == null || favButtonReactionIsFavorite) && 
-							(isCanAction || favButtonReactionIsFavorite)
+							(isCanAction || favButtonReactionIsFavorite) &&
+							showContent
 						"
 						ref="starButton"
 						class="button"

@@ -21,7 +21,7 @@
 				<template v-else>
 					<div :class="$style.tabs">
 						<button
-							v-for="reaction in reactions"
+							v-for="reaction in reactionFilterMuted"
 							:key="reaction"
 							:class="[
 								$style.tab,
@@ -72,6 +72,7 @@ import MkUserCardMini from "@/components/MkUserCardMini.vue";
 import { userPage } from "@/filters/user";
 import { i18n } from "@/i18n";
 import * as os from "@/os";
+import { defaultStore } from "@/store";
 
 const emit = defineEmits<{
 	(ev: "closed"): void;
@@ -87,6 +88,15 @@ let note = $ref<misskey.entities.Note>();
 let tab = $ref<string>();
 let reactions = $ref<string[]>();
 let users = $ref();
+const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
+let reactionFilterMuted = $computed(() => {
+		//ミュートリアクションを除外
+		return reactionMuted.filter(x => !(
+				(!x.exact && localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(x.name)) 
+				||  x.name === localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"")
+			)
+		)
+});
 
 watch($$(tab), async () => {
 	const res = await os.api("notes/reactions", {

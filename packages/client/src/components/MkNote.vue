@@ -120,7 +120,7 @@
 						<MkTime :time="appearNote.createdAt" mode="absolute" />
 					</MkA>
 				</div>
-				<footer v-if="showContent" ref="footerEl" class="footer" @click.stop tabindex="-1">
+				<footer v-show="showContent" ref="footerEl" class="footer" @click.stop tabindex="-1">
 					<XReactionsViewer
 						v-if="enableEmojiReactions || detailedView"
 						ref="reactionsViewer"

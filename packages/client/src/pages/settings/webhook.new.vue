@@ -46,7 +46,7 @@
 				>グループチャット受信時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 			>
 			<FormSwitch v-if="event_groupMessage" v-model="event_groupMentionOnly" class="_formBlock"
-				>呼びかけられた時のみ</FormSwitch
+				>呼びかけられた時のみ<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 			>
 			<FormSwitch v-model="event_note" class="_formBlock"
 				>自分の投稿時</FormSwitch

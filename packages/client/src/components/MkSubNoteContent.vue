@@ -317,7 +317,7 @@ function focusFooter(ev) {
 				> .body {
 					min-height: 2em;
 					max-height: 5em;
-					filter: blur(4px);
+					filter: blur(5px);
 					:deep(span) {
 						animation: none !important;
 						transform: none !important;
@@ -375,7 +375,7 @@ function focusFooter(ev) {
 		}
 	}
 	> :deep(button) {
-		margin-top: 7px;
+		margin-top: 10px;
 		margin-left: 0;
 		margin-right: .4rem;
 	}

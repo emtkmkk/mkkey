@@ -328,7 +328,7 @@ function focusFooter(ev) {
 				}
 				:deep(.fade) {
 					inset: 0;
-					top: 32px;
+					top: 40px;
 				}
 			}
 
@@ -375,7 +375,7 @@ function focusFooter(ev) {
 		}
 	}
 	> :deep(button) {
-		margin-top: 10px;
+		margin-top: 5px;
 		margin-left: 0;
 		margin-right: .4rem;
 	}

@@ -1,6 +1,7 @@
 <template>
 	<div
 		ref="elRef"
+		v-if="!isMuted"
 		v-size="{ max: [500, 600] }"
 		class="qglefbjs"
 		:class="notification.type"
@@ -317,6 +318,13 @@ const props = withDefaults(
 
 const elRef = ref<HTMLElement>(null);
 const reactionRef = ref(null);
+
+const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
+
+const isMuted = notification.type === 'reaction' && reactionMuted.some(x => 
+					(!x.exact && localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(x.name)) 
+					||  x.name === localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"")
+				)
 
 const showEmojiReactions =
 	defaultStore.state.enableEmojiReactions ||

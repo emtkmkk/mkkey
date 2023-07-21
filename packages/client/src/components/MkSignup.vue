@@ -1,5 +1,5 @@
 <template>
-	<div v-if="instance.disableRegistration" style="margin-bottom: 1rem">
+	<div v-if="false && instance.disableRegistration" style="margin-bottom: 1rem">
 		<p>{{ i18n.ts.signupsDisabled }}</p>
 		<a href="https://calckey.org/join">
 			<MkButton rounded gradate

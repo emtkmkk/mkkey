@@ -19,6 +19,19 @@
 
 		<div v-else ref="rootEl">
 			<div
+				v-show="pagination.reversed && moreFetchError"
+				key="_errorrev_"
+				class="cxiknjgy _gap"
+			>
+				<div key="_errordiv_" class="_miniinfo">
+					<img
+						src="/static-assets/badges/error.png"
+						class="_ghost"
+						alt="notMore"
+					/>
+				</div>
+			</div>
+			<div
 				v-show="pagination.reversed && more"
 				key="_more_"
 				class="cxiknjgy _gap"
@@ -36,11 +49,11 @@
 				<MkLoading v-else class="loading" />
 			</div>
 			<div
-				v-show="pagination.reversed && !more"
+				v-show="pagination.reversed && !moreFetchError && !more"
 				key="_notmore_"
 				class="cxiknjgy _gap"
 			>
-				<div class="_miniinfo">
+				<div key="_icondiv_" class="_miniinfo">
 					<img
 						:src="$instance.iconUrl"
 						class="_ghost"
@@ -57,7 +70,7 @@
 				<MkButton
 					v-if="!moreFetching"
 					v-appear="
-						$store.state.enableInfiniteScroll && !disableAutoLoad
+						$store.state.enableInfiniteScroll && !disableAutoLoad && !moreFetchError
 							? fetchMore
 							: null
 					"
@@ -72,13 +85,26 @@
 				<MkLoading v-else class="loading" />
 			</div>
 			<div
-				v-show="!pagination.reversed && !more"
+				v-show="!pagination.reversed && !moreFetchError && !more"
 				key="_notmore_"
 				class="cxiknjgy _gap"
 			>
-				<div class="_miniinfo">
+				<div key="_icondiv_" class="_miniinfo">
 					<img
 						:src="$instance.iconUrl"
+						class="_ghost"
+						alt="notMore"
+					/>
+				</div>
+			</div>
+			<div
+				v-show="!pagination.reversed && moreFetchError"
+				key="_errorf_"
+				class="cxiknjgy _gap"
+			>
+				<div key="_errordiv_" class="_miniinfo">
+					<img
+						src="/static-assets/badges/error.png"
 						class="_ghost"
 						alt="notMore"
 					/>
@@ -164,6 +190,7 @@ const backed = ref(false); // 遡り中か否か
 const isBackTop = ref(false);
 const empty = computed(() => items.value.length === 0);
 const error = ref(false);
+const moreFetchError = ref(false);
 
 const init = async (): Promise<void> => {
 	queue.value = [];
@@ -267,6 +294,7 @@ const fetchMore = async (): Promise<void> => {
 		items.value.length === 0
 	)
 		return;
+	moreFetchError.value = false;
 	moreFetching.value = true;
 	backed.value = true;
 	const params = props.pagination.params
@@ -318,7 +346,7 @@ const fetchMore = async (): Promise<void> => {
 				moreFetching.value = false;
 			},
 			(err) => {
-				more.value = false;
+				moreFetchError.value = true;
 				moreFetching.value = false;
 			}
 		);
@@ -332,6 +360,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 		items.value.length === 0
 	)
 		return;
+	moreFetchError.value = false;
 	moreFetching.value = true;
 	const params = props.pagination.params
 		? isRef(props.pagination.params)
@@ -372,7 +401,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 				moreFetching.value = false;
 			},
 			(err) => {
-				more.value = false;
+				moreFetchError.value = true;
 				moreFetching.value = false;
 			}
 		);

@@ -4,7 +4,7 @@
 			{{ i18n.ts.enableEmojiReactions }}
 		</FormSwitch>
 		<FormSwitch v-if="!enableEmojiReactions" v-model="showEmojiButton" class="_formBlock">
-			{{ i18n.ts.showEmojiButton }}
+			{{ i18n.ts.showEmojiButton }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 		</FormSwitch>
 		<div v-if="!enableEmojiReactions">
 			<FormSwitch
@@ -194,79 +194,79 @@
 					v-if="tab === 'reactions' && ((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsDefaultOpen }}
+					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactions2DefaultOpen"
 					v-if="tab === 'reactions2'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsDefaultOpen }}
+					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactions3DefaultOpen"
 					v-if="tab === 'reactions3'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsDefaultOpen }}
+					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactions4DefaultOpen"
 					v-if="tab === 'reactions4'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsDefaultOpen }}
+					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactions5DefaultOpen"
 					v-if="tab === 'reactions5'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsDefaultOpen }}
+					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 			</FromSlot>
 			<FormSwitch
 				v-model="reactionAutoFocusSearchBar"
 				class="_formBlock"
 			>
-				{{ i18n.ts.reactionAutoFocusSearchBar }}
+				{{ i18n.ts.reactionAutoFocusSearchBar }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			</FormSwitch>
 			<FormSwitch
 				v-model="doubleTapReaction"
 				class="_formBlock"
 			>
-				{{ i18n.ts.doubleTapReaction }}
+				{{ i18n.ts.doubleTapReaction }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			</FormSwitch>
 			<FormSwitch
 				v-model="recentlyUsedDefaultOpen"
 				class="_formBlock"
 				v-if="((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0 && !hiddenRecent && !hiddenReactionDeckAndRecent"
 			>
-				{{ i18n.ts.recentlyUsedDefaultOpen }}
+				{{ i18n.ts.recentlyUsedDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			</FormSwitch>
 			<FormSwitch
 				v-model="hiddenRecent"
 				class="_formBlock"
 				v-if="!hiddenReactionDeckAndRecent"
 			>
-				{{ i18n.ts.hiddenRecent }}
+				{{ i18n.ts.hiddenRecent }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			</FormSwitch>
 			<FormSwitch
 				v-model="hiddenReactionDeckAndRecent"
 				class="_formBlock"
 				v-if="!hiddenRecent"
 			>
-				{{ i18n.ts.hiddenReactionDeckAndRecent }}
+				{{ i18n.ts.hiddenReactionDeckAndRecent }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			</FormSwitch>
 			<FormSwitch
 				v-model="japanCategory"
 				class="_formBlock"
 			>
-				{{ i18n.ts.japanCategory }}
+				{{ i18n.ts.japanCategory }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			</FormSwitch>
 			
 			<FormSelect v-if="!isMobile" v-model="remoteEmojisFetch" class="_formBlock">
-				<template #label>{{ i18n.ts.remoteEmojisFetch }}</template>
+				<template #label>{{ i18n.ts.remoteEmojisFetch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 				<option value="always">{{ i18n.ts._remoteEmojisFetchForPc.always }}</option>
 				<option value="all">{{ i18n.ts._remoteEmojisFetchForPc.all }}</option>
 				<option value="plus">{{ i18n.ts._remoteEmojisFetchForPc.plus }}</option>
@@ -274,7 +274,7 @@
 				<option value="none">{{ i18n.ts._remoteEmojisFetchForPc.none }}</option>
 			</FormSelect>
 			<FormSelect v-else v-model="remoteEmojisFetch" class="_formBlock">
-				<template #label>{{ i18n.ts.remoteEmojisFetch }}</template>
+				<template #label>{{ i18n.ts.remoteEmojisFetch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 				<option value="all">{{ i18n.ts._remoteEmojisFetch.all }}</option>
 				<option value="plus">{{ i18n.ts._remoteEmojisFetch.plus }}</option>
 				<option value="keep">{{ i18n.ts._remoteEmojisFetch.keep }}</option>
@@ -289,7 +289,7 @@
 				>
 					<template #label>{{
 						i18n.ts.defaultReactionUser
-					}}</template>
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 					<option value="">
 						{{
 							i18n.ts.default
@@ -455,6 +455,10 @@ window.addEventListener("resize", () => {
 });
 
 const tab = $ref("reactions");
+
+const showMkkeySettingTips = $computed(
+	defaultStore.makeGetterSetter("showMkkeySettingTips")
+);
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({

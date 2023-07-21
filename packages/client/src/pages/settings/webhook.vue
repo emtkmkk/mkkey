@@ -64,6 +64,10 @@ import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
+const showMkkeySettingTips = $computed(
+	defaultStore.makeGetterSetter("showMkkeySettingTips")
+);
+
 const pagination = {
 	endpoint: "i/webhooks/list" as const,
 	limit: 10,

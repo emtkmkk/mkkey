@@ -184,19 +184,18 @@ async function save() {
 	
 	const parseMutesSimple = (mutes, tab) => {
 		// split into lines, remove empty lines and unnecessary whitespace
-		let lines = mutes
+		return mutes
 			.trim()
 			.split("\n")
 			.map((line) => line.trim())
 			.filter((line) => line !== "");
-		return lines;
 	};
 
 	let softMutes, hardMutes, reactionMutes;
 	try {
 		softMutes = parseMutes(softMutedWords.value, i18n.ts._wordMute.soft);
 		hardMutes = parseMutes(hardMutedWords.value, i18n.ts._wordMute.hard);
-		reactionMutes = parseMutesSimple(reactionMutesWords.value, i18n.ts.reaction);
+		reactionMutes = parseMutesSimple(reactionMutedWords.value, i18n.ts.reaction);
 	} catch (err) {
 		// already displayed error message in parseMutes
 		return;

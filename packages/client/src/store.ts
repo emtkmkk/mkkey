@@ -664,6 +664,10 @@ export const defaultStore = markRaw(
 			where: 'device',
 			default: false,
 		},
+		showMkkeySettingTips: {
+			where: 'device',
+			default: false,
+		},
 	}),
 );
 

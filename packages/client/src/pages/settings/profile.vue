@@ -185,6 +185,7 @@ import { i18n } from "@/i18n";
 import { $i } from "@/account";
 import { langmap } from "@/scripts/langmap";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { defaultStore } from "@/store";
 
 const descriptionareaEl = $ref(null);
 const nameareaEl = $ref(null);

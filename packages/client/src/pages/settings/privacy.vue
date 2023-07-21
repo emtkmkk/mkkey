@@ -18,7 +18,7 @@
 			}}<template #caption>{{
 				i18n.ts.lockedAccountInfoSilent
 			}}</template></FormSwitch
-		>
+		><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 		<FormSwitch
 			v-if="isLocked || isSilentLocked"
 			v-model="autoAcceptFollowed"
@@ -33,7 +33,7 @@
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostPublic
-				}}<template #caption>{{
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
 					i18n.ts.blockPostPublicDescription
 				}}</template></FormSwitch
 			>		
@@ -42,7 +42,7 @@
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostHome
-				}}<template #caption>{{
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
 					i18n.ts.blockPostHomeDescription
 				}}</template></FormSwitch
 			>		
@@ -51,7 +51,7 @@
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostNotLocal
-				}}<template #caption>{{
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
 					i18n.ts.blockPostNotLocalDescription
 				}}</template></FormSwitch
 			>		
@@ -61,7 +61,7 @@
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostNotLocalPublic
-				}}<template #caption>{{
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
 					i18n.ts.blockPostNotLocalPublicDescription
 				}}</template></FormSwitch
 			>
@@ -203,13 +203,13 @@
 
 				<FormSwitch v-model="secondPostButton" class="_formBlock">{{
 					i18n.ts.secondPostButton
-				}}</FormSwitch>
+				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				<FormSwitch v-if="secondPostButton" v-model="firstPostWideButton" class="_formBlock">{{
 					i18n.ts.wideFirstPostButton
-				}}</FormSwitch>
+				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				<FormSwitch v-if="secondPostButton" v-model="secondPostWideButton" class="_formBlock">{{
 					i18n.ts.widePostButton
-				}}</FormSwitch>
+				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 
 				<FormSelect v-model="secondPostVisibility" class="_formBlock">
 					<option value="public">
@@ -268,10 +268,10 @@
 
 				<FormSwitch v-model="thirdPostButton" class="_formBlock">{{
 					i18n.ts.thirdPostButton
-				}}</FormSwitch>
+				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				<FormSwitch v-if="thirdPostButton" v-model="thirdPostWideButton" class="_formBlock">{{
 					i18n.ts.widePostButton
-				}}</FormSwitch>
+				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 
 				<FormSelect v-model="thirdPostVisibility" class="_formBlock">
 					<option value="public">
@@ -330,10 +330,10 @@
 
 				<FormSwitch v-model="fourthPostButton" class="_formBlock">{{
 					i18n.ts.fourthPostButton
-				}}</FormSwitch>
+				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				<FormSwitch v-if="fourthPostButton" v-model="fourthPostWideButton" class="_formBlock">{{
 					i18n.ts.widePostButton
-				}}</FormSwitch>
+				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 
 				<FormSelect v-model="fourthPostVisibility" class="_formBlock">
 					<option value="public">
@@ -392,10 +392,10 @@
 
 				<FormSwitch v-model="fifthPostButton" class="_formBlock">{{
 					i18n.ts.fifthPostButton
-				}}</FormSwitch>
+				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				<FormSwitch v-if="fifthPostButton" v-model="fifthPostWideButton" class="_formBlock">{{
 					i18n.ts.widePostButton
-				}}</FormSwitch>
+				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 
 				<FormSelect v-model="fifthPostVisibility" class="_formBlock">
 					<option value="public">
@@ -425,7 +425,7 @@
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.channelSecondPostButton }}</FormSwitch
-		>
+		><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 	</div>
 </template>
 
@@ -511,6 +511,9 @@ let fifthPostWideButton = $computed(
 );
 let channelSecondPostButton = $computed(
 	defaultStore.makeGetterSetter("channelSecondPostButton")
+);
+const showMkkeySettingTips = $computed(
+	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
 
 function save() {

@@ -9,8 +9,8 @@
 		>
 			<template #label>{{
 				i18n.ts.enableAntennaTab
-			}}</template>
-		</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+		</FormSwitch>
 		<FormSection>
 			<ForFormButtonmLink
 				class="_formBlock"

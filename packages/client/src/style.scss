@@ -565,6 +565,18 @@ hr {
 	}
 }
 
+._miniinfo {
+	padding: 16px 8px;
+	text-align: center;
+
+	> img {
+		vertical-align: bottom;
+		height: 32px;
+		margin-bottom: 4px;
+		border-radius: 4px;
+	}
+}
+
 ._fullinfo {
 	padding: 64px 32px;
 	text-align: center;

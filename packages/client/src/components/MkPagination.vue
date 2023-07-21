@@ -35,6 +35,19 @@
 				</MkButton>
 				<MkLoading v-else class="loading" />
 			</div>
+			<div
+				v-show="pagination.reversed && !more"
+				key="_notmore_"
+				class="cxiknjgy _gap"
+			>
+				<div class="_miniinfo">
+					<img
+						:src="$instance.bannerUrl"
+						class="_ghost"
+						alt="notMore"
+					/>
+				</div>
+			</div>
 			<slot :items="items"></slot>
 			<div
 				v-show="!pagination.reversed && more"
@@ -57,6 +70,19 @@
 					{{ i18n.ts.loadMore }}
 				</MkButton>
 				<MkLoading v-else class="loading" />
+			</div>
+			<div
+				v-show="!pagination.reversed && !more"
+				key="_notmore_"
+				class="cxiknjgy _gap"
+			>
+				<div class="_miniinfo">
+					<img
+						:src="$instance.bannerUrl"
+						class="_ghost"
+						alt="notMore"
+					/>
+				</div>
 			</div>
 		</div>
 	</transition>

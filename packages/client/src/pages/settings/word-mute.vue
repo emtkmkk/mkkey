@@ -3,6 +3,7 @@
 		<MkTab v-model="tab" class="_formBlock">
 			<option value="soft">{{ i18n.ts._wordMute.soft }}</option>
 			<option value="hard">{{ i18n.ts._wordMute.hard }}</option>
+			<option value="reaction">{{ i18n.ts.reaction }}</option>
 		</MkTab>
 		<MkButton primary inline :disabled="!changed" @click="save()"
 			><i class="ph-floppy-disk-back ph-bold ph-lg"></i>
@@ -54,6 +55,19 @@
 					}}</template>
 				</MkKeyValue>
 			</div>
+			<div v-show="tab === 'reaction'">
+				<MkInfo class="_formBlock">{{
+					i18n.ts._wordMute.reactionDescription
+				}}</MkInfo>
+				<FormTextarea v-model="reactionMutedWords" class="_formBlock">
+					<span>{{ i18n.ts._wordMute.muteWords }}</span>
+					<template #caption
+						>{{ i18n.ts._wordMute.muteWordsDescription }}<br />{{
+							i18n.ts._wordMute.muteWordsDescription2
+						}}</template
+					>
+				</FormTextarea>
+			</div>
 		</div>
 		<MkButton primary inline :disabled="!changed" @click="save()"
 			><i class="ph-floppy-disk-back ph-bold ph-lg"></i>
@@ -93,6 +107,7 @@ const render = (mutedWords) =>
 const tab = ref("soft");
 const softMutedWords = ref(render(defaultStore.state.mutedWords));
 const hardMutedWords = ref(render($i!.mutedWords));
+const reactionMutedWords = ref(render(defaultStore.state.reactionMutedWords));
 const hardWordMutedNotesCount = ref(null);
 const hiddenSoftMutes = computed(
 	defaultStore.makeGetterSetter("hiddenSoftMutes")
@@ -114,6 +129,10 @@ watch(softMutedWords, () => {
 });
 
 watch(hardMutedWords, () => {
+	changed.value = true;
+});
+
+watch(reactionMutedWords, () => {
 	changed.value = true;
 });
 
@@ -159,16 +178,18 @@ async function save() {
 		return lines;
 	};
 
-	let softMutes, hardMutes;
+	let softMutes, hardMutes, reactionMutes;
 	try {
 		softMutes = parseMutes(softMutedWords.value, i18n.ts._wordMute.soft);
 		hardMutes = parseMutes(hardMutedWords.value, i18n.ts._wordMute.hard);
+		reactionMutes = parseMutes(reactionMutes.value, i18n.ts.reaction);
 	} catch (err) {
 		// already displayed error message in parseMutes
 		return;
 	}
 
 	defaultStore.set("mutedWords", softMutes);
+	defaultStore.set("reactionMutedWords", reactionMutes);
 	await os.api("i/update", {
 		mutedWords: hardMutes,
 	});

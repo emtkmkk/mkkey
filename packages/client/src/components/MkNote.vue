@@ -201,22 +201,12 @@
 		</article>
 	</div>
 	<button v-else-if="summaryRenote" class="muted _button" @click="summaryRenote = false">
-		<div tag="small" style="font-size:0.8em">
-			{{ "RT " }}
-			<MkA
-				v-user-preview="note.userId"
-				class="name"
-				:to="userPage(note.user)"
-			>
-				<MkUserName :user="note.user" maxlength="8" />
-			</MkA>
-				{{ 
-					isRecentRenote
-						? " : 最近表示したRT"
-						: " : 反応済のRT"
-				}}
-		</div>
-		<div tag="small" style="font-size:0.8em">
+		<div tag="small" style="padding: 0 3%; font-size:0.8em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+			{{ 
+				isRecentRenote
+					? "最近表示したRT : "
+					: "既に反応済のRT : "
+			}}
 			<MkA
 				v-user-preview="appearNote.userId"
 				class="name"
@@ -224,7 +214,18 @@
 			>
 				<MkUserName :user="appearNote.user" maxlength="8" />
 			</MkA>
-			{{ " : " + getNoteSummary(appearNote).slice(0,12) + (getNoteSummary(appearNote)?.length > 12 ? "…" : "") }}
+			{{ の投稿を }}
+			<MkA
+				v-user-preview="note.userId"
+				class="name"
+				:to="userPage(note.user)"
+			>
+				<MkUserName :user="note.user" maxlength="8" />
+			</MkA>
+			{{ " がRT" }}
+		</div>
+		<div tag="small" style="padding: 0 3%; font-size:0.8em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+			{{ getNoteSummary(appearNote) }}
 		</div>
 	</button>
 	<button v-else-if="(!hiddenSoftMutes && muted.matched.join('').length !== 0) || excludeMute" class="muted _button" @click="muted.muted = false">

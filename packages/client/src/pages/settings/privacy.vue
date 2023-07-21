@@ -15,10 +15,10 @@
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.makeFollowManuallyApproveSilent
-			}}<template #caption>{{
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
 				i18n.ts.lockedAccountInfoSilent
 			}}</template></FormSwitch
-		><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+		>
 		<FormSwitch
 			v-if="isLocked || isSilentLocked"
 			v-model="autoAcceptFollowed"
@@ -203,13 +203,13 @@
 
 				<FormSwitch v-model="secondPostButton" class="_formBlock">{{
 					i18n.ts.secondPostButton
-				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 				<FormSwitch v-if="secondPostButton" v-model="firstPostWideButton" class="_formBlock">{{
 					i18n.ts.wideFirstPostButton
-				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 				<FormSwitch v-if="secondPostButton" v-model="secondPostWideButton" class="_formBlock">{{
 					i18n.ts.widePostButton
-				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 
 				<FormSelect v-model="secondPostVisibility" class="_formBlock">
 					<option value="public">
@@ -268,10 +268,10 @@
 
 				<FormSwitch v-model="thirdPostButton" class="_formBlock">{{
 					i18n.ts.thirdPostButton
-				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 				<FormSwitch v-if="thirdPostButton" v-model="thirdPostWideButton" class="_formBlock">{{
 					i18n.ts.widePostButton
-				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 
 				<FormSelect v-model="thirdPostVisibility" class="_formBlock">
 					<option value="public">
@@ -330,10 +330,10 @@
 
 				<FormSwitch v-model="fourthPostButton" class="_formBlock">{{
 					i18n.ts.fourthPostButton
-				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 				<FormSwitch v-if="fourthPostButton" v-model="fourthPostWideButton" class="_formBlock">{{
 					i18n.ts.widePostButton
-				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 
 				<FormSelect v-model="fourthPostVisibility" class="_formBlock">
 					<option value="public">
@@ -392,10 +392,10 @@
 
 				<FormSwitch v-model="fifthPostButton" class="_formBlock">{{
 					i18n.ts.fifthPostButton
-				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 				<FormSwitch v-if="fifthPostButton" v-model="fifthPostWideButton" class="_formBlock">{{
 					i18n.ts.widePostButton
-				}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 
 				<FormSelect v-model="fifthPostVisibility" class="_formBlock">
 					<option value="public">
@@ -424,8 +424,8 @@
 			v-model="channelSecondPostButton"
 			class="_formBlock"
 			@update:modelValue="save()"
-			>{{ i18n.ts.channelSecondPostButton }}</FormSwitch
-		><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			>{{ i18n.ts.channelSecondPostButton }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+		>
 	</div>
 </template>
 

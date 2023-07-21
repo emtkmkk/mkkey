@@ -91,21 +91,18 @@ let users = $ref();
 const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
 let reactionFilterMuted = $computed(() => {
 	//ミュートリアクションを除外
-	return reactions.filter(
-		x => 
+	reactions.filter((x) => 
 		{
 			//なければ表示
-			return !
-			reactionMuted.some(y => {
+			!(reactionMuted.some((y) => {
 				// リアクションミュートに当てはまる物があるかの判定
-				return
 				(
 					(
-						!y.exact && x.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(y.name)
+						!y.exact && x.replaceAll(":","").replace(/@[\w:\.\-]+$/,"").includes(y.name)
 					)
-					||  y.name === x.replace(":","").replace(/@[\w:\.\-]+:$/,"")
+					||  y.name === x.replaceAll(":","").replace(/@[\w:\.\-]+$/,"")
 				)
-			});
+			}));
 		}
 	);
 });

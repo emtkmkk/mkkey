@@ -136,7 +136,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import * as misskey from "calckey-js";
 import * as mfm from "mfm-js";
 import * as os from "@/os";
@@ -176,7 +176,14 @@ const urls = props.note.text
 	? extractUrlFromMfm(mfm.parse(props.note.text)).slice(0, 5)
 	: null;
 
-let showContent = $ref(false);
+let showContent = ref(false);
+
+watch(
+	showContent,
+	(n) => {
+			emit('changeShowContent', n);
+	}
+);
 
 const mfms = props.note.text ? extractMfmWithAnimation(mfm.parse(props.note.text)) : null;
 

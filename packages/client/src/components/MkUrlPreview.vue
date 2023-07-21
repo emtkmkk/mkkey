@@ -157,7 +157,7 @@ if (
 	requestUrl.hostname = "www.youtube.com";
 }
 
-const requestLang = (lang || "ja-JP").replace("ja-KS", "ja-JP");
+const requestLang = (lang || "ja-JP").replace("ja-KS", "ja-JP").replace("ja-KK", "ja-JP");
 
 requestUrl.hash = "";
 

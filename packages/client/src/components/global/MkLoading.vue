@@ -29,7 +29,7 @@
 			<img
 				v-if="isLongTime"
 				:class="[$style.spinner]"
-				:src="$instance.bannerUrl"
+				:src="$instance.iconUrl"
 				alt="longlongloading"
 			/>
 		</div>

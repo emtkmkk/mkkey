@@ -28,6 +28,7 @@
 						:parentId="appearNote.parentId"
 						:conversation="conversation"
 						@focusfooter="footerEl.focus()"
+						@changeShowContent="(v) => showContent = v"
 					/>
 					<div v-if="translating || translation" class="translation">
 						<MkLoading v-if="translating" mini />
@@ -48,7 +49,7 @@
 						</div>
 					</div>
 				</div>
-				<footer ref="footerEl" class="footer" @click.stop tabindex="-1">
+				<footer v-if="showContent" ref="footerEl" class="footer" @click.stop tabindex="-1">
 					<XReactionsViewer
 						v-if="enableEmojiReactions"
 						ref="reactionsViewer"
@@ -225,6 +226,8 @@ const props = withDefaults(
 );
 
 let note = $ref(deepClone(props.note));
+
+const showContent = ref(false);
 
 const softMuteReasonI18nSrc = (what?: string) => {
 	if (what === "note") return i18n.ts.userSaysSomethingReason;

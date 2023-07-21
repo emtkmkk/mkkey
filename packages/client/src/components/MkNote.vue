@@ -86,6 +86,7 @@
 						:parentId="appearNote.parentId"
 						@push="(e) => router.push(notePage(e))"
 						@focusfooter="footerEl.focus()"
+						@changeShowContent="(v) => showContent = v"
 					></MkSubNoteContent>
 					<div v-if="translating || translation" class="translation">
 						<MkLoading v-if="translating" mini />
@@ -119,7 +120,7 @@
 						<MkTime :time="appearNote.createdAt" mode="absolute" />
 					</MkA>
 				</div>
-				<footer ref="footerEl" class="footer" @click.stop tabindex="-1">
+				<footer v-if="showContent" ref="footerEl" class="footer" @click.stop tabindex="-1">
 					<XReactionsViewer
 						v-if="enableEmojiReactions || detailedView"
 						ref="reactionsViewer"

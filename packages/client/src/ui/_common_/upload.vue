@@ -3,6 +3,7 @@
 		<ol v-if="uploads.length > 0">
 			<li v-for="ctx in uploads" :key="ctx.id">
 				<div
+					v-if="ctx.img"
 					class="img"
 					:style="{ backgroundImage: `url(${ctx.img})` }"
 				></div>

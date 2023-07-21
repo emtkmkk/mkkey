@@ -42,7 +42,7 @@
 			>
 				<div class="_miniinfo">
 					<img
-						:src="$instance.bannerUrl"
+						:src="$instance.iconUrl"
 						class="_ghost"
 						alt="notMore"
 					/>
@@ -78,7 +78,7 @@
 			>
 				<div class="_miniinfo">
 					<img
-						:src="$instance.bannerUrl"
+						:src="$instance.iconUrl"
 						class="_ghost"
 						alt="notMore"
 					/>

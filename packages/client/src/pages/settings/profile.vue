@@ -84,7 +84,7 @@
 			@click="profile.birthday = '9999' + profile.birthday.slice(4)" class="_formBlock"
 		>{{
 			i18n.ts.hiddenYearSwitch
-		}}</MkButton><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></MkButton>
 
 		<FormSelect v-model="profile.lang" class="_formBlock">
 			<template #label>{{ i18n.ts.language }}</template>

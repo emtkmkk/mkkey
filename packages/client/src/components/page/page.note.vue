@@ -9,6 +9,7 @@
 			v-if="note && block.detailed"
 			:key="note.id + ':detail'"
 			:note="note"
+			:notAutoFocus="true"
 		/>
 	</div>
 </template>

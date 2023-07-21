@@ -56,7 +56,7 @@
 				@update:modelValue="saveProfile()"
 			>
 				<template #label>{{ i18n.ts.alwaysMarkSensitive }}</template>
-			</FormSwitch>
+			</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch
 				v-model="autoSensitive"
 				class="_formBlock"
@@ -99,6 +99,9 @@ const DEFAULT_CAPACITY = 5 * 1024 * 1024 * 1024;
 const MAX_CAPACITY = 100 * 1024 * 1024 * 1024;
 let alwaysMarkNsfw = $ref($i.alwaysMarkNsfw);
 let autoSensitive = $ref($i.autoSensitive);
+const showMkkeySettingTips = computed(
+	defaultStore.makeGetterSetter("showMkkeySettingTips")
+);
 
 
 const meterStyle = computed(() => {

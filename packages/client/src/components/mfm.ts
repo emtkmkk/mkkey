@@ -453,7 +453,7 @@ export default defineComponent({
 						}
 
 						case "emojiCode": {
-							if (isNote && this.customEmojis && !isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
+							if (isNote && !isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
 								return h(
 									"span",
 									{
@@ -469,7 +469,7 @@ export default defineComponent({
 										}),
 									],
 								);
-							} else if (isNote && this.customEmojis && !isPlain && emojiAst != null && emojiAst.length <= 6){
+							} else if (isNote && !isPlain && emojiAst != null && emojiAst.length <= 6){
 								return h(
 									"span",
 									{

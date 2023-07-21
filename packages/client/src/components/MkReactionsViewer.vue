@@ -16,6 +16,7 @@ import { computed, unref } from "vue";
 import * as misskey from "calckey-js";
 import { $i } from "@/account";
 import XReaction from "@/components/MkReactionsViewer.reaction.vue";
+import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	note: misskey.entities.Note;
@@ -36,6 +37,7 @@ const reactions = computed(() => {
 
 	const localReactions = Object.keys(_reactions).filter((x) => x.includes("@"));
 	const mergeReactions = {};
+	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
 	
 	localReactions.forEach((localReaction) => {
 		if (!_reactions || _reactions.length === 0) return;
@@ -50,6 +52,14 @@ const reactions = computed(() => {
 			totalCount += _reactions[x];
 			delete _reactions[x];
 		});
+		
+		//ミュートリアクション判定
+		if (reactionMuted.some(x => 
+				(!x.exact && localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(x.name)) 
+				||  x.name === localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"")
+			)
+		) totalCount = 0;
+		
 		mergeReactions[maxReaction.reaction] = totalCount;
 	});
 	return {...mergeReactions, ..._reactions};

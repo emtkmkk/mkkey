@@ -375,7 +375,7 @@ function focusFooter(ev) {
 		}
 	}
 	> :deep(button) {
-		margin-top: 5px;
+		margin-top: 7px;
 		margin-left: 0;
 		margin-right: .4rem;
 	}

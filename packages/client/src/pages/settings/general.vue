@@ -142,8 +142,8 @@
 			<FormSwitch
 				v-model="keepPostCw"
 				class="_formBlock"
-				>{{ i18n.ts.keepPostCw }}</FormSwitch
-			><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				>{{ i18n.ts.keepPostCw }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+			>
 			<FormSwitch
 				v-model="keepCw"
 				class="_formBlock"

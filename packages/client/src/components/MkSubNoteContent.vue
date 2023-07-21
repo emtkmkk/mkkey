@@ -176,13 +176,13 @@ const urls = props.note.text
 	? extractUrlFromMfm(mfm.parse(props.note.text)).slice(0, 5)
 	: null;
 
-let showContent = ref(false);
+let showContent = ref(note.cw ? false : true);
 
 watch(
 	showContent,
 	(n) => {
 			emit('changeShowContent', n);
-	}
+	}, { immediate: true }
 );
 
 const mfms = props.note.text ? extractMfmWithAnimation(mfm.parse(props.note.text)) : null;

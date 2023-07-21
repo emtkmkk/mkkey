@@ -216,7 +216,7 @@
 			>
 				<MkUserName :user="appearNote.user" maxlength="8" />
 			</MkA>
-			{{ の投稿を }}
+			{{ " の投稿を " }}
 			<MkA
 				v-user-preview="note.userId"
 				class="name"

@@ -18,7 +18,6 @@
 				:virtual="true"
 				:allow-touch-move="
 					!(
-						deviceKind === 'desktop' &&
 						!defaultStore.state.swipeOnDesktop
 					)
 				"
@@ -28,7 +27,8 @@
 				<swiper-slide>
 					<div class="_formRoot">
 						<div class="fnfelxur">
-							<img :src="faviconUrl" alt="" class="icon" />
+							<img :src="faviconUrl" title="favicon" alt="favicon" class="icon" />
+							<img :src="iconUrl" title="icon" alt="icon" class="icon" />
 							<span class="name">{{
 								instance.name || `(${i18n.ts.unknown})`
 							}}</span>
@@ -385,6 +385,7 @@ let instance = $ref<AugmentedInstance | null>(null);
 let suspended = $ref(false);
 let isBlocked = $ref(false);
 let isSilenced = $ref(false);
+let iconUrl = $ref(null);
 let faviconUrl = $ref(null);
 
 const usersPagination = {
@@ -407,9 +408,9 @@ async function fetch() {
 	suspended = instance.isSuspended;
 	isBlocked = instance.isBlocked;
 	isSilenced = instance.isSilenced;
+	iconUrl = getProxiedImageUrlNullable(instance.iconUrl, "preview");
 	faviconUrl =
-		getProxiedImageUrlNullable(instance.faviconUrl, "preview") ??
-		getProxiedImageUrlNullable(instance.iconUrl, "preview");
+		getProxiedImageUrlNullable(instance.faviconUrl, "preview");
 }
 
 async function toggleBlock() {

@@ -321,7 +321,7 @@ const reactionRef = ref(null);
 
 const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
 
-const isMuted = notification.type === 'reaction' && reactionMuted.some(x => 
+const isMuted = props.notification.type === 'reaction' && reactionMuted.some(x => 
 					(!x.exact && props.notification.reaction.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(x.name)) 
 					||  x.name === props.notification.reaction.replace(":","").replace(/@[\w:\.\-]+:$/,"")
 				)

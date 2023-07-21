@@ -1302,6 +1302,7 @@ _wordMute:
   reactionMuteWordsDescription: 改行で区切って入力してください。部分一致で判定されます。:で囲むと完全一致で判定します。
   softDescription: "指定した条件のトゥートをタイムラインから隠します。"
   hardDescription: "指定した条件のトゥートをタイムラインに追加しないようにします。追加されなかったトゥートは、条件を変更しても除外されたままになります。"
+  reactionDescription: "指定した名前のリアクションをタイムラインから隠します。"
   soft: "ソフト"
   hard: "ハード"
   mutedNotes: "ミュートされた投稿"

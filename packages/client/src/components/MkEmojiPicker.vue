@@ -623,7 +623,7 @@ watch(q, (nQ, oQ) => {
 		return;
 	}
 	
-	if (nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) {
+	if ((nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) || (nQ.endsWith('!'))) {
 		return;
 	}
 

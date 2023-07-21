@@ -30,19 +30,19 @@
 			}}</FormSwitch>
 			<FormSwitch v-model="recentRenoteHidden" class="_formBlock">{{
 				i18n.ts.recentRenoteHidden
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="reactedRenoteHidden" class="_formBlock">{{
 				i18n.ts.reactedRenoteHidden
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="localShowRenote" class="_formBlock" @update:modelValue="save()">{{
 				i18n.ts.localShowRenote
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="remoteShowRenote" class="_formBlock" @update:modelValue="save()">{{
 				i18n.ts.remoteShowRenote
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="showSelfRenoteToHome" class="_formBlock" @update:modelValue="save()">{{
 				i18n.ts.showSelfRenoteToHome
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="showTimelineReplies" class="_formBlock" @update:modelValue="save()"
 				>{{ i18n.ts.flagShowTimelineReplies
 				}}<template #caption
@@ -67,31 +67,31 @@
 			>
 			<FormSwitch v-model="alwaysPostButton" class="_formBlock">{{
 				i18n.ts.alwaysPostButton
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="swipeOnDesktop" class="_formBlock">{{
 				i18n.ts.swipeOnDesktop
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="showDetailNoteClick" class="_formBlock">{{
 				i18n.ts.showDetailNoteClick
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="enableDataSaverMode" class="_formBlock">{{
 				i18n.ts.dataSaver
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{
 				i18n.ts.hiddenActivityChart
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript
 			}}</FormSwitch>
 			<FormSwitch v-if="developer" v-model="developerRenote" class="_formBlock">{{
 				i18n.ts.developerRenote
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-if="developer" v-model="developerQuote" class="_formBlock">{{
 				i18n.ts.developerQuote
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-if="developer" v-model="developerNoteMenu" class="_formBlock">{{
 				i18n.ts.developerNoteMenu
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 
 			<FormSelect v-model="serverDisconnectedBehavior" class="_formBlock">
 				<template #label>{{ i18n.ts.whenServerDisconnected }}</template>
@@ -117,33 +117,33 @@
 			}}</FormSwitch>
 			<FormSwitch v-model="openEmojiPicker" class="_formBlock">{{
 				i18n.ts.openEmojiPicker
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-if="openEmojiPicker" v-model="postAutoFocusSearchBar" class="_formBlock">{{
 				i18n.ts.postAutoFocusSearchBar
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-if="openEmojiPicker" v-model="notCloseEmojiPicker" class="_formBlock">{{
 				i18n.ts.notCloseEmojiPicker
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="hiddenMentionButton" class="_formBlock">{{
 				i18n.ts.hiddenMentionButton
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-if="!hiddenMentionButton" v-model="openMentionWindow" class="_formBlock">{{
 				i18n.ts.openMentionWindow
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="hiddenCloseButton" class="_formBlock">{{
 				i18n.ts.hiddenCloseButton
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock">{{
 				i18n.ts.hiddenMFMHelp
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
 				i18n.ts.smartMFMInputer
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch
 				v-model="keepPostCw"
 				class="_formBlock"
 				>{{ i18n.ts.keepPostCw }}</FormSwitch
-			>
+			><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch
 				v-model="keepCw"
 				class="_formBlock"
@@ -151,7 +151,7 @@
 			>
 			<FormSwitch v-model="emojiPickerUseDrawerForMobile" class="_formBlock">{{
 				i18n.ts.emojiPickerUseDrawerForMobile
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 		</FormSection>
 
 		<FormSection>
@@ -179,7 +179,7 @@
 			>
 			<FormSwitch v-model="showRelationMark" class="_formBlock">{{
 				i18n.ts.showRelationMark
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="loadRawImages" class="_formBlock">{{
 				i18n.ts.loadRawImages
 			}}</FormSwitch>
@@ -196,13 +196,13 @@
 				class="_formBlock"
 			>
 				{{ i18n.ts.reactionShowUsername }}
-			</FormSwitch>
+			</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch
 				v-model="reactionShowShort"
 				class="_formBlock"
 			>
 				{{ i18n.ts.reactionShowShort }}
-			</FormSwitch>
+			</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="seperateRenoteQuote" class="_formBlock">{{
 				i18n.ts.seperateRenoteQuote
 			}}</FormSwitch>
@@ -221,12 +221,15 @@
 			<FormSwitch v-model="showAds" class="_formBlock">{{
 				i18n.ts.showAds
 			}}</FormSwitch>
+			<FormSwitch v-model="showMkkeySettingTips" class="_formBlock">{{
+				i18n.ts.showMkkeySettingTips
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-model="showUpdates" class="_formBlock">{{
 				i18n.ts.showUpdates
 			}}</FormSwitch>
 			<FormSwitch v-if="developer" v-model="showMiniUpdates" class="_formBlock">{{
 				i18n.ts.showMiniUpdates
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch
 				v-if="$i?.isAdmin"
 				v-model="showAdminUpdates"
@@ -238,13 +241,13 @@
 			<template #label>{{ i18n.ts.power }}</template>
 			<FormSwitch v-model="powerMode" class="_formBlock">{{
 				i18n.ts.powerMode
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-if="powerMode" v-model="powerModeColorful" class="_formBlock">{{
 				i18n.ts.powerModeColorful
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<FormSwitch v-if="powerMode" v-model="powerModeNoShake" class="_formBlock">{{
 				i18n.ts.powerModeNoShake
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 		</FormSection>
 
 		<FormSection>
@@ -268,36 +271,36 @@
 			<FormRadios v-model="fontSize" class="_formBlock">
 				<template #label>{{ i18n.ts.fontSize }}</template>
 				<option value="-5">
-					<span style="font-size: 11px">-5</span>
+					<span style="font-size: 11px">11</span>
 				</option>
 				<option :value="-3">
-					<span style="font-size: 13px">-3</span>
+					<span style="font-size: 13px">13</span>
 				</option>
 				<option value="-2">
-					<span style="font-size: 14px">-2</span>
+					<span style="font-size: 14px">14</span>
 				</option>
 				<option value="-1">
-					<span style="font-size: 15px">-1</span>
+					<span style="font-size: 15px">15</span>
 				</option>
 				<option value="null">
-					<span style="font-size: 16px">16px</span>
+					<span style="font-size: 16px">16</span>
 				</option>
 				<option value="1">
-					<span style="font-size: 17px">+1</span>
+					<span style="font-size: 17px">17</span>
 				</option>
 				<option value="2">
-					<span style="font-size: 18px">+2</span>
+					<span style="font-size: 18px">18</span>
 				</option>
 				<option value="3">
-					<span style="font-size: 18px">+3</span>
+					<span style="font-size: 19px">19</span>
 				</option>
 				<option value="5">
-					<span style="font-size: 20px">+5</span>
+					<span style="font-size: 21px">21</span>
 				</option>
 			</FormRadios>
 			
 			<FormRadios v-model="avatarSize" class="_formBlock">
-				<template #label>{{ i18n.ts.avatarSize }}</template>
+				<template #label>{{ i18n.ts.avatarSize }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 				<option value="-2">
 					極小
 				</option>
@@ -340,10 +343,10 @@
 
 		<FormSwitch v-if="developer" v-model="developerTicker" class="_formBlock">{{
 			i18n.ts.developerTicker
-		}}</FormSwitch>
+		}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 		
 		<FormSelect v-if="!isMobile" v-model="remoteEmojisFetch" class="_formBlock">
-			<template #label>{{ i18n.ts.remoteEmojisFetch }}</template>
+			<template #label>{{ i18n.ts.remoteEmojisFetch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			<option value="always">{{ i18n.ts._remoteEmojisFetchForPc.always }}</option>
 			<option value="all">{{ i18n.ts._remoteEmojisFetchForPc.all }}</option>
 			<option value="plus">{{ i18n.ts._remoteEmojisFetchForPc.plus }}</option>
@@ -351,7 +354,7 @@
 			<option value="none">{{ i18n.ts._remoteEmojisFetchForPc.none }}</option>
 		</FormSelect>
 		<FormSelect v-else v-model="remoteEmojisFetch" class="_formBlock">
-			<template #label>{{ i18n.ts.remoteEmojisFetch }}</template>
+			<template #label>{{ i18n.ts.remoteEmojisFetch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			<option value="all">{{ i18n.ts._remoteEmojisFetch.all }}</option>
 			<option value="plus">{{ i18n.ts._remoteEmojisFetch.plus }}</option>
 			<option value="keep">{{ i18n.ts._remoteEmojisFetch.keep }}</option>
@@ -601,6 +604,9 @@ let localShowRenote = $ref($i.localShowRenote);
 let remoteShowRenote = $ref($i.remoteShowRenote);
 let showSelfRenoteToHome = $ref($i.showSelfRenoteToHome);
 let showTimelineReplies = $ref($i.showTimelineReplies);
+const showMkkeySettingTips = computed(
+	defaultStore.makeGetterSetter("showMkkeySettingTips")
+);
 
 function save() {
 	os.api("i/update", {

@@ -104,6 +104,7 @@ const router = useRouter();
 const props = defineProps<{
 	note: misskey.entities.Note;
 	pinned?: boolean;
+	notAutoFocus?: boolean;
 }>();
 
 const inChannel = inject("inChannel", null);
@@ -284,7 +285,9 @@ function showRenoteMenu(viaKeyboard = false): void {
 }
 
 function focus() {
-	noteEl.focus();
+	if (!props.notAutoFocus) {
+		noteEl.focus();
+	}
 }
 
 function blur() {

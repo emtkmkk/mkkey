@@ -10,7 +10,7 @@
 			<template #label>{{
 				i18n.ts.enableAntennaTab
 			}}</template>
-		</FormSwitch>
+		</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 		<FormSection>
 			<ForFormButtonmLink
 				class="_formBlock"
@@ -55,7 +55,7 @@
 		<FormSection>
 		<FormLink to="/settings/webhook" class="_formBlock"
 			><template #icon><i class="ph-lightning ph-bold ph-lg"></i></template
-			>Webhookによる通知の受け取り設定 (Discordなど)</FormLink
+			>Webhookによる通知の受け取り設定 (Discordなど)<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormLink
 		>
 		</FormSection>
 	</div>
@@ -86,6 +86,10 @@ let sendReadMessage = $computed(
 
 const enableAntennaTab = $computed(
 	defaultStore.makeGetterSetter("enableAntennaTab")
+);
+
+const showMkkeySettingTips = $computed(
+	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
 
 async function readAllUnreadNotes() {

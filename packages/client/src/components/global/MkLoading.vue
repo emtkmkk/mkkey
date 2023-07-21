@@ -11,6 +11,7 @@
 	>
 		<div :class="$style.container" aria-hidden="true">
 			<svg
+				v-if="!isLongTime"
 				:class="[$style.spinner]"
 				viewBox="0 0 50 50"
 				xmlns="http://www.w3.org/2000/svg"
@@ -25,12 +26,18 @@
 					style="fill: none; stroke: currentColor; stroke-width: 6px"
 				></circle>
 			</svg>
+			<img
+				v-if="isLongTime"
+				:class="[$style.spinner]"
+				:src="$instance.bannerUrl"
+				alt="longlongloading"
+			/>
 		</div>
 	</div>
 </template>
 
 <script lang="ts" setup>
-import {} from "vue";
+import { computed } from "vue";
 
 const props = withDefaults(
 	defineProps<{
@@ -46,6 +53,9 @@ const props = withDefaults(
 		em: false,
 	}
 );
+
+const showDate = Date.now();
+const isLongTime = computed(() => (Date.now() - showDate) > 30 * 1000);
 </script>
 
 <style lang="scss" module>

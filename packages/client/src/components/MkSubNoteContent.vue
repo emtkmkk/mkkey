@@ -176,7 +176,7 @@ const urls = props.note.text
 	? extractUrlFromMfm(mfm.parse(props.note.text)).slice(0, 5)
 	: null;
 
-let showContent = ref(note.cw ? false : true);
+let showContent = ref(!props.note.cw);
 
 watch(
 	showContent,

@@ -65,7 +65,7 @@
 				class="_formBlock"
 				>{{ i18n.ts.useReactionPickerForContextMenu }}</FormSwitch
 			>
-			<FormSwitch v-model="alwaysPostButton" class="_formBlock">{{
+			<FormSwitch v-if="!['classic','deck'].includes(ui)" v-model="alwaysPostButton" class="_formBlock">{{
 				i18n.ts.alwaysPostButton
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="swipeOnDesktop" class="_formBlock">{{
@@ -409,7 +409,7 @@ import FormRange from "@/components/form/range.vue";
 import FormSection from "@/components/form/section.vue";
 import FormLink from "@/components/form/link.vue";
 import MkLink from "@/components/MkLink.vue";
-import { langs } from "@/config";
+import { ui, langs } from "@/config";
 import { defaultStore } from "@/store";
 import * as os from "@/os";
 import { unisonReload } from "@/scripts/unison-reload";

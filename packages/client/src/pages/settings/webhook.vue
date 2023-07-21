@@ -63,6 +63,7 @@ import { userPage } from "@/filters/user";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { defaultStore } from "@/store";
 
 const showMkkeySettingTips = $computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")

@@ -96,7 +96,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const followingQuery = Followings.createQueryBuilder("following")
 		.select("following.followeeId")
-		.where("following.followerId = :followerId", { followerId: user.id });
+		.where(`following.followerId = '${user.id}'`);
 
 	//#region Construct query
 	const query = makePaginationQuery(

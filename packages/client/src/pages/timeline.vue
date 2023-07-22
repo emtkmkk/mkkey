@@ -318,7 +318,7 @@ const headerTabs = $computed(() => [
 				},
 		  ]
 		: []), */
-	...(isRecommendedTimelineAvailable &&     defaultStore.state.showSpotlight
+	...(isRecommendedTimelineAvailable && !defaultStore.state.showSpotlight
 		? [
 				{
 					key: "recommended",
@@ -330,7 +330,7 @@ const headerTabs = $computed(() => [
 		: [
 			{
 				key: "spotlight",
-				title: i18n.ts._timelines.showSpotlight,
+				title: i18n.ts._timelines.spotlight,
 				icon: "ph-diamonds-four ph-bold ph-lg",
 				iconOnly: true,
 			},

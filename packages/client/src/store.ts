@@ -668,6 +668,10 @@ export const defaultStore = markRaw(
 			where: 'device',
 			default: false,
 		},
+		showSpotlight: {
+			where: 'account',
+			default: true,
+		}
 	}),
 );
 

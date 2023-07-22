@@ -28,6 +28,9 @@
 			<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
 				i18n.ts.showFixedPostForm
 			}}</FormSwitch>
+			<FormSwitch v-model="showSpotlight" class="_formBlock">{{
+				i18n.ts.showSpotlight
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="recentRenoteHidden" class="_formBlock">{{
 				i18n.ts.recentRenoteHidden
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -598,6 +601,7 @@ const showDetailNoteClick = $computed(
 const alwaysPostButton = $computed(
 	defaultStore.makeGetterSetter("alwaysPostButton")
 );
+const showSpotlight = computed(defaultStore.makeGetterSetter("showSpotlight"));
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
 let keepPostCw = $computed(defaultStore.makeGetterSetter("keepPostCw"));
 let localShowRenote = $ref($i.localShowRenote);

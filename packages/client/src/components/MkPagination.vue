@@ -328,7 +328,7 @@ const fetchMore = async (): Promise<void> => {
 						if (i === 10) item._shouldInsertAd_ = true;
 					}
 				}
-				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 0) && items.value[0].id !== res[0].id) {
+				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 0) && items.value?.[0]?.id !== res?.[0]?.id) {
 					if (res.length > SECOND_FETCH_LIMIT) res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse().concat(items.value)

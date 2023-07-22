@@ -187,16 +187,16 @@ export default define(meta, paramDef, async (ps, user) => {
 	const found = [];
 	const take = Math.floor(ps.limit * 1.5);
 	let skip = 0;
-	try {
+	//try {
 		while (found.length < ps.limit) {
 			const notes = await query.take(take).skip(skip).getMany();
 			found.push(...(await Notes.packMany(notes, user)));
 			skip += take;
 			if (notes.length < take) break;
 		}
-	} catch (error) {
-		throw new ApiError(meta.errors.queryError);
-	}
+	//} catch (error) {
+		//throw new ApiError(meta.errors.queryError);
+	//}
 
 	if (found.length > ps.limit) {
 		found.length = ps.limit;

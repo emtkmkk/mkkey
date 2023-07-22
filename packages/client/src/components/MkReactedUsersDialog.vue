@@ -122,7 +122,7 @@ onMounted(() => {
 		noteId: props.noteId,
 	}).then((res) => {
 		reactions = Object.keys(res.reactions);
-		tab = reactions[0];
+		tab = reactionFilterMuted[0];
 		note = res;
 	});
 });

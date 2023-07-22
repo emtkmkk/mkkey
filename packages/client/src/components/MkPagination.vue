@@ -335,7 +335,7 @@ const fetchMore = async (): Promise<void> => {
 						: items.value.concat(res);
 					more.value = true;
 				} else {
-					if (items.value[0].id !== res[0].id){
+					if (items.value?.[0]?.id !== res?.[0]?.id){
 						items.value = props.pagination.reversed
 							? [...res].reverse().concat(items.value)
 							: items.value.concat(res);

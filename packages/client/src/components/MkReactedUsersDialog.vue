@@ -21,7 +21,7 @@
 				<template v-else>
 					<div :class="$style.tabs">
 						<button
-							v-for="reaction in reactionFilterMuted"
+							v-for="reaction in reactions"
 							:key="reaction"
 							:class="[
 								$style.tab,
@@ -89,7 +89,7 @@ let tab = $ref<string>();
 let reactions = ref<string[]>();
 let users = $ref();
 const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
-let reactionFilterMuted = computed(() => {
+/*let reactionFilterMuted = computed(() => {
 	//ミュートリアクションを除外
 	reactions.filter((x) => 
 		{
@@ -105,7 +105,7 @@ let reactionFilterMuted = computed(() => {
 			}));
 		}
 	);
-});
+});*/
 
 watch($$(tab), async () => {
 	const res = await os.api("notes/reactions", {
@@ -122,7 +122,7 @@ onMounted(() => {
 		noteId: props.noteId,
 	}).then((res) => {
 		reactions = Object.keys(res.reactions);
-		tab = reactionFilterMuted[0];
+		tab = reactions[0];
 		note = res;
 	});
 });

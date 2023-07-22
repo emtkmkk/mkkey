@@ -115,7 +115,7 @@ export default define(meta, paramDef, async (ps, user) => {
 				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteId" IS NOT NULL) AND (note."userHost" IS NULL) AND (renote."userId" IN (${followingQuery.getQuery()})) AND (renote."fileIds" != '{}') AND (renote."userHost" IS NULL) AND (renote."renoteCount" > :minrtCount5)) AND (note."userId" != renote."userId") AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE ((note."userId" IN (${followingQuery.getQuery()})) AND (note."userHost" IS NULL) AND (note."userId" != renote."userId")) GROUP BY note."renoteId") temp))`, { minrtCount5: DynamicRTCount5 });
 		}))
 		.andWhere("(note.visibility = 'public')")
-		.andWhere("(note.channelId IS NULL)")
+		.andWhere(`(note."channelId" IS NULL)`)
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")

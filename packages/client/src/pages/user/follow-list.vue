@@ -2,6 +2,7 @@
 	<div>
 		<MkPagination
 			v-slot="{ items }"
+			v-if="!user.host || $i?.isAdmin"
 			ref="list"
 			:pagination="
 				type === 'following' ? followingPagination : followersPagination
@@ -27,6 +28,7 @@ import { computed } from "vue";
 import * as misskey from "calckey-js";
 import MkUserInfo from "@/components/MkUserInfo.vue";
 import MkPagination from "@/components/MkPagination.vue";
+import { $i } from "@/account";
 
 const props = defineProps<{
 	user: misskey.entities.User;

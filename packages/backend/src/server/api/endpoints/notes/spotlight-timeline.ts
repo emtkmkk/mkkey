@@ -108,11 +108,11 @@ export default define(meta, paramDef, async (ps, user) => {
 	)
 		.andWhere('note.id > :minId', { minId: genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 10))) })
 		.andWhere(new Brackets(qb => {
-			qb.where(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteCount" > :minrtCount1) AND (note.renote IS NULL))`, { minrtCount1: dynamicRTCount1 })
-				.orWhere(`((note."renoteCount" > :minrtCount2) AND (note."userHost" IS NULL) AND (note.renote IS NULL))`, { minrtCount2: dynamicRTCount2 })
-				.orWhere(`((note."renoteCount" > :minrtCount3) AND (note.renote IS NULL))`, { minrtCount3: dynamicRTCount3 })
-				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (renote."userId" NOT IN (${followingQuery.getQuery()})) AND (renote."renoteCount" > :minrtCount4)) AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE (note."userId" IN (${followingQuery.getQuery()})) GROUP BY note."renoteId") temp))`, { minrtCount4: dynamicRTCount4 })
-				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteId" IS NOT NULL) AND (note."userHost" IS NULL) AND (renote."userId" IN (${followingQuery.getQuery()})) AND (renote."fileIds" != '{}') AND (renote."userHost" IS NULL) AND (renote."renoteCount" > :minrtCount5)) AND (note."userId" != renote."userId") AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE ((note."userId" IN (${followingQuery.getQuery()})) AND (note."userHost" IS NULL) AND (note."userId" != renote."userId")) GROUP BY note."renoteId") temp))`, { minrtCount5: dynamicRTCount5 });
+			qb.where(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteCount" > ${dynamicRTCount1 ?? 5}) AND (note.renote IS NULL))`)
+				.orWhere(`((note."renoteCount" > ${dynamicRTCount2 ?? 10}) AND (note."userHost" IS NULL) AND (note.renote IS NULL))`)
+				.orWhere(`((note."renoteCount" > ${dynamicRTCount3 ?? 20}) AND (note.renote IS NULL))`)
+				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (renote."userId" NOT IN (${followingQuery.getQuery()})) AND (renote."renoteCount" > ${dynamicRTCount4 ?? 7})) AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE (note."userId" IN (${followingQuery.getQuery()})) GROUP BY note."renoteId") temp))`)
+				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteId" IS NOT NULL) AND (note."userHost" IS NULL) AND (renote."userId" IN (${followingQuery.getQuery()})) AND (renote."fileIds" != '{}') AND (renote."userHost" IS NULL) AND (renote."renoteCount" > ${dynamicRTCount5 ?? 2})) AND (note."userId" != renote."userId") AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE ((note."userId" IN (${followingQuery.getQuery()})) AND (note."userHost" IS NULL) AND (note."userId" != renote."userId")) GROUP BY note."renoteId") temp))`);
 		}))
 		.andWhere("(note.visibility = 'public')")
 		.andWhere(`(note."channelId" IS NULL)`)

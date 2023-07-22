@@ -106,7 +106,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.sinceDate,
 		ps.untilDate,
 	)
-		.andWhere('note.id > :minId', { minId: genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 10))) })
+		.andWhere(`note.id > ${genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 10))) ?? genId()}`)
 		.andWhere(new Brackets(qb => {
 			qb.where(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteCount" > ${dynamicRTCount1 ?? 5}) AND (note.renote IS NULL))`)
 				.orWhere(`((note."renoteCount" > ${dynamicRTCount2 ?? 10}) AND (note."userHost" IS NULL) AND (note.renote IS NULL))`)

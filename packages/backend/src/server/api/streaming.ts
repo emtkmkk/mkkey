@@ -59,13 +59,16 @@ export const initializeStreamingServer = (server: http.Server) => {
 			accessToken,
 			prepareStream,
 		);
-
+		
+		
 		const intervalId = user
 			? setInterval(() => {
+					const now = new Date()
+					now.setSeconds(now.getSeconds() - 150);
 					Users.update(user.id, {
 						lastActiveDate: new Date(),
 					});
-			  }, 1000 * 60 * 2.49)
+			  }, 1000 * 60 * 2.5)
 			: null;
 		if (user) {
 			Users.update(user.id, {

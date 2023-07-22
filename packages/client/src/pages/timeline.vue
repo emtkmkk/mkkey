@@ -329,8 +329,8 @@ const headerTabs = $computed(() => [
 		  ]
 		: [
 			{
-				key: "spotlight"
-				title: i18n.ts._timelines.showSpotlight
+				key: "spotlight",
+				title: i18n.ts._timelines.showSpotlight,
 				icon: "ph-diamonds-four ph-bold ph-lg",
 				iconOnly: true,
 			},

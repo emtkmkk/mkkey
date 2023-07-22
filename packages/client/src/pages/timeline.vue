@@ -120,8 +120,13 @@ if (isLocalTimelineAvailable) {
 	timelines.push("local");
 }
 
-if (isRecommendedTimelineAvailable) {
+if (isRecommendedTimelineAvailable && 
+    !defaultStore.state.showSpotlight
+	) {
 	timelines.push("recommended");
+}
+if (defaultStore.state.showSpotlight){
+	timelines.push("spotlight");
 }
 if (isGlobalTimelineAvailable) {
 	timelines.push("global");
@@ -203,7 +208,7 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 }
 
 function saveSrc(
-	newSrc: "home" | "local" | "recommended" | "social" | "global"
+	newSrc: "home" | "local" | "spotlight" | "recommended" | "social" | "global"
 ): void {
 	defaultStore.set("tl", {
 		...defaultStore.state.tl,
@@ -313,7 +318,7 @@ const headerTabs = $computed(() => [
 				},
 		  ]
 		: []), */
-	...(isRecommendedTimelineAvailable
+	...(isRecommendedTimelineAvailable &&     defaultStore.state.showSpotlight
 		? [
 				{
 					key: "recommended",
@@ -322,7 +327,14 @@ const headerTabs = $computed(() => [
 					iconOnly: true,
 				},
 		  ]
-		: []),
+		: [
+			{
+				key: "spotlight"
+				title: i18n.ts._timelines.showSpotlight
+				icon: "ph-diamonds-four ph-bold ph-lg",
+				iconOnly: true,
+			},
+		]),
 	...(isGlobalTimelineAvailable
 		? [
 				{
@@ -348,6 +360,8 @@ definePageMetadata(
 				? "ph-handshake ph-bold ph-lg"
 				: src === "recommended"
 				? "ph-images-square ph-bold ph-lg"
+				: src === "spotlight"
+				? "ph-diamonds-four ph-bold ph-lg"
 				: src === "global"
 				? "ph-planet ph-bold ph-lg"
 				: src === "home" &&

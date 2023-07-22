@@ -76,22 +76,22 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-	let DynamicRTCount1 = 10;
-	let DynamicRTCount2 = 40;
-	let DynamicRTCount3 = 60;
-	let DynamicRTCount4 = 15;
-	let DynamicRTCount5 = 2;
+	let dynamicRTCount1 = 10;
+	let dynamicRTCount2 = 40;
+	let dynamicRTCount3 = 60;
+	let dynamicRTCount4 = 15;
+	let dynamicRTCount5 = 2;
 
 
 	if (user.followingCount < 50) {
-		DynamicRTCount1 = 5;
-		DynamicRTCount2 = 10;
-		DynamicRTCount3 = 20;
-		DynamicRTCount4 = 7;
+		dynamicRTCount1 = 5;
+		dynamicRTCount2 = 10;
+		dynamicRTCount3 = 20;
+		dynamicRTCount4 = 7;
 	} else if (user.followingCount < 500) {
-		DynamicRTCount2 = 20;
-		DynamicRTCount3 = 30;
-		DynamicRTCount4 = 10;
+		dynamicRTCount2 = 20;
+		dynamicRTCount3 = 30;
+		dynamicRTCount4 = 10;
 	}
 
 	const followingQuery = Followings.createQueryBuilder("following")
@@ -108,11 +108,11 @@ export default define(meta, paramDef, async (ps, user) => {
 	)
 		.andWhere('note.id > :minId', { minId: genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 10))) })
 		.andWhere(new Brackets(qb => {
-			qb.where(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteCount" > :minrtCount1) AND (note.renote IS NULL))`, { minrtCount1: DynamicRTCount1 })
-				.orWhere(`((note."renoteCount" > :minrtCount2) AND (note."userHost" IS NULL) AND (note.renote IS NULL))`, { minrtCount2: DynamicRTCount2 })
-				.orWhere(`((note."renoteCount" > :minrtCount3) AND (note.renote IS NULL))`, { minrtCount3: DynamicRTCount3 })
-				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (renote."userId" NOT IN (${followingQuery.getQuery()})) AND (renote."renoteCount" > :minrtCount4)) AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE (note."userId" IN (${followingQuery.getQuery()})) GROUP BY note."renoteId") temp))`, { minrtCount4: DynamicRTCount4 })
-				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteId" IS NOT NULL) AND (note."userHost" IS NULL) AND (renote."userId" IN (${followingQuery.getQuery()})) AND (renote."fileIds" != '{}') AND (renote."userHost" IS NULL) AND (renote."renoteCount" > :minrtCount5)) AND (note."userId" != renote."userId") AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE ((note."userId" IN (${followingQuery.getQuery()})) AND (note."userHost" IS NULL) AND (note."userId" != renote."userId")) GROUP BY note."renoteId") temp))`, { minrtCount5: DynamicRTCount5 });
+			qb.where(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteCount" > :minrtCount1) AND (note.renote IS NULL))`, { minrtCount1: dynamicRTCount1 })
+				.orWhere(`((note."renoteCount" > :minrtCount2) AND (note."userHost" IS NULL) AND (note.renote IS NULL))`, { minrtCount2: dynamicRTCount2 })
+				.orWhere(`((note."renoteCount" > :minrtCount3) AND (note.renote IS NULL))`, { minrtCount3: dynamicRTCount3 })
+				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (renote."userId" NOT IN (${followingQuery.getQuery()})) AND (renote."renoteCount" > :minrtCount4)) AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE (note."userId" IN (${followingQuery.getQuery()})) GROUP BY note."renoteId") temp))`, { minrtCount4: dynamicRTCount4 })
+				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteId" IS NOT NULL) AND (note."userHost" IS NULL) AND (renote."userId" IN (${followingQuery.getQuery()})) AND (renote."fileIds" != '{}') AND (renote."userHost" IS NULL) AND (renote."renoteCount" > :minrtCount5)) AND (note."userId" != renote."userId") AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE ((note."userId" IN (${followingQuery.getQuery()})) AND (note."userHost" IS NULL) AND (note."userId" != renote."userId")) GROUP BY note."renoteId") temp))`, { minrtCount5: dynamicRTCount5 });
 		}))
 		.andWhere("(note.visibility = 'public')")
 		.andWhere(`(note."channelId" IS NULL)`)

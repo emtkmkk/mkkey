@@ -10,7 +10,7 @@
 		<template #header>
 			<i v-if="column.tl === 'home'" class="ph-house ph-bold ph-lg"></i>
 			<i
-				v-else-if="column.tl === 'local'"
+				v-else-if="column.tl === 'local' || column.tl === 'spotlight'"
 				class="ph-chats-circle ph-bold ph-lg"
 			></i>
 			<i
@@ -94,6 +94,10 @@ async function setType() {
 			{
 				value: "local" as const,
 				text: i18n.ts._timelines.local,
+			},
+			{
+				value: "spotlight" as const,
+				text: i18n.ts._timelines.spotlight,
 			},
 			{
 				value: "recommended" as const,

@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import * as misskey from "calckey-js";
 import MkModalWindow from "@/components/MkModalWindow.vue";
 import MkReactionIcon from "@/components/MkReactionIcon.vue";
@@ -86,10 +86,10 @@ const dialog = $shallowRef<InstanceType<typeof MkModalWindow>>();
 
 let note = $ref<misskey.entities.Note>();
 let tab = $ref<string>();
-let reactions = $ref<string[]>();
+let reactions = ref<string[]>();
 let users = $ref();
 const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
-let reactionFilterMuted = $computed(() => {
+let reactionFilterMuted = computed(() => {
 	//ミュートリアクションを除外
 	reactions.filter((x) => 
 		{
@@ -122,7 +122,7 @@ onMounted(() => {
 		noteId: props.noteId,
 	}).then((res) => {
 		reactions = Object.keys(res.reactions);
-		tab = reactionFilterMuted?.[0];
+		tab = reactionFilterMuted[0];
 		note = res;
 	});
 });

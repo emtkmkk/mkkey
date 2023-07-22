@@ -217,6 +217,20 @@ export default class Connection {
 					const client = getClient(this.host, this.accessToken);
 					const tl = await client.getPublicTimeline();
 					for (const t of tl.data) forSubscribe.push(t.id);
+				} else if (simpleObj.stream === "spotlight") {
+					this.currentSubscribe.push(["spotlight"]);
+					objs = [
+						{
+							type: "connect",
+							body: {
+								channel: "spotlightTimeline",
+								id: simpleObj.stream,
+							},
+						},
+					];
+					const client = getClient(this.host, this.accessToken);
+					const tl = await client.getSpotlightTimeline();
+					for (const t of tl.data) forSubscribe.push(t.id);
 				} else if (simpleObj.stream === "list") {
 					this.currentSubscribe.push(["list", simpleObj.list]);
 					objs = [

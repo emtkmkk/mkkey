@@ -435,7 +435,7 @@ export default async (
 		// リモートユーザまたはbotの投稿時、ユーザの最終更新時刻を更新
 		// 2時間前以上の場合は更新しない
 		// TODO : 更新した時に時刻が戻る可能性あり
-		if ((user.onlineStatus === "half-online" || Users.isRemoteUser(user) || user.isBot) && (new Date().valueOf() - data.createdAt.valueOf()) < 2 * 60 * 60 * 1000) {
+		if ((user.onlineStatus === "online" || user.onlineStatus === "half-online" || Users.isRemoteUser(user) || user.isBot) && (new Date().valueOf() - data.createdAt.valueOf()) < 2 * 60 * 60 * 1000) {
 			Users.update(user.id, {
 				lastActiveDate: data.createdAt,
 			});

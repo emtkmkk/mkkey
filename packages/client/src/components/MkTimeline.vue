@@ -98,6 +98,10 @@ if (props.src === "antenna") {
 	endpoint = "notes/global-timeline";
 	connection = stream.useChannel("globalTimeline");
 	connection.on("note", prepend);
+} else if (props.src === "spotlight") {
+	endpoint = "notes/spotlight-timeline";
+	connection = stream.useChannel("spotlightTimeline");
+	connection.on("note", prepend);
 } else if (props.src === "mentions") {
 	endpoint = "notes/mentions";
 	connection = stream.useChannel("main");

@@ -1,5 +1,5 @@
 <template>
-	<p v-if="note.cw != null" class="cw">
+	<p v-if="cwView != null" class="cw">
 		<MkA
 			v-if="!detailed && note.replyId"
 			:to="`/notes/${note.replyId}`"
@@ -22,9 +22,8 @@
 			<i class="ph-quotes ph-bold ph-lg"></i>
 		</MkA>
 		<Mfm
-			v-if="note.cw != ''"
 			class="text"
-			:text="note.cw"
+			:text="(note.cw ?? (":nsfw: " + i18n.ts.isSensitive))"
 			:author="note.user"
 			:i="$i"
 			:custom-emojis="note.emojis"
@@ -33,11 +32,11 @@
 	<div class="wrmlmaau">
 		<div
 			class="content"
-			:class="{ collapsed, isLong, showContent: note.cw && !showContent, disableAnim: disableMfm }"
+			:class="{ collapsed, isLong, showContent: cwView && !showContent, disableAnim: disableMfm }"
 		>
 			<XCwButton
 				ref="cwButton"
-				v-if="note.cw && !showContent"
+				v-if="cwView && !showContent"
 				v-model="showContent"
 				:note="note"
 				v-on:keydown="focusFooter"
@@ -52,7 +51,7 @@
 				<span v-if="note.deletedAt" style="opacity: 0.5"
 					>({{ i18n.ts.deleted }})</span
 				>
-				<template v-if="!note.cw">
+				<template v-if="!cwView">
 					<MkA
 						v-if="!detailed && note.replyId"
 						:to="`/notes/${note.replyId}`"
@@ -110,7 +109,7 @@
 					</div>
 				</template>
 				<div
-					v-if="note.cw && !showContent"
+					v-if="cwView && !showContent"
 					tabindex="0"
 					v-on:focus="cwButton?.focus()"
 				></div>
@@ -119,7 +118,7 @@
 				v-if="isLong"
 				v-model="collapsed"
 			></XShowMoreButton>
-			<XCwButton v-if="note.cw" v-model="showContent" :note="note" />
+			<XCwButton v-if="cwView" v-model="showContent" :note="note" />
 		</div>
 		<MkButton
 			v-if="hasMfm && defaultStore.state.animatedMfm"
@@ -175,8 +174,12 @@ const collapsed = $ref(props.note.cw == null && isLong);
 const urls = props.note.text
 	? extractUrlFromMfm(mfm.parse(props.note.text)).slice(0, 5)
 	: null;
+	
+const isSensitive = props.note.files && props.note.files.some((file) => file.isSensitive);
 
-let showContent = ref(!props.note.cw);
+const cwView = props.note.cw || (isSensitive && defaultStore.state.nsfw === "toCW");
+
+let showContent = ref(!cwView);
 
 watch(
 	showContent,

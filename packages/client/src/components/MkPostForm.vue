@@ -66,6 +66,7 @@
 				<button
 					v-if="(($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) && !$store.state.secondPostButton) || (!$store.state.channelSecondPostButton && isChannel) || visibility === 'specified'"
 					class="submit _buttonGradate"
+					:class="{ shortcutTarget: shortcutKeyValue === 1 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 1 }"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
 					@click="post"
@@ -1038,9 +1039,17 @@ function onKeydown(ev: KeyboardEvent) {
 	if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue === 1 &&
-		canPost
+		canPost &&
+		visibility !== 'specified'
 	)
 		postFirst();
+	if (
+		(ev.which === 10 || ev.which === 13) &&
+		postValue === 1 &&
+		canPost &&
+		visibility === 'specified'
+	)
+		post();
 	if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue === 2 &&

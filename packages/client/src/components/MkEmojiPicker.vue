@@ -601,7 +601,7 @@ let singleTapEl = undefined;
 
 watch(q, (nQ, oQ) => {
 	if (q.value.endsWith("*")) q.value = oQ;
-	if (q.value.endsWith("＠")) q.value = oQ + "@";
+	if (q.value.endsWith("＠")) q.value = oQ.replace("*","") + "@";
 	if (nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","") + "@";
 	/*
 	// computedにしたので恐らくコレはいらないはず

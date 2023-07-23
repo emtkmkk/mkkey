@@ -23,7 +23,7 @@
 		</MkA>
 		<Mfm
 			class="text"
-			:text="(note.cw ?? (":nsfw: " + i18n.ts.isSensitive))"
+			:text="(note.cw ?? (':nsfw: ' + i18n.ts.isSensitive))"
 			:author="note.user"
 			:i="$i"
 			:custom-emojis="note.emojis"

@@ -103,11 +103,11 @@ function checkMuteKeyword(
 		return !note.user ? undefined : note.user.host ? note.user.username + "@" + note.user.host === fromKeyword : note.user.username === fromKeyword;
 	}
 	if (keyword.startsWith("host:")) {
-		const hostKeyword = keyword.replace("host:", "") || "mkkey.net";
+		const hostKeyword = keyword.replace("host:", "");
 		return !note.user ? undefined : hostKeyword === "mkkey.net" ? !note.user.host : note.user.host === hostKeyword;
 	}
 	if (keyword.startsWith("fuzzyHost:")) {
-		const hostKeyword = keyword.replace("fuzzyHost:", "") || "mkkey.net";
+		const hostKeyword = keyword.replace("fuzzyHost:", "");
 		return !note.user ? undefined : ("mkkey.net".includes(hostKeyword) && !note.user.host) || note.user.host.includes(hostKeyword);
 	}
 	if (keyword.startsWith("username:")) {

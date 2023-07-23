@@ -4,6 +4,7 @@ import localTimeline from "./local-timeline.js";
 import hybridTimeline from "./hybrid-timeline.js";
 import recommendedTimeline from "./recommended-timeline.js";
 import globalTimeline from "./global-timeline.js";
+import spotlightTimeline from "./spotlight-timeline.js"
 import serverStats from "./server-stats.js";
 import queueStats from "./queue-stats.js";
 import userList from "./user-list.js";
@@ -22,6 +23,7 @@ export default {
 	recommendedTimeline,
 	hybridTimeline,
 	globalTimeline,
+	spotlightTimeline,
 	serverStats,
 	queueStats,
 	userList,

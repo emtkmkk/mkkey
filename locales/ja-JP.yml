@@ -1192,9 +1192,10 @@ _remoteEmojisFetchForPc:
   none: "取得しない (データ破棄)"
   always: "常に最新に"
 _nsfw:
-  respect: "閲覧注意のメディアは隠す"
-  ignore: "閲覧注意のメディアを隠さない"
-  force: "常にメディアを隠す"
+  respect: "センシティブメディアは隠す"
+  ignore: "センシティブメディアを隠さない"
+  force: "全てのメディアを隠す"
+  toCW: "NSFWがあれば投稿を折りたたむ"
 _mfm:
   play: "MFMを再生"
   stop: "MFMを停止"
@@ -1528,9 +1529,9 @@ _widgets:
     chooseList: "リストを選択"
 _cw:
   hide: "隠す"
-  show: "隠された文章を表示"
-  chars: "{count}文字"
-  files: "{count}ファイル"
+  show: "隠された内容を表示"
+  chars: "📝{count}"
+  files: "📎{count}"
 _poll:
   noOnlyOneChoice: "選択肢は最低2つ必要です"
   choiceN: "選択肢{n}"

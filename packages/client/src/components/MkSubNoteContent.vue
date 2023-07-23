@@ -22,6 +22,7 @@
 			<i class="ph-quotes ph-bold ph-lg"></i>
 		</MkA>
 		<Mfm
+		    v-if="cwView"
 			class="text"
 			:text="(note.cw ?? (':nsfw: ' + i18n.ts.isSensitive))"
 			:author="note.user"

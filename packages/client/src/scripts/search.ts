@@ -60,5 +60,5 @@ export async function search(channel?: string,user?: string) {
 		return;
 	}
 
-	mainRouter.push(`/search?q=${encodeURIComponent(q)}${channel ? `&channel=${encodeURIComponent(channel)}` : ""}${user ? `&user=${encodeURIComponent(user)}` : ""}`);
+	mainRouter.push(`/search?q=${encodeURIComponent(q.replaceAll(/[　\s]/g,"+"))}${channel ? `&channel=${encodeURIComponent(channel)}` : ""}${user ? `&user=${encodeURIComponent(user)}` : ""}`);
 }

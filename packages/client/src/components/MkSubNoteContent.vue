@@ -166,6 +166,7 @@ const emit = defineEmits<{
 }>();
 
 const cwButton = ref<HTMLElement>();
+const isSensitive = props.note.files && props.note.files.some((file) => file.isSensitive);
 const cwView = props.note.cw || (isSensitive && defaultStore.state.nsfw === "toCW");
 const isLong =
 	!props.detailedView &&
@@ -177,7 +178,6 @@ const urls = props.note.text
 	? extractUrlFromMfm(mfm.parse(props.note.text)).slice(0, 5)
 	: null;
 	
-const isSensitive = props.note.files && props.note.files.some((file) => file.isSensitive);
 
 let showContent = ref(!cwView);
 

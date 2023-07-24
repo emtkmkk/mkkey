@@ -138,7 +138,7 @@ function edit() {
 }
 
 function channelSearch() {
-	search({channel: channel?.id});
+	search(channel?.id,undefined);
 }
 
 const headerActions = $computed(() => [

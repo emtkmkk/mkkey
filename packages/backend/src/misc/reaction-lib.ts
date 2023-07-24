@@ -87,14 +87,14 @@ export async function toDbReaction(
 		});
 
 		if (emoji) return reacterHost ? `:${name}@${reacterHost}:` : `:${name}:`;
-		
+
 		// 無理ならリモートから （host情報がない場合、misskey.ioで試行してみる）
-		const host = (reacterHost && custom?.[2] === "mkkey.net" ? IsNull() : custom?.[2])|| "misskey.io";
+		const host = (reacterHost && custom?.[2] === "mkkey.net" ? IsNull() : custom?.[2]) || "misskey.io";
 		const emoji2 = await Emojis.findOneBy({
 			host,
 			name,
 		});
-											
+
 		if (emoji2) return `:${name}@${host}:`;
 	}
 

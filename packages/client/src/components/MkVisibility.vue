@@ -14,7 +14,6 @@
 			v-else-if="note.visibility === 'specified'"
 			ref="specified"
 			class="ph-envelope-simple-open ph-bold ph-lg"
-			v-tooltip="i18n.ts._visibility.specifiedTooltip"
 		></i>
 	</span>
 	<span v-if="note.localOnly && note.channelId" :class="$style.localOnly"

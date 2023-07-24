@@ -53,6 +53,14 @@
 					{{ i18n.ts.reflectMayTakeTime }}</template
 				></FormSwitch
 			>
+		
+			<FormSelect v-model="nsfw" class="_formBlock">
+				<template #label>{{ i18n.ts.nsfw }}</template>
+				<option value="respect">{{ i18n.ts._nsfw.respect }}</option>
+				<option value="ignore">{{ i18n.ts._nsfw.ignore }}</option>
+				<option value="force">{{ i18n.ts._nsfw.force }}</option>
+				<option value="toCW">{{ i18n.ts._nsfw.toCW }}</option>
+			</FormSelect>
 		</FormSection>
 
 		<FormSection>
@@ -363,14 +371,6 @@
 			<option value="keep">{{ i18n.ts._remoteEmojisFetch.keep }}</option>
 			<option value="none">{{ i18n.ts._remoteEmojisFetch.none }}</option>
 			<option value="always">{{ i18n.ts._remoteEmojisFetch.always }}</option>
-		</FormSelect>
-		
-		<FormSelect v-model="nsfw" class="_formBlock">
-			<template #label>{{ i18n.ts.nsfw }}</template>
-			<option value="respect">{{ i18n.ts._nsfw.respect }}</option>
-			<option value="ignore">{{ i18n.ts._nsfw.ignore }}</option>
-			<option value="force">{{ i18n.ts._nsfw.force }}</option>
-			<option value="toCW">{{ i18n.ts._nsfw.toCW }}</option>
 		</FormSelect>
 
 		<FormRange

@@ -64,6 +64,10 @@ let tab = $ref(props.page);
 let user = $ref<null | misskey.entities.UserDetailed>(null);
 let error = $ref(null);
 
+function userSearch() {
+	search({user: user?.id});
+}
+
 function fetchUser(): void {
 	if (props.acct == null) return;
 	user = null;
@@ -80,7 +84,17 @@ watch(() => props.acct, fetchUser, {
 	immediate: true,
 });
 
-const headerActions = $computed(() => []);
+const headerActions = $computed(() => [
+	...(user
+		? [
+				{
+					icon: "ph-magnifying-glass ph-bold ph-lg",
+					text: i18n.ts.search,
+					handler: userSearch,
+				},
+		  ]
+		: []),
+]);
 
 const headerTabs = $computed(() =>
 	user

@@ -112,6 +112,7 @@ import { useRouter } from "@/router";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { search } from "@/scripts/search";
 
 const router = useRouter();
 
@@ -136,7 +137,20 @@ function edit() {
 	router.push(`/channels/${channel?.id}/edit`);
 }
 
+function channelSearch() {
+	search({channel: channel?.id});
+}
+
 const headerActions = $computed(() => [
+	...(channel
+		? [
+				{
+					icon: "ph-magnifying-glass ph-bold ph-lg",
+					text: i18n.ts.search,
+					handler: channelSearch,
+				},
+		  ]
+		: []),
 	...(channel && channel?.userId === $i?.id
 		? [
 				{

@@ -28,7 +28,8 @@
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" :src="getInstanceIcon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="instanceFavicon" :src="instanceFavicon" aria-hidden="true" />
+		<img class="icon" v-if="instanceIcon" :src="instanceIcon" aria-hidden="true" />
 		<span class="name">{{ instance.name }}</span>
 	</div>
 </template>

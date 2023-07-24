@@ -1,5 +1,5 @@
 <template>
-	<div v-if="instance.disableRegistration" style="margin-bottom: 1rem">
+	<div v-if="instance.disableRegistration" style="white-space: pre-line; margin-bottom: 1rem">
 		<p>{{ i18n.ts.signupsDisabled }}</p>
 	</div>
 	<form

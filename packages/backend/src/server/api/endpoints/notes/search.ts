@@ -61,6 +61,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
+	let que = ps.query;
 	if (es == null && sonic == null) {
 		const query = makePaginationQuery(
 			Notes.createQueryBuilder("note"),
@@ -68,16 +69,51 @@ export default define(meta, paramDef, async (ps, me) => {
 			ps.untilId,
 		);
 
-		if (ps.userId) {
-			query.andWhere("note.userId = :userId", { userId: ps.userId });
-		} else if (ps.channelId) {
-			query.andWhere("note.channelId = :channelId", {
-				channelId: ps.channelId,
-			});
+		if (ps.userId || query.includes("user:")) {
+			let qUserId = ps.userId;
+			if (!qUserId) {
+				const match = /(^|\s)user:(\w{10})($|\s)/i.exec(que)
+				qUserId = match?.[1];
+				que = query.replace(/(^|\s)user:(\w{10})($|\s)/i,"")
+			}
+			if (qUserId){
+				query.andWhere("note.userId = :userId", { userId: qUserId });
+			}
+		} else if (ps.channelId || query.includes("channel:")) {
+			let qChannelId = ps.channelId;
+			if (!qChannelId) {
+				const match = /(^|\s)channel:(\w{10})($|\s)/i.exec(que)
+				qChannelId = match?.[1];
+				que = query.replace(/(^|\s)channel:(\w{10})($|\s)/i,"")
+			}
+			if (qChannelId){
+				query.andWhere("note.channelId = :channelId", {
+					channelId: qChannelId,
+				});
+			}
+		} else if (ps.host || query.includes("host:")) {
+			let qHost = ps.host;
+			if (!qHost) {
+				const match = /(^|\s)host:(\S+)($|\s)/i.exec(que)
+				qHost = match?.[1];
+				que = query.replace(/(^|\s)host:(\S+)($|\s)/i,"")
+			}
+			if (qHost){
+				query.andWhere("note.user.host = :host", {
+					host: qHost,
+				});
+			}
 		}
+		
+		if (que === "") return [];
+		
+		const words = que.split(" ");
+		
+		words.forEach((x) => {
+			query.andWhere("note.text ILIKE :q", { q: `%${x}%` })
+		});
 
 		query
-			.andWhere("note.text ILIKE :q", { q: `%${ps.query}%` })
 			.innerJoinAndSelect("note.user", "user")
 			.leftJoinAndSelect("user.avatar", "avatar")
 			.leftJoinAndSelect("user.banner", "banner")

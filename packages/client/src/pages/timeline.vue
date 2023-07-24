@@ -331,7 +331,7 @@ const headerTabs = $computed(() => [
 			{
 				key: "spotlight",
 				title: i18n.ts._timelines.spotlight,
-				icon: "ph-diamonds-four ph-bold ph-lg",
+				icon: "ph-star-four ph-bold ph-lg",
 				iconOnly: true,
 			},
 		]),
@@ -361,7 +361,7 @@ definePageMetadata(
 				: src === "recommended"
 				? "ph-images-square ph-bold ph-lg"
 				: src === "spotlight"
-				? "ph-diamonds-four ph-bold ph-lg"
+				? "ph-star-four ph-bold ph-lg"
 				: src === "global"
 				? "ph-planet ph-bold ph-lg"
 				: src === "home" &&

@@ -69,7 +69,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			ps.untilId,
 		);
 
-		if (ps.userId || query.includes("user:")) {
+		if (ps.userId || que.includes("user:")) {
 			let qUserId = ps.userId;
 			if (!qUserId) {
 				const match = /(^|\s)user:(\w{10})($|\s)/i.exec(que)
@@ -79,7 +79,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (qUserId){
 				query.andWhere("note.userId = :userId", { userId: qUserId });
 			}
-		} else if (ps.channelId || query.includes("channel:")) {
+		} else if (ps.channelId || que.includes("channel:")) {
 			let qChannelId = ps.channelId;
 			if (!qChannelId) {
 				const match = /(^|\s)channel:(\w{10})($|\s)/i.exec(que)
@@ -91,7 +91,7 @@ export default define(meta, paramDef, async (ps, me) => {
 					channelId: qChannelId,
 				});
 			}
-		} else if (ps.host || query.includes("host:")) {
+		} else if (ps.host || que.includes("host:")) {
 			let qHost = ps.host;
 			if (!qHost) {
 				const match = /(^|\s)host:(\S+)($|\s)/i.exec(que)

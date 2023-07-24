@@ -170,10 +170,10 @@ const isSensitive = props.note.files && props.note.files.some((file) => file.isS
 const cwView = props.note.cw || (isSensitive && defaultStore.state.nsfw === "toCW");
 const isLong =
 	!props.detailedView &&
-	cwView &&
+	!cwView &&
 	props.note.text != null &&
 	(props.note.text.split("\n").length > 9 || props.note.text.length > 500);
-const collapsed = $ref(cwView && isLong);
+const collapsed = $ref(!cwView && isLong);
 const urls = props.note.text
 	? extractUrlFromMfm(mfm.parse(props.note.text)).slice(0, 5)
 	: null;

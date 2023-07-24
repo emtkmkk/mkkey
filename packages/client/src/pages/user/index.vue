@@ -66,7 +66,7 @@ let user = $ref<null | misskey.entities.UserDetailed>(null);
 let error = $ref(null);
 
 function userSearch() {
-	search({user: user?.id});
+	search(undefined,user?.id);
 }
 
 function fetchUser(): void {

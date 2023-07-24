@@ -10,8 +10,12 @@
 		<template #header>
 			<i v-if="column.tl === 'home'" class="ph-house ph-bold ph-lg"></i>
 			<i
-				v-else-if="column.tl === 'local' || column.tl === 'spotlight'"
+				v-else-if="column.tl === 'local'"
 				class="ph-chats-circle ph-bold ph-lg"
+			></i>
+			<i
+				v-else-if="column.tl === 'spotlight'"
+				class="ph-star-four ph-bold ph-lg"
 			></i>
 			<i
 				v-else-if="column.tl === 'social'"
@@ -92,6 +96,10 @@ async function setType() {
 				text: i18n.ts._timelines.home,
 			},
 			{
+				value: "social" as const,
+				text: i18n.ts._timelines.social,
+			},
+			{
 				value: "local" as const,
 				text: i18n.ts._timelines.local,
 			},
@@ -102,10 +110,6 @@ async function setType() {
 			{
 				value: "recommended" as const,
 				text: i18n.ts._timelines.recommended,
-			},
-			{
-				value: "social" as const,
-				text: i18n.ts._timelines.social,
 			},
 			{
 				value: "global" as const,

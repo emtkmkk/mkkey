@@ -2,7 +2,7 @@ import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { mainRouter } from "@/router";
 
-export async function search() {
+export async function search(channel?: string,user?: string) {
 	const { canceled, result: query } = await os.inputText({
 		title: i18n.ts.search,
 	});
@@ -60,5 +60,5 @@ export async function search() {
 		return;
 	}
 
-	mainRouter.push(`/search?q=${encodeURIComponent(q)}`);
+	mainRouter.push(`/search?q=${encodeURIComponent(q)}${channel ? `&channel=${encodeURIComponent(channel)}` : ""}${user ? `&user=${encodeURIComponent(user)}` : ""}`);
 }

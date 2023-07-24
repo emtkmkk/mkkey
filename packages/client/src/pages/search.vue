@@ -50,6 +50,7 @@ import "swiper/scss/virtual";
 const props = defineProps<{
 	query: string;
 	channel?: string;
+	user?: string;
 }>();
 
 const notesPagination = {
@@ -58,6 +59,7 @@ const notesPagination = {
 	params: computed(() => ({
 		query: props.query,
 		channelId: props.channel,
+		userId: props.user,
 	})),
 };
 

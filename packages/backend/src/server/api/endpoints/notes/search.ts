@@ -110,7 +110,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		const queWords = que.replaceAll(/\s/g,"+").split("+");
 		
 		queWords.forEach((x) => {
-			query.andWhere("note.text ILIKE '%${x}%'");
+			query.andWhere(`note.text ILIKE '%${x}%'`);
 		});
 
 		query

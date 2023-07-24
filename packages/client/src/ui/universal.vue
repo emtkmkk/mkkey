@@ -106,7 +106,7 @@
 		</div>
 
 		<button
-			v-if="isMobile && mainRouter.currentRoute.value.name === 'index' || ($store.state.alwaysPostButton && mainRouter.currentRoute.value.name !== 'messaging')"
+			v-if="isMobile && mainRouter.currentRoute.value.name === 'index' || ($store.state.alwaysPostButton && mainRouter.currentRoute.value.name !== 'messaging' && !mainRouter.currentRoute.value.path.includes("messaging") && !mainRouter.currentRoute.value.path.includes("channels"))"
 			ref="postButton"
 			class="postButton button post _button"
 			@click="os.post()"

@@ -6,7 +6,8 @@
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" :src="getInstanceIcon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="instanceFavicon" :src="instanceFavicon" aria-hidden="true" />
+		<img class="icon" v-if="instanceIcon" :src="instanceIcon" aria-hidden="true" />
 		<span class="name">{{ (instance.softwareVersion || '???') }}</span>
 	</div>
 	<div
@@ -16,7 +17,8 @@
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" :src="getInstanceIcon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="instanceFavicon" :src="instanceFavicon" aria-hidden="true" />
+		<img class="icon" v-if="instanceIcon" :src="instanceIcon" aria-hidden="true" />
 		<span class="name">{{ capitalize((instance.softwareName || '???')) + '/' + (instance.softwareVersion || '???') }}</span>
 	</div>
 	<div
@@ -65,6 +67,12 @@ const instance = props.instance ?? {
 const capitalize = (s: string) => s && s[0].toUpperCase() + s.slice(1);
 
 const computedStyle = getComputedStyle(document.documentElement);
+const instanceIcon = $computed(() => {
+	getInstanceIcon(instance)
+})
+const instanceFavicon = $computed(() => {
+	getInstanceFavicon(instance)
+})
 const themeColor =
 	instance.themeColor ?? computedStyle.getPropertyValue("--bg");
 
@@ -72,18 +80,14 @@ const bg = {
 	background: `linear-gradient(90deg, ${themeColor}, ${themeColor}55)`,
 };
 
-function getInstanceIcon(instance): string {
+function getInstanceFavicon(instance): string {
 	return (
-		getProxiedImageUrlNullable(instance.faviconUrl, "preview") ??
-		getProxiedImageUrlNullable(instance.iconUrl, "preview") ??
-		"/client-assets/dummy.png"
+		getProxiedImageUrlNullable(instance.faviconUrl, "preview")
 	);
 }
-function getInstanceIconAnother(instance): string {
+function getInstanceIcon(instance): string {
 	return (
-		getProxiedImageUrlNullable(instance.iconUrl, "preview") ??
-		getProxiedImageUrlNullable(instance.faviconUrl, "preview") ??
-		"/client-assets/dummy.png"
+		getProxiedImageUrlNullable(instance.iconUrl, "preview")
 	);
 }
 </script>

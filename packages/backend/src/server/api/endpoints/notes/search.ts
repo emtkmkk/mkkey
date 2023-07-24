@@ -74,7 +74,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (!qUserId) {
 				const match = /(^|\s)user:(\w{10})($|\s)/i.exec(que)
 				qUserId = match?.[1];
-				que = query.replace(/(^|\s)user:(\w{10})($|\s)/i,"")
+				que = que.replace(/(^|\s)user:(\w{10})($|\s)/i,"")
 			}
 			if (qUserId){
 				query.andWhere("note.userId = :userId", { userId: qUserId });
@@ -84,7 +84,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (!qChannelId) {
 				const match = /(^|\s)channel:(\w{10})($|\s)/i.exec(que)
 				qChannelId = match?.[1];
-				que = query.replace(/(^|\s)channel:(\w{10})($|\s)/i,"")
+				que = que.replace(/(^|\s)channel:(\w{10})($|\s)/i,"")
 			}
 			if (qChannelId){
 				query.andWhere("note.channelId = :channelId", {
@@ -96,7 +96,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (!qHost) {
 				const match = /(^|\s)host:(\S+)($|\s)/i.exec(que)
 				qHost = match?.[1];
-				que = query.replace(/(^|\s)host:(\S+)($|\s)/i,"")
+				que = que.replace(/(^|\s)host:(\S+)($|\s)/i,"")
 			}
 			if (qHost){
 				query.andWhere("note.user.host = :host", {

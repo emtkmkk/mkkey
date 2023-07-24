@@ -6,8 +6,8 @@
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" v-if="instanceFavicon" :src="instanceFavicon" aria-hidden="true" />
-		<img class="icon" v-if="instanceIcon" :src="instanceIcon" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceFavicon(instance)" :src="getInstanceFavicon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceIcon(instance)" :src="getInstanceIcon(instance)" aria-hidden="true" />
 		<span class="name">{{ (instance.softwareVersion || '???') }}</span>
 	</div>
 	<div
@@ -17,8 +17,8 @@
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" v-if="instanceFavicon" :src="instanceFavicon" aria-hidden="true" />
-		<img class="icon" v-if="instanceIcon" :src="instanceIcon" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceFavicon(instance)" :src="getInstanceFavicon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceIcon(instance)" :src="getInstanceIcon(instance)" aria-hidden="true" />
 		<span class="name">{{ capitalize((instance.softwareName || '???')) + '/' + (instance.softwareVersion || '???') }}</span>
 	</div>
 	<div
@@ -28,8 +28,8 @@
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" v-if="instanceFavicon" :src="instanceFavicon" aria-hidden="true" />
-		<img class="icon" v-if="instanceIcon" :src="instanceIcon" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceFavicon(instance)" :src="getInstanceFavicon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceIcon(instance)" :src="getInstanceIcon(instance)" aria-hidden="true" />
 		<span class="name">{{ instance.name }}</span>
 	</div>
 </template>
@@ -70,12 +70,6 @@ const instance = props.instance ?? {
 const capitalize = (s: string) => s && s[0].toUpperCase() + s.slice(1);
 
 const computedStyle = getComputedStyle(document.documentElement);
-const instanceIcon = $computed(() => {
-	getInstanceIcon(instance)
-})
-const instanceFavicon = $computed(() => {
-	getInstanceFavicon(instance)
-})
 const themeColor =
 	instance.themeColor ?? computedStyle.getPropertyValue("--bg");
 

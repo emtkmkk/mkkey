@@ -73,7 +73,7 @@ const url = computed(() => {
 	}
 });
 const alt = computed(() =>
-	customEmoji.value ? `:${customEmoji.value.name}${hostmatch?.[2] ? "@" + hostmatch?.[2] : (noteHost ?? "")}:` : char.value
+	customEmoji.value ? `:${customEmoji.value.name}${hostmatch?.[2] ? "@" + hostmatch?.[2] : (props.noteHost ?? "")}:` : char.value
 );
 </script>
 

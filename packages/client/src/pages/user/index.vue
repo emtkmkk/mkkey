@@ -41,6 +41,7 @@ import { useRouter } from "@/router";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
 import { $i } from "@/account";
+import { search } from "@/scripts/search";
 
 const XHome = defineAsyncComponent(() => import("./home.vue"));
 const XReactions = defineAsyncComponent(() => import("./reactions.vue"));

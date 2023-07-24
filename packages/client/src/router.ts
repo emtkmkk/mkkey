@@ -324,6 +324,7 @@ export const routes = [
 		query: {
 			q: "query",
 			channel: "channel",
+			user: "user",
 		},
 	},
 	{

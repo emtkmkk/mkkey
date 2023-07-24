@@ -72,9 +72,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		if (ps.userId || que.includes("user:")) {
 			let qUserId = ps.userId;
 			if (!qUserId) {
-				const match = /(^|\s)user:(\w{10})($|\s)/i.exec(que)
+				const match = /(^|[\s\+])user:(\w{10})($|[\s\+])/i.exec(que)
 				qUserId = match?.[1];
-				que = que.replace(/(^|\s)user:(\w{10})($|\s)/i,"")
+				que = que.replace(/(^|[\s\+])user:(\w{10})($|[\s\+])/i,"")
 			}
 			if (qUserId){
 				query.andWhere("note.userId = :userId", { userId: qUserId });
@@ -82,9 +82,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		} else if (ps.channelId || que.includes("channel:")) {
 			let qChannelId = ps.channelId;
 			if (!qChannelId) {
-				const match = /(^|\s)channel:(\w{10})($|\s)/i.exec(que)
+				const match = /(^|[\s\+])channel:(\w{10})($|[\s\+])/i.exec(que)
 				qChannelId = match?.[1];
-				que = que.replace(/(^|\s)channel:(\w{10})($|\s)/i,"")
+				que = que.replace(/(^|[\s\+])channel:(\w{10})($|[\s\+])/i,"")
 			}
 			if (qChannelId){
 				query.andWhere("note.channelId = :channelId", {
@@ -94,9 +94,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		} else if (ps.host || que.includes("host:")) {
 			let qHost = ps.host;
 			if (!qHost) {
-				const match = /(^|\s)host:(\S+)($|\s)/i.exec(que)
+				const match = /(^|[\s\+])host:(\S+)($|[\s\+])/i.exec(que)
 				qHost = match?.[1];
-				que = que.replace(/(^|\s)host:(\S+)($|\s)/i,"")
+				que = que.replace(/(^|[\s\+])host:(\S+)($|[\s\+])/i,"")
 			}
 			if (qHost){
 				query.andWhere("note.user.host = :host", {
@@ -107,7 +107,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		
 		if (que === "") return [];
 		
-		const queWords = que.replaceAll(/\s/g," ").split(" ");
+		const queWords = que.replaceAll(/\s/g,"+").split("+");
 		
 		queWords.forEach((x) => {
 			query.andWhere("note.text ILIKE :q", { q: `%${x}%` });

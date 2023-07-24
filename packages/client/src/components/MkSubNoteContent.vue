@@ -24,7 +24,7 @@
 		<Mfm
 		    v-if="cwView"
 			class="text"
-			:text="(note.cw ?? ('センシティブメディア'))"
+			:text="(note.cw ?? ('★センシティブメディアCW'))"
 			:author="note.user"
 			:i="$i"
 			:custom-emojis="note.emojis"
@@ -166,19 +166,18 @@ const emit = defineEmits<{
 }>();
 
 const cwButton = ref<HTMLElement>();
+const cwView = props.note.cw || (isSensitive && defaultStore.state.nsfw === "toCW");
 const isLong =
 	!props.detailedView &&
-	props.note.cw == null &&
+	cwView &&
 	props.note.text != null &&
 	(props.note.text.split("\n").length > 9 || props.note.text.length > 500);
-const collapsed = $ref(props.note.cw == null && isLong);
+const collapsed = $ref(cwView && isLong);
 const urls = props.note.text
 	? extractUrlFromMfm(mfm.parse(props.note.text)).slice(0, 5)
 	: null;
 	
 const isSensitive = props.note.files && props.note.files.some((file) => file.isSensitive);
-
-const cwView = props.note.cw || (isSensitive && defaultStore.state.nsfw === "toCW");
 
 let showContent = ref(!cwView);
 

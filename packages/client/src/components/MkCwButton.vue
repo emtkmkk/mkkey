@@ -40,7 +40,7 @@ const label = computed(() => {
 			: [],
 		props.note.poll != null ? [i18n.ts.poll] : [],
 		props.note.renote != null ? [i18n.ts.quoteAttached] : [],
-	] as string[][]).join(", ");
+	] as string[][]).join(" , ");
 });
 
 const toggle = () => {

@@ -42,6 +42,7 @@ import { defaultStore } from "@/store";
 const props = defineProps<{
 	instance?: {
 		faviconUrl?: string;
+		iconUrl?: string;
 		name: string;
 		themeColor?: string;
 		softwareName?: string;
@@ -53,7 +54,8 @@ let ticker = $ref<HTMLElement | null>(null);
 
 // if no instance data is given, this is for the local instance
 const instance = props.instance ?? {
-	faviconUrl: defaultStore.state.developerTicker ? Instance.iconUrl || Instance.faviconUrl || "/favicon.ico" : Instance.faviconUrl || Instance.iconUrl || "/favicon.ico",
+	faviconUrl: Instance.faviconUrl || "/favicon.ico"
+	iconUrl: Instance.iconUrl,
 	name: instanceName,
 	themeColor: (
 		document.querySelector(

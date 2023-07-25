@@ -57,6 +57,7 @@ deleteAndEditConfirm: "この投稿を削除してもう一度編集しますか
 addToList: "リストに追加"
 sendMessage: "メッセージを送信"
 copyUsername: "ユーザー名をコピー"
+copyUserUrl: "プロフURLをコピー"
 searchUser: "ユーザーを検索"
 reply: "返信"
 loadMore: "さらに読み込む"

@@ -23,7 +23,7 @@
 		</FormRadios>
 		
 		<FormRadios v-model="mobileThirdButton" class="_formBlock">
-			<template #label>{{ i18n.ts.mobileThirdButton }}</template>
+			<template #label>{{ i18n.ts.mobileThirdButton }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template></template>
 			<option value="reload">
 				{{ i18n.ts.reload }}
 			</option>

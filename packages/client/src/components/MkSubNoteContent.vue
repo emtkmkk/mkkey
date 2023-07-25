@@ -33,7 +33,7 @@
 	<div class="wrmlmaau">
 		<div
 			class="content"
-			:class="{ collapsed, isLong, showContent: cwView && !showContent, disableAnim: disableMfm, minimumCw: defaultStore.state.noteAllCw }"
+			:class="{ collapsed, isLong, showContent: cwView && !showContent, disableAnim: disableMfm, minimumCw: defaultStore.state.noteAllCw noblur: !cwDetermine }"
 		>
 			<XCwButton
 				ref="cwButton"
@@ -337,6 +337,11 @@ function focusFooter(ev) {
 				&.minimumCw {
 					> .body {
 						max-height: 2em;
+					}
+				}
+				&.noblur {
+					> .body {
+						filter: none;
 					}
 				}
 			}

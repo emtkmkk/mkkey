@@ -675,7 +675,11 @@ export const defaultStore = markRaw(
 		mobileThirdButton: {
 			where: 'account',
 			default: "reload",
-		}
+		},
+		noteAllCw: {
+			where: 'device',
+			default: false,
+		},
 	}),
 );
 

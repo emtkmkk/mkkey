@@ -426,7 +426,7 @@
 </template>
 
 <script lang="ts" setup>
-import { unref, defineAsyncComponent, watch } from "vue";
+import { computed, unref, defineAsyncComponent, watch } from "vue";
 import XDraggable from "vuedraggable";
 import FormInput from "@/components/form/input.vue";
 import FormSelect from "@/components/form/select.vue";
@@ -553,16 +553,16 @@ const remoteEmojisFetch = $computed(
 const doubleTapReaction = $computed(
 	defaultStore.makeGetterSetter("doubleTapReaction")
 );	
-const customEmojis = $computed(() => 
+const customEmojis = computed(() => 
 	instance.emojis
 );
-let allCustomEmojis = $computed(() => 
+let allCustomEmojis = computed(() => 
 	instance.allEmojis
 );
-const emojiStr = $computed(() => 
+const emojiStr = computed(() => 
 	unref(customEmojis) ? unref(customEmojis).map((x) => ":" + x.name + ":") : undefined
 );
-const remoteEmojiStr = $computed(() => 
+const remoteEmojiStr = computed(() => 
 	unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
 

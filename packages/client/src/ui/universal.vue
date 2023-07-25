@@ -80,7 +80,7 @@
 				v-if="tbitem"
 				class="button messaging _button"
 				@click="
-					navbarItemDef[tbitem].action ? navbarItemDef[tbitem].action : mainRouter.push('navbarItemDef[tbitem].to');
+					navbarItemDef[tbitem].action ? navbarItemDef[tbitem].action() : mainRouter.push('navbarItemDef[tbitem].to');
 					updateButtonState();
 				"
 			>

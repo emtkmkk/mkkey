@@ -130,10 +130,10 @@ watch(
 		backdrop-filter: var(--blur, blur(15px));
 		color: var(--accent);
 		font-size: 0.8em;
-		padding: 6px 8px;
+		padding: 12px 14px;
 		text-align: center;
-		top: 12px;
-		right: 12px;
+		top: 0px;
+		right: 0px;
 
 		> i {
 			display: block;

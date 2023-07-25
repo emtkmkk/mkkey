@@ -1487,6 +1487,7 @@ defineExpose({
 
 	&.asDrawer {
 		width: 100% !important;
+		padding: 12px 0 max(env(safe-area-inset-bottom, 0px), 12px) 0;
 		max-height: 90dvh;
 	&
 

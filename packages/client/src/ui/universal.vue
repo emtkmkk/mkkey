@@ -238,7 +238,7 @@ function updateButtonState(): void {
 		buttonAnimIndex.value = 1;
 		return;
 	}
-	if (tbitem?.to ? routerState.includes(navbarItemDef[tbitem].to) : false) {
+	if (navbarItemDef[tbitem]?.to ? routerState.includes(navbarItemDef[tbitem].to) : false) {
 		buttonAnimIndex.value = 2;
 		return;
 	}

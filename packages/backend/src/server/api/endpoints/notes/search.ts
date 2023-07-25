@@ -63,6 +63,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, me) => {
 	let que = ps.query;
 	if (es == null && sonic == null) {
+		let plusQueryCount = 0;
 		const query = makePaginationQuery(
 			Notes.createQueryBuilder("note"),
 			ps.sinceId,
@@ -73,7 +74,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			let qUserId = ps.userId;
 			if (!qUserId) {
 				const match = /(^|[\s\+])user:(\w{10})($|[\s\+])/i.exec(que)
-				qUserId = match?.[1];
+				qUserId = match?.[2];
 				que = que.replace(/(^|[\s\+])user:(\w{10})($|[\s\+])/i, "")
 			}
 			if (qUserId) {
@@ -83,7 +84,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			let qChannelId = ps.channelId;
 			if (!qChannelId) {
 				const match = /(^|[\s\+])channel:(\w{10})($|[\s\+])/i.exec(que)
-				qChannelId = match?.[1];
+				qChannelId = match?.[2];
 				que = que.replace(/(^|[\s\+])channel:(\w{10})($|[\s\+])/i, "")
 			}
 			if (qChannelId) {
@@ -95,10 +96,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			let qHost = ps.host;
 			if (!qHost) {
 				const match = /(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i.exec(que)
-				qHost = match?.[1];
+				qHost = match?.[2];
 				que = que.replace(/(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i, "")
 			}
 			if (qHost) {
+				plusQueryCount += 1
 				query.andWhere("note.user.host = :host", {
 					host: qHost,
 				});
@@ -107,10 +109,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			let qVisibility = ps.visibility;
 			if (!qVisibility) {
 				const match = /(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i.exec(que)
-				qVisibility = match?.[1];
+				qVisibility = match?.[2];
 				que = que.replace(/(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i, "")
 			}
 			if (qVisibility) {
+				plusQueryCount += 1
 				query.andWhere("note.visibility = :visibility", {
 					visibility: qVisibility,
 				});
@@ -119,10 +122,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			let qLocal = ps.local;
 			if (!qLocal) {
 				const match = /(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i.exec(que)
-				qLocal = ["true", "on", "yes", "only"].includes(match?.[1].toLowerCase());
+				qLocal = ["true", "on", "yes", "only"].includes(match?.[2].toLowerCase());
 				que = que.replace(/(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i, "")
 			}
 			if (qLocal) {
+				plusQueryCount += 1
 				query.andWhere("note.localOnly = :localOnly", {
 					localOnly: qLocal,
 				});
@@ -131,10 +135,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			let qScore = ps.score;
 			if (!qScore) {
 				const match = /(^|[\s\+])score:(\d+)($|[\s\+])/i.exec(que)
-				qScore = match?.[1];
+				qScore = match?.[2];
 				que = que.replace(/(^|[\s\+])score:(\d+)($|[\s\+])/i, "")
 			}
 			if (qScore) {
+				plusQueryCount += 1
 				query.andWhere("note.score > :score", {
 					score: qScore,
 				});
@@ -142,7 +147,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		}
 
 
-		if (que.replaceAll(/[\s\+]/g,"") === "") return [];
+		if (que.replaceAll(/[\s\+]/g,"") === "" && plusQueryCount === 0) return [];
 
 		const queWords = que.replaceAll(/\s/g, "+").split("+");
 
@@ -150,9 +155,12 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (x.startsWith("-")){
 				query.andWhere(`note.text NOT ILIKE '%${x.substring(1)}%'`);
 			} else {
+				plusQueryCount += 1
 				query.andWhere(`note.text ILIKE '%${x}%'`);
 			}
 		});
+		
+		if (plusQueryCount === 0) return [];
 
 		query
 			.innerJoinAndSelect("note.user", "user")

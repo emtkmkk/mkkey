@@ -49,12 +49,6 @@ export class UserProfile {
 		name: string;
 		value: string;
 	}[];
-	
-	@Column('varchar', {
-		length: 2048, nullable: true,
-		comment: 'fields values converted to keywords for search.',
-	})
-	public fieldsKeyword: string | null;
 
 	@Column('varchar', {
 		length: 32, nullable: true,

@@ -33,7 +33,7 @@
 	<div class="wrmlmaau">
 		<div
 			class="content"
-			:class="{ collapsed, isLong, showContent: cwView && !showContent, disableAnim: disableMfm, minimumCw: defaultStore.state.noteAllCw noblur: !cwDetermine }"
+			:class="{ collapsed, isLong, showContent: cwView && !showContent, disableAnim: disableMfm, minimumCw: defaultStore.state.noteAllCw, noblur: !cwDetermine }"
 		>
 			<XCwButton
 				ref="cwButton"

@@ -83,7 +83,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			  },
 	);
 
-	if (user == null) {
+	if (user == null || (user.host && !me?.isAdmin)) {
 		throw new ApiError(meta.errors.noSuchUser);
 	}
 

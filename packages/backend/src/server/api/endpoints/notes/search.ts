@@ -74,9 +74,9 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (!qUserId) {
 				const match = /(^|[\s\+])user:(\w{10})($|[\s\+])/i.exec(que)
 				qUserId = match?.[1];
-				que = que.replace(/(^|[\s\+])user:(\w{10})($|[\s\+])/i,"")
+				que = que.replace(/(^|[\s\+])user:(\w{10})($|[\s\+])/i, "")
 			}
-			if (qUserId){
+			if (qUserId) {
 				query.andWhere("note.userId = :userId", { userId: qUserId });
 			}
 		} else if (ps.channelId || que.includes("channel:")) {
@@ -84,9 +84,9 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (!qChannelId) {
 				const match = /(^|[\s\+])channel:(\w{10})($|[\s\+])/i.exec(que)
 				qChannelId = match?.[1];
-				que = que.replace(/(^|[\s\+])channel:(\w{10})($|[\s\+])/i,"")
+				que = que.replace(/(^|[\s\+])channel:(\w{10})($|[\s\+])/i, "")
 			}
-			if (qChannelId){
+			if (qChannelId) {
 				query.andWhere("note.channelId = :channelId", {
 					channelId: qChannelId,
 				});
@@ -94,23 +94,64 @@ export default define(meta, paramDef, async (ps, me) => {
 		} else if (ps.host || que.includes("host:")) {
 			let qHost = ps.host;
 			if (!qHost) {
-				const match = /(^|[\s\+])host:(\S+)($|[\s\+])/i.exec(que)
+				const match = /(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i.exec(que)
 				qHost = match?.[1];
-				que = que.replace(/(^|[\s\+])host:(\S+)($|[\s\+])/i,"")
+				que = que.replace(/(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i, "")
 			}
-			if (qHost){
+			if (qHost) {
 				query.andWhere("note.user.host = :host", {
 					host: qHost,
 				});
 			}
+		} else if (ps.visibility || que.includes("visibility:")) {
+			let qVisibility = ps.visibility;
+			if (!qVisibility) {
+				const match = /(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i.exec(que)
+				qVisibility = match?.[1];
+				que = que.replace(/(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i, "")
+			}
+			if (qVisibility) {
+				query.andWhere("note.visibility = :visibility", {
+					visibility: qVisibility,
+				});
+			}
+		} else if (ps.local || que.includes("local:")) {
+			let qLocal = ps.local;
+			if (!qLocal) {
+				const match = /(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i.exec(que)
+				qLocal = ["true", "on", "yes", "only"].includes(match?.[1].toLowerCase());
+				que = que.replace(/(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i, "")
+			}
+			if (qLocal) {
+				query.andWhere("note.localOnly = :localOnly", {
+					localOnly: qLocal,
+				});
+			}
+		} else if (ps.minScore || que.includes("score:")) {
+			let qScore = ps.score;
+			if (!qScore) {
+				const match = /(^|[\s\+])score:(\d+)($|[\s\+])/i.exec(que)
+				qScore = match?.[1];
+				que = que.replace(/(^|[\s\+])score:(\d+)($|[\s\+])/i, "")
+			}
+			if (qScore) {
+				query.andWhere("note.score > :score", {
+					score: qScore,
+				});
+			}
 		}
-		
-		if (que === "") return [];
-		
-		const queWords = que.replaceAll(/\s/g,"+").split("+");
-		
+
+
+		if (que.replaceAll(/[\s\+]/g,"") === "") return [];
+
+		const queWords = que.replaceAll(/\s/g, "+").split("+");
+
 		queWords.forEach((x) => {
-			query.andWhere(`note.text ILIKE '%${x}%'`);
+			if (x.startsWith("-")){
+				query.andWhere(`note.text NOT ILIKE '%${x.substring(1)}%'`);
+			} else {
+				query.andWhere(`note.text ILIKE '%${x}%'`);
+			}
 		});
 
 		query
@@ -210,37 +251,37 @@ export default define(meta, paramDef, async (ps, me) => {
 		const userQuery =
 			ps.userId != null
 				? [
-						{
-							term: {
-								userId: ps.userId,
-							},
+					{
+						term: {
+							userId: ps.userId,
 						},
-				  ]
+					},
+				]
 				: [];
 
 		const hostQuery =
 			ps.userId == null
 				? ps.host === null
 					? [
-							{
-								bool: {
-									must_not: {
-										exists: {
-											field: "userHost",
-										},
+						{
+							bool: {
+								must_not: {
+									exists: {
+										field: "userHost",
 									},
 								},
 							},
-					  ]
+						},
+					]
 					: ps.host !== undefined
-					? [
+						? [
 							{
 								term: {
 									userHost: ps.host,
 								},
 							},
-					  ]
-					: []
+						]
+						: []
 				: [];
 
 		const result = await es.search({

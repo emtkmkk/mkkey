@@ -170,7 +170,6 @@ import { navbarItemDef } from "@/navbar";
 import { i18n } from "@/i18n";
 import { $i } from "@/account";
 import { mainRouter } from "@/router";
-import { navbarItemDef } from "@/navbar";
 import {
 	provideMetadataReceiver,
 	setPageMetadata,

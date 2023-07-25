@@ -258,7 +258,7 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			icon: "ph-share-network ph-bold ph-lg",
 			text: i18n.ts.copyUserUrl,
 			action: () => {
-				copyToClipboard(`https://mkkey.net/@${user.username}@${user.host || host}`);
+				copyToClipboard(`https://mkkey.net/@${user.username}${user.host ? "@" + user.host : ""}`);
 			},
 		},
 		null,

@@ -24,7 +24,7 @@
 		<Mfm
 		    v-if="cwView"
 			class="text"
-			:text="(note.cw ?? ('★センシティブメディアCW'))"
+			:text="(note.cw ?? ('★センシティブメディア'))"
 			:author="note.user"
 			:i="$i"
 			:custom-emojis="note.emojis"

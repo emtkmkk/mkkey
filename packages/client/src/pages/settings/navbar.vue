@@ -114,6 +114,10 @@ watch(menuDisplay, async () => {
 	await reloadAsk();
 });
 
+watch(mobileThirdButton, async () => {
+	await reloadAsk();
+});
+
 const headerActions = $computed(() => []);
 
 const headerTabs = $computed(() => []);

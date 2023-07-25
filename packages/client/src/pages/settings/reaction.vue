@@ -598,7 +598,7 @@ function save() {
 function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[
-			reaction.includes("@") && !remoteEmojiStr?.includes(reaction) && emojiStr?.includes(reaction.replace(/@(\S+)$/,":")) ? {
+			reaction.includes("@") && !unref(remoteEmojiStr)?.includes(reaction) && unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/,":")) ? {
 				text: "ローカル絵文字に変換",
 				action: () => {
 					deleteReac(reaction);

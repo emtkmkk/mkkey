@@ -10,15 +10,15 @@ export function generateMutedNoteQuery(
 		.select("muted.noteId")
 		.where("muted.userId = :userId", { userId: me.id });
 		
-	const threadMutedQuery = NoteThreadMutings.createQueryBuilder("threadMuted")
+	/*const threadMutedQuery = NoteThreadMutings.createQueryBuilder("threadMuted")
 	.select("threadMuted.threadId")
-	.where("threadMuted.userId = :userId", { userId: me.id });
+	.where("threadMuted.userId = :userId", { userId: me.id });*/
 
 	q.andWhere(`note.id NOT IN (${mutedQuery.getQuery()})`);
 
 	q.setParameters(mutedQuery.getParameters());
 
-	q.andWhere(`(COALESCE(renote.id,"") NOT IN (${threadMutedQuery.getQuery()}))`);
+	//q.andWhere(`COALESCE(renote.id," ") NOT IN (${threadMutedQuery.getQuery()})`);
 	
-	q.setParameters(threadMutedQuery.getParameters());
+	//q.setParameters(threadMutedQuery.getParameters());
 }

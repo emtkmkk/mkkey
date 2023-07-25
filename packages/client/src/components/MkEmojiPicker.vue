@@ -904,7 +904,7 @@ function chosen(emoji: any, ev?: MouseEvent) {
 		((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);
 	if (el) {
 		//誤爆防止ダブルタップリアクション機能
-		if (props.asReactionPicker && defaultStore.state.doubleTapReaction){
+		if (props.asReactionPicker && showPinned && defaultStore.state.doubleTapReaction){
 			if (!singleTapTime || singleTapEmoji !== emoji || (Date.now() - singleTapTime) > 2 * 1000){
 				singleTapTime = Date.now();
 				singleTapEmoji = emoji;

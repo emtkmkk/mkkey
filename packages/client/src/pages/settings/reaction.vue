@@ -552,6 +552,18 @@ const remoteEmojisFetch = $computed(
 );
 const doubleTapReaction = $computed(
 	defaultStore.makeGetterSetter("doubleTapReaction")
+);	
+const customEmojis = computed(() => 
+	instance.emojis
+);
+let allCustomEmojis = computed(() => 
+	instance.allEmojis
+);
+const emojiStr = computed(() => 
+	unref(customEmojis) ? unref(customEmojis).map((x) => ":" + x.name + ":") : undefined
+);
+const remoteEmojiStr = computed(() => 
+	unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
 
 const editPage = $computed(() => {
@@ -585,6 +597,13 @@ function save() {
 function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[
+			reaction.includes("@") && !remoteEmojiStr.includes(reaction) && emojiStr.includes(reaction.replace(/@(\S+)$/,":")) ? {
+				text: "ローカル絵文字に変換",
+				action: () => {
+					deleteReac(reaction);
+					reactions.push(reaction.replace(/@(\S+)$/,":"));
+				},
+			} : undefined,
 			tab !== 'reactions' && !reactions.includes(reaction) ? {
 				text: (reactionsFolderName || "1")?.slice(0,6) + (reactionsFolderName?.length > 6 ? "…" : "") + "に移動",
 				action: () => {

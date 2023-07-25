@@ -61,6 +61,9 @@
 				<option value="force">{{ i18n.ts._nsfw.force }}</option>
 				<option value="toCW">{{ i18n.ts._nsfw.toCW }}</option>
 			</FormSelect>
+			<FormSwitch v-model="noteAllCw" class="_formBlock">{{
+				i18n.ts.noteAllCw
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 		</FormSection>
 
 		<FormSection>
@@ -611,6 +614,9 @@ let showSelfRenoteToHome = $ref($i.showSelfRenoteToHome);
 let showTimelineReplies = $ref($i.showTimelineReplies);
 const showMkkeySettingTips = computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
+);
+const noteAllCw = $computed(
+	defaultStore.makeGetterSetter("noteAllCw")
 );
 
 function save() {

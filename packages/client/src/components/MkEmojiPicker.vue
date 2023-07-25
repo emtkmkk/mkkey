@@ -632,7 +632,7 @@ watch(q, (nQ, oQ) => {
 	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/[:@]/g, "")));
 	
 	const searchCustom = () => {
-		const max = 64;
+		const max = 99;
 		const emojis = unref(customEmojis);
 		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
@@ -770,7 +770,7 @@ watch(q, (nQ, oQ) => {
 	};
 	
 	const searchUnicode = () => {
-		const max = 20;
+		const max = 30;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
 		
@@ -831,7 +831,7 @@ watch(q, (nQ, oQ) => {
 	};
 	
 	const searchUnicodeStart = () => {
-		const max = 40;
+		const max = 45;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
 		const beforeSort = new Set();

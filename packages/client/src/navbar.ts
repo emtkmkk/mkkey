@@ -1,5 +1,5 @@
 import { computed, ref, reactive } from "vue";
-import { $i } from "./account";
+import { $i, openAccountMenu as openAccountMenu_  } from "./account";
 import { search } from "@/scripts/search";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
@@ -113,6 +113,18 @@ export const navbarItemDef = reactive({
 		title: "groups",
 		icon: "ph-users-three ph-bold ph-lg",
 		to: "/my/groups",
+	},
+	changeAccount: {
+		title: "changeAccount",
+		icon: "ph-users ph-bold ph-lg",
+		action: (ev) => {
+			openAccountMenu_(
+				{
+				withExtraOperation: true,
+				},
+				ev,
+			);
+		},
 	},
 	ui: {
 		title: "switchUi",

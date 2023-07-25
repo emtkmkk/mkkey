@@ -88,7 +88,7 @@
 					class="button-wrapper"
 					:class="buttonAnimIndex === 2 ? 'on' : ''"
 				>
-					<i :class="navbarItemDef[tbitem].icon"></i
+					<i class="ph-lg" :class="navbarItemDef[tbitem].icon"></i
 					><span
 						v-if="navbarItemDef[tbitem].indicated"
 						class="indicator"

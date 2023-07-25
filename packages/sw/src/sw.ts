@@ -30,7 +30,7 @@ self.addEventListener("activate", (ev) => {
 });
 
 function offlineContentHTML(): string {
-	return `<!doctype html>Offline. Service Worker @${_VERSION_} <button onclick="location.reload()">リロード</button>`
+	return `<!doctype html>Offline. Service Worker @${_VERSION_} <button onclick="location.reload()">reload</button>`
 }
 
 self.addEventListener("fetch", (ev) => {

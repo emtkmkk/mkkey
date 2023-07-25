@@ -30,6 +30,9 @@
 			<option value="messaging">
 				{{ i18n.ts.messaging }}
 			</option>
+			<option value="changeAccount">
+				{{ i18n.ts.changeAccount }}
+			</option>
 		</FormRadios>
 
 		<FormButton danger class="_formBlock" @click="reset()"

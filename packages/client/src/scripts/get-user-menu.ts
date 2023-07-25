@@ -254,6 +254,13 @@ export function getUserMenu(user, router: Router = mainRouter) {
 					to: `/my/messaging/${Acct.toString(user)}`,
 			  }
 			: undefined,
+		{
+			icon: "ph-share-network ph-bold ph-lg",
+			text: i18n.ts.copyUserUrl,
+			action: () => {
+				copyToClipboard(`https://mkkey.net/@${user.username}@${user.host || host}`);
+			},
+		},
 		null,
 		{
 			icon: "ph-list-bullets ph-bold ph-lg",

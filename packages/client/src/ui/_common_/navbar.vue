@@ -1,7 +1,7 @@
 <template>
 	<header class="mvcprjjd sidebar" :class="{ iconOnly }">
 		<div class="body">
-			<div class="top">
+			<div v-if="!menu.includes('changeAccount')" class="top">
 				<div
 					class="banner"
 					:user="$i"

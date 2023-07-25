@@ -79,7 +79,10 @@
 			<button
 				v-if="tbitem"
 				class="button messaging _button"
-				@click="thirdButtonClick"
+				@click="
+					navbarItemDef[tbitem].action ? navbarItemDef[tbitem].action($event) : mainRouter.push(navbarItemDef[tbitem].to);		
+					updateButtonState();		
+				"
 			>
 				<div
 					class="button-wrapper"
@@ -302,11 +305,6 @@ function messagingStart(ev) {
 		],
 		ev.currentTarget ?? ev.target
 	);
-}
-
-function thirdButtonClick(ev) {
-	navbarItemDef[tbitem].action ? navbarItemDef[tbitem].action(ev) : mainRouter.push(navbarItemDef[tbitem].to);
-	updateButtonState();
 }
 
 async function startUser(): void {

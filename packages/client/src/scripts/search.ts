@@ -4,7 +4,7 @@ import { mainRouter } from "@/router";
 
 export async function search(channel?: string,user?: string) {
 	const { canceled, result: query } = await os.inputText({
-		title: i18n.ts.search,
+		title: (channel ? i18n.ts.channelSearch : user ? i18n.ts.userSearch : i18n.ts.search),
 	});
 	if (canceled || query == null || query === "") return;
 

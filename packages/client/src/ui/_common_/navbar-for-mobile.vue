@@ -30,7 +30,8 @@
 						v-else-if="
 							navbarItemDef[item] &&
 							navbarItemDef[item].show !== false &&
-							navbarItemDef[item].onlyDesktop !== true
+							navbarItemDef[item].onlyDesktop !== true &&
+							$store.state.mobileThirdButton !== item
 						"
 						v-click-anime
 						class="item _button"

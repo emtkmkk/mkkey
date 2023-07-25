@@ -27,8 +27,8 @@
 			<option value="reload">
 				{{ i18n.ts.reload }}
 			</option>
-			<option value="message">
-				{{ i18n.ts.message }}
+			<option value="messaging">
+				{{ i18n.ts.messaging }}
 			</option>
 		</FormRadios>
 
@@ -60,6 +60,7 @@ const split = computed(() =>
 		.filter((x) => x.trim() !== "")
 );
 const menuDisplay = computed(defaultStore.makeGetterSetter("menuDisplay"));
+const mobileThirdButton = computed(defaultStore.makeGetterSetter("mobileThirdButton"));
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({

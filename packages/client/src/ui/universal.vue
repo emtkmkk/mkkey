@@ -77,9 +77,10 @@
 				</div>
 			</button>
 			<button
+				v-if="tbitem"
 				class="button messaging _button"
 				@click="
-					mainRouter.push('/my/messaging');
+					navbarItemDef[tbitem].action ? navbarItemDef[tbitem].action : mainRouter.push('navbarItemDef[tbitem].to');
 					updateButtonState();
 				"
 			>
@@ -87,9 +88,9 @@
 					class="button-wrapper"
 					:class="buttonAnimIndex === 2 ? 'on' : ''"
 				>
-					<i class="ph-chats-teardrop ph-bold ph-lg"></i
+					<i :class="navbarItemDef[tbitem].icon"></i
 					><span
-						v-if="$i?.hasUnreadMessagingMessage"
+						v-if="navbarItemDef[tbitem].indicated"
 						class="indicator"
 						><i class="ph-circle ph-fill"></i
 					></span>
@@ -169,6 +170,7 @@ import { navbarItemDef } from "@/navbar";
 import { i18n } from "@/i18n";
 import { $i } from "@/account";
 import { mainRouter } from "@/router";
+import { navbarItemDef } from "@/navbar";
 import {
 	provideMetadataReceiver,
 	setPageMetadata,
@@ -210,10 +212,18 @@ provideMetadataReceiver((info) => {
 	}
 });
 
+const tbitem = computed(() => {
+	if (navbarItemDef?.[defaultStore.state.mobileThirdButton]){
+		return defaultStore.state.mobileThirdButton;
+	} else {
+		return undefined;
+	}
+});
+
 const menuIndicated = computed(() => {
 	for (const def in navbarItemDef) {
 		if (def === "notifications") continue; // 通知は下にボタンとして表示されてるから
-		if (def === "messaging") continue; // チャットは下にボタンとして表示されてるから
+		if (def === tbitem) continue; // 3番目のボタンは通知にしない
 		if (navbarItemDef[def].indicated) return true;
 	}
 	return false;
@@ -229,7 +239,7 @@ function updateButtonState(): void {
 		buttonAnimIndex.value = 1;
 		return;
 	}
-	if (routerState.includes("/my/messaging")) {
+	if (tbitem ? routerState.includes(navbarItemDef[tbitem].to) : false) {
 		buttonAnimIndex.value = 2;
 		return;
 	}

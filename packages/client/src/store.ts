@@ -671,6 +671,10 @@ export const defaultStore = markRaw(
 		showSpotlight: {
 			where: 'account',
 			default: true,
+		},
+		mobileThirdButton: {
+			where: 'account',
+			default: "reload",
 		}
 	}),
 );

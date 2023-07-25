@@ -49,7 +49,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	const querys = ps.query.replaceAll(/\s/g, "+").split("+");
 
-	if (["&#35477;&#29983;&#26085;","&#12383;&#12435;&#12376;&#12423;&#12358;&#12403;","birthday"].includes(querys?.[0].toLowerCase())) {
+	if (["誕生日","たんじょうび","birthday"].includes(querys?.[0].toLowerCase())) {
 
 		const now = new Date();
 		const profQuery = UserProfiles.createQueryBuilder("prof")

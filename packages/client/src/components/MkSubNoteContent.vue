@@ -22,7 +22,7 @@
 			<i class="ph-quotes ph-bold ph-lg"></i>
 		</MkA>
 		<Mfm
-		    v-if="cwView"
+		    v-if="cwDetermine"
 			class="text"
 			:text="(note.cw ?? ('★センシティブメディア'))"
 			:author="note.user"
@@ -167,7 +167,8 @@ const emit = defineEmits<{
 
 const cwButton = ref<HTMLElement>();
 const isSensitive = props.note.files && props.note.files.some((file) => file.isSensitive);
-const cwView = props.note.cw || (isSensitive && defaultStore.state.nsfw === "toCW");
+const cwDetermine = props.note.cw || (isSensitive && defaultStore.state.nsfw === "toCW");
+const cwView = cwDetermine || defaultStore.state.noteAllCw;
 const isLong =
 	!props.detailedView &&
 	!cwView &&

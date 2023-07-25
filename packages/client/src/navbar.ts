@@ -30,7 +30,6 @@ export const navbarItemDef = reactive({
 		title: "messaging",
 		icon: "ph-chats-teardrop ph-bold ph-lg",
 		show: computed(() => $i != null),
-		onlyDesktop: true,
 		indicated: computed(() => $i?.hasUnreadMessagingMessage),
 		to: "/my/messaging",
 	},

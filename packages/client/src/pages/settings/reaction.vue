@@ -443,6 +443,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { deepClone } from "@/scripts/clone";
 import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
+import { instance } from "@/instance";
 
 const MOBILE_THRESHOLD = 500;
 
@@ -597,7 +598,7 @@ function save() {
 function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[
-			reaction.includes("@") && !remoteEmojiStr.includes(reaction) && emojiStr.includes(reaction.replace(/@(\S+)$/,":")) ? {
+			reaction.includes("@") && !remoteEmojiStr?.includes(reaction) && emojiStr?.includes(reaction.replace(/@(\S+)$/,":")) ? {
 				text: "ローカル絵文字に変換",
 				action: () => {
 					deleteReac(reaction);

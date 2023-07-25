@@ -41,16 +41,54 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const activeThreshold = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30); // 30日
+	const activeThreshold = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30); // 30&#26085;
 
 	const isUsername = ps.query.startsWith("@");
 
 	let users: User[] = [];
 
-	if (isUsername) {
+	const querys = ps.query.replaceAll(/\s/g, "+").split("+");
+
+	if (["&#35477;&#29983;&#26085;","&#12383;&#12435;&#12376;&#12423;&#12358;&#12403;","birthday"].includes(querys?.[0].toLowerCase())) {
+
+		const now = new Date();
+		const profQuery = UserProfiles.createQueryBuilder("prof")
+			.select("prof.userId")
+			.where("user.birthday LIKE :birthday", {
+				birthday: `%${("0" + now.getMonth()).slice(-2)}-${("0" + now.getDate()).slice(-2)}`
+			});
+
+		if (ps.origin === "local") {
+			profQuery.andWhere("prof.userHost IS NULL");
+		} else if (ps.origin === "remote") {
+			profQuery.andWhere("prof.userHost IS NOT NULL");
+		}
+
+		const query = Users.createQueryBuilder("user")
+			.where(`user.id IN (${profQuery.getQuery()})`)
+			.andWhere(
+				new Brackets((qb) => {
+					qb.where("user.updatedAt IS NULL").orWhere(
+						"user.updatedAt > :activeThreshold",
+						{ activeThreshold: activeThreshold },
+					);
+				}),
+			)
+			.andWhere("user.isSuspended = FALSE")
+			.setParameters(profQuery.getParameters());
+
+		users = users.concat(
+			await query
+				.orderBy("user.updatedAt", "DESC", "NULLS LAST")
+				.take(ps.limit)
+				.skip(ps.offset)
+				.getMany(),
+		);
+
+	} else if (isUsername) {
 		const usernameQuery = Users.createQueryBuilder("user")
 			.where("user.usernameLower LIKE :username", {
-				username: `${ps.query.replace("@", "").toLowerCase()}%`,
+				username: `${querys?.[0].replace("@", "").toLowerCase()}%`,
 			})
 			.andWhere(
 				new Brackets((qb) => {
@@ -77,12 +115,12 @@ export default define(meta, paramDef, async (ps, me) => {
 		const nameQuery = Users.createQueryBuilder("user")
 			.where(
 				new Brackets((qb) => {
-					qb.where("user.name ILIKE :query", { query: `%${ps.query}%` });
+					qb.where("user.name ILIKE :query", { query: `%${querys?.[0]}%` });
 
 					// Also search username if it qualifies as username
-					if (Users.validateLocalUsername(ps.query)) {
+					if (Users.validateLocalUsername(querys?.[0])) {
 						qb.orWhere("user.usernameLower LIKE :username", {
-							username: `%${ps.query.toLowerCase()}%`,
+							username: `%${querys?.[0].toLowerCase()}%`,
 						});
 					}
 				}),
@@ -112,9 +150,22 @@ export default define(meta, paramDef, async (ps, me) => {
 		if (users.length < ps.limit) {
 			const profQuery = UserProfiles.createQueryBuilder("prof")
 				.select("prof.userId")
-				.where("prof.description ILIKE :query", {
-					query: `%${ps.query}%`,
-				});
+				.where(
+					new Brackets((qb) => {
+						qb.where("prof.description ILIKE :query", {
+							query: `%${querys?.[0]}%`,
+						});
+						qb.orWhere("prof.location LIKE :query", {
+							query: `%${querys?.[0]}%`,
+						});
+						qb.orWhere("(prof.fields->>'name') LIKE :query", {
+							query: `%${querys?.[0]}%`,
+						});
+						qb.orWhere("(prof.fields->>'value') LIKE :query", {
+							query: `%${querys?.[0]}%`,
+						});
+					}),
+				)
 
 			if (ps.origin === "local") {
 				profQuery.andWhere("prof.userHost IS NULL");

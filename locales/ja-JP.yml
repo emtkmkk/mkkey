@@ -5,6 +5,8 @@ introMisskey: "ようこそ！Calckeyは、オープンソースの非中央集�
 monthAndDay: "{month}月 {day}日"
 mkkey: "もこきー"
 search: "検索"
+userSearch: "ユーザ内検索"
+channelSearch: "チャンネル内検索"
 notifications: "通知"
 username: "ユーザー名"
 password: "パスワード"

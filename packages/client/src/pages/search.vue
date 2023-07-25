@@ -23,7 +23,7 @@
 				<swiper-slide>
 					<XNotes ref="notes" :pagination="notesPagination" />
 				</swiper-slide>
-				<swiper-slide>
+				<swiper-slide v-if="!user">
 					<XUserList
 						ref="users"
 						class="_gap"
@@ -72,7 +72,7 @@ const usersPagination = {
 	})),
 };
 
-const tabs = ["notes", "users"];
+let tabs = props.user ? ["notes"] : ["notes", "users"];
 let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
@@ -84,11 +84,11 @@ const headerTabs = $computed(() => [
 		icon: "ph-magnifying-glass ph-bold ph-lg",
 		title: i18n.ts.notes,
 	},
-	{
+	...(props.user ? [] : [{
 		key: "users",
 		icon: "ph-users ph-bold ph-lg",
 		title: i18n.ts.users,
-	},
+	}]),
 ]);
 
 let swiperRef = null;

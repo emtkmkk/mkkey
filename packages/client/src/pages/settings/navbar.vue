@@ -33,6 +33,9 @@
 			<option value="changeAccount">
 				{{ i18n.ts.changeAccount }}
 			</option>
+			<option value="hidden">
+				{{ i18n.ts.hidden }}
+			</option>
 		</FormRadios>
 
 		<FormButton danger class="_formBlock" @click="reset()"

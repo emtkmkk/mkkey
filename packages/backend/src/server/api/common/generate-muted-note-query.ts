@@ -18,7 +18,7 @@ export function generateMutedNoteQuery(
 
 	q.setParameters(mutedQuery.getParameters());
 
-	q.andWhere(`renote.id NOT IN (${threadMutedQuery.getQuery()})`);
+	q.andWhere(`(COALESCE(renote.id,"") NOT IN (${threadMutedQuery.getQuery()}))`);
 	
 	q.setParameters(threadMutedQuery.getParameters());
 }

@@ -21,6 +21,16 @@
 			<!-- <MkRadio v-model="menuDisplay" value="hide" disabled>{{ i18n.ts._menuDisplay.hide }}</MkRadio>-->
 			<!-- TODO: サイドバーを完全に隠せるようにすると、別途ハンバーガーボタンのようなものをUIに表示する必要があり面倒 -->
 		</FormRadios>
+		
+		<FormRadios v-model="mobileThirdButton" class="_formBlock">
+			<template #label>{{ i18n.ts.mobileThirdButton }}</template>
+			<option value="reload">
+				{{ i18n.ts.reload }}
+			</option>
+			<option value="message">
+				{{ i18n.ts.message }}
+			</option>
+		</FormRadios>
 
 		<FormButton danger class="_formBlock" @click="reset()"
 			><i class="ph-arrow-clockwise ph-bold ph-lg"></i>

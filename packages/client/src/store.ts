@@ -703,6 +703,10 @@ export const defaultStore = markRaw(
 			where: 'device',
 			default: false,
 		},
+		enableInstanceEmojiSearch: {
+			where: 'account',
+			default: false,
+		},
 	}),
 );
 

@@ -35,6 +35,7 @@
 							v-for="emoji in searchResultCustomStart"
 							:key="emoji.id"
 							class="_button item"
+							v-tooltip="emoji.name + (emoji.host ? '@' + emoji.host : '')"
 							:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
 							tabindex="0"
 							@click="chosen(emoji, $event)"
@@ -55,6 +56,7 @@
 							v-for="emoji in searchResultUnicodeStart"
 							:key="emoji.name"
 							class="_button item"
+							v-tooltip="emoji.name"
 							:title="emoji.name"
 							tabindex="0"
 							@click="chosen(emoji, $event)"
@@ -67,6 +69,7 @@
 							v-for="emoji in searchResultCustom"
 							:key="emoji.id"
 							class="_button item"
+							v-tooltip="emoji.name + (emoji.host ? '@' + emoji.host : '')"
 							:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
 							tabindex="0"
 							@click="chosen(emoji, $event)"
@@ -87,6 +90,7 @@
 							v-for="emoji in searchResultUnicode"
 							:key="emoji.name"
 							class="_button item"
+							v-tooltip="emoji.name"
 							:title="emoji.name"
 							tabindex="0"
 							@click="chosen(emoji, $event)"
@@ -103,6 +107,7 @@
 								<button
 									v-for="emoji in pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))"
 									:key="emoji"
+									v-tooltip="emoji"
 									class="_button item"
 									tabindex="0"
 									@click="chosen(emoji, $event)"
@@ -125,6 +130,7 @@
 								<button
 									v-for="emoji in recentlyUsedEmojis.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))"
 									:key="emoji"
+									v-tooltip="emoji"
 									class="_button item"
 									@click="chosen(emoji, $event)"
 								>

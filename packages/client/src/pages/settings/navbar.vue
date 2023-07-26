@@ -45,7 +45,10 @@
 			:placeholder="i18n.ts.mobileThirdButton"
 			style="margin: 0 0 !important"
 		/>
-		<FormSwitch v-if="defaultStore.state.developer" v-model="freeThirdButton" class="_formBlock">{{
+		<button v-if="freeThirdButton" class="_textButton" @click="setItem">
+			{{ i18n.ts.setItem }}
+		</button>
+		<FormSwitch v-model="freeThirdButton" class="_formBlock">{{
 			i18n.ts.freeThirdButton
 		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 
@@ -79,7 +82,7 @@ const split = computed(() =>
 );
 const menuDisplay = computed(defaultStore.makeGetterSetter("menuDisplay"));
 const mobileThirdButton = computed(defaultStore.makeGetterSetter("mobileThirdButton"));
-const freeThirdButton = ref(!["reload","messaging","changeAccount","hidden"].includes(mobileThirdButton));
+const freeThirdButton = ref(!["reload","messaging","changeAccount","hidden"].includes(unref(mobileThirdButton)));
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({
@@ -110,6 +113,24 @@ async function addItem() {
 	});
 	if (canceled) return;
 	items.value = [...split.value, item].join("\n");
+}
+
+async function setThirdItem() {
+	const { canceled, result: item } = await os.select({
+		title: i18n.ts.setItem,
+		items: [
+			...menu.map((k) => ({
+				value: k,
+				text: i18n.ts[navbarItemDef[k].title],
+			})),
+			{
+				value: "hidden",
+				text: i18n.ts.hidden,
+			},
+		],
+	});
+	if (canceled) return;
+	mobileThirdButton.value = item;
 }
 
 async function save() {

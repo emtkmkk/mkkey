@@ -29,6 +29,7 @@ export const defaultStore = markRaw(
 		tutorial: {
 			where: "account",
 			default: 0,
+			advanced: -1,
 		},
 		keepCw: {
 			where: "account",
@@ -202,7 +203,7 @@ export const defaultStore = markRaw(
 		},
 		muteExcludeNotification: {
 			where: "account",
-			default: false,
+			default: true,
 		},
 		reactionMutedWords: {
 			where: "account",
@@ -243,30 +244,37 @@ export const defaultStore = markRaw(
 		firstPostButtonVisibilityForce: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		firstPostWideButton: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		secondPostButton: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		secondPostVisibility: {
 			where: "deviceAccount",
 			default: "home" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
+			advanced: "l-public" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
 		},
 		secondPostWideButton: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		thirdPostButton: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		thirdPostVisibility: {
 			where: "deviceAccount",
 			default: "l-public" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
+			advanced: "home" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
 		},
 		thirdPostWideButton: {
 			where: "deviceAccount",
@@ -275,6 +283,7 @@ export const defaultStore = markRaw(
 		fourthPostButton: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		fourthPostVisibility: {
 			where: "deviceAccount",
@@ -287,6 +296,7 @@ export const defaultStore = markRaw(
 		fifthPostButton: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		fifthPostVisibility: {
 			where: "deviceAccount",
@@ -299,6 +309,7 @@ export const defaultStore = markRaw(
 		channelSecondPostButton: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		localOnly: {
 			where: "deviceAccount",
@@ -311,14 +322,17 @@ export const defaultStore = markRaw(
 		hiddenMFMHelp: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		hiddenCloseButton: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		hiddenMentionButton: {
 			where: "deviceAccount",
 			default: false,
+			advanced: true,
 		},
 		openMentionWindow: {
 			where: "deviceAccount",
@@ -423,6 +437,7 @@ export const defaultStore = markRaw(
 		showFixedPostForm: {
 			where: "device",
 			default: true,
+			advanced: false,
 		},
 		enableInfiniteScroll: {
 			where: "device",
@@ -455,6 +470,7 @@ export const defaultStore = markRaw(
 		reactionPickerHeight: {
 			where: "device",
 			default: 3,
+			advanced: 10,
 		},
 		emojiPickerUseDrawerForMobile: {
 			where: "device",
@@ -479,6 +495,7 @@ export const defaultStore = markRaw(
 		menuDisplay: {
 			where: "device",
 			default: "sideFull" as "sideFull" | "sideIcon" | "top",
+			advanced: "sideIcon" as "sideFull" | "sideIcon" | "top",
 		},
 		reportError: {
 			where: "device",
@@ -563,6 +580,7 @@ export const defaultStore = markRaw(
 		favButtonReaction: {
 			where: "account",
 			default: "custom",
+			advanced: "favorite",
 		},
 		favButtonReactionCustom: {
 			where: "account",
@@ -571,14 +589,17 @@ export const defaultStore = markRaw(
 		powerMode: {
 			where: "device",
 			default: false,
+			advanced: true,
 		},
 		powerModeColorful: {
 			where: "device",
 			default: false,
+			advanced: true,
 		},
 		powerModeNoShake: {
 			where: "device",
 			default: false,
+			advanced: true,
 		},
 		developer: {
 			where: "account",
@@ -611,14 +632,15 @@ export const defaultStore = markRaw(
 		showRelationMark: {
 			where: "account",
 			default: false,
+			advanced: true,
 		},
 		reactionAutoFocusSearchBar: {
 			where: "device",
-			default: false,
+			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
 		},
 		postAutoFocusSearchBar: {
 			where: "device",
-			default: false,
+			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
 		},
 		reactionShowUsername: {
 			where: "device",
@@ -627,6 +649,7 @@ export const defaultStore = markRaw(
 		reactionShowShort: {
 			where: "device",
 			default: false,
+			advanced: true,
 		},
 		japanCategory: {
 			where: "account",
@@ -666,7 +689,7 @@ export const defaultStore = markRaw(
 		},
 		showMkkeySettingTips: {
 			where: 'device',
-			default: false,
+			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
 		},
 		showSpotlight: {
 			where: 'account',

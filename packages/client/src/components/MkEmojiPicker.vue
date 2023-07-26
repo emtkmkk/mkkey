@@ -641,8 +641,8 @@ watch(q, (nQ, oQ) => {
 	}
 
 	const isAllSearch = unref(allCustomEmojis) ? q.value.includes("@") : false;
-	const newQ = kanaToHira(format_roomaji(q.value.replace(/@\S+$|:/g, "")));
-	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/@\S+$|:/g, "")));
+	const newQ = kanaToHira(format_roomaji(q.value.replace(/@\S*$|:/g, "")));
+	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/@\S*$|:/g, "")));
 	
 	const searchCustom = () => {
 		const max = 99;

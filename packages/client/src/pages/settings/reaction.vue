@@ -418,7 +418,13 @@
 							class="ph-arrow-counter-clockwise ph-bold ph-lg"
 						></i>
 						 {{ i18n.ts.default }}</FormButton
-				>
+					>
+					<FormButton inline danger @click="setDefault"
+						><i
+							class="ph-trash ph-bold ph-lg"
+						></i>
+						 {{ i18n.ts.default }}</FormButton
+					>
 				</div>
 			</FormSection>
 		</div>
@@ -587,6 +593,14 @@ function deleteReac(reaction){
 	if (tab === 'reactions5') reactions5 = reactions5.filter((x) => x !== reaction);
 }
 
+function deleteAllReac(){
+	if (tab === 'reactions') reactions = [];
+	if (tab === 'reactions2') reactions2 = [];
+	if (tab === 'reactions3') reactions3 = [];
+	if (tab === 'reactions4') reactions4 = [];
+	if (tab === 'reactions5') reactions5 = [];
+}
+
 function save() {
 	defaultStore.set("reactions", reactions);
 	defaultStore.set("reactions2", reactions2);
@@ -601,8 +615,11 @@ function remove(reaction, ev: MouseEvent) {
 			reaction.includes("@") && !unref(remoteEmojiStr)?.includes(reaction) && unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/,":")) ? {
 				text: "ローカル絵文字に変換",
 				action: () => {
-					deleteReac(reaction);
-					reactions.push(reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions') $set(reactions, reactions.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions2') $set(reactions2, reactions2.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions3') $set(reactions3, reactions3.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions4') $set(reactions4, reactions4.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions5') $set(reactions5, reactions5.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
 				},
 			} : undefined,
 			tab !== 'reactions' && !reactions.includes(reaction) ? {
@@ -668,11 +685,21 @@ function preview(ev: MouseEvent) {
 async function setDefault() {
 	const { canceled } = await os.confirm({
 		type: "warning",
-		text: i18n.ts.resetAreYouSure,
+		text: i18n.ts.resetAreYouSure + "\n※1ページ目のみデフォルトに戻します",
 	});
 	if (canceled) return;
 
 	reactions = deepClone(defaultStore.def.reactions.default);
+}
+
+async function setEmpty() {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.ts.deleteReactionAreYouSure,
+	});
+	if (canceled) return;
+
+	deleteAllReac();
 }
 
 function chooseEmoji(ev: MouseEvent) {

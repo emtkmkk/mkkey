@@ -25,9 +25,9 @@
 			</MkContainer>
 		</FormSlot>
 		<div class="_buttons">
-			<FormButton @click="addItem"><i class="ti ti-plus"></i> {{ i18n.ts.addItem }}</MkButton>
-			<FormButton danger @click="reset"><i class="ti ti-reload"></i> {{ i18n.ts.default }}</MkButton>
-			<FormButton primary class="save" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
+			<FormButton @click="addItem"><i class="ti ti-plus"></i> {{ i18n.ts.addItem }}</FormButton>
+			<FormButton danger @click="reset"><i class="ti ti-reload"></i> {{ i18n.ts.default }}</FormButton>
+			<FormButton primary class="save" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</FormButton>
 		</div>
 
 		<FormRadios v-model="menuDisplay" class="_formBlock">

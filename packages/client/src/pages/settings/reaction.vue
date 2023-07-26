@@ -612,6 +612,14 @@ function save() {
 function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[
+			{
+				text: reaction.replace(/@(\S+)$/,"").replaceAll(":",""),
+				type: "label",
+			},
+			reaction.includes("@") ? {
+				text: reaction.replace(/^(\S+)@/,"@").replaceAll(":",""),
+				type: "label",
+			} : undefined,
 			reaction.includes("@") && !unref(remoteEmojiStr)?.includes(reaction) && unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/,":")) ? {
 				text: "ローカル絵文字に変換",
 				action: () => {

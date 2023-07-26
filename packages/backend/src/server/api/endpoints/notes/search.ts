@@ -128,7 +128,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (qLocal) {
 				plusQueryCount += 1
 				query.andWhere("note.localOnly = :localOnly", {
-					localOnly: qLocal,
+					localOnly: qLocal ? true : false,
 				});
 			}
 		} else if (ps.minScore || que.includes("score:")) {

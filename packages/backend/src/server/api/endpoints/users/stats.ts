@@ -493,6 +493,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	if (!firstLocalFollower && user.host) result.powerRank = result.powerRank + "?";
+	
+	if (_rankPower > rankBorder.slice(-2)[0]) result.starPower = _rankPower;
 
 	return result;
 });

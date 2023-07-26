@@ -628,6 +628,7 @@ yourAccountSuspendedDescription: "このアカウントは、サーバーの利�
 menu: "メニュー"
 divider: "分割線"
 addItem: "項目を追加"
+setItem: "項目を設定"
 relays: "リレー"
 addRelay: "リレーの追加"
 inboxUrl: "inboxのURL"

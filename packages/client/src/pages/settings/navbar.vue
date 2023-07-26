@@ -80,7 +80,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch, unref } from "vue";
+import { computed, ref, watch, unref, defineAsyncComponent } from "vue";
 import FormRadios from "@/components/form/radios.vue";
 import FormSwitch from "@/components/form/switch.vue";
 import FormButton from "@/components/MkButton.vue";

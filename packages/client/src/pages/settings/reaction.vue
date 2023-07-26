@@ -419,7 +419,7 @@
 						></i>
 						 {{ i18n.ts.default }}</FormButton
 					>
-					<FormButton inline danger @click="setDefault"
+					<FormButton inline danger @click="setEmpty"
 						><i
 							class="ph-trash ph-bold ph-lg"
 						></i>
@@ -623,11 +623,11 @@ function remove(reaction, ev: MouseEvent) {
 			reaction.includes("@") && !unref(remoteEmojiStr)?.includes(reaction) && unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/,":")) ? {
 				text: "ローカル絵文字に変換",
 				action: () => {
-					if (tab === 'reactions') $set(reactions, reactions.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
-					if (tab === 'reactions2') $set(reactions2, reactions2.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
-					if (tab === 'reactions3') $set(reactions3, reactions3.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
-					if (tab === 'reactions4') $set(reactions4, reactions4.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
-					if (tab === 'reactions5') $set(reactions5, reactions5.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions') this.$set(reactions, reactions.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions2') this.$set(reactions2, reactions2.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions3') this.$set(reactions3, reactions3.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions4') this.$set(reactions4, reactions4.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions5') this.$set(reactions5, reactions5.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
 				},
 			} : undefined,
 			tab !== 'reactions' && !reactions.includes(reaction) ? {

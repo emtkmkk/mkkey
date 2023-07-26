@@ -16,17 +16,17 @@
 							v-if="element.type === '-' || navbarItemDef[element.type]"
 							:class="$style.item"
 						>
-							<button class="_button" :class="$style.itemHandle"><i class="ti ti-menu"></i></button>
-							<i class="ti-fw" :class="[$style.itemIcon, navbarItemDef[element.type]?.icon]"></i><span :class="$style.itemText">{{ navbarItemDef[element.type]?.title ?? i18n.ts.divider }}</span>
-							<button class="_button" :class="$style.itemRemove" @click="removeItem(index)"><i class="ti ti-x"></i></button>
+							<button class="_button" :class="$style.itemHandle"><i class="ph-bold ph-list ph-lg"></i></button>
+							<i class="ph-fw" :class="[$style.itemIcon, navbarItemDef[element.type]?.icon]"></i><span :class="$style.itemText">{{ i18n.ts[(navbarItemDef[element.type]?.title ?? divider)] }}</span>
+							<button class="_button" :class="$style.itemRemove" @click="removeItem(index)"><i class="ph-bold ph-lg ph-x"></i></button>
 						</div>
 					</template>
 				</Sortable>
 			</MkContainer>
 		</FormSlot>
 		<div class="_buttons">
-			<FormButton @click="addItem"><i class="ti ti-plus"></i> {{ i18n.ts.addItem }}</FormButton>
-			<FormButton primary class="save" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</FormButton>
+			<FormButton @click="addItem"><i class="ph-bold ph-plus ph-lg"></i> {{ i18n.ts.addItem }}</FormButton>
+			<FormButton primary class="save" @click="save"><i class="ph-bold ph-floppy-disk ph-lg"></i> {{ i18n.ts.save }}</FormButton>
 		</div>
 
 		<FormRadios v-model="menuDisplay" class="_formBlock">
@@ -81,6 +81,7 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch, unref, defineAsyncComponent } from "vue";
+import FormInput from "@/components/form/input.vue";
 import FormRadios from "@/components/form/radios.vue";
 import FormSwitch from "@/components/form/switch.vue";
 import FormButton from "@/components/MkButton.vue";
@@ -139,7 +140,7 @@ async function addItem() {
 	}];
 }
 
-async function setThirdItem() {
+async function setItem() {
 	const { canceled, result: item } = await os.select({
 		title: i18n.ts.setItem,
 		items: [

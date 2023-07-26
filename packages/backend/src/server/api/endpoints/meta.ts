@@ -448,13 +448,14 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_plus_emojis",
 			milliseconds: 3600000, // 1 hour
 		},
-	})).filter((x) => !emojiNames.includes(x.name) && (x.name?.length ?? 0) < 50 && (x.publicUrl?.length ?? 0) < 120).slice(0,10000)
+	})).filter((x) => !emojiNames.includes(x.name) && (x.name?.length ?? 0) < 75 && (x.publicUrl?.length ?? 0) < 140).slice(0,10000)
 	: undefined;
 	
 	// データ削減の為、不要情報を削除
 	plusEmojis?.forEach((x) => {
 		delete x.createdAt
 		delete x.updatedAt
+		delete x.category
 		delete x.aliases
 		delete x.license
 	});
@@ -471,12 +472,13 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_all_emojis",
 			milliseconds: 3600000, // 1 hour
 		},
-	})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net"].includes(x.host) && (x.name?.length ?? 0) < 60 && (x.host?.length ?? 0) < 40 && (x.publicUrl?.length ?? 0) < 120) : undefined;
+	})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net"].includes(x.host) && (x.name?.length ?? 0) < 75 && (x.host?.length ?? 0) < 50 && (x.publicUrl?.length ?? 0) < 140) : undefined;
 
 	// データ削減の為、不要情報を削除
 	allEmojis?.forEach((x) => {
 		delete x.createdAt
 		delete x.updatedAt
+		delete x.category
 		delete x.aliases
 		delete x.license
 	});

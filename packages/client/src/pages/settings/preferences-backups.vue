@@ -152,6 +152,9 @@ const defaultStoreSaveKeys: (keyof (typeof defaultStore)["state"])[] = [
 	"powerMode",
 	"powerModeColorful",
 	"powerModeNoShake",
+	"alwaysPostButton",
+	"showMkkeySettingTips",
+	"noteAllCw",
 ];
 const coldDeviceStorageSaveKeys: (keyof typeof ColdDeviceStorage.default)[] = [
 	"lightTheme",

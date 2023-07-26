@@ -155,6 +155,68 @@ const defaultStoreSaveKeys: (keyof (typeof defaultStore)["state"])[] = [
 	"alwaysPostButton",
 	"showMkkeySettingTips",
 	"noteAllCw",
+	"tutorial",
+	"keepCw",
+	"keepPostCw",
+	"showFullAcct",
+	"rememberNoteVisibility",
+	"defaultNoteVisibility",
+	"defaultNoteLocalOnly",
+	"defaultNoteLocalAndFollower",
+	"uploadFolder",
+	"pastedFileName",
+	"keepOriginalUploading",
+	"memo",
+	"reactions",
+	"reactionsFolderName",
+	"reactionsDefaultOpen",
+	"reactions2",
+	"reactionsFolderName2",
+	"reactions2DefaultOpen",
+	"reactions3",
+	"reactionsFolderName3",
+	"reactions3DefaultOpen",
+	"reactions4",
+	"reactionsFolderName4",
+	"reactions4DefaultOpen",
+	"reactions5",
+	"reactionsFolderName5",
+	"reactions5DefaultOpen",
+	"recentlyUsedDefaultOpen",
+	"hiddenRecent",
+	"hiddenReactionDeckAndRecent",
+	"doubleTapReaction",
+	"mutedWords",
+	"hiddenSoftMutes",
+	"muteExcludeReplyQuote",
+	"muteExcludeNotification",
+	"reactionMutedWords",
+	"mutedAds",
+	"enableAntennaTab",
+	"firstPostButtonVisibilityForce",
+	"useBigCustom",
+	"showMiniUpdates",
+	"woozyMode",
+	"showEmojiButton",
+	"showEmojisInReactionNotifications",
+	"favButtonReaction",
+	"favButtonReactionCustom",
+	"developer",
+	"developerRenote",
+	"developerQuote",
+	"developerNoteMenu",
+	"developerTicker",
+	"completedReInit",
+	"showRelationMark",
+	"japanCategory",
+	"keepFileName",
+	"recentRenoteHidden",
+	"reactedRenoteHidden",
+	"showDetailNoteClick",
+	"showMkkeySettingTips",
+	"showSpotlight",
+	"mobileThirdButton",
+	"enableInstanceEmojiSearch",
 ];
 const coldDeviceStorageSaveKeys: (keyof typeof ColdDeviceStorage.default)[] = [
 	"lightTheme",
@@ -240,9 +302,10 @@ function validate(profile: unknown): void {
 	if (!isObject(profile.settings)) throw new Error("Invalid prop: settings");
 }
 
-function getSettings(): Profile["settings"] {
+function getSettings(deviceOnly): Profile["settings"] {
 	const hot = {} as Record<keyof typeof defaultStoreSaveKeys, unknown>;
 	for (const key of defaultStoreSaveKeys) {
+		if (deviceOnly && defaultStore.def?.[key]?.where !== "device") continue;
 		hot[key] = defaultStore.state[key];
 	}
 
@@ -268,6 +331,11 @@ async function saveNew(): Promise<void> {
 		title: ts._preferencesBackups.inputName,
 	});
 	if (canceled) return;
+	
+	const { canceled: cancel2 } = await os.yesno({
+		type: "question",
+		text: "アカウント依存設定を保存しますか？",
+	});
 
 	if (Object.values(profiles).some((x) => x.name === name)) {
 		return os.alert({
@@ -283,7 +351,7 @@ async function saveNew(): Promise<void> {
 		updatedAt: null,
 		misskeyVersion: version,
 		host,
-		settings: getSettings(),
+		settings: getSettings(cancel2),
 	};
 	await os.apiWithDialog("i/registry/set", {
 		scope,
@@ -437,6 +505,11 @@ async function save(id: string): Promise<void> {
 		text: t("_preferencesBackups.saveConfirm", { name }),
 	});
 	if (canceled) return;
+	
+	const { canceled: cancel2 } = await os.yesno({
+		type: "question",
+		text: "アカウント依存設定を保存しますか？",
+	});
 
 	const profile: Profile = {
 		name,
@@ -444,8 +517,9 @@ async function save(id: string): Promise<void> {
 		updatedAt: new Date().toISOString(),
 		misskeyVersion: version,
 		host,
-		settings: getSettings(),
+		settings: getSettings(cancel2),
 	};
+	
 	await os.apiWithDialog("i/registry/set", {
 		scope,
 		key: id,

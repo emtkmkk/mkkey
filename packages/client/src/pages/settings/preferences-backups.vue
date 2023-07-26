@@ -420,7 +420,7 @@ async function applyProfile(id: string): Promise<void> {
 	});
 	if (cancel1) return;
 	
-	const { canceled: cancel2 } = await os.yesno({
+	const { canceled: cancel3 } = await os.yesno({
 		type: "question",
 		text: "アカウント依存設定を読み込みますか？",
 	});
@@ -431,7 +431,7 @@ async function applyProfile(id: string): Promise<void> {
 
 	// defaultStore
 	for (const key of defaultStoreSaveKeys) {
-		if (settings.hot[key] !== undefined && (!cancel2 || defaultStore.def?.[key]?.where === "device")) {
+		if (settings.hot[key] !== undefined && (!cancel3 || defaultStore.def?.[key]?.where === "device")) {
 			defaultStore.set(key, settings.hot[key]);
 		}
 	}

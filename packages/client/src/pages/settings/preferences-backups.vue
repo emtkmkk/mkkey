@@ -351,6 +351,11 @@ async function applyProfile(id: string): Promise<void> {
 		text: t("_preferencesBackups.applyConfirm", { name: profile.name }),
 	});
 	if (cancel1) return;
+	
+	const { canceled: cancel2 } = await os.yesno({
+		type: "question",
+		text: "アカウント依存設定を読み込みますか？",
+	});
 
 	// TODO: バージョン or ホストが違ったらさらに警告を表示
 
@@ -358,7 +363,7 @@ async function applyProfile(id: string): Promise<void> {
 
 	// defaultStore
 	for (const key of defaultStoreSaveKeys) {
-		if (settings.hot[key] !== undefined) {
+		if (settings.hot[key] !== undefined && (!cancel2 || defaultStore.def?.[key]?.where === "device")) {
 			defaultStore.set(key, settings.hot[key]);
 		}
 	}

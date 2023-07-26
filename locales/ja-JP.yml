@@ -1182,7 +1182,7 @@ _registry:
   createKey: "キーを作成"
 _aboutMisskey:
   about: "Calckeyは、2022年に生まれたThatOneCalculatorによるMisskeyのforkです。"
-  contributors: "主なコントリビューター"
+  contributors: "Misskey の主なコントリビューター"
   allContributors: "全てのコントリビューター"
   source: "ソースコード"
   mkkeysource: "もこきーのソースコード"
@@ -1190,6 +1190,8 @@ _aboutMisskey:
   donate: "Calckeyに寄付"
   morePatrons: "他にも多くの方が支援してくれています。ありがとうございます！ 🥰"
   patrons: "支援者"
+_aboutCalckey:
+  contributors: "Calckey / Firefish の主なコントリビューター"
 _remoteEmojisFetch:
   all: "全て"
   plus: "一部 (通信量削減)"

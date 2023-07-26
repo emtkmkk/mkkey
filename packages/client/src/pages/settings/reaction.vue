@@ -623,11 +623,11 @@ function remove(reaction, ev: MouseEvent) {
 			reaction.includes("@") && !unref(remoteEmojiStr)?.includes(reaction) && unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/,":")) ? {
 				text: "ローカル絵文字に変換",
 				action: () => {
-					if (tab === 'reactions') this.$set(reactions, reactions.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
-					if (tab === 'reactions2') this.$set(reactions2, reactions2.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
-					if (tab === 'reactions3') this.$set(reactions3, reactions3.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
-					if (tab === 'reactions4') this.$set(reactions4, reactions4.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
-					if (tab === 'reactions5') this.$set(reactions5, reactions5.indexOf(reaction), reaction.replace(/@(\S+)$/,":"));
+					if (tab === 'reactions') reactions[reactions.indexOf(reaction)] = reaction.replace(/@(\S+)$/,":");
+					if (tab === 'reactions2') reactions2[reactions2.indexOf(reaction)] = reaction.replace(/@(\S+)$/,":");
+					if (tab === 'reactions3') reactions3[reactions3.indexOf(reaction)] = reaction.replace(/@(\S+)$/,":");
+					if (tab === 'reactions4') reactions4[reactions4.indexOf(reaction)] = reaction.replace(/@(\S+)$/,":");
+					if (tab === 'reactions5') reactions5[reactions5.indexOf(reaction)] = reaction.replace(/@(\S+)$/,":");
 				},
 			} : undefined,
 			tab !== 'reactions' && !reactions.includes(reaction) ? {

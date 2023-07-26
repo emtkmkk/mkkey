@@ -141,6 +141,7 @@ async function addItem() {
 }
 
 async function setItem() {
+	const menu = Object.keys(navbarItemDef)
 	const { canceled, result: item } = await os.select({
 		title: i18n.ts.setItem,
 		items: [

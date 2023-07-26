@@ -22,7 +22,7 @@
 			<!-- TODO: サイドバーを完全に隠せるようにすると、別途ハンバーガーボタンのようなものをUIに表示する必要があり面倒 -->
 		</FormRadios>
 		
-		<FormRadios v-model="mobileThirdButton" class="_formBlock">
+		<FormRadios v-if="!freeThirdButton" v-model="mobileThirdButton" class="_formBlock">
 			<template #label>{{ i18n.ts.mobileThirdButton }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			<option value="reload">
 				{{ i18n.ts.reload }}
@@ -37,6 +37,17 @@
 				{{ i18n.ts.hidden }}
 			</option>
 		</FormRadios>
+		<FormInput
+			v-if="freeThirdButton"
+			v-model="mobileThirdButton"
+			class="_formBlock"
+			:small="true"
+			:placeholder="i18n.ts.mobileThirdButton"
+			style="margin: 0 0 !important"
+		/>
+		<FormSwitch v-if="defaultStore.state.developer" v-model="freeThirdButton" class="_formBlock">{{
+			i18n.ts.freeThirdButton
+		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 
 		<FormButton danger class="_formBlock" @click="reset()"
 			><i class="ph-arrow-clockwise ph-bold ph-lg"></i>
@@ -59,6 +70,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 
 const items = ref(defaultStore.state.menu.join("\n"));
 
+
 const split = computed(() =>
 	items.value
 		.trim()
@@ -67,6 +79,7 @@ const split = computed(() =>
 );
 const menuDisplay = computed(defaultStore.makeGetterSetter("menuDisplay"));
 const mobileThirdButton = computed(defaultStore.makeGetterSetter("mobileThirdButton"));
+const freeThirdButton = ref(!["reload","messaging","changeAccount","hidden"].includes(mobileThirdButton));
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({

@@ -16,6 +16,7 @@
 			<button
 				v-for="emoji in emojis"
 				:key="emoji"
+				v-tooltip="emoji"
 				class="_button item"
 				@click="emit('chosen', emoji, $event)"
 			>

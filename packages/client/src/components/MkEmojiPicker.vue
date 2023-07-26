@@ -1244,6 +1244,9 @@ function ja_to_roomaji(
 			{before:"ー", after:"_"},
 			{before:/っ(\w)/g, after:"$1$1"},
 			{before:"っ", after:"xtu"},
+			{before:"！", after:"i"},
+			{before:"?", after:"q"},
+			{before:"？", after:"q"},
 		];
 
 		_str = kanaToHira(_str);

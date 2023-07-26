@@ -1,13 +1,34 @@
 <template>
 	<div class="_formRoot">
-		<FormTextarea v-model="items" tall manual-save class="_formBlock">
+		<FormSlot>
 			<template #label>{{ i18n.ts.navbar }}</template>
-			<template #caption
-				><button class="_textButton" @click="addItem">
-					{{ i18n.ts.addItem }}
-				</button></template
-			>
-		</FormTextarea>
+			<MkContainer :showHeader="false">
+				<Sortable
+					v-model="items"
+					itemKey="id"
+					:animation="150"
+					:handle="'.' + $style.itemHandle"
+					@start="e => e.item.classList.add('active')"
+					@end="e => e.item.classList.remove('active')"
+				>
+					<template #item="{element,index}">
+						<div
+							v-if="element.type === '-' || navbarItemDef[element.type]"
+							:class="$style.item"
+						>
+							<button class="_button" :class="$style.itemHandle"><i class="ti ti-menu"></i></button>
+							<i class="ti-fw" :class="[$style.itemIcon, navbarItemDef[element.type]?.icon]"></i><span :class="$style.itemText">{{ navbarItemDef[element.type]?.title ?? i18n.ts.divider }}</span>
+							<button class="_button" :class="$style.itemRemove" @click="removeItem(index)"><i class="ti ti-x"></i></button>
+						</div>
+					</template>
+				</Sortable>
+			</MkContainer>
+		</FormSlot>
+		<div class="_buttons">
+			<FormButton @click="addItem"><i class="ti ti-plus"></i> {{ i18n.ts.addItem }}</MkButton>
+			<FormButton danger @click="reset"><i class="ti ti-reload"></i> {{ i18n.ts.default }}</MkButton>
+			<FormButton primary class="save" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
+		</div>
 
 		<FormRadios v-model="menuDisplay" class="_formBlock">
 			<template #label>{{ i18n.ts.display }}</template>
@@ -61,25 +82,23 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
-import FormTextarea from "@/components/form/textarea.vue";
 import FormRadios from "@/components/form/radios.vue";
 import FormButton from "@/components/MkButton.vue";
+import FormSlot from "@/components/form/slot.vue";
+import MkContainer from "@/components/MkContainer.vue";
 import * as os from "@/os";
 import { navbarItemDef } from "@/navbar";
 import { defaultStore } from "@/store";
 import { unisonReload } from "@/scripts/unison-reload";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { deepClone } from "@/scripts/clone";
 
-const items = ref(defaultStore.state.menu.join("\n"));
+const items = ref(defaultStore.state.menu.map(x => ({
+	id: Math.random().toString(),
+	type: x,
+})));
 
-
-const split = computed(() =>
-	items.value
-		.trim()
-		.split("\n")
-		.filter((x) => x.trim() !== "")
-);
 const menuDisplay = computed(defaultStore.makeGetterSetter("menuDisplay"));
 const mobileThirdButton = computed(defaultStore.makeGetterSetter("mobileThirdButton"));
 const freeThirdButton = ref(!["reload","messaging","changeAccount","hidden"].includes(unref(mobileThirdButton)));
@@ -112,7 +131,10 @@ async function addItem() {
 		],
 	});
 	if (canceled) return;
-	items.value = [...split.value, item].join("\n");
+	items.value = [...items.value, {
+		id: Math.random().toString(),
+		type: item,
+	}];
 }
 
 async function setThirdItem() {
@@ -133,19 +155,21 @@ async function setThirdItem() {
 	mobileThirdButton.value = item;
 }
 
+function removeItem(index: number) {
+	items.value.splice(index, 1);
+}
+
 async function save() {
-	defaultStore.set("menu", split.value);
+	defaultStore.set("menu", items.value.map(x => x.type));
 	await reloadAsk();
 }
 
 function reset() {
-	defaultStore.reset("menu");
-	items.value = defaultStore.state.menu.join("\n");
+	items.value = defaultStore.def.menu.default.map(x => ({
+		id: Math.random().toString(),
+		type: x,
+	}));
 }
-
-watch(items, async () => {
-	await save();
-});
 
 watch(menuDisplay, async () => {
 	await reloadAsk();

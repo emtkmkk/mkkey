@@ -188,3 +188,45 @@ definePageMetadata({
 	icon: "ph-list-bullets ph-bold ph-lg",
 });
 </script>
+
+
+<style lang="scss" module>
+.item {
+	position: relative;
+	display: block;
+	line-height: 2.85rem;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+	color: var(--navFg);
+}
+
+.itemIcon {
+	position: relative;
+	width: 32px;
+	margin-right: 8px;
+}
+
+.itemText {
+	position: relative;
+	font-size: 0.9em;
+}
+
+.itemRemove {
+	position: absolute;
+	z-index: 10000;
+	width: 32px;
+	height: 32px;
+	color: #ff2a2a;
+	right: 8px;
+	opacity: 0.8;
+}
+
+.itemHandle {
+	cursor: move;
+	width: 32px;
+	height: 32px;
+	margin: 0 8px;
+	opacity: 0.5;
+}
+</style>

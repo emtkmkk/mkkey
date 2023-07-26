@@ -179,8 +179,8 @@ watch(menuDisplay, async () => {
 	await reloadAsk();
 });
 
-watch(mobileThirdButton, async () => {
-	await reloadAsk();
+watch(mobileThirdButton, async (v) => {
+	if (v === "hidden" || navbarItemDef[v]) await reloadAsk();
 });
 
 const headerActions = $computed(() => []);

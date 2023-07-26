@@ -633,7 +633,7 @@ watch(q, (nQ, oQ) => {
 		return;
 	}
 	
-	const searchHost = undefined;
+	let searchHost = undefined;
 	
 	if (nQ.includes("@") && defaultStore.state.enableInstanceEmojiSearch) {
 		// ホスト名絞り込み

@@ -238,6 +238,12 @@
 				{{ i18n.ts.doubleTapReaction }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			</FormSwitch>
 			<FormSwitch
+				v-model="enableInstanceEmojiSearch"
+				class="_formBlock"
+			>
+				{{ i18n.ts.enableInstanceEmojiSearch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			</FormSwitch>
+			<FormSwitch
 				v-model="recentlyUsedDefaultOpen"
 				class="_formBlock"
 				v-if="((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0 && !hiddenRecent && !hiddenReactionDeckAndRecent"
@@ -572,6 +578,9 @@ const emojiStr = computed(() =>
 const remoteEmojiStr = computed(() => 
 	unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
+const enableInstanceEmojiSearch = $computed(
+	defaultStore.makeGetterSetter("enableInstanceEmojiSearch")
+);	
 
 const editPage = $computed(() => {
 		return tab === 'reactions' 

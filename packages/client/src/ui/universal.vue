@@ -156,7 +156,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, provide, onMounted, computed, ref } from "vue";
+import { defineAsyncComponent, provide, onMounted, computed, ref, unref } from "vue";
 import XCommon from "./_common_/common.vue";
 import * as Acct from "calckey-js/built/acct";
 import type { ComputedRef } from "vue";
@@ -238,7 +238,7 @@ function updateButtonState(): void {
 		buttonAnimIndex.value = 1;
 		return;
 	}
-	if (navbarItemDef[tbitem]?.to ? routerState.includes(navbarItemDef[tbitem].to) : false) {
+	if (navbarItemDef[unref(tbitem)]?.to ? routerState.includes(navbarItemDef[unref(tbitem)].to) : false) {
 		buttonAnimIndex.value = 2;
 		return;
 	}

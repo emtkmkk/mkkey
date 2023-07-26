@@ -26,6 +26,10 @@
 				<template #key>{{ i18n.ts.powerRank }}</template>
 				<template #value>{{ (stats.powerRank ?? "N/A") + " ( " + (stats.nextRank ?? "N/A") + " )" }}</template>
 			</MkKeyValue>
+			<MkKeyValue oneline v-if="stats.starPower" style="margin: 1em 0">
+				<template #key>{{ "⭐" }}</template>
+				<template #value>{{ number(stats.starPower ?? "N/A") }}</template>
+			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.notesCount }}</template>
 				<template #value>{{ number(stats.notesCount) }}</template>

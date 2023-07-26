@@ -18,15 +18,15 @@
 			/>
 			<div ref="emojis" class="emojis">
 				<section class="result">
-					<div v-if="!allCustomEmojis && q && q.endsWith('@')">
+					<div v-if="!allCustomEmojis && q && q.includes('@')">
 						<header class="_acrylic">{{ props.asReactionPicker ? "他サーバー絵文字の取得に失敗した為、使用出来ません。" : "@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
 					</div>
 					<div v-else>
 						<header class="_acrylic" v-if="!(q == null || q === '')">
-							{{ `${q.endsWith('@') ? (remoteEmojiMode === "all" ? "他サーバー絵文字検索 " : "他サーバー絵文字検索(ミニ) ") : "検索結果 "}
+							{{ `${q.includes('@') ? (remoteEmojiMode === "all" ? "他サーバー絵文字検索 " : "他サーバー絵文字検索(ミニ) ") : "検索結果 "}
 							${(searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
 								? `${(searchResultCustomStart.length + searchResultUnicodeStart.length) + " / " + (searchResultCustom.length + searchResultUnicode.length)} 件` 
-								: "0 件"}${allCustomEmojis && !q.endsWith('@') ? " (@で他サーバー絵文字検索)" : ""}
+								: "0 件"}${allCustomEmojis && !q.includes('@') ? " (@で他サーバー絵文字検索)" : ""}
 							` }}
 						</header>
 					</div>
@@ -608,10 +608,10 @@ let singleTapEl = undefined;
 watch(q, (nQ, oQ) => {
 	if (q.value.endsWith("*")) q.value = oQ;
 	if (q.value.endsWith("＠")) q.value = oQ + "@";
-	if (nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","").replace("*","") + "@";
+	if (!defaultStore.state.enableInstanceEmojiSearch && nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","").replace("*","") + "@";
 	/*
 	// computedにしたので恐らくコレはいらないはず
-	if (q.value.endsWith("@") && !allCustomEmojis && props.asReactionPicker){
+	if (q.value.includes("@") && !allCustomEmojis && props.asReactionPicker){
 		//絵文字取得失敗時に@が指定された場合は再度読込直す
 		allCustomEmojis = instance.allEmojis;
 		remoteEmojiMode = instance.remoteEmojiMode;
@@ -632,10 +632,17 @@ watch(q, (nQ, oQ) => {
 	if ((nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) || (nQ.endsWith('!'))) {
 		return;
 	}
+	
+	const searchHost = undefined;
+	
+	if (nQ.includes("@") && defaultStore.state.enableInstanceEmojiSearch) {
+		// ホスト名絞り込み
+		searchHost = /@(\S+?):?$/.exec(q.value)?.[1];
+	}
 
-	const isAllSearch = unref(allCustomEmojis) ? q.value.endsWith("@") : false;
-	const newQ = kanaToHira(format_roomaji(q.value.replace(/[:@]/g, "")));
-	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/[:@]/g, "")));
+	const isAllSearch = unref(allCustomEmojis) ? q.value.includes("@") : false;
+	const newQ = kanaToHira(format_roomaji(q.value.replace(/@\S+$|:/g, "")));
+	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/@\S+$|:/g, "")));
 	
 	const searchCustom = () => {
 		const max = 99;
@@ -651,6 +658,7 @@ watch(q, (nQ, oQ) => {
 			// 名前またはエイリアスにキーワードが含まれている
 			if (isAllSearch) {
 				for (const emoji of allEmojis) {
+					if (searchHost && !emoji.host.includes(searchHost)) continue;
 					if (
 						keywords.every(
 							(keyword) =>
@@ -692,6 +700,7 @@ watch(q, (nQ, oQ) => {
 		} else {
 			if (isAllSearch) {
 				for (const emoji of allEmojis) {
+					if (searchHost && !emoji.host.includes(searchHost)) continue;
 					if (!format_roomaji(emoji.name).startsWith(roomajiQ)) {
 						if (format_roomaji(emoji.name).includes(roomajiQ)) {
 							matches.add(emoji);
@@ -737,6 +746,7 @@ watch(q, (nQ, oQ) => {
 		} else {
 			if (isAllSearch) {
 				for (const emoji of allEmojis) {
+					if (searchHost && !emoji.host.includes(searchHost)) continue;
 					if (format_roomaji(emoji.name).startsWith(roomajiQ)) {
 						if (beforeSort.size >= max) break;
 						beforeSort.add({

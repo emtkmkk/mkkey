@@ -26,7 +26,6 @@
 		</FormSlot>
 		<div class="_buttons">
 			<FormButton @click="addItem"><i class="ti ti-plus"></i> {{ i18n.ts.addItem }}</FormButton>
-			<FormButton danger @click="reset"><i class="ti ti-reload"></i> {{ i18n.ts.default }}</FormButton>
 			<FormButton primary class="save" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</FormButton>
 		</div>
 
@@ -83,6 +82,7 @@
 <script lang="ts" setup>
 import { computed, ref, watch, unref } from "vue";
 import FormRadios from "@/components/form/radios.vue";
+import FormSwitch from "@/components/form/switch.vue";
 import FormButton from "@/components/MkButton.vue";
 import FormSlot from "@/components/form/slot.vue";
 import MkContainer from "@/components/MkContainer.vue";
@@ -93,6 +93,8 @@ import { unisonReload } from "@/scripts/unison-reload";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deepClone } from "@/scripts/clone";
+
+const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 
 const items = ref(defaultStore.state.menu.map(x => ({
 	id: Math.random().toString(),

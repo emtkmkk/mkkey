@@ -423,7 +423,7 @@
 						><i
 							class="ph-trash ph-bold ph-lg"
 						></i>
-						 {{ i18n.ts.default }}</FormButton
+						 {{ i18n.ts.allDelete }}</FormButton
 					>
 				</div>
 			</FormSection>

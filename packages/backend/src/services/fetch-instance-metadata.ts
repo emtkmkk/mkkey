@@ -32,10 +32,11 @@ export async function fetchInstanceMetadata(
 	logger.info(`Fetching metadata of ${instance.host} ...`);
 
 	try {
-		const [info, dom, manifest] = await Promise.all([
+		const [info, dom, manifest, mastodonInfo] = await Promise.all([
 			fetchNodeinfo(instance).catch(() => null),
 			fetchDom(instance).catch(() => null),
 			fetchManifest(instance).catch(() => null),
+			fetchMastodonInfo(instance).catch(() => null),
 		]);
 
 		const [favicon, icon, themeColor, name, description] = await Promise.all([
@@ -66,6 +67,24 @@ export async function fetchInstanceMetadata(
 					? info.metadata.maintainer.email || null
 					: null
 				: null;
+				
+			if (mastodonInfo) {
+				// max_reactions_per_account の指定があればその値にする
+				// 指定が無い場合は以下の通り
+				// 1 : softwareNameがmastodonじゃなければ 1
+				// 2 : configurationにemoji_reactionsの設定が何かあれば 1
+				// 3 : fedibird_capabilitiesにemoji_reactionがあれば 1
+				// 4 : 全てに当てはまらない場合は 0
+				updates.maxReactionsPerAccount = mastodonInfo.configuration?.emoji_reactions?.max_reactions_per_account 
+					?? ((
+							info.software?.name.toLowerCase() !== "mastodon" ||
+							mastodonInfo.configuration?.emoji_reactions ||
+							mastodonInfo.fedibird_capabilities?.includes("emoji_reaction")
+					) ? 1 : 0);
+			} else {
+				// /api/v1/instance が取得できない場合はsoftwareNameがmastodonかどうかで判定
+				updates.maxReactionsPerAccount = info.software?.name.toLowerCase() === "mastodon" ? 0 : 1;
+			}
 		}
 
 		if (name) updates.name = name;
@@ -174,6 +193,18 @@ async function fetchManifest(
 	const manifest = (await getJson(manifestUrl)) as Record<string, unknown>;
 
 	return manifest;
+}
+
+async function fetchMastodonInfo(
+	instance: Instance,
+): Promise<Record<string, unknown> | null> {
+	const url = `https://${instance.host}`;
+
+	const mastodonInfoUrl = `${url}/api/v1/instance`;
+
+	const mastodonInfo = (await getJson(mastodonInfoUrl)) as Record<string, unknown>;
+
+	return mastodonInfo;
 }
 
 async function fetchFaviconUrl(

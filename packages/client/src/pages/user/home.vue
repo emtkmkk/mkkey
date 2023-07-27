@@ -56,11 +56,14 @@
 									/></span>
 									<span
 									    v-for="badge in mkBadge"
+										:key="badge.key"
+										style="badge"
 										:title="i18n.ts[badge.key]"
+										v-tooltip="i18n.ts[badge.key]"
 										><MkEmoji
 											class="emoji"
 											:emoji="badge.emoji"
-											style="height: 1.3em"
+											style="height: 1.3em; pointer-events: none;"
 										></MkEmoji
 									></span>
 									<span
@@ -123,11 +126,14 @@
 								/></span>
 								<span
 									v-for="badge in mkBadge"
+									:key="'badge-' + badge.key"
+									style="badge"
 									:title="i18n.ts[badge.key]"
+									v-tooltip="i18n.ts[badge.key]"
 									><MkEmoji
 										class="emoji"
 										:emoji="badge.emoji"
-										style="height: 1.3em"
+										style="height: 1.3em; pointer-events: none;"
 									></MkEmoji
 								></span>
 								<span
@@ -793,6 +799,9 @@ onUnmounted(() => {
 							display: inline-block;
 							margin-right: 8px;
 							opacity: 0.8;
+						}
+						> .badge {
+							opacity: 1;
 						}
 					}
 				}

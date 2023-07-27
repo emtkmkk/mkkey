@@ -510,7 +510,7 @@ export const UserRepository = db.getRepository(User).extend({
 								iconUrl: instance.iconUrl,
 								faviconUrl: instance.faviconUrl,
 								themeColor: instance.themeColor,
-								maxReactionsPerAccount: instance.maxReactionsPerAccount
+								maxReactionsPerAccount: instance.maxReactionsPerAccount ?? 1
 							}
 							: undefined,
 					)

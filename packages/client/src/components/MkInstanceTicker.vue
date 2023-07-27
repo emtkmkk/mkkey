@@ -18,7 +18,7 @@
 		:style="bg"
 	>
 		<img class="icon" v-if="getInstanceFavicon(instance)" :src="getInstanceFavicon(instance)" aria-hidden="true" />
-		<img class="icon" v-if="getInstanceIcon(instance) && getInstanceFavicon(instance) !== getInstanceIcon(instance)" :src="getInstanceIcon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceIcon(instance) && faviconUrl !== iconUrl" :src="getInstanceIcon(instance)" aria-hidden="true" />
 		<span class="name">{{ capitalize((instance.softwareName || '???')) + '/' + (instance.softwareVersion || '???') }}</span>
 	</div>
 	<div
@@ -29,7 +29,7 @@
 		:style="bg"
 	>
 		<img class="icon" v-if="getInstanceFavicon(instance)" :src="getInstanceFavicon(instance)" aria-hidden="true" />
-		<img class="icon" v-if="getInstanceIcon(instance) && getInstanceFavicon(instance) !== getInstanceIcon(instance)" :src="getInstanceIcon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceIcon(instance) && faviconUrl !== iconUrl" :src="getInstanceIcon(instance)" aria-hidden="true" />
 		<span class="name">{{ instance.name }}</span>
 	</div>
 </template>

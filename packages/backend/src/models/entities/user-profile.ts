@@ -118,6 +118,11 @@ export class UserProfile {
 	})
 	public usePasswordLessLogin: boolean;
 
+	@Column('boolean', {
+		default: false,
+	})
+	public showDonateBadges: boolean;
+
 	@Column('varchar', {
 		length: 128, nullable: true,
 		comment: 'The password hash of the User. It will be null if the origin of the user is local.',

@@ -19,8 +19,8 @@ export const MIN = 60 * SEC; // why do we need this duplicate here?
 export const HOUR = 60 * MIN;
 export const DAY = 24 * HOUR;
 
-export const USER_ONLINE_THRESHOLD = 150 * SEC;
-export const USER_HALFONLINE_THRESHOLD = 5 * MINUTE;
+export const USER_ONLINE_THRESHOLD = 300 * SEC;
+export const USER_HALFONLINE_THRESHOLD = 7.5 * MINUTE;
 export const USER_ACTIVE_THRESHOLD = 1 * HOUR;
 export const USER_ACTIVE2_THRESHOLD = 3 * HOUR;
 export const USER_HALFSLEEP_THRESHOLD = 1 * DAY;

@@ -861,7 +861,7 @@ function readPromo() {
 					}
 				}
 				> .unsupported {
-					opacity: 0.7;
+					opacity: 0.1 !important;
 				}
 			}
 		}

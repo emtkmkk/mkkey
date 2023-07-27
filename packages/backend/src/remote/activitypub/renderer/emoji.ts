@@ -5,9 +5,9 @@ export default (emoji: Emoji) => ({
 	id: emoji.uri || `${config.url}/emojis/${emoji.name}`,
 	type: "Emoji",
 	name: `:${emoji.name}:`,
-	host: `${emoji.host}`,
+	host: `${emoji.host ?? "mkkey.net"}`,
 	updated:
-		emoji.updatedAt != null
+		!emoji.host && emoji.updatedAt != null
 			? emoji.updatedAt.toISOString()
 			: new Date().toISOString,
 	icon: {

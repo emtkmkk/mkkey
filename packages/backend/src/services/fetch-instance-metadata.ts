@@ -71,6 +71,11 @@ export async function fetchInstanceMetadata(
 				: null;
 				
 			if (mastodonInfo) {
+				
+				// Nodeinfo から取得できなかった場合はここで取得を試行
+				if (updates.maintainerName == null) updates.maintainerName = mastodonInfo.contact_account?.username ? "@" + mastodonInfo.contact_account?.username : null;
+				if (updates.maintainerEmail == null) updates.maintainerEmail = mastodonInfo.email || null;
+				
 				// max_reactions_per_account の指定があればその値にする
 				// 指定が無い場合は以下の通り
 				// 1 : softwareNameがmastodonじゃなければ 1

@@ -93,10 +93,15 @@ export async function fetchInstanceMetadata(
 				const now = Date.now();
 				updates.maxReactionsPerAccount = 
 				((await NoteReactions.count({
+					relations: {
+						user: true,
+					},
 					where: {
 						createdAt: MoreThan(new Date(now - 2678400000)),
-						host: instance.host,
 						reaction: Not(await getFallbackReaction()),
+						user: {
+							host: instance.host,
+						}
 					},
 					cache: {
 						id: "emojiSearch:" + instance.host,

@@ -313,7 +313,7 @@ export const UserRepository = db.getRepository(User).extend({
 		return count > 0;
 	},
 
-	getOnlineStatus(user: User, meId?: string): "unknown" | "online" | "half-online" | "active" | "half-active" | "offline" | "half-sleeping" | "sleeping" | "deep-sleeping" | "never-sleeping" {
+	getOnlineStatus(user: User, meId?: string): "unknown" | "online" | "half-online" | "active" | "half-active" | "offline" | "half-sleeping" | "sleeping" | "deep-sleeping" | "never-sleeping" | "super-sleeping" {
 		if (!meId) return "unknown";
 		if (user.lastActiveDate == null) return "unknown";
 		const elapsed = Date.now() - user.lastActiveDate.getTime();
@@ -445,6 +445,38 @@ export const UserRepository = db.getRepository(User).extend({
 						relation.isFollowing
 						? user.followersCount
 						: user.followersCount;
+						
+		const donateBadges = 
+			user.driveCapacityOverrideMb > 5120
+				? user.driveCapacityOverrideMb >= 20120
+					? user.driveCapacityOverrideMb >= 51200
+						? user.driveCapacityOverrideMb >= 102400
+							? { 
+								key: "mkb4",
+								emoji: ":mk_discochicken:",
+							}
+							: { 
+								key: "mkb3",
+								emoji: ":mk_chuchuchicken:",
+							}
+						: { 
+							key: "mkb2",
+							emoji: ":mk_yurayurachicken:",
+						}
+				: { 
+					key: "mkb1",
+					emoji: ":mkb:",
+				}
+			: undefined;
+		
+		const harborBadges = 
+			(new Date(user.createdAt) < new Date('2023-04-05T00:00:00Z'))
+				? {
+					key: "mkhb",
+					emoji: ":mkbms:",
+				} : undefined;
+		
+		const badges = [(profile!.showDonateBadges ? donateBadges : undefined), harborBadges].filter(x => x !== undefined);
 
 		const truthy = opts.detail ? true : undefined;
 		const falsy = opts.detail ? false : undefined;
@@ -536,6 +568,7 @@ export const UserRepository = db.getRepository(User).extend({
 					isSilentLocked: user.isSilentLocked || falsy,
 					twoFactorEnabled: profile!.twoFactorEnabled,
 					usePasswordLessLogin: profile!.usePasswordLessLogin,
+					badges: badges.length !== 0 ? badges : undefined,
 					securityKeys: profile!.twoFactorEnabled
 						? UserSecurityKeys.countBy({
 							userId: user.id,

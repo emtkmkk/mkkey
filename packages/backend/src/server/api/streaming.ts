@@ -70,7 +70,7 @@ export const initializeStreamingServer = (server: http.Server) => {
 						lastActiveDate: now,
 					});
 				}
-			}, 1000 * 60 * 5)
+			}, 1000 * 60 * 2.5)
 			: null;
 		if (user) {
 			Users.update(user.id, {

@@ -65,12 +65,12 @@ export const initializeStreamingServer = (server: http.Server) => {
 			? setInterval(() => {
 				if (user.onlineStatus !== "online") {
 					const now = new Date()
-					now.setSeconds(now.getSeconds() - 150);
+					now.setSeconds(now.getSeconds() - 300);
 					Users.update(user.id, {
 						lastActiveDate: now,
 					});
 				}
-			}, 1000 * 60 * 2.5)
+			}, 1000 * 60 * 5)
 			: null;
 		if (user) {
 			Users.update(user.id, {

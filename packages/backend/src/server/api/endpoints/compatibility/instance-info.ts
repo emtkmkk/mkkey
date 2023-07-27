@@ -106,7 +106,7 @@ export default define(meta, paramDef, async () => {
 				max_expiration: -1,
 			},
 			emoji_reactions: {
-        		max_reactions: 32767,
+				max_reactions: 32767,
 				max_reactions_per_account: MAX_REACTION_PER_ACCOUNT,
 			},
 		},

@@ -570,7 +570,7 @@ export const UserRepository = db.getRepository(User).extend({
 					twoFactorEnabled: profile!.twoFactorEnabled,
 					usePasswordLessLogin: profile!.usePasswordLessLogin,
 					showDonateBadges: profile!.showDonateBadges,
-					badges: badges.length !== 0 ? badges : undefined,
+					badges: badges?.length !== 0 ? badges : undefined,
 					securityKeys: profile!.twoFactorEnabled
 						? UserSecurityKeys.countBy({
 							userId: user.id,

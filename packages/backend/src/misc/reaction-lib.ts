@@ -78,24 +78,28 @@ export async function toDbReaction(
 	}
 
 	const custom = reaction.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/);
-	// まずローカルで持ってこれるか試行する
-	if (custom) {
+
+	// ローカルユーザの場合 : ローカル絵文字の場合、まずローカルで持ってこれるか試行する
+	// リモートユーザでホスト名が無い場合 : reacterHost絵文字があるかどうか試行する
+	if (custom && (!reacterHost || !custom?.[2])) {
 		const name = custom[1];
 		const emoji = await Emojis.findOneBy({
 			host: reacterHost || IsNull(),
 			name,
 		});
 
-		if (emoji) return reacterHost ? `:${name}@${reacterHost}:` : `:${name}:`;
+		if (emoji) return emoji.host ? `:${emoji.name}@${emoji.host}:` : `:${emoji.name}:`;
 
-		// 無理ならリモートから （host情報がない場合、misskey.ioで試行してみる）
-		const host = (reacterHost && custom?.[2] === "mkkey.net" ? IsNull() : custom?.[2]) || "misskey.io";
+		// 無理ならリモートから 
+		// ローカルユーザの場合 : host情報がない場合、misskey.io絵文字で試行してみる
+		// リモートユーザの場合 : host情報がない場合、reacterHost絵文字ではなくローカル絵文字で試行してみる
+		const host = (reacterHost && custom?.[2] === "mkkey.net" ? IsNull() : custom?.[2]) || (reacterHost ? IsNull() : "misskey.io");
 		const emoji2 = await Emojis.findOneBy({
 			host,
 			name,
 		});
 
-		if (emoji2) return `:${name}@${host}:`;
+		if (emoji2) return emoji2.host ? `:${emoji2.name}@${emoji2.host}:` : `:${emoji2.name}:`;
 	}
 
 	return await getFallbackReaction();

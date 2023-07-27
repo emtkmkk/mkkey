@@ -1,3 +1,4 @@
+import {IsNull} from "typeorm";
 import promiseLimit from "promise-limit";
 import * as mfm from "mfm-js";
 import config from "@/config/index.js";
@@ -477,6 +478,13 @@ export async function extractEmojis(
 			const _host = detectHost?.length >= 4 && host !== toPuny(detectHost)
 				? toPuny(detectHost)
 				: host;
+				
+			if ( _host === "mkkey.net" ) {
+				return (await Emojis.findOneBy({
+						host: IsNull(),
+						name,
+					})) as Emoji;
+			}
 
 			const exists = await Emojis.findOneBy({
 				host: _host,

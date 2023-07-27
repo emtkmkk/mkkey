@@ -174,6 +174,7 @@
 						ref="reactButton"
 						v-tooltip.noDelay.bottom="i18n.ts.reaction"
 						class="button _button"
+						:class="{unsupported: appearNote.user.instance?.maxReactionsPerAccount === 0}"
 						@click="react()"
 					>
 						<i class="ph-smiley ph-bold ph-lg"></i>
@@ -858,6 +859,9 @@ function readPromo() {
 					&.reacted {
 						color: var(--accent);
 					}
+				}
+				> .unsupported {
+					opacity: 0.7;
 				}
 			}
 		}

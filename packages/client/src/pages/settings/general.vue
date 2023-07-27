@@ -9,7 +9,7 @@
 
 		<FormSection>
 			<template #label>{{ i18n.ts.timeline }}</template>
-			<FormRadios v-model="showLocalPostsInTimeline" class="_formBlock">
+			<FormRadios v-model="showLocalPostsInTimeline" v-if="!['classic','deck'].includes(ui)" class="_formBlock">
 				<template #label>{{ i18n.ts.showLocalPosts }}</template>
 				<option value="home">
 					<i class="ph-handshake ph-bold ph-lg" />
@@ -28,7 +28,7 @@
 			<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
 				i18n.ts.showFixedPostForm
 			}}</FormSwitch>
-			<FormSwitch v-model="showSpotlight" class="_formBlock">{{
+			<FormSwitch v-if="!['classic','deck'].includes(ui)" v-model="showSpotlight" class="_formBlock">{{
 				i18n.ts.showSpotlight
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="recentRenoteHidden" class="_formBlock">{{

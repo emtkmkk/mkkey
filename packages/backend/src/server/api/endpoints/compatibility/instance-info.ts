@@ -13,7 +13,7 @@ import {
 import type { Emoji } from "@/models/entities/emoji.js";
 import type { User } from "@/models/entities/user.js";
 import { IsNull, In } from "typeorm";
-import { MAX_NOTE_TEXT_LENGTH, FILE_TYPE_BROWSERSAFE } from "@/const.js";
+import { MAX_NOTE_TEXT_LENGTH, FILE_TYPE_BROWSERSAFE, MAX_REACTION_PER_ACCOUNT } from "@/const.js";
 import define from "../../define.js";
 
 export const meta = {
@@ -104,6 +104,9 @@ export default define(meta, paramDef, async () => {
 				max_characters_per_option: 50,
 				min_expiration: 15,
 				max_expiration: -1,
+			},
+			emoji_reactions: {
+				max_reactions_per_account: MAX_REACTION_PER_ACCOUNT,
 			},
 		},
 		contact_account: await getContact(firstAdmin, emojis),

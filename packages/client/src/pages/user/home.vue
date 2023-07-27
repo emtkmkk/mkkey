@@ -55,11 +55,11 @@
 										><MkAcct :user="user" :detail="true"
 									/></span>
 									<span
-									    v-if="mkbBadge"
-										:title="i18n.ts.mkhb"
+									    v-for="badge in mkBadge"
+										:title="i18n.ts[badge.key]"
 										><MkEmoji
 											class="emoji"
-											emoji=":mkbms:"
+											:emoji="badge.emoji"
 											style="height: 1.3em"
 										></MkEmoji
 									></span>
@@ -122,11 +122,11 @@
 									><MkAcct :user="user" :detail="true"
 								/></span>
 								<span
-								    v-if="mkbBadge"
-									:title="i18n.ts.mkhb"
+									v-for="badge in mkBadge"
+									:title="i18n.ts[badge.key]"
 									><MkEmoji
 										class="emoji"
-										emoji=":mkbms:"
+										:emoji="badge.emoji"
 										style="height: 1.3em"
 									></MkEmoji
 								></span>
@@ -422,7 +422,7 @@ let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
 const pinFull = $ref(false);
-const mkbBadge = $ref((new Date(props.user.createdAt) < new Date('2023-04-05T00:00:00Z')) && props.user.host == null);
+const mkBadge = $ref(props.user.badges || []);
 const visiblePinnedNotes = $computed(() => {
 	return pinFull.value ? props.user.pinnedNotes : props.user.pinnedNotes.slice(0, 2);
 });

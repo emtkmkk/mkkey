@@ -6,19 +6,19 @@
 			pad: !widgetProps.transparent,
 		}"
 	>
-		<span v-if="widgetProps.showOnline && !widgetProps.superDetails" class="text" data-v-93ec8385="">
+		<span v-if="widgetProps.showOnline" class="text" data-v-93ec8385="">
 		接続中: <b data-v-93ec8385="">{{ onlineUsersCount + honlineUsersCount }}</b>{{ showCount === 4 || showCount === 2 ? "  " : "" }}
 		<br v-if="showCount === 3"></span>
-		<span v-if="widgetProps.showAway && !widgetProps.superDetails" class="text" data-v-93ec8385="">
+		<span v-if="widgetProps.showAway" class="text" data-v-93ec8385="">
 		離席中: <b data-v-93ec8385="">{{ activeUsersCount + hactiveUsersCount }}</b>{{ (showCount === 3 && widgetProps.showOnline) || (showCount === 2 && !widgetProps.showOnline) ? "  " : "" }}
 		<br v-if="showCount === 4 || (!widgetProps.showOnline && showCount === 3)"></span>
-		<span v-if="widgetProps.showOffline && !widgetProps.superDetails" class="text" data-v-93ec8385="">
+		<span v-if="widgetProps.showOffline" class="text" data-v-93ec8385="">
 		切断中: <b data-v-93ec8385="">{{ offline1UsersCount + offline2UsersCount + offline3UsersCount }}</b>{{ widgetProps.showSleep ? "  " : "" }}
 		</span>
-		<span v-if="widgetProps.showSleep && !widgetProps.superDetails" class="text" data-v-93ec8385="">
+		<span v-if="widgetProps.showSleep" class="text" data-v-93ec8385="">
 		休眠中: <b data-v-93ec8385="">{{ sleepUsersCount + dsleepUsersCount + dsleep2UsersCount }}</b>  
 		</span>
-		<span v-if="widgetProps.showOnline && widgetProps.superDetails" class="text" data-v-93ec8385="">
+	<!--<span v-if="widgetProps.showOnline && widgetProps.superDetails" class="text" data-v-93ec8385="">
 		接続中: <b data-v-93ec8385="">{{ onlineUsersCount }}</b> / <b data-v-93ec8385="">{{ honlineUsersCount }}</b>
 		<br></span>
 		<span v-if="widgetProps.showAway && widgetProps.superDetails" class="text" data-v-93ec8385="">
@@ -29,7 +29,7 @@
 		<br></span>
 		<span v-if="widgetProps.showSleep && widgetProps.superDetails" class="text" data-v-93ec8385="">
 		休眠中: <b data-v-93ec8385="">{{ sleepUsersCount }}</b> / <b data-v-93ec8385="">{{ dsleepUsersCount }}</b> / <b data-v-93ec8385="">{{ dsleep2UsersCount }}</b>
-		</span>
+		</span> -->
 	</div>
 </template>
 
@@ -106,16 +106,10 @@ const dsleep2UsersCount = ref(0);
 
 const tick = () => {
 	os.api("get-online-users-count/detail").then((res) => {
-		onlineUsersCount.value = res.o150s;
-		honlineUsersCount.value = res.o5m;
-		activeUsersCount.value = res.o10m + res.o30m + res.o60m;
-		hactiveUsersCount.value = res.o2h + res.o3h;
-		offline1UsersCount.value = res.o6h;
-		offline2UsersCount.value = res.o12h;
-		offline3UsersCount.value = res.o24h;
-		sleepUsersCount.value = res.o2d;
-		dsleepUsersCount.value = res.o3d + res.o4d + res.o7d;
-		dsleep2UsersCount.value = res.o14d + res.o30d + res.omore;
+		onlineUsersCount.value = res.onlineCount;
+		activeUsersCount.value = res.activeCount;
+		offline1UsersCount.value = res.offlineCount;
+		sleepUsersCount.value = res.sleepCount;
 	});
 };
 

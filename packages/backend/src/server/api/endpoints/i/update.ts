@@ -229,6 +229,8 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		updates.isSilentLocked = ps.isSilentLocked;
 		updates.isLocked = false;
 	}
+	if (typeof ps.showDonateBadges === "boolean")
+		profileUpdates.showDonateBadges = ps.showDonateBadges;
 	if (ps.emailNotificationTypes !== undefined)
 		profileUpdates.emailNotificationTypes = ps.emailNotificationTypes;
 

@@ -1,11 +1,13 @@
 import { URL } from "node:url";
 import { JSDOM } from "jsdom";
 import fetch from "node-fetch";
+import { Not, MoreThan } from "typeorm";
 import tinycolor from "tinycolor2";
 import { getJson, getHtml, getAgentByUrl } from "@/misc/fetch.js";
 import type { Instance } from "@/models/entities/instance.js";
-import { Instances } from "@/models/index.js";
+import { NoteReactions, Instances } from "@/models/index.js";
 import { getFetchInstanceMetadataLock } from "@/misc/app-lock.js";
+import { getFallbackReaction } from "@/misc/reaction-lib.js";
 import Logger from "./logger.js";
 import type { DOMWindow } from "jsdom";
 
@@ -85,6 +87,24 @@ export async function fetchInstanceMetadata(
 				// /api/v1/instance が取得できない場合はsoftwareNameがmastodonかどうかで判定
 				updates.maxReactionsPerAccount = info.software?.name.toLowerCase() === "mastodon" ? 0 : 1;
 			}
+			
+			if (updates.maxReactionsPerAccount = 0) {
+				// 0と判定された場合でも、30日以内に通常のlike以外が3以上あれば1にする
+				const now = Date.now();
+				updates.maxReactionsPerAccount = 
+				((await NoteReactions.count({
+					where: {
+						createdAt: MoreThan(new Date(now - 2678400000)),
+						host: instance.host,
+						reaction: Not(await getFallbackReaction()),
+					},
+					cache: {
+						id: "emojiSearch:" + instance.host,
+						milliseconds: 3600000, // 1 hour
+					},
+				})) > 2) ? 1 : 0 ;
+			}
+			
 		}
 
 		if (name) updates.name = name;

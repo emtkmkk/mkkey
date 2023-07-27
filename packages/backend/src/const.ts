@@ -7,6 +7,11 @@ export const MAX_CAPTION_TEXT_LENGTH = Math.min(
 	DB_MAX_IMAGE_COMMENT_LENGTH,
 );
 
+export const MB = 1024 * 1024;
+export const GB = 1024 * MB;
+export const DEFAULT_DRIVE_SIZE = 5 * GB;
+export const MAX_DRIVE_SIZE = 100 * GB;
+
 export const SECOND = 1000;
 export const SEC = 1000; // why do we need this duplicate here?
 export const MINUTE = 60 * SEC;

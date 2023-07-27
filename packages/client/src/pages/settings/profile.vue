@@ -162,6 +162,10 @@
 			}}</template></FormSwitch
 		>
 
+		<FormSwitch v-model="profile.showDonateBadges" class="_formBlock"
+			>{{ i18n.ts.showDonateBadges
+			}}</FormSwitch
+		>
 		<div v-if="saveButton == true">
 			<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 		</div>
@@ -199,6 +203,7 @@ const profile = reactive({
 	isBot: $i?.isBot,
 	isCat: $i?.isCat,
 	speakAsCat: $i?.speakAsCat,
+	showDonateBadges: $i?.showDonateBadges,
 });
 
 const props = withDefaults(
@@ -263,6 +268,7 @@ function save() {
 		hideOnlineStatus: !!profile.isBot,
 		isCat: !!profile.isCat,
 		speakAsCat: !!profile.speakAsCat,
+		showDonateBadges: !!profile.showDonateBadges
 	});
 }
 

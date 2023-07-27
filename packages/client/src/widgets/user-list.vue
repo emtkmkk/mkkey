@@ -51,6 +51,10 @@ const widgetPropsDef = {
 		type: "boolean" as const,
 		default: false,
 	},
+	highFrequencyReload: {
+		type: "boolean" as const,
+		default: false,
+	},
 	listId: {
 		type: "string" as const,
 		default: null,
@@ -104,7 +108,7 @@ const fetch = () => {
 		});
 	});
 };
-useInterval(fetch, 1000 * 60, {
+useInterval(fetch, (widgetProps.highFrequencyReload ? 1000 * 10 : 1000 * 60), {
 	immediate: true,
 	afterMounted: true,
 });

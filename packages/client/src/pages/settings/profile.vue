@@ -164,7 +164,7 @@
 
 		<FormSwitch v-model="profile.showDonateBadges" class="_formBlock"
 			>{{ i18n.ts.showDonateBadges
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch></FormSwitch
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 		>
 		<div v-if="saveButton == true">
 			<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>

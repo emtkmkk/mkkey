@@ -9,7 +9,7 @@ import type { Promiseable } from "@/prelude/await-all.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import { populateEmojis } from "@/misc/populate-emojis.js";
 import { getAntennas } from "@/misc/antenna-cache.js";
-import { USER_ACTIVE_THRESHOLD, USER_ACTIVE2_THRESHOLD, USER_HALFONLINE_THRESHOLD, USER_ONLINE_THRESHOLD, USER_HALFSLEEP_THRESHOLD, USER_SLEEP_THRESHOLD, USER_DEEPSLEEP_THRESHOLD, USER_SUPERSLEEP_THRESHOLD } from "@/const.js";
+import { MB, DEFAULT_DRIVE_SIZE, MAX_DRIVE_SIZE, USER_ACTIVE_THRESHOLD, USER_ACTIVE2_THRESHOLD, USER_HALFONLINE_THRESHOLD, USER_ONLINE_THRESHOLD, USER_HALFSLEEP_THRESHOLD, USER_SLEEP_THRESHOLD, USER_DEEPSLEEP_THRESHOLD, USER_SUPERSLEEP_THRESHOLD } from "@/const.js";
 import { Cache } from "@/misc/cache.js";
 import { db } from "@/db/postgre.js";
 import { isActor, getApId } from "@/remote/activitypub/type.js";
@@ -447,10 +447,10 @@ export const UserRepository = db.getRepository(User).extend({
 						: user.followersCount;
 						
 		const donateBadges = 
-			user.driveCapacityOverrideMb > 5120
-				? user.driveCapacityOverrideMb >= 20120
-					? user.driveCapacityOverrideMb >= 51200
-						? user.driveCapacityOverrideMb >= 102400
+			user.driveCapacityOverrideMb > DEFAULT_DRIVE_SIZE / MB
+				? user.driveCapacityOverrideMb >= (DEFAULT_DRIVE_SIZE / MB) + 15000
+					? user.driveCapacityOverrideMb >= ((MAX_DRIVE_SIZE / 2) / MB)
+						? user.driveCapacityOverrideMb >= (MAX_DRIVE_SIZE / MB)
 							? { 
 								key: "mkb4",
 								emoji: ":mk_discochicken:",
@@ -568,6 +568,7 @@ export const UserRepository = db.getRepository(User).extend({
 					isSilentLocked: user.isSilentLocked || falsy,
 					twoFactorEnabled: profile!.twoFactorEnabled,
 					usePasswordLessLogin: profile!.usePasswordLessLogin,
+					showDonateBadges: profile!.showDonateBadges,
 					badges: badges.length !== 0 ? badges : undefined,
 					securityKeys: profile!.twoFactorEnabled
 						? UserSecurityKeys.countBy({

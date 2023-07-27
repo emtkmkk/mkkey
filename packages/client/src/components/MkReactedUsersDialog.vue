@@ -6,7 +6,7 @@
 		@close="dialog.close()"
 		@closed="emit('closed')"
 	>
-		<template #header>{{ tab || i18n.ts.reaction }}</template>
+		<template #header>{{ tab.replace(/@.:$/,"@mkkey.net") || i18n.ts.reaction }}</template>
 
 		<MkSpacer :margin-min="20" :margin-max="28">
 			<div v-if="note" class="_gaps">

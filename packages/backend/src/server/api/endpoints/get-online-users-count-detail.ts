@@ -37,7 +37,7 @@ export default define(meta, paramDef, async () => {
 		lastActiveDate: LessThan(new Date(Date.now())),
 		isBot: false,
 	}) - onlineCount - activeCount - offlineCount;
-	const o150s = await Users.countBy({
+	/*const o150s = await Users.countBy({
 		host: IsNull(),
 		lastActiveDate: MoreThan(new Date(Date.now() - 150 * SEC)),
 		isBot: false,
@@ -121,8 +121,8 @@ export default define(meta, paramDef, async () => {
 		host: IsNull(),
 		lastActiveDate: LessThan(new Date(Date.now())),
 		isBot: false,
-	}) - o150s - o5m - o10m - o30m - o60m - o2h - o3h - o6h - o12h - o24h - o2d - o3d - o4d - o7d - o14d - o30d;
+	}) - o150s - o5m - o10m - o30m - o60m - o2h - o3h - o6h - o12h - o24h - o2d - o3d - o4d - o7d - o14d - o30d;*/
 	return {
-		onlineCount,activeCount,offlineCount,sleepCount,o150s,o5m,o10m,o30m,o60m,o2h,o3h,o6h,o12h,o24h,o2d,o3d,o4d,o7d,o14d,o30d,omore
+		onlineCount,activeCount,offlineCount,sleepCount//,o150s,o5m,o10m,o30m,o60m,o2h,o3h,o6h,o12h,o24h,o2d,o3d,o4d,o7d,o14d,o30d,omore
 	};
 });

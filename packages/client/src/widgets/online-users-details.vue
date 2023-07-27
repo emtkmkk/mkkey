@@ -18,7 +18,7 @@
 		<span v-if="widgetProps.showSleep" class="text" data-v-93ec8385="">
 		休眠中: <b data-v-93ec8385="">{{ sleepUsersCount + dsleepUsersCount + dsleep2UsersCount }}</b>  
 		</span>
-	<!--<span v-if="widgetProps.showOnline && widgetProps.superDetails" class="text" data-v-93ec8385="">
+	<!-- <span v-if="widgetProps.showOnline && widgetProps.superDetails" class="text" data-v-93ec8385="">
 		接続中: <b data-v-93ec8385="">{{ onlineUsersCount }}</b> / <b data-v-93ec8385="">{{ honlineUsersCount }}</b>
 		<br></span>
 		<span v-if="widgetProps.showAway && widgetProps.superDetails" class="text" data-v-93ec8385="">

@@ -476,7 +476,7 @@ export const UserRepository = db.getRepository(User).extend({
 					emoji: ":mkbms:",
 				} : undefined;
 		
-		const badges = [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges].filter(x => x !== undefined);
+		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges].filter(x => x !== undefined) : undefined;
 
 		const truthy = opts.detail ? true : undefined;
 		const falsy = opts.detail ? false : undefined;
@@ -510,6 +510,7 @@ export const UserRepository = db.getRepository(User).extend({
 								iconUrl: instance.iconUrl,
 								faviconUrl: instance.faviconUrl,
 								themeColor: instance.themeColor,
+								maxReactionsPerAccount: instance.maxReactionsPerAccount
 							}
 							: undefined,
 					)

@@ -93,7 +93,7 @@ export async function fetchInstanceMetadata(
 				updates.maxReactionsPerAccount = info.software?.name.toLowerCase() === "mastodon" ? 0 : 1;
 			}
 			
-			if (updates.maxReactionsPerAccount = 0) {
+			if (updates.maxReactionsPerAccount === 0) {
 				// 0と判定された場合でも、30日以内に通常のlike以外が3以上あれば1にする
 				const now = Date.now();
 				updates.maxReactionsPerAccount = 

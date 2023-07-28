@@ -76,28 +76,33 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-	let dynamicRTCount1 = 10;
+	let dynamicRTCount1 = 40;
 	let dynamicRTCount2 = 40;
-	let dynamicRTCount3 = 60;
-	let dynamicRTCount4 = 15;
-	let dynamicRTCount5 = 2;
+	let dynamicRTCount3 = 120;
+	let dynamicRTCount4 = 90;
+	let dynamicRTCount5 = 8;
 
 
 	if (user.followingCount < 50) {
-		dynamicRTCount1 = 5;
-		dynamicRTCount2 = 10;
-		dynamicRTCount3 = 20;
-		dynamicRTCount4 = 7;
-	} else if (user.followingCount < 500) {
+		dynamicRTCount1 = 20;
 		dynamicRTCount2 = 20;
-		dynamicRTCount3 = 30;
-		dynamicRTCount4 = 10;
+		dynamicRTCount3 = 60;
+		dynamicRTCount4 = 40;
+	} else if (user.followingCount < 500) {
+		dynamicRTCount1 = 30;
+		dynamicRTCount2 = 30;
+		dynamicRTCount3 = 90;
+		dynamicRTCount4 = 65;
 	}
 
-	const followingQuery = Followings.createQueryBuilder("following")
-		.select("following.followeeId")
-		.where(`following.followerId = '${user.id}'`);
+	const followees = await Followings.createQueryBuilder('following')
+	.select('following.followeeId')
+	.where('following.followerId = :followerId', { followerId: user.id })
+	.getMany();
 
+	const meOrFolloweeIds = [user.id, ...followees.map(f => f.followeeId)];
+	const meOrFolloweeIdsStr = "'" + meOrFolloweeIds.join("','") + "'"
+	
 	//#region Construct query
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
@@ -108,11 +113,11 @@ export default define(meta, paramDef, async (ps, user) => {
 	)
 		.andWhere(`note.id > '${genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 10))) ?? genId()}'`)
 		.andWhere(new Brackets(qb => {
-			qb.where(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteCount" > ${dynamicRTCount1 ?? 5}) AND (note.renote IS NULL))`)
-				.orWhere(`((note."renoteCount" > ${dynamicRTCount2 ?? 10}) AND (note."userHost" IS NULL) AND (note.renote IS NULL))`)
-				.orWhere(`((note."renoteCount" > ${dynamicRTCount3 ?? 20}) AND (note.renote IS NULL))`)
-				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (renote."userId" NOT IN (${followingQuery.getQuery()})) AND (renote."renoteCount" > ${dynamicRTCount4 ?? 7})) AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE (note."userId" IN (${followingQuery.getQuery()})) GROUP BY note."renoteId") temp))`)
-				.orWhere(`((note."userId" IN (${followingQuery.getQuery()})) AND (note."renoteId" IS NOT NULL) AND (note."userHost" IS NULL) AND (renote."userId" IN (${followingQuery.getQuery()})) AND (renote."fileIds" != '{}') AND (renote."userHost" IS NULL) AND (renote."renoteCount" > ${dynamicRTCount5 ?? 2})) AND (note."userId" != renote."userId") AND (note.id IN (SELECT max_id from (SELECT MAX(note.id) max_id FROM note WHERE ((note."userId" IN (${followingQuery.getQuery()})) AND (note."userHost" IS NULL) AND (note."userId" != renote."userId")) GROUP BY note."renoteId") temp))`);
+			qb.where(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (note."score" > ${dynamicRTCount1}) AND (note.renote IS NULL))`)
+				.orWhere(`((note."score" > ${dynamicRTCount2}) AND (note."userHost" IS NULL) AND (note.renote IS NULL))`)
+				.orWhere(`((note."score" > ${dynamicRTCount3}) AND (note.renote IS NULL))`)
+				.orWhere(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (renote."userId" NOT IN (${meOrFolloweeIdsStr})) AND (renote."score" > ${dynamicRTCount4}))`)
+				.orWhere(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (note."renoteId" IS NOT NULL) AND (note."userHost" IS NULL) AND (renote."userId" IN (${meOrFolloweeIdsStr})) AND (renote."fileIds" != '{}') AND (renote."userHost" IS NULL) AND (renote."score" > ${dynamicRTCount5}) AND (note."userId" != renote."userId"))`);
 		}))
 		.andWhere("(note.visibility = 'public')")
 		.andWhere(`(note."channelId" IS NULL)`)
@@ -185,11 +190,18 @@ export default define(meta, paramDef, async (ps, user) => {
 	// We fetch more than requested because some may be filtered out, and if there's less than
 	// requested, the pagination stops.
 	const found = [];
+	const foundAppearNoteId = [];
 	const take = Math.floor(ps.limit * 1.5);
 	let skip = 0;
 	//try {
 		while (found.length < ps.limit) {
-			const notes = await query.take(take).skip(skip).getMany();
+			let notes = await query.take(take).skip(skip).getMany();
+			// 同じappearNoteの場合は除外
+			notes = notes.map(x => {
+				if (foundAppearNoteId.includes(x.renoteId || x.id)) return undefined;
+				foundAppearNoteId.push(x.renoteId || x.id);
+				return x;
+			}).filter(x => x !== undefined);
 			found.push(...(await Notes.packMany(notes, user)));
 			skip += take;
 			if (notes.length < take) break;

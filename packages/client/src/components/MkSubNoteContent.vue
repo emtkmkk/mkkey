@@ -1,5 +1,5 @@
 <template>
-	<p v-if="cwView != null" class="cw">
+	<p v-if="cwDetermine" class="cw">
 		<MkA
 			v-if="!detailed && note.replyId"
 			:to="`/notes/${note.replyId}`"

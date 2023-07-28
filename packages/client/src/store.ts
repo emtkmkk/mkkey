@@ -715,6 +715,10 @@ export const defaultStore = markRaw(
 			where: 'device',
 			default: false,
 		},
+		plusInfoPostForm: {
+			where: 'device',
+			default: false,
+		},
 	}),
 );
 

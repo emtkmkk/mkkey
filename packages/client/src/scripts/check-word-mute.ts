@@ -148,13 +148,13 @@ function checkMuteKeyword(
 		if (["home", "social"].includes(tlKeyword)) return ["notes/timeline", "notes/hybrid-timeline"].includes(endpoint);
 		if (["local", "global"].includes(tlKeyword)) return endpoint === "notes/" + tlKeyword + "-timeline";
 		if (["recommended", "media"].includes(tlKeyword)) return ["notes/recommended-timeline"].includes(endpoint);
+		if (["spotlight"].includes(tlKeyword)) return ["channels/spotlight-timeline"].includes(endpoint);
 		if (["list"].includes(tlKeyword)) return ["notes/user-list-timeline"].includes(endpoint);
 		if (["antenna"].includes(tlKeyword)) return ["antennas/notes"].includes(endpoint);
 		if (["trend"].includes(tlKeyword)) return ["notes/featured", "notes/polls/recommendation"].includes(endpoint);
 		if (["channel"].includes(tlKeyword)) return ["channels/timeline"].includes(endpoint);
 		if (["user"].includes(tlKeyword)) return ["users/notes"].includes(endpoint);
 		if (["notification"].includes(tlKeyword)) return ["notifications/read"].includes(endpoint);
-
 
 		return endpoint.startsWith(tlKeyword) || endpoint.startsWith("notes/" + tlKeyword);
 	}
@@ -206,6 +206,10 @@ function checkMuteKeyword(
 		if (filterKeyword.includes("nsfw")) {
 			const isNsfw = (note.files && note.files.some((file) => file.isSensitive));
 			return !!isNsfw;
+		}
+		if (filterKeyword.includes("reacted")) {
+			const isReacted = (note.myReaction != null);
+			return !!isReacted;
 		}
 		return undefined;
 	}

@@ -627,6 +627,9 @@ const noteAllCw = $computed(
 const longLoading = $computed(
 	defaultStore.makeGetterSetter("longLoading")
 );
+const plusInfoPostForm = $computed(
+	defaultStore.makeGetterSetter("plusInfoPostForm")
+);
 
 function save() {
 	os.api("i/update", {

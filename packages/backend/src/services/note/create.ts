@@ -203,7 +203,7 @@ export default async (
 		if (data.reply && data.channel == null && data.reply.channelId) {
 			data.channel = await Channels.findOneBy({ id: data.reply.channelId });
 		}
-		
+
 		//指定がなければpublicでlocalOnlyOFF
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
@@ -231,7 +231,7 @@ export default async (
 		if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
 			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?\S*)/g, "$1");
 		}
-		
+
 		//23:59の間によるほを含む投稿をした場合
 		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {
 			if (data.createdAt?.getSeconds() === 59 && data.createdAt?.getMilliseconds() !== 0) {
@@ -399,9 +399,9 @@ export default async (
 			if (user.isSilenced && (!relation.every((x) => x) ?? true)) {
 				throw new Error("サイレンス中はフォロワーでないユーザにダイレクトは送信できません。");
 			}
-			
+
 			const localRelation = await Promise.all(data.visibleUsers.filter((x) => !x.host || x.host === "mkkey.net").map(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed));
-			
+
 			//9d7csvz8zd はログインボーナスbot 環境によって変わるはず
 			if (user.id !== '9d7csvz8zd' && user.host && (localRelation.every((x) => x) ?? true)) {
 				data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi, "$1");
@@ -501,7 +501,7 @@ export default async (
 			!user.isBot &&
 			(await countSameRenotes(user.id, data.renote.id, note.id)) === 0
 		) {
-			incRenoteCount(data.renote);
+			incRenoteCount(data.renote, user.host);
 		}
 
 		if (data.poll?.expiresAt) {
@@ -726,12 +726,12 @@ async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 	return renderActivity(content);
 }
 
-function incRenoteCount(renote: Note) {
+function incRenoteCount(renote: Note, userHost?: string) {
 	Notes.createQueryBuilder()
 		.update()
 		.set({
 			renoteCount: () => '"renoteCount" + 1',
-			score: () => '"score" + 3',
+			score: () => '"score" + ' + (userHost ? '3' : '6'),
 		})
 		.where("id = :id", { id: renote.id })
 		.execute();

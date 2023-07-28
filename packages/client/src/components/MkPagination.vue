@@ -27,6 +27,7 @@
 					<img
 						src="/static-assets/badges/error.png"
 						class="_ghost"
+						v-tooltip="errorMsg"
 						alt="notMore"
 					/>
 				</div>
@@ -70,7 +71,7 @@
 				<MkButton
 					v-if="!moreFetching"
 					v-appear="
-						$store.state.enableInfiniteScroll && !disableAutoLoad && !moreFetchError
+						$store.state.enableInfiniteScroll && !disableAutoLoad && !moreFetchError && ((Date.now() - lastFetchDate) > 3 * 1000)
 							? fetchMore
 							: null
 					"
@@ -106,6 +107,7 @@
 					<img
 						src="/static-assets/badges/error.png"
 						class="_ghost"
+						v-tooltip="errorMsg"
 						alt="notMore"
 					/>
 				</div>
@@ -191,6 +193,8 @@ const isBackTop = ref(false);
 const empty = computed(() => items.value.length === 0);
 const error = ref(false);
 const moreFetchError = ref(false);
+const lastFetchDate = ref(0);
+const errorMsg = ref("");
 
 const init = async (): Promise<void> => {
 	queue.value = [];
@@ -238,6 +242,7 @@ const init = async (): Promise<void> => {
 			},
 			(err) => {
 				error.value = true;
+				errorMsg.value = err;
 				fetching.value = false;
 			}
 		);
@@ -281,6 +286,7 @@ const refresh = async (): void => {
 			},
 			(err) => {
 				error.value = true;
+				errorMsg.value = err;
 				fetching.value = false;
 			}
 		);
@@ -294,6 +300,7 @@ const fetchMore = async (): Promise<void> => {
 		items.value.length === 0
 	)
 		return;
+	lastFetchDate.value = Date.now();
 	moreFetchError.value = false;
 	moreFetching.value = true;
 	backed.value = true;
@@ -328,18 +335,21 @@ const fetchMore = async (): Promise<void> => {
 						if (i === 10) item._shouldInsertAd_ = true;
 					}
 				}
-				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 0) && items.value?.[0]?.id !== res?.[0]?.id) {
+				const itemIdArray = items.value?.map(x => x.id);
+				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 0)) {
 					if (res.length > SECOND_FETCH_LIMIT) res.pop();
+					// 既に取得してる項目に重複項目があれば取り除く
+					// TODO : 重いかも
+					resFiltered = res.filter(x => !itemIdArray.includes(x.id));
 					items.value = props.pagination.reversed
-						? [...res].reverse().concat(items.value)
-						: items.value.concat(res);
-					more.value = true;
+						? [...resFiltered].reverse().concat(items.value)
+						: items.value.concat(resFiltered);
+					more.value = res?.length === resFiltered?.length;
 				} else {
-					if (items.value?.[0]?.id !== res?.[0]?.id){
-						items.value = props.pagination.reversed
-							? [...res].reverse().concat(items.value)
-							: items.value.concat(res);
-					}
+					resFiltered = res.filter(x => !itemIdArray.includes(x.id));
+					items.value = props.pagination.reversed
+						? [...resFiltered].reverse().concat(items.value)
+						: items.value.concat(resFiltered);
 					more.value = false;
 				}
 				offset.value += res.length;
@@ -347,6 +357,7 @@ const fetchMore = async (): Promise<void> => {
 			},
 			(err) => {
 				moreFetchError.value = true;
+				errorMsg.value = err;
 				moreFetching.value = false;
 			}
 		);
@@ -360,6 +371,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 		items.value.length === 0
 	)
 		return;
+	lastFetchDate.value = Date.now();
 	moreFetchError.value = false;
 	moreFetching.value = true;
 	const params = props.pagination.params
@@ -402,6 +414,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 			},
 			(err) => {
 				moreFetchError.value = true;
+				errorMsg.value = err;
 				moreFetching.value = false;
 			}
 		);

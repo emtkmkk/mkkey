@@ -711,6 +711,10 @@ export const defaultStore = markRaw(
 			where: 'account',
 			default: false,
 		},
+		longLoading: {
+			where: 'device',
+			default: false,
+		},
 	}),
 );
 

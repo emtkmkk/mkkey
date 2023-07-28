@@ -97,7 +97,7 @@ export default async (
 		.update()
 		.set({
 			reactions: () => sql,
-			score: () => '"score" + 1',
+			score: () => '"score" + ' + (user.host ? '1' : '2'),
 		})
 		.where("id = :id", { id: note.id })
 		.execute();

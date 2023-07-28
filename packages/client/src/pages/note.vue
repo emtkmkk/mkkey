@@ -16,6 +16,7 @@
 						<div v-if="showNext" class="_gap">
 							<XNotes
 								class="_content"
+								key="nextUserNote"
 								:pagination="nextPagination"
 								:no-gap="true"
 							/>
@@ -81,6 +82,7 @@
 						<div v-if="showPrev" class="_gap">
 							<XNotes
 								class="_content"
+								key="prevUserNote"
 								:pagination="prevPagination"
 								:no-gap="true"
 							/>

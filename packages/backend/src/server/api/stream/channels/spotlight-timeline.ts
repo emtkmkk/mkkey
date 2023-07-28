@@ -42,7 +42,7 @@ export default class extends Channel {
 			dynamicScore3 = 150;
 		}
 		
-		// TODO : うまく行かないと拾えない
+		// TODO : うまく行かないと拾えないのを直す
 		dynamicScore1 = Math.floor(dynamicScore1 / 3);
 		dynamicScore2 = Math.floor(dynamicScore2 / 3);
 		dynamicScore3 = Math.floor(dynamicScore3 / 3);

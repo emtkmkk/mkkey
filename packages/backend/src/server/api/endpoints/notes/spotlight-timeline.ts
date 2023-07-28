@@ -76,23 +76,27 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-	let dynamicRTCount1 = 50;
-	let dynamicRTCount2 = 50;
-	let dynamicRTCount3 = 125;
-	let dynamicRTCount4 = 100;
-	let dynamicRTCount5 = 10;
+	// もこきーのスコア計算
+	// ローカルユーザー RT : 9 Reaction : 3
+	// リモートユーザー RT : 3 Reaction : 1
+
+	let dynamicScore1 = 40;		// フォロー済のユーザが出現するScore閾値
+	let dynamicScore2 = 120;	// ローカルユーザが出現するScore閾値
+	let dynamicScore3 = 200;	// リモートユーザが出現するScore閾値
+	let dynamicScore4 = 130;	// フォロイーがRTした投稿が出現するScore閾値
+	let dynamicScore5 = 25;		// 自鯖内コンテンツが出現するScore閾値
 
 
 	if (user.followingCount < 50) {
-		dynamicRTCount1 = 25;
-		dynamicRTCount2 = 25;
-		dynamicRTCount3 = 75;
-		dynamicRTCount4 = 50;
+		dynamicScore1 = 20;
+		dynamicScore2 = 36;
+		dynamicScore3 = 100;
+		dynamicScore4 = 70;
 	} else if (user.followingCount < 500) {
-		dynamicRTCount1 = 35;
-		dynamicRTCount2 = 35;
-		dynamicRTCount3 = 100;
-		dynamicRTCount4 = 75;
+		dynamicScore1 = 30;
+		dynamicScore2 = 60;
+		dynamicScore3 = 150;
+		dynamicScore4 = 100;
 	}
 
 	const followees = await Followings.createQueryBuilder('following')
@@ -113,11 +117,11 @@ export default define(meta, paramDef, async (ps, user) => {
 	)
 		.andWhere(`note.id > '${genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 10))) ?? genId()}'`)
 		.andWhere(new Brackets(qb => {
-			qb.where(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (note."score" > ${dynamicRTCount1}) AND (note.renote IS NULL))`)
-				.orWhere(`((note."score" > ${dynamicRTCount2}) AND (note."userHost" IS NULL) AND (note.renote IS NULL))`)
-				.orWhere(`((note."score" > ${dynamicRTCount3}) AND (note.renote IS NULL))`)
-				.orWhere(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (renote."userId" NOT IN (${meOrFolloweeIdsStr})) AND (renote."score" > ${dynamicRTCount4}))`)
-				.orWhere(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (note."renoteId" IS NOT NULL) AND (note."userHost" IS NULL) AND (renote."userId" IN (${meOrFolloweeIdsStr})) AND (renote."fileIds" != '{}') AND (renote."userHost" IS NULL) AND (renote."score" > ${dynamicRTCount5}) AND (note."userId" != renote."userId"))`);
+			qb.where(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (note."score" > ${dynamicScore1}) AND (note.renote IS NULL))`)
+				.orWhere(`((note."score" > ${dynamicScore2}) AND (note."userHost" IS NULL) AND (note.renote IS NULL))`)
+				.orWhere(`((note."score" > ${dynamicScore3}) AND (note.renote IS NULL))`)
+				.orWhere(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (renote."userId" NOT IN (${meOrFolloweeIdsStr})) AND (renote."score" > ${dynamicScore4}))`)
+				.orWhere(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (note."renoteId" IS NOT NULL) AND (note."userHost" IS NULL) AND (renote."userId" IN (${meOrFolloweeIdsStr})) AND (renote."fileIds" != '{}') AND (renote."userHost" IS NULL) AND (renote."score" > ${dynamicScore5}) AND (note."userId" != renote."userId"))`);
 		}))
 		.andWhere("(note.visibility = 'public')")
 		.andWhere(`(note."channelId" IS NULL)`)

@@ -28,22 +28,31 @@ export default class extends Channel {
 	private async onNote(note: Packed<"Note">) {
 		const meta = await fetchMeta();
 		
-		let DynamicRenoteCount1 = 10;
-		let DynamicRenoteCount2 = 40;
-		let DynamicRenoteCount3 = 60;
-		if(this.user!.followersCount < 50){
-			DynamicRenoteCount1 = 5;
-			DynamicRenoteCount2 = 10;
-			DynamicRenoteCount3 = 20;
-		}else if(this.user!.followersCount < 500){
-			DynamicRenoteCount2 = 20;
-			DynamicRenoteCount3 = 30;
+		let dynamicScore1 = 40;		// フォロー済のユーザが出現するScore閾値
+		let dynamicScore2 = 120;	// ローカルユーザが出現するScore閾値
+		let dynamicScore3 = 200;	// リモートユーザが出現するScore閾値
+		
+		if(this.user!.followingCount < 50){
+			dynamicScore1 = 20;
+			dynamicScore2 = 36;
+			dynamicScore3 = 100;
+		}else if(this.user!.followingCount < 500){
+			dynamicScore1 = 30;
+			dynamicScore2 = 60;
+			dynamicScore3 = 150;
 		}
 		
+		// TODO : うまく行かないと拾えない
+		dynamicScore1 = Math.floor(dynamicScore1 / 3);
+		dynamicScore2 = Math.floor(dynamicScore2 / 3);
+		dynamicScore3 = Math.floor(dynamicScore3 / 3);
+		
+		if (!note.renoteId) return;
+		
 		if (!(
-			(note.channelId == null && this.following.has(note.renote!.userId) && note.renote!.renoteCount == DynamicRenoteCount1 && note.renoteId != null)||
-			(note.channelId == null && note.renote!.renoteCount == DynamicRenoteCount2 && note.user.host == null && note.renoteId != null)||
-			(note.channelId == null && note.renote!.renoteCount == DynamicRenoteCount3 && note.renoteId != null))
+			(note.channelId == null && this.following.has(note.renote!.userId) && Math.floor(note.renote!.score / 3) === dynamicScore1)||
+			(note.channelId == null && !note.renote!.user.host && Math.floor(note.renote!.score / 3) === dynamicScore2) ||
+			(note.channelId == null && note.renote!.user.host && Math.floor(note.renote!.score / 3) === dynamicScore3))
 		) return;
 		
 		if (note.visibility !== "public") return;

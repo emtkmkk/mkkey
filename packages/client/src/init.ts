@@ -213,6 +213,10 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 	widgets(app);
 	directives(app);
 	components(app);
+	
+	const wait = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
+	
+	if ($i && defaultStore.state.longLoading) await wait(3000);
 
 	const splash = document.getElementById("splash");
 	// 念のためnullチェック(HTMLが古い場合があるため(そのうち消す))

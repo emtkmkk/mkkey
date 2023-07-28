@@ -76,23 +76,23 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-	let dynamicRTCount1 = 40;
-	let dynamicRTCount2 = 40;
-	let dynamicRTCount3 = 120;
-	let dynamicRTCount4 = 90;
-	let dynamicRTCount5 = 8;
+	let dynamicRTCount1 = 50;
+	let dynamicRTCount2 = 50;
+	let dynamicRTCount3 = 125;
+	let dynamicRTCount4 = 100;
+	let dynamicRTCount5 = 10;
 
 
 	if (user.followingCount < 50) {
-		dynamicRTCount1 = 20;
-		dynamicRTCount2 = 20;
-		dynamicRTCount3 = 60;
-		dynamicRTCount4 = 40;
+		dynamicRTCount1 = 25;
+		dynamicRTCount2 = 25;
+		dynamicRTCount3 = 75;
+		dynamicRTCount4 = 50;
 	} else if (user.followingCount < 500) {
-		dynamicRTCount1 = 30;
-		dynamicRTCount2 = 30;
-		dynamicRTCount3 = 90;
-		dynamicRTCount4 = 65;
+		dynamicRTCount1 = 35;
+		dynamicRTCount2 = 35;
+		dynamicRTCount3 = 100;
+		dynamicRTCount4 = 75;
 	}
 
 	const followees = await Followings.createQueryBuilder('following')

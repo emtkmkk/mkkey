@@ -209,6 +209,45 @@ export class Storage<T extends StateDef> {
 	public reset(key: keyof T) {
 		this.set(key, this.def[key].default);
 	}
+	
+	public isDefault(k: string){
+		const v = this.def[k];
+	
+		const deviceState = JSON.parse(
+			localStorage.getItem(this.keyForLocalStorage) || "{}",
+		);
+		const deviceAccountState = $i
+			? JSON.parse(
+					localStorage.getItem(`${this.keyForLocalStorage}::${$i.id}`) || "{}",
+			)
+			: {};
+		const registryCache = $i
+			? JSON.parse(
+					localStorage.getItem(`${this.keyForLocalStorage}::cache::${$i.id}`) ||
+						"{}",
+			)
+			: {};
+
+		if (
+			v.where === "device" &&
+			Object.prototype.hasOwnProperty.call(deviceState, k)
+		) {
+			return false;
+		} else if (
+			v.where === "account" &&
+			$i &&
+			Object.prototype.hasOwnProperty.call(registryCache, k)
+		) {
+			return false;
+		} else if (
+			v.where === "deviceAccount" &&
+			Object.prototype.hasOwnProperty.call(deviceAccountState, k)
+		) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 	/**
 	 * 特定のキーの、簡易的なgetter/setterを作ります

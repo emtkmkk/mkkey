@@ -46,7 +46,7 @@ export default async (
 		.where("id = :id", { id: note.id })
 		.execute();
 
-	Notes.decrement({ id: note.id }, "score", (user.host ? '1' : '2'));
+	Notes.decrement({ id: note.id }, "score", (user.host ? '1' : '3'));
 
 	publishNoteStream(note.id, "unreacted", {
 		reaction: decodeReaction(exist.reaction).reaction,

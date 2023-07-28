@@ -36,7 +36,7 @@ import { version, ui, lang, host } from "@/config";
 import { applyTheme } from "@/scripts/theme";
 import { isDeviceDarkmode } from "@/scripts/is-device-darkmode";
 import { i18n } from "@/i18n";
-import { confirm, alert, post, popup, toast } from "@/os";
+import { confirm, alert, post, popup, toast, yesno } from "@/os";
 import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i, refreshAccount, login, updateAccount, signout } from "@/account";
@@ -453,6 +453,28 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 			// 取得設定を保存
 			localStorage.setItem("lastFetchModeMax", fetchModeMax);
 		});
+		
+		if (
+			!defaultStore.state.showLocalPostsInfoPopup &&
+			$i.followingCount >= 10
+		) {
+			if (defaultStore.isDefault("showLocalPostsInTimeline")){
+				const { canceled } = await yesno({
+					type: "question",
+					text: "ホームTLの内容をフォローしている人のみ表示に変更する事が可能です。\n※ここで変更しない場合でも設定画面>色々にて後から変更する事が可能です。\n今すぐフォローのみの表示に変更しますか？",
+				});
+				if (!canceled) {
+					defaultStore.set("showLocalPostsInTimeline","social")
+					defaultStore.set("showLocalPostsInfoPopup",true);
+					location.reload();
+				} else {
+					defaultStore.set("showLocalPostsInTimeline","home")
+					defaultStore.set("showLocalPostsInfoPopup",true);
+				}
+			} else {
+				defaultStore.set("showLocalPostsInfoPopup",true);
+			}
+		}
 
 		const lastUsed = localStorage.getItem("lastUsed");
 		if (lastUsed) {

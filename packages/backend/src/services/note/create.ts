@@ -731,7 +731,7 @@ function incRenoteCount(renote: Note, userHost?: string) {
 		.update()
 		.set({
 			renoteCount: () => '"renoteCount" + 1',
-			score: () => '"score" + ' + (userHost ? '3' : '6'),
+			score: () => '"score" + ' + (userHost ? '3' : '9'),
 		})
 		.where("id = :id", { id: renote.id })
 		.execute();

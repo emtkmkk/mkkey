@@ -97,6 +97,9 @@
 			<FormSwitch v-model="diablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript
 			}}</FormSwitch>
+			<FormSwitch v-model="longLoading" class="_formBlock">{{
+				i18n.ts.longLoading
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-if="developer" v-model="developerRenote" class="_formBlock">{{
 				i18n.ts.developerRenote
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -617,6 +620,9 @@ const showMkkeySettingTips = computed(
 );
 const noteAllCw = $computed(
 	defaultStore.makeGetterSetter("noteAllCw")
+);
+const longLoading = $computed(
+	defaultStore.makeGetterSetter("longLoading")
 );
 
 function save() {

@@ -374,6 +374,10 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: "home" as "home" | "social" | "both",
 		},
+		showLocalPostsInfoPopup: {
+			where: "account",
+			default: false,
+		},
 		serverDisconnectedBehavior: {
 			where: "device",
 			default: "nothing" as "nothing" | "quiet" | "reload" | "dialog",

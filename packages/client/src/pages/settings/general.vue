@@ -132,6 +132,9 @@
 			<FormSwitch v-model="enterSendsMessage" class="_formBlock">{{
 				i18n.ts.enterSendsMessage
 			}}</FormSwitch>
+			<FormSwitch v-model="plusInfoPostForm" class="_formBlock">{{
+				i18n.ts.plusInfoPostForm
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="openEmojiPicker" class="_formBlock">{{
 				i18n.ts.openEmojiPicker
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>

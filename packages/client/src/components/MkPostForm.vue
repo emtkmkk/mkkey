@@ -666,6 +666,12 @@ const placeholder = $computed((): string => {
 		return i18n.ts._postForm.replyPlaceholder;
 	} else if (props.channel) {
 		return i18n.ts._postForm.channelPlaceholder;
+	} else if (defaultStore.state.plusInfoPostForm) {
+		return (i18n.ts._visibility[visibility] 
+			? (localOnly ? "もこワー" : "") + i18n.ts._visibility[visibility] + " : " : "") +
+			 new Date()
+			 .toLocaleTimeString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit' })
+			 .replace(/日(.*)\s(\d+):(\d+)/,"日($1) $2時$3分");
 	} else {
 		const xs = [
 			i18n.ts._postForm._placeholders.a,

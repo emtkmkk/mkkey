@@ -340,13 +340,13 @@ const fetchMore = async (): Promise<void> => {
 					if (res.length > SECOND_FETCH_LIMIT) res.pop();
 					// 既に取得してる項目に重複項目があれば取り除く
 					// TODO : 重いかも
-					resFiltered = res.filter(x => !itemIdArray.includes(x.id));
+					const resFiltered = res.filter(x => !itemIdArray.includes(x.id));
 					items.value = props.pagination.reversed
 						? [...resFiltered].reverse().concat(items.value)
 						: items.value.concat(resFiltered);
 					more.value = res?.length === resFiltered?.length;
 				} else {
-					resFiltered = res.filter(x => !itemIdArray.includes(x.id));
+					const resFiltered = res.filter(x => !itemIdArray.includes(x.id));
 					items.value = props.pagination.reversed
 						? [...resFiltered].reverse().concat(items.value)
 						: items.value.concat(resFiltered);

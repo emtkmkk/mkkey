@@ -667,7 +667,7 @@ const placeholder = $computed((): string => {
 	} else if (props.channel) {
 		return i18n.ts._postForm.channelPlaceholder;
 	} else if (defaultStore.state.plusInfoPostForm) {
-		return (i18n.ts._visibility[visibility] && (($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) || visibility === 'specified')
+		return (i18n.ts._visibility[visibility] && ((defaultStore.state.rememberNoteVisibility || !defaultStore.state.firstPostButtonVisibilityForce) || visibility === 'specified')
 			? (localOnly ? "もこワー" : "") + i18n.ts._visibility[visibility] + " : " : "") +
 			 new Date()
 			 .toLocaleTimeString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit' })

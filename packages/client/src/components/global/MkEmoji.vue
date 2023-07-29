@@ -47,8 +47,8 @@ const useOsNativeEmojis = computed(
 const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
 const ace = computed(() => 
 	[
-		...(instance.allEmojis ?? {}),
-		...(props.customEmojis ?? {}),
+		...(instance.allEmojis ?? []),
+		...(props.customEmojis ?? []),
 	]
 );
 const customEmoji = computed(() =>

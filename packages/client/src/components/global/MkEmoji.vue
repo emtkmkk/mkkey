@@ -45,12 +45,12 @@ const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
 );
 const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
-const ace = computed(() => (
-	{
-		...(instance.allEmojis.value ?? {}),
+const ace = computed(() => 
+	[
+		...(instance.allEmojis ?? {}),
 		...(props.customEmojis ?? {}),
-	}
-));
+	]
+);
 const customEmoji = computed(() =>
 	isCustom.value
 		? hostmatch?.[2]
@@ -58,7 +58,7 @@ const customEmoji = computed(() =>
 					(x) => x.name === hostmatch?.[1] && x.host === hostmatch?.[2]
 			)
 			: props.noteHost && !props.customEmojis
-				? ace.value.find(
+				? ace.value?.find(
 					(x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.host === props.noteHost
 				)
 				: ce.value.find(

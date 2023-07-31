@@ -7,7 +7,7 @@
 			{{ i18n.ts.notSetOnly }}
 		</FormSwitch>
 		<template v-for="item in items">
-			<FormLink v-if="!notSetOnly || defaultStore.isDefault(item.key)" :to="`/settings/${item.def.page}`" style="overflow: hidden;text-overflow: ellipsis;" class="_formBlock">
+			<FormLink :key="item.key" v-if="!notSetOnly || defaultStore.isDefault(item.key)" :to="`/settings/${item.def.page}`" style="overflow: hidden;text-overflow: ellipsis;" class="_formBlock">
 				{{ i18n.ts[item.key] }}<span v-if="defaultStore.isDefault(item.key)" class="_beta">{{ i18n.ts.notSet }}</span>
 				<template #suffix><MkTime :time="new Date(item.def.createdAt)" mode="relative"/></template>
 			</FormLink>

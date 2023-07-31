@@ -500,6 +500,31 @@ export async function extractEmojis(
 						new Date(tag.updated) > exists.updatedAt) ||
 					tag.icon!.url !== exists.originalUrl
 				) {
+					let beforeD15Date = new Date();
+					beforeD15Date.setDate(beforeD15Date.getDate() - 15);
+					if (exists.createdAt && exists.createdAt < beforeD15Date && exists.originalUrl && tag.icon!.url !== exists.originalUrl) {
+						try {
+							let lastUpdateDate = "00000000000000";
+							lastUpdateDate = exists.createdAt.getFullYear() + ('0' + (exists.createdAt.getMonth() + 1)).slice(-2) + ('0' + exists.createdAt.getDate()).slice(-2) + ('0' + exists.createdAt.getHours()).slice(-2) + ('0' + exists.createdAt.getMinutes()).slice(-2) + ('0' + exists.createdAt.getSeconds()).slice(-2);
+							await Emojis.insert({
+								...exists,
+								id: genId(),
+								name: exists.name + "_" + lastUpdateDate,
+								oldEmoji: true,
+							});
+							await Emojis.update(
+								{
+									host: _host,
+									name,
+								},
+								{
+									createdAt: new Date(),
+								},
+							);
+						} catch (err) {
+							logger.warn(`backup emoji err : ${err}`);
+						}
+					}
 					await Emojis.update(
 						{
 							host: _host,

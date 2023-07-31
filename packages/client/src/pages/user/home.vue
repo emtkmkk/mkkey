@@ -801,7 +801,7 @@ onUnmounted(() => {
 							opacity: 0.8;
 						}
 						> .badge {
-							opacity: 1;
+							opacity: 1 !important;
 						}
 					}
 				}

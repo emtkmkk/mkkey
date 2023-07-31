@@ -94,6 +94,18 @@ const menuDef = computed(() => [
 		title: i18n.ts.basicSettings,
 		items: [
 			{
+				icon: "ph-gear-six ph-bold ph-lg",
+				text: i18n.ts.general,
+				to: "/settings/general",
+				active: currentPage?.route.name === "general",
+			},
+			{
+				icon: "ph-list-plus ph-bold ph-lg",
+				text: i18n.ts.mkkeySettings,
+				to: "/settings/mkkey-settings",
+				active: currentPage?.route.name === "mkkey-settings",
+			},
+			{
 				icon: "ph-user ph-bold ph-lg",
 				text: i18n.ts.profile,
 				to: "/settings/profile",
@@ -146,18 +158,6 @@ const menuDef = computed(() => [
 	{
 		title: i18n.ts.clientSettings,
 		items: [
-			{
-				icon: "ph-gear-six ph-bold ph-lg",
-				text: i18n.ts.general,
-				to: "/settings/general",
-				active: currentPage?.route.name === "general",
-			},
-			{
-				icon: "ph-list-plus ph-bold ph-lg",
-				text: i18n.ts.mkkeySettings,
-				to: "/settings/mkkey-settings",
-				active: currentPage?.route.name === "mkkey-settings",
-			},
 			{
 				icon: "ph-palette ph-bold ph-lg",
 				text: i18n.ts.theme,

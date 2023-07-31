@@ -272,7 +272,7 @@ export async function openAccountMenu(
 						action: () => {
 							signout();
 						},
-					}] : [{}]),
+					}] : []),
 				],
 			],
 			ev.currentTarget ?? ev.target,

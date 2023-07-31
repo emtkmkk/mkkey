@@ -31,7 +31,7 @@ const notSetOnly = ref(false);
 
 const items = computed(() => {
 	const storekeys = Object.keys(defaultStore.def).filter(x => i18n.ts[x] && defaultStore.def[x]?.createdAt && defaultStore.def[x]?.page);
-	return storekeys.map(x => ({key: x,def: defaultStore.def[x]})).sort((a,b) => {
+	return storekeys.map(x => ({key: x, def: defaultStore.def[x]})).sort((a,b) => {
 		if (a.def.createdAt === b.def.createdAt) {
 			    if (a.key < b.key) return -1;
     			if (a.key > b.key) return 1;
@@ -49,7 +49,7 @@ const headerActions = $computed(() => []);
 const headerTabs = $computed(() => []);
 
 definePageMetadata({
-	title: i18n.ts.other,
-	icon: "ph-dots-three-outline ph-bold ph-lg",
+	title: i18n.ts.mkkeySettings,
+	icon: "ph-list-plus ph-bold ph-lg",
 });
 </script>

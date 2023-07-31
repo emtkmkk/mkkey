@@ -18,6 +18,7 @@ export const EmojiRepository = db.getRepository(Emoji).extend({
 			license: emoji.license,
 			createdAt: emoji.createdAt,
 			updatedAt: emoji.updatedAt,
+			...(emoji.oldEmoji ? {oldEmoji: true} : {}),
 		};
 	},
 

@@ -34,7 +34,6 @@ import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
-const notSetOnly = ref(!dontShowNotSet && items.some(x => defaultStore.isDefault(x.key)));
 const dontShowNotSet = computed(
 	defaultStore.makeGetterSetter("dontShowNotSet")
 );
@@ -60,6 +59,8 @@ const items = computed(() => {
 			}
 		});
 });
+
+const notSetOnly = ref(!dontShowNotSet && items.some(x => defaultStore.isDefault(x.key)));
 
 const headerActions = $computed(() => []);
 

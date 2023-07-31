@@ -406,6 +406,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	let emojis = await Emojis.find({
 		where: {
 			host: IsNull(),
+			oldEmoji: false,
 		},
 		order: {
 			category: "ASC",
@@ -448,7 +449,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_plus_emojis",
 			milliseconds: 3600000, // 1 hour
 		},
-	})).filter((x) => !emojiNames.includes(x.name) && (x.name?.length ?? 0) < 75 && (x.publicUrl?.length ?? 0) < 140).slice(0,10000)
+	})).filter((x) => !emojiNames.includes(x.name) && !x.oldEmoji && (x.name?.length ?? 0) < 75 && (x.publicUrl?.length ?? 0) < 140).slice(0,10000)
 	: undefined;
 	
 	// データ削減の為、不要情報を削除
@@ -464,6 +465,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	? (await Emojis.find({
 		where: {
 			host: Not(IsNull()),
+			oldEmoji: false,
 		},
 		order: {
 			name: "ASC",

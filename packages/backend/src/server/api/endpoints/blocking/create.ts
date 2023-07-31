@@ -67,6 +67,11 @@ export default define(meta, paramDef, async (ps, user) => {
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
+	
+	// 管理人はブロック不可（モデレーションに問題が出る為）
+	if (!blocker.host && !blocker.isAdmin && blockee.isAdmin) {
+		throw new ApiError();
+	}
 
 	// Check if already blocking
 	const exist = await Blockings.findOneBy({

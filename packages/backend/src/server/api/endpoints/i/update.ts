@@ -153,8 +153,20 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-	if (ps.name !== undefined) updates.name = ps.name;
-	if (ps.description !== undefined) profileUpdates.description = ps.description;
+	if (ps.name !== undefined) {
+		if (_user.isAdmin || ps.name.toLowerCase().includes("admin"))
+			throw new ApiError();
+		if (_user.isAdmin || _user.isModerator || ps.name.toLowerCase().includes("moderator"))
+			throw new ApiError();
+		updates.name = ps.name;
+	}
+	if (ps.description !== undefined) {
+		if (_user.isAdmin || ps.name.toLowerCase().includes("admin"))
+			throw new ApiError();
+		if (_user.isAdmin || _user.isModerator || ps.name.toLowerCase().includes("moderator"))
+			throw new ApiError();
+		profileUpdates.description = ps.description;
+	}
 	if (ps.lang !== undefined) profileUpdates.lang = ps.lang;
 	if (ps.location !== undefined) profileUpdates.location = ps.location;
 	if (ps.birthday !== undefined) profileUpdates.birthday = ps.birthday;
@@ -225,7 +237,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		updates.blockPostNotLocal = ps.blockPostNotLocal;
 	if (typeof ps.blockPostNotLocalPublic === "boolean")
 		updates.blockPostNotLocalPublic = ps.blockPostNotLocalPublic;
-	if (typeof ps.isSilentLocked === "boolean"){
+	if (typeof ps.isSilentLocked === "boolean") {
 		updates.isSilentLocked = ps.isSilentLocked;
 		updates.isLocked = false;
 	}
@@ -309,7 +321,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	}
 
 	if (newField != null) {
-		
+
 		newField.forEach((x) => {
 			const nameTokens = mfm.parseSimple(x.name);
 			emojis = emojis.concat(extractCustomEmojisFromMfm(nameTokens!));
@@ -342,7 +354,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		"updateUserProfile",
 		await UserProfiles.findOneBy({ userId: user.id }),
 	);
-	
+
 	// Publish meUpdated event
 	publishInternalEvent(
 		"localUserUpdated",

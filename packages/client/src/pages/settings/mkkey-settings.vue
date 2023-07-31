@@ -32,8 +32,8 @@ const notSetOnly = ref(false);
 const items = computed(() => {
 	const storekeys = Object.keys(defaultStore.def).filter(x => {
 		i18n.ts[x] &&
-		defaultStore.def[x]?.createdAt &&
-		defaultStore.def[x]?.page
+		defaultStore.def[x].createdAt &&
+		defaultStore.def[x].page
 	});
 	return storekeys
 		.map(x => ({

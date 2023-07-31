@@ -154,9 +154,9 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
 	if (ps.name !== undefined) {
-		if (_user.isAdmin || ps.name.toLowerCase().includes("admin"))
+		if (!_user.host && (_user.isAdmin || ps.name.toLowerCase().includes("admin")))
 			throw new ApiError();
-		if (_user.isAdmin || _user.isModerator || ps.name.toLowerCase().includes("moderator"))
+		if (!_user.host && (_user.isAdmin || _user.isModerator || ps.name.toLowerCase().includes("moderator")))
 			throw new ApiError();
 		updates.name = ps.name;
 	}

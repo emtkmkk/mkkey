@@ -153,6 +153,12 @@ const menuDef = computed(() => [
 				active: currentPage?.route.name === "general",
 			},
 			{
+				icon: "ph-list-plus ph-bold ph-lg",
+				text: i18n.ts.mkkeySettings,
+				to: "/settings/mkkey-settings",
+				active: currentPage?.route.name === "mkkey-settings",
+			},
+			{
 				icon: "ph-palette ph-bold ph-lg",
 				text: i18n.ts.theme,
 				to: "/settings/theme",

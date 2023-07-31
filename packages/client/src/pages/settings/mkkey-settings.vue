@@ -42,7 +42,7 @@ const items = computed(() => {
 			return 0;
 		}
 	});
-})
+});
 
 const headerActions = $computed(() => []);
 

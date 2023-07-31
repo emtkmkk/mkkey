@@ -74,7 +74,10 @@ let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
 function post() {
-	os.post({initialText: ` #${props.tag} `});
+	os.post({
+		initialText: ` #${props.tag} `,
+		instant: true,
+	});
 }
 
 const headerActions = $computed(() => [{

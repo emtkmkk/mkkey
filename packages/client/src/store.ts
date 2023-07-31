@@ -38,6 +38,8 @@ export const defaultStore = markRaw(
 		keepPostCw: {
 			where: "account",
 			default: true,
+			createdAt: "2023/5/23",
+			page: "general",
 		},
 		showFullAcct: {
 			where: "account",
@@ -58,6 +60,7 @@ export const defaultStore = markRaw(
 		defaultNoteLocalAndFollower: {
 			where: "account",
 			default: false,
+			createdAt: "2023/5/11",
 		},
 		uploadFolder: {
 			where: "account",
@@ -120,74 +123,110 @@ export const defaultStore = markRaw(
 		reactionsFolderName: {
 			where: "account",
 			default: "",
+			createdAt: "2023/7/18",
+			page: "reaction",
 		},
 		reactionsDefaultOpen: {
 			where: 'account',
 			default: true,
+			createdAt: "2023/7/19",
+			page: "reaction",
 		},
 		reactions2: {
 			where: "account",
 			default: [],
+			createdAt: "2023/7/13",
+			page: "reaction",
 		},
 		reactionsFolderName2: {
 			where: "account",
 			default: "",
+			createdAt: "2023/7/18",
+			page: "reaction",
 		},
 		reactions2DefaultOpen: {
 			where: 'account',
 			default: false,
+			createdAt: "2023/7/19",
+			page: "reaction",
 		},
 		reactions3: {
 			where: "account",
 			default: [],
+			createdAt: "2023/7/13",
+			page: "reaction",
 		},
 		reactionsFolderName3: {
 			where: "account",
 			default: "",
+			createdAt: "2023/7/18",
+			page: "reaction",
 		},
 		reactions3DefaultOpen: {
 			where: 'account',
 			default: false,
+			createdAt: "2023/7/19",
+			page: "reaction",
 		},
 		reactions4: {
 			where: "account",
 			default: [],
+			createdAt: "2023/7/13",
+			page: "reaction",
 		},
 		reactionsFolderName4: {
 			where: "account",
 			default: "",
+			createdAt: "2023/7/18",
+			page: "reaction",
 		},
 		reactions4DefaultOpen: {
 			where: 'account',
 			default: false,
+			createdAt: "2023/7/19",
+			page: "reaction",
 		},
 		reactions5: {
 			where: "account",
 			default: [],
+			createdAt: "2023/7/13",
+			page: "reaction",
 		},
 		reactionsFolderName5: {
 			where: "account",
 			default: "",
+			createdAt: "2023/7/18",
+			page: "reaction",
 		},
 		reactions5DefaultOpen: {
 			where: 'account',
 			default: false,
+			createdAt: "2023/7/19",
+			page: "reaction",
 		},
 		recentlyUsedDefaultOpen: {
 			where: 'account',
 			default: true,
+			createdAt: "2023/7/19",
+			page: "reaction",
 		},
 		hiddenRecent: {
 			where: "account",
 			default: false,
+			createdAt: "2023/7/18",
+			page: "reaction",
 		},
 		hiddenReactionDeckAndRecent: {
 			where: "account",
 			default: false,
+			createdAt: "2023/6/30",
+			page: "reaction",
 		},
 		doubleTapReaction: {
 			where: "account",
 			default: false,
+			createdAt: "2023/7/18",
+			page: "reaction",
 		},
 		mutedWords: {
 			where: "account",
@@ -196,18 +235,26 @@ export const defaultStore = markRaw(
 		hiddenSoftMutes: {
 			where: "account",
 			default: false,
+			createdAt: "2023/5/16",
+			page: "word-mute",
 		},
 		muteExcludeReplyQuote: {
 			where: "account",
 			default: false,
+			createdAt: "2023/6/12",
+			page: "word-mute",
 		},
 		muteExcludeNotification: {
 			where: "account",
 			default: true,
+			createdAt: "2023/6/12",
+			page: "word-mute",
 		},
 		reactionMutedWords: {
 			where: "account",
 			default: [],
+			createdAt: "2023/7/21",
+			page: "word-mute",
 		},
 		mutedAds: {
 			where: "account",
@@ -220,6 +267,8 @@ export const defaultStore = markRaw(
 		enableAntennaTab: {
 			where: "account",
 			default: false,
+			createdAt: "2023/6/12",
+			page: "notifications",
 		},
 		localShowRenote: {
 			where: "account",
@@ -245,71 +294,101 @@ export const defaultStore = markRaw(
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/16",
+			page: "privacy",
 		},
 		firstPostWideButton: {
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/26",
+			page: "privacy",
 		},
 		secondPostButton: {
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/2",
+			page: "privacy",
 		},
 		secondPostVisibility: {
 			where: "deviceAccount",
 			default: "home" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
 			advanced: "l-public" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
+			createdAt: "2023/5/2",
+			page: "privacy",
 		},
 		secondPostWideButton: {
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/26",
+			page: "privacy",
 		},
 		thirdPostButton: {
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/3",
+			page: "privacy",
 		},
 		thirdPostVisibility: {
 			where: "deviceAccount",
 			default: "l-public" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
 			advanced: "home" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
+			createdAt: "2023/5/3",
+			page: "privacy",
 		},
 		thirdPostWideButton: {
 			where: "deviceAccount",
 			default: false,
+			createdAt: "2023/5/26",
+			page: "privacy",
 		},
 		fourthPostButton: {
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/26",
+			page: "privacy",
 		},
 		fourthPostVisibility: {
 			where: "deviceAccount",
 			default: "followers" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
+			createdAt: "2023/5/26",
+			page: "privacy",
 		},
 		fourthPostWideButton: {
 			where: "deviceAccount",
 			default: false,
+			createdAt: "2023/5/26",
+			page: "privacy",
 		},
 		fifthPostButton: {
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/26",
+			page: "privacy",
 		},
 		fifthPostVisibility: {
 			where: "deviceAccount",
 			default: "specified" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
+			createdAt: "2023/5/26",
+			page: "privacy",
 		},
 		fifthPostWideButton: {
 			where: "deviceAccount",
 			default: false,
+			createdAt: "2023/5/26",
+			page: "privacy",
 		},
 		channelSecondPostButton: {
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/16",
+			page: "privacy",
 		},
 		localOnly: {
 			where: "deviceAccount",
@@ -318,25 +397,34 @@ export const defaultStore = markRaw(
 		localAndFollower: {
 			where: "deviceAccount",
 			default: false,
+			createdAt: "2023/5/11",
 		},
 		hiddenMFMHelp: {
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/16",
+			page: "general",
 		},
 		hiddenCloseButton: {
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/26",
+			page: "general",
 		},
 		hiddenMentionButton: {
 			where: "deviceAccount",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/25",
+			page: "general",
 		},
 		openMentionWindow: {
 			where: "deviceAccount",
 			default: true,
+			createdAt: "2023/5/25",
+			page: "general",
 		},
 		statusbars: {
 			where: "deviceAccount",
@@ -377,6 +465,7 @@ export const defaultStore = markRaw(
 		showLocalPostsInfoPopup: {
 			where: "account",
 			default: false,
+			createdAt: "2023/7/28",
 		},
 		serverDisconnectedBehavior: {
 			where: "device",
@@ -425,6 +514,7 @@ export const defaultStore = markRaw(
 		useBigCustom: {
 			where: "device",
 			default: false,
+			createdAt: "2023/6/1",
 		},
 		disableDrawer: {
 			where: "device",
@@ -483,6 +573,7 @@ export const defaultStore = markRaw(
 		reactionPickerUseDrawerForMobile: {
 			where: "device",
 			default: false,
+			createdAt: "2023/4/25",
 		},
 		recentlyUsedEmojis: {
 			where: "device",
@@ -520,6 +611,7 @@ export const defaultStore = markRaw(
 		postFormCw: {
 			where: "device",
 			default: "",
+			createdAt: "2023/5/26",
 		},
 		themeInitial: {
 			where: "device",
@@ -536,14 +628,20 @@ export const defaultStore = markRaw(
 		openEmojiPicker: {
 			where: "device",
 			default: true,
+			createdAt: "2023/5/25",
+			page: "general",
 		},
 		notCloseEmojiPicker: {
 			where: "device",
 			default: true,
+			createdAt: "2023/4/24",
+			page: "general",
 		},
 		smartMFMInputer: {
 			where: "device",
 			default: true,
+			createdAt: "2023/5/25",
+			page: "general",
 		},
 		showUpdates: {
 			where: "device",
@@ -552,6 +650,7 @@ export const defaultStore = markRaw(
 		showMiniUpdates: {
 			where: "device",
 			default: false,
+			createdAt: "2023/6/1",
 		},
 		swipeOnDesktop: {
 			where: "device",
@@ -572,6 +671,7 @@ export const defaultStore = markRaw(
 		enableEmojiReactions: {
 			where: "account",
 			default: true,
+			createdAt: "2023/5/29",
 		},
 		showEmojiButton: {
 			where: "account",
@@ -585,139 +685,197 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: "custom",
 			advanced: "favorite",
+			createdAt: "2023/5/9",
+			page: "reaction",
 		},
 		favButtonReactionCustom: {
 			where: "account",
 			default: ":iine:",
+			createdAt: "2023/5/9",
 		},
 		powerMode: {
 			where: "device",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/15",
+			page: "general",
 		},
 		powerModeColorful: {
 			where: "device",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/15",
+			page: "general",
 		},
 		powerModeNoShake: {
 			where: "device",
 			default: false,
 			advanced: true,
+			createdAt: "2023/5/15",
+			page: "general",
 		},
 		developer: {
 			where: "account",
 			default: false,
+			createdAt: "2023/5/26",
 		},
 		developerRenote: {
 			where: "account",
 			default: false,
+			createdAt: "2023/5/29",
 		},
 		developerQuote: {
 			where: "account",
 			default: false,
+			createdAt: "2023/5/29",
 		},
 		developerNoteMenu: {
 			where: "account",
 			default: false,
+			createdAt: "2023/5/29",
 		},
 		developerTicker: {
 			where: "account",
 			default: false,
+			createdAt: "2023/6/9",
 		},
 		completedReInit: {
 			where: "device",
 			default: false,
+			createdAt: "2023/6/2",
 		},
 		hiddenActivityChart: {
 			where: "device",
 			default: false,
+			createdAt: "2023/6/9",
+			page: "general",
 		},
 		showRelationMark: {
 			where: "account",
 			default: false,
 			advanced: true,
+			createdAt: "2023/6/27",
+			page: "general",
 		},
 		reactionAutoFocusSearchBar: {
 			where: "device",
 			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
+			createdAt: "2023/7/3",
+			page: "reaction",
 		},
 		postAutoFocusSearchBar: {
 			where: "device",
 			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
+			createdAt: "2023/7/3",
+			page: "general",
 		},
 		reactionShowUsername: {
 			where: "device",
 			default: false,
+			createdAt: "2023/7/6",
+			page: "general",
 		},
 		reactionShowShort: {
 			where: "device",
 			default: false,
 			advanced: true,
+			createdAt: "2023/7/6",
+			page: "general",
 		},
 		japanCategory: {
 			where: "account",
 			default: true,
+			createdAt: "2023/7/7",
+			page: "reaction",
 		},
 		remoteEmojisFetch: {
 			where: "device",
 			default: "all" as "all" | "plus" | "keep" | "none" | "always",
+			createdAt: "2023/7/10",
+			page: "reaction",
 		},
 		keepFileName: {
 			where: "account",
 			default: false,	
+			createdAt: "2023/7/11",
+			page: "general",
 		},
 		enableDataSaverMode: {
 			where: 'device',
 			default: false,
+			createdAt: "2023/7/11",
+			page: "general",
 		},
 		recentRenoteId: {
 			where: 'device',
 			default: [],
+			createdAt: "2023/7/18",
 		},
 		recentRenoteHidden: {
 			where: 'account',
 			default: true,
+			createdAt: "2023/7/18",
+			page: "general",
 		},
 		reactedRenoteHidden: {
 			where: 'account',
 			default: true,
+			createdAt: "2023/7/18",
+			page: "general",
 		},
 		showDetailNoteClick: {
 			where: 'account',
 			default: true,
+			createdAt: "2023/7/18",
+			page: "general",
 		},
 		alwaysPostButton: {
 			where: 'device',
 			default: false,
+			createdAt: "2023/7/19",
+			page: "general",
 		},
 		showMkkeySettingTips: {
 			where: 'device',
 			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
+			createdAt: "2023/7/21",
+			page: "general",
 		},
 		showSpotlight: {
 			where: 'account',
 			default: true,
+			createdAt: "2023/7/23",
+			page: "general",
 		},
 		mobileThirdButton: {
 			where: 'account',
 			default: "reload",
+			createdAt: "2023/7/25",
+			page: "navbar",
 		},
 		noteAllCw: {
 			where: 'device',
 			default: false,
+			createdAt: "2023/7/25",
+			page: "general",
 		},
 		enableInstanceEmojiSearch: {
 			where: 'account',
 			default: false,
+			createdAt: "2023/7/26",
+			page: "reaction",
 		},
 		longLoading: {
 			where: 'device',
 			default: false,
+			createdAt: "2023/7/28",
+			page: "general",
 		},
 		plusInfoPostForm: {
 			where: 'device',
 			default: false,
+			createdAt: "2023/7/28",
+			page: "general",
 		},
 	}),
 );

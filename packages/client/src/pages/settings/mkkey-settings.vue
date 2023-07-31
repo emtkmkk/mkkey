@@ -30,18 +30,27 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 const notSetOnly = ref(false);
 
 const items = computed(() => {
-	const storekeys = Object.keys(defaultStore.def).filter(x => i18n.ts[x] && defaultStore.def[x]?.createdAt && defaultStore.def[x]?.page);
-	return storekeys.map(x => ({key: x, def: defaultStore.def[x]})).sort((a,b) => {
-		if (a.def.createdAt === b.def.createdAt) {
-			    if (a.key < b.key) return -1;
-    			if (a.key > b.key) return 1;
-				return 0;
-		} else {
-			if (new Date(a.def.createdAt) > new Date(b.def.createdAt)) return -1;
-			if (new Date(a.def.createdAt) < new Date(b.def.createdAt)) return 1;
-			return 0;
-		}
+	const storekeys = Object.keys(defaultStore.def).filter(x => {
+		i18n.ts[x] &&
+		defaultStore.def[x]?.createdAt &&
+		defaultStore.def[x]?.page
 	});
+	return storekeys
+		.map(x => ({
+			key: x,
+			def: defaultStore.def[x],
+		}))
+		.sort((a, b) => {
+			if (a.def.createdAt === b.def.createdAt) {
+				if (a.key < b.key) return -1;
+				if (a.key > b.key) return 1;
+				return 0;
+			} else {
+				if (new Date(a.def.createdAt) > new Date(b.def.createdAt)) return -1;
+				if (new Date(a.def.createdAt) < new Date(b.def.createdAt)) return 1;
+				return 0;
+			}
+		});
 });
 
 const headerActions = $computed(() => []);

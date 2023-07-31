@@ -8,8 +8,8 @@
 		</FormSwitch>
 		<template v-for="item in items">
 			<FormLink :key="item.key" v-if="!notSetOnly || defaultStore.isDefault(item.key)" :to="`/settings/${item.def.page}`" style="overflow: hidden;text-overflow: ellipsis;" class="_formBlock">
-				{{ i18n.ts[item.key] }}<span v-if="defaultStore.isDefault(item.key)" class="_beta">{{ i18n.ts.notSet }}</span>
-				<template #suffix><MkTime :time="new Date(item.def.createdAt)" mode="relative"/></template>
+				<span v-if="!notSetOnly && defaultStore.isDefault(item.key)" class="_beta">{{ i18n.ts.notSet }}</span>{{ i18n.ts[item.key] }}
+				<template #suffix><MkTime :time="new Date(item.def.createdAt)" mode="relative" dateOnly /></template>
 			</FormLink>
 		</template>
 	</div>
@@ -27,7 +27,7 @@ import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
-const notSetOnly = ref(false);
+const notSetOnly = ref(items.some(x => defaultStore.isDefault(x.key)));
 
 const items = computed(() => {
 	return Object.keys(defaultStore.def)

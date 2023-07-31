@@ -877,6 +877,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/7/28",
 			page: "general",
 		},
+		dontShowNotSet: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/7/31",
+			page: "mkkey-settings",
+		},
 	}),
 );
 

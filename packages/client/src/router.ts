@@ -275,6 +275,11 @@ export const routes = [
 				component: page(() => import("./pages/settings/other.vue")),
 			},
 			{
+				path: "/mkkey-settings",
+				name: "mkkey-settings",
+				component: page(() => import("./pages/settings/mkkey-settings.vue")),
+			},
+			{
 				path: "/",
 				component: page(() => import("./pages/_empty_.vue")),
 			},

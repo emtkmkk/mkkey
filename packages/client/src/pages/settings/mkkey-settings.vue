@@ -30,12 +30,10 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 const notSetOnly = ref(false);
 
 const items = computed(() => {
-	const storekeys = Object.keys(defaultStore.def).filter(x => {
-		i18n.ts[x] &&
-		defaultStore.def[x].createdAt &&
-		defaultStore.def[x].page
-	});
-	return storekeys
+	return Object.keys(defaultStore.def)
+		.filter(x => defaultStore.def[x].createdAt)
+		.filter(x => defaultStore.def[x].page)
+		.filter(x => i18n.ts[x])
 		.map(x => ({
 			key: x,
 			def: defaultStore.def[x],

@@ -1,12 +1,14 @@
 <template>
 	<time :title="absolute">
-		<template v-if="mode === 'relative'">{{ relative }}</template>
+		<template v-if="mode === 'relative' && dateOnly">{{ relativeDateOnly }}</template>
+		<template v-else-if="mode === 'relative'">{{ relative }}</template>
+		<template v-else-if="mode === 'absolute' && dateOnly">{{ absoluteDateOnly }}</template>
 		<template v-else-if="mode === 'absolute'">{{ absolute }}<span style="font-size: 0.75em" v-if="milliseconds">{{ milliseconds }}</span></template>
+		<template v-else-if="mode === 'detail-dateOnly' || mode === 'detail' && dateOnly"
+			>{{ absoluteDateOnly }} ({{ relativeRawDateOnly }})</template
+		>
 		<template v-else-if="mode === 'detail'"
 			>{{ absolute }} ({{ relativeRaw }})</template
-		>
-		<template v-else-if="mode === 'detail-dateOnly'"
-			>{{ absoluteDateOnly }} ({{ relativeRawDateOnly }})</template
 		>
 		<slot></slot>
 	</time>
@@ -20,13 +22,15 @@ const props = withDefaults(
 	defineProps<{
 		time: Date | string;
 		mode?: "relative" | "absolute" | "detail" | "detail-dateOnly" | "none";
+		dateOnly?: boolean;
 	}>(),
 	{
 		mode: "relative",
+		dateOnly: false,
 	}
 );
 
-const _time = props.mode === "detail-dateOnly" 
+const _time = props.mode === "detail-dateOnly" || props.dateOnly
 				? typeof props.time === "string" ? new Date(new Date(props.time).setHours(0, 0, 0, 0)) : new Date(props.time.setHours(0, 0, 0, 0))
 				: typeof props.time === "string" ? new Date(props.time) : props.time;
 const absolute = _time.toLocaleString();
@@ -67,6 +71,12 @@ const relativeRaw = $computed(() => {
 		: ago >= 3
 		? i18n.t("_ago.secondsAgo", { n: (~~(ago % 60)).toString() })
 		: i18n.ts._ago.justNow;
+});
+
+const relativeDateOnly = $computed(() => {
+	return now.getFullYear() !== _time.getFullYear()
+		? _time.toLocaleString([], { year:'numeric' , month: 'numeric' , day: 'numeric' })
+		: _time.toLocaleString([], { month: 'numeric' , day: 'numeric' });
 });
 
 const relativeRawDateOnly = $computed(() => {

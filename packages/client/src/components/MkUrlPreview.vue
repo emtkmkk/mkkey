@@ -308,12 +308,12 @@ onUnmounted(() => {
 			pointer-events: none;
 
 			> button {
-				font-size: 7em;
+				font-size: 6em;
 				opacity: 0.9;
 				pointer-events: auto;
 
 				&:hover {
-					font-size: 7em;
+					font-size: 6em;
 					opacity: 1;
 				}
 				

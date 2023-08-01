@@ -409,13 +409,12 @@ router.get("/emoji/:path", async (ctx) => {
 		// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
 		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
 		url.searchParams.set('emoji', '1');
+		ctx.status = 301;
+		ctx.redirect(url.toString());
 	} else {
 		ctx.status = 301;
 		ctx.redirect(emoji.publicUrl || emoji.originalUrl);
 	}
-	
-	ctx.status = 301;
-	ctx.redirect(url.toString());
 	
 });
 

@@ -40,15 +40,19 @@
 							tabindex="0"
 							@click="chosen(emoji, $event)"
 						>
-							<!--<MkEmoji v-if="emoji.char != null" :emoji="emoji.char"/>-->
-							<img
+							<MkEmoji
+								class="emoji"
+								:emoji="emoji.name + (emoji.host ? '@' + emoji.host : '')"
+								:normal="true"
+							/>
+							<!--<img
 								class="emoji"
 								:src="
 									disableShowingAnimatedImages
 										? getStaticImageUrl(emoji.url)
 										: emoji.url
 								"
-							/>
+							/>-->
 						</button>
 					</div>
 					<div v-if="searchResultUnicodeStart.length > 0" class="body">
@@ -74,15 +78,19 @@
 							tabindex="0"
 							@click="chosen(emoji, $event)"
 						>
-							<!--<MkEmoji v-if="emoji.char != null" :emoji="emoji.char"/>-->
-							<img
+							<MkEmoji
+								class="emoji"
+								:emoji="emoji.name + (emoji.host ? '@' + emoji.host : '')"
+								:normal="true"
+							/>
+							<!--<img
 								class="emoji"
 								:src="
 									disableShowingAnimatedImages
 										? getStaticImageUrl(emoji.url)
 										: emoji.url
 								"
-							/>
+							/>-->
 						</button>
 					</div>
 					<div v-if="searchResultUnicode.length > 0" class="body">

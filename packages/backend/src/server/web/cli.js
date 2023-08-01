@@ -52,17 +52,17 @@ window.onload = async () => {
 			avatar.src = note.user.avatarUrl;
 			avatar.style = "height: 40px";
 			const text = document.createElement("div");
-			text.textContent = `${note.text}`;
+			text.textContent = `${note.cw ? (note.cw + (" (CW)")).trim() : note.text}`;
 			el.appendChild(header);
 			header.appendChild(avatar);
 			header.appendChild(name);
-			if (note.text) {
+			if (note.cw || note.text) {
 				el.appendChild(text);
 			}
 			if (note.files) {
 				for (const file of note.files) {
 					const img = document.createElement("img");
-					img.src = file.properties.thumbnailUrl;
+					img.src = file.thumbnailUrl;
 					el.appendChild(img);
 				}
 			}

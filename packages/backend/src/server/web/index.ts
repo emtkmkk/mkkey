@@ -336,6 +336,46 @@ const jsonFeed: Router.Middleware = async (ctx) => {
 	}
 };
 
+router.get("/emoji/:path(.*)", async (ctx) => {
+	
+	ctx.set('Cache-Control', 'public, max-age=86400');
+	
+	if (!ctx.params.path.match(/^[a-zA-Z0-9\-_@\.]+?\.webp$/)) {
+		ctx.status = 404;
+		return;
+	}
+	
+	const name = ctx.params.path.split('@')[0].replace('.webp', '');
+	const host = ctx.params.path.split('@')[1]?.replace('.webp', '');
+	
+	const emoji = await Emojis.findOneBy({
+		// `@.` is the spec of ReactionService.decodeReaction
+		host: (host == null || host === '.') ? IsNull() : host,
+		name: name,
+	});
+	
+	ctx.set('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
+
+	if (emoji == null) {
+		ctx.status = 404;
+		return;
+	}
+	
+	let url: URL;
+	if (false && config.mediaProxy !== null){
+		url = new URL(`${config.mediaProxy}/emoji.webp`);
+		// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
+		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
+		url.searchParams.set('emoji', '1');
+		ctx.status = 301;
+		ctx.redirect(url.toString());
+	} else {
+		ctx.status = 301;
+		ctx.redirect(emoji.publicUrl || emoji.originalUrl);
+	}
+	
+});
+
 //#region SSR (for crawlers)
 // User
 const userPage: Router.Middleware = async (ctx, next) => {
@@ -377,46 +417,6 @@ const userPage: Router.Middleware = async (ctx, next) => {
 	await ctx.render("user", userDetail);
 	ctx.set("Cache-Control", "public, max-age=15");
 };
-
-router.get("/emoji/:path", async (ctx) => {
-	
-	ctx.set('Cache-Control', 'public, max-age=86400');
-	
-	if (!ctx.params.path.match(/^[a-zA-Z0-9\-_@\.]+?\.webp$/)) {
-		ctx.status = 404;
-		return;
-	}
-	
-	const name = ctx.params.path.split('@')[0].replace('.webp', '');
-	const host = ctx.params.path.split('@')[1]?.replace('.webp', '');
-	
-	const emoji = await Emojis.findOneBy({
-		// `@.` is the spec of ReactionService.decodeReaction
-		host: (host == null || host === '.') ? IsNull() : host,
-		name: name,
-	});
-	
-	ctx.set('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
-
-	if (emoji == null) {
-		ctx.status = 404;
-		return;
-	}
-	
-	let url: URL;
-	if (config.mediaProxy !== null){
-		url = new URL(`${config.mediaProxy}/emoji.webp`);
-		// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
-		url.searchParams.set('emoji', '1');
-		ctx.status = 301;
-		ctx.redirect(url.toString());
-	} else {
-		ctx.status = 301;
-		ctx.redirect(emoji.publicUrl || emoji.originalUrl);
-	}
-	
-});
 
 router.get("/users/:user", async (ctx) => {
 	const user = await Users.findOneBy({

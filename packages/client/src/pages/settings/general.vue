@@ -203,6 +203,9 @@
 			<FormSwitch v-model="loadRawImages" class="_formBlock">{{
 				i18n.ts.loadRawImages
 			}}</FormSwitch>
+			<FormSwitch v-model="thumbnailCover" class="_formBlock">{{
+				i18n.ts.thumbnailCover
+			}}</FormSwitch>
 			<FormSwitch
 				v-model="disableShowingAnimatedImages"
 				class="_formBlock"
@@ -629,6 +632,9 @@ const longLoading = $computed(
 );
 const plusInfoPostForm = $computed(
 	defaultStore.makeGetterSetter("plusInfoPostForm")
+);
+const thumbnailCover = $computed(
+	defaultStore.makeGetterSetter("thumbnailCover")
 );
 
 function save() {

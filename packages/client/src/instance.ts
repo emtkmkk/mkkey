@@ -30,9 +30,8 @@ export async function fetchInstance() {
 }
 
 export async function fetchPlusEmoji() {
-	const meta = await api("meta", {
-		detail: false,
-		plusEmojis: true,
+	const meta = await api("emojis", {
+		remoteEmojis: "mini",
 	});
 	
 	const remoteEmojiData = {
@@ -51,9 +50,8 @@ export async function fetchPlusEmoji() {
 }
 
 export async function fetchAllEmoji() {
-	const meta = await api("meta", {
-		detail: false,
-		allEmojis: true,
+	const meta = await api("emojis", {
+		remoteEmojis: "all",
 	});
 
 	const remoteEmojiData = {
@@ -72,9 +70,8 @@ export async function fetchAllEmoji() {
 }
 
 export async function fetchAllEmojiNoCache() {
-	const meta = await api("meta", {
-		detail: false,
-		allEmojis: true,
+	const meta = await api("emoji", {
+		remoteEmojis: "all",
 	});
 
 	for (const [k, v] of Object.entries(meta)) {

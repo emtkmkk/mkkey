@@ -29,7 +29,7 @@
 				:alt="image.comment"
 				:type="image.type"
 				:title="image.comment"
-				:cover="false"
+				:cover="defaultStore.state.thumbnailCover"
 			/>
 			<div v-if="image.type === 'image/gif'" class="gif">GIF</div>
 		</a>

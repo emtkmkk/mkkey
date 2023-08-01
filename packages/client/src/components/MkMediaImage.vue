@@ -22,7 +22,7 @@
 		</div>
 	</button>
 	<div v-else class="gqnyydlz">
-		<a class="imageView" :class="{imageCover: defaultStore.state.thumbnailCover}" :href="image.url" :title="image.name">
+		<a class="imageView" :class="{imageContain: !defaultStore.state.thumbnailCover, imageCover: defaultStore.state.thumbnailCover}" :href="image.url" :title="image.name">
 			<ImgWithBlurhash
 				:hash="image.blurhash"
 				:src="url"
@@ -147,15 +147,10 @@ watch(
 		width: 100%;
 		height: 100%;
 		background-position: center;
-		background-size: contain;
 		background-repeat: no-repeat;
 		box-sizing: border-box;
 		&:focus-visible {
 			border: 2px solid var(--accent);
-		}
-		
-		& .imageCover {
-			background-size: cover;
 		}
 
 		> .gif {
@@ -172,6 +167,12 @@ watch(
 			top: 12px;
 			pointer-events: none;
 		}
+	}
+	> .imageContain {
+		background-size: contain;
+	}
+	> .imageCover {
+		background-size: cover;
 	}
 }
 </style>

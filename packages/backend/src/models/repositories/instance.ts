@@ -11,6 +11,7 @@ export const InstanceRepository = db.getRepository(Instance).extend({
 		return {
 			id: instance.id,
 			caughtAt: instance.caughtAt.toISOString(),
+			firstRetrievedAt: instance.caughtAt.toISOString(),
 			host: instance.host,
 			usersCount: instance.usersCount,
 			notesCount: instance.notesCount,

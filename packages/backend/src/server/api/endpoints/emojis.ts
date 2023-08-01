@@ -57,7 +57,6 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	// データ削減の為、不要情報を削除
 	emojis?.forEach((x) => {
-		delete x.publicUrl
 		delete x.license
 	});
 	

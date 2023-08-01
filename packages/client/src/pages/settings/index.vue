@@ -159,6 +159,12 @@ const menuDef = computed(() => [
 		title: i18n.ts.clientSettings,
 		items: [
 			{
+				icon: "ph-gear-six ph-bold ph-lg",
+				text: i18n.ts.general,
+				to: "/settings/general",
+				active: currentPage?.route.name === "general",
+			},
+			{
 				icon: "ph-palette ph-bold ph-lg",
 				text: i18n.ts.theme,
 				to: "/settings/theme",

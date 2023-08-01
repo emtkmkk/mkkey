@@ -1,5 +1,6 @@
 import { computed, reactive } from "vue";
 import { api } from "./os";
+import { useStream } from '@/stream';
 import type * as Misskey from "calckey-js";
 
 // TODO: 他のタブと永続化されたstateを同期
@@ -16,6 +17,20 @@ export const instance: Misskey.entities.InstanceMetadata = reactive(
 				// TODO: set default values
 		  },
 );
+
+const stream = useStream();
+
+stream.on('emojiAdded', emojiData => {
+	instance.emojis = [emojiData.emoji, ...instance.emojis];
+});
+
+stream.on('emojiUpdated', emojiData => {
+	instance.emojis = instance.emojis.map(item => emojiData.emojis.find(search => search.name === item.name) as Misskey.entities.CustomEmoji ?? item);
+});
+
+stream.on('emojiDeleted', emojiData => {
+	instance.emojis = instance.emojis.filter(item => !emojiData.emojis.some(search => search.name === item.name));
+});
 
 export async function fetchInstance() {
 	const meta = await api("meta", {

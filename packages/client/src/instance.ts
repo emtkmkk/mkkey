@@ -70,7 +70,7 @@ export async function fetchAllEmoji() {
 }
 
 export async function fetchAllEmojiNoCache() {
-	const meta = await api("emoji", {
+	const meta = await api("emojis", {
 		remoteEmojis: "all",
 	});
 

@@ -71,7 +71,7 @@
 						:title="i18n.ts.enablePlayer"
 						@click.prevent="playerEnabled = true"
 					>
-						<i class="ph-play-circle ph-bold ph-lg"></i>
+						<i class="ph-play-circle ph-bold ph-7x"></i>
 					</button>
 				</div>
 				<article>
@@ -308,7 +308,7 @@ onUnmounted(() => {
 			pointer-events: none;
 
 			> button {
-				font-size: 6em;
+				font-size: 7em;
 				opacity: 0.9;
 				pointer-events: auto;
 

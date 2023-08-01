@@ -22,7 +22,7 @@
 		</div>
 	</button>
 	<div v-else class="gqnyydlz">
-		<a :href="image.url" :title="image.name">
+		<a class="imageView" :class="{imageCover: defaultStore.state.thumbnailCover}" :href="image.url" :title="image.name">
 			<ImgWithBlurhash
 				:hash="image.blurhash"
 				:src="url"
@@ -140,7 +140,7 @@ watch(
 		}
 	}
 
-	> a {
+	> .imageView {
 		display: block;
 		cursor: zoom-in;
 		overflow: hidden;
@@ -152,6 +152,10 @@ watch(
 		box-sizing: border-box;
 		&:focus-visible {
 			border: 2px solid var(--accent);
+		}
+		
+		& .imageCover {
+			background-size: cover;
 		}
 
 		> .gif {

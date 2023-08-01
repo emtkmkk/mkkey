@@ -81,11 +81,11 @@ const hide = ref(
 		color: var(--accentLighten);
 		font-size: 14px;
 		opacity: 0.5;
-		padding: 3px 6px;
+		padding: 9px 15px;
 		text-align: center;
 		cursor: pointer;
-		top: 12px;
-		right: 12px;
+		top: 0px;
+		right: 0px;
 	}
 
 	> video {

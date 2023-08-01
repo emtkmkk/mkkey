@@ -299,6 +299,7 @@ onUnmounted(() => {
 			height: 200px;
 			background-position: center;
 			background-size: contain;
+			background-repeat: no-repeat;
 			display: flex;
 			justify-content: center;
 			align-items: center;

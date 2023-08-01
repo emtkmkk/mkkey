@@ -71,11 +71,11 @@ const customEmoji = computed(() =>
 
 const customEmojiName = computed(() => {
 	return customEmoji.value.name || hostmatch?.[1] || props.emoji.substr(1, props.emoji.length - 2) || null;
-}
+});
 
 const emojiHost = computed(() => {
 	return customEmoji.value.host || hostmatch?.[2] || props.noteHost || null;
-}
+});
 
 const urlRaw = computed(() => {
 	return customEmoji.value.url 
@@ -83,7 +83,7 @@ const urlRaw = computed(() => {
 		: emojiHost.value
 			? `/emoji/${customEmojiName.value}@${emojiHost.value}.webp` 
 			: `/emoji/${customEmojiName.value}.webp`;
-}
+});
 
 const url = computed(() => {
 	if (char.value) {

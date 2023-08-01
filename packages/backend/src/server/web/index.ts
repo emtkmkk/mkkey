@@ -410,9 +410,11 @@ router.get("/emoji/:path", async (ctx) => {
 		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
 		url.searchParams.set('emoji', '1');
 	} else {
-		url = new URL(emoji.publicUrl || emoji.originalUrl);
+		ctx.status = 301;
+		ctx.redirect(emoji.publicUrl || emoji.originalUrl);
 	}
 	
+	ctx.status = 301;
 	ctx.redirect(url.toString());
 	
 });

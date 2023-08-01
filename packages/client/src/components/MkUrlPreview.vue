@@ -268,7 +268,6 @@ onUnmounted(() => {
 				> .thumbnail {
 					position: relative;
 					width: 100%;
-					height: 112px;
 				}
 
 				> article {
@@ -308,7 +307,6 @@ onUnmounted(() => {
 		> .thumbnail {
 			position: relative;
 			width: 100%;
-			height: 200px;
 			background-position: center;
 			background-size: contain;
 			display: flex;

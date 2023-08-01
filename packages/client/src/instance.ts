@@ -1,6 +1,6 @@
 import { computed, reactive } from "vue";
 import { api } from "./os";
-import { useStream } from '@/stream';
+import { stream } from '@/stream';
 import type * as Misskey from "calckey-js";
 
 // TODO: 他のタブと永続化されたstateを同期
@@ -17,8 +17,6 @@ export const instance: Misskey.entities.InstanceMetadata = reactive(
 				// TODO: set default values
 		  },
 );
-
-const stream = useStream();
 
 stream.on('emojiAdded', emojiData => {
 	instance.emojis = [emojiData.emoji, ...instance.emojis];

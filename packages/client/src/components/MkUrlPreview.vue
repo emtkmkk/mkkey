@@ -285,6 +285,7 @@ onUnmounted(() => {
 		border-radius: 8px;
 		overflow: hidden;
 		transition: background 0.2s;
+		pointer-events: none;
 		&:hover,
 		&:focus-within {
 			text-decoration: none;
@@ -297,7 +298,7 @@ onUnmounted(() => {
 		> .thumbnail {
 			position: relative;
 			width: 100%;
-			height: 12.5em;
+			height: 12em;
 			background-position: center;
 			background-size: contain;
 			background-repeat: no-repeat;
@@ -313,8 +314,12 @@ onUnmounted(() => {
 				pointer-events: auto;
 
 				&:hover {
-					font-size: 4em;
-					opacity: 0.9;
+					font-size: 7em;
+					opacity: 1;
+				}
+				
+				> i {
+					font-size: 6em;
 				}
 			}
 
@@ -328,6 +333,7 @@ onUnmounted(() => {
 			position: relative;
 			box-sizing: border-box;
 			padding: 16px;
+			pointer-events: auto;
 
 			> header {
 				margin-bottom: 8px;

@@ -42,7 +42,7 @@
 						>
 							<MkEmoji
 								class="emoji"
-								:emoji="emoji.name + (emoji.host ? '@' + emoji.host : '')"
+								:emoji="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
 								:normal="true"
 							/>
 							<!--<img
@@ -80,7 +80,7 @@
 						>
 							<MkEmoji
 								class="emoji"
-								:emoji="emoji.name + (emoji.host ? '@' + emoji.host : '')"
+								:emoji="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
 								:normal="true"
 							/>
 							<!--<img

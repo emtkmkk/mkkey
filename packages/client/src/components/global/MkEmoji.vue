@@ -68,18 +68,37 @@ const customEmoji = computed(() =>
 				) : null)
 		: null
 );
+
+const customEmojiName = computed(() => {
+	return customEmoji.value.name || hostmatch?.[1] || props.emoji.substr(1, props.emoji.length - 2) || null;
+}
+
+const emojiHost = computed(() => {
+	return customEmoji.value.host || hostmatch?.[2] || props.noteHost || null;
+}
+
+const urlRaw = computed(() => {
+	return customEmoji.value.url 
+		? customEmoji.value.url 
+		: emojiHost.value
+			? `/emoji/${customEmojiName.value}@${emojiHost.value}.webp` 
+			: `/emoji/${customEmojiName.value}.webp`;
+}
+
 const url = computed(() => {
 	if (char.value) {
 		return char2filePath(char.value);
 	} else {
 		return defaultStore.state.disableShowingAnimatedImages
-			? getStaticImageUrl(customEmoji.value.url)
-			: customEmoji.value.url;
+				? getStaticImageUrl(urlRaw.value)
+				: urlRaw.value;
 	}
 });
+
 const alt = computed(() =>
 	customEmoji.value ? `:${customEmoji.value.name}${hostmatch?.[2] ? "@" + hostmatch?.[2] : (props.noteHost ?? "")}:` : char.value
 );
+
 </script>
 
 <style lang="scss" scoped>

@@ -50,6 +50,7 @@ import { reloadChannel } from "@/scripts/unison-reload";
 import { reactionPicker } from "@/scripts/reaction-picker";
 import { getUrlWithoutLoginId } from "@/scripts/login-id";
 import { getAccountFromId } from "@/scripts/get-account-from-id";
+import getUserName from '@/scripts/get-user-name';
 
 (async () => {
 	console.info(`Calckey v${version}`);
@@ -488,7 +489,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 				toast(
 					i18n.t("welcomeBackWithNameLong", {
 						days: Math.floor((Date.now() - lastUsedDate) / (1000 * 60 * 60 * 24)),
-						name: $i.name || $i.username,
+						name: getUserName($i,true),
 					}),
 				);
 			}
@@ -496,7 +497,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 			else if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 48) {
 				toast(
 					i18n.t("welcomeBackWithNameSleep", {
-						name: $i.name || $i.username,
+						name: getUserName($i,true),
 					}),
 				);
 			}
@@ -504,7 +505,7 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 			else if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 24) {
 				toast(
 					i18n.t("welcomeBackWithName", {
-						name: $i.name || $i.username,
+						name: getUserName($i,true),
 					}),
 				);
 			}
@@ -515,33 +516,33 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 				if (now.getHours() >= 5 && now.getHours() <= 10) {
 					toast(
 						i18n.t("welcomeBackWithNameMorning", {
-							name: $i.name || $i.username,
+							name: getUserName($i,true),
 						}),
 					);
 				} else if (now.getHours() >= 11 && now.getHours() <= 15) {
 					toast(
 						i18n.t("welcomeBackWithNameNoon", {
-							name: $i.name || $i.username,
+							name: getUserName($i,true),
 						}),
 					);
 				} else if (now.getHours() >= 16 && now.getHours() <= 18) {
 					if (now.getDay() >= 1 && now.getDay() <= 5) {
 						toast(
 							i18n.t("welcomeBackWithNameEvening", {
-								name: $i.name || $i.username,
+								name: getUserName($i,true),
 							}),
 						);
 					} else {
 						toast(
 							i18n.t("welcomeBackWithNameNoon", {
-								name: $i.name || $i.username,
+								name: getUserName($i,true),
 							}),
 						);
 					}
 				} else {
 					toast(
 						i18n.t("welcomeBackWithNameNight", {
-							name: $i.name || $i.username,
+							name: getUserName($i,true),
 						}),
 					);
 				}

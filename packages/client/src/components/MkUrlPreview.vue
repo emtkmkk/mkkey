@@ -199,19 +199,19 @@ onUnmounted(() => {
 
 	> button {
 		position: absolute;
-		top: -3em;
+		top: -1.5em;
 		right: 0;
-		font-size: 2em;
-		width: 3em;
-		height: 3em;
+		font-size: 1em;
+		width: 1.5em;
+		height: 1.5em;
 		padding: 0;
 		margin: 0;
 		color: var(--fg);
-		background: rgba(128, 128, 128, 0.9);
-		opacity: 0.8;
+		background: rgba(128, 128, 128, 0.2);
+		opacity: 0.7;
 
 		&:hover {
-			opacity: 1;
+			opacity: 0.9;
 		}
 	}
 
@@ -280,6 +280,7 @@ onUnmounted(() => {
 		position: relative;
 		display: block;
 		font-size: 14px;
+		margin-top: 2px;
 		border: 1px solid var(--divider);
 		border-radius: 8px;
 		overflow: hidden;
@@ -296,17 +297,20 @@ onUnmounted(() => {
 		> .thumbnail {
 			position: relative;
 			width: 100%;
-			height: 200px;
+			height: 12.5em;
 			background-position: center;
 			background-size: contain;
 			background-repeat: no-repeat;
 			display: flex;
 			justify-content: center;
 			align-items: center;
+			pointer-events: none;
 
 			> button {
-				font-size: 3.5em;
-				opacity: 0.7;
+				font-size: 6em;
+				opacity: 0.9;
+				color: rgba(128, 128, 128, 1);
+				pointer-events: auto;
 
 				&:hover {
 					font-size: 4em;

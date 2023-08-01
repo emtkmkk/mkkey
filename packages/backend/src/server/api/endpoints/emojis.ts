@@ -140,8 +140,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		remoteEmojiMode = "plus";
 
 	} else if (ps.remoteEmojis === "all" || ps.allEmojis) {
-		remoteEmojis = ps.allEmojis 
-		? (await Emojis.find({
+		remoteEmojis = (await Emojis.find({
 			where: {
 				host: Not(IsNull()),
 				oldEmoji: false,
@@ -153,7 +152,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				id: "meta_all_emojis",
 				milliseconds: 3600000, // 1 hour
 			},
-		})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net"].includes(x.host) && (x.name?.length ?? 0) < 100 && (x.host?.length ?? 0) < 50) : undefined;
+		})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net"].includes(x.host) && (x.name?.length ?? 0) < 100 && (x.host?.length ?? 0) < 50);
 
 		// データ削減の為、不要情報を削除
 		remoteEmojis?.forEach((x) => {

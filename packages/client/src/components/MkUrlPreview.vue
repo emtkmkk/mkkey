@@ -230,7 +230,7 @@ onUnmounted(() => {
 			font-size: 12px;
 
 			> .thumbnail {
-				height: 80px;
+				/* height: 80px; */
 			}
 
 			> article {

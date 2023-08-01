@@ -199,11 +199,11 @@ onUnmounted(() => {
 
 	> button {
 		position: absolute;
-		top: -1.5em;
+		top: -3em;
 		right: 0;
-		font-size: 1em;
-		width: 1.5em;
-		height: 1.5em;
+		font-size: 2em;
+		width: 3em;
+		height: 3em;
 		padding: 0;
 		margin: 0;
 		color: var(--fg);
@@ -243,10 +243,6 @@ onUnmounted(() => {
 		> .link {
 			font-size: 10px;
 
-			> .thumbnail {
-				height: 70px;
-			}
-
 			> article {
 				padding: 8px;
 
@@ -265,15 +261,7 @@ onUnmounted(() => {
 			}
 
 			&.compact {
-				> .thumbnail {
-					position: relative;
-					width: 100%;
-					height: 112px;
-				}
-
 				> article {
-					left: 0px;
-					width: 100%;
 					padding: 4px;
 
 					> header {

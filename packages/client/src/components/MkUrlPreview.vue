@@ -207,11 +207,11 @@ onUnmounted(() => {
 		padding: 0;
 		margin: 0;
 		color: var(--fg);
-		background: rgba(128, 128, 128, 0.2);
-		opacity: 0.7;
+		background: rgba(128, 128, 128, 0.9);
+		opacity: 0.8;
 
 		&:hover {
-			opacity: 0.9;
+			opacity: 1;
 		}
 	}
 
@@ -266,14 +266,14 @@ onUnmounted(() => {
 
 			&.compact {
 				> .thumbnail {
-					position: absolute;
-					width: 56px;
-					height: 100%;
+					position: relative;
+					width: 100%;
+					height: 112px;
 				}
 
 				> article {
-					left: 56px;
-					width: calc(100% - 56px);
+					left: 0px;
+					width: 100%;
 					padding: 4px;
 
 					> header {
@@ -306,11 +306,11 @@ onUnmounted(() => {
 		}
 
 		> .thumbnail {
-			position: absolute;
-			width: 100px;
-			height: 100%;
+			position: relative;
+			width: 100%;
+			height: 200px;
 			background-position: center;
-			background-size: cover;
+			background-size: contain;
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -326,8 +326,8 @@ onUnmounted(() => {
 			}
 
 			& + article {
-				left: 100px;
-				width: calc(100% - 100px);
+				left: 0px;
+				width: 100%;
 			}
 		}
 

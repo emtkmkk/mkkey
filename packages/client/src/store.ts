@@ -883,6 +883,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/7/31",
 			page: "mkkey-settings",
 		},
+		thumbnailCover: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/8/1",
+			page: "general",
+		},
 	}),
 );
 

@@ -298,7 +298,7 @@ onUnmounted(() => {
 		> .thumbnail {
 			position: relative;
 			width: 100%;
-			height: 12em;
+			height: 13em;
 			background-position: center;
 			background-size: contain;
 			background-repeat: no-repeat;
@@ -308,18 +308,15 @@ onUnmounted(() => {
 			pointer-events: none;
 
 			> button {
-				font-size: 1em;
+				font-size: 6em;
 				opacity: 0.9;
 				pointer-events: auto;
 
 				&:hover {
-					font-size: 1.2em;
+					font-size: 7em;
 					opacity: 1;
 				}
 				
-				> i {
-					font-size: 1em;
-				}
 			}
 
 			& + article {

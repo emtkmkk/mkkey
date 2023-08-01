@@ -308,18 +308,17 @@ onUnmounted(() => {
 			pointer-events: none;
 
 			> button {
-				font-size: 6em;
+				font-size: 1em;
 				opacity: 0.9;
-				color: rgba(128, 128, 128, 1);
 				pointer-events: auto;
 
 				&:hover {
-					font-size: 7em;
+					font-size: 1.2em;
 					opacity: 1;
 				}
 				
 				> i {
-					font-size: 6em;
+					font-size: 1em;
 				}
 			}
 

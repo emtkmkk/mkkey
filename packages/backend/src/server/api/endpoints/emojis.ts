@@ -10,7 +10,6 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 	allowGet: true,
-	cacheSec: 3600,
 
 	res: {
 		type: 'object',
@@ -18,13 +17,48 @@ export const meta = {
 		nullable: false,
 		properties: {
 			emojis: {
-				type: 'array',
-				optional: false, nullable: false,
+				type: "array",
+				optional: false,
+				nullable: false,
 				items: {
-					type: 'object',
+					type: "object",
 					optional: false,
 					nullable: false,
-					ref: 'EmojiSimple',
+					properties: {
+						id: {
+							type: "string",
+							optional: false,
+							nullable: false,
+							format: "id",
+						},
+						aliases: {
+							type: "array",
+							optional: false,
+							nullable: false,
+							items: {
+								type: "string",
+								optional: false,
+								nullable: false,
+							},
+						},
+						category: {
+							type: "string",
+							optional: false,
+							nullable: true,
+						},
+						host: {
+							type: "string",
+							optional: false,
+							nullable: true,
+							description: "The local host is represented with `null`.",
+						},
+						url: {
+							type: "string",
+							optional: false,
+							nullable: false,
+							format: "url",
+						},
+					},
 				},
 			},
 		},
@@ -64,7 +98,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	
 	let remoteEmojis = undefined;
 	
-	let remoteEmojiMode = "none";
+	let remoteEmojiMode = undefined;
 	
 	if(ps.remoteEmojis === "mini" || ps.plusEmojis){
 			
@@ -90,11 +124,12 @@ export default define(meta, paramDef, async (ps, me) => {
 				id: "meta_plus_emojis",
 				milliseconds: 3600000, // 1 hour
 			},
-		})).filter((x) => !emojiNames.includes(x.name) && !x.oldEmoji && (x.name?.length ?? 0) < 75 && (x.publicUrl?.length ?? 0) < 140).slice(0,10000);
+		})).filter((x) => !emojiNames.includes(x.name) && !x.oldEmoji && (x.name?.length ?? 0) < 100).slice(0,10000);
 		
 		// データ削減の為、不要情報を削除
 		remoteEmojis?.forEach((x) => {
 			delete x.publicUrl
+			delete x.originalUrl
 			delete x.createdAt
 			delete x.updatedAt
 			delete x.category
@@ -118,11 +153,12 @@ export default define(meta, paramDef, async (ps, me) => {
 				id: "meta_all_emojis",
 				milliseconds: 3600000, // 1 hour
 			},
-		})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net"].includes(x.host) && (x.name?.length ?? 0) < 75 && (x.host?.length ?? 0) < 50 && (x.publicUrl?.length ?? 0) < 140) : undefined;
+		})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net"].includes(x.host) && (x.name?.length ?? 0) < 100 && (x.host?.length ?? 0) < 50) : undefined;
 
 		// データ削減の為、不要情報を削除
 		remoteEmojis?.forEach((x) => {
 			delete x.publicUrl
+			delete x.originalUrl
 			delete x.createdAt
 			delete x.updatedAt
 			delete x.category
@@ -136,11 +172,11 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	return {
 		emojis: await Emojis.packMany(emojis),
-		...(remoteEmojiMode !== "none" && me
+		...(remoteEmojiMode && remoteEmojis && me
 			? {
 					emojiFetchDate: new Date(),
 					remoteEmojiMode: remoteEmojiMode,
-					remoteEmojiCount: remoteEmojis.length,
+					remoteEmojiCount: remoteEmojis?.length ?? 0,
 					allEmojis: await Emojis.packMany(remoteEmojis),
 			  }
 			: {}),

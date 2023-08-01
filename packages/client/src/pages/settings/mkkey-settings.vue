@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, defineAsyncComponent } from "vue";
+import { ref, unref, computed, defineAsyncComponent } from "vue";
 import FormSwitch from "@/components/form/switch.vue";
 import FormLink from "@/components/form/link.vue";
 import MkButton from "@/components/MkButton.vue";
@@ -60,7 +60,7 @@ const items = computed(() => {
 		});
 });
 
-const notSetOnly = ref(!dontShowNotSet && items.some(x => defaultStore.isDefault(x.key)));
+const notSetOnly = ref(!unref(dontShowNotSet) && unref(items).some(x => defaultStore.isDefault(x.key)));
 
 const headerActions = $computed(() => []);
 

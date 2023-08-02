@@ -52,7 +52,7 @@
 		<MkButton v-if="tweetId" :small="true" class="expandTweet" @click="tweetExpanded = true">
 			{{ i18n.ts.expandTweet }}
 		</MkButton>
-		<MkButton v-if="($store.state.enableDataSaverMode && !showThumbnail)" class="showThumbnail" :small="true" @click="showThumbnail = true">
+		<MkButton v-if="thumbnail && ($store.state.enableDataSaverMode && !showThumbnail)" class="showThumbnail" :small="true" @click="showThumbnail = true">
 			<i class="ph-image ph-bold ph-lg"></i> {{ i18n.ts.showThumbnail }}
 		</MkButton>
 		<transition :name="$store.state.animation ? 'zoom' : ''" mode="out-in">

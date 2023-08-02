@@ -82,7 +82,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-	window.cancelAnimationFrame(loopHandler);
+	if (loopHandler) {
+		window.cancelAnimationFrame(loopHandler);
+		loopHandler = null;
+	}
 });
 </script>
 

@@ -49,18 +49,12 @@
 		></iframe>
 	</div>
 	<div v-else v-size="{ max: [400, 350] }" class="mk-url-preview" @click.stop>
-		<div v-if="tweetId" class="expandTweet">
-			<a @click="tweetExpanded = true">
-				<i class="ph-x ph-bold ph-lg"></i>
-				{{ i18n.ts.expandTweet }}
-			</a>
-		</div>
-		<div v-if="($store.state.enableDataSaverMode && !showThumbnail)" class="showThumbnail">
-			<a @click="showThumbnail = true">
-				<i class="ph-ph-image ph-bold ph-lg"></i>
-				{{ i18n.ts.showThumbnail }}
-			</a>
-		</div>
+		<MkButton v-if="tweetId" :small="true" class="expandTweet" @click="tweetExpanded = true">
+			{{ i18n.ts.expandTweet }}
+		</MkButton>
+		<MkButton v-if="($store.state.enableDataSaverMode && !showThumbnail)" class="showThumbnail" :small="true" @click="showThumbnail = true">
+			<i class="ph-image ph-bold ph-lg"></i> {{ i18n.ts.showThumbnail }}
+		</MkButton>
 		<transition :name="$store.state.animation ? 'zoom' : ''" mode="out-in">
 			<component
 				:is="self ? 'MkA' : 'a'"
@@ -112,6 +106,7 @@ import { onMounted, onUnmounted } from "vue";
 import { url as local, lang } from "@/config";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
+import MkButton from "@/components/MkButton.vue";
 
 const props = withDefaults(
 	defineProps<{
@@ -286,19 +281,17 @@ onUnmounted(() => {
 	
 	> .expandTweet {
 		margin-top: 3px;
-		margin-bottom: 1px;
 	}
 	
 	> .showThumbnail {
 		margin-top: 3px;
-		margin-bottom: 1px;
 	}
 
 	> .link {
 		position: relative;
 		display: block;
 		font-size: 14px;
-		margin-top: 2px;
+		margin-top: 3px;
 		border: 1px solid var(--divider);
 		border-radius: 8px;
 		overflow: hidden;

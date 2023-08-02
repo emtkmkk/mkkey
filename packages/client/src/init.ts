@@ -445,21 +445,15 @@ import getUserName from '@/scripts/get-user-name';
 				// 最終試行日を更新する
 				localStorage.setItem("emojiFetchAttemptDate", Date.now().toString());
 				if (fetchModeMax === "always") {
-					let fetchRemoteEmojiMetaPromise = fetchAllEmojiNoCache();
-					fetchRemoteEmojiMetaPromise.then()(() => {
-					});
+					fetchAllEmojiNoCache();
 				} else if (fetchModeMax === "all") {
 					let fetchRemoteEmojiMetaPromise = fetchAllEmoji();
 					fetchRemoteEmojiMetaPromise.catch(() => {
 						// 保存に失敗した場合は軽量版リモート絵文字の取得を試行
 						fetchInstanceMetaPromise = fetchPlusEmoji();
 					});
-					fetchRemoteEmojiMetaPromise.then()(() => {
-					});
 				} else if (fetchModeMax === "plus") {
-					let fetchRemoteEmojiMetaPromise = fetchPlusEmoji();
-					fetchRemoteEmojiMetaPromise.then()(() => {
-					});
+					fetchPlusEmoji();
 				}
 			}
 			// 取得設定を保存

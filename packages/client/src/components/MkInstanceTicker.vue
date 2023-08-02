@@ -6,8 +6,8 @@
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" v-if="getInstanceFavicon(instance)" :src="getInstanceFavicon(instance)" aria-hidden="true" />
-		<img class="icon" v-if="getInstanceIcon(instance) && instance.faviconUrl !== instance.iconUrl" :src="getInstanceIcon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceFavicon(instance) && !errorFavicon" :src="getInstanceFavicon(instance)" aria-hidden="true" @error="errorFavicon = true"/>
+		<img class="icon" v-if="getInstanceIcon(instance) && instance.faviconUrl !== instance.iconUrl && !errorIcon" :src="getInstanceIcon(instance)" aria-hidden="true" @error="errorIcon = true"/>
 		<span class="name">{{ (instance.softwareVersion || '???') }}</span>
 	</div>
 	<div
@@ -17,8 +17,8 @@
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" v-if="getInstanceFavicon(instance)" :src="getInstanceFavicon(instance)" aria-hidden="true" />
-		<img class="icon" v-if="getInstanceIcon(instance) && instance.faviconUrl !== instance.iconUrl" :src="getInstanceIcon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceFavicon(instance) && !errorFavicon" :src="getInstanceFavicon(instance)" aria-hidden="true" @error="errorFavicon = true"/>
+		<img class="icon" v-if="getInstanceIcon(instance) && instance.faviconUrl !== instance.iconUrl && !errorIcon" :src="getInstanceIcon(instance)" aria-hidden="true" @error="errorIcon = true"/>
 		<span class="name">{{ capitalize((instance.softwareName || '???')) + '/' + (instance.softwareVersion || '???') }}</span>
 	</div>
 	<div
@@ -28,8 +28,8 @@
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" v-if="getInstanceFavicon(instance)" :src="getInstanceFavicon(instance)" aria-hidden="true" />
-		<img class="icon" v-if="getInstanceIcon(instance) && instance.faviconUrl !== instance.iconUrl" :src="getInstanceIcon(instance)" aria-hidden="true" />
+		<img class="icon" v-if="getInstanceFavicon(instance) && !errorFavicon" :src="getInstanceFavicon(instance)" aria-hidden="true" @error="errorFavicon = true"/>
+		<img class="icon" v-if="getInstanceIcon(instance) && instance.faviconUrl !== instance.iconUrl && !errorIcon" :src="getInstanceIcon(instance)" aria-hidden="true" @error="errorIcon = true"/>
 		<span class="name">{{ instance.name }}</span>
 	</div>
 </template>
@@ -52,6 +52,8 @@ const props = defineProps<{
 }>();
 
 let ticker = $ref<HTMLElement | null>(null);
+let errorFavicon = $ref(false);
+let errorIcon = $ref(false);
 
 // if no instance data is given, this is for the local instance
 const instance = props.instance ?? {

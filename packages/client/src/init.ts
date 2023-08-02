@@ -426,13 +426,20 @@ import getUserName from '@/scripts/get-user-name';
 		fetchInstanceMetaPromise.then(() => {
 			const lastEmojiFetchDate = localStorage.getItem("remoteEmojiData") ? JSON.parse(localStorage.getItem("remoteEmojiData"))?.emojiFetchDate : undefined;
 			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, localStorage.getItem("emojiFetchAttemptDate") ? parseInt(localStorage.getItem("emojiFetchAttemptDate"), 10) : 0);
-			const fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
-			const fetchTimeBorder = defaultStore.state.enableDataSaverMode ? 1000 * 60 * 60 * 12 : 1000 * 60 * 60 * 2
+			let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
+			// 更新間隔 : データセーバーなら、24時間 そうでないなら、6時間
+			const fetchTimeBorder = defaultStore.state.enableDataSaverMode ? 1000 * 60 * 60 * 24 : 1000 * 60 * 60 * 6
 
 			if (fetchModeMax === "always" || (Date.now() - emojiFetchDateInt) > fetchTimeBorder || fetchModeMax !== (localStorage.getItem("lastFetchModeMax") ?? fetchModeMax)) {
-				// 常に取得がon or 最終取得日が無い or 前回取得から2時間以上 or 取得設定が前回と異なる場合取得
+				// 常に取得がon or 最終取得日が無い or 前回取得から更新間隔以上 or 取得設定が前回と異なる場合取得
 				//一度キャッシュを破棄
 				if (fetchModeMax !== "keep") localStorage.setItem("remoteEmojiData", "");
+				// 一度だけ更新の場合、データモードを前回と同じにしておく
+				if (fetchModeMax === "once") {
+					const lastFetchModeMax = (localStorage.getItem("lastFetchModeMax") ?? fetchModeMax);
+					fetchModeMax = lastFetchModeMax;
+					defaultStore.set("remoteEmojisFetch", lastFetchModeMax);
+				}
 				// 取得設定を保存
 				localStorage.setItem("lastFetchModeMax", fetchModeMax);
 				// 最終試行日を更新する

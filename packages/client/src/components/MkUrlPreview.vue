@@ -134,7 +134,7 @@ let player = $ref({
 });
 let playerEnabled = $ref(false);
 let tweetId = $ref<string | null>(null);
-let tweetExpanded = $ref(props.detail);
+let tweetExpanded = $ref(defaultStore.state.alwaysXExpand || props.detail);
 const embedId = `embed${Math.random().toString().replace(/\D/, "")}`;
 let tweetHeight = $ref(150);
 

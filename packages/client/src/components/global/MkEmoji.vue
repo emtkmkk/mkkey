@@ -72,11 +72,11 @@ const customEmoji = computed(() =>
 );
 
 const customEmojiName = computed(() => {
-	return customEmoji.value.name || hostmatch?.[1] || props.emoji.substr(1, props.emoji.length - 2) || null;
+	return customEmoji.value?.name || hostmatch?.[1] || props.emoji.substr(1, props.emoji.length - 2) || null;
 });
 
 const emojiHost = computed(() => {
-	return customEmoji.value.host || hostmatch?.[2] || props.noteHost || null;
+	return customEmoji.value?.host || hostmatch?.[2] || props.noteHost || null;
 });
 
 const urlRaw = computed(() => {

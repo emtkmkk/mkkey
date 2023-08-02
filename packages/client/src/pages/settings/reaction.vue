@@ -463,7 +463,7 @@ const isMobile = $ref(
 	deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD
 );
 window.addEventListener("resize", () => {
-	unref(isMobile) =
+	isMobile =
 		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 

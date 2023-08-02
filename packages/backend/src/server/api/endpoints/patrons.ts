@@ -2,7 +2,7 @@ import define from "../define.js";
 
 export const meta = {
 	tags: ["meta"],
-	description: "Get list of Calckey patrons from Codeberg",
+	description: "Get list of FireFish patrons",
 
 	requireCredential: false,
 	requireCredentialPrivateMode: false,
@@ -17,7 +17,7 @@ export const paramDef = {
 export default define(meta, paramDef, async () => {
 	let patrons;
 	await fetch(
-		"https://codeberg.org/calckey/calckey/raw/branch/develop/patrons.json",
+		"https://git.joinfirefish.org/firefish/firefish/-/raw/develop/patrons.json",
 	)
 		.then((response) => response.json())
 		.then((data) => {

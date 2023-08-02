@@ -55,7 +55,7 @@
 				{{ i18n.ts.expandTweet }}
 			</a>
 		</div>
-		<div v-if="(defaultStore.state.enableDataSaverMode && !showThumbnail)" class="showThumbnail">
+		<div v-if="($store.state.enableDataSaverMode && !showThumbnail)" class="showThumbnail">
 			<a @click="showThumbnail = true">
 				<i class="ph-ph-image ph-bold ph-lg"></i>
 				{{ i18n.ts.showThumbnail }}
@@ -111,6 +111,7 @@
 import { onMounted, onUnmounted } from "vue";
 import { url as local, lang } from "@/config";
 import { i18n } from "@/i18n";
+import { defaultStore } from "@/store";
 
 const props = withDefaults(
 	defineProps<{

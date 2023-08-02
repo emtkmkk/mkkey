@@ -49,6 +49,18 @@
 		></iframe>
 	</div>
 	<div v-else v-size="{ max: [400, 350] }" class="mk-url-preview" @click.stop>
+		<div v-if="tweetId" class="expandTweet">
+			<a @click="tweetExpanded = true">
+				<i class="ph-x ph-bold ph-lg"></i>
+				{{ i18n.ts.expandTweet }}
+			</a>
+		</div>
+		<div v-if="(defaultStore.state.enableDataSaverMode && !showThumbnail)" class="showThumbnail">
+			<a @click="showThumbnail = true">
+				<i class="ph-ph-image ph-bold ph-lg"></i>
+				{{ i18n.ts.showThumbnail }}
+			</a>
+		</div>
 		<transition :name="$store.state.animation ? 'zoom' : ''" mode="out-in">
 			<component
 				:is="self ? 'MkA' : 'a'"
@@ -61,7 +73,7 @@
 				:title="url"
 			>
 				<div
-					v-if="thumbnail"
+					v-if="thumbnail && (!defaultStore.state.enableDataSaverMode || showThumbnail)"
 					class="thumbnail"
 					:style="`background-image: url('${thumbnail}')`"
 				>
@@ -92,12 +104,6 @@
 				</article>
 			</component>
 		</transition>
-		<div v-if="tweetId" class="expandTweet">
-			<a @click="tweetExpanded = true">
-				<i class="ph-twitter-logo ph-bold ph-lg"></i>
-				{{ i18n.ts.expandTweet }}
-			</a>
-		</div>
 	</div>
 </template>
 
@@ -133,6 +139,7 @@ let player = $ref({
 	height: null,
 });
 let playerEnabled = $ref(false);
+let showThumbnail = $ref(false);
 let tweetId = $ref<string | null>(null);
 let tweetExpanded = $ref(defaultStore.state.alwaysXExpand || props.detail);
 const embedId = `embed${Math.random().toString().replace(/\D/, "")}`;
@@ -274,6 +281,16 @@ onUnmounted(() => {
 				}
 			}
 		}
+	}
+	
+	> .expandTweet {
+		margin-top: 3px;
+		margin-bottom: 1px;
+	}
+	
+	> .showThumbnail {
+		margin-top: 3px;
+		margin-bottom: 1px;
 	}
 
 	> .link {

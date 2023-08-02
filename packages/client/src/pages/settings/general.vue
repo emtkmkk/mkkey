@@ -197,6 +197,9 @@
 				class="_formBlock"
 				>{{ i18n.ts.showGapBetweenNotesInTimeline }}</FormSwitch
 			>
+			<FormSwitch v-model="alwaysXExpand" class="_formBlock">{{
+				i18n.ts.alwaysXExpand
+			}}</FormSwitch>
 			<FormSwitch v-model="showRelationMark" class="_formBlock">{{
 				i18n.ts.showRelationMark
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -635,6 +638,9 @@ const plusInfoPostForm = $computed(
 );
 const thumbnailCover = $computed(
 	defaultStore.makeGetterSetter("thumbnailCover")
+);
+const alwaysXExpand = $computed(
+	defaultStore.makeGetterSetter("alwaysXExpand")
 );
 
 function save() {

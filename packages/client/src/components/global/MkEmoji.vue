@@ -1,12 +1,13 @@
 <template>
 	<img
-		v-if="customEmoji"
+		v-if="customEmoji && !errorEmoji"
 		class="mk-emoji"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="url"
 		:alt="alt"
 		:title="alt"
 		decoding="async"
+		@error="errorEmoji = true"
 	/>
 	<img
 		v-else-if="char && !useOsNativeEmojis"
@@ -17,7 +18,7 @@
 		decoding="async"
 	/>
 	<span v-else-if="char && useOsNativeEmojis">{{ char }}</span>
-	<span v-else>{{ emoji }}</span>
+	<span v-else>{{ customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
 </template>
 
 <script lang="ts" setup>
@@ -44,6 +45,7 @@ const hostmatch = props.emoji && !props.customEmojis ? props.emoji.match(/^:([\w
 const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
 );
+const errorEmoji = ref(false);
 const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
 const ace = computed(() => 
 	[

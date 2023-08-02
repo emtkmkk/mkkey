@@ -447,10 +447,9 @@ import getUserName from '@/scripts/get-user-name';
 				if (fetchModeMax === "always") {
 					fetchAllEmojiNoCache();
 				} else if (fetchModeMax === "all") {
-					let fetchRemoteEmojiMetaPromise = fetchAllEmoji();
-					fetchRemoteEmojiMetaPromise.catch(() => {
+					fetchAllEmoji().catch(() => {
 						// 保存に失敗した場合は軽量版リモート絵文字の取得を試行
-						fetchInstanceMetaPromise = fetchPlusEmoji();
+						fetchPlusEmoji();
 					});
 				} else if (fetchModeMax === "plus") {
 					fetchPlusEmoji();

@@ -460,7 +460,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			rankResult.driveFilesCount * 6 +
 			rankResult.sendMessageCount * 11 +
 			rankResult.readMessageCount * 2
-		) / elapsedDays);
+		) / elapsedDays * 100) / 100;
 
 	let _rankPower = rankPower;
 

@@ -191,6 +191,12 @@
 					{{ "N/A" }}
 				</template>
 			</MkKeyValue>
+			<FormButton @click="refetchEmoji"
+				><i
+					class="ph-arrows-counter-clockwise ph-bold ph-lg"
+				></i>
+					{{ i18n.ts.refetch }}</FormButton
+			>
 		</FormSection>
 
 		<FormSection>
@@ -251,6 +257,7 @@ import { onMounted, ref } from "vue";
 import FormSection from "@/components/form/section.vue";
 import FormLink from "@/components/form/link.vue";
 import MkKeyValue from "@/components/MkKeyValue.vue";
+import FormButton from "@/components/MkButton.vue";
 import * as os from "@/os";
 import number from "@/filters/number";
 import bytes from "@/filters/bytes";
@@ -258,9 +265,11 @@ import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { instance } from "@/instance";
+import { unisonReload } from "@/scripts/unison-reload";
+import { defaultStore } from "@/store";
 
 const stats = ref<any>({});
-const remoteEmojiSize = JSON.stringify(instance)?.length;
+const remoteEmojiSize = $computed(() => {JSON.stringify(instance)?.length});
 
 onMounted(() => {
 	os.api("users/stats", {
@@ -283,9 +292,15 @@ function post() {
 	if (stats.value && stats.value.power && stats.value.powerRank) {
 		os.post({
 			initialText: `<center>私のパワーは\n$[x2 $[tada ${number(stats.value.power)}]]\nです。\n\nランクは\n$[x2 $[tada ${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}]] ( ${stats.value.nextRank ?? "?%"} )\nです。\n\n#もこきーパワー</center>`,
+			initialLocalOnly: true,
 			instant: true,
 		});
 	}
+}
+
+function refetchEmoji() {
+	defaultStore.set("remoteEmojisFetch", "once");
+	unisonReload();
 }
 
 definePageMetadata({

@@ -179,7 +179,7 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>サイズ</template>
 				<template #value>{{
-					remoteEmojiSize ? bytes(remoteEmojiSize,2) : "N/A"
+					bytes(JSON.stringify(instance)?.length,2) ?? "N/A"
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
@@ -269,7 +269,6 @@ import { unisonReload } from "@/scripts/unison-reload";
 import { defaultStore } from "@/store";
 
 const stats = ref<any>({});
-const remoteEmojiSize = $computed(() => {JSON.stringify(instance)?.length});
 
 onMounted(() => {
 	os.api("users/stats", {

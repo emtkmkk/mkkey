@@ -8,7 +8,7 @@
 		:alt="alt"
 		:title="alt"
 		decoding="async"
-		@error="emit('loaderror', emoji); errorCnt = errorCnt + 1;"
+		@error="() => { emit('loaderror', emoji); errorCnt = errorCnt + 1; }"
 	/>
 	<img
 		v-else-if="char && !useOsNativeEmojis"
@@ -51,6 +51,7 @@ const props = defineProps<{
 	isPicker?: boolean;
 }>();
 
+const emit = defineEmits(["loaderror"]);
 const isCustom = computed(() => props.emoji.startsWith(":"));
 const bigCustom = computed(() => defaultStore.state.useBigCustom);
 const char = computed(() => (isCustom.value ? null : props.emoji));

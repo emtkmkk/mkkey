@@ -1,6 +1,6 @@
 <template>
 	<img
-		v-if="customEmoji && urlRaw.length > errorCnt"
+		v-if="isCustom && urlRaw.length > errorCnt"
 		class="mk-emoji"
 		:key="emoji + '-' + errorCnt"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
@@ -20,7 +20,7 @@
 	/>
 	<span v-else-if="char && useOsNativeEmojis">{{ char }}</span>
 	<img
-		v-else-if="customEmoji && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
+		v-else-if="isCustom && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
 		class="mk-emoji emoji-ghost"
 		:key="emoji + '-alt'"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
@@ -61,10 +61,11 @@ const useOsNativeEmojis = computed(
 const errorCnt = ref(0);
 const errorEmoji = ref(false);
 const errorAlt = ref(false);
+const propsCustomEmojisStr = computed(() => props.customEmojis.map((x) => x.name + "@" + (x.host ?? ".")));
 const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
 const ace = computed(() => 
 	[
-		...(instance.allEmojis ?? []),
+		...(instance.allEmojis.filter(x => !propsCustomEmojisStr.includes(x.name + "@" + (x.host ?? "."))) ?? []),
 		...(props.customEmojis ?? []),
 	]
 );
@@ -74,7 +75,7 @@ const customEmoji = computed(() =>
 			? ace.value.find(
 					(x) => x.name === hostmatch?.[1] && x.host === hostmatch?.[2]
 			)
-			: props.noteHost && !props.customEmojis
+			: props.noteHost
 				? ace.value?.find(
 					(x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.host === props.noteHost
 				)

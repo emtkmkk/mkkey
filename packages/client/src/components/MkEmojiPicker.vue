@@ -648,7 +648,7 @@ watch(q, (nQ, oQ) => {
 	if (q.value.includes("*")) {
 		q.value = oQ;
 	}
-	if (oQ.includes("*")){
+	if (oQ?.includes("*")){
 		searchInstant = true;
 	}
 	if (q.value.includes("＠")) q.value = nQ.replaceAll("＠","@");
@@ -1171,7 +1171,7 @@ function ja_to_roomaji(
 	let _str = str;
 	
 	// ひらがなかカタカナだけでなければ終了
-	if (/^[ぁ-んァ-ンー\s]+$/.test(_str)){
+	if (!/^[ぁ-んァ-ンー\s]+$/.test(_str)){
 		return _str;	
 	}
 		

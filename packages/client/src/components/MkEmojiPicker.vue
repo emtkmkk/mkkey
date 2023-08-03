@@ -31,29 +31,33 @@
 						</header>
 					</div>
 					<div v-if="searchResultCustomStart.length > 0" class="body">
-						<button
-							v-for="emoji in searchResultCustomStart"
-							:key="emoji.id"
-							class="_button item"
-							v-tooltip="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
-							:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
-							tabindex="0"
-							@click="chosen(emoji, $event)"
-						>
-							<MkEmoji
-								class="emoji"
-								:emoji="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
-								:normal="true"
-							/>
-							<!--<img
-								class="emoji"
-								:src="
-									disableShowingAnimatedImages
-										? getStaticImageUrl(emoji.url)
-										: emoji.url
-								"
-							/>-->
-						</button>
+						<template v-for="emoji in searchResultCustomStart">
+							<button
+								:key="emoji.id"
+								v-if="errorEmojis.includes(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+								class="_button item"
+								v-tooltip="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
+								:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
+								tabindex="0"
+								@click="chosen(emoji, $event)"
+							>
+								<MkEmoji
+									class="emoji"
+									:emoji="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
+									:normal="true"
+									:isPicker="true"
+									@loaderror="errorEmojis.push(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+								/>
+								<!--<img
+									class="emoji"
+									:src="
+										disableShowingAnimatedImages
+											? getStaticImageUrl(emoji.url)
+											: emoji.url
+									"
+								/>-->
+							</button>
+						</template>
 					</div>
 					<div v-if="searchResultUnicodeStart.length > 0" class="body">
 						<button
@@ -69,29 +73,33 @@
 						</button>
 					</div>
 					<div v-if="searchResultCustom.length > 0" class="body">
-						<button
-							v-for="emoji in searchResultCustom"
-							:key="emoji.id"
-							class="_button item"
-							v-tooltip="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
-							:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
-							tabindex="0"
-							@click="chosen(emoji, $event)"
-						>
-							<MkEmoji
-								class="emoji"
-								:emoji="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
-								:normal="true"
-							/>
-							<!--<img
-								class="emoji"
-								:src="
-									disableShowingAnimatedImages
-										? getStaticImageUrl(emoji.url)
-										: emoji.url
-								"
-							/>-->
-						</button>
+						<template v-for="emoji in searchResultCustom">
+							<button
+								:key="emoji.id"
+								v-if="errorEmojis.includes(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+								class="_button item"
+								v-tooltip="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
+								:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
+								tabindex="0"
+								@click="chosen(emoji, $event)"
+							>
+								<MkEmoji
+									class="emoji"
+									:emoji="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
+									:normal="true"
+									:isPicker="true"
+									@loaderror="errorEmojis.push(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+								/>
+								<!--<img
+									class="emoji"
+									:src="
+										disableShowingAnimatedImages
+											? getStaticImageUrl(emoji.url)
+											: emoji.url
+									"
+								/>-->
+							</button>
+						</template>
 					</div>
 					<div v-if="searchResultUnicode.length > 0" class="body">
 						<button
@@ -112,20 +120,18 @@
 					<template v-if="!showPinned || ((pinned2?.length ?? 0) + (pinned3?.length ?? 0) + (pinned4?.length ?? 0) + (pinned5?.length ?? 0)) === 0">
 						<section v-if="showPinned">
 							<div class="body">
-								<button
-									v-for="emoji in pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))"
-									:key="emoji"
-									v-tooltip="emoji"
-									class="_button item"
-									tabindex="0"
-									@click="chosen(emoji, $event)"
-								>
-									<MkEmoji
-										class="emoji"
-										:emoji="emoji"
-										:normal="true"
-									/>
-								</button>
+								<template v-for="emoji in pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
+									<button
+										:key="emoji"
+										v-if="errorEmojis.includes(emoji)"
+										v-tooltip="emoji"
+										class="_button item"
+										tabindex="0"
+										@click="chosen(emoji, $event)"
+									>
+										<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.push(emoji)"/>
+									</button>
+								</template>
 							</div>
 						</section>
 
@@ -135,19 +141,17 @@
 								{{ i18n.ts.recentUsed }}
 							</header>
 							<div class="body">
-								<button
-									v-for="emoji in recentlyUsedEmojis.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))"
-									:key="emoji"
-									v-tooltip="emoji"
-									class="_button item"
-									@click="chosen(emoji, $event)"
-								>
-									<MkEmoji
-										class="emoji"
-										:emoji="emoji"
-										:normal="true"
-									/>
-								</button>
+								<template v-for="emoji in recentlyUsedEmojis.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
+									<button
+										:key="emoji"
+										v-if="errorEmojis.includes(emoji)"
+										v-tooltip="emoji"
+										class="_button item"
+										@click="chosen(emoji, $event)"
+									>
+										<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.push(emoji)"/>
+									</button>
+								</template>
 							</div>
 						</section>
 					</template>
@@ -603,6 +607,7 @@ const emojiStr = computed(() =>
 	props.asReactionPicker && unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
 const q = ref<string | null>(null);
+const errorEmojis = ref([]);
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultCustomStart = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultUnicode = ref<UnicodeEmojiDef[]>([]);
@@ -742,7 +747,7 @@ watch(q, (nQ, oQ) => {
 		return matches;
 	};
 	const searchCustomStart = () => {
-		const max = 99;
+		const max = isAllSearch ? 30 : 99;
 		const emojis = unref(customEmojis);
 		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();

@@ -26,6 +26,7 @@
 			class="text"
 			:text="(note.cw ?? ('★センシティブメディア'))"
 			:author="note.user"
+			:noteHost="note.user?.host"
 			:i="$i"
 			:custom-emojis="note.emojis"
 		/>
@@ -79,6 +80,7 @@
 					v-if="note.text"
 					:text="note.text"
 					:author="note.user"
+					:noteHost="note.user?.host"
 					:i="$i"
 					:custom-emojis="note.emojis"
 				/>

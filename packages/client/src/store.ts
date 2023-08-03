@@ -895,6 +895,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/8/2",
 			page: "general",
 		},
+		disableAllIncludesSearch: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/8/3",
+			page: "reaction",
+		},
 	}),
 );
 

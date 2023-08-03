@@ -1,13 +1,14 @@
 <template>
 	<img
-		v-if="customEmoji && !errorEmoji"
+		v-if="customEmoji && urlRaw.length > errorCnt"
 		class="mk-emoji"
+		:key="emoji + '-' + errorCnt"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="url"
 		:alt="alt"
 		:title="alt"
 		decoding="async"
-		@error="emit('loaderror', emoji); errorEmoji = true;"
+		@error="emit('loaderror', emoji); errorCnt = errorCnt + 1;"
 	/>
 	<img
 		v-else-if="char && !useOsNativeEmojis"
@@ -19,8 +20,9 @@
 	/>
 	<span v-else-if="char && useOsNativeEmojis">{{ char }}</span>
 	<img
-		v-else-if="customEmoji && errorEmoji && !isPicker && emojiHost && !errorAlt"
+		v-else-if="customEmoji && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
 		class="mk-emoji emoji-ghost"
+		:key="emoji + '-alt'"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="altimgUrl"
 		:alt="alt"
@@ -56,6 +58,7 @@ const hostmatch = props.emoji ? props.emoji.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/
 const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
 );
+const errorCnt = ref(0);
 const errorEmoji = ref(false);
 const errorAlt = ref(false);
 const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
@@ -92,27 +95,34 @@ const emojiHost = computed(() => {
 });
 
 const urlRaw = computed(() => {
-	return customEmoji.value.url 
-		? customEmoji.value.url 
-		: emojiHost.value
+	const urlArr = [];
+	if(customEmoji.value.url) urlArr.push(customEmoji.value.url);
+	urlArr.push(
+		emojiHost.value
 			? `/emoji/${customEmojiName.value}@${emojiHost.value}.webp` 
 			: `/emoji/${customEmojiName.value}.webp`;
+	)
+	return urlArr
 });
 
 const url = computed(() => {
 	if (char.value) {
 		return char2filePath(char.value);
 	} else {
-		return defaultStore.state.disableShowingAnimatedImages
-				? getStaticImageUrl(urlRaw.value)
-				: urlRaw.value;
+		return urlRaw.value.length > errorCnt.value ?
+			defaultStore.state.disableShowingAnimatedImages
+					? getStaticImageUrl(urlRaw.value[errorCnt.value])
+					: urlRaw.value[errorCnt.value];
+			: "";
 	}
 });
 
 const altimgUrl = computed(() => {
-		return defaultStore.state.disableShowingAnimatedImages
+		return emojiHost.value ? 
+			defaultStore.state.disableShowingAnimatedImages
 				? getStaticImageUrl(`https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`)
 				: `https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`;
+			: "";
 });
 
 const alt = computed(() =>

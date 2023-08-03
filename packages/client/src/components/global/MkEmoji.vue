@@ -101,7 +101,7 @@ const urlRaw = computed(() => {
 	urlArr.push(
 		emojiHost.value
 			? `/emoji/${customEmojiName.value}@${emojiHost.value}.webp` 
-			: `/emoji/${customEmojiName.value}.webp`;
+			: `/emoji/${customEmojiName.value}.webp`
 	)
 	return urlArr
 });
@@ -122,7 +122,7 @@ const altimgUrl = computed(() => {
 		return emojiHost.value ? 
 			defaultStore.state.disableShowingAnimatedImages
 				? getStaticImageUrl(`https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`)
-				: `https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`;
+				: `https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`
 			: "";
 });
 

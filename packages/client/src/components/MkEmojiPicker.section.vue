@@ -15,13 +15,13 @@
 		<div v-if="shown" class="body">
 			<template v-for="emoji in emojis">
 				<button
-					v-if="!errorEmojis.includes(emoji)"
+					v-if="!errorEmojis.has(emoji)"
 					:key="emoji"
 					v-tooltip="emoji"
 					class="_button item"
 					@click="emit('chosen', emoji, $event)"
 				>
-					<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.push(emoji)"/>
+					<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.add(emoji)"/>
 				</button>
 			</template>
 		</div>
@@ -41,7 +41,7 @@ const emit = defineEmits<{
 }>();
 
 const shown = ref(!!props.initialShown);
-const errorEmojis = ref([]);
+const errorEmojis = ref(new Set());
 </script>
 
 <style lang="scss" scoped></style>

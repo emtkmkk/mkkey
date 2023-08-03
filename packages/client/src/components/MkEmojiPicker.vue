@@ -693,10 +693,13 @@ function emojiSearch(nQ, oQ) {
 	const roomajiQ = cachedRoomaji(ja_to_roomaji(q.value.replace(/@\S*$|:/g, "")));
 	
 	const searchCustom = () => {
-		const max = isAllSearch ? 30 : 99;
+		const max = isAllSearch ? 45 : 99;
 		const emojis = unref(customEmojis);
 		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
+		
+		// 設定で無効にされている場合は即終了
+		if (isAllSearch && defaultStore.state.disableAllIncludesSearch) return matches;
 
 		if (newQ.includes(" ")) {
 			// AND検索

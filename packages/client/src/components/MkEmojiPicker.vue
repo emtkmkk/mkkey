@@ -34,7 +34,7 @@
 						<template v-for="emoji in searchResultCustomStart">
 							<button
 								:key="emoji.id"
-								v-if="errorEmojis.includes(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+								v-if="!errorEmojis.includes(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
 								class="_button item"
 								v-tooltip="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
 								:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
@@ -76,7 +76,7 @@
 						<template v-for="emoji in searchResultCustom">
 							<button
 								:key="emoji.id"
-								v-if="errorEmojis.includes(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+								v-if="!errorEmojis.includes(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
 								class="_button item"
 								v-tooltip="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
 								:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"

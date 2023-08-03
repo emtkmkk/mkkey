@@ -72,19 +72,23 @@ const ace = computed(() => {
 		...(props.customEmojis ?? []),
 	];
 });
-const customEmoji = computed(() =>
+const customEmoji = computed(() => {
 	if (!isCustom.value) return null;
 
 	const name = hostmatch?.[1];
 	const host = hostmatch?.[2];
+	const matchprops = prop.customEmojis?.find((x) => x.name === name);
 
-	if (host) {
+	if (matchprops) {
+		return matchprops;
+	} else if (host) {
 		return ace.value.find((x) => x.name === name && x.host === host);
 	} else if (props.noteHost) {
 		return ace.value.find((x) => x.name === name && x.host === props.noteHost);
 	} else {
 		return ce.value.find((x) => x.name === name);
 	}
+}
 );
 
 const customEmojiName = computed(() => {

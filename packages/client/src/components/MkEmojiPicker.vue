@@ -646,8 +646,10 @@ watch(q, (nQ, oQ) => {
 	
 	let searchInstant = false;
 	if (q.value.includes("*")) {
-		searchInstant = true;
 		q.value = oQ;
+	}
+	if (oQ.includes("*")){
+		searchInstant = true;
 	}
 	if (q.value.includes("＠")) q.value = nQ.replaceAll("＠","@");
 	

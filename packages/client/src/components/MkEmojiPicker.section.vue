@@ -15,7 +15,7 @@
 		<div v-if="shown" class="body">
 			<template v-for="emoji in emojis">
 				<button
-					v-if="errorEmojis.includes(emoji)"
+					v-if="!errorEmojis.includes(emoji)"
 					:key="emoji"
 					v-tooltip="emoji"
 					class="_button item"

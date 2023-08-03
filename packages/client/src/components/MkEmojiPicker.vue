@@ -24,9 +24,9 @@
 					<div v-else>
 						<header class="_acrylic" v-if="!(q == null || q === '')">
 							{{ `${q.includes('@') ? (remoteEmojiMode === "all" ? "他サーバー絵文字検索 " : "他サーバー絵文字検索(ミニ) ") : "検索結果 "}
-							${(searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
+							${!(waitingFlg || searchingFlg) ? (searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
 								? `${(searchResultCustomStart.length + searchResultUnicodeStart.length) + " / " + (searchResultCustom.length + searchResultUnicode.length)} 件` 
-								: "0 件"}${allCustomEmojis && !q.includes('@') ? " (@で他サーバー絵文字検索)" : ""}
+								: "0 件" : waitingFlg ? "検索ワード入力待機中……" : "検索中……" }${allCustomEmojis && !q.includes('@') ? " (@で他サーバー絵文字検索)" : ""}
 							` }}
 						</header>
 					</div>
@@ -635,10 +635,15 @@ function cachedKanaHira(input) {
 	return hiraCache.get(input);
 }
 
+let waitingFlg = ref(false);
+let searchingFlg = ref(false);
 let debounceTimer;
 
 watch(q, (nQ, oQ) => {
-	clearTimeout(debounceTimer); 
+	clearTimeout(debounceTimer);
+	
+	waitingFlg.value = true;
+	
 	if (q.value.includes("*")) q.value = oQ;
 	if (q.value.includes("＠")) q.value = nQ.replaceAll("＠","@");
 	
@@ -667,6 +672,8 @@ watch(q, (nQ, oQ) => {
 function emojiSearch(nQ, oQ) {
 	if (!defaultStore.state.enableInstanceEmojiSearch && nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","").replace("*","") + "@";
 	
+	waitingFlg.value = false;
+	
 	if (emojis.value) emojis.value.scrollTop = 0;
 	
 	if (q.value == null || q.value.replace(/[:@]/g,"") === "") {
@@ -680,6 +687,8 @@ function emojiSearch(nQ, oQ) {
 	if ((nQ.endsWith('!'))) {
 		return;
 	}
+	
+	searchingFlg.value = true;
 	
 	let searchHost = undefined;
 	
@@ -943,6 +952,9 @@ function emojiSearch(nQ, oQ) {
 	searchResultCustomStart.value = Array.from(searchCustomStart());
 	searchResultUnicode.value = Array.from(searchUnicode());
 	searchResultUnicodeStart.value = Array.from(searchUnicodeStart());
+	
+	searchingFlg.value = false;
+
 }
 
 function focus() {

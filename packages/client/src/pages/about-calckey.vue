@@ -197,9 +197,9 @@ let easterEggEngine = $ref(null);
 const containerEl = $ref<HTMLElement>();
 
 function iconLoaded() {
-	const emojis = defaultStore.state.reactions;
+	const emojis = [...defaultStore.state.reactions,...defaultStore.state.reactions2,...defaultStore.state.reactions3,...defaultStore.state.reactions4,...defaultStore.state.reactions5,...defaultStore.state.recentlyUsedEmojis];
 	const containerWidth = containerEl?.offsetWidth;
-	for (let i = 0; i < 32; i++) {
+	for (let i = 0; i < 128; i++) {
 		easterEggEmojis.push({
 			id: i.toString(),
 			top: -(128 + Math.random() * 256),
@@ -292,7 +292,7 @@ definePageMetadata({
 			> .emoji {
 				pointer-events: none;
 				font-size: 24px;
-				width: 24px;
+				height: 24px;
 			}
 		}
 	}

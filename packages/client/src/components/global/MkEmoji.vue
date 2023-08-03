@@ -60,36 +60,38 @@ const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
 );
 const errorCnt = ref(0);
-const errorEmoji = ref(false);
 const errorAlt = ref(false);
-const propsCustomEmojisStr = computed(() => props.customEmojis?.map((x) => x.name + "@" + (x.host ?? ".")));
+
 const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
-const ace = computed(() => 
-	[
-		...(instance.allEmojis.filter(x => !propsCustomEmojisStr.value?.includes(x.name + "@" + (x.host ?? "."))) ?? []),
+const ace = computed(() => {
+	const customEmojisSet = new Set(props.customEmojis?.map(x => `${x.name}@${x.host ?? "."}`));
+	const filteredInstanceEmojis = instance.allEmojis.filter(x => !customEmojisSet.has(`${x.name}@${x.host ?? "."}`));
+
+	return [
+		...filteredInstanceEmojis,
 		...(props.customEmojis ?? []),
-	]
-);
+	];
+});
 const customEmoji = computed(() =>
-	isCustom.value
-		? hostmatch?.[2]
-			? ace.value.find(
-					(x) => x.name === hostmatch?.[1] && x.host === hostmatch?.[2]
-			)
-			: props.noteHost
-				? ace.value?.find(
-					(x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.host === props.noteHost
-				)
-				: ce.value.find(
-						(x) => x.name === props.emoji.substr(1, props.emoji.length - 2)
-				) ?? (props.noteHost ? ace?.value?.find(
-					(x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.host === props.noteHost
-				) : null)
-		: null
+	if (!isCustom.value) return null;
+
+	const name = hostmatch?.[1];
+	const host = hostmatch?.[2];
+
+	if (host) {
+		return ace.value.find((x) => x.name === name && x.host === host);
+	} else if (props.noteHost) {
+		return ace.value.find((x) => x.name === name && x.host === props.noteHost);
+	} else {
+		return ce.value.find((x) => x.name === name);
+	}
 );
 
 const customEmojiName = computed(() => {
-	return isCustom ? customEmoji.value?.name || hostmatch?.[1] || props.emoji.substr(1, props.emoji.length - 2) || null : null;
+	if (!isCustom.value) return null;
+	
+	const nameFromEmoji = props.emoji.substr(1, props.emoji.length - 2);
+	return customEmoji.value?.name || hostmatch?.[1] || nameFromEmoji || null;
 });
 
 const emojiHost = computed(() => {
@@ -99,37 +101,40 @@ const emojiHost = computed(() => {
 const urlRaw = computed(() => {
 	const urlArr = [];
 	if(customEmoji.value?.url) urlArr.push(customEmoji.value.url);
-	urlArr.push(
-		emojiHost.value
-			? `/emoji/${customEmojiName.value}@${emojiHost.value}.webp` 
-			: `/emoji/${customEmojiName.value}.webp`
-	)
-	return urlArr
+	if(customEmojiName.value) {
+		const hostSuffix = emojiHost.value ? "@" + emojiHost.value : "";
+		urlArr.push(`/emoji/${customEmojiName.value}${hostSuffix}.webp`);
+	}
+	return urlArr;
 });
 
 const url = computed(() => {
 	if (char.value) {
 		return char2filePath(char.value);
-	} else {
-		return urlRaw.value.length > errorCnt.value ?
-			defaultStore.state.disableShowingAnimatedImages
+	} else if (urlRaw.value.length > errorCnt.value) {
+		return defaultStore.state.disableShowingAnimatedImages
 					? getStaticImageUrl(urlRaw.value[errorCnt.value])
-					: urlRaw.value[errorCnt.value]
-			: "";
+					: urlRaw.value[errorCnt.value];
+	} else {
+		return "";
 	}
 });
 
 const altimgUrl = computed(() => {
-		return emojiHost.value ? 
-			defaultStore.state.disableShowingAnimatedImages
-				? getStaticImageUrl(`https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`)
-				: `https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`
-			: "";
+	if (!emojiHost.value) return "";
+
+	const imgUrl = `https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`;
+	return defaultStore.state.disableShowingAnimatedImages
+				? getStaticImageUrl(imgUrl)
+				: imgUrl;
 });
 
-const alt = computed(() =>
-	customEmojiName.value ? `:${customEmojiName.value}${emojiHost.value ? "@" + emojiHost.value : ""}:` : char.value
-);
+const alt = computed(() => {
+	if (!customEmojiName.value) return char.value;
+
+	const hostSuffix = emojiHost.value ? "@" + emojiHost.value : "";
+	return `:${customEmojiName.value}${hostSuffix}:`;
+});
 
 </script>
 

@@ -77,7 +77,7 @@ const customEmoji = computed(() => {
 
 	const name = hostmatch?.[1];
 	const host = hostmatch?.[2];
-	const matchprops = prop.customEmojis?.find((x) => x.name === name);
+	const matchprops = props.customEmojis?.find((x) => x.name === name);
 
 	if (matchprops) {
 		return matchprops;

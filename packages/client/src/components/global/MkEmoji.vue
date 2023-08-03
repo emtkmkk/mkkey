@@ -41,7 +41,7 @@ const props = defineProps<{
 const isCustom = computed(() => props.emoji.startsWith(":"));
 const bigCustom = computed(() => defaultStore.state.useBigCustom);
 const char = computed(() => (isCustom.value ? null : props.emoji));
-const hostmatch = props.emoji && !props.customEmojis ? props.emoji.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/) : undefined;
+const hostmatch = props.emoji ? props.emoji.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/) : undefined;
 const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
 );

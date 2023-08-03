@@ -62,29 +62,20 @@ const useOsNativeEmojis = computed(
 const errorCnt = ref(0);
 const errorAlt = ref(false);
 
-const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
-const ace = computed(() => {
-	const customEmojisSet = new Set(props.customEmojis?.map(x => `${x.name}@${x.host ?? "."}`));
-	const filteredInstanceEmojis = instance.allEmojis.filter(x => !customEmojisSet.has(`${x.name}@${x.host ?? "."}`));
-
-	return [
-		...filteredInstanceEmojis,
-		...(props.customEmojis ?? []),
-	];
-});
+const ce = computed(() => instance.emojis ?? []);
+const ace = computed(() => instance.allEmojis ?? []);
 const customEmoji = computed(() => {
 	if (!isCustom.value) return null;
 
 	const name = hostmatch?.[1];
-	const host = hostmatch?.[2];
-	const matchprops = props.customEmojis?.find((x) => x.name === name);
-
+	const host = hostmatch?.[2] || props.noteHost;
+	
+	const matchprops = props.customEmojis?.find((x) => x.name === name && (!host || x.host === host));
+	
 	if (matchprops) {
 		return matchprops;
 	} else if (host) {
 		return ace.value.find((x) => x.name === name && x.host === host);
-	} else if (props.noteHost) {
-		return ace.value.find((x) => x.name === name && x.host === props.noteHost);
 	} else {
 		return ce.value.find((x) => x.name === name);
 	}

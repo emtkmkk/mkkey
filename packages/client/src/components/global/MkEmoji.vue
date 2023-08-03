@@ -88,7 +88,7 @@ const customEmoji = computed(() =>
 );
 
 const customEmojiName = computed(() => {
-	return customEmoji.value?.name || hostmatch?.[1] || props.emoji.substr(1, props.emoji.length - 2) || null;
+	return isCustom ? customEmoji.value?.name || hostmatch?.[1] || props.emoji.substr(1, props.emoji.length - 2) || null : null;
 });
 
 const emojiHost = computed(() => {
@@ -97,7 +97,7 @@ const emojiHost = computed(() => {
 
 const urlRaw = computed(() => {
 	const urlArr = [];
-	if(customEmoji.value.url) urlArr.push(customEmoji.value.url);
+	if(customEmoji.value?.url) urlArr.push(customEmoji.value.url);
 	urlArr.push(
 		emojiHost.value
 			? `/emoji/${customEmojiName.value}@${emojiHost.value}.webp` 
@@ -127,7 +127,7 @@ const altimgUrl = computed(() => {
 });
 
 const alt = computed(() =>
-	customEmoji.value ? `:${customEmoji.value.name}${hostmatch?.[2] ? "@" + hostmatch?.[2] : (props.noteHost ?? "")}:` : char.value
+	customEmojiName.value ? `:${customEmojiName.value}${emojiHost.value ? "@" + emojiHost.value : ""}:` : char.value
 );
 
 </script>

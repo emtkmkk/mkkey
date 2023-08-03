@@ -650,10 +650,12 @@ watch(q, (nQ, oQ) => {
 		q.value = oQ;
 	}
 	if (q.value.includes("＠")) q.value = nQ.replaceAll("＠","@");
+	
+	const enableInstanceEmojiSearch = defaultStore.state.enableInstanceEmojiSearch;
+	
 	if (!nQ || (!enableInstanceEmojiSearch && (oQ + "@" === nQ || nQ + "@" === oQ))) searchInstant = true;
 	
 	let waitTime;
-	const enableInstanceEmojiSearch = defaultStore.state.enableInstanceEmojiSearch;
 	
 	if (!searchInstant && nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) {
 		// 1文字消しただけで消した文字が@じゃない場合は次の更新まで2秒待つ

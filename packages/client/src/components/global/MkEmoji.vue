@@ -7,7 +7,7 @@
 		:alt="alt"
 		:title="alt"
 		decoding="async"
-		@error="errorEmoji = true"
+		@error="emit('loaderror', emoji); errorEmoji = true;"
 	/>
 	<img
 		v-else-if="char && !useOsNativeEmojis"
@@ -18,6 +18,16 @@
 		decoding="async"
 	/>
 	<span v-else-if="char && useOsNativeEmojis">{{ char }}</span>
+	<img
+		v-else-if="customEmoji && errorEmoji && !isPicker && emojiHost && !errorAlt"
+		class="mk-emoji emoji-ghost"
+		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
+		:src="altimgUrl"
+		:alt="alt"
+		:title="alt"
+		decoding="async"
+		@error="errorAlt = true"
+	/>
 	<span v-else>{{ customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
 </template>
 
@@ -36,6 +46,7 @@ const props = defineProps<{
 	customEmojis?: CustomEmoji[];
 	isReaction?: boolean;
 	noteHost?: string;
+	isPicker?: boolean;
 }>();
 
 const isCustom = computed(() => props.emoji.startsWith(":"));
@@ -46,6 +57,7 @@ const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
 );
 const errorEmoji = ref(false);
+const errorAlt = ref(false);
 const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
 const ace = computed(() => 
 	[
@@ -97,6 +109,12 @@ const url = computed(() => {
 	}
 });
 
+const altimgUrl = computed(() => {
+		return defaultStore.state.disableShowingAnimatedImages
+				? getStaticImageUrl(`https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`)
+				: `https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`;
+});
+
 const alt = computed(() =>
 	customEmoji.value ? `:${customEmoji.value.name}${hostmatch?.[2] ? "@" + hostmatch?.[2] : (props.noteHost ?? "")}:` : char.value
 );
@@ -127,6 +145,10 @@ const alt = computed(() =>
 				transform: none;
 			}
 		}
+	}
+	
+	&.emoji-ghost {
+		opacity: 0.8;
 	}
 	
 	&.bigCustom {

@@ -34,7 +34,7 @@
 						<template v-for="emoji in searchResultCustomStart">
 							<button
 								:key="emoji.id"
-								v-if="!errorEmojis.includes(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+								v-if="!errorEmojis.has(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
 								class="_button item"
 								v-tooltip="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
 								:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
@@ -46,7 +46,7 @@
 									:emoji="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
 									:normal="true"
 									:isPicker="true"
-									@loaderror="errorEmojis.push(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+									@loaderror="errorEmojis.add(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
 								/>
 								<!--<img
 									class="emoji"
@@ -76,7 +76,7 @@
 						<template v-for="emoji in searchResultCustom">
 							<button
 								:key="emoji.id"
-								v-if="!errorEmojis.includes(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+								v-if="!errorEmojis.has(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
 								class="_button item"
 								v-tooltip="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
 								:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
@@ -88,7 +88,7 @@
 									:emoji="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
 									:normal="true"
 									:isPicker="true"
-									@loaderror="errorEmojis.push(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+									@loaderror="errorEmojis.add(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
 								/>
 								<!--<img
 									class="emoji"
@@ -123,13 +123,13 @@
 								<template v-for="emoji in pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
 									<button
 										:key="emoji"
-										v-if="errorEmojis.includes(emoji)"
+										v-if="!errorEmojis.has(emoji)"
 										v-tooltip="emoji"
 										class="_button item"
 										tabindex="0"
 										@click="chosen(emoji, $event)"
 									>
-										<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.push(emoji)"/>
+										<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.add(emoji)"/>
 									</button>
 								</template>
 							</div>
@@ -144,12 +144,12 @@
 								<template v-for="emoji in recentlyUsedEmojis.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
 									<button
 										:key="emoji"
-										v-if="errorEmojis.includes(emoji)"
+										v-if="!errorEmojis.has(emoji)"
 										v-tooltip="emoji"
 										class="_button item"
 										@click="chosen(emoji, $event)"
 									>
-										<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.push(emoji)"/>
+										<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.add(emoji)"/>
 									</button>
 								</template>
 							</div>
@@ -164,7 +164,7 @@
 								pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ ($store.state.reactionsFolderName || "ピン留め絵文字 : 1") + " "  }}</XSection
+							>{{ ($store.state.reactionsFolderName || "ピン留め絵文字 : 1") + " " }}</XSection
 						>
 						<XSection
 							key="pinned:2"
@@ -484,7 +484,7 @@
 						>
 					</template>
 				</div>
-				<div v-once v-if="searchResultCustom.length <= 0  && (q == null || q === '')" class="group">
+				<div v-once v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
 					<header>{{ i18n.ts.emoji }}</header>
 					<XSection
 						v-for="category in categories"
@@ -607,7 +607,7 @@ const emojiStr = computed(() =>
 	props.asReactionPicker && unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
 const q = ref<string | null>(null);
-const errorEmojis = ref([]);
+const errorEmojis = ref(new Set());
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultCustomStart = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultUnicode = ref<UnicodeEmojiDef[]>([]);
@@ -618,19 +618,27 @@ let singleTapTime = undefined;
 let singleTapEmoji = undefined;
 let singleTapEl = undefined;
 
+const formatCache = new Map();
+const hiraCache = new Map();
+
+function cachedRoomaji(input) {
+	if (!formatCache.has(input)) {
+		formatCache.set(input, format_roomaji(input));
+	}
+	return formatCache.get(input);
+}
+
+function cachedKanaHira(input) {
+	if (!hiraCache.has(input)) {
+		hiraCache.set(input, kanaToHira(input));
+	}
+	return hiraCache.get(input);
+}
+
 watch(q, (nQ, oQ) => {
 	if (q.value.endsWith("*")) q.value = oQ;
 	if (q.value.endsWith("＠")) q.value = oQ + "@";
 	if (!defaultStore.state.enableInstanceEmojiSearch && nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","").replace("*","") + "@";
-	/*
-	// computedにしたので恐らくコレはいらないはず
-	if (q.value.includes("@") && !allCustomEmojis && props.asReactionPicker){
-		//絵文字取得失敗時に@が指定された場合は再度読込直す
-		allCustomEmojis = instance.allEmojis;
-		remoteEmojiMode = instance.remoteEmojiMode;
-		emojiStr = props.asReactionPicker && allCustomEmojis ? allCustomEmojis.map((x) => ":" + x.name + "@" + x.host + ":") : undefined;
-	}
-	*/
 	
 	if (emojis.value) emojis.value.scrollTop = 0;
 	
@@ -654,8 +662,8 @@ watch(q, (nQ, oQ) => {
 	}
 
 	const isAllSearch = unref(allCustomEmojis) ? q.value.includes("@") : false;
-	const newQ = kanaToHira(format_roomaji(q.value.replace(/@\S*$|:/g, "")));
-	const roomajiQ = format_roomaji(ja_to_roomaji(q.value.replace(/@\S*$|:/g, "")));
+	const newQ = cachedKanaHira(cachedRoomaji(q.value.replace(/@\S*$|:/g, "")));
+	const roomajiQ = cachedRoomaji(ja_to_roomaji(q.value.replace(/@\S*$|:/g, "")));
 	
 	const searchCustom = () => {
 		const max = 99;
@@ -747,7 +755,7 @@ watch(q, (nQ, oQ) => {
 		return matches;
 	};
 	const searchCustomStart = () => {
-		const max = isAllSearch ? 30 : 99;
+		const max = 99;
 		const emojis = unref(customEmojis);
 		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
@@ -760,34 +768,34 @@ watch(q, (nQ, oQ) => {
 			if (isAllSearch) {
 				for (const emoji of allEmojis) {
 					if (searchHost && !emoji.host.includes(searchHost)) continue;
-					if (format_roomaji(emoji.name).startsWith(roomajiQ)) {
+					if (cachedRoomaji(emoji.name).startsWith(roomajiQ)) {
 						if (beforeSort.size >= max) break;
 						beforeSort.add({
 							emoji: emoji,
-							key: format_roomaji(emoji.name),
+							key: cachedRoomaji(emoji.name),
 						});
 					}
 				}
 			} else {
 				const exactMatch = emojis.find((emoji) => emoji.name === roomajiQ);
-				if (exactMatch) beforeSort.add({emoji: exactMatch,key: format_roomaji(exactMatch.name),});
+				if (exactMatch) beforeSort.add({emoji: exactMatch,key: cachedRoomaji(exactMatch.name),});
 				for (const emoji of emojis) {
-					if (format_roomaji(emoji.name).startsWith(roomajiQ)) {
+					if (cachedRoomaji(emoji.name).startsWith(roomajiQ)) {
 						if (beforeSort.size >= max) break;
 						beforeSort.add({
 							emoji: emoji,
-							key: format_roomaji(emoji.name),
+							key: cachedRoomaji(emoji.name),
 						});
 					}
 				}
 
 				emojifor : for (const emoji of emojis) {
 					for (const alias of emoji.aliases) {
-						if (kanaToHira(format_roomaji(alias)).startsWith(newQ)) {
+						if (cachedKanaHira(cachedRoomaji(alias)).startsWith(newQ)) {
 							if (beforeSort.size >= max) break emojifor;
 							beforeSort.add({
 								emoji: emoji,
-								key: format_roomaji(alias),
+								key: cachedRoomaji(alias),
 							});
 						}
 					}
@@ -811,7 +819,7 @@ watch(q, (nQ, oQ) => {
 
 			// 名前にキーワードが含まれている
 			for (const emoji of emojis) {
-				if (keywords.every((keyword) => format_roomaji(emoji.name).includes(roomajiKeywords))) {
+				if (keywords.every((keyword) => cachedRoomaji(emoji.name).includes(roomajiKeywords))) {
 					matches.add(emoji);
 					if (matches.size >= max) break;
 				}
@@ -823,9 +831,9 @@ watch(q, (nQ, oQ) => {
 				if (
 					keywords.every(
 						(keyword) =>
-							format_roomaji(emoji.name).includes(roomajiKeywords) ||
+							cachedRoomaji(emoji.name).includes(roomajiKeywords) ||
 							emoji.keywords.some((alias) =>
-								format_roomaji(alias).includes(keyword)
+								cachedRoomaji(alias).includes(keyword)
 							)
 					)
 				) {
@@ -835,8 +843,8 @@ watch(q, (nQ, oQ) => {
 			}
 		} else {
 			for (const emoji of emojis) {
-				if (!format_roomaji(emoji.name).startsWith(roomajiQ)) {
-					if (format_roomaji(emoji.name).includes(roomajiQ)) {
+				if (!cachedRoomaji(emoji.name).startsWith(roomajiQ)) {
+					if (cachedRoomaji(emoji.name).includes(roomajiQ)) {
 						matches.add(emoji);
 						if (matches.size >= max) break;
 					}
@@ -846,9 +854,9 @@ watch(q, (nQ, oQ) => {
 
 			for (const emoji of emojis) {
 				if (
-					!emoji.keywords.some((keyword) => format_roomaji(keyword).startsWith(roomajiQ))
+					!emoji.keywords.some((keyword) => cachedRoomaji(keyword).startsWith(roomajiQ))
 				) {
-					if (emoji.keywords.some((keyword) => format_roomaji(keyword).includes(roomajiQ))) {
+					if (emoji.keywords.some((keyword) => cachedRoomaji(keyword).includes(roomajiQ))) {
 						matches.add(emoji);
 						if (matches.size >= max) break;
 					}
@@ -866,19 +874,19 @@ watch(q, (nQ, oQ) => {
 		const beforeSort = new Set();
 
 		if (isAllSearch) return matches;
-		const exactMatch = emojis.find((emoji) => format_roomaji(emoji.name) === roomajiQ);
-		if (exactMatch) beforeSort.add({emoji: exactMatch,key: format_roomaji(exactMatch.name),});
+		const exactMatch = emojis.find((emoji) => cachedRoomaji(emoji.name) === roomajiQ);
+		if (exactMatch) beforeSort.add({emoji: exactMatch,key: cachedRoomaji(exactMatch.name),});
 
 		if (newQ.includes(" ")) {
 			// AND検索
 			return matches;
 		} else {
 			for (const emoji of emojis) {
-				if (format_roomaji(emoji.name).startsWith(roomajiQ)) {
+				if (cachedRoomaji(emoji.name).startsWith(roomajiQ)) {
 					if (beforeSort.size >= max) break;
 					beforeSort.add({
 						emoji: emoji,
-						key: format_roomaji(emoji.name),
+						key: cachedRoomaji(emoji.name),
 					});
 				}
 			}
@@ -886,12 +894,12 @@ watch(q, (nQ, oQ) => {
 			emojifor : for (const emoji of emojis) {
 				for (const keyword of emoji.keywords) {
 					if (
-						format_roomaji(keyword).startsWith(roomajiQ)
+						cachedRoomaji(keyword).startsWith(roomajiQ)
 					) {
 						if (beforeSort.size >= max) break emojifor;
 						beforeSort.add({
 							emoji: emoji,
-							key: format_roomaji(keyword),
+							key: cachedRoomaji(keyword),
 						});
 					}
 				}
@@ -949,8 +957,8 @@ function chosen(emoji: any, ev?: MouseEvent) {
 				el.style.backgroundColor = 'var(--accent)';
 				setTimeout(() => {
 					el.style.transition = 'background-color 1s';
-    				el.style.backgroundColor = 'transparent';
-  				}, 1500);
+					el.style.backgroundColor = 'transparent';
+				}, 1500);
 				
 				return
 			}
@@ -1111,172 +1119,172 @@ function ja_to_roomaji(
 	
 	// ひらがなかカタカナだけでなければ終了
 	if (/^[ぁ-んァ-ンー\s]+$/.test(_str)){
-		
-		const replaceList = [
-			{before:"きゃ", after:"kya"},
-			{before:"きぃ", after:"kyi"},
-			{before:"きゅ", after:"kyu"},
-			{before:"きぇ", after:"kye"},
-			{before:"きょ", after:"kyo"},
-			{before:"しゃ", after:"sya"},
-			{before:"しぃ", after:"syi"},
-			{before:"しゅ", after:"syu"},
-			{before:"しぇ", after:"sye"},
-			{before:"しょ", after:"syo"},
-			{before:"ちゃ", after:"cha"},
-			{before:"ちぃ", after:"chi"},
-			{before:"ちゅ", after:"chu"},
-			{before:"ちぇ", after:"che"},
-			{before:"ちょ", after:"cho"},
-			{before:"にゃ", after:"nya"},
-			{before:"にぃ", after:"nyi"},
-			{before:"にゅ", after:"nyu"},
-			{before:"にぇ", after:"nye"},
-			{before:"にょ", after:"nyo"},
-			{before:"ひゃ", after:"hya"},
-			{before:"ひぃ", after:"hyi"},
-			{before:"ひゅ", after:"hyu"},
-			{before:"ひぇ", after:"hye"},
-			{before:"ひょ", after:"hyo"},
-			{before:"みゃ", after:"mya"},
-			{before:"みぃ", after:"myi"},
-			{before:"みゅ", after:"myu"},
-			{before:"みぇ", after:"mye"},
-			{before:"みょ", after:"myo"},
-			{before:"ふぁ", after:"fa"},
-			{before:"ふぃ", after:"fi"},
-			{before:"ふぇ", after:"fu"},
-			{before:"ふょ", after:"fo"},
-			{before:"ぎゃ", after:"gya"},
-			{before:"ぎぃ", after:"gyi"},
-			{before:"ぎゅ", after:"gyu"},
-			{before:"ぎぇ", after:"gye"},
-			{before:"ぎょ", after:"gyo"},
-			{before:"じゃ", after:"zya"},
-			{before:"じぃ", after:"zyi"},
-			{before:"じゅ", after:"zyu"},
-			{before:"じぇ", after:"zye"},
-			{before:"じょ", after:"zyo"},
-			{before:"ぢゃ", after:"dya"},
-			{before:"ぢぃ", after:"dyi"},
-			{before:"ぢゅ", after:"dyu"},
-			{before:"ぢぇ", after:"dye"},
-			{before:"ぢょ", after:"dyo"},
-			{before:"びゃ", after:"bya"},
-			{before:"びぃ", after:"byi"},
-			{before:"びゅ", after:"byu"},
-			{before:"びぇ", after:"bye"},
-			{before:"びょ", after:"byo"},
-			{before:"ぴゃ", after:"pyo"},
-			{before:"ぴぃ", after:"pyi"},
-			{before:"ぴゅ", after:"pyu"},
-			{before:"ぴぇ", after:"pye"},
-			{before:"ぴょ", after:"pyo"},
-			{before:"ぁ", after:"xa"},
-			{before:"あ", after:"a"},
-			{before:"ぃ", after:"xi"},
-			{before:"い", after:"i"},
-			{before:"ぅ", after:"xu"},
-			{before:"う", after:"u"},
-			{before:"ぇ", after:"xe"},
-			{before:"え", after:"e"},
-			{before:"ぉ", after:"xo"},
-			{before:"お", after:"o"},
-			{before:"か", after:"ka"},
-			{before:"が", after:"ga"},
-			{before:"き", after:"ki"},
-			{before:"ぎ", after:"gi"},
-			{before:"く", after:"ku"},
-			{before:"ぐ", after:"gu"},
-			{before:"け", after:"ke"},
-			{before:"げ", after:"ge"},
-			{before:"こ", after:"ko"},
-			{before:"ご", after:"go"},
-			{before:"さ", after:"sa"},
-			{before:"ざ", after:"za"},
-			{before:"し", after:"si"},
-			{before:"じ", after:"zi"},
-			{before:"す", after:"su"},
-			{before:"ず", after:"zu"},
-			{before:"せ", after:"se"},
-			{before:"ぜ", after:"ze"},
-			{before:"そ", after:"so"},
-			{before:"ぞ", after:"zo"},
-			{before:"た", after:"ta"},
-			{before:"だ", after:"da"},
-			{before:"ち", after:"ti"},
-			{before:"ぢ", after:"di"},
-			{before:"つ", after:"tu"},
-			{before:"づ", after:"du"},
-			{before:"て", after:"te"},
-			{before:"で", after:"de"},
-			{before:"と", after:"to"},
-			{before:"ど", after:"do"},
-			{before:"な", after:"na"},
-			{before:"に", after:"ni"},
-			{before:"ぬ", after:"nu"},
-			{before:"ね", after:"ne"},
-			{before:"の", after:"no"},
-			{before:"は", after:"ha"},
-			{before:"ば", after:"ba"},
-			{before:"ぱ", after:"pa"},
-			{before:"ひ", after:"hi"},
-			{before:"び", after:"bi"},
-			{before:"ぴ", after:"pi"},
-			{before:"ふ", after:"fu"},
-			{before:"ぶ", after:"bu"},
-			{before:"ぷ", after:"pu"},
-			{before:"へ", after:"he"},
-			{before:"べ", after:"be"},
-			{before:"ぺ", after:"pe"},
-			{before:"ほ", after:"ho"},
-			{before:"ぼ", after:"bo"},
-			{before:"ぽ", after:"po"},
-			{before:"ま", after:"ma"},
-			{before:"み", after:"mi"},
-			{before:"む", after:"mu"},
-			{before:"め", after:"me"},
-			{before:"も", after:"mo"},
-			{before:"ゃ", after:"xya"},
-			{before:"や", after:"ya"},
-			{before:"ゅ", after:"xyu"},
-			{before:"ゆ", after:"yu"},
-			{before:"ょ", after:"xyo"},
-			{before:"よ", after:"yo"},
-			{before:"ら", after:"ra"},
-			{before:"り", after:"ri"},
-			{before:"る", after:"ru"},
-			{before:"れ", after:"re"},
-			{before:"ろ", after:"ro"},
-			{before:"ゎ", after:"xwa"},
-			{before:"わ", after:"wa"},
-			{before:"ゐ", after:"i"},
-			{before:"ゑ", after:"e"},
-			{before:"を", after:"wo"},
-			{before:"ん", after:"n"},
-			{before:"ー", after:"_"},
-			{before:/っ(\w)/g, after:"$1$1"},
-			{before:"っ", after:"xtu"},
-			{before:"！", after:"i"},
-			{before:"?", after:"q"},
-			{before:"？", after:"q"},
-		];
-
-		_str = kanaToHira(_str);
-
-		replaceList.forEach((x) => _str = _str.replaceAll(x.before,x.after));
-
+		return _str;	
 	}
+		
+	const replaceList = [
+		{before:"きゃ", after:"kya"},
+		{before:"きぃ", after:"kyi"},
+		{before:"きゅ", after:"kyu"},
+		{before:"きぇ", after:"kye"},
+		{before:"きょ", after:"kyo"},
+		{before:"しゃ", after:"sya"},
+		{before:"しぃ", after:"syi"},
+		{before:"しゅ", after:"syu"},
+		{before:"しぇ", after:"sye"},
+		{before:"しょ", after:"syo"},
+		{before:"ちゃ", after:"cha"},
+		{before:"ちぃ", after:"chi"},
+		{before:"ちゅ", after:"chu"},
+		{before:"ちぇ", after:"che"},
+		{before:"ちょ", after:"cho"},
+		{before:"にゃ", after:"nya"},
+		{before:"にぃ", after:"nyi"},
+		{before:"にゅ", after:"nyu"},
+		{before:"にぇ", after:"nye"},
+		{before:"にょ", after:"nyo"},
+		{before:"ひゃ", after:"hya"},
+		{before:"ひぃ", after:"hyi"},
+		{before:"ひゅ", after:"hyu"},
+		{before:"ひぇ", after:"hye"},
+		{before:"ひょ", after:"hyo"},
+		{before:"みゃ", after:"mya"},
+		{before:"みぃ", after:"myi"},
+		{before:"みゅ", after:"myu"},
+		{before:"みぇ", after:"mye"},
+		{before:"みょ", after:"myo"},
+		{before:"ふぁ", after:"fa"},
+		{before:"ふぃ", after:"fi"},
+		{before:"ふぇ", after:"fu"},
+		{before:"ふょ", after:"fo"},
+		{before:"ぎゃ", after:"gya"},
+		{before:"ぎぃ", after:"gyi"},
+		{before:"ぎゅ", after:"gyu"},
+		{before:"ぎぇ", after:"gye"},
+		{before:"ぎょ", after:"gyo"},
+		{before:"じゃ", after:"zya"},
+		{before:"じぃ", after:"zyi"},
+		{before:"じゅ", after:"zyu"},
+		{before:"じぇ", after:"zye"},
+		{before:"じょ", after:"zyo"},
+		{before:"ぢゃ", after:"dya"},
+		{before:"ぢぃ", after:"dyi"},
+		{before:"ぢゅ", after:"dyu"},
+		{before:"ぢぇ", after:"dye"},
+		{before:"ぢょ", after:"dyo"},
+		{before:"びゃ", after:"bya"},
+		{before:"びぃ", after:"byi"},
+		{before:"びゅ", after:"byu"},
+		{before:"びぇ", after:"bye"},
+		{before:"びょ", after:"byo"},
+		{before:"ぴゃ", after:"pyo"},
+		{before:"ぴぃ", after:"pyi"},
+		{before:"ぴゅ", after:"pyu"},
+		{before:"ぴぇ", after:"pye"},
+		{before:"ぴょ", after:"pyo"},
+		{before:"ぁ", after:"xa"},
+		{before:"あ", after:"a"},
+		{before:"ぃ", after:"xi"},
+		{before:"い", after:"i"},
+		{before:"ぅ", after:"xu"},
+		{before:"う", after:"u"},
+		{before:"ぇ", after:"xe"},
+		{before:"え", after:"e"},
+		{before:"ぉ", after:"xo"},
+		{before:"お", after:"o"},
+		{before:"か", after:"ka"},
+		{before:"が", after:"ga"},
+		{before:"き", after:"ki"},
+		{before:"ぎ", after:"gi"},
+		{before:"く", after:"ku"},
+		{before:"ぐ", after:"gu"},
+		{before:"け", after:"ke"},
+		{before:"げ", after:"ge"},
+		{before:"こ", after:"ko"},
+		{before:"ご", after:"go"},
+		{before:"さ", after:"sa"},
+		{before:"ざ", after:"za"},
+		{before:"し", after:"si"},
+		{before:"じ", after:"zi"},
+		{before:"す", after:"su"},
+		{before:"ず", after:"zu"},
+		{before:"せ", after:"se"},
+		{before:"ぜ", after:"ze"},
+		{before:"そ", after:"so"},
+		{before:"ぞ", after:"zo"},
+		{before:"た", after:"ta"},
+		{before:"だ", after:"da"},
+		{before:"ち", after:"ti"},
+		{before:"ぢ", after:"di"},
+		{before:"つ", after:"tu"},
+		{before:"づ", after:"du"},
+		{before:"て", after:"te"},
+		{before:"で", after:"de"},
+		{before:"と", after:"to"},
+		{before:"ど", after:"do"},
+		{before:"な", after:"na"},
+		{before:"に", after:"ni"},
+		{before:"ぬ", after:"nu"},
+		{before:"ね", after:"ne"},
+		{before:"の", after:"no"},
+		{before:"は", after:"ha"},
+		{before:"ば", after:"ba"},
+		{before:"ぱ", after:"pa"},
+		{before:"ひ", after:"hi"},
+		{before:"び", after:"bi"},
+		{before:"ぴ", after:"pi"},
+		{before:"ふ", after:"fu"},
+		{before:"ぶ", after:"bu"},
+		{before:"ぷ", after:"pu"},
+		{before:"へ", after:"he"},
+		{before:"べ", after:"be"},
+		{before:"ぺ", after:"pe"},
+		{before:"ほ", after:"ho"},
+		{before:"ぼ", after:"bo"},
+		{before:"ぽ", after:"po"},
+		{before:"ま", after:"ma"},
+		{before:"み", after:"mi"},
+		{before:"む", after:"mu"},
+		{before:"め", after:"me"},
+		{before:"も", after:"mo"},
+		{before:"ゃ", after:"xya"},
+		{before:"や", after:"ya"},
+		{before:"ゅ", after:"xyu"},
+		{before:"ゆ", after:"yu"},
+		{before:"ょ", after:"xyo"},
+		{before:"よ", after:"yo"},
+		{before:"ら", after:"ra"},
+		{before:"り", after:"ri"},
+		{before:"る", after:"ru"},
+		{before:"れ", after:"re"},
+		{before:"ろ", after:"ro"},
+		{before:"ゎ", after:"xwa"},
+		{before:"わ", after:"wa"},
+		{before:"ゐ", after:"i"},
+		{before:"ゑ", after:"e"},
+		{before:"を", after:"wo"},
+		{before:"ん", after:"n"},
+		{before:"ー", after:"_"},
+		{before:/っ(\w)/g, after:"$1$1"},
+		{before:"っ", after:"xtu"},
+		{before:"！", after:"i"},
+		{before:"?", after:"q"},
+		{before:"？", after:"q"},
+	];
+
+	_str = cachedKanaHira(_str);
+
+	replaceList.forEach((x) => _str = _str.replaceAll(x.before,x.after));
 
 	return _str;
 
 }
 
 function kanaToHira(str) {
-    return str.replace(/[ァ-ン]/g, function(match) {
-        var chr = match.charCodeAt(0) - 0x60;
-        return String.fromCharCode(chr);
-    });
+	return str.replace(/[ァ-ン]/g, function(match) {
+		var chr = match.charCodeAt(0) - 0x60;
+		return String.fromCharCode(chr);
+	});
 }
 
 onMounted(() => {
@@ -1538,7 +1546,7 @@ defineExpose({
 
 					> .item {
 						width: var(--eachWidth);
-   						height: var(--eachSize);
+						height: var(--eachSize);
 						min-width: 0;
 					}
 				}

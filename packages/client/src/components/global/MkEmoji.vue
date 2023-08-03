@@ -160,7 +160,7 @@ const alt = computed(() =>
 	}
 	
 	&.emoji-ghost {
-		opacity: 0.8;
+		opacity: 0.5;
 	}
 	
 	&.bigCustom {

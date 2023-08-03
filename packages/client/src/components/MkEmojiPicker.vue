@@ -650,14 +650,15 @@ watch(q, (nQ, oQ) => {
 		q.value = oQ;
 	}
 	if (q.value.includes("＠")) q.value = nQ.replaceAll("＠","@");
+	if (!nQ || (!enableInstanceEmojiSearch && (oQ + "@" === nQ || nQ + "@" === oQ))) searchInstant = true;
 	
 	let waitTime;
 	const enableInstanceEmojiSearch = defaultStore.state.enableInstanceEmojiSearch;
 	
-	if (nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) {
+	if (!searchInstant && nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) {
 		// 1文字消しただけで消した文字が@じゃない場合は次の更新まで2秒待つ
 		waitTime = 2000;
-	} else if (searchInstant || nQ == null || (!enableInstanceEmojiSearch && (oQ + "@" === nQ || nQ + "@" === oQ))) {
+	} else if (searchInstant) {
 		// ユーザから即時検索を要求された場合、全文字が消えた場合
 		// ホスト名検索が無効で@が足されたり消されたりした場合は即時検索
 		waitTime = 1;

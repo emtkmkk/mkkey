@@ -113,7 +113,7 @@ const url = computed(() => {
 		return urlRaw.value.length > errorCnt.value ?
 			defaultStore.state.disableShowingAnimatedImages
 					? getStaticImageUrl(urlRaw.value[errorCnt.value])
-					: urlRaw.value[errorCnt.value];
+					: urlRaw.value[errorCnt.value]
 			: "";
 	}
 });

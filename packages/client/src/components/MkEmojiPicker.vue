@@ -641,7 +641,24 @@ watch(q, (nQ, oQ) => {
 	clearTimeout(debounceTimer); 
 	if (q.value.includes("*")) q.value = oQ;
 	if (q.value.includes("＠")) q.value = nQ.replaceAll("＠","@");
-	const waitTime = (nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) ? 2000 : q.value == null ? 0 : 500;
+	
+	let waitTime;
+	const enableInstanceEmojiSearch = defaultStore.state.enableInstanceEmojiSearch;
+	
+	if (nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) {
+		// 1文字消しただけで消した文字が@じゃない場合は次の更新まで2秒待つ
+		waitTime = 2000;
+	} else if (q.value == null || (!enableInstanceEmojiSearch && (oQ + "@" === nQ || nQ + "@" === oQ))) {
+		// 全文字が消えた場合、またはホスト名検索が無効で@が足されたり消されたりした場合は即時検索
+		waitTime = 0;
+	} else if (enableInstanceEmojiSearch && nQ.includes("@")) {
+		// ホスト名検索が有効で@が入力されている場合は少し遅めの0.8秒にする
+		waitTime = 800;
+	} else {
+		// すべてに当てはまらない場合は0.5秒
+		waitTime = 500;
+	}
+	
 	debounceTimer = setTimeout(() => {
 		emojiSearch(nQ, oQ); 
 	}, waitTime);

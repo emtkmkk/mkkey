@@ -61,11 +61,11 @@ const useOsNativeEmojis = computed(
 const errorCnt = ref(0);
 const errorEmoji = ref(false);
 const errorAlt = ref(false);
-const propsCustomEmojisStr = computed(() => props.customEmojis.map((x) => x.name + "@" + (x.host ?? ".")));
+const propsCustomEmojisStr = computed(() => props.customEmojis?.map((x) => x.name + "@" + (x.host ?? ".")));
 const ce = computed(() => props.customEmojis ?? instance.emojis ?? []);
 const ace = computed(() => 
 	[
-		...(instance.allEmojis.filter(x => !propsCustomEmojisStr.includes(x.name + "@" + (x.host ?? "."))) ?? []),
+		...(instance.allEmojis.filter(x => !propsCustomEmojisStr.value?.includes(x.name + "@" + (x.host ?? "."))) ?? []),
 		...(props.customEmojis ?? []),
 	]
 );

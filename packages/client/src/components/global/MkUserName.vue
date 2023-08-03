@@ -4,6 +4,7 @@
 		:text="maxlength && (user.name || user.username).length > maxlength ? (user.name?.replaceAll(/\s?:\w+:/g,'') || user.username).slice(0,maxlength) + (user.name?.replaceAll(/\s?:\w+:/g,'')?.length > maxlength ? '…' : '') : (user.name || user.username)"
 		:plain="true"
 		:nowrap="nowrap"
+		:author="user"
 		:custom-emojis="user.emojis"
 	/>
 </template>

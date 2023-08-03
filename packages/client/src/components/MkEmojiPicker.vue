@@ -635,9 +635,19 @@ function cachedKanaHira(input) {
 	return hiraCache.get(input);
 }
 
+let debounceTimer;
+
 watch(q, (nQ, oQ) => {
-	if (q.value.endsWith("*")) q.value = oQ;
-	if (q.value.endsWith("＠")) q.value = oQ + "@";
+	clearTimeout(debounceTimer); 
+	if (q.value.includes("*")) q.value = oQ;
+	if (q.value.includes("＠")) q.value = nQ.replaceAll("＠","@");
+	const waitTime = (nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) ? 2000 : q.value == null ? 0 : 500;
+	debounceTimer = setTimeout(() => {
+		emojiSearch(nQ, oQ); 
+	}, waitTime);
+});
+
+function emojiSearch(nQ, oQ) {
 	if (!defaultStore.state.enableInstanceEmojiSearch && nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","").replace("*","") + "@";
 	
 	if (emojis.value) emojis.value.scrollTop = 0;
@@ -650,7 +660,7 @@ watch(q, (nQ, oQ) => {
 		return;
 	}
 	
-	if ((nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) || (nQ.endsWith('!'))) {
+	if ((nQ.endsWith('!'))) {
 		return;
 	}
 	
@@ -666,7 +676,7 @@ watch(q, (nQ, oQ) => {
 	const roomajiQ = cachedRoomaji(ja_to_roomaji(q.value.replace(/@\S*$|:/g, "")));
 	
 	const searchCustom = () => {
-		const max = 99;
+		const max = isAllSearch ? 30 : 99;
 		const emojis = unref(customEmojis);
 		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
@@ -913,7 +923,7 @@ watch(q, (nQ, oQ) => {
 	searchResultCustomStart.value = Array.from(searchCustomStart());
 	searchResultUnicode.value = Array.from(searchUnicode());
 	searchResultUnicodeStart.value = Array.from(searchUnicodeStart());
-});
+}
 
 function focus() {
 	// || (!["smartphone", "tablet"].includes(deviceKind) && !isTouchUsing) は一旦OFF

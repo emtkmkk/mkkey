@@ -670,8 +670,8 @@ watch(q, (nQ, oQ) => {
 	}
 	
 	debounceTimer = setTimeout(() => {
-		waitingFlg.value = false;
 		searchingFlg.value = true;
+		waitingFlg.value = false;
 		emojiSearch(nQ, oQ); 
 	}, waitTime);
 });

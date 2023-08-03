@@ -670,15 +670,15 @@ watch(q, (nQ, oQ) => {
 	}
 	
 	debounceTimer = setTimeout(() => {
+		waitingFlg.value = false;
+		searchingFlg.value = true;
 		emojiSearch(nQ, oQ); 
 	}, waitTime);
 });
 
 function emojiSearch(nQ, oQ) {
 	if (!defaultStore.state.enableInstanceEmojiSearch && nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","").replace("*","") + "@";
-	
-	waitingFlg.value = false;
-	
+
 	if (emojis.value) emojis.value.scrollTop = 0;
 	
 	if (q.value == null || q.value.replace(/[:@]/g,"") === "") {
@@ -686,14 +686,15 @@ function emojiSearch(nQ, oQ) {
 		searchResultCustomStart.value = [];
 		searchResultUnicode.value = [];
 		searchResultUnicodeStart.value = [];
+		searchingFlg.value = false;
 		return;
 	}
 	
 	if ((nQ.endsWith('!'))) {
+		searchingFlg.value = false;
 		return;
 	}
 	
-	searchingFlg.value = true;
 	
 	let searchHost = undefined;
 	

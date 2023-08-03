@@ -660,7 +660,7 @@ watch(q, (nQ, oQ) => {
 	} else if (searchInstant || nQ == null || (!enableInstanceEmojiSearch && (oQ + "@" === nQ || nQ + "@" === oQ))) {
 		// ユーザから即時検索を要求された場合、全文字が消えた場合
 		// ホスト名検索が無効で@が足されたり消されたりした場合は即時検索
-		waitTime = 0;
+		waitTime = 1;
 	} else if (enableInstanceEmojiSearch && nQ.includes("@")) {
 		// ホスト名検索が有効で@が入力されている場合は少し遅めの0.8秒にする
 		waitTime = 800;
@@ -728,7 +728,7 @@ function emojiSearch(nQ, oQ) {
 					if (
 						keywords.every(
 							(keyword) =>
-								format_roomaji(emoji.name).includes(roomajiKeywords)
+								cachedRoomaji(emoji.name).includes(roomajiKeywords)
 						)
 					) {
 						matches.add(emoji);
@@ -742,9 +742,9 @@ function emojiSearch(nQ, oQ) {
 					if (
 						keywords.every(
 							(keyword) =>
-								format_roomaji(emoji.name).includes(roomajiKeywords) ||
+								cachedRoomaji(emoji.name).includes(roomajiKeywords) ||
 								emoji.aliases.some((alias) =>
-									format_roomaji(alias).includes(keyword)
+									cachedRoomaji(alias).includes(keyword)
 								)
 						)
 					) {
@@ -756,7 +756,7 @@ function emojiSearch(nQ, oQ) {
 
 				// 名前にキーワードが含まれている
 				for (const emoji of emojis) {
-					if (keywords.every((keyword) => format_roomaji(emoji.name).includes(roomajiKeywords))) {
+					if (keywords.every((keyword) => cachedRoomaji(emoji.name).includes(roomajiKeywords))) {
 						matches.add(emoji);
 						if (matches.size >= max) break;
 					}
@@ -767,8 +767,8 @@ function emojiSearch(nQ, oQ) {
 			if (isAllSearch) {
 				for (const emoji of allEmojis) {
 					if (searchHost && !emoji.host.includes(searchHost)) continue;
-					if (!format_roomaji(emoji.name).startsWith(roomajiQ)) {
-						if (format_roomaji(emoji.name).includes(roomajiQ)) {
+					if (!cachedRoomaji(emoji.name).startsWith(roomajiQ)) {
+						if (cachedRoomaji(emoji.name).includes(roomajiQ)) {
 							matches.add(emoji);
 							if (matches.size >= max) break;
 						}
@@ -777,8 +777,8 @@ function emojiSearch(nQ, oQ) {
 				if (matches.size >= max) return matches;
 			} else {
 				for (const emoji of emojis) {
-					if (!format_roomaji(emoji.name).startsWith(roomajiQ)) {
-						if (format_roomaji(emoji.name).includes(roomajiQ)) {
+					if (!cachedRoomaji(emoji.name).startsWith(roomajiQ)) {
+						if (cachedRoomaji(emoji.name).includes(roomajiQ)) {
 							matches.add(emoji);
 							if (matches.size >= max) break;
 						}
@@ -787,8 +787,8 @@ function emojiSearch(nQ, oQ) {
 				if (matches.size >= max) return matches;
 
 				for (const emoji of emojis) {
-					if (!emoji.aliases.some((alias) => kanaToHira(format_roomaji(alias)).startsWith(newQ))) {
-						if (emoji.aliases.some((alias) => kanaToHira(format_roomaji(alias)).includes(newQ))) {
+					if (!emoji.aliases.some((alias) => cachedKanaHira(format_roomaji(alias)).startsWith(newQ))) {
+						if (emoji.aliases.some((alias) => cachedKanaHira(format_roomaji(alias)).includes(newQ))) {
 							matches.add(emoji);
 							if (matches.size >= max) break;
 						}

@@ -6,6 +6,7 @@
 		:author="author"
 		:customEmojis="customEmojis"
 		:isNote="isNote"
+		:noteHost="noteHost"
 		class="havbbuyv"
 		:class="{ nowrap }"
 	/>
@@ -23,12 +24,14 @@ const props = withDefaults(
 		author?: any;
 		customEmojis?: any;
 		isNote?: boolean;
+		noteHost?: string;
 	}>(),
 	{
 		plain: false,
 		nowrap: false,
 		author: null,
 		isNote: true,
+		noteHost: null,
 	}
 );
 </script>

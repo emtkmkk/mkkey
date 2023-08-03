@@ -292,7 +292,8 @@ definePageMetadata({
 			> .emoji {
 				pointer-events: none;
 				font-size: 24px;
-				height: 24px;
+				height: 24px !important;
+				width: auto !important
 			}
 		}
 	}

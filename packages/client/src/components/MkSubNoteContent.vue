@@ -163,6 +163,7 @@ const props = defineProps<{
 const emit = defineEmits<{
 	(ev: "push", v): void;
 	(ev: "focusfooter"): void;
+	(ev: "changeShowContent"): void;
 }>();
 
 const cwButton = ref<HTMLElement>();
@@ -185,7 +186,7 @@ let showContent = ref(!cwView);
 watch(
 	showContent,
 	(n) => {
-			emit('changeShowContent', n);
+			emit("changeShowContent", n);
 	}, { immediate: true }
 );
 

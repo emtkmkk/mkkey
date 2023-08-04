@@ -470,7 +470,7 @@ const birthday = $computed(() => {
 	
 	if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
 	
-	return _birthday.getFullYear() + "-" + _birthday.getMonth() + "-" + _birthday.getDate();
+	return _birthday.getFullYear() + "-" + (_birthday.getMonth() + 1) + "-" + _birthday.getDate();
 })
 
 const style = $computed(() => {

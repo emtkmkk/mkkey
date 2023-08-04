@@ -481,12 +481,12 @@ const style = $computed(() => {
 });
 
 const age = $computed(() => {
-	return calcAge(birthday.value);
+	return calcAge(birthday);
 });
 
 const nextBirthday = $computed(() => {
 
-	const _birthday = new Date(birthday.value);
+	const _birthday = new Date(birthday);
 	_birthday.setHours(0);
 
 	const today = new Date();

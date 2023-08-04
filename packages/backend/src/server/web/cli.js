@@ -55,28 +55,23 @@ window.onload = async () => {
 			const name = document.createElement("p");
 			const avatar = document.createElement("img");
 			const rtname = document.createElement("p");
-			name.textContent = `${appearNote.user.name ? appearNote.user.name + "" : ""}@${appearNote.user.username}${appearNote.user.host ? "@" + appearNote.user.host : ""}`;
-			rtname.textContent = `${!note.text ? "RT : " : ""}${note.user.name ? note.user.name + "" : ""}@${note.user.username}${note.user.host ? "@" + note.user.host : ""}`;
-			avatar.src = !note.text ? appearNote.user.avatarUrl : note.user.avatarUrl;
+			name.textContent = `${appearNote.user.name ? appearNote.user.name + " " : ""}@${appearNote.user.username}${appearNote.user.host ? "@" + appearNote.user.host : ""}`;
+			rtname.textContent = `${note.user.name ? note.user.name + " \n" : ""}@${note.user.username}${note.user.host ? "@" + note.user.host : ""}`;
+			avatar.src = note.user.avatarUrl;
 			avatar.style = "height: 40px";
 			const text = document.createElement("div");
-			text.textContent = `${note.cw ? (note.cw + (note.text ? ` (CW 📝${note.text.length})` : "")) : note.text}${note.renote ? " QT " + name.textContent + (appearNote.cw ? (appearNote.cw + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")) : appearNote.text) : ""}`;
+			text.textContent = `${(note.cw ? (note.cw + (note.text ? ` (CW 📝${note.text.length})` : "")) : (note.text || "")) + (note.files.length !== 0 ? " (📎" + note.files.length + ")" : "")}${note.renote ? (!note.text ? " RT " : "\nQT ") + name.textContent + " " + (appearNote.cw ? (appearNote.cw + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")) : (appearNote.text || "")) + (appearNote.files.length !== 0 ? " (📎" + appearNote.files.length + ")" : "") : ""}`.trim();
 			el.appendChild(header);
 			header.appendChild(avatar);
-			if (note.renote && !note.text){
-				header.appendChild(name);
-				header.appendChild(rtname);
-			} else {
-				header.appendChild(rtname);
-			}
+			header.appendChild(rtname);
 			if (appearNote.cw || appearNote.text) {
 				el.appendChild(text);
 			}
 			if (appearNote.files) {
 				for (const file of appearNote.files) {
-					const img = document.createElement("img");
-					img.src = file.thumbnailUrl;
-					el.appendChild(img);
+					//const img = document.createElement("img");
+					//img.src = file.thumbnailUrl;
+					//el.appendChild(img);
 				}
 			}
 			tl.appendChild(el);

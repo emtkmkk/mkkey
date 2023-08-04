@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 
 const props = withDefaults(
 	defineProps<{
@@ -54,8 +54,18 @@ const props = withDefaults(
 	}
 );
 
-const showDate = Date.now();
-const isLongTime = computed(() => (Date.now() - showDate) > 30 * 1000);
+const isLongTime = ref(false);
+let timerId = null;
+
+onMounted(() => {
+	timerId = setTimeout(() => {
+	isLongTime.value = true;
+	}, 30000);
+});
+
+onBeforeUnmount(() => {
+	clearTimeout(timerId); // タイマーの解除
+});
 </script>
 
 <style lang="scss" module>

@@ -234,6 +234,15 @@
 						>{{ i18n.ts.recentlyAddEmojis }}</XSection
 					>
 					<XSection
+						key="custom:random"
+						:initial-shown="false"
+						:emojis="
+							randomSubset.map((e) => ':' + e.name + ':')
+						"
+						@chosen="chosen"
+						>{{ i18n.ts.random }}</XSection
+					>
+					<XSection
 						v-for="category in customEmojiCategories"
 						:key="'custom:' + category"
 						:initial-shown="false"
@@ -606,6 +615,16 @@ const remoteEmojiMode = computed(() =>
 const emojiStr = computed(() => 
 	props.asReactionPicker && unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
+const randomSubset = computed(() => {
+	let copy = [...unref(customEmojis)];
+	let result = [];
+	for (let i = 0; i < 99; ++i) {
+		const randomIndex = Math.floor(Math.random() * copy.length);
+		const [item] = copy.splice(randomIndex, 1);
+		result.push(item);
+	}
+	return result;
+});
 const q = ref<string | null>(null);
 const errorEmojis = ref(new Set());
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);

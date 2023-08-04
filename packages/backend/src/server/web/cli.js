@@ -45,6 +45,7 @@ window.onload = async () => {
 	
 	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has('tl') ? "notes/" + searchParams.get('tl') + "-timeline" : "notes/timeline";
 	const limit = searchParams.has('limit') ? searchParams.get('limit') : undefined;
+	const noAvatar = searchParams.has('noAvatar')
 
 	api(notesApi,limit ? {limit} : {}).then((notes) => {
 		const tl = document.getElementById("tl");
@@ -62,7 +63,7 @@ window.onload = async () => {
 			const text = document.createElement("div");
 			text.textContent = `${(note.cw ? (note.cw + (note.text ? ` (CW 📝${note.text.length})` : "")) : (note.text || "")) + (note.files.length !== 0 ? " (📎" + note.files.length + ")" : "")}${note.renote ? (!note.text ? " RT " : "\nQT ") + name.textContent + " : " + (appearNote.cw ? (appearNote.cw + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")) : (appearNote.text || "")) + (appearNote.files.length !== 0 ? " (📎" + appearNote.files.length + ")" : "") : ""}`.trim();
 			el.appendChild(header);
-			header.appendChild(avatar);
+			if (!noAvatar) header.appendChild(avatar);
 			header.appendChild(rtname);
 			if (appearNote.cw || appearNote.text) {
 				el.appendChild(text);

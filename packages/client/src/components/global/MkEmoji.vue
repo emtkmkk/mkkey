@@ -8,7 +8,12 @@
 		:alt="alt"
 		:title="alt"
 		decoding="async"
-		@error="() => { emit('loaderror', emoji); errorCnt = errorCnt + 1; }"
+		@error="() => { 
+			if (isPicker) {
+				emit('loaderror', ""); 
+			}
+			errorCnt = errorCnt + 1; 
+		}"
 	/>
 	<img
 		v-else-if="char && !useOsNativeEmojis"

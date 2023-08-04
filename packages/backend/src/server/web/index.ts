@@ -456,7 +456,7 @@ router.get("/notes/:note", async (ctx, next) => {
 				summary = ["public", "home"].includes(note.visibility) && !note.localOnly ? getNoteSummary(_note) : "";
 			}
 			await ctx.render("note", {
-				note: ["public", "home"].includes(note.visibility) && !note.localOnly ? _note : null,
+				note: ["public", "home"].includes(note.visibility) && !note.localOnly ? _note : {id:_note.id ,user:_note.user,fileIds: [], files: []},
 				profile,
 				avatarUrl: await Users.getAvatarUrl(
 					await Users.findOneByOrFail({ id: note.userId }),
@@ -497,7 +497,7 @@ router.get("/posts/:note", async (ctx, next) => {
 			summary = ["public", "home"].includes(note.visibility) && !note.localOnly ? getNoteSummary(_note) : "";
 		}
 		await ctx.render("note", {
-			note: ["public", "home"].includes(note.visibility) && !note.localOnly ? _note : null,
+			note: ["public", "home"].includes(note.visibility) && !note.localOnly ? _note : {id:_note.id ,user:_note.user,fileIds: [], files: []},
 			profile,
 			avatarUrl: await Users.getAvatarUrl(
 				await Users.findOneByOrFail({ id: note.userId }),

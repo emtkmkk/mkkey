@@ -40,8 +40,13 @@ window.onload = async () => {
 			location.reload();
 		});
 	});
+	
+	const searchParams = new URLSearchParams(window.location.search)
+	
+	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has('tl') ? "notes/" + searchParams.get('tl') + "-timeline" : "notes/timeline";
+	const limit = searchParams.has('limit') ? searchParams.get('limit') : undefined;
 
-	api("notes/timeline").then((notes) => {
+	api(notesApi,limit ? {limit} : {}).then((notes) => {
 		const tl = document.getElementById("tl");
 		for (const note of notes) {
 			const appearNote = note.renote ? note.renote : note;

@@ -9,7 +9,7 @@
 		decoding="async"
 		@error="() => { 
 			if (isPicker) {
-				emit('loaderror', ""); 
+				emit('loaderror', ''); 
 			}
 			errorCnt = errorCnt + 1; 
 		}"

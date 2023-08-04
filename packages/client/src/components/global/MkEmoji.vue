@@ -101,7 +101,7 @@ const emojiFullName = computed(() => {
 	if (!customEmojiName.value) return char.value;
 	
 	const hostSuffix = emojiHost.value ? "@" + emojiHost.value : "";
-	return `:${customEmojiName.value}${hostSuffix}:`;
+	return `${customEmojiName.value}${hostSuffix}`;
 });
 
 const urlRaw = computed(() => {

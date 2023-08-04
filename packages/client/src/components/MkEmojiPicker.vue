@@ -26,7 +26,7 @@
 							{{ `${q.includes('@') ? (remoteEmojiMode === "all" ? "他サーバー絵文字検索 " : "他サーバー絵文字検索(ミニ) ") : "検索結果 "}
 							${!(waitingFlg || searchingFlg) ? (searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
 								? `${(searchResultCustomStart.length + searchResultUnicodeStart.length) + " / " + (searchResultCustom.length + searchResultUnicode.length)} 件` 
-								: "0 件" : waitingFlg ? "検索ワード入力待機中……" : "検索中……" }${allCustomEmojis && !q.includes('@') ? " (@で他サーバー絵文字検索)" : ""}
+								: "0 件" : searchingFlg ? "検索中……" : "入力待機中……" }${allCustomEmojis && !q.includes('@') ? " (@で他サーバー絵文字検索)" : ""}
 							` }}
 						</header>
 					</div>
@@ -660,18 +660,19 @@ watch(q, (nQ, oQ) => {
 	let waitTime;
 	
 	if (!searchInstant && nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) {
-		// 1文字消しただけで消した文字が@じゃない場合は次の更新まで2秒待つ
-		waitTime = 2000;
+		// 1文字消しただけで消した文字が@じゃない場合は次の更新まで1.2秒待つ
+		// ただし@が入っている場合は2秒待つ
+		waitTime = nQ.includes("@") ? 2000 : 1200;
 	} else if (searchInstant) {
 		// ユーザから即時検索を要求された場合、全文字が消えた場合
 		// ホスト名検索が無効で@が足されたり消されたりした場合は即時検索
-		waitTime = 1;
+		waitTime = 0;
 	} else if (enableInstanceEmojiSearch && nQ.includes("@")) {
-		// ホスト名検索が有効で@が入力されている場合は少し遅めの0.8秒にする
-		waitTime = 800;
+		// ホスト名検索が有効で@が入力されている場合は少し遅めの0.6秒にする
+		waitTime = 600;
 	} else {
-		// すべてに当てはまらない場合は0.5秒
-		waitTime = 500;
+		// すべてに当てはまらない場合は0.4秒
+		waitTime = 400;
 	}
 	
 	debounceTimer = setTimeout(() => {

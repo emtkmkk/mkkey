@@ -202,7 +202,7 @@
 								{{ i18n.ts.noAccountDescription }}
 							</p>
 						</div>
-						<div v-if=" $i || user.location || user.birthday || user.host == null" class="fields system">
+						<div v-if=" $i || user.location || birthday || user.host == null" class="fields system">
 							<dl v-if="user.location" class="field">
 								<dt class="name">
 									<i
@@ -214,7 +214,7 @@
 									{{ user.location }}{{ timeForThem }}
 								</dd>
 							</dl>
-							<dl v-if="user.birthday" class="field">
+							<dl v-if="birthday" class="field">
 								<dt class="name">
 									<i
 										class="ph-cake ph-bold ph-lg ph-fw ph-lg"
@@ -223,20 +223,20 @@
 								</dt>
 								<dd class="value">
 									{{
-										user.birthday.substring(0, 4) == "0000" || user.birthday.substring(0, 4) == "9999" || user.birthday.substring(0, 4) == "4000"
-											? user.birthday
+										birthday.substring(0, 4) == "0000" || birthday.substring(0, 4) == "9999" || birthday.substring(0, 4) == "4000"
+											? birthday
 											.replace("-", "/")
 											.replace("-", "/").substring(5)
-											: user.birthday
+											: birthday
 											.replace("-", "/")
 											.replace("-", "/")
 									}}
 									{{ 
 										nextBirthday === 0 
 											? "(" + i18n.ts.birthdayToday + ")" 
-											: user.birthday.substring(0, 4) != "0000" 
-											&& user.birthday.substring(0, 4) != "9999" 
-											&& user.birthday.substring(0, 4) != "4000" 
+											: birthday.substring(0, 4) != "0000" 
+											&& birthday.substring(0, 4) != "9999" 
+											&& birthday.substring(0, 4) != "4000" 
 											&& age >= 6 && age <= 122 
 											&& nextBirthday > 9 
 												? "(" + i18n.t("yearsOld", { age }) + ")" 
@@ -443,6 +443,36 @@ const visiblePinnedNotes = $computed(() => {
 	return pinFull.value ? props.user.pinnedNotes : props.user.pinnedNotes.slice(0, 2);
 });
 
+const birthday = $computed(() => {
+	if (!(props.user.name.includes("8yo") || props.user.description.includes("8yo"))){
+		return props.user.birthday
+	}
+	
+	let _birthday;
+	
+	const today = new Date();
+	
+	if(!props.user.birthday){
+		_birthday = new Date();
+		_birthday.setMonth(_birthday.getMonth() - 6);
+	} else {
+		_birthday = new Date(props.user.birthday);
+	}
+	
+	_birthday.setFullYear(today.getFullYear() - 8);
+	
+	const y8date = new Date();
+	y8date.setFullYear(today.getFullYear() - 8)
+	y8date.setHours(0);
+	y8date.setMinutes(0);
+	y8date.setSeconds(0);
+	y8date.setMilliseconds(0);
+	
+	if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
+	
+	return _birthday.getFullYear() + "-" + _birthday.getMonth() + "-" + _birthday.getDate();
+})
+
 const style = $computed(() => {
 	if (props.user.bannerUrl == null) return {};
 	return {
@@ -451,13 +481,13 @@ const style = $computed(() => {
 });
 
 const age = $computed(() => {
-	return calcAge(props.user.birthday);
+	return calcAge(birthday.value);
 });
 
 const nextBirthday = $computed(() => {
 
-	const birthday = new Date(props.user.birthday);
-	birthday.setHours(0);
+	const _birthday = new Date(birthday.value);
+	_birthday.setHours(0);
 
 	const today = new Date();
 	today.setHours(0);
@@ -465,11 +495,11 @@ const nextBirthday = $computed(() => {
 	today.setSeconds(0);
 	today.setMilliseconds(0);
 
-	birthday.setFullYear(today.getFullYear());
+	_birthday.setFullYear(today.getFullYear());
 
-	return birthday >= today
-			? Math.floor((birthday - today) / (24 * 60 * 60 * 1000))
-			: Math.floor((birthday.setFullYear(birthday.getFullYear() + 1) - today) / (24 * 60 * 60 * 1000));
+	return _birthday >= today
+			? Math.floor((_birthday - today) / (24 * 60 * 60 * 1000))
+			: Math.floor((_birthday.setFullYear(_birthday.getFullYear() + 1) - today) / (24 * 60 * 60 * 1000));
 });
 
 const timeForThem = $computed(() => {

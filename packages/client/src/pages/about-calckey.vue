@@ -186,6 +186,7 @@ import MkSparkle from "@/components/MkSparkle.vue";
 import { physics } from "@/scripts/physics";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
+import { instance } from "@/instance";
 import * as os from "@/os";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
@@ -197,14 +198,15 @@ let easterEggEngine = $ref(null);
 const containerEl = $ref<HTMLElement>();
 
 function iconLoaded() {
-	const emojis = [...defaultStore.state.reactions,...defaultStore.state.reactions2,...defaultStore.state.reactions3,...defaultStore.state.reactions4,...defaultStore.state.reactions5,...defaultStore.state.recentlyUsedEmojis];
+	const emojis = defaultStore.state.hiddenReactionDeckAndRecent ? instance.emojis.map(x => ":" + x.name + ":") : [...defaultStore.state.reactions,...defaultStore.state.reactions2,...defaultStore.state.reactions3,...defaultStore.state.reactions4,...defaultStore.state.reactions5,...(hiddenRecent ? [] : defaultStore.state.recentlyUsedEmojis)];
 	const containerWidth = containerEl?.offsetWidth;
-	for (let i = 0; i < 128; i++) {
+	const emojisCnt = emojis.length
+	for (let i = 0; i < Math.min(emojisCnt, 128); i++) {
 		easterEggEmojis.push({
 			id: i.toString(),
 			top: -(128 + Math.random() * 256),
 			left: Math.random() * containerWidth,
-			emoji: emojis[Math.floor(Math.random() * emojis.length)],
+			emoji: emojisCnt >= 128 ? emojis[Math.floor(Math.random() * emojis.length)] : emojis[i],
 		});
 	}
 
@@ -291,8 +293,8 @@ definePageMetadata({
 
 			> .emoji {
 				pointer-events: none;
-				font-size: 24px;
-				height: 24px !important;
+				font-size: 16px;
+				height: 16px !important;
 				width: auto !important
 			}
 		}

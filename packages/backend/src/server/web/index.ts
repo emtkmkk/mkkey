@@ -437,8 +437,6 @@ router.get("/users/:user", async (ctx) => {
 router.get("/notes/:note", async (ctx, next) => {
 	const note = await Notes.findOneBy({
 		id: ctx.params.note,
-		visibility: In(["public", "home"]),
-		localOnly: false,
 	});
 
 	try {
@@ -449,15 +447,23 @@ router.get("/notes/:note", async (ctx, next) => {
 				userId: note.userId,
 			});
 			const meta = await fetchMeta();
+			const userName = _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/, '')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`;
+			let summary = "";
+			if (!["public", "home"].includes(note.visibility) || note.localOnly){
+				summary = `${note.visibility === "followers" ? (userName + "さんのフォロワー限定の投稿") : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
+			} else {
+				// 念のため
+				summary = ["public", "home"].includes(note.visibility) && !note.localOnly ? getNoteSummary(_note) : "";
+			}
 			await ctx.render("note", {
-				note: _note,
+				note: ["public", "home"].includes(note.visibility) && !note.localOnly ? _note : null,
 				profile,
 				avatarUrl: await Users.getAvatarUrl(
 					await Users.findOneByOrFail({ id: note.userId }),
 				),
 				// TODO: Let locale changeable by instance setting
-				summary: getNoteSummary(_note),
-				userName: _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/, '')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`,
+				summary,
+				userName,
 				instanceName: meta.name || "Calckey",
 				icon: meta.iconUrl,
 				privateMode: meta.privateMode,
@@ -476,23 +482,29 @@ router.get("/notes/:note", async (ctx, next) => {
 router.get("/posts/:note", async (ctx, next) => {
 	const note = await Notes.findOneBy({
 		id: ctx.params.note,
-		visibility: In(["public", "home"]),
-		localOnly: false,
 	});
 
 	if (note) {
 		const _note = await Notes.pack(note);
 		const profile = await UserProfiles.findOneByOrFail({ userId: note.userId });
-		const meta = await fetchMeta();
+		const meta = await fetchMeta();			
+		const userName = _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/, '')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`;
+		let summary = "";
+		if (!["public", "home"].includes(note.visibility) || note.localOnly){
+			summary = `${note.visibility === "followers" ? (userName + "さんのフォロワー限定の投稿") : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
+		} else {
+			// 念のため
+			summary = ["public", "home"].includes(note.visibility) && !note.localOnly ? getNoteSummary(_note) : "";
+		}
 		await ctx.render("note", {
-			note: _note,
+			note: ["public", "home"].includes(note.visibility) && !note.localOnly ? _note : null,
 			profile,
 			avatarUrl: await Users.getAvatarUrl(
 				await Users.findOneByOrFail({ id: note.userId }),
 			),
 			// TODO: Let locale changeable by instance setting
-			summary: getNoteSummary(_note),
-			userName: _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/, '')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`,
+			summary,
+			userName,
 			instanceName: meta.name || "Calckey",
 			icon: meta.iconUrl,
 			privateMode: meta.privateMode,

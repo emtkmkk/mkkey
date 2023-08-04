@@ -44,23 +44,31 @@ window.onload = async () => {
 	api("notes/timeline").then((notes) => {
 		const tl = document.getElementById("tl");
 		for (const note of notes) {
+			const appearNote = note.renote ? note.renote : note;
 			const el = document.createElement("div");
 			const header = document.createElement("header");
 			const name = document.createElement("p");
 			const avatar = document.createElement("img");
-			name.textContent = `${note.user.name} @${note.user.username}`;
-			avatar.src = note.user.avatarUrl;
+			const rtname = document.createElement("p");
+			name.textContent = `${appearNote.user.name ? appearNote.user.name + "" : ""}@${appearNote.user.username}${appearNote.user.host ? "@" + appearNote.user.host : ""}`;
+			rtname.textContent = `${!note.text ? "RT : " : ""}${note.user.name ? note.user.name + "" : ""}@${note.user.username}${note.user.host ? "@" + note.user.host : ""}`;
+			avatar.src = !note.text ? appearNote.user.avatarUrl : note.user.avatarUrl;
 			avatar.style = "height: 40px";
 			const text = document.createElement("div");
-			text.textContent = `${note.cw ? (note.cw + (" (CW)")).trim() : note.text}`;
+			text.textContent = `${note.cw ? (note.cw + (note.text ? ` (CW 📝${note.text.length})` : "")) : note.text}${note.renote ? " QT " + name.textContent + (appearNote.cw ? (appearNote.cw + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")) : appearNote.text) : ""}`;
 			el.appendChild(header);
 			header.appendChild(avatar);
-			header.appendChild(name);
-			if (note.cw || note.text) {
+			if (note.renote && !note.text){
+				header.appendChild(name);
+				header.appendChild(rtname);
+			} else {
+				header.appendChild(rtname);
+			}
+			if (appearNote.cw || appearNote.text) {
 				el.appendChild(text);
 			}
-			if (note.files) {
-				for (const file of note.files) {
+			if (appearNote.files) {
+				for (const file of appearNote.files) {
 					const img = document.createElement("img");
 					img.src = file.thumbnailUrl;
 					el.appendChild(img);

@@ -223,13 +223,13 @@
 								</dt>
 								<dd class="value">
 									{{
-										birthday.substring(0, 4) == "0000" || birthday.substring(0, 4) == "9999" || birthday.substring(0, 4) == "4000"
+										(birthday.substring(0, 4) == "0000" || birthday.substring(0, 4) == "9999" || birthday.substring(0, 4) == "4000"
 											? birthday
 											.replace("-", "/")
 											.replace("-", "/").substring(5)
 											: birthday
 											.replace("-", "/")
-											.replace("-", "/")
+											.replace("-", "/")) + (!props.user.birthday ? "?" : "")
 									}}
 									{{ 
 										nextBirthday === 0 

@@ -108,7 +108,7 @@ const urlRaw = computed(() => {
 	const urlArr = [];
 	if(customEmoji.value?.url) urlArr.push(customEmoji.value.url);
 	if(customEmojiName.value) {
-		urlArr.push(`/emoji/${emojiFullName}.webp`);
+		urlArr.push(`/emoji/${emojiFullName.value}.webp`);
 	}
 	return urlArr;
 });
@@ -135,7 +135,7 @@ const altimgUrl = computed(() => {
 });
 
 const alt = computed(() => {
-	return `:${emojiFullName}:`;
+	return `:${emojiFullName.value}:`;
 });
 
 </script>

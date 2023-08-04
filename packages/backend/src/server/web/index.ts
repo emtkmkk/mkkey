@@ -337,32 +337,32 @@ const jsonFeed: Router.Middleware = async (ctx) => {
 };
 
 router.get("/emoji/:path(.*)", async (ctx) => {
-	
+
 	ctx.set('Cache-Control', 'public, max-age=86400');
-	
+
 	if (!ctx.params.path.match(/^[a-zA-Z0-9\-_@\.]+?\.webp$/)) {
 		ctx.status = 404;
 		return;
 	}
-	
+
 	const name = ctx.params.path.split('@')[0].replace('.webp', '');
 	const host = ctx.params.path.split('@')[1]?.replace('.webp', '');
-	
+
 	const emoji = await Emojis.findOneBy({
 		// `@.` is the spec of ReactionService.decodeReaction
 		host: (host == null || host === '.') ? IsNull() : host,
 		name: name,
 	});
-	
+
 	ctx.set('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
 
 	if (emoji == null) {
 		ctx.status = 404;
 		return;
 	}
-	
+
 	let url: URL;
-	if (false && config.mediaProxy !== null){
+	if (false && config.mediaProxy !== null) {
 		url = new URL(`${config.mediaProxy}/emoji.webp`);
 		// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
 		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
@@ -373,7 +373,7 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 		ctx.status = 301;
 		ctx.redirect(emoji.publicUrl || emoji.originalUrl);
 	}
-	
+
 });
 
 //#region SSR (for crawlers)
@@ -441,26 +441,28 @@ router.get("/notes/:note", async (ctx, next) => {
 
 	try {
 		if (note) {
-			const _note = await Notes.pack(note);
+
+			const user = await Users.findOneByOrFail({
+				id: note.userId,
+			});
+
+			const _note = ["public", "home"].includes(note.visibility) && !note.localOnly ? await Notes.pack(note) : { id: note.id, user: user, fileIds: [], files: [] };
 
 			const profile = await UserProfiles.findOneByOrFail({
 				userId: note.userId,
 			});
 			const meta = await fetchMeta();
-			const userName = _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/, '')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`;
+			const userName = user.name ? `${user.name.replace(/ ?:.*?:/, '')}${user.host ? `@${user.host}` : ''}` : `@${user.username}${user.host ? `@${user.host}` : ''}`;
 			let summary = "";
-			if (!["public", "home"].includes(note.visibility) || note.localOnly){
+			if (!["public", "home"].includes(note.visibility) || note.localOnly) {
 				summary = `${note.visibility === "followers" ? (userName + "さんのフォロワー限定の投稿") : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
 			} else {
-				// 念のため
-				summary = ["public", "home"].includes(note.visibility) && !note.localOnly ? getNoteSummary(_note) : "";
+				summary = getNoteSummary(_note);
 			}
 			await ctx.render("note", {
-				note: ["public", "home"].includes(note.visibility) && !note.localOnly ? _note : {id:_note.id ,user:_note.user,fileIds: [], files: []},
+				note: _note,
 				profile,
-				avatarUrl: await Users.getAvatarUrl(
-					await Users.findOneByOrFail({ id: note.userId }),
-				),
+				avatarUrl: await Users.getAvatarUrl(user),
 				// TODO: Let locale changeable by instance setting
 				summary,
 				userName,
@@ -485,23 +487,28 @@ router.get("/posts/:note", async (ctx, next) => {
 	});
 
 	if (note) {
-		const _note = await Notes.pack(note);
-		const profile = await UserProfiles.findOneByOrFail({ userId: note.userId });
-		const meta = await fetchMeta();			
-		const userName = _note.user.name ? `${_note.user.name.replace(/ ?:.*?:/, '')}${_note.user.host ? `@${_note.user.host}` : ''}` : `@${_note.user.username}${_note.user.host ? `@${_note.user.host}` : ''}`;
+
+		const user = await Users.findOneByOrFail({
+			id: note.userId,
+		});
+
+		const _note = ["public", "home"].includes(note.visibility) && !note.localOnly ? await Notes.pack(note) : { id: note.id, user: user, fileIds: [], files: [] };
+
+		const profile = await UserProfiles.findOneByOrFail({
+			userId: note.userId,
+		});
+		const meta = await fetchMeta();
+		const userName = user.name ? `${user.name.replace(/ ?:.*?:/, '')}${user.host ? `@${user.host}` : ''}` : `@${user.username}${user.host ? `@${user.host}` : ''}`;
 		let summary = "";
-		if (!["public", "home"].includes(note.visibility) || note.localOnly){
+		if (!["public", "home"].includes(note.visibility) || note.localOnly) {
 			summary = `${note.visibility === "followers" ? (userName + "さんのフォロワー限定の投稿") : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
 		} else {
-			// 念のため
-			summary = ["public", "home"].includes(note.visibility) && !note.localOnly ? getNoteSummary(_note) : "";
+			summary = getNoteSummary(_note);
 		}
 		await ctx.render("note", {
-			note: ["public", "home"].includes(note.visibility) && !note.localOnly ? _note : {id:_note.id ,user:_note.user,fileIds: [], files: []},
+			note: _note,
 			profile,
-			avatarUrl: await Users.getAvatarUrl(
-				await Users.findOneByOrFail({ id: note.userId }),
-			),
+			avatarUrl: await Users.getAvatarUrl(user),
 			// TODO: Let locale changeable by instance setting
 			summary,
 			userName,
@@ -719,28 +726,28 @@ router.get("(.*)", async (ctx) => {
 	const now = new Date();
 	let nowDate = new Date().toLocaleDateString('ja-JP');
 	motdd.push("今日は " + nowDate + " です");
-	switch (now.getDay()){
+	switch (now.getDay()) {
 		case 0:
-		motdd.push("今日は日曜日 すやすや");
-		break;
+			motdd.push("今日は日曜日 すやすや");
+			break;
 		case 1:
-		motdd.push("今日は月曜日 一週間のはじまり");
-		break;
+			motdd.push("今日は月曜日 一週間のはじまり");
+			break;
 		case 2:
-		motdd.push("今日は火曜日 エンジンかけてこ");
-		break;
+			motdd.push("今日は火曜日 エンジンかけてこ");
+			break;
 		case 3:
-		motdd.push("今日は水曜日 すいすい");
-		break;
+			motdd.push("今日は水曜日 すいすい");
+			break;
 		case 4:
-		motdd.push("今日は木曜日 もくもく");
-		break;
+			motdd.push("今日は木曜日 もくもく");
+			break;
 		case 5:
-		motdd.push("今日は金曜日 今週もお疲れ様");
-		break;
+			motdd.push("今日は金曜日 今週もお疲れ様");
+			break;
 		case 6:
-		motdd.push("今日は土曜日 一休みしよね");
-		break;
+			motdd.push("今日は土曜日 一休みしよね");
+			break;
 	}
 	motdt.push("もこきーのユーザ数は " + usersCount + " です");
 	motdt.push("もこきーの合計投稿数は " + notesCount + " です");
@@ -853,7 +860,7 @@ router.get("(.*)", async (ctx) => {
 	}
 	//季節メッセージ 終わり
 	//季節 : 6 , 日付 : 3 , 統計・その他 : 1
-	motd = [...motd,...motd,...motd,...motd,...motd,...motd,...motdd,...motdd,...motdd,...motdt,];
+	motd = [...motd, ...motd, ...motd, ...motd, ...motd, ...motd, ...motdd, ...motdd, ...motdd, ...motdt,];
 	let splashIconUrl = meta.iconUrl;
 	if (meta.customSplashIcons.length > 0) {
 		splashIconUrl =

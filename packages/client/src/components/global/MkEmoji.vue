@@ -2,7 +2,6 @@
 	<img
 		v-if="isCustom && urlRaw.length > errorCnt"
 		class="mk-emoji"
-		:key="emoji + '-' + errorCnt"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="url"
 		:alt="alt"
@@ -27,7 +26,6 @@
 	<img
 		v-else-if="isCustom && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
 		class="mk-emoji emoji-ghost"
-		:key="emoji + '-alt'"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="altimgUrl"
 		:alt="alt"

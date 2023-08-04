@@ -838,14 +838,14 @@ router.get("(.*)", async (ctx) => {
 			motd.push("Halloweeeeeeen");
 		}
 	} else if (now.getMonth() == 10) {
-		motd.push("冬がやってきますね");
+		motd.push("秋か冬かよく分からない時期ですね");
 		if (now.getDate() == 26) {
 			motd = ["今日はもこきー " + (now.getFullYear() - 2022) + " 周年の日です！🎉"];
 			motdd = [];
 			motdt = [];
 		}
 	} else if (now.getMonth() == 11) {
-		motd.push("冬が始まってきますね");
+		motd.push("冬が始まりますね");
 		if (now.getDate() == 31 && now.getHours() >= 18) {
 			motd = [now.getFullYear() + "年もお疲れ様でした。来年も頑張りましょう"];
 			motdd = [];

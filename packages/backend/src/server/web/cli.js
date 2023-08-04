@@ -60,7 +60,7 @@ window.onload = async () => {
 			avatar.src = note.user.avatarUrl;
 			avatar.style = "height: 40px";
 			const text = document.createElement("div");
-			text.textContent = `${(note.cw ? (note.cw + (note.text ? ` (CW 📝${note.text.length})` : "")) : (note.text || "")) + (note.files.length !== 0 ? " (📎" + note.files.length + ")" : "")}${note.renote ? (!note.text ? " RT " : "\nQT ") + name.textContent + " " + (appearNote.cw ? (appearNote.cw + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")) : (appearNote.text || "")) + (appearNote.files.length !== 0 ? " (📎" + appearNote.files.length + ")" : "") : ""}`.trim();
+			text.textContent = `${(note.cw ? (note.cw + (note.text ? ` (CW 📝${note.text.length})` : "")) : (note.text || "")) + (note.files.length !== 0 ? " (📎" + note.files.length + ")" : "")}${note.renote ? (!note.text ? " RT " : "\nQT ") + name.textContent + " : " + (appearNote.cw ? (appearNote.cw + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")) : (appearNote.text || "")) + (appearNote.files.length !== 0 ? " (📎" + appearNote.files.length + ")" : "") : ""}`.trim();
 			el.appendChild(header);
 			header.appendChild(avatar);
 			header.appendChild(rtname);

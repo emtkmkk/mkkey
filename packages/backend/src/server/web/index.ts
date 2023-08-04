@@ -749,6 +749,11 @@ router.get("(.*)", async (ctx) => {
 			motdd.push("今日は土曜日 一休みしよね");
 			break;
 	}
+	const yearFirstDay = new Date(now.getFullYear(), 0);
+	const yearNextFirstDay = new Date(now.getFullYear() + 1, 0);
+	const nowDaysCnt = Math.floor((now.valueOf() - yearFirstDay.valueOf()) / (24 * 60 * 60 * 1000));
+	const yearDaysCnt = Math.floor((yearNextFirstDay.valueOf() - yearFirstDay.valueOf()) / (24 * 60 * 60 * 1000));
+	motdd.push(now.getFullYear() + "年 進行度 " + nowDaysCnt + " / " + yearDaysCnt + " ( " + (nowDaysCnt / yearDaysCnt).toFixed(1) + "% ) です");
 	motdt.push("もこきーのユーザ数は " + usersCount + " です");
 	motdt.push("もこきーの合計投稿数は " + notesCount + " です");
 	motdt.push("もこきーの連合ユーザ数は " + gUsersCount + " です");

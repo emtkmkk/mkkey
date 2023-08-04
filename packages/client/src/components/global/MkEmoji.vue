@@ -29,7 +29,8 @@
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="altimgUrl"
 		:alt="alt"
-		:title="alt"
+		:title="alt + ' (localOnly)'"
+		v-tooptip="emojiHost + ' localOnly'"
 		decoding="async"
 		@error="errorAlt = true"
 	/>
@@ -73,7 +74,7 @@ const customEmoji = computed(() => {
 	const name = hostmatch?.[1];
 	const host = hostmatch?.[2] || props.noteHost;
 	
-	const matchprops = props.customEmojis?.find((x) => x.name === name && (!host || x.host === host));
+	const matchprops = props.customEmojis?.find((x) => x.name === props.emoji.substr(1, props.emoji.length - 2));
 	
 	if (matchprops) {
 		return matchprops;
@@ -96,12 +97,18 @@ const emojiHost = computed(() => {
 	return customEmoji.value?.host || hostmatch?.[2] || props.noteHost || null;
 });
 
+const emojiFullName = computed(() => {
+	if (!customEmojiName.value) return char.value;
+	
+	const hostSuffix = emojiHost.value ? "@" + emojiHost.value : "";
+	return `:${customEmojiName.value}${hostSuffix}:`;
+});
+
 const urlRaw = computed(() => {
 	const urlArr = [];
 	if(customEmoji.value?.url) urlArr.push(customEmoji.value.url);
 	if(customEmojiName.value) {
-		const hostSuffix = emojiHost.value ? "@" + emojiHost.value : "";
-		urlArr.push(`/emoji/${customEmojiName.value}${hostSuffix}.webp`);
+		urlArr.push(`/emoji/${emojiFullName}.webp`);
 	}
 	return urlArr;
 });
@@ -128,10 +135,7 @@ const altimgUrl = computed(() => {
 });
 
 const alt = computed(() => {
-	if (!customEmojiName.value) return char.value;
-
-	const hostSuffix = emojiHost.value ? "@" + emojiHost.value : "";
-	return `:${customEmojiName.value}${hostSuffix}:`;
+	return `:${emojiFullName}:`;
 });
 
 </script>

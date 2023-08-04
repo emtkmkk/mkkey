@@ -44,7 +44,7 @@ window.onload = async () => {
 	const searchParams = new URLSearchParams(window.location.search)
 	
 	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has('tl') ? "notes/" + searchParams.get('tl') + "-timeline" : "notes/timeline";
-	const limit = searchParams.has('limit') ? searchParams.get('limit') : undefined;
+	const limit = searchParams.has('limit') ? parseInt(searchParams.get('limit'),10) : undefined;
 	const noAvatar = searchParams.has('noAvatar')
 
 	api(notesApi,limit ? {limit} : {}).then((notes) => {

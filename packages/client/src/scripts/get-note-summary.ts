@@ -20,6 +20,13 @@ export const getNoteSummary = (note: misskey.entities.Note): string => {
 	} else {
 		summary += note.text ? note.text : "";
 	}
+	
+	// リノートである場合
+	if (note.renoteId && !note.text && !note.files && !note.poll) {
+		summary += ` (RT)`;
+	} else if (note.renoteId) {
+		summary += ` (QT)`;
+	}
 
 	// ファイルが添付されているとき
 	if ((note.files || []).length !== 0) {
@@ -30,7 +37,6 @@ export const getNoteSummary = (note: misskey.entities.Note): string => {
 	if (note.poll) {
 		summary += ` (${i18n.ts.poll})`;
 	}
-
 	/*
 
 	// 返信のとき

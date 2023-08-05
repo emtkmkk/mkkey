@@ -444,7 +444,7 @@ const visiblePinnedNotes = $computed(() => {
 });
 
 const birthday = $computed(() => {
-	if (!(props.user.name.includes("8yo") || props.user.description.includes("8yo"))){
+	if (!(props.user.name?.includes("8yo") || props.user.description?.includes("8yo"))){
 		return props.user.birthday
 	}
 	

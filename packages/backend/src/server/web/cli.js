@@ -87,7 +87,7 @@ function excludeNotPlain(text) {
 }
 
 function getProcessName(name){
-		return name.replaceAll(/\s?:[\w_]+?:/g, '').trim();
+		return name ? name.replaceAll(/\s?:[\w_]+?:/g, '').trim() : "";
 }
 
 function vicon(v,l){

@@ -57,8 +57,8 @@ window.onload = async () => {
 			const name = document.createElement("p");
 			const avatar = document.createElement("img");
 			const rtname = document.createElement("p");
-			name.textContent = `${getProcessName(appearNote.user.name)} @${appearNote.user.username}${appearNote.user.host ? "@" + appearNote.user.host : ""}`.trim();
-			rtname.textContent = `${getProcessName(note.user.name)} @${note.user.username}${note.user.host ? "@" + note.user.host : ""}`.trim();
+			name.textContent = `${getProcessName(appearNote.user.name)} @${appearNote.user.username}${appearNote.user.host ? "@" + appearNote.user.host : ""} ${vicon(note.visibility,note.localOnly)}`.trim();
+			rtname.textContent = `${getProcessName(note.user.name)} @${note.user.username}${note.user.host ? "@" + note.user.host : ""} ${vicon(note.visibility,note.localOnly)}`.trim();
 			avatar.src = note.user.avatarUrl;
 			avatar.style = "height: " + (avatarSize ?? "40") + "px";
 			const text = document.createElement("div");
@@ -90,3 +90,6 @@ function getProcessName(name){
 		return name.replaceAll(/\s?:[\w_]+?:/g, '').trim();
 }
 
+function vicon(v,l){
+	return `${l ? "♥" : ""}${v === "home" ? "🏠" : v === "followers" ? "🔒" : v === "specified" ? "✉" : ""}`
+}

@@ -40,14 +40,15 @@ window.onload = async () => {
 			location.reload();
 		});
 	});
-	
-	const searchParams = new URLSearchParams(window.location.search)
-	
-	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has('tl') ? "notes/" + searchParams.get('tl') + "-timeline" : "notes/timeline";
-	const limit = searchParams.has('limit') ? parseInt(searchParams.get('limit'),10) : undefined;
-	const noAvatar = searchParams.has('noAvatar')
 
-	api(notesApi,limit ? {limit} : {}).then((notes) => {
+	const searchParams = new URLSearchParams(window.location.search)
+
+	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has('tl') ? "notes/" + searchParams.get('tl') + "-timeline" : "notes/timeline";
+	const limit = searchParams.has('limit') ? parseInt(searchParams.get('limit'), 10) : undefined;
+	const noAvatar = searchParams.has('noAvatar');
+	const avatarSize = searchParams.has("avatarSize") ? searchParams.get('avatarSize') : undefined;
+
+	api(notesApi, limit ? { limit } : {}).then((notes) => {
 		const tl = document.getElementById("tl");
 		for (const note of notes) {
 			const appearNote = note.renote ? note.renote : note;
@@ -56,12 +57,12 @@ window.onload = async () => {
 			const name = document.createElement("p");
 			const avatar = document.createElement("img");
 			const rtname = document.createElement("p");
-			name.textContent = `${appearNote.user.name ? appearNote.user.name + " " : ""}@${appearNote.user.username}${appearNote.user.host ? "@" + appearNote.user.host : ""}`;
-			rtname.textContent = `${note.user.name ? note.user.name + " \n" : ""}@${note.user.username}${note.user.host ? "@" + note.user.host : ""}`;
+			name.textContent = `${getProcessName(appearNote.user.name)} @${appearNote.user.username}${appearNote.user.host ? "@" + appearNote.user.host : ""}`.trim();
+			rtname.textContent = `${getProcessName(note.user.name)} @${note.user.username}${note.user.host ? "@" + note.user.host : ""}`.trim();
 			avatar.src = note.user.avatarUrl;
-			avatar.style = "height: 40px";
+			avatar.style = "height: " + (avatarSize ?? "40") + "px";
 			const text = document.createElement("div");
-			text.textContent = `${(note.cw ? (note.cw + (note.text ? ` (CW 📝${note.text.length})` : "")) : (note.text || "")) + (note.files.length !== 0 ? " (📎" + note.files.length + ")" : "")}${note.renote ? (!note.text ? " RT " : "\nQT ") + name.textContent + " : " + (appearNote.cw ? (appearNote.cw + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")) : (appearNote.text || "")) + (appearNote.files.length !== 0 ? " (📎" + appearNote.files.length + ")" : "") : ""}`.trim();
+			text.textContent = `${(note.cw ? (excludeNotPlain(note.cw) + (note.text ? ` (CW 📝${note.text.length})` : "")) : (excludeNotPlain(note.text) || "")) + (note.files.length !== 0 ? " (📎" + note.files.length + ")" : "")}${note.renote ? (!note.text ? " RT " : " \nQT ") + name.textContent + " : " + (appearNote.cw ? (excludeNotPlain(appearNote.cw) + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")) : (excludeNotPlain(appearNote.text) || "")) + (appearNote.files.length !== 0 ? " (📎" + appearNote.files.length + ")" : "") : ""}`.trim();
 			el.appendChild(header);
 			if (!noAvatar) header.appendChild(avatar);
 			header.appendChild(rtname);
@@ -79,3 +80,13 @@ window.onload = async () => {
 		}
 	});
 };
+
+function excludeNotPlain(text) {
+	// <xxx>を消す、中身が空のMFMを消す（4階層まで）
+	return text ? text.replaceAll(/<\/?\w*?>/g, '').replaceAll(/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g, '').trim() : undefined;
+}
+
+function getProcessName(name){
+		return name.replaceAll(/\s?:[\w_]+?:/g, '').trim();
+}
+

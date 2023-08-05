@@ -674,7 +674,7 @@ export async function updateFeatured(userId: User["id"], resolver?: Resolver) {
 	const featuredNotes = await Promise.all(
 		items
 			.filter((item) => getApType(item) === "Note") // TODO: Maybe it doesn't have to be a Note.
-			.slice(0, 30)
+			.slice(0, 50)
 			.map((item) => limit(() => resolveNote(item, resolver))),
 	);
 

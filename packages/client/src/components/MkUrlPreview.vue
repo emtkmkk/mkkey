@@ -92,7 +92,7 @@
 						}}
 					</p>
 					<footer>
-						<img v-if="icon" class="icon" :src="icon" />
+						<img v-if="icon" class="icon" :src="icon" @error="icon = ''" />
 						<p :title="sitename">{{ sitename }}</p>
 					</footer>
 				</article>

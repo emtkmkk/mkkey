@@ -28,7 +28,7 @@ export async function proxyMedia(ctx: Koa.Context) {
 		const { mime, ext } = await detectType(path);
 		const isConvertibleImage = isMimeImage(mime, "sharp-convertible-image");
 		
-		if (
+		/*if (
             'static' in ctx.query ||
             'preview' in ctx.query ||
             'badge' in ctx.query
@@ -37,7 +37,7 @@ export async function proxyMedia(ctx: Koa.Context) {
                 // 画像でないなら404でお茶を濁す
                 throw new StatusError('Unexpected mime', 404);
             }
-        }
+        }*/
 
 
 		let image: IImage;

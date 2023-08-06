@@ -84,7 +84,7 @@ mastoRouter.use(
 
 mastoFileRouter.post("/v1/media", upload.single("file"), async (ctx) => {
 	const BASE_URL = `${ctx.protocol}://${ctx.hostname}`;
-	const accessTokens = ctx.headers.authorization;
+	const accessTokens = ctx.request?.body?.i || ctx.headers.authorization;
 	const client = getClient(BASE_URL, accessTokens);
 	try {
 		let multipartData = await ctx.file;

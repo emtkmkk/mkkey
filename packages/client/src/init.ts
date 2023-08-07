@@ -41,7 +41,7 @@ import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i, refreshAccount, login, updateAccount, signout } from "@/account";
 import { defaultStore, ColdDeviceStorage } from "@/store";
-import { fetchInstance, fetchPlusEmoji, fetchAllEmoji, fetchAllEmojiNoCache, instance } from "@/instance";
+import { fetchInstance, fetchEmoji, fetchPlusEmoji, fetchAllEmoji, fetchAllEmojiNoCache, instance } from "@/instance";
 import { makeHotkey } from "@/scripts/hotkey";
 import { search } from "@/scripts/search";
 import { deviceKind } from "@/scripts/device-kind";
@@ -424,6 +424,7 @@ import getUserName from '@/scripts/get-user-name';
 		
 		
 		fetchInstanceMetaPromise.then(() => {
+			fetchEmoji();
 			const lastEmojiFetchDate = localStorage.getItem("remoteEmojiData") ? JSON.parse(localStorage.getItem("remoteEmojiData"))?.emojiFetchDate : undefined;
 			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, localStorage.getItem("emojiFetchAttemptDate") ? parseInt(localStorage.getItem("emojiFetchAttemptDate"), 10) : 0);
 			let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
@@ -431,7 +432,7 @@ import getUserName from '@/scripts/get-user-name';
 			const fetchTimeBorder = defaultStore.state.enableDataSaverMode ? 1000 * 60 * 60 * 24 : 1000 * 60 * 60 * 6
 
 			if (fetchModeMax === "always" || (Date.now() - emojiFetchDateInt) > fetchTimeBorder || fetchModeMax !== (localStorage.getItem("lastFetchModeMax") ?? fetchModeMax)) {
-				// 常に取得がon or 最終取得日が無い or 前回取得から更新間隔以上 or 取得設定が前回と異なる場合取得
+				// 常に取得がon or 最終取得日が無い or 前回取得から更新間隔以上 or 取得設定が前回と異なる場合絵文字を取得
 				//一度キャッシュを破棄
 				if (fetchModeMax !== "keep") localStorage.setItem("remoteEmojiData", "");
 				// 一度だけ更新の場合、データモードを前回と同じにしておく
@@ -458,7 +459,7 @@ import getUserName from '@/scripts/get-user-name';
 			// 取得設定を保存
 			localStorage.setItem("lastFetchModeMax", fetchModeMax);
 		});
-		
+
 		if (
 			!defaultStore.state.showLocalPostsInfoPopup &&
 			$i.followingCount >= 10
@@ -466,7 +467,7 @@ import getUserName from '@/scripts/get-user-name';
 			if (defaultStore.isDefault("showLocalPostsInTimeline")){
 				const { canceled } = await yesno({
 					type: "question",
-					text: "ホームTLの内容をフォローしている人のみ表示に変更する事が可能です。\n※ここで変更しない場合でも設定画面>色々にて後から変更する事が可能です。\n今すぐフォローのみの表示に変更しますか？",
+					text: "ホームTLの内容を自身がフォローしている人の投稿のみに変更する事が可能です。\n※ここで変更しない場合でも設定ページ>色々にて後から変更する事が可能です。\n今すぐホームTLをフォロー者の投稿のみの表示に変更しますか？",
 				});
 				if (!canceled) {
 					defaultStore.set("showLocalPostsInTimeline","social")
@@ -478,6 +479,27 @@ import getUserName from '@/scripts/get-user-name';
 				}
 			} else {
 				defaultStore.set("showLocalPostsInfoPopup",true);
+			}
+		}
+		
+		if (
+			!defaultStore.state.showInviteInfoPopupAccount &&
+			!defaultStore.state.showInviteInfoPopupDevice
+		) {
+			// 招待可能条件
+			// 登録から(7日-((投稿数-20)*1.5時間))経過
+			// ただし1日未満にはならない
+			// 投稿数が20以上
+			const eTime = $i ? (Date.now() - new Date($i.createdAt).valueOf()) : undefined;
+			const inviteBorder = eTime ? eTime > 7 * 24 * 60 * 60 * 1000 ? 7 * 24 * 60 * 60 * 1000 : Math.max(7 * 24 * 60 * 60 * 1000 - ($i.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000) : undefined;
+			const canInvite = $i ? eTime > inviteBorder && $i.notesCount >= 20 && !$i.isSilenced : false;
+			if (canInvite) {
+				await alert({
+					type: "info",
+					text: "もこきーの招待コードを発行する事が出来るようになりました！\n\n左メニューの(i)ボタンから招待コードを発行することが出来ます。",
+				});
+				defaultStore.set("showLocalPostsInfoPopupAccount",true);
+				defaultStore.set("showLocalPostsInfoPopupDevice",true);
 			}
 		}
 

@@ -41,7 +41,7 @@
 				controls
 				@contextmenu.stop
 			>
-				<source :src="video.url" :type="video.type" />
+				<source :src="video.url" :type="videoType" />
 			</video>
 		</VuePlyr>
 		<i class="ph-eye-slash ph-bold ph-lg" @click="hide = true"></i>
@@ -49,7 +49,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import VuePlyr from "vue-plyr";
 import type * as misskey from "calckey-js";
 import { defaultStore } from "@/store";
@@ -60,6 +60,10 @@ import bytes from '@/filters/bytes';
 const props = defineProps<{
 	video: misskey.entities.DriveFile;
 }>();
+
+const videoType = computed(() => {
+	return props.video.type === 'video/quicktime' ? 'video/mp4' : props.video.type;
+});
 
 const hide = ref(
 	defaultStore.state.nsfw === "force" || defaultStore.state.enableDataSaverMode

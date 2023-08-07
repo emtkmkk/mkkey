@@ -445,39 +445,39 @@ export const UserRepository = db.getRepository(User).extend({
 						relation.isFollowing
 						? user.followersCount
 						: user.followersCount;
-						
-		const donateBadges = 
+
+		const donateBadges =
 			user.driveCapacityOverrideMb > DEFAULT_DRIVE_SIZE / MB
 				? user.driveCapacityOverrideMb >= (DEFAULT_DRIVE_SIZE / MB) + 15000
 					? user.driveCapacityOverrideMb >= ((MAX_DRIVE_SIZE / 2) / MB)
 						? user.driveCapacityOverrideMb >= (MAX_DRIVE_SIZE / MB)
-							? { 
+							? {
 								id: "3000000014",
 								key: "mkb4",
 								name: "支援者LvMax",
 								emoji: ":mk_discochicken:",
 							}
-							: { 
+							: {
 								id: "3000000013",
 								key: "mkb3",
 								name: "支援者Lv3",
 								emoji: ":mk_chuchuchicken:",
 							}
-						: { 
-							id: "3000000012",					
+						: {
+							id: "3000000012",
 							key: "mkb2",
 							name: "支援者Lv2",
 							emoji: ":mk_yurayurachicken:",
 						}
-				: { 
-					id: "3000000011",
-					key: "mkb1",
-					name: "支援者",
-					emoji: ":mkb:",
-				}
-			: undefined;
-		
-		const harborBadges = 
+					: {
+						id: "3000000011",
+						key: "mkb1",
+						name: "支援者",
+						emoji: ":mkb:",
+					}
+				: undefined;
+
+		const harborBadges =
 			(new Date(user.createdAt) < new Date('2023-04-05T00:00:00Z'))
 				? {
 					id: "3000000001",
@@ -485,17 +485,44 @@ export const UserRepository = db.getRepository(User).extend({
 					name: "港から移住",
 					emoji: ":mkbms:",
 				} : undefined;
-		
+
 		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges].filter(x => x !== undefined) : undefined;
-		const roles = badges?.map((x,i) => (
+		let roles = badges?.map((x, i) => (
 			{
-				id:x.id,
-				name:x.name,
-				description:x.name,
-				iconUrl:"https://mkkey.net/emojis/" + x.emoji.replaceAll(":","") + ".webp",
-				displayOrder:badges?.length - 1 - i,
+				id: x.id,
+				name: x.name,
+				description: x.name,
+				iconUrl: "https://mkkey.net/emojis/" + x.emoji.replaceAll(":", "") + ".webp",
+				isModerator: false,
+				isAdministrator: false,
+				color: "#f8bcba",
+				displayOrder: badges?.length - 1 - i,
 			}
 		)) ?? [];
+		if (user.isAdmin) {
+			roles.push({
+				id: "3000000021",
+				name: "Admin",
+				description: "Admin",
+				iconUrl: null,
+				isModerator: false,
+				isAdministrator: true,
+				color: "#ff4b45",
+				displayOrder: 200 + (badges?.length ?? 0),
+			})
+		}
+		if (user.isModerator) {
+			roles.push({
+				id: "3000000022",
+				name: "Moderator",
+				description: "Moderator",
+				iconUrl: null,
+				isModerator: true,
+				isAdministrator: false,
+				color: "#1dc200",
+				displayOrder: 100 + (badges?.length ?? 0),
+			})
+		}
 
 		const truthy = opts.detail ? true : undefined;
 		const falsy = opts.detail ? false : undefined;

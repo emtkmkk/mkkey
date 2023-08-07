@@ -8,12 +8,14 @@
 		/></template>
 		<MkSpacer :content-max="700">
 			<swiper
+				:touch-angle="$store.state.swipeTouchAngle"
+				:threshold="$store.state.swipeThreshold"
+				:centeredSlides="$store.state.swipeCenteredSlides"
 				:modules="[Virtual]"
 				:space-between="20"
 				:virtual="true"
 				:allow-touch-move="
 					!(
-						deviceKind === 'desktop' &&
 						!defaultStore.state.swipeOnDesktop
 					)
 				"

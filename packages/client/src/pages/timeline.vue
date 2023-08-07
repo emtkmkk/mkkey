@@ -33,6 +33,9 @@
 			</div> *v-else on next div* -->
 				<div class="tl _block">
 					<swiper
+						:touch-angle="$store.state.swipeTouchAngle"
+						:threshold="$store.state.swipeThreshold"
+						:centeredSlides="$store.state.swipeCenteredSlides"
 						:modules="[Virtual]"
 						:space-between="20"
 						:virtual="true"
@@ -50,6 +53,7 @@
 							:virtual-index="index"
 						>
 							<XTimeline
+								v-if="index == timelines[swiperRef.activeIndex]"
 								ref="tl"
 								:key="src"
 								class="tl"

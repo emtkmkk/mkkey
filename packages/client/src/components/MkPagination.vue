@@ -71,7 +71,7 @@
 				<MkButton
 					v-if="!moreFetching"
 					v-appear="
-						$store.state.enableInfiniteScroll && !disableAutoLoad && !moreFetchError
+						$store.state.enableInfiniteScroll && !disableAutoLoad && !moreFetchError && !ctAutoReload
 							? fetchMore
 							: null
 					"
@@ -195,6 +195,8 @@ const error = ref(false);
 const moreFetchError = ref(false);
 const lastFetchDate = ref(0);
 const errorMsg = ref("");
+const ctAutoReload = ref(false);
+let timerid = null;
 
 const init = async (): Promise<void> => {
 	queue.value = [];
@@ -354,6 +356,11 @@ const fetchMore = async (): Promise<void> => {
 				}
 				offset.value += res.length;
 				moreFetching.value = false;
+				ctAutoReload.value = true;
+				clearTimeout(timerId);
+				timerId = setTimeout(() => {
+					ctAutoReload.value = false;
+				}, 1500);
 			},
 			(err) => {
 				moreFetchError.value = true;
@@ -411,6 +418,11 @@ const fetchMoreAhead = async (): Promise<void> => {
 				}
 				offset.value += res.length;
 				moreFetching.value = false;
+				ctAutoReload.value = true;
+				clearTimeout(timerId);
+				timerId = setTimeout(() => {
+					ctAutoReload.value = false;
+				}, 1500);
 			},
 			(err) => {
 				moreFetchError.value = true;

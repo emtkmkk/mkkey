@@ -9,6 +9,9 @@
 		<div class="lznhrdub">
 			<MkSpacer :content-max="1200">
 				<swiper
+					:touch-angle="$store.state.swipeTouchAngle"
+					:threshold="$store.state.swipeThreshold"
+					:centeredSlides="$store.state.swipeCenteredSlides"
 					:modules="[Virtual]"
 					:space-between="20"
 					:virtual="true"

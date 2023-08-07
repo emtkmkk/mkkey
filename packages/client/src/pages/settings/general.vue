@@ -401,6 +401,32 @@
 				i18n.ts.numberOfPageCacheDescription
 			}}</template>
 		</FormRange>
+		
+		<FormRange
+			v-model="swipeTouchAngle"
+			:min="1"
+			:max="90"
+			:step="1"
+			easing
+			class="_formBlock"
+		>
+			<template #label>{{ i18n.ts.swipeTouchAngle }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+		</FormRange>
+		
+		<FormRange
+			v-model="swipeThreshold"
+			:min="0"
+			:max="100"
+			:step="1"
+			easing
+			class="_formBlock"
+		>
+			<template #label>{{ i18n.ts.swipeThreshold }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+		</FormRange>
+		
+		<FormSwitch v-model="swipeCenteredSlides" class="_formBlock">{{
+			i18n.ts.swipeCenteredSlides
+		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 
 		<FormLink to="/settings/deck" class="_formBlock">{{
 			i18n.ts.deck
@@ -641,6 +667,15 @@ const thumbnailCover = $computed(
 );
 const alwaysXExpand = $computed(
 	defaultStore.makeGetterSetter("alwaysXExpand")
+);
+const swipeTouchAngle = $computed(
+	defaultStore.makeGetterSetter("swipeTouchAngle")
+);
+const swipeThreshold = $computed(
+	defaultStore.makeGetterSetter("swipeThreshold")
+);
+const swipeCenteredSlides = $computed(
+	defaultStore.makeGetterSetter("swipeCenteredSlides")
 );
 
 function save() {

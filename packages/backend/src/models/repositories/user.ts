@@ -482,7 +482,7 @@ export const UserRepository = db.getRepository(User).extend({
 				} : undefined;
 		
 		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges].filter(x => x !== undefined) : undefined;
-		const roles = badges.map((x,i) => (
+		const roles = badges?.map((x,i) => (
 			{
 				id:x.id,
 				name:x.key,
@@ -490,7 +490,7 @@ export const UserRepository = db.getRepository(User).extend({
 				iconUrl:"https://mkkey.net/emojis/" + x.emoji + ".webp",
 				displayOrder:badges?.length - 1 - i,
 			}
-		));
+		)) ?? [];
 
 		const truthy = opts.detail ? true : undefined;
 		const falsy = opts.detail ? false : undefined;

@@ -198,6 +198,10 @@ html, body {
 	padding: 0;
 }
 
+.swiper-slide {
+	height: unset !important;
+}
+
 a {
 	text-decoration: none;
 	cursor: pointer;

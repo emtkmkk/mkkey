@@ -452,18 +452,22 @@ export const UserRepository = db.getRepository(User).extend({
 					? user.driveCapacityOverrideMb >= ((MAX_DRIVE_SIZE / 2) / MB)
 						? user.driveCapacityOverrideMb >= (MAX_DRIVE_SIZE / MB)
 							? { 
+								id: "3000000014",
 								key: "mkb4",
 								emoji: ":mk_discochicken:",
 							}
 							: { 
+								id: "3000000013",
 								key: "mkb3",
 								emoji: ":mk_chuchuchicken:",
 							}
 						: { 
+							id: "3000000012",					
 							key: "mkb2",
 							emoji: ":mk_yurayurachicken:",
 						}
 				: { 
+					id: "3000000011",
 					key: "mkb1",
 					emoji: ":mkb:",
 				}
@@ -472,11 +476,21 @@ export const UserRepository = db.getRepository(User).extend({
 		const harborBadges = 
 			(new Date(user.createdAt) < new Date('2023-04-05T00:00:00Z'))
 				? {
+					id: "3000000001",
 					key: "mkhb",
 					emoji: ":mkbms:",
 				} : undefined;
 		
 		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges].filter(x => x !== undefined) : undefined;
+		const roles = badges.map((x,i) => (
+			{
+				id:x.id,
+				name:x.key,
+				description:x.key,
+				iconUrl:"https://mkkey.net/emojis/" + x.emoji + ".webp",
+				displayOrder:badges?.length - 1 - i,
+			}
+		));
 
 		const truthy = opts.detail ? true : undefined;
 		const falsy = opts.detail ? false : undefined;
@@ -571,6 +585,7 @@ export const UserRepository = db.getRepository(User).extend({
 					usePasswordLessLogin: profile!.usePasswordLessLogin,
 					showDonateBadges: profile!.showDonateBadges,
 					badges: badges?.length !== 0 ? badges : undefined,
+					roles,
 					securityKeys: profile!.twoFactorEnabled
 						? UserSecurityKeys.countBy({
 							userId: user.id,

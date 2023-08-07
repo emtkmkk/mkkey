@@ -666,6 +666,24 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 		},
+		swipeTouchAngle: {
+			where: "device",
+			default: 25,
+			createdAt: "2023/8/7",
+			page: "general",
+		},
+		swipeThreshold: {
+			where: "device",
+			default: 10,
+			createdAt: "2023/8/7",
+			page: "general",
+		},
+		swipeCenteredSlides: {
+			where: "device",
+			default: true,
+			createdAt: "2023/8/7",
+			page: "general",
+		},
 		showAdminUpdates: {
 			where: "account",
 			default: true,

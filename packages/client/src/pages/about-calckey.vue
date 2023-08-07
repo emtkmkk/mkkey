@@ -43,7 +43,7 @@
 					</div>
 					<div class="_formBlock" style="text-align: center">
 						{{ i18n.ts._aboutMisskey.about }}<br /><a
-							href="https://calckey.org/"
+							href="https://joinfirefish.org/"
 							target="_blank"
 							class="_link"
 							>{{ i18n.ts.learnMore }}</a
@@ -57,17 +57,17 @@
 					<FormSection>
 						<div class="_formLinks">
 							<FormLink
-								to="https://codeberg.org/calckey/calckey"
+								to="https://git.joinfirefish.org/firefish/firefish"
 								external
 							>
 								<template #icon
 									><i class="ph-code ph-bold ph-lg"></i
 								></template>
 								{{ i18n.ts._aboutMisskey.source }}
-								<template #suffix>Codeberg</template>
+								<template #suffix></template>
 							</FormLink>
 							<FormLink
-								to="https://opencollective.com/calckey"
+								to="https://opencollective.com/firefish"
 								external
 							>
 								<template #icon
@@ -76,16 +76,6 @@
 								{{ i18n.ts._aboutMisskey.donate }}
 								<template #suffix>Donate</template>
 							</FormLink>
-							<FormLink
-								to="https://hosted.weblate.org/engage/calckey/"
-								external
-							>
-								<template #icon
-									><i class="ph-translate ph-bold ph-lg"></i
-								></template>
-								{{ i18n.ts._aboutMisskey.translation }}
-								<template #suffix>Translate</template>
-							</FormLink>
 						</div>
 					</FormSection>
 					<FormSection>
@@ -93,20 +83,24 @@
 							i18n.ts._aboutCalckey.contributors
 						}}</template>
 						<div class="_formLinks">
-							<FormLink to="/@kainoa@calckey.social"
+							<FormLink to="/@kainoa@firefish.social"
 								><Mfm
-									:text="'$[sparkle @kainoa@calckey.social] (Main developer)'"
+									:text="'$[sparkle @kainoa@firefish.social] (Main developer)'"
 							/></FormLink>
-							<FormLink to="/@cleo@bz.pawdev.me"
-								><Mfm :text="'@cleo@bz.pawdev.me (Maintainer)'"
-							/></FormLink>
-							<FormLink to="/@panos@calckey.social"
+							<FormLink to="/@freeplay@firefish.social"
 								><Mfm
-									:text="'@panos@calckey.social (Project Coordinator)'"
+									:text="'@freeplay@firefish.social (UI/UX)'"
 							/></FormLink>
-							<FormLink to="/@freeplay@bz.pawdev.me"
+							<FormLink to="/@namekuji@firefish.social"
 								><Mfm
-									:text="'@freeplay@bz.pawdev.me (UI/UX Designer)'"
+									:text="'@namekuji@firefish.social (Backend)'"
+							/></FormLink>
+							<FormLink to="/@dev@post.naskya.net"
+								><Mfm :text="'@dev@post.naskya.net (Backend)'"
+							/></FormLink>
+							<FormLink to="/@panos@firefish.social"
+								><Mfm
+									:text="'@panos@firefish.social (Project Coordinator)'"
 							/></FormLink>
 							<FormLink
 								to="https://www.youtube.com/c/Henkiwashere"
@@ -116,9 +110,9 @@
 						</div>
 						<template #caption
 							><MkLink
-								url="https://codeberg.org/calckey/calckey/activity"
+								url="https://git.joinfirefish.org/firefish/firefish/activity"
 								>{{
-									i18n.ts._aboutMisskey.allContributors
+									i18n.ts._aboutFirefish.allContributors
 								}}</MkLink
 							></template
 						>
@@ -147,6 +141,26 @@
 								><Mfm :text="'@robflop@misskey.io'"
 							/></FormLink>
 						</div>
+					</FormSection>
+					<FormSection>
+						<template #label
+							><Mfm
+								:text="`$[x2 $[jelly ❤] ${i18n.ts._aboutFirefish.sponsors}]`"
+							/>
+						</template>
+						<MkSparkle>
+							<span
+								v-for="sponsor in sponsors"
+								:key="sponsor"
+								style="
+									margin-bottom: 0.5rem;
+									margin-right: 0.5rem;
+									font-size: 1.7rem;
+								"
+							>
+								<Mfm :text="`${sponsor}`" />
+							</span>
+						</MkSparkle>
 					</FormSection>
 					<FormSection>
 						<template #label
@@ -190,7 +204,13 @@ import { instance } from "@/instance";
 import * as os from "@/os";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
-const patrons = await os.api("patrons");
+let patrons = [];
+let sponsors = [];
+const patronsResp = await os.api("patrons", { forceUpdate: true });
+patrons = patronsResp.patrons;
+sponsors = patronsResp.sponsors;
+
+patrons = patrons.filter((patron) => !sponsors.includes(patron));
 
 let easterEggReady = false;
 let easterEggEmojis = $ref([]);

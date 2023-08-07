@@ -498,13 +498,13 @@ import getUserName from '@/scripts/get-user-name';
 					type: "info",
 					text: "もこきーの招待コードを発行する事が出来るようになりました！\n\n左メニューの(i)ボタンから招待コードを発行することが出来ます。",
 				});
-				defaultStore.set("showLocalPostsInfoPopupAccount",true);
-				defaultStore.set("showLocalPostsInfoPopupDevice",true);
+				defaultStore.set("showInviteInfoPopupAccount",true);
+				defaultStore.set("showInviteInfoPopupDevice",true);
 			}
 		} else {
 			if (!(defaultStore.state.showInviteInfoPopupAccount && defaultStore.state.showInviteInfoPopupDevice)){
-					defaultStore.set("showLocalPostsInfoPopupDevice",true);
-					defaultStore.set("showLocalPostsInfoPopupAccount",true);
+					defaultStore.set("showInviteInfoPopupDevice",true);
+					defaultStore.set("showInviteInfoPopupAccount",true);
 			}
 		}
 

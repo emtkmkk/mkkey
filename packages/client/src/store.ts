@@ -467,6 +467,16 @@ export const defaultStore = markRaw(
 			default: false,
 			createdAt: "2023/7/28",
 		},
+		showInviteInfoPopupAccount: {
+			where: "account",
+			default: false,
+			createdAt: "2023/8/7",
+		},
+		showInviteInfoPopupDevice: {
+			where: "device",
+			default: false,
+			createdAt: "2023/8/7",
+		},
 		serverDisconnectedBehavior: {
 			where: "device",
 			default: "nothing" as "nothing" | "quiet" | "reload" | "dialog",

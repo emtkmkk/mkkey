@@ -6,16 +6,17 @@ import type * as Misskey from "calckey-js";
 // TODO: 他のタブと永続化されたstateを同期
 
 const instanceData = localStorage.getItem("instance");
+const emojiData = localStorage.getItem("emojiData");
 const remoteEmojiData = localStorage.getItem("remoteEmojiData");
 
 // TODO: instanceをリアクティブにするかは再考の余地あり
 
 export const instance: Misskey.entities.InstanceMetadata = reactive(
 	instanceData
-		? {...JSON.parse(instanceData),...JSON.parse(remoteEmojiData ? remoteEmojiData : "{}")}
+		? { ...JSON.parse(instanceData), ...JSON.parse(emojiData ? emojiData : "{}"), ...JSON.parse(remoteEmojiData ? remoteEmojiData : "{}") }
 		: {
-				// TODO: set default values
-		  },
+			// TODO: set default values
+		},
 );
 
 stream.on('emojiAdded', emojiData => {
@@ -33,33 +34,46 @@ stream.on('emojiDeleted', emojiData => {
 export async function fetchInstance() {
 	const meta = await api("meta", {
 		detail: false,
+		excludeEmoji: true,
 	});
-	
+
 	for (const [k, v] of Object.entries(meta)) {
-			instance[k] = v;
+		instance[k] = v;
 	}
 
 	localStorage.setItem("instance", JSON.stringify(meta));
+}
+
+export async function fetchEmoji() {
+	const meta = await api("emojis", {
+		includeUrl: true,
+	});
+
+	localStorage.setItem("emojiData", JSON.stringify(meta));
+
+	for (const [k, v] of Object.entries(meta)) {
+		instance[k] = v;
+	}
 }
 
 export async function fetchPlusEmoji() {
 	const meta = await api("emojis", {
 		remoteEmojis: "mini",
 	});
-	
+
 	const remoteEmojiData = {
-			emojiFetchDate: meta.emojiFetchDate,
-			remoteEmojiMode: meta.remoteEmojiMode,
-			remoteEmojiCount: meta.remoteEmojiCount,
-			allEmojis: meta.allEmojis,
+		emojiFetchDate: meta.emojiFetchDate,
+		remoteEmojiMode: meta.remoteEmojiMode,
+		remoteEmojiCount: meta.remoteEmojiCount,
+		allEmojis: meta.allEmojis,
 	};
-	
+
 	localStorage.setItem("remoteEmojiData", JSON.stringify(remoteEmojiData));
-	
+
 	for (const [k, v] of Object.entries(meta)) {
-			instance[k] = v;
+		instance[k] = v;
 	}
-	
+
 }
 
 export async function fetchAllEmoji() {
@@ -68,18 +82,18 @@ export async function fetchAllEmoji() {
 	});
 
 	const remoteEmojiData = {
-			emojiFetchDate: meta.emojiFetchDate,
-			remoteEmojiMode: meta.remoteEmojiMode,
-			remoteEmojiCount: meta.remoteEmojiCount,
-			allEmojis: meta.allEmojis,
-		};
+		emojiFetchDate: meta.emojiFetchDate,
+		remoteEmojiMode: meta.remoteEmojiMode,
+		remoteEmojiCount: meta.remoteEmojiCount,
+		allEmojis: meta.allEmojis,
+	};
 
 	localStorage.setItem("remoteEmojiData", JSON.stringify(remoteEmojiData));
-	
+
 	for (const [k, v] of Object.entries(meta)) {
-			instance[k] = v;
+		instance[k] = v;
 	}
-	
+
 }
 
 export async function fetchAllEmojiNoCache() {
@@ -88,7 +102,7 @@ export async function fetchAllEmojiNoCache() {
 	});
 
 	for (const [k, v] of Object.entries(meta)) {
-			instance[k] = v;
+		instance[k] = v;
 	}
 }
 
@@ -97,6 +111,7 @@ export const emojiCategories = computed(() => {
 	const categories = new Set();
 	for (const emoji of instance.emojis) {
 		if (!emoji.category) continue;
+		if (emoji.category.startsWith("!")) continue;
 		categories.add(emoji.category);
 	}
 	return Array.from(categories);

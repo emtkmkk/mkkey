@@ -454,21 +454,25 @@ export const UserRepository = db.getRepository(User).extend({
 							? { 
 								id: "3000000014",
 								key: "mkb4",
+								name: "支援者LvMax",
 								emoji: ":mk_discochicken:",
 							}
 							: { 
 								id: "3000000013",
 								key: "mkb3",
+								name: "支援者Lv3",
 								emoji: ":mk_chuchuchicken:",
 							}
 						: { 
 							id: "3000000012",					
 							key: "mkb2",
+							name: "支援者Lv2",
 							emoji: ":mk_yurayurachicken:",
 						}
 				: { 
 					id: "3000000011",
 					key: "mkb1",
+					name: "支援者",
 					emoji: ":mkb:",
 				}
 			: undefined;
@@ -478,6 +482,7 @@ export const UserRepository = db.getRepository(User).extend({
 				? {
 					id: "3000000001",
 					key: "mkhb",
+					name: "港から移住",
 					emoji: ":mkbms:",
 				} : undefined;
 		
@@ -485,9 +490,9 @@ export const UserRepository = db.getRepository(User).extend({
 		const roles = badges?.map((x,i) => (
 			{
 				id:x.id,
-				name:x.key,
-				description:x.key,
-				iconUrl:"https://mkkey.net/emojis/" + x.emoji + ".webp",
+				name:x.name,
+				description:x.name,
+				iconUrl:"https://mkkey.net/emojis/" + x.emoji.replaceAll(":","") + ".webp",
 				displayOrder:badges?.length - 1 - i,
 			}
 		)) ?? [];

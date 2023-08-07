@@ -501,6 +501,11 @@ import getUserName from '@/scripts/get-user-name';
 				defaultStore.set("showLocalPostsInfoPopupAccount",true);
 				defaultStore.set("showLocalPostsInfoPopupDevice",true);
 			}
+		} else {
+			if (!(defaultStore.state.showInviteInfoPopupAccount && defaultStore.state.showInviteInfoPopupDevice)){
+					defaultStore.set("showLocalPostsInfoPopupDevice",true);
+					defaultStore.set("showLocalPostsInfoPopupAccount",true);
+			}
 		}
 
 		const lastUsed = localStorage.getItem("lastUsed");

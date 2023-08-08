@@ -357,7 +357,7 @@ const fetchMore = async (): Promise<void> => {
 				offset.value += res.length;
 				moreFetching.value = false;
 				ctAutoReload.value = true;
-				clearTimeout(timerId);
+				if (timerId) clearTimeout(timerId);
 				timerId = setTimeout(() => {
 					ctAutoReload.value = false;
 				}, 1500);
@@ -419,7 +419,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 				offset.value += res.length;
 				moreFetching.value = false;
 				ctAutoReload.value = true;
-				clearTimeout(timerId);
+				if (timerId) clearTimeout(timerId);
 				timerId = setTimeout(() => {
 					ctAutoReload.value = false;
 				}, 1500);

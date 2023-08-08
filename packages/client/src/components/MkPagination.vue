@@ -196,7 +196,7 @@ const moreFetchError = ref(false);
 const lastFetchDate = ref(0);
 const errorMsg = ref("");
 const ctAutoReload = ref(false);
-let timerid = null;
+let timerId = null;
 
 const init = async (): Promise<void> => {
 	queue.value = [];

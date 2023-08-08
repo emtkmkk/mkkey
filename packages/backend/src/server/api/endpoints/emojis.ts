@@ -130,7 +130,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				id: "meta_plus_emojis",
 				milliseconds: 3600000, // 1 hour
 			},
-		})).filter((x) => !emojiNames.includes(x.name) && !x.oldEmoji && (x.name?.length ?? 0) < 100).slice(0,10000);
+		})).filter((x) => !emojiNames.includes(x.name) && !x.oldEmoji && (x.name?.length ?? 0) < 100).slice(0,15000);
 		
 		// データ削減の為、不要情報を削除
 		remoteEmojis?.forEach((x) => {
@@ -141,7 +141,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			delete x.license
 		});
 		if (!ps.includeUrl) {
-			emojis?.forEach((x) => {
+			remoteEmojis?.forEach((x) => {
 				delete x.publicUrl
 				delete x.originalUrl
 			});
@@ -173,7 +173,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			delete x.license
 		});
 		if (!ps.includeUrl) {
-			emojis?.forEach((x) => {
+			remoteEmojis?.forEach((x) => {
 				delete x.publicUrl
 				delete x.originalUrl
 			});

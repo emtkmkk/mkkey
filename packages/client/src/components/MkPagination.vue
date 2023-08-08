@@ -71,7 +71,7 @@
 				<MkButton
 					v-if="!moreFetching"
 					v-appear="
-						$store.state.enableInfiniteScroll && !disableAutoLoad && !moreFetchError && !ctAutoReload
+						$store.state.enableInfiniteScroll && !disableAutoLoad && !moreFetchError
 							? fetchMore
 							: null
 					"

@@ -46,7 +46,7 @@
 				@keydown="onKeydown"
 			>
 				<span v-if="emoji.isCustomEmoji" class="emoji"
-					><MkEmoji class="emoji" :emoji="emoji.name" :normal="true" :isPicker="true"
+					><MkEmoji class="emoji" :emoji="emoji.emoji" :normal="true" :isPicker="true"
 				/></span>
 				<span
 					v-else-if="!defaultStore.state.useOsNativeEmojis"

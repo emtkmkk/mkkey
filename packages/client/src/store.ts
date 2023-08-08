@@ -664,7 +664,7 @@ export const defaultStore = markRaw(
 		},
 		swipeOnDesktop: {
 			where: "device",
-			default: false,
+			default: true,
 		},
 		swipeTouchAngle: {
 			where: "device",
@@ -871,7 +871,7 @@ export const defaultStore = markRaw(
 		},
 		showSpotlight: {
 			where: 'account',
-			default: true,
+			default: false,
 			createdAt: "2023/7/23",
 			page: "general",
 		},

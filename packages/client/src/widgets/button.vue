@@ -8,7 +8,7 @@
 
 <script lang="ts" setup>
 import { onMounted, onUnmounted, ref, watch } from "vue";
-import { Interpreter, Parser, utils } from "@syuilo/aiscript";
+import { AiScript, parse, utils } from "@syuilo/aiscript";
 import {
 	useWidgetPropsManager,
 	Widget,
@@ -56,7 +56,7 @@ const { widgetProps, configure } = useWidgetPropsManager(
 );
 
 const run = async () => {
-	const aiscript = new Interpreter(
+	const aiscript = new AiScript(
 		createAiScriptEnv({
 			storageKey: "widget",
 			token: $i?.token,
@@ -81,9 +81,8 @@ const run = async () => {
 	);
 
 	let ast;
-	const parser = new Parser()
 	try {
-		ast = parser.parse(widgetProps.script);
+		ast = parse(widgetProps.script);
 	} catch (err) {
 		os.alert({
 			type: "error",

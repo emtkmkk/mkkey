@@ -19,7 +19,8 @@
 
 <script lang="ts" setup>
 import { defineAsyncComponent, nextTick, ref } from "vue";
-import { Interpreter, Parser } from "@syuilo/aiscript";
+import { AiScript, parse } from "@syuilo/aiscript";
+import { serialize } from "@syuilo/aiscript/built/serializer";
 import { v4 as uuid } from "uuid";
 import FormTextarea from "@/components/form/textarea.vue";
 import FormButton from "@/components/MkButton.vue";
@@ -48,9 +49,8 @@ function installPlugin({ id, meta, ast, token }) {
 
 async function install() {
 	let ast;
-	const parser = new Parser()
 	try {
-		ast = parser.parse(code.value);
+		ast = parse(code.value);
 	} catch (err) {
 		os.alert({
 			type: "error",
@@ -59,7 +59,7 @@ async function install() {
 		return;
 	}
 
-	const meta = Interpreter.collectMetadata(ast);
+	const meta = AiScript.collectMetadata(ast);
 	if (meta == null) {
 		os.alert({
 			type: "error",
@@ -132,7 +132,7 @@ async function install() {
 			config,
 		},
 		token,
-		ast: ast,
+		ast: serialize(ast),
 	});
 
 	os.success();

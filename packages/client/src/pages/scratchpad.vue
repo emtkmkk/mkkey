@@ -45,7 +45,7 @@ import "prismjs/components/prism-javascript";
 import "prismjs/themes/prism-okaidia.css";
 import { PrismEditor } from "vue-prism-editor";
 import "vue-prism-editor/dist/prismeditor.min.css";
-import { Interpreter, Parser, utils } from "@syuilo/aiscript";
+import { AiScript, parse, utils } from "@syuilo/aiscript";
 import MkContainer from "@/components/MkContainer.vue";
 import MkButton from "@/components/MkButton.vue";
 import { createAiScriptEnv } from "@/scripts/aiscript/api";
@@ -68,8 +68,7 @@ watch(code, () => {
 
 async function run() {
 	logs.value = [];
-	const parser = new Parser()
-	const aiscript = new Interpreter(
+	const aiscript = new AiScript(
 		createAiScriptEnv({
 			storageKey: "scratchpad",
 			token: $i?.token,
@@ -112,7 +111,7 @@ async function run() {
 
 	let ast;
 	try {
-		ast = parser.parse(code.value);
+		ast = parse(code.value);
 	} catch (error) {
 		os.alert({
 			type: "error",

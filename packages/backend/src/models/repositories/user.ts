@@ -420,9 +420,7 @@ export const UserRepository = db.getRepository(User).extend({
 				.orderBy("pin.createdAt", "DESC").addOrderBy("pin.id", "DESC")
 				.getMany()
 			: [];
-		const profile = opts.detail
-			? await UserProfiles.findOneByOrFail({ userId: user.id })
-			: null;
+		const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
 		const followingCount =
 			profile == null

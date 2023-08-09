@@ -1,32 +1,78 @@
+import { hiraToRoma, romaToHira } from "https://raw.githubusercontent.com/marmooo/hiraroma/main/mod.js";
 
 const formatRoomajiCache = new Map();
 const kanaHiraCache = new Map();
+const roomajiToJaCache = new Map();
+const jaToRoomajiCache = new Map();
 
-export function formatRoomaji(input) {
-	if (!formatRoomajiCache.has(input)) {
-		formatRoomajiCache.set(input, format_roomaji(input));
+export function formatRoomaji(
+	str: string
+): string {
+	if (!formatRoomajiCache.has(str)) {
+		formatRoomajiCache.set(str, format_roomaji(str));
 	}
-	return formatRoomajiCache.get(input);
+	return formatRoomajiCache.get(str);
 }
 
-export function kanaToHira(input) {
-	if (!kanaHiraCache.has(input)) {
-		kanaHiraCache.set(input, kana_to_hira(input));
+export function kanaToHira(
+	str: string
+): string {
+	if (!kanaHiraCache.has(str)) {
+		kanaHiraCache.set(str, kana_to_hira(str));
 	}
-	return kanaHiraCache.get(input);
+	return kanaHiraCache.get(str);
+}
+
+export function roomajiToJa(
+	str: string
+): string {
+	if (!roomajiToJaCache.has(str)) {
+		roomajiToJaCache.set(str, roomaji_to_ja(str));
+	}
+	return roomajiToJaCache.get(str);
 }
 
 export function jaToRoomaji(
 	str: string
 ): string {
-	
-	let _str = str;
-	
-	// ひらがなかカタカナだけでなければ終了
-	if (!/^[ぁ-んァ-ンー\s]+$/.test(_str)){
-		return _str;	
+	if (!jaToRoomajiCache.has(str)) {
+		jaToRoomajiCache.set(str, ja_to_roomaji(str));
 	}
-		
+	return jaToRoomajiCache.get(str);
+}
+
+export function roomaji_to_ja(
+	str: string
+): string {
+
+	let _str = str;
+
+	// ひらがなかカタカナが含まれていれば終了
+	if (/[ぁ-んァ-ンー\s]+/.test(_str)) {
+		return _str;
+	}
+
+	romaToHira(_str);
+
+	return _str;
+}
+
+export function ja_to_roomaji(
+	str: string
+): string {
+
+	let _str = str;
+
+	// ひらがなかカタカナだけでなければ終了
+	if (!/^[ぁ-んァ-ンー\s]+$/.test(_str)) {
+		return _str;
+	}
+
+	_str = kanaToHira(_str);
+
+	hiraToRoma(_str);
+
+	/*
 	const replaceList = [
 		{before:"きゃ", after:"kya"},
 		{before:"きぃ", after:"kyi"},
@@ -179,7 +225,7 @@ export function jaToRoomaji(
 
 	_str = kanaToHira(_str);
 
-	replaceList.forEach((x) => _str = _str.replaceAll(x.before,x.after));
+	replaceList.forEach((x) => _str = _str.replaceAll(x.before,x.after)); */
 
 	return _str;
 
@@ -188,74 +234,74 @@ export function jaToRoomaji(
 function format_roomaji(
 	roomaji: string
 ): string {
-	
+
 	// 絵文字の突き合わせにのみ使うため同じ物として扱われれば
 	// それで良いのでafterの方が正しいぞという意味ではないです
-	
+
 	// 変換前が2文字
 	const replaceDataBefore2 = [
-		{before:"ca", after:"ka"},
-		{before:"ci", after:"ki"},
-		{before:"cu", after:"ku"},
-		{before:"ce", after:"ke"},
-		{before:"co", after:"ko"},
-		{before:"fu", after:"hu"},
-		{before:"ja", after:"jya"},
-		{before:"ju", after:"jyu"},
-		{before:"je", after:"jye"},
-		{before:"jo", after:"jyo"},
-		{before:"fa", after:"fya"},
-		{before:"fi", after:"fyi"},
-		{before:"fe", after:"fye"},
-		{before:"fu", after:"fyu"},
-		{before:"fo", after:"fyo"},
-		{before:"la", after:"xa"},
-		{before:"li", after:"xi"},
-		{before:"lu", after:"xu"},
-		{before:"le", after:"xe"},
-		{before:"lo", after:"xo"},
-		{before:"va", after:"ba"},
-		{before:"vi", after:"bi"},
-		{before:"vu", after:"bu"},
-		{before:"ve", after:"be"},
-		{before:"vo", after:"bo"},
+		{ before: "ca", after: "ka" },
+		{ before: "ci", after: "ki" },
+		{ before: "cu", after: "ku" },
+		{ before: "ce", after: "ke" },
+		{ before: "co", after: "ko" },
+		{ before: "fu", after: "hu" },
+		{ before: "ja", after: "jya" },
+		{ before: "ju", after: "jyu" },
+		{ before: "je", after: "jye" },
+		{ before: "jo", after: "jyo" },
+		{ before: "fa", after: "fya" },
+		{ before: "fi", after: "fyi" },
+		{ before: "fe", after: "fye" },
+		{ before: "fu", after: "fyu" },
+		{ before: "fo", after: "fyo" },
+		{ before: "la", after: "xa" },
+		{ before: "li", after: "xi" },
+		{ before: "lu", after: "xu" },
+		{ before: "le", after: "xe" },
+		{ before: "lo", after: "xo" },
+		{ before: "va", after: "ba" },
+		{ before: "vi", after: "bi" },
+		{ before: "vu", after: "bu" },
+		{ before: "ve", after: "be" },
+		{ before: "vo", after: "bo" },
 	]
-	
+
 	// 変換前が3文字
 	const replaceDataBefore3 = [
-		{before:"sha", after:"sya"},
-		{before:"shi", after:"si"},
-		{before:"shu", after:"syu"},
-		{before:"sho", after:"syo"},
-		{before:"syi", after:"si"},
-		{before:"thi", after:"ti"},
-		{before:"tsu", after:"tu"},
-		{before:"kwa", after:"kya"},
-		{before:"cya", after:"tya"},
-		{before:"cyi", after:"tyi"},
-		{before:"cyu", after:"tyu"},
-		{before:"cye", after:"tye"},
-		{before:"cyo", after:"tyo"},
-		{before:"jya", after:"zya"},
-		{before:"jyi", after:"zyi"},
-		{before:"jyu", after:"zyu"},
-		{before:"jye", after:"zye"},
-		{before:"jyo", after:"zyo"},
-		{before:"ltu", after:"xtu"},
+		{ before: "sha", after: "sya" },
+		{ before: "shi", after: "si" },
+		{ before: "shu", after: "syu" },
+		{ before: "sho", after: "syo" },
+		{ before: "syi", after: "si" },
+		{ before: "thi", after: "ti" },
+		{ before: "tsu", after: "tu" },
+		{ before: "kwa", after: "kya" },
+		{ before: "cya", after: "tya" },
+		{ before: "cyi", after: "tyi" },
+		{ before: "cyu", after: "tyu" },
+		{ before: "cye", after: "tye" },
+		{ before: "cyo", after: "tyo" },
+		{ before: "jya", after: "zya" },
+		{ before: "jyi", after: "zyi" },
+		{ before: "jyu", after: "zyu" },
+		{ before: "jye", after: "zye" },
+		{ before: "jyo", after: "zyo" },
+		{ before: "ltu", after: "xtu" },
 	]
-	
+
 	let str = roomaji.toLowerCase()
-	if (roomaji.length >= 3){
-		replaceDataBefore3.forEach((x) => str = str.replaceAll(x.before,x.after));
+	if (roomaji.length >= 3) {
+		replaceDataBefore3.forEach((x) => str = str.replaceAll(x.before, x.after));
 	}
-	if (roomaji.length >= 2){
-		replaceDataBefore2.forEach((x) => str = str.replaceAll(x.before,x.after));
+	if (roomaji.length >= 2) {
+		replaceDataBefore2.forEach((x) => str = str.replaceAll(x.before, x.after));
 	}
 	return str
 }
 
 function kana_to_hira(str) {
-	return str.replace(/[ァ-ン]/g, function(match) {
+	return str.replace(/[ァ-ン]/g, function (match) {
 		var chr = match.charCodeAt(0) - 0x60;
 		return String.fromCharCode(chr);
 	});

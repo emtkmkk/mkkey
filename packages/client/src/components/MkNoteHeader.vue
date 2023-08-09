@@ -25,7 +25,7 @@
 						><MkEmoji
 							class="emoji"
 							:emoji="badge.emoji"
-							style="height: 0.9em; pointer-events: none;"
+							style="height: 1em; pointer-events: none;"
 						></MkEmoji
 					></span>
 					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && note.user.isFollowing && !note.user.isFollowed" class="ph-heart-half ph-bold relation"></i>
@@ -167,11 +167,11 @@ const showTicker =
 				overflow: hidden;
 				text-overflow: ellipsis;
 			}
-			> .relation {
+			.relation {
 				margin-right: 0.5em;
 				vertical-align: middle;
 			}
-			> .badge {
+			.badge {
 				margin-right: 0.5em;
 				font-size: 0.9em;
 				vertical-align: middle;

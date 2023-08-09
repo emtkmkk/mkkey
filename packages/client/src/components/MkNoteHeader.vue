@@ -70,7 +70,7 @@ const props = defineProps<{
 
 let note = $ref(props.note);
 
-const mkBadge = $ref(note.user.badges || []);
+const mkBadge = $ref(note.value.user.badges || []);
 
 const showTicker =
 	defaultStore.state.instanceTicker === "always" ||

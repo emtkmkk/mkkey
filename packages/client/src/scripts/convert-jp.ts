@@ -723,7 +723,10 @@ export function romaToHira(roma) {
         push(tmp);
         continue;
       }
-    }
+    } else {
+		const prev = roma.charAt(index - 1);
+		if (prev === "n") push("ん");
+	}
     push(tmp + char);
     index++;
   }

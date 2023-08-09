@@ -92,6 +92,7 @@ import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import { acct } from "@/filters/user";
 import * as os from "@/os";
 import { MFM_TAGS, MFM_TAGS_JP } from "@/scripts/mfm-tags";
+import { formatRoomaji, kanaToHira, jaToRoomaji } from "@/scripts/convert-jp";
 import { defaultStore } from "@/store";
 import { emojilist } from "@/scripts/emojilist";
 import { instance } from "@/instance";
@@ -291,13 +292,16 @@ function exec() {
 				.filter((x) => x) as EmojiDef[];
 			return;
 		}
-
+		
+		const searchQ = kanaToHira(formatRoomaji(props.q));
+		const roomajiQ = formatRoomaji(jaToRoomaji(props.q));
+		
 		const matched: EmojiDef[] = [];
 		const max = 30;
 
 		emojiDb.some((x) => {
 			if (
-				x.name.startsWith(props.q ?? "") &&
+				formatRoomaji(x.name).startsWith(roomajiQ ?? "") &&
 				!x.aliasOf &&
 				!matched.some((y) => y.emoji === x.emoji)
 			)
@@ -308,7 +312,7 @@ function exec() {
 		if (matched.length < max) {
 			emojiDb.some((x) => {
 				if (
-					x.name.startsWith(props.q ?? "") &&
+					formatRoomaji(x.name).startsWith(searchQ ?? "") &&
 					!matched.some((y) => y.emoji === x.emoji)
 				)
 					matched.push(x);
@@ -316,10 +320,21 @@ function exec() {
 			});
 		}
 
+		if (matched.length < max && roomajiQ !== searchQ) {
+			emojiDb.some((x) => {
+				if (
+					formatRoomaji(x.name).includes(roomajiQ ?? "") &&
+					!matched.some((y) => y.emoji === x.emoji)
+				)
+					matched.push(x);
+				return matched.length === max;
+			});
+		}
+		
 		if (matched.length < max) {
 			emojiDb.some((x) => {
 				if (
-					x.name.includes(props.q ?? "") &&
+					formatRoomaji(x.name).includes(searchQ ?? "") &&
 					!matched.some((y) => y.emoji === x.emoji)
 				)
 					matched.push(x);

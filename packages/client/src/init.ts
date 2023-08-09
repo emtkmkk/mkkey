@@ -461,7 +461,7 @@ import getUserName from '@/scripts/get-user-name';
 		});
 
 		if (
-			!defaultStore.state.showLocalPostsInfoPopup &&
+			defaultStore.isDefault("showLocalPostsInfoPopup") &&
 			$i.followingCount >= 10
 		) {
 			if (defaultStore.isDefault("showLocalPostsInTimeline")){

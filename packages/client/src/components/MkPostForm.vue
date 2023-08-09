@@ -823,7 +823,7 @@ if (!canFollower && visibility === "followers") visibility = "specified";
 if (!canNotLocal && visibility !== "followers" && visibility !== "specified" && localOnly === false && !$i.blockPostNotLocalPublic) localOnly = true;
 
 // keep post cw
-if (defaultStore.state.keepPostCw && cw) {
+if (defaultStore.state.keepPostCw && cw && !cw.includes("@")) {
 	useCw = true;
 } else {
 	cw = "";
@@ -833,6 +833,7 @@ if (defaultStore.state.keepCw && props.reply && props.reply.cw) {
 	useCw = true;
 	const replyCwText = props.reply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/ig,"") ?? "";
 	cw = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " Re: " + replyCwText;
+	text = text.replace("@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ","");
 }
 
 function watchForDraft() {

@@ -50,9 +50,7 @@ export function roomaji_to_ja(
 		return _str;
 	}
 
-	romaToHira(_str);
-
-	return _str;
+	return romaToHira(_str);
 }
 
 export function ja_to_roomaji(
@@ -68,7 +66,7 @@ export function ja_to_roomaji(
 
 	_str = kanaToHira(_str);
 
-	hiraToRoma(_str);
+	return hiraToRoma(_str);
 
 	/*
 	const replaceList = [
@@ -224,8 +222,6 @@ export function ja_to_roomaji(
 	_str = kanaToHira(_str);
 
 	replaceList.forEach((x) => _str = _str.replaceAll(x.before,x.after)); */
-
-	return _str;
 
 }
 

@@ -456,24 +456,28 @@ export const UserRepository = db.getRepository(User).extend({
 								key: "mkb4",
 								name: "支援者LvMax",
 								emoji: ":mk_discochicken:",
+								showBadgeNote: true,
 							}
 							: {
 								id: "3000000013",
 								key: "mkb3",
 								name: "支援者Lv3",
 								emoji: ":mk_chuchuchicken:",
+								showBadgeNote: true,
 							}
 						: {
 							id: "3000000012",
 							key: "mkb2",
 							name: "支援者Lv2",
 							emoji: ":mk_yurayurachicken:",
+							showBadgeNote: true,
 						}
 					: {
 						id: "3000000011",
 						key: "mkb1",
 						name: "支援者",
 						emoji: ":mkb:",
+						showBadgeNote: true,
 					}
 				: undefined;
 
@@ -484,9 +488,10 @@ export const UserRepository = db.getRepository(User).extend({
 					key: "mkhb",
 					name: "港から移住",
 					emoji: ":mkbms:",
+					showBadgeNote: false,
 				} : undefined;
 
-		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges].filter(x => x !== undefined) : undefined;
+		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges].filter(x => x !== undefined && (opts.detail || x.showBadgeNote)) : undefined;
 		let roles = badges?.map((x, i) => (
 			{
 				id: x.id,
@@ -564,6 +569,8 @@ export const UserRepository = db.getRepository(User).extend({
 			emojis: populateEmojis(user.emojis, user.host),
 			onlineStatus: this.getOnlineStatus(user, meId),
 			driveCapacityOverrideMb: user.driveCapacityOverrideMb,
+			badges: badges?.length !== 0 ? badges : undefined,
+			roles,
 
 			...(opts.detail
 				? {
@@ -616,8 +623,6 @@ export const UserRepository = db.getRepository(User).extend({
 					twoFactorEnabled: profile!.twoFactorEnabled,
 					usePasswordLessLogin: profile!.usePasswordLessLogin,
 					showDonateBadges: profile!.showDonateBadges,
-					badges: badges?.length !== 0 ? badges : undefined,
-					roles,
 					securityKeys: profile!.twoFactorEnabled
 						? UserSecurityKeys.countBy({
 							userId: user.id,

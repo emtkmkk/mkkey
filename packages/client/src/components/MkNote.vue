@@ -465,7 +465,7 @@ useNoteCapture({
 
 function reply(viaKeyboard = false): void {
 	pleaseLogin();
-	if (appearNote.user.isBot && (["public", "home"].includes(appearNote.visibility) || appearNote.userId === $i?.id)){
+	if (false && appearNote.user.isBot && (["public", "home"].includes(appearNote.visibility) || appearNote.userId === $i?.id)){
 		os.post(
 			{
 				renote: appearNote,

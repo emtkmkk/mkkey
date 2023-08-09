@@ -15,9 +15,21 @@
 				<div class="username"><MkAcct :user="note.user" /></div>
 			</div>
 			<div>
-				<div class="info">
-					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && note.user.isFollowing && !note.user.isFollowed" style="margin-right: 0.5em; vertical-align:middle;" class="ph-heart-half ph-bold"></i>
-					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && !note.user.isFollowing && !note.user.isFollowed" style="margin-right: 0.5em; vertical-align:middle;" class="ph-placeholder ph-bold"></i>
+				<div class="info">	
+					<span
+						v-for="badge in mkBadge"
+						:key="badge.key"
+						style="badge"
+						:title="i18n.ts[badge.key]"
+						v-tooltip="i18n.ts[badge.key]"
+						><MkEmoji
+							class="emoji"
+							:emoji="badge.emoji"
+							style="height: 0.9em; pointer-events: none;"
+						></MkEmoji
+					></span>
+					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && note.user.isFollowing && !note.user.isFollowed" class="ph-heart-half ph-bold relation"></i>
+					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && !note.user.isFollowing && !note.user.isFollowed" class="ph-placeholder ph-bold relation"></i>
 					<MkA class="created-at" :to="notePage(note)">
 						<MkTime :time="note.createdAt" />
 						<MkTime
@@ -57,6 +69,8 @@ const props = defineProps<{
 }>();
 
 let note = $ref(props.note);
+
+const mkBadge = $ref(note.user.badges || []);
 
 const showTicker =
 	defaultStore.state.instanceTicker === "always" ||
@@ -152,6 +166,15 @@ const showTicker =
 				max-width: 100%;
 				overflow: hidden;
 				text-overflow: ellipsis;
+			}
+			> .relation {
+				margin-right: 0.5em;
+				vertical-align: middle;
+			}
+			> .badge {
+				margin-right: 0.5em;
+				font-size: 0.9em;
+				vertical-align: middle;
 			}
 		}
 

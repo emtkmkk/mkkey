@@ -732,7 +732,7 @@ export function romaToHira(roma) {
   }
   tmp = tmp.replace(/n$/, "ん");
   push(tmp);
-  return result;
+  return result.replaceAll("_","");
 }
 
 export const table = {

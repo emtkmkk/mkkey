@@ -56,10 +56,10 @@
 				<span v-else class="emoji">{{ emoji.emoji }}</span>
 				<span
 					class="name"
-					v-html="emoji.name.replace(q, `<b>${q}</b>`)"
+					v-html="/[ぁ-んァ-ンー]+/.test(q) && !emoji.aliasOf ? roomajiToJa(emoji.name) : emoji.name.replace(q, `<b>${q}</b>`)"
 				></span>
 				<span v-if="emoji.aliasOf" class="alias"
-					>({{ emoji.aliasOf }})</span
+					>({{ /[ぁ-んァ-ンー]+/.test(q) ? roomajiToJa(emoji.aliasOf) : emoji.aliasOf }})</span
 				>
 			</li>
 		</ol>
@@ -92,7 +92,7 @@ import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import { acct } from "@/filters/user";
 import * as os from "@/os";
 import { MFM_TAGS, MFM_TAGS_JP } from "@/scripts/mfm-tags";
-import { formatRoomaji, kanaToHira, jaToRoomaji } from "@/scripts/convert-jp";
+import { formatRoomaji, kanaToHira, jaToRoomaji, roomajiToJa } from "@/scripts/convert-jp";
 import { defaultStore } from "@/store";
 import { emojilist } from "@/scripts/emojilist";
 import { instance } from "@/instance";

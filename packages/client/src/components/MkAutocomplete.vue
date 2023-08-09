@@ -56,10 +56,10 @@
 				<span v-else class="emoji">{{ emoji.emoji }}</span>
 				<span
 					class="name"
-					v-html="/[ぁ-んァ-ンー]+/.test(q) && !emoji.aliasOf ? roomajiToJa(emoji.name) : emoji.name.replace(q, `<b>${q}</b>`)"
+					v-html="/[ぁ-んァ-ンー]+/.test(q) && !emoji.aliasOf ? roomajiToJa(emoji.name).replace(q, `<b>${q}</b>`)" : emoji.name.replace(q, `<b>${q}</b>`)"
 				></span>
-				<span v-if="emoji.aliasOf" class="alias"
-					>({{ /[ぁ-んァ-ンー]+/.test(q) ? roomajiToJa(emoji.aliasOf) : emoji.aliasOf }})</span
+				<span v-if="emoji.aliasOf || /[ぁ-んァ-ンー]+/.test(q)" class="alias"
+					>({{ /[ぁ-んァ-ンー]+/.test(q) && !emoji.aliasOf ? emoji.name : emoji.aliasOf }})</span
 				>
 			</li>
 		</ol>

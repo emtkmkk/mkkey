@@ -16,7 +16,7 @@ export function kanaToHira(input) {
 	return kanaHiraCache.get(input);
 }
 
-export function ja_to_roomaji(
+export function jaToRoomaji(
 	str: string
 ): string {
 	

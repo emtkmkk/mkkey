@@ -10,24 +10,25 @@
 				>
 					<MkUserName :user="note.user" class="mkusername">
 						<span v-if="note.user.isBot" class="is-bot">bot</span>
+						<span
+							v-for="badge in mkBadge"
+							:key="badge.key"
+							style="badge"
+							:title="i18n.ts[badge.key]"
+							v-tooltip="i18n.ts[badge.key]"
+							><MkEmoji
+								class="emoji"
+								:emoji="badge.emoji"
+								style="height: 1em; pointer-events: none;"
+								static
+							></MkEmoji
+						></span>
 					</MkUserName>
 				</MkA>
 				<div class="username"><MkAcct :user="note.user" /></div>
 			</div>
 			<div>
-				<div class="info">	
-					<span
-						v-for="badge in mkBadge"
-						:key="badge.key"
-						style="badge"
-						:title="i18n.ts[badge.key]"
-						v-tooltip="i18n.ts[badge.key]"
-						><MkEmoji
-							class="emoji"
-							:emoji="badge.emoji"
-							style="height: 1em; pointer-events: none;"
-						></MkEmoji
-					></span>
+				<div class="info">
 					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && note.user.isFollowing && !note.user.isFollowed" class="ph-heart-half ph-bold relation"></i>
 					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && !note.user.isFollowing && !note.user.isFollowed" class="ph-placeholder ph-bold relation"></i>
 					<MkA class="created-at" :to="notePage(note)">
@@ -142,6 +143,13 @@ const showTicker =
 				border: solid 0.5px var(--divider);
 				border-radius: 3px;
 			}
+			.badge {
+				flex-shrink: 0;
+				align-self: center;
+				margin-right: 0.5em;
+				padding: 1px 6px;
+				vertical-align: middle;
+			}
 
 			&:hover {
 				text-decoration: underline;
@@ -170,10 +178,6 @@ const showTicker =
 			.relation {
 				margin-right: 0.5em;
 				font-size: 0.9em;
-				vertical-align: middle;
-			}
-			.badge {
-				margin-right: 0.5em;
 				vertical-align: middle;
 			}
 		}

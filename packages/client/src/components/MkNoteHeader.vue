@@ -169,11 +169,11 @@ const showTicker =
 			}
 			.relation {
 				margin-right: 0.5em;
+				font-size: 0.9em;
 				vertical-align: middle;
 			}
 			.badge {
 				margin-right: 0.5em;
-				font-size: 0.9em;
 				vertical-align: middle;
 			}
 		}

@@ -53,6 +53,7 @@ const props = defineProps<{
 	isReaction?: boolean;
 	noteHost?: string;
 	isPicker?: boolean;
+	static?: boolean;
 }>();
 
 const emit = defineEmits(["loaderror"]);
@@ -117,7 +118,7 @@ const url = computed(() => {
 	if (char.value) {
 		return char2filePath(char.value);
 	} else if (urlRaw.value.length > errorCnt.value) {
-		return defaultStore.state.disableShowingAnimatedImages
+		return defaultStore.state.disableShowingAnimatedImages || props.static
 					? getStaticImageUrl(urlRaw.value[errorCnt.value])
 					: urlRaw.value[errorCnt.value];
 	} else {
@@ -129,7 +130,7 @@ const altimgUrl = computed(() => {
 	if (!emojiHost.value) return "";
 
 	const imgUrl = `https://${emojiHost.value}/emoji/${customEmojiName.value}.webp`;
-	return defaultStore.state.disableShowingAnimatedImages
+	return defaultStore.state.disableShowingAnimatedImages || props.static
 				? getStaticImageUrl(imgUrl)
 				: imgUrl;
 });

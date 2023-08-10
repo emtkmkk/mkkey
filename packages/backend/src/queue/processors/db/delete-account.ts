@@ -22,34 +22,38 @@ export async function deleteAccount(
 		return;
 	}
 
-	let tryCount = 0;
-	while (tryCount <= 100) {
-		const relations = (await Followings.find({
-			where: {
-				followerId: user.id,
-			},
-			take: 100,
-			order: {
-				id: 1,
-			},
-		}));
+	try {
+		let tryCount = 0;
+		while (tryCount <= 100) {
+			const relations = (await Followings.find({
+				where: {
+					followerId: user.id,
+				},
+				take: 100,
+				order: {
+					id: 1,
+				},
+			}));
 
-		if (relations.length === 0) {
-			break;
-		}
-
-		relations.forEach(async (x) => {
-			try {
-				const followee = await getUser(x.followeeId);
-				if (followee) await deleteFollowing(user, followee);
-			} catch {
-
+			if (relations.length === 0) {
+				break;
 			}
-		});
-		tryCount += 1
+
+			relations.forEach(async (x) => {
+				try {
+					const followee = await getUser(x.followeeId);
+					if (followee) await deleteFollowing(user, followee);
+				} catch {
+
+				}
+			});
+			tryCount += 1
+
+		}
+		logger.succ("All of relations removed");
+	} catch {
 
 	}
-	logger.succ("All of relations removed");
 
 	{
 		// Delete notes

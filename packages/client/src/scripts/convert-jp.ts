@@ -6,10 +6,11 @@ const jaToRoomajiCache = new Map();
 export function formatRoomaji(
 	str: string
 ): string {
-	if (!formatRoomajiCache.has(str)) {
-		formatRoomajiCache.set(str, format_roomaji(str));
+	const _str = str.toLowerCase();
+	if (!formatRoomajiCache.has(_str)) {
+		formatRoomajiCache.set(_str, format_roomaji(_str));
 	}
-	return formatRoomajiCache.get(str);
+	return formatRoomajiCache.get(_str);
 }
 
 export function kanaToHira(
@@ -24,10 +25,11 @@ export function kanaToHira(
 export function roomajiToJa(
 	str: string
 ): string {
-	if (!roomajiToJaCache.has(str)) {
-		roomajiToJaCache.set(str, roomaji_to_ja(str));
+	const _str = str.toLowerCase();
+	if (!roomajiToJaCache.has(_str)) {
+		roomajiToJaCache.set(_str, roomaji_to_ja(_str));
 	}
-	return roomajiToJaCache.get(str);
+	return roomajiToJaCache.get(_str);
 }
 
 export function jaToRoomaji(
@@ -49,8 +51,17 @@ export function roomaji_to_ja(
 	if (/[ぁ-んァ-ンー\s]+/.test(_str)) {
 		return _str;
 	}
+	
+	let blobflg = false;
+	
+	if (_str.startsWith("blob")) {
+		blobflg = true;
+		_str = _str.replace("blob","");
+	}
 
-	return romaToHira(_str);
+	let ret = romaToHira(_str);
+	
+	return (blobflg ? "blob" : "") + ret
 }
 
 export function ja_to_roomaji(

@@ -34,7 +34,7 @@
 				<option value="hidden">{{ i18n.ts.hidden }}</option>
 			</FormSelect>
 			<FormInput
-				v-if="['list','antenna'].includes(thirdTimelineType) && developer"
+				v-if="!['classic','deck'].includes(ui) && ['list','antenna'].includes(thirdTimelineType) && developer"
 				v-model="thirdTimelineListId"
 				class="_formBlock"
 				:small="true"

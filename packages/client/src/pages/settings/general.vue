@@ -462,6 +462,7 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
 import { $i } from "@/account";
+import FormInput from "@/components/form/input.vue";
 import FormSwitch from "@/components/form/switch.vue";
 import FormSelect from "@/components/form/select.vue";
 import FormRadios from "@/components/form/radios.vue";

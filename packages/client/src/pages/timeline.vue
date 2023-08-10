@@ -58,6 +58,8 @@
 								:key="src"
 								class="tl"
 								:src="src"
+								:list="src === 'list' ? defaultStore.state.thirdTimelineListId : null"
+								:antenna="src === 'antenna' ? defaultStore.state.thirdTimelineListId : null"
 								:sound="true"
 								@queue="queueUpdated"
 							/>
@@ -125,12 +127,18 @@ if (isLocalTimelineAvailable) {
 }
 
 if (isRecommendedTimelineAvailable && 
-    !defaultStore.state.showSpotlight
+    defaultStore.state.thirdTimelineType === "media"
 	) {
 	timelines.push("recommended");
 }
-if (defaultStore.state.showSpotlight){
+if (defaultStore.state.thirdTimelineType === "spotlight"){
 	timelines.push("spotlight");
+}
+if (defaultStore.state.thirdTimelineType === "list"){
+	timelines.push("list");
+}
+if (defaultStore.state.thirdTimelineType === "antenna"){
+	timelines.push("antenna");
 }
 if (isGlobalTimelineAvailable) {
 	timelines.push("global");
@@ -152,7 +160,13 @@ const rootEl = $ref<HTMLElement>();
 
 let queue = $ref(0);
 const src = $computed({
-	get: () => defaultStore.reactiveState.tl.value.src,
+	get: () => {
+		if (timelines.includes(defaultStore.reactiveState.tl.value.src)) {
+			return defaultStore.reactiveState.tl.value.src
+		} else {
+			return timelines?.[0] ?? "local";
+		}
+	},
 	set: (x) => {
 		saveSrc(x);
 		syncSlide(timelines.indexOf(x));
@@ -212,7 +226,7 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 }
 
 function saveSrc(
-	newSrc: "home" | "local" | "spotlight" | "recommended" | "social" | "global"
+	newSrc: "home" | "local" | "spotlight" | "recommended" | "list" | "antenna" | "social" | "global"
 ): void {
 	defaultStore.set("tl", {
 		...defaultStore.state.tl,
@@ -322,7 +336,7 @@ const headerTabs = $computed(() => [
 				},
 		  ]
 		: []), */
-	...(isRecommendedTimelineAvailable && !defaultStore.state.showSpotlight
+	...(isRecommendedTimelineAvailable && defaultStore.state.thirdTimelineType === "media"
 		? [
 				{
 					key: "recommended",
@@ -331,14 +345,37 @@ const headerTabs = $computed(() => [
 					iconOnly: true,
 				},
 		  ]
-		: [
-			{
-				key: "spotlight",
-				title: i18n.ts._timelines.spotlight,
-				icon: "ph-star-four ph-bold ph-lg",
-				iconOnly: true,
-			},
-		]),
+		: []),
+	...(defaultStore.state.thirdTimelineType === "spotlight"
+		? [
+				{
+					key: "spotlight",
+					title: i18n.ts._timelines.spotlight,
+					icon: "ph-star-four ph-bold ph-lg",
+					iconOnly: true,
+				},
+		  ]
+		: []),
+	...(defaultStore.state.thirdTimelineType === "list"
+		? [
+				{
+					key: "list",
+					title: i18n.ts._timelines.list,
+					icon: "ph-list-bullets ph-bold ph-lg",
+					iconOnly: true,
+				},
+		  ]
+		: []),
+	...(defaultStore.state.thirdTimelineType === "antenna"
+		? [
+				{
+					key: "antenna",
+					title: i18n.ts._timelines.antenna,
+					icon: "ph-flying-saucer ph-bold ph-lg",
+					iconOnly: true,
+				},
+		  ]
+		: []),
 	...(isGlobalTimelineAvailable
 		? [
 				{
@@ -366,6 +403,10 @@ definePageMetadata(
 				? "ph-images-square ph-bold ph-lg"
 				: src === "spotlight"
 				? "ph-star-four ph-bold ph-lg"
+				: src === "list"
+				? "ph-list-bullets ph-bold ph-lg"
+				: src === "antenna"
+				? "ph-flying-saucer ph-bold ph-lg"
 				: src === "global"
 				? "ph-planet ph-bold ph-lg"
 				: src === "home" &&

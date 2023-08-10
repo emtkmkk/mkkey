@@ -880,6 +880,11 @@ export const defaultStore = markRaw(
 			createdAt: "2023/08/10",
 			page: "general",
 		},
+		thirdTimelineListId: {
+			where: 'account',
+			default: "",
+			createdAt: "2023/08/10",
+		},
 		mobileThirdButton: {
 			where: 'account',
 			default: "reload",

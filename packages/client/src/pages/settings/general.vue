@@ -25,12 +25,27 @@
 					{{ i18n.ts.bothTimeline }}
 				</option>
 			</FormRadios>
+			<FormSelect v-if="!['classic','deck'].includes(ui)" v-model="thirdTimelineType" class="_formBlock">
+				<template #label>{{ i18n.ts.thirdTimelineType }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+				<option value="media">{{ i18n.ts._timelines.media }}</option>
+				<option value="spotlight">{{ i18n.ts._timelines.spotlight }}</option>
+				<option v-if="developer" value="list">{{ i18n.ts._timelines.list }}</option>
+				<option v-if="developer" value="antenna">{{ i18n.ts._timelines.antenna }}</option>
+				<option value="hidden">{{ i18n.ts.hidden }}</option>
+			</FormSelect>
+			<FormInput
+				v-if="['list','antenna'].includes(thirdTimelineType) && developer"
+				v-model="thirdTimelineListId"
+				class="_formBlock"
+				:small="true"
+				:placeholder="`リスト / アンテナの内部ID (10文字)`"
+				style="margin: 0 0 !important"
+			>
+				<template #label>{{ i18n.ts.thirdTimelineListId }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+			</FormInput>
 			<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
 				i18n.ts.showFixedPostForm
 			}}</FormSwitch>
-			<FormSwitch v-if="!['classic','deck'].includes(ui)" v-model="showSpotlight" class="_formBlock">{{
-				i18n.ts.showSpotlight
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="recentRenoteHidden" class="_formBlock">{{
 				i18n.ts.recentRenoteHidden
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -404,7 +419,7 @@
 		
 		<FormRange
 			v-model="swipeTouchAngle"
-			:min="1"
+			:min="0"
 			:max="90"
 			:step="1"
 			easing
@@ -416,8 +431,8 @@
 		<FormRange
 			v-model="swipeThreshold"
 			:min="0"
-			:max="100"
-			:step="1"
+			:max="200"
+			:step="2"
 			easing
 			class="_formBlock"
 		>
@@ -676,6 +691,12 @@ const swipeThreshold = $computed(
 );
 const swipeCenteredSlides = $computed(
 	defaultStore.makeGetterSetter("swipeCenteredSlides")
+);
+const thirdTimelineType = $computed(
+	defaultStore.makeGetterSetter("thirdTimelineType")
+);
+const thirdTimelineListId = $computed(
+	defaultStore.makeGetterSetter("thirdTimelineListId")
 );
 
 function save() {

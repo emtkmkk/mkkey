@@ -8,7 +8,7 @@ import { MoreThan } from "typeorm";
 import { deleteFileSync } from "@/services/drive/delete-file.js";
 import { sendEmail } from "@/services/send-email.js";
 import deleteFollowing from "@/services/following/delete.js";
-import { getUser } from "../../common/getters.js";
+import { getUser } from "@/server/api/common/common/getters.js";
 
 const logger = queueLogger.createSubLogger("delete-account");
 

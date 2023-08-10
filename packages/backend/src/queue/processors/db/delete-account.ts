@@ -1,12 +1,14 @@
 import type Bull from "bull";
 import { queueLogger } from "../../logger.js";
-import { DriveFiles, Notes, UserProfiles, Users } from "@/models/index.js";
+import { Followings, DriveFiles, Notes, UserProfiles, Users } from "@/models/index.js";
 import type { DbUserDeleteJobData } from "@/queue/types.js";
 import type { Note } from "@/models/entities/note.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import { MoreThan } from "typeorm";
 import { deleteFileSync } from "@/services/drive/delete-file.js";
 import { sendEmail } from "@/services/send-email.js";
+import deleteFollowing from "@/services/following/delete.js";
+import { getUser } from "../../common/getters.js";
 
 const logger = queueLogger.createSubLogger("delete-account");
 
@@ -19,6 +21,35 @@ export async function deleteAccount(
 	if (user == null) {
 		return;
 	}
+
+	let tryCount = 0;
+	while (tryCount <= 100) {
+		const relations = (await Followings.find({
+			where: {
+				followerId: user.id,
+			},
+			take: 100,
+			order: {
+				id: 1,
+			},
+		}));
+
+		if (relations.length === 0) {
+			break;
+		}
+
+		relations.forEach(async (x) => {
+			try {
+				const followee = await getUser(x.followeeId);
+				if (followee) await deleteFollowing(user, followee);
+			} catch {
+
+			}
+		});
+		tryCount += 1
+
+	}
+	logger.succ("All of relations removed");
 
 	{
 		// Delete notes

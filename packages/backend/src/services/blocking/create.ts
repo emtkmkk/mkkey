@@ -68,15 +68,12 @@ async function cancelRequest(follower: User, followee: User) {
 		}).then((packed) => publishMainStream(followee.id, "meUpdated", packed));
 	}
 
-	if (Users.isLocalUser(follower)) {
-		Users.pack(followee, follower, {
+	if (Users.isLocalUser(followee)) {
+		Users.pack(follower.id, followee, {
 			detail: true,
 		}).then(async (packed) => {
-			publishUserEvent(follower.id, "unfollow", packed);
-			publishMainStream(follower.id, "unfollow", packed);
-
 			const webhooks = (await getActiveWebhooks()).filter(
-				(x) => x.userId === follower.id && x.on.includes("unfollow"),
+				(x) => x.userId === followee.id && x.on.includes("unfollow"),
 			);
 			for (const webhook of webhooks) {
 				webhookDeliver(webhook, "unfollow", {
@@ -130,9 +127,15 @@ async function unFollow(follower: User, followee: User) {
 		}).then(async (packed) => {
 			publishUserEvent(follower.id, "unfollow", packed);
 			publishMainStream(follower.id, "unfollow", packed);
+		});
+	}
 
+	if (Users.isLocalUser(followee)) {
+		Users.pack(follower.id, followee, {
+			detail: true,
+		}).then(async (packed) => {
 			const webhooks = (await getActiveWebhooks()).filter(
-				(x) => x.userId === follower.id && x.on.includes("unfollow"),
+				(x) => x.userId === followee.id && x.on.includes("unfollow"),
 			);
 			for (const webhook of webhooks) {
 				webhookDeliver(webhook, "unfollow", {

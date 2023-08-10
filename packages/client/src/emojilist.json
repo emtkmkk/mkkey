@@ -4,7 +4,7 @@
 	{ "category": "face", "char": "😁", "name": "grin", "keywords": ["face", "happy", "smile", "joy", "kawaii", "kagayakuegao"] },
 	{ "category": "face", "char": "😂", "name": "joy", "keywords": ["face", "cry", "tears", "weep", "happy", "happytears", "haha", "ureshinakinokao"] },
 	{ "category": "face", "char": "🤣", "name": "rofl", "keywords": ["face", "rolling", "floor", "laughing", "lol", "haha", "waraikorogerukao"] },
-	{ "category": "face", "char": "🥳", "name": "partying", "keywords": ["face", "celebration", "woohoo", "patinokao"] },
+	{ "category": "face", "char": "🥳", "name": "partying", "keywords": ["face", "celebration", "woohoo", "pa_ti_nokao"] },
 	{ "category": "face", "char": "😃", "name": "smiley", "keywords": ["face", "happy", "joy", "haha", ": D", ": )", "smile", "funny", "ookiimenoegao"] },
 	{ "category": "face", "char": "😄", "name": "smile", "keywords": ["face", "happy", "joy", "funny", "haha", "laugh", "like", ": D", ": )", "memonikoyakanaegao"] },
 	{ "category": "face", "char": "😅", "name": "sweat_smile", "keywords": ["face", "hot", "happy", "laugh", "sweat", "smile", "relief", "asewokaiegaogao"] },

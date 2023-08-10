@@ -894,7 +894,7 @@ export const table = {
   "ろ": "ro",
   "わ": "wa",
   "を": "wo",
-  "ん": "nn",
+  "ん": "n",
   "が": "ga",
   "ぎ": "gi",
   "ぐ": "gu",
@@ -935,6 +935,9 @@ export const table = {
   "ゐ": "wyi",
   "ゑ": "wye",
   "ー": "_",
+  "！": "i",
+  "?": "q",
+  "？": "q",
 };
 
 export function hiraToRoma(str) {

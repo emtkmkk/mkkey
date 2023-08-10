@@ -268,6 +268,7 @@ function format_roomaji(
 		{ before: "shu", after: "syu" },
 		{ before: "sho", after: "syo" },
 		{ before: "syi", after: "si" },
+		{ before: "chi", after: "ti" },
 		{ before: "thi", after: "ti" },
 		{ before: "tsu", after: "tu" },
 		{ before: "kwa", after: "kya" },

@@ -30,9 +30,6 @@ export async function deleteAccount(
 					followerId: user.id,
 				},
 				take: 100,
-				order: {
-					id: 1,
-				},
 			}));
 
 			if (relations.length === 0) {

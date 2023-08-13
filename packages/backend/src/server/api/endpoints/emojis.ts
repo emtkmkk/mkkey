@@ -80,6 +80,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			oldEmoji: false,
 		},
 		order: {
+			...(ps.createdAtDesc ? {id: "DESC"} : {}),
 			category: "ASC",
 			name: "ASC",
 		},

@@ -106,7 +106,7 @@
 			<FormSwitch v-model="enableDataSaverMode" :disabled="autoSwitchDataSaver" class="_formBlock">{{
 				i18n.ts.dataSaver
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="autoSwitchDataSaver" v-if="!supportAutoDataSaver" class="_formBlock">{{
+			<FormSwitch v-model="autoSwitchDataSaver" v-if="supportAutoDataSaver" class="_formBlock">{{
 				i18n.ts.autoSwitchDataSaver
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{

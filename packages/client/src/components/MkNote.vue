@@ -427,7 +427,7 @@ const isRecentRenote = $computed(() => {
 				if (isMyRenote){
 					//タイムスタンプはそのままで自分のノートを登録
 					recentRenoteId = recentRenoteId.filter((x) => x.id !== appearNote.id);
-					recentRenoteId.push({id: appearNote.id, fid: note.id, date: targetRecentRenoteId[0]?.date});
+					recentRenoteId = [...recentRenoteId,{id: appearNote.id, fid: note.id, date: targetRecentRenoteId[0]?.date}];
 					return false;
 				} else {
 					return true;
@@ -435,7 +435,7 @@ const isRecentRenote = $computed(() => {
 			}
 		} else {
 			//されていない場合はリノートを除外したリスト+現在の双方のノートidを保存した後、falseを返す
-			recentRenoteId.push({id: appearNote.id, fid: note.id, date: now});
+			recentRenoteId = [...recentRenoteId,{id: appearNote.id, fid: note.id, date: now}];
 			return false;
 		}
 

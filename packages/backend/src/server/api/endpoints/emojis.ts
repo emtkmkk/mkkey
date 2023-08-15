@@ -79,8 +79,9 @@ export default define(meta, paramDef, async (ps, me) => {
 			host: IsNull(),
 			oldEmoji: false,
 		},
-		order: {
-			...(ps.createdAtDesc ? {id: "DESC"} : {}),
+		order: ps.createdAtDesc ? {
+			id: "DESC",
+		} : {
 			category: "ASC",
 			name: "ASC",
 		},

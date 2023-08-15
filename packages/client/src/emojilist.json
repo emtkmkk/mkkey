@@ -79,7 +79,7 @@
 	{ "category": "face", "char": "😓", "name": "sweat", "keywords": ["face", "hot", "sad", "tired", "exercise", "asegashitataruikishouchinshitakao"] },
 	{ "category": "face", "char": "🥵", "name": "hot", "keywords": ["face", "feverish", "heat", "red", "sweating", "atsuikao"] },
 	{ "category": "face", "char": "🥶", "name": "cold", "keywords": ["face", "blue", "freezing", "frozen", "frostbite", "icicles", "samuikao"] },
-	{ "category": "face", "char": "😭", "name": "sob", "keywords": ["face", "cry", "tears", "sad", "upset", "depressed", "oogoedenaiterukao"] },
+	{ "category": "face", "char": "😭", "name": "sob", "keywords": ["face", "cry", "tears", "sad", "upset", "depressed", "oogoedenaiterukao", "yakinikuogorimasu"] },
 	{ "category": "face", "char": "😵", "name": "dizzy_face", "keywords": ["spent", "unconscious", "xox", "dizzy", "memaikao"] },
 	{ "category": "face", "char": "😲", "name": "astonished", "keywords": ["face", "xox", "surprised", "poisoned", "bikkurishitakao"] },
 	{ "category": "face", "char": "🤐", "name": "zipper_mouth_face", "keywords": ["face", "sealed", "zipper", "secret", "kuchichakkunokao"] },

@@ -469,6 +469,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		});
 
 		if (
+			defaultStore.tutorial === -1 &&
 			defaultStore.isDefault("showLocalPostsInfoPopup") &&
 			$i.followingCount >= 10
 		) {
@@ -491,6 +492,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		}
 		
 		if (
+			defaultStore.tutorial === -1 &&
 			!defaultStore.state.showInviteInfoPopupAccount &&
 			!defaultStore.state.showInviteInfoPopupDevice
 		) {

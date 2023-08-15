@@ -356,13 +356,13 @@ if (noteViewInterruptors.length > 0) {
 }
 
 const isRenote =
-	note.renote != null &&
+	note.renoteId != null &&
 	note.text == null &&
 	note.fileIds.length === 0 &&
 	note.poll == null;
 
 const isQuote =
-    note.renote != null &&
+    note.renoteId != null &&
 	!isRenote;
 
 const el = ref<HTMLElement>();

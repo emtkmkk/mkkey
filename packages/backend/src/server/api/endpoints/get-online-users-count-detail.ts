@@ -34,9 +34,10 @@ export default define(meta, paramDef, async () => {
 	}) - onlineCount - activeCount;
 	const sleepCount = await Users.countBy({
 		host: IsNull(),
-		lastActiveDate: LessThan(new Date(Date.now())),
+		lastActiveDate: LessThan(new Date(Date.now() - USER_HALFSLEEP_THRESHOLD)),
 		isBot: false,
-	}) - onlineCount - activeCount - offlineCount;
+		notesCount: MoreThan(50),
+	});
 	/*const o150s = await Users.countBy({
 		host: IsNull(),
 		lastActiveDate: MoreThan(new Date(Date.now() - 150 * SEC)),

@@ -86,7 +86,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			name: "ASC",
 		},
 		cache: {
-			id: "meta_emojis",
+			id: ps.createdAtDesc ? "meta_emojis2" : "meta_emojis",
 			milliseconds: 3600000, // 1 hour
 		},
 	});

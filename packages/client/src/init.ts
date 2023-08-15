@@ -51,6 +51,7 @@ import { reactionPicker } from "@/scripts/reaction-picker";
 import { getUrlWithoutLoginId } from "@/scripts/login-id";
 import { getAccountFromId } from "@/scripts/get-account-from-id";
 import getUserName from '@/scripts/get-user-name';
+import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver';
 
 (async () => {
 	console.info(`Calckey v${version}`);
@@ -329,6 +330,13 @@ import getUserName from '@/scripts/get-user-name';
 			defaultStore.set("darkMode", mql.matches);
 		}
 	});
+	//#endregion
+	
+	//#region Auto switch data saver
+	if (defaultStore.state.autoSwitchDataSaver) {
+		defaultStore.set('enableDataSaverMode', isMobileData());
+		initializeDetectNetworkChange();
+	}
 	//#endregion
 
 	fetchInstanceMetaPromise.then(() => {

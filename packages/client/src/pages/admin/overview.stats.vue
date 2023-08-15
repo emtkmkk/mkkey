@@ -72,6 +72,15 @@
 						<div class="label">Online</div>
 					</div>
 				</div>
+				<div class="item _panel emojis">
+					<div class="icon"><i class="ph-smiley ph-bold ph-lg"></i></div>
+					<div class="body">
+						<div class="value">
+							<MkNumber :value="instance.emojis?.length" style="margin-right: 0.5em;"/>
+						</div>
+						<div class="label">Custom emojis</div>
+					</div>
+				</div>
 			</div>
 		</Transition>
 	</div>
@@ -85,6 +94,7 @@ import number from "@/filters/number";
 import MkNumberDiff from "@/components/MkNumberDiff.vue";
 import MkNumber from "@/components/MkNumber.vue";
 import { i18n } from "@/i18n";
+import { instance } from "@/instance";
 
 let stats: any = $ref(null);
 let usersComparedToThePrevDay = $ref<number>();

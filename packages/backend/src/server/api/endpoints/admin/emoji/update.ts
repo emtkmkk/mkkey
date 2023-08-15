@@ -1,6 +1,7 @@
 import define from "../../../define.js";
 import { Emojis } from "@/models/index.js";
 import { ApiError } from "../../../error.js";
+import { publishBroadcastStream } from "@/services/stream.js";
 import { db } from "@/db/postgre.js";
 
 export const meta = {
@@ -53,6 +54,10 @@ export default define(meta, paramDef, async (ps) => {
 		category: ps.category,
 		aliases: ps.aliases,
 		license: ps.license,
+	});
+	
+	publishBroadcastStream("emojiUpdated", {
+		emoji: await Emojis.pack(emoji.id),
 	});
 
 	await db.queryResultCache!.remove(["meta_emojis"]);

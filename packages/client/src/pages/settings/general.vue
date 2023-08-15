@@ -103,8 +103,11 @@
 			<FormSwitch v-model="showDetailNoteClick" class="_formBlock">{{
 				i18n.ts.showDetailNoteClick
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="enableDataSaverMode" class="_formBlock">{{
+			<FormSwitch v-model="enableDataSaverMode" :disabled="autoSwitchDataSaver" class="_formBlock">{{
 				i18n.ts.dataSaver
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="autoSwitchDataSaver" v-if="!supportAutoDataSaver" class="_formBlock">{{
+				i18n.ts.autoSwitchDataSaver
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{
 				i18n.ts.hiddenActivityChart
@@ -419,7 +422,7 @@
 		
 		<FormRange
 			v-model="swipeTouchAngle"
-			:min="0"
+			:min="1"
 			:max="90"
 			:step="1"
 			easing
@@ -477,6 +480,7 @@ import { unisonReload } from "@/scripts/unison-reload";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deviceKind } from "@/scripts/device-kind";
+import { isSupportNavigatorConnection } from '@/scripts/datasaver';
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;
@@ -495,6 +499,8 @@ const lang = ref(localStorage.getItem("lang"));
 const fontSize = ref(localStorage.getItem("fontSize"));
 const avatarSize = ref(localStorage.getItem("avatarSize"));
 const useSystemFont = ref(localStorage.getItem("useSystemFont") != null);
+
+const supportAutoDataSaver = computed(() => isSupportNavigatorConnection());
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({
@@ -698,6 +704,9 @@ const thirdTimelineType = $computed(
 );
 const thirdTimelineListId = $computed(
 	defaultStore.makeGetterSetter("thirdTimelineListId")
+);
+const autoSwitchDataSaver = $computed(
+	defaultStore.makeGetterSetter("autoSwitchDataSaver")
 );
 
 function save() {

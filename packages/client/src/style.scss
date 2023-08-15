@@ -55,6 +55,7 @@ html {
 	line-height: 1.4;
 	text-size-adjust: 100%;
 	tab-size: 2;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
 
 	&, * {
 		scrollbar-color: var(--scrollbarHandle) inherit;

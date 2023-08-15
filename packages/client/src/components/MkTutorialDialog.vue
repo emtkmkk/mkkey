@@ -29,7 +29,7 @@
 							</button>
 						</div>
 						<MkButton
-							v-if="tutorial === 6"
+							v-if="tutorial === 6 || tutorial === 0"
 							class="ok"
 							primary
 							@click="close"

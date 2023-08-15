@@ -29,7 +29,7 @@
 							</button>
 						</div>
 						<MkButton
-							v-if="tutorial === 6 || tutorial === 0"
+							v-if="tutorial === 6 || tutorial === -1"
 							class="ok"
 							primary
 							@click="close"
@@ -42,6 +42,12 @@
 						>
 					</div>
 					<Transition name="fade">
+						<section v-if="tutorial === -1" key="0" class="_content">
+							<h2 class="_title title">
+								すみません、すでにチュートリアルは完了しているようです!
+							</h2>
+							<h3>{{ i18n.ts.gotIt + "を押下してダイアログを閉じてください。" }}</h3>
+						</section>
 						<section v-if="tutorial === 0" key="1" class="_content">
 							<h2 class="_title title">
 								<i class="ph-info ph-bold ph-lg"></i>

@@ -205,11 +205,11 @@ function excludeNotPlain(text): string {
 
 function emojiEscape(text): string {
 	// 絵文字をエスケープする
-	return text ? text.replaceAll(/:([\w_]+):/g, ': $1 :') : undefined;
+	return text ? text.replaceAll(/:(\w+):/g, '<$1>') : undefined;
 }
 
 function getUsername(user): string {
-	return user ? user.name?.replaceAll(/\s?:[\w_]+?:/g, '') || user.username : undefined;
+	return user ? user.name?.replaceAll(/\s?:\w+?:/g, '').trim() || user.username : undefined;
 }
 
 function getNoteContentSummary(note, userId, textLength?): string {
@@ -292,7 +292,7 @@ async function typeToBody(jobData: any): Promise<any> {
 			return {
 				username,
 				avatar_url,
-				content: username + " から " + body.reaction?.emojiName.replaceAll(":","") + content,
+				content: username + " から " + body.reaction?.emojiName.replaceAll(/:(\w+):/g, '<$1>') + content,
 			};
 		case "antenna":
 			return {

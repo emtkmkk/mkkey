@@ -15,7 +15,7 @@ export const meta = {
 
 	limit: {
 		duration: HOUR,
-		max: 120,
+		max: 480,
 	},
 
 	requireFile: true,

@@ -126,6 +126,14 @@
 											number(stats.originalNotesCount)
 										}}</template>
 									</MkKeyValue>
+									<MkKeyValue class="_formBlock">
+										<template #key>{{
+											i18n.ts.emojis
+										}}</template>
+										<template #value>{{
+											number(instance.emojis?.length)
+										}}</template>
+									</MkKeyValue>
 								</FormSplit>
 							</FormSection>
 						</FormSuspense>

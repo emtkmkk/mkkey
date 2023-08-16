@@ -7,15 +7,16 @@
 		:author="user"
 		:custom-emojis="user.emojis"
 	/>
+	{{ hostIcon && user.host ? '@' : '' }}
 	<img 
 		class="icon"
-		style="height:1em; margin-left:0.2em; border-radis:0.3rem;"
+		style="height:1.1em; margin-left:0.2em; border-radis:0.3rem;display:flex;align-items: center;"
 		v-if="hostIcon && getIcon(hostIcon) && !errorIcon"
 		:src="getIcon(hostIcon)"
 		aria-hidden="true"
 		@error="errorIcon = true"
 	/>
-	{{ hostIcon && errorIcon && user.host ? '@' + user.host : ''}}
+	{{ hostIcon && errorIcon && user.host ? user.host : ''}}
 </template>
 
 <script lang="ts" setup>

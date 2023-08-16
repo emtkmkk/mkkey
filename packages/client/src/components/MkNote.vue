@@ -42,7 +42,11 @@
 							:to="userPage(note.user)"
 							@click.stop
 						>
-							<MkUserName :user="note.user" :hostIcon="note.user.instance?.faviconUrl || note.user.instance?.iconUrl || note.user.host"/>
+							<MkUserName 
+								:user="note.user"
+								:hostIcon="note.user.instance?.faviconUrl || note.user.instance?.iconUrl || note.user.host"
+								:altIcon="note.user.instance?.iconUrl"
+							/>
 						</MkA>
 					</template>
 				</I18n>

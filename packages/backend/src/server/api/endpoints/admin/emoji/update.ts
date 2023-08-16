@@ -59,7 +59,7 @@ export default define(meta, paramDef, async (ps) => {
 	const afterEmoji = await Emojis.findOneBy({ id: ps.id });
 		
 	publishBroadcastStream("emojiUpdated", {
-		emoji: await Emojis.pack(afterEmoji),
+		emoji: await Emojis.pack(afterEmoji.id),
 	});
 
 	await db.queryResultCache!.remove(["meta_emojis"]);

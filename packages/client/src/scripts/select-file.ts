@@ -121,7 +121,7 @@ function select(
 				},
 			],
 			src,
-		);
+		).then(() => {rej()});
 	});
 }
 

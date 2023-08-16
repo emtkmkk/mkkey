@@ -9,7 +9,7 @@
 	/>
 	<img 
 		class="icon"
-		style="height:1.3em; margin-left:0.2em; border-radis:0.3rem;"
+		style="height:1em; margin-left:0.2em; border-radis:0.3rem;"
 		v-if="hostIcon && getIcon(hostIcon) && !errorIcon"
 		:src="getIcon(hostIcon)"
 		aria-hidden="true"

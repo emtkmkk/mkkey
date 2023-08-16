@@ -43,6 +43,7 @@
 							@click.stop
 						>
 							<MkUserName :user="note.user" />
+							{{ note.user.host ? '@' + note.user.host : '' }}
 						</MkA>
 					</template>
 				</I18n>

@@ -10,7 +10,7 @@
 	{{ hostIcon && user.host ? '@' : '' }}
 	<img 
 		class="icon"
-		style="height:1.1em; margin-left:0.2em; border-radis:0.3rem;display:flex;align-items: center;"
+		style="height:1.1em; border-radis:0.3rem;display:inline-flex;align-items: center;"
 		v-if="hostIcon && getIcon(hostIcon) && !errorIcon"
 		:src="getIcon(hostIcon)"
 		aria-hidden="true"

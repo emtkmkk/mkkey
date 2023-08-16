@@ -571,6 +571,7 @@ let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") 
 let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]")  && !$i.isSilenced);
 let imeText = $ref("");
 let shortcutKeyValue = $ref(0);
+let fileselecting = $ref(false);
 
 const publicIcon = $computed((): String => {
 	if (!canNotLocal && (canPublic || canHome)) {
@@ -706,7 +707,8 @@ const canPost = $computed((): boolean => {
 		!posting &&
 		(1 <= textLength || 1 <= files.length || !!poll || !!props.renote || !!quoteId) &&
 		textLength <= maxTextLength &&
-		(!poll || poll.choices.length >= 2)
+		(!poll || poll.choices.length >= 2) &&
+		!fileselecting
 	);
 });
 
@@ -910,13 +912,15 @@ function focus() {
 }
 
 function chooseFileFrom(ev) {
+	fileselecting = true;
 	selectFiles(ev.currentTarget ?? ev.target, i18n.ts.attachFile).then(
 		(files_) => {
+			fileselecting = false;
 			for (const file of files_) {
 				files.push(file);
 			}
 		}
-	);
+	).catch(() => fileselecting = false);
 }
 
 function detachFile(id) {

@@ -231,6 +231,10 @@ export default async (
 		if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
 			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?\S*)/g, "$1");
 		}
+		
+		if (data.text?.includes("https://x.com") || data.text?.includes("http://x.com")) {
+			data.text = data.text.replaceAll(/(https?:\/\/x.com\/\S*\/status\/\S*)(\?\S*)/g, "$1");
+		}
 
 		//23:59の間によるほを含む投稿をした場合
 		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {

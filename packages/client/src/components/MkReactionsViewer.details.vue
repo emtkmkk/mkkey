@@ -20,7 +20,6 @@
 				<div v-for="u in users" :key="u.id" class="user">
 					<MkAvatar class="avatar" :user="u" />
 					<MkUserName v-if="!$store.state.reactionShowUsername" class="name" :user="u" :maxlength="$store.state.reactionShowShort ? 8 : 0" :nowrap="true" :hostIcon="u.instance?.faviconUrl || u.instance?.iconUrl || u.host"/>
-					{{ !$store.state.reactionShowUsername && u.host ? "@" + ($store.state.reactionShowShort && u.host.length > 8 ? u.host.slice(0,4) + "…" + u.host.slice(-4) : u.host) : "" }}
 					<MkAcct v-if="$store.state.reactionShowUsername" class="name" :user="u" :maxlength="$store.state.reactionShowShort ? 8 : 0" />
 				</div>
 				<div v-if="users.length > 10" class="omitted">

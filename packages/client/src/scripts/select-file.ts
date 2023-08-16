@@ -127,7 +127,7 @@ function select(
 			src,
 		).then(() => {
 			setTimeout(() => {
-				if (doAction) rej();
+				if (!doAction) rej();
 				}, 500
 			);
 		});

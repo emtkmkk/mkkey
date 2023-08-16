@@ -46,4 +46,8 @@ function getIcon(url): string {
 .root {
 	unicode-bidi: isolate;
 }
+.icon {
+		height: 100%;
+		border-radius: 0.3rem;
+}
 </style>

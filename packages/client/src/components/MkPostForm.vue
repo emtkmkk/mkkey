@@ -920,7 +920,9 @@ function chooseFileFrom(ev) {
 				files.push(file);
 			}
 		}
-	).catch(() => fileselecting = false);
+	).finally(() => {
+		fileselecting = false;
+	});
 }
 
 function detachFile(id) {

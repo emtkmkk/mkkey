@@ -492,7 +492,6 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		}
 		
 		if (
-			defaultStore.tutorial === -1 &&
 			!defaultStore.state.showInviteInfoPopupAccount &&
 			!defaultStore.state.showInviteInfoPopupDevice
 		) {
@@ -503,7 +502,10 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 			const eTime = $i ? (Date.now() - new Date($i.createdAt).valueOf()) : undefined;
 			const inviteBorder = eTime ? eTime > 7 * 24 * 60 * 60 * 1000 ? 7 * 24 * 60 * 60 * 1000 : Math.max(7 * 24 * 60 * 60 * 1000 - ($i.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000) : undefined;
 			const canInvite = $i ? eTime > inviteBorder && $i.notesCount >= 20 && !$i.isSilenced : false;
-			if (canInvite) {
+			if (
+				defaultStore.tutorial === -1 &&
+				canInvite
+			) {
 				await alert({
 					type: "info",
 					text: "もこきーの招待コードを発行する事が出来るようになりました！\n\n左メニューの(i)ボタンから招待コードを発行することが出来ます。",

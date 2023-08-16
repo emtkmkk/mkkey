@@ -10,13 +10,21 @@
 	{{ hostIcon && user.host ? '@' : '' }}
 	<img 
 		class="icon"
-		style="height:1.1em; border-radis:0.3rem;display:inline-flex;align-items: center;"
+		style="height:1.1em; border-radis:0.3rem;vertical-align: middle;"
 		v-if="hostIcon && getIcon(hostIcon) && !errorIcon"
 		:src="getIcon(hostIcon)"
 		aria-hidden="true"
 		@error="errorIcon = true"
 	/>
-	{{ hostIcon && errorIcon && user.host ? user.host : ''}}
+	<img 
+		class="icon"
+		style="height:1.1em; border-radis:0.3rem;vertical-align: middle;"
+		v-if="altIcon && getIcon(altIcon) && errorIcon && !erroraltIcon"
+		:src="getIcon(altIcon)"
+		aria-hidden="true"
+		@error="erroraltIcon = true"
+	/>
+	{{ hostIcon && errorIcon && (erroraltIcon || !altIcon) && user.host ? user.host : ''}}
 </template>
 
 <script lang="ts" setup>
@@ -30,6 +38,7 @@ const props = withDefaults(
 		nowrap?: boolean;
 		maxlength?: number;
 		hostIcon?: string;
+		altIcon?: string;
 	}>(),
 	{
 		nowrap: true,
@@ -37,6 +46,7 @@ const props = withDefaults(
 	}
 );
 let errorIcon = $ref(false);
+let erroraltIcon = $ref(false);
 function getIcon(url): string {
 		return (
 					getProxiedImageUrlNullable(url, "preview")

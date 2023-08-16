@@ -27,7 +27,7 @@ const props = withDefaults(
 		user: misskey.entities.User;
 		nowrap?: boolean;
 		maxlength?: number;
-		hosticon?: string;
+		hostIcon?: string;
 	}>(),
 	{
 		nowrap: true,

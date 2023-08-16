@@ -14,8 +14,10 @@ function select(
 	return new Promise((res, rej) => {
 		const keepOriginal = ref(defaultStore.state.keepOriginalUploading);
 		const keepFileName = ref(defaultStore.state.keepFileName);
+		let doAction = false;
 
 		const chooseFileFromPc = () => {
+			doAction = true;
 			const input = document.createElement("input");
 			input.type = "file";
 			input.multiple = multiple;
@@ -50,12 +52,14 @@ function select(
 		};
 
 		const chooseFileFromDrive = () => {
+			doAction = true;
 			os.selectDriveFile(multiple).then((files) => {
 				res(files);
 			});
 		};
 
 		const chooseFileFromUrl = () => {
+			doAction = true;
 			os.inputText({
 				title: i18n.ts.uploadFromUrl,
 				type: "url",
@@ -121,7 +125,12 @@ function select(
 				},
 			],
 			src,
-		).then(() => {rej()});
+		).then(() => {
+			setTimeout(() => {
+				if (doAction) rej();
+				}, 500
+			);
+		});
 	});
 }
 

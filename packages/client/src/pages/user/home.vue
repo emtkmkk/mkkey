@@ -445,9 +445,13 @@ const visiblePinnedNotes = $computed(() => {
 
 const birthday = $computed(() => {
 	
+	if (props.user.host){
+		return props.user.birthday
+	}
+	
 	const regtest = /(\d{1,2})(yo|歳|sai)/.test(props.user.name ?? "") || /(\d{1,2})(yo|歳|sai)/.test(props.user.description ?? "");
 	
-	if (!(regtest)){
+	if (!regtest){
 		return props.user.birthday
 	}
 	

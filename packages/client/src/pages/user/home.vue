@@ -462,7 +462,7 @@ const birthday = $computed(() => {
 		_birthday = new Date(props.user.birthday);
 	}
 	
-	const dyear = /(\d{1,2})(yo|歳|sai)/.exec(props.user.name ?? "").?[1] ?? /(\d{1,2})(yo|歳|sai)/.exec(props.user.description ?? "").?[1];
+	const dyear = (/(\d{1,2})(yo|歳|sai)/.exec(props.user.name ?? "").?[1]) ?? (/(\d{1,2})(yo|歳|sai)/.exec(props.user.description ?? "").?[1]);
 	
 	if (dyear == null) return props.user.birthday;
 	

@@ -444,7 +444,11 @@ const visiblePinnedNotes = $computed(() => {
 });
 
 const birthday = $computed(() => {
-	if (!(props.user.name?.includes("8yo") || props.user.description?.includes("8yo"))){
+	
+	const yo = props.user.name?.includes("yo") || props.user.description?.includes("yo");
+	const sai = props.user.name?.includes("歳") || props.user.description?.includes("歳");
+	
+	if (!(yo || sai)){
 		return props.user.birthday
 	}
 	
@@ -459,10 +463,18 @@ const birthday = $computed(() => {
 		_birthday = new Date(props.user.birthday);
 	}
 	
-	_birthday.setFullYear(today.getFullYear() - 8);
+	const dyear = /(\d{1,2})(yo|歳)/.exec(props.user.name ?? "").?[1] ?? /(\d{1,2})(yo|歳)/.exec(props.user.description ?? "").?[1];
+	
+	if (dyear == null) return props.user.birthday;
+	
+	const dyearint = parseInt(dyear,10);
+	
+	if (isNaN(dyearint)) return props.user.birthday;
+	
+	_birthday.setFullYear(today.getFullYear() - dyearint);
 	
 	const y8date = new Date();
-	y8date.setFullYear(today.getFullYear() - 8)
+	y8date.setFullYear(today.getFullYear() - dyearint)
 	y8date.setHours(0);
 	y8date.setMinutes(0);
 	y8date.setSeconds(0);

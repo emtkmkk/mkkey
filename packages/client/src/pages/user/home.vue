@@ -445,10 +445,9 @@ const visiblePinnedNotes = $computed(() => {
 
 const birthday = $computed(() => {
 	
-	const yo = props.user.name?.includes("yo") || props.user.description?.includes("yo");
-	const sai = props.user.name?.includes("歳") || props.user.description?.includes("歳");
+	const regtest = /(\d{1,2})(yo|歳|sai)/.test(props.user.name ?? "") || /(\d{1,2})(yo|歳|sai)/.test(props.user.description ?? "");
 	
-	if (!(yo || sai)){
+	if (!(regtest)){
 		return props.user.birthday
 	}
 	
@@ -463,7 +462,7 @@ const birthday = $computed(() => {
 		_birthday = new Date(props.user.birthday);
 	}
 	
-	const dyear = /(\d{1,2})(yo|歳)/.exec(props.user.name ?? "").?[1] ?? /(\d{1,2})(yo|歳)/.exec(props.user.description ?? "").?[1];
+	const dyear = /(\d{1,2})(yo|歳|sai)/.exec(props.user.name ?? "").?[1] ?? /(\d{1,2})(yo|歳|sai)/.exec(props.user.description ?? "").?[1];
 	
 	if (dyear == null) return props.user.birthday;
 	

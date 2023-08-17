@@ -1229,8 +1229,10 @@ function deleteDraft() {
 }
 
 async function postFirst() {
-	visibility = defaultStore.state.defaultNoteVisibility;
-	localOnly = defaultStore.state.defaultNoteLocalAndFollower;
+	if (defaultStore.state.firstPostButtonVisibilityForce) {
+		visibility = defaultStore.state.defaultNoteVisibility;
+		localOnly = defaultStore.state.defaultNoteLocalAndFollower;
+	}
 	if (canPost && visibility !== 'specified') {
 		post();
 	}

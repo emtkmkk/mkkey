@@ -225,9 +225,11 @@
 									{{
 										(birthday.substring(0, 4) == "0000" || birthday.substring(0, 4) == "9999" || birthday.substring(0, 4) == "4000"
 											? birthday
+											.replaceAll("-0","-")
 											.replace("-", "/")
 											.replace("-", "/").substring(5)
 											: birthday
+											.replaceAll("-0","-")	
 											.replace("-", "/")
 											.replace("-", "/")) + (!props.user.birthday ? "?" : "")
 									}}

@@ -15,7 +15,7 @@ export function isIncludeNgWord(note: any): string {
 		});
 	
 	if (ngword.some((x) => {
-		text.includes(x);
+		return text.includes(x);
 	})){
 		return "シモ";
 	}

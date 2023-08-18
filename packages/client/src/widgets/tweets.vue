@@ -96,7 +96,7 @@ const { widgetProps, configure } = useWidgetPropsManager(
 	emit
 );
 
-const nitter = "nitter.naskya.net";
+const nitter = "nitter.tux.pizza";
 const twitter = "twitter.com";
 
 const iframeUpdate = ref(false);

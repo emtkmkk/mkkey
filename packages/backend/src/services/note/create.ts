@@ -232,7 +232,7 @@ export default async (
 		if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
 			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?\S*)/g, "$1");
 		}
-		
+
 		if (data.text?.includes("https://x.com") || data.text?.includes("http://x.com")) {
 			data.text = data.text.replaceAll(/(https?:\/\/x.com\/\S*\/status\/\S*)(\?\S*)/g, "$1");
 		}
@@ -344,11 +344,26 @@ export default async (
 		} else {
 			data.text = null;
 		}
-		
-		const isIncludeNgWordRet = isIncludeNgWord(data);
-		
-		if (isIncludeNgWordRet) {
-			data.cw = "[強制CW] " + isIncludeNgWordRet;
+
+		if (!user.host && data.visibility === "public") {
+
+			const isIncludeNgWordRet = isIncludeNgWord(data);
+
+			if (isIncludeNgWordRet) {
+				data.cw = "[強制CW] " + isIncludeNgWordRet;
+			}
+
+			if (data.renote) {
+				const isIncludeNgWordRtRet = isIncludeNgWord(data.renote);
+				if (isIncludeNgWordRtRet) {
+					if (data.text) {
+						if (!data.cw) data.cw = "[強制CW (引用先)] " + isIncludeNgWordRtRet;
+					} else {
+						data.visibility = "home";
+					}
+				}
+			}
+
 		}
 
 		let tags = data.apHashtags;

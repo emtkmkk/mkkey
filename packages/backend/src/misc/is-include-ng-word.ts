@@ -1,6 +1,6 @@
 export function isIncludeNgWord(note: any): string {
 	
-	if (note.host || note.cw || !note.text || note.visibility != "public") {
+	if (note.user.host || note.cw || !note.text || note.visibility != "public") {
 		return "";
 	}
 	

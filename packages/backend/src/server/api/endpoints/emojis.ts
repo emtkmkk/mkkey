@@ -95,7 +95,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	emojis?.forEach((x) => {
 		delete x.license
 	});
-	if (!ps.includeUrl) {
+	if (true || !ps.includeUrl) {
 		emojis?.forEach((x) => {
 			delete x.publicUrl
 			delete x.originalUrl

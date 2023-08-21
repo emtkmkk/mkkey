@@ -211,7 +211,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 	os.popupMenu(buttonActions, buttonRef.value, { viaKeyboard });
 };
 
-function doRenote(data) {
+async function doRenote(data) {
 	/*if (renoteCompleted.value) {
 		const { canceled } = await os.yesno({
 			type: "question",
@@ -221,7 +221,6 @@ function doRenote(data) {
 			return;
 		}
 	}*/
-	os.api("notes/create", data);
 	const el =
 		ev &&
 		((ev.currentTarget ?? ev.target) as
@@ -235,6 +234,7 @@ function doRenote(data) {
 		os.popup(Ripple, { x, y }, {}, "end");
 		renoteCompleted.value = true;
 	}
+	return os.api("notes/create", data);
 }
 </script>
 

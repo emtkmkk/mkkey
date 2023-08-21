@@ -215,21 +215,21 @@
 					: "既に反応済のRT : "
 			}}
 			<MkA
-				v-user-preview="appearNote.userId"
-				class="name"
-				:to="userPage(appearNote.user)"
-			>
-				<MkUserName :user="appearNote.user" maxlength="8" />
-			</MkA>
-			{{ " の投稿を " }}
-			<MkA
 				v-user-preview="note.userId"
 				class="name"
 				:to="userPage(note.user)"
 			>
 				<MkUserName :user="note.user" maxlength="8" />
 			</MkA>
-			{{ " がRT" }}
+			{{ " がRT " }}
+			<MkA
+				v-user-preview="appearNote.userId"
+				class="name"
+				:to="userPage(appearNote.user)"
+			>
+				<MkUserName :user="appearNote.user" maxlength="8" />
+			</MkA>
+			{{ " の投稿" }}
 		</div>
 		<div tag="small" style="padding: 0 3%; font-size:0.8em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
 			{{ getNoteSummary(appearNote) }}

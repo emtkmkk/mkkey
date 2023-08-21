@@ -230,11 +230,11 @@ export default async (
 
 		// Twitterのstatusリンクの場合、?以降を取り除く
 		if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
-			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?\S*)/g, "$1");
+			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?\S*)/ig, "$1");
 		}
 
 		if (data.text?.includes("https://x.com") || data.text?.includes("http://x.com")) {
-			data.text = data.text.replaceAll(/(https?:\/\/x.com\/\S*\/status\/\S*)(\?\S*)/g, "$1");
+			data.text = data.text.replaceAll(/(https?:\/\/x.com\/\S*\/status\/\S*)(\?\S*)/ig, "$1");
 		}
 
 		//23:59の間によるほを含む投稿をした場合
@@ -738,9 +738,9 @@ async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 	if (data.localOnly && data.visibility !== "hidden" && data.visibility !== "specified") note.visibility = "followers";
 	if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]?):/.test(note.cw) || /:([a-z0-9_+-]+)(@[a-z0-9_+-.]?):/.test(note.text)){
 		// 他鯖絵文字が入っている場合、外部には@以下をトリミングして配信する
-		note.cw = note.cw.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]?):/g,":$1:");
-		note.text = note.text.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]?):/g,":$1:");
-		note.emojis = note.emojis?.map((x) => x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]?)$/g,"$1"));
+		note.cw = note.cw.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]?):/ig,":$1:");
+		note.text = note.text.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]?):/ig,":$1:");
+		note.emojis = note.emojis?.map((x) => x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]?)$/ig,"$1"));
 	}
 
 	const content =

@@ -259,9 +259,9 @@ function doRenote(data) {
 		opacity: 0.7;
 	}
 	
-	.success {
-		color: var(--success);
-	}
-
+}
+	
+.success {
+	color: var(--success);
 }
 </style>

@@ -740,6 +740,7 @@ async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 		// 他鯖絵文字が入っている場合、外部には@以下をトリミングして配信する
 		note.cw = note.cw.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]?):/,":$1:");
 		note.text = note.text.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]?):/,":$1:");
+		note.emojis = note.emojis?.map((x) => x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]?)$/,"$1"));
 	}
 
 	const content =

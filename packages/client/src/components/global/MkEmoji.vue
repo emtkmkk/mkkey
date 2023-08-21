@@ -79,7 +79,7 @@ const customEmoji = computed(() => {
 	
 	if (matchprops) {
 		return matchprops;
-	} else if (host) {
+	} else if (host && host !== "mkkey.net") {
 		return ace.value.find((x) => x.name === name && x.host === host);
 	} else {
 		return ce.value.find((x) => x.name === name);
@@ -95,7 +95,8 @@ const customEmojiName = computed(() => {
 });
 
 const emojiHost = computed(() => {
-	return customEmoji.value?.host || hostmatch?.[2] || props.noteHost || null;
+	const host = customEmoji.value?.host || hostmatch?.[2] || props.noteHost || null;
+	return host !== "mkkey.net" ? host : null;
 });
 
 const emojiFullName = computed(() => {

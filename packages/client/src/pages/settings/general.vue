@@ -162,6 +162,9 @@
 			<FormSwitch v-if="openEmojiPicker" v-model="notCloseEmojiPicker" class="_formBlock">{{
 				i18n.ts.notCloseEmojiPicker
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-if="developer" v-model="showRemoteEmojiPostForm" class="_formBlock">{{
+				i18n.ts.showRemoteEmojiPostForm
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="hiddenMentionButton" class="_formBlock">{{
 				i18n.ts.hiddenMentionButton
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -707,6 +710,9 @@ const thirdTimelineListId = $computed(
 );
 const autoSwitchDataSaver = $computed(
 	defaultStore.makeGetterSetter("autoSwitchDataSaver")
+);
+const showRemoteEmojiPostForm = $computed(
+	defaultStore.makeGetterSetter("showRemoteEmojiPostForm")
 );
 
 function save() {

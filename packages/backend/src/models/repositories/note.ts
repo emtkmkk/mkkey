@@ -83,6 +83,11 @@ async function populateMyReaction(
 		// 実装上抜けがあるだけかもしれないので、「ヒントに含まれてなかったら(=undefinedなら)return」のようにはしない
 	}
 
+	// パフォーマンスのためノートが作成されてから1秒以上経っていない場合はリアクションを取得しない
+	if (note.createdAt.getTime() + 1000 > Date.now()) {
+		return undefined;
+	}
+
 	const reaction = await NoteReactions.findOneBy({
 		userId: meId,
 		noteId: note.id,
@@ -181,9 +186,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 		let text = note.text;
 
 		if (note.name && (note.url ?? note.uri)) {
-			text = `【${note.name}】\n${(note.text || "").trim()}\n\n${
-				note.url ?? note.uri
-			}`;
+			text = `【${note.name}】\n${(note.text || "").trim()}\n\n${note.url ?? note.uri
+				}`;
 		}
 
 		const channel = note.channelId
@@ -229,9 +233,9 @@ export const NoteRepository = db.getRepository(Note).extend({
 			channelId: note.channelId || undefined,
 			channel: channel
 				? {
-						id: channel.id,
-						name: channel.name,
-				  }
+					id: channel.id,
+					name: channel.name,
+				}
 				: undefined,
 			mentions: note.mentions.length > 0 ? note.mentions : undefined,
 			uri: note.uri || undefined,
@@ -240,28 +244,28 @@ export const NoteRepository = db.getRepository(Note).extend({
 
 			...(opts.detail
 				? {
-						reply: note.replyId
-							? this.pack(note.reply || note.replyId, me, {
-									detail: false,
-									_hint_: options?._hint_,
-							  })
-							: undefined,
+					reply: note.replyId
+						? this.pack(note.reply || note.replyId, me, {
+							detail: false,
+							_hint_: options?._hint_,
+						})
+						: undefined,
 
-						renote: note.renoteId
-							? this.pack(note.renote || note.renoteId, me, {
-									detail: true,
-									_hint_: options?._hint_,
-							  })
-							: undefined,
+					renote: note.renoteId
+						? this.pack(note.renote || note.renoteId, me, {
+							detail: true,
+							_hint_: options?._hint_,
+						})
+						: undefined,
 
-						poll: note.hasPoll ? populatePoll(note, meId) : undefined,
+					poll: note.hasPoll ? populatePoll(note, meId) : undefined,
 
-						...(meId
-							? {
-									myReaction: populateMyReaction(note, meId, options?._hint_),
-							  }
-							: {}),
-				  }
+					...(meId
+						? {
+							myReaction: populateMyReaction(note, meId, options?._hint_),
+						}
+						: {}),
+				}
 				: {}),
 		});
 

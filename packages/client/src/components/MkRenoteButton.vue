@@ -85,7 +85,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 			icon: "ph-repeat ph-bold ph-lg",
 			danger: false,
 			action: doRenote(
-				os.api("notes/create", {
+				{
 					renoteId: props.note.id,
 					visibility: "public",
 					localOnly: false,

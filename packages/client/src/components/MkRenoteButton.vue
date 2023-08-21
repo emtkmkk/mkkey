@@ -218,7 +218,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 };
 
 async function doRenote(data, ev?: MouseEvent) {
-	/*if (renoteCompleted.value) {
+	if (renoteCompleted.value) {
 		const { canceled } = await os.yesno({
 			type: "question",
 			text: "この投稿は先程RTした様です。再度RTしますか？",
@@ -226,7 +226,7 @@ async function doRenote(data, ev?: MouseEvent) {
 		if (canceled) {
 			return;
 		}
-	}*/
+	}
 	const el =
 		ev &&
 		((ev.currentTarget ?? ev.target) as

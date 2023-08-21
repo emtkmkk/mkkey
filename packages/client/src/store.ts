@@ -945,6 +945,11 @@ export const defaultStore = markRaw(
 			createdAt: "2023/8/3",
 			page: "reaction",
 		},
+		showRemoteEmojiPostForm: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/8/21",
+		}
 	}),
 );
 

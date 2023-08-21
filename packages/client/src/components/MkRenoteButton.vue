@@ -6,7 +6,8 @@
 		class="eddddedb _button canRenote"
 		@click="renote(false, $event)"
 	>
-		<i class="ph-repeat ph-bold ph-lg"></i>
+		<i v-if="!renoteCompleted" class="ph-repeat ph-bold ph-lg"></i>
+		<i v-else class="ph-repeat ph-bold ph-lg ph-fill" :class="$style.success"></i>
 		<p v-if="count > 0" class="count">{{ count }}</p>
 	</button>
 	<button v-else class="eddddedb _button">
@@ -32,6 +33,8 @@ const props = defineProps<{
 }>();
 
 const buttonRef = ref<HTMLElement>();
+
+const renoteCompleted = ref(false);
 
 const canRenote = computed(
 	() =>
@@ -81,25 +84,13 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 			textStyle: "font-weight: bold",
 			icon: "ph-repeat ph-bold ph-lg",
 			danger: false,
-			action: () => {
+			action: doRenote(
 				os.api("notes/create", {
 					renoteId: props.note.id,
 					visibility: "public",
 					localOnly: false,
-				});
-				const el =
-					ev &&
-					((ev.currentTarget ?? ev.target) as
-						| HTMLElement
-						| null
-						| undefined);
-				if (el) {
-					const rect = el.getBoundingClientRect();
-					const x = rect.left + el.offsetWidth / 2;
-					const y = rect.top + el.offsetHeight / 2;
-					os.popup(Ripple, { x, y }, {}, "end");
 				}
-			},
+			),
 		});
 	}
 
@@ -108,25 +99,13 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 			text: i18n.ts.renoteAsUnlisted,
 			icons: ["ph-repeat ph-bold ph-lg", "ph-house ph-bold ph-lg"],
 			danger: false,
-			action: () => {
-				os.api("notes/create", {
+			action: doRenote(
+				{
 					renoteId: props.note.id,
 					visibility: "home",
 					localOnly: false,
-				});
-				const el =
-					ev &&
-					((ev.currentTarget ?? ev.target) as
-						| HTMLElement
-						| null
-						| undefined);
-				if (el) {
-					const rect = el.getBoundingClientRect();
-					const x = rect.left + el.offsetWidth / 2;
-					const y = rect.top + el.offsetHeight / 2;
-					os.popup(Ripple, { x, y }, {}, "end");
 				}
-			},
+			),
 		});
 	}
 
@@ -138,28 +117,13 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				"ph-hand-heart ph-bold ph-lg"
 			],
 			danger: false,
-			action: () => {
-				os.api(
-					"notes/create",
-						  {
-								renoteId: props.note.id,
-								visibility: "public",
-								localOnly: true,
-						  }
-				);
-				const el =
-					ev &&
-					((ev.currentTarget ?? ev.target) as
-						| HTMLElement
-						| null
-						| undefined);
-				if (el) {
-					const rect = el.getBoundingClientRect();
-					const x = rect.left + el.offsetWidth / 2;
-					const y = rect.top + el.offsetHeight / 2;
-					os.popup(Ripple, { x, y }, {}, "end");
+			action: doRenote(
+				{
+					renoteId: props.note.id,
+					visibility: "public",
+					localOnly: true,
 				}
-			},
+			),
 		});
 	}
 	
@@ -172,28 +136,13 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				"ph-house ph-bold ph-lg"
 			],
 			danger: false,
-			action: () => {
-				os.api(
-					"notes/create",
-						  {
-								renoteId: props.note.id,
-								visibility: "home",
-								localOnly: true,
-						  }
-				);
-				const el =
-					ev &&
-					((ev.currentTarget ?? ev.target) as
-						| HTMLElement
-						| null
-						| undefined);
-				if (el) {
-					const rect = el.getBoundingClientRect();
-					const x = rect.left + el.offsetWidth / 2;
-					const y = rect.top + el.offsetHeight / 2;
-					os.popup(Ripple, { x, y }, {}, "end");
+			action: doRenote(
+				{
+					renoteId: props.note.id,
+					visibility: "home",
+					localOnly: true,
 				}
-			},
+			),
 		});
 	}
 	
@@ -205,25 +154,13 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				"ph-envelope-simple-open ph-bold ph-lg",
 			],
 			danger: false,
-			action: () => {
-				os.api("notes/create", {
+			action: doRenote(
+				{
 					renoteId: props.note.id,
 					visibility: "specified",
 					visibleUserIds: props.note.visibleUserIds,
-				});
-				const el =
-					ev &&
-					((ev.currentTarget ?? ev.target) as
-						| HTMLElement
-						| null
-						| undefined);
-				if (el) {
-					const rect = el.getBoundingClientRect();
-					const x = rect.left + el.offsetWidth / 2;
-					const y = rect.top + el.offsetHeight / 2;
-					os.popup(Ripple, { x, y }, {}, "end");
 				}
-			},
+			),
 		});
 	} else {
 		buttonActions.push({
@@ -237,24 +174,12 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				"ph-lock-simple ph-bold ph-lg",
 			],
 			danger: false,
-			action: () => {
-				os.api("notes/create", {
+			action: doRenote(
+				{
 					renoteId: props.note.id,
 					visibility: "followers",
-				});
-				const el =
-					ev &&
-					((ev.currentTarget ?? ev.target) as
-						| HTMLElement
-						| null
-						| undefined);
-				if (el) {
-					const rect = el.getBoundingClientRect();
-					const x = rect.left + el.offsetWidth / 2;
-					const y = rect.top + el.offsetHeight / 2;
-					os.popup(Ripple, { x, y }, {}, "end");
 				}
-			},
+			),
 		});
 	}
 
@@ -285,6 +210,31 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 	}
 	os.popupMenu(buttonActions, buttonRef.value, { viaKeyboard });
 };
+
+function doRenote(data) {
+	if (renoteCompleted.value) {
+		const { canceled } = await yesno({
+			type: "question",
+			text: "この投稿は先程RTした様です。再度RTしますか？",
+		});
+		if (canceled) {
+			return;
+		}
+	}
+	const ret = os.api("notes/create", data).then(() => renoteCompleted.value = true);
+	const el =
+		ev &&
+		((ev.currentTarget ?? ev.target) as
+			| HTMLElement
+			| null
+			| undefined);
+	if (el) {
+		const rect = el.getBoundingClientRect();
+		const x = rect.left + el.offsetWidth / 2;
+		const y = rect.top + el.offsetHeight / 2;
+		os.popup(Ripple, { x, y }, {}, "end");
+	}
+}
 </script>
 
 <style lang="scss" scoped>
@@ -308,5 +258,10 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 		margin-left: 8px;
 		opacity: 0.7;
 	}
+	
+	.success {
+		color: var(--success);
+	}
+
 }
 </style>

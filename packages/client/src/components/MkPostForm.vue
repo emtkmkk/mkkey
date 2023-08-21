@@ -337,6 +337,12 @@
 					{{ i18n.ts.add }}
 				</button></MkInfo
 			>
+			<MkInfo
+				v-if="includesOtherServerEmoji"
+				warn
+				class="hasNotSpecifiedMentions"
+				>{{ i18n.ts.includesOtherServerEmojiWarning }}</MkInfo
+			>
 			<input
 				v-show="useCw"
 				ref="cwInputEl"
@@ -564,6 +570,7 @@ let autocomplete = $ref(null);
 let draghover = $ref(false);
 let quoteId = $ref(null);
 let hasNotSpecifiedMentions = $ref(false);
+let includesOtherServerEmoji = $ref(false);
 let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
 let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public")  && !$i.blockPostPublic && !$i.isSilenced);
 let canHome = $ref((!props.reply || (props.reply.visibility === "public" || props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" || props.renote.visibility === "home")) && !$i.blockPostHome && !$i.isSilenced);
@@ -718,6 +725,7 @@ const withHashtags = $computed(
 const hashtags = $computed(defaultStore.makeGetterSetter("postFormHashtags"));
 
 watch($$(text), () => {
+	checkIncludesOtherServerEmoji();
 	checkMissingMention();
 });
 
@@ -846,6 +854,14 @@ function watchForDraft() {
 	watch($$(files), () => saveDraft(), { deep: true });
 	watch($$(visibility), () => saveDraft());
 	watch($$(localOnly), () => saveDraft());
+}
+
+function checkIncludesOtherServerEmoji() {
+	if(/:[a-z0-9_+-]+(@[a-z0-9_+-]+):/.test(text)) {
+		includesOtherServerEmoji = true
+	} else {
+		includesOtherServerEmoji = false
+	}
 }
 
 function checkMissingMention() {

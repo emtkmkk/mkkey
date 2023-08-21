@@ -83,7 +83,7 @@ export class Autocomplete {
 		const isHashtag = hashtagIndex !== -1;
 		const isMfmTag = mfmTagIndex !== -1;
 		const isEmoji =
-			emojiIndex !== -1 && text.split(/:[a-z0-9_+\-]+:/).pop()!.includes(":");
+			emojiIndex !== -1 && text.split(/:[a-z0-9_+\-.@]+:/).pop()!.includes(":");
 
 		let opened = false;
 

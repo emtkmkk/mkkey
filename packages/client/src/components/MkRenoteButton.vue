@@ -89,7 +89,8 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 					renoteId: props.note.id,
 					visibility: "public",
 					localOnly: false,
-				}
+				},
+				ev
 			)},
 		});
 	}
@@ -104,7 +105,8 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 					renoteId: props.note.id,
 					visibility: "home",
 					localOnly: false,
-				}
+				},
+				ev
 			)},
 		});
 	}
@@ -122,7 +124,8 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 					renoteId: props.note.id,
 					visibility: "public",
 					localOnly: true,
-				}
+				},
+				ev
 			)},
 		});
 	}
@@ -141,7 +144,8 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 					renoteId: props.note.id,
 					visibility: "home",
 					localOnly: true,
-				}
+				},
+				ev
 			)},
 		});
 	}
@@ -159,7 +163,8 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 					renoteId: props.note.id,
 					visibility: "specified",
 					visibleUserIds: props.note.visibleUserIds,
-				}
+				},
+				ev
 			)},
 		});
 	} else {
@@ -178,7 +183,8 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				{
 					renoteId: props.note.id,
 					visibility: "followers",
-				}
+				},
+				ev
 			)},
 		});
 	}
@@ -211,7 +217,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 	os.popupMenu(buttonActions, buttonRef.value, { viaKeyboard });
 };
 
-async function doRenote(data) {
+async function doRenote(data, ev?: MouseEvent) {
 	/*if (renoteCompleted.value) {
 		const { canceled } = await os.yesno({
 			type: "question",

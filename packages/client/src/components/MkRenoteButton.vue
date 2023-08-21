@@ -7,7 +7,7 @@
 		@click="renote(false, $event)"
 	>
 		<i v-if="!renoteCompleted" class="ph-repeat ph-bold ph-lg"></i>
-		<i v-else class="ph-repeat ph-bold ph-lg ph-fill" :class="$style.success"></i>
+		<i v-else class="ph-repeat ph-bold ph-lg ph-fill success"></i>
 		<p v-if="count > 0" class="count">{{ count }}</p>
 	</button>
 	<button v-else class="eddddedb _button">
@@ -84,13 +84,13 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 			textStyle: "font-weight: bold",
 			icon: "ph-repeat ph-bold ph-lg",
 			danger: false,
-			action: doRenote(
+			action: () => {doRenote(
 				{
 					renoteId: props.note.id,
 					visibility: "public",
 					localOnly: false,
 				}
-			),
+			)},
 		});
 	}
 
@@ -99,13 +99,13 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 			text: i18n.ts.renoteAsUnlisted,
 			icons: ["ph-repeat ph-bold ph-lg", "ph-house ph-bold ph-lg"],
 			danger: false,
-			action: doRenote(
+			action: () => {doRenote(
 				{
 					renoteId: props.note.id,
 					visibility: "home",
 					localOnly: false,
 				}
-			),
+			)},
 		});
 	}
 
@@ -117,13 +117,13 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				"ph-hand-heart ph-bold ph-lg"
 			],
 			danger: false,
-			action: doRenote(
+			action: () => {doRenote(
 				{
 					renoteId: props.note.id,
 					visibility: "public",
 					localOnly: true,
 				}
-			),
+			)},
 		});
 	}
 	
@@ -136,13 +136,13 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				"ph-house ph-bold ph-lg"
 			],
 			danger: false,
-			action: doRenote(
+			action: () => {doRenote(
 				{
 					renoteId: props.note.id,
 					visibility: "home",
 					localOnly: true,
 				}
-			),
+			)},
 		});
 	}
 	
@@ -154,13 +154,13 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				"ph-envelope-simple-open ph-bold ph-lg",
 			],
 			danger: false,
-			action: doRenote(
+			action: () => {doRenote(
 				{
 					renoteId: props.note.id,
 					visibility: "specified",
 					visibleUserIds: props.note.visibleUserIds,
 				}
-			),
+			)},
 		});
 	} else {
 		buttonActions.push({
@@ -174,12 +174,12 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				"ph-lock-simple ph-bold ph-lg",
 			],
 			danger: false,
-			action: doRenote(
+			action: () => {doRenote(
 				{
 					renoteId: props.note.id,
 					visibility: "followers",
 				}
-			),
+			)},
 		});
 	}
 
@@ -211,9 +211,9 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 	os.popupMenu(buttonActions, buttonRef.value, { viaKeyboard });
 };
 
-function doRenote(data) {
+async function doRenote(data) {
 	/*if (renoteCompleted.value) {
-		const { canceled } = os.yesno({
+		const { canceled } = await os.yesno({
 			type: "question",
 			text: "この投稿は先程RTした様です。再度RTしますか？",
 		});
@@ -221,7 +221,6 @@ function doRenote(data) {
 			return;
 		}
 	}*/
-	const ret = os.api("notes/create", data).then(() => renoteCompleted.value = true);
 	const el =
 		ev &&
 		((ev.currentTarget ?? ev.target) as
@@ -234,6 +233,7 @@ function doRenote(data) {
 		const y = rect.top + el.offsetHeight / 2;
 		os.popup(Ripple, { x, y }, {}, "end");
 	}
+	const ret = os.api("notes/create", data).then(() => renoteCompleted.value = true);
 }
 </script>
 
@@ -260,7 +260,6 @@ function doRenote(data) {
 	}
 	
 }
-	
 .success {
 	color: var(--success);
 }

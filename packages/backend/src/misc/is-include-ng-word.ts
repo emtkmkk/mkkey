@@ -14,18 +14,18 @@ export function isIncludeNgWord(note: any): string {
 			var chr = match.charCodeAt(0) - 0x60;
 			return String.fromCharCode(chr);
 		})
-		.replaceAll("ぱちんこ","ぱチんこ");
-	
-	if (ngword1.some((x) => {
-		return text.includes(x);
-	})){
-		return "シモ(弱)";
-	}
+		.replaceAll("ぱちんこ","ぱチんこ")
 	
 	if (ngword2.some((x) => {
 		return text.includes(x);
 	})){
 		return "シモ";
+	};
+	
+	if (ngword1.some((x) => {
+		return text.includes(x);
+	})){
+		return "シモ(弱)";
 	}
 	
 	return "";

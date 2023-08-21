@@ -54,7 +54,7 @@
 		"json5": "2.2.3",
 		"katex": "0.16.4",
 		"matter-js": "0.18.0",
-		"mfm-js": "0.23.3",
+		"mfm-js": "git+https://code.naskya.net/emtkmkk/mfm.js.git#develop",
 		"photoswipe": "5.3.4",
 		"prettier": "2.8.7",
 		"prettier-plugin-vue": "1.1.6",

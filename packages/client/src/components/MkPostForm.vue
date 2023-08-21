@@ -857,7 +857,7 @@ function watchForDraft() {
 }
 
 function checkIncludesOtherServerEmoji() {
-	if(/:[a-z0-9_+-]+(@[a-z0-9_+-]+):/.test(text)) {
+	if(/:[a-z0-9_+-]+(@[a-z0-9_+-.]+):/.test(text)) {
 		includesOtherServerEmoji = true
 	} else {
 		includesOtherServerEmoji = false

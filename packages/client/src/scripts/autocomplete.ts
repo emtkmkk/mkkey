@@ -106,18 +106,18 @@ export class Autocomplete {
 			}
 		}
 
-		if (isEmoji && !opened) {
-			const emoji = text.substr(emojiIndex + 1);
-			if (!emoji.includes(" ")) {
-				this.open("emoji", emoji);
-				opened = true;
-			}
-		}
-
 		if (isMfmTag && !opened) {
 			const mfmTag = text.substr(mfmTagIndex + 1);
 			if (!mfmTag.includes(" ")) {
 				this.open("mfmTag", mfmTag.replace("[", ""));
+				opened = true;
+			}
+		}
+
+		if (isEmoji && !opened) {
+			const emoji = text.substr(emojiIndex + 1);
+			if (!emoji.includes(" ")) {
+				this.open("emoji", emoji);
 				opened = true;
 			}
 		}

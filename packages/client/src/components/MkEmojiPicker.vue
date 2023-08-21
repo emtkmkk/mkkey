@@ -19,7 +19,7 @@
 			<div ref="emojis" class="emojis">
 				<section class="result">
 					<div v-if="!allCustomEmojis && q && q.includes('@')">
-						<header class="_acrylic">{{ props.asReactionPicker ? "他サーバー絵文字の取得に失敗した為、使用出来ません。" : "@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
+						<header class="_acrylic">{{ (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) ? "他サーバー絵文字の取得に失敗した為、使用出来ません。" : "@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
 					</div>
 					<div v-else>
 						<header class="_acrylic" v-if="!(q == null || q === '')">
@@ -120,7 +120,7 @@
 					<template v-if="!showPinned || ((pinned2?.length ?? 0) + (pinned3?.length ?? 0) + (pinned4?.length ?? 0) + (pinned5?.length ?? 0)) === 0">
 						<section v-if="showPinned">
 							<div class="body">
-								<template v-for="emoji in pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
+								<template v-for="emoji in pinned.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
 									<button
 										:key="emoji"
 										v-if="!errorEmojis.has(emoji)"
@@ -141,7 +141,7 @@
 								{{ i18n.ts.recentUsed }}
 							</header>
 							<div class="body">
-								<template v-for="emoji in recentlyUsedEmojis.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
+								<template v-for="emoji in recentlyUsedEmojis.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
 									<button
 										:key="emoji"
 										v-if="!errorEmojis.has(emoji)"
@@ -161,7 +161,7 @@
 							v-if="pinned?.length != 0"
 							:initial-shown="$store.state.reactionsDefaultOpen"
 							:emojis="
-								pinned.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+								pinned.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
 							>{{ ($store.state.reactionsFolderName || "ピン留め絵文字 : 1") + " " }}</XSection
@@ -171,7 +171,7 @@
 							v-if="pinned2?.length != 0"
 							:initial-shown="$store.state.reactions2DefaultOpen"
 							:emojis="
-								pinned2.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+								pinned2.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
 							>{{ ($store.state.reactionsFolderName2 || "ピン留め絵文字 : 2") + " " }}</XSection
@@ -181,7 +181,7 @@
 							key="pinned:3"
 							:initial-shown="$store.state.reactions3DefaultOpen"
 							:emojis="
-								pinned3.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+								pinned3.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
 							>{{ ($store.state.reactionsFolderName3 || "ピン留め絵文字 : 3") + " " }}</XSection
@@ -191,7 +191,7 @@
 							key="pinned:4"
 							:initial-shown="$store.state.reactions4DefaultOpen"
 							:emojis="
-								pinned4.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+								pinned4.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
 							>{{ ($store.state.reactionsFolderName4 || "ピン留め絵文字 : 4") + " " }}</XSection
@@ -201,7 +201,7 @@
 							key="pinned:5"
 							:initial-shown="$store.state.reactions5DefaultOpen"
 							:emojis="
-								pinned5.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+								pinned5.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
 							>{{ ($store.state.reactionsFolderName5 || "ピン留め絵文字 : 5") + " " }}</XSection
@@ -211,7 +211,7 @@
 							key="recentlyUsed"
 							:initial-shown="$store.state.recentlyUsedDefaultOpen"
 							:emojis="
-								recentlyUsedEmojis.filter((x) => (props.asReactionPicker && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
+								recentlyUsedEmojis.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
 							>{{ i18n.ts.recentUsed }}</XSection
@@ -608,13 +608,13 @@ const customEmojis = computed(() =>
 	instance.emojis
 );
 let allCustomEmojis = computed(() => 
-	props.asReactionPicker ? instance.allEmojis : undefined
+	(props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm) ? instance.allEmojis : undefined
 );
 const remoteEmojiMode = computed(() => 
 	instance.remoteEmojiMode
 );
 const emojiStr = computed(() => 
-	props.asReactionPicker && unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
+	(props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm) && unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
 const randomSubset = computed(() => {
 	let copy = [...unref(customEmojis)];

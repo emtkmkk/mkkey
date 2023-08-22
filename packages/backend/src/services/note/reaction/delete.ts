@@ -15,10 +15,8 @@ export default async (
 	emoji?: any,
 ) => {
 	const existCount = await NoteReactions.count({
-		where: {
 			noteId: note.id,
 			userId: user.id,
-		}
 	});
 
 	if (emoji == null && existCount > 1) {

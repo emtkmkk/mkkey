@@ -205,7 +205,7 @@ function excludeNotPlain(text): string {
 
 function emojiEscape(text): string {
 	// 絵文字をエスケープする
-	return text ? text.replaceAll(/:(\w+):/g, '<$1>') : undefined;
+	return text ? text.replaceAll(/:(\w+):/g, '：$1：') : undefined;
 }
 
 function getUsername(user): string {

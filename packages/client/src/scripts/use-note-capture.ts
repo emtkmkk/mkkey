@@ -35,8 +35,8 @@ export function useNoteCapture(props: {
 
 				if ($i && body.userId === $i.id) {
 					note.value.myReaction = reaction;
-					note.value.myReactions = [...note.value.myReactions, reaction]
-					note.value.myReactionsCnt += 1
+					note.value.myReactions = [...(note.value.myReactions || []), reaction];
+					note.value.myReactionsCnt += 1;
 				}
 				break;
 			}

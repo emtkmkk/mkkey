@@ -36,6 +36,7 @@ export const paramDef = {
 	type: "object",
 	properties: {
 		noteId: { type: "string", format: "misskey:id" },
+		reaction: { type: "string" },
 	},
 	required: ["noteId"],
 } as const;
@@ -46,7 +47,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			throw new ApiError(meta.errors.noSuchNote);
 		throw err;
 	});
-	await deleteReaction(user, note).catch((e) => {
+	await deleteReaction(user, note, ps.reaction).catch((e) => {
 		if (e.id === "60527ec9-b4cb-4a88-a6bd-32d3ad26817d")
 			throw new ApiError(meta.errors.notReacted);
 		throw e;

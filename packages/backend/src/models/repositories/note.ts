@@ -100,6 +100,35 @@ async function populateMyReaction(
 	return undefined;
 }
 
+async function populateMyReactions(
+	note: Note,
+	meId: User["id"],
+	_hint_?: {
+		myReactions: Map<Note["id"], NoteReaction | null>;
+	},
+) {
+	
+	if (note.host && note.user?.instance?.maxReactionsPerAccount <= 1) {
+		return [populateMyReaction(note,meId,_hint_)];
+	}
+
+	// パフォーマンスのためノートが作成されてから1秒以上経っていない場合はリアクションを取得しない
+	if (note.createdAt.getTime() + 1000 > Date.now()) {
+		return [];
+	}
+
+	const reactions = await NoteReactions.find({
+		userId: meId,
+		noteId: note.id,
+	});
+
+	if (reactions && reactions.length != 0) {
+		return reactions.map((reaction) => convertLegacyReaction(reaction.reaction));
+	}
+
+	return [];
+}
+
 export const NoteRepository = db.getRepository(Note).extend({
 	async isVisibleForMe(note: Note, meId: User["id"] | null): Promise<boolean> {
 		// This code must always be synchronized with the checks in generateVisibilityQuery.
@@ -263,6 +292,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 					...(meId
 						? {
 							myReaction: populateMyReaction(note, meId, options?._hint_),
+							myReactions: populateMyReactions(note, meId, options?._hint_),
 						}
 						: {}),
 				}

@@ -85,13 +85,15 @@ export default async (
 			maxReactionsPerAccount = instance.maxReactionsPerAccount;
 		}
 		
-		const noteUser = await Users.findOneBy({ host: note.userId });
-		
-		if (!noteUser?.host) {
-			maxReactionsNote = maxReactionsPerAccount;
-		} else {
-			const instance = await Instances.findOneBy({ host: noteUser.host });
-			maxReactionsNote = instance.maxReactionsPerAccount;
+		if (maxReactionsPerAccount >= 2) {
+			const noteUser = await Users.findOneBy({ host: note.userId });
+			
+			if (!noteUser?.host) {
+				maxReactionsNote = maxReactionsPerAccount;
+			} else {
+				const instance = await Instances.findOneBy({ host: noteUser.host });
+				maxReactionsNote = instance.maxReactionsPerAccount;
+			}
 		}
 		
 		const maxReactions = Math.max(Math.min(maxReactionsPerAccount,maxReactionsNote),1);

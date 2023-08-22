@@ -44,6 +44,7 @@ export class NoteReaction {
 
 	// TODO: 対象noteのuserIdを非正規化したい(「受け取ったリアクション一覧」のようなものを(JOIN無しで)実装したいため)
 
+	@Index()
 	@Column('varchar', {
 		length: 260,
 	})

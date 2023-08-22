@@ -388,7 +388,7 @@ let replyNote = $computed(() =>
 );
 const isMyRenote = $i && $i.id === note.userId;
 const multiReaction = $i.patron && (!appearNote.user.host || appearNote.user.instance?.maxReactionsPerAccount > 1);
-const maxReactions = multiReaction ? (math.min(appearNote.user.instance?.maxReactionsPerAccount ?? 3, 64)) : 1;
+const maxReactions = multiReaction ? (Math.min(appearNote.user.instance?.maxReactionsPerAccount ?? 3, 64)) : 1;
 const showContent = ref(false);
 const isDeleted = ref(false);
 const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords, props.endpoint));

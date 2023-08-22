@@ -27,7 +27,7 @@ import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { MAX_REACTION_PER_ACCOUNT } from "@/const.js";
 
 export default async (
-	user: { id: User["id"]; host: User["host"]; username: User["username"]; name: User["name"]; avatarUrl: User["avatarUrl"]; isSilenced: User["isSilenced"]; patron: User["patron"] },
+	user: { id: User["id"]; host: User["host"]; username: User["username"]; name: User["name"]; avatarUrl: User["avatarUrl"]; isSilenced: User["isSilenced"]; driveCapacityOverrideMb: User["driveCapacityOverrideMb"]; },
 	note: Note,
 	reaction?: string,
 ) => {
@@ -80,7 +80,7 @@ export default async (
 		let maxReactionsPerAccount = 1;
 		let maxReactionsNote = 1;
 		if (!user.host) {
-			maxReactionsPerAccount = user.patron ? MAX_REACTION_PER_ACCOUNT : 1;
+			maxReactionsPerAccount = user.driveCapacityOverrideMb > 5120 ? MAX_REACTION_PER_ACCOUNT : 1;
 		} else {
 			const instance = await Instances.findOneBy({ host: user.host });
 			maxReactionsPerAccount = instance.maxReactionsPerAccount;
@@ -108,8 +108,7 @@ export default async (
 
 				if (exists.reaction !== reaction) {
 					// 別のリアクションがすでにされていたら置き換える
-					await deleteReaction(user, note);
-					await NoteReactions.insert(record);
+					await deleteReaction(user, note, exists.reaction);
 				} else {
 					// 同じリアクションがすでにされていたらエラー
 					throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");

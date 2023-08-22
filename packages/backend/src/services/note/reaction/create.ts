@@ -49,9 +49,9 @@ export default async (
 			"Note not accessible for you.",
 		);
 	}
-	
+
 	const relation = user.isSilenced ? note.userId !== user.id ? await Users.getRelation(user.id, note.userId) : undefined : undefined;
-	
+
 	if (user.isSilenced && (!note.user.isFollowed && !relation.isFollowed)) {
 		throw new IdentifiableError(
 			"5ab2b45b-c2b5-0560-793d-2a670084cc92",
@@ -69,12 +69,14 @@ export default async (
 		userId: user.id,
 		reaction,
 	};
-	
-	const existCount = await NoteReactions.count({where: {
-		noteId: note.id,
-		userId: user.id,
-	}});
-	
+
+	const existCount = await NoteReactions.count({
+		where: {
+			noteId: note.id,
+			userId: user.id,
+		}
+	});
+
 	if (existCount != 0) {
 		let maxReactionsPerAccount = 1;
 		let maxReactionsNote = 1;
@@ -84,10 +86,10 @@ export default async (
 			const instance = await Instances.findOneBy({ host: user.host });
 			maxReactionsPerAccount = instance.maxReactionsPerAccount;
 		}
-		
+
 		if (maxReactionsPerAccount >= 2) {
 			const noteUser = await Users.findOneBy({ host: note.userId });
-			
+
 			if (!noteUser?.host) {
 				maxReactionsNote = maxReactionsPerAccount;
 			} else {
@@ -95,9 +97,9 @@ export default async (
 				maxReactionsNote = instance.maxReactionsPerAccount;
 			}
 		}
-		
-		const maxReactions = Math.max(Math.min(maxReactionsPerAccount,maxReactionsNote),1);
-		
+
+		const maxReactions = Math.max(Math.min(maxReactionsPerAccount, maxReactionsNote), 1);
+
 		if (existCount >= maxReactions) {
 			if (maxReactions === 1) {
 				const exists = await NoteReactions.findOneByOrFail({
@@ -135,8 +137,8 @@ export default async (
 				await deleteReaction(user, note);
 				await NoteReactions.insert(record);
 			} else {*/
-				// 同じリアクションがすでにされていたらエラー
-				throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
+			// 同じリアクションがすでにされていたらエラー
+			throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
 			//}
 		} else {
 			throw e;
@@ -146,14 +148,14 @@ export default async (
 	// Increment reactions count
 	const sql = `jsonb_set("reactions", '{${reaction}}', (COALESCE("reactions"->>'${reaction}', '0')::int + 1)::text::jsonb)`;
 	if (existCount === 0) {
-		 await Notes.createQueryBuilder()
-		.update()
-		.set({
-			reactions: () => sql,
-			score: () => '"score" + ' + (user.host ? '1' : '3'),
-		})
-		.where("id = :id", { id: note.id })
-		.execute();
+		await Notes.createQueryBuilder()
+			.update()
+			.set({
+				reactions: () => sql,
+				score: () => '"score" + ' + (user.host ? '1' : '3'),
+			})
+			.where("id = :id", { id: note.id })
+			.execute();
 	}
 
 	perUserReactionsChart.update(user, note);

@@ -14,6 +14,7 @@ import MkA from "@/components/global/MkA.vue";
 import { host } from "@/config";
 import { reducedMotion } from "@/scripts/reduced-motion";
 import { defaultStore } from "@/store";
+import { nyaize } from "@/scripts/nyaize.js";
 
 export default defineComponent({
 	props: {
@@ -81,7 +82,11 @@ export default defineComponent({
 				ast.map((token, index): VNode[] => {
 					switch (token.type) {
 						case "text": {
-							const text = token.props.text.replace(/(\r\n|\n|\r)/g, "\n");
+							let text = token.props.text.replace(/(\r\n|\n|\r)/g, "\n");
+							
+							if (isNote && !noteHost && this.author && this.author.isCat && this.author.speakAsCat) {
+								text = nyaize(text);
+							}
 
 							if (!this.plain) {
 								const res = [];

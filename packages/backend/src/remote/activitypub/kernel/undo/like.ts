@@ -12,8 +12,10 @@ export default async (actor: CacheableRemoteUser, activity: ILike) => {
 
 	const note = await fetchNote(targetUri);
 	if (!note) return `skip: target note not found ${targetUri}`;
+	
+	const emoji = activity.object?.content;
 
-	await deleteReaction(actor, note).catch((e) => {
+	await deleteReaction(actor, note, emoji).catch((e) => {
 		if (e.id === "60527ec9-b4cb-4a88-a6bd-32d3ad26817d") return;
 		throw e;
 	});

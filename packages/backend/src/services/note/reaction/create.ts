@@ -70,11 +70,11 @@ export default async (
 		reaction,
 	};
 
-	const existCount = await NoteReactions.count({
+	const existCount = await NoteReactions.count({where: {
 			noteId: note.id,
 			userId: user.id,
 		}
-	);
+	});
 
 	if (existCount != 0) {
 		let maxReactionsPerAccount = 1;

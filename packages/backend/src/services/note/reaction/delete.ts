@@ -7,7 +7,7 @@ import { IdentifiableError } from "@/misc/identifiable-error.js";
 import type { User, IRemoteUser } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
 import { NoteReactions, Users, Notes } from "@/models/index.js";
-import { decodeReaction } from "@/misc/reaction-lib.js";
+import { toDbReaction, decodeReaction } from "@/misc/reaction-lib.js";
 
 export default async (
 	user: { id: User["id"]; host: User["host"] },
@@ -26,6 +26,8 @@ export default async (
 			"Unable to process due to multiple targets",
 		);
 	}
+	
+	emoji = await toDbReaction(emoji, user.host);
 
 	// if already unreacted
 	const exist = await NoteReactions.findOneBy({

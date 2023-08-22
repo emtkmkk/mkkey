@@ -146,16 +146,14 @@ export default async (
 
 	// Increment reactions count
 	const sql = `jsonb_set("reactions", '{${reaction}}', (COALESCE("reactions"->>'${reaction}', '0')::int + 1)::text::jsonb)`;
-	if (existCount === 0) {
-		await Notes.createQueryBuilder()
-			.update()
-			.set({
-				reactions: () => sql,
-				score: () => '"score" + ' + (user.host ? '1' : '3'),
-			})
-			.where("id = :id", { id: note.id })
-			.execute();
-	}
+	await Notes.createQueryBuilder()
+		.update()
+		.set({
+			reactions: () => sql,
+			...(existCount === 0 ? {score: () => '"score" + ' + (user.host ? '1' : '3')} : {}),
+		})
+		.where("id = :id", { id: note.id })
+		.execute();
 
 	perUserReactionsChart.update(user, note);
 

@@ -97,7 +97,7 @@ export default async (
 			}
 		}
 
-		const maxReactions = Math.max(Math.min(maxReactionsPerAccount, maxReactionsNote), 1);
+		const maxReactions = Math.min(Math.max(Math.min(maxReactionsPerAccount, maxReactionsNote), 1), 64);
 
 		if (existCount >= maxReactions) {
 			if (maxReactions === 1) {

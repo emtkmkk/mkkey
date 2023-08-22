@@ -569,7 +569,7 @@ export const UserRepository = db.getRepository(User).extend({
 			emojis: populateEmojis(user.emojis, user.host),
 			onlineStatus: this.getOnlineStatus(user, meId),
 			driveCapacityOverrideMb: user.driveCapacityOverrideMb,
-			patron: user.driveCapacityOverrideMb > DEFAULT_DRIVE_SIZE / MB,
+			patron: user.host ? undefined : user.driveCapacityOverrideMb > DEFAULT_DRIVE_SIZE / MB,
 			badges: badges?.length !== 0 ? badges : undefined,
 			roles,
 

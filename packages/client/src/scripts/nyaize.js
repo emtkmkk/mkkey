@@ -1,4 +1,4 @@
-export function nyaize(text: string): string {
+export function nyaize(text) {
 	return (
 		text
 			// ja-JP
@@ -12,7 +12,7 @@ export function nyaize(text: string): string {
 			// ko-KR
 			.replace(/[나-낳]/g, (match) =>
 				String.fromCharCode(
-					match.charCodeAt(0)! + "냐".charCodeAt(0) - "나".charCodeAt(0),
+					match.charCodeAt(0) + "냐".charCodeAt(0) - "나".charCodeAt(0),
 				),
 			)
 			.replace(/(다$)|(다(?=\.))|(다(?= ))|(다(?=!))|(다(?=\?))/gm, "다냥")

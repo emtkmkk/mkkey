@@ -13,7 +13,7 @@
 	>
 		<XReactionIcon
 			class="icon"
-			:reaction="reacted && note.myReaction !== reaction ? note.myReaction : reaction"
+			:reaction="reacted && note.myReaction !== reaction && !multi ? note.myReaction : reaction"
 			:custom-emojis="note.emojis"
 		/>
 		<span class="count">{{ count }}</span>
@@ -34,35 +34,54 @@ const props = defineProps<{
 	count: number;
 	isInitial: boolean;
 	note: misskey.entities.Note;
+	multi?: boolean;
 }>();
 
 const buttonRef = ref<HTMLElement>();
 
 const canToggle = computed(() => $i && (!$i.isSilenced || props.note.user.isFollowed));
 
-const reacted = computed(() => props.note.myReaction && props.note.myReaction?.replace(/@[\w:\.\-]+:$/,"@") === props.reaction?.replace(/@[\w:\.\-]+:$/,"@"));
+const reacted = computed(() => {
+	props.multi 
+		? props.note.myReactions && props.note.myReactions.some((x) => x.replace(/@[\w:\.\-]+:$/,"@") === props.reaction?.replace(/@[\w:\.\-]+:$/,"@"))
+		: props.note.myReaction && props.note.myReaction?.replace(/@[\w:\.\-]+:$/,"@") === props.reaction?.replace(/@[\w:\.\-]+:$/,"@")
+});
 
 const toggleReaction = () => {
 	if (!canToggle.value) return;
-
-	const oldReaction = props.note.myReaction;
-	if (oldReaction && reacted.value) {
-		os.api("notes/reactions/delete", {
-			noteId: props.note.id,
-			reaction: props.reaction,
-		}).then(() => {
-			if (false) {
-				os.api("notes/reactions/create", {
-					noteId: props.note.id,
-					reaction: props.reaction,
-				});
-			}
-		});
-	} else if (!oldReaction) {
-		os.api("notes/reactions/create", {
-			noteId: props.note.id,
-			reaction: props.reaction,
-		});
+	
+	if (props.multi) {
+		if (reacted.value) {
+			os.api("notes/reactions/delete", {
+				noteId: props.note.id,
+				reaction: props.reaction,
+			})
+		} else {
+			os.api("notes/reactions/create", {
+				noteId: props.note.id,
+				reaction: props.reaction,
+			});
+		}
+	} else {
+		const oldReaction = props.note.myReaction;
+		if (oldReaction && reacted.value) {
+			os.api("notes/reactions/delete", {
+				noteId: props.note.id,
+				reaction: props.reaction,
+			}).then(() => {
+				if (false) {
+					os.api("notes/reactions/create", {
+						noteId: props.note.id,
+						reaction: props.reaction,
+					});
+				}
+			});
+		} else if (!oldReaction) {
+			os.api("notes/reactions/create", {
+				noteId: props.note.id,
+				reaction: props.reaction,
+			});
+		}
 	}
 };
 
@@ -78,9 +97,11 @@ useTooltip(
 
 		const users = reactions.map((x) => x.user);
 		
-		const popupReaction = (reacted.value && props.note.myReaction !== props.reaction.value) 
-			? props.note.myReaction
-			: props.reaction;
+		const popupReaction = props.multi 
+			? props.reaction
+			: (reacted.value && props.note.myReaction !== props.reaction.value) 
+				? props.note.myReaction
+				: props.reaction;
 
 		os.popup(
 			XDetails,

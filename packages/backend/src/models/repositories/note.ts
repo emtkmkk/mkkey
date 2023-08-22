@@ -108,7 +108,7 @@ async function populateMyReactions(
 	},
 ) {
 	
-	if (note.host && note.user?.instance?.maxReactionsPerAccount <= 1) {
+	if (!note.user || (note.user?.host && note.user?.instance?.maxReactionsPerAccount <= 1)) {
 		return [populateMyReaction(note,meId,_hint_)];
 	}
 

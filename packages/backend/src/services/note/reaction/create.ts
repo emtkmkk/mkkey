@@ -12,6 +12,7 @@ import {
 	Notes,
 	Emojis,
 	Blockings,
+	Instances,
 } from "@/models/index.js";
 import { IsNull, Not } from "typeorm";
 import { perUserReactionsChart } from "@/services/chart/index.js";
@@ -23,6 +24,7 @@ import type { NoteReaction } from "@/models/entities/note-reaction.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 import { webhookDeliver } from "@/queue/index.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
+import { MAX_REACTION_PER_ACCOUNT } from "@/const.js";
 
 export default async (
 	user: { id: User["id"]; host: User["host"]; username: User["username"]; name: User["name"]; avatarUrl: User["avatarUrl"]; isSilenced: User["isSilenced"]; },
@@ -67,13 +69,59 @@ export default async (
 		userId: user.id,
 		reaction,
 	};
+	
+	const existCount = await NoteReactions.count({where: {
+		noteId: note.id,
+		userId: user.id,
+	}});
+	
+	if (existCount != 0) {
+		let maxReactionsPerAccount = 1;
+		let maxReactionsNote = 1;
+		if (!user.host) {
+			maxReactionsPerAccount = MAX_REACTION_PER_ACCOUNT;
+		} else {
+			const instance = await Instances.findOneBy({ host: user.host });
+			maxReactionsPerAccount = instance.maxReactionsPerAccount;
+		}
+		
+		if (!note.user.host) {
+			maxReactionsNote = maxReactionsPerAccount;
+		} else {
+			const instance = await Instances.findOneBy({ host: note.user.host });
+			maxReactionsNote = instance.maxReactionsPerAccount;
+		}
+		
+		const maxReactions = Math.max(Math.min(maxReactionsPerAccount,maxReactionsNote),1);
+		
+		if (existCount >= maxReactions) {
+			if (maxReactions === 1) {
+				const exists = await NoteReactions.findOneByOrFail({
+					noteId: note.id,
+					userId: user.id,
+				});
+
+				if (exists.reaction !== reaction) {
+					// 別のリアクションがすでにされていたら置き換える
+					await deleteReaction(user, note);
+					await NoteReactions.insert(record);
+				} else {
+					// 同じリアクションがすでにされていたらエラー
+					throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
+				}
+			} else {
+				// 絵文字上限超過エラー
+				throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
+			}
+		}
+	}
 
 	// Create reaction
 	try {
 		await NoteReactions.insert(record);
 	} catch (e) {
 		if (isDuplicateKeyValueError(e)) {
-			const exists = await NoteReactions.findOneByOrFail({
+			/*const exists = await NoteReactions.findOneByOrFail({
 				noteId: note.id,
 				userId: user.id,
 			});
@@ -82,10 +130,10 @@ export default async (
 				// 別のリアクションがすでにされていたら置き換える
 				await deleteReaction(user, note);
 				await NoteReactions.insert(record);
-			} else {
+			} else {*/
 				// 同じリアクションがすでにされていたらエラー
 				throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
-			}
+			//}
 		} else {
 			throw e;
 		}
@@ -93,7 +141,8 @@ export default async (
 
 	// Increment reactions count
 	const sql = `jsonb_set("reactions", '{${reaction}}', (COALESCE("reactions"->>'${reaction}', '0')::int + 1)::text::jsonb)`;
-	await Notes.createQueryBuilder()
+	if (existCount === 0) {
+		 await Notes.createQueryBuilder()
 		.update()
 		.set({
 			reactions: () => sql,
@@ -101,6 +150,7 @@ export default async (
 		})
 		.where("id = :id", { id: note.id })
 		.execute();
+	}
 
 	perUserReactionsChart.update(user, note);
 

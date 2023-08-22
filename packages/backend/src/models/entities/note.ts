@@ -132,7 +132,7 @@ export class Note {
 	public url: string | null;
 
 	@Column('integer', {
-		default: 0, select: false,
+		default: 0,
 	})
 	public score: number;
 

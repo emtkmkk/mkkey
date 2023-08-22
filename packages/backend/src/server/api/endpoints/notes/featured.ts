@@ -42,7 +42,6 @@ export default define(meta, paramDef, async (ps, user) => {
 	const day = 1000 * 60 * 60 * 24 * ps.days;
 
 	const query = Notes.createQueryBuilder("note")
-		.addSelect("note.score")
 		.andWhere("note.score > 0")
 		.andWhere("note.createdAt > :date", { date: new Date(Date.now() - day) })
 		.andWhere("note.visibility = 'public'")

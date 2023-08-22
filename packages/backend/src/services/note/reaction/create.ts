@@ -87,7 +87,7 @@ export default async (
 		}
 
 		if (maxReactionsPerAccount >= 2) {
-			const noteUser = await Users.findOneBy({ host: note.userId });
+			const noteUser = await Users.findOneBy({ id: note.userId });
 
 			if (!noteUser?.host) {
 				maxReactionsNote = maxReactionsPerAccount;

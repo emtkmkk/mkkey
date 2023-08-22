@@ -27,7 +27,7 @@ import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { MAX_REACTION_PER_ACCOUNT } from "@/const.js";
 
 export default async (
-	user: { id: User["id"]; host: User["host"]; username: User["username"]; name: User["name"]; avatarUrl: User["avatarUrl"]; isSilenced: User["isSilenced"]; },
+	user: { id: User["id"]; host: User["host"]; username: User["username"]; name: User["name"]; avatarUrl: User["avatarUrl"]; isSilenced: User["isSilenced"]; patron: User["patron"] },
 	note: Note,
 	reaction?: string,
 ) => {
@@ -80,7 +80,7 @@ export default async (
 		let maxReactionsPerAccount = 1;
 		let maxReactionsNote = 1;
 		if (!user.host) {
-			maxReactionsPerAccount = MAX_REACTION_PER_ACCOUNT;
+			maxReactionsPerAccount = user.patron ? MAX_REACTION_PER_ACCOUNT : 1;
 		} else {
 			const instance = await Instances.findOneBy({ host: user.host });
 			maxReactionsPerAccount = instance.maxReactionsPerAccount;

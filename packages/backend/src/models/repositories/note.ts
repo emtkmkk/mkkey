@@ -108,7 +108,7 @@ async function populateMyReactions(
 	},
 ) {
 	
-	if (!note.user || (note.user?.host && note.user?.instance?.maxReactionsPerAccount <= 1)) {
+	if (!note.user || !note.user.instance || (note.user.host && note.user.instance.maxReactionsPerAccount <= 1)) {
 		return undefined;
 	}
 
@@ -292,7 +292,6 @@ export const NoteRepository = db.getRepository(Note).extend({
 					...(meId
 						? {
 							myReaction: populateMyReaction(note, meId, options?._hint_),
-							myReactions: populateMyReactions(note, meId, options?._hint_),
 						}
 						: {}),
 				}

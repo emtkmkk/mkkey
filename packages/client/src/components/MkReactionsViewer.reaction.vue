@@ -49,6 +49,7 @@ const toggleReaction = () => {
 	if (oldReaction && reacted.value) {
 		os.api("notes/reactions/delete", {
 			noteId: props.note.id,
+			reaction: props.reaction,
 		}).then(() => {
 			if (false) {
 				os.api("notes/reactions/create", {

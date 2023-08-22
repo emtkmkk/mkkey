@@ -130,6 +130,7 @@
 						v-show="showContent"
 						ref="reactionsViewer"
 						:note="appearNote"
+						:multi="multiReaction"
 					/>
 					<button
 						v-tooltip.noDelay.bottom="i18n.ts.reply"
@@ -162,7 +163,7 @@
 					<XStarButton
 						v-if="
 							(enableEmojiReactions || detailedView) &&
-							(appearNote.myReaction == null || favButtonReactionIsFavorite) && 
+							(!isMaxReacted || favButtonReactionIsFavorite) && 
 							(isCanAction || favButtonReactionIsFavorite) &&
 							showContent
 						"
@@ -173,7 +174,7 @@
 					<button
 						v-if="
 							(enableEmojiReactions || detailedView || showEmojiButton) &&
-							appearNote.myReaction == null && isCanAction
+							!isMaxReacted && isCanAction
 						"
 						ref="reactButton"
 						v-tooltip.noDelay.bottom="i18n.ts.reaction"
@@ -186,7 +187,7 @@
 					<button
 						v-if="
 							(enableEmojiReactions || detailedView || (showEmojiButton && favButtonReactionIsFavorite)) &&
-							appearNote.myReaction != null
+							appearNote.myReaction != null && !multiReaction
 						"
 						ref="reactButton"
 						class="button _button reacted"
@@ -386,6 +387,8 @@ let replyNote = $computed(() =>
 	note.reply != null ? (note.reply as misskey.entities.Note) : note
 );
 const isMyRenote = $i && $i.id === note.userId;
+const multiReaction = $i.patron && (!appearNote.user.host || appearNote.user.instance?.maxReactionsPerAccount > 1);
+const maxReactions = multiReaction ? (appearNote.user.instance?.maxReactionsPerAccount ?? 3) : 1;
 const showContent = ref(false);
 const isDeleted = ref(false);
 const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords, props.endpoint));
@@ -407,6 +410,8 @@ const developerNoteMenu = defaultStore.state.developerNoteMenu;
 const recentRenoteId = $computed(
 	defaultStore.makeGetterSetter("recentRenoteId")
 );
+
+const isMaxReacted = $computed(() => multiReaction ? appearNote.myReactions.length >= maxReactions : appearNote.myReaction != null)
 
 const isReactedRenote = $computed(() => !unref(muted)?.muted && defaultStore.state.reactedRenoteHidden && isRenote && appearNote.myReaction)
 

@@ -103,24 +103,17 @@ async function populateMyReaction(
 async function populateMyReactions(
 	note: Note,
 	meId: User["id"],
-	_hint_?: {
-		myReactions: Map<Note["id"], NoteReaction | null>;
-	},
 ) {
-	
-	if (!note.user || !note.user.instance || (note.user.host && note.user.instance.maxReactionsPerAccount <= 1)) {
-		return undefined;
-	}
 
 	// パフォーマンスのためノートが作成されてから1秒以上経っていない場合はリアクションを取得しない
 	if (note.createdAt.getTime() + 1000 > Date.now()) {
 		return undefined;
 	}
 
-	const reactions = await NoteReactions.find({
+	const reactions = await NoteReactions.find({where: {
 		userId: meId,
 		noteId: note.id,
-	});
+	}});
 
 	if (reactions && reactions.length != 0) {
 		return reactions.map((reaction) => convertLegacyReaction(reaction.reaction));
@@ -292,6 +285,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 					...(meId
 						? {
 							myReaction: populateMyReaction(note, meId, options?._hint_),
+							myReactions: populateMyReactions(note, meId),
 						}
 						: {}),
 				}

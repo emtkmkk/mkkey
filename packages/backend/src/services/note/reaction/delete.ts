@@ -12,11 +12,27 @@ import { decodeReaction } from "@/misc/reaction-lib.js";
 export default async (
 	user: { id: User["id"]; host: User["host"] },
 	note: Note,
+	emoji?: any,
 ) => {
+	const existCount = await NoteReactions.count({
+		where: {
+			noteId: note.id,
+			userId: user.id,
+		}
+	});
+
+	if (emoji == null && existCount > 1) {
+		throw new IdentifiableError(
+			"60527ec9-b4cb-4a88-a6bd-32d3ad26817d",
+			"Unable to process due to multiple targets",
+		);
+	}
+
 	// if already unreacted
 	const exist = await NoteReactions.findOneBy({
 		noteId: note.id,
 		userId: user.id,
+		...(emoji ? { reaction: emoji } : {}),
 	});
 
 	if (exist == null) {
@@ -38,6 +54,7 @@ export default async (
 
 	// Decrement reactions count
 	const sql = `jsonb_set("reactions", '{${exist.reaction}}', (COALESCE("reactions"->>'${exist.reaction}', '0')::int - 1)::text::jsonb)`;
+
 	await Notes.createQueryBuilder()
 		.update()
 		.set({
@@ -46,7 +63,9 @@ export default async (
 		.where("id = :id", { id: note.id })
 		.execute();
 
-	Notes.decrement({ id: note.id }, "score", (user.host ? '1' : '3'));
+	if (existCount === 1) {
+		Notes.decrement({ id: note.id }, "score", (user.host ? '1' : '3'));
+	}
 
 	publishNoteStream(note.id, "unreacted", {
 		reaction: decodeReaction(exist.reaction).reaction,

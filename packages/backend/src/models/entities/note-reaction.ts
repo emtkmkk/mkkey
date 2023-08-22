@@ -11,7 +11,7 @@ import { Note } from "./note.js";
 import { id } from "../id.js";
 
 @Entity()
-@Index(['userId', 'noteId'], { unique: true })
+@Index(['userId', 'noteId', 'reaction'], { unique: true })
 export class NoteReaction {
 	@PrimaryColumn(id())
 	public id: string;

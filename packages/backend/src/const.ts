@@ -28,7 +28,7 @@ export const USER_SLEEP_THRESHOLD = 2 * DAY;
 export const USER_DEEPSLEEP_THRESHOLD = 7 * DAY;
 export const USER_SUPERSLEEP_THRESHOLD = 30 * DAY;
 
-export const MAX_REACTION_PER_ACCOUNT = 1;
+export const MAX_REACTION_PER_ACCOUNT = 3;
 
 // List of file types allowed to be viewed directly in the browser
 // Anything not included here will be responded as application/octet-stream

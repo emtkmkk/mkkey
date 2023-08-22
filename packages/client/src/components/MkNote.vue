@@ -513,6 +513,7 @@ function undoReact(note): void {
 	if (!oldReaction) return;
 	os.api("notes/reactions/delete", {
 		noteId: note.id,
+		reaction: oldReaction,
 	});
 }
 

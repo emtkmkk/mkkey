@@ -7,6 +7,7 @@
 			:count="reaction.count"
 			:is-initial="initialReactions.has(reaction.name)"
 			:note="note"
+			:multi="multi"
 		/>
 	</div>
 </template>
@@ -20,6 +21,7 @@ import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	note: misskey.entities.Note;
+	multi?: boolean;
 }>();
 
 

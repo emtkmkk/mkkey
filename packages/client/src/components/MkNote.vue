@@ -411,7 +411,7 @@ const recentRenoteId = $computed(
 	defaultStore.makeGetterSetter("recentRenoteId")
 );
 
-const isMaxReacted = $computed(() => multiReaction ? appearNote.myReactionsCnt >= maxReactions : appearNote.myReaction != null)
+const isMaxReacted = $computed(() => multiReaction ? appearNote.myReactions?.length >= maxReactions : appearNote.myReaction != null)
 
 const isReactedRenote = $computed(() => !unref(muted)?.muted && defaultStore.state.reactedRenoteHidden && isRenote && appearNote.myReaction)
 

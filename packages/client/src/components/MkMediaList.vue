@@ -22,23 +22,19 @@
 						previewable(media)
 					)"
 				>
-					<div class="media">
-						<div class="media-content">
-							<XVideo
-								v-if="media.type.startsWith('video')"
-								:key="media.id"
-								:video="media"
-							/>
-							<XImage
-								v-else-if="media.type.startsWith('image')"
-								:key="media.id"
-								class="image"
-								:data-id="media.id"
-								:image="media"
-								:raw="raw"
-							/>
-						</div>
-					</div>
+					<XVideo
+						v-if="media.type.startsWith('video')"
+						:key="media.id"
+						:video="media"
+					/>
+					<XImage
+						v-else-if="media.type.startsWith('image')"
+						:key="media.id"
+						class="image"
+						:data-id="media.id"
+						:image="media"
+						:raw="raw"
+					/>
 				</template>
 			</div>
 		</div>
@@ -180,8 +176,6 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 </script>
 
 <style lang="scss" scoped>
-@use "sass:math";
-
 .hoawjimk {
 	> .dmWidth {
 		min-width: 20rem;
@@ -193,41 +187,34 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 		width: 100%;
 		margin-top: 4px;
 		border-radius: var(--radius);
+		overflow: hidden;
 		pointer-events: none;
 
-		> .gallery {
+		&:before {
+			content: "";
+			display: block;
+			padding-top: 56.25%; // 16:9;
+		}
+
+		> div {
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
 			display: grid;
 			grid-gap: 8px;
 			grid-template-columns: 1fr 1fr;
 
-			> .media {
+			> * {
 				overflow: hidden;
-
-				&::before {
-					content: "";
-					display: block;
-					padding-top: 56.25%; // 16:9のアスペクト比
-				}
-
-				> .media-content {
-					position: absolute;
-					top: 0;
-					right: 0;
-					bottom: 0;
-					left: 0;
-					
-					> * {
-						overflow: hidden;
-						border-radius: 6px;
-						pointer-events: all;
-					}
-					
-				}
+				border-radius: 6px;
+				pointer-events: all;
 			}
 
 			&[data-count="1"] {
 				grid-template-rows: 1fr;
-				> .media:nth-child(1) {
+				> *:nth-child(1) {
 					grid-column: 1 / 3;
 				}
 			}
@@ -239,14 +226,14 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 			$num: 3;
 			@while $num <= 16 {
 				&[data-count="#{$num}"] {
-					grid-template-rows: repeat(math.ceil(math.div($num, 2)), 1fr); 
+					grid-template-rows: repeat(ceil($num / 2), 1fr);
 
-					> .media:nth-child(1) {
+					> *:nth-child(1) {
 						grid-column: 1 / 3;
 					}
 
 					@if $num % 2 == 1 {
-						> .media:nth-child(#{$num}) {
+						> *:nth-child(#{$num}) {
 							grid-column: 2 / 3;
 						}
 					}

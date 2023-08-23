@@ -179,7 +179,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 .hoawjimk {
 	> .dmWidth {
 		min-width: 20rem;
-		max-width: 40rem;
+		max-width: 160rem;
 	}
 
 	> .gird-container {
@@ -204,6 +204,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 			left: 0;
 			display: grid;
 			grid-gap: 8px;
+			grid-template-columns: 1fr 1fr;
 
 			> * {
 				overflow: hidden;
@@ -213,50 +214,31 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 
 			&[data-count="1"] {
 				grid-template-rows: 1fr;
+				> *:nth-child(1) {
+					grid-column: 1 / 3;
+				}
 			}
 
 			&[data-count="2"] {
-				grid-template-columns: 1fr 1fr;
 				grid-template-rows: 1fr;
 			}
 
-			&[data-count="3"] {
-				grid-template-columns: 1fr 0.5fr;
-				grid-template-rows: 1fr 1fr;
+			$num: 3;
+			@while $num <= 16 {
+				&[data-count="#{$num}"] {
+					grid-template-rows: repeat(ceil($num / 2), 1fr); 
 
-				> *:nth-child(1) {
-					grid-row: 1 / 3;
+					> *:nth-child(1) {
+						grid-column: 1 / 3;
+					}
+
+					@if $num % 2 == 1 {
+						> *:nth-child(#{$num}) {
+							grid-column: 2 / 3;
+						}
+					}
 				}
-
-				> *:nth-child(3) {
-					grid-column: 2 / 3;
-					grid-row: 2 / 3;
-				}
-			}
-
-			&[data-count="4"] {
-				grid-template-columns: 1fr 1fr;
-				grid-template-rows: 1fr 1fr;
-			}
-
-			> *:nth-child(1) {
-				grid-column: 1 / 2;
-				grid-row: 1 / 2;
-			}
-
-			> *:nth-child(2) {
-				grid-column: 2 / 3;
-				grid-row: 1 / 2;
-			}
-
-			> *:nth-child(3) {
-				grid-column: 1 / 2;
-				grid-row: 2 / 3;
-			}
-
-			> *:nth-child(4) {
-				grid-column: 2 / 3;
-				grid-row: 2 / 3;
+				$num: $num + 1;
 			}
 		}
 	}

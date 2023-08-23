@@ -1,7 +1,7 @@
 <template>
 	<button
 		v-if="canRenote && $store.state.seperateRenoteQuote"
-		v-tooltip.noDelay.bottom="i18n.ts.quote"
+		v-tooltip.bottom="i18n.ts.quote"
 		class="eddddedb _button"
 		@click="quote()"
 	>

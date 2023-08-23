@@ -5,6 +5,7 @@
 		:plain="true"
 		:nowrap="nowrap"
 		:author="user"
+		:is-note="false"
 		:custom-emojis="user.emojis"
 	/>
 	{{ hostIcon && user.host ? '@' : '' }}

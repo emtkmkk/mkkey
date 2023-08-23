@@ -133,7 +133,7 @@
 						:multi="multiReaction"
 					/>
 					<button
-						v-tooltip.noDelay.bottom="i18n.ts.reply"
+						v-tooltip.bottom="i18n.ts.reply"
 						class="button _button"
 						@click="reply()"
 					>
@@ -149,7 +149,7 @@
 						:count="appearNote.renoteCount"
 					/>
 					<XStarButtonNoEmoji
-						v-if="((!enableEmojiReactions && !detailedView) || !showContent) && (isCanAction || favButtonReactionIsFavorite)"
+						v-if="((!enableEmojiReactions && !detailedView) || !showContent) && ((!isMaxReacted && !isfavButtonReacted && isCanAction) || favButtonReactionIsFavorite)"
 						class="button"
 						:note="appearNote"
 						:count="
@@ -163,8 +163,7 @@
 					<XStarButton
 						v-if="
 							(enableEmojiReactions || detailedView) &&
-							(!isMaxReacted || favButtonReactionIsFavorite) && 
-							(isCanAction || favButtonReactionIsFavorite) &&
+							((!isMaxReacted && !isfavButtonReacted && isCanAction) || favButtonReactionIsFavorite) && 
 							showContent
 						"
 						ref="starButton"
@@ -176,13 +175,15 @@
 							(enableEmojiReactions || detailedView || showEmojiButton) &&
 							!isMaxReacted && isCanAction
 						"
+						:title="multiReaction ? ((appearNote.myReactions?.length ?? 0) + ' / ' + maxReactions) : ''"
 						ref="reactButton"
-						v-tooltip.noDelay.bottom="i18n.ts.reaction"
+						v-tooltip.bottom="i18n.ts.reaction + (multiReaction ? (' (' + (appearNote.myReactions?.length ?? 0) + ' / ' + maxReactions + ')') : '')"
 						class="button _button"
 						:class="{unsupported: appearNote.user.instance?.maxReactionsPerAccount === 0}"
 						@click="react()"
 					>
-						<i class="ph-smiley ph-bold ph-lg"></i>
+						<i v-if="multiReaction" class="ph-smiley-wink ph-bold ph-lg"></i>
+						<i v-else class="ph-smiley ph-bold ph-lg"></i>
 					</button>
 					<button
 						v-if="
@@ -198,7 +199,7 @@
 					<XQuoteButton class="button" :note="developerQuote ? note : appearNote" />
 					<button
 						ref="menuButton"
-						v-tooltip.noDelay.bottom="i18n.ts.more"
+						v-tooltip.bottom="i18n.ts.more"
 						class="button _button"
 						@click="menu()"
 					>
@@ -412,6 +413,18 @@ const recentRenoteId = $computed(
 );
 
 const isMaxReacted = $computed(() => multiReaction ? appearNote.myReactions?.length >= maxReactions : appearNote.myReaction != null)
+const isfavButtonReacted = $computed(() => {
+	const favButtonReaction = defaultStore.state.woozyMode === true
+		? "🥴"
+		: defaultStore.state.favButtonReaction === "custom"
+			? defaultStore.state.favButtonReactionCustom
+			: defaultStore.state.favButtonReaction === ""
+				? instance.defaultReaction
+				: defaultStore.state.favButtonReaction;
+	return multiReaction 
+		? appearNote.myReactions?.includes(favButtonReaction)
+		: false;
+})
 
 const isReactedRenote = $computed(() => !unref(muted)?.muted && defaultStore.state.reactedRenoteHidden && isRenote && appearNote.myReaction)
 

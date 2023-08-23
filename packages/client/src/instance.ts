@@ -24,11 +24,11 @@ stream.on('emojiAdded', emojiData => {
 });
 
 stream.on('emojiUpdated', emojiData => {
-	instance.emojis = instance.emojis.map(item => emojiData.emojis.find(search => search.name === item.name) as Misskey.entities.CustomEmoji ?? item);
+	instance.emojis = instance.emojis.map(item => emojiData.emojis.find(search => search.id === item.id) as Misskey.entities.CustomEmoji ?? item);
 });
 
 stream.on('emojiDeleted', emojiData => {
-	instance.emojis = instance.emojis.filter(item => !emojiData.emojis.some(search => search.name === item.name));
+	instance.emojis = instance.emojis.filter(item => !emojiData.emojis.some(search => search.id === item.id));
 });
 
 export async function fetchInstance() {

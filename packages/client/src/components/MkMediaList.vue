@@ -190,12 +190,6 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 		overflow: hidden;
 		pointer-events: none;
 
-		&:before {
-			content: "";
-			display: block;
-			padding-top: 56.25%; // 16:9;
-		}
-
 		> div {
 			position: absolute;
 			top: 0;

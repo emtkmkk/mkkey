@@ -69,13 +69,13 @@ export async function fetchInstanceMetadata(
 					? info.metadata.maintainer.email || null
 					: null
 				: null;
-				
+
 			if (mastodonInfo) {
-				
+
 				// Nodeinfo から取得できなかった場合はここで取得を試行
 				if (updates.maintainerName == null) updates.maintainerName = mastodonInfo.contact_account?.username ? "@" + mastodonInfo.contact_account?.username : null;
 				if (updates.maintainerEmail == null) updates.maintainerEmail = mastodonInfo.email || null;
-				
+
 				// max_reactions_per_account の指定があればその値にする
 				// 指定が無い場合は以下の通り
 				// softwareNameが akkoma ならば 64
@@ -83,12 +83,12 @@ export async function fetchInstanceMetadata(
 				// configurationにemoji_reactionsの設定が何かあれば 1
 				// fedibird_capabilitiesにemoji_reactionがあれば 1
 				// 全てに当てはまらない場合は 0
-				updates.maxReactionsPerAccount = mastodonInfo.configuration?.emoji_reactions?.max_reactions_per_account 
+				updates.maxReactionsPerAccount = mastodonInfo.configuration?.emoji_reactions?.max_reactions_per_account
 					?? ((
-							info.software?.name.toLowerCase() !== "mastodon" ||
-							mastodonInfo.configuration?.emoji_reactions ||
-							mastodonInfo.fedibird_capabilities?.includes("emoji_reaction")
-					) 
+						info.software?.name.toLowerCase() !== "mastodon" ||
+						mastodonInfo.configuration?.emoji_reactions ||
+						mastodonInfo.fedibird_capabilities?.includes("emoji_reaction")
+					)
 						? info.software?.name.toLowerCase() === "akkoma" ? 64 : 1
 						: 0
 					);
@@ -103,29 +103,29 @@ export async function fetchInstanceMetadata(
 						: 1
 					: 0;
 			}
-			
+
 			if (updates.maxReactionsPerAccount === 0) {
 				// 0と判定された場合でも、30日以内に通常のlike以外が3以上あれば1にする
 				const now = Date.now();
-				updates.maxReactionsPerAccount = 
-				((await NoteReactions.count({
-					relations: {
-						user: true,
-					},
-					where: {
-						createdAt: MoreThan(new Date(now - 2678400000)),
-						reaction: Not(await getFallbackReaction()),
-						user: {
-							host: instance.host,
-						}
-					},
-					cache: {
-						id: "emojiSearch:" + instance.host,
-						milliseconds: 3600000, // 1 hour
-					},
-				})) > 2) ? 1 : 0 ;
+				updates.maxReactionsPerAccount =
+					((await NoteReactions.count({
+						relations: {
+							user: true,
+						},
+						where: {
+							createdAt: MoreThan(new Date(now - 2678400000)),
+							reaction: Not(await getFallbackReaction()),
+							user: {
+								host: instance.host,
+							}
+						},
+						cache: {
+							id: "emojiSearch:" + instance.host,
+							milliseconds: 3600000, // 1 hour
+						},
+					})) > 2) ? 1 : 0;
 			}
-			
+
 		}
 
 		if (name) updates.name = name;
@@ -243,7 +243,7 @@ async function fetchMastodonInfo(
 
 	const mastodonInfoUrl = `${url}/api/v1/instance`;
 
-	const mastodonInfo = (await getJson(mastodonInfoUrl)) as Record<string, unknown>;
+	const mastodonInfo = (await getJson(mastodonInfoUrl, "application/json, */*", 2000)) as Record<string, unknown>;
 
 	return mastodonInfo;
 }

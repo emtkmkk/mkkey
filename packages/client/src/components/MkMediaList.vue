@@ -8,7 +8,7 @@
 		<div
 			v-if="mediaList.filter((media) => previewable(media)).length > 0"
 			class="gird-container"
-			:class="{ dmWidth: inDm }"
+			:class="{ dmWidth: inDm, fixed-grid:$store.state.compactGrid }"
 			:data-count="
 				mediaList.filter((media) => previewable(media)).length
 			"
@@ -204,11 +204,37 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 				$padding-top-value: $padding-top-value + 28.125%;
 			}
 			
+			
+			&.fixed-grid {
+				> div {
+					grid-template-columns: repeat(8, 1fr);
+					grid-template-rows: repeat(2, 1fr);
+
+					> * {
+						grid-column: auto;
+						grid-row: auto;
+					}
+				}
+			}
+			
 			&[data-count="#{$num}"] {
 				&:before {
 					content: "";
 					display: block;
 					padding-top: $padding-top-value;
+				}
+				
+				&.fixed-grid {
+					@if $num <= 8 {
+						&:before {
+							padding-top: 28.125%;
+						}
+					}
+					@if $num <= 16 {
+						&:before {
+							padding-top: 56.25%;
+						}
+					}
 				}
 
 				> div {
@@ -227,7 +253,6 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 						border-radius: 6px;
 						pointer-events: all;
 					}
-
 					@if $num == 1 or $num % 2 == 1 {
 						> *:nth-child(1) {
 							grid-column: 1 / 3;

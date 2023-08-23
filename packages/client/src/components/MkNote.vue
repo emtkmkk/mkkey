@@ -419,7 +419,7 @@ const isfavButtonReacted = $computed(() => {
 		: defaultStore.state.favButtonReaction === "custom"
 			? defaultStore.state.favButtonReactionCustom
 			: defaultStore.state.favButtonReaction === ""
-				? instance.defaultReaction
+				? ""
 				: defaultStore.state.favButtonReaction;
 	return multiReaction 
 		? appearNote.myReactions?.includes(favButtonReaction)

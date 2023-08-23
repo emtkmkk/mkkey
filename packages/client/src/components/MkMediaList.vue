@@ -230,7 +230,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 							padding-top: 28.125%;
 						}
 					}
-					@if $num <= 16 {
+					@if $num > 8 and $num <= 16 {
 						&:before {
 							padding-top: 56.25%;
 						}

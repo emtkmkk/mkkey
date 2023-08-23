@@ -3,6 +3,7 @@ import { Emojis } from "@/models/index.js";
 import { In } from "typeorm";
 import { ApiError } from "../../../error.js";
 import { db } from "@/db/postgre.js";
+import { publishBroadcastStream } from "@/services/stream.js";
 
 export const meta = {
 	tags: ["admin"],
@@ -41,5 +42,9 @@ export default define(meta, paramDef, async (ps) => {
 		},
 	);
 
+	publishBroadcastStream("emojiUpdated", {
+		emojis: await Emojis.packMany(emojis),
+	});
+	
 	await db.queryResultCache!.remove(["meta_emojis"]);
 });

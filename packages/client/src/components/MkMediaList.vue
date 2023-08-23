@@ -230,7 +230,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 						}
 					}
 
-					@if $num % 2 == 1 {
+					@if $num != 1 and $num % 2 == 1 {
 						> *:nth-child(#{$num}) {
 							grid-column: 2 / 3;
 						}

@@ -12,7 +12,6 @@
 		>
 			<div
 				ref="gallery"
-				class="gallery"
 				:data-count="
 					mediaList.filter((media) => previewable(media)).length
 				"

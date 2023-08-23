@@ -204,37 +204,11 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 				$padding-top-value: $padding-top-value + 28.125%;
 			}
 			
-			
-			&.fixedGrid {
-				> div {
-					grid-template-columns: repeat(8, 1fr);
-					grid-template-rows: repeat(2, 1fr);
-
-					> * {
-						grid-column: auto;
-						grid-row: auto;
-					}
-				}
-			}
-			
 			&[data-count="#{$num}"] {
 				&:before {
 					content: "";
 					display: block;
 					padding-top: $padding-top-value;
-				}
-				
-				&.fixedGrid {
-					@if $num <= 8 {
-						&:before {
-							padding-top: 28.125%;
-						}
-					}
-					@if $num > 8 and $num <= 16 {
-						&:before {
-							padding-top: 56.25%;
-						}
-					}
 				}
 
 				> div {
@@ -268,6 +242,38 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 						}
 					}
 				}
+
+                &.fixedGrid {
+                    // 要素数に応じたpadding-topの調整
+                    @if $num <= 8 {
+                        &:before {
+                            padding-top: 28.125%;
+                        }
+                    }
+                    @if $num > 8 and $num <= 16 {
+                        &:before {
+                            padding-top: 56.25%;
+                        }
+                    }
+
+                    > div {
+                        // 8列のグリッドとして表示
+                        grid-template-columns: repeat(8, 1fr);
+                        
+                        @if $num <= 8 {
+                            grid-template-rows: repeat(1, 1fr);
+                        }
+                        @if $num > 8 and $num <= 16 {
+                            grid-template-rows: repeat(2, 1fr);
+                        }
+
+                        // 以前のグリッド設定をリセット
+                        > * {
+                            grid-column: auto;
+                            grid-row: auto;
+                        }
+                    }
+                }
 			}
 			$num: $num + 1;
 		}

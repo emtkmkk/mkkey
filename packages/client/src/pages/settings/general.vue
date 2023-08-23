@@ -230,6 +230,9 @@
 			<FormSwitch v-model="thumbnailCover" class="_formBlock">{{
 				i18n.ts.thumbnailCover
 			}}</FormSwitch>
+			<FormSwitch v-model="compactGrid" class="_formBlock">{{
+				i18n.ts.compactGrid
+			}}</FormSwitch>
 			<FormSwitch
 				v-model="disableShowingAnimatedImages"
 				class="_formBlock"
@@ -713,6 +716,9 @@ const autoSwitchDataSaver = $computed(
 );
 const showRemoteEmojiPostForm = $computed(
 	defaultStore.makeGetterSetter("showRemoteEmojiPostForm")
+);
+const compactGrid = $computed(
+	defaultStore.makeGetterSetter("compactGrid")
 );
 
 function save() {

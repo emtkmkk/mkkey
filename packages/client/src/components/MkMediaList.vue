@@ -8,7 +8,7 @@
 		<div
 			v-if="mediaList.filter((media) => previewable(media)).length > 0"
 			class="gird-container"
-			:class="{ dmWidth: inDm, fixed-grid:$store.state.compactGrid }"
+			:class="{ dmWidth: inDm, fixedGrid: $store.state.compactGrid, }"
 			:data-count="
 				mediaList.filter((media) => previewable(media)).length
 			"
@@ -205,7 +205,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 			}
 			
 			
-			&.fixed-grid {
+			&.fixedGrid {
 				> div {
 					grid-template-columns: repeat(8, 1fr);
 					grid-template-rows: repeat(2, 1fr);
@@ -224,7 +224,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 					padding-top: $padding-top-value;
 				}
 				
-				&.fixed-grid {
+				&.fixedGrid {
 					@if $num <= 8 {
 						&:before {
 							padding-top: 28.125%;

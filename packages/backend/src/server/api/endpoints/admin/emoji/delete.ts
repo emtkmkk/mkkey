@@ -32,9 +32,12 @@ export default define(meta, paramDef, async (ps, me) => {
 	const emoji = await Emojis.findOneBy({ id: ps.id });
 
 	if (emoji == null) throw new ApiError(meta.errors.noSuchEmoji);
-	
+
+	const pack = await Emojis.pack(emoji.id)
+
 	publishBroadcastStream("emojiDeleted", {
-		emoji: await Emojis.pack(emoji.id),
+		emoji: pack,
+		emojis: [pack],
 	});
 
 	await Emojis.delete(emoji.id);

@@ -224,8 +224,10 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 						pointer-events: all;
 					}
 
-					> *:nth-child(1) {
-						grid-column: 1 / 3;
+					@if $num == 1 or $num % 2 == 1 {
+						> *:nth-child(1) {
+							grid-column: 1 / 3;
+						}
 					}
 
 					@if $num % 2 == 1 {

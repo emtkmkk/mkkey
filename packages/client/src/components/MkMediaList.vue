@@ -179,7 +179,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 .hoawjimk {
 	> .dmWidth {
 		min-width: 20rem;
-		max-width: 160rem;
+		max-width: 40rem;
 	}
 
 	> .gird-container {

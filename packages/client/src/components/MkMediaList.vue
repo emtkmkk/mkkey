@@ -200,7 +200,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 			$additional-rows: $row-count - 2;
 			$padding-top-value: 56.25% + max(0, $additional-rows) * 28.125%;
 
-			@if $num % 2 == 1 {
+			@if $num != 1 and $num % 2 == 1 {
 				$padding-top-value: $padding-top-value + 28.125%;
 			}
 			

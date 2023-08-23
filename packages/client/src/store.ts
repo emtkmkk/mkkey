@@ -949,7 +949,13 @@ export const defaultStore = markRaw(
 			where: 'account',
 			default: false,
 			createdAt: "2023/8/21",
-		}
+		},
+		compactGrid: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/8/23",
+			page: "general",
+		},
 	}),
 );
 

@@ -31,9 +31,10 @@
 				:title="image.comment"
 				:cover="defaultStore.state.thumbnailCover"
 			/>
-			<div v-if="image.type === 'image/gif'" class="gif">GIF</div>
+			<div v-if="image.type === 'image/gif' && !$store.state.compactGrid" class="gif">GIF</div>
 		</a>
 		<button
+			v-if="!$store.state.compactGrid"
 			v-tooltip="i18n.ts.hide"
 			class="_button hide"
 			@click="hide = true"

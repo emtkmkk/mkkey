@@ -32,6 +32,11 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps) => {
+	
+	const emojis = await Emojis.findBy({
+		id: In(ps.ids),
+	});
+
 	await Emojis.update(
 		{
 			id: In(ps.ids),

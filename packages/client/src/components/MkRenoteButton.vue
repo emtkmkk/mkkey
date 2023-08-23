@@ -2,7 +2,7 @@
 	<button
 		v-if="canRenote"
 		ref="buttonRef"
-		v-tooltip.noDelay.bottom="i18n.ts.renote"
+		v-tooltip.bottom="i18n.ts.renote"
 		class="eddddedb _button canRenote"
 		@click="renote(false, $event)"
 	>

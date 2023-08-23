@@ -414,15 +414,17 @@ const recentRenoteId = $computed(
 
 const isMaxReacted = $computed(() => multiReaction ? appearNote.myReactions?.length >= maxReactions : appearNote.myReaction != null)
 const isfavButtonReacted = $computed(() => {
-	const favButtonReaction = defaultStore.state.woozyMode === true
+	const favButtonReaction = multiReaction 
+	? defaultStore.state.woozyMode === true
 		? "🥴"
 		: defaultStore.state.favButtonReaction === "custom"
 			? defaultStore.state.favButtonReactionCustom
 			: defaultStore.state.favButtonReaction === ""
-				? ""
+				? ":iine_fav:"
 				: defaultStore.state.favButtonReaction;
+	: undefined;
 	return multiReaction 
-		? appearNote.myReactions?.includes(favButtonReaction)
+		? appearNote.myReactions?.map((x) => x.replace(/@[^:\s]?(:?)$/,"$1")).includes(favButtonReaction)
 		: false;
 })
 

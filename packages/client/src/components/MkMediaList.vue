@@ -9,6 +9,9 @@
 			v-if="mediaList.filter((media) => previewable(media)).length > 0"
 			class="gird-container"
 			:class="{ dmWidth: inDm }"
+			:data-count="
+				mediaList.filter((media) => previewable(media)).length
+			"
 		>
 			<div
 				ref="gallery"
@@ -176,6 +179,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:math";
 .hoawjimk {
 	> .dmWidth {
 		min-width: 20rem;
@@ -190,37 +194,35 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 		overflow: hidden;
 		pointer-events: none;
 
-		> div {
-			position: absolute;
-			top: 0;
-			right: 0;
-			bottom: 0;
-			left: 0;
-			display: grid;
-			grid-gap: 8px;
-			grid-template-columns: 1fr 1fr;
+		$num: 1;
+		@while $num <= 16 {
+			$row-count: math.ceil(math.div($num, 2));
+			$additional-rows: $row-count - 2;
+			$padding-top-value: 56.25% + max(0, $additional-rows) * 28.125%;
 
-			> * {
-				overflow: hidden;
-				border-radius: 6px;
-				pointer-events: all;
-			}
-
-			&[data-count="1"] {
-				grid-template-rows: 1fr;
-				> *:nth-child(1) {
-					grid-column: 1 / 3;
+			&[data-count="#{$num}"] {
+				&:before {
+					content: "";
+					display: block;
+					padding-top: $padding-top-value;
 				}
-			}
 
-			&[data-count="2"] {
-				grid-template-rows: 1fr;
-			}
+				> div {
+					position: absolute;
+					top: 0;
+					right: 0;
+					bottom: 0;
+					left: 0;
+					display: grid;
+					grid-gap: 8px;
+					grid-template-columns: 1fr 1fr;
+					grid-template-rows: repeat($row-count, 1fr);
 
-			$num: 3;
-			@while $num <= 16 {
-				&[data-count="#{$num}"] {
-					grid-template-rows: repeat(ceil($num / 2), 1fr);
+					> * {
+						overflow: hidden;
+						border-radius: 6px;
+						pointer-events: all;
+					}
 
 					> *:nth-child(1) {
 						grid-column: 1 / 3;
@@ -232,8 +234,8 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 						}
 					}
 				}
-				$num: $num + 1;
 			}
+			$num: $num + 1;
 		}
 	}
 }

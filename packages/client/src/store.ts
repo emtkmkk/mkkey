@@ -956,6 +956,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/8/23",
 			page: "general",
 		},
+		doContextMenu: {
+			where: 'device',
+			default: 'menu',
+			createdAt: "2023/8/24",
+			page: "general",
+		},
 	}),
 );
 

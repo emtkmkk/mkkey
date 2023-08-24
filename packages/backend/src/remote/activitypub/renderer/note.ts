@@ -152,7 +152,7 @@ export default async function renderNote(
 		attributedTo,
 		summary,
 		content,
-		contentmap: {
+		contentMap: {
 			ja: content,
 		},
 		_misskey_content: text,

@@ -68,45 +68,43 @@ export async function fetchInstanceMetadata(
 					? info.metadata.maintainer.email || null
 					: null
 				: null;
-			
-			if (info.software?.name.toLowerCase() === "mastodon" || info.software?.name.toLowerCase() === "fedibird"){
-				
-				const [mastodonInfo] = await Promise.all([fetchMastodonInfo(instance).catch(() => null)]);
-				
-				if (mastodonInfo) {
+			updates.maxReactionsPerAccount = info.metadata?.maxReactionsPerAccount;
 
-					// Nodeinfo から取得できなかった場合はここで取得を試行
-					if (updates.maintainerName == null) updates.maintainerName = mastodonInfo.contact_account?.username ? "@" + mastodonInfo.contact_account?.username : null;
-					if (updates.maintainerEmail == null) updates.maintainerEmail = mastodonInfo.email || null;
+			// 最大リアクション数がnodeinfoで取得できなかった場合
+			if (!updates.maxReactionsPerAccount) {
+				// mastodon または upstreamがmastodon の場合 
+				if (info.software?.name.toLowerCase() === "mastodon" || info.metadata?.upstream?.name.toLowerCase() === "mastodon") {
+					const [mastodonInfo] = await Promise.all([fetchMastodonInfo(instance).catch(() => null)]);
+					if (mastodonInfo) {
+						// Nodeinfo から取得できなかった場合はここで取得を試行
+						if (updates.maintainerName == null) updates.maintainerName = mastodonInfo.contact_account?.username ? "@" + mastodonInfo.contact_account?.username : null;
+						if (updates.maintainerEmail == null) updates.maintainerEmail = mastodonInfo.email || null;
 
-					// max_reactions_per_account の指定があればその値にする
-					// 指定が無い場合は以下の通り
-					// softwareNameが akkoma ならば 64
-					// softwareNameが mastodon でなければ 1
-					// configurationにemoji_reactionsの設定が何かあれば 1
-					// fedibird_capabilitiesにemoji_reactionがあれば 1
-					// 全てに当てはまらない場合は 0
-					updates.maxReactionsPerAccount = mastodonInfo.configuration?.emoji_reactions?.max_reactions_per_account
-						?? ((
-							info.software?.name.toLowerCase() !== "mastodon" ||
-							mastodonInfo.configuration?.emoji_reactions ||
-							mastodonInfo.fedibird_capabilities?.includes("emoji_reaction")
-						)
-							? info.software?.name.toLowerCase() === "akkoma" ? 64 : 1
-							: 0
-						);
-				} else {
-					// /api/v1/instance が取得できない場合は
-					// softwareNameが mastodon ならば 0
-					// softwareNameが akkoma ならば 64
-					// 全てに当てはまらない場合は 1
-					updates.maxReactionsPerAccount = info.software?.name.toLowerCase() !== "mastodon"
-						? info.software?.name.toLowerCase() === "akkoma"
-							? 64
-							: 1
-						: 0;
+						// max_reactions_per_account の指定があればその値にする
+						// 指定が無い場合は以下の通り
+						// configurationにemoji_reactionsの設定が何かあれば 1
+						// fedibird_capabilitiesにemoji_reactionがあれば 1
+						// 全てに当てはまらない場合は 0
+						updates.maxReactionsPerAccount = mastodonInfo.configuration?.emoji_reactions?.max_reactions_per_account
+							?? ((
+								mastodonInfo.configuration?.emoji_reactions ||
+								mastodonInfo.fedibird_capabilities?.includes("emoji_reaction")
+							)
+								? 1
+								: 0
+							);
+					}
 				}
-
+				// akkoma の場合
+				else if (info.software?.name === "akkoma") {
+					// 無限なので128とする
+					updates.maxReactionsPerAccount = 128;
+				}
+				// それ以外
+				else {
+					// 不明なので1にする
+					updates.maxReactionsPerAccount = 1;
+				}
 			}
 
 			if (updates.maxReactionsPerAccount === 0) {
@@ -160,6 +158,10 @@ type NodeInfo = {
 			name?: any;
 			email?: any;
 		};
+		upstream?: {
+			name?: any;
+		}
+		maxReactionsPerAccount?: any;
 	};
 };
 

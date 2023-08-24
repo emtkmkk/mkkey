@@ -552,10 +552,10 @@ function onContextmenu(ev: MouseEvent): void {
 	if (isLink(ev.target)) return;
 	if (window.getSelection().toString() !== "") return;
 
-	if (defaultStore.state.useReactionPickerForContextMenu) {
+	if (defaultStore.state.doContextMenu === "reactionPicker") {
 		ev.preventDefault();
 		react();
-	} else {
+	} else if (defaultStore.state.doContextMenu === "contextMenu") {
 		os.contextMenu(
 			getNoteMenu({
 				note: note,

@@ -116,7 +116,7 @@ const emojiFullName = computed(() => {
 const urlRaw = computed(() => {
 	const urlArr = [];
 	if(customEmoji.value?.url) urlArr.push(customEmoji.value.url);
-	if(customEmojiName.value) {
+	if(customEmojiName.value || props.nofallback) {
 		urlArr.push(`/emoji/${emojiFullName.value}.webp`);
 	}
 	return urlArr;

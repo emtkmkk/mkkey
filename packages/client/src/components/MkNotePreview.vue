@@ -7,6 +7,13 @@
 			</div>
 			<div class="body">
 				<div class="content">
+					<Mfm
+						v-if="cw != null"
+						class="text"
+						:text="(cw ? preprocess(cw).trim() + " " : "") + "[" + i18n.ts._cw.show + "]\n"
+						:author="note.user"
+						:i="$i"
+					/>
 					<Mfm :text="preprocess(text).trim()" :author="$i" :i="$i" />
 				</div>
 			</div>
@@ -17,9 +24,11 @@
 <script lang="ts" setup>
 import {} from "vue";
 import { preprocess } from "@/scripts/preprocess";
+import { i18n } from "@/i18n";
 
 const props = defineProps<{
 	text: string;
+	cw?: string;
 }>();
 </script>
 

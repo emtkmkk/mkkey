@@ -54,7 +54,7 @@ async function install() {
 	} catch (err) {
 		os.alert({
 			type: "error",
-			text: "Syntax error :(",
+			text: "Syntax error!" + (err.message ? " \n" + err.message : " \nno Message"),
 		});
 		return;
 	}

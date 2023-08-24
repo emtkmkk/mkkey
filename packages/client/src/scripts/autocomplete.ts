@@ -87,17 +87,6 @@ export class Autocomplete {
 
 		let opened = false;
 
-		if (isMention) {
-			const username = text.substr(mentionIndex + 1);
-			if (username !== "" && username.match(/^[a-zA-Z0-9_]+$/)) {
-				this.open("user", username);
-				opened = true;
-			} else if (username === "") {
-				this.open("user", null);
-				opened = true;
-			}
-		}
-
 		if (isHashtag && !opened) {
 			const hashtag = text.substr(hashtagIndex + 1);
 			if (!hashtag.includes(" ")) {
@@ -118,6 +107,17 @@ export class Autocomplete {
 			const emoji = text.substr(emojiIndex + 1);
 			if (!emoji.includes(" ")) {
 				this.open("emoji", emoji);
+				opened = true;
+			}
+		}
+		
+		if (isMention) {
+			const username = text.substr(mentionIndex + 1);
+			if (username !== "" && username.match(/^[a-zA-Z0-9_]+$/)) {
+				this.open("user", username);
+				opened = true;
+			} else if (username === "") {
+				this.open("user", null);
 				opened = true;
 			}
 		}

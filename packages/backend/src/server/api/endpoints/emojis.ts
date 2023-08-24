@@ -186,7 +186,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	return {
-		emojis: await Emojis.packMany(emojis.filter((x) => !x.category.startsWith("!"))),
+		emojis: await Emojis.packMany(emojis.filter((x) => !x.category?.startsWith("!"))),
 		...(remoteEmojiMode && remoteEmojis && me
 			? {
 					emojiFetchDate: new Date(),

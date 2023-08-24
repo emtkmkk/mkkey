@@ -57,11 +57,18 @@ export default define(meta, paramDef, async (ps) => {
 	});
 	
 	const pack = await Emojis.pack(emoji.id)
-		
-	publishBroadcastStream("emojiUpdated", {
-		emoji: pack,
-		emojis: [pack],
-	});
+
+	if (pack.category?.startsWith("!")){
+		publishBroadcastStream("emojiDeleted", {
+			emoji: pack,
+			emojis: [pack],
+		});
+	} else {
+		publishBroadcastStream("emojiUpdated", {
+			emoji: pack,
+			emojis: [pack],
+		});
+	}
 
 	await db.queryResultCache!.remove(["meta_emojis"]);
 });

@@ -270,7 +270,7 @@ export class Autocomplete {
 			let after = source.substr(caret);
 			let target = undefined;
 
-			if (defaultStore.state.smartMFMInputer) {
+			if (defaultStore.reactiveState.smartMFMInputer.value) {
 				// afterの中に1種類の終了タグのみ含まれている場合
 				// afterは指定していないことにする
 				if (/^(<\/\w*>|\*\*|~~|\n```|\\\)|\\\]|[`\]])$/.test(after)) {
@@ -287,7 +287,7 @@ export class Autocomplete {
 
 			// 挿入
 			const mfmValue = value.defaultOption ?? value.exportLeft
-			if (defaultStore.state.smartMFMInputer) {
+			if (defaultStore.reactiveState.smartMFMInputer.value) {
 				// スマートモード
 				// 右に文字列無し : textを全て囲む
 				// 右に文字列有り : 右の文字列を改行まで全て囲む

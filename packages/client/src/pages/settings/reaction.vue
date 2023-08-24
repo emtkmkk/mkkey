@@ -641,11 +641,11 @@ function remove(reaction, ev: MouseEvent) {
 			!reaction.includes("@") && !unref(emojiStr)?.includes(reaction) && unref(customEmojis).some((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))) ? {
 				text: "代替絵文字に変換",
 				action: () => {
-					if (tab === 'reactions') reactions[reactions.indexOf(reaction)] = unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":","")));
-					if (tab === 'reactions2') reactions2[reactions2.indexOf(reaction)] = unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":","")));
-					if (tab === 'reactions3') reactions3[reactions3.indexOf(reaction)] = unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":","")));
-					if (tab === 'reactions4') reactions4[reactions4.indexOf(reaction)] = unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":","")));
-					if (tab === 'reactions5') reactions5[reactions5.indexOf(reaction)] = unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":","")));
+					if (tab === 'reactions') reactions[reactions.indexOf(reaction)] = ":" + unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))).name + ":";
+					if (tab === 'reactions2') reactions2[reactions2.indexOf(reaction)] = ":" + unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))).name + ":";
+					if (tab === 'reactions3') reactions3[reactions3.indexOf(reaction)] = ":" + unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))).name + ":";
+					if (tab === 'reactions4') reactions4[reactions4.indexOf(reaction)] = ":" + unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))).name + ":";
+					if (tab === 'reactions5') reactions5[reactions5.indexOf(reaction)] = ":" + unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))).name + ":";
 				},
 			} : undefined,
 			reaction.includes("@") && !unref(remoteEmojiStr)?.includes(reaction) && unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/,":")) ? {

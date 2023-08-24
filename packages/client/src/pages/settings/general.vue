@@ -89,11 +89,12 @@
 			<FormSwitch v-model="enableInfiniteScroll" class="_formBlock">{{
 				i18n.ts.enableInfiniteScroll
 			}}</FormSwitch>
-			<FormSwitch
-				v-model="useReactionPickerForContextMenu"
-				class="_formBlock"
-				>{{ i18n.ts.useReactionPickerForContextMenu }}</FormSwitch
-			>
+			<FormSelect v-model="doContextMenu" class="_formBlock">
+				<template #label>{{ i18n.ts.doContextMenu }}</template>
+				<option value="contextMenu">{{ i18n.ts.contextMenu }}</option>
+				<option value="reactionPicker">{{ i18n.ts.reactionPicker }}</option>
+				<option value="doNothing">{{ i18n.ts.doNothing }}</option>
+			</FormSelect>
 			<FormSwitch v-if="!['classic','deck'].includes(ui)" v-model="alwaysPostButton" class="_formBlock">{{
 				i18n.ts.alwaysPostButton
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -602,6 +603,9 @@ const openMentionWindow = computed(
 );
 const useReactionPickerForContextMenu = computed(
 	defaultStore.makeGetterSetter("useReactionPickerForContextMenu")
+);
+const doContextMenu = computed(
+	defaultStore.makeGetterSetter("doContextMenu")
 );
 const seperateRenoteQuote = computed(
 	defaultStore.makeGetterSetter("seperateRenoteQuote")

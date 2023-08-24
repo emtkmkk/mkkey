@@ -82,7 +82,13 @@ const customEmoji = computed(() => {
 	} else if (host && host !== "mkkey.net") {
 		return ace.value.find((x) => x.name === name && x.host === host);
 	} else {
-		return ce.value.find((x) => x.name === name);
+		const cefind = ce.value.find((x) => x.name === name);
+		if (cefind){
+			return cefind
+		} else {
+			// ローカル絵文字が見つからない場合、aliasesを検索
+			return ce.value.find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === name));
+		}
 	}
 }
 );

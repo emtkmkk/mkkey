@@ -962,6 +962,7 @@ notCloseEmojiPicker: "絵文字選択後、ピッカーを自動的に閉じな�
 showRemoteEmojiPostForm: "【dev】投稿時でも他鯖絵文字選択可能に"
 hiddenCloseButton: "❌ボタンを非表示にする"
 smartMFMInputer: "スマートMFM入力機能を有効にする"
+quickToggleSmartMFMInputer: "MFMボタンをスマート機能切替ボタンに"
 hiddenActivityChart: "全てのグラフを非表示にする"
 longLoading: "起動時のロード時間を長くする"
 developerRenote: "【dev】RT対象はRT先でなく元"

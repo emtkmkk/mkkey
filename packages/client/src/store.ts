@@ -958,7 +958,7 @@ export const defaultStore = markRaw(
 		},
 		doContextMenu: {
 			where: 'device',
-			default: 'menu',
+			default: 'contextMenu',
 			createdAt: "2023/8/24",
 			page: "general",
 		},

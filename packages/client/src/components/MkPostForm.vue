@@ -454,7 +454,7 @@
 					<i class="ph-binoculars ph-bold ph-lg"></i>
 				</button>
 			</footer>
-			<XNotePreview v-if="showPreview" class="preview" :text="text" />
+			<XNotePreview v-if="showPreview" class="preview" :text="text" :cw="useCw ? (cw ?? '') : null" />
 			<datalist id="hashtags">
 				<option
 					v-for="hashtag in recentHashtags"
@@ -548,7 +548,7 @@ let poll = $ref<{
 	expiredAfter: string | null;
 } | null>(null);
 let useCw = $ref(false);
-let showPreview = $ref(true);
+let showPreview = $computed(defaultStore.makeGetterSetter("showPreview"));
 let cw = $computed(defaultStore.makeGetterSetter("postFormCw"));
 let localOnly = $ref<boolean>(
 	props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility

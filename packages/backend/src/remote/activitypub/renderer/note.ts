@@ -152,6 +152,9 @@ export default async function renderNote(
 		attributedTo,
 		summary,
 		content,
+		contentmap: {
+			ja: content,
+		},
 		_misskey_content: text,
 		source: {
 			content: text,

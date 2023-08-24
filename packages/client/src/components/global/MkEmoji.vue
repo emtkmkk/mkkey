@@ -54,6 +54,7 @@ const props = defineProps<{
 	noteHost?: string;
 	isPicker?: boolean;
 	static?: boolean;
+	nofallback?: boolean;
 }>();
 
 const emit = defineEmits(["loaderror"]);
@@ -83,7 +84,7 @@ const customEmoji = computed(() => {
 		return ace.value.find((x) => x.name === name && x.host === host);
 	} else {
 		const cefind = ce.value.find((x) => x.name === name);
-		if (cefind){
+		if (cefind || props.nofallback){
 			return cefind
 		} else {
 			// ローカル絵文字が見つからない場合、aliasesを検索

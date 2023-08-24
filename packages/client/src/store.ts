@@ -653,6 +653,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/5/25",
 			page: "general",
 		},
+		quickToggleSmartMFMInputer: {
+			where: "device",
+			default: false,
+			createdAt: "2023/8/24",
+			page: "general",
+		},
 		showUpdates: {
 			where: "device",
 			default: true,

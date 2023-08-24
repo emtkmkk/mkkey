@@ -433,6 +433,7 @@
 				<button
 					v-tooltip="i18n.ts.mfm"
 					class="_button"
+					:class="{ active: defaultStore.state.quickToggleSmartMFMInputer && smartMFMInputer }"
 					@click="insertMfm"
 				>
 					<i class="ph-magic-wand ph-bold ph-lg"></i>
@@ -567,6 +568,7 @@ if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }
 let autocomplete = $ref(null);
+let smartMFMInputer = $computed(defaultStore.makeGetterSetter("smartMFMInputer"));
 let draghover = $ref(false);
 let quoteId = $ref(null);
 let hasNotSpecifiedMentions = $ref(false);
@@ -1423,7 +1425,12 @@ async function insertEmoji(ev: MouseEvent) {
 }
 
 function insertMfm() {
-	insertTextAtCursor(textareaEl, '$');
+	if (defaultStore.state.quickToggleSmartMFMInputer) {
+		smartMFMInputer = !smartMFMInputer;
+	} else {
+		insertTextAtCursor(textareaEl, '$');
+	}
+	
 }
 
 async function openCheatSheet(ev: MouseEvent) {

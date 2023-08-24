@@ -958,7 +958,7 @@ export const defaultStore = markRaw(
 		},
 		doContextMenu: {
 			where: 'device',
-			default: 'contextMenu',
+			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? 'contextMenu' : 'doNothing',
 			createdAt: "2023/8/24",
 			page: "general",
 		},

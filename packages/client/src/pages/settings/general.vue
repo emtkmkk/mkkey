@@ -181,6 +181,9 @@
 			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
 				i18n.ts.smartMFMInputer
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="quickToggleSmartMFMInputer" class="_formBlock">{{
+				i18n.ts.quickToggleSmartMFMInputer
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch
 				v-model="keepPostCw"
 				class="_formBlock"
@@ -629,6 +632,9 @@ const showAdminUpdates = computed(
 );
 const smartMFMInputer = computed(
 	defaultStore.makeGetterSetter("smartMFMInputer")
+);
+const quickToggleSmartMFMInputer = computed(
+	defaultStore.makeGetterSetter("quickToggleSmartMFMInputer")
 );
 const developer = computed(
 	defaultStore.makeGetterSetter("developer")

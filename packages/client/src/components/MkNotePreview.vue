@@ -11,7 +11,7 @@
 						v-if="cw != null"
 						class="text"
 						:text="(cw ? preprocess(cw).trim() + ' ' : '') + '[' + i18n.ts._cw.show + ']\n'"
-						:author="note.user"
+						:author="$i"
 						:i="$i"
 					/>
 					<Mfm :text="preprocess(text).trim()" :author="$i" :i="$i" />

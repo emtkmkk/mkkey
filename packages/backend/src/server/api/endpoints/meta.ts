@@ -529,7 +529,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		logoImageUrl: instance.logoImageUrl,
 		maxNoteTextLength: MAX_NOTE_TEXT_LENGTH, // 後方互換性のため
 		maxCaptionTextLength: MAX_CAPTION_TEXT_LENGTH,
-		emojis: instance.privateMode && !me ? [] : await Emojis.packMany(emojis),
+		emojis: instance.privateMode && !me ? [] : await Emojis.packMany(emojis.filter((x) => !x.category.startsWith("!"))),
 		defaultLightTheme: instance.defaultLightTheme,
 		defaultDarkTheme: instance.defaultDarkTheme,
 		ads:

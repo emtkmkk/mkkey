@@ -37,7 +37,7 @@ const absolute = _time.toLocaleString();
 const milliseconds = _time.getMilliseconds() ? "." + ("000" + _time.getMilliseconds()).slice(-3) : "";
 const absoluteDateOnly = _time.toLocaleDateString();
 
-let now = $ref($shallowRef(new Date()).getTime());
+let now = $ref((new Date()).getTime());
 const ago = $computed(() => (now - _time.getTime()) / 1000/*ms*/);
 
 const relative = $computed(() => {

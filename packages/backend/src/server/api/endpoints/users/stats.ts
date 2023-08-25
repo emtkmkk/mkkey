@@ -451,7 +451,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	const rankPower =
 		Math.floor((rankResult.notesPostDays * 482 +
-			rankResult.notesCount * 18 +
+			(rankResult.notesCount * 18 +
 			rankResult.repliesCount * 7 +
 			rankResult.renotesCount * -11 +
 			rankResult.quotesCount * 7 +
@@ -465,8 +465,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			rankResult.receivedReactionsCount * 3 +
 			rankResult.driveFilesCount * 6 +
 			rankResult.sendMessageCount * 11 +
-			rankResult.readMessageCount * 2
-		) / elapsedDays * 100 * rpRate) / 100;
+			rankResult.readMessageCount * 2) * rpRate
+		) / elapsedDays * 100) / 100;
 
 	let _rankPower = rankPower;
 

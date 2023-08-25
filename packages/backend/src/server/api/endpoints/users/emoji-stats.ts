@@ -163,38 +163,38 @@ export default define(meta, paramDef, async (ps, me) => {
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
 			.where("reaction.userId = :userId", { userId: user.id })
 			.groupBy('reaction.reaction')
-			.orderBy("count")
+			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
-		sentReactionsCount: NoteReactions.createQueryBuilder("reaction")
+		sentReactionsCount: (NoteReactions.createQueryBuilder("reaction")
 			.select('reaction.reaction')
 			.where("reaction.userId = :userId", { userId: user.id })
-			.andWhere("reaction.reaction ~* '^:[^@]+:$'")
+			.andWhere("reaction.reaction ~ '^:[^@]+:$'")
 			.groupBy('reaction.reaction')
 			.cache(CACHE_TIME)
-			.getCount(),
+			.getRawMany()).length,
 		receivedReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
 			.innerJoin("reaction.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
 			.groupBy('reaction.reaction')
-			.orderBy("count")
+			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
-		receivedReactionsCount: NoteReactions.createQueryBuilder("reaction")
+		receivedReactionsCount: (NoteReactions.createQueryBuilder("reaction")
 			.select('reaction.reaction')
 			.innerJoin("reaction.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
-			.andWhere("reaction.reaction ~* '^:[^@]+:$'")
+			.andWhere("reaction.reaction ~ '^:[^@]+:$'")
 			.groupBy('reaction.reaction')
 			.cache(CACHE_TIME)
-			.getCount(),
+			.getRawMany()).length,
 		recentlySentReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
 			.where("reaction.userId = :userId", { userId: user.id })
 			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.groupBy('reaction.reaction')
-			.orderBy("count")
+			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
 		recentlyReceivedReactionsCount: NoteReactions.createQueryBuilder("reaction")
@@ -203,7 +203,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.groupBy('reaction.reaction')
-			.orderBy("count")
+			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
 	});

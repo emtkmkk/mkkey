@@ -647,17 +647,12 @@ const randomSubset = computed(() => {
 	}
 	return result;
 });
-const recentlyMostUsed = computed(async () => {
-	if (!instance.emojiStats) {
-		const _emojiStats = await os.api("users/emoji-stats", {
-			userId: $i.id,
-			limit: 80,
-		});
+const recentlyMostUsed = computed(() => {
+  if (!instance.emojiStats.value) return [];
 
-		instance.emojiStats = _emojiStats;
-	}
-	return instance.emojiStats.recentlySentReactions.map((x) => x.name).filter((x) => !pinned.value.includes(x) && !pinned2.value.includes(x) && !pinned3.value.includes(x) && !pinned4.value.includes(x) && !pinned5.value.includes(x)).slice(0,50);
-})
+  const pinnedValues = [...pinned.value, ...pinned2.value, ...pinned3.value, ...pinned4.value, ...pinned5.value];
+  return instance.emojiStats.value.recentlySentReactions.map((x) => x.name).filter((x) => !pinnedValues.includes(x)).slice(0, 50);
+});
 const q = ref<string | null>(null);
 const errorEmojis = ref(new Set());
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);

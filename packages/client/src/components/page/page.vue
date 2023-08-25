@@ -63,7 +63,7 @@ export default defineComponent({
 						ast = parse(props.page.script);
 					} catch (err) {
 						console.error(err);
-						_err.value += "\n" + err.stringify();
+						_err.value += "\n" + JSON.stringify(err);
 						return;
 					}
 					hpml.aiscript
@@ -73,7 +73,7 @@ export default defineComponent({
 						})
 						.catch((err) => {
 							console.error(err);
-							_err.value += "\n" + err.stringify();
+							_err.value += "\n" + JSON.stringify(err);
 						});
 				} else {
 					hpml.eval();

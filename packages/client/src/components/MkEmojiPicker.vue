@@ -656,7 +656,7 @@ const recentlyMostUsed = computed(async () => {
 
 		instance.emojiStats = _emojiStats;
 	}
-	return instance.emojiStats.recentlySentReactions.map((x) => x.name).filter((x) => !pinned.value.includes(key) && !pinned2.value.includes(key) && !pinned3.value.includes(key) && !pinned4.value.includes(key) && !pinned5.value.includes(key)).slice(0,50);
+	return instance.emojiStats.recentlySentReactions.map((x) => x.name).filter((x) => !pinned.value.includes(x) && !pinned2.value.includes(x) && !pinned3.value.includes(x) && !pinned4.value.includes(x) && !pinned5.value.includes(x)).slice(0,50);
 })
 const q = ref<string | null>(null);
 const errorEmojis = ref(new Set());

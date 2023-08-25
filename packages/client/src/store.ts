@@ -832,7 +832,7 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: false,	
 			createdAt: "2023/7/11",
-			page: "general",
+			page: "drive",
 		},
 		enableDataSaverMode: {
 			where: 'device',
@@ -977,6 +977,7 @@ export const defaultStore = markRaw(
 			where: 'device',
 			default: false,
 			createdAt: "2023/8/25",
+			page: "drive",
 		},
 	}),
 );

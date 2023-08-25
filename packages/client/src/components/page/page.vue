@@ -1,8 +1,9 @@
 <template>
 	<div
 		v-if="!page.isPublic && _err"
+		style="white-space: normal; font-size: 0.9em; opacity: 0.9;"
 	>
-		{{ "Error!" + _err }}
+		{{ "エラー！\n" + _err + "\nJavascriptコンソールにて詳細を出力しています。\n（このメッセージはページが非公開の場合のみ表示されます。）\n\n" }}
 	</div>
 	<div
 		v-if="hpml"

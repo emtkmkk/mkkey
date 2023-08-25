@@ -97,6 +97,7 @@ export class Hpml {
 		try {
 			this.vars.value = this.evaluateVars();
 		} catch (err) {
+			console.error(err);
 			//this.onError(e);
 		}
 	}
@@ -114,7 +115,7 @@ export class Hpml {
 	public callAiScript(fn: string) {
 		try {
 			if (this.aiscript) this.aiscript.execFn(this.aiscript.scope.get(fn), []);
-		} catch (err) {}
+		} catch (err) {console.error(err);}
 	}
 
 	@autobind
@@ -202,6 +203,7 @@ export class Hpml {
 					try {
 						return utils.valToJs(this.aiscript.scope.get(expr.value));
 					} catch (err) {
+						console.error(err);
 						return null;
 					}
 				} else {

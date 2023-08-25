@@ -135,13 +135,13 @@
 							</div>
 						</section>
 						
-						<section v-if="!showPinned && !$store.state.hiddenRecent">
+						<section v-if="!showPinned && !$store.state.hiddenRecent && recentlyMostUsed?.length">
 							<header class="_acrylic">
 								<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
 								{{ i18n.ts.recentlyMostUsed }}
 							</header>
 							<div class="body">
-								<template v-for="emoji in recentlyMostUsed.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
+								<template v-for="emoji in recentlyMostUsed?.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
 									<button
 										:key="emoji"
 										v-if="!errorEmojis.has(emoji)"

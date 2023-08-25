@@ -166,7 +166,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
-		sentReactionsCount: (NoteReactions.createQueryBuilder("reaction")
+		sentReactionsCount: (await NoteReactions.createQueryBuilder("reaction")
 			.select('reaction.reaction')
 			.where("reaction.userId = :userId", { userId: user.id })
 			.andWhere("reaction.reaction ~ '^:[^@]+:$'")
@@ -181,7 +181,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
-		receivedReactionsCount: (NoteReactions.createQueryBuilder("reaction")
+		receivedReactionsCount: (await NoteReactions.createQueryBuilder("reaction")
 			.select('reaction.reaction')
 			.innerJoin("reaction.note", "note")
 			.where("note.userId = :userId", { userId: user.id })

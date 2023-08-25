@@ -1,5 +1,10 @@
 <template>
 	<div
+		v-if="!page.isPublic && _err"
+	>
+		{{ "Error!" + _err }}
+	</div>
+	<div
 		v-if="hpml"
 		class="iroscrza"
 		:class="{ center: page.alignCenter, serif: page.font === 'serif' }"
@@ -46,6 +51,8 @@ export default defineComponent({
 			url: url,
 			enableAiScript: !defaultStore.state.disablePagesScript,
 		});
+		
+		let _err = "";
 
 		onMounted(() => {
 			nextTick(() => {
@@ -55,6 +62,7 @@ export default defineComponent({
 						ast = parse(props.page.script);
 					} catch (err) {
 						console.error(err);
+						_err += "\n" + err.stringify();
 						if (!props.page.isPublic){
 							os.alert({
 								type: 'error',
@@ -70,6 +78,7 @@ export default defineComponent({
 						})
 						.catch((err) => {
 							console.error(err);
+							_err += "\n" + err.stringify();
 							if (!props.page.isPublic){
 								os.alert({
 									type: 'error',
@@ -88,6 +97,7 @@ export default defineComponent({
 
 		return {
 			hpml,
+			_err,
 		};
 	},
 });

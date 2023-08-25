@@ -443,6 +443,12 @@ export default define(meta, paramDef, async (ps, me) => {
 			result.followingCount * 0.0005 +
 			result.followersCount * 0.0015));
 
+	const rpRate = 1 - (
+		(elapsedDays < 7 ? (7 - elapsedDays) * (0.3 / 7) : 0) +
+		Math.min((elapsedDays < 14 ? (14 - elapsedDays) * (0.1 / 7) : 0), 0.1) +
+		Math.min((elapsedDays < 30 ? (30 - elapsedDays) * (0.1 / 16) : 0), 0.1)
+	);
+
 	const rankPower =
 		Math.floor((rankResult.notesPostDays * 482 +
 			rankResult.notesCount * 18 +
@@ -460,7 +466,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			rankResult.driveFilesCount * 6 +
 			rankResult.sendMessageCount * 11 +
 			rankResult.readMessageCount * 2
-		) / elapsedDays * 100) / 100;
+		) / elapsedDays * 100 * rpRate) / 100;
 
 	let _rankPower = rankPower;
 
@@ -493,7 +499,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	if (!firstLocalFollower && user.host) result.powerRank = result.powerRank + "?";
-	
+
 	//if (_rankPower > rankBorder.slice(-2)[0]) result.starPower = _rankPower;
 
 	return result;

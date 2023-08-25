@@ -160,9 +160,10 @@ export default define(meta, paramDef, async (ps, me) => {
 	
 	const result = await awaitAll({
 		sentReactions: NoteReactions.createQueryBuilder("reaction")
-			.select(['reaction.reaction', 'COUNT(*) AS cnt'])
+			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
 			.where("reaction.userId = :userId", { userId: user.id })
 			.groupBy('reaction.reaction')
+			.orderBy("count")
 			.cache(CACHE_TIME)
 			.getRawMany(),
 		sentReactionsCount: NoteReactions.createQueryBuilder("reaction")
@@ -173,10 +174,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			.cache(CACHE_TIME)
 			.getCount(),
 		receivedReactions: NoteReactions.createQueryBuilder("reaction")
-			.select(['reaction.reaction', 'COUNT(*) AS cnt'])
+			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
 			.innerJoin("reaction.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
 			.groupBy('reaction.reaction')
+			.orderBy("count")
 			.cache(CACHE_TIME)
 			.getRawMany(),
 		receivedReactionsCount: NoteReactions.createQueryBuilder("reaction")
@@ -188,18 +190,20 @@ export default define(meta, paramDef, async (ps, me) => {
 			.cache(CACHE_TIME)
 			.getCount(),
 		recentlySentReactions: NoteReactions.createQueryBuilder("reaction")
-			.select(['reaction.reaction', 'COUNT(*) AS cnt'])
+			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
 			.where("reaction.userId = :userId", { userId: user.id })
 			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.groupBy('reaction.reaction')
+			.orderBy("count")
 			.cache(CACHE_TIME)
 			.getRawMany(),
 		recentlyReceivedReactionsCount: NoteReactions.createQueryBuilder("reaction")
-			.select(['reaction.reaction', 'COUNT(*) AS cnt'])
+			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
 			.innerJoin("reaction.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.groupBy('reaction.reaction')
+			.orderBy("count")
 			.cache(CACHE_TIME)
 			.getRawMany(),
 	});

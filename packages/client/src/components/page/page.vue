@@ -21,6 +21,7 @@
 
 <script lang="ts">
 import {
+	ref,
 	defineComponent,
 	onMounted,
 	nextTick,
@@ -52,7 +53,7 @@ export default defineComponent({
 			enableAiScript: !defaultStore.state.disablePagesScript,
 		});
 		
-		let _err = "";
+		let _err = ref("");
 
 		onMounted(() => {
 			nextTick(() => {
@@ -62,7 +63,7 @@ export default defineComponent({
 						ast = parse(props.page.script);
 					} catch (err) {
 						console.error(err);
-						_err += "\n" + err.stringify();
+						_err.value += "\n" + err.stringify();
 						if (!props.page.isPublic){
 							os.alert({
 								type: 'error',
@@ -78,7 +79,7 @@ export default defineComponent({
 						})
 						.catch((err) => {
 							console.error(err);
-							_err += "\n" + err.stringify();
+							_err.value += "\n" + err.stringify();
 							if (!props.page.isPublic){
 								os.alert({
 									type: 'error',

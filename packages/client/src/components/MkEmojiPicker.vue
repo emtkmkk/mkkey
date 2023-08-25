@@ -648,7 +648,7 @@ const randomSubset = computed(() => {
 });
 const recentlyMostUsed = computed(async () => {
 	if (!instance.emojiStats) {
-		const _emojiStats = await api("users/emoji-stats", {
+		const _emojiStats = await os.api("users/emoji-stats", {
 			userId: $i.id,
 			limit: 80,
 		});

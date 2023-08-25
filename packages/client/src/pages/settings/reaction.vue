@@ -444,7 +444,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, unref, defineAsyncComponent, watch } from "vue";
+import { computed, unref, onMounted, defineAsyncComponent, watch } from "vue";
 import XDraggable from "vuedraggable";
 import FormInput from "@/components/form/input.vue";
 import FormSelect from "@/components/form/select.vue";
@@ -462,6 +462,7 @@ import { deepClone } from "@/scripts/clone";
 import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
 import { instance } from "@/instance";
+import { $i } from "@/account";
 
 const MOBILE_THRESHOLD = 500;
 
@@ -748,6 +749,16 @@ function chooseEmoji(ev: MouseEvent) {
 		}
 	});
 }
+
+onMounted(async () => {
+	if (!unref(instance.emojiStats)) {
+		const data = await os.api("users/emoji-stats", {
+			userId: $i.id,
+			limit: 80,
+		});
+		unref(instance.emojiStats) = data;
+	}
+});
 
 watch(
 	[$$(reactions),$$(reactions2),$$(reactions3),$$(reactions4),$$(reactions5)],

@@ -37,8 +37,8 @@ const absolute = _time.toLocaleString();
 const milliseconds = _time.getMilliseconds() ? "." + ("000" + _time.getMilliseconds()).slice(-3) : "";
 const absoluteDateOnly = _time.toLocaleDateString();
 
-let now = $ref((new Date()).getTime());
-const ago = $computed(() => (now - _time.getTime()) / 1000/*ms*/);
+let now = $ref((new Date()));
+const ago = $computed(() => (now.getTime() - _time.getTime()) / 1000/*ms*/);
 
 const relative = $computed(() => {
 	return now.getFullYear() !== _time.getFullYear()
@@ -83,6 +83,7 @@ const relativeRawDateOnly = $computed(() => {
 });
 
 let tickId: number;
+let currentInterval: number;
 
 function tick() {
 	now = (new Date()).getTime();

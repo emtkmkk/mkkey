@@ -197,7 +197,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
-		recentlyReceivedReactionsCount: NoteReactions.createQueryBuilder("reaction")
+		recentlyReceivedReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
 			.innerJoin("reaction.note", "note")
 			.where("note.userId = :userId", { userId: user.id })

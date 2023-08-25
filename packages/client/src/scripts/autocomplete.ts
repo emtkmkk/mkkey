@@ -87,7 +87,7 @@ export class Autocomplete {
 
 		let opened = false;
 
-		if (isHashtag && !opened) {
+		if (isHashtag) {
 			const hashtag = text.substr(hashtagIndex + 1);
 			if (!hashtag.includes(" ")) {
 				this.open("hashtag", hashtag);
@@ -111,7 +111,7 @@ export class Autocomplete {
 			}
 		}
 		
-		if (isMention) {
+		if (isMention && !opened) {
 			const username = text.substr(mentionIndex + 1);
 			if (username !== "" && username.match(/^[a-zA-Z0-9_]+$/)) {
 				this.open("user", username);

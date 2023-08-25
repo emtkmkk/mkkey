@@ -577,7 +577,8 @@ let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
 let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public")  && !$i.blockPostPublic && !$i.isSilenced);
 let canHome = $ref((!props.reply || (props.reply.visibility === "public" || props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" || props.renote.visibility === "home")) && !$i.blockPostHome && !$i.isSilenced);
 let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified"));
-let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]")  && !$i.isSilenced);
+let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]") && !$i.isSilenced);
+let requiredFilename = $ref(props.channel?.description?.includes("[requiredFilename]"))
 let imeText = $ref("");
 let shortcutKeyValue = $ref(0);
 let fileselecting = $ref(false);
@@ -931,7 +932,7 @@ function focus() {
 
 function chooseFileFrom(ev) {
 	fileselecting = true;
-	selectFiles(ev.currentTarget ?? ev.target, i18n.ts.attachFile).then(
+	selectFiles(ev.currentTarget ?? ev.target, i18n.ts.attachFile, requiredFilename).then(
 		(files_) => {
 			fileselecting = false;
 			for (const file of files_) {
@@ -960,7 +961,7 @@ function updateFileName(file, name) {
 }
 
 function upload(file: File, name?: string) {
-	uploadFile(file, defaultStore.state.uploadFolder, name).then((res) => {
+	uploadFile(file, defaultStore.state.uploadFolder, name, undefined, undefined, requiredFilename).then((res) => {
 		files.push(res);
 	});
 }

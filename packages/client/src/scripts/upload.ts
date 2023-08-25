@@ -60,7 +60,7 @@ export function uploadFile(
 			
 			let inputName = undefined;
 			
-			if (requiredFilename || defaultStore.state.alwaysInputFilename && keepFileName) {
+			if (requiredFilename || defaultStore.state.alwaysInputFilename) {
 				const { canceled, result: input } = await os.inputText({
 					title: i18n.ts.filenameInput,
 					text: ext ?? ".???",

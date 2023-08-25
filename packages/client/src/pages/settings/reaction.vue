@@ -756,7 +756,7 @@ onMounted(async () => {
 			userId: $i.id,
 			limit: 80,
 		});
-		unref(instance.emojiStats) = data;
+		instance.emojiStats = data;
 	}
 });
 

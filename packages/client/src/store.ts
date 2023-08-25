@@ -973,6 +973,11 @@ export const defaultStore = markRaw(
 			default: true,
 			createdAt: "2023/8/24",
 		},
+		alwaysInputFilename: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/8/25",
+		},
 	}),
 );
 

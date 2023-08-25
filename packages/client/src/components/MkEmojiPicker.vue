@@ -651,7 +651,7 @@ const recentlyMostUsed = computed(() => {
   if (!instance.emojiStats) return [];
 
   const pinnedValues = [...pinned.value, ...pinned2.value, ...pinned3.value, ...pinned4.value, ...pinned5.value];
-  return instance.emojiStats.value.recentlySentReactions.map((x) => x.name).filter((x) => !pinnedValues.includes(x)).slice(0, 50);
+  return instance.emojiStats.recentlySentReactions.map((x) => x.name).filter((x) => !pinnedValues.includes(x)).slice(0, 50);
 });
 const q = ref<string | null>(null);
 const errorEmojis = ref(new Set());

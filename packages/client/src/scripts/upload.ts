@@ -64,14 +64,14 @@ export function uploadFile(
 				const { canceled, result: input } = await os.inputText({
 					title: i18n.ts.filenameInput,
 					text: ext ?? ".???",
-					placeholder: (name ? (file.name ? file.name : "") : "") + ext ?? ".???",
-					default: name || (file.name ? file.name : ""),
+					placeholder: (name ? (file.name ? file.name.replace(/\.\w+$/,"") : "") : "") + ext ?? ".???",
+					default: name || (file.name ? file.name.replace(/\.\w+$/,"") : ""),
 				});
 				if (!input || canceled) {
 					reject();
 					return;
 				}
-				inputName = input;
+				inputName = input + ext;
 			}
 			
 			const ctx = reactive<Uploading>({

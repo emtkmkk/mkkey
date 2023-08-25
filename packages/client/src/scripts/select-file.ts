@@ -10,6 +10,7 @@ function select(
 	src: any,
 	label: string | null,
 	multiple: boolean,
+	requiredFilename?: boolean,
 ): Promise<DriveFile | DriveFile[]> {
 	return new Promise((res, rej) => {
 		const keepOriginal = ref(defaultStore.state.keepOriginalUploading);
@@ -29,6 +30,7 @@ function select(
 						undefined,
 						keepOriginal.value,
 						keepFileName.value,
+						requiredFilename,
 					),
 				);
 

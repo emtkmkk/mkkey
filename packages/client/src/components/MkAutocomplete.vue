@@ -430,8 +430,8 @@ function applySelect() {
 function chooseUser() {
 	props.close();
 	os.selectUser().then((user) => {
-		complete("user", user);
 		props.textarea.focus();
+		complete("user", user);
 	});
 }
 

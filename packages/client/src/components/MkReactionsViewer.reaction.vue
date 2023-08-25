@@ -159,21 +159,25 @@ useTooltip(
 		cursor: default;
 	}
 
-	&.reacted {
-		background: var(--accent);
-
-		&:hover {
-			background: var(--accent);
-		}
+	&.reacted, &.reacted:hover {
+		background: var(--accentedBg);
+		color: var(--accent);
+		border: 1px solid var(--accent);
 
 		> .count {
-			color: var(--fgOnAccent);
+			color: var(--accent);
 			font-weight: 600;
 		}
 
 		> .icon {
 			filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
 		}
+	}
+	
+	&.reacted, &.reacted:hover {
+		background: var(--accentedBg);
+		color: var(--accent);
+		border: 1px solid var(--accent);
 	}
 
 	> .count {

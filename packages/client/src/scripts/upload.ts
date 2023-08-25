@@ -36,6 +36,7 @@ export function uploadFile(
 	name?: string,
 	keepOriginal: boolean = defaultStore.state.keepOriginalUploading,
 	keepFileName: boolean = defaultStore.state.keepFileName,
+	requiredFilename: boolean = false,
 ): Promise<Misskey.entities.DriveFile> {
 	if (folder && typeof folder === "object") folder = folder.id;
 
@@ -57,9 +58,25 @@ export function uploadFile(
 			
 			const ext = /\.\w+$/.exec(file.name) ?? undefined;
 			
+			let inputName = undefined;
+			
+			if (requiredFilename || defaultStore.state.alwaysInputFilename && keepFileName) {
+				const { canceled, result: input } = await os.inputText({
+					title: i18n.ts.filenameInput,
+					text: ext ?? ".???",
+					placeholder: (name ? (file.name ? file.name : "") : "") + ext ?? ".???",
+					default: name || (file.name ? file.name : ""),
+				});
+				if (!input || canceled) {
+					reject();
+					return;
+				}
+				inputName = input;
+			}
+			
 			const ctx = reactive<Uploading>({
 				id: id,
-				name: name || (keepFileName ? file.name : undefined) || $i.username + "-" + id.replaceAll(".","") + (ext?.[0] ?? ""),
+				name: inputName || name || (keepFileName ? file.name : undefined) || $i.username + "-" + id.replaceAll(".","") + (ext?.[0] ?? ""),
 				progressMax: undefined,
 				progressValue: undefined,
 				img: window.URL.createObjectURL(file),

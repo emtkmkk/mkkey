@@ -37,10 +37,10 @@ const absolute = _time.toLocaleString();
 const milliseconds = _time.getMilliseconds() ? "." + ("000" + _time.getMilliseconds()).slice(-3) : "";
 const absoluteDateOnly = _time.toLocaleDateString();
 
-let now = $shallowRef(new Date());
+let now = $ref(now.getTime());
+const ago = $computed(() => (now - _time.getTime()) / 1000/*ms*/);
 
 const relative = $computed(() => {
-	const ago = (now.getTime() - _time.getTime()) / 1000; /*ms*/
 	return now.getFullYear() !== _time.getFullYear()
 		? _time.toLocaleString([], { year:'numeric' , month: 'numeric' , day: 'numeric' , hour: 'numeric' , minute: 'numeric', hour12: false })
 		: ago >= (60 * 60 * 24)
@@ -55,7 +55,6 @@ const relative = $computed(() => {
 });
 
 const relativeRaw = $computed(() => {
-	const ago = (now.getTime() - _time.getTime()) / 1000; /*ms*/
 	return ago >= 31536000
 		? i18n.t("_ago.yearsAgo", { n: (~~(ago / 31536000)).toString() })
 		: ago >= 2592000
@@ -80,26 +79,29 @@ const relativeDateOnly = $computed(() => {
 });
 
 const relativeRawDateOnly = $computed(() => {
-	const ago = (now.getTime() - _time.getTime()) / 1000; /*ms*/
 	return i18n.t("_ago.daysAgo", { n: (~~(ago / 86400)).toString() })
 });
 
-function tick() {
-	// TODO: パフォーマンス向上のため、このコンポーネントが画面内に表示されている場合のみ更新する
-	now = new Date();
-
-	tickId = window.setTimeout(() => {
-		window.requestAnimationFrame(tick);
-	}, 10000);
-}
-
 let tickId: number;
 
+function tick() {
+	now = (new Date()).getTime();
+	const nextInterval = ago < 60 ? 10000 : ago < 3600 ? 30000 : 300000;
+
+	if (currentInterval !== nextInterval) {
+		if (tickId) window.clearInterval(tickId);
+		currentInterval = nextInterval;
+		tickId = window.setInterval(tick, nextInterval);
+	}
+}
+
 if (props.mode === "relative" || props.mode === "detail" || props.mode === "detail-dateOnly") {
-	tickId = window.requestAnimationFrame(tick);
+	onMounted(() => {
+		tick();
+	});
 
 	onUnmounted(() => {
-		window.cancelAnimationFrame(tickId);
+		if (tickId) window.clearInterval(tickId);
 	});
 }
 </script>

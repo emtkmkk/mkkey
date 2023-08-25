@@ -151,7 +151,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	let now = new Date();
 	let borderDate = new Date();
 	
-	const limit = ps.limit > 0 ? ps.limit : 100000;
+	const limit = ps.limit;
 
 	const RECENTLY_TARGET_DAYS = 14;
 	const CACHE_TIME = 300 * 1000;
@@ -168,7 +168,6 @@ export default define(meta, paramDef, async (ps, me) => {
 			.groupBy('reaction.reaction')
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
-			.take(limit)
 			.getRawMany(),
 		sentReactionsCount: (await NoteReactions.createQueryBuilder("reaction")
 			.select('reaction.reaction')
@@ -176,7 +175,6 @@ export default define(meta, paramDef, async (ps, me) => {
 			.andWhere("reaction.reaction ~ '^:[^@]+:$'")
 			.groupBy('reaction.reaction')
 			.cache(CACHE_TIME)
-			.take(limit)
 			.getRawMany()).length,
 		receivedReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
@@ -185,7 +183,6 @@ export default define(meta, paramDef, async (ps, me) => {
 			.groupBy('reaction.reaction')
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
-			.take(limit)
 			.getRawMany(),
 		receivedReactionsCount: (await NoteReactions.createQueryBuilder("reaction")
 			.select('reaction.reaction')
@@ -194,7 +191,6 @@ export default define(meta, paramDef, async (ps, me) => {
 			.andWhere("reaction.reaction ~ '^:[^@]+:$'")
 			.groupBy('reaction.reaction')
 			.cache(CACHE_TIME)
-			.take(limit)
 			.getRawMany()).length,
 		recentlySentReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
@@ -203,7 +199,6 @@ export default define(meta, paramDef, async (ps, me) => {
 			.groupBy('reaction.reaction')
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
-			.take(limit)
 			.getRawMany(),
 		recentlyReceivedReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
@@ -213,9 +208,14 @@ export default define(meta, paramDef, async (ps, me) => {
 			.groupBy('reaction.reaction')
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
-			.take(limit)
 			.getRawMany(),
 	});
 
+	if (limit){
+		result.sentReactions = result.sentReactions.slice(0,limit)
+		result.receivedReactions = result.receivedReactions.slice(0,limit)
+		result.recentlySentReactions = result.recentlySentReactions.slice(0,limit)
+		result.recentlyReceivedReactions = result.recentlyReceivedReactions.slice(0,limit)
+	}
 	return result;
 });

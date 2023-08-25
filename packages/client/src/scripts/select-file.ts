@@ -139,13 +139,15 @@ function select(
 export function selectFile(
 	src: any,
 	label: string | null = null,
+	requiredFilename?: boolean,
 ): Promise<DriveFile> {
-	return select(src, label, false) as Promise<DriveFile>;
+	return select(src, label, false, requiredFilename) as Promise<DriveFile>;
 }
 
 export function selectFiles(
 	src: any,
 	label: string | null = null,
+	requiredFilename?: boolean,
 ): Promise<DriveFile[]> {
-	return select(src, label, true) as Promise<DriveFile[]>;
+	return select(src, label, true, requiredFilename) as Promise<DriveFile[]>;
 }

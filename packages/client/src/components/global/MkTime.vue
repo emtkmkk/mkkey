@@ -86,7 +86,7 @@ let tickId: number;
 let currentInterval: number;
 
 function tick() {
-	now = (new Date()).getTime();
+	now = new Date();
 	const nextInterval = ago < 60 ? 10000 : ago < 3600 ? 30000 : 300000;
 
 	if (currentInterval !== nextInterval) {

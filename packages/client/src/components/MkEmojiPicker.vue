@@ -650,7 +650,7 @@ const recentlyMostUsed = computed(() => {
 	if (!instance.emojiStats) {
 		const _emojiStats = await api("users/emoji-stats", {
 			userId: $i.id,
-			limit: 70,
+			limit: 80,
 		});
 
 		instance.emojiStats = _emojiStats;

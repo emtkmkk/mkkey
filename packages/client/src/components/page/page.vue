@@ -64,12 +64,6 @@ export default defineComponent({
 					} catch (err) {
 						console.error(err);
 						_err.value += "\n" + err.stringify();
-						if (!props.page.isPublic){
-							os.alert({
-								type: 'error',
-								text: "Syntax error!" + (err.message ? " \n" + err.message : " \nno Message"),
-							});
-						}
 						return;
 					}
 					hpml.aiscript
@@ -80,12 +74,6 @@ export default defineComponent({
 						.catch((err) => {
 							console.error(err);
 							_err.value += "\n" + err.stringify();
-							if (!props.page.isPublic){
-								os.alert({
-									type: 'error',
-									text: "error!" + (err.message ? " \n" + err.message : " \n" + err),
-								});
-							}
 						});
 				} else {
 					hpml.eval();

@@ -134,6 +134,26 @@
 								</template>
 							</div>
 						</section>
+						
+						<section v-if="!showPinned && !$store.state.hiddenRecent">
+							<header class="_acrylic">
+								<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
+								{{ i18n.ts.recentlyMostUsed }}
+							</header>
+							<div class="body">
+								<template v-for="emoji in recentlyMostUsed.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))">
+									<button
+										:key="emoji"
+										v-if="!errorEmojis.has(emoji)"
+										v-tooltip="emoji"
+										class="_button item"
+										@click="chosen(emoji, $event)"
+									>
+										<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.add(emoji)"/>
+									</button>
+								</template>
+							</div>
+						</section>
 
 						<section v-if="!$store.state.hiddenRecent">
 							<header class="_acrylic">
@@ -626,6 +646,17 @@ const randomSubset = computed(() => {
 	}
 	return result;
 });
+const recentlyMostUsed = computed(() => {
+	if (!instance.emojiStats) {
+		const _emojiStats = await api("users/emoji-stats", {
+			userId: $i.id,
+			limit: 70,
+		});
+
+		instance.emojiStats = _emojiStats;
+	}
+	return instance.emojiStats.recentlySentReactions.map((x) => x.name).filter((x) => !pinned.value.includes(key) && !pinned2.value.includes(key) && !pinned3.value.includes(key) && !pinned4.value.includes(key) && !pinned5.value.includes(key)).slice(0,50);
+})
 const q = ref<string | null>(null);
 const errorEmojis = ref(new Set());
 const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);

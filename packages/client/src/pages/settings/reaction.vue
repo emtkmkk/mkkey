@@ -754,7 +754,7 @@ onMounted(async () => {
 	if (!unref(instance.emojiStats)) {
 		const data = await os.api("users/emoji-stats", {
 			userId: $i.id,
-			limit: 80,
+			limit: 100,
 		});
 		instance.emojiStats = data;
 	}

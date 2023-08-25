@@ -581,6 +581,7 @@ import { emojiCategories, instance } from "@/instance";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
 import { FocusTrap } from "focus-trap-vue";
+import { $i } from "@/account";
 
 const props = withDefaults(
 	defineProps<{

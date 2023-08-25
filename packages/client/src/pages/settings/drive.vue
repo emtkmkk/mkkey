@@ -50,6 +50,9 @@
 			<FormSwitch v-model="keepFileName" class="_formBlock">
 				<template #label>{{ i18n.ts.keepFileName }}</template>
 			</FormSwitch>
+			<FormSwitch v-model="alwaysInputFilename" class="_formBlock">
+				<template #label>{{ i18n.ts.alwaysInputFilename }}</template>
+			</FormSwitch>
 			<FormSwitch
 				v-model="alwaysMarkNsfw"
 				class="_formBlock"
@@ -121,6 +124,10 @@ const keepOriginalUploading = computed(
 
 const keepFileName = computed(
 	defaultStore.makeGetterSetter("keepFileName")
+);
+
+const alwaysInputFilename = computed(
+	defaultStore.makeGetterSetter("alwaysInputFilename")
 );
 
 os.api("drive").then((info) => {

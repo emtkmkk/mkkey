@@ -579,7 +579,7 @@ let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
 let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public") && (!props.airReply || props.airReply.visibility === "public")  && !$i.blockPostPublic && !$i.isSilenced);
 let canHome = $ref((!props.reply || (props.reply.visibility === "public" || props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" || props.renote.visibility === "home"))  && (!props.renote || (props.airReply.visibility === "public" || props.airReply.visibility === "home")) && !$i.blockPostHome && !$i.isSilenced);
 let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified") && (!props.airReply || props.airReply.visibility !== "specified") );
-let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && (!props.airReply || !props.airReply.localOnly) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]") && !$i.isSilenced);
+let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && (!props.airReply || props.airReply.host) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]") && !$i.isSilenced);
 let requiredFilename = $ref(props.channel?.description?.includes("[requiredFilename]"))
 let imeText = $ref("");
 let shortcutKeyValue = $ref(0);

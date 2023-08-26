@@ -55,7 +55,8 @@ export function getNoteMenu(props: {
 		os.post({
 			initialVisibility: v,
 			initialLocalOnly: appearNote.user.host == null,
-			key: appearNote.id
+			key: appearNote.id,
+			airReply: appearNote,
 		});
 	}
 

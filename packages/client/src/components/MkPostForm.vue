@@ -1517,10 +1517,10 @@ onMounted(() => {
 			const draft = JSON.parse(localStorage.getItem("drafts") || "{}")[
 				draftKey
 			];
-			if (draft) {
+			if (draft && (draft.data.text || (draft.data.useCw && draft.data.cw) || draft.data.files || draft.data.poll)) {
 				text = draft.data.text;
 				useCw = draft.data.useCw;
-				cw = draft.data.cw;
+				if (useCw) cw = draft.data.cw;
 				visibility = draft.data.visibility;
 				localOnly = draft.data.localOnly;
 				files = (draft.data.files || []).filter(

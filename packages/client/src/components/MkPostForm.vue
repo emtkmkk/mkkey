@@ -521,6 +521,7 @@ const props = withDefaults(
 		instant?: boolean;
 		fixed?: boolean;
 		autofocus?: boolean;
+		key?: string;
 	}>(),
 	{
 		initialVisibleUsers: () => [],
@@ -665,6 +666,7 @@ const draftKey = $computed((): string => {
 		key += `reply:${props.reply.id}`;
 	} else {
 		key += "note";
+		if (props.key) key += ":" + props.key;
 	}
 
 	return key;

@@ -554,7 +554,7 @@ let showPreview = $computed(defaultStore.makeGetterSetter("showPreview"));
 let cw = $computed(defaultStore.makeGetterSetter("postFormCw"));
 let localOnly = $ref<boolean>(
 	props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility
-		? defaultStore.state.LocalAndFollower
+		? defaultStore.state.localAndFollower
 		: defaultStore.state.defaultNoteLocalAndFollower
 );
 let visibility = $ref(

@@ -522,6 +522,7 @@ const props = withDefaults(
 		fixed?: boolean;
 		autofocus?: boolean;
 		key?: string;
+		airReply?: misskey.entities.Note;
 	}>(),
 	{
 		initialVisibleUsers: () => [],
@@ -553,9 +554,9 @@ let useCw = $ref(false);
 let showPreview = $computed(defaultStore.makeGetterSetter("showPreview"));
 let cw = $computed(defaultStore.makeGetterSetter("postFormCw"));
 let localOnly = $ref<boolean>(
-	props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility
+	props.initialLocalOnly ?? (defaultStore.state.rememberNoteVisibility
 		? defaultStore.state.localAndFollower
-		: defaultStore.state.defaultNoteLocalAndFollower
+		: defaultStore.state.defaultNoteLocalAndFollower)
 );
 let visibility = $ref(
 	props.initialVisibility ??
@@ -575,10 +576,10 @@ let quoteId = $ref(null);
 let hasNotSpecifiedMentions = $ref(false);
 let includesOtherServerEmoji = $ref(false);
 let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
-let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public")  && !$i.blockPostPublic && !$i.isSilenced);
-let canHome = $ref((!props.reply || (props.reply.visibility === "public" || props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" || props.renote.visibility === "home")) && !$i.blockPostHome && !$i.isSilenced);
-let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified"));
-let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]") && !$i.isSilenced);
+let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public") && (!props.airReply || props.airReply.visibility === "public")  && !$i.blockPostPublic && !$i.isSilenced);
+let canHome = $ref((!props.reply || (props.reply.visibility === "public" || props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" || props.renote.visibility === "home"))  && (!props.renote || (props.airReply.visibility === "public" || props.airReply.visibility === "home")) && !$i.blockPostHome && !$i.isSilenced);
+let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified") && (!props.airReply || props.airReply.visibility !== "specified") );
+let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && (!props.airReply || !props.airReply.localOnly) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]") && !$i.isSilenced);
 let requiredFilename = $ref(props.channel?.description?.includes("[requiredFilename]"))
 let imeText = $ref("");
 let shortcutKeyValue = $ref(0);
@@ -664,6 +665,8 @@ const draftKey = $computed((): string => {
 		key += `renote:${props.renote.id}`;
 	} else if (props.reply) {
 		key += `reply:${props.reply.id}`;
+	} else if (props.airReply) {
+		key += `note:${props.airReply.id}`;
 	} else {
 		key += "note";
 		if (props.key) key += ":" + props.key;
@@ -849,6 +852,13 @@ if (defaultStore.state.keepCw && props.reply && props.reply.cw) {
 	const replyCwText = props.reply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/ig,"") ?? "";
 	cw = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " Re: " + replyCwText;
 	text = text.replace("@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ","");
+}
+
+// keep cw when airreply
+if (defaultStore.state.keepCw && props.airReply && props.airReply.cw) {
+	useCw = true;
+	const replyCwText = props.airReply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/ig,"") ?? "";
+	cw = replyCwText;
 }
 
 function watchForDraft() {

@@ -39,6 +39,8 @@ const props = defineProps<{
 	instant?: boolean;
 	fixed?: boolean;
 	autofocus?: boolean;
+	key?: string;
+	airReply?: misskey.entities.Note;
 }>();
 
 const emit = defineEmits<{

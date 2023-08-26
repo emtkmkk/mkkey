@@ -1330,6 +1330,11 @@ async function post() {
 	
 	if (!cw && useCw) cw = " ";
 	if (cw && !useCw) cw = "";
+	
+	if (!canPublic && visibility === "public") visibility = "home";
+	if (!canHome && visibility === "home") visibility = "followers";
+	if (!canFollower && visibility === "followers") visibility = "specified";
+	if (!canNotLocal && visibility !== "followers" && visibility !== "specified" && localOnly === false && !$i.blockPostNotLocalPublic) localOnly = true;
 
 	let postData = {
 		text: processedText === "" ? undefined : processedText,

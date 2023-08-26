@@ -49,6 +49,15 @@ export function getNoteMenu(props: {
 			initialVisibleUsers: appearNote.mentions ? [appearNote.user,...appearNote.mentions] : [appearNote.user],
 		});
 	}
+	
+	function airReply(): void {
+		const v = appearNote.user.host != null && appearNote.visibility === "public" ? "home" : appearNote.visibility
+		os.post({
+			initialVisibility: v,
+			initialLocalOnly: appearNote.user.host == null,
+			key: appearNote.id
+		});
+	}
 
 	function delEdit(): void {
 		os.confirm({
@@ -282,6 +291,11 @@ export function getNoteMenu(props: {
 						null,
 				  ]
 				: []),
+			{
+				icon: "ph-paper-plane-tilt ph-bold ph-lg",
+				text: i18n.ts.airReply,
+				action: airReply,
+			},
 			defaultStore.state.firstPostButtonVisibilityForce
 				? {
 					icon: "ph-envelope-simple-open ph-bold ph-lg",

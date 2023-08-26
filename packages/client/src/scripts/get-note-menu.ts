@@ -291,11 +291,14 @@ export function getNoteMenu(props: {
 						null,
 				  ]
 				: []),
-			{
-				icon: "ph-paper-plane-tilt ph-bold ph-lg",
-				text: i18n.ts.airReply,
-				action: airReply,
-			},
+			appearNote.visibility !== "specified"
+				? {
+					icon: "ph-paper-plane-tilt ph-bold ph-lg",
+					text: i18n.ts.airReply,
+					action: airReply,
+				}
+				: undefined,
+
 			defaultStore.state.firstPostButtonVisibilityForce
 				? {
 					icon: "ph-envelope-simple-open ph-bold ph-lg",

@@ -68,10 +68,11 @@ const useOsNativeEmojis = computed(
 const errorCnt = ref(0);
 const errorAlt = ref(false);
 const isMuted = computed(() => {
+	if (!props.emoji) return false;
 	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
 	if (reactionMuted.some(x => 
-		(!x.exact && localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(x.name)) 
-		||  x.name === localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"")
+		(!x.exact && props.emoji.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(x.name)) 
+		||  x.name === props.emoji.replace(":","").replace(/@[\w:\.\-]+:$/,"")
 	)) {
 		emit('loaderror', '');
 		return true;

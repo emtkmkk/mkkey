@@ -81,7 +81,7 @@ export default async function (ctx: Koa.Context) {
 
 					if (isWebpublic) {
 						if (["image/svg+xml"].includes(mime)) {
-							return await convertToWebp(path, 2048, 2048, 100);
+							return await convertToWebp(path, 20480, 2048, 100);
 						}
 					}
 

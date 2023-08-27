@@ -153,17 +153,17 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-	if (ps.name !== undefined) {
+	if (ps.name != null) {
 		if (!_user.host && (!_user.isAdmin && ps.name.toLowerCase().includes("admin")))
 			throw new ApiError();
 		if (!_user.host && (!_user.isAdmin && !_user.isModerator && ps.name.toLowerCase().includes("moderator")))
 			throw new ApiError();
 		updates.name = ps.name;
 	}
-	if (ps.description !== undefined) {
-		if (!_user.isAdmin && ps.name.toLowerCase().includes("admin"))
+	if (ps.description != null) {
+		if (!_user.isAdmin && ps.description.toLowerCase().includes("admin"))
 			throw new ApiError();
-		if (!_user.isAdmin &&  !_user.isModerator && ps.name.toLowerCase().includes("moderator"))
+		if (!_user.isAdmin && !_user.isModerator && ps.description.toLowerCase().includes("moderator"))
 			throw new ApiError();
 		profileUpdates.description = ps.description;
 	}

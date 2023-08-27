@@ -1,6 +1,6 @@
 <template>
 	<img
-		v-if="isCustom && urlRaw.length > errorCnt"
+		v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
 		class="mk-emoji"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="url"
@@ -24,7 +24,7 @@
 	/>
 	<span v-else-if="char && useOsNativeEmojis">{{ char }}</span>
 	<img
-		v-else-if="isCustom && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
+		v-else-if="isCustom && !isMuted && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
 		class="mk-emoji emoji-ghost"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="altimgUrl"
@@ -67,6 +67,18 @@ const useOsNativeEmojis = computed(
 );
 const errorCnt = ref(0);
 const errorAlt = ref(false);
+const isMuted = computed(() => {
+	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
+	if (reactionMuted.some(x => 
+		(!x.exact && localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(x.name)) 
+		||  x.name === localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"")
+	)) {
+		emit('loaderror', '');
+		return true;
+	} else {
+		return false;
+	}
+})
 
 const ce = computed(() => instance.emojis ?? []);
 const ace = computed(() => instance.allEmojis ?? []);

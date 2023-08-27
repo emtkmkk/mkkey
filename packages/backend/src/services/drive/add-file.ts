@@ -258,9 +258,9 @@ export async function generateAlts(
 				metadata.tifftagPhotoshop
 			) &&
 			metadata.width &&
-			metadata.width <= 20480 &&
+			metadata.width <= 524288 &&
 			metadata.height &&
-			metadata.height <= 2048 &&
+			metadata.height <= 524288 &&
 			metadata.width * metadata.height <= 2048 * 2048
 		);
 	} catch (err) {

@@ -248,7 +248,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			text: text,
 			cw: note.cw,
 			visibility: note.visibility,
-			localOnly: note.localOnly,
+			localOnly: !!note.localOnly,
 			visibleUserIds:
 				note.visibility === "specified" ? note.visibleUserIds : undefined,
 			renoteCount: note.renoteCount,

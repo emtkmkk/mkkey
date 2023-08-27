@@ -8,7 +8,7 @@ import { decodeReaction } from "./reaction-lib.js";
 import config from "@/config/index.js";
 import { query } from "@/prelude/url.js";
 
-const cache = new Cache<Emoji | null>(1000 * 60 * 60 * 12);
+const cache = new Cache<Emoji | null>(1000 * 60 * 60 * 4);
 
 /**
  * 添付用絵文字情報

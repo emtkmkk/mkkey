@@ -270,6 +270,7 @@ function format_roomaji(
 		{ before: "vu", after: "bu" },
 		{ before: "ve", after: "be" },
 		{ before: "vo", after: "bo" },
+		{ before: "_" , after: ""   },
 	]
 
 	// 変換前が3文字

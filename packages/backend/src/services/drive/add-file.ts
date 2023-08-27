@@ -258,9 +258,10 @@ export async function generateAlts(
 				metadata.tifftagPhotoshop
 			) &&
 			metadata.width &&
-			metadata.width <= 2048 &&
+			metadata.width <= 20480 &&
 			metadata.height &&
-			metadata.height <= 2048
+			metadata.height <= 2048 &&
+			metadata.width * metadata.height <= 2048 * 2048
 		);
 	} catch (err) {
 		logger.warn(`sharp failed: ${err}`);

@@ -500,7 +500,7 @@ export const UserRepository = db.getRepository(User).extend({
 					showBadgeNote: false,
 				} : undefined;
 
-		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges, rankBadges].filter(x => x !== undefined && (opts.detail || x.showBadgeNote)) : undefined;
+		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges, rankBadges].filter(x => x !== undefined && (opts.detail || x.showBadgeNote)) : rankBadges ? [rankBadges] : undefined;
 		let roles = badges?.map((x, i) => (
 			{
 				id: x.id,

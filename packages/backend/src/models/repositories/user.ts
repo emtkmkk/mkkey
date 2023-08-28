@@ -450,7 +450,7 @@ export const UserRepository = db.getRepository(User).extend({
 			user.maxRankPoint > 5000 ? {
 				id: 3000010000 + user.maxRankPoint + "",
 				key: "star",
-				name: "最大ランク : ⭐" + (user.maxRankPoint > 9000 ? "+" + (Math.floor(user.maxRankPoint / 1000) - 5) : user.maxRankPoint > 6000 ? "+".repeat((Math.floor(user.maxRankPoint / 1000) - 5)) : "") + (" " + (user.maxRankPoint % 1000 / 10).toFixed(1) + "%"),
+				name: "最高ランク : ⭐" + (user.maxRankPoint > 9000 ? "+" + (Math.floor(user.maxRankPoint / 1000) - 5) : user.maxRankPoint > 6000 ? "+".repeat((Math.floor(user.maxRankPoint / 1000) - 5)) : "") + (" " + (user.maxRankPoint % 1000 / 10).toFixed(1) + "%"),
 				emoji: "⭐",
 				showBadgeNote: false,
 			} : undefined;

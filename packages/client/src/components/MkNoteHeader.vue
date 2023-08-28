@@ -31,6 +31,14 @@
 				<div class="info">
 					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && note.user.isFollowing && !note.user.isFollowed" class="ph-heart-half ph-bold relation"></i>
 					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && !note.user.isFollowing && !note.user.isFollowed" class="ph-placeholder ph-bold relation"></i>
+					<MkA
+						v-if="note.replyId"
+						:to="`/notes/${note.replyId}`"
+						class="reply-icon"
+						@click.stop
+					>
+						<i class="ph-arrow-bend-left-up ph-bold ph-lg"></i>
+					</MkA>
 					<MkA class="created-at" :to="notePage(note)">
 						<MkTime :time="note.createdAt" />
 						<MkTime
@@ -179,6 +187,16 @@ const showTicker =
 				margin-right: 0.5em;
 				font-size: 0.9em;
 				vertical-align: middle;
+			}
+			.reply-icon {
+				display: inline-block;
+				border-radius: 6px;
+				color: var(--accent);
+				transition: background 0.2s;
+				&:hover,
+				&:focus {
+					background: var(--buttonHoverBg);
+				}
 			}
 		}
 

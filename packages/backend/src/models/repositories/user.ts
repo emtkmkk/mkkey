@@ -445,6 +445,15 @@ export const UserRepository = db.getRepository(User).extend({
 						relation.isFollowing
 						? user.followersCount
 						: user.followersCount;
+						
+		const rankBadges =
+			user.maxRankPoint > 5000 ? {
+				id: 3000010000 + user.maxRankPoint + "",
+				key: "star",
+				name: "最大ランク : ⭐" + (user.maxRankPoint > 9000 ? "+" + (Math.floor(user.maxRankPoint / 1000) - 5) : user.maxRankPoint > 6000 ? "+".repeat((Math.floor(user.maxRankPoint / 1000) - 5)) : "") + (" " + (user.maxRankPoint % 1000 / 10).toFixed(1) + "%"),
+				emoji: "⭐",
+				showBadgeNote: false,
+			} : undefined;
 
 		const donateBadges =
 			user.driveCapacityOverrideMb > DEFAULT_DRIVE_SIZE / MB
@@ -491,7 +500,7 @@ export const UserRepository = db.getRepository(User).extend({
 					showBadgeNote: false,
 				} : undefined;
 
-		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges].filter(x => x !== undefined && (opts.detail || x.showBadgeNote)) : undefined;
+		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges, rankBadges].filter(x => x !== undefined && (opts.detail || x.showBadgeNote)) : undefined;
 		let roles = badges?.map((x, i) => (
 			{
 				id: x.id,

@@ -303,6 +303,16 @@ export class User {
 		nullable: true 
 	})
 	public inviteUserId: string;
+	
+	@Column('integer', {
+		default: 0,
+	})
+	public maxPower: number;
+	
+	@Column('integer', {
+		default: 0,
+	})
+	public maxRankPoint: number;
 
 	constructor(data: Partial<User>) {
 		if (data == null) return;

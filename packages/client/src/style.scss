@@ -57,11 +57,6 @@ html {
 	tab-size: 2;
 	-webkit-tap-highlight-color: rgba(0,0,0,0);
 	-webkit-text-size-adjust: 100%;
-	image-rendering: -moz-crisp-edges; // Firefox
-	image-rendering: -o-crisp-edges; // Opera
-	image-rendering: -webkit-optimize-contrast; // Chrome, Safari
-	image-rendering: crisp-edges; // CSS3 Proposed
-	-ms-interpolation-mode: bicubic; // IE8+
 
 	&, * {
 		scrollbar-color: var(--scrollbarHandle) inherit;

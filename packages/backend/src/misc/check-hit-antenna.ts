@@ -92,8 +92,8 @@ export async function checkHitAntenna(
 	const textComponents = [
 		note.cw,
 		note.text,
-		...(note.files?.map(x => x.comment) || []),
-		...(note.poll?.choices?.map(x => typeof x === 'object' ? x.text : x) || []),
+		...(note.files?.map(x => x.comment || "") || []),
+		...(note.poll?.choices?.map(x => (typeof x === 'object' ? x.text : x) || "") || []),
 	];
 
 	const text = textComponents.filter(Boolean).join(" ").trim();

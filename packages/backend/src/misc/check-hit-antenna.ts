@@ -88,13 +88,20 @@ export async function checkHitAntenna(
 			});
 		if (!instances.includes(noteUser.host?.toLowerCase() ?? "mkkey.net")) return false;
 	}
+	
+	const textComponents = [
+		note.cw,
+		note.text,
+		...(note.files?.map(x => x.comment) || []),
+		...(note.poll?.choices?.map(x => typeof x === 'object' ? x.text : x) || [])
+	];
+
+	const text = textComponents.filter(Boolean).join(" ").trim();
 
 	const keywords = antenna.keywords
 		// Clean up
 		.map((xs) => xs.filter((x) => x !== ""))
 		.filter((xs) => xs.length > 0);
-		
-	const text = ((note.cw ?? "") + " " + (note.text ?? "") + " " + (note.files?.map((x) => (x.comment ?? "")).join(" ") ?? "") + " " + (note.poll?.choices?.map((x) => (x.text ?? "")).join(" ") ?? "")).trim();
 
 	if (keywords.length > 0) {
 		if (!text) return false;

@@ -48,7 +48,7 @@
 			}&amp;id=${tweetId}`"
 		></iframe>
 	</div>
-	<div v-else v-size="{ max: [400, 350] }" class="mk-url-preview" @click.stop>
+	<div v-else v-size="{ max: [400, 350] }" class="mk-url-preview" :class="{legacyStyle: $store.state.compactGrid,}" @click.stop>
 		<MkButton v-if="tweetId" :small="true" class="expandTweet" @click="tweetExpanded = true">
 			{{ i18n.ts.expandTweet }}
 		</MkButton>
@@ -389,6 +389,69 @@ onUnmounted(() => {
 					overflow: hidden;
 					white-space: nowrap;
 					text-overflow: ellipsis;
+				}
+			}
+		}
+	}
+	
+	&.legacyStyle {
+
+		&.max-width_400px > .link {
+			> .thumbnail {
+				height: 80px;
+			}
+		}
+
+		&.max-width_350px {
+			> .link {
+				> .thumbnail {
+					height: 70px;
+				}
+				&.compact {
+					> .thumbnail {
+						position: absolute;
+						width: 56px;
+						height: 100%;
+					}	
+					> article {
+						left: 56px;
+						width: calc(100% - 56px);
+					}
+				}
+			}
+		}
+	
+		> .expandTweet {
+			margin-top: 0px;
+		}
+		
+		> .showThumbnail {
+			margin-top: 0px;
+		}
+		
+		> .link {
+			margin-top: 0px;
+			pointer-events: auto;
+			> .thumbnail {
+				position: absolute;
+				width: 100px;
+				height: 100%;
+				background-size: cover;
+				pointer-events: auto;
+				
+				> button {
+					font-size: 3.5em;
+					opacity: 0.7;
+
+					&:hover {
+						font-size: 4em;
+						opacity: 0.9;
+					}
+				}
+				
+				& + article {
+					left: 100px;
+					width: calc(100% - 100px);
 				}
 			}
 		}

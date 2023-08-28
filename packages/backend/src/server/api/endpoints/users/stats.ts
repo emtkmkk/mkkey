@@ -502,7 +502,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (!(!firstLocalFollower && user.host)) {
 		let updates: any = {};
-		if (user.maxRankPoint < _rankPower) {
+		if (user.maxRankPoint < Math.floor(_rankPower)) {
 			updates.maxRankPoint = Math.floor(_rankPower);
 		}
 		if (user.maxPower < result.power) {

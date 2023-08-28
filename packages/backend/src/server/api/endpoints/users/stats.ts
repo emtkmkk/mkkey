@@ -452,20 +452,20 @@ export default define(meta, paramDef, async (ps, me) => {
 	const rankPower =
 		Math.floor((rankResult.notesPostDays * 482 +
 			(rankResult.notesCount * 18 +
-			rankResult.repliesCount * 7 +
-			rankResult.renotesCount * -11 +
-			rankResult.quotesCount * 7 +
-			rankResult.repliedCount * 3 +
-			rankResult.renotedCount * 3 +
-			rankResult.pollVotesCount * 7 +
-			rankResult.pollVotedCount * 3 +
-			rankResult.pageLikesCount * 33 +
-			rankResult.pageLikedCount * 27 +
-			rankResult.sentReactionsCount * 7 +
-			rankResult.receivedReactionsCount * 3 +
-			rankResult.driveFilesCount * 6 +
-			rankResult.sendMessageCount * 11 +
-			rankResult.readMessageCount * 2) * rpRate
+				rankResult.repliesCount * 7 +
+				rankResult.renotesCount * -11 +
+				rankResult.quotesCount * 7 +
+				rankResult.repliedCount * 3 +
+				rankResult.renotedCount * 3 +
+				rankResult.pollVotesCount * 7 +
+				rankResult.pollVotedCount * 3 +
+				rankResult.pageLikesCount * 33 +
+				rankResult.pageLikedCount * 27 +
+				rankResult.sentReactionsCount * 7 +
+				rankResult.receivedReactionsCount * 3 +
+				rankResult.driveFilesCount * 6 +
+				rankResult.sendMessageCount * 11 +
+				rankResult.readMessageCount * 2) * rpRate
 		) / elapsedDays * 100) / 100;
 
 	let _rankPower = rankPower;
@@ -499,6 +499,19 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	if (!firstLocalFollower && user.host) result.powerRank = result.powerRank + "?";
+
+	if (!(!firstLocalFollower && user.host)) {
+		let updates = undefined;
+		if (user.maxRankPoint < rankPower) {
+			updates.maxRankPoint = rankPower;
+		}
+		if (user.maxPower < result.power) {
+			updates.maxPower = result.power;
+		}
+		if (updates?.length > 0) {
+			await Users.update(user.id, updates);
+		}
+	}
 
 	//if (_rankPower > rankBorder.slice(-2)[0]) result.starPower = _rankPower;
 

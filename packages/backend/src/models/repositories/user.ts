@@ -579,9 +579,11 @@ export const UserRepository = db.getRepository(User).extend({
 			onlineStatus: this.getOnlineStatus(user, meId),
 			driveCapacityOverrideMb: user.driveCapacityOverrideMb,
 			patron: user.host ? undefined : user.driveCapacityOverrideMb > DEFAULT_DRIVE_SIZE / MB,
-			badges: badges?.length !== 0 ? badges : undefined,
-			roles,
-
+			badgeRoles: user.host == null ? roles.map((x) => ({
+				name: x.name,
+				iconUrl: x.iconUrl,
+				displayOrder: x.displayOrder,
+			})): undefined,
 			...(opts.detail
 				? {
 					url: profile!.url,
@@ -638,6 +640,8 @@ export const UserRepository = db.getRepository(User).extend({
 							userId: user.id,
 						}).then((result) => result >= 1)
 						: false,
+					badges: badges?.length !== 0 ? badges : undefined,
+					roles,
 				}
 				: {}),
 

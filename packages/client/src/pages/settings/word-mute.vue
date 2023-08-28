@@ -3,7 +3,7 @@
 		<MkTab v-model="tab" class="_formBlock">
 			<option value="soft">{{ i18n.ts._wordMute.soft }}</option>
 			<option value="hard">{{ i18n.ts._wordMute.hard }}</option>
-			<option value="reaction">{{ i18n.ts.reaction }}</option>
+			<option value="reaction">{{ i18n.ts._wordMute.emojiMutes }}</option>
 		</MkTab>
 		<MkButton primary inline :disabled="!changed" @click="save()"
 			><i class="ph-floppy-disk-back ph-bold ph-lg"></i>
@@ -57,7 +57,7 @@
 			</div>
 			<div v-show="tab === 'reaction'">
 				<MkInfo class="_formBlock">{{
-					i18n.ts._wordMute.reactionDescription
+					i18n.ts._wordMute.emojiMutesDescription
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></MkInfo>
 				<FormTextarea v-model="reactionMutedWords" class="_formBlock">
 					<span>{{ i18n.ts._wordMute.muteWords }}</span>

@@ -93,15 +93,17 @@ export async function checkHitAntenna(
 		// Clean up
 		.map((xs) => xs.filter((x) => x !== ""))
 		.filter((xs) => xs.length > 0);
+		
+	const text = ((note.cw ?? "") + " " + (note.text ?? "") + " " + (note.files?.map((x) => (x.comment ?? "")).join(" ") ?? "") + " " + (note.poll?.choices?.map((x) => (x.text ?? "")).join(" ") ?? "")).trim();
 
 	if (keywords.length > 0) {
-		if (note.text == null) return false;
+		if (!text) return false;
 
 		const matched = keywords.some((and) =>
 			and.every((keyword) =>
 				antenna.caseSensitive
-					? note.text!.includes(keyword)
-					: note.text!.toLowerCase().includes(keyword.toLowerCase()),
+					? text!.includes(keyword)
+					: text!.toLowerCase().includes(keyword.toLowerCase()),
 			),
 		);
 
@@ -114,13 +116,13 @@ export async function checkHitAntenna(
 		.filter((xs) => xs.length > 0);
 
 	if (excludeKeywords.length > 0) {
-		if (note.text == null) return false;
+		if (!text) return false;
 
 		const matched = excludeKeywords.some((and) =>
 			and.every((keyword) =>
 				antenna.caseSensitive
-					? note.text!.includes(keyword)
-					: note.text!.toLowerCase().includes(keyword.toLowerCase()),
+					? text!.includes(keyword)
+					: text!.toLowerCase().includes(keyword.toLowerCase()),
 			),
 		);
 

@@ -508,7 +508,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		if (user.maxPower < result.power) {
 			updates.maxPower = result.power;
 		}
-		if (updates?.length > 0) {
+		if (Object.keys(updates).length > 0) {
 			await Users.update(user.id, updates);
 		}
 	}

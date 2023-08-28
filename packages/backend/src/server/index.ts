@@ -118,10 +118,14 @@ router.get("/avatar/@:acct", async (ctx) => {
 });
 
 router.get("/identicon/:x", async (ctx) => {
+	ctx.set('Content-Type', 'image/png');
+	ctx.set('Cache-Control', 'public, max-age=86400');
+	return ctx.redirect('/static-assets/missing.png');
+	/*
 	const [temp, cleanup] = await createTemp();
 	await genIdenticon(ctx.params.x, fs.createWriteStream(temp));
-	ctx.set("Content-Type", "image/png");
 	ctx.body = fs.createReadStream(temp).on("close", () => cleanup());
+	*/
 });
 
 mastoRouter.get("/oauth/authorize", async (ctx) => {

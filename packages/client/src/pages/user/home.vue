@@ -56,10 +56,10 @@
 									/></span>
 									<span
 									    v-for="badge in mkBadge"
-										:key="badge.key"
+										:key="'badge-' + badge.key"
 										style="badge"
-										:title="i18n.ts[badge.key]"
-										v-tooltip="i18n.ts[badge.key]"
+										:title="badge.name"
+										v-tooltip="badge.name"
 										><MkEmoji
 											class="emoji"
 											:emoji="badge.emoji"
@@ -128,8 +128,8 @@
 									v-for="badge in mkBadge"
 									:key="'badge-' + badge.key"
 									style="badge"
-									:title="i18n.ts[badge.key]"
-									v-tooltip="i18n.ts[badge.key]"
+									:title="badge.name"
+									v-tooltip="badge.name"
 									><MkEmoji
 										class="emoji"
 										:emoji="badge.emoji"

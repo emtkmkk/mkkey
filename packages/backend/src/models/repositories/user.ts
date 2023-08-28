@@ -48,7 +48,7 @@ type IsUserDetailed<Detailed extends boolean> = Detailed extends true
 type IsMeAndIsUserDetailed<
 	ExpectsMe extends boolean | null,
 	Detailed extends boolean,
-	> = Detailed extends true
+> = Detailed extends true
 	? ExpectsMe extends true
 	? Packed<"MeDetailed">
 	: ExpectsMe extends false
@@ -370,14 +370,14 @@ export const UserRepository = db.getRepository(User).extend({
 	async pack<
 		ExpectsMe extends boolean | null = null,
 		D extends boolean = false,
-		>(
-			src: User["id"] | User,
-			me?: { id: User["id"] } | null | undefined,
-			options?: {
-				detail?: D;
-				relation?: D;
-				includeSecrets?: boolean;
-			},
+	>(
+		src: User["id"] | User,
+		me?: { id: User["id"] } | null | undefined,
+		options?: {
+			detail?: D;
+			relation?: D;
+			includeSecrets?: boolean;
+		},
 	): Promise<IsMeAndIsUserDetailed<ExpectsMe, D>> {
 		const opts = Object.assign(
 			{
@@ -445,7 +445,7 @@ export const UserRepository = db.getRepository(User).extend({
 						relation.isFollowing
 						? user.followersCount
 						: user.followersCount;
-						
+
 		const rankBadges =
 			user.maxRankPoint > 5000 ? {
 				id: 3000010000 + user.maxRankPoint + "",
@@ -583,7 +583,7 @@ export const UserRepository = db.getRepository(User).extend({
 				name: x.name,
 				iconUrl: x.iconUrl,
 				displayOrder: x.displayOrder,
-			})): undefined,
+			})) : undefined,
 			...(opts.detail
 				? {
 					url: profile!.url,
@@ -642,6 +642,34 @@ export const UserRepository = db.getRepository(User).extend({
 						: false,
 					badges: badges?.length !== 0 ? badges : undefined,
 					roles,
+					achievements: [],
+					loggedInDays: 0,
+					policies: {
+						gtlAvailable: true,
+						ltlAvailable: true,
+						canPublicNote: true,
+						canCreateContent: true,
+						canUpdateContent: true,
+						canDeleteContent: true,
+						canInvite: true,
+						inviteLimit: 128,
+						inviteLimitCycle: 0,
+						inviteExpirationTime: 0,
+						canManageCustomEmojis: false,
+						canSearchNotes: true,
+						canHideAds: true,
+						driveCapacityMb: user.driveCapacityOverrideMb ?? 5192,
+						alwaysMarkNsfw: false,
+						pinLimit: 30,
+						antennaLimit: 128,
+						wordMuteLimit: 1024,
+						webhookLimit: 128,
+						clipLimit: 128,
+						noteEachClipsLimit: 1024,
+						userListLimit: 128,
+						userEachUserListsLimit: 1024,
+						rateLimitFactor: 128,
+					}
 				}
 				: {}),
 

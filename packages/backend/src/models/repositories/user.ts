@@ -448,9 +448,9 @@ export const UserRepository = db.getRepository(User).extend({
 
 		const rankBadges =
 			user.maxRankPoint > 5000 ? {
-				id: 3000010000 + user.maxRankPoint + "",
+				id: 3000010000 + (user.maxRankPoint - 5000) + "",
 				key: "star",
-				name: "最高ランク : ⭐" + (user.maxRankPoint > 9000 ? "+" + (Math.floor(user.maxRankPoint / 1000) - 5) : user.maxRankPoint > 6000 ? "+".repeat((Math.floor(user.maxRankPoint / 1000) - 5)) : "") + (" " + (user.maxRankPoint % 1000 / 10).toFixed(1) + "%"),
+				name: "星の観測者" + (user.maxRankPoint > 9000 ? "+" + (Math.floor(user.maxRankPoint / 1000) - 5) : user.maxRankPoint > 6000 ? "+".repeat((Math.floor(user.maxRankPoint / 1000) - 5)) : "") + (" " + (user.maxRankPoint % 1000 / 10).toFixed(1) + "%"),
 				emoji: "⭐",
 				showBadgeNote: false,
 			} : undefined;
@@ -506,7 +506,7 @@ export const UserRepository = db.getRepository(User).extend({
 				id: x.id,
 				name: x.name,
 				description: x.name,
-				iconUrl: "https://mkkey.net/emojis/" + x.emoji.replaceAll(":", "") + ".webp",
+				iconUrl: "https://mkkey.net/emojis/" + x.emoji.startsWith(":") ? x.emoji.replaceAll(":", "") : x.key + ".webp",
 				isModerator: false,
 				isAdministrator: false,
 				color: "#f8bcba",

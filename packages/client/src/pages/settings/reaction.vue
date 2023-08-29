@@ -410,6 +410,13 @@
 				<option :value="9">{{ i18n.ts.large }}+6</option>
 				<option :value="10">Auto(90%)</option>
 			</FormRadios>
+			
+			<FormSwitch
+				v-model="usePickerSizePostForm"
+				class="_formBlock"
+			>
+				{{ i18n.ts.usePickerSizePostForm }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			</FormSwitch>
 
 			<FormSwitch
 				v-model="reactionPickerUseDrawerForMobile"
@@ -596,6 +603,9 @@ const enableInstanceEmojiSearch = $computed(
 );
 const disableAllIncludesSearch = $computed(
 	defaultStore.makeGetterSetter("disableAllIncludesSearch")
+);
+const usePickerSizePostForm = $computed(
+	defaultStore.makeGetterSetter("usePickerSizePostForm")
 );
 
 const editPage = $computed(() => {

@@ -137,15 +137,19 @@ export const paramDef = {
 	type: "object",
 	properties: {
 		userId: { type: "string", format: "misskey:id" },
-		limit: {type: "integer",}
+		limit: {type: "integer"},
+		localOnly: {type: "boolean", default: false},
 	},
-	required: ["userId"],
+	//required: ["userId"],
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const user = await Users.findOneBy({ id: ps.userId });
-	if (user == null) {
-		throw new ApiError(meta.errors.noSuchUser);
+	let user = undefined;
+	if (ps.userId) {
+		user = await Users.findOneBy({ id: ps.userId });
+		if (user == null) {
+			throw new ApiError(meta.errors.noSuchUser);
+		}
 	}
 
 	let now = new Date();
@@ -164,14 +168,15 @@ export default define(meta, paramDef, async (ps, me) => {
 	const result = await awaitAll({
 		sentReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
-			.where("reaction.userId = :userId", { userId: user.id })
+			.where("(reaction.userId = :userId" + (!user ? " OR TRUE)" : ")"), { userId: user.id })
+			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
 			.groupBy('reaction.reaction')
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
 		sentReactionsCount: (await NoteReactions.createQueryBuilder("reaction")
 			.select('reaction.reaction')
-			.where("reaction.userId = :userId", { userId: user.id })
+			.where("(reaction.userId = :userId" + (!user ? " OR TRUE)" : ")"), { userId: user.id })
 			.andWhere("reaction.reaction ~ '^:[^@]+:$'")
 			.groupBy('reaction.reaction')
 			.cache(CACHE_TIME)
@@ -179,7 +184,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		receivedReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
 			.innerJoin("reaction.note", "note")
-			.where("note.userId = :userId", { userId: user.id })
+			.where("(note.userId = :userId" + (!user ? " OR TRUE)" : ")"), { userId: user.id })
+			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
 			.groupBy('reaction.reaction')
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
@@ -187,15 +193,16 @@ export default define(meta, paramDef, async (ps, me) => {
 		receivedReactionsCount: (await NoteReactions.createQueryBuilder("reaction")
 			.select('reaction.reaction')
 			.innerJoin("reaction.note", "note")
-			.where("note.userId = :userId", { userId: user.id })
+			.where("(note.userId = :userId" + (!user ? " OR TRUE)" : ")"), { userId: user.id })
 			.andWhere("reaction.reaction ~ '^:[^@]+:$'")
 			.groupBy('reaction.reaction')
 			.cache(CACHE_TIME)
 			.getRawMany()).length,
 		recentlySentReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
-			.where("reaction.userId = :userId", { userId: user.id })
+			.where("(reaction.userId = :userId" + (!user ? " OR TRUE)" : ")"), { userId: user.id })
 			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
 			.groupBy('reaction.reaction')
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)
@@ -203,8 +210,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		recentlyReceivedReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
 			.innerJoin("reaction.note", "note")
-			.where("note.userId = :userId", { userId: user.id })
+			.where("(note.userId = :userId" + (!user ? " OR TRUE)" : ")"), { userId: user.id })
 			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
 			.groupBy('reaction.reaction')
 			.orderBy("count","DESC")
 			.cache(CACHE_TIME)

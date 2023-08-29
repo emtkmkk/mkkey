@@ -485,6 +485,17 @@ export async function extractEmojis(
 						name,
 					})) as Emoji;
 			}
+			
+			const aliases = tag.aliases || tag.keywords || [];
+			
+			const license = [
+				(tag.license ? "ライセンス : " + tag.license : ""),
+				(tag.author ? "作者 : " + tag.author : ""),
+				(tag.copyPermission && tag.copyPermission !== "none" ? "コピー可否 : " + tag.copyPermission : ""),
+				(tag.usageInfo ? "使用情報 : " + tag.usageInfo : ""),
+				(tag.description ? "説明 : " + tag.description : ""),
+				(tag.isBasedOnUrl ? "元画像 : " + tag.isBasedOnUrl : ""),
+			].filter(Boolean).join(", ").trim() || null;
 
 			const exists = await Emojis.findOneBy({
 				host: _host,
@@ -498,7 +509,9 @@ export async function extractEmojis(
 					(tag.updated != null &&
 						exists.updatedAt != null &&
 						new Date(tag.updated) > exists.updatedAt) ||
-					tag.icon!.url !== exists.originalUrl
+					tag.icon!.url !== exists.originalUrl ||
+					aliases !== exists.aliases ||
+					license !== exists.license
 				) {
 					let beforeD15Date = new Date();
 					beforeD15Date.setDate(beforeD15Date.getDate() - 15);
@@ -534,6 +547,8 @@ export async function extractEmojis(
 							uri: tag.id,
 							originalUrl: tag.icon!.url,
 							publicUrl: tag.icon!.url,
+							aliases,
+							license,
 							updatedAt: new Date(),
 						},
 					);
@@ -548,15 +563,6 @@ export async function extractEmojis(
 			}
 
 			logger.info(`register emoji host=${host}, name=${name}`);
-			
-			const license = [
-				(tag.license ? "ライセンス : " + tag.license : ""),
-				(tag.author ? "作者 : " + tag.author : ""),
-				(tag.copyPermission && tag.copyPermission !== "none" ? "コピー可否 : " + tag.copyPermission : ""),
-				(tag.usageInfo ? "使用情報 : " + tag.usageInfo : ""),
-				(tag.description ? "説明 : " + tag.description : ""),
-				(tag.isBasedOnUrl ? "元画像 : " + tag.isBasedOnUrl : ""),
-			].filter(Boolean).join(", ").trim();
 
 			return await Emojis.insert({
 				id: genId(),
@@ -567,8 +573,8 @@ export async function extractEmojis(
 				publicUrl: tag.icon!.url,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				aliases: tag.aliases || tag.keywords || [],
-				license: license || null,
+				aliases,
+				license,
 			} as Partial<Emoji>).then((x) =>
 				Emojis.findOneByOrFail(x.identifiers[0]),
 			);

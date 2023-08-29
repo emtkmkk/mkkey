@@ -739,19 +739,22 @@ async function autoSetEmojis(ev: MouseEvent) {
 	if (!instance?.emojiStats?.recentlySentReactions) return;
 	const { canceled } = await os.confirm({
 		type: "info",
-		text: "このページに他のページに登録されていない、最近使用された絵文字を登録します。",
+		text: "このページに、他のページに登録されていない\n最近頻繁に使用している絵文字を追加します。\n(最大35個)",
 	});
 	if (canceled) return;
 	
 	const reactionsSet = new Set([...reactions, ...reactions2, ...reactions3, ...reactions4, ...reactions5]);
 	
+	let addCount = 0;
+	
 	instance.emojiStats.recentlySentReactions.forEach((x) => {
-		if (!reactionsSet.has(x.name)) {
+		if (!reactionsSet.has(x.name) && addCount <= 35) {
 			if (tab === 'reactions') reactions.push(x.name)
 			if (tab === 'reactions2') reactions2.push(x.name);
 			if (tab === 'reactions3') reactions3.push(x.name);
 			if (tab === 'reactions4') reactions4.push(x.name);
 			if (tab === 'reactions5') reactions5.push(x.name);
+			addCount += 1;
 		}
 	})
 }
@@ -791,7 +794,7 @@ onMounted(async () => {
 	if (!unref(instance.emojiStats)) {
 		const data = await os.api("users/emoji-stats", {
 			userId: $i.id,
-			limit: 100,
+			limit: 105,
 		});
 		instance.emojiStats = data;
 	}

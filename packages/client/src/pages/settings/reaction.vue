@@ -735,7 +735,7 @@ function preview(ev: MouseEvent) {
 	);
 }
 
-function autoSetEmojis(ev: MouseEvent) {
+async function autoSetEmojis(ev: MouseEvent) {
 	if (!instance?.emojiStats?.recentlySentReactions) return;
 	const { canceled } = await os.confirm({
 		type: "info",

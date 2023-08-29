@@ -254,7 +254,7 @@
 						>{{ i18n.ts.recentlyAddEmojis }}</XSection
 					>
 					<XSection
-						v-if="recentlyPopularReactions?.length"
+						v-if="recentlyPopularReactions && recentlyPopularReactions.length"
 						key="custom:recentlyPopularReactions"
 						:initial-shown="false"
 						:emojis="

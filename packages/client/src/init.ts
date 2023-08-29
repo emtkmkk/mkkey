@@ -41,7 +41,7 @@ import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i, refreshAccount, login, updateAccount, signout } from "@/account";
 import { defaultStore, ColdDeviceStorage } from "@/store";
-import { fetchInstance, fetchEmoji, fetchPlusEmoji, fetchAllEmoji, fetchAllEmojiNoCache, instance } from "@/instance";
+import { fetchInstance, fetchEmoji, fetchEmojiStats, fetchPlusEmoji, fetchAllEmoji, fetchAllEmojiNoCache, instance } from "@/instance";
 import { makeHotkey } from "@/scripts/hotkey";
 import { search } from "@/scripts/search";
 import { deviceKind } from "@/scripts/device-kind";
@@ -433,6 +433,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		
 		fetchInstanceMetaPromise.then(() => {
 			fetchEmoji();
+			fetchEmojiStats();
 			const lastEmojiFetchDate = localStorage.getItem("remoteEmojiData") ? JSON.parse(localStorage.getItem("remoteEmojiData"))?.emojiFetchDate : undefined;
 			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, localStorage.getItem("emojiFetchAttemptDate") ? parseInt(localStorage.getItem("emojiFetchAttemptDate"), 10) : 0);
 			let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";

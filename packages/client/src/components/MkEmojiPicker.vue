@@ -238,7 +238,7 @@
 						>
 					</template>
 				</div>
-				<div v-once v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
+				<div v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
 					<header>{{ i18n.ts.customEmojis }}</header>
 					<XSection
 						key="custom:recentlyAddEmojis"
@@ -266,7 +266,8 @@
 						@chosen="chosen"
 						>{{ i18n.ts.recentlyPopularReactions }}</XSection
 					>
-					<XSection
+					<XSection 
+						v-once
 						key="custom:random"
 						:initial-shown="false"
 						:emojis="
@@ -276,6 +277,7 @@
 						>{{ i18n.ts.random }}</XSection
 					>
 					<XSection
+						v-once
 						v-for="category in customEmojiCategories"
 						:key="'custom:' + category"
 						:initial-shown="false"
@@ -287,7 +289,7 @@
 						@chosen="chosen"
 						>{{ category || i18n.ts.other }}</XSection
 					>
-					<template v-if="$store.state.japanCategory">
+					<template v-once v-if="$store.state.japanCategory">
 						<XSection
 							key="custom:null/A"
 							:initial-shown="false"
@@ -424,7 +426,7 @@
 							>{{ "未設定 / その他" }}</XSection
 						>
 					</template>
-					<template v-else>
+					<template v-once v-else>
 						<XSection
 							key="custom:null/A-D"
 							:initial-shown="false"

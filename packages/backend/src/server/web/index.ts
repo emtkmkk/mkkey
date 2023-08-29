@@ -15,7 +15,7 @@ import { createBullBoard } from "@bull-board/api";
 import { BullAdapter } from "@bull-board/api/bullAdapter.js";
 import { KoaAdapter } from "@bull-board/koa";
 
-import { In, IsNull, Not } from "typeorm";
+import { In, IsNull, Not, MoreThan } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import config from "@/config/index.js";
 import {
@@ -711,7 +711,7 @@ router.get("/api/v1/streaming", async (ctx) => {
 // Render base html for all requests
 router.get("(.*)", async (ctx) => {
 	const meta = await fetchMeta();
-	let usersCount = await Users.count({ where: { host: IsNull() }, cache: 21600000 }); //6h
+	let usersCount = await Users.count({ where: { host: IsNull(), notesCount: MoreThan(50) }, cache: 21600000 }); //6h
 	let notesCount = await Notes.count({ where: { userHost: IsNull() }, cache: 21600000 }); //6h
 	let gUsersCount = await Users.count({ where: { host: Not(IsNull()) }, cache: 21600000 }); //6h
 	let gNotesCount = await Notes.count({ where: { userHost: Not(IsNull()) }, cache: 21600000 }); //6h
@@ -749,6 +749,15 @@ router.get("(.*)", async (ctx) => {
 			motdd.push("今日は土曜日 一休みしよね");
 			break;
 	}
+	if (now.getDate() < 5) {
+		motdd.push("月初ですね 今月もぼちぼち行きましょう");
+	}
+	if (now.getDate() > 12 && now.getDate() < 18) {
+		motdd.push("月の真ん中くらいですね");
+	}
+	if (now.getDate() > 24) {
+		motdd.push("月末ですね 今月もお疲れ様");
+	}
 	const yearFirstDay = new Date(now.getFullYear(), 0);
 	const yearNextFirstDay = new Date(now.getFullYear() + 1, 0);
 	const nowDaysCnt = Math.floor((now.valueOf() - yearFirstDay.valueOf()) / (24 * 60 * 60 * 1000));
@@ -759,7 +768,7 @@ router.get("(.*)", async (ctx) => {
 	motdt.push("もこきーの連合ユーザ数は " + gUsersCount + " です");
 	motdt.push("もこきーの連合投稿数は " + gNotesCount + " です");
 	motdt.push("もこきーの絵文字数は " + emojisCount + " です");
-	motdt.push("もこきーの全絵文字数は " + (emojisCount + gEmojisCount) + " です");
+	//motdt.push("もこきーの全絵文字数は " + (emojisCount + gEmojisCount) + " です");
 	//季節メッセージ
 	if (now.getMonth() === 0) {
 		motd.push("冬ですね");

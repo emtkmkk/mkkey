@@ -258,7 +258,9 @@
 						key="custom:recentlyPopularReactions"
 						:initial-shown="false"
 						:emojis="
-							instance.recentlyPopularReactions.map((e) => e.name)
+							instance.recentlyPopularReactions
+							.filter((e) => e.name !== ":iine_fav:")
+							.map((e) => e.name)
 							.slice(0,99)
 						"
 						@chosen="chosen"

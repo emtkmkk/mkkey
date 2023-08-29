@@ -254,11 +254,11 @@
 						>{{ i18n.ts.recentlyAddEmojis }}</XSection
 					>
 					<XSection
-						v-if="instance?.recentlyPopularReactions?.length"
+						v-if="recentlyPopularReactions?.length"
 						key="custom:recentlyPopularReactions"
 						:initial-shown="false"
 						:emojis="
-							instance.recentlyPopularReactions
+							recentlyPopularReactions
 							.filter((e) => e.name !== ':iine_fav:')
 							.map((e) => e.name)
 							.slice(0,99)
@@ -650,6 +650,7 @@ const remoteEmojiMode = computed(() =>
 const emojiStr = computed(() => 
 	(props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm) && unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
+const recentlyPopularReactions = computed(() => instance.recentlyPopularReactions);
 const randomSubset = computed(() => {
 	let copy = [...unref(customEmojis)];
 	let result = [];

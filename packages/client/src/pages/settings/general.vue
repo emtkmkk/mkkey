@@ -166,6 +166,9 @@
 			<FormSwitch v-if="developer" v-model="showRemoteEmojiPostForm" class="_formBlock">{{
 				i18n.ts.showRemoteEmojiPostForm
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="usePickerSizePostForm" class="_formBlock">
+				{{ i18n.ts.usePickerSizePostForm }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			</FormSwitch>
 			<FormSwitch v-model="hiddenMentionButton" class="_formBlock">{{
 				i18n.ts.hiddenMentionButton
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -729,6 +732,9 @@ const showRemoteEmojiPostForm = $computed(
 );
 const compactGrid = $computed(
 	defaultStore.makeGetterSetter("compactGrid")
+);
+const usePickerSizePostForm = $computed(
+	defaultStore.makeGetterSetter("usePickerSizePostForm")
 );
 
 function save() {

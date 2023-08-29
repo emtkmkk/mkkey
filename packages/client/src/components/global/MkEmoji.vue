@@ -100,6 +100,7 @@ const customEmoji = computed(() => {
 		if (cefind || props.nofallback){
 			return cefind
 		} else {
+			emit('loaderror', '');
 			// ローカル絵文字が見つからない場合、aliasesを検索
 			return ce.value.find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === name));
 		}

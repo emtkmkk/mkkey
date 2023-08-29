@@ -548,6 +548,15 @@ export async function extractEmojis(
 			}
 
 			logger.info(`register emoji host=${host}, name=${name}`);
+			
+			const license = [
+				(tag.license ? "ライセンス : " + tag.license : ""),
+				(tag.author ? "作者 : " + tag.author : ""),
+				(tag.copyPermission && tag.copyPermission !== "none" ? "コピー可否 : " + tag.copyPermission : ""),
+				(tag.usageInfo ? "使用情報 : " + tag.usageInfo : ""),
+				(tag.description ? "説明 : " + tag.description : ""),
+				(tag.isBasedOnUrl ? "元画像 : " + tag.isBasedOnUrl : ""),
+			].filter(Boolean).join(", ").trim();
 
 			return await Emojis.insert({
 				id: genId(),
@@ -558,8 +567,8 @@ export async function extractEmojis(
 				publicUrl: tag.icon!.url,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				aliases: tag.aliases || [],
-				license: tag.license || null,
+				aliases: tag.aliases || tag.keywords || [],
+				license: license || null,
 			} as Partial<Emoji>).then((x) =>
 				Emojis.findOneByOrFail(x.identifiers[0]),
 			);

@@ -447,7 +447,7 @@ export const UserRepository = db.getRepository(User).extend({
 						: user.followersCount;
 
 		const rankBadges =
-			user.maxRankPoint > 5000 ? {
+			user.maxRankPoint > 5000 && !user.isBot ? {
 				id: 3000010000 + (user.maxRankPoint - 5000) + "",
 				key: "star",
 				name: "星の観測者" + (user.maxRankPoint > 9000 ? "+" + (Math.floor(user.maxRankPoint / 1000) - 5) : user.maxRankPoint > 6000 ? "+".repeat((Math.floor(user.maxRankPoint / 1000) - 5)) : "") + (" " + (user.maxRankPoint % 1000 / 10).toFixed(1) + "%"),

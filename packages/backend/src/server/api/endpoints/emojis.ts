@@ -132,7 +132,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				id: "meta_plus_emojis",
 				milliseconds: 3600000, // 1 hour
 			},
-		})).filter((x) => !emojiNames.includes(x.name) && !x.oldEmoji && (x.name?.length ?? 0) < 100 && !x.license.includes("コピー可否 : deny")).slice(0,15000);
+		})).filter((x) => !emojiNames.includes(x.name) && !x.oldEmoji && (x.name?.length ?? 0) < 100 && !x.license?.includes("コピー可否 : deny")).slice(0,15000);
 		
 		// データ削減の為、不要情報を削除
 		remoteEmojis?.forEach((x) => {
@@ -164,7 +164,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				id: "meta_all_emojis",
 				milliseconds: 3600000, // 1 hour
 			},
-		})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net"].includes(x.host) && (x.name?.length ?? 0) < 100 && (x.host?.length ?? 0) < 50 && !x.license.includes("コピー可否 : deny"));
+		})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net"].includes(x.host) && (x.name?.length ?? 0) < 100 && (x.host?.length ?? 0) < 50 && !x.license?.includes("コピー可否 : deny"));
 
 		// データ削減の為、不要情報を削除
 		remoteEmojis?.forEach((x) => {

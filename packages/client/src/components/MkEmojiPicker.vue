@@ -259,7 +259,7 @@
 						:initial-shown="false"
 						:emojis="
 							instance.recentlyPopularReactions
-							.filter((e) => e.name !== ":iine_fav:")
+							.filter((e) => e.name !== ':iine_fav:')
 							.map((e) => e.name)
 							.slice(0,99)
 						"

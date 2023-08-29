@@ -425,6 +425,12 @@
 						><i class="ph-eye ph-bold ph-lg"></i>
 						{{ i18n.ts.preview }}</FormButton
 					>
+					<FormButton v-if="instance.emojiStats" inline @click="autoSetEmojis"
+						><i
+							class="ph-plus-square ph-bold ph-lg"
+						></i>
+						 {{ i18n.ts.autoSetEmojis }}</FormButton
+					>
 					<FormButton inline danger @click="setDefault"
 						><i
 							class="ph-arrow-counter-clockwise ph-bold ph-lg"
@@ -717,6 +723,27 @@ function preview(ev: MouseEvent) {
 		{},
 		"closed"
 	);
+}
+
+function autoSetEmojis(ev: MouseEvent) {
+	if (!instance?.emojiStats?.recentlySentReactions) return;
+	const { canceled } = await os.confirm({
+		type: "info",
+		text: "このページに他のページに登録されていない、最近使用された絵文字を登録します。",
+	});
+	if (canceled) return;
+	
+	const reactionsSet = new Set([...reactions, ...reactions2, ...reactions3, ...reactions4, ...reactions5]);
+	
+	instance.emojiStats.recentlySentReactions.forEach((x) => {
+		if (!reactionsSet.has(x.name)) {
+			if (tab === 'reactions') reactions.push(x.name)
+			if (tab === 'reactions2') reactions2.push(x.name);
+			if (tab === 'reactions3') reactions3.push(x.name);
+			if (tab === 'reactions4') reactions4.push(x.name);
+			if (tab === 'reactions5') reactions5.push(x.name);
+		}
+	})
 }
 
 async function setDefault() {

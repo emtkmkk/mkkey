@@ -631,13 +631,13 @@ const {
 } = defaultStore.reactiveState;
 
 const size = computed(() =>
-	props.asReactionPicker ? reactionPickerSize.value : 1
+	props.asReactionPicker || defaultStore.state.usePickerSizePostForm ? reactionPickerSize.value : 1
 );
 const width = computed(() =>
-	props.asReactionPicker ? reactionPickerWidth.value : 3
+	props.asReactionPicker || defaultStore.state.usePickerSizePostForm ? reactionPickerWidth.value : 3
 );
 const height = computed(() =>
-	props.asReactionPicker ? reactionPickerHeight.value : 2
+	props.asReactionPicker || defaultStore.state.usePickerSizePostForm ? reactionPickerHeight.value : 2
 );
 const customEmojiCategories = emojiCategories;
 const customEmojis = computed(() => 

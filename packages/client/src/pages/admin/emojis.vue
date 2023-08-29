@@ -297,6 +297,10 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 					im(emoji);
 				},
 			},
+			{
+				type: "label",
+				text: JSON.stringify({...emoji,name: undefined}),
+			},
 		],
 		ev.currentTarget ?? ev.target
 	);

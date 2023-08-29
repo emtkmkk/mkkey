@@ -106,6 +106,15 @@ export async function fetchAllEmojiNoCache() {
 	}
 }
 
+export async function fetchEmojiStats() {
+	const emojiStats = await api("users/emoji-stats", {
+			limit: 120,
+			localOnly: true,
+		});
+
+		instance.recentlyPopularReactions = emojiStats.recentlySentReactions;
+}
+
 export const emojiCategories = computed(() => {
 	if (instance.emojis == null) return [];
 	const categories = new Set();

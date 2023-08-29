@@ -254,6 +254,17 @@
 						>{{ i18n.ts.recentlyAddEmojis }}</XSection
 					>
 					<XSection
+						v-if="instance?.recentlyPopularReactions?.length"
+						key="custom:recentlyPopularReactions"
+						:initial-shown="false"
+						:emojis="
+							instance.recentlyPopularReactions.map((e) => e.name)
+							.slice(0,99)
+						"
+						@chosen="chosen"
+						>{{ i18n.ts.recentlyPopularReactions }}</XSection
+					>
+					<XSection
 						key="custom:random"
 						:initial-shown="false"
 						:emojis="

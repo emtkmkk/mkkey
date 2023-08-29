@@ -576,6 +576,12 @@ export const defaultStore = markRaw(
 			default: 3,
 			advanced: 10,
 		},
+		usePickerSizePostForm: {
+			where: "device",
+			default: false,
+			createdAt: "2023/8/29",
+			page: "reaction",
+		},
 		emojiPickerUseDrawerForMobile: {
 			where: "device",
 			default: false,

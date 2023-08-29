@@ -330,6 +330,7 @@ reactedRenoteHidden: "リアクション済のRTを畳む"
 alwaysPostButton: "常に右下に投稿ボタンを表示"
 noteAllCw: "全てのノートをCWの表示にする"
 allDelete: 全て削除
+autoSetEmojis: "オート追加"
 birthday: "誕生日"
 yearsOld: "{age}歳"
 nextBirthday: "あと{nextBirthday}日"

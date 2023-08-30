@@ -376,6 +376,37 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 
 });
 
+router.get("/emoji_license/:path(.*)", async (ctx) => {
+	
+	if (!ctx.params.path.match(/^[a-zA-Z0-9\-_@\.]+?$/)) {
+		ctx.status = 404;
+		return;
+	}
+	
+	const name = ctx.params.path.split('@')[0];
+	const host = ctx.params.path.split('@')?.[1];	
+	
+	const emoji = await Emojis.findOneBy({
+		// `@.` is the spec of ReactionService.decodeReaction
+		host: (host == null || host === '.') ? IsNull() : host,
+		name: name,
+	});
+	
+	if (emoji) {
+		ctx.set("Content-Type", "application/json; charset=utf-8");	
+		ctx.body = JSON.stringify({
+			copyPermission: emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none" : "none",
+			license: emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? null : null,
+			usageInfo: emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+			author: emoji.license?.includes("作者 : ") ? /作者 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+			description: emoji.license?.includes("説明 : ") ? /説明 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+			isBasedOnUrl: emoji.license?.includes("元画像 : ") ? /元画像 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+		});
+	} else {
+		ctx.status = 404;
+	}
+});
+
 //#region SSR (for crawlers)
 // User
 const userPage: Router.Middleware = async (ctx, next) => {

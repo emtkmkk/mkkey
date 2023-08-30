@@ -50,7 +50,7 @@ export default define(meta, paramDef, async (ps) => {
 	
 	let license = ps.license;
 	if (ps.license?.includes("!")){
-		license
+		license = license
 		.replace(/^!m$/,"文字だけ")
 		.replace(/!ca(,|$)/,"コピー可否 : allow")
 		.replace(/!cd(,|$)/,"コピー可否 : deny")

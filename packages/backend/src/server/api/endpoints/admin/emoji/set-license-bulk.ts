@@ -36,20 +36,22 @@ export default define(meta, paramDef, async (ps) => {
 		id: In(ps.ids),
 	});
 	
-	const license = 
-		ps.license
+	const license = ps.license;
+	if (ps.license?.includes("!")){
+		license
 		.replace(/^!m$/,"文字だけ")
-		.replace("!ca","コピー可否 : allow")
-		.replace("!cd","コピー可否 : deny")
-		.replace("!cc","コピー可否 : conditional")
-		.replace("!l : ","ライセンス : ")
-		.replace("!u : ","使用情報 : ")
-		.replace("!a : ","作者 : ")
-		.replace("!d : ","説明 : ")
-		.replace("!b : ","元画像 : ")
-		.replace("!i : ","元画像 : ")
+		.replace(/!ca(,|$)/,"コピー可否 : allow")
+		.replace(/!cd(,|$)/,"コピー可否 : deny")
+		.replace(/!cc(,|$)/,"コピー可否 : conditional")
+		.replace(/!l : ([^,:]+)(,|$)/,"ライセンス : $1$2")
+		.replace(/!u : ([^,:]+)(,|$)/,"使用情報 : $1$2")
+		.replace(/!a : ([^,:]+)(,|$)/,"作者 : $1$2")
+		.replace(/!d :  ([^,:]+)(,|$)/,"説明 : $1$2")
+		.replace(/!b :  ([^,:]+)(,|$)/,"元画像 : $1$2")
+		.replace(/!i :  ([^,:]+)(,|$)/,"元画像 : $1$2")
 		.replace("!c0","CC0 1.0 Universal")
 		.replace("!cb","CC BY 4.0");
+	}
 
 	await Emojis.update(
 		{

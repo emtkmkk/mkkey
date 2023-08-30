@@ -16,10 +16,10 @@ export default (emoji: Emoji) => ({
 		url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
 	},
 	keyword: emoji.aliases,
-    copyPermission: emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none" : "none",
+	copyPermission: emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none" : "none",
 	license: emoji.license?.includes("ライセンス : ") ? /ライセンス : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? null : null,
 	usageInfo: emoji.license?.includes("使用情報 : ") ? /使用情報 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
 	author: emoji.license?.includes("作者 : ") ? /作者 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
 	description: emoji.license?.includes("説明 : ") ? /説明 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-	isBasedOnUrl : emoji.license?.includes("元画像 : ") ? /元画像 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+	isBasedOnUrl: emoji.license?.includes("元画像 : ") ? /元画像 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
 });

@@ -395,14 +395,22 @@ router.get("/emoji_license/:path(.*)", async (ctx) => {
 	if (emoji) {
 		ctx.set("Content-Type", "application/json; charset=utf-8");	
 		ctx.set("Cache-Control", "public, max-age=15");
-		ctx.body = JSON.stringify({
-			copyPermission: emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none" : "none",
-			license: emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? null : null,
-			usageInfo: emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-			author: emoji.license?.includes("作者 : ") ? /作者 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-			description: emoji.license?.includes("説明 : ") ? /説明 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-			isBasedOnUrl: emoji.license?.includes("元画像 : ") ? /元画像 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-		});
+		if (emoji.license === "文字だけ") {
+			ctx.body = JSON.stringify({
+				copyPermission: "allow",
+				license: "CC0 1.0 Universal",
+				author: "mkkey.net"
+			});
+		} else {
+			ctx.body = JSON.stringify({
+				copyPermission: emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none" : "none",
+				license: emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? null : null,
+				usageInfo: emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+				author: emoji.license?.includes("作者 : ") ? /作者 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+				description: emoji.license?.includes("説明 : ") ? /説明 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+				isBasedOnUrl: emoji.license?.includes("元画像 : ") ? /元画像 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+			});
+		}
 	} else {
 		ctx.status = 404;
 	}

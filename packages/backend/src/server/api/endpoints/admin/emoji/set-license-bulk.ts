@@ -36,7 +36,7 @@ export default define(meta, paramDef, async (ps) => {
 		id: In(ps.ids),
 	});
 	
-	const license = ps.license;
+	let license = ps.license;
 	if (ps.license?.includes("!")){
 		license
 		.replace(/^!m$/,"文字だけ")

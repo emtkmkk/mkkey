@@ -395,7 +395,7 @@ router.get("/emoji_license/:path(.*)", async (ctx) => {
 	if (emoji) {
 		ctx.set("Content-Type", "application/json; charset=utf-8");	
 		ctx.set("Cache-Control", "public, max-age=15");
-		if (emoji.license === "文字だけ") {
+		if (!emoji.host && emoji.license === "文字だけ") {
 			ctx.body = JSON.stringify({
 				copyPermission: "allow",
 				license: "CC0 1.0 Universal",

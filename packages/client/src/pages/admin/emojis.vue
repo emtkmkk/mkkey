@@ -299,7 +299,11 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 			},
 			{
 				type: "label",
-				text: JSON.stringify({...emoji,id: undefined,name: undefined,url: undefined,host: undefined}),
+				text: JSON.stringify({...emoji,id: undefined,name: undefined,url: undefined,host: undefined,createdAt: undefined,updatedAt: undefined}),
+			},
+			{
+				type: "label",
+				text: JSON.stringify({createdAt: emoji.createdAt,updatedAt: emoji.updatedAt}),
 			},
 		],
 		ev.currentTarget ?? ev.target

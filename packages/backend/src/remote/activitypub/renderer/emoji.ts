@@ -16,7 +16,7 @@ export default (emoji: Emoji) => ({
 		url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
 	},
 	keyword: emoji.aliases,
-	...(emoji.license === "文字だけ" ? {
+	...(!emoji.host && emoji.license === "文字だけ" ? {
 		copyPermission: "allow",
 		license: "CC0 1.0 Universal",
 		author: "mkkey.net"

@@ -404,11 +404,11 @@ router.get("/emoji_license/:path(.*)", async (ctx) => {
 		} else {
 			ctx.body = JSON.stringify({
 				copyPermission: emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none" : "none",
-				license: emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? null : null,
-				usageInfo: emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-				author: emoji.license?.includes("作者 : ") ? /作者 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-				description: emoji.license?.includes("説明 : ") ? /説明 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-				isBasedOnUrl: emoji.license?.includes("元画像 : ") ? /元画像 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+				license: emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? null : null,
+				usageInfo: emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+				author: emoji.license?.includes("作者 : ") ? /作者 : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+				description: emoji.license?.includes("説明 : ") ? /説明 : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+				isBasedOnUrl: emoji.license?.includes("元画像 : ") ? /元画像 : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
 			});
 		}
 	} else {

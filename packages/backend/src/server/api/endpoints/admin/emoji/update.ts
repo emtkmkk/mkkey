@@ -47,13 +47,24 @@ export default define(meta, paramDef, async (ps) => {
 	const emoji = await Emojis.findOneBy({ id: ps.id });
 
 	if (emoji == null) throw new ApiError(meta.errors.noSuchEmoji);
+	
+	const license = 
+		ps.license
+		.replace(/^!m$/,"文字だけ")
+		.replace("!c : ","コピー可否 : ")
+		.replace("!l : ","ライセンス : ")
+		.replace("!u : ","使用情報 : ")
+		.replace("!a : ","作者 : ")
+		.replace("!d : ","説明 : ")
+		.replace("!b : ","元画像 : ")
+		.replace("!i : ","元画像 : ");
 
 	await Emojis.update(emoji.id, {
 		updatedAt: new Date(),
 		name: ps.name,
 		category: ps.category,
 		aliases: ps.aliases,
-		license: ps.license,
+		license,
 	});
 	
 	const pack = await Emojis.pack(emoji.id)

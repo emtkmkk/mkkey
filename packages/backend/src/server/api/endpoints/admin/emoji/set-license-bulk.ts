@@ -35,6 +35,17 @@ export default define(meta, paramDef, async (ps) => {
 	const emojis = await Emojis.findBy({
 		id: In(ps.ids),
 	});
+	
+	const license = 
+		ps.license
+		.replace(/^!m$/,"文字だけ")
+		.replace("!c : ","コピー可否 : ")
+		.replace("!l : ","ライセンス : ")
+		.replace("!u : ","使用情報 : ")
+		.replace("!a : ","作者 : ")
+		.replace("!d : ","説明 : ")
+		.replace("!b : ","元画像 : ")
+		.replace("!i : ","元画像 : ");
 
 	await Emojis.update(
 		{
@@ -42,7 +53,7 @@ export default define(meta, paramDef, async (ps) => {
 		},
 		{
 			updatedAt: new Date(),
-			license: ps.license,
+			license,
 		},
 	);
 	

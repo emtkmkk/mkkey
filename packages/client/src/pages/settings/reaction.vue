@@ -748,7 +748,7 @@ async function autoSetEmojis(ev: MouseEvent) {
 	let addCount = 0;
 	
 	instance.emojiStats.recentlySentReactions.forEach((x) => {
-		if (!reactionsSet.has(x.name) && addCount <= 35) {
+		if (!reactionsSet.has(x.name) && addCount < 35) {
 			if (tab === 'reactions') reactions.push(x.name)
 			if (tab === 'reactions2') reactions2.push(x.name);
 			if (tab === 'reactions3') reactions3.push(x.name);

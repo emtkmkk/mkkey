@@ -45,7 +45,9 @@ export default define(meta, paramDef, async (ps) => {
 		.replace("!a : ","作者 : ")
 		.replace("!d : ","説明 : ")
 		.replace("!b : ","元画像 : ")
-		.replace("!i : ","元画像 : ");
+		.replace("!i : ","元画像 : ")
+		.replace("!0","CC0 1.0 Universal")
+		.replace("!cb","CC BY 4.0");
 
 	await Emojis.update(
 		{

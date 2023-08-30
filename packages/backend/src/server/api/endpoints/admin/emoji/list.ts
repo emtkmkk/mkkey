@@ -99,7 +99,7 @@ export default define(meta, paramDef, async (ps) => {
 				emoji.license?.includes(ps.query!) || 
 				(ps.query === "NotTag" && emoji.aliases?.length === 0) ||
 				(ps.query === "NotCategory" && !emoji.category) ||
-				(ps.query === "NotLicence" && !emoji.license),
+				(ps.query === "NotLicense" && !emoji.license),
 		);
 
 		emojis.splice(ps.limit + 1);

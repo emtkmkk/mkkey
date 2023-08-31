@@ -16,6 +16,7 @@
 						:user="user"
 						@refresh="fetchUser()"
 					/>
+					<XImages v-else-if="tab === 'images'" :user="user" />
 					<XReactions v-else-if="tab === 'reactions'" :user="user" />
 					<XClips v-else-if="tab === 'clips'" :user="user" />
 					<XPages v-else-if="tab === 'pages'" :user="user" />
@@ -44,6 +45,7 @@ import { $i } from "@/account";
 import { search } from "@/scripts/search";
 
 const XHome = defineAsyncComponent(() => import("./home.vue"));
+const XImages = defineAsyncComponent(() => import("./images.vue"));
 const XReactions = defineAsyncComponent(() => import("./reactions.vue"));
 const XClips = defineAsyncComponent(() => import("./clips.vue"));
 const XPages = defineAsyncComponent(() => import("./pages.vue"));
@@ -105,6 +107,15 @@ const headerTabs = $computed(() =>
 					title: i18n.ts.overview,
 					icon: "ph-user ph-bold ph-lg",
 				},
+				...(user.notesCount > 0 
+					? [
+						{
+							key: "images",
+							title: i18n.ts.images,
+							icon: "ph-images ph-bold ph-lg",
+						},
+					]
+					: []),
 				...(($i && $i.id === user.id) || user.publicReactions
 					? [
 							{
@@ -116,21 +127,27 @@ const headerTabs = $computed(() =>
 					: []),
 				...(user.instance == null
 					? [
-							{
-								key: "clips",
-								title: i18n.ts.clips,
-								icon: "ph-paperclip ph-bold ph-lg",
-							},
-							{
-								key: "pages",
-								title: i18n.ts.pages,
-								icon: "ph-file-text ph-bold ph-lg",
-							},
-							{
-								key: "gallery",
-								title: i18n.ts.gallery,
-								icon: "ph-image-square ph-bold ph-lg",
-							},
+							...(user.hasClips ? [
+								{
+									key: "clips",
+									title: i18n.ts.clips,
+									icon: "ph-paperclip ph-bold ph-lg",
+								}
+							] : []),
+							...(user.hasPages ? [
+								{
+									key: "pages",
+									title: i18n.ts.pages,
+									icon: "ph-file-text ph-bold ph-lg",
+								},
+							] : []),
+							...(user.hasGallerys ? [
+								{
+									key: "gallery",
+									title: i18n.ts.gallery,
+									icon: "ph-image-square ph-bold ph-lg",
+								},
+							] : []),
 					  ]
 					: []),
 		  ]

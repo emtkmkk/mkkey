@@ -9,6 +9,9 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 import { i18n } from "@/i18n";
+import { length } from "stringz";
+import * as misskey from "calckey-js";
+import { concat } from "@/scripts/array";
 
 const props = defineProps<{
 	modelValue: boolean;

@@ -104,8 +104,12 @@ async function onClick() {
 			reject();
 			return;
 		}
-
-		window.open(`https://${input}/@${props.user.username}@${props.user.host ?? "mkkey.net"}`, '_blank');
+		
+		if (input.trim() === props.user.host) {
+			window.open(`https://${input.trim()}/@${props.user.username}`, '_blank');
+		} else {
+			window.open(`https://${input.trim()}/@${props.user.username}@${props.user.host ?? "mkkey.net"}`, '_blank');
+		}
 		
 		return
 

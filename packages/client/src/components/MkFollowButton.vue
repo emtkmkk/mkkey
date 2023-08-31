@@ -103,7 +103,7 @@ async function onClick() {
 			text: `または、照会機能にて\n「${props.user.username}@${hostname}」\nを入力してください。`,
 			placeholder: i18n.ts.hostnameInputPlaceholder,
 		});
-		if (canceled || !input || input.trim() !== "mkkey.net" || !/^[\w.-]+$/.test(input)) {
+		if (canceled || !input || input.trim() === "mkkey.net" || !/^[\w.-]+$/.test(input)) {
 			return;
 		}
 		

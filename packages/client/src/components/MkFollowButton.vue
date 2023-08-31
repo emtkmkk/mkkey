@@ -55,6 +55,7 @@ import type * as Misskey from "calckey-js";
 import * as os from "@/os";
 import { stream } from "@/stream";
 import { i18n } from "@/i18n";
+import { $i } from "@/account";
 
 const emit = defineEmits(["refresh"]);
 const props = withDefaults(
@@ -92,56 +93,77 @@ function onFollowChange(user: Misskey.entities.UserDetailed) {
 }
 
 async function onClick() {
-	wait = true;
 
-	try {
-		if (isBlocking.value) {
-			const { canceled } = await os.confirm({
-				type: "warning",
-				text: i18n.t("unblockConfirm"),
-			});
-			if (canceled) return;
+	if ( $i == null ) {
 
-			await os.api("blocking/delete", {
-				userId: props.user.id,
-			});
-			if (props.user.isMuted) {
-				await os.api("mute/delete", {
-					userId: props.user.id,
-				});
-			}
-			emit("refresh");
-		} else if (isFollowing) {
-			const { canceled } = await os.confirm({
-				type: "warning",
-				text: i18n.t("unfollowConfirm", {
-					name: props.user.name || props.user.username,
-				}),
-			});
-
-			if (canceled) return;
-
-			await os.api("following/delete", {
-				userId: props.user.id,
-			});
-		} else {
-			if (hasPendingFollowRequestFromYou) {
-				await os.api("following/requests/cancel", {
-					userId: props.user.id,
-				});
-				hasPendingFollowRequestFromYou = false;
-			} else {
-				await os.api("following/create", {
-					userId: props.user.id,
-				});
-				hasPendingFollowRequestFromYou = true;
-			}
+		const { canceled, result: input } = await os.inputText({
+			title: i18n.ts.hostnameInput,
+			placeholder: i18n.ts.hostnameInputPlaceholder,
+		});
+		if (!input || canceled) {
+			reject();
+			return;
 		}
-	} catch (err) {
-		console.error(err);
-	} finally {
-		wait = false;
+
+		window.open(`https://${input}/@${props.user.username}@mkkey.net`, '_blank');
+		
+		return
+
+	} else {
+		
+		wait = true;
+
+		try {
+			if (isBlocking.value) {
+				const { canceled } = await os.confirm({
+					type: "warning",
+					text: i18n.t("unblockConfirm"),
+				});
+				if (canceled) return;
+
+				await os.api("blocking/delete", {
+					userId: props.user.id,
+				});
+				if (props.user.isMuted) {
+					await os.api("mute/delete", {
+						userId: props.user.id,
+					});
+				}
+				emit("refresh");
+			} else if (isFollowing) {
+				const { canceled } = await os.confirm({
+					type: "warning",
+					text: i18n.t("unfollowConfirm", {
+						name: props.user.name || props.user.username,
+					}),
+				});
+
+				if (canceled) return;
+
+				await os.api("following/delete", {
+					userId: props.user.id,
+				});
+			} else {
+				if (hasPendingFollowRequestFromYou) {
+					await os.api("following/requests/cancel", {
+						userId: props.user.id,
+					});
+					hasPendingFollowRequestFromYou = false;
+				} else {
+					await os.api("following/create", {
+						userId: props.user.id,
+					});
+					hasPendingFollowRequestFromYou = true;
+				}
+			}
+		} catch (err) {
+			console.error(err);
+		} finally {
+			wait = false;
+		}
+		
 	}
+	
 }
 
 onMounted(() => {

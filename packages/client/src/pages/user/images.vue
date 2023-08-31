@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import {} from "vue";
+import { defineAsyncComponent, } from "vue";
 import * as misskey from "calckey-js";
 
 const XPhotos = defineAsyncComponent(() => import("./index.photos.vue"));

@@ -1,6 +1,6 @@
 <template>
 	<button v-if="modelValue" class="fade _button" @click.stop="toggle">
-		<span>{{ i18n.ts.showMore }}</span>
+		<span>{{ i18n.ts.showMore }}<span>{{ label }}</span></span>
 	</button>
 	<button v-if="!modelValue" class="showLess _button" @click.stop="toggle">
 		<span>{{ i18n.ts.showLess }}</span>
@@ -11,7 +11,21 @@ import { i18n } from "@/i18n";
 
 const props = defineProps<{
 	modelValue: boolean;
+	note?: misskey.entities.Note;
 }>();
+
+const label = computed(() => {
+	return props.note ? concat([
+		props.note.text
+			? [i18n.t("_cw.chars", { count: length(props.note.text) })]
+			: [],
+		props.note.files && props.note.files.length !== 0
+			? [i18n.t("_cw.files", { count: props.note.files.length })]
+			: [],
+		props.note.poll != null ? [i18n.ts.poll] : [],
+		props.note.renote != null ? [i18n.ts.quoteAttached] : [],
+	] as string[][]).join(" , ") : "";
+});
 
 const emit = defineEmits<{
 	(ev: "update:modelValue", v: boolean): void;

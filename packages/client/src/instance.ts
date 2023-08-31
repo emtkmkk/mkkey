@@ -106,9 +106,9 @@ export async function fetchAllEmojiNoCache() {
 	}
 }
 
-export async function fetchEmojiStats() {
-	const emojiStats = await api("users/emoji-stats", {
-			limit: 120,
+export async function fetchEmojiStats(limit) {
+	const emojiStats = await api("emoji-stats", {
+			limit,
 			localOnly: true,
 		});
 

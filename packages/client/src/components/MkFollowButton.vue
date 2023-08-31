@@ -70,16 +70,16 @@ const props = withDefaults(
 	}
 );
 
-const isBlocking = computed(() => props.user.isBlocking);
+const isBlocking = computed(() => $i != null && props.user.isBlocking);
 
-let isFollowing = $ref(props.user.isFollowing);
+let isFollowing = $ref($i != null && props.user.isFollowing);
 let hasPendingFollowRequestFromYou = $ref(
-	props.user.hasPendingFollowRequestFromYou
+	$i != null && props.user.hasPendingFollowRequestFromYou
 );
 let wait = $ref(false);
 const connection = stream.useChannel("main");
 
-if (props.user.isFollowing == null) {
+if ($i != null && props.user.isFollowing == null) {
 	os.api("users/show", {
 		userId: props.user.id,
 	}).then(onFollowChange);

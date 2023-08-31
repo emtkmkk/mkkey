@@ -16,12 +16,12 @@
 					<b
 						><MkA to="/">{{ host }}</MkA></b
 					>
-					<small
+					<!--<small
 						>Powered by
 						<a href="https://calckey.org/" target="_blank"
 							>Calckey</a
 						></small
-					>
+					>-->
 				</div>
 			</div>
 		</div>

@@ -58,12 +58,12 @@ function showMenu(ev: MouseEvent) {
 					chartSrc = "per-user-notes";
 				},
 			},
-			{
+		/*	{
 				text: i18n.ts.reaction,
 				action: () => {
 					chartSrc = "per-user-reactions";
 				},
-			} /*, {
+			} , {
 		text: i18n.ts.following,
 		action: () => {
 			chartSrc = 'per-user-following';

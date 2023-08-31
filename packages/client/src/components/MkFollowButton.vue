@@ -100,8 +100,7 @@ async function onClick() {
 			title: i18n.ts.hostnameInput,
 			placeholder: i18n.ts.hostnameInputPlaceholder,
 		});
-		if (!input || canceled) {
-			reject();
+		if (!input || !/^[\w.-]+$/.test(input) || canceled) {
 			return;
 		}
 		

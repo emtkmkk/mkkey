@@ -8,6 +8,8 @@
 import {} from "vue";
 import * as misskey from "calckey-js";
 
+const XPhotos = defineAsyncComponent(() => import("./index.photos.vue"));
+
 const props = defineProps<{
 	user: misskey.entities.User;
 }>();

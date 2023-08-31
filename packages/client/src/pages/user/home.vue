@@ -296,7 +296,7 @@
 								</dt>
 								<dd class="value">
 									<Mfm
-										:text="field.value.replace(/^https?:\/\/([\w.-]+?)\/@([\w]+)$/,"$2@$1")"
+										:text="field.value.replace(/^https?:\/\/([\w.-]+?)\/@([\w]+)$/,'$2@$1')"
 										:author="user"
 										:i="$i"
 										:is-note="false"

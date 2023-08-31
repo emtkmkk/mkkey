@@ -476,10 +476,6 @@ console.log(mainRouter.currentRoute.value.name);
 	box-sizing: border-box;
 	display: flex;
 
-	--stickyBottom: 1em;
-	&.isMobile {
-		--stickyBottom: 6rem;
-	}
 	&.wallpaper {
 		background: var(--wallpaperOverlay);
 		//backdrop-filter: var(--blur, blur(4px));

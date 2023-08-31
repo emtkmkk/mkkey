@@ -422,7 +422,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	result.averagePostCount = Math.floor(result.notesCount / result.notesPostDays * 10) / 10;
 	result.averageWordCount = !ps.simple ? Math.floor(result.totalWordCount / (result.notesCount - result.renotesCount) * 10) / 10 : undefined;
 	result.averageSentReactionsCount = Math.floor(result.sentReactionsCount / elapsedDaysRaw * 10) / 10;
-	result.averageReceivedReactionsCount = Math.floor(result.notesCount / elapsedDaysRaw * 10) / 10;
+	result.averageReceivedReactionsCount = Math.floor(result.receivedReactionsCount / elapsedDaysRaw * 10) / 10;
 
 	result.power =
 		Math.floor((result.notesPostDays * 482 +

@@ -42,7 +42,7 @@ const props = withDefaults(
 		limit?: number;
 	}>(),
 	{
-		limit: 50,
+		limit: 30,
 	}
 );
 

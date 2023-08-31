@@ -31,7 +31,7 @@
 			<i class="ph-stack ph-bold ph-lg"></i>
 		</button>
 
-		<div v-if="isMobile" class="buttons">
+		<div v-if="isMobile" ref="navFooter" class="buttons">
 			<button
 				class="button nav _button"
 				@click="drawerMenuShowing = true"
@@ -156,7 +156,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, provide, onMounted, computed, ref, unref } from "vue";
+import { defineAsyncComponent, provide, onMounted, computed, ref, unref, shallowRef } from "vue";
 import XCommon from "./_common_/common.vue";
 import * as Acct from "calckey-js/built/acct";
 import type { ComputedRef } from "vue";
@@ -202,6 +202,7 @@ let pageMetadata = $ref<null | ComputedRef<PageMetadata>>();
 const widgetsEl = $ref<HTMLElement>();
 const postButton = $ref<HTMLElement>();
 const widgetsShowing = $ref(false);
+const navFooter = $shallowRef<HTMLElement>();
 
 provide("router", mainRouter);
 provideMetadataReceiver((info) => {
@@ -397,6 +398,23 @@ const attachSticky = (el: any) => {
 function top() {
 	window.scroll({ top: 0, behavior: "smooth" });
 }
+
+let navFooterHeight = $ref(0);
+provide<Ref<number>>(CURRENT_STICKY_BOTTOM, $$(navFooterHeight));
+
+watch($$(navFooter), () => {
+	if (navFooter) {
+		navFooterHeight = navFooter.offsetHeight;
+		document.body.style.setProperty('--stickyBottom', `${navFooterHeight}px`);
+		document.body.style.setProperty('--minBottomSpacing', 'var(--minBottomSpacingMobile)');
+	} else {
+		navFooterHeight = 0;
+		document.body.style.setProperty('--stickyBottom', '0px');
+		document.body.style.setProperty('--minBottomSpacing', '0px');
+	}
+}, {
+	immediate: true,
+});
 
 const wallpaper = localStorage.getItem("wallpaper") != null;
 console.log(mainRouter.currentRoute.value.name);
@@ -658,8 +676,8 @@ console.log(mainRouter.currentRoute.value.name);
 .spacer {
 	$widgets-hide-threshold: 1090px;
 
-	height: calc(env(safe-area-inset-bottom, 0px) + 96px);
-
+	height: calc(var(--minBottomSpacing));
+	
 	@media (min-width: ($widgets-hide-threshold + 1px)) {
 		display: none;
 	}

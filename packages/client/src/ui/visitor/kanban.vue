@@ -67,12 +67,12 @@
 						<b
 							><MkA to="/">{{ host }}</MkA></b
 						>
-						<small
+						<!--<small
 							>Powered by
 							<a href="https://calckey.org/" target="_blank"
 								>Calckey</a
 							></small
-						>
+						>-->
 					</div>
 				</template>
 			</div>
@@ -210,15 +210,15 @@ export default defineComponent({
 			> h1 {
 				display: block;
 				margin: 0;
-				padding: 32px 0 32px 0;
+				padding: 16px 0 16px 0;
 				color: #fff;
 
 				&.full {
-					padding: 64px 0 0 0;
+					padding: 0 0 0 0;
 
 					> .link {
 						> ::v-deep(.logo) {
-							max-height: 130px;
+							max-height: 48px;
 						}
 					}
 				}
@@ -228,7 +228,7 @@ export default defineComponent({
 
 					> ::v-deep(.logo) {
 						vertical-align: bottom;
-						max-height: 100px;
+						max-height: 48px;
 					}
 				}
 			}

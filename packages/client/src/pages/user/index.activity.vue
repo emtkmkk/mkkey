@@ -57,8 +57,8 @@ function showMenu(ev: MouseEvent) {
 				action: () => {
 					chartSrc = "per-user-notes";
 				},
-			},
-		/*	{
+			}/*,
+			{
 				text: i18n.ts.reaction,
 				action: () => {
 					chartSrc = "per-user-reactions";

@@ -1,10 +1,8 @@
 import {
 	NoteReactions,
-	Users,
 } from "@/models/index.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import define from "../../define.js";
-import { ApiError } from "../../error.js";
 
 export const meta = {
 	tags: ["users"],
@@ -12,16 +10,8 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
-	description: "Show statistics about a user.",
-
-	errors: {
-		noSuchUser: {
-			message: "No such user.",
-			code: "NO_SUCH_USER",
-			id: "9e638e45-3b25-4ef7-8f95-07e8498f1819",
-		},
-	},
-
+	description: "Show statistics.",
+	
 	res: {
 		type: "object",
 		optional: false,

@@ -42,28 +42,18 @@ export type UriParseResult =
 	  };
 
 export function parseUri(value: string | IObject): UriParseResult {
-	const uri = getApId(value);
+	const separator = '/';
 
-	// the host part of a URL is case insensitive, so use the 'i' flag.
-	const localRegex = new RegExp(
-		`^${escapeRegexp(config.url)}/(\\w+)/(\\w+)(?:/(.+))?`,
-		"i",
-	);
-	const matchLocal = uri.match(localRegex);
+	const uri = new URL(getApId(value));
+	if (uri.origin !== this.config.url) return { local: false, uri: uri.href };
 
-	if (matchLocal) {
-		return {
-			local: true,
-			type: matchLocal[1],
-			id: matchLocal[2],
-			rest: matchLocal[3],
-		};
-	} else {
-		return {
-			local: false,
-			uri,
-		};
-	}
+	const [, type, id, ...rest] = uri.pathname.split(separator);
+	return {
+		local: true,
+		type,
+		id,
+		rest: rest.length === 0 ? undefined : rest.join(separator),
+	};
 }
 
 export default class DbResolver {

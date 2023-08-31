@@ -11,6 +11,9 @@
 
 	--margin: var(--marginFull);
 
+	--minBottomSpacingMobile: calc(72px + max(12px, env(safe-area-inset-bottom, 0px)));
+	--minBottomSpacing: var(--minBottomSpacingMobile);
+
 	@media (max-width: 500px) {
 		--margin: var(--marginHalf);
 	}

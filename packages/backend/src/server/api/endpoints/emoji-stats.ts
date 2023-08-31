@@ -2,7 +2,7 @@ import {
 	NoteReactions,
 } from "@/models/index.js";
 import { awaitAll } from "@/prelude/await-all.js";
-import define from "../../define.js";
+import define from "../define.js";
 
 export const meta = {
 	tags: ["users"],

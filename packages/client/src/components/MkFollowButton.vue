@@ -105,7 +105,7 @@ async function onClick() {
 			return;
 		}
 
-		window.open(`https://${input}/@${props.user.username}@mkkey.net`, '_blank');
+		window.open(`https://${input}/@${props.user.username}@${props.user.host ?? "mkkey.net"}`, '_blank');
 		
 		return
 

@@ -118,6 +118,7 @@
 			<XShowMoreButton
 				v-if="isLong"
 				v-model="collapsed"
+				:note="note"
 			></XShowMoreButton>
 			<XCwButton v-if="cwView" v-model="showContent" :note="note" />
 		</div>

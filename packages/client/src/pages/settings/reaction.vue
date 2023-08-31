@@ -791,7 +791,7 @@ function chooseEmoji(ev: MouseEvent) {
 }
 
 onMounted(async () => {
-	if (!unref(instance.emojiStats)) {
+	if (!unref(instance.emojiStats) && !defaultStore.state.enableDataSaverMode) {
 		const data = await os.api("users/emoji-stats", {
 			userId: $i.id,
 			limit: 105,

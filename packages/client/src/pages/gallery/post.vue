@@ -174,6 +174,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { shareAvailable } from "@/scripts/share-available";
 import XImage from "@/components/MkMediaImage.vue";
 import XVideo from "@/components/MkMediaVideo.vue";
+import { FILE_TYPE_BROWSERSAFE } from "@/const";
 
 const router = useRouter();
 

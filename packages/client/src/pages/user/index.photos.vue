@@ -1,5 +1,5 @@
 <template>
-	<MkContainer id="photos-container" :max-height="300" :foldable="true">
+	<MkContainer class="photos-container" :max-height="limit <= 10 ? 300 : null" :foldable="limit <= 10">
 		<template #header
 			><i class="ph-image ph-bold ph-lg" style="margin-right: 0.5em"></i
 			>{{ i18n.ts.images }}</template
@@ -38,9 +38,15 @@ import ImgWithBlurhash from "@/components/MkImgWithBlurhash.vue";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 
-const props = defineProps<{
-	user: misskey.entities.UserDetailed;
-}>();
+const props = withDefaults(
+	defineProps<{
+		user: misskey.entities.UserDetailed;
+		limit?: number;
+	}>(),
+	{
+		limit: 10,
+	}
+);
 
 let fetching = $ref(true);
 let images = $ref<
@@ -69,7 +75,7 @@ onMounted(() => {
 		userId: props.user.id,
 		fileType: image,
 		excludeNsfw: defaultStore.state.nsfw !== "ignore",
-		limit: 10,
+		limit: props.limit,
 	}).then((notes) => {
 		for (const note of notes) {
 			for (const file of note.files) {
@@ -85,7 +91,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-#photos-container {
+.photos-container {
 	--stickyTop: 0;
 }
 

@@ -339,9 +339,10 @@
 					<template v-if="narrow">
 						<XPhotos :key="user.id" :user="user" />
 						<XActivity
-							v-if="!$store.state.hiddenActivityChart"
+							v-if="!$store.state.hiddenActivityChart && stats?.elapsedDays"
 							:key="user.id"
 							:user="user"
+							:limit="stats.elapsedDays < 30 ? Math.ceil(stats.elapsedDays) : 30"
 							style="margin-top: var(--margin)"
 						/>
 					</template>
@@ -379,8 +380,10 @@
 			<div v-if="!narrow" class="sub">
 				<XPhotos :key="user.id" :user="user" />
 				<XActivity
+					v-if="!$store.state.hiddenActivityChart && stats?.elapsedDays"
 					:key="user.id"
 					:user="user"
+					:limit="stats.elapsedDays < 30 ? Math.ceil(stats.elapsedDays) : 30"
 					style="margin-top: var(--margin)"
 				/>
 				<div v-if="user.pinnedNotes.length > 0" class="_gap">

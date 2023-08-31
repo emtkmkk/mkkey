@@ -95,19 +95,22 @@ function onFollowChange(user: Misskey.entities.UserDetailed) {
 async function onClick() {
 
 	if ( $i == null ) {
+		
+		const hostname = props.user.host ?? "mkkey.net";
 
 		const { canceled, result: input } = await os.inputText({
 			title: i18n.ts.hostnameInput,
+			text: `または、照会機能にて\n「${props.user.username}@${hostname}」\nを入力してください。`,
 			placeholder: i18n.ts.hostnameInputPlaceholder,
 		});
-		if (!input || !/^[\w.-]+$/.test(input) || canceled) {
+		if (canceled || !input || input.trim() !== "mkkey.net" || !/^[\w.-]+$/.test(input)) {
 			return;
 		}
 		
-		if (input.trim() === props.user.host) {
+		if (input.trim() === hostname) {
 			window.open(`https://${input.trim()}/@${props.user.username}`, '_blank');
 		} else {
-			window.open(`https://${input.trim()}/@${props.user.username}@${props.user.host ?? "mkkey.net"}`, '_blank');
+			window.open(`https://${input.trim()}/@${props.user.username}@${hostname}`, '_blank');
 		}
 		
 		return

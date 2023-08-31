@@ -1,6 +1,6 @@
 <template>
 	<MkSpacer :content-max="800">
-		<XPhotos :key="user.id + 'detail'" :user="user" limit="100"/>
+		<XPhotos :key="user.id + 'detail'" :user="user" :limit="100"/>
 	</MkSpacer>
 </template>
 

@@ -309,7 +309,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.where("note.userId = :userId", { userId: user.id })
 			.cache(CACHE_TIME * 2)
 			.getRawOne()).count : undefined,
-		totalInviteCount: me.id === user.id || me.isAdmin ? Users.createQueryBuilder("user")
+		totalInviteCount: me && (me.id === user.id || me.isAdmin) ? Users.createQueryBuilder("user")
 			.where("user.inviteUserId = :userId", { userId: user.id })
 			.cache(CACHE_TIME)
 			.getCount() : undefined,

@@ -433,7 +433,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		
 		fetchInstanceMetaPromise.then(() => {
 			fetchEmoji();
-			fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 30 : 120);
+			fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
 			const lastEmojiFetchDate = localStorage.getItem("remoteEmojiData") ? JSON.parse(localStorage.getItem("remoteEmojiData"))?.emojiFetchDate : undefined;
 			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, localStorage.getItem("emojiFetchAttemptDate") ? parseInt(localStorage.getItem("emojiFetchAttemptDate"), 10) : 0);
 			let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";

@@ -9,6 +9,7 @@
 import { defineAsyncComponent, ref } from "vue";
 import * as misskey from "calckey-js";
 import MkButton from "@/components/MkButton.vue";
+import { defaultStore } from "@/store";
 
 const XPhotos = defineAsyncComponent(() => import("./index.photos.vue"));
 let showImages = ref(!defaultStore.state.enableDataSaverMode);

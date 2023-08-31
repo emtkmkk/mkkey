@@ -553,6 +553,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		translatorAvailable:
 			instance.deeplAuthKey != null || instance.libreTranslateApiUrl != null,
 		defaultReaction: instance.defaultReaction,
+		enableGuestTimeline: true,
 
 		...(ps.detail
 			? {

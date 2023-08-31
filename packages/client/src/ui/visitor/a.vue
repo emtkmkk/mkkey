@@ -61,12 +61,12 @@
 					<b
 						><MkA to="/">{{ host }}</MkA></b
 					>
-					<small
+					<!-- <small
 						>Powered by
 						<a href="https://calckey.org/" target="_blank"
 							>Calckey</a
 						></small
-					>
+					> -->
 				</div>
 			</div>
 		</div>
@@ -195,12 +195,12 @@ export default defineComponent({
 
 			> h1 {
 				margin: 0;
-				padding: 96px 32px 0 32px;
+				padding: 0px 32px 0 32px;
 				text-shadow: 0 0 8px black;
 
 				> .logo {
 					vertical-align: bottom;
-					max-height: 150px;
+					max-height: 0px;
 				}
 			}
 
@@ -258,13 +258,13 @@ export default defineComponent({
 			}
 
 			> h1 {
-				margin: 0;
-				padding: 32px;
+				margin: 0; 
+				padding: 16px;
 				text-shadow: 0 0 8px black;
 
 				> .logo {
 					vertical-align: bottom;
-					max-height: 100px;
+					max-height: 48px;
 				}
 			}
 		}

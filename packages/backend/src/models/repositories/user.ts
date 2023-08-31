@@ -22,9 +22,11 @@ import {
 	AntennaNotes,
 	Blockings,
 	ChannelFollowings,
+	Clips,
 	DriveFiles,
 	Followings,
 	FollowRequests,
+	GalleryPosts,
 	Instances,
 	MessagingMessages,
 	Mutings,
@@ -613,6 +615,18 @@ export const UserRepository = db.getRepository(User).extend({
 					followersCount: followersCount ?? "N/A",
 					followingCount: followingCount ?? "N/A",
 					notesCount: user.notesCount,
+					hasClips: !user.host ? Clips.count({
+						where: { userId: user.id, isPublic: true },
+						take: 1,
+					}).then((count) => count > 0) : false,
+					hasPages: !user.host ? profile!.pinnedPageId ? true : Pages.count({
+						where: { userId: user.id, isPublic: true },
+						take: 1,
+					}).then((count) => count > 0) : false,
+					hasGallerys: !user.host ? GalleryPosts.count({
+						where: { userId: user.id, },
+						take: 1,
+					}).then((count) => count > 0) : false,
 					pinnedNoteIds: pins.map((pin) => pin.noteId),
 					pinnedNotes: Notes.packMany(
 						pins.map((pin) => pin.note!),

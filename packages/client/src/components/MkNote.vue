@@ -388,7 +388,7 @@ let replyNote = $computed(() =>
 	note.reply != null ? (note.reply as misskey.entities.Note) : note
 );
 const isMyRenote = $i && $i.id === note.userId;
-const multiReaction = $i.patron && (!appearNote.user.host || appearNote.user.instance?.maxReactionsPerAccount > 1);
+const multiReaction = $i && $i.patron && (!appearNote.user.host || appearNote.user.instance?.maxReactionsPerAccount > 1);
 const maxReactions = multiReaction ? (Math.min(appearNote.user.instance?.maxReactionsPerAccount ?? 3, 64)) : 1;
 const showContent = ref(false);
 const isDeleted = ref(false);

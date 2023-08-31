@@ -1,6 +1,6 @@
 <template>
 	<button v-if="modelValue" class="fade _button" @click.stop="toggle">
-		<span>{{ i18n.ts.showMore }}<span>{{ label }}</span></span>
+		<span>{{ i18n.ts.showMore }}<span>{{ " (" + label + ")" }}</span></span>
 	</button>
 	<button v-if="!modelValue" class="showLess _button" @click.stop="toggle">
 		<span>{{ i18n.ts.showLess }}</span>

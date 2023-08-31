@@ -378,7 +378,7 @@
 				</div>
 			</div>
 			<div v-if="!narrow" class="sub">
-				<XPhotos :key="user.id" :user="user" />
+				<XPhotos v-if="!defaultStore.state.enableDataSaverMode" :key="user.id" :user="user" />
 				<XActivity
 					v-if="!$store.state.hiddenActivityChart && stats?.elapsedDays"
 					:key="user.id"

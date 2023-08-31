@@ -67,14 +67,6 @@
 				<template #value>{{ number(stats.renotedCount) }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>{{ i18n.ts.pollVotesCount }}</template>
-				<template #value>{{ number(stats.pollVotesCount) }}</template>
-			</MkKeyValue>
-			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>{{ i18n.ts.pollVotedCount }}</template>
-				<template #value>{{ number(stats.pollVotedCount) }}</template>
-			</MkKeyValue>
-			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.sentReactionsCount }}</template>
 				<template #value>{{
 					number(stats.sentReactionsCount)
@@ -85,6 +77,26 @@
 				<template #value>{{
 					number(stats.receivedReactionsCount)
 				}}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.averageSentReactionsCount }}</template>
+				<template #value>{{
+					number(stats.averageSentReactionsCount)
+				}}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.averageReceivedReactionsCount }}</template>
+				<template #value>{{
+					number(stats.averageReceivedReactionsCount)
+				}}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.pollVotesCount }}</template>
+				<template #value>{{ number(stats.pollVotesCount) }}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.pollVotedCount }}</template>
+				<template #value>{{ number(stats.pollVotedCount) }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.noteFavoritesCount }}</template>

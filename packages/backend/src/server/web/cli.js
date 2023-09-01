@@ -4,92 +4,92 @@ window.onload = async () => {
 	const account = JSON.parse(localStorage.getItem("account"));
 	const i = account.token;
 
-	const api = (endpoint, data = {}) => {
-		const promise = new Promise((resolve, reject) => {
-			// Append a credential
-			if (i) data.i = i;
+	const api = async (endpoint, data = {}) => {
+		if (i) data.i = i;
 
-			// Send request
-			fetch(endpoint.indexOf("://") > -1 ? endpoint : `/api/${endpoint}`, {
-				method: "POST",
-				body: JSON.stringify(data),
-				credentials: "omit",
-				cache: "no-cache",
-			})
-				.then(async (res) => {
-					const body = res.status === 204 ? null : await res.json();
-
-					if (res.status === 200) {
-						resolve(body);
-					} else if (res.status === 204) {
-						resolve();
-					} else {
-						reject(body.error);
-					}
-				})
-				.catch(reject);
+		const res = await fetch(endpoint.indexOf("://") > -1 ? endpoint : `/api/${endpoint}`, {
+			method: "POST",
+			body: JSON.stringify(data),
+			credentials: "omit",
+			cache: "no-cache",
 		});
 
-		return promise;
+		const body = res.status === 204 ? null : await res.json();
+		if (res.ok) return body;
+
+		throw body.error;
 	};
 
-	document.getElementById("submit").addEventListener("click", () => {
-		api("notes/create", {
-			text: document.getElementById("text").value,
-		}).then(() => {
-			location.reload();
+	document.getElementById("submit").addEventListener("click", async () => {
+		await api("notes/create", {
+			text: document.getElementById("text").value
 		});
+		location.reload();
 	});
 
-	const searchParams = new URLSearchParams(window.location.search)
+	const searchParams = new URLSearchParams(window.location.search);
 
 	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has('tl') ? "notes/" + searchParams.get('tl') + "-timeline" : "notes/timeline";
 	const limit = searchParams.has('limit') ? parseInt(searchParams.get('limit'), 10) : undefined;
 	const noAvatar = searchParams.has('noAvatar');
-	const avatarSize = searchParams.has("avatarSize") ? searchParams.get('avatarSize') : undefined;
+	const avatarSize = searchParams.has("avatarSize") ? searchParams.get('avatarSize') : "40";
 
-	api(notesApi, limit ? { limit } : {}).then((notes) => {
-		const tl = document.getElementById("tl");
-		for (const note of notes) {
-			const appearNote = note.renote ? note.renote : note;
-			const el = document.createElement("div");
-			const header = document.createElement("header");
-			const name = document.createElement("p");
-			const avatar = document.createElement("img");
-			const rtname = document.createElement("p");
-			name.textContent = `${getProcessName(appearNote.user.name)} @${appearNote.user.username}${appearNote.user.host ? "@" + appearNote.user.host : ""} ${vicon(note.visibility,note.localOnly)}`.trim();
-			rtname.textContent = `${getProcessName(note.user.name)} @${note.user.username}${note.user.host ? "@" + note.user.host : ""} ${vicon(note.visibility,note.localOnly)}`.trim();
-			avatar.src = note.user.avatarUrl;
-			avatar.style = "height: " + (avatarSize ?? "40") + "px";
-			const text = document.createElement("div");
-			text.textContent = `${(note.cw ? (excludeNotPlain(note.cw) + (note.text ? ` (CW 📝${note.text.length})` : "")) : (excludeNotPlain(note.text) || "")) + (note.files.length !== 0 ? " (📎" + note.files.length + ")" : "")}${note.renote ? (!note.text ? " RT " : " \nQT ") + name.textContent + " : " + (appearNote.cw ? (excludeNotPlain(appearNote.cw) + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")) : (excludeNotPlain(appearNote.text) || "")) + (appearNote.files.length !== 0 ? " (📎" + appearNote.files.length + ")" : "") : ""}`.trim();
-			el.appendChild(header);
-			if (!noAvatar) header.appendChild(avatar);
-			header.appendChild(rtname);
-			if (appearNote.cw || appearNote.text) {
-				el.appendChild(text);
+	const notes = await api(notesApi, limit ? { limit } : {});
+	const tl = document.getElementById("tl");
+
+	for (const note of notes) {
+		const appearNote = note.renote || note;
+		const el = document.createElement("div");
+		const header = document.createElement("header");
+		const name = createUserLabel(appearNote);
+		const rtname = createUserLabel(note);
+		const avatar = document.createElement("img");
+
+		avatar.src = note.user.avatarUrl;
+		avatar.style.height = avatarSize + "px";
+		const text = document.createElement("div");
+		text.textContent = formatNoteText(note, appearNote, name);
+
+		el.appendChild(header);
+		if (!noAvatar) header.appendChild(avatar);
+		header.appendChild(rtname);
+		if (appearNote.cw || appearNote.text) el.appendChild(text);
+		if (appearNote.files) {
+			for (const file of appearNote.files) {
+				//const img = document.createElement("img");
+				//img.src = file.thumbnailUrl;
+				//el.appendChild(img);
 			}
-			if (appearNote.files) {
-				for (const file of appearNote.files) {
-					//const img = document.createElement("img");
-					//img.src = file.thumbnailUrl;
-					//el.appendChild(img);
-				}
-			}
-			tl.appendChild(el);
 		}
-	});
+		tl.appendChild(el);
+	}
 };
 
+function createUserLabel(note) {
+	const p = document.createElement("p");
+	p.textContent = `${getProcessName(note.user.name)} @${note.user.username}${note.user.host ? "@" + note.user.host : ""} ${vicon(note.visibility, note.localOnly)}`.trim();
+	return p;
+}
+
+function formatNoteText(note, appearNote, name) {
+	const noteText = note.cw
+		? excludeNotPlain(note.cw) + (note.text ? ` (CW 📝${note.text.length})` : "")
+		: excludeNotPlain(note.text) || "";
+	const appearText = appearNote.cw
+		? excludeNotPlain(appearNote.cw) + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")
+		: excludeNotPlain(appearNote.text) || "";
+
+	return `${noteText}${note.files.length ? " (📎" + note.files.length + ")" : ""}${note.renote ? (!note.text ? " RT " : " \nQT ") + name.textContent + " : " + appearText + (appearNote.files.length ? " (📎" + appearNote.files.length + ")" : "") : ""}`.trim();
+}
+
 function excludeNotPlain(text) {
-	// <xxx>を消す、中身が空のMFMを消す（4階層まで）
 	return text ? text.replaceAll(/<\/?\w*?>/g, '').replaceAll(/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g, '').trim() : undefined;
 }
 
-function getProcessName(name){
-		return name ? name.replaceAll(/\s?:[\w_]+?:/g, '').trim() : "";
+function getProcessName(name) {
+	return name ? name.replaceAll(/\s?:[\w_]+?:/g, '').trim() : "";
 }
 
-function vicon(v,l){
-	return `${l ? "♥" : ""}${v === "home" ? "🏠" : v === "followers" ? "🔒" : v === "specified" ? "✉" : ""}`
+function vicon(v, l) {
+	return `${l ? "♥" : ""}${v === "home" ? "🏠" : v === "followers" ? "🔒" : v === "specified" ? "✉" : ""}`;
 }

@@ -1,6 +1,7 @@
 "use strict";
 
 window.onload = async () => {
+	createFormToggleLink();
 	const account = JSON.parse(localStorage.getItem("account"));
 	const i = account.token;
 
@@ -64,6 +65,72 @@ window.onload = async () => {
 		tl.appendChild(el);
 	}
 };
+
+function createFormToggleLink() {
+	const link = document.createElement("a");
+	link.href = "#";
+	link.textContent = "Show Options Form";
+	link.style.display = "block";
+	link.style.marginTop = "1em";
+	link.onclick = function(e) {
+		e.preventDefault();
+		createOptionsForm();
+	};
+
+	document.body.appendChild(link);
+}
+
+function createOptionsForm() {
+	// 既にフォームが存在する場合は、それ以上作成しない
+	if (document.getElementById("optionsForm")) return;
+
+	// フォームの要素を作成
+	const form = document.createElement("form");
+	form.id = "optionsForm";
+
+	const tlInput = createInputWithLabel("text", "tl", "Timeline:", "e.g. home | social | local | global");
+	const limitInput = createInputWithLabel("number", "limit", "Limit:", "1 - 100");
+	const noAvatarCheckbox = createInputWithLabel("checkbox", "noAvatar", "No Avatar");
+	const avatarSizeInput = createInputWithLabel("text", "avatarSize", "Avatar Size:", "e.g. 40");
+	const submitButton = document.createElement("input");
+	submitButton.type = "submit";
+	submitButton.value = "Apply";
+
+	// フォームに要素を追加
+	form.appendChild(tlInput);
+	form.appendChild(limitInput);
+	form.appendChild(noAvatarCheckbox);
+	form.appendChild(avatarSizeInput);
+	form.appendChild(submitButton);
+
+	// イベントリスナーを設定
+	form.addEventListener('submit', function (e) {
+		e.preventDefault();
+
+		const formData = new FormData(e.target);
+		const queryParams = new URLSearchParams();
+
+		for (const [key, value] of formData.entries()) {
+			if (value && key !== 'submit') queryParams.append(key, value);
+		}
+
+		window.location.search = queryParams.toString();
+	});
+
+	// フォームをページの下部に追加
+	document.body.appendChild(form);
+}
+
+function createInputWithLabel(type, name, labelText, placeholder = "") {
+	const label = document.createElement("label");
+	const input = document.createElement("input");
+	input.type = type;
+	input.name = name;
+	if (placeholder) input.placeholder = placeholder;
+	label.appendChild(document.createTextNode(labelText));
+	label.appendChild(input);
+	return label;
+}
 
 function createUserLabel(note) {
 	const p = document.createElement("p");

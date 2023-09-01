@@ -1,7 +1,7 @@
 {
 	"short_name": "Calckey",
 	"name": "Calckey",
-	"description": "An open source, decentralized social media platform that's free forever!",
+	"description": "PWAの説明です",
 	"start_url": "/",
 	"display": "standalone",
 	"background_color": "#1f1d2e",
@@ -47,25 +47,38 @@
 			"sizes": "1195x579",
 			"type": "image/webp",
 			"platform": "narrow",
-			"label": "Profile page"
+			"label": "PWAの画像 1"
 		},
 		{
 			"src": "/static-assets/screenshots/2.webp",
 			"sizes": "1195x579",
 			"type": "image/webp",
 			"platform": "narrow",
-			"label": "Posts"
+			"label": "PWAの画像 2"
 		}
 	],
 	"shortcuts" : [
 		{
-			"name": "Notifications",
-			"short_name": "Notifs",
+			"name": "新しい投稿",
+			"short_name": "投稿",
+			"url": "/share"
+		},
+		{
+			"name": "トレンド",
+			"url": "/explore"
+		},
+		{
+			"name": "通知",
 			"url": "/my/notifications"
 		},
 		{
-			"name": "Chats",
+			"name": "チャット",
 			"url": "/my/messaging"
+		},
+		{
+			"name": "アカウント統計",
+			"short_name": "統計",
+			"url": "/settings/account-info"
 		}
 	],
 	"categories": [

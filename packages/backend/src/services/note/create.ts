@@ -425,13 +425,14 @@ export default async (
 			if (user.isSilenced && (!relation.every((x) => x) ?? true)) {
 				throw new Error("サイレンス中はフォロワーでないユーザにダイレクトは送信できません。");
 			}
-
-			const localRelation = await Promise.all(data.visibleUsers.filter((x) => !x.host || x.host === "mkkey.net").map(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed));
+/*
+			const localRelation = user.id === '9d7csvz8zd' || !user.host ? false :await Promise.all(data.visibleUsers.filter((x) => !x.host || x.host === "mkkey.net").every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed));
 
 			//9d7csvz8zd はログインボーナスbot 環境によって変わるはず
-			if (user.id !== '9d7csvz8zd' && user.host && (localRelation.every((x) => x) ?? true)) {
+			if (user.id !== '9d7csvz8zd' && user.host && (localRelation ?? true)) {
 				data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi, "$1");
 			}
+*/
 		}
 
 		const note = await insertNote(user, data, tags, emojis, mentionedUsers);

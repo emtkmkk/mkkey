@@ -209,7 +209,7 @@ function emojiEscape(text): string {
 }
 
 function getUsername(user): string {
-	return user ? user.name?.replaceAll(/\s?:\w+?:/g, '').trim() || user.username : undefined;
+	return user ? (user.name?.replaceAll(/\s?:\w+?:/g, '').trim() || user.username) + (user.host ? "@" + user.host : "") : undefined;
 }
 
 function getNoteContentSummary(note, userId, textLength?): string {
@@ -292,7 +292,7 @@ async function typeToBody(jobData: any): Promise<any> {
 			return {
 				username,
 				avatar_url,
-				content: username + " から " + body.reaction?.emojiName.replaceAll(/:(\w+):/g, '<$1>') + content,
+				content: username + " から " + body.reaction?.emojiName.replaceAll(/:(\w+):/g, '：$1：') + content,
 			};
 		case "antenna":
 			return {

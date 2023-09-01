@@ -191,7 +191,12 @@ const render = () => {
 		data: {
 			labels: new Array(props.limit)
 				.fill(0)
-				.map((_, i) => getDate(i))
+				.map((_, i) => {
+					const currentDate = getDate(i);
+					const dateString = currentDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' });
+					const timeString = currentDate.toLocaleTimeString('ja-JP', { hour: 'numeric', minute: 'numeric', second: 'numeric' });
+					return timeString === "0:00:00" ? dateString : `${dateString} ${timeString}`;
+				})
 				.slice()
 				.reverse(),
 			datasets: chartData.series.map((x, i) => ({

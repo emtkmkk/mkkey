@@ -13,7 +13,7 @@
 			</button>
 		</template>-->
 
-		<div style="padding: 0px">
+		<div style="padding: 8px">
 			<MkChart
 				:src="chartSrc"
 				:args="{ user, withoutAll: true }"

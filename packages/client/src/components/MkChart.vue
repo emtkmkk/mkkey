@@ -191,7 +191,7 @@ const render = () => {
 		data: {
 			labels: new Array(props.limit)
 				.fill(0)
-				.map((_, i) => getDate(i).toLocaleString())
+				.map((_, i) => props.span === "day" ? getDate(i).toLocaleDateString() : getDate(i).toLocaleString())
 				.slice()
 				.reverse(),
 			datasets: chartData.series.map((x, i) => ({
@@ -231,7 +231,7 @@ const render = () => {
 			layout: {
 				padding: {
 					left: 0,
-					right: 8,
+					right: 0,
 					top: 0,
 					bottom: 0,
 				},

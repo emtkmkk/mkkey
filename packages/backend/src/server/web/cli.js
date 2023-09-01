@@ -30,7 +30,7 @@ window.onload = async () => {
 
 	const searchParams = new URLSearchParams(window.location.search);
 
-	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has('tl').replace('home','') ? "notes/" + searchParams.get('tl').replace('home','').replace('social','hybrid') + "-timeline" : "notes/timeline";
+	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has("tl") && searchParams.get('tl').replace('home','') ? "notes/" + searchParams.get('tl').replace('home','').replace('social','hybrid') + "-timeline" : "notes/timeline";
 	const limit = searchParams.has('limit') ? parseInt(searchParams.get('limit'), 10) : undefined;
 	const noAvatar = searchParams.has('noAvatar');
 	const avatarSize = searchParams.has("avatarSize") ? searchParams.get('avatarSize') : "40";

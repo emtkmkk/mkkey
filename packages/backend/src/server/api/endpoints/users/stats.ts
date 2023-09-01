@@ -450,24 +450,44 @@ export default define(meta, paramDef, async (ps, me) => {
 		(elapsedDays < 14 ? (14 - elapsedDays) * (0.4 / 14) : 0) +
 		Math.min((elapsedDays < 30 ? (30 - elapsedDays) * (0.1 / 16) : 0), 0.1)
 	);
+	
+	const dailyBonus = rankResult.notesPostDays * 482;
+	
+	const notePower = (
+		rankResult.notesCount * 18 +
+		rankResult.renotesCount * -18 +
+		rankResult.sendMessageCount * 11
+	);
+	
+	const subNotePower = (
+		rankResult.repliesCount * 7 +
+		rankResult.renotesCount * 7 +
+		rankResult.quotesCount * 7 +
+		rankResult.pollVotesCount * 7
+	);
+	
+	const receivedSubNotePower = (
+		rankResult.repliedCount * 3 +
+		rankResult.renotedCount * 3 +
+		rankResult.pollVotedCount * 3 +
+		rankResult.readMessageCount * 2
+	);
+	
+	const sentReactionsPower = rankResult.sentReactionsCount * 7;
+	
+	const receivedReactionsPower = rankResult.receivedReactionsCount * 3;
 
 	const rankPower =
-		Math.floor((rankResult.notesPostDays * 482 +
-			(rankResult.notesCount * 18 +
-				rankResult.repliesCount * 7 +
-				rankResult.renotesCount * -11 +
-				rankResult.quotesCount * 7 +
-				rankResult.repliedCount * 3 +
-				rankResult.renotedCount * 3 +
-				rankResult.pollVotesCount * 7 +
-				rankResult.pollVotedCount * 3 +
-				rankResult.pageLikesCount * 33 +
-				rankResult.pageLikedCount * 27 +
-				rankResult.sentReactionsCount * 7 +
-				rankResult.receivedReactionsCount * 3 +
-				rankResult.driveFilesCount * 6 +
-				rankResult.sendMessageCount * 11 +
-				rankResult.readMessageCount * 2) * rpRate
+		Math.floor((
+			dailyBonus +
+			(
+				notePower +
+				subNotePower +
+				Math.min(notePower / 2 + subNotePower,receivedSubNotePower) +
+				sentReactionsPower +
+				Math.min(notePower / 2 + sentReactionsPower,receivedReactionsPower) +
+				rankResult.driveFilesCount * 6
+			) * rpRate
 		) / elapsedDays * 100) / 100;
 
 	let _rankPower = rankPower;

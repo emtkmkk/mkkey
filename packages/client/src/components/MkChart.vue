@@ -191,7 +191,7 @@ const render = () => {
 		data: {
 			labels: new Array(props.limit)
 				.fill(0)
-				.map((_, i) => props.span === "day" ? getDate(i).toLocaleDateString() : getDate(i).toLocaleString())
+				.map((_, i) => getDate(i))
 				.slice()
 				.reverse(),
 			datasets: chartData.series.map((x, i) => ({
@@ -231,7 +231,7 @@ const render = () => {
 			layout: {
 				padding: {
 					left: 0,
-					right: 0,
+					right: 8,
 					top: 0,
 					bottom: 0,
 				},
@@ -244,6 +244,10 @@ const render = () => {
 					time: {
 						stepSize: 1,
 						unit: props.span === "day" ? "month" : "day",
+						displayFormats: {
+							day: 'M/d',
+							month: 'Y/M',
+						},
 					},
 					grid: {
 						color: gridColor,
@@ -259,7 +263,7 @@ const render = () => {
 							locale: enUS,
 						},
 					},
-					min: getDate(props.limit).getTime(),
+					min: getDate(props.limit - 1).getTime(),
 				},
 				y: {
 					position: "left",

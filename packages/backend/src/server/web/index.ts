@@ -724,6 +724,12 @@ router.get("/cli", async (ctx) => {
 	});
 });
 
+router.get("/sc", async (ctx) => {
+	await ctx.render("sc", {
+		version: config.version,
+	});
+});
+
 const override = (source: string, target: string, depth = 0) =>
 	[
 		undefined,

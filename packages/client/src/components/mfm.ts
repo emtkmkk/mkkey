@@ -84,9 +84,9 @@ export default defineComponent({
 						case "text": {
 							let text = token.props.text.replace(/(\r\n|\n|\r)/g, "\n");
 							
-							if (isNote && !noteHost && this.author && this.author.isCat && this.author.speakAsCat) {
+							/*if (isNote && !noteHost && this.author && this.author.isCat && this.author.speakAsCat) {
 								text = nyaize(text);
-							}
+							}*/
 
 							if (!this.plain) {
 								const res = [];

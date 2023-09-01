@@ -463,19 +463,17 @@ export default define(meta, paramDef, async (ps, me) => {
 		rankResult.repliesCount * 7 +
 		rankResult.renotesCount * 7 +
 		rankResult.quotesCount * 7 +
-		rankResult.pollVotesCount * 7
+		rankResult.pollVotesCount * 7 +
+		rankResult.sentReactionsCount * 7
 	);
 	
 	const receivedSubNotePower = (
 		rankResult.repliedCount * 3 +
 		rankResult.renotedCount * 3 +
 		rankResult.pollVotedCount * 3 +
+		rankResult.receivedReactionsCount * 3 +
 		rankResult.readMessageCount * 2
 	);
-	
-	const sentReactionsPower = rankResult.sentReactionsCount * 7;
-	
-	const receivedReactionsPower = rankResult.receivedReactionsCount * 3;
 
 	const rankPower =
 		Math.floor((
@@ -484,8 +482,6 @@ export default define(meta, paramDef, async (ps, me) => {
 				notePower +
 				subNotePower +
 				Math.min(notePower / 2 + subNotePower,receivedSubNotePower) +
-				sentReactionsPower +
-				Math.min(notePower / 2 + sentReactionsPower,receivedReactionsPower) +
 				rankResult.driveFilesCount * 6
 			) * rpRate
 		) / elapsedDays * 100) / 100;

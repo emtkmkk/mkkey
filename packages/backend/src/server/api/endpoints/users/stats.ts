@@ -447,8 +447,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			result.followersCount * 0.0015));
 
 	const rpRate = 1 - (
-		(elapsedDays < 7 ? (7 - elapsedDays) * (0.3 / 7) : 0) +
-		Math.min((elapsedDays < 14 ? (14 - elapsedDays) * (0.1 / 7) : 0), 0.1) +
+		(elapsedDays < 14 ? (14 - elapsedDays) * (0.4 / 14) : 0) +
 		Math.min((elapsedDays < 30 ? (30 - elapsedDays) * (0.1 / 16) : 0), 0.1)
 	);
 

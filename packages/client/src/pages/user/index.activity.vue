@@ -7,13 +7,13 @@
 			></i
 			>{{ i18n.ts.activity }}</template
 		>
-		<template #func>
+		<!--<template #func>
 			<button class="_button" @click="showMenu">
 				<i class="ph-dots-three-outline ph-bold ph-lg"></i>
 			</button>
-		</template>
+		</template>-->
 
-		<div style="padding: 8px">
+		<div style="padding: 0px">
 			<MkChart
 				:src="chartSrc"
 				:args="{ user, withoutAll: true }"

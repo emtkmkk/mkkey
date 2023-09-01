@@ -122,6 +122,7 @@ function createOptionsForm() {
 }
 
 function createInputWithLabel(type, name, labelText, placeholder = "") {
+	const div = document.createElement("div");
 	const label = document.createElement("label");
 	const input = document.createElement("input");
 	input.type = type;
@@ -129,7 +130,8 @@ function createInputWithLabel(type, name, labelText, placeholder = "") {
 	if (placeholder) input.placeholder = placeholder;
 	label.appendChild(document.createTextNode(labelText));
 	label.appendChild(input);
-	return label;
+	div.appendChild(label);
+	return div;
 }
 
 function createUserLabel(note) {

@@ -47,8 +47,8 @@ export default define(meta, paramDef, async (ps) => {
 		.replace(/!u : ([^,:]+)(,|$)/,"使用情報 : $1$2")
 		.replace(/!a : ([^,:]+)(,|$)/,"作者 : $1$2")
 		.replace(/!d :  ([^,:]+)(,|$)/,"説明 : $1$2")
-		.replace(/!b :  ([^,:]+)(,|$)/,"元画像 : $1$2")
-		.replace(/!i :  ([^,:]+)(,|$)/,"元画像 : $1$2")
+		.replace(/!b :  ([^,:]+)(,|$)/,"コピー元 : $1$2")
+		.replace(/!i :  ([^,:]+)(,|$)/,"コピー元 : $1$2")
 		.replace("!c0","CC0 1.0 Universal")
 		.replace("!cb","CC BY 4.0");
 	}

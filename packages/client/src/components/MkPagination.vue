@@ -632,7 +632,7 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" module>
+<style lang="scss" scoped>
 .transition_fade_enterActive,
 .transition_fade_leaveActive {
 	transition: opacity 0.125s ease;

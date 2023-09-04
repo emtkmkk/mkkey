@@ -36,7 +36,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (file == null) throw new ApiError(meta.errors.noSuchFile);
 
-	let name = file.name.split(".")?.[0]?.replaceAll(/[^A-Za-z0-9_]+/g,"") || `_${rndstr("a-z0-9", 8)}_`;
+	let name = file.name.split(".")?.[0]?.replaceAll(/[^A-Za-z0-9_]+/g,"").toLowerCase() || `_${rndstr("a-z0-9", 8)}_`;
 	/*file.name.split(".")[0].match(/^[A-Za-z0-9_]+$/)
 		? file.name.split(".")[0]
 		: `_${rndstr("a-z0-9", 8)}_`;*/
@@ -44,7 +44,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	const emojiSearchName = await Emojis.findOneBy({ name: name , host: IsNull() });
 	
 	// 名前重複の場合
-	if (emojiSearchName) {
+	if (emojiSearchName.toLowerCase()) {
 		name = name + `_${rndstr("a-z0-9", 8)}`;
 	}
 

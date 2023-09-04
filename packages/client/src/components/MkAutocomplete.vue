@@ -135,7 +135,7 @@ const emojiDefinitions: EmojiDef[] = [];
 
 for (const x of customEmojis) {
 	emojiDefinitions.push({
-		name: x.name,
+		name: x.name.toLowerCase(),
 		emoji: `:${x.name}:`,
 		url: x.url,
 		isCustomEmoji: true,
@@ -144,8 +144,8 @@ for (const x of customEmojis) {
 	if (x.aliases) {
 		for (const alias of x.aliases) {
 			emojiDefinitions.push({
-				name: alias,
-				aliasOf: x.name,
+				name: alias.toLowerCase(),
+				aliasOf: x.name.toLowerCase(),
 				emoji: `:${x.name}:`,
 				url: x.url,
 				isCustomEmoji: true,

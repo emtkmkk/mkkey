@@ -160,7 +160,7 @@ useTooltip(
     0%, 100% {
         color: inherit;
     }
-    50% {
+    25%, 75% {
         color: var(--accent);
     }
 }

@@ -41,7 +41,6 @@
 			:key="column.tl"
 			:src="column.tl"
 			@after="() => emit('loaded')"
-			@queue="queueUpdated"
 			@note="onNote"
 		/>
 	</XColumn>

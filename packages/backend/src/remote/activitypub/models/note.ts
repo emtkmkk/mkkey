@@ -494,7 +494,7 @@ export async function extractEmojis(
 				(tag.copyPermission && tag.copyPermission !== "none" ? "コピー可否 : " + tag.copyPermission : ""),
 				(tag.usageInfo ? "使用情報 : " + tag.usageInfo : ""),
 				(tag.description ? "説明 : " + tag.description : ""),
-				(tag.isBasedOnUrl ? "元画像 : " + tag.isBasedOnUrl : ""),
+				(tag.isBasedOnUrl ? "コピー元 : " + tag.isBasedOnUrl : ""),
 			].filter(Boolean).join(", ").trim() || null;
 
 			const exists = await Emojis.findOneBy({

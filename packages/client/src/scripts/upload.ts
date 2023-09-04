@@ -72,7 +72,7 @@ export function uploadFile(
 					return;
 				}
 				inputName = input;
-				inputName = inputName.toLowerCase().replace(/\.\w+$/,"").replace(/\W+/,"").trim();
+				inputName = inputName.toLowerCase().replace(/\.\w+$/,"").trim();
 				if (!inputName) {
 					reject();
 					return;

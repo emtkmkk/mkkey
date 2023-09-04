@@ -153,21 +153,12 @@ useTooltip(
 </script>
 
 <style lang="scss" scoped>
-@keyframes brighten {
+@keyframes textColorChanged {
     0%, 100% {
-        filter: brightness(1);
+        color: inherit;
     }
     50% {
-        filter: brightness(1.5);
-    }
-}
-
-@keyframes darken {
-    0%, 100% {
-        filter: brightness(1);
-    }
-    50% {
-        filter: brightness(0.7);
+        color: var(--accent);
     }
 }
 .hkzvhatu {
@@ -234,11 +225,11 @@ useTooltip(
 		margin: 0 0 0 4px;
 		
 		&.count-increased {
-			animation: textBrighten 0.5s;
+			animation: textColorChanged 0.5s;
 		}
 
 		&.count-decreased {
-			animation: textDarken 0.5s;
+			animation: textColorChanged 0.5s;
 		}
 	}
 }

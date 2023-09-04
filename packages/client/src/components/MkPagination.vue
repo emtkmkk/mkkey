@@ -1,5 +1,11 @@
 <template>
-	<transition :name="$store.state.animation ? 'fade' : ''" mode="out-in">
+	<transition
+		:enter-active-class="$store.state.animation ? $style.transition_fade_enterActive : ''"
+		:leave-active-class="$store.state.animation ? $style.transition_fade_leaveActive : ''"
+		:enter-from-class="$store.state.animation ? $style.transition_fade_enterFrom : ''"
+		:leave-to-class="$store.state.animation ? $style.transition_fade_leaveTo : ''"
+		mode="out-in"
+	>
 		<MkLoading v-if="fetching" />
 
 		<MkError v-else-if="error" @retry="init()" />
@@ -122,8 +128,11 @@ import {
 	ComputedRef,
 	isRef,
 	markRaw,
+	nextTick,
 	onActivated,
+	onBeforeUnmount,
 	onDeactivated,
+	onMounted,
 	Ref,
 	ref,
 	watch,
@@ -134,8 +143,14 @@ import {
 	onScrollTop,
 	isTopVisible,
 	getScrollPosition,
+	getBodyScrollHeight,
 	getScrollContainer,
+	onScrollBottom,
+	scrollToBottom,
+	scroll,
+	isBottomVisible
 } from "@/scripts/scroll";
+import { useDocumentVisibility } from '@/scripts/use-document-visibility';
 import MkButton from "@/components/MkButton.vue";
 import { i18n } from "@/i18n";
 
@@ -163,6 +178,7 @@ export type Paging<
 };
 
 const SECOND_FETCH_LIMIT = 30;
+const TOLERANCE = 16;
 
 const props = withDefaults(
 	defineProps<{
@@ -198,7 +214,58 @@ const errorMsg = ref("");
 const ctAutoReload = ref(false);
 let timerId = null;
 
-const init = async (): Promise<void> => {
+const contentEl = $computed(() => props.pagination.pageEl ?? rootEl);
+const scrollableElement = $computed(() => getScrollContainer(contentEl));
+
+const visibility = useDocumentVisibility();
+let isPausingUpdate = false;
+let timerForSetPause: number | null = null;
+const BACKGROUND_PAUSE_WAIT_SEC = 10;
+
+// 先頭が表示されているかどうかを検出
+// https://qiita.com/mkataigi/items/0154aefd2223ce23398e
+let scrollObserver = $ref<IntersectionObserver>();
+
+watch([() => props.pagination.reversed, $$(scrollableElement)], () => {
+	if (scrollObserver) scrollObserver.disconnect();
+
+	scrollObserver = new IntersectionObserver(entries => {
+		backed = entries[0].isIntersecting;
+	}, {
+		root: scrollableElement,
+		rootMargin: props.pagination.reversed ? '-100% 0px 100% 0px' : '100% 0px -100% 0px',
+		threshold: 0.01,
+	});
+}, { immediate: true });
+
+watch($$(rootEl), () => {
+	scrollObserver.disconnect();
+	nextTick(() => {
+		if (rootEl) scrollObserver.observe(rootEl);
+	});
+});
+
+watch([$$(backed), $$(contentEl)], () => {
+	if (!backed) {
+		if (!contentEl) return;
+
+		scrollRemove = (props.pagination.reversed ? onScrollBottom : onScrollTop)(contentEl, executeQueue, TOLERANCE);
+	} else {
+		if (scrollRemove) scrollRemove();
+		scrollRemove = null;
+	}
+});
+
+if (props.pagination.params && isRef(props.pagination.params)) {
+	watch(props.pagination.params, init, { deep: true });
+}
+
+watch(queue, (a, b) => {
+	if (a.length === 0 && b.length === 0) return;
+	emit('queue', queue.value.length);
+}, { deep: true });
+
+async function init(): Promise<void> {
 	queue.value = [];
 	fetching.value = true;
 	const params = props.pagination.params
@@ -432,70 +499,63 @@ const fetchMoreAhead = async (): Promise<void> => {
 		);
 };
 
-const prepend = (item: Item): void => {
-	if (props.pagination.reversed) {
-		if (rootEl.value) {
-			const container = getScrollContainer(rootEl.value);
-			if (container == null) {
-				// TODO?
-			} else {
-				const pos = getScrollPosition(rootEl.value);
-				const viewHeight = container.clientHeight;
-				const height = container.scrollHeight;
-				const isBottom = pos + viewHeight > height - 32;
-				if (isBottom) {
-					// オーバーフローしたら古いアイテムは捨てる
-					if (items.value.length >= props.displayLimit) {
-						// このやり方だとVue 3.2以降アニメーションが動かなくなる
-						//items.value = items.value.slice(-props.displayLimit);
-						while (items.value.length >= props.displayLimit) {
-							items.value.shift();
-						}
-						more.value = true;
-					}
-				}
-			}
-		}
-		items.value.push(item);
-		// TODO
-	} else {
-		// 初回表示時はunshiftだけでOK
-		if (!rootEl.value) {
-			items.value.unshift(item);
-			return;
-		}
-
-		const isTop =
-			isBackTop.value ||
-			(document.body.contains(rootEl.value) &&
-				isTopVisible(rootEl.value));
-
-		if (isTop) {
-			// Prepend the item
-			items.value.unshift(item);
-
-			// オーバーフローしたら古いアイテムは捨てる
-			if (items.value.length >= props.displayLimit) {
-				// このやり方だとVue 3.2以降アニメーションが動かなくなる
-				//this.items = items.value.slice(0, props.displayLimit);
-				while (items.value.length >= props.displayLimit) {
-					items.value.pop();
-				}
-				more.value = true;
-			}
+const isTop = (): boolean => isBackTop.value || (props.pagination.reversed ? isBottomVisible : isTopVisible)(contentEl, TOLERANCE);
+watch(visibility, () => {
+	if (visibility.value === 'hidden') {
+		timerForSetPause = window.setTimeout(() => {
+			isPausingUpdate = true;
+			timerForSetPause = null;
+		},
+		BACKGROUND_PAUSE_WAIT_SEC * 1000);
+	} else { // 'visible'
+		if (timerForSetPause) {
+			clearTimeout(timerForSetPause);
+			timerForSetPause = null;
 		} else {
-			queue.value.push(item);
-			onScrollTop(rootEl.value, () => {
-				for (const queueItem of queue.value) {
-					prepend(queueItem);
-				}
-				queue.value = [];
-			});
+			isPausingUpdate = false;
+			if (isTop()) {
+				executeQueue();
+			}
 		}
 	}
+});
+
+const prepend = (item: Item): void => {
+	// 初回表示時はunshiftだけでOK
+	if (!rootEl) {
+		items.value.unshift(item);
+		return;
+	}
+
+	if (isTop() && !isPausingUpdate) unshiftItems([item]);
+	else prependQueue(item);
 };
 
+function unshiftItems(newItems: MisskeyEntity[]) {
+	const length = newItems.length + items.value.length;
+	items.value = [...newItems, ...items.value].slice(0, props.displayLimit);
+
+	if (length >= props.displayLimit) more.value = true;
+}
+
+function executeQueue() {
+	if (queue.value.length === 0) return;
+	unshiftItems(queue.value);
+	queue.value = [];
+}
+
+function prependQueue(newItem: Item) {
+	queue.value.unshift(newItem);
+	if (queue.value.length >= props.displayLimit) {
+		queue.value.pop();
+	}
+}
+
 const append = (item: Item): void => {
+	items.value.push(item);
+};
+
+const appendItem = (item: Item): void => {
 	items.value.push(item);
 };
 
@@ -519,27 +579,42 @@ const updateItem = (id: Item["id"], replacer: (old: Item) => Item): boolean => {
 	return true;
 };
 
-if (props.pagination.params && isRef(props.pagination.params)) {
-	watch(props.pagination.params, init, { deep: true });
-}
-
-watch(
-	queue,
-	(a, b) => {
-		if (a.length === 0 && b.length === 0) return;
-		emit("queue", queue.value.length);
-	},
-	{ deep: true }
-);
-
-init();
+const inited = init();
 
 onActivated(() => {
 	isBackTop.value = false;
 });
 
 onDeactivated(() => {
-	isBackTop.value = window.scrollY === 0;
+	isBackTop.value = props.pagination.reversed ? window.scrollY >= (rootEl ? rootEl.scrollHeight - window.innerHeight : 0) : window.scrollY === 0;
+});
+
+function toBottom() {
+	scrollToBottom(contentEl);
+}
+
+onMounted(() => {
+	inited.then(() => {
+		if (props.pagination.reversed) {
+			nextTick(() => {
+				setTimeout(toBottom, 800);
+
+				// scrollToBottomでmoreFetchingボタンが画面外まで出るまで
+				// more = trueを遅らせる
+				setTimeout(() => {
+					moreFetching.value = false;
+				}, 2000);
+			});
+		}
+	});
+});
+
+onBeforeUnmount(() => {
+	if (timerForSetPause) {
+		clearTimeout(timerForSetPause);
+		timerForSetPause = null;
+	}
+	scrollObserver.disconnect();
 });
 
 defineExpose({
@@ -556,12 +631,12 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-.fade-enter-active,
-.fade-leave-active {
+.transition_fade_enterActive,
+.transition_fade_leaveActive {
 	transition: opacity 0.125s ease;
 }
-.fade-enter-from,
-.fade-leave-to {
+.transition_fade_enterFrom,
+.transition_fade_leaveTo {
 	opacity: 0;
 }
 

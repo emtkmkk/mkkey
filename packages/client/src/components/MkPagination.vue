@@ -198,14 +198,14 @@ const emit = defineEmits<{
 
 type Item = { id: string; [another: string]: unknown };
 
-const rootEl = ref<HTMLElement>();
+const rootEl = $ref<HTMLElement>();
 const items = ref<Item[]>([]);
 const queue = ref<Item[]>([]);
 const offset = ref(0);
 const fetching = ref(true);
 const moreFetching = ref(false);
 const more = ref(false);
-let backed = ref(false); // 遡り中か否か
+let backed = $ref(false); // 遡り中か否か
 let scrollRemove = $ref<(() => void) | null>(null);
 const isBackTop = ref(false);
 const empty = computed(() => items.value.length === 0);
@@ -232,7 +232,7 @@ watch([() => props.pagination.reversed, $$(scrollableElement)], () => {
 	if (scrollObserver) scrollObserver.disconnect();
 
 	scrollObserver = new IntersectionObserver(entries => {
-		backed = entries[0].isIntersecting;
+		unref(backed) = entries[0].isIntersecting;
 	}, {
 		root: unref(scrollableElement),
 		rootMargin: props.pagination.reversed ? '-100% 0px 100% 0px' : '100% 0px -100% 0px',
@@ -374,7 +374,7 @@ const fetchMore = async (): Promise<void> => {
 	lastFetchDate.value = Date.now();
 	moreFetchError.value = false;
 	moreFetching.value = true;
-	backed = true;
+	unref(backed) = true;
 	const params = props.pagination.params
 		? isRef(props.pagination.params)
 			? props.pagination.params.value

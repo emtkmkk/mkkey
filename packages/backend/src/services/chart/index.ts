@@ -21,7 +21,7 @@ export const instanceChart = new InstanceChart();
 export const perUserNotesChart = new PerUserNotesChart();
 export const driveChart = new DriveChart();
 export const perUserReactionsChart = new PerUserReactionsChart();
-export const hashtagChart = new HashtagChart();
+//export const hashtagChart = new HashtagChart();
 export const perUserFollowingChart = new PerUserFollowingChart();
 export const perUserDriveChart = new PerUserDriveChart();
 export const apRequestChart = new ApRequestChart();
@@ -35,7 +35,7 @@ const charts = [
 	perUserNotesChart,
 	driveChart,
 	perUserReactionsChart,
-	hashtagChart,
+	//hashtagChart,
 	perUserFollowingChart,
 	perUserDriveChart,
 	apRequestChart,
@@ -46,6 +46,6 @@ setInterval(() => {
 	for (const chart of charts) {
 		chart.save();
 	}
-}, 1000 * 60 * 20);
+}, 1000 * 60 * 30);
 
 beforeShutdown(() => Promise.all(charts.map((chart) => chart.save())));

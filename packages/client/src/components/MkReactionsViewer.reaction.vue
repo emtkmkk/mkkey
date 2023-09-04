@@ -16,7 +16,13 @@
 			:reaction="reacted && note.myReaction !== reaction && !multi ? note.myReaction : reaction"
 			:custom-emojis="note.emojis"
 		/>
-		<span class="count">{{ count }}</span>
+		<span
+			class="count"
+			:class="{
+				'count-increased': countChanged === 'increased',
+				'count-decreased': countChanged === 'decreased'
+			}"
+		>{{ count }}</span>
 	</button>
 </template>
 
@@ -96,6 +102,20 @@ async function toggleReaction() {
 	}
 };
 
+watch(() => props.count, (newVal, oldVal) => {
+    if (newVal > oldVal) {
+        // 増加時の処理
+        countChanged.value = "increased";
+    } else if (newVal < oldVal) {
+        // 減少時の処理
+        countChanged.value = "decreased";
+    }
+    
+    setTimeout(() => {
+        countChanged.value = null;
+    }, 500);  // 500ms後にリセット
+});
+
 useTooltip(
 	buttonRef,
 	async (showing) => {
@@ -133,6 +153,23 @@ useTooltip(
 </script>
 
 <style lang="scss" scoped>
+@keyframes brighten {
+    0%, 100% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.5);
+    }
+}
+
+@keyframes darken {
+    0%, 100% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(0.7);
+    }
+}
 .hkzvhatu {
 	display: inline-block;
 	height: 32px;
@@ -195,6 +232,14 @@ useTooltip(
 		font-size: 0.9em;
 		line-height: 32px;
 		margin: 0 0 0 4px;
+		
+		&.count-increased {
+			animation: textBrighten 0.5s;
+		}
+
+		&.count-decreased {
+			animation: textDarken 0.5s;
+		}
 	}
 }
 </style>

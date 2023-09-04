@@ -6,7 +6,11 @@ export function getScrollContainer(el: HTMLElement | null): HTMLElement | null {
 	if (overflow === "scroll" || overflow === "auto") {
 		return el;
 	} else {
-		return getScrollContainer(el.parentElement);
+		if (el.parentElement instanceof HTMLElement) {
+			return getScrollContainer(el.parentElement);
+        } else {
+            return null;
+        }
 	}
 }
 export function getScrollPosition(el: HTMLElement | null): number {

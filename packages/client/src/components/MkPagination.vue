@@ -215,7 +215,7 @@ const ctAutoReload = ref(false);
 let timerId = null;
 
 const contentEl = $computed(() => props.pagination.pageEl ?? rootEl);
-const scrollableElement = $computed(() => getScrollContainer(contentEl));
+const scrollableElement = $computed(() => getScrollContainer(contentEl.value));
 
 const visibility = useDocumentVisibility();
 let isPausingUpdate = false;

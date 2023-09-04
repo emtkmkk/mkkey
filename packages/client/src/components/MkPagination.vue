@@ -1,9 +1,9 @@
 <template>
 	<transition
-		:enter-active-class="$store.state.animation ? 'fadeEnterActive' : ''"
-		:leave-active-class="$store.state.animation ? 'fadeLeaveActive' : ''"
-		:enter-from-class="$store.state.animation ? 'fadeEnterFrom' : ''"
-		:leave-to-class="$store.state.animation ? 'fadeLeaveTo' : ''"
+		:enter-active-class="$store.state.animation ? $style.transition_fade_enterActive : ''"
+		:leave-active-class="$store.state.animation ? $style.transition_fade_leaveActive : ''"
+		:enter-from-class="$store.state.animation ? $style.transition_fade_enterFrom : ''"
+		:leave-to-class="$store.state.animation ? $style.transition_fade_leaveTo : ''"
 		mode="out-in"
 	>
 		<MkLoading v-if="fetching" />
@@ -632,16 +632,18 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped>
-.fadeEnterActive,
-.fadeLeaveActive {
+<style lang="scss" module>
+.transition_fade_enterActive,
+.transition_fade_leaveActive {
 	transition: opacity 0.125s ease;
 }
-.fadeEnterFrom,
-.fadeLeaveTo {
+.transition_fade_enterFrom,
+.transition_fade_leaveTo {
 	opacity: 0;
 }
+</style>
 
+<style lang="scss" scoped>
 .cxiknjgy {
 	> .button {
 		margin-left: auto;

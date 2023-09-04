@@ -12,7 +12,7 @@
 					<div v-if="post" class="rkxwuolj">
 						<div class="files">
 							<div
-								:key="file.id"
+								:key="gallery"
 								class="file"
 								@click.stop
 							>

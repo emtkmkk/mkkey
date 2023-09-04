@@ -151,6 +151,7 @@
 										<div class="body">
 											<div class="name _monospace">
 												{{ emoji.name }}
+												{{ instance.emojis?.some((x) => x.name === emoji.name) ? " ⭐" : "" }}
 											</div>
 											<div class="info">
 												<i v-if="emoji.license?.includes('コピー可否 : conditional')" class="ph-bold ph-warning ph-lg" />
@@ -188,6 +189,7 @@ import { selectFile, selectFiles } from "@/scripts/select-file";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { instance } from "@/instance";
 
 const emojisPaginationComponent = ref<InstanceType<typeof MkPagination>>();
 

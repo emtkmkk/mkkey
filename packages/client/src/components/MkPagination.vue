@@ -204,7 +204,7 @@ const offset = ref(0);
 const fetching = ref(true);
 const moreFetching = ref(false);
 const more = ref(false);
-const backed = ref(false); // 遡り中か否か
+let backed = ref(false); // 遡り中か否か
 const isBackTop = ref(false);
 const empty = computed(() => items.value.length === 0);
 const error = ref(false);

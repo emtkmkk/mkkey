@@ -44,7 +44,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	const emojiSearchName = await Emojis.findOneBy({ name: name , host: IsNull() });
 	
 	// 名前重複の場合
-	if (emojiSearchName.toLowerCase()) {
+	if (emojiSearchName) {
 		name = name + `_${rndstr("a-z0-9", 8)}`;
 	}
 

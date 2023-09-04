@@ -11,10 +11,11 @@ function select(
 	label: string | null,
 	multiple: boolean,
 	requiredFilename?: boolean,
+	keepFilename?: boolean,
 ): Promise<DriveFile | DriveFile[]> {
 	return new Promise((res, rej) => {
 		const keepOriginal = ref(defaultStore.state.keepOriginalUploading);
-		const keepFileName = ref(defaultStore.state.keepFileName);
+		const keepFileName = ref(keepFilename ?? defaultStore.state.keepFileName);
 		let doAction = false;
 
 		const chooseFileFromPc = () => {
@@ -140,8 +141,9 @@ export function selectFile(
 	src: any,
 	label: string | null = null,
 	requiredFilename?: boolean,
+	keepFilename?: boolean,
 ): Promise<DriveFile> {
-	return select(src, label, false, requiredFilename) as Promise<DriveFile>;
+	return select(src, label, false, requiredFilename, keepFilename) as Promise<DriveFile>;
 }
 
 export function selectFiles(

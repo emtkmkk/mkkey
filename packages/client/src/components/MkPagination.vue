@@ -232,7 +232,7 @@ watch([() => props.pagination.reversed, $$(scrollableElement)], () => {
 	if (scrollObserver) scrollObserver.disconnect();
 
 	scrollObserver = new IntersectionObserver(entries => {
-		unref(backed) = entries[0].isIntersecting;
+		backed = entries[0].isIntersecting;
 	}, {
 		root: unref(scrollableElement),
 		rootMargin: props.pagination.reversed ? '-100% 0px 100% 0px' : '100% 0px -100% 0px',
@@ -374,7 +374,7 @@ const fetchMore = async (): Promise<void> => {
 	lastFetchDate.value = Date.now();
 	moreFetchError.value = false;
 	moreFetching.value = true;
-	unref(backed) = true;
+	backed = true;
 	const params = props.pagination.params
 		? isRef(props.pagination.params)
 			? props.pagination.params.value

@@ -427,7 +427,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	result.power =
 		Math.floor((result.notesPostDays * 482 +
-			result.notesCount * 18 +
+			Math.max(result.notesCount,user.host ? user.notesCount : 0) * 18 +
 			result.repliesCount * 7 +
 			result.renotesCount * -11 +
 			result.quotesCount * 7 +

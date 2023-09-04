@@ -408,7 +408,7 @@ router.get("/emoji_license/:path(.*)", async (ctx) => {
 				usageInfo: emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
 				author: emoji.license?.includes("作者 : ") ? /作者 : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
 				description: emoji.license?.includes("説明 : ") ? /説明 : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-				isBasedOnUrl: emoji.license?.includes("元画像 : ") ? /元画像 : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+				isBasedOnUrl: emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
 			});
 		}
 	} else {

@@ -263,8 +263,8 @@ if (props.pagination.params && isRef(props.pagination.params)) {
 }
 
 watch(queue, (a, b) => {
-	if (a.size === 0 && b.size === 0) return;
-	emit('queue', queue.value.size);
+	if (a.length === 0 && b.length === 0) return;
+	emit('queue', queue.value.length);
 }, { deep: true });
 
 async function init(): Promise<void> {

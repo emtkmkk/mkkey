@@ -12,6 +12,12 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 import { char2fileName } from "@/scripts/twemoji-base";
 import * as url from "@/scripts/url";
 
+const closeNotificationsByTags = async (tags: string[]) => {
+	for (const n of (await Promise.all(tags.map(tag => globalThis.registration.getNotifications({ tag })))).flat()) {
+		n.close();
+	}
+}
+
 const iconUrl = (name: string) =>
 	`/static-assets/notification-badges/${name}.png`;
 
@@ -64,11 +70,11 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 							actions: userDetail.isFollowing
 								? []
 								: [
-										{
-											action: "follow",
-											title: t("_notification._actions.followBack"),
-										},
-								  ],
+									{
+										action: "follow",
+										title: t("_notification._actions.followBack"),
+									},
+								],
 						},
 					];
 
@@ -120,6 +126,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 							body: getUserName(data.body.user) + " : " + bodyText || "",
 							icon: data.body.user.avatarUrl,
 							badge: iconUrl("comments"),
+							tag: `antenna:${data.body.antenna.id}`,
 							data,
 						},
 					];
@@ -158,13 +165,13 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 									title: t("_notification._actions.reply"),
 								},
 								...(data.body.note.visibility === "public" ||
-								data.body.note.visibility === "home"
+									data.body.note.visibility === "home"
 									? [
-											{
-												action: "renote",
-												title: t("_notification._actions.renote"),
-											},
-									  ]
+										{
+											action: "renote",
+											title: t("_notification._actions.renote"),
+										},
+									]
 									: []),
 							],
 						},
@@ -205,8 +212,8 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					if (
 						badge
 							? await fetch(badge)
-									.then((res) => res.status !== 200)
-									.catch(() => true)
+								.then((res) => res.status !== 200)
+								.catch(() => true)
 							: true
 					) {
 						badge = iconUrl("plus");
@@ -217,6 +224,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						{
 							body: data.body.note.text || "",
 							icon: data.body.user.avatarUrl,
+							tag: `reaction:${data.body.note.id}`,
 							badge,
 							data,
 							actions: [
@@ -247,6 +255,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						{
 							body: data.body.note.text || "",
 							badge: iconUrl("clipboard-check-solid"),
+							tag: `poll:${data.body.note.id}`,
 							data,
 						},
 					];
@@ -370,15 +379,10 @@ export async function createEmptyNotification(data?) {
 		res();
 
 		setTimeout(async () => {
-			for (const n of [
-				...(await self.registration.getNotifications({
-					tag: "user_visible_auto_notification",
-				})),
-				...(await self.registration.getNotifications({
-					tag: "read_notification",
-				})),
-			]) {
-				n.close();
+			try {
+				await closeNotificationsByTags(['user_visible_auto_notification', 'read_notification']);
+			} finally {
+				res();
 			}
 		}, 1000);
 	});

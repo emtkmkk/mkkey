@@ -18,6 +18,7 @@ import * as misskey from "calckey-js";
 import { $i } from "@/account";
 import XReaction from "@/components/MkReactionsViewer.reaction.vue";
 import { defaultStore } from "@/store";
+import { i18n } from "@/i18n";
 
 const props = defineProps<{
 	note: misskey.entities.Note;

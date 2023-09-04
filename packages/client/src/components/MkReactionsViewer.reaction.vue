@@ -34,6 +34,7 @@ import XReactionIcon from "@/components/MkReactionIcon.vue";
 import * as os from "@/os";
 import { useTooltip } from "@/scripts/use-tooltip";
 import { $i } from "@/account";
+import { i18n } from "@/i18n";
 
 const props = defineProps<{
 	reaction: string;

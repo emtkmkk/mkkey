@@ -205,6 +205,7 @@ const fetching = ref(true);
 const moreFetching = ref(false);
 const more = ref(false);
 let backed = ref(false); // 遡り中か否か
+let scrollRemove = $ref<(() => void) | null>(null);
 const isBackTop = ref(false);
 const empty = computed(() => items.value.length === 0);
 const error = ref(false);
@@ -215,7 +216,7 @@ const ctAutoReload = ref(false);
 let timerId = null;
 
 const contentEl = $computed(() => props.pagination.pageEl ?? rootEl);
-const scrollableElement = $computed(() => getScrollContainer(contentEl.value));
+const scrollableElement = $computed(() => contentEl ? getScrollContainer(contentEl) : document.body);
 
 const visibility = useDocumentVisibility();
 let isPausingUpdate = false;
@@ -239,9 +240,9 @@ watch([() => props.pagination.reversed, $$(scrollableElement)], () => {
 }, { immediate: true });
 
 watch($$(rootEl), () => {
-	scrollObserver.disconnect();
+	scrollObserver?.disconnect();
 	nextTick(() => {
-		if (rootEl) scrollObserver.observe(rootEl);
+		if (rootEl) scrollObserver?.observe(rootEl);
 	});
 });
 
@@ -261,8 +262,8 @@ if (props.pagination.params && isRef(props.pagination.params)) {
 }
 
 watch(queue, (a, b) => {
-	if (a.length === 0 && b.length === 0) return;
-	emit('queue', queue.value.length);
+	if (a.size === 0 && b.size === 0) return;
+	emit('queue', queue.value.size);
 }, { deep: true });
 
 async function init(): Promise<void> {

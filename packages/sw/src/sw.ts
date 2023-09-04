@@ -118,7 +118,8 @@ self.addEventListener("push", (ev) => {
 							break;
 					}
 
-					return createEmptyNotification("NotNfType : " + data.type);
+					await createEmptyNotification("NotNfType : " + data.type);
+					return;
 				},
 			),
 	);

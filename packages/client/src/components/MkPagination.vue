@@ -135,6 +135,7 @@ import {
 	onMounted,
 	Ref,
 	ref,
+	unref,
 	watch,
 } from "vue";
 import * as misskey from "calckey-js";
@@ -216,7 +217,7 @@ const ctAutoReload = ref(false);
 let timerId = null;
 
 const contentEl = $computed(() => props.pagination.pageEl ?? rootEl);
-const scrollableElement = $computed(() => contentEl ? getScrollContainer(contentEl) : document.body);
+const scrollableElement = $computed(() => unref(contentEl) ? getScrollContainer(unref(contentEl)) : document.body);
 
 const visibility = useDocumentVisibility();
 let isPausingUpdate = false;
@@ -233,7 +234,7 @@ watch([() => props.pagination.reversed, $$(scrollableElement)], () => {
 	scrollObserver = new IntersectionObserver(entries => {
 		backed = entries[0].isIntersecting;
 	}, {
-		root: scrollableElement,
+		root: unref(scrollableElement),
 		rootMargin: props.pagination.reversed ? '-100% 0px 100% 0px' : '100% 0px -100% 0px',
 		threshold: 0.01,
 	});
@@ -248,9 +249,9 @@ watch($$(rootEl), () => {
 
 watch([$$(backed), $$(contentEl)], () => {
 	if (!backed) {
-		if (!contentEl) return;
+		if (!unref(contentEl)) return;
 
-		scrollRemove = (props.pagination.reversed ? onScrollBottom : onScrollTop)(contentEl, executeQueue, TOLERANCE);
+		scrollRemove = (props.pagination.reversed ? onScrollBottom : onScrollTop)(unref(contentEl), executeQueue, TOLERANCE);
 	} else {
 		if (scrollRemove) scrollRemove();
 		scrollRemove = null;
@@ -500,7 +501,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 		);
 };
 
-const isTop = (): boolean => isBackTop.value || (props.pagination.reversed ? isBottomVisible : isTopVisible)(contentEl, TOLERANCE);
+const isTop = (): boolean => isBackTop.value || (props.pagination.reversed ? isBottomVisible : isTopVisible)(unref(contentEl), TOLERANCE);
 watch(visibility, () => {
 	if (visibility.value === 'hidden') {
 		timerForSetPause = window.setTimeout(() => {
@@ -591,7 +592,7 @@ onDeactivated(() => {
 });
 
 function toBottom() {
-	scrollToBottom(contentEl);
+	scrollToBottom(unref(contentEl));
 }
 
 onMounted(() => {

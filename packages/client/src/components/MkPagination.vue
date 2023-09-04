@@ -533,7 +533,7 @@ const prepend = (item: Item): void => {
 	else prependQueue(item);
 };
 
-function unshiftItems(newItems: MisskeyEntity[]) {
+function unshiftItems(newItems: Item[]) {
 	const length = newItems.length + items.value.length;
 	items.value = [...newItems, ...items.value].slice(0, props.displayLimit);
 

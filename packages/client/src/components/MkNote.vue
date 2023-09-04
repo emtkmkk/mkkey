@@ -528,9 +528,16 @@ function react(viaKeyboard = false): void {
 	);
 }
 
-function undoReact(note): void {
+async function undoReact(note): void {
 	const oldReaction = note.myReaction;
 	if (!oldReaction) return;
+	
+	const confirm = await os.confirm({
+		type: 'warning',
+		text: i18n.ts.cancelReactionConfirm,
+	});
+	if (confirm.canceled) return;
+
 	os.api("notes/reactions/delete", {
 		noteId: note.id,
 		reaction: oldReaction,

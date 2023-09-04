@@ -46,6 +46,6 @@ setInterval(() => {
 	for (const chart of charts) {
 		chart.save();
 	}
-}, 1000 * 60 * 30);
+}, 1000 * 60 * 20);
 
 beforeShutdown(() => Promise.all(charts.map((chart) => chart.save())));

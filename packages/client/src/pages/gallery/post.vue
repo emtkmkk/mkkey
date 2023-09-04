@@ -12,24 +12,27 @@
 					<div v-if="post" class="rkxwuolj">
 						<div class="files">
 							<div
-								v-for="file in post.files?.filter((x) => previewable(x))"
 								:key="file.id"
 								class="file"
+								@click.stop
 							>
-								
-								<XVideo
-									v-if="file.type?.startsWith('video')"
-									:key="file.id"
-									:video="file"
-								/>
-								<XImage
-									v-else-if="file.type?.startsWith('image')"
-									:key="file.id"
-									class="image"
-									:data-id="file.id"
-									:image="file"
-									:raw="false"
-								/>
+								<template
+									v-for="file in post.files?.filter((x) => previewable(x))"
+								>
+									<XVideo
+										v-if="file.type?.startsWith('video')"
+										:key="file.id"
+										:video="file"
+									/>
+									<XImage
+										v-else-if="file.type?.startsWith('image')"
+										:key="file.id"
+										class="image"
+										:data-id="file.id"
+										:image="file"
+										:raw="false"
+									/>
+								</template>
 							</div>
 						</div>
 						<div class="body _block">

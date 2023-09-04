@@ -87,7 +87,9 @@ async function postProcess(file: DriveFile, isExpired = false) {
 
 	// 統計を更新
 	driveChart.update(file, false);
-	perUserDriveChart.update(file, false);
+	if (file.userHost == null) {
+		perUserDriveChart.update(file, false);
+	}
 	if (file.userHost !== null) {
 		instanceChart.updateDrive(file, false);
 	}

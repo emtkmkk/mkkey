@@ -228,11 +228,11 @@ useTooltip(
 		margin: 0 0 0 4px;
 		
 		&.count-increased {
-			animation: textColorChanged 0.5s;
+			animation: textColorChanged 1s;
 		}
 
 		&.count-decreased {
-			animation: textColorChanged 0.5s;
+			animation: textColorChanged 1s;
 		}
 	}
 }

@@ -47,11 +47,17 @@ const reacted = computed(() => {
 		: props.note.myReaction && props.note.myReaction?.replace(/@[\w:\.\-]+:$/,"@") === props.reaction?.replace(/@[\w:\.\-]+:$/,"@")
 });
 
-const toggleReaction = () => {
+async function toggleReaction() {
 	if (!canToggle.value) return;
 	
 	if (props.multi) {
 		if (reacted.value) {
+			const confirm = await os.confirm({
+				type: 'warning',
+				text: i18n.ts.cancelReactionConfirm,
+			});
+			if (confirm.canceled) return;
+
 			os.api("notes/reactions/delete", {
 				noteId: props.note.id,
 				reaction: props.reaction,
@@ -65,6 +71,11 @@ const toggleReaction = () => {
 	} else {
 		const oldReaction = props.note.myReaction;
 		if (oldReaction && reacted.value) {
+			const confirm = await os.confirm({
+				type: 'warning',
+				text: i18n.ts.cancelReactionConfirm,
+			});
+			if (confirm.canceled) return;
 			os.api("notes/reactions/delete", {
 				noteId: props.note.id,
 				reaction: props.reaction,

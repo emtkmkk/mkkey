@@ -664,7 +664,9 @@ export async function addFile({
 
 	// 統計を更新
 	driveChart.update(file, true);
-	perUserDriveChart.update(file, true);
+	if (file.userHost == null) {
+		perUserDriveChart.update(file, true);
+	}
 	if (file.userHost !== null) {
 		instanceChart.updateDrive(file, true);
 	}

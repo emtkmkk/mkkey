@@ -243,7 +243,7 @@ watch([() => props.pagination.reversed, $$(scrollableElement)], () => {
 watch($$(rootEl), () => {
 	scrollObserver?.disconnect();
 	nextTick(() => {
-		if (rootEl) scrollObserver?.observe(rootEl);
+		if (unref(rootEl)) scrollObserver?.observe(unref(rootEl));
 	});
 });
 

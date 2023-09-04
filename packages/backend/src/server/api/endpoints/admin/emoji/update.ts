@@ -1,3 +1,4 @@
+import { IsNull } from "typeorm";
 import define from "../../../define.js";
 import { Emojis } from "@/models/index.js";
 import { ApiError } from "../../../error.js";
@@ -15,6 +16,11 @@ export const meta = {
 			message: "No such emoji.",
 			code: "NO_SUCH_EMOJI",
 			id: "684dec9d-a8c2-4364-9aa8-456c49cb1dc8",
+		},
+		duplicateEmojiName: {
+			message: "The specified emoji name already exists.",
+			code: "DUPLICATE_EMOJI_NAME",
+			id: "a7f2bc3d-b1c2-4678-b023-9f8c5d4e2abc",
 		},
 	},
 } as const;
@@ -48,6 +54,13 @@ export default define(meta, paramDef, async (ps) => {
 
 	if (emoji == null) throw new ApiError(meta.errors.noSuchEmoji);
 	
+	const emojiSearchName = await Emojis.findOneBy({ name: ps.name.toLowerCase() , host: IsNull() });
+	
+	// 名前重複の場合
+	if (emojiSearchName) {
+		throw new ApiError(meta.errors.duplicateEmojiName);
+	}
+	
 	let license = ps.license;
 	if (ps.license?.includes("!")){
 		license = license
@@ -67,7 +80,7 @@ export default define(meta, paramDef, async (ps) => {
 
 	await Emojis.update(emoji.id, {
 		updatedAt: new Date(),
-		name: ps.name,
+		name: ps.name.toLowerCase(),
 		category: ps.category,
 		aliases: ps.aliases,
 		license,

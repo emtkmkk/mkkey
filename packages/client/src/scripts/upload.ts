@@ -71,7 +71,13 @@ export function uploadFile(
 					reject();
 					return;
 				}
-				inputName = input + ext;
+				inputName = input;
+				inputName = inputName.toLowerCase().replace(/\.\w+$/,"").replace(/[^\W]+/,"").trim();
+				if (!inputName) {
+					reject();
+					return;
+				}
+				inputName = inputName + ext;
 			}
 			
 			const ctx = reactive<Uploading>({
@@ -99,7 +105,7 @@ export function uploadFile(
 					resizedImage = await readAndCompressImage(file, config);
 					ctx.name =
 						file.type !== imgConfig.mimeType
-							? `${ctx.name}.${mimeTypeMap[compressTypeMap[file.type].mimeType]
+							? `${ctx.name.replace(/\.\w+$/,"")}.${mimeTypeMap[compressTypeMap[file.type].mimeType]
 							}`
 							: ctx.name;
 				} catch (err) {

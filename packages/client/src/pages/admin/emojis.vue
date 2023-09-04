@@ -93,8 +93,13 @@
 											<div class="name _monospace">
 												{{ emoji.name }}
 											</div>
-											<div v-if="emoji.aliases.length === 0" class="info">
-												NotTag
+											<div v-if="!emoji.aliases?.length || !emoji.license?.length" class="info">
+												{{ 
+													[
+														emoji.aliases?.length ? "" : "NotTag",
+														emoji.license?.length ? "" : "NotLicense",
+													].filter(Boolean).join(", ")
+												}}
 											</div>
 											<div class="info">
 												{{ emoji.category }}
@@ -238,7 +243,7 @@ const toggleSelect = (emoji) => {
 };
 
 const add = async (ev: MouseEvent) => {
-	const files = await selectFiles(ev.currentTarget ?? ev.target, null);
+	const files = await selectFiles(ev.currentTarget ?? ev.target, null, false, true);
 
 	const promise = Promise.all(
 		files.map((file) =>

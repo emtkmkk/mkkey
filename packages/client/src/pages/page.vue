@@ -247,7 +247,7 @@ function fetchPage() {
 }
 
 function copyUrl() {
-	copyToClipboard(${url}/@${page.user.username}/pages/${page.name});
+	copyToClipboard(`${url}/@${page.user.username}/pages/${page.name}`);
 	os.success();
 }
 

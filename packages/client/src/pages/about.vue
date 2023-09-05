@@ -131,7 +131,7 @@
 											i18n.ts.emojis
 										}}</template>
 										<template #value>{{
-											number(instance.emojis?.length) + (instance.remoteEmojiMode === "all" ? " (" + number(instance.emojis?.length + instance.remoteEmojiCount) + ")")
+											number(instance.emojis?.length) + (instance.remoteEmojiMode === "all" ? " (" + number(instance.emojis?.length + instance.remoteEmojiCount) + ")" : "")
 										}}</template>
 									</MkKeyValue>
 								</FormSplit>

@@ -1,7 +1,7 @@
 import { Instances, NoteReactions, Notes, Users } from "@/models/index.js";
 import define from "../define.js";
 import {} from "@/services/chart/index.js";
-import { IsNull } from "typeorm";
+import { IsNull, MoreThan } from "typeorm";
 
 export const meta = {
 	requireCredential: false,
@@ -64,6 +64,7 @@ export default define(meta, paramDef, async () => {
 		notesCount,
 		originalNotesCount,
 		usersCount,
+		activeUsersCount,
 		originalUsersCount,
 		reactionsCount,
 		//originalReactionsCount,
@@ -72,6 +73,7 @@ export default define(meta, paramDef, async () => {
 		Notes.count({ cache: 3600000 }), // 1 hour
 		Notes.count({ where: { userHost: IsNull() }, cache: 3600000 }),
 		Users.count({ cache: 3600000 }),
+		Users.count({ where: { host: IsNull(), notesCount: MoreThan(50) }, cache: 3600000 }),
 		Users.count({ where: { host: IsNull() }, cache: 3600000 }),
 		NoteReactions.count({ cache: 3600000 }), // 1 hour
 		//NoteReactions.count({ where: { userHost: IsNull() }, cache: 3600000 }),
@@ -82,6 +84,7 @@ export default define(meta, paramDef, async () => {
 		notesCount,
 		originalNotesCount,
 		usersCount,
+		activeUsersCount,
 		originalUsersCount,
 		reactionsCount,
 		//originalReactionsCount,

@@ -150,6 +150,7 @@ export function selectFiles(
 	src: any,
 	label: string | null = null,
 	requiredFilename?: boolean,
+	keepFilename?: boolean,
 ): Promise<DriveFile[]> {
-	return select(src, label, true, requiredFilename) as Promise<DriveFile[]>;
+	return select(src, label, true, requiredFilename, keepFilename) as Promise<DriveFile[]>;
 }

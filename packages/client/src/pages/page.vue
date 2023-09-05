@@ -247,7 +247,7 @@ function fetchPage() {
 }
 
 function copyUrl() {
-	copyToClipboard(window.location.href);
+	copyToClipboard(${url}/@${page.user.username}/pages/${page.name});
 	os.success();
 }
 
@@ -272,6 +272,7 @@ function shareWithNote() {
 		initialText: `${page.title || page.name} ${url}/@${
 			page.user.username
 		}/pages/${page.name}`,
+		instant: true,
 	});
 }
 

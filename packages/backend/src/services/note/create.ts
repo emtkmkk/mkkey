@@ -155,6 +155,7 @@ type Option = {
 	uri?: string | null;
 	url?: string | null;
 	app?: App | null;
+	isFirstNote?: boolean | null;
 };
 
 export default async (
@@ -168,6 +169,7 @@ export default async (
 		isAdmin: User["isAdmin"];
 		isModerator: User["isModerator"];
 		isBot: User["isBot"];
+		notesCount: User["notesCount"];
 		onlineStatus: User["onlineStatus"];
 		blockPostPublic: User["blockPostPublic"];
 		blockPostHome: User["blockPostHome"];
@@ -235,6 +237,11 @@ export default async (
 
 		if (data.text?.includes("https://x.com") || data.text?.includes("http://x.com")) {
 			data.text = data.text.replaceAll(/(https?:\/\/x.com\/\S*\/status\/\S*)(\?\S*)/ig, "$1");
+		}
+		
+		//ローカルユーザーでこの投稿が1投稿目の場合
+		if (!user.host && user.notesCount < 1){
+			data.isFirstNote = true;
 		}
 
 		//23:59の間によるほを含む投稿をした場合
@@ -807,7 +814,7 @@ async function insertNote(
 				: [],
 
 		attachedFileTypes: data.files ? data.files.map((file) => file.type) : [],
-
+		isFirstNote: !!data.isFirstNote,
 		// 以下非正規化データ
 		replyUserId: data.reply ? data.reply.userId : null,
 		replyUserHost: data.reply ? data.reply.userHost : null,

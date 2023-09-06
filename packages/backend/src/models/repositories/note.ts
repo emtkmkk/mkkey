@@ -273,7 +273,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			url: note.url || undefined,
 			score: note.score,
 			updatedAt: note.updatedAt?.toISOString() || undefined,
-
+			isFirstNote: note.isFirstNote ? true : undefined,
 			...(opts.detail
 				? {
 					reply: note.replyId

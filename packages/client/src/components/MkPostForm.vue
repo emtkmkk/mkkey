@@ -1522,7 +1522,7 @@ onMounted(() => {
 			const draft = JSON.parse(localStorage.getItem("drafts") || "{}")[
 				draftKey
 			];
-			if (draft && (draft.data.text || (draft.data.useCw && draft.data.cw) || draft.data.files || draft.data.poll)) {
+			if (draft && (draft.data.text || (draft.data.useCw && draft.data.cw) || draft.data.files?.length || draft.data.poll)) {
 				text = draft.data.text;
 				useCw = draft.data.useCw;
 				if (useCw) cw = draft.data.cw;

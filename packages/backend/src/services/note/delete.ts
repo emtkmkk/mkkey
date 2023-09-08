@@ -100,6 +100,7 @@ export default async function (
 				),
 			);
 			deliverToConcerned(cascadingNote.user, cascadingNote, content);
+			decNotesCountOfUser(cascadingNote.user);
 		}
 		//#endregion
 

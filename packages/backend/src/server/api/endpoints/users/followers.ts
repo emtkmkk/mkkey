@@ -73,31 +73,33 @@ export default define(meta, paramDef, async (ps, me) => {
 		ps.userId != null
 			? { id: ps.userId }
 			: {
-					usernameLower: ps.username!.toLowerCase(),
-					host: toPunyNullable(ps.host) ?? IsNull(),
-			  },
+				usernameLower: ps.username!.toLowerCase(),
+				host: toPunyNullable(ps.host) ?? IsNull(),
+			},
 	);
 
-	if (user == null || (user.host && !me?.isAdmin) ) {
+	if (user == null || (user.host && !me?.isAdmin)) {
 		throw new ApiError(meta.errors.noSuchUser);
 	}
 
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-	if (profile.ffVisibility === "private") {
-		if (me == null || me.id !== user.id) {
-			throw new ApiError(meta.errors.forbidden);
-		}
-	} else if (profile.ffVisibility === "followers") {
-		if (me == null) {
-			throw new ApiError(meta.errors.forbidden);
-		} else if (me.id !== user.id) {
-			const following = await Followings.findOneBy({
-				followeeId: user.id,
-				followerId: me.id,
-			});
-			if (following == null) {
+	if (!me?.isAdmin) {
+		if (profile.ffVisibility === "private") {
+			if (me == null || me.id !== user.id) {
 				throw new ApiError(meta.errors.forbidden);
+			}
+		} else if (profile.ffVisibility === "followers") {
+			if (me == null) {
+				throw new ApiError(meta.errors.forbidden);
+			} else if (me.id !== user.id) {
+				const following = await Followings.findOneBy({
+					followeeId: user.id,
+					followerId: me.id,
+				});
+				if (following == null) {
+					throw new ApiError(meta.errors.forbidden);
+				}
 			}
 		}
 	}

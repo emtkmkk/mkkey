@@ -241,7 +241,11 @@ export default async (
 		
 		//ローカルユーザーでこの投稿が1投稿目の場合
 		if (!user.host && user.notesCount < 1){
-			data.isFirstNote = true;
+			//キャッシュで0に見えてる可能性があるためここで最新データを取得		
+			const _user = await Users.findOneByOrFail({ id: user.id })
+			if (_user.notesCount === 0){
+				data.isFirstNote = true;
+			}
 		}
 
 		//23:59の間によるほを含む投稿をした場合

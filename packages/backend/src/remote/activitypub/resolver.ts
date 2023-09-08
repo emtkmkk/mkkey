@@ -14,6 +14,7 @@ import {
 	Polls,
 	Users,
 } from "@/models/index.js";
+import { IsNull, Not } from 'typeorm';
 import { parseUri } from "./db-resolver.js";
 import renderNote from "@/remote/activitypub/renderer/note.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
@@ -153,6 +154,26 @@ export default class Resolver {
 					(reaction) => renderActivity(renderLike(reaction, { uri: null })),
 				);
 			case "follows":
+				return FollowRequests.findOneBy({ id: parsed.id }).then(
+					async followRequest => {
+						if (followRequest == null) throw new Error('resolveLocal: invalid follow request ID');
+						const [follower, followee] = await Promise.all([
+							Users.findOneBy({
+								id: followRequest.followerId,
+								host: IsNull(),
+							}),
+							Users.findOneBy({
+								id: followRequest.followeeId,
+								host: Not(IsNull()),
+							}),
+						]);
+						if (follower == null || followee == null) {
+							throw new Error('resolveLocal: follower or followee does not exist');
+						}
+						return renderActivity(renderFollow(follower, followee, url));
+					}
+				);
+			/*
 				// rest should be <followee id>
 				if (parsed.rest == null || !/^\w+$/.test(parsed.rest))
 					throw new Error("resolveLocal: invalid follow URI");
@@ -161,7 +182,7 @@ export default class Resolver {
 					[parsed.id, parsed.rest].map((id) => Users.findOneByOrFail({ id })),
 				).then(([follower, followee]) =>
 					renderActivity(renderFollow(follower, followee, url)),
-				);
+				);*/
 			default:
 				throw new Error(`resolveLocal: type ${type} unhandled`);
 		}

@@ -18,7 +18,7 @@
 
 				<div v-if="queue > 0" class="new">
 					<button class="_buttonPrimary" @click="top()">
-						{{ i18n.ts.newNoteRecived + " (" + (queue >= 30 ? "30+" : queue) + ")" }}
+						{{ i18n.ts.newNoteRecived + " (" + (queue >= 29 ? "29+" : queue) + ")" }}
 					</button>
 				</div>
 				<!-- <div v-if="!isMobile" class="tl _block">

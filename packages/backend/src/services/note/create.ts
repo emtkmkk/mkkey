@@ -437,7 +437,7 @@ export default async (
 				throw new Error("サイレンス中はフォロワーでないユーザにダイレクトは送信できません。");
 			}
 
-			const localRelation = user.id === '9d7csvz8zd' || !user.host ? false :await Promise.all(data.visibleUsers.filter((x) => !x.host || x.host === "mkkey.net").every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed));
+			const localRelation = user.id === '9d7csvz8zd' || !user.host ? false :await data.visibleUsers.filter((x) => !x.host || x.host === "mkkey.net").every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);
 
 			//9d7csvz8zd はログインボーナスbot 環境によって変わるはず
 			if (user.id !== '9d7csvz8zd' && user.host && (localRelation ?? true)) {

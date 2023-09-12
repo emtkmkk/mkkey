@@ -243,7 +243,8 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			icon: "ph-envelope-simple-open ph-bold ph-lg",
 			text: i18n.ts.sendMessage,
 			action: () => {
-				os.post({ specified: user });
+				const canonical = user.host === null ? `@${user.username}` : `@${user.username}@${user.host}`;
+				os.post({ specified: user, initialText: `${canonical} ` });
 			},
 		},
 		meId !== user.id

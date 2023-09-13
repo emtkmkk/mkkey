@@ -448,7 +448,8 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	const rpRate = 1 - (
 		(elapsedDays < 14 ? (14 - elapsedDays) * (0.4 / 14) : 0) +
-		Math.min((elapsedDays < 30 ? (30 - elapsedDays) * (0.1 / 16) : 0), 0.1)
+		Math.min((elapsedDays < 30 ? (30 - elapsedDays) * (0.1 / 16) : 0), 0.1) +
+		(user.isBot ? 0.5 : 0)
 	);
 	
 	const dailyBonus = rankResult.notesPostDays * 482;
@@ -488,8 +489,8 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	let _rankPower = rankPower;
 
-	// 経過日数によるランク制限
-	if (elapsedDays < 14) {
+	// 経過日数によるランク制限 ※Botの場合はAAA+で停止
+	if (elapsedDays < 14 || user.isBot) {
 		_rankPower = Math.min(rankPower, 4999);	// AAA+
 		if (elapsedDays < 1) _rankPower = Math.min(rankPower, 1599); // A
 		if (elapsedDays < 3) _rankPower = Math.min(rankPower, 1999); // A+

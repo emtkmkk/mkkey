@@ -470,57 +470,59 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 			localStorage.setItem("lastFetchModeMax", fetchModeMax);
 		});
 
-		if (
-			defaultStore.tutorial === -1 &&
-			defaultStore.isDefault("showLocalPostsInfoPopup") &&
-			$i.followingCount >= 10
-		) {
-			if (defaultStore.isDefault("showLocalPostsInTimeline")){
-				const { canceled } = await yesno({
-					type: "question",
-					text: "ホームTLの内容を自身がフォローしている人の投稿のみに変更する事が可能です。\n※ここで変更しない場合でも設定ページ>色々にて後から変更する事が可能です。\n今すぐホームTLをフォロー者の投稿のみの表示に変更しますか？",
-				});
-				if (!canceled) {
-					defaultStore.set("showLocalPostsInTimeline","social")
-					defaultStore.set("showLocalPostsInfoPopup",true);
-					location.reload();
-				} else {
-					defaultStore.set("showLocalPostsInTimeline","home")
-					defaultStore.set("showLocalPostsInfoPopup",true);
-				}
-			} else {
-				defaultStore.set("showLocalPostsInfoPopup",true);
-			}
-		}
-		
-		if (
-			!defaultStore.state.showInviteInfoPopupAccount &&
-			!defaultStore.state.showInviteInfoPopupDevice
-		) {
-			// 招待可能条件
-			// 登録から(7日-((投稿数-20)*1.5時間))経過
-			// ただし1日未満にはならない
-			// 投稿数が20以上
-			const eTime = $i ? (Date.now() - new Date($i.createdAt).valueOf()) : undefined;
-			const inviteBorder = eTime ? eTime > 7 * 24 * 60 * 60 * 1000 ? 7 * 24 * 60 * 60 * 1000 : Math.max(7 * 24 * 60 * 60 * 1000 - ($i.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000) : undefined;
-			const canInvite = $i ? eTime > inviteBorder && $i.notesCount >= 20 && !$i.isSilenced : false;
+		defaultStore.loaded.then(async () => {
 			if (
 				defaultStore.tutorial === -1 &&
-				canInvite
+				defaultStore.isDefault("showLocalPostsInfoPopup") &&
+				$i.followingCount >= 10
 			) {
-				await alert({
-					type: "info",
-					text: "もこきーの招待コードを発行する事が出来るようになりました！\n\n左メニューの(i)ボタンから招待コードを発行することが出来ます。",
-				});
-				defaultStore.set("showInviteInfoPopupAccount",true);
-				defaultStore.set("showInviteInfoPopupDevice",true);
+				if (defaultStore.isDefault("showLocalPostsInTimeline")){
+					const { canceled } = await yesno({
+						type: "question",
+						text: "ホームTLの内容を自身がフォローしている人の投稿のみに変更する事が可能です。\n※ここで変更しない場合でも設定ページ>色々にて後から変更する事が可能です。\n今すぐホームTLをフォロー者の投稿のみの表示に変更しますか？",
+					});
+					if (!canceled) {
+						defaultStore.set("showLocalPostsInTimeline","social")
+						defaultStore.set("showLocalPostsInfoPopup",true);
+						location.reload();
+					} else {
+						defaultStore.set("showLocalPostsInTimeline","home")
+						defaultStore.set("showLocalPostsInfoPopup",true);
+					}
+				} else {
+					defaultStore.set("showLocalPostsInfoPopup",true);
+				}
 			}
-		} else {
-			if (!(defaultStore.state.showInviteInfoPopupAccount && defaultStore.state.showInviteInfoPopupDevice)){
-					defaultStore.set("showInviteInfoPopupDevice",true);
+			
+			if (
+				!defaultStore.state.showInviteInfoPopupAccount &&
+				!defaultStore.state.showInviteInfoPopupDevice
+			) {
+				// 招待可能条件
+				// 登録から(7日-((投稿数-20)*1.5時間))経過
+				// ただし1日未満にはならない
+				// 投稿数が20以上
+				const eTime = $i ? (Date.now() - new Date($i.createdAt).valueOf()) : undefined;
+				const inviteBorder = eTime ? eTime > 7 * 24 * 60 * 60 * 1000 ? 7 * 24 * 60 * 60 * 1000 : Math.max(7 * 24 * 60 * 60 * 1000 - ($i.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000) : undefined;
+				const canInvite = $i ? eTime > inviteBorder && $i.notesCount >= 20 && !$i.isSilenced : false;
+				if (
+					defaultStore.tutorial === -1 &&
+					canInvite
+				) {
+					await alert({
+						type: "info",
+						text: "もこきーの招待コードを発行する事が出来るようになりました！\n\n左メニューの(i)ボタンから招待コードを発行することが出来ます。",
+					});
 					defaultStore.set("showInviteInfoPopupAccount",true);
+					defaultStore.set("showInviteInfoPopupDevice",true);
+				}
+			} else {
+				if (!(defaultStore.state.showInviteInfoPopupAccount && defaultStore.state.showInviteInfoPopupDevice)){
+						defaultStore.set("showInviteInfoPopupDevice",true);
+						defaultStore.set("showInviteInfoPopupAccount",true);
+				}
 			}
-		}
+		});
 
 		const lastUsed = localStorage.getItem("lastUsed");
 		if (lastUsed) {

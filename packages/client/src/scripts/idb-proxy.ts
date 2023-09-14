@@ -6,7 +6,7 @@ const fallbackName = (key: string) => `idbfallback::${key}`;
 
 let idbAvailable = typeof window !== "undefined" ? !!(window.indexedDB && window.indexedDB.open) : true;
 
-initialize();
+let initialization: Promise<void> = initialize();
 
 async function initialize() {
 	if (idbAvailable) {
@@ -23,16 +23,19 @@ async function initialize() {
 }
 
 export async function get(key: string) {
+	await initialization;
 	if (idbAvailable) return iget(key);
 	return JSON.parse(window.localStorage.getItem(fallbackName(key)));
 }
 
 export async function set(key: string, val: any) {
+	await initialization;
 	if (idbAvailable) return iset(key, val);
 	return window.localStorage.setItem(fallbackName(key), JSON.stringify(val));
 }
 
 export async function del(key: string) {
+	await initialization;
 	if (idbAvailable) return idel(key);
 	return window.localStorage.removeItem(fallbackName(key));
 }

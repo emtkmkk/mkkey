@@ -256,27 +256,29 @@ mainRouter.on("change", () => {
 
 document.documentElement.style.overflowY = "scroll";
 
-if (defaultStore.state.widgets.length === 0) {
-	defaultStore.set("widgets", [
-		{
-			name: "digitalClock",
-			id: "a",
-			place: "right",
-			data: {},
-		},
-		{
-			name: "calendar",
-			id: "b",
-			place: "right",
-			data: {},
-		},
-		{
-			name: "notifications",
-			id: "c",
-			place: "right",
-			data: {},
-		},
-	]);
+defaultStore.loaded.then(() => {
+	if (defaultStore.state.widgets.length === 0) {
+		defaultStore.set("widgets", [
+			{
+				name: "digitalClock",
+				id: "a",
+				place: "right",
+				data: {},
+			},
+			{
+				name: "calendar",
+				id: "b",
+				place: "right",
+				data: {},
+			},
+			{
+				name: "notifications",
+				id: "c",
+				place: "right",
+				data: {},
+			},
+		]);
+	}
 }
 
 function messagingStart(ev) {

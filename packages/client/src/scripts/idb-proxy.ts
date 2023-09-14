@@ -4,10 +4,10 @@ import { get as iget, set as iset, del as idel } from "idb-keyval";
 
 const fallbackName = (key: string) => `idbfallback::${key}`;
 
-let idbAvailable = typeof window !== "undefined" ? !!window.indexedDB : true;
+let idbAvailable = typeof window !== "undefined" ? !!(window.indexedDB && window.indexedDB.open) : true;
 
 if (idbAvailable) {
-	iset("idb-test", "test").catch((err) => {
+	await iset("idb-test", "test").catch((err) => {
 		console.error("idb error", err);
 		console.error("indexedDB is unavailable. It will use localStorage.");
 		idbAvailable = false;
@@ -18,15 +18,15 @@ if (idbAvailable) {
 
 export async function get(key: string) {
 	if (idbAvailable) return iget(key);
-	return JSON.parse(localStorage.getItem(fallbackName(key)));
+	return JSON.parse(window.localStorage.getItem(fallbackName(key)));
 }
 
 export async function set(key: string, val: any) {
 	if (idbAvailable) return iset(key, val);
-	return localStorage.setItem(fallbackName(key), JSON.stringify(val));
+	return window.localStorage.setItem(fallbackName(key), JSON.stringify(val));
 }
 
 export async function del(key: string) {
 	if (idbAvailable) return idel(key);
-	return localStorage.removeItem(fallbackName(key));
+	return window.localStorage.removeItem(fallbackName(key));
 }

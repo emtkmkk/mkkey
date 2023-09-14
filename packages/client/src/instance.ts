@@ -32,7 +32,7 @@ stream.on('emojiDeleted', emojiData => {
 });
 
 export async function emojiLoad() {
-	const remoteEmoji = JSON.parse(await get("remoteEmojiData"));
+	const remoteEmoji = await get("remoteEmojiData");
 
 	for (const [k, v] of Object.entries(remoteEmoji)) {
 		instance[k] = v;
@@ -58,7 +58,7 @@ export async function fetchEmoji() {
 		includeUrl: true,
 	});
 
-	await set("emojiData", JSON.stringify(meta));
+	await set("emojiData", meta);
 
 	for (const [k, v] of Object.entries(meta)) {
 		instance[k] = v;
@@ -77,7 +77,7 @@ export async function fetchPlusEmoji() {
 		allEmojis: meta.allEmojis,
 	};
 
-	await set("remoteEmojiData", JSON.stringify(remoteEmojiData));
+	await set("remoteEmojiData", remoteEmojiData);
 
 	for (const [k, v] of Object.entries(meta)) {
 		instance[k] = v;
@@ -97,7 +97,7 @@ export async function fetchAllEmoji() {
 		allEmojis: meta.allEmojis,
 	};
 
-	await set("remoteEmojiData", JSON.stringify(remoteEmojiData));
+	await set("remoteEmojiData", remoteEmojiData);
 
 	for (const [k, v] of Object.entries(meta)) {
 		instance[k] = v;

@@ -459,7 +459,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				// 取得設定を保存
 				await set("lastFetchModeMax", fetchModeMax);
 				// 最終試行日を更新する
-				await set("emojiFetchAttemptDate", Date.now().toString());
+				await set("emojiFetchAttemptDate", Date.now());
 				if (fetchModeMax === "always") {
 					fetchAllEmojiNoCache();
 				} else if (fetchModeMax === "all") {

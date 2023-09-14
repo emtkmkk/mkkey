@@ -10,7 +10,7 @@ import "@phosphor-icons/web/bold";
 import "@phosphor-icons/web/fill";
 
 //#region account indexedDB migration
-import { set } from "@/scripts/idb-proxy";
+import { get, set, del } from "@/scripts/idb-proxy";
 
 if (localStorage.getItem("accounts") != null) {
 	set("accounts", JSON.parse(localStorage.getItem("accounts")));
@@ -431,29 +431,35 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		}
 		
 		
-		fetchInstanceMetaPromise.then(() => {
+		fetchInstanceMetaPromise.then(async () => {
 			fetchEmoji();
 			fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
-			const lastEmojiFetchDate = localStorage.getItem("remoteEmojiData") ? JSON.parse(localStorage.getItem("remoteEmojiData"))?.emojiFetchDate : undefined;
-			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, localStorage.getItem("emojiFetchAttemptDate") ? parseInt(localStorage.getItem("emojiFetchAttemptDate"), 10) : 0);
+			const lastEmojiFetchDate = await get("remoteEmojiData") ? JSON.parse(await get("remoteEmojiData"))?.emojiFetchDate : undefined;
+			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, await get("emojiFetchAttemptDate") ? parseInt(await get("emojiFetchAttemptDate"), 10) : 0);
 			let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
 			// 更新間隔 : データセーバーなら、24時間 そうでないなら、6時間
 			const fetchTimeBorder = defaultStore.state.enableDataSaverMode ? 1000 * 60 * 60 * 24 : 1000 * 60 * 60 * 6
 
-			if (fetchModeMax === "always" || (Date.now() - emojiFetchDateInt) > fetchTimeBorder || fetchModeMax !== (localStorage.getItem("lastFetchModeMax") ?? fetchModeMax)) {
+			if (fetchModeMax === "always" || (Date.now() - emojiFetchDateInt) > fetchTimeBorder || fetchModeMax !== (await get("lastFetchModeMax") ?? fetchModeMax)) {
 				// 常に取得がon or 最終取得日が無い or 前回取得から更新間隔以上 or 取得設定が前回と異なる場合絵文字を取得
 				//一度キャッシュを破棄
-				if (fetchModeMax !== "keep") localStorage.setItem("remoteEmojiData", "");
+				if (fetchModeMax !== "keep") {
+					localStorage.removeItem("emojiData");
+					localStorage.removeItem("remoteEmojiData");
+					localStorage.removeItem("lastFetchModeMax");
+					localStorage.removeItem("emojiFetchAttemptDate");
+					await del("remoteEmojiData");
+				}
 				// 一度だけ更新の場合、データモードを前回と同じにしておく
 				if (fetchModeMax === "once") {
-					const lastFetchModeMax = (localStorage.getItem("lastFetchModeMax") ?? fetchModeMax);
+					const lastFetchModeMax = (await get("lastFetchModeMax") ?? fetchModeMax);
 					fetchModeMax = lastFetchModeMax;
-					defaultStore.set("remoteEmojisFetch", lastFetchModeMax);
+					await set("remoteEmojisFetch", lastFetchModeMax);
 				}
 				// 取得設定を保存
-				localStorage.setItem("lastFetchModeMax", fetchModeMax);
+				await set("lastFetchModeMax", fetchModeMax);
 				// 最終試行日を更新する
-				localStorage.setItem("emojiFetchAttemptDate", Date.now().toString());
+				await set("emojiFetchAttemptDate", Date.now().toString());
 				if (fetchModeMax === "always") {
 					fetchAllEmojiNoCache();
 				} else if (fetchModeMax === "all") {
@@ -466,7 +472,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				}
 			}
 			// 取得設定を保存
-			localStorage.setItem("lastFetchModeMax", fetchModeMax);
+			await set("lastFetchModeMax", fetchModeMax);
 			// 絵文字を読み込み直す
 			emojiLoad();
 		});

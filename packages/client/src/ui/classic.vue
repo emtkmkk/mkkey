@@ -166,28 +166,30 @@ if (window.innerWidth < 1024) {
 
 document.documentElement.style.overflowY = "scroll";
 
-if (defaultStore.state.widgets.length === 0) {
-	defaultStore.set("widgets", [
-		{
-			name: "calendar",
-			id: "a",
-			place: null,
-			data: {},
-		},
-		{
-			name: "notifications",
-			id: "b",
-			place: null,
-			data: {},
-		},
-		{
-			name: "trends",
-			id: "c",
-			place: null,
-			data: {},
-		},
-	]);
-}
+defaultStore.loaded.then(() => {
+	if (defaultStore.state.widgets.length === 0) {
+		defaultStore.set("widgets", [
+			{
+				name: "digitalClock",
+				id: "a",
+				place: "right",
+				data: {},
+			},
+			{
+				name: "calendar",
+				id: "b",
+				place: "right",
+				data: {},
+			},
+			{
+				name: "notifications",
+				id: "c",
+				place: "right",
+				data: {},
+			},
+		]);
+	}
+});
 
 onMounted(() => {
 	window.addEventListener(

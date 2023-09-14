@@ -187,6 +187,8 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		initializeSw();
 	});
 
+	// 設定の取得が完了するまでストップ
+	await defaultStore.loaded
 
 	const app = createApp(
 		window.location.search === "?zen"
@@ -220,9 +222,6 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	
 	// ロードを長くする設定がオンの場合、2.2秒待つ
 	if ($i && defaultStore.state.longLoading) await wait(2200);
-	
-	// 設定の取得が完了するまでスプラッシュ画面でストップ
-	await defaultStore.loaded
 
 	const splash = document.getElementById("splash");
 	// 念のためnullチェック(HTMLが古い場合があるため(そのうち消す))

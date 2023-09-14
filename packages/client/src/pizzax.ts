@@ -49,6 +49,7 @@ export class Storage<T extends StateDef> {
 	// TODO: これが実装されたらreadonlyにしたい: https://github.com/microsoft/TypeScript/issues/37487
 	public readonly state: State<T>;
 	public readonly reactiveState: ReactiveState<T>;
+	public readonly isDefaultState;
 
 	private pizzaxChannel: BroadcastChannel<PizzaxChannelMessage<T>>;
 
@@ -74,10 +75,12 @@ export class Storage<T extends StateDef> {
 
 		this.state = {} as State<T>;
 		this.reactiveState = {} as ReactiveState<T>;
+		this.isDefaultState = {};
 
 		for (const [k, v] of Object.entries(def) as [keyof T, T[keyof T]["default"]][]) {
 			this.state[k] = v.default;
 			this.reactiveState[k] = ref(v.default);
+			this.isDefaultState[k] = true;
 		}
 
 		this.ready = this.init();
@@ -97,19 +100,23 @@ export class Storage<T extends StateDef> {
 				Object.prototype.hasOwnProperty.call(deviceState, k)
 			) {
 				this.reactiveState[k].value = this.state[k] = deviceState[k];
+				this.isDefaultState[k] = false;
 			} else if (
 				v.where === "account" &&
 				$i &&
 				Object.prototype.hasOwnProperty.call(registryCache, k)
 			) {
 				this.reactiveState[k].value = this.state[k] = registryCache[k];
+				this.isDefaultState[k] = false;
 			} else if (
 				v.where === "deviceAccount" &&
 				Object.prototype.hasOwnProperty.call(deviceAccountState, k)
 			) {
 				this.reactiveState[k].value = this.state[k] = deviceAccountState[k];
+				this.isDefaultState[k] = false;
 			} else {
 				this.reactiveState[k].value = this.state[k] = v.default;
+				this.isDefaultState[k] = true;
 				if (_DEV_) console.log("Use default value", k, v.default);
 			}
 		}
@@ -253,36 +260,8 @@ export class Storage<T extends StateDef> {
 		return this.def[key].default;
 	}
 
-	public async isDefault(k: string) {
-		const v = this.def[k];
-
-		const deviceState: State<T> = await get(this.deviceStateKeyName) || {};
-		const deviceAccountState = $i
-			? await get(this.deviceAccountStateKeyName) || {}
-			: {};
-		const registryCache = $i
-			? await get(this.registryCacheKeyName) || {}
-			: {};
-
-		if (
-			v.where === "device" &&
-			Object.prototype.hasOwnProperty.call(deviceState, k)
-		) {
-			return false;
-		} else if (
-			v.where === "account" &&
-			$i &&
-			Object.prototype.hasOwnProperty.call(registryCache, k)
-		) {
-			return false;
-		} else if (
-			v.where === "deviceAccount" &&
-			Object.prototype.hasOwnProperty.call(deviceAccountState, k)
-		) {
-			return false;
-		} else {
-			return true;
-		}
+	public isDefault(k: string) {
+			return !!this.isDefaultState[k];
 	}
 
 	/**

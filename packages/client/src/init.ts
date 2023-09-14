@@ -434,7 +434,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		fetchInstanceMetaPromise.then(async () => {
 			fetchEmoji();
 			fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
-			const lastEmojiFetchDate = await get("remoteEmojiData") ? JSON.parse(await get("remoteEmojiData"))?.emojiFetchDate : undefined;
+			const lastEmojiFetchDate = await get("remoteEmojiData") ? await get("remoteEmojiData")?.emojiFetchDate : undefined;
 			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, await get("emojiFetchAttemptDate") ? parseInt(await get("emojiFetchAttemptDate"), 10) : 0);
 			let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
 			// 更新間隔 : データセーバーなら、24時間 そうでないなら、6時間

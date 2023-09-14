@@ -89,9 +89,11 @@ import { deviceKind } from "@/scripts/device-kind";
 import "swiper/scss";
 import "swiper/scss/virtual";
 
-if (defaultStore.reactiveState.tutorial.value !== -1) {
-	os.popup(XTutorial, {}, {}, "closed");
-}
+defaultStore.loaded.then(() => {
+	if (defaultStore.reactiveState.tutorial.value !== -1) {
+		os.popup(XTutorial, {}, {}, "closed");
+	}
+});
 
 const isLocalTimelineAvailable =
 	!instance.disableLocalTimeline ||

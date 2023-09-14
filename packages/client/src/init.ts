@@ -432,7 +432,6 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		
 		
 		fetchInstanceMetaPromise.then(() => {
-			emojiLoad();
 			fetchEmoji();
 			fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
 			const lastEmojiFetchDate = localStorage.getItem("remoteEmojiData") ? JSON.parse(localStorage.getItem("remoteEmojiData"))?.emojiFetchDate : undefined;
@@ -468,6 +467,8 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 			}
 			// 取得設定を保存
 			localStorage.setItem("lastFetchModeMax", fetchModeMax);
+			// 絵文字を読み込み直す
+			emojiLoad();
 		});
 
 		defaultStore.loaded.then(async () => {

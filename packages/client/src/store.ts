@@ -830,7 +830,7 @@ export const defaultStore = markRaw(
 		},
 		remoteEmojisFetch: {
 			where: "device",
-			default: "all" as "all" | "plus" | "keep" | "none" | "always",
+			default: /iphone/.test(navigator.userAgent.toLowerCase()) ? "plus" : /mobile|android/.test(navigator.userAgent.toLowerCase()) ? "all" : "always" as "all" | "plus" | "keep" | "none" | "always",
 			createdAt: "2023/7/10",
 			page: "reaction",
 		},

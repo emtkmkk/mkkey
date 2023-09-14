@@ -118,7 +118,7 @@ export class Storage<T extends StateDef> {
 			// アカウント変更すればunisonReloadが効くため、このreturnが発火することは
 			// まずないと思うけど一応弾いておく
 			if (where === "deviceAccount" && !($i && userId !== $i.id)) return;
-			this.reactiveState[key].value = this.state[key] = value;
+			this.reactiveState[key as keyof T].value = this.state[key as keyof T] = value;
 		});
 
 		if ($i) {

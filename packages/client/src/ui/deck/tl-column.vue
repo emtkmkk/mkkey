@@ -25,7 +25,7 @@
 				v-else-if="column.tl === 'global'"
 				class="ph-planet ph-bold ph-lg"
 			></i>
-			<span style="margin-left: 8px">{{ column.name + (columnActive && indicated ? ` (${q})` : '') }}</span>
+			<span style="margin-left: 8px">{{ column.name + (columnActive && indicated ? ` (${q >= 29 ? '29+' : q})` : '') }}</span>
 		</template>
 
 		<div v-if="disabled" class="iwaalbte">

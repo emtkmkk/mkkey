@@ -2,18 +2,18 @@ import { computed, reactive } from "vue";
 import { api } from "./os";
 import { stream } from '@/stream';
 import type * as Misskey from "calckey-js";
+import { get, set } from "./scripts/idb-proxy";
+
 
 // TODO: 他のタブと永続化されたstateを同期
 
 const instanceData = localStorage.getItem("instance");
-const emojiData = localStorage.getItem("emojiData");
-const remoteEmojiData = localStorage.getItem("remoteEmojiData");
 
 // TODO: instanceをリアクティブにするかは再考の余地あり
 
 export const instance: Misskey.entities.InstanceMetadata = reactive(
 	instanceData
-		? { ...JSON.parse(instanceData), ...JSON.parse(emojiData ? emojiData : "{}"), ...JSON.parse(remoteEmojiData ? remoteEmojiData : "{}") }
+		? { ...JSON.parse(instanceData) }
 		: {
 			// TODO: set default values
 		},
@@ -30,6 +30,19 @@ stream.on('emojiUpdated', emojiData => {
 stream.on('emojiDeleted', emojiData => {
 	instance.emojis = instance.emojis.filter(item => !emojiData.emojis.some(search => search.id === item.id));
 });
+
+export async function emojiLoad() {
+	const emoji = await get("emojiData");
+	const remoteEmoji = await get("remoteEmojiData");
+
+	for (const [k, v] of Object.entries(emoji)) {
+		instance[k] = v;
+	}
+	for (const [k, v] of Object.entries(remoteEmoji)) {
+		instance[k] = v;
+	}
+
+}
 
 export async function fetchInstance() {
 	const meta = await api("meta", {
@@ -49,7 +62,7 @@ export async function fetchEmoji() {
 		includeUrl: true,
 	});
 
-	localStorage.setItem("emojiData", JSON.stringify(meta));
+	await set("emojiData", JSON.stringify(meta));
 
 	for (const [k, v] of Object.entries(meta)) {
 		instance[k] = v;
@@ -68,7 +81,7 @@ export async function fetchPlusEmoji() {
 		allEmojis: meta.allEmojis,
 	};
 
-	localStorage.setItem("remoteEmojiData", JSON.stringify(remoteEmojiData));
+	await set("remoteEmojiData", JSON.stringify(remoteEmojiData));
 
 	for (const [k, v] of Object.entries(meta)) {
 		instance[k] = v;
@@ -88,7 +101,7 @@ export async function fetchAllEmoji() {
 		allEmojis: meta.allEmojis,
 	};
 
-	localStorage.setItem("remoteEmojiData", JSON.stringify(remoteEmojiData));
+	await set("remoteEmojiData", JSON.stringify(remoteEmojiData));
 
 	for (const [k, v] of Object.entries(meta)) {
 		instance[k] = v;

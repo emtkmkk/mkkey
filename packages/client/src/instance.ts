@@ -32,12 +32,15 @@ stream.on('emojiDeleted', emojiData => {
 });
 
 export async function emojiLoad() {
-	const remoteEmoji = await get("remoteEmojiData");
-
-	for (const [k, v] of Object.entries(remoteEmoji)) {
-		instance[k] = v;
+	if (!instance.remoteEmojiMode) {
+		const remoteEmoji = await get("remoteEmojiData");
+		
+		if (remoteEmoji) {
+			for (const [k, v] of Object.entries(remoteEmoji)) {
+				instance[k] = v;
+			}
+		}
 	}
-
 }
 
 export async function fetchInstance() {

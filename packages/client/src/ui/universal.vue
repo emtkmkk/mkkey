@@ -279,7 +279,7 @@ defaultStore.loaded.then(() => {
 			},
 		]);
 	}
-}
+});
 
 function messagingStart(ev) {
 	os.popupMenu(

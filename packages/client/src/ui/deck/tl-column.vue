@@ -25,7 +25,7 @@
 				v-else-if="column.tl === 'global'"
 				class="ph-planet ph-bold ph-lg"
 			></i>
-			<span style="margin-left: 8px">{{ column.name + (columnActive && indicated ? ` (${q >= 29 ? '29+' : q})` : '') }}</span>
+			<span style="margin-left: 8px">{{ column.name + (columnActive && indicated ? ` (${queue >= 29 ? '29+' : queue})` : '') }}</span>
 		</template>
 
 		<div v-if="disabled" class="iwaalbte">
@@ -70,6 +70,7 @@ const emit = defineEmits<{
 let disabled = $ref(false);
 let indicated = $ref(false);
 let columnActive = $ref(true);
+let queue = $ref(0);
 
 onMounted(() => {
 	if (props.column.tl == null) {
@@ -129,6 +130,7 @@ async function setType() {
 }
 
 function queueUpdated(q) {
+	queue = q;
 	if (columnActive) {
 		indicated = q !== 0;
 	}

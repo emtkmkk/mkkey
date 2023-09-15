@@ -262,7 +262,7 @@ export default class Connection {
 
 		for (const obj of objs) {
 			const { type, body } = obj;
-			console.log(type, body);
+			//console.log(type, body);
 			switch (type) {
 				case "readNotification":
 					this.onReadNotification(body);
@@ -408,7 +408,7 @@ export default class Connection {
 	 * クライアントにメッセージ送信
 	 */
 	public sendMessageToWs(type: string, payload: any) {
-		console.log(payload, this.isMastodonCompatible);
+		//console.log(payload, this.isMastodonCompatible);
 		if (this.isMastodonCompatible) {
 			if (payload.type === "note") {
 				this.wsConnection.send(

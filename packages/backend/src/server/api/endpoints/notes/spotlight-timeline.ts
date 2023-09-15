@@ -82,26 +82,30 @@ export default define(meta, paramDef, async (ps, user) => {
 		.where('following.followerId = :followerId', { followerId: user.id })
 		.getMany();
 
-	let followeeRenoteCount = 5;
-	let localRenoteCount = 10;
-	let globalRenoteCount = 15;
+	// もこきーのスコア計算
+	// ローカルユーザー RT : 9 Reaction : 3
+	// リモートユーザー RT : 3 Reaction : 1
+	
+	let followeeScore = 20;
+	let localScore = 40;
+	let globalScore = 80;
 
 	if (followees.length >= 50) {
-		followeeRenoteCount = 7;
-		localRenoteCount = 12;
-		globalRenoteCount = 15;
+		followeeScore = 28;
+		localScore = 48;
+		globalScore = 80;
 	} else if (followees.length >= 150) {
-		followeeRenoteCount = 10;
-		localRenoteCount = 15;
-		globalRenoteCount = 20;
+		followeeScore = 40;
+		localScore = 60;
+		globalScore = 120;
 	} else if (followees.length >= 300) {
-		followeeRenoteCount = 15;
-		localRenoteCount = 20;
-		globalRenoteCount = 30;
+		followeeScore = 60;
+		localScore = 80;
+		globalScore = 180;
 	} else if (followees.length >= 500) {
-		followeeRenoteCount = 20;
-		localRenoteCount = 30;
-		globalRenoteCount = 40;
+		followeeScore = 80;
+		localScore = 120;
+		globalScore = 240;
 	}
 
 	const meOrFolloweeIds = [user.id, ...followees.map(f => f.followeeId)];
@@ -147,7 +151,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			.andWhere('note.renoteId IS NOT NULL')
 			.andWhere('note.text IS NULL')
 			.andWhere('note.userId IN (:...meOrFolloweeIds)', { meOrFolloweeIds: meOrFolloweeIds })
-			.andWhere(`(note.renoteCount > :localRenoteCount)`, { localRenoteCount: localRenoteCount })
+			.andWhere(`(note.score > :localScore)`, { localScore: localScore })
 			.andWhere(new Brackets(qb => {
 				qb.where(`(note.userHost = note.renoteUserHost)`)
 					.orWhere(`(note.userHost IS NULL)`);
@@ -161,12 +165,12 @@ export default define(meta, paramDef, async (ps, user) => {
 
 		query.andWhere('note.userId IN (:...meOrfollowingNetworks)', { meOrfollowingNetworks: meOrfollowingNetworks })
 			.andWhere(new Brackets(qb => {
-				qb.where(`(note.renoteCount > :globalRenoteCount) `, { globalRenoteCount: globalRenoteCount })
-					.orWhere(`(note.userHost IS NULL) AND (note.renoteCount > :localRenoteCount)`, { localRenoteCount: localRenoteCount })
-					.orWhere(`(note.renoteCount > :followeeRenoteCount) AND (note.userId IN (:...meOrFolloweeIds))`, { meOrFolloweeIds: meOrFolloweeIds, followeeRenoteCount: followeeRenoteCount });
+				qb.where(`(note.score > :globalScore) `, { globalScore: globalScore })
+					.orWhere(`(note.userHost IS NULL) AND (note.score > :localScore)`, { localScore: localScore })
+					.orWhere(`(note.score > :followeeScore) AND (note.userId IN (:...meOrFolloweeIds))`, { meOrFolloweeIds: meOrFolloweeIds, followeeScore: followeeScore });
 			}));
 	} else {
-		query.andWhere(`(note.userHost IS NULL) AND (note.score > 30)`);
+		query.andWhere(`(note.userHost IS NULL) AND (note.score > 90)`);
 	}
 
 	if (ps.withFiles) {

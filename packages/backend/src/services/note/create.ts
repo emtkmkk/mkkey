@@ -469,7 +469,7 @@ export default async (
 		}
 
 		// Increment notes count (user)
-		incNotesCountOfUser(user);
+		if (data.visibility !== "specified") incNotesCountOfUser(user);
 
 		// リモートユーザまたはbotの投稿時、ユーザの最終更新時刻を更新
 		// 2時間前以上の場合は更新しない

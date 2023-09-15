@@ -76,37 +76,36 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-	// もこきーのスコア計算
-	// ローカルユーザー RT : 9 Reaction : 3
-	// リモートユーザー RT : 3 Reaction : 1
-
-	let dynamicScore1 = 40;		// フォロー済のユーザが出現するScore閾値
-	let dynamicScore2 = 120;	// ローカルユーザが出現するScore閾値
-	let dynamicScore3 = 200;	// リモートユーザが出現するScore閾値
-	let dynamicScore4 = 130;	// フォロイーがRTした投稿が出現するScore閾値
-	let dynamicScore5 = 25;		// 自鯖内コンテンツが出現するScore閾値
-
-
-	if (user.followingCount < 50) {
-		dynamicScore1 = 20;
-		dynamicScore2 = 36;
-		dynamicScore3 = 100;
-		dynamicScore4 = 70;
-	} else if (user.followingCount < 500) {
-		dynamicScore1 = 30;
-		dynamicScore2 = 60;
-		dynamicScore3 = 150;
-		dynamicScore4 = 100;
-	}
 
 	const followees = await Followings.createQueryBuilder('following')
-	.select('following.followeeId')
-	.where('following.followerId = :followerId', { followerId: user.id })
-	.getMany();
+		.select('following.followeeId')
+		.where('following.followerId = :followerId', { followerId: user.id })
+		.getMany();
+
+	let followeeRenoteCount = 5;
+	let localRenoteCount = 10;
+	let globalRenoteCount = 15;
+
+	if (followees.length >= 50) {
+		followeeRenoteCount = 7;
+		localRenoteCount = 12;
+		globalRenoteCount = 15;
+	} else if (followees.length >= 150) {
+		followeeRenoteCount = 10;
+		localRenoteCount = 15;
+		globalRenoteCount = 20;
+	} else if (followees.length >= 300) {
+		followeeRenoteCount = 15;
+		localRenoteCount = 20;
+		globalRenoteCount = 30;
+	} else if (followees.length >= 500) {
+		followeeRenoteCount = 20;
+		localRenoteCount = 30;
+		globalRenoteCount = 40;
+	}
 
 	const meOrFolloweeIds = [user.id, ...followees.map(f => f.followeeId)];
-	const meOrFolloweeIdsStr = "'" + meOrFolloweeIds.join("','") + "'"
-	
+
 	//#region Construct query
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
@@ -115,14 +114,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.sinceDate,
 		ps.untilDate,
 	)
-		.andWhere(`note.id > '${genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 10))) ?? genId()}'`)
-		.andWhere(new Brackets(qb => {
-			qb.where(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (note."score" > ${dynamicScore1}) AND (note.renote IS NULL))`)
-				.orWhere(`((note."score" > ${dynamicScore2}) AND (note."userHost" IS NULL) AND (note.renote IS NULL))`)
-				.orWhere(`((note."score" > ${dynamicScore3}) AND (note.renote IS NULL))`)
-				.orWhere(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (renote."userId" NOT IN (${meOrFolloweeIdsStr})) AND (renote."score" > ${dynamicScore4}))`)
-				.orWhere(`((note."userId" IN (${meOrFolloweeIdsStr})) AND (note."renoteId" IS NOT NULL) AND (note."userHost" IS NULL) AND (renote."userId" IN (${meOrFolloweeIdsStr})) AND (renote."fileIds" != '{}') AND (renote."userHost" IS NULL) AND (renote."score" > ${dynamicScore5}) AND (note."userId" != renote."userId"))`);
-		}))
+		.andWhere(`note.id > '${genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 7))) ?? genId()}'`)
 		.andWhere("(note.visibility = 'public')")
 		.andWhere(`(note."channelId" IS NULL)`)
 		.innerJoinAndSelect("note.user", "user")
@@ -145,17 +137,36 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user) generateBlockedUserQuery(query, user);
 	if (user) generateMutedUserRenotesQueryForNotes(query, user);
 
-	if (user && !user.localShowRenote) {
-		query.andWhere(
-			new Brackets((qb) => {
-				qb.where("note.renoteId IS NULL");
-				qb.orWhere("note.text IS NOT NULL");
-				qb.orWhere("note.fileIds != '{}'");
-				qb.orWhere(
-					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
-				);
-			}),
-		);
+	if (followees.length > 0) {
+		const meOrFolloweeIds = [user.id, ...followees.map(f => f.followeeId)];
+
+		const followingNetworksQuery = await Notes.createQueryBuilder('note')
+			.select('note.renoteUserId')
+			.distinct(true)
+			.andWhere('note.id > :minId', { minId: genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 2))) })
+			.andWhere('note.renoteId IS NOT NULL')
+			.andWhere('note.text IS NULL')
+			.andWhere('note.userId IN (:...meOrFolloweeIds)', { meOrFolloweeIds: meOrFolloweeIds })
+			.andWhere(`(note.renoteCount > :localRenoteCount)`, { localRenoteCount: localRenoteCount })
+			.andWhere(new Brackets(qb => {
+				qb.where(`(note.userHost = note.renoteUserHost)`)
+					.orWhere(`(note.userHost IS NULL)`);
+			}));
+
+
+		generateMutedUserRenotesQueryForNotes(followingNetworksQuery, user);
+		const followingNetworks = await followingNetworksQuery.getMany();
+
+		const meOrfollowingNetworks = [user.id, ...followingNetworks.map(f => f.renoteUserId), ...followees.map(f => f.followeeId)];
+
+		query.andWhere('note.userId IN (:...meOrfollowingNetworks)', { meOrfollowingNetworks: meOrfollowingNetworks })
+			.andWhere(new Brackets(qb => {
+				qb.where(`(note.renoteCount > :globalRenoteCount) `, { globalRenoteCount: globalRenoteCount })
+					.orWhere(`(note.userHost IS NULL) AND (note.renoteCount > :localRenoteCount)`, { localRenoteCount: localRenoteCount })
+					.orWhere(`(note.renoteCount > :followeeRenoteCount) AND (note.userId IN (:...meOrFolloweeIds))`, { meOrFolloweeIds: meOrFolloweeIds, followeeRenoteCount: followeeRenoteCount });
+			}));
+	} else {
+		query.andWhere(`(note.userHost IS NULL) AND (note.score > 30)`);
 	}
 
 	if (ps.withFiles) {
@@ -198,20 +209,20 @@ export default define(meta, paramDef, async (ps, user) => {
 	const take = Math.floor(ps.limit * 1.5);
 	let skip = 0;
 	//try {
-		while (found.length < ps.limit) {
-			let notes = await query.take(take).skip(skip).getMany();
-			// 同じappearNoteの場合は除外
-			notes = notes.map(x => {
-				if (foundAppearNoteId.includes(x.renoteId || x.id)) return undefined;
-				foundAppearNoteId.push(x.renoteId || x.id);
-				return x;
-			}).filter(x => x !== undefined);
-			found.push(...(await Notes.packMany(notes, user)));
-			skip += take;
-			if (notes.length < take) break;
-		}
+	while (found.length < ps.limit) {
+		let notes = await query.take(take).skip(skip).getMany();
+		// 同じappearNoteの場合は除外
+		notes = notes.map(x => {
+			if (foundAppearNoteId.includes(x.renoteId || x.id)) return undefined;
+			foundAppearNoteId.push(x.renoteId || x.id);
+			return x;
+		}).filter(x => x !== undefined);
+		found.push(...(await Notes.packMany(notes, user)));
+		skip += take;
+		if (notes.length < take) break;
+	}
 	//} catch (error) {
-		//throw new ApiError(meta.errors.queryError);
+	//throw new ApiError(meta.errors.queryError);
 	//}
 
 	if (found.length > ps.limit) {

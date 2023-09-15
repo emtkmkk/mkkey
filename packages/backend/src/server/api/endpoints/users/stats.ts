@@ -250,7 +250,6 @@ export default define(meta, paramDef, async (ps, me) => {
 			.getCount(),
 		pollVotesCount: PollVotes.createQueryBuilder("vote")
 			.where("vote.userId = :userId", { userId: user.id })
-			.andWhere("note.visibility <> 'specified'")
 			.cache(CACHE_TIME)
 			.getCount(),
 		pollVotedCount: PollVotes.createQueryBuilder("vote")

@@ -19,6 +19,8 @@ export default class extends Channel {
 	}
 
 	private onStats(stats: any) {
+		if (stats && (stats.cpu_usage || stats.cpu) > 0.85) console.log(`WARN 1 CPU ${Math.round((stats.cpu_usage || stats.cpu) * 100)}%`)
+		if (stats && (stats.mem_usage || stats.mem) > 0.85) console.log(`WARN 1 MEM ${Math.round((stats.mem_usage || stats.mem) * 100)}%`)
 		this.send("stats", stats);
 	}
 

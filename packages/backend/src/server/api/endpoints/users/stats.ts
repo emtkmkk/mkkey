@@ -215,40 +215,48 @@ export default define(meta, paramDef, async (ps, me) => {
 	const result = await awaitAll({
 		notesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.visibility !== 'specified'")
 			.cache(CACHE_TIME)
 			.getCount(),
 		repliesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.visibility !== 'specified'")
 			.andWhere("note.replyId IS NOT NULL")
 			.cache(CACHE_TIME)
 			.getCount(),
 		renotesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.visibility !== 'specified'")
 			.andWhere("note.text IS NULL")
 			.andWhere("note.renoteId IS NOT NULL")
 			.cache(CACHE_TIME)
 			.getCount(),
 		quotesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.visibility !== 'specified'")
 			.andWhere("note.text IS NOT NULL")
 			.andWhere("note.renoteId IS NOT NULL")
 			.cache(CACHE_TIME)
 			.getCount(),
 		repliedCount: Notes.createQueryBuilder("note")
 			.where("note.replyUserId = :userId", { userId: user.id })
+			.andWhere("note.visibility !== 'specified'")
 			.cache(CACHE_TIME)
 			.getCount(),
 		renotedCount: Notes.createQueryBuilder("note")
 			.where("note.renoteUserId = :userId", { userId: user.id })
+			.andWhere("note.visibility !== 'specified'")
 			.cache(CACHE_TIME)
 			.getCount(),
 		pollVotesCount: PollVotes.createQueryBuilder("vote")
 			.where("vote.userId = :userId", { userId: user.id })
+			.andWhere("note.visibility !== 'specified'")
 			.cache(CACHE_TIME)
 			.getCount(),
 		pollVotedCount: PollVotes.createQueryBuilder("vote")
 			.innerJoin("vote.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.visibility !== 'specified'")
 			.cache(CACHE_TIME)
 			.getCount(),
 		localFollowingCount: Followings.createQueryBuilder("following")
@@ -302,6 +310,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("'misshaialert' <> ALL(note.tags)")
+			.andWhere("note.visibility !== 'specified'")
 			.cache(CACHE_TIME)
 			.getRawOne()).count,
 		totalWordCount: !ps.simple ? (await Notes.createQueryBuilder("note")

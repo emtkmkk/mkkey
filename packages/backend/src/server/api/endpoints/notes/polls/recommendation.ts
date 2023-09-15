@@ -62,8 +62,8 @@ export default define(meta, paramDef, async (ps, user) => {
 	//#endregion
 
 	const polls = await query
-		.orderBy("poll.userHost IS NULL", "DESC")
-		.addOrderBy("poll.expiresAt IS NULL", "ASC")
+		.orderBy("poll.expiresAt IS NULL", "ASC")
+		.addOrderBy("poll.userHost IS NULL", "DESC")
 		.addOrderBy("poll.expiresAt", "ASC")
 		.addOrderBy("poll.noteId", "DESC")
 		.take(ps.limit)

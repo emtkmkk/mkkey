@@ -35,6 +35,15 @@ export default class Resolver {
 		this.recursionLimit = recursionLimit;
 	}
 
+	public setUser(user) {
+		this.user = user;
+	}
+
+	public reset(): Resolver {
+		this.history = new Set();
+		return this;
+	}
+	
 	public getHistory(): string[] {
 		return Array.from(this.history);
 	}

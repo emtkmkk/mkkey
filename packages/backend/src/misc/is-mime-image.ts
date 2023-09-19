@@ -11,18 +11,6 @@ const dictionary = {
 		"image/webp",
 		"image/svg+xml",
 		"image/avif",
-		"image/x-icon",
-		"image/bmp"
-	],
-	"sharp-animation-convertible-image": [
-		"image/jpeg",
-		"image/png",
-		"image/gif",
-		"image/webp",
-		"image/avif",
-		"image/svg+xml",
-		"image/x-icon",
-		"image/bmp"
 	],
 };
 

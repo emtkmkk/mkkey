@@ -3,7 +3,6 @@ import net from "node:net";
 import { promises } from "node:dns";
 import type Koa from "koa";
 import sharp from "sharp";
-import { sharpBmp } from 'sharp-read-bmp';
 import type { IImage } from "@/services/drive/image-processor.js";
 import { convertToWebp } from "@/services/drive/image-processor.js";
 import { createTemp } from "@/misc/create-temp.js";
@@ -79,17 +78,16 @@ export async function proxyMedia(ctx: Koa.Context) {
 				throw new StatusError("Unexpected mime", 404);
 			}
 
-            const mask = (await sharpBmp(path, mime))
-                .resize(96, 96, {
-                fit: 'contain',
-                position: 'center',
-                withoutEnlargement: false,
-            })
-                .greyscale()
-                .normalise()
-                .linear(1.75, -(128 * 1.75) + 128) // 1.75x contrast
-                .flatten({ background: '#000' })
-                .toColorspace('b-w');
+			const mask = sharp(path)
+				.resize(96, 96, {
+					fit: "inside",
+					withoutEnlargement: false,
+				})
+				.greyscale()
+				.normalise()
+				.linear(1.75, -(128 * 1.75) + 128) // 1.75x contrast
+				.flatten({ background: "#000" })
+				.toColorspace("b-w");
 
 			const stats = await mask.clone().stats();
 

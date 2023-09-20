@@ -71,16 +71,16 @@ const isMuted = computed(() => {
 	if (!props.emoji) return false;
 	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
 		return {
-			name: x.replaceAll(":",""),
+			name: x.replaceAll(":", ""),
 			exact: /^:@?\w+:$/.test(x),
-			hostmute: /^:?@[\w.-]/.text(x),
+			hostmute: /^:?@[\w.-]/.test(x),
 		};
 	})
-	if (reactionMuted.some(x => {
-		const emojiName = props.emoji.replace(":","").replace(/@[\w:\.\-]+:$/,"")
-		const emojiHost = props.emoji.replace(":","").replace(/^:[\w:\.\-]+@/,"")
+	return reactionMuted.some(x => {
+		const emojiName = props.emoji.replace(":", "").replace(/@[\w:\.\-]+:$/, "")
+		const emojiHost = props.emoji.replace(":", "").replace(/^:[\w:\.\-]+@/, "")
 		if (x.exact) {
-			if (x.hostmute){
+			if (x.hostmute) {
 				if (x.name === emojiHost) {
 					emit('loaderror', '');
 					return true;
@@ -92,7 +92,7 @@ const isMuted = computed(() => {
 				}
 			}
 		} else {
-			if (x.hostmute){
+			if (x.hostmute) {
 				if (emojiHost.includes(x.name)) {
 					emit('loaderror', '');
 					return true;
@@ -105,12 +105,7 @@ const isMuted = computed(() => {
 			}
 		}
 		return false;
-	}
-	)){
-		return true;
-	} else {
-		return false;
-	}
+	});
 })
 
 const ce = computed(() => instance.emojis ?? []);

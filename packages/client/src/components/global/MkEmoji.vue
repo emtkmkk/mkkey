@@ -69,16 +69,44 @@ const errorCnt = ref(0);
 const errorAlt = ref(false);
 const isMuted = computed(() => {
 	if (!props.emoji) return false;
-	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
-	if (reactionMuted.some(x => 
-		(!x.exact && props.emoji.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(x.name)) 
-		||  x.name === props.emoji.replace(":","").replace(/@[\w:\.\-]+:$/,"")
-	)) {
-		emit('loaderror', '');
-		return true;
-	} else {
+	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
+		return {
+			name: x.replaceAll(":",""),
+			exact: /^:@?\w+:$/.test(x),
+			hostmute: /^:?@[\w.-]/.text(x),
+		};
+	})
+	if (reactionMuted.some(x => {
+		const emojiName = props.emoji.replace(":","").replace(/@[\w:\.\-]+:$/,"")
+		const emojiHost = props.emoji.replace(":","").replace(/^:[\w:\.\-]+@/,"")
+		if (x.exact) {
+			if (x.hostmute){
+				if (x.name === emojiHost) {
+					emit('loaderror', '');
+					return true;
+				}
+			} else {
+				if (x.name === emojiName) {
+					emit('loaderror', '');
+					return true;
+				}
+			}
+		} else {
+			if (x.hostmute){
+				if (emojiHost.includes(x.name)) {
+					emit('loaderror', '');
+					return true;
+				}
+			} else {
+				if (emojiName.includes(x.name)) {
+					emit('loaderror', '');
+					return true;
+				}
+			}
+		}
 		return false;
 	}
+	)) 
 })
 
 const ce = computed(() => instance.emojis ?? []);

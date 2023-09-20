@@ -55,6 +55,8 @@ export default define(meta, paramDef, async (ps, user) => {
 				);
 			}),
 		)
+		// Avoid scanning primary key index
+		.orderBy('CONCAT(note.id)', 'DESC')
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")

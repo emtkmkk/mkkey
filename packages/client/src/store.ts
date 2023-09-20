@@ -456,7 +456,7 @@ export const defaultStore = markRaw(
 
 		overridedDeviceKind: {
 			where: "device",
-			default: null as null | "smartphone" | "tablet" | "desktop",
+			default: null as null | "smartphone" | "tablet" | "desktop" | "desktop-force",
 		},
 		showLocalPostsInTimeline: {
 			where: "device",

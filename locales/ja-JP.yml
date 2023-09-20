@@ -1356,7 +1356,7 @@ _wordMute:
   muteWordsDescription: "スペースで区切るとAND指定になり、改行で区切るとOR指定になります。"
   muteWordsDescription2: "キーワードをスラッシュで囲むと正規表現になります。"
   muteWordsDescription3: "\n（以下は試験的機能です）\nすべての機能は-か!を頭に付けると効果が反転します。\n\npname:xxx ミュートされた際に表示する文章を設定できます。\n行の一番左に指定した場合のみ動作します。\n<#id>を入力すると内部的なノートIDに置き換わります。\n空白またはhiddenを指定するとそのソフトミュートは完全に隠されます。\n\nfrom:xxx(@host) 指定したユーザーをミュートします。\n\nusername:xxx ユーザIDがxxxのユーザをミュートします。\n\nfuzzyUsername:xxx ユーザIDにxxxが含まれているユーザをミュートします。\n\nhost:xxx サーバー名がxxxのユーザをミュートします。\n\nfuzzyHost:xxx サーバー名にxxxが含まれているユーザをミュートします。\n\nname:xxx 名前がxxxのユーザーをミュートします。\n\nfuzzyName:xxx 名前にxxxが含まれているユーザーをミュートします。\n\nvisibility:xxx 公開範囲でミュートします。\n( public | home | hidden | followers | specified | private | visitor )\n\nfilter:xxx 投稿の種類でミュートします。\n( mention | reply | rt | quote | media | poll | channel | cw | nsfw | reacted )\n\ninclude:xxx xxxが含まれている文章をミュートします。\nxxx内のコマンドを通常文章扱いにします。\n\nexclude:xxx xxxが含まれている文章をミュート対象から除外します。\n\nor:xxx,yyy,zzz 指定した文章のどれかが含まれていた場合にミュートします。\n\nfuzzy:xxx 単語の全てが一続きでなくてもミュートします。\n\nwhat:xxx チェックしているノートの種類によってミュートします。\n( note | reply | rt | quote )\n\nrelation:xxx フォローの関係性によってミュートします。\n( follow | follower | followOnly | followerOnly | both | none )\n\nwhere:xxx 表示されるTLによってミュートします。\n( home | local | media | spotlight | global | list | antenna | user | trend | channel )"
-  reactionMuteWordsDescription: 改行で区切って入力してください。部分一致で判定されます。:で囲むと完全一致で判定します。
+  reactionMuteWordsDescription: 改行で区切って入力してください。部分一致で判定されます。:で囲むと完全一致で判定します。@で始まる場合はホスト名で部分一致判定します。ホスト名完全一致で検索する場合は:で囲んだ後に@を付けてください。
   softDescription: "指定した条件のトゥートをタイムラインから隠します。"
   hardDescription: "指定した条件のトゥートをタイムラインに追加しないようにします。追加されなかったトゥートは、条件を変更しても除外されたままになります。"
   emojiMutes: "絵文字"

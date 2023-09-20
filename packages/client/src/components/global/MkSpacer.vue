@@ -30,7 +30,7 @@ let margin = $ref(0);
 const shouldSpacerMin = inject("shouldSpacerMin", false);
 
 const adjust = (rect: { width: number; height: number }) => {
-	if (shouldSpacerMin || deviceKind === "smartphone") {
+	if ((shouldSpacerMin || deviceKind === "smartphone") && defaultStore.state.overridedDeviceKind !== "desktop-force") {
 		margin = props.marginMin;
 		return;
 	}

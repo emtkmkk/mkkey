@@ -9,7 +9,6 @@
 <script lang="ts" setup>
 import { inject, onMounted, onUnmounted, ref } from "vue";
 import { deviceKind } from "@/scripts/device-kind";
-import { ui } from "@/config";
 
 const props = withDefaults(
 	defineProps<{
@@ -21,22 +20,18 @@ const props = withDefaults(
 		contentMax: null,
 		marginMin: 12,
 		marginMax: 24,
-	},
+	}
 );
 
-let ro: ResizeObserver,
-	root = ref<HTMLElement>(),
-	content = ref<HTMLElement>(),
-	margin = ref(0);
+let ro: ResizeObserver;
+let root = $ref<HTMLElement>();
+let content = $ref<HTMLElement>();
+let margin = $ref(0);
 const shouldSpacerMin = inject("shouldSpacerMin", false);
 
 const adjust = (rect: { width: number; height: number }) => {
 	if (shouldSpacerMin || deviceKind === "smartphone") {
-		margin.value = props.marginMin;
-		return;
-	}
-	if (ui === "classic") {
-		margin.value = 12;
+		margin = props.marginMin;
 		return;
 	}
 
@@ -44,9 +39,9 @@ const adjust = (rect: { width: number; height: number }) => {
 		rect.width > (props.contentMax ?? 0) ||
 		(rect.width > 360 && window.innerWidth > 400)
 	) {
-		margin.value = props.marginMax;
+		margin = props.marginMax;
 	} else {
-		margin.value = props.marginMin;
+		margin = props.marginMin;
 	}
 };
 
@@ -59,14 +54,14 @@ onMounted(() => {
 		});
 		*/
 		adjust({
-			width: root.value!.offsetWidth,
-			height: root.value!.offsetHeight,
+			width: root!.offsetWidth,
+			height: root!.offsetHeight,
 		});
 	});
-	ro.observe(root.value!);
+	ro.observe(root!);
 
 	if (props.contentMax) {
-		content.value!.style.maxWidth = `${props.contentMax}px`;
+		content!.style.maxWidth = `${props.contentMax}px`;
 	}
 });
 

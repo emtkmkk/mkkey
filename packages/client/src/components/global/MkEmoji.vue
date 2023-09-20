@@ -71,7 +71,7 @@ const isMuted = computed(() => {
 	if (!props.emoji) return false;
 	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
 		return {
-			name: x.replaceAll(":", ""),
+			name: x.replaceAll(":", "").replace("@", ""),
 			exact: /^:@?\w+:$/.test(x),
 			hostmute: /^:?@[\w.-]/.test(x),
 		};

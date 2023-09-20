@@ -31,7 +31,7 @@ let ro: ResizeObserver,
 const shouldSpacerMin = inject("shouldSpacerMin", false);
 
 const adjust = (rect: { width: number; height: number }) => {
-	if ((shouldSpacerMin || deviceKind === "smartphone") && defaultStore.state.overridedDeviceKind !== "desktop-force") {
+	if ((shouldSpacerMin || deviceKind === "smartphone") && !defaultStore.state.overridedDeviceKind === "desktop-force") {
 		margin.value = props.marginMin;
 		return;
 	}

@@ -40,7 +40,13 @@ const reactions = computed(() => {
 
 	const localReactions = Object.keys(_reactions).filter((x) => x.includes("@"));
 	const mergeReactions = {};
-	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
+	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
+		return {
+			name: x.replaceAll(":", "").replace("@", ""),
+			exact: /^:@?\w+:$/.test(x),
+			hostmute: /^:?@[\w.-]/.test(x),
+		};
+	})
 	
 	localReactions.forEach((localReaction) => {
 		if (!_reactions || _reactions.length === 0) return;
@@ -58,8 +64,12 @@ const reactions = computed(() => {
 		
 		//ミュートリアクション判定
 		if (reactionMuted.some(x => 
-				(!x.exact && localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(x.name)) 
-				||  x.name === localReaction.replace(":","").replace(/@[\w:\.\-]+:$/,"")
+				const emojiName = localReaction.replace(":", "").replace(/@[\w:\.\-]+:$/, "");
+				const emojiHost = localReaction.replace(/^:[\w:\.\-]+@/, "").replace(":", "");
+				return (!x.hostmute && !x.exact && emojiName.includes(x.name)) 
+				|| (!x.hostmute && x.name === emojiName)
+				|| (x.hostmute && !x.exact && emojiHost.includes(x.name)) 
+				|| (x.hostmute && x.name === emojiHost)
 			)
 		) totalCount = 0;
 		

@@ -183,6 +183,7 @@ import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { mainRouter } from "@/router";
 import { unisonReload } from "@/scripts/unison-reload";
+import { defaultStore } from "@/store";
 const XStatusBars = defineAsyncComponent(
 	() => import("@/ui/_common_/statusbars.vue")
 );
@@ -199,9 +200,9 @@ mainRouter.navHook = (path, flag): boolean => {
 	return false;
 };
 
-const isMobile = ref(window.innerWidth <= 500);
+const isMobile = ref(window.innerWidth <= 500 && !defaultStore.state.overridedDeviceKind === "desktop-force");
 window.addEventListener("resize", () => {
-	isMobile.value = window.innerWidth <= 500;
+	isMobile.value = window.innerWidth <= 500 && !defaultStore.state.overridedDeviceKind === "desktop-force";
 });
 
 const drawerMenuShowing = ref(false);

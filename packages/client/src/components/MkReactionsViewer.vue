@@ -63,14 +63,14 @@ const reactions = computed(() => {
 		});
 		
 		//ミュートリアクション判定
-		if (reactionMuted.some(x => 
+		if (reactionMuted.some(x => {
 				const emojiName = localReaction.replace(":", "").replace(/@[\w:\.\-]+:$/, "");
 				const emojiHost = localReaction.replace(/^:[\w:\.\-]+@/, "").replace(":", "");
 				return (!x.hostmute && !x.exact && emojiName.includes(x.name)) 
 				|| (!x.hostmute && x.name === emojiName)
 				|| (x.hostmute && !x.exact && emojiHost.includes(x.name)) 
 				|| (x.hostmute && x.name === emojiHost)
-			)
+		})
 		) totalCount = 0;
 		
 		mergeReactions[maxReaction.reaction] = totalCount;

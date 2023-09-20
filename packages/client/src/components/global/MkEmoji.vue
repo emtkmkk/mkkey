@@ -106,7 +106,11 @@ const isMuted = computed(() => {
 		}
 		return false;
 	}
-	)) 
+	)){
+		return true;
+	} else {
+		return false;
+	}
 })
 
 const ce = computed(() => instance.emojis ?? []);

@@ -323,6 +323,10 @@
 				<option value="desktop">
 					<i class="ph-desktop ph-bold ph-lg" /> {{ i18n.ts.desktop }}
 				</option>
+				<option value="desktop-force">
+					<i class="ph-desktop ph-bold ph-lg" />
+					{{ i18n.ts.desktopForce }}
+				</option>
 			</FormRadios>
 
 			<FormRadios v-model="fontSize" class="_formBlock">

@@ -77,8 +77,8 @@ const isMuted = computed(() => {
 		};
 	})
 	return reactionMuted.some(x => {
-		const emojiName = props.emoji.replace(":", "").replace(/@[\w:\.\-]+:$/, "")
-		const emojiHost = props.emoji.replace(":", "").replace(/^:[\w:\.\-]+@/, "")
+		const emojiName = props.emoji.replace(":", "").replace(/@[\w:\.\-]+:$/, "");
+		const emojiHost = props.emoji.replace(/^:[\w:\.\-]+@/, "").replace(":", "");
 		if (x.exact) {
 			if (x.hostmute) {
 				if (x.name === emojiHost) {

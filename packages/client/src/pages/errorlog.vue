@@ -30,5 +30,7 @@ definePageMetadata({
 <style lang="scss" module>
 .root {
 	background: var(--bg);
+	white-space: pre-wrap; 
+	overflow-y: auto;
 }
 </style>

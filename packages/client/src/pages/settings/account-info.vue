@@ -255,6 +255,11 @@
 			><template #icon><i class="ph-gear-six ph-bold ph-lg"></i></template
 			>{{ i18n.ts.registry }}</FormLink
 		>
+
+		<FormLink to="/errorlog" class="_formBlock"
+			><template #icon><i class="ph-wrench ph-bold ph-lg"></i></template
+			>{{ i18n.ts.errorlog }}</FormLink
+		>
 		
 		<FormLink v-if="$store.state.developer" to="/bios" class="_formBlock"
 			><template #icon><i class="ph-wrench ph-bold ph-lg"></i></template

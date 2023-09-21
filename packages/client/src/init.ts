@@ -96,23 +96,6 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	});
 	
 
-	/*config.errorHandler = async (err, vm, info) => {
-		
-		const currentDate = new Date();
-		const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
-
-		// エラーログのテキストを生成
-		const logtext = `${formattedDate} - ${err.toString()} - ${info}`;
-
-		let currentLogs = await get("errorLog") || [];
-		currentLogs.push(logtext);
-
-		if (currentLogs.length > 50) {
-			currentLogs = currentLogs.slice(-50);
-		}
-
-		await set("errorLog", currentLogs);
-	}*/
 	
 	if (_DEV_) {
 		console.warn("Development mode!!!");
@@ -259,6 +242,24 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 						? defineAsyncComponent(() => import("@/ui/classic.vue"))
 						: defineAsyncComponent(() => import("@/ui/universal.vue")),
 	);
+	
+	
+	app.config.errorHandler = async (err, vm, info) => {
+		const currentDate = new Date();
+		const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+
+		// エラーログのテキストを生成
+		const logtext = `${formattedDate} - ${err.toString()} - ${info}`;
+
+		let currentLogs = await get("errorLog") || [];
+		currentLogs.push(logtext);
+
+		if (currentLogs.length > 50) {
+			currentLogs = currentLogs.slice(-50);
+		}
+
+		await set("errorLog", currentLogs);
+	}
 
 	if (_DEV_) {
 		app.config.performance = true;

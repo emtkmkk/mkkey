@@ -65,14 +65,18 @@ export async function proxyMedia(ctx: Koa.Context) {
 
 		const { mime, ext } = await detectType(path);
 		const isConvertibleImage = isMimeImage(mime, "sharp-convertible-image");
+		serverLogger.info(`imageproxy : ${mime} : ${url}`);
 
 		let image: IImage;
 
 		if ("static" in ctx.query && isConvertibleImage) {
+			serverLogger.info(`static`);
 			image = await convertToWebp(path, 996, 560);
 		} else if ("preview" in ctx.query && isConvertibleImage) {
+			serverLogger.info(`preview`);
 			image = await convertToWebp(path, 400, 400);
 		} else if ("badge" in ctx.query) {
+			serverLogger.info(`badge`);
 			if (!isConvertibleImage) {
 				// 画像でないなら404でお茶を濁す
 				throw new StatusError("Unexpected mime", 404);

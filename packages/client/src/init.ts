@@ -310,8 +310,8 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	app.mount(rootEl);
 
 	// boot.jsのやつを解除
-	window.onerror = null;
-	window.onunhandledrejection = null;
+	/*window.onerror = null;
+	window.onunhandledrejection = null;*/
 
 	reactionPicker.init();
 

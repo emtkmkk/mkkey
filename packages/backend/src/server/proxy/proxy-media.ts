@@ -87,7 +87,7 @@ export async function proxyMedia(ctx: Koa.Context) {
 				type: "image/png",
 			};
 		} else if (mime === "image/svg+xml") {
-			image = await convertToWebp(path, 20480, 2048, 1);
+			image = await convertToWebp(path, 2048, 2048, 1);
 		} else if (
 			!(mime.startsWith("image/") && FILE_TYPE_BROWSERSAFE.includes(mime))
 		) {

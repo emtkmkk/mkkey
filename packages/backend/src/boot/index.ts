@@ -39,7 +39,7 @@ export default async function () {
 	if (cluster.isWorker) {
 		// Set workers to a much lower priority so that the master process will be
 		// able to respond to api calls even if the workers gank everything.
-		os.setPriority(10);
+		os.setPriority(19);
 	}
 
 	// For when Calckey is started in a child process during unit testing.

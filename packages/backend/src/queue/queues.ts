@@ -25,7 +25,7 @@ export const objectStorageQueue =
 	initializeQueue<ObjectStorageJobData>("objectStorage");
 export const webhookDeliverQueue = initializeQueue<WebhookDeliverJobData>(
 	"webhookDeliver",
-	64,
+	32,
 );
 export const backgroundQueue = initializeQueue<Record<string, unknown>>("bg");
 

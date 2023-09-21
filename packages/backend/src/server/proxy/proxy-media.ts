@@ -117,12 +117,15 @@ export async function proxyMedia(ctx: Koa.Context) {
 				type: "image/png",
 			};
 		} else if (mime === "image/svg+xml") {
+			serverLogger.info(`image/svg+xml`);
 			image = await convertToWebp(path, 2048, 2048, 1);
 		} else if (
 			!(mime.startsWith("image/") && FILE_TYPE_BROWSERSAFE.includes(mime))
 		) {
+			serverLogger.info(`not image`);
 			throw new StatusError("Rejected type", 403, "Rejected type");
 		} else {
+			serverLogger.info(`else`);
 			image = {
 				data: fs.readFileSync(path),
 				ext,

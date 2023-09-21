@@ -13,6 +13,7 @@ import { isMimeImage } from "@/misc/is-mime-image.js";
 
 export async function proxyMedia(ctx: Koa.Context) {
 	const url = "url" in ctx.query ? ctx.query.url : `https://${ctx.params.url}`;
+	
 
 	if (typeof url !== "string") {
 		ctx.status = 400;
@@ -28,6 +29,7 @@ export async function proxyMedia(ctx: Koa.Context) {
 		const { mime, ext } = await detectType(path);
 		const isConvertibleImage = isMimeImage(mime, "sharp-convertible-image");
 
+		serverLogger.info(`proxy : ${mime} : ${ctx.query} : ${url}`);
 		/*if (
             'static' in ctx.query ||
             'preview' in ctx.query ||

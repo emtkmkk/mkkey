@@ -25,7 +25,6 @@ import {
 	markRaw,
 	version as vueVersion,
 	defineAsyncComponent,
-	config,
 } from "vue";
 import { compareVersions } from "compare-versions";
 import JSON5 from "json5";
@@ -97,7 +96,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	});
 	
 
-	config.errorHandler = async (err, vm, info) => {
+	Vue.config.errorHandler = async (err, vm, info) => {
 		
 		const currentDate = new Date();
 		const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();

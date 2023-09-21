@@ -10,15 +10,25 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, defineComponent } from "vue";
+import { ref, onMounted, onUnmounted, defineComponent } from "vue";
 import { get, set, del } from "@/scripts/idb-proxy";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
-const errorLog = ref(""); // 反応性のある参照を初期化
+const errorLog = ref("");
 
-// マウント時にエラーログを取得
-onMounted(async () => {
-	errorLog.value = (await get("errorLog") || []).join("\n");
+let intervalId;
+
+const fetchErrorLog = async () => {
+    errorLog.value = (await get("errorLog") || []).join("\n");
+};
+
+onMounted(() => {
+    fetchErrorLog();
+    intervalId = setInterval(fetchErrorLog, 30000);
+});
+
+onUnmounted(() => {
+    clearInterval(intervalId);
 });
 
 definePageMetadata({

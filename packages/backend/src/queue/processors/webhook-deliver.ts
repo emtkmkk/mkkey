@@ -321,6 +321,7 @@ async function typeToBody(jobData: any): Promise<any> {
 
 export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 	try {
+		logger.info(`Webhook ${job.data.webhookId}`);
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
 		if (job.data.secret?.startsWith("Discord")) {

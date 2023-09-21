@@ -25,6 +25,7 @@ import {
 	markRaw,
 	version as vueVersion,
 	defineAsyncComponent,
+	config,
 } from "vue";
 import { compareVersions } from "compare-versions";
 import JSON5 from "json5";
@@ -55,7 +56,65 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 
 (async () => {
 	console.info(`Calckey v${version}`);
+	
+	const currentDate = new Date();
+	const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+	
+	// エラーログのリセット
+	await set("errorLog", [`${formattedDate} - Calckey v${version}`]);
 
+	window.addEventListener("error", async (event) => {
+
+		// エラーログのテキストを生成
+		const logtext = `${formattedDate} - ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`;
+
+		let currentLogs = await get("errorLog") || [];
+		currentLogs.push(logtext);
+
+		if (currentLogs.length > 50) {
+			currentLogs = currentLogs.slice(-50);
+		}
+
+		await set("errorLog", currentLogs);
+
+	});
+
+	window.addEventListener('unhandledrejection', async (event) => {
+		
+		const currentDate = new Date();
+		const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+
+		const logtext = `${formattedDate} - Unhandled promise rejection: ${event.reason}`;
+
+		let currentLogs = await get("errorLog") || [];
+		currentLogs.push(logtext);
+
+		if (currentLogs.length > 50) {
+			currentLogs = currentLogs.slice(-50);
+		}
+
+		await set("errorLog", currentLogs);
+	});
+	
+
+	config.errorHandler = async (err, vm, info) => {
+		
+		const currentDate = new Date();
+		const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+
+		// エラーログのテキストを生成
+		const logtext = `${formattedDate} - ${err.toString()} - ${info}`;
+
+		let currentLogs = await get("errorLog") || [];
+		currentLogs.push(logtext);
+
+		if (currentLogs.length > 50) {
+			currentLogs = currentLogs.slice(-50);
+		}
+
+		await set("errorLog", currentLogs);
+	}
+	
 	if (_DEV_) {
 		console.warn("Development mode!!!");
 

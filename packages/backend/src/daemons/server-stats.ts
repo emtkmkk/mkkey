@@ -28,6 +28,7 @@ export default function () {
 		const stats = {
 			cpu: roundCpu(cpu),
 			mem: {
+				total: round(memStats.total),
 				used: round(memStats.used - memStats.buffers - memStats.cached),
 				active: round(memStats.active),
 			},
@@ -41,7 +42,7 @@ export default function () {
 			},
 		};
 		if (stats && (stats.cpu) > 0.85) console.log(`WARN CPU ${Math.round((stats.cpu) * 100)}%`)
-		if (stats && (stats.mem.active / stats.mem.used) > 0.85) console.log(`WARN MEM ${Math.round((stats.mem.used / stats.mem.active) * 100)}%`)
+		if (stats && (stats.mem.active / stats.mem.total) > 0.85) console.log(`WARN MEM ${Math.round((stats.mem.active / stats.mem.total) * 100)}%`)
 		ev.emit("serverStats", stats);
 		log.unshift(stats);
 		if (log.length > 200) log.pop();

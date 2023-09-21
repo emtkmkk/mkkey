@@ -352,6 +352,10 @@ export const routes = [
 		component: page(() => import("./pages/mfm-cheat-sheet.vue")),
 	},
 	{
+		path: "/errorlog",
+		component: page(() => import("./pages/errorlog.vue")),
+	},
+	{
 		path: "/scratchpad",
 		component: page(() => import("./pages/scratchpad.vue")),
 	},

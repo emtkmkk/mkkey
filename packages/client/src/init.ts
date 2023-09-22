@@ -130,6 +130,16 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 
 	// タッチデバイスでCSSの:hoverを機能させる
 	document.addEventListener("touchend", () => { }, { passive: true });
+	
+	// パワーモード
+	if (!!defaultStore.state.powerMode) {
+		import("activate-power-mode").then((module) => {
+			const powerMode = module.default;
+			powerMode.shake = !defaultStore.state.powerModeNoShake;
+			powerMode.colorful = !!defaultStore.state.powerModeColorful;
+			window.addEventListener('input', powerMode);
+		});
+	}
 
 	// 一斉リロード
 	reloadChannel.addEventListener("message", (path) => {

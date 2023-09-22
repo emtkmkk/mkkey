@@ -23,9 +23,9 @@ export async function proxyMedia(ctx: Koa.Context) {
 
 	url = url.replace("//", "/");
 
-	const { hostname } = new URL(url);
 	let resolvedIps;
 	try {
+		const { hostname } = new URL(url);
 		resolvedIps = await promises.resolve(hostname);
 	} catch (error) {
 		ctx.status = 400;

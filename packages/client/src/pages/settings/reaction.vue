@@ -586,16 +586,16 @@ const remoteEmojisFetch = $computed(
 const doubleTapReaction = $computed(
 	defaultStore.makeGetterSetter("doubleTapReaction")
 );	
-const customEmojis = computed(() => 
+let customEmojis = computed(() => 
 	instance.emojis
 );
 let allCustomEmojis = computed(() => 
 	instance.allEmojis
 );
-const emojiStr = computed(() => 
+let emojiStr = computed(() => 
 	unref(customEmojis) ? unref(customEmojis).map((x) => ":" + x.name + ":") : undefined
 );
-const remoteEmojiStr = computed(() => 
+let remoteEmojiStr = computed(() => 
 	unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
 const enableInstanceEmojiSearch = $computed(

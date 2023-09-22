@@ -19,7 +19,7 @@
 			<div ref="emojis" class="emojis">
 				<section class="result">
 					<div v-if="!allCustomEmojis && q && q.includes('@')">
-						<header class="_acrylic">{{ (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) ? "他サーバー絵文字の取得に失敗した為、使用出来ません。" : "@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
+						<header class="_acrylic">{{ (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) ? "他サーバー絵文字の辞書データがありません。" : "@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
 					</div>
 					<div v-else>
 						<header class="_acrylic" v-if="!(q == null || q === '')">

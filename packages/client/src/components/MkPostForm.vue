@@ -472,7 +472,6 @@ import { unref, inject, watch, nextTick, onMounted, onUnmounted, defineAsyncComp
 import * as mfm from "mfm-js";
 import * as misskey from "calckey-js";
 import insertTextAtCursor from "insert-text-at-cursor";
-import powerMode from "activate-power-mode";
 import { length } from "stringz";
 import { toASCII } from "punycode/";
 import * as Acct from "calckey-js/built/acct";

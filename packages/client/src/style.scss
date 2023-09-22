@@ -504,6 +504,7 @@ hr {
 			left: 0;
 			bottom: 0;
 			z-index: -1;
+			transform: translateZ(-1px);
 			background: var(--bg);
 			opacity: .75;
 		}

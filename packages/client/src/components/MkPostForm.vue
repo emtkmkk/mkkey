@@ -1510,12 +1510,6 @@ onMounted(() => {
 	new Autocomplete(cwInputEl, $$(cw));
 	new Autocomplete(hashtagsInputEl, $$(hashtags));
 
-	if (!!defaultStore.state.powerMode){
-		powerMode.shake = !defaultStore.state.powerModeNoShake
-		powerMode.colorful =  !!defaultStore.state.powerModeColorful
-		window.addEventListener('input',powerMode);
-	}
-
 	nextTick(() => {
 		// 書きかけの投稿を復元
 		if (!props.instant && !props.mention && !props.specified) {
@@ -1561,7 +1555,6 @@ onMounted(() => {
 	});
 });
 
-onUnmounted(() => window.removeEventListener('input',powerMode));
 </script>
 
 <style lang="scss" scoped>

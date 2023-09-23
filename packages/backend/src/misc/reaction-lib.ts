@@ -66,6 +66,8 @@ export async function toDbReaction(
 
 	reacterHost = toPunyNullable(reacterHost);
 
+    reaction = reaction?.replaceAll("::",":");
+
 	// Convert string-type reactions to unicode
 	const emoji = legacies.get(reaction) || (reaction === "♥️" ? "❤️" : null);
 	if (emoji) return emoji;

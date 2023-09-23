@@ -147,6 +147,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		);
 		query.setParameters(followingQuery.getParameters());
 	}
+	
+	ps.excludeTypes = ps.excludeTypes.push("unreadAntenna");
 
 	if (ps.includeTypes && ps.includeTypes.length > 0) {
 		query.andWhere("notification.type IN (:...includeTypes)", {

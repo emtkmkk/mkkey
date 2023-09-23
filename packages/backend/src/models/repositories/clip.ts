@@ -16,6 +16,8 @@ export const ClipRepository = db.getRepository(Clip).extend({
 			user: Users.pack(clip.user || clip.userId),
 			name: clip.name,
 			description: clip.description,
+			favoritedCount: 0,
+			isFavorited: false,
 			isPublic: clip.isPublic,
 		});
 	},

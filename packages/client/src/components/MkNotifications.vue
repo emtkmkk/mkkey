@@ -77,6 +77,7 @@ const pagination: Paging = {
 			? props.excludeTypes ?? undefined
 			: $i.mutingNotificationTypes.concat(props.excludeTypes ?? []),
 		unreadOnly: props.unreadOnly,
+		allTypes: true,
 	})),
 };
 

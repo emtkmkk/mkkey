@@ -147,11 +147,9 @@ export default define(meta, paramDef, async (ps, user) => {
 		);
 		query.setParameters(followingQuery.getParameters());
 	}
-	
-	if(ps.excludeTypes){
-		ps.excludeTypes = ps.excludeTypes.push("unreadAntenna");
-	}else{
-		ps.excludeTypes = ["unreadAntenna"]
+
+	if (!ps.allTypes) {
+		query.andWhere("notification.type <> 'unreadAntenna'");
 	}
 
 	if (ps.includeTypes && ps.includeTypes.length > 0) {

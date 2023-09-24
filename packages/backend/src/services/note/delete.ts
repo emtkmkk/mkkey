@@ -103,7 +103,7 @@ export default async function (
 				),
 			);
 			deliverToConcerned(cascadingNote.user, cascadingNote, content);
-			decNotesCountOfUser(cascadingNote.user);
+			if (cascadingNote.visibility !== "specified") decNotesCountOfUser(user);
 		}
 		//#endregion
 
@@ -192,7 +192,8 @@ async function deliverToConcerned(
 	}
 }
 
-function decNotesCountOfUser(user: { id: User["id"] }) {
+function decNotesCountOfUser(user: { id: User["id"]; host:User["host"] }) {
+	if (user.host) return;
 	Users.createQueryBuilder()
 		.update()
 		.set({

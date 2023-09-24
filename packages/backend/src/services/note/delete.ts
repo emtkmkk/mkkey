@@ -93,7 +93,7 @@ export default async function (
 			(note) => !note.localOnly,
 		); // filter out local-only notes
 		for (const cascadingNote of cascadingNotes) {
-			console.log("cascadeDeleteNote : " + cascadingNote.id)
+			console.log("cascadeDeleteNote(" + cascadingNotes.length + ") : " + cascadingNote.id)
 			if (!cascadingNote.user) continue;
 			if (!Users.isLocalUser(cascadingNote.user)) continue;
 			const content = renderActivity(

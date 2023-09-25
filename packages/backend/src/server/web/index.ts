@@ -355,18 +355,30 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 	});
 
 	ctx.set('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
-
+	
 	if (emoji == null) {
-		ctx.status = 404;
-		return;
+		if ('fallback' in ctx.query) {
+			return await ctx.redirect('/static-assets/emoji-unknown.png');
+		} else {
+			ctx.status = 404;
+			return;
+		}
 	}
 
 	let url: URL;
-	if (false && config.mediaProxy !== null) {
-		url = new URL(`${config.mediaProxy}/emoji.webp`);
-		// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
-		url.searchParams.set('emoji', '1');
+	if (config.mediaProxy !== null) {
+		if ('badge' in ctx.query) {
+			url = new URL(`${config.mediaProxy}/emoji.png`);
+			// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
+			url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
+			url.searchParams.set('badge', '1');
+		} else {
+			url = new URL(`${config.mediaProxy}/emoji.webp`);
+			// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
+			url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
+			url.searchParams.set('emoji', '1');
+			if ('static' in ctx.query) url.searchParams.set('static', '1');
+		}
 		ctx.status = 301;
 		ctx.redirect(url.toString());
 	} else {

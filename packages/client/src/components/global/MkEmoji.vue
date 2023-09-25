@@ -61,7 +61,7 @@ const emit = defineEmits(["loaderror"]);
 const isCustom = computed(() => props.emoji.startsWith(":"));
 const bigCustom = computed(() => defaultStore.state.useBigCustom);
 const char = computed(() => (isCustom.value ? null : props.emoji));
-const hostmatch = props.emoji ? props.emoji.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/) : undefined;
+const hostmatch = computed(() => props.emoji ? props.emoji.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/) : undefined);
 const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
 );
@@ -113,8 +113,8 @@ const ace = computed(() => instance.allEmojis ?? []);
 const customEmoji = computed(() => {
 	if (!isCustom.value) return null;
 
-	const name = hostmatch?.[1];
-	const host = hostmatch?.[2] || props.noteHost;
+	const name = hostmatch.value?.[1];
+	const host = hostmatch.value?.[2] || props.noteHost;
 	
 	const matchprops = props.customEmojis?.find((x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.url);
 	
@@ -139,11 +139,11 @@ const customEmojiName = computed(() => {
 	if (!isCustom.value) return null;
 	
 	const nameFromEmoji = props.emoji.substr(1, props.emoji.length - 2);
-	return customEmoji.value?.name || hostmatch?.[1] || nameFromEmoji || null;
+	return customEmoji.value?.name || hostmatch.value?.[1] || nameFromEmoji || null;
 });
 
 const emojiHost = computed(() => {
-	const host = customEmoji.value?.host || hostmatch?.[2] || props.noteHost || null;
+	const host = customEmoji.value?.host || hostmatch.value?.[2] || props.noteHost || null;
 	return host !== "mkkey.net" ? host : null;
 });
 

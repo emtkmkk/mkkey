@@ -840,7 +840,7 @@ if (!canFollower && visibility === "followers") visibility = "specified";
 if (!canNotLocal && visibility !== "followers" && visibility !== "specified" && localOnly === false && !$i.blockPostNotLocalPublic) localOnly = true;
 
 // keep post cw
-if (defaultStore.state.keepPostCw && cw && !cw.includes("@")) {
+if (defaultStore.state.keepPostCw && cw && !cw.includes("@") && !(props.reply && !props.reply.cw)) {
 	useCw = true;
 } else {
 	cw = "";

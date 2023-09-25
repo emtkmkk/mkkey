@@ -952,7 +952,7 @@ function togglePoll() {
 }
 
 function toggleUseCw() {
-	if(useCW) {
+	if(useCw) {
 		// ON -> OFF
 		const mention = /^(@\w+\s?)(.*)$/.match(cw)
 		if(mention != null){

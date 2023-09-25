@@ -234,7 +234,8 @@ export default async (
 		note.visibility !== "hidden"
 	) {
 		// ブラックリストに登録済みのホスト または リモート絵文字でライセンスにコピー拒否がある場合 は いいねに変更して外部に送信
-		if (["voskey.icalo.net"].includes(record.reaction?.host) || (record.reaction?.host && record.reaction?.license?.includes("コピー可否 : deny"))) record.reaction = await getFallbackReaction()
+		// TODO : リアクション解除時も変換をかけた方が良いかも
+		if (["voskey.icalo.net"].includes(emoji?.host) || (emoji?.host && emoji?.license?.includes("コピー可否 : deny"))) record.reaction = await getFallbackReaction()
 		
 		const content = renderActivity(await renderLike(record, note));
 		const dm = new DeliverManager(user, content);

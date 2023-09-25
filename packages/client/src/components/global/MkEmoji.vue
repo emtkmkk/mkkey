@@ -119,7 +119,7 @@ const customEmoji = computed(() => {
 	const matchprops = props.customEmojis?.find((x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.url);
 	
 	if (matchprops) {
-		return matchprops;
+		return {...matchprops, name, host};
 	} else if (host && host !== "." && host !== "mkkey.net") {
 		return ace.value.find((x) => x.name === name && x.host === host);
 	} else {

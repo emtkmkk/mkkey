@@ -59,6 +59,9 @@ export async function populateEmoji(
 	emojiName: string,
 	noteUserHost: string | null,
 ): Promise<PopulatedEmoji | null> {
+	// ノートに絵文字を付けない
+	// TODO : 試験的
+	return null;
 	const { name, host } = parseEmojiStr(emojiName, noteUserHost);
 	if (name == null) return null;
 

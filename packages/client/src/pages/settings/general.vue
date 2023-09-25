@@ -107,8 +107,11 @@
 			<FormSwitch v-model="enableDataSaverMode" :disabled="autoSwitchDataSaver" class="_formBlock">{{
 				i18n.ts.dataSaver
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="autoSwitchDataSaver" v-if="supportAutoDataSaver" class="_formBlock">{{
+			<FormSwitch v-model="autoSwitchDataSaver" :disabled="!supportAutoDataSaver" class="_formBlock">{{
 				i18n.ts.autoSwitchDataSaver
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="enabledAirReply" class="_formBlock">{{
+				i18n.ts.enabledAirReply
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{
 				i18n.ts.hiddenActivityChart
@@ -118,6 +121,9 @@
 			}}</FormSwitch>
 			<FormSwitch v-model="longLoading" class="_formBlock">{{
 				i18n.ts.longLoading
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-if="developer" v-model="copyPostRemoteEmojiCode" class="_formBlock">{{
+				i18n.ts.copyPostRemoteEmojiCode
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-if="developer" v-model="developerRenote" class="_formBlock">{{
 				i18n.ts.developerRenote
@@ -658,6 +664,9 @@ const developerNoteMenu = computed(
 const developerTicker = computed(
 	defaultStore.makeGetterSetter("developerTicker")
 );
+const copyPostRemoteEmojiCode = computed(
+	defaultStore.makeGetterSetter("copyPostRemoteEmojiCode")	
+);
 const showMiniUpdates = computed(
 	defaultStore.makeGetterSetter("showMiniUpdates")
 );
@@ -739,6 +748,9 @@ const compactGrid = $computed(
 );
 const usePickerSizePostForm = $computed(
 	defaultStore.makeGetterSetter("usePickerSizePostForm")
+);
+const enabledAirReply = computed(
+	defaultStore.makeGetterSetter("enabledAirReply")	
 );
 
 function save() {

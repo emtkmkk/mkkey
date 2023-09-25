@@ -239,12 +239,12 @@ export default async (
 		if (data.text?.includes("https://x.com") || data.text?.includes("http://x.com")) {
 			data.text = data.text.replaceAll(/(https?:\/\/x.com\/\S*\/status\/\S*)(\?\S*)/ig, "$1");
 		}
-		
+
 		//ローカルユーザーでこの投稿が1投稿目の場合
-		if (!user.host && user.notesCount < 1){
+		if (!user.host && user.notesCount < 1) {
 			//キャッシュで0に見えてる可能性があるためここで最新データを取得		
 			const _user = await Users.findOneByOrFail({ id: user.id })
-			if (_user.notesCount === 0){
+			if (_user.notesCount === 0) {
 				data.isFirstNote = true;
 			}
 		}
@@ -362,14 +362,22 @@ export default async (
 			const isIncludeNgWordRet = isIncludeNgWord(data);
 
 			if (isIncludeNgWordRet) {
-				data.cw = "[強制CW] " + isIncludeNgWordRet;
+				if (!data.cw) {
+					data.cw = "[強制CW] " + isIncludeNgWordRet;
+				} else if (!data.cw.trim()) {
+					data.cw = isIncludeNgWordRet;
+				}
 			}
 
 			if (data.renote) {
 				const isIncludeNgWordRtRet = isIncludeNgWord(data.renote);
 				if (isIncludeNgWordRtRet) {
 					if (data.text) {
-						if (!data.cw) data.cw = "[強制CW (引用先)] " + isIncludeNgWordRtRet;
+						if (!data.cw) {
+							data.cw = "[強制CW (引用先)] " + isIncludeNgWordRtRet;
+						} else if (!data.cw.trim()) {
+							data.cw = isIncludeNgWordRtRet + " (引用先)";
+						}
 					} else {
 						data.visibility = "home";
 					}
@@ -437,13 +445,13 @@ export default async (
 			if (user.isSilenced && (!relation.every((x) => x) ?? true)) {
 				throw new Error("サイレンス中はフォロワーでないユーザにダイレクトは送信できません。");
 			}
-/*
-			const localRelation = !user.isBot || !user.host ? false :await data.visibleUsers.filter((x) => !x.host || !x.isBot || x.host === "mkkey.net").every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);
-
-			if (!user.isBot && user.host && (localRelation ?? true)) {
-				data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi, "$1");
-			}
-*/
+			/*
+						const localRelation = !user.isBot || !user.host ? false :await data.visibleUsers.filter((x) => !x.host || !x.isBot || x.host === "mkkey.net").every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);
+			
+						if (!user.isBot && user.host && (localRelation ?? true)) {
+							data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi, "$1");
+						}
+			*/
 
 		}
 
@@ -749,11 +757,11 @@ async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 	if (data.localOnly && data.channel) return null;
 	// ローカル＆フォロワー
 	if (data.localOnly && data.visibility !== "hidden" && data.visibility !== "specified") note.visibility = "followers";
-	if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.cw) || /:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.text)){
+	if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.cw) || /:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.text)) {
 		// 他鯖絵文字が入っている場合、外部には@以下をトリミングして配信する
-		note.cw = note.cw?.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig,":$1:");
-		note.text = note.text?.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig,":$1:");
-		note.emojis = note.emojis?.map((x) => x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]*)$/ig,"$1"));
+		note.cw = note.cw?.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+		note.text = note.text?.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+		note.emojis = note.emojis?.map((x) => x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]*)$/ig, "$1"));
 	}
 
 	const content =

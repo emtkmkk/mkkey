@@ -403,7 +403,7 @@
 					v-tooltip="i18n.ts.useCw"
 					class="_button"
 					:class="{ active: useCw }"
-					@click="useCw = !useCw"
+					@click="toggleUseCw"
 				>
 					<i class="ph-eye-slash ph-bold ph-lg"></i>
 				</button>
@@ -736,6 +736,11 @@ watch($$(text), () => {
 	checkMissingMention();
 });
 
+watch($$(visibility), () => {
+	checkIncludesOtherServerEmoji();
+	checkMissingMention();
+});
+
 watch(
 	$$(visibleUsers),
 	() => {
@@ -927,6 +932,25 @@ function togglePoll() {
 	}
 }
 
+function toggleUseCw() {
+	if(useCW) {
+		// ON -> OFF
+		const mention = /^(@\w+\s?)(.*)$/.match(cw)
+		if(mention != null){
+			cw = mention?.[2]
+			text = mention[1].trim() + " " + text;
+		}
+	} else {
+		// OFF -> ON
+		const mention = /^(@\w+\s?)(.*)$/.match(text)
+		if(mention != null){
+			text = mention?.[2]
+			cw = mention[1].trim() + " " + cw;
+		}
+	}
+	useCw = !useCw;
+}
+
 function addTag(tag: string) {
 	insertTextAtCursor(textareaEl, ` #${tag} `);
 }
@@ -1000,7 +1024,10 @@ function setVisibility() {
 		{
 			changeVisibility: (v) => {
 				visibility = v;
-				if (v === "specified") localOnly = false;
+				if (v === "specified"){
+					localOnly = false;
+					addMissingMention();
+				}
 				if (defaultStore.state.rememberNoteVisibility) {
 					defaultStore.set("visibility", visibility);
 				}

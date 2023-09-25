@@ -2,7 +2,7 @@ import { publishNoteStream } from "@/services/stream.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import DeliverManager from "@/remote/activitypub/deliver-manager.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
-import { toDbReaction, decodeReaction } from "@/misc/reaction-lib.js";
+import { toDbReaction, decodeReaction, getFallbackReaction } from "@/misc/reaction-lib.js";
 import type { User, IRemoteUser } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
 import {
@@ -233,6 +233,9 @@ export default async (
 		!(note.channelId && note.localOnly) &&
 		note.visibility !== "hidden"
 	) {
+		// ブラックリストに登録済みのホスト または リモート絵文字でライセンスにコピー拒否がある場合 は いいねに変更して外部に送信
+		if (["voskey.icalo.net"].includes(record.reaction?.host) || (record.reaction?.host && record.reaction?.license?.includes("コピー可否 : deny"))) record.reaction = await getFallbackReaction()
+		
 		const content = renderActivity(await renderLike(record, note));
 		const dm = new DeliverManager(user, content);
 		if (note.userHost !== null) {

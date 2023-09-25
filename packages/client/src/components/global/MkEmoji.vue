@@ -12,7 +12,11 @@
 			if (isPicker) {
 				emit('loaderror', ''); 
 			}
-			errorCnt = errorCnt + 1; 
+			errorCnt = errorCnt + 1;
+			if (!instance.errorEmoji) {
+				instance.errorEmoji = {};
+			}
+			instance.errorEmoji[emoji] = errorCnt;
 		}"
 	/>
 	<img
@@ -34,7 +38,13 @@
 		:title="alt + ' (localOnly)'"
 		v-tooptip="emojiHost + ' localOnly'"
 		decoding="async"
-		@error="errorAlt = true"
+		@error="() => {
+			errorAlt = true;
+			if (!instance.errorEmojiAlt) {
+				instance.errorEmojiAlt = {};
+			}
+			instance.errorEmojiAlt[emoji] = true;
+		}"
 	/>
 	<span v-else>{{ customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
 </template>
@@ -69,8 +79,8 @@ const hostmatch = computed(() => props.emoji ? props.emoji.match(/^:([\w+-]+)(?:
 const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
 );
-const errorCnt = ref(0);
-const errorAlt = ref(false);
+const errorCnt = ref(instance.errorEmoji?.[props.emoji] ?? 0);
+const errorAlt = ref(instance.errorEmojiAlt?.[props.emoji] ?? false);
 const isMuted = computed(() => {
 	if (!props.emoji) return false;
 	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {

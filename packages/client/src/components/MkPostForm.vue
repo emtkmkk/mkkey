@@ -455,7 +455,7 @@
 					<i class="ph-binoculars ph-bold ph-lg"></i>
 				</button>
 			</footer>
-			<XNotePreview v-if="showPreview" class="preview" :text="text" :cw="useCw ? (cw ?? '') : null" />
+			<XNotePreview v-if="showPreview" class="preview" :text="text + (withHashtags ? ' ' + hashtagsPreview : '')" :cw="useCw ? (cw ?? '') : null" />
 			<datalist id="hashtags">
 				<option
 					v-for="hashtag in recentHashtags"
@@ -730,6 +730,25 @@ const withHashtags = $computed(
 	defaultStore.makeGetterSetter("postFormWithHashtags")
 );
 const hashtags = $computed(defaultStore.makeGetterSetter("postFormHashtags"));
+
+const hashtagsPreview = $computed(() => {
+	if (withHashtags && hashtags && hashtags.trim() !== "") {
+		const textHashtags_ = mfm
+			.parse(text)
+			.filter((x) => x.type === "hashtag")
+			.map((x) => x.props.hashtag.startsWith("#") ? x.props.hashtag : "#" + x.props.hashtag);
+		const hashtags_ = hashtags
+			.trim()
+			.split(" ")
+			.map((x) => (x.startsWith("#") ? x : "#" + x));
+		const hashtags__ = hashtags_
+			.filter(x => !textHashtags_.includes(x))
+			.join(" ");
+		return hashtags__;
+	} else {
+		return "";
+	}
+})
 
 watch($$(text), () => {
 	checkIncludesOtherServerEmoji();

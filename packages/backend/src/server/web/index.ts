@@ -358,7 +358,7 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 	
 	if (emoji == null) {
 		if ('fallback' in ctx.query) {
-			return await ctx.redirect('/static-assets/emoji-unknown.png');
+			return await ctx.redirect('/static-assets/user-unknown.png');
 		} else {
 			ctx.status = 404;
 			return;

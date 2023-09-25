@@ -196,7 +196,7 @@ const alt = computed(() => {
 let singleTapTime = undefined;
 
 const handleImgClick = (event) => {
-	if (defaultStore.state.noteQuickReaction && props.note && urlRaw.length <= errorCnt){
+	if (props.note && defaultStore.state.noteQuickReaction && urlRaw.length <= errorCnt){
 		const el =
 			ev &&
 			((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);

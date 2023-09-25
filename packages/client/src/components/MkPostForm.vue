@@ -954,14 +954,14 @@ function togglePoll() {
 function toggleUseCw() {
 	if(useCw) {
 		// ON -> OFF
-		const mention = /^(@\w+\s?)(.*)$/.match(cw)
+		const mention = /^(@\w+\s?)(.*)$/.exec(cw)
 		if(mention != null){
 			cw = mention?.[2]
 			text = mention[1].trim() + " " + text;
 		}
 	} else {
 		// OFF -> ON
-		const mention = /^(@\w+\s?)(.*)$/.match(text)
+		const mention = /^(@\w+\s?)(.*)$/.exec(text)
 		if(mention != null){
 			text = mention?.[2]
 			cw = mention[1].trim() + " " + cw;

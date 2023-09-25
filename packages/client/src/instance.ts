@@ -21,10 +21,12 @@ export const instance: Misskey.entities.InstanceMetadata = reactive(
 
 stream.on('emojiAdded', emojiData => {
 	instance.emojis = [emojiData.emoji, ...instance.emojis];
+	instance.errorEmoji = {};
 });
 
 stream.on('emojiUpdated', emojiData => {
 	instance.emojis = instance.emojis.map(item => emojiData.emojis.find(search => search.id === item.id) as Misskey.entities.CustomEmoji ?? item);
+	instance.errorEmoji = {};
 });
 
 stream.on('emojiDeleted', emojiData => {

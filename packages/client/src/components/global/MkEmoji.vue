@@ -7,6 +7,7 @@
 		:alt="alt"
 		:title="alt"
 		decoding="async"
+		@click="handleImgClick"
 		@error="() => { 
 			if (isPicker) {
 				emit('loaderror', ''); 
@@ -21,8 +22,9 @@
 		:alt="alt"
 		:title="alt"
 		decoding="async"
+		@click="handleImgClick"
 	/>
-	<span v-else-if="char && useOsNativeEmojis">{{ char }}</span>
+	<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick">{{ char }}</span>
 	<img
 		v-else-if="isCustom && !isMuted && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
 		class="mk-emoji emoji-ghost"
@@ -44,6 +46,7 @@ import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import { char2filePath } from "@/scripts/twemoji-base";
 import { defaultStore } from "@/store";
 import { instance } from "@/instance";
+import * as os from "@/os";
 
 const props = defineProps<{
 	emoji: string;
@@ -55,6 +58,7 @@ const props = defineProps<{
 	isPicker?: boolean;
 	static?: boolean;
 	nofallback?: boolean;
+	note?: any;
 }>();
 
 const emit = defineEmits(["loaderror"]);
@@ -187,6 +191,48 @@ const altimgUrl = computed(() => {
 const alt = computed(() => {
 	return `:${emojiFullName.value}:`;
 });
+
+
+let singleTapTime = undefined;
+
+const handleImgClick = (event) => {
+	if (defaultStore.state.noteQuickReaction && props.note && urlRaw.length <= errorCnt){
+		const el =
+			ev &&
+			((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);
+		if (el) {
+			//誤爆防止ダブルタップリアクション機能
+			if (defaultStore.state.doubleTapReaction){
+				if (!singleTapTime || singleTapEmoji !== emoji || (Date.now() - singleTapTime) > 2 * 1000){
+					singleTapTime = Date.now();
+					
+					//アニメーション
+					el.style.transition = '';
+					el.style.backgroundColor = 'var(--accent)';
+					setTimeout(() => {
+						el.style.transition = 'background-color 1s';
+						el.style.backgroundColor = 'transparent';
+					}, 1500);
+					
+					return
+				}
+			}
+			if (defaultStore.state.doubleTapReaction){
+				singleTapEl.style.transition = '';
+				singleTapEl.style.backgroundColor = 'transparent';
+			}
+			const rect = el.getBoundingClientRect();
+			const x = rect.left + el.offsetWidth / 2;
+			const y = rect.top + el.offsetHeight / 2;
+			os.popup(Ripple, { x, y }, {}, "end");
+		}
+
+		os.api("notes/reactions/create", {
+			noteId: props.note.id,
+			reaction: props.emoji,
+		});
+	}
+};
 
 </script>
 

@@ -60,7 +60,7 @@ export default async (
 	}
 
 	// TODO: cache
-	reaction = await toDbReaction(reaction, user.host, note.host);
+	reaction = await toDbReaction(reaction, user.host, note.user?.host);
 
 	const record: NoteReaction = {
 		id: genId(),

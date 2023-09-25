@@ -61,6 +61,7 @@ export function convertLegacyReactions(reactions: Record<string, number>) {
 export async function toDbReaction(
 	reaction?: string | null,
 	reacterHost?: string | null,
+	noteHost?: string | null,
 ): Promise<string> {
 	if (!reaction) return await getFallbackReaction();
 
@@ -93,9 +94,9 @@ export async function toDbReaction(
 		if (emoji) return emoji.host ? `:${emoji.name}@${emoji.host}:` : `:${emoji.name}:`;
 
 		// 無理ならリモートから 
-		// ローカルユーザの場合 : host情報がない場合、misskey.io絵文字で試行してみる
+		// ローカルユーザの場合 : host情報がない場合、noteHost絵文字で、ローカル相手ならmisskey.io絵文字で試行してみる
 		// リモートユーザの場合 : host情報がない場合、reacterHost絵文字ではなくローカル絵文字で試行してみる
-		const host = (reacterHost && custom?.[2] === "mkkey.net" ? IsNull() : custom?.[2]) || (reacterHost ? IsNull() : "misskey.io");
+		const host = (reacterHost && custom?.[2] === "mkkey.net" ? IsNull() : custom?.[2]) || (reacterHost ? IsNull() : noteHost ?? "misskey.io");
 		const emoji2 = await Emojis.findOneBy({
 			host,
 			name,

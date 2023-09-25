@@ -108,7 +108,11 @@ export function getNoteMenu(props: {
 	}
 
 	function copyContent(): void {
-		copyToClipboard(appearNote.text);
+		if (defaultStore.store.copyPostRemoteEmojiCode && appearNote.user?.host != null){
+			copyToClipboard(appearNote.text.replaceAll(/:(\w+):/g,":$1@" + appearNote.user?.host + ":"));
+		} else {
+			copyToClipboard(appearNote.text)
+		}
 		os.success();
 	}
 
@@ -292,7 +296,7 @@ export function getNoteMenu(props: {
 					null,
 				]
 				: []),
-			appearNote.visibility !== "specified"
+			defaultStore.store.enabledAirReply && appearNote.visibility !== "specified"
 				? {
 					icon: "ph-paper-plane-tilt ph-bold ph-lg",
 					text: i18n.ts.airReply,

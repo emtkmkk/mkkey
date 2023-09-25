@@ -990,6 +990,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/8/25",
 			page: "drive",
 		},
+		enabledAirReply: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/9/25",
+			page: "general",
+		}
 	}),
 );
 

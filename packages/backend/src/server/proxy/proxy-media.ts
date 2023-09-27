@@ -93,7 +93,8 @@ export async function proxyMedia(ctx: Koa.Context) {
 						height: 400,
 						withoutEnlargement: true,
 					})
-					.webp(webpDefault);
+					.webp(webpDefault)
+					.toBuffer();
 
 				image = {
 					data,

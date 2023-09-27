@@ -377,7 +377,7 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 			url = new URL(`${config.mediaProxy}/emoji.webp`);
 			// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
 			url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
-			url.searchParams.set('preview', '1');
+			url.searchParams.set('emoji', '1');
 			if ('static' in ctx.query) url.searchParams.set('static', '1');
 		}
 		ctx.status = 301;

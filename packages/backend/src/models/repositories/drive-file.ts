@@ -61,7 +61,7 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 		}
 
 		// リモートかつ期限切れはローカルプロキシを試みる
-		if (file.uri != null && file.isLink && config.proxyRemoteFiles) {
+		if (false && file.uri != null && file.isLink && config.proxyRemoteFiles) {
 			const key = thumbnail ? file.thumbnailAccessKey : file.webpublicAccessKey;
 
 			if (key && !key.match("/")) {
@@ -77,6 +77,7 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 				"image/apng",
 				"image/gif",
 				"image/jpeg",
+				"image/vnd.mozilla.apng",
 				"image/webp",
 				"image/svg+xml",
 				"image/avif",

@@ -78,7 +78,7 @@ export async function proxyMedia(ctx: Koa.Context) {
 			image = await convertSharpToWebp(await sharpBmp(path, mime), 996, 560);
 		} else if ("preview" in ctx.query && isConvertibleImage) {
 			serverLogger.info(`preview`);
-			image = await convertSharpToWebp(await sharpBmp(path, mime), 400, 400);
+			image = await convertSharpToWebp(await sharpBmp(path, mime), 996, 560);
 		} else if ("emoji" in ctx.query && isConvertibleImage) {
 			serverLogger.info(`emoji`);
             if (!isAnimationConvertibleImage && !('static' in ctx.query)) {

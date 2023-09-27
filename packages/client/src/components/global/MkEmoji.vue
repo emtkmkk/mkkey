@@ -170,7 +170,7 @@ const emojiFullName = computed(() => {
 
 const urlRaw = computed(() => {
 	const urlArr = [];
-	if(customEmoji.value?.url) urlArr.push(customEmoji.value.url);
+	if(customEmoji.value?.url && !defaultStore.state.enableDataSaverMode) urlArr.push(customEmoji.value.url);
 	if(customEmojiName.value && (emojiHost || !props.nofallback)) {
 		urlArr.push(`/emoji/${emojiFullName.value}.webp`);
 	}

@@ -82,16 +82,16 @@ export async function proxyMedia(ctx: Koa.Context) {
 					type: mime,
 				};
 			} else {
+				serverLogger.info('processing...')
 				const data = (await sharpBmp(path, mime, { animated: !('static' in ctx.query) }))
 					.resize({
 						height: 400,
 						withoutEnlargement: true,
 					})
-					.webp(webpDefault)
-					.toBuffer();
+					.webp(webpDefault);
 
 				image = {
-					data,
+					data: await data.toBuffer(),
 					ext: 'webp',
 					type: 'image/webp',
 				};

@@ -158,7 +158,7 @@ const customEmojiName = computed(() => {
 
 const emojiHost = computed(() => {
 	const host = customEmoji.value?.host || hostmatch.value?.[2] || props.noteHost || null;
-	return host !== "mkkey.net" ? host : null;
+	return host !== "mkkey.net" && host !== "." ? host : null;
 });
 
 const emojiFullName = computed(() => {

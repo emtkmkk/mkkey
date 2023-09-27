@@ -106,11 +106,11 @@ function select(
 					icon: "ph-upload-simple ph-bold ph-lg",
 					action: chooseFileFromPc,
 				},
-				{
+				...(!requiredFilename ? [{
 					text: i18n.ts.fromDrive,
 					icon: "ph-cloud ph-bold ph-lg",
 					action: chooseFileFromDrive,
-				},
+				}] : []),
 				{
 					text: i18n.ts.fromUrl,
 					icon: "ph-link-simple ph-bold ph-lg",

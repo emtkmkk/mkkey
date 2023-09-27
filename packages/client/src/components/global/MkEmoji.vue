@@ -16,7 +16,7 @@
 			if (!instance.errorEmoji) {
 				instance.errorEmoji = {};
 			}
-			instance.errorEmoji[emoji] = errorCnt;
+			instance.errorEmoji[emoji + (noteHost ? '@' + noteHost : '')] = errorCnt;
 		}"
 	/>
 	<img
@@ -43,7 +43,7 @@
 			if (!instance.errorEmojiAlt) {
 				instance.errorEmojiAlt = {};
 			}
-			instance.errorEmojiAlt[emoji] = true;
+			instance.errorEmojiAlt[emoji + (noteHost ? '@' + noteHost : '')] = true;
 		}"
 	/>
 	<span v-else>{{ customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>

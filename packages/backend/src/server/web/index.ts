@@ -367,7 +367,7 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 
 	let url: URL;
 	// TODO : プロキシをサイズが大きすぎる物のみに使用するようにしたい
-	if (false && config.mediaProxy !== null) {
+	if (config.mediaProxy !== null) {
 		if ('badge' in ctx.query) {
 			url = new URL(`${config.mediaProxy}/emoji.png`);
 			// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
@@ -377,7 +377,7 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 			url = new URL(`${config.mediaProxy}/emoji.webp`);
 			// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
 			url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
-			url.searchParams.set('emoji', '1');
+			url.searchParams.set('preview', '1');
 			if ('static' in ctx.query) url.searchParams.set('static', '1');
 		}
 		ctx.status = 301;
@@ -397,7 +397,7 @@ router.get("/emoji_license/:path(.*)", async (ctx) => {
 	}
 	
 	const name = ctx.params.path.split('@')[0];
-	const host = ctx.params.path.split('@')?.[1];	
+	const host = ctx.params.path.split('@')?.[1].replace(/\.json$/,"");
 	
 	const emoji = await Emojis.findOneBy({
 		// `@.` is the spec of ReactionService.decodeReaction

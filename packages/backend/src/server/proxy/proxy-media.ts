@@ -67,7 +67,7 @@ export async function proxyMedia(ctx: Koa.Context) {
 
 		const { mime, ext } = await detectType(path);
 		const isConvertibleImage = isMimeImage(mime, "sharp-convertible-image");
-        const isAnimationConvertibleImage = isMimeImage(mime, 'sharp-animation-convertible-image');
+		const isAnimationConvertibleImage = isMimeImage(mime, 'sharp-animation-convertible-image');
 		
 		serverLogger.info(`imageproxy : ${mime} : ${url}`);
 
@@ -81,26 +81,26 @@ export async function proxyMedia(ctx: Koa.Context) {
 			image = await convertSharpToWebp(await sharpBmp(path, mime), 996, 560);
 		} else if ("emoji" in ctx.query && isConvertibleImage) {
 			serverLogger.info(`emoji`);
-            if (!isAnimationConvertibleImage && !('static' in ctx.query)) {
-                image = {
-                    data: fs.createReadStream(path),
-                    ext: ext,
-                    type: mime,
-                };
-            } else {
-                const data = (await sharpBmp(path, mime, { animated: !('static' in ctx.query) }))
-                    .resize({
-                        height: 400,
-                        withoutEnlargement: true,
-                    })
-                    .webp(webpDefault);
+			if (!isAnimationConvertibleImage && !('static' in ctx.query)) {
+				image = {
+					data: fs.readFileSync(path),
+					ext: ext,
+					type: mime,
+				};
+			} else {
+				const data = (await sharpBmp(path, mime, { animated: !('static' in ctx.query) }))
+					.resize({
+						height: 400,
+						withoutEnlargement: true,
+					})
+					.webp(webpDefault);
 
-                image = {
-                    data,
-                    ext: 'webp',
-                    type: 'image/webp',
-                };
-            }
+				image = {
+					data,
+					ext: 'webp',
+					type: 'image/webp',
+				};
+			}
 		} else if ("badge" in ctx.query) {
 			serverLogger.info(`badge`);
 			if (!isConvertibleImage) {

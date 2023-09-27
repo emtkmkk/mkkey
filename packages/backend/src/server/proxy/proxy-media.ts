@@ -18,6 +18,7 @@ export async function proxyMedia(ctx: Koa.Context) {
 
 	if (typeof url !== "string") {
 		ctx.status = 400;
+		ctx.body = { message: "Invalid URL Type" };
 		return;
 	}
 

@@ -72,19 +72,13 @@ export async function proxyMedia(ctx: Koa.Context) {
 		serverLogger.info(`imageproxy : ${mime} : ${url}`);
 
 		let image: IImage;
-
-		if ("static" in ctx.query && isConvertibleImage) {
-			serverLogger.info(`static`);
-			image = await convertSharpToWebp(await sharpBmp(path, mime), 996, 560);
-		} else if ("preview" in ctx.query && isConvertibleImage) {
-			serverLogger.info(`preview`);
-			image = await convertSharpToWebp(await sharpBmp(path, mime), 996, 560);
-		} else if ("emoji" in ctx.query && isConvertibleImage) {
+		
+		if ("emoji" in ctx.query && isConvertibleImage) {
 			serverLogger.info(`emoji`);
 			if (!isAnimationConvertibleImage && !('static' in ctx.query)) {
 				image = {
 					data: fs.readFileSync(path),
-					ext: ext,
+					ext,
 					type: mime,
 				};
 			} else {
@@ -102,6 +96,12 @@ export async function proxyMedia(ctx: Koa.Context) {
 					type: 'image/webp',
 				};
 			}
+		} else if ("static" in ctx.query && isConvertibleImage) {
+			serverLogger.info(`static`);
+			image = await convertSharpToWebp(await sharpBmp(path, mime), 996, 560);
+		} else if ("preview" in ctx.query && isConvertibleImage) {
+			serverLogger.info(`preview`);
+			image = await convertSharpToWebp(await sharpBmp(path, mime), 996, 560);
 		} else if ("badge" in ctx.query) {
 			serverLogger.info(`badge`);
 			if (!isConvertibleImage) {

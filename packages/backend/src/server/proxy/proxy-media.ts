@@ -3,8 +3,9 @@ import net from "node:net";
 import { promises } from "node:dns";
 import type Koa from "koa";
 import sharp from "sharp";
+import { sharpBmp } from 'sharp-read-bmp';
 import type { IImage } from "@/services/drive/image-processor.js";
-import { convertToWebp } from "@/services/drive/image-processor.js";
+import { convertToWebp, convertSharpToWebp, webpDefault } from "@/services/drive/image-processor.js";
 import { createTemp } from "@/misc/create-temp.js";
 import { downloadUrl } from "@/misc/download-url.js";
 import { detectType } from "@/misc/get-file-info.js";
@@ -66,16 +67,40 @@ export async function proxyMedia(ctx: Koa.Context) {
 
 		const { mime, ext } = await detectType(path);
 		const isConvertibleImage = isMimeImage(mime, "sharp-convertible-image");
+        const isAnimationConvertibleImage = isMimeImage(mime, 'sharp-animation-convertible-image');
+		
 		serverLogger.info(`imageproxy : ${mime} : ${url}`);
 
 		let image: IImage;
 
 		if ("static" in ctx.query && isConvertibleImage) {
 			serverLogger.info(`static`);
-			image = await convertToWebp(path, 996, 560);
+			image = await convertSharpToWebp(await sharpBmp(path, mime), 996, 560);
 		} else if ("preview" in ctx.query && isConvertibleImage) {
 			serverLogger.info(`preview`);
-			image = await convertToWebp(path, 400, 400);
+			image = await convertSharpToWebp(await sharpBmp(path, mime), 400, 400);
+		} else if ("emoji" in ctx.query && isConvertibleImage) {
+			serverLogger.info(`emoji`);
+            if (!isAnimationConvertibleImage && !('static' in ctx.query)) {
+                image = {
+                    data: fs.createReadStream(path),
+                    ext: ext,
+                    type: mime,
+                };
+            } else {
+                const data = (await sharpBmp(path, mime, { animated: !('static' in ctx.query) }))
+                    .resize({
+                        height: 400,
+                        withoutEnlargement: true,
+                    })
+                    .webp(webpDefault);
+
+                image = {
+                    data,
+                    ext: 'webp',
+                    type: 'image/webp',
+                };
+            }
 		} else if ("badge" in ctx.query) {
 			serverLogger.info(`badge`);
 			if (!isConvertibleImage) {
@@ -83,7 +108,7 @@ export async function proxyMedia(ctx: Koa.Context) {
 				throw new StatusError("Unexpected mime", 404);
 			}
 
-			const mask = sharp(path)
+			const mask = (await sharpBmp(path, mime))
 				.resize(96, 96, {
 					fit: "inside",
 					withoutEnlargement: false,

@@ -995,7 +995,13 @@ export const defaultStore = markRaw(
 			default: false,
 			createdAt: "2023/9/25",
 			page: "general",
-		}
+		},
+		hiddenReactionNumber: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/9/29",
+			page: "reaction",
+		},
 	}),
 );
 

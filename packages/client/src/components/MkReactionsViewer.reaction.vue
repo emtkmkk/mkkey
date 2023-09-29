@@ -17,6 +17,7 @@
 			:custom-emojis="note.emojis"
 		/>
 		<span
+			v-if="!$store.state.hiddenReactionNumber"
 			class="count"
 			:class="{
 				'count-increased': countChanged === 'increased',

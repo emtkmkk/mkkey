@@ -37,7 +37,7 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 		return await awaitAll({
 			id: notification.id,
 			createdAt: notification.createdAt.toISOString(),
-			type: notification.type,
+			type: notification.type === 'unreadAntenna' ? 'note' : notification.type,
 			isRead: notification.isRead,
 			userId: notification.notifierId,
 			user: notification.notifierId

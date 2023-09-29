@@ -490,7 +490,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			(
 				notePower +
 				subNotePower +
-				Math.min(notePower / 2 + subNotePower,receivedSubNotePower) +
+				Math.min(notePower / 6 + subNotePower,receivedSubNotePower) +
 				rankResult.driveFilesCount * 6
 			) * rpRate
 		) / elapsedDays * 100) / 100;

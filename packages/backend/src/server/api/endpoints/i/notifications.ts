@@ -148,7 +148,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		query.setParameters(followingQuery.getParameters());
 	}
 
-	if (!ps.allTypes) {
+	if (false && !ps.allTypes) {
 		query.andWhere("notification.type <> 'unreadAntenna'");
 	}
 

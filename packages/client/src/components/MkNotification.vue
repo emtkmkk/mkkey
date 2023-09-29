@@ -57,7 +57,7 @@
 					class="ph-quotes ph-bold"
 				></i>
 				<i
-					v-else-if="notification.type === 'unreadAntenna'"
+					v-else-if="notification.type === 'unreadAntenna' || notification.type === 'note'"
 					class="ph-flying-saucer ph-bold"
 				></i>
 				<i
@@ -183,7 +183,7 @@
 				/>
 			</MkA>
 			<MkA
-				v-if="notification.type === 'unreadAntenna'"
+				v-if="notification.type === 'unreadAntenna' || notification.type === 'note'"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="notification.reaction"

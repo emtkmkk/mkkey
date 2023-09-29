@@ -1002,6 +1002,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/9/29",
 			page: "reaction",
 		},
+		userSelectFontFamily: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/9/29",
+			page: "theme",
+		},
 	}),
 );
 

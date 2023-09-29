@@ -14,6 +14,9 @@
 				{{ i18n.ts.showEmojisInReactionNotifications }}
 			</FormSwitch>
 		</div>
+		<FormSwitch v-model="hiddenReactionNumber" class="_formBlock">
+			{{ i18n.ts.hiddenReactionNumber }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+		</FormSwitch>
 
 		<div>
 			<FromSlot class="_formBlock" v-if="!hiddenReactionDeckAndRecent">
@@ -585,7 +588,10 @@ const remoteEmojisFetch = $computed(
 );
 const doubleTapReaction = $computed(
 	defaultStore.makeGetterSetter("doubleTapReaction")
-);	
+);
+const hiddenReactionNumber = $computed(
+	defaultStore.makeGetterSetter("hiddenReactionNumber")
+);
 let customEmojis = computed(() => 
 	instance.emojis
 );

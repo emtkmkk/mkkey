@@ -84,7 +84,7 @@ export async function toDbReaction(
 
 	// ローカルユーザの場合 : ローカル絵文字の場合、まずローカルで持ってこれるか試行する
 	// リモートユーザでホスト名が無い場合 : reacterHost絵文字があるかどうか試行する
-	if (custom && (!reacterHost || !custom?.[2])) {
+	if (custom) {
 		const name = custom[1];
 		const emoji = await Emojis.findOneBy({
 			host: reacterHost || IsNull(),

@@ -20,7 +20,7 @@ export default async (actor: CacheableRemoteUser, activity: ILike) => {
 	return await create(
 		actor,
 		note,
-		`:${reactEmoji?.[0]?.name + (reactEmoji?.[0]?.host ? "@" + reactEmoji[0].host : "")}:`,
+		reactEmoji ? `:${reactEmoji?.[0]?.name + (reactEmoji?.[0]?.host ? "@" + reactEmoji[0].host : "")}:` : reactName,
 	)
 		.catch((e) => {
 			if (e.id === "51c42bb4-931a-456b-bff7-e5a8a70dd298") {

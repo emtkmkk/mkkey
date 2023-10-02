@@ -15,7 +15,7 @@ export default async (actor: CacheableRemoteUser, activity: ILike) => {
 	const reactHost = react?.split("@")?.[1] ?? undefined;
 	
 	const emoji = await extractEmojis(activity.tag || [], actor.host).catch(() => null);
-	const reactEmoji = emoji?.filter((x) => x.name === reactName && (!reactHost || (x.host ?? "mkkey.net") === reactHost));
+	const reactEmoji = emoji?.length === 1 ? emoji : emoji?.filter((x) => x.name === reactName && (!reactHost || (x.host ?? "mkkey.net") === reactHost));
 	
 	return await create(
 		actor,

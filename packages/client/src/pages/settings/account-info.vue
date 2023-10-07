@@ -168,6 +168,10 @@
 				<template #key>{{ i18n.ts.driveUsage }}</template>
 				<template #value>{{ bytes(stats.driveUsage,2) }}</template>
 			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.ojPower }}</template>
+				<template #value>{{ number(stats.ojPower) }}</template>
+			</MkKeyValue>
 			<MkKeyValue oneline v-if="stats.totalInviteCount" style="margin: 1em 0">
 				<template #key>{{ i18n.ts.totalInviteCount }}</template>
 				<template #value>{{ number(stats.totalInviteCount) }}</template>

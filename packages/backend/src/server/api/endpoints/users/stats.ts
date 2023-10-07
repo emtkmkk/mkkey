@@ -320,7 +320,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		ojNotesCount: !ps.simple ? Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.visibility <> 'specified'")
-			.andWhere("((note.text LIKE '%ですわ%') OR (note.text LIKE '%わよ%') OR (note.text LIKE '%わね%'))")
+			.andWhere("((note.text LIKE '%ですわ%') OR (note.text LIKE '%わよ%') OR (note.text LIKE '%わね%') OR (note.text LIKE '%desuwa%') OR (note.text LIKE '%wayo%') OR (note.text LIKE '%wane%') OR (note.text LIKE '%maa%'))")
 			.cache(CACHE_TIME)
 			.getCount() : undefined,
 		ojSentReactionsCount: !ps.simple ? NoteReactions.createQueryBuilder("reaction")

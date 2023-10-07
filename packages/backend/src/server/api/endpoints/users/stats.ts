@@ -317,6 +317,17 @@ export default define(meta, paramDef, async (ps, me) => {
 			.where("note.userId = :userId", { userId: user.id })
 			.cache(CACHE_TIME * 2)
 			.getRawOne()).count : undefined,
+		ojNotesCount: !ps.simple ? Notes.createQueryBuilder("note")
+			.where("note.userId = :userId", { userId: user.id })
+			.andWhere("note.visibility <> 'specified'")
+			.andWhere("(note.text LIKE '%ですわ%') OR (note.text LIKE '%わよ%') OR (note.text LIKE '%わね%'')")
+			.cache(CACHE_TIME)
+			.getCount() : undefined,
+		ojSentReactionsCount: !ps.simple ? NoteReactions.createQueryBuilder("reaction")
+			.where("reaction.userId = :userId", { userId: user.id })
+			.andWhere("(reaction.reaction LIKE '%desuwa%') OR (reaction.reaction LIKE '%wayo%') OR (reaction.reaction LIKE '%wane%'')")
+			.cache(CACHE_TIME)
+			.getCount() : undefined,
 		totalInviteCount: me && (me.id === user.id || me.isAdmin) ? Users.createQueryBuilder("user")
 			.where("user.inviteUserId = :userId", { userId: user.id })
 			.cache(CACHE_TIME)
@@ -432,7 +443,9 @@ export default define(meta, paramDef, async (ps, me) => {
 	result.averageSentReactionsCount = Math.floor(result.sentReactionsCount / elapsedDaysRaw * 10) / 10;
 	result.averageReceivedReactionsCount = Math.floor(result.receivedReactionsCount / elapsedDaysRaw * 10) / 10;
 	result.elapsedDays = !firstLocalFollower && user.host ? 0 : elapsedDaysRaw;
-
+	
+	if (!ps.simple) result.ojPower = result.ojNotesCount * 3 + result.ojSentReactionsCount;
+	
 	result.power =
 		Math.floor((result.notesPostDays * 482 +
 			Math.max(result.notesCount,user.host ? user.notesCount : 0) * 18 +

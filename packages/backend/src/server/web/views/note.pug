@@ -29,10 +29,12 @@ block og
 			meta(property='og:image:height'    content=note.files[0].properties.height)
 			meta(property='og:image:type'      content=note.files[0].type)
 			meta(property='twitter:card'       content="summary_large_image")
+			meta(property='note:card'          content="summary_large_image")
 		if isVideo && !note.files[0].isSensitive
 			meta(property='og:video:type'      content=note.files[0].type)
 			meta(property='og:video'           content=note.files[0].url)
 			meta(property='twitter:card'       content="summary_large_image")
+			meta(property='note:card'          content="summary_large_image")
 
 block meta
 	unless privateMode

@@ -31,6 +31,7 @@ export const AntennaRepository = db.getRepository(Antenna).extend({
 			withReplies: antenna.withReplies,
 			withFile: antenna.withFile,
 			hasUnreadNote,
+			isActive: true,
 		};
 	},
 });

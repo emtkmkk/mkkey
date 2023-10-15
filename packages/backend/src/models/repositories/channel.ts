@@ -43,10 +43,12 @@ export const ChannelRepository = db.getRepository(Channel).extend({
 			bannerUrl: banner ? DriveFiles.getPublicUrl(banner, false) : null,
 			usersCount: channel.usersCount,
 			notesCount: channel.notesCount,
-
+			pinnedNoteIds: [],
+			pinnedNotes: [],
 			...(me
 				? {
 						isFollowing: following != null,
+						isFavorited: false,
 						hasUnreadNote,
 				  }
 				: {}),

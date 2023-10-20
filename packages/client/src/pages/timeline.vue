@@ -392,7 +392,7 @@ const headerTabs = $computed(() => [
 
 definePageMetadata(
 	computed(() => ({
-		title: i18n.ts.timeline,
+		title: timelines == null || timelines.length == 0 ? i18n.ts.wall : i18n.ts.timeline,
 		icon:
 			src === "local"
 				? "ph-users ph-bold ph-lg"

@@ -368,10 +368,10 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 	let proxy;
 	let url: URL;
 	// TODO : プロキシをサイズが大きすぎる物のみに使用するようにしたい
-	if (config.mediaProxy != null) {
-		proxy = `${config.url}/proxy`
+	if (!config?.mediaProxy) {
+		proxy = `https://mkkey.net/proxy`;
 	} else {
-		proxy = `${config.mediaProxy}`
+		proxy = `${config.mediaProxy}`;
 	}
 	
 	if ('badge' in ctx.query) {

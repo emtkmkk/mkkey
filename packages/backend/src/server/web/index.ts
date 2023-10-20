@@ -368,8 +368,9 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 	let url: URL;
 	// TODO : プロキシをサイズが大きすぎる物のみに使用するようにしたい
 	if (config.mediaProxy !== null) {
+		console.log(`${config.mediaProxy}/emoji.png`);
 		if ('badge' in ctx.query) {
-			url = new URL(`${config.mediaProxy}/emoji.png`);
+			url = new URL(`${config.mediaProxy}/emoji.png`);	
 			// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
 			url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
 			url.searchParams.set('badge', '1');

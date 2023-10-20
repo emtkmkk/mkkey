@@ -365,28 +365,29 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 		}
 	}
 
+	let proxy;
 	let url: URL;
 	// TODO : プロキシをサイズが大きすぎる物のみに使用するようにしたい
-	if (config.mediaProxy !== null) {
-		console.log(`${config.mediaProxy}/emoji.png`);
-		if ('badge' in ctx.query) {
-			url = new URL(`${config.mediaProxy}/emoji.png`);	
-			// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-			url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
-			url.searchParams.set('badge', '1');
-		} else {
-			url = new URL(`${config.mediaProxy}/emoji.webp`);
-			// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-			url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
-			url.searchParams.set('emoji', '1');
-			if ('static' in ctx.query) url.searchParams.set('static', '1');
-		}
-		ctx.status = 301;
-		ctx.redirect(url.toString());
+	if (config.mediaProxy != null) {
+		proxy = `${config.url}/proxy`
 	} else {
-		ctx.status = 301;
-		ctx.redirect(emoji.publicUrl || emoji.originalUrl);
+		proxy = `${config.mediaProxy}`
 	}
+	
+	if ('badge' in ctx.query) {
+		url = new URL(`${proxy}/emoji.png`);	
+		// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
+		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
+		url.searchParams.set('badge', '1');
+	} else {
+		url = new URL(`${proxy}/emoji.webp`);
+		// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
+		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
+		url.searchParams.set('emoji', '1');
+		if ('static' in ctx.query) url.searchParams.set('static', '1');
+	}
+	ctx.status = 301;
+	ctx.redirect(url.toString());
 
 });
 

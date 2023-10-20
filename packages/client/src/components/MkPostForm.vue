@@ -575,7 +575,7 @@ let quoteId = $ref(null);
 let hasNotSpecifiedMentions = $ref(false);
 let includesOtherServerEmoji = $ref(false);
 let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
-let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public") && (!props.airReply || props.initialVisibility === "public") && !$i.blockPostPublic && !$i.isSilenced && !defaultStore.state.hiddenLTL);
+let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public") && (!props.airReply || props.initialVisibility === "public") && !$i.blockPostPublic && !$i.isSilenced);
 let canHome = $ref((!props.reply || (props.reply.visibility === "public" || props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" || props.renote.visibility === "home"))  && (!props.airReply || (props.initialVisibility === "public" || props.initialVisibility === "home")) && !$i.blockPostHome && !$i.isSilenced);
 let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified") && (!props.airReply || props.initialVisibility !== "specified") );
 let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && (!props.airReply || !props.initialLocalOnly) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]") && !$i.isSilenced);

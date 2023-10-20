@@ -24,6 +24,9 @@
 					<i class="ph-handshake ph-bold ph-lg" />
 					{{ i18n.ts.bothTimeline }}
 				</option>
+				<option value="none">
+					{{ i18n.ts.hidden }}
+				</option>
 			</FormRadios>
 			<FormSwitch v-if="!['classic', 'deck'].includes(ui)" v-model="hiddenLTL" class="_formBlock">{{
 				i18n.ts.hiddenLTL

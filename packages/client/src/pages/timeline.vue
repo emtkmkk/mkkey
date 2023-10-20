@@ -166,7 +166,7 @@ const src = $computed({
 		if (timelines.includes(defaultStore.reactiveState.tl.value.src)) {
 			return defaultStore.reactiveState.tl.value.src
 		} else {
-			return timelines?.[0] ?? "local";
+			return timelines?.[0] || null;
 		}
 	},
 	set: (x) => {
@@ -308,7 +308,7 @@ const headerTabs = $computed(() => [
 				},
 		  ]
 		: []),
-	...(isLocalTimelineAvailable
+	...(isLocalTimelineAvailable && !defaultStore.state.hiddenLTL
 		? [
 				{
 					key: "local",
@@ -378,7 +378,7 @@ const headerTabs = $computed(() => [
 				},
 		  ]
 		: []),
-	...(isGlobalTimelineAvailable
+	...(isGlobalTimelineAvailable && !defaultStore.state.hiddenGTL
 		? [
 				{
 					key: "global",

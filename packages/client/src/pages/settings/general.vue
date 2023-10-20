@@ -27,10 +27,10 @@
 			</FormRadios>
 			<FormSwitch v-model="hiddenLTL" class="_formBlock">{{
 				i18n.ts.hiddenLTL
-			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="hiddenGTL" class="_formBlock">{{
 				i18n.ts.hiddenGTL
-			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSelect v-if="!['classic','deck'].includes(ui)" v-model="thirdTimelineType" class="_formBlock">
 				<template #label>{{ i18n.ts.thirdTimelineType }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 				<option value="media">{{ i18n.ts._timelines.media }}</option>

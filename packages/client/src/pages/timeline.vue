@@ -124,11 +124,11 @@ if (
 	timelines.push("social");
 }
 
-if (isLocalTimelineAvailable) {
+if (isLocalTimelineAvailable && !defaultStore.state.hiddenLTL) {
 	timelines.push("local");
 }
 
-if (isRecommendedTimelineAvailable && 
+if (isRecommendedTimelineAvailable &&
     defaultStore.state.thirdTimelineType === "media"
 	) {
 	timelines.push("recommended");
@@ -142,7 +142,7 @@ if (defaultStore.state.thirdTimelineType === "list"){
 if (defaultStore.state.thirdTimelineType === "antenna"){
 	timelines.push("antenna");
 }
-if (isGlobalTimelineAvailable) {
+if (isGlobalTimelineAvailable && !defaultStore.state.hiddenGTL) {
 	timelines.push("global");
 }
 

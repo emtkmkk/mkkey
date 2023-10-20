@@ -575,7 +575,7 @@ let quoteId = $ref(null);
 let hasNotSpecifiedMentions = $ref(false);
 let includesOtherServerEmoji = $ref(false);
 let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
-let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public") && (!props.airReply || props.initialVisibility === "public")  && !$i.blockPostPublic && !$i.isSilenced);
+let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public") && (!props.airReply || props.initialVisibility === "public") && !$i.blockPostPublic && !$i.isSilenced && !defaultStore.state.hiddenLTL);
 let canHome = $ref((!props.reply || (props.reply.visibility === "public" || props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" || props.renote.visibility === "home"))  && (!props.airReply || (props.initialVisibility === "public" || props.initialVisibility === "home")) && !$i.blockPostHome && !$i.isSilenced);
 let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified") && (!props.airReply || props.initialVisibility !== "specified") );
 let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && (!props.airReply || !props.initialLocalOnly) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]") && !$i.isSilenced);
@@ -593,7 +593,7 @@ const publicIcon = $computed((): String => {
 				return 'ph-house-line ph-bold ph-lg'
 			}
 		}
-	} 
+	}
 	if (canPublic) {
 		return 'ph-planet ph-bold ph-lg'
 	} else if (canHome) {
@@ -1021,7 +1021,7 @@ function upload(file: File, name?: string) {
 }
 
 function setVisibility() {
-	
+
 	const isForce = (!defaultStore.state.rememberNoteVisibility && defaultStore.state.firstPostButtonVisibilityForce);
 
 	os.popup(
@@ -1095,7 +1095,7 @@ function clear() {
 
 function onKeyup(ev: KeyboardEvent) {
 	let postButtonMax = (
-		defaultStore.state.secondPostButton 
+		defaultStore.state.secondPostButton
 		? defaultStore.state.thirdPostButton
 			? defaultStore.state.fourthPostButton
 				? defaultStore.state.fifthPostButton
@@ -1112,7 +1112,7 @@ function onKeyup(ev: KeyboardEvent) {
 
 function onKeydown(ev: KeyboardEvent) {
 	let postButtonMax = (
-		defaultStore.state.secondPostButton 
+		defaultStore.state.secondPostButton
 		? defaultStore.state.thirdPostButton
 			? defaultStore.state.fourthPostButton
 				? defaultStore.state.fifthPostButton
@@ -1372,10 +1372,10 @@ async function postFifth() {
 
 async function post() {
 	const processedText = preprocess(text);
-	
+
 	if (!cw && useCw) cw = " ";
 	if (cw && !useCw) cw = "";
-	
+
 	if (!canPublic && visibility === "public") visibility = "home";
 	if (!canHome && visibility === "home") visibility = "followers";
 	if (!canFollower && visibility === "followers") visibility = "specified";
@@ -1493,7 +1493,7 @@ function insertMfm() {
 	} else {
 		insertTextAtCursor(textareaEl, '$');
 	}
-	
+
 }
 
 async function openCheatSheet(ev: MouseEvent) {
@@ -1682,7 +1682,7 @@ onMounted(() => {
 					color: var(--accent);
 				}
 			}
-			
+
 			> .addblank {
 				margin: 0 8px 0 0 !important;
 			}
@@ -1706,7 +1706,7 @@ onMounted(() => {
 					margin-left: 6px;
 				}
 			}
-			
+
 			> .submit_h {
 				display: inline-flex;
 				align-items: center;
@@ -1721,33 +1721,33 @@ onMounted(() => {
 				&:disabled {
 					opacity: 0.7;
 				}
-				
+
 				> .subPostIcon {
 					margin-left: 6px;
 				}
-				
+
 				> .widePostButton {
 					margin-left: 12px;
 					margin-right: 12px;
 				}
-				
+
 				> .widePostButton_left {
 					margin-left: calc(9px - 0.45em);
 				}
-				
+
 				> .widePostButton_right {
 					margin-right: calc(9px - 0.45em);
 				}
-			
+
 			}
-			
+
 			> .shortcutTarget::before {
 				content: "⏎";
 			}
-			
+
 			> .notShortcutTarget {
 				opacity: 0.7;
-			} 
+			}
 		}
 	}
 
@@ -1903,7 +1903,7 @@ onMounted(() => {
 				> .submit {
 					margin: 8px 8px 8px 0;
 				}
-				
+
 				> .submit_h {
 					margin: 8px 8px 8px 0;
 				}

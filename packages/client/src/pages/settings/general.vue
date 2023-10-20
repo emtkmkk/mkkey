@@ -25,6 +25,12 @@
 					{{ i18n.ts.bothTimeline }}
 				</option>
 			</FormRadios>
+			<FormSwitch v-model="hiddenLTL" class="_formBlock">{{
+				i18n.ts.hiddenLTL
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="hiddenGTL" class="_formBlock">{{
+				i18n.ts.hiddenGTL
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSelect v-if="!['classic','deck'].includes(ui)" v-model="thirdTimelineType" class="_formBlock">
 				<template #label>{{ i18n.ts.thirdTimelineType }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 				<option value="media">{{ i18n.ts._timelines.media }}</option>
@@ -43,6 +49,24 @@
 			>
 				<template #label>{{ i18n.ts.thirdTimelineListId }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			</FormInput>
+			<!--<FormSelect v-if="!['classic', 'deck'].includes(ui)" v-model="fourthTimelineType" class="_formBlock">
+				<template #label>{{ i18n.ts.fourthTimelineType }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+				<option value="media">{{ i18n.ts._timelines.media }}</option>
+				<option value="spotlight">{{ i18n.ts._timelines.spotlight }}</option>
+				<option v-if="developer" value="list">{{ i18n.ts._timelines.list }}</option>
+				<option v-if="developer" value="antenna">{{ i18n.ts._timelines.antenna }}</option>
+				<option value="hidden">{{ i18n.ts.hidden }}</option>
+			</FormSelect>
+			<FormInput
+				v-if="!['classic', 'deck'].includes(ui) && ['list', 'antenna'].includes(fourthTimelineType) && developer"
+				v-model="fourthTimelineListId"
+				class="_formBlock"
+				:small="true"
+				:placeholder="`リスト / アンテナの内部ID (10文字)`"
+				style="margin: 0 0 !important"
+			>
+				<template #label>{{ i18n.ts.fourthTimelineListId }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+			</FormInput>-->
 			<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
 				i18n.ts.showFixedPostForm
 			}}</FormSwitch>
@@ -68,7 +92,7 @@
 					{{ i18n.ts.reflectMayTakeTime }}</template
 				></FormSwitch
 			>
-		
+
 			<FormSelect v-model="nsfw" class="_formBlock">
 				<template #label>{{ i18n.ts.nsfw }}</template>
 				<option value="respect">{{ i18n.ts._nsfw.respect }}</option>
@@ -365,7 +389,7 @@
 					<span style="font-size: 21px">21</span>
 				</option>
 			</FormRadios>
-			
+
 			<FormRadios v-model="avatarSize" class="_formBlock">
 				<template #label>{{ i18n.ts.avatarSize }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 				<option value="-2">
@@ -411,7 +435,7 @@
 		<FormSwitch v-if="developer" v-model="developerTicker" class="_formBlock">{{
 			i18n.ts.developerTicker
 		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-		
+
 		<FormSelect v-if="!isMobile" v-model="remoteEmojisFetch" class="_formBlock">
 			<template #label>{{ i18n.ts.remoteEmojisFetch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			<option value="always">{{ i18n.ts._remoteEmojisFetchForPc.always }}</option>
@@ -442,7 +466,7 @@
 				i18n.ts.numberOfPageCacheDescription
 			}}</template>
 		</FormRange>
-		
+
 		<FormRange
 			v-model="swipeTouchAngle"
 			:min="1"
@@ -453,7 +477,7 @@
 		>
 			<template #label>{{ i18n.ts.swipeTouchAngle }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 		</FormRange>
-		
+
 		<FormRange
 			v-model="swipeThreshold"
 			:min="0"
@@ -464,7 +488,7 @@
 		>
 			<template #label>{{ i18n.ts.swipeThreshold }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 		</FormRange>
-		
+
 		<FormSwitch v-model="swipeCenteredSlides" class="_formBlock">{{
 			i18n.ts.swipeCenteredSlides
 		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -665,7 +689,7 @@ const developerTicker = computed(
 	defaultStore.makeGetterSetter("developerTicker")
 );
 const copyPostRemoteEmojiCode = computed(
-	defaultStore.makeGetterSetter("copyPostRemoteEmojiCode")	
+	defaultStore.makeGetterSetter("copyPostRemoteEmojiCode")
 );
 const showMiniUpdates = computed(
 	defaultStore.makeGetterSetter("showMiniUpdates")
@@ -737,6 +761,18 @@ const thirdTimelineType = $computed(
 const thirdTimelineListId = $computed(
 	defaultStore.makeGetterSetter("thirdTimelineListId")
 );
+const fourthTimelineType = $computed(
+	defaultStore.makeGetterSetter("fourthTimelineType")
+);
+const fourthTimelineListId = $computed(
+	defaultStore.makeGetterSetter("fourthTimelineListId")
+);
+const hiddenLTL = $computed(
+	defaultStore.makeGetterSetter("hiddenLTL")
+);
+const hiddenGTL = $computed(
+	defaultStore.makeGetterSetter("hiddenGTL")
+);
 const autoSwitchDataSaver = $computed(
 	defaultStore.makeGetterSetter("autoSwitchDataSaver")
 );
@@ -750,7 +786,7 @@ const usePickerSizePostForm = $computed(
 	defaultStore.makeGetterSetter("usePickerSizePostForm")
 );
 const enabledAirReply = computed(
-	defaultStore.makeGetterSetter("enabledAirReply")	
+	defaultStore.makeGetterSetter("enabledAirReply")
 );
 
 function save() {

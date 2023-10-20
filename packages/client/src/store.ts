@@ -460,7 +460,7 @@ export const defaultStore = markRaw(
 		},
 		showLocalPostsInTimeline: {
 			where: "device",
-			default: "home" as "home" | "social" | "both",
+			default: "home" as "home" | "social" | "both" | "none",
 		},
 		showLocalPostsInfoPopup: {
 			where: "account",
@@ -836,7 +836,7 @@ export const defaultStore = markRaw(
 		},
 		keepFileName: {
 			where: "account",
-			default: false,	
+			default: false,
 			createdAt: "2023/7/11",
 			page: "drive",
 		},
@@ -902,6 +902,17 @@ export const defaultStore = markRaw(
 			where: 'account',
 			default: "",
 			createdAt: "2023/08/10",
+		},
+		fourthTimelineType: {
+			where: 'account',
+			default: "media",
+			createdAt: "2023/10/21",
+			page: "general",
+		},
+		fourthTimelineListId: {
+			where: 'account',
+			default: "",
+			createdAt: "2023/10/21",
 		},
 		mobileThirdButton: {
 			where: 'account',
@@ -1007,6 +1018,18 @@ export const defaultStore = markRaw(
 			default: false,
 			createdAt: "2023/9/29",
 			page: "theme",
+		},
+		hiddenLTL: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/10/21",
+			page: "general",
+		},
+		hiddenGTL: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/10/21",
+			page: "general",
 		},
 	}),
 );

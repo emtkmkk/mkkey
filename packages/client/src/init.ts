@@ -541,7 +541,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 
 		defaultStore.loaded.then(async () => {
 			if (
-				defaultStore.tutorial === -1 &&
+				defaultStore.state.tutorial === -1 &&
 				defaultStore.isDefault("showLocalPostsInfoPopup") &&
 				$i.followingCount >= 10
 			) {
@@ -575,7 +575,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				const inviteBorder = eTime ? eTime > 7 * 24 * 60 * 60 * 1000 ? 7 * 24 * 60 * 60 * 1000 : Math.max(7 * 24 * 60 * 60 * 1000 - ($i.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000) : undefined;
 				const canInvite = $i ? eTime > inviteBorder && $i.notesCount >= 20 && !$i.isSilenced : false;
 				if (
-					defaultStore.tutorial === -1 &&
+					defaultStore.state.tutorial === -1 &&
 					canInvite
 				) {
 					await alert({
@@ -596,7 +596,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 			) {
 				const canMultiReaction = $i && $i.patron;
 				if (
-					defaultStore.tutorial === -1 &&
+					defaultStore.state.tutorial === -1 &&
 					canMultiReaction
 				) {
 					await alert({

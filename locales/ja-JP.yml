@@ -980,6 +980,8 @@ postAutoFocusSearchBar: "絵文字ピッカーの検索欄に自動フォーカ�
 notCloseEmojiPicker: "絵文字選択後、ピッカーを自動的に閉じない"
 showRemoteEmojiPostForm: "【dev】投稿時でも他鯖絵文字選択可能に"
 hiddenCloseButton: "❌ボタンを非表示にする"
+hiddenAccountButton: "アカウント切替ボタンを非表示にする"
+CloseAllClearButton: "❌ボタンを投稿欄全消機能にする"
 smartMFMInputer: "スマートMFM入力機能を有効にする"
 quickToggleSmartMFMInputer: "MFMボタンをスマート機能切替ボタンに"
 hiddenActivityChart: "全てのグラフを非表示にする"

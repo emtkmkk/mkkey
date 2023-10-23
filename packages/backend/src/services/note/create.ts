@@ -201,11 +201,25 @@ export default async (
 				data.channel = null;
 			}
 		}
+		if (
+			data.renote &&
+			data.channel &&
+			data.renote.channelId !== data.channel.id
+		) {
+			if (data.renote.channelId) {
+				data.channel = await Channels.findOneBy({ id: data.renote.channelId });
+			} else {
+				data.channel = null;
+			}
+		}
 
 		// When you reply in a channel, match the scope of the target
 		// TODO (I think it's a process that could be done on the client side, but it's server side for now.)
 		if (data.reply && data.channel == null && data.reply.channelId) {
 			data.channel = await Channels.findOneBy({ id: data.reply.channelId });
+		}
+		if (data.renote && data.channel == null && data.renote.channelId) {
+			data.channel = await Channels.findOneBy({ id: data.renote.channelId });
 		}
 
 		//指定がなければpublicでlocalOnlyOFF

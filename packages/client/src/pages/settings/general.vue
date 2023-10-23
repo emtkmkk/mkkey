@@ -31,6 +31,18 @@
 			<FormSwitch v-if="!['classic', 'deck'].includes(ui)" v-model="hiddenLTL" class="_formBlock">{{
 				i18n.ts.hiddenLTL
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch
+				v-model="blockPostPublic"
+				v-if="hiddenLTL"
+				class="_formBlock"
+				@update:modelValue="save()"
+				>{{ i18n.ts.blockPostPublic
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
+					i18n.ts.blockPostPublicDescription
+				}}{{
+					i18n.ts.hiddenLTLDescription
+				}}</template></FormSwitch
+			>
 			<FormSwitch v-if="!['classic', 'deck'].includes(ui)" v-model="hiddenGTL" class="_formBlock">{{
 				i18n.ts.hiddenGTL
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -791,6 +803,7 @@ const usePickerSizePostForm = $computed(
 const enabledAirReply = computed(
 	defaultStore.makeGetterSetter("enabledAirReply")
 );
+let blockPostPublic = $ref($i.blockPostPublic);
 
 function save() {
 	os.api("i/update", {
@@ -798,6 +811,7 @@ function save() {
 		remoteShowRenote: !!remoteShowRenote,
 		showSelfRenoteToHome: !!showSelfRenoteToHome,
 		showTimelineReplies: !!showTimelineReplies,
+		blockPostPublic: !!blockPostPublic,
 	});
 }
 

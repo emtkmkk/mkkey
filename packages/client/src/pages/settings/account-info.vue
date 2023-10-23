@@ -218,6 +218,12 @@
 		<FormSection>
 			<template #label>{{ i18n.ts.other }}</template>
 			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>複数リアクション</template>
+				<template #value>{{
+					$i.patron ? i18n.ts.yes : i18n.ts.no
+				}}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>メール認証</template>
 				<template #value>{{
 					$i.emailVerified ? i18n.ts.yes : i18n.ts.no

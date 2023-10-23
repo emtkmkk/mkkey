@@ -223,6 +223,12 @@
 			<FormSwitch v-model="hiddenCloseButton" class="_formBlock">{{
 				i18n.ts.hiddenCloseButton
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-if="!hiddenCloseButton" v-model="CloseAllClearButton" class="_formBlock">{{
+				i18n.ts.CloseAllClearButton
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="hiddenAccountButton" class="_formBlock">{{
+				i18n.ts.hiddenAccountButton
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock">{{
 				i18n.ts.hiddenMFMHelp
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -652,6 +658,12 @@ const hiddenMentionButton = computed(
 );
 const hiddenCloseButton = computed(
 	defaultStore.makeGetterSetter("hiddenCloseButton")
+);
+const hiddenAccountButton = computed(
+	defaultStore.makeGetterSetter("hiddenAccountButton")
+);
+const CloseAllClearButton = computed(
+	defaultStore.makeGetterSetter("CloseAllClearButton")
 );
 const openMentionWindow = computed(
 	defaultStore.makeGetterSetter("openMentionWindow")

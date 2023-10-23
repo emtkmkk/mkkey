@@ -420,6 +420,18 @@ export const defaultStore = markRaw(
 			createdAt: "2023/5/25",
 			page: "general",
 		},
+		hiddenAccountButton: {
+			where: "deviceAccount",
+			default: false,
+			createdAt: "2023/10/23",
+			page: "general",
+		},
+		CloseAllClearButton: {
+			where: "deviceAccount",
+			default: false,
+			createdAt: "2023/10/23",
+			page: "general",
+		},
 		openMentionWindow: {
 			where: "deviceAccount",
 			default: true,

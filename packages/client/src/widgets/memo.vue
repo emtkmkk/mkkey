@@ -2,12 +2,13 @@
 	<MkContainer :show-header="widgetProps.showHeader" class="mkw-memo">
 		<template #header
 			><i class="ph-sticker ph-bold ph-lg"></i
-			>{{ i18n.ts._widgets.memo }}</template
+			>{{ widgetProps.name || i18n.ts._widgets.memo }}</template
 		>
 
 		<div class="otgbylcu">
 			<textarea
 				v-model="text"
+				:style="`height: ${widgetProps.height}px;`"
 				:placeholder="i18n.ts.placeholder"
 				@input="onChange"
 			></textarea>
@@ -44,6 +45,14 @@ const widgetPropsDef = {
 		type: "boolean" as const,
 		default: true,
 	},
+	name: {
+		type: 'string' as const,
+		default: '',
+	},
+	height: {
+		type: 'number' as const,
+		default: 100,
+	},
 };
 
 type WidgetProps = GetFormResultType<typeof widgetPropsDef>;
@@ -58,15 +67,23 @@ const { widgetProps, configure } = useWidgetPropsManager(
 	name,
 	widgetPropsDef,
 	props,
-	emit
+	emit,
 );
 
-const text = ref<string | null>(defaultStore.state.memo);
+const getMemo = () => {
+	if (typeof defaultStore.state.memo === 'object') return defaultStore.state.memo?.[props.widget?.id ?? 'default'];
+	if (typeof defaultStore.state.memo === 'string') return defaultStore.state.memo;
+	return null;
+};
+
+const text = ref<string | null>(getMemo());
 const changed = ref(false);
 let timeoutId;
 
 const saveMemo = () => {
-	defaultStore.set("memo", text.value);
+	const memo = typeof defaultStore.state.memo === 'object' ? defaultStore.state.memo : {};
+	memo![props.widget?.id ?? 'default'] = text.value;
+	defaultStore.set('memo', memo);
 	changed.value = false;
 };
 
@@ -78,8 +95,8 @@ const onChange = () => {
 
 watch(
 	() => defaultStore.reactiveState.memo,
-	(newText) => {
-		text.value = newText.value;
+	() => {
+		text.value = getMemo();
 	}
 );
 

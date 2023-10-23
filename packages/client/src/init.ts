@@ -591,6 +591,21 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 						defaultStore.set("showInviteInfoPopupAccount",true);
 				}
 			}
+			if (
+				!defaultStore.state.showMultiReactionInfoPopup
+			) {
+				const canMultiReaction = $i && $i.patron;
+				if (
+					defaultStore.tutorial === -1 &&
+					canMultiReaction
+				) {
+					await alert({
+						type: "info",
+						text: "複数リアクション機能が解禁されました！\n\nもこきーや他の対応サーバのユーザには、1つのノートに対して基本3種類のリアクションを付けることが出来ます！\n（未対応のサーバのユーザには通常通り1つまでしか付けることが出来ません。対応しているかどうかはリアクションボタンがウインクしているかどうかで判別可能です。）",
+					});
+					defaultStore.set("showMultiReactionInfoPopup",true);
+				}
+			}
 			// パワーモード
 			if (!!defaultStore.state.powerMode) {
 				import("activate-power-mode").then((module) => {

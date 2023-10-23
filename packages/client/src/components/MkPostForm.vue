@@ -14,7 +14,7 @@
 				<i class="ph-x ph-bold ph-lg"></i>
 			</button>
 			<button
-			    v-if="!$store.state.hiddenAccountButton"
+				v-if="!$store.state.hiddenAccountButton"
 				v-click-anime
 				v-tooltip="i18n.ts.switchAccount"
 				class="account _button"
@@ -1467,7 +1467,7 @@ async function post() {
 }
 
 function cancel() {
-	if (!$store.state.CloseAllClearButton){
+	if (!defaultStore.state.CloseAllClearButton){
 		emit("cancel");
 	} else {
 		useCw = false;

@@ -81,7 +81,7 @@ const changed = ref(false);
 let timeoutId;
 
 const saveMemo = () => {
-	const memo = typeof defaultStore.state.memo === 'object' ? defaultStore.state.memo : {};
+	const memo = defaultStore.state.memo && typeof defaultStore.state.memo === 'object' ? defaultStore.state.memo : {};
 	memo![props.widget?.id ?? 'default'] = text.value;
 	defaultStore.set('memo', memo);
 	changed.value = false;

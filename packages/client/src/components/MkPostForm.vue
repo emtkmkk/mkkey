@@ -10,10 +10,11 @@
 		@drop.stop="onDrop"
 	>
 		<header>
-			<button v-if="!fixed && !$store.state.hiddenCloseButton" class="cancel _button" @click="cancel">
+			<button v-if="(!fixed || $store.state.CloseAllClearButton) && !$store.state.hiddenCloseButton" class="cancel _button" @click="cancel">
 				<i class="ph-x ph-bold ph-lg"></i>
 			</button>
 			<button
+			    v-if="!$store.state.hiddenAccountButton"
 				v-click-anime
 				v-tooltip="i18n.ts.switchAccount"
 				class="account _button"
@@ -1466,7 +1467,13 @@ async function post() {
 }
 
 function cancel() {
-	emit("cancel");
+	if (!$store.state.CloseAllClearButton){
+		emit("cancel");
+	} else {
+		useCw = false;
+		cw = "";
+		text = "";
+	}
 }
 
 function insertMention() {

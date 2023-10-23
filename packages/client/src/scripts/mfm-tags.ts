@@ -51,6 +51,7 @@ export const MFM_TAGS_JP = [
 	{name:"blur", ja:"ぼかし", exportLeft:"$[blur ", exportRight:"]",},
 	{name:"fade", ja:"フェードイン", exportLeft:"$[fade ", exportRight:"]", defaultOption:"$[fade.speed=1.5s ",},
 	{name:"fade", ja:"フェードアウト", exportLeft:"$[fade.out ", exportRight:"]", defaultOption:"$[fade.out,speed=1.5s ",},
+	{name:"ruby", ja:"ルビ振り", exportLeft:"$[ruby ", exportRight:"]",},
 	{name:"code", ja:"行コード", exportLeft:"`", exportRight:"`",},
 	{name:"codeB", ja:"ブロックコード", exportLeft:"```\n", exportRight:"\n```",},
 	{name:"KaTeX", ja:"行数式", exportLeft:"\\(", exportRight:"\\)",},

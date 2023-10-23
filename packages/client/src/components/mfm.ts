@@ -56,7 +56,7 @@ export default defineComponent({
 		const isPlain = this.plain;
 
 		const isNote = this.isNote;
-		
+
 		const noteHost = this.noteHost || this.author?.host;
 
 		const ast = (isPlain ? mfm.parseSimple : mfm.parse)(this.text);
@@ -66,7 +66,7 @@ export default defineComponent({
         let emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type) || (x.props?.text ? /^\s*$/.test(x.props?.text) : false)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type) && !(x.props?.text ? /^\s*$/.test(x.props?.text) : false)) : null;
 
 		let isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji"].includes(x.type) || (x.props?.text ? /^\s*$/.test(x.props?.text) : false));
-		
+
 		const validTime = (t: string | null | undefined) => {
 			if (t == null) return null;
 			return t.match(/^[0-9.]+s$/) ? t : null;
@@ -76,14 +76,14 @@ export default defineComponent({
 			const parsed = parseFloat(n);
 			return !isNaN(parsed) && isFinite(parsed) && parsed > 0;
 		};
-		
+
 		const genEl = (ast: mfm.MfmNode[]) =>
 			concat(
 				ast.map((token, index): VNode[] => {
 					switch (token.type) {
 						case "text": {
 							let text = token.props.text.replace(/(\r\n|\n|\r)/g, "\n");
-							
+
 							/*if (isNote && !noteHost && this.author && this.author.isCat && this.author.speakAsCat) {
 								text = nyaize(text);
 							}*/
@@ -310,6 +310,28 @@ export default defineComponent({
 									style = `background-color: #${color};`;
 									break;
 								}
+								case 'ruby': {
+									token.children.forEach((t) => { if (t.type === 'text') { t.props.text = t.props.text.trim(); }});
+									let rb: string | (string | VNode)[];
+									let rt: string | (string | VNode)[];
+
+									const children = token.children.filter((t) => t.type !== 'text' || t.props.text !== '');
+									if (children.length === 1 && children[0].type === 'text') {
+										const tokens = children[0].props.text.split(' ');
+										rb = [tokens[0]];
+										rt = [tokens.slice(1).join(' ')];
+									} else if (children.length >= 2) {
+										rb = genEl([children[0]]);
+										rt = genEl(children.slice(1));
+									} else {
+										return genEl(children);
+									}
+
+									if (typeof rb[0] === 'string' && typeof rt[0] === 'string' && rt[0] === '') rt = '・'.repeat(rb[0].length);
+									const align = typeof rb[0] === 'string' ? { style: rb.length < rt.length ? 'ruby-align:center' : 'ruby-align:space-around' } : {};
+
+									return h('ruby', align, [rb, h('rt', rt)]);
+								}
 							}
 							if (style == null) {
 								return h("span", {}, [
@@ -334,8 +356,8 @@ export default defineComponent({
 							//ルート要素にあり、子要素に絵文字かsmallしかない場合x1で表示する
 							if(isNote && firstAst.length === 1 && firstAst === ast && token.children.every((x) => ["emojiCode","unicodeEmoji","small"].includes(x.type))){
 								return h(
-									"span", 
-									{}, 
+									"span",
+									{},
 									genEl(token.children),
 								);
 							}

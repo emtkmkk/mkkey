@@ -1470,9 +1470,17 @@ function cancel() {
 	if (!defaultStore.state.CloseAllClearButton){
 		emit("cancel");
 	} else {
-		useCw = false;
+		
 		cw = "";
-		text = "";
+		if (useCw && props.reply){
+			cw = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ";
+		}
+		
+		if (!useCw && props.reply){
+			text = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ";
+		} else {
+			text = "";
+		}
 	}
 }
 

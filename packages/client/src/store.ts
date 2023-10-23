@@ -489,6 +489,11 @@ export const defaultStore = markRaw(
 			default: false,
 			createdAt: "2023/8/7",
 		},
+		showMultiReactionInfoPopup: {
+			where: "account",
+			default: false,
+			createdAt: "2023/10/24",
+		},
 		serverDisconnectedBehavior: {
 			where: "device",
 			default: "nothing" as "nothing" | "quiet" | "reload" | "dialog",

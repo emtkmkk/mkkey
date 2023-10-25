@@ -2,6 +2,7 @@ import define from "../define.js";
 
 export const meta = {
 	requireCredential: false,
+	allowGet: true,
 
 	tags: ["meta"],
 

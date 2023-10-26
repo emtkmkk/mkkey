@@ -74,7 +74,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			break;
 		case "alive":
 			query.andWhere("user.updatedAt > :date", {
-				date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+				date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
 			});
 			break;
 	}
@@ -117,6 +117,9 @@ export default define(meta, paramDef, async (ps, me) => {
 				.andWhere("user.updatedAt IS NOT NULL")
 				.orderBy("user.updatedAt", "ASC");
 			break;
+		case "+notesCount":
+			query
+				.orderBy("user.notesCount","DESC");
 		default:
 			query.orderBy("user.id", "ASC");
 			break;

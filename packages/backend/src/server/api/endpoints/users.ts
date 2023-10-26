@@ -36,6 +36,7 @@ export const paramDef = {
 				"-createdAt",
 				"+updatedAt",
 				"-updatedAt",
+				"+notesCount",
 			],
 		},
 		state: {

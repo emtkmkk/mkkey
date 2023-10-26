@@ -173,7 +173,7 @@ const tagUsers = $computed(() => ({
 	params: {
 		tag: props.tag,
 		origin: "combined",
-		sort: "+follower",
+		sort: "+notesCount",
 	},
 }));
 
@@ -185,7 +185,7 @@ const popularUsers = {
 	params: {
 		state: "alive",
 		origin: "local",
-		sort: "+follower",
+		sort: "+notesCount",
 	},
 };
 const recentlyUpdatedUsers = {
@@ -214,7 +214,7 @@ const popularUsersF = {
 	params: {
 		state: "alive",
 		origin: "remote",
-		sort: "+follower",
+		sort: "+notesCount",
 	},
 };
 const recentlyUpdatedUsersF = {

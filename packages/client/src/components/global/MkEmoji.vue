@@ -46,7 +46,7 @@
 			instance.errorEmojiAlt[emoji + (noteHost ? '@' + noteHost : '')] = true;
 		}"
 	/>
-	<span v-else>{{ customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
+	<span v-else>{{ isCustom && customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
 </template>
 
 <script lang="ts" setup>

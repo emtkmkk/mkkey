@@ -86,6 +86,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			break;
 		case "remote":
 			query.andWhere("user.host IS NOT NULL");
+			query.andWhere("user.isLocked = FALSE");
 			break;
 	}
 

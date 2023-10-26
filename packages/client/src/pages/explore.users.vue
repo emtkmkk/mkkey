@@ -180,7 +180,7 @@ const tagUsers = $computed(() => ({
 const pinnedUsers = { endpoint: "pinned-users" };
 const popularUsers = {
 	endpoint: "users",
-	limit: 10,
+	limit: 30,
 	noPaging: true,
 	params: {
 		state: "alive",

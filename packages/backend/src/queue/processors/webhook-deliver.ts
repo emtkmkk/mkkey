@@ -44,12 +44,12 @@ function toDiscordEmbeds(body: any): Array<DiscordEmbeds> {
 		body.note ? ({
 			author: {
 				name: getUsername(body.note.user),
-				url: "https://mkkey.net/@" + body.note.user?.username + (body.note.user?.host ? "@" + body.note.user?.host : ""),
+				url: `${config.url}/@${body.note.user?.username}${(body.note.user?.host ? `@${body.note.user?.host}` : "")}`,
 				icon_url: body.note.user?.avatarUrl,
 			},
-			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
-			url: "https://mkkey.net/notes/" + body.note.id,
-			description: excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note)),
+			title: `投稿${(body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : "")}`,
+			url: `${config.url}/notes/${body.note.id}`,
+			description: excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? `${excludeNotPlain(getNoteSummary(body.note)).slice(0, 100)}…${(body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "")}` : excludeNotPlain(getNoteSummary(body.note)),
 			timestamp: new Date(body.note.createdAt),
 			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image") ?
 				{
@@ -69,8 +69,8 @@ function toDiscordEmbeds(body: any): Array<DiscordEmbeds> {
 			color: 16757683,
 		}) : undefined,
 		body.user ? ({
-			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (excludeNotPlain(body.user.name) + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : ""))),
-			url: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
+			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (`${excludeNotPlain(body.user.name)} (${body.user.username}${(body.user.host ? `@${body.user.host}` : "")})`) : (body.user.username + (body.user.host ? `@${body.user.host}` : ""))),
+			url: `${config.url}/@${body.user.username}${(body.user.host ? `@${body.user.host}` : "")}`,
 			description: excludeNotPlain(body.user.description) ?? undefined,
 			fields: body.user.notesCount ? [
 				{
@@ -98,12 +98,12 @@ function toDiscordEmbeds(body: any): Array<DiscordEmbeds> {
 		body.message ? ({
 			author: {
 				name: getUsername(body.message.user),
-				url: "https://mkkey.net/@" + body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""),
+				url: `${config.url}/@${body.message.user?.username}${(body.message.user?.host ? "@" + body.message.user?.host : "")}`,
 				icon_url: body.message.user?.avatarUrl,
 			},
-			title: (body.message.group ? body.message.group.name + " の" : "個人宛の") + "チャット",
-			url: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
-			description: (excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0, 100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
+			title: `${(body.message.group ? `${body.message.group.name} の` : "個人宛の")}チャット`,
+			url: body.message.groupId ? `${config.url}/my/messaging/group/${body.message.groupId}` : `${config.url}/my/messaging/${(body.message.user?.username + (body.message.user?.host ? `@${body.message.user?.host}` : ""))}`,
+			description: (excludeNotPlain(body.message.text)?.length > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
 			image: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ?
 				{
 					url: body.message.file.url,
@@ -131,27 +131,27 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 	return [
 		body.note ? ({
 			author_name: getUsername(body.note.user),
-			author_link: "https://mkkey.net/@" + body.note.user?.username + (body.note.user?.host ? "@" + body.note.user?.host : ""),
+			author_link: `${config.url}/@${body.note.user?.username}${(body.note.user?.host ? `@${body.note.user?.host}` : "")}`,
 			author_icon: body.note.user?.avatarUrl,
 			icon_url: content.avatar_url,
 			username: content.username,
 			fallback: emojiEscape(content.content),
             pretext: emojiEscape(content.content),
-			title: "投稿" + (body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : ""),
-			text: emojiEscape(excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? excludeNotPlain(getNoteSummary(body.note)).slice(0, 100) + "…" + (body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "") : excludeNotPlain(getNoteSummary(body.note))),
-			title_link: "https://mkkey.net/notes/" + body.note.id,
+			title: `投稿${(body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : "")}`,
+			text: emojiEscape(excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? `${excludeNotPlain(getNoteSummary(body.note)).slice(0, 100)}…${(body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "")}` : excludeNotPlain(getNoteSummary(body.note))),
+			title_link: `${config.url}/notes/${body.note.id}`,
 			color: "#f8bcba",
 			ts: new Date(body.note.createdAt).valueOf() / 1000,
 			image_url: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image")
-				? body.note.files[0].url 
+				? body.note.files[0].url
 				: undefined,
 			thumb_url: body.reaction?.customEmoji ? body.reaction?.customEmoji.publicUrl : (body.note.files?.length > 1 && !body.note.cw && !body.note.files[1].isSensitive && body.note.files[1].type?.startsWith("image")) ? body.note.files[1].thumbnailUrl : body.note.user?.avatarUrl,
 			footer: "もこきー",
 			footer_icon: "https://s3.ap-northeast-2.wasabisys.com/mkkey/data/d2345d62-b667-4d27-b11a-f0c25746cbe5.png",
 		}) : undefined,
 		body.user ? ({
-			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (excludeNotPlain(body.user.name) + " (" + body.user.username + (body.user.host ? "@" + body.user.host : "") + ")") : (body.user.username + (body.user.host ? "@" + body.user.host : ""))),
-			title_link: "https://mkkey.net/@" + body.user.username + (body.user.host ? "@" + body.user.host : ""),
+			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (`${excludeNotPlain(body.user.name)} (${body.user.username}${(body.user.host ? "@" + body.user.host : "")})`) : (body.user.username + (body.user.host ? `@${body.user.host}` : ""))),
+			title_link: `${config.url}/@${body.user.username}${(body.user.host ? `@${body.user.host}` : "")}`,
 			text: emojiEscape(excludeNotPlain(body.user.description)) ?? undefined,
 			icon_url: content.avatar_url,
 			username: content.username,
@@ -179,15 +179,15 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 		}) : undefined,
 		body.message ? ({
 			author_name: getUsername(body.message.user),
-			author_link: "https://mkkey.net/@" + body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""),
+			author_link: `${config.url}/@${body.message.user?.username}${(body.message.user?.host ? `@${body.message.user?.host}` : "")}`,
 			author_icon: body.message.user?.avatarUrl,
 			icon_url: content.avatar_url,
 			username: content.username,
 			fallback: emojiEscape(content.content),
             pretext: emojiEscape(content.content),
-			title: (body.message.group ? body.message.group.name + " の" : "個人宛の") + "チャット",
-			title_link: body.message.groupId ? "https://mkkey.net/my/messaging/group/" + body.message.groupId : "https://mkkey.net/my/messaging/" + (body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : "")),
-			text: emojiEscape((excludeNotPlain(body.message.text)?.length > 100 ? excludeNotPlain(body.message.text)?.slice(0, 100) + "… " : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : "")),
+			title: `${(body.message.group ? `${body.message.group.name} の` : "個人宛の")}チャット`,
+			title_link: body.message.groupId ? `${config.url}/my/messaging/group/${body.message.groupId}` : `${config.url}/my/messaging/${(body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""))}`,
+			text: emojiEscape((excludeNotPlain(body.message.text)?.length > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : "")),
 			image_url: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? body.message.file.url : undefined,
 			ts: new Date(body.message.createdAt).valueOf() / 1000,
 			thumb_url: body.emoji ? body.emoji.publicUrl : body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("video") ? body.message.file.thumbnailUrl : body.message.user?.avatarUrl,
@@ -209,7 +209,7 @@ function emojiEscape(text): string {
 }
 
 function getUsername(user): string {
-	return user ? (user.name?.replaceAll(/\s?:\w+?:/g, '').trim() || user.username) + (user.host ? "@" + user.host : "") : undefined;
+	return user ? (user.name?.replaceAll(/\s?:\w+?:/g, '').trim() || user.username) + (user.host ? `@${user.host}` : "") : undefined;
 }
 
 function getNoteContentSummary(note, userId, textLength?): string {
@@ -229,15 +229,15 @@ async function typeToBody(jobData: any): Promise<any> {
 
 	const user = body.user ? body.user : body.antenna ? body.antenna.noteUser : body.reaction ? body.reaction.user : body.note ? body.note.user : body.message ? body.message.user : undefined;
 	const username = user ? getUsername(user) : undefined;
-	const fullUsername = user ? user.name ? user.name + " (" + user.username + "@" + (user.host ?? "mkkey.net") + ")" : user.username + "@" + (user.host ?? "mkkey.net") : undefined;
+	const fullUsername = user ? user.name ? `${user.name} (${user.username}@${(user.host ?? config.host)})` : `${user.username}@${(user.host ?? config.host)}` : undefined;
 	const avatar_url = user ? user.avatarUrl ?? (await Users.getAvatarUrl(user)) : undefined;
 
 	const content =
 		contentLength !== 0
 			? body.note
-				? " : " + getNoteContentSummary(body.note.text ? body.note : body.note.renote, jobData.userId, contentLength)
+				? ` : ${getNoteContentSummary(body.note.text ? body.note : body.note.renote, jobData.userId, contentLength)}`
 				: body.message?.text
-					? " : " + excludeNotPlain(body.message.text).slice(0, contentLength ?? 40) + (excludeNotPlain(body.message.text).length > contentLength ?? 40 ? "…" : "")
+					? ` : ${excludeNotPlain(body.message.text).slice(0, contentLength ?? 40)}${(excludeNotPlain(body.message.text).length > contentLength ?? 40 ? "…" : "")}`
 					: ""
 			: "";
 
@@ -246,75 +246,75 @@ async function typeToBody(jobData: any): Promise<any> {
 			return {
 				username,
 				avatar_url,
-				content: username + " から 呼びかけ" + content,
+				content: `${username} から 呼びかけ${content}`,
 			};
 		case "unfollow":
 			return {
 				username,
 				avatar_url,
-				content: fullUsername + " から リムーブされました",
+				content: `${fullUsername} から リムーブされました`,
 			};
 		case "silentUnfollow":
 			return {
 				username,
 				avatar_url,
-				content: "💬 " + fullUsername + " から リムーブされました",
+				content: `💬 ${fullUsername} から リムーブされました`,
 			};
 		case "follow":
 			return {
 				username,
 				avatar_url,
-				content: fullUsername + " の フォローに成功",
+				content: `${fullUsername} の フォローに成功`,
 			};
 		case "followed":
 			return {
 				username,
 				avatar_url,
-				content: fullUsername + " から フォローされました",
+				content: `${fullUsername} から フォローされました`,
 			};
 		case "note":
 			return {
-				content: "投稿に成功しました" + content,
+				content: `投稿に成功しました${content}`,
 			};
 		case "reply":
 			return {
 				username,
 				avatar_url,
-				content: username + " から 返信" + content,
+				content: `${username} から 返信${content}`,
 			};
 		case "renote":
 			return {
 				username,
 				avatar_url,
-				content: username + " から " + (body.note.text ? "引用" : "RT") + content,
+				content: `${username} から ${(body.note.text ? "引用" : "RT")}${content}`,
 			};
 		case "reaction":
 			return {
 				username,
 				avatar_url,
-				content: username + " から " + body.reaction?.emojiName.replaceAll(/:(\w+):/g, '：$1：') + content,
+				content: `${username} から ${body.reaction?.emojiName.replaceAll(/:(\w+):/g, '：$1：')}${content}`,
 			};
 		case "antenna":
 			return {
 				username,
 				avatar_url,
-				content: body.antenna?.name + "📡新着 : " + username + (user.id !== body.note?.user?.id ? " : RT " + getUsername(body.note?.user) : "") + content,
+				content: `${body.antenna?.name}📡新着 : ${username}${(user.id !== body.note?.user?.id ? " : RT " + getUsername(body.note?.user) : "")}${content}`,
 			};
 		case "userMessage":
 			return {
 				username,
 				avatar_url,
-				content: username + " から チャット" + content,
+				content: `${username} から チャット${content}`,
 			};
 		case "groupMessage":
 			return {
 				username,
 				avatar_url,
-				content: body.message.group.name + " で " + username + " から チャット" + content,
+				content: `${body.message.group.name} で ${username} から チャット${content}`,
 			};
 		default:
 			return {
-				content: "type : " + jobData.type + content,
+				content: `type : ${jobData.type}${content}`,
 			};
 	}
 }

@@ -3,6 +3,7 @@ import { fetchMeta } from "./fetch-meta.js";
 import { Emojis } from "@/models/index.js";
 import { toPunyNullable } from "./convert-host.js";
 import { IsNull } from "typeorm";
+import config from "@/config/index.js";
 
 const legacies = new Map([
 	["like", "👍"],
@@ -93,10 +94,10 @@ export async function toDbReaction(
 
 		if (emoji) return emoji.host ? `:${emoji.name}@${emoji.host}:` : `:${emoji.name}:`;
 
-		// 無理ならリモートから 
+		// 無理ならリモートから
 		// ローカルユーザの場合 : host情報がない場合、noteHost絵文字で、ローカル相手ならmisskey.io絵文字で試行してみる
 		// リモートユーザの場合 : host情報がない場合、reacterHost絵文字ではなくローカル絵文字で試行してみる
-		const host = (reacterHost && custom?.[2] === "mkkey.net" ? IsNull() : custom?.[2]) || (reacterHost ? IsNull() : noteHost ?? "misskey.io");
+		const host = (reacterHost && custom?.[2] === config.host ? IsNull() : custom?.[2]) || (reacterHost ? IsNull() : noteHost ?? "misskey.io");
 		const emoji2 = await Emojis.findOneBy({
 			host,
 			name,
@@ -104,7 +105,7 @@ export async function toDbReaction(
 
 		if (emoji2) return emoji2.host ? `:${emoji2.name}@${emoji2.host}:` : `:${emoji2.name}:`;
 	}
-	
+
 	console.log("NotFound Emoji : " + reaction)
 	return await getFallbackReaction();
 }

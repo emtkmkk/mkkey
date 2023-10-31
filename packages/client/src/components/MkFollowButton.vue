@@ -56,6 +56,7 @@ import * as os from "@/os";
 import { stream } from "@/stream";
 import { i18n } from "@/i18n";
 import { $i } from "@/account";
+import * as config from "@/config";
 
 const emit = defineEmits(["refresh"]);
 const props = withDefaults(
@@ -95,28 +96,28 @@ function onFollowChange(user: Misskey.entities.UserDetailed) {
 async function onClick() {
 
 	if ( $i == null ) {
-		
-		const hostname = props.user.host ?? "mkkey.net";
+
+		const hostname = props.user.host ?? config.host;
 
 		const { canceled, result: input } = await os.inputText({
 			title: i18n.ts.hostnameInput,
 			text: `または、照会機能にて\n「${props.user.username}@${hostname}」\nを入力してください。\n`,
 			placeholder: i18n.ts.hostnameInputPlaceholder,
 		});
-		if (canceled || !input || input.trim() === "mkkey.net" || !/^[\w.-]+$/.test(input)) {
+		if (canceled || !input || input.trim() === config.host || !/^[\w.-]+$/.test(input)) {
 			return;
 		}
-		
+
 		if (input.trim() === hostname) {
 			window.open(`https://${input.trim()}/@${props.user.username}`, '_blank');
 		} else {
 			window.open(`https://${input.trim()}/@${props.user.username}@${hostname}`, '_blank');
 		}
-		
+
 		return
 
 	} else {
-		
+
 		wait = true;
 
 		try {
@@ -167,9 +168,9 @@ async function onClick() {
 		} finally {
 			wait = false;
 		}
-		
+
 	}
-	
+
 }
 
 onMounted(() => {

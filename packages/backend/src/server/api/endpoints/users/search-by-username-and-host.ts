@@ -3,6 +3,7 @@ import { Followings, Users } from "@/models/index.js";
 import { USER_ACTIVE_THRESHOLD } from "@/const.js";
 import type { User } from "@/models/entities/user.js";
 import define from "../../define.js";
+import config from "@/config/index.js";
 
 export const meta = {
 	tags: ["users"],
@@ -44,7 +45,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (ps.host) {
 		const q = Users.createQueryBuilder("user")
 			.where("user.isSuspended = FALSE")
-			.andWhere("coalesce(user.host,'mkkey.net') LIKE :host", { host: `${ps.host === "." ? "mkkey.net" : ps.host.toLowerCase()}%` });
+			.andWhere(`coalesce(user.host,${config.host}) LIKE :host`, { host: `${ps.host === "." ? config.host : ps.host.toLowerCase()}%` });
 
 		if (ps.username) {
 			q.andWhere("user.usernameLower LIKE :username", {

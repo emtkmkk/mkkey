@@ -3,6 +3,7 @@ import type { ILike } from "../../type.js";
 import { getApId } from "../../type.js";
 import deleteReaction from "@/services/note/reaction/delete.js";
 import { fetchNote, extractEmojis } from "../../models/note.js";
+import config from "@/config/index.js";
 
 /**
  * Process Undo.Like activity
@@ -12,13 +13,13 @@ export default async (actor: CacheableRemoteUser, activity: ILike) => {
 
 	const note = await fetchNote(targetUri);
 	if (!note) return `skip: target note not found ${targetUri}`;
-	
+
 	const react = activity._misskey_reaction || activity.content || activity.name;
 	const reactName = react?.split("@")?.[0];
 	const reactHost = react?.split("@")?.[1] ?? undefined;
-	
+
 	const emoji = await extractEmojis(activity.tag || [], actor.host).catch(() => null);
-	const reactEmoji = emoji?.filter((x) => x.name === reactName && (!reactHost || (x.host ?? "mkkey.net") === reactHost));
+	const reactEmoji = emoji?.filter((x) => x.name === reactName && (!reactHost || (x.host ?? config.host) === reactHost));
 
 	await deleteReaction(
 		actor,

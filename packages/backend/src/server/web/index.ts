@@ -355,7 +355,7 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 	});
 
 	ctx.set('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
-	
+
 	if (emoji == null) {
 		if ('fallback' in ctx.query) {
 			return await ctx.redirect('/static-assets/user-unknown.png');
@@ -369,13 +369,13 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 	let url: URL;
 	// TODO : プロキシをサイズが大きすぎる物のみに使用するようにしたい
 	if (!config?.mediaProxy) {
-		proxy = `https://mkkey.net/proxy`;
+		proxy = `${config.url}/proxy`;
 	} else {
 		proxy = `${config.mediaProxy}`;
 	}
-	
+
 	if ('badge' in ctx.query) {
-		url = new URL(`${proxy}/emoji.png`);	
+		url = new URL(`${proxy}/emoji.png`);
 		// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
 		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
 		url.searchParams.set('badge', '1');
@@ -392,29 +392,29 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 });
 
 router.get("/emoji_license/:path(.*)", async (ctx) => {
-	
+
 	if (!ctx.params.path.match(/^[a-zA-Z0-9\-_@\.]+?$/)) {
 		ctx.status = 404;
 		return;
 	}
-	
+
 	const name = ctx.params.path.split('@')[0];
 	const host = ctx.params.path.split('@')?.[1].replace(/\.json$/,"");
-	
+
 	const emoji = await Emojis.findOneBy({
 		// `@.` is the spec of ReactionService.decodeReaction
 		host: (host == null || host === '.') ? IsNull() : host,
 		name: name,
 	});
-	
+
 	if (emoji) {
-		ctx.set("Content-Type", "application/json; charset=utf-8");	
+		ctx.set("Content-Type", "application/json; charset=utf-8");
 		ctx.set("Cache-Control", "public, max-age=15");
 		if (!emoji.host && emoji.license === "文字だけ") {
 			ctx.body = JSON.stringify({
 				copyPermission: "allow",
 				license: "CC0 1.0 Universal",
-				author: "mkkey.net"
+				author: config.host
 			});
 		} else {
 			ctx.body = JSON.stringify({

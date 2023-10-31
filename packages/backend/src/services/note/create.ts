@@ -256,7 +256,7 @@ export default async (
 
 		//ローカルユーザーでこの投稿が1投稿目の場合
 		if (!user.host && user.notesCount < 1) {
-			//キャッシュで0に見えてる可能性があるためここで最新データを取得		
+			//キャッシュで0に見えてる可能性があるためここで最新データを取得
 			const _user = await Users.findOneByOrFail({ id: user.id })
 			if (_user.notesCount === 0) {
 				data.isFirstNote = true;
@@ -460,8 +460,8 @@ export default async (
 				throw new Error("サイレンス中はフォロワーでないユーザにダイレクトは送信できません。");
 			}
 			/*
-						const localRelation = !user.isBot || !user.host ? false :await data.visibleUsers.filter((x) => !x.host || !x.isBot || x.host === "mkkey.net").every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);
-			
+						const localRelation = !user.isBot || !user.host ? false :await data.visibleUsers.filter((x) => !x.host || !x.isBot || x.host === config.host).every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);
+
 						if (!user.isBot && user.host && (localRelation ?? true)) {
 							data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi, "$1");
 						}

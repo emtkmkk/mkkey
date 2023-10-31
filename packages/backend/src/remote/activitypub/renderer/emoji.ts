@@ -5,7 +5,7 @@ export default (emoji: Emoji) => ({
 	id: emoji.uri || `${config.url}/emojis/${emoji.name}`,
 	type: "Emoji",
 	name: `:${emoji.name}:`,
-	host: `${emoji.host ?? "mkkey.net"}`,
+	host: `${emoji.host ?? config.host}`,
 	updated:
 		!emoji.host && emoji.updatedAt != null
 			? emoji.updatedAt.toISOString()
@@ -19,7 +19,7 @@ export default (emoji: Emoji) => ({
 	...(!emoji.host && emoji.license === "文字だけ" ? {
 		copyPermission: "allow",
 		license: "CC0 1.0 Universal",
-		author: "mkkey.net"
+		author: config.host
 	} : {
 		copyPermission: emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none" : "none",
 		license: emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,:]+)(,|$)/.exec(emoji.license)?.[1] ?? null : null,

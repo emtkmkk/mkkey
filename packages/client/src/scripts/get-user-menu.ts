@@ -8,6 +8,7 @@ import { userActions } from "@/store";
 import { $i, iAmModerator } from "@/account";
 import { mainRouter } from "@/router";
 import { Router } from "@/nirax";
+import * as config from "@/config";
 
 export function getUserMenu(user, router: Router = mainRouter) {
 	const meId = $i ? $i.id : null;
@@ -259,7 +260,7 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			icon: "ph-share-network ph-bold ph-lg",
 			text: i18n.ts.copyUserUrl,
 			action: () => {
-				copyToClipboard(`https://mkkey.net/@${user.username}${user.host ? "@" + user.host : ""}`);
+				copyToClipboard(`https://${config.host}/@${user.username}${user.host ? "@" + user.host : ""}`);
 			},
 		},
 		null,

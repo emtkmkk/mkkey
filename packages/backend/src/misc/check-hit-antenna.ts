@@ -10,6 +10,7 @@ import { getFullApAccount } from "./convert-host.js";
 import * as Acct from "@/misc/acct.js";
 import type { Packed } from "./schema.js";
 import { Cache } from "./cache.js";
+import config from "@/config/index.js";
 
 const blockingCache = new Cache<User["id"][]>(1000 * 60 * 5);
 
@@ -86,9 +87,9 @@ export async function checkHitAntenna(
 			.map((host) => {
 				return host.toLowerCase();
 			});
-		if (!instances.includes(noteUser.host?.toLowerCase() ?? "mkkey.net")) return false;
+		if (!instances.includes(noteUser.host?.toLowerCase() ?? config.host)) return false;
 	}
-	
+
 	const textComponents = [
 		note.cw,
 		note.text,

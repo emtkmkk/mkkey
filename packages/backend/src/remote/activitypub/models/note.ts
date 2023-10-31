@@ -478,23 +478,23 @@ export async function extractEmojis(
 			const _host = detectHost?.length >= 4 && host !== toPuny(detectHost)
 				? toPuny(detectHost)
 				: host;
-				
-			if ( _host === "mkkey.net" ) {
+
+			if ( _host === config.host ) {
 				return (await Emojis.findOneBy({
 						host: IsNull(),
 						name,
 					})) as Emoji;
 			}
-			
+
 			const aliases = tag.aliases || tag.keywords || [];
-			
+
 			const license = [
-				(tag.license ? "ライセンス : " + tag.license : ""),
-				(tag.author ? "作者 : " + tag.author : ""),
-				(tag.copyPermission && tag.copyPermission !== "none" ? "コピー可否 : " + tag.copyPermission : ""),
-				(tag.usageInfo ? "使用情報 : " + tag.usageInfo : ""),
-				(tag.description ? "説明 : " + tag.description : ""),
-				(tag.isBasedOnUrl ? "コピー元 : " + tag.isBasedOnUrl : ""),
+				(tag.license ? `ライセンス : ${tag.license}` : ""),
+				(tag.author ? `作者 : ${tag.author}` : ""),
+				(tag.copyPermission && tag.copyPermission !== "none" ? `コピー可否 : ${tag.copyPermission}` : ""),
+				(tag.usageInfo ? `使用情報 : ${tag.usageInfo}` : ""),
+				(tag.description ? `説明 : ${tag.description}` : ""),
+				(tag.isBasedOnUrl ? `コピー元 : ${tag.isBasedOnUrl}` : ""),
 			].filter(Boolean).join(", ").trim() || null;
 
 			const exists = await Emojis.findOneBy({
@@ -522,7 +522,7 @@ export async function extractEmojis(
 							await Emojis.insert({
 								...exists,
 								id: genId(),
-								name: exists.name + "_" + lastUpdateDate,
+								name: `${exists.name}_${lastUpdateDate}`,
 								oldEmoji: true,
 							});
 							await Emojis.update(

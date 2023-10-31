@@ -8,9 +8,9 @@
 		:title="alt"
 		decoding="async"
 		@click="handleImgClick"
-		@error="() => { 
+		@error="() => {
 			if (isPicker) {
-				emit('loaderror', ''); 
+				emit('loaderror', '');
 			}
 			errorCnt = errorCnt + 1;
 			if (!instance.errorEmoji) {
@@ -57,6 +57,7 @@ import { char2filePath } from "@/scripts/twemoji-base";
 import { defaultStore } from "@/store";
 import { instance } from "@/instance";
 import * as os from "@/os";
+import * as config from "@/config";
 
 const props = defineProps<{
 	emoji: string;
@@ -129,9 +130,9 @@ const customEmoji = computed(() => {
 
 	const name = hostmatch.value?.[1];
 	const host = hostmatch.value?.[2] || props.noteHost;
-	
+
 	const matchprops = props.customEmojis?.find((x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.url);
-	
+
 	if (matchprops) {
 		return {...matchprops, name, host};
 	} else if (host && host !== "." && host !== "mkkey.net") {
@@ -151,19 +152,19 @@ const customEmoji = computed(() => {
 
 const customEmojiName = computed(() => {
 	if (!isCustom.value) return null;
-	
+
 	const nameFromEmoji = props.emoji.substr(1, props.emoji.length - 2);
 	return customEmoji.value?.name || hostmatch.value?.[1] || nameFromEmoji || null;
 });
 
 const emojiHost = computed(() => {
 	const host = customEmoji.value?.host || hostmatch.value?.[2] || props.noteHost || null;
-	return host !== "mkkey.net" && host !== "." ? host : null;
+	return host !== config.host && host !== "." ? host : null;
 });
 
 const emojiFullName = computed(() => {
 	if (!customEmojiName.value) return char.value;
-	
+
 	const hostSuffix = emojiHost.value ? "@" + emojiHost.value : "";
 	return `${customEmojiName.value}${hostSuffix}`;
 });
@@ -216,7 +217,7 @@ const handleImgClick = (event) => {
 			if (defaultStore.state.doubleTapReaction){
 				if (!singleTapTime || singleTapEmoji !== emoji || (Date.now() - singleTapTime) > 2 * 1000){
 					singleTapTime = Date.now();
-					
+
 					//アニメーション
 					el.style.transition = '';
 					el.style.backgroundColor = 'var(--accent)';
@@ -224,7 +225,7 @@ const handleImgClick = (event) => {
 						el.style.transition = 'background-color 1s';
 						el.style.backgroundColor = 'transparent';
 					}, 1500);
-					
+
 					return
 				}
 			}
@@ -272,11 +273,11 @@ const handleImgClick = (event) => {
 			}
 		}
 	}
-	
+
 	&.emoji-ghost {
 		opacity: 0.5;
 	}
-	
+
 	&.bigCustom {
 		height: 2.5em;
 		max-width: 100%;

@@ -399,7 +399,7 @@ router.get("/emoji_license/:path(.*)", async (ctx) => {
 	}
 
 	const name = ctx.params.path.split('@')[0];
-	const host = ctx.params.path.split('@')?.[1].replace(/\.json$/,"");
+	const host = ctx.params.path.split('@')?.[1]?.replace(/\.json$/,"");
 
 	const emoji = await Emojis.findOneBy({
 		// `@.` is the spec of ReactionService.decodeReaction

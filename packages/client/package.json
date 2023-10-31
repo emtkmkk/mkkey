@@ -28,7 +28,6 @@
 		"@types/uuid": "8.3.4",
 		"@vitejs/plugin-vue": "4.0.0",
 		"@vue/compiler-sfc": "3.2.45",
-		"activate-power-mode": "github:emtkmkk/activate-power-mode",
 		"autobind-decorator": "2.4.0",
 		"autosize": "5.0.2",
 		"blurhash": "1.1.5",
@@ -89,6 +88,7 @@
 		"vuedraggable": "4.1.0"
 	},
 	"dependencies": {
+		"activate-power-mode": "github:emtkmkk/activate-power-mode",
 		"mfm-js": "git+https://code.naskya.net/emtkmkk/mfm.js.git#develop",
 		"sharp-read-bmp": "github:misskey-dev/sharp-read-bmp"
 	}

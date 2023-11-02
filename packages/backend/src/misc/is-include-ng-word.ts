@@ -14,6 +14,8 @@ export function isIncludeNgWord(note: any): string {
 			var chr = match.charCodeAt(0) - 0x60;
 			return String.fromCharCode(chr);
 		})
+		.replaceAll("金","きん")
+		.replaceAll("玉","たま")
 		.replaceAll("ぱちんこ", "ぱチんこ")
 
 	if (ngword2.some((x) => {

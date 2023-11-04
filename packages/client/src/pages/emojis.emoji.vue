@@ -13,6 +13,7 @@ import {} from "vue";
 import * as os from "@/os";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
 import { i18n } from "@/i18n";
+import * as config from "@/config";
 
 const props = defineProps<{
 	emoji: Record<string, unknown>; // TODO
@@ -41,7 +42,7 @@ function menu(ev) {
 						(res) => {
 							os.alert({
 								type: "info",
-								text: `${res.license || i18n.ts.notSet}\n\nhttps://mkkey.net/emoji_licence/${res.name}`,
+								text: `${res.license || i18n.ts.notSet}\n\nhttps://${config.host}/emoji_licence/${res.name}`,
 							});
 						}
 					);

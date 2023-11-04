@@ -1,3 +1,5 @@
+import * as config from "@/config";
+
 export type Muted = {
 	muted: boolean;
 	matched: string[];
@@ -12,7 +14,7 @@ function checkWordMute(
 	what?: string,
 	endpoint?: string,
 ): Muted {
-	const text = ((note.cw ?? "") + " " + (note.text ?? "")).trim();
+	const text = (`${(note.cw ?? "")} ${(note.text ?? "")}`).trim();
 	//if (text === "") return NotMuted;
 
 	let result = { muted: false, matched: [] };
@@ -24,7 +26,7 @@ function checkWordMute(
 
 			if (
 				keywords.length > 0 &&
-				!(keywords[0].startsWith("pname:") && keywords.length == 1) &&
+				!(keywords[0].startsWith("pname:") && keywords.length === 1) &&
 				keywords.every((keyword, index) => {
 					// 反転オプション：- or !
 					const reverse = keyword.startsWith("-") || keyword.startsWith("!");
@@ -99,16 +101,16 @@ function checkMuteKeyword(
 		return fuzzyKeywords.every((fuzzyKeyword) => text.includes(fuzzyKeyword));
 	}
 	if (keyword.startsWith("from:")) {
-		const fromKeyword = keyword.replace("from:", "").replace("@mkkey.net", "");
-		return !note.user ? undefined : note.user.host ? note.user.username + "@" + note.user.host === fromKeyword : note.user.username === fromKeyword;
+		const fromKeyword = keyword.replace("from:", "").replace(`@${config.host}`, "");
+		return !note.user ? undefined : note.user.host ? `${note.user.username}@${note.user.host}` === fromKeyword : note.user.username === fromKeyword;
 	}
 	if (keyword.startsWith("host:")) {
 		const hostKeyword = keyword.replace("host:", "");
-		return !note.user ? undefined : hostKeyword === "mkkey.net" ? !note.user.host : note.user.host === hostKeyword;
+		return !note.user ? undefined : hostKeyword === config.host ? !note.user.host : note.user.host === hostKeyword;
 	}
 	if (keyword.startsWith("fuzzyHost:")) {
 		const hostKeyword = keyword.replace("fuzzyHost:", "");
-		return !note.user ? undefined : ("mkkey.net".includes(hostKeyword) && !note.user.host) || note.user.host.includes(hostKeyword);
+		return !note.user ? undefined : (config.host.includes(hostKeyword) && !note.user.host) || note.user.host.includes(hostKeyword);
 	}
 	if (keyword.startsWith("username:")) {
 		const usernameKeyword = keyword.replace("username:", "");
@@ -144,9 +146,9 @@ function checkMuteKeyword(
 	}
 	if (keyword.startsWith("where:") || keyword.startsWith("timeline:") || keyword.startsWith("tl:")) {
 		if (!endpoint) return undefined;
-		let tlKeyword = keyword.replace("where:", "").replace("timeline:", "").replace("tl:", "").toLowerCase();
+		const tlKeyword = keyword.replace("where:", "").replace("timeline:", "").replace("tl:", "").toLowerCase();
 		if (["home", "social"].includes(tlKeyword)) return ["notes/timeline", "notes/hybrid-timeline"].includes(endpoint);
-		if (["local", "global"].includes(tlKeyword)) return endpoint === "notes/" + tlKeyword + "-timeline";
+		if (["local", "global"].includes(tlKeyword)) return endpoint === `notes/${tlKeyword}-timeline`;
 		if (["recommended", "media"].includes(tlKeyword)) return ["notes/recommended-timeline"].includes(endpoint);
 		if (["spotlight"].includes(tlKeyword)) return ["channels/spotlight-timeline"].includes(endpoint);
 		if (["list"].includes(tlKeyword)) return ["notes/user-list-timeline"].includes(endpoint);
@@ -156,7 +158,7 @@ function checkMuteKeyword(
 		if (["user"].includes(tlKeyword)) return ["users/notes"].includes(endpoint);
 		if (["notification"].includes(tlKeyword)) return ["notifications/read"].includes(endpoint);
 
-		return endpoint.startsWith(tlKeyword) || endpoint.startsWith("notes/" + tlKeyword);
+		return endpoint.startsWith(tlKeyword) || endpoint.startsWith(`notes/${tlKeyword}`);
 	}
 	if (keyword.startsWith("relation:")) {
 		const relationKeyword = keyword.replace("relation:", "").toLowerCase();
@@ -204,7 +206,7 @@ function checkMuteKeyword(
 			return !!isCw;
 		}
 		if (filterKeyword.includes("nsfw")) {
-			const isNsfw = (note.files && note.files.some((file) => file.isSensitive));
+			const isNsfw = (note.files?.some((file) => file.isSensitive));
 			return !!isNsfw;
 		}
 		if (filterKeyword.includes("reacted")) {

@@ -508,7 +508,7 @@ export const UserRepository = db.getRepository(User).extend({
 				id: x.id,
 				name: x.name,
 				description: x.name,
-				iconUrl: "https://mkkey.net/emojis/" + ((x.emoji.startsWith(":")) ? x.emoji.replaceAll(":", "") : x.key) + ".webp",
+				iconUrl: `${config.url}/emojis/${((x.emoji.startsWith(":")) ? x.emoji.replaceAll(":", "") : x.key)}.webp`,
 				isModerator: false,
 				isAdministrator: false,
 				color: "#f8bcba",

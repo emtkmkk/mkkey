@@ -6,7 +6,7 @@
 		@close="dialog.close()"
 		@closed="emit('closed')"
 	>
-		<template #header>{{ tab.replace(/@.:$/,"@mkkey.net:") || i18n.ts.reaction }}</template>
+		<template #header>{{ tab.replace(/@.:$/,`@${config.host}:`) || i18n.ts.reaction }}</template>
 
 		<MkSpacer :margin-min="20" :margin-max="28">
 			<div v-if="note" class="_gaps">
@@ -73,6 +73,7 @@ import { userPage } from "@/filters/user";
 import { i18n } from "@/i18n";
 import * as os from "@/os";
 import { defaultStore } from "@/store";
+import * as config from "@/config";
 
 const emit = defineEmits<{
 	(ev: "closed"): void;

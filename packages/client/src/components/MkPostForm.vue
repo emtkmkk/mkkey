@@ -1374,7 +1374,7 @@ async function postFifth() {
 async function post() {
 	const processedText = preprocess(text);
 
-	if (!cw && useCw) cw = " ";
+	if (!cw && useCw) cw = "CW";
 	if (cw && !useCw) cw = "";
 
 	if (!canPublic && visibility === "public") visibility = "home";

@@ -378,7 +378,7 @@ export default async (
 			if (isIncludeNgWordRet) {
 				if (!data.cw) {
 					data.cw = "[強制CW] " + isIncludeNgWordRet;
-				} else if (!data.cw.trim()) {
+				} else if (!data.cw.trim() || data.cw.trim()　=== "CW") {
 					data.cw = isIncludeNgWordRet;
 				}
 			}
@@ -389,7 +389,7 @@ export default async (
 					if (data.text) {
 						if (!data.cw) {
 							data.cw = "[強制CW (引用先)] " + isIncludeNgWordRtRet;
-						} else if (!data.cw.trim()) {
+						} else if (!data.cw.trim() || data.cw.trim()　=== "CW") {
 							data.cw = isIncludeNgWordRtRet + " (引用先)";
 						}
 					} else {

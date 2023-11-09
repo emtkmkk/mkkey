@@ -1374,8 +1374,8 @@ async function postFifth() {
 async function post() {
 	const processedText = preprocess(text);
 
-	if (!cw.trim() && useCw) cw = "CW";
-	if (cw && !useCw) cw = "";
+	if (useCw && !cw?.trim()) cw = "CW";
+	if (!useCw && cw) cw = "";
 
 	if (!canPublic && visibility === "public") visibility = "home";
 	if (!canHome && visibility === "home") visibility = "followers";
@@ -1470,12 +1470,12 @@ function cancel() {
 	if (!defaultStore.state.CloseAllClearButton){
 		emit("cancel");
 	} else {
-		
+
 		cw = "";
 		if (useCw && props.reply){
 			cw = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ";
 		}
-		
+
 		if (!useCw && props.reply){
 			text = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ";
 		} else {

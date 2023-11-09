@@ -204,7 +204,7 @@ async function toggleMfm() {
 				text: i18n.ts._mfm.warn,
 			});
 			if (canceled) return;
-			
+
 			defaultStore.set("animatedMfmWarnShown", true);
 		}
 
@@ -322,13 +322,13 @@ function focusFooter(ev) {
 				> .body {
 					min-height: 2em;
 					max-height: 5em;
-					filter: blur(5px);
+					filter: blur(8px);
 					:deep(span) {
 						animation: none !important;
 						transform: none !important;
 					}
 					:deep(img) {
-						filter: blur(12px);
+						filter: blur(18px);
 					}
 				}
 				:deep(.fade) {

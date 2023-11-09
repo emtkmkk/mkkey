@@ -62,7 +62,7 @@
 								<template #value>{{ version }}</template>
 							</MkKeyValue>
 							<FormLink
-								to="https://code.naskya.net/emtkmkk/mkkey"
+								to="https://github.com/emtkmkk/mkkey"
 								external
 							>
 								<template #icon

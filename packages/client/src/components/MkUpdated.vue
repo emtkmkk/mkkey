@@ -46,7 +46,7 @@ const modal = shallowRef<InstanceType<typeof MkModal>>();
 
 const whatIsNew = () => {
 	modal.value.close();
-	window.open(`https://code.naskya.net/emtkmkk/mkkey/src/branch/beta/patchnote.md`, '_blank');
+	window.open(`https://github.com/emtkmkk/mkkey/blob/develop/patchnote.md`, '_blank');
 };
 
 let newRelease = $ref(false);

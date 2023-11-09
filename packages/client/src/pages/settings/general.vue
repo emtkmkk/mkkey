@@ -91,6 +91,9 @@
 			<FormSwitch v-model="reactedRenoteHidden" class="_formBlock">{{
 				i18n.ts.reactedRenoteHidden
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="showLocalTimelineBelowPublic" class="_formBlock">{{
+				i18n.ts.showLocalTimelineBelowPublic
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="localShowRenote" class="_formBlock" @update:modelValue="save()">{{
 				i18n.ts.localShowRenote
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -814,6 +817,9 @@ const usePickerSizePostForm = $computed(
 );
 const enabledAirReply = computed(
 	defaultStore.makeGetterSetter("enabledAirReply")
+);
+const showLocalTimelineBelowPublic = computed(
+	defaultStore.makeGetterSetter('showLocalTimelineBelowPublic')
 );
 let blockPostPublic = $ref($i.blockPostPublic);
 

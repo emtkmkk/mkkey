@@ -1048,6 +1048,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/10/21",
 			page: "general",
 		},
+		showLocalTimelineBelowPublic: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/11/9",
+			page: "general",
+		},
 	}),
 );
 

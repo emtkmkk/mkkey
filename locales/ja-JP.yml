@@ -330,6 +330,7 @@ autoSwitchDataSaver: "Wi-Fiの有無でデータセーバーを切り替え"
 enabledAirReply: "投稿のメニューに「空リプ」を追加する"
 recentRenoteHidden: "1時間以内に表示したRTを畳む"
 reactedRenoteHidden: "リアクション済のRTを畳む"
+showLocalTimelineBelowPublic: "LTLに公開投稿以外の投稿も表示する"
 alwaysPostButton: "常に右下に投稿ボタンを表示"
 noteAllCw: "全てのノートをCWの表示にする"
 allDelete: 全て削除

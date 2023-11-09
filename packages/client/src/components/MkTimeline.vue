@@ -14,6 +14,7 @@ import * as os from "@/os";
 import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i } from "@/account";
+import { defaultStore } from '@/store';
 
 const props = defineProps<{
 	src: string;
@@ -84,7 +85,10 @@ if (props.src === "antenna") {
 	connection2.on("unfollow", onChangeFollowing);
 } else if (props.src === "local") {
 	endpoint = "notes/local-timeline";
-	connection = stream.useChannel("localTimeline");
+	query = {
+		withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,
+	};
+	connection = stream.useChannel("localTimeline", { withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic });
 	connection.on("note", prepend);
 } else if (props.src === "recommended") {
 	endpoint = "notes/recommended-timeline";

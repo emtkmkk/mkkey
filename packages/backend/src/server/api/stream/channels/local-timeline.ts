@@ -8,6 +8,7 @@ export default class extends Channel {
 	public readonly chName = "localTimeline";
 	public static shouldShare = true;
 	public static requireCredential = false;
+	private withBelowPublic: boolean;
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
@@ -21,6 +22,8 @@ export default class extends Channel {
 				return;
 		}
 
+		this.withBelowPublic = params.withBelowPublic ?? false;
+
 		// Subscribe events
 		this.subscriber.on("notesStream", this.onNote);
 	}
@@ -28,7 +31,8 @@ export default class extends Channel {
 	private async onNote(note: Packed<"Note">) {
 		const meta = await fetchMeta();
 		if (note.user.host !== null && !meta.recommendedInstances.includes(`${note.user.username}@${note.user.host}`)) return;
-		if (note.visibility !== "public") return;
+		if (!this.withBelowPublic && note.visibility !== 'public') return;
+		if ((note.visibility !== "public") && ((this.user!.id !== note.userId) && !this.following.has(note.userId))) return;
 
 		// 関係ない返信は除外
 		if (note.reply && !this.user!.showTimelineReplies) {
@@ -49,7 +53,7 @@ export default class extends Channel {
 
 		if (note.renote && !note.text && isUserRelated(note, this.renoteMuting))
 			return;
-		
+
 		if (note.renote && !note.text && !this.user!.localShowRenote)
 		    return;
 

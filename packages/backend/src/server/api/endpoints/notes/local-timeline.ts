@@ -1,6 +1,6 @@
 import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Notes, Users } from "@/models/index.js";
+import { Notes, Users, Followings } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -58,6 +58,7 @@ export const paramDef = {
 			},
 		},
 		excludeNsfw: { type: "boolean", default: false },
+		withBelowPublic: { type: 'boolean', default: false },
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: "string", format: "misskey:id" },
 		untilId: { type: "string", format: "misskey:id" },
@@ -83,7 +84,6 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.sinceDate,
 		ps.untilDate,
 	)
-		.andWhere("(note.visibility = 'public')")
 		.andWhere(`((note.userHost IS NULL) OR (user.username || '@' || note."userHost" = ANY ('{"${m.recommendedInstances.join('","')}"}')))`)
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
@@ -104,7 +104,24 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user) generateMutedNoteQuery(query, user);
 	if (user) generateBlockedUserQuery(query, user);
 	if (user) generateMutedUserRenotesQueryForNotes(query, user);
-	
+
+	if (user && ps.withBelowPublic){
+		const followees = await Followings.createQueryBuilder('following')
+			.select('following.followeeId')
+			.where('following.followerId = :followerId', { followerId: user.id })
+			.getMany();
+
+		const meOrFolloweeIds = [user.id, ...followees.map(f => f.followeeId)];
+		query.andWhere(
+			new Brackets((qb) => {
+				qb.where("(note.visibility = 'public')");
+				qb.orWhere("note.userId IN (:...meOrFolloweeIds)", { meOrFolloweeIds: meOrFolloweeIds });
+			}),
+		);
+	} else {
+		query.andWhere("(note.visibility = 'public')")
+	}
+
 	if (user && !user.localShowRenote) {
 		query.andWhere(
 			new Brackets((qb) => {

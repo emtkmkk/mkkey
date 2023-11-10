@@ -210,10 +210,10 @@ const alt = computed(() => {
 let singleTapTime = undefined;
 
 const handleImgClick = (event) => {
-	if (props.note && defaultStore.state.noteReactionMenu && urlRaw.value.length <= errorCnt.value) {
+	if (props.note && defaultStore.state.noteReactionMenu && urlRaw.value.length >= errorCnt.value) {
 			// TODO: 押せるか押せないかの判定を行えるように
 		openReactionMenu_(props.emoji, props.note, true, true, event);
-	} else if (props.note && defaultStore.state.noteQuickReaction && urlRaw.value.length <= errorCnt.value){
+	} else if (props.note && defaultStore.state.noteQuickReaction && urlRaw.value.length >= errorCnt.value){
 		const el =
 			ev &&
 			((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);

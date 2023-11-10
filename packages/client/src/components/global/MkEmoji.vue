@@ -211,8 +211,11 @@ let singleTapTime = undefined;
 
 const handleImgClick = (event) => {
 	if (props.note && defaultStore.state.noteReactionMenu && urlRaw.value.length >= errorCnt.value) {
-			// TODO: 押せるか押せないかの判定を行えるように
-		openReactionMenu_(isCustom ? `:${emojiFullName.value}:` : props.emoji, props.note, true, true, event);
+		// TODO: 押せるか押せないかの判定を行えるように
+		const el =
+			event &&
+			((event.currentTarget ?? event.target) as HTMLElement | null | undefined);
+		openReactionMenu_(isCustom ? `:${emojiFullName.value}:` : props.emoji, props.note, true, true, el);
 	} else if (props.note && defaultStore.state.noteQuickReaction && urlRaw.value.length >= errorCnt.value){
 		const el =
 			ev &&

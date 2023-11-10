@@ -24,6 +24,7 @@ const rippleEffect = (el: HTMLElement | null | undefined): void => {
 export function openReactionMenu_(reaction, note, canToggle, multi, reactButton) {
 	const emojiName = reaction.split("@")?.[0]?.replaceAll(":", "");
 	let emojiHost = reaction.split("@")?.[1]?.replaceAll(":", "");
+	const isCustom = reaction.startsWith(":");
 	const noteId = note.id;
 	const menu: any[] = [];
 
@@ -47,8 +48,8 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 	}
 
 	const reacted = multi
-		? note.myReactions?.some((x) => x?.replace(/@[\w:\.\-]+:$/,"@") === `:${emojiName}@${emojiHost || "."}:`?.replace(/@[\w:\.\-]+:$/,"@"))
-		: note.myReaction && note.myReaction?.replace(/@[\w:\.\-]+:$/,"@") === `:${emojiName}@${emojiHost || "."}:`?.replace(/@[\w:\.\-]+:$/,"@");
+		? note.myReactions?.some((x) => x?.replace(/@[\w:\.\-]+:$/,"@") === (isCustom ? `:${emojiName}@${emojiHost || "."}:` : reaction)?.replace(/@[\w:\.\-]+:$/,"@"))
+		: note.myReaction && note.myReaction?.replace(/@[\w:\.\-]+:$/,"@") === (isCustom ? `:${emojiName}@${emojiHost || "."}:` : reaction)?.replace(/@[\w:\.\-]+:$/,"@");
 
 	if (canToggle) {
 		if (multi){

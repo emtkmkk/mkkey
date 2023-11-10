@@ -4,6 +4,7 @@ import * as os from "@/os";
 import { i18n } from "@/i18n";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
 import MkRippleEffect from '@/components/MkRipple.vue';
+import { instance } from "@/instance";
 
 const createReaction = ({ noteId, reaction }: { noteId: string, reaction: string }): Promise<null> => {
 	return os.api('notes/reactions/create', { noteId, reaction });
@@ -113,8 +114,14 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 			text: i18n.ts.plusPinnedEmoji,
 			icon: "ph-list-plus ph-bold ph-lg",
 			action: () => {
-				defaultStore.set("reactions", [...defaultStore.state.reactions,reaction]);
-				os.success();
+						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+						if (emojiHost && instanceEmoji?.includes(emojiName)){
+							defaultStore.set("reactions", [...defaultStore.state.reactions,`:${emojiName}:`]);
+							os.success();
+						} else {
+							defaultStore.set("reactions", [...defaultStore.state.reactions,reaction]);
+							os.success();
+						}
 			},
 		});
 	} else {
@@ -126,36 +133,66 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 				{
 					text: `${defaultStore.state.reactionsFolderName || "1ページ目"}に追加`,
 					action: () => {
-						defaultStore.set("reactions", [...defaultStore.state.reactions,reaction]);
-						os.success();
+						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+						if (emojiHost && instanceEmoji?.includes(emojiName)){
+							defaultStore.set("reactions", [...defaultStore.state.reactions,`:${emojiName}:`]);
+							os.success();
+						} else {
+							defaultStore.set("reactions", [...defaultStore.state.reactions,reaction]);
+							os.success();
+						}
 					},
 				},
 				{
 					text: `${defaultStore.state.reactionsFolderName2 || "2ページ目"}に追加`,
 					action: () => {
-						defaultStore.set("reactions2", [...defaultStore.state.reactions2,reaction]);
-						os.success();
+						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+						if (emojiHost && instanceEmoji?.includes(emojiName)){
+							defaultStore.set("reactions2", [...defaultStore.state.reactions2,`:${emojiName}:`]);
+							os.success();
+						} else {
+							defaultStore.set("reactions2", [...defaultStore.state.reactions2,reaction]);
+							os.success();
+						}
 					},
 				},
 				{
 					text: `${defaultStore.state.reactionsFolderName3 || "3ページ目"}に追加`,
 					action: () => {
-						defaultStore.set("reactions3", [...defaultStore.state.reactions3,reaction]);
-						os.success();
+						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+						if (emojiHost && instanceEmoji?.includes(emojiName)){
+							defaultStore.set("reactions3", [...defaultStore.state.reactions3,`:${emojiName}:`]);
+							os.success();
+						} else {
+							defaultStore.set("reactions3", [...defaultStore.state.reactions3,reaction]);
+							os.success();
+						}
 					},
 				},
 				{
 					text: `${defaultStore.state.reactionsFolderName4 || "4ページ目"}に追加`,
 					action: () => {
-						defaultStore.set("reactions4", [...defaultStore.state.reactions4,reaction]);
-						os.success();
+						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+						if (emojiHost && instanceEmoji?.includes(emojiName)){
+							defaultStore.set("reactions4", [...defaultStore.state.reactions4,`:${emojiName}:`]);
+							os.success();
+						} else {
+							defaultStore.set("reactions4", [...defaultStore.state.reactions4,reaction]);
+							os.success();
+						}
 					},
 				},
 				{
 					text: `${defaultStore.state.reactionsFolderName5 || "5ページ目"}に追加`,
 					action: () => {
-						defaultStore.set("reactions5", [...defaultStore.state.reactions5,reaction]);
-						os.success();
+						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+						if (emojiHost && instanceEmoji?.includes(emojiName)){
+							defaultStore.set("reactions5", [...defaultStore.state.reactions5,`:${emojiName}:`]);
+							os.success();
+						} else {
+							defaultStore.set("reactions5", [...defaultStore.state.reactions5,reaction]);
+							os.success();
+						}
 					},
 				},
 			],

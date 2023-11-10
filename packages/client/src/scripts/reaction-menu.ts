@@ -3,7 +3,7 @@ import { host } from "@/config";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
-import MkRippleEffect from '@/components/MkRippleEffect.vue';
+import MkRippleEffect from '@/components/MkRipple.vue';
 
 const createReaction = ({ noteId, reaction }: { noteId: string, reaction: string }): Promise<null> => {
 	return os.api('notes/reactions/create', { noteId, reaction });

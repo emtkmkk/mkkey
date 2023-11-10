@@ -22,8 +22,8 @@ const rippleEffect = (el: HTMLElement | null | undefined): void => {
 };
 
 export function openReactionMenu_(reaction, note, canToggle, multi, reactButton) {
-	const emojiName = reaction.split("@")?.[0].replaceAll(":", "");
-	let emojiHost = reaction.split("@")?.[1].replaceAll(":", "");
+	const emojiName = reaction.split("@")?.[0]?.replaceAll(":", "");
+	let emojiHost = reaction.split("@")?.[1]?.replaceAll(":", "");
 	const noteId = note.id;
 	const menu: any[] = [];
 

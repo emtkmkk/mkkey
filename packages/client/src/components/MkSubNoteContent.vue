@@ -28,6 +28,8 @@
 			:author="note.user"
 			:i="$i"
 			:custom-emojis="note.emojis"
+			:reaction-menu-enabled="true"
+			:note="note"
 		/>
 	</p>
 	<div class="wrmlmaau">
@@ -81,6 +83,8 @@
 					:author="note.user"
 					:i="$i"
 					:custom-emojis="note.emojis"
+					:reaction-menu-enabled="true"
+					:note="note"
 				/>
 				<MkA
 					v-if="!detailed && note.renoteId"

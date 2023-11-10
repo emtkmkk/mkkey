@@ -48,6 +48,14 @@ export default defineComponent({
 		noteHost: {
 			required: false,
 		},
+		reactionMenuEnabled: {
+			type: Boolean,
+			default: false,
+		},
+		note: {
+			type: Object,
+			default: null,
+		},
 	},
 
 	render() {
@@ -493,6 +501,8 @@ export default defineComponent({
 											customEmojis: this.customEmojis,
 											normal: this.plain,
 											noteHost: noteHost,
+											reactionMenuEnabled: this.reactionMenuEnabled,
+											note: this.note,
 										}),
 									],
 								);
@@ -509,6 +519,8 @@ export default defineComponent({
 											customEmojis: this.customEmojis,
 											normal: this.plain,
 											noteHost: noteHost,
+											reactionMenuEnabled: this.reactionMenuEnabled,
+											note: this.note,
 										}),
 									],
 								);
@@ -520,6 +532,8 @@ export default defineComponent({
 										customEmojis: this.customEmojis,
 										normal: this.plain,
 										noteHost: noteHost,
+										reactionMenuEnabled: this.reactionMenuEnabled,
+										note: this.note,
 									}),
 								];
 							}
@@ -538,6 +552,8 @@ export default defineComponent({
 											emoji: token.props.emoji,
 											customEmojis: this.customEmojis,
 											normal: this.plain,
+											reactionMenuEnabled: this.reactionMenuEnabled,
+											note: this.note,
 										}),
 									],
 								);
@@ -553,6 +569,8 @@ export default defineComponent({
 											emoji: token.props.emoji,
 											customEmojis: this.customEmojis,
 											normal: this.plain,
+											reactionMenuEnabled: this.reactionMenuEnabled,
+											note: this.note,
 										}),
 									],
 								);
@@ -563,6 +581,8 @@ export default defineComponent({
 										emoji: token.props.emoji,
 										customEmojis: this.customEmojis,
 										normal: this.plain,
+										reactionMenuEnabled: this.reactionMenuEnabled,
+										note: this.note,
 									}),
 								];
 							}

@@ -1054,6 +1054,11 @@ export const defaultStore = markRaw(
 			createdAt: "2023/11/9",
 			page: "general",
 		},
+		noteReactionMenu: {
+			where: 'device',
+			default: true,
+			createdAt: "2023/11/11",
+		},
 	}),
 );
 

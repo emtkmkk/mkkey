@@ -9,6 +9,8 @@
 		:noteHost="noteHost"
 		class="havbbuyv"
 		:class="{ nowrap }"
+		:reaction-menu-enabled="reactionMenuEnabled"
+		:note="note"
 	/>
 </template>
 
@@ -25,6 +27,8 @@ const props = withDefaults(
 		customEmojis?: any;
 		isNote?: boolean;
 		noteHost?: string;
+		reactionMenuEnabled?: boolean;
+		note?: any;
 	}>(),
 	{
 		plain: false,
@@ -32,6 +36,8 @@ const props = withDefaults(
 		author: null,
 		isNote: true,
 		noteHost: null,
+		reactionMenuEnabled: false,
+		note: null,
 	}
 );
 </script>

@@ -50,7 +50,7 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 		? note.myReactions?.some((x) => x?.replace(/@[\w:\.\-]+:$/,"@") === reaction?.replace(/@[\w:\.\-]+:$/,"@"))
 		: note.myReaction && note.myReaction?.replace(/@[\w:\.\-]+:$/,"@") === reaction?.replace(/@[\w:\.\-]+:$/,"@");
 
-	if (!canToggle) {
+	if (canToggle) {
 		if (multi){
 			if (reacted) {
 				menu.push({
@@ -125,35 +125,35 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 				{
 					text: `${defaultStore.state.reactionsFolderName || "1ページ目"}に追加`,
 					action: () => {
-					  defaultStore.state.reactions = [...defaultStore.state.reactions,reaction];
+						defaultStore.set("reactions", [...defaultStore.state.reactions,reaction]);
 						os.success();
 					},
 				},
 				{
 					text: `${defaultStore.state.reactionsFolderName2 || "2ページ目"}に追加`,
 					action: () => {
-					  defaultStore.state.reactions2 = [...defaultStore.state.reactions2,reaction];
+						defaultStore.set("reactions2", [...defaultStore.state.reactions2,reaction]);
 						os.success();
 					},
 				},
 				{
 					text: `${defaultStore.state.reactionsFolderName3 || "3ページ目"}に追加`,
 					action: () => {
-					  defaultStore.state.reactions3 = [...defaultStore.state.reactions3,reaction];
+						defaultStore.set("reactions3", [...defaultStore.state.reactions3,reaction]);
 						os.success();
 					},
 				},
 				{
 					text: `${defaultStore.state.reactionsFolderName4 || "4ページ目"}に追加`,
 					action: () => {
-					  defaultStore.state.reactions4 = [...defaultStore.state.reactions4,reaction];
+						defaultStore.set("reactions4", [...defaultStore.state.reactions4,reaction]);
 						os.success();
 					},
 				},
 				{
 					text: `${defaultStore.state.reactionsFolderName5 || "5ページ目"}に追加`,
 					action: () => {
-					  defaultStore.state.reactions5 = [...defaultStore.state.reactions5,reaction];
+						defaultStore.set("reactions5", [...defaultStore.state.reactions5,reaction]);
 						os.success();
 					},
 				},

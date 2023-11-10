@@ -203,7 +203,7 @@ const altimgUrl = computed(() => {
 });
 
 const alt = computed(() => {
-	return `:${emojiFullName.value}:`;
+	return isCustom.value ? `:${emojiFullName.value}:` : props.emoji;
 });
 
 
@@ -215,7 +215,7 @@ const handleImgClick = (event) => {
 		const el =
 			event &&
 			((event.currentTarget ?? event.target) as HTMLElement | null | undefined);
-		openReactionMenu_(isCustom ? `:${emojiFullName.value}:` : props.emoji, props.note, true, true, el);
+		openReactionMenu_(isCustom.value ? `:${emojiFullName.value}:` : props.emoji, props.note, true, true, el);
 	} else if (props.note && defaultStore.state.noteQuickReaction && urlRaw.value.length >= errorCnt.value){
 		const el =
 			ev &&

@@ -110,93 +110,144 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 	});
 
 	if (((defaultStore.state.reactions2?.length ?? 0) + (defaultStore.state.reactions3?.length ?? 0) + (defaultStore.state.reactions4?.length ?? 0) + (defaultStore.state.reactions5?.length ?? 0)) === 0) {
-		menu.push({
-			text: i18n.ts.plusPinnedEmoji,
-			icon: "ph-list-plus ph-bold ph-lg",
-			action: () => {
-						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
-						if (emojiHost && instanceEmoji?.includes(emojiName)){
-							defaultStore.set("reactions", [...defaultStore.state.reactions,`:${emojiName}:`]);
-							os.success();
-						} else {
-							defaultStore.set("reactions", [...defaultStore.state.reactions,reaction]);
-							os.success();
-						}
-			},
-		});
+		if (!defaultStore.state.reactions.includes(reaction) && !defaultStore.state.reactions.includes(`:${emojiName}:`)) {
+			menu.push({
+				text: i18n.ts.plusPinnedEmoji,
+				icon: "ph-list-plus ph-bold ph-lg",
+				action: () => {
+					const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+					if (emojiHost && instanceEmoji?.includes(emojiName)) {
+						defaultStore.set("reactions", [
+							...defaultStore.state.reactions,
+							`:${emojiName}:`,
+						]);
+						os.success();
+					} else {
+						defaultStore.set("reactions", [
+							...defaultStore.state.reactions,
+							reaction,
+						]);
+						os.success();
+					}
+				},
+			});
+		}
 	} else {
-		menu.push({
-			type: "parent",
-			text: i18n.ts.plusPinnedEmoji,
-			icon: "ph-list-plus ph-bold ph-lg",
-			children: [
-				{
-					text: `${defaultStore.state.reactionsFolderName || "1ページ目"}に追加`,
-					action: () => {
-						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
-						if (emojiHost && instanceEmoji?.includes(emojiName)){
-							defaultStore.set("reactions", [...defaultStore.state.reactions,`:${emojiName}:`]);
-							os.success();
-						} else {
-							defaultStore.set("reactions", [...defaultStore.state.reactions,reaction]);
-							os.success();
-						}
-					},
+		const childMenu: any[] = [];
+		if (!defaultStore.state.reactions.includes(reaction) && !defaultStore.state.reactions.includes(`:${emojiName}:`)) {
+			childMenu.push({
+				text: `${defaultStore.state.reactionsFolderName || "1ページ目"}に追加`,
+				action: () => {
+					const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+					if (emojiHost && instanceEmoji?.includes(emojiName)) {
+						defaultStore.set("reactions", [
+							...defaultStore.state.reactions,
+							`:${emojiName}:`,
+						]);
+						os.success();
+					} else {
+						defaultStore.set("reactions", [
+							...defaultStore.state.reactions,
+							reaction,
+						]);
+						os.success();
+					}
 				},
-				{
-					text: `${defaultStore.state.reactionsFolderName2 || "2ページ目"}に追加`,
-					action: () => {
-						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
-						if (emojiHost && instanceEmoji?.includes(emojiName)){
-							defaultStore.set("reactions2", [...defaultStore.state.reactions2,`:${emojiName}:`]);
-							os.success();
-						} else {
-							defaultStore.set("reactions2", [...defaultStore.state.reactions2,reaction]);
-							os.success();
-						}
-					},
+			});
+		}
+		if (!defaultStore.state.reactions2.includes(reaction) && !defaultStore.state.reactions2.includes(`:${emojiName}:`)) {
+			childMenu.push({
+				text: `${defaultStore.state.reactionsFolderName2 || "2ページ目"}に追加`,
+				action: () => {
+					const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+					if (emojiHost && instanceEmoji?.includes(emojiName)) {
+						defaultStore.set("reactions2", [
+							...defaultStore.state.reactions2,
+							`:${emojiName}:`,
+						]);
+						os.success();
+					} else {
+						defaultStore.set("reactions2", [
+							...defaultStore.state.reactions2,
+							reaction,
+						]);
+						os.success();
+					}
 				},
-				{
-					text: `${defaultStore.state.reactionsFolderName3 || "3ページ目"}に追加`,
-					action: () => {
-						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
-						if (emojiHost && instanceEmoji?.includes(emojiName)){
-							defaultStore.set("reactions3", [...defaultStore.state.reactions3,`:${emojiName}:`]);
-							os.success();
-						} else {
-							defaultStore.set("reactions3", [...defaultStore.state.reactions3,reaction]);
-							os.success();
-						}
-					},
+			});
+		}
+		if (!defaultStore.state.reactions3.includes(reaction) && !defaultStore.state.reactions3.includes(`:${emojiName}:`)) {
+			childMenu.push({
+				text: `${defaultStore.state.reactionsFolderName3 || "3ページ目"}に追加`,
+				action: () => {
+					const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+					if (emojiHost && instanceEmoji?.includes(emojiName)) {
+						defaultStore.set("reactions3", [
+							...defaultStore.state.reactions3,
+							`:${emojiName}:`,
+						]);
+						os.success();
+					} else {
+						defaultStore.set("reactions3", [
+							...defaultStore.state.reactions3,
+							reaction,
+						]);
+						os.success();
+					}
 				},
-				{
-					text: `${defaultStore.state.reactionsFolderName4 || "4ページ目"}に追加`,
-					action: () => {
-						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
-						if (emojiHost && instanceEmoji?.includes(emojiName)){
-							defaultStore.set("reactions4", [...defaultStore.state.reactions4,`:${emojiName}:`]);
-							os.success();
-						} else {
-							defaultStore.set("reactions4", [...defaultStore.state.reactions4,reaction]);
-							os.success();
-						}
-					},
+			});
+		}
+		if (!defaultStore.state.reactions4.includes(reaction) && !defaultStore.state.reactions4.includes(`:${emojiName}:`)) {
+			childMenu.push({
+				text: `${defaultStore.state.reactionsFolderName4 || "4ページ目"}に追加`,
+				action: () => {
+					const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+					if (emojiHost && instanceEmoji?.includes(emojiName)) {
+						defaultStore.set("reactions4", [
+							...defaultStore.state.reactions4,
+							`:${emojiName}:`,
+						]);
+						os.success();
+					} else {
+						defaultStore.set("reactions4", [
+							...defaultStore.state.reactions4,
+							reaction,
+						]);
+						os.success();
+					}
 				},
-				{
-					text: `${defaultStore.state.reactionsFolderName5 || "5ページ目"}に追加`,
-					action: () => {
-						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
-						if (emojiHost && instanceEmoji?.includes(emojiName)){
-							defaultStore.set("reactions5", [...defaultStore.state.reactions5,`:${emojiName}:`]);
-							os.success();
-						} else {
-							defaultStore.set("reactions5", [...defaultStore.state.reactions5,reaction]);
-							os.success();
-						}
-					},
+			});
+		}
+		if (!defaultStore.state.reactions5.includes(reaction) && !defaultStore.state.reactions5.includes(`:${emojiName}:`)) {
+			childMenu.push({
+				text: `${defaultStore.state.reactionsFolderName5 || "5ページ目"}に追加`,
+				action: () => {
+					const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
+					if (emojiHost && instanceEmoji?.includes(emojiName)) {
+						defaultStore.set("reactions5", [
+							...defaultStore.state.reactions5,
+							`:${emojiName}:`,
+						]);
+						os.success();
+					} else {
+						defaultStore.set("reactions5", [
+							...defaultStore.state.reactions5,
+							reaction,
+						]);
+						os.success();
+					}
 				},
-			],
-		});
+			});
+		}
+
+		if (childMenu.length > 0) {
+			menu.push({
+				type: "parent",
+				text: i18n.ts.plusPinnedEmoji,
+				icon: "ph-list-plus ph-bold ph-lg",
+				children: childMenu,
+			});
+		}
 	}
 
 	os.popupMenu(menu, reactButton);

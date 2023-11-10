@@ -7,7 +7,7 @@
 		:alt="alt"
 		:title="alt"
 		decoding="async"
-		@click="handleImgClick"
+		@click.stop="handleImgClick"
 		@error="() => {
 			if (isPicker) {
 				emit('loaderror', '');
@@ -26,7 +26,7 @@
 		:alt="alt"
 		:title="alt"
 		decoding="async"
-		@click="handleImgClick"
+		@click.stop="handleImgClick"
 	/>
 	<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick">{{ char }}</span>
 	<img

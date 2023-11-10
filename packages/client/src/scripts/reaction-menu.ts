@@ -35,7 +35,7 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 			}
 		);
 	}
-	if (emojiHost && host !== emojiHost){
+	if (emojiHost && host !== emojiHost && emojiHost !== "."){
 		menu.push(
 			{
 				text: `@${emojiHost}`,
@@ -47,8 +47,8 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 	}
 
 	const reacted = multi
-		? note.myReactions?.some((x) => x?.replace(/@[\w:\.\-]+:$/,"@") === reaction?.replace(/@[\w:\.\-]+:$/,"@"))
-		: note.myReaction && note.myReaction?.replace(/@[\w:\.\-]+:$/,"@") === reaction?.replace(/@[\w:\.\-]+:$/,"@");
+		? note.myReactions?.some((x) => x?.replace(/@[\w:\.\-]+:$/,"@") === `:${emojiName}@${emojiHost || "."}:`?.replace(/@[\w:\.\-]+:$/,"@"))
+		: note.myReaction && note.myReaction?.replace(/@[\w:\.\-]+:$/,"@") === `:${emojiName}@${emojiHost || "."}:`?.replace(/@[\w:\.\-]+:$/,"@");
 
 	if (canToggle) {
 		if (multi){
@@ -112,7 +112,7 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 			text: i18n.ts.plusPinnedEmoji,
 			icon: "ph-list-plus ph-bold ph-lg",
 			action: () => {
-				defaultStore.state.reactions = [...defaultStore.state.reactions,reaction];
+				defaultStore.set("reactions", [...defaultStore.state.reactions,reaction]);
 				os.success();
 			},
 		});

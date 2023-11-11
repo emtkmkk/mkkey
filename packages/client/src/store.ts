@@ -1059,6 +1059,12 @@ export const defaultStore = markRaw(
 			default: true,
 			createdAt: "2023/11/11",
 		},
+		showReactionMenu: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/11/11",
+			page: "reactions",
+		},
 	}),
 );
 

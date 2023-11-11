@@ -9,7 +9,7 @@
 			canToggle,
 			newlyAdded: !isInitial,
 		}"
-		@click="toggleReaction()"
+		@click="toggleReaction"
 	>
 		<XReactionIcon
 			class="icon"
@@ -36,6 +36,8 @@ import * as os from "@/os";
 import { useTooltip } from "@/scripts/use-tooltip";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
+import { defaultStore } from "@/store";
+import { openReactionMenu_ } from "@/scripts/reaction-menu";
 
 const props = defineProps<{
 	reaction: string;
@@ -52,56 +54,67 @@ const countChanged = ref(null);
 const canToggle = computed(() => $i && (!$i.isSilenced || props.note.user.isFollowed));
 
 const reacted = computed(() => {
-	return props.multi 
+	return props.multi
 		? props.note.myReactions && props.note.myReactions.some((x) => x?.replace(/@[\w:\.\-]+:$/,"@") === props.reaction?.replace(/@[\w:\.\-]+:$/,"@"))
 		: props.note.myReaction && props.note.myReaction?.replace(/@[\w:\.\-]+:$/,"@") === props.reaction?.replace(/@[\w:\.\-]+:$/,"@")
 });
 
-async function toggleReaction() {
-	if (!canToggle.value) return;
-	
-	if (props.multi) {
-		if (reacted.value) {
-			const confirm = await os.confirm({
-				type: 'warning',
-				text: i18n.ts.cancelReactionConfirm,
-			});
-			if (confirm.canceled) return;
+async function toggleReaction(event) {
 
-			os.api("notes/reactions/delete", {
-				noteId: props.note.id,
-				reaction: props.reaction,
-			})
-		} else {
-			os.api("notes/reactions/create", {
-				noteId: props.note.id,
-				reaction: props.reaction,
-			});
-		}
+	if (defaultStore.state.showReactionMenu) {
+
+		const el =
+			event &&
+			((event.currentTarget ?? event.target) as HTMLElement | null | undefined);
+		openReactionMenu_(props.reaction, props.note, canToggle.value, props.multi, el);
+
 	} else {
-		const oldReaction = props.note.myReaction;
-		if (oldReaction && reacted.value) {
-			const confirm = await os.confirm({
-				type: 'warning',
-				text: i18n.ts.cancelReactionConfirm,
-			});
-			if (confirm.canceled) return;
-			os.api("notes/reactions/delete", {
-				noteId: props.note.id,
-				reaction: props.reaction,
-			}).then(() => {
-				if (false) {
-					os.api("notes/reactions/create", {
-						noteId: props.note.id,
-						reaction: props.reaction,
-					});
-				}
-			});
-		} else if (!oldReaction) {
-			os.api("notes/reactions/create", {
-				noteId: props.note.id,
-				reaction: props.reaction,
-			});
+
+		if (!canToggle.value) return;
+
+		if (props.multi) {
+			if (reacted.value) {
+				const confirm = await os.confirm({
+					type: 'warning',
+					text: i18n.ts.cancelReactionConfirm,
+				});
+				if (confirm.canceled) return;
+
+				os.api("notes/reactions/delete", {
+					noteId: props.note.id,
+					reaction: props.reaction,
+				})
+			} else {
+				os.api("notes/reactions/create", {
+					noteId: props.note.id,
+					reaction: props.reaction,
+				});
+			}
+		} else {
+			const oldReaction = props.note.myReaction;
+			if (oldReaction && reacted.value) {
+				const confirm = await os.confirm({
+					type: 'warning',
+					text: i18n.ts.cancelReactionConfirm,
+				});
+				if (confirm.canceled) return;
+				os.api("notes/reactions/delete", {
+					noteId: props.note.id,
+					reaction: props.reaction,
+				}).then(() => {
+					if (false) {
+						os.api("notes/reactions/create", {
+							noteId: props.note.id,
+							reaction: props.reaction,
+						});
+					}
+				});
+			} else if (!oldReaction) {
+				os.api("notes/reactions/create", {
+					noteId: props.note.id,
+					reaction: props.reaction,
+				});
+			}
 		}
 	}
 };
@@ -114,7 +127,7 @@ watch(() => props.count, (newVal, oldVal) => {
         // 減少時の処理
         countChanged.value = "decreased";
     }
-    
+
     setTimeout(() => {
         countChanged.value = null;
     }, 500);  // 500ms後にリセット
@@ -131,10 +144,10 @@ useTooltip(
 		});
 
 		const users = reactions.map((x) => x.user);
-		
-		const popupReaction = props.multi 
+
+		const popupReaction = props.multi
 			? props.reaction
-			: (reacted.value && props.note.myReaction !== props.reaction.value) 
+			: (reacted.value && props.note.myReaction !== props.reaction.value)
 				? props.note.myReaction
 				: props.reaction;
 
@@ -216,7 +229,7 @@ useTooltip(
 			filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
 		}
 	}
-	
+
 	&.reacted, &.reacted:hover {
 		background: var(--accentedBg);
 		color: var(--accent);
@@ -227,7 +240,7 @@ useTooltip(
 		font-size: 0.9em;
 		line-height: 32px;
 		margin: 0 0 0 4px;
-		
+
 		&.count-increased {
 			animation: textColorChanged 1s;
 		}

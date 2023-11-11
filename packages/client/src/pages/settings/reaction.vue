@@ -241,6 +241,12 @@
 				{{ i18n.ts.doubleTapReaction }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			</FormSwitch>
 			<FormSwitch
+				v-model="showReactionMenu"
+				class="_formBlock"
+			>
+				{{ i18n.ts.showReactionMenu }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			</FormSwitch>
+			<FormSwitch
 				v-model="recentlyUsedDefaultOpen"
 				class="_formBlock"
 				v-if="((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0 && !hiddenRecent && !hiddenReactionDeckAndRecent"
@@ -279,7 +285,7 @@
 			>
 				{{ i18n.ts.disableAllIncludesSearch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			</FormSwitch>
-			
+
 			<FormSelect v-if="!isMobile" v-model="remoteEmojisFetch" class="_formBlock">
 				<template #label>{{ i18n.ts.remoteEmojisFetch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 				<option value="always">{{ i18n.ts._remoteEmojisFetchForPc.always }}</option>
@@ -296,7 +302,7 @@
 				<option value="none">{{ i18n.ts._remoteEmojisFetch.none }}</option>
 				<option value="always">{{ i18n.ts._remoteEmojisFetch.always }}</option>
 			</FormSelect>
-			
+
 			<FormSection>
 				<FormRadios
 					v-model="favButtonReaction"
@@ -357,7 +363,7 @@
 					</option>
 				</FormRadios>
 			</FormSection>
-			
+
 			<FormRadios v-model="reactionPickerSize" class="_formBlock">
 				<template #label>{{ i18n.ts.size }}</template>
 				<option :value="-6">{{ i18n.ts.small }}-7</option>
@@ -413,7 +419,7 @@
 				<option :value="9">{{ i18n.ts.large }}+6</option>
 				<option :value="10">Auto(90%)</option>
 			</FormRadios>
-			
+
 			<FormSwitch
 				v-model="usePickerSizePostForm"
 				class="_formBlock"
@@ -428,7 +434,7 @@
 				{{ i18n.ts.useDrawerReactionPickerForMobile }}
 				<template #caption>{{ i18n.ts.needReloadToApply }}</template>
 			</FormSwitch>
-			
+
 			<FormSection>
 				<div style="display: flex; gap: var(--margin); flex-wrap: wrap">
 					<FormButton inline @click="preview"
@@ -592,16 +598,19 @@ const doubleTapReaction = $computed(
 const hiddenReactionNumber = $computed(
 	defaultStore.makeGetterSetter("hiddenReactionNumber")
 );
-let customEmojis = computed(() => 
+const showReactionMenu = $computed(
+	defaultStore.makeGetterSetter("showReactionMenu")
+);
+let customEmojis = computed(() =>
 	instance.emojis
 );
-let allCustomEmojis = computed(() => 
+let allCustomEmojis = computed(() =>
 	instance.allEmojis
 );
-let emojiStr = computed(() => 
+let emojiStr = computed(() =>
 	unref(customEmojis) ? unref(customEmojis).map((x) => ":" + x.name + ":") : undefined
 );
-let remoteEmojiStr = computed(() => 
+let remoteEmojiStr = computed(() =>
 	unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
 );
 const enableInstanceEmojiSearch = $computed(
@@ -615,13 +624,13 @@ const usePickerSizePostForm = $computed(
 );
 
 const editPage = $computed(() => {
-		return tab === 'reactions' 
+		return tab === 'reactions'
 		? reactions
-		: tab === 'reactions2' 
+		: tab === 'reactions2'
 			? reactions2
-			: tab === 'reactions3' 
+			: tab === 'reactions3'
 				? reactions3
-				: tab === 'reactions4' 
+				: tab === 'reactions4'
 					? reactions4
 					: reactions5;
 });
@@ -748,11 +757,11 @@ async function autoSetEmojis(ev: MouseEvent) {
 		text: "このページに、他のページに登録されていない\n最近頻繁に使用している絵文字を追加します。\n(最大35個)",
 	});
 	if (canceled) return;
-	
+
 	const reactionsSet = new Set([...reactions, ...reactions2, ...reactions3, ...reactions4, ...reactions5]);
-	
+
 	let addCount = 0;
-	
+
 	instance.emojiStats.recentlySentReactions.forEach((x) => {
 		if (!reactionsSet.has(x.name) && addCount < 35) {
 			if (tab === 'reactions') reactions.push(x.name)

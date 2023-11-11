@@ -146,6 +146,9 @@
 			<FormSwitch v-model="showDetailNoteClick" class="_formBlock">{{
 				i18n.ts.showDetailNoteClick
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="noteReactionMenu" class="_formBlock">{{
+				i18n.ts.noteReactionMenu
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="enableDataSaverMode" :disabled="autoSwitchDataSaver" class="_formBlock">{{
 				i18n.ts.dataSaver
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -820,6 +823,9 @@ const enabledAirReply = computed(
 );
 const showLocalTimelineBelowPublic = computed(
 	defaultStore.makeGetterSetter('showLocalTimelineBelowPublic')
+);
+const noteReactionMenu = $computed(
+	defaultStore.makeGetterSetter('noteReactionMenu')
 );
 let blockPostPublic = $ref($i.blockPostPublic);
 

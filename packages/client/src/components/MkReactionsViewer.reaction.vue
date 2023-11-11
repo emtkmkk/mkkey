@@ -2,7 +2,7 @@
 	<button
 		v-if="count > 0 || ['🅰️','🅱️'].includes(reaction)"
 		ref="buttonRef"
-		v-ripple="canToggle"
+		v-ripple="canToggle && !defaultStore.state.showReactionMenu"
 		class="hkzvhatu _button"
 		:class="{
 			reacted,

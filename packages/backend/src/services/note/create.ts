@@ -238,8 +238,8 @@ export default async (
 		if (data.visibility === "specified" && data.localOnly === true) data.localOnly = false;
 		//チャンネルに[localOnly]が含まれている場合はlocalOnlyON
 		if (data.channel != null && data.channel.description?.includes("[localOnly]") && data.localOnly === false) data.localOnly = true;
-		if (!user.host && data.channel != null && data.localOnly === false && !data.reply && !data.text?.includes("#" + data.channel!.name)) {
-			//ローカル投稿でチャンネルで連合有りで返信でなく、
+		if (!user.host && data.channel != null && data.localOnly === false && !data.reply && data.text?.trim() && !data.text?.includes("#" + data.channel!.name)) {
+			//ローカル投稿でチャンネルで連合有りで返信でなくテキストがあり、
 			//すでにタグが含まれていない場合はハッシュタグを自動で付ける
 			data.text += " #" + data.channel!.name;
 		}

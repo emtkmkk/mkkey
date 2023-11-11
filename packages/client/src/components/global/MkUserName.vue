@@ -1,7 +1,7 @@
 <template>
 	<Mfm
 		:class="$style.root"
-		:text="maxlength && (user.name || user.username).length > maxlength ? (user.name?.replaceAll(/\s?:\w+:/g,'') || user.username).slice(0,maxlength) + (user.name?.replaceAll(/\s?:\w+:/g,'')?.length > maxlength ? '…' : '') : (user.name || user.username)"
+		:text="maxlength && (user.name || user.username).length > maxlength ? (user.name?.replaceAll(/\s?:\w+:/g,'')?.trim() || user.username).slice(0,maxlength) + (user.name?.replaceAll(/\s?:\w+:/g,'')?.trim()?.length > maxlength ? '…' : '') : (user.name?.trim() || user.username)"
 		:plain="true"
 		:nowrap="nowrap"
 		:author="user"
@@ -9,7 +9,7 @@
 		:custom-emojis="user.emojis"
 	/>
 	{{ hostIcon && user.host ? '@' : '' }}
-	<img 
+	<img
 		class="icon"
 		style="height:1.1em; border-radis:0.3rem;vertical-align: middle;"
 		v-if="hostIcon && getIcon(hostIcon) && !errorIcon"
@@ -17,7 +17,7 @@
 		aria-hidden="true"
 		@error="errorIcon = true"
 	/>
-	<img 
+	<img
 		class="icon"
 		style="height:1.1em; border-radis:0.3rem;vertical-align: middle;"
 		v-if="altIcon && getIcon(altIcon) && errorIcon && !erroraltIcon"

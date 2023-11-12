@@ -7,7 +7,7 @@
 		:alt="alt"
 		:title="alt"
 		decoding="async"
-		@click.stop="handleImgClick"
+		@click="handleImgClick"
 		@error="() => {
 			if (isPicker) {
 				emit('loaderror', '');
@@ -26,7 +26,7 @@
 		:alt="alt"
 		:title="alt"
 		decoding="async"
-		@click.stop="handleImgClick"
+		@click="handleImgClick"
 	/>
 	<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick">{{ char }}</span>
 	<img
@@ -211,12 +211,14 @@ let singleTapTime = undefined;
 
 const handleImgClick = (event) => {
 	if (props.note && defaultStore.state.noteReactionMenu && urlRaw.value.length >= errorCnt.value) {
+		event.stopPropagation();
 		// TODO: 押せるか押せないかの判定を行えるように
 		const el =
 			event &&
 			((event.currentTarget ?? event.target) as HTMLElement | null | undefined);
 		openReactionMenu_(isCustom.value ? `:${emojiFullName.value}:` : props.emoji, props.note, true, true, el);
-	} else if (props.note && defaultStore.state.noteQuickReaction && urlRaw.value.length >= errorCnt.value){
+	} else if (props.note && defaultStore.state.noteQuickReaction && urlRaw.value.length >= errorCnt.value) {
+		event.stopPropagation();
 		const el =
 			ev &&
 			((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);

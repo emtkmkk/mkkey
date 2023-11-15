@@ -760,6 +760,9 @@ const showDetailNoteClick = $computed(
 const alwaysPostButton = $computed(
 	defaultStore.makeGetterSetter("alwaysPostButton")
 );
+const customFont = $computed(
+	defaultStore.makeGetterSetter("customFont")
+);
 const showSpotlight = computed(defaultStore.makeGetterSetter("showSpotlight"));
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
 let keepPostCw = $computed(defaultStore.makeGetterSetter("keepPostCw"));

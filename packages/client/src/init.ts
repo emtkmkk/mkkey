@@ -33,6 +33,7 @@ import widgets from "@/widgets";
 import directives from "@/directives";
 import components from "@/components";
 import { version, ui, lang, host } from "@/config";
+import { applyFont } from '@/scripts/font';
 import { applyTheme } from "@/scripts/theme";
 import { isDeviceDarkmode } from "@/scripts/is-device-darkmode";
 import { i18n } from "@/i18n";
@@ -55,10 +56,10 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 
 (async () => {
 	console.info(`Calckey v${version}`);
-	
+
 	const currentDate = new Date();
 	const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
-	
+
 	// エラーログのリセット
 	await set("errorLog", [`${formattedDate} - Calckey v${version}`]);
 
@@ -79,7 +80,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	});
 
 	window.addEventListener('unhandledrejection', async (event) => {
-		
+
 		const currentDate = new Date();
 		const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
 
@@ -94,9 +95,9 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 
 		await set("errorLog", currentLogs);
 	});
-	
 
-	
+
+
 	if (_DEV_) {
 		console.warn("Development mode!!!");
 
@@ -242,8 +243,8 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 						? defineAsyncComponent(() => import("@/ui/classic.vue"))
 						: defineAsyncComponent(() => import("@/ui/universal.vue")),
 	);
-	
-	
+
+
 	app.config.errorHandler = async (err, vm, info) => {
 		const currentDate = new Date();
 		const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
@@ -276,9 +277,9 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	widgets(app);
 	directives(app);
 	components(app);
-	
+
 	const wait = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
-	
+
 	// ロードを長くする設定がオンの場合、2.2秒待つ
 	if ($i && defaultStore.state.longLoading) await wait(2200);
 
@@ -393,13 +394,21 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		}
 	});
 	//#endregion
-	
+
 	//#region Auto switch data saver
 	if (defaultStore.state.autoSwitchDataSaver) {
 		defaultStore.set('enableDataSaverMode', isMobileData());
 		initializeDetectNetworkChange();
 	}
 	//#endregion
+
+	if (defaultStore.state.customFont) {
+		applyFont(defaultStore.state.customFont);
+	}
+
+	watch(defaultStore.reactiveState.customFont, (font) => {
+		applyFont(font);
+	});
 
 	fetchInstanceMetaPromise.then(() => {
 		const reInit = darkTheme?.name === "Rosé Pine" && lightTheme?.name === "l-rosepinedawn"
@@ -491,8 +500,8 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				text: i18n.ts.accountDeletionInProgress,
 			});
 		}
-		
-		
+
+
 		fetchInstanceMetaPromise.then(async () => {
 			fetchEmoji();
 			fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
@@ -562,7 +571,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 					defaultStore.set("showLocalPostsInfoPopup",true);
 				}
 			}
-			
+
 			if (
 				!defaultStore.state.showInviteInfoPopupAccount &&
 				!defaultStore.state.showInviteInfoPopupDevice

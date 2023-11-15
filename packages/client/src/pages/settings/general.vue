@@ -329,6 +329,11 @@
 					<Mfm :key="useOsNativeEmojis" text="🍮🍦🍭🍩🍰🍫🍬🥞🍪" />
 				</div>
 			</FormSwitch>
+			<MkSelect v-model="customFont">
+				<template #label>{{ i18n.ts.customFont }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+				<option :value="null">{{ i18n.ts.default }}</option>
+				<option v-for="[name, font] of Object.entries(fontList)" :value="name">{{ font.name }}</option>
+			</MkSelect>
 			<FormSwitch v-model="disableDrawer" class="_formBlock">{{
 				i18n.ts.disableDrawer
 			}}</FormSwitch>
@@ -555,6 +560,7 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deviceKind } from "@/scripts/device-kind";
 import { isSupportNavigatorConnection } from '@/scripts/datasaver';
+import { fontList } from '@/scripts/font';
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;

@@ -1030,11 +1030,11 @@ export const defaultStore = markRaw(
 			createdAt: "2023/9/29",
 			page: "reaction",
 		},
-		userSelectFontFamily: {
+		customFont: {
 			where: 'device',
-			default: false,
-			createdAt: "2023/9/29",
-			page: "theme",
+			default: null,
+			createdAt: "2023/11/16",
+			page: "general",
 		},
 		hiddenLTL: {
 			where: 'device',

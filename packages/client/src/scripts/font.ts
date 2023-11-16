@@ -9,16 +9,6 @@ export const fontList = {
 		fontFamily: 'Noto Serif JP',
 		importUrl: 'https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap',
 	},
-	'kosugi': {
-		name: '小杉',
-		fontFamily: 'Kosugi',
-		importUrl: 'https://fonts.googleapis.com/css2?family=Kosugi&display=swap',
-	},
-	'kosugi-maru': {
-		name: '小杉丸',
-		fontFamily: 'Kosugi Maru',
-		importUrl: 'https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap',
-	},
 	'sawarabi Gothic': {
 		name: 'さわらびゴシック',
 		fontFamily: 'Sawarabi Gothic',
@@ -48,6 +38,11 @@ export const fontList = {
 		name: 'M PLUS 2',
 		fontFamily: 'M PLUS 2',
 		importUrl: 'https://fonts.googleapis.com/css2?family=M+PLUS+2&display=swap',
+	},
+	'kosugi': {
+		name: '小杉',
+		fontFamily: 'Kosugi',
+		importUrl: 'https://fonts.googleapis.com/css2?family=Kosugi&display=swap',
 	},
 	'kosugi-maru': {
 		name: '小杉丸ゴシック',

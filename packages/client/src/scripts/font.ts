@@ -99,6 +99,11 @@ export const fontList = {
 		fontFamily: 'Zen Maru Gothic',
 		importUrl: 'https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&display=swap',
 	},
+	'sinecaption': {
+		name: 'しねきゃぷしょん',
+		fontFamily: 'しねきゃぷしょん',
+		importUrl: 'https://mkkey.net/static-assets/sinecaption.css',
+	},
 	'kaisei-decol': {
 		name: '解星デコール',
 		fontFamily: 'Kaisei Decol',

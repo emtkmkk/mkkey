@@ -334,6 +334,12 @@
 				<option :value="null">{{ i18n.ts.default }}</option>
 				<option v-for="[name, font] of Object.entries(fontList)" :value="name">{{ font.name }}</option>
 			</FormSelect>
+			<FormSwitch
+				v-model="randomCustomFont"
+				class="_formBlock"
+			>
+				{{ i18n.ts.randomCustomFont }}
+			<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="disableDrawer" class="_formBlock">{{
 				i18n.ts.disableDrawer
 			}}</FormSwitch>
@@ -762,6 +768,9 @@ const alwaysPostButton = $computed(
 );
 const customFont = $computed(
 	defaultStore.makeGetterSetter("customFont")
+);
+const randomCustomFont = $computed(
+	defaultStore.makeGetterSetter("randomCustomFont")
 );
 const showSpotlight = computed(defaultStore.makeGetterSetter("showSpotlight"));
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));

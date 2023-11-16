@@ -33,7 +33,7 @@ import widgets from "@/widgets";
 import directives from "@/directives";
 import components from "@/components";
 import { version, ui, lang, host } from "@/config";
-import { applyFont } from '@/scripts/font';
+import { applyFont, fontList } from '@/scripts/font';
 import { applyTheme } from "@/scripts/theme";
 import { isDeviceDarkmode } from "@/scripts/is-device-darkmode";
 import { i18n } from "@/i18n";
@@ -401,6 +401,13 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		initializeDetectNetworkChange();
 	}
 	//#endregion
+
+	if (defaultStore.state.randomCustomFont) {
+		const _fontList = {...fontList};
+
+		_fontList.esenapaj = undefined;
+		defaultStore.set("customFont", _fontList[Math.random() * Object.keys(fontList).length]);
+	}
 
 	if (defaultStore.state.customFont) {
 		applyFont(defaultStore.state.customFont);

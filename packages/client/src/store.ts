@@ -1036,6 +1036,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/11/16",
 			page: "general",
 		},
+		randomCustomFont: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/11/16",
+			page: "general",
+		},
 		hiddenLTL: {
 			where: 'device',
 			default: false,

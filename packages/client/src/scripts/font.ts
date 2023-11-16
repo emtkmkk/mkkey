@@ -126,8 +126,8 @@ export const fontList = {
 	},
 	'esenapaj': {
 		name: 'エセナパJ',
-		fontFamily: 'esenapaj',
-		importUrl: 'https://cdn.rawgit.com/raspi0124/my-sites-files/097f6373/esenapaj.ttf',
+		fontFamily: 'EsenapaJ',
+		importUrl: 'https://mkkey.net/static-assets/esenapaj.css',
 	},
 };
 

@@ -124,6 +124,11 @@ export const fontList = {
 		fontFamily: 'DotGothic16',
 		importUrl: 'https://fonts.googleapis.com/css2?family=DotGothic16&display=swap',
 	},
+	'esenapaj': {
+		name: 'エセナパJ',
+		fontFamily: 'esenapaj',
+		importUrl: 'https://cdn.rawgit.com/raspi0124/my-sites-files/097f6373/esenapaj.ttf',
+	},
 };
 
 export function applyFont(fontname: null | string) {

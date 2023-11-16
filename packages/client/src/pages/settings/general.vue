@@ -329,11 +329,11 @@
 					<Mfm :key="useOsNativeEmojis" text="🍮🍦🍭🍩🍰🍫🍬🥞🍪" />
 				</div>
 			</FormSwitch>
-			<MkSelect v-model="customFont">
+			<FormSelect v-model="customFont">
 				<template #label>{{ i18n.ts.customFont }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 				<option :value="null">{{ i18n.ts.default }}</option>
 				<option v-for="[name, font] of Object.entries(fontList)" :value="name">{{ font.name }}</option>
-			</MkSelect>
+			</FormSelect>
 			<FormSwitch v-model="disableDrawer" class="_formBlock">{{
 				i18n.ts.disableDrawer
 			}}</FormSwitch>

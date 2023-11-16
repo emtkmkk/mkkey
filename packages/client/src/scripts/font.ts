@@ -14,6 +14,11 @@ export const fontList = {
 		fontFamily: 'Kosugi',
 		importUrl: 'https://fonts.googleapis.com/css2?family=Kosugi&display=swap',
 	},
+	'kosugi-maru': {
+		name: '小杉丸',
+		fontFamily: 'Kosugi Maru',
+		importUrl: 'https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap',
+	},
 	'sawarabi Gothic': {
 		name: 'さわらびゴシック',
 		fontFamily: 'Sawarabi Gothic',
@@ -78,6 +83,11 @@ export const fontList = {
 		name: 'モッチーポップ',
 		fontFamily: 'Mochiy Pop P One',
 		importUrl: 'https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&display=swap',
+	},
+	'potta-one': {
+		name: 'ポッタ One',
+		fontFamily: 'Potta One',
+		importUrl: 'https://fonts.googleapis.com/css2?family=Potta+One&display=swap',
 	},
 	'Yomogi': {
 		name: 'よもぎフォント',

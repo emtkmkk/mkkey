@@ -74,6 +74,26 @@ export const fontList = {
 		fontFamily: 'Yomogi',
 		importUrl: 'https://fonts.googleapis.com/css2?family=Yomogi&display=swap',
 	},
+	'nukamiso': {
+		name: 'ぬかみそフォント',
+		fontFamily: 'ぬかみそフォント',
+		importUrl: 'https://mkkey.net/static-assets/fonts/nukamiso.css',
+	},
+	'bokutatino': {
+		name: 'ぼくたちのゴシック',
+		fontFamily: 'ぼくたちのゴシック',
+		importUrl: 'https://mkkey.net/static-assets/fonts/bokutatino.css',
+	},
+	'tetubin': {
+		name: '鉄瓶ゴシック',
+		fontFamily: '鉄瓶ゴシック',
+		importUrl: 'https://mkkey.net/static-assets/fonts/tetubin.css',
+	},
+	'seto': {
+		name: '瀬戸フォント',
+		fontFamily: '瀬戸フォント',
+		importUrl: 'https://mkkey.net/static-assets/fonts/seto.css',
+	},
 	'sinecaption': {
 		name: 'しねきゃぷしょん',
 		fontFamily: 'しねきゃぷしょん',
@@ -93,6 +113,11 @@ export const fontList = {
 		name: 'モッチーポップ',
 		fontFamily: 'Mochiy Pop P One',
 		importUrl: 'https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&display=swap',
+	},
+	'lightnovel': {
+		name: 'ラノベPOPフォント',
+		fontFamily: 'ラノベPOPフォント',
+		importUrl: 'https://mkkey.net/static-assets/fonts/lightnovel.css',
 	},
 	'potta-one': {
 		name: 'ポッタ One',
@@ -138,6 +163,11 @@ export const fontList = {
 		name: 'ドットゴシック16',
 		fontFamily: 'DotGothic16',
 		importUrl: 'https://fonts.googleapis.com/css2?family=DotGothic16&display=swap',
+	},
+	'pixelmplus12': {
+		name: 'PixelMplus12',
+		fontFamily: 'PixelMplus12 Regular',
+		importUrl: 'https://mkkey.net/static-assets/fonts/pixelmplus12.css',
 	},
 	'esenapaj': {
 		name: 'エセナパJ',

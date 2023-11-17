@@ -69,6 +69,21 @@ export const fontList = {
 		fontFamily: 'New Tegomin',
 		importUrl: 'https://fonts.googleapis.com/css2?family=New+Tegomin&display=swap',
 	},
+	'Yomogi': {
+		name: 'よもぎフォント',
+		fontFamily: 'Yomogi',
+		importUrl: 'https://fonts.googleapis.com/css2?family=Yomogi&display=swap',
+	},
+	'sinecaption': {
+		name: 'しねきゃぷしょん',
+		fontFamily: 'しねきゃぷしょん',
+		importUrl: 'https://mkkey.net/static-assets/sinecaption.css',
+	},
+	'huifontp109': {
+		name: 'ふい字',
+		fontFamily: 'HuiFontP109',
+		importUrl: 'https://mkkey.net/static-assets/huifontp109.css',
+	},
 	'hachi-maru-pop': {
 		name: 'はちまるポップ',
 		fontFamily: 'Hachi Maru Pop',
@@ -84,11 +99,6 @@ export const fontList = {
 		fontFamily: 'Potta One',
 		importUrl: 'https://fonts.googleapis.com/css2?family=Potta+One&display=swap',
 	},
-	'Yomogi': {
-		name: 'よもぎフォント',
-		fontFamily: 'Yomogi',
-		importUrl: 'https://fonts.googleapis.com/css2?family=Yomogi&display=swap',
-	},
 	'klee-one': {
 		name: 'クレー One',
 		fontFamily: 'Klee One',
@@ -103,11 +113,6 @@ export const fontList = {
 		name: 'ZEN丸ゴシック',
 		fontFamily: 'Zen Maru Gothic',
 		importUrl: 'https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&display=swap',
-	},
-	'sinecaption': {
-		name: 'しねきゃぷしょん',
-		fontFamily: 'しねきゃぷしょん',
-		importUrl: 'https://mkkey.net/static-assets/sinecaption.css',
 	},
 	'kaisei-decol': {
 		name: '解星デコール',

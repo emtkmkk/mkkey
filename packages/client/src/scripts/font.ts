@@ -77,12 +77,12 @@ export const fontList = {
 	'sinecaption': {
 		name: 'しねきゃぷしょん',
 		fontFamily: 'しねきゃぷしょん',
-		importUrl: 'https://mkkey.net/static-assets/sinecaption.css',
+		importUrl: 'https://mkkey.net/static-assets/fonts/sinecaption.css',
 	},
 	'huifontp109': {
 		name: 'ふい字',
 		fontFamily: 'HuiFontP109',
-		importUrl: 'https://mkkey.net/static-assets/huifontp109.css',
+		importUrl: 'https://mkkey.net/static-assets/fonts/huifontp109.css',
 	},
 	'hachi-maru-pop': {
 		name: 'はちまるポップ',
@@ -142,7 +142,7 @@ export const fontList = {
 	'esenapaj': {
 		name: 'エセナパJ',
 		fontFamily: 'EsenapaJ',
-		importUrl: 'https://mkkey.net/static-assets/esenapaj.css',
+		importUrl: 'https://mkkey.net/static-assets/fonts/esenapaj.css',
 	},
 };
 

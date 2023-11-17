@@ -1,9 +1,6 @@
 @font-face {
 	font-family: 'HuiFontP109';
-	src: url('/fonts/public/HuiFont/HuiFontP109.eot?#iefix') format('embedded-opentype'),
-		url('/fonts/public/HuiFont/HuiFontP109.woff')format('woff'),
-		url('/fonts/public/HuiFont/HuiFontP109.ttf')format('truetype'),
-		url('/fonts/public/HuiFont/HuiFontP109.svg#HuiFontP109') format('svg');
+	src: url('https://mkkey.net/static-assets/fonts/HuiFontP109.woff') format('woff');
 	font-weight: 400;
 	font-style: normal;
 	font-display: swap;

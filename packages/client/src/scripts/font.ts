@@ -102,7 +102,7 @@ export const fontList = {
 	'huifontp109': {
 		name: 'ふい字',
 		fontFamily: 'HuiFontP109',
-		importUrl: 'https://mkkey.net/static-assets/fonts/huifontp109.css',
+		importUrl: 'https://mkkey.net/static-assets/fonts/huifontp1092.css',
 	},
 	'hachi-maru-pop': {
 		name: 'はちまるポップ',

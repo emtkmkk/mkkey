@@ -402,8 +402,8 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	}
 	//#endregion
 
-	if (defaultStore.state.randomCustomFont) {
-		let _fontList = Object.keys(fontList).filter((x) => x !== "esenapaj");
+	if (defaultStore.state.randomCustomFont && defaultStore.state.customFont !== "esenapaj") {
+		const _fontList = Object.keys(fontList).filter((x) => x !== "esenapaj");
 		defaultStore.set("customFont", _fontList[Math.floor(Math.random() * _fontList.length)]);
 	}
 

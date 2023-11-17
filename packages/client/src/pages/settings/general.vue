@@ -780,7 +780,7 @@ const randomCustomFont = $computed(
 	defaultStore.makeGetterSetter("randomCustomFont")
 );
 const includesRandomEsenapaj = $computed(
-	defaultStore.makeGetterSetterSetter("includesRandomEsenapaj")
+	defaultStore.makeGetterSetter("includesRandomEsenapaj")
 );
 const showSpotlight = computed(defaultStore.makeGetterSetter("showSpotlight"));
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));

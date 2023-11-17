@@ -340,6 +340,13 @@
 			>
 				{{ i18n.ts.randomCustomFont }}
 			<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch
+				v-if="customFont === 'esenapaj' && randomCustomFont"
+				v-model="includesRandomEsenapaj"
+				class="_formBlock"
+			>
+				{{ i18n.ts.includesRandomEsenapaj }}
+			<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="disableDrawer" class="_formBlock">{{
 				i18n.ts.disableDrawer
 			}}</FormSwitch>

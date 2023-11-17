@@ -402,9 +402,16 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	}
 	//#endregion
 
-	if (defaultStore.state.randomCustomFont && defaultStore.state.customFont !== "esenapaj") {
-		const _fontList = Object.keys(fontList).filter((x) => x !== "esenapaj");
-		defaultStore.set("customFont", _fontList[Math.floor(Math.random() * _fontList.length)]);
+	if (defaultStore.state.randomCustomFont) {
+		if (defaultStore.state.includesRandomEsenapaj) {
+				const _fontList = Object.keys(fontList);
+				defaultStore.set("customFont", _fontList[Math.floor(Math.random() * _fontList.length)]);
+		} else {
+			if (defaultStore.state.customFont !== "esenapaj") {
+				const _fontList = Object.keys(fontList).filter((x) => x !== "esenapaj");
+				defaultStore.set("customFont", _fontList[Math.floor(Math.random() * _fontList.length)]);
+			}
+		}
 	}
 
 	if (defaultStore.state.customFont) {

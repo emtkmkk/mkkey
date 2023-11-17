@@ -1042,6 +1042,11 @@ export const defaultStore = markRaw(
 			createdAt: "2023/11/16",
 			page: "general",
 		},
+		includesRandomEsenapaj: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/11/17",
+		},
 		hiddenLTL: {
 			where: 'device',
 			default: false,

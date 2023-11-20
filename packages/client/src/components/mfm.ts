@@ -353,7 +353,7 @@ export default defineComponent({
 										}),
 										h(MkTime, {
 											key: Math.random(),
-											time: unixtime * 1000,
+											time: new Date(unixtime * 1000),
 											mode: 'detail',
 										}),
 									]);

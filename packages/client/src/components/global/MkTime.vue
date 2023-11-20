@@ -1,6 +1,7 @@
 <template>
 	<time :title="absolute">
-		<template v-if="mode === 'relative' && dateOnly">{{ relativeDateOnly }}</template>
+		<template v-if="time == 'Invalid Date'">？？？</template>
+		<template v-else-if="mode === 'relative' && dateOnly">{{ relativeDateOnly }}</template>
 		<template v-else-if="mode === 'relative'">{{ relative }}</template>
 		<template v-else-if="mode === 'absolute' && dateOnly">{{ absoluteDateOnly }}</template>
 		<template v-else-if="mode === 'absolute'">{{ absolute }}<span style="font-size: 0.75em" v-if="milliseconds">{{ milliseconds }}</span></template>
@@ -30,7 +31,7 @@ const props = withDefaults(
 	}
 );
 
-const _time = props.mode === "detail-dateOnly" || props.dateOnly
+const _time = (props.mode === "detail-dateOnly" || props.dateOnly)
 				? typeof props.time === "string" ? new Date(new Date(props.time).setHours(0, 0, 0, 0)) : new Date(props.time.setHours(0, 0, 0, 0))
 				: typeof props.time === "string" ? new Date(props.time) : props.time;
 const absolute = _time.toLocaleString();

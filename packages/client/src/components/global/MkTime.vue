@@ -55,21 +55,40 @@ const relative = $computed(() => {
 });
 
 const relativeRaw = $computed(() => {
-	return ago >= 31536000
-		? i18n.t("_ago.yearsAgo", { n: (~~(ago / 31536000)).toString() })
-		: ago >= 2592000
-		? i18n.t("_ago.monthsAgo", { n: (~~(ago / 2592000)).toString() })
-		: ago >= 604800
-		? i18n.t("_ago.weeksAgo", { n: (~~(ago / 604800)).toString() })
-		: ago >= 86400
-		? i18n.t("_ago.daysAgo", { n: (~~(ago / 86400)).toString() })
-		: ago >= 3600
-		? i18n.t("_ago.hoursAgo", { n: (~~(ago / 3600)).toString() })
-		: ago >= 60
-		? i18n.t("_ago.minutesAgo", { n: (~~(ago / 60)).toString() })
-		: ago >= 3
-		? i18n.t("_ago.secondsAgo", { n: (~~(ago % 60)).toString() })
-		: i18n.ts._ago.justNow;
+	if (ago <= -3) {
+		const agoAbs = -ago;
+		return agoAbs >= 31536000
+			? i18n.t("_timeIn.years", { n: (~~(agoAbs / 31536000)).toString() })
+			: agoAbs >= 2592000
+			? i18n.t("_timeIn.months", { n: (~~(agoAbs / 2592000)).toString() })
+			: agoAbs >= 604800
+			? i18n.t("_timeIn.weeks", { n: (~~(agoAbs / 604800)).toString() })
+			: agoAbs >= 86400
+			? i18n.t("_timeIn.days", { n: (~~(agoAbs / 86400)).toString() })
+			: agoAbs >= 3600
+			? i18n.t("_timeIn.hours", { n: (~~(agoAbs / 3600)).toString() })
+			: agoAbs >= 60
+			? i18n.t("_timeIn.minutes", { n: (~~(agoAbs / 60)).toString() })
+			: agoAbs >= 3
+			? i18n.t("_timeIn.seconds", { n: (~~(agoAbs % 60)).toString() })
+			: i18n.ts._ago.justNow;
+	} else {
+		return ago >= 31536000
+			? i18n.t("_ago.yearsAgo", { n: (~~(ago / 31536000)).toString() })
+			: ago >= 2592000
+			? i18n.t("_ago.monthsAgo", { n: (~~(ago / 2592000)).toString() })
+			: ago >= 604800
+			? i18n.t("_ago.weeksAgo", { n: (~~(ago / 604800)).toString() })
+			: ago >= 86400
+			? i18n.t("_ago.daysAgo", { n: (~~(ago / 86400)).toString() })
+			: ago >= 3600
+			? i18n.t("_ago.hoursAgo", { n: (~~(ago / 3600)).toString() })
+			: ago >= 60
+			? i18n.t("_ago.minutesAgo", { n: (~~(ago / 60)).toString() })
+			: ago >= 3
+			? i18n.t("_ago.secondsAgo", { n: (~~(ago % 60)).toString() })
+			: i18n.ts._ago.justNow;
+	}
 });
 
 const relativeDateOnly = $computed(() => {

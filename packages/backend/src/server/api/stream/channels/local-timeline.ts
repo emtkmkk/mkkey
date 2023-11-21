@@ -22,7 +22,7 @@ export default class extends Channel {
 				return;
 		}
 
-		this.withBelowPublic = params.withBelowPublic ?? false;
+		this.withBelowPublic = params?.withBelowPublic || false;
 
 		// Subscribe events
 		this.subscriber.on("notesStream", this.onNote);

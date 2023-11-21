@@ -1,6 +1,6 @@
 <template>
-	<time :title="absolute">
-		<template v-if="time == 'Invalid Date'">？？？</template>
+	<time :title="absolute" v-tooltip="absolute">
+		<template v-if="Number.isNaN(_time.getTime())">？？？</template>
 		<template v-else-if="mode === 'relative' && dateOnly">{{ relativeDateOnly }}</template>
 		<template v-else-if="mode === 'relative'">{{ relative }}</template>
 		<template v-else-if="mode === 'absolute' && dateOnly">{{ absoluteDateOnly }}</template>
@@ -32,11 +32,11 @@ const props = withDefaults(
 );
 
 const _time = (props.mode === "detail-dateOnly" || props.dateOnly)
-				? typeof props.time === "string" ? new Date(new Date(props.time).setHours(0, 0, 0, 0)) : new Date(props.time.setHours(0, 0, 0, 0))
-				: typeof props.time === "string" ? new Date(props.time) : props.time;
-const absolute = _time.toLocaleString();
+				? typeof props.time === "string" || typeof props.time === "number" ? new Date(new Date(props.time).setHours(0, 0, 0, 0)) : new Date(props.time.setHours(0, 0, 0, 0))
+				: typeof props.time === "string" || typeof props.time === "number" ? new Date(props.time) : props.time;
+const absolute = Number.isNaN(_time.getTime()) ? props.time : _time.getFullYear() < 0 ? `${_time.getFullYear()} D.C.` : _time.toLocaleString();
 const milliseconds = _time.getMilliseconds() ? "." + ("000" + _time.getMilliseconds()).slice(-3) : "";
-const absoluteDateOnly = _time.toLocaleDateString();
+const absoluteDateOnly = Number.isNaN(_time.getTime()) ? props.time : _time.getFullYear() < 0 ? `${_time.getFullYear()} D.C.` : _time.toLocaleDateString();
 
 let now = $ref((new Date()));
 const ago = $computed(() => (now.getTime() - _time.getTime()) / 1000/*ms*/);

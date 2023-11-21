@@ -430,7 +430,7 @@ let preview_mention = $ref("@example");
 let preview_hashtag = $ref("#test");
 let preview_link = $ref(`[${i18n.ts._mfm.dummy}](https://calckey.org)`);
 let preview_emoji = $ref(
-	instance.emojis.length ? `:${instance.emojis[0].name}:` : ":emojiname:"
+	instance.recentlyPopularReactions.length ? `:${instance.recentlyPopularReactions[0].name}:` : ":emojiname:"
 );
 let preview_bold = $ref(`**${i18n.ts._mfm.dummy}**`);
 let preview_small = $ref(`<small>${i18n.ts._mfm.dummy}</small>`);

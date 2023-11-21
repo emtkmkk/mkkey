@@ -1,5 +1,5 @@
 <template>
-	<time :title="absolute" v-tooltip="absolute">
+	<time :title="typeof time === 'number' ? time : absolute" v-tooltip="typeof time === 'number' ? time : absolute">
 		<template v-if="Number.isNaN(_time.getTime())">？？？</template>
 		<template v-else-if="mode === 'relative' && dateOnly">{{ relativeDateOnly }}</template>
 		<template v-else-if="mode === 'relative'">{{ relative }}</template>

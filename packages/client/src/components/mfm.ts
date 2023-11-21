@@ -353,7 +353,7 @@ export default defineComponent({
 										}),
 										h(MkTime, {
 											key: Math.random(),
-											time: Number.isNaN(unixtime) ? child.type === 'text' ? child.props.text : '' : unixtime * 1000,
+											time: Number.isNaN(unixtime) ? child.type === 'text' ? child.props.text : '？？？' : unixtime * 1000,
 											mode: 'detail',
 										}),
 									]);

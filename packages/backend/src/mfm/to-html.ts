@@ -54,10 +54,16 @@ export function toHtml(
 				if (node.props.name === 'unixtime') {
 					const text = node.children[0].type === 'text' ? node.children[0].props.text : '';
 					const date = new Date(parseInt(text, 10) * 1000);
-					const el = doc.createElement('time');
-					el.setAttribute('datetime', date.toISOString());
-					el.textContent = date.toISOString();
-					return el;
+					if (Number.isNaN(date.getTime())) {
+						const el = doc.createElement('i');
+						appendChildren(node.children, el);
+						return el;
+					} else {
+						const el = doc.createElement('time');
+						el.setAttribute('datetime', date.toISOString());
+						el.textContent = date.toISOString();
+						return el;
+					}
 				} else {
 					const el = doc.createElement('i');
 					appendChildren(node.children, el);

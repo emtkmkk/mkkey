@@ -535,7 +535,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				}
 				// 一度だけ更新の場合、データモードを前回と同じにしておく
 				if (fetchModeMax === "once") {
-					const lastFetchModeMax = (await get("lastFetchModeMax") ?? fetchModeMax);
+					const lastFetchModeMax = ((await get("lastFetchModeMax")) ?? fetchModeMax);
 					fetchModeMax = lastFetchModeMax;
 					await set("remoteEmojisFetch", lastFetchModeMax);
 				}

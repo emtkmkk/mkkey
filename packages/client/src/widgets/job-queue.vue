@@ -182,7 +182,10 @@ const current = reactive({
 	},
 });
 const prev = reactive({} as typeof current);
-const jammedSound = sound.setVolume(sound.getAudio("syuilo/queue-jammed"), 1);
+let jammedAudioBuffer: AudioBuffer | null = $ref(null);
+let jammedSoundNodePlaying: boolean = $ref(false);
+
+sound.loadAudio('syuilo/queue-jammed').then(buf => jammedAudioBuffer = buf ?? null);
 
 for (const domain of ["inbox", "deliver"]) {
 	prev[domain] = deepClone(current[domain]);
@@ -199,9 +202,15 @@ const onStats = (stats) => {
 		if (
 			current[domain].waiting > 0 &&
 			widgetProps.sound &&
-			jammedSound.paused
+			jammedAudioBuffer &&
+			!jammedSoundNodePlaying
 		) {
-			jammedSound.play();
+			const soundNode = sound.createSourceNode(jammedAudioBuffer, 1);
+			if (soundNode) {
+				jammedSoundNodePlaying = true;
+				soundNode.onended = () => jammedSoundNodePlaying = false;
+				soundNode.start();
+			}
 		}
 	}
 };

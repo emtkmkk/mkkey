@@ -3,7 +3,7 @@ import { ColdDeviceStorage } from "@/store";
 const ctx = new AudioContext();
 const cache = new Map<string, AudioBuffer>();
 
-export async function getAudio(file: string, useCache = true) {
+export async function loadAudio(file: string, useCache = true) {
 	if (useCache && cache.has(file)) {
 		return cache.get(file);
 	}
@@ -35,15 +35,23 @@ export function play(type: string) {
 }
 
 export async function playFile(file: string, volume: number) {
+	if (!file.toLowerCase().includes("none")){
+		const buffer = await loadAudio(file);
+		createSourceNode(buffer, volume)?.start();
+	}
+}
+
+export function createSourceNode(buffer: AudioBuffer | undefined, volume: number) {
 	const masterVolume = ColdDeviceStorage.get("sound_masterVolume");
-	if (masterVolume === 0 || volume === 0 || file.toLowerCase().includes("none"))
-		return;
+	if (!buffer || masterVolume === 0 || volume === 0)
+		return null;
 
 	const gainNode = ctx.createGain();
 	gainNode.gain.value = masterVolume * volume;
 
 	const soundSource = ctx.createBufferSource();
-	soundSource.buffer = await getAudio(file) ?? null;
+	soundSource.buffer = buffer;
 	soundSource.connect(gainNode).connect(ctx.destination);
-	soundSource.start();
+
+	return soundSource;
 }

@@ -658,9 +658,9 @@ export default abstract class Chart<T extends Schema> {
 		const groupCount = groups.length;
 
 		// Limit the number of concurrent chart update queries executed on the database
-		// to 5 at a time, so as avoid excessive IO spinlocks like when 8k queries are
+		// to 1000 at a time, so as avoid excessive IO spinlocks like when 8k queries are
 		// sent out at once.
-		const limit = promiseLimit(5);
+		const limit = promiseLimit(1000);
 
 		const startTime = Date.now();
 		await Promise.all(

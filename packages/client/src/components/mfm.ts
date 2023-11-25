@@ -330,7 +330,7 @@ export default defineComponent({
 										rb = [tokens[0]];
 										rt = [tokens.slice(1).join(' ')];
 									} else if (children.length >= 2) {
-										rb = genEl(children.slice(1));
+										rb = genEl(children.slice(0, -1));
 										rt = genEl(children.slice(-1));
 									} else {
 										return genEl(children);

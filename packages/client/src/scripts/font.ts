@@ -19,11 +19,6 @@ export const fontList = {
 		fontFamily: 'Sawarabi Mincho',
 		importUrl: 'https://fonts.googleapis.com/css2?family=Sawarabi+Mincho&display=swap',
 	},
-	'Roboto': {
-		name: 'Roboto',
-		fontFamily: 'Roboto',
-		importUrl: 'https://fonts.googleapis.com/css2?family=Roboto&display=swap',
-	},
 	'm-plus': {
 		name: 'M PLUS 1p',
 		fontFamily: 'M PLUS 1p',

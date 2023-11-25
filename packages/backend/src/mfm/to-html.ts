@@ -114,7 +114,7 @@ export function toHtml(
 							node.children.slice(0, node.children.length - 1),
 							rubyEl,
 						);
-						appendChildren(node.children.slice(-1).children, rtEl);
+						appendChildren(node.children.slice(-1), rtEl);
 						
 						rubyEl.appendChild(rpStartEl);
 						rubyEl.appendChild(rtEl);

@@ -167,7 +167,7 @@
 			<FormSwitch v-model="longLoading" class="_formBlock">{{
 				i18n.ts.longLoading
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="developer" v-model="copyPostRemoteEmojiCode" class="_formBlock">{{
+			<FormSwitch v-model="copyPostRemoteEmojiCode" class="_formBlock">{{
 				i18n.ts.copyPostRemoteEmojiCode
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-if="developer" v-model="developerRenote" class="_formBlock">{{
@@ -214,7 +214,7 @@
 			<FormSwitch v-if="openEmojiPicker" v-model="notCloseEmojiPicker" class="_formBlock">{{
 				i18n.ts.notCloseEmojiPicker
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="developer" v-model="showRemoteEmojiPostForm" class="_formBlock">{{
+			<FormSwitch v-model="showRemoteEmojiPostForm" class="_formBlock">{{
 				i18n.ts.showRemoteEmojiPostForm
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="usePickerSizePostForm" class="_formBlock">

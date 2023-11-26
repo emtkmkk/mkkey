@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import json from "koa-json-body";
+import bodyParser from "koa-bodyparser";
 import httpSignature from "@peertube/http-signature";
 
 import { In, IsNull, Not } from "typeorm";
@@ -20,6 +20,11 @@ import {
 import type { ILocalUser, User } from "@/models/entities/user.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import { getUserKeypair } from "@/misc/keypair-store.js";
+import {
+	checkFetch,
+	getSignatureUser,
+	verifyDigest,
+} from "@/remote/activitypub/check-fetch.js";
 import { checkFetch, hasSignature } from "@/remote/activitypub/check-fetch.js";
 import { getInstanceActor } from "@/services/instance-actor.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
@@ -28,6 +33,9 @@ import Featured from "./activitypub/featured.js";
 import Following from "./activitypub/following.js";
 import Followers from "./activitypub/followers.js";
 import Outbox, { packActivity } from "./activitypub/outbox.js";
+import { serverLogger } from "./index.js";
+import config from "@/config/index.js";
+import Koa from "koa";
 
 // Init router
 const router = new Router();
@@ -35,11 +43,21 @@ const router = new Router();
 //#region Routing
 
 function inbox(ctx: Router.RouterContext) {
+	if (ctx.req.headers.host !== config.host) {
+		ctx.status = 400;
+		return;
+	}
+
 	let signature;
 
 	try {
-		signature = httpSignature.parseRequest(ctx.req, { headers: [] });
+		signature = httpSignature.parseRequest(ctx.req, { headers: ['(request-target)', 'digest', 'host', 'date'] });
 	} catch (e) {
+		ctx.status = 401;
+		return;
+	}
+
+	if (!verifyDigest(ctx.request.rawBody, ctx.headers.digest)) {
 		ctx.status = 401;
 		return;
 	}
@@ -68,9 +86,24 @@ export function setResponseType(ctx: Router.RouterContext) {
 	}
 }
 
+async function parseJsonBodyOrFail(ctx: Router.RouterContext, next: Koa.Next) {
+	const koaBodyParser = bodyParser({
+		enableTypes: ["json"],
+		detectJSON: () => true,
+	});
+
+	try {
+		await koaBodyParser(ctx, next);
+	}
+	catch {
+		ctx.status = 400;
+		return;
+	}
+}
+
 // inbox
-router.post("/inbox", json(), inbox);
-router.post("/users/:user/inbox", json(), inbox);
+router.post("/inbox", parseJsonBodyOrFail, inbox);
+router.post("/users/:user/inbox", parseJsonBodyOrFail, inbox);
 
 // note
 router.get("/notes/:note", async (ctx, next) => {
@@ -84,7 +117,7 @@ router.get("/notes/:note", async (ctx, next) => {
 
 	const note = await Notes.findOneBy({
 		id: ctx.params.note,
-		visibility: In(["public" as const, "home" as const]),
+		visibility: In(["public" as const, "home" as const, "followers" as const]),
 		localOnly: false,
 	});
 
@@ -101,6 +134,37 @@ router.get("/notes/:note", async (ctx, next) => {
 		}
 		ctx.redirect(note.uri);
 		return;
+	}
+
+	if (note.visibility === "followers") {
+		serverLogger.debug(
+			"Responding to request for follower-only note, validating access...",
+		);
+		const remoteUser = await getSignatureUser(ctx.req);
+		serverLogger.debug("Local note author user:");
+		serverLogger.debug(JSON.stringify(note, null, 2));
+		serverLogger.debug("Authenticated remote user:");
+		serverLogger.debug(JSON.stringify(remoteUser, null, 2));
+
+		if (remoteUser == null) {
+			serverLogger.debug("Rejecting: no user");
+			ctx.status = 401;
+			return;
+		}
+
+		const relation = await Users.getRelation(remoteUser.user.id, note.userId);
+		serverLogger.debug("Relation:");
+		serverLogger.debug(JSON.stringify(relation, null, 2));
+
+		if (!relation.isFollowing || relation.isBlocked) {
+			serverLogger.debug(
+				"Rejecting: authenticated user is not following us or was blocked by us",
+			);
+			ctx.status = 403;
+			return;
+		}
+
+		serverLogger.debug("Accepting: access criteria met");
 	}
 
 	ctx.body = renderActivity(await renderNote(note, false));

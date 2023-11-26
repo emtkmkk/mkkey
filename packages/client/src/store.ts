@@ -991,11 +991,13 @@ export const defaultStore = markRaw(
 			where: 'account',
 			default: false,
 			createdAt: "2023/8/21",
+			page: "general",
 		},
 		copyPostRemoteEmojiCode: {
 			where: 'account',
 			default: false,
 			createdAt: "2023/9/25",
+			page: "general",
 		},
 		compactGrid: {
 			where: 'device',

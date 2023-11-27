@@ -52,6 +52,7 @@ const props = withDefaults(
 		disablePreview?: boolean;
 		showIndicator?: boolean;
 		allowCat?: boolean;
+		clickToJumpAvatarImage?: boolean;
 	}>(),
 	{
 		target: null,
@@ -59,6 +60,7 @@ const props = withDefaults(
 		disablePreview: false,
 		showIndicator: false,
 		allowCat: true,
+		clickToJumpAvatarImage: false,
 	}
 );
 
@@ -73,6 +75,9 @@ const url = $computed(() =>
 );
 
 function onClick(ev: MouseEvent) {
+	if (props.clickToJumpAvatarImage) {
+		window.open(url);
+	}
 	emit("click", ev);
 }
 

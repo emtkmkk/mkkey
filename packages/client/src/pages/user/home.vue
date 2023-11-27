@@ -100,6 +100,7 @@
 							:user="user"
 							:disable-preview="true"
 							:show-indicator="true"
+							:click-to-jump-avatar-image="true"
 						/>
 						<div class="title">
 							<div class="nameCollumn">
@@ -229,19 +230,19 @@
 											.replace("-", "/")
 											.replace("-", "/").substring(5)
 											: birthday
-											.replaceAll("-0","-")	
+											.replaceAll("-0","-")
 											.replace("-", "/")
 											.replace("-", "/")) + (!props.user.birthday ? "?" : "")
 									}}
-									{{ 
-										nextBirthday === 0 
-											? "(" + i18n.ts.birthdayToday + ")" 
-											: birthday.substring(0, 4) != "0000" 
-											&& birthday.substring(0, 4) != "9999" 
-											&& birthday.substring(0, 4) != "4000" 
-											&& age >= 6 && age <= 122 
-											&& nextBirthday > 9 
-												? "(" + i18n.t("yearsOld", { age }) + ")" 
+									{{
+										nextBirthday === 0
+											? "(" + i18n.ts.birthdayToday + ")"
+											: birthday.substring(0, 4) != "0000"
+											&& birthday.substring(0, 4) != "9999"
+											&& birthday.substring(0, 4) != "4000"
+											&& age >= 6 && age <= 122
+											&& nextBirthday > 9
+												? "(" + i18n.t("yearsOld", { age }) + ")"
 												: "(" + (i18n.t("nextBirthday", { nextBirthday })) + ")"
 									}}
 								</dd>
@@ -271,7 +272,7 @@
 										:is-note="false"
 										:author="user"
 										:i="$i"
-									/> 
+									/>
 									<template v-else>
 										{{ stats.powerRank ? stats.powerRank + " " : "" }}
 									</template>
@@ -449,47 +450,47 @@ const visiblePinnedNotes = $computed(() => {
 });
 
 const birthday = $computed(() => {
-	
+
 	if (props.user.host){
 		return props.user.birthday
 	}
-	
+
 	const regtest = /(\d{1,2})(yo|歳|sai)/.test(props.user.name ?? "") || /(\d{1,2})(yo|歳|sai)/.test(props.user.description ?? "");
-	
+
 	if (!regtest){
 		return props.user.birthday
 	}
-	
+
 	let _birthday;
-	
+
 	const today = new Date();
-	
+
 	if(!props.user.birthday){
 		_birthday = new Date();
 		_birthday.setMonth(_birthday.getMonth() - 6);
 	} else {
 		_birthday = new Date(props.user.birthday);
 	}
-	
+
 	const dyear = (/(\d{1,2})(yo|歳|sai)/.exec(props.user.name ?? "")?.[1]) ?? (/(\d{1,2})(yo|歳|sai)/.exec(props.user.description ?? "")?.[1]);
-	
+
 	if (dyear == null) return props.user.birthday;
-	
+
 	const dyearint = parseInt(dyear,10);
-	
+
 	if (isNaN(dyearint)) return props.user.birthday;
-	
+
 	_birthday.setFullYear(today.getFullYear() - dyearint);
-	
+
 	const y8date = new Date();
 	y8date.setFullYear(today.getFullYear() - dyearint)
 	y8date.setHours(0);
 	y8date.setMinutes(0);
 	y8date.setSeconds(0);
 	y8date.setMilliseconds(0);
-	
+
 	if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
-	
+
 	return _birthday.getFullYear() + "-" + (_birthday.getMonth() + 1) + "-" + _birthday.getDate();
 })
 

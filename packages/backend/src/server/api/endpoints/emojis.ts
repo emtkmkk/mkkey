@@ -119,7 +119,7 @@ export default define(meta, paramDef, async (ps, me) => {
 					host: "fedibird.com",
 				},
 				{
-					host: "misskey.backspace.fm",
+					host: "minazukey.uk",
 				},
 				{
 					host: "misskey.takehi.to"

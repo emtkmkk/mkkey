@@ -25,7 +25,6 @@ import {
 	getSignatureUser,
 	verifyDigest,
 } from "@/remote/activitypub/check-fetch.js";
-import { checkFetch, hasSignature } from "@/remote/activitypub/check-fetch.js";
 import { getInstanceActor } from "@/services/instance-actor.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import renderFollow from "@/remote/activitypub/renderer/follow.js";

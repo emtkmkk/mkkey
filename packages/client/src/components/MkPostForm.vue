@@ -1492,8 +1492,8 @@ function cancel() {
 				cw = backupCw;
 				text = backupText;
 		} else {
-				backupCw = cw;
-				backupText = text;
+				backupCw = _cw;
+				backupText = _text;
 		}
 		}
 	}

@@ -19,7 +19,7 @@ export const meta = {
 
 	limit: {
 		duration: 20000,
-		max: 8,
+		max: 25,
 	},
 
 	kind: "read:notifications",

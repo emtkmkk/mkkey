@@ -8,7 +8,7 @@ block vars
 	- const isCw = note.cw;
 	- const isImage = !isCw && note.files.length !== 0 && note.files[0].type.startsWith('image');
 	- const isVideo = !isCw && note.files.length !== 0 && note.files[0].type.startsWith('video');
-	- const imageUrl = isImage ? note.files[0].url : isVideo ? note.files[0].thumbnailUrl : avatarUrl;
+	- const imageUrl = !note.files[0]?.isSensitive ? isImage ? note.files[0].url : isVideo ? note.files[0].thumbnailUrl : avatarUrl : avatarUrl;
 
 block title
 	= `${title} | ${instanceName}`

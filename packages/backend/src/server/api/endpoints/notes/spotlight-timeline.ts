@@ -88,24 +88,24 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	let followeeScore = 20;
 	let localScore = 40;
-	let globalScore = 80;
+	let globalScore = 60;
 
 	if (followees.length >= 50) {
 		followeeScore = 28;
 		localScore = 48;
-		globalScore = 80;
+		globalScore = 60;
 	} else if (followees.length >= 150) {
 		followeeScore = 40;
 		localScore = 60;
-		globalScore = 120;
+		globalScore = 90;
 	} else if (followees.length >= 300) {
 		followeeScore = 60;
 		localScore = 80;
-		globalScore = 180;
+		globalScore = 135;
 	} else if (followees.length >= 500) {
 		followeeScore = 80;
 		localScore = 120;
-		globalScore = 240;
+		globalScore = 180;
 	}
 
 	const meOrFolloweeIds = [user.id, ...followees.map(f => f.followeeId)];

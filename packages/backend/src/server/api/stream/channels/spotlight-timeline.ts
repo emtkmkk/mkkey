@@ -30,16 +30,16 @@ export default class extends Channel {
 
 		let dynamicScore1 = 40;		// フォロー済のユーザが出現するScore閾値
 		let dynamicScore2 = 120;	// ローカルユーザが出現するScore閾値
-		let dynamicScore3 = 200;	// リモートユーザが出現するScore閾値
+		let dynamicScore3 = 160;	// リモートユーザが出現するScore閾値
 
 		if(this.user!.followingCount < 50){
 			dynamicScore1 = 20;
 			dynamicScore2 = 36;
-			dynamicScore3 = 100;
+			dynamicScore3 = 80;
 		}else if(this.user!.followingCount < 500){
 			dynamicScore1 = 30;
 			dynamicScore2 = 60;
-			dynamicScore3 = 150;
+			dynamicScore3 = 120;
 		}
 
 		// TODO : うまく行かないと拾えないのを直す

@@ -913,7 +913,7 @@ export const defaultStore = markRaw(
 		},
 		thirdTimelineType: {
 			where: 'account',
-			default: "media",
+			default: "spotlight",
 			createdAt: "2023/08/10",
 			page: "general",
 		},

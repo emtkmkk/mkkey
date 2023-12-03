@@ -72,7 +72,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	)
 		.andWhere("note.visibility = 'public'")
 		.andWhere("user.isBot = false")
-		.andWhere("note.text IS NOT NULL")
+		.andWhere("(note.renoteId IS NULL OR note.text IS NOT NULL)")
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")

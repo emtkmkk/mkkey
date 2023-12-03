@@ -70,10 +70,6 @@ export default define(meta, paramDef, async (ps, user) => {
 	}
 
 	//#region Construct query
-	const followingQuery = Followings.createQueryBuilder("following")
-		.select("following.followeeId")
-		.where("following.followerId = :followerId", { followerId: user.id });
-
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
 		ps.sinceId,
@@ -100,10 +96,17 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renote.user", "renoteUser")
 		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner")
-		.setParameters(followingQuery.getParameters());
 
 	generateChannelQuery(query, user);
-	generateRepliesQuery(query, user, followingQuery.getQuery());
+	if (user) {
+		const followingQuery = Followings.createQueryBuilder("following")
+			.select("following.followeeId")
+			.where("following.followerId = :followerId", { followerId: user.id });
+		query.setParameters(followingQuery.getParameters());
+		generateRepliesQuery(query, user, followingQuery.getQuery());
+	} else {
+		generateRepliesQuery(query, user);
+	}
 	generateVisibilityQuery(query, user);
 	generateMutedUserQuery(query, user);
 	generateMutedNoteQuery(query, user);

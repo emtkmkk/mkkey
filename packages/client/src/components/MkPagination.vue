@@ -78,7 +78,7 @@
 					v-if="!moreFetching"
 					v-appear="
 						$store.state.enableInfiniteScroll && !disableAutoLoad && !moreFetchError
-							? !moreFetchError && !error && !moreFetching ? fetchMore : null
+							? fetchMore
 							: null
 					"
 					class="button"
@@ -101,7 +101,6 @@
 						:src="$instance.iconUrl"
 						class="_ghost"
 						alt="notMore"
-						@click="fetchMore"
 					/>
 				</div>
 			</div>

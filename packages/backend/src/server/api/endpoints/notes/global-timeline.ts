@@ -1,6 +1,6 @@
 import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Notes } from "@/models/index.js";
+import { Notes, Followings } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -88,7 +88,15 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
 
-	generateRepliesQuery(query, user);
+	if (user) {
+		const followingQuery = Followings.createQueryBuilder("following")
+			.select("following.followeeId")
+			.where("following.followerId = :followerId", { followerId: user.id });
+		query.setParameters(followingQuery.getParameters());
+		generateRepliesQuery(query, user, followingQuery.getQuery());
+	} else {
+		generateRepliesQuery(query, user);
+	}
 	if (user) {
 		generateMutedUserQuery(query, user);
 		generateMutedNoteQuery(query, user);
@@ -97,7 +105,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	} else {
 		query.andWhere("note.localOnly = false")
 	}
-	
+
 	if (user && !user.localShowRenote) {
 		query.andWhere(
 			new Brackets((qb) => {
@@ -111,7 +119,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			}),
 		);
 	}
-	
+
 	if (user && !user.remoteShowRenote) {
 		query.andWhere(
 			new Brackets((qb) => {

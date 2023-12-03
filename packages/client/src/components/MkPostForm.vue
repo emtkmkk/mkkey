@@ -553,8 +553,6 @@ let poll = $ref<{
 let useCw = $ref(false);
 let showPreview = $computed(defaultStore.makeGetterSetter("showPreview"));
 let cw = $computed(defaultStore.makeGetterSetter("postFormCw"));
-let backupText = "";
-let backupCw = "";
 let localOnly = $ref<boolean>(
 	props.initialLocalOnly ?? (defaultStore.state.rememberNoteVisibility
 		? defaultStore.state.localAndFollower
@@ -1472,12 +1470,7 @@ function cancel() {
 	if (!defaultStore.state.CloseAllClearButton){
 		emit("cancel");
 	} else {
-		let _cw = cw;
-		let _text = text;
-		if (!cw?.trim() && !text?.trim()) {
-				cw = backupCw;
-				text = backupText;
-		} else {
+
 		cw = "";
 		if (useCw && props.reply){
 			cw = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ";
@@ -1487,14 +1480,6 @@ function cancel() {
 			text = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ";
 		} else {
 			text = "";
-		}
-		if ((backupCw || backupText)　&&　_cw === cw && _text === text) {
-				cw = backupCw;
-				text = backupText;
-		} else {
-				backupCw = _cw;
-				backupText = _text;
-		}
 		}
 	}
 }

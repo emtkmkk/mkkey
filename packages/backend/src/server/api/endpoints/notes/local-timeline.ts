@@ -85,6 +85,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.untilDate,
 	)
 		.andWhere(`((note.userHost IS NULL) OR (user.username || '@' || note."userHost" = ANY ('{"${m.recommendedInstances.join('","')}"}')))`)
+		.andWhere("(note.replyId IS NULL OR reply.userHost IS NULL)")
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")
@@ -98,7 +99,15 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
 
 	generateChannelQuery(query, user);
-	generateRepliesQuery(query, user);
+	if (user) {
+		const followingQuery = Followings.createQueryBuilder("following")
+			.select("following.followeeId")
+			.where("following.followerId = :followerId", { followerId: user.id });
+		query.setParameters(followingQuery.getParameters());
+		generateRepliesQuery(query, user, followingQuery.getQuery());
+	} else {
+		generateRepliesQuery(query, user);
+	}
 	generateVisibilityQuery(query, user);
 	if (user) generateMutedUserQuery(query, user);
 	if (user) generateMutedNoteQuery(query, user);

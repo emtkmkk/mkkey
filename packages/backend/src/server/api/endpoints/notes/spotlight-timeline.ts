@@ -85,7 +85,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	// もこきーのスコア計算
 	// ローカルユーザー RT : 9 Reaction : 3
 	// リモートユーザー RT : 3 Reaction : 1
-	
+
 	let followeeScore = 20;
 	let localScore = 40;
 	let globalScore = 80;
@@ -134,7 +134,15 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
 
 	generateChannelQuery(query, user);
-	generateRepliesQuery(query, user);
+	if (user) {
+		const followingQuery = Followings.createQueryBuilder("following")
+			.select("following.followeeId")
+			.where("following.followerId = :followerId", { followerId: user.id });
+		query.setParameters(followingQuery.getParameters());
+		generateRepliesQuery(query, user, followingQuery.getQuery());
+	} else {
+		generateRepliesQuery(query, user);
+	}
 	generateVisibilityQuery(query, user);
 	if (user) generateMutedUserQuery(query, user);
 	if (user) generateMutedNoteQuery(query, user);

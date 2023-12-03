@@ -507,7 +507,7 @@ router.get("/notes/:note", async (ctx, next) => {
 				userId: note.userId,
 			});
 			const meta = await fetchMeta();
-			const userName = user.name?.replaceAll(/ ?:.*?:/g, '').trim() ? `${user.name?.replaceAll(/ ?:.*?:/g, '')}${user.host ? `@${user.host}` : ''}` : `@${user.username}${user.host ? `@${user.host}` : ''}`;
+			const userName = user.name ? `${user.name.replace(/ ?:.*?:/, '')}${user.host ? `@${user.host}` : ''}` : `@${user.username}${user.host ? `@${user.host}` : ''}`;
 			let summary = "";
 			if (!["public", "home"].includes(note.visibility) || note.localOnly) {
 				summary = `${note.visibility === "followers" ? (userName + "さんのフォロワー限定の投稿") : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
@@ -553,7 +553,7 @@ router.get("/posts/:note", async (ctx, next) => {
 			userId: note.userId,
 		});
 		const meta = await fetchMeta();
-		const userName = user.name?.replaceAll(/ ?:.*?:/g, '').trim() ? `${user.name?.replaceAll(/ ?:.*?:/g, '')}${user.host ? `@${user.host}` : ''}` : `@${user.username}${user.host ? `@${user.host}` : ''}`;
+		const userName = user.name ? `${user.name.replace(/ ?:.*?:/, '')}${user.host ? `@${user.host}` : ''}` : `@${user.username}${user.host ? `@${user.host}` : ''}`;
 		let summary = "";
 		if (!["public", "home"].includes(note.visibility) || note.localOnly) {
 			summary = `${note.visibility === "followers" ? (userName + "さんのフォロワー限定の投稿") : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`

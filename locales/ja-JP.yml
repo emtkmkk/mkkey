@@ -1724,7 +1724,7 @@ _timelines:
   media: "メディア"
   social: "ソーシャル"
   global: "グローバル"
-  spotlight: "スポットライト"
+  spotlight: "オススメ"
   list: "リスト"
   antenna: "アンテナ"
 _pages:

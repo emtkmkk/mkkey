@@ -286,8 +286,10 @@ _exportOrImport:
   excludeMutingUsers: "無視しているお嬢様を除外"
 _timelines:
   home: "ホーム"
-  local: "お屋敷(もこきー)"
-  recommended: "おすすめ"
+  local: "お屋敷"
+  recommended: "お写真"
+  media: "お写真"
+  spotlight: "おすすめ"
   social: "ソーシャル"
   global: "グローバル"
 _notification:

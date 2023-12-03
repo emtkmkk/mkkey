@@ -64,3 +64,5 @@ _antennaSources:
   userList: "指定したリストのユーザーのｶｷｰｺ"
   userGroup: "指定したグループのユーザーのｶｷｰｺ"
   instances: "指定したサーバーの全ユーザーのｶｷｰｺ"
+_timelines:
+  spotlight: "ｵﾇﾇﾒ"

@@ -1,5 +1,5 @@
 import { Brackets } from "typeorm";
-import { UserLists, UserListJoinings, Notes } from "@/models/index.js";
+import { UserLists, UserListJoinings, Notes, Followings } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";

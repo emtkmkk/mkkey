@@ -234,6 +234,10 @@ hr {
 	background: var(--divider);
 }
 
+rt {
+	white-space: initial;
+}
+
 .fa-pulse {
 	animation: spin 1s infinite;
 }

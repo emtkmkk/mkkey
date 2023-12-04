@@ -49,8 +49,9 @@ window.onload = async () => {
 		const name = createUserLabel(appearNote);
 		const rtname = createUserLabel(note);
 		const avatar = document.createElement("img");
-
-		avatar.src = note.user.avatarUrl;
+		if (!noAvatar) {
+			avatar.src = note.user.avatarUrl;
+		}
 		avatar.style.height = avatarSize + "px";
 		const text = document.createElement("div");
 		text.textContent = formatNoteText(note, appearNote, name);

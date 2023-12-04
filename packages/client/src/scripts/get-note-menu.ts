@@ -136,6 +136,7 @@ export function getNoteMenu(props: {
 		if (!($i.isModerator || $i.isAdmin)) {
 			delete _note.user;
 			delete _note.myReactionCnt;
+			delete _note._shouldInsertAd_;
 		}
 		Object.keys(_note).forEach((key) => {
 			if (_note[key] === null || _note[key] === false || _note[key] === 0 || (_note[key].length !== undefined && _note[key].length === 0) || (typeof _note[key] === "object" && Object.keys(_note[key]).length === 0)) {

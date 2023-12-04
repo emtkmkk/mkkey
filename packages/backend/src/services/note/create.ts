@@ -225,9 +225,8 @@ export default async (
 		//指定がなければpublicでlocalOnlyOFF
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
-		//チャンネル投稿ならpublic
-		if (data.channel != null) data.visibility = "public";
-		if (data.channel != null) data.visibleUsers = [];
+		//チャンネル投稿でリプライ、リノートでないならpublic
+		if (data.channel != null && !data.reply && !data.renote) data.visibility = "public";
 		//publicをブロックする設定でpublic設定ならhomeに設定
 		if (user.blockPostPublic && data.visibility === "public") data.visibility = "home";
 		//homeをブロックする設定でhome設定ならfollowersに設定

@@ -8,7 +8,7 @@
 	>
 		<div class="head">
 			<MkAvatar
-				v-if="notification.type === 'pollEnded'"
+				v-if="notification.note && notification.type === 'pollEnded'"
 				class="icon"
 				:user="notification.note.user"
 			/>
@@ -71,7 +71,7 @@
 				<!-- notification.reaction が null になることはまずないが、ここでoptional chaining使うと一部ブラウザで刺さるので念の為 -->
 				<XReactionIcon
 					v-else-if="
-						showEmojiReactions && notification.type === 'reaction'
+						showEmojiReactions && notification.type === 'reaction' && notification.reaction
 					"
 					ref="reactionRef"
 					:reaction="
@@ -114,7 +114,7 @@
 				/>
 			</header>
 			<MkA
-				v-if="notification.type === 'reaction'"
+				v-if="notification.note && notification.type === 'reaction'"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="getNoteSummary(notification.note)"
@@ -129,7 +129,7 @@
 				<i class="ph-quotes ph-fill ph-lg"></i>
 			</MkA>
 			<MkA
-				v-if="notification.type === 'renote'"
+				v-if="notification.note && notification.type === 'renote'"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="getNoteSummary(notification.note.renote)"
@@ -144,7 +144,7 @@
 				<i class="ph-quotes ph-fill ph-lg"></i>
 			</MkA>
 			<MkA
-				v-if="notification.type === 'reply'"
+				v-if="notification.note && notification.type === 'reply'"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="getNoteSummary(notification.note)"
@@ -157,7 +157,7 @@
 				/>
 			</MkA>
 			<MkA
-				v-if="notification.type === 'mention'"
+				v-if="notification.note && notification.type === 'mention'"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="getNoteSummary(notification.note)"
@@ -170,7 +170,7 @@
 				/>
 			</MkA>
 			<MkA
-				v-if="notification.type === 'quote'"
+				v-if="notification.note && notification.type === 'quote'"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="getNoteSummary(notification.note)"
@@ -183,7 +183,7 @@
 				/>
 			</MkA>
 			<MkA
-				v-if="notification.type === 'unreadAntenna' || notification.type === 'note'"
+				v-if="notification.note && (notification.type === 'unreadAntenna' || notification.type === 'note')"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="notification.reaction"
@@ -198,7 +198,7 @@
 				<i class="ph-quotes ph-fill ph-lg"></i>
 			</MkA>
 			<MkA
-				v-if="notification.type === 'pollVote'"
+				v-if="notification.note && notification.type === 'pollVote'"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="getNoteSummary(notification.note)"
@@ -213,7 +213,7 @@
 				<i class="ph-quotes ph-fill ph-lg"></i>
 			</MkA>
 			<MkA
-				v-if="notification.type === 'pollEnded'"
+				v-if="notification.note && notification.type === 'pollEnded'"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="getNoteSummary(notification.note)"

@@ -17,37 +17,49 @@ const props = defineProps<{
 }>();
 
 const users = ref([]);
+const isFetching = ref(false);
 
 watchEffect(() => {
+  if (isFetching.value) {
+    // 処理中は何もしない
+    return;
+  }
+
+  isFetching.value = true;
+
   (async () => {
-    const _users = (await os.api("users/show", {
-      userIds: props.userIds,
-    })).filter((x) =>
-      props.hiddenOfflineSleep
-        ? !(x.onlineStatus?.includes("offline") || x.onlineStatus?.includes("sleep"))
-        : true
-    );
-    const onlineStatus = [
-      "online",
-      "half-online",
-      "active",
-      "half-active",
-      "offline",
-      "half-sleeping",
-      "sleeping",
-      "deep-sleeping",
-      "never-sleeping",
-      "unknown",
-    ];
-    users.value = props.sortStatus
-      ? _users.sort((a, b) =>
-          onlineStatus.indexOf(a.onlineStatus) < onlineStatus.indexOf(b.onlineStatus)
-            ? -1
-            : onlineStatus.indexOf(a.onlineStatus) === onlineStatus.indexOf(b.onlineStatus)
-            ? 0
-            : 1
-        )
-      : _users;
+    try {
+      const _users = (await os.api("users/show", {
+        userIds: props.userIds,
+      })).filter((x) =>
+        props.hiddenOfflineSleep
+          ? !(x.onlineStatus?.includes("offline") || x.onlineStatus?.includes("sleep"))
+          : true
+      );
+      const onlineStatus = [
+        "online",
+        "half-online",
+        "active",
+        "half-active",
+        "offline",
+        "half-sleeping",
+        "sleeping",
+        "deep-sleeping",
+        "never-sleeping",
+        "unknown",
+      ];
+      users.value = props.sortStatus
+        ? _users.sort((a, b) =>
+            onlineStatus.indexOf(a.onlineStatus) < onlineStatus.indexOf(b.onlineStatus)
+              ? -1
+              : onlineStatus.indexOf(a.onlineStatus) === onlineStatus.indexOf(b.onlineStatus)
+              ? 0
+              : 1
+          )
+        : _users;
+    } finally {
+      isFetching.value = false;
+    }
   })();
 });
 </script>

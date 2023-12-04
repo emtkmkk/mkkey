@@ -16,7 +16,7 @@
 		<div class="wsdlkfj">
 			<div v-if="widgetProps.listId == null" class="init">
 				<MkButton primary @click="chooseList">{{
-					i18n.ts._widgets._userList.chooseList
+					i18n.ts._widgets._userList.chooseList	
 				}}</MkButton>
 			</div>
 			<MkLoading v-else-if="fetching" />
@@ -108,7 +108,7 @@ const fetch = () => {
 		});
 	});
 };
-useInterval(fetch, (widgetProps.highFrequencyReload ? 1000 * 10 : 1000 * 60), {
+useInterval(fetch, (widgetProps.highFrequencyReload ? 1000 * 60 : 1000 * 300), {
 	immediate: true,
 	afterMounted: true,
 });

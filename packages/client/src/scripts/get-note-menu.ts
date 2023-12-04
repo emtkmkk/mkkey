@@ -131,6 +131,11 @@ export function getNoteMenu(props: {
 		os.success();
 	}
 
+	function copyNote(): void {
+		copyToClipboard(JSON.stringify(appearNote, null , "\t"));
+		os.success();
+	}
+
 	function togglePin(pin: boolean): void {
 		os.apiWithDialog(
 			pin ? "i/pin" : "i/unpin",
@@ -477,8 +482,8 @@ export function getNoteMenu(props: {
 			...(defaultStore.state.developer ? [
 				{
 					icon: "ph-file-code ph-bold ph-lg",
-					text: i18n.ts.copyId,
-					action: copyId,
+					text: i18n.ts.copyNote,
+					action: copyNote,
 				},
 			]
 				: []),

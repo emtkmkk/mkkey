@@ -5,7 +5,8 @@ export let isTouchUsing = false;
 
 export let isScreenTouching = false;
 
-if (isTouchSupported) {
+// maxTouchPointsを見ず、１度でもタッチされたらタッチ可能判定にする
+if (true || isTouchSupported) {
 	window.addEventListener(
 		"touchstart",
 		() => {

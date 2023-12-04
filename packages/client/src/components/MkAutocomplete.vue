@@ -127,8 +127,6 @@ for (const x of lib) {
 	}
 }
 
-emjdb.sort((a, b) => a.name.length - b.name.length);
-
 //#region Construct Emoji DB
 const customEmojis = instance.emojis;
 const emojiDefinitions: EmojiDef[] = [];
@@ -154,9 +152,7 @@ for (const x of customEmojis) {
 	}
 }
 
-emojiDefinitions.sort((a, b) => a.name.length - b.name.length);
-
-const emojiDb = markRaw(emojiDefinitions.concat(emjdb));
+const emojiDb = markRaw(emojiDefinitions.concat(emjdb).sort((a, b) => a.name.length - b.name.length));
 //#endregion
 
 export default {

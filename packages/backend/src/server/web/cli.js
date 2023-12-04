@@ -23,7 +23,9 @@ window.onload = async () => {
 
 	document.getElementById("submit").addEventListener("click", async () => {
 		await api("notes/create", {
-			text: document.getElementById("text").value
+			text: document.getElementById("text").value,
+			visibility: searchParams.has("v") ? searchParams.get("v") : "public",
+			localOnly: searchParams.has("mkkeyPublic") ? !!searchParams.get("mkkeyPublic") : false,
 		});
 		location.reload();
 	});
@@ -90,8 +92,10 @@ function createOptionsForm() {
 
 	const tlInput = createInputWithLabel("text", "tl", "Timeline:", "e.g. home | social | local | global");
 	const limitInput = createInputWithLabel("number", "limit", "Limit:", "1 - 100");
-	const noAvatarCheckbox = createInputWithLabel("checkbox", "noAvatar", "No Avatar");
+	const noAvatarCheckbox = createInputWithLabel("checkbox", "noAvatar", "No Avatar:");
 	const avatarSizeInput = createInputWithLabel("text", "avatarSize", "Avatar Size:", "e.g. 40");
+	const visibilityInput = createInputWithLabel("text", "v", "Visibility:", "public | home | followers");
+	const mkkeyPublicCheckbox = createInputWithLabel("checkbox", "mkkeyPublic", "mkkeyPublic:");
 	const submitButton = document.createElement("input");
 	submitButton.type = "submit";
 	submitButton.value = "Apply";
@@ -101,6 +105,8 @@ function createOptionsForm() {
 	form.appendChild(limitInput);
 	form.appendChild(noAvatarCheckbox);
 	form.appendChild(avatarSizeInput);
+	form.appendChild(visibilityInput);
+	form.appendChild(mkkeyPublicCheckbox);
 	form.appendChild(submitButton);
 
 	// イベントリスナーを設定
@@ -121,12 +127,13 @@ function createOptionsForm() {
 	document.body.appendChild(form);
 }
 
-function createInputWithLabel(type, name, labelText, placeholder = "") {
+function createInputWithLabel(type, name, labelText, placeholder = "", value = "") {
 	const div = document.createElement("div");
 	const label = document.createElement("label");
 	const input = document.createElement("input");
 	input.type = type;
 	input.name = name;
+	input.value = searchParams.has(name) ? searchParams.get(name) : value;
 	if (placeholder) input.placeholder = placeholder;
 	label.appendChild(document.createTextNode(labelText));
 	label.appendChild(input);

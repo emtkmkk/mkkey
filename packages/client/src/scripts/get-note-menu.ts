@@ -132,7 +132,18 @@ export function getNoteMenu(props: {
 	}
 
 	function copyNote(): void {
-		copyToClipboard(JSON.stringify(appearNote, null , "\t"));
+		let _note = {...appearNote};
+		if (!($i.isModerator || $i.isAdmin)) {
+			delete _note.user;
+			delete _note.myReactionCnt;
+		}
+		Object.keys(_note).forEach((key) => {
+			if (_note[key] === null || (_note[key].length !== undefined && _note[key].length === 0)) {
+				_note[key] = undefined;
+			}
+		});
+		
+		copyToClipboard(JSON.stringify(_note, null, "\t"));
 		os.success();
 	}
 
@@ -338,6 +349,14 @@ export function getNoteMenu(props: {
 					action: copyRemoteLink,
 				}
 				: undefined,
+			...(defaultStore.state.developer ? [
+				{
+					icon: "ph-file-code ph-bold ph-lg",
+					text: i18n.ts.copyNote,
+					action: copyNote,
+				},
+			]
+				: []),
 			appearNote.url || appearNote.uri
 				? {
 					icon: "ph-arrow-square-out ph-bold ph-lg",
@@ -478,14 +497,6 @@ export function getNoteMenu(props: {
 						action: del,
 					},
 				]
-				: []),
-			...(defaultStore.state.developer ? [
-				{
-					icon: "ph-file-code ph-bold ph-lg",
-					text: i18n.ts.copyNote,
-					action: copyNote,
-				},
-			]
 				: []),
 		].filter((x) => x !== undefined);
 	} else {

@@ -32,7 +32,7 @@ window.onload = async () => {
 
 	const searchParams = new URLSearchParams(window.location.search);
 
-	document.getElementById("submit").text === `${document.getElementById("submit").text}" ${vicon(searchParams.has("v") ? searchParams.get("v") : "public",searchParams.has("mkkeyPublic") ? !!searchParams.get("mkkeyPublic") : false)}"`
+	document.getElementById("submit").textContent = `${document.getElementById("submit").textContent}" ${vicon(searchParams.has("v") ? searchParams.get("v") : "public",searchParams.has("mkkeyPublic") ? !!searchParams.get("mkkeyPublic") : false)}"`
 
 	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has("tl") && searchParams.get('tl').replace('home','') ? "notes/" + searchParams.get('tl').replace('home','').replace('social','hybrid') + "-timeline" : "notes/timeline";
 	const limit = searchParams.has('limit') ? parseInt(searchParams.get('limit'), 10) : undefined;
@@ -136,7 +136,7 @@ function createInputWithLabel(type, name, labelText, placeholder = "", value = "
 	const input = document.createElement("input");
 	input.type = type;
 	input.name = name;
-	input.value = searchParams.has(name) ? searchParams.get(name) : value;
+	if (searchParams.has(name) && value) input.value = searchParams.has(name) ? searchParams.get(name) : value;
 	if (placeholder) input.placeholder = placeholder;
 	label.appendChild(document.createTextNode(labelText));
 	label.appendChild(input);

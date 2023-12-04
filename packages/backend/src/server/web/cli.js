@@ -3,7 +3,7 @@
 window.onload = async () => {
 	createFormToggleLink();
 	const account = JSON.parse(localStorage.getItem("account"));
-	const i = account.token;
+	const i = account?.token;
 
 	const api = async (endpoint, data = {}) => {
 		if (i) data.i = i;

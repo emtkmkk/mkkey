@@ -24,7 +24,7 @@
 		:to="userPage(user)"
 		:title="acct(user)"
 		:target="target"
-		@click.stop
+		@click.stop="showAvatar"
 	>
 		<img class="inner" :src="url" decoding="async" />
 		<MkUserOnlineIndicator
@@ -79,6 +79,12 @@ function onClick(ev: MouseEvent) {
 		window.open(url);
 	}
 	emit("click", ev);
+}
+
+function showAvatar(ev: MouseEvent) {
+	if (props.clickToJumpAvatarImage) {
+		window.open(url);
+	}
 }
 
 let color = $ref();

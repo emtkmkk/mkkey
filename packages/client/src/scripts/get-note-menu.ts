@@ -138,7 +138,7 @@ export function getNoteMenu(props: {
 			delete _note.myReactionCnt;
 		}
 		Object.keys(_note).forEach((key) => {
-			if (_note[key] === null || _note[key] === 0 || (_note[key].length !== undefined && _note[key].length === 0)) {
+			if (_note[key] === null || _note[key] === false || _note[key] === 0 || (_note[key].length !== undefined && _note[key].length === 0) || (typeof myObject[key] === "object" && Object.keys(myObject[key]).length === 0)) {
 				_note[key] = undefined;
 			}
 		});

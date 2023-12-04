@@ -131,20 +131,25 @@ export function getNoteMenu(props: {
 		os.success();
 	}
 
+	function noteReplacer(key, value): void {
+		if (
+			key === "user" ||
+			key === "myReactionCnt" ||
+			key.startsWith("_") ||
+			value === null ||
+			value === false ||
+			value === 0 ||
+			(value.length !== undefined && value.length === 0) ||
+			(typeof value === "object" && Object.keys(value).length === 0)
+		) {
+			return undefined;
+		}
+		return value;
+	}
+
 	function copyNote(): void {
 		let _note = {...appearNote};
-		if (!($i.isModerator || $i.isAdmin)) {
-			delete _note.user;
-			delete _note.myReactionCnt;
-			delete _note._shouldInsertAd_;
-		}
-		Object.keys(_note).forEach((key) => {
-			if (_note[key] === null || _note[key] === false || _note[key] === 0 || (_note[key].length !== undefined && _note[key].length === 0) || (typeof _note[key] === "object" && Object.keys(_note[key]).length === 0)) {
-				_note[key] = undefined;
-			}
-		});
-		
-		copyToClipboard(JSON.stringify(_note, null, "\t"));
+		copyToClipboard(JSON.stringify(_note, noteReplacer, "\t"));
 		os.success();
 	}
 

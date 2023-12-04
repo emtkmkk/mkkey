@@ -345,8 +345,8 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 		return;
 	}
 
-	const name = ctx.params.path.split('@')[0].replace('.webp', '');
-	const host = ctx.params.path.split('@')[1]?.replace('.webp', '');
+	const name = ctx.params.path.split('@')[0].replace(/\.webp$/i, '');
+	const host = ctx.params.path.split('@')[1]?.replace(/\.webp$/i, '');
 
 	const emoji = await Emojis.findOneBy({
 		// `@.` is the spec of ReactionService.decodeReaction

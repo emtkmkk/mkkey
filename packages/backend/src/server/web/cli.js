@@ -30,9 +30,9 @@ window.onload = async () => {
 		location.reload();
 	});
 
-	document.getElementById("submit").text === `${document.getElementById("submit").text}" ${vicon(searchParams.has("v") ? searchParams.get("v") : "public",searchParams.has("mkkeyPublic") ? !!searchParams.get("mkkeyPublic") : false)}"`
-
 	const searchParams = new URLSearchParams(window.location.search);
+
+	document.getElementById("submit").text === `${document.getElementById("submit").text}" ${vicon(searchParams.has("v") ? searchParams.get("v") : "public",searchParams.has("mkkeyPublic") ? !!searchParams.get("mkkeyPublic") : false)}"`
 
 	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has("tl") && searchParams.get('tl').replace('home','') ? "notes/" + searchParams.get('tl').replace('home','').replace('social','hybrid') + "-timeline" : "notes/timeline";
 	const limit = searchParams.has('limit') ? parseInt(searchParams.get('limit'), 10) : undefined;
@@ -130,6 +130,7 @@ function createOptionsForm() {
 }
 
 function createInputWithLabel(type, name, labelText, placeholder = "", value = "") {
+	const searchParams = new URLSearchParams(window.location.search);
 	const div = document.createElement("div");
 	const label = document.createElement("label");
 	const input = document.createElement("input");

@@ -9,10 +9,10 @@
 		decoding="async"
 		@click="handleImgClick"
 		@error="() => {
-			if (isPicker) {
+			errorCnt = errorCnt + 1;
+			if (isPicker && urlRaw.length <= errorCnt) {
 				emit('loaderror', '');
 			}
-			errorCnt = errorCnt + 1;
 			if (!instance.errorEmoji) {
 				instance.errorEmoji = {};
 			}

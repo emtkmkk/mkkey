@@ -2,6 +2,7 @@ import { ColdDeviceStorage } from "@/store";
 
 const ctx = new AudioContext();
 const cache = new Map<string, AudioBuffer>();
+let canPlay = true;
 
 export async function loadAudio(file: string, useCache = true) {
 	if (useCache && cache.has(file)) {
@@ -30,8 +31,18 @@ export function setVolume(
 
 export function play(type: string) {
 	const sound = ColdDeviceStorage.get(`sound_${type}` as any);
-	if (sound.type == null) return;
-	playFile(sound.type, sound.volume);
+	if (sound.type == null || !canPlay) return;
+	(async () => {
+		canPlay = false;
+		try {
+			await playFile(sound.type, sound.volume);
+		} finally {
+			// ごく短時間に音が重複しないように
+			setTimeout(() => {
+				canPlay = true;
+			}, 25);
+		}
+	})();
 }
 
 export async function playFile(file: string, volume: number) {

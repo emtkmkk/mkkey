@@ -136,7 +136,7 @@ function createInputWithLabel(type, name, labelText, placeholder = "", value = "
 	const input = document.createElement("input");
 	input.type = type;
 	input.name = name;
-	if (searchParams.has(name) && value) input.value = searchParams.has(name) ? searchParams.get(name) : value;
+	if (searchParams.has(name) || value) input.value = searchParams.has(name) ? searchParams.get(name) : value;
 	if (placeholder) input.placeholder = placeholder;
 	label.appendChild(document.createTextNode(labelText));
 	label.appendChild(input);

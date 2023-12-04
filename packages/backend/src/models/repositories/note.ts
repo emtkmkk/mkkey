@@ -253,6 +253,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 				note.visibility === "specified" ? note.visibleUserIds : undefined,
 			renoteCount: note.renoteCount,
 			repliesCount: note.repliesCount,
+			score: note.score,
 			reactions: convertLegacyReactions(note.reactions),
 			reactionEmojis: reactionEmoji,
 			emojis: noteEmoji,
@@ -271,7 +272,6 @@ export const NoteRepository = db.getRepository(Note).extend({
 			mentions: note.mentions.length > 0 ? note.mentions : undefined,
 			uri: note.uri || undefined,
 			url: note.url || undefined,
-			score: note.score,
 			updatedAt: note.updatedAt?.toISOString() || undefined,
 			isFirstNote: note.isFirstNote ? true : undefined,
 			...(opts.detail

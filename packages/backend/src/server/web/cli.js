@@ -54,7 +54,7 @@ window.onload = async () => {
 		el.appendChild(header);
 		if (!noAvatar) header.appendChild(avatar);
 		header.appendChild(rtname);
-		if (appearNote.cw || appearNote.text) el.appendChild(text);
+		if (text.textContent) el.appendChild(text);
 		if (appearNote.files) {
 			for (const file of appearNote.files) {
 				//const img = document.createElement("img");

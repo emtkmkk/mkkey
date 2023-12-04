@@ -93,8 +93,22 @@ export default define(meta, paramDef, async (ps, user) => {
 		.andWhere("userListJoining.userListId = :userListId", {
 			userListId: list.id,
 		});
-
-	generateVisibilityQuery(query, user);
+		
+		generateChannelQuery(query, user);
+		if (user) {
+			const followingQuery = Followings.createQueryBuilder("following")
+				.select("following.followeeId")
+				.where("following.followerId = :followerId", { followerId: user.id });
+			query.setParameters(followingQuery.getParameters());
+			generateRepliesQuery(query, user, followingQuery.getQuery());
+		} else {
+			generateRepliesQuery(query, user);
+		}
+		generateVisibilityQuery(query, user);
+		if (user) generateMutedUserQuery(query, user);
+		if (user) generateMutedNoteQuery(query, user);
+		if (user) generateBlockedUserQuery(query, user);
+		if (user) generateMutedUserRenotesQueryForNotes(query, user);
 
 	if (ps.includeMyRenotes === false) {
 		query.andWhere(

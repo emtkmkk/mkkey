@@ -152,7 +152,7 @@ for (const x of customEmojis) {
 	}
 }
 
-const emojiDb = markRaw(emojiDefinitions.concat(emjdb).sort((a, b) => a.name.length - b.name.length));
+const emojiDb = markRaw(emojiDefinitions.concat(emjdb));
 //#endregion
 
 export default {
@@ -338,7 +338,7 @@ function exec() {
 			});
 		}
 
-		emojis.value = matched;
+		emojis.value = matched.sort((a, b) => a.name.length - b.name.length);
 	} else if (props.type === "mfmTag") {
 		if (!props.q || props.q === "") {
 			mfmTags.value = MFM_TAGS_JP;

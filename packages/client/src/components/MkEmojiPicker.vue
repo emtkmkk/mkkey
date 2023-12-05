@@ -194,7 +194,7 @@
 								pinned2.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ `${__VLS_ctx.$store.state.reactionsFolderName2 || "ピン留め絵文字 : 2"} ` }}</XSection
+							>{{ `${$store.state.reactionsFolderName2 || "ピン留め絵文字 : 2"} ` }}</XSection
 						>
 						<XSection
 							v-if="pinned3?.length != 0"
@@ -204,7 +204,7 @@
 								pinned3.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ `${__VLS_ctx.$store.state.reactionsFolderName3 || "ピン留め絵文字 : 3"} ` }}</XSection
+							>{{ `${$store.state.reactionsFolderName3 || "ピン留め絵文字 : 3"} ` }}</XSection
 						>
 						<XSection
 							v-if="pinned4?.length != 0"
@@ -214,7 +214,7 @@
 								pinned4.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ `${__VLS_ctx.$store.state.reactionsFolderName4 || "ピン留め絵文字 : 4"} ` }}</XSection
+							>{{ `${$store.state.reactionsFolderName4 || "ピン留め絵文字 : 4"} ` }}</XSection
 						>
 						<XSection
 							v-if="pinned5?.length != 0"
@@ -224,7 +224,7 @@
 								pinned5.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ `${__VLS_ctx.$store.state.reactionsFolderName5 || "ピン留め絵文字 : 5"} ` }}</XSection
+							>{{ `${$store.state.reactionsFolderName5 || "ピン留め絵文字 : 5"} ` }}</XSection
 						>
 						<XSection
 							v-if="recentlyUsedEmojis?.length != 0 && !$store.state.hiddenRecent"

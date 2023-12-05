@@ -65,13 +65,13 @@ const localUsernameSchema = {
 	pattern: /^\w{1,20}$/.toString().slice(1, -1),
 } as const;
 const passwordSchema = { type: "string", minLength: 1 } as const;
-const nameSchema = { type: "string", minLength: 1, maxLength: 50 } as const;
+const nameSchema = { type: "string", minLength: 1, maxLength: 128 } as const;
 const descriptionSchema = {
 	type: "string",
 	minLength: 1,
 	maxLength: 2048,
 } as const;
-const locationSchema = { type: "string", minLength: 1, maxLength: 50 } as const;
+const locationSchema = { type: "string", minLength: 1, maxLength: 128 } as const;
 const birthdaySchema = {
 	type: "string",
 	pattern: /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.toString().slice(1, -1),

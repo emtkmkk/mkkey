@@ -40,7 +40,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 						.then((x) => {
 							os.alert({
 								type: "info",
-								text: x.code + "\n\n" + "※有効期限 : 24時間",
+								text: `${x.code}\n\n※有効期限 : 24時間\n期限内なら何回でも使用できます。`,
 							});
 						})
 						.catch((err) => {

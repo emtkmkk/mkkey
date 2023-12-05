@@ -35,7 +35,7 @@
 			v-else-if="instance.defaultReaction === '❤️'"
 			class="ph-heart ph-bold ph-lg"
 		></i>
-		<i v-else-if="defaultStore.state.favButtonReaction !== 'favorite' && note.isFavorited" class="ph-star ph-bold ph-lg" style="color: var(--warn)"></i>
+		<i v-else-if="defaultStore.state.favButtonReaction === 'favorite' && note.isFavorited" class="ph-star ph-bold ph-lg" style="color: var(--warn)"></i>
 		<i v-else class="ph-star ph-bold ph-lg"></i>
 	</button>
 </template>
@@ -171,7 +171,7 @@ function star(ev?: MouseEvent): void {
 	} else {
 		if (props.note.isFavorited) {
 			os.apiWithDialog(
-				"notes/favorites/create",
+				"notes/favorites/delete",
 				{
 					noteId: props.note.id,
 				},

@@ -742,7 +742,7 @@ export const defaultStore = markRaw(
 		},
 		favButtonReaction: {
 			where: "account",
-			default: "custom",
+			default: "favorite",
 			advanced: "favorite",
 			createdAt: "2023/5/9",
 			page: "reaction",

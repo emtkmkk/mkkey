@@ -35,6 +35,7 @@
 			v-else-if="instance.defaultReaction === '❤️'"
 			class="ph-heart ph-bold ph-lg"
 		></i>
+		<i v-else-if="defaultStore.state.favButtonReaction !== 'favorite' && note.isFavorited" class="ph-star ph-bold ph-lg" style="color: var(--warn)"></i>
 		<i v-else class="ph-star ph-bold ph-lg"></i>
 	</button>
 </template>
@@ -57,7 +58,7 @@ const props = defineProps<{
 
 const starButton = ref<HTMLElement>();
 
-async function clip(): Promise<void> {
+async function clip(ev?: MouseEvent): Promise<void> {
 	const clips = await os.api("clips/list");
 	os.popupMenu(
 		[
@@ -137,7 +138,7 @@ function star(ev?: MouseEvent): void {
 	pleaseLogin();
 
 	if (defaultStore.state.favButtonReaction === "clip"){
-		() => clip();
+		() => clip(ev);
 	}
 	else if (defaultStore.state.favButtonReaction === "picker") {
 		pleaseLogin();
@@ -168,12 +169,23 @@ function star(ev?: MouseEvent): void {
 							: defaultStore.state.favButtonReaction,
 		});
 	} else {
-		os.apiWithDialog(
-			"notes/favorites/create",
-			{
-				noteId: props.note.id,
-			},
-		);
+		if (props.note.isFavorited) {
+			os.apiWithDialog(
+				"notes/favorites/create",
+				{
+					noteId: props.note.id,
+				},
+			);
+			props.note.isFavorited = false;
+		} else {
+			os.apiWithDialog(
+				"notes/favorites/create",
+				{
+					noteId: props.note.id,
+				},
+			);
+			props.note.isFavorited = true;
+		}
 	}
 	const el =
 		ev &&

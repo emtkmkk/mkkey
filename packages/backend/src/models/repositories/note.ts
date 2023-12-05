@@ -10,6 +10,7 @@ import {
 	Followings,
 	Polls,
 	Channels,
+	NoteFavorites,
 } from "../index.js";
 import type { Packed } from "@/misc/schema.js";
 import { nyaize } from "@/misc/nyaize.js";
@@ -296,6 +297,13 @@ export const NoteRepository = db.getRepository(Note).extend({
 						? {
 							myReaction: populateMyReaction(note, meId, options?._hint_),
 							...(await populateMyReactions(note, meId)),
+							isFavorited: (await NoteFavorites.count({
+								where: {
+									userId: meId,
+									noteId: note.id,
+								},
+								take: 1,
+							})) ? true : undefined,
 						}
 						: {}),
 				}

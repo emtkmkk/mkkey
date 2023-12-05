@@ -34,6 +34,13 @@
 						</li>
 					</ul>
 				</div>
+				<div class="_comment">
+					<p>{{ i18n.ts._auth.comment }}</p>
+					<FormInput
+							v-model="comment"
+							class="_formBlock"
+					/>
+				</div>
 				<div class="_footer">
 					<MkButton inline @click="deny">{{
 						i18n.ts.cancel
@@ -54,6 +61,7 @@
 import {} from "vue";
 import MkSignin from "@/components/MkSignin.vue";
 import MkButton from "@/components/MkButton.vue";
+import FormInput from "@/components/form/input.vue";
 import * as os from "@/os";
 import { $i, login } from "@/account";
 import { appendQuery, query } from "@/scripts/url";
@@ -70,12 +78,13 @@ const props = defineProps<{
 const _permissions = props.permission.split(",");
 
 let state = $ref<string | null>(null);
+let comment = $ref("");
 
 async function accept(): Promise<void> {
 	state = "waiting";
 	await os.api("miauth/gen-token", {
 		session: props.session,
-		name: props.name,
+		name: `${props.name}${comment ? ` (${comment.slice(0,20)})` : ''}`,
 		iconUrl: props.icon,
 		permission: _permissions,
 	});

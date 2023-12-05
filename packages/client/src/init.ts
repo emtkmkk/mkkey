@@ -601,7 +601,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				) {
 					await alert({
 						type: "info",
-						text: "もこきーの招待コードを発行する事が出来るようになりました！\n\n左メニューの(i)ボタンから招待コードを発行することが出来ます。",
+						text: "もこきーの招待コードを発行する事が出来るようになりました！\n\n左メニューのℹ️ボタンから招待コードを発行することが出来ます。",
 					});
 					defaultStore.set("showInviteInfoPopupAccount", true);
 					defaultStore.set("showInviteInfoPopupDevice", true);

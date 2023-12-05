@@ -2,7 +2,7 @@
 	<button
 		v-if="defaultStore.state.favButtonReaction !== 'hidden'"
 		ref="starButton"
-		v-tooltip.noDelay.bottom="i18n.ts._gallery.like"
+		v-tooltip.noDelay.bottom="defaultStore.state.favButtonReaction === 'favorite' ? i18n.ts.favorite : defaultStore.state.favButtonReaction === 'custom' ? defaultStore.state.favButtonReactionCustom : i18n.ts._gallery.like"
 		class="skdfgljsdkf _button"
 		@click="star($event)"
 	>
@@ -35,7 +35,7 @@
 			v-else-if="instance.defaultReaction === '❤️'"
 			class="ph-heart ph-bold ph-lg"
 		></i>
-		<i v-else-if="defaultStore.state.favButtonReaction === 'favorite' && note.isFavorited" class="ph-star ph-bold ph-lg" style="color: var(--warn)"></i>
+		<i v-else-if="defaultStore.state.favButtonReaction === 'favorite' && note.isFavorited" class="ph-star ph-bold ph-lg ph-fill" style="color: var(--warn)"></i>
 		<i v-else class="ph-star ph-bold ph-lg"></i>
 	</button>
 </template>

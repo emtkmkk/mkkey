@@ -824,11 +824,11 @@ router.get("(.*)", async (ctx) => {
 	const nowDaysCnt = Math.floor((now.valueOf() - yearFirstDay.valueOf()) / (24 * 60 * 60 * 1000));
 	const yearDaysCnt = Math.floor((yearNextFirstDay.valueOf() - yearFirstDay.valueOf()) / (24 * 60 * 60 * 1000));
 	motdd.push(`${now.getFullYear()}年 進行度 ${nowDaysCnt} / ${yearDaysCnt} ( ${(nowDaysCnt / yearDaysCnt * 100).toFixed(1)}% ) です`);
-	motdt.push(`もこきーのユーザ数は ${usersCount} です`);
-	motdt.push(`もこきーの合計投稿数は ${notesCount} です`);
-	motdt.push(`もこきーの連合ユーザ数は ${gUsersCount} です`);
-	motdt.push(`もこきーの連合投稿数は ${gNotesCount} です`);
-	motdt.push(`もこきーの絵文字数は ${emojisCount} です`);
+	motdt.push(`${meta.name}のユーザ数は ${usersCount} です`);
+	motdt.push(`${meta.name}の合計投稿数は ${notesCount} です`);
+	motdt.push(`${meta.name}の連合ユーザ数は ${gUsersCount} です`);
+	motdt.push(`${meta.name}の連合投稿数は ${gNotesCount} です`);
+	motdt.push(`${meta.name}の絵文字数は ${emojisCount} です`);
 	//季節メッセージ
 	if (now.getMonth() === 0) {
 		motd.push("冬ですね");
@@ -909,7 +909,7 @@ router.get("(.*)", async (ctx) => {
 	} else if (now.getMonth() == 10) {
 		motd.push("秋か冬かよく分からない時期ですね");
 		if (now.getDate() == 26) {
-			motd = [`今日はもこきー ${now.getFullYear() - 2022} 周年の日です！🎉`];
+			motd = [`今日は${meta.name} ${now.getFullYear() - 2022} 周年の日です！🎉`];
 			motdd = [];
 			motdt = [];
 		}
@@ -946,7 +946,7 @@ router.get("(.*)", async (ctx) => {
 		img: meta.iconUrl,
 		title: meta.name || "Calckey",
 		instanceName: meta.name || "Calckey",
-		desc: `FediverseのSNSサーバーのもこきーです\n\n${nowDate}時点の\nユーザ数 : ${usersCount}\n合計投稿数 : ${notesCount}\n絵文字数 : ${emojisCount}\n連合ユーザ数 : ${gUsersCount}\n連合投稿数 : ${gNotesCount}\n連合絵文字数 : ${gEmojisCount}`,
+		desc: `FediverseのSNSサーバーの${meta.name}です\n\n${nowDate}時点の\nユーザ数 : ${usersCount}\n合計投稿数 : ${notesCount}\n絵文字数 : ${emojisCount}\n連合ユーザ数 : ${gUsersCount}\n連合投稿数 : ${gNotesCount}\n連合絵文字数 : ${gEmojisCount}`,
 		icon: meta.iconUrl,
 		splashIcon: splashIconUrl,
 		themeColor: meta.themeColor,

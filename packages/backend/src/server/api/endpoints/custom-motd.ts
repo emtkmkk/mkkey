@@ -110,7 +110,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	} else if (now.getMonth() == 10) {
 		motd.push("冬がやってきますね");
 		if (now.getDate() == 26) {
-			return [`今日はもこきー ${now.getFullYear() - 2022} 周年の日です！🎉`];
+			return [`今日は${meta.name} ${now.getFullYear() - 2022} 周年の日です！🎉`];
 		}
 	} else if (now.getMonth() == 11) {
 		motd.push("冬が始まってきますね");

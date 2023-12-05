@@ -36,7 +36,7 @@
 									<MkUserName
 										class="name"
 										:user="user"
-										:nowrap="true"
+										:nowrap="false"
 									/>
 									<div>
 									<span
@@ -107,7 +107,7 @@
 								<MkUserName
 									class="name"
 									:user="user"
-									:nowrap="true"
+									:nowrap="false"
 								/>
 								<div>
 								<span

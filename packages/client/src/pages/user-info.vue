@@ -54,7 +54,7 @@
 						>Profile</FormLink
 					>
 					<FormLink v-if="iAmModerator && inviteUser" class="_formBlock" :to="userPage(user)"
-						>招待したUser ( {{ inviteUser.username + " - " + inviteUser.id }} )</FormLink
+						>招待したUser ( {{ `${inviteUser.username} - ${inviteUser.id}` }} )</FormLink
 					>
 
 					<FormLink

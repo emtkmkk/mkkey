@@ -70,7 +70,7 @@
 				@click="complete(type, tag)"
 				@keydown="onKeydown"
 			>
-				<span class="tag">{{ tag.name + " " + tag.ja }}</span>
+				<span class="tag">{{ `${tag.name} ${tag.ja}` }}</span>
 			</li>
 		</ol>
 	</div>
@@ -205,15 +205,15 @@ function setPosition() {
 	if (!rootEl.value) return;
 	if (props.x + rootEl.value.offsetWidth > window.innerWidth) {
 		rootEl.value.style.left =
-			window.innerWidth - rootEl.value.offsetWidth + "px";
+			`${window.innerWidth - rootEl.value.offsetWidth}px`;
 	} else {
 		rootEl.value.style.left = `${props.x}px`;
 	}
 	if (props.y + rootEl.value.offsetHeight > window.innerHeight) {
-		rootEl.value.style.top = props.y - rootEl.value.offsetHeight + "px";
+		rootEl.value.style.top = `${props.y - rootEl.value.offsetHeight}px`;
 		rootEl.value.style.marginTop = "0";
 	} else {
-		rootEl.value.style.top = props.y + "px";
+		rootEl.value.style.top = `${props.y}px`;
 		rootEl.value.style.marginTop = "calc(1em + 8px)";
 	}
 }

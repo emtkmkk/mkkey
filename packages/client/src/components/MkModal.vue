@@ -328,8 +328,8 @@ const align = () => {
 
 	transformOrigin = `${transformOriginX} ${transformOriginY}`;
 
-	content.style.left = left + "px";
-	content.style.top = top + "px";
+	content.style.left = `${left}px`;
+	content.style.top = `${top}px`;
 };
 
 const onOpened = () => {

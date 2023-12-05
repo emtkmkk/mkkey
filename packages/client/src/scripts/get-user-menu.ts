@@ -260,7 +260,7 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			icon: "ph-share-network ph-bold ph-lg",
 			text: i18n.ts.copyUserUrl,
 			action: () => {
-				copyToClipboard(`https://${config.host}/@${user.username}${user.host ? "@" + user.host : ""}`);
+				copyToClipboard(`https://${config.host}/@${user.username}${user.host ? `@${user.host}` : ""}`);
 			},
 		},
 		null,

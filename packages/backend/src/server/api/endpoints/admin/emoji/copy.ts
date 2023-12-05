@@ -72,7 +72,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	
 	const emojiSearchName = await Emojis.findOneBy({ name: emoji.name , host: IsNull() });
 	
-	const emojiSearchNamePlusHost = await Emojis.findOneBy({ name: emoji.name + "_" + emoji.host.replaceAll(/[^\w]/ig,"_") , host: IsNull() });
+	const emojiSearchNamePlusHost = await Emojis.findOneBy({ name: `${emoji.name}_${emoji.host.replaceAll(/[^\w]/ig, "_")}` , host: IsNull() });
 
 	if (emojiSearchNamePlusHost != null){
 		throw new ApiError(meta.errors.alreadyRegistered);
@@ -82,13 +82,13 @@ export default define(meta, paramDef, async (ps, me) => {
 		id: genId(),
 		createdAt: new Date(),
 		updatedAt: new Date(),
-		name: emojiSearchName ? emoji.name + "_" + emoji.host.replaceAll(/[^\w]/ig,"_") : emoji.name,
+		name: emojiSearchName ? `${emoji.name}_${emoji.host.replaceAll(/[^\w]/ig, "_")}` : emoji.name,
 		host: null,
 		aliases: emoji.aliases ?? [],
 		originalUrl: driveFile.url,
 		publicUrl: driveFile.webpublicUrl ?? driveFile.url,
 		type: driveFile.webpublicType ?? driveFile.type,
-		license: "Copy to " + (emoji.host ?? "unknown") + (emoji.license ? ", " + emoji.license.replace(/コピー元 : ([^,:]+)(,|$)/,"") : "") + (emoji.uri ? ", コピー元 : "	+ emoji.uri : ""),
+		license: `Copy to ${emoji.host ?? "unknown"}${emoji.license ? `, ${emoji.license.replace(/コピー元 : ([^,:]+)(,|$)/, "")}` : ""}${emoji.uri ? `, コピー元 : ${emoji.uri}` : ""}`,
 	}).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
 
 	await db.queryResultCache!.remove(["meta_emojis"]);

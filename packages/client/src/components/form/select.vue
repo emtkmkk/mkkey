@@ -115,13 +115,13 @@ useInterval(
 		if (prefixEl.value) {
 			if (prefixEl.value.offsetWidth) {
 				inputEl.value.style.paddingLeft =
-					prefixEl.value.offsetWidth + "px";
+					`${prefixEl.value.offsetWidth}px`;
 			}
 		}
 		if (suffixEl.value) {
 			if (suffixEl.value.offsetWidth) {
 				inputEl.value.style.paddingRight =
-					suffixEl.value.offsetWidth + "px";
+					`${suffixEl.value.offsetWidth}px`;
 			}
 		}
 	},

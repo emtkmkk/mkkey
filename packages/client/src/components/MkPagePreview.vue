@@ -18,7 +18,7 @@
 				<p v-if="page.summary" :title="page.summary">
 					{{
 						page.summary.length > 85
-							? page.summary.slice(0, 85) + "…"
+							? `${page.summary.slice(0, 85)}…`
 							: page.summary
 					}}
 				</p>

@@ -30,7 +30,7 @@ export async function createImage(
 	}
 
 	if (!image.url.startsWith("https://") && !image.url.startsWith("http://")) {
-		throw new Error("invalid image: unexpected shcema of url: " + image.url);
+		throw new Error(`invalid image: unexpected shcema of url: ${image.url}`);
 	}
 
 	logger.info(`Creating the Image: ${image.url}`);

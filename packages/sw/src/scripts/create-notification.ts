@@ -30,7 +30,7 @@ export async function createNotification<
 		return self.registration.showNotification(...n);
 	} else {
 		console.error("Could not compose notification", data);
-		return createEmptyNotification("Could not compose notification" + data);
+		return createEmptyNotification(`Could not compose notification${data}`);
 	}
 }
 
@@ -117,13 +117,13 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					];
 
 				case "unreadAntenna":
-					const bodyText = data.body.user.id !== data.body.note.userId ? "RT " + getUserName(data.body.note.user) + " : " + data.body.note.text : data.body.note.text;
+					const bodyText = data.body.user.id !== data.body.note.userId ? `RT ${getUserName(data.body.note.user)} : ${data.body.note.text}` : data.body.note.text;
 					return [
 						t("_notification.youUnreadAntenna", {
 							name: data.body.reaction,
 						}),
 						{
-							body: getUserName(data.body.user) + " : " + bodyText || "",
+							body: `${getUserName(data.body.user)} : ${bodyText}` || "",
 							icon: data.body.user.avatarUrl,
 							badge: iconUrl("comments"),
 							tag: `antenna:${data.body.antenna.id}`,
@@ -348,7 +348,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					name: data.body.group.name,
 				}),
 				{
-					body: getUserName(data.body.user) + " : " + data.body.text || "",
+					body: `${getUserName(data.body.user)} : ${data.body.text}` || "",
 					icon: data.body.user.avatarUrl,
 					badge: iconUrl("comments"),
 					tag: `messaging:group:${data.body.groupId}`,

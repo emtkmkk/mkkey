@@ -608,10 +608,10 @@ let allCustomEmojis = computed(() =>
 	instance.allEmojis
 );
 let emojiStr = computed(() =>
-	unref(customEmojis) ? unref(customEmojis).map((x) => ":" + x.name + ":") : undefined
+	unref(customEmojis) ? unref(customEmojis).map((x) => `:${x.name}:`) : undefined
 );
 let remoteEmojiStr = computed(() =>
-	unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
+	unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => `:${x.name}@${x.host}:`) : undefined
 );
 const enableInstanceEmojiSearch = $computed(
 	defaultStore.makeGetterSetter("enableInstanceEmojiSearch")
@@ -673,11 +673,11 @@ function remove(reaction, ev: MouseEvent) {
 			!reaction.includes("@") && !unref(emojiStr)?.includes(reaction) && unref(customEmojis).some((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))) ? {
 				text: "代替絵文字に変換",
 				action: () => {
-					if (tab === 'reactions') reactions[reactions.indexOf(reaction)] = ":" + unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))).name + ":";
-					if (tab === 'reactions2') reactions2[reactions2.indexOf(reaction)] = ":" + unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))).name + ":";
-					if (tab === 'reactions3') reactions3[reactions3.indexOf(reaction)] = ":" + unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))).name + ":";
-					if (tab === 'reactions4') reactions4[reactions4.indexOf(reaction)] = ":" + unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))).name + ":";
-					if (tab === 'reactions5') reactions5[reactions5.indexOf(reaction)] = ":" + unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))).name + ":";
+					if (tab === 'reactions') reactions[reactions.indexOf(reaction)] = `:${unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", ""))).name}:`;
+					if (tab === 'reactions2') reactions2[reactions2.indexOf(reaction)] = `:${unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", ""))).name}:`;
+					if (tab === 'reactions3') reactions3[reactions3.indexOf(reaction)] = `:${unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", ""))).name}:`;
+					if (tab === 'reactions4') reactions4[reactions4.indexOf(reaction)] = `:${unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", ""))).name}:`;
+					if (tab === 'reactions5') reactions5[reactions5.indexOf(reaction)] = `:${unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", ""))).name}:`;
 				},
 			} : undefined,
 			reaction.includes("@") && !unref(remoteEmojiStr)?.includes(reaction) && unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/,":")) ? {
@@ -691,35 +691,35 @@ function remove(reaction, ev: MouseEvent) {
 				},
 			} : undefined,
 			tab !== 'reactions' && !reactions.includes(reaction) ? {
-				text: (reactionsFolderName || "1")?.slice(0,6) + (reactionsFolderName?.length > 6 ? "…" : "") + "に移動",
+				text: `${(reactionsFolderName || "1")?.slice(0, 6) + (reactionsFolderName?.length > 6 ? "…" : "")}に移動`,
 				action: () => {
 					deleteReac(reaction);
 					reactions.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions2' && !reactions2.includes(reaction) ? {
-				text: (reactionsFolderName2 || "2")?.slice(0,6) + (reactionsFolderName2?.length > 6 ? "…" : "") + "に移動",
+				text: `${(reactionsFolderName2 || "2")?.slice(0, 6) + (reactionsFolderName2?.length > 6 ? "…" : "")}に移動`,
 				action: () => {
 					deleteReac(reaction);
 					reactions2.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions3' && !reactions3.includes(reaction) ? {
-				text: (reactionsFolderName3 || "3")?.slice(0,6) + (reactionsFolderName3?.length > 6 ? "…" : "") + "に移動",
+				text: `${(reactionsFolderName3 || "3")?.slice(0, 6) + (reactionsFolderName3?.length > 6 ? "…" : "")}に移動`,
 				action: () => {
 					deleteReac(reaction);
 					reactions3.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions4' && !reactions4.includes(reaction) ? {
-				text: (reactionsFolderName4 || "4")?.slice(0,6) + (reactionsFolderName4?.length > 6 ? "…" : "") + "に移動",
+				text: `${(reactionsFolderName4 || "4")?.slice(0, 6) + (reactionsFolderName4?.length > 6 ? "…" : "")}に移動`,
 				action: () => {
 					deleteReac(reaction);
 					reactions4.push(reaction);
 				},
 			} : undefined,
 			tab !== 'reactions5' && !reactions5.includes(reaction) ? {
-				text: (reactionsFolderName5 || "5")?.slice(0,6) + (reactionsFolderName5?.length > 6 ? "…" : "") + "に移動",
+				text: `${(reactionsFolderName5 || "5")?.slice(0, 6) + (reactionsFolderName5?.length > 6 ? "…" : "")}に移動`,
 				action: () => {
 					deleteReac(reaction);
 					reactions5.push(reaction);
@@ -777,7 +777,7 @@ async function autoSetEmojis(ev: MouseEvent) {
 async function setDefault() {
 	const { canceled } = await os.confirm({
 		type: "warning",
-		text: i18n.ts.resetAreYouSure + "\n※1ページ目のみデフォルトに戻します",
+		text: `${i18n.ts.resetAreYouSure}\n※1ページ目のみデフォルトに戻します`,
 	});
 	if (canceled) return;
 

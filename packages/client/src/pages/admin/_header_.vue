@@ -178,9 +178,9 @@ onMounted(() => {
 					const parentRect =
 						tabEl.parentElement.getBoundingClientRect();
 					const rect = tabEl.getBoundingClientRect();
-					tabHighlightEl.style.width = rect.width + "px";
+					tabHighlightEl.style.width = `${rect.width}px`;
 					tabHighlightEl.style.left =
-						rect.left - parentRect.left + "px";
+						`${rect.left - parentRect.left}px`;
 				}
 			});
 		},

@@ -58,7 +58,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	console.info(`Calckey v${version}`);
 
 	const currentDate = new Date();
-	const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
 	// エラーログのリセット
 	await set("errorLog", [`${formattedDate} - Calckey v${version}`]);
@@ -82,7 +82,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	window.addEventListener('unhandledrejection', async (event) => {
 
 		const currentDate = new Date();
-		const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
 		const logtext = `${formattedDate} - Unhandled promise rejection: ${event.reason}`;
 
@@ -247,7 +247,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 
 	app.config.errorHandler = async (err, vm, info) => {
 		const currentDate = new Date();
-		const formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
 		// エラーログのテキストを生成
 		const logtext = `${formattedDate} - ${err.toString()} - ${info}`;
@@ -404,8 +404,8 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 
 	if (defaultStore.state.randomCustomFont) {
 		if (defaultStore.state.includesRandomEsenapaj) {
-				const _fontList = Object.keys(fontList);
-				defaultStore.set("customFont", _fontList[Math.floor(Math.random() * _fontList.length)]);
+			const _fontList = Object.keys(fontList);
+			defaultStore.set("customFont", _fontList[Math.floor(Math.random() * _fontList.length)]);
 		} else {
 			if (defaultStore.state.customFont !== "esenapaj") {
 				const _fontList = Object.keys(fontList).filter((x) => x !== "esenapaj");
@@ -566,21 +566,21 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				defaultStore.isDefault("showLocalPostsInfoPopup") &&
 				$i.followingCount >= 10
 			) {
-				if (defaultStore.isDefault("showLocalPostsInTimeline")){
+				if (defaultStore.isDefault("showLocalPostsInTimeline")) {
 					const { canceled } = await yesno({
 						type: "question",
 						text: "ホームTLの内容を自身がフォローしている人の投稿のみに変更する事が可能です。\n※ここで変更しない場合でも設定ページ>色々にて後から変更する事が可能です。\n今すぐホームTLをフォロー者の投稿のみの表示に変更しますか？",
 					});
 					if (!canceled) {
-						defaultStore.set("showLocalPostsInTimeline","social")
-						defaultStore.set("showLocalPostsInfoPopup",true);
+						defaultStore.set("showLocalPostsInTimeline", "social")
+						defaultStore.set("showLocalPostsInfoPopup", true);
 						location.reload();
 					} else {
-						defaultStore.set("showLocalPostsInTimeline","home")
-						defaultStore.set("showLocalPostsInfoPopup",true);
+						defaultStore.set("showLocalPostsInTimeline", "home")
+						defaultStore.set("showLocalPostsInfoPopup", true);
 					}
 				} else {
-					defaultStore.set("showLocalPostsInfoPopup",true);
+					defaultStore.set("showLocalPostsInfoPopup", true);
 				}
 			}
 
@@ -603,13 +603,13 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 						type: "info",
 						text: "もこきーの招待コードを発行する事が出来るようになりました！\n\n左メニューの(i)ボタンから招待コードを発行することが出来ます。",
 					});
-					defaultStore.set("showInviteInfoPopupAccount",true);
-					defaultStore.set("showInviteInfoPopupDevice",true);
+					defaultStore.set("showInviteInfoPopupAccount", true);
+					defaultStore.set("showInviteInfoPopupDevice", true);
 				}
 			} else {
-				if (!(defaultStore.state.showInviteInfoPopupAccount && defaultStore.state.showInviteInfoPopupDevice)){
-						defaultStore.set("showInviteInfoPopupDevice",true);
-						defaultStore.set("showInviteInfoPopupAccount",true);
+				if (!(defaultStore.state.showInviteInfoPopupAccount && defaultStore.state.showInviteInfoPopupDevice)) {
+					defaultStore.set("showInviteInfoPopupDevice", true);
+					defaultStore.set("showInviteInfoPopupAccount", true);
 				}
 			}
 			if (
@@ -624,7 +624,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 						type: "info",
 						text: "複数リアクション機能が解禁されました！\n\nもこきーや他の対応サーバのユーザには、1つの投稿に対して基本3種類までのリアクションを付ける事が出来ます！\n（未対応のサーバのユーザに対しては、通常と同じで1つまでしか付けられません。複数リアクション可能な投稿かどうかはリアクションボタンがウインクしているかどうかで判別可能です。）",
 					});
-					defaultStore.set("showMultiReactionInfoPopup",true);
+					defaultStore.set("showMultiReactionInfoPopup", true);
 				}
 			}
 			// パワーモード
@@ -646,7 +646,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				toast(
 					i18n.t("welcomeBackWithNameLong", {
 						days: Math.floor((Date.now() - lastUsedDate) / (1000 * 60 * 60 * 24)),
-						name: getUserName($i,true),
+						name: getUserName($i, true),
 					}),
 				);
 			}
@@ -654,7 +654,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 			else if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 48) {
 				toast(
 					i18n.t("welcomeBackWithNameSleep", {
-						name: getUserName($i,true),
+						name: getUserName($i, true),
 					}),
 				);
 			}
@@ -662,7 +662,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 			else if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 24) {
 				toast(
 					i18n.t("welcomeBackWithName", {
-						name: getUserName($i,true),
+						name: getUserName($i, true),
 					}),
 				);
 			}
@@ -673,33 +673,33 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				if (now.getHours() >= 5 && now.getHours() <= 10) {
 					toast(
 						i18n.t("welcomeBackWithNameMorning", {
-							name: getUserName($i,true),
+							name: getUserName($i, true),
 						}),
 					);
 				} else if (now.getHours() >= 11 && now.getHours() <= 15) {
 					toast(
 						i18n.t("welcomeBackWithNameNoon", {
-							name: getUserName($i,true),
+							name: getUserName($i, true),
 						}),
 					);
 				} else if (now.getHours() >= 16 && now.getHours() <= 18) {
 					if (now.getDay() >= 1 && now.getDay() <= 5) {
 						toast(
 							i18n.t("welcomeBackWithNameEvening", {
-								name: getUserName($i,true),
+								name: getUserName($i, true),
 							}),
 						);
 					} else {
 						toast(
 							i18n.t("welcomeBackWithNameNoon", {
-								name: getUserName($i,true),
+								name: getUserName($i, true),
 							}),
 						);
 					}
 				} else {
 					toast(
 						i18n.t("welcomeBackWithNameNight", {
-							name: getUserName($i,true),
+							name: getUserName($i, true),
 						}),
 					);
 				}

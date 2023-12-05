@@ -120,7 +120,7 @@ async function clip(ev?: MouseEvent): Promise<void> {
 							} else {
 								os.alert({
 									type: "error",
-									text: err.message + "\n" + err.id,
+									text: `${err.message}\n${err.id}`,
 								});
 							}
 						},

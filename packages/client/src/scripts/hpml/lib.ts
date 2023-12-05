@@ -471,7 +471,7 @@ export function initHpmlLib(
 		if (!visitor && !localStorage.getItem("pageRndUUID")) {
 			localStorage.setItem("pageRndUUID",new Date().getTime().toString(16).slice(-7) + Math.floor(4095 * Math.random()).toString(16).padStart(3, '0'))
 		}
-	 	pageRndUUID = visitor ? visitor.id : (localStorage.getItem("pageRndUUID") ?? navigator.userAgent + ":" + window.devicePixelRatio);
+	 	pageRndUUID = visitor ? visitor.id : (localStorage.getItem("pageRndUUID") ?? `${navigator.userAgent}-${window.devicePixelRatio}`);
 	} catch(e) {
 		
 	}

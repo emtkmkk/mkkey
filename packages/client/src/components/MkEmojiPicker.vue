@@ -25,7 +25,7 @@
 						<header class="_acrylic" v-if="!(q == null || q === '')">
 							{{ `${q.includes('@') ? (remoteEmojiMode === "all" ? "他サーバー絵文字検索 " : "他サーバー絵文字検索(ミニ) ") : "検索結果 "}
 							${!(waitingFlg || searchingFlg) ? (searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
-								? `${(searchResultCustomStart.length + searchResultUnicodeStart.length) + " / " + (searchResultCustom.length + searchResultUnicode.length)} 件` 
+								? `${`${searchResultCustomStart.length + searchResultUnicodeStart.length} / ${searchResultCustom.length + searchResultUnicode.length}`} 件` 
 								: "0 件" : searchingFlg ? "検索中……" : "入力待機中……" }${allCustomEmojis && !q.includes('@') ? " (@で他サーバー絵文字検索)" : ""}
 							` }}
 						</header>
@@ -34,19 +34,19 @@
 						<template v-for="emoji in searchResultCustomStart">
 							<button
 								:key="emoji.id"
-								v-if="!errorEmojis.has(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+								v-if="!errorEmojis.has(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
 								class="_button item"
-								v-tooltip="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
-								:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
+								v-tooltip="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
+								:title="emoji.name + (emoji.host ? `@${emoji.host}` : '')"
 								tabindex="0"
 								@click="chosen(emoji, $event)"
 							>
 								<MkEmoji
 									class="emoji"
-									:emoji="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
+									:emoji="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
 									:normal="true"
 									:isPicker="true"
-									@loaderror="errorEmojis.add(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+									@loaderror="errorEmojis.add(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
 								/>
 								<!--<img
 									class="emoji"
@@ -184,7 +184,7 @@
 								pinned.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ ($store.state.reactionsFolderName || "ピン留め絵文字 : 1") + " " }}</XSection
+							>{{ `${$store.state.reactionsFolderName || "ピン留め絵文字 : 1"} ` }}</XSection
 						>
 						<XSection
 							key="pinned:2"
@@ -194,7 +194,7 @@
 								pinned2.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ ($store.state.reactionsFolderName2 || "ピン留め絵文字 : 2") + " " }}</XSection
+							>{{ `${__VLS_ctx.$store.state.reactionsFolderName2 || "ピン留め絵文字 : 2"} ` }}</XSection
 						>
 						<XSection
 							v-if="pinned3?.length != 0"
@@ -204,7 +204,7 @@
 								pinned3.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ ($store.state.reactionsFolderName3 || "ピン留め絵文字 : 3") + " " }}</XSection
+							>{{ `${__VLS_ctx.$store.state.reactionsFolderName3 || "ピン留め絵文字 : 3"} ` }}</XSection
 						>
 						<XSection
 							v-if="pinned4?.length != 0"
@@ -214,7 +214,7 @@
 								pinned4.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ ($store.state.reactionsFolderName4 || "ピン留め絵文字 : 4") + " " }}</XSection
+							>{{ `${__VLS_ctx.$store.state.reactionsFolderName4 || "ピン留め絵文字 : 4"} ` }}</XSection
 						>
 						<XSection
 							v-if="pinned5?.length != 0"
@@ -224,7 +224,7 @@
 								pinned5.filter((x) => ((props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && emojiStr && emojiStr.includes(x)) || !x.includes('@'))
 							"
 							@chosen="chosen"
-							>{{ ($store.state.reactionsFolderName5 || "ピン留め絵文字 : 5") + " " }}</XSection
+							>{{ `${__VLS_ctx.$store.state.reactionsFolderName5 || "ピン留め絵文字 : 5"} ` }}</XSection
 						>
 						<XSection
 							v-if="recentlyUsedEmojis?.length != 0 && !$store.state.hiddenRecent"
@@ -650,7 +650,7 @@ const remoteEmojiMode = computed(() =>
 	instance.remoteEmojiMode
 );
 const emojiStr = computed(() => 
-	(props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm) && unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => ":" + x.name + "@" + x.host + ":") : undefined
+	(props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm) && unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => `:${x.name}@${x.host}:`) : undefined
 );
 const recentlyPopularReactions = computed(() => instance.recentlyPopularReactions);
 const randomSubset = computed(() => {
@@ -729,7 +729,7 @@ watch(q, (nQ, oQ) => {
 });
 
 function emojiSearch(nQ, oQ) {
-	if (!defaultStore.state.enableInstanceEmojiSearch && nQ.includes("@") && !nQ.endsWith("@")) q.value = nQ.replaceAll("@","").replace("*","") + "@";
+	if (!defaultStore.state.enableInstanceEmojiSearch && nQ.includes("@") && !nQ.endsWith("@")) q.value = `${nQ.replaceAll("@", "").replace("*", "")}@`;
 
 	if (emojis.value) emojis.value.scrollTop = 0;
 	
@@ -1032,7 +1032,7 @@ function reset() {
 function getKey(
 	emoji: string | Misskey.entities.CustomEmoji | UnicodeEmojiDef
 ): string {
-	return typeof emoji === "string" ? emoji : emoji.char || `:${emoji.name}${emoji.host ? "@" + emoji.host : ""}:`;
+	return typeof emoji === "string" ? emoji : emoji.char || `:${emoji.name}${emoji.host ? `@${emoji.host}` : ""}:`;
 }
 
 function chosen(emoji: any, ev?: MouseEvent) {
@@ -1097,14 +1097,14 @@ function done(query?: any): boolean | void {
 	if (q2.endsWith(' -f')) {
 		const emojiForceStd = query.match(/([\w:\.\-@]*) \-f/);
 		if (emojiForceStd && emojiForceStd[1]){
-			chosen(":" + emojiForceStd[1] + ":")
+			chosen(`:${emojiForceStd[1]}:`)
 			return true;
 		}
 	}
 	if (q2.endsWith('!')) {
 		const emojiForceStd = query.match(/([\w:\.\-@]*)!/);
 		if (emojiForceStd && emojiForceStd[1]){
-			chosen(":" + emojiForceStd[1] + ":")
+			chosen(`:${emojiForceStd[1]}:`)
 			return true;
 		}
 	}
@@ -1138,7 +1138,7 @@ function done(query?: any): boolean | void {
 			return true;
 		}
 	} else {
-		q.value = query + "*";
+		q.value = `${query}*`;
 	}
 }
 

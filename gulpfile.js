@@ -10,7 +10,7 @@ const cssnano = require('gulp-cssnano');
 
 const locales = require('./locales');
 const meta = require('./package.json');
-const version = meta.version + "+" + process.env.COMMIT_HASH
+const version = `${meta.version}+${process.env.COMMIT_HASH}`
 
 gulp.task('copy:backend:views', () =>
 	gulp.src('./packages/backend/src/server/web/views/**/*').pipe(gulp.dest('./packages/backend/built/server/web/views'))

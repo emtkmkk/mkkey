@@ -62,9 +62,9 @@ export function genOpenapiSpec() {
 			: {};
 
 		let desc =
-			(endpoint.meta.description
+			`${endpoint.meta.description
 				? endpoint.meta.description
-				: "No description provided.") + "\n\n";
+				: "No description provided."}\n\n`;
 		desc += `**Credential required**: *${
 			endpoint.meta.requireCredential ? "Yes" : "No"
 		}*`;

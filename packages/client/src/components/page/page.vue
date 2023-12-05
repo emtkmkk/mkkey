@@ -3,7 +3,7 @@
 		v-if="!page.isPublic && _err"
 		style="white-space: pre-line; font-size: 0.8em; opacity: 0.8;"
 	>
-		{{ "エラー！" + _err + "\nJavascriptコンソールにて詳細を出力しています。\n(このメッセージはページが非公開の場合のみ表示されます。)\n\n" }}
+		{{ `エラー！${_err}\nJavascriptコンソールにて詳細を出力しています。\n(このメッセージはページが非公開の場合のみ表示されます。)\n\n` }}
 	</div>
 	<div
 		v-if="hpml"
@@ -64,7 +64,7 @@ export default defineComponent({
 						ast = parse(props.page.script);
 					} catch (err) {
 						console.error(err);
-						_err.value += "\n" + JSON.stringify(err);
+						_err.value += `\n${JSON.stringify(err)}`;
 						return;
 					}
 					hpml.aiscript
@@ -74,7 +74,7 @@ export default defineComponent({
 						})
 						.catch((err) => {
 							console.error(err);
-							_err.value += "\n" + JSON.stringify(err);
+							_err.value += `\n${JSON.stringify(err)}`;
 						});
 				} else {
 					hpml.eval();

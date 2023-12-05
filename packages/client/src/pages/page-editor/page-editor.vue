@@ -306,8 +306,8 @@ function del() {
 }
 
 function duplicate() {
-	title = title + " - copy";
-	name = name + "-copy";
+	title = `${title} - copy`;
+	name = `${name}-copy`;
 	os.api("pages/create", getSaveOptions()).then((created) => {
 		pageId = created.id;
 		currentName = name.trim();
@@ -436,7 +436,7 @@ function getScriptBlockList(type: string = null) {
 		list.unshift({
 			label: i18n.t("_pages.script.categories.fn"),
 			items: userFns.map((v) => ({
-				value: "fn:" + v.name,
+				value: `fn:${v.name}`,
 				text: v.name,
 			})),
 		});

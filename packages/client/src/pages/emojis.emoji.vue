@@ -24,7 +24,7 @@ function menu(ev) {
 		[
 			{
 				type: "label",
-				text: ":" + props.emoji.name + ":",
+				text: `:${props.emoji.name}:`,
 			},
 			{
 				text: i18n.ts.copy,

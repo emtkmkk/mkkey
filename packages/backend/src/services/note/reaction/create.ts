@@ -150,7 +150,7 @@ export default async (
 		.update()
 		.set({
 			reactions: () => sql,
-			...(existCount === 0 ? {score: () => '"score" + ' + (user.host ? '1' : '3')} : {}),
+			...(existCount === 0 ? {score: () => `"score" + ${user.host ? '1' : '3'}`} : {}),
 		})
 		.where("id = :id", { id: note.id })
 		.execute();
@@ -204,7 +204,7 @@ export default async (
 				note: await Notes.pack(note, user),
 				reaction: {
 					user: user,
-					emojiName: decodedReaction.name ? ":" + decodedReaction.name + ":" : reaction + (existCount > 0 ? " (+" + existCount + ")" : ""),
+					emojiName: decodedReaction.name ? `:${decodedReaction.name}:` : reaction + (existCount > 0 ? ` (+${existCount})` : ""),
 					customEmoji: decodedReaction.name ? emoji : undefined,
 				}
 			});

@@ -43,7 +43,7 @@ const headerActions = $computed(() => [
 		icon: "ph-arrow-square-up-right ph-bold ph-lg",
 		text: i18n.ts.dashboard,
 		handler: () => {
-			window.open(config.url + "/queue", "_blank");
+			window.open(`${config.url}/queue`, "_blank");
 		},
 	},
 ]);

@@ -97,12 +97,12 @@
 
 	const fontSize = localStorage.getItem("fontSize");
 	if (fontSize) {
-		document.documentElement.classList.add("f-" + fontSize);
+		document.documentElement.classList.add(`f-${fontSize}`);
 	}
 	
 	const avatarSize = localStorage.getItem("avatarSize");
 	if (avatarSize) {
-		document.documentElement.classList.add("av-" + avatarSize);
+		document.documentElement.classList.add(`av-${avatarSize}`);
 	}
 
 	const useSystemFont = localStorage.getItem("useSystemFont");

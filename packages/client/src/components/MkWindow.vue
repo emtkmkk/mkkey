@@ -294,8 +294,8 @@ function onHeaderMousedown(evt: MouseEvent) {
 		if (moveLeft + windowWidth > browserWidth)
 			moveLeft = browserWidth - windowWidth;
 
-		rootEl.style.left = moveLeft + "px";
-		rootEl.style.top = moveTop + "px";
+		rootEl.style.left = `${moveLeft}px`;
+		rootEl.style.top = `${moveTop}px`;
 	}
 
 	if (beforeMaximized) {
@@ -452,23 +452,23 @@ function onBottomLeftHandleMousedown(evt) {
 // 高さを適用
 function applyTransformHeight(height) {
 	if (height > window.innerHeight) height = window.innerHeight;
-	rootEl.style.height = height + "px";
+	rootEl.style.height = `${height}px`;
 }
 
 // 幅を適用
 function applyTransformWidth(width) {
 	if (width > window.innerWidth) width = window.innerWidth;
-	rootEl.style.width = width + "px";
+	rootEl.style.width = `${width}px`;
 }
 
 // Y座標を適用
 function applyTransformTop(top) {
-	rootEl.style.top = top + "px";
+	rootEl.style.top = `${top}px`;
 }
 
 // X座標を適用
 function applyTransformLeft(left) {
-	rootEl.style.left = left + "px";
+	rootEl.style.left = `${left}px`;
 }
 
 function onBrowserResize() {
@@ -480,9 +480,9 @@ function onBrowserResize() {
 	const windowHeight = main.offsetHeight;
 	if (position.left < 0) main.style.left = "0"; // 左はみ出し
 	if (position.top + windowHeight > browserHeight)
-		main.style.top = browserHeight - windowHeight + "px"; // 下はみ出し
+		main.style.top = `${browserHeight - windowHeight}px`; // 下はみ出し
 	if (position.left + windowWidth > browserWidth)
-		main.style.left = browserWidth - windowWidth + "px"; // 右はみ出し
+		main.style.left = `${browserWidth - windowWidth}px`; // 右はみ出し
 	if (position.top < 0) main.style.top = "0"; // 上はみ出し
 }
 

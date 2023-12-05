@@ -519,7 +519,7 @@ export async function addFile({
 
 	// detect name
 	const detectedName =
-		name || (info.type.ext ? `${user.username}${user.host ? "-" + user.host.replaceAll(/\W+/,"_") : ""}-${uuid()}.${info.type.ext}` : "untitled");
+		name || (info.type.ext ? `${user.username}${user.host ? `-${user.host.replaceAll(/\W+/, "_")}` : ""}-${uuid()}.${info.type.ext}` : "untitled");
 
 	if (user && !force) {
 		// Check if there is a file with the same hash

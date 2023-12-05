@@ -74,7 +74,7 @@ export async function addNoteToAntenna(
 				});
 				
 				const webhooks = await getActiveWebhooks().then((webhooks) =>
-				webhooks.filter((x) => x.userId === antenna.userId && x.on.includes("antenna") && !x.on.includes("exclude-" + x.id)),
+				webhooks.filter((x) => x.userId === antenna.userId && x.on.includes("antenna") && !x.on.includes(`exclude-${x.id}`)),
 				);
 
 				for (const webhook of webhooks) {

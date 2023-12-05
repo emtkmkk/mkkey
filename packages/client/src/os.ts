@@ -115,7 +115,7 @@ export const apiWithDialog = ((
 	promiseDialog(promise, null, (err) => {
 		alert({
 			type: "error",
-			text: err.message + "\n" + (err as any).id,
+			text: `${err.message}\n${(err as any).id}`,
 		});
 	});
 

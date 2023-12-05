@@ -55,7 +55,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		const profQuery = UserProfiles.createQueryBuilder("prof")
 			.select("prof.userId")
 			.where("user.birthday LIKE :birthday", {
-				birthday: `%${("0" + now.getMonth()).slice(-2)}-${("0" + now.getDate()).slice(-2)}`
+				birthday: `%${(`0${now.getMonth()}`).slice(-2)}-${(`0${now.getDate()}`).slice(-2)}`
 			});
 
 		if (ps.origin === "local") {

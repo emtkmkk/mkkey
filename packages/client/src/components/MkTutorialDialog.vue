@@ -46,7 +46,7 @@
 							<h2 class="_title title">
 								すみません、すでにチュートリアルは完了しているようです!
 							</h2>
-							<h3>{{ i18n.ts.gotIt + "を押下してダイアログを閉じてください。" }}</h3>
+							<h3>{{ `${i18n.ts.gotIt}を押下してダイアログを閉じてください。` }}</h3>
 						</section>
 						<section v-if="tutorial === 0" key="1" class="_content">
 							<h2 class="_title title">

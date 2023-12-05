@@ -24,7 +24,7 @@
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.powerRank }}</template>
-				<template #value>{{ (stats.powerRank ?? "N/A") + " ( " + (stats.nextRank ?? "N/A") + " )" }}</template>
+				<template #value>{{ `${stats.powerRank ?? "N/A"} ( ${stats.nextRank ?? "N/A"} )` }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline v-if="stats.starPower" style="margin: 1em 0">
 				<template #key>{{ "⭐" }}</template>

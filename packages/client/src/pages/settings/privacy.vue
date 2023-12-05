@@ -188,7 +188,7 @@
 				<template
 					v-else-if="secondPostButton == true && secondPostVisibility === 'l-home'"
 					#suffix
-					>{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}</template
+					>{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}</template
 				>
 				<template
 					v-else-if="secondPostButton == true && secondPostVisibility === 'followers'"
@@ -222,7 +222,7 @@
 						{{ i18n.ts._visibility.home }}
 					</option>
 					<option value="l-home">
-						{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}
+						{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -253,7 +253,7 @@
 				<template
 					v-else-if="thirdPostButton == true && thirdPostVisibility === 'l-home'"
 					#suffix
-					>{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}</template
+					>{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}</template
 				>
 				<template
 					v-else-if="thirdPostButton == true && thirdPostVisibility === 'followers'"
@@ -284,7 +284,7 @@
 						{{ i18n.ts._visibility.home }}
 					</option>
 					<option value="l-home">
-						{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}
+						{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -315,7 +315,7 @@
 				<template
 					v-else-if="fourthPostButton == true && fourthPostVisibility === 'l-home'"
 					#suffix
-					>{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}</template
+					>{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}</template
 				>
 				<template
 					v-else-if="fourthPostButton == true && fourthPostVisibility === 'followers'"
@@ -346,7 +346,7 @@
 						{{ i18n.ts._visibility.home }}
 					</option>
 					<option value="l-home">
-						{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}
+						{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -377,7 +377,7 @@
 				<template
 					v-else-if="fifthPostButton == true && fifthPostVisibility === 'l-home'"
 					#suffix
-					>{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}</template
+					>{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}</template
 				>
 				<template
 					v-else-if="fifthPostButton == true && fifthPostVisibility === 'followers'"
@@ -408,7 +408,7 @@
 						{{ i18n.ts._visibility.home }}
 					</option>
 					<option value="l-home">
-						{{ i18n.ts._visibility.localAndFollower + " (" + i18n.ts._visibility.home + ")" }}
+						{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}

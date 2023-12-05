@@ -76,8 +76,8 @@ function onMousedown(evt: MouseEvent): void {
 	const rect = target.getBoundingClientRect();
 
 	const ripple = document.createElement("div");
-	ripple.style.top = (evt.clientY - rect.top - 1).toString() + "px";
-	ripple.style.left = (evt.clientX - rect.left - 1).toString() + "px";
+	ripple.style.top = `${(evt.clientY - rect.top - 1).toString()}px`;
+	ripple.style.left = `${(evt.clientX - rect.left - 1).toString()}px`;
 
 	ripples!.appendChild(ripple);
 
@@ -92,7 +92,7 @@ function onMousedown(evt: MouseEvent): void {
 	);
 
 	window.setTimeout(() => {
-		ripple.style.transform = "scale(" + scale / 2 + ")";
+		ripple.style.transform = `scale(${scale / 2})`;
 	}, 1);
 	window.setTimeout(() => {
 		ripple.style.transition = "all 1s ease";

@@ -19,7 +19,7 @@
 				style="margin-bottom: 8px"
 				@click="edit(type)"
 			>
-				{{ i18n.t("_sfx." + type) }}
+				{{ i18n.t(`_sfx.${type}`) }}
 				<template #suffix>{{
 					sounds[type].type || i18n.ts.none
 				}}</template>
@@ -75,7 +75,7 @@ const sounds = ref({
 const soundsTypes = await os.api("get-sounds");
 
 async function edit(type) {
-	const { canceled, result } = await os.form(i18n.t("_sfx." + type), {
+	const { canceled, result } = await os.form(i18n.t(`_sfx.${type}`), {
 		type: {
 			type: "enum",
 			enum: soundsTypes.map((x) => ({
@@ -109,14 +109,14 @@ async function edit(type) {
 		volume: result.volume,
 	};
 
-	ColdDeviceStorage.set("sound_" + type, v);
+	ColdDeviceStorage.set(`sound_${type}`, v);
 	sounds.value[type] = v;
 }
 
 function reset() {
 	for (const sound of Object.keys(sounds.value)) {
-		const v = ColdDeviceStorage.default["sound_" + sound];
-		ColdDeviceStorage.set("sound_" + sound, v);
+		const v = ColdDeviceStorage.default[`sound_${sound}`];
+		ColdDeviceStorage.set(`sound_${sound}`, v);
 		sounds.value[sound] = v;
 	}
 }

@@ -36,7 +36,7 @@
 						? widgetProps.list.name
 						: widgetProps.src === "antenna"
 						? widgetProps.antenna.name
-						: i18n.t("_timelines." + widgetProps.src)
+						: i18n.t(`_timelines.${widgetProps.src}`)
 				}}</span>
 				<i
 					:class="

@@ -109,7 +109,7 @@ export function getNoteMenu(props: {
 
 	function copyContent(): void {
 		if (defaultStore.state.copyPostRemoteEmojiCode && appearNote.user?.host != null){
-			copyToClipboard(appearNote.text.replaceAll(/:(\w+):/g,":$1@" + appearNote.user?.host + ":"));
+			copyToClipboard(appearNote.text.replaceAll(/:(\w+):/g,`:\$1@${appearNote.user?.host}:`));
 		} else {
 			copyToClipboard(appearNote.text)
 		}
@@ -234,7 +234,7 @@ export function getNoteMenu(props: {
 								} else {
 									os.alert({
 										type: "error",
-										text: err.message + "\n" + err.id,
+										text: `${err.message}\n${err.id}`,
 									});
 								}
 							},

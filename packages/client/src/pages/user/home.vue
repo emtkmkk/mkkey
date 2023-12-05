@@ -236,14 +236,14 @@
 									}}
 									{{
 										nextBirthday === 0
-											? "(" + i18n.ts.birthdayToday + ")"
+											? `(${i18n.ts.birthdayToday})`
 											: birthday.substring(0, 4) != "0000"
 											&& birthday.substring(0, 4) != "9999"
 											&& birthday.substring(0, 4) != "4000"
 											&& age >= 6 && age <= 122
 											&& nextBirthday > 9
-												? "(" + i18n.t("yearsOld", { age }) + ")"
-												: "(" + (i18n.t("nextBirthday", { nextBirthday })) + ")"
+												? `(${i18n.t("yearsOld", { age: age })})`
+												: `(${i18n.t("nextBirthday", { nextBirthday: nextBirthday })})`
 									}}
 								</dd>
 							</dl>
@@ -274,7 +274,7 @@
 										:i="$i"
 									/>
 									<template v-else>
-										{{ stats.powerRank ? stats.powerRank + " " : "" }}
+										{{ stats.powerRank ? `${stats.powerRank} ` : "" }}
 									</template>
 									<MkNumber :value="stats.power" />
 								</dd>
@@ -491,7 +491,7 @@ const birthday = $computed(() => {
 
 	if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
 
-	return _birthday.getFullYear() + "-" + (_birthday.getMonth() + 1) + "-" + _birthday.getDate();
+	return `${_birthday.getFullYear()}-${_birthday.getMonth() + 1}-${_birthday.getDate()}`;
 })
 
 const style = $computed(() => {

@@ -237,10 +237,10 @@ export default async (
 		if (data.visibility === "specified" && data.localOnly === true) data.localOnly = false;
 		//チャンネルに[localOnly]が含まれている場合はlocalOnlyON
 		if (data.channel != null && data.channel.description?.includes("[localOnly]") && data.localOnly === false) data.localOnly = true;
-		if (!user.host && data.channel != null && data.localOnly === false && !data.reply && data.text?.trim() && !data.text?.includes("#" + data.channel!.name)) {
+		if (!user.host && data.channel != null && data.localOnly === false && !data.reply && data.text?.trim() && !data.text?.includes(`#${data.channel!.name}`)) {
 			//ローカル投稿でチャンネルで連合有りで返信でなくテキストがあり、
 			//すでにタグが含まれていない場合はハッシュタグを自動で付ける
-			data.text += " #" + data.channel!.name;
+			data.text += ` #${data.channel!.name}`;
 		}
 		if (data.visibility === "hidden") data.visibility = "public";
 
@@ -266,9 +266,9 @@ export default async (
 		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {
 			if (data.createdAt?.getSeconds() === 59 && data.createdAt?.getMilliseconds() !== 0) {
 				//誤差がミリ秒単位の場合
-				data.text = data.text + " [❌ -." + (1000 - data.createdAt.getMilliseconds()).toString().padStart(3, '0') + "]"
+				data.text = `${data.text} [❌ -.${(1000 - data.createdAt.getMilliseconds()).toString().padStart(3, '0')}]`
 			} else {
-				data.text = data.text + " [❌ -" + (60 - data.createdAt?.getSeconds()).toString() + "s]"
+				data.text = `${data.text} [❌ -${(60 - data.createdAt?.getSeconds()).toString()}s]`
 			}
 		}
 
@@ -276,12 +276,12 @@ export default async (
 		if (data.createdAt?.getHours() === 0 && data.createdAt?.getMinutes() === 0 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {
 			if (data.createdAt?.getMilliseconds() === 0) {
 				//ジャストの場合
-				data.text = data.text + " [$[tada 🦉 .000]]"
+				data.text = `${data.text} [\$[tada 🦉 .000]]`
 			} else if (data.createdAt?.getSeconds() === 0) {
 				//誤差がミリ秒単位の場合
-				data.text = data.text + " [🦉 ." + data.createdAt.getMilliseconds().toString().padStart(3, '0') + "]"
+				data.text = `${data.text} [🦉 .${data.createdAt.getMilliseconds().toString().padStart(3, '0')}]`
 			} else {
-				data.text = data.text + " [❌ +" + (data.createdAt?.getSeconds()).toString() + "s]"
+				data.text = `${data.text} [❌ +${(data.createdAt?.getSeconds()).toString()}s]`
 			}
 		}
 
@@ -376,8 +376,8 @@ export default async (
 
 			if (isIncludeNgWordRet) {
 				if (!data.cw) {
-					data.cw = "[強制CW] " + isIncludeNgWordRet;
-				} else if (!data.cw.trim() || data.cw.trim()　=== "CW") {
+					data.cw = `[強制CW] ${isIncludeNgWordRet}`;
+				} else if (!data.cw.trim() || data.cw.trim() === "CW") {
 					data.cw = isIncludeNgWordRet;
 				}
 			}
@@ -387,9 +387,9 @@ export default async (
 				if (isIncludeNgWordRtRet) {
 					if (data.text) {
 						if (!data.cw) {
-							data.cw = "[強制CW (引用先)] " + isIncludeNgWordRtRet;
-						} else if (!data.cw.trim() || data.cw.trim()　=== "CW") {
-							data.cw = isIncludeNgWordRtRet + " (引用先)";
+							data.cw = `[強制CW (引用先)] ${isIncludeNgWordRtRet}`;
+						} else if (!data.cw.trim() || data.cw.trim() === "CW") {
+							data.cw = `${isIncludeNgWordRtRet} (引用先)`;
 						}
 					} else {
 						data.visibility = "home";
@@ -798,7 +798,7 @@ function incRenoteCount(renote: Note, userHost?: string) {
 		.update()
 		.set({
 			renoteCount: () => '"renoteCount" + 1',
-			score: () => '"score" + ' + (userHost ? '3' : '9'),
+			score: () => `"score" + ${userHost ? '3' : '9'}`,
 		})
 		.where("id = :id", { id: renote.id })
 		.execute();

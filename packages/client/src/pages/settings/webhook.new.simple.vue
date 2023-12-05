@@ -81,7 +81,7 @@ async function create(): Promise<void> {
 		events.push("antenna");
 		event_excludeAntennas.forEach((x,index) => {
 			if (!x){
-				events.push("exclude-" + antennas[index].id);
+				events.push(`exclude-${antennas[index].id}`);
 			}
 		});
 	}
@@ -90,7 +90,7 @@ async function create(): Promise<void> {
 		if (text_length && isFinite(text_length)) {
 			if (text_length > 1000) text_length = 1000;
 			if (text_length < 0) text_length = 0;
-			secret = "Discord" + parseInt(text_length);
+			secret = `Discord${parseInt(text_length)}`;
 		} else {
 			secret = "Discord";
 		}
@@ -100,7 +100,7 @@ async function create(): Promise<void> {
 	
 	let webhookName = name || "Discord";
 	
-	if (match) webhookName = webhookName + "-" + match[1].slice(0,6) + "-" + match[2].slice(0,6)
+	if (match) webhookName = `${webhookName}-${match[1].slice(0, 6)}-${match[2].slice(0, 6)}`
 
 	os.apiWithDialog("i/webhooks/create", {
 		name: webhookName,

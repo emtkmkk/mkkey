@@ -229,7 +229,7 @@ const otherPostsPagination = {
 		userId: page.user.id,
 	})),
 };
-const path = $computed(() => props.username + "/" + props.pageName);
+const path = $computed(() => `${props.username}/${props.pageName}`);
 
 function fetchPage() {
 	page = null;

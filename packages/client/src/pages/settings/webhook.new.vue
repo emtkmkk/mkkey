@@ -146,7 +146,7 @@ async function create(): Promise<void> {
 		events.push("antenna");
 		event_excludeAntennas.forEach((x,index) => {
 			if (!x){
-				events.push("exclude-" + antennas[index].id);
+				events.push(`exclude-${antennas[index].id}`);
 			}
 		});
 	}
@@ -155,7 +155,7 @@ async function create(): Promise<void> {
 		if (text_length && isFinite(text_length)) {
 			if (text_length > 1000) text_length = 1000;
 			if (text_length < 0) text_length = 0;
-			secret = "Discord" + parseInt(text_length);
+			secret = `Discord${parseInt(text_length)}`;
 		} else {
 			secret = "Discord";
 		}
@@ -165,7 +165,7 @@ async function create(): Promise<void> {
 		if (text_length && isFinite(text_length)) {
 			if (text_length > 1000) text_length = 1000;
 			if (text_length < 0) text_length = 0;
-			secret = "Slack" + parseInt(text_length);
+			secret = `Slack${parseInt(text_length)}`;
 		} else {
 			secret = "Slack";
 		}

@@ -106,7 +106,7 @@ export async function toDbReaction(
 		if (emoji2) return emoji2.host ? `:${emoji2.name}@${emoji2.host}:` : `:${emoji2.name}:`;
 	}
 
-	console.log("NotFound Emoji : " + reaction)
+	console.log(`NotFound Emoji : ${reaction}`)
 	return await getFallbackReaction();
 }
 

@@ -59,7 +59,7 @@ function greet() {
 	}
 
 	bootLogger.info("Welcome to Calckey!");
-	bootLogger.info(`Calckey v${meta.version + "+" + process.env.COMMIT_HASH}`, null, true);
+	bootLogger.info(`Calckey v${meta.version}+${process.env.COMMIT_HASH}`, null, true);
 }
 
 /**

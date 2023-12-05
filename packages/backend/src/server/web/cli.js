@@ -34,7 +34,7 @@ window.onload = async () => {
 
 	document.getElementById("submit").textContent = `${document.getElementById("submit").textContent} ${vicon(searchParams.has("v") ? searchParams.get("v") : "public",searchParams.has("mkkeyPublic") ? !!searchParams.get("mkkeyPublic") : false)}`
 
-	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has("tl") && searchParams.get('tl').replace('home','') ? "notes/" + searchParams.get('tl').replace('home','').replace('social','hybrid') + "-timeline" : i ? "notes/timeline" : "notes/local-timeline";
+	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has("tl") && searchParams.get('tl').replace('home','') ? `notes/${searchParams.get('tl').replace('home', '').replace('social', 'hybrid')}-timeline` : i ? "notes/timeline" : "notes/local-timeline";
 	const limit = searchParams.has('limit') ? parseInt(searchParams.get('limit'), 10) : undefined;
 	const noAvatar = searchParams.has('noAvatar');
 	const avatarSize = searchParams.has("avatarSize") ? searchParams.get('avatarSize') : "40";
@@ -52,7 +52,7 @@ window.onload = async () => {
 		if (!noAvatar) {
 			avatar.src = note.user.avatarUrl;
 		}
-		avatar.style.height = avatarSize + "px";
+		avatar.style.height = `${avatarSize}px`;
 		const text = document.createElement("div");
 		text.textContent = formatNoteText(note, appearNote, name);
 
@@ -151,7 +151,7 @@ function createInputWithLabel(type, name, labelText, placeholder = "", value = "
 
 function createUserLabel(note) {
 	const p = document.createElement("p");
-	p.textContent = `${getProcessName(note.user.name)} @${note.user.username}${note.user.host ? "@" + note.user.host : ""} ${vicon(note.visibility, note.localOnly)}`.trim();
+	p.textContent = `${getProcessName(note.user.name)} @${note.user.username}${note.user.host ? `@${note.user.host}` : ""} ${vicon(note.visibility, note.localOnly)}`.trim();
 	return p;
 }
 
@@ -163,7 +163,7 @@ function formatNoteText(note, appearNote, name) {
 		? excludeNotPlain(appearNote.cw) + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")
 		: excludeNotPlain(appearNote.text) || "";
 
-	return `${noteText}${note.files.length ? " (📎" + note.files.length + ")" : ""}${note.renote ? (!note.text ? " RT " : " \nQT ") + name.textContent + " : " + appearText + (appearNote.files.length ? " (📎" + appearNote.files.length + ")" : "") : ""}`.trim();
+	return `${noteText}${note.files.length ? ` (📎${note.files.length})` : ""}${note.renote ? `${(!note.text ? " RT " : " \nQT ") + name.textContent} : ${appearText}${appearNote.files.length ? ` (📎${appearNote.files.length})` : ""}` : ""}`.trim();
 }
 
 function excludeNotPlain(text) {

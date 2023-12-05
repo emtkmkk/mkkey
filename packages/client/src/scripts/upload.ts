@@ -82,7 +82,7 @@ export function uploadFile(
 			
 			const ctx = reactive<Uploading>({
 				id: id,
-				name: inputName || name || (keepFileName ? file.name : undefined) || $i.username + "-" + id.replaceAll(".","") + (ext?.[0] ?? ""),
+				name: inputName || name || (keepFileName ? file.name : undefined) || `${$i.username}-${id.replaceAll(".","")}${ext?.[0] ?? ""}`,
 				progressMax: undefined,
 				progressValue: undefined,
 				img: window.URL.createObjectURL(file),

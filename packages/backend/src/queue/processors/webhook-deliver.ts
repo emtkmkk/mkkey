@@ -99,7 +99,7 @@ async function toDiscordEmbeds(body: any): Promise<(DiscordEmbeds | undefined)[]
 		body.message ? ({
 			author: {
 				name: getUsername(body.message.user) ?? "",
-				url: `${config.url}/@${body.message.user?.username}${(body.message.user?.host ? "@" + body.message.user?.host : "")}`,
+				url: `${config.url}/@${body.message.user?.username}${(body.message.user?.host ? `@${body.message.user?.host}` : "")}`,
 				icon_url: body.message.user?.avatarUrl,
 			},
 			title: `${(body.message.group ? `${body.message.group.name} の` : "個人宛の")}チャット`,
@@ -152,7 +152,7 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			footer_icon: meta.iconUrl || undefined,
 		}) : undefined,
 		body.user ? ({
-			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (`${excludeNotPlain(body.user.name)} (${body.user.username}${(body.user.host ? "@" + body.user.host : "")})`) : (body.user.username + (body.user.host ? `@${body.user.host}` : ""))),
+			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (`${excludeNotPlain(body.user.name)} (${body.user.username}${(body.user.host ? `@${body.user.host}` : "")})`) : (body.user.username + (body.user.host ? `@${body.user.host}` : ""))),
 			title_link: `${config.url}/@${body.user.username}${(body.user.host ? `@${body.user.host}` : "")}`,
 			text: emojiEscape(excludeNotPlain(body.user.description)) ?? undefined,
 			icon_url: content.avatar_url,
@@ -188,7 +188,7 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			fallback: emojiEscape(content.content),
 			pretext: emojiEscape(content.content),
 			title: `${(body.message.group ? `${body.message.group.name} の` : "個人宛の")}チャット`,
-			title_link: body.message.groupId ? `${config.url}/my/messaging/group/${body.message.groupId}` : `${config.url}/my/messaging/${(body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""))}`,
+			title_link: body.message.groupId ? `${config.url}/my/messaging/group/${body.message.groupId}` : `${config.url}/my/messaging/${(body.message.user?.username + (body.message.user?.host ? `@${body.message.user?.host}` : ""))}`,
 			text: emojiEscape((excludeNotPlain(body.message.text)?.length ?? 0 > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : "")),
 			image_url: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? body.message.file.url : undefined,
 			ts: new Date(body.message.createdAt).valueOf() / 1000,
@@ -218,12 +218,12 @@ function getNoteContentSummary(note: any, userId: string, textLength?: number): 
 	const noteText = excludeNotPlain(getNoteSummary(note));
 	return (
 		noteText ?
-		textLength
-			? noteText.slice(0, textLength) + (noteText?.length > textLength ? "…" : "")
-			: note.user?.id === userId
-				? noteText.slice(0, 10) + (noteText?.length > 10 ? "…" : "")
-				: noteText.slice(0, 40) + (noteText?.length > 40 ? "…" : "")
-		: undefined
+			textLength
+				? noteText.slice(0, textLength) + (noteText?.length > textLength ? "…" : "")
+				: note.user?.id === userId
+					? noteText.slice(0, 10) + (noteText?.length > 10 ? "…" : "")
+					: noteText.slice(0, 40) + (noteText?.length > 40 ? "…" : "")
+			: undefined
 	)
 }
 
@@ -302,7 +302,7 @@ async function typeToBody(jobData: any): Promise<any> {
 			return {
 				username,
 				avatar_url,
-				content: `${body.antenna?.name}📡新着 : ${username}${(user.id !== body.note?.user?.id ? " : RT " + getUsername(body.note?.user) : "")}${content}`,
+				content: `${body.antenna?.name}📡新着 : ${username}${(user.id !== body.note?.user?.id ? ` : RT ${getUsername(body.note?.user)}` : "")}${content}`,
 			};
 		case "userMessage":
 			return {

@@ -128,7 +128,7 @@ export default defineComponent({
 			}
 		);
 
-		this.$el.style.setProperty("--maxHeight", this.maxHeight + "px");
+		this.$el.style.setProperty("--maxHeight", `${this.maxHeight}px`);
 
 		const calcOmit = () => {
 			if (this.omitted || this.ignoreOmit || this.maxHeight == null)
@@ -152,14 +152,14 @@ export default defineComponent({
 			const elementHeight = el.getBoundingClientRect().height;
 			el.style.height = 0;
 			el.offsetHeight; // reflow
-			el.style.height = elementHeight + "px";
+			el.style.height = `${elementHeight}px`;
 		},
 		afterEnter(el) {
 			el.style.height = null;
 		},
 		leave(el) {
 			const elementHeight = el.getBoundingClientRect().height;
-			el.style.height = elementHeight + "px";
+			el.style.height = `${elementHeight}px`;
 			el.offsetHeight; // reflow
 			el.style.height = 0;
 		},

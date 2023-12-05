@@ -101,14 +101,14 @@ export default defineComponent({
 			const elementHeight = el.getBoundingClientRect().height;
 			el.style.height = 0;
 			el.offsetHeight; // reflow
-			el.style.height = elementHeight + "px";
+			el.style.height = `${elementHeight}px`;
 		},
 		afterEnter(el) {
 			el.style.height = null;
 		},
 		leave(el) {
 			const elementHeight = el.getBoundingClientRect().height;
-			el.style.height = elementHeight + "px";
+			el.style.height = `${elementHeight}px`;
 			el.offsetHeight; // reflow
 			el.style.height = 0;
 		},

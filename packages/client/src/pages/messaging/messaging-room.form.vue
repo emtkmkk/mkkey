@@ -223,13 +223,13 @@ function insertMfm() {
 
 function quickSizeUp() {
 	if (textEl.value.startsWith("$[x4 ")){
-		textEl.value = "$[x2 " + textEl.value + "]";
+		textEl.value = `\$[x2 ${textEl.value}]`;
 	} else if (textEl.value.startsWith("$[x2 ")){
 		textEl.value = textEl.value.replace("$[x2 ", "$[x3 ");
 	} else if (textEl.value.startsWith("$[x3 ")){
 		textEl.value = textEl.value.replace("$[x3 ", "$[x4 ");
 	} else {
-		textEl.value = "$[x2 " + textEl.value + "]";
+		textEl.value = `\$[x2 ${textEl.value}]`;
 	}
 	text = textEl.value;
 	

@@ -35,7 +35,7 @@ const _time = (props.mode === "detail-dateOnly" || props.dateOnly)
 				? typeof props.time === "string" || typeof props.time === "number" ? new Date(new Date(props.time).setHours(0, 0, 0, 0)) : new Date(props.time.setHours(0, 0, 0, 0))
 				: typeof props.time === "string" || typeof props.time === "number" ? new Date(props.time) : props.time;
 const absolute = Number.isNaN(_time.getTime()) ? props.time : _time.getFullYear() < 0 ? `${-(_time.getFullYear())} B.C.` : _time.toLocaleString();
-const milliseconds = _time.getMilliseconds() ? "." + ("000" + _time.getMilliseconds()).slice(-3) : "";
+const milliseconds = _time.getMilliseconds() ? `.${(`000${_time.getMilliseconds()}`).slice(-3)}` : "";
 const absoluteDateOnly = Number.isNaN(_time.getTime()) ? props.time : _time.getFullYear() < 0 ? `${-(_time.getFullYear())} B.C.` : _time.toLocaleDateString();
 
 let now = $ref((new Date()));

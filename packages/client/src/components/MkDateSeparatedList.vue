@@ -64,7 +64,7 @@ export default defineComponent({
 						"div",
 						{
 							class: "separator",
-							key: item.id + ":separator",
+							key: `${item.id}:separator`,
 						},
 						h(
 							"p",
@@ -94,7 +94,7 @@ export default defineComponent({
 						return [
 							h(MkAd, {
 								class: "a", // advertiseの意(ブロッカー対策)
-								key: item.id + ":ad",
+								key: `${item.id}:ad`,
 								prefer: ["inline", "inline-big"],
 							}),
 							el,
@@ -110,14 +110,14 @@ export default defineComponent({
 				defaultStore.state.animation ? TransitionGroup : "div",
 				defaultStore.state.animation
 					? {
-							class: "sqadhkmv" + (props.noGap ? " noGap" : ""),
+							class: `sqadhkmv${props.noGap ? " noGap" : ""}`,
 							name: "list",
 							tag: "div",
 							"data-direction": props.direction,
 							"data-reversed": props.reversed ? "true" : "false",
 					  }
 					: {
-							class: "sqadhkmv" + (props.noGap ? " noGap" : ""),
+							class: `sqadhkmv${props.noGap ? " noGap" : ""}`,
 					  },
 				{ default: renderChildren }
 			);

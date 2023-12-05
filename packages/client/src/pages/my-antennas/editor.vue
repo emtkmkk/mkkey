@@ -238,7 +238,7 @@ function addUser() {
 function addInstance() {
 	os.selectInstance().then((instance) => {
 		instances = instances.trim();
-		instances += "\n" + instance.host;
+		instances += `\n${instance.host}`;
 		instances = instances.trim();
 	});
 }

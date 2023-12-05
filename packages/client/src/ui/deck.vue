@@ -244,7 +244,7 @@ const addColumn = async (ev) => {
 		title: i18n.ts._deck.addColumn,
 		items: columns.map((column) => ({
 			value: column,
-			text: i18n.t("_deck._columns." + column),
+			text: i18n.t(`_deck._columns.${column}`),
 		})),
 	});
 	if (canceled) return;
@@ -252,7 +252,7 @@ const addColumn = async (ev) => {
 	addColumnToStore({
 		type: column,
 		id: uuid(),
-		name: i18n.t("_deck._columns." + column),
+		name: i18n.t(`_deck._columns.${column}`),
 		width: 330,
 	});
 };

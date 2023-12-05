@@ -130,7 +130,7 @@ export async function createMessage(
 				const targetUser = await Users.findOneByOrFail({ id: joining.userId });
 				//webhook
 				const webhooks = await getActiveWebhooks().then((webhooks) =>
-				webhooks.filter((x) => x.userId === joining.userId && x.on.includes("groupMessage") && (!x.on.includes("groupMentionOnly") || messageObj.text?.includes("@" + targetUser.username))),
+				webhooks.filter((x) => x.userId === joining.userId && x.on.includes("groupMessage") && (!x.on.includes("groupMentionOnly") || messageObj.text?.includes(`@${targetUser.username}`))),
 				);
 
 				for (const webhook of webhooks) {

@@ -254,7 +254,7 @@ onMounted(() => {
 						const rect = tabEl.getBoundingClientRect();
 						const left =
 							rect.left - parentRect.left + tabsEl?.scrollLeft;
-						tabHighlightEl.style.width = tabSizeX + "px";
+						tabHighlightEl.style.width = `${tabSizeX}px`;
 						tabHighlightEl.style.transform = `translateX(${left}px)`;
 						window.requestAnimationFrame(() => {
 							tabsEl?.scrollTo({

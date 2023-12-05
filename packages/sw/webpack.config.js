@@ -38,7 +38,7 @@ module.exports = {
 	},
 	plugins: [
 		new webpack.DefinePlugin({
-			_VERSION_: JSON.stringify(meta.version + "+" + process.env.COMMIT_HASH),
+			_VERSION_: JSON.stringify(`${meta.version}+${process.env.COMMIT_HASH}`),
 			_LANGS_: JSON.stringify(
 				Object.entries(locales).map(([k, v]) => [k, v._lang_]),
 			),

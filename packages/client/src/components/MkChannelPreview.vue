@@ -36,7 +36,7 @@
 			<p :title="channel.description">
 				{{
 					channel.description.length > 85
-						? channel.description.slice(0, 85) + "…"
+						? `${channel.description.slice(0, 85)}…`
 						: channel.description
 				}}
 			</p>

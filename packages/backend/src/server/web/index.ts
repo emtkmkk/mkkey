@@ -510,7 +510,7 @@ router.get("/notes/:note", async (ctx, next) => {
 			const userName = user.name?.replaceAll(/ ?:.*?:/g, '').trim() ? `${user.name?.replaceAll(/ ?:.*?:/g, '')}${user.host ? `@${user.host}` : ''}` : `@${user.username}${user.host ? `@${user.host}` : ''}`;
 			let summary = "";
 			if (!["public", "home"].includes(note.visibility) || note.localOnly) {
-				summary = `${note.visibility === "followers" ? (userName + "さんのフォロワー限定の投稿") : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
+				summary = `${note.visibility === "followers" ? (`${userName}さんのフォロワー限定の投稿`) : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
 			} else {
 				summary = getNoteSummary(_note);
 			}
@@ -556,7 +556,7 @@ router.get("/posts/:note", async (ctx, next) => {
 		const userName = user.name?.replaceAll(/ ?:.*?:/g, '').trim() ? `${user.name?.replaceAll(/ ?:.*?:/g, '')}${user.host ? `@${user.host}` : ''}` : `@${user.username}${user.host ? `@${user.host}` : ''}`;
 		let summary = "";
 		if (!["public", "home"].includes(note.visibility) || note.localOnly) {
-			summary = `${note.visibility === "followers" ? (userName + "さんのフォロワー限定の投稿") : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
+			summary = `${note.visibility === "followers" ? (`${userName}さんのフォロワー限定の投稿`) : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
 		} else {
 			summary = getNoteSummary(_note);
 		}
@@ -786,7 +786,7 @@ router.get("(.*)", async (ctx) => {
 	}
 	const now = new Date();
 	let nowDate = new Date().toLocaleDateString('ja-JP');
-	motdd.push("今日は " + nowDate + " です");
+	motdd.push(`今日は ${nowDate} です`);
 	switch (now.getDay()) {
 		case 0:
 			motdd.push("今日は日曜日 すやすや");
@@ -823,22 +823,21 @@ router.get("(.*)", async (ctx) => {
 	const yearNextFirstDay = new Date(now.getFullYear() + 1, 0);
 	const nowDaysCnt = Math.floor((now.valueOf() - yearFirstDay.valueOf()) / (24 * 60 * 60 * 1000));
 	const yearDaysCnt = Math.floor((yearNextFirstDay.valueOf() - yearFirstDay.valueOf()) / (24 * 60 * 60 * 1000));
-	motdd.push(now.getFullYear() + "年 進行度 " + nowDaysCnt + " / " + yearDaysCnt + " ( " + (nowDaysCnt / yearDaysCnt * 100).toFixed(1) + "% ) です");
-	motdt.push("もこきーのユーザ数は " + usersCount + " です");
-	motdt.push("もこきーの合計投稿数は " + notesCount + " です");
-	motdt.push("もこきーの連合ユーザ数は " + gUsersCount + " です");
-	motdt.push("もこきーの連合投稿数は " + gNotesCount + " です");
-	motdt.push("もこきーの絵文字数は " + emojisCount + " です");
-	//motdt.push("もこきーの全絵文字数は " + (emojisCount + gEmojisCount) + " です");
+	motdd.push(`${now.getFullYear()}年 進行度 ${nowDaysCnt} / ${yearDaysCnt} ( ${(nowDaysCnt / yearDaysCnt * 100).toFixed(1)}% ) です`);
+	motdt.push(`もこきーのユーザ数は ${usersCount} です`);
+	motdt.push(`もこきーの合計投稿数は ${notesCount} です`);
+	motdt.push(`もこきーの連合ユーザ数は ${gUsersCount} です`);
+	motdt.push(`もこきーの連合投稿数は ${gNotesCount} です`);
+	motdt.push(`もこきーの絵文字数は ${emojisCount} です`);
 	//季節メッセージ
 	if (now.getMonth() === 0) {
 		motd.push("冬ですね");
 		if (now.getDate() == 1) {
-			motd = ["HAPPY NEW YEAR " + now.getFullYear() + " 🎉", "あけましておめでとうございます！"];
+			motd = [`HAPPY NEW YEAR ${now.getFullYear()} 🎉`, "あけましておめでとうございます！"];
 			motdd = [];
 			motdt = [];
 		} else if (now.getDate() <= 3) {
-			motd.push("HAPPY NEW YEAR " + now.getFullYear() + " 🎉");
+			motd.push(`HAPPY NEW YEAR ${now.getFullYear()} 🎉`);
 			motd.push("あけましておめでとうございます！")
 		}
 	} else if (now.getMonth() == 1) {
@@ -910,14 +909,14 @@ router.get("(.*)", async (ctx) => {
 	} else if (now.getMonth() == 10) {
 		motd.push("秋か冬かよく分からない時期ですね");
 		if (now.getDate() == 26) {
-			motd = ["今日はもこきー " + (now.getFullYear() - 2022) + " 周年の日です！🎉"];
+			motd = [`今日はもこきー ${now.getFullYear() - 2022} 周年の日です！🎉`];
 			motdd = [];
 			motdt = [];
 		}
 	} else if (now.getMonth() == 11) {
 		motd.push("冬が始まりますね");
 		if (now.getDate() == 31 && now.getHours() >= 18) {
-			motd = [now.getFullYear() + "年もお疲れ様でした。来年も頑張りましょう"];
+			motd = [`${now.getFullYear()}年もお疲れ様でした。来年も頑張りましょう`];
 			motdd = [];
 			motdt = [];
 		} else if (now.getDate() >= 19 && now.getDate() <= 23) {
@@ -927,7 +926,7 @@ router.get("(.*)", async (ctx) => {
 			motd.push("クリスマスですね");
 		}
 		if (now.getDate() >= 30) {
-			motd.push(now.getFullYear() + "年がもうすぐ終わりますね");
+			motd.push(`${now.getFullYear()}年がもうすぐ終わりますね`);
 		}
 		if (now.getDate() == 31) {
 			motd.push("年越しそば、食べましたか？");
@@ -947,7 +946,7 @@ router.get("(.*)", async (ctx) => {
 		img: meta.iconUrl,
 		title: meta.name || "Calckey",
 		instanceName: meta.name || "Calckey",
-		desc: "FediverseのSNSサーバーのもこきーです\n\n" + nowDate + "時点の\nユーザ数 : " + usersCount + "\n合計投稿数 : " + notesCount + "\n絵文字数 : " + emojisCount + "\n連合ユーザ数 : " + gUsersCount + "\n連合投稿数 : " + gNotesCount + "\n連合絵文字数 : " + gEmojisCount,
+		desc: `FediverseのSNSサーバーのもこきーです\n\n${nowDate}時点の\nユーザ数 : ${usersCount}\n合計投稿数 : ${notesCount}\n絵文字数 : ${emojisCount}\n連合ユーザ数 : ${gUsersCount}\n連合投稿数 : ${gNotesCount}\n連合絵文字数 : ${gEmojisCount}`,
 		icon: meta.iconUrl,
 		splashIcon: splashIconUrl,
 		themeColor: meta.themeColor,

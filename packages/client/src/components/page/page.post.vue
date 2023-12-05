@@ -99,7 +99,7 @@ export default defineComponent({
 						);
 					}
 
-					fetch(apiUrl + "/drive/files/create", {
+					fetch(`${apiUrl}/drive/files/create`, {
 						method: "POST",
 						body: formData,
 						headers: {

@@ -89,7 +89,7 @@
 					<p v-if="description" :title="description">
 						{{
 							description.length > 85
-								? description.slice(0, 85) + "…"
+								? `${description.slice(0, 85)}…`
 								: description
 						}}
 					</p>

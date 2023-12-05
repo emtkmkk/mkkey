@@ -45,8 +45,8 @@ function setPosition() {
 	const rect = props.targetElement.getBoundingClientRect();
 	const left = props.targetElement.offsetWidth;
 	const top = rect.top - rootRect.top - 8;
-	el.value.style.left = left + "px";
-	el.value.style.top = top + "px";
+	el.value.style.left = `${left}px`;
+	el.value.style.top = `${top}px`;
 }
 
 function onChildClosed(actioned?: boolean) {

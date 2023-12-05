@@ -530,12 +530,12 @@ export default define(meta, paramDef, async (ps, me) => {
 		// +0が5000、+1が6000ならば +2は6000+1000の7000 +3は8000
 		const plusNum = Math.floor((_rankPower - rankBorder.slice(-2)[0]) / suffixIncBorder);
 		result.powerRank = plusNum >= 1000 ? "⭐!!!" : plusNum >= 100 ? rankName.slice(-2)[0] + plusNum : plusNum >= 4 ? rankName.slice(-1)[0] + plusNum : rankName.slice(-1)[0] + ("+").repeat(plusNum - 1);
-		result.nextRank = (Math.floor((rankPower % suffixIncBorder) / suffixIncBorder * 1000) / 10) + "%";
+		result.nextRank = `${Math.floor((rankPower % suffixIncBorder) / suffixIncBorder * 1000) / 10}%`;
 	} else {
 		const clearBorder = rankBorder.filter(x => x <= _rankPower);
 		result.powerRank = rankName[clearBorder.length];
 		const clearBorderMax = clearBorder.slice(-1)[0] ?? 0;
-		result.nextRank = (Math.floor((rankPower - clearBorderMax) / ((rankBorder[clearBorder.length] ?? (clearBorder.slice(-1)[0] + suffixIncBorder)) - clearBorderMax) * 1000) / 10).toFixed(1) + "%";
+		result.nextRank = `${(Math.floor((rankPower - clearBorderMax) / ((rankBorder[clearBorder.length] ?? (clearBorder.slice(-1)[0] + suffixIncBorder)) - clearBorderMax) * 1000) / 10).toFixed(1)}%`;
 	}
 
 	if (!firstLocalFollower && user.host) result.powerRank = result.powerRank + "?";

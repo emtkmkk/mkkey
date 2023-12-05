@@ -281,7 +281,7 @@ export class Autocomplete {
 				const regex = /^([^\n]*)\n([\S\s]*)$/.exec(after);
 				if (regex) {
 					target = regex[1];
-					after = "\n" + regex[2];
+					after = `\n${regex[2]}`;
 				}
 			}
 

@@ -4,7 +4,7 @@
 		<span
 			v-if="user.host || detail || $store.state.showFullAcct"
 			class="host"
-			>@{{ maxlength && (user.host || host).length > maxlength ? (user.host || host).slice(0,~~(maxlength/2)) + "…" + (user.host || host).slice((maxlength - ~~(maxlength/2)) * -1) : user.host || host }}</span
+			>@{{ maxlength && (user.host || host).length > maxlength ? `${(user.host || host).slice(0, ~~(maxlength / 2))}…${(user.host || host).slice((maxlength - ~~(maxlength / 2)) * -1)}` : user.host || host }}</span
 		>
 	</span>
 </template>

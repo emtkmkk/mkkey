@@ -298,7 +298,7 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 		[
 			{
 				type: "label",
-				text: ":" + emoji.name + ":",
+				text: `:${emoji.name}:`,
 			},
 			{
 				text: i18n.ts.import,

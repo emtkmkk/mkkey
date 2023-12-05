@@ -172,7 +172,7 @@ function getMenu() {
 		},
 		{
 			type: "parent",
-			text: i18n.ts.move + "...",
+			text: `${i18n.ts.move}...`,
 			icon: "ph-arrows-out-cardinal ph-bold ph-lg",
 			children: [
 				{

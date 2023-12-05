@@ -671,7 +671,7 @@ const draftKey = $computed((): string => {
 		key += `note:${props.airReply.id}`;
 	} else {
 		key += "note";
-		if (props.key) key += ":" + props.key;
+		if (props.key) key += `:${props.key}`;
 	}
 
 	return key;
@@ -686,7 +686,7 @@ const placeholder = $computed((): string => {
 		return i18n.ts._postForm.channelPlaceholder;
 	} else if (defaultStore.state.plusInfoPostForm) {
 		return (i18n.ts._visibility[visibility] && ((defaultStore.state.rememberNoteVisibility || !defaultStore.state.firstPostButtonVisibilityForce) || visibility === 'specified')
-			? (localOnly ? "もこワー" : "") + i18n.ts._visibility[visibility] + " : " : "") +
+			? `${(localOnly ? "もこワー" : "") + i18n.ts._visibility[visibility]} : ` : "") +
 			 new Date()
 			 .toLocaleTimeString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit' })
 			 .replace(/日(.*)\s(\d+):(\d+)/,"日($1) $2時$3分");
@@ -739,11 +739,11 @@ const hashtagsPreview = $computed(() => {
 		const textHashtags_ = mfm
 			.parse(text)
 			.filter((x) => x.type === "hashtag")
-			.map((x) => x.props.hashtag.startsWith("#") ? x.props.hashtag : "#" + x.props.hashtag);
+			.map((x) => x.props.hashtag.startsWith("#") ? x.props.hashtag : `#${x.props.hashtag}`);
 		const hashtags_ = hashtags
 			.trim()
 			.split(" ")
-			.map((x) => (x.startsWith("#") ? x : "#" + x));
+			.map((x) => (x.startsWith("#") ? x : `#${x}`));
 		const hashtags__ = hashtags_
 			.filter(x => !textHashtags_.includes(x))
 			.join(" ");
@@ -787,7 +787,7 @@ if (
 ) {
 	text = `@${props.reply.user.username}${
 		props.reply.user.host != null
-			? "@" + toASCII(props.reply.user.host)
+			? `@${toASCII(props.reply.user.host)}`
 			: ""
 	} `;
 }
@@ -876,8 +876,8 @@ if (defaultStore.state.keepPostCw && cw && !cw.includes("@") && !(props.reply &&
 if (defaultStore.state.keepCw && props.reply && props.reply.cw) {
 	useCw = true;
 	const replyCwText = props.reply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/ig,"") ?? "";
-	cw = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " Re: " + replyCwText;
-	text = text.replace("@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ","");
+	cw = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} Re: ${replyCwText}`;
+	text = text.replace(`@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `,"");
 }
 
 // keep cw when airreply
@@ -960,14 +960,14 @@ function toggleUseCw() {
 		const mention = /^(@[\w@.-]+\s?)(.*)$/.exec(cw)
 		if(mention != null){
 			cw = mention?.[2]
-			text = mention[1].trim() + " " + text;
+			text = `${mention[1].trim()} ${text}`;
 		}
 	} else {
 		// OFF -> ON
 		const mention = /^(@[\w@.-]+\s?)(.*)$/.exec(text)
 		if(mention != null){
 			text = mention?.[2]
-			cw = mention[1].trim() + " " + cw;
+			cw = `${mention[1].trim()} ${cw}`;
 		}
 	}
 	useCw = !useCw;
@@ -1209,7 +1209,7 @@ async function onPaste(ev: ClipboardEvent) {
 
 	const paste = ev.clipboardData.getData("text");
 
-	if (!props.renote && !quoteId && paste.startsWith(url + "/notes/")) {
+	if (!props.renote && !quoteId && paste.startsWith(`${url}/notes/`)) {
 		ev.preventDefault();
 
 		os.confirm({
@@ -1408,11 +1408,11 @@ async function post() {
 		const textHashtags_ = mfm
 			.parse(postData.text)
 			.filter((x) => x.type === "hashtag")
-			.map((x) => x.props.hashtag.startsWith("#") ? x.props.hashtag : "#" + x.props.hashtag);
+			.map((x) => x.props.hashtag.startsWith("#") ? x.props.hashtag : `#${x.props.hashtag}`);
 		const hashtags_ = hashtags
 			.trim()
 			.split(" ")
-			.map((x) => (x.startsWith("#") ? x : "#" + x));
+			.map((x) => (x.startsWith("#") ? x : `#${x}`));
 		const hashtags__ = hashtags_
 			.filter(x => !textHashtags_.includes(x))
 			.join(" ");
@@ -1463,7 +1463,7 @@ async function post() {
 			posting = false;
 			os.alert({
 				type: "error",
-				text: err.message + "\n" + (err as any).id,
+				text: `${err.message}\n${(err as any).id}`,
 			});
 		});
 }
@@ -1480,15 +1480,15 @@ function cancel() {
 		} else {
 		cw = "";
 		if (useCw && props.reply){
-			cw = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ";
+			cw = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `;
 		}
 
 		if (!useCw && props.reply){
-			text = "@" + props.reply.user.username + (props.reply.user.host ? "@" + props.reply.user.host : "") + " ";
+			text = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `;
 		} else {
 			text = "";
 		}
-		if ((backupCw || backupText)　&&　_cw === cw && _text === text) {
+		if ((backupCw || backupText) && _cw === cw && _text === text) {
 				cw = backupCw;
 				text = backupText;
 		} else {
@@ -1502,7 +1502,7 @@ function cancel() {
 function insertMention() {
 	if (defaultStore.state.openMentionWindow) {
 		os.selectUser().then((user) => {
-			insertTextAtCursor(textareaEl, "@" + Acct.toString(user) + " ");
+			insertTextAtCursor(textareaEl, `@${Acct.toString(user)} `);
 		});
 	} else {
 		insertTextAtCursor(textareaEl, '@');

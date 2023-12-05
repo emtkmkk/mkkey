@@ -5,6 +5,7 @@ import type { WebhookDeliverJobData } from "../types.js";
 import { getResponse, StatusError } from "@/misc/fetch.js";
 import { Users, Webhooks } from "@/models/index.js";
 import { getNoteSummary } from "@/misc/get-note-summary.js";
+import { fetchMeta } from "@/misc/fetch-meta.js";
 import config from "@/config/index.js";
 
 const logger = new Logger("webhook");
@@ -39,17 +40,17 @@ interface DiscordEmbeds {
 	fields?: Array<any>;
 }
 
-function toDiscordEmbeds(body: any): Array<DiscordEmbeds> {
+async function toDiscordEmbeds(body: any): Promise<(DiscordEmbeds | undefined)[] | undefined> {
 	return [
 		body.note ? ({
 			author: {
-				name: getUsername(body.note.user),
+				name: getUsername(body.note.user) ?? "",
 				url: `${config.url}/@${body.note.user?.username}${(body.note.user?.host ? `@${body.note.user?.host}` : "")}`,
 				icon_url: body.note.user?.avatarUrl,
 			},
 			title: `投稿${(body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : "")}`,
 			url: `${config.url}/notes/${body.note.id}`,
-			description: excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? `${excludeNotPlain(getNoteSummary(body.note)).slice(0, 100)}…${(body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "")}` : excludeNotPlain(getNoteSummary(body.note)),
+			description: excludeNotPlain(getNoteSummary(body.note))?.length ?? 0 > 100 ? `${excludeNotPlain(getNoteSummary(body.note))?.slice(0, 100)}…${(body.note.cw != null && (excludeNotPlain(getNoteSummary(body.note))?.length ?? 0) > 102 ? " (CW)" : "")}` : excludeNotPlain(getNoteSummary(body.note)),
 			timestamp: new Date(body.note.createdAt),
 			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image") ?
 				{
@@ -69,7 +70,7 @@ function toDiscordEmbeds(body: any): Array<DiscordEmbeds> {
 			color: 16757683,
 		}) : undefined,
 		body.user ? ({
-			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (`${excludeNotPlain(body.user.name)} (${body.user.username}${(body.user.host ? `@${body.user.host}` : "")})`) : (body.user.username + (body.user.host ? `@${body.user.host}` : ""))),
+			title: `${body.user.isLocked ? "🔒 " : ""}${body.user.name ? `${excludeNotPlain(body.user.name)} (${body.user.username}${body.user.host ? `@${body.user.host}` : ""})` : `${body.user.username}${body.user.host ? `@${body.user.host}` : ""}`}`,
 			url: `${config.url}/@${body.user.username}${(body.user.host ? `@${body.user.host}` : "")}`,
 			description: excludeNotPlain(body.user.description) ?? undefined,
 			fields: body.user.notesCount ? [
@@ -97,13 +98,13 @@ function toDiscordEmbeds(body: any): Array<DiscordEmbeds> {
 		}) : undefined,
 		body.message ? ({
 			author: {
-				name: getUsername(body.message.user),
+				name: getUsername(body.message.user) ?? "",
 				url: `${config.url}/@${body.message.user?.username}${(body.message.user?.host ? "@" + body.message.user?.host : "")}`,
 				icon_url: body.message.user?.avatarUrl,
 			},
 			title: `${(body.message.group ? `${body.message.group.name} の` : "個人宛の")}チャット`,
 			url: body.message.groupId ? `${config.url}/my/messaging/group/${body.message.groupId}` : `${config.url}/my/messaging/${(body.message.user?.username + (body.message.user?.host ? `@${body.message.user?.host}` : ""))}`,
-			description: (excludeNotPlain(body.message.text)?.length > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
+			description: (excludeNotPlain(body.message.text)?.length ?? 0 > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
 			image: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ?
 				{
 					url: body.message.file.url,
@@ -122,10 +123,11 @@ function toDiscordEmbeds(body: any): Array<DiscordEmbeds> {
 			},
 			color: 16757683,
 		}) : undefined,
-	].filter((x: DiscordEmbeds | undefined) => x !== undefined)
-}
+	].filter((x) => x !== undefined)
+};
 
 async function toSlackEmbeds(data: any): Promise<any[]> {
+	const meta = await fetchMeta();
 	const content = await typeToBody(data)
 	const body = data.content;
 	return [
@@ -136,9 +138,9 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			icon_url: content.avatar_url,
 			username: content.username,
 			fallback: emojiEscape(content.content),
-            pretext: emojiEscape(content.content),
+			pretext: emojiEscape(content.content),
 			title: `投稿${(body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : "")}`,
-			text: emojiEscape(excludeNotPlain(getNoteSummary(body.note))?.length > 100 ? `${excludeNotPlain(getNoteSummary(body.note)).slice(0, 100)}…${(body.note.cw != null && excludeNotPlain(getNoteSummary(body.note))?.length > 102 ? " (CW)" : "")}` : excludeNotPlain(getNoteSummary(body.note))),
+			text: emojiEscape(excludeNotPlain(getNoteSummary(body.note))?.length ?? 0 > 100 ? `${excludeNotPlain(getNoteSummary(body.note))?.slice(0, 100)}…${(body.note.cw != null && (excludeNotPlain(getNoteSummary(body.note))?.length ?? 0) > 102 ? " (CW)" : "")}` : excludeNotPlain(getNoteSummary(body.note))),
 			title_link: `${config.url}/notes/${body.note.id}`,
 			color: "#f8bcba",
 			ts: new Date(body.note.createdAt).valueOf() / 1000,
@@ -146,8 +148,8 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 				? body.note.files[0].url
 				: undefined,
 			thumb_url: body.reaction?.customEmoji ? body.reaction?.customEmoji.publicUrl : (body.note.files?.length > 1 && !body.note.cw && !body.note.files[1].isSensitive && body.note.files[1].type?.startsWith("image")) ? body.note.files[1].thumbnailUrl : body.note.user?.avatarUrl,
-			footer: "もこきー",
-			footer_icon: "https://s3.ap-northeast-2.wasabisys.com/mkkey/data/d2345d62-b667-4d27-b11a-f0c25746cbe5.png",
+			footer: meta.name || "Calckey",
+			footer_icon: meta.iconUrl || undefined,
 		}) : undefined,
 		body.user ? ({
 			title: (body.user.isLocked ? "🔒 " : "") + (body.user.name ? (`${excludeNotPlain(body.user.name)} (${body.user.username}${(body.user.host ? "@" + body.user.host : "")})`) : (body.user.username + (body.user.host ? `@${body.user.host}` : ""))),
@@ -156,7 +158,7 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			icon_url: content.avatar_url,
 			username: content.username,
 			fallback: emojiEscape(content.content),
-            pretext: emojiEscape(content.content),
+			pretext: emojiEscape(content.content),
 			fields: body.user.notesCount ? [
 				{
 					title: "投稿数",
@@ -173,9 +175,9 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			] : undefined,
 			image_url: body.user.bannerUrl ? body.user.bannerUrl : undefined,
 			thumb_url: body.user.avatarUrl ? body.user.avatarUrl : undefined,
-			color: "#f8bcba",
-			footer: "もこきー",
-			footer_icon: "https://s3.ap-northeast-2.wasabisys.com/mkkey/data/d2345d62-b667-4d27-b11a-f0c25746cbe5.png",
+			color: meta.themeColor || "#f8bcba",
+			footer: meta.name || "Calckey",
+			footer_icon: meta.iconUrl || undefined,
 		}) : undefined,
 		body.message ? ({
 			author_name: getUsername(body.message.user),
@@ -184,42 +186,44 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			icon_url: content.avatar_url,
 			username: content.username,
 			fallback: emojiEscape(content.content),
-            pretext: emojiEscape(content.content),
+			pretext: emojiEscape(content.content),
 			title: `${(body.message.group ? `${body.message.group.name} の` : "個人宛の")}チャット`,
 			title_link: body.message.groupId ? `${config.url}/my/messaging/group/${body.message.groupId}` : `${config.url}/my/messaging/${(body.message.user?.username + (body.message.user?.host ? "@" + body.message.user?.host : ""))}`,
-			text: emojiEscape((excludeNotPlain(body.message.text)?.length > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : "")),
+			text: emojiEscape((excludeNotPlain(body.message.text)?.length ?? 0 > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : "")),
 			image_url: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? body.message.file.url : undefined,
 			ts: new Date(body.message.createdAt).valueOf() / 1000,
 			thumb_url: body.emoji ? body.emoji.publicUrl : body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("video") ? body.message.file.thumbnailUrl : body.message.user?.avatarUrl,
-			color: "#f8bcba",
-			footer: "もこきー",
-			footer_icon: "https://s3.ap-northeast-2.wasabisys.com/mkkey/data/d2345d62-b667-4d27-b11a-f0c25746cbe5.png",
+			color: meta.themeColor || "#f8bcba",
+			footer: meta.name || "Calckey",
+			footer_icon: meta.iconUrl || undefined,
 		}) : undefined,
 	].filter((x) => x !== undefined)
 }
 
-function excludeNotPlain(text): string {
+function excludeNotPlain(text?: string): string | undefined {
 	// <xxx>を消す、中身が空のMFMを消す（4階層まで）
 	return text ? text.replaceAll(/<\/?\w*?>/g, '').replaceAll(/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g, '') : undefined;
 }
 
-function emojiEscape(text): string {
+function emojiEscape(text?: string): string | undefined {
 	// 絵文字をエスケープする
 	return text ? text.replaceAll(/:(\w+):/g, '：$1：') : undefined;
 }
 
-function getUsername(user): string {
+function getUsername(user?: any): string | undefined {
 	return user ? (user.name?.replaceAll(/\s?:\w+?:/g, '').trim() || user.username) + (user.host ? `@${user.host}` : "") : undefined;
 }
 
-function getNoteContentSummary(note, userId, textLength?): string {
+function getNoteContentSummary(note: any, userId: string, textLength?: number): string | undefined {
 	const noteText = excludeNotPlain(getNoteSummary(note));
 	return (
+		noteText ?
 		textLength
 			? noteText.slice(0, textLength) + (noteText?.length > textLength ? "…" : "")
 			: note.user?.id === userId
 				? noteText.slice(0, 10) + (noteText?.length > 10 ? "…" : "")
 				: noteText.slice(0, 40) + (noteText?.length > 40 ? "…" : "")
+		: undefined
 	)
 }
 
@@ -237,7 +241,7 @@ async function typeToBody(jobData: any): Promise<any> {
 			? body.note
 				? ` : ${getNoteContentSummary(body.note.text ? body.note : body.note.renote, jobData.userId, contentLength)}`
 				: body.message?.text
-					? ` : ${excludeNotPlain(body.message.text).slice(0, contentLength ?? 40)}${(excludeNotPlain(body.message.text).length > contentLength ?? 40 ? "…" : "")}`
+					? ` : ${excludeNotPlain(body.message.text)?.slice(0, contentLength ?? 40)}${(excludeNotPlain(body.message.text)?.length ?? 0 > contentLength ?? 40 ? "…" : "")}`
 					: ""
 			: "";
 
@@ -325,7 +329,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 		logger.debug(`delivering ${job.data.webhookId}`);
 		let res;
 		if (job.data.secret?.startsWith("Discord")) {
-			let embeds = toDiscordEmbeds(job.data.content);
+			let embeds = await toDiscordEmbeds(job.data.content);
 			res = await getResponse({
 				url: job.data.to,
 				method: "POST",

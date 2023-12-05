@@ -303,12 +303,22 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	const newField = profileUpdates.fields === undefined ? profile.fields : profileUpdates.fields;
 
 	if (newName != null) {
-		const tokens = mfm.parseSimple(newName);
+		let _newName = newName;
+		if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(_newName)) {
+			// 他鯖絵文字が入っている場合、@以下をトリミングする
+			_newName = _newName.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+		}
+		const tokens = mfm.parseSimple(_newName);
 		emojis = emojis.concat(extractCustomEmojisFromMfm(tokens!));
 	}
 
 	if (newDescription != null) {
-		const tokens = mfm.parse(newDescription);
+		let _newDescription = newDescription;
+		if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(_newDescription)) {
+			// 他鯖絵文字が入っている場合、@以下をトリミングする
+			_newDescription = _newDescription.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+		}
+		const tokens = mfm.parse(_newDescription);
 		emojis = emojis.concat(extractCustomEmojisFromMfm(tokens!));
 		tags = extractHashtags(tokens!)
 			.map((tag) => normalizeForSearch(tag))

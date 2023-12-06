@@ -85,6 +85,11 @@ export default defineComponent({
 			const parsed = parseFloat(n);
 			return !isNaN(parsed) && isFinite(parsed) && parsed > 0;
 		};
+		const validColor = (t: string | null | undefined) => {
+			if (t == null) return null;
+			return t.match(/^([\da-f]{3}|([\da-f]{2}){2,4})$/) ? t : null;
+		};
+
 
 		const genEl = (ast: mfm.MfmNode[]) =>
 			concat(
@@ -309,13 +314,13 @@ export default defineComponent({
 								}
 								case "fg": {
 									let color = token.props.args.color;
-									if (!/^[0-9a-f]{3,6}$/i.test(color)) color = "f00";
+									if (!validColor(color)) color = "f00";
 									style = `color: #${color};`;
 									break;
 								}
 								case "bg": {
 									let color = token.props.args.color;
-									if (!/^[0-9a-f]{3,6}$/i.test(color)) color = "f00";
+									if (!validColor(color)) color = "f00";
 									style = `background-color: #${color};`;
 									break;
 								}

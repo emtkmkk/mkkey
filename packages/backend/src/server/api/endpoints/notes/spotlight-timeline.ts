@@ -121,6 +121,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		.andWhere(`note.id > '${genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 7))) ?? genId()}'`)
 		.andWhere("(note.visibility = 'public')")
 		.andWhere(`(note."channelId" IS NULL)`)
+		.andWhere(`(note."deletedAt" IS NULL)`)
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")

@@ -161,7 +161,7 @@ export class Note {
 		...id(),
 		array: true, default: '{}',
 	})
-	public c: User["id"][];
+	public mentions: User["id"][];
 
 	@Column('text', {
 		default: '[]',

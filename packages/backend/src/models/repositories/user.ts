@@ -543,9 +543,11 @@ export const UserRepository = db.getRepository(User).extend({
 		const truthy = opts.detail ? true : undefined;
 		const falsy = opts.detail ? false : undefined;
 
+		const isDeleted = user.isDeleted;
+
 		const packed = {
 			id: user.id,
-			name: user.name,
+			name: isDeleted ? "🗑" : user.name,
 			username: user.username,
 			host: user.host,
 			avatarUrl: this.getAvatarUrlSync(user),
@@ -607,11 +609,11 @@ export const UserRepository = db.getRepository(User).extend({
 					isLocked: user.isLocked,
 					isSilenced: user.isSilenced || falsy,
 					isSuspended: user.isSuspended || falsy,
-					description: profile!.description,
-					location: profile!.location,
-					birthday: profile!.birthday,
-					lang: profile!.lang,
-					fields: profile!.fields,
+					description: isDeleted ? "🗑" : profile!.description,
+					location: isDeleted ? "🗑" : profile!.location,
+					birthday: isDeleted ? "🗑" : profile!.birthday,
+					lang: isDeleted ? "🗑" : profile!.lang,
+					fields: isDeleted ? "🗑" : profile!.fields,
 					followersCount: followersCount ?? "N/A",
 					followingCount: followingCount ?? "N/A",
 					notesCount: user.notesCount,

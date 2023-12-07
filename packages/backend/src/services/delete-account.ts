@@ -11,7 +11,7 @@ export async function deleteAccount(user: {
 	await doPostSuspend(user).catch((e) => {});
 
 	createDeleteAccountJob(user, {
-		soft: false,
+		soft: true,
 	});
 
 	await Users.update(user.id, {

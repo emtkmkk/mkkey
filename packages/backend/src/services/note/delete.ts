@@ -93,7 +93,7 @@ export default async function (
 			deliverToConcerned(user, note, content);
 		}
 
-		if (deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 60))) {
+		if (deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 30))) {
 
 			// also deliever delete activity to cascaded notes
 			const cascadingNotes = (await findCascadingNotes(note)).filter(

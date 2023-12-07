@@ -183,7 +183,7 @@ welcomeBackWithNameNight: "こんばんは、{name}様。ディナーにいた�
 welcomeBackWithName: "お屋敷へようこそ、{name}様。"
 welcomeBackWithNameSleep: "お久しぶりですわね、{name}様。"
 welcomeBackWithNameLong: "{days}日ぶりですわね。お元気でしたの？ {name}様。"
-
+deleted: "削除されたお言葉"
 
 
 _ffVisibility:

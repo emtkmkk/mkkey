@@ -8,7 +8,7 @@ import { i18n } from "@/i18n";
 export const getNoteSummary = (note: misskey.entities.Note): string => {
 	
 	if (note.deletedAt) {
-		return `${i18n.ts.deletedNote}`;
+		return `(${i18n.ts.deleted})`;
 	}
 	
 

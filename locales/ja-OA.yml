@@ -183,7 +183,7 @@ welcomeBackWithNameNight: "こんばんは、{name}様！！！！！！！！�
 welcomeBackWithName: "お屋敷へようこそ、{name}様！！！！！！！！！！！！！！！！！！！！！！！！！！！！"
 welcomeBackWithNameSleep: "お久しぶりですわね、{name}様！！！！！！！！！！！！！！！！！！！！くたばったかと思いましたわ！！！！！！！！！！！！！！"
 welcomeBackWithNameLong: "{days}日ぶりですわね！！！！！！！！！！！！！！！！！誰ですの誰ですの誰ですの！！？！？！？？！？！？！？？！？！？"
-
+deleted: "テレパスを消しやがりましたわ！！！！！"
 
 
 _ffVisibility:

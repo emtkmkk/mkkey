@@ -147,7 +147,7 @@ export default async function (
 
 	}
 
-	if (deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 60))) {
+	if (deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 30))) {
 		// ノート数を減らす
 		if (note.visibility !== "specified") decNotesCountOfUser(user);
 

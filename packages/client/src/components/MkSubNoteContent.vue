@@ -79,7 +79,7 @@
 				</template>
 				<Mfm
 					v-if="note.text"
-					:text="note.text"
+					:text="note.deletedAt ? i18n.ts.deletedNote : note.text"
 					:author="note.user"
 					:i="$i"
 					:custom-emojis="note.emojis"

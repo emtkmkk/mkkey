@@ -274,6 +274,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			uri: note.uri || undefined,
 			url: note.url || undefined,
 			updatedAt: note.updatedAt?.toISOString() || undefined,
+			deletedAt: note.deletedAt?.toISOString() || undefined,
 			isFirstNote: note.isFirstNote ? true : undefined,
 			...(opts.detail
 				? {

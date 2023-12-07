@@ -161,7 +161,7 @@ export class Note {
 		...id(),
 		array: true, default: '{}',
 	})
-	public mentions: User["id"][];
+	public c: User["id"][];
 
 	@Column('text', {
 		default: '[]',
@@ -237,6 +237,13 @@ export class Note {
 		comment: 'The updated date of the Note.',
 	})
 	public updatedAt: Date;
+
+	@Column('timestamp with time zone', {
+		nullable: true,
+		comment: 'The deleted date of the Note.',
+	})
+	public deletedAt: Date;
+
 	@Column('boolean', {
 		default: false,
 	})

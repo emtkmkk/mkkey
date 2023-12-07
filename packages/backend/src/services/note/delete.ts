@@ -32,8 +32,13 @@ export default async function (
 	note: Note,
 	quiet = false,
 ) {
+
+	if (note.deletedAt) {
+		return;
+	}
+
 	const deletedAt = new Date();
-	
+
 	console.log(`deleteNote : ${note.id}`)
 
 	// この投稿を除く指定したユーザーによる指定したノートのリノートが存在しないとき
@@ -88,45 +93,70 @@ export default async function (
 			deliverToConcerned(user, note, content);
 		}
 
-		// also deliever delete activity to cascaded notes
-		const cascadingNotes = (await findCascadingNotes(note)).filter(
-			(note) => !note.localOnly,
-		); // filter out local-only notes
-		for (const cascadingNote of cascadingNotes) {
-			console.log(`cascadeDeleteNote(${cascadingNotes.length}) : ${cascadingNote.id}`)
-			if (!cascadingNote.user) continue;
-			if (!Users.isLocalUser(cascadingNote.user)) continue;
-			const content = renderActivity(
-				renderDelete(
-					renderTombstone(`${config.url}/notes/${cascadingNote.id}`),
-					cascadingNote.user,
-				),
-			);
-			deliverToConcerned(cascadingNote.user, cascadingNote, content);
-			if (cascadingNote.visibility !== "specified") decNotesCountOfUser(user);
-		}
-		//#endregion
+		if (deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 60))) {
 
-		// 統計を更新
-		notesChart.update(note, false);
-		perUserNotesChart.update(user, note, false);
+			// also deliever delete activity to cascaded notes
+			const cascadingNotes = (await findCascadingNotes(note)).filter(
+				(note) => !note.localOnly,
+			); // filter out local-only notes
+			for (const cascadingNote of cascadingNotes) {
+				console.log(`cascadeDeleteNote(${cascadingNotes.length}) : ${cascadingNote.id}`)
+				if (!cascadingNote.user) continue;
+				if (!Users.isLocalUser(cascadingNote.user)) continue;
+				const content = renderActivity(
+					renderDelete(
+						renderTombstone(`${config.url}/notes/${cascadingNote.id}`),
+						cascadingNote.user,
+					),
+				);
+				deliverToConcerned(cascadingNote.user, cascadingNote, content);
+				if (cascadingNote.visibility !== "specified") decNotesCountOfUser(user);
+			}
+			//#endregion
 
-		if (Users.isRemoteUser(user)) {
-			registerOrFetchInstanceDoc(user.host).then((i) => {
-				Instances.decrement({ id: i.id }, "notesCount", 1);
-				instanceChart.updateNote(i.host, note, false);
+			// 統計を更新
+			notesChart.update(note, false);
+			perUserNotesChart.update(user, note, false);
+
+			if (Users.isRemoteUser(user)) {
+				registerOrFetchInstanceDoc(user.host).then((i) => {
+					Instances.decrement({ id: i.id }, "notesCount", 1);
+					instanceChart.updateNote(i.host, note, false);
+				});
+			}
+
+		} else {
+
+			await Notes.update({
+				id: note.id,
+				userId: user.id,
+			},{
+				text: null,
+				cw: null,
+				fileIds: {},
+				attachedFileTypes: {},
+				mentions: {},
+				mentionedRemoteUsers: [],
+				emojis: [],
+				tags: [],
+				hasPoll: false,
+				deletedAt: deletedAt,
 			});
+
 		}
 
 	}
 
-	// ノート数を減らす
-	if (note.visibility !== "specified") decNotesCountOfUser(user);
+	if (deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 60))) {
+		// ノート数を減らす
+		if (note.visibility !== "specified") decNotesCountOfUser(user);
 
-	await Notes.delete({
-		id: note.id,
-		userId: user.id,
-	});
+		await Notes.delete({
+			id: note.id,
+			userId: user.id,
+		});
+	}
+
 }
 
 async function findCascadingNotes(note: Note) {
@@ -192,7 +222,7 @@ async function deliverToConcerned(
 	}
 }
 
-function decNotesCountOfUser(user: { id: User["id"]; host:User["host"] }) {
+function decNotesCountOfUser(user: { id: User["id"]; host: User["host"] }) {
 	if (user.host) return;
 	Users.createQueryBuilder()
 		.update()

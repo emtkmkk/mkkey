@@ -6,7 +6,7 @@ import type { Packed } from "./schema.js";
  */
 export const getNoteSummary = (note: Packed<"Note">): string => {
 	if (note.deletedAt) {
-		return "❌";
+		return "🗑️";
 	}
 
 	let summary = "";

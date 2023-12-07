@@ -120,7 +120,7 @@ router.get("/notes/:note", async (ctx, next) => {
 		localOnly: false,
 	});
 
-	if (note == null) {
+	if (note == null || note.deletedAt) {
 		ctx.status = 404;
 		return;
 	}

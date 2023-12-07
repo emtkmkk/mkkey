@@ -303,6 +303,18 @@ export default async (
 			data.visibility = "home";
 		}
 
+		if (
+			data.reply?.deletedAt
+		) {
+			return rej("削除された投稿に対しては返信できません。");
+		}
+
+		if (
+			data.renote?.deletedAt
+		) {
+			return rej("削除された投稿はRTできません。");
+		}
+
 		// Reject if the target of the renote is a public range other than "Home or Entire".
 		if (
 			data.renote &&

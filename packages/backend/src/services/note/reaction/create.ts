@@ -59,6 +59,15 @@ export default async (
 		);
 	}
 
+	if (
+		note.deletedAt
+	) {		
+		throw new IdentifiableError(
+			"639cc3a5-fe68-b071-0c20-413c887054cd",
+			"削除された投稿に対してはリアクション出来ません。",
+		);
+	}
+
 	// TODO: cache
 	reaction = await toDbReaction(reaction, user.host, note.user?.host);
 

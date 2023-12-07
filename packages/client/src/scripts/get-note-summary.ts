@@ -6,11 +6,11 @@ import { i18n } from "@/i18n";
  * @param {*} note (packされた)投稿
  */
 export const getNoteSummary = (note: misskey.entities.Note): string => {
-	/*
+	
 	if (note.deletedAt) {
-		return `(${i18n.ts.deletedNote})`;
+		return `${i18n.ts.deletedNote}`;
 	}
-	*/
+	
 
 	let summary = "";
 

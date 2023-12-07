@@ -61,7 +61,7 @@ export async function addPinned(
 	}
 
 	// Deliver to remote followers
-	if (Users.isLocalUser(user) && !note.localOnly && ['public', 'home'].includes(note.visibility)) {
+	if (Users.isLocalUser(user) && !note.localOnly && ['public', 'home'].includes(note.visibility) && !note.deletedAt) {
 		deliverPinnedChange(user.id, note.id, true);
 	}
 }
@@ -94,7 +94,7 @@ export async function removePinned(
 	});
 
 	// Deliver to remote followers
-	if (Users.isLocalUser(user) && !note.localOnly && ['public', 'home'].includes(note.visibility)) {
+	if (Users.isLocalUser(user) && !note.localOnly && ['public', 'home'].includes(note.visibility) && !note.deletedAt) {
 		deliverPinnedChange(user.id, noteId, false);
 	}
 }

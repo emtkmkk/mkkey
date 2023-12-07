@@ -486,7 +486,7 @@ export function getNoteMenu(props: {
 					},
 				]
 				: []),
-			...(appearNote.userId === $i.id || $i.isModerator || $i.isAdmin
+			...((appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) && !appearNote.deletedAt
 				? [
 					null,
 					appearNote.userId === $i.id

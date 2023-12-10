@@ -37,6 +37,11 @@ export default async function (
 		return;
 	}
 
+	const isRenote = note.renoteId &&
+				note.text == null &&
+				!note.hasPoll &&
+				(note.fileIds == null || note.fileIds.length === 0);
+
 	const deletedAt = new Date();
 
 	console.log(`deleteNote : ${note.id}`)
@@ -93,7 +98,7 @@ export default async function (
 			deliverToConcerned(user, note, content);
 		}
 
-		if (deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 30))) {
+		if (isRenote || deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 30))) {
 
 			// also deliever delete activity to cascaded notes
 			const cascadingNotes = (await findCascadingNotes(note)).filter(
@@ -147,7 +152,7 @@ export default async function (
 
 	}
 
-	if (deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 30))) {
+	if (isRenote || deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 30))) {
 		// ノート数を減らす
 		if (note.visibility !== "specified") decNotesCountOfUser(user);
 

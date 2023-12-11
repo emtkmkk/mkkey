@@ -297,6 +297,8 @@ import { defaultStore } from "@/store";
 
 const stats = ref<any>({});
 
+let powerShowCount = 0;
+
 onMounted(() => {
 	os.api("users/stats", {
 		userId: $i!.id,
@@ -316,9 +318,10 @@ const headerTabs = $computed(() => []);
 
 function post() {
 	if (stats.value && stats.value.power && stats.value.powerRank) {
-		if (defaultStore.state.woozyMode) {
+		powerShowCount += 1;
+		if (powerShowCount % 3 === 0 || defaultStore.state.woozyMode) {
 			os.post({
-				initialText: `(´へεへ\`*)＜${stats.value.power > 100000000 ? `${(stats.value.power / 100000000).toFixed(1)}億` : stats.value.power > 100000 ? `${Math.floor(stats.value.power / 10000)}万` : stats.value.power > 1000 ? `${(stats.value.power / 10000).toFixed(1)}万` : stats.value.power}パワーなう\n\n(´へεへ\`*)＜${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}ランクなう\n\n#もこきーパワー`,
+				initialText: `(´へεへ\`*)＜${stats.value.power > 100000000 ? `${Math.floor(stats.value.power / 10000000) / 10}億` : stats.value.power > 100000 ? `${Math.floor(stats.value.power / 10000)}万` : stats.value.power > 1000 ? `${Math.floor(stats.value.power / 1000) / 10}万` : stats.value.power}パワーなう\n\n(´へεへ\`*)＜${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}ランクなう\n\n#もこきーパワー`,
 				initialLocalOnly: true,
 				instant: true,
 			});

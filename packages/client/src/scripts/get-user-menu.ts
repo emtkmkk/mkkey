@@ -329,7 +329,7 @@ export function getUserMenu(user, router: Router = mainRouter) {
 					icon: "ph-snowflake ph-bold ph-lg",
 					text: i18n.ts.canSuspend,
 					action: async () => {
-						await alert({
+						await os.alert({
 							type: "info",
 							text: `あなたはこのユーザを凍結させる権利がある様です。\n\nもしこのユーザを凍結させたい場合は、管理人にDMにて申請を行ってください。\n（凍結させたいユーザのID(@${user.username})と凍結させたい理由を送ってください。）`,
 						});

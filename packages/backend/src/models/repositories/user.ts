@@ -181,6 +181,9 @@ export const UserRepository = db.getRepository(User).extend({
 				},
 				take: 1,
 			}).then((n) => n > 0),
+			isInviter: me === (await this.findOneOrFail({
+				where: { id: target },
+			}))?.inviteUserId,
 		});
 	},
 
@@ -764,6 +767,7 @@ export const UserRepository = db.getRepository(User).extend({
 					isBlocked: relation.isBlocked,
 					isMuted: relation.isMuted,
 					isRenoteMuted: relation.isRenoteMuted,
+					isInviter:relation.isInviter ? true : undefined,
 				}
 				: {}),
 		} as Promiseable<Packed<"User">> as Promiseable<

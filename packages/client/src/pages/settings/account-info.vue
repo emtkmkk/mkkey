@@ -316,11 +316,19 @@ const headerTabs = $computed(() => []);
 
 function post() {
 	if (stats.value && stats.value.power && stats.value.powerRank) {
-		os.post({
-			initialText: `<center>私のパワーは\n$[x2 $[tada ${number(stats.value.power)}]]\nです。\n\nランクは\n$[x2 $[tada ${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}]] ( ${stats.value.nextRank ?? "?%"} )\nです。\n\n#もこきーパワー</center>`,
-			initialLocalOnly: true,
-			instant: true,
-		});
+		if (defaultStore.state.woozyMode) {
+			os.post({
+				initialText: `(´へεへ\`*)＜${stats.value.power > 100000000 ? `${(stats.value.power / 100000000).toFixed(1)}億` : stats.value.power > 100000 ? `${Math.floor(stats.value.power / 10000)}万` : stats.value.power > 1000 ? `${(stats.value.power / 10000).toFixed(1)}万` : stats.value.power}パワーなう\n\n(´へεへ\`*)＜${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}ランクなう\n\n#もこきーパワー`,
+				initialLocalOnly: true,
+				instant: true,
+			});
+		} else {
+			os.post({
+				initialText: `<center>私のパワーは\n$[x2 $[tada ${number(stats.value.power)}]]\nです。\n\nランクは\n$[x2 $[tada ${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}]] ( ${stats.value.nextRank ?? "?%"} )\nです。\n\n#もこきーパワー</center>`,
+				initialLocalOnly: true,
+				instant: true,
+			});
+		}
 	}
 }
 

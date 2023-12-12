@@ -227,9 +227,9 @@ export default async function (
 	const followeeProfile = await UserProfiles.findOneByOrFail({
 		userId: followee.id,
 	});
-	
+
 	const followingRate = Number.isFinite(follower.followersCount) ? (follower.followingCount / follower.followersCount) : 0
-	const needRequestFR = 
+	const needRequestFR =
 		follower.followingCount > 7500
 			? followingRate > 1.1
 			: follower.followingCount > 1000
@@ -241,7 +241,7 @@ export default async function (
 							: follower.followingCount > 100
 								? followingRate > 5
 								: false;
-					
+
 
 	// フォロー対象が鍵アカウントである or
 	// The follower is silenced, or
@@ -254,6 +254,7 @@ export default async function (
 		followee.isLocked ||
 		followee.isSilentLocked ||
 		(followee.blockPostNotLocal && Users.isRemoteUser(follower)) ||
+		(followee.isRemoteLocked && Users.isRemoteUser(follower)) ||
 		follower.isSilenced ||
 		(followeeProfile.carefulBot && follower.isBot) ||
 		(Users.isLocalUser(follower) && Users.isRemoteUser(followee)) ||

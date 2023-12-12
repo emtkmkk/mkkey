@@ -242,49 +242,55 @@ export class User {
 		comment: 'Show local Accounts renotes in the public timeline.',
 	})
 	public localShowRenote: boolean;
-	
+
 	@Column('boolean', {
 		default: true,
 		comment: 'Show remote Accounts renotes in the public timeline.',
 	})
 	public remoteShowRenote: boolean;
-	
+
 	@Column('boolean', {
 		default: true,
 		comment: 'Show remote Accounts renotes in the public timeline.',
 	})
 	public showSelfRenoteToHome: boolean;
-	
+
 	@Column('boolean', {
 		default: false,
 		comment: 'Change public post to home post.',
 	})
 	public blockPostPublic: boolean;
-	
+
 	@Column('boolean', {
 		default: false,
 		comment: 'Change home post to followers post.',
 	})
 	public blockPostHome: boolean;
-	
+
 	@Column('boolean', {
 		default: false,
 		comment: 'Change not localonly post to localonly post.',
 	})
 	public blockPostNotLocal: boolean;
-	
+
 	@Column('boolean', {
 		default: false,
 		comment: 'Change not localonly post to localonly post.',
 	})
 	public blockPostNotLocalPublic: boolean;
-	
+
 	@Column('boolean', {
 		default: false,
 		comment: 'The key will no longer be displayed.',
 	})
 	public isSilentLocked: boolean;
-	
+
+	@Column('boolean', {
+		default: false,
+		comment: 'The key will no longer be displayed.',
+	})
+	public isRemoteLocked: boolean;
+
 	@Index({ unique: true })
 	@Column('char', {
 		length: 16, nullable: true, unique: true,
@@ -297,18 +303,18 @@ export class User {
 		comment: 'Overrides user drive capacity limit',
 	})
 	public driveCapacityOverrideMb: number | null;
-	
-	@Column('varchar', { 
+
+	@Column('varchar', {
 		length: 10,
-		nullable: true 
+		nullable: true
 	})
 	public inviteUserId: string;
-	
+
 	@Column('integer', {
 		default: 0,
 	})
 	public maxPower: number;
-	
+
 	@Column('integer', {
 		default: 0,
 	})

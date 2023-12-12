@@ -177,7 +177,7 @@
 				<template #value>{{ number(stats.totalInviteCount) }}</template>
 			</MkKeyValue>
 		</FormSection>
-		
+
 		<FormSection>
 			<template #label>他サーバー絵文字</template>
 			<MkKeyValue oneline style="margin: 1em 0">
@@ -270,7 +270,7 @@
 			><template #icon><i class="ph-wrench ph-bold ph-lg"></i></template
 			>{{ "errorlog" }}</FormLink
 		>
-		
+
 		<FormLink v-if="$store.state.developer" to="/bios" class="_formBlock"
 			><template #icon><i class="ph-wrench ph-bold ph-lg"></i></template
 			>{{ i18n.ts.bios }}</FormLink
@@ -319,7 +319,7 @@ const headerTabs = $computed(() => []);
 function post() {
 	if (stats.value && stats.value.power && stats.value.powerRank) {
 		powerShowCount += 1;
-		if (powerShowCount % 3 === 0 || defaultStore.state.woozyMode) {
+		if (powerShowCount % 2 === 0 || defaultStore.state.woozyMode) {
 			os.post({
 				initialText: `(´へεへ\`*)＜${stats.value.power > 100000000 ? `${Math.floor(stats.value.power / 10000000) / 10}億` : stats.value.power > 100000 ? `${Math.floor(stats.value.power / 10000)}万` : stats.value.power > 1000 ? `${Math.floor(stats.value.power / 1000) / 10}万` : stats.value.power}パワーなう\n\n(´へεへ\`*)＜${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}ランクなう\n\n#もこきーパワー`,
 				initialLocalOnly: true,

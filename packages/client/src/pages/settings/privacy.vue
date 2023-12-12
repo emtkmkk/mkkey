@@ -20,13 +20,23 @@
 			}}</template></FormSwitch
 		>
 		<FormSwitch
-			v-if="isLocked || isSilentLocked"
+			v-model="isRemoteLocked"
+			v-if="!isLocked || !isSilentLocked"
+			class="_formBlock"
+			@update:modelValue="save()"
+			>{{ i18n.ts.makeFollowManuallyApproveToRemote
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
+				i18n.ts.lockedAccountToRemoteInfo
+			}}</template></FormSwitch
+		>
+		<FormSwitch
+			v-if="isLocked || isSilentLocked || isRemoteLocked"
 			v-model="autoAcceptFollowed"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.autoAcceptFollowed }}</FormSwitch
 		>
-		
+
 		<FormSection>
 			<FormSwitch
 				v-model="blockPostPublic"
@@ -36,7 +46,7 @@
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
 					i18n.ts.blockPostPublicDescription
 				}}</template></FormSwitch
-			>		
+			>
 			<FormSwitch
 				v-model="blockPostHome"
 				class="_formBlock"
@@ -45,7 +55,7 @@
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
 					i18n.ts.blockPostHomeDescription
 				}}</template></FormSwitch
-			>		
+			>
 			<FormSwitch
 				v-model="blockPostNotLocal"
 				class="_formBlock"
@@ -54,7 +64,7 @@
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
 					i18n.ts.blockPostNotLocalDescription
 				}}</template></FormSwitch
-			>		
+			>
 			<FormSwitch
 				v-model="blockPostNotLocalPublic"
 				v-if="blockPostNotLocal"
@@ -443,6 +453,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 
 let isLocked = $ref($i.isLocked);
 let isSilentLocked = $ref($i.isSilentLocked);
+let isRemoteLocked = $ref($i.isRemoteLocked);
 let blockPostPublic = $ref($i.blockPostPublic);
 let blockPostHome = $ref($i.blockPostHome);
 let blockPostNotLocal = $ref($i.blockPostNotLocal);
@@ -520,6 +531,7 @@ function save() {
 	os.api("i/update", {
 		isLocked: !!isLocked,
 		isSilentLocked: !!isSilentLocked,
+		isRemoteLocked: !!isRemoteLocked,
 		autoAcceptFollowed: !!autoAcceptFollowed,
 		blockPostPublic: !!blockPostPublic,
 		blockPostHome: !!blockPostHome,

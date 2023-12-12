@@ -651,6 +651,7 @@ export const UserRepository = db.getRepository(User).extend({
 					blockPostNotLocal: user.blockPostNotLocal || falsy,
 					blockPostNotLocalPublic: user.blockPostNotLocalPublic || falsy,
 					isSilentLocked: user.isSilentLocked || falsy,
+					isRemoteLocked: user.isRemoteLocked || falsy,
 					twoFactorEnabled: profile!.twoFactorEnabled,
 					usePasswordLessLogin: profile!.usePasswordLessLogin,
 					showDonateBadges: profile!.showDonateBadges,

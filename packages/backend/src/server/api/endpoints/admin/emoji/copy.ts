@@ -46,12 +46,20 @@ export const paramDef = {
 	type: "object",
 	properties: {
 		emojiId: { type: "string", format: "misskey:id" },
+		emojiName: { type: "string" },
+		emojiHost: { type: "string" },
 	},
-	required: ["emojiId"],
+	anyOf: [{ required: ["emojiId"] }, { required: ["emojiName", "emojiHost"] }],
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const emoji = await Emojis.findOneBy({ id: ps.emojiId });
+
+	let emoji;
+	if (ps.emojiName && ps.emojiHost) {
+		emoji = await Emojis.findOneBy({ name: ps.emojiName , host: ps.emojiHost });
+	} else {
+		emoji = await Emojis.findOneBy({ id: ps.emojiId });
+	}
 
 	if (emoji == null) {
 		throw new ApiError(meta.errors.noSuchEmoji);

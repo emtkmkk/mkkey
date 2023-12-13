@@ -28,7 +28,6 @@ export const defaultStore = markRaw(
 		tutorial: {
 			where: "account",
 			default: 0,
-			advanced: -1,
 		},
 		keepCw: {
 			where: "account",
@@ -71,7 +70,7 @@ export const defaultStore = markRaw(
 		},
 		keepOriginalUploading: {
 			where: "account",
-			default: true,
+			default: false,
 		},
 		memo: {
 			where: "account",
@@ -294,49 +293,42 @@ export const defaultStore = markRaw(
 		firstPostButtonVisibilityForce: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/16",
 			page: "privacy",
 		},
 		firstPostWideButton: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/26",
 			page: "privacy",
 		},
 		secondPostButton: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/2",
 			page: "privacy",
 		},
 		secondPostVisibility: {
 			where: "deviceAccount",
 			default: "home" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
-			advanced: "l-public" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
 			createdAt: "2023/5/2",
 			page: "privacy",
 		},
 		secondPostWideButton: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/26",
 			page: "privacy",
 		},
 		thirdPostButton: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/3",
 			page: "privacy",
 		},
 		thirdPostVisibility: {
 			where: "deviceAccount",
 			default: "l-public" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
-			advanced: "home" as "public" | "l-public" | "home" | "l-home" | "followers" | "specified",
 			createdAt: "2023/5/3",
 			page: "privacy",
 		},
@@ -349,7 +341,6 @@ export const defaultStore = markRaw(
 		fourthPostButton: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/26",
 			page: "privacy",
 		},
@@ -368,7 +359,6 @@ export const defaultStore = markRaw(
 		fifthPostButton: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/26",
 			page: "privacy",
 		},
@@ -387,7 +377,6 @@ export const defaultStore = markRaw(
 		channelSecondPostButton: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/16",
 			page: "privacy",
 		},
@@ -403,21 +392,18 @@ export const defaultStore = markRaw(
 		hiddenMFMHelp: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/16",
 			page: "general",
 		},
 		hiddenCloseButton: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/26",
 			page: "general",
 		},
 		hiddenMentionButton: {
 			where: "deviceAccount",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/25",
 			page: "general",
 		},
@@ -559,7 +545,6 @@ export const defaultStore = markRaw(
 		showFixedPostForm: {
 			where: "device",
 			default: true,
-			advanced: false,
 		},
 		enableInfiniteScroll: {
 			where: "device",
@@ -592,7 +577,6 @@ export const defaultStore = markRaw(
 		reactionPickerHeight: {
 			where: "device",
 			default: 3,
-			advanced: 10,
 		},
 		usePickerSizePostForm: {
 			where: "device",
@@ -624,7 +608,6 @@ export const defaultStore = markRaw(
 		menuDisplay: {
 			where: "device",
 			default: "sideFull" as "sideFull" | "sideIcon" | "top",
-			advanced: "sideIcon" as "sideFull" | "sideIcon" | "top",
 		},
 		reportError: {
 			where: "device",
@@ -742,7 +725,6 @@ export const defaultStore = markRaw(
 		favButtonReaction: {
 			where: "account",
 			default: "favorite",
-			advanced: "favorite",
 			createdAt: "2023/5/9",
 			page: "reaction",
 		},
@@ -754,21 +736,18 @@ export const defaultStore = markRaw(
 		powerMode: {
 			where: "device",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/15",
 			page: "general",
 		},
 		powerModeColorful: {
 			where: "device",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/15",
 			page: "general",
 		},
 		powerModeNoShake: {
 			where: "device",
 			default: false,
-			advanced: true,
 			createdAt: "2023/5/15",
 			page: "general",
 		},
@@ -811,7 +790,6 @@ export const defaultStore = markRaw(
 		showRelationMark: {
 			where: "account",
 			default: false,
-			advanced: true,
 			createdAt: "2023/6/27",
 			page: "general",
 		},
@@ -836,7 +814,6 @@ export const defaultStore = markRaw(
 		reactionShowShort: {
 			where: "device",
 			default: false,
-			advanced: true,
 			createdAt: "2023/7/6",
 			page: "general",
 		},
@@ -1002,6 +979,12 @@ export const defaultStore = markRaw(
 			where: 'device',
 			default: false,
 			createdAt: "2023/8/23",
+			page: "general",
+		},
+		compactGridUrl: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/12/13",
 			page: "general",
 		},
 		doContextMenu: {

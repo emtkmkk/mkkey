@@ -205,14 +205,14 @@
 					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
-					v-model="reactionsPostHiddens[0]"
+					v-model="reactionsPostHiddens"
 					v-if="tab === 'reactions' && ((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
 					class="_formBlock"
 				>
 					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
-					v-model="reactionsReactionHiddens[0]"
+					v-model="reactionsReactionHiddens"
 					v-if="tab === 'reactions' && ((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
 					class="_formBlock"
 				>
@@ -226,14 +226,14 @@
 					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
-					v-model="reactionsPostHiddens[1]"
+					v-model="reactionsPostHiddens2"
 					v-if="tab === 'reactions2'"
 					class="_formBlock"
 				>
 					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
-					v-model="reactionsReactionHiddens[1]"
+					v-model="reactionsReactionHiddens2"
 					v-if="tab === 'reactions2'"
 					class="_formBlock"
 				>
@@ -247,14 +247,14 @@
 					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
-					v-model="reactionsPostHiddens[2]"
+					v-model="reactionsPostHiddens3"
 					v-if="tab === 'reactions3'"
 					class="_formBlock"
 				>
 					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
-					v-model="reactionsReactionHiddens[2]"
+					v-model="reactionsReactionHiddens3"
 					v-if="tab === 'reactions3'"
 					class="_formBlock"
 				>
@@ -268,14 +268,14 @@
 					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
-					v-model="reactionsPostHiddens[3]"
+					v-model="reactionsPostHiddens4"
 					v-if="tab === 'reactions4'"
 					class="_formBlock"
 				>
 					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
-					v-model="reactionsReactionHiddens[3]"
+					v-model="reactionsReactionHiddens4"
 					v-if="tab === 'reactions4'"
 					class="_formBlock"
 				>
@@ -289,14 +289,14 @@
 					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
-					v-model="reactionsPostHiddens[4]"
+					v-model="reactionsPostHiddens5"
 					v-if="tab === 'reactions5'"
 					class="_formBlock"
 				>
 					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
-					v-model="reactionsReactionHiddens[4]"
+					v-model="reactionsReactionHiddens5"
 					v-if="tab === 'reactions5'"
 					class="_formBlock"
 				>
@@ -679,8 +679,32 @@ const showReactionMenu = $computed(
 const reactionsPostHiddens = $computed(
 	defaultStore.makeGetterSetter("reactionsPostHiddens")
 );
+const reactionsPostHiddens2 = $computed(
+	defaultStore.makeGetterSetter("reactionsPostHiddens2")
+);
+const reactionsPostHiddens3 = $computed(
+	defaultStore.makeGetterSetter("reactionsPostHiddens3")
+);
+const reactionsPostHiddens4 = $computed(
+	defaultStore.makeGetterSetter("reactionsPostHiddens4")
+);
+const reactionsPostHiddens5 = $computed(
+	defaultStore.makeGetterSetter("reactionsPostHiddens5")
+);
 const reactionsReactionHiddens = $computed(
 	defaultStore.makeGetterSetter("reactionsReactionHiddens")
+);
+const reactionsReactionHiddens2 = $computed(
+	defaultStore.makeGetterSetter("reactionsReactionHiddens2")
+);
+const reactionsReactionHiddens3 = $computed(
+	defaultStore.makeGetterSetter("reactionsReactionHiddens3")
+);
+const reactionsReactionHiddens4 = $computed(
+	defaultStore.makeGetterSetter("reactionsReactionHiddens4")
+);
+const reactionsReactionHiddens5 = $computed(
+	defaultStore.makeGetterSetter("reactionsReactionHiddens5")
 );
 let customEmojis = computed(() =>
 	instance.emojis

@@ -134,15 +134,55 @@ export const defaultStore = markRaw(
 		},
 		reactionsPostHiddens: {
 			where: 'account',
-			default: [false,false,false,false,false],
+			default: false,
 			createdAt: "2023/12/13",
 			page: "reaction",
 		},
+		reactionsPostHiddens2: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/12/13",
+		},
+		reactionsPostHiddens3: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/12/13",
+		},
+		reactionsPostHiddens4: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/12/13",
+		},
+		reactionsPostHiddens5: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/12/13",
+		},
 		reactionsReactionHiddens: {
 			where: 'account',
-			default: [false,false,false,false,false],
+			default: false,
 			createdAt: "2023/12/13",
 			page: "reaction",
+		},
+		reactionsReactionHiddens2: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/12/13",
+		},
+		reactionsReactionHiddens3: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/12/13",
+		},
+		reactionsReactionHiddens4: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/12/13",
+		},
+		reactionsReactionHiddens5: {
+			where: 'account',
+			default: false,
+			createdAt: "2023/12/13",
 		},
 		reactions2: {
 			where: "account",

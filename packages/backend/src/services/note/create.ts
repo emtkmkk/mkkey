@@ -222,6 +222,9 @@ export default async (
 			data.channel = await Channels.findOneBy({ id: data.renote.channelId });
 		}
 
+		//リモートのノートはチャンネル扱いにしない
+		if (user.host && data.channel) data.channel = null;
+
 		//指定がなければpublicでlocalOnlyOFF
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
@@ -236,7 +239,7 @@ export default async (
 		//ただしspecifiedならlocalOnlyOFF
 		if (data.visibility === "specified" && data.localOnly === true) data.localOnly = false;
 		//チャンネルに[localOnly]が含まれている場合はlocalOnlyON
-		if (data.channel != null && data.channel.description?.includes("[localOnly]") && data.localOnly === false) data.localOnly = true;
+		if (data.channel?.description?.includes("[localOnly]") && data.localOnly === false) data.localOnly = true;
 		if (!user.host && data.channel != null && data.localOnly === false && !data.reply && data.text?.trim() && !data.text?.includes(`#${data.channel!.name}`)) {
 			//ローカル投稿でチャンネルで連合有りで返信でなくテキストがあり、
 			//すでにタグが含まれていない場合はハッシュタグを自動で付ける
@@ -389,7 +392,7 @@ export default async (
 			if (isIncludeNgWordRet) {
 				if (!data.cw) {
 					data.cw = `[強制CW] ${isIncludeNgWordRet}`;
-				} else if (!data.cw.trim() || data.cw.trim() === "CW") {
+				} else if (!data.cw.trim() || data.cw.trim().toUpperCase() === "CW") {
 					data.cw = isIncludeNgWordRet;
 				}
 			}
@@ -400,7 +403,7 @@ export default async (
 					if (data.text) {
 						if (!data.cw) {
 							data.cw = `[強制CW (引用先)] ${isIncludeNgWordRtRet}`;
-						} else if (!data.cw.trim() || data.cw.trim() === "CW") {
+						} else if (!data.cw.trim() || data.cw.trim().toUpperCase() === "CW") {
 							data.cw = `${isIncludeNgWordRtRet} (引用先)`;
 						}
 					} else {
@@ -467,7 +470,7 @@ export default async (
 
 			const relation = user.isSilenced ? await Promise.all(data.visibleUsers.map(async (x) => (await Users.getRelation(user.id, x.id)).isFollowed)) : undefined;
 
-			if (user.isSilenced && (!relation.every((x) => x) ?? true)) {
+			if (user.isSilenced && (!relation?.every((x) => x) ?? true)) {
 				throw new Error("サイレンス中はフォロワーでないユーザにダイレクトは送信できません。");
 			}
 			/*
@@ -756,7 +759,7 @@ export default async (
 			//#endregion
 		}
 
-		if (data.channel) {
+		if (data.channel && (!data.renote || data.text != null)) {
 			Channels.increment({ id: data.channel.id }, "notesCount", 1);
 			Channels.update(data.channel.id, {
 				lastNotedAt: new Date(),
@@ -782,11 +785,11 @@ async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 	if (data.localOnly && data.channel) return null;
 	// ローカル＆フォロワー
 	if (data.localOnly && data.visibility !== "hidden" && data.visibility !== "specified") note.visibility = "followers";
-	if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.cw) || /:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.text)) {
+	if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.cw ?? "") || /:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.text ?? "")) {
 		// 他鯖絵文字が入っている場合、外部には@以下をトリミングして配信する
-		note.cw = note.cw?.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
-		note.text = note.text?.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
-		note.emojis = note.emojis?.map((x) => x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]*)$/ig, "$1"));
+		if (note.cw) note.cw = note.cw?.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+		if (note.text) note.text = note.text?.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+		if (note.emojis) note.emojis = note.emojis?.map((x) => x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]*)$/ig, "$1"));
 	}
 
 	const content =

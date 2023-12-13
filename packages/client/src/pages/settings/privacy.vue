@@ -21,7 +21,7 @@
 		>
 		<FormSwitch
 			v-model="isRemoteLocked"
-			v-if="!isLocked || !isSilentLocked"
+			v-if="!isLocked && !isSilentLocked"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.makeFollowManuallyApproveToRemote

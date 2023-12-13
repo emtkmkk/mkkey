@@ -132,6 +132,18 @@ export const defaultStore = markRaw(
 			createdAt: "2023/7/19",
 			page: "reaction",
 		},
+		reactionsPostHiddens: {
+			where: 'account',
+			default: [false,false,false,false,false],
+			createdAt: "2023/12/13",
+			page: "reaction",
+		},
+		reactionsReactionHiddens: {
+			where: 'account',
+			default: [false,false,false,false,false],
+			createdAt: "2023/12/13",
+			page: "reaction",
+		},
 		reactions2: {
 			where: "account",
 			default: [],

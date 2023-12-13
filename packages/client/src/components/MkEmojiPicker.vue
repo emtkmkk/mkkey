@@ -178,7 +178,7 @@
 					<template v-else>
 						<XSection
 							key="pinned:1"
-							v-if="pinned?.length != 0"
+							v-if="pinned?.length != 0 && ((props.asReactionPicker && !$store.state.reactionsReactionHiddens[0]) || (!props.asReactionPicker && !$store.state.reactionsPostHiddens[0]))"
 							:initial-shown="$store.state.reactionsDefaultOpen"
 							:emojis="
 								pinned.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))
@@ -188,7 +188,7 @@
 						>
 						<XSection
 							key="pinned:2"
-							v-if="pinned2?.length != 0"
+							v-if="pinned2?.length != 0 && ((props.asReactionPicker && !$store.state.reactionsReactionHiddens[1]) || (!props.asReactionPicker && !$store.state.reactionsPostHiddens[1]))"
 							:initial-shown="$store.state.reactions2DefaultOpen"
 							:emojis="
 								pinned2.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))
@@ -197,7 +197,7 @@
 							>{{ `${$store.state.reactionsFolderName2 || "ピン留め絵文字 : 2"} ` }}</XSection
 						>
 						<XSection
-							v-if="pinned3?.length != 0"
+							v-if="pinned3?.length != 0 && ((props.asReactionPicker && !$store.state.reactionsReactionHiddens[2]) || (!props.asReactionPicker && !$store.state.reactionsPostHiddens[2]))"
 							key="pinned:3"
 							:initial-shown="$store.state.reactions3DefaultOpen"
 							:emojis="
@@ -207,7 +207,7 @@
 							>{{ `${$store.state.reactionsFolderName3 || "ピン留め絵文字 : 3"} ` }}</XSection
 						>
 						<XSection
-							v-if="pinned4?.length != 0"
+							v-if="pinned4?.length != 0 && ((props.asReactionPicker && !$store.state.reactionsReactionHiddens[3]) || (!props.asReactionPicker && !$store.state.reactionsPostHiddens[3]))"
 							key="pinned:4"
 							:initial-shown="$store.state.reactions4DefaultOpen"
 							:emojis="
@@ -217,7 +217,7 @@
 							>{{ `${$store.state.reactionsFolderName4 || "ピン留め絵文字 : 4"} ` }}</XSection
 						>
 						<XSection
-							v-if="pinned5?.length != 0"
+							v-if="pinned5?.length != 0 && ((props.asReactionPicker && !$store.state.reactionsReactionHiddens[4]) || (!props.asReactionPicker && !$store.state.reactionsPostHiddens[4]))"
 							key="pinned:5"
 							:initial-shown="$store.state.reactions5DefaultOpen"
 							:emojis="

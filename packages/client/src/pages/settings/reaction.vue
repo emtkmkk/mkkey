@@ -36,6 +36,7 @@
 						class="_formBlock"
 						:small="true"
 						:placeholder="`フォルダ名 : 1`"
+						:manualSave="true"
 						v-if="((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
 						style="margin: 0 0 !important"
 					/>
@@ -68,6 +69,7 @@
 						class="_formBlock"
 						:small="true"
 						:placeholder="`フォルダ名 : 2`"
+						:manualSave="true"
 						style="margin: 0 0 !important"
 					/>
 					<XDraggable
@@ -99,6 +101,7 @@
 						class="_formBlock"
 						:small="true"
 						:placeholder="`フォルダ名 : 3`"
+						:manualSave="true"
 						style="margin: 0 0 !important"
 					/>
 					<XDraggable
@@ -130,6 +133,7 @@
 						class="_formBlock"
 						:small="true"
 						:placeholder="`フォルダ名 : 4`"
+						:manualSave="true"
 						style="margin: 0 0 !important"
 					/>
 					<XDraggable
@@ -161,6 +165,7 @@
 						class="_formBlock"
 						:small="true"
 						:placeholder="`フォルダ名 : 5`"
+						:manualSave="true"
 						style="margin: 0 0 !important"
 					/>
 					<XDraggable
@@ -200,11 +205,39 @@
 					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
+					v-model="reactionsPostHiddens[0]"
+					v-if="tab === 'reactions' && ((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactionsReactionHiddens[0]"
+					v-if="tab === 'reactions' && ((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsReactionHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				</FormSwitch>
+				<FormSwitch
 					v-model="reactions2DefaultOpen"
 					v-if="tab === 'reactions2'"
 					class="_formBlock"
 				>
 					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactionsPostHiddens[1]"
+					v-if="tab === 'reactions2'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactionsReactionHiddens[1]"
+					v-if="tab === 'reactions2'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsReactionHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactions3DefaultOpen"
@@ -214,6 +247,20 @@
 					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
+					v-model="reactionsPostHiddens[2]"
+					v-if="tab === 'reactions3'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactionsReactionHiddens[2]"
+					v-if="tab === 'reactions3'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsReactionHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				</FormSwitch>
+				<FormSwitch
 					v-model="reactions4DefaultOpen"
 					v-if="tab === 'reactions4'"
 					class="_formBlock"
@@ -221,11 +268,39 @@
 					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 				<FormSwitch
+					v-model="reactionsPostHiddens[3]"
+					v-if="tab === 'reactions4'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactionsReactionHiddens[3]"
+					v-if="tab === 'reactions4'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsReactionHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				</FormSwitch>
+				<FormSwitch
 					v-model="reactions5DefaultOpen"
 					v-if="tab === 'reactions5'"
 					class="_formBlock"
 				>
 					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactionsPostHiddens[4]"
+					v-if="tab === 'reactions5'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				</FormSwitch>
+				<FormSwitch
+					v-model="reactionsReactionHiddens[4]"
+					v-if="tab === 'reactions5'"
+					class="_formBlock"
+				>
+					{{ i18n.ts.reactionsReactionHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 				</FormSwitch>
 			</FromSlot>
 			<FormSwitch
@@ -600,6 +675,12 @@ const hiddenReactionNumber = $computed(
 );
 const showReactionMenu = $computed(
 	defaultStore.makeGetterSetter("showReactionMenu")
+);
+const reactionsPostHiddens = $computed(
+	defaultStore.makeGetterSetter("reactionsPostHiddens")
+);
+const reactionsReactionHiddens = $computed(
+	defaultStore.makeGetterSetter("reactionsReactionHiddens")
 );
 let customEmojis = computed(() =>
 	instance.emojis

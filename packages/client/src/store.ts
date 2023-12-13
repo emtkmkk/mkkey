@@ -789,7 +789,7 @@ export const defaultStore = markRaw(
 		},
 		showRelationMark: {
 			where: "account",
-			default: false,
+			default: true,
 			createdAt: "2023/6/27",
 			page: "general",
 		},

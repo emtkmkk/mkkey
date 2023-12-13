@@ -50,7 +50,7 @@
 			}&amp;id=${tweetId}`"
 		></iframe>
 	</div>
-	<div v-else v-size="{ max: [400, 350] }" class="mk-url-preview" :class="{legacyStyle: $store.state.compactGrid,}" @click.stop>
+	<div v-else v-size="{ max: [400, 350] }" class="mk-url-preview" :class="{legacyStyle: $store.state.compactGridUrl,}" @click.stop>
 		<MkButton v-if="tweetId" :small="true" class="expandTweet" @click="tweetExpanded = true">
 			{{ i18n.ts.expandTweet }}
 		</MkButton>

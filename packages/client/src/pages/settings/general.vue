@@ -293,10 +293,13 @@
 			}}</FormSwitch>
 			<FormSwitch v-model="thumbnailCover" class="_formBlock">{{
 				i18n.ts.thumbnailCover
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="compactGrid" class="_formBlock">{{
 				i18n.ts.compactGrid
-			}}</FormSwitch>
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="compactGridUrl" class="_formBlock">{{
+				i18n.ts.compactGridUrl
+			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch
 				v-model="disableShowingAnimatedImages"
 				class="_formBlock"
@@ -842,6 +845,9 @@ const showRemoteEmojiPostForm = $computed(
 );
 const compactGrid = $computed(
 	defaultStore.makeGetterSetter("compactGrid")
+);
+const compactGridUrl = $computed(
+	defaultStore.makeGetterSetter("compactGridUrl")
 );
 const usePickerSizePostForm = $computed(
 	defaultStore.makeGetterSetter("usePickerSizePostForm")

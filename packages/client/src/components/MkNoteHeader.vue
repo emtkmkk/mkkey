@@ -30,7 +30,8 @@
 			<div>
 				<div class="info">
 					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && note.user.isFollowing && !note.user.isFollowed" class="ph-heart-half ph-bold relation"></i>
-					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && !note.user.isFollowing && !note.user.isFollowed" class="ph-placeholder ph-bold relation"></i>
+					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && !note.user.isFollowing && note.user.isFollowed" class="ph-heart-half ph-bold relation" style="transform: scaleX(-1);"></i>
+					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && !note.user.isFollowing && !note.user.isFollowed" class="ph-smiley-meh ph-bold relation"></i>
 					<MkA
 						v-if="note.replyId"
 						:to="`/notes/${note.replyId}`"

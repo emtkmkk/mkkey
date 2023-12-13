@@ -293,13 +293,13 @@
 			}}</FormSwitch>
 			<FormSwitch v-model="thumbnailCover" class="_formBlock">{{
 				i18n.ts.thumbnailCover
-			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="compactGrid" class="_formBlock">{{
 				i18n.ts.compactGrid
-			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="compactGridUrl" class="_formBlock">{{
 				i18n.ts.compactGridUrl
-			}}</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch
 				v-model="disableShowingAnimatedImages"
 				class="_formBlock"

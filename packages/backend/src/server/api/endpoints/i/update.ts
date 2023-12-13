@@ -311,6 +311,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(_newName)) {
 			// 他鯖絵文字が入っている場合、@以下をトリミングする
 			_newName = _newName.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+			updates.name = _newName;
 		}
 		const tokens = mfm.parseSimple(_newName);
 		emojis = emojis.concat(extractCustomEmojisFromMfm(tokens!));
@@ -321,6 +322,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(_newDescription)) {
 			// 他鯖絵文字が入っている場合、@以下をトリミングする
 			_newDescription = _newDescription.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+			profileUpdates.description = _newDescription;
 		}
 		const tokens = mfm.parse(_newDescription);
 		emojis = emojis.concat(extractCustomEmojisFromMfm(tokens!));
@@ -330,7 +332,13 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	}
 
 	if (newLocation != null) {
-		const tokens = mfm.parseSimple(newLocation);
+		let _newLocation = newLocation;
+		if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(_newLocation)) {
+			// 他鯖絵文字が入っている場合、@以下をトリミングする
+			_newLocation = _newLocation.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+			profileUpdates.location = _newLocation;
+		}
+		const tokens = mfm.parseSimple(_newLocation);
 		emojis = emojis.concat(extractCustomEmojisFromMfm(tokens!));
 	}
 

@@ -847,6 +847,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/8/15",
 			page: "general",
 		},
+		dataSaverDisabledBanner: {
+			where: 'device',
+			default: true,
+			createdAt: "2023/12/13",
+			page: "general",
+		},
 		recentRenoteId: {
 			where: 'device',
 			default: [],

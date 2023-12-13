@@ -495,7 +495,7 @@ const birthday = $computed(() => {
 })
 
 const style = $computed(() => {
-	if (props.user.bannerUrl == null || defaultStore.state.enableDataSaverMode) return {};
+	if (props.user.bannerUrl == null || (defaultStore.state.enableDataSaverMode && defaultStore.state.dataSaverDisabledBanner)) return {};
 	return {
 		backgroundImage: `url(${props.user.bannerUrl})`,
 	};

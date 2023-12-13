@@ -155,6 +155,9 @@
 			<FormSwitch v-model="autoSwitchDataSaver" :disabled="!supportAutoDataSaver" class="_formBlock">{{
 				i18n.ts.autoSwitchDataSaver
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-if="enableDataSaverMode || autoSwitchDataSaver" v-model="dataSaverDisabledBanner" class="_formBlock">{{
+				i18n.ts.dataSaverDisabledBanner
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="enabledAirReply" class="_formBlock">{{
 				i18n.ts.enabledAirReply
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -763,6 +766,9 @@ const remoteEmojisFetch = $computed(
 );
 const enableDataSaverMode = $computed(
 	defaultStore.makeGetterSetter("enableDataSaverMode")
+);
+const dataSaverDisabledBanner = $computed(
+	defaultStore.makeGetterSetter("dataSaverDisabledBanner")
 );
 const recentRenoteHidden = $computed(
 	defaultStore.makeGetterSetter("recentRenoteHidden")

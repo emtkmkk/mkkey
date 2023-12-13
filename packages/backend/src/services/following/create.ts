@@ -260,7 +260,7 @@ export default async function (
 		(Users.isLocalUser(follower) && Users.isRemoteUser(followee)) ||
 		(Users.isRemoteUser(follower) &&
 			Users.isLocalUser(followee) &&
-			((await shouldSilenceInstance(follower.host)) || needRequestFR))
+			((await shouldSilenceInstance(follower.host)) || (needRequestFR && !followee.isBot)))
 	) {
 		let autoAccept = false;
 

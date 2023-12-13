@@ -2,7 +2,7 @@
 	<div class="_formRoot">
 		<FormSwitch
 			v-model="isLocked"
-			v-if="!isSilentLocked"
+			v-if="!isRemoteLocked"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.makeFollowManuallyApprove
@@ -11,17 +11,8 @@
 			}}</template></FormSwitch
 		>
 		<FormSwitch
-			v-model="isSilentLocked"
-			class="_formBlock"
-			@update:modelValue="save()"
-			>{{ i18n.ts.makeFollowManuallyApproveSilent
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
-				i18n.ts.lockedAccountInfoSilent
-			}}</template></FormSwitch
-		>
-		<FormSwitch
 			v-model="isRemoteLocked"
-			v-if="!isLocked && !isSilentLocked"
+			v-if="!isLocked && !blockPostNotLocal"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.makeFollowManuallyApproveToRemote
@@ -30,11 +21,21 @@
 			}}</template></FormSwitch
 		>
 		<FormSwitch
-			v-if="isLocked || isSilentLocked || isRemoteLocked"
+			v-if="isLocked || isRemoteLocked || blockPostNotLocal"
 			v-model="autoAcceptFollowed"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.autoAcceptFollowed }}</FormSwitch
+		>
+		<FormSwitch
+			v-if="isLocked || isRemoteLocked || blockPostNotLocal"
+			v-model="isSilentLocked"
+			class="_formBlock"
+			@update:modelValue="save()"
+			>{{ i18n.ts.makeFollowManuallyApproveSilent
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
+				i18n.ts.lockedAccountInfoSilent
+			}}</template></FormSwitch
 		>
 
 		<FormSection>

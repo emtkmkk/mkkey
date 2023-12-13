@@ -90,10 +90,11 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	// Publish meUpdated event
 	publishMainStream(user.id, "meUpdated", iObj);
-
+	/*
 	if (user.isLocked === false) {
 		acceptAllFollowRequests(user);
 	}
+	*/
 
 	publishToFollowers(user.id);
 

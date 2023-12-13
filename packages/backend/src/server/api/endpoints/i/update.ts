@@ -240,7 +240,6 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		updates.blockPostNotLocalPublic = ps.blockPostNotLocalPublic;
 	if (typeof ps.isSilentLocked === "boolean") {
 		updates.isSilentLocked = ps.isSilentLocked;
-		if (ps.isSilentLocked) updates.isLocked = false;
 	}
 	if (typeof ps.isRemoteLocked === "boolean") {
 		updates.isRemoteLocked = ps.isRemoteLocked;

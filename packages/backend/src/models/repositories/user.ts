@@ -609,7 +609,7 @@ export const UserRepository = db.getRepository(User).extend({
 						: null,
 					bannerBlurhash: user.banner?.blurhash || null,
 					bannerColor: null, // 後方互換性のため
-					isLocked: user.isLocked,
+					isLocked: !user.isSilentLocked && user.isLocked,
 					isSilenced: user.isSilenced || falsy,
 					isSuspended: user.isSuspended || falsy,
 					description: isDeleted ? "🗑" : profile!.description,
@@ -650,7 +650,6 @@ export const UserRepository = db.getRepository(User).extend({
 					blockPostHome: user.blockPostHome || falsy,
 					blockPostNotLocal: user.blockPostNotLocal || falsy,
 					blockPostNotLocalPublic: user.blockPostNotLocalPublic || falsy,
-					isSilentLocked: user.isSilentLocked || falsy,
 					isRemoteLocked: user.isRemoteLocked || falsy,
 					twoFactorEnabled: profile!.twoFactorEnabled,
 					usePasswordLessLogin: profile!.usePasswordLessLogin,
@@ -754,6 +753,7 @@ export const UserRepository = db.getRepository(User).extend({
 						})
 						: [],
 					inviteUserId: user.inviteUserId,
+					isSilentLocked: user.isSilentLocked || falsy,
 				}
 				: {}),
 

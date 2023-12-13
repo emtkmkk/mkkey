@@ -175,7 +175,7 @@ const getContact = async (
 		username: user.username,
 		acct: user.username,
 		display_name: user.name ?? user.username,
-		locked: user.isLocked,
+		locked: !user.isSilentLocked && user.isLocked,
 		bot: user.isBot,
 		created_at: user.createdAt.toISOString(),
 		url: `${config.url}/@${user.username}`,

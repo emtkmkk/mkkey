@@ -74,10 +74,11 @@ export async function renderPerson(user: ILocalUser) {
 		summary: profile.description
 			? toHtml(mfm.parse(profile.description))
 			: null,
+		_misskey_summary: profile.description,
 		icon: avatar ? renderImage(avatar) : null,
 		image: banner ? renderImage(banner) : null,
 		tag,
-		manuallyApprovesFollowers: user.isLocked,
+		manuallyApprovesFollowers: !user.isSilentLocked && (user.isLocked || user.blockPostNotLocal || user.isRemoteLocked),
 		discoverable: !!user.isExplorable,
 		publicKey: renderKey(user, keypair, "#main-key"),
 		isCat: user.isCat,

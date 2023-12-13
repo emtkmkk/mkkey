@@ -40,6 +40,7 @@ export const renderActivity = (x: any): IActivity | null => {
 					_misskey_quote: "misskey:_misskey_quote",
 					_misskey_reaction: "misskey:_misskey_reaction",
 					_misskey_votes: "misskey:_misskey_votes",
+					_misskey_summary: 'misskey:_misskey_summary',
 					_misskey_talk: "misskey:_misskey_talk",
 					isCat: "misskey:isCat",
 					// Fedibird

@@ -245,6 +245,14 @@ export async function createPerson(
 			notesCount = undefined;
 		}
 	}
+
+	let _description: string | null = null;
+
+	if (person._misskey_summary) {
+		_description = truncate(person._misskey_summary, summaryLength);
+	} else if (person.summary) {
+		_description = htmlToMfm(truncate(person.summary, summaryLength), person.tag);
+	}
 	
 	// Create user
 	let user: IRemoteUser;
@@ -309,9 +317,7 @@ export async function createPerson(
 			await transactionalEntityManager.save(
 				new UserProfile({
 					userId: user.id,
-					description: person.summary
-						? htmlToMfm(truncate(person.summary, summaryLength), person.tag)
-						: null,
+					description: _description,
 					url: url,
 					fields,
 					birthday: bday ? bday[0] : null,
@@ -513,6 +519,15 @@ export async function updatePerson(
 		}
 	}
 
+	let _description: string | null = null;
+
+	if (person._misskey_summary) {
+		_description = truncate(person._misskey_summary, summaryLength);
+	} else if (person.summary) {
+		_description = htmlToMfm(truncate(person.summary, summaryLength), person.tag);
+	}
+
+
 	const updates = {
 		lastFetchedAt: new Date(),
 		inbox: person.inbox,
@@ -582,9 +597,7 @@ export async function updatePerson(
 		{
 			url: url,
 			fields,
-			description: person.summary
-				? htmlToMfm(truncate(person.summary, summaryLength), person.tag)
-				: null,
+			description: _description,
 			birthday: bday ? bday[0] : null,
 			location: person["vcard:Address"] || null,
 		},

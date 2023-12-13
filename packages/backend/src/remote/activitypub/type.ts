@@ -6,6 +6,7 @@ export interface IObject {
 	type: string | string[];
 	id?: string;
 	summary?: string;
+	_misskey_summary?: string;
 	published?: string;
 	cc?: ApObject;
 	to?: ApObject;

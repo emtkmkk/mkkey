@@ -63,6 +63,7 @@
 			class="_formBlock"
 			:small="true"
 			:placeholder="i18n.ts.mobileThirdButton"
+			:manualSave="true"
 			style="margin: 0 0 !important"
 		/>
 		<button v-if="freeThirdButton" class="_textButton" @click="setItem">

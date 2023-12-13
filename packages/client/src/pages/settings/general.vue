@@ -60,6 +60,7 @@
 				class="_formBlock"
 				:small="true"
 				:placeholder="`リスト / アンテナの内部ID (10文字)`"
+				:manualSave="true"
 				style="margin: 0 0 !important"
 			>
 				<template #label>{{ i18n.ts.thirdTimelineListId }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>

@@ -491,7 +491,7 @@ const birthday = $computed(() => {
 
 	if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
 
-	return `${_birthday.getFullYear()}-${_birthday.getMonth() + 1}-${_birthday.getDate()}`;
+	return `${_birthday.getFullYear()}-${('00' + (_birthday.getMonth() + 1)).slice(-2)}-${('00' + _birthday.getDate()).slice(-2)}`;
 })
 
 const style = $computed(() => {
@@ -507,7 +507,7 @@ const age = $computed(() => {
 
 const nextBirthday = $computed(() => {
 
-	const _birthday = new Date(birthday);
+	const _birthday = new Date(birthday?.replaceAll("-","/"));
 	_birthday.setHours(0);
 
 	const today = new Date();

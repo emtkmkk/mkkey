@@ -585,7 +585,7 @@ export const UserRepository = db.getRepository(User).extend({
 			emojis: populateEmojis(user.emojis, user.host),
 			onlineStatus: this.getOnlineStatus(user, meId),
 			driveCapacityOverrideMb: user.driveCapacityOverrideMb,
-			patron: user.host ? undefined : (user.driveCapacityOverrideMb ?? DEFAULT_DRIVE_SIZE) > DEFAULT_DRIVE_SIZE / MB,
+			patron: user.host ? undefined : (user.driveCapacityOverrideMb ?? (DEFAULT_DRIVE_SIZE / MB)) > DEFAULT_DRIVE_SIZE / MB,
 			badgeRoles: user.host == null ? roles.map((x) => ({
 				name: x.name,
 				iconUrl: x.iconUrl,

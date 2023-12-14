@@ -331,6 +331,7 @@ import * as ep___users_lists_pull from "./endpoints/users/lists/pull.js";
 import * as ep___users_lists_push from "./endpoints/users/lists/push.js";
 import * as ep___users_lists_show from "./endpoints/users/lists/show.js";
 import * as ep___users_lists_update from "./endpoints/users/lists/update.js";
+import * as ep___users_featuredNotes from "./endpoints/users/featured-notes.js";
 import * as ep___users_notes from "./endpoints/users/notes.js";
 import * as ep___users_pages from "./endpoints/users/pages.js";
 import * as ep___users_reactions from "./endpoints/users/reactions.js";
@@ -688,6 +689,7 @@ const eps = [
 	["users/lists/push", ep___users_lists_push],
 	["users/lists/show", ep___users_lists_show],
 	["users/lists/update", ep___users_lists_update],
+	["users/featured-notes", ep___users_featuredNotes],
 	["users/notes", ep___users_notes],
 	["users/pages", ep___users_pages],
 	["users/reactions", ep___users_reactions],

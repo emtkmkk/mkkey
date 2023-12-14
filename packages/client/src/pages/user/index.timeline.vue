@@ -8,7 +8,7 @@
 				<option value="files">{{ i18n.ts.withFiles }}</option>
 			</MkTab>
 		</template>
-		<XNotes :key="include" :no-gap="true" :pagination="pagination" />
+		<XNotes :no-gap="true" :pagination="pagination" />
 	</MkStickyContainer>
 </template>
 
@@ -28,7 +28,9 @@ const props = defineProps<{
 const include = ref<string | null>(null);
 
 const pagination = {
-	endpoint: computed(() => {return include.value != "highlight" ? "users/notes" : "users/featured-notes"}),
+	endpoint: computed(() => {
+		return include.value != "highlight" ? "users/notes" : "users/featured-notes"
+	}),
 	limit: 10,
 	params: computed(() => ({
 		userId: props.user.id,

@@ -271,13 +271,18 @@ watch(queue, (a, b) => {
 async function init(): Promise<void> {
 	queue.value = [];
 	fetching.value = true;
+	const endpoint = props.pagination.endpoint
+		? isRef(props.pagination.endpoint)
+			? props.pagination.endpoint.value
+			: props.pagination.endpoint
+		: "";
 	const params = props.pagination.params
 		? isRef(props.pagination.params)
 			? props.pagination.params.value
 			: props.pagination.params
 		: {};
 	await os
-		.api(props.pagination.endpoint, {
+		.api(endpoint, {
 			...params,
 			limit: props.pagination.noPaging
 				? props.pagination.limit || 10
@@ -326,13 +331,18 @@ const reload = (): void => {
 };
 
 const refresh = async (): void => {
+	const endpoint = props.pagination.endpoint
+		? isRef(props.pagination.endpoint)
+			? props.pagination.endpoint.value
+			: props.pagination.endpoint
+		: "";
 	const params = props.pagination.params
 		? isRef(props.pagination.params)
 			? props.pagination.params.value
 			: props.pagination.params
 		: {};
 	await os
-		.api(props.pagination.endpoint, {
+		.api(endpoint, {
 			...params,
 			limit: items.value.length + 1,
 			offset: 0,
@@ -376,13 +386,18 @@ const fetchMore = async (): Promise<void> => {
 	moreFetchError.value = false;
 	moreFetching.value = true;
 	backed = true;
+	const endpoint = props.pagination.endpoint
+		? isRef(props.pagination.endpoint)
+			? props.pagination.endpoint.value
+			: props.pagination.endpoint
+		: "";
 	const params = props.pagination.params
 		? isRef(props.pagination.params)
 			? props.pagination.params.value
 			: props.pagination.params
 		: {};
 	await os
-		.api(props.pagination.endpoint, {
+		.api(endpoint, {
 			...params,
 			limit: SECOND_FETCH_LIMIT + 1,
 			...(props.pagination.offsetMode
@@ -451,13 +466,18 @@ const fetchMoreAhead = async (): Promise<void> => {
 	lastFetchDate.value = Date.now();
 	moreFetchError.value = false;
 	moreFetching.value = true;
+	const endpoint = props.pagination.endpoint
+		? isRef(props.pagination.endpoint)
+			? props.pagination.endpoint.value
+			: props.pagination.endpoint
+		: "";
 	const params = props.pagination.params
 		? isRef(props.pagination.params)
 			? props.pagination.params.value
 			: props.pagination.params
 		: {};
 	await os
-		.api(props.pagination.endpoint, {
+		.api(endpoint, {
 			...params,
 			limit: SECOND_FETCH_LIMIT + 1,
 			...(props.pagination.offsetMode

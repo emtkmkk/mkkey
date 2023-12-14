@@ -378,6 +378,13 @@
 				<option value="always">{{ i18n.ts._remoteEmojisFetch.always }}</option>
 			</FormSelect>
 
+			<FormSwitch
+				v-model="mastodonOnetapFavorite"
+				class="_formBlock"
+			>
+				{{ i18n.ts.mastodonOnetapFavorite }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			</FormSwitch>
+
 			<FormSection>
 				<FormRadios
 					v-model="favButtonReaction"
@@ -705,6 +712,9 @@ const reactionsReactionHiddens4 = $computed(
 );
 const reactionsReactionHiddens5 = $computed(
 	defaultStore.makeGetterSetter("reactionsReactionHiddens5")
+);
+const mastodonOnetapFavorite = $computed(
+	defaultStore.makeGetterSetter("mastodonOnetapFavorite")
 );
 let customEmojis = computed(() =>
 	instance.emojis

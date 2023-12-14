@@ -513,19 +513,26 @@ function reply(viaKeyboard = false): void {
 
 function react(viaKeyboard = false): void {
 	pleaseLogin();
-	blur();
-	reactionPicker.show(
-		reactButton.value,
-		(reaction) => {
-			os.api("notes/reactions/create", {
-				noteId: appearNote.id,
-				reaction: reaction,
-			});
-		},
-		() => {
-			focus();
-		}
-	);
+	if (defaultStore.state.mastodonOnetapFavorite && appearNote.user.instance?.maxReactionsPerAccount === 0) {
+		os.api("notes/reactions/create", {
+			noteId: note.id,
+			reaction: "",
+		});
+	} else {
+		blur();
+		reactionPicker.show(
+			reactButton.value,
+			(reaction) => {
+				os.api("notes/reactions/create", {
+					noteId: appearNote.id,
+					reaction: reaction,
+				});
+			},
+			() => {
+				focus();
+			}
+		);
+	}
 }
 
 async function undoReact(note): void {

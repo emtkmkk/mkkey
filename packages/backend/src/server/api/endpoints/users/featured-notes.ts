@@ -71,12 +71,12 @@ export default define(meta, paramDef, async (ps, me) => {
 	borderDate.setSeconds(0);
 	borderDate.setMilliseconds(0);
 	
-	const borderScore = ps.borderScore ?? (await Notes.createQueryBuilder("note")
-	.select(`sum(note.score) * ${THRESHOLD_SCORE_MULTIPLIER} / count(note.id) score`)
+	const borderScore = ps.borderScore && Number.isFinite(parseInt(ps.borderScore,10)) ? parseInt(ps.borderScore,10) : ((await Notes.createQueryBuilder("note")
+	.select("sum(note.score) * 100 / (count(note.id) + 1) score")
 	.where("note.userId = :userId", { userId: user.id })
 	.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 	.cache(6 * 60 * 60 * 1000)
-	.getRawOne()).score
+	.getRawOne()).score * THRESHOLD_SCORE_MULTIPLIER / 100);
 
 	//#region Construct query
 	const query = makePaginationQuery(
@@ -87,7 +87,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		ps.untilDate,
 	)
 		.andWhere("note.userId = :userId", { userId: user.id })
-		.andWhere("note.score >= :borderScore", { borderScore: borderScore })
+		.andWhere("note.score >= :borderScore", { borderScore: Math.floor(borderScore) || 1 })
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")

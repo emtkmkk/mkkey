@@ -438,8 +438,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	result.followersCount =
 		user.host ? user.followersCount : result.localFollowersCount + result.remoteFollowersCount;
 
-	result.averagePostCount = Math.floor(result.notesCount / result.notesPostDays * 10) / 10;
-	result.averageWordCount = !ps.simple ? Math.floor(result.totalWordCount / (result.notesCount - result.renotesCount) * 10) / 10 : undefined;
+	result.averagePostCount = Math.floor(result.notesCount / (result.notesPostDays || 1) * 10) / 10;
+	result.averageWordCount = !ps.simple ? Math.floor(result.totalWordCount / ((result.notesCount - result.renotesCount) || 1) * 10) / 10 : undefined;
 	result.averageSentReactionsCount = Math.floor(result.sentReactionsCount / elapsedDaysRaw * 10) / 10;
 	result.averageReceivedReactionsCount = Math.floor(result.receivedReactionsCount / elapsedDaysRaw * 10) / 10;
 	result.elapsedDays = !firstLocalFollower && user.host ? 0 : elapsedDaysRaw;

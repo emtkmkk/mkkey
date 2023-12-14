@@ -638,11 +638,11 @@ export const defaultStore = markRaw(
 		},
 		emojiPickerUseDrawerForMobile: {
 			where: "device",
-			default: false,
+			default: true,
 		},
 		reactionPickerUseDrawerForMobile: {
 			where: "device",
-			default: false,
+			default: true,
 			createdAt: "2023/4/25",
 		},
 		recentlyUsedEmojis: {

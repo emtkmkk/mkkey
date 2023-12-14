@@ -519,8 +519,8 @@ const nextBirthday = $computed(() => {
 	_birthday.setFullYear(today.getFullYear());
 
 	return _birthday >= today
-			? Math.floor((_birthday - today) / (24 * 60 * 60 * 1000))
-			: Math.floor((_birthday.setFullYear(_birthday.getFullYear() + 1) - today) / (24 * 60 * 60 * 1000));
+			? Math.floor((_birthday.valueOf() - today.valueOf()) / (24 * 60 * 60 * 1000))
+			: Math.floor((_birthday.setFullYear(_birthday.getFullYear() + 1) - today.valueOf()) / (24 * 60 * 60 * 1000));
 });
 
 const timeForThem = $computed(() => {

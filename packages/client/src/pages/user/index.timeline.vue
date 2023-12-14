@@ -28,7 +28,7 @@ const props = defineProps<{
 const include = ref<string | null>(null);
 
 const pagination = {
-	endpoint: include.value != "highlight" ? "users/notes" : "users/featured-notes",
+	endpoint: computed(() => ({include.value != "highlight" ? "users/notes" : "users/featured-notes"})),
 	limit: 10,
 	params: computed(() => ({
 		userId: props.user.id,

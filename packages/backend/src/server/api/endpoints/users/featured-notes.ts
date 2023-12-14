@@ -75,6 +75,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	.select("sum(note.score) * 100 / (count(note.id) + 1) score")
 	.where("note.userId = :userId", { userId: user.id })
 	.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+	.andWhere("note.visibility = 'public'")
+	.andWhere(`(note."deletedAt" IS NULL)`)
 	.cache(6 * 60 * 60 * 1000)
 	.getRawOne()).score * THRESHOLD_SCORE_MULTIPLIER / 100);
 
@@ -88,6 +90,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	)
 		.andWhere("note.userId = :userId", { userId: user.id })
 		.andWhere("note.score >= :borderScore", { borderScore: Math.floor(borderScore) || 1 })
+		.andWhere("note.visibility = 'public'")
+		.andWhere(`(note."deletedAt" IS NULL)`)
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")

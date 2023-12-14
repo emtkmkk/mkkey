@@ -1,29 +1,12 @@
 <template>
 	<MkStickyContainer>
 		<template #header>
-		  	<template v-if="$i != null && $i.id === user.id">
-			    <MkTab v-model="include" :class="$style.tab">
-				    <option :value="null">{{ i18n.ts.notes }}</option>
-				    <option value="visitor">{{ i18n.ts.showVisitor }}</option>
-				    <option value="replies">{{ i18n.ts.notesAndReplies }}</option>
-				    <option value="files">{{ i18n.ts.withFiles }}</option>
-			    </MkTab>
-			</template>
-			<template v-else-if="$i != null && user.isFollowing">
-		        <MkTab v-model="include" :class="$style.tab">
-				    <option :value="null">{{ i18n.ts.notes }}</option>
-				    <option value="private">{{ i18n.ts.privateOnly }}</option>
-			        <option value="replies">{{ i18n.ts.notesAndReplies }}</option>
-			        <option value="files">{{ i18n.ts.withFiles }}</option>
-			    </MkTab>
-			</template>
-			<template v-else>
-		        <MkTab v-model="include" :class="$style.tab">
-				    <option :value="null">{{ i18n.ts.notes }}</option>
-			        <option value="replies">{{ i18n.ts.notesAndRepliesLong }}</option>
-			        <option value="files">{{ i18n.ts.withFilesLong }}</option>
-			    </MkTab>
-			</template>
+			<MkTab v-model="include" :class="$style.tab">
+				<option :value="null">{{ i18n.ts.notes }}</option>
+				<option value="highlight">{{ i18n.ts.highlight }}</option>
+				<option value="replies">{{ i18n.ts.notesAndRepliesLong }}</option>
+				<option value="files">{{ i18n.ts.withFilesLong }}</option>
+			</MkTab>
 		</template>
 		<XNotes :no-gap="true" :pagination="pagination" />
 	</MkStickyContainer>
@@ -45,7 +28,7 @@ const props = defineProps<{
 const include = ref<string | null>(null);
 
 const pagination = {
-	endpoint: "users/notes" as const,
+	endpoint: include.value != "highlight" ? "users/notes" : "users/featured-notes",
 	limit: 10,
 	params: computed(() => ({
 		userId: props.user.id,

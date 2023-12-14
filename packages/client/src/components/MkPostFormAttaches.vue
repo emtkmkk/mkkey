@@ -160,13 +160,13 @@ export default defineComponent({
 								this.toggleSensitive(file);
 							},
 						},
-						{
+						/*{
 							text: i18n.ts.renameFile,
 							icon: "ph-cursor-text ph-bold ph-lg",
 							action: () => {
 								this.rename(file);
 							},
-						},
+						},*/
 						{
 							text: i18n.ts.attachCancel,
 							icon: "ph-x ph-bold ph-lg",

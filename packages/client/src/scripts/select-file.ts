@@ -111,21 +111,21 @@ function select(
 					icon: "ph-cloud ph-bold ph-lg",
 					action: chooseFileFromDrive,
 				}] : []),
-				{
+				...(!requiredFilename ? [{
 					text: i18n.ts.fromUrl,
 					icon: "ph-link-simple ph-bold ph-lg",
 					action: chooseFileFromUrl,
-				},
+				}] : []),
 				{
 					type: "switch",
 					text: i18n.ts.keepOriginalUploading,
 					ref: keepOriginal,
 				},
-				{
+				...(!requiredFilename ? [{
 					type: "switch",
 					text: i18n.ts.keepFileName,
 					ref: keepFileName,
-				},
+				}] : []),
 			],
 			src,
 		).then(() => {

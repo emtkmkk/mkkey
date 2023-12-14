@@ -64,7 +64,7 @@ export function uploadFile(
 				const { canceled, result: input } = await os.inputText({
 					title: i18n.ts.filenameInput,
 					text: ext ?? ".???",
-					placeholder: (name ? (file.name ? file.name.replace(/\.\w+$/,"") : "") : "") + ext ?? ".???",
+					placeholder: (name || (file.name ? file.name.replace(/\.\w+$/,"") : "")) + (ext ?? ".???"),
 					default: name || (file.name ? file.name.replace(/\.\w+$/,"") : ""),
 				});
 				if (!input || canceled) {

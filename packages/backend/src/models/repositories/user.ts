@@ -646,7 +646,7 @@ export const UserRepository = db.getRepository(User).extend({
 						: null,
 					publicReactions: profile!.publicReactions,
 					ffVisibility: profile!.ffVisibility,
-					isRemoteLocked: user.isRemoteLocked || falsy,
+					isRemoteLocked: !user.isSilentLocked && user.isRemoteLocked || falsy,
 					twoFactorEnabled: profile!.twoFactorEnabled,
 					usePasswordLessLogin: profile!.usePasswordLessLogin,
 					showDonateBadges: profile!.showDonateBadges,

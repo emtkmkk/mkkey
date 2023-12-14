@@ -41,7 +41,7 @@ import { confirm, alert, post, popup, toast, yesno } from "@/os";
 import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i, refreshAccount, login, updateAccount, signout } from "@/account";
-import { defaultStore, ColdDeviceStorage } from "@/store";
+import { defaultStore, ColdDeviceStorage, userActions } from "@/store";
 import { emojiLoad, fetchInstance, fetchEmoji, fetchEmojiStats, fetchPlusEmoji, fetchAllEmoji, fetchAllEmojiNoCache, instance } from "@/instance";
 import { makeHotkey } from "@/scripts/hotkey";
 import { search } from "@/scripts/search";
@@ -638,9 +638,13 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 			}
 		});
 
-		const lastUsed = localStorage.getItem("lastUsed");
+		let lastUsed = localStorage.getItem("lastUsed");
+		if (!lastUsed && $i.lastActiveDate) lastUsed = new Date($i.lastActiveDate).valueOf().toString();
 		if (lastUsed) {
-			const lastUsedDate = parseInt(lastUsed, 10);
+			let lastUsedDate = parseInt(lastUsed, 10);
+			if ($i.lastActiveDate && new Date($i.lastActiveDate).valueOf() > lastUsedDate) {
+				lastUsedDate = new Date($i.lastActiveDate).valueOf();
+			}
 			// 三日前以上前なら
 			if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 72) {
 				toast(

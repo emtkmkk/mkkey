@@ -4,11 +4,11 @@
 			<MkTab v-model="include" :class="$style.tab">
 				<option :value="null">{{ i18n.ts.notes }}</option>
 				<option value="highlight">{{ i18n.ts.highlight }}</option>
-				<option value="replies">{{ i18n.ts.notesAndRepliesLong }}</option>
-				<option value="files">{{ i18n.ts.withFilesLong }}</option>
+				<option value="replies">{{ i18n.ts.notesAndReplies }}</option>
+				<option value="files">{{ i18n.ts.withFiles }}</option>
 			</MkTab>
 		</template>
-		<XNotes :no-gap="true" :pagination="pagination" />
+		<XNotes :key="include" :no-gap="true" :pagination="pagination" />
 	</MkStickyContainer>
 </template>
 

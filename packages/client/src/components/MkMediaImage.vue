@@ -3,8 +3,8 @@
 		<ImgWithBlurhash
 			class="bg"
 			:hash="image.blurhash"
-			:title="image.comment"
-			:alt="image.comment"
+			:title="image.name"
+			:alt="image.comment || image.name"
 			:force-blurhash="defaultStore.state.enableDataSaverMode"
 		/>
 		<div class="text">
@@ -26,9 +26,9 @@
 			<ImgWithBlurhash
 				:hash="image.blurhash"
 				:src="url"
-				:alt="image.comment"
+				:alt="image.comment || image.name"
 				:type="image.type"
-				:title="image.comment"
+				:title="image.name"
 				:cover="defaultStore.state.thumbnailCover"
 			/>
 			<div v-if="image.type === 'image/gif' && !$store.state.compactGrid" class="gif">GIF</div>

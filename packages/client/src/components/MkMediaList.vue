@@ -81,6 +81,7 @@ onMounted(() => {
 					src: media.url,
 					w: media.properties.width,
 					h: media.properties.height,
+					title: media.name,
 					alt: media.comment,
 				};
 				if (
@@ -132,6 +133,7 @@ onMounted(() => {
 		) {
 			[itemData.w, itemData.h] = [itemData.h, itemData.w];
 		}
+		itemData.title = file.name;
 		itemData.msrc = file.thumbnailUrl;
 		itemData.alt = file.comment;
 		itemData.thumbCropped = true;

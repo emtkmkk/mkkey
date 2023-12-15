@@ -54,5 +54,8 @@ export function createAiScriptEnv(opts) {
 				),
 			);
 		}),
+		"Mk:url": values.FN_NATIVE(() => {
+			return values.STR(window.location.href);
+		}),
 	};
 }

@@ -1,6 +1,4 @@
-import { AiScript, utils, values } from "@syuilo/aiscript";
-import { deserialize } from "@syuilo/aiscript/built/serializer";
-import { jsToVal } from "@syuilo/aiscript/built/interpreter/util";
+import { Interpreter, Parser, utils, values } from "@syuilo/aiscript";
 import { createAiScriptEnv } from "@/scripts/aiscript/api";
 import { inputText } from "@/os";
 import {
@@ -11,12 +9,13 @@ import {
 	userActions,
 } from "@/store";
 
-const pluginContexts = new Map<string, AiScript>();
+const parser = new Parser();
+const pluginContexts = new Map<string, Interpreter>();
 
 export function install(plugin) {
 	console.info("Plugin installed:", plugin.name, `v${plugin.version}`);
 
-	const aiscript = new AiScript(
+	const aiscript = new Interpreter(
 		createPluginEnv({
 			plugin: plugin,
 			storageKey: `plugins:${plugin.id}`,
@@ -40,15 +39,15 @@ export function install(plugin) {
 
 	initPlugin({ plugin, aiscript });
 
-	aiscript.exec(deserialize(plugin.ast));
+	aiscript.exec(parser.parse(plugin.src));
 }
 
 function createPluginEnv(opts) {
-	const config = new Map();
-	for (const [k, v] of Object.entries(opts.plugin.config || {})) {
+	const config = new Map<string, values.Value>();
+	for (const [k, v] of Object.entries(opts.plugin.config ?? {})) {
 		config.set(
 			k,
-			jsToVal(
+			utils.jsToVal(
 				typeof opts.plugin.configData[k] !== "undefined"
 					? opts.plugin.configData[k]
 					: v.default,
@@ -108,6 +107,9 @@ function createPluginEnv(opts) {
 		"Plugin:register_note_post_interruptor": values.FN_NATIVE(([handler]) => {
 			registerNotePostInterruptor({ pluginId: opts.plugin.id, handler });
 		}),
+		"Plugin:register_page_view_interruptor": values.FN_NATIVE(([handler]) => {
+			registerPageViewInterruptor({ pluginId: opts.plugin.id, handler });
+		}),
 		"Plugin:open_url": values.FN_NATIVE(([url]) => {
 			window.open(url.value, "_blank");
 		}),
@@ -123,10 +125,17 @@ function registerPostFormAction({ pluginId, title, handler }) {
 	postFormActions.push({
 		title,
 		handler: (form, update) => {
-			pluginContexts.get(pluginId).execFn(handler, [
+			const pluginContext = pluginContexts.get(pluginId);
+			if (!pluginContext) {
+				return;
+			}
+			pluginContext.execFn(handler, [
 				utils.jsToVal(form),
 				values.FN_NATIVE(([key, value]) => {
-					update(key.value, value.value);
+					if (!key || !value) {
+						return;
+					}
+					update(utils.valToJs(key), utils.valToJs(value));
 				}),
 			]);
 		},
@@ -137,7 +146,11 @@ function registerUserAction({ pluginId, title, handler }) {
 	userActions.push({
 		title,
 		handler: (user) => {
-			pluginContexts.get(pluginId).execFn(handler, [utils.jsToVal(user)]);
+			const pluginContext = pluginContexts.get(pluginId);
+			if (!pluginContext) {
+				return;
+			}
+			pluginContext.execFn(handler, [utils.jsToVal(user)]);
 		},
 	});
 }
@@ -146,7 +159,11 @@ function registerNoteAction({ pluginId, title, handler }) {
 	noteActions.push({
 		title,
 		handler: (note) => {
-			pluginContexts.get(pluginId).execFn(handler, [utils.jsToVal(note)]);
+			const pluginContext = pluginContexts.get(pluginId);
+			if (!pluginContext) {
+				return;
+			}
+			pluginContext.execFn(handler, [utils.jsToVal(user)]);
 		},
 	});
 }
@@ -154,10 +171,12 @@ function registerNoteAction({ pluginId, title, handler }) {
 function registerNoteViewInterruptor({ pluginId, handler }) {
 	noteViewInterruptors.push({
 		handler: async (note) => {
+			const pluginContext = pluginContexts.get(pluginId);
+			if (!pluginContext) {
+				return;
+			}
 			return utils.valToJs(
-				await pluginContexts
-					.get(pluginId)
-					.execFn(handler, [utils.jsToVal(note)]),
+				await pluginContext.execFn(handler, [utils.jsToVal(note)]),
 			);
 		},
 	});
@@ -166,10 +185,26 @@ function registerNoteViewInterruptor({ pluginId, handler }) {
 function registerNotePostInterruptor({ pluginId, handler }) {
 	notePostInterruptors.push({
 		handler: async (note) => {
+			const pluginContext = pluginContexts.get(pluginId);
+			if (!pluginContext) {
+				return;
+			}
 			return utils.valToJs(
-				await pluginContexts
-					.get(pluginId)
-					.execFn(handler, [utils.jsToVal(note)]),
+				await pluginContext.execFn(handler, [utils.jsToVal(note)]),
+			);
+		},
+	});
+}
+
+function registerPageViewInterruptor({ pluginId, handler }): void {
+	pageViewInterruptors.push({
+		handler: async (page) => {
+			const pluginContext = pluginContexts.get(pluginId);
+			if (!pluginContext) {
+				return;
+			}
+			return utils.valToJs(
+				await pluginContext.execFn(handler, [utils.jsToVal(page)]),
 			);
 		},
 	});

@@ -19,8 +19,7 @@
 
 <script lang="ts" setup>
 import { defineAsyncComponent, nextTick, ref } from "vue";
-import { AiScript, parse } from "@syuilo/aiscript";
-import { serialize } from "@syuilo/aiscript/built/serializer";
+import { Interpreter, Parser, utils } from "@syuilo/aiscript";
 import { v4 as uuid } from "uuid";
 import FormTextarea from "@/components/form/textarea.vue";
 import FormButton from "@/components/MkButton.vue";
@@ -30,10 +29,20 @@ import { ColdDeviceStorage } from "@/store";
 import { unisonReload } from "@/scripts/unison-reload";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { compareVersions } from "compare-versions";
+import icon from "@/scripts/icon";
 
-const code = ref(null);
+const code = ref<string>();
 
-function installPlugin({ id, meta, ast, token }) {
+function isSupportedVersion(version: string): boolean {
+	try {
+		return compareVersions(version, "0.12.0") >= 0;
+	} catch (err) {
+		return false;
+	}
+}
+
+function installPlugin({ id, meta, src, token }) {
 	ColdDeviceStorage.set(
 		"plugins",
 		ColdDeviceStorage.get("plugins").concat({
@@ -41,16 +50,37 @@ function installPlugin({ id, meta, ast, token }) {
 			id,
 			active: true,
 			configData: {},
-			token: token,
-			ast: ast,
-		})
+			src,
+			token,
+		}),
 	);
 }
 
+const parser = new Parser();
+
 async function install() {
+	if (code.value == null) return;
+
+	const scriptVersion = utils.getLangVersion(code.value);
+
+	if (scriptVersion == null) {
+		os.alert({
+			type: "error",
+			text: "No language version annotation found :(",
+		});
+		return;
+	}
+	if (!isSupportedVersion(scriptVersion)) {
+		os.alert({
+			type: "error",
+			text: `aiscript version '${scriptVersion}' is not supported :(`,
+		});
+		return;
+	}
+
 	let ast;
 	try {
-		ast = parse(code.value);
+		ast = parser.parse(code.value);
 	} catch (err) {
 		const locationStr = err.location?.start
 			? `\nLine ${err.location.start.line} : ${err.location.start.column} (${err.location.start.offset})${err.location.start.offset + 1 === err.location.end.offset ? "" : `\n- Line ${err.location.end.line} : ${err.location.end.column} (${err.location.end.offset})`}`
@@ -62,7 +92,7 @@ async function install() {
 		return;
 	}
 
-	const meta = AiScript.collectMetadata(ast);
+	const meta = Interpreter.collectMetadata(ast);
 	if (meta == null) {
 		os.alert({
 			type: "error",
@@ -85,7 +115,7 @@ async function install() {
 	if (name == null || version == null || author == null) {
 		os.alert({
 			type: "error",
-			text: "Required property not found :(",
+			text: "Required property (name, version, author) not found :(",
 		});
 		return;
 	}
@@ -134,8 +164,8 @@ async function install() {
 			permissions,
 			config,
 		},
+		src: code.value,
 		token,
-		ast: serialize(ast),
 	});
 
 	os.success();

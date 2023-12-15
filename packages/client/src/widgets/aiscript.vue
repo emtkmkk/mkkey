@@ -30,10 +30,12 @@ import { onMounted, onUnmounted, ref, watch } from "vue";
 import { Interpreter, Parser, utils } from "@syuilo/aiscript";
 import {
 	useWidgetPropsManager,
+	Widget,
 	WidgetComponentEmits,
+	WidgetComponentExpose,
 	WidgetComponentProps,
 } from "./widget";
-import type { WidgetComponentExpose } from "./widget";
+import { GetFormResultType } from "@/scripts/form";
 import type { GetFormResultType } from "@/scripts/form";
 import * as os from "@/os";
 import MkContainer from "@/components/MkContainer.vue";
@@ -58,8 +60,11 @@ const widgetPropsDef = {
 
 type WidgetProps = GetFormResultType<typeof widgetPropsDef>;
 
-const props = defineProps<WidgetComponentProps<WidgetProps>>();
-const emit = defineEmits<WidgetComponentEmits<WidgetProps>>();
+// 現時点ではvueの制限によりimportしたtypeをジェネリックに渡せない
+//const props = defineProps<WidgetComponentProps<WidgetProps>>();
+//const emit = defineEmits<WidgetComponentEmits<WidgetProps>>();
+const props = defineProps<{ widget?: Widget<WidgetProps> }>();
+const emit = defineEmits<{ (ev: "updateProps", props: WidgetProps) }>();
 
 const { widgetProps, configure } = useWidgetPropsManager(
 	name,

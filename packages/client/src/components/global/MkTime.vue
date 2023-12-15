@@ -111,7 +111,7 @@ const relativeRawDateOnly = $computed(() => {
 const countdownTime = $computed(() => {
 	if (ago >= 0) return i18n.ts.countdownDone
 	const agoAbs = -ago;
-	return `${agoAbs >= 3600 ? `${~~(agoAbs / 3600)}:` : ""}${agoAbs >= 3600 ? ('00' + ~~(agoAbs / 60)).slice(-2) : (~~(agoAbs / 60) % 60)}:${('00' + ~~(agoAbs % 60)).slice(-2)}`
+	return `${agoAbs >= 3600 ? `${~~(agoAbs / 3600)}:` : ""}${agoAbs >= 3600 ? ('00' + (~~(agoAbs / 60) % 60)).slice(-2) : (~~(agoAbs / 60) % 60)}:${('00' + ~~(agoAbs % 60)).slice(-2)}`
 })
 
 let tickId: number;

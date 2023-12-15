@@ -8,6 +8,9 @@
 		<template v-else-if="mode === 'detail-dateOnly' || mode === 'detail' && dateOnly"
 			>{{ absoluteDateOnly }} ({{ relativeRawDateOnly }})</template
 		>
+		<template v-else-if="mode === 'detail' && countdown && !done"
+			>{{ countdownTime }}</template
+		>
 		<template v-else-if="mode === 'detail'"
 			>{{ absolute }} ({{ relativeRaw }})</template
 		>
@@ -24,10 +27,12 @@ const props = withDefaults(
 		time: Date | string;
 		mode?: "relative" | "absolute" | "detail" | "detail-dateOnly" | "none";
 		dateOnly?: boolean;
+		countdown?: boolean;
 	}>(),
 	{
 		mode: "relative",
 		dateOnly: false,
+		countdown: false,
 	}
 );
 
@@ -39,6 +44,7 @@ const milliseconds = _time.getMilliseconds() ? `.${(`000${_time.getMilliseconds(
 const absoluteDateOnly = Number.isNaN(_time.getTime()) ? props.time : _time.getFullYear() < 0 ? `${-(_time.getFullYear())} B.C.` : _time.toLocaleDateString();
 
 let now = $ref((new Date()));
+let done = $ref(false);
 const ago = $computed(() => (now.getTime() - _time.getTime()) / 1000/*ms*/);
 
 const relative = $computed(() => {
@@ -102,12 +108,18 @@ const relativeRawDateOnly = $computed(() => {
 	return i18n.t("_ago.daysAgo", { n: (~~(ago / 86400)).toString() })
 });
 
+const countdownTime = $computed(() => {
+	if (ago >= 0) return i18n.ts.countdownDone
+	const agoAbs = -ago;
+	return `${agoAbs >= 3600 ? `${~~(agoAbs / 3600)}:` : ""}${agoAbs >= 3600 ? ('00' + ~~(agoAbs / 60)).slice(-2) : ~~(agoAbs / 60)}:${('00' + ~~(agoAbs % 60)).slice(-2)}}`
+})
+
 let tickId: number;
 let currentInterval: number;
 
 function tick() {
 	now = new Date();
-	const nextInterval = ago < 60 ? 10000 : ago < 3600 ? 30000 : 300000;
+	const nextInterval = props.countdown && ago < 0 ? 500 : ago < 60 && ago > -60 ? 10000 : ago < 3600 && ago > -3600 ? 30000 : 300000;
 
 	if (currentInterval !== nextInterval) {
 		if (tickId) window.clearInterval(tickId);
@@ -118,6 +130,7 @@ function tick() {
 
 if (props.mode === "relative" || props.mode === "detail" || props.mode === "detail-dateOnly") {
 	onMounted(() => {
+		if (props.countdown && ago >= 0) done = true;
 		tick();
 	});
 

@@ -87,7 +87,7 @@ export default defineComponent({
 		};
 		const validColor = (t: string | null | undefined) => {
 			if (t == null) return null;
-			return t.match(/^([\da-f]{3}|([\da-f]{2}){2,4})$/) ? t : null;
+			return t.match(/^([\da-f]{3}|([\da-f]{2}){2,4})$/i) ? t : null;
 		};
 
 
@@ -360,6 +360,7 @@ export default defineComponent({
 											key: Math.random(),
 											time: Number.isNaN(unixtime) ? child.type === 'text' ? child.props.text : '？？？' : unixtime * 1000,
 											mode: 'detail',
+											countdown: !!token.props.args.countdown,
 										}),
 									]);
 								}

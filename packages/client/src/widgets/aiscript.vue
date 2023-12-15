@@ -35,7 +35,6 @@ import {
 	WidgetComponentExpose,
 	WidgetComponentProps,
 } from "./widget";
-import { GetFormResultType } from "@/scripts/form";
 import type { GetFormResultType } from "@/scripts/form";
 import * as os from "@/os";
 import MkContainer from "@/components/MkContainer.vue";

@@ -895,7 +895,6 @@ function watchForDraft() {
 	watch($$(files), () => saveDraft(), { deep: true });
 	watch($$(visibility), () => saveDraft());
 	watch($$(localOnly), () => saveDraft());
-	watch($$(visibleUsers), () => saveDraft());
 }
 
 function checkIncludesOtherServerEmoji() {
@@ -917,7 +916,7 @@ function checkMissingMention() {
 		for (const x of extractMentions(ast)) {
 			if (
 				!visibleUsers.some(
-					(u) => u.username === x.username && u.host === x.host
+					(u) => u.username === x.username && (!x.host || u.host === x.host)
 				)
 			) {
 				hasNotSpecifiedMentions = true;
@@ -933,6 +932,7 @@ function addMissingMention() {
 		os.api("users/show", { userId: props.reply.userId }).then(
 			(user) => {
 				pushVisibleUser(user);
+				saveDraft();
 			}
 		);
 	}
@@ -948,6 +948,7 @@ function addMissingMention() {
 			os.api("users/show", { username: x.username, host: x.host }).then(
 				(user) => {
 					visibleUsers.push(user);
+					saveDraft();
 				}
 			);
 		}
@@ -1085,10 +1086,11 @@ function setVisibility() {
 function pushVisibleUser(user) {
 	if (
 		!visibleUsers.some(
-			(u) => u.username === user.username && u.host === user.host
+			(u) => u.username === user.username && (!user.host || u.host === user.host)
 		)
 	) {
 		visibleUsers.push(user);
+		saveDraft();
 	}
 }
 

@@ -174,12 +174,12 @@ export default define(meta, paramDef, async (ps, user) => {
 
 		query.andWhere('note.userId IN (:...meOrfollowingNetworks)', { meOrfollowingNetworks: meOrfollowingNetworks })
 			.andWhere(new Brackets(qb => {
-				qb.where(`(note.score > :globalScore) `, { globalScore: globalScore })
-					.orWhere(`(note.userHost IS NULL) AND (note.score > :localScore)`, { localScore: localScore })
+				qb.where(`(note.score > :globalScore) AND (user.isExplorable = TRUE)`, { globalScore: globalScore })
+					.orWhere(`(note.userHost IS NULL) AND (note.score > :localScore) AND (user.isExplorable = TRUE)`, { localScore: localScore })
 					.orWhere(`(note.score > :followeeScore) AND (note.userId IN (:...meOrFolloweeIds))`, { meOrFolloweeIds: meOrFolloweeIds, followeeScore: followeeScore });
 			}));
 	} else {
-		query.andWhere(`(note.userHost IS NULL) AND (note.score > 90)`);
+		query.andWhere(`(note.userHost IS NULL) AND (note.score > 90) AND (user.isExplorable = TRUE)`);
 	}
 
 	if (ps.withFiles) {

@@ -46,6 +46,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		.andWhere("note.createdAt > :date", { date: new Date(Date.now() - day) })
 		.andWhere("note.visibility = 'public'")
 		.andWhere(`(note."deletedAt" IS NULL)`)
+		.andWhere("user.isExplorable = TRUE")
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")

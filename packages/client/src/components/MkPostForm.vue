@@ -895,10 +895,11 @@ function watchForDraft() {
 	watch($$(files), () => saveDraft(), { deep: true });
 	watch($$(visibility), () => saveDraft());
 	watch($$(localOnly), () => saveDraft());
+	watch($$(visibleUsers), () => saveDraft());
 }
 
 function checkIncludesOtherServerEmoji() {
-	if(/:[a-z0-9_+-]+(@[a-z0-9_+-.]+):/.test(text)) {
+	if(text?.includes(":") && /:[a-z0-9_+-]+(@[a-z0-9_+-.]+):/.test(text)) {
 		includesOtherServerEmoji = true
 	} else {
 		includesOtherServerEmoji = false
@@ -907,6 +908,10 @@ function checkIncludesOtherServerEmoji() {
 
 function checkMissingMention() {
 	if (visibility === "specified") {
+		if (props.reply && props.reply.userId !== $i.id && !visibleUsers.some((u) => u.id === props.reply.user.id)) {
+			hasNotSpecifiedMentions = true;
+			return;
+		}
 		const ast = mfm.parse(text);
 
 		for (const x of extractMentions(ast)) {
@@ -924,6 +929,14 @@ function checkMissingMention() {
 }
 
 function addMissingMention() {
+	if (props.reply && props.reply.userId !== $i.id && !visibleUsers.some((u) => u.id === props.reply.user.id)) {
+		os.api("users/show", { userId: props.reply.userId }).then(
+			(user) => {
+				pushVisibleUser(user);
+			}
+		);
+	}
+
 	const ast = mfm.parse(text);
 
 	for (const x of extractMentions(ast)) {
@@ -1293,6 +1306,7 @@ function saveDraft() {
 			localOnly: localOnly,
 			files: files,
 			poll: poll,
+			visibilityUserId: visibleUsers.map((u) => u.id),
 		},
 	};
 
@@ -1600,6 +1614,11 @@ onMounted(() => {
 				files = (draft.data.files || []).filter(
 					(draftFile) => draftFile
 				);
+				draft.data.visibilityUserId.forEach((x) => os.api("users/show", { userId: x }).then(
+					(user) => {
+						pushVisibleUser(user);
+					}
+				));
 				if (draft.data.poll) {
 					poll = draft.data.poll;
 				}
@@ -1622,6 +1641,11 @@ onMounted(() => {
 				};
 			}
 			visibility = init.visibility;
+			init.visibilityUserId.forEach((x) => os.api("users/show", { userId: x }).then(
+				(user) => {
+					pushVisibleUser(user);
+				}
+			));
 			localOnly = init.localOnly;
 			quoteId = init.renote ? init.renote.id : null;
 		}

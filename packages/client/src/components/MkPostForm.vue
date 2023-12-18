@@ -931,8 +931,7 @@ function addMissingMention() {
 	if (props.reply && props.reply.userId !== $i.id && !visibleUsers.some((u) => u.id === props.reply.user.id)) {
 		os.api("users/show", { userId: props.reply.userId }).then(
 			(user) => {
-				visibleUsers.push(user);
-				saveDraft();
+				pushVisibleUser(user);
 			}
 		);
 	}
@@ -947,8 +946,7 @@ function addMissingMention() {
 		) {
 			os.api("users/show", { username: x.username, host: x.host }).then(
 				(user) => {
-					visibleUsers.push(user);
-					saveDraft();
+					pushVisibleUser(user);
 				}
 			);
 		}
@@ -1060,10 +1058,7 @@ function setVisibility() {
 		{
 			changeVisibility: (v) => {
 				visibility = v;
-				if (v === "specified"){
-					localOnly = false;
-					addMissingMention();
-				}
+				specifiedCheck();
 				if (defaultStore.state.rememberNoteVisibility) {
 					defaultStore.set("visibility", visibility);
 				}

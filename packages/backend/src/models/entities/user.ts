@@ -181,6 +181,12 @@ export class User {
 	})
 	public isExplorable: boolean;
 
+	@Index()
+	@Column('boolean', {
+		default: true,
+	})
+	public isRemoteExplorable: boolean;
+
 	// アカウントが削除されたかどうかのフラグだが、完全に削除される際は物理削除なので実質削除されるまでの「削除が進行しているかどうか」のフラグ
 	@Column('boolean', {
 		default: false,

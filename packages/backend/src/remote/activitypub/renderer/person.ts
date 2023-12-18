@@ -79,7 +79,7 @@ export async function renderPerson(user: ILocalUser) {
 		image: banner ? renderImage(banner) : null,
 		tag,
 		manuallyApprovesFollowers: !user.isSilentLocked && (user.isLocked || user.blockPostNotLocal || user.isRemoteLocked),
-		discoverable: !!user.isExplorable,
+		discoverable: !!user.isRemoteExplorable && !!user.isExplorable,
 		publicKey: renderKey(user, keypair, "#main-key"),
 		isCat: user.isCat,
 		attachment: attachment.length ? attachment : undefined,

@@ -97,6 +97,7 @@ export const paramDef = {
 		},
 		isLocked: { type: "boolean" },
 		isExplorable: { type: "boolean" },
+		isRemoteExplorable: { type: "boolean" },
 		hideOnlineStatus: { type: "boolean" },
 		publicReactions: { type: "boolean" },
 		carefulBot: { type: "boolean" },
@@ -201,6 +202,8 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	if (typeof ps.isLocked === "boolean") updates.isLocked = ps.isLocked;
 	if (typeof ps.isExplorable === "boolean")
 		updates.isExplorable = ps.isExplorable;
+	if (typeof ps.isRemoteExplorable === "boolean")
+		updates.isRemoteExplorable = ps.isRemoteExplorable;
 	if (typeof ps.hideOnlineStatus === "boolean")
 		updates.hideOnlineStatus = ps.hideOnlineStatus;
 	if (typeof ps.publicReactions === "boolean")

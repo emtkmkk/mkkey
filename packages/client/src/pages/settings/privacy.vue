@@ -125,6 +125,17 @@
 				i18n.ts.makeExplorableDescription
 			}}</template>
 		</FormSwitch>
+		<FormSwitch
+			v-model="isRemoteBlockExplorable"
+			v-if="isExplorable"
+			class="_formBlock"
+			@update:modelValue="save()"
+		>
+			{{ i18n.ts.makeNotExplorableRemote }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>
+			<template #caption>{{
+				i18n.ts.makeNotExplorableRemoteDescription
+			}}</template>
+		</FormSwitch>
 
 		<FormSection>
 			<FormSwitch
@@ -462,6 +473,7 @@ let blockPostNotLocalPublic = $ref($i.blockPostNotLocalPublic);
 let autoAcceptFollowed = $ref($i.autoAcceptFollowed);
 let noCrawle = $ref($i.noCrawle);
 let isExplorable = $ref($i.isExplorable);
+let isRemoteBlockExplorable = $ref(!$i.isRemoteExplorable);
 let hideOnlineStatus = $ref($i.hideOnlineStatus);
 let publicReactions = $ref($i.publicReactions);
 let ffVisibility = $ref($i.ffVisibility);
@@ -540,6 +552,7 @@ function save() {
 		blockPostNotLocalPublic: !!blockPostNotLocalPublic,
 		noCrawle: !!noCrawle,
 		isExplorable: !!isExplorable,
+		isRemoteExplorable: !isRemoteBlockExplorable,
 		publicReactions: !!publicReactions,
 		preventAiLearning: !!preventAiLearning,
 		ffVisibility: ffVisibility,

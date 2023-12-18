@@ -1306,7 +1306,7 @@ function saveDraft() {
 			localOnly: localOnly,
 			files: files,
 			poll: poll,
-			visibilityUserId: visibleUsers.map((u) => u.id),
+			visibleUserIds: visibleUsers.map((u) => u.id),
 		},
 	};
 
@@ -1321,11 +1321,19 @@ function deleteDraft() {
 	localStorage.setItem("drafts", JSON.stringify(draftData));
 }
 
+function specifiedCheck() {
+	if (visibility === "specified"){
+		localOnly = false;
+		addMissingMention();
+	}
+}
+
 async function postFirst() {
 	if (defaultStore.state.firstPostButtonVisibilityForce) {
 		visibility = defaultStore.state.defaultNoteVisibility;
 		localOnly = defaultStore.state.defaultNoteLocalAndFollower;
 	}
+	specifiedCheck();
 	if (canPost && visibility !== 'specified') {
 		post();
 	}
@@ -1339,6 +1347,7 @@ async function postSecond() {
 		localOnly = false;
 		visibility = defaultStore.state.secondPostVisibility;
 	}
+	specifiedCheck();
 	if (canPost && visibility !== 'specified') {
 		post();
 	}
@@ -1356,6 +1365,7 @@ async function postThird() {
 		localOnly = false;
 		visibility = defaultStore.state.thirdPostVisibility;
 	}
+	specifiedCheck();
 	if (canPost && visibility !== 'specified') {
 		post();
 	}
@@ -1369,6 +1379,7 @@ async function postFourth() {
 		localOnly = false;
 		visibility = defaultStore.state.fourthPostVisibility;
 	}
+	specifiedCheck();
 	if (canPost && visibility !== 'specified') {
 		post();
 	}
@@ -1382,6 +1393,7 @@ async function postFifth() {
 		localOnly = false;
 		visibility = defaultStore.state.fifthPostVisibility;
 	}
+	specifiedCheck();
 	if (canPost && visibility !== 'specified') {
 		post();
 	}
@@ -1614,7 +1626,7 @@ onMounted(() => {
 				files = (draft.data.files || []).filter(
 					(draftFile) => draftFile
 				);
-				draft.data.visibilityUserId.forEach((x) => os.api("users/show", { userId: x }).then(
+				draft.data.visibleUserIds.forEach((x) => os.api("users/show", { userId: x }).then(
 					(user) => {
 						pushVisibleUser(user);
 					}
@@ -1641,7 +1653,7 @@ onMounted(() => {
 				};
 			}
 			visibility = init.visibility;
-			init.visibilityUserId.forEach((x) => os.api("users/show", { userId: x }).then(
+			init.visibleUserIds.forEach((x) => os.api("users/show", { userId: x }).then(
 				(user) => {
 					pushVisibleUser(user);
 				}

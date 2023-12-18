@@ -323,6 +323,9 @@
 						<button v-if="u.id !== reply?.userId" class="_button" @click="removeVisibleUser(u)">
 							<i class="ph-x ph-bold ph-lg"></i>
 						</button>
+						<button v-else class="_button">
+							<i class="ph-arrow-bend-left-up ph-bold ph-lg"></i>
+						</button>
 					</span>
 					<button class="_button" @click="addVisibleUser">
 						<i class="ph-plus ph-bold ph-md ph-fw ph-lg"></i>

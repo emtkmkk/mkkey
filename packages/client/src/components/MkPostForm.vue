@@ -1626,7 +1626,7 @@ onMounted(() => {
 				files = (draft.data.files || []).filter(
 					(draftFile) => draftFile
 				);
-				draft.data.visibleUserIds.forEach((x) => os.api("users/show", { userId: x }).then(
+				draft.data.visibleUserIds?.forEach((x) => os.api("users/show", { userId: x }).then(
 					(user) => {
 						pushVisibleUser(user);
 					}
@@ -1653,7 +1653,7 @@ onMounted(() => {
 				};
 			}
 			visibility = init.visibility;
-			init.visibleUserIds.forEach((x) => os.api("users/show", { userId: x }).then(
+			init.visibleUserIds?.forEach((x) => os.api("users/show", { userId: x }).then(
 				(user) => {
 					pushVisibleUser(user);
 				}

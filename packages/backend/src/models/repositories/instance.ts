@@ -20,6 +20,8 @@ export const InstanceRepository = db.getRepository(Instance).extend({
 			latestRequestSentAt: instance.latestRequestSentAt
 				? instance.latestRequestSentAt.toISOString()
 				: null,
+			latestStatus: instance.latestStatus,
+			latestRequestReceivedAt: instance.latestRequestReceivedAt,
 			lastCommunicatedAt: instance.lastCommunicatedAt.toISOString(),
 			isNotResponding: instance.isNotResponding,
 			isSuspended: instance.isSuspended,

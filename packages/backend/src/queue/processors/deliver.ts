@@ -58,6 +58,13 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 				isNotResponding: true,
 			});
 
+			if (res instanceof StatusError && typeof res.statusCode === "number" && res.statusCode === 410) {
+				// Goneが返された場合、以降の配送をストップします
+				Instances.update(i.id, {
+					isSuspended: true,
+				});
+			}
+
 			instanceChart.requestSent(i.host, false);
 			apRequestChart.deliverFail();
 			federationChart.deliverd(i.host, false);

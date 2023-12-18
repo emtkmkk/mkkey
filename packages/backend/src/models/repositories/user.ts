@@ -700,6 +700,7 @@ export const UserRepository = db.getRepository(User).extend({
 					noCrawle: profile!.noCrawle,
 					preventAiLearning: profile!.preventAiLearning,
 					isExplorable: user.isExplorable,
+					isRemoteExplorable: user.isRemoteExplorable,
 					isDeleted: user.isDeleted,
 					hideOnlineStatus: user.hideOnlineStatus,
 					hasUnreadSpecifiedNotes: NoteUnreads.count({

@@ -931,7 +931,7 @@ function addMissingMention() {
 	if (props.reply && props.reply.userId !== $i.id && !visibleUsers.some((u) => u.id === props.reply.user.id)) {
 		os.api("users/show", { userId: props.reply.userId }).then(
 			(user) => {
-				pushVisibleUser(user);
+				visibleUsers.push(user);
 				saveDraft();
 			}
 		);

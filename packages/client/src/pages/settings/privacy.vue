@@ -131,7 +131,7 @@
 			class="_formBlock"
 			@update:modelValue="save()"
 		>
-			{{ i18n.ts.makeNotExplorableRemote }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>
+			{{ i18n.ts.makeNotExplorableRemote }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
 			<template #caption>{{
 				i18n.ts.makeNotExplorableRemoteDescription
 			}}</template>

@@ -320,7 +320,7 @@
 				<div class="visibleUsers">
 					<span v-for="u in visibleUsers" :key="u.id">
 						<MkAcct :user="u" />
-						<button class="_button" @click="removeVisibleUser(u)">
+						<button v-if="u.id !== reply?.userId" class="_button" @click="removeVisibleUser(u)">
 							<i class="ph-x ph-bold ph-lg"></i>
 						</button>
 					</span>

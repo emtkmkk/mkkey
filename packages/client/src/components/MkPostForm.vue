@@ -942,7 +942,7 @@ function addMissingMention() {
 	for (const x of extractMentions(ast)) {
 		if (
 			!visibleUsers.some(
-				(u) => u.username === x.username && u.host === x.host
+				(u) => u.username === x.username && (!x.host || u.host === x.host)
 			)
 		) {
 			os.api("users/show", { username: x.username, host: x.host }).then(
@@ -1306,7 +1306,7 @@ function saveDraft() {
 			localOnly: localOnly,
 			files: files,
 			poll: poll,
-			visibleUserIds: visibleUsers.map((u) => u.id),
+			visibleUserIds: visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
 		},
 	};
 

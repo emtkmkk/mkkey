@@ -1331,7 +1331,7 @@ function saveDraft(key?, name?) {
 			files: files,
 			poll: poll,
 			visibleUserIds: visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
-			quoteId: props.renote ? props.renote.id : props.reply ? props.reply.id : null,
+			quoteId: quoteId ? quoteId : props.renote ? props.renote.id : props.reply ? props.reply.id : null,
 		},
 	};
 
@@ -1635,7 +1635,7 @@ function loadDraft(key?) {
 			if (draft.data.poll) {
 				poll = draft.data.poll;
 			}
-			if (draft.data.quoteId) {
+			if (draft.data.quoteId && (!props.reply || props.reply.id !== draft.data.quoteId) && (!props.renote || props.renote.id !== draft.data.quoteId)) {
 				quoteId = draft.data.quoteId;
 			}
 		} else {

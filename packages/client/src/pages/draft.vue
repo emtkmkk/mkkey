@@ -10,22 +10,22 @@
 			<template #label>{{ ts._drafts.list }}</template>
 			<template v-if="drafts && Object.keys(drafts).length > 0">
 				<div
-					v-for="(draft, key) in drafts"
-					:key="key"
+					v-for="draft in drafts"
+					:key="draft.key"
 					class="_formBlock _panel"
 					:class="$style.draft"
-					@click="($event) => menu($event, key)"
-					@contextmenu.prevent.stop="($event) => menu($event, key)"
+					@click="($event) => menu($event, draft.key)"
+					@contextmenu.prevent.stop="($event) => menu($event, draft.key)"
 				>
-					<div :class="$style.draftName">{{ draft.name || convertName(key) }}</div>
+					<div :class="$style.draftName">{{ draft.value.name || convertName(draft.key) }}</div>
 					<div :class="$style.draftText">
 						{{
-							`${draft.data.useCw ? `${draft.data.cw || "CW"} / ` : ""}${draft.data.text || ts._drafts.noText}`
+							`${draft.value.data.useCw ? `${draft.value.data.cw || "CW"} / ` : ""}${draft.value.data.text || ts._drafts.noText}`
 						}}
 					</div>
-					<div v-if="draft.data.files?.length || draft.data.poll || draft.data.quoteId" :class="$style.draftText">
+					<div v-if="draft.value.data.files?.length || draft.value.data.poll || draft.value.data.quoteId" :class="$style.draftText">
 						{{
-							`${draft.data.quoteId ? ts._drafts.quote : ""}${draft.data.poll ? ts._drafts.poll : ""}${draft.data.files?.length ? `${i18n.t("_drafts.files", { count: draft.data.files?.length })} ` : ""}`
+							`${draft.value.data.quoteId ? ts._drafts.quote : ""}${draft.value.data.poll ? ts._drafts.poll : ""}${draft.value.data.files?.length ? `${i18n.t("_drafts.files", { count: draft.value.data.files?.length })} ` : ""}`
 						}}
 					</div>
 				</div>
@@ -122,7 +122,7 @@ function convertName(draftKey: string): string {
 
 async function saveNew() {
 	const { canceled, result: name } = await os.inputText({
-		title: ts._draft.inputName,
+		title: ts._drafts.inputName,
 	});
 	if (canceled) return;
 	emit("save",{canceled:false,key:`manual:${uuid()?.slice(0, 8)}`,name})

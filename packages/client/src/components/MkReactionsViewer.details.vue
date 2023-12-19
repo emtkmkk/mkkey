@@ -22,8 +22,8 @@
 					<MkUserName v-if="!$store.state.reactionShowUsername" class="name" :user="u" :maxlength="$store.state.reactionShowShort ? 8 : 0" :nowrap="true" :hostIcon="u.instance?.faviconUrl || u.instance?.iconUrl || u.host" :altIcon="u.instance?.iconUrl"/>
 					<MkAcct v-if="$store.state.reactionShowUsername" class="name" :user="u" :maxlength="$store.state.reactionShowShort ? 8 : 0" />
 				</div>
-				<div v-if="users.length > 10" class="omitted">
-					+{{ count - 10 }}
+				<div v-if="count - users.length > 0" class="omitted">
+					+{{ count - users.length }}
 				</div>
 			</div>
 		</div>

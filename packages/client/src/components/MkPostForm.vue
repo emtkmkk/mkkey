@@ -317,10 +317,10 @@
 			<XNoteSimple v-if="renote" class="preview" :note="renote" />
 			<div v-if="quoteId" class="with-quote">
 				<i class="ph-quotes ph-bold ph-lg"></i>
-				<span @click="() => {
+				<button @click="() => {
 					os.pageWindow(`/notes/${quoteId}`);
 				}">{{ `${i18n.ts.quoteAttached} ${quoteId}`
-				}}</span><button class="_button" @click="quoteId = null">
+				}}</button><button class="_button" @click="quoteId = null">
 					<i class="ph-x ph-bold ph-lg"></i>
 				</button>
 			</div>

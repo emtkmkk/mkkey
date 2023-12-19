@@ -58,7 +58,8 @@
 				</button>
 				<button
 					v-tooltip="i18n.ts._drafts.title"
-					class="_button preview"
+					class="_button visibility"
+					:class="{ addblank: $store.state.hiddenMFMHelp }"
 					@click="openDraft"
 				>
 					<i class="ph-notepad ph-bold ph-lg"></i>

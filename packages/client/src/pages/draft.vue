@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" :class="$style.root">
 		<div :class="$style.buttons">
 			<MkButton inline primary @click="saveNew">{{
 				ts._drafts.saveNew
@@ -62,7 +62,7 @@ const emit = defineEmits<{
 let jsonParse = $ref(JSON.parse(localStorage.getItem("drafts") || "{}"));
 
 let drafts = $computed(() => {
-	return Object.keys(jsonParse).map((x) => { 
+	return Object.keys(jsonParse.filter((x) => (x.data.text || (x.data.useCw && x.data.cw) || x.data.files?.length || x.data.poll))).map((x) => { 
 	return {key:x, value:jsonParse[x]}; 
 }).sort((a, b) => {
 	function sortNo(draftKey) {
@@ -70,11 +70,13 @@ let drafts = $computed(() => {
 		if (_draftKey.length !== 2) return 1
 		switch (_draftKey[0]) {
 			case 'renote':
-				return 5;
-			case 'reply':
-				return 4;
-			case 'note':
 				return 6;
+			case 'reply':
+				return 5;
+			case 'note':
+				return 7;
+			case 'channel':
+				return 4;
 			case 'edit':
 				return 3;
 			case 'auto':
@@ -117,6 +119,8 @@ function convertName(draftKey: string): string {
 			return `${ts._drafts.auto}${updatedAt}`
 		case 'manual':
 			return `${ts._drafts.manual}${updatedAt}`
+		case 'channel':
+			return `${ts._drafts.channel}${updatedAt}`
 		default:
 			return `${updatedAt}`
 	}
@@ -137,6 +141,7 @@ function load(key: string) {
 
 function deleteDraft(key: string) {
 	emit("delete",{canceled:false,key})
+	jsonParse = JSON.parse(localStorage.getItem("drafts") || "{}");
 }
 
 function menu(ev: MouseEvent, draftKey: string) {
@@ -182,7 +187,7 @@ definePageMetadata(
 </script>
 
 <style lang="scss" module>
-._formRoot {
+.root {
 	background: var(--bg);
 }
 .buttons {

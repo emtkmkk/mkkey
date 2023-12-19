@@ -1704,6 +1704,7 @@ _drafts:
   edit: "編集:"
   manual: "手動:"
   normal: "通常:"
+  channel: "チャンネル:"
 _profile:
   name: "名前"
   username: "ユーザー名"

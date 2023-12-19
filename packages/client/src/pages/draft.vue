@@ -189,6 +189,7 @@ definePageMetadata(
 <style lang="scss" module>
 .root {
 	background: var(--bg);
+	padding: 10px;
 }
 .buttons {
 	display: flex;
@@ -198,6 +199,7 @@ definePageMetadata(
 
 .draft {
 	padding: 20px;
+	margin: 5px 0;
 	cursor: pointer;
 
 	&Name {

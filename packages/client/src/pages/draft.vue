@@ -158,7 +158,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 						type: "application/json",
 					})
 				),
-				download: `${drafts[draftKey].name || draftKey}.json`,
+				download: `${jsonParse[draftKey].name || draftKey}.json`,
 			} as MenuItem] : []),
 			null,
 			{

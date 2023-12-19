@@ -59,9 +59,10 @@ const emit = defineEmits<{
 	(ev: "closed"): void;
 }>();
 
-let jsonParse = JSON.parse(localStorage.getItem("drafts") || "{}");
+let jsonParse = $ref(JSON.parse(localStorage.getItem("drafts") || "{}"));
 
-let drafts = Object.keys(jsonParse).map((x) => { 
+let drafts = $computed(() => {
+	return Object.keys(jsonParse).map((x) => { 
 	return {key:x, value:jsonParse[x]}; 
 }).sort((a, b) => {
 	function sortNo(draftKey) {
@@ -94,13 +95,14 @@ let drafts = Object.keys(jsonParse).map((x) => {
 		return sortNo(a.key) - sortNo(b.key);
 	}
 })
+});
 
 useCssModule();
 
 function convertName(draftKey: string): string {
 	if (!drafts[draftKey]) return "";
 	const _draftKey = draftKey.split(":");
-	const updatedAt = new Date(drafts[draftKey].updatedAt).toLocaleString()
+	const updatedAt = new Date(drafts[draftKey].value.updatedAt).toLocaleString()
 	if (_draftKey.length !== 2) return `${ts._drafts.normal}${updatedAt}`
 	switch (_draftKey[0]) {
 		case 'renote':
@@ -126,6 +128,7 @@ async function saveNew() {
 	});
 	if (canceled) return;
 	emit("save",{canceled:false,key:`manual:${uuid()?.slice(0, 8)}`,name})
+	jsonParse = JSON.parse(localStorage.getItem("drafts") || "{}");
 }
 
 function load(key: string) {

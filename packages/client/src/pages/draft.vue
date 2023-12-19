@@ -59,7 +59,7 @@ const emit = defineEmits<{
 	(ev: "closed"): void;
 }>();
 
-let jsonParse = $ref(JSON.parse(localStorage.getItem("drafts") || "{}").filter((x) => (x.data.text || (x.data.useCw && x.data.cw) || x.data.files?.length || x.data.poll)));
+let jsonParse = $ref(JSON.parse(localStorage.getItem("drafts") || "{}"));
 
 let drafts = $computed(() => {
 	return Object.keys(jsonParse).map((x) => { 
@@ -132,7 +132,7 @@ async function saveNew() {
 	});
 	if (canceled) return;
 	emit("save",{canceled:false,key:`manual:${uuid()?.slice(0, 8)}`,name})
-	jsonParse = JSON.parse(localStorage.getItem("drafts") || "{}").filter((x) => (x.data.text || (x.data.useCw && x.data.cw) || x.data.files?.length || x.data.poll));
+	jsonParse = JSON.parse(localStorage.getItem("drafts") || "{}");
 }
 
 function load(key: string) {
@@ -141,7 +141,7 @@ function load(key: string) {
 
 function deleteDraft(key: string) {
 	emit("delete",{canceled:false,key})
-	jsonParse = JSON.parse(localStorage.getItem("drafts") || "{}").filter((x) => (x.data.text || (x.data.useCw && x.data.cw) || x.data.files?.length || x.data.poll));
+	jsonParse = JSON.parse(localStorage.getItem("drafts") || "{}");
 }
 
 function menu(ev: MouseEvent, draftKey: string) {

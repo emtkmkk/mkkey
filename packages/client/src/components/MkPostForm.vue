@@ -57,7 +57,6 @@
 					></span>
 				</button>
 				<button
-					v-tooltip="i18n.ts._drafts.title"
 					class="_button visibility"
 					:class="{ addblank: $store.state.hiddenMFMHelp }"
 					@click="openDraft"

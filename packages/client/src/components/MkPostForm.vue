@@ -39,7 +39,7 @@
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
-					:class="{ addblank: $store.state.hiddenMFMHelp }"
+					:class="{ addblank: $store.state.hiddenMFMHelp && false }"
 					:disabled="!canFollower"
 					@click="setVisibility"
 				>
@@ -55,6 +55,13 @@
 					<span v-if="visibility === 'specified'"
 						><i class="ph-envelope-simple-open ph-bold ph-lg"></i
 					></span>
+				</button>
+				<button
+					v-tooltip="i18n.ts._draft.title"
+					class="_button preview"
+					@click="openDraft"
+				>
+					<i class="ph-notepad ph-bold ph-lg"></i>
 				</button>
 				<button
 					v-if="!$store.state.hiddenMFMHelp"
@@ -165,7 +172,7 @@
 											: $store.state.fourthPostVisibility === 'followers'
 												? followerIcon
 												: 'ph-envelope-simple-open ph-bold ph-lg'
-						, $store.state.fourthhPostWideButton ? 'widePostButton' : '']"
+						, $store.state.fourthPostWideButton ? 'widePostButton' : '']"
 					></i>
 				</button>
 				<button
@@ -310,8 +317,10 @@
 			<XNoteSimple v-if="renote" class="preview" :note="renote" />
 			<div v-if="quoteId" class="with-quote">
 				<i class="ph-quotes ph-bold ph-lg"></i>
-				{{ i18n.ts.quoteAttached
-				}}<button class="_button" @click="quoteId = null">
+				<span @click="() => {
+					os.pageWindow(`/notes/${quoteId}`);
+				}">{{ `${i18n.ts.quoteAttached} ${quoteId}`
+				}}</span><button class="_button" @click="quoteId = null">
 					<i class="ph-x ph-bold ph-lg"></i>
 				</button>
 			</div>
@@ -480,6 +489,7 @@ import { length } from "stringz";
 import { toASCII } from "punycode/";
 import * as Acct from "calckey-js/built/acct";
 import { throttle } from "throttle-debounce";
+import { v4 as uuid } from "uuid";
 import XNoteSimple from "@/components/MkNoteSimple.vue";
 import XNotePreview from "@/components/MkNotePreview.vue";
 import XPostFormAttaches from "@/components/MkPostFormAttaches.vue";
@@ -496,6 +506,7 @@ import { defaultStore, notePostInterruptors, postFormActions } from "@/store";
 import MkInfo from "@/components/MkInfo.vue";
 import { i18n } from "@/i18n";
 import { instance } from "@/instance";
+import { notePage } from "@/filters/note";
 import {
 	$i,
 	getAccounts,
@@ -503,6 +514,7 @@ import {
 } from "@/account";
 import { uploadFile } from "@/scripts/upload";
 import { deepClone } from "@/scripts/clone";
+import XDraft from "@/components/MkDraftDialog.vue";
 import XCheatSheet from "@/components/MkCheatSheetDialog.vue";
 import { preprocess } from "@/scripts/preprocess";
 
@@ -672,6 +684,8 @@ const draftKey = $computed((): string => {
 		key += `reply:${props.reply.id}`;
 	} else if (props.airReply) {
 		key += `note:${props.airReply.id}`;
+	} else if (props.initialNote) {
+		key += `edit:${props.initialNote.id}`;
 	} else {
 		key += "note";
 		if (props.key) key += `:${props.key}`;
@@ -1293,11 +1307,20 @@ function onDrop(ev): void {
 	//#endregion
 }
 
-function saveDraft() {
+function saveDraft(key?, name?) {
+
+	if (!(text || (useCw && cw) || files?.length || poll)) {
+		if(!key){
+			deleteDraft(key);
+		}
+		return
+	}
+
 	const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
 
-	draftData[draftKey] = {
+	draftData[key ? key : draftKey] = {
 		updatedAt: new Date(),
+		name: name ? name : undefined,
 		data: {
 			text: text,
 			useCw: useCw,
@@ -1307,16 +1330,17 @@ function saveDraft() {
 			files: files,
 			poll: poll,
 			visibleUserIds: visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
+			quoteId: props.renote ? props.renote.id : props.reply ? props.reply.id : null,
 		},
 	};
 
 	localStorage.setItem("drafts", JSON.stringify(draftData));
 }
 
-function deleteDraft() {
+function deleteDraft(key?) {
 	const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
 
-	delete draftData[draftKey];
+	delete draftData[key ? key : draftKey];
 
 	localStorage.setItem("drafts", JSON.stringify(draftData));
 }
@@ -1556,6 +1580,63 @@ async function openCheatSheet(ev: MouseEvent) {
 	os.popup(XCheatSheet, {}, {}, "closed");
 }
 
+async function openDraft(ev: MouseEvent) {
+	os.popup(
+		XDraft, 
+		{},
+		{
+			done: (result) => {
+				if (!result || result.canceled) return;
+			},
+			load: (result) => {
+				if (!result || result.canceled) return;
+				saveDraft(`auto:${uuid()?.slice(0, 8)}`,result.name);
+				loadDraft(result.key);
+				deleteDraft(result.key);
+			},
+			save: (result) => {
+				if (!result || result.canceled) return;
+				saveDraft(result.key,result.name);
+			},
+			delete: (result) => {
+				if (!result || result.canceled) return;
+				deleteDraft(result.key);
+			},
+		},
+		"closed");
+}
+
+function loadDraft(key?) {
+	const draft = JSON.parse(localStorage.getItem("drafts") || "{}")[
+		key ? key : draftKey
+	];
+	if (draft) {
+		if ((draft.data.text || (draft.data.useCw && draft.data.cw) || draft.data.files?.length || draft.data.poll)) {
+			text = draft.data.text;
+			useCw = draft.data.useCw;
+			if (useCw) cw = draft.data.cw;
+			visibility = draft.data.visibility;
+			localOnly = draft.data.localOnly;
+			files = (draft.data.files || []).filter(
+				(draftFile) => draftFile
+			);
+			draft.data.visibleUserIds?.forEach((x) => os.api("users/show", { userId: x }).then(
+				(user) => {
+					pushVisibleUser(user);
+				}
+			));
+			if (draft.data.poll) {
+				poll = draft.data.poll;
+			}
+			if (draft.data.quoteId) {
+				quoteId = draft.data.quoteId;
+			}
+		} else {
+			deleteDraft(key);
+		}
+	}
+}
+
 function showActions(ev) {
 	os.popupMenu(
 		postFormActions.map((action) => ({
@@ -1614,27 +1695,7 @@ onMounted(() => {
 	nextTick(() => {
 		// 書きかけの投稿を復元
 		if (!props.instant && !props.mention && !props.specified) {
-			const draft = JSON.parse(localStorage.getItem("drafts") || "{}")[
-				draftKey
-			];
-			if (draft && (draft.data.text || (draft.data.useCw && draft.data.cw) || draft.data.files?.length || draft.data.poll)) {
-				text = draft.data.text;
-				useCw = draft.data.useCw;
-				if (useCw) cw = draft.data.cw;
-				visibility = draft.data.visibility;
-				localOnly = draft.data.localOnly;
-				files = (draft.data.files || []).filter(
-					(draftFile) => draftFile
-				);
-				draft.data.visibleUserIds?.forEach((x) => os.api("users/show", { userId: x }).then(
-					(user) => {
-						pushVisibleUser(user);
-					}
-				));
-				if (draft.data.poll) {
-					poll = draft.data.poll;
-				}
-			}
+				loadDraft()
 		}
 
 		// 削除して編集

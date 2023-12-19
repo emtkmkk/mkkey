@@ -57,7 +57,7 @@
 					></span>
 				</button>
 				<button
-					v-tooltip="i18n.ts._draft.title"
+					v-tooltip="i18n.ts._drafts.title"
 					class="_button preview"
 					@click="openDraft"
 				>

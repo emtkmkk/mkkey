@@ -1598,6 +1598,7 @@ async function openDraft(ev: MouseEvent) {
 			},
 			load: (result) => {
 				if (!result || result.canceled) return;
+				if (result.key === draftKey) return;
 				saveDraft(`auto:${uuid()?.slice(0, 8)}`,result.name);
 				loadDraft(result.key);
 				deleteDraft(result.key);
@@ -1729,6 +1730,7 @@ onMounted(() => {
 			));
 			localOnly = init.localOnly;
 			quoteId = init.renote ? init.renote.id : null;
+			saveDraft();
 		}
 
 		nextTick(() => watchForDraft());

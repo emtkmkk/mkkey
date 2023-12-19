@@ -1118,6 +1118,7 @@ function removeVisibleUser(user) {
 
 function clear() {
 	text = "";
+	cw = "";
 	files = [];
 	poll = null;
 	quoteId = null;
@@ -1335,6 +1336,12 @@ function saveDraft(key?, name?) {
 	};
 
 	localStorage.setItem("drafts", JSON.stringify(draftData));
+
+	if (key) {
+		clear();
+		deleteDraft();
+	}
+
 }
 
 function deleteDraft(key?) {
@@ -1528,16 +1535,16 @@ function cancel() {
 				cw = backupCw;
 				text = backupText;
 		} else {
-		cw = "";
-		if (useCw && props.reply){
-			cw = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `;
-		}
+			cw = "";
+			if (useCw && props.reply){
+				cw = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `;
+			}
 
-		if (!useCw && props.reply){
-			text = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `;
-		} else {
-			text = "";
-		}
+			if (!useCw && props.reply){
+				text = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `;
+			} else {
+				text = "";
+			}
 		if ((backupCw || backupText) && _cw === cw && _text === text) {
 				cw = backupCw;
 				text = backupText;

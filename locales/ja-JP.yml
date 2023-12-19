@@ -1665,6 +1665,7 @@ _visibility:
   specified: "ダイレクト"
   specifiedDescription: "指定したユーザーのみに公開"
   specifiedTooltip: "指定された相手のみに表示されています"
+  hidden: "特殊"
   localOnly: "もこきーのみ"
   localOnlyChannel: "もこきーのみ（チャンネル）"
   localOnlyDescription: "もこきーのみに公開"

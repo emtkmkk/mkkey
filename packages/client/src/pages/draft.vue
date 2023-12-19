@@ -23,9 +23,9 @@
 							`${draft.value.data.useCw ? `${draft.value.data.cw || "CW"} / ` : ""}${draft.value.data.text || ts._drafts.noText}`
 						}}
 					</div>
-					<div v-if="draft.value.data.files?.length || draft.value.data.poll || draft.value.data.quoteId" :class="$style.draftText">
+					<div v-if="draft.value.data.visibility !== "public" || draft.value.data.localOnly || draft.value.data.files?.length || draft.value.data.poll || draft.value.data.quoteId" :class="$style.draftText">
 						{{
-							`${draft.value.data.quoteId ? ts._drafts.quote : ""}${draft.value.data.poll ? ts._drafts.poll : ""}${draft.value.data.files?.length ? `${i18n.t("_drafts.files", { count: draft.value.data.files?.length })} ` : ""}`
+							`${draft.value.data.visibility !== "public" && ts._visibility[draft.value.data.visibility] ? ts._visibility[draft.value.data.visibility] + " " : "" }${draft.value.data.localOnly ? ts._visibility.localAndFollower + " " : "" }${draft.value.data.quoteId ? ts._drafts.quote : ""}${draft.value.data.quoteId ? ts._drafts.quote : ""}${draft.value.data.poll ? ts._drafts.poll : ""}${draft.value.data.files?.length ? `${i18n.t("_drafts.files", { count: draft.value.data.files?.length })} ` : ""}`
 						}}
 					</div>
 				</div>
@@ -100,9 +100,9 @@ let drafts = $computed(() => {
 useCssModule();
 
 function convertName(draftKey: string): string {
-	if (!drafts[draftKey]) return "";
+	if (!jsonParse[draftKey]) return "";
 	const _draftKey = draftKey.split(":");
-	const updatedAt = new Date(drafts[draftKey].value.updatedAt).toLocaleString()
+	const updatedAt = new Date(jsonParse[draftKey].updatedAt).toLocaleString()
 	if (_draftKey.length !== 2) return `${ts._drafts.normal}${updatedAt}`
 	switch (_draftKey[0]) {
 		case 'renote':
@@ -154,7 +154,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 				text: ts.download,
 				icon: "ph-download-simple ph-bold ph-lg",
 				href: URL.createObjectURL(
-					new Blob([JSON.stringify(drafts[draftKey], null, 2)], {
+					new Blob([JSON.stringify(jsonParse[draftKey], null, 2)], {
 						type: "application/json",
 					})
 				),
@@ -182,6 +182,9 @@ definePageMetadata(
 </script>
 
 <style lang="scss" module>
+._formRoot {
+	background: var(--bg);
+}
 .buttons {
 	display: flex;
 	gap: var(--margin);

@@ -1130,13 +1130,13 @@ export const defaultStore = markRaw(
 		notUseSound: {
 			where: 'device',
 			default: false,
-			createdAt: "2023/12/14",
+			createdAt: "2023/12/20",
 			page: "sounds",
 		},
 		useSoundOnlyWhenActive: {
 			where: 'device',
 			default: false,
-			createdAt: "2023/12/14",
+			createdAt: "2023/12/20",
 			page: "sounds",
 		},
 	}),

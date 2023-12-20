@@ -10,6 +10,12 @@
 		>
 			<template #label>{{ i18n.ts.masterVolume }}</template>
 		</FormRange>
+		<MkSwitch v-model="notUseSound">
+			<template #label>{{ i18n.ts.notUseSound }}</template>
+		</MkSwitch>
+		<MkSwitch v-model="useSoundOnlyWhenActive">
+			<template #label>{{ i18n.ts.useSoundOnlyWhenActive }}</template>
+		</MkSwitch>
 
 		<FormSection>
 			<template #label>{{ i18n.ts.sounds }}</template>
@@ -46,6 +52,11 @@ import { ColdDeviceStorage } from "@/store";
 import { playFile } from "@/scripts/sound";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { defaultStore } from '@/store.js';
+import MkSwitch from '@/components/MkSwitch.vue';
+
+const notUseSound = computed(defaultStore.makeGetterSetter('notUseSound'));
+const useSoundOnlyWhenActive = computed(defaultStore.makeGetterSetter('useSoundOnlyWhenActive'));
 
 const masterVolume = computed({
 	get: () => {

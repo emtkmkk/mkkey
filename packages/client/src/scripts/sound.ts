@@ -1,4 +1,5 @@
 import { ColdDeviceStorage } from "@/store";
+import { defaultStore } from '@/store.js';
 
 const ctx = new AudioContext();
 const cache = new Map<string, AudioBuffer>();
@@ -54,7 +55,7 @@ export async function playFile(file: string, volume: number) {
 
 export function createSourceNode(buffer: AudioBuffer | undefined, volume: number) {
 	const masterVolume = ColdDeviceStorage.get("sound_masterVolume");
-	if (!buffer || masterVolume === 0 || volume === 0)
+	if (!buffer || isMute() || masterVolume === 0 || volume === 0)
 		return null;
 
 	const gainNode = ctx.createGain();
@@ -65,4 +66,19 @@ export function createSourceNode(buffer: AudioBuffer | undefined, volume: number
 	soundSource.connect(gainNode).connect(ctx.destination);
 
 	return soundSource;
+}
+
+export function isMute(): boolean {
+	if (defaultStore.state.notUseSound) {
+		// サウンドを出力しない
+		return true;
+	}
+
+	// noinspection RedundantIfStatementJS
+	if (defaultStore.state.useSoundOnlyWhenActive && document.visibilityState === 'hidden') {
+		// ブラウザがアクティブな時のみサウンドを出力する
+		return true;
+	}
+
+	return false;
 }

@@ -1119,13 +1119,25 @@ export const defaultStore = markRaw(
 			where: 'device',
 			default: false,
 			createdAt: "2023/11/11",
-			page: "reactions",
+			page: "reaction",
 		},
 		mastodonOnetapFavorite: {
 			where: 'device',
 			default: false,
 			createdAt: "2023/12/14",
-			page: "reactions",
+			page: "reaction",
+		},
+		notUseSound: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/12/14",
+			page: "sounds",
+		},
+		useSoundOnlyWhenActive: {
+			where: 'device',
+			default: false,
+			createdAt: "2023/12/14",
+			page: "sounds",
 		},
 	}),
 );

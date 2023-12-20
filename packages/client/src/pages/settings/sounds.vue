@@ -53,7 +53,7 @@ import { playFile } from "@/scripts/sound";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from '@/store.js';
-import MkSwitch from '@/components/MkSwitch.vue';
+import MkSwitch from "@/components/form/switch.vue";
 
 const notUseSound = computed(defaultStore.makeGetterSetter('notUseSound'));
 const useSoundOnlyWhenActive = computed(defaultStore.makeGetterSetter('useSoundOnlyWhenActive'));

@@ -321,7 +321,7 @@ function post() {
 		powerShowCount += 1;
 		if (powerShowCount % 2 === 0 || defaultStore.state.woozyMode) {
 			os.post({
-				initialText: `(´へεへ\`*)＜${stats.value.power > 100000000 ? `${Math.floor(stats.value.power / 10000000) / 10}億` : stats.value.power > 100000 ? `${Math.floor(stats.value.power / 10000)}万` : stats.value.power > 1000 ? `${Math.floor(stats.value.power / 1000) / 10}万` : stats.value.power}パワーなう\n\n(´へεへ\`*)＜${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}ランクなう\n\n#もこきーパワー`,
+				initialText: `(´へεへ\`*)＜${stats.value.power > 100000000 ? `${Math.floor(stats.value.power / 10000000) / 10}億` : stats.value.power > 100000 ? `${Math.floor(stats.value.power / 10000)}万` : stats.value.power > 1000 ? `${Math.floor(stats.value.power / 1000) / 10}万` : stats.value.power}パワーなう\n\n(´へεへ\`*)＜${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}ランクなう\n\n☝( ◠‿◠ )☝「次のランクまでたったの${((1000 - (stats.value.rankPoint % 1000)) / 10).toFixed(1)}%か…ザコめ…」\n\n#もこきーパワー`,
 				initialLocalOnly: true,
 				instant: true,
 			});

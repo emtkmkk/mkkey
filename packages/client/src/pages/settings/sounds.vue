@@ -10,10 +10,10 @@
 		>
 			<template #label>{{ i18n.ts.masterVolume }}</template>
 		</FormRange>
-		<MkSwitch v-model="notUseSound">
+		<MkSwitch v-model="notUseSound" class="_formBlock">
 			<template #label>{{ i18n.ts.notUseSound }}</template>
 		</MkSwitch>
-		<MkSwitch v-model="useSoundOnlyWhenActive">
+		<MkSwitch v-model="useSoundOnlyWhenActive" class="_formBlock">
 			<template #label>{{ i18n.ts.useSoundOnlyWhenActive }}</template>
 		</MkSwitch>
 

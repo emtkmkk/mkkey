@@ -658,6 +658,7 @@ export const UserRepository = db.getRepository(User).extend({
 					roles,
 					achievements: [],
 					loggedInDays: 0,
+					driveCapacityOverrideMb: user.driveCapacityOverrideMb,
 					policies: {
 						gtlAvailable: true,
 						ltlAvailable: true,
@@ -725,7 +726,6 @@ export const UserRepository = db.getRepository(User).extend({
 					mutedInstances: profile!.mutedInstances,
 					mutingNotificationTypes: profile!.mutingNotificationTypes,
 					emailNotificationTypes: profile!.emailNotificationTypes,
-					driveCapacityOverrideMb: user.driveCapacityOverrideMb,
 					showTimelineReplies: user.showTimelineReplies || falsy,
 					blockPostPublic: user.blockPostPublic || falsy,
 					blockPostHome: user.blockPostHome || falsy,

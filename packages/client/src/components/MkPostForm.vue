@@ -1619,10 +1619,6 @@ function loadDraft(key?) {
 		key ? key : draftKey
 	];
 	if (draft) {
-		if (!key && draftKey === "note" && Date.now() > Date.parse(draft.updatedAt) + (300 * 1000)) {
-				saveDraft(`note:${uuid()?.slice(0, 8)}`)
-				return;
-		}
 		if ((draft.data.text || (draft.data.useCw && draft.data.cw) || draft.data.files?.length || draft.data.poll)) {
 			text = draft.data.text;
 			useCw = draft.data.useCw;
@@ -1643,6 +1639,10 @@ function loadDraft(key?) {
 			if (draft.data.quoteId && (!props.reply || props.reply.id !== draft.data.quoteId) && (!props.renote || props.renote.id !== draft.data.quoteId)) {
 				quoteId = draft.data.quoteId;
 			}
+			if (!key && draftKey === "note" && Date.now() > Date.parse(draft.updatedAt) + (300 * 1000)) {
+				saveDraft(`note:${uuid()?.slice(0, 8)}`)
+				return;
+		  }
 		} else {
 			deleteDraft(key);
 		}

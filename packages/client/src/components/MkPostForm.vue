@@ -683,7 +683,7 @@ const draftKey = $computed((): string => {
 	} else if (props.reply) {
 		key += `reply:${props.reply.id}`;
 	} else if (props.airReply) {
-		key += `note:${props.airReply.id}`;
+		key += `air:${props.airReply.id}`;
 	} else if (props.initialNote) {
 		key += `edit:${props.initialNote.id}`;
 	} else {
@@ -1619,6 +1619,10 @@ function loadDraft(key?) {
 		key ? key : draftKey
 	];
 	if (draft) {
+		if (!key && draftKey === "note" && Date.now() > Date.parse(draft.updatedAt) + (300 * 1000)) {
+				saveDraft(`note:${uuid()?.slice(0, 8)}`)
+				return;
+		}
 		if ((draft.data.text || (draft.data.useCw && draft.data.cw) || draft.data.files?.length || draft.data.poll)) {
 			text = draft.data.text;
 			useCw = draft.data.useCw;

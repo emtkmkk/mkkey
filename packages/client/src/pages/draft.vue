@@ -17,7 +17,7 @@
 					@click="($event) => menu($event, draft.key)"
 					@contextmenu.prevent.stop="($event) => menu($event, draft.key)"
 				>
-					<div :class="$style.draftName">{{ draft.value.name || convertName(draft.key) }}</div>
+					<div :class="$style.draftName">{{ draft.value.name || convertName(draft.key) }}: <MkTime :time="draft.value.updatedAt" mode="relative"/></div>
 					<div :class="$style.draftText">
 						{{
 							`${draft.value.data.useCw ? `${draft.value.data.cw || "CW"} / ` : ""}${draft.value.data.text || ts._drafts.noText}`
@@ -67,24 +67,26 @@ let drafts = $computed(() => {
 }).sort((a, b) => {
 	function sortNo(draftKey) {
 		const _draftKey = draftKey.split(":");
-		if (_draftKey.length !== 2) return 1
+		if (_draftKey.length !== 2) return 3
 		switch (_draftKey[0]) {
 			case 'renote':
 				return 6;
 			case 'reply':
 				return 5;
-			case 'note':
+			case 'air':
 				return 7;
+			case 'note':
+				return 1;
 			case 'channel':
 				return 4;
 			case 'edit':
-				return 3;
+				return 2;
 			case 'auto':
 				return 0;
 			case 'manual':
 				return 0;
 			default:
-				return 2;
+				return 3;
 		}
 	}
 	if (sortNo(a.key) === sortNo(b.key)) {
@@ -104,25 +106,26 @@ useCssModule();
 function convertName(draftKey: string): string {
 	if (!jsonParse[draftKey]) return "";
 	const _draftKey = draftKey.split(":");
-	const updatedAt = new Date(jsonParse[draftKey].updatedAt).toLocaleString()
-	if (_draftKey.length !== 2) return `${ts._drafts.normal}${updatedAt}`
+	if (_draftKey.length !== 2) return `${ts._drafts.normal}`!
 	switch (_draftKey[0]) {
 		case 'renote':
-			return `${ts._drafts.qt}${updatedAt}`
+			return `${ts._drafts.qt}`!
 		case 'reply':
-			return `${ts._drafts.reply}${updatedAt}`
-		case 'note':
-			return `${ts._drafts.note}${updatedAt}`
+			return `${ts._drafts.reply}`;
+		case 'air':
+			return `${ts._drafts.note}`;
 		case 'edit':
-			return `${ts._drafts.edit}${updatedAt}`
+			return `${ts._drafts.edit}`!
 		case 'auto':
-			return `${ts._drafts.auto}${updatedAt}`
+			return `${ts._drafts.auto}`;
 		case 'manual':
-			return `${ts._drafts.manual}${updatedAt}`
+			return `${ts._drafts.manual}`;
 		case 'channel':
-			return `${ts._drafts.channel}${updatedAt}`
+			return `${ts._drafts.channel}`;
+		case 'note':
+			return `${ts._drafts.normal}`;
 		default:
-			return `${updatedAt}`
+			return "";
 	}
 }
 

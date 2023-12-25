@@ -61,7 +61,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	});
 	
 	const SCORE_TARGET_DAYS = 31;
-	const THRESHOLD_SCORE_PERCENT = ps.threshold && Number.isFinite(parseInt(ps.threshold,10)) ? parseInt(ps.threshold,10) : 10;
+	const THRESHOLD_SCORE_PERCENT = ps.threshold && Number.isFinite(parseInt(ps.threshold,10)) ? parseInt(ps.threshold,10) : 7;
 
 	let now = new Date();
 	let borderDate = new Date();

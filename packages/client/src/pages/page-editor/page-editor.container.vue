@@ -7,9 +7,9 @@
 				<button v-if="removable" class="_button" @click="remove()">
 					<i class="ph-trash ph-bold ph-lg"></i>
 				</button>
-				<button v-if="draggable" class="drag-handle _button">
+				<div v-if="draggable" class="drag-handle _button">
 					<i class="ph-list ph-bold ph-lg"></i>
-				</button>
+				</div>
 				<button class="_button" @click="toggleContent(!showBody)">
 					<template v-if="showBody"
 						><i class="ph-caret-up ph-bold ph-lg"></i
@@ -137,7 +137,7 @@ export default defineComponent({
 			top: 0;
 			right: 0;
 
-			> button {
+			> ._button {
 				padding: 0;
 				width: 42px;
 				font-size: 0.9em;

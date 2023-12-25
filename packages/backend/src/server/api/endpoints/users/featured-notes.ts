@@ -75,7 +75,7 @@ export default define(meta, paramDef, async (ps, me) => {
   ? parseInt(ps.borderScore, 10)
   : (await Notes.createQueryBuilder("note")
         .select("score")
-        .addSelect(`percentile_cont(1 - ${THRESHOLD_SCORE_PERCENT / 100}) WITHIN GROUP (ORDER BY note.score DESC) as score`)
+        .addSelect(`percentile_cont(${THRESHOLD_SCORE_PERCENT / 100}) WITHIN GROUP (ORDER BY note.score DESC) as score`)
         .where("note.userId = :userId", { userId: user.id })
         .andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
         .andWhere("note.visibility = 'public'")

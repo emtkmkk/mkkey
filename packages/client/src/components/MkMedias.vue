@@ -1,7 +1,7 @@
 <template>
 	<template v-for="file in note.files.filter((file) => previewable(file))">
 		<div 
-			v-if="(defaultStore.state.enableDataSaverMode || file.isSensitive) && !showingFiles.includes(file.id) && (file.type.startsWith('video') || file.type.startsWith('image'))" 
+			v-if="(defaultStore.state.enableDataSaverMode || (file.isSensitive && defaultStore.state.nsfw !== 'ignore')) && !showingFiles.includes(file.id) && (file.type.startsWith('video') || file.type.startsWith('image'))" 
 			:class="$style.sensitive"
 			@click="showingFiles.push(file.id)">
 			<ImgWithBlurhash

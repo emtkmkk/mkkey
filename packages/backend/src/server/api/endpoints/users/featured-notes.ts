@@ -61,7 +61,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	});
 	
 	const SCORE_TARGET_DAYS = 31;
-	const THRESHOLD_SCORE_MULTIPLIER = ps.threshold && Number.isFinite(parseInt(ps.threshold,10)) ? parseInt(ps.threshold,10) : 5;
+	const THRESHOLD_SCORE_PERCENT = ps.threshold && Number.isFinite(parseInt(ps.threshold,10)) ? parseInt(ps.threshold,10) : 10;
 
 	let now = new Date();
 	let borderDate = new Date();
@@ -71,14 +71,17 @@ export default define(meta, paramDef, async (ps, me) => {
 	borderDate.setSeconds(0);
 	borderDate.setMilliseconds(0);
 	
-	const borderScore = ps.borderScore && Number.isFinite(parseInt(ps.borderScore,10)) ? parseInt(ps.borderScore,10) : ((await Notes.createQueryBuilder("note")
-	.select("sum(note.score) * 100 / (count(note.id) + 1) score")
-	.where("note.userId = :userId", { userId: user.id })
-	.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
-	.andWhere("note.visibility = 'public'")
-	.andWhere(`(note."deletedAt" IS NULL)`)
-	.cache(6 * 60 * 60 * 1000)
-	.getRawOne()).score * THRESHOLD_SCORE_MULTIPLIER / 100);
+	const borderScore = ps.borderScore && Number.isFinite(parseInt(ps.borderScore, 10))
+  ? parseInt(ps.borderScore, 10)
+  : (await Notes.createQueryBuilder("note")
+        .select("score")
+        .addSelect(`percentile_cont(1 - ${THRESHOLD_SCORE_PERCENT / 100}) WITHIN GROUP (ORDER BY note.score DESC) as score`)
+        .where("note.userId = :userId", { userId: user.id })
+        .andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+        .andWhere("note.visibility = 'public'")
+        .andWhere(`(note."deletedAt" IS NULL)`)
+        .cache(6 * 60 * 60 * 1000)
+        .getRawOne().score);
 
 	//#region Construct query
 	const query = makePaginationQuery(

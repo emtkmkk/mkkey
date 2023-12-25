@@ -50,7 +50,7 @@ async function toDiscordEmbeds(body: any): Promise<(DiscordEmbeds | undefined)[]
 			},
 			title: `投稿${(body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : "")}`,
 			url: `${config.url}/notes/${body.note.id}`,
-			description: excludeNotPlain(getNoteSummary(body.note))?.length ?? 0 > 100 ? `${excludeNotPlain(getNoteSummary(body.note))?.slice(0, 100)}…${(body.note.cw != null && (excludeNotPlain(getNoteSummary(body.note))?.length ?? 0) > 102 ? " (CW)" : "")}` : excludeNotPlain(getNoteSummary(body.note)),
+			description: (excludeNotPlain(getNoteSummary(body.note))?.length ?? 0) > 100 ? `${excludeNotPlain(getNoteSummary(body.note))?.slice(0, 100)}…${(body.note.cw != null && (excludeNotPlain(getNoteSummary(body.note))?.length ?? 0) > 102 ? " (CW)" : "")}` : excludeNotPlain(getNoteSummary(body.note)),
 			timestamp: new Date(body.note.createdAt),
 			image: body.note.files?.length > 0 && !body.note.cw && !body.note.files[0].isSensitive && body.note.files[0].type?.toLowerCase().startsWith("image") ?
 				{
@@ -104,7 +104,7 @@ async function toDiscordEmbeds(body: any): Promise<(DiscordEmbeds | undefined)[]
 			},
 			title: `${(body.message.group ? `${body.message.group.name} の` : "個人宛の")}チャット`,
 			url: body.message.groupId ? `${config.url}/my/messaging/group/${body.message.groupId}` : `${config.url}/my/messaging/${(body.message.user?.username + (body.message.user?.host ? `@${body.message.user?.host}` : ""))}`,
-			description: (excludeNotPlain(body.message.text)?.length ?? 0 > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
+			description: ((excludeNotPlain(body.message.text)?.length ?? 0) > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : ""),
 			image: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ?
 				{
 					url: body.message.file.url,
@@ -140,7 +140,7 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			fallback: emojiEscape(content.content),
 			pretext: emojiEscape(content.content),
 			title: `投稿${(body.note.visibility === "home" ? " : 🏠ホーム" : body.note.visibility === "followers" ? " : 🔒フォロワー限定" : body.note.visibility === "specified" ? " : ✉ダイレクト" : "")}`,
-			text: emojiEscape(excludeNotPlain(getNoteSummary(body.note))?.length ?? 0 > 100 ? `${excludeNotPlain(getNoteSummary(body.note))?.slice(0, 100)}…${(body.note.cw != null && (excludeNotPlain(getNoteSummary(body.note))?.length ?? 0) > 102 ? " (CW)" : "")}` : excludeNotPlain(getNoteSummary(body.note))),
+			text: emojiEscape((excludeNotPlain(getNoteSummary(body.note))?.length ?? 0) > 100 ? `${excludeNotPlain(getNoteSummary(body.note))?.slice(0, 100)}…${(body.note.cw != null && (excludeNotPlain(getNoteSummary(body.note))?.length ?? 0) > 102 ? " (CW)" : "")}` : excludeNotPlain(getNoteSummary(body.note))),
 			title_link: `${config.url}/notes/${body.note.id}`,
 			color: "#f8bcba",
 			ts: new Date(body.note.createdAt).valueOf() / 1000,
@@ -189,7 +189,7 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			pretext: emojiEscape(content.content),
 			title: `${(body.message.group ? `${body.message.group.name} の` : "個人宛の")}チャット`,
 			title_link: body.message.groupId ? `${config.url}/my/messaging/group/${body.message.groupId}` : `${config.url}/my/messaging/${(body.message.user?.username + (body.message.user?.host ? `@${body.message.user?.host}` : ""))}`,
-			text: emojiEscape((excludeNotPlain(body.message.text)?.length ?? 0 > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : "")),
+			text: emojiEscape(((excludeNotPlain(body.message.text)?.length ?? 0) > 100 ? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… ` : excludeNotPlain(body.message.text) ?? "") + (body.message.file ? "(📎)" : "")),
 			image_url: body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("image") ? body.message.file.url : undefined,
 			ts: new Date(body.message.createdAt).valueOf() / 1000,
 			thumb_url: body.emoji ? body.emoji.publicUrl : body.message.file && !body.message.file.isSensitive && body.message.file.type?.toLowerCase().startsWith("video") ? body.message.file.thumbnailUrl : body.message.user?.avatarUrl,
@@ -241,7 +241,7 @@ async function typeToBody(jobData: any): Promise<any> {
 			? body.note
 				? ` : ${getNoteContentSummary(body.note.text ? body.note : body.note.renote, jobData.userId, contentLength)}`
 				: body.message?.text
-					? ` : ${excludeNotPlain(body.message.text)?.slice(0, contentLength ?? 40)}${(excludeNotPlain(body.message.text)?.length ?? 0 > contentLength ?? 40 ? "…" : "")}`
+					? ` : ${excludeNotPlain(body.message.text)?.slice(0, contentLength ?? 40)}${((excludeNotPlain(body.message.text)?.length ?? 0) > contentLength ?? 40 ? "…" : "")}`
 					: ""
 			: "";
 

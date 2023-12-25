@@ -258,6 +258,18 @@ async function typeToBody(jobData: any): Promise<any> {
 				avatar_url,
 				content: `${fullUsername} から リムーブされました`,
 			};
+		case "deletefollow":
+			return {
+				username,
+				avatar_url,
+				content: `${fullUsername} への フォローを解除させられました`,
+			};
+		case "rejectRequest":
+			return {
+				username,
+				avatar_url,
+				content: `${fullUsername} への フォロー申請が拒否されました`,
+			};
 		case "silentUnfollow":
 			return {
 				username,

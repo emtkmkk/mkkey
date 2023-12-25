@@ -76,7 +76,7 @@ async function cancelRequest(follower: User, followee: User) {
 				(x) => x.userId === followee.id && x.on.includes("unfollow"),
 			);
 			for (const webhook of webhooks) {
-				webhookDeliver(webhook, "unfollow", {
+				webhookDeliver(webhook, "rejectRequest", {
 					user: packed,
 				});
 			}

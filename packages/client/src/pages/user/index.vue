@@ -107,11 +107,11 @@ const headerTabs = $computed(() =>
 					title: i18n.ts.overview,
 					icon: "ph-user ph-bold ph-lg",
 				},
-				...(user.notesCount > 0 
+				...(user.notesCount > 0
 					? [
 						{
 							key: "images",
-							title: i18n.ts.images,
+							title: i18n.ts._timelines.media,
 							icon: "ph-images ph-bold ph-lg",
 						},
 					]

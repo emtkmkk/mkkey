@@ -8,7 +8,7 @@ import { IsNull } from "typeorm";
 import { publishMainStream, publishDriveStream } from "@/services/stream.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { contentDisposition } from "@/misc/content-disposition.js";
-import { getFileInfo } from "@/misc/get-file-info.js";
+import { getFileInfo, getBlurhashBuffer } from "@/misc/get-file-info.js";
 import {
 	DriveFiles,
 	DriveFolders,
@@ -149,6 +149,13 @@ async function save(
 			uploads.push(
 				upload(thumbnailKey, alts.thumbnail.data, alts.thumbnail.type),
 			);
+			if (!file.blurhash) {
+				// もしBlurhashがまだ生成されていない場合は、サムネイル画像を用いて再度生成する
+					file.blurhash = await getBlurhashBuffer(alts.thumbnail.data).catch((e) => {
+						console.log(`getBlurhash to thumbnail failed: ${e}`);
+						return null;
+					});
+			}
 		}
 
 		await Promise.all(uploads);

@@ -441,3 +441,24 @@ function getBlurhash(path: string): Promise<string> {
 			});
 	});
 }
+export function getBlurhashBuffer(data: Buffer): Promise<string> {
+	return new Promise((resolve, reject) => {
+		sharp(data)
+			.raw()
+			.ensureAlpha()
+			.resize(64, 64, { fit: "inside" })
+			.toBuffer((err, buffer, { width, height }) => {
+				if (err) return reject(err);
+
+				let hash;
+
+				try {
+					hash = encode(new Uint8ClampedArray(buffer), width, height, 7, 7);
+				} catch (e) {
+					return reject(e);
+				}
+
+				resolve(hash);
+			});
+	});
+}

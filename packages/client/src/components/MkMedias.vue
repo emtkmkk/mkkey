@@ -5,14 +5,14 @@
 			:class="$style.sensitive"
 			@click="showingFiles.push(file.id)">
 			<ImgWithBlurhash
-				class="bg"
+				:class="$style.bg"
 				:hash="file.blurhash"
 				:title="file.name"
 				:alt="file.comment || file.name"
 				:force-blurhash="defaultStore.state.enableDataSaverMode"
 			/>
-			<div class="text">
-				<div class="wrapper">
+			<div :class="$style.text">
+				<div :class="$style.wrapper">
 					<b v-if="file.isSensitive" style="display: block"
 						><i class="ph-warning ph-bold ph-lg"></i>
 						{{ i18n.ts.sensitive }}</b
@@ -25,7 +25,7 @@
 				</div>
 			</div>
 		</div>
-		<MkA :class="$style.img" :to="notePage(note)">
+		<MkA v-else :class="$style.img" :to="notePage(note)">
 			<ImgWithBlurhash
 				v-if="file.type.startsWith('video')"
 				:hash="file.blurhash"
@@ -95,6 +95,28 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 .sensitive {
 	display: grid;
 	place-items: center;
+	
+	> .bg {
+		filter: brightness(0.5);
+	}
+
+	> .text {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		> .wrapper {
+			display: table-cell;
+			text-align: center;
+			font-size: 0.8em;
+			color: #fff;
+		}
 }
 
 .gif {

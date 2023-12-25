@@ -80,7 +80,7 @@ export default define(meta, paramDef, async (ps, me) => {
         .andWhere("note.visibility = 'public'")
         .andWhere(`(note."deletedAt" IS NULL)`)
         .cache(6 * 60 * 60 * 1000)
-        .getRawOne().score);
+        .getRawOne()).score;
 
 	//#region Construct query
 	const query = makePaginationQuery(

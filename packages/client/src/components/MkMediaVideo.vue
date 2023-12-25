@@ -4,16 +4,25 @@
 		class="icozogqfvdetwohsdglrbswgrejoxbdj"
 		@click="hide = false"
 	>
-		<div>
-			<b v-if="video.isSensitive" style="display: block"
-				><i class="ph-warning ph-bold ph-lg"></i>
-				{{ i18n.ts.sensitive }}</b
-			>
-			<b v-if="(defaultStore.state.enableDataSaverMode && video.size) || !video.isSensitive" style="display: block"
-				><i class="ph-file-video ph-bold ph-lg"></i>
-				{{ defaultStore.state.enableDataSaverMode && video.size ? bytes(video.size,2) : i18n.ts.video }}</b
-			>
-			<span>{{ i18n.ts.clickToShow }}</span>
+		<ImgWithBlurhash
+			class="bg"
+			:hash="video.blurhash"
+			:title="video.name"
+			:alt="video.comment || video.name"
+			:force-blurhash="defaultStore.state.enableDataSaverMode"
+		/>
+		<div class="text">
+			<div class="wrapper">
+				<b v-if="video.isSensitive" style="display: block"
+					><i class="ph-warning ph-bold ph-lg"></i>
+					{{ i18n.ts.sensitive }}</b
+				>
+				<b v-if="(defaultStore.state.enableDataSaverMode && video.size) || !video.isSensitive" style="display: block"
+					><i class="ph-file-video ph-bold ph-lg"></i>
+					{{ defaultStore.state.enableDataSaverMode && video.size ? bytes(video.size,2) : i18n.ts.video }}</b
+				>
+				<span style="display: block">{{ i18n.ts.clickToShow }}</span>
+			</div>
 		</div>
 	</div>
 	<div v-else class="kkjnbbplepmiyuadieoenjgutgcmtsvu">
@@ -107,19 +116,29 @@ const hide = ref(
 }
 
 .icozogqfvdetwohsdglrbswgrejoxbdj {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	background: #111;
-	color: #fff;
+	all: unset;
+	position: relative;
 
-	> div {
-		display: table-cell;
-		text-align: center;
-		font-size: 12px;
+	> .bg {
+		filter: brightness(0.5);
+	}
 
-		> b {
-			display: block;
+	> .text {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		> .wrapper {
+			display: table-cell;
+			text-align: center;
+			font-size: 0.8em;
+			color: #fff;
 		}
 	}
 }

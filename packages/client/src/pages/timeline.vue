@@ -51,6 +51,7 @@
 							v-for="index in timelines"
 							:key="index"
 							:virtual-index="index"
+							style="box-sizing: border-box;"
 						>
 							<XTimeline
 								v-if="index == timelines[swiperRef.activeIndex]"

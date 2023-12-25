@@ -1,12 +1,6 @@
 <template>
 	<MkSpacer :content-max="1100">
-		<MkButton
-			style="text-align: center; margin: auto; margin-top: calc(var(--margin) / 2);"
-			v-if="!showImages"
-			@click="showImages = true">
-			{{ "画像一覧を読み込む" }}
-		</MkButton>
-		<template v-if="showImages">
+		<template>
 			<MkPagination v-slot="{items}" :pagination="pagination">
 				<div :class="$style.stream">
 					<MkMedias v-for="note in items" :note="note"/>
@@ -21,10 +15,6 @@ import { defineAsyncComponent, ref, computed } from "vue";
 import MkMedias from "@/components/MkMedias.vue";
 import MkPagination from "@/components/MkPagination.vue";
 import * as misskey from "calckey-js";
-import MkButton from "@/components/MkButton.vue";
-import { defaultStore } from "@/store";
-
-let showImages = ref(!defaultStore.state.enableDataSaverMode);
 
 const props = defineProps<{
 	user: misskey.entities.User;
@@ -32,7 +22,7 @@ const props = defineProps<{
 
 const pagination = {
 	endpoint: 'users/notes' as const,
-	limit: 10,
+	limit: 20,
 	params: computed(() => ({
 		userId: props.user.id,
 		withFiles: true,

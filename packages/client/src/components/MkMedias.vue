@@ -1,5 +1,5 @@
 <template>
-	<template v-for="file in note.files.filter((file) => !previewable(file))">
+	<template v-for="file in note.files.filter((file) => previewable(file))">
 		<div 
 			v-if="(defaultStore.state.enableDataSaverMode || file.isSensitive) && !showingFiles.includes(file.id) && (file.type.startsWith('video') || file.type.startsWith('image'))" 
 			:class="$style.sensitive"

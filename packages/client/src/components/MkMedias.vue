@@ -40,8 +40,8 @@
 				<div v-if="file.isSensitive"><i class="ph-bold ph-file-audio"></i> {{ i18n.ts.sensitive }}</div>
 				<div v-else><i class="ph-bold ph-file-audio"></i> {{ i18n.ts.audioFile }}</div>
 			</div>
-			<div v-if="file.type.startsWith('video')" class="$style.gif">{{ i18n.ts.video }}</div>
-			<div v-if="file.type === 'image/gif'" class="$style.gif">GIF</div>
+			<div v-if="file.type.startsWith('video')" :class="$style.gif">{{ i18n.ts.video }}</div>
+			<div v-if="file.type === 'image/gif'" :class="$style.gif">GIF</div>
 		</MkA>
 	</template>
 </template>
@@ -84,6 +84,7 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 	height: 220px;
 	border-radius: 6px;
 	overflow: clip;
+	position: relative;
 }
 
 .empty {
@@ -95,6 +96,8 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 .sensitive {
 	display: grid;
 	place-items: center;
+	height: 220px;
+	position: relative;
 	
 	> .bg {
 		filter: brightness(0.5);
@@ -102,8 +105,6 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 
 	> .text {
 		position: absolute;
-		left: 0;
-		top: 0;
 		width: 100%;
 		height: 100%;
 		z-index: 1;
@@ -121,6 +122,7 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 }
 
 .gif {
+	position: absolute;
 	background-color: var(--fg);
 	border-radius: 6px;
 	color: var(--accentLighten);

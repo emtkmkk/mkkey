@@ -143,6 +143,7 @@ watch(
 
 	> .imageView {
 		display: block;
+		position: relative;
 		cursor: zoom-in;
 		overflow: hidden;
 		width: 100%;
@@ -155,6 +156,7 @@ watch(
 		}
 
 		> .gif {
+			position: absolute;
 			background-color: var(--fg);
 			border-radius: 6px;
 			color: var(--accentLighten);

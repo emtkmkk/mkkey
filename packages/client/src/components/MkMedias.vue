@@ -117,6 +117,7 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 			font-size: 0.8em;
 			color: #fff;
 		}
+	}
 }
 
 .gif {

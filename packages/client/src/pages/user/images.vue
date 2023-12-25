@@ -1,17 +1,15 @@
 <template>
 	<MkSpacer :content-max="1100">
-		<template>
-			<MkPagination v-slot="{items}" :pagination="pagination">
-				<div :class="$style.stream">
-					<MkMedias v-for="note in items" :note="note"/>
-				</div>
-			</MkPagination>
-		</template>
+		<MkPagination v-slot="{items}" :pagination="pagination">
+			<div :class="$style.stream">
+				<MkMedias v-for="note in items" :note="note"/>
+			</div>
+		</MkPagination>
 	</MkSpacer>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, ref, computed } from "vue";
+import { computed } from "vue";
 import MkMedias from "@/components/MkMedias.vue";
 import MkPagination from "@/components/MkPagination.vue";
 import * as misskey from "calckey-js";

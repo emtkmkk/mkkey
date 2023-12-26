@@ -337,6 +337,11 @@ export const meta = {
 						optional: false,
 						nullable: false,
 					},
+					turnstile: {
+						type: "boolean",
+						optional: false,
+						nullable: false,
+					},
 					objectStorage: {
 						type: "boolean",
 						optional: false,
@@ -498,6 +503,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		version: config.version,
 
 		name: instance.name,
+		shortName: instance.name,
 		uri: config.url,
 		description: instance.description,
 		langs: instance.langs,
@@ -527,6 +533,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		iconUrl: instance.iconUrl,
 		backgroundImageUrl: instance.backgroundImageUrl,
 		logoImageUrl: instance.logoImageUrl,
+		privacyPolicyUrl: "",
+		impressumUrl: "",
 		maxNoteTextLength: MAX_NOTE_TEXT_LENGTH, // 後方互換性のため
 		maxCaptionTextLength: MAX_CAPTION_TEXT_LENGTH,
 		emojis: instance.privateMode && !me ? [] : await Emojis.packMany(emojis.filter((x) => !x.category?.startsWith("!"))),
@@ -542,6 +550,7 @@ export default define(meta, paramDef, async (ps, me) => {
 						ratio: ad.ratio,
 						imageUrl: ad.imageUrl,
 				  })),
+		serverRules: [],
 		enableEmail: instance.enableEmail,
 
 		enableTwitterIntegration: instance.enableTwitterIntegration,
@@ -595,6 +604,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			elasticsearch: config.elasticsearch ? true : false,
 			hcaptcha: instance.enableHcaptcha,
 			recaptcha: instance.enableRecaptcha,
+			turnstile: false,
 			objectStorage: instance.useObjectStorage,
 			twitter: instance.enableTwitterIntegration,
 			github: instance.enableGithubIntegration,

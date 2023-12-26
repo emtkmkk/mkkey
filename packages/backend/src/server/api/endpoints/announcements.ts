@@ -5,9 +5,6 @@ import { makePaginationQuery } from "../common/make-pagination-query.js";
 export const meta = {
 	tags: ["meta"],
 
-	requireCredential: true,
-	requireCredentialPrivateMode: true,
-
 	res: {
 		type: "array",
 		optional: false,
@@ -73,6 +70,8 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
+	if (!user) return [];
+
 	const query = makePaginationQuery(
 		Announcements.createQueryBuilder("announcement"),
 		ps.sinceId,

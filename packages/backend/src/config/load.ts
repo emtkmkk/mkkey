@@ -56,6 +56,23 @@ export default function load() {
 
 	if (!config.redis.prefix) config.redis.prefix = mixin.host;
 
+	if (!config.clusterLimits) {
+		config.clusterLimits = {
+			web: 1,
+			queue: config.clusterLimit && config.clusterLimit > 1 ? config.clusterLimit - 1 : 1,
+		};
+	} else {
+		config.clusterLimits = {
+			web: 1,
+			queue: config.clusterLimit && config.clusterLimit > 1 ? config.clusterLimit - 1 : 1,
+			...config.clusterLimits,
+		};
+
+		if (config.clusterLimits.web! < 1 || config.clusterLimits.queue! < 1) {
+			throw new Error("Invalid cluster limits");
+		}
+	}
+	
 	return Object.assign(config, mixin);
 }
 

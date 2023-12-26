@@ -52,6 +52,11 @@ export type Source = {
 
 	clusterLimit?: number;
 
+	clusterLimits?: {
+		web?: number;
+		queue?: number;
+	};
+
 	id: string;
 
 	outgoingAddressFamily?: "ipv4" | "ipv6" | "dual";

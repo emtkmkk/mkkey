@@ -19,7 +19,12 @@ const ev = new Xev();
  * Init process
  */
 export default async function () {
-	process.title = `Calckey (${cluster.isPrimary ? "master" : "worker"})`;
+	const mode =
+		process.env.mode && ["web", "queue"].includes(process.env.mode)
+			? `(${process.env.mode})`
+			: "";
+	const type = cluster.isPrimary ? "(master)" : "(worker)";
+	process.title = `Calckey ${mode} ${type}`;
 
 	if (cluster.isPrimary || envOption.disableClustering) {
 		await masterMain();

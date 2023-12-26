@@ -71,7 +71,7 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, user) => {
 	if (!user) {
-		if (sinceId ||　untilId) return [];
+		if (ps.sinceId ||　ps.untilId) return [];
 		return [{
 			id: "0000000000",
 			createdAt: new Date(0).toISOString(),

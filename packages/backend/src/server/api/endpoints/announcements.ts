@@ -70,7 +70,16 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	if (!user) return [];
+	if (!user) {
+		return [{
+			id: "0000000000",
+			createdAt: new Date(0).toISOString(),
+			updatedAt: null,
+			text: "未認証のユーザにはお知らせを配信していません。",
+			title: "Forbidden",
+			isRead: true,
+		}];
+	}
 
 	const query = makePaginationQuery(
 		Announcements.createQueryBuilder("announcement"),

@@ -51,7 +51,7 @@
 					v-if="importServerName"
 					:class="$style.button"
 					inline
-					@click="window.open(`https://${importServerName}/registry/value/@/client/base/reactions`)"
+					@click="openWindow(`https://${importServerName}/registry/value/@/client/base/reactions`)"
 				>
 				{{ "1" }}
 				</MkButton>
@@ -59,7 +59,7 @@
 					v-if="importServerName"
 					:class="$style.button"
 					inline
-					@click="window.open(`https://${importServerName}/registry/value/system/client/base/reactions`)"
+					@click="openWindow(`https://${importServerName}/registry/value/system/client/base/reactions`)"
 				>
 				{{ "2" }}
 				</MkButton>
@@ -392,12 +392,17 @@ const importBlocking = async (ev) => {
 		.catch(onError);
 };
 
+
+const openWindow = (url) => {
+	window.open(url);
+};
+
 const exportEmojiDecks = (ev) => {
 	const a = document.createElement("a");
 	a.href = href;
 	a.download = `${name}.json`;
 	a.click();
-}
+};
 
 const importEmojiDecks = (ev) => {
 	try {
@@ -457,7 +462,7 @@ const importEmojiDecks = (ev) => {
 	} catch (error) {
 		onError(error);
 	}
-}
+};
 
 const headerActions = $computed(() => []);
 

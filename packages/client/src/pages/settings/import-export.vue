@@ -50,7 +50,6 @@
 				<MkButton
 					v-if="importServerName"
 					inline
-					link
 					@click="window.open(`https://${importServerName}/registry/value/@/client/base/reactions`);"
 				>
 				{{ "1" }}
@@ -58,7 +57,6 @@
 				<MkButton
 					v-if="importServerName"
 					inline
-					link
 					@click="window.open(`https://${importServerName}/registry/value/system/client/base/reactions`);"
 				>
 				{{ "2" }}

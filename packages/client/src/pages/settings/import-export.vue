@@ -455,6 +455,7 @@ const importEmojiDecks = (ev) => {
 				}
 			})
 			defaultStore.set(deckType[importDeckType.value], deck);
+			code.value = "";
 			onImportSuccess();
 		} else {
 			onError(new Error("Invalid data format. Expected an array of strings."));

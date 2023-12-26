@@ -49,15 +49,17 @@
 				</FormInput>
 				<MkButton
 					v-if="importServerName"
+					:class="$style.button"
 					inline
-					@click="window.open(`https://${importServerName}/registry/value/@/client/base/reactions`);"
+					@click="window.open(`https://${importServerName}/registry/value/@/client/base/reactions`)"
 				>
 				{{ "1" }}
 				</MkButton>
 				<MkButton
 					v-if="importServerName"
+					:class="$style.button"
 					inline
-					@click="window.open(`https://${importServerName}/registry/value/system/client/base/reactions`);"
+					@click="window.open(`https://${importServerName}/registry/value/system/client/base/reactions`)"
 				>
 				{{ "2" }}
 				</MkButton>

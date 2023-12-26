@@ -254,6 +254,7 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
+import JSON5 from "json5";
 import MkButton from "@/components/MkButton.vue";
 import FormSection from "@/components/form/section.vue";
 import FormFolder from "@/components/form/folder.vue";
@@ -281,7 +282,7 @@ const deckType = {"1":"reactions", "2":"reactions2", "3":"reactions3", "4":"reac
 
 const href = $computed(() => {
 	return URL.createObjectURL(
-		new Blob([JSON.stringify(defaultStore.state[deckType[exportDeckType.value]], null, 2)], {
+		new Blob([JSON5.stringify(defaultStore.state[deckType[exportDeckType.value]], null, 2)], {
 			type: "application/json",
 		})
 	)
@@ -401,13 +402,12 @@ const importEmojiDecks = (ev) => {
 		if (!code.value) return;
 		let parsedData;
 		try {
-			parsedData = JSON.parse(code.value);
+			parsedData = JSON5.parse(code.value);
 		} catch (parseError) {
 			onError(parseError);
 			return;
 		}
 
-		// ② JSONでパースできたら、文字列型の配列かどうかを確認
 		if (Array.isArray(parsedData) && parsedData.every(item => typeof item === 'string')) {
 			let customEmojis = $computed(() =>
 				instance.emojis
@@ -415,12 +415,13 @@ const importEmojiDecks = (ev) => {
 			let emojiStr = $computed(() =>
 				customEmojis ? customEmojis.map((x) => `:${x.name}:`) : undefined
 			);
-			let deck = [...defaultStore.state[deckType[exportDeckType.value]]]
+			let deck = [...defaultStore.state[deckType[importDeckType.value]]];
 			parsedData.forEach((x) => {
 				if (!x.startsWith(":") || !x.endsWith(":")) {
 					if (!deck.includes(x) && [...x].length === 1) {
 						deck.push(x);
 					}
+					return;
 				}
 				const emojiName = x.split("@")?.[0]?.replaceAll(":", "");
 				const emojiHost = x.split("@")?.[1]?.replaceAll(":", "");
@@ -443,11 +444,11 @@ const importEmojiDecks = (ev) => {
 					return;
 				}
 				if (!deck.includes(`:${emojiName}@${importServerName.value}:`)) {
-					deck.push(`:${emojiName}@${emojiHost}:`);
+					deck.push(`:${emojiName}@${importServerName.value}:`);
 				}
 			})
-			defaultStore.set(deckType[exportDeckType.value], deck);
-			onImportSuccess(); // 成功時の処理
+			defaultStore.set(deckType[importDeckType.value], deck);
+			onImportSuccess();
 		} else {
 			onError(new Error("Invalid data format. Expected an array of strings."));
 		}

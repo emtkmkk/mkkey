@@ -1730,6 +1730,7 @@ _exportOrImport:
   userLists: "リスト"
   excludeMutingUsers: "ミュートしているユーザーを除外"
   excludeInactiveUsers: "使われていないアカウントを除外"
+  emojiDeckList: "絵文字デッキ"
 _charts:
   federation: "連合"
   apRequest: "リクエスト"

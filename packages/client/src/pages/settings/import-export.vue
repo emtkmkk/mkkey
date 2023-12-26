@@ -1,6 +1,83 @@
 <template>
 	<div class="_formRoot">
 		<FormSection>
+			<template #label>{{
+				i18n.ts._exportOrImport.emojiDeckList
+			}}<span v-if="defaultStore.state.showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+			<FormFolder class="_formBlock">
+				<template #label>{{ i18n.ts.export }}</template>
+				<template #icon
+					><i class="ph-download-simple ph-bold ph-lg"></i
+				></template>
+				<FormRadios v-model="exportDeckType" class="_formBlock">
+					<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
+					<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
+					<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
+					<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
+					<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
+				</FormRadios>
+				<MkButton
+					primary
+					:class="$style.button"
+					inline
+					@click="exportEmojiDecks($event)"
+					><i class="ph-download-simple ph-bold ph-lg"></i>
+					{{ i18n.ts.export }}</MkButton
+				>
+			</FormFolder>
+			<FormFolder class="_formBlock">
+				<template #label>{{ i18n.ts.import }}</template>
+				<template #icon
+					><i class="ph-upload-simple ph-bold ph-lg"></i
+				></template>
+				<FormRadios v-model="importDeckType" class="_formBlock">
+					<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
+					<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
+					<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
+					<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
+					<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
+				</FormRadios>
+				<FormInput
+					v-model="importServerName"
+					class="_formBlock"
+					:small="true"
+					:placeholder="config.host"
+					style="margin: 0 0 !important"
+				>
+					<template #label>{{ `インポートしたいサーバ(misskey.ioなど)` }}</template>
+					<template #caption>{{ importServerName ? "下のリンクのアクセス可能な方にアクセスし、「値(JSON)」の内容をすべてコピーして下のテキストボックスに貼り付けてください。" : "インポート先のサーバ名を入力してください。" }}</template>
+				</FormInput>
+				<MkButton
+					v-if="importServerName"
+					inline
+					link
+					:to="`https://${importServerName}/registry/value/@/client/base/reactions`"
+				>
+				{{ "1" }}
+				</MkButton>
+				<MkButton
+					v-if="importServerName"
+					inline
+					link
+					:to="`https://${importServerName}/registry/value/system/client/base/reactions`"
+				>
+				{{ "2" }}
+				</MkButton>
+				<FormTextarea v-model="code" tall class="_formBlock">
+					<template #label>{{ i18n.ts.code }}</template>
+				</FormTextarea>
+				<MkButton
+					primary
+					:disabled="code == null"
+					:class="$style.button"
+					inline
+					@click="importEmojiDecks($event)"
+					><i class="ph-upload-simple ph-bold ph-lg"></i>
+					{{ i18n.ts.import }}</MkButton
+				>
+			</FormFolder>
+		</FormSection>
+		<FormSection>
 			<template #label>{{ i18n.ts._exportOrImport.allNotes }}</template>
 			<FormFolder>
 				<template #label>{{ i18n.ts.export }}</template>
@@ -184,14 +261,51 @@ import FormSection from "@/components/form/section.vue";
 import FormFolder from "@/components/form/folder.vue";
 import FormSwitch from "@/components/form/switch.vue";
 import FormRadios from "@/components/form/radios.vue";
+import FormTextarea from "@/components/form/textarea.vue";
+import FormInput from "@/components/form/input.vue";
 import * as os from "@/os";
 import { selectFile } from "@/scripts/select-file";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { instance } from "@/instance";
+import { defaultStore } from "@/store";
+import * as config from "@/config";
 
 const excludeMutingUsers = ref(false);
 const importType = ref("calckey");
 const excludeInactiveUsers = ref(false);
+const exportDeckType = ref("1");
+const importDeckType = ref("1");
+const code = ref<string>();
+const importServerName = ref<string>();
+
+const deckType = {"1":"reactions", "2":"reactions2", "3":"reactions3", "4":"reactions4", "5":"reactions5"};
+
+const href = $computed(() => {
+	URL.createObjectURL(
+		new Blob([JSON.stringify(defaultStore.state[deckType[exportDeckType.value]], null, 2)], {
+			type: "application/json",
+		})
+	)
+});
+
+const name = $computed(() => {
+	switch (exportDeckType.value) {
+		case "1":
+			return defaultStore.state.reactionsFolderName || "page1";
+		case "2":
+			return defaultStore.state.reactionsFolderName2 || "page2";
+		case "3":
+			return defaultStore.state.reactionsFolderName3 || "page3";
+		case "4":
+			return defaultStore.state.reactionsFolderName4 || "page4";
+		case "5":
+			return defaultStore.state.reactionsFolderName5 || "page5";
+		default:
+			return "reactions"
+	}
+	
+});
 
 const onExportSuccess = () => {
 	os.alert({
@@ -276,6 +390,73 @@ const importBlocking = async (ev) => {
 		.then(onImportSuccess)
 		.catch(onError);
 };
+
+const exportEmojiDecks = (ev) => {
+	const a = document.createElement("a");
+	a.href = href;
+	a.download = `${name}.json`;
+	a.click();
+}
+
+const importEmojiDecks = (ev) => {
+	try {
+		if (!code.value) return;
+		let parsedData;
+		try {
+			parsedData = JSON.parse(code.value);
+		} catch (parseError) {
+			onError(parseError);
+			return;
+		}
+
+		// ② JSONでパースできたら、文字列型の配列かどうかを確認
+		if (Array.isArray(parsedData) && parsedData.every(item => typeof item === 'string')) {
+			let customEmojis = $computed(() =>
+				instance.emojis
+			);
+			let emojiStr = $computed(() =>
+				customEmojis ? customEmojis.map((x) => `:${x.name}:`) : undefined
+			);
+			let deck = [...defaultStore.state[deckType[exportDeckType.value]]]
+			parsedData.forEach((x) => {
+				if (!x.startsWith(":") || !x.endsWith(":")) {
+					if (!deck.includes(x) && [...x].length === 1) {
+						deck.push(x);
+					}
+				}
+				const emojiName = x.split("@")?.[0]?.replaceAll(":", "");
+				const emojiHost = x.split("@")?.[1]?.replaceAll(":", "");
+				if (emojiStr.includes(x) || emojiHost === config.host) {
+					if (!deck.includes(`:${emojiName}:`)) {
+						deck.push(`:${emojiName}:`);
+					}
+					return;
+				}
+				if (emojiHost) {
+					if (!deck.includes(`:${emojiName}@${emojiHost}:`)) {
+						deck.push(`:${emojiName}@${emojiHost}:`);
+					}
+					return;
+				}
+				if (importServerName.value === config.host || !importServerName.value) {
+					if (!deck.includes(`:${emojiName}:`)) {
+						deck.push(`:${emojiName}:`);
+					}
+					return;
+				}
+				if (!deck.includes(`:${emojiName}@${importServerName.value}:`)) {
+					deck.push(`:${emojiName}@${emojiHost}:`);
+				}
+			})
+			defaultStore.set(deckType[exportDeckType.value], deck);
+			onImportSuccess(); // 成功時の処理
+		} else {
+			onError(new Error("Invalid data format. Expected an array of strings."));
+		}
+	} catch (error) {
+		onError(error);
+	}
+}
 
 const headerActions = $computed(() => []);
 

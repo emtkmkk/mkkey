@@ -44,8 +44,8 @@
 					:placeholder="config.host"
 					style="margin: 0 0 !important"
 				>
-					<template #label>{{ `インポートしたいサーバ(misskey.ioなど)` }}</template>
-					<template #caption>{{ importServerName ? "下のリンクのアクセス可能な方にアクセスし、「値(JSON)」の内容をすべてコピーして下のテキストボックスに貼り付けてください。" : "インポート先のサーバ名を入力してください。" }}</template>
+					<template #label>{{ `インポート元のサーバ(misskey.ioなど)` }}</template>
+					<template #caption>{{ importServerName ? "下のリンクのアクセス可能な方にアクセスし、「値(JSON)」の内容をすべてコピーして下のテキストボックスに貼り付けてください。" : "インポート元のサーバ名を入力してください。" }}</template>
 				</FormInput>
 				<MkButton
 					v-if="importServerName"

@@ -51,7 +51,7 @@
 					v-if="importServerName"
 					inline
 					link
-					:to="`https://${importServerName}/registry/value/@/client/base/reactions`"
+					@click="window.open(`https://${importServerName}/registry/value/@/client/base/reactions`);"
 				>
 				{{ "1" }}
 				</MkButton>
@@ -59,7 +59,7 @@
 					v-if="importServerName"
 					inline
 					link
-					:to="`https://${importServerName}/registry/value/system/client/base/reactions`"
+					@click="window.open(`https://${importServerName}/registry/value/system/client/base/reactions`);"
 				>
 				{{ "2" }}
 				</MkButton>
@@ -282,7 +282,7 @@ const importServerName = ref<string>();
 const deckType = {"1":"reactions", "2":"reactions2", "3":"reactions3", "4":"reactions4", "5":"reactions5"};
 
 const href = $computed(() => {
-	URL.createObjectURL(
+	return URL.createObjectURL(
 		new Blob([JSON.stringify(defaultStore.state[deckType[exportDeckType.value]], null, 2)], {
 			type: "application/json",
 		})

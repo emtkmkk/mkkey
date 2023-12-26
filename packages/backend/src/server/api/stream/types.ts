@@ -129,6 +129,7 @@ export interface NoteStreamTypes {
 	};
 	deleted: {
 		deletedAt: Date;
+		physical?: boolean;
 	};
 	reacted: {
 		reaction: string;

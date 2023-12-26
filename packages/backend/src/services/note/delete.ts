@@ -59,9 +59,12 @@ export default async function (
 		await Notes.decrement({ id: note.replyId }, "repliesCount", 1);
 	}
 
+	const isPhysical = isRenote || deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 5))
+
 	if (!quiet) {
 		publishNoteStream(note.id, "deleted", {
 			deletedAt: deletedAt,
+			physical: isPhysical,
 		});
 
 		//#region ローカルの投稿なら削除アクティビティを配送
@@ -98,7 +101,7 @@ export default async function (
 			deliverToConcerned(user, note, content);
 		}
 
-		if (isRenote || deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 30))) {
+		if (isPhysical) {
 
 			// also deliever delete activity to cascaded notes
 			const cascadingNotes = (await findCascadingNotes(note)).filter(

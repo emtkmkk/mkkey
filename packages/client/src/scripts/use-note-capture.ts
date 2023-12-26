@@ -79,7 +79,20 @@ export function useNoteCapture(props: {
 			}
 
 			case "deleted": {
-				props.isDeletedRef.value = true;
+				if (body.physical) {
+					props.isDeletedRef.value = true;
+				} else {
+					note.value.deletedAt = body.deletedAt ?? new Date();
+					note.value.text = "";
+					note.value.cw = "";
+					note.value.fileIds = {};
+					note.value.attachedFileTypes = {};
+					note.value.mentions = {};
+					note.value.mentionedRemoteUsers = [];
+					note.value.emojis = [];
+					note.value.tags = [];
+					note.value.hasPoll = false;
+				}
 				break;
 			}
 

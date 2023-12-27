@@ -743,7 +743,7 @@ function emojiSearch(nQ, oQ) {
 	}
 	
 	
-	let searchHost = undefined;
+	let searchHost: string | undefined;
 	
 	if (nQ.includes("@") && defaultStore.state.enableInstanceEmojiSearch) {
 		// ホスト名絞り込み
@@ -759,7 +759,7 @@ function emojiSearch(nQ, oQ) {
     return searchHost && !emoji.host.includes(searchHost);
 };
 
-	const nameSearch = (emojis, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?, startsWith?) => {
+	const nameSearch = (emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?, startsWith?) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];
 		for (const emoji of emojis) {
 			if (shouldSkipEmoji(emoji)) continue;
@@ -776,14 +776,14 @@ function emojiSearch(nQ, oQ) {
 			}
 		}
 	}
-	const aliasSearch = (emojis, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?, startsWith?) => {
+	const aliasSearch = (emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji | UnicodeEmojiDef | {emoji:Misskey.entities.CustomEmoji | UnicodeEmojiDef; key: string;}>, max?, startsWith?) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];
 		for (const emoji of emojis) {
 			if (shouldSkipEmoji(emoji)) continue;
 			if (
 				keywords.every(
 					(keyword) =>
-						emoji.aliases.some((alias) =>
+						(emoji.aliases || emoji.keywords).some((alias) =>
 							startsWith
 								? formatRoomaji(alias).startsWith(keyword)
 								: !formatRoomaji(alias).startsWith(keyword) && formatRoomaji(emoji.name).includes(keyword)
@@ -798,7 +798,7 @@ function emojiSearch(nQ, oQ) {
 				}
 			}
 	}
-	const andSearch = (emojis, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?) => {
+	const andSearch = (emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];
 		for (const emoji of emojis) {
 			if (shouldSkipEmoji(emoji)) continue;
@@ -806,7 +806,7 @@ function emojiSearch(nQ, oQ) {
 				keywords.every(
 					(keyword) =>
 							formatRoomaji(emoji.name).includes(keyword) ||
-							emoji.keywords.some((alias) =>
+							(emoji.aliases || emoji.keywords).some((alias) =>
 								formatRoomaji(alias).includes(keyword)
 							)
 				)
@@ -852,7 +852,7 @@ function emojiSearch(nQ, oQ) {
 		const emojis = unref(customEmojis);
 		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
-		const beforeSort = new Set();
+		const beforeSort = new Set<{emoji:Misskey.entities.CustomEmoji | UnicodeEmojiDef; key: string;}>();
 
 		if (newQ.includes(" ")) {
 			// AND検索
@@ -894,7 +894,7 @@ function emojiSearch(nQ, oQ) {
 		const max = 45;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
-		const beforeSort = new Set();
+		const beforeSort = new Set<{emoji:Misskey.entities.CustomEmoji | UnicodeEmojiDef; key: string;}>();
 
 		if (isAllSearch) return matches;
 		const exactMatch = emojis.find((emoji) => formatRoomaji(emoji.name) === roomajiQ);
@@ -904,11 +904,11 @@ function emojiSearch(nQ, oQ) {
 			// AND検索
 			return matches;
 		} else {
-			nameSearch(emojis, roomajiQ, matches, max, true);
-			aliasSearch(emojis, roomajiQ, matches, max, true);
+			nameSearch(emojis, roomajiQ, beforeSort, max, true);
+			aliasSearch(emojis, roomajiQ, beforeSort, max, true);
 		}
 		
-		return new Set(Array.from(beforeSort).sort((a, b) => a.key.length - b.key.length).map((x) => x.emoji));
+		return new Set(Array.from(beforeSort).sort((a, b) => (a.key?.length ?? 0) - (b.key?.length ?? 0)).map((x) => x.emoji));
 	};
 
 	searchResultCustom.value = Array.from(searchCustom());

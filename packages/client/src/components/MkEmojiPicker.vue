@@ -35,6 +35,7 @@
 							<button
 								:key="emoji.id"
 								v-if="!errorEmojis.has(getKey(emoji))"
+								v-tooltip="getKey(emoji)"
 								class="_button item"
 								:title="getKey(emoji)"
 								tabindex="0"
@@ -61,6 +62,7 @@
 					<div v-if="searchResultUnicodeStart.length > 0" class="body">
 						<button
 							v-for="emoji in searchResultUnicodeStart"
+							v-tooltip="getKey(emoji)"
 							:key="emoji.name"
 							class="_button item"
 							:title="emoji.name"
@@ -75,6 +77,7 @@
 							<button
 								:key="emoji.id"
 								v-if="!errorEmojis.has(getKey(emoji))"
+								v-tooltip="getKey(emoji)"
 								class="_button item"
 								:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
 								tabindex="0"
@@ -101,6 +104,7 @@
 					<div v-if="searchResultUnicode.length > 0" class="body">
 						<button
 							v-for="emoji in searchResultUnicode"
+							v-tooltip="getKey(emoji)"
 							:key="emoji.name"
 							class="_button item"
 							:title="emoji.name"
@@ -757,7 +761,7 @@ function emojiSearch(nQ, oQ) {
 
 	const shouldSkipEmoji = (emoji) => {
     return searchHost && !emoji.host.includes(searchHost);
-};
+	};
 
 	const nameSearch = (emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?, startsWith?) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];
@@ -821,7 +825,7 @@ function emojiSearch(nQ, oQ) {
 	}
 	
 	const searchCustom = () => {
-		const max = isAllSearch ? 45 : 99;
+		const max = 99;
 		const emojis = unref(customEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 
@@ -937,11 +941,11 @@ function reset() {
 	q.value = "";
 }
 
-function getKey(
+const getKey = $computed((
 	emoji: string | Misskey.entities.CustomEmoji | UnicodeEmojiDef
-): string {
+): string => {
 	return typeof emoji === "string" ? emoji : emoji.char || `:${emoji.name}${emoji.host ? `@${emoji.host}` : ""}:`;
-}
+});
 
 function chosen(emoji: any, ev?: MouseEvent) {
 	const el =

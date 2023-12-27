@@ -123,7 +123,6 @@ const isMuted = computed(() => {
 })
 
 const ce = computed(() => instance.emojis ?? []);
-const ace = computed(() => instance.allEmojis ?? []);
 const customEmoji = computed(() => {
 	if (!isCustom.value) return null;
 
@@ -135,7 +134,7 @@ const customEmoji = computed(() => {
 	if (matchprops) {
 		return {...matchprops, name, host};
 	} else if (host && host !== "." && host !== config.host) {
-		return ace.value.find((x) => x.name === name && x.host === host);
+		return {name, host};
 	} else {
 		const cefind = ce.value.find((x) => x.name === name);
 		if (cefind || props.nofallback){

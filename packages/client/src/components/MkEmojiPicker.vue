@@ -771,7 +771,10 @@ function emojiSearch(nQ, oQ) {
 							: !formatRoomaji(emoji.name).startsWith(keyword) && formatRoomaji(emoji.name).includes(keyword)
 				)
 			) {
-				matches.add(emoji);
+				matches.add(!startsWith ? emoji : {
+					emoji: emoji,
+					key: formatRoomaji(emoji.name),
+				});
 				if (matches.size >= (max ?? 99)) break;
 			}
 		}
@@ -790,7 +793,7 @@ function emojiSearch(nQ, oQ) {
 						)
 				)
 			) {
-				matches.add(startsWith ? emoji : {
+				matches.add(!startsWith ? emoji : {
 					emoji: emoji,
 					key: formatRoomaji(emoji.name),
 				});

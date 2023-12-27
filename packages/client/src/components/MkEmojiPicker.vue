@@ -34,19 +34,18 @@
 						<template v-for="emoji in searchResultCustomStart">
 							<button
 								:key="emoji.id"
-								v-if="!errorEmojis.has(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
+								v-if="!errorEmojis.has(getKey(emoji))"
 								class="_button item"
-								v-tooltip="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
-								:title="emoji.name + (emoji.host ? `@${emoji.host}` : '')"
+								:title="getKey(emoji)"
 								tabindex="0"
 								@click="chosen(emoji, $event)"
 							>
 								<MkEmoji
 									class="emoji"
-									:emoji="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
+									:emoji="getKey(emoji)"
 									:normal="true"
 									:isPicker="true"
-									@loaderror="errorEmojis.add(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
+									@loaderror="errorEmojis.add(getKey(emoji))"
 								/>
 								<!--<img
 									class="emoji"
@@ -64,7 +63,6 @@
 							v-for="emoji in searchResultUnicodeStart"
 							:key="emoji.name"
 							class="_button item"
-							v-tooltip="emoji.name"
 							:title="emoji.name"
 							tabindex="0"
 							@click="chosen(emoji, $event)"
@@ -76,19 +74,18 @@
 						<template v-for="emoji in searchResultCustom">
 							<button
 								:key="emoji.id"
-								v-if="!errorEmojis.has(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+								v-if="!errorEmojis.has(getKey(emoji))"
 								class="_button item"
-								v-tooltip="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
 								:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
 								tabindex="0"
 								@click="chosen(emoji, $event)"
 							>
 								<MkEmoji
 									class="emoji"
-									:emoji="':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':'"
+									:emoji="getKey(emoji)"
 									:normal="true"
 									:isPicker="true"
-									@loaderror="errorEmojis.add(':' + emoji.name + (emoji.host ? '@' + emoji.host : '') + ':')"
+									@loaderror="errorEmojis.add(getKey(emoji))"
 								/>
 								<!--<img
 									class="emoji"
@@ -106,7 +103,6 @@
 							v-for="emoji in searchResultUnicode"
 							:key="emoji.name"
 							class="_button item"
-							v-tooltip="emoji.name"
 							:title="emoji.name"
 							tabindex="0"
 							@click="chosen(emoji, $event)"
@@ -124,7 +120,6 @@
 									<button
 										:key="emoji"
 										v-if="!errorEmojis.has(emoji)"
-										v-tooltip="emoji"
 										class="_button item"
 										tabindex="0"
 										@click="chosen(emoji, $event)"
@@ -800,8 +795,8 @@ function emojiSearch(nQ, oQ) {
 					key: formatRoomaji(emoji.name),
 				});
 				if (matches.size >= (max ?? 99)) break;
+				}
 			}
-		}
 	}
 	const andSearch = (emojis, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];

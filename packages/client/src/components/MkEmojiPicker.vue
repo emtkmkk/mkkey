@@ -34,19 +34,19 @@
 						<template v-for="emoji in searchResultCustomStart">
 							<button
 								:key="emoji.id"
-								v-if="!errorEmojis.has(getKey(emoji))"
-								v-tooltip="getKey(emoji)"
+								v-if="!errorEmojis.has(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
+								v-tooltip="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
 								class="_button item"
-								:title="getKey(emoji)"
+								:title="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
 								tabindex="0"
 								@click="chosen(emoji, $event)"
 							>
 								<MkEmoji
 									class="emoji"
-									:emoji="getKey(emoji)"
+									:emoji="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
 									:normal="true"
 									:isPicker="true"
-									@loaderror="errorEmojis.add(getKey(emoji))"
+									@loaderror="errorEmojis.add(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
 								/>
 								<!--<img
 									class="emoji"
@@ -62,7 +62,7 @@
 					<div v-if="searchResultUnicodeStart.length > 0" class="body">
 						<button
 							v-for="emoji in searchResultUnicodeStart"
-							v-tooltip="getKey(emoji)"
+							v-tooltip="emoji.name"
 							:key="emoji.name"
 							class="_button item"
 							:title="emoji.name"
@@ -76,19 +76,19 @@
 						<template v-for="emoji in searchResultCustom">
 							<button
 								:key="emoji.id"
-								v-if="!errorEmojis.has(getKey(emoji))"
-								v-tooltip="getKey(emoji)"
+								v-if="!errorEmojis.has(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
+								v-tooltip="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
 								class="_button item"
-								:title="emoji.name + (emoji.host ? '@' + emoji.host : '')"
+								:title="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
 								tabindex="0"
 								@click="chosen(emoji, $event)"
 							>
 								<MkEmoji
 									class="emoji"
-									:emoji="getKey(emoji)"
+									:emoji="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
 									:normal="true"
 									:isPicker="true"
-									@loaderror="errorEmojis.add(getKey(emoji))"
+									@loaderror="errorEmojis.add(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
 								/>
 								<!--<img
 									class="emoji"
@@ -104,7 +104,7 @@
 					<div v-if="searchResultUnicode.length > 0" class="body">
 						<button
 							v-for="emoji in searchResultUnicode"
-							v-tooltip="getKey(emoji)"
+							v-tooltip="emoji.name"
 							:key="emoji.name"
 							class="_button item"
 							:title="emoji.name"
@@ -941,11 +941,11 @@ function reset() {
 	q.value = "";
 }
 
-const getKey = $computed((
+function getKey(
 	emoji: string | Misskey.entities.CustomEmoji | UnicodeEmojiDef
-): string => {
+): string {
 	return typeof emoji === "string" ? emoji : emoji.char || `:${emoji.name}${emoji.host ? `@${emoji.host}` : ""}:`;
-});
+}
 
 function chosen(emoji: any, ev?: MouseEvent) {
 	const el =

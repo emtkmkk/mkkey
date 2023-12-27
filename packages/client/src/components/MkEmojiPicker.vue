@@ -755,100 +755,101 @@ function emojiSearch(nQ, oQ) {
 		searchHost = /@(\S+?):?$/.exec(q.value)?.[1];
 	}
 
-	const isAllSearch = unref(allCustomEmojis) ? q.value.includes("@") : false;
+	const isAllSearch = !!unref(allCustomEmojis) && q.value.includes("@");
 	const newQ = kanaToHira(formatRoomaji(q.value.replace(/@\S*$|:/g, "")));
 	const roomajiQ = formatRoomaji(jaToRoomaji(q.value.replace(/@\S*$|:/g, "")));
+	const allEmojis = unref(allCustomEmojis);
+
+	const shouldSkipEmoji = (emoji) => {
+    return searchHost && !emoji.host.includes(searchHost);
+};
+
+	const nameSearch = (emojis, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?, startsWith?) => {
+		keywords = Array.isArray(keywords) ? keywords : [keywords];
+		for (const emoji of emojis) {
+			if (shouldSkipEmoji(emoji)) continue;
+			if (
+				keywords.every(
+					(keyword) =>
+						startsWith
+							? formatRoomaji(emoji.name).startsWith(keyword)
+							: !formatRoomaji(emoji.name).startsWith(keyword) && formatRoomaji(emoji.name).includes(keyword)
+				)
+			) {
+				matches.add(emoji);
+				if (matches.size >= (max ?? 99)) break;
+			}
+		}
+	}
+	const aliasSearch = (emojis, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?, startsWith?) => {
+		keywords = Array.isArray(keywords) ? keywords : [keywords];
+		for (const emoji of emojis) {
+			if (shouldSkipEmoji(emoji)) continue;
+			if (
+				keywords.every(
+					(keyword) =>
+						emoji.aliases.some((alias) =>
+							startsWith
+								? formatRoomaji(alias).startsWith(keyword)
+								: !formatRoomaji(alias).startsWith(keyword) && formatRoomaji(emoji.name).includes(keyword)
+						)
+				)
+			) {
+				matches.add(startsWith ? emoji : {
+					emoji: emoji,
+					key: formatRoomaji(emoji.name),
+				});
+				if (matches.size >= (max ?? 99)) break;
+			}
+		}
+	}
+	const andSearch = (emojis, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?) => {
+		keywords = Array.isArray(keywords) ? keywords : [keywords];
+		for (const emoji of emojis) {
+			if (shouldSkipEmoji(emoji)) continue;
+			if (
+				keywords.every(
+					(keyword) =>
+							formatRoomaji(emoji.name).includes(keyword) ||
+							emoji.keywords.some((alias) =>
+								formatRoomaji(alias).includes(keyword)
+							)
+				)
+			) {
+				matches.add(emoji);
+				if (matches.size >= (max ?? 99)) break;
+			}
+		}
+	}
 	
 	const searchCustom = () => {
 		const max = isAllSearch ? 45 : 99;
 		const emojis = unref(customEmojis);
-		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
-		
+
 		// 設定で無効にされている場合は即終了
 		if (isAllSearch && defaultStore.state.disableAllIncludesSearch) return matches;
 
 		if (newQ.includes(" ")) {
 			// AND検索
-			const keywords = newQ.split(" ");
-			const roomajiKeywords = roomajiQ.split(" ");
 
 			// 名前またはエイリアスにキーワードが含まれている
 			if (isAllSearch) {
-				for (const emoji of allEmojis) {
-					if (searchHost && !emoji.host.includes(searchHost)) continue;
-					if (
-						keywords.every(
-							(keyword) =>
-								formatRoomaji(emoji.name).includes(roomajiKeywords)
-						)
-					) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
-					}
-				}
-				if (matches.size >= max) return matches;
+				nameSearch(allEmojis, roomajiQ.split(" "), matches, max);
 			} else {
-				
-				for (const emoji of emojis) {
-					if (
-						keywords.every(
-							(keyword) =>
-								formatRoomaji(emoji.name).includes(roomajiKeywords) ||
-								emoji.aliases.some((alias) =>
-									formatRoomaji(alias).includes(keyword)
-								)
-						)
-					) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
-					}
-				}
+				andSearch(emojis, roomajiQ.split(" "), matches, max);
 				if (matches.size >= max) return matches;
-
-				// 名前にキーワードが含まれている
-				for (const emoji of emojis) {
-					if (keywords.every((keyword) => formatRoomaji(emoji.name).includes(roomajiKeywords))) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
-					}
-				}
-				
+				andSearch(emojis, newQ.split(" "), matches, max);
 			}
 		} else {
 			if (isAllSearch) {
-				for (const emoji of allEmojis) {
-					if (searchHost && !emoji.host.includes(searchHost)) continue;
-					if (!formatRoomaji(emoji.name).startsWith(roomajiQ)) {
-						if (formatRoomaji(emoji.name).includes(roomajiQ)) {
-							matches.add(emoji);
-							if (matches.size >= max) break;
-						}
-					}
-				}
-				if (matches.size >= max) return matches;
+				nameSearch(allEmojis, roomajiQ, matches, max);
 			} else {
-				for (const emoji of emojis) {
-					if (!formatRoomaji(emoji.name).startsWith(roomajiQ)) {
-						if (formatRoomaji(emoji.name).includes(roomajiQ)) {
-							matches.add(emoji);
-							if (matches.size >= max) break;
-						}
-					}
-				}
+				nameSearch(emojis, roomajiQ, matches, max);
 				if (matches.size >= max) return matches;
-
-				for (const emoji of emojis) {
-					if (!emoji.aliases.some((alias) => kanaToHira(formatRoomaji(alias)).startsWith(newQ))) {
-						if (emoji.aliases.some((alias) => kanaToHira(formatRoomaji(alias)).includes(newQ))) {
-							matches.add(emoji);
-							if (matches.size >= max) break;
-						}
-					}
-				}
+				aliasSearch(emojis, newQ, matches, max);
 			}
 		}
-
 		return matches;
 	};
 	const searchCustomStart = () => {
@@ -863,40 +864,12 @@ function emojiSearch(nQ, oQ) {
 			return matches;
 		} else {
 			if (isAllSearch) {
-				for (const emoji of allEmojis) {
-					if (searchHost && !emoji.host.includes(searchHost)) continue;
-					if (formatRoomaji(emoji.name).startsWith(roomajiQ)) {
-						if (beforeSort.size >= max) break;
-						beforeSort.add({
-							emoji: emoji,
-							key: formatRoomaji(emoji.name),
-						});
-					}
-				}
+				nameSearch(allEmojis, roomajiQ, beforeSort, max, true);
 			} else {
 				const exactMatch = emojis.find((emoji) => emoji.name === roomajiQ);
 				if (exactMatch) beforeSort.add({emoji: exactMatch,key: formatRoomaji(exactMatch.name),});
-				for (const emoji of emojis) {
-					if (formatRoomaji(emoji.name).startsWith(roomajiQ)) {
-						if (beforeSort.size >= max) break;
-						beforeSort.add({
-							emoji: emoji,
-							key: formatRoomaji(emoji.name),
-						});
-					}
-				}
-
-				emojifor : for (const emoji of emojis) {
-					for (const alias of emoji.aliases) {
-						if (kanaToHira(formatRoomaji(alias)).startsWith(newQ)) {
-							if (beforeSort.size >= max) break emojifor;
-							beforeSort.add({
-								emoji: emoji,
-								key: formatRoomaji(alias),
-							});
-						}
-					}
-				}
+				nameSearch(emojis, roomajiQ, beforeSort, max, true);
+				aliasSearch(emojis, newQ, beforeSort, max, true);
 			}
 		}
 
@@ -911,54 +884,12 @@ function emojiSearch(nQ, oQ) {
 		if (isAllSearch) return matches;
 		if (newQ.includes(" ")) {
 			// AND検索
-			const keywords = newQ.split(" ");
-			const roomajiKeywords = roomajiQ.split(" ");
-
 			// 名前にキーワードが含まれている
-			for (const emoji of emojis) {
-				if (keywords.every((keyword) => formatRoomaji(emoji.name).includes(roomajiKeywords))) {
-					matches.add(emoji);
-					if (matches.size >= max) break;
-				}
-			}
-			if (matches.size >= max) return matches;
-
-			// 名前またはエイリアスにキーワードが含まれている
-			for (const emoji of emojis) {
-				if (
-					keywords.every(
-						(keyword) =>
-							formatRoomaji(emoji.name).includes(roomajiKeywords) ||
-							emoji.keywords.some((alias) =>
-								formatRoomaji(alias).includes(keyword)
-							)
-					)
-				) {
-					matches.add(emoji);
-					if (matches.size >= max) break;
-				}
-			}
+			andSearch(emojis, roomajiQ.split(" "), matches, max);
 		} else {
-			for (const emoji of emojis) {
-				if (!formatRoomaji(emoji.name).startsWith(roomajiQ)) {
-					if (formatRoomaji(emoji.name).includes(roomajiQ)) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
-					}
-				}
-			}
+			nameSearch(emojis, roomajiQ, matches, max);
 			if (matches.size >= max) return matches;
-
-			for (const emoji of emojis) {
-				if (
-					!emoji.keywords.some((keyword) => formatRoomaji(keyword).startsWith(roomajiQ))
-				) {
-					if (emoji.keywords.some((keyword) => formatRoomaji(keyword).includes(roomajiQ))) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
-					}
-				}
-			}
+			aliasSearch(emojis, roomajiQ, matches, max);
 		}
 
 		return matches;
@@ -978,29 +909,8 @@ function emojiSearch(nQ, oQ) {
 			// AND検索
 			return matches;
 		} else {
-			for (const emoji of emojis) {
-				if (formatRoomaji(emoji.name).startsWith(roomajiQ)) {
-					if (beforeSort.size >= max) break;
-					beforeSort.add({
-						emoji: emoji,
-						key: formatRoomaji(emoji.name),
-					});
-				}
-			}
-
-			emojifor : for (const emoji of emojis) {
-				for (const keyword of emoji.keywords) {
-					if (
-						formatRoomaji(keyword).startsWith(roomajiQ)
-					) {
-						if (beforeSort.size >= max) break emojifor;
-						beforeSort.add({
-							emoji: emoji,
-							key: formatRoomaji(keyword),
-						});
-					}
-				}
-			}
+			nameSearch(emojis, roomajiQ, matches, max, true);
+			aliasSearch(emojis, roomajiQ, matches, max, true);
 		}
 		
 		return new Set(Array.from(beforeSort).sort((a, b) => a.key.length - b.key.length).map((x) => x.emoji));

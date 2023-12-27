@@ -792,8 +792,8 @@ function emojiSearch(nQ, oQ) {
 					(keyword) =>
 						(emoji.aliases || emoji.keywords).some((alias) =>
 							startsWith
-								? formatRoomaji(alias).startsWith(keyword)
-								: !formatRoomaji(alias).startsWith(keyword) && formatRoomaji(emoji.name).includes(keyword)
+								? kanaToHira(formatRoomaji(alias)).startsWith(keyword)
+								: !kanaToHira(formatRoomaji(alias)).startsWith(keyword) && formatRoomaji(emoji.name).includes(keyword)
 						)
 				)
 			) {
@@ -814,7 +814,7 @@ function emojiSearch(nQ, oQ) {
 					(keyword) =>
 							formatRoomaji(emoji.name).includes(keyword) ||
 							(emoji.aliases || emoji.keywords).some((alias) =>
-								formatRoomaji(alias).includes(keyword)
+								kanaToHira(formatRoomaji(alias)).includes(keyword)
 							)
 				)
 			) {

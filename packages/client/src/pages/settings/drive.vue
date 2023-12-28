@@ -41,7 +41,7 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
-			<FormButton @click="chooseUploadFolderAvatar()">
+			<FormButton @click="chooseUploadFolderAvatar()" style="margin-top: 6px;">
 				{{ i18n.ts.uploadFolderAvatar }}
 				<template #suffix>{{
 					uploadFolderAvatar ? uploadFolderAvatar.name : "-"
@@ -50,7 +50,7 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
-			<FormButton @click="chooseUploadFolderBanner()">
+			<FormButton @click="chooseUploadFolderBanner()" style="margin-top: 6px;">
 				{{ i18n.ts.uploadFolderBanner }}
 				<template #suffix>{{
 					uploadFolderBanner ? uploadFolderBanner.name : "-"
@@ -59,7 +59,7 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
-			<FormButton v-if="$i.isModerator || $i.isAdmin" @click="chooseUploadFolderEmoji()">
+			<FormButton v-if="$i.isModerator || $i.isAdmin" @click="chooseUploadFolderEmoji()" style="margin-top: 6px;">
 				{{ i18n.ts.uploadFolderEmoji }}
 				<template #suffix>{{
 					uploadFolderEmoji ? uploadFolderEmoji.name : "-"

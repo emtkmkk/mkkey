@@ -70,12 +70,13 @@
 		const updateProgress = () => {
 			const elapsedTime = Date.now() - startTime;
 			const finalTime = Math.max(elapsedTime - (duration - finalDuration), 0);
-			const randomIncrement = 0.0075 + Math.random() * 0.017;
+			const randomIncrement = 0.006 + Math.random() * 0.017;
 
 			if (finalTime > 0) {
 				if (!finalProgress) finalProgress = progress.value
 				progress.value = finalProgress + (1 - finalProgress) * (finalTime / finalDuration);
 			} else {
+				if (progress.value === 0) progress.value += 0.05;
 				progress.value += randomIncrement;
 			}
 

@@ -80,7 +80,6 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: null as string | null,
 			createdAt: "2023/12/28",
-			page: "drive",
 		},
 		pastedFileName: {
 			where: "account",

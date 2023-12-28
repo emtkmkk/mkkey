@@ -23,7 +23,8 @@
 							r="20"
 							fill="none"
 							stroke-width="6px"
-							style="fill: none; stroke: currentColor; stroke-width: 6px; stroke-dasharray: 125.664; stroke-dashoffset: calc(125.664 * (1 - progress));"
+							style="fill: none; stroke: currentColor; stroke-width: 6px; stroke-dasharray: 125.664;"
+							:style="{ strokeDashoffset: circleDashoffset }"
 					></circle>
 				</svg>
 				<img
@@ -37,7 +38,7 @@
 	</template>
 
 	<script lang="ts" setup>
-	import { ref, onMounted, onBeforeUnmount } from "vue";
+	import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 
 	const props = withDefaults(
 		defineProps<{
@@ -55,6 +56,7 @@
 	);
 
 	const progress = ref(0);
+	const circleDashoffset = ref("0");
 	const duration = 30000;
 	const finalDuration = 10000;
 	const isLongTime = ref(false);
@@ -89,6 +91,11 @@
 
 	onBeforeUnmount(() => {
 		clearTimeout(timerId); // タイマーの解除
+	});
+
+	watch(progress, (newVal) => {
+		const dashoffset = 125.664 * (1 - newVal);
+		circleDashoffset.value = `${dashoffset}`;
 	});
 	</script>
 

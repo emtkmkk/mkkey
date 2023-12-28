@@ -307,6 +307,7 @@ const handleImgClick = (event) => {
 
 	&.noStyle {
 		height: auto !important;
+		max-height: 100%;
 	}
 }
 </style>

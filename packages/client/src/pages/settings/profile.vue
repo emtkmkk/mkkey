@@ -273,7 +273,7 @@ function save() {
 }
 
 function changeAvatar(ev) {
-	selectFile(ev.currentTarget ?? ev.target, i18n.ts.avatar).then(
+	selectFile(ev.currentTarget ?? ev.target, i18n.ts.avatar, undefined, undefined, "avatar").then(
 		async (file) => {
 			let originalOrCropped = file;
 
@@ -300,7 +300,7 @@ function changeAvatar(ev) {
 }
 
 function changeBanner(ev) {
-	selectFile(ev.currentTarget ?? ev.target, i18n.ts.banner).then(
+	selectFile(ev.currentTarget ?? ev.target, i18n.ts.banner, undefined, undefined, "banner").then(
 		async (file) => {
 			let originalOrCropped = file;
 /*

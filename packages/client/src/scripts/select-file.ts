@@ -12,11 +12,17 @@ function select(
 	multiple: boolean,
 	requiredFilename?: boolean,
 	keepFilename?: boolean,
+	to?: string,
 ): Promise<DriveFile | DriveFile[]> {
 	return new Promise((res, rej) => {
-		const keepOriginal = ref(defaultStore.state.keepOriginalUploading);
+		const keepOriginal = ref(to === "emoji" ? true : defaultStore.state.keepOriginalUploading);
 		const keepFileName = ref(keepFilename ?? defaultStore.state.keepFileName);
 		let doAction = false;
+		const folderId = 
+			defaultStore.state.uploadFolderAvatar && to === "avatar" ? defaultStore.state.uploadFolderAvatar 
+			: defaultStore.state.uploadFolderBanner && to === "banner" ? defaultStore.state.uploadFolderBanner
+			: defaultStore.state.uploadFolderEmoji && to === "emoji" ? defaultStore.state.uploadFolderEmoji
+			: defaultStore.state.uploadFolder;
 
 		const chooseFileFromPc = () => {
 			doAction = true;
@@ -27,7 +33,7 @@ function select(
 				const promises = Array.from(input.files).map((file) =>
 					uploadFile(
 						file,
-						defaultStore.state.uploadFolder,
+						folderId,
 						undefined,
 						keepOriginal.value,
 						keepFileName.value,
@@ -82,7 +88,7 @@ function select(
 
 				os.api("drive/files/upload-from-url", {
 					url: url,
-					folderId: defaultStore.state.uploadFolder,
+					folderId,
 					marker,
 				});
 
@@ -142,8 +148,9 @@ export function selectFile(
 	label: string | null = null,
 	requiredFilename?: boolean,
 	keepFilename?: boolean,
+	to?: string,
 ): Promise<DriveFile> {
-	return select(src, label, false, requiredFilename, keepFilename) as Promise<DriveFile>;
+	return select(src, label, false, requiredFilename, keepFilename, to) as Promise<DriveFile>;
 }
 
 export function selectFiles(
@@ -151,6 +158,7 @@ export function selectFiles(
 	label: string | null = null,
 	requiredFilename?: boolean,
 	keepFilename?: boolean,
+	to?: string,
 ): Promise<DriveFile[]> {
-	return select(src, label, true, requiredFilename, keepFilename) as Promise<DriveFile[]>;
+	return select(src, label, true, requiredFilename, keepFilename, to) as Promise<DriveFile[]>;
 }

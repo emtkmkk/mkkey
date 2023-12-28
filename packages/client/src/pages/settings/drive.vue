@@ -41,6 +41,33 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
+			<FormButton @click="chooseUploadFolderAvatar()">
+				{{ i18n.ts.uploadFolderAvatar }}
+				<template #suffix>{{
+					uploadFolderAvatar ? uploadFolderAvatar.name : "-"
+				}}</template>
+				<template #suffixIcon
+					><i class="ph-folder-notch-open ph-bold ph-lg"></i
+				></template>
+			</FormButton>
+			<FormButton @click="chooseUploadFolderBanner()">
+				{{ i18n.ts.uploadFolderBanner }}
+				<template #suffix>{{
+					uploadFolderBanner ? uploadFolderBanner.name : "-"
+				}}</template>
+				<template #suffixIcon
+					><i class="ph-folder-notch-open ph-bold ph-lg"></i
+				></template>
+			</FormButton>
+			<FormButton v-if="$i.isModerator || $i.isAdmin" @click="chooseUploadFolderEmoji()">
+				{{ i18n.ts.uploadFolderEmoji }}
+				<template #suffix>{{
+					uploadFolderEmoji ? uploadFolderEmoji.name : "-"
+				}}</template>
+				<template #suffixIcon
+					><i class="ph-folder-notch-open ph-bold ph-lg"></i
+				></template>
+			</FormButton>
 			<FormSwitch v-model="keepOriginalUploading" class="_formBlock">
 				<template #label>{{ i18n.ts.keepOriginalUploading }}</template>
 				<template #caption>{{
@@ -98,6 +125,9 @@ const fetching = ref(true);
 const usage = ref<any>(null);
 const capacity = ref<any>(null);
 const uploadFolder = ref<any>(null);
+const uploadFolderAvatar = ref<any>(null);
+const uploadFolderBanner = ref<any>(null);
+const uploadFolderEmoji = ref<any>(null);
 const DEFAULT_CAPACITY = 5 * 1024 * 1024 * 1024;
 const MAX_CAPACITY = 100 * 1024 * 1024 * 1024;
 let alwaysMarkNsfw = $ref($i.alwaysMarkNsfw);
@@ -143,6 +173,27 @@ if (defaultStore.state.uploadFolder) {
 		uploadFolder.value = response;
 	});
 }
+if (defaultStore.state.uploadFolderAvatar) {
+	os.api("drive/folders/show", {
+		folderId: defaultStore.state.uploadFolderAvatar,
+	}).then((response) => {
+		uploadFolderAvatar.value = response;
+	});
+}
+if (defaultStore.state.uploadFolderBanner) {
+	os.api("drive/folders/show", {
+		folderId: defaultStore.state.uploadFolderBanner,
+	}).then((response) => {
+		uploadFolderBanner.value = response;
+	});
+}
+if (defaultStore.state.uploadFolderEmoji) {
+	os.api("drive/folders/show", {
+		folderId: defaultStore.state.uploadFolderEmoji,
+	}).then((response) => {
+		uploadFolderEmoji.value = response;
+	});
+}
 
 function chooseUploadFolder() {
 	os.selectDriveFolder(false).then(async (folder) => {
@@ -154,6 +205,45 @@ function chooseUploadFolder() {
 			});
 		} else {
 			uploadFolder.value = null;
+		}
+	});
+}
+function chooseUploadFolderAvatar() {
+	os.selectDriveFolder(false).then(async (folder) => {
+		defaultStore.set("uploadFolderAvatar", folder ? folder.id : null);
+		os.success();
+		if (defaultStore.state.uploadFolderAvatar) {
+			uploadFolderAvatar.value = await os.api("drive/folders/show", {
+				folderId: defaultStore.state.uploadFolderAvatar,
+			});
+		} else {
+			uploadFolderAvatar.value = null;
+		}
+	});
+}
+function chooseUploadFolderBanner() {
+	os.selectDriveFolder(false).then(async (folder) => {
+		defaultStore.set("uploadFolderBanner", folder ? folder.id : null);
+		os.success();
+		if (defaultStore.state.uploadFolderBanner) {
+			uploadFolderBanner.value = await os.api("drive/folders/show", {
+				folderId: defaultStore.state.uploadFolderBanner,
+			});
+		} else {
+			uploadFolderBanner.value = null;
+		}
+	});
+}
+function chooseUploadFolderEmoji() {
+	os.selectDriveFolder(false).then(async (folder) => {
+		defaultStore.set("uploadFolderEmoji", folder ? folder.id : null);
+		os.success();
+		if (defaultStore.state.uploadFolderEmoji) {
+			uploadFolderEmoji.value = await os.api("drive/folders/show", {
+				folderId: defaultStore.state.uploadFolderEmoji,
+			});
+		} else {
+			uploadFolderEmoji.value = null;
 		}
 	});
 }

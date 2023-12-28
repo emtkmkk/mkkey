@@ -64,6 +64,24 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: null as string | null,
 		},
+		uploadFolderAvatar: {
+			where: "account",
+			default: null as string | null,
+			createdAt: "2023/12/28",
+			page: "drive",
+		},
+		uploadFolderBanner: {
+			where: "account",
+			default: null as string | null,
+			createdAt: "2023/12/28",
+			page: "drive",
+		},
+		uploadFolderEmoji: {
+			where: "account",
+			default: null as string | null,
+			createdAt: "2023/12/28",
+			page: "drive",
+		},
 		pastedFileName: {
 			where: "account",
 			default: "yyyy-MM-dd HH-mm-ss [{{number}}]",

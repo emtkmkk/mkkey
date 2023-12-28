@@ -245,7 +245,7 @@ const toggleSelect = (emoji) => {
 };
 
 const add = async (ev: MouseEvent) => {
-	const files = await selectFiles(ev.currentTarget ?? ev.target, null, false, true);
+	const files = await selectFiles(ev.currentTarget ?? ev.target, null, false, true, "emoji");
 
 	const promise = Promise.all(
 		files.map((file) =>
@@ -347,7 +347,7 @@ const menu = (ev: MouseEvent) => {
 				text: i18n.ts.import,
 				action: async () => {
 					const file = await selectFile(
-						ev.currentTarget ?? ev.target
+						ev.currentTarget ?? ev.target,null,undefined,undefined,"emoji"
 					);
 					os.api("admin/emoji/import-zip", {
 						fileId: file.id,

@@ -561,6 +561,7 @@ export const UserRepository = db.getRepository(User).extend({
 			isBot: user.isBot || falsy,
 			isCat: user.isCat || falsy,
 			speakAsCat: user.speakAsCat || falsy,
+			notesCount: user.notesCount,
 			instance: user.host
 				? userInstanceCache
 					.fetch(
@@ -618,7 +619,6 @@ export const UserRepository = db.getRepository(User).extend({
 					fields: isDeleted ? "🗑" : profile!.fields,
 					followersCount: followersCount ?? "N/A",
 					followingCount: followingCount ?? "N/A",
-					notesCount: user.notesCount,
 					hasClips: !user.host ? Clips.count({
 						where: { userId: user.id, isPublic: true },
 						take: 1,

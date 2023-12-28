@@ -155,7 +155,7 @@ export default async function (
 
 	}
 
-	if (isRenote || deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 30))) {
+	if (isPhysical) {
 		// ノート数を減らす
 		if (note.visibility !== "specified") decNotesCountOfUser(user);
 

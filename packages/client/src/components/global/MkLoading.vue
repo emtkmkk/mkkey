@@ -12,20 +12,21 @@
 			<div :class="$style.container" aria-hidden="true">
 				<svg
 					v-if="!isLongTime"
-					:class="[$style.spinner]"
 					viewBox="0 0 50 50"
 					xmlns="http://www.w3.org/2000/svg"
 				>
-					<circle
-							:class="[$style.path]"
-							cx="25"
-							cy="25"
-							r="20"
-							fill="none"
-							stroke-width="6px"
-							style="fill: none; stroke: currentColor; stroke-width: 6px; stroke-dasharray: 125.664;"
-							:style="{ strokeDashoffset: circleDashoffset }"
-					></circle>
+   				<g transform="rotate(-90 25 25)">
+						<circle
+								:class="[$style.path]"
+								cx="25"
+								cy="25"
+								r="20"
+								fill="none"
+								stroke-width="6px"
+								style="fill: none; stroke: currentColor; stroke-width: 6px; stroke-dasharray: 125.664;"
+								:style="{ strokeDashoffset: circleDashoffset }"
+						></circle>
+					</g>
 				</svg>
 				<img
 					v-if="isLongTime"
@@ -169,7 +170,7 @@
 		z-index: 999;
 		width: var(--size);
 		height: var(--size);
-		//animation: spin 2s linear infinite;
+		animation: spin 2s linear infinite;
 	}
 
 	.path {

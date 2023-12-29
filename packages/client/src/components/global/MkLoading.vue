@@ -91,7 +91,7 @@
 
 	watch(progress, (newVal) => {
 		if (newVal % 2 >= 1){
-      const dashoffset = 125.664 * (newVal % 1);
+      const dashoffset = -125.664 * (newVal % 1);
 			circleDashoffset.value = `${dashoffset}`;
 		} else {
 			const dashoffset = 125.664 * (1 - (newVal % 1));

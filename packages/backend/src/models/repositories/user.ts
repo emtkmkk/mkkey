@@ -556,7 +556,7 @@ export const UserRepository = db.getRepository(User).extend({
 
 		const packed = {
 			id: user.id,
-			name: isDeleted ? "🗑" : memo.customName ? memo.customName : user.name,
+			name: isDeleted ? "🗑" : memo?.customName ? memo.customName : user.name,
 			username: user.username,
 			host: user.host,
 			avatarUrl: this.getAvatarUrlSync(user),

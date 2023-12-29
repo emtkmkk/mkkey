@@ -58,8 +58,7 @@
 
 	const progress = ref(0);
 	const circleDashoffset = ref("0");
-	const duration = 30000;
-	const finalDuration = 10000;
+	const duration = 10000;
 	const isLongTime = ref(false);
 	let timerId: number | null = null;
 	let finalProgress = 0;
@@ -69,19 +68,15 @@
 
 		const updateProgress = () => {
 			const elapsedTime = Date.now() - startTime;
-			const finalTime = Math.max(elapsedTime - (duration - finalDuration), 0);
-			const randomIncrement = 0.006 + Math.random() * 0.017;
+			const tickmax = 1 / (duration / 375)
+			const randomIncrement = (tickmax / 3) + Math.random() * (tickmax * 2 / 3);
 
-			if (finalTime > 0) {
-				if (!finalProgress) finalProgress = progress.value
-				progress.value = finalProgress + (1 - finalProgress) * (finalTime / finalDuration);
-			} else {
-				if (progress.value === 0) progress.value += 0.05;
+			if (progress.value === 0) progress.value += 0.1;
 				progress.value += randomIncrement;
 			}
 
-			if (progress.value < 1) {
-				timerId = setTimeout(updateProgress, 500);
+			if (progress.value < 4) {
+				timerId = setTimeout(updateProgress, 250);
 			} else {
 				isLongTime.value = true;
 			}
@@ -96,8 +91,13 @@
 	});
 
 	watch(progress, (newVal) => {
-		const dashoffset = 125.664 * (1 - newVal);
-		circleDashoffset.value = `${dashoffset}`;
+		if (newVal % 2 >= 1){
+      const dashoffset = 125.664 * (newVal % 1);
+			circleDashoffset.value = `${dashoffset}`;
+		} else {
+			const dashoffset = 125.664 * (1 - (newVal % 1));
+			circleDashoffset.value = `${dashoffset}`;
+		}
 	});
 	</script>
 

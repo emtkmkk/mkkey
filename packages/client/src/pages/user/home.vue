@@ -37,6 +37,7 @@
 										class="name"
 										:user="user"
 										:nowrap="false"
+										:original="true"
 									/>
 									<div>
 									<span
@@ -108,6 +109,7 @@
 									class="name"
 									:user="user"
 									:nowrap="false"
+									:original="true"
 								/>
 								<div>
 								<span

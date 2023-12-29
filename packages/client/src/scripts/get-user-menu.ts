@@ -129,6 +129,28 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		});
 	}
 
+	async function setCustomName(): Promise<void> {
+		const { canceled, result: input } = await os.inputText({
+			title: i18n.ts.addCustomname,
+			placeholder: user.originalName || "",
+			default: user.originalName ? user.name : "",
+		});
+		if (canceled) {
+			return;
+		}
+		os.apiWithDialog(
+			"users/update-memo",
+			{
+				userId: user.id,
+				customName: input || null,
+				memo: user.memo,
+			},
+		).then(() => {
+			user.originalName = user.originalName || user.name;
+			user.name = input;
+		});
+	}
+
 	async function toggleBlock(): Promise<void> {
 		if (
 			!(await getConfirmed(
@@ -284,6 +306,13 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			text: user.isRenoteMuted ? i18n.ts.renoteUnmute : i18n.ts.renoteMute,
 			action: toggleRenoteMute,
 		},
+		meId !== user.id
+			? {
+					icon: "ph-note-pencil ph-bold ph-lg",
+					text: i18n.ts.addCustomname,
+					action: setCustomName,
+			  }
+			: undefined,
 	] as any;
 
 	if ($i && meId !== user.id) {
@@ -322,7 +351,7 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			},
 		]);
 		if (user.isInviter) {
-			
+
 			menu = menu.concat([
 				null,
 				{

@@ -1,7 +1,7 @@
 <template>
 	<Mfm
 		:class="$style.root"
-		:text="maxlength && (user.name || user.username).length > maxlength ? (user.name?.replaceAll(/\s?:\w+:/g,'')?.trim() || user.username).slice(0,maxlength) + (user.name?.replaceAll(/\s?:\w+:/g,'')?.trim()?.length > maxlength ? '…' : '') : (user.name?.trim() || user.username)"
+		:text="maxlength && name.length > maxlength ? shortName.slice(0,maxlength) + (shortName?.length > maxlength ? '…' : '') : name"
 		:plain="true"
 		:nowrap="nowrap"
 		:author="user"
@@ -40,6 +40,7 @@ const props = withDefaults(
 		maxlength?: number;
 		hostIcon?: string;
 		altIcon?: string;
+		original?: boolean;
 	}>(),
 	{
 		nowrap: true,
@@ -48,6 +49,20 @@ const props = withDefaults(
 );
 let errorIcon = $ref(false);
 let erroraltIcon = $ref(false);
+let shortName = $computed(() => {
+	if (props.original) {
+		return props.user.name?.replaceAll(/\s?:\w+:/g, '')?.trim() || props.user.name?.replaceAll(/\s?:\w+:/g, '')?.trim() || props.user.username;
+	} else {
+		return props.user.name?.replaceAll(/\s?:\w+:/g, '')?.trim() || props.user.username;
+	}
+})
+let name = $computed(() => {
+	if (props.original) {
+		return props.user.originalName || props.user.name || props.user.username;
+	} else {
+		return props.user.name || props.user.username;
+	}
+})
 function getIcon(url): string {
 		return (
 					getProxiedImageUrlNullable(url, "preview")

@@ -68,6 +68,7 @@ import { InstanceRepository } from "./repositories/instance.js";
 import { Webhook } from "./entities/webhook.js";
 import { UserIp } from "./entities/user-ip.js";
 import { NoteEdit } from "./entities/note-edit.js";
+import { UserMemo } from "./entities/user-memo.js";
 
 export const Announcements = db.getRepository(Announcement);
 export const AnnouncementReads = db.getRepository(AnnouncementRead);
@@ -135,3 +136,4 @@ export const RegistryItems = db.getRepository(RegistryItem);
 export const Webhooks = db.getRepository(Webhook);
 export const Ads = db.getRepository(Ad);
 export const PasswordResetRequests = db.getRepository(PasswordResetRequest);
+export { UserMemo };

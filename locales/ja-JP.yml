@@ -100,6 +100,8 @@ pageLoadErrorDescription: "これは通常、ネットワークまたはブラ�
 serverIsDead: "サーバーの応答がありません。しばらく待ってから再度試してください。"
 youShouldUpgradeClient: "このページを表示するためには、リロードして新しいバージョンのクライアントをご利用ください。"
 enterListName: "リスト名を入力"
+addMemo: "メモを追加"
+addCustomname: "ニックネームを編集"
 privacy: "プライバシー"
 makeFollowManuallyApprove: "フォローを承認制にする"
 makeFollowManuallyApproveSilent: "プロフィールの鍵マークを非表示にする"

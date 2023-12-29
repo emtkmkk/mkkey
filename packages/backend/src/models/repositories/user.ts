@@ -39,6 +39,7 @@ import {
 	UserNotePinings,
 	UserProfiles,
 	UserSecurityKeys,
+	UserMemo,
 } from "../index.js";
 import type { Instance } from "../entities/instance.js";
 
@@ -548,9 +549,14 @@ export const UserRepository = db.getRepository(User).extend({
 
 		const isDeleted = user.isDeleted;
 
+		const memo = meId == null ? null : await UserMemo.findOneBy({
+			userId: meId,
+			targetUserId: user.id,
+		}).then((row) => row ?? null);
+
 		const packed = {
 			id: user.id,
-			name: isDeleted ? "🗑" : user.name,
+			name: isDeleted ? "🗑" : memo.customName ? memo.customName : user.name,
 			username: user.username,
 			host: user.host,
 			avatarUrl: this.getAvatarUrlSync(user),
@@ -591,6 +597,8 @@ export const UserRepository = db.getRepository(User).extend({
 				iconUrl: x.iconUrl,
 				displayOrder: x.displayOrder,
 			})) : undefined,
+			originalName: memo.customName ? isDeleted ? "🗑" : user.name : undefined,
+			memo: memo.memo ? memo.memo : undefined,
 			...(opts.detail
 				? {
 					url: profile!.url,

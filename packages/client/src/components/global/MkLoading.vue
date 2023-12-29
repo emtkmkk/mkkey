@@ -72,8 +72,7 @@
 			const randomIncrement = (tickmax / 3) + Math.random() * (tickmax * 2 / 3);
 
 			if (progress.value === 0) progress.value += 0.1;
-				progress.value += randomIncrement;
-			}
+			progress.value += randomIncrement;
 
 			if (progress.value < 4) {
 				timerId = setTimeout(updateProgress, 250);

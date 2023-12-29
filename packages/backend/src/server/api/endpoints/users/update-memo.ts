@@ -1,4 +1,4 @@
-import { Users, UserMemo } from "@/models/index.js";
+import { Users, UserMemos } from "@/models/index.js";
 import { ApiError } from "../../error.js";
 import define from "../../define.js";
 import { genId } from "@/misc/gen-id.js";
@@ -46,7 +46,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 			// 引数がnullか空文字であれば、パーソナルメモを削除する
 			if (!ps.memo && !ps.customName) {
-				await UserMemo.delete({
+				await UserMemos.delete({
 					userId: user.id,
 					targetUserId: target.id,
 				});
@@ -54,13 +54,13 @@ export default define(meta, paramDef, async (ps, user) => {
 			}
 
 			// 以前に作成されたパーソナルメモがあるかどうか確認
-			const previousmemo = await UserMemo.findOneBy({
+			const previousmemo = await UserMemos.findOneBy({
 				userId: user.id,
 				targetUserId: target.id,
 			});
 
 			if (!previousmemo) {
-				await UserMemo.insert({
+				await UserMemos.insert({
 					id: genId(),
 					userId: user.id,
 					targetUserId: target.id,
@@ -68,7 +68,7 @@ export default define(meta, paramDef, async (ps, user) => {
 					memo: ps.memo,
 				});
 			} else {
-				await UserMemo.update(previousmemo.id, {
+				await UserMemos.update(previousmemo.id, {
 					userId: user.id,
 					targetUserId: target.id,
 					customName: ps.customName,

@@ -136,4 +136,4 @@ export const RegistryItems = db.getRepository(RegistryItem);
 export const Webhooks = db.getRepository(Webhook);
 export const Ads = db.getRepository(Ad);
 export const PasswordResetRequests = db.getRepository(PasswordResetRequest);
-export { UserMemo };
+export const UserMemos = db.getRepository(UserMemo);

@@ -39,7 +39,7 @@ import {
 	UserNotePinings,
 	UserProfiles,
 	UserSecurityKeys,
-	UserMemo,
+	UserMemos,
 } from "../index.js";
 import type { Instance } from "../entities/instance.js";
 
@@ -549,7 +549,7 @@ export const UserRepository = db.getRepository(User).extend({
 
 		const isDeleted = user.isDeleted;
 
-		const memo = meId == null ? null : await UserMemo.findOneBy({
+		const memo = meId == null ? null : await UserMemos.findOneBy({
 			userId: meId,
 			targetUserId: user.id,
 		}).then((row) => row ?? null);

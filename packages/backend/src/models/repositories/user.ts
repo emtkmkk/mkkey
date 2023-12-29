@@ -597,8 +597,8 @@ export const UserRepository = db.getRepository(User).extend({
 				iconUrl: x.iconUrl,
 				displayOrder: x.displayOrder,
 			})) : undefined,
-			originalName: memo.customName ? isDeleted ? "🗑" : user.name : undefined,
-			memo: memo.memo ? memo.memo : undefined,
+			originalName: memo?.customName ? isDeleted ? "🗑" : user.name : undefined,
+			memo: memo?.memo ? memo.memo : undefined,
 			...(opts.detail
 				? {
 					url: profile!.url,

@@ -114,7 +114,6 @@ export async function getFileInfo(
 			"image/png",
 			"image/apng",
 			"image/webp",
-			"image/bmp",
 			"image/svg+xml",
 			"image/avif",
 		].includes(type.mime)

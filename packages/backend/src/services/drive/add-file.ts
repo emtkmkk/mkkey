@@ -4,6 +4,7 @@ import { v4 as uuid } from "uuid";
 
 import type S3 from "aws-sdk/clients/s3.js";
 import sharp from "sharp";
+import { sharpBmp } from 'sharp-read-bmp';
 import { IsNull } from "typeorm";
 import { publishMainStream, publishDriveStream } from "@/services/stream.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
@@ -94,6 +95,7 @@ async function save(
 			if (type === "image/webp") ext = ".webp";
 			if (type === "image/apng") ext = ".apng";
 			if (type === "image/avif") ext = ".avif";
+			if (type === "image/bmp") ext = ".bmp";
 			if (type === "image/vnd.mozilla.apng") ext = ".apng";
 		}
 
@@ -257,6 +259,7 @@ export async function generateAlts(
 			"image/webp",
 			"image/svg+xml",
 			"image/avif",
+			"image/bmp",
 		].includes(type)
 	) {
 		logger.debug("web image and thumbnail not created (not an required file)");
@@ -270,7 +273,7 @@ export async function generateAlts(
 	let satisfyWebpublic: boolean;
 
 	try {
-		img = sharp(path);
+		img = (await sharpBmp(path, type));
 		const metadata = await img.metadata();
 		const isAnimated = metadata.pages && metadata.pages > 1;
 
@@ -320,6 +323,8 @@ export async function generateAlts(
 				webpublic = await convertSharpToWebp(img, 2048, 2048, 100);
 			} else if (["image/svg+xml"].includes(type)) {
 				webpublic = await convertSharpToWebp(img, 2048, 2048);
+			} else if (["image/bmp"].includes(type)) {
+				webpublic = await convertSharpToWebp(img, 2048, 2048);
 			} else {
 				logger.debug("web image not created (not an required image)");
 			}
@@ -344,6 +349,7 @@ export async function generateAlts(
 				"image/png",
 				"image/svg+xml",
 				"image/avif",
+				"image/bmp",
 			].includes(type)
 		) {
 			thumbnail = await convertSharpToWebp(img, 996, 560);

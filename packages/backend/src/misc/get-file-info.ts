@@ -10,6 +10,7 @@ import isSvg from "is-svg";
 import probeImageSize from "probe-image-size";
 import { type predictionType } from "nsfwjs";
 import sharp from "sharp";
+import { sharpBmp } from 'sharp-read-bmp';
 import { encode } from "blurhash";
 import { detectSensitive } from "@/services/detect-sensitive.js";
 import { createTempDir } from "./create-temp.js";
@@ -113,11 +114,12 @@ export async function getFileInfo(
 			"image/png",
 			"image/apng",
 			"image/webp",
+			"image/bmp",
 			"image/svg+xml",
 			"image/avif",
 		].includes(type.mime)
 	) {
-		blurhash = await getBlurhash(path).catch((e) => {
+		blurhash = await getBlurhash(path, type.mime).catch((e) => {
 			warnings.push(`getBlurhash failed: ${e}`);
 			return undefined;
 		});
@@ -420,9 +422,10 @@ async function detectImageSize(path: string): Promise<{
 /**
  * Calculate average color of image
  */
-function getBlurhash(path: string): Promise<string> {
-	return new Promise((resolve, reject) => {
-		sharp(path)
+function getBlurhash(path: string,mime?: string): Promise<string> {
+	return new Promise(async (resolve, reject) => {
+		
+		(mime ? (await sharpBmp(path, mime)) : sharp(path))
 			.raw()
 			.ensureAlpha()
 			.resize(64, 64, { fit: "inside" })

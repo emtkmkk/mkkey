@@ -6,6 +6,7 @@ export function isIncludeNgWord(note: any): string {
 
 	const ngword1 = ["ちんちん", "ちんぽ", "ちんこ", "うんこ", "うんち", "おしっこ", "ぱいぱい", "きんたま"]
 	const ngword2 = ["おなほ", "おっぱい", "ぱいおつ", "ぱいずり", "乳首", "ちくび", "射精", "しゃせい", "おなに", "精液", "せいえき", "まんこ", "ふたなり", "れいぷ", "せっくす", "せくーす", "ヴぁぎな", "しこっ", "性器", "処女", "受精", "自慰", "勃起"];
+	const ngword3 = ["地震", "津波", "震災", "震度", "震源", "3.11", "羽田", "飛行機", "事故", "海保", "海上保安庁"]
 
 	const text = note.text
 		.replaceAll(/\s/g, "")
@@ -29,6 +30,12 @@ export function isIncludeNgWord(note: any): string {
 	})) {
 		return "シモ(弱)";
 	}
+
+	if (ngword3.some((x) => {
+		return text.includes(x);
+	})) {
+		return "暗いニュース";
+	};
 
 	return "";
 }

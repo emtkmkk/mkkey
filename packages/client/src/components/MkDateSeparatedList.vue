@@ -60,7 +60,7 @@ export default defineComponent({
 					new Date(item.createdAt).getDate() !==
 						new Date(props.items[i + 1].createdAt).getDate() &&
 					( !props.items?.[i + 2] || new Date(props.items[i + 1].createdAt).getDate() === new Date(props.items[i + 2].createdAt).getDate() ) &&
-					( !props.items?.[i - 1] || new Date(item.createdAt).getDate() === new Date(props.items[i - 1].createdAt).getDate() )
+					( props.items?.[i - 1] && new Date(item.createdAt).getDate() === new Date(props.items[i - 1].createdAt).getDate() )
 				) {
 					const separator = h(
 						"div",

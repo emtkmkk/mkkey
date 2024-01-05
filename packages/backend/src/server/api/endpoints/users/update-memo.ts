@@ -44,14 +44,6 @@ export default define(meta, paramDef, async (ps, user) => {
 				throw new ApiError(meta.errors.noSuchUser);
 			}
 
-			// 引数がnullか空文字であれば、パーソナルメモを削除する
-			if (!ps.memo && !ps.customName) {
-				await UserMemos.delete({
-					userId: user.id,
-					targetUserId: target.id,
-				});
-				return;
-			}
 
 			// 以前に作成されたパーソナルメモがあるかどうか確認
 			const previousmemo = await UserMemos.findOneBy({
@@ -59,20 +51,44 @@ export default define(meta, paramDef, async (ps, user) => {
 				targetUserId: target.id,
 			});
 
-			if (!previousmemo) {
+			const psmemo = ({memo: ps.memo,customName: ps.customName});
+
+			Object.keys(psmemo).forEach(key => {
+				if (psmemo[key] === undefined) {
+					// undefinedならプロパティを削除
+					delete psmemo[key];
+				} else if (!psmemo[key]) {
+					// falsyならnullに変換
+					psmemo[key] = null;
+				}
+			});
+			
+			if (previousmemo) {
+				const _memo = [...previousmemo, ...psmemo];
+				// 引数がnullか空文字であれば、パーソナルメモを削除する
+				if (!_memo.memo && !_memo.customName) {
+					await UserMemos.delete({
+						userId: user.id,
+						targetUserId: target.id,
+					});
+					return;
+				}
+				await UserMemos.update(previousmemo.id, {
+					userId: user.id,
+					targetUserId: target.id,
+					customName: _memo.customName,
+					memo: _memo.memo,
+				});
+			} else {
+				if (!(ps.memo || ps.customName)) {
+					return;
+				}
 				await UserMemos.insert({
 					id: genId(),
 					userId: user.id,
 					targetUserId: target.id,
-					customName: ps.customName,
-					memo: ps.memo,
-				});
-			} else {
-				await UserMemos.update(previousmemo.id, {
-					userId: user.id,
-					targetUserId: target.id,
-					customName: ps.customName,
-					memo: ps.memo,
+					customName: ps.customName || null,
+					memo: ps.memo || null,
 				});
 			}
 });

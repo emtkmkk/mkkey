@@ -59,7 +59,7 @@ export default async function (
 		await Notes.decrement({ id: note.replyId }, "repliesCount", 1);
 	}
 
-	const isPhysical = isRenote || deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 5))
+	const isPhysical = isRenote || deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 3))
 
 	if (!quiet) {
 		publishNoteStream(note.id, "deleted", {

@@ -42,7 +42,7 @@
 				/>
 				<div class="title">
 					<MkA class="name" :to="userPage(user)"
-						><MkUserName :user="user" :nowrap="false"
+						><MkUserName :user="user" :nowrap="false" :original="true"
 					/></MkA>
 					<span
 						v-if="

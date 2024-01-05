@@ -58,13 +58,13 @@ export default function load() {
 
 	if (!config.clusterLimits) {
 		config.clusterLimits = {
-			web: 1,
-			queue: config.clusterLimit && config.clusterLimit > 1 ? config.clusterLimit - 1 : 1,
+			web: config.clusterLimit && config.clusterLimit > 1 ? config.clusterLimit - 1 : 1,
+			queue: 1,
 		};
 	} else {
 		config.clusterLimits = {
-			web: 1,
-			queue: config.clusterLimit && config.clusterLimit > 1 ? config.clusterLimit - 1 : 1,
+			web: config.clusterLimit && config.clusterLimit > 1 ? config.clusterLimit - 1 : 1,
+			queue: 1,
 			...config.clusterLimits,
 		};
 

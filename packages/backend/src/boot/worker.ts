@@ -19,7 +19,7 @@ export async function workerMain() {
 
 		if (process.env.mode === "queue") {
 			// if this is an exclusive queue worker, renice to have higher priority
-			os.setPriority(os.constants.priority.PRIORITY_BELOW_NORMAL);
+			os.setPriority(os.constants.priority.PRIORITY_LOW);
 		}
 	}
 

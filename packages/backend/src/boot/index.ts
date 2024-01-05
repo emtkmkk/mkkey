@@ -41,9 +41,11 @@ export default async function () {
 		// Leave the master process with a marginally lower priority but not too low.
 		os.setPriority(2);
 	}
-	if (cluster.isWorker) {
+	if (cluster.isWorker && process.env.mode === "web") {
 		// Set workers to a much lower priority so that the master process will be
 		// able to respond to api calls even if the workers gank everything.
+		os.setPriority(10);
+	} else if (cluster.isWorker) {
 		os.setPriority(19);
 	}
 

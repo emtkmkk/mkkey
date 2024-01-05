@@ -244,6 +244,11 @@ export class Note {
 	})
 	public deletedAt: Date;
 
+	@Column('timestamp with time zone', {
+		nullable: true,
+	})
+	public lastSendActivityAt: Date;
+
 	@Column('boolean', {
 		default: false,
 	})

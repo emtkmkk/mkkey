@@ -42,6 +42,21 @@ export function getNoteMenu(props: {
 		});
 	}
 
+	function delActivity(): void {
+		os.confirm({
+			type: "warning",
+			text: i18n.ts.noteDeleteActivityConfirm,
+		}).then(({ canceled }) => {
+			if (canceled) return;
+
+			os.api("notes/delete", {
+				noteId: appearNote.id,
+			});
+
+			appearNote.lastSendActivityAt = new Date();
+		});
+	}
+
 	function directReply(): void {
 		os.post({
 			reply: appearNote,
@@ -504,6 +519,17 @@ export function getNoteMenu(props: {
 					},
 				]
 				: []),
+				...((appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) && appearNote.deletedAt && (!(appearNote.localOnly && appearNote.channelId)) && !(appearNote.lastSendActivityAt && Date.now() < appearNote.lastSendActivityAt.valueOf() + (1000 * 60 * 30))
+					? [
+						null,
+						{
+							icon: "ph-trash ph-bold ph-lg",
+							text: i18n.ts.deleteActivity,
+							danger: true,
+							action: delActivity,
+						},
+					]
+					: []),
 		].filter((x) => x !== undefined);
 	} else {
 		menu = [

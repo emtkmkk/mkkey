@@ -34,6 +34,15 @@ export default async function (
 ) {
 
 	if (note.deletedAt) {
+		if ((Users.isLocalUser(user) && !(note.localOnly && note.channelId)) && !(note.lastSendActivityAt && Date.now() < note.lastSendActivityAt.valueOf() + (1000 * 60 * 30))) {
+			await Notes.update({
+				id: note.id,
+				userId: user.id,
+			},{
+				lastSendActivityAt: new Date(),
+			});
+			await deleteActivity(user, note);
+		}
 		return;
 	}
 
@@ -67,39 +76,7 @@ export default async function (
 			physical: isPhysical,
 		});
 
-		//#region ローカルの投稿なら削除アクティビティを配送
-		if (Users.isLocalUser(user) && !(note.localOnly && note.channelId)) {
-			let renote: Note | null = null;
-
-			// if deletd note is renote
-			if (
-				note.renoteId &&
-				note.text == null &&
-				!note.hasPoll &&
-				(note.fileIds == null || note.fileIds.length === 0)
-			) {
-				renote = await Notes.findOneBy({
-					id: note.renoteId,
-				});
-			}
-
-			const content = renderActivity(
-				renote
-					? renderUndo(
-						renderAnnounce(
-							renote.uri || `${config.url}/notes/${renote.id}`,
-							note,
-						),
-						user,
-					)
-					: renderDelete(
-						renderTombstone(`${config.url}/notes/${note.id}`),
-						user,
-					),
-			);
-
-			deliverToConcerned(user, note, content);
-		}
+		await deleteActivity(user, note);
 
 		if (isPhysical) {
 
@@ -165,6 +142,45 @@ export default async function (
 		});
 	}
 
+}
+
+async function deleteActivity(
+	user: { id: User["id"]; uri: User["uri"]; host: User["host"] },
+	note: Note,
+) {
+	//#region ローカルの投稿なら削除アクティビティを配送
+	if (Users.isLocalUser(user) && !(note.localOnly && note.channelId)) {
+		let renote: Note | null = null;
+
+		// if deletd note is renote
+		if (
+			note.renoteId &&
+			note.text == null &&
+			!note.hasPoll &&
+			(note.fileIds == null || note.fileIds.length === 0)
+		) {
+			renote = await Notes.findOneBy({
+				id: note.renoteId,
+			});
+		}
+
+		const content = renderActivity(
+			renote
+				? renderUndo(
+					renderAnnounce(
+						renote.uri || `${config.url}/notes/${renote.id}`,
+						note,
+					),
+					user,
+				)
+				: renderDelete(
+					renderTombstone(`${config.url}/notes/${note.id}`),
+					user,
+				),
+		);
+
+		deliverToConcerned(user, note, content);
+	}
 }
 
 async function findCascadingNotes(note: Note) {

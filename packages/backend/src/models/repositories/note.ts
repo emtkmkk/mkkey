@@ -305,6 +305,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 								},
 								take: 1,
 							})) ? true : undefined,
+							lastSendActivityAt: meId === note.userId ? note.lastSendActivityAt?.toISOString() || undefined : undefined,
 						}
 						: {}),
 				}

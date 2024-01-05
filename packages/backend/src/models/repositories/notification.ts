@@ -41,7 +41,7 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			isRead: notification.isRead,
 			userId: notification.notifierId,
 			user: notification.notifierId
-				? Users.pack(notification.notifier || notification.notifierId)
+				? Users.pack(notification.notifier || notification.notifierId, { id: notification.notifieeId },)
 				: null,
 			...(notification.type === "mention"
 				? {

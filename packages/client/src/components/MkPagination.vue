@@ -32,7 +32,7 @@
 				<div key="_errordiv_" class="_miniinfo">
 					<img
 						src="/static-assets/badges/error.png"
-						class="_ghost"
+						:title="errorMsg"
 						v-tooltip="errorMsg"
 						alt="notMore"
 					/>
@@ -99,7 +99,6 @@
 				<div key="_icondiv_" class="_miniinfo">
 					<img
 						:src="$instance.iconUrl"
-						class="_ghost"
 						alt="notMore"
 						@click="fetchMore"
 					/>
@@ -113,7 +112,7 @@
 				<div key="_errordiv_" class="_miniinfo">
 					<img
 						src="/static-assets/badges/error.png"
-						class="_ghost"
+						:title="errorMsg"
 						v-tooltip="errorMsg"
 						alt="notMore"
 					/>

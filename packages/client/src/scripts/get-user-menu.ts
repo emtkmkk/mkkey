@@ -286,6 +286,13 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			},
 		},
 		null,
+		meId !== user.id
+			? {
+					icon: "ph-note-pencil ph-bold ph-lg",
+					text: i18n.ts.addCustomname,
+					action: setCustomName,
+			  }
+			: undefined,
 		{
 			icon: "ph-list-bullets ph-bold ph-lg",
 			text: i18n.ts.addToList,
@@ -306,13 +313,6 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			text: user.isRenoteMuted ? i18n.ts.renoteUnmute : i18n.ts.renoteMute,
 			action: toggleRenoteMute,
 		},
-		meId !== user.id
-			? {
-					icon: "ph-note-pencil ph-bold ph-lg",
-					text: i18n.ts.addCustomname,
-					action: setCustomName,
-			  }
-			: undefined,
 	] as any;
 
 	if ($i && meId !== user.id) {

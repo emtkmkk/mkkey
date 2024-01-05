@@ -95,6 +95,9 @@
 			<FormSwitch v-model="showLocalTimelineBelowPublic" class="_formBlock">{{
 				i18n.ts.showLocalTimelineBelowPublic
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="delayPostHidden" class="_formBlock">{{
+				i18n.ts.delayPostHidden
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="localShowRenote" class="_formBlock" @update:modelValue="save()">{{
 				i18n.ts.localShowRenote
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -792,7 +795,7 @@ const randomCustomFont = $computed(
 const includesRandomEsenapaj = $computed(
 	defaultStore.makeGetterSetter("includesRandomEsenapaj")
 );
-const showSpotlight = computed(defaultStore.makeGetterSetter("showSpotlight"));
+const delayPostHidden = computed(defaultStore.makeGetterSetter("delayPostHidden"));
 let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
 let keepPostCw = $computed(defaultStore.makeGetterSetter("keepPostCw"));
 let localShowRenote = $ref($i.localShowRenote);

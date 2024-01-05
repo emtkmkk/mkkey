@@ -2,6 +2,7 @@ import { onUnmounted, Ref } from "vue";
 import * as misskey from "calckey-js";
 import { stream } from "@/stream";
 import { $i } from "@/account";
+import { defaultStore } from "@/store";
 import * as os from "@/os";
 
 export function useNoteCapture(props: {
@@ -114,7 +115,7 @@ export function useNoteCapture(props: {
 	}
 
 	function capture(withHandler = false): void {
-		if (connection) {
+		if (connection && !(defaultStore.state.delayPostHidden && Date.now() > new Date(note.value.createdAt).valueOf() + (10 * 60 * 1000))) {
 			// TODO: このノートがストリーミング経由で流れてきた場合のみ sr する
 			connection.send(document.body.contains(props.rootEl.value) ? "sr" : "s", {
 				id: note.value.id,

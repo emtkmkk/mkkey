@@ -1156,6 +1156,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/12/20",
 			page: "sounds",
 		},
+		delayPostHidden: {
+			where: 'account',
+			default: true,
+			createdAt: "2024/1/5",
+			page: "general",
+		},
 	}),
 );
 

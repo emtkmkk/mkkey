@@ -376,7 +376,6 @@ const refresh = async (): void => {
 
 const fetchMore = async (): Promise<void> => {
 	if (
-		!more.value ||
 		fetching.value ||
 		moreFetching.value ||
 		items.value.length === 0

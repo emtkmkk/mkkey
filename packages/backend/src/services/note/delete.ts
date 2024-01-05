@@ -116,7 +116,7 @@ export default async function (
 				id: note.id,
 				userId: user.id,
 			},{
-				text: null,
+				text: note.renoteId ? "QT" : null,
 				cw: null,
 				fileIds: {},
 				attachedFileTypes: {},

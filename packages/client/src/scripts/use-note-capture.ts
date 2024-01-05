@@ -84,7 +84,7 @@ export function useNoteCapture(props: {
 					props.isDeletedRef.value = true;
 				} else {
 					note.value.deletedAt = body.deletedAt ?? new Date();
-					note.value.text = "";
+					note.value.text = note.value.renoteId ? "QT" : "";
 					note.value.cw = "";
 					note.value.fileIds = {};
 					note.value.attachedFileTypes = {};

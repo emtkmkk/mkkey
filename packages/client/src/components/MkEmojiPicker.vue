@@ -793,7 +793,7 @@ function emojiSearch(nQ, oQ) {
 						(emoji.aliases || emoji.keywords).some((alias) =>
 							startsWith
 								? kanaToHira(formatRoomaji(alias)).startsWith(keyword)
-								: !kanaToHira(formatRoomaji(alias)).startsWith(keyword) && formatRoomaji(emoji.name).includes(keyword)
+								: !kanaToHira(formatRoomaji(alias)).startsWith(keyword) && formatRoomaji(alias).includes(keyword)
 						)
 				)
 			) {

@@ -64,9 +64,9 @@ export default define(meta, paramDef, async (ps, user) => {
 			});
 			
 			if (previousmemo) {
-				const _memo = [...previousmemo, ...psmemo];
+				const _memo = {...previousmemo, ...psmemo};
 				// 引数がnullか空文字であれば、パーソナルメモを削除する
-				if (!_memo.memo && !_memo.customName) {
+				if (!(_memo.memo || _memo.customName)) {
 					await UserMemos.delete({
 						userId: user.id,
 						targetUserId: target.id,

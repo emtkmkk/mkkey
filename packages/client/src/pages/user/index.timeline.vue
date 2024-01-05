@@ -8,7 +8,7 @@
 				<option value="files">{{ i18n.ts.withFiles }}</option>
 			</MkTab>
 		</template>
-		<XNotes :no-gap="true" :pagination="pagination" />
+		<XNotes :key="generateUniqueKey()" :no-gap="true" :pagination="pagination" />
 	</MkStickyContainer>
 </template>
 
@@ -39,6 +39,9 @@ const pagination = {
 		showVisitor: include.value === "visitor",
 		privateOnly: include.value === "private",
 	})),
+};
+const generateUniqueKey = () => {
+  return `${include.value}-${Math.floor(Date.now() / 10000)}`;
 };
 </script>
 

@@ -101,7 +101,7 @@ async function onClick() {
 
 		const { canceled, result: input } = await os.inputText({
 			title: i18n.ts.hostnameInput,
-			text: `または、照会機能にて\n「@${props.user.username}@${hostname}」\nを入力してください。\n`,
+			text: `または、照会機能にて\n「<plain>@${props.user.username}@${hostname}</plain>」\nを入力してください。\n`,
 			placeholder: i18n.ts.hostnameInputPlaceholder,
 		});
 		if (canceled || !input || input.trim() === config.host || !/^[\w.-]+$/.test(input)) {

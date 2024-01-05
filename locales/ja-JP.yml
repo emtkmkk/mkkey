@@ -2002,14 +2002,14 @@ _pages:
       randomPick: "リストからランダムに選択"
       _randomPick:
         arg1: "リスト"
-      dailyRandom: "ランダム (ユーザーごとに日替わり)"
+      dailyRandom: "ランダム (ユーザーごとに8時間毎替わり)"
       _dailyRandom:
         arg1: "確率"
-      dailyRannum: "乱数 (ユーザーごとに日替わり)"
+      dailyRannum: "乱数 (ユーザーごとに8時間毎替わり)"
       _dailyRannum:
         arg1: "最小"
         arg2: "最大"
-      dailyRandomPick: "リストからランダムに選択 (ユーザーごとに日替わり)"
+      dailyRandomPick: "リストからランダムに選択 (ユーザーごとに8時間毎替わり)"
       _dailyRandomPick:
         arg1: "リスト"
       seedRandom: "ランダム (シード)"
@@ -2025,7 +2025,7 @@ _pages:
       _seedRandomPick:
         arg1: "シード"
         arg2: "リスト"
-      DRPWPM: "確率付きリストからランダムに選択 (ユーザーごとに日替わり)"
+      DRPWPM: "確率付きリストからランダムに選択 (ユーザーごとに8時間毎替わり)"
       _DRPWPM:
         arg1: "テキストのリスト"
       pick: "リストから選択"

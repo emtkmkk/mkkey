@@ -38,6 +38,8 @@ provide(
 const tlComponent: InstanceType<typeof XNotes> = $ref();
 
 const prepend = (note) => {
+	if (defaultStore.state.delayPostHidden && Date.now() > new Date(note.createdAt).valueOf() + (10 * 60 * 1000))) return;
+	
 	tlComponent.pagingComponent?.prepend(note);
 
 	emit("note");

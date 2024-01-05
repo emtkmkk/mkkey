@@ -50,15 +50,15 @@ const props = withDefaults(
 let errorIcon = $ref(false);
 let erroraltIcon = $ref(false);
 let shortName = $computed(() => {
-	if (props.original) {
-		return props.user.name?.replaceAll(/\s?:\w+:/g, '')?.trim() || props.user.name?.replaceAll(/\s?:\w+:/g, '')?.trim() || props.user.username;
+	if (props.original && props.user.originalName) {
+		return `${props.user.name?.replaceAll(/\s?:\w+:/g, '')?.trim()} (${props.user.originalName?.replaceAll(/\s?:\w+:/g, '')?.trim()})`
 	} else {
 		return props.user.name?.replaceAll(/\s?:\w+:/g, '')?.trim() || props.user.username;
 	}
 })
 let name = $computed(() => {
-	if (props.original) {
-		return props.user.originalName || props.user.name || props.user.username;
+	if (props.original && props.user.originalName) {
+		return `${props.user.name} (${props.user.originalName})`
 	} else {
 		return props.user.name || props.user.username;
 	}

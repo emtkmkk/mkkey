@@ -266,6 +266,25 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 					children: childMenu,
 				});
 			}
+
+			const emojiData = !emojiHost ? instance.emojis.filter((x) => x.name === emojiName)?.[0] : undefined;
+				
+			menu.push({
+				text: i18n.ts.info,
+				icon: 'ph-info ph-bold ph-lg',
+				action: (): void => {
+					const info = [];
+					if (emojiData.category) info.push(`カテゴリ\n${emojiData.category}`)
+					if (emojiData.aliases?.length) info.push(`エイリアス\n${emojiData.aliases?.length.join(" ")}`)
+					if (emojiData.license) info.push(`ライセンス\n${emojiData.license.replaceAll(/,\s?([^\n])/,",\n$1")}`)
+					if (info.length === 0) info.push(`詳細情報無し`)
+					info.push(`(編集申請はこちらから)[https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${emojiName}]`)
+					os.alert({
+						type: "info",
+						text: info.join("\n\n"),
+					});
+				},
+			});
 		}
 	}
 

@@ -426,7 +426,6 @@ export default define(meta, paramDef, async (ps, me) => {
 	// データ削減の為、不要情報を削除
 	emojis?.forEach((x) => {
 		delete x.updatedAt
-		delete x.license
 	});
 
 	const emojiNames = emojis.map((x) => x.name);

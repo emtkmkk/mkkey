@@ -27,6 +27,22 @@ export const paramDef = {
 	type: "object",
 	properties: {
 		fileId: { type: "string", format: "misskey:id" },
+		name: { type: "string", nullable: true },
+		category: {
+			type: "string",
+			nullable: true,
+		},
+		aliases: {
+			type: "array",
+			items: {
+				type: "string",
+			},
+			nullable: true,
+		},
+		license: {
+			type: "string",
+			nullable: true,
+		},
 	},
 	required: ["fileId"],
 } as const;
@@ -36,7 +52,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (file == null) throw new ApiError(meta.errors.noSuchFile);
 
-	let name = file.name.split(".")?.[0]?.replaceAll(/[^A-Za-z0-9_]+/g,"").toLowerCase() || `_${rndstr("a-z0-9", 8)}_`;
+	let name = ps.name || file.name.split(".")?.[0]?.replaceAll(/[^A-Za-z0-9_]+/g,"").toLowerCase() || `_${rndstr("a-z0-9", 8)}_`;
 	/*file.name.split(".")[0].match(/^[A-Za-z0-9_]+$/)
 		? file.name.split(".")[0]
 		: `_${rndstr("a-z0-9", 8)}_`;*/
@@ -48,18 +64,35 @@ export default define(meta, paramDef, async (ps, me) => {
 		name = name + `_${rndstr("a-z0-9", 8)}`;
 	}
 
+	let license = ps.license;
+	if (ps.license?.includes("!")){
+		license = license
+		.replace(/^!m$/,"文字だけ")
+		.replace(/!ca(,|$)/,"コピー可否 : allow")
+		.replace(/!cd(,|$)/,"コピー可否 : deny")
+		.replace(/!cc(,|$)/,"コピー可否 : conditional")
+		.replace(/!l : ([^,:]+)(,|$)/,"ライセンス : $1$2")
+		.replace(/!u : ([^,:]+)(,|$)/,"使用情報 : $1$2")
+		.replace(/!a : ([^,:]+)(,|$)/,"作者 : $1$2")
+		.replace(/!d : ([^,:]+)(,|$)/,"説明 : $1$2")
+		.replace(/!b : ([^,:]+)(,|$)/,"コピー元 : $1$2")
+		.replace(/!i : ([^,:]+)(,|$)/,"コピー元 : $1$2")
+		.replace("!c0","CC0 1.0 Universal")
+		.replace("!cb","CC BY 4.0");
+	}
+
 	const emoji = await Emojis.insert({
 		id: genId(),
 		createdAt: new Date(),
 		updatedAt: new Date(),
 		name: name,
-		category: null,
+		category: ps.category || null,
 		host: null,
-		aliases: [],
+		aliases: ps.aliases || [],
 		originalUrl: file.url,
 		publicUrl: file.webpublicUrl ?? file.url,
 		type: file.webpublicType ?? file.type,
-		license: null,
+		license: license || null,
 	}).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
 
 	await db.queryResultCache!.remove(["meta_emojis"]);

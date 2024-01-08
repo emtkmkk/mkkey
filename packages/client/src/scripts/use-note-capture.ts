@@ -115,7 +115,7 @@ export function useNoteCapture(props: {
 	}
 
 	function capture(withHandler = false): void {
-		if (connection && !(defaultStore.state.delayPostHidden && Date.now() > new Date(note.value.createdAt).valueOf() + (10 * 60 * 1000))) {
+		if (connection) {
 			// TODO: このノートがストリーミング経由で流れてきた場合のみ sr する
 			connection.send(document.body.contains(props.rootEl.value) ? "sr" : "s", {
 				id: note.value.id,

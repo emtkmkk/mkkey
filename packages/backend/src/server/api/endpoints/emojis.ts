@@ -91,10 +91,6 @@ export default define(meta, paramDef, async (ps, me) => {
 		},
 	});
 
-	// データ削減の為、不要情報を削除
-	emojis?.forEach((x) => {
-		delete x.license
-	});
 	if (false && !ps.includeUrl) {
 		emojis?.forEach((x) => {
 			delete x.publicUrl

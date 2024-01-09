@@ -1,7 +1,7 @@
 import config from "@/config/index.js";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 
-export const MAX_NOTE_TEXT_LENGTH = 1; // <- should we increase this?
+export const MAX_NOTE_TEXT_LENGTH = 7999; // <- should we increase this?
 export const MAX_CAPTION_TEXT_LENGTH = Math.min(
 	7999,
 	DB_MAX_IMAGE_COMMENT_LENGTH,

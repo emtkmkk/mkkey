@@ -316,7 +316,7 @@ export async function createNote(
 		text = htmlToMfm(note.content, note.tag);
 	}
 	if (quote && text) {
-		let reg = new RegExp(`(\n\n|^)[^\n]+${quote.uri ? quote.uri : `${config.url}/notes/${quote.id}}`}$`,"i");
+		let reg = new RegExp(`(\n\n|^)[^\n]+${quote.uri ? quote.uri.replaceAll("/","\\/") : `${config.url}/notes/${quote.id}}`.replaceAll("/","\\/")}$`,"i");
 		text = text.replace(reg,"");
 	}
 

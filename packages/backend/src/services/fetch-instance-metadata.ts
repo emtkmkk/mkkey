@@ -95,8 +95,8 @@ export async function fetchInstanceMetadata(
 							);
 					}
 				}
-				// akkoma の場合
-				else if (info.software?.name === "akkoma") {
+				// akkoma / pleroma の場合
+				else if (["akkoma", "pleroma"].includes(info.software?.name)) {
 					// 無限なので128とする
 					updates.maxReactionsPerAccount = 128;
 				}

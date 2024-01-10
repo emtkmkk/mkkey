@@ -132,7 +132,7 @@ export default class DeliverManager {
 				followerInbox: string;
 			}[];
 
-			if (!union.length) console.log(`actor : ${this.actor.id} : ${unionInbox.size}`)
+			if (!union.length) console.log(`actor : ${this.actor.id} : ${followers.length}`)
 			for (const following of followers) {
 				const inbox = following.followerSharedInbox || following.followerInbox;
 				if (!union.length || unionInbox.has(inbox)) inboxes.add(inbox);

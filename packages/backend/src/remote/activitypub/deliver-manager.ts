@@ -11,7 +11,7 @@ interface IRecipe {
 
 interface IFollowersRecipe extends IRecipe {
 	type: "Followers";
-	union: ILocalUser;
+	union: ILocalUser | null;
 }
 
 interface IDirectRecipe extends IRecipe {
@@ -94,6 +94,7 @@ export default class DeliverManager {
 			const unionInbox = new Set<string>();
 
 			union.forEach(async (u) => {
+				if (!u) return;
 				const unionFollowers = (await Followings.find({
 					where: {
 						followeeId: u.id,
@@ -112,6 +113,7 @@ export default class DeliverManager {
 					const inbox = f.followerSharedInbox || f.followerInbox;
 					unionInbox.add(inbox);
 				})
+				console.log(`union : ${u.id} : ${unionInbox.size}`)
 			})
 
 			// TODO: SELECT DISTINCT ON ("followerSharedInbox") "followerSharedInbox" みたいな問い合わせにすればよりパフォーマンス向上できそう
@@ -130,10 +132,12 @@ export default class DeliverManager {
 				followerInbox: string;
 			}[];
 
+			if (!union.length) console.log(`actor : ${this.actor.id} : ${unionInbox.size}`)
 			for (const following of followers) {
 				const inbox = following.followerSharedInbox || following.followerInbox;
 				if (!union.length || unionInbox.has(inbox)) inboxes.add(inbox);
 			}
+			if (!union.length) console.log(`deliver : ${inboxes.size}`)
 		}
 
 		this.recipes

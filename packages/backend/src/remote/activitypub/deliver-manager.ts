@@ -93,8 +93,10 @@ export default class DeliverManager {
 			const union = (this.recipes.filter((r) => isFollowers(r) && r.union && Users.isLocalUser(r.union)) as IFollowersRecipe[]).map((r) => r.union);
 			const unionInbox = new Set<string>();
 
+			if (!union.length) console.log(`unions : ${union.length}`)
 			union.forEach(async (u) => {
 				if (!u) return;
+				console.log(`union : ${u.id}`)
 				const unionFollowers = (await Followings.find({
 					where: {
 						followeeId: u.id,

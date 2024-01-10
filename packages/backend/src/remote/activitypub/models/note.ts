@@ -315,6 +315,10 @@ export async function createNote(
 	} else if (typeof note.content === "string") {
 		text = htmlToMfm(note.content, note.tag);
 	}
+	if (quote && text) {
+		let reg = new RegExp(`(\n\n|^)[^\n]+${quote.uri ? quote.uri : `${config.url}/notes/${quote.id}}`}$`,"i");
+		text = text.replace(reg,"");
+	}
 
 	// vote
 	if (reply?.hasPoll) {

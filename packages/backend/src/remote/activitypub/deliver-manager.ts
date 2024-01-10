@@ -93,7 +93,7 @@ export default class DeliverManager {
 			const union = (this.recipes.filter((r) => isFollowers(r) && r.union && Users.isLocalUser(r.union)) as IFollowersRecipe[]).map((r) => r.union);
 			const unionInbox = new Set<string>();
 
-			if (!union.length) console.log(`unions : ${union.length}`)
+			if (union.length) console.log(`unions : ${union.length}`)
 			union.forEach(async (u) => {
 				if (!u) return;
 				console.log(`union : ${u.id}`)
@@ -134,12 +134,12 @@ export default class DeliverManager {
 				followerInbox: string;
 			}[];
 
-			if (!union.length) console.log(`actor : ${this.actor.id} : ${followers.length}`)
+			if (union.length) console.log(`actor : ${this.actor.id} : ${followers.length}`);
 			for (const following of followers) {
 				const inbox = following.followerSharedInbox || following.followerInbox;
-				if (!union.length || unionInbox.has(inbox)) inboxes.add(inbox);
+				if (!unionInbox.size || unionInbox.has(inbox)) inboxes.add(inbox);
 			}
-			if (!union.length) console.log(`deliver : ${inboxes.size}`)
+			if (union.length) console.log(`deliver : ${inboxes.size}`);
 		}
 
 		this.recipes

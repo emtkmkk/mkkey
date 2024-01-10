@@ -11,6 +11,7 @@ interface IRecipe {
 
 interface IFollowersRecipe extends IRecipe {
 	type: "Followers";
+	union: ILocalUser;
 }
 
 interface IDirectRecipe extends IRecipe {
@@ -43,9 +44,10 @@ export default class DeliverManager {
 	/**
 	 * Add recipe for followers deliver
 	 */
-	public addFollowersRecipe() {
+	public addFollowersRecipe(union?: ILocalUser) {
 		const deliver = {
 			type: "Followers",
+			union,
 		} as IFollowersRecipe;
 
 		this.addRecipe(deliver);
@@ -88,6 +90,30 @@ export default class DeliverManager {
 		*/
 		if (this.recipes.some((r) => isFollowers(r))) {
 			// followers deliver
+			const union = (this.recipes.filter((r) => isFollowers(r) && r.union && Users.isLocalUser(r.union)) as IFollowersRecipe[]).map((r) => r.union);
+			const unionInbox = new Set<string>();
+
+			union.forEach(async (u) => {
+				const unionFollowers = (await Followings.find({
+					where: {
+						followeeId: u.id,
+						followerHost: Not(IsNull()),
+					},
+					select: {
+						followerSharedInbox: true,
+						followerInbox: true,
+					},
+				})) as {
+					followerSharedInbox: string | null;
+					followerInbox: string;
+				}[];
+
+				unionFollowers.forEach((f) => {
+					const inbox = f.followerSharedInbox || f.followerInbox;
+					unionInbox.add(inbox);
+				})
+			})
+
 			// TODO: SELECT DISTINCT ON ("followerSharedInbox") "followerSharedInbox" みたいな問い合わせにすればよりパフォーマンス向上できそう
 			// ただ、sharedInboxがnullなリモートユーザーも稀におり、その対応ができなさそう？
 			const followers = (await Followings.find({
@@ -106,7 +132,7 @@ export default class DeliverManager {
 
 			for (const following of followers) {
 				const inbox = following.followerSharedInbox || following.followerInbox;
-				inboxes.add(inbox);
+				if (!union.length || unionInbox.has(inbox)) inboxes.add(inbox);
 			}
 		}
 

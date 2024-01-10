@@ -3,7 +3,7 @@ import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import DeliverManager from "@/remote/activitypub/deliver-manager.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import { toDbReaction, decodeReaction, getFallbackReaction } from "@/misc/reaction-lib.js";
-import type { User, IRemoteUser } from "@/models/entities/user.js";
+import type { User, IRemoteUser, ILocalUser } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
 import {
 	NoteReactions,
@@ -254,7 +254,12 @@ export default async (
 		}
 
 		if (["public", "home", "followers"].includes(note.visibility)) {
-			dm.addFollowersRecipe();
+			if (note.userId !== user.id && note.userHost === null) {
+				const u = await Users.findOneBy({ id: note.userId });
+				dm.addFollowersRecipe(u as ILocalUser);
+			} else {
+				dm.addFollowersRecipe();
+			}
 		} else if (note.visibility === "specified") {
 			const visibleUsers = await Promise.all(
 				note.visibleUserIds.map((id) => Users.findOneBy({ id })),

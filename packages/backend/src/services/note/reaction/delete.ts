@@ -4,7 +4,7 @@ import renderUndo from "@/remote/activitypub/renderer/undo.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import DeliverManager from "@/remote/activitypub/deliver-manager.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
-import type { User, IRemoteUser } from "@/models/entities/user.js";
+import type { User, IRemoteUser, ILocalUser } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
 import { NoteReactions, Users, Notes } from "@/models/index.js";
 import { toDbReaction, decodeReaction } from "@/misc/reaction-lib.js";
@@ -83,7 +83,12 @@ export default async (
 			const reactee = await Users.findOneBy({ id: note.userId });
 			dm.addDirectRecipe(reactee as IRemoteUser);
 		}
-		dm.addFollowersRecipe();
+		if (note.userId !== user.id && note.userHost === null) {
+			const u = await Users.findOneBy({ id: note.userId });
+			dm.addFollowersRecipe(u as ILocalUser);
+		} else {
+			dm.addFollowersRecipe();
+		}
 		dm.execute();
 	}
 	//#endregion

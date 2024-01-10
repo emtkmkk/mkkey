@@ -745,7 +745,32 @@ export default async (
 
 					// フォロワーに配送
 					if (["public", "home", "followers"].includes(note.visibility)) {
-						dm.addFollowersRecipe();
+						if (data.reply && data.reply.userId === user.id && data.reply?.replyId) {
+							// 自己リプライでリプライのリプライがある場合
+							// リプライのリプライを取得
+							const packedReReply = await Notes.pack(note, {
+								id: data.reply.replyId,
+							});
+							if (packedReReply?.userId) {
+								// リプライのリプライが自分ではない場合
+								if (packedReReply.userId !== user.id && packedReReply.userHost === null) {
+									const u = await Users.findOneBy({ id: packedReReply.userId });
+									dm.addFollowersRecipe(u as ILocalUser);
+								} else {
+									// リプライのリプライが自分の場合
+									dm.addFollowersRecipe();
+								}
+							} else {
+								// リプライのリプライが上手く取得できなかった場合
+								dm.addFollowersRecipe();
+							}
+						} else if ((data.reply && data.reply.userId !== user.id && data.reply.userHost === null)) {
+							// 他人宛のリプライがある場合
+							const u = await Users.findOneBy({ id: data.reply.userId });
+							dm.addFollowersRecipe(u as ILocalUser);
+						} else {
+							dm.addFollowersRecipe();
+						}
 					}
 
 					//リレーに配送

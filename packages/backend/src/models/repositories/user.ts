@@ -617,7 +617,7 @@ export const UserRepository = db.getRepository(User).extend({
 						: null,
 					bannerBlurhash: user.banner?.blurhash || null,
 					bannerColor: null, // 後方互換性のため
-					isLocked: !user.isSilentLocked && user.isLocked,
+					isLocked: isMe ? user.isLocked : !user.isSilentLocked && user.isLocked,
 					isSilenced: user.isSilenced || falsy,
 					isSuspended: user.isSuspended || falsy,
 					description: isDeleted ? "🗑" : profile!.description,

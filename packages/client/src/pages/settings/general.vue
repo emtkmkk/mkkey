@@ -7,6 +7,25 @@
 			</option>
 		</FormSelect>
 
+		<FormSwitch v-model="showAds" class="_formBlock">{{
+			i18n.ts.showAds
+		}}</FormSwitch>
+
+		<FormSwitch v-model="showUpdates" class="_formBlock">{{
+			i18n.ts.showUpdates
+		}}</FormSwitch>
+
+		<FormSwitch v-if="developer" v-model="showMiniUpdates" class="_formBlock">{{
+			i18n.ts.showMiniUpdates
+		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+
+		<FormSwitch
+			v-if="$i?.isAdmin"
+			v-model="showAdminUpdates"
+			class="_formBlock"
+			>{{ i18n.ts.showAdminUpdates }}</FormSwitch
+		>
+
 		<FormSwitch v-model="showMkkeySettingTips" class="_formBlock">{{
 			i18n.ts.showMkkeySettingTips
 		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -51,7 +70,6 @@ import { unisonReload } from "@/scripts/unison-reload";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deviceKind } from "@/scripts/device-kind";
-import { fontList } from '@/scripts/font';
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;
@@ -67,6 +85,20 @@ window.addEventListener("resize", () => {
 });
 
 const lang = ref(localStorage.getItem("lang"));
+
+const showAds = computed(defaultStore.makeGetterSetter("showAds"));
+
+const showUpdates = computed(defaultStore.makeGetterSetter("showUpdates"));
+
+const showAdminUpdates = computed(
+	defaultStore.makeGetterSetter("showAdminUpdates")
+);
+
+const showMiniUpdates = computed(
+	defaultStore.makeGetterSetter("showMiniUpdates")
+);
+
+
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({
@@ -94,6 +126,10 @@ watch(lang, () => {
 watch(
 	[
 		lang,
+		showAds,
+		showUpdates,
+		showMiniUpdates,
+		showAdminUpdates,
 	],
 	async () => {
 		await reloadAsk();

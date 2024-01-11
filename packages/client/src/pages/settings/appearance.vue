@@ -94,21 +94,6 @@
 			<FormSwitch v-model="disableDrawer" class="_formBlock">{{
 				i18n.ts.disableDrawer
 			}}</FormSwitch>
-			<FormSwitch v-model="showAds" class="_formBlock">{{
-				i18n.ts.showAds
-			}}</FormSwitch>
-			<FormSwitch v-model="showUpdates" class="_formBlock">{{
-				i18n.ts.showUpdates
-			}}</FormSwitch>
-			<FormSwitch v-if="developer" v-model="showMiniUpdates" class="_formBlock">{{
-				i18n.ts.showMiniUpdates
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch
-				v-if="$i?.isAdmin"
-				v-model="showAdminUpdates"
-				class="_formBlock"
-				>{{ i18n.ts.showAdminUpdates }}</FormSwitch
-			>
 		</FormSection>
 		<FormSection>
 			<template #label></template>
@@ -210,6 +195,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
+import { fontList } from '@/scripts/font';
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;
@@ -247,7 +233,6 @@ const useBlurEffect = computed(defaultStore.makeGetterSetter("useBlurEffect"));
 const showGapBetweenNotesInTimeline = computed(
 	defaultStore.makeGetterSetter("showGapBetweenNotesInTimeline")
 );
-const showAds = computed(defaultStore.makeGetterSetter("showAds"));
 const autoplayMfm = computed(
 	defaultStore.makeGetterSetter(
 		"animatedMfm",
@@ -271,15 +256,8 @@ const seperateRenoteQuote = computed(
 	defaultStore.makeGetterSetter("seperateRenoteQuote")
 );
 const squareAvatars = computed(defaultStore.makeGetterSetter("squareAvatars"));
-const showUpdates = computed(defaultStore.makeGetterSetter("showUpdates"));
-const showAdminUpdates = computed(
-	defaultStore.makeGetterSetter("showAdminUpdates")
-);
 const developerTicker = computed(
 	defaultStore.makeGetterSetter("developerTicker")
-);
-const showMiniUpdates = computed(
-	defaultStore.makeGetterSetter("showMiniUpdates")
 );
 const reactionShowUsername = $computed(
 	defaultStore.makeGetterSetter("reactionShowUsername")
@@ -351,10 +329,7 @@ watch(
 		squareAvatars,
 		showGapBetweenNotesInTimeline,
 		instanceTicker,
-		showAds,
-		showUpdates,
 		seperateRenoteQuote,
-		showAdminUpdates,
 		developerTicker,
 	],
 	async () => {

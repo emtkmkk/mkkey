@@ -62,13 +62,17 @@ onMounted(() => {
 	watch([parentStickyTop, parentStickyBottom], calc);
 
 	watch(childStickyTop, () => {
-		bodyEl.value.style.setProperty("--stickyTop", `${childStickyTop.value}px`);
+		if (bodyEl.value) {
+			bodyEl.value.style.setProperty("--stickyTop", `${childStickyTop.value}px`);
+		}
 	}, {
 		immediate: true,
 	});
 
 	watch(childStickyBottom, () => {
-		bodyEl.value.style.setProperty("--stickyBottom", `${childStickyBottom.value}px`);
+		if (bodyEl.value) {
+			bodyEl.value.style.setProperty("--stickyBottom", `${childStickyBottom.value}px`);
+		}
 	}, {
 		immediate: true,
 	});

@@ -108,9 +108,15 @@ export default class DeliverManager {
 				}[];
 
 				unionFollowers.forEach((f) => {
-					unionFollowerIds.add(f.followerId);
-				})
-				console.log(`a ${this.actor.id} u ${u.id}`)
+					if (f?.followerId) {
+						unionFollowerIds.add(f.followerId)
+					} else if (typeof f === "string") {
+						unionFollowerIds.add(f);
+					} else {
+						console.log(`error f : ${JSON.stringify(f,undefined,"\t")}`)
+					}
+				});
+				console.log(`a ${this.actor.id} u ${u.id} : ${unionFollowerIds.size}`)
 			})
 
 			if (!union.length || unionFollowerIds.size) {
@@ -123,12 +129,10 @@ export default class DeliverManager {
 						followerHost: Not(IsNull()),
 					},
 					select: {
-						followerId: true,
 						followerSharedInbox: true,
 						followerInbox: true,
 					},
 				})) as {
-					followerId: string;
 					followerSharedInbox: string | null;
 					followerInbox: string;
 				}[];
@@ -137,6 +141,8 @@ export default class DeliverManager {
 					const inbox = following.followerSharedInbox || following.followerInbox;
 					inboxes.add(inbox);
 				}
+			} else {
+				console.log(`skip : no remote follower (${union.map((u) => {u.id}).join(", ")})`)
 			}
 		}
 

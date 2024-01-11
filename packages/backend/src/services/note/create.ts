@@ -773,6 +773,7 @@ export default async (
 							const u = await Users.findOneBy({ id: data.reply.userId });
 							dm.addFollowersRecipe(u as ILocalUser);
 						} else {
+							if(data.reply && data.reply.userId !== user.id) console.log(JSON.stringify(data))
 							dm.addFollowersRecipe();
 						}
 					}

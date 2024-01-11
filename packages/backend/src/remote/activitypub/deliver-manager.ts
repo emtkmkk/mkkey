@@ -169,7 +169,7 @@ export default class DeliverManager {
 			)
 			.forEach((recipe) => inboxes.add(recipe.to.inbox!));
 
-		console.log(`deliver : ${logText} + ${inboxes.size - inboxSize}`)
+		console.log(`deliver : ${logText}${inboxes.size - inboxSize ? ` + ${inboxes.size - inboxSize}` : ""}`)
 		
 		// Validate Inboxes first
 		const validInboxes = [];

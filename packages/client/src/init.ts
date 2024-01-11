@@ -636,6 +636,9 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 					window.addEventListener('input', powerMode);
 				});
 			}
+			if (!defaultStore.state.unlockDeveloperSettings && defaultStore.state.developer) {
+				defaultStore.set("unlockDeveloperSettings", true);
+			}
 		});
 
 		let lastUsed = localStorage.getItem("lastUsed");

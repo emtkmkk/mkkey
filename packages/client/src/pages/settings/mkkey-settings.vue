@@ -13,6 +13,9 @@
 		>
 			{{ i18n.ts.dontShowNotSet }}
 		</FormSwitch>
+		<MkButton v-if="allConfigured && notSetOnly" inline @click="changeUnlockDeveloperSettings">{{
+				"？"
+		}}</MkButton>
 		<template v-for="item in items">
 			<FormLink :key="item.key" v-if="!notSetOnly || defaultStore.isDefault(item.key)" :to="`/settings/${item.def.page}`" style="overflow: hidden;text-overflow: ellipsis;" class="_formBlock">
 				<span v-if="!notSetOnly && !dontShowNotSet && defaultStore.isDefault(item.key)" style="margin-left:0;margin-right:0.5em;vertical-align:baseline;" class="_beta">{{ i18n.ts.notSet }}</span>{{ i18n.ts[item.key] }}
@@ -28,7 +31,7 @@ import FormSwitch from "@/components/form/switch.vue";
 import FormLink from "@/components/form/link.vue";
 import MkButton from "@/components/MkButton.vue";
 import * as os from "@/os";
-import { popup } from "@/os";
+import { popup, toast } from "@/os";
 import { defaultStore } from "@/store";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
@@ -60,7 +63,26 @@ const items = computed(() => {
 		});
 });
 
-const notSetOnly = ref(!unref(dontShowNotSet) && unref(items).some(x => defaultStore.isDefault(x.key)));
+const unlockDeveloperSettings = computed(
+	defaultStore.makeGetterSetter("unlockDeveloperSettings")
+);
+
+const allConfigured = !(!unref(dontShowNotSet) && unref(items).some(x => defaultStore.isDefault(x.key)));
+
+const notSetOnly = ref(!allConfigured);
+
+function changeUnlockDeveloperSettings() {
+	if (unlockDeveloperSettings.value) {
+		toast(
+			"既に設定 > 色々に項目が追加されています。",
+		);
+	} else {
+		unlockDeveloperSettings.value = true;
+		toast(
+			"設定 > 色々にて項目が追加されました！",
+		);
+	}
+}
 
 const headerActions = $computed(() => []);
 

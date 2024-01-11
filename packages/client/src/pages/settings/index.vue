@@ -159,10 +159,34 @@ const menuDef = computed(() => [
 		title: i18n.ts.clientSettings,
 		items: [
 			{
-				icon: "ph-gear-six ph-bold ph-lg",
-				text: i18n.ts.general,
-				to: "/settings/general",
-				active: currentPage?.route.name === "general",
+				icon: "ph-list-dashes ph-bold ph-lg",
+				text: i18n.ts.timeline,
+				to: "/settings/timeline",
+				active: currentPage?.route.name === "timeline",
+			},
+			{
+				icon: "ph-sneaker-move ph-bold ph-lg",
+				text: i18n.ts.behavior,
+				to: "/settings/behavior",
+				active: currentPage?.route.name === "behavior",
+			},
+			{
+				icon: "ph-note-pencil ph-bold ph-lg",
+				text: i18n.ts.postForm,
+				to: "/settings/postform",
+				active: currentPage?.route.name === "postform",
+			},
+			{
+				icon: "ph-shapes ph-bold ph-lg",
+				text: i18n.ts.appearance,
+				to: "/settings/appearance",
+				active: currentPage?.route.name === "appearance",
+			},
+			{
+				icon: "ph-confetti ph-bold ph-lg",
+				text: i18n.ts.funSetting,
+				to: "/settings/fun",
+				active: currentPage?.route.name === "fun",
 			},
 			{
 				icon: "ph-palette ph-bold ph-lg",

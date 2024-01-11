@@ -114,6 +114,31 @@ export const routes = [
 				component: page(() => import("./pages/settings/general.vue")),
 			},
 			{
+				path: "/timeline",
+				name: "timeline",
+				component: page(() => import("./pages/settings/timeline.vue")),
+			},
+			{
+				path: "/behavior",
+				name: "behavior",
+				component: page(() => import("./pages/settings/behavior.vue")),
+			},
+			{
+				path: "/postform",
+				name: "postform",
+				component: page(() => import("./pages/settings/postform.vue")),
+			},
+			{
+				path: "/appearance",
+				name: "appearance",
+				component: page(() => import("./pages/settings/appearance.vue")),
+			},
+			{
+				path: "/fun",
+				name: "fun",
+				component: page(() => import("./pages/settings/fun.vue")),
+			},
+			{
 				path: "/theme/install",
 				name: "theme",
 				component: page(() => import("./pages/settings/theme.install.vue")),

@@ -720,12 +720,10 @@ mainRouter.addListener("push", (ctx) => {
 	window.history.pushState({ key: ctx.key }, "", ctx.path);
 	const scrollPos = scrollPosStore.get(ctx.key) ?? 0;
 	window.scroll({ top: scrollPos, behavior: "instant" });
-	if (scrollPos !== 0) {
-		window.setTimeout(() => {
-			// 遷移直後はタイミングによってはコンポーネントが復元し切ってない可能性も考えられるため少し時間を空けて再度スクロール
-			window.scroll({ top: scrollPos, behavior: "instant" });
-		}, 100);
-	}
+	window.setTimeout(() => {
+		// 遷移直後はタイミングによってはコンポーネントが復元し切ってない可能性も考えられるため少し時間を空けて再度スクロール
+		window.scroll({ top: scrollPos, behavior: "instant" });
+	}, 100);
 });
 
 mainRouter.addListener("replace", (ctx) => {

@@ -754,17 +754,21 @@ export default async (
 							if (packedReReply?.userId) {
 								// リプライのリプライが自分ではない場合
 								if (packedReReply.userId !== user.id && packedReReply.user?.host === null) {
+									console.log(`reReply deliver : ${packedReReply?.id}`)
 									const u = await Users.findOneBy({ id: packedReReply.userId });
 									dm.addFollowersRecipe(u as ILocalUser);
 								} else {
+									console.log(`reReply deliver : ${packedReReply?.id}`)
 									// リプライのリプライが自分の場合
 									dm.addFollowersRecipe();
 								}
 							} else {
+								console.log(`packedReReply error : ${JSON.stringify(data)}`)
 								// リプライのリプライが上手く取得できなかった場合
 								dm.addFollowersRecipe();
 							}
 						} else if ((data.reply && data.reply.userId !== user.id && data.reply.user?.host === null)) {
+							console.log(`reply deliver : ${data.reply.id}`)
 							// 他人宛のリプライがある場合
 							const u = await Users.findOneBy({ id: data.reply.userId });
 							dm.addFollowersRecipe(u as ILocalUser);

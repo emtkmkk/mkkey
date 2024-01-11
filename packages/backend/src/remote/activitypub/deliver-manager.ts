@@ -80,6 +80,8 @@ export default class DeliverManager {
 	public async execute() {
 		if (!Users.isLocalUser(this.actor)) return;
 
+		let logText = "";
+
 		const inboxes = new Set<string>();
 
 		/*
@@ -91,6 +93,7 @@ export default class DeliverManager {
 		if (this.recipes.some((r) => isFollowers(r))) {
 			// followers deliver
 			const union = (this.recipes.filter((r) => isFollowers(r) && r.union && Users.isLocalUser(r.union)) as IFollowersRecipe[]).map((r) => r.union);
+			const followerInbox = new Set<string>();
 			const unionInbox = new Set<string>();
 
 			union.forEach(async (u) => {
@@ -113,6 +116,7 @@ export default class DeliverManager {
 					const inbox = f.followerSharedInbox || f.followerInbox;
 					unionInbox.add(inbox);
 				})
+				console.log(`a ${this.actor.id} u ${u.id} : ${unionInbox.size}`)
 			})
 
 			// TODO: SELECT DISTINCT ON ("followerSharedInbox") "followerSharedInbox" みたいな問い合わせにすればよりパフォーマンス向上できそう
@@ -133,9 +137,25 @@ export default class DeliverManager {
 
 			for (const following of followers) {
 				const inbox = following.followerSharedInbox || following.followerInbox;
-				if (!unionInbox.size || unionInbox.has(inbox)) inboxes.add(inbox);
+				followerInbox.add(inbox);
+			}
+
+			if (unionInbox.size) {
+				followerInbox.forEach((x) => {
+					if (unionInbox.has(x)) {
+						inboxes.add(x);
+					}
+				})
+				logText = `${followerInbox.size} ∩ ${unionInbox.size} = ${inboxes.size}`
+			} else {
+				followerInbox.forEach((x) => {
+						inboxes.add(x);
+				})
+				logText = `${inboxes.size}`
 			}
 		}
+
+		const inboxSize = inboxes.size;
 
 		this.recipes
 			.filter(
@@ -149,6 +169,8 @@ export default class DeliverManager {
 			)
 			.forEach((recipe) => inboxes.add(recipe.to.inbox!));
 
+		console.log(`deliver : ${logText} + ${inboxes.size - inboxSize}`)
+		
 		// Validate Inboxes first
 		const validInboxes = [];
 		for (const inbox of inboxes) {

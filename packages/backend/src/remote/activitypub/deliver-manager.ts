@@ -142,7 +142,7 @@ export default class DeliverManager {
 					inboxes.add(inbox);
 				}
 			} else {
-				console.log(`skip : no remote follower (${union.map((u) => {u.id}).join(", ")})`)
+				console.log(`skip : no remote follower (${union.map((u) => {u?.id}).join(", ")})`)
 			}
 		}
 

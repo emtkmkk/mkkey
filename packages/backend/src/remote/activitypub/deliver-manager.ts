@@ -93,9 +93,10 @@ export default class DeliverManager {
 			const union = (this.recipes.filter((r) => isFollowers(r) && r.union && Users.isLocalUser(r.union)) as IFollowersRecipe[]).map((r) => r.union);
 			const unionFollowerIds = new Set<string>();
 
-			union.forEach(async (u) => {
-				if (!u) return;
-				const unionFollowers = (await Followings.find({
+			for (const u of union) {
+				if (!u) continue;
+
+				const unionFollowers = await Followings.find({
 					where: {
 						followeeId: u.id,
 						followerHost: Not(IsNull()),
@@ -103,21 +104,21 @@ export default class DeliverManager {
 					select: {
 						followerId: true,
 					},
-				})) as {
+				}) as {
 					followerId: string;
 				}[];
 
 				unionFollowers.forEach((f) => {
 					if (f?.followerId) {
-						unionFollowerIds.add(f.followerId)
+						unionFollowerIds.add(f.followerId);
 					} else if (typeof f === "string") {
 						unionFollowerIds.add(f);
 					} else {
-						console.log(`error f : ${JSON.stringify(f,undefined,"\t")}`)
+						console.log(`error f : ${JSON.stringify(f, undefined, "\t")}`);
 					}
 				});
-				console.log(`a ${this.actor.id} u ${u.id} : ${unionFollowerIds.size}`)
-			})
+				console.log(`a ${this.actor.id} u ${u.id} : ${unionFollowerIds.size}`);
+			}
 
 			if (!union.length || unionFollowerIds.size !== 0) {
 				// TODO: SELECT DISTINCT ON ("followerSharedInbox") "followerSharedInbox" みたいな問い合わせにすればよりパフォーマンス向上できそう

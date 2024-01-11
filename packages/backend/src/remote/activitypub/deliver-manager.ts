@@ -119,7 +119,7 @@ export default class DeliverManager {
 				console.log(`a ${this.actor.id} u ${u.id} : ${unionFollowerIds.size}`)
 			})
 
-			if (!union.length || unionFollowerIds.size) {
+			if (!union.length || unionFollowerIds.size !== 0) {
 				// TODO: SELECT DISTINCT ON ("followerSharedInbox") "followerSharedInbox" みたいな問い合わせにすればよりパフォーマンス向上できそう
 				// ただ、sharedInboxがnullなリモートユーザーも稀におり、その対応ができなさそう？
 				const followers = (await Followings.find({
@@ -142,7 +142,7 @@ export default class DeliverManager {
 					inboxes.add(inbox);
 				}
 			} else {
-				console.log(`skip : no remote follower (${union.map((u) => {u?.id}).join(", ")})`)
+				console.log(`skip : no remote follower (${union.map((u) => u?.id).join(", ")})`)
 			}
 		}
 

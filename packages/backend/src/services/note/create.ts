@@ -753,7 +753,7 @@ export default async (
 							});
 							if (packedReReply?.userId) {
 								// リプライのリプライが自分ではない場合
-								if (packedReReply.userId !== user.id && packedReReply.userHost === null) {
+								if (packedReReply.userId !== user.id && packedReReply.user?.host === null) {
 									const u = await Users.findOneBy({ id: packedReReply.userId });
 									dm.addFollowersRecipe(u as ILocalUser);
 								} else {
@@ -764,7 +764,7 @@ export default async (
 								// リプライのリプライが上手く取得できなかった場合
 								dm.addFollowersRecipe();
 							}
-						} else if ((data.reply && data.reply.userId !== user.id && data.reply.userHost === null)) {
+						} else if ((data.reply && data.reply.userId !== user.id && data.reply.user?.host === null)) {
 							// 他人宛のリプライがある場合
 							const u = await Users.findOneBy({ id: data.reply.userId });
 							dm.addFollowersRecipe(u as ILocalUser);

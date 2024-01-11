@@ -280,8 +280,10 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 
 	const wait = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-	// ロードを長くする設定がオンの場合、2.2秒待つ
-	if ($i && defaultStore.state.longLoading) await wait(2200);
+	const splashText = document.getElementById("splashText");
+
+	// ロードを長くする設定がオンで、splashTextがある場合、2.2秒待つ
+	if ($i && defaultStore.state.longLoading && splashText?.textContent) await wait(2200);
 
 	const splash = document.getElementById("splash");
 	// 念のためnullチェック(HTMLが古い場合があるため(そのうち消す))

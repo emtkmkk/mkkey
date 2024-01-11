@@ -745,35 +745,24 @@ export default async (
 
 					// フォロワーに配送
 					if (["public", "home", "followers"].includes(note.visibility)) {
-						if (data.reply && data.reply.userId === user.id && data.reply?.replyId) {
+						if (data.reply && data.reply.userId === user.id && data.reply.replyId) {
 							// 自己リプライでリプライのリプライがある場合
-							// リプライのリプライを取得
-							const packedReReply = await Notes.pack(note, {
-								id: data.reply.replyId,
-							});
-							if (packedReReply?.userId) {
-								// リプライのリプライが自分ではない場合
-								if (packedReReply.userId !== user.id && packedReReply.user?.host === null) {
-									console.log(`reReply deliver : ${packedReReply?.id}`)
-									const u = await Users.findOneBy({ id: packedReReply.userId });
-									dm.addFollowersRecipe(u as ILocalUser);
-								} else {
-									console.log(`reReply deliver : ${packedReReply?.id}`)
-									// リプライのリプライが自分の場合
-									dm.addFollowersRecipe();
-								}
+							// リプライのリプライが自分ではない場合
+							if (data.reply.replyUserId !== user.id && data.reply.replyUserHost === null) {
+								console.log(`reReply deliver : ${data.reply.replyId}`)
+								const u = await Users.findOneBy({ id: data.reply.replyUserId });
+								dm.addFollowersRecipe(u as ILocalUser);
 							} else {
-								console.log(`packedReReply error : ${JSON.stringify(data)}`)
-								// リプライのリプライが上手く取得できなかった場合
+								console.log(`reReply deliver : ${data.reply.replyId}`)
+								// リプライのリプライが自分の場合
 								dm.addFollowersRecipe();
 							}
-						} else if ((data.reply && data.reply.userId !== user.id && data.reply.user?.host === null)) {
+						} else if ((data.reply && data.reply.userId !== user.id && data.reply.userHost === null)) {
 							console.log(`reply deliver : ${data.reply.id}`)
 							// 他人宛のリプライがある場合
 							const u = await Users.findOneBy({ id: data.reply.userId });
 							dm.addFollowersRecipe(u as ILocalUser);
 						} else {
-							if(data.reply && data.reply.userId !== user.id) console.log(JSON.stringify(data))
 							dm.addFollowersRecipe();
 						}
 					}

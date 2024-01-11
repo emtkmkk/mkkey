@@ -196,7 +196,7 @@ export const db = new DataSource({
 	password: config.db.pass,
 	database: config.db.db,
 	extra: {
-		statement_timeout: 1000 * 10,
+		statement_timeout: 1000 * 30,
 		...config.db.extra,
 	},
 	synchronize: process.env.NODE_ENV === "test",
@@ -216,7 +216,7 @@ export const db = new DataSource({
 		: false,
 	logging: log,
 	logger: log ? new MyCustomLogger() : undefined,
-	maxQueryExecutionTime: 300,
+	maxQueryExecutionTime: 1000,
 	entities: entities,
 	migrations: ["../../migration/*.js"],
 });

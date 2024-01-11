@@ -185,7 +185,7 @@ export default async (
 		.finally(() => {
 			const after = performance.now();
 			const time = after - before;
-			if (time > 1000) {
+			if (time > 2000) {
 				apiLogger.warn(`SLOW API CALL DETECTED: ${ep.name} (${time}ms)`);
 			}
 		});

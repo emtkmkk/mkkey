@@ -67,9 +67,9 @@ const unlockDeveloperSettings = computed(
 	defaultStore.makeGetterSetter("unlockDeveloperSettings")
 );
 
-const allConfigured = !(!unref(dontShowNotSet) && unref(items).some(x => defaultStore.isDefault(x.key)));
+const allConfigured = !unref(items).some(x => defaultStore.isDefault(x.key));
 
-const notSetOnly = ref(!allConfigured);
+const notSetOnly = ref(!unref(dontShowNotSet) && !allConfigured);
 
 function changeUnlockDeveloperSettings() {
 	if (unlockDeveloperSettings.value) {

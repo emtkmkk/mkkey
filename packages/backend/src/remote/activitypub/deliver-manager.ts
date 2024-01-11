@@ -1,4 +1,4 @@
-import { IsNull, Not } from "typeorm";
+import { IsNull, Not, In } from "typeorm";
 import { Users, Followings } from "@/models/index.js";
 import type { ILocalUser, IRemoteUser, User } from "@/models/entities/user.js";
 import { deliver } from "@/queue/index.js";
@@ -80,8 +80,6 @@ export default class DeliverManager {
 	public async execute() {
 		if (!Users.isLocalUser(this.actor)) return;
 
-		let logText = "";
-
 		const inboxes = new Set<string>();
 
 		/*
@@ -93,8 +91,7 @@ export default class DeliverManager {
 		if (this.recipes.some((r) => isFollowers(r))) {
 			// followers deliver
 			const union = (this.recipes.filter((r) => isFollowers(r) && r.union && Users.isLocalUser(r.union)) as IFollowersRecipe[]).map((r) => r.union);
-			const followerInbox = new Set<string>();
-			const unionInbox = new Set<string>();
+			const unionFollowerIds = new Set<string>();
 
 			union.forEach(async (u) => {
 				if (!u) return;
@@ -104,54 +101,42 @@ export default class DeliverManager {
 						followerHost: Not(IsNull()),
 					},
 					select: {
+						followerId: true,
+					},
+				})) as {
+					followerId: string;
+				}[];
+
+				unionFollowers.forEach((f) => {
+					unionFollowerIds.add(f.followerId);
+				})
+				console.log(`a ${this.actor.id} u ${u.id}`)
+			})
+
+			if (!union.length || unionFollowerIds.size) {
+				// TODO: SELECT DISTINCT ON ("followerSharedInbox") "followerSharedInbox" みたいな問い合わせにすればよりパフォーマンス向上できそう
+				// ただ、sharedInboxがnullなリモートユーザーも稀におり、その対応ができなさそう？
+				const followers = (await Followings.find({
+					where: {
+						followeeId: this.actor.id,
+						...(union.length ? {followerId: In(Array.from(unionFollowerIds))} : {}),
+						followerHost: Not(IsNull()),
+					},
+					select: {
+						followerId: true,
 						followerSharedInbox: true,
 						followerInbox: true,
 					},
 				})) as {
+					followerId: string;
 					followerSharedInbox: string | null;
 					followerInbox: string;
 				}[];
 
-				unionFollowers.forEach((f) => {
-					const inbox = f.followerSharedInbox || f.followerInbox;
-					unionInbox.add(inbox);
-				})
-				console.log(`a ${this.actor.id} u ${u.id} : ${unionInbox.size}`)
-			})
-
-			// TODO: SELECT DISTINCT ON ("followerSharedInbox") "followerSharedInbox" みたいな問い合わせにすればよりパフォーマンス向上できそう
-			// ただ、sharedInboxがnullなリモートユーザーも稀におり、その対応ができなさそう？
-			const followers = (await Followings.find({
-				where: {
-					followeeId: this.actor.id,
-					followerHost: Not(IsNull()),
-				},
-				select: {
-					followerSharedInbox: true,
-					followerInbox: true,
-				},
-			})) as {
-				followerSharedInbox: string | null;
-				followerInbox: string;
-			}[];
-
-			for (const following of followers) {
-				const inbox = following.followerSharedInbox || following.followerInbox;
-				followerInbox.add(inbox);
-			}
-
-			if (unionInbox.size) {
-				followerInbox.forEach((x) => {
-					if (unionInbox.has(x)) {
-						inboxes.add(x);
-					}
-				})
-				logText = `${followerInbox.size} ∩ ${unionInbox.size} = ${inboxes.size}`
-			} else {
-				followerInbox.forEach((x) => {
-						inboxes.add(x);
-				})
-				logText = `${inboxes.size}`
+				for (const following of followers) {
+					const inbox = following.followerSharedInbox || following.followerInbox;
+					inboxes.add(inbox);
+				}
 			}
 		}
 
@@ -169,7 +154,7 @@ export default class DeliverManager {
 			)
 			.forEach((recipe) => inboxes.add(recipe.to.inbox!));
 
-		console.log(`deliver : ${logText}${inboxes.size - inboxSize ? ` + ${inboxes.size - inboxSize}` : ""}`)
+		console.log(`deliver : ${inboxSize}${inboxes.size - inboxSize ? ` + ${inboxes.size - inboxSize}` : ""}`)
 		
 		// Validate Inboxes first
 		const validInboxes = [];

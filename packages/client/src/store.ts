@@ -1171,7 +1171,7 @@ export const defaultStore = markRaw(
 			default: false,
 			createdAt: "2024/1/12",
 			page: "fun",
-		}
+		},
 		allEmojiReplace: {
 			where: 'device',
 			default: [],

@@ -12,6 +12,35 @@
 				i18n.ts.powerModeNoShake
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 		</FormSection>
+		<FormSection>
+			<template #label>{{ i18n.ts.emojiReplace }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+			<FormSwitch v-model="enableEmojiReplace" class="_formBlock">{{
+				i18n.ts.enableEmojiReplace
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			
+			<XDraggable
+				v-model="allEmojiReplace"
+				class="zoaiodol"
+				:item-key="(item) => item"
+				animation="150"
+				delay="100"
+				delay-on-touch-only="true"
+			>
+				<template #item="{ element }">
+					<button
+						class="_button item"
+						@click="remove(element, $event)"
+					>
+						<MkEmoji :emoji="element" :normal="true" :nofallback="true" noreplace />
+					</button>
+				</template>
+				<template #footer>
+					<button class="_button add" @click="chooseEmoji">
+						<i class="ph-plus ph-bold ph-lg"></i>
+					</button>
+				</template>
+			</XDraggable>
+		</FormSection>
 	</div>
 </template>
 
@@ -28,7 +57,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
-import { isSupportNavigatorConnection } from '@/scripts/datasaver';
+import { deepClone } from "@/scripts/clone";
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;
@@ -42,6 +71,7 @@ window.addEventListener("resize", () => {
 	isMobile.value =
 		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
+
 
 const developer = computed(
 	defaultStore.makeGetterSetter("developer")
@@ -58,6 +88,76 @@ const powerModeColorful = computed(
 );
 const powerModeNoShake = computed(
 	defaultStore.makeGetterSetter("powerModeNoShake")
+);
+let allEmojiReplace = $ref(deepClone(defaultStore.state.allEmojiReplace));
+const enableEmojiReplace = computed(
+	defaultStore.makeGetterSetter("enableEmojiReplace")
+);
+
+function chooseEmoji(ev: MouseEvent) {
+	os.pickEmoji(ev.currentTarget ?? ev.target, {
+		showPinned: false,
+		asReactionPicker: true,
+	}).then((emoji) => {
+		if (!allEmojiReplace.includes(emoji)) {
+			allEmojiReplace.push(emoji);
+		}
+	});
+}
+
+function remove(reaction, ev: MouseEvent) {
+	os.popupMenu(
+		[
+			{
+				text: reaction.replace(/@(\S+)$/,"").replaceAll(":",""),
+				type: "label",
+			},
+			reaction.includes("@") ? {
+				text: reaction.replace(/^(\S+)@/,"@").replaceAll(":",""),
+				type: "label",
+			} : undefined,
+			{
+				text: i18n.ts.remove,
+				action: () => {
+					deleteReac(reaction);
+				},
+			},
+		].filter((x) => x !== undefined),
+		ev.currentTarget ?? ev.target
+	);
+}
+
+watch(
+	[$$(allEmojiReplace)],
+	() => {
+		save();
+	},
+	{
+		deep: true,
+	}
+);
+
+function save() {
+	defaultStore.set("allEmojiReplace", allEmojiReplace);
+}
+
+async function reloadAsk() {
+	const { canceled } = await os.confirm({
+		type: "info",
+		text: i18n.ts.reloadToApplySetting,
+	});
+	if (canceled) return;
+
+	unisonReload();
+}
+
+watch(
+	[
+		powerMode,
+	],
+	async () => {
+		await reloadAsk();
+	}
 );
 
 const headerActions = $computed(() => []);

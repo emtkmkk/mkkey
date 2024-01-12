@@ -1165,6 +1165,18 @@ export const defaultStore = markRaw(
 			where: 'account',
 			default: false,
 			createdAt: "2024/1/11",
+		},
+		enableEmojiReplace: {
+			where: 'device',
+			default: false,
+			createdAt: "2024/1/12",
+			page: "fun",
+		}
+		allEmojiReplace: {
+			where: 'device',
+			default: [],
+			createdAt: "2024/1/12",
+			page: "fun",
 		}
 	}),
 );

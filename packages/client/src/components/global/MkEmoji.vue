@@ -67,22 +67,25 @@ const props = defineProps<{
 	isPicker?: boolean;
 	static?: boolean;
 	nofallback?: boolean;
+	noreplace?: boolean;
 	reactionMenuEnabled?: boolean;
 	note?: any;
 }>();
 
 const emit = defineEmits(["loaderror"]);
-const isCustom = computed(() => props.emoji.startsWith(":"));
+const replace = !props.noreplace && defaultStore.state.enableEmojiReplace && defaultStore.state.allEmojiReplace.length;
+const emoji = replace ? defaultStore.state.allEmojiReplace[Math.floor(Math.random() * defaultStore.state.allEmojiReplace.length)] : props.emoji;
+const isCustom = computed(() => emoji.startsWith(":"));
 const bigCustom = computed(() => defaultStore.state.useBigCustom);
-const char = computed(() => (isCustom.value ? null : props.emoji));
-const hostmatch = computed(() => props.emoji ? props.emoji.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/) : undefined);
+const char = computed(() => (isCustom.value ? null : emoji));
+const hostmatch = computed(() => emoji ? emoji.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/) : undefined);
 const useOsNativeEmojis = computed(
 	() => defaultStore.state.useOsNativeEmojis && !props.isReaction
 );
-const errorCnt = ref(instance.errorEmoji?.[props.emoji] ?? 0);
-const errorAlt = ref(instance.errorEmojiAlt?.[props.emoji] ?? false);
+const errorCnt = ref(instance.errorEmoji?.[emoji] ?? 0);
+const errorAlt = ref(instance.errorEmojiAlt?.[emoji] ?? false);
 const isMuted = computed(() => {
-	if (!props.emoji) return false;
+	if (!emoji) return false;
 	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
 		return {
 			name: x.replaceAll(":", "").replace("@", ""),
@@ -91,8 +94,8 @@ const isMuted = computed(() => {
 		};
 	})
 	return reactionMuted.some(x => {
-		const emojiName = props.emoji.replace(":", "").replace(/@[\w:\.\-]+:$/, "");
-		const emojiHost = props.emoji.replace(/^:[\w:\.\-]+@/, "").replace(":", "");
+		const emojiName = emoji.replace(":", "").replace(/@[\w:\.\-]+:$/, "");
+		const emojiHost = emoji.replace(/^:[\w:\.\-]+@/, "").replace(":", "");
 		if (x.exact) {
 			if (x.hostmute) {
 				if (x.name === emojiHost) {
@@ -129,7 +132,7 @@ const customEmoji = computed(() => {
 	const name = hostmatch.value?.[1];
 	const host = hostmatch.value?.[2] || props.noteHost;
 
-	const matchprops = props.customEmojis?.find((x) => x.name === props.emoji.substr(1, props.emoji.length - 2) && x.url);
+	const matchprops = props.customEmojis?.find((x) => x.name === emoji.substr(1, emoji.length - 2) && x.url);
 
 	if (matchprops) {
 		return {...matchprops, name, host};
@@ -151,7 +154,7 @@ const customEmoji = computed(() => {
 const customEmojiName = computed(() => {
 	if (!isCustom.value) return null;
 
-	const nameFromEmoji = props.emoji.substr(1, props.emoji.length - 2);
+	const nameFromEmoji = emoji.substr(1, emoji.length - 2);
 	return customEmoji.value?.name || hostmatch.value?.[1] || nameFromEmoji || null;
 });
 
@@ -199,7 +202,7 @@ const altimgUrl = computed(() => {
 });
 
 const alt = computed(() => {
-	return isCustom.value ? `:${emojiFullName.value}:` : props.emoji;
+	return isCustom.value ? `:${emojiFullName.value}:` : emoji;
 });
 
 
@@ -212,7 +215,7 @@ const handleImgClick = (event) => {
 		const el =
 			event &&
 			((event.currentTarget ?? event.target) as HTMLElement | null | undefined);
-		openReactionMenu_(isCustom.value ? `:${emojiFullName.value}:` : props.emoji, props.note, true, true, el);
+		openReactionMenu_(isCustom.value ? `:${emojiFullName.value}:` : emoji, props.note, true, true, el);
 	} else if (props.note && defaultStore.state.noteQuickReaction && urlRaw.value.length >= errorCnt.value) {
 		event.stopPropagation();
 		const el =
@@ -247,7 +250,7 @@ const handleImgClick = (event) => {
 
 		os.api("notes/reactions/create", {
 			noteId: props.note.id,
-			reaction: props.emoji,
+			reaction: emoji,
 		});
 	}
 };

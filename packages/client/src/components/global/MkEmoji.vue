@@ -131,7 +131,7 @@ const customEmoji = computed(() => {
 	if (!isCustom.value) return null;
 
 	const name = hostmatch.value?.[1];
-	let host = hostmatch.value?.[2] || (!replace ? props.noteHost : undefined);
+	const host = hostmatch.value?.[2] || (!replace ? props.noteHost : undefined);
 
 	const matchprops = props.customEmojis?.find((x) => x.name === emoji.substr(1, emoji.length - 2) && x.url);
 
@@ -171,6 +171,24 @@ const emojiFullName = computed(() => {
 	return `${customEmojiName.value}${hostSuffix}`;
 });
 
+const originalEmojiFullName = $computed(() => {
+	if (!props.emoji.startsWith(":")) return char.value;
+
+	const hostmatch = computed(() => props.emoji?.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/));
+
+	const name = hostmatch.value?.[1];
+	let host = hostmatch.value?.[2] || props.noteHost;
+
+	const matchprops = props.customEmojis?.find((x) => x.url && x.name === emoji.substr(1, emoji.length - 2));
+
+	if (!(matchprops || (host && host !== "." && host !== config.host))) {
+		host = undefined;
+	}
+
+	const hostSuffix = host ? `@${host}` : "";
+	return `${name}${hostSuffix}`;
+});
+
 const urlRaw = computed(() => {
 	const urlArr = [];
 	if(customEmoji.value?.url && !defaultStore.state.enableDataSaverMode) urlArr.push(customEmoji.value.url);
@@ -204,7 +222,7 @@ const altimgUrl = computed(() => {
 
 const alt = computed(() => {
 	const alt = isCustom.value ? `:${emojiFullName.value}:` : emoji;
-	return alt + (alt !== props.emoji ? " (" + props.emoji.replace("@.","").replace("@" + config.host,"") + ")" : "");
+	return alt + (alt !== originalEmojiFullName ? " (" + originalEmojiFullName + ")" : "");
 });
 
 
@@ -217,7 +235,7 @@ const handleImgClick = (event) => {
 		const el =
 			event &&
 			((event.currentTarget ?? event.target) as HTMLElement | null | undefined);
-		openReactionMenu_(replace ? props.emoji.replace("@.","").replace("@" + config.host,"") : isCustom.value ? `:${emojiFullName.value}:` : emoji, props.note, true, true, el);
+		openReactionMenu_(replace ? originalEmojiFullName : isCustom.value ? `:${emojiFullName.value}:` : emoji, props.note, true, true, el);
 	} else if (props.note && defaultStore.state.noteQuickReaction && urlRaw.value.length >= errorCnt.value) {
 		event.stopPropagation();
 		const el =

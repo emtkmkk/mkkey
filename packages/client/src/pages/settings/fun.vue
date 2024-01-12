@@ -18,28 +18,30 @@
 				i18n.ts.enableEmojiReplace
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			
-			<XDraggable
-				v-model="allEmojiReplace"
-				class="zoaiodol"
-				:item-key="(item) => item"
-				animation="150"
-				delay="100"
-				delay-on-touch-only="true"
-			>
-				<template #item="{ element }">
-					<button
-						class="_button item"
-						@click="remove(element, $event)"
-					>
-						<MkEmoji :emoji="element" :normal="true" :nofallback="true" noreplace />
-					</button>
-				</template>
-				<template #footer>
-					<button class="_button add" @click="chooseEmoji">
-						<i class="ph-plus ph-bold ph-lg"></i>
-					</button>
-				</template>
-			</XDraggable>
+			<div v-panel v-if="enableEmojiReplace" style="border-radius: 6px">
+				<XDraggable
+					v-model="allEmojiReplace"
+					class="zoaiodol"
+					:item-key="(item) => item"
+					animation="150"
+					delay="100"
+					delay-on-touch-only="true"
+				>
+					<template #item="{ element }">
+						<button
+							class="_button item"
+							@click="remove(element, $event)"
+						>
+							<MkEmoji :emoji="element" :normal="true" :nofallback="true" noreplace />
+						</button>
+					</template>
+					<template #footer>
+						<button class="_button add" @click="chooseEmoji">
+							<i class="ph-plus ph-bold ph-lg"></i>
+						</button>
+					</template>
+				</XDraggable>
+			</div>
 		</FormSection>
 	</div>
 </template>
@@ -120,7 +122,7 @@ function remove(reaction, ev: MouseEvent) {
 			{
 				text: i18n.ts.remove,
 				action: () => {
-					deleteReac(reaction);
+					allEmojiReplace = allEmojiReplace.filter((x) => x !== reaction);
 				},
 			},
 		].filter((x) => x !== undefined),
@@ -170,3 +172,22 @@ definePageMetadata({
 	icon: "ph-confetti ph-bold ph-lg",
 });
 </script>
+
+<style lang="scss" scoped>
+.zoaiodol {
+	padding: 12px;
+	font-size: 1.1em;
+
+	> .item {
+		display: inline-block;
+		padding: 8px;
+		cursor: move;
+	}
+
+	> .add {
+		display: inline-block;
+		padding: 8px;
+	}
+}
+</style>
+

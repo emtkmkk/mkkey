@@ -11,10 +11,10 @@
 			<FormSwitch v-model="openEmojiPicker" class="_formBlock">{{
 				i18n.ts.openEmojiPicker
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="openEmojiPicker" v-model="postAutoFocusSearchBar" class="_formBlock">{{
+			<FormSwitch :disabled="!openEmojiPicker" v-model="postAutoFocusSearchBar" class="_formBlock">{{
 				i18n.ts.postAutoFocusSearchBar
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="openEmojiPicker" v-model="notCloseEmojiPicker" class="_formBlock">{{
+			<FormSwitch :disabled="!openEmojiPicker" v-model="notCloseEmojiPicker" class="_formBlock">{{
 				i18n.ts.notCloseEmojiPicker
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="showRemoteEmojiPostForm" class="_formBlock">{{
@@ -26,13 +26,13 @@
 			<FormSwitch v-model="hiddenMentionButton" class="_formBlock">{{
 				i18n.ts.hiddenMentionButton
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="!hiddenMentionButton" v-model="openMentionWindow" class="_formBlock">{{
+			<FormSwitch :disabled="hiddenMentionButton" v-model="openMentionWindow" class="_formBlock">{{
 				i18n.ts.openMentionWindow
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="hiddenCloseButton" class="_formBlock">{{
 				i18n.ts.hiddenCloseButton
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="!hiddenCloseButton" v-model="CloseAllClearButton" class="_formBlock">{{
+			<FormSwitch :disabled="hiddenCloseButton" v-model="CloseAllClearButton" class="_formBlock">{{
 				i18n.ts.CloseAllClearButton
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="hiddenAccountButton" class="_formBlock">{{

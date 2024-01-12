@@ -174,6 +174,11 @@
 		<FormSwitch v-if="developer" v-model="developerTicker" class="_formBlock">{{
 			i18n.ts.developerTicker
 		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+
+		<FormLink to="/settings/custom-css" class="_formBlock"
+			><template #icon><i class="ph-code ph-bold ph-lg"></i></template
+			>{{ i18n.ts.customCss }}</FormLink
+		>
 	</div>
 </template>
 

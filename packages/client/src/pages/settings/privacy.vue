@@ -2,7 +2,7 @@
 	<div class="_formRoot">
 		<FormSwitch
 			v-model="isLocked"
-			v-if="!isRemoteLocked"
+			:disabled="isRemoteLocked"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.makeFollowManuallyApprove
@@ -12,7 +12,7 @@
 		>
 		<FormSwitch
 			v-model="isRemoteLocked"
-			v-if="!isLocked && !blockPostNotLocal"
+			:disabled="!(!isLocked && !blockPostNotLocal)"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.makeFollowManuallyApproveToRemote
@@ -21,14 +21,14 @@
 			}}</template></FormSwitch
 		>
 		<FormSwitch
-			v-if="isLocked || isRemoteLocked || blockPostNotLocal"
+			:disabled="!(isLocked || isRemoteLocked || blockPostNotLocal)"
 			v-model="autoAcceptFollowed"
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.autoAcceptFollowed }}</FormSwitch
 		>
 		<FormSwitch
-			v-if="isLocked || isRemoteLocked || blockPostNotLocal"
+			:disabled="!(isLocked || isRemoteLocked || blockPostNotLocal)"
 			v-model="isSilentLocked"
 			class="_formBlock"
 			@update:modelValue="save()"
@@ -68,7 +68,7 @@
 			>
 			<FormSwitch
 				v-model="blockPostNotLocalPublic"
-				v-if="blockPostNotLocal"
+				:disabled="!blockPostNotLocal"
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostNotLocalPublic
@@ -127,7 +127,7 @@
 		</FormSwitch>
 		<FormSwitch
 			v-model="isRemoteBlockExplorable"
-			v-if="isExplorable"
+			:disabled="!isExplorable"
 			class="_formBlock"
 			@update:modelValue="save()"
 		>

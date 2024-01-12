@@ -147,7 +147,7 @@
 			}}</template></FormSwitch
 		>
 		<FormSwitch
-			v-if="profile.isCat"
+			:disabled="!profile.isCat"
 			v-model="profile.speakAsCat"
 			class="_formBlock"
 			>{{ i18n.ts.flagSpeakAsCat

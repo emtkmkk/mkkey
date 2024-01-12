@@ -40,11 +40,6 @@
 			i18n.ts.deck
 		}}</FormLink>
 
-		<FormLink to="/settings/custom-css" class="_formBlock"
-			><template #icon><i class="ph-code ph-bold ph-lg"></i></template
-			>{{ i18n.ts.customCss }}</FormLink
-		>
-
 		<FormLink to="/settings/custom-katex-macro" class="_formBlock"
 			><template #icon><i class="ph-radical ph-bold ph-lg"></i></template
 			>{{ i18n.ts.customKaTeXMacro }}</FormLink

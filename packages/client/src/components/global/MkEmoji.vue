@@ -56,6 +56,7 @@ import { instance } from "@/instance";
 import { openReactionMenu_ } from "@/scripts/reaction-menu";
 import * as os from "@/os";
 import * as config from "@/config";
+import seedrandom from "seedrandom";
 
 const props = defineProps<{
 	emoji: string;
@@ -74,7 +75,7 @@ const props = defineProps<{
 
 const emit = defineEmits(["loaderror"]);
 const replace = !props.noreplace && !props.isPicker && defaultStore.state.enableEmojiReplace && defaultStore.state.allEmojiReplace.length;
-const emoji = replace ? defaultStore.state.allEmojiReplace[Math.floor(Math.random() * defaultStore.state.allEmojiReplace.length)] : props.emoji;
+const emoji = replace ? defaultStore.state.allEmojiReplace[Math.floor(seedrandom(props.emoji?.replaceAll(":","")?.split("@")?.[0] || props.emoji)() * defaultStore.state.allEmojiReplace.length)] : props.emoji;
 const isCustom = computed(() => emoji.startsWith(":"));
 const bigCustom = computed(() => defaultStore.state.useBigCustom);
 const char = computed(() => (isCustom.value ? null : emoji));

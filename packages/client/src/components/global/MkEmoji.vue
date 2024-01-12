@@ -73,7 +73,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(["loaderror"]);
-const replace = !props.noreplace && defaultStore.state.enableEmojiReplace && defaultStore.state.allEmojiReplace.length;
+const replace = !props.noreplace && !props.isPicker && defaultStore.state.enableEmojiReplace && defaultStore.state.allEmojiReplace.length;
 const emoji = replace ? defaultStore.state.allEmojiReplace[Math.floor(Math.random() * defaultStore.state.allEmojiReplace.length)] : props.emoji;
 const isCustom = computed(() => emoji.startsWith(":"));
 const bigCustom = computed(() => defaultStore.state.useBigCustom);

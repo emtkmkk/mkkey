@@ -186,7 +186,7 @@ const originalEmojiFullName = $computed(() => {
 	}
 
 	const hostSuffix = host ? `@${host}` : "";
-	return `${name}${hostSuffix}`;
+	return `:${name}${hostSuffix}:`;
 });
 
 const urlRaw = computed(() => {

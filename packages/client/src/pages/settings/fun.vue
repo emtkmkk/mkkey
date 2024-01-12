@@ -46,6 +46,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, watch } from "vue";
+import XDraggable from "vuedraggable";
 import FormButton from "@/components/MkButton.vue";
 import FormLink from "@/components/form/link.vue";
 import FormSection from "@/components/form/section.vue";

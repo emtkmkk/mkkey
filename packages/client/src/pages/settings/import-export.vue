@@ -15,6 +15,7 @@
 					<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
 					<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
 					<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
+					<option value="6" v-if="defaultStore.state.enableEmojiReplace">{{ "全絵文字置換" }}</option>
 				</FormRadios>
 				<MkButton
 					primary
@@ -36,6 +37,7 @@
 					<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
 					<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
 					<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
+					<option value="6" v-if="defaultStore.state.enableEmojiReplace">{{ "全絵文字置換" }}</option>
 				</FormRadios>
 				<FormInput
 					v-model="importServerName"
@@ -280,7 +282,7 @@ const importDeckType = ref("1");
 const code = ref<string>();
 const importServerName = ref<string>();
 
-const deckType = {"1":"reactions", "2":"reactions2", "3":"reactions3", "4":"reactions4", "5":"reactions5"};
+const deckType = {"1":"reactions", "2":"reactions2", "3":"reactions3", "4":"reactions4", "5":"reactions5", "6":"allEmojiReplace"};
 
 const href = $computed(() => {
 	return URL.createObjectURL(
@@ -302,6 +304,8 @@ const name = $computed(() => {
 			return defaultStore.state.reactionsFolderName4 || "page4";
 		case "5":
 			return defaultStore.state.reactionsFolderName5 || "page5";
+		case "6":
+			return new Date().toLocaleString();
 		default:
 			return "reactions"
 	}

@@ -65,7 +65,7 @@ const picker = ref<InstanceType<typeof MkEmojiPicker>>();
 
 function chosen(emoji: any) {
 	emit("done", emoji);
-	if (defaultStore.state.notCloseEmojiPicker === false || (props.showPinned && props.asReactionPicker)) {
+	if (defaultStore.state.notCloseEmojiPicker === false || (props.asReactionPicker)) {
 	    modal.value?.close();
 	}
 }

@@ -42,6 +42,12 @@
 					</template>
 				</XDraggable>
 			</div>
+			<FormButton v-if="enableEmojiReplace" inline danger @click="setEmpty"
+			><i
+				class="ph-trash ph-bold ph-lg"
+			></i>
+				{{ i18n.ts.allDelete }}</FormButton
+			>
 		</FormSection>
 	</div>
 </template>
@@ -142,6 +148,16 @@ watch(
 
 function save() {
 	defaultStore.set("allEmojiReplace", allEmojiReplace);
+}
+
+async function setEmpty() {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.ts.deleteReactionAreYouSure,
+	});
+	if (canceled) return;
+
+	allEmojiReplace = [];
 }
 
 async function reloadAsk() {

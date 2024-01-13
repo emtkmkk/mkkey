@@ -9,16 +9,25 @@
 				<template #icon
 					><i class="ph-download-simple ph-bold ph-lg"></i
 				></template>
-				<FormRadios v-model="exportDeckType" class="_formBlock">
-					<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
-					<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
-					<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
-					<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
-					<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
-					<template v-if="defaultStore.state.enableEmojiReplace">
+				<template v-if="defaultStore.state.enableEmojiReplace">
+					<FormRadios v-model="exportDeckType" class="_formBlock">
+						<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
+						<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
+						<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
+						<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
+						<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
 						<option value="6">{{ "全絵文字置換" }}</option>
-					</template>
-				</FormRadios>
+					</FormRadios>
+				</template>
+				<template v-else>
+					<FormRadios v-model="exportDeckType" class="_formBlock">
+						<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
+						<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
+						<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
+						<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
+						<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
+					</FormRadios>
+				</template>
 				<MkButton
 					primary
 					:class="$style.button"
@@ -33,16 +42,25 @@
 				<template #icon
 					><i class="ph-upload-simple ph-bold ph-lg"></i
 				></template>
-				<FormRadios v-model="importDeckType" class="_formBlock">
-					<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
-					<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
-					<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
-					<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
-					<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
-					<template v-if="defaultStore.state.enableEmojiReplace">
+				<template v-if="defaultStore.state.enableEmojiReplace">
+					<FormRadios v-model="importDeckType" class="_formBlock">
+						<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
+						<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
+						<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
+						<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
+						<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
 						<option value="6">{{ "全絵文字置換" }}</option>
-					</template>
-				</FormRadios>
+					</FormRadios>
+				</template>
+				<template v-else>
+					<FormRadios v-model="importDeckType" class="_formBlock">
+						<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
+						<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
+						<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
+						<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
+						<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
+					</FormRadios>
+				</template>
 				<FormInput
 					v-model="importServerName"
 					class="_formBlock"
@@ -309,7 +327,7 @@ const name = $computed(() => {
 		case "5":
 			return defaultStore.state.reactionsFolderName5 || "page5";
 		case "6":
-			return new Date().toLocaleString();
+			return "allReplaceEmoji_" + new Date().toLocaleString();
 		default:
 			return "reactions"
 	}

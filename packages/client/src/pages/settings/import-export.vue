@@ -15,7 +15,9 @@
 					<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
 					<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
 					<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
-					<option value="6" v-if="defaultStore.state.enableEmojiReplace">{{ "全絵文字置換" }}</option>
+					<template v-if="defaultStore.state.enableEmojiReplace">
+						<option value="6">{{ "全絵文字置換" }}</option>
+					</template>
 				</FormRadios>
 				<MkButton
 					primary
@@ -37,7 +39,9 @@
 					<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
 					<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
 					<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
-					<option value="6" v-if="defaultStore.state.enableEmojiReplace">{{ "全絵文字置換" }}</option>
+					<template v-if="defaultStore.state.enableEmojiReplace">
+						<option value="6">{{ "全絵文字置換" }}</option>
+					</template>
 				</FormRadios>
 				<FormInput
 					v-model="importServerName"

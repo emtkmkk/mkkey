@@ -324,6 +324,19 @@ export default defineComponent({
 									style = `background-color: #${color};`;
 									break;
 								}
+								case 'border': {
+									let color = token.props.args.color;
+									color = !validColor(color) ? `#${color}` : 'var(--accent)';
+									let b_style = token.props.args.style;
+									if (
+										!['hidden', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset']
+											.includes(b_style)
+									) b_style = 'solid';
+									const width = parseFloat(token.props.args.width ?? '1');
+									const radius = parseFloat(token.props.args.radius ?? '0');
+									style = `border: ${width}px ${b_style} ${color}; border-radius: ${radius}px`;
+									break;
+								}
 								case 'ruby': {
 									token.children.forEach((t) => { if (t.type === 'text') { t.props.text = t.props.text.trim(); }});
 									let rb: string | (string | VNode)[];

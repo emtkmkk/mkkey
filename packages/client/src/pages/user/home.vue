@@ -234,7 +234,7 @@
 											: birthday
 											.replaceAll("-0","-")
 											.replace("-", "/")
-											.replace("-", "/")) + (!props.user.birthday ? "?" : "")
+											.replace("-", "/")) + (!props.user.birthday || props.user.username === "eroflash" || [":nobuyori_hpb:"].includes(props.user.originalname || props.user.name) ? "?" : "")
 									}}
 									{{
 										nextBirthday === 0
@@ -456,6 +456,13 @@ const birthday = $computed(() => {
 	if (props.user.host){
 		return props.user.birthday
 	}
+
+　if (props.user.username === "eroflash" || [":nobuyori_hpb:"].includes(props.user.originalname || props.user.name)) {
+	 let _birthday = props.user.birthday ? new Date(props.user.birthday) : new Date();
+	 _birthday.setMonth(new Date().getMonth());
+	 _birthday.setDate(new Date().getDate())
+	 return `${_birthday.getFullYear()}-${('00' + (_birthday.getMonth() + 1)).slice(-2)}-${('00' + _birthday.getDate()).slice(-2)}`;
+ }
 
 	const regtest = /(\d{1,2})(yo|歳|sai)/.test(props.user.name ?? "") || /(\d{1,2})(yo|歳|sai)/.test(props.user.description ?? "");
 

@@ -318,6 +318,10 @@ export async function createNote(
 	if (quote && text) {
 		let reg = new RegExp(`(\n\n|^)[^\n]+${quote.uri ? quote.uri.replaceAll("/","\\/") : `${config.url}/notes/${quote.id}`.replaceAll("/","\\/")}$`,"i");
 		text = text.replace(reg,"");
+		if (quote.url) (
+			let reg = new RegExp(`(\n\n|^)[^\n]+${quote.url.replaceAll("/","\\/")}$`,"i");
+		  text = text.replace(reg,"");
+		}
 	}
 
 	// vote

@@ -326,7 +326,7 @@ export default defineComponent({
 								}
 								case 'border': {
 									let color = token.props.args.color;
-									color = !validColor(color) ? `#${color}` : 'var(--accent)';
+									color = validColor(color) ? `#${color}` : 'var(--accent)';
 									let b_style = token.props.args.style;
 									if (
 										!['hidden', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset']

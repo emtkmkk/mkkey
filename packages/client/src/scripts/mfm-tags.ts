@@ -59,7 +59,7 @@ export const MFM_TAGS_JP = [
 	{name:"KaTeXB", ja:"ブロック数式", exportLeft:"\\[", exportRight:"\\]",},
 	{name:"fg", ja:"文字色変更", exportLeft:"$[fg ", exportRight:"]", defaultOption:"$[fg.color=FF0000FF ",},
 	{name:"bg", ja:"背景色変更", exportLeft:"$[bg ", exportRight:"]", defaultOption:"$[bg.color=FF0000FF ",},
-	{name:"border", ja:"枠線", exportLeft:"$[border ", exportRight:"]", defaultOption:"$[border.color=FF0000FF,style=solid,width=1,radius=0 ",},
+	{name:"border", ja:"枠線", exportLeft:"$[border ", exportRight:"]", defaultOption:"$[border.style=solid,width=1,radius=0,color=accent ",},
 	{name:"scale", ja:"サイズ調整", exportLeft:"$[scale ", exportRight:"]", defaultOption:"$[scale.x=1,y=1 ",},
 	{name:"position", ja:"位置調整", exportLeft:"$[position ", exportRight:"]", defaultOption:"$[position.x=0,y=0 ",},
 	{name:"rotateZ", ja:"回転調整", exportLeft:"$[rotate ", exportRight:"]", defaultOption:"$[rotate.deg=90 ",},

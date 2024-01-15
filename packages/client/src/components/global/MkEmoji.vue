@@ -1,5 +1,6 @@
 <template>
-		<template v-if="!(!isMuted && size && size >= 2 && size <= 4 && (urlRaw.length > errorCnt || (emojiHost && !errorAlt)))">
+	<span>
+		<template v-if="!(!noStyle && !isMuted && size && size >= 2 && size <= 4 && (urlRaw.length > errorCnt || (emojiHost && !errorAlt)))">
 			<img
 				v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
 				v-bind="$attrs"
@@ -106,6 +107,7 @@
 				/>
 			</span>
 		</template>
+	</span>
 </template>
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";

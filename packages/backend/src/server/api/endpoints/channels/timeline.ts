@@ -105,7 +105,9 @@ export default define(meta, paramDef, async (ps, user) => {
 		new Brackets((qb) => {
 			qb.orWhere("note.channelId = :channelId", { channelId: channel.id })
 			if (!channel.description?.includes("[localOnly]")){
-				qb.orWhere("'{\":channelName\"}' <@ (note.tags)",{ channelName: normalizeForSearch(channel.name) });
+				if (safeForSql(normalizeForSearch(channel.name))){
+					qb.orWhere(`'{"${normalizeForSearch(channel.name)}"}' <@ note.tags`);
+				}
 			}
 		}),
 	);

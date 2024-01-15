@@ -86,7 +86,7 @@ export default define(meta, paramDef, async (ps, user) => {
 				qb.where(
 					`((note.userId IN (${followingQuery.getQuery()})) OR (note.userId = :meId))`,
 					{ meId: user.id },
-				).orWhere(`(note.visibility = 'public') AND ((note.userHost IS NULL) OR (user.username || '@' || note."userHost" IN ('{"${m.recommendedInstances.join('","')}"}')))`);
+				).orWhere(`(note.visibility = 'public') AND ((note.userHost IS NULL) OR (user.username || '@' || note."userHost" IN ('${m.recommendedInstances.join(',')}')))`);
 			}),
 		)
 		.innerJoinAndSelect("note.user", "user")

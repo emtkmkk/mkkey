@@ -526,23 +526,18 @@ export default defineComponent({
 
 						case "emojiCode": {
 							if (isNote && !isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
-								return h(
-									"span",
-									{
-										class: "mfm-x3",
-									},
-									[
-										h(MkEmoji, {
-											key: Math.random(),
-											emoji: `:${token.props.name}:`,
-											customEmojis: this.customEmojis,
-											normal: this.plain,
-											noteHost: noteHost,
-											reactionMenuEnabled: this.reactionMenuEnabled,
-											note: this.note,
-										}),
-									],
-								);
+								return [
+									h(MkEmoji, {
+										key: Math.random(),
+										emoji: `:${token.props.name}:`,
+										customEmojis: this.customEmojis,
+										normal: this.plain,
+										noteHost: noteHost,
+										reactionMenuEnabled: this.reactionMenuEnabled,
+										note: this.note,
+										size: 3,
+									}),
+								];
 							} else if (isNote && !isPlain && emojiAst != null && emojiAst.length <= 6){
 								return [
 									h(MkEmoji, {

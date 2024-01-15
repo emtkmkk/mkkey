@@ -1,6 +1,13 @@
 <template>
 	<MkSpacer :content-max="800">
-		<MkPagination v-slot="{ items }" ref="list" :pagination="pagination">
+		<div class="query">
+			<MkInput v-model="q" debounce class="" :placeholder="i18n.ts.search">
+				<template #prefix
+					><i class="ph-magnifying-glass ph-bold ph-lg"></i
+				></template>
+			</MkInput>
+		</div>
+		<MkPagination :key="`reaction:${user.id}-${q}`"  v-slot="{ items }" ref="list" :pagination="pagination">
 			<div
 				v-for="item in items"
 				:key="item.id"
@@ -13,6 +20,7 @@
 						class="reaction"
 						:reaction="item.type"
 						:custom-emojis="item.note.emojis"
+						@click="q = item.type"
 					/>
 					<MkTime :time="item.createdAt" class="createdAt" />
 				</div>
@@ -28,6 +36,11 @@ import * as misskey from "calckey-js";
 import MkPagination from "@/components/MkPagination.vue";
 import MkNote from "@/components/MkNote.vue";
 import MkReactionIcon from "@/components/MkReactionIcon.vue";
+import MkInput from "@/components/form/input.vue";
+import { i18n } from "@/i18n";
+
+
+const q = $ref("");
 
 const props = defineProps<{
 	user: misskey.entities.User;
@@ -38,11 +51,21 @@ const pagination = {
 	limit: 20,
 	params: computed(() => ({
 		userId: props.user.id,
+		emoji: q || undefined,
 	})),
 };
 </script>
 
+watch($$(q), () => {
+
+});
+
 <style lang="scss" scoped>
+
+.query {
+	background: var(--bg);
+	padding: 16px;
+}
 .afdcfbfb {
 	> .header {
 		display: flex;

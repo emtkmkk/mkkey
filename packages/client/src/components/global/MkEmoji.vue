@@ -7,7 +7,7 @@
 				:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 				:src="url"
 				:title="title"
-				:alt="alt"
+				alt=""
 				decoding="async"
 				@click="handleImgClick"
 				@error="() => {
@@ -26,7 +26,7 @@
 				class="mk-emoji"
 				:src="url"
 				:title="title"
-				:alt="alt"
+				alt=""
 				decoding="async"
 				@click="handleImgClick"
 			/>
@@ -37,7 +37,7 @@
 				:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 				:src="altimgUrl"
 				:title="title + ' [localOnly]'"
-				:alt="alt"
+				alt=""
 				v-tooltip="emojiHost + ' localOnly'"
 				decoding="async"
 				@error="() => {

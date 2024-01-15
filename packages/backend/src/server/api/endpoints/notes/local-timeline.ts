@@ -84,7 +84,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.sinceDate,
 		ps.untilDate,
 	)
-		.andWhere(`((note.userHost IS NULL) OR (user.username || '@' || note."userHost" IN ('{"${m.recommendedInstances.join('","')}"}')))`)
+		.andWhere(`((note.userHost IS NULL) OR (user.username || '@' || note."userHost" IN ('${m.recommendedInstances.join(',')}')))`)
 		.andWhere("(note.replyId IS NULL OR reply.userHost IS NULL)")
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")

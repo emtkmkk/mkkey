@@ -70,8 +70,14 @@ export default define(meta, paramDef, async (ps, me) => {
 			ps.untilId,
 		);
 
-		if (ps.userId || que.includes("user:")) {
+		if (ps.userId || que.includes("user:") || que.toLowerCase().includes("from:me")) {
 			let qUserId = ps.userId;
+			if (que.toLowerCase().includes("from:me")) {
+				if (me) {
+					qUserId = me.id;
+				}
+				que = que.replace(/from:me/i, "")
+			}
 			if (!qUserId) {
 				const match = /(^|[\s\+])user:(\w{10})($|[\s\+])/i.exec(que)
 				qUserId = match?.[2];
@@ -103,9 +109,13 @@ export default define(meta, paramDef, async (ps, me) => {
 			}
 			if (qHost) {
 				plusQueryCount += 1
-				query.andWhere("note.user.host = :host", {
-					host: qHost,
-				});
+				if (qHost === "." || qHost === config.host) {
+					query.andWhere("note.userHost IS NULL");
+				} else {
+					query.andWhere("note.userHost = :host", {
+						host: qHost,
+					});
+				}
 			}
 		}
 		if (ps.visibility || que.includes("visibility:")) {

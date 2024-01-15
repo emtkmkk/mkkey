@@ -2,7 +2,7 @@
 	<img
 		v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
 		class="mk-emoji"
-		:class="{ normal, noStyle, bigCustom, custom : !bigCustom, ('mfm-x' + (size || 2)): mfmx }"
+		:class="{ normal, noStyle, bigCustom, custom : !bigCustom, 'mfm-x' + (size || 2): mfmx  }"
 		:src="url"
 		:title="title"
 		:alt="alt"
@@ -22,18 +22,18 @@
 	<img
 		v-else-if="char && !useOsNativeEmojis"
 		class="mk-emoji"
-		:class="{('mfm-x' + (size || 2)): mfmx  }"
+		:class="{'mfm-x' + (size || 2): mfmx   }"
 		:src="url"
 		:title="title"
 		:alt="alt"
 		decoding="async"
 		@click="handleImgClick"
 	/>
-	<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick" :class="{ ('mfm-x' + (size || 2)): mfmx  }">{{ char }}</span>
+	<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick" :class="{ 'mfm-x' + (size || 2): mfmx   }">{{ char }}</span>
 	<img
 		v-else-if="isCustom && !isMuted && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
 		class="mk-emoji emoji-ghost"
-		:class="{ normal, noStyle, bigCustom, custom : !bigCustom, ('mfm-x' + (size || 2)): mfmx  }"
+		:class="{ normal, noStyle, bigCustom, custom : !bigCustom, 'mfm-x' + (size || 2): mfmx   }"
 		:src="altimgUrl"
 		:title="title + ' [localOnly]'"
 		:alt="alt"

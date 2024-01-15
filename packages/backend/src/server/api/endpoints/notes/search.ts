@@ -80,7 +80,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (qUserId) {
 				query.andWhere("note.userId = :userId", { userId: qUserId });
 			}
-		} else if (ps.channelId || que.includes("channel:")) {
+		}
+		if (ps.channelId || que.includes("channel:")) {
 			let qChannelId = ps.channelId;
 			if (!qChannelId) {
 				const match = /(^|[\s\+])channel:(\w{10})($|[\s\+])/i.exec(que)
@@ -92,7 +93,8 @@ export default define(meta, paramDef, async (ps, me) => {
 					channelId: qChannelId,
 				});
 			}
-		} else if (ps.host || que.includes("host:")) {
+		}
+		if (ps.host || que.includes("host:")) {
 			let qHost = ps.host;
 			if (!qHost) {
 				const match = /(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i.exec(que)
@@ -105,7 +107,8 @@ export default define(meta, paramDef, async (ps, me) => {
 					host: qHost,
 				});
 			}
-		} else if (ps.visibility || que.includes("visibility:")) {
+		}
+		if (ps.visibility || que.includes("visibility:")) {
 			let qVisibility = ps.visibility;
 			if (!qVisibility) {
 				const match = /(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i.exec(que)
@@ -118,7 +121,8 @@ export default define(meta, paramDef, async (ps, me) => {
 					visibility: qVisibility,
 				});
 			}
-		} else if (ps.local || que.includes("local:")) {
+		}
+		if (ps.local || que.includes("local:")) {
 			let qLocal = ps.local;
 			if (!qLocal) {
 				const match = /(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i.exec(que)
@@ -131,7 +135,8 @@ export default define(meta, paramDef, async (ps, me) => {
 					localOnly: qLocal ? true : false,
 				});
 			}
-		} else if (ps.minScore || que.includes("score:")) {
+		}
+		if (ps.minScore || que.includes("score:")) {
 			let qScore = ps.score;
 			if (!qScore) {
 				const match = /(^|[\s\+])score:(\d+)($|[\s\+])/i.exec(que)

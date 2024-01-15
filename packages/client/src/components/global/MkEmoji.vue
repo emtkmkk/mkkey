@@ -1,6 +1,6 @@
 <template>
 	<template v-if="!isMuted && size && size >= 2 && size <= 4 && (urlRaw.length > errorCnt || (emojiHost && !errorAlt))">
-  	<span :class="'MFM-x' + size">
+  	<span :class="'mfm-x' + size">
 			<img
 				v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
 				class="mk-emoji"

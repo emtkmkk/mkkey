@@ -35,8 +35,8 @@ export function generateVisibilityQuery(
 					// または 自分自身
 					.orWhere("note.userId = :meId")
 					// または 自分宛て
-					.orWhere(":meId = ANY(note.visibleUserIds)")
-					.orWhere(":meId = ANY(note.mentions)")
+					.orWhere("'{\":meId\"}' <@ (note.visibleUserIds)")
+					.orWhere("'{\":meId\"}' <@ (note.mentions)")
 					.orWhere(
 						new Brackets((qb) => {
 							qb

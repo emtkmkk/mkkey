@@ -49,7 +49,7 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, me) => {
 	const query = Users.createQueryBuilder("user").where(
-		":tag = ANY(user.tags)",
+		"'{\":tag\"}' <@ (user.tags)",
 		{ tag: normalizeForSearch(ps.tag) },
 	);
 

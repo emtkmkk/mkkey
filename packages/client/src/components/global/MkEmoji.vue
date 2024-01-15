@@ -50,54 +50,56 @@
 			/>
 		</span>
 	</template>
-	<img
-		v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
-		class="mk-emoji"
-		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
-		:src="url"
-		:title="title"
-		:alt="alt"
-		decoding="async"
-		@click="handleImgClick"
-		@error="() => {
-			errorCnt = errorCnt + 1;
-			if (isPicker && urlRaw.length <= errorCnt) {
-				emit('loaderror', '');
-			}
-			if (!instance.errorEmoji) {
-				instance.errorEmoji = {};
-			}
-			instance.errorEmoji[emoji + (noteHost ? '@' + noteHost : '')] = errorCnt;
-		}"
-	/>
-	<img
-		v-else-if="char && !useOsNativeEmojis"
-		class="mk-emoji"
-		:src="url"
-		:title="title"
-		:alt="alt"
-		decoding="async"
-		@click="handleImgClick"
-	/>
-	<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick">{{ char }}</span>
-	<img
-		v-else-if="isCustom && !isMuted && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
-		class="mk-emoji emoji-ghost"
-		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
-		:src="altimgUrl"
-		:title="title + ' [localOnly]'"
-		:alt="alt"
-		v-tooltip="emojiHost + ' localOnly'"
-		decoding="async"
-		@error="() => {
-			errorAlt = true;
-			if (!instance.errorEmojiAlt) {
-				instance.errorEmojiAlt = {};
-			}
-			instance.errorEmojiAlt[emoji + (noteHost ? '@' + noteHost : '')] = true;
-		}"
-	/>
-	<span v-else>{{ isCustom && customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
+	<template v-else>
+		<img
+			v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
+			class="mk-emoji"
+			:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
+			:src="url"
+			:title="title"
+			:alt="alt"
+			decoding="async"
+			@click="handleImgClick"
+			@error="() => {
+				errorCnt = errorCnt + 1;
+				if (isPicker && urlRaw.length <= errorCnt) {
+					emit('loaderror', '');
+				}
+				if (!instance.errorEmoji) {
+					instance.errorEmoji = {};
+				}
+				instance.errorEmoji[emoji + (noteHost ? '@' + noteHost : '')] = errorCnt;
+			}"
+		/>
+		<img
+			v-else-if="char && !useOsNativeEmojis"
+			class="mk-emoji"
+			:src="url"
+			:title="title"
+			:alt="alt"
+			decoding="async"
+			@click="handleImgClick"
+		/>
+		<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick">{{ char }}</span>
+		<img
+			v-else-if="isCustom && !isMuted && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
+			class="mk-emoji emoji-ghost"
+			:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
+			:src="altimgUrl"
+			:title="title + ' [localOnly]'"
+			:alt="alt"
+			v-tooltip="emojiHost + ' localOnly'"
+			decoding="async"
+			@error="() => {
+				errorAlt = true;
+				if (!instance.errorEmojiAlt) {
+					instance.errorEmojiAlt = {};
+				}
+				instance.errorEmojiAlt[emoji + (noteHost ? '@' + noteHost : '')] = true;
+			}"
+		/>
+		<span v-else>{{ isCustom && customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
+	</template>
 </template>
 
 <script lang="ts" setup>

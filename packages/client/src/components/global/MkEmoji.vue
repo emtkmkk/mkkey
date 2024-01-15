@@ -89,7 +89,7 @@ const useOsNativeEmojis = computed(
 );
 const errorCnt = ref(instance.errorEmoji?.[emoji] ?? 0);
 const errorAlt = ref(instance.errorEmojiAlt?.[emoji] ?? false);
-const mfmx = computed(() => props.size && props.size >= 2 && props.size <= 4);
+const mfmx = props.size && props.size >= 2 && props.size <= 4;
 const isMuted = computed(() => {
 	if (!emoji) return false;
 	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {

@@ -30,6 +30,7 @@
 			v-for="category in customEmojiCategories"
 			:key="category"
 			class="emojis"
+			:expanded="false"
 		>
 			<template #header>{{ category || i18n.ts.other }}</template>
 			<div class="zuvgdzyt">
@@ -47,6 +48,7 @@
 		<MkFolder
 			key="category:null"
 			class="emojis"
+			:expanded="false"
 		>
 			<template #header>{{ "カテゴリ未設定" }}</template>
 			<div class="zuvgdzyt">

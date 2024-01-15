@@ -82,8 +82,9 @@ watch($$(q), () => {
 		}
 
 		> .reaction {
-			width: 32px;
+			max-width: 160px;
 			height: 32px;
+			object-fit: fill;
 		}
 
 		> .createdAt {

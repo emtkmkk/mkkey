@@ -117,6 +117,10 @@ export default define(meta, paramDef, async (ps, me) => {
 			}
 			if (qVisibility) {
 				plusQueryCount += 1
+				if (qVisibility === "全公開") qVisibility = "public";
+				if (qVisibility === "ホーム") qVisibility = "home";
+				if (qVisibility === "フォロワー") qVisibility = "followers";
+				if (qVisibility === "ダイレクト" || qVisibility === "direct") qVisibility = "specified";
 				query.andWhere("note.visibility = :visibility", {
 					visibility: qVisibility,
 				});

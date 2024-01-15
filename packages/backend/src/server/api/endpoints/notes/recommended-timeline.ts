@@ -136,7 +136,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			new Brackets((qb) => {
 				for (const type of ps.fileType!) {
 					const i = ps.fileType!.indexOf(type);
-					qb.orWhere(`'{":type${i}"}' <@ (note.attachedFileTypes)`, {
+					qb.orWhere(`:type${i} = ANY(note.attachedFileTypes)`, {
 						[`type${i}`]: type,
 					});
 				}
@@ -146,7 +146,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		if (ps.excludeNsfw) {
 			query.andWhere("note.cw IS NULL");
 			query.andWhere(
-				'0 = (SELECT COUNT(*) FROM drive_file df WHERE \'{"df.id"}\' <@ (note."fileIds") AND df."isSensitive" = TRUE)',
+				'0 = (SELECT COUNT(*) FROM drive_file df WHERE df.id = ANY(note."fileIds") AND df."isSensitive" = TRUE)',
 			);
 		}
 	}

@@ -20,7 +20,7 @@
 						class="reaction"
 						:reaction="item.type"
 						:custom-emojis="item.note.emojis"
-						@click="q = item.type?.replace('.@','').replace('.' + config.host, '')"
+						@click="q = item.type?.replace('@.','').replace('@' + config.host, '')"
 					/>
 					<MkTime :time="item.createdAt" class="createdAt" />
 				</div>

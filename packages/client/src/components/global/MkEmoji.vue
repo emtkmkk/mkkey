@@ -1,4 +1,5 @@
-<template v-if="!isMuted && size && size >= 2 && size <= 4 && (urlRaw.length > errorCnt || (emojiHost && !errorAlt))">
+<template>
+	<template v-if="!isMuted && size && size >= 2 && size <= 4 && (urlRaw.length > errorCnt || (emojiHost && !errorAlt))">
   	<span :class="'mfm-x' + size">
 			<img
 				v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
@@ -98,8 +99,8 @@
 			}"
 		/>
 		<span v-else>{{ isCustom && customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
+  </template>
 </template>
-
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
 import { CustomEmoji } from "calckey-js/built/entities";

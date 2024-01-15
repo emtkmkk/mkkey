@@ -1,5 +1,5 @@
 <template>
-	<template>
+	<template v-if="true">
 	<template v-if="!(!isMuted && size && size >= 2 && size <= 4 && (urlRaw.length > errorCnt || (emojiHost && !errorAlt)))">
 		<img
 			v-if="isCustom && !isMuted && urlRaw.length > errorCnt"

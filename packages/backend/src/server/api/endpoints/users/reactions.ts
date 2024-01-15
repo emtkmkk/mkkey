@@ -38,6 +38,7 @@ export const paramDef = {
 	properties: {
 		userId: { type: "string", format: "misskey:id" },
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		emoji: { type: "string", nullable: true },
 		sinceId: { type: "string", format: "misskey:id" },
 		untilId: { type: "string", format: "misskey:id" },
 		sinceDate: { type: "integer" },
@@ -62,6 +63,10 @@ export default define(meta, paramDef, async (ps, me) => {
 	)
 		.andWhere("reaction.userId = :userId", { userId: ps.userId })
 		.leftJoinAndSelect("reaction.note", "note");
+
+	if (ps.emoji) {
+		query.andWhere("reaction.reaction = :emoji", { emoji: ps.emoji })
+	}
 
 	generateVisibilityQuery(query, me);
 

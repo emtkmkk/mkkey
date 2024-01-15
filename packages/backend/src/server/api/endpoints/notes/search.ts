@@ -140,7 +140,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			let qLocal = ps.local;
 			if (!qLocal) {
 				const match = /(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i.exec(que)
-				qLocal = ["true", "on", "yes", "only"].includes(match?.[2].toLowerCase());
+				qLocal = ["true", "on", "yes", "only"].includes(match?.[2]?.toLowerCase());
 				que = que.replace(/(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i, "")
 			}
 			if (qLocal) {

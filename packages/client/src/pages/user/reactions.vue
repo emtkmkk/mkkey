@@ -13,7 +13,6 @@
 						class="reaction"
 						:reaction="item.type"
 						:custom-emojis="item.note.emojis"
-						:no-style="true"
 					/>
 					<MkTime :time="item.createdAt" class="createdAt" />
 				</div>

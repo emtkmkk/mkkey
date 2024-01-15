@@ -4,7 +4,8 @@
 		class="mk-emoji"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="url"
-		:title="alt"
+		:title="title"
+		:alt="alt"
 		decoding="async"
 		@click="handleImgClick"
 		@error="() => {
@@ -22,7 +23,8 @@
 		v-else-if="char && !useOsNativeEmojis"
 		class="mk-emoji"
 		:src="url"
-		:title="alt"
+		:title="title"
+		:alt="alt"
 		decoding="async"
 		@click="handleImgClick"
 	/>
@@ -32,8 +34,9 @@
 		class="mk-emoji emoji-ghost"
 		:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 		:src="altimgUrl"
-		:title="alt + ' (localOnly)'"
-		v-tooptip="emojiHost + ' localOnly'"
+		:title="title + ' [localOnly]'"
+		:alt="alt"
+		v-tooltip="emojiHost + ' localOnly'"
 		decoding="async"
 		@error="() => {
 			errorAlt = true;
@@ -172,7 +175,7 @@ const emojiFullName = computed(() => {
 });
 
 const originalEmojiFullName = $computed(() => {
-	if (!props.emoji.startsWith(":")) return char.value;
+	if (!props.emoji.startsWith(":")) return props.emoji;
 
 	const hostmatch = computed(() => props.emoji?.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/));
 
@@ -181,8 +184,7 @@ const originalEmojiFullName = $computed(() => {
 
 	const matchprops = props.customEmojis?.find((x) => x.url && x.name === emoji.substr(1, emoji.length - 2));
 
-	if (!(matchprops || (host && host !== "." && host !== config.host))) {
-		host = undefined;
+	if (!(matchprops || (host && host !== "." && host !== config.host))) {		host = undefined;
 	}
 
 	const hostSuffix = host ? `@${host}` : "";
@@ -220,9 +222,13 @@ const altimgUrl = computed(() => {
 				: imgUrl;
 });
 
-const alt = computed(() => {
+const title = computed(() => {
 	const alt = isCustom.value ? `:${emojiFullName.value}:` : emoji;
 	return alt + (alt !== originalEmojiFullName ? " (" + originalEmojiFullName + ")" : "");
+});
+
+const alt = computed(() => {
+	return isCustom.value ? `:${emojiFullName.value}:` : emoji;
 });
 
 

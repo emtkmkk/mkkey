@@ -37,14 +37,7 @@ const emit = defineEmits<{
 .beeadbfb {
 	text-align: center;
 
-	> img {
-		display: block;
-		width: 60px;
-		font-size: 60px; // unicodeな絵文字についてはwidthが効かないため
-		margin: 0 auto;
-	}
-
-	> span {
+	> .icon {
 		display: block;
 		width: 60px;
 		font-size: 60px; // unicodeな絵文字についてはwidthが効かないため

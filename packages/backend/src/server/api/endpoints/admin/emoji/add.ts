@@ -65,7 +65,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	const emojiSearchName = await Emojis.findOneBy({ name: name , host: IsNull() });
 	
 	// 名前重複の場合
-	if (emojiSearchName) 
+	if (emojiSearchName) {
 		if (ps.name) {
 			throw new ApiError(meta.errors.duplicateEmojiName);
 		}

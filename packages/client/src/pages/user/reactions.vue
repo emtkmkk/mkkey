@@ -20,7 +20,7 @@
 						class="reaction"
 						:reaction="item.type"
 						:custom-emojis="item.note.emojis"
-						@click="q = item.type"
+						@click="q = item.type?.replace('.@','').replace('.' + config.host, '')"
 					/>
 					<MkTime :time="item.createdAt" class="createdAt" />
 				</div>
@@ -38,6 +38,7 @@ import MkNote from "@/components/MkNote.vue";
 import MkReactionIcon from "@/components/MkReactionIcon.vue";
 import MkInput from "@/components/form/input.vue";
 import { i18n } from "@/i18n";
+import * as config from "@/config";
 
 
 const q = $ref("");

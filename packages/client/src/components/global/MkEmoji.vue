@@ -1,4 +1,7 @@
 <template>
+	<template v-if="!isMuted && size && size >= 2 && size <= 4 && (urlRaw.length > errorCnt || (emojiHost && !errorAlt))">
+  	<span :class="'MFM-x' + size">
+	</template>
 	<img
 		v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
 		class="mk-emoji"
@@ -47,6 +50,9 @@
 		}"
 	/>
 	<span v-else>{{ isCustom && customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
+	<template v-if="!isMuted && size && size >= 2 && size <= 4 && (urlRaw.length > errorCnt || (emojiHost && !errorAlt))">
+		</span>
+	</template>
 </template>
 
 <script lang="ts" setup>
@@ -74,6 +80,7 @@ const props = defineProps<{
 	noreplace?: boolean;
 	reactionMenuEnabled?: boolean;
 	note?: any;
+	size?: number;
 }>();
 
 const emit = defineEmits(["loaderror"]);

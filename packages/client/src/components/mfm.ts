@@ -544,23 +544,18 @@ export default defineComponent({
 									],
 								);
 							} else if (isNote && !isPlain && emojiAst != null && emojiAst.length <= 6){
-								return h(
-									"span",
-									{
-										class: "mfm-x2",
-									},
-									[
-										h(MkEmoji, {
-											key: Math.random(),
-											emoji: `:${token.props.name}:`,
-											customEmojis: this.customEmojis,
-											normal: this.plain,
-											noteHost: noteHost,
-											reactionMenuEnabled: this.reactionMenuEnabled,
-											note: this.note,
-										}),
-									],
-								);
+								return [
+									h(MkEmoji, {
+										key: Math.random(),
+										emoji: `:${token.props.name}:`,
+										customEmojis: this.customEmojis,
+										normal: this.plain,
+										noteHost: noteHost,
+										reactionMenuEnabled: this.reactionMenuEnabled,
+										note: this.note,
+										size: 2,
+									}),
+								];
 							} else {
 								return [
 									h(MkEmoji, {
@@ -571,6 +566,7 @@ export default defineComponent({
 										noteHost: noteHost,
 										reactionMenuEnabled: this.reactionMenuEnabled,
 										note: this.note,
+										nofallback: !isNote && isPlain,
 									}),
 								];
 							}
@@ -578,39 +574,29 @@ export default defineComponent({
 
 						case "unicodeEmoji": {
 							if (isNote && !isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
-								return h(
-									"span",
-									{
-										class: "mfm-x3",
-									},
-									[
-										h(MkEmoji, {
-											key: Math.random(),
-											emoji: token.props.emoji,
-											customEmojis: this.customEmojis,
-											normal: this.plain,
-											reactionMenuEnabled: this.reactionMenuEnabled,
-											note: this.note,
-										}),
-									],
-								);
+								return [
+									h(MkEmoji, {
+										key: Math.random(),
+										emoji: token.props.emoji,
+										customEmojis: this.customEmojis,
+										normal: this.plain,
+										reactionMenuEnabled: this.reactionMenuEnabled,
+										note: this.note,
+										size: 3,
+									}),
+								];
 							} else if (isNote && !isPlain && emojiAst != null && emojiAst.length <= 6){
-								return h(
-									"span",
-									{
-										class: "mfm-x2",
-									},
-									[
-										h(MkEmoji, {
-											key: Math.random(),
-											emoji: token.props.emoji,
-											customEmojis: this.customEmojis,
-											normal: this.plain,
-											reactionMenuEnabled: this.reactionMenuEnabled,
-											note: this.note,
-										}),
-									],
-								);
+								return [
+									h(MkEmoji, {
+										key: Math.random(),
+										emoji: token.props.emoji,
+										customEmojis: this.customEmojis,
+										normal: this.plain,
+										reactionMenuEnabled: this.reactionMenuEnabled,
+										note: this.note,
+										size: 2,
+									}),
+								];
 							} else {
 								return [
 									h(MkEmoji, {
@@ -620,6 +606,7 @@ export default defineComponent({
 										normal: this.plain,
 										reactionMenuEnabled: this.reactionMenuEnabled,
 										note: this.note,
+										nofallback: !isNote && isPlain,
 									}),
 								];
 							}

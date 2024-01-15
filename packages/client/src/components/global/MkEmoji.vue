@@ -1,8 +1,8 @@
 <template>
-	<template v-if="true">
 		<template v-if="!(!isMuted && size && size >= 2 && size <= 4 && (urlRaw.length > errorCnt || (emojiHost && !errorAlt)))">
 			<img
 				v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
+				v-bind="$attrs"
 				class="mk-emoji"
 				:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 				:src="url"
@@ -23,6 +23,7 @@
 			/>
 			<img
 				v-else-if="char && !useOsNativeEmojis"
+				v-bind="$attrs"
 				class="mk-emoji"
 				:src="url"
 				:title="title"
@@ -30,9 +31,10 @@
 				decoding="async"
 				@click="handleImgClick"
 			/>
-			<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick">{{ char }}</span>
+			<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick" v-bind="$attrs">{{ char }}</span>
 			<img
 				v-else-if="isCustom && !isMuted && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
+				v-bind="$attrs"
 				class="mk-emoji emoji-ghost"
 				:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 				:src="altimgUrl"
@@ -48,12 +50,13 @@
 					instance.errorEmojiAlt[emoji + (noteHost ? '@' + noteHost : '')] = true;
 				}"
 			/>
-			<span v-else>{{ isCustom && customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
+			<span v-else v-bind="$attrs">{{ isCustom && customEmojiName && !isReaction ? `:${customEmojiName}:` : emoji }}</span>
 		</template>
 		<template v-else>
 			<span :class="'mfm-x' + size">
 				<img
 					v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
+					v-bind="$attrs"
 					class="mk-emoji"
 					:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 					:src="url"
@@ -74,6 +77,7 @@
 				/>
 				<img
 					v-else-if="char && !useOsNativeEmojis"
+					v-bind="$attrs"
 					class="mk-emoji"
 					:src="url"
 					:title="title"
@@ -81,9 +85,10 @@
 					decoding="async"
 					@click="handleImgClick"
 				/>
-				<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick">{{ char }}</span>
+				<span v-else-if="char && useOsNativeEmojis" @click="handleImgClick" v-bind="$attrs">{{ char }}</span>
 				<img
 					v-else-if="isCustom && !isMuted && urlRaw.length <= errorCnt && !isPicker && emojiHost && !errorAlt"
+					v-bind="$attrs"
 					class="mk-emoji emoji-ghost"
 					:class="{ normal, noStyle, bigCustom, custom : !bigCustom }"
 					:src="altimgUrl"
@@ -101,7 +106,6 @@
 				/>
 			</span>
 		</template>
-	</template>
 </template>
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
@@ -237,9 +241,8 @@ const originalEmojiFullName = $computed(() => {
 	const name = hostmatch.value?.[1];
 	let host = hostmatch.value?.[2] || props.noteHost;
 
-	const matchprops = props.customEmojis?.find((x) => x.url && x.name === emoji.substr(1, emoji.length - 2));
-
-	if (!(matchprops || (host && host !== "." && host !== config.host))) {		host = undefined;
+	if (host && (host === "." || host === config.host)) {
+		host = undefined;
 	}
 
 	const hostSuffix = host ? `@${host}` : "";

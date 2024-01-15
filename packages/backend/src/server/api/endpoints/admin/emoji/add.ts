@@ -20,6 +20,11 @@ export const meta = {
 			code: "MO_SUCH_FILE",
 			id: "fc46b5a4-6b92-4c33-ac66-b806659bb5cf",
 		},
+		duplicateEmojiName: {
+			message: "The specified emoji name already exists.",
+			code: "DUPLICATE_EMOJI_NAME",
+			id: "a7f2bc3d-b1c2-4678-b023-9f8c5d4e2abc",
+		},
 	},
 } as const;
 
@@ -60,8 +65,11 @@ export default define(meta, paramDef, async (ps, me) => {
 	const emojiSearchName = await Emojis.findOneBy({ name: name , host: IsNull() });
 	
 	// 名前重複の場合
-	if (emojiSearchName) {
-		name = name + `_${rndstr("a-z0-9", 8)}`;
+	if (emojiSearchName) 
+		if (ps.name) {
+			throw new ApiError(meta.errors.duplicateEmojiName);
+		}
+		name = `${name}_${rndstr("a-z0-9", 8)}`;
 	}
 
 	let license = ps.license;

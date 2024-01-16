@@ -182,16 +182,17 @@ export function mr_to_str(mr, jpmode = true) {
 			ret.push(x);
 			return;
 		}
-		if (jpmode && x === "010010") {
-			_jpmode = true;
+		if (jpmode) {
+			if (x === "101101") {
+				_jpmode = false;
+				return;
+			} else if (x === "010010") {
+				_jpmode = true;
+				return;
+			}
 		}
 		const jp = rjpdict[x];
 		if (_jpmode && jp) {
-			if (x === "101101") {
-				_jpmode = false;
-			} else if (x !== "010010") {
-				ret.push(jp);
-			}
 		} else {
 			const en = rdict[x];
 			if (en) {

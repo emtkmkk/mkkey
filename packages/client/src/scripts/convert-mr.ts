@@ -193,6 +193,7 @@ export function mr_to_str(mr, jpmode = true) {
 		}
 		const jp = rjpdict[x];
 		if (_jpmode && jp) {
+			ret.push(jp);
 		} else {
 			const en = rdict[x];
 			if (en) {

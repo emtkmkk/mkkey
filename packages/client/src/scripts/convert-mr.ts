@@ -42,7 +42,6 @@ export const dict = {
 	"!": "101011",
 	"+": "01010",
 	"-": "100001",
-	"*": "1001",
 	"/": "10010",
 	"^": "111111",
 	"=": "10001",
@@ -121,6 +120,7 @@ export function str_to_mr(str) {
 		ret.push("10001");
 	}
 	strarr.forEach((x) => {
+		if(x === "*" || x === "×" || x === "✕") x = "X";
 		const jp = jpdict[x];
 		if (jpmode && jp) {
 			if (jpmode && !_jpmode) {

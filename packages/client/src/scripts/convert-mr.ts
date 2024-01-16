@@ -104,7 +104,7 @@ export function str_to_mr(str) {
 	_str = _str.replaceAll("ァ", "ア").replaceAll("ィ", "イ").replaceAll("ゥ", "ウ").replaceAll("ェ", "エ").replaceAll("ォ", "オ");
 	_str = _str.replaceAll("ヵ", "カ").replaceAll("ッ", "ツ").replaceAll("ャ", "ヤ").replaceAll("ュ", "ユ").replaceAll("ョ", "ヨ");
 
-	let jpmode = !/^[A-Z0-9.,:?!_+\-*^\/@\(\)"']+$/.test(_str);
+	let jpmode = !/^[A-Z0-9.,:?!_+\-*^=\/@\(\)"']+$/.test(_str);
 	let _jpmode = jpmode;
 
 	let ret: Array<String> = [];

@@ -210,5 +210,5 @@ export function mr_to_str(mr, jpmode = true) {
 	_ret = _ret.replaceAll("タ゛", "ダ").replaceAll("チ゛", "ヂ").replaceAll("ツ゛", "ヅ").replaceAll("テ゛", "デ").replaceAll("ト゛", "ド");
 	_ret = _ret.replaceAll("ハ゛", "バ").replaceAll("ヒ゛", "ビ").replaceAll("フ゛", "ブ").replaceAll("ヘ゛", "ベ").replaceAll("ホ゛", "ボ");
 	_ret = _ret.replaceAll("ハ゜", "パ").replaceAll("ヒ゜", "ピ").replaceAll("フ゜", "プ").replaceAll("ヘ゜", "ペ").replaceAll("ホ゜", "ポ");
-	return _ret.replaceAll("」", "\n");
+	return _ret.replaceAll("」", "\n").toUpperCase();
 }

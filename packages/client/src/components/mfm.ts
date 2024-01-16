@@ -104,12 +104,20 @@ export default defineComponent({
 							}*/
 
 							if (defaultStore.state.enableMorseDecode){
-								while (/([-－]・・[-－][-－][-－][\s　]+(.+)[\s　]・・・[-－]・|[-－]・・・[-－][\s　]+(.+)[\s　]・[-－]・[-－]・)/.test(text)){
-									const exec = /([-－]・・[-－][-－][-－][\s　]+(.+)[\s　]・・・[-－]・|[-－]・・・[-－][\s　]+(.+)[\s　]・[-－]・[-－]・)/.exec(text);
+								while (/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/.test(text)){
+									const exec = /([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/.exec(text);
 									if (exec?.[2] || exec?.[3]) {
-										text = text.replace(/([-－]・・[-－][-－][-－][\s　]+(.+)[\s　]・・・[-－]・|[-－]・・・[-－][\s　]+(.+)[\s　]・[-－]・[-－]・)/,`("${mr_to_str(exec?.[2] || exec?.[3],!!exec?.[2])}")`);
+										text = text.replace(/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/,`("${mr_to_str(exec?.[2] || exec?.[3],!!exec?.[2])}")`);
 									} else {
-										text = text.replace(/([-－]・・[-－][-－][-－][\s　]+(.+)[\s　]・・・[-－]・|[-－]・・・[-－][\s　]+(.+)[\s　]・[-－]・[-－]・)/,`("")`);
+										text = text.replace(/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/,`("")`);
+									}
+								}
+								while (/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}?/.test(text)) {
+									const exec = /(([-－ー_]|[.・])+?([\s　]|$)+?){2,}?/.exec(text);
+									if (exec?.[0]) {
+										text = text.replace(/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}?/,`("${mr_to_str(exec?.[0],true)}")`);
+									} else {
+										text = text.replace(/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}?/,`("")`);
 									}
 								}
 							}
@@ -366,7 +374,7 @@ export default defineComponent({
 										return genEl(children);
 									}
 
-									if (typeof rb[0] === 'string' && typeof rt[0] === 'string' && rt[0] === '') rt = '・'.repeat(rb[0].length);
+									if (typeof rb[0] === 'string' && typeof rt[0] === 'string' && rt[0] === '') rt = '[.・]'.repeat(rb[0].length);
 									const align = typeof rb[0] === 'string' ? { style: rb.length < rt.length ? 'ruby-align:center' : 'ruby-align:space-around' } : {};
 
 									return h('ruby', align, [rb, h('rt', rt)]);

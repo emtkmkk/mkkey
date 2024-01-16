@@ -82,8 +82,7 @@ export const jpdict = {
 	'ス': '11101', 'ン': '01010',
 	'゛': '00', '゜': '00110',
 	'ー': '01101', '、': '010101',
-	'」': '010100', '（': '101101',
-	'）': '010010',
+	'」': '010100',
 	"[ホレ]": "100111",
 	"[ラタ]": "00010",
 };
@@ -101,7 +100,7 @@ export function str_to_mr(str) {
 	_str = _str.replaceAll("バ", "ハ゛").replaceAll("ビ", "ヒ゛").replaceAll("ブ", "フ゛").replaceAll("ベ", "ヘ゛").replaceAll("ボ", "ホ゛");
 	_str = _str.replaceAll("パ", "ハ゜").replaceAll("ピ", "ヒ゜").replaceAll("プ", "フ゜").replaceAll("ペ", "ヘ゜").replaceAll("ポ", "ホ゜");
 	_str = _str.replaceAll("ァ", "ア").replaceAll("ィ", "イ").replaceAll("ゥ", "ウ").replaceAll("ェ", "エ").replaceAll("ォ", "オ");
-	_str = _str.replaceAll("ヵ", "カ").replaceAll("ッ", "ツ").replaceAll("ャ", "ヤ").replaceAll("ュ", "ユ").replaceAll("ョ", "ヨ").replaceAll("。", "」").replaceAll(/[\s　]+/g,"");
+	_str = _str.replaceAll("ヵ", "カ").replaceAll("ッ", "ツ").replaceAll("ャ", "ヤ").replaceAll("ュ", "ユ").replaceAll("ョ", "ヨ").replaceAll("（", "(").replaceAll("）", ")").replaceAll("。", "」").replaceAll(/[\s　]+/g,"");
 
 	let jpmode = !/^[A-Z0-9.,:?!_+\-*^=\/@\(\)"']+$/.test(_str);
 	let _jpmode = jpmode;
@@ -115,7 +114,7 @@ export function str_to_mr(str) {
 	let strarr = _str.split('')
 
 	if (jpmode) {
-		ret.push("100111");
+		if (strarr.length === 1) ret.push("100111");
 	} else {
 		ret.push("10001");
 	}
@@ -158,7 +157,7 @@ export function str_to_mr(str) {
 				skipCnt -= 1
 			}
 		}
-		ret.push("00010");
+		if (strarr.length === 1) ret.push("00010");
 	} else {
 		ret.push("01010");
 	}
@@ -168,7 +167,7 @@ export function str_to_mr(str) {
 }
 
 export function mr_to_str(mr, jpmode = true) {
-	const mrarr = mr.replaceAll(/[-－]/g, "1").replaceAll(/[・・]/g, "0").split(/[\s ]+/);
+	const mrarr = mr.replaceAll(/[-－ー_]/g, "1").replaceAll(/[.・]/g, "0").split(/[\s ]+/);
 	const rdict = {};
 	const rjpdict = {};
 	Object.keys(dict).forEach((x) => rdict[dict[x]] = x);
@@ -188,9 +187,10 @@ export function mr_to_str(mr, jpmode = true) {
 		}
 		const jp = rjpdict[x];
 		if (_jpmode && jp) {
-			ret.push(jp);
 			if (x === "101101") {
 				_jpmode = false;
+			} else if (x !== "010010") {
+				ret.push(jp);
 			}
 		} else {
 			const en = rdict[x];
@@ -205,7 +205,7 @@ export function mr_to_str(mr, jpmode = true) {
 	});
 
 	let _ret = ret.join("");
-	_ret = _ret.replaceAll("ガ", "カ゛").replaceAll("ギ", "キ゛").replaceAll("ク゛", "グ").replaceAll("ケ゛", "ゲ").replaceAll("コ゛", "ゴ");
+	_ret = _ret.replaceAll("カ゛", "ガ").replaceAll("キ゛", "ギ").replaceAll("ク゛", "グ").replaceAll("ケ゛", "ゲ").replaceAll("コ゛", "ゴ");
 	_ret = _ret.replaceAll("サ゛", "ザ").replaceAll("シ゛", "ジ").replaceAll("ス゛", "ズ").replaceAll("セ゛", "ゼ").replaceAll("ソ゛", "ゾ");
 	_ret = _ret.replaceAll("タ゛", "ダ").replaceAll("チ゛", "ヂ").replaceAll("ツ゛", "ヅ").replaceAll("テ゛", "デ").replaceAll("ト゛", "ド");
 	_ret = _ret.replaceAll("ハ゛", "バ").replaceAll("ヒ゛", "ビ").replaceAll("フ゛", "ブ").replaceAll("ヘ゛", "ベ").replaceAll("ホ゛", "ボ");

@@ -102,7 +102,7 @@ export function str_to_mr(str) {
 	_str = _str.replaceAll("バ", "ハ゛").replaceAll("ビ", "ヒ゛").replaceAll("ブ", "フ゛").replaceAll("ベ", "ヘ゛").replaceAll("ボ", "ホ゛");
 	_str = _str.replaceAll("パ", "ハ゜").replaceAll("ピ", "ヒ゜").replaceAll("プ", "フ゜").replaceAll("ペ", "ヘ゜").replaceAll("ポ", "ホ゜");
 	_str = _str.replaceAll("ァ", "ア").replaceAll("ィ", "イ").replaceAll("ゥ", "ウ").replaceAll("ェ", "エ").replaceAll("ォ", "オ");
-	_str = _str.replaceAll("ヵ", "カ").replaceAll("ッ", "ツ").replaceAll("ャ", "ヤ").replaceAll("ュ", "ユ").replaceAll("ョ", "ヨ").replaceAll(/[\s　]+/,"");
+	_str = _str.replaceAll("ヵ", "カ").replaceAll("ッ", "ツ").replaceAll("ャ", "ヤ").replaceAll("ュ", "ユ").replaceAll("ョ", "ヨ").replaceAll(/[\s　]+/g,"");
 
 	let jpmode = !/^[A-Z0-9.,:?!_+\-*^=\/@\(\)"']+$/.test(_str);
 	let _jpmode = jpmode;

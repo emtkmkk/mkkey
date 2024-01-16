@@ -121,6 +121,11 @@ export class Page {
 	})
 	public likedCount: number;
 
+	@Column('integer', {
+		default: 0,
+	})
+	public userpv: number;
+
 	constructor(data: Partial<Page>) {
 		if (data == null) return;
 

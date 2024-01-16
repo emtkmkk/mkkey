@@ -85,6 +85,7 @@ export const PageRepository = db.getRepository(Page).extend({
 				).filter((x): x is DriveFile => x != null),
 			),
 			likedCount: page.likedCount ?? 0,
+			score: (page.likedCount * 10) + (page.userPv * 1),
 			isLiked: meId
 				? page.likedCount
 					? (await PageLikes.findOneBy({ pageId: page.id, userId: meId }).then(

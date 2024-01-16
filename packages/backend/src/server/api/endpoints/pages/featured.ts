@@ -22,7 +22,9 @@ export const meta = {
 
 export const paramDef = {
 	type: "object",
-	properties: {},
+	properties: {
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+	},
 	required: [],
 } as const;
 
@@ -30,10 +32,10 @@ export default define(meta, paramDef, async (ps, me) => {
 	const query = Pages.createQueryBuilder("page")
 		.where("page.visibility = 'public'")
 		.andWhere("page.isPublic = true")
-		.andWhere("page.likedCount > 0")
-		.orderBy("page.likedCount", "DESC");
+		.andWhere("(page.likedCount * 10) + page.userPv > 0")
+		.orderBy("(page.likedCount * 10) + page.userPv", "DESC");
 
-	const pages = await query.take(10).getMany();
+	const pages = await query.take(ps.limit || 10).getMany();
 
 	return await Pages.packMany(pages, me);
 });

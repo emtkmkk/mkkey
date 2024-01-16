@@ -71,5 +71,17 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.noSuchPage);
 	}
 
+	if (page && (user && user.id !== page.userId)) {
+		if (user) {
+			Pages.createQueryBuilder()
+			.update()
+			.set({
+				userpv: () => `"userpv" + 1`,
+			})
+			.where("id = :id", { id: page.id })
+			.execute();
+		}
+	}
+
 	return await Pages.pack(page, user);
 });

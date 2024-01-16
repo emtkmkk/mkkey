@@ -27,6 +27,7 @@ export function preprocess(text: string): string {
 				});
 				node.type = "text";
 				node.props.text = mfm.toString(node.children);
+				node.children = undefined;
 			}
 		});
 

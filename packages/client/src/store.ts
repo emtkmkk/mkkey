@@ -1184,6 +1184,12 @@ export const defaultStore = markRaw(
 			createdAt: "2024/01/16",
 			page: "appearance",
 		},
+		enableMorseDecode: {
+			where: 'device',
+			default: false,
+			createdAt: "2024/01/16",
+			page: "fun",
+		}
 	}),
 );
 

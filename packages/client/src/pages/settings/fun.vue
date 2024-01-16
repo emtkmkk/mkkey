@@ -13,6 +13,12 @@
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 		</FormSection>
 		<FormSection>
+			<template #label>{{ i18n.ts.morse }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+			<FormSwitch v-model="enableMorseDecode" class="_formBlock">{{
+				i18n.ts.enableMorseDecode
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+		</FormSection>
+		<FormSection>
 			<template #label>{{ i18n.ts.emojiReplace }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			<FormSwitch v-model="enableEmojiReplace" class="_formBlock">{{
 				i18n.ts.enableEmojiReplace
@@ -97,6 +103,9 @@ const powerModeColorful = computed(
 );
 const powerModeNoShake = computed(
 	defaultStore.makeGetterSetter("powerModeNoShake")
+);
+const enableMorseDecode = computed(
+	defaultStore.makeGetterSetter("enableMorseDecode")
 );
 let allEmojiReplace = $ref(deepClone(defaultStore.state.allEmojiReplace));
 const enableEmojiReplace = computed(

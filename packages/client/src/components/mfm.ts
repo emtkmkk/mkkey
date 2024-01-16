@@ -15,6 +15,7 @@ import MkA from "@/components/global/MkA.vue";
 import { host } from "@/config";
 import { reducedMotion } from "@/scripts/reduced-motion";
 import { defaultStore } from "@/store";
+import { mr_to_str } from "@/scripts/convert-mr";
 import { nyaize } from "@/scripts/nyaize.js";
 
 export default defineComponent({
@@ -70,9 +71,9 @@ export default defineComponent({
 
 		const ast = (isPlain ? mfm.parseSimple : mfm.parse)(this.text);
 
-        let firstAst = ast;
+    let firstAst = ast;
 
-        let emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type) || (x.props?.text ? /^\s*$/.test(x.props?.text) : false)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type) && !(x.props?.text ? /^\s*$/.test(x.props?.text) : false)) : null;
+    let emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type) || (x.props?.text ? /^\s*$/.test(x.props?.text) : false)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type) && !(x.props?.text ? /^\s*$/.test(x.props?.text) : false)) : null;
 
 		let isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji"].includes(x.type) || (x.props?.text ? /^\s*$/.test(x.props?.text) : false));
 
@@ -101,6 +102,17 @@ export default defineComponent({
 							/*if (isNote && !noteHost && this.author && this.author.isCat && this.author.speakAsCat) {
 								text = nyaize(text);
 							}*/
+
+							if (defaultStore.state.enableMorseDecode){
+								while (/([-－]・・[-－][-－][-－][\s　]+(.+)[\s　]・・・[-－]・|[-－]・・・[-－][\s　]+(.+)[\s　]・[-－]・[-－]・)/.test(text)){
+									const exec = /([-－]・・[-－][-－][-－][\s　]+(.+)[\s　]・・・[-－]・|[-－]・・・[-－][\s　]+(.+)[\s　]・[-－]・[-－]・)/.exec(text);
+									if (exec?.[2]) {
+										text = text.replace(/([-－]・・[-－][-－][-－][\s　]+(.+)[\s　]・・・[-－]・|[-－]・・・[-－][\s　]+(.+)[\s　]・[-－]・[-－]・)/,`("${mr_to_str(exec?.[2],/[-－]・・[-－][-－][-－][\s　]+(.+)[\s　]・・・[-－]・/.test(exec?.[1]))}")`);
+									} else {
+										text = text.replace(/([-－]・・[-－][-－][-－][\s　]+(.+)[\s　]・・・[-－]・|[-－]・・・[-－][\s　]+(.+)[\s　]・[-－]・[-－]・)/,`("")`);
+									}
+								}
+							}
 
 							if (!this.plain) {
 								const res = [];

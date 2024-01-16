@@ -1,9 +1,9 @@
 import * as mfm from "mfm-js";
 import { defaultStore } from "@/store";
 import { expandKaTeXMacro } from "@/scripts/katex-macro";
+import { str_to_mr } from "@/scripts/convert-mr";
 
 export function preprocess(text: string): string {
-	if (defaultStore.state.enableCustomKaTeXMacro) {
 		const parsedKaTeXMacro =
 			localStorage.getItem("customKaTeXMacroParsed") ?? "{}";
 		const maxNumberOfExpansions = 200; // to prevent infinite expansion loops
@@ -11,17 +11,24 @@ export function preprocess(text: string): string {
 		let nodes = mfm.parse(text);
 
 		for (let node of nodes) {
-			if (node["type"] === "mathInline" || node["type"] === "mathBlock") {
-				node["props"]["formula"] = expandKaTeXMacro(
-					node["props"]["formula"],
-					parsedKaTeXMacro,
-					maxNumberOfExpansions,
-				);
+			if (defaultStore.state.enableCustomKaTeXMacro) {
+				if (node["type"] === "mathInline" || node["type"] === "mathBlock") {
+					node["props"]["formula"] = expandKaTeXMacro(
+						node["props"]["formula"],
+						parsedKaTeXMacro,
+						maxNumberOfExpansions,
+					);
+				}
+			}
+			if (node.type === "fn" && node.props.name === "morse") {
+				node.children.forEach((x) => {
+					if (x.type !== "text" || !x.props.text) return;
+					x.props.text = str_to_mr(x.props.text);
+				});
 			}
 		}
 
 		text = mfm.toString(nodes);
-	}
 
 	return text;
 }

@@ -183,10 +183,10 @@ export function mr_to_str(mr, jpmode = true) {
 			return;
 		}
 		if (jpmode) {
-			if (x === "101101") {
+			if (_jpmode && x === "101101") {
 				_jpmode = false;
 				return;
-			} else if (x === "010010") {
+			} else if (!_jpmode && x === "010010") {
 				_jpmode = true;
 				return;
 			}

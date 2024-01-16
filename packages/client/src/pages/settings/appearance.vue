@@ -50,6 +50,12 @@
 				i18n.ts.squareAvatars
 			}}</FormSwitch>
 			<FormSwitch
+				v-model="reactionShowBig"
+				class="_formBlock"
+			>
+				{{ i18n.ts.reactionShowBig }}
+			<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch
 				v-model="reactionShowUsername"
 				class="_formBlock"
 			>
@@ -263,6 +269,9 @@ const seperateRenoteQuote = computed(
 const squareAvatars = computed(defaultStore.makeGetterSetter("squareAvatars"));
 const developerTicker = computed(
 	defaultStore.makeGetterSetter("developerTicker")
+);
+const reactionShowBig = $computed(
+	defaultStore.makeGetterSetter("reactionShowBig")
 );
 const reactionShowUsername = $computed(
 	defaultStore.makeGetterSetter("reactionShowUsername")

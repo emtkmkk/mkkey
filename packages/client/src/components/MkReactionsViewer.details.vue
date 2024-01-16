@@ -10,7 +10,7 @@
 				<XReactionIcon
 					:reaction="reaction"
 					:custom-emojis="emojis"
-					class="icon"
+					:class="{icon : !defaultStore.state.reactionShowBig, bigIcon : defaultStore.state.reactionShowBig}"
 					:no-style="true"
 				/>
 				<div class="name">{{ reaction?.replace(/@[\w:\.\-]+:$/,":") }}</div>
@@ -32,6 +32,7 @@
 
 <script lang="ts" setup>
 import { computed } from "vue";
+import { defaultStore } from "@/store";
 import MkTooltip from "./MkTooltip.vue";
 import XReactionIcon from "@/components/MkReactionIcon.vue";
 
@@ -64,6 +65,12 @@ const emit = defineEmits<{
 			margin: 0 auto;
 		}
 
+		> .bigIcon {
+			display: block;
+			height: 50px !important;
+			font-size: 120px; // unicodeな絵文字についてはwidthが効かないため
+			margin: 0 auto;
+		}
 		> .name {
 			font-size: 1em;
 		}

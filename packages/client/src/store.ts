@@ -1177,7 +1177,13 @@ export const defaultStore = markRaw(
 			default: [],
 			createdAt: "2024/1/12",
 			page: "fun",
-		}
+		},
+		reactionShowBig: {
+			where: 'device',
+			default: false,
+			createdAt: "2024/01/16",
+			page: "appearance",
+		},
 	}),
 );
 

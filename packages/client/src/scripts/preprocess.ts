@@ -10,7 +10,7 @@ export function preprocess(text: string): string {
 
 		let nodes = mfm.parse(text);
 
-		for (let node of nodes) {
+		mfm.inspect(nodes, (node) => {
 			if (defaultStore.state.enableCustomKaTeXMacro) {
 				if (node["type"] === "mathInline" || node["type"] === "mathBlock") {
 					node["props"]["formula"] = expandKaTeXMacro(
@@ -25,9 +25,10 @@ export function preprocess(text: string): string {
 					if (x.type !== "text" || !x.props.text) return;
 					x.props.text = str_to_mr(x.props.text);
 				});
-				node = node.children;
+				node.type = "text";
+				node.props.text = mfm.toString(node.children);
 			}
-		}
+		});
 
 		text = mfm.toString(nodes);
 

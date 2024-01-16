@@ -527,7 +527,7 @@ export const defaultStore = markRaw(
 			default: null as null | "smartphone" | "tablet" | "desktop" | "desktop-force",
 		},
 		showLocalPostsInTimeline: {
-			where: "device",
+			where: "deviceAccount",
 			default: "home" as "home" | "social" | "both" | "none",
 		},
 		showLocalPostsInfoPopup: {
@@ -1108,13 +1108,13 @@ export const defaultStore = markRaw(
 			createdAt: "2023/11/17",
 		},
 		hiddenLTL: {
-			where: 'device',
+			where: 'account',
 			default: false,
 			createdAt: "2023/10/21",
 			page: "timeline",
 		},
 		hiddenGTL: {
-			where: 'device',
+			where: 'account',
 			default: false,
 			createdAt: "2023/10/21",
 			page: "timeline",

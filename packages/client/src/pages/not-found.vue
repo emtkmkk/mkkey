@@ -7,6 +7,9 @@
 				alt="Not found"
 			/>
 			<div>{{ i18n.ts.notFoundDescription }}</div>
+			<MkButton class="button primary" @click="reload">{{
+				i18n.ts.reload
+			}}</MkButton>
 		</div>
 	</div>
 </template>
@@ -14,6 +17,11 @@
 <script lang="ts" setup>
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { unisonReload } from "@/scripts/unison-reload";
+
+function reload() {
+	unisonReload();
+}
 
 const headerActions = $computed(() => []);
 

@@ -97,8 +97,8 @@
 						<a :href="licenseDetail.isBasedOnUrl" target="_blank">{{ licenseDetail.isBasedOnUrl }}</a>
 					</template>
 				</MkKeyValue>
-				<br v-if="!_emoji.host" />
-				<a v-if="!_emoji.host" :class="$style.link" :href="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${_emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</a>
+				<br v-if="$i && !_emoji.host" />
+				<a v-if="$i && !_emoji.host" :class="$style.link" :href="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${_emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</a>
 			</div>
 		</MkSpacer>
   </XModalWindow>
@@ -112,6 +112,7 @@ import XModalWindow from "@/components/MkModalWindow.vue";
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import * as config from "@/config";
 import * as os from "@/os";
+import { $i } from "@/account";
 const props = defineProps<{
   emoji: any,
 }>();

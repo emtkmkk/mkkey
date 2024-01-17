@@ -6,7 +6,7 @@ import copyToClipboard from "@/scripts/copy-to-clipboard";
 import MkRippleEffect from '@/components/MkRipple.vue';
 import { instance } from "@/instance";
 import { $i } from "@/account";
-import MkCustomEmojiDetailedDialog from './MkCustomEmojiDetailedDialog.vue';
+import MkCustomEmojiDetailedDialog from '@/components/MkCustomEmojiDetailedDialog.vue';
 
 const createReaction = ({ noteId, reaction }: { noteId: string, reaction: string }): Promise<null> => {
 	return os.api('notes/reactions/create', { noteId, reaction });

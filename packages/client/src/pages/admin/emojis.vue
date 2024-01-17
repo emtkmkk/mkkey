@@ -190,7 +190,7 @@ import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { instance } from "@/instance";
-import MkCustomEmojiDetailedDialog from './MkCustomEmojiDetailedDialog.vue';
+import MkCustomEmojiDetailedDialog from '@/components/MkCustomEmojiDetailedDialog.vue';
 
 const emojisPaginationComponent = ref<InstanceType<typeof MkPagination>>();
 

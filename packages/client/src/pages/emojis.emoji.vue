@@ -13,7 +13,7 @@ import {} from "vue";
 import * as os from "@/os";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
 import { i18n } from "@/i18n";
-import MkCustomEmojiDetailedDialog from './MkCustomEmojiDetailedDialog.vue';
+import MkCustomEmojiDetailedDialog from '@/components/MkCustomEmojiDetailedDialog.vue';
 import * as config from "@/config";
 
 const props = defineProps<{

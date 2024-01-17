@@ -548,7 +548,7 @@ export async function extractEmojis(
 
 			if (emojiInfo?.isSensitive) aliases.push("センシティブ");
 
-			const copydeny = emojiInfo?.localOnly || roleOnly;
+			const copydeny = emojiInfo?.localOnly || roleOnly || emojiInfo?.license?.includes("prohibited");
 
 			let _aliases: Array<string> = [];
 			

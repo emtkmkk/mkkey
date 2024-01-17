@@ -179,7 +179,7 @@ export default async (
 			name: decodedReaction.name,
 			host: decodedReaction.host ?? IsNull(),
 		},
-		select: ["name", "host", "originalUrl", "publicUrl"],
+		select: ["name", "host", "originalUrl", "publicUrl", "license"],
 	});
 
 	publishNoteStream(note.id, "reacted", {

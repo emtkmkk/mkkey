@@ -506,7 +506,7 @@ export async function extractEmojis(
 			//絵文字情報を取得できそうなら取得
 			if (host && host === _host) {
 
-				if (!exists || (exists.createdAt < new Date("2024/01/17") && (!exists.updatedAt || exists.updatedAt < new Date("2024/01/17")))) {
+				if (!exists || (exists.createdAt < new Date("2024/01/17 12:52:00") && (!exists.updatedAt || exists.updatedAt < new Date("2024/01/17 12:52:00")))) {
 
 					const apiurl = `https://${host}/api/emoji?name=${name}`;
 
@@ -515,7 +515,6 @@ export async function extractEmojis(
 					} catch (e) {
 						logger.warn(`fetch emojiInfo err : ${e}`);
 					}
-					if (emojiInfo) logger.warn(JSON.stringify(emojiInfo,undefined,"\t"));
 					if (exists) {
 						try {
 							await Emojis.update(
@@ -534,7 +533,9 @@ export async function extractEmojis(
 				}
 			}
 
-			const aliases = tag.aliases || tag.keywords || (emojiInfo?.category ? [emojiInfo?.category, ...emojiInfo?.aliases] : emojiInfo?.aliases) || [];
+			const category = emojiInfo?.category ? `${emojiInfo?.category} <${_host}>` : null;
+
+			const aliases = tag.aliases || tag.keywords || emojiInfo?.aliases || [];
 
 			const license = [
 				(tag.license ? `ライセンス : ${tag.license}` : ""),
@@ -553,7 +554,8 @@ export async function extractEmojis(
 						exists.updatedAt != null &&
 						new Date(tag.updated) > exists.updatedAt) ||
 					tag.icon!.url !== exists.originalUrl ||
-					aliases !== exists.aliases ||
+					category !== exists.category ||
+					aliases.join(", ") !== exists.aliases.join(", ") ||
 					license !== exists.license
 				) {
 					let beforeD15Date = new Date();
@@ -590,6 +592,7 @@ export async function extractEmojis(
 							uri: tag.id,
 							originalUrl: tag.icon!.url,
 							publicUrl: tag.icon!.url,
+							category,
 							aliases,
 							license,
 							updatedAt: new Date(),
@@ -616,6 +619,7 @@ export async function extractEmojis(
 				publicUrl: tag.icon!.url,
 				createdAt: new Date(),
 				updatedAt: new Date(),
+				category,
 				aliases,
 				license,
 			} as Partial<Emoji>).then((x) =>

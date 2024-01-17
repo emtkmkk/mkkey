@@ -94,8 +94,8 @@
               <a :href="licenseDetail.isBasedOnUrl" target="_blank">{{ licenseDetail.isBasedOnUrl }}</a>
             </template>
           </MkKeyValue>
-					<br />
-          <a :href="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${emojiName}`" target="_blank">{{ "編集申請はこちらから" }}</a>
+					<br v-if="!_emoji.host" />
+          <a v-if="!_emoji.host" :href="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${emojiName}`" target="_blank">{{ "編集申請はこちらから" }}</a>
         </div>
       </MkSpacer>
     </template>

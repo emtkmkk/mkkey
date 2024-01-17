@@ -24,7 +24,7 @@ const rippleEffect = (el: HTMLElement | null | undefined): void => {
 	os.popup(MkRippleEffect, { x, y }, {}, 'end');
 };
 
-export function openReactionMenu_(reaction, note, canToggle, multi, reactButton) {
+export async function openReactionMenu_(reaction, note, canToggle, multi, reactButton) {
 	const emojiName = reaction.split("@")?.[0]?.replaceAll(":", "");
 	let emojiHost = reaction.split("@")?.[1]?.replaceAll(":", "");
 	const isCustom = reaction.startsWith(":");

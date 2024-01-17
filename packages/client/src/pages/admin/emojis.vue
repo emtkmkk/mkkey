@@ -294,7 +294,7 @@ const im = (emoji) => {
 	});
 };
 
-const remoteMenu = (emoji, ev: MouseEvent) => {
+const remoteMenu = async (emoji, ev: MouseEvent) => {
 	os.popupMenu(
 		[
 			{

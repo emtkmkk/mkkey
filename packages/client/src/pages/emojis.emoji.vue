@@ -20,7 +20,7 @@ const props = defineProps<{
 	emoji: Record<string, unknown>; // TODO
 }>();
 
-function menu(ev) {
+async function menu(ev) {
 	os.popupMenu(
 		[
 			{

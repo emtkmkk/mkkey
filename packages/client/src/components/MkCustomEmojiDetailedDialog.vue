@@ -5,7 +5,7 @@
       <MkSpacer>
         <div style="display: flex; flex-direction: column; gap: 1em;">
           <div :class="$style.emojiImgWrapper">
-            <MkCustomEmoji :name="_emoji.name" :normal="true" style="height: 100%;"></MkCustomEmoji>
+            <MkEmoji :emoji="_emoji.name" :normal="true" style="height: 100%;"></MkEmoji>
           </div>
           <MkKeyValue>
             <template #key>{{ i18n.ts.name }}</template>
@@ -63,11 +63,11 @@
 							class="ph-bold ph-lg" 
 							:class="{
 								'ph-check': licenseDetail.copyPermission == 'allow',
-								'allow': licenseDetail.copyPermission == 'allow',
+								[$style.allow]: licenseDetail.copyPermission == 'allow',
 								'ph-warning': licenseDetail.copyPermission == 'conditional',
-								'conditional': licenseDetail.copyPermission == 'conditional',
+								[$style.conditional]: licenseDetail.copyPermission == 'conditional',
 								'ph-prohibit': licenseDetail.copyPermission == 'deny',
-								'deny': licenseDetail.copyPermission == 'deny',
+								[$style.deny]: licenseDetail.copyPermission == 'deny',
 								'ph-question': licenseDetail.copyPermission == 'none',
 							}"></i>
 							{{ i18n.ts._copyPermission[licenseDetail.copyPermission] ?? licenseDetail.copyPermission }}</template>
@@ -88,7 +88,7 @@
               <a :href="_emoji.url" target="_blank">{{ _emoji.url }}</a>
             </template>
           </MkKeyValue>
-          <MkKeyValue :copy="licenseDetail.isBasedOnUrl">
+          <MkKeyValue v-if="licenseDetail.isBasedOnUrl" :copy="licenseDetail.isBasedOnUrl">
             <template #key>{{ i18n.ts.isBasedOnUrl }}</template>
             <template #value>
               <a :href="licenseDetail.isBasedOnUrl" target="_blank">{{ licenseDetail.isBasedOnUrl }}</a>
@@ -104,7 +104,7 @@
 
 <script lang="ts" setup>
 import * as Misskey from 'calckey-js';
-import { defineProps, shallowRef } from 'vue';
+import { defineProps, shallowRef, unref } from 'vue';
 import { i18n } from '@/i18n.js';
 import MkModalWindow from '@/components/MkModalWindow.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
@@ -131,7 +131,7 @@ const _emoji = typeof props.emoji === "string"
 							name: props.emoji.split("@")?.[0]?.replaceAll(":", ""),
 							...(emojiHost ? {host: emojiHost} : {})
 			}))
-			: props.emoji;
+			: unref(props.emoji);
 
 const licenseDetail = !_emoji.host && _emoji.license === "文字だけ" 
 ? {

@@ -23,6 +23,9 @@ export const paramDef = {
 		name: {
 			type: "string",
 		},
+		host: {
+			type: "string",
+		},
 	},
 	required: ["name"],
 } as const;
@@ -31,7 +34,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	const emoji = await Emojis.findOneOrFail({
 		where: {
 			name: ps.name,
-			host: IsNull(),
+			host: ps.host || IsNull(),
 		},
 	});
 

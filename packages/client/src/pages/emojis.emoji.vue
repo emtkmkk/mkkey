@@ -38,7 +38,7 @@ async function menu(ev) {
 			{
 				text: i18n.ts.info,
 				icon: "ph-info ph-bold ph-lg",
-				action: async () => {
+				action: () => {
 					os.apiGet('emoji', {
 						name: props.emoji,
 					}).then((res) => {

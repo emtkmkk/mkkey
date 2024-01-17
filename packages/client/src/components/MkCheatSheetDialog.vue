@@ -3,6 +3,7 @@
 		ref="dialog"
 		:width="600"
 		@close="dialog?.close()"
+		@click="dialog?.close()"
 		@closed="$emit('closed')"
 	>
 		<template #header>{{ i18n.ts._mfm.cheatSheet }}</template>

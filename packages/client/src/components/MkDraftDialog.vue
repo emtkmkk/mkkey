@@ -2,6 +2,7 @@
 	<XModalWindow
 		ref="dialog"
 		:width="600"
+		@click="done(true)"
 		@close="done(true)"
 		@closed="$emit('closed')"
 	>

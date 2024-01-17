@@ -540,7 +540,7 @@ export async function extractEmojis(
 
 			const category = emojiInfo?.category ? `${emojiInfo?.category} <${_host}>` : null;
 
-			let aliases = tag.aliases || tag.keywords || emojiInfo?.aliases || [];
+			let aliases: Array<string> = tag.aliases || tag.keywords || emojiInfo?.aliases || [];
 
 			const roleOnly = (emojiInfo?.roleIdsThatCanBeUsedThisEmojiAsReaction as Array<string>)?.length || (emojiInfo?.roleIdsThatCanNotBeUsedThisEmojiAsReaction as Array<string>)?.length
 
@@ -549,6 +549,18 @@ export async function extractEmojis(
 			if (emojiInfo?.isSensitive) aliases.push("センシティブ");
 
 			const copydeny = emojiInfo?.localOnly || roleOnly;
+
+			let _aliases: Array<string> = [];
+			
+			aliases = aliases.filter((x) => x.trim())
+			
+			aliases.forEach((x) => {
+				x.trim().split(/[\s　]+/).forEach((y) => {
+					_aliases.push(y);
+				})
+			});
+
+			aliases = _aliases;
 
 			const license = [
 				(tag.license ? `ライセンス : ${tag.license}` : ""),

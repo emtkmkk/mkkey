@@ -2,7 +2,7 @@
   <XModalWindow ref="dialog" @click="cancel()" @close="cancel()" @closed="$emit('closed')" >
     <template #header>:{{ _emoji ? `${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}` : "" }}:</template>
 		<MkSpacer>
-			<div v-if="_emoji" style="display: flex; flex-direction: column; gap: 1em;">
+			<div v-if="_emoji && Object.keys(licenseDetail).filter((x) => licenseDetail[x]).length >= 1" style="display: flex; flex-direction: column; gap: 1em;">
 				<div :class="$style.emojiImgWrapper">
 					<MkEmoji :emoji="`:${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}:`" :normal="true" style="height: 100%;"></MkEmoji>
 				</div>
@@ -31,7 +31,7 @@
 					<template #value>
 						<div v-if="_emoji.aliases.length === 0">{{ i18n.ts.none }}</div>
 						<div v-else :class="$style.aliases">
-							<span v-for="alias in _emoji.aliases" :key="alias" :class="$style.alias">
+							<span v-for="alias in _emoji.aliases.filter((x) => x.trim())" :key="alias" :class="$style.alias">
 								{{ alias }}
 							</span>
 						</div>
@@ -43,17 +43,19 @@
 				</MkKeyValue>
 				<MkKeyValue v-if="!_emoji.license || Object.keys(licenseDetail).filter((x) => licenseDetail[x]).length < 2">
 					<template #key>{{ i18n.ts.license }}</template>
-					<template #value>{{ _emoji.license ?? i18n.ts.none }}</template>
+					<template #value>
+						<Mfm :text="_emoji.license ?? i18n.ts.none" />
+					</template>
 				</MkKeyValue>
 				<MkKeyValue v-if="licenseDetail.description">
 					<template #key>{{ i18n.ts.emojiDescription }}</template>
 					<template #value>
-						{{ licenseDetail.description }}</template>
+						<Mfm :text="licenseDetail.description" /></template>
 				</MkKeyValue>
 				<MkKeyValue v-if="licenseDetail.author">
 					<template #key>{{ i18n.ts.emojiAuthor }}</template>
 					<template #value>
-						{{ licenseDetail.author }}</template>
+						<Mfm :text="licenseDetail.author" /></template>
 				</MkKeyValue>
 				<MkKeyValue v-if="!_emoji.host || licenseDetail.copyPermission !== 'none'">
 					<template #key>{{ i18n.ts.copyPermission }}</template>
@@ -74,12 +76,14 @@
 				<MkKeyValue v-if="licenseDetail.license">
 					<template #key>{{ i18n.ts.license }}</template>
 					<template #value>
-						{{ licenseDetail.license }}</template>
+						<Mfm :text="licenseDetail.license" />
+					</template>
 				</MkKeyValue>
 				<MkKeyValue v-if="licenseDetail.usageInfo">
 					<template #key>{{ i18n.ts.usageInfo }}</template>
 					<template #value>
-						{{ licenseDetail.usageInfo }}</template>
+						<Mfm :text="licenseDetail.usageInfo" />
+					</template>
 				</MkKeyValue>
 				<MkKeyValue :copy="_emoji.url">
 					<template #key>{{ i18n.ts.emojiUrl }}</template>
@@ -94,7 +98,7 @@
 					</template>
 				</MkKeyValue>
 				<br v-if="!_emoji.host" />
-				<a v-if="!_emoji.host" :href="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${_emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</a>
+				<a v-if="!_emoji.host" :class="$style.link" :href="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${_emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</a>
 			</div>
 		</MkSpacer>
   </XModalWindow>
@@ -132,26 +136,25 @@ const fetchData = async () => {
       });
 };
 
-let _emoji = $ref<object>(undefined);
+let _emoji = $ref<object | undefined>(undefined);
 
-const licenseDetail = $computed(() => {
-return _emoji ? !_emoji.host && _emoji.license === "文字だけ" 
-? {
-	copyPermission: "allow",
-	license: "CC0 1.0 Universal",
-	author: config.host,
-} : {
-	copyPermission: _emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(_emoji.license)?.[1] ?? "none" : "none",
-	license: _emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? null : null,
-	usageInfo: _emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
-	author: _emoji.license?.includes("作者 : ") ? /作者 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
-	description: _emoji.license?.includes("説明 : ") ? /説明 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
-	isBasedOnUrl: _emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
-} : {}
-});
+let licenseDetail = $ref<object | undefined>(undefined);
 
 onMounted(async () => {
 	_emoji = typeof props.emoji === "string" ? await fetchData() : props.emoji
+
+	licenseDetail = !_emoji.host && _emoji.license === "文字だけ" ? {
+		copyPermission: "allow",
+		license: "CC0 1.0 Universal",
+		author: config.host,
+	} : {
+		copyPermission: _emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(_emoji.license)?.[1] ?? "none" : "none",
+		license: _emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? null : null,
+		usageInfo: _emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
+		author: _emoji.license?.includes("作者 : ") ? /作者 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
+		description: _emoji.license?.includes("説明 : ") ? /説明 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
+		isBasedOnUrl: _emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,:]+)b(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
+	}
 })
 
 </script>
@@ -188,5 +191,8 @@ onMounted(async () => {
 }
 .deny {
 	color: var(--error);
+}
+.link {
+	color: var(--link);
 }
 </style>

@@ -20,6 +20,7 @@ import { apLogger } from "../logger.js";
 import { DriveFile } from "@/models/entities/drive-file.js";
 import { deliverQuestionUpdate } from "@/services/note/polls/update.js";
 import { extractDbHost, toPuny } from "@/misc/convert-host.js";
+import { getJson } from "@/misc/fetch.js";
 import {
 	Emojis,
 	Polls,
@@ -53,6 +54,7 @@ import { UserProfiles } from "@/models/index.js";
 import { In } from "typeorm";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 import { truncate } from "@/misc/truncate.js";
+import emoji from "../renderer/emoji.js";
 
 const logger = apLogger;
 
@@ -494,7 +496,44 @@ export async function extractEmojis(
 					})) as Emoji;
 			}
 
-			const aliases = tag.aliases || tag.keywords || [];
+			const exists = await Emojis.findOneBy({
+				host: _host,
+				name,
+			});
+
+			let emojiInfo:Record<string, unknown> = {};
+
+			//絵文字情報を取得できそうなら取得
+			if (host && host === _host) {
+
+				if (!exists || (exists.createdAt < new Date("2024/01/17") && (!exists.updatedAt || exists.updatedAt < new Date("2024/01/17")))) {
+
+					const apiurl = `https://${host}/api/emoji?name=${name}`;
+
+					try {
+						emojiInfo = (await getJson(apiurl, "application/json, */*", 2000)) as Record<string, unknown>;
+					} catch (e) {
+						logger.warn(`fetch emojiInfo err : ${e}`);
+					}
+					if (exists) {
+						try {
+							await Emojis.update(
+								{
+									host: _host,
+									name,
+								},
+								{
+									updatedAt: new Date(),
+								},
+							)
+						} catch (e) {
+							logger.warn(`fetch emojiInfo update err : ${e}`);
+						}
+					}
+				}
+			}
+
+			const aliases = tag.aliases || tag.keywords || (emojiInfo?.category ? [emojiInfo?.category, ...emojiInfo?.aliases] : emojiInfo?.aliases) || [];
 
 			const license = [
 				(tag.license ? `ライセンス : ${tag.license}` : ""),
@@ -503,12 +542,7 @@ export async function extractEmojis(
 				(tag.usageInfo ? `使用情報 : ${tag.usageInfo}` : ""),
 				(tag.description ? `説明 : ${tag.description}` : ""),
 				(tag.isBasedOnUrl ? `コピー元 : ${tag.isBasedOnUrl}` : ""),
-			].filter(Boolean).join(", ").trim() || null;
-
-			const exists = await Emojis.findOneBy({
-				host: _host,
-				name,
-			});
+			].filter(Boolean).join(", ").trim() || emojiInfo?.license || null;
 
 			if (exists) {
 				if (
@@ -555,6 +589,7 @@ export async function extractEmojis(
 							uri: tag.id,
 							originalUrl: tag.icon!.url,
 							publicUrl: tag.icon!.url,
+							category,
 							aliases,
 							license,
 							updatedAt: new Date(),

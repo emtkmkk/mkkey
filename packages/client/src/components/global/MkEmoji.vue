@@ -235,14 +235,14 @@ const alt = computed(() => {
 
 let singleTapTime = undefined;
 
-const handleImgClick = (event) => {
+const handleImgClick = async (event) => {
 	if (props.note && defaultStore.state.noteReactionMenu && urlRaw.value.length >= errorCnt.value) {
 		event.stopPropagation();
 		// TODO: 押せるか押せないかの判定を行えるように
 		const el =
 			event &&
 			((event.currentTarget ?? event.target) as HTMLElement | null | undefined);
-		openReactionMenu_(replace ? originalEmojiFullName : isCustom.value ? `:${emojiFullName.value}:` : emoji, props.note, true, true, el);
+		await openReactionMenu_(replace ? originalEmojiFullName : isCustom.value ? `:${emojiFullName.value}:` : emoji, props.note, true, true, el);
 	} else if (props.note && defaultStore.state.noteQuickReaction && urlRaw.value.length >= errorCnt.value) {
 		event.stopPropagation();
 		const el =

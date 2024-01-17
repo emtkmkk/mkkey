@@ -66,7 +66,7 @@ async function toggleReaction(event) {
 		const el =
 			event &&
 			((event.currentTarget ?? event.target) as HTMLElement | null | undefined);
-		openReactionMenu_(props.reaction?.replace("@.",""), props.note, canToggle.value, props.multi, el);
+		await openReactionMenu_(props.reaction?.replace("@.",""), props.note, canToggle.value, props.multi, el);
 
 	} else {
 

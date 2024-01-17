@@ -311,12 +311,17 @@ const remoteMenu = async (emoji, ev: MouseEvent) => {
 			{
 				text: i18n.ts.info,
 				icon: 'ph-info ph-bold ph-lg',
-				action: async () => {
-					os.popup(MkCustomEmojiDetailedDialog, {
-							emoji: (await os.apiGet('emoji', {
-								name: emoji.name + (emoji.host ? "@" + emoji.host : ""),
-							}))
-					}, {}, "closed");
+				action: () => {
+					os.apiGet('emoji', {
+							name: emoji.name,
+							...(emoji.host ? {host: emoji.host} : {}),
+					}).then((res) => {
+						os.popup(MkCustomEmojiDetailedDialog, {
+							emoji: res
+						}, {
+							anchor: ev.target,
+						}, "closed");
+					});
 				},
 			},
 		],

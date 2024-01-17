@@ -39,13 +39,15 @@ async function menu(ev) {
 				text: i18n.ts.info,
 				icon: "ph-info ph-bold ph-lg",
 				action: async () => {
-					os.popup(MkCustomEmojiDetailedDialog, {
-							emoji: (await os.apiGet('emoji', {
-								name: props.emoji,
-							}))
-					}, {
-						anchor: ev.target,
-					}, "closed");
+					os.apiGet('emoji', {
+						name: props.emoji,
+					}).then((res) => {
+						os.popup(MkCustomEmojiDetailedDialog, {
+							emoji: res
+						}, {
+							anchor: ev.target,
+						}, "closed");
+					});
 				},
 			},
 		],

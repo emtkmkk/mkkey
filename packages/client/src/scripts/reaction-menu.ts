@@ -267,18 +267,25 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 					children: childMenu,
 				});
 			}
-			
-			menu.push({
-				text: i18n.ts.info,
-				icon: 'ph-info ph-bold ph-lg',
-				action: async () => {
-					os.popup(MkCustomEmojiDetailedDialog, {
-						emoji: (await os.apiGet('emoji', {
-							name: emojiName + (emojiHost ? "@" + emojiHost : ""),
-						}))
-				}, {}, "closed");
-				},
-			});
+		
+			if (isCustom) {
+				menu.push({
+					text: i18n.ts.info,
+					icon: 'ph-info ph-bold ph-lg',
+					action: () => {
+						os.apiGet('emoji', {
+							name: emojiName,
+							...(emojiHost ? {host: emojiHost} : {}),
+						}).then ((res) => {
+							os.popup(MkCustomEmojiDetailedDialog, {
+								emoji: res
+							}, {
+								anchor: reactButton.target,
+							}, "closed");
+						})
+					},
+				});
+			}
 		}
 	}
 

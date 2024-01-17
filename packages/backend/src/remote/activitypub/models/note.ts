@@ -511,7 +511,7 @@ export async function extractEmojis(
 
 				let beforeD14Date = new Date();
 				beforeD14Date.setDate(beforeD14Date.getDate() - 14);
-				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD14Date)) {
+				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD14Date) || ((exists.updatedAt || exists.createdAt) < new Date("2024/1/17 16:00:00"))) {
 					emojiInfoFlg = true;
 					const apiurl = `https://${host}/api/emoji?name=${name}`;
 

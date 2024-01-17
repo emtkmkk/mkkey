@@ -511,7 +511,7 @@ export async function extractEmojis(
 					const apiurl = `https://${host}/api/emoji?name=${name}`;
 
 					try {
-						emojiInfo = (await getJson(apiurl, "application/json, */*", 6000)) as Record<string, unknown>;
+						emojiInfo = json.parse((await getJson(apiurl, "application/json, */*", 6000))) as Record<string, unknown>;
 					} catch (e) {
 						logger.warn(`fetch emojiInfo err : ${e}`);
 					}

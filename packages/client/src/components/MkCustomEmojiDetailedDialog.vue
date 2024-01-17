@@ -14,18 +14,6 @@
 					<template #key>{{ i18n.ts.host }}</template>
 					<template #value>{{ _emoji.host }}</template>
 				</MkKeyValue>
-				<MkKeyValue v-if="_emoji.createdAt">
-					<template #key>{{ i18n.ts.createdAt }}</template>
-					<template #value>
-						<MkTime :time="_emoji.createdAt" mode="relative"/>
-					</template>
-				</MkKeyValue>
-				<MkKeyValue v-if="_emoji.updatedAt">
-					<template #key>{{ i18n.ts.updatedAt }}</template>
-					<template #value>
-						<MkTime :time="_emoji.updatedAt" mode="relative"/>
-					</template>
-				</MkKeyValue>
 				<MkKeyValue v-if="_emoji.aliases.length > 0">
 					<template #key>{{ i18n.ts.tags }}</template>
 					<template #value>
@@ -83,6 +71,18 @@
 					<template #key>{{ i18n.ts.usageInfo }}</template>
 					<template #value>
 						<Mfm :text="licenseDetail.usageInfo" />
+					</template>
+				</MkKeyValue>
+				<MkKeyValue v-if="_emoji.createdAt">
+					<template #key>{{ i18n.ts.createdAt }}</template>
+					<template #value>
+						<MkTime :time="_emoji.createdAt" mode="relative"/>
+					</template>
+				</MkKeyValue>
+				<MkKeyValue v-if="_emoji.updatedAt">
+					<template #key>{{ i18n.ts.updatedAt }}</template>
+					<template #value>
+						<MkTime :time="_emoji.updatedAt" mode="relative"/>
 					</template>
 				</MkKeyValue>
 				<MkKeyValue :copy="_emoji.url">

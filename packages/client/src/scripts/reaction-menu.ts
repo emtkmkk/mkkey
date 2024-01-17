@@ -28,7 +28,6 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 	const emojiName = reaction.split("@")?.[0]?.replaceAll(":", "");
 	let emojiHost = reaction.split("@")?.[1]?.replaceAll(":", "");
 	const isCustom = reaction.startsWith(":");
-	const noteId = note.id;
 	const menu: any[] = [];
 
 	if (emojiName) {
@@ -50,58 +49,63 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 		emojiHost = undefined;
 	}
 
-	const reacted = multi
+	if (note) {
+
+		const noteId = note.id;
+
+		const reacted = multi
 		? note.myReactions?.some((x) => x?.replace(/@[\w:\.\-]+:$/, "@") === (isCustom ? `:${emojiName}@${emojiHost || "."}:` : reaction)?.replace(/@[\w:\.\-]+:$/, "@"))
 		: note.myReaction && note.myReaction?.replace(/@[\w:\.\-]+:$/, "@") === (isCustom ? `:${emojiName}@${emojiHost || "."}:` : reaction)?.replace(/@[\w:\.\-]+:$/, "@");
 
-	if (canToggle) {
-		if (multi) {
-			if (reacted) {
-				menu.push({
-					text: i18n.ts.doUnreact,
-					icon: 'ph-minus ph-bold ph-lg',
-					action: (): void => {
-						rippleEffect(reactButton);
+		if (canToggle) {
+			if (multi) {
+				if (reacted) {
+					menu.push({
+						text: i18n.ts.doUnreact,
+						icon: 'ph-minus ph-bold ph-lg',
+						action: (): void => {
+							rippleEffect(reactButton);
 
-						deleteReaction({ noteId, reaction });
-					},
-				});
+							deleteReaction({ noteId, reaction });
+						},
+					});
+				} else {
+					menu.push({
+						text: i18n.ts.doReact,
+						icon: 'ph-plus ph-bold ph-lg',
+						action: (): void => {
+							rippleEffect(reactButton);
+
+							createReaction({ noteId, reaction });
+						}
+					});
+				}
 			} else {
-				menu.push({
-					text: i18n.ts.doReact,
-					icon: 'ph-plus ph-bold ph-lg',
-					action: (): void => {
-						rippleEffect(reactButton);
+				if (note.myReaction && reacted) {
+					menu.push({
+						text: i18n.ts.doUnreact,
+						icon: 'ph-minus ph-bold ph-lg',
+						action: (): void => {
+							rippleEffect(reactButton);
 
-						createReaction({ noteId, reaction });
-					}
-				});
-			}
-		} else {
-			if (note.myReaction && reacted) {
-				menu.push({
-					text: i18n.ts.doUnreact,
-					icon: 'ph-minus ph-bold ph-lg',
-					action: (): void => {
-						rippleEffect(reactButton);
+							deleteReaction({ noteId, reaction });
+						},
+					});
+				} else if (!note.myReaction) {
+					menu.push({
+						text: i18n.ts.doReact,
+						icon: 'ph-plus ph-bold ph-lg',
+						action: (): void => {
+							rippleEffect(reactButton);
 
-						deleteReaction({ noteId, reaction });
-					},
-				});
-			} else if (!note.myReaction) {
-				menu.push({
-					text: i18n.ts.doReact,
-					icon: 'ph-plus ph-bold ph-lg',
-					action: (): void => {
-						rippleEffect(reactButton);
-
-						createReaction({ noteId, reaction });
-					}
-				});
+							createReaction({ noteId, reaction });
+						}
+					});
+				}
 			}
 		}
-	}
 
+	}
 	menu.push({
 		text: i18n.ts.copy,
 		icon: 'ph-copy ph-bold ph-lg',

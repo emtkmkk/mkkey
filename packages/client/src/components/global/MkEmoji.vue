@@ -236,7 +236,7 @@ const alt = computed(() => {
 let singleTapTime = undefined;
 
 const handleImgClick = async (event) => {
-	if (props.note && defaultStore.state.noteReactionMenu && urlRaw.value.length >= errorCnt.value) {
+	if (defaultStore.state.noteReactionMenu && urlRaw.value.length >= errorCnt.value) {
 		event.stopPropagation();
 		// TODO: 押せるか押せないかの判定を行えるように
 		const el =

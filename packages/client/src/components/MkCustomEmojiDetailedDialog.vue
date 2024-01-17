@@ -118,10 +118,10 @@ const emit = defineEmits<{
 	(ev: 'cancel'): void;
 	(ev: 'closed'): void;
 }>();
-const dialogEl = shallowRef<InstanceType<typeof MkModalWindow>>();
+const dialog = shallowRef<InstanceType<typeof MkModalWindow>>();
 const cancel = () => {
 	emit('cancel');
-	dialogEl.value!.close();
+	dialog.value!.close();
 };
 
 const emojiHost = typeof props.emoji === "string" ? props.emoji.split("@")?.[1]?.replaceAll(":", "") : undefined;

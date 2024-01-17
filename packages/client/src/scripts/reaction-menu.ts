@@ -274,8 +274,7 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 				action: async () => {
 					os.popup(MkCustomEmojiDetailedDialog, {
 						emoji: await os.apiGet('emoji', {
-							name: emojiName,
-							...(emojiHost ? {host: emojiHost} : {})
+							emoji: emojiName + (emojiHost ? "@" + emojiHost : "")
 						}),
 					});
 				},

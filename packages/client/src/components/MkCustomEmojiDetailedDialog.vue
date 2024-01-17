@@ -1,6 +1,6 @@
 <template>
   <MkModalWindow ref="dialogEl" @close="cancel()" @closed="$emit('closed')" >
-    <template #header>:{{ _emoji.name }}:</template>
+    <template #header>:{{ `${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}` }}:</template>
     <template #default>
       <MkSpacer>
         <div style="display: flex; flex-direction: column; gap: 1em;">

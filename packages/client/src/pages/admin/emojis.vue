@@ -313,10 +313,7 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 				icon: 'ph-info ph-bold ph-lg',
 				action: async () => {
 					os.popup(MkCustomEmojiDetailedDialog, {
-						emoji: await os.apiGet('emoji', {
-							name: emoji.name,
-							...(emoji.host ? {host: emoji.host} : {})
-						}),
+							emoji: emoji.name + (emoji.host ? "@" + emoji.host : "")
 					});
 				},
 			},

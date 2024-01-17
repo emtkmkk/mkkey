@@ -36,7 +36,7 @@ function menu(ev) {
 				},
 			},
 			{
-				text: i18n.ts.license,
+				text: i18n.ts.info,
 				icon: "ph-info ph-bold ph-lg",
 				action: async () => {
 					os.popup(MkCustomEmojiDetailedDialog, {

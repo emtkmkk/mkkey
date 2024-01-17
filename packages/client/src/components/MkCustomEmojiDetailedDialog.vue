@@ -1,5 +1,5 @@
 <template>
-  <MkModalWindow ref="dialogEl" @close="cancel()" @closed="$emit('closed')" >
+  <MkModalWindow ref="dialog" @close="cancel()" @closed="$emit('closed')" >
     <template #header>:{{ `${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}` }}:</template>
     <template #default>
       <MkSpacer>

@@ -515,7 +515,7 @@ export async function extractEmojis(
 					} catch (e) {
 						logger.warn(`fetch emojiInfo err : ${e}`);
 					}
-					if (emojiInfo) logger.warn(JSON..stringify(emojiInfo,undefined,"\t"));
+					if (emojiInfo) logger.warn(JSON.stringify(emojiInfo,undefined,"\t"));
 					if (exists) {
 						try {
 							await Emojis.update(

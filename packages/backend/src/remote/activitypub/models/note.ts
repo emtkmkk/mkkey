@@ -504,13 +504,15 @@ export async function extractEmojis(
 
 			let emojiInfo:Record<string, unknown> = {};
 
+			let emojiInfoFlg = false;
+
 			//絵文字情報を取得できそうなら取得
 			if (host && host === _host) {
 
 				let beforeD14Date = new Date();
 				beforeD14Date.setDate(beforeD14Date.getDate() - 14);
 				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD14Date)) {
-
+					emojiInfoFlg = true;
 					const apiurl = `https://${host}/api/emoji?name=${name}`;
 
 					try {
@@ -565,9 +567,9 @@ export async function extractEmojis(
 						exists.updatedAt != null &&
 						new Date(tag.updated) > exists.updatedAt) ||
 					tag.icon!.url !== exists.originalUrl ||
-					category !== exists.category ||
-					aliases.join(", ") !== exists.aliases.join(", ") ||
-					license !== exists.license
+					(emojiInfoFlg && category !== exists.category) ||
+					(emojiInfoFlg && aliases.join(", ") !== exists.aliases.join(", ")) ||
+					(emojiInfoFlg && license !== exists.license)
 				) {
 					let beforeD15Date = new Date();
 					beforeD15Date.setDate(beforeD15Date.getDate() - 15);

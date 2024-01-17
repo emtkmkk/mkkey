@@ -150,11 +150,11 @@ onMounted(async () => {
 		author: config.host,
 	} : {
 		copyPermission: _emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(_emoji.license)?.[1] ?? "none" : "none",
-		license: _emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? null : null,
-		usageInfo: _emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
-		author: _emoji.license?.includes("作者 : ") ? /作者 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
-		description: _emoji.license?.includes("説明 : ") ? /説明 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
-		isBasedOnUrl: _emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
+		license: _emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ?? null : null,
+		usageInfo: _emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
+		author: _emoji.license?.includes("作者 : ") ? /作者 : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
+		description: _emoji.license?.includes("説明 : ") ? /説明 : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
+		isBasedOnUrl: _emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
 	}
 })
 

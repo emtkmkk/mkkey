@@ -96,7 +96,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		originalUrl: driveFile.url,
 		publicUrl: driveFile.webpublicUrl ?? driveFile.url,
 		type: driveFile.webpublicType ?? driveFile.type,
-		license: `Copy to ${emoji.host ?? "unknown"}${emoji.license ? `, ${emoji.license.replace(/コピー元 : ([^,:]+)(,|$)/, "")}` : ""}${emoji.uri ? `, コピー元 : ${emoji.uri}` : ""}`,
+		license: `Copy to ${emoji.host ?? "unknown"}${emoji.license ? `, ${emoji.license.replace(/コピー元 : ([^,]+)(,|$)/, "")}` : ""}${emoji.uri ? `, コピー元 : ${emoji.uri}` : ""}`,
 	}).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
 
 	await db.queryResultCache!.remove(["meta_emojis"]);

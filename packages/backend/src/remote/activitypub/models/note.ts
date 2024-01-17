@@ -28,6 +28,7 @@ import {
 	Notes,
 	NoteEdits,
 	DriveFiles,
+	Instances,
 } from "@/models/index.js";
 import type { IMentionedRemoteUsers, Note } from "@/models/entities/note.js";
 import type { IObject, IPost } from "../type.js";
@@ -506,29 +507,19 @@ export async function extractEmojis(
 			//絵文字情報を取得できそうなら取得
 			if (host && host === _host) {
 
-				if (!exists || (exists.createdAt < new Date("2024/01/17 14:30:00") && (!exists.updatedAt || exists.updatedAt < new Date("2024/01/17 14:30:00")))) {
+				let beforeD14Date = new Date();
+				beforeD14Date.setDate(beforeD14Date.getDate() - 14);
+				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD14Date)) {
 
 					const apiurl = `https://${host}/api/emoji?name=${name}`;
 
 					try {
-						emojiInfo = (await getJson(apiurl, "application/json, */*", 6000)) as Record<string, unknown>;
-						if (exists) {
-							try {
-								await Emojis.update(
-									{
-										host: _host,
-										name,
-									},
-									{
-										updatedAt: new Date(),
-									},
-								)
-							} catch (e) {
-								logger.warn(`fetch emojiInfo update err : ${e}`);
-							}
-						}
+						emojiInfo = (await getJson(apiurl, "application/json, */*", 5000)) as Record<string, unknown>;
 					} catch (e) {
-						if (e.statusCode && e.statusCode >= 400 && e.statusCode < 500) {
+						logger.warn(`fetch emojiInfo err : ${e}`);
+					}
+					if (exists) {
+						try {
 							await Emojis.update(
 								{
 									host: _host,
@@ -538,24 +529,33 @@ export async function extractEmojis(
 									updatedAt: new Date(),
 								},
 							)
+						} catch (e) {
+							logger.warn(`fetch emojiInfo update err : ${e}`);
 						}
-						logger.warn(`fetch emojiInfo err : ${e}`);
 					}
 				}
 			}
 
 			const category = emojiInfo?.category ? `${emojiInfo?.category} <${_host}>` : null;
 
-			const aliases = tag.aliases || tag.keywords || emojiInfo?.aliases || [];
+			let aliases = tag.aliases || tag.keywords || emojiInfo?.aliases || [];
+
+			const roleOnly = (emojiInfo?.roleIdsThatCanBeUsedThisEmojiAsReaction as Array<string>)?.length || (emojiInfo?.roleIdsThatCanNotBeUsedThisEmojiAsReaction as Array<string>)?.length
+
+			if (roleOnly) aliases.push("ロール限定");
+
+			if (emojiInfo?.isSensitive) aliases.push("センシティブ");
+
+			const copydeny = emojiInfo?.localOnly || roleOnly;
 
 			const license = [
 				(tag.license ? `ライセンス : ${tag.license}` : ""),
 				(tag.author ? `作者 : ${tag.author}` : ""),
-				(tag.copyPermission && tag.copyPermission !== "none" ? `コピー可否 : ${tag.copyPermission}` : ""),
+				((tag.copyPermission && tag.copyPermission !== "none") || copydeny ? `コピー可否 : ${tag.copyPermission ?? ("deny, \n" + (emojiInfo?.license ?? ""))}` : ""),
 				(tag.usageInfo ? `使用情報 : ${tag.usageInfo}` : ""),
 				(tag.description ? `説明 : ${tag.description}` : ""),
 				(tag.isBasedOnUrl ? `コピー元 : ${tag.isBasedOnUrl}` : ""),
-			].filter(Boolean).join(", ").trim() || emojiInfo?.license || null;
+			].filter(Boolean).join(", \n").trim() || emojiInfo?.license || null;
 
 			if (exists) {
 				if (

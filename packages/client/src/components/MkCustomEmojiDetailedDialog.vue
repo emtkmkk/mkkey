@@ -29,7 +29,7 @@
 				<MkKeyValue v-if="_emoji.aliases.length > 0">
 					<template #key>{{ i18n.ts.tags }}</template>
 					<template #value>
-						<div v-if="_emoji.aliases.length === 0">{{ i18n.ts.none }}</div>
+						<div v-if="_emoji.aliases.filter((x) => x.trim()).length === 0">{{ i18n.ts.none }}</div>
 						<div v-else :class="$style.aliases">
 							<span v-for="alias in _emoji.aliases.filter((x) => x.trim())" :key="alias" :class="$style.alias">
 								{{ alias }}
@@ -153,7 +153,7 @@ onMounted(async () => {
 		usageInfo: _emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
 		author: _emoji.license?.includes("作者 : ") ? /作者 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
 		description: _emoji.license?.includes("説明 : ") ? /説明 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
-		isBasedOnUrl: _emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,:]+)b(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
+		isBasedOnUrl: _emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
 	}
 })
 

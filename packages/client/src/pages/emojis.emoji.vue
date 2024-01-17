@@ -43,7 +43,7 @@ function menu(ev) {
 							emoji: props.emoji.name
 					}, {
 						anchor: ev.target,
-					});
+					}, "closed");
 				},
 			},
 		],

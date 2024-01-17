@@ -276,7 +276,7 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 						emoji: await os.apiGet('emoji', {
 							emoji: emojiName + (emojiHost ? "@" + emojiHost : "")
 						}),
-					});
+					}, {}, "closed");
 				},
 			});
 		}

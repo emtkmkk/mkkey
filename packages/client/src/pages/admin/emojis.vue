@@ -314,7 +314,7 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 				action: async () => {
 					os.popup(MkCustomEmojiDetailedDialog, {
 							emoji: emoji.name + (emoji.host ? "@" + emoji.host : "")
-					});
+					}, {}, "closed");
 				},
 			},
 		],

@@ -1,5 +1,5 @@
 <template>
-  <MkModalWindow ref="dialog" @close="cancel()" @closed="$emit('closed')" >
+  <XModalWindow ref="dialog" :width="600" @close="cancel()" @closed="$emit('closed')" >
     <template #header>:{{ `${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}` }}:</template>
     <template #default>
       <MkSpacer>
@@ -42,7 +42,7 @@
             <template #key>{{ i18n.ts.category }}</template>
             <template #value>{{ _emoji.category ?? i18n.ts.none }}</template>
           </MkKeyValue>
-          <MkKeyValue v-if="!_emoji.license">
+          <MkKeyValue v-if="!_emoji.license || Object.keys(licenseDetail).filter((x) => licenseDetail[x]).length < 2">
             <template #key>{{ i18n.ts.license }}</template>
             <template #value>{{ _emoji.license ?? i18n.ts.none }}</template>
           </MkKeyValue>
@@ -99,14 +99,14 @@
         </div>
       </MkSpacer>
     </template>
-  </MkModalWindow>
+  </XModalWindow>
 </template>
 
 <script lang="ts" setup>
 import * as Misskey from 'calckey-js';
 import { defineProps, shallowRef, unref } from 'vue';
 import { i18n } from '@/i18n.js';
-import MkModalWindow from '@/components/MkModalWindow.vue';
+import XModalWindow from "@/components/MkModalWindow.vue";
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import * as config from "@/config";
 import * as os from "@/os";

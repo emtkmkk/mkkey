@@ -511,7 +511,7 @@ export async function extractEmojis(
 					const apiurl = `https://${host}/api/emoji?name=${name}`;
 
 					try {
-						emojiInfo = (await getJson(apiurl, "application/json, */*", 2000)) as Record<string, unknown>;
+						emojiInfo = (await getJson(apiurl, "application/json, */*", 6000)) as Record<string, unknown>;
 					} catch (e) {
 						logger.warn(`fetch emojiInfo err : ${e}`);
 					}
@@ -589,7 +589,6 @@ export async function extractEmojis(
 							uri: tag.id,
 							originalUrl: tag.icon!.url,
 							publicUrl: tag.icon!.url,
-							category,
 							aliases,
 							license,
 							updatedAt: new Date(),

@@ -280,7 +280,7 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 							os.popup(MkCustomEmojiDetailedDialog, {
 								emoji: res
 							}, {
-								anchor: reactButton.target,
+								anchor: reactButton,
 							}, "closed");
 						})
 					},

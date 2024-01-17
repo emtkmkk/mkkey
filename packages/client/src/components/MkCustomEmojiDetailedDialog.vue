@@ -1,8 +1,8 @@
 <template>
   <XModalWindow ref="dialog" @click="cancel()" @close="cancel()" @closed="$emit('closed')" >
-    <template #header>:{{ `${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}` }}:</template>
+    <template #header>:{{ _emoji ? `${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}` : "" }}:</template>
 		<MkSpacer>
-			<div style="display: flex; flex-direction: column; gap: 1em;">
+			<div v-if="_emoji" style="display: flex; flex-direction: column; gap: 1em;">
 				<div :class="$style.emojiImgWrapper">
 					<MkEmoji :emoji="`:${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}:`" :normal="true" style="height: 100%;"></MkEmoji>
 				</div>
@@ -102,7 +102,7 @@
 
 <script lang="ts" setup>
 import * as Misskey from 'calckey-js';
-import { defineProps } from 'vue';
+import { defineProps, onMounted } from 'vue';
 import { i18n } from '@/i18n.js';
 import XModalWindow from "@/components/MkModalWindow.vue";
 import MkKeyValue from '@/components/MkKeyValue.vue';
@@ -132,10 +132,10 @@ const fetchData = async () => {
       });
 };
 
-const _emoji = $ref(typeof props.emoji === "string" ? await fetchData() : props.emoji);
+let _emoji = $ref<object>(undefined);
 
 const licenseDetail = $computed(() => {
-return !_emoji.host && _emoji.license === "文字だけ" 
+return _emoji ? !_emoji.host && _emoji.license === "文字だけ" 
 ? {
 	copyPermission: "allow",
 	license: "CC0 1.0 Universal",
@@ -147,8 +147,12 @@ return !_emoji.host && _emoji.license === "文字だけ"
 	author: _emoji.license?.includes("作者 : ") ? /作者 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
 	description: _emoji.license?.includes("説明 : ") ? /説明 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
 	isBasedOnUrl: _emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
-}
+} : {}
 });
+
+onMounted(async () => {
+	_emoji = typeof props.emoji === "string" ? await fetchData() : props.emoji
+})
 
 </script>
 

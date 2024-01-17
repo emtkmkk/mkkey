@@ -5,7 +5,7 @@
       <MkSpacer>
         <div style="display: flex; flex-direction: column; gap: 1em;">
           <div :class="$style.emojiImgWrapper">
-            <MkEmoji :emoji="_emoji.name" :normal="true" style="height: 100%;"></MkEmoji>
+            <MkEmoji :emoji="`:${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}:`" :normal="true" style="height: 100%;"></MkEmoji>
           </div>
           <MkKeyValue>
             <template #key>{{ i18n.ts.name }}</template>

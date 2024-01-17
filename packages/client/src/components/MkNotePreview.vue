@@ -13,9 +13,9 @@
 						:text="(cw ? preprocess(cw).trim() + ' ' : '') + '[' + i18n.ts._cw.show + ']\n'"
 						:author="$i"
 						:i="$i"
-						reactionMenuEnabled
+						reaction-menu-enabled
 					/>
-					<Mfm :text="preprocess(text).trim()" :author="$i" :i="$i" />
+					<Mfm :text="preprocess(text).trim()" :author="$i" :i="$i" reaction-menu-enabled/>
 				</div>
 			</div>
 		</div>

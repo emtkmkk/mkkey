@@ -684,7 +684,7 @@ export const routes = [
 	},
 	{
 		path: "/emoji_license/:emoji",
-		component: page(() => import("./MkCustomEmojiDetailedDialog.vue")),
+		component: page(() => import("./components/MkCustomEmojiDetailedDialog.vue")),
 	},
 	{
 		name: "index",

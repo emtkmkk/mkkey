@@ -271,7 +271,11 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 					children: childMenu,
 				});
 			}
-		
+
+		}
+	}
+
+			
 			if (isCustom) {
 				menu.push({
 					text: i18n.ts.info,
@@ -290,8 +294,6 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 					},
 				});
 			}
-		}
-	}
 
 	os.popupMenu(menu, reactButton);
 }

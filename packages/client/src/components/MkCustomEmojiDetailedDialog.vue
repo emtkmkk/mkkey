@@ -118,7 +118,7 @@ const emit = defineEmits<{
 	(ev: 'cancel'): void;
 	(ev: 'closed'): void;
 }>();
-const dialog = shallowRef<InstanceType<typeof MkModalWindow>>();
+const dialog = shallowRef<InstanceType<typeof XModalWindow>>();
 const cancel = () => {
 	emit('cancel');
 	dialog.value!.close();

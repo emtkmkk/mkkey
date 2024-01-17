@@ -95,7 +95,7 @@
             </template>
           </MkKeyValue>
 					<br v-if="!_emoji.host" />
-          <a v-if="!_emoji.host" :href="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${emojiName}`" target="_blank">{{ "編集申請はこちらから" }}</a>
+          <a v-if="!_emoji.host" :href="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</a>
         </div>
       </MkSpacer>
     </template>
@@ -124,14 +124,18 @@ const cancel = () => {
 	dialog.value!.close();
 };
 
-const emojiHost = typeof props.emoji === "string" ? props.emoji.split("@")?.[1]?.replaceAll(":", "") : undefined;
+const fetchData = async () => {
+  const emojiHost = typeof props.emoji === "string" ? props.emoji.split("@")?.[1]?.replaceAll(":","") : undefined;
 
-const _emoji = typeof props.emoji === "string"
-			? (await os.apiGet('emoji', {
-							name: props.emoji.split("@")?.[0]?.replaceAll(":", ""),
-							...(emojiHost ? {host: emojiHost} : {})
-			}))
-			: unref(props.emoji);
+  return typeof props.emoji === "string"
+    ? await os.apiGet('emoji', {
+        name: props.emoji.split("@")?.[0]?.replaceAll(":",""),
+        ...(emojiHost ? { host: emojiHost } : {})
+      })
+    : unref(props.emoji);
+};
+
+const _emoji = await fetchData();
 
 const licenseDetail = !_emoji.host && _emoji.license === "文字だけ" 
 ? {
@@ -152,7 +156,7 @@ const licenseDetail = !_emoji.host && _emoji.license === "文字だけ"
 <style lang="scss" module>
 .emojiImgWrapper {
   max-width: 100%;
-  height: 40cqh;
+  height: 30cqh;
   background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, var(--X5) 8px, var(--X5) 14px);
   border-radius: var(--radius);
   margin: auto;

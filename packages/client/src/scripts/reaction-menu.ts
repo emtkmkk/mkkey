@@ -273,9 +273,7 @@ export function openReactionMenu_(reaction, note, canToggle, multi, reactButton)
 				icon: 'ph-info ph-bold ph-lg',
 				action: async () => {
 					os.popup(MkCustomEmojiDetailedDialog, {
-						emoji: await os.apiGet('emoji', {
-							emoji: emojiName + (emojiHost ? "@" + emojiHost : "")
-						}),
+						emoji: emojiName + (emojiHost ? "@" + emojiHost : "")
 					}, {}, "closed");
 				},
 			});

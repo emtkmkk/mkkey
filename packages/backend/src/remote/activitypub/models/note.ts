@@ -506,17 +506,29 @@ export async function extractEmojis(
 			//絵文字情報を取得できそうなら取得
 			if (host && host === _host) {
 
-				if (!exists || (exists.createdAt < new Date("2024/01/17 12:52:00") && (!exists.updatedAt || exists.updatedAt < new Date("2024/01/17 12:52:00")))) {
+				if (!exists || (exists.createdAt < new Date("2024/01/17 14:30:00") && (!exists.updatedAt || exists.updatedAt < new Date("2024/01/17 14:30:00")))) {
 
 					const apiurl = `https://${host}/api/emoji?name=${name}`;
 
 					try {
 						emojiInfo = (await getJson(apiurl, "application/json, */*", 6000)) as Record<string, unknown>;
+						if (exists) {
+							try {
+								await Emojis.update(
+									{
+										host: _host,
+										name,
+									},
+									{
+										updatedAt: new Date(),
+									},
+								)
+							} catch (e) {
+								logger.warn(`fetch emojiInfo update err : ${e}`);
+							}
+						}
 					} catch (e) {
-						logger.warn(`fetch emojiInfo err : ${e}`);
-					}
-					if (exists) {
-						try {
+						if (e.statusCode && e.statusCode >= 400 && e.statusCode < 500) {
 							await Emojis.update(
 								{
 									host: _host,
@@ -526,9 +538,8 @@ export async function extractEmojis(
 									updatedAt: new Date(),
 								},
 							)
-						} catch (e) {
-							logger.warn(`fetch emojiInfo update err : ${e}`);
 						}
+						logger.warn(`fetch emojiInfo err : ${e}`);
 					}
 				}
 			}

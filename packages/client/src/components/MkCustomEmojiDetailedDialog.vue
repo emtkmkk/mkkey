@@ -55,7 +55,7 @@
 					<template #value>
 						{{ licenseDetail.author }}</template>
 				</MkKeyValue>
-				<MkKeyValue>
+				<MkKeyValue v-if="!emoji.host || licenseDetail.copyPermission !== 'none'">
 					<template #key>{{ i18n.ts.copyPermission }}</template>
 					<template #value>
 						<i 

@@ -40,7 +40,9 @@ function menu(ev) {
 				icon: "ph-info ph-bold ph-lg",
 				action: async () => {
 					os.popup(MkCustomEmojiDetailedDialog, {
-							emoji: props.emoji.name
+							emoji: (await os.apiGet('emoji', {
+								name: props.emoji,
+							}))
 					}, {
 						anchor: ev.target,
 					}, "closed");

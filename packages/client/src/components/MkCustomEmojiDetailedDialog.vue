@@ -95,7 +95,7 @@
             </template>
           </MkKeyValue>
 					<br v-if="!_emoji.host" />
-          <a v-if="!_emoji.host" :href="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</a>
+          <a v-if="!_emoji.host" :href="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${_emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</a>
         </div>
       </MkSpacer>
     </template>
@@ -104,7 +104,7 @@
 
 <script lang="ts" setup>
 import * as Misskey from 'calckey-js';
-import { defineProps, shallowRef, unref } from 'vue';
+import { defineProps } from 'vue';
 import { i18n } from '@/i18n.js';
 import XModalWindow from "@/components/MkModalWindow.vue";
 import MkKeyValue from '@/components/MkKeyValue.vue';
@@ -118,26 +118,26 @@ const emit = defineEmits<{
 	(ev: 'cancel'): void;
 	(ev: 'closed'): void;
 }>();
-const dialog = shallowRef<InstanceType<typeof XModalWindow>>();
+const dialog = $ref<InstanceType<typeof XModalWindow>>();
 const cancel = () => {
+	console.log('cancel');
 	emit('cancel');
-	dialog.value!.close();
+	dialog.close();
 };
 
 const fetchData = async () => {
-  const emojiHost = typeof props.emoji === "string" ? props.emoji.split("@")?.[1]?.replaceAll(":","") : undefined;
+  const emojiHost = props.emoji.split("@")?.[1]?.replaceAll(":","");
 
-  return typeof props.emoji === "string"
-    ? await os.apiGet('emoji', {
+  return await os.apiGet('emoji', {
         name: props.emoji.split("@")?.[0]?.replaceAll(":",""),
         ...(emojiHost ? { host: emojiHost } : {})
-      })
-    : unref(props.emoji);
+      });
 };
 
-const _emoji = await fetchData();
+const _emoji = $ref(typeof props.emoji === "string" ? await fetchData() : props.emoji);
 
-const licenseDetail = !_emoji.host && _emoji.license === "文字だけ" 
+const licenseDetail = $computed(() => {
+return !_emoji.host && _emoji.license === "文字だけ" 
 ? {
 	copyPermission: "allow",
 	license: "CC0 1.0 Universal",
@@ -150,6 +150,7 @@ const licenseDetail = !_emoji.host && _emoji.license === "文字だけ"
 	description: _emoji.license?.includes("説明 : ") ? /説明 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
 	isBasedOnUrl: _emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,:]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
 }
+});
 
 </script>
 

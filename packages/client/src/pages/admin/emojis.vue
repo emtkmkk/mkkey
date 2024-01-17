@@ -190,6 +190,7 @@ import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { instance } from "@/instance";
+import MkCustomEmojiDetailedDialog from './MkCustomEmojiDetailedDialog.vue';
 
 const emojisPaginationComponent = ref<InstanceType<typeof MkPagination>>();
 
@@ -308,12 +309,16 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 				},
 			},
 			{
-				type: "label",
-				text: JSON.stringify({...emoji,id: undefined,name: undefined,url: undefined,host: undefined,createdAt: undefined,updatedAt: undefined}),
-			},
-			{
-				type: "label",
-				text: JSON.stringify({createdAt: emoji.createdAt,updatedAt: emoji.updatedAt}),
+				text: i18n.ts.info,
+				icon: 'ph-info ph-bold ph-lg',
+				action: async () => {
+					os.popup(MkCustomEmojiDetailedDialog, {
+						emoji: await os.apiGet('emoji', {
+							name: emoji.name,
+							...(emoji.host ? {host: emoji.host} : {})
+						}),
+					});
+				},
 			},
 		],
 		ev.currentTarget ?? ev.target

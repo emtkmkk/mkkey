@@ -13,6 +13,7 @@ import {} from "vue";
 import * as os from "@/os";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
 import { i18n } from "@/i18n";
+import MkCustomEmojiDetailedDialog from './MkCustomEmojiDetailedDialog.vue';
 import * as config from "@/config";
 
 const props = defineProps<{
@@ -37,15 +38,14 @@ function menu(ev) {
 			{
 				text: i18n.ts.license,
 				icon: "ph-info ph-bold ph-lg",
-				action: () => {
-					os.apiGet("emoji", { name: props.emoji.name }).then(
-						(res) => {
-							os.alert({
-								type: "info",
-								text: `${res.license || i18n.ts.notSet}\n\nhttps://${config.host}/emoji_licence/${res.name}`,
-							});
-						}
-					);
+				action: async () => {
+					os.popup(MkCustomEmojiDetailedDialog, {
+							emoji: await os.apiGet('emoji', {
+							name: props.emoji.name,
+						})
+					}, {
+						anchor: ev.target,
+					});
 				},
 			},
 		],

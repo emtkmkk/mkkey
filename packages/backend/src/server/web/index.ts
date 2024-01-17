@@ -391,7 +391,7 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 
 });
 
-router.get("/emoji_license/:path(.*)", async (ctx) => {
+router.get("/emoji_license/:path([^.]*).json", async (ctx) => {
 
 	if (!ctx.params.path.match(/^[a-zA-Z0-9\-_@\.]+?$/)) {
 		ctx.status = 404;

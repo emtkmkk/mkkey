@@ -683,6 +683,10 @@ export const routes = [
 		loginRequired: true,
 	},
 	{
+		path: "/emoji_license/:emoji",
+		component: page(() => import("./MkCustomEmojiDetailedDialog.vue")),
+	},
+	{
 		name: "index",
 		path: "/",
 		component: $i

@@ -13,6 +13,7 @@
 						:text="(cw ? preprocess(cw).trim() + ' ' : '') + '[' + i18n.ts._cw.show + ']\n'"
 						:author="$i"
 						:i="$i"
+						reactionMenuEnabled
 					/>
 					<Mfm :text="preprocess(text).trim()" :author="$i" :i="$i" />
 				</div>

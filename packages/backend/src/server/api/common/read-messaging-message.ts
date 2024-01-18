@@ -141,7 +141,7 @@ export async function readGroupMessagingMessage(
 		const unreadExist = await MessagingMessages.createQueryBuilder("message")
 			.where("message.groupId = :groupId", { groupId: groupId })
 			.andWhere("message.userId != :userId", { userId: userId })
-			.andWhere("NOT (:userId = ANY(message.reads))", { userId: userId })
+			.andWhere("NOT (:userIdList <@ message.reads)", { userIdList: [userId] })
 			.andWhere("message.createdAt > :joinedAt", {
 				joinedAt: joining.createdAt,
 			}) // 自分が加入する前の会話については、未読扱いしない

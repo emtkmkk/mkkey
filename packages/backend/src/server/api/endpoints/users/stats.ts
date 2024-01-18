@@ -208,7 +208,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		.getCount();
 
 	const readMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
-		.where(" :userId  = ANY(messaging_message.reads) ", { userId: user.id })
+		.where(" :userIdList <@ (messaging_message.reads) ", { userIdList: [user.id] })
 		.cache(CACHE_TIME)
 		.getCount();
 
@@ -427,7 +427,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.cache(CACHE_TIME)
 			.getCount(),
 		readMessageCount: await MessagingMessages.createQueryBuilder("messaging_message")
-			.where(" :userId  = ANY(messaging_message.reads) ", { userId: user.id })
+			.where(" :userIdList <@ (messaging_message.reads) ", { userIdList: [user.id] })
 			.andWhere("messaging_message.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
 			.cache(CACHE_TIME)
 			.getCount(),

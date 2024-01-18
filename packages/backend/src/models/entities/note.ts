@@ -13,6 +13,7 @@ import { noteVisibilities } from "../../types.js";
 import { Channel } from "./channel.js";
 
 @Entity()
+@Index('IDX_NOTE_FILE_IDS', { synchronize: false })
 @Index('IDX_NOTE_TAGS', { synchronize: false })
 @Index('IDX_NOTE_MENTIONS', { synchronize: false })
 @Index('IDX_NOTE_VISIBLE_USER_IDS', { synchronize: false })

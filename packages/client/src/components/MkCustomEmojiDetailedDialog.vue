@@ -106,7 +106,7 @@
 
 <script lang="ts" setup>
 import * as Misskey from 'calckey-js';
-import { defineProps, onMounted } from 'vue';
+import { defineAsyncComponent, defineProps, onMounted } from 'vue';
 import { i18n } from '@/i18n.js';
 import XModalWindow from "@/components/MkModalWindow.vue";
 import MkKeyValue from '@/components/MkKeyValue.vue';

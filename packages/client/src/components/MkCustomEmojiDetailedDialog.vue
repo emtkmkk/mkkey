@@ -97,7 +97,8 @@
 						<MkLink :url="licenseDetail.isBasedOnUrl" target="_blank">{{ licenseDetail.isBasedOnUrl }}</MkLink>
 					</template>
 				</MkKeyValue>
-				<MkLink v-if="$i && !_emoji.host" :url="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${_emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</MkLink>
+				<MkLink v-if="$i && !($i.isAdmin || $i.isModerator) && !_emoji.host" :url="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${_emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</MkLink>
+				<MkButton v-if="$i && ($i.isAdmin || $i.isModerator) && !_emoji.host" primary @click="edit">{{ "この絵文字を編集" }}</MkButton>
 			</div>
 		</MkSpacer>
   </XModalWindow>
@@ -110,6 +111,7 @@ import { i18n } from '@/i18n.js';
 import XModalWindow from "@/components/MkModalWindow.vue";
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import MkLink from '@/components/MkLink.vue';
+import MkButton from "@/components/MkButton.vue";
 import * as config from "@/config";
 import * as os from "@/os";
 import { $i } from "@/account";
@@ -143,8 +145,10 @@ let licenseDetail = $ref<object | undefined>(undefined);
 
 let licenseText = $ref<string | undefined>("");
 
-onMounted(async () => {
-	_emoji = typeof props.emoji === "string" ? await fetchData() : props.emoji
+const load = async (emoji) => {
+	_emoji = typeof emoji === "string" ? await fetchData() : emoji;
+
+	if (!_emoji) return;
 
 	licenseDetail = !_emoji.host && _emoji.license === "文字だけ" ? {
 		copyPermission: "allow",
@@ -159,7 +163,26 @@ onMounted(async () => {
 		isBasedOnUrl: _emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
 	}
 
-	licenseText = _emoji.license?.replaceAll(/(コピー可否|ライセンス|使用情報|作者|説明|コピー元) : ([^,]+)(,|$)/g, "").trim();
+	licenseText = _emoji.license?.replaceAll(/(コピー可否|ライセンス|使用情報|作者|説明|コピー元) : ([^,]+)(,|$)/g, "").trim().replace(/,$/,"");
+}
+
+const edit = (emoji) => {
+	os.popup(
+		defineAsyncComponent(() => import("./emoji-edit-dialog.vue")),
+		{
+			emoji: emoji,
+		},
+		{
+			done: (result) => {
+				load(`${emoji.name}${emoji.host ? '@' + emoji.host : ''}`);
+			},
+		},
+		"closed"
+	);
+};
+
+onMounted(async () => {
+	await load(props.emoji);
 })
 
 </script>

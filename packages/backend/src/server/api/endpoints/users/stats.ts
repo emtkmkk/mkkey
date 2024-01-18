@@ -181,7 +181,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	let borderDate = new Date();
 
 	const RANK_TARGET_DAYS = 31;
-	const CACHE_TIME = 300 * 1000;
+	const CACHE_TIME = 600 * 1000;
 
 	borderDate.setDate(now.getDate() - RANK_TARGET_DAYS);
 	borderDate.setMinutes(0);
@@ -201,6 +201,22 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	const elapsedDaysRaw = Math.ceil((now.getTime() - userCreatedAtDate) / (1000 * 60 * 60 * 2.4)) / 10;
 	const elapsedDays = Math.max(Math.min(elapsedDaysRaw, RANK_TARGET_DAYS), 1);
+
+	const countDeliver = async () => {
+		const inboxes = new Set<string>();
+		const followers = await Followings.createQueryBuilder("following")
+		.select("following.followerSharedInbox")
+		.addSelect("following.followerInbox")
+		.where("following.followeeId = :userId", { userId: user.id })
+		.andWhere("following.followerHost IS NOT NULL")
+		.cache(CACHE_TIME)
+		.getMany();
+		for (const following of followers) {
+			const inbox = following.followerSharedInbox || following.followerInbox;
+			inboxes.add(inbox);
+		}
+		return inboxes.size;
+	}
 
 	const sendMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
 		.where("messaging_message.userId = :userId", { userId: user.id })
@@ -278,6 +294,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.andWhere("following.followerHost IS NOT NULL")
 			.cache(CACHE_TIME)
 			.getCount(),
+		deliverServersCount: !ps.simple ? countDeliver() : undefined,
 		sentReactionsCount: NoteReactions.createQueryBuilder("reaction")
 			.where("reaction.userId = :userId", { userId: user.id })
 			.cache(CACHE_TIME)

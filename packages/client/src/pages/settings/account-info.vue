@@ -153,6 +153,10 @@
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
+				<template #key>{{ i18n.ts.deliverServersCount }}</template>
+				<template #value>{{ number(stats.deliverServersCount) }}</template>
+			</MkKeyValue>
+			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.pageLikesCount }}</template>
 				<template #value>{{ number(stats.pageLikesCount) }}</template>
 			</MkKeyValue>

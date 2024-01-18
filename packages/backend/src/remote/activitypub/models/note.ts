@@ -608,21 +608,36 @@ export async function extractEmojis(
 							logger.warn(`backup emoji err : ${err}`);
 						}
 					}
-					await Emojis.update(
-						{
-							host: _host,
-							name,
-						},
-						{
-							uri: tag.id,
-							originalUrl: tag.icon!.url,
-							publicUrl: tag.icon!.url,
-							category,
-							aliases,
-							license,
-							updatedAt: new Date(),
-						},
-					);
+					if (emojiInfoFlg) {
+						await Emojis.update(
+							{
+								host: _host,
+								name,
+							},
+							{
+								uri: tag.id,
+								originalUrl: tag.icon!.url,
+								publicUrl: tag.icon!.url,
+								category,
+								aliases,
+								license,
+								updatedAt: new Date(),
+							},
+						);
+					} else {
+						await Emojis.update(
+							{
+								host: _host,
+								name,
+							},
+							{
+								uri: tag.id,
+								originalUrl: tag.icon!.url,
+								publicUrl: tag.icon!.url,
+								updatedAt: new Date(),
+							},
+						);
+					}
 
 					return (await Emojis.findOneBy({
 						host: _host,

@@ -18,6 +18,7 @@
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { unisonReload } from "@/scripts/unison-reload";
+import MkButton from "@/components/MkButton.vue";
 
 function reload() {
 	unisonReload();

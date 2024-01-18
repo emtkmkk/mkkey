@@ -15,7 +15,7 @@
 			v-model="disableRequestNotification"
 		>
 			<template #label>{{
-				i18n.ts.disableRequestNotificatio
+				i18n.ts.disableRequestNotification
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 		</FormSwitch>
 		<FormSection>

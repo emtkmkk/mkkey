@@ -339,6 +339,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/6/12",
 			page: "notifications",
 		},
+		disableRequestNotification: {
+			where: "account",
+			default: false,
+			createdAt: "2024/1/18",
+			page: "notifications",
+		},
 		localShowRenote: {
 			where: "account",
 			default: true,

@@ -11,6 +11,13 @@
 				i18n.ts.enableAntennaTab
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 		</FormSwitch>
+		<FormSwitch
+			v-model="disableRequestNotification"
+		>
+			<template #label>{{
+				i18n.ts.disableRequestNotificatio
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+		</FormSwitch>
 		<FormSection>
 			<ForFormButtonmLink
 				class="_formBlock"
@@ -86,6 +93,10 @@ let sendReadMessage = $computed(
 
 const enableAntennaTab = $computed(
 	defaultStore.makeGetterSetter("enableAntennaTab")
+);
+
+const disableRequestNotification = $computed(
+	defaultStore.makeGetterSetter("disableRequestNotification")
 );
 
 const showMkkeySettingTips = $computed(

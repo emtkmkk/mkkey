@@ -12,10 +12,10 @@
 			<template #prefix><i class="ph-lock ph-bold ph-lg"></i></template>
 			<template #label>Secret</template>
 		</FormInput>
-		<FormSwitch v-if="!slack_type" v-model="discord_type" class="_formBlock"
+		<FormSwitch :disable="slack_type" v-model="discord_type" class="_formBlock"
 			>Discordに対応した形式で送信<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 		>
-		<FormSwitch v-if="!discord_type" v-model="slack_type" class="_formBlock"
+		<FormSwitch :disable="discord_type" v-model="slack_type" class="_formBlock"
 			>Slackに対応した形式で送信<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
 		>
 		

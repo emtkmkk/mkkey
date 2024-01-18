@@ -39,6 +39,7 @@
 			ref="nameareaEl"
 			:max="30"
 			manual-save
+			misskey-auto-complete
 			class="_formBlock"
 		>
 			<template #label>{{ i18n.ts._profile.name }}</template>
@@ -50,6 +51,7 @@
 			:max="500"
 			tall
 			manual-save
+			misskey-auto-complete
 			class="_formBlock"
 		>
 			<template #label>{{ i18n.ts._profile.description }}</template>
@@ -106,14 +108,14 @@
 						:min-width="250"
 						class="_formBlock"
 					>
-						<FormInput v-model="record.name" small>
+						<FormInput v-model="record.name" small misskey-auto-complete>
 							<template #label
 								>{{ i18n.ts._profile.metadataLabel }} #{{
 									i + 1
 								}}</template
 							>
 						</FormInput>
-						<FormInput v-model="record.value" small>
+						<FormInput v-model="record.value" small misskey-auto-complete>
 							<template #label
 								>{{ i18n.ts._profile.metadataContent }} #{{
 									i + 1

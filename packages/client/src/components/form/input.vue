@@ -53,6 +53,7 @@ import { debounce } from "throttle-debounce";
 import MkButton from "@/components/MkButton.vue";
 import { useInterval } from "@/scripts/use-interval";
 import { i18n } from "@/i18n";
+import { Autocomplete } from '@/scripts/autocomplete.js';
 
 const props = defineProps<{
 	modelValue: string | number;
@@ -80,6 +81,7 @@ const props = defineProps<{
 	manualSave?: boolean;
 	small?: boolean;
 	large?: boolean;
+	misskeyAutoComplete?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -100,6 +102,7 @@ const inputEl = ref<HTMLElement>();
 const prefixEl = ref<HTMLElement>();
 const suffixEl = ref<HTMLElement>();
 const height = props.small ? 36 : props.large ? 40 : 38;
+let autocomplete: Autocomplete;
 
 const focus = () => inputEl.value.focus();
 const onInput = (ev: KeyboardEvent) => {
@@ -171,6 +174,16 @@ onMounted(() => {
 			focus();
 		}
 	});
+	
+	if (props.misskeyAutoComplete) {
+		autocomplete = new Autocomplete(inputEl.value, v);
+	}
+});
+
+onUnmounted(() => {
+	if (autocomplete) {
+		autocomplete.detach();
+	}
 });
 </script>
 

@@ -29,18 +29,19 @@
 			{{ i18n.ts._pages.script.emptySlot }}
 		</section>
 		<section v-else-if="modelValue.type === 'text'" class="tbwccoaw">
-			<input v-model="modelValue.value" />
+			<input v-model="modelValue.value" misskey-auto-complete />
 		</section>
 		<section
 			v-else-if="modelValue.type === 'multiLineText'"
 			class="tbwccoaw"
 		>
-			<textarea v-model="modelValue.value"></textarea>
+			<textarea v-model="modelValue.value" misskey-auto-complete></textarea>
 		</section>
 		<section v-else-if="modelValue.type === 'textList'" class="tbwccoaw">
 			<textarea
 				v-model="modelValue.value"
 				:placeholder="i18n.ts._pages.script.blocks._textList.info"
+				misskey-auto-complete
 			></textarea>
 		</section>
 		<section v-else-if="modelValue.type === 'number'" class="tbwccoaw">

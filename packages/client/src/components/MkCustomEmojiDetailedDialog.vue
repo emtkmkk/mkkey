@@ -168,7 +168,7 @@ const load = async (emoji) => {
 
 const edit = (emoji) => {
 	os.popup(
-		defineAsyncComponent(() => import("./emoji-edit-dialog.vue")),
+		defineAsyncComponent(() => import("@/pages/admin/emoji-edit-dialog.vue")),
 		{
 			emoji: emoji,
 		},

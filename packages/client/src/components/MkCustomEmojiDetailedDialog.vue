@@ -159,7 +159,7 @@ onMounted(async () => {
 		isBasedOnUrl: _emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ?? undefined : undefined,
 	}
 
-	licenseText = _emoji.license?.replaceAll(/(コピー可否|ライセンス|使用情報|作者|説明|コピー元) : ([^,]+)(,|$)/g, "").trim(),
+	licenseText = _emoji.license?.replaceAll(/(コピー可否|ライセンス|使用情報|作者|説明|コピー元) : ([^,]+)(,|$)/g, "").trim();
 })
 
 </script>

@@ -174,7 +174,7 @@ const edit = () => {
 		},
 		{
 			done: (result) => {
-				load(`${result.updated.name || _emoji.name}${emoji.host ? '@' + emoji.host : ''}`);
+				load(`${result?.updated?.name || _emoji.name}${emoji.host ? '@' + emoji.host : ''}`);
 			},
 		},
 		"closed"

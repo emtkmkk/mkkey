@@ -619,7 +619,7 @@ export async function extractEmojis(
 				(licenseData.description ? `説明 : ${licenseData.description}` : ""),
 				(licenseData.isBasedOnUrl ? `コピー元 : ${licenseData.isBasedOnUrl}` : ""),
 				licenseData.text,
-			].filter(Boolean).join(", \n").trim() || emojiInfo?.license || null;
+			].filter(Boolean).map((x) => x.replaceAll(",","，")).join(", \n").trim() || emojiInfo?.license || null;
 
 			if (exists) {
 				if (

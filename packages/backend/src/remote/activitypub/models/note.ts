@@ -506,19 +506,68 @@ export async function extractEmojis(
 
 			let emojiInfoFlg = false;
 
+			let licenseData = {
+				license : tag.license,
+				author : tag.author,
+				copyPermission : tag.copyPermission,
+				usageInfo : tag.usageInfo,
+				description : tag.description,
+				isBasedOnUrl : tag.isBasedOnUrl,
+				text : "",
+			}
+
 			//絵文字情報を取得できそうなら取得
 			if (host && host === _host) {
 
 				let beforeD7Date = new Date();
 				beforeD7Date.setDate(beforeD7Date.getDate() - 7);
-				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD7Date)) {
+				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD7Date) || ((exists.updatedAt || exists.createdAt) < new Date("2024/01/19 15:35:00"))) {
 					emojiInfoFlg = true;
-					const apiurl = `https://${host}/api/emoji?name=${name}`;
 
-					try {
-						emojiInfo = (await getJson(apiurl, "application/json, */*", 5000)) as Record<string, unknown>;
-					} catch (e) {
-						logger.warn(`fetch emojiInfo err : ${e}`);
+					const instance = await Instances.findOneBy({ host: host });
+
+					if (instance.maxReactionsPerAccount !== 128) {
+						const apiurl = `https://${host}/api/emoji?name=${name}`;
+	
+						try {
+							emojiInfo = (await getJson(apiurl, "application/json, */*", 5000)) as Record<string, unknown>;
+						} catch (e) {
+							logger.warn(`fetch emojiInfo err : ${e}`);
+						}
+					} else {
+						const apiurl = `https://${host}/api/v1/pleroma/emoji`;
+
+						try {
+							const emojiJson = (await getJson(apiurl, "application/json, */*", 5000))[name];
+
+							const pack = emojiJson.tags.filter((x) => x.startsWith("pack:"))?.[0]?.replace("pack:","");
+							if (pack) {
+								const apiurl = `https://${host}/api/v1/pleroma/emoji/pack?name=${pack}`;
+								const packJson = (await getJson(apiurl, "application/json, */*", 5000));
+								licenseData.copyPermission = licenseData.copyPermission ? licenseData.copyPermission : packJson.pack["can-download"] && packJson.pack["share-flies"] !== false ? "allow" : !(packJson.pack["can-download"] !== false || packJson.pack["share-flies"] ) ? "deny" : "none";
+								licenseData.license = packJson.pack["license"];
+								licenseData.description = packJson.pack["description"];
+								licenseData.usageInfo = packJson.pack["homepage"] ? `pack:${pack}${(packJson["files_count"] ?? 0) > 1 ? `(${packJson["files_count"]})` : ""} ${packJson.pack["homepage"]}${packJson.pack["fallback-src"] ? ` (${packJson.pack["fallback-src"]})` : ""}` : "";
+							}
+
+							emojiInfo = {
+								category: pack || emojiJson.tags?.[0],
+								aliases: emojiJson.tags?.length > 1 ? emojiJson.tags?.slice(1) : undefined,
+							};
+
+							licenseData = {
+								license : tag.license || licenseData.license,
+								author : tag.author || licenseData.author,
+								copyPermission : tag.copyPermission || licenseData.copyPermission,
+								usageInfo : tag.usageInfo || licenseData.usageInfo,
+								description : tag.description || licenseData.description,
+								isBasedOnUrl : tag.isBasedOnUrl || licenseData.isBasedOnUrl,
+								text : licenseData.text,
+							};
+
+						} catch (e) {
+							logger.warn(`fetch emojiInfo err : ${e}`);
+						}
 					}
 					if (exists) {
 						try {
@@ -563,12 +612,13 @@ export async function extractEmojis(
 			aliases = _aliases;
 
 			const license = [
-				(tag.license ? `ライセンス : ${tag.license}` : ""),
-				(tag.author ? `作者 : ${tag.author}` : ""),
-				((tag.copyPermission && tag.copyPermission !== "none") || copydeny ? `コピー可否 : ${tag.copyPermission ?? ("deny, \n" + (emojiInfo?.license ?? ""))}` : ""),
-				(tag.usageInfo ? `使用情報 : ${tag.usageInfo}` : ""),
-				(tag.description ? `説明 : ${tag.description}` : ""),
-				(tag.isBasedOnUrl ? `コピー元 : ${tag.isBasedOnUrl}` : ""),
+				(licenseData.license ? `ライセンス : ${licenseData.license}` : ""),
+				(licenseData.author ? `作者 : ${licenseData.author}` : ""),
+				((licenseData.copyPermission && licenseData.copyPermission !== "none") || copydeny ? `コピー可否 : ${licenseData.copyPermission ?? ("deny, \n" + (emojiInfo?.license ?? ""))}` : ""),
+				(licenseData.usageInfo ? `使用情報 : ${licenseData.usageInfo}` : ""),
+				(licenseData.description ? `説明 : ${licenseData.description}` : ""),
+				(licenseData.isBasedOnUrl ? `コピー元 : ${licenseData.isBasedOnUrl}` : ""),
+				licenseData.text,
 			].filter(Boolean).join(", \n").trim() || emojiInfo?.license || null;
 
 			if (exists) {

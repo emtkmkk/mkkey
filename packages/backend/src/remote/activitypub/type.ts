@@ -135,6 +135,7 @@ export interface IPost extends IObject {
 		content: string;
 		mediaType: string;
 	};
+	_misskey_content?: string;
 	_misskey_quote?: string;
 	quoteUrl?: string;
 	quoteUri?: string;
@@ -252,6 +253,15 @@ export const isHashtag = (object: IObject): object is IApHashtag =>
 export interface IApEmoji extends IObject {
 	type: "Emoji";
 	updated: Date;
+	host?: string;
+	aliases?: Array<string>;
+	keywords?: Array<string>;
+	license?: string;
+	author?: string;
+	copyPermission?: string;
+	usageInfo?: string;
+	description?: string;
+	isBasedOnUrl?: string;
 }
 
 export const isEmoji = (object: IObject): object is IApEmoji =>

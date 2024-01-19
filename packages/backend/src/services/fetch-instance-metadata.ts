@@ -95,8 +95,8 @@ export async function fetchInstanceMetadata(
 							);
 					}
 				}
-				// akkoma / pleroma の場合
-				else if (["akkoma", "pleroma"].includes(info.software?.name)) {
+				// features に pleroma_emoji_reactions が含まれる場合
+				else if (info.metadata?.features?.includes("pleroma_emoji_reactions")) {
 					// 無限なので128とする
 					updates.maxReactionsPerAccount = 128;
 				}
@@ -162,6 +162,7 @@ type NodeInfo = {
 			name?: any;
 		}
 		maxReactionsPerAccount?: any;
+		features?: Array<string>;
 	};
 };
 

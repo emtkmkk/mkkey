@@ -603,7 +603,7 @@ export async function extractEmojis(
 
 			const copyallow = /(\W|^)(public\s*domain|pd|cc0)(\W|$)/.test(licenseText);
 
-			if (copydeny || copyallow) {
+			if (!licenseData.copyPermission && (copydeny || copyallow)) {
 				licenseData.copyPermission = copydeny ? "deny" : "allow";
 				licenseData.text = emojiInfo?.license;
 			}

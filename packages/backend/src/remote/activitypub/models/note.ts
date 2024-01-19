@@ -509,9 +509,9 @@ export async function extractEmojis(
 			//絵文字情報を取得できそうなら取得
 			if (host && host === _host) {
 
-				let beforeD14Date = new Date();
-				beforeD14Date.setDate(beforeD14Date.getDate() - 14);
-				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD14Date) || ((exists.updatedAt || exists.createdAt) < new Date("2024/1/17 16:00:00"))) {
+				let beforeD7Date = new Date();
+				beforeD7Date.setDate(beforeD7Date.getDate() - 7);
+				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD7Date)) {
 					emojiInfoFlg = true;
 					const apiurl = `https://${host}/api/emoji?name=${name}`;
 
@@ -548,7 +548,7 @@ export async function extractEmojis(
 
 			if (emojiInfo?.isSensitive) aliases.push("センシティブ");
 
-			const copydeny = emojiInfo?.localOnly || roleOnly || emojiInfo?.license?.includes("prohibited");
+			const copydeny = emojiInfo?.localOnly || roleOnly || emojiInfo?.license?.includes("prohibited") || /(インポート|コピー)[\s　]*(NG|不可|禁止)/.test(category ?? "") || /(インポート|コピー)[\s　]*(NG|不可|禁止)/.test(emojiInfo?.license);
 
 			let _aliases: Array<string> = [];
 			

@@ -547,7 +547,7 @@ export async function extractEmojis(
 								licenseData.copyPermission = licenseData.copyPermission ? licenseData.copyPermission : packJson.pack["can-download"] && packJson.pack["share-flies"] !== false ? "allow" : !(packJson.pack["can-download"] !== false || packJson.pack["share-flies"] ) ? "deny" : "none";
 								licenseData.license = packJson.pack["license"];
 								licenseData.description = packJson.pack["description"];
-								licenseData.usageInfo = packJson.pack["homepage"] ? `pack:${pack}${(packJson["files_count"] ?? 0) > 1 ? `(${packJson["files_count"]})` : ""} ${packJson.pack["homepage"]}${packJson.pack["fallback-src"] ? ` (${packJson.pack["fallback-src"]})` : ""}` : "";
+								licenseData.usageInfo = packJson.pack["homepage"] ? `pack:${pack}${(packJson["files_count"] ?? 0) > 1 ? `(${packJson["files_count"]})` : ""}\n${packJson.pack["homepage"]}${packJson.pack["fallback-src"] ? `\n(${packJson.pack["fallback-src"]})` : ""}` : "";
 							}
 
 							emojiInfo = {

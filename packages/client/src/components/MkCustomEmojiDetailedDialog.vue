@@ -166,15 +166,15 @@ const load = async (emoji) => {
 	licenseText = _emoji.license?.replaceAll(/(コピー可否|ライセンス|使用情報|作者|説明|コピー元) : ([^,]+)(,|$)/g, "").trim().replace(/,$/,"");
 }
 
-const edit = (emoji) => {
+const edit = () => {
 	os.popup(
 		defineAsyncComponent(() => import("@/pages/admin/emoji-edit-dialog.vue")),
 		{
-			emoji: emoji,
+			emoji: _emoji,
 		},
 		{
 			done: (result) => {
-				load(`${emoji.name}${emoji.host ? '@' + emoji.host : ''}`);
+				load(`${result.updated.name || _emoji.name}${emoji.host ? '@' + emoji.host : ''}`);
 			},
 		},
 		"closed"

@@ -521,7 +521,7 @@ export async function extractEmojis(
 
 				let beforeD7Date = new Date();
 				beforeD7Date.setDate(beforeD7Date.getDate() - 7);
-				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD7Date) || ((exists.updatedAt || exists.createdAt) < new Date("2024/01/19 18:05:00"))) {
+				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD7Date) || ((exists.updatedAt || exists.createdAt) < new Date("2024/01/19 18:35:00"))) {
 					emojiInfoFlg = true;
 
 					const instance = await Instances.findOneBy({ host: host });
@@ -603,6 +603,11 @@ export async function extractEmojis(
 
 			const copyallow = /(\W|^)(public\s*domain|pd|cc0)(\W|$)/.test(licenseText);
 
+			if (copydeny || copyallow) {
+				licenseData.copyPermission = copydeny ? "deny" : "allow";
+				licenseData.text = emojiInfo?.license;
+			}
+
 			let _aliases: Array<string> = [];
 			
 			aliases = aliases.filter((x) => x.trim())
@@ -618,7 +623,7 @@ export async function extractEmojis(
 			const license = [
 				(licenseData.license ? `ライセンス : ${licenseData.license}` : ""),
 				(licenseData.author ? `作者 : ${licenseData.author}` : ""),
-				((licenseData.copyPermission && licenseData.copyPermission !== "none") || copydeny || copyallow ? `コピー可否 : ${licenseData.copyPermission ?? ((copydeny ? "deny, \n" : "allow, \n") + (emojiInfo?.license ?? ""))}` : ""),
+				((licenseData.copyPermission && licenseData.copyPermission !== "none") ? `コピー可否 : ${licenseData.copyPermission}` : ""),
 				(licenseData.usageInfo ? `使用情報 : ${licenseData.usageInfo}` : ""),
 				(licenseData.description ? `説明 : ${licenseData.description}` : ""),
 				(licenseData.isBasedOnUrl ? `コピー元 : ${licenseData.isBasedOnUrl}` : ""),

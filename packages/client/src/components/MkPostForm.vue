@@ -892,9 +892,13 @@ if (defaultStore.state.keepPostCw && cw && !cw.includes("@") && !(props.reply &&
 // keep cw when reply
 if (defaultStore.state.keepCw && props.reply && props.reply.cw) {
 	useCw = true;
-	const replyCwText = props.reply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/ig,"") ?? "";
-	cw = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} Re: ${replyCwText}`;
-	text = text.replace(`@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `,"");
+	if (props.reply.userId === $i.id) {
+		cw = `${props.reply.cw}`;
+	} else {
+		const replyCwText = props.reply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/ig,"") ?? "";
+		cw = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} Re: ${replyCwText}`;
+		text = text.replace(`@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `,"");
+	}
 }
 
 // keep cw when airreply

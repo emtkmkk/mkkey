@@ -103,7 +103,7 @@ const fetch = () => {
 		os.api("users/show", {
 			userIds: list.userIds,
 		}).then((_users) => {
-			users = list.userIds;
+			users = _users.map((x) => x.id);
 			fetching = false;
 		});
 	});

@@ -137,7 +137,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			user = await Users.findOneBy(q);
 		}
 
-		if (user == null || (!isAdminOrModerator && user.isSuspended)) {
+		if (user == null || (!isAdminOrModerator && user.isSuspended) || user.isDeleted) {
 			throw new ApiError(meta.errors.noSuchUser);
 		}
 

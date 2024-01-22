@@ -196,8 +196,8 @@ export default async function (
 			blockeeId: follower.id,
 		}),
 		FollowBlockings.findOneBy({
-			blockerId: follower.id,
-			blockeeId: followee.id,
+			blockerId: followee.id,
+			blockeeId: follower.id,
 		}),
 	]);
 

@@ -320,8 +320,14 @@ export const UserRepository = db.getRepository(User).extend({
 	async getHasPendingReceivedFollowRequest(
 		userId: User["id"],
 	): Promise<boolean> {
+		
+		const followBlocking = await FollowBlockings.findBy({
+			blockerId: userId,
+		})
+
 		const count = await FollowRequests.countBy({
 			followeeId: userId,
+			followerId: Not(In(followBlocking.map((x) => x.blockeeId))),
 		});
 
 		return count > 0;

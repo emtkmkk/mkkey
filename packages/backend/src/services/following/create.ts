@@ -16,6 +16,7 @@ import {
 	Blockings,
 	Instances,
 	UserProfiles,
+	FollowBlockings,
 } from "@/models/index.js";
 import {
 	instanceChart,
@@ -185,7 +186,7 @@ export default async function (
 	]);
 
 	// check blocking
-	const [blocking, blocked] = await Promise.all([
+	const [blocking, blocked, followBlocking] = await Promise.all([
 		Blockings.findOneBy({
 			blockerId: follower.id,
 			blockeeId: followee.id,
@@ -193,6 +194,10 @@ export default async function (
 		Blockings.findOneBy({
 			blockerId: followee.id,
 			blockeeId: follower.id,
+		}),
+		FollowBlockings.findOneBy({
+			blockerId: follower.id,
+			blockeeId: followee.id,
 		}),
 	]);
 
@@ -248,7 +253,8 @@ export default async function (
 	// フォロー対象がリモート配信を制限しており、フォロワーがリモートユーザー or
 	// フォロワーがBotであり、フォロー対象がBotからのフォローに慎重である or
 	// フォロワーがローカルユーザーであり、フォロー対象がリモートユーザーである or
-	// The follower is remote, the followee is local, and the follower is in a silenced instance.
+	// The follower is remote, the followee is local, and the follower is in a silenced instance. or
+	// 対象がフォロー拒否に設定されている
 	// 上記のいずれかに当てはまる場合はすぐフォローせずにフォローリクエストを発行しておく
 	if (
 		followee.isLocked ||
@@ -259,7 +265,8 @@ export default async function (
 		(Users.isLocalUser(follower) && Users.isRemoteUser(followee)) ||
 		(Users.isRemoteUser(follower) &&
 			Users.isLocalUser(followee) &&
-			((await shouldSilenceInstance(follower.host)) || (needRequestFR && !followee.isBot)))
+			((await shouldSilenceInstance(follower.host)) || (needRequestFR && !followee.isBot))) ||
+		followBlocking
 	) {
 		let autoAccept = false;
 
@@ -276,7 +283,10 @@ export default async function (
 		if (
 			!autoAccept &&
 			Users.isLocalUser(followee) &&
-			(followeeProfile.autoAcceptFollowed || !followee.isLocked)
+			!followBlocking &&
+			(followeeProfile.autoAcceptFollowed || !(followee.isLocked  ||
+				(followee.blockPostNotLocal && Users.isRemoteUser(follower)) ||
+				(followee.isRemoteLocked && Users.isRemoteUser(follower))))
 		) {
 			const followed = await Followings.findOneBy({
 				followerId: followee.id,

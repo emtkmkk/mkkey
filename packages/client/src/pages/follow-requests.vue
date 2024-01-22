@@ -65,6 +65,12 @@
 									>
 										<i class="ph-x ph-bold ph-lg"></i>
 									</button>
+									<button
+										class="_button"
+										@click="ignore(req.follower)"
+									>
+										<i class="ph-bell-slash ph-bold ph-lg"></i>
+									</button>
 								</div>
 							</div>
 						</div>
@@ -90,14 +96,41 @@ const pagination = {
 	limit: 10,
 };
 
-function accept(user) {
+async function accept(user) {
+	const { canceled } = await os.confirm({
+		type: "question",
+		text: i18n.t("acceptConfirm", {
+			name: user.name || user.username,
+		}),
+	});
+	if (canceled) return;
 	os.api("following/requests/accept", { userId: user.id }).then(() => {
 		paginationComponent.value.reload();
 	});
 }
 
-function reject(user) {
+async function reject(user) {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.t("rejectConfirm", {
+			name: user.name || user.username,
+		}),
+	});
+	if (canceled) return;
 	os.api("following/requests/reject", { userId: user.id }).then(() => {
+		paginationComponent.value.reload();
+	});
+}
+
+async function ignore(user) {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.t("ignoreConfirm", {
+			name: user.name || user.username,
+		}),
+	});
+	if (canceled) return;
+	os.api("follow-blocking/create", { userId: user.id }).then(() => {
 		paginationComponent.value.reload();
 	});
 }

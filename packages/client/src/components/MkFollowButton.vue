@@ -17,21 +17,18 @@
 				><i class="ph-prohibit ph-bold ph-lg"></i>
 			</template>
 			<template
-				v-else-if="hasPendingFollowRequestFromYou && user.isLocked"
+				v-else-if="hasPendingFollowRequestFromYou"
 			>
 				<span v-if="full">{{ i18n.ts.followRequestPending }}</span
 				><i class="ph-hourglass-medium ph-bold ph-lg"></i>
 			</template>
-			<template
-				v-else-if="hasPendingFollowRequestFromYou && !user.isLocked"
-			>
-				<!-- つまりリモートフォローの場合。 -->
-				<span v-if="full">{{ i18n.ts.processing }}</span
-				><i class="ph-circle-notch ph-bold ph-lg fa-pulse"></i>
-			</template>
 			<template v-else-if="isFollowing">
 				<span v-if="full">{{ i18n.ts.unfollow }}</span
 				><i class="ph-minus ph-bold ph-lg"></i>
+			</template>
+			<template v-else-if="!$i">
+				<span v-if="full">{{ i18n.ts.followRequest }}</span
+				><i class="ph-plus ph-bold ph-lg"></i>
 			</template>
 			<template v-else-if="!isFollowing && user.isLocked">
 				<span v-if="full">{{ i18n.ts.followRequest }}</span

@@ -3,7 +3,7 @@ import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderFollow from "@/remote/activitypub/renderer/follow.js";
 import { deliver } from "@/queue/index.js";
 import type { User } from "@/models/entities/user.js";
-import { Blockings, FollowRequests, Users } from "@/models/index.js";
+import { Blockings, FollowRequests, Users, FollowBlockings } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { createNotification } from "../../create-notification.js";
 import config from "@/config/index.js";
@@ -72,11 +72,18 @@ export default async function (
 			detail: true,
 		}).then((packed) => publishMainStream(followee.id, "meUpdated", packed));
 
-		// 通知を作成
-		createNotification(followee.id, "receiveFollowRequest", {
-			notifierId: follower.id,
-			followRequestId: followRequest.id,
-		});
+		const FollowBlocking = await FollowBlockings.findOneBy({
+			blockerId: follower.id,
+			blockeeId: followee.id,
+		})
+
+		if (!FollowBlocking) {
+			// 通知を作成
+			createNotification(followee.id, "receiveFollowRequest", {
+				notifierId: follower.id,
+				followRequestId: followRequest.id,
+			});
+		}
 	}
 
 	if (Users.isLocalUser(follower) && Users.isRemoteUser(followee)) {

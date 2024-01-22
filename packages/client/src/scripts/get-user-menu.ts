@@ -118,6 +118,17 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		}
 	}
 
+	async function toggleIgnore(): Promise<void> {
+		os.apiWithDialog(
+			user.isFollowBlocking ? "follow-blocking/delete" : "follow-blocking/create",
+			{
+				userId: user.id,
+			},
+		).then(() => {
+			user.isFollowBlocking = !user.isFollowBlocking;
+		});
+	}
+
 	async function toggleRenoteMute(): Promise<void> {
 		os.apiWithDialog(
 			user.isRenoteMuted ? "renote-mute/delete" : "renote-mute/create",
@@ -247,6 +258,29 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		});
 	}
 
+	
+async function accept() {
+	const { canceled } = await os.confirm({
+		type: "question",
+		text: i18n.t("acceptConfirm", {
+			name: user.name || user.username,
+		}),
+	});
+	if (canceled) return;
+	os.api("following/requests/accept", { userId: user.id });
+}
+
+async function reject() {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.t("rejectConfirm", {
+			name: user.name || user.username,
+		}),
+	});
+	if (canceled) return;
+	os.api("following/requests/reject", { userId: user.id });
+}
+
 	let menu = [
 		{
 			icon: "ph-at ph-bold ph-lg",
@@ -285,6 +319,19 @@ export function getUserMenu(user, router: Router = mainRouter) {
 				copyToClipboard(`https://${config.host}/@${user.username}${user.host ? `@${user.host}` : ""}`);
 			},
 		},
+		...(user.hasPendingFollowRequestToYou ? [
+			null,
+			{
+				icon: "ph-check ph-bold ph-lg",
+				text: i18n.ts.followAccept,
+				action: accept,
+			},
+			{
+				icon: "ph-x ph-bold ph-lg",
+				text: i18n.ts.followReject,
+				action: reject,
+			},
+		] : []),
 		null,
 		meId !== user.id
 			? {
@@ -324,6 +371,12 @@ export function getUserMenu(user, router: Router = mainRouter) {
 				text: user.isMuted ? i18n.ts.unmute : i18n.ts.mute,
 				hidden: user.isBlocking === true,
 				action: toggleMute,
+			},
+			{
+				icon: "ph-prohibit-inset ph-bold ph-lg",
+				text: user.isFollowBlocking ? i18n.ts.unblock : i18n.ts.block,
+				hidden: user.isBlocking === true,
+				action: toggleIgnore,
 			},
 			{
 				icon: "ph-prohibit ph-bold ph-lg",

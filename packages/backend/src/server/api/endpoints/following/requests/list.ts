@@ -1,5 +1,6 @@
 import define from "../../../define.js";
-import { FollowRequests } from "@/models/index.js";
+import { Not, In } from "typeorm";
+import { FollowRequests, FollowBlockings } from "@/models/index.js";
 
 export const meta = {
 	tags: ["following", "account"],
@@ -47,8 +48,14 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
+
+	const followBlocking = await FollowBlockings.findBy({
+		blockerId: user.id,
+	})
+
 	const reqs = await FollowRequests.findBy({
 		followeeId: user.id,
+		followerId: Not(In(followBlocking.map((x) => x.blockeeId))),
 	});
 
 	return await Promise.all(reqs.map((req) => FollowRequests.pack(req)));

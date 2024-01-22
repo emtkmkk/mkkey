@@ -28,6 +28,7 @@ import { UserGroupInvitationRepository } from "./repositories/user-group-invitat
 import { FollowRequestRepository } from "./repositories/follow-request.js";
 import { MutingRepository } from "./repositories/muting.js";
 import { RenoteMutingRepository } from "./repositories/renote-muting.js";
+import { FollowBlockingRepository } from "./repositories/follow-blocking.js";
 import { BlockingRepository } from "./repositories/blocking.js";
 import { NoteReactionRepository } from "./repositories/note-reaction.js";
 import { NotificationRepository } from "./repositories/notification.js";
@@ -108,6 +109,7 @@ export const Metas = db.getRepository(Meta);
 export const Mutings = MutingRepository;
 export const RenoteMutings = RenoteMutingRepository;
 export const Blockings = BlockingRepository;
+export const FollowBlockings = FollowBlockingRepository;
 export const SwSubscriptions = db.getRepository(SwSubscription);
 export const Hashtags = HashtagRepository;
 export const AbuseUserReports = AbuseUserReportRepository;

@@ -18,6 +18,7 @@ import { packedFollowingSchema } from "@/models/schema/following.js";
 import { packedMutingSchema } from "@/models/schema/muting.js";
 import { packedRenoteMutingSchema } from "@/models/schema/renote-muting.js";
 import { packedBlockingSchema } from "@/models/schema/blocking.js";
+import { packedFollowBlockingSchema } from "@/models/schema/follow-blocking.js";
 import { packedNoteReactionSchema } from "@/models/schema/note-reaction.js";
 import { packedHashtagSchema } from "@/models/schema/hashtag.js";
 import { packedPageSchema } from "@/models/schema/page.js";
@@ -55,6 +56,7 @@ export const refs = {
 	Following: packedFollowingSchema,
 	Muting: packedMutingSchema,
 	RenoteMuting: packedRenoteMutingSchema,
+	FollowBlocking: packedFollowBlockingSchema,
 	Blocking: packedBlockingSchema,
 	Hashtag: packedHashtagSchema,
 	Page: packedPageSchema,

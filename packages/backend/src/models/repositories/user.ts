@@ -40,6 +40,7 @@ import {
 	UserProfiles,
 	UserSecurityKeys,
 	UserMemos,
+	FollowBlockings,
 } from "../index.js";
 import type { Instance } from "../entities/instance.js";
 
@@ -179,6 +180,13 @@ export const UserRepository = db.getRepository(User).extend({
 				where: {
 					muterId: me,
 					muteeId: target,
+				},
+				take: 1,
+			}).then((n) => n > 0),
+			isFollowBlocking: FollowBlockings.count({
+				where: {
+					blockerId: me,
+					blockeeId: target,
 				},
 				take: 1,
 			}).then((n) => n > 0),
@@ -778,6 +786,7 @@ export const UserRepository = db.getRepository(User).extend({
 					isBlocked: relation.isBlocked,
 					isMuted: relation.isMuted,
 					isRenoteMuted: relation.isRenoteMuted,
+					isFollowBlocking: relation.isFollowBlocking,
 					isInviter:relation.isInviter ? true : undefined,
 				}
 				: {}),

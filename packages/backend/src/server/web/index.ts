@@ -772,7 +772,7 @@ router.get("/api/v1/streaming", async (ctx) => {
 // Render base html for all requests
 router.get("(.*)", async (ctx) => {
 	const meta = await fetchMeta();
-	let usersCount = await Users.count({ where: { host: IsNull(), notesCount: MoreThan(50), deletedAt: IsNull() }, cache: 21600000 }); //6h
+	let usersCount = await Users.count({ where: { host: IsNull(), notesCount: MoreThan(50), isDeleted: false }, cache: 21600000 }); //6h
 	let notesCount = await Notes.count({ where: { userHost: IsNull(), deletedAt: IsNull() }, cache: 21600000 }); //6h
 	let gUsersCount = await Users.count({ where: { host: Not(IsNull()), isDeleted: false }, cache: 21600000 }); //6h
 	let gNotesCount = await Notes.count({ where: { userHost: Not(IsNull()), deletedAt: IsNull() }, cache: 21600000 }); //6h

@@ -16,8 +16,8 @@ export const FollowBlockingRepository = db.getRepository(FollowBlocking).extend(
 		return await awaitAll({
 			id: blocking.id,
 			createdAt: blocking.createdAt.toISOString(),
-			blockeeId: blocking.muteeId,
-			blockee: Users.pack(blocking.muteeId, me, {
+			blockeeId: blocking.blockeeId,
+			blockee: Users.pack(blocking.blockeeId, me, {
 				detail: true,
 			}),
 		});

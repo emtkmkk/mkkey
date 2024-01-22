@@ -111,7 +111,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		// リクエストされた通りに並べ替え
 		const _users: User[] = [];
 		for (const id of ps.userIds) {
-			_users.push(users.find((x) => x.id === id)!);
+			const user = users.find((x) => x.id === id);
+			if (user) _users.push(user);
 		}
 
 		return await Promise.all(

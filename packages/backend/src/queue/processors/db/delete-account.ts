@@ -1,5 +1,6 @@
 import type Bull from "bull";
 import { queueLogger } from "../../logger.js";
+import deleteNote from "@/services/note/delete.js";
 import { Followings, DriveFiles, Notes, UserProfiles, Users } from "@/models/index.js";
 import type { DbUserDeleteJobData } from "@/queue/types.js";
 import type { Note } from "@/models/entities/note.js";
@@ -15,15 +16,16 @@ const logger = queueLogger.createSubLogger("delete-account");
 export async function deleteAccount(
 	job: Bull.Job<DbUserDeleteJobData>,
 ): Promise<string | void> {
-	logger.info(`Deleting account of ${job.data.user.id} ...`);
-
 	const user = await Users.findOneBy({ id: job.data.user.id });
 	if (user == null) {
 		return;
 	}
 
+	logger.info(`Deleting account of ${job.data.user.id} @${user.username}${user.host ? `@${user.host}` : ""} ...`);
+
 	try {
 		let tryCount = 0;
+		let deleteCount = 0;
 		while (tryCount <= 100) {
 			const relations = (await Followings.find({
 				where: {
@@ -39,6 +41,7 @@ export async function deleteAccount(
 			relations.forEach(async (x) => {
 				try {
 					const followee = await getUser(x.followeeId);
+					deleteCount += 1;
 					if (followee) await deleteFollowing(user, followee);
 				} catch {
 
@@ -47,14 +50,17 @@ export async function deleteAccount(
 			tryCount += 1
 
 		}
-		logger.succ("All of relations removed");
+		logger.succ(`All of relations removed (${deleteCount})`);
 	} catch {
 
 	}
 
+
 	{
+		let deleteCount = 0;
 		// Delete notes
 		let cursor: Note["id"] | null = null;
+
 
 		while (true) {
 			const notes = (await Notes.find({
@@ -74,13 +80,17 @@ export async function deleteAccount(
 
 			cursor = notes[notes.length - 1].id;
 
-			await Notes.delete(notes.map((note) => note.id));
+			for (const note of notes) {
+				deleteCount += 1;
+				await deleteNote(user, note, false, false);
+			}
 		}
 
-		logger.succ("All of notes deleted");
+		logger.succ(`All of notes deleted (${deleteCount})`);
 	}
 
 	{
+		let deleteCount = 0;
 		// Delete files
 		let cursor: DriveFile["id"] | null = null;
 
@@ -103,11 +113,12 @@ export async function deleteAccount(
 			cursor = files[files.length - 1].id;
 
 			for (const file of files) {
+				deleteCount += 1;
 				await deleteFileSync(file);
 			}
 		}
 
-		logger.succ("All of files deleted");
+		logger.succ(`All of files deleted (${deleteCount})`);
 	}
 
 	{
@@ -116,9 +127,9 @@ export async function deleteAccount(
 		if (profile.email && profile.emailVerified) {
 			sendEmail(
 				profile.email,
-				"Account deleted",
-				"Your account has been deleted.",
-				"Your account has been deleted.",
+				"アカウントは消去されました。",
+				"あなたのアカウントは消去されました。",
+				"あなたのアカウントは消去されました。",
 			);
 		}
 	}
@@ -127,7 +138,7 @@ export async function deleteAccount(
 	if (job.data.soft) {
 		// nop
 	} else {
-		await Users.delete(job.data.user.id);
+		// await Users.delete(job.data.user.id);
 	}
 
 	return "Account deleted";

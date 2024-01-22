@@ -73,8 +73,8 @@ export default async function (
 		}).then((packed) => publishMainStream(followee.id, "meUpdated", packed));
 
 		const FollowBlocking = await FollowBlockings.findOneBy({
-			blockerId: follower.id,
-			blockeeId: followee.id,
+			blockerId: followee.id,
+			blockeeId: follower.id,
 		})
 
 		if (!FollowBlocking) {

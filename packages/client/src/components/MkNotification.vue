@@ -257,6 +257,10 @@
 					<button class="_textButton" @click="rejectFollowRequest()">
 						{{ i18n.ts.reject }}
 					</button>
+					|
+					<button class="_textButton" @click="ignoreFollowRequest()">
+						{{ i18n.ts.ignore }}
+					</button>
 				</div></span
 			>
 			<span
@@ -365,14 +369,40 @@ onUnmounted(() => {
 const followRequestDone = ref(false);
 const groupInviteDone = ref(false);
 
-const acceptFollowRequest = () => {
+const acceptFollowRequest = async () => {
+	const { canceled } = await os.confirm({
+		type: "question",
+		text: i18n.t("acceptConfirm", {
+			name: props.notification.user.name || props.notification.user.username,
+		}),
+	});
+	if (canceled) return;
 	followRequestDone.value = true;
 	os.api("following/requests/accept", { userId: props.notification.user.id });
 };
 
-const rejectFollowRequest = () => {
+const rejectFollowRequest = async () => {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.t("rejectConfirm", {
+			name: props.notification.user.name || props.notification.user.username,
+		}),
+	});
+	if (canceled) return;
 	followRequestDone.value = true;
 	os.api("following/requests/reject", { userId: props.notification.user.id });
+};
+
+const ignoreFollowRequest = async () => {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.t("ignoreConfirm", {
+			name: props.notification.user.name || props.notification.user.username,
+		}),
+	});
+	if (canceled) return;
+	followRequestDone.value = true;
+	os.api("follow-blocking/create", { userId: props.notification.user.id });
 };
 
 const acceptGroupInvitation = () => {

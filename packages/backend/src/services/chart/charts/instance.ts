@@ -5,6 +5,7 @@ import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { Note } from "@/models/entities/note.js";
 import { toPuny } from "@/misc/convert-host.js";
 import { name, schema } from "./entities/instance.js";
+import { Not, IsNull } from "typeorm";
 
 /**
  * インスタンスごとのチャート
@@ -20,8 +21,8 @@ export default class InstanceChart extends Chart<typeof schema> {
 	): Promise<Partial<KVs<typeof schema>>> {
 		const [notesCount, usersCount, followingCount, followersCount, driveFiles] =
 			await Promise.all([
-				Notes.countBy({ userHost: group }),
-				Users.countBy({ host: group }),
+				Notes.countBy({ userHost: group, deletedAt: IsNull() }),
+				Users.countBy({ host: group, isDeleted: false }),
 				Followings.countBy({ followerHost: group }),
 				Followings.countBy({ followeeHost: group }),
 				DriveFiles.countBy({ userHost: group }),

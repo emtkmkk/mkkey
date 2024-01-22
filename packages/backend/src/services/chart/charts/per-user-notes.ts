@@ -1,6 +1,7 @@
 import type { KVs } from "../core.js";
 import Chart from "../core.js";
 import type { User } from "@/models/entities/user.js";
+import { Not, IsNull } from "typeorm";
 import { Notes } from "@/models/index.js";
 import type { Note } from "@/models/entities/note.js";
 import { name, schema } from "./entities/per-user-notes.js";
@@ -17,7 +18,7 @@ export default class PerUserNotesChart extends Chart<typeof schema> {
 	protected async tickMajor(
 		group: string,
 	): Promise<Partial<KVs<typeof schema>>> {
-		const [count] = await Promise.all([Notes.countBy({ userId: group })]);
+		const [count] = await Promise.all([Notes.countBy({ userId: group, deletedAt: IsNull() })]);
 
 		return {
 			total: count,

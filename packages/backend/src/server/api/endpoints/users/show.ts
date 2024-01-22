@@ -99,10 +99,12 @@ export default define(meta, paramDef, async (ps, me) => {
 			isAdminOrModerator
 				? {
 						id: In(ps.userIds),
+						isDeleted: false,
 				  }
 				: {
 						id: In(ps.userIds),
 						isSuspended: false,
+						isDeleted: false,
 				  },
 		);
 

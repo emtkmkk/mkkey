@@ -21,6 +21,7 @@ export default define(meta, paramDef, async () => {
 		host: IsNull(),
 		lastActiveDate: MoreThan(new Date(Date.now() - USER_HALFONLINE_THRESHOLD)),
 		isBot: false,
+		isDeleted: false,
 	});
 
 	return {

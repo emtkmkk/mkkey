@@ -15,6 +15,7 @@ import type { User } from "@/models/entities/user.js";
 import { IsNull, In } from "typeorm";
 import { MAX_NOTE_TEXT_LENGTH, FILE_TYPE_BROWSERSAFE, MAX_REACTION_PER_ACCOUNT } from "@/const.js";
 import define from "../../define.js";
+import { isNull } from "util";
 
 export const meta = {
 	requireCredential: false,
@@ -35,8 +36,8 @@ export default define(meta, paramDef, async () => {
 	const [meta, total, localPosts, instanceCount, firstAdmin, emojis] =
 		await Promise.all([
 			fetchMeta(true),
-			Users.count({ where: { host: IsNull() } }),
-			Notes.count({ where: { userHost: IsNull(), replyId: IsNull() } }),
+			Users.count({ where: { host: IsNull(), isDeleted: false } }),
+			Notes.count({ where: { userHost: IsNull(), replyId: IsNull(), deletedAt: IsNull() } }),
 			Instances.count(),
 			Users.findOne({
 				where: {

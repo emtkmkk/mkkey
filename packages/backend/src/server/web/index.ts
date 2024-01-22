@@ -722,8 +722,8 @@ router.get("/_info_card_", async (ctx) => {
 		version: config.version,
 		host: config.host,
 		meta: meta,
-		originalUsersCount: await Users.count({ where: { host: IsNull() }, cache: 3600000 }), //1h
-		originalNotesCount: await Notes.count({ where: { userHost: IsNull() }, cache: 3600000 }), //1h
+		originalUsersCount: await Users.count({ where: { host: IsNull(), isDeleted: false }, cache: 3600000 }), //1h
+		originalNotesCount: await Notes.count({ where: { userHost: IsNull(), deletedAt: IsNull() }, cache: 3600000 }), //1h
 	});
 });
 
@@ -772,10 +772,10 @@ router.get("/api/v1/streaming", async (ctx) => {
 // Render base html for all requests
 router.get("(.*)", async (ctx) => {
 	const meta = await fetchMeta();
-	let usersCount = await Users.count({ where: { host: IsNull(), notesCount: MoreThan(50) }, cache: 21600000 }); //6h
-	let notesCount = await Notes.count({ where: { userHost: IsNull() }, cache: 21600000 }); //6h
-	let gUsersCount = await Users.count({ where: { host: Not(IsNull()) }, cache: 21600000 }); //6h
-	let gNotesCount = await Notes.count({ where: { userHost: Not(IsNull()) }, cache: 21600000 }); //6h
+	let usersCount = await Users.count({ where: { host: IsNull(), notesCount: MoreThan(50), deletedAt: IsNull() }, cache: 21600000 }); //6h
+	let notesCount = await Notes.count({ where: { userHost: IsNull(), deletedAt: IsNull() }, cache: 21600000 }); //6h
+	let gUsersCount = await Users.count({ where: { host: Not(IsNull()), isDeleted: false }, cache: 21600000 }); //6h
+	let gNotesCount = await Notes.count({ where: { userHost: Not(IsNull()), deletedAt: IsNull() }, cache: 21600000 }); //6h
 	let emojisCount = await Emojis.count({ where: { host: IsNull() }, cache: 21600000 }); //6h
 	let gEmojisCount = await Emojis.count({ where: { host: Not(IsNull()) }, cache: 21600000 }); //6h
 	let motd = [];

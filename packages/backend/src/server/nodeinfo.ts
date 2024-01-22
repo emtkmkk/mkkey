@@ -28,20 +28,22 @@ const nodeinfo2 = async () => {
 	const [meta, total, activeHalfyear, activeMonth, localPosts] =
 		await Promise.all([
 			fetchMeta(true),
-			Users.count({ where: { host: IsNull() } }),
+			Users.count({ where: { host: IsNull(), isDeleted: false } }),
 			Users.count({
 				where: {
 					host: IsNull(),
 					lastActiveDate: MoreThan(new Date(now - 15552000000)),
+					isDeleted: false,
 				},
 			}),
 			Users.count({
 				where: {
 					host: IsNull(),
 					lastActiveDate: MoreThan(new Date(now - 2592000000)),
+					isDeleted: false,
 				},
 			}),
-			Notes.count({ where: { userHost: IsNull() } }),
+			Notes.count({ where: { userHost: IsNull(), deletedAt: IsNull()  } }),
 		]);
 
 	const proxyAccount = meta.proxyAccountId

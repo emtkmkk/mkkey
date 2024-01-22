@@ -21,21 +21,25 @@ export default define(meta, paramDef, async () => {
 		host: IsNull(),
 		lastActiveDate: MoreThan(new Date(Date.now() - USER_HALFONLINE_THRESHOLD)),
 		isBot: false,
+		isDeleted: false,
 	});
 	const activeCount = await Users.countBy({
 		host: IsNull(),
 		lastActiveDate: MoreThan(new Date(Date.now() - USER_ACTIVE2_THRESHOLD)),
 		isBot: false,
+		isDeleted: false,
 	}) - onlineCount;
 	const offlineCount = await Users.countBy({
 		host: IsNull(),
 		lastActiveDate: MoreThan(new Date(Date.now() - USER_HALFSLEEP_THRESHOLD)),
 		isBot: false,
+		isDeleted: false,
 	}) - onlineCount - activeCount;
 	const sleepCount = await Users.countBy({
 		host: IsNull(),
 		lastActiveDate: LessThan(new Date(Date.now() - USER_HALFSLEEP_THRESHOLD)),
 		isBot: false,
+		isDeleted: false,
 		notesCount: MoreThan(50),
 	});
 	/*const o150s = await Users.countBy({

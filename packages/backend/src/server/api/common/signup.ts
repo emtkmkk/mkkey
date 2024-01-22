@@ -25,6 +25,7 @@ export async function signup(opts: {
 
 	const userCount = await Users.countBy({
 		host: IsNull(),
+		isDeleted: false,
 	});
 
 	if (config.maxUserSignups != null && userCount > config.maxUserSignups) {

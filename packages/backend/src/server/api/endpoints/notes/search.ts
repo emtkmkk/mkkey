@@ -182,6 +182,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		if (plusQueryCount === 0) return [];
 
 		query
+			.andWhere("note.deletedAt IS NULL")
 			.innerJoinAndSelect("note.user", "user")
 			.leftJoinAndSelect("user.avatar", "avatar")
 			.leftJoinAndSelect("user.banner", "banner")

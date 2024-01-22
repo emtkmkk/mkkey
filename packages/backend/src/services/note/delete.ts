@@ -31,6 +31,7 @@ export default async function (
 	user: { id: User["id"]; uri: User["uri"]; host: User["host"] },
 	note: Note,
 	quiet = false,
+	isAdmin = false,
 ) {
 
 	if (note.deletedAt) {
@@ -47,6 +48,7 @@ export default async function (
 	}
 
 	const isRenote = note.renoteId &&
+				note.cw == null &&
 				note.text == null &&
 				!note.hasPoll &&
 				(note.fileIds == null || note.fileIds.length === 0);
@@ -68,7 +70,7 @@ export default async function (
 		await Notes.decrement({ id: note.replyId }, "repliesCount", 1);
 	}
 
-	const isPhysical = isRenote || deletedAt.valueOf() < (note.createdAt.valueOf() + (1000 * 60 * 3))
+	const isPhysical = !isAdmin && (isRenote || deletedAt.valueOf() < (note.createdAt.valueOf() + ((1000 * 60 * 3) - (note.score * 10000))))
 
 	if (!quiet) {
 		publishNoteStream(note.id, "deleted", {
@@ -112,11 +114,21 @@ export default async function (
 
 		} else {
 
+			let textCaption = [
+				(note.cw?.length ? `CW ${note.cw.length}` : ""),
+				(note.text?.length ? `📝 ${note.text.length}` : ""),
+				(note.hasPoll ? "📊" : ""),
+				(note.fileIds?.length ? `📎 ${note.fileIds.length}` : ""),
+				(note.renoteId ? "QT" : ""),
+			].filter(Boolean).join(", ");
+
+			textCaption = [(isAdmin ? "*" : ""), textCaption].filter(Boolean).join(" ");
+
 			await Notes.update({
 				id: note.id,
 				userId: user.id,
 			},{
-				text: note.renoteId ? "QT" : null,
+				text: textCaption || null,
 				cw: null,
 				fileIds: {},
 				attachedFileTypes: {},

@@ -52,7 +52,7 @@
 				}"
 			>
 				<span v-if="note.deletedAt" style="opacity: 0.5"
-					>({{ i18n.ts.deleted }})</span
+					>{{ `(${i18n.ts.deleted})${note.text ? ` <${note.text}>` : ""}` }}</span
 				>
 				<template v-if="!cwView">
 					<MkA
@@ -78,7 +78,7 @@
 					</MkA>
 				</template>
 				<Mfm
-					v-if="note.text"
+					v-if="note.text && !note.deletedAt"
 					:text="note.deletedAt ? i18n.ts.deletedNote : note.text"
 					:author="note.user"
 					:i="$i"

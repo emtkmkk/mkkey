@@ -154,8 +154,9 @@
 												{{ instance.emojis?.some((x) => x.name === emoji.name) ? " ⭐" : "" }}
 											</div>
 											<div class="info">
-												<i v-if="emoji.license?.includes('コピー可否 : conditional')" class="ph-bold ph-warning ph-lg" />
-												<i v-else-if="emoji.license?.includes('コピー可否 : deny')" class="ph-bold ph-prohibit ph-lg" />
+												<i v-if="emoji.license?.includes('コピー可否 : conditional')" class="ph-bold ph-warning ph-lg" style="color: var(--warn);"/>
+												<i v-else-if="emoji.license?.includes('コピー可否 : deny')" class="ph-bold ph-prohibit ph-lg" style="color: var(--error);"/>
+												<i v-else-if="emoji.license?.includes('コピー可否 : allow')" class="ph-bold ph-check ph-lg" style="color: var(--success);"/>
 												<i v-else-if="emoji.license" class="ph-bold ph-info ph-lg" />
 												{{ emoji.host }}
 											</div>

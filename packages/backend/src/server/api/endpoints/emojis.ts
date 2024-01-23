@@ -74,8 +74,8 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, me) => {
 
-	if (Object.keys(ps ?? {}).length === 0 && me) {
-			
+	if (Object.keys(ps ?? {})?.filter((x) => x !== "i").length === 0 && me) {
+
 		const item = RegistryItems.createQueryBuilder("item")
 			.where("item.domain IS NULL")
 			.andWhere("item.userId = :userId", { userId: me.id })

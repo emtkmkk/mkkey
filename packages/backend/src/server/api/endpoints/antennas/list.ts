@@ -36,11 +36,11 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (!ps.mkkey) {
 		antennas.forEach((x) => {
 			// 互換性
-			if (!["home", "all", "users", "users_blacklist"].includes(x.src)) {
-				antennas[x].src = "all";
+			if (x.src && !["home", "all", "users", "users_blacklist"].includes(x.src)) {
+				x.src = "all";
 			}
 		})
 	}
 
-	return await Promise.all(filterAntennas.map((x) => Antennas.pack(x)));
+	return await Promise.all(antennas.map((x) => Antennas.pack(x)));
 });

@@ -11,6 +11,7 @@ import {
 	Polls,
 	Channels,
 	NoteFavorites,
+	RegistryItems,
 } from "../index.js";
 import type { Packed } from "@/misc/schema.js";
 import { nyaize } from "@/misc/nyaize.js";
@@ -232,12 +233,21 @@ export const NoteRepository = db.getRepository(Note).extend({
 			.filter((x) => x?.startsWith(":"))
 			.map((x) => decodeReaction(x).reaction)
 			.map((x) => x.replace(/:/g, ""));
+		
+		const noEmojiInfo = me ? RegistryItems.createQueryBuilder("item")
+			.where("item.domain IS NULL")
+			.andWhere("item.userId = :userId", { userId: me.id })
+			.andWhere("item.key = 'externalOutputAllEmojis'")
+			.andWhere("item.scope = :scope", { scope: ["client","base"] })
+			.getOne() : false;
 
-		const noteEmoji = await populateEmojis(
+		const noteEmoji = noEmojiInfo ? [] : await populateEmojis(
 			note.emojis.concat(reactionEmojiNames),
 			host,
 		);
-		const reactionEmoji = await populateEmojis(reactionEmojiNames, host);
+
+		const reactionEmoji = noEmojiInfo ? [] : await populateEmojis(reactionEmojiNames, host);
+
 		const packed: Packed<"Note"> = await awaitAll({
 			id: note.id,
 			createdAt: note.createdAt.toISOString(),

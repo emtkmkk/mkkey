@@ -103,7 +103,7 @@ export default define(meta, paramDef, async (ps, me) => {
 					id: emoji.id,
 					aliases: emoji.aliases.filter(Boolean),
 					name: emoji.name + (emoji.host ? `@${emoji.host}` : ""),
-					category: emoji.category || emoji.host ? `<${emoji.host}>` : null,
+					category: emoji.category || emoji.host ? `囗 <${emoji.host}>` : null,
 					host: null,
 					// || emoji.originalUrl してるのは後方互換性のため
 					url: emoji.host ? `${config.url}/emoji/${emoji.name + (emoji.host ? `@${emoji.host}` : "")}.webp` : (emoji.publicUrl || emoji.originalUrl),

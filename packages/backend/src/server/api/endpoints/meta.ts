@@ -1,7 +1,7 @@
 import { IsNull, MoreThan, Not } from "typeorm";
 import config from "@/config/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Ads, Emojis, Users } from "@/models/index.js";
+import { Ads, Emojis, RegistryItems, Users } from "@/models/index.js";
 import { MAX_NOTE_TEXT_LENGTH, MAX_CAPTION_TEXT_LENGTH } from "@/const.js";
 import define from "../define.js";
 
@@ -408,7 +408,24 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, me) => {
 	const instance = await fetchMeta(true);
 
-	let emojis = await Emojis.find({
+	let noEmoji = false;
+
+	if (Object.keys(ps ?? {})?.filter((x) => x !== "i").length === 0 && me) {
+
+		const item = RegistryItems.createQueryBuilder("item")
+			.where("item.domain IS NULL")
+			.andWhere("item.userId = :userId", { userId: me.id })
+			.andWhere("item.key = 'externalOutputAllEmojis'")
+			.andWhere("item.scope = :scope", { scope: ["client","base"] })
+			.getOne();
+
+		if (item) {
+			noEmoji = true;
+		}
+
+	}
+
+	let emojis = noEmoji ? [] : await Emojis.find({
 		where: {
 			host: IsNull(),
 			oldEmoji: false,
@@ -421,72 +438,6 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: "meta_emojis",
 			milliseconds: 3600000, // 1 hour
 		},
-	});
-
-	// データ削減の為、不要情報を削除
-	emojis?.forEach((x) => {
-		delete x.updatedAt
-	});
-
-	const emojiNames = emojis.map((x) => x.name);
-
-	const plusEmojis = ps.plusEmojis
-	? (await Emojis.find({
-		where: [
-			{
-				host: "misskey.io",
-			},
-			{
-				host: "fedibird.com",
-			},
-			{
-				host: "minazukey.uk",
-			},
-			{
-				host: "misskey.takehi.to"
-			},
-		],
-		order: {
-			name: "ASC",
-		},
-		cache: {
-			id: "meta_plus_emojis",
-			milliseconds: 3600000, // 1 hour
-		},
-	})).filter((x) => !emojiNames.includes(x.name) && !x.oldEmoji && (x.name?.length ?? 0) < 75 && (x.publicUrl?.length ?? 0) < 140).slice(0,10000)
-	: undefined;
-
-	// データ削減の為、不要情報を削除
-	plusEmojis?.forEach((x) => {
-		delete x.createdAt
-		delete x.updatedAt
-		delete x.category
-		delete x.aliases
-		delete x.license
-	});
-
-	const allEmojis = ps.allEmojis
-	? (await Emojis.find({
-		where: {
-			host: Not(IsNull()),
-			oldEmoji: false,
-		},
-		order: {
-			name: "ASC",
-		},
-		cache: {
-			id: "meta_all_emojis",
-			milliseconds: 3600000, // 1 hour
-		},
-	})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net","9ineverse.com"].includes(x.host) && (x.name?.length ?? 0) < 75 && (x.host?.length ?? 0) < 50 && (x.publicUrl?.length ?? 0) < 140) : undefined;
-
-	// データ削減の為、不要情報を削除
-	allEmojis?.forEach((x) => {
-		delete x.createdAt
-		delete x.updatedAt
-		delete x.category
-		delete x.aliases
-		delete x.license
 	});
 
 	const ads = await Ads.find({
@@ -574,14 +525,6 @@ export default define(meta, paramDef, async (ps, me) => {
 							host: IsNull(),
 							isAdmin: true,
 						})) === 0,
-			  }
-			: {}),
-		...((ps.plusEmojis || ps.allEmojis) && me
-			? {
-					emojiFetchDate: new Date(),
-					remoteEmojiMode: ps.allEmojis ? "all" : "plus",
-					remoteEmojiCount: ps.allEmojis ? allEmojis.length : plusEmojis.length,
-					allEmojis: await Emojis.packMany(ps.allEmojis ? allEmojis : plusEmojis),
 			  }
 			: {}),
 	};

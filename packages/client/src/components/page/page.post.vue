@@ -225,6 +225,7 @@ export default defineComponent({
 	border-radius: 6px;
 	box-shadow: 0 2px 8px var(--shadow);
 	z-index: 1;
+	text-align: left;
 	
 	> .shareButton {
 		text-align: left;
@@ -236,9 +237,11 @@ export default defineComponent({
 	}
 	
 	> .button {
+		display: inline-block !important;
 		margin-top: 32px;
 	}
 	> .visibility {
+		display: inline-block !important;
 		height: 34px;
 		width: 34px;
 		margin: 0 8px 0 0 !important;

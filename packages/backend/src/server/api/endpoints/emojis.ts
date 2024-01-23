@@ -1,7 +1,7 @@
 import { IsNull, MoreThan, Not } from "typeorm";
 import config from "@/config/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Ads, Emojis, Users } from "@/models/index.js";
+import { Ads, Emojis, Users, RegistryItems } from "@/models/index.js";
 import define from "../define.js";
 
 export const meta = {
@@ -73,6 +73,51 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
+
+	if (Object.keys(ps ?? {}).length === 0 && me) {
+			
+		const item = RegistryItems.createQueryBuilder("item")
+			.where("item.domain IS NULL")
+			.andWhere("item.userId = :userId", { userId: me.id })
+			.andWhere("item.key = 'externalOutputAllEmojis'")
+			.andWhere("item.scope = 'client/base'")
+			.getOne();
+
+		if (item) {
+			let emojis = (await Emojis.find({
+				where: {
+					oldEmoji: false,
+				},
+				order: {
+					name: "ASC",
+				},
+				cache: {
+					id: "meta_all_emojis2",
+					milliseconds: 3600000, // 1 hour
+				},
+			})).map((emoji) => {
+				if(["voskey.icalo.net","9ineverse.com"].includes(emoji.host) || emoji.license?.includes("コピー可否 : deny") || emoji.category?.startsWith("!")) {
+					return null;
+				}
+				return {
+					id: emoji.id,
+					aliases: emoji.aliases,
+					name: emoji.name + (emoji.host ? `@${emoji.host}` : ""),
+					category: emoji.category || emoji.host ? `<${emoji.host}>` : null,
+					host: null,
+					// || emoji.originalUrl してるのは後方互換性のため
+					url: emoji.host ? `${config.url}/emoji/${emoji.name + (emoji.host ? `@${emoji.host}` : "")}.webp` : (emoji.publicUrl || emoji.originalUrl),
+					license: emoji.license,
+					createdAt: emoji.createdAt,
+					updatedAt: emoji.updatedAt,
+				}
+			}).filter(Boolean);
+			return {
+				emojis
+			};
+		}
+
+	}
 
 	let emojis = await Emojis.find({
 		where: {

@@ -1195,6 +1195,11 @@ export const defaultStore = markRaw(
 			default: false,
 			createdAt: "2024/01/16",
 			page: "fun",
+		},
+		externalOutputAllEmojis: {
+			where: 'account',
+			default: false,
+			createdAt: "2024/01/23",
 		}
 	}),
 );

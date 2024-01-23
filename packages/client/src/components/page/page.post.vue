@@ -1,5 +1,5 @@
 <template>
-	<div class="ngbfujlo">
+	<div v-if="text" class="ngbfujlo">
 		<MkTextarea :model-value="text" readonly style="margin: 0"></MkTextarea>
 		<MkButton
 			v-if="$i != null"
@@ -11,6 +11,24 @@
 			<i v-if="posted" class="ph-check ph-bold ph-lg"></i>
 			<i v-else class="ph-paper-plane-tilt ph-bold ph-lg"></i>
 		</MkButton>
+		<button
+			ref="visibilityButton"
+			class="_button visibility"
+			@click="setVisibility"
+		>
+			<span v-if="visibility === 'public'"
+				><i class="ph-planet ph-bold ph-lg"></i
+			></span>
+			<span v-if="visibility === 'home'"
+				><i class="ph-house ph-bold ph-lg"></i
+			></span>
+			<span v-if="visibility === 'followers'"
+				><i class="ph-lock-simple ph-bold ph-lg"></i
+			></span>
+		</button>
+		<span v-if="localOnly" class="local-only"
+			><i class="ph-hand-heart ph-bold ph-lg"></i
+		></span>
 		<div 
 			class="shareButton"
 			v-if="$i == null"
@@ -44,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType, defineAsyncComponent } from "vue";
 import FormInput from "@/components/form/input.vue";
 import MkTextarea from "../form/textarea.vue";
 import MkButton from "../MkButton.vue";
@@ -53,6 +71,7 @@ import * as os from "@/os";
 import { $i } from "@/account";
 import { PostBlock } from "@/scripts/hpml/block";
 import { Hpml } from "@/scripts/hpml/evaluator";
+import { defaultStore } from "@/store";
 
 export default defineComponent({
 	components: {
@@ -75,12 +94,33 @@ export default defineComponent({
 			text: $i == null ? this.hpml.interpolate(this.block.text).replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase())).replaceAll("STAR","☆") : this.hpml.interpolate(this.block.text),
 			posted: false,
 			posting: false,
+			localOnly: (defaultStore.state.rememberNoteVisibility
+				? defaultStore.state.localAndFollower
+				: defaultStore.state.defaultNoteLocalAndFollower),
+			visibility:
+				(defaultStore.state.rememberNoteVisibility
+						? defaultStore.state.visibility
+						: defaultStore.state.defaultNoteVisibility),
 		};
 	},
 	watch: {
 		"hpml.vars": {
 			handler() {
 				this.text = $i == null ? this.hpml.interpolate(this.block.text).replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase())).replaceAll("STAR","☆") : this.hpml.interpolate(this.block.text);
+			},
+			deep: true,
+		},
+		"this.text": {
+			handler() {
+				if (this.posting && this.posted) {
+					this.posting = false;
+					this.posted = false;
+				}
+			},
+		},
+		"this.visibility": {
+			handler() {
+				if (this.visibility === "specified") this.visibility = "followers";
 			},
 			deep: true,
 		},
@@ -123,6 +163,8 @@ export default defineComponent({
 			os.apiWithDialog("notes/create", {
 				text: this.text === "" ? null : this.text,
 				fileIds: file ? [file.id] : undefined,
+				visibility: this.visibility,
+				localOnly: this.localOnly,
 			}).then(() => {
 				this.posted = true;
 			});
@@ -136,6 +178,41 @@ export default defineComponent({
 			if (this.text !== "") {
 				window.open('https://misskeyshare.link/share.html?text=' + encodeURIComponent(this.text), '_blank');
 			}
+		},
+		setVisibility() {
+			os.popup(
+				defineAsyncComponent(
+					() => import("@/components/MkVisibilityPicker.vue")
+				),
+				{
+					currentVisibility: this.visibility,
+					currentLocalOnly: this.localOnly,
+					src: this.$refs.visibilityButton,
+					canLocalSwitch: false,
+					canVisibilitySwitch: true,
+					forceMode: false,
+					canPublic: !$i.blockPostPublic && !$i.isSilenced,
+					canHome: !$i.blockPostHome && !$i.isSilenced,
+					canFollower: true,
+					canNotLocal: !$i.blockPostNotLocal && !$i.isSilenced,
+					canDirect: false,
+				},
+				{
+					changeVisibility: (v: "public" | "home" | "followers" | "specified") => {
+						this.visibility = v;
+						if (defaultStore.state.rememberNoteVisibility) {
+							defaultStore.set("visibility", v);
+						}
+					},
+					changeLocalOnly: (v) => {
+						this.localOnly = v;
+						if (defaultStore.state.rememberNoteVisibility) {
+							defaultStore.set("localAndFollower", this.localOnly);
+						}
+					},
+				},
+				"closed"
+			);
 		},
 	},
 });
@@ -160,6 +237,11 @@ export default defineComponent({
 	
 	> .button {
 		margin-top: 32px;
+	}
+	> .visibility {
+		height: 34px;
+		width: 34px;
+		margin: 0 8px 0 0 !important;
 	}
 
 	@media (max-width: 600px) {

@@ -89,7 +89,7 @@
 			</button>
 			<button
 				key="specified"
-				v-if="canVisibilitySwitch || forceMode"
+				v-if="(canVisibilitySwitch || forceMode) && canDirect"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'specified' }]"
 				data-index="4"
@@ -200,6 +200,7 @@ const props = withDefaults(
 		canHome?: boolean;
 		canFollower?: boolean;
 		canNotLocal?: boolean;
+		canDirect?: boolean;
 	}>(),
 	{}
 );
@@ -222,6 +223,7 @@ let canPublic = props.canPublic ?? true;
 let canHome = props.canHome ?? true;
 let canFollower = props.canFollower ?? true;
 let canNotLocal = props.canNotLocal ?? true;
+let canDirect = props.canDirect ?? true;
 
 watch($$(localOnly), () => {
 	emit("changeLocalOnly", localOnly);

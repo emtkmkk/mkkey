@@ -2184,6 +2184,9 @@ _copyPermission:
   conditional: "条件付き"
   deny: "拒否"
   none: "不明"
+_offlineScreen:
+  title: "オフライン - サーバーに接続できません"
+  header: "サーバーに接続できません"
 noteId: "投稿のID"
 hiddenTagsDescription: "トレンドと「みつける」から除外したいハッシュタグを（先頭の # を除いて）改行区切りで入力してください。この設定はトレンドと「みつける」以外には影響しません。"
 hiddenTags: "非表示にするハッシュタグ"

@@ -5,7 +5,7 @@
 				class="ph-chart-bar ph-bold ph-lg"
 				style="margin-right: 0.5em"
 			></i
-			>{{ i18n.ts.activity }}</template
+			>{{ [i18n.ts.activity,suffix].filter(Boolean).join(" ") }}</template
 		>
 		<!--<template #func>
 			<button class="_button" @click="showMenu">

@@ -41,7 +41,6 @@ import {
 	UserSecurityKeys,
 	UserMemos,
 	FollowBlockings,
-	RegistryItems,
 } from "../index.js";
 import type { Instance } from "../entities/instance.js";
 

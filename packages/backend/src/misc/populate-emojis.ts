@@ -1,5 +1,5 @@
 import { In, IsNull } from "typeorm";
-import { Emojis, RegistryItems } from "@/models/index.js";
+import { Emojis } from "@/models/index.js";
 import type { Emoji } from "@/models/entities/emoji.js";
 import type { Note } from "@/models/entities/note.js";
 import { Cache } from "./cache.js";

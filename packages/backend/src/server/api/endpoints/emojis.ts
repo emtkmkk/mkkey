@@ -102,9 +102,9 @@ export default define(meta, paramDef, async (ps, me) => {
 				return {
 					id: emoji.id,
 					aliases: emoji.aliases.filter(Boolean),
-					name: emoji.name,
-					category: emoji.category || (emoji.host ? `<${emoji.host}>` : null),
-					host: emoji.host,
+					name: emoji.name + (emoji.host ? `@${emoji.host}` : ""),
+					category: emoji.category || (emoji.host ? "カテゴリなし(リモート)" : "カテゴリなし(ローカル)"),
+					host: null,
 					// || emoji.originalUrl してるのは後方互換性のため
 					url: emoji.host ? `${config.url}/emoji/${emoji.name + (emoji.host ? `@${emoji.host}` : "")}.webp` : (emoji.publicUrl || emoji.originalUrl),
 					license: emoji.license,

@@ -342,11 +342,11 @@
 					<template v-if="narrow">
 						<XPhotos v-if="!defaultStore.state.enableDataSaverMode" :key="user.id" :user="user" />
 						<XActivity
-							v-if="!$store.state.hiddenActivityChart && ((!user.host && Date.now() - user.createdAt > (30 * 24 * 60 * 60 * 1000)) || stats?.elapsedDays)"
+							v-if="!$store.state.hiddenActivityChart && ((!user.host && Date.now() - new Date(user.createdAt).valueOf() > (30 * 24 * 60 * 60 * 1000)) || stats?.elapsedDays)"
 							:key="user.id"
 							:user="user"
 							:limit="!stats.elapsedDays || stats.elapsedDays < 30 ? Math.ceil(stats.elapsedDays) : 30"
-							:suffix="stats?.averagePostCount ? `(${stats.averagePostCount} /日)` : ''"
+							:suffix="stats?.averagePostCount ? `( ${stats.averagePostCount.toFixed(1)} /日 )` : ''"
 							style="margin-top: var(--margin)"
 						/>
 					</template>

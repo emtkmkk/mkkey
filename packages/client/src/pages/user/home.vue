@@ -345,7 +345,7 @@
 							v-if="!$store.state.hiddenActivityChart && ((!user.host && Date.now() - new Date(user.createdAt).valueOf() > (30 * 24 * 60 * 60 * 1000)) || stats?.elapsedDays)"
 							:key="user.id"
 							:user="user"
-							:limit="!stats.elapsedDays || stats.elapsedDays < 30 ? Math.ceil(stats.elapsedDays) : 30"
+							:limit="stats.elapsedDays && stats.elapsedDays < 30 ? Math.ceil(stats.elapsedDays) : 30"
 							:suffix="stats?.averagePostCount ? `( ${stats.averagePostCount.toFixed(1)} /日 )` : ''"
 							style="margin-top: var(--margin)"
 						/>

@@ -74,15 +74,13 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, me) => {
 
-	if (me && ps) console.log(JSON.stringify(ps,undefined,"\t"))
-
 	if (Object.keys(ps ?? {})?.filter((x) => x !== "i").length === 0 && me) {
 
 		const item = RegistryItems.createQueryBuilder("item")
 			.where("item.domain IS NULL")
 			.andWhere("item.userId = :userId", { userId: me.id })
 			.andWhere("item.key = 'externalOutputAllEmojis'")
-			.andWhere("item.scope = 'client/base'")
+			.andWhere("item.scope = :scope", { scope: ["client","base"] })
 			.getOne();
 
 		if (item) {
@@ -103,7 +101,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				}
 				return {
 					id: emoji.id,
-					aliases: emoji.aliases,
+					aliases: emoji.aliases.filter(Boolean),
 					name: emoji.name + (emoji.host ? `@${emoji.host}` : ""),
 					category: emoji.category || emoji.host ? `<${emoji.host}>` : null,
 					host: null,

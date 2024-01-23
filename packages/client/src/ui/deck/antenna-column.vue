@@ -47,7 +47,7 @@ onMounted(() => {
 });
 
 async function setAntenna() {
-	const antennas = await os.api("antennas/list");
+	const antennas = await os.api("antennas/list", {mkkey: true});
 	const { canceled, result: antenna } = await os.select({
 		title: i18n.ts.selectAntenna,
 		items: antennas.map((x) => ({

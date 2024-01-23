@@ -1,3 +1,4 @@
+import acceptAll from "@/services/following/requests/accept-all.js";
 import define from "../../define.js";
 import { Antennas } from "@/models/index.js";
 
@@ -32,5 +33,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		userId: me.id,
 	});
 
-	return await Promise.all(antennas.map((x) => Antennas.pack(x)));
+	if (!ps.mkkey) {
+		antennas.forEach((x) => {
+			// 互換性
+			if (!["home", "all", "users", "users_blacklist"].includes(x.src)) {
+				antennas[x].src = "all";
+			}
+		})
+	}
+
+	return await Promise.all(filterAntennas.map((x) => Antennas.pack(x)));
 });

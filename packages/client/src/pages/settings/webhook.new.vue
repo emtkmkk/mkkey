@@ -124,7 +124,7 @@ let event_groupMessage = $ref(true);
 let event_groupMentionOnly = $ref(false);
 let event_unfollow = $ref(false);
 
-const antennasAll = await os.api("antennas/list") as Array<any>;
+const antennasAll = await os.api("antennas/list", {mkkey: true}) as Array<any>;
 const antennas = $ref(antennasAll.filter((x) => x.notify));
 
 let event_excludeAntennas = $ref(antennas.map((x) => true));

@@ -207,7 +207,7 @@ async function chooseList(ev: MouseEvent): Promise<void> {
 }
 
 async function chooseAntenna(ev: MouseEvent): Promise<void> {
-	const antennas = await os.api("antennas/list");
+	const antennas = await os.api("antennas/list", {mkkey: true});
 	const items = [
 		{
 			type: "link" as const,

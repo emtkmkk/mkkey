@@ -135,7 +135,7 @@ const setSrc = (src) => {
 const choose = async (ev) => {
 	menuOpened.value = true;
 	const [antennas, lists] = await Promise.all([
-		os.api("antennas/list"),
+		os.api("antennas/list", {mkkey: true}),
 		os.api("users/lists/list"),
 	]);
 	const antennaItems = antennas.map((antenna) => ({

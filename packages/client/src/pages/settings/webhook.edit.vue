@@ -112,7 +112,7 @@ const webhook = await os.api("i/webhooks/show", {
 	webhookId: props.webhookId,
 });
 
-const antennasAll = await os.api("antennas/list");
+const antennasAll = await os.api("antennas/list", {mkkey: true});
 const antennas = $ref(antennasAll.filter((x) => x.notify));
 
 let name = $ref(webhook.name);

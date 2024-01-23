@@ -419,7 +419,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.andWhere("item.scope = :scope", { scope: ["client","base"] })
 			.getOne();
 
-		if (item) {
+		if (item?.value) {
 			noEmoji = true;
 		}
 

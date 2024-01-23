@@ -244,7 +244,7 @@ export default defineComponent({
 		display: inline-block !important;
 		height: 34px;
 		width: 34px;
-		margin: 0 8px 0 0 !important;
+		margin: 0 0 0 12px !important;
 	}
 
 	@media (max-width: 600px) {

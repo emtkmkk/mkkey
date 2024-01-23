@@ -342,10 +342,11 @@
 					<template v-if="narrow">
 						<XPhotos v-if="!defaultStore.state.enableDataSaverMode" :key="user.id" :user="user" />
 						<XActivity
-							v-if="!$store.state.hiddenActivityChart && stats?.elapsedDays"
+							v-if="!$store.state.hiddenActivityChart && ((!user.host && Date.now() - user.createdAt > (30 * 24 * 60 * 60 * 1000)) || stats?.elapsedDays)"
 							:key="user.id"
 							:user="user"
-							:limit="stats.elapsedDays < 30 ? Math.ceil(stats.elapsedDays) : 30"
+							:limit="!stats.elapsedDays || stats.elapsedDays < 30 ? Math.ceil(stats.elapsedDays) : 30"
+							:suffix="stats?.averagePostCount ? `(${stats.averagePostCount} /日)` : ''"
 							style="margin-top: var(--margin)"
 						/>
 					</template>
@@ -457,7 +458,7 @@ const birthday = $computed(() => {
 		return props.user.birthday
 	}
 
-　if (props.user.username === "eroflash" || [":nobuyori_hpb:"].includes(props.user.originalname || props.user.name)) {
+ if (props.user.username === "eroflash" || [":nobuyori_hpb:"].includes(props.user.originalname || props.user.name)) {
 	 let _birthday = props.user.birthday ? new Date(props.user.birthday) : new Date();
 	 _birthday.setMonth(new Date().getMonth());
 	 _birthday.setDate(new Date().getDate())

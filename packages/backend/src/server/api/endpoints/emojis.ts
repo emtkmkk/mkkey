@@ -74,6 +74,8 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, me) => {
 
+	if (me && ps) console.log(JSON.stringify(ps,undefined,"\t"))
+
 	if (Object.keys(ps ?? {})?.filter((x) => x !== "i").length === 0 && me) {
 
 		const item = RegistryItems.createQueryBuilder("item")

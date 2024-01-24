@@ -29,6 +29,15 @@ export function preprocess(text: string): string {
 				node.props.text = mfm.toString(node.children);
 				node.children = undefined;
 			}
+			if (node.type === "fn" && node.props.name === "daku") {
+				mfm.inspect(node.children,(x) => {
+					if (x.type !== "text" || !x.props.text) return;
+					x.props.text = x.props.text.split("").map((x) => `${x}゛`).join("");
+				});
+				node.type = "text";
+				node.props.text = mfm.toString(node.children);
+				node.children = undefined;
+			}
 		});
 
 		text = mfm.toString(nodes);

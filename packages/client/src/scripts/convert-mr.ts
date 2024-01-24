@@ -162,7 +162,7 @@ export function str_to_mr(str) {
 		ret.push("01010");
 	}
 
-	return ret.join(" ").replaceAll("0", "・").replaceAll("1", "－");
+	return ret.join(jpmode ? "　" : " ").replaceAll("0", "・").replaceAll("1", "－");
 
 }
 

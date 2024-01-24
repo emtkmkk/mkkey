@@ -109,6 +109,7 @@
 								:custom-emojis="appearNote.emojis"
 							/>
 							<div
+								style="margin-top: 0.5em; white-space: pre-wrap; overflow-wrap: break-word;"
 								v-else
 							>{{ info.text }}</div>
 						</div>

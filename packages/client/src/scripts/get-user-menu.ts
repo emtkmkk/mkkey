@@ -375,7 +375,7 @@ async function reject() {
 			{
 				icon: "ph-prohibit-inset ph-bold ph-lg",
 				text: user.isFollowBlocking ? i18n.ts.followUnblock : i18n.ts.followBlock,
-				hidden: user.isBlocking === true || user.isFollowed,
+				hidden: user.isBlocking === true || (user.isFollowed && !user.isFollowBlocking),
 				action: toggleIgnore,
 			},
 			{

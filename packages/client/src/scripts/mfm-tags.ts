@@ -52,6 +52,7 @@ export const MFM_TAGS_JP = [
 	{name:"fade", ja:"フェードイン", exportLeft:"$[fade ", exportRight:"]", defaultOption:"$[fade.speed=1.5s ",},
 	{name:"fade", ja:"フェードアウト", exportLeft:"$[fade.out ", exportRight:"]", defaultOption:"$[fade.out,speed=1.5s ",},
 	{name:"daku", ja:"濁点付与", exportLeft:"$[daku ", exportRight:"]", defaultOption:"$[daku ",},
+	{name:"handaku", ja:"半濁点付与", exportLeft:"$[handaku ", exportRight:"]", defaultOption:"$[handaku ",},
 	{name:"morse", ja:"モールス", exportLeft:"$[morse ", exportRight:"]", defaultOption:"$[morse ",},
 	{name:"ruby", ja:"ルビ振り", exportLeft:"$[ruby ", exportRight:"]",},
 	{name:"unixtime", ja:"時間", exportLeft:`$[unixtime ${Math.floor(new Date(new Date().setHours(0, 0, 0, 0)).getTime() / 1000)}`, exportRight:"]",},

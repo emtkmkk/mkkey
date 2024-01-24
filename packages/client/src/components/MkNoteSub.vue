@@ -48,7 +48,7 @@
 							/>
 							<span
 								v-else
-							/>{{ info.text }}</span>
+							>{{ info.text }}</span>
 						</div>
 					</div>
 					<div v-if="translating || translation" class="translation">

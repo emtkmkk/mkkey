@@ -60,7 +60,7 @@ export function preprocess(text: string): string {
 				}
 				if (node.type === "fn" && ["b", "s", "q", "i", "p", "bold", "small", "quote", "italic", "strike", "plain"].includes(node.props.name)) {
 					if (node.props.name.length === 1) {
-						node.props.name = node.props.name.replace("b","bold").replace("q","quote").replace("i","italic").replace("p","plain");
+						node.props.name = node.props.name.replace("b","bold").replace("q","quote").replace("i","italic").replace("p","plain").replace("s","small");
 					}
 					node.type = node.props.name;
 					node.props.name = undefined;

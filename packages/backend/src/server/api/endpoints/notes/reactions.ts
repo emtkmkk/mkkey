@@ -1,6 +1,6 @@
 import type { FindOptionsWhere } from "typeorm";
-import { DeepPartial, Like } from "typeorm";
-import { NoteReactions } from "@/models/index.js";
+import { DeepPartial, Like, Not, In } from "typeorm";
+import { Blockings, Mutings, NoteReactions } from "@/models/index.js";
 import type { NoteReaction } from "@/models/entities/note-reaction.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -60,6 +60,27 @@ export default define(meta, paramDef, async (ps, user) => {
 	let query = {
 		noteId: ps.noteId,
 	} as FindOptionsWhere<NoteReaction>;
+
+	if (user?.id) {
+
+		const mutingUserIds = Mutings.createQueryBuilder("muting")
+			.select("muting.muteeId")
+			.where("muting.muterId = :muterId", { muterId: me.id })
+			.getMany();
+
+		const blockingUserIds = Blockings.createQueryBuilder("blocking")
+			.select("blocking.blockeeId")
+			.where("blocking.blockerId = :blockerId", { blockerId: user.id })
+			.getMany();
+
+		const blockedUserIds = Blockings.createQueryBuilder("blocking")
+			.select("blocking.blockerId")
+			.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
+			.getMany();
+	
+		query = {...query, userId: Not(In([...mutingUserIds, ...blockingUserIds, ...blockedUserIds]))}
+
+	}
 
 	if (ps.type) {
 		// ローカルリアクションはホスト名が . とされているが

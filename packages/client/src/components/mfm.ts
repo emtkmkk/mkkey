@@ -374,7 +374,7 @@ export default defineComponent({
 										return genEl(children);
 									}
 
-									if (typeof rb[0] === 'string' && typeof rt[0] === 'string' && rt[0] === '') rt = '[.・]'.repeat(rb[0].length);
+									if (typeof rb[0] === 'string' && typeof rt[0] === 'string' && rt[0] === '') rt = '・'.repeat(rb[0].length);
 									const align = typeof rb[0] === 'string' ? { style: rb.length < rt.length ? 'ruby-align:center' : 'ruby-align:space-around' } : {};
 
 									return h('ruby', align, [rb, h('rt', rt)]);

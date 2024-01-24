@@ -63,17 +63,17 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	if (user?.id) {
 
-		const mutingUserIds = Mutings.createQueryBuilder("muting")
+		const mutingUserIds = await Mutings.createQueryBuilder("muting")
 			.select("muting.muteeId")
 			.where("muting.muterId = :muterId", { muterId: user.id })
 			.getMany();
 
-		const blockingUserIds = Blockings.createQueryBuilder("blocking")
+		const blockingUserIds = await Blockings.createQueryBuilder("blocking")
 			.select("blocking.blockeeId")
 			.where("blocking.blockerId = :blockerId", { blockerId: user.id })
 			.getMany();
 
-		const blockedUserIds = Blockings.createQueryBuilder("blocking")
+		const blockedUserIds = await Blockings.createQueryBuilder("blocking")
 			.select("blocking.blockerId")
 			.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
 			.getMany();

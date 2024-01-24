@@ -365,6 +365,11 @@ export const defaultStore = markRaw(
 			where: "deviceAccount",
 			default: "public" as "public" | "home" | "followers" | "specified",
 		},
+		pageVisibility: {
+			where: "deviceAccount",
+			default: {},
+			createdAt: "2024/1/24",
+		},
 		firstPostButtonVisibilityForce: {
 			where: "deviceAccount",
 			default: false,
@@ -463,6 +468,11 @@ export const defaultStore = markRaw(
 			where: "deviceAccount",
 			default: false,
 			createdAt: "2023/5/11",
+		},
+		pagelocalAndFollower: {
+			where: "deviceAccount",
+			default: {},
+			createdAt: "2024/1/24",
 		},
 		hiddenMFMHelp: {
 			where: "deviceAccount",

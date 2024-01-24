@@ -94,10 +94,11 @@ export default defineComponent({
 			text: $i == null ? this.hpml.interpolate(this.block.text).replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase())).replaceAll("STAR","☆") : this.hpml.interpolate(this.block.text),
 			posted: false,
 			posting: false,
-			localOnly: (defaultStore.state.rememberNoteVisibility
-				? defaultStore.state.localAndFollower
-				: defaultStore.state.defaultNoteLocalAndFollower),
-			visibility:
+			localOnly: defaultStore.state.pagelocalAndFollower[this.hpml.page.id] || 
+			  (defaultStore.state.rememberNoteVisibility
+						? defaultStore.state.localAndFollower
+						: defaultStore.state.defaultNoteLocalAndFollower),
+			visibility: defaultStore.state.pageVisibility[this.hpml.page.id] || 
 				(defaultStore.state.rememberNoteVisibility
 						? defaultStore.state.visibility
 						: defaultStore.state.defaultNoteVisibility),
@@ -110,7 +111,7 @@ export default defineComponent({
 			},
 			deep: true,
 		},
-		"this.text": {
+		"text": {
 			handler() {
 				if (this.posting && this.posted) {
 					this.posting = false;
@@ -118,7 +119,7 @@ export default defineComponent({
 				}
 			},
 		},
-		"this.visibility": {
+		"visibility": {
 			handler() {
 				if (this.visibility === "specified") this.visibility = "followers";
 			},
@@ -200,15 +201,11 @@ export default defineComponent({
 				{
 					changeVisibility: (v: "public" | "home" | "followers" | "specified") => {
 						this.visibility = v;
-						if (defaultStore.state.rememberNoteVisibility) {
-							defaultStore.set("visibility", v);
-						}
+						defaultStore.set("pageVisibility", {...defaultStore.state.pageVisibility, [this.hpml.page.id]: v});
 					},
 					changeLocalOnly: (v) => {
 						this.localOnly = v;
-						if (defaultStore.state.rememberNoteVisibility) {
-							defaultStore.set("localAndFollower", this.localOnly);
-						}
+						defaultStore.set("pagelocalAndFollower", {...defaultStore.state.pagelocalAndFollower, [this.hpml.page.id]: v});
 					},
 				},
 				"closed"

@@ -11,7 +11,7 @@ export function preprocess(text: string): string {
 		let _text = text;
 		let centerFlg = false;
 
-		for(let i = 0 ; i < 20; i++) {
+		for(let i = 0 ; i < 50; i++) {
 
 			let nodes = mfm.parse(_text);
 
@@ -67,8 +67,8 @@ export function preprocess(text: string): string {
 				}
 				if (node.type === "fn" && (node.props.name === "search" || node.props.name === "f")) {
 					node.type = "search";
-					node.props.query = `${mfm.toString(node.children)}`;
-					node.props.content = `${mfm.toString(node.children)} [Search]`;
+					node.props.query = mfm.toString(node.children).replaceAll("\n"," ");
+					node.props.content = `${mfm.toString(node.children).replaceAll("\n"," ")} [Search]`;
 				}
 			});
 

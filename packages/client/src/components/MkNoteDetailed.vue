@@ -156,6 +156,7 @@ const isDeleted = ref(false);
 const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords));
 const translation = ref(null);
 const translating = ref(false);
+const info = ref(null);
 const urls = appearNote.text
 	? extractUrlFromMfm(mfm.parse(appearNote.text)).slice(0, 5)
 	: null;
@@ -239,6 +240,7 @@ function onContextmenu(ev: MouseEvent): void {
 				translation,
 				menuButton,
 				isDeleted,
+				info,
 			}),
 			ev
 		).then(focus);
@@ -253,6 +255,7 @@ function menu(viaKeyboard = false): void {
 			translation,
 			menuButton,
 			isDeleted,
+			info,
 		}),
 		menuButton.value,
 		{

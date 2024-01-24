@@ -18,6 +18,7 @@ export function getNoteMenu(props: {
 	translating: Ref<boolean>;
 	isDeleted: Ref<boolean>;
 	currentClipPage?: Ref<misskey.entities.Clip>;
+	info?: Ref<any>;
 }) {
 	const isRenote =
 		props.note.renote != null &&
@@ -131,6 +132,22 @@ export function getNoteMenu(props: {
 		os.success();
 	}
 
+	function showSource(): void {
+		let text;
+		if (defaultStore.state.copyPostRemoteEmojiCode && appearNote.user?.host != null){
+			text = appearNote.text.replaceAll(/:(\w+):/g,`:\$1@${appearNote.user?.host}:`);
+		} else {
+			text = appearNote.text;
+		}
+		props.info.value = {
+			ready: true,
+			title: i18n.ts.noteSource,
+			text,
+			copy: text,
+			mfm: false,
+		};
+	}
+
 	function copyLink(): void {
 		copyToClipboard(`${url}/notes/${appearNote.id}`);
 		os.success();
@@ -166,6 +183,18 @@ export function getNoteMenu(props: {
 		let _note = {...appearNote};
 		copyToClipboard(JSON.stringify(_note, noteReplacer, "\t"));
 		os.success();
+	}
+
+	function showNote(): void {
+		let _note = {...appearNote};
+		const text = JSON.stringify(_note, noteReplacer, "\t")
+		props.info.value = {
+			ready: true,
+			title: i18n.ts.noteInfo,
+			text,
+			copy: text,
+			mfm: false,
+		};
 	}
 
 	function togglePin(pin: boolean): void {
@@ -355,8 +384,8 @@ export function getNoteMenu(props: {
 			},
 			{
 				icon: "ph-clipboard-text ph-bold ph-lg",
-				text: i18n.ts.copyContent,
-				action: copyContent,
+				text: i18n.ts.showSource,
+				action: showSource,
 			},
 			{
 				icon: "ph-link-simple ph-bold ph-lg",
@@ -373,8 +402,8 @@ export function getNoteMenu(props: {
 			...(defaultStore.state.developer ? [
 				{
 					icon: "ph-file-code ph-bold ph-lg",
-					text: i18n.ts.copyNote,
-					action: copyNote,
+					text: i18n.ts.showNote,
+					action: showNote,
 				},
 			]
 				: []),
@@ -535,8 +564,8 @@ export function getNoteMenu(props: {
 		menu = [
 			{
 				icon: "ph-clipboard-text ph-bold ph-lg",
-				text: i18n.ts.copyContent,
-				action: copyContent,
+				text: i18n.ts.showSource,
+				action: showSource,
 			},
 			{
 				icon: "ph-link-simple ph-bold ph-lg",

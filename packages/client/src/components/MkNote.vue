@@ -92,6 +92,27 @@
 						@focusfooter="footerEl.focus()"
 						@changeShowContent="(v) => showContent = v"
 					></MkSubNoteContent>
+					<div v-if="info" class="translation">
+						<MkLoading v-if="!info.ready" mini />
+						<div v-else class="translated">
+							<b
+								>{{ info.title
+								}}
+							</b>
+							<span v-if="info.copy"> · </span>
+							<a v-if="info.copy" @click.stop="copyToClipboard(info.copy)">{{ i18n.ts.copy }}</a>
+							<Mfm
+								v-if="info.mfm"
+								:text="info.text"
+								:author="appearNote.user"
+								:i="$i"
+								:custom-emojis="appearNote.emojis"
+							/>
+							<span
+								v-else
+							/>{{ info.text }}</span>
+						</div>
+					</div>
 					<div v-if="translating || translation" class="translation">
 						<MkLoading v-if="translating" mini />
 						<div v-else class="translated">
@@ -325,6 +346,7 @@ import { useNoteCapture } from "@/scripts/use-note-capture";
 import { notePage } from "@/filters/note";
 import { deepClone } from "@/scripts/clone";
 import { getNoteSummary } from "@/scripts/get-note-summary";
+import copyToClipboard from "@/scripts/copy-to-clipboard";
 
 const router = useRouter();
 
@@ -395,6 +417,7 @@ const isDeleted = ref(false);
 const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords, props.endpoint));
 const translation = ref(null);
 const translating = ref(false);
+const info = ref(null);
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
 const showEmojiButton = defaultStore.state.showEmojiButton;
 const favButtonReactionIsFavorite = defaultStore.state.favButtonReaction === 'favorite';
@@ -578,6 +601,7 @@ function onContextmenu(ev: MouseEvent): void {
 				menuButton,
 				isDeleted,
 				currentClipPage,
+				info,
 			}),
 			ev
 		).then(focus);
@@ -593,6 +617,7 @@ function menu(viaKeyboard = false): void {
 			menuButton,
 			isDeleted,
 			currentClipPage,
+			info,
 		}),
 		menuButton.value,
 		{

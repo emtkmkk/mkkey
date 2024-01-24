@@ -36,7 +36,7 @@ export function preprocess(text: string): string {
 				if (node.type === "fn" && node.props.name === "daku") {
 					mfm.inspect(node.children,(x) => {
 						if (x.type !== "text" || !x.props.text) return;
-						x.props.text = x.props.text.split("").map((x) => x.trim() ? `${x}゛` : x).join("");
+						x.props.text = x.props.text.split("").map((x) => /[\s　゛゜]/.test(x) ? x : `${x}゜`).join("");
 					});
 					node.type = "text";
 					node.props.text = mfm.toString(node.children);
@@ -45,7 +45,7 @@ export function preprocess(text: string): string {
 				if (node.type === "fn" && node.props.name === "handaku") {
 					mfm.inspect(node.children,(x) => {
 						if (x.type !== "text" || !x.props.text) return;
-						x.props.text = x.props.text.split("").map((x) => x.trim() ? `${x}゜` : x).join("");
+						x.props.text = x.props.text.split("").map((x) => /[\s　゛゜]/.test(x) ? x : `${x}゜`).join("");
 					});
 					node.type = "text";
 					node.props.text = mfm.toString(node.children);

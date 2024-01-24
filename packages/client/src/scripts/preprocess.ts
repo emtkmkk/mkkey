@@ -67,7 +67,7 @@ export function preprocess(text: string): string {
 				}
 				if (node.type === "fn" && (node.props.name === "search" || node.props.name === "f")) {
 					node.type = "search";
-					node.props.query = mfm.toString(node.children);
+					node.props.query = `${mfm.toString(node.children)}`;
 					node.props.content = `${mfm.toString(node.children)} [Search]`;
 				}
 			});
@@ -84,7 +84,7 @@ export function preprocess(text: string): string {
 
 
 		if (centerFlg || /<center>(.*)<\/center>/.test(text)) {
-			return `<center>${text.replaceAll(/<\/?center>/,"")}</center>`;
+			return `<center>${text.replaceAll(/<\/?center>/g,"")}</center>`;
 		} else {
 			return text;
 		}

@@ -63,20 +63,20 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	if (user?.id) {
 
-		const mutingUserIds = await Mutings.createQueryBuilder("muting")
+		const mutingUserIds = (await Mutings.createQueryBuilder("muting")
 			.select("muting.muteeId")
 			.where("muting.muterId = :muterId", { muterId: user.id })
-			.getMany();
+			.getMany()).map((x) => x.muteeId);
 
-		const blockingUserIds = await Blockings.createQueryBuilder("blocking")
+		const blockingUserIds = (await Blockings.createQueryBuilder("blocking")
 			.select("blocking.blockeeId")
 			.where("blocking.blockerId = :blockerId", { blockerId: user.id })
-			.getMany();
+			.getMany()).map((x) => x.blockeeId);
 
-		const blockedUserIds = await Blockings.createQueryBuilder("blocking")
+		const blockedUserIds = (await Blockings.createQueryBuilder("blocking")
 			.select("blocking.blockerId")
 			.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
-			.getMany();
+			.getMany()).map((x) => x.blockerId);
 	
 		query = {...query, userId: Not(In([...mutingUserIds, ...blockingUserIds, ...blockedUserIds]))}
 

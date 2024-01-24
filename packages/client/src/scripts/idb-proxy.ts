@@ -31,6 +31,8 @@ export async function get(key: string) {
 export async function set(key: string, val: any) {
 	await initialization;
 	if (idbAvailable) return iset(key, val);
+	// valが1.5MBを超える場合、フォールバックしない
+	if (JSON.stringify(val).length > 3 * 512 * 1024) return;
 	return window.localStorage.setItem(fallbackName(key), JSON.stringify(val));
 }
 

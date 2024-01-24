@@ -371,6 +371,13 @@ export function getNoteMenu(props: {
 				: undefined,
 
 			defaultStore.state.firstPostButtonVisibilityForce
+			&& ![
+				defaultStore.state.defaultNoteVisibility,
+				...(defaultStore.state.secondPostButton ? [defaultStore.state.secondPostVisibility] : []),
+				...(defaultStore.state.thirdPostButton ? [defaultStore.state.thirdPostVisibility] : []),
+				...(defaultStore.state.fourthPostButton ? [defaultStore.state.fourthPostVisibility] : []),
+				...(defaultStore.state.fifthPostButton ? [defaultStore.state.fifthPostVisibility] : []),
+			].includes("specified")
 				? {
 					icon: "ph-envelope-simple-open ph-bold ph-lg",
 					text: i18n.ts.directReply,

@@ -9,6 +9,7 @@ export function preprocess(text: string): string {
 		const maxNumberOfExpansions = 200; // to prevent infinite expansion loops
 
 		let _text = text;
+		let centerFlg = false;
 
 		for(let i = 0 ; i < 20; i++) {
 
@@ -51,6 +52,24 @@ export function preprocess(text: string): string {
 					node.props.text = mfm.toString(node.children);
 					node.children = undefined;
 				}
+				if (node.type === "fn" && (node.props.name === "center" || node.props.name === "c")) {
+					centerFlg = true;
+					node.type = "text";
+					node.props.text = mfm.toString(node.children);
+					node.children = undefined;
+				}
+				if (node.type === "fn" && ["b", "s", "q", "i", "p", "bold", "small", "quote", "italic", "strike", "plain"].includes(node.props.name)) {
+					if (node.props.name.length === 1) {
+						node.props.name = node.props.name.replace("b","bold").replace("q","quote").replace("i","italic").replace("p","plain");
+					}
+					node.type = node.props.name;
+					node.props.name = undefined;
+				}
+				if (node.type === "fn" && (node.props.name === "search" || node.props.name === "f")) {
+					node.type = "search";
+					node.props.query = mfm.toString(node.children);
+					node.props.content = `${mfm.toString(node.children)} [Search]`;
+				}
 			});
 
 			text = mfm.toString(nodes);
@@ -63,5 +82,10 @@ export function preprocess(text: string): string {
 
 		}
 
-	return text;
+
+		if (centerFlg || /<center>(.*)<\/center>/.test(text)) {
+			return `<center>${text.replaceAll(/<\/?center>/,"")}</center>`;
+		} else {
+			return text;
+		}
 }

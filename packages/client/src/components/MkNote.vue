@@ -108,9 +108,9 @@
 								:i="$i"
 								:custom-emojis="appearNote.emojis"
 							/>
-							<span
+							<div
 								v-else
-							>{{ info.text }}</span>
+							>{{ info.text }}</div>
 						</div>
 					</div>
 					<div v-if="translating || translation" class="translation">

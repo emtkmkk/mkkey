@@ -65,7 +65,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 		const mutingUserIds = Mutings.createQueryBuilder("muting")
 			.select("muting.muteeId")
-			.where("muting.muterId = :muterId", { muterId: me.id })
+			.where("muting.muterId = :muterId", { muterId: user.id })
 			.getMany();
 
 		const blockingUserIds = Blockings.createQueryBuilder("blocking")

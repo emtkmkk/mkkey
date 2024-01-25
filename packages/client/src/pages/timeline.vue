@@ -158,7 +158,7 @@ window.addEventListener("resize", () => {
 		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 
-const tlComponent = $ref<InstanceType<typeof XTimeline>>();
+const tlComponent = ref<InstanceType<typeof XTimeline>>();
 const rootEl = $ref<HTMLElement>();
 
 let queue = $ref(0);
@@ -244,11 +244,11 @@ async function timetravel(): Promise<void> {
 	});
 	if (canceled) return;
 
-	tlComponent.timetravel(date);
+	tlComponent.value?.timetravel(date);
 }
 
 function focus(): void {
-	tlComponent.focus();
+	tlComponent.value?.focus();
 }
 
 const headerActions = $computed(() => [

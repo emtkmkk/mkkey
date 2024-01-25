@@ -9,7 +9,6 @@
 
 <script lang="ts" setup>
 import { ref, computed, provide, onUnmounted } from "vue";
-import { LessThanOrEqual } from "typeorm";
 import XNotes from "@/components/MkNotes.vue";
 import * as os from "@/os";
 import { stream } from "@/stream";
@@ -163,7 +162,7 @@ let travelDate;
 
 const timetravel = (date?: Date) => {
 	travelDate = date || undefined;
-	query = {...query, createdAt: travelDate ? LessThanOrEqual(travelDate) : undefined}
+	query = {...query, untilDate: travelDate ? travelDate.valueOf() : undefined}
 	tlComponent.pagingComponent?.reload();
 };
 </script>

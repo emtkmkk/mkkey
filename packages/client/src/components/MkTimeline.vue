@@ -160,7 +160,7 @@ onUnmounted(() => {
 
 let travelDate;
 
-const timetravel = (date?: Date) => {
+function timetravel(date?: Date) {
 	travelDate = date || undefined;
 	query = {...query, untilDate: travelDate ? travelDate.valueOf() : undefined}
 	pagination = {

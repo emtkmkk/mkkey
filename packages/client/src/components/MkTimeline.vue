@@ -3,7 +3,7 @@
 		ref="tlComponent"
 		:no-gap="!$store.state.showGapBetweenNotesInTimeline"
 		:pagination="pagination"
-		@queue="emit('queue', $event)"
+		@queue="if (!travelDate) emit('queue', $event)"
 	/>
 </template>
 
@@ -38,6 +38,7 @@ provide(
 const tlComponent: InstanceType<typeof XNotes> = $ref();
 
 const prepend = (note) => {
+	if (travelDate) return;
 	if (defaultStore.state.delayPostHidden && Date.now() > new Date(note.createdAt).valueOf() + (10 * 60 * 1000)) return;
 	
 	tlComponent.pagingComponent?.prepend(note);
@@ -158,7 +159,7 @@ onUnmounted(() => {
 	if (connection2) connection2.dispose();
 });
 
-let travelDate : Date | undefined = $ref(undefined);
+let travelDate = $ref<Date | undefined>(undefined);
 
 const timetravel = (date?: Date) => {
 	travelDate = date || undefined;

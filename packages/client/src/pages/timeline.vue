@@ -238,14 +238,14 @@ function saveSrc(
 	});
 }
 
-let travelDate : Date | undefined = $ref(undefined);
+let travelDate = $ref<Date | undefined>(undefined);
 
 const onContextmenu = (ev: MouseEvent) => {
 	os.contextMenu(
 		[
 			...( travelDate ? [{
 				type: "label",
-				text: travelDate.toLocaleString(),
+				text: ts.showingPastTimeline + "\n" + travelDate.toLocaleString(),
 			}] : []),
 			{
 				icon: 'ph-calendar-blank ph-bold ph-lg',
@@ -277,7 +277,7 @@ function focus(): void {
 }
 
 const headerActions = $computed(() => [
-	(travelDate ? [{
+	...(travelDate ? [{
 		icon: 'ph-calendar-blank ph-bold ph-lg',
 		title: i18n.ts.showingPastTimeline,
 		text: i18n.ts.showingPastTimeline,

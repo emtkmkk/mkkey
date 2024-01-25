@@ -152,28 +152,18 @@ export default define(meta, paramDef, async (ps, me) => {
 	if(ps.remoteEmojis === "mini" || ps.plusEmojis){
 
 		remoteEmojis = (await Emojis.find({
-			where: [
-				{
-					host: "misskey.io",
-				},
-				{
-					host: "fedibird.com",
-				},
-				{
-					host: "minazukey.uk",
-				},
-				{
-					host: "misskey.takehi.to"
-				},
-			],
+			where: {
+				host: Not(IsNull()),
+				oldEmoji: false,
+			},
 			order: {
 				name: "ASC",
 			},
 			cache: {
-				id: "meta_plus_emojis",
+				id: "meta_all_emojis",
 				milliseconds: 3600000, // 1 hour
 			},
-		})).filter((x) => !emojiNames.includes(x.name) && !x.oldEmoji && (x.name?.length ?? 0) < 100 && !x.license?.includes("コピー可否 : deny"));
+		})).filter((x) => !emojiNames.includes(x.name) && !["voskey.icalo.net","9ineverse.com"].includes(x.host) && (x.host?.length ?? 0) < 50 && x.license?.includes("コピー可否 : allow"));
 
 		// データ削減の為、不要情報を削除
 		remoteEmojis?.forEach((x) => {

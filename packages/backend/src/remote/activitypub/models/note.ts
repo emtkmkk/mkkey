@@ -599,9 +599,9 @@ export async function extractEmojis(
 
 			const licenseText = JSON.stringify({...licenseData, emojiInfo: emojiInfo?.license}).toLowerCase();
 
-			const copydeny = emojiInfo?.localOnly || roleOnly || licenseText.includes("prohibited") || /(インポート|コピー)[\s　]*(NG|不可|禁止)/.test(category ?? "") || /(インポート|コピー)[\s　]*(NG|不可|禁止)/.test(licenseText);
+			const copydeny = emojiInfo?.localOnly || roleOnly || licenseText.includes("prohibited") || /(インポート|コピー|他サーバー使用：?)[\s　]*(NG|不可|禁止)/.test(category ?? "") || /(インポート|コピー|他サーバー使用：?)[\s　]*(NG|不可|禁止)/.test(licenseText);
 
-			const copyallow = /(\W|^)(public\s*domain|pd|cc0)(\W|$)/.test(licenseText);
+			const copyallow = /(\W|^)(public\s*domain|pd|cc0|他サーバー使用：可)(\W|$)/.test(licenseText);
 
 			if (!licenseData.copyPermission && (copydeny || copyallow)) {
 				licenseData.copyPermission = copydeny ? "deny" : "allow";

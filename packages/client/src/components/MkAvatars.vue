@@ -7,19 +7,20 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watchEffect } from "vue";
+import { onUnmounted, ref, watchEffect } from "vue";
 import * as os from "@/os";
 
 const props = defineProps<{
 	userIds: string[];
 	sortStatus?: boolean;
 	hiddenOfflineSleep?: boolean;
+	interval?: number;
 }>();
 
 const users = ref([]);
 const isFetching = ref(false);
 
-watchEffect(() => {
+const fetchData = async () => {
   if (isFetching.value) {
     // 処理中は何もしない
     return;
@@ -27,40 +28,50 @@ watchEffect(() => {
 
   isFetching.value = true;
 
-  (async () => {
-    try {
-      const _users = (await os.api("users/show", {
-        userIds: props.userIds,
-      })).filter((x) =>
-        props.hiddenOfflineSleep
-          ? !(x.onlineStatus?.includes("offline") || x.onlineStatus?.includes("sleep"))
-          : true
-      );
-      const onlineStatus = [
-        "online",
-        "half-online",
-        "active",
-        "half-active",
-        "offline",
-        "half-sleeping",
-        "sleeping",
-        "deep-sleeping",
-        "never-sleeping",
-        "unknown",
-      ];
-      users.value = props.sortStatus
-        ? _users.sort((a, b) =>
-            onlineStatus.indexOf(a.onlineStatus) < onlineStatus.indexOf(b.onlineStatus)
-              ? -1
-              : onlineStatus.indexOf(a.onlineStatus) === onlineStatus.indexOf(b.onlineStatus)
-              ? 0
-              : 1
-          )
-        : _users;
-    } finally {
-      isFetching.value = false;
-    }
-  })();
+  try {
+    const _users = (await os.api("users/show", {
+      userIds: props.userIds,
+    })).filter((x) =>
+      props.hiddenOfflineSleep
+        ? !(x.onlineStatus?.includes("offline") || x.onlineStatus?.includes("sleep"))
+        : true
+    );
+
+    const onlineStatus = [
+      "online",
+      "half-online",
+      "active",
+      "half-active",
+      "offline",
+      "half-sleeping",
+      "sleeping",
+      "deep-sleeping",
+      "never-sleeping",
+      "unknown",
+    ];
+
+    users.value = props.sortStatus
+      ? _users.sort((a, b) =>
+          onlineStatus.indexOf(a.onlineStatus) < onlineStatus.indexOf(b.onlineStatus)
+            ? -1
+            : onlineStatus.indexOf(a.onlineStatus) === onlineStatus.indexOf(b.onlineStatus)
+            ? 0
+            : 1
+        )
+      : _users;
+  } finally {
+    isFetching.value = false;
+  }
+};
+
+watchEffect(() => {
+  fetchData();
+	
+  const intervalId = setInterval(fetchData, props.interval || 300 * 1000);
+
+  onUnmounted(() => {
+    clearInterval(intervalId);
+  });
 });
 </script>
 

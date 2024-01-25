@@ -252,6 +252,13 @@ function focus(): void {
 
 const headerActions = $computed(() => [
 	{
+		icon: 'ph-calendar-blank ph-bold ph-lg',
+		title: i18n.ts.jumpToSpecifiedDate,
+		text: i18n.ts.jumpToSpecifiedDate,
+		iconOnly: true,
+		handler: timetravel,
+	},
+	{
 		icon: "ph-list-bullets ph-bold ph-lg",
 		title: i18n.ts.lists,
 		text: i18n.ts.lists,
@@ -264,12 +271,7 @@ const headerActions = $computed(() => [
 		text: i18n.ts.antennas,
 		iconOnly: true,
 		handler: chooseAntenna,
-	} /* **TODO: fix timetravel** {
-	icon: 'ph-calendar-blank ph-bold ph-lg',
-	title: i18n.ts.jumpToSpecifiedDate,
-	iconOnly: true,
-	handler: timetravel,
-}*/,
+	},
 ]);
 
 // Swap home timeline with social's functionality

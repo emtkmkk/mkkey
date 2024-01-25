@@ -683,7 +683,15 @@ export const routes = [
 		loginRequired: true,
 	},
 	{
+		path: "/emoji/:emoji",
+		component: page(() => import("./components/MkCustomEmojiDetailed.vue")),
+	},
+	{
 		path: "/emoji_license/:emoji",
+		component: page(() => import("./components/MkCustomEmojiDetailed.vue")),
+	},
+	{
+		path: "/emoji_dialog/:emoji",
 		component: page(() => import("./components/MkCustomEmojiDetailedDialog.vue")),
 	},
 	{

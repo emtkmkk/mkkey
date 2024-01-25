@@ -1,5 +1,5 @@
 <template>
-	<MkSpacer>
+	<MkSpacer :content-max="600" :margin-min="20">
 		<div v-if="_emoji && Object.keys(licenseDetail).filter((x) => licenseDetail[x]).length >= 1" style="display: flex; flex-direction: column; gap: 1em;">
 			<div :class="$style.emojiImgWrapper">
 				<MkEmoji :emoji="`:${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}:`" :normal="true" style="height: 100%;"></MkEmoji>

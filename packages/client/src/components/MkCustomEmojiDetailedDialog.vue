@@ -1,11 +1,9 @@
 <template>
   <XModalWindow ref="dialog" @click="cancel()" @close="cancel()" @closed="$emit('closed')" >
     <template #header>{{ name }}</template>
-		<MkSpacer>
 			<XEmojiDetailed 
 				:emoji="emoji"
 			/>
-		</MkSpacer>
   </XModalWindow>
 </template>
 

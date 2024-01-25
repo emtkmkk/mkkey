@@ -1,103 +1,106 @@
 <template>
-	<div v-if="_emoji && Object.keys(licenseDetail).filter((x) => licenseDetail[x]).length >= 1" style="display: flex; flex-direction: column; gap: 1em;">
-		<div :class="$style.emojiImgWrapper">
-			<MkEmoji :emoji="`:${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}:`" :normal="true" style="height: 100%;"></MkEmoji>
+	<MkSpacer>
+		<div v-if="_emoji && Object.keys(licenseDetail).filter((x) => licenseDetail[x]).length >= 1" style="display: flex; flex-direction: column; gap: 1em;">
+			<div :class="$style.emojiImgWrapper">
+				<MkEmoji :emoji="`:${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}:`" :normal="true" style="height: 100%;"></MkEmoji>
+			</div>
+			<MkKeyValue :copy="`:${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}:`">
+				<template #key>{{ i18n.ts.name }}</template>
+				<template #value>{{ _emoji.name }}</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.host">
+				<template #key>{{ i18n.ts.host }}</template>
+				<template #value>{{ _emoji.host }}</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.aliases.length > 0">
+				<template #key>{{ i18n.ts.tags }}</template>
+				<template #value>
+					<div v-if="_emoji.aliases.filter((x) => x.trim()).length === 0">{{ i18n.ts.none }}</div>
+					<div v-else :class="$style.aliases">
+						<span v-for="alias in _emoji.aliases.filter((x) => x.trim())" :key="alias" :class="$style.alias">
+							{{ alias }}
+						</span>
+					</div>
+				</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.category">
+				<template #key>{{ i18n.ts.category }}</template>
+				<template #value>{{ _emoji.category ?? i18n.ts.none }}</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="licenseDetail.description">
+				<template #key>{{ i18n.ts.emojiDescription }}</template>
+				<template #value>
+					<Mfm :text="licenseDetail.description" /></template>
+			</MkKeyValue>
+			<MkKeyValue v-if="licenseDetail.author">
+				<template #key>{{ i18n.ts.emojiAuthor }}</template>
+				<template #value>
+					<Mfm :text="licenseDetail.author" /></template>
+			</MkKeyValue>
+			<MkKeyValue v-if="!_emoji.host || licenseDetail.copyPermission !== 'none'">
+				<template #key>{{ i18n.ts.copyPermission }}</template>
+				<template #value>
+					<i 
+					class="ph-bold ph-lg" 
+					:class="{
+						'ph-check': licenseDetail.copyPermission == 'allow',
+						[$style.allow]: licenseDetail.copyPermission == 'allow',
+						'ph-warning': licenseDetail.copyPermission == 'conditional',
+						[$style.conditional]: licenseDetail.copyPermission == 'conditional',
+						'ph-prohibit': licenseDetail.copyPermission == 'deny',
+						[$style.deny]: licenseDetail.copyPermission == 'deny',
+						'ph-question': licenseDetail.copyPermission == 'none',
+					}"></i>
+					{{ i18n.ts._copyPermission[licenseDetail.copyPermission] ?? licenseDetail.copyPermission }}</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="licenseDetail.license">
+				<template #key>{{ i18n.ts.license }}</template>
+				<template #value>
+					<Mfm :text="licenseDetail.license" />
+				</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="licenseDetail.usageInfo">
+				<template #key>{{ i18n.ts.usageInfo }}</template>
+				<template #value>
+					<Mfm :text="licenseDetail.usageInfo" />
+				</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="!_emoji.license || licenseText">
+				<template #key>{{ Object.keys(licenseDetail).filter((x) => licenseDetail[x]).length < 2 ? i18n.ts.license : i18n.ts.licenseText }}</template>
+				<template #value>
+					<Mfm :text="licenseText ?? i18n.ts.none" />
+				</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.createdAt">
+				<template #key>{{ i18n.ts.createdAt }}</template>
+				<template #value>
+					<MkTime :time="_emoji.createdAt" mode="relative"/>
+				</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.updatedAt">
+				<template #key>{{ i18n.ts.updatedAt }}</template>
+				<template #value>
+					<MkTime :time="_emoji.updatedAt" mode="relative"/>
+				</template>
+			</MkKeyValue>
+			<MkKeyValue :copy="_emoji.url">
+				<template #key>{{ i18n.ts.emojiUrl }}</template>
+				<template #value>
+					<MkLink :url="_emoji.url" target="_blank">{{ _emoji.url }}</MkLink>
+				</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="licenseDetail.isBasedOnUrl" :copy="licenseDetail.isBasedOnUrl">
+				<template #key>{{ i18n.ts.isBasedOnUrl }}</template>
+				<template #value>
+					<MkLink :url="licenseDetail.isBasedOnUrl" target="_blank">{{ licenseDetail.isBasedOnUrl }}</MkLink>
+				</template>
+			</MkKeyValue>
+			<MkLink v-if="$i && !($i.isAdmin || $i.isModerator) && !_emoji.host" :url="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${_emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</MkLink>
+			<MkButton v-if="$i && ($i.isAdmin || $i.isModerator) && !_emoji.host" primary @click="edit">{{ "この絵文字を編集" }}</MkButton>
 		</div>
-		<MkKeyValue :copy="`:${_emoji.name}${_emoji.host ? '@' + _emoji.host : ''}:`">
-			<template #key>{{ i18n.ts.name }}</template>
-			<template #value>{{ _emoji.name }}</template>
-		</MkKeyValue>
-		<MkKeyValue v-if="_emoji.host">
-			<template #key>{{ i18n.ts.host }}</template>
-			<template #value>{{ _emoji.host }}</template>
-		</MkKeyValue>
-		<MkKeyValue v-if="_emoji.aliases.length > 0">
-			<template #key>{{ i18n.ts.tags }}</template>
-			<template #value>
-				<div v-if="_emoji.aliases.filter((x) => x.trim()).length === 0">{{ i18n.ts.none }}</div>
-				<div v-else :class="$style.aliases">
-					<span v-for="alias in _emoji.aliases.filter((x) => x.trim())" :key="alias" :class="$style.alias">
-						{{ alias }}
-					</span>
-				</div>
-			</template>
-		</MkKeyValue>
-		<MkKeyValue v-if="_emoji.category">
-			<template #key>{{ i18n.ts.category }}</template>
-			<template #value>{{ _emoji.category ?? i18n.ts.none }}</template>
-		</MkKeyValue>
-		<MkKeyValue v-if="licenseDetail.description">
-			<template #key>{{ i18n.ts.emojiDescription }}</template>
-			<template #value>
-				<Mfm :text="licenseDetail.description" /></template>
-		</MkKeyValue>
-		<MkKeyValue v-if="licenseDetail.author">
-			<template #key>{{ i18n.ts.emojiAuthor }}</template>
-			<template #value>
-				<Mfm :text="licenseDetail.author" /></template>
-		</MkKeyValue>
-		<MkKeyValue v-if="!_emoji.host || licenseDetail.copyPermission !== 'none'">
-			<template #key>{{ i18n.ts.copyPermission }}</template>
-			<template #value>
-				<i 
-				class="ph-bold ph-lg" 
-				:class="{
-					'ph-check': licenseDetail.copyPermission == 'allow',
-					[$style.allow]: licenseDetail.copyPermission == 'allow',
-					'ph-warning': licenseDetail.copyPermission == 'conditional',
-					[$style.conditional]: licenseDetail.copyPermission == 'conditional',
-					'ph-prohibit': licenseDetail.copyPermission == 'deny',
-					[$style.deny]: licenseDetail.copyPermission == 'deny',
-					'ph-question': licenseDetail.copyPermission == 'none',
-				}"></i>
-				{{ i18n.ts._copyPermission[licenseDetail.copyPermission] ?? licenseDetail.copyPermission }}</template>
-		</MkKeyValue>
-		<MkKeyValue v-if="licenseDetail.license">
-			<template #key>{{ i18n.ts.license }}</template>
-			<template #value>
-				<Mfm :text="licenseDetail.license" />
-			</template>
-		</MkKeyValue>
-		<MkKeyValue v-if="licenseDetail.usageInfo">
-			<template #key>{{ i18n.ts.usageInfo }}</template>
-			<template #value>
-				<Mfm :text="licenseDetail.usageInfo" />
-			</template>
-		</MkKeyValue>
-		<MkKeyValue v-if="!_emoji.license || licenseText">
-			<template #key>{{ Object.keys(licenseDetail).filter((x) => licenseDetail[x]).length < 2 ? i18n.ts.license : i18n.ts.licenseText }}</template>
-			<template #value>
-				<Mfm :text="licenseText ?? i18n.ts.none" />
-			</template>
-		</MkKeyValue>
-		<MkKeyValue v-if="_emoji.createdAt">
-			<template #key>{{ i18n.ts.createdAt }}</template>
-			<template #value>
-				<MkTime :time="_emoji.createdAt" mode="relative"/>
-			</template>
-		</MkKeyValue>
-		<MkKeyValue v-if="_emoji.updatedAt">
-			<template #key>{{ i18n.ts.updatedAt }}</template>
-			<template #value>
-				<MkTime :time="_emoji.updatedAt" mode="relative"/>
-			</template>
-		</MkKeyValue>
-		<MkKeyValue :copy="_emoji.url">
-			<template #key>{{ i18n.ts.emojiUrl }}</template>
-			<template #value>
-				<MkLink :url="_emoji.url" target="_blank">{{ _emoji.url }}</MkLink>
-			</template>
-		</MkKeyValue>
-		<MkKeyValue v-if="licenseDetail.isBasedOnUrl" :copy="licenseDetail.isBasedOnUrl">
-			<template #key>{{ i18n.ts.isBasedOnUrl }}</template>
-			<template #value>
-				<MkLink :url="licenseDetail.isBasedOnUrl" target="_blank">{{ licenseDetail.isBasedOnUrl }}</MkLink>
-			</template>
-		</MkKeyValue>
-		<MkLink v-if="$i && !($i.isAdmin || $i.isModerator) && !_emoji.host" :url="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${_emoji.name}`" target="_blank">{{ "編集申請はこちらから" }}</MkLink>
-		<MkButton v-if="$i && ($i.isAdmin || $i.isModerator) && !_emoji.host" primary @click="edit">{{ "この絵文字を編集" }}</MkButton>
-	</div>
-	<MkError v-else />
+		<MkError v-else-if="_emoji?.error" />
+		<MkLoading v-else />
+	</MkSpacer>
 </template>
 
 <script lang="ts" setup>

@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted, ref, watchEffect } from "vue";
+import { onUnmounted, ref, watch } from "vue";
 import * as os from "@/os";
 
 const props = defineProps<{
@@ -64,7 +64,7 @@ const fetchData = async () => {
   }
 };
 
-watchEffect(() => {
+watch(() => props.userIds, (newUserIds, oldUserIds) => {
   fetchData();
 	
   const intervalId = setInterval(fetchData, props.interval || 300 * 1000);

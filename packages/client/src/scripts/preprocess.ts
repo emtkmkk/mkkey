@@ -72,7 +72,7 @@ export function preprocess(text: string): string {
 				}
 				if (node.type === "fn" && (node.props.name === "unixtime" || node.props.name === "time")) {
 					const ctext = mfm.toString(node.children)
-					if (node.props.name === "time" || !Number.isFinite(Number(ctext))) {
+					if (node.props.name === "time" || (ctext && !Number.isFinite(Number(ctext)))) {
 						const pdate = Date.parse(ctext);
 						if (Number.isFinite(pdate)) {
 							node.props.name = "unixtime";

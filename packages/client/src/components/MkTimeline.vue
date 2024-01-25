@@ -3,7 +3,7 @@
 		ref="tlComponent"
 		:no-gap="!$store.state.showGapBetweenNotesInTimeline"
 		:pagination="pagination"
-		@queue="if (!travelDate) emit('queue', $event)"
+		@queue="!travelDate ? emit('queue', $event) : null"
 	/>
 </template>
 

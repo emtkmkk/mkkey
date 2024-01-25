@@ -1,4 +1,4 @@
-import { genId } from "@/misc/gen-id";
+import { genId } from "@/misc/gen-id.js";
 import type { SelectQueryBuilder } from "typeorm";
 
 export function makePaginationQuery<T>(

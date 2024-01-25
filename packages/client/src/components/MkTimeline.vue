@@ -170,4 +170,8 @@ function timetravel(date?: Date) {
 	};
 	tlComponent.pagingComponent?.reload();
 };
+
+defineExpose({
+	timetravel,
+});
 </script>

@@ -160,7 +160,7 @@ onUnmounted(() => {
 
 let travelDate;
 
-function timetravel(date?: Date) {
+const timetravel = (date?: Date) => {
 	travelDate = date || undefined;
 	query = {...query, untilDate: travelDate ? travelDate.valueOf() : undefined}
 	pagination = {
@@ -172,6 +172,7 @@ function timetravel(date?: Date) {
 };
 
 defineExpose({
+	focus,
 	timetravel,
 });
 </script>

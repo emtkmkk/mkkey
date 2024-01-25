@@ -147,7 +147,7 @@ if (props.src === "antenna") {
 	connection.on("note", prepend);
 }
 
-const pagination = {
+let pagination = {
 	endpoint: endpoint,
 	limit: 10,
 	params: query,
@@ -163,6 +163,11 @@ let travelDate;
 const timetravel = (date?: Date) => {
 	travelDate = date || undefined;
 	query = {...query, untilDate: travelDate ? travelDate.valueOf() : undefined}
+	pagination = {
+		endpoint: endpoint,
+		limit: 10,
+		params: query,
+	};
 	tlComponent.pagingComponent?.reload();
 };
 </script>

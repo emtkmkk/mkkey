@@ -237,16 +237,20 @@ function saveSrc(
 	});
 }
 
+let travelDate : Date | undefined = $ref(undefined);
+
 async function timetravel(): Promise<void> {
 	const { canceled, result: date } = await os.inputDateTime({
 		title: i18n.ts.date,
-		default: new Date(),
+		default: travelDate || new Date(),
 	});
 	if (canceled) {
+		travelDate = undefined;
 		Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel() : tlComponent.value?.timetravel();
 		return;
 	}
 
+	travelDate = date;
 	Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel(date) : tlComponent.value?.timetravel(date);
 }
 
@@ -259,6 +263,7 @@ const headerActions = $computed(() => [
 		icon: 'ph-calendar-blank ph-bold ph-lg',
 		title: i18n.ts.jumpToSpecifiedDate,
 		text: i18n.ts.jumpToSpecifiedDate,
+		highlighted: travelDate,
 		iconOnly: true,
 		handler: timetravel,
 	},

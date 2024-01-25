@@ -242,7 +242,10 @@ async function timetravel(): Promise<void> {
 		title: i18n.ts.date,
 		default: new Date(),
 	});
-	if (canceled) return;
+	if (canceled) {
+		Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel() : tlComponent.value?.timetravel();
+		return;
+	}
 
 	Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel(date) : tlComponent.value?.timetravel(date);
 }

@@ -1,3 +1,4 @@
+import { genId } from "@/misc/gen-id";
 import type { SelectQueryBuilder } from "typeorm";
 
 export function makePaginationQuery<T>(
@@ -18,23 +19,23 @@ export function makePaginationQuery<T>(
 		q.andWhere(`${q.alias}.id < :untilId`, { untilId: untilId });
 		q.orderBy(`${q.alias}.id`, "DESC");
 	} else if (sinceDate && untilDate) {
-		q.andWhere(`${q.alias}.createdAt > :sinceDate`, {
-			sinceDate: new Date(sinceDate),
+		q.andWhere(`${q.alias}.id > :since`, {
+			since: genId(new Date(sinceDate)),
 		});
-		q.andWhere(`${q.alias}.createdAt < :untilDate`, {
-			untilDate: new Date(untilDate),
+		q.andWhere(`${q.alias}.id < :until`, {
+			until: genId(new Date(untilDate)),
 		});
-		q.orderBy(`${q.alias}.createdAt`, "DESC");
+		q.orderBy(`${q.alias}.id`, "DESC");
 	} else if (sinceDate) {
-		q.andWhere(`${q.alias}.createdAt > :sinceDate`, {
-			sinceDate: new Date(sinceDate),
+		q.andWhere(`${q.alias}.id > :sinceDate`, {
+			sinceDate: genId(new Date(sinceDate)),
 		});
-		q.orderBy(`${q.alias}.createdAt`, "ASC");
+		q.orderBy(`${q.alias}.id`, "ASC");
 	} else if (untilDate) {
-		q.andWhere(`${q.alias}.createdAt < :untilDate`, {
-			untilDate: new Date(untilDate),
+		q.andWhere(`${q.alias}.id < :untilDate`, {
+			untilDate: genId(new Date(untilDate)),
 		});
-		q.orderBy(`${q.alias}.createdAt`, "DESC");
+		q.orderBy(`${q.alias}.id`, "DESC");
 	} else {
 		q.orderBy(`${q.alias}.id`, "DESC");
 	}

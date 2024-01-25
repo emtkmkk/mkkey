@@ -244,11 +244,11 @@ async function timetravel(): Promise<void> {
 	});
 	if (canceled) return;
 
-	tlComponent.value?.timetravel(date);
+	Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel(date) : tlComponent.value?.timetravel(date);
 }
 
 function focus(): void {
-	tlComponent.value?.focus();
+	Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.focus() : tlComponent.value?.focus();
 }
 
 const headerActions = $computed(() => [

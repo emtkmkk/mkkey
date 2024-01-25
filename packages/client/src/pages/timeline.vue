@@ -63,6 +63,7 @@
 								:list="src === 'list' ? defaultStore.state.thirdTimelineListId : null"
 								:antenna="src === 'antenna' ? defaultStore.state.thirdTimelineListId : null"
 								:sound="true"
+								:travel-date="travelDate"
 								@queue="queueUpdated"
 							/>
 						</swiper-slide>
@@ -245,7 +246,10 @@ const onContextmenu = (ev: MouseEvent) => {
 		[
 			...( travelDate ? [{
 				type: "label",
-				text: i18n.ts.showingPastTimeline + "\n" + travelDate.toLocaleString(),
+				text: i18n.ts.showingPastTimeline,
+			},{
+				type: "label",
+				text: travelDate.toLocaleString(),
 			}] : []),
 			{
 				icon: 'ph-calendar-blank ph-bold ph-lg',
@@ -457,7 +461,6 @@ function setSwiperRef(swiper) {
 
 function onSlideChange() {
 	saveSrc(timelines[swiperRef.activeIndex]);
-	if (travelDate) Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel(travelDate) : tlComponent.value?.timetravel(travelDate);
 }
 
 function syncSlide(index) {

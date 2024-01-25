@@ -23,6 +23,7 @@ const props = defineProps<{
 	channel?: string;
 	sound?: boolean;
 	channelName?: string;
+	travelDate?: Date;
 }>();
 
 const emit = defineEmits<{
@@ -148,6 +149,8 @@ if (props.src === "antenna") {
 	connection.on("note", prepend);
 }
 
+let travelDate = $ref<Date | undefined>(props.travelDate || undefined);
+
 let pagination = {
 	endpoint: endpoint,
 	limit: 10,
@@ -158,8 +161,6 @@ onUnmounted(() => {
 	connection.dispose();
 	if (connection2) connection2.dispose();
 });
-
-let travelDate = $ref<Date | undefined>(undefined);
 
 const timetravel = (date?: Date) => {
 	travelDate = date || undefined;

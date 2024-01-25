@@ -55,7 +55,7 @@
 						>
 							<XTimeline
 								v-if="index == timelines[swiperRef.activeIndex]"
-								ref="tl"
+								ref="tlComponent"
 								:key="src"
 								class="tl"
 								:src="src"
@@ -238,8 +238,9 @@ function saveSrc(
 }
 
 async function timetravel(): Promise<void> {
-	const { canceled, result: date } = await os.inputDate({
+	const { canceled, result: date } = await os.inputDateTime({
 		title: i18n.ts.date,
+		default: new Date(),
 	});
 	if (canceled) return;
 

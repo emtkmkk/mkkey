@@ -160,7 +160,7 @@ onUnmounted(() => {
 
 let travelDate;
 
-const timetravel = (date?: Date) => {
+export const timetravel = (date?: Date) => {
 	travelDate = date || undefined;
 	query = {...query, untilDate: travelDate ? travelDate.valueOf() : undefined}
 	tlComponent.pagingComponent?.reload();

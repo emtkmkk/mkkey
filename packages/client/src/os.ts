@@ -465,6 +465,44 @@ export function inputDate(props: {
 	});
 }
 
+export function inputDateTime(props: {
+	title?: string | null;
+	text?: string | null;
+	placeholder?: string | null;
+	default?: Date | null;
+}): Promise<
+	| { canceled: true; result: undefined }
+	| {
+			canceled: false;
+			result: Date;
+	  }
+> {
+	return new Promise((resolve, reject) => {
+		popup(
+			defineAsyncComponent(() => import("@/components/MkDialog.vue")),
+			{
+				title: props.title,
+				text: props.text,
+				input: {
+					type: "datetime-local",
+					placeholder: props.placeholder,
+					default: props.default,
+				},
+			},
+			{
+				done: (result) => {
+					resolve(
+						result
+							? { result: new Date(result.result), canceled: false }
+							: { canceled: true },
+					);
+				},
+			},
+			"closed",
+		);
+	});
+}
+
 export function select<C = any>(
 	props: {
 		title?: string | null;

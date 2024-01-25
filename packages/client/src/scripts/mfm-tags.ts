@@ -55,7 +55,7 @@ export const MFM_TAGS_JP = [
 	{name:"handaku", ja:"半濁点付与", exportLeft:"$[handaku ", exportRight:"]", defaultOption:"$[handaku ",},
 	{name:"morse", ja:"モールス", exportLeft:"$[morse ", exportRight:"]", defaultOption:"$[morse ",},
 	{name:"ruby", ja:"ルビ振り", exportLeft:"$[ruby ", exportRight:"]",},
-	{name:"unixtime", ja:"時間", exportLeft:`$[unixtime ${utime()}`, exportRight:"]",},
+	{name:"unixtime", ja:"時間", exportLeft:`$[unixtime ${new Date().toLocaleString()}`, exportRight:"]",},
 	{name:"code", ja:"行コード", exportLeft:"`", exportRight:"`",},
 	{name:"codeB", ja:"ブロックコード", exportLeft:"```\n", exportRight:"\n```",},
 	{name:"KaTeX", ja:"行数式", exportLeft:"\\(", exportRight:"\\)",},
@@ -76,13 +76,3 @@ export const MFM_TAGS_JP = [
 	{name:"emoji", ja:"絵文字ﾌｫﾝﾄ", exportLeft:"$[font.emoji ", exportRight:"]",},
 	{name:"math", ja:"計算式ﾌｫﾝﾄ", exportLeft:"$[font.math ", exportRight:"]",},
 ];
-
-const utime = async () => {
-	const { canceled, result: date } = await os.inputDate({
-		title: i18n.ts.date,
-		default: new Date(),
-	});
-	if (canceled) return "";
-
-	return date ? date.valueOf() / 1000 : ""
-}

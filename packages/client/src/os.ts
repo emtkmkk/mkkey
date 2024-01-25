@@ -477,6 +477,10 @@ export function inputDateTime(props: {
 			result: Date;
 	  }
 > {
+	const _default = props.default;
+	if (_default) {
+		_default.setMinutes(_default.getMinutes() - _default.getTimezoneOffset());
+	}
 	return new Promise((resolve, reject) => {
 		popup(
 			defineAsyncComponent(() => import("@/components/MkDialog.vue")),
@@ -486,7 +490,7 @@ export function inputDateTime(props: {
 				input: {
 					type: "datetime-local",
 					placeholder: props.placeholder,
-					default: props.default?.toISOString().substr(0, 16),
+					default: _default?.toISOString()?.substr(0, 16),
 				},
 			},
 			{

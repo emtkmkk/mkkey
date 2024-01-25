@@ -9,6 +9,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, provide, onUnmounted } from "vue";
+import { LessThanOrEqual } from "typeorm";
 import XNotes from "@/components/MkNotes.vue";
 import * as os from "@/os";
 import { stream } from "@/stream";
@@ -158,10 +159,11 @@ onUnmounted(() => {
 	if (connection2) connection2.dispose();
 });
 
-/* TODO
+let travelDate;
+
 const timetravel = (date?: Date) => {
-	this.date = date;
-	this.$refs.tl.reload();
+	travelDate = date || undefined;
+	query = {...query, createdAt: travelDate ? LessThanOrEqual(travelDate) : undefined}
+	tlComponent.pagingComponent?.reload();
 };
-*/
 </script>

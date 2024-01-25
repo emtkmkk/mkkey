@@ -147,11 +147,11 @@ if (props.src === "antenna") {
 	connection.on("note", prepend);
 }
 
-let pagination = computed(() => ({
+let pagination = () => ({
 	endpoint: endpoint,
 	limit: 10,
-	params: {...query, untilDate: travelDate ? travelDate.valueOf() : undefined},
-}));
+	params: computed(() => ({...query, untilDate: travelDate ? travelDate.valueOf() : undefined})),
+});
 
 onUnmounted(() => {
 	connection.dispose();
@@ -162,7 +162,6 @@ let travelDate : Date | undefined = $ref(undefined);
 
 const timetravel = (date?: Date) => {
 	travelDate = date || undefined;
-	tlComponent.pagingComponent?.reload();
 };
 
 defineExpose({

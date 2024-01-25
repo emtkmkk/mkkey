@@ -454,8 +454,8 @@ export function inputDate(props: {
 			{
 				done: (result) => {
 					resolve(
-						result
-							? { result: new Date(result.result), canceled: false }
+						result || !result.canceled
+							? { result: new Date(result.result), canceled: result.canceled }
 							: { canceled: true },
 					);
 				},
@@ -497,7 +497,7 @@ export function inputDateTime(props: {
 				done: (result) => {
 					resolve(
 						result
-							? { result: new Date(result.result), canceled: false }
+							? { result: new Date(result.result), canceled: result.canceled }
 							: { canceled: true },
 					);
 				},

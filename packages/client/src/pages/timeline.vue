@@ -6,6 +6,7 @@
 				:actions="headerActions"
 				:tabs="headerTabs"
 				:display-my-avatar="true"
+				@contextmenu.stop="onContextmenu"
 			/>
 		</template>
 		<MkSpacer :content-max="800">
@@ -239,12 +240,29 @@ function saveSrc(
 
 let travelDate : Date | undefined = $ref(undefined);
 
+const onContextmenu = (ev: MouseEvent) => {
+	os.contextMenu(
+		[
+			...( travelDate ? [{
+				type: "label",
+				text: travelDate.toLocaleString(),
+			}] : []),
+			{
+				icon: 'ph-calendar-blank ph-bold ph-lg',
+				text: i18n.ts.jumpToSpecifiedDate,
+				action: timetravel,
+			},
+		],
+		ev
+	);
+};
+
 async function timetravel(): Promise<void> {
 	const { canceled, result: date } = await os.inputDateTime({
 		title: i18n.ts.date,
 		default: travelDate || new Date(),
 	});
-	if (canceled) {
+	if (canceled || !date || Date.now() < date.valueOf()) {
 		travelDate = undefined;
 		Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel() : tlComponent.value?.timetravel();
 		return;
@@ -259,14 +277,14 @@ function focus(): void {
 }
 
 const headerActions = $computed(() => [
-	{
+	(travelDate ? [{
 		icon: 'ph-calendar-blank ph-bold ph-lg',
-		title: i18n.ts.jumpToSpecifiedDate,
-		text: i18n.ts.jumpToSpecifiedDate,
+		title: i18n.ts.showingPastTimeline,
+		text: i18n.ts.showingPastTimeline,
 		highlighted: travelDate,
 		iconOnly: true,
 		handler: timetravel,
-	},
+	}] : []),
 	{
 		icon: "ph-list-bullets ph-bold ph-lg",
 		title: i18n.ts.lists,

@@ -80,6 +80,7 @@ export const MFM_TAGS_JP = [
 const utime = async () => {
 	const { canceled, result: date } = await os.inputDate({
 		title: i18n.ts.date,
+		default: new Date(),
 	});
 	if (canceled) return "";
 

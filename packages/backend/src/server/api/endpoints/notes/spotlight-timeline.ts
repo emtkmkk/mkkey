@@ -110,7 +110,8 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const meOrFolloweeIds = [user.id, ...followees.map(f => f.followeeId)];
 
-	ps.sinceDate = new Date((ps.untilDate || Date.now()) - (1000 * 60 * 60 * 24 * 7)).valueOf();
+	ps.untilDate = ps.untilDate || Date.now()
+	ps.sinceDate = ps.untilDate - (1000 * 60 * 60 * 24 * 7);
 
 	//#region Construct query
 	const query = makePaginationQuery(
@@ -158,7 +159,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			.select('note.renoteUserId')
 			.distinct(true)
 			.andWhere('note.id > :minId', { minId: genId(new Date(ps.sinceDate)) })
-			.andWhere('note.id < :maxId', { maxId: genId(ps.untilDate ? new Date(ps.untilDate) : new Date()) })
+			.andWhere('note.id < :maxId', { maxId: genId(new Date(ps.untilDate)) })
 			.andWhere('note.renoteId IS NOT NULL')
 			.andWhere('note.text IS NULL')
 			.andWhere('note.userId IN (:...meOrFolloweeIds)', { meOrFolloweeIds: meOrFolloweeIds })

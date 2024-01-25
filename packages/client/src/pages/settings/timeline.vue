@@ -76,6 +76,15 @@
 			>
 				<template #label>{{ i18n.ts.fourthTimelineListId }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			</FormInput>-->
+			<FormSwitch  v-model="showListButton" class="_formBlock">{{
+				i18n.ts.showListButton
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch  v-model="showAntennaButton" class="_formBlock">{{
+				i18n.ts.showAntennaButton
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch  v-model="showTimeTravelButton" class="_formBlock">{{
+				i18n.ts.showTimeTravelButton
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
 				i18n.ts.showFixedPostForm
 			}}</FormSwitch>
@@ -162,6 +171,15 @@ const developer = computed(
 );
 const showMkkeySettingTips = computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
+);
+const showListButton = computed(
+	defaultStore.makeGetterSetter("showListButton")
+);
+const showAntennaButton = computed(
+	defaultStore.makeGetterSetter("showAntennaButton")
+);
+const showTimeTravelButton = computed(
+	defaultStore.makeGetterSetter("showTimeTravelButton")
 );
 const showFixedPostForm = computed(
 	defaultStore.makeGetterSetter("showFixedPostForm")

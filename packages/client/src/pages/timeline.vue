@@ -2,6 +2,7 @@
 	<MkStickyContainer>
 		<template #header>
 			<MkPageHeader
+				ref="header"
 				v-model:tab="src"
 				:actions="headerActions"
 				:tabs="headerTabs"
@@ -281,7 +282,7 @@ function focus(): void {
 }
 
 const headerActions = $computed(() => [
-	...(travelDate ? [{
+	...(defaultStore.state.showTimeTravelButton || travelDate ? [{
 		icon: 'ph-calendar-blank ph-bold ph-lg',
 		title: i18n.ts.showingPastTimeline,
 		text: i18n.ts.showingPastTimeline,
@@ -289,20 +290,20 @@ const headerActions = $computed(() => [
 		iconOnly: true,
 		handler: timetravel,
 	}] : []),
-	{
+	...(defaultStore.state.showListButton ? [{
 		icon: "ph-list-bullets ph-bold ph-lg",
 		title: i18n.ts.lists,
 		text: i18n.ts.lists,
 		iconOnly: true,
 		handler: chooseList,
-	},
-	{
+	}] : []),
+	...(defaultStore.state.showAntennaButton ? [{
 		icon: "ph-flying-saucer ph-bold ph-lg",
 		title: i18n.ts.antennas,
 		text: i18n.ts.antennas,
 		iconOnly: true,
 		handler: chooseAntenna,
-	},
+	}] : []),
 ]);
 
 // Swap home timeline with social's functionality

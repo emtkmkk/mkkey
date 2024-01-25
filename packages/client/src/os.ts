@@ -448,7 +448,7 @@ export function inputDate(props: {
 				input: {
 					type: "date",
 					placeholder: props.placeholder,
-					default: props.default,
+					default: props.default?.toISOString(),
 				},
 			},
 			{
@@ -486,7 +486,7 @@ export function inputDateTime(props: {
 				input: {
 					type: "datetime-local",
 					placeholder: props.placeholder,
-					default: props.default,
+					default: props.default?.toISOString(),
 				},
 			},
 			{

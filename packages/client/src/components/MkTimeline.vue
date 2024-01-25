@@ -147,11 +147,11 @@ if (props.src === "antenna") {
 	connection.on("note", prepend);
 }
 
-let pagination = () => ({
+let pagination = {
 	endpoint: endpoint,
 	limit: 10,
 	params: computed(() => ({...query, untilDate: travelDate ? travelDate.valueOf() : undefined})),
-});
+};
 
 onUnmounted(() => {
 	connection.dispose();

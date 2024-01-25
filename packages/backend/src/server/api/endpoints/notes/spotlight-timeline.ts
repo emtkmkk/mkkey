@@ -110,6 +110,8 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const meOrFolloweeIds = [user.id, ...followees.map(f => f.followeeId)];
 
+	ps.sinceDate = new Date((ps.untilDate || Date.now()) - (1000 * 60 * 60 * 24 * 7)).valueOf();
+
 	//#region Construct query
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
@@ -118,7 +120,6 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.sinceDate,
 		ps.untilDate,
 	)
-		.andWhere(`note.id > '${genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 7))) ?? genId()}'`)
 		.andWhere("(note.visibility = 'public')")
 		.andWhere(`(note."channelId" IS NULL)`)
 		.andWhere(`(note."deletedAt" IS NULL)`)
@@ -156,7 +157,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		const followingNetworksQuery = await Notes.createQueryBuilder('note')
 			.select('note.renoteUserId')
 			.distinct(true)
-			.andWhere('note.id > :minId', { minId: genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 2))) })
+			.andWhere('note.id > :minId', { minId: genId(new Date(ps.sinceDate)) })
+			.andWhere('note.id < :maxId', { maxId: genId(ps.untilDate ? new Date(ps.untilDate) : new Date()) })
 			.andWhere('note.renoteId IS NOT NULL')
 			.andWhere('note.text IS NULL')
 			.andWhere('note.userId IN (:...meOrFolloweeIds)', { meOrFolloweeIds: meOrFolloweeIds })

@@ -83,5 +83,5 @@ const utime = async () => {
 	});
 	if (canceled) return "";
 
-	return result ? result.valueOf() / 1000 : ""
+	return date ? date.valueOf() / 1000 : ""
 }

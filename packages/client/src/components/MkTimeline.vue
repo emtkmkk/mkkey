@@ -158,7 +158,7 @@ onUnmounted(() => {
 	if (connection2) connection2.dispose();
 });
 
-let travelDate;
+let travelDate : Date | undefined = $ref(undefined);
 
 const timetravel = (date?: Date) => {
 	travelDate = date || undefined;

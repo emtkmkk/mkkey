@@ -72,6 +72,8 @@ watch(() => props.userIds, (newUserIds, oldUserIds) => {
   onUnmounted(() => {
     clearInterval(intervalId);
   });
+},{
+	immediate: true
 });
 </script>
 

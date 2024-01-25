@@ -70,6 +70,16 @@ export function preprocess(text: string): string {
 					node.props.query = mfm.toString(node.children).replaceAll("\n"," ");
 					node.props.content = `${mfm.toString(node.children).replaceAll("\n"," ")} [Search]`;
 				}
+				if (node.type === "fn" && (node.props.name === "unixtime" || node.props.name === "time")) {
+					const ctext = mfm.toString(node.children)
+					if (node.props.name === "time" || !Number.isFinite(parseInt(ctext,10))) {
+						const pdate = Date.parse(ctext);
+						if (Number.isFinite(pdate)) {
+							node.props.name = "unixtime";
+							node.children = [{type: "text",props: {text: Math.floor(pdate / 1000)},}];
+						}
+					}
+				}
 			});
 
 			text = mfm.toString(nodes);

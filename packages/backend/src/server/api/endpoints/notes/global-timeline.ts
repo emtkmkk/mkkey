@@ -130,6 +130,7 @@ export default define(meta, paramDef, async (ps, user) => {
 					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
 				);
 				qb.orWhere("note.userHost IS NULL");
+				qb.orWhere(`user.username || '@' || note."userHost" = ANY ('{"${m.recommendedInstances.join('","')}"}')`);
 			}),
 		);
 	}

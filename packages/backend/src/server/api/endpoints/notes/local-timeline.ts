@@ -138,7 +138,6 @@ export default define(meta, paramDef, async (ps, user) => {
 	} else {
 		query.andWhere("(note.visibility = 'public')")
 	}
-
 	if (user && !user.localShowRenote) {
 		query.andWhere(
 			new Brackets((qb) => {
@@ -148,6 +147,22 @@ export default define(meta, paramDef, async (ps, user) => {
 				qb.orWhere(
 					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
 				);
+				qb.orWhere("note.userHost IS NOT NULL");
+			}),
+		);
+	}
+
+	if (user && !user.remoteShowRenote) {
+		query.andWhere(
+			new Brackets((qb) => {
+				qb.where("note.renoteId IS NULL");
+				qb.orWhere("note.text IS NOT NULL");
+				qb.orWhere("note.fileIds != '{}'");
+				qb.orWhere(
+					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
+				);
+				qb.orWhere("note.userHost IS NULL");
+				qb.orWhere(`user.username || '@' || note."userHost" = ANY ('{"${m.recommendedInstances.join('","')}"}')`);
 			}),
 		);
 	}

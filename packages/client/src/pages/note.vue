@@ -23,12 +23,25 @@
 						</div>
 
 						<div class="main _gap">
-							<MkButton
-								v-if="!showNext && hasNext"
-								class="load next"
-								@click="showNext = true"
-								><i class="ph-caret-up ph-bold ph-lg"></i
-							></MkButton>
+							<div v-if="!showNext" class="load next">
+								<MkButton
+									v-if="!note.channelId"
+									class="load button"
+									@click="showNext = 'local'"
+									>LTL <i class="ph-caret-up ph-bold ph-lg"></i
+								></MkButton>
+								<MkButton
+									v-if="note.channelId"
+									class="load button"
+									@click="showNext = 'channel'"
+									><i class="ph-television ph-bold ph-lg"></i> <i class="ph-caret-up ph-bold ph-lg"></i
+								></MkButton>
+								<MkButton
+									class="load button"
+									@click="showNext = 'user'"
+									><i class="ph-user ph-bold ph-lg"></i> <i class="ph-caret-up ph-bold ph-lg"></i
+								></MkButton>
+							</div>
 							<div class="note _gap">
 								<MkRemoteCaution
 									v-if="note.user.host != null"
@@ -71,12 +84,25 @@
 									</div>
 								</MkA>
 							</div>
-							<MkButton
-								v-if="!showPrev && hasPrev"
-								class="load prev"
-								@click="showPrev = true"
-								><i class="ph-caret-down ph-bold ph-lg"></i
-							></MkButton>
+							<div v-if="!showPrev" class="load prev">
+								<MkButton
+									v-if="!note.channelId"
+									class="load button"
+									@click="showPrev = 'local'"
+									>LTL <i class="ph-caret-down ph-bold ph-lg"></i
+								></MkButton>
+								<MkButton
+									v-if="note.channelId"
+									class="load button"
+									@click="showPrev = 'channel'"
+									><i class="ph-television ph-bold ph-lg"></i> <i class="ph-caret-down ph-bold ph-lg"></i
+								></MkButton>
+								<MkButton
+									class="load button"
+									@click="showPrev = 'user'"
+									><i class="ph-user ph-bold ph-lg"></i> <i class="ph-caret-down ph-bold ph-lg"></i
+								></MkButton>
+							</div>
 						</div>
 
 						<div v-if="showPrev" class="_gap">
@@ -114,19 +140,27 @@ const props = defineProps<{
 
 let note = $ref<null | misskey.entities.Note>();
 let clips = $ref();
-let hasPrev = $ref(false);
-let hasNext = $ref(false);
-let showPrev = $ref(false);
-let showNext = $ref(false);
+let showPrev = $ref<"user" | "local" | "channel" | true | false>(false);
+let showNext = $ref<"user" | "local" | "channel" | true | false>(false);
 let error = $ref();
 
 const prevPagination = {
-	endpoint: "users/notes" as const,
+	endpoint: computed(() => {
+		switch (showPrev){
+			case "user":
+			default:
+				return "users/notes";
+			case "local":
+				return "notes/local-timeline";
+			case "channel":
+				return "channels/timeline";
+		}
+	}),
 	limit: 10,
 	params: computed(() =>
 		note
 			? {
-					userId: note.userId,
+					...(showPrev === "local" && note.user.host ? {host: note.user.host} : showPrev === "local" ? {} : showPrev === "channel" ? {channelId: note.channelId} : {userId: note.userId}),
 					untilId: note.id,
 			  }
 			: null
@@ -135,12 +169,22 @@ const prevPagination = {
 
 const nextPagination = {
 	reversed: true,
-	endpoint: "users/notes" as const,
+	endpoint: computed(() => {
+		switch (showNext){
+			case "user":
+			default:
+				return "users/notes";
+			case "local":
+				return "notes/local-timeline";
+			case "channel":
+				return "channels/timeline";
+		}
+	}),
 	limit: 10,
 	params: computed(() =>
 		note
 			? {
-					userId: note.userId,
+				...(showNext === "local" && note.user.host ? {host: note.user.host} : showNext === "local" ? {} : showNext === "channel" ? {channelId: note.channelId} : {userId: note.userId}),
 					sinceId: note.id,
 			  }
 			: null
@@ -148,8 +192,6 @@ const nextPagination = {
 };
 
 function fetchNote() {
-	hasPrev = false;
-	hasNext = false;
 	showPrev = false;
 	showNext = false;
 	note = null;
@@ -162,20 +204,8 @@ function fetchNote() {
 				os.api("notes/clips", {
 					noteId: note.id,
 				}),
-				os.api("users/notes", {
-					userId: note.userId,
-					untilId: note.id,
-					limit: 1,
-				}),
-				os.api("users/notes", {
-					userId: note.userId,
-					sinceId: note.id,
-					limit: 1,
-				}),
 			]).then(([_clips, prev, next]) => {
 				clips = _clips;
-				hasPrev = prev.length !== 0;
-				hasNext = next.length !== 0;
 			});
 		})
 		.catch((err) => {
@@ -227,9 +257,7 @@ definePageMetadata(
 	> .note {
 		> .main {
 			> .load {
-				min-width: 0;
-				margin: 0 auto;
-				border-radius: 999px;
+				justify-content: center;
 
 				&.next {
 					margin-bottom: var(--margin);
@@ -237,6 +265,10 @@ definePageMetadata(
 
 				&.prev {
 					margin-top: var(--margin);
+				}
+
+				&.button {
+					min-width: 0;
 				}
 			}
 

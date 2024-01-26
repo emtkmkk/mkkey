@@ -483,7 +483,11 @@ const fetchMoreAhead = async (): Promise<void> => {
 						offset: offset.value,
 				  }
 				: props.pagination.reversed
+				?	params.sinceId && !params.untilId
 				? {
+						sinceId: items.value[0].id,
+				  }
+				: {
 						untilId: items.value[0].id,
 				  }
 				: {

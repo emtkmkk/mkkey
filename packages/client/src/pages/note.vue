@@ -257,6 +257,7 @@ definePageMetadata(
 	> .note {
 		> .main {
 			> .load {
+				display: flex;
 				justify-content: center;
 
 				&.next {
@@ -269,6 +270,7 @@ definePageMetadata(
 
 				&.button {
 					min-width: 0;
+					border-radius: 999px;
 				}
 			}
 

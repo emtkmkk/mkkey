@@ -26,7 +26,7 @@
 						<div class="main _gap">
 							<div v-if="!showNext" class="load next">
 								<MkButton
-									v-if="!note.channelId"
+									v-if="!note.channelId && ($i || !note.user.host)"
 									class="load loadbutton"
 									@click="showNext = 'local'"
 									>LTL <i class="ph-caret-up ph-bold ph-lg"></i
@@ -38,9 +38,16 @@
 									><i class="ph-television ph-bold ph-lg"></i> <i class="ph-caret-up ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
+									v-if="(note.channelId || $i || !note.user.host)"
 									class="load loadbutton"
 									@click="showNext = 'user'"
 									><i class="ph-user ph-bold ph-lg"></i> <i class="ph-caret-up ph-bold ph-lg"></i
+								></MkButton>
+								<MkButton
+									v-else
+									class="load loadbutton"
+									@click="showNext = 'user'"
+									><i class="ph-caret-up ph-bold ph-lg"></i
 								></MkButton>
 							</div>
 							<div class="note _gap">
@@ -87,7 +94,7 @@
 							</div>
 							<div v-if="!showPrev" class="load prev">
 								<MkButton
-									v-if="!note.channelId"
+									v-if="!note.channelId && ($i || !note.user.host)"
 									class="load loadbutton"
 									@click="showPrev = 'local'"
 									>LTL <i class="ph-caret-down ph-bold ph-lg"></i
@@ -99,9 +106,16 @@
 									><i class="ph-television ph-bold ph-lg"></i> <i class="ph-caret-down ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
+									v-if="(note.channelId || $i || !note.user.host)"
 									class="load loadbutton"
-									@click="showPrev = 'user'"
-									><i class="ph-user ph-bold ph-lg"></i> <i class="ph-caret-down ph-bold ph-lg"></i
+									@click="showNext = 'user'"
+									><i class="ph-user ph-bold ph-lg"></i> <i class="ph-caret-up ph-bold ph-lg"></i
+								></MkButton>
+								<MkButton
+									v-else
+									class="load loadbutton"
+									@click="showNext = 'user'"
+									><i class="ph-caret-up ph-bold ph-lg"></i
 								></MkButton>
 							</div>
 						</div>
@@ -135,6 +149,7 @@ import MkButton from "@/components/MkButton.vue";
 import * as os from "@/os";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
+import { $i } from "@/account";
 import { defaultStore } from "@/store";
 
 const props = defineProps<{

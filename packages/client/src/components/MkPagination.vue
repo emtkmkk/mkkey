@@ -12,7 +12,7 @@
 
 		<div v-else-if="empty" key="_empty_" class="empty">
 			<slot name="empty">
-				<div class="_fullinfo">
+				<div v-if="!silenceNothing" class="_fullinfo">
 					<img
 						src="/static-assets/badges/info.png"
 						class="_ghost"
@@ -186,6 +186,7 @@ const props = withDefaults(
 		pagination: Paging;
 		disableAutoLoad?: boolean;
 		displayLimit?: number;
+		silenceNothing?: boolean;
 	}>(),
 	{
 		displayLimit: 30,

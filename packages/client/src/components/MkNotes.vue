@@ -1,7 +1,7 @@
 <template>
 	<MkPagination ref="pagingComponent" :pagination="pagination">
 		<template #empty>
-			<div class="_fullinfo">
+			<div v-if="!silenceNoNotes" class="_fullinfo">
 				<img
 					src="/static-assets/badges/info.png"
 					class="_ghost"
@@ -46,6 +46,7 @@ import { i18n } from "@/i18n";
 const props = defineProps<{
 	pagination: Paging;
 	noGap?: boolean;
+	silenceNoNotes?: boolean;
 }>();
 
 const pagingComponent = ref<InstanceType<typeof MkPagination>>();

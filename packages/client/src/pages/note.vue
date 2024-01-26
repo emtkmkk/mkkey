@@ -19,6 +19,7 @@
 								key="nextUserNote"
 								:pagination="nextPagination"
 								:no-gap="true"
+								:silence-no-notes="true"
 							/>
 						</div>
 
@@ -26,18 +27,18 @@
 							<div v-if="!showNext" class="load next">
 								<MkButton
 									v-if="!note.channelId"
-									class="load button"
+									class="load loadbutton"
 									@click="showNext = 'local'"
 									>LTL <i class="ph-caret-up ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
 									v-if="note.channelId"
-									class="load button"
+									class="load loadbutton"
 									@click="showNext = 'channel'"
 									><i class="ph-television ph-bold ph-lg"></i> <i class="ph-caret-up ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
-									class="load button"
+									class="load loadbutton"
 									@click="showNext = 'user'"
 									><i class="ph-user ph-bold ph-lg"></i> <i class="ph-caret-up ph-bold ph-lg"></i
 								></MkButton>
@@ -87,18 +88,18 @@
 							<div v-if="!showPrev" class="load prev">
 								<MkButton
 									v-if="!note.channelId"
-									class="load button"
+									class="load loadbutton"
 									@click="showPrev = 'local'"
 									>LTL <i class="ph-caret-down ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
 									v-if="note.channelId"
-									class="load button"
+									class="load loadbutton"
 									@click="showPrev = 'channel'"
 									><i class="ph-television ph-bold ph-lg"></i> <i class="ph-caret-down ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
-									class="load button"
+									class="load loadbutton"
 									@click="showPrev = 'user'"
 									><i class="ph-user ph-bold ph-lg"></i> <i class="ph-caret-down ph-bold ph-lg"></i
 								></MkButton>
@@ -111,6 +112,7 @@
 								key="prevUserNote"
 								:pagination="prevPagination"
 								:no-gap="true"
+								:silence-no-notes="true"
 							/>
 						</div>
 					</div>
@@ -268,7 +270,7 @@ definePageMetadata(
 					margin-top: var(--margin);
 				}
 
-				&.button {
+				&.loadbutton {
 					min-width: 0;
 					border-radius: 999px;
 				}

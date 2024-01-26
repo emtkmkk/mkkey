@@ -270,7 +270,7 @@ definePageMetadata(
 					margin-top: var(--margin);
 				}
 
-				&.loadbutton {
+				> .loadbutton {
 					min-width: 0;
 					border-radius: 999px;
 				}

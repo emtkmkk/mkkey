@@ -108,13 +108,13 @@
 								<MkButton
 									v-if="(note.channelId || $i || !note.user.host)"
 									class="load loadbutton"
-									@click="showNext = 'user'"
+									@click="showPrev = 'user'"
 									><i class="ph-user ph-bold ph-lg"></i> <i class="ph-caret-down ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
 									v-else
 									class="load loadbutton"
-									@click="showNext = 'user'"
+									@click="showPrev = 'user'"
 									><i class="ph-caret-down ph-bold ph-lg"></i
 								></MkButton>
 							</div>

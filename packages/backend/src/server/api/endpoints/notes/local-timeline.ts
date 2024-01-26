@@ -64,6 +64,7 @@ export const paramDef = {
 		untilId: { type: "string", format: "misskey:id" },
 		sinceDate: { type: "integer" },
 		untilDate: { type: "integer" },
+		host: { type: "string" },
 	},
 	required: [],
 } as const;
@@ -84,8 +85,6 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.sinceDate,
 		ps.untilDate,
 	)
-		.andWhere(`((note.userHost IS NULL) OR (user.username || '@' || note."userHost" = ANY ('{"${m.recommendedInstances.join('","')}"}')))`)
-		.andWhere("(note.replyId IS NULL OR reply.userHost IS NULL)")
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")
@@ -97,6 +96,15 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renote.user", "renoteUser")
 		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+
+	
+		if (!ps.host) {
+			query.andWhere(`((note.userHost IS NULL) OR (user.username || '@' || note."userHost" = ANY ('{"${m.recommendedInstances.join('","')}"}')))`)
+			.andWhere("(note.replyId IS NULL OR reply.userHost IS NULL)")
+		} else {
+			query.andWhere("(note.userHost = :host)", { host : ps.host })
+			.andWhere("(note.replyId IS NULL OR reply.userHost = :host)", { host : ps.host })
+		}
 
 	generateChannelQuery(query, user);
 	if (user) {

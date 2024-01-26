@@ -135,6 +135,7 @@ import MkButton from "@/components/MkButton.vue";
 import * as os from "@/os";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
+import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	noteId: string;
@@ -162,7 +163,7 @@ const prevPagination = {
 	params: computed(() =>
 		note
 			? {
-					...(showPrev === "local" && note.user.host ? {host: note.user.host} : showPrev === "local" ? {} : showPrev === "channel" ? {channelId: note.channelId} : {userId: note.userId}),
+					...(showPrev === "local" && note.user.host ? {host: note.user.host, withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,} : showPrev === "local" ? {withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,} : showPrev === "channel" ? {channelId: note.channelId} : {userId: note.userId}),
 					untilId: note.id,
 			  }
 			: null
@@ -186,7 +187,7 @@ const nextPagination = {
 	params: computed(() =>
 		note
 			? {
-				...(showNext === "local" && note.user.host ? {host: note.user.host} : showNext === "local" ? {} : showNext === "channel" ? {channelId: note.channelId} : {userId: note.userId}),
+				...(showNext === "local" && note.user.host ? {host: note.user.host, withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,} : showNext === "local" ? {withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,} : showNext === "channel" ? {channelId: note.channelId} : {userId: note.userId}),
 					sinceId: note.id,
 			  }
 			: null

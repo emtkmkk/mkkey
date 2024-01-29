@@ -162,6 +162,14 @@ export class Note {
 		...id(),
 		array: true, default: '{}',
 	})
+	public ccUserIds: User["id"][];
+
+
+	@Index()
+	@Column({
+		...id(),
+		array: true, default: '{}',
+	})
 	public mentions: User["id"][];
 
 	@Column('text', {

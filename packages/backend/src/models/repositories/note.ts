@@ -143,7 +143,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 				return true;
 			} else {
 				// 指定されているかどうか
-				return note.visibleUserIds.some((id: any) => meId === id);
+				return note.visibleUserIds.some((id: any) => meId === id) || note.ccUserIds.some((id: any) => meId === id);
 			}
 		}
 
@@ -254,6 +254,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			localOnly: !!note.localOnly ?? undefined,
 			visibleUserIds:
 				note.visibility === "specified" ? note.visibleUserIds : undefined,
+			ccUserIdsCount: note.ccUserIds.length,
 			renoteCount: note.renoteCount,
 			repliesCount: note.repliesCount,
 			score: note.score,

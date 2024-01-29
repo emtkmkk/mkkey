@@ -195,6 +195,6 @@ export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
 	});
 
 	// アクティビティを処理
-	await perform(authUser.user, activity);
+	await perform(authUser.user, activity, job.data.user?.id);
 	return "ok";
 };

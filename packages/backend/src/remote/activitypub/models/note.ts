@@ -29,6 +29,7 @@ import {
 	NoteEdits,
 	DriveFiles,
 	Instances,
+	Users,
 } from "@/models/index.js";
 import type { IMentionedRemoteUsers, Note } from "@/models/entities/note.js";
 import type { IObject, IPost } from "../type.js";
@@ -111,6 +112,7 @@ export async function createNote(
 	value: string | IObject,
 	resolver?: Resolver,
 	silent = false,
+	additionalTo?: ILocalUser['id'],
 ): Promise<Note | null> {
 	if (resolver == null) resolver = new Resolver();
 
@@ -179,9 +181,17 @@ export async function createNote(
 	const noteAudience = await parseAudience(actor, note.to, note.cc);
 	let visibility = noteAudience.visibility;
 	const visibleUsers = noteAudience.visibleUsers;
+	const ccUsers = [];
+
+	if (additionalTo) {
+		const additionalUser = await Users.findOneBy({ id: additionalTo, host: IsNull() });
+		if (additionalUser && !visibleUsers.some(x => x.id === additionalUser.id)) {
+			ccUsers.push(additionalUser);
+		}
+	}
 
 	// If Audience (to, cc) was not specified
-	if (visibility === "specified" && visibleUsers.length === 0) {
+	if (visibility === "specified" && visibleUsers.length === 0 && ccUsers.length === 0) {
 		if (typeof value === "string") {
 			// If the input is a string, GET occurs in resolver
 			// Public if you can GET anonymously from here
@@ -382,6 +392,17 @@ export async function createNote(
 			);
 			return null;
 		}
+		for (const recipient of ccUsers) {
+			await createMessage(
+				actor,
+				recipient,
+				undefined,
+				text || undefined,
+				files && files.length > 0 ? files[0] : null,
+				object.id,
+			);
+			return null;
+		}
 	}
 
 	return await post(
@@ -397,6 +418,7 @@ export async function createNote(
 			localOnly: false,
 			visibility,
 			visibleUsers,
+			ccUsers,
 			apMentions,
 			apHashtags,
 			apEmojis,

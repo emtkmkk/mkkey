@@ -183,10 +183,12 @@ export function deliver(user: ThinUser, content: unknown, to: string | null) {
 export function inbox(
 	activity: IActivity,
 	signature: httpSignature.IParsedSignature,
+	user?: ThinUser,
 ) {
 	const data = {
 		activity: activity,
 		signature,
+		user: user ?? undefined,
 	};
 
 	return inboxQueue.add(data, {

@@ -41,11 +41,12 @@ const router = new Router();
 
 //#region Routing
 
-function inbox(ctx: Router.RouterContext) {
+async function inbox(ctx: Router.RouterContext) {
 	if (ctx.req.headers.host !== config.host) {
 		ctx.status = 400;
 		return;
 	}
+	const userId = (ctx.params as { user: string; } | undefined)?.user;
 
 	let signature;
 
@@ -61,7 +62,17 @@ function inbox(ctx: Router.RouterContext) {
 		return;
 	}
 
-	processInbox(ctx.request.body, signature);
+	const user = userId ? await Users.findOneBy({
+		id: userId,
+		host: IsNull(),
+	}) : null;
+
+	if (userId && user == null) {
+		ctx.status = 404;
+		return;
+	}
+
+	await processInbox(ctx.request.body, signature, user);
 
 	ctx.status = 202;
 }

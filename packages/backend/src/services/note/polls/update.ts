@@ -11,7 +11,7 @@ export async function deliverQuestionUpdate(noteId: Note["id"]) {
 	if (note == null) throw new Error("note not found");
 
 	const user = await Users.findOneBy({ id: note.userId });
-	if (user == null) throw new Error("note not found");
+	if (user == null) throw new Error("user not found");
 
 	if (Users.isLocalUser(user)) {
 		const content = renderActivity(

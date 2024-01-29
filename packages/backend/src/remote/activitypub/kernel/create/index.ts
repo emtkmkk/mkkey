@@ -1,5 +1,5 @@
 import Resolver from "../../resolver.js";
-import type { CacheableRemoteUser } from "@/models/entities/user.js";
+import type { CacheableRemoteUser, ILocalUser } from "@/models/entities/user.js";
 import createNote from "./note.js";
 import type { ICreate } from "../../type.js";
 import { getApId, isPost, getApType } from "../../type.js";
@@ -11,6 +11,7 @@ const logger = apLogger;
 export default async (
 	actor: CacheableRemoteUser,
 	activity: ICreate,
+	additionalTo?: ILocalUser['id']
 ): Promise<void> => {
 	const uri = getApId(activity);
 
@@ -44,7 +45,7 @@ export default async (
 	});
 
 	if (isPost(object)) {
-		createNote(resolver, actor, object, false, activity);
+		createNote(resolver, actor, object, false, activity, additionalTo);
 	} else {
 		logger.warn(`Unknown type: ${getApType(object)}`);
 	}

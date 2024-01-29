@@ -1,4 +1,4 @@
-import type { CacheableRemoteUser } from "@/models/entities/user.js";
+import type { CacheableRemoteUser, ILocalUser } from "@/models/entities/user.js";
 import { toArray } from "@/prelude/array.js";
 import {
 	isCreate,
@@ -44,6 +44,7 @@ import { shouldBlockInstance } from "@/misc/should-block-instance.js";
 export async function performActivity(
 	actor: CacheableRemoteUser,
 	activity: IObject,
+	additionalTo?: ILocalUser['id'],
 ) {
 	if (isCollectionOrOrderedCollection(activity)) {
 		const resolver = new Resolver();
@@ -52,7 +53,7 @@ export async function performActivity(
 		)) {
 			const act = await resolver.resolve(item);
 			try {
-				await performOneActivity(actor, act);
+				await performOneActivity(actor, act, additionalTo);
 			} catch (err) {
 				if (err instanceof Error || typeof err === "string") {
 					apLogger.error(err);
@@ -60,13 +61,14 @@ export async function performActivity(
 			}
 		}
 	} else {
-		await performOneActivity(actor, activity);
+		await performOneActivity(actor, activity, additionalTo);
 	}
 }
 
 async function performOneActivity(
 	actor: CacheableRemoteUser,
 	activity: IObject,
+	additionalTo?: ILocalUser['id'],
 ): Promise<void> {
 	if (actor.isSuspended) return;
 
@@ -76,11 +78,11 @@ async function performOneActivity(
 	}
 
 	if (isCreate(activity)) {
-		await create(actor, activity);
+		await create(actor, activity, additionalTo);
 	} else if (isDelete(activity)) {
 		await performDeleteActivity(actor, activity);
 	} else if (isUpdate(activity)) {
-		await performUpdateActivity(actor, activity);
+		await performUpdateActivity(actor, activity, additionalTo);
 	} else if (isRead(activity)) {
 		await performReadActivity(actor, activity);
 	} else if (isFollow(activity)) {

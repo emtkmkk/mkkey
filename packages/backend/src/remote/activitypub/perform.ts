@@ -6,8 +6,9 @@ import { updatePerson } from "./models/person.js";
 export default async (
 	actor: CacheableRemoteUser,
 	activity: IObject,
+	userId: string,
 ): Promise<void> => {
-	await performActivity(actor, activity);
+	await performActivity(actor, activity, userId);
 
 	// Update the remote user information if it is out of date
 	if (actor.uri) {

@@ -42,6 +42,7 @@ const props = defineProps<{
 		visibility: string;
 		localOnly?: boolean;
 		visibleUserIds?: string[];
+		ccUserIdsCount?: number;
 		channelId?: string;
 	};
 }>();
@@ -60,7 +61,7 @@ if (props.note.visibility === "specified") {
 			{
 				showing,
 				users,
-				count: props.note.visibleUserIds.length,
+				count: (props.note.visibleUserIds?.length || 0) + (props.note.ccUserIdsCount || 0),
 				targetElement: specified,
 			},
 			{},

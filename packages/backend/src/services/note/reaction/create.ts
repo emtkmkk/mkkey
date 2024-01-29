@@ -267,6 +267,12 @@ export default async (
 			for (const u of visibleUsers.filter((u) => u && Users.isRemoteUser(u))) {
 				dm.addDirectRecipe(u as IRemoteUser);
 			}
+			const ccUsers = await Promise.all(
+				note.ccUserIds.map((id) => Users.findOneBy({ id })),
+			);
+			for (const u of ccUsers.filter((u) => u && Users.isRemoteUser(u))) {
+				dm.addDirectRecipe(u as IRemoteUser);
+			}
 		}
 
 		dm.execute();

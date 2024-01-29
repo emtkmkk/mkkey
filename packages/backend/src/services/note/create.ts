@@ -149,6 +149,7 @@ type Option = {
 	cw?: string | null;
 	visibility?: string;
 	visibleUsers?: MinimumUser[] | null;
+	ccUsers?: MinimumUser[] | null;
 	channel?: Channel | null;
 	apMentions?: MinimumUser[] | null;
 	apHashtags?: string[] | null;
@@ -800,6 +801,34 @@ export default async (
 		await index(note);
 	});
 
+	
+	export async function appendNoteVisibleUser(user: {
+		id: User["id"];
+		username: User["username"];
+		host: User["host"];
+		isBot: User["isBot"];
+		isCat: User["isCat"];
+	}, note: Note, additionalUserId: ILocalUser["id"]) {
+		if (note.visibility !== "specified") return;
+		if (note.visibleUserIds.includes(additionalUserId)) return;
+		if (note.ccUserIds.includes(additionalUserId)) return;
+
+		const additionalUser = await Users.findOneByOrFail({ id: additionalUserId, host: IsNull() });
+
+		// ノートのvisibleUserIdsを更新
+		await Notes.update(note.id, {
+			ccUserIds: () => `array_append("ccUserIds", "${additionalUser.id}")`,
+		});
+
+		// 新しい対象ユーザーにだけ処理が行われるようにする
+		note.visibleUserIds = [];
+		note.ccUserIds = [additionalUser.id];
+
+		// ストリームに流す
+		const noteObj = await Notes.pack(note, null);
+		publishNotesStream(noteObj);
+	}
+
 async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 	if (data.localOnly && data.channel) return null;
 	// ローカル＆フォロワー
@@ -872,7 +901,12 @@ async function insertNote(
 					? data.visibleUsers.map((u) => u.id)
 					: []
 				: [],
-
+		ccUserIds:
+			data.visibility === "specified"
+			? data.ccUsers
+				? data.ccUsers.map((u) => u.id)
+				: []
+			: [],
 		attachedFileTypes: data.files ? data.files.map((file) => file.type) : [],
 		isFirstNote: !!data.isFirstNote,
 		// 以下非正規化データ

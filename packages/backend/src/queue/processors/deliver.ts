@@ -58,13 +58,6 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 				isNotResponding: true,
 			});
 
-			if (res instanceof StatusError && typeof res.statusCode === "number" && res.statusCode === 410) {
-				// Goneが返された場合、以降の配送をストップします
-				Instances.update(i.id, {
-					isSuspended: true,
-				});
-			}
-
 			instanceChart.requestSent(i.host, false);
 			apRequestChart.deliverFail();
 			federationChart.deliverd(i.host, false);
@@ -72,7 +65,15 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 
 		if (res instanceof StatusError) {
 			// 4xx
-			if (res.isClientError) {
+			if (!res.isRetryable) {
+				// 相手が閉鎖していることを明示しているため、配送停止する
+				if (job.data.isSharedInbox && res.statusCode === 410) {
+					registerOrFetchInstanceDoc(host).then(i => {
+						Instances.update(i.id, {
+							isSuspended: true,
+						});
+					});
+				}
 				// HTTPステータスコード4xxはクライアントエラーであり、それはつまり
 				// 何回再送しても成功することはないということなのでエラーにはしないでおく
 				return `${res.statusCode} ${res.statusMessage}`;

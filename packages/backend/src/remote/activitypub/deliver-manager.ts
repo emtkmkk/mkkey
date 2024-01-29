@@ -80,7 +80,7 @@ export default class DeliverManager {
 	public async execute() {
 		if (!Users.isLocalUser(this.actor)) return;
 
-		const inboxes = new Set<string>();
+		const inboxes = new Map<string, boolean>();
 
 		/*
 		build inbox list
@@ -140,7 +140,7 @@ export default class DeliverManager {
 
 				for (const following of followers) {
 					const inbox = following.followerSharedInbox || following.followerInbox;
-					inboxes.add(inbox);
+					inboxes.set(inbox, following.followerSharedInbox === null);
 				}
 			} else {
 				console.log(`skip : no remote follower (${union.map((u) => u?.id).join(", ")})`)
@@ -159,7 +159,7 @@ export default class DeliverManager {
 					// check that they actually have an inbox
 					recipe.to.inbox != null,
 			)
-			.forEach((recipe) => inboxes.add(recipe.to.inbox!));
+			.forEach((recipe) => inboxes.set(recipe.to.inbox!, false));
 
 		console.log(`deliver : ${inboxSize}${inboxes.size - inboxSize ? ` + ${inboxes.size - inboxSize}` : ""}`)
 		
@@ -169,7 +169,7 @@ export default class DeliverManager {
 			try {
 				validInboxes.push({
 					inbox,
-					host: new URL(inbox).host,
+					host: new URL(inbox[0]).host,
 				});
 			} catch (error) {
 				console.error(error);
@@ -187,7 +187,7 @@ export default class DeliverManager {
 			// skip instances as indicated
 			if (instancesToSkip.includes(valid.host)) continue;
 
-			deliver(this.actor, this.activity, valid.inbox);
+			deliver(this.actor, this.activity, valid.inbox[0], valid.inbox[1]);
 		}
 	}
 }

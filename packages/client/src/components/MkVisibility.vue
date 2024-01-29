@@ -11,9 +11,14 @@
 			v-tooltip="i18n.ts._visibility.followersTooltip"
 		></i>
 		<i
-			v-else-if="note.visibility === 'specified'"
+			v-else-if="note.visibility === 'specified' && note.visibleUserIds?.length"
 			ref="specified"
 			class="ph-envelope-simple-open ph-bold ph-lg"
+		></i>
+		<i
+			v-else-if="note.visibility === 'specified'"
+			ref="specified"
+			class="ph-user-circle-gear ph-bold ph-lg"
 		></i>
 	</span>
 	<span v-if="note.localOnly && note.channelId" :class="$style.localOnly"

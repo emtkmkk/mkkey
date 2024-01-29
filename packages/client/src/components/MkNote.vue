@@ -7,7 +7,7 @@
 		v-size="{ max: [500, 450, 350, 300] }"
 		class="tkcbzcuz"
 		:tabindex="!isDeleted ? '-1' : null"
-		:class="[{ renote: isRenote } , `v-${appearNote.visibility}` , { localOnly : appearNote.localOnly }]"
+		:class="[{ renote: isRenote } , `${appearNote.visibility === 'specified' && !appearNote.visibleUserIds?.length ? 'circle' : appearNote.visibility}` , { localOnly : appearNote.localOnly }]"
 	>
 		<MkNoteSub
 			v-if="appearNote.reply && !detailedView"
@@ -32,7 +32,7 @@
 				<i class="ph-push-pin ph-bold ph-lg"></i
 				>{{ i18n.ts.pinnedNote }}
 			</div>
-			<div v-if="isRenote" class="renote" :class="[appearNote.visibility == 'public' ? `v-${note.visibility}` : '' , { localOnly : note.localOnly }]">
+			<div v-if="isRenote" class="renote" :class="[appearNote.visibility == 'public' ? `v-${note.visibility === 'specified' && !note.visibleUserIds?.length ? 'circle' : note.visibility}` : '' , { localOnly : note.localOnly }]">
 				<i v-if="!pinned" class="ph-repeat ph-bold ph-lg"></i>
 				<I18n v-if="!pinned" :src="i18n.ts.renotedBy" tag="span">
 					<template #user>

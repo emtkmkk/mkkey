@@ -11,7 +11,7 @@
 		}]"
 	>
 		<div v-if="conversation && depth > 1" class="line"></div>
-		<div class="main" @click="noteClick" :class="[`v-${appearNote.visibility === 'specified' && appearNote.visibleUserIds.length === 0 ? 'circle' : appearNote.visibility}` , { localOnly : appearNote.localOnly } ]">
+		<div class="main" @click="noteClick" :class="[`v-${appearNote.visibility === 'specified' && !appearNote.visibleUserIds?.length ? 'circle' : appearNote.visibility}` , { localOnly : appearNote.localOnly } ]">
 			<div class="avatar-container">
 				<MkAvatar class="avatar" :user="appearNote.user" />
 				<div

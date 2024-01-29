@@ -42,6 +42,9 @@ a[href*="/tags/"] {
 .v-specified {
     background-color: rgba(190, 190, 50, 0.2) !important;
 }
+.v-circle {
+    background-color: rgba(255, 116, 63, 0.2) !important;
+}
 
 span > i.ph-bold.ph-envelope-simple-open::before,
 span > i.ph-bold.ph-hand-fist::before{

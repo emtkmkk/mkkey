@@ -64,10 +64,14 @@ export async function getResponse(args: {
 	setTimeout(() => {
 		controller.abort();
 	}, timeout * 6);
+	const bearcaps = args.url.startsWith('bear:?') ? parseBearcaps(args.url) : undefined;
 
-	const res = await fetch(args.url, {
+	const res = await fetch(bearcaps?.url ?? args.url, {
 		method: args.method,
-		headers: args.headers,
+		headers: {
+			...(args.headers ?? {}),
+			...(bearcaps?.token ? { Authorization: `Bearer ${bearcaps.token}` } : {}),
+		},
 		body: args.body,
 		timeout,
 		size: args.size || 10 * 1024 * 1024,
@@ -155,6 +159,19 @@ export function getAgentByUrl(url: URL, bypassProxy = false) {
 	} else {
 		return url.protocol === "http:" ? httpAgent : httpsAgent;
 	}
+}
+
+// Bearcaps https://docs.joinmastodon.org/spec/bearcaps/
+// bear:?t=<token>&u=https://example.com/foo'
+// -> GET https://example.com/foo Authorization: Bearer <token>
+function parseBearcaps(url: string): { url: string, token: string | undefined } | undefined {
+	const params = new URLSearchParams(url.split('?')[1]);
+	if (!params.has('u')) return undefined;
+
+	return {
+		url: params.get('u')!,
+		token: params.get('t') ?? undefined,
+	};
 }
 
 export class StatusError extends Error {

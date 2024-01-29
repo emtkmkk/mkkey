@@ -104,7 +104,7 @@ export default async function (ctx: Koa.Context) {
 			} catch (e) {
 				serverLogger.error(`${e}`);
 
-				if (e instanceof StatusError && e.isClientError) {
+				if (e instanceof StatusError && !e.isRetryable) {
 					ctx.status = e.statusCode;
 					ctx.set("Cache-Control", "max-age=86400");
 				} else {

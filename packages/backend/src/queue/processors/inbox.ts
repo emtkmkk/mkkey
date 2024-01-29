@@ -75,7 +75,7 @@ export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
 		} catch (e) {
 			// Skip if target is 4xx
 			if (e instanceof StatusError) {
-				if (e.isClientError) {
+				if (!e.isRetryable) {
 					return `skip: Ignored deleted actors on both ends ${activity.actor} - ${e.statusCode}`;
 				}
 				throw new Error(

@@ -166,7 +166,7 @@ export async function proxyMedia(ctx: Koa.Context) {
 	} catch (e) {
 		serverLogger.error(`${e}`);
 
-		if (e instanceof StatusError && (e.statusCode === 302 || e.isClientError)) {
+		if (e instanceof StatusError && (e.statusCode === 302 || !e.isRetryable)) {
 			ctx.status = e.statusCode;
 		} else {
 			ctx.status = 500;

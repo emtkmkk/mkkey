@@ -48,7 +48,7 @@ export default async function (
 		} catch (e) {
 			// Skip if target is 4xx
 			if (e instanceof StatusError) {
-				if (e.isClientError) {
+				if (!e.isRetryable) {
 					logger.warn(`Ignored announce target ${targetUri} - ${e.statusCode}`);
 					return;
 				}

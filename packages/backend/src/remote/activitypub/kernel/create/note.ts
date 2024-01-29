@@ -47,7 +47,7 @@ export default async function (
 		await createNote(note, resolver, silent, additionalTo);
 		return "ok";
 	} catch (e) {
-		if (e instanceof StatusError && e.isClientError) {
+		if (e instanceof StatusError && !e.isRetryable) {
 			return `skip ${e.statusCode}`;
 		} else {
 			throw e;

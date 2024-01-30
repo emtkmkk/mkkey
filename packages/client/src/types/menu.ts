@@ -16,18 +16,22 @@ export type MenuLink = {
 	text: string;
 	textStyle?: string;
 	icon?: string;
+	icons?: string;
 	indicate?: boolean;
 	avatar?: Misskey.entities.User;
+	action?: MenuAction;
 };
 export type MenuA = {
 	type: "a";
 	href: string;
 	target?: string;
-	download?: string;c
+	download?: string;
 	text: string;
 	textStyle?: string;
 	icon?: string;
+	icons?: string;
 	indicate?: boolean;
+	action?: MenuAction;
 };
 export type MenuUser = {
 	type: "user";

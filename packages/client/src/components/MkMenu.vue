@@ -28,7 +28,7 @@
 						v-else-if="item.type === 'link'"
 						:to="item.to"
 						class="_button item"
-						@click.passive="close(true)"
+						@click="clicked(item.action, $event)"
 						@mouseenter.passive="onItemMouseEnter(item)"
 						@mouseleave.passive="onItemMouseLeave(item)"
 					>
@@ -63,7 +63,7 @@
 						:target="item.target"
 						:download="item.download"
 						class="_button item"
-						@click="close(true)"
+						@click="clicked(item.action, $event)"
 						@mouseenter.passive="onItemMouseEnter(item)"
 						@mouseleave.passive="onItemMouseLeave(item)"
 					>
@@ -313,12 +313,17 @@ async function showChildren(item: MenuItem, ev: MouseEvent) {
 	}
 }
 
-function clicked(fn: MenuAction, ev: MouseEvent) {
-	fn(ev);
+function clicked(fn: MenuAction | undefined, ev: MouseEvent) {
+	if (fn) {
+		fn(ev);
+	}
 	close(true);
 }
 
 function close(actioned = false) {
+	if (actioned) {
+
+	}
 	emit("close", actioned);
 }
 

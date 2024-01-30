@@ -590,6 +590,7 @@ let autocomplete = $ref(null);
 let smartMFMInputer = $computed(defaultStore.makeGetterSetter("smartMFMInputer"));
 let draghover = $ref(false);
 let reply = $ref(props.reply);
+let replyId = $ref(null);
 let quoteId = $ref(null);
 let hasNotSpecifiedMentions = $ref(false);
 let includesOtherServerEmoji = $ref(false);
@@ -703,6 +704,8 @@ const draftKey = $computed((): string => {
 		key += `renote:${props.renote.id}`;
 	} else if (reply) {
 		key += `reply:${reply.id}`;
+	} else if (replyId) {
+		key += `reply:${replyId}`;
 	} else if (props.airReply) {
 		key += `air:${props.airReply.id}`;
 	} else if (props.initialNote) {
@@ -1657,6 +1660,7 @@ function loadDraft(key?) {
 	];
 	if (draft) {
 		if ((draft.data.text || (draft.data.useCw && draft.data.cw) || draft.data.files?.length || draft.data.poll)) {
+			replyId = draft.data.replyId;
 			text = draft.data.text;
 			useCw = draft.data.useCw;
 			if (useCw) cw = draft.data.cw;

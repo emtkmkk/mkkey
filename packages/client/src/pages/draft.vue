@@ -51,7 +51,6 @@ import { defaultStore } from "@/store";
 const { t, ts } = i18n;
 import { MenuA, MenuButton, MenuItem, MenuLink } from "@/types/menu";
 import { notePage } from "@/filters/note";
-import { mainRouter } from "@/router";
 
 const emit = defineEmits<{
 	(ev: "done", v: { canceled: boolean; result: any }): void;
@@ -174,25 +173,21 @@ function menu(ev: MouseEvent, draftKey: string) {
 			]),
 			...(jsonParse[draftKey].data?.replyId ? [
 				{
-					type: "button",
+					type: "link",
 					text: ts._drafts.openReply,
 					icon: "ph-arrow-u-up-left ph-bold ph-lg",
-					action: async () => {
-						mainRouter.push(notePage({id: jsonParse[draftKey].data?.quoteId}));
-						emit("closeAll");
-					},
-				} as MenuButton
+					to: notePage({id: jsonParse[draftKey].data?.replyId}),
+					action: () => emit("closeAll"),
+				} as MenuLink
 			] : []),
 			...(jsonParse[draftKey].data?.quoteId ? [
 				{
-					type: "button",
+					type: "link",
 					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
 					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
-					action: async () => {
-						mainRouter.push(notePage({id: jsonParse[draftKey].data?.quoteId}));
-						emit("closeAll");
-					},
-				} as MenuButton
+					to: notePage({id: jsonParse[draftKey].data?.quoteId}),
+					action: () => emit("closeAll"),
+				} as MenuLink
 			] : []),
 			...(defaultStore.state.developer && false ? [{
 				type: "a",

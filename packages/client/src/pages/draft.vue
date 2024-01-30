@@ -132,12 +132,13 @@ function convertName(draftKey: string): string {
 }
 
 function getTypeText(draft): string {
+	const draftData = draft.data || draft.value?.data;
 	return [
-		draft.value.data.visibility !== "public" && ts._visibility[draft.value.data.visibility] ? ts._visibility[draft.value.data.visibility] : "",
-		draft.value.data.localOnly ? ts._visibility.localAndFollower : "",
-		draft.value.data.quoteId && !draft.key?.startsWith("reply:") ? ts._drafts.quote : "",
-		draft.value.data.poll ? ts._drafts.poll : "",
-		draft.value.data.files?.length ? `${i18n.t("_drafts.files", { count: draft.value.data.files?.length })} ` : ""
+		draftData.visibility !== "public" && ts._visibility[draftData.visibility] ? ts._visibility[draftData.visibility] : "",
+		draftData.localOnly ? ts._visibility.localAndFollower : "",
+		draftData.quoteId && !draft.key?.startsWith("reply:") ? ts._drafts.quote : "",
+		draftData.poll ? ts._drafts.poll : "",
+		draftData.files?.length ? `${i18n.t("_drafts.files", { count: draftData.files?.length })} ` : ""
 	].filter(Boolean).join(" ")
 }
 
@@ -179,7 +180,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 				action: async () => {
 					const text = `${jsonParse[draftKey].data.useCw ? `${jsonParse[draftKey].data.cw || "CW"} / ` : ""}${jsonParse[draftKey].data.text || ts._drafts.noText}`
 					await os.alert({
-						text: text + (getTypeText(drafts[draftKey]) ? ("\n" + getTypeText(drafts[draftKey])) : "")
+						text: text + (getTypeText(drafts[jsonParse[draftKey]]) ? ("\n" + getTypeText(jsonParse[draftKey])) : "")
 					});
 				},
 			} as MenuButton,
@@ -191,7 +192,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 					const { canceled } = await os.yesno({
 						type: "question",
 						title: ts._drafts.directPostQuestion,
-						text: `${text.slice(0,120)}${text.length > 120 ? "…" : ""}${getTypeText(drafts[draftKey]) ? ("\n" + getTypeText(drafts[draftKey])) : ""}`
+						text: `${text.slice(0,120)}${text.length > 120 ? "…" : ""}${getTypeText(jsonParse[draftKey]) ? ("\n" + getTypeText(jsonParse[draftKey])) : ""}`
 					})
 					if (!canceled) {
 						await os.apiWithDialog("notes/create",{

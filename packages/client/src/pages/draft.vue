@@ -163,27 +163,27 @@ function menu(ev: MouseEvent, draftKey: string) {
 
 	return os.popupMenu(
 		[
-			...((((draftKey?.startsWith("reply:") && jsonParse[draftKey].value.data?.quoteId) || jsonParse[draftKey].value.data?.replyId)) ? [] : [
+			...((((draftKey?.startsWith("reply:") && jsonParse[draftKey].data?.quoteId) || jsonParse[draftKey].data?.replyId)) ? [] : [
 				{
 					text: ts._drafts.load,
 					icon: "ph-caret-circle-down ph-bold ph-lg",
 					action: () => load(draftKey),
 				}
 			]),
-			...(drafts[draftKey].value.data?.replyId ? [
+			...(jsonParse[draftKey].data?.replyId ? [
 				{
 					type: "a",
 					text: ts._drafts.openReply,
 					icon: "ph-arrow-u-up-left ph-bold ph-lg",
-					href: notePage({id: drafts[draftKey].value.data?.replyId}),
+					href: notePage({id: jsonParse[draftKey].data?.replyId}),
 				} as MenuA
 			] : []),
-			...(drafts[draftKey].value.data?.quoteId ? [
+			...(jsonParse[draftKey].data?.quoteId ? [
 				{
 					type: "a",
-					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].value.data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
-					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].value.data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
-					href: notePage({id: drafts[draftKey].value.data?.quoteId}),
+					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
+					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
+					href: notePage({id: jsonParse[draftKey].data?.quoteId}),
 				} as MenuA
 			] : []),
 			...(defaultStore.state.developer && false ? [{

@@ -49,7 +49,7 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 const { t, ts } = i18n;
-import { MenuA, MenuItem, MenuLink } from "@/types/menu";
+import { MenuA, MenuButton, MenuItem, MenuLink } from "@/types/menu";
 import { notePage } from "@/filters/note";
 
 const emit = defineEmits<{
@@ -58,6 +58,7 @@ const emit = defineEmits<{
 	(ev: "load", v: { canceled: boolean; key: any }): void;
 	(ev: "delete", v: { canceled: boolean; key: any }): void;
 	(ev: "closed"): void;
+	(ev: "closeAll"): void;
 }>();
 
 let jsonParse = $ref(JSON.parse(localStorage.getItem("drafts") || "{}"));
@@ -172,19 +173,25 @@ function menu(ev: MouseEvent, draftKey: string) {
 			]),
 			...(jsonParse[draftKey].data?.replyId ? [
 				{
-					type: "link",
+					type: "button",
 					text: ts._drafts.openReply,
 					icon: "ph-arrow-u-up-left ph-bold ph-lg",
-					to: notePage({id: jsonParse[draftKey].data?.replyId}),
-				} as MenuLink
+					action: () => {
+						os.modalPageWindow(notePage({id: jsonParse[draftKey].data?.quoteId}))
+						emit("closeAll");
+					},
+				} as MenuButton
 			] : []),
 			...(jsonParse[draftKey].data?.quoteId ? [
 				{
-					type: "link",
+					type: "button",
 					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
 					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
-					to: notePage({id: jsonParse[draftKey].data?.quoteId}),
-				} as MenuLink
+					action: () => {
+						os.modalPageWindow(notePage({id: jsonParse[draftKey].data?.quoteId}))
+						emit("closeAll");
+					},
+				} as MenuButton
 			] : []),
 			...(defaultStore.state.developer && false ? [{
 				type: "a",

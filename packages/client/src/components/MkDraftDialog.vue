@@ -15,6 +15,7 @@
 					@save="emit('save', $event)"
 					@load="load($event)"
 					@delete="emit('delete', $event)"
+					@close-all="closeAll"
 				/>
 			</div>
 		</div>
@@ -32,6 +33,7 @@ const emit = defineEmits<{
 	(ev: "load", v: { canceled: boolean; key: any }): void;
 	(ev: "delete", v: { canceled: boolean; key: any }): void;
 	(ev: "closed"): void;
+	(ev: "closeAll"): void;
 }>();
 
 const dialog = $ref<InstanceType<typeof XModalWindow>>();
@@ -45,7 +47,8 @@ function load(ev) {
 	dialog.close();
 }
 
-function close(res) {
+function closeAll(res) {
+	emit("closeAll");
 	dialog.close();
 }
 </script>

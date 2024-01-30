@@ -1650,6 +1650,9 @@ async function openDraft(ev: MouseEvent) {
 				if (!result || result.canceled) return;
 				deleteDraft(result.key);
 			},
+			closeAll: () => {
+				emit("cancel");
+			}
 		},
 		"closed");
 }

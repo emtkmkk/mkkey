@@ -181,8 +181,8 @@ function menu(ev: MouseEvent, draftKey: string) {
 			...(drafts[draftKey].value.data?.quoteId ? [
 				{
 					type: "a",
-					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
-					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
+					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].value.data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
+					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].value.data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
 					href: notePage({id: drafts[draftKey].value.data?.quoteId}),
 				} as MenuA
 			] : []),

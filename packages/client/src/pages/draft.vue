@@ -51,7 +51,7 @@ import { defaultStore } from "@/store";
 const { t, ts } = i18n;
 import { MenuA, MenuButton, MenuItem, MenuLink } from "@/types/menu";
 import { notePage } from "@/filters/note";
-import { mainRouter, useRouter } from "@/router";
+import { mainRouter } from "@/router";
 
 const emit = defineEmits<{
 	(ev: "done", v: { canceled: boolean; result: any }): void;
@@ -105,13 +105,6 @@ let drafts = $computed(() => {
 });
 
 useCssModule();
-
-let router;
-try {
-	router = useRouter();
-} catch (e) {
-	router = mainRouter;
-}
 
 function convertName(draftKey: string): string {
 	if (!jsonParse[draftKey]) return "";
@@ -185,7 +178,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 					text: ts._drafts.openReply,
 					icon: "ph-arrow-u-up-left ph-bold ph-lg",
 					action: () => {
-						router.push(notePage({id: jsonParse[draftKey].data?.quoteId}));
+						mainRouter.push(notePage({id: jsonParse[draftKey].data?.quoteId}));
 						emit("closeAll");
 					},
 				} as MenuButton
@@ -196,7 +189,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
 					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
 					action: () => {
-						router.push(notePage({id: jsonParse[draftKey].data?.quoteId}));
+						mainRouter.push(notePage({id: jsonParse[draftKey].data?.quoteId}));
 						emit("closeAll");
 					},
 				} as MenuButton

@@ -191,7 +191,9 @@ function menu(ev: MouseEvent, draftKey: string) {
 				text: ts._drafts.directPost,
 				icon: "ph-paper-plane-tilt ph-bold ph-lg",
 				action: async () => {
-					const text = `${jsonParse[draftKey].data.useCw ? `${jsonParse[draftKey].data.cw || "CW"} / ` : ""}${jsonParse[draftKey].data.text || ts._drafts.noText}`
+					const processedText = preprocess(jsonParse[draftKey].data.text);
+					const processedCw = preprocess(jsonParse[draftKey].data.cw);
+					const text = `${jsonParse[draftKey].data.useCw ? `${processedCw || "CW"} / ` : ""}${processedText || ts._drafts.noText}`
 					const { canceled } = await os.yesno({
 						type: "question",
 						title: ts._drafts.directPostQuestion,

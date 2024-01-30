@@ -169,8 +169,48 @@ function menu(ev: MouseEvent, draftKey: string) {
 					text: ts._drafts.load,
 					icon: "ph-caret-circle-down ph-bold ph-lg",
 					action: () => load(draftKey),
-				}
+				},
 			]),
+			{
+				type: "button",
+				text: ts._drafts.showText,
+				icon: "ph-arrow-u-up-left ph-bold ph-lg",
+				to: notePage({id: jsonParse[draftKey].data?.replyId}),
+				action: async () => {
+					const text = `${jsonParse[draftKey].data.useCw ? `${jsonParse[draftKey].data.cw || "CW"} / ` : ""}${jsonParse[draftKey].data.text || ts._drafts.noText}`
+					await os.alert({
+						text: text + (getTypeText(drafts[draftKey]) ? ("\n" + getTypeText(drafts[draftKey])) : "")
+					});
+				},
+			} as MenuButton,
+			...(["manual", "auto", "note", "edit", "air", "renote"].includes(draftKey?.split(":")?.[0]) ? [{
+				text: ts._drafts.directPost,
+				icon: "ph-paper-plane-tilt ph-bold ph-lg",
+				action: async () => {
+					const text = `${jsonParse[draftKey].data.useCw ? `${jsonParse[draftKey].data.cw || "CW"} / ` : ""}${jsonParse[draftKey].data.text || ts._drafts.noText}`
+					const { canceled } = await os.yesno({
+						type: "question",
+						title: ts._drafts.directPostQuestion,
+						text: `${text.slice(0,120)}${text.length > 120 ? "…" : ""}${getTypeText(drafts[draftKey]) ? ("\n" + getTypeText(drafts[draftKey])) : ""}`
+					})
+					if (!canceled) {
+						await os.apiWithDialog("notes/create",{
+							text: jsonParse[draftKey].data.text,
+							cw: jsonParse[draftKey].data.useCw ? (jsonParse[draftKey].data.cw || "CW") : undefined,
+							fileIds: jsonParse[draftKey].data.fileIds.length > 0 ? jsonParse[draftKey].data.fileIds : undefined,
+							renoteId: jsonParse[draftKey].data.quoteId || undefined,
+							poll: jsonParse[draftKey].data.poll,
+							visibility: jsonParse[draftKey].data.visibility,
+							localOnly: jsonParse[draftKey].data.localOnly,
+							visibleUserIds:
+								jsonParse[draftKey].data.visibility === "specified"
+									? jsonParse[draftKey].data.visibleUserIds
+									: undefined,
+						});
+						deleteDraft(draftKey);
+					}
+				}
+			}] : []),
 			...(jsonParse[draftKey].data?.replyId ? [
 				{
 					type: "link",

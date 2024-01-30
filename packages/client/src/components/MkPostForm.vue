@@ -568,8 +568,11 @@ let poll = $ref<{
 let useCw = $ref(false);
 let showPreview = $computed(defaultStore.makeGetterSetter("showPreview"));
 let cw = $computed(defaultStore.makeGetterSetter("postFormCw"));
-let backupText = "";
-let backupCw = "";
+let backupText = text;
+let backupCw = cw;
+let backupFiles = files;
+let backupQuoteId = null;
+let backupPoll = null;
 let localOnly = $ref<boolean>(
 	props.initialLocalOnly ?? (defaultStore.state.rememberNoteVisibility
 		? defaultStore.state.localAndFollower
@@ -1573,9 +1576,15 @@ function cancel() {
 	} else {
 		let _cw = cw;
 		let _text = text;
-		if (!cw?.trim() && !text?.trim()) {
+		let _quoteId = quoteId;
+		let _files = files;
+		let _poll = poll;
+		if (!cw?.trim() && !text?.trim() && !files?.length && !quoteId?.trim() && !poll) {
 				cw = backupCw;
 				text = backupText;
+				files = backupFiles;
+				quoteId = backupQuoteId;
+				poll = backupPoll;
 		} else {
 			cw = "";
 			if (useCw && reply){
@@ -1587,13 +1596,26 @@ function cancel() {
 			} else {
 				text = "";
 			}
-		if ((backupCw || backupText) && _cw === cw && _text === text) {
-				cw = backupCw;
-				text = backupText;
-		} else {
-				backupCw = _cw;
-				backupText = _text;
-		}
+			
+			files = [];
+			quoteId = null;
+			poll = null;
+
+			if (
+				(backupCw || backupText || backupFiles?.length || backupQuoteId || backupPoll) 
+				&& _cw === cw && _text === text && quoteId === _quoteId && JSON.stringify(files) === JSON.stringify(_files) && JSON.stringify(poll) === JSON.stringify(_poll)) {
+					cw = backupCw;
+					text = backupText;
+					files = backupFiles;
+					quoteId = backupQuoteId;
+					poll = backupPoll;
+			} else {
+					backupCw = _cw;
+					backupText = _text;
+					backupFiles = _files;
+					backupPoll = _poll;
+					backupQuoteId = _quoteId;
+			}
 		}
 	}
 }
@@ -1681,7 +1703,7 @@ function loadDraft(key?) {
 			if (draft.data.poll) {
 				poll = draft.data.poll;
 			}
-			if (draft.data.quoteId && (!props.renote || props.renote.id !== draft.data.quoteId)) {
+			if (draft.data.quoteId && (!props.reply || props.reply.id !== draft.data.quoteId) && (!props.renote || props.renote.id !== draft.data.quoteId)) {
 				quoteId = draft.data.quoteId;
 			}
 			if (!key && draftKey === "note" && Date.now() > Date.parse(draft.updatedAt) + (300 * 1000)) {

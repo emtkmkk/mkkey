@@ -180,7 +180,8 @@ function menu(ev: MouseEvent, draftKey: string) {
 				to: notePage({id: jsonParse[draftKey].data?.replyId}),
 				action: async () => {
 					const processedText = preprocess(jsonParse[draftKey].data.text);
-					const text = `${jsonParse[draftKey].data.useCw ? `${jsonParse[draftKey].data.cw || "CW"} / ` : ""}${processedText || ts._drafts.noText}`
+					const processedCw = preprocess(jsonParse[draftKey].data.cw);
+					const text = `${jsonParse[draftKey].data.useCw ? `${processedCw || "CW"} / ` : ""}${processedText || ts._drafts.noText}`
 					await os.alert({
 						text: text + (getTypeText(jsonParse[draftKey]) ? ("\n" + getTypeText(jsonParse[draftKey])) : "")
 					});
@@ -198,9 +199,10 @@ function menu(ev: MouseEvent, draftKey: string) {
 					})
 					if (!canceled) {
 						const processedText = preprocess(jsonParse[draftKey].data.text);
+						const processedCw = preprocess(jsonParse[draftKey].data.cw);
 						await os.apiWithDialog("notes/create",{
 							text: processedText === "" ? undefined : processedText,
-							cw: jsonParse[draftKey].data.useCw ? (jsonParse[draftKey].data.cw || "CW") : undefined,
+							cw: jsonParse[draftKey].data.useCw ? (processedCw || "CW") : undefined,
 							fileIds: jsonParse[draftKey].data.fileIds?.length > 0 ? jsonParse[draftKey].data.fileIds : undefined,
 							renoteId: jsonParse[draftKey].data.quoteId || undefined,
 							poll: jsonParse[draftKey].data.poll,

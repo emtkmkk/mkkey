@@ -1476,6 +1476,8 @@ async function post() {
 	if (useCw && !cw?.trim()) cw = "CW";
 	if (!useCw && cw) cw = "";
 
+	const processedCw = preprocess(cw);
+
 	if (!canPublic && visibility === "public") visibility = "home";
 	if (!canHome && visibility === "home") visibility = "followers";
 	if (!canFollower && visibility === "followers") visibility = "specified";
@@ -1492,7 +1494,7 @@ async function post() {
 			: undefined,
 		channelId: props.channel ? props.channel.id : undefined,
 		poll: poll,
-		cw: useCw ? cw || "" : undefined,
+		cw: useCw ? (processedCw ? processedCw : "") : undefined,
 		localOnly: localOnly,
 		visibility: visibility,
 		visibleUserIds:

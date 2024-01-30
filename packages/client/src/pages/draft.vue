@@ -175,12 +175,12 @@ function menu(ev: MouseEvent, draftKey: string) {
 			{
 				type: "button",
 				text: ts._drafts.showText,
-				icon: "ph-arrow-u-up-left ph-bold ph-lg",
+				icon: "ph-binoculars ph-bold ph-lg",
 				to: notePage({id: jsonParse[draftKey].data?.replyId}),
 				action: async () => {
 					const text = `${jsonParse[draftKey].data.useCw ? `${jsonParse[draftKey].data.cw || "CW"} / ` : ""}${jsonParse[draftKey].data.text || ts._drafts.noText}`
 					await os.alert({
-						text: text + (getTypeText(drafts[jsonParse[draftKey]]) ? ("\n" + getTypeText(jsonParse[draftKey])) : "")
+						text: text + (getTypeText(jsonParse[draftKey]) ? ("\n" + getTypeText(jsonParse[draftKey])) : "")
 					});
 				},
 			} as MenuButton,
@@ -198,7 +198,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 						await os.apiWithDialog("notes/create",{
 							text: jsonParse[draftKey].data.text,
 							cw: jsonParse[draftKey].data.useCw ? (jsonParse[draftKey].data.cw || "CW") : undefined,
-							fileIds: jsonParse[draftKey].data.fileIds.length > 0 ? jsonParse[draftKey].data.fileIds : undefined,
+							fileIds: jsonParse[draftKey].data.fileIds?.length > 0 ? jsonParse[draftKey].data.fileIds : undefined,
 							renoteId: jsonParse[draftKey].data.quoteId || undefined,
 							poll: jsonParse[draftKey].data.poll,
 							visibility: jsonParse[draftKey].data.visibility,

@@ -51,6 +51,7 @@ import { defaultStore } from "@/store";
 const { t, ts } = i18n;
 import { MenuA, MenuButton, MenuItem, MenuLink } from "@/types/menu";
 import { notePage } from "@/filters/note";
+import { preprocess } from "@/scripts/preprocess";
 
 const emit = defineEmits<{
 	(ev: "done", v: { canceled: boolean; result: any }): void;
@@ -178,7 +179,8 @@ function menu(ev: MouseEvent, draftKey: string) {
 				icon: "ph-binoculars ph-bold ph-lg",
 				to: notePage({id: jsonParse[draftKey].data?.replyId}),
 				action: async () => {
-					const text = `${jsonParse[draftKey].data.useCw ? `${jsonParse[draftKey].data.cw || "CW"} / ` : ""}${jsonParse[draftKey].data.text || ts._drafts.noText}`
+					const processedText = preprocess(jsonParse[draftKey].data.text);
+					const text = `${jsonParse[draftKey].data.useCw ? `${jsonParse[draftKey].data.cw || "CW"} / ` : ""}${processedText || ts._drafts.noText}`
 					await os.alert({
 						text: text + (getTypeText(jsonParse[draftKey]) ? ("\n" + getTypeText(jsonParse[draftKey])) : "")
 					});
@@ -195,8 +197,9 @@ function menu(ev: MouseEvent, draftKey: string) {
 						text: `${text.slice(0,120)}${text.length > 120 ? "…" : ""}${getTypeText(jsonParse[draftKey]) ? ("\n" + getTypeText(jsonParse[draftKey])) : ""}`
 					})
 					if (!canceled) {
+						const processedText = preprocess(jsonParse[draftKey].data.text);
 						await os.apiWithDialog("notes/create",{
-							text: jsonParse[draftKey].data.text,
+							text: processedText === "" ? undefined : processedText,
 							cw: jsonParse[draftKey].data.useCw ? (jsonParse[draftKey].data.cw || "CW") : undefined,
 							fileIds: jsonParse[draftKey].data.fileIds?.length > 0 ? jsonParse[draftKey].data.fileIds : undefined,
 							renoteId: jsonParse[draftKey].data.quoteId || undefined,

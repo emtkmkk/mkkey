@@ -23,9 +23,9 @@
 							`${draft.value.data.useCw ? `${draft.value.data.cw || "CW"} / ` : ""}${draft.value.data.text || ts._drafts.noText}`
 						}}
 					</div>
-					<div v-if="draft.value.data.visibility !== 'public' || draft.value.data.localOnly || draft.value.data.files?.length || draft.value.data.poll || draft.value.data.quoteId" :class="$style.draftText">
+					<div v-if="getTypeText(draft)" :class="$style.draftText">
 						{{
-							getTypeText(draft);
+							getTypeText(draft)
 						}}
 					</div>
 				</div>

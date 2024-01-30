@@ -589,14 +589,35 @@ if (props.initialVisibleUsers) {
 let autocomplete = $ref(null);
 let smartMFMInputer = $computed(defaultStore.makeGetterSetter("smartMFMInputer"));
 let draghover = $ref(false);
+let reply = $ref(props.reply);
 let quoteId = $ref(null);
 let hasNotSpecifiedMentions = $ref(false);
 let includesOtherServerEmoji = $ref(false);
 let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
-let canPublic = $ref((!props.reply || props.reply.visibility === "public") && (!props.renote || props.renote.visibility === "public") && (!props.airReply || props.initialVisibility === "public") && !$i.blockPostPublic && !$i.isSilenced);
-let canHome = $ref((!props.reply || (props.reply.visibility === "public" || props.reply.visibility === "home")) && (!props.renote || (props.renote.visibility === "public" || props.renote.visibility === "home"))  && (!props.airReply || (props.initialVisibility === "public" || props.initialVisibility === "home")) && !$i.blockPostHome && !$i.isSilenced);
-let canFollower = $ref((!props.reply || props.reply.visibility !== "specified") && (!props.renote || props.renote.visibility !== "specified") && (!props.airReply || props.initialVisibility !== "specified") );
-let canNotLocal = $ref((!props.reply || !props.reply.localOnly) && (!props.renote || !props.renote.localOnly) && (!props.airReply || !props.initialLocalOnly) && !$i.blockPostNotLocal && !props.channel?.description?.includes("[localOnly]") && !$i.isSilenced);
+let canPublic = $ref(
+	(!reply || reply.visibility === "public") &&
+	(!props.renote || props.renote.visibility === "public") &&
+	(!props.airReply || props.initialVisibility === "public") &&
+	!$i.blockPostPublic && !$i.isSilenced
+);
+let canHome = $ref(
+	(!reply || ["public","home"].includes(reply.visibility)) &&
+	(!props.renote || ["public","home"].includes(props.renote.visibility)) &&
+	(!props.airReply || ["public","home"].includes(props.initialVisibility)) &&
+	!$i.blockPostHome && !$i.isSilenced
+);
+let canFollower = $ref(
+	(!reply || reply.visibility !== "specified") &&
+	(!props.renote || props.renote.visibility !== "specified") &&
+	(!props.airReply || props.initialVisibility !== "specified")
+);
+let canNotLocal = $ref(
+	(!reply || !reply.localOnly) &&
+	(!props.renote || !props.renote.localOnly) &&
+	(!props.airReply || !props.initialLocalOnly) &&
+	!$i.blockPostNotLocal && !$i.isSilenced &&
+	!props.channel?.description?.includes("[localOnly]")
+);
 let requiredFilename = $ref(props.channel?.description?.includes("[requiredFilename]"))
 let imeText = $ref("");
 let shortcutKeyValue = $ref(0);
@@ -680,8 +701,8 @@ const draftKey = $computed((): string => {
 
 	if (props.renote) {
 		key += `renote:${props.renote.id}`;
-	} else if (props.reply) {
-		key += `reply:${props.reply.id}`;
+	} else if (reply) {
+		key += `reply:${reply.id}`;
 	} else if (props.airReply) {
 		key += `air:${props.airReply.id}`;
 	} else if (props.initialNote) {
@@ -697,12 +718,18 @@ const draftKey = $computed((): string => {
 const placeholder = $computed((): string => {
 	if (props.renote) {
 		return i18n.ts._postForm.quotePlaceholder;
-	} else if (props.reply) {
+	} else if (reply) {
 		return i18n.ts._postForm.replyPlaceholder;
 	} else if (props.channel) {
 		return i18n.ts._postForm.channelPlaceholder;
 	} else if (defaultStore.state.plusInfoPostForm) {
-		return (i18n.ts._visibility[visibility] && ((defaultStore.state.rememberNoteVisibility || !defaultStore.state.firstPostButtonVisibilityForce) || visibility === 'specified')
+		return (
+			i18n.ts._visibility[visibility] && 
+			(
+				defaultStore.state.rememberNoteVisibility ||
+				!defaultStore.state.firstPostButtonVisibilityForce ||
+				visibility === 'specified'
+			)
 			? `${(localOnly ? "もこワー" : "") + i18n.ts._visibility[visibility]} : ` : "") +
 			 new Date()
 			 .toLocaleTimeString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit' })
@@ -723,7 +750,7 @@ const placeholder = $computed((): string => {
 const submitText = $computed((): string => {
 	return props.renote
 		? i18n.ts.quote
-		: props.reply
+		: reply
 		? i18n.ts.reply
 		: i18n.ts.note;
 });
@@ -798,20 +825,20 @@ if (props.mention) {
 }
 
 if (
-	props.reply &&
-	(props.reply.user.username !== $i.username ||
-		(props.reply.user.host != null && props.reply.user.host !== host))
+	reply &&
+	(reply.user.username !== $i.username ||
+		(reply.user.host != null && reply.user.host !== host))
 ) {
-	text = `@${props.reply.user.username}${
-		props.reply.user.host != null
-			? `@${toASCII(props.reply.user.host)}`
+	text = `@${reply.user.username}${
+		reply.user.host != null
+			? `@${toASCII(reply.user.host)}`
 			: ""
 	} `;
 }
 
-if (props.reply && props.reply.text != null) {
-	const ast = mfm.parse(props.reply.text);
-	const otherHost = props.reply.user.host;
+if (reply && reply.text != null) {
+	const ast = mfm.parse(reply.text);
+	const otherHost = reply.user.host;
 
 	for (const x of extractMentions(ast)) {
 		const mention = x.host
@@ -833,38 +860,42 @@ if (props.reply && props.reply.text != null) {
 
 if (props.channel) {
 	visibility = "public";
-	localOnly = defaultStore.state.channelSecondPostButton ? false : defaultStore.state.rememberNoteVisibility ? defaultStore.state.localOnly : defaultStore.state.defaultNoteLocalOnly;
+	localOnly = defaultStore.state.channelSecondPostButton
+		? false
+		: defaultStore.state.rememberNoteVisibility
+			? defaultStore.state.localOnly
+			: defaultStore.state.defaultNoteLocalOnly;
 	if (!canNotLocal) localOnly = true;
 }
 
 // 公開以外へのリプライ時は元の公開範囲を引き継ぐ
 if (
-	props.reply &&
-	["home", "followers", "specified"].includes(props.reply.visibility)
+	reply &&
+	["home", "followers", "specified"].includes(reply.visibility)
 ) {
-	if (props.reply.visibility === "home" && visibility === "followers") {
+	if (reply.visibility === "home" && visibility === "followers") {
 		visibility = "followers";
 	} else if (
-		["home", "followers"].includes(props.reply.visibility) &&
+		["home", "followers"].includes(reply.visibility) &&
 		visibility === "specified"
 	) {
 		visibility = "specified";
 	} else {
-		visibility = props.reply.visibility;
+		visibility = reply.visibility;
 	}
 	if (visibility === "specified") {
-		if (props.reply.visibleUserIds) {
+		if (reply.visibleUserIds) {
 			os.api("users/show", {
-				userIds: props.reply.visibleUserIds.filter(
-					(uid) => uid !== $i.id && uid !== props.reply.userId
+				userIds: reply.visibleUserIds.filter(
+					(uid) => uid !== $i.id && uid !== reply.userId
 				),
 			}).then((users) => {
 				users.forEach(pushVisibleUser);
 			});
 		}
 
-		if (props.reply.userId !== $i.id) {
-			os.api("users/show", { userId: props.reply.userId }).then(
+		if (reply.userId !== $i.id) {
+			os.api("users/show", { userId: reply.userId }).then(
 				(user) => {
 					pushVisibleUser(user);
 				}
@@ -881,23 +912,30 @@ if (props.specified) {
 if (!canPublic && visibility === "public") visibility = "home";
 if (!canHome && visibility === "home") visibility = "followers";
 if (!canFollower && visibility === "followers") visibility = "specified";
-if (!canNotLocal && visibility !== "followers" && visibility !== "specified" && localOnly === false && !$i.blockPostNotLocalPublic) localOnly = true;
+if (
+	!canNotLocal &&
+	visibility !== "followers" &&
+	visibility !== "specified" &&
+	localOnly === false &&
+	!$i.blockPostNotLocalPublic
+) localOnly = true;
 
 // keep post cw
-if (defaultStore.state.keepPostCw && cw && !cw.includes("@") && !(props.reply && !props.reply.cw)) {
+if (
+	defaultStore.state.keepPostCw &&cw && !cw.includes("@") && !(reply && !reply.cw)) {
 	useCw = true;
 } else {
 	cw = "";
 }
 // keep cw when reply
-if (defaultStore.state.keepCw && props.reply && props.reply.cw) {
+if (defaultStore.state.keepCw && reply && reply.cw) {
 	useCw = true;
-	if (props.reply.userId === $i.id) {
-		cw = `${props.reply.cw}`;
+	if (reply.userId === $i.id) {
+		cw = `${reply.cw}`;
 	} else {
-		const replyCwText = props.reply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/ig,"") ?? "";
-		cw = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} Re: ${replyCwText}`;
-		text = text.replace(`@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `,"");
+		const replyCwText = reply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/ig,"") ?? "";
+		cw = `@${reply.user.username}${reply.user.host ? `@${reply.user.host}` : ""} Re: ${replyCwText}`;
+		text = text.replace(`@${reply.user.username}${reply.user.host ? `@${reply.user.host}` : ""} `,"");
 	}
 }
 
@@ -928,7 +966,7 @@ function checkIncludesOtherServerEmoji() {
 
 function checkMissingMention() {
 	if (visibility === "specified") {
-		if (props.reply && props.reply.userId !== $i.id && !visibleUsers.some((u) => u.id === props.reply.user.id)) {
+		if (reply && reply.userId !== $i.id && !visibleUsers.some((u) => u.id === reply.user.id)) {
 			hasNotSpecifiedMentions = true;
 			return;
 		}
@@ -949,8 +987,8 @@ function checkMissingMention() {
 }
 
 function addMissingMention() {
-	if (props.reply && props.reply.userId !== $i.id && !visibleUsers.some((u) => u.id === props.reply.user.id)) {
-		os.api("users/show", { userId: props.reply.userId }).then(
+	if (reply && reply.userId !== $i.id && !visibleUsers.some((u) => u.id === reply.user.id)) {
+		os.api("users/show", { userId: reply.userId }).then(
 			(user) => {
 				pushVisibleUser(user);
 			}
@@ -1162,54 +1200,48 @@ function onKeydown(ev: KeyboardEvent) {
 	}
 	if (
 		(ev.which === 10 || ev.which === 13) &&
-		postValue === 1 &&
-		canPost &&
-		visibility !== 'specified'
-	)
-		postFirst();
-	if (
-		(ev.which === 10 || ev.which === 13) &&
-		postValue === 1 &&
-		canPost &&
-		visibility === 'specified'
-	)
-		post();
-	if (
-		(ev.which === 10 || ev.which === 13) &&
-		postValue === 2 &&
-		defaultStore.state.secondPostButton &&
-		(canPost || defaultStore.state.secondPostVisibility === 'specified') &&
-		!isChannel &&
-		visibility !== 'specified'
-	)
-		postSecond();
-	if (
-		(ev.which === 10 || ev.which === 13) &&
-		postValue === 3 &&
-		defaultStore.state.thirdPostButton &&
-		(canPost || defaultStore.state.thirdPostVisibility === 'specified') &&
-		!isChannel &&
-		visibility !== 'specified'
-	)
-		postThird();
-	if (
-		(ev.which === 10 || ev.which === 13) &&
-		postValue === 4 &&
-		defaultStore.state.fourthPostButton &&
-		(canPost || defaultStore.state.fourthPostVisibility === 'specified') &&
-		!isChannel &&
-		visibility !== 'specified'
-	)
-		postFourth();
-	if (
-		(ev.which === 10 || ev.which === 13) &&
-		postValue === 5 &&
+		postValue >= 5 &&
 		defaultStore.state.fifthPostButton &&
 		(canPost || defaultStore.state.fifthPostVisibility === 'specified') &&
 		!isChannel &&
 		visibility !== 'specified'
-	)
-		postFifth();
+	) postFifth();
+	else if (
+		(ev.which === 10 || ev.which === 13) &&
+		postValue >= 4 &&
+		defaultStore.state.fourthPostButton &&
+		(canPost || defaultStore.state.fourthPostVisibility === 'specified') &&
+		!isChannel &&
+		visibility !== 'specified'
+	) postFourth();
+	else if (
+		(ev.which === 10 || ev.which === 13) &&
+		postValue >= 3 &&
+		defaultStore.state.thirdPostButton &&
+		(canPost || defaultStore.state.thirdPostVisibility === 'specified') &&
+		!isChannel &&
+		visibility !== 'specified'
+	) postThird();
+	else if (
+		(ev.which === 10 || ev.which === 13) &&
+		postValue >= 2 &&
+		defaultStore.state.secondPostButton &&
+		(canPost || defaultStore.state.secondPostVisibility === 'specified') &&
+		!isChannel &&
+		visibility !== 'specified'
+	) postSecond();
+	else if (
+		(ev.which === 10 || ev.which === 13) &&
+		postValue >= 1 &&
+		canPost &&
+		visibility !== 'specified'
+	) postFirst();
+	else if (
+		(ev.which === 10 || ev.which === 13) &&
+		postValue >= 1 &&
+		canPost &&
+		visibility === 'specified'
+	) post();
 	if (ev.which === 27) emit("esc");
 	typing();
 }
@@ -1335,7 +1367,8 @@ function saveDraft(key?, name?) {
 			files: files,
 			poll: poll,
 			visibleUserIds: visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
-			quoteId: quoteId ? quoteId : props.renote ? props.renote.id : props.reply ? props.reply.id : null,
+			replyId: reply?.id ? reply.id : null,
+			quoteId: quoteId ? quoteId : props.renote ? props.renote.id : null,
 		},
 	};
 
@@ -1448,7 +1481,7 @@ async function post() {
 	let postData = {
 		text: processedText === "" ? undefined : processedText,
 		fileIds: files.length > 0 ? files.map((f) => f.id) : undefined,
-		replyId: props.reply ? props.reply.id : undefined,
+		replyId: reply ? reply.id : undefined,
 		renoteId: props.renote
 			? props.renote.id
 			: quoteId
@@ -1540,12 +1573,12 @@ function cancel() {
 				text = backupText;
 		} else {
 			cw = "";
-			if (useCw && props.reply){
-				cw = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `;
+			if (useCw && reply){
+				cw = `@${reply.user.username}${reply.user.host ? `@${reply.user.host}` : ""} `;
 			}
 
-			if (!useCw && props.reply){
-				text = `@${props.reply.user.username}${props.reply.user.host ? `@${props.reply.user.host}` : ""} `;
+			if (!useCw && reply){
+				text = `@${reply.user.username}${reply.user.host ? `@${reply.user.host}` : ""} `;
 			} else {
 				text = "";
 			}
@@ -1640,7 +1673,13 @@ function loadDraft(key?) {
 			if (draft.data.poll) {
 				poll = draft.data.poll;
 			}
-			if (draft.data.quoteId && (!props.reply || props.reply.id !== draft.data.quoteId) && (!props.renote || props.renote.id !== draft.data.quoteId)) {
+			if ((draft.data.replyId || key.startsWith("reply:")) && (!reply || reply.id !== draft.data.replyId)) {
+				os.api("notes/show", { noteId: draft.data.replyId || draft.data.quoteId }).then(
+				(note) => {
+					reply = note;
+				});
+			}
+			if (draft.data.quoteId && (!props.renote || props.renote.id !== draft.data.quoteId)) {
 				quoteId = draft.data.quoteId;
 			}
 			if (!key && draftKey === "note" && Date.now() > Date.parse(draft.updatedAt) + (300 * 1000)) {

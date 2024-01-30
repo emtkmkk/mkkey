@@ -25,7 +25,7 @@
 					</div>
 					<div v-if="draft.value.data.visibility !== 'public' || draft.value.data.localOnly || draft.value.data.files?.length || draft.value.data.poll || draft.value.data.quoteId" :class="$style.draftText">
 						{{
-							`${draft.value.data.visibility !== "public" && ts._visibility[draft.value.data.visibility] ? ts._visibility[draft.value.data.visibility] + " " : "" }${draft.value.data.localOnly ? ts._visibility.localAndFollower + " " : "" }${draft.value.data.quoteId ? ts._drafts.quote : ""}${draft.value.data.poll ? ts._drafts.poll : ""}${draft.value.data.files?.length ? `${i18n.t("_drafts.files", { count: draft.value.data.files?.length })} ` : ""}`
+							`${draft.value.data.visibility !== "public" && ts._visibility[draft.value.data.visibility] ? ts._visibility[draft.value.data.visibility] + " " : "" }${draft.value.data.localOnly ? ts._visibility.localAndFollower + " " : "" }${draft.value.data.replyId ? ts._drafts.reply : ""}${draft.value.data.quoteId ? ts._drafts.quote : ""}${draft.value.data.poll ? ts._drafts.poll : ""}${draft.value.data.files?.length ? `${i18n.t("_drafts.files", { count: draft.value.data.files?.length })} ` : ""}`
 						}}
 					</div>
 				</div>

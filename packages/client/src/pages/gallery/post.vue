@@ -171,7 +171,6 @@ import MkPagination from "@/components/MkPagination.vue";
 import MkGalleryPostPreview from "@/components/MkGalleryPostPreview.vue";
 import MkFollowButton from "@/components/MkFollowButton.vue";
 import { url } from "@/config";
-import { useRouter } from "@/router";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { shareAvailable } from "@/scripts/share-available";
@@ -241,7 +240,7 @@ async function unlike() {
 }
 
 function edit() {
-	router.push(`/gallery/${post.id}/edit`);
+	router	.push(`/gallery/${post.id}/edit`);
 }
 
 const previewable = (file: misskey.entities.DriveFile): boolean => {

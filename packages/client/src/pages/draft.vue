@@ -177,7 +177,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 					type: "button",
 					text: ts._drafts.openReply,
 					icon: "ph-arrow-u-up-left ph-bold ph-lg",
-					action: () => {
+					action: async () => {
 						mainRouter.push(notePage({id: jsonParse[draftKey].data?.quoteId}));
 						emit("closeAll");
 					},
@@ -188,7 +188,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 					type: "button",
 					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
 					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
-					action: () => {
+					action: async () => {
 						mainRouter.push(notePage({id: jsonParse[draftKey].data?.quoteId}));
 						emit("closeAll");
 					},

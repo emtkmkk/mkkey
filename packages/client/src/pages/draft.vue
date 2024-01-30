@@ -25,7 +25,7 @@
 					</div>
 					<div v-if="draft.value.data.visibility !== 'public' || draft.value.data.localOnly || draft.value.data.files?.length || draft.value.data.poll || draft.value.data.quoteId" :class="$style.draftText">
 						{{
-							`${draft.value.data.visibility !== "public" && ts._visibility[draft.value.data.visibility] ? ts._visibility[draft.value.data.visibility] + " " : "" }${draft.value.data.localOnly ? ts._visibility.localAndFollower + " " : "" }${draft.value.data.replyId ? ts._drafts.existreply : ""}${draft.value.data.quoteId ? ts._drafts.quote : ""}${draft.value.data.poll ? ts._drafts.poll : ""}${draft.value.data.files?.length ? `${i18n.t("_drafts.files", { count: draft.value.data.files?.length })} ` : ""}`
+							getTypeText(draft);
 						}}
 					</div>
 				</div>
@@ -49,7 +49,8 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 const { t, ts } = i18n;
-import { MenuItem } from "@/types/menu";
+import { MenuA, MenuItem } from "@/types/menu";
+import { notePage } from "@/filters/note";
 
 const emit = defineEmits<{
 	(ev: "done", v: { canceled: boolean; result: any }): void;
@@ -76,11 +77,11 @@ let drafts = $computed(() => {
 			case 'air':
 				return 7;
 			case 'note':
-				return 1;
+				return 2;
 			case 'channel':
 				return 4;
 			case 'edit':
-				return 2;
+				return 1;
 			case 'auto':
 				return 0;
 			case 'manual':
@@ -129,6 +130,16 @@ function convertName(draftKey: string): string {
 	}
 }
 
+function getTypeText(draft): string {
+	return [
+		draft.value.data.visibility !== "public" && ts._visibility[draft.value.data.visibility] ? ts._visibility[draft.value.data.visibility] : "",
+		draft.value.data.localOnly ? ts._visibility.localAndFollower : "",
+		draft.value.data.quoteId && !draft.key?.startsWith("reply:") ? ts._drafts.quote : "",
+		draft.value.data.poll ? ts._drafts.poll : "",
+		draft.value.data.files?.length ? `${i18n.t("_drafts.files", { count: draft.value.data.files?.length })} ` : ""
+	].filter(Boolean).join(" ")
+}
+
 async function saveNew() {
 	const { canceled, result: name } = await os.inputText({
 		title: ts._drafts.inputName,
@@ -152,12 +163,30 @@ function menu(ev: MouseEvent, draftKey: string) {
 
 	return os.popupMenu(
 		[
-			{
-				text: ts._drafts.load,
-				icon: "ph-caret-circle-down ph-bold ph-lg",
-				action: () => load(draftKey),
-			},
-			...(defaultStore.state.developer ? [{
+			...((((draftKey?.startsWith("reply:") && jsonParse[draftKey].data?.quoteId) || jsonParse[draftKey].data?.replyId)) ? [] : [
+				{
+					text: ts._drafts.load,
+					icon: "ph-caret-circle-down ph-bold ph-lg",
+					action: () => load(draftKey),
+				}
+			]),
+			...(drafts[draftKey].data?.replyId ? [
+				{
+					type: "a",
+					text: ts._drafts.openReply,
+					icon: "ph-arrow-u-up-left ph-bold ph-lg",
+					href: notePage({id: drafts[draftKey].data?.replyId}),
+				} as MenuA
+			] : []),
+			...(drafts[draftKey].data?.quoteId ? [
+				{
+					type: "a",
+					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
+					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
+					href: notePage({id: drafts[draftKey].data?.quoteId}),
+				} as MenuA
+			] : []),
+			...(defaultStore.state.developer && false ? [{
 				type: "a",
 				text: ts.download,
 				icon: "ph-download-simple ph-bold ph-lg",
@@ -167,7 +196,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 					})
 				),
 				download: `${jsonParse[draftKey].name || draftKey}.json`,
-			} as MenuItem] : []),
+			} as MenuA] : []),
 			null,
 			{
 				text: ts._drafts.delete,

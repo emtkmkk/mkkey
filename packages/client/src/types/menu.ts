@@ -23,7 +23,7 @@ export type MenuA = {
 	type: "a";
 	href: string;
 	target?: string;
-	download?: string;
+	download?: string;c
 	text: string;
 	textStyle?: string;
 	icon?: string;

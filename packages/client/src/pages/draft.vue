@@ -49,7 +49,7 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 const { t, ts } = i18n;
-import { MenuA, MenuItem } from "@/types/menu";
+import { MenuA, MenuItem, MenuLink } from "@/types/menu";
 import { notePage } from "@/filters/note";
 
 const emit = defineEmits<{
@@ -172,19 +172,19 @@ function menu(ev: MouseEvent, draftKey: string) {
 			]),
 			...(jsonParse[draftKey].data?.replyId ? [
 				{
-					type: "a",
+					type: "link",
 					text: ts._drafts.openReply,
 					icon: "ph-arrow-u-up-left ph-bold ph-lg",
-					href: notePage({id: jsonParse[draftKey].data?.replyId}),
-				} as MenuA
+					to: notePage({id: jsonParse[draftKey].data?.replyId}),
+				} as MenuLink
 			] : []),
 			...(jsonParse[draftKey].data?.quoteId ? [
 				{
-					type: "a",
+					type: "link",
 					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
 					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
-					href: notePage({id: jsonParse[draftKey].data?.quoteId}),
-				} as MenuA
+					to: notePage({id: jsonParse[draftKey].data?.quoteId}),
+				} as MenuLink
 			] : []),
 			...(defaultStore.state.developer && false ? [{
 				type: "a",

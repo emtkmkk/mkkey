@@ -51,6 +51,9 @@ import { defaultStore } from "@/store";
 const { t, ts } = i18n;
 import { MenuA, MenuButton, MenuItem, MenuLink } from "@/types/menu";
 import { notePage } from "@/filters/note";
+import { useRouter } from "@/router";
+
+const router = useRouter();
 
 const emit = defineEmits<{
 	(ev: "done", v: { canceled: boolean; result: any }): void;
@@ -177,7 +180,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 					text: ts._drafts.openReply,
 					icon: "ph-arrow-u-up-left ph-bold ph-lg",
 					action: () => {
-						os.modalPageWindow(notePage({id: jsonParse[draftKey].data?.quoteId}))
+						router.push(notePage({id: jsonParse[draftKey].data?.quoteId}));
 						emit("closeAll");
 					},
 				} as MenuButton
@@ -188,7 +191,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 					text: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? ts._drafts.openReply : ts._drafts.openQuote),
 					icon: (draftKey?.startsWith("reply:") && !jsonParse[draftKey].data?.replyId ? "ph-arrow-u-up-left ph-bold ph-lg" : "ph-quotes ph-bold ph-lg"),
 					action: () => {
-						os.modalPageWindow(notePage({id: jsonParse[draftKey].data?.quoteId}))
+						router.push(notePage({id: jsonParse[draftKey].data?.quoteId}));
 						emit("closeAll");
 					},
 				} as MenuButton

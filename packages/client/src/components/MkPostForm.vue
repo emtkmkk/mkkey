@@ -1673,13 +1673,13 @@ function loadDraft(key?) {
 			if (draft.data.poll) {
 				poll = draft.data.poll;
 			}
-			if ((draft.data.replyId || key.startsWith("reply:")) && (!reply || reply.id !== draft.data.replyId)) {
+			if ((draft.data.replyId || key?.startsWith("reply:")) && (!reply || reply.id !== draft.data.replyId)) {
 				os.api("notes/show", { noteId: draft.data.replyId || draft.data.quoteId }).then(
 				(note) => {
 					reply = note;
 				});
 			}
-			if (draft.data.quoteId && (!key.startsWith("reply:") || draft.data.replyId) && (!props.renote || props.renote.id !== draft.data.quoteId)) {
+			if (draft.data.quoteId && (!key?.startsWith("reply:") || draft.data.replyId) && (!props.renote || props.renote.id !== draft.data.quoteId)) {
 				quoteId = draft.data.quoteId;
 			}
 			if (!key && draftKey === "note" && Date.now() > Date.parse(draft.updatedAt) + (300 * 1000)) {

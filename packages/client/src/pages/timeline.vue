@@ -291,7 +291,9 @@ const onContextmenu = (ev: MouseEvent) => {
 			{
 				icon: 'ph-calendar-blank ph-bold ph-lg',
 				text: i18n.ts.jumpToSpecifiedDate as string,
-				action: timetravel,
+				action: () => {
+					timetravel()
+				},
 			} as MenuButton,
 		],
 		ev

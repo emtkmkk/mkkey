@@ -42,7 +42,7 @@
 						:space-between="20"
 						:virtual="true"
 						:allow-touch-move="
-							(!defaultStore.state.notTopToSwipeStop || (queue === 0 && !queueActive && !(tlComponent?.tlComponent?.pagingComponent?.active || tlComponent?.tlComponent?.pagingComponent?.backed ?? false))) &&
+							(!defaultStore.state.notTopToSwipeStop || (queue === 0 && !queueActive && !((tlComponent?.tlComponent?.pagingComponent?.active || tlComponent?.tlComponent?.pagingComponent?.backed) ?? false))) &&
 							defaultStore.state.swipeOnDesktop
 						 "
 						@swiper="setSwiperRef"

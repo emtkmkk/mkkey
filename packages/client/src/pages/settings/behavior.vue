@@ -17,9 +17,6 @@
 			<FormSwitch v-model="alwaysPostButton" class="_formBlock">{{
 				i18n.ts.alwaysPostButton
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="swipeOnDesktop" class="_formBlock">{{
-				i18n.ts.swipeOnDesktop
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 			<FormSwitch v-model="showDetailNoteClick" class="_formBlock">{{
 				i18n.ts.showDetailNoteClick
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
@@ -130,6 +127,14 @@
 				}}</template>
 			</FormRange>
 
+			<FormSwitch v-model="swipeOnDesktop" class="_formBlock">{{
+				i18n.ts.swipeOnDesktop
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+
+			<FormSwitch v-model="notTopToSwipeStop" class="_formBlock">{{
+				i18n.ts.notTopToSwipeStop
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+
 			<FormRange
 				v-model="swipeTouchAngle"
 				:min="1"
@@ -207,6 +212,9 @@ const enableInfiniteScroll = computed(
 );
 const swipeOnDesktop = computed(
 	defaultStore.makeGetterSetter("swipeOnDesktop")
+);
+const notTopToSwipeStop = computed(
+	defaultStore.makeGetterSetter("notTopToSwipeStop")
 );
 const hiddenActivityChart = computed(
 	defaultStore.makeGetterSetter("hiddenActivityChart")

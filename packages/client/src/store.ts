@@ -764,6 +764,11 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: true,
 		},
+		notTopToSwipeStop: {
+			where: "device",
+			default: false,
+			createdAt: "2024/02/01",
+		},
 		swipeTouchAngle: {
 			where: "device",
 			default: 25,
@@ -1225,7 +1230,7 @@ export const defaultStore = markRaw(
 			where: 'deviceAccount',
 			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
 			createdAt: "2024/01/25",
-		}
+		},
 	}),
 );
 

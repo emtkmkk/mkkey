@@ -42,10 +42,9 @@
 						:space-between="20"
 						:virtual="true"
 						:allow-touch-move="
-							!(
-								!defaultStore.state.swipeOnDesktop
-							)
-						"
+							(!defaultStore.state.notTopToSwipeStop || (isTopVisible(tlComponent ?? null) ?? true)) &&
+							defaultStore.state.swipeOnDesktop
+						 "
 						@swiper="setSwiperRef"
 						@slide-change="onSlideChange"
 					>
@@ -82,7 +81,7 @@ import { Swiper, SwiperSlide } from "swiper/vue";
 import XTutorial from "@/components/MkTutorialDialog.vue";
 import XTimeline from "@/components/MkTimeline.vue";
 import XPostForm from "@/components/MkPostForm.vue";
-import { scroll } from "@/scripts/scroll";
+import { scroll, isTopVisible } from "@/scripts/scroll";
 import * as os from "@/os";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";

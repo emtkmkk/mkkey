@@ -52,7 +52,7 @@ const keymap = $computed(() => ({
 	t: focus,
 }));
 
-function queueUpdated(q) {
+function queueUpdated(q, a) {
 	queue = q;
 }
 

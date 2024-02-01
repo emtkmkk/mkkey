@@ -42,7 +42,7 @@
 						:space-between="20"
 						:virtual="true"
 						:allow-touch-move="
-							(!defaultStore.state.notTopToSwipeStop || !(tlComponent?.tlComponent?.pagingComponent?.backed ?? false)) &&
+							(!defaultStore.state.notTopToSwipeStop || (queue === 0 && !queueActive && !(tlComponent?.tlComponent?.pagingComponent?.active || tlComponent?.tlComponent?.pagingComponent?.backed ?? false))) &&
 							defaultStore.state.swipeOnDesktop
 						 "
 						@swiper="setSwiperRef"
@@ -108,6 +108,7 @@ const isGlobalTimelineAvailable =
 const keymap = {
 	t: focus,
 };
+let queueActive = $ref(false);
 
 let timelines = [];
 
@@ -180,8 +181,9 @@ const src = $computed({
 
 watch($$(src), () => (queue = 0));
 
-function queueUpdated(q: number): void {
+function queueUpdated(q: number, a): void {
 	queue = q;
+	queueActive = a;
 }
 
 function top(): void {

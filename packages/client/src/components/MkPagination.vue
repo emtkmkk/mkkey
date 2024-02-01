@@ -194,7 +194,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	(ev: "queue", count: number): void;
+	(ev: "queue", count: number, active: boolean): void;
 }>();
 
 type Item = { id: string; [another: string]: unknown };
@@ -265,7 +265,7 @@ if (props.pagination.params && isRef(props.pagination.params)) {
 
 watch(queue, (a, b) => {
 	if (a.length === 0 && b.length === 0) return;
-	emit('queue', queue.value.length);
+	emit('queue', queue.value.length, isTop() && !isPausingUpdate);
 }, { deep: true });
 
 async function init(): Promise<void> {
@@ -647,6 +647,7 @@ defineExpose({
 	items,
 	queue,
 	backed,
+	active: isTop() && !isPausingUpdate,
 	reload,
 	refresh,
 	prepend,

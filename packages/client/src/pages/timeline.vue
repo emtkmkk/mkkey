@@ -245,9 +245,6 @@ function saveSrc(
 const endpoint = computed(() => 
 		src === "local"
 				? "notes/local-timeline"
-				: src === "social" &&
-				  defaultStore.state.showLocalPostsInTimeline === "home"
-				? "notes/timeline"
 				: src === "social"
 				? "notes/hybrid-timeline"
 				: src === "recommended"
@@ -260,9 +257,6 @@ const endpoint = computed(() =>
 				? "antennas/notes"
 				: src === "global"
 				? "notes/global-timeline"
-				: src === "home" &&
-				  defaultStore.state.showLocalPostsInTimeline === "home"
-				? "notes/hybrid-timeline"
 				: "notes/timeline",
 	)
 

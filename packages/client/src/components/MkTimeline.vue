@@ -28,7 +28,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(ev: "note"): void;
-	(ev: "queue", count: number): void;
+	(ev: "queue", count: number, active?: boolean): void;
 }>();
 
 provide(

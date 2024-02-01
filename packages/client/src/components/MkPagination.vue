@@ -194,7 +194,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	(ev: "queue", count: number, active: boolean): void;
+	(ev: "queue", count: number, active?: boolean): void;
 }>();
 
 type Item = { id: string; [another: string]: unknown };

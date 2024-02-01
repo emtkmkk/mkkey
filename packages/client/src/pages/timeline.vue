@@ -91,6 +91,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { deviceKind } from "@/scripts/device-kind";
 import "swiper/scss";
 import "swiper/scss/virtual";
+import { MenuAction, MenuButton, MenuItem, MenuLabel } from "@/types/menu";
 
 defaultStore.loaded.then(() => {
 	if (defaultStore.reactiveState.tutorial.value !== -1) {
@@ -241,6 +242,32 @@ function saveSrc(
 	});
 }
 
+const endpoint = computed(() => 
+		src === "local"
+				? "notes/local-timeline"
+				: src === "social" &&
+				  defaultStore.state.showLocalPostsInTimeline === "home"
+				? "notes/timeline"
+				: src === "social"
+				? "notes/hybrid-timeline"
+				: src === "recommended"
+				? "notes/recommended-timeline"
+				: src === "spotlight"
+				? "notes/spotlight-timeline"
+				: src === "list"
+				? "notes/user-list-timeline"
+				: src === "antenna"
+				? "antennas/notes"
+				: src === "global"
+				? "notes/global-timeline"
+				: src === "home" &&
+				  defaultStore.state.showLocalPostsInTimeline === "home"
+				? "notes/hybrid-timeline"
+				: "notes/timeline",
+	)
+
+const lastBackedDate = defaultStore.state.lastBackedDate?.[endpoint.value]
+					
 let travelDate = $ref<Date | undefined>(undefined);
 
 const onContextmenu = (ev: MouseEvent) => {
@@ -249,24 +276,32 @@ const onContextmenu = (ev: MouseEvent) => {
 			...( travelDate ? [{
 				type: "label",
 				text: i18n.ts.showingPastTimeline,
-			},{
+			} as MenuLabel,{
 				type: "label",
 				text: travelDate.toLocaleString(),
-			}] : []),
+			} as MenuLabel] : []),
+			...(!travelDate && lastBackedDate?.createdAt && Date.now() - lastBackedDate?.createdAt?.valueOf() < 30 * 60 * 1000 ? [{
+				icon: 'ph-arrow-arc-left ph-bold ph-lg',
+				text: i18n.ts.lastBackedDate as string,
+				action: () => {
+					travelDate = lastBackedDate?.date;
+					Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel(lastBackedDate?.date) : tlComponent.value?.timetravel(lastBackedDate?.date);
+				},
+			} as MenuButton] : []),
 			{
 				icon: 'ph-calendar-blank ph-bold ph-lg',
-				text: i18n.ts.jumpToSpecifiedDate,
+				text: i18n.ts.jumpToSpecifiedDate as string,
 				action: timetravel,
-			},
+			} as MenuButton,
 		],
 		ev
 	);
 };
 
-async function timetravel(): Promise<void> {
+async function timetravel(defaultDate?: Date): Promise<void> {
 	const { canceled, result: date } = await os.inputDateTime({
 		title: i18n.ts.date,
-		default: travelDate || new Date(),
+		default: travelDate || defaultDate || new Date(),
 	});
 	if (canceled || !date || Date.now() < date.valueOf()) {
 		travelDate = undefined;
@@ -281,7 +316,6 @@ async function timetravel(): Promise<void> {
 function focus(): void {
 	Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.focus() : tlComponent.value?.focus();
 }
-
 const headerActions = $computed(() => [
 	...(defaultStore.state.showTimeTravelButton || travelDate ? [{
 		icon: 'ph-calendar-blank ph-bold ph-lg',
@@ -289,7 +323,14 @@ const headerActions = $computed(() => [
 		text: i18n.ts.showingPastTimeline,
 		highlighted: travelDate,
 		iconOnly: true,
-		handler: timetravel,
+		handler: () => {
+			const lastBackedDate = defaultStore.state.lastBackedDate?.[endpoint.value]
+			if (lastBackedDate?.createdAt && Date.now() - lastBackedDate?.createdAt?.valueOf() < 30 * 60 * 1000) {
+				timetravel(lastBackedDate?.date)
+			} else {
+				timetravel()
+			}
+		}
 	}] : []),
 	...(defaultStore.state.showListButton ? [{
 		icon: "ph-list-bullets ph-bold ph-lg",

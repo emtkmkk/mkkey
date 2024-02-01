@@ -1220,16 +1220,24 @@ export const defaultStore = markRaw(
 			where: 'deviceAccount',
 			default: true,
 			createdAt: "2024/01/25",
+			page: "timeline",
 		},
 		showAntennaButton: {
 			where: 'deviceAccount',
 			default: true,
 			createdAt: "2024/01/25",
+			page: "timeline",
 		},
 		showTimeTravelButton: {
 			where: 'deviceAccount',
 			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
 			createdAt: "2024/01/25",
+			page: "timeline",
+		},
+		lastBackedDate: {
+			where: "device",
+			default: {},
+			createdAt: "2024/1/24",
 		},
 	}),
 );

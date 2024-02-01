@@ -154,6 +154,7 @@ import {
 import { useDocumentVisibility } from '@/scripts/use-document-visibility';
 import MkButton from "@/components/MkButton.vue";
 import { i18n } from "@/i18n";
+import { defaultStore } from "@/store";
 
 export type Paging<
 	E extends keyof misskey.Endpoints = keyof misskey.Endpoints
@@ -439,6 +440,7 @@ const fetchMore = async (): Promise<void> => {
 					more.value = false;
 				}
 				offset.value += res.length;
+				if (res[0]?.createdAt) defaultStore.set("lastBackedDate", {...defaultStore.state.lastBackedDate, [props.pagination.endpoint]: {date: res[0]?.createdAt, createdAt: new Date()}});
 				moreFetching.value = false;
 				ctAutoReload.value = true;
 				if (timerId) clearTimeout(timerId);

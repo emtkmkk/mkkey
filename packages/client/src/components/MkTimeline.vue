@@ -167,6 +167,7 @@ const timetravel = (date?: Date) => {
 };
 
 defineExpose({
+	tlComponent,
 	focus,
 	timetravel,
 });

@@ -131,7 +131,7 @@
 				i18n.ts.swipeOnDesktop
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 
-			<FormSwitch v-model="notTopToSwipeStop" class="_formBlock">{{
+			<FormSwitch v-model="notTopToSwipeStop" class="_formBlock" :disabled="!swipeOnDesktop">{{
 				i18n.ts.notTopToSwipeStop
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 

@@ -1474,12 +1474,12 @@ async function postFifth() {
 }
 
 async function post() {
-	const processedText = preprocess(text);
+	const processedText = text ? preprocess(text) : "";
 
 	if (useCw && !cw?.trim()) cw = "CW";
 	if (!useCw && cw) cw = "";
 
-	const processedCw = preprocess(cw);
+	const processedCw = cw ? preprocess(cw) : "";
 
 	if (!canPublic && visibility === "public") visibility = "home";
 	if (!canHome && visibility === "home") visibility = "followers";
@@ -1497,7 +1497,7 @@ async function post() {
 			: undefined,
 		channelId: props.channel ? props.channel.id : undefined,
 		poll: poll,
-		cw: useCw ? (processedCw ? processedCw : "") : undefined,
+		cw: useCw ? (processedCw || "") : undefined,
 		localOnly: localOnly,
 		visibility: visibility,
 		visibleUserIds:

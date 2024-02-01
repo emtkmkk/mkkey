@@ -179,8 +179,8 @@ function menu(ev: MouseEvent, draftKey: string) {
 				icon: "ph-binoculars ph-bold ph-lg",
 				to: notePage({id: jsonParse[draftKey].data?.replyId}),
 				action: async () => {
-					const processedText = preprocess(jsonParse[draftKey].data.text);
-					const processedCw = preprocess(jsonParse[draftKey].data.cw);
+					const processedText = jsonParse[draftKey].data.text ? preprocess(jsonParse[draftKey].data.text) : "";
+					const processedCw = jsonParse[draftKey].data.cw ? preprocess(jsonParse[draftKey].data.cw) : "";
 					const text = `${jsonParse[draftKey].data.useCw ? `${processedCw || "CW"} / ` : ""}${processedText || ts._drafts.noText}`
 					await os.alert({
 						text: text + (getTypeText(jsonParse[draftKey]) ? ("\n" + getTypeText(jsonParse[draftKey])) : "")
@@ -191,8 +191,8 @@ function menu(ev: MouseEvent, draftKey: string) {
 				text: ts._drafts.directPost,
 				icon: "ph-paper-plane-tilt ph-bold ph-lg",
 				action: async () => {
-					const processedText = preprocess(jsonParse[draftKey].data.text);
-					const processedCw = preprocess(jsonParse[draftKey].data.cw);
+					const processedText = jsonParse[draftKey].data.text ? preprocess(jsonParse[draftKey].data.text) : "";
+					const processedCw = jsonParse[draftKey].data.cw ? preprocess(jsonParse[draftKey].data.cw) : "";
 					const text = `${jsonParse[draftKey].data.useCw ? `${processedCw || "CW"} / ` : ""}${processedText || ts._drafts.noText}`
 					const { canceled } = await os.yesno({
 						type: "question",
@@ -200,8 +200,8 @@ function menu(ev: MouseEvent, draftKey: string) {
 						text: `${text.slice(0,120)}${text.length > 120 ? "…" : ""}${getTypeText(jsonParse[draftKey]) ? ("\n" + getTypeText(jsonParse[draftKey])) : ""}`
 					})
 					if (!canceled) {
-						const processedText = preprocess(jsonParse[draftKey].data.text);
-						const processedCw = preprocess(jsonParse[draftKey].data.cw);
+					const processedText = jsonParse[draftKey].data.text ? preprocess(jsonParse[draftKey].data.text) : "";
+					const processedCw = jsonParse[draftKey].data.cw ? preprocess(jsonParse[draftKey].data.cw) : "";
 						await os.apiWithDialog("notes/create",{
 							text: processedText === "" ? undefined : processedText,
 							cw: jsonParse[draftKey].data.useCw ? (processedCw || "CW") : undefined,

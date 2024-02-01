@@ -266,8 +266,8 @@ const endpoint = computed(() =>
 				: "notes/timeline",
 	)
 
-const lastBackedDate = defaultStore.state.lastBackedDate?.[endpoint.value]
-					
+const lastBackedDate = $computed(() => defaultStore.reactiveState.lastBackedDate?.value?.[endpoint.value]);
+
 let travelDate = $ref<Date | undefined>(undefined);
 
 const onContextmenu = (ev: MouseEvent) => {

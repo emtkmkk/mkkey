@@ -440,7 +440,7 @@ const fetchMore = async (): Promise<void> => {
 					more.value = false;
 				}
 				offset.value += res.length;
-				if (res[0]?.createdAt) defaultStore.set("lastBackedDate", {...defaultStore.state.lastBackedDate, [props.pagination.endpoint]: {date: res[0]?.createdAt, createdAt: new Date()}});
+				if (res[0]?.createdAt) defaultStore.set("lastBackedDate", {...defaultStore.state.lastBackedDate, [props.pagination.endpoint]: {date: res[0]?.createdAt, createdAt: new Date().toISOString}});
 				moreFetching.value = false;
 				ctAutoReload.value = true;
 				if (timerId) clearTimeout(timerId);

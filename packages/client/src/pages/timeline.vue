@@ -280,12 +280,12 @@ const onContextmenu = (ev: MouseEvent) => {
 				type: "label",
 				text: travelDate.toLocaleString(),
 			} as MenuLabel] : []),
-			...(!travelDate && lastBackedDate?.createdAt && Date.now() - lastBackedDate?.createdAt?.valueOf() < 30 * 60 * 1000 ? [{
+			...(!travelDate && lastBackedDate?.createdAt && Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000 ? [{
 				icon: 'ph-arrow-arc-left ph-bold ph-lg',
 				text: i18n.ts.lastBackedDate as string,
 				action: () => {
-					travelDate = lastBackedDate?.date;
-					Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel(lastBackedDate?.date) : tlComponent.value?.timetravel(lastBackedDate?.date);
+					travelDate = new Date(lastBackedDate?.date);
+					Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel(travelDate) : tlComponent.value?.timetravel(travelDate);
 				},
 			} as MenuButton] : []),
 			{
@@ -325,8 +325,8 @@ const headerActions = $computed(() => [
 		iconOnly: true,
 		handler: () => {
 			const lastBackedDate = defaultStore.state.lastBackedDate?.[endpoint.value]
-			if (lastBackedDate?.createdAt && Date.now() - lastBackedDate?.createdAt?.valueOf() < 30 * 60 * 1000) {
-				timetravel(lastBackedDate?.date)
+			if (lastBackedDate?.createdAt && Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000) {
+				timetravel(new Date(lastBackedDate?.date))
 			} else {
 				timetravel()
 			}

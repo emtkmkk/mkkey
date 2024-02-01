@@ -325,7 +325,7 @@ const headerActions = $computed(() => [
 			const lastBackedDate = defaultStore.state.lastBackedDate?.[endpoint.value]
 			if (lastBackedDate?.createdAt && Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000) {
 					let lastDate = new Date(lastBackedDate?.date);
-					lastDate.setSeconds(lastDate.getSeconds() + 1);
+					lastDate.setSeconds(lastDate.getSeconds() + 60);
 				timetravel(lastDate)
 			} else {
 				timetravel()

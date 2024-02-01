@@ -284,7 +284,9 @@ const onContextmenu = (ev: MouseEvent) => {
 				icon: 'ph-arrow-arc-left ph-bold ph-lg',
 				text: i18n.ts.lastBackedDate as string,
 				action: () => {
-					travelDate = new Date(lastBackedDate?.date);
+					let lastDate = new Date(lastBackedDate?.date);
+					lastDate.setSeconds(lastDate.getSeconds() + 1);
+					travelDate = lastDate;
 					Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel(travelDate) : tlComponent.value?.timetravel(travelDate);
 				},
 			} as MenuButton] : []),
@@ -328,7 +330,9 @@ const headerActions = $computed(() => [
 		handler: () => {
 			const lastBackedDate = defaultStore.state.lastBackedDate?.[endpoint.value]
 			if (lastBackedDate?.createdAt && Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000) {
-				timetravel(new Date(lastBackedDate?.date))
+					let lastDate = new Date(lastBackedDate?.date);
+					lastDate.setSeconds(lastDate.getSeconds() + 1);
+				timetravel(lastDate)
 			} else {
 				timetravel()
 			}

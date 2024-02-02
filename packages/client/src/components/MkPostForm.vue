@@ -1119,6 +1119,7 @@ function setVisibility() {
 			canHome,
 			canFollower,
 			canNotLocal,
+			canDirect: true,
 		},
 		{
 			changeVisibility: (v) => {

@@ -15,7 +15,7 @@
 			<div v-else-if="widgetProps.compactView">
 				<iframe
 					v-for="e in tweets"
-					:src="`https://${widgetProps.nitterUrl}/${e[1]}/status/${e[2]}/embed/${theme}`"
+					:src="`https://${widgetProps.nitterUrl}/${e[1]}/status/${e[2]}/embed`"
 					:width="widgetProps.width - widthAdjust"
 					:class="$style.tweet"
 					height=100
@@ -24,7 +24,7 @@
 			</div>
 			<div v-else>
 				<iframe 
-					:src="`https://${widgetProps.nitterUrl}/${widgetProps.accounts}/with_replies/${theme}`"
+					:src="`https://${widgetProps.nitterUrl}/${widgetProps.accounts}/with_replies`"
 					:width="widgetProps.width - widthAdjust"
 					:height="widgetProps.height"
 					:class="$style.tweets"

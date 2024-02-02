@@ -32,7 +32,7 @@
 				<i class="ph-push-pin ph-bold ph-lg"></i
 				>{{ i18n.ts.pinnedNote }}
 			</div>
-			<div v-if="isRenote" class="renote" :class="[appearNote.visibility == 'public' ? `v-${note.visibility === 'specified' && note.ccUserIdsCount ? 'circle' : note.visibility}` : '' , { localOnly : note.localOnly }]">
+			<div v-if="isRenote" class="renote" :class="[appearNote.visibility !== note.visibility || note.ccUserIdsCount ? `v-${note.visibility === 'specified' && note.ccUserIdsCount ? 'circle' : note.visibility}` : '' , { localOnly : appearNote.localOnly !== note.localOnly && note.localOnly }]">
 				<i v-if="!pinned" class="ph-repeat ph-bold ph-lg"></i>
 				<I18n v-if="!pinned" :src="i18n.ts.renotedBy" tag="span">
 					<template #user>

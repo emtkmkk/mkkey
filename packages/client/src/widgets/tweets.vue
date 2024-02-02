@@ -15,7 +15,7 @@
 			<div v-else-if="widgetProps.compactView">
 				<iframe
 					v-for="e in tweets"
-					:src="`https://${nitter}/${e[1]}/status/${e[2]}/embed/${theme}`"
+					:src="`https://${widgetProps.nitterUrl}/${e[1]}/status/${e[2]}/embed/${theme}`"
 					:width="widgetProps.width - widthAdjust"
 					:class="$style.tweet"
 					height=100
@@ -24,7 +24,7 @@
 			</div>
 			<div v-else>
 				<iframe 
-					:src="`https://${nitter}/${widgetProps.accounts}/with_replies/${theme}`"
+					:src="`https://${widgetProps.nitterUrl}/${widgetProps.accounts}/with_replies/${theme}`"
 					:width="widgetProps.width - widthAdjust"
 					:height="widgetProps.height"
 					:class="$style.tweets"
@@ -75,6 +75,10 @@ const widgetPropsDef = {
 		type: "boolean" as const,
 		default: false,
 	},
+	nitterUrl: {
+		type: "string" as const,
+		default: "nitter.holo-mix.com"
+	},
 	showHeader: {
 		type: "boolean" as const,
 		default: true,
@@ -96,7 +100,6 @@ const { widgetProps, configure } = useWidgetPropsManager(
 	emit
 );
 
-const nitter = "nitter.tux.pizza";
 const twitter = "twitter.com";
 
 const iframeUpdate = ref(false);
@@ -107,7 +110,7 @@ const regex = new RegExp(`https://${twitter}/\(\\w{1,15}\)/status/\(\\d\+\)`);
 
 const tick = async () => {
 	if (widgetProps.compactView) {
-		fetch(`/api/fetch-rss?url=https://${nitter}/${widgetProps.accounts}/${widgetProps.withReplies ? "with_replies/" : ""}rss`, {}).then((res) => {
+		fetch(`/api/fetch-rss?url=https://${widgetProps.nitterUrl}/${widgetProps.accounts}/${widgetProps.withReplies ? "with_replies/" : ""}rss`, {}).then((res) => {
 			res.json().then((feed) => {
 				tweets.value = feed.items.map((e) => e.link.match(regex));
 				fetching.value = false;

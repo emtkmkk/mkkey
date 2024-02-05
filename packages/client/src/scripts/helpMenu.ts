@@ -70,6 +70,11 @@ export function openHelpMenu_(ev: MouseEvent) {
 				type: "button",
 				action: async () => {
 					defaultStore.set("tutorial", 0);
+					defaultStore.set("showLocalPostsInfoPopup", false);
+					defaultStore.set("showInviteInfoPopupAccount", false);
+					defaultStore.set("showInviteInfoPopupDevice", false);
+					defaultStore.set("showMultiReactionInfoPopup", false);
+
 					os.popup(XTutorial, {}, {}, "closed");
 				},
 				text: i18n.ts.replayTutorial,

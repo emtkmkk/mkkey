@@ -62,9 +62,6 @@ html {
 	-webkit-text-size-adjust: 100%;
 
 	&, * {
-		scrollbar-color: var(--scrollbarHandle) inherit;
-		scrollbar-width: thin;
-
 		&::-webkit-scrollbar {
 			width: 6px;
 			height: 6px;
@@ -189,6 +186,13 @@ body::-webkit-scrollbar-thumb {
 	&:active {
 		background: var(--accent);
 		background-clip: content-box;
+	}
+}
+
+@supports not selector(::-webkit-scrollbar) {
+	html, * {
+		scrollbar-color: var(--scrollbarHandle) inherit;
+		scrollbar-width: thin;
 	}
 }
 

@@ -333,8 +333,23 @@ export const UserRepository = db.getRepository(User).extend({
 		return count > 0;
 	},
 
-	getOnlineStatus(user: User, meId?: string): "unknown" | "online" | "half-online" | "active" | "half-active" | "offline" | "half-sleeping" | "sleeping" | "deep-sleeping" | "never-sleeping" | "super-sleeping" {
+	async getOnlineStatus(
+		user: User,
+		meId?: string,
+	):
+		Promise<"unknown"
+		| "online"
+		| "half-online"
+		| "active"
+		| "half-active"
+		| "offline"
+		| "half-sleeping"
+		| "sleeping"
+		| "deep-sleeping"
+		| "never-sleeping"
+		| "super-sleeping"> {
 		if (!meId) return "unknown";
+		if (meId && !user.host && !(await this.getRelation(meId, user.id)).isFollowing) return "unknown";
 		if (user.lastActiveDate == null) return "unknown";
 		const elapsed = Date.now() - user.lastActiveDate.getTime();
 		return elapsed < USER_ONLINE_THRESHOLD
@@ -604,14 +619,7 @@ export const UserRepository = db.getRepository(User).extend({
 					)
 				: undefined,
 			emojis: populateEmojis(user.emojis, user.host),
-			onlineStatus: this.getOnlineStatus(user, meId),
-			patron: user.host ? undefined : (user.driveCapacityOverrideMb ?? (DEFAULT_DRIVE_SIZE / MB)) > DEFAULT_DRIVE_SIZE / MB,
-			badgeRoles: user.host == null ? roles.map((x) => ({
-				name: x.name,
-				iconUrl: x.iconUrl,
-				displayOrder: x.displayOrder,
-			})) : undefined,
-			originalName: memo?.customName ? isDeleted ? "🗑" : user.name : undefined,
+			onlineStatus: await this.getOnlineStatus(user, meId),
 			memo: memo?.memo ? memo.memo : undefined,
 			...(opts.detail
 				? {

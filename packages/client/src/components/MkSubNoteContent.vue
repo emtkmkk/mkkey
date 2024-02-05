@@ -22,9 +22,9 @@
 			<i class="ph-quotes ph-bold ph-lg"></i>
 		</MkA>
 		<Mfm
-		  v-if="cwDetermine && note.reply?.user && note.reply.user.id !== note.user.id && !note.cw.includes(`@${note.reply.user?.username}${note.reply.user?.host ? `@${note.reply.user.host}` : ''}`)"
+		  v-if="cwDetermine && note.reply?.user && note.reply.user.id !== note.user.id && !note.cw.includes(`@`)"
 			class="text"
-			:text="`@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : ''} ` + (note.cw ?? ('★センシティブメディア'))"
+			:text="`@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : '@mkkey.net'} ` + (note.cw ?? ('★センシティブメディア'))"
 			:author="note.user"
 			:i="$i"
 			:custom-emojis="note.emojis"
@@ -88,8 +88,8 @@
 					</MkA>
 				</template>
 				<Mfm
-					v-if="note.text && !note.cw && !note.deletedAt && note.reply?.user && note.reply.user.id !== note.user.id && !note.text.includes(`@${note.reply.user?.username}${note.reply.user?.host ? `@${note.reply.user.host}` : ''}`)"
-					:text="note.deletedAt ? i18n.ts.deletedNote : `@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : ''} ` + note.text"
+					v-if="note.text && !note.cw && !note.deletedAt && note.reply?.user && note.reply.user.id !== note.user.id && !note.text.includes(`@`)"
+					:text="note.deletedAt ? i18n.ts.deletedNote : `@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : '@mkkey.net'} ` + note.text"
 					:author="note.user"
 					:i="$i"
 					:custom-emojis="note.emojis"

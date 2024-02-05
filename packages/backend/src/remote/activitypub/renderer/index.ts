@@ -50,7 +50,7 @@ export const renderActivity = (x: any): IActivity | null => {
 					license: "schema:license",
 					keywords: "schema:keywords",
 					usageInfo: "schema:usageInfo",
-					isBasedOnUrl: "schema:isBasedOnUrl"
+					isBasedOnUrl: "schema:isBasedOnUrl",
 					// vcard
 					vcard: "http://www.w3.org/2006/vcard/ns#",
 				},

@@ -124,6 +124,7 @@
 									:full="true"
 									large
 									class="koudoku"
+									is-following-hidden
 								/>
 							</div>
 						</div>

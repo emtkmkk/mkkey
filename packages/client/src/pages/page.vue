@@ -156,6 +156,7 @@
 									:transparent="false"
 									:full="true"
 									class="koudoku"
+									is-following-hidden
 								/>
 							</div>
 						</div>

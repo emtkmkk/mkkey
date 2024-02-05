@@ -232,10 +232,11 @@
 				class="text"
 				style="opacity: 0.6"
 				>{{ i18n.ts.youGotNewFollower }}
-				<div v-if="full">
+				<div v-if="full && notification.user.isFollowed">
 					<MkFollowButton
 						:user="notification.user"
 						:full="true"
+						is-following-hidden
 					/></div
 			></span>
 			<span

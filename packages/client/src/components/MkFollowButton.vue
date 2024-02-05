@@ -22,7 +22,7 @@
 				<span v-if="full">{{ i18n.ts.followRequestPending }}</span
 				><i class="ph-hourglass-medium ph-bold ph-lg"></i>
 			</template>
-			<template v-else-if="isFollowing">
+			<template v-else-if="isFollowing && !isFollowingHidden">
 				<span v-if="full">{{ i18n.ts.unfollow }}</span
 				><i class="ph-minus ph-bold ph-lg"></i>
 			</template>
@@ -61,10 +61,12 @@ const props = withDefaults(
 		user: Misskey.entities.UserDetailed;
 		full?: boolean;
 		large?: boolean;
+		isFollowingHidden?: boolean;
 	}>(),
 	{
 		full: false,
 		large: false,
+		isFollowingHidden: false,
 	}
 );
 

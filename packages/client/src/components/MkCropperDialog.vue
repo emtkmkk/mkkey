@@ -55,6 +55,8 @@ const emit = defineEmits<{
 const props = defineProps<{
 	file: misskey.entities.DriveFile;
 	aspectRatio: number;
+	uploadFolder?: string | null;
+	to?: string | null;
 }>();
 
 const imgUrl = `${url}/proxy/image.webp?${query({
@@ -67,12 +69,32 @@ let loading = $ref(true);
 
 const ok = async () => {
 	const promise = new Promise<misskey.entities.DriveFile>(async (res) => {
-		const croppedCanvas = await cropper?.getCropperSelection()?.$toCanvas();
+		const croppedImage = await cropper?.getCropperImage();
+		const croppedSection = await cropper?.getCropperSelection();
+		// 拡大率を計算し、(ほぼ)元の大きさに戻す
+		const zoomedRate = croppedImage.getBoundingClientRect().width / croppedImage.clientWidth;
+		const widthToRender = croppedSection.getBoundingClientRect().width / zoomedRate;
+		const croppedCanvas = await croppedSection?.$toCanvas({ width: widthToRender });
 		croppedCanvas.toBlob((blob) => {
 			const formData = new FormData();
 			formData.append("file", blob);
-			if (defaultStore.state.uploadFolder) {
-				formData.append("folderId", defaultStore.state.uploadFolder);
+			formData.append('name', `cropped_${props.file.name}`);
+			formData.append('isSensitive', props.file.isSensitive ? 'true' : 'false');
+			if (props.file.comment) { formData.append('comment', props.file.comment);}
+
+			const folderId =
+			props.uploadFolder
+				? props.uploadFolder
+				: defaultStore.state.uploadFolderAvatar && props.to === "avatar"
+				? defaultStore.state.uploadFolderAvatar
+				: defaultStore.state.uploadFolderBanner && props.to === "banner"
+				? defaultStore.state.uploadFolderBanner
+				: defaultStore.state.uploadFolderEmoji && props.to === "emoji"
+				? defaultStore.state.uploadFolderEmoji
+				: defaultStore.state.uploadFolder;
+
+			if (folderId) {
+				formData.append("folderId", folderId);
 			}
 
 			fetch(`${apiUrl}/drive/files/create`, {

@@ -279,7 +279,6 @@ function changeAvatar(ev) {
 		async (file) => {
 			let originalOrCropped = file;
 
-/*
 			const { canceled } = await os.yesno({
 				type: "question",
 				text: i18n.t("cropImageAsk"),
@@ -288,9 +287,9 @@ function changeAvatar(ev) {
 			if (!canceled) {
 				originalOrCropped = await os.cropImage(file, {
 					aspectRatio: 1,
+					to: "avatar",
 				});
 			}
-*/
 
 			const i = await os.apiWithDialog("i/update", {
 				avatarId: originalOrCropped.id,
@@ -305,7 +304,7 @@ function changeBanner(ev) {
 	selectFile(ev.currentTarget ?? ev.target, i18n.ts.banner, undefined, undefined, "banner").then(
 		async (file) => {
 			let originalOrCropped = file;
-/*
+
 			const { canceled } = await os.yesno({
 				type: "question",
 				text: i18n.t("cropImageAsk"),
@@ -314,9 +313,10 @@ function changeBanner(ev) {
 			if (!canceled) {
 				originalOrCropped = await os.cropImage(file, {
 					aspectRatio: 2,
+					to: "banner"
 				});
 			}
-*/
+
 			const i = await os.apiWithDialog("i/update", {
 				bannerId: originalOrCropped.id,
 			});

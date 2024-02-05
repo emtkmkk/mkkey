@@ -710,6 +710,7 @@ export async function cropImage(
 	image: Misskey.entities.DriveFile,
 	options: {
 		aspectRatio: number;
+		to?: string;
 	},
 ): Promise<Misskey.entities.DriveFile> {
 	return new Promise((resolve, reject) => {
@@ -718,6 +719,7 @@ export async function cropImage(
 			{
 				file: image,
 				aspectRatio: options.aspectRatio,
+				to: options.to,
 			},
 			{
 				ok: (x) => {

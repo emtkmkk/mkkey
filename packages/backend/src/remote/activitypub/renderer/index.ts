@@ -45,6 +45,12 @@ export const renderActivity = (x: any): IActivity | null => {
 					isCat: "misskey:isCat",
 					// Fedibird
 					fedibird: "http://fedibird.com/ns#",
+					copyPermission: "fedibird:copyPermission",
+					schema: "http://schema.org#",
+					license: "schema:license",
+					keywords: "schema:keywords",
+					usageInfo: "schema:usageInfo",
+					isBasedOnUrl: "schema:isBasedOnUrl"
 					// vcard
 					vcard: "http://www.w3.org/2006/vcard/ns#",
 				},

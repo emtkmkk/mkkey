@@ -81,14 +81,16 @@ export default async (ctx: Koa.Context) => {
 		const now = new Date();
 
 		// 発行から24時間以上経過している場合、無効
-		if ((now.valueOf() - new Date(ticket.createdAt).valueOf()) > 24 * 60 * 60 * 1000) {
+		if (
+			now.valueOf() - new Date(ticket.createdAt).valueOf() >
+			24 * 60 * 60 * 1000
+		) {
 			RegistrationTickets.delete(ticket.id);
 			ctx.status = 400;
 			return;
 		}
-		
-		ticketUserId = ticket.inviteUserId;
 
+		ticketUserId = ticket.inviteUserId;
 	}
 
 	if (instance.emailRequiredForSignup) {

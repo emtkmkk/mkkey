@@ -113,7 +113,8 @@ export default {
 	unmounted(el, binding, vn) {
 		const self = el._tooltipDirective_;
 		window.clearInterval(self.checkTimer);
-		if (self.close) { // Check if self.close is defined
+		if (self.close) {
+			// Check if self.close is defined
 			self.close();
 		}
 	},

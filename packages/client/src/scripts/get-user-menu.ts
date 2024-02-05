@@ -120,7 +120,9 @@ export function getUserMenu(user, router: Router = mainRouter) {
 
 	async function toggleIgnore(): Promise<void> {
 		os.apiWithDialog(
-			user.isFollowBlocking ? "follow-blocking/delete" : "follow-blocking/create",
+			user.isFollowBlocking
+				? "follow-blocking/delete"
+				: "follow-blocking/create",
 			{
 				userId: user.id,
 			},
@@ -149,14 +151,11 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		if (canceled) {
 			return;
 		}
-		os.apiWithDialog(
-			"users/update-memo",
-			{
-				userId: user.id,
-				customName: input || null,
-				memo: user.memo,
-			},
-		).then(() => {
+		os.apiWithDialog("users/update-memo", {
+			userId: user.id,
+			customName: input || null,
+			memo: user.memo,
+		}).then(() => {
 			user.originalName = user.originalName || user.name;
 			user.name = input;
 		});
@@ -258,28 +257,27 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		});
 	}
 
-	
-async function accept() {
-	const { canceled } = await os.confirm({
-		type: "question",
-		text: i18n.t("acceptConfirm", {
-			name: user.name || user.username,
-		}),
-	});
-	if (canceled) return;
-	os.api("following/requests/accept", { userId: user.id });
-}
+	async function accept() {
+		const { canceled } = await os.confirm({
+			type: "question",
+			text: i18n.t("acceptConfirm", {
+				name: user.name || user.username,
+			}),
+		});
+		if (canceled) return;
+		os.api("following/requests/accept", { userId: user.id });
+	}
 
-async function reject() {
-	const { canceled } = await os.confirm({
-		type: "warning",
-		text: i18n.t("rejectConfirm", {
-			name: user.name || user.username,
-		}),
-	});
-	if (canceled) return;
-	os.api("following/requests/reject", { userId: user.id });
-}
+	async function reject() {
+		const { canceled } = await os.confirm({
+			type: "warning",
+			text: i18n.t("rejectConfirm", {
+				name: user.name || user.username,
+			}),
+		});
+		if (canceled) return;
+		os.api("following/requests/reject", { userId: user.id });
+	}
 
 	let menu = [
 		{
@@ -300,7 +298,10 @@ async function reject() {
 			icon: "ph-envelope-simple-open ph-bold ph-lg",
 			text: i18n.ts.sendMessage,
 			action: () => {
-				const canonical = user.host === null ? `@${user.username}` : `@${user.username}@${user.host}`;
+				const canonical =
+					user.host === null
+						? `@${user.username}`
+						: `@${user.username}@${user.host}`;
 				os.post({ specified: user, initialText: `${canonical} ` });
 			},
 		},
@@ -316,22 +317,28 @@ async function reject() {
 			icon: "ph-share-network ph-bold ph-lg",
 			text: i18n.ts.copyUserUrl,
 			action: () => {
-				copyToClipboard(`https://${config.host}/@${user.username}${user.host ? `@${user.host}` : ""}`);
+				copyToClipboard(
+					`https://${config.host}/@${user.username}${
+						user.host ? `@${user.host}` : ""
+					}`,
+				);
 			},
 		},
-		...(user.hasPendingFollowRequestToYou ? [
-			null,
-			{
-				icon: "ph-check ph-bold ph-lg",
-				text: i18n.ts.followAccept,
-				action: accept,
-			},
-			{
-				icon: "ph-x ph-bold ph-lg",
-				text: i18n.ts.followReject,
-				action: reject,
-			},
-		] : []),
+		...(user.hasPendingFollowRequestToYou
+			? [
+					null,
+					{
+						icon: "ph-check ph-bold ph-lg",
+						text: i18n.ts.followAccept,
+						action: accept,
+					},
+					{
+						icon: "ph-x ph-bold ph-lg",
+						text: i18n.ts.followReject,
+						action: reject,
+					},
+			  ]
+			: []),
 		null,
 		meId !== user.id
 			? {
@@ -374,8 +381,12 @@ async function reject() {
 			},
 			{
 				icon: "ph-prohibit-inset ph-bold ph-lg",
-				text: user.isFollowBlocking ? i18n.ts.followUnblock : i18n.ts.followBlock,
-				hidden: user.isBlocking === true || (user.isFollowed && !user.isFollowBlocking),
+				text: user.isFollowBlocking
+					? i18n.ts.followUnblock
+					: i18n.ts.followBlock,
+				hidden:
+					user.isBlocking === true ||
+					(user.isFollowed && !user.isFollowBlocking),
 				action: toggleIgnore,
 			},
 			{
@@ -404,7 +415,6 @@ async function reject() {
 			},
 		]);
 		if (user.isInviter) {
-
 			menu = menu.concat([
 				null,
 				{

@@ -101,35 +101,35 @@ async function populateMyReaction(
 	return undefined;
 }
 
-async function populateMyReactions(
-	note: Note,
-	meId: User["id"],
-) {
-
+async function populateMyReactions(note: Note, meId: User["id"]) {
 	// パフォーマンスのためノートが作成されてから1秒以上経っていない場合はリアクションを取得しない
 	if (note.createdAt.getTime() + 1000 > Date.now()) {
-		return ({
+		return {
 			myReactions: [],
 			myReactionsCnt: 0,
-		})
+		};
 	}
 
-	const reactions = await NoteReactions.find({where: {
-		userId: meId,
-		noteId: note.id,
-	}});
+	const reactions = await NoteReactions.find({
+		where: {
+			userId: meId,
+			noteId: note.id,
+		},
+	});
 
 	if (reactions && reactions.length != 0) {
-		return ({
-			myReactions: reactions.map((reaction) => convertLegacyReaction(reaction.reaction)),
+		return {
+			myReactions: reactions.map((reaction) =>
+				convertLegacyReaction(reaction.reaction),
+			),
 			myReactionsCnt: reactions.length,
-		})
+		};
 	}
 
-	return ({
+	return {
 		myReactions: [],
 		myReactionCnt: 0,
-	});
+	};
 }
 
 export const NoteRepository = db.getRepository(Note).extend({
@@ -143,7 +143,10 @@ export const NoteRepository = db.getRepository(Note).extend({
 				return true;
 			} else {
 				// 指定されているかどうか
-				return note.visibleUserIds.some((id: any) => meId === id) || note.ccUserIds.some((id: any) => meId === id);
+				return (
+					note.visibleUserIds.some((id: any) => meId === id) ||
+					note.ccUserIds.some((id: any) => meId === id)
+				);
 			}
 		}
 
@@ -218,8 +221,9 @@ export const NoteRepository = db.getRepository(Note).extend({
 		let text = note.text;
 
 		if (note.name && (note.url ?? note.uri)) {
-			text = `【${note.name}】\n${(note.text || "").trim()}\n\n${note.url ?? note.uri
-				}`;
+			text = `【${note.name}】\n${(note.text || "").trim()}\n\n${
+				note.url ?? note.uri
+			}`;
 		}
 
 		const channel = note.channelId
@@ -269,9 +273,9 @@ export const NoteRepository = db.getRepository(Note).extend({
 			channelId: note.channelId || undefined,
 			channel: channel
 				? {
-					id: channel.id,
-					name: channel.name,
-				}
+						id: channel.id,
+						name: channel.name,
+				  }
 				: undefined,
 			mentions: note.mentions.length > 0 ? note.mentions : undefined,
 			uri: note.uri || undefined,
@@ -281,37 +285,42 @@ export const NoteRepository = db.getRepository(Note).extend({
 			isFirstNote: note.isFirstNote ? true : undefined,
 			...(opts.detail
 				? {
-					reply: note.replyId
-						? this.pack(note.reply || note.replyId, me, {
-							detail: false,
-							_hint_: options?._hint_,
-						})
-						: undefined,
+						reply: note.replyId
+							? this.pack(note.reply || note.replyId, me, {
+									detail: false,
+									_hint_: options?._hint_,
+							  })
+							: undefined,
 
-					renote: note.renoteId
-						? this.pack(note.renote || note.renoteId, me, {
-							detail: true,
-							_hint_: options?._hint_,
-						})
-						: undefined,
+						renote: note.renoteId
+							? this.pack(note.renote || note.renoteId, me, {
+									detail: true,
+									_hint_: options?._hint_,
+							  })
+							: undefined,
 
-					poll: note.hasPoll ? populatePoll(note, meId) : undefined,
+						poll: note.hasPoll ? populatePoll(note, meId) : undefined,
 
-					...(meId
-						? {
-							myReaction: populateMyReaction(note, meId, options?._hint_),
-							...(await populateMyReactions(note, meId)),
-							isFavorited: (await NoteFavorites.count({
-								where: {
-									userId: meId,
-									noteId: note.id,
-								},
-								take: 1,
-							})) ? true : undefined,
-							lastSendActivityAt: meId === note.userId ? note.lastSendActivityAt?.toISOString() || undefined : undefined,
-						}
-						: {}),
-				}
+						...(meId
+							? {
+									myReaction: populateMyReaction(note, meId, options?._hint_),
+									...(await populateMyReactions(note, meId)),
+									isFavorited: (await NoteFavorites.count({
+										where: {
+											userId: meId,
+											noteId: note.id,
+										},
+										take: 1,
+									}))
+										? true
+										: undefined,
+									lastSendActivityAt:
+										meId === note.userId
+											? note.lastSendActivityAt?.toISOString() || undefined
+											: undefined,
+							  }
+							: {}),
+				  }
 				: {}),
 		});
 

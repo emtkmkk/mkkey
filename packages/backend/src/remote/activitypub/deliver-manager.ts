@@ -90,13 +90,17 @@ export default class DeliverManager {
 		*/
 		if (this.recipes.some((r) => isFollowers(r))) {
 			// followers deliver
-			const union = (this.recipes.filter((r) => isFollowers(r) && r.union && Users.isLocalUser(r.union)) as IFollowersRecipe[]).map((r) => r.union);
+			const union = (
+				this.recipes.filter(
+					(r) => isFollowers(r) && r.union && Users.isLocalUser(r.union),
+				) as IFollowersRecipe[]
+			).map((r) => r.union);
 			const unionFollowerIds = new Set<string>();
 
 			for (const u of union) {
 				if (!u) continue;
 
-				const unionFollowers = await Followings.find({
+				const unionFollowers = (await Followings.find({
 					where: {
 						followeeId: u.id,
 						followerHost: Not(IsNull()),
@@ -104,7 +108,7 @@ export default class DeliverManager {
 					select: {
 						followerId: true,
 					},
-				}) as {
+				})) as {
 					followerId: string;
 				}[];
 
@@ -126,7 +130,9 @@ export default class DeliverManager {
 				const followers = (await Followings.find({
 					where: {
 						followeeId: this.actor.id,
-						...(union.length ? {followerId: In(Array.from(unionFollowerIds))} : {}),
+						...(union.length
+							? { followerId: In(Array.from(unionFollowerIds)) }
+							: {}),
 						followerHost: Not(IsNull()),
 					},
 					select: {
@@ -139,11 +145,14 @@ export default class DeliverManager {
 				}[];
 
 				for (const following of followers) {
-					const inbox = following.followerSharedInbox || following.followerInbox;
+					const inbox =
+						following.followerSharedInbox || following.followerInbox;
 					inboxes.set(inbox, following.followerSharedInbox === null);
 				}
 			} else {
-				console.log(`skip : no remote follower (${union.map((u) => u?.id).join(", ")})`)
+				console.log(
+					`skip : no remote follower (${union.map((u) => u?.id).join(", ")})`,
+				);
 			}
 		}
 
@@ -161,8 +170,12 @@ export default class DeliverManager {
 			)
 			.forEach((recipe) => inboxes.set(recipe.to.inbox!, false));
 
-		console.log(`deliver : ${inboxSize}${inboxes.size - inboxSize ? ` + ${inboxes.size - inboxSize}` : ""}`)
-		
+		console.log(
+			`deliver : ${inboxSize}${
+				inboxes.size - inboxSize ? ` + ${inboxes.size - inboxSize}` : ""
+			}`,
+		);
+
 		// Validate Inboxes first
 		const validInboxes = [];
 		for (const inbox of inboxes) {

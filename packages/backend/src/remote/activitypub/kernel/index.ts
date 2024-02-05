@@ -1,4 +1,7 @@
-import type { CacheableRemoteUser, ILocalUser } from "@/models/entities/user.js";
+import type {
+	CacheableRemoteUser,
+	ILocalUser,
+} from "@/models/entities/user.js";
 import { toArray } from "@/prelude/array.js";
 import {
 	isCreate,
@@ -44,7 +47,7 @@ import { shouldBlockInstance } from "@/misc/should-block-instance.js";
 export async function performActivity(
 	actor: CacheableRemoteUser,
 	activity: IObject,
-	additionalTo?: ILocalUser['id'],
+	additionalTo?: ILocalUser["id"],
 ) {
 	if (isCollectionOrOrderedCollection(activity)) {
 		const resolver = new Resolver();
@@ -68,7 +71,7 @@ export async function performActivity(
 async function performOneActivity(
 	actor: CacheableRemoteUser,
 	activity: IObject,
-	additionalTo?: ILocalUser['id'],
+	additionalTo?: ILocalUser["id"],
 ): Promise<void> {
 	if (actor.isSuspended) return;
 

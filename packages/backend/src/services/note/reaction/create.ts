@@ -2,7 +2,11 @@ import { publishNoteStream } from "@/services/stream.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import DeliverManager from "@/remote/activitypub/deliver-manager.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
-import { toDbReaction, decodeReaction, getFallbackReaction } from "@/misc/reaction-lib.js";
+import {
+	toDbReaction,
+	decodeReaction,
+	getFallbackReaction,
+} from "@/misc/reaction-lib.js";
 import type { User, IRemoteUser, ILocalUser } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
 import {
@@ -27,7 +31,15 @@ import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { MAX_REACTION_PER_ACCOUNT } from "@/const.js";
 
 export default async (
-	user: { id: User["id"]; host: User["host"]; username: User["username"]; name: User["name"]; avatarUrl: User["avatarUrl"]; isSilenced: User["isSilenced"]; driveCapacityOverrideMb: User["driveCapacityOverrideMb"]; },
+	user: {
+		id: User["id"];
+		host: User["host"];
+		username: User["username"];
+		name: User["name"];
+		avatarUrl: User["avatarUrl"];
+		isSilenced: User["isSilenced"];
+		driveCapacityOverrideMb: User["driveCapacityOverrideMb"];
+	},
 	note: Note,
 	reaction?: string,
 ) => {
@@ -50,18 +62,20 @@ export default async (
 		);
 	}
 
-	const relation = user.isSilenced ? note.userId !== user.id ? await Users.getRelation(user.id, note.userId) : undefined : undefined;
+	const relation = user.isSilenced
+		? note.userId !== user.id
+			? await Users.getRelation(user.id, note.userId)
+			: undefined
+		: undefined;
 
-	if (user.isSilenced && (!note.user.isFollowed && !relation.isFollowed)) {
+	if (user.isSilenced && !note.user.isFollowed && !relation.isFollowed) {
 		throw new IdentifiableError(
 			"5ab2b45b-c2b5-0560-793d-2a670084cc92",
 			"サイレンス中はフォロワー以外にリアクション出来ません。",
 		);
 	}
 
-	if (
-		note.deletedAt
-	) {		
+	if (note.deletedAt) {
 		throw new IdentifiableError(
 			"639cc3a5-fe68-b071-0c20-413c887054cd",
 			"削除された投稿に対してはリアクション出来ません。",
@@ -79,17 +93,19 @@ export default async (
 		reaction,
 	};
 
-	const existCount = await NoteReactions.count({where: {
+	const existCount = await NoteReactions.count({
+		where: {
 			noteId: note.id,
 			userId: user.id,
-		}
+		},
 	});
 
 	if (existCount != 0) {
 		let maxReactionsPerAccount = 1;
 		let maxReactionsNote = 1;
 		if (!user.host) {
-			maxReactionsPerAccount = user.driveCapacityOverrideMb > 5120 ? MAX_REACTION_PER_ACCOUNT : 1;
+			maxReactionsPerAccount =
+				user.driveCapacityOverrideMb > 5120 ? MAX_REACTION_PER_ACCOUNT : 1;
 		} else {
 			const instance = await Instances.findOneBy({ host: user.host });
 			maxReactionsPerAccount = instance.maxReactionsPerAccount;
@@ -107,7 +123,10 @@ export default async (
 			}
 		}
 
-		const maxReactions = Math.min(Math.max(Math.min(maxReactionsPerAccount, maxReactionsNote), 1), 64);
+		const maxReactions = Math.min(
+			Math.max(Math.min(maxReactionsPerAccount, maxReactionsNote), 1),
+			64,
+		);
 
 		if (existCount >= maxReactions) {
 			if (maxReactions === 1) {
@@ -159,7 +178,9 @@ export default async (
 		.update()
 		.set({
 			reactions: () => sql,
-			...(existCount === 0 ? {score: () => `"score" + ${user.host ? '1' : '3'}`} : {}),
+			...(existCount === 0
+				? { score: () => `"score" + ${user.host ? "1" : "3"}` }
+				: {}),
 		})
 		.where("id = :id", { id: note.id })
 		.execute();
@@ -187,11 +208,11 @@ export default async (
 		emoji:
 			emoji != null
 				? {
-					name: emoji.host
-						? `${emoji.name}@${emoji.host}`
-						: `${emoji.name}@.`,
-					url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
-				}
+						name: emoji.host
+							? `${emoji.name}@${emoji.host}`
+							: `${emoji.name}@.`,
+						url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
+				  }
 				: null,
 		userId: user.id,
 	});
@@ -205,20 +226,23 @@ export default async (
 			reaction: reaction,
 		});
 		const webhooks = await getActiveWebhooks().then((webhooks) =>
-			webhooks.filter((x) => x.userId === note.userId && x.on.includes("reaction")),
+			webhooks.filter(
+				(x) => x.userId === note.userId && x.on.includes("reaction"),
+			),
 		);
 
 		for (const webhook of webhooks) {
 			webhookDeliver(webhook, "reaction", {
 				note: await Notes.pack(note, user),
 				reaction: {
-					user: await Users.pack(user, {id: note.userId}),
-					emojiName: decodedReaction.name ? `:${decodedReaction.name}:` : reaction + (existCount > 0 ? ` (+${existCount})` : ""),
+					user: await Users.pack(user, { id: note.userId }),
+					emojiName: decodedReaction.name
+						? `:${decodedReaction.name}:`
+						: reaction + (existCount > 0 ? ` (+${existCount})` : ""),
 					customEmoji: decodedReaction.name ? emoji : undefined,
-				}
+				},
 			});
 		}
-
 	}
 
 	// Fetch watchers
@@ -244,7 +268,11 @@ export default async (
 	) {
 		// ブラックリストに登録済みのホスト または リモート絵文字でライセンスにコピー拒否がある場合 は いいねに変更して外部に送信
 		// TODO : リアクション解除時も変換をかけた方が良いかも
-		if (["voskey.icalo.net","9ineverse.com"].includes(emoji?.host) || (emoji?.host && emoji?.license?.includes("コピー可否 : deny"))) record.reaction = await getFallbackReaction()
+		if (
+			["voskey.icalo.net", "9ineverse.com"].includes(emoji?.host) ||
+			(emoji?.host && emoji?.license?.includes("コピー可否 : deny"))
+		)
+			record.reaction = await getFallbackReaction();
 
 		const content = renderActivity(await renderLike(record, note));
 		const dm = new DeliverManager(user, content);

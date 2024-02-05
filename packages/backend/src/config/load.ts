@@ -58,12 +58,18 @@ export default function load() {
 
 	if (!config.clusterLimits) {
 		config.clusterLimits = {
-			web: config.clusterLimit && config.clusterLimit > 1 ? config.clusterLimit - 1 : 1,
+			web:
+				config.clusterLimit && config.clusterLimit > 1
+					? config.clusterLimit - 1
+					: 1,
 			queue: 1,
 		};
 	} else {
 		config.clusterLimits = {
-			web: config.clusterLimit && config.clusterLimit > 1 ? config.clusterLimit - 1 : 1,
+			web:
+				config.clusterLimit && config.clusterLimit > 1
+					? config.clusterLimit - 1
+					: 1,
 			queue: 1,
 			...config.clusterLimits,
 		};
@@ -72,7 +78,7 @@ export default function load() {
 			throw new Error("Invalid cluster limits");
 		}
 	}
-	
+
 	return Object.assign(config, mixin);
 }
 

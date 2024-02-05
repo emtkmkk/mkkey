@@ -32,7 +32,6 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps) => {
-	
 	const emojis = await Emojis.findBy({
 		id: In(ps.ids),
 	});
@@ -50,6 +49,6 @@ export default define(meta, paramDef, async (ps) => {
 	publishBroadcastStream("emojiUpdated", {
 		emojis: await Emojis.packMany(emojis),
 	});
-	
+
 	await db.queryResultCache!.remove(["meta_emojis"]);
 });

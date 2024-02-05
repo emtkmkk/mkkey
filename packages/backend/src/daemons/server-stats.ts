@@ -41,13 +41,17 @@ export default function () {
 				w: round(Math.max(0, fsStats.wIO_sec ?? 0)),
 			},
 		};
-		if (stats && (stats.cpu) > 0.85) console.log(`WARN CPU ${Math.round((stats.cpu) * 100)}%`)
-		if (stats && (stats.mem.active / stats.mem.total) > 0.85) console.log(`WARN MEM ${Math.round((stats.mem.active / stats.mem.total) * 100)}%`)
+		if (stats && stats.cpu > 0.85)
+			console.log(`WARN CPU ${Math.round(stats.cpu * 100)}%`);
+		if (stats && stats.mem.active / stats.mem.total > 0.85)
+			console.log(
+				`WARN MEM ${Math.round((stats.mem.active / stats.mem.total) * 100)}%`,
+			);
 		ev.emit("serverStats", stats);
 		log.unshift(stats);
 		if (log.length > 200) log.pop();
 	}
-	
+
 	tick();
 
 	setInterval(tick, interval);

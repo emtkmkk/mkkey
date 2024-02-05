@@ -78,9 +78,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		ps.userId != null
 			? { id: ps.userId }
 			: {
-				usernameLower: ps.username!.toLowerCase(),
-				host: toPunyNullable(ps.host) ?? IsNull(),
-			},
+					usernameLower: ps.username!.toLowerCase(),
+					host: toPunyNullable(ps.host) ?? IsNull(),
+			  },
 	);
 
 	if (user == null || (user.host && !me?.isAdmin)) {

@@ -87,14 +87,17 @@ export async function checkHitAntenna(
 			.map((host) => {
 				return host.toLowerCase();
 			});
-		if (!instances.includes(noteUser.host?.toLowerCase() ?? config.host)) return false;
+		if (!instances.includes(noteUser.host?.toLowerCase() ?? config.host))
+			return false;
 	}
 
 	const textComponents = [
 		note.cw,
 		note.text,
-		...(note.files?.map(x => x?.comment || "") || []),
-		...(note.poll?.choices?.map(x => (typeof x === 'object' ? x?.text : x) || "") || []),
+		...(note.files?.map((x) => x?.comment || "") || []),
+		...(note.poll?.choices?.map(
+			(x) => (typeof x === "object" ? x?.text : x) || "",
+		) || []),
 	];
 
 	const text = textComponents.filter(Boolean).join(" ").trim();

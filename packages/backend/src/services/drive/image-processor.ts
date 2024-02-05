@@ -7,13 +7,13 @@ export type IImage = {
 };
 
 export const webpDefault: sharp.WebpOptions = {
-    quality: 85,
-    alphaQuality: 95,
-    lossless: false,
-    nearLossless: false,
-    smartSubsample: true,
-    mixed: true,
-    effort: 2,
+	quality: 85,
+	alphaQuality: 95,
+	lossless: false,
+	nearLossless: false,
+	smartSubsample: true,
+	mixed: true,
+	effort: 2,
 };
 
 /**
@@ -27,7 +27,7 @@ export async function convertToWebp(
 	options: sharp.WebpOptions | number = {},
 	quality?: number | null,
 ): Promise<IImage> {
-	if (typeof options === 'number') {
+	if (typeof options === "number") {
 		quality = options;
 		options = { ...webpDefault, quality };
 	} else if (quality !== null && quality !== undefined) {
@@ -45,7 +45,7 @@ export async function convertSharpToWebp(
 	options: sharp.WebpOptions | number = {},
 	quality?: number | null,
 ): Promise<IImage> {
-	if (typeof options === 'number') {
+	if (typeof options === "number") {
 		quality = options;
 		options = { ...webpDefault, quality };
 	} else if (quality !== null && quality !== undefined) {
@@ -59,7 +59,7 @@ export async function convertSharpToWebp(
 			withoutEnlargement: true,
 		})
 		.rotate()
-        .webp(options)
+		.webp(options)
 		.toBuffer();
 
 	return {

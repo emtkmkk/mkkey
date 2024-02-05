@@ -43,7 +43,7 @@ export const meta = {
 				format: "url",
 				example: "https://calckey.example.com",
 			},
-			description:{
+			description: {
 				type: "string",
 				optional: false,
 				nullable: true,
@@ -411,34 +411,34 @@ export default define(meta, paramDef, async (ps, me) => {
 	let noEmoji = false;
 
 	if (Object.keys(ps ?? {})?.filter((x) => x !== "i").length === 0 && me) {
-
 		const item = RegistryItems.createQueryBuilder("item")
 			.where("item.domain IS NULL")
 			.andWhere("item.userId = :userId", { userId: me.id })
 			.andWhere("item.key = 'externalOutputAllEmojis'")
-			.andWhere("item.scope = :scope", { scope: ["client","base"] })
+			.andWhere("item.scope = :scope", { scope: ["client", "base"] })
 			.getOne();
 
 		if (item?.value) {
 			noEmoji = true;
 		}
-
 	}
 
-	let emojis = noEmoji ? [] : await Emojis.find({
-		where: {
-			host: IsNull(),
-			oldEmoji: false,
-		},
-		order: {
-			category: "ASC",
-			name: "ASC",
-		},
-		cache: {
-			id: "meta_emojis",
-			milliseconds: 3600000, // 1 hour
-		},
-	});
+	let emojis = noEmoji
+		? []
+		: await Emojis.find({
+				where: {
+					host: IsNull(),
+					oldEmoji: false,
+				},
+				order: {
+					category: "ASC",
+					name: "ASC",
+				},
+				cache: {
+					id: "meta_emojis",
+					milliseconds: 3600000, // 1 hour
+				},
+		  });
 
 	const ads = await Ads.find({
 		where: {
@@ -487,7 +487,12 @@ export default define(meta, paramDef, async (ps, me) => {
 		impressumUrl: "",
 		maxNoteTextLength: MAX_NOTE_TEXT_LENGTH, // 後方互換性のため
 		maxCaptionTextLength: MAX_CAPTION_TEXT_LENGTH,
-		emojis: instance.privateMode && !me ? [] : await Emojis.packMany(emojis.filter((x) => !x.category?.startsWith("!"))),
+		emojis:
+			instance.privateMode && !me
+				? []
+				: await Emojis.packMany(
+						emojis.filter((x) => !x.category?.startsWith("!")),
+				  ),
 		defaultLightTheme: instance.defaultLightTheme,
 		defaultDarkTheme: instance.defaultDarkTheme,
 		ads:

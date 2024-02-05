@@ -21,11 +21,9 @@ export default define(meta, paramDef, async (ps) => {
 	if (!ps.forceUpdate && cachedPatrons) {
 		patrons = JSON.parse(cachedPatrons);
 	} else {
-		
 		patrons = await fetch(
 			"https://git.joinfirefish.org/firefish/firefish/-/raw/develop/patrons.json",
-		)
-			.then((response) => response.json())
+		).then((response) => response.json());
 		await redisClient.set("patrons", JSON.stringify(patrons), "EX", 3600);
 	}
 	return {

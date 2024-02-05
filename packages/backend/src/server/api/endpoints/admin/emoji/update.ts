@@ -53,29 +53,32 @@ export default define(meta, paramDef, async (ps) => {
 	const emoji = await Emojis.findOneBy({ id: ps.id });
 
 	if (emoji == null) throw new ApiError(meta.errors.noSuchEmoji);
-	
-	const emojiSearchName = await Emojis.findOneBy({ name: ps.name.toLowerCase() , host: IsNull() });
-	
+
+	const emojiSearchName = await Emojis.findOneBy({
+		name: ps.name.toLowerCase(),
+		host: IsNull(),
+	});
+
 	// 名前重複の場合
 	if (emojiSearchName && emojiSearchName.id !== emoji.id) {
 		throw new ApiError(meta.errors.duplicateEmojiName);
 	}
-	
+
 	let license = ps.license;
-	if (ps.license?.includes("!")){
+	if (ps.license?.includes("!")) {
 		license = license
-		.replace(/^!m$/,"文字だけ")
-		.replace(/!ca(,|$)/,"コピー可否 : allow")
-		.replace(/!cd(,|$)/,"コピー可否 : deny")
-		.replace(/!cc(,|$)/,"コピー可否 : conditional")
-		.replace(/!l : ([^,]+)(,|$)/,"ライセンス : $1$2")
-		.replace(/!u : ([^,]+)(,|$)/,"使用情報 : $1$2")
-		.replace(/!a : ([^,]+)(,|$)/,"作者 : $1$2")
-		.replace(/!d : ([^,]+)(,|$)/,"説明 : $1$2")
-		.replace(/!b : ([^,]+)(,|$)/,"コピー元 : $1$2")
-		.replace(/!i : ([^,]+)(,|$)/,"コピー元 : $1$2")
-		.replace("!c0","CC0 1.0 Universal")
-		.replace("!cb","CC BY 4.0");
+			.replace(/^!m$/, "文字だけ")
+			.replace(/!ca(,|$)/, "コピー可否 : allow")
+			.replace(/!cd(,|$)/, "コピー可否 : deny")
+			.replace(/!cc(,|$)/, "コピー可否 : conditional")
+			.replace(/!l : ([^,]+)(,|$)/, "ライセンス : $1$2")
+			.replace(/!u : ([^,]+)(,|$)/, "使用情報 : $1$2")
+			.replace(/!a : ([^,]+)(,|$)/, "作者 : $1$2")
+			.replace(/!d : ([^,]+)(,|$)/, "説明 : $1$2")
+			.replace(/!b : ([^,]+)(,|$)/, "コピー元 : $1$2")
+			.replace(/!i : ([^,]+)(,|$)/, "コピー元 : $1$2")
+			.replace("!c0", "CC0 1.0 Universal")
+			.replace("!cb", "CC BY 4.0");
 	}
 
 	await Emojis.update(emoji.id, {
@@ -85,10 +88,10 @@ export default define(meta, paramDef, async (ps) => {
 		aliases: ps.aliases,
 		license,
 	});
-	
-	const pack = await Emojis.pack(emoji.id)
 
-	if (pack.category?.startsWith("!")){
+	const pack = await Emojis.pack(emoji.id);
+
+	if (pack.category?.startsWith("!")) {
 		publishBroadcastStream("emojiDeleted", {
 			emoji: pack,
 			emojis: [pack],

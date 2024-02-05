@@ -110,7 +110,7 @@ export class Autocomplete {
 				opened = true;
 			}
 		}
-		
+
 		if (isMention && !opened) {
 			const username = text.substr(mentionIndex + 1);
 			if (username !== "" && username.match(/^[a-zA-Z0-9_]+$/)) {
@@ -286,14 +286,15 @@ export class Autocomplete {
 			}
 
 			// 挿入
-			const mfmValue = value.defaultOption ?? value.exportLeft
+			const mfmValue = value.defaultOption ?? value.exportLeft;
 			if (defaultStore.reactiveState.smartMFMInputer.value) {
 				// スマートモード
 				// 右に文字列無し : textを全て囲む
 				// 右に文字列有り : 右の文字列を改行まで全て囲む
-				this.text = after.length === 0
-					? `${mfmValue}${trimmedBefore}${value.exportRight}`
-					: target
+				this.text =
+					after.length === 0
+						? `${mfmValue}${trimmedBefore}${value.exportRight}`
+						: target
 						? `${trimmedBefore}${mfmValue}${target}${value.exportRight}${after}`
 						: `${trimmedBefore}${mfmValue}${after}${value.exportRight}`;
 
@@ -305,16 +306,17 @@ export class Autocomplete {
 
 				nextTick(() => {
 					this.textarea.focus();
-					const regex = /\n?(<\/\w*>|\\\)|\\\]|\s\[Search\]|\s\[検索\]|[\]*~`])+$/.exec(trimText);
+					const regex =
+						/\n?(<\/\w*>|\\\)|\\\]|\s\[Search\]|\s\[検索\]|[\]*~`])+$/.exec(
+							trimText,
+						);
 					const pos = regex
 						? trimmedBefore.length + (trimText.length - regex[0].length)
 						: trimmedBefore.length + trimText.length;
 
 					this.textarea.setSelectionRange(pos, pos);
 				});
-
 			} else {
-
 				// 通常モード
 				// キャレット位置に空白のタグを生成する
 				this.text = `${trimmedBefore}${mfmValue}${value.exportRight}${after}`;
@@ -322,7 +324,7 @@ export class Autocomplete {
 				// キャレットを戻す
 				nextTick(() => {
 					this.textarea.focus();
-					const pos = trimmedBefore.length + (mfmValue.length);
+					const pos = trimmedBefore.length + mfmValue.length;
 					this.textarea.setSelectionRange(pos, pos);
 				});
 			}

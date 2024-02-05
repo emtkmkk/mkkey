@@ -6,8 +6,12 @@ import { IsNull, MoreThan } from "typeorm";
 // TODO: add calckey features
 export async function getInstance(response: Entity.Instance) {
 	const meta = await fetchMeta(true);
-	const totalUsers = Users.count({ where: { host: IsNull(), isDeleted: false } });
-	const totalStatuses = Notes.count({ where: { userHost: IsNull(), deletedAt: IsNull() } });
+	const totalUsers = Users.count({
+		where: { host: IsNull(), isDeleted: false },
+	});
+	const totalStatuses = Notes.count({
+		where: { userHost: IsNull(), deletedAt: IsNull() },
+	});
 	return {
 		uri: response.uri,
 		title: response.title || "Calckey",

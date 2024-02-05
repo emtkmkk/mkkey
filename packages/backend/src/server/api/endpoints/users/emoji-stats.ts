@@ -1,7 +1,4 @@
-import {
-	NoteReactions,
-	Users,
-} from "@/models/index.js";
+import { NoteReactions, Users } from "@/models/index.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -42,7 +39,7 @@ export const meta = {
 						optional: false,
 						nullable: false,
 					},
-				}
+				},
 			},
 			sentReactionsCount: {
 				type: "object",
@@ -59,7 +56,7 @@ export const meta = {
 						optional: false,
 						nullable: false,
 					},
-				}
+				},
 			},
 			receivedReactions: {
 				type: "object",
@@ -76,7 +73,7 @@ export const meta = {
 						optional: false,
 						nullable: false,
 					},
-				}
+				},
 			},
 			receivedReactionsCount: {
 				type: "object",
@@ -93,7 +90,7 @@ export const meta = {
 						optional: false,
 						nullable: false,
 					},
-				}
+				},
 			},
 			recentlySentReactions: {
 				type: "object",
@@ -110,7 +107,7 @@ export const meta = {
 						optional: false,
 						nullable: false,
 					},
-				}
+				},
 			},
 			recentlyReceivedReactions: {
 				type: "object",
@@ -127,7 +124,7 @@ export const meta = {
 						optional: false,
 						nullable: false,
 					},
-				}
+				},
 			},
 		},
 	},
@@ -137,8 +134,8 @@ export const paramDef = {
 	type: "object",
 	properties: {
 		userId: { type: "string", format: "misskey:id" },
-		limit: {type: "integer"},
-		localOnly: {type: "boolean", default: false},
+		limit: { type: "integer" },
+		localOnly: { type: "boolean", default: false },
 	},
 	//required: ["userId"],
 } as const;
@@ -151,12 +148,12 @@ export default define(meta, paramDef, async (ps, me) => {
 			throw new ApiError(meta.errors.noSuchUser);
 		}
 	} else {
-		user = {id:""};
+		user = { id: "" };
 	}
 
 	let now = new Date();
 	let borderDate = new Date();
-	
+
 	const limit = ps.limit;
 
 	const RECENTLY_TARGET_DAYS = 14;
@@ -166,66 +163,89 @@ export default define(meta, paramDef, async (ps, me) => {
 	borderDate.setMinutes(0);
 	borderDate.setSeconds(0);
 	borderDate.setMilliseconds(0);
-	
+
 	const result = await awaitAll({
 		sentReactions: NoteReactions.createQueryBuilder("reaction")
-			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
-			.where(`(reaction.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, { userId: user.id })
+			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
+			.where(`(reaction.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
+				userId: user.id,
+			})
 			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
-			.groupBy('reaction.reaction')
-			.orderBy("count","DESC")
+			.groupBy("reaction.reaction")
+			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
-		sentReactionsCount: (await NoteReactions.createQueryBuilder("reaction")
-			.select('reaction.reaction')
-			.where(`(reaction.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, { userId: user.id })
-			.andWhere("reaction.reaction ~ '^:[^@]+:$'")
-			.groupBy('reaction.reaction')
-			.cache(CACHE_TIME)
-			.getRawMany()).length,
+		sentReactionsCount: (
+			await NoteReactions.createQueryBuilder("reaction")
+				.select("reaction.reaction")
+				.where(`(reaction.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
+					userId: user.id,
+				})
+				.andWhere("reaction.reaction ~ '^:[^@]+:$'")
+				.groupBy("reaction.reaction")
+				.cache(CACHE_TIME)
+				.getRawMany()
+		).length,
 		receivedReactions: NoteReactions.createQueryBuilder("reaction")
-			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
+			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
 			.innerJoin("reaction.note", "note")
-			.where(`(note.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, { userId: user.id })
+			.where(`(note.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
+				userId: user.id,
+			})
 			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
-			.groupBy('reaction.reaction')
-			.orderBy("count","DESC")
+			.groupBy("reaction.reaction")
+			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
-		receivedReactionsCount: (await NoteReactions.createQueryBuilder("reaction")
-			.select('reaction.reaction')
-			.innerJoin("reaction.note", "note")
-			.where(`(note.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, { userId: user.id })
-			.andWhere("reaction.reaction ~ '^:[^@]+:$'")
-			.groupBy('reaction.reaction')
-			.cache(CACHE_TIME)
-			.getRawMany()).length,
+		receivedReactionsCount: (
+			await NoteReactions.createQueryBuilder("reaction")
+				.select("reaction.reaction")
+				.innerJoin("reaction.note", "note")
+				.where(`(note.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
+					userId: user.id,
+				})
+				.andWhere("reaction.reaction ~ '^:[^@]+:$'")
+				.groupBy("reaction.reaction")
+				.cache(CACHE_TIME)
+				.getRawMany()
+		).length,
 		recentlySentReactions: NoteReactions.createQueryBuilder("reaction")
-			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
-			.where(`(reaction.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, { userId: user.id })
-			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
+			.where(`(reaction.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
+				userId: user.id,
+			})
+			.andWhere("reaction.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
-			.groupBy('reaction.reaction')
-			.orderBy("count","DESC")
+			.groupBy("reaction.reaction")
+			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
 		recentlyReceivedReactions: NoteReactions.createQueryBuilder("reaction")
-			.select(['reaction.reaction AS name', 'COUNT(*) AS count'])
+			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
 			.innerJoin("reaction.note", "note")
-			.where(`(note.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, { userId: user.id })
-			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.where(`(note.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
+				userId: user.id,
+			})
+			.andWhere("reaction.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
-			.groupBy('reaction.reaction')
-			.orderBy("count","DESC")
+			.groupBy("reaction.reaction")
+			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
 	});
 
-	if (limit){
-		result.sentReactions = result.sentReactions.slice(0,limit)
-		result.receivedReactions = result.receivedReactions.slice(0,limit)
-		result.recentlySentReactions = result.recentlySentReactions.slice(0,limit)
-		result.recentlyReceivedReactions = result.recentlyReceivedReactions.slice(0,limit)
+	if (limit) {
+		result.sentReactions = result.sentReactions.slice(0, limit);
+		result.receivedReactions = result.receivedReactions.slice(0, limit);
+		result.recentlySentReactions = result.recentlySentReactions.slice(0, limit);
+		result.recentlyReceivedReactions = result.recentlyReceivedReactions.slice(
+			0,
+			limit,
+		);
 	}
 	return result;
 });

@@ -3,9 +3,13 @@ import net from "node:net";
 import { promises } from "node:dns";
 import type Koa from "koa";
 import sharp from "sharp";
-import { sharpBmp } from 'sharp-read-bmp';
+import { sharpBmp } from "sharp-read-bmp";
 import type { IImage } from "@/services/drive/image-processor.js";
-import { convertToWebp, convertSharpToWebp, webpDefault } from "@/services/drive/image-processor.js";
+import {
+	convertToWebp,
+	convertSharpToWebp,
+	webpDefault,
+} from "@/services/drive/image-processor.js";
 import { createTemp } from "@/misc/create-temp.js";
 import { downloadUrl } from "@/misc/download-url.js";
 import { detectType } from "@/misc/get-file-info.js";
@@ -67,23 +71,28 @@ export async function proxyMedia(ctx: Koa.Context) {
 
 		const { mime, ext } = await detectType(path);
 		const isConvertibleImage = isMimeImage(mime, "sharp-convertible-image");
-		const isAnimationConvertibleImage = isMimeImage(mime, 'sharp-animation-convertible-image');
-		
+		const isAnimationConvertibleImage = isMimeImage(
+			mime,
+			"sharp-animation-convertible-image",
+		);
+
 		serverLogger.info(`imageproxy : ${mime} : ${url}`);
 
 		let image: IImage;
-		
+
 		if ("emoji" in ctx.query && isConvertibleImage) {
 			serverLogger.info(`emoji`);
-			if (!isAnimationConvertibleImage && !('static' in ctx.query)) {
+			if (!isAnimationConvertibleImage && !("static" in ctx.query)) {
 				image = {
 					data: fs.readFileSync(path),
 					ext,
 					type: mime,
 				};
 			} else {
-				serverLogger.info('processing...')
-				const data = (await sharpBmp(path, mime, { animated: !('static' in ctx.query) }))
+				serverLogger.info("processing...");
+				const data = (
+					await sharpBmp(path, mime, { animated: !("static" in ctx.query) })
+				)
 					.resize({
 						height: 400,
 						withoutEnlargement: true,
@@ -92,8 +101,8 @@ export async function proxyMedia(ctx: Koa.Context) {
 
 				image = {
 					data: await data.toBuffer(),
-					ext: 'webp',
-					type: 'image/webp',
+					ext: "webp",
+					type: "image/webp",
 				};
 			}
 		} else if ("static" in ctx.query && isConvertibleImage) {

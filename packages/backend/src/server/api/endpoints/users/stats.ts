@@ -158,7 +158,7 @@ export const meta = {
 				optional: false,
 				nullable: false,
 				description: "powerrrrrrrrrrrrrr",
-			}
+			},
 		},
 	},
 } as const;
@@ -188,43 +188,60 @@ export default define(meta, paramDef, async (ps, me) => {
 	borderDate.setSeconds(0);
 	borderDate.setMilliseconds(0);
 
-	const firstLocalFollower = user.host ? Date.parse((await Followings.createQueryBuilder("following")
-		.select('min(following.\"createdAt\")', "min")
-		.where("following.followeeId = :userId", { userId: user.id })
-		.andWhere("following.followerHost IS NULL")
-		.cache(CACHE_TIME)
-		.getRawOne()).min) : undefined;
+	const firstLocalFollower = user.host
+		? Date.parse(
+				(
+					await Followings.createQueryBuilder("following")
+						.select('min(following."createdAt")', "min")
+						.where("following.followeeId = :userId", { userId: user.id })
+						.andWhere("following.followerHost IS NULL")
+						.cache(CACHE_TIME)
+						.getRawOne()
+				).min,
+		  )
+		: undefined;
 
-	const userCreatedAtDate = firstLocalFollower ? firstLocalFollower : Date.parse(user.createdAt);
+	const userCreatedAtDate = firstLocalFollower
+		? firstLocalFollower
+		: Date.parse(user.createdAt);
 
-	if (firstLocalFollower && borderDate.valueOf() < firstLocalFollower) borderDate = new Date(firstLocalFollower);
+	if (firstLocalFollower && borderDate.valueOf() < firstLocalFollower)
+		borderDate = new Date(firstLocalFollower);
 
-	const elapsedDaysRaw = Math.ceil((now.getTime() - userCreatedAtDate) / (1000 * 60 * 60 * 2.4)) / 10;
+	const elapsedDaysRaw =
+		Math.ceil((now.getTime() - userCreatedAtDate) / (1000 * 60 * 60 * 2.4)) /
+		10;
 	const elapsedDays = Math.max(Math.min(elapsedDaysRaw, RANK_TARGET_DAYS), 1);
 
 	const countDeliver = async () => {
 		const inboxes = new Set<string>();
 		const followers = await Followings.createQueryBuilder("following")
-		.select("following.followerSharedInbox")
-		.addSelect("following.followerInbox")
-		.where("following.followeeId = :userId", { userId: user.id })
-		.andWhere("following.followerHost IS NOT NULL")
-		.cache(CACHE_TIME)
-		.getMany();
+			.select("following.followerSharedInbox")
+			.addSelect("following.followerInbox")
+			.where("following.followeeId = :userId", { userId: user.id })
+			.andWhere("following.followerHost IS NOT NULL")
+			.cache(CACHE_TIME)
+			.getMany();
 		for (const following of followers) {
 			const inbox = following.followerSharedInbox || following.followerInbox;
 			inboxes.add(inbox);
 		}
 		return inboxes.size;
-	}
+	};
 
-	const sendMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
+	const sendMessageCount = await MessagingMessages.createQueryBuilder(
+		"messaging_message",
+	)
 		.where("messaging_message.userId = :userId", { userId: user.id })
 		.cache(CACHE_TIME)
 		.getCount();
 
-	const readMessageCount = await MessagingMessages.createQueryBuilder("messaging_message")
-		.where(" :userIdList <@ (messaging_message.reads) ", { userIdList: [user.id] })
+	const readMessageCount = await MessagingMessages.createQueryBuilder(
+		"messaging_message",
+	)
+		.where(" :userIdList <@ (messaging_message.reads) ", {
+			userIdList: [user.id],
+		})
 		.cache(CACHE_TIME)
 		.getCount();
 
@@ -322,150 +339,223 @@ export default define(meta, paramDef, async (ps, me) => {
 			.cache(CACHE_TIME)
 			.getCount(),
 		driveUsage: DriveFiles.calcDriveUsageOf(user),
-		notesPostDays: (await Notes.createQueryBuilder("note")
-			.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
-			.where("note.userId = :userId", { userId: user.id })
-			.andWhere("'misshaialert' <> ALL(note.tags)")
-			.andWhere("note.visibility <> 'specified'")
-			.cache(CACHE_TIME)
-			.getRawOne()).count,
-		totalWordCount: !ps.simple ? (await Notes.createQueryBuilder("note")
-			.select("coalesce(sum(length(regexp_replace(regexp_replace(note.text,'(:\\w+?:)','☆', 'g'),'(<\\/?\\w+>|\\$\\[\\S+\\s|https?:\\/\\/[\\w\\/:%#\\$&@\\?\\(\\)~\\.=\\+\\-]+|@\\w+|#\\S+|\\s+)','', 'ig'))),0) + coalesce(sum(length(regexp_replace(regexp_replace(note.cw,'(:\\w+?:)','☆', 'g'),'(<\\/?\\w+>|\\$\\[\\S+\\s|https?:\\/\\/[\\w\\/:%#\\$&@\\?\\(\\)~\\.=\\+\\-]+|@\\w+|#\\S+|\\s+)','', 'ig'))),0) count")
-			.where("note.userId = :userId", { userId: user.id })
-			.cache(CACHE_TIME * 2)
-			.getRawOne()).count : undefined,
-		ojNotesCount: !ps.simple ? Notes.createQueryBuilder("note")
-			.where("note.userId = :userId", { userId: user.id })
-			.andWhere("note.visibility <> 'specified'")
-			.andWhere("((note.text LIKE '%ですわ%') OR (note.text LIKE '%わよ%') OR (note.text LIKE '%わね%') OR (note.text LIKE '%desuwa%') OR (note.text LIKE '%wayo%') OR (note.text LIKE '%wane%') OR (note.text LIKE '%maa%'))")
-			.cache(CACHE_TIME)
-			.getCount() : undefined,
-		ojSentReactionsCount: !ps.simple ? NoteReactions.createQueryBuilder("reaction")
-			.where("reaction.userId = :userId", { userId: user.id })
-			.andWhere("((reaction.reaction LIKE '%desuwa%') OR (reaction.reaction LIKE '%wayo%') OR (reaction.reaction LIKE '%wane%') OR (reaction.reaction LIKE '%maa%'))")
-			.cache(CACHE_TIME)
-			.getCount() : undefined,
-		totalInviteCount: me && (me.id === user.id || me.isAdmin) ? Users.createQueryBuilder("user")
-			.where("user.inviteUserId = :userId", { userId: user.id })
-			.cache(CACHE_TIME)
-			.getCount() : undefined,
+		notesPostDays: (
+			await Notes.createQueryBuilder("note")
+				.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
+				.where("note.userId = :userId", { userId: user.id })
+				.andWhere("'misshaialert' <> ALL(note.tags)")
+				.andWhere("note.visibility <> 'specified'")
+				.cache(CACHE_TIME)
+				.getRawOne()
+		).count,
+		totalWordCount: !ps.simple
+			? (
+					await Notes.createQueryBuilder("note")
+						.select(
+							"coalesce(sum(length(regexp_replace(regexp_replace(note.text,'(:\\w+?:)','☆', 'g'),'(<\\/?\\w+>|\\$\\[\\S+\\s|https?:\\/\\/[\\w\\/:%#\\$&@\\?\\(\\)~\\.=\\+\\-]+|@\\w+|#\\S+|\\s+)','', 'ig'))),0) + coalesce(sum(length(regexp_replace(regexp_replace(note.cw,'(:\\w+?:)','☆', 'g'),'(<\\/?\\w+>|\\$\\[\\S+\\s|https?:\\/\\/[\\w\\/:%#\\$&@\\?\\(\\)~\\.=\\+\\-]+|@\\w+|#\\S+|\\s+)','', 'ig'))),0) count",
+						)
+						.where("note.userId = :userId", { userId: user.id })
+						.cache(CACHE_TIME * 2)
+						.getRawOne()
+			  ).count
+			: undefined,
+		ojNotesCount: !ps.simple
+			? Notes.createQueryBuilder("note")
+					.where("note.userId = :userId", { userId: user.id })
+					.andWhere("note.visibility <> 'specified'")
+					.andWhere(
+						"((note.text LIKE '%ですわ%') OR (note.text LIKE '%わよ%') OR (note.text LIKE '%わね%') OR (note.text LIKE '%desuwa%') OR (note.text LIKE '%wayo%') OR (note.text LIKE '%wane%') OR (note.text LIKE '%maa%'))",
+					)
+					.cache(CACHE_TIME)
+					.getCount()
+			: undefined,
+		ojSentReactionsCount: !ps.simple
+			? NoteReactions.createQueryBuilder("reaction")
+					.where("reaction.userId = :userId", { userId: user.id })
+					.andWhere(
+						"((reaction.reaction LIKE '%desuwa%') OR (reaction.reaction LIKE '%wayo%') OR (reaction.reaction LIKE '%wane%') OR (reaction.reaction LIKE '%maa%'))",
+					)
+					.cache(CACHE_TIME)
+					.getCount()
+			: undefined,
+		totalInviteCount:
+			me && (me.id === user.id || me.isAdmin)
+				? Users.createQueryBuilder("user")
+						.where("user.inviteUserId = :userId", { userId: user.id })
+						.cache(CACHE_TIME)
+						.getCount()
+				: undefined,
 	});
 
 	const rankResult = await awaitAll({
 		notesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
-			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("note.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		repliesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.replyId IS NOT NULL")
-			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("note.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		renotesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.text IS NULL")
 			.andWhere("note.renoteId IS NOT NULL")
-			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("note.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		quotesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.text IS NOT NULL")
 			.andWhere("note.renoteId IS NOT NULL")
-			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("note.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		repliedCount: Notes.createQueryBuilder("note")
 			.where("note.replyUserId = :userId", { userId: user.id })
-			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("note.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		renotedCount: Notes.createQueryBuilder("note")
 			.where("note.renoteUserId = :userId", { userId: user.id })
-			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("note.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		pollVotesCount: PollVotes.createQueryBuilder("vote")
 			.where("vote.userId = :userId", { userId: user.id })
-			.andWhere("vote.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("vote.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		pollVotedCount: PollVotes.createQueryBuilder("vote")
 			.innerJoin("vote.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
-			.andWhere("vote.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("vote.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		sentReactionsCount: NoteReactions.createQueryBuilder("reaction")
 			.where("reaction.userId = :userId", { userId: user.id })
-			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("reaction.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		receivedReactionsCount: NoteReactions.createQueryBuilder("reaction")
 			.innerJoin("reaction.note", "note")
 			.where("note.userId = :userId", { userId: user.id })
-			.andWhere("reaction.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("reaction.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		noteFavoritesCount: NoteFavorites.createQueryBuilder("favorite")
 			.where("favorite.userId = :userId", { userId: user.id })
-			.andWhere("favorite.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("favorite.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		pageLikesCount: PageLikes.createQueryBuilder("like")
 			.where("like.userId = :userId", { userId: user.id })
-			.andWhere("like.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("like.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		pageLikedCount: PageLikes.createQueryBuilder("like")
 			.innerJoin("like.page", "page")
 			.where("page.userId = :userId", { userId: user.id })
-			.andWhere("like.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("like.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 		driveFilesCount: DriveFiles.createQueryBuilder("file")
 			.where("file.userId = :userId", { userId: user.id })
-			.andWhere("file.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("file.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
-		notesPostDays: (await Notes.createQueryBuilder("note")
-			.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
-			.where("note.userId = :userId", { userId: user.id })
-			.andWhere("note.visibility <> 'hidden'")
-			.andWhere("'misshaialert' <> ALL(note.tags)")
-			.andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
-			.cache(CACHE_TIME)
-			.getRawOne()).count,
-		sendMessageCount: await MessagingMessages.createQueryBuilder("messaging_message")
+		notesPostDays: (
+			await Notes.createQueryBuilder("note")
+				.select("count(distinct date_trunc('day',note.\"createdAt\")) count")
+				.where("note.userId = :userId", { userId: user.id })
+				.andWhere("note.visibility <> 'hidden'")
+				.andWhere("'misshaialert' <> ALL(note.tags)")
+				.andWhere("note.createdAt >= :borderDate", {
+					borderDate: borderDate.toISOString(),
+				})
+				.cache(CACHE_TIME)
+				.getRawOne()
+		).count,
+		sendMessageCount: await MessagingMessages.createQueryBuilder(
+			"messaging_message",
+		)
 			.where("messaging_message.userId = :userId", { userId: user.id })
-			.andWhere("messaging_message.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+			.andWhere("messaging_message.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
-		readMessageCount: await MessagingMessages.createQueryBuilder("messaging_message")
-			.where(" :userIdList <@ (messaging_message.reads) ", { userIdList: [user.id] })
-			.andWhere("messaging_message.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
+		readMessageCount: await MessagingMessages.createQueryBuilder(
+			"messaging_message",
+		)
+			.where(" :userIdList <@ (messaging_message.reads) ", {
+				userIdList: [user.id],
+			})
+			.andWhere("messaging_message.createdAt >= :borderDate", {
+				borderDate: borderDate.toISOString(),
+			})
 			.cache(CACHE_TIME)
 			.getCount(),
 	});
 
-	result.followingCount =
-		user.host ? user.followingCount : result.localFollowingCount + result.remoteFollowingCount;
-	result.followersCount =
-		user.host ? user.followersCount : result.localFollowersCount + result.remoteFollowersCount;
+	result.followingCount = user.host
+		? user.followingCount
+		: result.localFollowingCount + result.remoteFollowingCount;
+	result.followersCount = user.host
+		? user.followersCount
+		: result.localFollowersCount + result.remoteFollowersCount;
 
-	result.averagePostCount = Math.floor(result.notesCount / (result.notesPostDays || 1) * 10) / 10;
-	result.averageWordCount = !ps.simple ? Math.floor(result.totalWordCount / ((result.notesCount - result.renotesCount) || 1) * 10) / 10 : undefined;
-	result.averageSentReactionsCount = Math.floor(result.sentReactionsCount / elapsedDaysRaw * 10) / 10;
-	result.averageReceivedReactionsCount = Math.floor(result.receivedReactionsCount / elapsedDaysRaw * 10) / 10;
+	result.averagePostCount =
+		Math.floor((result.notesCount / (result.notesPostDays || 1)) * 10) / 10;
+	result.averageWordCount = !ps.simple
+		? Math.floor(
+				(result.totalWordCount /
+					(result.notesCount - result.renotesCount || 1)) *
+					10,
+		  ) / 10
+		: undefined;
+	result.averageSentReactionsCount =
+		Math.floor((result.sentReactionsCount / elapsedDaysRaw) * 10) / 10;
+	result.averageReceivedReactionsCount =
+		Math.floor((result.receivedReactionsCount / elapsedDaysRaw) * 10) / 10;
 	result.elapsedDays = !firstLocalFollower && user.host ? 0 : elapsedDaysRaw;
-	
-	if (!ps.simple) result.ojPower = result.ojNotesCount * 3 + result.ojSentReactionsCount;
-	
-	result.power =
-		Math.floor((result.notesPostDays * 482 +
-			Math.max(result.notesCount,user.host ? user.notesCount : 0) * 18 +
+
+	if (!ps.simple)
+		result.ojPower = result.ojNotesCount * 3 + result.ojSentReactionsCount;
+
+	result.power = Math.floor(
+		(result.notesPostDays * 482 +
+			Math.max(result.notesCount, user.host ? user.notesCount : 0) * 18 +
 			result.repliesCount * 7 +
 			result.renotesCount * -11 +
 			result.quotesCount * 7 +
@@ -479,57 +569,54 @@ export default define(meta, paramDef, async (ps, me) => {
 			result.receivedReactionsCount * 3 +
 			result.driveFilesCount * 6 +
 			sendMessageCount * 11 +
-			readMessageCount * 2
-		) * (1 +
-			result.followingCount * 0.0005 +
-			result.followersCount * 0.0015));
-
-	const rpRate = 1 - (
-		(elapsedDays < 14 ? (14 - elapsedDays) * (0.4 / 14) : 0) +
-		Math.min((elapsedDays < 30 ? (30 - elapsedDays) * (0.1 / 16) : 0), 0.1) +
-		(user.isBot ? 0.5 : 0)
+			readMessageCount * 2) *
+			(1 + result.followingCount * 0.0005 + result.followersCount * 0.0015),
 	);
-	
+
+	const rpRate =
+		1 -
+		((elapsedDays < 14 ? (14 - elapsedDays) * (0.4 / 14) : 0) +
+			Math.min(elapsedDays < 30 ? (30 - elapsedDays) * (0.1 / 16) : 0, 0.1) +
+			(user.isBot ? 0.5 : 0));
+
 	const dailyBonus = rankResult.notesPostDays * 482;
-	
-	const notePower = (
+
+	const notePower =
 		rankResult.notesCount * 18 +
 		rankResult.renotesCount * -18 +
-		rankResult.sendMessageCount * 11
-	);
-	
-	const subNotePower = (
+		rankResult.sendMessageCount * 11;
+
+	const subNotePower =
 		rankResult.repliesCount * 7 +
 		rankResult.renotesCount * 7 +
 		rankResult.quotesCount * 7 +
 		rankResult.pollVotesCount * 7 +
-		rankResult.sentReactionsCount * 7
-	);
-	
-	const receivedSubNotePower = (
+		rankResult.sentReactionsCount * 7;
+
+	const receivedSubNotePower =
 		rankResult.repliedCount * 3 +
 		rankResult.renotedCount * 3 +
 		rankResult.pollVotedCount * 3 +
 		rankResult.receivedReactionsCount * 3 +
-		rankResult.readMessageCount * 2
-	);
+		rankResult.readMessageCount * 2;
 
 	const rankPower =
-		Math.floor((
-			dailyBonus +
-			(
-				notePower +
-				subNotePower +
-				Math.min(notePower / 6 + subNotePower,receivedSubNotePower) +
-				rankResult.driveFilesCount * 6
-			) * rpRate
-		) / elapsedDays * 100) / 100;
+		Math.floor(
+			((dailyBonus +
+				(notePower +
+					subNotePower +
+					Math.min(notePower / 6 + subNotePower, receivedSubNotePower) +
+					rankResult.driveFilesCount * 6) *
+					rpRate) /
+				elapsedDays) *
+				100,
+		) / 100;
 
 	let _rankPower = rankPower;
 
 	// 経過日数によるランク制限 ※Botの場合はAAA+で停止
 	if (elapsedDays < 14 || user.isBot) {
-		_rankPower = Math.min(rankPower, 4999);	// AAA+
+		_rankPower = Math.min(rankPower, 4999); // AAA+
 		if (elapsedDays < 1) _rankPower = Math.min(rankPower, 1599); // A
 		if (elapsedDays < 3) _rankPower = Math.min(rankPower, 1999); // A+
 		else if (elapsedDays < 6) _rankPower = Math.min(rankPower, 2749); // AA
@@ -537,29 +624,72 @@ export default define(meta, paramDef, async (ps, me) => {
 		else if (elapsedDays < 12) _rankPower = Math.min(rankPower, 4249); // AAA
 	}
 
-	const rankBorder = [16, 50, 125, 200, 300, 400, 500, 600, 700, 800, 1000, 1200, 1600, 2000, 2750, 3500, 4250, 5000, 6000];
-	const rankName = ["G", "F-", "F", "F+", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+", "AA", "AA+", "AAA", "AAA+", "⭐", "⭐+"];
+	const rankBorder = [
+		16, 50, 125, 200, 300, 400, 500, 600, 700, 800, 1000, 1200, 1600, 2000,
+		2750, 3500, 4250, 5000, 6000,
+	];
+	const rankName = [
+		"G",
+		"F-",
+		"F",
+		"F+",
+		"E",
+		"E+",
+		"D",
+		"D+",
+		"C",
+		"C+",
+		"B",
+		"B+",
+		"A",
+		"A+",
+		"AA",
+		"AA+",
+		"AAA",
+		"AAA+",
+		"⭐",
+		"⭐+",
+	];
 	const suffixIncBorder = rankBorder.slice(-1)[0] - rankBorder.slice(-2)[0];
 
 	// 最大ランク+2以上かどうか
 	if (_rankPower >= rankBorder.slice(-1)[0] + suffixIncBorder) {
 		// 最大ランク+2以降は+0と+1の差を続ける
 		// +0が5000、+1が6000ならば +2は6000+1000の7000 +3は8000
-		const plusNum = Math.floor((_rankPower - rankBorder.slice(-2)[0]) / suffixIncBorder);
-		result.powerRank = plusNum >= 1000 ? "⭐!!!" : plusNum >= 100 ? rankName.slice(-2)[0] + plusNum : plusNum >= 4 ? rankName.slice(-1)[0] + plusNum : rankName.slice(-1)[0] + ("+").repeat(plusNum - 1);
-		const nextRank = Math.floor((rankPower % suffixIncBorder) / suffixIncBorder * 1000) / 10;
+		const plusNum = Math.floor(
+			(_rankPower - rankBorder.slice(-2)[0]) / suffixIncBorder,
+		);
+		result.powerRank =
+			plusNum >= 1000
+				? "⭐!!!"
+				: plusNum >= 100
+				? rankName.slice(-2)[0] + plusNum
+				: plusNum >= 4
+				? rankName.slice(-1)[0] + plusNum
+				: rankName.slice(-1)[0] + "+".repeat(plusNum - 1);
+		const nextRank =
+			Math.floor(((rankPower % suffixIncBorder) / suffixIncBorder) * 1000) / 10;
 		result.nextRank = `${nextRank.toFixed(1)}%`;
-		result.rankPoint = (rankBorder.length * 1000) + ((plusNum - 1) * 1000) + (nextRank * 10);
+		result.rankPoint =
+			rankBorder.length * 1000 + (plusNum - 1) * 1000 + nextRank * 10;
 	} else {
-		const clearBorder = rankBorder.filter(x => x <= _rankPower);
+		const clearBorder = rankBorder.filter((x) => x <= _rankPower);
 		result.powerRank = rankName[clearBorder.length];
 		const clearBorderMax = clearBorder.slice(-1)[0] ?? 0;
-		const nextRank = (Math.floor((rankPower - clearBorderMax) / ((rankBorder[clearBorder.length] ?? (clearBorder.slice(-1)[0] + suffixIncBorder)) - clearBorderMax) * 1000) / 10);
+		const nextRank =
+			Math.floor(
+				((rankPower - clearBorderMax) /
+					((rankBorder[clearBorder.length] ??
+						clearBorder.slice(-1)[0] + suffixIncBorder) -
+						clearBorderMax)) *
+					1000,
+			) / 10;
 		result.nextRank = `${nextRank.toFixed(1)}%`;
-		result.rankPoint = (clearBorder.length * 1000) + (nextRank * 10);
+		result.rankPoint = clearBorder.length * 1000 + nextRank * 10;
 	}
 
-	if (!firstLocalFollower && user.host) result.powerRank = result.powerRank + "?";
+	if (!firstLocalFollower && user.host)
+		result.powerRank = result.powerRank + "?";
 
 	if (!(!firstLocalFollower && user.host)) {
 		let updates: any = {};

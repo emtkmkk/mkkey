@@ -35,22 +35,22 @@ export default define(meta, paramDef, async (ps) => {
 	const emojis = await Emojis.findBy({
 		id: In(ps.ids),
 	});
-	
+
 	let license = ps.license;
-	if (ps.license?.includes("!")){
+	if (ps.license?.includes("!")) {
 		license = license
-		.replace(/^!m$/,"文字だけ")
-		.replace(/!ca(,|$)/,"コピー可否 : allow")
-		.replace(/!cd(,|$)/,"コピー可否 : deny")
-		.replace(/!cc(,|$)/,"コピー可否 : conditional")
-		.replace(/!l : ([^,]+)(,|$)/,"ライセンス : $1$2")
-		.replace(/!u : ([^,]+)(,|$)/,"使用情報 : $1$2")
-		.replace(/!a : ([^,]+)(,|$)/,"作者 : $1$2")
-		.replace(/!d :  ([^,]+)(,|$)/,"説明 : $1$2")
-		.replace(/!b :  ([^,]+)(,|$)/,"コピー元 : $1$2")
-		.replace(/!i :  ([^,]+)(,|$)/,"コピー元 : $1$2")
-		.replace("!c0","CC0 1.0 Universal")
-		.replace("!cb","CC BY 4.0");
+			.replace(/^!m$/, "文字だけ")
+			.replace(/!ca(,|$)/, "コピー可否 : allow")
+			.replace(/!cd(,|$)/, "コピー可否 : deny")
+			.replace(/!cc(,|$)/, "コピー可否 : conditional")
+			.replace(/!l : ([^,]+)(,|$)/, "ライセンス : $1$2")
+			.replace(/!u : ([^,]+)(,|$)/, "使用情報 : $1$2")
+			.replace(/!a : ([^,]+)(,|$)/, "作者 : $1$2")
+			.replace(/!d :  ([^,]+)(,|$)/, "説明 : $1$2")
+			.replace(/!b :  ([^,]+)(,|$)/, "コピー元 : $1$2")
+			.replace(/!i :  ([^,]+)(,|$)/, "コピー元 : $1$2")
+			.replace("!c0", "CC0 1.0 Universal")
+			.replace("!cb", "CC BY 4.0");
 	}
 
 	await Emojis.update(
@@ -62,7 +62,7 @@ export default define(meta, paramDef, async (ps) => {
 			license,
 		},
 	);
-	
+
 	publishBroadcastStream("emojiUpdated", {
 		emojis: await Emojis.packMany(emojis),
 	});

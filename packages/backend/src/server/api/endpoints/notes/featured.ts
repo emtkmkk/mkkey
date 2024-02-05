@@ -62,7 +62,9 @@ export default define(meta, paramDef, async (ps, user) => {
 	switch (ps.origin) {
 		case "local":
 			query.andWhere("note.userHost IS NULL");
-			query.andWhere("note.id = ANY (SELECT note2.id FROM note note2 WHERE note.score > 0 AND note2.\"userId\" = note.\"userId\" AND note2.\"createdAt\" >= date_trunc('day',note.\"createdAt\") AND note2.\"createdAt\" < date_trunc('day',note.\"createdAt\") + cast( '1 days' as INTERVAL ) ORDER BY note2.score DESC LIMIT 2)")
+			query.andWhere(
+				'note.id = ANY (SELECT note2.id FROM note note2 WHERE note.score > 0 AND note2."userId" = note."userId" AND note2."createdAt" >= date_trunc(\'day\',note."createdAt") AND note2."createdAt" < date_trunc(\'day\',note."createdAt") + cast( \'1 days\' as INTERVAL ) ORDER BY note2.score DESC LIMIT 2)',
+			);
 			break;
 		case "remote":
 			query.andWhere("note.userHost IS NOT NULL");

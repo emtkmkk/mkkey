@@ -41,8 +41,12 @@ export class Storage<T extends StateDef> {
 
 	public readonly key: string;
 	public readonly deviceStateKeyName: `pizzax::${this["key"]}`;
-	public readonly deviceAccountStateKeyName: `pizzax::${this["key"]}::${string}` | "";
-	public readonly registryCacheKeyName: `pizzax::${this["key"]}::cache::${string}` | "";
+	public readonly deviceAccountStateKeyName:
+		| `pizzax::${this["key"]}::${string}`
+		| "";
+	public readonly registryCacheKeyName:
+		| `pizzax::${this["key"]}::cache::${string}`
+		| "";
 
 	public readonly def: T;
 
@@ -56,7 +60,7 @@ export class Storage<T extends StateDef> {
 	// 簡易的にキューイングして占有ロックとする
 	private currentIdbJob: Promise<any> = Promise.resolve();
 	private addIdbSetJob<T>(job: () => Promise<T>) {
-		const promise = this.currentIdbJob.then(job, err => {
+		const promise = this.currentIdbJob.then(job, (err) => {
 			console.error("Pizzax failed to save data to idb!", err);
 			return job();
 		});
@@ -77,7 +81,10 @@ export class Storage<T extends StateDef> {
 		this.reactiveState = {} as ReactiveState<T>;
 		this.isDefaultState = {};
 
-		for (const [k, v] of Object.entries(def) as [keyof T, T[keyof T]["default"]][]) {
+		for (const [k, v] of Object.entries(def) as [
+			keyof T,
+			T[keyof T]["default"],
+		][]) {
 			this.state[k] = v.default;
 			this.reactiveState[k] = ref(v.default);
 			this.isDefaultState[k] = true;
@@ -90,11 +97,18 @@ export class Storage<T extends StateDef> {
 	private async init(): Promise<void> {
 		await this.migrate();
 
-		const deviceState: State<T> = await get(this.deviceStateKeyName) || {};
-		const deviceAccountState = $i ? await get(this.deviceAccountStateKeyName) || {} : {};
-		const registryCache = $i ? await get(this.registryCacheKeyName) || {} : {};
+		const deviceState: State<T> = (await get(this.deviceStateKeyName)) || {};
+		const deviceAccountState = $i
+			? (await get(this.deviceAccountStateKeyName)) || {}
+			: {};
+		const registryCache = $i
+			? (await get(this.registryCacheKeyName)) || {}
+			: {};
 
-		for (const [k, v] of Object.entries(this.def) as [keyof T, T[keyof T]["default"]][]) {
+		for (const [k, v] of Object.entries(this.def) as [
+			keyof T,
+			T[keyof T]["default"],
+		][]) {
 			if (
 				v.where === "device" &&
 				Object.prototype.hasOwnProperty.call(deviceState, k)
@@ -121,12 +135,16 @@ export class Storage<T extends StateDef> {
 			}
 		}
 
-		this.pizzaxChannel.addEventListener("message", ({ where, key, value, userId }) => {
-			// アカウント変更すればunisonReloadが効くため、このreturnが発火することは
-			// まずないと思うけど一応弾いておく
-			if (where === "deviceAccount" && !($i && userId !== $i.id)) return;
-			this.reactiveState[key as keyof T].value = this.state[key as keyof T] = value;
-		});
+		this.pizzaxChannel.addEventListener(
+			"message",
+			({ where, key, value, userId }) => {
+				// アカウント変更すればunisonReloadが効くため、このreturnが発火することは
+				// まずないと思うけど一応弾いておく
+				if (where === "deviceAccount" && !($i && userId !== $i.id)) return;
+				this.reactiveState[key as keyof T].value = this.state[key as keyof T] =
+					value;
+			},
+		);
 
 		if ($i) {
 			// streamingのuser storage updateイベントを監視して更新
@@ -158,7 +176,7 @@ export class Storage<T extends StateDef> {
 							await set(this.registryCacheKeyName, cache);
 						}
 					});
-				}
+				},
 			);
 		}
 	}
@@ -171,12 +189,17 @@ export class Storage<T extends StateDef> {
 					await defaultStore.ready;
 
 					api("i/registry/get-all", { scope: ["client", this.key] })
-						.then(kvs => {
+						.then((kvs) => {
 							const cache: Partial<T> = {};
-							for (const [k, v] of Object.entries(this.def) as [keyof T, T[keyof T]["default"]][]) {
+							for (const [k, v] of Object.entries(this.def) as [
+								keyof T,
+								T[keyof T]["default"],
+							][]) {
 								if (v.where === "account") {
 									if (Object.prototype.hasOwnProperty.call(kvs, k)) {
-										this.reactiveState[k].value = this.state[k] = (kvs as Partial<T>)[k];
+										this.reactiveState[k].value = this.state[k] = (
+											kvs as Partial<T>
+										)[k];
 										cache[k] = (kvs as Partial<T>)[k];
 									} else {
 										this.reactiveState[k].value = this.state[k] = v.default;
@@ -193,7 +216,6 @@ export class Storage<T extends StateDef> {
 			}
 		});
 	}
-
 
 	public set<K extends keyof T>(key: K, value: T[K]["default"]): Promise<void> {
 		// IndexedDBやBroadcastChannelで扱うために単純なオブジェクトにする
@@ -213,7 +235,7 @@ export class Storage<T extends StateDef> {
 						key,
 						value: rawValue,
 					});
-					const deviceState = await get(this.deviceStateKeyName) || {};
+					const deviceState = (await get(this.deviceStateKeyName)) || {};
 					deviceState[key] = rawValue;
 					await set(this.deviceStateKeyName, deviceState);
 					break;
@@ -226,14 +248,15 @@ export class Storage<T extends StateDef> {
 						value: rawValue,
 						userId: $i.id,
 					});
-					const deviceAccountState = await get(this.deviceAccountStateKeyName) || {};
+					const deviceAccountState =
+						(await get(this.deviceAccountStateKeyName)) || {};
 					deviceAccountState[key] = rawValue;
 					await set(this.deviceAccountStateKeyName, deviceAccountState);
 					break;
 				}
 				case "account": {
 					if ($i == null) break;
-					const cache = await get(this.registryCacheKeyName) || {};
+					const cache = (await get(this.registryCacheKeyName)) || {};
 					cache[key] = rawValue;
 					await set(this.registryCacheKeyName, cache);
 					await api("i/registry/set", {
@@ -261,7 +284,7 @@ export class Storage<T extends StateDef> {
 	}
 
 	public isDefault(k: string) {
-			return !!this.isDefaultState[k];
+		return !!this.isDefaultState[k];
 	}
 
 	/**
@@ -308,7 +331,8 @@ export class Storage<T extends StateDef> {
 			localStorage.removeItem(this.deviceStateKeyName);
 		}
 
-		const deviceAccountState = $i && localStorage.getItem(this.deviceAccountStateKeyName);
+		const deviceAccountState =
+			$i && localStorage.getItem(this.deviceAccountStateKeyName);
 		if ($i && deviceAccountState) {
 			await set(this.deviceAccountStateKeyName, JSON.parse(deviceAccountState));
 			localStorage.removeItem(this.deviceAccountStateKeyName);

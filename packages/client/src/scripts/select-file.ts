@@ -15,14 +15,19 @@ function select(
 	to?: string,
 ): Promise<DriveFile | DriveFile[]> {
 	return new Promise((res, rej) => {
-		const keepOriginal = ref(to === "emoji" ? true : defaultStore.state.keepOriginalUploading);
+		const keepOriginal = ref(
+			to === "emoji" ? true : defaultStore.state.keepOriginalUploading,
+		);
 		const keepFileName = ref(keepFilename ?? defaultStore.state.keepFileName);
 		let doAction = false;
-		const folderId = 
-			defaultStore.state.uploadFolderAvatar && to === "avatar" ? defaultStore.state.uploadFolderAvatar 
-			: defaultStore.state.uploadFolderBanner && to === "banner" ? defaultStore.state.uploadFolderBanner
-			: defaultStore.state.uploadFolderEmoji && to === "emoji" ? defaultStore.state.uploadFolderEmoji
-			: defaultStore.state.uploadFolder;
+		const folderId =
+			defaultStore.state.uploadFolderAvatar && to === "avatar"
+				? defaultStore.state.uploadFolderAvatar
+				: defaultStore.state.uploadFolderBanner && to === "banner"
+				? defaultStore.state.uploadFolderBanner
+				: defaultStore.state.uploadFolderEmoji && to === "emoji"
+				? defaultStore.state.uploadFolderEmoji
+				: defaultStore.state.uploadFolder;
 
 		const chooseFileFromPc = () => {
 			doAction = true;
@@ -112,33 +117,44 @@ function select(
 					icon: "ph-upload-simple ph-bold ph-lg",
 					action: chooseFileFromPc,
 				},
-				...(!requiredFilename ? [{
-					text: i18n.ts.fromDrive,
-					icon: "ph-cloud ph-bold ph-lg",
-					action: chooseFileFromDrive,
-				}] : []),
-				...(!requiredFilename ? [{
-					text: i18n.ts.fromUrl,
-					icon: "ph-link-simple ph-bold ph-lg",
-					action: chooseFileFromUrl,
-				}] : []),
+				...(!requiredFilename
+					? [
+							{
+								text: i18n.ts.fromDrive,
+								icon: "ph-cloud ph-bold ph-lg",
+								action: chooseFileFromDrive,
+							},
+					  ]
+					: []),
+				...(!requiredFilename
+					? [
+							{
+								text: i18n.ts.fromUrl,
+								icon: "ph-link-simple ph-bold ph-lg",
+								action: chooseFileFromUrl,
+							},
+					  ]
+					: []),
 				{
 					type: "switch",
 					text: i18n.ts.keepOriginalUploading,
 					ref: keepOriginal,
 				},
-				...(!requiredFilename ? [{
-					type: "switch",
-					text: i18n.ts.keepFileName,
-					ref: keepFileName,
-				}] : []),
+				...(!requiredFilename
+					? [
+							{
+								type: "switch",
+								text: i18n.ts.keepFileName,
+								ref: keepFileName,
+							},
+					  ]
+					: []),
 			],
 			src,
 		).then(() => {
 			setTimeout(() => {
 				if (!doAction) rej();
-				}, 500
-			);
+			}, 500);
 		});
 	});
 }
@@ -150,7 +166,14 @@ export function selectFile(
 	keepFilename?: boolean,
 	to?: string,
 ): Promise<DriveFile> {
-	return select(src, label, false, requiredFilename, keepFilename, to) as Promise<DriveFile>;
+	return select(
+		src,
+		label,
+		false,
+		requiredFilename,
+		keepFilename,
+		to,
+	) as Promise<DriveFile>;
 }
 
 export function selectFiles(
@@ -160,5 +183,12 @@ export function selectFiles(
 	keepFilename?: boolean,
 	to?: string,
 ): Promise<DriveFile[]> {
-	return select(src, label, true, requiredFilename, keepFilename, to) as Promise<DriveFile[]>;
+	return select(
+		src,
+		label,
+		true,
+		requiredFilename,
+		keepFilename,
+		to,
+	) as Promise<DriveFile[]>;
 }

@@ -22,14 +22,13 @@ export const getNoteSummary = (note: Packed<"Note">): string => {
 	if ((note.files || []).length !== 0) {
 		summary += ` (📎${note.files!.length})`;
 	}
-	
+
 	// リノートである場合
 	if (note.renoteId && !note.text && !note.files && !note.poll) {
 		summary += ` (RT)`;
 	} else if (note.renoteId) {
 		summary += ` (QT)`;
 	}
-
 
 	// 投票が添付されているとき
 	if (note.poll) {

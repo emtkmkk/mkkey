@@ -251,9 +251,12 @@ export async function createPerson(
 	if (person._misskey_summary) {
 		_description = truncate(person._misskey_summary, summaryLength);
 	} else if (person.summary) {
-		_description = htmlToMfm(truncate(person.summary, summaryLength), person.tag);
+		_description = htmlToMfm(
+			truncate(person.summary, summaryLength),
+			person.tag,
+		);
 	}
-	
+
 	// Create user
 	let user: IRemoteUser;
 	try {
@@ -503,7 +506,7 @@ export async function updatePerson(
 			followingCount = undefined;
 		}
 	}
-	
+
 	let notesCount: number | undefined;
 
 	if (typeof person.outbox === "string") {
@@ -524,9 +527,11 @@ export async function updatePerson(
 	if (person._misskey_summary) {
 		_description = truncate(person._misskey_summary, summaryLength);
 	} else if (person.summary) {
-		_description = htmlToMfm(truncate(person.summary, summaryLength), person.tag);
+		_description = htmlToMfm(
+			truncate(person.summary, summaryLength),
+			person.tag,
+		);
 	}
-
 
 	const updates = {
 		lastFetchedAt: new Date(),

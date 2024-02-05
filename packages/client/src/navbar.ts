@@ -1,5 +1,5 @@
 import { computed, ref, reactive } from "vue";
-import { $i, openAccountMenu as openAccountMenu_  } from "./account";
+import { $i, openAccountMenu as openAccountMenu_ } from "./account";
 import { search } from "@/scripts/search";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
@@ -42,8 +42,18 @@ export const navbarItemDef = reactive({
 	followRequests: {
 		title: "followRequests",
 		icon: "ph-hand-waving ph-bold ph-lg",
-		show: computed(() => $i?.isLocked || $i?.isSlientLocked || $i?.hasPendingReceivedFollowRequest),
-		indicated: computed(() => $i?.isLocked && $i?.hasPendingReceivedFollowRequest && !defaultStore.state.disableRequestNotification),
+		show: computed(
+			() =>
+				$i?.isLocked ||
+				$i?.isSlientLocked ||
+				$i?.hasPendingReceivedFollowRequest,
+		),
+		indicated: computed(
+			() =>
+				$i?.isLocked &&
+				$i?.hasPendingReceivedFollowRequest &&
+				!defaultStore.state.disableRequestNotification,
+		),
 		to: "/my/follow-requests",
 	},
 	explore: {
@@ -120,7 +130,7 @@ export const navbarItemDef = reactive({
 		action: (ev) => {
 			openAccountMenu_(
 				{
-				withExtraOperation: true,
+					withExtraOperation: true,
 				},
 				ev,
 			);

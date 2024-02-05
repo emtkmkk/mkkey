@@ -1,7 +1,13 @@
 import type Bull from "bull";
 import { queueLogger } from "../../logger.js";
 import deleteNote from "@/services/note/delete.js";
-import { Followings, DriveFiles, Notes, UserProfiles, Users } from "@/models/index.js";
+import {
+	Followings,
+	DriveFiles,
+	Notes,
+	UserProfiles,
+	Users,
+} from "@/models/index.js";
 import type { DbUserDeleteJobData } from "@/queue/types.js";
 import type { Note } from "@/models/entities/note.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
@@ -21,18 +27,22 @@ export async function deleteAccount(
 		return;
 	}
 
-	logger.info(`Deleting account of ${job.data.user.id} @${user.username}${user.host ? `@${user.host}` : ""} ...`);
+	logger.info(
+		`Deleting account of ${job.data.user.id} @${user.username}${
+			user.host ? `@${user.host}` : ""
+		} ...`,
+	);
 
 	try {
 		let tryCount = 0;
 		let deleteCount = 0;
 		while (tryCount <= 100) {
-			const relations = (await Followings.find({
+			const relations = await Followings.find({
 				where: {
 					followerId: user.id,
 				},
 				take: 100,
-			}));
+			});
 
 			if (relations.length === 0) {
 				break;
@@ -43,24 +53,17 @@ export async function deleteAccount(
 					const followee = await getUser(x.followeeId);
 					deleteCount += 1;
 					if (followee) await deleteFollowing(user, followee);
-				} catch {
-
-				}
+				} catch {}
 			});
-			tryCount += 1
-
+			tryCount += 1;
 		}
 		logger.succ(`All of relations removed (${deleteCount})`);
-	} catch {
-
-	}
-
+	} catch {}
 
 	{
 		let deleteCount = 0;
 		// Delete notes
 		let cursor: Note["id"] | null = null;
-
 
 		while (true) {
 			const notes = (await Notes.find({

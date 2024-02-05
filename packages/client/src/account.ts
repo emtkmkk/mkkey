@@ -265,14 +265,18 @@ export async function openAccountMenu(
 						text: i18n.ts.manageAccounts,
 						to: "/settings/accounts",
 					},
-					...(!/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? [{
-						type: "button",
-						icon: "ph-sign-out ph-bold ph-lg",
-						text: i18n.ts.logout,
-						action: () => {
-							signout();
-						},
-					}] : []),
+					...(!/mobile|iphone|android/.test(navigator.userAgent.toLowerCase())
+						? [
+								{
+									type: "button",
+									icon: "ph-sign-out ph-bold ph-lg",
+									text: i18n.ts.logout,
+									action: () => {
+										signout();
+									},
+								},
+						  ]
+						: []),
 				],
 			],
 			ev.currentTarget ?? ev.target,

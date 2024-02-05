@@ -5,7 +5,6 @@ import { i18n } from "@/i18n";
  * @param {*} 画像URL
  */
 export async function isImageExists(imgUrl: string): boolean {
-
 	const imgLoad = new Promise(async (resolve, reject) => {
 		try {
 			//ステータスコードで判定
@@ -14,9 +13,9 @@ export async function isImageExists(imgUrl: string): boolean {
 				xhr.open("HEAD", imgUrl, false);
 				xhr.send(null);
 				return resolve(xhr);
-			})
+			});
 
-			if (xhr.status = 404) reject(imgUrl);
+			if ((xhr.status = 404)) reject(imgUrl);
 
 			//画像であるかどうかで判定
 			if (!xhr.headers["content-type"].startsWith("image/")) reject(imgUrl);
@@ -32,15 +31,16 @@ export async function isImageExists(imgUrl: string): boolean {
 			}
 
 			resolve(imgUrl);
-
 		} catch (err) {
 			reject(imgUrl);
 		}
 	});
 
-	return imgLoad.then(() => {
-		return true;
-	}).catch(() => {
-		return false;
-	});
-};
+	return imgLoad
+		.then(() => {
+			return true;
+		})
+		.catch(() => {
+			return false;
+		});
+}

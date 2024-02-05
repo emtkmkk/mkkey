@@ -44,13 +44,16 @@ export async function addPinned(
 
 	if (pinings.some((pining) => pining.noteId === note.id)) {
 		// すでに登録済みの場合、上に持ってくるためにID・登録日を更新
-		await UserNotePinings.update({
-			userId: user.id,
-			noteId: note.id,
-		},{
-			id: genId(),
-			createdAt: new Date(),
-		} as UserNotePining);
+		await UserNotePinings.update(
+			{
+				userId: user.id,
+				noteId: note.id,
+			},
+			{
+				id: genId(),
+				createdAt: new Date(),
+			} as UserNotePining,
+		);
 	} else {
 		await UserNotePinings.insert({
 			id: genId(),
@@ -61,7 +64,12 @@ export async function addPinned(
 	}
 
 	// Deliver to remote followers
-	if (Users.isLocalUser(user) && !note.localOnly && ['public', 'home'].includes(note.visibility) && !note.deletedAt) {
+	if (
+		Users.isLocalUser(user) &&
+		!note.localOnly &&
+		["public", "home"].includes(note.visibility) &&
+		!note.deletedAt
+	) {
 		deliverPinnedChange(user.id, note.id, true);
 	}
 }
@@ -94,7 +102,12 @@ export async function removePinned(
 	});
 
 	// Deliver to remote followers
-	if (Users.isLocalUser(user) && !note.localOnly && ['public', 'home'].includes(note.visibility) && !note.deletedAt) {
+	if (
+		Users.isLocalUser(user) &&
+		!note.localOnly &&
+		["public", "home"].includes(note.visibility) &&
+		!note.deletedAt
+	) {
 		deliverPinnedChange(user.id, noteId, false);
 	}
 }

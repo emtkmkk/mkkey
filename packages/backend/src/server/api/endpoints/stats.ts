@@ -71,10 +71,19 @@ export default define(meta, paramDef, async () => {
 		instances,
 	] = await Promise.all([
 		Notes.count({ where: { deletedAt: IsNull() }, cache: 3600000 }), // 1 hour
-		Notes.count({ where: { userHost: IsNull(), deletedAt: IsNull() }, cache: 3600000 }),
+		Notes.count({
+			where: { userHost: IsNull(), deletedAt: IsNull() },
+			cache: 3600000,
+		}),
 		Users.count({ where: { isDeleted: false }, cache: 3600000 }),
-		Users.count({ where: { host: IsNull(), notesCount: MoreThan(50), isDeleted: false }, cache: 3600000 }),
-		Users.count({ where: { host: IsNull(), isDeleted: false }, cache: 3600000 }),
+		Users.count({
+			where: { host: IsNull(), notesCount: MoreThan(50), isDeleted: false },
+			cache: 3600000,
+		}),
+		Users.count({
+			where: { host: IsNull(), isDeleted: false },
+			cache: 3600000,
+		}),
 		NoteReactions.count({ cache: 3600000 }), // 1 hour
 		//NoteReactions.count({ where: { userHost: IsNull() }, cache: 3600000 }),
 		Instances.count({ cache: 3600000 }),

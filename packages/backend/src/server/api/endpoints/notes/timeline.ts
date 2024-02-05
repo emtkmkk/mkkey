@@ -121,7 +121,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			}),
 		);
 	}
-	
+
 	if (ps.includeMyRenotes === false) {
 		query.andWhere(
 			new Brackets((qb) => {

@@ -24,7 +24,6 @@ export async function getApLock(
 	return lock;
 }
 
-
 export async function getFetchInstanceMetadataLock(
 	host: string,
 	timeout = 30 * 1000,
@@ -36,7 +35,6 @@ export async function getFetchInstanceMetadataLock(
 	await lock.acquire();
 	return lock;
 }
-
 
 export async function getChartInsertLock(
 	lockKey: string,

@@ -67,7 +67,7 @@ export default async function (
 			}*/
 		});
 	}
-	
+
 	if (Users.isLocalUser(followee)) {
 		Users.pack(follower.id, followee, {
 			detail: true,

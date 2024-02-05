@@ -34,7 +34,8 @@ class SwNotificationReadManager {
 		data: pushNotificationDataMap[K],
 	) {
 		// 既読をサーバーに送信しない
-		if (data.type !== "notification" || !(data.userId in this.accounts) || true) return;
+		if (data.type !== "notification" || !(data.userId in this.accounts) || true)
+			return;
 
 		const account = this.accounts[data.userId];
 

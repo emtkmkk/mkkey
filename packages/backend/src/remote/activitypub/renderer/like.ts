@@ -9,7 +9,11 @@ import { fetchMeta } from "@/misc/fetch-meta.js";
 export const renderLike = async (noteReaction: NoteReaction, note: Note) => {
 	const reaction = noteReaction.reaction;
 	const custom = reaction.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/) || null;
-	const sendReaction = custom ? custom[2] ? `:${reaction?.match(/[^:@]+/)?.[0]}:` : reaction : reaction;
+	const sendReaction = custom
+		? custom[2]
+			? `:${reaction?.match(/[^:@]+/)?.[0]}:`
+			: reaction
+		: reaction;
 	const meta = await fetchMeta();
 
 	const object = {

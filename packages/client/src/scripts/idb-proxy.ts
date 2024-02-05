@@ -4,7 +4,10 @@ import { get as iget, set as iset, del as idel } from "idb-keyval";
 
 const fallbackName = (key: string) => `idbfallback::${key}`;
 
-let idbAvailable = typeof window !== "undefined" ? !!(window.indexedDB && window.indexedDB.open) : true;
+let idbAvailable =
+	typeof window !== "undefined"
+		? !!(window.indexedDB && window.indexedDB.open)
+		: true;
 
 let initialization: Promise<void> = initialize();
 

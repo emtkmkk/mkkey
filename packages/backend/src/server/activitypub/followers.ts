@@ -69,11 +69,14 @@ export default async (ctx: Router.RouterContext) => {
 		}
 
 		// Get followers
-		const followings = profile.ffVisibility !== "private" && profile.ffVisibility !== "followers" ? await Followings.find({
-			where: query,
-			take: limit + 1,
-			order: { id: -1 },
-		}) : [];
+		const followings =
+			profile.ffVisibility !== "private" && profile.ffVisibility !== "followers"
+				? await Followings.find({
+						where: query,
+						take: limit + 1,
+						order: { id: -1 },
+				  })
+				: [];
 
 		// 「次のページ」があるかどうか
 		const inStock = followings.length === limit + 1;

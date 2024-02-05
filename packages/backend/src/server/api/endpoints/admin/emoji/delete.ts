@@ -33,7 +33,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (emoji == null) throw new ApiError(meta.errors.noSuchEmoji);
 
-	const pack = await Emojis.pack(emoji.id)
+	const pack = await Emojis.pack(emoji.id);
 
 	publishBroadcastStream("emojiDeleted", {
 		emoji: pack,

@@ -59,9 +59,12 @@ export default define(meta, paramDef, async (ps, me) => {
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
-	
+
 	const SCORE_TARGET_DAYS = 31;
-	const THRESHOLD_SCORE_PERCENT = ps.threshold && Number.isFinite(parseInt(ps.threshold,10)) ? parseInt(ps.threshold,10) : 7;
+	const THRESHOLD_SCORE_PERCENT =
+		ps.threshold && Number.isFinite(parseInt(ps.threshold, 10))
+			? parseInt(ps.threshold, 10)
+			: 7;
 
 	let now = new Date();
 	let borderDate = new Date();
@@ -70,17 +73,26 @@ export default define(meta, paramDef, async (ps, me) => {
 	borderDate.setMinutes(0);
 	borderDate.setSeconds(0);
 	borderDate.setMilliseconds(0);
-	
-	const borderScore = ps.borderScore && Number.isFinite(parseInt(ps.borderScore, 10))
-  ? parseInt(ps.borderScore, 10)
-  : (await Notes.createQueryBuilder("note")
-        .select(`percentile_cont(${THRESHOLD_SCORE_PERCENT / 100}) WITHIN GROUP (ORDER BY note.score DESC) as score`)
-        .where("note.userId = :userId", { userId: user.id })
-        .andWhere("note.createdAt >= :borderDate", { borderDate: borderDate.toISOString() })
-        .andWhere("note.visibility = 'public'")
-        .andWhere(`(note."deletedAt" IS NULL)`)
-        .cache(6 * 60 * 60 * 1000)
-        .getRawOne()).score;
+
+	const borderScore =
+		ps.borderScore && Number.isFinite(parseInt(ps.borderScore, 10))
+			? parseInt(ps.borderScore, 10)
+			: (
+					await Notes.createQueryBuilder("note")
+						.select(
+							`percentile_cont(${
+								THRESHOLD_SCORE_PERCENT / 100
+							}) WITHIN GROUP (ORDER BY note.score DESC) as score`,
+						)
+						.where("note.userId = :userId", { userId: user.id })
+						.andWhere("note.createdAt >= :borderDate", {
+							borderDate: borderDate.toISOString(),
+						})
+						.andWhere("note.visibility = 'public'")
+						.andWhere(`(note."deletedAt" IS NULL)`)
+						.cache(6 * 60 * 60 * 1000)
+						.getRawOne()
+			  ).score;
 
 	//#region Construct query
 	const query = makePaginationQuery(
@@ -91,7 +103,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		ps.untilDate,
 	)
 		.andWhere("note.userId = :userId", { userId: user.id })
-		.andWhere("note.score >= :borderScore", { borderScore: Math.floor(borderScore) || 1 })
+		.andWhere("note.score >= :borderScore", {
+			borderScore: Math.floor(borderScore) || 1,
+		})
 		.andWhere("note.visibility = 'public'")
 		.andWhere(`(note."deletedAt" IS NULL)`)
 		.innerJoinAndSelect("note.user", "user")
@@ -104,14 +118,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
 		.leftJoinAndSelect("renote.user", "renoteUser")
 		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
-		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner")
+		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
 
 	generateVisibilityQuery(query, me);
 	if (me) {
 		generateMutedUserQuery(query, me, user);
 		generateBlockedUserQuery(query, me);
 	}
-	
+
 	//#endregion
 
 	const timeline = await query.take(ps.limit).getMany();

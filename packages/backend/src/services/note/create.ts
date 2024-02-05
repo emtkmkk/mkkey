@@ -183,11 +183,11 @@ export default async (
 ) =>
 	// rome-ignore lint/suspicious/noAsyncPromiseExecutor: FIXME
 	new Promise<Note>(async (res, rej) => {
-
 		// 最初に投稿時刻を確定させる
 		if (data.createdAt == null) data.createdAt = new Date();
 
-		const dontFederateInitially = (data.localOnly && data.channel) || data.visibility === "hidden";
+		const dontFederateInitially =
+			(data.localOnly && data.channel) || data.visibility === "hidden";
 
 		// If you reply outside the channel, match the scope of the target.
 		// TODO (I think it's a process that could be done on the client side, but it's server side for now.)
@@ -230,18 +230,38 @@ export default async (
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
 		//チャンネル投稿でリプライ、リノートでないならpublic
-		if (data.channel != null && !data.reply && !data.renote) data.visibility = "public";
+		if (data.channel != null && !data.reply && !data.renote)
+			data.visibility = "public";
 		//publicをブロックする設定でpublic設定ならhomeに設定
-		if (user.blockPostPublic && data.visibility === "public") data.visibility = "home";
+		if (user.blockPostPublic && data.visibility === "public")
+			data.visibility = "home";
 		//homeをブロックする設定でhome設定ならfollowersに設定
-		if (user.blockPostHome && data.visibility === "home") data.visibility = "followers";
+		if (user.blockPostHome && data.visibility === "home")
+			data.visibility = "followers";
 		//非localOnlyをブロックする設定で非localOnly設定ならlocalOnlyに設定
-		if (user.blockPostNotLocal && data.localOnly === false && (!user.blockPostNotLocalPublic || data.visibility === "public")) data.localOnly = true;
+		if (
+			user.blockPostNotLocal &&
+			data.localOnly === false &&
+			(!user.blockPostNotLocalPublic || data.visibility === "public")
+		)
+			data.localOnly = true;
 		//ただしspecifiedならlocalOnlyOFF
-		if (data.visibility === "specified" && data.localOnly === true) data.localOnly = false;
+		if (data.visibility === "specified" && data.localOnly === true)
+			data.localOnly = false;
 		//チャンネルに[localOnly]が含まれている場合はlocalOnlyON
-		if (data.channel?.description?.includes("[localOnly]") && data.localOnly === false) data.localOnly = true;
-		if (!user.host && data.channel != null && data.localOnly === false && !data.reply && data.text?.trim() && !data.text?.includes(`#${data.channel!.name}`)) {
+		if (
+			data.channel?.description?.includes("[localOnly]") &&
+			data.localOnly === false
+		)
+			data.localOnly = true;
+		if (
+			!user.host &&
+			data.channel != null &&
+			data.localOnly === false &&
+			!data.reply &&
+			data.text?.trim() &&
+			!data.text?.includes(`#${data.channel!.name}`)
+		) {
 			//ローカル投稿でチャンネルで連合有りで返信でなくテキストがあり、
 			//すでにタグが含まれていない場合はハッシュタグを自動で付ける
 			data.text += ` #${data.channel!.name}`;
@@ -249,51 +269,88 @@ export default async (
 		if (data.visibility === "hidden") data.visibility = "public";
 
 		// Twitterのstatusリンクの場合、?以降を取り除く
-		if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
-			data.text = data.text.replaceAll(/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?\S*)/ig, "$1");
+		if (
+			data.text?.includes("https://twitter.com") ||
+			data.text?.includes("http://twitter.com")
+		) {
+			data.text = data.text.replaceAll(
+				/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?\S*)/gi,
+				"$1",
+			);
 		}
 
-		if (data.text?.includes("https://x.com") || data.text?.includes("http://x.com")) {
-			data.text = data.text.replaceAll(/(https?:\/\/x.com\/\S*\/status\/\S*)(\?\S*)/ig, "$1");
+		if (
+			data.text?.includes("https://x.com") ||
+			data.text?.includes("http://x.com")
+		) {
+			data.text = data.text.replaceAll(
+				/(https?:\/\/x.com\/\S*\/status\/\S*)(\?\S*)/gi,
+				"$1",
+			);
 		}
 
 		//ローカルユーザーでこの投稿が1投稿目の場合
 		if (!user.host && user.notesCount < 1) {
 			//キャッシュで0に見えてる可能性があるためここで最新データを取得
-			const _user = await Users.findOneByOrFail({ id: user.id })
+			const _user = await Users.findOneByOrFail({ id: user.id });
 			if (_user.notesCount === 0) {
 				data.isFirstNote = true;
 			}
 		}
 
 		//23:59の間によるほを含む投稿をした場合
-		if (data.createdAt?.getHours() === 23 && data.createdAt?.getMinutes() === 59 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {
-			if (data.createdAt?.getSeconds() === 59 && data.createdAt?.getMilliseconds() !== 0) {
+		if (
+			data.createdAt?.getHours() === 23 &&
+			data.createdAt?.getMinutes() === 59 &&
+			!user.host &&
+			(data.text?.includes("よるほ") ||
+				data.text?.includes("ヨルホ") ||
+				data.text?.includes("yoruho"))
+		) {
+			if (
+				data.createdAt?.getSeconds() === 59 &&
+				data.createdAt?.getMilliseconds() !== 0
+			) {
 				//誤差がミリ秒単位の場合
-				data.text = `${data.text} [❌ -.${(1000 - data.createdAt.getMilliseconds()).toString().padStart(3, '0')}]`
+				data.text = `${data.text} [❌ -.${(
+					1000 - data.createdAt.getMilliseconds()
+				)
+					.toString()
+					.padStart(3, "0")}]`;
 			} else {
-				data.text = `${data.text} [❌ -${(60 - data.createdAt?.getSeconds()).toString()}s]`
+				data.text = `${data.text} [❌ -${(
+					60 - data.createdAt?.getSeconds()
+				).toString()}s]`;
 			}
 		}
 
 		//0:00の間によるほを含む投稿をした場合
-		if (data.createdAt?.getHours() === 0 && data.createdAt?.getMinutes() === 0 && !user.host && (data.text?.includes("よるほ") || data.text?.includes("ヨルホ") || data.text?.includes("yoruho"))) {
+		if (
+			data.createdAt?.getHours() === 0 &&
+			data.createdAt?.getMinutes() === 0 &&
+			!user.host &&
+			(data.text?.includes("よるほ") ||
+				data.text?.includes("ヨルホ") ||
+				data.text?.includes("yoruho"))
+		) {
 			if (data.createdAt?.getMilliseconds() === 0) {
 				//ジャストの場合
-				data.text = `${data.text} [\$[tada 🦉 .000]]`
+				data.text = `${data.text} [\$[tada 🦉 .000]]`;
 			} else if (data.createdAt?.getSeconds() === 0) {
 				//誤差がミリ秒単位の場合
-				data.text = `${data.text} [🦉 .${data.createdAt.getMilliseconds().toString().padStart(3, '0')}]`
+				data.text = `${data.text} [🦉 .${data.createdAt
+					.getMilliseconds()
+					.toString()
+					.padStart(3, "0")}]`;
 			} else {
-				data.text = `${data.text} [❌ +${(data.createdAt?.getSeconds()).toString()}s]`
+				data.text = `${data.text} [❌ +${data.createdAt
+					?.getSeconds()
+					.toString()}s]`;
 			}
 		}
 
 		// サイレンスされている場合はフォロワー限定に
-		if (
-			user.isSilenced &&
-			data.visibility !== "specified"
-		) {
+		if (user.isSilenced && data.visibility !== "specified") {
 			data.visibility = "followers";
 			data.localOnly = true;
 		}
@@ -307,15 +364,11 @@ export default async (
 			data.visibility = "home";
 		}
 
-		if (
-			data.reply?.deletedAt
-		) {
+		if (data.reply?.deletedAt) {
 			return rej("削除された投稿に対しては返信できません。");
 		}
 
-		if (
-			data.renote?.deletedAt
-		) {
+		if (data.renote?.deletedAt) {
 			return rej("削除された投稿はRTできません。");
 		}
 
@@ -387,7 +440,6 @@ export default async (
 		}
 
 		if (!user.host && data.visibility === "public") {
-
 			const isIncludeNgWordRet = isIncludeNgWord(data);
 
 			if (isIncludeNgWordRet) {
@@ -404,7 +456,10 @@ export default async (
 					if (data.text) {
 						if (!data.cw) {
 							data.cw = `[強制CW (引用先)] ${isIncludeNgWordRtRet}`;
-						} else if (!data.cw.trim() || data.cw.trim().toUpperCase() === "CW") {
+						} else if (
+							!data.cw.trim() ||
+							data.cw.trim().toUpperCase() === "CW"
+						) {
 							data.cw = `${isIncludeNgWordRtRet} (引用先)`;
 						}
 					} else {
@@ -412,7 +467,6 @@ export default async (
 					}
 				}
 			}
-
 		}
 
 		let tags = data.apHashtags;
@@ -469,10 +523,18 @@ export default async (
 				);
 			}
 
-			const relation = user.isSilenced ? await Promise.all(data.visibleUsers.map(async (x) => (await Users.getRelation(user.id, x.id)).isFollowed)) : undefined;
+			const relation = user.isSilenced
+				? await Promise.all(
+						data.visibleUsers.map(
+							async (x) => (await Users.getRelation(user.id, x.id)).isFollowed,
+						),
+				  )
+				: undefined;
 
 			if (user.isSilenced && (!relation?.every((x) => x) ?? true)) {
-				throw new Error("サイレンス中はフォロワーでないユーザにダイレクトは送信できません。");
+				throw new Error(
+					"サイレンス中はフォロワーでないユーザにダイレクトは送信できません。",
+				);
 			}
 			/*
 						const localRelation = !user.isBot || !user.host ? false :await data.visibleUsers.filter((x) => !x.host || !x.isBot || x.host === config.host).every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);
@@ -481,7 +543,6 @@ export default async (
 							data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi, "$1");
 						}
 			*/
-
 		}
 
 		const note = await insertNote(user, data, tags, emojis, mentionedUsers);
@@ -511,7 +572,13 @@ export default async (
 		// リモートユーザまたはbotの投稿時、ユーザの最終更新時刻を更新
 		// 2時間前以上の場合は更新しない
 		// TODO : 更新した時に時刻が戻る可能性あり
-		if ((user.onlineStatus === "online" || user.onlineStatus === "half-online" || Users.isRemoteUser(user) || user.isBot) && (new Date().valueOf() - data.createdAt.valueOf()) < 2 * 60 * 60 * 1000) {
+		if (
+			(user.onlineStatus === "online" ||
+				user.onlineStatus === "half-online" ||
+				Users.isRemoteUser(user) ||
+				user.isBot) &&
+			new Date().valueOf() - data.createdAt.valueOf() < 2 * 60 * 60 * 1000
+		) {
 			Users.update(user.id, {
 				lastActiveDate: data.createdAt,
 			});
@@ -746,20 +813,31 @@ export default async (
 
 					// フォロワーに配送
 					if (["public", "home", "followers"].includes(note.visibility)) {
-						if (data.reply && data.reply.userId === user.id && data.reply.replyId) {
+						if (
+							data.reply &&
+							data.reply.userId === user.id &&
+							data.reply.replyId
+						) {
 							// 自己リプライでリプライのリプライがある場合
 							// リプライのリプライが自分ではない場合
-							if (data.reply.replyUserId !== user.id && data.reply.replyUserHost === null) {
-								console.log(`reReply deliver : ${data.reply.replyId}`)
+							if (
+								data.reply.replyUserId !== user.id &&
+								data.reply.replyUserHost === null
+							) {
+								console.log(`reReply deliver : ${data.reply.replyId}`);
 								const u = await Users.findOneBy({ id: data.reply.replyUserId });
 								dm.addFollowersRecipe(u as ILocalUser);
 							} else {
-								console.log(`reReply deliver : ${data.reply.replyId}`)
+								console.log(`reReply deliver : ${data.reply.replyId}`);
 								// リプライのリプライが自分の場合
 								dm.addFollowersRecipe();
 							}
-						} else if ((data.reply && data.reply.userId !== user.id && data.reply.userHost === null)) {
-							console.log(`reply deliver : ${data.reply.id}`)
+						} else if (
+							data.reply &&
+							data.reply.userId !== user.id &&
+							data.reply.userHost === null
+						) {
+							console.log(`reply deliver : ${data.reply.id}`);
 							// 他人宛のリプライがある場合
 							const u = await Users.findOneBy({ id: data.reply.userId });
 							dm.addFollowersRecipe(u as ILocalUser);
@@ -801,56 +879,81 @@ export default async (
 		await index(note);
 	});
 
-	
-	export async function appendNoteVisibleUser(user: {
+export async function appendNoteVisibleUser(
+	user: {
 		id: User["id"];
 		username: User["username"];
 		host: User["host"];
 		isBot: User["isBot"];
 		isCat: User["isCat"];
-	}, note: Note, additionalUserId: ILocalUser["id"]) {
-		if (note.visibility !== "specified") return;
-		if (note.visibleUserIds.includes(additionalUserId)) return;
-		if (note.ccUserIds.includes(additionalUserId)) return;
+	},
+	note: Note,
+	additionalUserId: ILocalUser["id"],
+) {
+	if (note.visibility !== "specified") return;
+	if (note.visibleUserIds.includes(additionalUserId)) return;
+	if (note.ccUserIds.includes(additionalUserId)) return;
 
-		const additionalUser = await Users.findOneByOrFail({ id: additionalUserId, host: IsNull() });
+	const additionalUser = await Users.findOneByOrFail({
+		id: additionalUserId,
+		host: IsNull(),
+	});
 
-		// ノートのvisibleUserIdsを更新
-		await Notes.update(note.id, {
-			ccUserIds: () => `array_append("ccUserIds", "${additionalUser.id}")`,
-		});
+	// ノートのvisibleUserIdsを更新
+	await Notes.update(note.id, {
+		ccUserIds: () => `array_append("ccUserIds", "${additionalUser.id}")`,
+	});
 
-		// 新しい対象ユーザーにだけ処理が行われるようにする
-		note.visibleUserIds = [];
-		note.ccUserIds = [additionalUser.id];
+	// 新しい対象ユーザーにだけ処理が行われるようにする
+	note.visibleUserIds = [];
+	note.ccUserIds = [additionalUser.id];
 
-		// ストリームに流す
-		const noteObj = await Notes.pack(note, null);
-		publishNotesStream(noteObj);
-	}
+	// ストリームに流す
+	const noteObj = await Notes.pack(note, null);
+	publishNotesStream(noteObj);
+}
 
 async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 	if (data.localOnly && data.channel) return null;
 	// ローカル＆フォロワー
-	if (data.localOnly && data.visibility !== "hidden" && data.visibility !== "specified") note.visibility = "followers";
-	if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.cw ?? "") || /:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.text ?? "")) {
+	if (
+		data.localOnly &&
+		data.visibility !== "hidden" &&
+		data.visibility !== "specified"
+	)
+		note.visibility = "followers";
+	if (
+		/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.cw ?? "") ||
+		/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.text ?? "")
+	) {
 		// 他鯖絵文字が入っている場合、外部には@以下をトリミングして配信する
-		if (note.cw) note.cw = note.cw?.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
-		if (note.text) note.text = note.text?.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
-		if (note.emojis) note.emojis = note.emojis?.map((x) => x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]*)$/ig, "$1"));
+		if (note.cw)
+			note.cw = note.cw?.replaceAll(
+				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
+				":$1:",
+			);
+		if (note.text)
+			note.text = note.text?.replaceAll(
+				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
+				":$1:",
+			);
+		if (note.emojis)
+			note.emojis = note.emojis?.map((x) =>
+				x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]*)$/gi, "$1"),
+			);
 	}
 
 	const content =
 		data.renote &&
-			data.text == null &&
-			data.poll == null &&
-			(data.files == null || data.files.length === 0)
+		data.text == null &&
+		data.poll == null &&
+		(data.files == null || data.files.length === 0)
 			? renderAnnounce(
-				data.renote.uri
-					? data.renote.uri
-					: `${config.url}/notes/${data.renote.id}`,
-				note,
-			)
+					data.renote.uri
+						? data.renote.uri
+						: `${config.url}/notes/${data.renote.id}`,
+					note,
+			  )
 			: renderCreate(await renderNote(note, false), note);
 
 	return renderActivity(content);
@@ -861,7 +964,7 @@ function incRenoteCount(renote: Note, userHost?: string) {
 		.update()
 		.set({
 			renoteCount: () => '"renoteCount" + 1',
-			score: () => `"score" + ${userHost ? '3' : '9'}`,
+			score: () => `"score" + ${userHost ? "3" : "9"}`,
 		})
 		.where("id = :id", { id: renote.id })
 		.execute();
@@ -903,10 +1006,10 @@ async function insertNote(
 				: [],
 		ccUserIds:
 			data.visibility === "specified"
-			? data.ccUsers
-				? data.ccUsers.map((u) => u.id)
-				: []
-			: [],
+				? data.ccUsers
+					? data.ccUsers.map((u) => u.id)
+					: []
+				: [],
 		attachedFileTypes: data.files ? data.files.map((file) => file.type) : [],
 		isFirstNote: !!data.isFirstNote,
 		// 以下非正規化データ

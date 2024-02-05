@@ -38,18 +38,24 @@ export default define(meta, paramDef, async (ps, me) => {
 	// 登録から(7日-((投稿数-20)*1.5時間))経過
 	// ただし1日未満にはならない
 	// 投稿数が20以上
-	
+
 	// 36投稿 : 6日  52投稿 : 5日  68投稿 : 4日
 	// 84投稿 : 3日 100投稿 : 2日 116投稿 : 1日
-	
-	const eTime = (Date.now() - new Date(me.createdAt).valueOf());
-	const inviteBorder = eTime > 7 * 24 * 60 * 60 * 1000 ? 7 * 24 * 60 * 60 * 1000 : Math.max(7 * 24 * 60 * 60 * 1000 - (me.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000);
+
+	const eTime = Date.now() - new Date(me.createdAt).valueOf();
+	const inviteBorder =
+		eTime > 7 * 24 * 60 * 60 * 1000
+			? 7 * 24 * 60 * 60 * 1000
+			: Math.max(
+					7 * 24 * 60 * 60 * 1000 - me.notesCount * 90 * 60 * 1000,
+					24 * 60 * 60 * 1000,
+			  );
 	const canInvite = eTime > inviteBorder && me.notesCount >= 20;
-	
+
 	if (me.isSilenced || !canInvite) {
 		throw new ApiError();
 	}
-	
+
 	const code = rndstr({
 		length: 8,
 		chars: "2-9A-HJ-NP-Z", // [0-9A-Z] w/o [01IO] (32 patterns)

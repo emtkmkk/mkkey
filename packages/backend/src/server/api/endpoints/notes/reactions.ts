@@ -62,24 +62,33 @@ export default define(meta, paramDef, async (ps, user) => {
 	} as FindOptionsWhere<NoteReaction>;
 
 	if (user?.id) {
+		const mutingUserIds = (
+			await Mutings.createQueryBuilder("muting")
+				.select("muting.muteeId")
+				.where("muting.muterId = :muterId", { muterId: user.id })
+				.getMany()
+		).map((x) => x.muteeId);
 
-		const mutingUserIds = (await Mutings.createQueryBuilder("muting")
-			.select("muting.muteeId")
-			.where("muting.muterId = :muterId", { muterId: user.id })
-			.getMany()).map((x) => x.muteeId);
+		const blockingUserIds = (
+			await Blockings.createQueryBuilder("blocking")
+				.select("blocking.blockeeId")
+				.where("blocking.blockerId = :blockerId", { blockerId: user.id })
+				.getMany()
+		).map((x) => x.blockeeId);
 
-		const blockingUserIds = (await Blockings.createQueryBuilder("blocking")
-			.select("blocking.blockeeId")
-			.where("blocking.blockerId = :blockerId", { blockerId: user.id })
-			.getMany()).map((x) => x.blockeeId);
+		const blockedUserIds = (
+			await Blockings.createQueryBuilder("blocking")
+				.select("blocking.blockerId")
+				.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
+				.getMany()
+		).map((x) => x.blockerId);
 
-		const blockedUserIds = (await Blockings.createQueryBuilder("blocking")
-			.select("blocking.blockerId")
-			.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
-			.getMany()).map((x) => x.blockerId);
-	
-		query = {...query, userId: Not(In([...mutingUserIds, ...blockingUserIds, ...blockedUserIds]))}
-
+		query = {
+			...query,
+			userId: Not(
+				In([...mutingUserIds, ...blockingUserIds, ...blockedUserIds]),
+			),
+		};
 	}
 
 	if (ps.type) {
@@ -87,10 +96,21 @@ export default define(meta, paramDef, async (ps, user) => {
 		// DB 上ではそうではないので、必要に応じて変換
 		// @.指定の場合、同名絵文字のリアクションを全て返す
 		const suffix = "@.:";
-		if (ps.type.endsWith(suffix)){
-			query = [{...query,reaction: `${ps.type.slice(0, ps.type.length - suffix.length)}:`,},{...query,reaction: Like(`${ps.type.slice(0, ps.type.length - suffix.length)}@%:`)}];
+		if (ps.type.endsWith(suffix)) {
+			query = [
+				{
+					...query,
+					reaction: `${ps.type.slice(0, ps.type.length - suffix.length)}:`,
+				},
+				{
+					...query,
+					reaction: Like(
+						`${ps.type.slice(0, ps.type.length - suffix.length)}@%:`,
+					),
+				},
+			];
 		} else {
-			query.reaction = ps.type
+			query.reaction = ps.type;
 		}
 	}
 

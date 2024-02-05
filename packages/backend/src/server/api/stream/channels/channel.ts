@@ -34,7 +34,12 @@ export default class extends Channel {
 
 	private async onNote(note: Packed<"Note">) {
 		if (note.visibility !== "public") return;
-		if (note.channelId !== this.channelId && (!this.channelName || !note.tags?.includes(normalizeForSearch(this.channelName)))) return;
+		if (
+			note.channelId !== this.channelId &&
+			(!this.channelName ||
+				!note.tags?.includes(normalizeForSearch(this.channelName)))
+		)
+			return;
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.muting)) return;
@@ -42,8 +47,7 @@ export default class extends Channel {
 		if (isUserRelated(note, this.blocking)) return;
 
 		//if (note.renote && !note.text && isUserRelated(note, this.renoteMuting))
-		if (note.renote && !note.text)
-			return;
+		if (note.renote && !note.text) return;
 
 		this.connection.cacheNote(note);
 

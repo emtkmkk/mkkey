@@ -48,10 +48,9 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-
 	const followBlocking = await FollowBlockings.findBy({
 		blockerId: user.id,
-	})
+	});
 
 	const reqs = await FollowRequests.findBy({
 		followeeId: user.id,

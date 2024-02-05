@@ -5,25 +5,27 @@ import { User } from "@/models/entities/user.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import { Users } from "../index.js";
 
-export const FollowBlockingRepository = db.getRepository(FollowBlocking).extend({
-	async pack(
-		src: FollowBlocking["id"] | FollowBlocking,
-		me?: { id: User["id"] } | null | undefined,
-	): Promise<Packed<"FollowBlocking">> {
-		const blocking =
-			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
+export const FollowBlockingRepository = db
+	.getRepository(FollowBlocking)
+	.extend({
+		async pack(
+			src: FollowBlocking["id"] | FollowBlocking,
+			me?: { id: User["id"] } | null | undefined,
+		): Promise<Packed<"FollowBlocking">> {
+			const blocking =
+				typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
 
-		return await awaitAll({
-			id: blocking.id,
-			createdAt: blocking.createdAt.toISOString(),
-			blockeeId: blocking.blockeeId,
-			blockee: Users.pack(blocking.blockeeId, me, {
-				detail: true,
-			}),
-		});
-	},
+			return await awaitAll({
+				id: blocking.id,
+				createdAt: blocking.createdAt.toISOString(),
+				blockeeId: blocking.blockeeId,
+				blockee: Users.pack(blocking.blockeeId, me, {
+					detail: true,
+				}),
+			});
+		},
 
-	packMany(blockings: any[], me: { id: User["id"] }) {
-		return Promise.all(blockings.map((x) => this.pack(x, me)));
-	},
-});
+		packMany(blockings: any[], me: { id: User["id"] }) {
+			return Promise.all(blockings.map((x) => this.pack(x, me)));
+		},
+	});

@@ -25,7 +25,14 @@ export async function createNotification(
 
 	if (
 		data.notifierId &&
-		["mention", "reply", "renote", "quote", "reaction","unreadAntenna"].includes(type)
+		[
+			"mention",
+			"reply",
+			"renote",
+			"quote",
+			"reaction",
+			"unreadAntenna",
+		].includes(type)
 	) {
 		const notifier = await Users.findOneBy({ id: data.notifierId });
 		// suppress if the notifier does not exist or is silenced.

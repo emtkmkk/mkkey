@@ -144,7 +144,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			}),
 		);
 	}
-	
+
 	if (ps.privateOnly === true) {
 		query.andWhere(
 			new Brackets((qb) => {
@@ -153,7 +153,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			}),
 		);
 	}
-	
+
 	//#endregion
 
 	const timeline = await query.take(ps.limit).getMany();

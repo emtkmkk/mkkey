@@ -34,7 +34,14 @@ export default async (ctx: Router.RouterContext) => {
 	});
 
 	const pinnedNotes = await Promise.all(
-		pinings.map((pining) => Notes.findOneByOrFail({ id: pining.noteId })).filter(note => !note.localOnly && ['public', 'home'].includes(note.visibility) && !note.deletedAt),
+		pinings
+			.map((pining) => Notes.findOneByOrFail({ id: pining.noteId }))
+			.filter(
+				(note) =>
+					!note.localOnly &&
+					["public", "home"].includes(note.visibility) &&
+					!note.deletedAt,
+			),
 	);
 
 	const renderedNotes = await Promise.all(

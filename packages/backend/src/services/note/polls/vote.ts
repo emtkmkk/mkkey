@@ -64,7 +64,7 @@ export default async function (
 		choice: choice,
 		userId: user.id,
 	});
-	
+
 	// 投票時、ユーザの最終更新時刻を更新
 	Users.update(user.id, {
 		lastActiveDate: new Date(),

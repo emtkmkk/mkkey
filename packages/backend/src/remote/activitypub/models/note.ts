@@ -1,4 +1,4 @@
-import {IsNull} from "typeorm";
+import { IsNull } from "typeorm";
 import promiseLimit from "promise-limit";
 import * as mfm from "mfm-js";
 import config from "@/config/index.js";
@@ -112,7 +112,7 @@ export async function createNote(
 	value: string | IObject,
 	resolver?: Resolver,
 	silent = false,
-	additionalTo?: ILocalUser['id'],
+	additionalTo?: ILocalUser["id"],
 ): Promise<Note | null> {
 	if (resolver == null) resolver = new Resolver();
 
@@ -184,14 +184,24 @@ export async function createNote(
 	const ccUsers = [];
 
 	if (additionalTo) {
-		const additionalUser = await Users.findOneBy({ id: additionalTo, host: IsNull() });
-		if (additionalUser && !visibleUsers.some(x => x.id === additionalUser.id)) {
+		const additionalUser = await Users.findOneBy({
+			id: additionalTo,
+			host: IsNull(),
+		});
+		if (
+			additionalUser &&
+			!visibleUsers.some((x) => x.id === additionalUser.id)
+		) {
 			ccUsers.push(additionalUser);
 		}
 	}
 
 	// If Audience (to, cc) was not specified
-	if (visibility === "specified" && visibleUsers.length === 0 && ccUsers.length === 0) {
+	if (
+		visibility === "specified" &&
+		visibleUsers.length === 0 &&
+		ccUsers.length === 0
+	) {
 		if (typeof value === "string") {
 			// If the input is a string, GET occurs in resolver
 			// Public if you can GET anonymously from here
@@ -213,48 +223,48 @@ export async function createNote(
 	note.attachment = Array.isArray(note.attachment)
 		? note.attachment
 		: note.attachment
-			? [note.attachment]
-			: [];
+		? [note.attachment]
+		: [];
 	const files = note.attachment.map(
 		(attach) => (attach.sensitive = note.sensitive),
 	)
 		? (
-			await Promise.all(
-				note.attachment.map(
-					(x) => limit(() => resolveImage(actor, x)) as Promise<DriveFile>,
-				),
-			)
-		).filter((image) => image != null)
+				await Promise.all(
+					note.attachment.map(
+						(x) => limit(() => resolveImage(actor, x)) as Promise<DriveFile>,
+					),
+				)
+		  ).filter((image) => image != null)
 		: [];
 
 	// Reply
 	const reply: Note | null = note.inReplyTo
 		? await resolveNote(note.inReplyTo, resolver)
-			.then((x) => {
-				if (x == null) {
-					logger.warn("Specified inReplyTo, but nout found");
-					throw new Error("inReplyTo not found");
-				} else {
-					return x;
-				}
-			})
-			.catch(async (e) => {
-				// トークだったらinReplyToのエラーは無視
-				const uri = getApId(note.inReplyTo);
-				if (uri.startsWith(`${config.url}/`)) {
-					const id = uri.split("/").pop();
-					const talk = await MessagingMessages.findOneBy({ id });
-					if (talk) {
-						isTalk = true;
-						return null;
+				.then((x) => {
+					if (x == null) {
+						logger.warn("Specified inReplyTo, but nout found");
+						throw new Error("inReplyTo not found");
+					} else {
+						return x;
 					}
-				}
+				})
+				.catch(async (e) => {
+					// トークだったらinReplyToのエラーは無視
+					const uri = getApId(note.inReplyTo);
+					if (uri.startsWith(`${config.url}/`)) {
+						const id = uri.split("/").pop();
+						const talk = await MessagingMessages.findOneBy({ id });
+						if (talk) {
+							isTalk = true;
+							return null;
+						}
+					}
 
-				logger.warn(
-					`Error in inReplyTo ${note.inReplyTo} - ${e.statusCode || e}`,
-				);
-				throw e;
-			})
+					logger.warn(
+						`Error in inReplyTo ${note.inReplyTo} - ${e.statusCode || e}`,
+					);
+					throw e;
+				})
 		: null;
 
 	// Quote
@@ -265,12 +275,12 @@ export async function createNote(
 			uri: string,
 		): Promise<
 			| {
-				status: "ok";
-				res: Note | null;
-			}
+					status: "ok";
+					res: Note | null;
+			  }
 			| {
-				status: "permerror" | "temperror";
-			}
+					status: "permerror" | "temperror";
+			  }
 		> => {
 			if (typeof uri !== "string" || !uri.match(/^https?:/))
 				return { status: "permerror" };
@@ -329,11 +339,21 @@ export async function createNote(
 		text = htmlToMfm(note.content, note.tag);
 	}
 	if (quote && text) {
-		let reg = new RegExp(`(\n\n|^)[^\n]+${quote.uri ? quote.uri.replaceAll("/","\\/") : `${config.url}/notes/${quote.id}`.replaceAll("/","\\/")}$`,"i");
-		text = text.replace(reg,"");
+		let reg = new RegExp(
+			`(\n\n|^)[^\n]+${
+				quote.uri
+					? quote.uri.replaceAll("/", "\\/")
+					: `${config.url}/notes/${quote.id}`.replaceAll("/", "\\/")
+			}$`,
+			"i",
+		);
+		text = text.replace(reg, "");
 		if (quote.url) {
-			let reg = new RegExp(`(\n\n|^)[^\n]+${quote.url.replaceAll("/","\\/")}$`,"i");
-		  text = text.replace(reg,"");
+			let reg = new RegExp(
+				`(\n\n|^)[^\n]+${quote.url.replaceAll("/", "\\/")}$`,
+				"i",
+			);
+			text = text.replace(reg, "");
 		}
 	}
 
@@ -500,23 +520,23 @@ export async function extractEmojis(
 			//2 : fedibirdやmarunaiさんの実装と同じ方法でhost判定を行う
 			let detectHost = undefined;
 			try {
-				detectHost = tag.host || name.split('@')?.[1] || new URL(tag.id).host;
-			} catch (err) {
-			}
+				detectHost = tag.host || name.split("@")?.[1] || new URL(tag.id).host;
+			} catch (err) {}
 
 			//@以降はもう不要なので消す
-			name = name.split('@')?.[0] ?? name;
+			name = name.split("@")?.[0] ?? name;
 
 			//3桁以下のホスト名は使用しない
-			const _host = detectHost?.length >= 4 && host !== toPuny(detectHost)
-				? toPuny(detectHost)
-				: host;
+			const _host =
+				detectHost?.length >= 4 && host !== toPuny(detectHost)
+					? toPuny(detectHost)
+					: host;
 
-			if ( _host === config.host ) {
+			if (_host === config.host) {
 				return (await Emojis.findOneBy({
-						host: IsNull(),
-						name,
-					})) as Emoji;
+					host: IsNull(),
+					name,
+				})) as Emoji;
 			}
 
 			const exists = await Emojis.findOneBy({
@@ -524,35 +544,43 @@ export async function extractEmojis(
 				name,
 			});
 
-			let emojiInfo:Record<string, unknown> = {};
+			let emojiInfo: Record<string, unknown> = {};
 
 			let emojiInfoFlg = false;
 
 			let licenseData = {
-				license : tag.license,
-				author : tag.author,
-				copyPermission : tag.copyPermission,
-				usageInfo : tag.usageInfo,
-				description : tag.description,
-				isBasedOnUrl : tag.isBasedOnUrl,
-				text : "",
-			}
+				license: tag.license,
+				author: tag.author,
+				copyPermission: tag.copyPermission,
+				usageInfo: tag.usageInfo,
+				description: tag.description,
+				isBasedOnUrl: tag.isBasedOnUrl,
+				text: "",
+			};
 
 			//絵文字情報を取得できそうなら取得
 			if (host && host === _host) {
-
 				let beforeD7Date = new Date();
 				beforeD7Date.setDate(beforeD7Date.getDate() - 7);
-				if (!exists || ((exists.updatedAt || exists.createdAt) < beforeD7Date) || ((exists.updatedAt || exists.createdAt) < new Date("2024/01/19 18:35:00"))) {
+				if (
+					!exists ||
+					(exists.updatedAt || exists.createdAt) < beforeD7Date ||
+					(exists.updatedAt || exists.createdAt) <
+						new Date("2024/01/19 18:35:00")
+				) {
 					emojiInfoFlg = true;
 
 					const instance = await Instances.findOneBy({ host: host });
 
 					if (instance.maxReactionsPerAccount !== 128) {
 						const apiurl = `https://${host}/api/emoji?name=${name}`;
-	
+
 						try {
-							emojiInfo = (await getJson(apiurl, "application/json, */*", 5000)) as Record<string, unknown>;
+							emojiInfo = (await getJson(
+								apiurl,
+								"application/json, */*",
+								5000,
+							)) as Record<string, unknown>;
 						} catch (e) {
 							logger.warn(`fetch emojiInfo err : ${e}`);
 						}
@@ -560,33 +588,64 @@ export async function extractEmojis(
 						const apiurl = `https://${host}/api/v1/pleroma/emoji`;
 
 						try {
-							const emojiJson = (await getJson(apiurl, "application/json, */*", 5000))[name];
+							const emojiJson = (
+								await getJson(apiurl, "application/json, */*", 5000)
+							)[name];
 
-							const pack = emojiJson.tags.filter((x) => x.startsWith("pack:"))?.[0]?.replace("pack:","");
+							const pack = emojiJson.tags
+								.filter((x) => x.startsWith("pack:"))?.[0]
+								?.replace("pack:", "");
 							if (pack) {
 								const apiurl = `https://${host}/api/v1/pleroma/emoji/pack?name=${pack}`;
-								const packJson = (await getJson(apiurl, "application/json, */*", 5000));
-								licenseData.copyPermission = licenseData.copyPermission ? licenseData.copyPermission : packJson.pack["can-download"] && packJson.pack["share-flies"] !== false ? "allow" : !(packJson.pack["can-download"] !== false || packJson.pack["share-flies"] ) ? "deny" : "none";
+								const packJson = await getJson(
+									apiurl,
+									"application/json, */*",
+									5000,
+								);
+								licenseData.copyPermission = licenseData.copyPermission
+									? licenseData.copyPermission
+									: packJson.pack["can-download"] &&
+									  packJson.pack["share-flies"] !== false
+									? "allow"
+									: !(
+											packJson.pack["can-download"] !== false ||
+											packJson.pack["share-flies"]
+									  )
+									? "deny"
+									: "none";
 								licenseData.license = packJson.pack["license"];
 								licenseData.description = packJson.pack["description"];
-								licenseData.usageInfo = packJson.pack["homepage"] ? `pack:${pack}${(packJson["files_count"] ?? 0) > 1 ? `(${packJson["files_count"]})` : ""}\n${packJson.pack["homepage"]}${packJson.pack["fallback-src"] ? `\n(${packJson.pack["fallback-src"]})` : ""}` : "";
+								licenseData.usageInfo = packJson.pack["homepage"]
+									? `pack:${pack}${
+											(packJson["files_count"] ?? 0) > 1
+												? `(${packJson["files_count"]})`
+												: ""
+									  }\n${packJson.pack["homepage"]}${
+											packJson.pack["fallback-src"]
+												? `\n(${packJson.pack["fallback-src"]})`
+												: ""
+									  }`
+									: "";
 							}
 
 							emojiInfo = {
 								category: pack || emojiJson.tags?.[0],
-								aliases: emojiJson.tags?.length > 1 ? emojiJson.tags?.slice(1) : undefined,
+								aliases:
+									emojiJson.tags?.length > 1
+										? emojiJson.tags?.slice(1)
+										: undefined,
 							};
 
 							licenseData = {
-								license : tag.license || licenseData.license,
-								author : tag.author || licenseData.author,
-								copyPermission : tag.copyPermission || licenseData.copyPermission,
-								usageInfo : tag.usageInfo || licenseData.usageInfo,
-								description : tag.description || licenseData.description,
-								isBasedOnUrl : tag.isBasedOnUrl || licenseData.isBasedOnUrl,
-								text : licenseData.text,
+								license: tag.license || licenseData.license,
+								author: tag.author || licenseData.author,
+								copyPermission:
+									tag.copyPermission || licenseData.copyPermission,
+								usageInfo: tag.usageInfo || licenseData.usageInfo,
+								description: tag.description || licenseData.description,
+								isBasedOnUrl: tag.isBasedOnUrl || licenseData.isBasedOnUrl,
+								text: licenseData.text,
 							};
-
 						} catch (e) {
 							logger.warn(`fetch emojiInfo err : ${e}`);
 						}
@@ -601,7 +660,7 @@ export async function extractEmojis(
 								{
 									updatedAt: new Date(),
 								},
-							)
+							);
 						} catch (e) {
 							logger.warn(`fetch emojiInfo update err : ${e}`);
 						}
@@ -609,21 +668,43 @@ export async function extractEmojis(
 				}
 			}
 
-			const category = emojiInfo?.category ? `${emojiInfo?.category} <${_host}>` : null;
+			const category = emojiInfo?.category
+				? `${emojiInfo?.category} <${_host}>`
+				: null;
 
-			let aliases: Array<string> = tag.aliases || tag.keywords || emojiInfo?.aliases || [];
+			let aliases: Array<string> =
+				tag.aliases || tag.keywords || emojiInfo?.aliases || [];
 
-			const roleOnly = (emojiInfo?.roleIdsThatCanBeUsedThisEmojiAsReaction as Array<string>)?.length || (emojiInfo?.roleIdsThatCanNotBeUsedThisEmojiAsReaction as Array<string>)?.length
+			const roleOnly =
+				(emojiInfo?.roleIdsThatCanBeUsedThisEmojiAsReaction as Array<string>)
+					?.length ||
+				(emojiInfo?.roleIdsThatCanNotBeUsedThisEmojiAsReaction as Array<string>)
+					?.length;
 
 			if (roleOnly) aliases.push("ロール限定");
 
 			if (emojiInfo?.isSensitive) aliases.push("センシティブ");
 
-			const licenseText = JSON.stringify({...licenseData, emojiInfo: emojiInfo?.license}).toLowerCase();
+			const licenseText = JSON.stringify({
+				...licenseData,
+				emojiInfo: emojiInfo?.license,
+			}).toLowerCase();
 
-			const copydeny = emojiInfo?.localOnly || roleOnly || licenseText.includes("prohibited") || /(インポート|コピー|他サーバー使用：?)[\s　]*(NG|不可|禁止)/.test(category ?? "") || /(インポート|コピー|他サーバー使用：?)[\s　]*(NG|不可|禁止)/.test(licenseText);
+			const copydeny =
+				emojiInfo?.localOnly ||
+				roleOnly ||
+				licenseText.includes("prohibited") ||
+				/(インポート|コピー|他サーバー使用：?)[\s　]*(NG|不可|禁止)/.test(
+					category ?? "",
+				) ||
+				/(インポート|コピー|他サーバー使用：?)[\s　]*(NG|不可|禁止)/.test(
+					licenseText,
+				);
 
-			const copyallow = /(\W|^)(public\s*domain|pd|cc0|他サーバー使用：可)(\W|$)/.test(licenseText);
+			const copyallow =
+				/(\W|^)(public\s*domain|pd|cc0|他サーバー使用：可)(\W|$)/.test(
+					licenseText,
+				);
 
 			if (!licenseData.copyPermission && (copydeny || copyallow)) {
 				licenseData.copyPermission = copydeny ? "deny" : "allow";
@@ -631,26 +712,39 @@ export async function extractEmojis(
 			}
 
 			let _aliases: Array<string> = [];
-			
-			aliases = aliases.filter((x) => x.trim())
-			
+
+			aliases = aliases.filter((x) => x.trim());
+
 			aliases.forEach((x) => {
-				x.trim().split(/[\s　]+/).forEach((y) => {
-					_aliases.push(y);
-				})
+				x.trim()
+					.split(/[\s　]+/)
+					.forEach((y) => {
+						_aliases.push(y);
+					});
 			});
 
 			aliases = _aliases;
 
-			const license = [
-				(licenseData.license ? `ライセンス : ${licenseData.license}` : ""),
-				(licenseData.author ? `作者 : ${licenseData.author}` : ""),
-				((licenseData.copyPermission && licenseData.copyPermission !== "none") ? `コピー可否 : ${licenseData.copyPermission}` : ""),
-				(licenseData.usageInfo ? `使用情報 : ${licenseData.usageInfo}` : ""),
-				(licenseData.description ? `説明 : ${licenseData.description}` : ""),
-				(licenseData.isBasedOnUrl ? `コピー元 : ${licenseData.isBasedOnUrl}` : ""),
-				licenseData.text,
-			].filter(Boolean).map((x) => x.replaceAll(",","，")).join(", \n").trim() || emojiInfo?.license || null;
+			const license =
+				[
+					licenseData.license ? `ライセンス : ${licenseData.license}` : "",
+					licenseData.author ? `作者 : ${licenseData.author}` : "",
+					licenseData.copyPermission && licenseData.copyPermission !== "none"
+						? `コピー可否 : ${licenseData.copyPermission}`
+						: "",
+					licenseData.usageInfo ? `使用情報 : ${licenseData.usageInfo}` : "",
+					licenseData.description ? `説明 : ${licenseData.description}` : "",
+					licenseData.isBasedOnUrl
+						? `コピー元 : ${licenseData.isBasedOnUrl}`
+						: "",
+					licenseData.text,
+				]
+					.filter(Boolean)
+					.map((x) => x.replaceAll(",", "，"))
+					.join(", \n")
+					.trim() ||
+				emojiInfo?.license ||
+				null;
 
 			if (exists) {
 				if (
@@ -666,10 +760,21 @@ export async function extractEmojis(
 				) {
 					let beforeD15Date = new Date();
 					beforeD15Date.setDate(beforeD15Date.getDate() - 15);
-					if (exists.createdAt && exists.createdAt < beforeD15Date && exists.originalUrl && tag.icon!.url !== exists.originalUrl) {
+					if (
+						exists.createdAt &&
+						exists.createdAt < beforeD15Date &&
+						exists.originalUrl &&
+						tag.icon!.url !== exists.originalUrl
+					) {
 						try {
 							let lastUpdateDate = "00000000000000";
-							lastUpdateDate = exists.createdAt.getFullYear() + ('0' + (exists.createdAt.getMonth() + 1)).slice(-2) + ('0' + exists.createdAt.getDate()).slice(-2) + ('0' + exists.createdAt.getHours()).slice(-2) + ('0' + exists.createdAt.getMinutes()).slice(-2) + ('0' + exists.createdAt.getSeconds()).slice(-2);
+							lastUpdateDate =
+								exists.createdAt.getFullYear() +
+								("0" + (exists.createdAt.getMonth() + 1)).slice(-2) +
+								("0" + exists.createdAt.getDate()).slice(-2) +
+								("0" + exists.createdAt.getHours()).slice(-2) +
+								("0" + exists.createdAt.getMinutes()).slice(-2) +
+								("0" + exists.createdAt.getSeconds()).slice(-2);
 							await Emojis.insert({
 								...exists,
 								id: genId(),

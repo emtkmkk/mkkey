@@ -59,7 +59,11 @@ function greet() {
 	}
 
 	bootLogger.info("Welcome to Calckey!");
-	bootLogger.info(`Calckey v${meta.version}+${process.env.COMMIT_HASH}`, null, true);
+	bootLogger.info(
+		`Calckey v${meta.version}+${process.env.COMMIT_HASH}`,
+		null,
+		true,
+	);
 }
 
 /**
@@ -191,7 +195,9 @@ async function spawnWorkers(
 	workers.fill("web", 0, clusterLimits?.web);
 	workers.fill("queue", clusterLimits?.web);
 
-	bootLogger.info(`Starting ${clusterLimits?.web} web workers and ${clusterLimits?.queue} queue workers (total ${total})...`);
+	bootLogger.info(
+		`Starting ${clusterLimits?.web} web workers and ${clusterLimits?.queue} queue workers (total ${total})...`,
+	);
 	await Promise.all(workers.map((mode) => spawnWorker(mode)));
 	bootLogger.succ("All workers started");
 }

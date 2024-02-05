@@ -24,7 +24,8 @@ export default async function indexAllNotes(
 	const batch = 100;
 	while (running) {
 		logger.info(
-			`Querying for ${take} notes ${indexedCount}/${total ? total : "?"
+			`Querying for ${take} notes ${indexedCount}/${
+				total ? total : "?"
 			} at ${cursor}`,
 		);
 
@@ -56,7 +57,7 @@ export default async function indexAllNotes(
 			const count = await Notes.count();
 			total = count;
 			await job.update({ indexedCount, cursor, total });
-		} catch (e) { }
+		} catch (e) {}
 
 		for (let i = 0; i < notes.length; i += batch) {
 			const chunk = notes.slice(i, i + batch);

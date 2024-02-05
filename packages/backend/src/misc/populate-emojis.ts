@@ -67,23 +67,23 @@ export async function populateEmoji(
 			name,
 			host: host ?? IsNull(),
 		})) || null;
-	
+
 	/*const queryOrNullAllHost = async () =>
 		(await Emojis.findOneBy({
 			where: {name,},
 			order: {host: "DESC",},
 		})) || null;*/
 
-	const emoji = await cache.fetch(`${name} ${host}`, queryOrNull) //?? queryOrNullAllHost;
+	const emoji = await cache.fetch(`${name} ${host}`, queryOrNull); //?? queryOrNullAllHost;
 
 	if (emoji == null) return null;
 
 	const isLocal = emoji.host == null;
-	
+
 	// ノートにローカル絵文字情報を付けない
 	// TODO : 試験的
 	if (isLocal) return null;
-	
+
 	const emojiUrl = emoji.publicUrl || emoji.originalUrl; // || emoji.originalUrl してるのは後方互換性のため
 	const url = isLocal
 		? emojiUrl

@@ -49,7 +49,7 @@ export async function addNoteToAntenna(
 		if (isUserRelated(_note, new Set<string>(mutings.map((x) => x.muteeId)))) {
 			return;
 		}
-		
+
 		if (noteUser.id != null) {
 			_note.user = await Users.findOneByOrFail({ id: noteUser.id });
 		}
@@ -62,9 +62,9 @@ export async function addNoteToAntenna(
 			});
 			if (unread) {
 				publishMainStream(antenna.userId, "unreadAntenna", antenna);
-				
+
 				const __note = note.renoteId && !note.text ? _note.renote : note;
-				
+
 				// 通知を作成
 				createNotification(antenna.userId, "unreadAntenna", {
 					notifierId: noteUser.id,
@@ -72,24 +72,30 @@ export async function addNoteToAntenna(
 					noteId: __note.id,
 					reaction: antenna.name,
 				});
-				
+
 				const webhooks = await getActiveWebhooks().then((webhooks) =>
-				webhooks.filter((x) => x.userId === antenna.userId && x.on.includes("antenna") && !x.on.includes(`exclude-${x.id}`)),
+					webhooks.filter(
+						(x) =>
+							x.userId === antenna.userId &&
+							x.on.includes("antenna") &&
+							!x.on.includes(`exclude-${x.id}`),
+					),
 				);
 
 				for (const webhook of webhooks) {
-					const antennaUser = await Users.findOneByOrFail({ id: antenna.userId });
+					const antennaUser = await Users.findOneByOrFail({
+						id: antenna.userId,
+					});
 					webhookDeliver(webhook, "antenna", {
-						note: await Notes.pack(__note , antennaUser),
+						note: await Notes.pack(__note, antennaUser),
 						antenna: {
 							id: antenna.id,
 							name: antenna.name,
 							noteUser: _note.user,
-						}
+						},
 					});
 				}
 			}
-			
 		}, 3000);
 	}
 }

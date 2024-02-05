@@ -157,7 +157,12 @@ webhookDeliverQueue
 		webhookLogger.warn(`stalled ${getJobInfo(job)} to=${job.data.to}`),
 	);
 
-export function deliver(user: ThinUser, content: unknown, to: string | null, isSharedInbox?: boolean) {
+export function deliver(
+	user: ThinUser,
+	content: unknown,
+	to: string | null,
+	isSharedInbox?: boolean,
+) {
 	if (content == null) return null;
 	if (to == null) return null;
 

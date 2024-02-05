@@ -582,31 +582,15 @@ export type Endpoints = {
 
 	// get-online-users-count
 	"get-online-users-count": { req: NoParams; res: { count: number } };
-	"get-online-users-count/detail": { 
-	req: NoParams; res: {
-            onlineCount: number;
-            activeCount: number;
-            offlineCount: number;
-            sleepCount: number;
-            o150s: number;
-            o5m: number;
-            o10m: number;
-            o30m: number;
-            o1h: number;
-            o2h: number;
-            o3h: number;
-            o6h: number;
-            o12h: number;
-            o24h: number;
-            o2d: number;
-            o3d: number;
-            o4d: number;
-            o7d: number;
-            o14d: number;
-            o30d: number;
-            omore: number;
-            };
-    };
+	"get-online-users-count/detail": {
+		req: NoParams;
+		res: {
+			onlineCount: number;
+			activeCount: number;
+			offlineCount: number;
+			sleepCount: number;
+		};
+	};
 
 	// hashtags
 	"hashtags/list": { req: TODO; res: TODO };

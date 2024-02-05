@@ -1,4 +1,4 @@
-import { IsNull,MoreThan } from "typeorm";
+import { IsNull, MoreThan } from "typeorm";
 import { USER_HALFONLINE_THRESHOLD } from "@/const.js";
 import { Users } from "@/models/index.js";
 import define from "../define.js";

@@ -14,7 +14,7 @@ const dictionary = {
 		"image/x-icon",
 		"image/bmp",
 	],
-    "sharp-animation-convertible-image": [
+	"sharp-animation-convertible-image": [
 		"image/jpeg",
 		"image/png",
 		"image/gif",
@@ -22,7 +22,7 @@ const dictionary = {
 		"image/avif",
 		"image/svg+xml",
 		"image/x-icon",
-		"image/bmp"
+		"image/bmp",
 	],
 };
 

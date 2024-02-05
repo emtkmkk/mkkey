@@ -29,17 +29,20 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const meta = await fetchMeta();
 	const motd = await Promise.all(meta.customMOTD.map((x) => x));
-	
+
 	const now = new Date();
-	
+
 	//季節メッセージ
 	if (now.getMonth() === 0) {
 		motd.push("冬ですね");
 		if (now.getDate() == 1) {
-			return [`HAPPY NEW YEAR ${now.getFullYear()} 🎉`,"あけましておめでとうございます！"];
+			return [
+				`HAPPY NEW YEAR ${now.getFullYear()} 🎉`,
+				"あけましておめでとうございます！",
+			];
 		} else if (now.getDate() <= 3) {
 			motd.push(`HAPPY NEW YEAR ${now.getFullYear()} 🎉`);
-			motd.push("あけましておめでとうございます！")
+			motd.push("あけましておめでとうございます！");
 		}
 	} else if (now.getMonth() == 1) {
 		motd.push("冬終盤ですね");
@@ -103,14 +106,16 @@ export default define(meta, paramDef, async (ps, user) => {
 			motd.push("大体このへんで昼と夜の長さが同じぐらいになるらしい");
 		}
 	} else if (now.getMonth() == 9) {
-			motd.push("秋ですね");
+		motd.push("秋ですね");
 		if (now.getDate() == 31) {
 			motd.push("Halloweeeeeeen");
 		}
 	} else if (now.getMonth() == 10) {
 		motd.push("冬がやってきますね");
 		if (now.getDate() == 26) {
-			return [`今日は${meta.name} ${now.getFullYear() - 2022} 周年の日です！🎉`];
+			return [
+				`今日は${meta.name} ${now.getFullYear() - 2022} 周年の日です！🎉`,
+			];
 		}
 	} else if (now.getMonth() == 11) {
 		motd.push("冬が始まってきますね");
@@ -129,38 +134,45 @@ export default define(meta, paramDef, async (ps, user) => {
 			motd.push("年越しそば、食べましたか？");
 		}
 	}
-	
+
 	if (user) {
-		const eDay = Math.ceil((now.valueOf() - new Date(user.createdAt).valueOf()) / (1000 * 60 * 60 * 24));
+		const eDay = Math.ceil(
+			(now.valueOf() - new Date(user.createdAt).valueOf()) /
+				(1000 * 60 * 60 * 24),
+		);
 		const avePost = Math.round((user.notesCount / eDay) * 10) / 10;
 		const uName = user.name || user.username;
-		
-		if (new Date(user.birthday).getMonth() === now.getMonth() && new Date(user.birthday).getDate() === now.getDate()) {
+
+		if (
+			new Date(user.birthday).getMonth() === now.getMonth() &&
+			new Date(user.birthday).getDate() === now.getDate()
+		) {
 			return ["誕生日おめでとうございます！🎉"];
 		}
-		
+
 		if (now.getHours() >= 5 && now.getHours() <= 10) {
-			motd.push(`おはようございます、${uName}さん`)
+			motd.push(`おはようございます、${uName}さん`);
 		} else if (now.getHours() >= 11 && now.getHours() <= 15) {
-			motd.push(`こんにちは、${uName}さん`)
+			motd.push(`こんにちは、${uName}さん`);
 		} else if (now.getHours() >= 16 && now.getHours() <= 18) {
-			if (now.getDay() >= 1 && now.getDay() <= 5){
-				motd.push(`お疲れ様です、${uName}さん`)
+			if (now.getDay() >= 1 && now.getDay() <= 5) {
+				motd.push(`お疲れ様です、${uName}さん`);
 			} else {
-				motd.push(`こんにちは、${uName}さん`)
+				motd.push(`こんにちは、${uName}さん`);
 			}
 		} else {
-			motd.push(`こんばんは、${uName}さん`)
+			motd.push(`こんばんは、${uName}さん`);
 		}
-		
-		motd.push(`アカウントを作成してから ${eDay} 日目です`)
-		motd.push(`あなたの現在の投稿数は ${user.notesCount} です`)
-		if (eDay >= 7 && avePost >= 2) motd.push(`あなたの一日平均投稿数は ${avePost} です`)
-		
-		if (user.isCat && user.speakAsCat) motd.push("にゃー")
-		if (user.isCat && user.speakAsCat) motd.push("にゃー！")
-		if (user.isCat && user.speakAsCat) motd.push("にゃー……")
+
+		motd.push(`アカウントを作成してから ${eDay} 日目です`);
+		motd.push(`あなたの現在の投稿数は ${user.notesCount} です`);
+		if (eDay >= 7 && avePost >= 2)
+			motd.push(`あなたの一日平均投稿数は ${avePost} です`);
+
+		if (user.isCat && user.speakAsCat) motd.push("にゃー");
+		if (user.isCat && user.speakAsCat) motd.push("にゃー！");
+		if (user.isCat && user.speakAsCat) motd.push("にゃー……");
 	}
-	
+
 	return motd;
 });

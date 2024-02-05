@@ -5,8 +5,8 @@ import type { User } from "@/models/entities/user.js";
 import { Notes, DriveFiles, UserProfiles, Users } from "@/models/index.js";
 
 export default async function (user: User) {
-	const username = user.name.replace(/ ?:.*?:/, '') || user.username;
-	
+	const username = user.name.replace(/ ?:.*?:/, "") || user.username;
+
 	const author = {
 		link: `${config.url}/@${user.username}`,
 		name: username,
@@ -30,9 +30,7 @@ export default async function (user: User) {
 		title: `${author.name} (@${user.username}@${config.host})`,
 		updated: notes[0].createdAt,
 		generator: "Calckey",
-		description: `${user.notesCount} 投稿, ${
-			user.followingCount
-		} フォロー, ${
+		description: `${user.notesCount} 投稿, ${user.followingCount} フォロー, ${
 			user.followersCount
 		} フォロワー${profile.description ? ` · ${profile.description}` : ""}`,
 		link: author.link,

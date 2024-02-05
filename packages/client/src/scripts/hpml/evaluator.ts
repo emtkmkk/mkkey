@@ -117,7 +117,9 @@ export class Hpml {
 	public callAiScript(fn: string) {
 		try {
 			if (this.aiscript) this.aiscript.execFn(this.aiscript.scope.get(fn), []);
-		} catch (err) {console.error(err);}
+		} catch (err) {
+			console.error(err);
+		}
 	}
 
 	@autobind

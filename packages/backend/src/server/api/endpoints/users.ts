@@ -120,8 +120,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				.orderBy("user.updatedAt", "ASC");
 			break;
 		case "+notesCount":
-			query
-				.orderBy("user.notesCount","DESC");
+			query.orderBy("user.notesCount", "DESC");
 			break;
 		default:
 			query.orderBy("user.id", "ASC");

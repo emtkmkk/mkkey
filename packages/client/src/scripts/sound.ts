@@ -1,5 +1,5 @@
 import { ColdDeviceStorage } from "@/store";
-import { defaultStore } from '@/store.js';
+import { defaultStore } from "@/store.js";
 
 const ctx = new AudioContext();
 const cache = new Map<string, AudioBuffer>();
@@ -47,16 +47,18 @@ export function play(type: string) {
 }
 
 export async function playFile(file: string, volume: number) {
-	if (!file.toLowerCase().includes("none")){
+	if (!file.toLowerCase().includes("none")) {
 		const buffer = await loadAudio(file);
 		createSourceNode(buffer, volume)?.start();
 	}
 }
 
-export function createSourceNode(buffer: AudioBuffer | undefined, volume: number) {
+export function createSourceNode(
+	buffer: AudioBuffer | undefined,
+	volume: number,
+) {
 	const masterVolume = ColdDeviceStorage.get("sound_masterVolume");
-	if (!buffer || isMute() || masterVolume === 0 || volume === 0)
-		return null;
+	if (!buffer || isMute() || masterVolume === 0 || volume === 0) return null;
 
 	const gainNode = ctx.createGain();
 	gainNode.gain.value = masterVolume * volume;
@@ -75,7 +77,10 @@ export function isMute(): boolean {
 	}
 
 	// noinspection RedundantIfStatementJS
-	if (defaultStore.state.useSoundOnlyWhenActive && document.visibilityState === 'hidden') {
+	if (
+		defaultStore.state.useSoundOnlyWhenActive &&
+		document.visibilityState === "hidden"
+	) {
 		// ブラウザがアクティブな時のみサウンドを出力する
 		return true;
 	}

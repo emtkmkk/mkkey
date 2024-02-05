@@ -3,66 +3,85 @@ import { host } from "@/config";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
-import MkRippleEffect from '@/components/MkRipple.vue';
+import MkRippleEffect from "@/components/MkRipple.vue";
 import { instance } from "@/instance";
 import { $i } from "@/account";
-import MkCustomEmojiDetailedDialog from '@/components/MkCustomEmojiDetailedDialog.vue';
+import MkCustomEmojiDetailedDialog from "@/components/MkCustomEmojiDetailedDialog.vue";
 
-const createReaction = ({ noteId, reaction }: { noteId: string, reaction: string }): Promise<null> => {
-	return os.api('notes/reactions/create', { noteId, reaction });
+const createReaction = ({
+	noteId,
+	reaction,
+}: { noteId: string; reaction: string }): Promise<null> => {
+	return os.api("notes/reactions/create", { noteId, reaction });
 };
 
-const deleteReaction = ({ noteId, reaction }: { noteId: string, reaction: string }): Promise<null> => {
-	return os.api('notes/reactions/delete', { noteId, reaction });
+const deleteReaction = ({
+	noteId,
+	reaction,
+}: { noteId: string; reaction: string }): Promise<null> => {
+	return os.api("notes/reactions/delete", { noteId, reaction });
 };
 
 const rippleEffect = (el: HTMLElement | null | undefined): void => {
 	if (!el) return;
 	const rect = el.getBoundingClientRect();
-	const x = rect.left + (el.offsetWidth / 2);
-	const y = rect.top + (el.offsetHeight / 2);
-	os.popup(MkRippleEffect, { x, y }, {}, 'end');
+	const x = rect.left + el.offsetWidth / 2;
+	const y = rect.top + el.offsetHeight / 2;
+	os.popup(MkRippleEffect, { x, y }, {}, "end");
 };
 
-export async function openReactionMenu_(reaction, note, canToggle, multi, reactButton) {
+export async function openReactionMenu_(
+	reaction,
+	note,
+	canToggle,
+	multi,
+	reactButton,
+) {
 	const emojiName = reaction.split("@")?.[0]?.replaceAll(":", "");
 	let emojiHost = reaction.split("@")?.[1]?.replaceAll(":", "");
 	const isCustom = reaction.startsWith(":");
 	const menu: any[] = [];
 
 	if (emojiName) {
-		menu.push(
-			{
-				text: emojiName,
-				type: "label",
-			}
-		);
+		menu.push({
+			text: emojiName,
+			type: "label",
+		});
 	}
 	if (emojiHost && host !== emojiHost && emojiHost !== ".") {
-		menu.push(
-			{
-				text: `@${emojiHost}`,
-				type: "label",
-			}
-		);
+		menu.push({
+			text: `@${emojiHost}`,
+			type: "label",
+		});
 	} else {
 		emojiHost = undefined;
 	}
 
 	if (note) {
-
 		const noteId = note.id;
 
 		const reacted = multi
-		? note.myReactions?.some((x) => x?.replace(/@[\w:\.\-]+:$/, "@") === (isCustom ? `:${emojiName}@${emojiHost || "."}:` : reaction)?.replace(/@[\w:\.\-]+:$/, "@"))
-		: note.myReaction && note.myReaction?.replace(/@[\w:\.\-]+:$/, "@") === (isCustom ? `:${emojiName}@${emojiHost || "."}:` : reaction)?.replace(/@[\w:\.\-]+:$/, "@");
+			? note.myReactions?.some(
+					(x) =>
+						x?.replace(/@[\w:\.\-]+:$/, "@") ===
+						(isCustom
+							? `:${emojiName}@${emojiHost || "."}:`
+							: reaction
+						)?.replace(/@[\w:\.\-]+:$/, "@"),
+			  )
+			: note.myReaction &&
+			  note.myReaction?.replace(/@[\w:\.\-]+:$/, "@") ===
+					(isCustom ? `:${emojiName}@${emojiHost || "."}:` : reaction)?.replace(
+						/@[\w:\.\-]+:$/,
+						"@",
+					);
 
 		if (canToggle) {
 			if (multi) {
 				if (reacted) {
 					menu.push({
 						text: i18n.ts.doUnreact,
-						icon: 'ph-minus ph-bold ph-lg',
+						icon: "ph-minus ph-bold ph-lg",
 						action: (): void => {
 							rippleEffect(reactButton);
 
@@ -72,19 +91,19 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 				} else {
 					menu.push({
 						text: i18n.ts.doReact,
-						icon: 'ph-plus ph-bold ph-lg',
+						icon: "ph-plus ph-bold ph-lg",
 						action: (): void => {
 							rippleEffect(reactButton);
 
 							createReaction({ noteId, reaction });
-						}
+						},
 					});
 				}
 			} else {
 				if (note.myReaction && reacted) {
 					menu.push({
 						text: i18n.ts.doUnreact,
-						icon: 'ph-minus ph-bold ph-lg',
+						icon: "ph-minus ph-bold ph-lg",
 						action: (): void => {
 							rippleEffect(reactButton);
 
@@ -94,28 +113,27 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 				} else if (!note.myReaction) {
 					menu.push({
 						text: i18n.ts.doReact,
-						icon: 'ph-plus ph-bold ph-lg',
+						icon: "ph-plus ph-bold ph-lg",
 						action: (): void => {
 							rippleEffect(reactButton);
 
 							createReaction({ noteId, reaction });
-						}
+						},
 					});
 				}
 			}
 		}
-
 	}
 	menu.push({
 		text: i18n.ts.copy,
-		icon: 'ph-copy ph-bold ph-lg',
+		icon: "ph-copy ph-bold ph-lg",
 		action: (): void => {
 			copyToClipboard(reaction);
 			os.success();
 		},
 	});
 
-	if ($i != null && ($i.isAdmin || $i.isModerator) && emojiName && emojiHost){
+	if ($i != null && ($i.isAdmin || $i.isModerator) && emojiName && emojiHost) {
 		const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
 		if (!instanceEmoji?.includes(emojiName)) {
 			menu.push({
@@ -132,8 +150,17 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 	}
 
 	if ($i != null && !defaultStore.state.hiddenReactionDeckAndRecent) {
-		if (((defaultStore.state.reactions2?.length ?? 0) + (defaultStore.state.reactions3?.length ?? 0) + (defaultStore.state.reactions4?.length ?? 0) + (defaultStore.state.reactions5?.length ?? 0)) === 0) {
-			if (!defaultStore.state.reactions.includes(reaction) && !defaultStore.state.reactions.includes(`:${emojiName}:`)) {
+		if (
+			(defaultStore.state.reactions2?.length ?? 0) +
+				(defaultStore.state.reactions3?.length ?? 0) +
+				(defaultStore.state.reactions4?.length ?? 0) +
+				(defaultStore.state.reactions5?.length ?? 0) ===
+			0
+		) {
+			if (
+				!defaultStore.state.reactions.includes(reaction) &&
+				!defaultStore.state.reactions.includes(`:${emojiName}:`)
+			) {
 				menu.push({
 					text: i18n.ts.plusPinnedEmoji,
 					icon: "ph-list-plus ph-bold ph-lg",
@@ -157,9 +184,14 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 			}
 		} else {
 			const childMenu: any[] = [];
-			if (!defaultStore.state.reactions.includes(reaction) && !defaultStore.state.reactions.includes(`:${emojiName}:`)) {
+			if (
+				!defaultStore.state.reactions.includes(reaction) &&
+				!defaultStore.state.reactions.includes(`:${emojiName}:`)
+			) {
 				childMenu.push({
-					text: `${defaultStore.state.reactionsFolderName || "1ページ目"}に追加`,
+					text: `${
+						defaultStore.state.reactionsFolderName || "1ページ目"
+					}に追加`,
 					action: () => {
 						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
 						if (emojiHost && instanceEmoji?.includes(emojiName)) {
@@ -178,9 +210,14 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 					},
 				});
 			}
-			if (!defaultStore.state.reactions2.includes(reaction) && !defaultStore.state.reactions2.includes(`:${emojiName}:`)) {
+			if (
+				!defaultStore.state.reactions2.includes(reaction) &&
+				!defaultStore.state.reactions2.includes(`:${emojiName}:`)
+			) {
 				childMenu.push({
-					text: `${defaultStore.state.reactionsFolderName2 || "2ページ目"}に追加`,
+					text: `${
+						defaultStore.state.reactionsFolderName2 || "2ページ目"
+					}に追加`,
 					action: () => {
 						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
 						if (emojiHost && instanceEmoji?.includes(emojiName)) {
@@ -199,9 +236,14 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 					},
 				});
 			}
-			if (!defaultStore.state.reactions3.includes(reaction) && !defaultStore.state.reactions3.includes(`:${emojiName}:`)) {
+			if (
+				!defaultStore.state.reactions3.includes(reaction) &&
+				!defaultStore.state.reactions3.includes(`:${emojiName}:`)
+			) {
 				childMenu.push({
-					text: `${defaultStore.state.reactionsFolderName3 || "3ページ目"}に追加`,
+					text: `${
+						defaultStore.state.reactionsFolderName3 || "3ページ目"
+					}に追加`,
 					action: () => {
 						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
 						if (emojiHost && instanceEmoji?.includes(emojiName)) {
@@ -220,9 +262,14 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 					},
 				});
 			}
-			if (!defaultStore.state.reactions4.includes(reaction) && !defaultStore.state.reactions4.includes(`:${emojiName}:`)) {
+			if (
+				!defaultStore.state.reactions4.includes(reaction) &&
+				!defaultStore.state.reactions4.includes(`:${emojiName}:`)
+			) {
 				childMenu.push({
-					text: `${defaultStore.state.reactionsFolderName4 || "4ページ目"}に追加`,
+					text: `${
+						defaultStore.state.reactionsFolderName4 || "4ページ目"
+					}に追加`,
 					action: () => {
 						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
 						if (emojiHost && instanceEmoji?.includes(emojiName)) {
@@ -241,9 +288,14 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 					},
 				});
 			}
-			if (!defaultStore.state.reactions5.includes(reaction) && !defaultStore.state.reactions5.includes(`:${emojiName}:`)) {
+			if (
+				!defaultStore.state.reactions5.includes(reaction) &&
+				!defaultStore.state.reactions5.includes(`:${emojiName}:`)
+			) {
 				childMenu.push({
-					text: `${defaultStore.state.reactionsFolderName5 || "5ページ目"}に追加`,
+					text: `${
+						defaultStore.state.reactionsFolderName5 || "5ページ目"
+					}に追加`,
 					action: () => {
 						const instanceEmoji = instance.emojis.map((x) => `${x.name}`);
 						if (emojiHost && instanceEmoji?.includes(emojiName)) {
@@ -271,29 +323,32 @@ export async function openReactionMenu_(reaction, note, canToggle, multi, reactB
 					children: childMenu,
 				});
 			}
-
 		}
 	}
 
-			
-			if (isCustom) {
-				menu.push({
-					text: i18n.ts.info,
-					icon: 'ph-info ph-bold ph-lg',
-					action: () => {
-						os.apiGet('emoji', {
-							name: emojiName,
-							...(emojiHost ? {host: emojiHost} : {}),
-						}).then ((res) => {
-							os.popup(MkCustomEmojiDetailedDialog, {
-								emoji: res
-							}, {
-								anchor: reactButton,
-							}, "closed");
-						})
-					},
+	if (isCustom) {
+		menu.push({
+			text: i18n.ts.info,
+			icon: "ph-info ph-bold ph-lg",
+			action: () => {
+				os.apiGet("emoji", {
+					name: emojiName,
+					...(emojiHost ? { host: emojiHost } : {}),
+				}).then((res) => {
+					os.popup(
+						MkCustomEmojiDetailedDialog,
+						{
+							emoji: res,
+						},
+						{
+							anchor: reactButton,
+						},
+						"closed",
+					);
 				});
-			}
+			},
+		});
+	}
 
 	os.popupMenu(menu, reactButton);
 }

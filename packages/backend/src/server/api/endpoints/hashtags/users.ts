@@ -49,9 +49,10 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	if (!safeForSql(normalizeForSearch(ps.tag))) throw new Error('Injection');
-	const query = Users.createQueryBuilder("user")
-	.where(':tag <@ user.tags', { tag: [normalizeForSearch(ps.tag)] })
+	if (!safeForSql(normalizeForSearch(ps.tag))) throw new Error("Injection");
+	const query = Users.createQueryBuilder("user").where(":tag <@ user.tags", {
+		tag: [normalizeForSearch(ps.tag)],
+	});
 
 	const recent = new Date(Date.now() - 1000 * 60 * 60 * 24 * 5);
 

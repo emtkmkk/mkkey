@@ -37,9 +37,12 @@ export default class extends Channel {
 		// フォローしているチャンネルの投稿 の場合だけ
 		if (
 			!(
-				(this.user!.id === note.userId) ||
-				(this.following.has(note.userId)) ||
-				((note.user.host == null  || meta.recommendedInstances.includes(`${note.user.username}@${note.user.host}`)) &&
+				this.user!.id === note.userId ||
+				this.following.has(note.userId) ||
+				((note.user.host == null ||
+					meta.recommendedInstances.includes(
+						`${note.user.username}@${note.user.host}`,
+					)) &&
 					note.visibility === "public") ||
 				(note.channelId != null && this.followingChannels.has(note.channelId))
 			)
@@ -59,9 +62,14 @@ export default class extends Channel {
 		if (note.reply && !this.user!.showTimelineReplies) {
 			const reply = note.reply;
 			// 「フォロー中同士の会話」でもなければ、「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信（ただし一つ上の投稿へ遡る）」でもない場合
-			let replyFollowing = reply.userId === note.userId || this.following.has(reply.userId) && this.following.has(note.userId);
+			let replyFollowing =
+				reply.userId === note.userId ||
+				(this.following.has(reply.userId) && this.following.has(note.userId));
 			if (reply.reply && reply.userId === note.userId) {
-				replyFollowing = reply.reply.userId === note.userId || this.following.has(reply.reply.userId) && this.following.has(note.userId);
+				replyFollowing =
+					reply.reply.userId === note.userId ||
+					(this.following.has(reply.reply.userId) &&
+						this.following.has(note.userId));
 			}
 			if (
 				!replyFollowing &&
@@ -71,7 +79,13 @@ export default class extends Channel {
 				return;
 		}
 
-		if (note.renote && !this.user!.showSelfRenoteToHome && !note.text && this.user!.id !== note.userId && note.renote.userId === note.userId)
+		if (
+			note.renote &&
+			!this.user!.showSelfRenoteToHome &&
+			!note.text &&
+			this.user!.id !== note.userId &&
+			note.renote.userId === note.userId
+		)
 			return;
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.muting)) return;

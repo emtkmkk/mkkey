@@ -64,7 +64,9 @@ export async function getResponse(args: {
 	setTimeout(() => {
 		controller.abort();
 	}, timeout * 6);
-	const bearcaps = args.url.startsWith('bear:?') ? parseBearcaps(args.url) : undefined;
+	const bearcaps = args.url.startsWith("bear:?")
+		? parseBearcaps(args.url)
+		: undefined;
 
 	const res = await fetch(bearcaps?.url ?? args.url, {
 		method: args.method,
@@ -164,13 +166,15 @@ export function getAgentByUrl(url: URL, bypassProxy = false) {
 // Bearcaps https://docs.joinmastodon.org/spec/bearcaps/
 // bear:?t=<token>&u=https://example.com/foo'
 // -> GET https://example.com/foo Authorization: Bearer <token>
-function parseBearcaps(url: string): { url: string, token: string | undefined } | undefined {
-	const params = new URLSearchParams(url.split('?')[1]);
-	if (!params.has('u')) return undefined;
+function parseBearcaps(
+	url: string,
+): { url: string; token: string | undefined } | undefined {
+	const params = new URLSearchParams(url.split("?")[1]);
+	if (!params.has("u")) return undefined;
 
 	return {
-		url: params.get('u')!,
-		token: params.get('t') ?? undefined,
+		url: params.get("u")!,
+		token: params.get("t") ?? undefined,
 	};
 }
 

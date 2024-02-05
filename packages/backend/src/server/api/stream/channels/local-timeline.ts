@@ -30,21 +30,37 @@ export default class extends Channel {
 
 	private async onNote(note: Packed<"Note">) {
 		const meta = await fetchMeta();
-		if (note.user.host !== null && !meta.recommendedInstances.includes(`${note.user.username}@${note.user.host}`)) return;
-		if (!this.withBelowPublic && note.visibility !== 'public') return;
-		if ((note.visibility !== "public") && ((this.user!.id !== note.userId) && !this.following.has(note.userId))) return;
+		if (
+			note.user.host !== null &&
+			!meta.recommendedInstances.includes(
+				`${note.user.username}@${note.user.host}`,
+			)
+		)
+			return;
+		if (!this.withBelowPublic && note.visibility !== "public") return;
+		if (
+			note.visibility !== "public" &&
+			this.user!.id !== note.userId &&
+			!this.following.has(note.userId)
+		)
+			return;
 		if (note.replyId != null && note.reply?.user.host != null) return;
 
 		// 関係ない返信は除外
-		if (!this.user && note.reply){
- 			return
+		if (!this.user && note.reply) {
+			return;
 		}
 		if (note.reply && !this.user!.showTimelineReplies) {
 			const reply = note.reply;
 			// 「フォロー中同士の会話」でもなければ、「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信（ただし一つ上の投稿へ遡る）」でもない場合
-			let replyFollowing = reply.userId === note.userId || this.following.has(reply.userId) && this.following.has(note.userId);
+			let replyFollowing =
+				reply.userId === note.userId ||
+				(this.following.has(reply.userId) && this.following.has(note.userId));
 			if (reply.reply && reply.userId === note.userId) {
-				replyFollowing = reply.reply.userId === note.userId || this.following.has(reply.reply.userId) && this.following.has(note.userId);
+				replyFollowing =
+					reply.reply.userId === note.userId ||
+					(this.following.has(reply.reply.userId) &&
+						this.following.has(note.userId));
 			}
 			if (
 				!replyFollowing &&
@@ -61,8 +77,12 @@ export default class extends Channel {
 
 		if (note.renote && !note.text && isUserRelated(note, this.renoteMuting))
 			return;
-		if (note.renote && !note.text && (!this.user || !this.user!.localShowRenote))
-		    return;
+		if (
+			note.renote &&
+			!note.text &&
+			(!this.user || !this.user!.localShowRenote)
+		)
+			return;
 
 		// 流れてきたNoteがミュートすべきNoteだったら無視する
 		// TODO: 将来的には、単にMutedNoteテーブルにレコードがあるかどうかで判定したい(以下の理由により難しそうではある)

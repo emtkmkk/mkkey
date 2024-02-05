@@ -5,15 +5,28 @@ import * as os from "@/os";
 import XTutorial from "../components/MkTutorialDialog.vue";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
-import { MenuButton, MenuItem, MenuLabel, MenuLink, MenuParent } from "@/types/menu";
+import {
+	MenuButton,
+	MenuItem,
+	MenuLabel,
+	MenuLink,
+	MenuParent,
+} from "@/types/menu";
 
 export function openHelpMenu_(ev: MouseEvent) {
 	// 招待可能条件
 	// 登録から(7日-((投稿数-20)*1.5時間))経過
 	// ただし1日未満にはならない
 	// 投稿数が20以上
-	const eTime = $i ? (Date.now() - new Date($i.createdAt).valueOf()) : undefined;
-	const inviteBorder = eTime ? eTime > 7 * 24 * 60 * 60 * 1000 ? 7 * 24 * 60 * 60 * 1000 : Math.max(7 * 24 * 60 * 60 * 1000 - ($i.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000) : undefined;
+	const eTime = $i ? Date.now() - new Date($i.createdAt).valueOf() : undefined;
+	const inviteBorder = eTime
+		? eTime > 7 * 24 * 60 * 60 * 1000
+			? 7 * 24 * 60 * 60 * 1000
+			: Math.max(
+					7 * 24 * 60 * 60 * 1000 - $i.notesCount * 90 * 60 * 1000,
+					24 * 60 * 60 * 1000,
+			  )
+		: undefined;
 	const canInvite = $i ? eTime > inviteBorder && $i.notesCount >= 20 : false;
 
 	os.popupMenu(
@@ -34,30 +47,35 @@ export function openHelpMenu_(ev: MouseEvent) {
 				icon: "ph-lightbulb ph-bold ph-lg",
 				to: "/about-calckey",
 			} as MenuLink,
-			$i && !$i.isSilenced && canInvite ? {
-				type: "button",
-				action: async () => {
-					os.api("admin/invite")
-						.then((x) => {
-							os.alert({
-								type: "info",
-								text: `${x.code}\n\n※有効期限 : 24時間\n期限内なら何回でも使用できます。`,
-							});
-						})
-						.catch((err) => {
-							os.alert({
-								type: "error",
-								text: err,
-							});
-						});
-				},
-				text: i18n.ts.showInviteCode,
-				icon: "ph-user-plus ph-bold ph-lg",
-			} as MenuButton 
-			: $i && !$i.isSilenced && $i.notesCount >= 20 ? {
-				type: "label",
-				text: `招待可能まで後${Math.ceil((inviteBorder - eTime) / (6 * 60 * 1000)) / 10}時間`,
-			} as MenuLabel : undefined,
+			$i && !$i.isSilenced && canInvite
+				? ({
+						type: "button",
+						action: async () => {
+							os.api("admin/invite")
+								.then((x) => {
+									os.alert({
+										type: "info",
+										text: `${x.code}\n\n※有効期限 : 24時間\n期限内なら何回でも使用できます。`,
+									});
+								})
+								.catch((err) => {
+									os.alert({
+										type: "error",
+										text: err,
+									});
+								});
+						},
+						text: i18n.ts.showInviteCode,
+						icon: "ph-user-plus ph-bold ph-lg",
+				  } as MenuButton)
+				: $i && !$i.isSilenced && $i.notesCount >= 20
+				? ({
+						type: "label",
+						text: `招待可能まで後${
+							Math.ceil((inviteBorder - eTime) / (6 * 60 * 1000)) / 10
+						}時間`,
+				  } as MenuLabel)
+				: undefined,
 			{
 				type: "button",
 				text: i18n.ts._apps.apps,
@@ -107,7 +125,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 					} as MenuLink,
 				],
 			} as MenuParent,
-		].filter(x => x !== undefined),
+		].filter((x) => x !== undefined),
 		ev.currentTarget ?? ev.target,
 	);
 }

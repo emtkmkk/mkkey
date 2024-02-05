@@ -69,11 +69,14 @@ export default async (ctx: Router.RouterContext) => {
 		}
 
 		// Get followings
-		const followings = profile.ffVisibility !== "private" && profile.ffVisibility !== "followers" ? await Followings.find({
-			where: query,
-			take: limit + 1,
-			order: { id: -1 },
-		}): [];
+		const followings =
+			profile.ffVisibility !== "private" && profile.ffVisibility !== "followers"
+				? await Followings.find({
+						where: query,
+						take: limit + 1,
+						order: { id: -1 },
+				  })
+				: [];
 
 		// Whether there is a "next page" or not
 		const inStock = followings.length === limit + 1;

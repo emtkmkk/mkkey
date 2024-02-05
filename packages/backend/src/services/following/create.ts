@@ -233,20 +233,21 @@ export default async function (
 		userId: followee.id,
 	});
 
-	const followingRate = Number.isFinite(follower.followersCount) ? (follower.followingCount / follower.followersCount) : 0
+	const followingRate = Number.isFinite(follower.followersCount)
+		? follower.followingCount / follower.followersCount
+		: 0;
 	const needRequestFR =
 		follower.followingCount > 7500
 			? followingRate > 1.1
 			: follower.followingCount > 1000
-				? followingRate > 2
-					: follower.followingCount > 500
-					? followingRate > 3
-						: follower.followingCount > 300
-						? followingRate > 4
-							: follower.followingCount > 100
-								? followingRate > 5
-								: false;
-
+			? followingRate > 2
+			: follower.followingCount > 500
+			? followingRate > 3
+			: follower.followingCount > 300
+			? followingRate > 4
+			: follower.followingCount > 100
+			? followingRate > 5
+			: false;
 
 	// フォロー対象が鍵アカウントである or
 	// The follower is silenced, or
@@ -265,7 +266,8 @@ export default async function (
 		(Users.isLocalUser(follower) && Users.isRemoteUser(followee)) ||
 		(Users.isRemoteUser(follower) &&
 			Users.isLocalUser(followee) &&
-			((await shouldSilenceInstance(follower.host)) || (needRequestFR && !followee.isBot))) ||
+			((await shouldSilenceInstance(follower.host)) ||
+				(needRequestFR && !followee.isBot))) ||
 		followBlocking
 	) {
 		let autoAccept = false;
@@ -284,9 +286,12 @@ export default async function (
 			!autoAccept &&
 			Users.isLocalUser(followee) &&
 			!followBlocking &&
-			(followeeProfile.autoAcceptFollowed || !(followee.isLocked  ||
-				(followee.blockPostNotLocal && Users.isRemoteUser(follower)) ||
-				(followee.isRemoteLocked && Users.isRemoteUser(follower))))
+			(followeeProfile.autoAcceptFollowed ||
+				!(
+					followee.isLocked ||
+					(followee.blockPostNotLocal && Users.isRemoteUser(follower)) ||
+					(followee.isRemoteLocked && Users.isRemoteUser(follower))
+				))
 		) {
 			const followed = await Followings.findOneBy({
 				followerId: followee.id,

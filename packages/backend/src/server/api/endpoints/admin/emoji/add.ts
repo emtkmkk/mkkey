@@ -57,13 +57,22 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (file == null) throw new ApiError(meta.errors.noSuchFile);
 
-	let name = ps.name || file.name.split(".")?.[0]?.replaceAll(/[^A-Za-z0-9_]+/g,"").toLowerCase() || `_${rndstr("a-z0-9", 8)}_`;
+	let name =
+		ps.name ||
+		file.name
+			.split(".")?.[0]
+			?.replaceAll(/[^A-Za-z0-9_]+/g, "")
+			.toLowerCase() ||
+		`_${rndstr("a-z0-9", 8)}_`;
 	/*file.name.split(".")[0].match(/^[A-Za-z0-9_]+$/)
 		? file.name.split(".")[0]
 		: `_${rndstr("a-z0-9", 8)}_`;*/
-	
-	const emojiSearchName = await Emojis.findOneBy({ name: name , host: IsNull() });
-	
+
+	const emojiSearchName = await Emojis.findOneBy({
+		name: name,
+		host: IsNull(),
+	});
+
 	// 名前重複の場合
 	if (emojiSearchName) {
 		if (ps.name) {
@@ -73,20 +82,20 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	let license = ps.license;
-	if (ps.license?.includes("!")){
+	if (ps.license?.includes("!")) {
 		license = license
-		.replace(/^!m$/,"文字だけ")
-		.replace(/!ca(,|$)/,"コピー可否 : allow")
-		.replace(/!cd(,|$)/,"コピー可否 : deny")
-		.replace(/!cc(,|$)/,"コピー可否 : conditional")
-		.replace(/!l : ([^,]+)(,|$)/,"ライセンス : $1$2")
-		.replace(/!u : ([^,]+)(,|$)/,"使用情報 : $1$2")
-		.replace(/!a : ([^,]+)(,|$)/,"作者 : $1$2")
-		.replace(/!d : ([^,]+)(,|$)/,"説明 : $1$2")
-		.replace(/!b : ([^,]+)(,|$)/,"コピー元 : $1$2")
-		.replace(/!i : ([^,]+)(,|$)/,"コピー元 : $1$2")
-		.replace("!c0","CC0 1.0 Universal")
-		.replace("!cb","CC BY 4.0");
+			.replace(/^!m$/, "文字だけ")
+			.replace(/!ca(,|$)/, "コピー可否 : allow")
+			.replace(/!cd(,|$)/, "コピー可否 : deny")
+			.replace(/!cc(,|$)/, "コピー可否 : conditional")
+			.replace(/!l : ([^,]+)(,|$)/, "ライセンス : $1$2")
+			.replace(/!u : ([^,]+)(,|$)/, "使用情報 : $1$2")
+			.replace(/!a : ([^,]+)(,|$)/, "作者 : $1$2")
+			.replace(/!d : ([^,]+)(,|$)/, "説明 : $1$2")
+			.replace(/!b : ([^,]+)(,|$)/, "コピー元 : $1$2")
+			.replace(/!i : ([^,]+)(,|$)/, "コピー元 : $1$2")
+			.replace("!c0", "CC0 1.0 Universal")
+			.replace("!cb", "CC BY 4.0");
 	}
 
 	const emoji = await Emojis.insert({

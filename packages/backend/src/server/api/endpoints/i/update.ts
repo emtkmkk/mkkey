@@ -1,6 +1,10 @@
 import RE2 from "re2";
 import * as mfm from "mfm-js";
-import { publishMainStream, publishUserEvent, publishInternalEvent } from "@/services/stream.js";
+import {
+	publishMainStream,
+	publishUserEvent,
+	publishInternalEvent,
+} from "@/services/stream.js";
 import acceptAllFollowRequests from "@/services/following/requests/accept-all.js";
 import { publishToFollowers } from "@/services/i/update.js";
 import { extractCustomEmojisFromMfm } from "@/misc/extract-custom-emojis-from-mfm.js";
@@ -156,16 +160,28 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
 	if (ps.name != null) {
-		if (!_user.host && (!_user.isAdmin && ps.name.toLowerCase().includes("admin")))
+		if (
+			!_user.host &&
+			!_user.isAdmin &&
+			ps.name.toLowerCase().includes("admin")
+		)
 			throw new ApiError();
-		if (!_user.host && (!_user.isAdmin && !_user.isModerator && ps.name.toLowerCase().includes("moderator")))
+		if (
+			!_user.host &&
+			!_user.isAdmin && !_user.isModerator &&
+			ps.name.toLowerCase().includes("moderator")
+		)
 			throw new ApiError();
 		updates.name = ps.name;
 	}
 	if (ps.description != null) {
 		if (!_user.isAdmin && ps.description.toLowerCase().includes("admin"))
 			throw new ApiError();
-		if (!_user.isAdmin && !_user.isModerator && ps.description.toLowerCase().includes("moderator"))
+		if (
+			!_user.isAdmin &&
+			!_user.isModerator &&
+			ps.description.toLowerCase().includes("moderator")
+		)
 			throw new ApiError();
 		profileUpdates.description = ps.description;
 	}
@@ -222,7 +238,8 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	if (typeof ps.autoAcceptFollowed === "boolean")
 		profileUpdates.autoAcceptFollowed = ps.autoAcceptFollowed;
 	if (typeof ps.noCrawle === "boolean") profileUpdates.noCrawle = ps.noCrawle;
-	if (typeof ps.preventAiLearning === "boolean") profileUpdates.preventAiLearning = ps.preventAiLearning;
+	if (typeof ps.preventAiLearning === "boolean")
+		profileUpdates.preventAiLearning = ps.preventAiLearning;
 	if (typeof ps.isCat === "boolean") updates.isCat = ps.isCat;
 	if (typeof ps.speakAsCat === "boolean") updates.speakAsCat = ps.speakAsCat;
 	if (typeof ps.injectFeaturedNote === "boolean")
@@ -305,14 +322,23 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		profileUpdates.description === undefined
 			? profile.description
 			: profileUpdates.description;
-	const newLocation = profileUpdates.location === undefined ? profile.location : profileUpdates.location;
-	const newField = profileUpdates.fields === undefined ? profile.fields : profileUpdates.fields;
+	const newLocation =
+		profileUpdates.location === undefined
+			? profile.location
+			: profileUpdates.location;
+	const newField =
+		profileUpdates.fields === undefined
+			? profile.fields
+			: profileUpdates.fields;
 
 	if (newName != null) {
 		let _newName = newName;
 		if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(_newName)) {
 			// 他鯖絵文字が入っている場合、@以下をトリミングする
-			_newName = _newName.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+			_newName = _newName.replaceAll(
+				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
+				":$1:",
+			);
 			updates.name = _newName;
 		}
 		const tokens = mfm.parseSimple(_newName);
@@ -323,7 +349,10 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		let _newDescription = newDescription;
 		if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(_newDescription)) {
 			// 他鯖絵文字が入っている場合、@以下をトリミングする
-			_newDescription = _newDescription.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+			_newDescription = _newDescription.replaceAll(
+				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
+				":$1:",
+			);
 			profileUpdates.description = _newDescription;
 		}
 		const tokens = mfm.parse(_newDescription);
@@ -337,7 +366,10 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		let _newLocation = newLocation;
 		if (/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(_newLocation)) {
 			// 他鯖絵文字が入っている場合、@以下をトリミングする
-			_newLocation = _newLocation.replaceAll(/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/ig, ":$1:");
+			_newLocation = _newLocation.replaceAll(
+				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
+				":$1:",
+			);
 			profileUpdates.location = _newLocation;
 		}
 		const tokens = mfm.parseSimple(_newLocation);
@@ -345,14 +377,12 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	}
 
 	if (newField != null) {
-
 		newField.forEach((x) => {
 			const nameTokens = mfm.parseSimple(x.name);
 			emojis = emojis.concat(extractCustomEmojisFromMfm(nameTokens!));
 			const valueTokens = mfm.parseSimple(x.value);
 			emojis = emojis.concat(extractCustomEmojisFromMfm(valueTokens!));
 		});
-
 	}
 
 	updates.emojis = emojis;
@@ -380,10 +410,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	);
 
 	// Publish meUpdated event
-	publishInternalEvent(
-		"localUserUpdated",
-		{ id: user.id },
-	);
+	publishInternalEvent("localUserUpdated", { id: user.id });
 
 	// 鍵垢を解除したとき、溜まっていたフォローリクエストがあるならすべて承認
 	// しないで欲しいので回避

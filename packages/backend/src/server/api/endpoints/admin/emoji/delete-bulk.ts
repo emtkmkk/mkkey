@@ -36,14 +36,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		await Emojis.delete(emoji.id);
 
 		await db.queryResultCache!.remove(["meta_emojis"]);
-		
-		const pack = await Emojis.pack(emoji.id)
+
+		const pack = await Emojis.pack(emoji.id);
 
 		insertModerationLog(me, "deleteEmoji", {
 			emoji: emoji,
 		});
 	}
-	
+
 	publishBroadcastStream("emojiDeleted", {
 		emojis: await Emojis.packMany(emojis),
 	});

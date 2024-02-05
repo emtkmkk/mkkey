@@ -34,9 +34,11 @@ export default class extends Channel {
 		const meta = await fetchMeta();
 		if (
 			!(
-				((note.fileIds &&
-				note.fileIds.length !== 0) || 
-				(note.renote && !note.text && note.renote.fileIds && note.renote.fileIds.length !== 0)) &&
+				((note.fileIds && note.fileIds.length !== 0) ||
+					(note.renote &&
+						!note.text &&
+						note.renote.fileIds &&
+						note.renote.fileIds.length !== 0)) &&
 				note.visibility === "public"
 			)
 		)
@@ -67,11 +69,21 @@ export default class extends Channel {
 		if (isUserRelated(note, this.muting)) return;
 		// 流れてきたNoteがブロックされているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.blocking)) return;
-		
-		if (note.renote && !note.text && !note.user.host && !this.user!.localShowRenote)
-            return;
-		if (note.renote && !note.text && note.user.host && !this.user!.remoteShowRenote)
-            return;
+
+		if (
+			note.renote &&
+			!note.text &&
+			!note.user.host &&
+			!this.user!.localShowRenote
+		)
+			return;
+		if (
+			note.renote &&
+			!note.text &&
+			note.user.host &&
+			!this.user!.remoteShowRenote
+		)
+			return;
 
 		if (note.renote && !note.text && isUserRelated(note, this.renoteMuting))
 			return;

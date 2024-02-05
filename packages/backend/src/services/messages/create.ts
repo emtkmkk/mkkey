@@ -105,10 +105,12 @@ export async function createMessage(
 
 			publishMainStream(recipientUser.id, "unreadMessagingMessage", messageObj);
 			pushNotification(recipientUser.id, "unreadMessagingMessage", messageObj);
-			
+
 			//webhook
 			const webhooks = await getActiveWebhooks().then((webhooks) =>
-			webhooks.filter((x) => x.userId === recipientUser.id && x.on.includes("userMessage")),
+				webhooks.filter(
+					(x) => x.userId === recipientUser.id && x.on.includes("userMessage"),
+				),
 			);
 
 			for (const webhook of webhooks) {
@@ -116,7 +118,6 @@ export async function createMessage(
 					message: messageObj,
 				});
 			}
-			
 		} else if (recipientGroup) {
 			const joinings = await UserGroupJoinings.findBy({
 				userGroupId: recipientGroup.id,
@@ -126,11 +127,17 @@ export async function createMessage(
 				if (freshMessage.reads.includes(joining.userId)) return; // 既読
 				publishMainStream(joining.userId, "unreadMessagingMessage", messageObj);
 				pushNotification(joining.userId, "unreadMessagingMessage", messageObj);
-				
+
 				const targetUser = await Users.findOneByOrFail({ id: joining.userId });
 				//webhook
 				const webhooks = await getActiveWebhooks().then((webhooks) =>
-				webhooks.filter((x) => x.userId === joining.userId && x.on.includes("groupMessage") && (!x.on.includes("groupMentionOnly") || messageObj.text?.includes(`@${targetUser.username}`))),
+					webhooks.filter(
+						(x) =>
+							x.userId === joining.userId &&
+							x.on.includes("groupMessage") &&
+							(!x.on.includes("groupMentionOnly") ||
+								messageObj.text?.includes(`@${targetUser.username}`)),
+					),
 				);
 
 				for (const webhook of webhooks) {
@@ -138,7 +145,6 @@ export async function createMessage(
 						message: messageObj,
 					});
 				}
-			
 			}
 		}
 	}, 3000);

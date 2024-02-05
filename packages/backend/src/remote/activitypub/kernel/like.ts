@@ -15,13 +15,27 @@ export default async (actor: CacheableRemoteUser, activity: ILike) => {
 	const reactName = react?.split("@")?.[0];
 	const reactHost = react?.split("@")?.[1] ?? undefined;
 
-	const emoji = await extractEmojis(activity.tag || [], actor.host).catch(() => null);
-	const reactEmoji = emoji?.length === 1 ? emoji : emoji?.filter((x) => x.name === reactName && (!reactHost || (x.host ?? config.host) === reactHost));
+	const emoji = await extractEmojis(activity.tag || [], actor.host).catch(
+		() => null,
+	);
+	const reactEmoji =
+		emoji?.length === 1
+			? emoji
+			: emoji?.filter(
+					(x) =>
+						x.name === reactName &&
+						(!reactHost || (x.host ?? config.host) === reactHost),
+			  );
 
 	return await create(
 		actor,
 		note,
-		reactEmoji?.length > 0 ? `:${reactEmoji?.[0]?.name + (reactEmoji?.[0]?.host ? `@${reactEmoji[0].host}` : "")}:` : reactName,
+		(reactEmoji?.length ?? 0) > 0
+			? `:${
+					reactEmoji?.[0]?.name +
+					(reactEmoji?.[0]?.host ? `@${reactEmoji[0].host}` : "")
+			  }:`
+			: reactName,
 	)
 		.catch((e) => {
 			if (e.id === "51c42bb4-931a-456b-bff7-e5a8a70dd298") {

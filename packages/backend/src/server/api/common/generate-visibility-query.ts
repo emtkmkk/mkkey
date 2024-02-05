@@ -35,9 +35,9 @@ export function generateVisibilityQuery(
 					// または 自分自身
 					.orWhere("note.userId = :meId")
 					// または 自分宛て
-					.orWhere(':meIdAsList <@ note.visibleUserIds')
-					.orWhere(':meIdAsList <@ note.ccUserIds')
-					.orWhere(':meIdAsList <@ note.mentions')
+					.orWhere(":meIdAsList <@ note.visibleUserIds")
+					.orWhere(":meIdAsList <@ note.ccUserIds")
+					.orWhere(":meIdAsList <@ note.mentions")
 					.orWhere(
 						new Brackets((qb) => {
 							qb

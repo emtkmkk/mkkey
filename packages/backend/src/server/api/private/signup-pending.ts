@@ -14,7 +14,7 @@ export default async (ctx: Koa.Context) => {
 		const { account, secret } = await signup({
 			username: pendingUser.username,
 			passwordHash: pendingUser.password,
-			inviteUserId: pendingUser.inviteUserId
+			inviteUserId: pendingUser.inviteUserId,
 		});
 
 		UserPendings.delete({

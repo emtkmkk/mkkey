@@ -49,13 +49,16 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	const querys = ps.query.replaceAll(/\s/g, "+").split("+");
 
-	if (["誕生日","たんじょうび","birthday"].includes(querys?.[0].toLowerCase())) {
-
+	if (
+		["誕生日", "たんじょうび", "birthday"].includes(querys?.[0].toLowerCase())
+	) {
 		const now = new Date();
 		const profQuery = UserProfiles.createQueryBuilder("prof")
 			.select("prof.userId")
 			.where("user.birthday LIKE :birthday", {
-				birthday: `%${(`0${now.getMonth()}`).slice(-2)}-${(`0${now.getDate()}`).slice(-2)}`
+				birthday: `%${`0${now.getMonth()}`.slice(
+					-2,
+				)}-${`0${now.getDate()}`.slice(-2)}`,
 			});
 
 		if (ps.origin === "local") {
@@ -84,7 +87,6 @@ export default define(meta, paramDef, async (ps, me) => {
 				.skip(ps.offset)
 				.getMany(),
 		);
-
 	} else if (isUsername) {
 		const usernameQuery = Users.createQueryBuilder("user")
 			.where("user.usernameLower LIKE :username", {
@@ -165,7 +167,7 @@ export default define(meta, paramDef, async (ps, me) => {
 							query: `%${querys?.[0]}%`,
 						});
 					}),
-				)
+				);
 
 			if (ps.origin === "local") {
 				profQuery.andWhere("prof.userHost IS NULL");

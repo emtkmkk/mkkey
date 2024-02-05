@@ -8,12 +8,15 @@ window.onload = async () => {
 	const api = async (endpoint, data = {}) => {
 		if (i) data.i = i;
 
-		const res = await fetch(endpoint.indexOf("://") > -1 ? endpoint : `/api/${endpoint}`, {
-			method: "POST",
-			body: JSON.stringify(data),
-			credentials: "omit",
-			cache: "no-cache",
-		});
+		const res = await fetch(
+			endpoint.indexOf("://") > -1 ? endpoint : `/api/${endpoint}`,
+			{
+				method: "POST",
+				body: JSON.stringify(data),
+				credentials: "omit",
+				cache: "no-cache",
+			},
+		);
 
 		const body = res.status === 204 ? null : await res.json();
 		if (res.ok) return body;
@@ -25,19 +28,39 @@ window.onload = async () => {
 		await api("notes/create", {
 			text: document.getElementById("text").value,
 			visibility: searchParams.has("v") ? searchParams.get("v") : "public",
-			localOnly: searchParams.has("mkkeyPublic") ? !!searchParams.get("mkkeyPublic") : false,
+			localOnly: searchParams.has("mkkeyPublic")
+				? !!searchParams.get("mkkeyPublic")
+				: false,
 		});
 		location.reload();
 	});
 
 	const searchParams = new URLSearchParams(window.location.search);
 
-	document.getElementById("submit").textContent = `${document.getElementById("submit").textContent} ${vicon(searchParams.has("v") ? searchParams.get("v") : "public",searchParams.has("mkkeyPublic") ? !!searchParams.get("mkkeyPublic") : false)}`
+	document.getElementById("submit").textContent = `${
+		document.getElementById("submit").textContent
+	} ${vicon(
+		searchParams.has("v") ? searchParams.get("v") : "public",
+		searchParams.has("mkkeyPublic") ? !!searchParams.get("mkkeyPublic") : false,
+	)}`;
 
-	const notesApi = searchParams.has('api') ? searchParams.get('api') : searchParams.has("tl") && searchParams.get('tl').replace('home','') ? `notes/${searchParams.get('tl').replace('home', '').replace('social', 'hybrid')}-timeline` : i ? "notes/timeline" : "notes/local-timeline";
-	const limit = searchParams.has('limit') ? parseInt(searchParams.get('limit'), 10) : undefined;
-	const noAvatar = searchParams.has('noAvatar');
-	const avatarSize = searchParams.has("avatarSize") ? searchParams.get('avatarSize') : "40";
+	const notesApi = searchParams.has("api")
+		? searchParams.get("api")
+		: searchParams.has("tl") && searchParams.get("tl").replace("home", "")
+		? `notes/${searchParams
+				.get("tl")
+				.replace("home", "")
+				.replace("social", "hybrid")}-timeline`
+		: i
+		? "notes/timeline"
+		: "notes/local-timeline";
+	const limit = searchParams.has("limit")
+		? parseInt(searchParams.get("limit"), 10)
+		: undefined;
+	const noAvatar = searchParams.has("noAvatar");
+	const avatarSize = searchParams.has("avatarSize")
+		? searchParams.get("avatarSize")
+		: "40";
 
 	const notes = await api(notesApi, limit ? { limit } : {});
 	const tl = document.getElementById("tl");
@@ -77,7 +100,7 @@ function createFormToggleLink() {
 	link.textContent = "Show Options Form";
 	link.style.display = "block";
 	link.style.marginTop = "1em";
-	link.onclick = function(e) {
+	link.onclick = function (e) {
 		e.preventDefault();
 		createOptionsForm();
 	};
@@ -93,12 +116,40 @@ function createOptionsForm() {
 	const form = document.createElement("form");
 	form.id = "optionsForm";
 
-	const tlInput = createInputWithLabel("text", "tl", "Timeline:", "e.g. home | social | local | global");
-	const limitInput = createInputWithLabel("number", "limit", "Limit:", "1 - 100");
-	const noAvatarCheckbox = createInputWithLabel("checkbox", "noAvatar", "No Avatar:");
-	const avatarSizeInput = createInputWithLabel("text", "avatarSize", "Avatar Size:", "e.g. 40");
-	const visibilityInput = createInputWithLabel("text", "v", "Visibility:", "public | home | followers");
-	const mkkeyPublicCheckbox = createInputWithLabel("checkbox", "mkkeyPublic", "mkkeyPublic:");
+	const tlInput = createInputWithLabel(
+		"text",
+		"tl",
+		"Timeline:",
+		"e.g. home | social | local | global",
+	);
+	const limitInput = createInputWithLabel(
+		"number",
+		"limit",
+		"Limit:",
+		"1 - 100",
+	);
+	const noAvatarCheckbox = createInputWithLabel(
+		"checkbox",
+		"noAvatar",
+		"No Avatar:",
+	);
+	const avatarSizeInput = createInputWithLabel(
+		"text",
+		"avatarSize",
+		"Avatar Size:",
+		"e.g. 40",
+	);
+	const visibilityInput = createInputWithLabel(
+		"text",
+		"v",
+		"Visibility:",
+		"public | home | followers",
+	);
+	const mkkeyPublicCheckbox = createInputWithLabel(
+		"checkbox",
+		"mkkeyPublic",
+		"mkkeyPublic:",
+	);
 	const submitButton = document.createElement("input");
 	submitButton.type = "submit";
 	submitButton.value = "Apply";
@@ -113,14 +164,14 @@ function createOptionsForm() {
 	form.appendChild(submitButton);
 
 	// イベントリスナーを設定
-	form.addEventListener('submit', function (e) {
+	form.addEventListener("submit", function (e) {
 		e.preventDefault();
 
 		const formData = new FormData(e.target);
 		const queryParams = new URLSearchParams();
 
 		for (const [key, value] of formData.entries()) {
-			if (value && key !== 'submit') queryParams.append(key, value);
+			if (value && key !== "submit") queryParams.append(key, value);
 		}
 
 		window.location.search = queryParams.toString();
@@ -130,7 +181,13 @@ function createOptionsForm() {
 	document.body.appendChild(form);
 }
 
-function createInputWithLabel(type, name, labelText, placeholder = "", value = "") {
+function createInputWithLabel(
+	type,
+	name,
+	labelText,
+	placeholder = "",
+	value = "",
+) {
 	const searchParams = new URLSearchParams(window.location.search);
 	const div = document.createElement("div");
 	const label = document.createElement("label");
@@ -138,9 +195,13 @@ function createInputWithLabel(type, name, labelText, placeholder = "", value = "
 	input.type = type;
 	input.name = name;
 	if (type === "checkbox") {
-		if (searchParams.has(name) || value) input.checked = searchParams.has(name) ? !!searchParams.get(name) : !!value;
+		if (searchParams.has(name) || value)
+			input.checked = searchParams.has(name)
+				? !!searchParams.get(name)
+				: !!value;
 	} else {
-		if (searchParams.has(name) || value) input.value = searchParams.has(name) ? searchParams.get(name) : value;
+		if (searchParams.has(name) || value)
+			input.value = searchParams.has(name) ? searchParams.get(name) : value;
 	}
 	if (placeholder) input.placeholder = placeholder;
 	label.appendChild(document.createTextNode(labelText));
@@ -151,29 +212,57 @@ function createInputWithLabel(type, name, labelText, placeholder = "", value = "
 
 function createUserLabel(note) {
 	const p = document.createElement("p");
-	p.textContent = `${getProcessName(note.user.name)} @${note.user.username}${note.user.host ? `@${note.user.host}` : ""} ${vicon(note.visibility, note.localOnly)}`.trim();
+	p.textContent = `${getProcessName(note.user.name)} @${note.user.username}${
+		note.user.host ? `@${note.user.host}` : ""
+	} ${vicon(note.visibility, note.localOnly)}`.trim();
 	return p;
 }
 
 function formatNoteText(note, appearNote, name) {
 	const noteText = note.cw
-		? excludeNotPlain(note.cw) + (note.text ? ` (CW 📝${note.text.length})` : "")
+		? excludeNotPlain(note.cw) +
+		  (note.text ? ` (CW 📝${note.text.length})` : "")
 		: excludeNotPlain(note.text) || "";
 	const appearText = appearNote.cw
-		? excludeNotPlain(appearNote.cw) + (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")
+		? excludeNotPlain(appearNote.cw) +
+		  (appearNote.text ? ` (CW 📝${appearNote.text.length})` : "")
 		: excludeNotPlain(appearNote.text) || "";
 
-	return `${noteText}${note.files.length ? ` (📎${note.files.length})` : ""}${note.renote ? `${(!note.text ? " RT " : " \nQT ") + name.textContent} : ${appearText}${appearNote.files.length ? ` (📎${appearNote.files.length})` : ""}` : ""}`.trim();
+	return `${noteText}${note.files.length ? ` (📎${note.files.length})` : ""}${
+		note.renote
+			? `${
+					(!note.text ? " RT " : " \nQT ") + name.textContent
+			  } : ${appearText}${
+					appearNote.files.length ? ` (📎${appearNote.files.length})` : ""
+			  }`
+			: ""
+	}`.trim();
 }
 
 function excludeNotPlain(text) {
-	return text ? text.replaceAll(/<\/?\w*?>/g, '').replaceAll(/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g, '').trim() : undefined;
+	return text
+		? text
+				.replaceAll(/<\/?\w*?>/g, "")
+				.replaceAll(
+					/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g,
+					"",
+				)
+				.trim()
+		: undefined;
 }
 
 function getProcessName(name) {
-	return name ? name.replaceAll(/\s?:[\w_]+?:/g, '').trim() : "";
+	return name ? name.replaceAll(/\s?:[\w_]+?:/g, "").trim() : "";
 }
 
 function vicon(v, l) {
-	return `${l ? "♥" : ""}${v === "home" ? "🏠" : v === "followers" ? "🔒" : v === "specified" ? "✉" : ""}`;
+	return `${l ? "♥" : ""}${
+		v === "home"
+			? "🏠"
+			: v === "followers"
+			? "🔒"
+			: v === "specified"
+			? "✉"
+			: ""
+	}`;
 }

@@ -71,15 +71,17 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, user) => {
 	if (!user) {
-		if (ps.sinceId ||　ps.untilId) return [];
-		return [{
-			id: "0000000000",
-			createdAt: new Date(0).toISOString(),
-			updatedAt: null,
-			text: "未認証のユーザにはお知らせを配信していません。",
-			title: "Forbidden",
-			isRead: true,
-		}];
+		if (ps.sinceId || ps.untilId) return [];
+		return [
+			{
+				id: "0000000000",
+				createdAt: new Date(0).toISOString(),
+				updatedAt: null,
+				text: "未認証のユーザにはお知らせを配信していません。",
+				title: "Forbidden",
+				isRead: true,
+			},
+		];
 	}
 
 	const query = makePaginationQuery(

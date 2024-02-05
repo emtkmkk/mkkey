@@ -45,44 +45,56 @@ export function uploadFile(
 
 		const reader = new FileReader();
 		reader.onload = async (ev) => {
-
-			const { canceled } = file.type === "video/quicktime" ? await os.yesno({
-				type: "question",
-				text: "このファイルはmov形式の為、iOS端末以外で正しく再生されない可能性があります。\nアプリ「VideoConvert」を使用するか、LINEでアップロード後に再度保存するなどでmp4形式に変換する事をオススメします。\nアップロードを続けますか？",
-			}) : { canceled: false };
+			const { canceled } =
+				file.type === "video/quicktime"
+					? await os.yesno({
+							type: "question",
+							text: "このファイルはmov形式の為、iOS端末以外で正しく再生されない可能性があります。\nアプリ「VideoConvert」を使用するか、LINEでアップロード後に再度保存するなどでmp4形式に変換する事をオススメします。\nアップロードを続けますか？",
+					  })
+					: { canceled: false };
 
 			if (canceled) {
 				reject();
 				return;
 			}
-			
+
 			const ext = /\.\w+$/.exec(file.name) ?? undefined;
-			
+
 			let inputName = undefined;
-			
+
 			if (requiredFilename || defaultStore.state.alwaysInputFilename) {
 				const { canceled, result: input } = await os.inputText({
 					title: i18n.ts.filenameInput,
 					text: ext ?? ".???",
-					placeholder: (name || (file.name ? file.name.replace(/\.\w+$/,"") : "")) + (ext ?? ".???"),
-					default: name || (file.name ? file.name.replace(/\.\w+$/,"") : ""),
+					placeholder:
+						(name || (file.name ? file.name.replace(/\.\w+$/, "") : "")) +
+						(ext ?? ".???"),
+					default: name || (file.name ? file.name.replace(/\.\w+$/, "") : ""),
 				});
 				if (!input || canceled) {
 					reject();
 					return;
 				}
 				inputName = input;
-				inputName = inputName.toLowerCase().replace(/\.\w+$/,"").replaceAll(/[\\\/:\*\?\"<>\|]+/g,"").trim();
+				inputName = inputName
+					.toLowerCase()
+					.replace(/\.\w+$/, "")
+					.replaceAll(/[\\\/:\*\?\"<>\|]+/g, "")
+					.trim();
 				if (!inputName) {
 					reject();
 					return;
 				}
 				inputName = inputName + ext;
 			}
-			
+
 			const ctx = reactive<Uploading>({
 				id: id,
-				name: inputName || name || (keepFileName ? file.name : undefined) || `${$i.username}-${id.replaceAll(".","")}${ext?.[0] ?? ""}`,
+				name:
+					inputName ||
+					name ||
+					(keepFileName ? file.name : undefined) ||
+					`${$i.username}-${id.replaceAll(".", "")}${ext?.[0] ?? ""}`,
 				progressMax: undefined,
 				progressValue: undefined,
 				img: window.URL.createObjectURL(file),
@@ -105,8 +117,9 @@ export function uploadFile(
 					resizedImage = await readAndCompressImage(file, config);
 					ctx.name =
 						file.type !== imgConfig.mimeType
-							? `${ctx.name.replace(/\.\w+$/,"")}.${mimeTypeMap[compressTypeMap[file.type].mimeType]
-							}`
+							? `${ctx.name.replace(/\.\w+$/, "")}.${
+									mimeTypeMap[compressTypeMap[file.type].mimeType]
+							  }`
 							: ctx.name;
 				} catch (err) {
 					console.error("Failed to resize image", err);

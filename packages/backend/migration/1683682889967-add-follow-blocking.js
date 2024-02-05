@@ -19,8 +19,6 @@ export class addFollowBlocking1683682889967 {
 	}
 
 	async down(queryRunner) {
-		await queryRunner.query(
-			`DROP TABLE "follow_blocking"`,
-		);
+		await queryRunner.query(`DROP TABLE "follow_blocking"`);
 	}
 }

@@ -65,7 +65,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		.leftJoinAndSelect("reaction.note", "note");
 
 	if (ps.emoji) {
-		query.andWhere("reaction.reaction = :emoji", { emoji: ps.emoji })
+		query.andWhere("reaction.reaction = :emoji", { emoji: ps.emoji });
 	}
 
 	generateVisibilityQuery(query, me);

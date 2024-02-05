@@ -68,7 +68,7 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 			if (!res.isRetryable) {
 				// 相手が閉鎖していることを明示しているため、配送停止する
 				if (job.data.isSharedInbox && res.statusCode === 410) {
-					registerOrFetchInstanceDoc(host).then(i => {
+					registerOrFetchInstanceDoc(host).then((i) => {
 						Instances.update(i.id, {
 							isSuspended: true,
 						});

@@ -9,7 +9,19 @@ import type { Promiseable } from "@/prelude/await-all.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import { populateEmojis } from "@/misc/populate-emojis.js";
 import { getAntennas } from "@/misc/antenna-cache.js";
-import { MB, DEFAULT_DRIVE_SIZE, MAX_DRIVE_SIZE, USER_ACTIVE_THRESHOLD, USER_ACTIVE2_THRESHOLD, USER_HALFONLINE_THRESHOLD, USER_ONLINE_THRESHOLD, USER_HALFSLEEP_THRESHOLD, USER_SLEEP_THRESHOLD, USER_DEEPSLEEP_THRESHOLD, USER_SUPERSLEEP_THRESHOLD } from "@/const.js";
+import {
+	MB,
+	DEFAULT_DRIVE_SIZE,
+	MAX_DRIVE_SIZE,
+	USER_ACTIVE_THRESHOLD,
+	USER_ACTIVE2_THRESHOLD,
+	USER_HALFONLINE_THRESHOLD,
+	USER_ONLINE_THRESHOLD,
+	USER_HALFSLEEP_THRESHOLD,
+	USER_SLEEP_THRESHOLD,
+	USER_DEEPSLEEP_THRESHOLD,
+	USER_SUPERSLEEP_THRESHOLD,
+} from "@/const.js";
 import { Cache } from "@/misc/cache.js";
 import { db } from "@/db/postgre.js";
 import { isActor, getApId } from "@/remote/activitypub/type.js";
@@ -54,10 +66,10 @@ type IsMeAndIsUserDetailed<
 	Detailed extends boolean,
 > = Detailed extends true
 	? ExpectsMe extends true
-	? Packed<"MeDetailed">
-	: ExpectsMe extends false
-	? Packed<"UserDetailedNotMe">
-	: Packed<"UserDetailed">
+		? Packed<"MeDetailed">
+		: ExpectsMe extends false
+		? Packed<"UserDetailedNotMe">
+		: Packed<"UserDetailed">
 	: Packed<"UserLite">;
 
 const ajv = new Ajv();
@@ -73,7 +85,11 @@ const descriptionSchema = {
 	minLength: 1,
 	maxLength: 2048,
 } as const;
-const locationSchema = { type: "string", minLength: 1, maxLength: 128 } as const;
+const locationSchema = {
+	type: "string",
+	minLength: 1,
+	maxLength: 128,
+} as const;
 const birthdaySchema = {
 	type: "string",
 	pattern: /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.toString().slice(1, -1),
@@ -190,9 +206,13 @@ export const UserRepository = db.getRepository(User).extend({
 				},
 				take: 1,
 			}).then((n) => n > 0),
-			isInviter: me === (await this.findOneOrFail({
-				where: { id: target },
-			}))?.inviteUserId,
+			isInviter:
+				me ===
+				(
+					await this.findOneOrFail({
+						where: { id: target },
+					})
+				)?.inviteUserId,
 		});
 	},
 
@@ -208,7 +228,9 @@ export const UserRepository = db.getRepository(User).extend({
 				MessagingMessages.createQueryBuilder("message")
 					.where("message.groupId = :groupId", { groupId: j.userGroupId })
 					.andWhere("message.userId != :userId", { userId: userId })
-					.andWhere("NOT (:userIdList <@ (message.reads))", { userIdList: [userId] })
+					.andWhere("NOT (:userIdList <@ (message.reads))", {
+						userIdList: [userId],
+					})
 					.andWhere("message.createdAt > :joinedAt", { joinedAt: j.createdAt }) // 自分が加入する前の会話については、未読扱いしない
 					.getOne()
 					.then((x) => x != null),
@@ -240,8 +262,8 @@ export const UserRepository = db.getRepository(User).extend({
 		const count = await Announcements.countBy(
 			reads.length > 0
 				? {
-					id: Not(In(reads.map((read) => read.announcementId))),
-				}
+						id: Not(In(reads.map((read) => read.announcementId))),
+				  }
 				: {},
 		);
 
@@ -275,9 +297,9 @@ export const UserRepository = db.getRepository(User).extend({
 		const unread =
 			myAntennas.length > 0
 				? await AntennaNotes.findOneBy({
-					antennaId: In(myAntennas.map((x) => x.id)),
-					read: false,
-				})
+						antennaId: In(myAntennas.map((x) => x.id)),
+						read: false,
+				  })
 				: null;
 
 		return unread != null;
@@ -289,9 +311,9 @@ export const UserRepository = db.getRepository(User).extend({
 		const unread =
 			channels.length > 0
 				? await NoteUnreads.findOneBy({
-					userId: userId,
-					noteChannelId: In(channels.map((x) => x.followeeId)),
-				})
+						userId: userId,
+						noteChannelId: In(channels.map((x) => x.followeeId)),
+				  })
 				: null;
 
 		return unread != null;
@@ -320,10 +342,9 @@ export const UserRepository = db.getRepository(User).extend({
 	async getHasPendingReceivedFollowRequest(
 		userId: User["id"],
 	): Promise<boolean> {
-		
 		const followBlocking = await FollowBlockings.findBy({
 			blockerId: userId,
-		})
+		});
 
 		const count = await FollowRequests.countBy({
 			followeeId: userId,
@@ -355,20 +376,20 @@ export const UserRepository = db.getRepository(User).extend({
 		return elapsed < USER_ONLINE_THRESHOLD
 			? "online"
 			: elapsed < USER_HALFONLINE_THRESHOLD
-				? "half-online"
-				: elapsed < USER_ACTIVE_THRESHOLD
-					? "active"
-					: elapsed < USER_ACTIVE2_THRESHOLD
-						? "half-active"
-						: elapsed < USER_HALFSLEEP_THRESHOLD
-							? "offline"
-							: elapsed < USER_SLEEP_THRESHOLD
-								? "half-sleeping"
-								: elapsed < USER_DEEPSLEEP_THRESHOLD
-									? "sleeping"
-									: elapsed < USER_SUPERSLEEP_THRESHOLD
-										? "deep-sleeping"
-										: "super-sleeping";
+			? "half-online"
+			: elapsed < USER_ACTIVE_THRESHOLD
+			? "active"
+			: elapsed < USER_ACTIVE2_THRESHOLD
+			? "half-active"
+			: elapsed < USER_HALFSLEEP_THRESHOLD
+			? "offline"
+			: elapsed < USER_SLEEP_THRESHOLD
+			? "half-sleeping"
+			: elapsed < USER_DEEPSLEEP_THRESHOLD
+			? "sleeping"
+			: elapsed < USER_SUPERSLEEP_THRESHOLD
+			? "deep-sleeping"
+			: "super-sleeping";
 	},
 
 	async getAvatarUrl(user: User): Promise<string> {
@@ -450,104 +471,124 @@ export const UserRepository = db.getRepository(User).extend({
 				: null;
 		const pins = opts.detail
 			? await UserNotePinings.createQueryBuilder("pin")
-				.where("pin.userId = :userId", { userId: user.id })
-				.innerJoinAndSelect("pin.note", "note")
-				.orderBy("pin.createdAt", "DESC").addOrderBy("pin.id", "DESC")
-				.getMany()
+					.where("pin.userId = :userId", { userId: user.id })
+					.innerJoinAndSelect("pin.note", "note")
+					.orderBy("pin.createdAt", "DESC")
+					.addOrderBy("pin.id", "DESC")
+					.getMany()
 			: [];
-		const profile = !user.host || opts.detail
-			? await UserProfiles.findOneByOrFail({ userId: user.id })
-			: null;
+		const profile =
+			!user.host || opts.detail
+				? await UserProfiles.findOneByOrFail({ userId: user.id })
+				: null;
 
 		const followingCount =
 			profile == null
 				? null
 				: profile.ffVisibility === "public" || isMe
-					? user.followingCount
-					: profile.ffVisibility === "followers" &&
-						relation &&
-						relation.isFollowing
-						? user.followingCount
-						: user.followingCount;
+				? user.followingCount
+				: profile.ffVisibility === "followers" &&
+				  relation &&
+				  relation.isFollowing
+				? user.followingCount
+				: user.followingCount;
 
 		const followersCount =
 			profile == null
 				? null
 				: profile.ffVisibility === "public" || isMe
-					? user.followersCount
-					: profile.ffVisibility === "followers" &&
-						relation &&
-						relation.isFollowing
-						? user.followersCount
-						: user.followersCount;
+				? user.followersCount
+				: profile.ffVisibility === "followers" &&
+				  relation &&
+				  relation.isFollowing
+				? user.followersCount
+				: user.followersCount;
 
 		const rankBadges =
-			user.maxRankPoint > 5000 && !user.isBot ? {
-				id: `${3000010000 + (user.maxRankPoint - 5000)}`,
-				key: "star",
-				name: `星の観測者${user.maxRankPoint > 9000 ? `+${Math.floor(user.maxRankPoint / 1000) - 5}` : user.maxRankPoint > 6000 ? "+".repeat((Math.floor(user.maxRankPoint / 1000) - 5)) : ""}${` ${(user.maxRankPoint % 1000 / 10).toFixed(1)}%`}`,
-				emoji: "⭐",
-				showBadgeNote: false,
-			} : undefined;
+			user.maxRankPoint > 5000 && !user.isBot
+				? {
+						id: `${3000010000 + (user.maxRankPoint - 5000)}`,
+						key: "star",
+						name: `星の観測者${
+							user.maxRankPoint > 9000
+								? `+${Math.floor(user.maxRankPoint / 1000) - 5}`
+								: user.maxRankPoint > 6000
+								? "+".repeat(Math.floor(user.maxRankPoint / 1000) - 5)
+								: ""
+						}${` ${((user.maxRankPoint % 1000) / 10).toFixed(1)}%`}`,
+						emoji: "⭐",
+						showBadgeNote: false,
+				  }
+				: undefined;
 
 		const donateBadges =
 			user.driveCapacityOverrideMb > DEFAULT_DRIVE_SIZE / MB
-				? user.driveCapacityOverrideMb >= (DEFAULT_DRIVE_SIZE / MB) + 15000
-					? user.driveCapacityOverrideMb >= ((MAX_DRIVE_SIZE / 2) / MB)
-						? user.driveCapacityOverrideMb >= (MAX_DRIVE_SIZE / MB)
+				? user.driveCapacityOverrideMb >= DEFAULT_DRIVE_SIZE / MB + 15000
+					? user.driveCapacityOverrideMb >= MAX_DRIVE_SIZE / 2 / MB
+						? user.driveCapacityOverrideMb >= MAX_DRIVE_SIZE / MB
 							? {
-								id: "3000000014",
-								key: "mkb4",
-								name: "支援者LvMax",
-								emoji: ":mk_discochicken:",
-								showBadgeNote: true,
-							}
+									id: "3000000014",
+									key: "mkb4",
+									name: "支援者LvMax",
+									emoji: ":mk_discochicken:",
+									showBadgeNote: true,
+							  }
 							: {
-								id: "3000000013",
-								key: "mkb3",
-								name: "支援者Lv3",
-								emoji: ":mk_chuchuchicken:",
-								showBadgeNote: true,
-							}
+									id: "3000000013",
+									key: "mkb3",
+									name: "支援者Lv3",
+									emoji: ":mk_chuchuchicken:",
+									showBadgeNote: true,
+							  }
 						: {
-							id: "3000000012",
-							key: "mkb2",
-							name: "支援者Lv2",
-							emoji: ":mk_yurayurachicken:",
-							showBadgeNote: true,
-						}
+								id: "3000000012",
+								key: "mkb2",
+								name: "支援者Lv2",
+								emoji: ":mk_yurayurachicken:",
+								showBadgeNote: true,
+						  }
 					: {
-						id: "3000000011",
-						key: "mkb1",
-						name: "支援者",
-						emoji: ":mkb:",
-						showBadgeNote: true,
-					}
+							id: "3000000011",
+							key: "mkb1",
+							name: "支援者",
+							emoji: ":mkb:",
+							showBadgeNote: true,
+					  }
 				: undefined;
 
 		const harborBadges =
-			(new Date(user.createdAt) < new Date('2023-04-05T00:00:00Z'))
+			new Date(user.createdAt) < new Date("2023-04-05T00:00:00Z")
 				? {
-					id: "3000000001",
-					key: "mkhb",
-					name: "港から移住",
-					emoji: ":mkbms:",
-					showBadgeNote: false,
-				} : undefined;
+						id: "3000000001",
+						key: "mkhb",
+						name: "港から移住",
+						emoji: ":mkbms:",
+						showBadgeNote: false,
+				  }
+				: undefined;
 
-		const badges = !user.host ? [(profile?.showDonateBadges ? donateBadges : undefined), harborBadges, rankBadges].filter(x => x !== undefined && (opts.detail || x.showBadgeNote)) : rankBadges ? [rankBadges] : undefined;
-		let roles = badges?.map((x, i) => (
-			{
+		const badges = !user.host
+			? [
+					profile?.showDonateBadges ? donateBadges : undefined,
+					harborBadges,
+					rankBadges,
+			  ].filter((x) => x !== undefined && (opts.detail || x.showBadgeNote))
+			: rankBadges
+			? [rankBadges]
+			: undefined;
+		let roles =
+			badges?.map((x, i) => ({
 				id: x.id,
 				name: x.name,
 				description: x.name,
-				iconUrl: `${config.url}/emojis/${((x.emoji.startsWith(":")) ? x.emoji.replaceAll(":", "") : x.key)}.webp`,
+				iconUrl: `${config.url}/emojis/${
+					x.emoji.startsWith(":") ? x.emoji.replaceAll(":", "") : x.key
+				}.webp`,
 				isModerator: false,
 				isAdministrator: false,
 				color: "#f8bcba",
 				displayOrder: badges?.length - 1 - i,
-			}
-		)) ?? [];
+			})) ?? [];
 		if (user.isAdmin) {
 			roles.push({
 				id: "3000000021",
@@ -558,7 +599,7 @@ export const UserRepository = db.getRepository(User).extend({
 				isAdministrator: true,
 				color: "#ff4b45",
 				displayOrder: 200 + (badges?.length ?? 0),
-			})
+			});
 		}
 		if (user.isModerator) {
 			roles.push({
@@ -570,7 +611,7 @@ export const UserRepository = db.getRepository(User).extend({
 				isAdministrator: false,
 				color: "#1dc200",
 				displayOrder: 100 + (badges?.length ?? 0),
-			})
+			});
 		}
 
 		const truthy = opts.detail ? true : undefined;
@@ -578,10 +619,13 @@ export const UserRepository = db.getRepository(User).extend({
 
 		const isDeleted = user.isDeleted;
 
-		const memo = meId == null ? null : await UserMemos.findOneBy({
-			userId: meId,
-			targetUserId: user.id,
-		}).then((row) => row ?? null);
+		const memo =
+			meId == null
+				? null
+				: await UserMemos.findOneBy({
+						userId: meId,
+						targetUserId: user.id,
+				  }).then((row) => row ?? null);
 
 		const packed = {
 			id: user.id,
@@ -599,210 +643,243 @@ export const UserRepository = db.getRepository(User).extend({
 			notesCount: user.notesCount,
 			instance: user.host
 				? userInstanceCache
-					.fetch(
-						user.host,
-						() => Instances.findOneBy({ host: user.host! }),
-						(v) => v != null,
-					)
-					.then((instance) =>
-						instance
-							? {
-								name: instance.name,
-								softwareName: instance.softwareName,
-								softwareVersion: instance.softwareVersion,
-								iconUrl: instance.iconUrl,
-								faviconUrl: instance.faviconUrl,
-								themeColor: instance.themeColor,
-								maxReactionsPerAccount: instance.maxReactionsPerAccount ?? 1
-							}
-							: undefined,
-					)
+						.fetch(
+							user.host,
+							() => Instances.findOneBy({ host: user.host! }),
+							(v) => v != null,
+						)
+						.then((instance) =>
+							instance
+								? {
+										name: instance.name,
+										softwareName: instance.softwareName,
+										softwareVersion: instance.softwareVersion,
+										iconUrl: instance.iconUrl,
+										faviconUrl: instance.faviconUrl,
+										themeColor: instance.themeColor,
+										maxReactionsPerAccount:
+											instance.maxReactionsPerAccount ?? 1,
+								  }
+								: undefined,
+						)
 				: undefined,
 			emojis: populateEmojis(user.emojis, user.host),
 			onlineStatus: await this.getOnlineStatus(user, meId),
+			patron: user.host
+				? undefined
+				: (user.driveCapacityOverrideMb ?? DEFAULT_DRIVE_SIZE / MB) >
+				  DEFAULT_DRIVE_SIZE / MB,
+			badgeRoles:
+				user.host == null
+					? roles.map((x) => ({
+							name: x.name,
+							iconUrl: x.iconUrl,
+							displayOrder: x.displayOrder,
+					  }))
+					: undefined,
+			originalName: memo?.customName
+				? isDeleted
+					? "🗑"
+					: user.name
+				: undefined,
 			memo: memo?.memo ? memo.memo : undefined,
 			...(opts.detail
 				? {
-					url: profile!.url,
-					uri: user.uri,
-					movedToUri: user.movedToUri
-						? await this.userFromURI(user.movedToUri)
-						: null,
-					alsoKnownAs: user.alsoKnownAs,
-					createdAt: user.createdAt.toISOString(),
-					updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null,
-					lastFetchedAt: user.lastFetchedAt
-						? user.lastFetchedAt.toISOString()
-						: null,
-					bannerUrl: user.banner
-						? DriveFiles.getPublicUrl(user.banner, false)
-						: null,
-					bannerBlurhash: user.banner?.blurhash || null,
-					bannerColor: null, // 後方互換性のため
-					isLocked: isMe ? user.isLocked : !user.isSilentLocked && user.isLocked,
-					isSilenced: user.isSilenced || falsy,
-					isSuspended: user.isSuspended || falsy,
-					description: isDeleted ? "🗑" : profile!.description,
-					location: isDeleted ? "🗑" : profile!.location,
-					birthday: isDeleted ? "🗑" : profile!.birthday,
-					lang: isDeleted ? "🗑" : profile!.lang,
-					fields: isDeleted ? "🗑" : profile!.fields,
-					followersCount: followersCount ?? "N/A",
-					followingCount: followingCount ?? "N/A",
-					hasClips: !user.host ? Clips.count({
-						where: { userId: user.id, isPublic: true },
-						take: 1,
-					}).then((count) => count > 0) : false,
-					hasPages: !user.host ? profile!.pinnedPageId ? true : Pages.count({
-						where: { userId: user.id, isPublic: true },
-						take: 1,
-					}).then((count) => count > 0) : false,
-					hasGallerys: !user.host ? GalleryPosts.count({
-						where: { userId: user.id, },
-						take: 1,
-					}).then((count) => count > 0) : false,
-					pinnedNoteIds: pins.map((pin) => pin.noteId),
-					pinnedNotes: Notes.packMany(
-						pins.map((pin) => pin.note!),
-						me,
-						{
-							detail: true,
+						url: profile!.url,
+						uri: user.uri,
+						movedToUri: user.movedToUri
+							? await this.userFromURI(user.movedToUri)
+							: null,
+						alsoKnownAs: user.alsoKnownAs,
+						createdAt: user.createdAt.toISOString(),
+						updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null,
+						lastFetchedAt: user.lastFetchedAt
+							? user.lastFetchedAt.toISOString()
+							: null,
+						bannerUrl: user.banner
+							? DriveFiles.getPublicUrl(user.banner, false)
+							: null,
+						bannerBlurhash: user.banner?.blurhash || null,
+						bannerColor: null, // 後方互換性のため
+						isLocked: isMe
+							? user.isLocked
+							: !user.isSilentLocked && user.isLocked,
+						isSilenced: user.isSilenced || falsy,
+						isSuspended: user.isSuspended || falsy,
+						description: isDeleted ? "🗑" : profile!.description,
+						location: isDeleted ? "🗑" : profile!.location,
+						birthday: isDeleted ? "🗑" : profile!.birthday,
+						lang: isDeleted ? "🗑" : profile!.lang,
+						fields: isDeleted ? "🗑" : profile!.fields,
+						followersCount: followersCount ?? "N/A",
+						followingCount: followingCount ?? "N/A",
+						hasClips: !user.host
+							? Clips.count({
+									where: { userId: user.id, isPublic: true },
+									take: 1,
+							  }).then((count) => count > 0)
+							: false,
+						hasPages: !user.host
+							? profile!.pinnedPageId
+								? true
+								: Pages.count({
+										where: { userId: user.id, isPublic: true },
+										take: 1,
+								  }).then((count) => count > 0)
+							: false,
+						hasGallerys: !user.host
+							? GalleryPosts.count({
+									where: { userId: user.id },
+									take: 1,
+							  }).then((count) => count > 0)
+							: false,
+						pinnedNoteIds: pins.map((pin) => pin.noteId),
+						pinnedNotes: Notes.packMany(
+							pins.map((pin) => pin.note!),
+							me,
+							{
+								detail: true,
+							},
+						),
+						pinnedPageId: profile!.pinnedPageId,
+						pinnedPage: profile!.pinnedPageId
+							? Pages.pack(profile!.pinnedPageId, me)
+							: null,
+						publicReactions: profile!.publicReactions,
+						ffVisibility: profile!.ffVisibility,
+						isRemoteLocked:
+							(isMe
+								? user.isRemoteLocked
+								: !user.isSilentLocked && user.isRemoteLocked) || falsy,
+						twoFactorEnabled: profile!.twoFactorEnabled,
+						usePasswordLessLogin: profile!.usePasswordLessLogin,
+						showDonateBadges: profile!.showDonateBadges,
+						securityKeys: profile!.twoFactorEnabled
+							? UserSecurityKeys.countBy({
+									userId: user.id,
+							  }).then((result) => result >= 1)
+							: false,
+						badges: badges?.length !== 0 ? badges : undefined,
+						roles,
+						achievements: [],
+						loggedInDays: 0,
+						driveCapacityOverrideMb: user.driveCapacityOverrideMb,
+						policies: {
+							gtlAvailable: true,
+							ltlAvailable: true,
+							canPublicNote: true,
+							canCreateContent: true,
+							canUpdateContent: true,
+							canDeleteContent: true,
+							canInvite: true,
+							inviteLimit: 128,
+							inviteLimitCycle: 0,
+							inviteExpirationTime: 0,
+							canManageCustomEmojis: false,
+							canSearchNotes: true,
+							canHideAds: true,
+							alwaysMarkNsfw: false,
+							driveCapacityMb: 5192,
+							pinLimit: 30,
+							antennaLimit: 128,
+							wordMuteLimit: 1024,
+							webhookLimit: 128,
+							clipLimit: 128,
+							noteEachClipsLimit: 1024,
+							userListLimit: 128,
+							userEachUserListsLimit: 1024,
+							rateLimitFactor: 128,
 						},
-					),
-					pinnedPageId: profile!.pinnedPageId,
-					pinnedPage: profile!.pinnedPageId
-						? Pages.pack(profile!.pinnedPageId, me)
-						: null,
-					publicReactions: profile!.publicReactions,
-					ffVisibility: profile!.ffVisibility,
-					isRemoteLocked:  (isMe ? user.isRemoteLocked : !user.isSilentLocked && user.isRemoteLocked) || falsy,
-					twoFactorEnabled: profile!.twoFactorEnabled,
-					usePasswordLessLogin: profile!.usePasswordLessLogin,
-					showDonateBadges: profile!.showDonateBadges,
-					securityKeys: profile!.twoFactorEnabled
-						? UserSecurityKeys.countBy({
-							userId: user.id,
-						}).then((result) => result >= 1)
-						: false,
-					badges: badges?.length !== 0 ? badges : undefined,
-					roles,
-					achievements: [],
-					loggedInDays: 0,
-					driveCapacityOverrideMb: user.driveCapacityOverrideMb,
-					policies: {
-						gtlAvailable: true,
-						ltlAvailable: true,
-						canPublicNote: true,
-						canCreateContent: true,
-						canUpdateContent: true,
-						canDeleteContent: true,
-						canInvite: true,
-						inviteLimit: 128,
-						inviteLimitCycle: 0,
-						inviteExpirationTime: 0,
-						canManageCustomEmojis: false,
-						canSearchNotes: true,
-						canHideAds: true,
-						alwaysMarkNsfw: false,
-						driveCapacityMb: 5192,
-						pinLimit: 30,
-						antennaLimit: 128,
-						wordMuteLimit: 1024,
-						webhookLimit: 128,
-						clipLimit: 128,
-						noteEachClipsLimit: 1024,
-						userListLimit: 128,
-						userEachUserListsLimit: 1024,
-						rateLimitFactor: 128,
-					}
-				}
+				  }
 				: {}),
 
 			...(opts.detail && isMe
 				? {
-					avatarId: user.avatarId,
-					bannerId: user.bannerId,
-					injectFeaturedNote: profile!.injectFeaturedNote,
-					receiveAnnouncementEmail: profile!.receiveAnnouncementEmail,
-					alwaysMarkNsfw: profile!.alwaysMarkNsfw,
-					autoSensitive: profile!.autoSensitive,
-					carefulBot: profile!.carefulBot,
-					autoAcceptFollowed: profile!.autoAcceptFollowed,
-					noCrawle: profile!.noCrawle,
-					preventAiLearning: profile!.preventAiLearning,
-					isExplorable: user.isExplorable,
-					isRemoteExplorable: user.isRemoteExplorable,
-					isDeleted: user.isDeleted,
-					hideOnlineStatus: user.hideOnlineStatus,
-					hasUnreadSpecifiedNotes: NoteUnreads.count({
-						where: { userId: user.id, isSpecified: true },
-						take: 1,
-					}).then((count) => count > 0),
-					hasUnreadMentions: NoteUnreads.count({
-						where: { userId: user.id, isMentioned: true },
-						take: 1,
-					}).then((count) => count > 0),
-					hasUnreadAnnouncement: this.getHasUnreadAnnouncement(user.id),
-					hasUnreadAntenna: this.getHasUnreadAntenna(user.id),
-					hasUnreadChannel: this.getHasUnreadChannel(user.id),
-					hasUnreadMessagingMessage: this.getHasUnreadMessagingMessage(
-						user.id,
-					),
-					hasUnreadNotification: this.getHasUnreadNotification(user.id),
-					hasPendingReceivedFollowRequest:
-						this.getHasPendingReceivedFollowRequest(user.id),
-					integrations: profile!.integrations,
-					mutedWords: profile!.mutedWords,
-					mutedInstances: profile!.mutedInstances,
-					mutingNotificationTypes: profile!.mutingNotificationTypes,
-					emailNotificationTypes: profile!.emailNotificationTypes,
-					showTimelineReplies: user.showTimelineReplies || falsy,
-					blockPostPublic: user.blockPostPublic || falsy,
-					blockPostHome: user.blockPostHome || falsy,
-					blockPostNotLocal: user.blockPostNotLocal || falsy,
-					blockPostNotLocalPublic: user.blockPostNotLocalPublic || falsy,
-					localShowRenote: user.localShowRenote ?? truthy,
-					remoteShowRenote: user.remoteShowRenote || falsy,
-					showSelfRenoteToHome: user.showSelfRenoteToHome ?? truthy,
-					lastActiveDate: user.lastActiveDate ? user.lastActiveDate.toISOString() : null,
-				}
+						avatarId: user.avatarId,
+						bannerId: user.bannerId,
+						injectFeaturedNote: profile!.injectFeaturedNote,
+						receiveAnnouncementEmail: profile!.receiveAnnouncementEmail,
+						alwaysMarkNsfw: profile!.alwaysMarkNsfw,
+						autoSensitive: profile!.autoSensitive,
+						carefulBot: profile!.carefulBot,
+						autoAcceptFollowed: profile!.autoAcceptFollowed,
+						noCrawle: profile!.noCrawle,
+						preventAiLearning: profile!.preventAiLearning,
+						isExplorable: user.isExplorable,
+						isRemoteExplorable: user.isRemoteExplorable,
+						isDeleted: user.isDeleted,
+						hideOnlineStatus: user.hideOnlineStatus,
+						hasUnreadSpecifiedNotes: NoteUnreads.count({
+							where: { userId: user.id, isSpecified: true },
+							take: 1,
+						}).then((count) => count > 0),
+						hasUnreadMentions: NoteUnreads.count({
+							where: { userId: user.id, isMentioned: true },
+							take: 1,
+						}).then((count) => count > 0),
+						hasUnreadAnnouncement: this.getHasUnreadAnnouncement(user.id),
+						hasUnreadAntenna: this.getHasUnreadAntenna(user.id),
+						hasUnreadChannel: this.getHasUnreadChannel(user.id),
+						hasUnreadMessagingMessage: this.getHasUnreadMessagingMessage(
+							user.id,
+						),
+						hasUnreadNotification: this.getHasUnreadNotification(user.id),
+						hasPendingReceivedFollowRequest:
+							this.getHasPendingReceivedFollowRequest(user.id),
+						integrations: profile!.integrations,
+						mutedWords: profile!.mutedWords,
+						mutedInstances: profile!.mutedInstances,
+						mutingNotificationTypes: profile!.mutingNotificationTypes,
+						emailNotificationTypes: profile!.emailNotificationTypes,
+						showTimelineReplies: user.showTimelineReplies || falsy,
+						blockPostPublic: user.blockPostPublic || falsy,
+						blockPostHome: user.blockPostHome || falsy,
+						blockPostNotLocal: user.blockPostNotLocal || falsy,
+						blockPostNotLocalPublic: user.blockPostNotLocalPublic || falsy,
+						localShowRenote: user.localShowRenote ?? truthy,
+						remoteShowRenote: user.remoteShowRenote || falsy,
+						showSelfRenoteToHome: user.showSelfRenoteToHome ?? truthy,
+						lastActiveDate: user.lastActiveDate
+							? user.lastActiveDate.toISOString()
+							: null,
+				  }
 				: {}),
 
 			...(opts.includeSecrets
 				? {
-					email: profile!.email,
-					emailVerified: profile!.emailVerified,
-					securityKeysList: profile!.twoFactorEnabled
-						? UserSecurityKeys.find({
-							where: {
-								userId: user.id,
-							},
-							select: {
-								id: true,
-								name: true,
-								lastUsed: true,
-							},
-						})
-						: [],
-					inviteUserId: user.inviteUserId,
-					isSilentLocked: user.isSilentLocked || falsy,
-				}
+						email: profile!.email,
+						emailVerified: profile!.emailVerified,
+						securityKeysList: profile!.twoFactorEnabled
+							? UserSecurityKeys.find({
+									where: {
+										userId: user.id,
+									},
+									select: {
+										id: true,
+										name: true,
+										lastUsed: true,
+									},
+							  })
+							: [],
+						inviteUserId: user.inviteUserId,
+						isSilentLocked: user.isSilentLocked || falsy,
+				  }
 				: {}),
 
 			...(relation
 				? {
-					isFollowing: relation.isFollowing,
-					isFollowed: relation.isFollowed,
-					hasPendingFollowRequestFromYou:
-						relation.hasPendingFollowRequestFromYou,
-					hasPendingFollowRequestToYou: relation.hasPendingFollowRequestToYou,
-					isBlocking: relation.isBlocking,
-					isBlocked: relation.isBlocked,
-					isMuted: relation.isMuted,
-					isRenoteMuted: relation.isRenoteMuted,
-					isFollowBlocking: relation.isFollowBlocking,
-					isInviter:relation.isInviter ? true : undefined,
-				}
+						isFollowing: relation.isFollowing,
+						isFollowed: relation.isFollowed,
+						hasPendingFollowRequestFromYou:
+							relation.hasPendingFollowRequestFromYou,
+						hasPendingFollowRequestToYou: relation.hasPendingFollowRequestToYou,
+						isBlocking: relation.isBlocking,
+						isBlocked: relation.isBlocked,
+						isMuted: relation.isMuted,
+						isRenoteMuted: relation.isRenoteMuted,
+						isFollowBlocking: relation.isFollowBlocking,
+						isInviter: relation.isInviter ? true : undefined,
+				  }
 				: {}),
 		} as Promiseable<Packed<"User">> as Promiseable<
 			IsMeAndIsUserDetailed<ExpectsMe, D>

@@ -1,9 +1,8 @@
 import { computed, reactive } from "vue";
 import { api } from "./os";
-import { stream } from '@/stream';
+import { stream } from "@/stream";
 import type * as Misskey from "calckey-js";
 import { get, set } from "./scripts/idb-proxy";
-
 
 // TODO: 他のタブと永続化されたstateを同期
 
@@ -15,28 +14,35 @@ export const instance: Misskey.entities.InstanceMetadata = reactive(
 	instanceData
 		? { ...JSON.parse(instanceData) }
 		: {
-			// TODO: set default values
-		},
+				// TODO: set default values
+		  },
 );
 
-stream.on('emojiAdded', emojiData => {
+stream.on("emojiAdded", (emojiData) => {
 	instance.emojis = [emojiData.emoji, ...instance.emojis];
 	instance.errorEmoji = {};
 });
 
-stream.on('emojiUpdated', emojiData => {
-	instance.emojis = instance.emojis.map(item => emojiData.emojis.find(search => search.id === item.id) as Misskey.entities.CustomEmoji ?? item);
+stream.on("emojiUpdated", (emojiData) => {
+	instance.emojis = instance.emojis.map(
+		(item) =>
+			(emojiData.emojis.find(
+				(search) => search.id === item.id,
+			) as Misskey.entities.CustomEmoji) ?? item,
+	);
 	instance.errorEmoji = {};
 });
 
-stream.on('emojiDeleted', emojiData => {
-	instance.emojis = instance.emojis.filter(item => !emojiData.emojis.some(search => search.id === item.id));
+stream.on("emojiDeleted", (emojiData) => {
+	instance.emojis = instance.emojis.filter(
+		(item) => !emojiData.emojis.some((search) => search.id === item.id),
+	);
 });
 
 export async function emojiLoad() {
 	if (!instance.remoteEmojiMode) {
 		const remoteEmoji = await get("remoteEmojiData");
-		
+
 		if (remoteEmoji) {
 			for (const [k, v] of Object.entries(remoteEmoji)) {
 				instance[k] = v;
@@ -87,7 +93,6 @@ export async function fetchPlusEmoji() {
 	for (const [k, v] of Object.entries(meta)) {
 		instance[k] = v;
 	}
-
 }
 
 export async function fetchAllEmoji() {
@@ -107,7 +112,6 @@ export async function fetchAllEmoji() {
 	for (const [k, v] of Object.entries(meta)) {
 		instance[k] = v;
 	}
-
 }
 
 export async function fetchAllEmojiNoCache() {
@@ -122,11 +126,11 @@ export async function fetchAllEmojiNoCache() {
 
 export async function fetchEmojiStats(limit) {
 	const emojiStats = await api("emoji-stats", {
-			limit,
-			localOnly: true,
-		});
+		limit,
+		localOnly: true,
+	});
 
-		instance.recentlyPopularReactions = emojiStats.recentlySentReactions;
+	instance.recentlyPopularReactions = emojiStats.recentlySentReactions;
 }
 
 export const emojiCategories = computed(() => {

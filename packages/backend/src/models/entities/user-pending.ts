@@ -29,7 +29,7 @@ export class UserPending {
 		length: 128,
 	})
 	public password: string;
-	
+
 	@Column('varchar', { 
 		length: 10,
 		nullable: true 

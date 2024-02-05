@@ -228,7 +228,9 @@ export const routes = [
 			{
 				path: "/webhook/new-simple",
 				name: "webhook",
-				component: page(() => import("./pages/settings/webhook.new.simple.vue")),
+				component: page(
+					() => import("./pages/settings/webhook.new.simple.vue"),
+				),
 			},
 			{
 				path: "/webhook/edit/:webhookId",
@@ -692,7 +694,9 @@ export const routes = [
 	},
 	{
 		path: "/emoji_dialog/:emoji",
-		component: page(() => import("./components/MkCustomEmojiDetailedDialog.vue")),
+		component: page(
+			() => import("./components/MkCustomEmojiDetailedDialog.vue"),
+		),
 	},
 	{
 		name: "index",

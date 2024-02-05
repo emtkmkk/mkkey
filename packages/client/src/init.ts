@@ -33,7 +33,7 @@ import widgets from "@/widgets";
 import directives from "@/directives";
 import components from "@/components";
 import { version, ui, lang, host } from "@/config";
-import { applyFont, fontList } from '@/scripts/font';
+import { applyFont, fontList } from "@/scripts/font";
 import { applyTheme } from "@/scripts/theme";
 import { isDeviceDarkmode } from "@/scripts/is-device-darkmode";
 import { i18n } from "@/i18n";
@@ -42,7 +42,16 @@ import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i, refreshAccount, login, updateAccount, signout } from "@/account";
 import { defaultStore, ColdDeviceStorage, userActions } from "@/store";
-import { emojiLoad, fetchInstance, fetchEmoji, fetchEmojiStats, fetchPlusEmoji, fetchAllEmoji, fetchAllEmojiNoCache, instance } from "@/instance";
+import {
+	emojiLoad,
+	fetchInstance,
+	fetchEmoji,
+	fetchEmojiStats,
+	fetchPlusEmoji,
+	fetchAllEmoji,
+	fetchAllEmojiNoCache,
+	instance,
+} from "@/instance";
 import { makeHotkey } from "@/scripts/hotkey";
 import { search } from "@/scripts/search";
 import { deviceKind } from "@/scripts/device-kind";
@@ -51,8 +60,11 @@ import { reloadChannel } from "@/scripts/unison-reload";
 import { reactionPicker } from "@/scripts/reaction-picker";
 import { getUrlWithoutLoginId } from "@/scripts/login-id";
 import { getAccountFromId } from "@/scripts/get-account-from-id";
-import getUserName from '@/scripts/get-user-name';
-import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver';
+import getUserName from "@/scripts/get-user-name";
+import {
+	isMobileData,
+	initializeDetectNetworkChange,
+} from "@/scripts/datasaver";
 
 (async () => {
 	console.info(`Calckey v${version}`);
@@ -64,11 +76,10 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	await set("errorLog", [`${formattedDate} - Calckey v${version}`]);
 
 	window.addEventListener("error", async (event) => {
-
 		// エラーログのテキストを生成
 		const logtext = `${formattedDate} - ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`;
 
-		let currentLogs = await get("errorLog") || [];
+		let currentLogs = (await get("errorLog")) || [];
 		currentLogs.push(logtext);
 
 		if (currentLogs.length > 50) {
@@ -76,17 +87,15 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		}
 
 		await set("errorLog", currentLogs);
-
 	});
 
-	window.addEventListener('unhandledrejection', async (event) => {
-
+	window.addEventListener("unhandledrejection", async (event) => {
 		const currentDate = new Date();
 		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
 		const logtext = `${formattedDate} - Unhandled promise rejection: ${event.reason}`;
 
-		let currentLogs = await get("errorLog") || [];
+		let currentLogs = (await get("errorLog")) || [];
 		currentLogs.push(logtext);
 
 		if (currentLogs.length > 50) {
@@ -95,8 +104,6 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 
 		await set("errorLog", currentLogs);
 	});
-
-
 
 	if (_DEV_) {
 		console.warn("Development mode!!!");
@@ -130,7 +137,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	}
 
 	// タッチデバイスでCSSの:hoverを機能させる
-	document.addEventListener("touchend", () => { }, { passive: true });
+	document.addEventListener("touchend", () => {}, { passive: true });
 
 	// 一斉リロード
 	reloadChannel.addEventListener("message", (path) => {
@@ -222,7 +229,6 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	let fetchInstanceMetaPromise = fetchInstance();
 
 	fetchInstanceMetaPromise.then(() => {
-
 		localStorage.setItem("v", instance.version);
 
 		// Init service worker
@@ -230,20 +236,19 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	});
 
 	// 設定の取得が完了するまでストップ
-	await defaultStore.loaded
+	await defaultStore.loaded;
 
 	const app = createApp(
 		window.location.search === "?zen"
 			? defineAsyncComponent(() => import("@/ui/zen.vue"))
 			: !$i
-				? defineAsyncComponent(() => import("@/ui/visitor.vue"))
-				: (ui === "deck" && location.pathname === '/')
-					? defineAsyncComponent(() => import("@/ui/deck.vue"))
-					: ui === "classic"
-						? defineAsyncComponent(() => import("@/ui/classic.vue"))
-						: defineAsyncComponent(() => import("@/ui/universal.vue")),
+			? defineAsyncComponent(() => import("@/ui/visitor.vue"))
+			: ui === "deck" && location.pathname === "/"
+			? defineAsyncComponent(() => import("@/ui/deck.vue"))
+			: ui === "classic"
+			? defineAsyncComponent(() => import("@/ui/classic.vue"))
+			: defineAsyncComponent(() => import("@/ui/universal.vue")),
 	);
-
 
 	app.config.errorHandler = async (err, vm, info) => {
 		const currentDate = new Date();
@@ -252,7 +257,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		// エラーログのテキストを生成
 		const logtext = `${formattedDate} - ${err.toString()} - ${info}`;
 
-		let currentLogs = await get("errorLog") || [];
+		let currentLogs = (await get("errorLog")) || [];
 		currentLogs.push(logtext);
 
 		if (currentLogs.length > 50) {
@@ -260,7 +265,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 		}
 
 		await set("errorLog", currentLogs);
-	}
+	};
 
 	if (_DEV_) {
 		app.config.performance = true;
@@ -278,12 +283,13 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	directives(app);
 	components(app);
 
-	const wait = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
+	const wait = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 	const splashText = document.getElementById("splashText");
 
 	// ロードを長くする設定がオンで、splashTextがある場合、2.2秒待つ
-	if ($i && defaultStore.state.longLoading && splashText?.textContent) await wait(2200);
+	if ($i && defaultStore.state.longLoading && splashText?.textContent)
+		await wait(2200);
 
 	const splash = document.getElementById("splash");
 	// 念のためnullチェック(HTMLが古い場合があるため(そのうち消す))
@@ -339,7 +345,8 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 			// 変なバージョン文字列来るとcompareVersionsでエラーになるため
 			if (
 				lastVersion != null &&
-				(defaultStore.state.showMiniUpdates || compareVersions(version, lastVersion) === 1) &&
+				(defaultStore.state.showMiniUpdates ||
+					compareVersions(version, lastVersion) === 1) &&
 				defaultStore.state.showUpdates
 			) {
 				// ログインしてる場合だけ
@@ -399,7 +406,7 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 
 	//#region Auto switch data saver
 	if (defaultStore.state.autoSwitchDataSaver) {
-		defaultStore.set('enableDataSaverMode', isMobileData());
+		defaultStore.set("enableDataSaverMode", isMobileData());
 		initializeDetectNetworkChange();
 	}
 	//#endregion
@@ -407,11 +414,17 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	if (defaultStore.state.randomCustomFont) {
 		if (defaultStore.state.includesRandomEsenapaj) {
 			const _fontList = Object.keys(fontList);
-			defaultStore.set("customFont", _fontList[Math.floor(Math.random() * _fontList.length)]);
+			defaultStore.set(
+				"customFont",
+				_fontList[Math.floor(Math.random() * _fontList.length)],
+			);
 		} else {
 			if (defaultStore.state.customFont !== "esenapaj") {
 				const _fontList = Object.keys(fontList).filter((x) => x !== "esenapaj");
-				defaultStore.set("customFont", _fontList[Math.floor(Math.random() * _fontList.length)]);
+				defaultStore.set(
+					"customFont",
+					_fontList[Math.floor(Math.random() * _fontList.length)],
+				);
 			}
 		}
 	}
@@ -425,8 +438,12 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 	});
 
 	fetchInstanceMetaPromise.then(() => {
-		const reInit = darkTheme?.name === "Rosé Pine" && lightTheme?.name === "l-rosepinedawn"
-		if (defaultStore.state.themeInitial || (reInit && !defaultStore.state.completedInit)) {
+		const reInit =
+			darkTheme?.name === "Rosé Pine" && lightTheme?.name === "l-rosepinedawn";
+		if (
+			defaultStore.state.themeInitial ||
+			(reInit && !defaultStore.state.completedInit)
+		) {
 			if (instance.defaultLightTheme != null)
 				ColdDeviceStorage.set(
 					"lightTheme",
@@ -515,17 +532,29 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 			});
 		}
 
-
 		fetchInstanceMetaPromise.then(async () => {
 			fetchEmoji();
 			fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
-			const lastEmojiFetchDate = await get("remoteEmojiData") ? await get("remoteEmojiData")?.emojiFetchDate : undefined;
-			const emojiFetchDateInt = Math.max(lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0, await get("emojiFetchAttemptDate") ? parseInt(await get("emojiFetchAttemptDate"), 10) : 0);
+			const lastEmojiFetchDate = (await get("remoteEmojiData"))
+				? await get("remoteEmojiData")?.emojiFetchDate
+				: undefined;
+			const emojiFetchDateInt = Math.max(
+				lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0,
+				(await get("emojiFetchAttemptDate"))
+					? parseInt(await get("emojiFetchAttemptDate"), 10)
+					: 0,
+			);
 			let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
 			// 更新間隔 : データセーバーなら、24時間 そうでないなら、6時間
-			const fetchTimeBorder = defaultStore.state.enableDataSaverMode ? 1000 * 60 * 60 * 24 : 1000 * 60 * 60 * 6
+			const fetchTimeBorder = defaultStore.state.enableDataSaverMode
+				? 1000 * 60 * 60 * 24
+				: 1000 * 60 * 60 * 6;
 
-			if (fetchModeMax === "always" || (Date.now() - emojiFetchDateInt) > fetchTimeBorder || fetchModeMax !== (await get("lastFetchModeMax") ?? fetchModeMax)) {
+			if (
+				fetchModeMax === "always" ||
+				Date.now() - emojiFetchDateInt > fetchTimeBorder ||
+				fetchModeMax !== ((await get("lastFetchModeMax")) ?? fetchModeMax)
+			) {
 				// 常に取得がon or 最終取得日が無い or 前回取得から更新間隔以上 or 取得設定が前回と異なる場合絵文字を取得
 				//一度キャッシュを破棄
 				if (fetchModeMax !== "keep") {
@@ -537,7 +566,8 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				}
 				// 一度だけ更新の場合、データモードを前回と同じにしておく
 				if (fetchModeMax === "once") {
-					const lastFetchModeMax = ((await get("lastFetchModeMax")) ?? fetchModeMax);
+					const lastFetchModeMax =
+						(await get("lastFetchModeMax")) ?? fetchModeMax;
 					fetchModeMax = lastFetchModeMax;
 					defaultStore.set("remoteEmojisFetch", lastFetchModeMax);
 				}
@@ -574,11 +604,11 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 						text: "ホームTLの内容を自身がフォローしている人の投稿のみに変更する事が可能です。\n※ここで変更しない場合でも設定ページ>色々にて後から変更する事が可能です。\n今すぐホームTLをフォロー者の投稿のみの表示に変更しますか？",
 					});
 					if (!canceled) {
-						defaultStore.set("showLocalPostsInTimeline", "social")
+						defaultStore.set("showLocalPostsInTimeline", "social");
 						defaultStore.set("showLocalPostsInfoPopup", true);
 						location.reload();
 					} else {
-						defaultStore.set("showLocalPostsInTimeline", "home")
+						defaultStore.set("showLocalPostsInTimeline", "home");
 						defaultStore.set("showLocalPostsInfoPopup", true);
 					}
 				} else {
@@ -594,13 +624,21 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 				// 登録から(7日-((投稿数-20)*1.5時間))経過
 				// ただし1日未満にはならない
 				// 投稿数が20以上
-				const eTime = $i ? (Date.now() - new Date($i.createdAt).valueOf()) : undefined;
-				const inviteBorder = eTime ? eTime > 7 * 24 * 60 * 60 * 1000 ? 7 * 24 * 60 * 60 * 1000 : Math.max(7 * 24 * 60 * 60 * 1000 - ($i.notesCount * 90 * 60 * 1000), 24 * 60 * 60 * 1000) : undefined;
-				const canInvite = $i ? eTime > inviteBorder && $i.notesCount >= 20 && !$i.isSilenced : false;
-				if (
-					defaultStore.state.tutorial === -1 &&
-					canInvite
-				) {
+				const eTime = $i
+					? Date.now() - new Date($i.createdAt).valueOf()
+					: undefined;
+				const inviteBorder = eTime
+					? eTime > 7 * 24 * 60 * 60 * 1000
+						? 7 * 24 * 60 * 60 * 1000
+						: Math.max(
+								7 * 24 * 60 * 60 * 1000 - $i.notesCount * 90 * 60 * 1000,
+								24 * 60 * 60 * 1000,
+						  )
+					: undefined;
+				const canInvite = $i
+					? eTime > inviteBorder && $i.notesCount >= 20 && !$i.isSilenced
+					: false;
+				if (defaultStore.state.tutorial === -1 && canInvite) {
 					await alert({
 						type: "info",
 						text: "もこきーの招待コードを発行する事が出来るようになりました！\n\n左メニューのℹ️ボタンから招待コードを発行することが出来ます。",
@@ -609,19 +647,19 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 					defaultStore.set("showInviteInfoPopupDevice", true);
 				}
 			} else {
-				if (!(defaultStore.state.showInviteInfoPopupAccount && defaultStore.state.showInviteInfoPopupDevice)) {
+				if (
+					!(
+						defaultStore.state.showInviteInfoPopupAccount &&
+						defaultStore.state.showInviteInfoPopupDevice
+					)
+				) {
 					defaultStore.set("showInviteInfoPopupDevice", true);
 					defaultStore.set("showInviteInfoPopupAccount", true);
 				}
 			}
-			if (
-				!defaultStore.state.showMultiReactionInfoPopup
-			) {
+			if (!defaultStore.state.showMultiReactionInfoPopup) {
 				const canMultiReaction = $i && $i.patron;
-				if (
-					defaultStore.state.tutorial === -1 &&
-					canMultiReaction
-				) {
+				if (defaultStore.state.tutorial === -1 && canMultiReaction) {
 					await alert({
 						type: "info",
 						text: "支援または自作絵の絵文字登録、ありがとうございます！\n複数リアクション機能が解禁されました！\n\nもこきーや他の対応サーバのユーザには、1つの投稿に対して基本3種類までのリアクションを付ける事が出来ます！\n（未対応のサーバのユーザに対しては、通常と同じで1つまでしか付けられません。複数リアクション可能な投稿かどうかはリアクションボタンがウインクしているかどうかで判別可能です。）",
@@ -635,26 +673,35 @@ import { isMobileData, initializeDetectNetworkChange } from '@/scripts/datasaver
 					const powerMode = module.default;
 					powerMode.shake = !defaultStore.state.powerModeNoShake;
 					powerMode.colorful = !!defaultStore.state.powerModeColorful;
-					window.addEventListener('input', powerMode);
+					window.addEventListener("input", powerMode);
 				});
 			}
-			if (!defaultStore.state.unlockDeveloperSettings && defaultStore.state.developer) {
+			if (
+				!defaultStore.state.unlockDeveloperSettings &&
+				defaultStore.state.developer
+			) {
 				defaultStore.set("unlockDeveloperSettings", true);
 			}
 		});
 
 		let lastUsed = localStorage.getItem("lastUsed");
-		if (!lastUsed && $i.lastActiveDate) lastUsed = new Date($i.lastActiveDate).valueOf().toString();
+		if (!lastUsed && $i.lastActiveDate)
+			lastUsed = new Date($i.lastActiveDate).valueOf().toString();
 		if (lastUsed) {
 			let lastUsedDate = parseInt(lastUsed, 10);
-			if ($i.lastActiveDate && new Date($i.lastActiveDate).valueOf() > lastUsedDate) {
+			if (
+				$i.lastActiveDate &&
+				new Date($i.lastActiveDate).valueOf() > lastUsedDate
+			) {
 				lastUsedDate = new Date($i.lastActiveDate).valueOf();
 			}
 			// 三日前以上前なら
 			if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 72) {
 				toast(
 					i18n.t("welcomeBackWithNameLong", {
-						days: Math.floor((Date.now() - lastUsedDate) / (1000 * 60 * 60 * 24)),
+						days: Math.floor(
+							(Date.now() - lastUsedDate) / (1000 * 60 * 60 * 24),
+						),
 						name: getUserName($i, true),
 					}),
 				);

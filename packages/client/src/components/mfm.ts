@@ -71,11 +71,32 @@ export default defineComponent({
 
 		const ast = (isPlain ? mfm.parseSimple : mfm.parse)(this.text);
 
-    let firstAst = ast;
+		let firstAst = ast;
 
-    let emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type) || (x.props?.text ? /^\s*$/.test(x.props?.text) : false)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type) && !(x.props?.text ? /^\s*$/.test(x.props?.text) : false)) : null;
+		let emojiAst = firstAst.every(
+			(x) =>
+				[
+					"emojiCode",
+					"unicodeEmoji",
+					"mention",
+					"hashtag",
+					"link",
+					"url",
+				].includes(x.type) ||
+				(x.props?.text ? /^\s*$/.test(x.props?.text) : false),
+		)
+			? firstAst.map(
+					(x) =>
+						["emojiCode", "unicodeEmoji"].includes(x.type) &&
+						!(x.props?.text ? /^\s*$/.test(x.props?.text) : false),
+			  )
+			: null;
 
-		let isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji"].includes(x.type) || (x.props?.text ? /^\s*$/.test(x.props?.text) : false));
+		let isEmojiOnly = firstAst.every(
+			(x) =>
+				["emojiCode", "unicodeEmoji"].includes(x.type) ||
+				(x.props?.text ? /^\s*$/.test(x.props?.text) : false),
+		);
 
 		const validTime = (t: string | null | undefined) => {
 			if (t == null) return null;
@@ -91,7 +112,6 @@ export default defineComponent({
 			return t.match(/^([\da-f]{3}|([\da-f]{2}){2,4})$/i) ? t : null;
 		};
 
-
 		const genEl = (ast: mfm.MfmNode[]) =>
 			concat(
 				ast.map((token, index): VNode[] => {
@@ -103,21 +123,42 @@ export default defineComponent({
 								text = nyaize(text);
 							}*/
 
-							if (defaultStore.state.enableMorseDecode){
-								while (/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/.test(text)){
-									const exec = /([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/.exec(text);
+							if (defaultStore.state.enableMorseDecode) {
+								while (
+									/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/.test(
+										text,
+									)
+								) {
+									const exec =
+										/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/.exec(
+											text,
+										);
 									if (exec?.[2] || exec?.[3]) {
-										text = text.replace(/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/,`("${mr_to_str(exec?.[2] || exec?.[3],!!exec?.[2])}")`);
+										text = text.replace(
+											/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/,
+											`("${mr_to_str(exec?.[2] || exec?.[3], !!exec?.[2])}")`,
+										);
 									} else {
-										text = text.replace(/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/,`("")`);
+										text = text.replace(
+											/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/,
+											`("")`,
+										);
 									}
 								}
 								while (/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/.test(text)) {
-									const exec = /(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/.exec(text);
+									const exec = /(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/.exec(
+										text,
+									);
 									if (exec?.[0]) {
-										text = text.replace(/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/,`("${mr_to_str(exec?.[0],true)}")`);
+										text = text.replace(
+											/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/,
+											`("${mr_to_str(exec?.[0], true)}")`,
+										);
 									} else {
-										text = text.replace(/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/,`("")`);
+										text = text.replace(
+											/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/,
+											`("")`,
+										);
 									}
 								}
 							}
@@ -344,29 +385,47 @@ export default defineComponent({
 									style = `background-color: #${color};`;
 									break;
 								}
-								case 'border': {
+								case "border": {
 									let color = token.props.args.color;
-									color = validColor(color) ? `#${color}` : 'var(--accent)';
+									color = validColor(color) ? `#${color}` : "var(--accent)";
 									let b_style = token.props.args.style;
 									if (
-										!['hidden', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset']
-											.includes(b_style)
-									) b_style = 'solid';
-									const width = parseFloat(token.props.args.width ?? '1');
-									const radius = parseFloat(token.props.args.radius ?? '0');
-									style = `border: ${width}px ${b_style} ${color}; border-radius: ${radius}px;${token.props.args.noclip ? '' : ' overflow: clip;'}`;
+										![
+											"hidden",
+											"dotted",
+											"dashed",
+											"solid",
+											"double",
+											"groove",
+											"ridge",
+											"inset",
+											"outset",
+										].includes(b_style)
+									)
+										b_style = "solid";
+									const width = parseFloat(token.props.args.width ?? "1");
+									const radius = parseFloat(token.props.args.radius ?? "0");
+									style = `border: ${width}px ${b_style} ${color}; border-radius: ${radius}px;${
+										token.props.args.noclip ? "" : " overflow: clip;"
+									}`;
 									break;
 								}
-								case 'ruby': {
-									token.children.forEach((t) => { if (t.type === 'text') { t.props.text = t.props.text.trim(); }});
+								case "ruby": {
+									token.children.forEach((t) => {
+										if (t.type === "text") {
+											t.props.text = t.props.text.trim();
+										}
+									});
 									let rb: string | (string | VNode)[];
 									let rt: string | (string | VNode)[];
 
-									const children = token.children.filter((t) => t.type !== 'text' || t.props.text !== '');
-									if (children.length === 1 && children[0].type === 'text') {
-										const tokens = children[0].props.text.split(' ');
+									const children = token.children.filter(
+										(t) => t.type !== "text" || t.props.text !== "",
+									);
+									if (children.length === 1 && children[0].type === "text") {
+										const tokens = children[0].props.text.split(" ");
 										rb = [tokens[0]];
-										rt = [tokens.slice(1).join(' ')];
+										rt = [tokens.slice(1).join(" ")];
 									} else if (children.length >= 2) {
 										rb = genEl(children.slice(0, -1));
 										rt = genEl(children.slice(-1));
@@ -374,28 +433,52 @@ export default defineComponent({
 										return genEl(children);
 									}
 
-									if (typeof rb[0] === 'string' && typeof rt[0] === 'string' && rt[0] === '') rt = '・'.repeat(rb[0].length);
-									const align = typeof rb[0] === 'string' ? { style: rb.length < rt.length ? 'ruby-align:center' : 'ruby-align:space-around' } : {};
+									if (
+										typeof rb[0] === "string" &&
+										typeof rt[0] === "string" &&
+										rt[0] === ""
+									)
+										rt = "・".repeat(rb[0].length);
+									const align =
+										typeof rb[0] === "string"
+											? {
+													style:
+														rb.length < rt.length
+															? "ruby-align:center"
+															: "ruby-align:space-around",
+											  }
+											: {};
 
-									return h('ruby', align, [rb, h('rt', rt)]);
+									return h("ruby", align, [rb, h("rt", rt)]);
 								}
-								case 'unixtime': {
+								case "unixtime": {
 									const child = token.children[0];
-									const unixtime = Number(child.type === 'text' ? child.props.text : '');
-									return h('span', {
-										style: 'display: inline-block; font-size: 90%; border: solid 1px var(--divider); border-radius: 999px; padding: 4px 10px 4px 6px;',
-									}, [
-										h('i', {
-											class: 'ph ph-clock ph-bold ph-lg',
-											style: 'margin-right: 0.25em;',
-										}),
-										h(MkTime, {
-											key: Math.random(),
-											time: Number.isNaN(unixtime) ? child.type === 'text' ? child.props.text : '？？？' : unixtime * 1000,
-											mode: 'detail',
-											countdown: !!token.props.args.countdown,
-										}),
-									]);
+									const unixtime = Number(
+										child.type === "text" ? child.props.text : "",
+									);
+									return h(
+										"span",
+										{
+											style:
+												"display: inline-block; font-size: 90%; border: solid 1px var(--divider); border-radius: 999px; padding: 4px 10px 4px 6px;",
+										},
+										[
+											h("i", {
+												class: "ph ph-clock ph-bold ph-lg",
+												style: "margin-right: 0.25em;",
+											}),
+											h(MkTime, {
+												key: Math.random(),
+												time: Number.isNaN(unixtime)
+													? child.type === "text"
+														? child.props.text
+														: "？？？"
+													: unixtime * 1000,
+												mode: "detail",
+												countdown: !!token.props.args.countdown,
+											}),
+										],
+									);
 								}
 							}
 							if (style == null) {
@@ -419,12 +502,15 @@ export default defineComponent({
 
 						case "small": {
 							//ルート要素にあり、子要素に絵文字かsmallしかない場合x1で表示する
-							if(isNote && firstAst.length === 1 && firstAst === ast && token.children.every((x) => ["emojiCode","unicodeEmoji","small"].includes(x.type))){
-								return h(
-									"span",
-									{},
-									genEl(token.children),
-								);
+							if (
+								isNote &&
+								firstAst.length === 1 &&
+								firstAst === ast &&
+								token.children.every((x) =>
+									["emojiCode", "unicodeEmoji", "small"].includes(x.type),
+								)
+							) {
+								return h("span", {}, genEl(token.children));
 							}
 							return [
 								h(
@@ -439,10 +525,25 @@ export default defineComponent({
 
 						case "center": {
 							//ルートでcenterしか使用していない場合、中で絵文字big判定をもう一度行う
-							if (isNote && firstAst.length === 1){
+							if (isNote && firstAst.length === 1) {
 								firstAst = token.children;
-								emojiAst = firstAst.every((x) => ["emojiCode","unicodeEmoji","mention","hashtag","link","url"].includes(x.type)) ? firstAst.map((x) => ["emojiCode","unicodeEmoji"].includes(x.type)) : null;
-								isEmojiOnly = firstAst.every((x) => ["emojiCode","unicodeEmoji"].includes(x.type));
+								emojiAst = firstAst.every((x) =>
+									[
+										"emojiCode",
+										"unicodeEmoji",
+										"mention",
+										"hashtag",
+										"link",
+										"url",
+									].includes(x.type),
+								)
+									? firstAst.map((x) =>
+											["emojiCode", "unicodeEmoji"].includes(x.type),
+									  )
+									: null;
+								isEmojiOnly = firstAst.every((x) =>
+									["emojiCode", "unicodeEmoji"].includes(x.type),
+								);
 							}
 							return [
 								h(
@@ -545,7 +646,13 @@ export default defineComponent({
 						}
 
 						case "emojiCode": {
-							if (isNote && !isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
+							if (
+								isNote &&
+								!isPlain &&
+								emojiAst != null &&
+								isEmojiOnly &&
+								emojiAst.length <= 3
+							) {
 								return [
 									h(MkEmoji, {
 										key: Math.random(),
@@ -558,7 +665,12 @@ export default defineComponent({
 										size: 3,
 									}),
 								];
-							} else if (isNote && !isPlain && emojiAst != null && emojiAst.length <= 6){
+							} else if (
+								isNote &&
+								!isPlain &&
+								emojiAst != null &&
+								emojiAst.length <= 6
+							) {
 								return [
 									h(MkEmoji, {
 										key: Math.random(),
@@ -588,7 +700,13 @@ export default defineComponent({
 						}
 
 						case "unicodeEmoji": {
-							if (isNote && !isPlain && emojiAst != null && isEmojiOnly && emojiAst.length <= 3){
+							if (
+								isNote &&
+								!isPlain &&
+								emojiAst != null &&
+								isEmojiOnly &&
+								emojiAst.length <= 3
+							) {
 								return [
 									h(MkEmoji, {
 										key: Math.random(),
@@ -600,7 +718,12 @@ export default defineComponent({
 										size: 3,
 									}),
 								];
-							} else if (isNote && !isPlain && emojiAst != null && emojiAst.length <= 6){
+							} else if (
+								isNote &&
+								!isPlain &&
+								emojiAst != null &&
+								emojiAst.length <= 6
+							) {
 								return [
 									h(MkEmoji, {
 										key: Math.random(),

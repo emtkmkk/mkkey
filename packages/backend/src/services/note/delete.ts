@@ -33,29 +33,39 @@ export default async function (
 	quiet = false,
 	isAdmin = false,
 ) {
-
 	if (note.deletedAt) {
-		if ((Users.isLocalUser(user) && !(note.localOnly && note.channelId)) && !(note.lastSendActivityAt && Date.now() < note.lastSendActivityAt.valueOf() + (1000 * 60 * 30))) {
-			await Notes.update({
-				id: note.id,
-				userId: user.id,
-			},{
-				lastSendActivityAt: new Date(),
-			});
+		if (
+			Users.isLocalUser(user) &&
+			!(note.localOnly && note.channelId) &&
+			!(
+				note.lastSendActivityAt &&
+				Date.now() < note.lastSendActivityAt.valueOf() + 1000 * 60 * 30
+			)
+		) {
+			await Notes.update(
+				{
+					id: note.id,
+					userId: user.id,
+				},
+				{
+					lastSendActivityAt: new Date(),
+				},
+			);
 			await deleteActivity(user, note);
 		}
 		return;
 	}
 
-	const isRenote = note.renoteId &&
-				note.cw == null &&
-				note.text == null &&
-				!note.hasPoll &&
-				(note.fileIds == null || note.fileIds.length === 0);
+	const isRenote =
+		note.renoteId &&
+		note.cw == null &&
+		note.text == null &&
+		!note.hasPoll &&
+		(note.fileIds == null || note.fileIds.length === 0);
 
 	const deletedAt = new Date();
 
-	console.log(`deleteNote : ${note.id}`)
+	console.log(`deleteNote : ${note.id}`);
 
 	// この投稿を除く指定したユーザーによる指定したノートのリノートが存在しないとき
 	if (
@@ -63,14 +73,18 @@ export default async function (
 		(await countSameRenotes(user.id, note.renoteId, note.id)) === 0
 	) {
 		Notes.decrement({ id: note.renoteId }, "renoteCount", 1);
-		Notes.decrement({ id: note.renoteId }, "score", (user.host ? '3' : '9'));
+		Notes.decrement({ id: note.renoteId }, "score", user.host ? "3" : "9");
 	}
 
 	if (note.replyId) {
 		await Notes.decrement({ id: note.replyId }, "repliesCount", 1);
 	}
 
-	const isPhysical = !isAdmin && (isRenote || deletedAt.valueOf() < (note.createdAt.valueOf() + ((1000 * 60 * 3) - (note.score * 10000))))
+	const isPhysical =
+		!isAdmin &&
+		(isRenote ||
+			deletedAt.valueOf() <
+				note.createdAt.valueOf() + (1000 * 60 * 3 - note.score * 10000));
 
 	if (!quiet) {
 		publishNoteStream(note.id, "deleted", {
@@ -81,13 +95,14 @@ export default async function (
 		await deleteActivity(user, note);
 
 		if (isPhysical) {
-
 			// also deliever delete activity to cascaded notes
 			const cascadingNotes = (await findCascadingNotes(note)).filter(
 				(note) => !note.localOnly,
 			); // filter out local-only notes
 			for (const cascadingNote of cascadingNotes) {
-				console.log(`cascadeDeleteNote(${cascadingNotes.length}) : ${cascadingNote.id}`)
+				console.log(
+					`cascadeDeleteNote(${cascadingNotes.length}) : ${cascadingNote.id}`,
+				);
 				if (!cascadingNote.user) continue;
 				if (!Users.isLocalUser(cascadingNote.user)) continue;
 				const content = renderActivity(
@@ -111,37 +126,38 @@ export default async function (
 					instanceChart.updateNote(i.host, note, false);
 				});
 			}
-
 		} else {
-
 			let textCaption = [
-				(note.cw?.length ? `CW ${note.cw.length}` : ""),
-				(note.text?.length ? `📝 ${note.text.length}` : ""),
-				(note.hasPoll ? "📊" : ""),
-				(note.fileIds?.length ? `📎 ${note.fileIds.length}` : ""),
-				(note.renoteId ? "QT" : ""),
-			].filter(Boolean).join(", ");
+				note.cw?.length ? `CW ${note.cw.length}` : "",
+				note.text?.length ? `📝 ${note.text.length}` : "",
+				note.hasPoll ? "📊" : "",
+				note.fileIds?.length ? `📎 ${note.fileIds.length}` : "",
+				note.renoteId ? "QT" : "",
+			]
+				.filter(Boolean)
+				.join(", ");
 
-			textCaption = [(isAdmin ? "*" : ""), textCaption].filter(Boolean).join(" ");
+			textCaption = [isAdmin ? "*" : "", textCaption].filter(Boolean).join(" ");
 
-			await Notes.update({
-				id: note.id,
-				userId: user.id,
-			},{
-				text: textCaption || null,
-				cw: null,
-				fileIds: {},
-				attachedFileTypes: {},
-				mentions: {},
-				mentionedRemoteUsers: [],
-				emojis: [],
-				tags: [],
-				hasPoll: false,
-				deletedAt: deletedAt,
-			});
-
+			await Notes.update(
+				{
+					id: note.id,
+					userId: user.id,
+				},
+				{
+					text: textCaption || null,
+					cw: null,
+					fileIds: {},
+					attachedFileTypes: {},
+					mentions: {},
+					mentionedRemoteUsers: [],
+					emojis: [],
+					tags: [],
+					hasPoll: false,
+					deletedAt: deletedAt,
+				},
+			);
 		}
-
 	}
 
 	if (isPhysical) {
@@ -153,7 +169,6 @@ export default async function (
 			userId: user.id,
 		});
 	}
-
 }
 
 async function deleteActivity(
@@ -179,16 +194,13 @@ async function deleteActivity(
 		const content = renderActivity(
 			renote
 				? renderUndo(
-					renderAnnounce(
-						renote.uri || `${config.url}/notes/${renote.id}`,
-						note,
-					),
-					user,
-				)
-				: renderDelete(
-					renderTombstone(`${config.url}/notes/${note.id}`),
-					user,
-				),
+						renderAnnounce(
+							renote.uri || `${config.url}/notes/${renote.id}`,
+							note,
+						),
+						user,
+				  )
+				: renderDelete(renderTombstone(`${config.url}/notes/${note.id}`), user),
 		);
 
 		deliverToConcerned(user, note, content);

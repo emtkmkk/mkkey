@@ -89,11 +89,11 @@ app.use(
 				process.env.NODE_ENV === "production"
 					? config.clientEntry
 					: JSON.parse(
-						readFileSync(
-							`${_dirname}/../../../../../built/_client_dist_/manifest.json`,
-							"utf-8",
-						),
-					)["src/init.ts"],
+							readFileSync(
+								`${_dirname}/../../../../../built/_client_dist_/manifest.json`,
+								"utf-8",
+							),
+					  )["src/init.ts"],
 			config,
 		},
 	}),
@@ -337,28 +337,30 @@ const jsonFeed: Router.Middleware = async (ctx) => {
 };
 
 router.get("/emoji/:path(.*)", async (ctx) => {
-
-	ctx.set('Cache-Control', 'public, max-age=86400');
+	ctx.set("Cache-Control", "public, max-age=86400");
 
 	if (!ctx.params.path.match(/^[a-zA-Z0-9\-_@\.]+?\.webp$/)) {
 		ctx.status = 404;
 		return;
 	}
 
-	const name = ctx.params.path.split('@')[0].replace(/\.webp$/i, '');
-	const host = ctx.params.path.split('@')[1]?.replace(/\.webp$/i, '');
+	const name = ctx.params.path.split("@")[0].replace(/\.webp$/i, "");
+	const host = ctx.params.path.split("@")[1]?.replace(/\.webp$/i, "");
 
 	const emoji = await Emojis.findOneBy({
 		// `@.` is the spec of ReactionService.decodeReaction
-		host: (host == null || host === '.') ? IsNull() : host,
+		host: host == null || host === "." ? IsNull() : host,
 		name: name,
 	});
 
-	ctx.set('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
+	ctx.set(
+		"Content-Security-Policy",
+		"default-src 'none'; style-src 'unsafe-inline'",
+	);
 
 	if (emoji == null) {
-		if ('fallback' in ctx.query) {
-			return await ctx.redirect('/static-assets/user-unknown.png');
+		if ("fallback" in ctx.query) {
+			return await ctx.redirect("/static-assets/user-unknown.png");
 		} else {
 			ctx.status = 404;
 			return;
@@ -374,36 +376,34 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 		proxy = `${config.mediaProxy}`;
 	}
 
-	if ('badge' in ctx.query) {
+	if ("badge" in ctx.query) {
 		url = new URL(`${proxy}/emoji.png`);
 		// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
-		url.searchParams.set('badge', '1');
+		url.searchParams.set("url", emoji.publicUrl || emoji.originalUrl);
+		url.searchParams.set("badge", "1");
 	} else {
 		url = new URL(`${proxy}/emoji.webp`);
 		// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-		url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
-		url.searchParams.set('emoji', '1');
-		if ('static' in ctx.query) url.searchParams.set('static', '1');
+		url.searchParams.set("url", emoji.publicUrl || emoji.originalUrl);
+		url.searchParams.set("emoji", "1");
+		if ("static" in ctx.query) url.searchParams.set("static", "1");
 	}
 	ctx.status = 301;
 	ctx.redirect(url.toString());
-
 });
 
 router.get("/emoji_license/:path([^.]*).json", async (ctx) => {
-
 	if (!ctx.params.path.match(/^[a-zA-Z0-9\-_@\.]+?$/)) {
 		ctx.status = 404;
 		return;
 	}
 
-	const name = ctx.params.path.split('@')[0];
-	const host = ctx.params.path.split('@')?.[1]?.replace(/\.json$/,"");
+	const name = ctx.params.path.split("@")[0];
+	const host = ctx.params.path.split("@")?.[1]?.replace(/\.json$/, "");
 
 	const emoji = await Emojis.findOneBy({
 		// `@.` is the spec of ReactionService.decodeReaction
-		host: (host == null || host === '.') ? IsNull() : host,
+		host: host == null || host === "." ? IsNull() : host,
 		name: name,
 	});
 
@@ -414,16 +414,28 @@ router.get("/emoji_license/:path([^.]*).json", async (ctx) => {
 			ctx.body = JSON.stringify({
 				copyPermission: "allow",
 				license: "CC0 1.0 Universal",
-				author: config.host
+				author: config.host,
 			});
 		} else {
 			ctx.body = JSON.stringify({
-				copyPermission: emoji.license?.includes("コピー可否 : ") ? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none" : "none",
-				license: emoji.license?.includes("ライセンス : ") ? /ライセンス : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? null : null,
-				usageInfo: emoji.license?.includes("使用情報 : ") ? /使用情報 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-				author: emoji.license?.includes("作者 : ") ? /作者 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-				description: emoji.license?.includes("説明 : ") ? /説明 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
-				isBasedOnUrl: emoji.license?.includes("コピー元 : ") ? /コピー元 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined : undefined,
+				copyPermission: emoji.license?.includes("コピー可否 : ")
+					? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none"
+					: "none",
+				license: emoji.license?.includes("ライセンス : ")
+					? /ライセンス : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? null
+					: null,
+				usageInfo: emoji.license?.includes("使用情報 : ")
+					? /使用情報 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
+					: undefined,
+				author: emoji.license?.includes("作者 : ")
+					? /作者 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
+					: undefined,
+				description: emoji.license?.includes("説明 : ")
+					? /説明 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
+					: undefined,
+				isBasedOnUrl: emoji.license?.includes("コピー元 : ")
+					? /コピー元 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
+					: undefined,
 			});
 		}
 	} else {
@@ -453,8 +465,8 @@ const userPage: Router.Middleware = async (ctx, next) => {
 	const meta = await fetchMeta();
 	const me = profile.fields
 		? profile.fields
-			.filter((filed) => filed.value?.match(/^https?:/))
-			.map((field) => field.value)
+				.filter((filed) => filed.value?.match(/^https?:/))
+				.map((field) => field.value)
 		: [];
 
 	const userDetail = {
@@ -496,21 +508,31 @@ router.get("/notes/:note", async (ctx, next) => {
 
 	try {
 		if (note) {
-
 			const user = await Users.findOneByOrFail({
 				id: note.userId,
 			});
 
-			const _note = ["public", "home"].includes(note.visibility) && !note.localOnly ? await Notes.pack(note) : { id: note.id, user: user, fileIds: [], files: [] };
+			const _note =
+				["public", "home"].includes(note.visibility) && !note.localOnly
+					? await Notes.pack(note)
+					: { id: note.id, user: user, fileIds: [], files: [] };
 
 			const profile = await UserProfiles.findOneByOrFail({
 				userId: note.userId,
 			});
 			const meta = await fetchMeta();
-			const userName = user.name?.replaceAll(/ ?:.*?:/g, '').trim() ? `${user.name?.replaceAll(/ ?:.*?:/g, '')}${user.host ? `@${user.host}` : ''}` : `@${user.username}${user.host ? `@${user.host}` : ''}`;
+			const userName = user.name?.replaceAll(/ ?:.*?:/g, "").trim()
+				? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${
+						user.host ? `@${user.host}` : ""
+				  }`
+				: `@${user.username}${user.host ? `@${user.host}` : ""}`;
 			let summary = "";
 			if (!["public", "home"].includes(note.visibility) || note.localOnly) {
-				summary = `${note.visibility === "followers" ? (`${userName}さんのフォロワー限定の投稿`) : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
+				summary = `${
+					note.visibility === "followers"
+						? `${userName}さんのフォロワー限定の投稿`
+						: "公開範囲が限定されている投稿"
+				}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`;
 			} else {
 				summary = getNoteSummary(_note);
 			}
@@ -531,7 +553,7 @@ router.get("/notes/:note", async (ctx, next) => {
 
 			return;
 		}
-	} catch { }
+	} catch {}
 
 	await next();
 });
@@ -542,21 +564,31 @@ router.get("/posts/:note", async (ctx, next) => {
 	});
 
 	if (note) {
-
 		const user = await Users.findOneByOrFail({
 			id: note.userId,
 		});
 
-		const _note = ["public", "home"].includes(note.visibility) && !note.localOnly ? await Notes.pack(note) : { id: note.id, user: user, fileIds: [], files: [] };
+		const _note =
+			["public", "home"].includes(note.visibility) && !note.localOnly
+				? await Notes.pack(note)
+				: { id: note.id, user: user, fileIds: [], files: [] };
 
 		const profile = await UserProfiles.findOneByOrFail({
 			userId: note.userId,
 		});
 		const meta = await fetchMeta();
-		const userName = user.name?.replaceAll(/ ?:.*?:/g, '').trim() ? `${user.name?.replaceAll(/ ?:.*?:/g, '')}${user.host ? `@${user.host}` : ''}` : `@${user.username}${user.host ? `@${user.host}` : ''}`;
+		const userName = user.name?.replaceAll(/ ?:.*?:/g, "").trim()
+			? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${
+					user.host ? `@${user.host}` : ""
+			  }`
+			: `@${user.username}${user.host ? `@${user.host}` : ""}`;
 		let summary = "";
 		if (!["public", "home"].includes(note.visibility) || note.localOnly) {
-			summary = `${note.visibility === "followers" ? (`${userName}さんのフォロワー限定の投稿`) : "公開範囲が限定されている投稿"}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`
+			summary = `${
+				note.visibility === "followers"
+					? `${userName}さんのフォロワー限定の投稿`
+					: "公開範囲が限定されている投稿"
+			}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`;
 		} else {
 			summary = getNoteSummary(_note);
 		}
@@ -722,8 +754,14 @@ router.get("/_info_card_", async (ctx) => {
 		version: config.version,
 		host: config.host,
 		meta: meta,
-		originalUsersCount: await Users.count({ where: { host: IsNull(), isDeleted: false }, cache: 3600000 }), //1h
-		originalNotesCount: await Notes.count({ where: { userHost: IsNull(), deletedAt: IsNull() }, cache: 3600000 }), //1h
+		originalUsersCount: await Users.count({
+			where: { host: IsNull(), isDeleted: false },
+			cache: 3600000,
+		}), //1h
+		originalNotesCount: await Notes.count({
+			where: { userHost: IsNull(), deletedAt: IsNull() },
+			cache: 3600000,
+		}), //1h
 	});
 });
 
@@ -772,12 +810,30 @@ router.get("/api/v1/streaming", async (ctx) => {
 // Render base html for all requests
 router.get("(.*)", async (ctx) => {
 	const meta = await fetchMeta();
-	let usersCount = await Users.count({ where: { host: IsNull(), notesCount: MoreThan(50), isDeleted: false }, cache: 21600000 }); //6h
-	let notesCount = await Notes.count({ where: { userHost: IsNull(), deletedAt: IsNull() }, cache: 21600000 }); //6h
-	let gUsersCount = await Users.count({ where: { host: Not(IsNull()), isDeleted: false }, cache: 21600000 }); //6h
-	let gNotesCount = await Notes.count({ where: { userHost: Not(IsNull()), deletedAt: IsNull() }, cache: 21600000 }); //6h
-	let emojisCount = await Emojis.count({ where: { host: IsNull() }, cache: 21600000 }); //6h
-	let gEmojisCount = await Emojis.count({ where: { host: Not(IsNull()) }, cache: 21600000 }); //6h
+	let usersCount = await Users.count({
+		where: { host: IsNull(), notesCount: MoreThan(50), isDeleted: false },
+		cache: 21600000,
+	}); //6h
+	let notesCount = await Notes.count({
+		where: { userHost: IsNull(), deletedAt: IsNull() },
+		cache: 21600000,
+	}); //6h
+	let gUsersCount = await Users.count({
+		where: { host: Not(IsNull()), isDeleted: false },
+		cache: 21600000,
+	}); //6h
+	let gNotesCount = await Notes.count({
+		where: { userHost: Not(IsNull()), deletedAt: IsNull() },
+		cache: 21600000,
+	}); //6h
+	let emojisCount = await Emojis.count({
+		where: { host: IsNull() },
+		cache: 21600000,
+	}); //6h
+	let gEmojisCount = await Emojis.count({
+		where: { host: Not(IsNull()) },
+		cache: 21600000,
+	}); //6h
 	let motd = [];
 	let motdd = []; //日付のmotd
 	let motdt = []; //統計のmotd
@@ -785,7 +841,7 @@ router.get("(.*)", async (ctx) => {
 		motdt = meta.customMOTD;
 	}
 	const now = new Date();
-	let nowDate = new Date().toLocaleDateString('ja-JP');
+	let nowDate = new Date().toLocaleDateString("ja-JP");
 	motdd.push(`今日は ${nowDate} です`);
 	switch (now.getDay()) {
 		case 0:
@@ -821,9 +877,19 @@ router.get("(.*)", async (ctx) => {
 	}
 	const yearFirstDay = new Date(now.getFullYear(), 0);
 	const yearNextFirstDay = new Date(now.getFullYear() + 1, 0);
-	const nowDaysCnt = Math.floor((now.valueOf() - yearFirstDay.valueOf()) / (24 * 60 * 60 * 1000));
-	const yearDaysCnt = Math.floor((yearNextFirstDay.valueOf() - yearFirstDay.valueOf()) / (24 * 60 * 60 * 1000));
-	motdd.push(`${now.getFullYear()}年 進行度 ${nowDaysCnt} / ${yearDaysCnt} ( ${(nowDaysCnt / yearDaysCnt * 100).toFixed(1)}% ) です`);
+	const nowDaysCnt = Math.floor(
+		(now.valueOf() - yearFirstDay.valueOf()) / (24 * 60 * 60 * 1000),
+	);
+	const yearDaysCnt = Math.floor(
+		(yearNextFirstDay.valueOf() - yearFirstDay.valueOf()) /
+			(24 * 60 * 60 * 1000),
+	);
+	motdd.push(
+		`${now.getFullYear()}年 進行度 ${nowDaysCnt} / ${yearDaysCnt} ( ${(
+			(nowDaysCnt / yearDaysCnt) *
+			100
+		).toFixed(1)}% ) です`,
+	);
 	motdt.push(`${meta.name}のユーザ数は ${usersCount} です`);
 	motdt.push(`${meta.name}の合計投稿数は ${notesCount} です`);
 	motdt.push(`${meta.name}の連合ユーザ数は ${gUsersCount} です`);
@@ -833,12 +899,15 @@ router.get("(.*)", async (ctx) => {
 	if (now.getMonth() === 0) {
 		motd.push("冬ですね");
 		if (now.getDate() == 1) {
-			motd = [`HAPPY NEW YEAR ${now.getFullYear()} 🎉`, "あけましておめでとうございます！"];
+			motd = [
+				`HAPPY NEW YEAR ${now.getFullYear()} 🎉`,
+				"あけましておめでとうございます！",
+			];
 			motdd = [];
 			motdt = [];
 		} else if (now.getDate() <= 3) {
 			motd.push(`HAPPY NEW YEAR ${now.getFullYear()} 🎉`);
-			motd.push("あけましておめでとうございます！")
+			motd.push("あけましておめでとうございます！");
 		}
 	} else if (now.getMonth() == 1) {
 		motd.push("冬終盤ですね");
@@ -909,7 +978,9 @@ router.get("(.*)", async (ctx) => {
 	} else if (now.getMonth() == 10) {
 		motd.push("秋か冬かよく分からない時期ですね");
 		if (now.getDate() == 26) {
-			motd = [`今日は${meta.name} ${now.getFullYear() - 2022} 周年の日です！🎉`];
+			motd = [
+				`今日は${meta.name} ${now.getFullYear() - 2022} 周年の日です！🎉`,
+			];
 			motdd = [];
 			motdt = [];
 		}
@@ -934,12 +1005,23 @@ router.get("(.*)", async (ctx) => {
 	}
 	//季節メッセージ 終わり
 	//季節 : 6 , 日付 : 3 , 統計・その他 : 1
-	motd = [...motd, ...motd, ...motd, ...motd, ...motd, ...motd, ...motdd, ...motdd, ...motdd, ...motdt,];
+	motd = [
+		...motd,
+		...motd,
+		...motd,
+		...motd,
+		...motd,
+		...motd,
+		...motdd,
+		...motdd,
+		...motdd,
+		...motdt,
+	];
 	let splashIconUrl = meta.iconUrl;
 	if (meta.customSplashIcons.length > 0) {
 		splashIconUrl =
 			meta.customSplashIcons[
-			Math.floor(Math.random() * meta.customSplashIcons.length)
+				Math.floor(Math.random() * meta.customSplashIcons.length)
 			];
 	}
 	await ctx.render("base", {

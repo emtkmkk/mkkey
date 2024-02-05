@@ -1,4 +1,11 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import {
+	Column,
+	Entity,
+	Index,
+	JoinColumn,
+	ManyToOne,
+	PrimaryColumn,
+} from "typeorm";
 import { id } from "../id.js";
 import { User } from "./user.js";
 

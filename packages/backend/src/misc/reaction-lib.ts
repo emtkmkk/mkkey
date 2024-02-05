@@ -68,7 +68,7 @@ export async function toDbReaction(
 
 	reacterHost = toPunyNullable(reacterHost);
 
-    reaction = reaction?.replaceAll("::",":");
+	reaction = reaction?.replaceAll("::", ":");
 
 	// Convert string-type reactions to unicode
 	const emoji = legacies.get(reaction) || (reaction === "♥️" ? "❤️" : null);
@@ -92,21 +92,27 @@ export async function toDbReaction(
 			name,
 		});
 
-		if (emoji) return emoji.host ? `:${emoji.name}@${emoji.host}:` : `:${emoji.name}:`;
+		if (emoji)
+			return emoji.host ? `:${emoji.name}@${emoji.host}:` : `:${emoji.name}:`;
 
 		// 無理ならリモートから
 		// ローカルユーザの場合 : host情報がない場合、noteHost絵文字で、ローカル相手ならmisskey.io絵文字で試行してみる
 		// リモートユーザの場合 : host情報がない場合、reacterHost絵文字ではなくローカル絵文字で試行してみる
-		const host = (reacterHost && custom?.[2] === config.host ? IsNull() : custom?.[2]) || (reacterHost ? IsNull() : noteHost ?? "misskey.io");
+		const host =
+			(reacterHost && custom?.[2] === config.host ? IsNull() : custom?.[2]) ||
+			(reacterHost ? IsNull() : noteHost ?? "misskey.io");
 		const emoji2 = await Emojis.findOneBy({
 			host,
 			name,
 		});
 
-		if (emoji2) return emoji2.host ? `:${emoji2.name}@${emoji2.host}:` : `:${emoji2.name}:`;
+		if (emoji2)
+			return emoji2.host
+				? `:${emoji2.name}@${emoji2.host}:`
+				: `:${emoji2.name}:`;
 	}
 
-	console.log(`NotFound Emoji : ${reaction}`)
+	console.log(`NotFound Emoji : ${reaction}`);
 	return await getFallbackReaction();
 }
 

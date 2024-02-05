@@ -49,16 +49,63 @@ export async function signup(opts: {
 
 	// Generate secret
 	const secret = generateUserToken();
-	
-	// 予約ワードのチェック
-	const preservedUsernames = ["admin", "administrator", "root", "system", "maintainer", "host", "mod", "moderator", "owner", "superuser", "staff", "auth", "i", "me", "everyone", "all", "mention", "mentions", "example", "user", "users", "account", "accounts", "official", "help", "helps", "support", "supports", "info", "information", "informations", "announce", "announces", "announcement", "announcements", "notice", "notification", "notifications", "dev", "developer", "developers", "tech", "misskey", "tos", "calckey", "mkkey"]
 
-	if (preservedUsernames.includes(username.toLowerCase())){
+	// 予約ワードのチェック
+	const preservedUsernames = [
+		"admin",
+		"administrator",
+		"root",
+		"system",
+		"maintainer",
+		"host",
+		"mod",
+		"moderator",
+		"owner",
+		"superuser",
+		"staff",
+		"auth",
+		"i",
+		"me",
+		"everyone",
+		"all",
+		"mention",
+		"mentions",
+		"example",
+		"user",
+		"users",
+		"account",
+		"accounts",
+		"official",
+		"help",
+		"helps",
+		"support",
+		"supports",
+		"info",
+		"information",
+		"informations",
+		"announce",
+		"announces",
+		"announcement",
+		"announcements",
+		"notice",
+		"notification",
+		"notifications",
+		"dev",
+		"developer",
+		"developers",
+		"tech",
+		"misskey",
+		"tos",
+		"calckey",
+		"mkkey",
+	];
+
+	if (preservedUsernames.includes(username.toLowerCase())) {
 		throw new Error("USED_USERNAME");
 	}
-	
+
 	// ID 1文字はやめてほしい
-	if (username.length <= 1){
+	if (username.length <= 1) {
 		throw new Error("USED_USERNAME");
 	}
 

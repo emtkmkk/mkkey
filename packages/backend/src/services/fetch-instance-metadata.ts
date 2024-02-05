@@ -72,27 +72,35 @@ export async function fetchInstanceMetadata(
 
 			// 最大リアクション数がnodeinfoで取得できなかった場合
 			if (!updates.maxReactionsPerAccount) {
-				// mastodon または upstreamがmastodon の場合 
-				if (info.software?.name.toLowerCase() === "mastodon" || info.metadata?.upstream?.name.toLowerCase() === "mastodon") {
-					const [mastodonInfo] = await Promise.all([fetchMastodonInfo(instance).catch(() => null)]);
+				// mastodon または upstreamがmastodon の場合
+				if (
+					info.software?.name.toLowerCase() === "mastodon" ||
+					info.metadata?.upstream?.name.toLowerCase() === "mastodon"
+				) {
+					const [mastodonInfo] = await Promise.all([
+						fetchMastodonInfo(instance).catch(() => null),
+					]);
 					if (mastodonInfo) {
 						// Nodeinfo から取得できなかった場合はここで取得を試行
-						if (updates.maintainerName == null) updates.maintainerName = mastodonInfo.contact_account?.username ? `@${mastodonInfo.contact_account?.username}` : null;
-						if (updates.maintainerEmail == null) updates.maintainerEmail = mastodonInfo.email || null;
+						if (updates.maintainerName == null)
+							updates.maintainerName = mastodonInfo.contact_account?.username
+								? `@${mastodonInfo.contact_account?.username}`
+								: null;
+						if (updates.maintainerEmail == null)
+							updates.maintainerEmail = mastodonInfo.email || null;
 
 						// max_reactions_per_account の指定があればその値にする
 						// 指定が無い場合は以下の通り
 						// configurationにemoji_reactionsの設定が何かあれば 1
 						// fedibird_capabilitiesにemoji_reactionがあれば 1
 						// 全てに当てはまらない場合は 0
-						updates.maxReactionsPerAccount = mastodonInfo.configuration?.emoji_reactions?.max_reactions_per_account
-							?? ((
-								mastodonInfo.configuration?.emoji_reactions ||
-								mastodonInfo.fedibird_capabilities?.includes("emoji_reaction")
-							)
+						updates.maxReactionsPerAccount =
+							mastodonInfo.configuration?.emoji_reactions
+								?.max_reactions_per_account ??
+							(mastodonInfo.configuration?.emoji_reactions ||
+							mastodonInfo.fedibird_capabilities?.includes("emoji_reaction")
 								? 1
-								: 0
-							);
+								: 0);
 					}
 				}
 				// features に pleroma_emoji_reactions が含まれる場合
@@ -111,7 +119,7 @@ export async function fetchInstanceMetadata(
 				// 0と判定された場合でも、30日以内に通常のlike以外が3以上あれば1にする
 				const now = Date.now();
 				updates.maxReactionsPerAccount =
-					((await NoteReactions.count({
+					(await NoteReactions.count({
 						relations: {
 							user: true,
 						},
@@ -120,11 +128,12 @@ export async function fetchInstanceMetadata(
 							reaction: Not(await getFallbackReaction()),
 							user: {
 								host: instance.host,
-							}
+							},
 						},
-					})) > 2) ? 1 : 0;
+					})) > 2
+						? 1
+						: 0;
 			}
-
 		}
 
 		if (name) updates.name = name;
@@ -160,7 +169,7 @@ type NodeInfo = {
 		};
 		upstream?: {
 			name?: any;
-		}
+		};
 		maxReactionsPerAccount?: any;
 		features?: Array<string>;
 	};
@@ -247,7 +256,11 @@ async function fetchMastodonInfo(
 
 	const mastodonInfoUrl = `${url}/api/v1/instance`;
 
-	const mastodonInfo = (await getJson(mastodonInfoUrl, "application/json, */*", 2000)) as Record<string, unknown>;
+	const mastodonInfo = (await getJson(
+		mastodonInfoUrl,
+		"application/json, */*",
+		2000,
+	)) as Record<string, unknown>;
 
 	return mastodonInfo;
 }

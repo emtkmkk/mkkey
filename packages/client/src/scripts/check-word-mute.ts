@@ -14,7 +14,7 @@ function checkWordMute(
 	what?: string,
 	endpoint?: string,
 ): Muted {
-	const text = (`${(note.cw ?? "")} ${(note.text ?? "")}`).trim();
+	const text = `${note.cw ?? ""} ${note.text ?? ""}`.trim();
 	//if (text === "") return NotMuted;
 
 	let result = { muted: false, matched: [] };
@@ -30,17 +30,31 @@ function checkWordMute(
 				keywords.every((keyword, index) => {
 					// 反転オプション：- or !
 					const reverse = keyword.startsWith("-") || keyword.startsWith("!");
-					const checkRet = checkMuteKeyword(note, text, keyword.replace(/^\-/, "").replace(/^\!/, ""), index, what ?? "note", endpoint);
+					const checkRet = checkMuteKeyword(
+						note,
+						text,
+						keyword.replace(/^\-/, "").replace(/^\!/, ""),
+						index,
+						what ?? "note",
+						endpoint,
+					);
 					return reverse
-						// エラーならば反転に関係なくfalse
-						? checkRet != null ? !checkRet : false
-						: checkRet ?? false
+						? // エラーならば反転に関係なくfalse
+						  checkRet != null
+							? !checkRet
+							: false
+						: checkRet ?? false;
 				})
 			) {
 				result.muted = true;
 				let pname = keywords;
 				if (keywords[0].startsWith("pname:")) {
-					pname = [keywords[0].replace("pname:", "").replace(/^hidden$/, "").replace("<#id>", note.id)];
+					pname = [
+						keywords[0]
+							.replace("pname:", "")
+							.replace(/^hidden$/, "")
+							.replace("<#id>", note.id),
+					];
 				}
 				result.matched.push(...pname);
 			}
@@ -101,16 +115,29 @@ function checkMuteKeyword(
 		return fuzzyKeywords.every((fuzzyKeyword) => text.includes(fuzzyKeyword));
 	}
 	if (keyword.startsWith("from:")) {
-		const fromKeyword = keyword.replace("from:", "").replace(`@${config.host}`, "");
-		return !note.user ? undefined : note.user.host ? `${note.user.username}@${note.user.host}` === fromKeyword : note.user.username === fromKeyword;
+		const fromKeyword = keyword
+			.replace("from:", "")
+			.replace(`@${config.host}`, "");
+		return !note.user
+			? undefined
+			: note.user.host
+			? `${note.user.username}@${note.user.host}` === fromKeyword
+			: note.user.username === fromKeyword;
 	}
 	if (keyword.startsWith("host:")) {
 		const hostKeyword = keyword.replace("host:", "");
-		return !note.user ? undefined : hostKeyword === config.host ? !note.user.host : note.user.host === hostKeyword;
+		return !note.user
+			? undefined
+			: hostKeyword === config.host
+			? !note.user.host
+			: note.user.host === hostKeyword;
 	}
 	if (keyword.startsWith("fuzzyHost:")) {
 		const hostKeyword = keyword.replace("fuzzyHost:", "");
-		return !note.user ? undefined : (config.host.includes(hostKeyword) && !note.user.host) || note.user.host.includes(hostKeyword);
+		return !note.user
+			? undefined
+			: (config.host.includes(hostKeyword) && !note.user.host) ||
+					note.user.host.includes(hostKeyword);
 	}
 	if (keyword.startsWith("username:")) {
 		const usernameKeyword = keyword.replace("username:", "");
@@ -118,7 +145,9 @@ function checkMuteKeyword(
 	}
 	if (keyword.startsWith("fuzzyUsername:")) {
 		const usernameKeyword = keyword.replace("fuzzyUsername:", "");
-		return !note.user ? undefined : note.user.username.includes(usernameKeyword);
+		return !note.user
+			? undefined
+			: note.user.username.includes(usernameKeyword);
 	}
 	if (keyword.startsWith("name:")) {
 		const nameKeyword = keyword.replace("name:", "");
@@ -130,87 +159,130 @@ function checkMuteKeyword(
 	}
 	if (keyword.startsWith("visibility:")) {
 		const visibilityKeyword = keyword.replace("visibility:", "").toLowerCase();
-		if (visibilityKeyword === "visitor") return ["public", "home", "hidden"].includes(note.visibility) && note.localOnly === false;
-		if (visibilityKeyword === "private") return ["followers", "specified"].includes(note.visibility);
+		if (visibilityKeyword === "visitor")
+			return (
+				["public", "home", "hidden"].includes(note.visibility) &&
+				note.localOnly === false
+			);
+		if (visibilityKeyword === "private")
+			return ["followers", "specified"].includes(note.visibility);
 		return note.visibility === visibilityKeyword;
 	}
-	if (keyword.startsWith("localOnly:") || keyword.startsWith("localAndFollower:")) {
-		const localOnlyKeyword = keyword.replace("localOnly:", "").replace("localAndFollower:", "").toLowerCase();
+	if (
+		keyword.startsWith("localOnly:") ||
+		keyword.startsWith("localAndFollower:")
+	) {
+		const localOnlyKeyword = keyword
+			.replace("localOnly:", "")
+			.replace("localAndFollower:", "")
+			.toLowerCase();
 		if (["true", "yes", "on"].includes(localOnlyKeyword)) return note.localOnly;
-		if (["false", "no", "off"].includes(localOnlyKeyword)) return !note.localOnly;
+		if (["false", "no", "off"].includes(localOnlyKeyword))
+			return !note.localOnly;
 		return undefined;
 	}
 	if (keyword.startsWith("what:")) {
-		const whatKeyword = keyword.replace("what:", "").replace("rt", "renote").toLowerCase();
+		const whatKeyword = keyword
+			.replace("what:", "")
+			.replace("rt", "renote")
+			.toLowerCase();
 		return what === whatKeyword;
 	}
-	if (keyword.startsWith("where:") || keyword.startsWith("timeline:") || keyword.startsWith("tl:")) {
+	if (
+		keyword.startsWith("where:") ||
+		keyword.startsWith("timeline:") ||
+		keyword.startsWith("tl:")
+	) {
 		if (!endpoint) return undefined;
-		const tlKeyword = keyword.replace("where:", "").replace("timeline:", "").replace("tl:", "").toLowerCase();
-		if (["home", "social"].includes(tlKeyword)) return ["notes/timeline", "notes/hybrid-timeline"].includes(endpoint);
-		if (["local", "global"].includes(tlKeyword)) return endpoint === `notes/${tlKeyword}-timeline`;
-		if (["recommended", "media"].includes(tlKeyword)) return ["notes/recommended-timeline"].includes(endpoint);
-		if (["spotlight"].includes(tlKeyword)) return ["channels/spotlight-timeline"].includes(endpoint);
-		if (["list"].includes(tlKeyword)) return ["notes/user-list-timeline"].includes(endpoint);
-		if (["antenna"].includes(tlKeyword)) return ["antennas/notes"].includes(endpoint);
-		if (["trend"].includes(tlKeyword)) return ["notes/featured", "notes/polls/recommendation"].includes(endpoint);
-		if (["channel"].includes(tlKeyword)) return ["channels/timeline"].includes(endpoint);
+		const tlKeyword = keyword
+			.replace("where:", "")
+			.replace("timeline:", "")
+			.replace("tl:", "")
+			.toLowerCase();
+		if (["home", "social"].includes(tlKeyword))
+			return ["notes/timeline", "notes/hybrid-timeline"].includes(endpoint);
+		if (["local", "global"].includes(tlKeyword))
+			return endpoint === `notes/${tlKeyword}-timeline`;
+		if (["recommended", "media"].includes(tlKeyword))
+			return ["notes/recommended-timeline"].includes(endpoint);
+		if (["spotlight"].includes(tlKeyword))
+			return ["channels/spotlight-timeline"].includes(endpoint);
+		if (["list"].includes(tlKeyword))
+			return ["notes/user-list-timeline"].includes(endpoint);
+		if (["antenna"].includes(tlKeyword))
+			return ["antennas/notes"].includes(endpoint);
+		if (["trend"].includes(tlKeyword))
+			return ["notes/featured", "notes/polls/recommendation"].includes(
+				endpoint,
+			);
+		if (["channel"].includes(tlKeyword))
+			return ["channels/timeline"].includes(endpoint);
 		if (["user"].includes(tlKeyword)) return ["users/notes"].includes(endpoint);
-		if (["notification"].includes(tlKeyword)) return ["notifications/read"].includes(endpoint);
+		if (["notification"].includes(tlKeyword))
+			return ["notifications/read"].includes(endpoint);
 
-		return endpoint.startsWith(tlKeyword) || endpoint.startsWith(`notes/${tlKeyword}`);
+		return (
+			endpoint.startsWith(tlKeyword) ||
+			endpoint.startsWith(`notes/${tlKeyword}`)
+		);
 	}
 	if (keyword.startsWith("relation:")) {
 		const relationKeyword = keyword.replace("relation:", "").toLowerCase();
 		if (note.user.isFollowing == null) return undefined;
-		if (["follow", "following"].includes(relationKeyword)) return note.user.isFollowing;
-		if (["followonly", "followingonly"].includes(relationKeyword)) return note.user.isFollowing && !note.user.isFollowed;
-		if (["follower", "followed"].includes(relationKeyword)) return note.user.isFollowed;
-		if (["followeronly", "followedonly"].includes(relationKeyword)) return !note.user.isFollowing && note.user.isFollowed;
-		if (relationKeyword === "both") return note.user.isFollowed && note.user.isFollowing;
-		if (relationKeyword === "none") return !note.user.isFollowed && !note.user.isFollowing;
+		if (["follow", "following"].includes(relationKeyword))
+			return note.user.isFollowing;
+		if (["followonly", "followingonly"].includes(relationKeyword))
+			return note.user.isFollowing && !note.user.isFollowed;
+		if (["follower", "followed"].includes(relationKeyword))
+			return note.user.isFollowed;
+		if (["followeronly", "followedonly"].includes(relationKeyword))
+			return !note.user.isFollowing && note.user.isFollowed;
+		if (relationKeyword === "both")
+			return note.user.isFollowed && note.user.isFollowing;
+		if (relationKeyword === "none")
+			return !note.user.isFollowed && !note.user.isFollowing;
 		return undefined;
 	}
 	if (keyword.startsWith("filter:")) {
 		const filterKeyword = keyword.replace("filter:", "").toLowerCase();
 		if (filterKeyword.includes("mention")) {
-			const isMention = ((note.mentions || note.includes("@")) && !note.replyId);
+			const isMention = (note.mentions || note.includes("@")) && !note.replyId;
 			return !!isMention;
 		}
 		if (filterKeyword.includes("reply")) {
-			const isReply = (note.replyId);
+			const isReply = note.replyId;
 			return !!isReply;
 		}
 		if (filterKeyword.includes("renote") || filterKeyword.includes("rt")) {
-			const isRenote = (note.renoteId && !note.text);
+			const isRenote = note.renoteId && !note.text;
 			return !!isRenote;
 		}
 		if (filterKeyword.includes("quote")) {
-			const isQuote = (note.renoteId && note.text);
+			const isQuote = note.renoteId && note.text;
 			return !!isQuote;
 		}
 		if (filterKeyword.includes("media") || filterKeyword.includes("file")) {
-			const isMedia = (note.fileIds && note.fileIds.length !== 0);
+			const isMedia = note.fileIds && note.fileIds.length !== 0;
 			return !!isMedia;
 		}
 		if (filterKeyword.includes("poll")) {
-			const isPoll = (note.hasPoll);
+			const isPoll = note.hasPoll;
 			return !!isPoll;
 		}
 		if (filterKeyword.includes("channel")) {
-			const isChannel = (note.channelId);
+			const isChannel = note.channelId;
 			return !!isChannel;
 		}
 		if (filterKeyword.includes("cw")) {
-			const isCw = (note.cw);
+			const isCw = note.cw;
 			return !!isCw;
 		}
 		if (filterKeyword.includes("nsfw")) {
-			const isNsfw = (note.files?.some((file) => file.isSensitive));
+			const isNsfw = note.files?.some((file) => file.isSensitive);
 			return !!isNsfw;
 		}
 		if (filterKeyword.includes("reacted")) {
-			const isReacted = (note.myReaction != null);
+			const isReacted = note.myReaction != null;
 			return !!isReacted;
 		}
 		return undefined;
@@ -237,7 +309,12 @@ export function getWordSoftMute(
 		}
 
 		if (note.renote) {
-			let renoteMuted = checkWordMute(note.renote, mutedWords, note.text == null ? "renote" : "quote", endpoint);
+			let renoteMuted = checkWordMute(
+				note.renote,
+				mutedWords,
+				note.text == null ? "renote" : "quote",
+				endpoint,
+			);
 			if (renoteMuted.muted) {
 				renoteMuted.what = note.text == null ? "renote" : "quote";
 				return renoteMuted;

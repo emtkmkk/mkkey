@@ -3,7 +3,11 @@ import config from "@/config/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Users, Notes } from "@/models/index.js";
 import { IsNull, MoreThan } from "typeorm";
-import { MAX_NOTE_TEXT_LENGTH, MAX_CAPTION_TEXT_LENGTH, MAX_REACTION_PER_ACCOUNT } from "@/const.js";
+import {
+	MAX_NOTE_TEXT_LENGTH,
+	MAX_CAPTION_TEXT_LENGTH,
+	MAX_REACTION_PER_ACCOUNT,
+} from "@/const.js";
 import { Cache } from "@/misc/cache.js";
 
 const router = new Router();
@@ -43,7 +47,7 @@ const nodeinfo2 = async () => {
 					isDeleted: false,
 				},
 			}),
-			Notes.count({ where: { userHost: IsNull(), deletedAt: IsNull()  } }),
+			Notes.count({ where: { userHost: IsNull(), deletedAt: IsNull() } }),
 		]);
 
 	const proxyAccount = meta.proxyAccountId

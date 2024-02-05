@@ -95,8 +95,8 @@ export default define(meta, paramDef, async (ps) => {
 			(emoji) =>
 				emoji.name.includes(ps.query!) ||
 				emoji.aliases.some((a) => a.includes(ps.query!)) ||
-				emoji.category?.includes(ps.query!) || 
-				emoji.license?.includes(ps.query!) || 
+				emoji.category?.includes(ps.query!) ||
+				emoji.license?.includes(ps.query!) ||
 				(ps.query === "NotTag" && emoji.aliases?.length === 0) ||
 				(ps.query === "NotCategory" && !emoji.category) ||
 				(ps.query === "NotLicense" && !emoji.license),

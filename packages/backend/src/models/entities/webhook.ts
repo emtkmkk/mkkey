@@ -18,7 +18,7 @@ export const webhookEventTypes = [
 	"reply",
 	"renote",
 	"reaction",
-	"antenna"
+	"antenna",
 ] as const;
 
 @Entity()

@@ -2,9 +2,13 @@ import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { mainRouter } from "@/router";
 
-export async function search(channel?: string,user?: string) {
+export async function search(channel?: string, user?: string) {
 	const { canceled, result: query } = await os.inputText({
-		title: (channel ? i18n.ts.channelSearch : user ? i18n.ts.userSearch : i18n.ts.search),
+		title: channel
+			? i18n.ts.channelSearch
+			: user
+			? i18n.ts.userSearch
+			: i18n.ts.search,
 	});
 	if (canceled || query == null || query === "") return;
 
@@ -60,5 +64,9 @@ export async function search(channel?: string,user?: string) {
 		return;
 	}
 
-	mainRouter.push(`/search?q=${encodeURIComponent(q.replaceAll(/[　\s]/g,"+"))}${channel ? `&channel=${encodeURIComponent(channel)}` : ""}${user ? `&user=${encodeURIComponent(user)}` : ""}`);
+	mainRouter.push(
+		`/search?q=${encodeURIComponent(q.replaceAll(/[　\s]/g, "+"))}${
+			channel ? `&channel=${encodeURIComponent(channel)}` : ""
+		}${user ? `&user=${encodeURIComponent(user)}` : ""}`,
+	);
 }

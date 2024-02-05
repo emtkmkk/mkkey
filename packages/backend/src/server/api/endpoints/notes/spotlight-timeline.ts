@@ -76,10 +76,9 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-
-	const followees = await Followings.createQueryBuilder('following')
-		.select('following.followeeId')
-		.where('following.followerId = :followerId', { followerId: user.id })
+	const followees = await Followings.createQueryBuilder("following")
+		.select("following.followeeId")
+		.where("following.followerId = :followerId", { followerId: user.id })
 		.getMany();
 
 	// もこきーのスコア計算
@@ -108,10 +107,10 @@ export default define(meta, paramDef, async (ps, user) => {
 		globalScore = 180;
 	}
 
-	const meOrFolloweeIds = [user.id, ...followees.map(f => f.followeeId)];
+	const meOrFolloweeIds = [user.id, ...followees.map((f) => f.followeeId)];
 
-	ps.untilDate = ps.untilDate || Date.now()
-	ps.sinceDate = ps.untilDate - (1000 * 60 * 60 * 24 * 7);
+	ps.untilDate = ps.untilDate || Date.now();
+	ps.sinceDate = ps.untilDate - 1000 * 60 * 60 * 24 * 7;
 
 	//#region Construct query
 	const query = makePaginationQuery(
@@ -153,36 +152,63 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user) generateMutedUserRenotesQueryForNotes(query, user);
 
 	if (followees.length > 0) {
-		const meOrFolloweeIds = [user.id, ...followees.map(f => f.followeeId)];
+		const meOrFolloweeIds = [user.id, ...followees.map((f) => f.followeeId)];
 
-		const followingNetworksQuery = await Notes.createQueryBuilder('note')
-			.select('note.renoteUserId')
+		const followingNetworksQuery = await Notes.createQueryBuilder("note")
+			.select("note.renoteUserId")
 			.distinct(true)
-			.andWhere('note.id > :minId', { minId: genId(new Date(ps.sinceDate)) })
-			.andWhere('note.id < :maxId', { maxId: genId(new Date(ps.untilDate)) })
-			.andWhere('note.renoteId IS NOT NULL')
-			.andWhere('note.text IS NULL')
-			.andWhere('note.userId IN (:...meOrFolloweeIds)', { meOrFolloweeIds: meOrFolloweeIds })
+			.andWhere("note.id > :minId", { minId: genId(new Date(ps.sinceDate)) })
+			.andWhere("note.id < :maxId", { maxId: genId(new Date(ps.untilDate)) })
+			.andWhere("note.renoteId IS NOT NULL")
+			.andWhere("note.text IS NULL")
+			.andWhere("note.userId IN (:...meOrFolloweeIds)", {
+				meOrFolloweeIds: meOrFolloweeIds,
+			})
 			.andWhere(`(note.score > :localScore)`, { localScore: localScore })
-			.andWhere(new Brackets(qb => {
-				qb.where(`(note.userHost = note.renoteUserHost)`)
-					.orWhere(`(note.userHost IS NULL)`);
-			}));
-
+			.andWhere(
+				new Brackets((qb) => {
+					qb.where(`(note.userHost = note.renoteUserHost)`).orWhere(
+						`(note.userHost IS NULL)`,
+					);
+				}),
+			);
 
 		generateMutedUserRenotesQueryForNotes(followingNetworksQuery, user);
 		const followingNetworks = await followingNetworksQuery.getMany();
 
-		const meOrfollowingNetworks = [user.id, ...followingNetworks.map(f => f.renoteUserId), ...followees.map(f => f.followeeId)];
+		const meOrfollowingNetworks = [
+			user.id,
+			...followingNetworks.map((f) => f.renoteUserId),
+			...followees.map((f) => f.followeeId),
+		];
 
-		query.andWhere('note.userId IN (:...meOrfollowingNetworks)', { meOrfollowingNetworks: meOrfollowingNetworks })
-			.andWhere(new Brackets(qb => {
-				qb.where(`(note.score > :globalScore) AND (user.isExplorable = TRUE)`, { globalScore: globalScore })
-					.orWhere(`(note.userHost IS NULL) AND (note.score > :localScore) AND (user.isExplorable = TRUE)`, { localScore: localScore })
-					.orWhere(`(note.score > :followeeScore) AND (note.userId IN (:...meOrFolloweeIds))`, { meOrFolloweeIds: meOrFolloweeIds, followeeScore: followeeScore });
-			}));
+		query
+			.andWhere("note.userId IN (:...meOrfollowingNetworks)", {
+				meOrfollowingNetworks: meOrfollowingNetworks,
+			})
+			.andWhere(
+				new Brackets((qb) => {
+					qb.where(
+						`(note.score > :globalScore) AND (user.isExplorable = TRUE)`,
+						{ globalScore: globalScore },
+					)
+						.orWhere(
+							`(note.userHost IS NULL) AND (note.score > :localScore) AND (user.isExplorable = TRUE)`,
+							{ localScore: localScore },
+						)
+						.orWhere(
+							`(note.score > :followeeScore) AND (note.userId IN (:...meOrFolloweeIds))`,
+							{
+								meOrFolloweeIds: meOrFolloweeIds,
+								followeeScore: followeeScore,
+							},
+						);
+				}),
+			);
 	} else {
-		query.andWhere(`(note.userHost IS NULL) AND (note.score > 90) AND (user.isExplorable = TRUE)`);
+		query.andWhere(
+			`(note.userHost IS NULL) AND (note.score > 90) AND (user.isExplorable = TRUE)`,
+		);
 	}
 
 	if (ps.withFiles) {
@@ -228,11 +254,13 @@ export default define(meta, paramDef, async (ps, user) => {
 	while (found.length < ps.limit) {
 		let notes = await query.take(take).skip(skip).getMany();
 		// 同じappearNoteの場合は除外
-		notes = notes.map(x => {
-			if (foundAppearNoteId.includes(x.renoteId || x.id)) return undefined;
-			foundAppearNoteId.push(x.renoteId || x.id);
-			return x;
-		}).filter(x => x !== undefined);
+		notes = notes
+			.map((x) => {
+				if (foundAppearNoteId.includes(x.renoteId || x.id)) return undefined;
+				foundAppearNoteId.push(x.renoteId || x.id);
+				return x;
+			})
+			.filter((x) => x !== undefined);
 		found.push(...(await Notes.packMany(notes, user)));
 		skip += take;
 		if (notes.length < take) break;

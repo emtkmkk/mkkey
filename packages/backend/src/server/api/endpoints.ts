@@ -345,7 +345,7 @@ import * as ep___users_searchByUsernameAndHost from "./endpoints/users/search-by
 import * as ep___users_search from "./endpoints/users/search.js";
 import * as ep___users_show from "./endpoints/users/show.js";
 import * as ep___users_stats from "./endpoints/users/stats.js";
-import * as ep___users_updateMemo from './endpoints/users/update-memo.js';
+import * as ep___users_updateMemo from "./endpoints/users/update-memo.js";
 import * as ep___users_emoji_stats from "./endpoints/users/emoji-stats.js";
 import * as ep___fetchRss from "./endpoints/fetch-rss.js";
 import * as ep___admin_driveCapOverride from "./endpoints/admin/drive-capacity-override.js";

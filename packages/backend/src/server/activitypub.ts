@@ -46,12 +46,14 @@ async function inbox(ctx: Router.RouterContext) {
 		ctx.status = 400;
 		return;
 	}
-	const userId = (ctx.params as { user: string; } | undefined)?.user;
+	const userId = (ctx.params as { user: string } | undefined)?.user;
 
 	let signature;
 
 	try {
-		signature = httpSignature.parseRequest(ctx.req, { headers: ['(request-target)', 'digest', 'host', 'date'] });
+		signature = httpSignature.parseRequest(ctx.req, {
+			headers: ["(request-target)", "digest", "host", "date"],
+		});
 	} catch (e) {
 		ctx.status = 401;
 		return;
@@ -62,10 +64,12 @@ async function inbox(ctx: Router.RouterContext) {
 		return;
 	}
 
-	const user = userId ? await Users.findOneBy({
-		id: userId,
-		host: IsNull(),
-	}) : null;
+	const user = userId
+		? await Users.findOneBy({
+				id: userId,
+				host: IsNull(),
+		  })
+		: null;
 
 	if (userId && user == null) {
 		ctx.status = 404;
@@ -104,8 +108,7 @@ async function parseJsonBodyOrFail(ctx: Router.RouterContext, next: Koa.Next) {
 
 	try {
 		await koaBodyParser(ctx, next);
-	}
-	catch {
+	} catch {
 		ctx.status = 400;
 		return;
 	}

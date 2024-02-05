@@ -469,16 +469,23 @@ export function initHpmlLib(
 	let pageRndUUID = visitor ? visitor.id : "";
 	try {
 		if (!visitor && !localStorage.getItem("pageRndUUID")) {
-			localStorage.setItem("pageRndUUID",new Date().getTime().toString(16).slice(-7) + Math.floor(4095 * Math.random()).toString(16).padStart(3, '0'))
+			localStorage.setItem(
+				"pageRndUUID",
+				new Date().getTime().toString(16).slice(-7) +
+					Math.floor(4095 * Math.random())
+						.toString(16)
+						.padStart(3, "0"),
+			);
 		}
-	 	pageRndUUID = visitor ? visitor.id : (localStorage.getItem("pageRndUUID") ?? `${navigator.userAgent}-${window.devicePixelRatio}`);
-	} catch(e) {
-		
-	}
+		pageRndUUID = visitor
+			? visitor.id
+			: localStorage.getItem("pageRndUUID") ??
+			  `${navigator.userAgent}-${window.devicePixelRatio}`;
+	} catch (e) {}
 	const date = new Date();
 	const day = `${pageRndUUID} ${date.getFullYear()}/${
 		date.getMonth() + 1
-	}/${date.getDate()} ${Math.floor(date.getHours()/8)}`;
+	}/${date.getDate()} ${Math.floor(date.getHours() / 8)}`;
 
 	// SHOULD be fine to ignore since it's intended + function shape isn't defined
 	const funcs: Record<string, Function> = {

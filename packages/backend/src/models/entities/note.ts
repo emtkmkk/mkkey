@@ -164,7 +164,6 @@ export class Note {
 	})
 	public ccUserIds: User["id"][];
 
-
 	@Index()
 	@Column({
 		...id(),

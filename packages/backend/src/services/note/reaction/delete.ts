@@ -14,10 +14,11 @@ export default async (
 	note: Note,
 	emoji?: any,
 ) => {
-	const existCount = await NoteReactions.count({where: {
+	const existCount = await NoteReactions.count({
+		where: {
 			noteId: note.id,
 			userId: user.id,
-		}
+		},
 	});
 
 	if (emoji == null && existCount > 1) {
@@ -26,7 +27,7 @@ export default async (
 			"Unable to process due to multiple targets",
 		);
 	}
-	
+
 	emoji = await toDbReaction(emoji, user.host);
 
 	// if already unreacted
@@ -65,7 +66,7 @@ export default async (
 		.execute();
 
 	if (existCount === 1) {
-		Notes.decrement({ id: note.id }, "score", (user.host ? '1' : '3'));
+		Notes.decrement({ id: note.id }, "score", user.host ? "1" : "3");
 	}
 
 	publishNoteStream(note.id, "unreacted", {

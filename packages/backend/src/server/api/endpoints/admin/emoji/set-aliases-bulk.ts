@@ -33,7 +33,6 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps) => {
-	
 	const emojis = await Emojis.findBy({
 		id: In(ps.ids),
 	});
@@ -47,7 +46,7 @@ export default define(meta, paramDef, async (ps) => {
 			aliases: ps.aliases,
 		},
 	);
-	
+
 	publishBroadcastStream("emojiUpdated", {
 		emojis: await Emojis.packMany(emojis),
 	});

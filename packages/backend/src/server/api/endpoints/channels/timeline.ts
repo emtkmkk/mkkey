@@ -103,9 +103,9 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	query.andWhere(
 		new Brackets((qb) => {
-			qb.orWhere("note.channelId = :channelId", { channelId: channel.id })
-			if (!channel.description?.includes("[localOnly]")){
-				if (safeForSql(normalizeForSearch(channel.name))){
+			qb.orWhere("note.channelId = :channelId", { channelId: channel.id });
+			if (!channel.description?.includes("[localOnly]")) {
+				if (safeForSql(normalizeForSearch(channel.name))) {
 					qb.orWhere(`'{"${normalizeForSearch(channel.name)}"}' <@ note.tags`);
 				}
 			}

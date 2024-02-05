@@ -3,7 +3,12 @@ import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderFollow from "@/remote/activitypub/renderer/follow.js";
 import { deliver } from "@/queue/index.js";
 import type { User } from "@/models/entities/user.js";
-import { Blockings, FollowRequests, Users, FollowBlockings } from "@/models/index.js";
+import {
+	Blockings,
+	FollowRequests,
+	Users,
+	FollowBlockings,
+} from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { createNotification } from "../../create-notification.js";
 import config from "@/config/index.js";
@@ -75,7 +80,7 @@ export default async function (
 		const FollowBlocking = await FollowBlockings.findOneBy({
 			blockerId: followee.id,
 			blockeeId: follower.id,
-		})
+		});
 
 		if (!FollowBlocking) {
 			// 通知を作成

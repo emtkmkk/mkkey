@@ -45,7 +45,9 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (ps.host) {
 		const q = Users.createQueryBuilder("user")
 			.where("user.isSuspended = FALSE")
-			.andWhere(`coalesce(user.host,${config.host}) LIKE :host`, { host: `${ps.host === "." ? config.host : ps.host.toLowerCase()}%` });
+			.andWhere(`coalesce(user.host,${config.host}) LIKE :host`, {
+				host: `${ps.host === "." ? config.host : ps.host.toLowerCase()}%`,
+			});
 
 		if (ps.username) {
 			q.andWhere("user.usernameLower LIKE :username", {

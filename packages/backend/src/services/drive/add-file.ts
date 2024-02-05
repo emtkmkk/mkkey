@@ -4,7 +4,7 @@ import { v4 as uuid } from "uuid";
 
 import type S3 from "aws-sdk/clients/s3.js";
 import sharp from "sharp";
-import { sharpBmp } from 'sharp-read-bmp';
+import { sharpBmp } from "sharp-read-bmp";
 import { IsNull } from "typeorm";
 import { publishMainStream, publishDriveStream } from "@/services/stream.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
@@ -153,10 +153,12 @@ async function save(
 			);
 			if (!file.blurhash) {
 				// もしBlurhashがまだ生成されていない場合は、サムネイル画像を用いて再度生成する
-					file.blurhash = await getBlurhashBuffer(alts.thumbnail.data).catch((e) => {
+				file.blurhash = await getBlurhashBuffer(alts.thumbnail.data).catch(
+					(e) => {
 						console.log(`getBlurhash to thumbnail failed: ${e}`);
 						return null;
-					});
+					},
+				);
 			}
 		}
 
@@ -273,7 +275,7 @@ export async function generateAlts(
 	let satisfyWebpublic: boolean;
 
 	try {
-		img = (await sharpBmp(path, type));
+		img = await sharpBmp(path, type);
 		const metadata = await img.metadata();
 		const isAnimated = metadata.pages && metadata.pages > 1;
 
@@ -532,7 +534,12 @@ export async function addFile({
 
 	// detect name
 	const detectedName =
-		name || (info.type.ext ? `${user.username}${user.host ? `-${user.host.replaceAll(/\W+/, "_")}` : ""}-${uuid()}.${info.type.ext}` : "untitled");
+		name ||
+		(info.type.ext
+			? `${user.username}${
+					user.host ? `-${user.host.replaceAll(/\W+/, "_")}` : ""
+			  }-${uuid()}.${info.type.ext}`
+			: "untitled");
 
 	if (user && !force) {
 		// Check if there is a file with the same hash

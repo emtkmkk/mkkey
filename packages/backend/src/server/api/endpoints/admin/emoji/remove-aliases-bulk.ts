@@ -43,7 +43,7 @@ export default define(meta, paramDef, async (ps) => {
 			aliases: emoji.aliases.filter((x) => !ps.aliases.includes(x)),
 		});
 	}
-	
+
 	publishBroadcastStream("emojiUpdated", {
 		emojis: await Emojis.packMany(emojis),
 	});

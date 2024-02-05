@@ -10,6 +10,6 @@ export class indexDeletedAt1683682889968 {
 	}
 
 	async down(queryRunner) {
-		await queryRunner.query(`DROP INDEX "IDX_NOTE_DELETEDAT"`)
+		await queryRunner.query(`DROP INDEX "IDX_NOTE_DELETEDAT"`);
 	}
 }

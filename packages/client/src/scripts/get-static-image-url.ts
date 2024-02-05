@@ -2,10 +2,12 @@ import { url as instanceUrl } from "@/config";
 import * as url from "@/scripts/url";
 
 export function getStaticImageUrl(baseUrl: string): string {
-	const u = baseUrl.startsWith('http') ? new URL(baseUrl) : new URL(baseUrl, instanceUrl);
+	const u = baseUrl.startsWith("http")
+		? new URL(baseUrl)
+		: new URL(baseUrl, instanceUrl);
 	if (u.href.startsWith(`${instanceUrl}/emoji/`)) {
 		// もう既にemojiっぽそうだったらsearchParams付けるだけ
-		u.searchParams.set('static', '1');
+		u.searchParams.set("static", "1");
 		return u.href;
 	}
 	if (u.href.startsWith(`${instanceUrl}/proxy/`)) {

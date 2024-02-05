@@ -14,7 +14,7 @@ import {
 	Polls,
 	Users,
 } from "@/models/index.js";
-import { IsNull, Not } from 'typeorm';
+import { IsNull, Not } from "typeorm";
 import { parseUri } from "./db-resolver.js";
 import renderNote from "@/remote/activitypub/renderer/note.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
@@ -43,7 +43,7 @@ export default class Resolver {
 		this.history = new Set();
 		return this;
 	}
-	
+
 	public getHistory(): string[] {
 		return Array.from(this.history);
 	}
@@ -164,8 +164,9 @@ export default class Resolver {
 				);
 			case "follows":
 				return FollowRequests.findOneBy({ id: parsed.id }).then(
-					async followRequest => {
-						if (followRequest == null) throw new Error('resolveLocal: invalid follow request ID');
+					async (followRequest) => {
+						if (followRequest == null)
+							throw new Error("resolveLocal: invalid follow request ID");
 						const [follower, followee] = await Promise.all([
 							Users.findOneBy({
 								id: followRequest.followerId,
@@ -177,10 +178,12 @@ export default class Resolver {
 							}),
 						]);
 						if (follower == null || followee == null) {
-							throw new Error('resolveLocal: follower or followee does not exist');
+							throw new Error(
+								"resolveLocal: follower or followee does not exist",
+							);
 						}
 						return renderActivity(renderFollow(follower, followee, url));
-					}
+					},
 				);
 			/*
 				// rest should be <followee id>

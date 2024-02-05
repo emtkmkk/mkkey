@@ -156,7 +156,7 @@ export class Instance {
 		length: 64, nullable: true,
 	})
 	public themeColor: string | null;
-	
+
 	/**
 	 * このインスタンスが１アカウントで行える最大リアクション数
 	 */
@@ -164,7 +164,6 @@ export class Instance {
 		default: 1,
 	})
 	public maxReactionsPerAccount: number;
-
 
 	@Column('timestamp with time zone', {
 		nullable: true,

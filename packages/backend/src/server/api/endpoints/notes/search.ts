@@ -70,18 +70,22 @@ export default define(meta, paramDef, async (ps, me) => {
 			ps.untilId,
 		);
 
-		if (ps.userId || que.includes("user:") || que.toLowerCase().includes("from:me")) {
+		if (
+			ps.userId ||
+			que.includes("user:") ||
+			que.toLowerCase().includes("from:me")
+		) {
 			let qUserId = ps.userId;
 			if (que.toLowerCase().includes("from:me")) {
 				if (me) {
 					qUserId = me.id;
 				}
-				que = que.replace(/from:me/i, "")
+				que = que.replace(/from:me/i, "");
 			}
 			if (!qUserId) {
-				const match = /(^|[\s\+])user:(\w{10})($|[\s\+])/i.exec(que)
+				const match = /(^|[\s\+])user:(\w{10})($|[\s\+])/i.exec(que);
 				qUserId = match?.[2];
-				que = que.replace(/(^|[\s\+])user:(\w{10})($|[\s\+])/i, "")
+				que = que.replace(/(^|[\s\+])user:(\w{10})($|[\s\+])/i, "");
 			}
 			if (qUserId) {
 				query.andWhere("note.userId = :userId", { userId: qUserId });
@@ -90,9 +94,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		if (ps.channelId || que.includes("channel:")) {
 			let qChannelId = ps.channelId;
 			if (!qChannelId) {
-				const match = /(^|[\s\+])channel:(\w{10})($|[\s\+])/i.exec(que)
+				const match = /(^|[\s\+])channel:(\w{10})($|[\s\+])/i.exec(que);
 				qChannelId = match?.[2];
-				que = que.replace(/(^|[\s\+])channel:(\w{10})($|[\s\+])/i, "")
+				que = que.replace(/(^|[\s\+])channel:(\w{10})($|[\s\+])/i, "");
 			}
 			if (qChannelId) {
 				query.andWhere("note.channelId = :channelId", {
@@ -103,12 +107,12 @@ export default define(meta, paramDef, async (ps, me) => {
 		if (ps.host || que.includes("host:")) {
 			let qHost = ps.host;
 			if (!qHost) {
-				const match = /(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i.exec(que)
+				const match = /(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i.exec(que);
 				qHost = match?.[2];
-				que = que.replace(/(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i, "")
+				que = que.replace(/(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i, "");
 			}
 			if (qHost) {
-				plusQueryCount += 1
+				plusQueryCount += 1;
 				if (qHost === "." || qHost === config.host) {
 					query.andWhere("note.userHost IS NULL");
 				} else {
@@ -121,16 +125,17 @@ export default define(meta, paramDef, async (ps, me) => {
 		if (ps.visibility || que.includes("visibility:")) {
 			let qVisibility = ps.visibility;
 			if (!qVisibility) {
-				const match = /(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i.exec(que)
+				const match = /(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i.exec(que);
 				qVisibility = match?.[2];
-				que = que.replace(/(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i, "")
+				que = que.replace(/(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i, "");
 			}
 			if (qVisibility) {
-				plusQueryCount += 1
+				plusQueryCount += 1;
 				if (qVisibility === "全公開") qVisibility = "public";
 				if (qVisibility === "ホーム") qVisibility = "home";
 				if (qVisibility === "フォロワー") qVisibility = "followers";
-				if (qVisibility === "ダイレクト" || qVisibility === "direct") qVisibility = "specified";
+				if (qVisibility === "ダイレクト" || qVisibility === "direct")
+					qVisibility = "specified";
 				query.andWhere("note.visibility = :visibility", {
 					visibility: qVisibility,
 				});
@@ -139,12 +144,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		if (ps.local || que.includes("local:")) {
 			let qLocal = ps.local;
 			if (!qLocal) {
-				const match = /(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i.exec(que)
-				qLocal = ["true", "on", "yes", "only"].includes(match?.[2]?.toLowerCase());
-				que = que.replace(/(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i, "")
+				const match = /(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i.exec(que);
+				qLocal = ["true", "on", "yes", "only"].includes(
+					match?.[2]?.toLowerCase(),
+				);
+				que = que.replace(/(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i, "");
 			}
 			if (qLocal) {
-				plusQueryCount += 1
+				plusQueryCount += 1;
 				query.andWhere("note.localOnly = :localOnly", {
 					localOnly: qLocal ? true : false,
 				});
@@ -153,32 +160,31 @@ export default define(meta, paramDef, async (ps, me) => {
 		if (ps.minScore || que.includes("score:")) {
 			let qScore = ps.score;
 			if (!qScore) {
-				const match = /(^|[\s\+])score:(\d+)($|[\s\+])/i.exec(que)
+				const match = /(^|[\s\+])score:(\d+)($|[\s\+])/i.exec(que);
 				qScore = match?.[2];
-				que = que.replace(/(^|[\s\+])score:(\d+)($|[\s\+])/i, "")
+				que = que.replace(/(^|[\s\+])score:(\d+)($|[\s\+])/i, "");
 			}
 			if (qScore) {
-				plusQueryCount += 1
+				plusQueryCount += 1;
 				query.andWhere("note.score > :score", {
 					score: qScore,
 				});
 			}
 		}
 
-
-		if (que.replaceAll(/[\s\+]/g,"") === "" && plusQueryCount === 0) return [];
+		if (que.replaceAll(/[\s\+]/g, "") === "" && plusQueryCount === 0) return [];
 
 		const queWords = que.replaceAll(/\s/g, "+").split("+");
 
 		queWords.forEach((x) => {
-			if (x.startsWith("-")){
+			if (x.startsWith("-")) {
 				query.andWhere(`note.text NOT ILIKE '%${x.substring(1)}%'`);
 			} else {
-				plusQueryCount += 1
+				plusQueryCount += 1;
 				query.andWhere(`note.text ILIKE '%${x}%'`);
 			}
 		});
-		
+
 		if (plusQueryCount === 0) return [];
 
 		query
@@ -279,37 +285,37 @@ export default define(meta, paramDef, async (ps, me) => {
 		const userQuery =
 			ps.userId != null
 				? [
-					{
-						term: {
-							userId: ps.userId,
+						{
+							term: {
+								userId: ps.userId,
+							},
 						},
-					},
-				]
+				  ]
 				: [];
 
 		const hostQuery =
 			ps.userId == null
 				? ps.host === null
 					? [
-						{
-							bool: {
-								must_not: {
-									exists: {
-										field: "userHost",
+							{
+								bool: {
+									must_not: {
+										exists: {
+											field: "userHost",
+										},
 									},
 								},
 							},
-						},
-					]
+					  ]
 					: ps.host !== undefined
-						? [
+					? [
 							{
 								term: {
 									userHost: ps.host,
 								},
 							},
-						]
-						: []
+					  ]
+					: []
 				: [];
 
 		const result = await es.search({

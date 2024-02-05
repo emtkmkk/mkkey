@@ -24,7 +24,7 @@ export function toHtml(
 	}
 
 	function fnDefault(node: mfm.MfmFn) {
-		const el = doc.createElement('i');
+		const el = doc.createElement("i");
 		appendChildren(node.children, el);
 		return el;
 	}
@@ -60,9 +60,7 @@ export function toHtml(
 			switch (node.props.name) {
 				case "unixtime": {
 					const text =
-						node.children[0].type === "text"
-							? node.children[0].props.text
-							: "";
+						node.children[0].type === "text" ? node.children[0].props.text : "";
 					try {
 						const date = new Date(parseInt(text, 10) * 1000);
 						const el = doc.createElement("time");
@@ -115,7 +113,7 @@ export function toHtml(
 							rubyEl,
 						);
 						appendChildren(node.children.slice(-1), rtEl);
-						
+
 						rubyEl.appendChild(rpStartEl);
 						rubyEl.appendChild(rtEl);
 						rubyEl.appendChild(rpEndEl);

@@ -22,7 +22,7 @@
 			<i class="ph-quotes ph-bold ph-lg"></i>
 		</MkA>
 		<Mfm
-		  v-if="cwDetermine && note.replyId && !note.cw.includes(`@${note.reply.user?.username}${note.reply.user?.host ? `@${note.reply.user.host}` : ''}`)"
+		  v-if="cwDetermine && note.reply?.user && note.reply.user.id !== note.user.id && !note.cw.includes(`@${note.reply.user?.username}${note.reply.user?.host ? `@${note.reply.user.host}` : ''}`)"
 			class="text"
 			:text="`@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : ''} ` + (note.cw ?? ('★センシティブメディア'))"
 			:author="note.user"
@@ -88,7 +88,7 @@
 					</MkA>
 				</template>
 				<Mfm
-					v-if="note.text && !note.cw && !note.deletedAt && note.replyId && !note.text.includes(`@${note.reply.user?.username}${note.reply.user?.host ? `@${note.reply.user.host}` : ''}`)"
+					v-if="note.text && !note.cw && !note.deletedAt && note.reply?.user && note.reply.user.id !== note.user.id && !note.text.includes(`@${note.reply.user?.username}${note.reply.user?.host ? `@${note.reply.user.host}` : ''}`)"
 					:text="note.deletedAt ? i18n.ts.deletedNote : `@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : ''} ` + note.text"
 					:author="note.user"
 					:i="$i"
@@ -175,6 +175,7 @@ import { extractUrlFromMfm } from "@/scripts/extract-url-from-mfm";
 import { extractMfmWithAnimation } from "@/scripts/extract-mfm";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
+import { $i } from "@/account";
 
 const props = defineProps<{
 	note: misskey.entities.Note;

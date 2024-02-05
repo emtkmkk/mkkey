@@ -53,7 +53,7 @@ export default define(meta, paramDef, async () => {
 		isDeleted: false,
 		notesCount: MoreThan(50),
 	});
-return {
+	return {
 		onlineCount,
 		activeCount,
 		offlineCount,

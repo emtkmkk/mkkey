@@ -230,6 +230,7 @@ import { i18n } from "@/i18n";
 import { useNoteCapture } from "@/scripts/use-note-capture";
 import { defaultStore } from "@/store";
 import { deepClone } from "@/scripts/clone";
+import copyToClipboard from "@/scripts/copy-to-clipboard";
 
 const router = useRouter();
 

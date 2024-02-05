@@ -168,7 +168,8 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 			throw new ApiError();
 		if (
 			!_user.host &&
-			!_user.isAdmin && !_user.isModerator &&
+			!_user.isAdmin &&
+			!_user.isModerator &&
 			ps.name.toLowerCase().includes("moderator")
 		)
 			throw new ApiError();

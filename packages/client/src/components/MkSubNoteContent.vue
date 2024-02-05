@@ -22,7 +22,17 @@
 			<i class="ph-quotes ph-bold ph-lg"></i>
 		</MkA>
 		<Mfm
-		    v-if="cwDetermine"
+		  v-if="cwDetermine && note.replyId && !note.cw.includes(`@${note.reply.user?.username}${note.reply.user?.host ? `@${note.reply.user.host}` : ''}`)"
+			class="text"
+			:text="`@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : ''} ` + (note.cw ?? ('★センシティブメディア'))"
+			:author="note.user"
+			:i="$i"
+			:custom-emojis="note.emojis"
+			:reaction-menu-enabled="true"
+			:note="note"
+		/>
+		<Mfm
+		  v-else-if="cwDetermine"
 			class="text"
 			:text="(note.cw ?? ('★センシティブメディア'))"
 			:author="note.user"
@@ -78,7 +88,16 @@
 					</MkA>
 				</template>
 				<Mfm
-					v-if="note.text && !note.deletedAt"
+					v-if="note.text && !note.cw && !note.deletedAt && note.replyId && !note.text.includes(`@${note.reply.user?.username}${note.reply.user?.host ? `@${note.reply.user.host}` : ''}`)"
+					:text="note.deletedAt ? i18n.ts.deletedNote : `@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : ''} ` + note.text"
+					:author="note.user"
+					:i="$i"
+					:custom-emojis="note.emojis"
+					:reaction-menu-enabled="true"
+					:note="note"
+				/>
+				<Mfm
+					v-else-if="note.text && !note.deletedAt"
 					:text="note.deletedAt ? i18n.ts.deletedNote : note.text"
 					:author="note.user"
 					:i="$i"

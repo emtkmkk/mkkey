@@ -357,8 +357,8 @@ export const UserRepository = db.getRepository(User).extend({
 	async getOnlineStatus(
 		user: User,
 		meId?: string,
-	):
-		Promise<"unknown"
+	): Promise<
+		| "unknown"
 		| "online"
 		| "half-online"
 		| "active"
@@ -368,9 +368,15 @@ export const UserRepository = db.getRepository(User).extend({
 		| "sleeping"
 		| "deep-sleeping"
 		| "never-sleeping"
-		| "super-sleeping"> {
+		| "super-sleeping"
+	> {
 		if (!meId) return "unknown";
-		if (meId && !user.host && !(await this.getRelation(meId, user.id)).isFollowing) return "unknown";
+		if (
+			meId &&
+			!user.host &&
+			!(await this.getRelation(meId, user.id)).isFollowing
+		)
+			return "unknown";
 		if (user.lastActiveDate == null) return "unknown";
 		const elapsed = Date.now() - user.lastActiveDate.getTime();
 		return elapsed < USER_ONLINE_THRESHOLD

@@ -178,6 +178,14 @@ useTooltip(
         color: var(--accent);
     }
 }
+@keyframes textColorChangedRev {
+    0%, 100% {
+        color: var(--accent);
+    }
+    25%, 75% {
+        color: var(--fg);
+    }
+}
 .hkzvhatu {
 	display: inline-block;
 	height: 32px;
@@ -241,12 +249,20 @@ useTooltip(
 		line-height: 32px;
 		margin: 0 0 0 4px;
 
-		&.count-increased {
+		&:not(.reacted).count-increased {
 			animation: textColorChanged 1s;
 		}
 
-		&.count-decreased {
+		&:not(.reacted).count-decreased {
 			animation: textColorChanged 1s;
+		}
+
+		&.reacted.count-increased, &.reacted:hover.count-increased {
+			animation: textColorChangedRev 1s;
+		}
+
+		&.reacted.count-decreased, &.reacted:hover.count-decreased {
+			animation: textColorChangedRev 1s;
 		}
 	}
 }

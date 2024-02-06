@@ -22,7 +22,7 @@
 			<i class="ph-quotes ph-bold ph-lg"></i>
 		</MkA>
 		<Mfm
-		  v-if="cwDetermine && note.reply?.user && note.reply.user.id !== note.user.id && !note.cw.includes(`@`)"
+		  v-if="cwDetermine && note.reply?.user && note.reply.user.id !== note.user.id && !note.cw?.includes(`@`)"
 			class="text"
 			:text="`@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : '@mkkey.net'} ` + (note.cw ?? ('★センシティブメディア'))"
 			:author="note.user"
@@ -88,7 +88,7 @@
 					</MkA>
 				</template>
 				<Mfm
-					v-if="note.text && !note.cw && !note.deletedAt && note.reply?.user && note.reply.user.id !== note.user.id && !note.text.includes(`@`)"
+					v-if="note.text && !note.cw && !note.deletedAt && note.reply?.user && note.reply.user.id !== note.user.id && !note.text?.includes(`@`)"
 					:text="note.deletedAt ? i18n.ts.deletedNote : `@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : '@mkkey.net'} ` + note.text"
 					:author="note.user"
 					:i="$i"

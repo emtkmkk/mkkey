@@ -259,8 +259,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				query.andWhere(`note.text NOT ILIKE '%${x.substring(1)}%'`);
 			} else {
 				plusQueryCount += 1;
-				query.andWhere(`note.cw ILIKE '%${x}%'`);
-				query.andWhere(`note.text ILIKE '%${x}%'`);
+				query.andWhere(`(note.cw ILIKE '%${x}%' OR note.text ILIKE '%${x}%')`);
 			}
 		});
 

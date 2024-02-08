@@ -278,6 +278,7 @@ const onContextmenu = (ev: MouseEvent) => {
 				text: i18n.ts.jumpToNow as string,
 				action: () => {
 					travelDate = undefined;
+					Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel() : tlComponent.value?.timetravel();
 				},
 			} as MenuButton] : []),
 			...(!travelDate && lastBackedDate?.createdAt && Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000 ? [{

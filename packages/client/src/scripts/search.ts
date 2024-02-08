@@ -9,6 +9,7 @@ export async function search(channel?: string, user?: string) {
 			: user
 			? i18n.ts.userSearch
 			: i18n.ts.search,
+		default: URLSearchParams(document.location.search)?.get("q")?.replaceAll("+"," ") || undefined,
 	});
 	if (canceled || query == null || query === "") return;
 

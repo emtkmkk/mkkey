@@ -89,7 +89,7 @@ export default define(meta, paramDef, async (ps, user) => {
 					.getMany()
 			).map((x) => x.blockerId);
 	
-			query.andWhere("(reaction.userId IN (:...followingUserIds) OR user.isExplorable = true", { followingUserIds: followingUserIds.filter((x) => ![...mutingUserIds, ...blockingUserIds, ...blockedUserIds].includes(x)) })
+			query.andWhere("(reaction.userId IN (:...followingUserIds) OR user.isExplorable = true)", { followingUserIds: followingUserIds.filter((x) => ![...mutingUserIds, ...blockingUserIds, ...blockedUserIds].includes(x)) })
 		}
 	} else {
 		query.andWhere("user.isExplorable = true AND user.isRemoteExplorable = true")
@@ -112,7 +112,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	}
 
 	query.innerJoinAndSelect("reaction.note", "note")
-	.leftJoinAndSelect("reaction.user", "user")
+	.innerJoinAndSelect("reaction.user", "user")
 	.leftJoinAndSelect("user.avatar", "avatar")
 	.leftJoinAndSelect("user.banner", "banner");
 

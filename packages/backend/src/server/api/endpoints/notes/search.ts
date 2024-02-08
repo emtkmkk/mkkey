@@ -194,6 +194,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				}
 			}
 		}
+		let cwOnly = false;
 		let loopCount = 0;
 		while (que.includes("filter:") && plusQueryCount < 15 && loopCount < 15) {
 			loopCount++
@@ -218,6 +219,12 @@ export default define(meta, paramDef, async (ps, me) => {
 							query.setParameters(followingQuery.getParameters());
 						};
 					break;
+					case "cw":
+						query.andWhere("note.cw IS NOT NULL");
+						break;
+					case "poll":
+						query.andWhere("note.poll IS NOT NULL");
+						break;
 					case "media":
 					case "images":
 					case "videos":
@@ -242,8 +249,8 @@ export default define(meta, paramDef, async (ps, me) => {
 						query.andWhere("(note.text IS NOT NULL OR note.fileIds != '{}')");
 					break;
 					case "safe":
-						query.andWhere(`note.cw NOT ILIKE '%シモ%'`);
-						query.andWhere(`note.cw NOT ILIKE '%そぎぎ%'`);
+						query.andWhere(`(note.cw NOT ILIKE '%シモ%' OR note.cw IS NULL)`);
+						query.andWhere(`(note.cw NOT ILIKE '%そぎぎ%' OR note.cw IS NULL)`);
 					break;
 				}
 			}
@@ -255,7 +262,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 		queWords.forEach((x) => {
 			if (x.startsWith("-")) {
-				query.andWhere(`note.cw NOT ILIKE '%${x.substring(1)}%'`);
+				query.andWhere(`(note.cw NOT ILIKE '%${x.substring(1)}%' OR note.cw IS NULL)`);
 				query.andWhere(`note.text NOT ILIKE '%${x.substring(1)}%'`);
 			} else {
 				plusQueryCount += 1;

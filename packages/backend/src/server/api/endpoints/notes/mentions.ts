@@ -54,7 +54,9 @@ export default define(meta, paramDef, async (ps, user) => {
 				.orWhere(
 					`'{"${user.id}"}' <@ note.visibleUserIds`,
 				)
-				.orWhere("(note.userId = :userId AND note.visibility = 'specified' AND note.visibleUserIds = '{}' AND note.ccUserIds = '{}')", { userId: user.id });
+				if (ps.visibility === "specified") {
+					qb.orWhere("(note.userId = :userId AND note.visibility = 'specified' AND note.visibleUserIds = '{}' AND note.ccUserIds = '{}')", { userId: user.id });
+				}
 			}),
 		)
 		.innerJoinAndSelect("note.user", "user")

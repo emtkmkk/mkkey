@@ -75,7 +75,13 @@ const onContextmenu = (ev: MouseEvent) => {
 			} as MenuLabel,{
 				type: "label",
 				text: travelDate.toLocaleString(),
-			} as MenuLabel] : []),
+			} as MenuLabel,{
+				icon: 'ph-arrow-line-up ph-bold ph-lg',
+				text: i18n.ts.jumpToNow as string,
+				action: () => {
+					travelDate = undefined;
+				},
+			} as MenuButton] : []),
 			...(!travelDate && lastBackedDate?.createdAt && Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000 ? [{
 				icon: 'ph-arrow-arc-left ph-bold ph-lg',
 				text: i18n.ts.lastBackedDate as string,

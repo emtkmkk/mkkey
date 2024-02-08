@@ -112,7 +112,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	}
 
 	query.innerJoinAndSelect("reaction.note", "note")
-	.innerJoinAndSelect("reaction.user", "user")
+	.leftJoinAndSelect("reaction.user", "user")
 	.leftJoinAndSelect("user.avatar", "avatar")
 	.leftJoinAndSelect("user.banner", "banner");
 

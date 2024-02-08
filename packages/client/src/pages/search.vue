@@ -25,13 +25,14 @@
 				@slide-change="onSlideChange"
 			>
 				<swiper-slide>
-					<XNotes key="notes" ref="notes" :pagination="notesPagination" />
+					<XNotes v-if="tab === 'notes'" key="notes" ref="notes" :pagination="notesPagination" />
 				</swiper-slide>
 				<swiper-slide>
-					<XNotes key="medianotes" ref="medianotes" :pagination="medianotesPagination" />
+					<XNotes v-if="tab === 'medianotes'" key="medianotes" ref="medianotes" :pagination="medianotesPagination" />
 				</swiper-slide>
 				<swiper-slide v-if="!user">
 					<XUserList
+						v-if="tab === 'users'"
 						ref="users"
 						class="_gap"
 						:pagination="usersPagination"

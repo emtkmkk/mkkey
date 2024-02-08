@@ -92,7 +92,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			query.andWhere("(reaction.userId IN (:...followingUserIds) OR user.isExplorable = true", { followingUserIds: followingUserIds.filter((x) => ![...mutingUserIds, ...blockingUserIds, ...blockedUserIds].includes(x)) })
 		}
 	} else {
-		query.andWhere("user.isExplorable = true")
+		query.andWhere("user.isExplorable = true AND user.isRemoteExplorable = true")
 	}
 
 	if (ps.type) {

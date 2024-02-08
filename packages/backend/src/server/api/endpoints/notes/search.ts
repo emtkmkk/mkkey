@@ -186,7 +186,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			}
 			if (qUntil) {
 				const untilDate = new Date(qUntil);
-				if (isNaN(untilDate.valueOf())) {
+				if (!isNaN(untilDate.valueOf())) {
 					plusQueryCount += 1;
 					query.andWhere("note.id < :id", {
 						id: genId(untilDate),

@@ -50,9 +50,11 @@ export default define(meta, paramDef, async (ps, user) => {
 	)
 		.andWhere(
 			new Brackets((qb) => {
-				qb.where(`'{"${user.id}"}' <@ note.mentions`).orWhere(
+				qb.where(`'{"${user.id}"}' <@ note.mentions`)
+				.orWhere(
 					`'{"${user.id}"}' <@ note.visibleUserIds`,
-				);
+				)
+				.orWhere("(note.visibleUserIds = '{}' AND note.ccUserIds = '{}')");
 			}),
 		)
 		.innerJoinAndSelect("note.user", "user")

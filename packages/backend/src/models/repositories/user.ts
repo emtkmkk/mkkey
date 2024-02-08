@@ -374,7 +374,7 @@ export const UserRepository = db.getRepository(User).extend({
 		if (
 			meId &&
 			!user.host &&
-			!(await this.getRelation(meId, user.id)).isFollowing
+			!(await this.getRelation(meId, user.id)).isFollowed
 		)
 			return "unknown";
 		if (user.lastActiveDate == null) return "unknown";

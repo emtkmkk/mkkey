@@ -19,6 +19,20 @@
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
 		</FormSection>
 		<FormSection>
+			<template #label>{{ i18n.ts.forkids }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+			<FormSwitch v-model="excludeSimo" class="_formBlock">{{
+				i18n.ts.excludeSimo
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
+				i18n.ts.excludeSimoDescription
+			}}</template></FormSwitch>
+			<FormSwitch v-model="excludeNSFW" class="_formBlock">{{
+				i18n.ts.excludeNSFW
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch :disabled="!excludeNSFW" v-model="excludeNotFollowNSFW" class="_formBlock">{{
+				i18n.ts.excludeNotFollowNSFW
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+		</FormSection>
+		<FormSection>
 			<template #label>{{ i18n.ts.emojiReplace }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			<FormSwitch v-model="enableEmojiReplace" class="_formBlock">{{
 				i18n.ts.enableEmojiReplace
@@ -106,6 +120,18 @@ const powerModeNoShake = computed(
 );
 const enableMorseDecode = computed(
 	defaultStore.makeGetterSetter("enableMorseDecode")
+);
+const excludeSimo = computed(
+	defaultStore.makeGetterSetter("excludeSimo")
+);
+const excludeNSFW = computed(
+	defaultStore.makeGetterSetter("excludeNSFW")
+);
+const excludeNotFollowNSFW = computed(
+	defaultStore.makeGetterSetter("excludeNotFollowNSFW")
+);
+const excludeSensitiveEmoji = computed(
+	defaultStore.makeGetterSetter("excludeSensitiveEmoji")
 );
 let allEmojiReplace = $ref(deepClone(defaultStore.state.allEmojiReplace));
 const enableEmojiReplace = computed(

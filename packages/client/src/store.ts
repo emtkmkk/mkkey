@@ -1270,6 +1270,26 @@ export const defaultStore = markRaw(
 			default: {},
 			createdAt: "2024/1/24",
 		},
+		excludeSimo: {
+			where: "account",
+			default: false,
+			createdAt: "2024/2/8",
+		},
+		excludeNSFW: {
+			where: "account",
+			default: false,
+			createdAt: "2024/2/8",
+		},
+		excludeNotFollowNSFW: {
+			where: "account",
+			default: false,
+			createdAt: "2024/2/8",
+		},
+		excludeSensitiveEmoji: {
+			where: "account",
+			default: false,
+			createdAt: "2024/2/8",
+		},
 	}),
 );
 

@@ -1,4 +1,5 @@
 import * as config from "@/config";
+import { defaultStore } from "@/store";
 
 export type Muted = {
 	muted: boolean;
@@ -18,6 +19,14 @@ function checkWordMute(
 	//if (text === "") return NotMuted;
 
 	let result = { muted: false, matched: [] };
+
+	if (defaultStore.state.excludeNSFW) {
+		if (defaultStore.state.excludeNotFollowNSFW) {
+			mutedWords.push(["pname:", "filter:nsfw", "-relation:follow"])
+		} else {
+			mutedWords.push(["pname:", "filter:nsfw"])
+		}
+	}
 
 	for (const mutePattern of mutedWords) {
 		if (Array.isArray(mutePattern)) {
@@ -77,6 +86,11 @@ function checkWordMute(
 				// This should never happen due to input sanitisation.
 			}
 		}
+	}
+
+	if (defaultStore.state.excludeSimo && (note.cw?.includes("シモ") || note.cw?.includes("そぎぎ"))) {
+		result.muted = true;
+		result.matched.push("");
 	}
 
 	result.matched = [...new Set(result.matched)];

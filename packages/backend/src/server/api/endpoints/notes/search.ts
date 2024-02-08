@@ -133,7 +133,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (qVisibility) {
 				plusQueryCount += 1;
 				if (qVisibility === "サークル" || qVisibility === "circle") {
-					query.andWhere("note.visibility = specified");
+					query.andWhere("note.visibility = 'specified'");
 					query.andWhere("note.ccUserIds != '{}'");
 				} else {
 					if (qVisibility === "全公開") qVisibility = "public";

@@ -54,7 +54,7 @@ export default define(meta, paramDef, async (ps, user) => {
 				.orWhere(
 					`'{"${user.id}"}' <@ note.visibleUserIds`,
 				)
-				.orWhere("(note.visibleUserIds = '{}' AND note.ccUserIds = '{}')");
+				.orWhere("(note.userId = :user AND note.visibleUserIds = '{}' AND note.ccUserIds = '{}')", { userId: user.id });
 			}),
 		)
 		.innerJoinAndSelect("note.user", "user")

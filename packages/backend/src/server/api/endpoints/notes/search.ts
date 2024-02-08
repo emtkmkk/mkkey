@@ -1,5 +1,5 @@
 import { In } from "typeorm";
-import { Notes } from "@/models/index.js";
+import { Followings, Notes } from "@/models/index.js";
 import { Note } from "@/models/entities/note.js";
 import config from "@/config/index.js";
 import es from "../../../../db/elasticsearch.js";
@@ -9,6 +9,7 @@ import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
+import { genId } from "@/misc/gen-id.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -131,14 +132,19 @@ export default define(meta, paramDef, async (ps, me) => {
 			}
 			if (qVisibility) {
 				plusQueryCount += 1;
-				if (qVisibility === "全公開") qVisibility = "public";
-				if (qVisibility === "ホーム") qVisibility = "home";
-				if (qVisibility === "フォロワー") qVisibility = "followers";
-				if (qVisibility === "ダイレクト" || qVisibility === "direct")
-					qVisibility = "specified";
-				query.andWhere("note.visibility = :visibility", {
-					visibility: qVisibility,
-				});
+				if (qVisibility === "サークル" || qVisibility === "circle") {
+					query.andWhere("note.visibility = specified");
+					query.andWhere("note.ccUserIds != '{}'");
+				} else {
+					if (qVisibility === "全公開") qVisibility = "public";
+					if (qVisibility === "ホーム") qVisibility = "home";
+					if (qVisibility === "フォロワー") qVisibility = "followers";
+					if (qVisibility === "ダイレクト" || qVisibility === "direct")
+						qVisibility = "specified";
+					query.andWhere("note.visibility = :visibility", {
+						visibility: qVisibility,
+					});
+				}
 			}
 		}
 		if (ps.local || que.includes("local:")) {
@@ -171,6 +177,77 @@ export default define(meta, paramDef, async (ps, me) => {
 				});
 			}
 		}
+		if (que.includes("until:")) {
+			let qUntil;
+			if (!qUntil) {
+				const match = /(^|[\s\+])until:([^\s\+]+)($|[\s\+])/i.exec(que);
+				qUntil = match?.[2];
+				que = que.replace(/(^|[\s\+])until:([^\s\+]+)($|[\s\+])/i, "");
+			}
+			if (qUntil) {
+				const untilDate = new Date(qUntil);
+				if (isNaN(untilDate.valueOf())) {
+					plusQueryCount += 1;
+					query.andWhere("note.id < :id", {
+						id: genId(untilDate),
+					});
+				}
+			}
+		}
+		let loopCount = 0;
+		while (que.includes("filter:") && plusQueryCount < 15 && loopCount < 15) {
+			loopCount++
+			let qFilter;
+			if (!qFilter) {
+				const match = /(^|[\s\+])filter:([^\s\+]+)($|[\s\+])/i.exec(que);
+				qFilter = match?.[2];
+				que = que.replace(/(^|[\s\+])filter:([^\s\+]+)($|[\s\+])/i, "");
+			}
+			if (qFilter) {
+				plusQueryCount += 1;
+				switch (qFilter) {
+					case "follows":	
+						if (me) {
+							const followingQuery = Followings.createQueryBuilder("following")
+							.select("following.followeeId")
+							.where("following.followerId = :followerId", { followerId: me.id });
+							query.andWhere(
+								`((note.userId IN (${followingQuery.getQuery()})) OR (note.userId = :meId))`,
+								{ meId: me.id },
+							);
+							query.setParameters(followingQuery.getParameters());
+						};
+					break;
+					case "media":
+					case "images":
+					case "videos":
+						query.andWhere("note.fileIds != '{}'");
+					break;
+					case "hashtags":
+						query.andWhere("note.tags != '{}'");
+					break;
+					case "mention":
+						query.andWhere("note.mentions != '{}'");
+					break;
+					case "replies":
+						query.andWhere("note.replyId IS NOT NULL");
+						query.andWhere("note.replyUserId != note.userId");
+					break;
+					case "self_threads":
+						query.andWhere("note.replyId IS NOT NULL");
+						query.andWhere("note.replyUserId = note.userId");
+					break;
+					case "quote":
+						query.andWhere("note.renoteId IS NOT NULL");
+						query.andWhere("(note.text IS NOT NULL OR note.fileIds != '{}')");
+					break;
+					case "safe":
+						query.andWhere(`note.cw NOT ILIKE '%シモ%'`);
+						query.andWhere(`note.cw NOT ILIKE '%そぎぎ%'`);
+					break;
+				}
+			}
+		}
 
 		if (que.replaceAll(/[\s\+]/g, "") === "" && plusQueryCount === 0) return [];
 
@@ -178,9 +255,11 @@ export default define(meta, paramDef, async (ps, me) => {
 
 		queWords.forEach((x) => {
 			if (x.startsWith("-")) {
+				query.andWhere(`note.cw NOT ILIKE '%${x.substring(1)}%'`);
 				query.andWhere(`note.text NOT ILIKE '%${x.substring(1)}%'`);
 			} else {
 				plusQueryCount += 1;
+				query.andWhere(`note.cw ILIKE '%${x}%'`);
 				query.andWhere(`note.text ILIKE '%${x}%'`);
 			}
 		});

@@ -39,6 +39,8 @@ export default async (
 		avatarUrl: User["avatarUrl"];
 		isSilenced: User["isSilenced"];
 		driveCapacityOverrideMb: User["driveCapacityOverrideMb"];
+		isExplorable: User["isExplorable"];
+		isRemoteExplorable: User["isRemoteExplorable"];
 	},
 	note: Note,
 	reaction?: string,
@@ -281,25 +283,27 @@ export default async (
 			dm.addDirectRecipe(reactee as IRemoteUser);
 		}
 
-		if (["public", "home", "followers"].includes(note.visibility)) {
-			if (note.userId !== user.id && note.userHost === null) {
-				const u = await Users.findOneBy({ id: note.userId });
-				dm.addFollowersRecipe(u as ILocalUser);
-			} else {
-				dm.addFollowersRecipe();
-			}
-		} else if (note.visibility === "specified") {
-			const visibleUsers = await Promise.all(
-				note.visibleUserIds.map((id) => Users.findOneBy({ id })),
-			);
-			for (const u of visibleUsers.filter((u) => u && Users.isRemoteUser(u))) {
-				dm.addDirectRecipe(u as IRemoteUser);
-			}
-			const ccUsers = await Promise.all(
-				note.ccUserIds.map((id) => Users.findOneBy({ id })),
-			);
-			for (const u of ccUsers.filter((u) => u && Users.isRemoteUser(u))) {
-				dm.addDirectRecipe(u as IRemoteUser);
+		if (user.isExplorable && user.isRemoteExplorable) {
+			if (["public", "home", "followers"].includes(note.visibility)) {
+				if (note.userId !== user.id && note.userHost === null) {
+					const u = await Users.findOneBy({ id: note.userId });
+					dm.addFollowersRecipe(u as ILocalUser);
+				} else {
+					dm.addFollowersRecipe();
+				}
+			} else if (note.visibility === "specified") {
+				const visibleUsers = await Promise.all(
+					note.visibleUserIds.map((id) => Users.findOneBy({ id })),
+				);
+				for (const u of visibleUsers.filter((u) => u && Users.isRemoteUser(u))) {
+					dm.addDirectRecipe(u as IRemoteUser);
+				}
+				const ccUsers = await Promise.all(
+					note.ccUserIds.map((id) => Users.findOneBy({ id })),
+				);
+				for (const u of ccUsers.filter((u) => u && Users.isRemoteUser(u))) {
+					dm.addDirectRecipe(u as IRemoteUser);
+				}
 			}
 		}
 

@@ -1,6 +1,6 @@
 import type { FindOptionsWhere } from "typeorm";
 import { DeepPartial, Like, Not, In } from "typeorm";
-import { Blockings, Mutings, NoteReactions } from "@/models/index.js";
+import { Blockings, Followings, Mutings, NoteReactions } from "@/models/index.js";
 import type { NoteReaction } from "@/models/entities/note-reaction.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -57,38 +57,42 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw err;
 	});
 
-	let query = {
-		noteId: ps.noteId,
-	} as FindOptionsWhere<NoteReaction>;
+	let query = NoteReactions.createQueryBuilder("reaction")
+							.where("reaction.noteId = :noteId", { noteId: note.id });
 
 	if (user?.id) {
-		const mutingUserIds = (
-			await Mutings.createQueryBuilder("muting")
-				.select("muting.muteeId")
-				.where("muting.muterId = :muterId", { muterId: user.id })
-				.getMany()
-		).map((x) => x.muteeId);
-
-		const blockingUserIds = (
-			await Blockings.createQueryBuilder("blocking")
-				.select("blocking.blockeeId")
-				.where("blocking.blockerId = :blockerId", { blockerId: user.id })
-				.getMany()
-		).map((x) => x.blockeeId);
-
-		const blockedUserIds = (
-			await Blockings.createQueryBuilder("blocking")
-				.select("blocking.blockerId")
-				.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
-				.getMany()
-		).map((x) => x.blockerId);
-
-		query = {
-			...query,
-			userId: Not(
-				In([...mutingUserIds, ...blockingUserIds, ...blockedUserIds]),
-			),
-		};
+		if (note.userId !== user.id) {
+			const followingUserIds = (await Followings.createQueryBuilder("following")
+			.select("following.followeeId")
+			.where("following.followerId = :followerId", { followerId: user.id })
+			.getMany()
+			).map((x) => x.followeeId);
+	
+			const mutingUserIds = (
+				await Mutings.createQueryBuilder("muting")
+					.select("muting.muteeId")
+					.where("muting.muterId = :muterId", { muterId: user.id })
+					.getMany()
+			).map((x) => x.muteeId);
+	
+			const blockingUserIds = (
+				await Blockings.createQueryBuilder("blocking")
+					.select("blocking.blockeeId")
+					.where("blocking.blockerId = :blockerId", { blockerId: user.id })
+					.getMany()
+			).map((x) => x.blockeeId);
+	
+			const blockedUserIds = (
+				await Blockings.createQueryBuilder("blocking")
+					.select("blocking.blockerId")
+					.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
+					.getMany()
+			).map((x) => x.blockerId);
+	
+			query.andWhere("(reaction.userId IN (:...followingUserIds) OR user.isExplorable = true", { followingUserIds: followingUserIds.filter((x) => ![...mutingUserIds, ...blockingUserIds, ...blockedUserIds].includes(x)) })
+		}
+	} else {
+		query.andWhere("user.isExplorable = true")
 	}
 
 	if (ps.type) {
@@ -97,32 +101,24 @@ export default define(meta, paramDef, async (ps, user) => {
 		// @.指定の場合、同名絵文字のリアクションを全て返す
 		const suffix = "@.:";
 		if (ps.type.endsWith(suffix)) {
-			query = [
-				{
-					...query,
-					reaction: `${ps.type.slice(0, ps.type.length - suffix.length)}:`,
-				},
-				{
-					...query,
-					reaction: Like(
-						`${ps.type.slice(0, ps.type.length - suffix.length)}@%:`,
-					),
-				},
-			];
+			query.andWhere("reaction.reaction = :type OR reaction.reaction LIKE :typelike",
+			{ 
+				type: `${ps.type.slice(0, ps.type.length - suffix.length)}:`,
+				typelike: `${ps.type.slice(0, ps.type.length - suffix.length)}@%:`
+			});
 		} else {
-			query.reaction = ps.type;
+			query.andWhere("reaction.reaction = :type", {type: ps.type});
 		}
 	}
 
-	const reactions = await NoteReactions.find({
-		where: query,
-		take: ps.limit,
-		skip: ps.offset,
-		order: {
-			id: -1,
-		},
-		relations: ["user", "user.avatar", "user.banner", "note"],
-	});
+	query.innerJoinAndSelect("reaction.note", "note")
+	.innerJoinAndSelect("reaction.user", "user")
+	.leftJoinAndSelect("user.avatar", "avatar")
+	.leftJoinAndSelect("user.banner", "banner");
+
+	query.orderBy("reaction.id","DESC")
+
+	const reactions = await query.take(ps.limit).skip(ps.offset).getMany();
 
 	return await NoteReactions.packMany(reactions, user);
 });

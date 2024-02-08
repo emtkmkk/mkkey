@@ -99,7 +99,7 @@ export default defineComponent({
 		);
 
 		const validTime = (t: string | null | undefined) => {
-			if (t == null) return null;
+			if (t == null || typeof t !== "string") return null;
 			return t.match(/^[0-9.]+s$/) ? t : null;
 		};
 		const validNumber = (n: string | null | undefined) => {
@@ -108,7 +108,7 @@ export default defineComponent({
 			return !isNaN(parsed) && isFinite(parsed) && parsed > 0;
 		};
 		const validColor = (t: string | null | undefined) => {
-			if (t == null) return null;
+			if (t == null || typeof t !== "string") return null;
 			return t.match(/^([\da-f]{3}|([\da-f]{2}){2,4})$/i) ? t : null;
 		};
 
@@ -386,7 +386,7 @@ export default defineComponent({
 									break;
 								}
 								case "border": {
-									let color = token.props.args.color;
+									let color = token.props.args.color;va
 									color = validColor(color) ? `#${color}` : "var(--accent)";
 									let b_style = token.props.args.style;
 									if (

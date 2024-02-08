@@ -158,7 +158,7 @@ const translation = ref(null);
 const translating = ref(false);
 const info = ref(null);
 const urls = appearNote.text
-	? extractUrlFromMfm(mfm.parse(appearNote.text)).slice(0, 5)
+	? extractUrlFromMfm(mfm.parse(appearNote.text)).filter((url) => appearNote.renote?.url !== url && appearNote.renote?.uri !== url).slice(0, 5)
 	: null;
 const showTicker =
 	defaultStore.state.instanceTicker === "always" ||

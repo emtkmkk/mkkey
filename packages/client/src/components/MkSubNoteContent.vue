@@ -202,7 +202,7 @@ const isLong =
 	(props.note.text.split("\n").length > 9 || props.note.text.length > 500 || (!defaultStore.state.compactGrid && (props.note.files?.length > 4 || props.note.files?.length === 3)));
 const collapsed = $ref(!cwView && isLong);
 const urls = props.note.text
-	? extractUrlFromMfm(mfm.parse(props.note.text)).slice(0, 5)
+	? extractUrlFromMfm(mfm.parse(props.note.text)).filter((url) => props.note.renote?.url !== url && props.note.renote?.uri !== url).slice(0, 5)
 	: null;
 
 let showContent = ref(!cwView);

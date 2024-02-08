@@ -194,7 +194,23 @@ export default define(meta, paramDef, async (ps, me) => {
 				}
 			}
 		}
-		let cwOnly = false;
+		if (que.includes("since:")) {
+			let qSince;
+			if (!qSince) {
+				const match = /(^|[\s\+])until:([^\s\+]+)($|[\s\+])/i.exec(que);
+				qSince = match?.[2];
+				que = que.replace(/(^|[\s\+])until:([^\s\+]+)($|[\s\+])/i, "");
+			}
+			if (qSince) {
+				const untilDate = new Date(qSince);
+				if (!isNaN(untilDate.valueOf())) {
+					plusQueryCount += 1;
+					query.andWhere("note.id > :id", {
+						id: genId(untilDate),
+					});
+				}
+			}
+		}
 		let loopCount = 0;
 		while (que.includes("filter:") && plusQueryCount < 15 && loopCount < 15) {
 			loopCount++

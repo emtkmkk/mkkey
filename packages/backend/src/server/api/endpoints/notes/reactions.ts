@@ -101,7 +101,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		// @.指定の場合、同名絵文字のリアクションを全て返す
 		const suffix = "@.:";
 		if (ps.type.endsWith(suffix)) {
-			query.andWhere("reaction.reaction = :type OR reaction.reaction LIKE :typelike",
+			query.andWhere("(reaction.reaction = :type OR reaction.reaction LIKE :typelike)",
 			{ 
 				type: `${ps.type.slice(0, ps.type.length - suffix.length)}:`,
 				typelike: `${ps.type.slice(0, ps.type.length - suffix.length)}@%:`

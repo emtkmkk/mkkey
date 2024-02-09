@@ -449,8 +449,8 @@ export default async (
 					data.cw = isIncludeNgWordRet;
 				} else if (
 					!(
-						data.cw?.includes(isIncludeNgWordRet) ||
-						data.cw?.includes(kana_to_hira(isIncludeNgWordRet))
+						data.cw?.includes(isIncludeNgWordRet?.replace("(弱)","")) ||
+						data.cw?.includes(kana_to_hira(isIncludeNgWordRet?.replace("(弱)","")))
 					)
 				) {
 					data.cw += ` (${isIncludeNgWordRet})`;
@@ -470,11 +470,11 @@ export default async (
 							data.cw = `${isIncludeNgWordRtRet} (引用先)`;
 						} else if (
 							!(
-								data.cw?.includes(isIncludeNgWordRet) ||
-								data.cw?.includes(kana_to_hira(isIncludeNgWordRet))
+								data.cw?.includes(isIncludeNgWordRet?.replace("(弱)","")) ||
+								data.cw?.includes(kana_to_hira(isIncludeNgWordRet?.replace("(弱)","")))
 							)
 						) {
-							data.cw += ` (${isIncludeNgWordRet})`;
+							data.cw += ` (${isIncludeNgWordRet} (引用先))`;
 						}
 					} else {
 						data.visibility = "home";

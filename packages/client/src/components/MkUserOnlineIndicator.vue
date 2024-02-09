@@ -45,15 +45,15 @@ const text = $computed(() => {
 	&.online {
 		background: #79fc68;
 	}
-	
+
 	&.half-online {
 		background: #9ccfd8;
 	}
-	
+
 	&.active {
 		background: #faa123;
 	}
-	
+
 	&.half-active {
 		background: #fce2bb;
 	}
@@ -61,23 +61,23 @@ const text = $computed(() => {
 	&.offline {
 		background: #6e6a86;
 	}
-	
+
 	&.half-sleeping {
 		background: #dfb8fc;
 	}
-	
+
 	&.sleeping {
 		background: #ac3bff;
 	}
-	
+
 	&.deep-sleeping {
 		background: #5436eb;
 	}
-	
+
 	&.super-sleeping {
 		background: #250173;
 	}
-	
+
 	&.unknown {
 		background: #555555;
 	}

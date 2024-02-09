@@ -14,7 +14,7 @@ import * as os from "@/os";
 import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i } from "@/account";
-import { defaultStore } from '@/store';
+import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	src: string;
@@ -40,8 +40,12 @@ const tlComponent: InstanceType<typeof XNotes> = $ref();
 
 const prepend = (note) => {
 	if (travelDate) return;
-	if (defaultStore.state.delayPostHidden && Date.now() > new Date(note.createdAt).valueOf() + (10 * 60 * 1000)) return;
-	
+	if (
+		defaultStore.state.delayPostHidden &&
+		Date.now() > new Date(note.createdAt).valueOf() + 10 * 60 * 1000
+	)
+		return;
+
 	tlComponent.pagingComponent?.prepend(note);
 
 	emit("note");
@@ -92,7 +96,9 @@ if (props.src === "antenna") {
 	query = {
 		withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,
 	};
-	connection = stream.useChannel("localTimeline", { withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic });
+	connection = stream.useChannel("localTimeline", {
+		withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,
+	});
 	connection.on("note", prepend);
 } else if (props.src === "recommended") {
 	endpoint = "notes/recommended-timeline";
@@ -154,7 +160,10 @@ let travelDate = $ref<Date | undefined>(props.travelDate || undefined);
 let pagination = {
 	endpoint: endpoint,
 	limit: 10,
-	params: computed(() => ({...query, untilDate: travelDate ? travelDate.valueOf() : undefined})),
+	params: computed(() => ({
+		...query,
+		untilDate: travelDate ? travelDate.valueOf() : undefined,
+	})),
 };
 
 onUnmounted(() => {

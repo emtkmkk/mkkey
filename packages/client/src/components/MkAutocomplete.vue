@@ -46,7 +46,12 @@
 				@keydown="onKeydown"
 			>
 				<span v-if="emoji.isCustomEmoji" class="emoji"
-					><MkEmoji class="emoji" :key="emoji.emoji" :emoji="emoji.emoji" :normal="true" :isPicker="true"
+					><MkEmoji
+						class="emoji"
+						:key="emoji.emoji"
+						:emoji="emoji.emoji"
+						:normal="true"
+						:isPicker="true"
 				/></span>
 				<span
 					v-else-if="!defaultStore.state.useOsNativeEmojis"
@@ -56,10 +61,22 @@
 				<span v-else class="emoji">{{ emoji.emoji }}</span>
 				<span
 					class="name"
-					v-html="/[ぁ-んァ-ンー]+/.test(q) && (!emoji.aliasOf || !emoji.isCustomEmoji) ? roomajiToJa(emoji.name).replace(q, `<b>${q}</b>`) : emoji.name.replace(q, `<b>${q}</b>`)"
+					v-html="
+						/[ぁ-んァ-ンー]+/.test(q) &&
+						(!emoji.aliasOf || !emoji.isCustomEmoji)
+							? roomajiToJa(emoji.name).replace(q, `<b>${q}</b>`)
+							: emoji.name.replace(q, `<b>${q}</b>`)
+					"
 				></span>
-				<span v-if="emoji.aliasOf || /[ぁ-んァ-ンー]+/.test(q)" class="alias"
-					>({{ /[ぁ-んァ-ンー]+/.test(q) && (!emoji.aliasOf || !emoji.isCustomEmoji) ? emoji.name : emoji.aliasOf }})</span
+				<span
+					v-if="emoji.aliasOf || /[ぁ-んァ-ンー]+/.test(q)"
+					class="alias"
+					>({{
+						/[ぁ-んァ-ンー]+/.test(q) &&
+						(!emoji.aliasOf || !emoji.isCustomEmoji)
+							? emoji.name
+							: emoji.aliasOf
+					}})</span
 				>
 			</li>
 		</ol>
@@ -92,7 +109,12 @@ import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import { acct } from "@/filters/user";
 import * as os from "@/os";
 import { MFM_TAGS, MFM_TAGS_JP } from "@/scripts/mfm-tags";
-import { formatRoomaji, kanaToHira, jaToRoomaji, roomajiToJa } from "@/scripts/convert-jp";
+import {
+	formatRoomaji,
+	kanaToHira,
+	jaToRoomaji,
+	roomajiToJa,
+} from "@/scripts/convert-jp";
 import { defaultStore } from "@/store";
 import { emojilist } from "@/scripts/emojilist";
 import { instance } from "@/instance";
@@ -204,8 +226,9 @@ function complete(type: string, value: any) {
 function setPosition() {
 	if (!rootEl.value) return;
 	if (props.x + rootEl.value.offsetWidth > window.innerWidth) {
-		rootEl.value.style.left =
-			`${window.innerWidth - rootEl.value.offsetWidth}px`;
+		rootEl.value.style.left = `${
+			window.innerWidth - rootEl.value.offsetWidth
+		}px`;
 	} else {
 		rootEl.value.style.left = `${props.x}px`;
 	}
@@ -288,10 +311,10 @@ function exec() {
 				.filter((x) => x) as EmojiDef[];
 			return;
 		}
-		
+
 		const searchQ = kanaToHira(formatRoomaji(props.q));
 		const roomajiQ = formatRoomaji(jaToRoomaji(props.q));
-		
+
 		const matched: EmojiDef[] = [];
 		const max = 30;
 
@@ -326,7 +349,7 @@ function exec() {
 				return matched.length === max;
 			});
 		}
-		
+
 		if (matched.length < max) {
 			emojiDb.some((x) => {
 				if (
@@ -345,8 +368,12 @@ function exec() {
 			return;
 		}
 
-		mfmTags.value = MFM_TAGS_JP.filter((tag) => tag.name.includes(props.q ?? "") || tag.ja.includes(props.q ?? ""));
-		
+		mfmTags.value = MFM_TAGS_JP.filter(
+			(tag) =>
+				tag.name.includes(props.q ?? "") ||
+				tag.ja.includes(props.q ?? "")
+		);
+
 		if (mfmTags.value.length === 0) {
 			mfmTags.value = MFM_TAGS_JP;
 			return;
@@ -394,7 +421,7 @@ function onKeydown(event: KeyboardEvent) {
 			selectNext();
 			break;
 
-		case 'Tab':
+		case "Tab":
 			if (event.shiftKey) {
 				if (select.value !== -1) {
 					cancel();

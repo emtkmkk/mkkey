@@ -116,11 +116,19 @@ async function run() {
 		ast = parser.parse(code.value);
 	} catch (err) {
 		const locationStr = err.location?.start
-			? `\nLine ${err.location.start.line} : ${err.location.start.column} (${err.location.start.offset})${err.location.start.offset + 1 === err.location.end.offset ? "" : `\n- Line ${err.location.end.line} : ${err.location.end.column} (${err.location.end.offset})`}`
-			: ""
+			? `\nLine ${err.location.start.line} : ${
+					err.location.start.column
+			  } (${err.location.start.offset})${
+					err.location.start.offset + 1 === err.location.end.offset
+						? ""
+						: `\n- Line ${err.location.end.line} : ${err.location.end.column} (${err.location.end.offset})`
+			  }`
+			: "";
 		os.alert({
 			type: "error",
-			text: `Syntax error!${locationStr}${err.message ? ` \n${err.message}` : " \nno Message"}`,
+			text: `Syntax error!${locationStr}${
+				err.message ? ` \n${err.message}` : " \nno Message"
+			}`,
 		});
 		return;
 	}

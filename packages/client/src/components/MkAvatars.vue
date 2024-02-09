@@ -21,60 +21,71 @@ const users = ref([]);
 const isFetching = ref(false);
 
 const fetchData = async () => {
-  if (isFetching.value) {
-    // 処理中は何もしない
-    return;
-  }
+	if (isFetching.value) {
+		// 処理中は何もしない
+		return;
+	}
 
-  isFetching.value = true;
+	isFetching.value = true;
 
-  try {
-    const _users = (await os.api("users/show", {
-      userIds: props.userIds,
-    })).filter((x) =>
-      props.hiddenOfflineSleep
-        ? !(x.onlineStatus?.includes("offline") || x.onlineStatus?.includes("sleep"))
-        : true
-    );
+	try {
+		const _users = (
+			await os.api("users/show", {
+				userIds: props.userIds,
+			})
+		).filter((x) =>
+			props.hiddenOfflineSleep
+				? !(
+						x.onlineStatus?.includes("offline") ||
+						x.onlineStatus?.includes("sleep")
+				  )
+				: true
+		);
 
-    const onlineStatus = [
-      "online",
-      "half-online",
-      "active",
-      "half-active",
-      "offline",
-      "half-sleeping",
-      "sleeping",
-      "deep-sleeping",
-      "never-sleeping",
-      "unknown",
-    ];
+		const onlineStatus = [
+			"online",
+			"half-online",
+			"active",
+			"half-active",
+			"offline",
+			"half-sleeping",
+			"sleeping",
+			"deep-sleeping",
+			"never-sleeping",
+			"unknown",
+		];
 
-    users.value = props.sortStatus
-      ? _users.sort((a, b) =>
-          onlineStatus.indexOf(a.onlineStatus) < onlineStatus.indexOf(b.onlineStatus)
-            ? -1
-            : onlineStatus.indexOf(a.onlineStatus) === onlineStatus.indexOf(b.onlineStatus)
-            ? 0
-            : 1
-        )
-      : _users;
-  } finally {
-    isFetching.value = false;
-  }
+		users.value = props.sortStatus
+			? _users.sort((a, b) =>
+					onlineStatus.indexOf(a.onlineStatus) <
+					onlineStatus.indexOf(b.onlineStatus)
+						? -1
+						: onlineStatus.indexOf(a.onlineStatus) ===
+						  onlineStatus.indexOf(b.onlineStatus)
+						? 0
+						: 1
+			  )
+			: _users;
+	} finally {
+		isFetching.value = false;
+	}
 };
 
-watch(() => props.userIds, (newUserIds, oldUserIds) => {
-  fetchData();
-	
-  const intervalId = setInterval(fetchData, props.interval || 300 * 1000);
+watch(
+	() => props.userIds,
+	(newUserIds, oldUserIds) => {
+		fetchData();
 
-  onUnmounted(() => {
-    clearInterval(intervalId);
-  });
-},{
-	immediate: true
-});
+		const intervalId = setInterval(fetchData, props.interval || 300 * 1000);
+
+		onUnmounted(() => {
+			clearInterval(intervalId);
+		});
+	},
+	{
+		immediate: true,
+	}
+);
 </script>
 
 <style lang="scss">

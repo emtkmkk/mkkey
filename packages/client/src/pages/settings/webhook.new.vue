@@ -8,20 +8,50 @@
 			<template #label>送信先のURL</template>
 		</FormInput>
 
-		<FormInput v-if="!discord_type && !slack_type" v-model="secret" class="_formBlock">
+		<FormInput
+			v-if="!discord_type && !slack_type"
+			v-model="secret"
+			class="_formBlock"
+		>
 			<template #prefix><i class="ph-lock ph-bold ph-lg"></i></template>
 			<template #label>Secret</template>
 		</FormInput>
-		<FormSwitch :disabled="slack_type" v-model="discord_type" class="_formBlock"
-			>Discordに対応した形式で送信<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+		<FormSwitch
+			:disabled="slack_type"
+			v-model="discord_type"
+			class="_formBlock"
+			>Discordに対応した形式で送信<span
+				v-if="showMkkeySettingTips"
+				class="_beta"
+				>{{ i18n.ts.mkkey }}</span
+			></FormSwitch
 		>
-		<FormSwitch :disabled="discord_type" v-model="slack_type" class="_formBlock"
-			>Slackに対応した形式で送信<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+		<FormSwitch
+			:disabled="discord_type"
+			v-model="slack_type"
+			class="_formBlock"
+			>Slackに対応した形式で送信<span
+				v-if="showMkkeySettingTips"
+				class="_beta"
+				>{{ i18n.ts.mkkey }}</span
+			></FormSwitch
 		>
-		
-		<FormInput v-if="discord_type || slack_type" v-model="text_length" class="_formBlock">
-			<template #prefix><i class="ph-pencil-line ph-bold ph-lg"></i></template>
-			<template #label>表示する本文の最大文字数<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+
+		<FormInput
+			v-if="discord_type || slack_type"
+			v-model="text_length"
+			class="_formBlock"
+		>
+			<template #prefix
+				><i class="ph-pencil-line ph-bold ph-lg"></i
+			></template>
+			<template #label
+				>表示する本文の最大文字数<span
+					v-if="showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				></template
+			>
 		</FormInput>
 
 		<FormSection>
@@ -37,16 +67,35 @@
 				>RTされた時</FormSwitch
 			>
 			<FormSwitch v-model="event_reaction" class="_formBlock"
-				>リアクションされた時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+				>リアクションされた時<span
+					v-if="showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				></FormSwitch
 			>
 			<FormSwitch v-model="event_userMessage" class="_formBlock"
-				>個人宛のチャット受信時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+				>個人宛のチャット受信時<span
+					v-if="showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				></FormSwitch
 			>
 			<FormSwitch v-model="event_groupMessage" class="_formBlock"
-				>グループチャット受信時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+				>グループチャット受信時<span
+					v-if="showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				></FormSwitch
 			>
-			<FormSwitch v-if="event_groupMessage" v-model="event_groupMentionOnly" class="_formBlock"
-				>呼びかけられた時のみ<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+			<FormSwitch
+				v-if="event_groupMessage"
+				v-model="event_groupMentionOnly"
+				class="_formBlock"
+				>呼びかけられた時のみ<span
+					v-if="showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				></FormSwitch
 			>
 			<FormSwitch v-model="event_note" class="_formBlock"
 				>自分の投稿時</FormSwitch
@@ -57,17 +106,42 @@
 			<FormSwitch v-model="event_reply" class="_formBlock"
 				>返信された時</FormSwitch
 			>
-			<FormSwitch v-if="$store.state.developer" v-model="event_unfollow" class="_formBlock"
-				>【dev】フォロー解除された時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+			<FormSwitch
+				v-if="$store.state.developer"
+				v-model="event_unfollow"
+				class="_formBlock"
+				>【dev】フォロー解除された時<span
+					v-if="showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				></FormSwitch
 			>
-			<FormSwitch :disabled="antennas.length <= 0" v-model="event_antenna" class="_formBlock"
-				>アンテナ新着時<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+			<FormSwitch
+				:disabled="antennas.length <= 0"
+				v-model="event_antenna"
+				class="_formBlock"
+				>アンテナ新着時<span
+					v-if="showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				></FormSwitch
 			>
 			<template v-if="event_antenna && antennas.length > 0">
 				<FormSection>
-					<template #label>送信するアンテナ<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
-					<template v-for="(antenna,index) in antennas" :key="antenna.id" >
-						<FormSwitch v-model="event_excludeAntennas[index]" class="_formBlock"
+					<template #label
+						>送信するアンテナ<span
+							v-if="showMkkeySettingTips"
+							class="_beta"
+							>{{ i18n.ts.mkkey }}</span
+						></template
+					>
+					<template
+						v-for="(antenna, index) in antennas"
+						:key="antenna.id"
+					>
+						<FormSwitch
+							v-model="event_excludeAntennas[index]"
+							class="_formBlock"
 							>{{ antenna.name }}</FormSwitch
 						>
 					</template>
@@ -124,7 +198,9 @@ let event_groupMessage = $ref(true);
 let event_groupMentionOnly = $ref(false);
 let event_unfollow = $ref(false);
 
-const antennasAll = await os.api("antennas/list", {mkkey: true}) as Array<any>;
+const antennasAll = (await os.api("antennas/list", {
+	mkkey: true,
+})) as Array<any>;
 const antennas = $ref(antennasAll.filter((x) => x.notify));
 
 let event_excludeAntennas = $ref(antennas.map((x) => true));
@@ -144,13 +220,13 @@ async function create(): Promise<void> {
 	if (event_unfollow) events.push("unfollow");
 	if (event_antenna) {
 		events.push("antenna");
-		event_excludeAntennas.forEach((x,index) => {
-			if (!x){
+		event_excludeAntennas.forEach((x, index) => {
+			if (!x) {
 				events.push(`exclude-${antennas[index].id}`);
 			}
 		});
 	}
-	
+
 	if (discord_type) {
 		if (text_length && isFinite(text_length)) {
 			if (text_length > 1000) text_length = 1000;
@@ -160,7 +236,7 @@ async function create(): Promise<void> {
 			secret = "Discord";
 		}
 	}
-	
+
 	if (slack_type) {
 		if (text_length && isFinite(text_length)) {
 			if (text_length > 1000) text_length = 1000;

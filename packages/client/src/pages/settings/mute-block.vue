@@ -2,7 +2,9 @@
 	<div class="_formRoot">
 		<MkTab v-model="tab" style="margin-bottom: var(--margin)">
 			<option value="rnmute">{{ i18n.ts.rnMutedUsers }}</option>
-			<option value="followblock">{{ i18n.ts.followBlockedUsers }}</option>
+			<option value="followblock">
+				{{ i18n.ts.followBlockedUsers }}
+			</option>
 			<option value="mute">{{ i18n.ts.mutedUsers }}</option>
 			<option value="block">{{ i18n.ts.blockedUsers }}</option>
 		</MkTab>
@@ -23,7 +25,10 @@
 			</MkPagination>
 		</div>
 		<div v-if="tab === 'followblock'">
-			<MkPagination :pagination="followblockingPagination" class="blocking">
+			<MkPagination
+				:pagination="followblockingPagination"
+				class="blocking"
+			>
 				<template #empty
 					><FormInfo>{{ i18n.ts.noUsers }}</FormInfo></template
 				>

@@ -1,6 +1,6 @@
 <template>
 	<div class="_formRoot">
-			<FormSection>
+		<FormSection>
 			<template #label></template>
 			<FormRadios v-model="showLocalPostsInTimeline" class="_formBlock">
 				<template #label>{{ i18n.ts.showLocalPosts }}</template>
@@ -21,34 +21,51 @@
 					{{ i18n.ts.hidden }}
 				</option>
 			</FormRadios>
-			<FormSwitch v-model="hiddenLTL" class="_formBlock">{{
-				i18n.ts.hiddenLTL
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="hiddenLTL" class="_formBlock"
+				>{{ i18n.ts.hiddenLTL
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch
 				v-model="blockPostPublic"
 				v-if="hiddenLTL"
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostPublic
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
-					i18n.ts.blockPostPublicDescription
-				}}{{
-					i18n.ts.hiddenLTLDescription
-				}}</template></FormSwitch
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span
+				><template #caption
+					>{{ i18n.ts.blockPostPublicDescription
+					}}{{ i18n.ts.hiddenLTLDescription }}</template
+				></FormSwitch
 			>
-			<FormSwitch  v-model="hiddenGTL" class="_formBlock">{{
-				i18n.ts.hiddenGTL
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="hiddenGTL" class="_formBlock"
+				>{{ i18n.ts.hiddenGTL
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSelect v-model="thirdTimelineType" class="_formBlock">
-				<template #label>{{ i18n.ts.thirdTimelineType }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+				<template #label
+					>{{ i18n.ts.thirdTimelineType
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
 				<option value="media">{{ i18n.ts._timelines.media }}</option>
-				<option value="spotlight">{{ i18n.ts._timelines.spotlight }}</option>
+				<option value="spotlight">
+					{{ i18n.ts._timelines.spotlight }}
+				</option>
 				<option value="list">{{ i18n.ts._timelines.list }}</option>
-				<option value="antenna">{{ i18n.ts._timelines.antenna }}</option>
+				<option value="antenna">
+					{{ i18n.ts._timelines.antenna }}
+				</option>
 				<option value="hidden">{{ i18n.ts.hidden }}</option>
 			</FormSelect>
 			<FormInput
-				v-if="['list','antenna'].includes(thirdTimelineType)"
+				v-if="['list', 'antenna'].includes(thirdTimelineType)"
 				v-model="thirdTimelineListId"
 				class="_formBlock"
 				:small="true"
@@ -56,7 +73,12 @@
 				:manualSave="true"
 				style="margin: 0 0 !important"
 			>
-				<template #label>{{ i18n.ts.thirdTimelineListId }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+				<template #label
+					>{{ i18n.ts.thirdTimelineListId
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
 			</FormInput>
 			<!--<FormSelect v-if="!['classic', 'deck'].includes(ui)" v-model="fourthTimelineType" class="_formBlock">
 				<template #label>{{ i18n.ts.fourthTimelineType }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
@@ -76,40 +98,84 @@
 			>
 				<template #label>{{ i18n.ts.fourthTimelineListId }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			</FormInput>-->
-			<FormSwitch  v-model="showListButton" class="_formBlock">{{
-				i18n.ts.showListButton
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch  v-model="showAntennaButton" class="_formBlock">{{
-				i18n.ts.showAntennaButton
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch  v-model="showTimeTravelButton" class="_formBlock">{{
-				i18n.ts.showTimeTravelButton
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="showListButton" class="_formBlock"
+				>{{ i18n.ts.showListButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="showAntennaButton" class="_formBlock"
+				>{{ i18n.ts.showAntennaButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="showTimeTravelButton" class="_formBlock"
+				>{{ i18n.ts.showTimeTravelButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
 				i18n.ts.showFixedPostForm
 			}}</FormSwitch>
-			<FormSwitch v-model="recentRenoteHidden" class="_formBlock">{{
-				i18n.ts.recentRenoteHidden
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="reactedRenoteHidden" class="_formBlock">{{
-				i18n.ts.reactedRenoteHidden
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="showLocalTimelineBelowPublic" class="_formBlock">{{
-				i18n.ts.showLocalTimelineBelowPublic
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="delayPostHidden" class="_formBlock">{{
-				i18n.ts.delayPostHidden
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="localShowRenote" class="_formBlock" @update:modelValue="save()">{{
-				i18n.ts.localShowRenote
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="remoteShowRenote" class="_formBlock" @update:modelValue="save()">{{
-				i18n.ts.remoteShowRenote
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="showSelfRenoteToHome" class="_formBlock" @update:modelValue="save()">{{
-				i18n.ts.showSelfRenoteToHome
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="showTimelineReplies" class="_formBlock" @update:modelValue="save()"
+			<FormSwitch v-model="recentRenoteHidden" class="_formBlock"
+				>{{ i18n.ts.recentRenoteHidden
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="reactedRenoteHidden" class="_formBlock"
+				>{{ i18n.ts.reactedRenoteHidden
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-model="showLocalTimelineBelowPublic"
+				class="_formBlock"
+				>{{ i18n.ts.showLocalTimelineBelowPublic
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="delayPostHidden" class="_formBlock"
+				>{{ i18n.ts.delayPostHidden
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-model="localShowRenote"
+				class="_formBlock"
+				@update:modelValue="save()"
+				>{{ i18n.ts.localShowRenote
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-model="remoteShowRenote"
+				class="_formBlock"
+				@update:modelValue="save()"
+				>{{ i18n.ts.remoteShowRenote
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-model="showSelfRenoteToHome"
+				class="_formBlock"
+				@update:modelValue="save()"
+				>{{ i18n.ts.showSelfRenoteToHome
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-model="showTimelineReplies"
+				class="_formBlock"
+				@update:modelValue="save()"
 				>{{ i18n.ts.flagShowTimelineReplies
 				}}<template #caption
 					>{{ i18n.ts.flagShowTimelineRepliesDescription }}
@@ -124,9 +190,12 @@
 				<option value="force">{{ i18n.ts._nsfw.force }}</option>
 				<option value="toCW">{{ i18n.ts._nsfw.toCW }}</option>
 			</FormSelect>
-			<FormSwitch v-model="noteAllCw" class="_formBlock">{{
-				i18n.ts.noteAllCw
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="noteAllCw" class="_formBlock"
+				>{{ i18n.ts.noteAllCw
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 		</FormSection>
 	</div>
 </template>
@@ -166,9 +235,7 @@ window.addEventListener("resize", () => {
 const showLocalPostsInTimeline = computed(
 	defaultStore.makeGetterSetter("showLocalPostsInTimeline")
 );
-const developer = computed(
-	defaultStore.makeGetterSetter("developer")
-);
+const developer = computed(defaultStore.makeGetterSetter("developer"));
 const showMkkeySettingTips = computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
@@ -191,10 +258,10 @@ const recentRenoteHidden = $computed(
 const reactedRenoteHidden = $computed(
 	defaultStore.makeGetterSetter("reactedRenoteHidden")
 );
-const delayPostHidden = computed(defaultStore.makeGetterSetter("delayPostHidden"));
-const noteAllCw = $computed(
-	defaultStore.makeGetterSetter("noteAllCw")
+const delayPostHidden = computed(
+	defaultStore.makeGetterSetter("delayPostHidden")
 );
+const noteAllCw = $computed(defaultStore.makeGetterSetter("noteAllCw"));
 const thirdTimelineType = $computed(
 	defaultStore.makeGetterSetter("thirdTimelineType")
 );
@@ -207,14 +274,10 @@ const fourthTimelineType = $computed(
 const fourthTimelineListId = $computed(
 	defaultStore.makeGetterSetter("fourthTimelineListId")
 );
-const hiddenLTL = $computed(
-	defaultStore.makeGetterSetter("hiddenLTL")
-);
-const hiddenGTL = $computed(
-	defaultStore.makeGetterSetter("hiddenGTL")
-);
+const hiddenLTL = $computed(defaultStore.makeGetterSetter("hiddenLTL"));
+const hiddenGTL = $computed(defaultStore.makeGetterSetter("hiddenGTL"));
 const showLocalTimelineBelowPublic = $computed(
-	defaultStore.makeGetterSetter('showLocalTimelineBelowPublic')
+	defaultStore.makeGetterSetter("showLocalTimelineBelowPublic")
 );
 let localShowRenote = $ref($i.localShowRenote);
 let remoteShowRenote = $ref($i.remoteShowRenote);
@@ -242,11 +305,7 @@ async function reloadAsk() {
 }
 
 watch(
-	[
-		showLocalPostsInTimeline,
-		delayPostHidden,
-		showLocalTimelineBelowPublic,
-	],
+	[showLocalPostsInTimeline, delayPostHidden, showLocalTimelineBelowPublic],
 	async () => {
 		await reloadAsk();
 	}

@@ -1,7 +1,12 @@
 <template>
 	<div class="driuhtrh">
 		<div class="query">
-			<MkInput v-model="q" debounce class="" :placeholder="i18n.ts.search">
+			<MkInput
+				v-model="q"
+				debounce
+				class=""
+				:placeholder="i18n.ts.search"
+			>
 				<template #prefix
 					><i class="ph-magnifying-glass ph-bold ph-lg"></i
 				></template>
@@ -44,18 +49,12 @@
 				/>
 			</div>
 		</MkFolder>
-	
-		<MkFolder
-			key="category:null"
-			class="emojis"
-			:expanded="false"
-		>
+
+		<MkFolder key="category:null" class="emojis" :expanded="false">
 			<template #header>{{ "カテゴリ未設定" }}</template>
 			<div class="zuvgdzyt">
 				<XEmoji
-					v-for="emoji in customEmojis.filter(
-						(e) => !e.category
-					)"
+					v-for="emoji in customEmojis.filter((e) => !e.category)"
 					:key="emoji.name"
 					class="emoji"
 					:emoji="emoji"

@@ -50,12 +50,14 @@ export default define(meta, paramDef, async (ps, user) => {
 	)
 		.andWhere(
 			new Brackets((qb) => {
-				qb.where(`'{"${user.id}"}' <@ note.mentions`)
-				.orWhere(
+				qb.where(`'{"${user.id}"}' <@ note.mentions`).orWhere(
 					`'{"${user.id}"}' <@ note.visibleUserIds`,
-				)
+				);
 				if (ps.visibility === "specified") {
-					qb.orWhere("(note.userId = :userId AND note.visibility = 'specified' AND note.visibleUserIds = '{}' AND note.ccUserIds = '{}')", { userId: user.id });
+					qb.orWhere(
+						"(note.userId = :userId AND note.visibility = 'specified' AND note.visibleUserIds = '{}' AND note.ccUserIds = '{}')",
+						{ userId: user.id },
+					);
 				}
 			}),
 		)

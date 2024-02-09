@@ -193,9 +193,19 @@ const render = () => {
 				.fill(0)
 				.map((_, i) => {
 					const currentDate = getDate(i);
-					const dateString = currentDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' });
-					const timeString = currentDate.toLocaleTimeString('ja-JP', { hour: 'numeric', minute: 'numeric', second: 'numeric' });
-					return timeString === "0:00:00" ? dateString : `${dateString} ${timeString}`;
+					const dateString = currentDate.toLocaleDateString("ja-JP", {
+						year: "numeric",
+						month: "numeric",
+						day: "numeric",
+					});
+					const timeString = currentDate.toLocaleTimeString("ja-JP", {
+						hour: "numeric",
+						minute: "numeric",
+						second: "numeric",
+					});
+					return timeString === "0:00:00"
+						? dateString
+						: `${dateString} ${timeString}`;
 				})
 				.slice()
 				.reverse(),
@@ -250,8 +260,8 @@ const render = () => {
 						stepSize: 1,
 						unit: props.span === "day" ? "month" : "day",
 						displayFormats: {
-							day: 'M/d',
-							month: 'Y/M',
+							day: "M/d",
+							month: "Y/M",
 						},
 					},
 					grid: {

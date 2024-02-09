@@ -97,9 +97,9 @@ const tick = () => {
 	const nd = now.getDate();
 	const nm = now.getMonth();
 	const ny = now.getFullYear();
-	
+
 	// logical
-	const nowl = new Date(now - (1000 * 60 * 60 * 6));
+	const nowl = new Date(now - 1000 * 60 * 60 * 6);
 	const ndl = nowl.getDate();
 	const nml = nowl.getMonth();
 	const nyl = nowl.getFullYear();
@@ -117,7 +117,9 @@ const tick = () => {
 		i18n.ts._weekday.saturday,
 	][now.getDay()];
 
-	const dayNumer = widgetProps.logicalDate ? nowl.getTime() - new Date(nyl, nml, ndl).getTime() : now.getTime() - new Date(ny, nm, nd).getTime();
+	const dayNumer = widgetProps.logicalDate
+		? nowl.getTime() - new Date(nyl, nml, ndl).getTime()
+		: now.getTime() - new Date(ny, nm, nd).getTime();
 	const dayDenom = 1000 /*ms*/ * 60 /*s*/ * 60 /*m*/ * 24; /*h*/
 	const monthNumer = now.getTime() - new Date(ny, nm, 1).getTime();
 	const monthDenom =

@@ -53,7 +53,7 @@ import { debounce } from "throttle-debounce";
 import MkButton from "@/components/MkButton.vue";
 import { useInterval } from "@/scripts/use-interval";
 import { i18n } from "@/i18n";
-import { Autocomplete } from '@/scripts/autocomplete.js';
+import { Autocomplete } from "@/scripts/autocomplete.js";
 
 const props = defineProps<{
 	modelValue: string | number;
@@ -150,14 +150,12 @@ useInterval(
 	() => {
 		if (prefixEl.value) {
 			if (prefixEl.value.offsetWidth) {
-				inputEl.value.style.paddingLeft =
-					`${prefixEl.value.offsetWidth}px`;
+				inputEl.value.style.paddingLeft = `${prefixEl.value.offsetWidth}px`;
 			}
 		}
 		if (suffixEl.value) {
 			if (suffixEl.value.offsetWidth) {
-				inputEl.value.style.paddingRight =
-					`${suffixEl.value.offsetWidth}px`;
+				inputEl.value.style.paddingRight = `${suffixEl.value.offsetWidth}px`;
 			}
 		}
 	},
@@ -174,7 +172,7 @@ onMounted(() => {
 			focus();
 		}
 	});
-	
+
 	if (props.misskeyAutoComplete) {
 		autocomplete = new Autocomplete(inputEl.value, v);
 	}

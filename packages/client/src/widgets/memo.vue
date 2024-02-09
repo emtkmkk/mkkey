@@ -46,11 +46,11 @@ const widgetPropsDef = {
 		default: true,
 	},
 	name: {
-		type: 'string' as const,
-		default: '',
+		type: "string" as const,
+		default: "",
 	},
 	height: {
-		type: 'number' as const,
+		type: "number" as const,
 		default: 100,
 	},
 };
@@ -67,12 +67,14 @@ const { widgetProps, configure } = useWidgetPropsManager(
 	name,
 	widgetPropsDef,
 	props,
-	emit,
+	emit
 );
 
 const getMemo = () => {
-	if (typeof defaultStore.state.memo === 'object') return defaultStore.state.memo?.[props.widget?.id ?? 'default'];
-	if (typeof defaultStore.state.memo === 'string') return defaultStore.state.memo;
+	if (typeof defaultStore.state.memo === "object")
+		return defaultStore.state.memo?.[props.widget?.id ?? "default"];
+	if (typeof defaultStore.state.memo === "string")
+		return defaultStore.state.memo;
 	return null;
 };
 
@@ -81,9 +83,12 @@ const changed = ref(false);
 let timeoutId;
 
 const saveMemo = () => {
-	const memo = defaultStore.state.memo && typeof defaultStore.state.memo === 'object' ? defaultStore.state.memo : {};
-	memo![props.widget?.id ?? 'default'] = text.value;
-	defaultStore.set('memo', memo);
+	const memo =
+		defaultStore.state.memo && typeof defaultStore.state.memo === "object"
+			? defaultStore.state.memo
+			: {};
+	memo![props.widget?.id ?? "default"] = text.value;
+	defaultStore.set("memo", memo);
 	changed.value = false;
 };
 

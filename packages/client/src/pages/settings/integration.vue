@@ -101,8 +101,9 @@ function disconnectGithub() {
 }
 
 onMounted(() => {
-	document.cookie =
-		`igi=${$i!.token}; path=/; max-age=31536000;${document.location.protocol.startsWith("https") ? " secure" : ""}`;
+	document.cookie = `igi=${$i!.token}; path=/; max-age=31536000;${
+		document.location.protocol.startsWith("https") ? " secure" : ""
+	}`;
 
 	watch(integrations, () => {
 		if (integrations.value.twitter) {

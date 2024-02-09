@@ -5,7 +5,10 @@
 			<FormSwitch v-model="autoplayMfm" class="_formBlock">
 				{{ i18n.ts._mfm.alwaysPlay }}
 				<template #caption>
-					<i class="ph-warning ph-bold ph-lg" style="color: var(--warn)"></i>
+					<i
+						class="ph-warning ph-bold ph-lg"
+						style="color: var(--warn)"
+					></i>
 					{{ i18n.ts._mfm.warn }}
 				</template>
 			</FormSwitch>
@@ -26,21 +29,33 @@
 			<FormSwitch v-model="alwaysXExpand" class="_formBlock">{{
 				i18n.ts.alwaysXExpand
 			}}</FormSwitch>
-			<FormSwitch v-model="showRelationMark" class="_formBlock">{{
-				i18n.ts.showRelationMark
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="showRelationMark" class="_formBlock"
+				>{{ i18n.ts.showRelationMark
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="loadRawImages" class="_formBlock">{{
 				i18n.ts.loadRawImages
 			}}</FormSwitch>
-			<FormSwitch v-model="thumbnailCover" class="_formBlock">{{
-				i18n.ts.thumbnailCover
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="compactGrid" class="_formBlock">{{
-				i18n.ts.compactGrid
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="compactGridUrl" class="_formBlock">{{
-				i18n.ts.compactGridUrl
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="thumbnailCover" class="_formBlock"
+				>{{ i18n.ts.thumbnailCover
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="compactGrid" class="_formBlock"
+				>{{ i18n.ts.compactGrid
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="compactGridUrl" class="_formBlock"
+				>{{ i18n.ts.compactGridUrl
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch
 				v-model="disableShowingAnimatedImages"
 				class="_formBlock"
@@ -49,24 +64,24 @@
 			<FormSwitch v-model="squareAvatars" class="_formBlock">{{
 				i18n.ts.squareAvatars
 			}}</FormSwitch>
-			<FormSwitch
-				v-model="reactionShowBig"
-				class="_formBlock"
-			>
+			<FormSwitch v-model="reactionShowBig" class="_formBlock">
 				{{ i18n.ts.reactionShowBig }}
-			<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch
-				v-model="reactionShowUsername"
-				class="_formBlock"
+				<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
 			>
+			<FormSwitch v-model="reactionShowUsername" class="_formBlock">
 				{{ i18n.ts.reactionShowUsername }}
-			<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch
-				v-model="reactionShowShort"
-				class="_formBlock"
+				<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
 			>
+			<FormSwitch v-model="reactionShowShort" class="_formBlock">
 				{{ i18n.ts.reactionShowShort }}
-			<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+				<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="seperateRenoteQuote" class="_formBlock">{{
 				i18n.ts.seperateRenoteQuote
 			}}</FormSwitch>
@@ -80,23 +95,39 @@
 				</div>
 			</FormSwitch>
 			<FormSelect v-model="customFont">
-				<template #label>{{ i18n.ts.customFont }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+				<template #label
+					>{{ i18n.ts.customFont
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
 				<option :value="null">{{ i18n.ts.default }}</option>
-				<option v-for="[name, font] of Object.entries(fontList)" :value="name">{{ font.name }}</option>
+				<option
+					v-for="[name, font] of Object.entries(fontList)"
+					:value="name"
+				>
+					{{ font.name }}
+				</option>
 			</FormSelect>
-			<FormSwitch
-				v-model="randomCustomFont"
-				class="_formBlock"
-			>
+			<FormSwitch v-model="randomCustomFont" class="_formBlock">
 				{{ i18n.ts.randomCustomFont }}
-			<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+				<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch
-				v-if="includesRandomEsenapaj || customFont === 'esenapaj' && randomCustomFont"
+				v-if="
+					includesRandomEsenapaj ||
+					(customFont === 'esenapaj' && randomCustomFont)
+				"
 				v-model="includesRandomEsenapaj"
 				class="_formBlock"
 			>
 				{{ i18n.ts.includesRandomEsenapaj }}
-			<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+				<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="disableDrawer" class="_formBlock">{{
 				i18n.ts.disableDrawer
 			}}</FormSwitch>
@@ -136,37 +167,22 @@
 			</FormRadios>
 
 			<FormRadios v-model="avatarSize" class="_formBlock">
-				<template #label>{{ i18n.ts.avatarSize }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
-				<option value="-2">
-					極小
-				</option>
-				<option value="-1">
-					小
-				</option>
-				<option value="null">
-					中
-				</option>
-				<option value="1">
-					大
-				</option>
-				<option value="2">
-					特大
-				</option>
-				<option value="-3">
-					豆粒
-				</option>
-				<option value="-4">
-					非表示
-				</option>
-				<option value="f-1">
-					固定（小）
-				</option>
-				<option value="f">
-					固定（中）
-				</option>
-				<option value="f1">
-					固定（大）
-				</option>
+				<template #label
+					>{{ i18n.ts.avatarSize
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
+				<option value="-2">極小</option>
+				<option value="-1">小</option>
+				<option value="null">中</option>
+				<option value="1">大</option>
+				<option value="2">特大</option>
+				<option value="-3">豆粒</option>
+				<option value="-4">非表示</option>
+				<option value="f-1">固定（小）</option>
+				<option value="f">固定（中）</option>
+				<option value="f1">固定（大）</option>
 			</FormRadios>
 		</FormSection>
 
@@ -177,9 +193,15 @@
 			<option value="always">{{ i18n.ts._instanceTicker.always }}</option>
 		</FormSelect>
 
-		<FormSwitch v-if="developer" v-model="developerTicker" class="_formBlock">{{
-			i18n.ts.developerTicker
-		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+		<FormSwitch
+			v-if="developer"
+			v-model="developerTicker"
+			class="_formBlock"
+			>{{ i18n.ts.developerTicker
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span></FormSwitch
+		>
 
 		<FormLink to="/settings/custom-css" class="_formBlock"
 			><template #icon><i class="ph-code ph-bold ph-lg"></i></template
@@ -206,7 +228,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
-import { fontList } from '@/scripts/font';
+import { fontList } from "@/scripts/font";
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;
@@ -221,9 +243,7 @@ window.addEventListener("resize", () => {
 		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 
-const developer = computed(
-	defaultStore.makeGetterSetter("developer")
-);
+const developer = computed(defaultStore.makeGetterSetter("developer"));
 const showMkkeySettingTips = computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
@@ -258,7 +278,9 @@ const disableDrawer = computed(defaultStore.makeGetterSetter("disableDrawer"));
 const disableShowingAnimatedImages = computed(
 	defaultStore.makeGetterSetter("disableShowingAnimatedImages")
 );
-const showRelationMark = computed(defaultStore.makeGetterSetter("showRelationMark"));
+const showRelationMark = computed(
+	defaultStore.makeGetterSetter("showRelationMark")
+);
 const loadRawImages = computed(defaultStore.makeGetterSetter("loadRawImages"));
 const instanceTicker = computed(
 	defaultStore.makeGetterSetter("instanceTicker")
@@ -279,9 +301,7 @@ const reactionShowUsername = $computed(
 const reactionShowShort = $computed(
 	defaultStore.makeGetterSetter("reactionShowShort")
 );
-const customFont = $computed(
-	defaultStore.makeGetterSetter("customFont")
-);
+const customFont = $computed(defaultStore.makeGetterSetter("customFont"));
 const randomCustomFont = $computed(
 	defaultStore.makeGetterSetter("randomCustomFont")
 );
@@ -291,12 +311,8 @@ const includesRandomEsenapaj = $computed(
 const thumbnailCover = $computed(
 	defaultStore.makeGetterSetter("thumbnailCover")
 );
-const alwaysXExpand = $computed(
-	defaultStore.makeGetterSetter("alwaysXExpand")
-);
-const compactGrid = $computed(
-	defaultStore.makeGetterSetter("compactGrid")
-);
+const alwaysXExpand = $computed(defaultStore.makeGetterSetter("alwaysXExpand"));
+const compactGrid = $computed(defaultStore.makeGetterSetter("compactGrid"));
 const compactGridUrl = $computed(
 	defaultStore.makeGetterSetter("compactGridUrl")
 );

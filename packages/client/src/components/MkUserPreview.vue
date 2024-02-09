@@ -42,16 +42,16 @@
 				/>
 				<div class="title">
 					<MkA class="name" :to="userPage(user)"
-						><MkUserName :user="user" :nowrap="false" :original="true"
+						><MkUserName
+							:user="user"
+							:nowrap="false"
+							:original="true"
 					/></MkA>
 					<span
-						v-if="
-							$i &&
-							$i.id != user.id &&
-							user.isFollowed
-						"
+						v-if="$i && $i.id != user.id && user.isFollowed"
 						class="followed"
-						>   ⭐</span
+					>
+						⭐</span
 					>
 					<p class="username"><MkAcct :user="user" /></p>
 				</div>

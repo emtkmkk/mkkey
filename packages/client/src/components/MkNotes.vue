@@ -1,5 +1,9 @@
 <template>
-	<MkPagination ref="pagingComponent" :pagination="pagination" :silence-nothing="true">
+	<MkPagination
+		ref="pagingComponent"
+		:pagination="pagination"
+		:silence-nothing="true"
+	>
 		<template #empty>
 			<div v-if="!silenceNoNotes" class="_fullinfo">
 				<img

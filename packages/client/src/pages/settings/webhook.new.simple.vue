@@ -1,19 +1,19 @@
 <template>
 	<div class="_formRoot">
-	<FormSection>
-	
-		<FormInput v-model="name" class="_formBlock">
-			<template #label>サーバー名(任意)</template>
-		</FormInput>
-		
-		<FormInput v-model="url" type="url" class="_formBlock">
-			<template #label>Discord ウェブフック URL</template>
-		</FormInput>
-		
-		<div>自身しか所属していないサーバーを作成し、
-		任意のチャンネルの設定にて、ウェブフックを作成
-		ウェブフックURLをコピーし、上の欄に貼り付けてください。</div>
-		
+		<FormSection>
+			<FormInput v-model="name" class="_formBlock">
+				<template #label>サーバー名(任意)</template>
+			</FormInput>
+
+			<FormInput v-model="url" type="url" class="_formBlock">
+				<template #label>Discord ウェブフック URL</template>
+			</FormInput>
+
+			<div>
+				自身しか所属していないサーバーを作成し、
+				任意のチャンネルの設定にて、ウェブフックを作成
+				ウェブフックURLをコピーし、上の欄に貼り付けてください。
+			</div>
 		</FormSection>
 
 		<div
@@ -59,7 +59,9 @@ let event_groupMessage = $ref(true);
 let event_groupMentionOnly = $ref(false);
 let event_unfollow = $ref(false);
 
-const antennasAll = await os.api("antennas/list", {mkkey: true}) as Array<any>;
+const antennasAll = (await os.api("antennas/list", {
+	mkkey: true,
+})) as Array<any>;
 const antennas = $ref(antennasAll.filter((x) => x.notify));
 
 let event_excludeAntennas = $ref(antennas.map((x) => true));
@@ -79,13 +81,13 @@ async function create(): Promise<void> {
 	if (event_unfollow) events.push("unfollow");
 	if (event_antenna) {
 		events.push("antenna");
-		event_excludeAntennas.forEach((x,index) => {
-			if (!x){
+		event_excludeAntennas.forEach((x, index) => {
+			if (!x) {
 				events.push(`exclude-${antennas[index].id}`);
 			}
 		});
 	}
-	
+
 	if (discord_type) {
 		if (text_length && isFinite(text_length)) {
 			if (text_length > 1000) text_length = 1000;
@@ -95,12 +97,18 @@ async function create(): Promise<void> {
 			secret = "Discord";
 		}
 	}
-	
-	const match = /^https:\/\/discord.com\/api\/webhooks\/(.*?)\/(.*?)$/.exec(url);
-	
+
+	const match = /^https:\/\/discord.com\/api\/webhooks\/(.*?)\/(.*?)$/.exec(
+		url
+	);
+
 	let webhookName = name || "Discord";
-	
-	if (match) webhookName = `${webhookName}-${match[1].slice(0, 6)}-${match[2].slice(0, 6)}`
+
+	if (match)
+		webhookName = `${webhookName}-${match[1].slice(0, 6)}-${match[2].slice(
+			0,
+			6
+		)}`;
 
 	os.apiWithDialog("i/webhooks/create", {
 		name: webhookName,

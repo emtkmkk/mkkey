@@ -35,7 +35,10 @@
 			v-else-if="modelValue.type === 'multiLineText'"
 			class="tbwccoaw"
 		>
-			<textarea v-model="modelValue.value" misskey-auto-complete></textarea>
+			<textarea
+				v-model="modelValue.value"
+				misskey-auto-complete
+			></textarea>
 		</section>
 		<section v-else-if="modelValue.type === 'textList'" class="tbwccoaw">
 			<textarea

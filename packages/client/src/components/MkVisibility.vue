@@ -27,7 +27,11 @@
 			v-tooltip="i18n.ts._visibility.localOnlyTooltip"
 		></i
 	></span>
-	<span v-if="note.localOnly && !note.channelId && note.visibility !== 'followers'" :class="$style.localOnly"
+	<span
+		v-if="
+			note.localOnly && !note.channelId && note.visibility !== 'followers'
+		"
+		:class="$style.localOnly"
 		><i
 			class="ph-hand-heart ph-bold ph-lg"
 			v-tooltip="i18n.ts._visibility.localAndFollowerTooltip"
@@ -66,7 +70,9 @@ if (props.note.visibility === "specified") {
 			{
 				showing,
 				users,
-				count: (props.note.visibleUserIds?.length || 0) + (props.note.ccUserIdsCount || 0),
+				count:
+					(props.note.visibleUserIds?.length || 0) +
+					(props.note.ccUserIdsCount || 0),
 				targetElement: specified,
 			},
 			{},

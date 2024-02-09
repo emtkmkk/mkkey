@@ -200,9 +200,14 @@ mainRouter.navHook = (path, flag): boolean => {
 	return false;
 };
 
-const isMobile = ref(window.innerWidth <= 500 && defaultStore.state.overridedDeviceKind !== "desktop-force");
+const isMobile = ref(
+	window.innerWidth <= 500 &&
+		defaultStore.state.overridedDeviceKind !== "desktop-force"
+);
 window.addEventListener("resize", () => {
-	isMobile.value = window.innerWidth <= 500 && defaultStore.state.overridedDeviceKind !== "desktop-force";
+	isMobile.value =
+		window.innerWidth <= 500 &&
+		defaultStore.state.overridedDeviceKind !== "desktop-force";
 });
 
 const drawerMenuShowing = ref(false);

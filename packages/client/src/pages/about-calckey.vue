@@ -218,15 +218,29 @@ let easterEggEngine = $ref(null);
 const containerEl = $ref<HTMLElement>();
 
 function iconLoaded() {
-	const emojis = defaultStore.state.hiddenReactionDeckAndRecent ? instance.emojis.map(x => `:${x.name}:`) : [...defaultStore.state.reactions,...defaultStore.state.reactions2,...defaultStore.state.reactions3,...defaultStore.state.reactions4,...defaultStore.state.reactions5,...(defaultStore.state.hiddenRecent ? [] : defaultStore.state.recentlyUsedEmojis)];
+	const emojis = defaultStore.state.hiddenReactionDeckAndRecent
+		? instance.emojis.map((x) => `:${x.name}:`)
+		: [
+				...defaultStore.state.reactions,
+				...defaultStore.state.reactions2,
+				...defaultStore.state.reactions3,
+				...defaultStore.state.reactions4,
+				...defaultStore.state.reactions5,
+				...(defaultStore.state.hiddenRecent
+					? []
+					: defaultStore.state.recentlyUsedEmojis),
+		  ];
 	const containerWidth = containerEl?.offsetWidth;
-	const emojisCnt = emojis.length
+	const emojisCnt = emojis.length;
 	for (let i = 0; i < Math.min(emojisCnt, 128); i++) {
 		easterEggEmojis.push({
 			id: i.toString(),
 			top: -(128 + Math.random() * 256),
 			left: Math.random() * containerWidth,
-			emoji: emojisCnt >= 128 ? emojis[Math.floor(Math.random() * emojis.length)] : emojis[i],
+			emoji:
+				emojisCnt >= 128
+					? emojis[Math.floor(Math.random() * emojis.length)]
+					: emojis[i],
 		});
 	}
 
@@ -315,7 +329,7 @@ definePageMetadata({
 				pointer-events: none;
 				font-size: 16px;
 				height: 16px !important;
-				width: auto !important
+				width: auto !important;
 			}
 		}
 	}

@@ -3,8 +3,15 @@
 		<FormSwitch v-model="enableEmojiReactions" class="_formBlock">
 			{{ i18n.ts.enableEmojiReactions }}
 		</FormSwitch>
-		<FormSwitch v-if="!enableEmojiReactions" v-model="showEmojiButton" class="_formBlock">
-			{{ i18n.ts.showEmojiButton }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+		<FormSwitch
+			v-if="!enableEmojiReactions"
+			v-model="showEmojiButton"
+			class="_formBlock"
+		>
+			{{ i18n.ts.showEmojiButton
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span>
 		</FormSwitch>
 		<div v-if="!enableEmojiReactions">
 			<FormSwitch
@@ -15,7 +22,10 @@
 			</FormSwitch>
 		</div>
 		<FormSwitch v-model="hiddenReactionNumber" class="_formBlock">
-			{{ i18n.ts.hiddenReactionNumber }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			{{ i18n.ts.hiddenReactionNumber
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span>
 		</FormSwitch>
 
 		<div>
@@ -24,20 +34,65 @@
 					i18n.ts.reactionSettingDescription
 				}}</template>
 				<MkTab v-model="tab" class="_formBlock">
-					<option value="reactions">{{ !reactionsFolderName ? "1" : reactionsFolderName.slice(0,3) + (reactionsFolderName?.length > 3 ? "…" : "") }}</option>
-					<option value="reactions2">{{ !reactionsFolderName2 ? "2" : reactionsFolderName2.slice(0,3) + (reactionsFolderName2?.length > 3 ? "…" : "") }}</option>
-					<option value="reactions3">{{ !reactionsFolderName3 ? "3" : reactionsFolderName3.slice(0,3) + (reactionsFolderName3?.length > 3 ? "…" : "") }}</option>
-					<option value="reactions4">{{ !reactionsFolderName4 ? "4" : reactionsFolderName4.slice(0,3) + (reactionsFolderName4?.length > 3 ? "…" : "") }}</option>
-					<option value="reactions5">{{ !reactionsFolderName5 ? "5" : reactionsFolderName5.slice(0,3) + (reactionsFolderName5?.length > 3 ? "…" : "") }}</option>
+					<option value="reactions">
+						{{
+							!reactionsFolderName
+								? "1"
+								: reactionsFolderName.slice(0, 3) +
+								  (reactionsFolderName?.length > 3 ? "…" : "")
+						}}
+					</option>
+					<option value="reactions2">
+						{{
+							!reactionsFolderName2
+								? "2"
+								: reactionsFolderName2.slice(0, 3) +
+								  (reactionsFolderName2?.length > 3 ? "…" : "")
+						}}
+					</option>
+					<option value="reactions3">
+						{{
+							!reactionsFolderName3
+								? "3"
+								: reactionsFolderName3.slice(0, 3) +
+								  (reactionsFolderName3?.length > 3 ? "…" : "")
+						}}
+					</option>
+					<option value="reactions4">
+						{{
+							!reactionsFolderName4
+								? "4"
+								: reactionsFolderName4.slice(0, 3) +
+								  (reactionsFolderName4?.length > 3 ? "…" : "")
+						}}
+					</option>
+					<option value="reactions5">
+						{{
+							!reactionsFolderName5
+								? "5"
+								: reactionsFolderName5.slice(0, 3) +
+								  (reactionsFolderName5?.length > 3 ? "…" : "")
+						}}
+					</option>
 				</MkTab>
-				<div v-panel v-if="tab === 'reactions'" style="border-radius: 6px">
+				<div
+					v-panel
+					v-if="tab === 'reactions'"
+					style="border-radius: 6px"
+				>
 					<FormInput
 						v-model="reactionsFolderName"
 						class="_formBlock"
 						:small="true"
 						:placeholder="`フォルダ名 : 1`"
 						:manualSave="true"
-						v-if="((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
+						v-if="
+							(reactions2?.length ?? 0) +
+								(reactions3?.length ?? 0) +
+								(reactions4?.length ?? 0) +
+								(reactions5?.length ?? 0) !==
+							0
+						"
 						style="margin: 0 0 !important"
 					/>
 					<XDraggable
@@ -53,7 +108,11 @@
 								class="_button item"
 								@click="remove(element, $event)"
 							>
-								<MkEmoji :emoji="element" :normal="true" :nofallback="true" />
+								<MkEmoji
+									:emoji="element"
+									:normal="true"
+									:nofallback="true"
+								/>
 							</button>
 						</template>
 						<template #footer>
@@ -63,7 +122,11 @@
 						</template>
 					</XDraggable>
 				</div>
-				<div v-panel v-if="tab === 'reactions2'" style="border-radius: 6px">
+				<div
+					v-panel
+					v-if="tab === 'reactions2'"
+					style="border-radius: 6px"
+				>
 					<FormInput
 						v-model="reactionsFolderName2"
 						class="_formBlock"
@@ -85,7 +148,11 @@
 								class="_button item"
 								@click="remove(element, $event)"
 							>
-								<MkEmoji :emoji="element" :normal="true" :nofallback="true" />
+								<MkEmoji
+									:emoji="element"
+									:normal="true"
+									:nofallback="true"
+								/>
 							</button>
 						</template>
 						<template #footer>
@@ -95,7 +162,11 @@
 						</template>
 					</XDraggable>
 				</div>
-				<div v-panel v-if="tab === 'reactions3'" style="border-radius: 6px">
+				<div
+					v-panel
+					v-if="tab === 'reactions3'"
+					style="border-radius: 6px"
+				>
 					<FormInput
 						v-model="reactionsFolderName3"
 						class="_formBlock"
@@ -117,7 +188,11 @@
 								class="_button item"
 								@click="remove(element, $event)"
 							>
-								<MkEmoji :emoji="element" :normal="true" :nofallback="true" />
+								<MkEmoji
+									:emoji="element"
+									:normal="true"
+									:nofallback="true"
+								/>
 							</button>
 						</template>
 						<template #footer>
@@ -127,7 +202,11 @@
 						</template>
 					</XDraggable>
 				</div>
-				<div v-panel v-if="tab === 'reactions4'" style="border-radius: 6px">
+				<div
+					v-panel
+					v-if="tab === 'reactions4'"
+					style="border-radius: 6px"
+				>
 					<FormInput
 						v-model="reactionsFolderName4"
 						class="_formBlock"
@@ -149,7 +228,11 @@
 								class="_button item"
 								@click="remove(element, $event)"
 							>
-								<MkEmoji :emoji="element" :normal="true" :nofallback="true" />
+								<MkEmoji
+									:emoji="element"
+									:normal="true"
+									:nofallback="true"
+								/>
 							</button>
 						</template>
 						<template #footer>
@@ -159,7 +242,11 @@
 						</template>
 					</XDraggable>
 				</div>
-				<div v-panel v-if="tab === 'reactions5'" style="border-radius: 6px">
+				<div
+					v-panel
+					v-if="tab === 'reactions5'"
+					style="border-radius: 6px"
+				>
 					<FormInput
 						v-model="reactionsFolderName5"
 						class="_formBlock"
@@ -181,7 +268,11 @@
 								class="_button item"
 								@click="remove(element, $event)"
 							>
-								<MkEmoji :emoji="element" :normal="true" :nofallback="true" />
+								<MkEmoji
+									:emoji="element"
+									:normal="true"
+									:nofallback="true"
+								/>
 							</button>
 						</template>
 						<template #footer>
@@ -199,204 +290,319 @@
 				>
 				<FormSwitch
 					v-model="reactionsDefaultOpen"
-					v-if="tab === 'reactions' && ((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
+					v-if="
+						tab === 'reactions' &&
+						(reactions2?.length ?? 0) +
+							(reactions3?.length ?? 0) +
+							(reactions4?.length ?? 0) +
+							(reactions5?.length ?? 0) !==
+							0
+					"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsDefaultOpen
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactionsPostHiddens"
-					v-if="tab === 'reactions' && ((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
+					v-if="
+						tab === 'reactions' &&
+						(reactions2?.length ?? 0) +
+							(reactions3?.length ?? 0) +
+							(reactions4?.length ?? 0) +
+							(reactions5?.length ?? 0) !==
+							0
+					"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsPostHiddens
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactionsReactionHiddens"
-					v-if="tab === 'reactions' && ((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0"
+					v-if="
+						tab === 'reactions' &&
+						(reactions2?.length ?? 0) +
+							(reactions3?.length ?? 0) +
+							(reactions4?.length ?? 0) +
+							(reactions5?.length ?? 0) !==
+							0
+					"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsReactionHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsReactionHiddens
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactions2DefaultOpen"
 					v-if="tab === 'reactions2'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsDefaultOpen
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactionsPostHiddens2"
 					v-if="tab === 'reactions2'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsPostHiddens
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactionsReactionHiddens2"
 					v-if="tab === 'reactions2'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsReactionHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsReactionHiddens
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactions3DefaultOpen"
 					v-if="tab === 'reactions3'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsDefaultOpen
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactionsPostHiddens3"
 					v-if="tab === 'reactions3'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsPostHiddens
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactionsReactionHiddens3"
 					v-if="tab === 'reactions3'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsReactionHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsReactionHiddens
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactions4DefaultOpen"
 					v-if="tab === 'reactions4'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsDefaultOpen
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactionsPostHiddens4"
 					v-if="tab === 'reactions4'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsPostHiddens
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactionsReactionHiddens4"
 					v-if="tab === 'reactions4'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsReactionHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsReactionHiddens
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactions5DefaultOpen"
 					v-if="tab === 'reactions5'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsDefaultOpen
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactionsPostHiddens5"
 					v-if="tab === 'reactions5'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsPostHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsPostHiddens
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 				<FormSwitch
 					v-model="reactionsReactionHiddens5"
 					v-if="tab === 'reactions5'"
 					class="_formBlock"
 				>
-					{{ i18n.ts.reactionsReactionHiddens }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+					{{ i18n.ts.reactionsReactionHiddens
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span>
 				</FormSwitch>
 			</FromSlot>
-			<FormSwitch
-				v-model="reactionAutoFocusSearchBar"
-				class="_formBlock"
-			>
-				{{ i18n.ts.reactionAutoFocusSearchBar }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			<FormSwitch v-model="reactionAutoFocusSearchBar" class="_formBlock">
+				{{ i18n.ts.reactionAutoFocusSearchBar
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
-			<FormSwitch
-				v-model="doubleTapReaction"
-				class="_formBlock"
-			>
-				{{ i18n.ts.doubleTapReaction }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			<FormSwitch v-model="doubleTapReaction" class="_formBlock">
+				{{ i18n.ts.doubleTapReaction
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
-			<FormSwitch
-				v-model="showReactionMenu"
-				class="_formBlock"
-			>
-				{{ i18n.ts.showReactionMenu }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			<FormSwitch v-model="showReactionMenu" class="_formBlock">
+				{{ i18n.ts.showReactionMenu
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
 			<FormSwitch
 				v-model="recentlyUsedDefaultOpen"
 				class="_formBlock"
-				v-if="((reactions2?.length ?? 0) + (reactions3?.length ?? 0) + (reactions4?.length ?? 0) + (reactions5?.length ?? 0)) !== 0 && !hiddenRecent && !hiddenReactionDeckAndRecent"
+				v-if="
+					(reactions2?.length ?? 0) +
+						(reactions3?.length ?? 0) +
+						(reactions4?.length ?? 0) +
+						(reactions5?.length ?? 0) !==
+						0 &&
+					!hiddenRecent &&
+					!hiddenReactionDeckAndRecent
+				"
 			>
-				{{ i18n.ts.recentlyUsedDefaultOpen }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				{{ i18n.ts.recentlyUsedDefaultOpen
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
 			<FormSwitch
 				v-model="hiddenRecent"
 				class="_formBlock"
 				v-if="!hiddenReactionDeckAndRecent"
 			>
-				{{ i18n.ts.hiddenRecent }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				{{ i18n.ts.hiddenRecent
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
 			<FormSwitch
 				v-model="hiddenReactionDeckAndRecent"
 				class="_formBlock"
 				v-if="!hiddenRecent"
 			>
-				{{ i18n.ts.hiddenReactionDeckAndRecent }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				{{ i18n.ts.hiddenReactionDeckAndRecent
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
-			<FormSwitch
-				v-model="japanCategory"
-				class="_formBlock"
-			>
-				{{ i18n.ts.japanCategory }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			<FormSwitch v-model="japanCategory" class="_formBlock">
+				{{ i18n.ts.japanCategory
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
-			<FormSwitch
-				v-model="enableInstanceEmojiSearch"
-				class="_formBlock"
-			>
-				{{ i18n.ts.enableInstanceEmojiSearch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			<FormSwitch v-model="enableInstanceEmojiSearch" class="_formBlock">
+				{{ i18n.ts.enableInstanceEmojiSearch
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
-			<FormSwitch
-				v-model="disableAllIncludesSearch"
-				class="_formBlock"
-			>
-				{{ i18n.ts.disableAllIncludesSearch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			<FormSwitch v-model="disableAllIncludesSearch" class="_formBlock">
+				{{ i18n.ts.disableAllIncludesSearch
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
 
-			<FormSelect v-if="!isMobile" v-model="remoteEmojisFetch" class="_formBlock">
-				<template #label>{{ i18n.ts.remoteEmojisFetch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
-				<option value="always">{{ i18n.ts._remoteEmojisFetchForPc.always }}</option>
-				<option value="all">{{ i18n.ts._remoteEmojisFetchForPc.all }}</option>
-				<option value="plus">{{ i18n.ts._remoteEmojisFetchForPc.plus }}</option>
-				<option value="keep">{{ i18n.ts._remoteEmojisFetchForPc.keep }}</option>
-				<option value="none">{{ i18n.ts._remoteEmojisFetchForPc.none }}</option>
+			<FormSelect
+				v-if="!isMobile"
+				v-model="remoteEmojisFetch"
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.remoteEmojisFetch
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
+				<option value="always">
+					{{ i18n.ts._remoteEmojisFetchForPc.always }}
+				</option>
+				<option value="all">
+					{{ i18n.ts._remoteEmojisFetchForPc.all }}
+				</option>
+				<option value="plus">
+					{{ i18n.ts._remoteEmojisFetchForPc.plus }}
+				</option>
+				<option value="keep">
+					{{ i18n.ts._remoteEmojisFetchForPc.keep }}
+				</option>
+				<option value="none">
+					{{ i18n.ts._remoteEmojisFetchForPc.none }}
+				</option>
 			</FormSelect>
 			<FormSelect v-else v-model="remoteEmojisFetch" class="_formBlock">
-				<template #label>{{ i18n.ts.remoteEmojisFetch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
-				<option value="all">{{ i18n.ts._remoteEmojisFetch.all }}</option>
-				<option value="plus">{{ i18n.ts._remoteEmojisFetch.plus }}</option>
-				<option value="keep">{{ i18n.ts._remoteEmojisFetch.keep }}</option>
-				<option value="none">{{ i18n.ts._remoteEmojisFetch.none }}</option>
-				<option value="always">{{ i18n.ts._remoteEmojisFetch.always }}</option>
+				<template #label
+					>{{ i18n.ts.remoteEmojisFetch
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
+				<option value="all">
+					{{ i18n.ts._remoteEmojisFetch.all }}
+				</option>
+				<option value="plus">
+					{{ i18n.ts._remoteEmojisFetch.plus }}
+				</option>
+				<option value="keep">
+					{{ i18n.ts._remoteEmojisFetch.keep }}
+				</option>
+				<option value="none">
+					{{ i18n.ts._remoteEmojisFetch.none }}
+				</option>
+				<option value="always">
+					{{ i18n.ts._remoteEmojisFetch.always }}
+				</option>
 			</FormSelect>
 
-			<FormSwitch
-				v-model="mastodonOnetapFavorite"
-				class="_formBlock"
-			>
-				{{ i18n.ts.mastodonOnetapFavorite }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			<FormSwitch v-model="mastodonOnetapFavorite" class="_formBlock">
+				{{ i18n.ts.mastodonOnetapFavorite
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
 
 			<FormSection>
-				<FormRadios
-					v-model="favButtonReaction"
-					class="_formBlock"
-				>
-					<template #label>{{
-						i18n.ts.defaultReactionUser
-					}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+				<FormRadios v-model="favButtonReaction" class="_formBlock">
+					<template #label
+						>{{ i18n.ts.defaultReactionUser
+						}}<span v-if="showMkkeySettingTips" class="_beta">{{
+							i18n.ts.mkkey
+						}}</span></template
+					>
 					<option value="">
-						{{
-							i18n.ts.default
-						}}
+						{{ i18n.ts.default }}
 					</option>
 					<option value="⭐">
 						<MkEmoji
@@ -420,9 +626,7 @@
 						/>
 					</option>
 					<option value="picker">
-						{{
-							i18n.ts.picker
-						}}
+						{{ i18n.ts.picker }}
 					</option>
 					<option value="custom">
 						<FormInput
@@ -434,14 +638,10 @@
 						/>
 					</option>
 					<option value="favorite">
-						{{
-							i18n.ts.favorite
-						}}
+						{{ i18n.ts.favorite }}
 					</option>
 					<option value="hidden">
-						{{
-							i18n.ts.hidden
-						}}
+						{{ i18n.ts.hidden }}
 					</option>
 				</FormRadios>
 			</FormSection>
@@ -502,11 +702,11 @@
 				<option :value="10">Auto(90%)</option>
 			</FormRadios>
 
-			<FormSwitch
-				v-model="usePickerSizePostForm"
-				class="_formBlock"
-			>
-				{{ i18n.ts.usePickerSizePostForm }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			<FormSwitch v-model="usePickerSizePostForm" class="_formBlock">
+				{{ i18n.ts.usePickerSizePostForm
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
 
 			<FormSwitch
@@ -523,23 +723,22 @@
 						><i class="ph-eye ph-bold ph-lg"></i>
 						{{ i18n.ts.preview }}</FormButton
 					>
-					<FormButton v-if="instance.emojiStats" inline @click="autoSetEmojis"
-						><i
-							class="ph-plus-square ph-bold ph-lg"
-						></i>
-						 {{ i18n.ts.autoSetEmojis }}</FormButton
+					<FormButton
+						v-if="instance.emojiStats"
+						inline
+						@click="autoSetEmojis"
+						><i class="ph-plus-square ph-bold ph-lg"></i>
+						{{ i18n.ts.autoSetEmojis }}</FormButton
 					>
 					<FormButton inline danger @click="setDefault"
 						><i
 							class="ph-arrow-counter-clockwise ph-bold ph-lg"
 						></i>
-						 {{ i18n.ts.default }}</FormButton
+						{{ i18n.ts.default }}</FormButton
 					>
 					<FormButton inline danger @click="setEmpty"
-						><i
-							class="ph-trash ph-bold ph-lg"
-						></i>
-						 {{ i18n.ts.allDelete }}</FormButton
+						><i class="ph-trash ph-bold ph-lg"></i>
+						{{ i18n.ts.allDelete }}</FormButton
 					>
 				</div>
 			</FormSection>
@@ -632,9 +831,7 @@ const reactions5DefaultOpen = $computed(
 const recentlyUsedDefaultOpen = $computed(
 	defaultStore.makeGetterSetter("recentlyUsedDefaultOpen")
 );
-const hiddenRecent = $computed(
-	defaultStore.makeGetterSetter("hiddenRecent")
-);
+const hiddenRecent = $computed(defaultStore.makeGetterSetter("hiddenRecent"));
 const hiddenReactionDeckAndRecent = $computed(
 	defaultStore.makeGetterSetter("hiddenReactionDeckAndRecent")
 );
@@ -668,9 +865,7 @@ const favButtonReactionCustom = $computed(
 const reactionAutoFocusSearchBar = $computed(
 	defaultStore.makeGetterSetter("reactionAutoFocusSearchBar")
 );
-const japanCategory = $computed(
-	defaultStore.makeGetterSetter("japanCategory")
-);
+const japanCategory = $computed(defaultStore.makeGetterSetter("japanCategory"));
 const remoteEmojisFetch = $computed(
 	defaultStore.makeGetterSetter("remoteEmojisFetch")
 );
@@ -716,17 +911,17 @@ const reactionsReactionHiddens5 = $computed(
 const mastodonOnetapFavorite = $computed(
 	defaultStore.makeGetterSetter("mastodonOnetapFavorite")
 );
-let customEmojis = computed(() =>
-	instance.emojis
-);
-let allCustomEmojis = computed(() =>
-	instance.allEmojis
-);
+let customEmojis = computed(() => instance.emojis);
+let allCustomEmojis = computed(() => instance.allEmojis);
 let emojiStr = computed(() =>
-	unref(customEmojis) ? unref(customEmojis).map((x) => `:${x.name}:`) : undefined
+	unref(customEmojis)
+		? unref(customEmojis).map((x) => `:${x.name}:`)
+		: undefined
 );
 let remoteEmojiStr = computed(() =>
-	unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => `:${x.name}@${x.host}:`) : undefined
+	unref(allCustomEmojis)
+		? unref(allCustomEmojis).map((x) => `:${x.name}@${x.host}:`)
+		: undefined
 );
 const enableInstanceEmojiSearch = $computed(
 	defaultStore.makeGetterSetter("enableInstanceEmojiSearch")
@@ -739,31 +934,36 @@ const usePickerSizePostForm = $computed(
 );
 
 const editPage = $computed(() => {
-		return tab === 'reactions'
+	return tab === "reactions"
 		? reactions
-		: tab === 'reactions2'
-			? reactions2
-			: tab === 'reactions3'
-				? reactions3
-				: tab === 'reactions4'
-					? reactions4
-					: reactions5;
+		: tab === "reactions2"
+		? reactions2
+		: tab === "reactions3"
+		? reactions3
+		: tab === "reactions4"
+		? reactions4
+		: reactions5;
 });
 
-function deleteReac(reaction){
-	if (tab === 'reactions') reactions = reactions.filter((x) => x !== reaction);
-	if (tab === 'reactions2') reactions2 = reactions2.filter((x) => x !== reaction);
-	if (tab === 'reactions3') reactions3 = reactions3.filter((x) => x !== reaction);
-	if (tab === 'reactions4') reactions4 = reactions4.filter((x) => x !== reaction);
-	if (tab === 'reactions5') reactions5 = reactions5.filter((x) => x !== reaction);
+function deleteReac(reaction) {
+	if (tab === "reactions")
+		reactions = reactions.filter((x) => x !== reaction);
+	if (tab === "reactions2")
+		reactions2 = reactions2.filter((x) => x !== reaction);
+	if (tab === "reactions3")
+		reactions3 = reactions3.filter((x) => x !== reaction);
+	if (tab === "reactions4")
+		reactions4 = reactions4.filter((x) => x !== reaction);
+	if (tab === "reactions5")
+		reactions5 = reactions5.filter((x) => x !== reaction);
 }
 
-function deleteAllReac(){
-	if (tab === 'reactions') reactions = [];
-	if (tab === 'reactions2') reactions2 = [];
-	if (tab === 'reactions3') reactions3 = [];
-	if (tab === 'reactions4') reactions4 = [];
-	if (tab === 'reactions5') reactions5 = [];
+function deleteAllReac() {
+	if (tab === "reactions") reactions = [];
+	if (tab === "reactions2") reactions2 = [];
+	if (tab === "reactions3") reactions3 = [];
+	if (tab === "reactions4") reactions4 = [];
+	if (tab === "reactions5") reactions5 = [];
 }
 
 function save() {
@@ -778,68 +978,169 @@ function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[
 			{
-				text: reaction.replace(/@(\S+)$/,"").replaceAll(":",""),
+				text: reaction.replace(/@(\S+)$/, "").replaceAll(":", ""),
 				type: "label",
 			},
-			reaction.includes("@") ? {
-				text: reaction.replace(/^(\S+)@/,"@").replaceAll(":",""),
-				type: "label",
-			} : undefined,
-			!reaction.includes("@") && !unref(emojiStr)?.includes(reaction) && unref(customEmojis).some((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":",""))) ? {
-				text: "代替絵文字に変換",
-				action: () => {
-					if (tab === 'reactions') reactions[reactions.indexOf(reaction)] = `:${unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", ""))).name}:`;
-					if (tab === 'reactions2') reactions2[reactions2.indexOf(reaction)] = `:${unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", ""))).name}:`;
-					if (tab === 'reactions3') reactions3[reactions3.indexOf(reaction)] = `:${unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", ""))).name}:`;
-					if (tab === 'reactions4') reactions4[reactions4.indexOf(reaction)] = `:${unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", ""))).name}:`;
-					if (tab === 'reactions5') reactions5[reactions5.indexOf(reaction)] = `:${unref(customEmojis).find((x) => x.aliases?.some((y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", ""))).name}:`;
-				},
-			} : undefined,
-			reaction.includes("@") && !unref(remoteEmojiStr)?.includes(reaction) && unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/,":")) ? {
-				text: "ローカル絵文字に変換",
-				action: () => {
-					if (tab === 'reactions') reactions[reactions.indexOf(reaction)] = reaction.replace(/@(\S+)$/,":");
-					if (tab === 'reactions2') reactions2[reactions2.indexOf(reaction)] = reaction.replace(/@(\S+)$/,":");
-					if (tab === 'reactions3') reactions3[reactions3.indexOf(reaction)] = reaction.replace(/@(\S+)$/,":");
-					if (tab === 'reactions4') reactions4[reactions4.indexOf(reaction)] = reaction.replace(/@(\S+)$/,":");
-					if (tab === 'reactions5') reactions5[reactions5.indexOf(reaction)] = reaction.replace(/@(\S+)$/,":");
-				},
-			} : undefined,
-			tab !== 'reactions' && !reactions.includes(reaction) ? {
-				text: `${(reactionsFolderName || "1")?.slice(0, 6) + (reactionsFolderName?.length > 6 ? "…" : "")}に移動`,
-				action: () => {
-					deleteReac(reaction);
-					reactions.push(reaction);
-				},
-			} : undefined,
-			tab !== 'reactions2' && !reactions2.includes(reaction) ? {
-				text: `${(reactionsFolderName2 || "2")?.slice(0, 6) + (reactionsFolderName2?.length > 6 ? "…" : "")}に移動`,
-				action: () => {
-					deleteReac(reaction);
-					reactions2.push(reaction);
-				},
-			} : undefined,
-			tab !== 'reactions3' && !reactions3.includes(reaction) ? {
-				text: `${(reactionsFolderName3 || "3")?.slice(0, 6) + (reactionsFolderName3?.length > 6 ? "…" : "")}に移動`,
-				action: () => {
-					deleteReac(reaction);
-					reactions3.push(reaction);
-				},
-			} : undefined,
-			tab !== 'reactions4' && !reactions4.includes(reaction) ? {
-				text: `${(reactionsFolderName4 || "4")?.slice(0, 6) + (reactionsFolderName4?.length > 6 ? "…" : "")}に移動`,
-				action: () => {
-					deleteReac(reaction);
-					reactions4.push(reaction);
-				},
-			} : undefined,
-			tab !== 'reactions5' && !reactions5.includes(reaction) ? {
-				text: `${(reactionsFolderName5 || "5")?.slice(0, 6) + (reactionsFolderName5?.length > 6 ? "…" : "")}に移動`,
-				action: () => {
-					deleteReac(reaction);
-					reactions5.push(reaction);
-				},
-			} : undefined,
+			reaction.includes("@")
+				? {
+						text: reaction
+							.replace(/^(\S+)@/, "@")
+							.replaceAll(":", ""),
+						type: "label",
+				  }
+				: undefined,
+			!reaction.includes("@") &&
+			!unref(emojiStr)?.includes(reaction) &&
+			unref(customEmojis).some((x) =>
+				x.aliases?.some(
+					(y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", "")
+				)
+			)
+				? {
+						text: "代替絵文字に変換",
+						action: () => {
+							if (tab === "reactions")
+								reactions[reactions.indexOf(reaction)] = `:${
+									unref(customEmojis).find((x) =>
+										x.aliases?.some(
+											(y) =>
+												/^\w+$/.test(y) &&
+												y ===
+													reaction.replaceAll(":", "")
+										)
+									).name
+								}:`;
+							if (tab === "reactions2")
+								reactions2[reactions2.indexOf(reaction)] = `:${
+									unref(customEmojis).find((x) =>
+										x.aliases?.some(
+											(y) =>
+												/^\w+$/.test(y) &&
+												y ===
+													reaction.replaceAll(":", "")
+										)
+									).name
+								}:`;
+							if (tab === "reactions3")
+								reactions3[reactions3.indexOf(reaction)] = `:${
+									unref(customEmojis).find((x) =>
+										x.aliases?.some(
+											(y) =>
+												/^\w+$/.test(y) &&
+												y ===
+													reaction.replaceAll(":", "")
+										)
+									).name
+								}:`;
+							if (tab === "reactions4")
+								reactions4[reactions4.indexOf(reaction)] = `:${
+									unref(customEmojis).find((x) =>
+										x.aliases?.some(
+											(y) =>
+												/^\w+$/.test(y) &&
+												y ===
+													reaction.replaceAll(":", "")
+										)
+									).name
+								}:`;
+							if (tab === "reactions5")
+								reactions5[reactions5.indexOf(reaction)] = `:${
+									unref(customEmojis).find((x) =>
+										x.aliases?.some(
+											(y) =>
+												/^\w+$/.test(y) &&
+												y ===
+													reaction.replaceAll(":", "")
+										)
+									).name
+								}:`;
+						},
+				  }
+				: undefined,
+			reaction.includes("@") &&
+			!unref(remoteEmojiStr)?.includes(reaction) &&
+			unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/, ":"))
+				? {
+						text: "ローカル絵文字に変換",
+						action: () => {
+							if (tab === "reactions")
+								reactions[reactions.indexOf(reaction)] =
+									reaction.replace(/@(\S+)$/, ":");
+							if (tab === "reactions2")
+								reactions2[reactions2.indexOf(reaction)] =
+									reaction.replace(/@(\S+)$/, ":");
+							if (tab === "reactions3")
+								reactions3[reactions3.indexOf(reaction)] =
+									reaction.replace(/@(\S+)$/, ":");
+							if (tab === "reactions4")
+								reactions4[reactions4.indexOf(reaction)] =
+									reaction.replace(/@(\S+)$/, ":");
+							if (tab === "reactions5")
+								reactions5[reactions5.indexOf(reaction)] =
+									reaction.replace(/@(\S+)$/, ":");
+						},
+				  }
+				: undefined,
+			tab !== "reactions" && !reactions.includes(reaction)
+				? {
+						text: `${
+							(reactionsFolderName || "1")?.slice(0, 6) +
+							(reactionsFolderName?.length > 6 ? "…" : "")
+						}に移動`,
+						action: () => {
+							deleteReac(reaction);
+							reactions.push(reaction);
+						},
+				  }
+				: undefined,
+			tab !== "reactions2" && !reactions2.includes(reaction)
+				? {
+						text: `${
+							(reactionsFolderName2 || "2")?.slice(0, 6) +
+							(reactionsFolderName2?.length > 6 ? "…" : "")
+						}に移動`,
+						action: () => {
+							deleteReac(reaction);
+							reactions2.push(reaction);
+						},
+				  }
+				: undefined,
+			tab !== "reactions3" && !reactions3.includes(reaction)
+				? {
+						text: `${
+							(reactionsFolderName3 || "3")?.slice(0, 6) +
+							(reactionsFolderName3?.length > 6 ? "…" : "")
+						}に移動`,
+						action: () => {
+							deleteReac(reaction);
+							reactions3.push(reaction);
+						},
+				  }
+				: undefined,
+			tab !== "reactions4" && !reactions4.includes(reaction)
+				? {
+						text: `${
+							(reactionsFolderName4 || "4")?.slice(0, 6) +
+							(reactionsFolderName4?.length > 6 ? "…" : "")
+						}に移動`,
+						action: () => {
+							deleteReac(reaction);
+							reactions4.push(reaction);
+						},
+				  }
+				: undefined,
+			tab !== "reactions5" && !reactions5.includes(reaction)
+				? {
+						text: `${
+							(reactionsFolderName5 || "5")?.slice(0, 6) +
+							(reactionsFolderName5?.length > 6 ? "…" : "")
+						}に移動`,
+						action: () => {
+							deleteReac(reaction);
+							reactions5.push(reaction);
+						},
+				  }
+				: undefined,
 			{
 				text: i18n.ts.remove,
 				action: () => {
@@ -873,20 +1174,26 @@ async function autoSetEmojis(ev: MouseEvent) {
 	});
 	if (canceled) return;
 
-	const reactionsSet = new Set([...reactions, ...reactions2, ...reactions3, ...reactions4, ...reactions5]);
+	const reactionsSet = new Set([
+		...reactions,
+		...reactions2,
+		...reactions3,
+		...reactions4,
+		...reactions5,
+	]);
 
 	let addCount = 0;
 
 	instance.emojiStats.recentlySentReactions.forEach((x) => {
 		if (!reactionsSet.has(x.name) && addCount < 35) {
-			if (tab === 'reactions') reactions.push(x.name)
-			if (tab === 'reactions2') reactions2.push(x.name);
-			if (tab === 'reactions3') reactions3.push(x.name);
-			if (tab === 'reactions4') reactions4.push(x.name);
-			if (tab === 'reactions5') reactions5.push(x.name);
+			if (tab === "reactions") reactions.push(x.name);
+			if (tab === "reactions2") reactions2.push(x.name);
+			if (tab === "reactions3") reactions3.push(x.name);
+			if (tab === "reactions4") reactions4.push(x.name);
+			if (tab === "reactions5") reactions5.push(x.name);
 			addCount += 1;
 		}
-	})
+	});
 }
 
 async function setDefault() {
@@ -921,7 +1228,10 @@ function chooseEmoji(ev: MouseEvent) {
 }
 
 onMounted(async () => {
-	if (!unref(instance.emojiStats) && !defaultStore.state.enableDataSaverMode) {
+	if (
+		!unref(instance.emojiStats) &&
+		!defaultStore.state.enableDataSaverMode
+	) {
 		const data = await os.api("users/emoji-stats", {
 			userId: $i.id,
 			limit: 105,
@@ -931,7 +1241,13 @@ onMounted(async () => {
 });
 
 watch(
-	[$$(reactions),$$(reactions2),$$(reactions3),$$(reactions4),$$(reactions5)],
+	[
+		$$(reactions),
+		$$(reactions2),
+		$$(reactions3),
+		$$(reactions4),
+		$$(reactions5),
+	],
 	() => {
 		save();
 	},
@@ -940,12 +1256,8 @@ watch(
 	}
 );
 
-watch([
-	enableEmojiReactions,
-	remoteEmojisFetch
-	],
-	async () => {
-		await reloadAsk();
+watch([enableEmojiReactions, remoteEmojisFetch], async () => {
+	await reloadAsk();
 });
 
 const headerActions = $computed(() => []);

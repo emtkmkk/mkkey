@@ -10,17 +10,48 @@
 				<XReactionIcon
 					:reaction="reaction"
 					:custom-emojis="emojis"
-					:class="{icon : !defaultStore.state.reactionShowBig, bigIcon : defaultStore.state.reactionShowBig}"
+					:class="{
+						icon: !defaultStore.state.reactionShowBig,
+						bigIcon: defaultStore.state.reactionShowBig,
+					}"
 					:no-style="true"
 				/>
-				<div class="name">{{ reaction?.replace(/@[\w:\.\-]+:$/,":") }}</div>
-				<div class="name" v-if="reaction.includes('@') && !reaction?.endsWith('@.:')">{{ `画像元 : ${/@([\w:\.\-]+):$/.exec(reaction)?.[1] ?? "???"}` }}</div>
+				<div class="name">
+					{{ reaction?.replace(/@[\w:\.\-]+:$/, ":") }}
+				</div>
+				<div
+					class="name"
+					v-if="reaction.includes('@') && !reaction?.endsWith('@.:')"
+				>
+					{{
+						`画像元 : ${
+							/@([\w:\.\-]+):$/.exec(reaction)?.[1] ?? "???"
+						}`
+					}}
+				</div>
 			</div>
 			<div class="users">
 				<div v-for="u in users" :key="u.id" class="user">
 					<MkAvatar class="avatar" :user="u" />
-					<MkUserName v-if="!$store.state.reactionShowUsername" class="name" :user="u" :maxlength="$store.state.reactionShowShort ? 8 : 0" :nowrap="true" :hostIcon="u.instance?.faviconUrl || u.instance?.iconUrl || u.host" :altIcon="u.instance?.iconUrl"/>
-					<MkAcct v-if="$store.state.reactionShowUsername" class="name" :user="u" :maxlength="$store.state.reactionShowShort ? 8 : 0" />
+					<MkUserName
+						v-if="!$store.state.reactionShowUsername"
+						class="name"
+						:user="u"
+						:maxlength="$store.state.reactionShowShort ? 8 : 0"
+						:nowrap="true"
+						:hostIcon="
+							u.instance?.faviconUrl ||
+							u.instance?.iconUrl ||
+							u.host
+						"
+						:altIcon="u.instance?.iconUrl"
+					/>
+					<MkAcct
+						v-if="$store.state.reactionShowUsername"
+						class="name"
+						:user="u"
+						:maxlength="$store.state.reactionShowShort ? 8 : 0"
+					/>
 				</div>
 				<div v-if="count - users.length > 0" class="omitted">
 					+{{ count - users.length }}
@@ -52,7 +83,7 @@ const emit = defineEmits<{
 <style lang="scss" scoped>
 .bqxuuuey {
 	display: flex;
-  flex-direction: column;
+	flex-direction: column;
 
 	> .reaction {
 		max-width: 100%;

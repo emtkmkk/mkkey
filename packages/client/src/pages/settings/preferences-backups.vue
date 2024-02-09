@@ -331,7 +331,7 @@ async function saveNew(): Promise<void> {
 		title: ts._preferencesBackups.inputName,
 	});
 	if (canceled) return;
-	
+
 	const { canceled: cancel2 } = await os.yesno({
 		type: "question",
 		text: "アカウント依存設定を保存しますか？",
@@ -419,7 +419,7 @@ async function applyProfile(id: string): Promise<void> {
 		text: t("_preferencesBackups.applyConfirm", { name: profile.name }),
 	});
 	if (cancel1) return;
-	
+
 	const { canceled: cancel3 } = await os.yesno({
 		type: "question",
 		text: "アカウント依存設定を読み込みますか？",
@@ -431,7 +431,10 @@ async function applyProfile(id: string): Promise<void> {
 
 	// defaultStore
 	for (const key of defaultStoreSaveKeys) {
-		if (settings.hot[key] !== undefined && (!cancel3 || defaultStore.def?.[key]?.where === "device")) {
+		if (
+			settings.hot[key] !== undefined &&
+			(!cancel3 || defaultStore.def?.[key]?.where === "device")
+		) {
 			defaultStore.set(key, settings.hot[key]);
 		}
 	}
@@ -449,7 +452,7 @@ async function applyProfile(id: string): Promise<void> {
 	} else {
 		localStorage.removeItem("fontSize");
 	}
-	
+
 	// avatarSize
 	if (settings.avatarSize) {
 		localStorage.setItem("avatarSize", settings.avatarSize);
@@ -505,7 +508,7 @@ async function save(id: string): Promise<void> {
 		text: t("_preferencesBackups.saveConfirm", { name }),
 	});
 	if (canceled) return;
-	
+
 	const { canceled: cancel2 } = await os.yesno({
 		type: "question",
 		text: "アカウント依存設定を保存しますか？",
@@ -519,7 +522,7 @@ async function save(id: string): Promise<void> {
 		host,
 		settings: getSettings(cancel2),
 	};
-	
+
 	await os.apiWithDialog("i/registry/set", {
 		scope,
 		key: id,

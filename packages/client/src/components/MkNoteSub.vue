@@ -4,14 +4,27 @@
 		ref="el"
 		v-size="{ max: [450, 500] }"
 		class="wrpstxzv"
-		:class="[{
-			children: depth > 1,
-			singleStart: replies.length == 1,
-			firstColumn: depth == 1 && conversation,
-		}]"
+		:class="[
+			{
+				children: depth > 1,
+				singleStart: replies.length == 1,
+				firstColumn: depth == 1 && conversation,
+			},
+		]"
 	>
 		<div v-if="conversation && depth > 1" class="line"></div>
-		<div class="main" @click="noteClick" :class="[`v-${appearNote.visibility === 'specified' && note.ccUserIdsCount ? 'circle' : appearNote.visibility}` , { localOnly : appearNote.localOnly } ]">
+		<div
+			class="main"
+			@click="noteClick"
+			:class="[
+				`v-${
+					appearNote.visibility === 'specified' && note.ccUserIdsCount
+						? 'circle'
+						: appearNote.visibility
+				}`,
+				{ localOnly: appearNote.localOnly },
+			]"
+		>
 			<div class="avatar-container">
 				<MkAvatar class="avatar" :user="appearNote.user" />
 				<div
@@ -28,17 +41,18 @@
 						:parentId="appearNote.parentId"
 						:conversation="conversation"
 						@focusfooter="footerEl.focus()"
-						@changeShowContent="(v) => showContent = v"
+						@changeShowContent="(v) => (showContent = v)"
 					/>
 					<div v-if="info" class="translation">
 						<MkLoading v-if="!info.ready" mini />
 						<div v-else class="translated">
-							<b
-								>{{ info.title
-								}}
-							</b>
+							<b>{{ info.title }} </b>
 							<span v-if="info.copy"> · </span>
-							<a v-if="info.copy" @click.stop="copyToClipboard(info.copy)">{{ i18n.ts.copy }}</a>
+							<a
+								v-if="info.copy"
+								@click.stop="copyToClipboard(info.copy)"
+								>{{ i18n.ts.copy }}</a
+							>
 							<Mfm
 								v-if="info.mfm"
 								:text="info.text"
@@ -47,9 +61,15 @@
 								:custom-emojis="appearNote.emojis"
 							/>
 							<div
-								style="margin-top: 0.5em; white-space: pre-wrap; overflow-wrap: break-word;"
+								style="
+									margin-top: 0.5em;
+									white-space: pre-wrap;
+									overflow-wrap: break-word;
+								"
 								v-else
-							>{{ info.text }}</div>
+							>
+								{{ info.text }}
+							</div>
 						</div>
 					</div>
 					<div v-if="translating || translation" class="translation">
@@ -124,7 +144,11 @@
 						ref="reactButton"
 						v-tooltip.noDelay.bottom="i18n.ts.reaction"
 						class="button _button"
-						:class="{unsupported: appearNote.user.instance?.maxReactionsPerAccount === 0}"
+						:class="{
+							unsupported:
+								appearNote.user.instance
+									?.maxReactionsPerAccount === 0,
+						}"
 						@click="react()"
 					>
 						<i class="ph-smiley ph-bold ph-lg"></i>
@@ -461,7 +485,7 @@ function noteClick(e) {
 					&.reacted {
 						color: var(--accent);
 					}
-					
+
 					> .unsupported {
 						opacity: 0.15 !important;
 					}

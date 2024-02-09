@@ -16,11 +16,7 @@
 				:modules="[Virtual]"
 				:space-between="20"
 				:virtual="true"
-				:allow-touch-move="
-					!(
-						!defaultStore.state.swipeOnDesktop
-					)
-				"
+				:allow-touch-move="!!defaultStore.state.swipeOnDesktop"
 				@swiper="setSwiperRef"
 				@slide-change="onSlideChange"
 			>
@@ -62,10 +58,18 @@
 					/>
 				</swiper-slide>
 				<swiper-slide>
-					<XNotes key="mentions" v-if="tab === 'mentions'" :pagination="mentionsPagination" />
+					<XNotes
+						key="mentions"
+						v-if="tab === 'mentions'"
+						:pagination="mentionsPagination"
+					/>
 				</swiper-slide>
 				<swiper-slide>
-					<XNotes key="directNotes" v-if="tab === 'directNotes'" :pagination="directNotesPagination" />
+					<XNotes
+						key="directNotes"
+						v-if="tab === 'directNotes'"
+						:pagination="directNotesPagination"
+					/>
 				</swiper-slide>
 			</swiper>
 		</MkSpacer>
@@ -87,7 +91,9 @@ import { defaultStore } from "@/store";
 import "swiper/scss";
 import "swiper/scss/virtual";
 
-const tabs = defaultStore.state.enableAntennaTab ?  ["all", "unread", "antenna" , "mentions", "directNotes"] : ["all", "unread", "mentions", "directNotes"];
+const tabs = defaultStore.state.enableAntennaTab
+	? ["all", "unread", "antenna", "mentions", "directNotes"]
+	: ["all", "unread", "mentions", "directNotes"];
 let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
@@ -165,33 +171,37 @@ const headerActions = $computed(() =>
 	].filter((x) => x !== undefined)
 );
 
-const headerTabs = $computed(() => [
-	{
-		key: "all",
-		title: i18n.ts.all,
-		icon: "ph-bell ph-bold ph-lg",
-	},
-	{
-		key: "unread",
-		title: i18n.ts.unread,
-		icon: "ph-circle-wavy-warning ph-bold ph-lg",
-	},
-	defaultStore.state.enableAntennaTab ? {
-		key: "antenna",
-		title: i18n.ts.antennas,
-		icon: "ph-flying-saucer ph-bold ph-lg",
-	} : undefined,
-	{
-		key: "mentions",
-		title: i18n.ts.mentions,
-		icon: "ph-at ph-bold ph-lg",
-	},
-	{
-		key: "directNotes",
-		title: i18n.ts.directNotes,
-		icon: "ph-envelope-simple-open ph-bold ph-lg",
-	},
-].filter(x => x !== undefined));
+const headerTabs = $computed(() =>
+	[
+		{
+			key: "all",
+			title: i18n.ts.all,
+			icon: "ph-bell ph-bold ph-lg",
+		},
+		{
+			key: "unread",
+			title: i18n.ts.unread,
+			icon: "ph-circle-wavy-warning ph-bold ph-lg",
+		},
+		defaultStore.state.enableAntennaTab
+			? {
+					key: "antenna",
+					title: i18n.ts.antennas,
+					icon: "ph-flying-saucer ph-bold ph-lg",
+			  }
+			: undefined,
+		{
+			key: "mentions",
+			title: i18n.ts.mentions,
+			icon: "ph-at ph-bold ph-lg",
+		},
+		{
+			key: "directNotes",
+			title: i18n.ts.directNotes,
+			icon: "ph-envelope-simple-open ph-bold ph-lg",
+		},
+	].filter((x) => x !== undefined)
+);
 
 definePageMetadata(
 	computed(() => ({

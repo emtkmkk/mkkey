@@ -69,7 +69,9 @@
 										class="_button"
 										@click="ignore(req.follower)"
 									>
-										<i class="ph-bell-slash ph-bold ph-lg"></i>
+										<i
+											class="ph-bell-slash ph-bold ph-lg"
+										></i>
 									</button>
 								</div>
 							</div>

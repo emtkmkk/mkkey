@@ -22,9 +22,20 @@
 			<i class="ph-quotes ph-bold ph-lg"></i>
 		</MkA>
 		<Mfm
-		  v-if="cwDetermine && note.reply?.user && note.reply.user.id !== note.user.id && !note.cw?.includes(`@`)"
+			v-if="
+				cwDetermine &&
+				note.reply?.user &&
+				note.reply.user.id !== note.user.id &&
+				!note.cw?.includes(`@`)
+			"
 			class="text"
-			:text="`@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : '@mkkey.net'} ` + (note.cw ?? ('★センシティブメディア'))"
+			:text="
+				`@${note.reply.user.username}${
+					note.reply.user.host
+						? `@${note.reply.user.host}`
+						: '@mkkey.net'
+				} ` + (note.cw ?? '★センシティブメディア')
+			"
 			:author="note.user"
 			:i="$i"
 			:custom-emojis="note.emojis"
@@ -32,9 +43,9 @@
 			:note="note"
 		/>
 		<Mfm
-		  v-else-if="cwDetermine"
+			v-else-if="cwDetermine"
 			class="text"
-			:text="(note.cw ?? ('★センシティブメディア'))"
+			:text="note.cw ?? '★センシティブメディア'"
 			:author="note.user"
 			:i="$i"
 			:custom-emojis="note.emojis"
@@ -45,7 +56,14 @@
 	<div class="wrmlmaau">
 		<div
 			class="content"
-			:class="{ collapsed, isLong, showContent: cwView && !showContent, disableAnim: disableMfm, minimumCw: defaultStore.state.noteAllCw, noblur: !cwDetermine }"
+			:class="{
+				collapsed,
+				isLong,
+				showContent: cwView && !showContent,
+				disableAnim: disableMfm,
+				minimumCw: defaultStore.state.noteAllCw,
+				noblur: !cwDetermine,
+			}"
 		>
 			<XCwButton
 				ref="cwButton"
@@ -61,9 +79,9 @@
 					tabindex: !showContent ? '-1' : null,
 				}"
 			>
-				<span v-if="note.deletedAt" style="opacity: 0.5"
-					>{{ `(${i18n.ts.deleted})${note.text ? ` <${note.text}>` : ""}` }}</span
-				>
+				<span v-if="note.deletedAt" style="opacity: 0.5">{{
+					`(${i18n.ts.deleted})${note.text ? ` <${note.text}>` : ""}`
+				}}</span>
 				<template v-if="!cwView">
 					<MkA
 						v-if="!detailed && note.replyId"
@@ -88,8 +106,23 @@
 					</MkA>
 				</template>
 				<Mfm
-					v-if="note.text && !note.cw && !note.deletedAt && note.reply?.user && note.reply.user.id !== note.user.id && !note.text?.includes(`@`)"
-					:text="note.deletedAt ? i18n.ts.deletedNote : `@${note.reply.user.username}${note.reply.user.host ? `@${note.reply.user.host}` : '@mkkey.net'} ` + note.text"
+					v-if="
+						note.text &&
+						!note.cw &&
+						!note.deletedAt &&
+						note.reply?.user &&
+						note.reply.user.id !== note.user.id &&
+						!note.text?.includes(`@`)
+					"
+					:text="
+						note.deletedAt
+							? i18n.ts.deletedNote
+							: `@${note.reply.user.username}${
+									note.reply.user.host
+										? `@${note.reply.user.host}`
+										: '@mkkey.net'
+							  } ` + note.text
+					"
 					:author="note.user"
 					:i="$i"
 					:custom-emojis="note.emojis"
@@ -192,17 +225,28 @@ const emit = defineEmits<{
 }>();
 
 const cwButton = ref<HTMLElement>();
-const isSensitive = props.note.files && props.note.files.some((file) => file.isSensitive);
-const cwDetermine = props.note.cw || (isSensitive && defaultStore.state.nsfw === "toCW");
+const isSensitive =
+	props.note.files && props.note.files.some((file) => file.isSensitive);
+const cwDetermine =
+	props.note.cw || (isSensitive && defaultStore.state.nsfw === "toCW");
 const cwView = cwDetermine || defaultStore.state.noteAllCw;
 const isLong =
 	!props.detailedView &&
 	!cwView &&
 	props.note.text != null &&
-	(props.note.text.split("\n").length > 9 || props.note.text.length > 500 || (!defaultStore.state.compactGrid && (props.note.files?.length > 4 || props.note.files?.length === 3)));
+	(props.note.text.split("\n").length > 9 ||
+		props.note.text.length > 500 ||
+		(!defaultStore.state.compactGrid &&
+			(props.note.files?.length > 4 || props.note.files?.length === 3)));
 const collapsed = $ref(!cwView && isLong);
 const urls = props.note.text
-	? extractUrlFromMfm(mfm.parse(props.note.text)).filter((url) => props.note.renote?.url !== url && props.note.renote?.uri !== url).slice(0, 5)
+	? extractUrlFromMfm(mfm.parse(props.note.text))
+			.filter(
+				(url) =>
+					props.note.renote?.url !== url &&
+					props.note.renote?.uri !== url
+			)
+			.slice(0, 5)
 	: null;
 
 let showContent = ref(!cwView);
@@ -210,11 +254,14 @@ let showContent = ref(!cwView);
 watch(
 	showContent,
 	(n) => {
-			emit("changeShowContent", n);
-	}, { immediate: true }
+		emit("changeShowContent", n);
+	},
+	{ immediate: true }
 );
 
-const mfms = props.note.text ? extractMfmWithAnimation(mfm.parse(props.note.text)) : null;
+const mfms = props.note.text
+	? extractMfmWithAnimation(mfm.parse(props.note.text))
+	: null;
 
 const hasMfm = $ref(mfms && mfms.length > 0);
 
@@ -416,7 +463,7 @@ function focusFooter(ev) {
 	> :deep(button) {
 		margin-top: 10px;
 		margin-left: 0;
-		margin-right: .4rem;
+		margin-right: 0.4rem;
 	}
 }
 </style>

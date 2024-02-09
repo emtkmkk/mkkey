@@ -15,11 +15,7 @@
 				:modules="[Virtual]"
 				:space-between="20"
 				:virtual="true"
-				:allow-touch-move="
-					!(
-						!defaultStore.state.swipeOnDesktop
-					)
-				"
+				:allow-touch-move="!!defaultStore.state.swipeOnDesktop"
 				@swiper="setSwiperRef"
 				@slide-change="onSlideChange"
 			>
@@ -83,12 +79,14 @@ function post() {
 	});
 }
 
-const headerActions = $computed(() => [{
+const headerActions = $computed(() => [
+	{
 		icon: "ph-note-pencil ph-bold ph-lg",
 		text: i18n.ts.postForm,
 		iconOnly: true,
 		handler: post,
-	}]);
+	},
+]);
 
 const headerTabs = $computed(() => [
 	{

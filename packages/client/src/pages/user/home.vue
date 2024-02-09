@@ -40,15 +40,15 @@
 										:original="true"
 									/>
 									<div>
-									<span
-										v-if="
-											$i &&
-											$i.id != user.id &&
-											user.isFollowed
-										"
-										class="followed"
-										>{{ i18n.ts.followsYou }}</span
-									>
+										<span
+											v-if="
+												$i &&
+												$i.id != user.id &&
+												user.isFollowed
+											"
+											class="followed"
+											>{{ i18n.ts.followsYou }}</span
+										>
 									</div>
 								</div>
 								<div class="bottom">
@@ -56,7 +56,7 @@
 										><MkAcct :user="user" :detail="true"
 									/></span>
 									<span
-									    v-for="badge in mkBadge"
+										v-for="badge in mkBadge"
 										:key="'badge-' + badge.key"
 										style="badge"
 										:title="badge.name"
@@ -64,24 +64,23 @@
 										><MkEmoji
 											class="emoji"
 											:emoji="badge.emoji"
-											style="height: 1.3em; pointer-events: none;"
+											style="
+												height: 1.3em;
+												pointer-events: none;
+											"
 										></MkEmoji
 									></span>
 									<span
 										v-if="user.isAdmin"
 										:title="i18n.ts.admin"
 										style="color: var(--badge)"
-										><i
-											class="ph-wrench ph-fill ph-lg"
-										></i
+										><i class="ph-wrench ph-fill ph-lg"></i
 									></span>
 									<span
 										v-if="!user.isAdmin && user.isModerator"
 										:title="i18n.ts.moderator"
 										style="color: var(--badge)"
-										><i
-											class="ph-wrench ph-bold"
-										></i
+										><i class="ph-wrench ph-bold"></i
 									></span>
 									<span
 										v-if="user.isLocked"
@@ -112,15 +111,15 @@
 									:original="true"
 								/>
 								<div>
-								<span
-									v-if="
-										$i &&
-										$i.id != user.id &&
-										user.isFollowed
-									"
-									class="followed"
-									>{{ i18n.ts.followsYou }}</span
-								>
+									<span
+										v-if="
+											$i &&
+											$i.id != user.id &&
+											user.isFollowed
+										"
+										class="followed"
+										>{{ i18n.ts.followsYou }}</span
+									>
 								</div>
 							</div>
 							<div class="bottom">
@@ -136,16 +135,17 @@
 									><MkEmoji
 										class="emoji"
 										:emoji="badge.emoji"
-										style="height: 1.3em; pointer-events: none;"
+										style="
+											height: 1.3em;
+											pointer-events: none;
+										"
 									></MkEmoji
 								></span>
 								<span
 									v-if="user.isAdmin"
 									:title="i18n.ts.admin"
 									style="color: var(--badge)"
-									><i
-										class="ph-wrench ph-fill ph-lg"
-									></i
+									><i class="ph-wrench ph-fill ph-lg"></i
 								></span>
 								<span
 									v-if="!user.isAdmin && user.isModerator"
@@ -166,7 +166,10 @@
 						<div class="follow-container">
 							<div class="actions">
 								<MkFollowButton
-									v-if="$i == null || ($i != null && $i.id != user.id)"
+									v-if="
+										$i == null ||
+										($i != null && $i.id != user.id)
+									"
 									:user="user"
 									@refresh="emit('refresh')"
 									:inline="true"
@@ -185,10 +188,12 @@
 						<div class="description">
 							<div class="role">
 								<span class="state">
-									<span v-if="user.isAdmin" class="admin"
-										>{{ i18n.ts.admin }}</span
-									>
-									<span v-if="!user.isAdmin && user.isModerator" class="moderator"
+									<span v-if="user.isAdmin" class="admin">{{
+										i18n.ts.admin
+									}}</span>
+									<span
+										v-if="!user.isAdmin && user.isModerator"
+										class="moderator"
 										>{{ i18n.ts.moderator }}</span
 									>
 								</span>
@@ -205,7 +210,15 @@
 								{{ i18n.ts.noAccountDescription }}
 							</p>
 						</div>
-						<div v-if=" $i || user.location || birthday || user.host == null" class="fields system">
+						<div
+							v-if="
+								$i ||
+								user.location ||
+								birthday ||
+								user.host == null
+							"
+							class="fields system"
+						>
 							<dl v-if="user.location" class="field">
 								<dt class="name">
 									<i
@@ -226,26 +239,45 @@
 								</dt>
 								<dd class="value">
 									{{
-										(birthday.substring(0, 4) == "0000" || birthday.substring(0, 4) == "9999" || birthday.substring(0, 4) == "4000"
+										(birthday.substring(0, 4) == "0000" ||
+										birthday.substring(0, 4) == "9999" ||
+										birthday.substring(0, 4) == "4000"
 											? birthday
-											.replaceAll("-0","-")
-											.replace("-", "/")
-											.replace("-", "/").substring(5)
+													.replaceAll("-0", "-")
+													.replace("-", "/")
+													.replace("-", "/")
+													.substring(5)
 											: birthday
-											.replaceAll("-0","-")
-											.replace("-", "/")
-											.replace("-", "/")) + (!props.user.birthday || props.user.username === "eroflash" || [":nobuyori_hpb:"].includes(props.user.originalname || props.user.name) ? "?" : "")
+													.replaceAll("-0", "-")
+													.replace("-", "/")
+													.replace("-", "/")) +
+										(!props.user.birthday ||
+										props.user.username === "eroflash" ||
+										[":nobuyori_hpb:"].includes(
+											props.user.originalname ||
+												props.user.name
+										)
+											? "?"
+											: "")
 									}}
 									{{
 										nextBirthday === 0
 											? `(${i18n.ts.birthdayToday})`
-											: birthday.substring(0, 4) != "0000"
-											&& birthday.substring(0, 4) != "9999"
-											&& birthday.substring(0, 4) != "4000"
-											&& age >= 6 && age <= 122
-											&& nextBirthday > 9
-												? `(${i18n.t("yearsOld", { age: age })})`
-												: `(${i18n.t("nextBirthday", { nextBirthday: nextBirthday })})`
+											: birthday.substring(0, 4) !=
+													"0000" &&
+											  birthday.substring(0, 4) !=
+													"9999" &&
+											  birthday.substring(0, 4) !=
+													"4000" &&
+											  age >= 6 &&
+											  age <= 122 &&
+											  nextBirthday > 9
+											? `(${i18n.t("yearsOld", {
+													age: age,
+											  })})`
+											: `(${i18n.t("nextBirthday", {
+													nextBirthday: nextBirthday,
+											  })})`
 									}}
 								</dd>
 							</dl>
@@ -257,26 +289,40 @@
 									{{ i18n.ts.registeredDate }}
 								</dt>
 								<dd class="value">
-									<MkTime :time="user.createdAt" mode="detail-dateOnly" />
+									<MkTime
+										:time="user.createdAt"
+										mode="detail-dateOnly"
+									/>
 								</dd>
 							</dl>
-							<dl v-if="($i) || (user.host == null && !user.isBot)" class="field">
+							<dl
+								v-if="$i || (user.host == null && !user.isBot)"
+								class="field"
+							>
 								<dt class="name">
 									<i
 										class="ph-lightning ph-bold ph-lg ph-fw ph-lg"
 									></i>
 									{{ i18n.ts.power }}
 								</dt>
-								<dd class="value" >
+								<dd class="value">
 									<Mfm
 										v-if="stats.powerRank?.startsWith('⭐')"
-										:text="'$[rainbow.speed=2s ⭐]' + stats.powerRank.slice(1) + ' '"
+										:text="
+											'$[rainbow.speed=2s ⭐]' +
+											stats.powerRank.slice(1) +
+											' '
+										"
 										:is-note="false"
 										:author="user"
 										:i="$i"
 									/>
 									<template v-else>
-										{{ stats.powerRank ? `${stats.powerRank} ` : "" }}
+										{{
+											stats.powerRank
+												? `${stats.powerRank} `
+												: ""
+										}}
 									</template>
 									<MkNumber :value="stats.power" />
 								</dd>
@@ -299,7 +345,14 @@
 								</dt>
 								<dd class="value">
 									<Mfm
-										:text="field.value.includes('skeb') ? field.value : field.value.replace(/^https?:\/\/([\w.-]+?)\/@([\w]+)$/,'@$2@$1')"
+										:text="
+											field.value.includes('skeb')
+												? field.value
+												: field.value.replace(
+														/^https?:\/\/([\w.-]+?)\/@([\w]+)$/,
+														'@$2@$1'
+												  )
+										"
 										:author="user"
 										:i="$i"
 										:is-note="false"
@@ -340,39 +393,86 @@
 
 				<div class="contents">
 					<template v-if="narrow">
-						<XPhotos v-if="!defaultStore.state.enableDataSaverMode" :key="user.id" :user="user" />
-						<XActivity
-							v-if="!$store.state.hiddenActivityChart && ((!user.host && Date.now() - new Date(user.createdAt).valueOf() > (30 * 24 * 60 * 60 * 1000)) || stats?.elapsedDays)"
+						<XPhotos
+							v-if="!defaultStore.state.enableDataSaverMode"
 							:key="user.id"
 							:user="user"
-							:limit="stats.elapsedDays && stats.elapsedDays < 30 ? Math.ceil(stats.elapsedDays) : 30"
-							:suffix="stats?.averagePostCount ? `( ${stats.averagePostCount.toFixed(1)} /日 )` : ''"
+						/>
+						<XActivity
+							v-if="
+								!$store.state.hiddenActivityChart &&
+								((!user.host &&
+									Date.now() -
+										new Date(user.createdAt).valueOf() >
+										30 * 24 * 60 * 60 * 1000) ||
+									stats?.elapsedDays)
+							"
+							:key="user.id"
+							:user="user"
+							:limit="
+								stats.elapsedDays && stats.elapsedDays < 30
+									? Math.ceil(stats.elapsedDays)
+									: 30
+							"
+							:suffix="
+								stats?.averagePostCount
+									? `( ${stats.averagePostCount.toFixed(
+											1
+									  )} /日 )`
+									: ''
+							"
 							style="margin-top: var(--margin)"
 						/>
 					</template>
-					<div v-if="user.pinnedNotes.length > 0 && narrow" class="_gap">
-							<template v-if="($i == null || ($i.id != user.id && !user.isFollowing)) || pinFull">
-									<XNote
-											v-for="note in user.pinnedNotes"
-											:key="note.id"
-											class="note _block"
-											:note="note"
-											:pinned="true"
-									/>
-							</template>
-							<template v-else>
-									<XNote
-											v-for="note in visiblePinnedNotes"
-											:key="note.id"
-											class="note _block"
-											:note="note"
-											:pinned="true"
-									/>
-									<MkButton style="text-align: center; margin: auto; margin-top: calc(var(--margin) / 2);" v-if="user.pinnedNotes.length > 2 && !pinFull" @click="pinFull = true">{{ i18n.t("moreShowPin", { count: user.pinnedNotes.length - 2 }) }}</MkButton>
-							</template>
-						</div>
+					<div
+						v-if="user.pinnedNotes.length > 0 && narrow"
+						class="_gap"
+					>
+						<template
+							v-if="
+								$i == null ||
+								($i.id != user.id && !user.isFollowing) ||
+								pinFull
+							"
+						>
+							<XNote
+								v-for="note in user.pinnedNotes"
+								:key="note.id"
+								class="note _block"
+								:note="note"
+								:pinned="true"
+							/>
+						</template>
+						<template v-else>
+							<XNote
+								v-for="note in visiblePinnedNotes"
+								:key="note.id"
+								class="note _block"
+								:note="note"
+								:pinned="true"
+							/>
+							<MkButton
+								style="
+									text-align: center;
+									margin: auto;
+									margin-top: calc(var(--margin) / 2);
+								"
+								v-if="user.pinnedNotes.length > 2 && !pinFull"
+								@click="pinFull = true"
+								>{{
+									i18n.t("moreShowPin", {
+										count: user.pinnedNotes.length - 2,
+									})
+								}}</MkButton
+							>
+						</template>
+					</div>
 					<MkInfo
-						v-if="user.pinnedNotes.length === 0 && $i && $i.id === user.id"
+						v-if="
+							user.pinnedNotes.length === 0 &&
+							$i &&
+							$i.id === user.id
+						"
 						style="margin: 12px 0"
 						>{{ i18n.ts.userPagePinTip }}</MkInfo
 					>
@@ -382,12 +482,22 @@
 				</div>
 			</div>
 			<div v-if="!narrow" class="sub">
-				<XPhotos v-if="!defaultStore.state.enableDataSaverMode" :key="user.id" :user="user" />
-				<XActivity
-					v-if="!$store.state.hiddenActivityChart && stats?.elapsedDays"
+				<XPhotos
+					v-if="!defaultStore.state.enableDataSaverMode"
 					:key="user.id"
 					:user="user"
-					:limit="stats.elapsedDays < 30 ? Math.ceil(stats.elapsedDays) : 30"
+				/>
+				<XActivity
+					v-if="
+						!$store.state.hiddenActivityChart && stats?.elapsedDays
+					"
+					:key="user.id"
+					:user="user"
+					:limit="
+						stats.elapsedDays < 30
+							? Math.ceil(stats.elapsedDays)
+							: 30
+					"
 					style="margin-top: var(--margin)"
 				/>
 				<div v-if="user.pinnedNotes.length > 0" class="_gap">
@@ -449,51 +559,64 @@ let bannerEl = $ref<null | HTMLElement>(null);
 const pinFull = $ref(false);
 const mkBadge = $ref(props.user.badges || []);
 const visiblePinnedNotes = $computed(() => {
-	return pinFull.value ? props.user.pinnedNotes : props.user.pinnedNotes.slice(0, 2);
+	return pinFull.value
+		? props.user.pinnedNotes
+		: props.user.pinnedNotes.slice(0, 2);
 });
 
 const birthday = $computed(() => {
-
-	if (props.user.host){
-		return props.user.birthday
+	if (props.user.host) {
+		return props.user.birthday;
 	}
 
- if (props.user.username === "eroflash" || [":nobuyori_hpb:"].includes(props.user.originalname || props.user.name)) {
-	 let _birthday = props.user.birthday ? new Date(props.user.birthday) : new Date();
-	 _birthday.setMonth(new Date().getMonth());
-	 _birthday.setDate(new Date().getDate())
-	 return `${_birthday.getFullYear()}-${('00' + (_birthday.getMonth() + 1)).slice(-2)}-${('00' + _birthday.getDate()).slice(-2)}`;
- }
+	if (
+		props.user.username === "eroflash" ||
+		[":nobuyori_hpb:"].includes(props.user.originalname || props.user.name)
+	) {
+		let _birthday = props.user.birthday
+			? new Date(props.user.birthday)
+			: new Date();
+		_birthday.setMonth(new Date().getMonth());
+		_birthday.setDate(new Date().getDate());
+		return `${_birthday.getFullYear()}-${(
+			"00" +
+			(_birthday.getMonth() + 1)
+		).slice(-2)}-${("00" + _birthday.getDate()).slice(-2)}`;
+	}
 
-	const regtest = /(\d{1,2})(yo|歳|sai)/.test(props.user.name ?? "") || /(\d{1,2})(yo|歳|sai)/.test(props.user.description ?? "");
+	const regtest =
+		/(\d{1,2})(yo|歳|sai)/.test(props.user.name ?? "") ||
+		/(\d{1,2})(yo|歳|sai)/.test(props.user.description ?? "");
 
-	if (!regtest){
-		return props.user.birthday
+	if (!regtest) {
+		return props.user.birthday;
 	}
 
 	let _birthday;
 
 	const today = new Date();
 
-	if(!props.user.birthday){
+	if (!props.user.birthday) {
 		_birthday = new Date();
 		_birthday.setMonth(_birthday.getMonth() - 6);
 	} else {
 		_birthday = new Date(props.user.birthday);
 	}
 
-	const dyear = (/(\d{1,2})(yo|歳|sai)/.exec(props.user.name ?? "")?.[1]) ?? (/(\d{1,2})(yo|歳|sai)/.exec(props.user.description ?? "")?.[1]);
+	const dyear =
+		/(\d{1,2})(yo|歳|sai)/.exec(props.user.name ?? "")?.[1] ??
+		/(\d{1,2})(yo|歳|sai)/.exec(props.user.description ?? "")?.[1];
 
 	if (dyear == null) return props.user.birthday;
 
-	const dyearint = parseInt(dyear,10);
+	const dyearint = parseInt(dyear, 10);
 
 	if (isNaN(dyearint)) return props.user.birthday;
 
 	_birthday.setFullYear(today.getFullYear() - dyearint);
 
 	const y8date = new Date();
-	y8date.setFullYear(today.getFullYear() - dyearint)
+	y8date.setFullYear(today.getFullYear() - dyearint);
 	y8date.setHours(0);
 	y8date.setMinutes(0);
 	y8date.setSeconds(0);
@@ -501,11 +624,19 @@ const birthday = $computed(() => {
 
 	if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
 
-	return `${_birthday.getFullYear()}-${('00' + (_birthday.getMonth() + 1)).slice(-2)}-${('00' + _birthday.getDate()).slice(-2)}`;
-})
+	return `${_birthday.getFullYear()}-${(
+		"00" +
+		(_birthday.getMonth() + 1)
+	).slice(-2)}-${("00" + _birthday.getDate()).slice(-2)}`;
+});
 
 const style = $computed(() => {
-	if (props.user.bannerUrl == null || (defaultStore.state.enableDataSaverMode && defaultStore.state.dataSaverDisabledBanner)) return {};
+	if (
+		props.user.bannerUrl == null ||
+		(defaultStore.state.enableDataSaverMode &&
+			defaultStore.state.dataSaverDisabledBanner)
+	)
+		return {};
 	return {
 		backgroundImage: `url(${props.user.bannerUrl})`,
 	};
@@ -516,8 +647,7 @@ const age = $computed(() => {
 });
 
 const nextBirthday = $computed(() => {
-
-	const _birthday = new Date(birthday?.replaceAll("-","/"));
+	const _birthday = new Date(birthday?.replaceAll("-", "/"));
 	_birthday.setHours(0);
 
 	const today = new Date();
@@ -529,8 +659,14 @@ const nextBirthday = $computed(() => {
 	_birthday.setFullYear(today.getFullYear());
 
 	return _birthday >= today
-			? Math.floor((_birthday.valueOf() - today.valueOf()) / (24 * 60 * 60 * 1000))
-			: Math.floor((_birthday.setFullYear(_birthday.getFullYear() + 1) - today.valueOf()) / (24 * 60 * 60 * 1000));
+		? Math.floor(
+				(_birthday.valueOf() - today.valueOf()) / (24 * 60 * 60 * 1000)
+		  )
+		: Math.floor(
+				(_birthday.setFullYear(_birthday.getFullYear() + 1) -
+					today.valueOf()) /
+					(24 * 60 * 60 * 1000)
+		  );
 });
 
 const timeForThem = $computed(() => {

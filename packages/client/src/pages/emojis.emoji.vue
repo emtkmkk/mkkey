@@ -13,7 +13,7 @@ import {} from "vue";
 import * as os from "@/os";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
 import { i18n } from "@/i18n";
-import MkCustomEmojiDetailedDialog from '@/components/MkCustomEmojiDetailedDialog.vue';
+import MkCustomEmojiDetailedDialog from "@/components/MkCustomEmojiDetailedDialog.vue";
 import * as config from "@/config";
 
 const props = defineProps<{
@@ -39,14 +39,19 @@ async function menu(ev) {
 				text: i18n.ts.info,
 				icon: "ph-info ph-bold ph-lg",
 				action: () => {
-					os.apiGet('emoji', {
+					os.apiGet("emoji", {
 						name: props.emoji.name,
 					}).then((res) => {
-						os.popup(MkCustomEmojiDetailedDialog, {
-							emoji: res
-						}, {
-							anchor: ev.target,
-						}, "closed");
+						os.popup(
+							MkCustomEmojiDetailedDialog,
+							{
+								emoji: res,
+							},
+							{
+								anchor: ev.target,
+							},
+							"closed"
+						);
 					});
 				},
 			},

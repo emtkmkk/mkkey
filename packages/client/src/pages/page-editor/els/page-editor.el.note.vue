@@ -9,7 +9,8 @@
 			<MkInput v-model="id">
 				<template #label>{{ i18n.ts._pages.blocks._note.id }}</template>
 				<template #caption>{{
-					props.value.note || i18n.ts._pages.blocks._note.idDescription
+					props.value.note ||
+					i18n.ts._pages.blocks._note.idDescription
 				}}</template>
 			</MkInput>
 			<MkSwitch v-model="value.detailed"
@@ -62,15 +63,25 @@ let note: any = ref(null);
 watch(
 	id,
 	async (newId) => {
-		if (newId && (newId.startsWith("http://") || newId.startsWith("https://"))) {
-			props.value.note = (newId.endsWith("/") ? newId.slice(0, -1) : newId)
+		if (
+			newId &&
+			(newId.startsWith("http://") || newId.startsWith("https://"))
+		) {
+			props.value.note = (
+				newId.endsWith("/") ? newId.slice(0, -1) : newId
+			)
 				.split("/")
 				.pop();
 		} else {
 			props.value.note = newId;
 		}
 
-		note = unref(props.value.note)?.length === 10 ? await os.api("notes/show", { noteId: unref(props.value.note) }) : undefined;
+		note =
+			unref(props.value.note)?.length === 10
+				? await os.api("notes/show", {
+						noteId: unref(props.value.note),
+				  })
+				: undefined;
 	},
 	{
 		immediate: true,

@@ -17,7 +17,11 @@
 				><span class="acct _monospace">@{{ acct(user) }}</span></span
 			>
 		</div>
-		<MkMiniChart v-if="withChart !== false && chartValues" class="chart" :src="chartValues" />
+		<MkMiniChart
+			v-if="withChart !== false && chartValues"
+			class="chart"
+			:src="chartValues"
+		/>
 	</div>
 </template>
 

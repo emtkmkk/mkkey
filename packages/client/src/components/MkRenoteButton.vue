@@ -84,72 +84,86 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 			textStyle: "font-weight: bold",
 			icon: "ph-repeat ph-bold ph-lg",
 			danger: false,
-			action: () => {doRenote(
-				{
-					renoteId: props.note.id,
-					visibility: "public",
-					localOnly: false,
-				},
-				ev
-			)},
+			action: () => {
+				doRenote(
+					{
+						renoteId: props.note.id,
+						visibility: "public",
+						localOnly: false,
+					},
+					ev
+				);
+			},
 		});
 	}
 
-	if (["public", "home"].includes(props.note.visibility) && !props.note.localOnly) {
+	if (
+		["public", "home"].includes(props.note.visibility) &&
+		!props.note.localOnly
+	) {
 		buttonActions.push({
 			text: i18n.ts.renoteAsUnlisted,
 			icons: ["ph-repeat ph-bold ph-lg", "ph-house ph-bold ph-lg"],
 			danger: false,
-			action: () => {doRenote(
-				{
-					renoteId: props.note.id,
-					visibility: "home",
-					localOnly: false,
-				},
-				ev
-			)},
+			action: () => {
+				doRenote(
+					{
+						renoteId: props.note.id,
+						visibility: "home",
+						localOnly: false,
+					},
+					ev
+				);
+			},
 		});
 	}
 
 	if (["public"].includes(props.note.visibility)) {
 		buttonActions.push({
-			text: props.note.localOnly && props.note.userId !== $i.id ? i18n.ts.renoteToLFLF : i18n.ts.renoteToLocalFollowers,
-			icons: [
-				"ph-repeat ph-bold ph-lg",
-				"ph-hand-heart ph-bold ph-lg"
-			],
+			text:
+				props.note.localOnly && props.note.userId !== $i.id
+					? i18n.ts.renoteToLFLF
+					: i18n.ts.renoteToLocalFollowers,
+			icons: ["ph-repeat ph-bold ph-lg", "ph-hand-heart ph-bold ph-lg"],
 			danger: false,
-			action: () => {doRenote(
-				{
-					renoteId: props.note.id,
-					visibility: "public",
-					localOnly: true,
-				},
-				ev
-			)},
+			action: () => {
+				doRenote(
+					{
+						renoteId: props.note.id,
+						visibility: "public",
+						localOnly: true,
+					},
+					ev
+				);
+			},
 		});
 	}
-	
-	if (["public", "home"].includes(props.note.visibility) && props.note.localOnly) {
+
+	if (
+		["public", "home"].includes(props.note.visibility) &&
+		props.note.localOnly
+	) {
 		buttonActions.push({
 			text: i18n.ts.renoteToLFLFHome,
 			icons: [
 				"ph-repeat ph-bold ph-lg",
 				"ph-hand-heart ph-bold ph-lg",
-				"ph-house ph-bold ph-lg"
+				"ph-house ph-bold ph-lg",
 			],
 			danger: false,
-			action: () => {doRenote(
-				{
-					renoteId: props.note.id,
-					visibility: "home",
-					localOnly: true,
-				},
-				ev
-			)},
+			action: () => {
+				doRenote(
+					{
+						renoteId: props.note.id,
+						visibility: "home",
+						localOnly: true,
+					},
+					ev
+				);
+			},
 		});
 	}
-	
+
 	if (props.note.visibility === "specified") {
 		buttonActions.push({
 			text: i18n.ts.renoteToRecipients,
@@ -158,34 +172,44 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 				"ph-envelope-simple-open ph-bold ph-lg",
 			],
 			danger: false,
-			action: () => {doRenote(
-				{
-					renoteId: props.note.id,
-					visibility: "specified",
-					visibleUserIds: props.note.visibleUserIds,
-				},
-				ev
-			)},
+			action: () => {
+				doRenote(
+					{
+						renoteId: props.note.id,
+						visibility: "specified",
+						visibleUserIds: props.note.visibleUserIds,
+					},
+					ev
+				);
+			},
 		});
 	} else {
 		buttonActions.push({
-			text: props.note.localOnly && props.note.userId !== $i.id ? i18n.ts.renoteToLFLFFollowers : i18n.ts.renoteToFollowers,
-			icons: props.note.localOnly && props.note.userId !== $i.id ? [
-				"ph-repeat ph-bold ph-lg",
-				"ph-hand-heart ph-bold ph-lg",
-				"ph-lock-simple ph-bold ph-lg",
-			] : [
-				"ph-repeat ph-bold ph-lg",
-				"ph-lock-simple ph-bold ph-lg",
-			],
+			text:
+				props.note.localOnly && props.note.userId !== $i.id
+					? i18n.ts.renoteToLFLFFollowers
+					: i18n.ts.renoteToFollowers,
+			icons:
+				props.note.localOnly && props.note.userId !== $i.id
+					? [
+							"ph-repeat ph-bold ph-lg",
+							"ph-hand-heart ph-bold ph-lg",
+							"ph-lock-simple ph-bold ph-lg",
+					  ]
+					: [
+							"ph-repeat ph-bold ph-lg",
+							"ph-lock-simple ph-bold ph-lg",
+					  ],
 			danger: false,
-			action: () => {doRenote(
-				{
-					renoteId: props.note.id,
-					visibility: "followers",
-				},
-				ev
-			)},
+			action: () => {
+				doRenote(
+					{
+						renoteId: props.note.id,
+						visibility: "followers",
+					},
+					ev
+				);
+			},
 		});
 	}
 
@@ -229,10 +253,7 @@ async function doRenote(data, ev?: MouseEvent) {
 	}
 	const el =
 		ev &&
-		((ev.currentTarget ?? ev.target) as
-			| HTMLElement
-			| null
-			| undefined);
+		((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);
 	if (el) {
 		const rect = el.getBoundingClientRect();
 		const x = rect.left + el.offsetWidth / 2;
@@ -265,7 +286,6 @@ async function doRenote(data, ev?: MouseEvent) {
 		margin-left: 8px;
 		opacity: 0.7;
 	}
-	
 }
 .success {
 	color: var(--success);

@@ -11,51 +11,110 @@
 			<FormSelect v-model="doContextMenu" class="_formBlock">
 				<template #label>{{ i18n.ts.doContextMenu }}</template>
 				<option value="contextMenu">{{ i18n.ts.contextMenu }}</option>
-				<option value="reactionPicker">{{ i18n.ts.reactionPicker }}</option>
+				<option value="reactionPicker">
+					{{ i18n.ts.reactionPicker }}
+				</option>
 				<option value="doNothing">{{ i18n.ts.doNothing }}</option>
 			</FormSelect>
-			<FormSwitch v-model="alwaysPostButton" class="_formBlock">{{
-				i18n.ts.alwaysPostButton
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="showDetailNoteClick" class="_formBlock">{{
-				i18n.ts.showDetailNoteClick
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="noteReactionMenu" class="_formBlock">{{
-				i18n.ts.noteReactionMenu
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="enableDataSaverMode" :disabled="autoSwitchDataSaver" class="_formBlock">{{
-				i18n.ts.dataSaver
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="autoSwitchDataSaver" :disabled="!supportAutoDataSaver" class="_formBlock">{{
-				i18n.ts.autoSwitchDataSaver
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="enableDataSaverMode || autoSwitchDataSaver" v-model="dataSaverDisabledBanner" class="_formBlock">{{
-				i18n.ts.dataSaverDisabledBanner
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="enabledAirReply" class="_formBlock">{{
-				i18n.ts.enabledAirReply
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="hiddenActivityChart" class="_formBlock">{{
-				i18n.ts.hiddenActivityChart
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="alwaysPostButton" class="_formBlock"
+				>{{ i18n.ts.alwaysPostButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="showDetailNoteClick" class="_formBlock"
+				>{{ i18n.ts.showDetailNoteClick
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="noteReactionMenu" class="_formBlock"
+				>{{ i18n.ts.noteReactionMenu
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-model="enableDataSaverMode"
+				:disabled="autoSwitchDataSaver"
+				class="_formBlock"
+				>{{ i18n.ts.dataSaver
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-model="autoSwitchDataSaver"
+				:disabled="!supportAutoDataSaver"
+				class="_formBlock"
+				>{{ i18n.ts.autoSwitchDataSaver
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-if="enableDataSaverMode || autoSwitchDataSaver"
+				v-model="dataSaverDisabledBanner"
+				class="_formBlock"
+				>{{ i18n.ts.dataSaverDisabledBanner
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="enabledAirReply" class="_formBlock"
+				>{{ i18n.ts.enabledAirReply
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="hiddenActivityChart" class="_formBlock"
+				>{{ i18n.ts.hiddenActivityChart
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="disablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript
 			}}</FormSwitch>
-			<FormSwitch v-model="longLoading" class="_formBlock">{{
-				i18n.ts.longLoading
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="copyPostRemoteEmojiCode" class="_formBlock">{{
-				i18n.ts.copyPostRemoteEmojiCode
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="developer" v-model="developerRenote" class="_formBlock">{{
-				i18n.ts.developerRenote
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="developer" v-model="developerQuote" class="_formBlock">{{
-				i18n.ts.developerQuote
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="developer" v-model="developerNoteMenu" class="_formBlock">{{
-				i18n.ts.developerNoteMenu
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="longLoading" class="_formBlock"
+				>{{ i18n.ts.longLoading
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="copyPostRemoteEmojiCode" class="_formBlock"
+				>{{ i18n.ts.copyPostRemoteEmojiCode
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-if="developer"
+				v-model="developerRenote"
+				class="_formBlock"
+				>{{ i18n.ts.developerRenote
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-if="developer"
+				v-model="developerQuote"
+				class="_formBlock"
+				>{{ i18n.ts.developerQuote
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-if="developer"
+				v-model="developerNoteMenu"
+				class="_formBlock"
+				>{{ i18n.ts.developerNoteMenu
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 
 			<FormSelect v-model="serverDisconnectedBehavior" class="_formBlock">
 				<template #label>{{ i18n.ts.whenServerDisconnected }}</template>
@@ -95,22 +154,55 @@
 				</option>
 			</FormRadios>
 
-				
-			<FormSelect v-if="!isMobile" v-model="remoteEmojisFetch" class="_formBlock">
-				<template #label>{{ i18n.ts.remoteEmojisFetch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
-				<option value="always">{{ i18n.ts._remoteEmojisFetchForPc.always }}</option>
-				<option value="all">{{ i18n.ts._remoteEmojisFetchForPc.all }}</option>
-				<option value="plus">{{ i18n.ts._remoteEmojisFetchForPc.plus }}</option>
-				<option value="keep">{{ i18n.ts._remoteEmojisFetchForPc.keep }}</option>
-				<option value="none">{{ i18n.ts._remoteEmojisFetchForPc.none }}</option>
+			<FormSelect
+				v-if="!isMobile"
+				v-model="remoteEmojisFetch"
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.remoteEmojisFetch
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
+				<option value="always">
+					{{ i18n.ts._remoteEmojisFetchForPc.always }}
+				</option>
+				<option value="all">
+					{{ i18n.ts._remoteEmojisFetchForPc.all }}
+				</option>
+				<option value="plus">
+					{{ i18n.ts._remoteEmojisFetchForPc.plus }}
+				</option>
+				<option value="keep">
+					{{ i18n.ts._remoteEmojisFetchForPc.keep }}
+				</option>
+				<option value="none">
+					{{ i18n.ts._remoteEmojisFetchForPc.none }}
+				</option>
 			</FormSelect>
 			<FormSelect v-else v-model="remoteEmojisFetch" class="_formBlock">
-				<template #label>{{ i18n.ts.remoteEmojisFetch }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
-				<option value="all">{{ i18n.ts._remoteEmojisFetch.all }}</option>
-				<option value="plus">{{ i18n.ts._remoteEmojisFetch.plus }}</option>
-				<option value="keep">{{ i18n.ts._remoteEmojisFetch.keep }}</option>
-				<option value="none">{{ i18n.ts._remoteEmojisFetch.none }}</option>
-				<option value="always">{{ i18n.ts._remoteEmojisFetch.always }}</option>
+				<template #label
+					>{{ i18n.ts.remoteEmojisFetch
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
+				<option value="all">
+					{{ i18n.ts._remoteEmojisFetch.all }}
+				</option>
+				<option value="plus">
+					{{ i18n.ts._remoteEmojisFetch.plus }}
+				</option>
+				<option value="keep">
+					{{ i18n.ts._remoteEmojisFetch.keep }}
+				</option>
+				<option value="none">
+					{{ i18n.ts._remoteEmojisFetch.none }}
+				</option>
+				<option value="always">
+					{{ i18n.ts._remoteEmojisFetch.always }}
+				</option>
 			</FormSelect>
 
 			<FormRange
@@ -127,13 +219,22 @@
 				}}</template>
 			</FormRange>
 
-			<FormSwitch v-model="swipeOnDesktop" class="_formBlock">{{
-				i18n.ts.swipeOnDesktop
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="swipeOnDesktop" class="_formBlock"
+				>{{ i18n.ts.swipeOnDesktop
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 
-			<FormSwitch v-model="notTopToSwipeStop" class="_formBlock" :disabled="!swipeOnDesktop">{{
-				i18n.ts.notTopToSwipeStop
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch
+				v-model="notTopToSwipeStop"
+				class="_formBlock"
+				:disabled="!swipeOnDesktop"
+				>{{ i18n.ts.notTopToSwipeStop
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 
 			<FormRange
 				v-model="swipeTouchAngle"
@@ -143,7 +244,12 @@
 				easing
 				class="_formBlock"
 			>
-				<template #label>{{ i18n.ts.swipeTouchAngle }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+				<template #label
+					>{{ i18n.ts.swipeTouchAngle
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
 			</FormRange>
 
 			<FormRange
@@ -154,12 +260,20 @@
 				easing
 				class="_formBlock"
 			>
-				<template #label>{{ i18n.ts.swipeThreshold }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+				<template #label
+					>{{ i18n.ts.swipeThreshold
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
 			</FormRange>
 
-			<FormSwitch v-model="swipeCenteredSlides" class="_formBlock">{{
-				i18n.ts.swipeCenteredSlides
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="swipeCenteredSlides" class="_formBlock"
+				>{{ i18n.ts.swipeCenteredSlides
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 		</FormSection>
 	</div>
 </template>
@@ -182,7 +296,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
-import { isSupportNavigatorConnection } from '@/scripts/datasaver';
+import { isSupportNavigatorConnection } from "@/scripts/datasaver";
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;
@@ -197,9 +311,7 @@ window.addEventListener("resize", () => {
 		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 
-const developer = computed(
-	defaultStore.makeGetterSetter("developer")
-);
+const developer = computed(defaultStore.makeGetterSetter("developer"));
 const showMkkeySettingTips = computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
@@ -235,9 +347,7 @@ const disablePagesScript = computed(
 const numberOfPageCache = computed(
 	defaultStore.makeGetterSetter("numberOfPageCache")
 );
-const doContextMenu = computed(
-	defaultStore.makeGetterSetter("doContextMenu")
-);
+const doContextMenu = computed(defaultStore.makeGetterSetter("doContextMenu"));
 const developerRenote = computed(
 	defaultStore.makeGetterSetter("developerRenote")
 );
@@ -262,9 +372,7 @@ const showDetailNoteClick = $computed(
 const alwaysPostButton = $computed(
 	defaultStore.makeGetterSetter("alwaysPostButton")
 );
-const longLoading = $computed(
-	defaultStore.makeGetterSetter("longLoading")
-);
+const longLoading = $computed(defaultStore.makeGetterSetter("longLoading"));
 const swipeTouchAngle = $computed(
 	defaultStore.makeGetterSetter("swipeTouchAngle")
 );
@@ -281,7 +389,7 @@ const enabledAirReply = computed(
 	defaultStore.makeGetterSetter("enabledAirReply")
 );
 const noteReactionMenu = $computed(
-	defaultStore.makeGetterSetter('noteReactionMenu')
+	defaultStore.makeGetterSetter("noteReactionMenu")
 );
 async function reloadAsk() {
 	const { canceled } = await os.confirm({

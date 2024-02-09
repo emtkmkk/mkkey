@@ -258,7 +258,7 @@ export default defineComponent({
 			}
 
 			> h1 {
-				margin: 0; 
+				margin: 0;
 				padding: 16px;
 				text-shadow: 0 0 8px black;
 

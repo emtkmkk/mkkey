@@ -2,7 +2,13 @@
 	<button
 		v-if="defaultStore.state.favButtonReaction !== 'hidden'"
 		ref="starButton"
-		v-tooltip.noDelay.bottom="defaultStore.state.favButtonReaction === 'favorite' ? i18n.ts.favorite : defaultStore.state.favButtonReaction === 'custom' ? defaultStore.state.favButtonReactionCustom : i18n.ts._gallery.like"
+		v-tooltip.noDelay.bottom="
+			defaultStore.state.favButtonReaction === 'favorite'
+				? i18n.ts.favorite
+				: defaultStore.state.favButtonReaction === 'custom'
+				? defaultStore.state.favButtonReactionCustom
+				: i18n.ts._gallery.like
+		"
 		class="skdfgljsdkf _button"
 		@click="star($event)"
 	>
@@ -35,7 +41,14 @@
 			v-else-if="instance.defaultReaction === '❤️'"
 			class="ph-heart ph-bold ph-lg"
 		></i>
-		<i v-else-if="defaultStore.state.favButtonReaction === 'favorite' && note.isFavorited" class="ph-star ph-bold ph-lg ph-fill" style="color: var(--warn)"></i>
+		<i
+			v-else-if="
+				defaultStore.state.favButtonReaction === 'favorite' &&
+				note.isFavorited
+			"
+			class="ph-star ph-bold ph-lg ph-fill"
+			style="color: var(--warn)"
+		></i>
 		<i v-else class="ph-star ph-bold ph-lg"></i>
 	</button>
 </template>
@@ -66,23 +79,26 @@ async function clip(ev?: MouseEvent): Promise<void> {
 				icon: "ph-plus ph-bold ph-lg",
 				text: i18n.ts.createNew,
 				action: async () => {
-					const { canceled, result } = await os.form(i18n.ts.createNewClip, {
-						name: {
-							type: "string",
-							label: i18n.ts.name,
-						},
-						description: {
-							type: "string",
-							required: false,
-							multiline: true,
-							label: i18n.ts.description,
-						},
-						isPublic: {
-							type: "boolean",
-							label: i18n.ts.public,
-							default: false,
-						},
-					});
+					const { canceled, result } = await os.form(
+						i18n.ts.createNewClip,
+						{
+							name: {
+								type: "string",
+								label: i18n.ts.name,
+							},
+							description: {
+								type: "string",
+								required: false,
+								multiline: true,
+								label: i18n.ts.description,
+							},
+							isPublic: {
+								type: "boolean",
+								label: i18n.ts.public,
+								default: false,
+							},
+						}
+					);
 					if (canceled) return;
 
 					const clip = await os.apiWithDialog("clips/create", result);
@@ -104,12 +120,18 @@ async function clip(ev?: MouseEvent): Promise<void> {
 						}),
 						null,
 						async (err) => {
-							if (err.id === "734806c4-542c-463a-9311-15c512803965") {
+							if (
+								err.id ===
+								"734806c4-542c-463a-9311-15c512803965"
+							) {
 								const confirm = await os.confirm({
 									type: "warning",
-									text: i18n.t("confirmToUnclipAlreadyClippedNote", {
-										name: clip.name,
-									}),
+									text: i18n.t(
+										"confirmToUnclipAlreadyClippedNote",
+										{
+											name: clip.name,
+										}
+									),
 								});
 								if (!confirm.canceled) {
 									os.apiWithDialog("clips/remove-note", {
@@ -123,24 +145,22 @@ async function clip(ev?: MouseEvent): Promise<void> {
 									text: `${err.message}\n${err.id}`,
 								});
 							}
-						},
+						}
 					);
 				},
 			})),
 		],
 		starButton.value,
-		{},
+		{}
 	).then(focus);
 }
-
 
 function star(ev?: MouseEvent): void {
 	pleaseLogin();
 
-	if (defaultStore.state.favButtonReaction === "clip"){
+	if (defaultStore.state.favButtonReaction === "clip") {
 		() => clip(ev);
-	}
-	else if (defaultStore.state.favButtonReaction === "picker") {
+	} else if (defaultStore.state.favButtonReaction === "picker") {
 		pleaseLogin();
 		blur();
 		reactionPicker.show(
@@ -155,35 +175,28 @@ function star(ev?: MouseEvent): void {
 				focus();
 			}
 		);
-	}
-	else if (defaultStore.state.favButtonReaction !== "favorite") {
+	} else if (defaultStore.state.favButtonReaction !== "favorite") {
 		os.api("notes/reactions/create", {
 			noteId: props.note.id,
 			reaction:
 				defaultStore.state.woozyMode === true
 					? "🥴"
 					: defaultStore.state.favButtonReaction === "custom"
-						? defaultStore.state.favButtonReactionCustom
-						: defaultStore.state.favButtonReaction === ""
-							? instance.defaultReaction
-							: defaultStore.state.favButtonReaction,
+					? defaultStore.state.favButtonReactionCustom
+					: defaultStore.state.favButtonReaction === ""
+					? instance.defaultReaction
+					: defaultStore.state.favButtonReaction,
 		});
 	} else {
 		if (props.note.isFavorited) {
-			os.apiWithDialog(
-				"notes/favorites/delete",
-				{
-					noteId: props.note.id,
-				},
-			);
+			os.apiWithDialog("notes/favorites/delete", {
+				noteId: props.note.id,
+			});
 			props.note.isFavorited = false;
 		} else {
-			os.apiWithDialog(
-				"notes/favorites/create",
-				{
-					noteId: props.note.id,
-				},
-			);
+			os.apiWithDialog("notes/favorites/create", {
+				noteId: props.note.id,
+			});
 			props.note.isFavorited = true;
 		}
 	}

@@ -1,9 +1,17 @@
 <template>
 	<transition
-		:enter-active-class="$store.state.animation ? $style.transition_fade_enterActive : ''"
-		:leave-active-class="$store.state.animation ? $style.transition_fade_leaveActive : ''"
-		:enter-from-class="$store.state.animation ? $style.transition_fade_enterFrom : ''"
-		:leave-to-class="$store.state.animation ? $style.transition_fade_leaveTo : ''"
+		:enter-active-class="
+			$store.state.animation ? $style.transition_fade_enterActive : ''
+		"
+		:leave-active-class="
+			$store.state.animation ? $style.transition_fade_leaveActive : ''
+		"
+		:enter-from-class="
+			$store.state.animation ? $style.transition_fade_enterFrom : ''
+		"
+		:leave-to-class="
+			$store.state.animation ? $style.transition_fade_leaveTo : ''
+		"
 		mode="out-in"
 	>
 		<MkLoading v-if="fetching" />
@@ -77,8 +85,12 @@
 				<MkButton
 					v-if="!moreFetching"
 					v-appear="
-						$store.state.enableInfiniteScroll && !disableAutoLoad && !moreFetchError
-							? !moreFetchError && !error && !moreFetching ? fetchMore : null
+						$store.state.enableInfiniteScroll &&
+						!disableAutoLoad &&
+						!moreFetchError
+							? !moreFetchError && !error && !moreFetching
+								? fetchMore
+								: null
 							: null
 					"
 					class="button"
@@ -149,9 +161,9 @@ import {
 	onScrollBottom,
 	scrollToBottom,
 	scroll,
-	isBottomVisible
+	isBottomVisible,
 } from "@/scripts/scroll";
-import { useDocumentVisibility } from '@/scripts/use-document-visibility';
+import { useDocumentVisibility } from "@/scripts/use-document-visibility";
 import MkButton from "@/components/MkButton.vue";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
@@ -219,7 +231,9 @@ const ctAutoReload = ref(false);
 let timerId = null;
 
 const contentEl = $computed(() => props.pagination.pageEl ?? rootEl);
-const scrollableElement = $computed(() => unref(contentEl) ? getScrollContainer(unref(contentEl)) : document.body);
+const scrollableElement = $computed(() =>
+	unref(contentEl) ? getScrollContainer(unref(contentEl)) : document.body
+);
 
 const visibility = useDocumentVisibility();
 let isPausingUpdate = false;
@@ -230,17 +244,26 @@ const BACKGROUND_PAUSE_WAIT_SEC = 10;
 // https://qiita.com/mkataigi/items/0154aefd2223ce23398e
 let scrollObserver = $ref<IntersectionObserver>();
 
-watch([() => props.pagination.reversed, $$(scrollableElement)], () => {
-	if (scrollObserver) scrollObserver.disconnect();
+watch(
+	[() => props.pagination.reversed, $$(scrollableElement)],
+	() => {
+		if (scrollObserver) scrollObserver.disconnect();
 
-	scrollObserver = new IntersectionObserver(entries => {
-		backed = entries[0].isIntersecting;
-	}, {
-		root: unref(scrollableElement),
-		rootMargin: props.pagination.reversed ? '-100% 0px 100% 0px' : '100% 0px -100% 0px',
-		threshold: 0.01,
-	});
-}, { immediate: true });
+		scrollObserver = new IntersectionObserver(
+			(entries) => {
+				backed = entries[0].isIntersecting;
+			},
+			{
+				root: unref(scrollableElement),
+				rootMargin: props.pagination.reversed
+					? "-100% 0px 100% 0px"
+					: "100% 0px -100% 0px",
+				threshold: 0.01,
+			}
+		);
+	},
+	{ immediate: true }
+);
 
 watch($$(rootEl), () => {
 	scrollObserver?.disconnect();
@@ -253,7 +276,9 @@ watch([$$(backed), $$(contentEl)], () => {
 	if (!backed) {
 		if (!unref(contentEl)) return;
 
-		scrollRemove = (props.pagination.reversed ? onScrollBottom : onScrollTop)(unref(contentEl), executeQueue, TOLERANCE);
+		scrollRemove = (
+			props.pagination.reversed ? onScrollBottom : onScrollTop
+		)(unref(contentEl), executeQueue, TOLERANCE);
 	} else {
 		if (scrollRemove) scrollRemove();
 		scrollRemove = null;
@@ -264,10 +289,14 @@ if (props.pagination.params && isRef(props.pagination.params)) {
 	watch(props.pagination.params, init, { deep: true });
 }
 
-watch(queue, (a, b) => {
-	if (a.length === 0 && b.length === 0) return;
-	emit('queue', queue.value.length, isTop() && !isPausingUpdate);
-}, { deep: true });
+watch(
+	queue,
+	(a, b) => {
+		if (a.length === 0 && b.length === 0) return;
+		emit("queue", queue.value.length, isTop() && !isPausingUpdate);
+	},
+	{ deep: true }
+);
 
 async function init(): Promise<void> {
 	queue.value = [];
@@ -301,7 +330,11 @@ async function init(): Promise<void> {
 				}
 				if (
 					!props.pagination.noPaging &&
-					res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? (props.pagination.limit || 10) : 0)
+					res.length >
+						(props.pagination.offsetMode ||
+						props.pagination.reversed
+							? props.pagination.limit || 10
+							: 0)
 				) {
 					if (res.length > (props.pagination.limit || 10)) res.pop();
 					items.value = props.pagination.reversed
@@ -324,7 +357,7 @@ async function init(): Promise<void> {
 				fetching.value = false;
 			}
 		);
-};
+}
 
 const reload = (): void => {
 	items.value = [];
@@ -376,11 +409,7 @@ const refresh = async (): void => {
 };
 
 const fetchMore = async (): Promise<void> => {
-	if (
-		fetching.value ||
-		moreFetching.value ||
-		items.value.length === 0
-	)
+	if (fetching.value || moreFetching.value || items.value.length === 0)
 		return;
 	lastFetchDate.value = Date.now();
 	moreFetchError.value = false;
@@ -422,25 +451,41 @@ const fetchMore = async (): Promise<void> => {
 						if (i === 10) item._shouldInsertAd_ = true;
 					}
 				}
-				const itemIdArray = items.value?.map(x => x.id);
-				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 0)) {
+				const itemIdArray = items.value?.map((x) => x.id);
+				if (
+					res.length >
+					(props.pagination.offsetMode || props.pagination.reversed
+						? SECOND_FETCH_LIMIT
+						: 0)
+				) {
 					if (res.length > SECOND_FETCH_LIMIT) res.pop();
 					// 既に取得してる項目に重複項目があれば取り除く
 					// TODO : 重いかも
-					const resFiltered = res.filter(x => !itemIdArray.includes(x.id));
+					const resFiltered = res.filter(
+						(x) => !itemIdArray.includes(x.id)
+					);
 					items.value = props.pagination.reversed
 						? [...resFiltered].reverse().concat(items.value)
 						: items.value.concat(resFiltered);
 					more.value = res?.length === resFiltered?.length;
 				} else {
-					const resFiltered = res.filter(x => !itemIdArray.includes(x.id));
+					const resFiltered = res.filter(
+						(x) => !itemIdArray.includes(x.id)
+					);
 					items.value = props.pagination.reversed
 						? [...resFiltered].reverse().concat(items.value)
 						: items.value.concat(resFiltered);
 					more.value = false;
 				}
 				offset.value += res.length;
-				if (res[0]?.createdAt) defaultStore.set("lastBackedDate", {...defaultStore.state.lastBackedDate, [props.pagination.endpoint]: {date: res[0]?.createdAt, createdAt: new Date().toISOString()}});
+				if (res[0]?.createdAt)
+					defaultStore.set("lastBackedDate", {
+						...defaultStore.state.lastBackedDate,
+						[props.pagination.endpoint]: {
+							date: res[0]?.createdAt,
+							createdAt: new Date().toISOString(),
+						},
+					});
 				moreFetching.value = false;
 				ctAutoReload.value = true;
 				if (timerId) clearTimeout(timerId);
@@ -486,20 +531,25 @@ const fetchMoreAhead = async (): Promise<void> => {
 						offset: offset.value,
 				  }
 				: props.pagination.reversed
-				?	params.sinceId && !params.untilId
-				? {
-						sinceId: items.value[0].id,
-				  }
-				: {
-						untilId: items.value[0].id,
-				  }
+				? params.sinceId && !params.untilId
+					? {
+							sinceId: items.value[0].id,
+					  }
+					: {
+							untilId: items.value[0].id,
+					  }
 				: {
 						sinceId: items.value[items.value.length - 1].id,
 				  }),
 		})
 		.then(
 			(res) => {
-				if (res.length > ((props.pagination.offsetMode || props.pagination.reversed) ? SECOND_FETCH_LIMIT : 0)) {
+				if (
+					res.length >
+					(props.pagination.offsetMode || props.pagination.reversed
+						? SECOND_FETCH_LIMIT
+						: 0)
+				) {
 					if (res.length > SECOND_FETCH_LIMIT) res.pop();
 					items.value = props.pagination.reversed
 						? [...res].reverse().concat(items.value)
@@ -527,15 +577,20 @@ const fetchMoreAhead = async (): Promise<void> => {
 		);
 };
 
-const isTop = (): boolean => isBackTop.value || (props.pagination.reversed ? isBottomVisible : isTopVisible)(unref(contentEl), TOLERANCE);
+const isTop = (): boolean =>
+	isBackTop.value ||
+	(props.pagination.reversed ? isBottomVisible : isTopVisible)(
+		unref(contentEl),
+		TOLERANCE
+	);
 watch(visibility, () => {
-	if (visibility.value === 'hidden') {
+	if (visibility.value === "hidden") {
 		timerForSetPause = window.setTimeout(() => {
 			isPausingUpdate = true;
 			timerForSetPause = null;
-		},
-		BACKGROUND_PAUSE_WAIT_SEC * 1000);
-	} else { // 'visible'
+		}, BACKGROUND_PAUSE_WAIT_SEC * 1000);
+	} else {
+		// 'visible'
 		if (timerForSetPause) {
 			clearTimeout(timerForSetPause);
 			timerForSetPause = null;
@@ -614,7 +669,10 @@ onActivated(() => {
 });
 
 onDeactivated(() => {
-	isBackTop.value = props.pagination.reversed ? window.scrollY >= (rootEl ? rootEl.scrollHeight - window.innerHeight : 0) : window.scrollY === 0;
+	isBackTop.value = props.pagination.reversed
+		? window.scrollY >=
+		  (rootEl ? rootEl.scrollHeight - window.innerHeight : 0)
+		: window.scrollY === 0;
 });
 
 function toBottom() {

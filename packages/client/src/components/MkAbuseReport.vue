@@ -24,8 +24,8 @@
 			<MkKeyValue class="_formBlock">
 				<template #key>{{ i18n.ts.registeredDate }}</template>
 				<template #value
-					><MkTime :time="report.targetUser.createdAt" mode="detail" /></template
-				>
+					><MkTime :time="report.targetUser.createdAt" mode="detail"
+				/></template>
 			</MkKeyValue>
 		</div>
 		<div class="detail">

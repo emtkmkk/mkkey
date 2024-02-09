@@ -26,22 +26,30 @@
 						<div class="main _gap">
 							<div v-if="!showNext" class="load next">
 								<MkButton
-									v-if="!note.channelId && ($i || !note.user.host)"
+									v-if="
+										!note.channelId &&
+										($i || !note.user.host)
+									"
 									class="load loadbutton"
 									@click="showNext = 'local'"
-									>LTL <i class="ph-caret-up ph-bold ph-lg"></i
+									>LTL
+									<i class="ph-caret-up ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
 									v-if="note.channelId"
 									class="load loadbutton"
 									@click="showNext = 'channel'"
-									><i class="ph-television ph-bold ph-lg"></i> <i class="ph-caret-up ph-bold ph-lg"></i
+									><i class="ph-television ph-bold ph-lg"></i>
+									<i class="ph-caret-up ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
-									v-if="(note.channelId || $i || !note.user.host)"
+									v-if="
+										note.channelId || $i || !note.user.host
+									"
 									class="load loadbutton"
 									@click="showNext = 'user'"
-									><i class="ph-user ph-bold ph-lg"></i> <i class="ph-caret-up ph-bold ph-lg"></i
+									><i class="ph-user ph-bold ph-lg"></i>
+									<i class="ph-caret-up ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
 									v-else
@@ -94,22 +102,30 @@
 							</div>
 							<div v-if="!showPrev" class="load prev">
 								<MkButton
-									v-if="!note.channelId && ($i || !note.user.host)"
+									v-if="
+										!note.channelId &&
+										($i || !note.user.host)
+									"
 									class="load loadbutton"
 									@click="showPrev = 'local'"
-									>LTL <i class="ph-caret-down ph-bold ph-lg"></i
+									>LTL
+									<i class="ph-caret-down ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
 									v-if="note.channelId"
 									class="load loadbutton"
 									@click="showPrev = 'channel'"
-									><i class="ph-television ph-bold ph-lg"></i> <i class="ph-caret-down ph-bold ph-lg"></i
+									><i class="ph-television ph-bold ph-lg"></i>
+									<i class="ph-caret-down ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
-									v-if="(note.channelId || $i || !note.user.host)"
+									v-if="
+										note.channelId || $i || !note.user.host
+									"
 									class="load loadbutton"
 									@click="showPrev = 'user'"
-									><i class="ph-user ph-bold ph-lg"></i> <i class="ph-caret-down ph-bold ph-lg"></i
+									><i class="ph-user ph-bold ph-lg"></i>
+									<i class="ph-caret-down ph-bold ph-lg"></i
 								></MkButton>
 								<MkButton
 									v-else
@@ -164,7 +180,7 @@ let error = $ref();
 
 const prevPagination = {
 	endpoint: computed(() => {
-		switch (showPrev){
+		switch (showPrev) {
 			case "user":
 			default:
 				return "users/notes";
@@ -178,7 +194,22 @@ const prevPagination = {
 	params: computed(() =>
 		note
 			? {
-					...(showPrev === "local" && note.user.host ? {host: note.user.host, withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,} : showPrev === "local" ? {withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,} : showPrev === "channel" ? {channelId: note.channelId} : {userId: note.userId}),
+					...(showPrev === "local" && note.user.host
+						? {
+								host: note.user.host,
+								withBelowPublic:
+									defaultStore.state
+										.showLocalTimelineBelowPublic,
+						  }
+						: showPrev === "local"
+						? {
+								withBelowPublic:
+									defaultStore.state
+										.showLocalTimelineBelowPublic,
+						  }
+						: showPrev === "channel"
+						? { channelId: note.channelId }
+						: { userId: note.userId }),
 					untilId: note.id,
 			  }
 			: null
@@ -188,7 +219,7 @@ const prevPagination = {
 const nextPagination = {
 	reversed: true,
 	endpoint: computed(() => {
-		switch (showNext){
+		switch (showNext) {
 			case "user":
 			default:
 				return "users/notes";
@@ -202,7 +233,22 @@ const nextPagination = {
 	params: computed(() =>
 		note
 			? {
-				...(showNext === "local" && note.user.host ? {host: note.user.host, withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,} : showNext === "local" ? {withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,} : showNext === "channel" ? {channelId: note.channelId} : {userId: note.userId}),
+					...(showNext === "local" && note.user.host
+						? {
+								host: note.user.host,
+								withBelowPublic:
+									defaultStore.state
+										.showLocalTimelineBelowPublic,
+						  }
+						: showNext === "local"
+						? {
+								withBelowPublic:
+									defaultStore.state
+										.showLocalTimelineBelowPublic,
+						  }
+						: showNext === "channel"
+						? { channelId: note.channelId }
+						: { userId: note.userId }),
 					sinceId: note.id,
 			  }
 			: null

@@ -22,9 +22,9 @@ function checkWordMute(
 
 	if (defaultStore.state.excludeNSFW) {
 		if (defaultStore.state.excludeNotFollowNSFW) {
-			mutedWords.push(["pname:", "filter:nsfw", "-relation:follow"])
+			mutedWords.push(["pname:", "filter:nsfw", "-relation:follow"]);
 		} else {
-			mutedWords.push(["pname:", "filter:nsfw"])
+			mutedWords.push(["pname:", "filter:nsfw"]);
 		}
 	}
 
@@ -93,6 +93,7 @@ function checkWordMute(
 	if (
 		defaultStore.state.excludeSimo &&
 		SimoWords.some((x) => note.cw?.includes(x))
+	) {
 		result.muted = true;
 		result.matched.push("");
 	}

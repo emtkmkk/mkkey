@@ -1,6 +1,6 @@
 <template>
 	<div
-		ref="rootEl" 
+		ref="rootEl"
 		class="_section"
 		@dragover.prevent.stop="onDragover"
 		@drop.prevent.stop="onDrop"
@@ -59,7 +59,16 @@
 									v-for="typer in typers"
 									:key="typer.id"
 									class="user"
-									>{{ `${typer.name.replaceAll(/[\s\u3000]?:\w+:/g, "").trim() || typer.username} ` }}</b
+									>{{
+										`${
+											typer.name
+												.replaceAll(
+													/[\s\u3000]?:\w+:/g,
+													""
+												)
+												.trim() || typer.username
+										} `
+									}}</b
 								>
 							</template>
 						</I18n>
@@ -355,9 +364,9 @@ XMessage:last-of-type {
 .mk-messaging-room {
 	position: relative;
 
-	 .body {
+	.body {
 		overflow-y: auto;
-		
+
 		.more {
 			display: block;
 			margin: 16px auto;
@@ -393,7 +402,7 @@ XMessage:last-of-type {
 		}
 	}
 
-	 footer {
+	footer {
 		width: 100%;
 		position: sticky;
 		z-index: 2;

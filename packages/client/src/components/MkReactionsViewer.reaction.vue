@@ -1,6 +1,6 @@
 <template>
 	<button
-		v-if="count > 0 || ['🅰️','🅱️'].includes(reaction)"
+		v-if="count > 0 || ['🅰️', '🅱️'].includes(reaction)"
 		ref="buttonRef"
 		v-ripple="canToggle && !defaultStore.state.showReactionMenu"
 		class="hkzvhatu _button"
@@ -13,7 +13,11 @@
 	>
 		<XReactionIcon
 			class="icon"
-			:reaction="reacted && note.myReaction !== reaction && !multi ? note.myReaction : reaction"
+			:reaction="
+				reacted && note.myReaction !== reaction && !multi
+					? note.myReaction
+					: reaction
+			"
 			:custom-emojis="note.emojis"
 		/>
 		<span
@@ -21,9 +25,10 @@
 			class="count"
 			:class="{
 				'count-increased': countChanged === 'increased',
-				'count-decreased': countChanged === 'decreased'
+				'count-decreased': countChanged === 'decreased',
 			}"
-		>{{ count }}</span>
+			>{{ count }}</span
+		>
 	</button>
 </template>
 
@@ -51,31 +56,45 @@ const buttonRef = ref<HTMLElement>();
 
 const countChanged = ref(null);
 
-const canToggle = computed(() => $i && (!$i.isSilenced || props.note.user.isFollowed));
+const canToggle = computed(
+	() => $i && (!$i.isSilenced || props.note.user.isFollowed)
+);
 
 const reacted = computed(() => {
 	return props.multi
-		? props.note.myReactions && props.note.myReactions.some((x) => x?.replace(/@[\w:\.\-]+:$/,"@") === props.reaction?.replace(/@[\w:\.\-]+:$/,"@"))
-		: props.note.myReaction && props.note.myReaction?.replace(/@[\w:\.\-]+:$/,"@") === props.reaction?.replace(/@[\w:\.\-]+:$/,"@")
+		? props.note.myReactions &&
+				props.note.myReactions.some(
+					(x) =>
+						x?.replace(/@[\w:\.\-]+:$/, "@") ===
+						props.reaction?.replace(/@[\w:\.\-]+:$/, "@")
+				)
+		: props.note.myReaction &&
+				props.note.myReaction?.replace(/@[\w:\.\-]+:$/, "@") ===
+					props.reaction?.replace(/@[\w:\.\-]+:$/, "@");
 });
 
 async function toggleReaction(event) {
-
 	if (defaultStore.state.showReactionMenu) {
-
 		const el =
 			event &&
-			((event.currentTarget ?? event.target) as HTMLElement | null | undefined);
-		await openReactionMenu_(props.reaction?.replace("@.",""), props.note, canToggle.value, props.multi, el);
-
+			((event.currentTarget ?? event.target) as
+				| HTMLElement
+				| null
+				| undefined);
+		await openReactionMenu_(
+			props.reaction?.replace("@.", ""),
+			props.note,
+			canToggle.value,
+			props.multi,
+			el
+		);
 	} else {
-
 		if (!canToggle.value) return;
 
 		if (props.multi) {
 			if (reacted.value) {
 				const confirm = await os.confirm({
-					type: 'warning',
+					type: "warning",
 					text: i18n.ts.cancelReactionConfirm,
 				});
 				if (confirm.canceled) return;
@@ -83,7 +102,7 @@ async function toggleReaction(event) {
 				os.api("notes/reactions/delete", {
 					noteId: props.note.id,
 					reaction: props.reaction,
-				})
+				});
 			} else {
 				os.api("notes/reactions/create", {
 					noteId: props.note.id,
@@ -94,7 +113,7 @@ async function toggleReaction(event) {
 			const oldReaction = props.note.myReaction;
 			if (oldReaction && reacted.value) {
 				const confirm = await os.confirm({
-					type: 'warning',
+					type: "warning",
 					text: i18n.ts.cancelReactionConfirm,
 				});
 				if (confirm.canceled) return;
@@ -117,28 +136,31 @@ async function toggleReaction(event) {
 			}
 		}
 	}
-};
+}
 
-watch(() => props.count, (newVal, oldVal) => {
-    if (newVal > oldVal) {
-        // 増加時の処理
-        countChanged.value = "increased";
-    } else if (newVal < oldVal) {
-        // 減少時の処理
-        countChanged.value = "decreased";
-    }
+watch(
+	() => props.count,
+	(newVal, oldVal) => {
+		if (newVal > oldVal) {
+			// 増加時の処理
+			countChanged.value = "increased";
+		} else if (newVal < oldVal) {
+			// 減少時の処理
+			countChanged.value = "decreased";
+		}
 
-    setTimeout(() => {
-        countChanged.value = null;
-    }, 500);  // 500ms後にリセット
-});
+		setTimeout(() => {
+			countChanged.value = null;
+		}, 500); // 500ms後にリセット
+	}
+);
 
 useTooltip(
 	buttonRef,
 	async (showing) => {
 		const reactions = await os.apiGet("notes/reactions", {
 			noteId: props.note.id,
-			type: props.reaction.replace(/@[\w:\.\-]+:$/,"@.:"),
+			type: props.reaction.replace(/@[\w:\.\-]+:$/, "@.:"),
 			limit: 11,
 			_cacheKey_: props.count,
 		});
@@ -147,9 +169,9 @@ useTooltip(
 
 		const popupReaction = props.multi
 			? props.reaction
-			: (reacted.value && props.note.myReaction !== props.reaction.value)
-				? props.note.myReaction
-				: props.reaction;
+			: reacted.value && props.note.myReaction !== props.reaction.value
+			? props.note.myReaction
+			: props.reaction;
 
 		os.popup(
 			XDetails,
@@ -171,20 +193,24 @@ useTooltip(
 
 <style lang="scss" scoped>
 @keyframes textColorChanged {
-    0%, 100% {
-        color: inherit;
-    }
-    25%, 75% {
-        color: var(--accent);
-    }
+	0%,
+	100% {
+		color: inherit;
+	}
+	25%,
+	75% {
+		color: var(--accent);
+	}
 }
 @keyframes textColorChangedRev {
-    0%, 100% {
-        color: var(--accent);
-    }
-    25%, 75% {
-        color: var(--fg);
-    }
+	0%,
+	100% {
+		color: var(--accent);
+	}
+	25%,
+	75% {
+		color: var(--fg);
+	}
 }
 .hkzvhatu {
 	display: inline-block;
@@ -223,7 +249,8 @@ useTooltip(
 		cursor: default;
 	}
 
-	&.reacted, &.reacted:hover {
+	&.reacted,
+	&.reacted:hover {
 		background: var(--accentedBg);
 		color: var(--accent);
 		box-shadow: 0 0 0px 1px var(--accent) inset;
@@ -238,7 +265,8 @@ useTooltip(
 		}
 	}
 
-	&.reacted, &.reacted:hover {
+	&.reacted,
+	&.reacted:hover {
 		background: var(--accentedBg);
 		color: var(--accent);
 		border: 1px solid var(--accent);
@@ -257,11 +285,13 @@ useTooltip(
 			animation: textColorChanged 1s;
 		}
 
-		&.reacted.count-increased, &.reacted:hover.count-increased {
+		&.reacted.count-increased,
+		&.reacted:hover.count-increased {
 			animation: textColorChangedRev 1s;
 		}
 
-		&.reacted.count-decreased, &.reacted:hover.count-decreased {
+		&.reacted.count-decreased,
+		&.reacted:hover.count-decreased {
 			animation: textColorChangedRev 1s;
 		}
 	}

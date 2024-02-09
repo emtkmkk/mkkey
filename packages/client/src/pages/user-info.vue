@@ -53,8 +53,15 @@
 					<FormLink v-else class="_formBlock" :to="userPage(user)"
 						>Profile</FormLink
 					>
-					<FormLink v-if="iAmModerator && inviteUser" class="_formBlock" :to="userPage(user)"
-						>招待したUser ( {{ `${inviteUser.username} - ${inviteUser.id}` }} )</FormLink
+					<FormLink
+						v-if="iAmModerator && inviteUser"
+						class="_formBlock"
+						:to="userPage(user)"
+						>招待したUser (
+						{{
+							`${inviteUser.username} - ${inviteUser.id}`
+						}}
+						)</FormLink
 					>
 
 					<FormLink
@@ -415,11 +422,10 @@ function createFetcher() {
 				ips = _ips;
 				if (info.inviteUserId) {
 					async () => {
-						inviteUser = await 
-						os.api("users/show", {
-						userId: info.inviteUserId,
+						inviteUser = await os.api("users/show", {
+							userId: info.inviteUserId,
 						});
-					}
+					};
 				}
 				moderator = info.isModerator;
 				silenced = info.isSilenced;
@@ -615,16 +621,16 @@ const headerTabs = $computed(() =>
 			: null,
 		!defaultStore.state.hiddenActivityChart
 			? {
-				key: "chart",
-				title: i18n.ts.charts,
-				icon: "ph-chart-bar ph-bold ph-lg",
+					key: "chart",
+					title: i18n.ts.charts,
+					icon: "ph-chart-bar ph-bold ph-lg",
 			  }
 			: null,
-		defaultStore.state.developer 
+		defaultStore.state.developer
 			? {
-			key: "raw",
-			title: "Raw",
-			icon: "ph-code ph-bold ph-lg",
+					key: "raw",
+					title: "Raw",
+					icon: "ph-code ph-bold ph-lg",
 			  }
 			: null,
 	].filter((x) => x != null)

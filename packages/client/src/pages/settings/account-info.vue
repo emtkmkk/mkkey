@@ -18,17 +18,26 @@
 
 		<FormSection v-if="stats">
 			<template #label>{{ i18n.ts.statistics }}</template>
-			<MkKeyValue oneline style="margin: 1em 0" :post="true" @postAction="post">
+			<MkKeyValue
+				oneline
+				style="margin: 1em 0"
+				:post="true"
+				@postAction="post"
+			>
 				<template #key>{{ i18n.ts.power }}</template>
 				<template #value>{{ number(stats.power) }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.powerRank }}</template>
-				<template #value>{{ `${stats.powerRank ?? "N/A"} ( ${stats.nextRank ?? "N/A"} )` }}</template>
+				<template #value>{{
+					`${stats.powerRank ?? "N/A"} ( ${stats.nextRank ?? "N/A"} )`
+				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline v-if="stats.starPower" style="margin: 1em 0">
 				<template #key>{{ "⭐" }}</template>
-				<template #value>{{ number(stats.starPower ?? "N/A") }}</template>
+				<template #value>{{
+					number(stats.starPower ?? "N/A")
+				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.notesCount }}</template>
@@ -79,13 +88,17 @@
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>{{ i18n.ts.averageSentReactionsCount }}</template>
+				<template #key>{{
+					i18n.ts.averageSentReactionsCount
+				}}</template>
 				<template #value>{{
 					number(stats.averageSentReactionsCount)
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
-				<template #key>{{ i18n.ts.averageReceivedReactionsCount }}</template>
+				<template #key>{{
+					i18n.ts.averageReceivedReactionsCount
+				}}</template>
 				<template #value>{{
 					number(stats.averageReceivedReactionsCount)
 				}}</template>
@@ -154,7 +167,9 @@
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.deliverServersCount }}</template>
-				<template #value>{{ number(stats.deliverServersCount) }}</template>
+				<template #value>{{
+					number(stats.deliverServersCount)
+				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.pageLikesCount }}</template>
@@ -170,13 +185,17 @@
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.driveUsage }}</template>
-				<template #value>{{ bytes(stats.driveUsage,2) }}</template>
+				<template #value>{{ bytes(stats.driveUsage, 2) }}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>{{ i18n.ts.ojPower }}</template>
 				<template #value>{{ number(stats.ojPower) }}</template>
 			</MkKeyValue>
-			<MkKeyValue oneline v-if="stats.totalInviteCount" style="margin: 1em 0">
+			<MkKeyValue
+				oneline
+				v-if="stats.totalInviteCount"
+				style="margin: 1em 0"
+			>
 				<template #key>{{ i18n.ts.totalInviteCount }}</template>
 				<template #value>{{ number(stats.totalInviteCount) }}</template>
 			</MkKeyValue>
@@ -187,7 +206,14 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>取得状態</template>
 				<template #value>{{
-					(instance.remoteEmojiMode === "all" ? "全て" : instance.remoteEmojiMode === "plus" ? "一部" : "無し") + (!instance.remoteEmojiMode || true ? "" : " (キャッシュ無し)")
+					(instance.remoteEmojiMode === "all"
+						? "全て"
+						: instance.remoteEmojiMode === "plus"
+						? "一部"
+						: "無し") +
+					(!instance.remoteEmojiMode || true
+						? ""
+						: " (キャッシュ無し)")
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
@@ -199,23 +225,21 @@
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>サイズ</template>
 				<template #value>{{
-					bytes(JSON.stringify(instance)?.length,2) ?? "N/A"
+					bytes(JSON.stringify(instance)?.length, 2) ?? "N/A"
 				}}</template>
 			</MkKeyValue>
 			<MkKeyValue oneline style="margin: 1em 0">
 				<template #key>最終取得</template>
 				<template v-if="instance.emojiFetchDate" #value>
-					<MkTime :time="instance.emojiFetchDate" mode="relative"/>
+					<MkTime :time="instance.emojiFetchDate" mode="relative" />
 				</template>
 				<template v-else #value>
 					{{ "N/A" }}
 				</template>
 			</MkKeyValue>
 			<FormButton @click="refetchEmoji"
-				><i
-					class="ph-arrows-counter-clockwise ph-bold ph-lg"
-				></i>
-					{{ i18n.ts.refetch }}</FormButton
+				><i class="ph-arrows-counter-clockwise ph-bold ph-lg"></i>
+				{{ i18n.ts.refetch }}</FormButton
 			>
 		</FormSection>
 
@@ -275,11 +299,14 @@
 			>{{ "errorlog" }}</FormLink
 		>
 
-		<FormLink v-if="$store.state.developer" to="/bios" external class="_formBlock"
+		<FormLink
+			v-if="$store.state.developer"
+			to="/bios"
+			external
+			class="_formBlock"
 			><template #icon><i class="ph-wrench ph-bold ph-lg"></i></template
 			>{{ i18n.ts.bios }}</FormLink
 		>
-
 	</div>
 </template>
 
@@ -311,12 +338,14 @@ onMounted(() => {
 	});
 });
 
-const headerActions = $computed(() => [{
+const headerActions = $computed(() => [
+	{
 		icon: "ph-note-pencil ph-bold ph-lg",
 		text: i18n.ts.postForm,
 		iconOnly: true,
 		handler: post,
-	}]);
+	},
+]);
 
 const headerTabs = $computed(() => []);
 
@@ -325,13 +354,34 @@ function post() {
 		powerShowCount += 1;
 		if (powerShowCount % 2 === 0 || defaultStore.state.woozyMode) {
 			os.post({
-				initialText: `(´へεへ\`*)＜${stats.value.power > 100000000 ? `${Math.floor(stats.value.power / 10000000) / 10}億` : stats.value.power > 100000 ? `${Math.floor(stats.value.power / 10000)}万` : stats.value.power > 1000 ? `${Math.floor(stats.value.power / 1000) / 10}万` : stats.value.power}パワーなう\n\n(´へεへ\`*)＜${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}ランクなう\n\n☝( ◠‿◠ )☝「次のランクまでたったの${((1000 - (stats.value.rankPoint % 1000)) / 10).toFixed(1)}%か…ザコめ…」\n\n#もこきーパワー`,
+				initialText: `(´へεへ\`*)＜${
+					stats.value.power > 100000000
+						? `${Math.floor(stats.value.power / 10000000) / 10}億`
+						: stats.value.power > 100000
+						? `${Math.floor(stats.value.power / 10000)}万`
+						: stats.value.power > 1000
+						? `${Math.floor(stats.value.power / 1000) / 10}万`
+						: stats.value.power
+				}パワーなう\n\n(´へεへ\`*)＜${stats.value.powerRank.replace(
+					"⭐",
+					"$[rainbow.speed=2s ⭐]"
+				)}ランクなう\n\n☝( ◠‿◠ )☝「次のランクまでたったの${(
+					(1000 - (stats.value.rankPoint % 1000)) /
+					10
+				).toFixed(1)}%か…ザコめ…」\n\n#もこきーパワー`,
 				initialLocalOnly: true,
 				instant: true,
 			});
 		} else {
 			os.post({
-				initialText: `<center>私のパワーは\n$[x2 $[tada ${number(stats.value.power)}]]\nです。\n\nランクは\n$[x2 $[tada ${stats.value.powerRank.replace("⭐","$[rainbow.speed=2s ⭐]")}]] ( ${stats.value.nextRank ?? "?%"} )\nです。\n\n#もこきーパワー</center>`,
+				initialText: `<center>私のパワーは\n$[x2 $[tada ${number(
+					stats.value.power
+				)}]]\nです。\n\nランクは\n$[x2 $[tada ${stats.value.powerRank.replace(
+					"⭐",
+					"$[rainbow.speed=2s ⭐]"
+				)}]] ( ${
+					stats.value.nextRank ?? "?%"
+				} )\nです。\n\n#もこきーパワー</center>`,
 				initialLocalOnly: true,
 				instant: true,
 			});

@@ -81,26 +81,22 @@ function toggleStar(ev?: MouseEvent): void {
 					focus();
 				}
 			);
-		}
-		else if (defaultStore.state.favButtonReaction !== "favorite") {
+		} else if (defaultStore.state.favButtonReaction !== "favorite") {
 			os.api("notes/reactions/create", {
 				noteId: props.note.id,
 				reaction:
 					defaultStore.state.woozyMode === true
 						? "🥴"
 						: defaultStore.state.favButtonReaction === "custom"
-							? defaultStore.state.favButtonReactionCustom
-							: defaultStore.state.favButtonReaction === ""
-								? instance.defaultReaction
-								: defaultStore.state.favButtonReaction,
+						? defaultStore.state.favButtonReactionCustom
+						: defaultStore.state.favButtonReaction === ""
+						? instance.defaultReaction
+						: defaultStore.state.favButtonReaction,
 			});
 		} else {
-			os.apiWithDialog(
-				"notes/favorites/create",
-				{
-					noteId: props.note.id,
-				},
-			);
+			os.apiWithDialog("notes/favorites/create", {
+				noteId: props.note.id,
+			});
 		}
 		const el =
 			ev &&
@@ -113,12 +109,9 @@ function toggleStar(ev?: MouseEvent): void {
 		}
 	} else {
 		if (defaultStore.state.favButtonReaction === "favorite") {
-			os.apiWithDialog(
-				"notes/favorites/create",
-				{
-					noteId: props.note.id,
-				},
-			);
+			os.apiWithDialog("notes/favorites/create", {
+				noteId: props.note.id,
+			});
 		} else {
 			os.api("notes/reactions/delete", {
 				noteId: props.note.id,

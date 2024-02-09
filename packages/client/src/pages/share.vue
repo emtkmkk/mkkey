@@ -73,17 +73,21 @@ async function init() {
 	let noteText = "";
 	let rText = text ? text.trim() : null;
 	let rUrl = url ? url.trim() : null;
-	let textToUrl = text ? text.match(/^(.* )?(https?:\/\/[\w/:%#\$&@\?\(\)~\.=\+\-ぁ-んァ-ヶｱ-ﾝﾞﾟ一-龠]+)+$/) : null;
-	
+	let textToUrl = text
+		? text.match(
+				/^(.* )?(https?:\/\/[\w/:%#\$&@\?\(\)~\.=\+\-ぁ-んァ-ヶｱ-ﾝﾞﾟ一-龠]+)+$/
+		  )
+		: null;
+
 	if (title === "undefined") title = null;
 	if (title) title = title.trim();
-	
-	if (!rUrl && textToUrl){
-		if(textToUrl.length == 2){
+
+	if (!rUrl && textToUrl) {
+		if (textToUrl.length == 2) {
 			rUrl = textToUrl[1];
-			rText = ""
+			rText = "";
 		} else {
-			if(textToUrl.length == 3){
+			if (textToUrl.length == 3) {
 				rUrl = textToUrl[2];
 				rText = textToUrl[1];
 			} else {
@@ -91,44 +95,69 @@ async function init() {
 			}
 		}
 	}
-	
-	if (rUrl){
+
+	if (rUrl) {
 		// 二重エンコード・三重エンコード検知
 		if (rUrl !== decodeURI(rUrl)) rUrl = decodeURI(rUrl);
 		if (rUrl !== decodeURI(rUrl)) rUrl = decodeURI(rUrl);
-		
+
 		if (rUrl !== encodeURI(rUrl)) {
 			if (!title && !rText) rText = rUrl;
 			rUrl = encodeURI(rUrl);
 		}
 	}
-	
+
 	// Yahooニュース
-	if (rText && rText?.startsWith(`${title}.\n`)){
+	if (rText && rText?.startsWith(`${title}.\n`)) {
 		rText = rText.replace(`${title}.\n`, "");
 	}
-	
+
 	// Twitter
-	if (rText?.includes("https://twitter.com") || rText?.includes("http://twitter.com")) {
-		rText = rText.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
+	if (
+		rText?.includes("https://twitter.com") ||
+		rText?.includes("http://twitter.com")
+	) {
+		rText = rText.replaceAll(
+			/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,
+			"$1"
+		);
 	}
-	
+
 	// Twitter
-	if (rUrl?.includes("https://twitter.com") || rUrl?.includes("http://twitter.com")) {
-		rUrl = rUrl.replaceAll(/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,"$1");
+	if (
+		rUrl?.includes("https://twitter.com") ||
+		rUrl?.includes("http://twitter.com")
+	) {
+		rUrl = rUrl.replaceAll(
+			/(https?:\/\/twitter.com\/[^\s]*)(\?[^\s]*)/g,
+			"$1"
+		);
 	}
-	
-	if (rUrl){
-		if (title && rText) noteText += `< [${title.replaceAll("[","【").replaceAll("]","】")}](${rUrl}) >\n${rText}\n\n`;
-		else if (title) noteText += `[${title.replaceAll("[","【").replaceAll("]","】")}](${rUrl})\n\n`;
-		else if (rText) noteText += `[${rText.replaceAll("[","【").replaceAll("]","】")}](${rUrl})\n\n`;
-		else noteText += rUrl.length > 31 ? `[${rUrl.slice(0,30)}…](${rUrl})\n\n` : `${rUrl}\n\n`;
+
+	if (rUrl) {
+		if (title && rText)
+			noteText += `< [${title
+				.replaceAll("[", "【")
+				.replaceAll("]", "】")}](${rUrl}) >\n${rText}\n\n`;
+		else if (title)
+			noteText += `[${title
+				.replaceAll("[", "【")
+				.replaceAll("]", "】")}](${rUrl})\n\n`;
+		else if (rText)
+			noteText += `[${rText
+				.replaceAll("[", "【")
+				.replaceAll("]", "】")}](${rUrl})\n\n`;
+		else
+			noteText +=
+				rUrl.length > 31
+					? `[${rUrl.slice(0, 30)}…](${rUrl})\n\n`
+					: `${rUrl}\n\n`;
 	} else {
-	    if (title && rText) noteText += `< ${title} >\n${rText}\n\n`;
-	    else if (title) noteText += `${title}\n\n`;
+		if (title && rText) noteText += `< ${title} >\n${rText}\n\n`;
+		else if (title) noteText += `${title}\n\n`;
 		else if (rText) noteText += `${rText}\n\n`;
 	}
-	
+
 	initialText = noteText.trim();
 
 	if (visibility === "specified") {

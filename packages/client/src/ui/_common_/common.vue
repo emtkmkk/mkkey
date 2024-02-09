@@ -15,7 +15,9 @@
 
 	<div v-if="dev" id="devTicker"><span>DEV BUILD</span></div>
 
-	<div v-if="$i && $i.isBot" id="botWarn"><span>{{ i18n.ts.loggedInAsBot }}</span></div>
+	<div v-if="$i && $i.isBot" id="botWarn">
+		<span>{{ i18n.ts.loggedInAsBot }}</span>
+	</div>
 </template>
 
 <script lang="ts" setup>
@@ -26,7 +28,7 @@ import { uploads } from "@/scripts/upload";
 import * as sound from "@/scripts/sound";
 import { $i } from "@/account";
 import { stream } from "@/stream";
-import { i18n } from '@/i18n';
+import { i18n } from "@/i18n";
 
 const XStreamIndicator = defineAsyncComponent(
 	() => import("./stream-indicator.vue")

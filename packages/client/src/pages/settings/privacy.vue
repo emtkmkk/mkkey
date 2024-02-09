@@ -16,7 +16,10 @@
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.makeFollowManuallyApproveToRemote
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span
+			><template #caption>{{
 				i18n.ts.lockedAccountToRemoteInfo
 			}}</template></FormSwitch
 		>
@@ -33,7 +36,10 @@
 			class="_formBlock"
 			@update:modelValue="save()"
 			>{{ i18n.ts.makeFollowManuallyApproveSilent
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span
+			><template #caption>{{
 				i18n.ts.lockedAccountInfoSilent
 			}}</template></FormSwitch
 		>
@@ -44,7 +50,10 @@
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostPublic
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span
+				><template #caption>{{
 					i18n.ts.blockPostPublicDescription
 				}}</template></FormSwitch
 			>
@@ -53,7 +62,10 @@
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostHome
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span
+				><template #caption>{{
 					i18n.ts.blockPostHomeDescription
 				}}</template></FormSwitch
 			>
@@ -62,7 +74,10 @@
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostNotLocal
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span
+				><template #caption>{{
 					i18n.ts.blockPostNotLocalDescription
 				}}</template></FormSwitch
 			>
@@ -72,7 +87,10 @@
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostNotLocalPublic
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span
+				><template #caption>{{
 					i18n.ts.blockPostNotLocalPublicDescription
 				}}</template></FormSwitch
 			>
@@ -112,8 +130,11 @@
 			<template #caption>{{ i18n.ts.noCrawleDescription }}</template>
 		</FormSwitch>
 		<FormSwitch v-model="preventAiLearning" @update:model-value="save()">
-			{{ i18n.ts.preventAiLearning }}<span class="_beta">{{ i18n.ts.beta }}</span>
-			<template #caption>{{ i18n.ts.preventAiLearningDescription }}</template>
+			{{ i18n.ts.preventAiLearning
+			}}<span class="_beta">{{ i18n.ts.beta }}</span>
+			<template #caption>{{
+				i18n.ts.preventAiLearningDescription
+			}}</template>
 		</FormSwitch>
 		<FormSwitch
 			v-model="isExplorable"
@@ -131,7 +152,10 @@
 			class="_formBlock"
 			@update:modelValue="save()"
 		>
-			{{ i18n.ts.makeNotExplorableRemote }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+			{{ i18n.ts.makeNotExplorableRemote
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span>
 			<template #caption>{{
 				i18n.ts.makeNotExplorableRemoteDescription
 			}}</template>
@@ -177,16 +201,20 @@
 						{{ i18n.ts._visibility.specified }}
 					</option>
 				</FormSelect>
-				<FormSwitch v-model="defaultNoteLocalAndFollower" class="_formBlock">{{
-					i18n.ts._visibility.localAndFollower
-				}}</FormSwitch>
+				<FormSwitch
+					v-model="defaultNoteLocalAndFollower"
+					class="_formBlock"
+					>{{ i18n.ts._visibility.localAndFollower }}</FormSwitch
+				>
 				<FormSwitch v-model="defaultNoteLocalOnly" class="_formBlock">{{
 					i18n.ts._visibility.localOnlyChannel
 				}}</FormSwitch>
 				<br />
-				<FormSwitch v-model="firstPostButtonVisibilityForce" class="_formBlock">{{
-					i18n.ts.firstPostButtonVisibilityForce
-				}}</FormSwitch>
+				<FormSwitch
+					v-model="firstPostButtonVisibilityForce"
+					class="_formBlock"
+					>{{ i18n.ts.firstPostButtonVisibilityForce }}</FormSwitch
+				>
 			</FormFolder>
 
 			<FormFolder class="_formBlock">
@@ -194,44 +222,81 @@
 				<template v-if="secondPostButton == false" #suffix>{{
 					i18n.ts.buttonNone
 				}}</template>
-				<template v-if="secondPostButton == true && secondPostVisibility === 'public'" #suffix>{{
-					i18n.ts._visibility.public
-				}}</template>
 				<template
-					v-else-if="secondPostButton == true && secondPostVisibility === 'l-public'"
+					v-if="
+						secondPostButton == true &&
+						secondPostVisibility === 'public'
+					"
+					#suffix
+					>{{ i18n.ts._visibility.public }}</template
+				>
+				<template
+					v-else-if="
+						secondPostButton == true &&
+						secondPostVisibility === 'l-public'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.localAndFollower }}</template
 				>
 				<template
-					v-else-if="secondPostButton == true && secondPostVisibility === 'home'"
+					v-else-if="
+						secondPostButton == true &&
+						secondPostVisibility === 'home'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.home }}</template
 				>
 				<template
-					v-else-if="secondPostButton == true && secondPostVisibility === 'l-home'"
+					v-else-if="
+						secondPostButton == true &&
+						secondPostVisibility === 'l-home'
+					"
 					#suffix
-					>{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}</template
+					>{{
+						`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
+					}}</template
 				>
 				<template
-					v-else-if="secondPostButton == true && secondPostVisibility === 'followers'"
+					v-else-if="
+						secondPostButton == true &&
+						secondPostVisibility === 'followers'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.followers }}</template
 				>
 				<template
-					v-else-if="secondPostButton == true && secondPostVisibility === 'specified'"
+					v-else-if="
+						secondPostButton == true &&
+						secondPostVisibility === 'specified'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.specified }}</template
 				>
 
-				<FormSwitch v-model="secondPostButton" class="_formBlock">{{
-					i18n.ts.secondPostButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-				<FormSwitch v-if="secondPostButton" v-model="firstPostWideButton" class="_formBlock">{{
-					i18n.ts.wideFirstPostButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-				<FormSwitch v-if="secondPostButton" v-model="secondPostWideButton" class="_formBlock">{{
-					i18n.ts.widePostButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+				<FormSwitch v-model="secondPostButton" class="_formBlock"
+					>{{ i18n.ts.secondPostButton
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
+				<FormSwitch
+					v-if="secondPostButton"
+					v-model="firstPostWideButton"
+					class="_formBlock"
+					>{{ i18n.ts.wideFirstPostButton
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
+				<FormSwitch
+					v-if="secondPostButton"
+					v-model="secondPostWideButton"
+					class="_formBlock"
+					>{{ i18n.ts.widePostButton
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
 
 				<FormSelect v-model="secondPostVisibility" class="_formBlock">
 					<option value="public">
@@ -244,7 +309,9 @@
 						{{ i18n.ts._visibility.home }}
 					</option>
 					<option value="l-home">
-						{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}
+						{{
+							`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
+						}}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -259,41 +326,72 @@
 				<template v-if="thirdPostButton == false" #suffix>{{
 					i18n.ts.buttonNone
 				}}</template>
-				<template v-if="thirdPostButton == true && thirdPostVisibility === 'public'" #suffix>{{
-					i18n.ts._visibility.public
-				}}</template>
 				<template
-					v-else-if="thirdPostButton == true && thirdPostVisibility === 'l-public'"
+					v-if="
+						thirdPostButton == true &&
+						thirdPostVisibility === 'public'
+					"
+					#suffix
+					>{{ i18n.ts._visibility.public }}</template
+				>
+				<template
+					v-else-if="
+						thirdPostButton == true &&
+						thirdPostVisibility === 'l-public'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.localAndFollower }}</template
 				>
 				<template
-					v-else-if="thirdPostButton == true && thirdPostVisibility === 'home'"
+					v-else-if="
+						thirdPostButton == true &&
+						thirdPostVisibility === 'home'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.home }}</template
 				>
 				<template
-					v-else-if="thirdPostButton == true && thirdPostVisibility === 'l-home'"
+					v-else-if="
+						thirdPostButton == true &&
+						thirdPostVisibility === 'l-home'
+					"
 					#suffix
-					>{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}</template
+					>{{
+						`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
+					}}</template
 				>
 				<template
-					v-else-if="thirdPostButton == true && thirdPostVisibility === 'followers'"
+					v-else-if="
+						thirdPostButton == true &&
+						thirdPostVisibility === 'followers'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.followers }}</template
 				>
 				<template
-					v-else-if="thirdPostButton == true && thirdPostVisibility === 'specified'"
+					v-else-if="
+						thirdPostButton == true &&
+						thirdPostVisibility === 'specified'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.specified }}</template
 				>
 
-				<FormSwitch v-model="thirdPostButton" class="_formBlock">{{
-					i18n.ts.thirdPostButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-				<FormSwitch v-if="thirdPostButton" v-model="thirdPostWideButton" class="_formBlock">{{
-					i18n.ts.widePostButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+				<FormSwitch v-model="thirdPostButton" class="_formBlock"
+					>{{ i18n.ts.thirdPostButton
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
+				<FormSwitch
+					v-if="thirdPostButton"
+					v-model="thirdPostWideButton"
+					class="_formBlock"
+					>{{ i18n.ts.widePostButton
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
 
 				<FormSelect v-model="thirdPostVisibility" class="_formBlock">
 					<option value="public">
@@ -306,7 +404,9 @@
 						{{ i18n.ts._visibility.home }}
 					</option>
 					<option value="l-home">
-						{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}
+						{{
+							`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
+						}}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -316,46 +416,80 @@
 					</option>
 				</FormSelect>
 			</FormFolder>
-			<FormFolder v-if="secondPostButton && thirdPostButton" class="_formBlock">
+			<FormFolder
+				v-if="secondPostButton && thirdPostButton"
+				class="_formBlock"
+			>
 				<template #label>{{ i18n.ts.fourthPostButton }}</template>
 				<template v-if="fourthPostButton == false" #suffix>{{
 					i18n.ts.buttonNone
 				}}</template>
-				<template v-if="fourthPostButton == true && fourthPostVisibility === 'public'" #suffix>{{
-					i18n.ts._visibility.public
-				}}</template>
 				<template
-					v-else-if="fourthPostButton == true && fourthPostVisibility === 'l-public'"
+					v-if="
+						fourthPostButton == true &&
+						fourthPostVisibility === 'public'
+					"
+					#suffix
+					>{{ i18n.ts._visibility.public }}</template
+				>
+				<template
+					v-else-if="
+						fourthPostButton == true &&
+						fourthPostVisibility === 'l-public'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.localAndFollower }}</template
 				>
 				<template
-					v-else-if="fourthPostButton == true && fourthPostVisibility === 'home'"
+					v-else-if="
+						fourthPostButton == true &&
+						fourthPostVisibility === 'home'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.home }}</template
 				>
 				<template
-					v-else-if="fourthPostButton == true && fourthPostVisibility === 'l-home'"
+					v-else-if="
+						fourthPostButton == true &&
+						fourthPostVisibility === 'l-home'
+					"
 					#suffix
-					>{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}</template
+					>{{
+						`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
+					}}</template
 				>
 				<template
-					v-else-if="fourthPostButton == true && fourthPostVisibility === 'followers'"
+					v-else-if="
+						fourthPostButton == true &&
+						fourthPostVisibility === 'followers'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.followers }}</template
 				>
 				<template
-					v-else-if="fourthPostButton == true && fourthPostVisibility === 'specified'"
+					v-else-if="
+						fourthPostButton == true &&
+						fourthPostVisibility === 'specified'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.specified }}</template
 				>
 
-				<FormSwitch v-model="fourthPostButton" class="_formBlock">{{
-					i18n.ts.fourthPostButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-				<FormSwitch v-if="fourthPostButton" v-model="fourthPostWideButton" class="_formBlock">{{
-					i18n.ts.widePostButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+				<FormSwitch v-model="fourthPostButton" class="_formBlock"
+					>{{ i18n.ts.fourthPostButton
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
+				<FormSwitch
+					v-if="fourthPostButton"
+					v-model="fourthPostWideButton"
+					class="_formBlock"
+					>{{ i18n.ts.widePostButton
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
 
 				<FormSelect v-model="fourthPostVisibility" class="_formBlock">
 					<option value="public">
@@ -368,7 +502,9 @@
 						{{ i18n.ts._visibility.home }}
 					</option>
 					<option value="l-home">
-						{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}
+						{{
+							`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
+						}}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -378,46 +514,80 @@
 					</option>
 				</FormSelect>
 			</FormFolder>
-			<FormFolder v-if="secondPostButton && thirdPostButton && fourthPostButton" class="_formBlock">
+			<FormFolder
+				v-if="secondPostButton && thirdPostButton && fourthPostButton"
+				class="_formBlock"
+			>
 				<template #label>{{ i18n.ts.fifthPostButton }}</template>
 				<template v-if="fifthPostButton == false" #suffix>{{
 					i18n.ts.buttonNone
 				}}</template>
-				<template v-if="fifthPostButton == true && fifthPostVisibility === 'public'" #suffix>{{
-					i18n.ts._visibility.public
-				}}</template>
 				<template
-					v-else-if="fifthPostButton == true && fifthPostVisibility === 'l-public'"
+					v-if="
+						fifthPostButton == true &&
+						fifthPostVisibility === 'public'
+					"
+					#suffix
+					>{{ i18n.ts._visibility.public }}</template
+				>
+				<template
+					v-else-if="
+						fifthPostButton == true &&
+						fifthPostVisibility === 'l-public'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.localAndFollower }}</template
 				>
 				<template
-					v-else-if="fifthPostButton == true && fifthPostVisibility === 'home'"
+					v-else-if="
+						fifthPostButton == true &&
+						fifthPostVisibility === 'home'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.home }}</template
 				>
 				<template
-					v-else-if="fifthPostButton == true && fifthPostVisibility === 'l-home'"
+					v-else-if="
+						fifthPostButton == true &&
+						fifthPostVisibility === 'l-home'
+					"
 					#suffix
-					>{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}</template
+					>{{
+						`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
+					}}</template
 				>
 				<template
-					v-else-if="fifthPostButton == true && fifthPostVisibility === 'followers'"
+					v-else-if="
+						fifthPostButton == true &&
+						fifthPostVisibility === 'followers'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.followers }}</template
 				>
 				<template
-					v-else-if="fifthPostButton == true && fifthPostVisibility === 'specified'"
+					v-else-if="
+						fifthPostButton == true &&
+						fifthPostVisibility === 'specified'
+					"
 					#suffix
 					>{{ i18n.ts._visibility.specified }}</template
 				>
 
-				<FormSwitch v-model="fifthPostButton" class="_formBlock">{{
-					i18n.ts.fifthPostButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-				<FormSwitch v-if="fifthPostButton" v-model="fifthPostWideButton" class="_formBlock">{{
-					i18n.ts.widePostButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+				<FormSwitch v-model="fifthPostButton" class="_formBlock"
+					>{{ i18n.ts.fifthPostButton
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
+				<FormSwitch
+					v-if="fifthPostButton"
+					v-model="fifthPostWideButton"
+					class="_formBlock"
+					>{{ i18n.ts.widePostButton
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
 
 				<FormSelect v-model="fifthPostVisibility" class="_formBlock">
 					<option value="public">
@@ -430,7 +600,9 @@
 						{{ i18n.ts._visibility.home }}
 					</option>
 					<option value="l-home">
-						{{ `${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})` }}
+						{{
+							`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
+						}}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -446,7 +618,10 @@
 			v-model="channelSecondPostButton"
 			class="_formBlock"
 			@update:modelValue="save()"
-			>{{ i18n.ts.channelSecondPostButton }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+			>{{ i18n.ts.channelSecondPostButton
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span></FormSwitch
 		>
 	</div>
 </template>

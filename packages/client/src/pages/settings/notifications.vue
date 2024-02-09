@@ -4,19 +4,21 @@
 			><template #icon><i class="ph-gear-six ph-bold ph-lg"></i></template
 			>{{ i18n.ts.notificationSetting }}</FormButton
 		>
-		<FormSwitch
-			v-model="enableAntennaTab"
-		>
-			<template #label>{{
-				i18n.ts.enableAntennaTab
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+		<FormSwitch v-model="enableAntennaTab">
+			<template #label
+				>{{ i18n.ts.enableAntennaTab
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></template
+			>
 		</FormSwitch>
-		<FormSwitch
-			v-model="disableRequestNotification"
-		>
-			<template #label>{{
-				i18n.ts.disableRequestNotification
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+		<FormSwitch v-model="disableRequestNotification">
+			<template #label
+				>{{ i18n.ts.disableRequestNotification
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></template
+			>
 		</FormSwitch>
 		<FormSection>
 			<ForFormButtonmLink
@@ -37,7 +39,7 @@
 			<div class="_gaps_m">
 				<MkPushNotificationAllowButton ref="allowButton" />
 				<FormSwitch
-				    :disabled="!pushRegistrationInServer"
+					:disabled="!pushRegistrationInServer"
 					:modelValue="sendReadMessage"
 					@update:modelValue="onChangeSendReadMessage"
 				>
@@ -60,10 +62,15 @@
 			</div>
 		</FormSection>
 		<FormSection>
-		<FormLink to="/settings/webhook" class="_formBlock"
-			><template #icon><i class="ph-lightning ph-bold ph-lg"></i></template
-			>Webhookによる通知の受け取り設定 (Discordなど)<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormLink
-		>
+			<FormLink to="/settings/webhook" class="_formBlock"
+				><template #icon
+					><i class="ph-lightning ph-bold ph-lg"></i></template
+				>Webhookによる通知の受け取り設定 (Discordなど)<span
+					v-if="showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				></FormLink
+			>
 		</FormSection>
 	</div>
 </template>

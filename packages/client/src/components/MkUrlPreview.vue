@@ -50,11 +50,29 @@
 			}&amp;id=${tweetId}`"
 		></iframe>
 	</div>
-	<div v-else v-size="{ max: [400, 350] }" class="mk-url-preview" :class="{legacyStyle: $store.state.compactGridUrl,}" @click.stop>
-		<MkButton v-if="tweetId" :small="true" class="expandTweet" @click="tweetExpanded = true">
+	<div
+		v-else
+		v-size="{ max: [400, 350] }"
+		class="mk-url-preview"
+		:class="{ legacyStyle: $store.state.compactGridUrl }"
+		@click.stop
+	>
+		<MkButton
+			v-if="tweetId"
+			:small="true"
+			class="expandTweet"
+			@click="tweetExpanded = true"
+		>
 			{{ i18n.ts.expandTweet }}
 		</MkButton>
-		<MkButton v-if="thumbnail && ($store.state.enableDataSaverMode && !showThumbnail)" class="showThumbnail" :small="true" @click="showThumbnail = true">
+		<MkButton
+			v-if="
+				thumbnail && $store.state.enableDataSaverMode && !showThumbnail
+			"
+			class="showThumbnail"
+			:small="true"
+			@click="showThumbnail = true"
+		>
 			<i class="ph-image ph-bold ph-lg"></i> {{ i18n.ts.showThumbnail }}
 		</MkButton>
 		<transition :name="$store.state.animation ? 'zoom' : ''" mode="out-in">
@@ -69,7 +87,11 @@
 				:title="url"
 			>
 				<div
-					v-if="thumbnail && (!defaultStore.state.enableDataSaverMode || showThumbnail)"
+					v-if="
+						thumbnail &&
+						(!defaultStore.state.enableDataSaverMode ||
+							showThumbnail)
+					"
 					class="thumbnail"
 					:style="`background-image: url('${thumbnail}')`"
 				>
@@ -94,7 +116,12 @@
 						}}
 					</p>
 					<footer>
-						<img v-if="icon" class="icon" :src="icon" @error="icon = ''" />
+						<img
+							v-if="icon"
+							class="icon"
+							:src="icon"
+							@error="icon = ''"
+						/>
 						<p :title="sitename">{{ sitename }}</p>
 					</footer>
 				</article>
@@ -164,7 +191,9 @@ if (
 	requestUrl.hostname = "www.youtube.com";
 }
 
-const requestLang = (lang || "ja-JP").replace("ja-KS", "ja-JP").replace("ja-KK", "ja-JP");
+const requestLang = (lang || "ja-JP")
+	.replace("ja-KS", "ja-JP")
+	.replace("ja-KK", "ja-JP");
 
 requestUrl.hash = "";
 
@@ -282,11 +311,11 @@ onUnmounted(() => {
 			}
 		}
 	}
-	
+
 	> .expandTweet {
 		margin-top: 3px;
 	}
-	
+
 	> .showThumbnail {
 		margin-top: 3px;
 	}
@@ -331,7 +360,6 @@ onUnmounted(() => {
 					font-size: 6em;
 					opacity: 1;
 				}
-				
 			}
 
 			& + article {
@@ -395,9 +423,8 @@ onUnmounted(() => {
 			}
 		}
 	}
-	
-	&.legacyStyle {
 
+	&.legacyStyle {
 		&.max-width_400px > .link {
 			> .thumbnail {
 				height: 80px;
@@ -414,7 +441,7 @@ onUnmounted(() => {
 						position: absolute;
 						width: 56px;
 						height: 100%;
-					}	
+					}
 					> article {
 						left: 56px;
 						width: calc(100% - 56px);
@@ -422,15 +449,15 @@ onUnmounted(() => {
 				}
 			}
 		}
-	
+
 		> .expandTweet {
 			margin-top: 0px;
 		}
-		
+
 		> .showThumbnail {
 			margin-top: 0px;
 		}
-		
+
 		> .link {
 			margin-top: 0px;
 			pointer-events: auto;
@@ -440,7 +467,7 @@ onUnmounted(() => {
 				height: 100%;
 				background-size: cover;
 				pointer-events: auto;
-				
+
 				> button {
 					font-size: 3.5em;
 					opacity: 0.7;
@@ -450,7 +477,7 @@ onUnmounted(() => {
 						opacity: 0.9;
 					}
 				}
-				
+
 				& + article {
 					left: 100px;
 					width: calc(100% - 100px);

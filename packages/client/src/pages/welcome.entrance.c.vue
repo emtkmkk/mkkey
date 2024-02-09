@@ -29,7 +29,7 @@
 						<div class="about">
 							<div
 								class="desc"
-								style="white-space: pre-line;"
+								style="white-space: pre-line"
 								v-html="
 									meta.description || i18n.ts.headlineMisskey
 								"

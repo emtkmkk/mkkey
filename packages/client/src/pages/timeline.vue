@@ -20,7 +20,11 @@
 
 				<div v-if="queue > 0" class="new">
 					<button class="_buttonPrimary" @click="top()">
-						{{ `${i18n.ts.newNoteRecived} (${queue >= 29 ? "29+" : queue})` }}
+						{{
+							`${i18n.ts.newNoteRecived} (${
+								queue >= 29 ? "29+" : queue
+							})`
+						}}
 					</button>
 				</div>
 				<!-- <div v-if="!isMobile" class="tl _block">
@@ -42,9 +46,18 @@
 						:space-between="20"
 						:virtual="true"
 						:allow-touch-move="
-							(!defaultStore.state.notTopToSwipeStop || (queue === 0 && !queueActive && !((tlComponent?.tlComponent?.pagingComponent?.active || tlComponent?.tlComponent?.pagingComponent?.backed) ?? false))) &&
+							(!defaultStore.state.notTopToSwipeStop ||
+								(queue === 0 &&
+									!queueActive &&
+									!(
+										(tlComponent?.tlComponent
+											?.pagingComponent?.active ||
+											tlComponent?.tlComponent
+												?.pagingComponent?.backed) ??
+										false
+									))) &&
 							defaultStore.state.swipeOnDesktop
-						 "
+						"
 						@swiper="setSwiperRef"
 						@slide-change="onSlideChange"
 					>
@@ -52,7 +65,7 @@
 							v-for="index in timelines"
 							:key="index"
 							:virtual-index="index"
-							style="box-sizing: border-box;"
+							style="box-sizing: border-box"
 						>
 							<XTimeline
 								v-if="index == timelines[swiperRef.activeIndex]"
@@ -60,8 +73,16 @@
 								:key="src"
 								class="tl"
 								:src="src"
-								:list="src === 'list' ? defaultStore.state.thirdTimelineListId : null"
-								:antenna="src === 'antenna' ? defaultStore.state.thirdTimelineListId : null"
+								:list="
+									src === 'list'
+										? defaultStore.state.thirdTimelineListId
+										: null
+								"
+								:antenna="
+									src === 'antenna'
+										? defaultStore.state.thirdTimelineListId
+										: null
+								"
 								:sound="true"
 								:travel-date="travelDate"
 								@queue="queueUpdated"
@@ -116,7 +137,7 @@ let timelines = [];
 if (
 	isLocalTimelineAvailable &&
 	(defaultStore.state.showLocalPostsInTimeline === "social" ||
-	defaultStore.state.showLocalPostsInTimeline === "both")
+		defaultStore.state.showLocalPostsInTimeline === "both")
 ) {
 	timelines.push("home");
 }
@@ -124,7 +145,7 @@ if (
 if (
 	isLocalTimelineAvailable &&
 	(defaultStore.state.showLocalPostsInTimeline === "home" ||
-	defaultStore.state.showLocalPostsInTimeline === "both")
+		defaultStore.state.showLocalPostsInTimeline === "both")
 ) {
 	timelines.push("social");
 }
@@ -133,18 +154,19 @@ if (isLocalTimelineAvailable && !defaultStore.state.hiddenLTL) {
 	timelines.push("local");
 }
 
-if (isRecommendedTimelineAvailable &&
-    defaultStore.state.thirdTimelineType === "media"
-	) {
+if (
+	isRecommendedTimelineAvailable &&
+	defaultStore.state.thirdTimelineType === "media"
+) {
 	timelines.push("recommended");
 }
-if (defaultStore.state.thirdTimelineType === "spotlight"){
+if (defaultStore.state.thirdTimelineType === "spotlight") {
 	timelines.push("spotlight");
 }
-if (defaultStore.state.thirdTimelineType === "list"){
+if (defaultStore.state.thirdTimelineType === "list") {
 	timelines.push("list");
 }
-if (defaultStore.state.thirdTimelineType === "antenna"){
+if (defaultStore.state.thirdTimelineType === "antenna") {
 	timelines.push("antenna");
 }
 if (isGlobalTimelineAvailable && !defaultStore.state.hiddenGTL) {
@@ -169,7 +191,7 @@ let queue = $ref(0);
 const src = $computed({
 	get: () => {
 		if (timelines.includes(defaultStore.reactiveState.tl.value.src)) {
-			return defaultStore.reactiveState.tl.value.src
+			return defaultStore.reactiveState.tl.value.src;
 		} else {
 			return timelines?.[0] || null;
 		}
@@ -212,7 +234,7 @@ async function chooseList(ev: MouseEvent): Promise<void> {
 }
 
 async function chooseAntenna(ev: MouseEvent): Promise<void> {
-	const antennas = await os.api("antennas/list", {mkkey: true});
+	const antennas = await os.api("antennas/list", { mkkey: true });
 	const items = [
 		{
 			type: "link" as const,
@@ -226,7 +248,9 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 			type: "link" as const,
 			text: antenna.name,
 			icon: "",
-			indicate: $i.mutingNotificationTypes.includes("unreadAntenna") && antenna.hasUnreadNote,
+			indicate:
+				$i.mutingNotificationTypes.includes("unreadAntenna") &&
+				antenna.hasUnreadNote,
 			to: `/timeline/antenna/${antenna.id}`,
 		}))
 	);
@@ -234,7 +258,15 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 }
 
 function saveSrc(
-	newSrc: "home" | "local" | "spotlight" | "recommended" | "list" | "antenna" | "social" | "global"
+	newSrc:
+		| "home"
+		| "local"
+		| "spotlight"
+		| "recommended"
+		| "list"
+		| "antenna"
+		| "social"
+		| "global"
 ): void {
 	defaultStore.set("tl", {
 		...defaultStore.state.tl,
@@ -242,60 +274,80 @@ function saveSrc(
 	});
 }
 
-const endpoint = computed(() => 
-		src === "local"
-				? "notes/local-timeline"
-				: src === "social"
-				? "notes/hybrid-timeline"
-				: src === "recommended"
-				? "notes/recommended-timeline"
-				: src === "spotlight"
-				? "notes/spotlight-timeline"
-				: src === "list"
-				? "notes/user-list-timeline"
-				: src === "antenna"
-				? "antennas/notes"
-				: src === "global"
-				? "notes/global-timeline"
-				: "notes/timeline",
-	)
+const endpoint = computed(() =>
+	src === "local"
+		? "notes/local-timeline"
+		: src === "social"
+		? "notes/hybrid-timeline"
+		: src === "recommended"
+		? "notes/recommended-timeline"
+		: src === "spotlight"
+		? "notes/spotlight-timeline"
+		: src === "list"
+		? "notes/user-list-timeline"
+		: src === "antenna"
+		? "antennas/notes"
+		: src === "global"
+		? "notes/global-timeline"
+		: "notes/timeline"
+);
 
-const lastBackedDate = $computed(() => defaultStore.reactiveState.lastBackedDate?.value?.[endpoint.value]);
+const lastBackedDate = $computed(
+	() => defaultStore.reactiveState.lastBackedDate?.value?.[endpoint.value]
+);
 
 let travelDate = $ref<Date | undefined>(undefined);
 
 const onContextmenu = (ev: MouseEvent) => {
 	os.contextMenu(
 		[
-			...( travelDate ? [{
-				type: "label",
-				text: i18n.ts.showingPastTimeline,
-			} as MenuLabel,{
-				type: "label",
-				text: travelDate.toLocaleString(),
-			} as MenuLabel,{
-				icon: 'ph-arrow-line-up ph-bold ph-lg',
-				text: i18n.ts.jumpToNow as string,
-				action: () => {
-					travelDate = undefined;
-					Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel() : tlComponent.value?.timetravel();
-				},
-			} as MenuButton] : []),
-			...(!travelDate && lastBackedDate?.createdAt && Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000 ? [{
-				icon: 'ph-arrow-arc-left ph-bold ph-lg',
-				text: i18n.ts.lastBackedDate as string,
-				action: () => {
-					let lastDate = new Date(lastBackedDate?.date);
-					lastDate.setSeconds(lastDate.getSeconds() + 1);
-					travelDate = lastDate;
-					Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel(travelDate) : tlComponent.value?.timetravel(travelDate);
-				},
-			} as MenuButton] : []),
+			...(travelDate
+				? [
+						{
+							type: "label",
+							text: i18n.ts.showingPastTimeline,
+						} as MenuLabel,
+						{
+							type: "label",
+							text: travelDate.toLocaleString(),
+						} as MenuLabel,
+						{
+							icon: "ph-arrow-line-up ph-bold ph-lg",
+							text: i18n.ts.jumpToNow as string,
+							action: () => {
+								travelDate = undefined;
+								Array.isArray(tlComponent.value)
+									? tlComponent.value?.[0]?.timetravel()
+									: tlComponent.value?.timetravel();
+							},
+						} as MenuButton,
+				  ]
+				: []),
+			...(!travelDate &&
+			lastBackedDate?.createdAt &&
+			Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000
+				? [
+						{
+							icon: "ph-arrow-arc-left ph-bold ph-lg",
+							text: i18n.ts.lastBackedDate as string,
+							action: () => {
+								let lastDate = new Date(lastBackedDate?.date);
+								lastDate.setSeconds(lastDate.getSeconds() + 1);
+								travelDate = lastDate;
+								Array.isArray(tlComponent.value)
+									? tlComponent.value?.[0]?.timetravel(
+											travelDate
+									  )
+									: tlComponent.value?.timetravel(travelDate);
+							},
+						} as MenuButton,
+				  ]
+				: []),
 			{
-				icon: 'ph-calendar-blank ph-bold ph-lg',
+				icon: "ph-calendar-blank ph-bold ph-lg",
 				text: i18n.ts.jumpToSpecifiedDate as string,
 				action: () => {
-					timetravel()
+					timetravel();
 				},
 			} as MenuButton,
 		],
@@ -310,49 +362,72 @@ async function timetravel(defaultDate?: Date): Promise<void> {
 	});
 	if (canceled || !date || Date.now() < date.valueOf()) {
 		travelDate = undefined;
-		Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel() : tlComponent.value?.timetravel();
+		Array.isArray(tlComponent.value)
+			? tlComponent.value?.[0]?.timetravel()
+			: tlComponent.value?.timetravel();
 		return;
 	}
 
 	travelDate = date;
-	Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.timetravel(date) : tlComponent.value?.timetravel(date);
+	Array.isArray(tlComponent.value)
+		? tlComponent.value?.[0]?.timetravel(date)
+		: tlComponent.value?.timetravel(date);
 }
 
 function focus(): void {
-	Array.isArray(tlComponent.value) ? tlComponent.value?.[0]?.focus() : tlComponent.value?.focus();
+	Array.isArray(tlComponent.value)
+		? tlComponent.value?.[0]?.focus()
+		: tlComponent.value?.focus();
 }
 const headerActions = $computed(() => [
-	...(defaultStore.state.showTimeTravelButton || travelDate ? [{
-		icon: 'ph-calendar-blank ph-bold ph-lg',
-		title: i18n.ts.showingPastTimeline,
-		text: i18n.ts.showingPastTimeline,
-		highlighted: travelDate,
-		iconOnly: true,
-		handler: () => {
-			const lastBackedDate = defaultStore.state.lastBackedDate?.[endpoint.value]
-			if (lastBackedDate?.createdAt && Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000) {
-					let lastDate = new Date(lastBackedDate?.date);
-					lastDate.setSeconds(lastDate.getSeconds() + 60);
-				timetravel(lastDate)
-			} else {
-				timetravel()
-			}
-		}
-	}] : []),
-	...(defaultStore.state.showListButton ? [{
-		icon: "ph-list-bullets ph-bold ph-lg",
-		title: i18n.ts.lists,
-		text: i18n.ts.lists,
-		iconOnly: true,
-		handler: chooseList,
-	}] : []),
-	...(defaultStore.state.showAntennaButton ? [{
-		icon: "ph-flying-saucer ph-bold ph-lg",
-		title: i18n.ts.antennas,
-		text: i18n.ts.antennas,
-		iconOnly: true,
-		handler: chooseAntenna,
-	}] : []),
+	...(defaultStore.state.showTimeTravelButton || travelDate
+		? [
+				{
+					icon: "ph-calendar-blank ph-bold ph-lg",
+					title: i18n.ts.showingPastTimeline,
+					text: i18n.ts.showingPastTimeline,
+					highlighted: travelDate,
+					iconOnly: true,
+					handler: () => {
+						const lastBackedDate =
+							defaultStore.state.lastBackedDate?.[endpoint.value];
+						if (
+							lastBackedDate?.createdAt &&
+							Date.now() - Date.parse(lastBackedDate?.createdAt) <
+								30 * 60 * 1000
+						) {
+							let lastDate = new Date(lastBackedDate?.date);
+							lastDate.setSeconds(lastDate.getSeconds() + 60);
+							timetravel(lastDate);
+						} else {
+							timetravel();
+						}
+					},
+				},
+		  ]
+		: []),
+	...(defaultStore.state.showListButton
+		? [
+				{
+					icon: "ph-list-bullets ph-bold ph-lg",
+					title: i18n.ts.lists,
+					text: i18n.ts.lists,
+					iconOnly: true,
+					handler: chooseList,
+				},
+		  ]
+		: []),
+	...(defaultStore.state.showAntennaButton
+		? [
+				{
+					icon: "ph-flying-saucer ph-bold ph-lg",
+					title: i18n.ts.antennas,
+					text: i18n.ts.antennas,
+					iconOnly: true,
+					handler: chooseAntenna,
+				},
+		  ]
+		: []),
 ]);
 
 // Swap home timeline with social's functionality
@@ -360,7 +435,7 @@ const headerActions = $computed(() => [
 const headerTabs = $computed(() => [
 	...(isLocalTimelineAvailable &&
 	(defaultStore.state.showLocalPostsInTimeline === "social" ||
-	defaultStore.state.showLocalPostsInTimeline === "both")
+		defaultStore.state.showLocalPostsInTimeline === "both")
 		? [
 				{
 					key: "home",
@@ -422,7 +497,8 @@ const headerTabs = $computed(() => [
 				},
 		  ]
 		: []), */
-	...(isRecommendedTimelineAvailable && defaultStore.state.thirdTimelineType === "media"
+	...(isRecommendedTimelineAvailable &&
+	defaultStore.state.thirdTimelineType === "media"
 		? [
 				{
 					key: "recommended",
@@ -476,7 +552,10 @@ const headerTabs = $computed(() => [
 
 definePageMetadata(
 	computed(() => ({
-		title: timelines == null || timelines.length == 0 ? i18n.ts.wall : i18n.ts.timeline,
+		title:
+			timelines == null || timelines.length == 0
+				? i18n.ts.wall
+				: i18n.ts.timeline,
 		icon:
 			src === "local"
 				? "ph-users ph-bold ph-lg"

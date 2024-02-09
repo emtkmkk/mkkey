@@ -36,10 +36,7 @@
 				</div>
 				<div class="_comment">
 					<p>{{ i18n.ts._auth.comment }}</p>
-					<FormInput
-							v-model="comment"
-							class="_formBlock"
-					/>
+					<FormInput v-model="comment" class="_formBlock" />
 				</div>
 				<div class="_footer">
 					<MkButton inline @click="deny">{{
@@ -84,7 +81,7 @@ async function accept(): Promise<void> {
 	state = "waiting";
 	await os.api("miauth/gen-token", {
 		session: props.session,
-		name: `${props.name}${comment ? ` (${comment.slice(0,20)})` : ''}`,
+		name: `${props.name}${comment ? ` (${comment.slice(0, 20)})` : ""}`,
 		iconUrl: props.icon,
 		permission: _permissions,
 	});

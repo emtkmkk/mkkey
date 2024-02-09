@@ -1,9 +1,14 @@
 <template>
 	<div class="_formRoot">
 		<FormSection>
-			<template #label>{{
-				i18n.ts._exportOrImport.emojiDeckList
-			}}<span v-if="defaultStore.state.showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+			<template #label
+				>{{ i18n.ts._exportOrImport.emojiDeckList
+				}}<span
+					v-if="defaultStore.state.showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				></template
+			>
 			<FormFolder class="_formBlock">
 				<template #label>{{ i18n.ts.export }}</template>
 				<template #icon
@@ -11,21 +16,71 @@
 				></template>
 				<template v-if="defaultStore.state.enableEmojiReplace">
 					<FormRadios v-model="exportDeckType" class="_formBlock">
-						<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
-						<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
-						<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
-						<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
-						<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
+						<option value="1">
+							{{
+								defaultStore.state.reactionsFolderName ||
+								"1ページ目"
+							}}
+						</option>
+						<option value="2">
+							{{
+								defaultStore.state.reactionsFolderName2 ||
+								"2ページ目"
+							}}
+						</option>
+						<option value="3">
+							{{
+								defaultStore.state.reactionsFolderName3 ||
+								"3ページ目"
+							}}
+						</option>
+						<option value="4">
+							{{
+								defaultStore.state.reactionsFolderName4 ||
+								"4ページ目"
+							}}
+						</option>
+						<option value="5">
+							{{
+								defaultStore.state.reactionsFolderName5 ||
+								"5ページ目"
+							}}
+						</option>
 						<option value="6">{{ "全絵文字置換" }}</option>
 					</FormRadios>
 				</template>
 				<template v-else>
 					<FormRadios v-model="exportDeckType" class="_formBlock">
-						<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
-						<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
-						<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
-						<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
-						<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
+						<option value="1">
+							{{
+								defaultStore.state.reactionsFolderName ||
+								"1ページ目"
+							}}
+						</option>
+						<option value="2">
+							{{
+								defaultStore.state.reactionsFolderName2 ||
+								"2ページ目"
+							}}
+						</option>
+						<option value="3">
+							{{
+								defaultStore.state.reactionsFolderName3 ||
+								"3ページ目"
+							}}
+						</option>
+						<option value="4">
+							{{
+								defaultStore.state.reactionsFolderName4 ||
+								"4ページ目"
+							}}
+						</option>
+						<option value="5">
+							{{
+								defaultStore.state.reactionsFolderName5 ||
+								"5ページ目"
+							}}
+						</option>
 					</FormRadios>
 				</template>
 				<MkButton
@@ -44,21 +99,71 @@
 				></template>
 				<template v-if="defaultStore.state.enableEmojiReplace">
 					<FormRadios v-model="importDeckType" class="_formBlock">
-						<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
-						<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
-						<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
-						<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
-						<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
+						<option value="1">
+							{{
+								defaultStore.state.reactionsFolderName ||
+								"1ページ目"
+							}}
+						</option>
+						<option value="2">
+							{{
+								defaultStore.state.reactionsFolderName2 ||
+								"2ページ目"
+							}}
+						</option>
+						<option value="3">
+							{{
+								defaultStore.state.reactionsFolderName3 ||
+								"3ページ目"
+							}}
+						</option>
+						<option value="4">
+							{{
+								defaultStore.state.reactionsFolderName4 ||
+								"4ページ目"
+							}}
+						</option>
+						<option value="5">
+							{{
+								defaultStore.state.reactionsFolderName5 ||
+								"5ページ目"
+							}}
+						</option>
 						<option value="6">{{ "全絵文字置換" }}</option>
 					</FormRadios>
 				</template>
 				<template v-else>
 					<FormRadios v-model="importDeckType" class="_formBlock">
-						<option value="1">{{ defaultStore.state.reactionsFolderName || "1ページ目" }}</option>
-						<option value="2">{{ defaultStore.state.reactionsFolderName2 || "2ページ目" }}</option>
-						<option value="3">{{ defaultStore.state.reactionsFolderName3 || "3ページ目" }}</option>
-						<option value="4">{{ defaultStore.state.reactionsFolderName4 || "4ページ目" }}</option>
-						<option value="5">{{ defaultStore.state.reactionsFolderName5 || "5ページ目" }}</option>
+						<option value="1">
+							{{
+								defaultStore.state.reactionsFolderName ||
+								"1ページ目"
+							}}
+						</option>
+						<option value="2">
+							{{
+								defaultStore.state.reactionsFolderName2 ||
+								"2ページ目"
+							}}
+						</option>
+						<option value="3">
+							{{
+								defaultStore.state.reactionsFolderName3 ||
+								"3ページ目"
+							}}
+						</option>
+						<option value="4">
+							{{
+								defaultStore.state.reactionsFolderName4 ||
+								"4ページ目"
+							}}
+						</option>
+						<option value="5">
+							{{
+								defaultStore.state.reactionsFolderName5 ||
+								"5ページ目"
+							}}
+						</option>
 					</FormRadios>
 				</template>
 				<FormInput
@@ -68,24 +173,38 @@
 					:placeholder="config.host"
 					style="margin: 0 0 !important"
 				>
-					<template #label>{{ `インポート元のサーバ(misskey.ioなど)` }}</template>
-					<template #caption>{{ importServerName ? "下のリンクのアクセス可能な方にアクセスし、「値(JSON)」の内容をすべてコピーして下のテキストボックスに貼り付けてください。" : "インポート元のサーバ名を入力してください。" }}</template>
+					<template #label>{{
+						`インポート元のサーバ(misskey.ioなど)`
+					}}</template>
+					<template #caption>{{
+						importServerName
+							? "下のリンクのアクセス可能な方にアクセスし、「値(JSON)」の内容をすべてコピーして下のテキストボックスに貼り付けてください。"
+							: "インポート元のサーバ名を入力してください。"
+					}}</template>
 				</FormInput>
 				<MkButton
 					v-if="importServerName"
 					:class="$style.button"
 					inline
-					@click="openWindow(`https://${importServerName}/registry/value/@/client/base/reactions`)"
+					@click="
+						openWindow(
+							`https://${importServerName}/registry/value/@/client/base/reactions`
+						)
+					"
 				>
-				{{ "1" }}
+					{{ "1" }}
 				</MkButton>
 				<MkButton
 					v-if="importServerName"
 					:class="$style.button"
 					inline
-					@click="openWindow(`https://${importServerName}/registry/value/system/client/base/reactions`)"
+					@click="
+						openWindow(
+							`https://${importServerName}/registry/value/system/client/base/reactions`
+						)
+					"
 				>
-				{{ "2" }}
+					{{ "2" }}
 				</MkButton>
 				<FormTextarea v-model="code" tall class="_formBlock">
 					<template #label>{{ i18n.ts.code }}</template>
@@ -304,14 +423,30 @@ const importDeckType = ref("1");
 const code = ref<string>();
 const importServerName = ref<string>();
 
-const deckType = {"1":"reactions", "2":"reactions2", "3":"reactions3", "4":"reactions4", "5":"reactions5", "6":"allEmojiReplace"};
+const deckType = {
+	"1": "reactions",
+	"2": "reactions2",
+	"3": "reactions3",
+	"4": "reactions4",
+	"5": "reactions5",
+	"6": "allEmojiReplace",
+};
 
 const href = $computed(() => {
 	return URL.createObjectURL(
-		new Blob([JSON5.stringify(defaultStore.state[deckType[exportDeckType.value]], null, 2)], {
-			type: "application/json",
-		})
-	)
+		new Blob(
+			[
+				JSON5.stringify(
+					defaultStore.state[deckType[exportDeckType.value]],
+					null,
+					2
+				),
+			],
+			{
+				type: "application/json",
+			}
+		)
+	);
 });
 
 const name = $computed(() => {
@@ -329,9 +464,8 @@ const name = $computed(() => {
 		case "6":
 			return "allReplaceEmoji_" + new Date().toLocaleString();
 		default:
-			return "reactions"
+			return "reactions";
 	}
-	
 });
 
 const onExportSuccess = () => {
@@ -418,7 +552,6 @@ const importBlocking = async (ev) => {
 		.catch(onError);
 };
 
-
 const openWindow = (url) => {
 	window.open(url);
 };
@@ -441,12 +574,15 @@ const importEmojiDecks = (ev) => {
 			return;
 		}
 
-		if (Array.isArray(parsedData) && parsedData.every(item => typeof item === 'string')) {
-			let customEmojis = $computed(() =>
-				instance.emojis
-			);
+		if (
+			Array.isArray(parsedData) &&
+			parsedData.every((item) => typeof item === "string")
+		) {
+			let customEmojis = $computed(() => instance.emojis);
 			let emojiStr = $computed(() =>
-				customEmojis ? customEmojis.map((x) => `:${x.name}:`) : undefined
+				customEmojis
+					? customEmojis.map((x) => `:${x.name}:`)
+					: undefined
 			);
 			let deck = [...defaultStore.state[deckType[importDeckType.value]]];
 			parsedData.forEach((x) => {
@@ -470,21 +606,28 @@ const importEmojiDecks = (ev) => {
 					}
 					return;
 				}
-				if (importServerName.value === config.host || !importServerName.value) {
+				if (
+					importServerName.value === config.host ||
+					!importServerName.value
+				) {
 					if (!deck.includes(`:${emojiName}:`)) {
 						deck.push(`:${emojiName}:`);
 					}
 					return;
 				}
-				if (!deck.includes(`:${emojiName}@${importServerName.value}:`)) {
+				if (
+					!deck.includes(`:${emojiName}@${importServerName.value}:`)
+				) {
 					deck.push(`:${emojiName}@${importServerName.value}:`);
 				}
-			})
+			});
 			defaultStore.set(deckType[importDeckType.value], deck);
 			code.value = "";
 			onImportSuccess();
 		} else {
-			onError(new Error("Invalid data format. Expected an array of strings."));
+			onError(
+				new Error("Invalid data format. Expected an array of strings.")
+			);
 		}
 	} catch (error) {
 		onError(error);

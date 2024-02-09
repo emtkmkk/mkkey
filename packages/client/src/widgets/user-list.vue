@@ -16,12 +16,20 @@
 		<div class="wsdlkfj">
 			<div v-if="widgetProps.listId == null" class="init">
 				<MkButton primary @click="chooseList">{{
-					i18n.ts._widgets._userList.chooseList	
+					i18n.ts._widgets._userList.chooseList
 				}}</MkButton>
 			</div>
 			<MkLoading v-else-if="fetching" />
 			<div v-else class="users">
-				<MkAvatars :user-ids="users" :sortStatus="widgetProps.sortStatus" :hiddenOfflineSleep="widgetProps.hiddenOfflineSleep" :interval="widgetProps.highFrequencyReload ? 1000 * 60 : 1000 * 300" class="userAvatars" />
+				<MkAvatars
+					:user-ids="users"
+					:sortStatus="widgetProps.sortStatus"
+					:hiddenOfflineSleep="widgetProps.hiddenOfflineSleep"
+					:interval="
+						widgetProps.highFrequencyReload ? 1000 * 60 : 1000 * 300
+					"
+					class="userAvatars"
+				/>
 			</div>
 		</div>
 	</MkContainer>
@@ -108,7 +116,7 @@ const fetch = () => {
 		});
 	});
 };
-useInterval(fetch, (widgetProps.highFrequencyReload ? 1000 * 60 : 1000 * 300), {
+useInterval(fetch, widgetProps.highFrequencyReload ? 1000 * 60 : 1000 * 300, {
 	immediate: true,
 	afterMounted: true,
 });

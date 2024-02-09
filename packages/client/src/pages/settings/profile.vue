@@ -78,15 +78,16 @@
 		>
 			<template #label>{{ i18n.ts.birthday }}</template>
 			<template #prefix><i class="ph-cake ph-bold ph-lg"></i></template>
-			<template #caption
-				>{{ i18n.ts.hiddenYear }}</template
-			>
+			<template #caption>{{ i18n.ts.hiddenYear }}</template>
 		</FormInput>
 		<MkButton
-			@click="profile.birthday = '9999' + profile.birthday.slice(4)" class="_formBlock"
-		>{{
-			i18n.ts.hiddenYearSwitch
-		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></MkButton>
+			@click="profile.birthday = '9999' + profile.birthday.slice(4)"
+			class="_formBlock"
+			>{{ i18n.ts.hiddenYearSwitch
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span></MkButton
+		>
 
 		<FormSelect v-model="profile.lang" class="_formBlock">
 			<template #label>{{ i18n.ts.language }}</template>
@@ -108,14 +109,22 @@
 						:min-width="250"
 						class="_formBlock"
 					>
-						<FormInput v-model="record.name" small misskey-auto-complete>
+						<FormInput
+							v-model="record.name"
+							small
+							misskey-auto-complete
+						>
 							<template #label
 								>{{ i18n.ts._profile.metadataLabel }} #{{
 									i + 1
 								}}</template
 							>
 						</FormInput>
-						<FormInput v-model="record.value" small misskey-auto-complete>
+						<FormInput
+							v-model="record.value"
+							small
+							misskey-auto-complete
+						>
 							<template #label
 								>{{ i18n.ts._profile.metadataContent }} #{{
 									i + 1
@@ -166,7 +175,9 @@
 
 		<FormSwitch v-model="profile.showDonateBadges" class="_formBlock"
 			>{{ i18n.ts.showDonateBadges
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span></FormSwitch
 		>
 		<div v-if="saveButton == true">
 			<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
@@ -270,60 +281,68 @@ function save() {
 		hideOnlineStatus: !!profile.isBot,
 		isCat: !!profile.isCat,
 		speakAsCat: !!profile.speakAsCat,
-		showDonateBadges: !!profile.showDonateBadges
+		showDonateBadges: !!profile.showDonateBadges,
 	});
 }
 
 function changeAvatar(ev) {
-	selectFile(ev.currentTarget ?? ev.target, i18n.ts.avatar, undefined, undefined, "avatar").then(
-		async (file) => {
-			let originalOrCropped = file;
+	selectFile(
+		ev.currentTarget ?? ev.target,
+		i18n.ts.avatar,
+		undefined,
+		undefined,
+		"avatar"
+	).then(async (file) => {
+		let originalOrCropped = file;
 
-			const { canceled } = await os.yesno({
-				type: "question",
-				text: i18n.t("cropImageAsk"),
+		const { canceled } = await os.yesno({
+			type: "question",
+			text: i18n.t("cropImageAsk"),
+		});
+
+		if (!canceled) {
+			originalOrCropped = await os.cropImage(file, {
+				aspectRatio: 1,
+				to: "avatar",
 			});
-
-			if (!canceled) {
-				originalOrCropped = await os.cropImage(file, {
-					aspectRatio: 1,
-					to: "avatar",
-				});
-			}
-
-			const i = await os.apiWithDialog("i/update", {
-				avatarId: originalOrCropped.id,
-			});
-			$i.avatarId = i.avatarId;
-			$i.avatarUrl = i.avatarUrl;
 		}
-	);
+
+		const i = await os.apiWithDialog("i/update", {
+			avatarId: originalOrCropped.id,
+		});
+		$i.avatarId = i.avatarId;
+		$i.avatarUrl = i.avatarUrl;
+	});
 }
 
 function changeBanner(ev) {
-	selectFile(ev.currentTarget ?? ev.target, i18n.ts.banner, undefined, undefined, "banner").then(
-		async (file) => {
-			let originalOrCropped = file;
+	selectFile(
+		ev.currentTarget ?? ev.target,
+		i18n.ts.banner,
+		undefined,
+		undefined,
+		"banner"
+	).then(async (file) => {
+		let originalOrCropped = file;
 
-			const { canceled } = await os.yesno({
-				type: "question",
-				text: i18n.t("cropImageAsk"),
+		const { canceled } = await os.yesno({
+			type: "question",
+			text: i18n.t("cropImageAsk"),
+		});
+
+		if (!canceled) {
+			originalOrCropped = await os.cropImage(file, {
+				aspectRatio: 2,
+				to: "banner",
 			});
-
-			if (!canceled) {
-				originalOrCropped = await os.cropImage(file, {
-					aspectRatio: 2,
-					to: "banner"
-				});
-			}
-
-			const i = await os.apiWithDialog("i/update", {
-				bannerId: originalOrCropped.id,
-			});
-			$i.bannerId = i.bannerId;
-			$i.bannerUrl = i.bannerUrl;
 		}
-	);
+
+		const i = await os.apiWithDialog("i/update", {
+			bannerId: originalOrCropped.id,
+		});
+		$i.bannerId = i.bannerId;
+		$i.bannerUrl = i.bannerUrl;
+	});
 }
 
 const headerActions = $computed(() => []);

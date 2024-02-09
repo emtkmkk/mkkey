@@ -1,9 +1,16 @@
 <template>
 	<template v-for="file in note.files.filter((file) => previewable(file))">
-		<div 
-			v-if="(defaultStore.state.enableDataSaverMode || (file.isSensitive && defaultStore.state.nsfw !== 'ignore')) && !showingFiles.includes(file.id) && (file.type.startsWith('video') || file.type.startsWith('image'))" 
+		<div
+			v-if="
+				(defaultStore.state.enableDataSaverMode ||
+					(file.isSensitive &&
+						defaultStore.state.nsfw !== 'ignore')) &&
+				!showingFiles.includes(file.id) &&
+				(file.type.startsWith('video') || file.type.startsWith('image'))
+			"
 			:class="$style.sensitive"
-			@click="showingFiles.push(file.id)">
+			@click="showingFiles.push(file.id)"
+		>
 			<ImgWithBlurhash
 				:class="$style.bg"
 				:hash="file.blurhash"
@@ -17,11 +24,30 @@
 						><i class="ph-warning ph-bold ph-lg"></i>
 						{{ i18n.ts.sensitive }}</b
 					>
-					<b v-if="(defaultStore.state.enableDataSaverMode && file.size) || !file.isSensitive" style="display: block"
-						><i v-if="file.type.startsWith('image')" class="ph-image ph-bold ph-lg"></i><i v-if="file.type.startsWith('video')" class="ph-file-video ph-bold ph-lg"></i>
-						{{ defaultStore.state.enableDataSaverMode && file.size ? bytes(file.size,2) : i18n.ts.image }}</b
+					<b
+						v-if="
+							(defaultStore.state.enableDataSaverMode &&
+								file.size) ||
+							!file.isSensitive
+						"
+						style="display: block"
+						><i
+							v-if="file.type.startsWith('image')"
+							class="ph-image ph-bold ph-lg"
+						></i
+						><i
+							v-if="file.type.startsWith('video')"
+							class="ph-file-video ph-bold ph-lg"
+						></i>
+						{{
+							defaultStore.state.enableDataSaverMode && file.size
+								? bytes(file.size, 2)
+								: i18n.ts.image
+						}}</b
 					>
-					<span style="display: block">{{ i18n.ts.clickToShow }}</span>
+					<span style="display: block">{{
+						i18n.ts.clickToShow
+					}}</span>
 				</div>
 			</div>
 		</div>
@@ -30,24 +56,33 @@
 				v-if="file.type.startsWith('video')"
 				:hash="file.blurhash"
 				:src="thumbnail(file)"
-				:title="file.name"/>
+				:title="file.name"
+			/>
 			<ImgWithBlurhash
 				v-if="file.type.startsWith('image')"
 				:hash="file.blurhash"
 				:src="thumbnail(file)"
-				:title="file.name"/>
+				:title="file.name"
+			/>
 			<div v-else :class="$style.sensitive">
-				<div v-if="file.isSensitive"><i class="ph-bold ph-file-audio"></i> {{ i18n.ts.sensitive }}</div>
-				<div v-else><i class="ph-bold ph-file-audio"></i> {{ i18n.ts.audioFile }}</div>
+				<div v-if="file.isSensitive">
+					<i class="ph-bold ph-file-audio"></i>
+					{{ i18n.ts.sensitive }}
+				</div>
+				<div v-else>
+					<i class="ph-bold ph-file-audio"></i>
+					{{ i18n.ts.audioFile }}
+				</div>
 			</div>
-			<div v-if="file.type.startsWith('video')" :class="$style.gif">{{ i18n.ts.video }}</div>
+			<div v-if="file.type.startsWith('video')" :class="$style.gif">
+				{{ i18n.ts.video }}
+			</div>
 			<div v-if="file.type === 'image/gif'" :class="$style.gif">GIF</div>
 		</MkA>
 	</template>
 </template>
 
 <script lang="ts" setup>
-
 import { notePage } from "@/filters/note.js";
 import { i18n } from "@/i18n.js";
 import ImgWithBlurhash from "@/components/MkImgWithBlurhash.vue";
@@ -55,7 +90,7 @@ import * as Misskey from "misskey-js";
 import { defaultStore } from "@/store.js";
 import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import { FILE_TYPE_BROWSERSAFE } from "@/const";
-import bytes from '@/filters/bytes';
+import bytes from "@/filters/bytes";
 
 let showingFiles = $ref<string[]>([]);
 
@@ -98,7 +133,7 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 	place-items: center;
 	height: 220px;
 	position: relative;
-	
+
 	> .bg {
 		filter: brightness(0.5);
 	}

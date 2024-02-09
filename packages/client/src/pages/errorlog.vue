@@ -19,16 +19,16 @@ const errorLog = ref("");
 let intervalId;
 
 const fetchErrorLog = async () => {
-    errorLog.value = (await get("errorLog") || []).join("\n");
+	errorLog.value = ((await get("errorLog")) || []).join("\n");
 };
 
 onMounted(() => {
-    fetchErrorLog();
-    intervalId = setInterval(fetchErrorLog, 30000);
+	fetchErrorLog();
+	intervalId = setInterval(fetchErrorLog, 30000);
 });
 
 onUnmounted(() => {
-    clearInterval(intervalId);
+	clearInterval(intervalId);
 });
 
 definePageMetadata({
@@ -40,7 +40,7 @@ definePageMetadata({
 <style lang="scss" module>
 .root {
 	background: var(--bg);
-	white-space: pre-wrap; 
+	white-space: pre-wrap;
 	overflow-y: auto;
 }
 </style>

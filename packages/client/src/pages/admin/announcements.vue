@@ -13,10 +13,16 @@
 					class="_card _gap announcements"
 				>
 					<div class="_content announcement">
-						<MkInput v-model="announcement.title" misskey-auto-complete>
+						<MkInput
+							v-model="announcement.title"
+							misskey-auto-complete
+						>
 							<template #label>{{ i18n.ts.title }}</template>
 						</MkInput>
-						<MkTextarea v-model="announcement.text" misskey-auto-complete>
+						<MkTextarea
+							v-model="announcement.text"
+							misskey-auto-complete
+						>
 							<template #label>{{ i18n.ts.text }}</template>
 						</MkTextarea>
 						<MkInput v-model="announcement.imageUrl">

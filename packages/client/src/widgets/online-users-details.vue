@@ -7,18 +7,40 @@
 		}"
 	>
 		<span v-if="widgetProps.showOnline" class="text" data-v-93ec8385="">
-		接続中: <b data-v-93ec8385="">{{ onlineUsersCount + honlineUsersCount }}</b>{{ showCount === 4 || showCount === 2 ? "  " : "" }}
-		<br v-if="showCount === 3"></span>
+			接続中:
+			<b data-v-93ec8385="">{{ onlineUsersCount + honlineUsersCount }}</b
+			>{{ showCount === 4 || showCount === 2 ? "  " : "" }}
+			<br v-if="showCount === 3"
+		/></span>
 		<span v-if="widgetProps.showAway" class="text" data-v-93ec8385="">
-		離席中: <b data-v-93ec8385="">{{ activeUsersCount + hactiveUsersCount }}</b>{{ (showCount === 3 && widgetProps.showOnline) || (showCount === 2 && !widgetProps.showOnline) ? "  " : "" }}
-		<br v-if="showCount === 4 || (!widgetProps.showOnline && showCount === 3)"></span>
+			離席中:
+			<b data-v-93ec8385="">{{ activeUsersCount + hactiveUsersCount }}</b
+			>{{
+				(showCount === 3 && widgetProps.showOnline) ||
+				(showCount === 2 && !widgetProps.showOnline)
+					? "  "
+					: ""
+			}}
+			<br
+				v-if="
+					showCount === 4 ||
+					(!widgetProps.showOnline && showCount === 3)
+				"
+		/></span>
 		<span v-if="widgetProps.showOffline" class="text" data-v-93ec8385="">
-		切断中: <b data-v-93ec8385="">{{ offline1UsersCount + offline2UsersCount + offline3UsersCount }}</b>{{ widgetProps.showSleep ? "  " : "" }}
+			切断中:
+			<b data-v-93ec8385="">{{
+				offline1UsersCount + offline2UsersCount + offline3UsersCount
+			}}</b
+			>{{ widgetProps.showSleep ? "  " : "" }}
 		</span>
 		<span v-if="widgetProps.showSleep" class="text" data-v-93ec8385="">
-		休眠中: <b data-v-93ec8385="">{{ sleepUsersCount + dsleepUsersCount + dsleep2UsersCount }}</b>  
+			休眠中:
+			<b data-v-93ec8385="">{{
+				sleepUsersCount + dsleepUsersCount + dsleep2UsersCount
+			}}</b>
 		</span>
-	<!-- <span v-if="widgetProps.showOnline && widgetProps.superDetails" class="text" data-v-93ec8385="">
+		<!-- <span v-if="widgetProps.showOnline && widgetProps.superDetails" class="text" data-v-93ec8385="">
 		接続中: <b data-v-93ec8385="">{{ onlineUsersCount }}</b> / <b data-v-93ec8385="">{{ honlineUsersCount }}</b>
 		<br></span>
 		<span v-if="widgetProps.showAway && widgetProps.superDetails" class="text" data-v-93ec8385="">
@@ -92,7 +114,11 @@ const { widgetProps, configure } = useWidgetPropsManager(
 	emit
 );
 
-const showCount = (widgetProps.showOnline ? 1 : 0) + (widgetProps.showAway ? 1 : 0) + (widgetProps.showOffline ? 1 : 0) + (widgetProps.showSleep ? 1 : 0);
+const showCount =
+	(widgetProps.showOnline ? 1 : 0) +
+	(widgetProps.showAway ? 1 : 0) +
+	(widgetProps.showOffline ? 1 : 0) +
+	(widgetProps.showSleep ? 1 : 0);
 const onlineUsersCount = ref(0);
 const honlineUsersCount = ref(0);
 const activeUsersCount = ref(0);

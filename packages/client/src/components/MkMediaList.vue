@@ -8,10 +8,8 @@
 		<div
 			v-if="mediaList.filter((media) => previewable(media)).length > 0"
 			class="gird-container"
-			:class="{ dmWidth: inDm, fixedGrid: $store.state.compactGrid, }"
-			:data-count="
-				mediaList.filter((media) => previewable(media)).length
-			"
+			:class="{ dmWidth: inDm, fixedGrid: $store.state.compactGrid }"
+			:data-count="mediaList.filter((media) => previewable(media)).length"
 		>
 			<div
 				ref="gallery"
@@ -206,7 +204,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 				$row-count: $row-count + 1;
 				$padding-top-value: $padding-top-value + 28.125%;
 			}
-			
+
 			&[data-count="#{$num}"] {
 				&:before {
 					content: "";
@@ -246,37 +244,37 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 					}
 				}
 
-                &.fixedGrid {
-                    // 要素数に応じたpadding-topの調整
-                    @if $num <= 8 {
-                        &:before {
-                            padding-top: 28.125%;
-                        }
-                    }
-                    @if $num > 8 and $num <= 16 {
-                        &:before {
-                            padding-top: 56.25%;
-                        }
-                    }
+				&.fixedGrid {
+					// 要素数に応じたpadding-topの調整
+					@if $num <= 8 {
+						&:before {
+							padding-top: 28.125%;
+						}
+					}
+					@if $num > 8 and $num <= 16 {
+						&:before {
+							padding-top: 56.25%;
+						}
+					}
 
-                    > div {
-                        // 8列のグリッドとして表示
-                        grid-template-columns: repeat(8, 1fr);
-                        
-                        @if $num <= 8 {
-                            grid-template-rows: repeat(1, 1fr);
-                        }
-                        @if $num > 8 and $num <= 16 {
-                            grid-template-rows: repeat(2, 1fr);
-                        }
+					> div {
+						// 8列のグリッドとして表示
+						grid-template-columns: repeat(8, 1fr);
 
-                        // 以前のグリッド設定をリセット
-                        > * {
-                            grid-column: auto;
-                            grid-row: auto;
-                        }
-                    }
-                }
+						@if $num <= 8 {
+							grid-template-rows: repeat(1, 1fr);
+						}
+						@if $num > 8 and $num <= 16 {
+							grid-template-rows: repeat(2, 1fr);
+						}
+
+						// 以前のグリッド設定をリセット
+						> * {
+							grid-column: auto;
+							grid-row: auto;
+						}
+					}
+				}
 			}
 			$num: $num + 1;
 		}

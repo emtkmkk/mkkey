@@ -47,7 +47,7 @@ import {
 import { debounce } from "throttle-debounce";
 import MkButton from "@/components/MkButton.vue";
 import { i18n } from "@/i18n";
-import { Autocomplete } from '@/scripts/autocomplete.js';
+import { Autocomplete } from "@/scripts/autocomplete.js";
 
 export default defineComponent({
 	components: {
@@ -178,12 +178,12 @@ export default defineComponent({
 					focus();
 				}
 			});
-	
+
 			if (props.misskeyAutoComplete) {
 				autocomplete = new Autocomplete(inputEl.value, v);
 			}
 		});
-		
+
 		onUnmounted(() => {
 			if (autocomplete) {
 				autocomplete.detach();

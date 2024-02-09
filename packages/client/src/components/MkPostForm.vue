@@ -10,7 +10,14 @@
 		@drop.stop="onDrop"
 	>
 		<header>
-			<button v-if="(!fixed || $store.state.CloseAllClearButton) && !$store.state.hiddenCloseButton" class="cancel _button" @click="cancel">
+			<button
+				v-if="
+					(!fixed || $store.state.CloseAllClearButton) &&
+					!$store.state.hiddenCloseButton
+				"
+				class="cancel _button"
+				@click="cancel"
+			>
 				<i class="ph-x ph-bold ph-lg"></i>
 			</button>
 			<button
@@ -26,16 +33,35 @@
 				<span
 					class="text-count"
 					:class="{ over: textLength > maxTextLength }"
-					>{{ (maxTextLength - textLength) > 999 ? textLength : i18n.t('remainingLength', { n: maxTextLength - textLength }) }}</span
+					>{{
+						maxTextLength - textLength > 999
+							? textLength
+							: i18n.t("remainingLength", {
+									n: maxTextLength - textLength,
+							  })
+					}}</span
 				>
 				<span v-if="localOnly && isChannel" class="local-only"
 					><i class="ph-hand-fist ph-bold ph-lg"></i
 				></span>
-				<span v-if="localOnly && !isChannel && (($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) || visibility === 'specified')" class="local-only"
+				<span
+					v-if="
+						localOnly &&
+						!isChannel &&
+						($store.state.rememberNoteVisibility ||
+							!$store.state.firstPostButtonVisibilityForce ||
+							visibility === 'specified')
+					"
+					class="local-only"
 					><i class="ph-hand-heart ph-bold ph-lg"></i
 				></span>
 				<button
-					v-if="($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) || isChannel || visibility === 'specified'"
+					v-if="
+						$store.state.rememberNoteVisibility ||
+						!$store.state.firstPostButtonVisibilityForce ||
+						isChannel ||
+						visibility === 'specified'
+					"
 					ref="visibilityButton"
 					v-tooltip="i18n.ts.visibility"
 					class="_button visibility"
@@ -72,9 +98,19 @@
 					<i class="ph-question ph-bold ph-lg"></i>
 				</button>
 				<button
-					v-if="(($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) && !$store.state.secondPostButton) || (!$store.state.channelSecondPostButton && isChannel) || visibility === 'specified'"
+					v-if="
+						(($store.state.rememberNoteVisibility ||
+							!$store.state.firstPostButtonVisibilityForce) &&
+							!$store.state.secondPostButton) ||
+						(!$store.state.channelSecondPostButton && isChannel) ||
+						visibility === 'specified'
+					"
 					class="submit _buttonGradate"
-					:class="{ shortcutTarget: shortcutKeyValue === 1 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 1 }"
+					:class="{
+						shortcutTarget: shortcutKeyValue === 1,
+						notShortcutTarget:
+							shortcutKeyValue !== 0 && shortcutKeyValue !== 1,
+					}"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
 					@click="post"
@@ -85,15 +121,25 @@
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
 								: renote
-									? 'ph-quotes ph-bold ph-lg'
-									: 'ph-paper-plane-tilt ph-bold ph-lg'
+								? 'ph-quotes ph-bold ph-lg'
+								: 'ph-paper-plane-tilt ph-bold ph-lg'
 						"
 					></i>
 				</button>
 				<button
-					v-if="(!$store.state.rememberNoteVisibility && $store.state.firstPostButtonVisibilityForce) && !$store.state.secondPostButton && !isChannel && visibility !== 'specified'"
+					v-if="
+						!$store.state.rememberNoteVisibility &&
+						$store.state.firstPostButtonVisibilityForce &&
+						!$store.state.secondPostButton &&
+						!isChannel &&
+						visibility !== 'specified'
+					"
 					class="submit _buttonGradate"
-					:class="{ shortcutTarget: shortcutKeyValue === 1 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 1 }"
+					:class="{
+						shortcutTarget: shortcutKeyValue === 1,
+						notShortcutTarget:
+							shortcutKeyValue !== 0 && shortcutKeyValue !== 1,
+					}"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
 					@click="postFirst"
@@ -103,15 +149,21 @@
 						:class="
 							$store.state.defaultNoteVisibility === 'public'
 								? publicIcon
-								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
-									? localIcon
-									: $store.state.defaultNoteVisibility === 'home'
-										? homeIcon
-										: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
-											? localHomeIcon
-											: $store.state.defaultNoteVisibility === 'followers'
-												? followerIcon
-												: 'ph-envelope-simple-open ph-bold ph-lg'
+								: $store.state.defaultNoteLocalAndFollower ===
+										true &&
+								  $store.state.defaultNoteVisibility ===
+										'public'
+								? localIcon
+								: $store.state.defaultNoteVisibility === 'home'
+								? homeIcon
+								: $store.state.defaultNoteLocalAndFollower ===
+										true &&
+								  $store.state.defaultNoteVisibility === 'home'
+								? localHomeIcon
+								: $store.state.defaultNoteVisibility ===
+								  'followers'
+								? followerIcon
+								: 'ph-envelope-simple-open ph-bold ph-lg'
 						"
 					></i>
 					<i
@@ -120,16 +172,30 @@
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
 								: renote
-									? 'ph-quotes ph-bold ph-lg'
-									: ''
+								? 'ph-quotes ph-bold ph-lg'
+								: ''
 						"
 					></i>
 				</button>
 				<button
-					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && $store.state.fourthPostButton && $store.state.fifthPostButton && !isChannel && visibility !== 'specified'"
+					v-if="
+						$store.state.secondPostButton &&
+						$store.state.thirdPostButton &&
+						$store.state.fourthPostButton &&
+						$store.state.fifthPostButton &&
+						!isChannel &&
+						visibility !== 'specified'
+					"
 					class="submit_h _buttonGradate"
-					:class="{ shortcutTarget: shortcutKeyValue === 5 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 5 }"
-					:disabled="!canPost && $store.state.fifthPostVisibility !== 'specified'"
+					:class="{
+						shortcutTarget: shortcutKeyValue === 5,
+						notShortcutTarget:
+							shortcutKeyValue !== 0 && shortcutKeyValue !== 5,
+					}"
+					:disabled="
+						!canPost &&
+						$store.state.fifthPostVisibility !== 'specified'
+					"
 					data-cy-open-post-form-submit
 					@click="postFifth"
 				>
@@ -138,23 +204,41 @@
 						:class="[
 							$store.state.fifthPostVisibility === 'public'
 								? publicIcon
-								: $store.state.fifthPostVisibility === 'l-public'
-									? localIcon
-									: $store.state.fifthPostVisibility === 'home'
-										? homeIcon
-										: $store.state.fifthPostVisibility === 'l-home'
-											? localHomeIcon
-											: $store.state.fifthPostVisibility === 'followers'
-												? followerIcon
-												: 'ph-envelope-simple-open ph-bold ph-lg'
-						, $store.state.fifthPostWideButton ? 'widePostButton' : '']"
+								: $store.state.fifthPostVisibility ===
+								  'l-public'
+								? localIcon
+								: $store.state.fifthPostVisibility === 'home'
+								? homeIcon
+								: $store.state.fifthPostVisibility === 'l-home'
+								? localHomeIcon
+								: $store.state.fifthPostVisibility ===
+								  'followers'
+								? followerIcon
+								: 'ph-envelope-simple-open ph-bold ph-lg',
+							$store.state.fifthPostWideButton
+								? 'widePostButton'
+								: '',
+						]"
 					></i>
 				</button>
 				<button
-					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && $store.state.fourthPostButton && !isChannel && visibility !== 'specified'"
+					v-if="
+						$store.state.secondPostButton &&
+						$store.state.thirdPostButton &&
+						$store.state.fourthPostButton &&
+						!isChannel &&
+						visibility !== 'specified'
+					"
 					class="submit_h _buttonGradate"
-					:class="{ shortcutTarget: shortcutKeyValue === 4 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 4 }"
-					:disabled="!canPost && $store.state.fourthPostVisibility !== 'specified'"
+					:class="{
+						shortcutTarget: shortcutKeyValue === 4,
+						notShortcutTarget:
+							shortcutKeyValue !== 0 && shortcutKeyValue !== 4,
+					}"
+					:disabled="
+						!canPost &&
+						$store.state.fourthPostVisibility !== 'specified'
+					"
 					data-cy-open-post-form-submit
 					@click="postFourth"
 				>
@@ -163,23 +247,40 @@
 						:class="[
 							$store.state.fourthPostVisibility === 'public'
 								? publicIcon
-								: $store.state.fourthPostVisibility === 'l-public'
-									? localIcon
-									: $store.state.fourthPostVisibility === 'home'
-										? homeIcon
-										: $store.state.fourthPostVisibility === 'l-home'
-											? localHomeIcon
-											: $store.state.fourthPostVisibility === 'followers'
-												? followerIcon
-												: 'ph-envelope-simple-open ph-bold ph-lg'
-						, $store.state.fourthPostWideButton ? 'widePostButton' : '']"
+								: $store.state.fourthPostVisibility ===
+								  'l-public'
+								? localIcon
+								: $store.state.fourthPostVisibility === 'home'
+								? homeIcon
+								: $store.state.fourthPostVisibility === 'l-home'
+								? localHomeIcon
+								: $store.state.fourthPostVisibility ===
+								  'followers'
+								? followerIcon
+								: 'ph-envelope-simple-open ph-bold ph-lg',
+							$store.state.fourthPostWideButton
+								? 'widePostButton'
+								: '',
+						]"
 					></i>
 				</button>
 				<button
-					v-if="$store.state.secondPostButton && $store.state.thirdPostButton && !isChannel && visibility !== 'specified'"
+					v-if="
+						$store.state.secondPostButton &&
+						$store.state.thirdPostButton &&
+						!isChannel &&
+						visibility !== 'specified'
+					"
 					class="submit_h _buttonGradate"
-					:class="{ shortcutTarget: shortcutKeyValue === 3 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 3 }"
-					:disabled="!canPost && $store.state.thirdPostVisibility !== 'specified'"
+					:class="{
+						shortcutTarget: shortcutKeyValue === 3,
+						notShortcutTarget:
+							shortcutKeyValue !== 0 && shortcutKeyValue !== 3,
+					}"
+					:disabled="
+						!canPost &&
+						$store.state.thirdPostVisibility !== 'specified'
+					"
 					data-cy-open-post-form-submit
 					@click="postThird"
 				>
@@ -188,23 +289,39 @@
 						:class="[
 							$store.state.thirdPostVisibility === 'public'
 								? publicIcon
-								: $store.state.thirdPostVisibility === 'l-public'
-									? localIcon
-									: $store.state.thirdPostVisibility === 'home'
-										? homeIcon
-										: $store.state.thirdPostVisibility === 'l-home'
-											? localHomeIcon
-											: $store.state.thirdPostVisibility === 'followers'
-												? followerIcon
-												: 'ph-envelope-simple-open ph-bold ph-lg'
-						, $store.state.thirdPostWideButton ? 'widePostButton' : '']"
+								: $store.state.thirdPostVisibility ===
+								  'l-public'
+								? localIcon
+								: $store.state.thirdPostVisibility === 'home'
+								? homeIcon
+								: $store.state.thirdPostVisibility === 'l-home'
+								? localHomeIcon
+								: $store.state.thirdPostVisibility ===
+								  'followers'
+								? followerIcon
+								: 'ph-envelope-simple-open ph-bold ph-lg',
+							$store.state.thirdPostWideButton
+								? 'widePostButton'
+								: '',
+						]"
 					></i>
 				</button>
 				<button
-					v-if="$store.state.secondPostButton && !isChannel && visibility !== 'specified'"
+					v-if="
+						$store.state.secondPostButton &&
+						!isChannel &&
+						visibility !== 'specified'
+					"
 					class="submit_h _buttonGradate"
-					:class="{ shortcutTarget: shortcutKeyValue === 2 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 2 }"
-					:disabled="!canPost && $store.state.secondPostVisibility !== 'specified'"
+					:class="{
+						shortcutTarget: shortcutKeyValue === 2,
+						notShortcutTarget:
+							shortcutKeyValue !== 0 && shortcutKeyValue !== 2,
+					}"
+					:disabled="
+						!canPost &&
+						$store.state.secondPostVisibility !== 'specified'
+					"
 					data-cy-open-post-form-submit
 					@click="postSecond"
 				>
@@ -213,22 +330,37 @@
 						:class="[
 							$store.state.secondPostVisibility === 'public'
 								? publicIcon
-								: $store.state.secondPostVisibility === 'l-public'
-									? localIcon
-									: $store.state.secondPostVisibility === 'home'
-										? homeIcon
-										: $store.state.secondPostVisibility === 'l-home'
-											? localHomeIcon
-											: $store.state.secondPostVisibility === 'followers'
-												? followerIcon
-												: 'ph-envelope-simple-open ph-bold ph-lg'
-						, $store.state.secondPostWideButton ? 'widePostButton' : '']"
+								: $store.state.secondPostVisibility ===
+								  'l-public'
+								? localIcon
+								: $store.state.secondPostVisibility === 'home'
+								? homeIcon
+								: $store.state.secondPostVisibility === 'l-home'
+								? localHomeIcon
+								: $store.state.secondPostVisibility ===
+								  'followers'
+								? followerIcon
+								: 'ph-envelope-simple-open ph-bold ph-lg',
+							$store.state.secondPostWideButton
+								? 'widePostButton'
+								: '',
+						]"
 					></i>
 				</button>
 				<button
-					v-if="($store.state.rememberNoteVisibility || !$store.state.firstPostButtonVisibilityForce) && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
+					v-if="
+						($store.state.rememberNoteVisibility ||
+							!$store.state.firstPostButtonVisibilityForce) &&
+						$store.state.secondPostButton &&
+						!isChannel &&
+						visibility !== 'specified'
+					"
 					class="submit_h _buttonGradate"
-					:class="{ shortcutTarget: shortcutKeyValue === 1 , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 1  }"
+					:class="{
+						shortcutTarget: shortcutKeyValue === 1,
+						notShortcutTarget:
+							shortcutKeyValue !== 0 && shortcutKeyValue !== 1,
+					}"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
 					@click="post"
@@ -240,15 +372,31 @@
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
 								: renote
 								? 'ph-quotes ph-bold ph-lg'
-								: 'ph-paper-plane-tilt ph-bold ph-lg'
-						, $store.state.firstPostWideButton ? 'widePostButton' : '']"
+								: 'ph-paper-plane-tilt ph-bold ph-lg',
+							$store.state.firstPostWideButton
+								? 'widePostButton'
+								: '',
+						]"
 					></i>
 				</button>
 				<button
-					v-if="(!$store.state.rememberNoteVisibility && $store.state.firstPostButtonVisibilityForce) && $store.state.secondPostButton && !isChannel && visibility !== 'specified'"
+					v-if="
+						!$store.state.rememberNoteVisibility &&
+						$store.state.firstPostButtonVisibilityForce &&
+						$store.state.secondPostButton &&
+						!isChannel &&
+						visibility !== 'specified'
+					"
 					class="submit_h _buttonGradate"
-					:class="{ shortcutTarget: shortcutKeyValue === 1  , notShortcutTarget: shortcutKeyValue !== 0 && shortcutKeyValue !== 1 }"
-					:disabled="!canPost && $store.state.defaultNoteVisibility !== 'specified'"
+					:class="{
+						shortcutTarget: shortcutKeyValue === 1,
+						notShortcutTarget:
+							shortcutKeyValue !== 0 && shortcutKeyValue !== 1,
+					}"
+					:disabled="
+						!canPost &&
+						$store.state.defaultNoteVisibility !== 'specified'
+					"
 					data-cy-open-post-form-submit
 					@click="postFirst"
 				>
@@ -257,16 +405,27 @@
 						:class="[
 							$store.state.defaultNoteVisibility === 'public'
 								? publicIcon
-								: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'public'
-									? localIcon
-									: $store.state.defaultNoteVisibility === 'home'
-										? homeIcon
-										: $store.state.defaultNoteLocalAndFollower === true && $store.state.defaultNoteVisibility === 'home'
-											? localHomeIcon
-											: $store.state.defaultNoteVisibility === 'followers'
-												? followerIcon
-												: 'ph-envelope-simple-open ph-bold ph-lg'
-						, $store.state.firstPostWideButton ? !(reply || renote) ? 'widePostButton' : 'widePostButton_left' : '']"
+								: $store.state.defaultNoteLocalAndFollower ===
+										true &&
+								  $store.state.defaultNoteVisibility ===
+										'public'
+								? localIcon
+								: $store.state.defaultNoteVisibility === 'home'
+								? homeIcon
+								: $store.state.defaultNoteLocalAndFollower ===
+										true &&
+								  $store.state.defaultNoteVisibility === 'home'
+								? localHomeIcon
+								: $store.state.defaultNoteVisibility ===
+								  'followers'
+								? followerIcon
+								: 'ph-envelope-simple-open ph-bold ph-lg',
+							$store.state.firstPostWideButton
+								? !(reply || renote)
+									? 'widePostButton'
+									: 'widePostButton_left'
+								: '',
+						]"
 					></i>
 					<i
 						v-if="reply || renote"
@@ -275,9 +434,12 @@
 							reply
 								? 'ph-arrow-u-up-left ph-bold ph-lg'
 								: renote
-									? 'ph-quotes ph-bold ph-lg'
-									: ''
-						, $store.state.firstPostWideButton ? 'widePostButton_right' : '']"
+								? 'ph-quotes ph-bold ph-lg'
+								: '',
+							$store.state.firstPostWideButton
+								? 'widePostButton_right'
+								: '',
+						]"
 					></i>
 				</button>
 				<button
@@ -288,12 +450,14 @@
 					@click="postSecondChannel"
 				>
 					&ZeroWidthSpace;
-					<i
-						class="ph-hand-fist ph-bold ph-lg widePostButton"
-					></i>
+					<i class="ph-hand-fist ph-bold ph-lg widePostButton"></i>
 				</button>
 				<button
-					v-if="$store.state.channelSecondPostButton && isChannel && canNotLocal"
+					v-if="
+						$store.state.channelSecondPostButton &&
+						isChannel &&
+						canNotLocal
+					"
 					class="submit_h _buttonGradate"
 					:disabled="!canPost"
 					data-cy-open-post-form-submit
@@ -317,10 +481,15 @@
 			<XNoteSimple v-if="renote" class="preview" :note="renote" />
 			<div v-if="quoteId" class="with-quote">
 				<i class="ph-quotes ph-bold ph-lg"></i>
-				<button @click="() => {
-					os.pageWindow(`/notes/${quoteId}`);
-				}">{{ `${i18n.ts.quoteAttached} ${quoteId}`
-				}}</button><button class="_button" @click="quoteId = null">
+				<button
+					@click="
+						() => {
+							os.pageWindow(`/notes/${quoteId}`);
+						}
+					"
+				>
+					{{ `${i18n.ts.quoteAttached} ${quoteId}` }}</button
+				><button class="_button" @click="quoteId = null">
 					<i class="ph-x ph-bold ph-lg"></i>
 				</button>
 			</div>
@@ -329,7 +498,11 @@
 				<div class="visibleUsers">
 					<span v-for="u in visibleUsers" :key="u.id">
 						<MkAcct :user="u" />
-						<button v-if="u.id !== reply?.userId" class="_button" @click="removeVisibleUser(u)">
+						<button
+							v-if="u.id !== reply?.userId"
+							class="_button"
+							@click="removeVisibleUser(u)"
+						>
 							<i class="ph-x ph-bold ph-lg"></i>
 						</button>
 						<button v-else class="_button">
@@ -441,12 +614,16 @@
 					class="_button"
 					@click="insertEmoji"
 				>
-				    <i class="ph-smiley ph-bold ph-lg"></i>
+					<i class="ph-smiley ph-bold ph-lg"></i>
 				</button>
 				<button
 					v-tooltip="i18n.ts.mfm"
 					class="_button"
-					:class="{ active: defaultStore.state.quickToggleSmartMFMInputer && smartMFMInputer }"
+					:class="{
+						active:
+							defaultStore.state.quickToggleSmartMFMInputer &&
+							smartMFMInputer,
+					}"
 					@click="insertMfm"
 				>
 					<i class="ph-magic-wand ph-bold ph-lg"></i>
@@ -468,7 +645,12 @@
 					<i class="ph-binoculars ph-bold ph-lg"></i>
 				</button>
 			</footer>
-			<XNotePreview v-if="showPreview" class="preview" :text="text + (withHashtags ? ' ' + hashtagsPreview : '')" :cw="useCw ? (cw ?? '') : null" />
+			<XNotePreview
+				v-if="showPreview"
+				class="preview"
+				:text="text + (withHashtags ? ' ' + hashtagsPreview : '')"
+				:cw="useCw ? cw ?? '' : null"
+			/>
 			<datalist id="hashtags">
 				<option
 					v-for="hashtag in recentHashtags"
@@ -481,7 +663,15 @@
 </template>
 
 <script lang="ts" setup>
-import { unref, inject, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from "vue";
+import {
+	unref,
+	inject,
+	watch,
+	nextTick,
+	onMounted,
+	onUnmounted,
+	defineAsyncComponent,
+} from "vue";
 import * as mfm from "mfm-js";
 import * as misskey from "calckey-js";
 import insertTextAtCursor from "insert-text-at-cursor";
@@ -574,9 +764,10 @@ let backupFiles = files;
 let backupQuoteId = null;
 let backupPoll = null;
 let localOnly = $ref<boolean>(
-	props.initialLocalOnly ?? (defaultStore.state.rememberNoteVisibility
-		? defaultStore.state.localAndFollower
-		: defaultStore.state.defaultNoteLocalAndFollower)
+	props.initialLocalOnly ??
+		(defaultStore.state.rememberNoteVisibility
+			? defaultStore.state.localAndFollower
+			: defaultStore.state.defaultNoteLocalAndFollower)
 );
 let visibility = $ref(
 	props.initialVisibility ??
@@ -590,7 +781,9 @@ if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }
 let autocomplete = $ref(null);
-let smartMFMInputer = $computed(defaultStore.makeGetterSetter("smartMFMInputer"));
+let smartMFMInputer = $computed(
+	defaultStore.makeGetterSetter("smartMFMInputer")
+);
 let draghover = $ref(false);
 let reply = $ref(props.reply);
 let replyId = $ref(null);
@@ -600,29 +793,36 @@ let includesOtherServerEmoji = $ref(false);
 let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
 let canPublic = $ref(
 	(!reply || reply.visibility === "public") &&
-	(!props.renote || props.renote.visibility === "public") &&
-	(!props.airReply || props.initialVisibility === "public") &&
-	!$i.blockPostPublic && !$i.isSilenced
+		(!props.renote || props.renote.visibility === "public") &&
+		(!props.airReply || props.initialVisibility === "public") &&
+		!$i.blockPostPublic &&
+		!$i.isSilenced
 );
 let canHome = $ref(
-	(!reply || ["public","home"].includes(reply.visibility)) &&
-	(!props.renote || ["public","home"].includes(props.renote.visibility)) &&
-	(!props.airReply || ["public","home"].includes(props.initialVisibility)) &&
-	!$i.blockPostHome && !$i.isSilenced
+	(!reply || ["public", "home"].includes(reply.visibility)) &&
+		(!props.renote ||
+			["public", "home"].includes(props.renote.visibility)) &&
+		(!props.airReply ||
+			["public", "home"].includes(props.initialVisibility)) &&
+		!$i.blockPostHome &&
+		!$i.isSilenced
 );
 let canFollower = $ref(
 	(!reply || reply.visibility !== "specified") &&
-	(!props.renote || props.renote.visibility !== "specified") &&
-	(!props.airReply || props.initialVisibility !== "specified")
+		(!props.renote || props.renote.visibility !== "specified") &&
+		(!props.airReply || props.initialVisibility !== "specified")
 );
 let canNotLocal = $ref(
 	(!reply || !reply.localOnly) &&
-	(!props.renote || !props.renote.localOnly) &&
-	(!props.airReply || !props.initialLocalOnly) &&
-	!$i.blockPostNotLocal && !$i.isSilenced &&
-	!props.channel?.description?.includes("[localOnly]")
+		(!props.renote || !props.renote.localOnly) &&
+		(!props.airReply || !props.initialLocalOnly) &&
+		!$i.blockPostNotLocal &&
+		!$i.isSilenced &&
+		!props.channel?.description?.includes("[localOnly]")
 );
-let requiredFilename = $ref(props.channel?.description?.includes("[requiredFilename]"))
+let requiredFilename = $ref(
+	props.channel?.description?.includes("[requiredFilename]")
+);
 let imeText = $ref("");
 let shortcutKeyValue = $ref(0);
 let fileselecting = $ref(false);
@@ -630,63 +830,63 @@ let fileselecting = $ref(false);
 const publicIcon = $computed((): String => {
 	if (!canNotLocal && (canPublic || canHome)) {
 		if (canPublic) {
-			return 'ph-hand-heart ph-bold ph-lg'
+			return "ph-hand-heart ph-bold ph-lg";
 		} else {
 			if (!$i.blockPostNotLocalPublic) {
-				return 'ph-house-line ph-bold ph-lg'
+				return "ph-house-line ph-bold ph-lg";
 			}
 		}
 	}
 	if (canPublic) {
-		return 'ph-planet ph-bold ph-lg'
+		return "ph-planet ph-bold ph-lg";
 	} else if (canHome) {
-		return 'ph-house ph-bold ph-lg'
+		return "ph-house ph-bold ph-lg";
 	} else if (canFollower) {
-		return 'ph-lock-simple ph-bold ph-lg'
+		return "ph-lock-simple ph-bold ph-lg";
 	} else {
-		return 'ph-envelope-simple-open ph-bold ph-lg'
+		return "ph-envelope-simple-open ph-bold ph-lg";
 	}
 });
 
 const homeIcon = $computed((): String => {
 	if (!canNotLocal && canHome && !$i.blockPostNotLocalPublic) {
-		return 'ph-house-line ph-bold ph-lg'
+		return "ph-house-line ph-bold ph-lg";
 	} else if (canHome) {
-		return 'ph-house ph-bold ph-lg'
+		return "ph-house ph-bold ph-lg";
 	} else if (canFollower) {
-		return 'ph-lock-simple ph-bold ph-lg'
+		return "ph-lock-simple ph-bold ph-lg";
 	} else {
-		return 'ph-envelope-simple-open ph-bold ph-lg'
+		return "ph-envelope-simple-open ph-bold ph-lg";
 	}
 });
 
 const followerIcon = $computed((): String => {
 	if (canFollower) {
-		return 'ph-lock-simple ph-bold ph-lg'
+		return "ph-lock-simple ph-bold ph-lg";
 	} else {
-		return 'ph-envelope-simple-open ph-bold ph-lg'
+		return "ph-envelope-simple-open ph-bold ph-lg";
 	}
 });
 
 const localIcon = $computed((): String => {
 	if (canPublic) {
-		return 'ph-hand-heart ph-bold ph-lg'
+		return "ph-hand-heart ph-bold ph-lg";
 	} else if (canHome) {
-		return 'ph-house-line ph-bold ph-lg'
+		return "ph-house-line ph-bold ph-lg";
 	} else if (canFollower) {
-		return 'ph-lock-simple ph-bold ph-lg'
+		return "ph-lock-simple ph-bold ph-lg";
 	} else {
-		return 'ph-envelope-simple-open ph-bold ph-lg'
+		return "ph-envelope-simple-open ph-bold ph-lg";
 	}
 });
 
 const localHomeIcon = $computed((): String => {
 	if (canHome) {
-		return 'ph-house-line ph-bold ph-lg'
+		return "ph-house-line ph-bold ph-lg";
 	} else if (canFollower) {
-		return 'ph-lock-simple ph-bold ph-lg'
+		return "ph-lock-simple ph-bold ph-lg";
 	} else {
-		return 'ph-envelope-simple-open ph-bold ph-lg'
+		return "ph-envelope-simple-open ph-bold ph-lg";
 	}
 });
 
@@ -730,16 +930,26 @@ const placeholder = $computed((): string => {
 		return i18n.ts._postForm.channelPlaceholder;
 	} else if (defaultStore.state.plusInfoPostForm) {
 		return (
-			i18n.ts._visibility[visibility] && 
-			(
-				defaultStore.state.rememberNoteVisibility ||
+			(i18n.ts._visibility[visibility] &&
+			(defaultStore.state.rememberNoteVisibility ||
 				!defaultStore.state.firstPostButtonVisibilityForce ||
-				visibility === 'specified'
-			)
-			? `${(localOnly ? "もこワー" : "") + i18n.ts._visibility[visibility]} : ` : "") +
-			 new Date()
-			 .toLocaleTimeString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit' })
-			 .replace(/日(.*)\s(\d+):(\d+)/,"日($1) $2時$3分");
+				visibility === "specified")
+				? `${
+						(localOnly ? "もこワー" : "") +
+						i18n.ts._visibility[visibility]
+				  } : `
+				: "") +
+			new Date()
+				.toLocaleTimeString("ja-JP", {
+					year: "numeric",
+					month: "long",
+					day: "numeric",
+					weekday: "long",
+					hour: "2-digit",
+					minute: "2-digit",
+				})
+				.replace(/日(.*)\s(\d+):(\d+)/, "日($1) $2時$3分")
+		);
 	} else {
 		const xs = [
 			i18n.ts._postForm._placeholders.a,
@@ -754,11 +964,7 @@ const placeholder = $computed((): string => {
 });
 
 const submitText = $computed((): string => {
-	return props.renote
-		? i18n.ts.quote
-		: reply
-		? i18n.ts.reply
-		: i18n.ts.note;
+	return props.renote ? i18n.ts.quote : reply ? i18n.ts.reply : i18n.ts.note;
 });
 
 const textLength = $computed((): number => {
@@ -772,7 +978,11 @@ const maxTextLength = $computed((): number => {
 const canPost = $computed((): boolean => {
 	return (
 		!posting &&
-		(1 <= textLength || 1 <= files.length || !!poll || !!props.renote || !!quoteId) &&
+		(1 <= textLength ||
+			1 <= files.length ||
+			!!poll ||
+			!!props.renote ||
+			!!quoteId) &&
 		textLength <= maxTextLength &&
 		(!poll || poll.choices.length >= 2) &&
 		!fileselecting
@@ -789,19 +999,23 @@ const hashtagsPreview = $computed(() => {
 		const textHashtags_ = mfm
 			.parse(text)
 			.filter((x) => x.type === "hashtag")
-			.map((x) => x.props.hashtag.startsWith("#") ? x.props.hashtag : `#${x.props.hashtag}`);
+			.map((x) =>
+				x.props.hashtag.startsWith("#")
+					? x.props.hashtag
+					: `#${x.props.hashtag}`
+			);
 		const hashtags_ = hashtags
 			.trim()
 			.split(" ")
 			.map((x) => (x.startsWith("#") ? x : `#${x}`));
 		const hashtags__ = hashtags_
-			.filter(x => !textHashtags_.includes(x))
+			.filter((x) => !textHashtags_.includes(x))
 			.join(" ");
 		return hashtags__;
 	} else {
 		return "";
 	}
-})
+});
 
 watch($$(text), () => {
 	checkIncludesOtherServerEmoji();
@@ -836,9 +1050,7 @@ if (
 		(reply.user.host != null && reply.user.host !== host))
 ) {
 	text = `@${reply.user.username}${
-		reply.user.host != null
-			? `@${toASCII(reply.user.host)}`
-			: ""
+		reply.user.host != null ? `@${toASCII(reply.user.host)}` : ""
 	} `;
 }
 
@@ -869,16 +1081,13 @@ if (props.channel) {
 	localOnly = defaultStore.state.channelSecondPostButton
 		? false
 		: defaultStore.state.rememberNoteVisibility
-			? defaultStore.state.localOnly
-			: defaultStore.state.defaultNoteLocalOnly;
+		? defaultStore.state.localOnly
+		: defaultStore.state.defaultNoteLocalOnly;
 	if (!canNotLocal) localOnly = true;
 }
 
 // 公開以外へのリプライ時は元の公開範囲を引き継ぐ
-if (
-	reply &&
-	["home", "followers", "specified"].includes(reply.visibility)
-) {
+if (reply && ["home", "followers", "specified"].includes(reply.visibility)) {
 	if (reply.visibility === "home" && visibility === "followers") {
 		visibility = "followers";
 	} else if (
@@ -901,11 +1110,9 @@ if (
 		}
 
 		if (reply.userId !== $i.id) {
-			os.api("users/show", { userId: reply.userId }).then(
-				(user) => {
-					pushVisibleUser(user);
-				}
-			);
+			os.api("users/show", { userId: reply.userId }).then((user) => {
+				pushVisibleUser(user);
+			});
 		}
 	}
 }
@@ -924,11 +1131,16 @@ if (
 	visibility !== "specified" &&
 	localOnly === false &&
 	!$i.blockPostNotLocalPublic
-) localOnly = true;
+)
+	localOnly = true;
 
 // keep post cw
 if (
-	defaultStore.state.keepPostCw &&cw && !cw.includes("@") && !(reply && !reply.cw)) {
+	defaultStore.state.keepPostCw &&
+	cw &&
+	!cw.includes("@") &&
+	!(reply && !reply.cw)
+) {
 	useCw = true;
 } else {
 	cw = "";
@@ -939,16 +1151,25 @@ if (defaultStore.state.keepCw && reply && reply.cw) {
 	if (reply.userId === $i.id) {
 		cw = `${reply.cw}`;
 	} else {
-		const replyCwText = reply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/ig,"") ?? "";
-		cw = `@${reply.user.username}${reply.user.host ? `@${reply.user.host}` : ""} Re: ${replyCwText}`;
-		text = text.replace(`@${reply.user.username}${reply.user.host ? `@${reply.user.host}` : ""} `,"");
+		const replyCwText =
+			reply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/gi, "") ?? "";
+		cw = `@${reply.user.username}${
+			reply.user.host ? `@${reply.user.host}` : ""
+		} Re: ${replyCwText}`;
+		text = text.replace(
+			`@${reply.user.username}${
+				reply.user.host ? `@${reply.user.host}` : ""
+			} `,
+			""
+		);
 	}
 }
 
 // keep cw when airreply
 if (defaultStore.state.keepCw && props.airReply && props.airReply.cw) {
 	useCw = true;
-	const replyCwText = props.airReply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/ig,"") ?? "";
+	const replyCwText =
+		props.airReply.cw?.replaceAll(/(@[^\s]+\s)*(Re:\s?)/gi, "") ?? "";
 	cw = replyCwText;
 }
 
@@ -963,16 +1184,20 @@ function watchForDraft() {
 }
 
 function checkIncludesOtherServerEmoji() {
-	if(text?.includes(":") && /:[a-z0-9_+-]+(@[a-z0-9_+-.]+):/.test(text)) {
-		includesOtherServerEmoji = true
+	if (text?.includes(":") && /:[a-z0-9_+-]+(@[a-z0-9_+-.]+):/.test(text)) {
+		includesOtherServerEmoji = true;
 	} else {
-		includesOtherServerEmoji = false
+		includesOtherServerEmoji = false;
 	}
 }
 
 function checkMissingMention() {
 	if (visibility === "specified") {
-		if (reply && reply.userId !== $i.id && !visibleUsers.some((u) => u.id === reply.user.id)) {
+		if (
+			reply &&
+			reply.userId !== $i.id &&
+			!visibleUsers.some((u) => u.id === reply.user.id)
+		) {
 			hasNotSpecifiedMentions = true;
 			return;
 		}
@@ -981,7 +1206,9 @@ function checkMissingMention() {
 		for (const x of extractMentions(ast)) {
 			if (
 				!visibleUsers.some(
-					(u) => u.username === x.username && (!x.host || u.host === x.host)
+					(u) =>
+						u.username === x.username &&
+						(!x.host || u.host === x.host)
 				)
 			) {
 				hasNotSpecifiedMentions = true;
@@ -993,12 +1220,14 @@ function checkMissingMention() {
 }
 
 function addMissingMention() {
-	if (reply && reply.userId !== $i.id && !visibleUsers.some((u) => u.id === reply.user.id)) {
-		os.api("users/show", { userId: reply.userId }).then(
-			(user) => {
-				pushVisibleUser(user);
-			}
-		);
+	if (
+		reply &&
+		reply.userId !== $i.id &&
+		!visibleUsers.some((u) => u.id === reply.user.id)
+	) {
+		os.api("users/show", { userId: reply.userId }).then((user) => {
+			pushVisibleUser(user);
+		});
 	}
 
 	const ast = mfm.parse(text);
@@ -1006,7 +1235,8 @@ function addMissingMention() {
 	for (const x of extractMentions(ast)) {
 		if (
 			!visibleUsers.some(
-				(u) => u.username === x.username && (!x.host || u.host === x.host)
+				(u) =>
+					u.username === x.username && (!x.host || u.host === x.host)
 			)
 		) {
 			os.api("users/show", { username: x.username, host: x.host }).then(
@@ -1032,18 +1262,18 @@ function togglePoll() {
 }
 
 function toggleUseCw() {
-	if(useCw) {
+	if (useCw) {
 		// ON -> OFF
-		const mention = /^(@[\w@.-]+\s?)(.*)$/.exec(cw)
-		if(mention != null){
-			cw = mention?.[2]
+		const mention = /^(@[\w@.-]+\s?)(.*)$/.exec(cw);
+		if (mention != null) {
+			cw = mention?.[2];
 			text = `${mention[1].trim()} ${text}`;
 		}
 	} else {
 		// OFF -> ON
-		const mention = /^(@[\w@.-]+\s?)(.*)$/.exec(text)
-		if(mention != null){
-			text = mention?.[2]
+		const mention = /^(@[\w@.-]+\s?)(.*)$/.exec(text);
+		if (mention != null) {
+			text = mention?.[2];
 			cw = `${mention[1].trim()} ${cw}`;
 		}
 	}
@@ -1066,16 +1296,20 @@ function focus() {
 
 function chooseFileFrom(ev) {
 	fileselecting = true;
-	selectFiles(ev.currentTarget ?? ev.target, i18n.ts.attachFile, requiredFilename).then(
-		(files_) => {
+	selectFiles(
+		ev.currentTarget ?? ev.target,
+		i18n.ts.attachFile,
+		requiredFilename
+	)
+		.then((files_) => {
 			fileselecting = false;
 			for (const file of files_) {
 				files.push(file);
 			}
-		}
-	).finally(() => {
-		fileselecting = false;
-	});
+		})
+		.finally(() => {
+			fileselecting = false;
+		});
 }
 
 function detachFile(id) {
@@ -1095,14 +1329,22 @@ function updateFileName(file, name) {
 }
 
 function upload(file: File, name?: string) {
-	uploadFile(file, defaultStore.state.uploadFolder, name, undefined, undefined, requiredFilename).then((res) => {
+	uploadFile(
+		file,
+		defaultStore.state.uploadFolder,
+		name,
+		undefined,
+		undefined,
+		requiredFilename
+	).then((res) => {
 		files.push(res);
 	});
 }
 
 function setVisibility() {
-
-	const isForce = (!defaultStore.state.rememberNoteVisibility && defaultStore.state.firstPostButtonVisibilityForce);
+	const isForce =
+		!defaultStore.state.rememberNoteVisibility &&
+		defaultStore.state.firstPostButtonVisibilityForce;
 
 	os.popup(
 		defineAsyncComponent(
@@ -1147,7 +1389,9 @@ function setVisibility() {
 function pushVisibleUser(user) {
 	if (
 		!visibleUsers.some(
-			(u) => u.username === user.username && (!user.host || u.host === user.host)
+			(u) =>
+				u.username === user.username &&
+				(!user.host || u.host === user.host)
 		)
 	) {
 		visibleUsers.push(user);
@@ -1174,8 +1418,7 @@ function clear() {
 }
 
 function onKeyup(ev: KeyboardEvent) {
-	let postButtonMax = (
-		defaultStore.state.secondPostButton
+	let postButtonMax = defaultStore.state.secondPostButton
 		? defaultStore.state.thirdPostButton
 			? defaultStore.state.fourthPostButton
 				? defaultStore.state.fifthPostButton
@@ -1183,16 +1426,20 @@ function onKeyup(ev: KeyboardEvent) {
 					: 4
 				: 3
 			: 2
-		: 1);
-	let postValue = Math.min(((ev.ctrlKey || ev.metaKey) ? 1 : 0) + ((ev.altKey) ? 2 : 0) + ((ev.shiftKey) && (ev.ctrlKey || ev.metaKey || ev.altKey) ? 2 : 0),postButtonMax);
-	if (postValue !== unref(shortcutKeyValue) && !isChannel){
+		: 1;
+	let postValue = Math.min(
+		(ev.ctrlKey || ev.metaKey ? 1 : 0) +
+			(ev.altKey ? 2 : 0) +
+			(ev.shiftKey && (ev.ctrlKey || ev.metaKey || ev.altKey) ? 2 : 0),
+		postButtonMax
+	);
+	if (postValue !== unref(shortcutKeyValue) && !isChannel) {
 		shortcutKeyValue = postValue;
 	}
 }
 
 function onKeydown(ev: KeyboardEvent) {
-	let postButtonMax = (
-		defaultStore.state.secondPostButton
+	let postButtonMax = defaultStore.state.secondPostButton
 		? defaultStore.state.thirdPostButton
 			? defaultStore.state.fourthPostButton
 				? defaultStore.state.fifthPostButton
@@ -1200,55 +1447,66 @@ function onKeydown(ev: KeyboardEvent) {
 					: 4
 				: 3
 			: 2
-		: 1);
-	let postValue = Math.min(((ev.ctrlKey || ev.metaKey) ? 1 : 0) + ((ev.altKey) ? 2 : 0) + ((ev.shiftKey) && (ev.ctrlKey || ev.metaKey || ev.altKey) ? 2 : 0),postButtonMax);
-	if (postValue !== unref(shortcutKeyValue) && !isChannel){
+		: 1;
+	let postValue = Math.min(
+		(ev.ctrlKey || ev.metaKey ? 1 : 0) +
+			(ev.altKey ? 2 : 0) +
+			(ev.shiftKey && (ev.ctrlKey || ev.metaKey || ev.altKey) ? 2 : 0),
+		postButtonMax
+	);
+	if (postValue !== unref(shortcutKeyValue) && !isChannel) {
 		shortcutKeyValue = postValue;
 	}
 	if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 5 &&
 		defaultStore.state.fifthPostButton &&
-		(canPost || defaultStore.state.fifthPostVisibility === 'specified') &&
+		(canPost || defaultStore.state.fifthPostVisibility === "specified") &&
 		!isChannel &&
-		visibility !== 'specified'
-	) postFifth();
+		visibility !== "specified"
+	)
+		postFifth();
 	else if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 4 &&
 		defaultStore.state.fourthPostButton &&
-		(canPost || defaultStore.state.fourthPostVisibility === 'specified') &&
+		(canPost || defaultStore.state.fourthPostVisibility === "specified") &&
 		!isChannel &&
-		visibility !== 'specified'
-	) postFourth();
+		visibility !== "specified"
+	)
+		postFourth();
 	else if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 3 &&
 		defaultStore.state.thirdPostButton &&
-		(canPost || defaultStore.state.thirdPostVisibility === 'specified') &&
+		(canPost || defaultStore.state.thirdPostVisibility === "specified") &&
 		!isChannel &&
-		visibility !== 'specified'
-	) postThird();
+		visibility !== "specified"
+	)
+		postThird();
 	else if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 2 &&
 		defaultStore.state.secondPostButton &&
-		(canPost || defaultStore.state.secondPostVisibility === 'specified') &&
+		(canPost || defaultStore.state.secondPostVisibility === "specified") &&
 		!isChannel &&
-		visibility !== 'specified'
-	) postSecond();
+		visibility !== "specified"
+	)
+		postSecond();
 	else if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 1 &&
 		canPost &&
-		visibility !== 'specified'
-	) postFirst();
+		visibility !== "specified"
+	)
+		postFirst();
 	else if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 1 &&
 		canPost &&
-		visibility === 'specified'
-	) post();
+		visibility === "specified"
+	)
+		post();
 	if (ev.which === 27) emit("esc");
 	typing();
 }
@@ -1352,12 +1610,11 @@ function onDrop(ev): void {
 }
 
 function saveDraft(key?, name?) {
-
 	if (!(text || (useCw && cw) || files?.length || poll)) {
-		if(!key){
+		if (!key) {
 			deleteDraft(key);
 		}
-		return
+		return;
 	}
 
 	const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
@@ -1373,7 +1630,8 @@ function saveDraft(key?, name?) {
 			localOnly: localOnly,
 			files: files,
 			poll: poll,
-			visibleUserIds: visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
+			visibleUserIds:
+				visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
 			replyId: reply?.id ? reply.id : null,
 			quoteId: quoteId ? quoteId : props.renote ? props.renote.id : null,
 		},
@@ -1385,7 +1643,6 @@ function saveDraft(key?, name?) {
 		clear();
 		deleteDraft();
 	}
-
 }
 
 function deleteDraft(key?) {
@@ -1397,7 +1654,7 @@ function deleteDraft(key?) {
 }
 
 function specifiedCheck() {
-	if (visibility === "specified"){
+	if (visibility === "specified") {
 		localOnly = false;
 		addMissingMention();
 	}
@@ -1409,21 +1666,21 @@ async function postFirst() {
 		localOnly = defaultStore.state.defaultNoteLocalAndFollower;
 	}
 	specifiedCheck();
-	if (canPost && visibility !== 'specified') {
+	if (canPost && visibility !== "specified") {
 		post();
 	}
 }
 
 async function postSecond() {
-	if (defaultStore.state.secondPostVisibility.startsWith("l-")){
+	if (defaultStore.state.secondPostVisibility.startsWith("l-")) {
 		localOnly = true;
-		visibility = defaultStore.state.secondPostVisibility.replace("l-","");
+		visibility = defaultStore.state.secondPostVisibility.replace("l-", "");
 	} else {
 		localOnly = false;
 		visibility = defaultStore.state.secondPostVisibility;
 	}
 	specifiedCheck();
-	if (canPost && visibility !== 'specified') {
+	if (canPost && visibility !== "specified") {
 		post();
 	}
 }
@@ -1433,43 +1690,43 @@ async function postSecondChannel() {
 	post();
 }
 async function postThird() {
-	if (defaultStore.state.thirdPostVisibility.startsWith("l-")){
+	if (defaultStore.state.thirdPostVisibility.startsWith("l-")) {
 		localOnly = true;
-		visibility = defaultStore.state.thirdPostVisibility.replace("l-","");
+		visibility = defaultStore.state.thirdPostVisibility.replace("l-", "");
 	} else {
 		localOnly = false;
 		visibility = defaultStore.state.thirdPostVisibility;
 	}
 	specifiedCheck();
-	if (canPost && visibility !== 'specified') {
+	if (canPost && visibility !== "specified") {
 		post();
 	}
 }
 
 async function postFourth() {
-	if (defaultStore.state.fourthPostVisibility.startsWith("l-")){
+	if (defaultStore.state.fourthPostVisibility.startsWith("l-")) {
 		localOnly = true;
-		visibility = defaultStore.state.fourthPostVisibility.replace("l-","");
+		visibility = defaultStore.state.fourthPostVisibility.replace("l-", "");
 	} else {
 		localOnly = false;
 		visibility = defaultStore.state.fourthPostVisibility;
 	}
 	specifiedCheck();
-	if (canPost && visibility !== 'specified') {
+	if (canPost && visibility !== "specified") {
 		post();
 	}
 }
 
 async function postFifth() {
-	if (defaultStore.state.fifthPostVisibility.startsWith("l-")){
+	if (defaultStore.state.fifthPostVisibility.startsWith("l-")) {
 		localOnly = true;
-		visibility = defaultStore.state.fifthPostVisibility.replace("l-","");
+		visibility = defaultStore.state.fifthPostVisibility.replace("l-", "");
 	} else {
 		localOnly = false;
 		visibility = defaultStore.state.fifthPostVisibility;
 	}
 	specifiedCheck();
-	if (canPost && visibility !== 'specified') {
+	if (canPost && visibility !== "specified") {
 		post();
 	}
 }
@@ -1485,7 +1742,14 @@ async function post() {
 	if (!canPublic && visibility === "public") visibility = "home";
 	if (!canHome && visibility === "home") visibility = "followers";
 	if (!canFollower && visibility === "followers") visibility = "specified";
-	if (!canNotLocal && visibility !== "followers" && visibility !== "specified" && localOnly === false && !$i.blockPostNotLocalPublic) localOnly = true;
+	if (
+		!canNotLocal &&
+		visibility !== "followers" &&
+		visibility !== "specified" &&
+		localOnly === false &&
+		!$i.blockPostNotLocalPublic
+	)
+		localOnly = true;
 
 	let postData = {
 		text: processedText === "" ? undefined : processedText,
@@ -1498,7 +1762,7 @@ async function post() {
 			: undefined,
 		channelId: props.channel ? props.channel.id : undefined,
 		poll: poll,
-		cw: useCw ? (processedCw || "") : undefined,
+		cw: useCw ? processedCw || "" : undefined,
 		localOnly: localOnly,
 		visibility: visibility,
 		visibleUserIds:
@@ -1511,13 +1775,17 @@ async function post() {
 		const textHashtags_ = mfm
 			.parse(postData.text)
 			.filter((x) => x.type === "hashtag")
-			.map((x) => x.props.hashtag.startsWith("#") ? x.props.hashtag : `#${x.props.hashtag}`);
+			.map((x) =>
+				x.props.hashtag.startsWith("#")
+					? x.props.hashtag
+					: `#${x.props.hashtag}`
+			);
 		const hashtags_ = hashtags
 			.trim()
 			.split(" ")
 			.map((x) => (x.startsWith("#") ? x : `#${x}`));
 		const hashtags__ = hashtags_
-			.filter(x => !textHashtags_.includes(x))
+			.filter((x) => !textHashtags_.includes(x))
 			.join(" ");
 		postData.text = postData.text
 			? `${postData.text} ${hashtags__}`
@@ -1572,7 +1840,7 @@ async function post() {
 }
 
 function cancel() {
-	if (!defaultStore.state.CloseAllClearButton){
+	if (!defaultStore.state.CloseAllClearButton) {
 		emit("cancel");
 	} else {
 		let _cw = cw;
@@ -1580,42 +1848,61 @@ function cancel() {
 		let _quoteId = quoteId;
 		let _files = files;
 		let _poll = poll;
-		if (!cw?.trim() && !text?.trim() && !files?.length && !quoteId?.trim() && !poll) {
-				cw = backupCw;
-				text = backupText;
-				files = backupFiles;
-				quoteId = backupQuoteId;
-				poll = backupPoll;
+		if (
+			!cw?.trim() &&
+			!text?.trim() &&
+			!files?.length &&
+			!quoteId?.trim() &&
+			!poll
+		) {
+			cw = backupCw;
+			text = backupText;
+			files = backupFiles;
+			quoteId = backupQuoteId;
+			poll = backupPoll;
 		} else {
 			cw = "";
-			if (useCw && reply){
-				cw = `@${reply.user.username}${reply.user.host ? `@${reply.user.host}` : ""} `;
+			if (useCw && reply) {
+				cw = `@${reply.user.username}${
+					reply.user.host ? `@${reply.user.host}` : ""
+				} `;
 			}
 
-			if (!useCw && reply){
-				text = `@${reply.user.username}${reply.user.host ? `@${reply.user.host}` : ""} `;
+			if (!useCw && reply) {
+				text = `@${reply.user.username}${
+					reply.user.host ? `@${reply.user.host}` : ""
+				} `;
 			} else {
 				text = "";
 			}
-			
+
 			files = [];
 			quoteId = null;
 			poll = null;
 
 			if (
-				(backupCw || backupText || backupFiles?.length || backupQuoteId || backupPoll) 
-				&& _cw === cw && _text === text && quoteId === _quoteId && JSON.stringify(files) === JSON.stringify(_files) && JSON.stringify(poll) === JSON.stringify(_poll)) {
-					cw = backupCw;
-					text = backupText;
-					files = backupFiles;
-					quoteId = backupQuoteId;
-					poll = backupPoll;
+				(backupCw ||
+					backupText ||
+					backupFiles?.length ||
+					backupQuoteId ||
+					backupPoll) &&
+				_cw === cw &&
+				_text === text &&
+				quoteId === _quoteId &&
+				JSON.stringify(files) === JSON.stringify(_files) &&
+				JSON.stringify(poll) === JSON.stringify(_poll)
+			) {
+				cw = backupCw;
+				text = backupText;
+				files = backupFiles;
+				quoteId = backupQuoteId;
+				poll = backupPoll;
 			} else {
-					backupCw = _cw;
-					backupText = _text;
-					backupFiles = _files;
-					backupPoll = _poll;
-					backupQuoteId = _quoteId;
+				backupCw = _cw;
+				backupText = _text;
+				backupFiles = _files;
+				backupPoll = _poll;
+				backupQuoteId = _quoteId;
 			}
 		}
 	}
@@ -1627,7 +1914,7 @@ function insertMention() {
 			insertTextAtCursor(textareaEl, `@${Acct.toString(user)} `);
 		});
 	} else {
-		insertTextAtCursor(textareaEl, '@');
+		insertTextAtCursor(textareaEl, "@");
 	}
 }
 
@@ -1635,7 +1922,7 @@ async function insertEmoji(ev: MouseEvent) {
 	if (defaultStore.state.openEmojiPicker) {
 		os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textareaEl);
 	} else {
-		insertTextAtCursor(textareaEl, ':');
+		insertTextAtCursor(textareaEl, ":");
 	}
 }
 
@@ -1643,9 +1930,8 @@ function insertMfm() {
 	if (defaultStore.state.quickToggleSmartMFMInputer) {
 		smartMFMInputer = !smartMFMInputer;
 	} else {
-		insertTextAtCursor(textareaEl, '$');
+		insertTextAtCursor(textareaEl, "$");
 	}
-
 }
 
 async function openCheatSheet(ev: MouseEvent) {
@@ -1654,7 +1940,7 @@ async function openCheatSheet(ev: MouseEvent) {
 
 async function openDraft(ev: MouseEvent) {
 	os.popup(
-		XDraft, 
+		XDraft,
 		{},
 		{
 			done: (result) => {
@@ -1663,13 +1949,13 @@ async function openDraft(ev: MouseEvent) {
 			load: (result) => {
 				if (!result || result.canceled) return;
 				if (result.key === draftKey) return;
-				saveDraft(`auto:${uuid()?.slice(0, 8)}`,result.name);
+				saveDraft(`auto:${uuid()?.slice(0, 8)}`, result.name);
 				loadDraft(result.key);
 				deleteDraft(result.key);
 			},
 			save: (result) => {
 				if (!result || result.canceled) return;
-				saveDraft(result.key,result.name);
+				saveDraft(result.key, result.name);
 			},
 			delete: (result) => {
 				if (!result || result.canceled) return;
@@ -1677,9 +1963,10 @@ async function openDraft(ev: MouseEvent) {
 			},
 			closeAll: () => {
 				emit("cancel");
-			}
+			},
 		},
-		"closed");
+		"closed"
+	);
 }
 
 function loadDraft(key?) {
@@ -1687,30 +1974,41 @@ function loadDraft(key?) {
 		key ? key : draftKey
 	];
 	if (draft) {
-		if ((draft.data.text || (draft.data.useCw && draft.data.cw) || draft.data.files?.length || draft.data.poll)) {
+		if (
+			draft.data.text ||
+			(draft.data.useCw && draft.data.cw) ||
+			draft.data.files?.length ||
+			draft.data.poll
+		) {
 			text = draft.data.text;
 			useCw = draft.data.useCw;
 			if (useCw) cw = draft.data.cw;
 			visibility = draft.data.visibility;
 			localOnly = draft.data.localOnly;
-			files = (draft.data.files || []).filter(
-				(draftFile) => draftFile
-			);
-			draft.data.visibleUserIds?.forEach((x) => os.api("users/show", { userId: x }).then(
-				(user) => {
+			files = (draft.data.files || []).filter((draftFile) => draftFile);
+			draft.data.visibleUserIds?.forEach((x) =>
+				os.api("users/show", { userId: x }).then((user) => {
 					pushVisibleUser(user);
-				}
-			));
+				})
+			);
 			if (draft.data.poll) {
 				poll = draft.data.poll;
 			}
-			if (draft.data.quoteId && (!props.reply || props.reply.id !== draft.data.quoteId) && (!props.renote || props.renote.id !== draft.data.quoteId)) {
+			if (
+				draft.data.quoteId &&
+				(!props.reply || props.reply.id !== draft.data.quoteId) &&
+				(!props.renote || props.renote.id !== draft.data.quoteId)
+			) {
 				quoteId = draft.data.quoteId;
 			}
-			if (!key && draftKey === "note" && Date.now() > Date.parse(draft.updatedAt) + (300 * 1000)) {
-				saveDraft(`note:${uuid()?.slice(0, 8)}`)
+			if (
+				!key &&
+				draftKey === "note" &&
+				Date.now() > Date.parse(draft.updatedAt) + 300 * 1000
+			) {
+				saveDraft(`note:${uuid()?.slice(0, 8)}`);
 				return;
-		  }
+			}
 		} else {
 			deleteDraft(key);
 		}
@@ -1775,7 +2073,7 @@ onMounted(() => {
 	nextTick(() => {
 		// 書きかけの投稿を復元
 		if (!props.instant && !props.mention && !props.specified) {
-				loadDraft()
+			loadDraft();
 		}
 
 		// 削除して編集
@@ -1794,11 +2092,11 @@ onMounted(() => {
 				};
 			}
 			visibility = init.visibility;
-			init.visibleUserIds?.forEach((x) => os.api("users/show", { userId: x }).then(
-				(user) => {
+			init.visibleUserIds?.forEach((x) =>
+				os.api("users/show", { userId: x }).then((user) => {
 					pushVisibleUser(user);
-				}
-			));
+				})
+			);
 			localOnly = init.localOnly;
 			quoteId = init.renote ? init.renote.id : null;
 			saveDraft();
@@ -1807,7 +2105,6 @@ onMounted(() => {
 		nextTick(() => watchForDraft());
 	});
 });
-
 </script>
 
 <style lang="scss" scoped>
@@ -1946,7 +2243,6 @@ onMounted(() => {
 				> .widePostButton_right {
 					margin-right: calc(9px - 0.45em);
 				}
-
 			}
 
 			> .shortcutTarget::before {

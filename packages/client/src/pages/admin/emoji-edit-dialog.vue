@@ -28,7 +28,11 @@
 						i18n.ts.setMultipleBySeparatingWithSpace
 					}}</template>
 				</MkInput>
-				<MkTextarea v-model="license" class="_formBlock" misskey-auto-complete>
+				<MkTextarea
+					v-model="license"
+					class="_formBlock"
+					misskey-auto-complete
+				>
 					<template #label>{{ i18n.ts.license }}</template>
 				</MkTextarea>
 				<MkButton danger @click="del()"

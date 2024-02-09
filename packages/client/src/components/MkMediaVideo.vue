@@ -17,9 +17,19 @@
 					><i class="ph-warning ph-bold ph-lg"></i>
 					{{ i18n.ts.sensitive }}</b
 				>
-				<b v-if="(defaultStore.state.enableDataSaverMode && video.size) || !video.isSensitive" style="display: block"
+				<b
+					v-if="
+						(defaultStore.state.enableDataSaverMode &&
+							video.size) ||
+						!video.isSensitive
+					"
+					style="display: block"
 					><i class="ph-file-video ph-bold ph-lg"></i>
-					{{ defaultStore.state.enableDataSaverMode && video.size ? bytes(video.size,2) : i18n.ts.video }}</b
+					{{
+						defaultStore.state.enableDataSaverMode && video.size
+							? bytes(video.size, 2)
+							: i18n.ts.video
+					}}</b
 				>
 				<span style="display: block">{{ i18n.ts.clickToShow }}</span>
 			</div>
@@ -65,18 +75,21 @@ import ImgWithBlurhash from "@/components/MkImgWithBlurhash.vue";
 import { defaultStore } from "@/store";
 import "vue-plyr/dist/vue-plyr.css";
 import { i18n } from "@/i18n";
-import bytes from '@/filters/bytes';
+import bytes from "@/filters/bytes";
 
 const props = defineProps<{
 	video: misskey.entities.DriveFile;
 }>();
 
 const videoType = computed(() => {
-	return props.video.type === 'video/quicktime' ? 'video/mp4' : props.video.type;
+	return props.video.type === "video/quicktime"
+		? "video/mp4"
+		: props.video.type;
 });
 
 const hide = ref(
-	defaultStore.state.nsfw === "force" || defaultStore.state.enableDataSaverMode
+	defaultStore.state.nsfw === "force" ||
+		defaultStore.state.enableDataSaverMode
 		? true
 		: props.video.isSensitive && defaultStore.state.nsfw !== "ignore"
 );

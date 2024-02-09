@@ -8,7 +8,16 @@
 			<FormSplit>
 				<MkKeyValue class="_formBlock">
 					<template #key>{{ i18n.ts.capacity }}</template>
-					<template #value>{{ bytes(capacity, 2) + (capacity - DEFAULT_CAPACITY > 0 ? ` (+${bytes(capacity - DEFAULT_CAPACITY, 2)} ${~~(((capacity - DEFAULT_CAPACITY) / (MAX_CAPACITY - DEFAULT_CAPACITY)) * 100)}% 拡張済み)` : "") }}</template>
+					<template #value>{{
+						bytes(capacity, 2) +
+						(capacity - DEFAULT_CAPACITY > 0
+							? ` (+${bytes(capacity - DEFAULT_CAPACITY, 2)} ${~~(
+									((capacity - DEFAULT_CAPACITY) /
+										(MAX_CAPACITY - DEFAULT_CAPACITY)) *
+									100
+							  )}% 拡張済み)`
+							: "")
+					}}</template>
 				</MkKeyValue>
 				<MkKeyValue class="_formBlock">
 					<template #key>{{ i18n.ts.inUse }}</template>
@@ -41,7 +50,10 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
-			<FormButton @click="chooseUploadFolderAvatar()" style="margin-top: 6px;">
+			<FormButton
+				@click="chooseUploadFolderAvatar()"
+				style="margin-top: 6px"
+			>
 				{{ i18n.ts.uploadFolderAvatar }}
 				<template #suffix>{{
 					uploadFolderAvatar ? uploadFolderAvatar.name : "-"
@@ -50,7 +62,10 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
-			<FormButton @click="chooseUploadFolderBanner()" style="margin-top: 6px;">
+			<FormButton
+				@click="chooseUploadFolderBanner()"
+				style="margin-top: 6px"
+			>
 				{{ i18n.ts.uploadFolderBanner }}
 				<template #suffix>{{
 					uploadFolderBanner ? uploadFolderBanner.name : "-"
@@ -59,7 +74,11 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
-			<FormButton v-if="$i.isModerator || $i.isAdmin" @click="chooseUploadFolderEmoji()" style="margin-top: 6px;">
+			<FormButton
+				v-if="$i.isModerator || $i.isAdmin"
+				@click="chooseUploadFolderEmoji()"
+				style="margin-top: 6px"
+			>
 				{{ i18n.ts.uploadFolderEmoji }}
 				<template #suffix>{{
 					uploadFolderEmoji ? uploadFolderEmoji.name : "-"
@@ -85,8 +104,12 @@
 				class="_formBlock"
 				@update:modelValue="saveProfile()"
 			>
-				<template #label>{{ i18n.ts.alwaysMarkSensitive }}</template>
-			</FormSwitch><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				<template #label>{{
+					i18n.ts.alwaysMarkSensitive
+				}}</template> </FormSwitch
+			><span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span>
 			<FormSwitch
 				v-model="autoSensitive"
 				class="_formBlock"
@@ -136,7 +159,6 @@ const showMkkeySettingTips = computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
 
-
 const meterStyle = computed(() => {
 	return {
 		width: `${(usage.value / capacity.value) * 100}%`,
@@ -152,9 +174,7 @@ const keepOriginalUploading = computed(
 	defaultStore.makeGetterSetter("keepOriginalUploading")
 );
 
-const keepFileName = computed(
-	defaultStore.makeGetterSetter("keepFileName")
-);
+const keepFileName = computed(defaultStore.makeGetterSetter("keepFileName"));
 
 const alwaysInputFilename = computed(
 	defaultStore.makeGetterSetter("alwaysInputFilename")

@@ -1,14 +1,35 @@
 <template>
 	<div
-		v-if="$store.state.developerTicker && instance.softwareVersion?.length > 13"
+		v-if="
+			$store.state.developerTicker &&
+			instance.softwareVersion?.length > 13
+		"
 		class="hpaizdrt"
-		v-tooltip="instance.name + '/' + capitalize((instance.softwareName || '???'))"
+		v-tooltip="
+			instance.name + '/' + capitalize(instance.softwareName || '???')
+		"
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" v-if="getInstanceFavicon(instance) && !errorFavicon" :src="getInstanceFavicon(instance)" aria-hidden="true" @error="errorFavicon = true"/>
-		<img class="icon" v-if="getInstanceIcon(instance) && instance.faviconUrl !== instance.iconUrl && !errorIcon" :src="getInstanceIcon(instance)" aria-hidden="true" @error="errorIcon = true"/>
-		<span class="name">{{ (instance.softwareVersion || '???') }}</span>
+		<img
+			class="icon"
+			v-if="getInstanceFavicon(instance) && !errorFavicon"
+			:src="getInstanceFavicon(instance)"
+			aria-hidden="true"
+			@error="errorFavicon = true"
+		/>
+		<img
+			class="icon"
+			v-if="
+				getInstanceIcon(instance) &&
+				instance.faviconUrl !== instance.iconUrl &&
+				!errorIcon
+			"
+			:src="getInstanceIcon(instance)"
+			aria-hidden="true"
+			@error="errorIcon = true"
+		/>
+		<span class="name">{{ instance.softwareVersion || "???" }}</span>
 	</div>
 	<div
 		v-else-if="$store.state.developerTicker"
@@ -17,19 +38,59 @@
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" v-if="getInstanceFavicon(instance) && !errorFavicon" :src="getInstanceFavicon(instance)" aria-hidden="true" @error="errorFavicon = true"/>
-		<img class="icon" v-if="getInstanceIcon(instance) && instance.faviconUrl !== instance.iconUrl && !errorIcon" :src="getInstanceIcon(instance)" aria-hidden="true" @error="errorIcon = true"/>
-		<span class="name">{{ capitalize((instance.softwareName || '???')) + '/' + (instance.softwareVersion || '???') }}</span>
+		<img
+			class="icon"
+			v-if="getInstanceFavicon(instance) && !errorFavicon"
+			:src="getInstanceFavicon(instance)"
+			aria-hidden="true"
+			@error="errorFavicon = true"
+		/>
+		<img
+			class="icon"
+			v-if="
+				getInstanceIcon(instance) &&
+				instance.faviconUrl !== instance.iconUrl &&
+				!errorIcon
+			"
+			:src="getInstanceIcon(instance)"
+			aria-hidden="true"
+			@error="errorIcon = true"
+		/>
+		<span class="name">{{
+			capitalize(instance.softwareName || "???") +
+			"/" +
+			(instance.softwareVersion || "???")
+		}}</span>
 	</div>
 	<div
 		v-else
 		class="hpaizdrt"
-		v-tooltip="capitalize((instance.softwareName || '???')) + '/' + (instance.softwareVersion || '???')"
+		v-tooltip="
+			capitalize(instance.softwareName || '???') +
+			'/' +
+			(instance.softwareVersion || '???')
+		"
 		ref="ticker"
 		:style="bg"
 	>
-		<img class="icon" v-if="getInstanceFavicon(instance) && !errorFavicon" :src="getInstanceFavicon(instance)" aria-hidden="true" @error="errorFavicon = true"/>
-		<img class="icon" v-if="getInstanceIcon(instance) && instance.faviconUrl !== instance.iconUrl && !errorIcon" :src="getInstanceIcon(instance)" aria-hidden="true" @error="errorIcon = true"/>
+		<img
+			class="icon"
+			v-if="getInstanceFavicon(instance) && !errorFavicon"
+			:src="getInstanceFavicon(instance)"
+			aria-hidden="true"
+			@error="errorFavicon = true"
+		/>
+		<img
+			class="icon"
+			v-if="
+				getInstanceIcon(instance) &&
+				instance.faviconUrl !== instance.iconUrl &&
+				!errorIcon
+			"
+			:src="getInstanceIcon(instance)"
+			aria-hidden="true"
+			@error="errorIcon = true"
+		/>
 		<span class="name">{{ instance.name }}</span>
 	</div>
 </template>
@@ -80,14 +141,10 @@ const bg = {
 };
 
 function getInstanceFavicon(instance): string {
-	return (
-		getProxiedImageUrlNullable(instance.faviconUrl, "preview")
-	);
+	return getProxiedImageUrlNullable(instance.faviconUrl, "preview");
 }
 function getInstanceIcon(instance): string {
-	return (
-		getProxiedImageUrlNullable(instance.iconUrl, "preview")
-	);
+	return getProxiedImageUrlNullable(instance.iconUrl, "preview");
 }
 </script>
 

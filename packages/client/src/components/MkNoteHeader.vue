@@ -19,7 +19,7 @@
 							><MkEmoji
 								class="emoji"
 								:emoji="badge.emoji"
-								style="height: 1em; pointer-events: none;"
+								style="height: 1em; pointer-events: none"
 								static
 							></MkEmoji
 						></span>
@@ -29,9 +29,37 @@
 			</div>
 			<div>
 				<div class="info">
-					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && note.user.isFollowing && !note.user.isFollowed" class="ph-heart-half ph-bold relation"></i>
-					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && !note.user.isFollowing && note.user.isFollowed" class="ph-heart-half ph-bold relation" style="transform: scaleX(-1);"></i>
-					<i v-if="$store.state.showRelationMark && !note.user.isBot && note.user.isFollowing != null && !note.user.isFollowing && !note.user.isFollowed" class="ph-smiley-meh ph-bold relation"></i>
+					<i
+						v-if="
+							$store.state.showRelationMark &&
+							!note.user.isBot &&
+							note.user.isFollowing != null &&
+							note.user.isFollowing &&
+							!note.user.isFollowed
+						"
+						class="ph-heart-half ph-bold relation"
+					></i>
+					<i
+						v-if="
+							$store.state.showRelationMark &&
+							!note.user.isBot &&
+							note.user.isFollowing != null &&
+							!note.user.isFollowing &&
+							note.user.isFollowed
+						"
+						class="ph-heart-half ph-bold relation"
+						style="transform: scaleX(-1)"
+					></i>
+					<i
+						v-if="
+							$store.state.showRelationMark &&
+							!note.user.isBot &&
+							note.user.isFollowing != null &&
+							!note.user.isFollowing &&
+							!note.user.isFollowed
+						"
+						class="ph-smiley-meh ph-bold relation"
+					></i>
 					<MkA
 						v-if="note.replyId"
 						:to="`/notes/${note.replyId}`"

@@ -1,10 +1,18 @@
 <template>
 	<div class="_formRoot">
 		<FormSection>
-			<FormLink :to="`/settings/webhook/new-simple`"> Discord通知転送簡単設定<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span> </FormLink>
+			<FormLink :to="`/settings/webhook/new-simple`">
+				Discord通知転送簡単設定<span
+					v-if="showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				>
+			</FormLink>
 		</FormSection>
 		<FormSection>
-			<FormLink :to="`/settings/webhook/new`"> WebHookを新規作成 </FormLink>
+			<FormLink :to="`/settings/webhook/new`">
+				WebHookを新規作成
+			</FormLink>
 		</FormSection>
 
 		<FormSection>

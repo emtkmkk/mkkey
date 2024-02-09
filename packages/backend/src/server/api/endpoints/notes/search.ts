@@ -213,7 +213,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		}
 		let loopCount = 0;
 		while (que.includes("filter:") && plusQueryCount < 15 && loopCount < 15) {
-			loopCount++
+			loopCount++;
 			let qFilter;
 			if (!qFilter) {
 				const match = /(^|[\s\+])filter:([^\s\+]+)($|[\s\+])/i.exec(que);
@@ -223,18 +223,20 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (qFilter) {
 				plusQueryCount += 1;
 				switch (qFilter) {
-					case "follows":	
+					case "follows":
 						if (me) {
 							const followingQuery = Followings.createQueryBuilder("following")
-							.select("following.followeeId")
-							.where("following.followerId = :followerId", { followerId: me.id });
+								.select("following.followeeId")
+								.where("following.followerId = :followerId", {
+									followerId: me.id,
+								});
 							query.andWhere(
 								`((note.userId IN (${followingQuery.getQuery()})) OR (note.userId = :meId))`,
 								{ meId: me.id },
 							);
 							query.setParameters(followingQuery.getParameters());
-						};
-					break;
+						}
+						break;
 					case "cw":
 						query.andWhere("note.cw IS NOT NULL");
 						break;
@@ -245,29 +247,29 @@ export default define(meta, paramDef, async (ps, me) => {
 					case "images":
 					case "videos":
 						query.andWhere("note.fileIds != '{}'");
-					break;
+						break;
 					case "hashtags":
 						query.andWhere("note.tags != '{}'");
-					break;
+						break;
 					case "mention":
 						query.andWhere("note.mentions != '{}'");
-					break;
+						break;
 					case "replies":
 						query.andWhere("note.replyId IS NOT NULL");
 						query.andWhere("note.replyUserId != note.userId");
-					break;
+						break;
 					case "self_threads":
 						query.andWhere("note.replyId IS NOT NULL");
 						query.andWhere("note.replyUserId = note.userId");
-					break;
+						break;
 					case "quote":
 						query.andWhere("note.renoteId IS NOT NULL");
 						query.andWhere("(note.text IS NOT NULL OR note.fileIds != '{}')");
-					break;
+						break;
 					case "safe":
 						query.andWhere(`(note.cw NOT ILIKE '%シモ%' OR note.cw IS NULL)`);
 						query.andWhere(`(note.cw NOT ILIKE '%そぎぎ%' OR note.cw IS NULL)`);
-					break;
+						break;
 				}
 			}
 		}
@@ -278,7 +280,9 @@ export default define(meta, paramDef, async (ps, me) => {
 
 		queWords.forEach((x) => {
 			if (x.startsWith("-")) {
-				query.andWhere(`(note.cw NOT ILIKE '%${x.substring(1)}%' OR note.cw IS NULL)`);
+				query.andWhere(
+					`(note.cw NOT ILIKE '%${x.substring(1)}%' OR note.cw IS NULL)`,
+				);
 				query.andWhere(`note.text NOT ILIKE '%${x.substring(1)}%'`);
 			} else {
 				plusQueryCount += 1;

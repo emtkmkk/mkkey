@@ -14,11 +14,7 @@
 				:modules="[Virtual]"
 				:space-between="20"
 				:virtual="true"
-				:allow-touch-move="
-					!(
-						!defaultStore.state.swipeOnDesktop
-					)
-				"
+				:allow-touch-move="!!defaultStore.state.swipeOnDesktop"
 				@swiper="setSwiperRef"
 				@slide-change="onSlideChange"
 			>
@@ -49,7 +45,10 @@
 							</div>
 						</div>
 
-						<MkKeyValue class="_formBlock" style="white-space: pre-line;">
+						<MkKeyValue
+							class="_formBlock"
+							style="white-space: pre-line"
+						>
 							<template #key>{{ i18n.ts.description }}</template>
 							<template #value>{{
 								$instance.description
@@ -115,7 +114,11 @@
 											i18n.ts.users
 										}}</template>
 										<template #value>{{
-											`${number(stats.activeUsersCount)} (${number(stats.originalUsersCount)})`
+											`${number(
+												stats.activeUsersCount
+											)} (${number(
+												stats.originalUsersCount
+											)})`
 										}}</template>
 									</MkKeyValue>
 									<MkKeyValue class="_formBlock">
@@ -131,7 +134,14 @@
 											i18n.ts.emojis
 										}}</template>
 										<template #value>{{
-											number(instance.emojis?.length) + (instance.remoteEmojiMode === "all" ? ` (${number(instance.emojis?.length + instance.remoteEmojiCount)})` : "")
+											number(instance.emojis?.length) +
+											(instance.remoteEmojiMode === "all"
+												? ` (${number(
+														instance.emojis
+															?.length +
+															instance.remoteEmojiCount
+												  )})`
+												: "")
 										}}</template>
 									</MkKeyValue>
 								</FormSplit>

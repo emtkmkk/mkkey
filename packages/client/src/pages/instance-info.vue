@@ -19,19 +19,25 @@
 				:modules="[Virtual]"
 				:space-between="20"
 				:virtual="true"
-				:allow-touch-move="
-					!(
-						!defaultStore.state.swipeOnDesktop
-					)
-				"
+				:allow-touch-move="!!defaultStore.state.swipeOnDesktop"
 				@swiper="setSwiperRef"
 				@slide-change="onSlideChange"
 			>
 				<swiper-slide>
 					<div class="_formRoot">
 						<div class="fnfelxur">
-							<img :src="faviconUrl" title="favicon" alt="favicon" class="icon" />
-							<img :src="iconUrl" title="icon" alt="icon" class="icon" />
+							<img
+								:src="faviconUrl"
+								title="favicon"
+								alt="favicon"
+								class="icon"
+							/>
+							<img
+								:src="iconUrl"
+								title="icon"
+								alt="icon"
+								class="icon"
+							/>
 							<span class="name">{{
 								instance.name || `(${i18n.ts.unknown})`
 							}}</span>
@@ -412,8 +418,7 @@ async function fetch() {
 	isBlocked = instance.isBlocked;
 	isSilenced = instance.isSilenced;
 	iconUrl = getProxiedImageUrlNullable(instance.iconUrl, "preview");
-	faviconUrl =
-		getProxiedImageUrlNullable(instance.faviconUrl, "preview");
+	faviconUrl = getProxiedImageUrlNullable(instance.faviconUrl, "preview");
 }
 
 async function toggleBlock() {
@@ -485,13 +490,11 @@ let theTabs = [
 ];
 
 if (iAmAdmin && !defaultStore.state.hiddenActivityChart) {
-	theTabs.push(
-		{
-			key: "chart",
-			title: i18n.ts.charts,
-			icon: "ph-chart-bar ph-bold ph-lg",
-		},
-	);
+	theTabs.push({
+		key: "chart",
+		title: i18n.ts.charts,
+		icon: "ph-chart-bar ph-bold ph-lg",
+	});
 }
 if (iAmAdmin) {
 	theTabs.push(

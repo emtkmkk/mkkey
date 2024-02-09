@@ -1,14 +1,23 @@
 <template>
 	<MkStickyContainer>
 		<template #header>
-			<MkTab v-model="include" :class="$style.tab" @contextmenu.stop="onContextmenu">
+			<MkTab
+				v-model="include"
+				:class="$style.tab"
+				@contextmenu.stop="onContextmenu"
+			>
 				<option :value="null">{{ i18n.ts.notes }}</option>
 				<option value="highlight">{{ i18n.ts.highlight }}</option>
 				<option value="replies">{{ i18n.ts.notesAndReplies }}</option>
 				<option value="files">{{ i18n.ts.withFiles }}</option>
 			</MkTab>
 		</template>
-		<XNotes re :key="generateUniqueKey()" :no-gap="true" :pagination="pagination" />
+		<XNotes
+			re
+			:key="generateUniqueKey()"
+			:no-gap="true"
+			:pagination="pagination"
+		/>
 	</MkStickyContainer>
 </template>
 
@@ -30,8 +39,10 @@ const props = defineProps<{
 const include = ref<string | null>(null);
 
 const endpoint = computed(() => {
-		return include.value != "highlight" ? "users/notes" : "users/featured-notes"
-})
+	return include.value != "highlight"
+		? "users/notes"
+		: "users/featured-notes";
+});
 
 const pagination = {
 	endpoint,
@@ -42,14 +53,16 @@ const pagination = {
 		withFiles: include.value === "files",
 		showVisitor: include.value === "visitor",
 		privateOnly: include.value === "private",
-		untilDate: travelDate ? travelDate.valueOf() : undefined
+		untilDate: travelDate ? travelDate.valueOf() : undefined,
 	})),
 };
 const generateUniqueKey = () => {
-  return `${include.value}-${Math.floor(Date.now() / 10000)}`;
+	return `${include.value}-${Math.floor(Date.now() / 10000)}`;
 };
 
-const lastBackedDate = $computed(() => defaultStore.reactiveState.lastBackedDate?.value?.[endpoint.value]);
+const lastBackedDate = $computed(
+	() => defaultStore.reactiveState.lastBackedDate?.value?.[endpoint.value]
+);
 
 let travelDate = $ref<Date | undefined>(undefined);
 
@@ -69,33 +82,45 @@ async function timetravel(defaultDate?: Date): Promise<void> {
 const onContextmenu = (ev: MouseEvent) => {
 	os.contextMenu(
 		[
-			...( travelDate ? [{
-				type: "label",
-				text: i18n.ts.showingPastTimeline,
-			} as MenuLabel,{
-				type: "label",
-				text: travelDate.toLocaleString(),
-			} as MenuLabel,{
-				icon: 'ph-arrow-line-up ph-bold ph-lg',
-				text: i18n.ts.jumpToNow as string,
-				action: () => {
-					travelDate = undefined;
-				},
-			} as MenuButton] : []),
-			...(!travelDate && lastBackedDate?.createdAt && Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000 ? [{
-				icon: 'ph-arrow-arc-left ph-bold ph-lg',
-				text: i18n.ts.lastBackedDate as string,
-				action: () => {
-					let lastDate = new Date(lastBackedDate?.date);
-					lastDate.setSeconds(lastDate.getSeconds() + 1);
-					travelDate = lastDate;
-				},
-			} as MenuButton] : []),
+			...(travelDate
+				? [
+						{
+							type: "label",
+							text: i18n.ts.showingPastTimeline,
+						} as MenuLabel,
+						{
+							type: "label",
+							text: travelDate.toLocaleString(),
+						} as MenuLabel,
+						{
+							icon: "ph-arrow-line-up ph-bold ph-lg",
+							text: i18n.ts.jumpToNow as string,
+							action: () => {
+								travelDate = undefined;
+							},
+						} as MenuButton,
+				  ]
+				: []),
+			...(!travelDate &&
+			lastBackedDate?.createdAt &&
+			Date.now() - Date.parse(lastBackedDate?.createdAt) < 30 * 60 * 1000
+				? [
+						{
+							icon: "ph-arrow-arc-left ph-bold ph-lg",
+							text: i18n.ts.lastBackedDate as string,
+							action: () => {
+								let lastDate = new Date(lastBackedDate?.date);
+								lastDate.setSeconds(lastDate.getSeconds() + 1);
+								travelDate = lastDate;
+							},
+						} as MenuButton,
+				  ]
+				: []),
 			{
-				icon: 'ph-calendar-blank ph-bold ph-lg',
+				icon: "ph-calendar-blank ph-bold ph-lg",
 				text: i18n.ts.jumpToSpecifiedDate as string,
 				action: () => {
-					timetravel()
+					timetravel();
 				},
 			} as MenuButton,
 		],

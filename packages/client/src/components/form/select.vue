@@ -114,14 +114,12 @@ useInterval(
 	() => {
 		if (prefixEl.value) {
 			if (prefixEl.value.offsetWidth) {
-				inputEl.value.style.paddingLeft =
-					`${prefixEl.value.offsetWidth}px`;
+				inputEl.value.style.paddingLeft = `${prefixEl.value.offsetWidth}px`;
 			}
 		}
 		if (suffixEl.value) {
 			if (suffixEl.value.offsetWidth) {
-				inputEl.value.style.paddingRight =
-					`${suffixEl.value.offsetWidth}px`;
+				inputEl.value.style.paddingRight = `${suffixEl.value.offsetWidth}px`;
 			}
 		}
 	},

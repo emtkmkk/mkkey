@@ -1,9 +1,11 @@
 <template>
 	<div
 		v-if="!page.isPublic && _err"
-		style="white-space: pre-line; font-size: 0.8em; opacity: 0.8;"
+		style="white-space: pre-line; font-size: 0.8em; opacity: 0.8"
 	>
-		{{ `エラー！${_err}\nJavascriptコンソールにて詳細を出力しています。\n(このメッセージはページが非公開の場合のみ表示されます。)\n\n` }}
+		{{
+			`エラー！${_err}\nJavascriptコンソールにて詳細を出力しています。\n(このメッセージはページが非公開の場合のみ表示されます。)\n\n`
+		}}
 	</div>
 	<div
 		v-if="hpml"
@@ -53,7 +55,7 @@ export default defineComponent({
 			url: url,
 			enableAiScript: !defaultStore.state.disablePagesScript,
 		});
-		
+
 		let _err = ref("");
 
 		const parser = new Parser();

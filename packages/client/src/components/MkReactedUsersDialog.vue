@@ -6,7 +6,9 @@
 		@close="dialog.close()"
 		@closed="emit('closed')"
 	>
-		<template #header>{{ tab?.replace(/@.:$/,`@${config.host}:`) || i18n.ts.reaction }}</template>
+		<template #header>{{
+			tab?.replace(/@.:$/, `@${config.host}:`) || i18n.ts.reaction
+		}}</template>
 
 		<MkSpacer :margin-min="20" :margin-max="28">
 			<div v-if="note" class="_gaps">
@@ -89,7 +91,9 @@ let note = $ref<misskey.entities.Note>();
 let tab = $ref<string>();
 let reactions = ref<string[]>();
 let users = $ref();
-const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
+const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
+	return { name: x.replaceAll(":", ""), exact: /^:\w+:$/.test(x) };
+});
 /*let reactionFilterMuted = computed(() => {
 	//ミュートリアクションを除外
 	reactions.filter((x) => 
@@ -111,7 +115,7 @@ const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {
 watch($$(tab), async () => {
 	const res = await os.api("notes/reactions", {
 		noteId: props.noteId,
-		type: tab.replace("@.:",":"),
+		type: tab.replace("@.:", ":"),
 		limit: 30,
 	});
 

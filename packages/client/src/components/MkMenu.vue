@@ -322,7 +322,6 @@ function clicked(fn: MenuAction | undefined, ev: MouseEvent) {
 
 function close(actioned = false) {
 	if (actioned) {
-
 	}
 	emit("close", actioned);
 }

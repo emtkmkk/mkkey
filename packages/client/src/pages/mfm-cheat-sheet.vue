@@ -4,7 +4,9 @@
 		<MkSpacer :content-max="800">
 			<div :class="$style.root">
 				<div>{{ i18n.ts._mfm.intro }}</div>
-				<Mfm text="[この下に続く内容は一部古かったり抜けがあります。こちらで最新の構文を含め詳しく解説されています。](https://misskey.io/@hakohako_f2/pages/mfm-cheat-sheet)" />
+				<Mfm
+					text="[この下に続く内容は一部古かったり抜けがあります。こちらで最新の構文を含め詳しく解説されています。](https://misskey.io/@hakohako_f2/pages/mfm-cheat-sheet)"
+				/>
 				<br />
 				<div class="section _block">
 					<div class="title">{{ i18n.ts._mfm.mention }}</div>
@@ -430,7 +432,13 @@ let preview_mention = $ref("@example");
 let preview_hashtag = $ref("#test");
 let preview_link = $ref(`[${i18n.ts._mfm.dummy}](https://calckey.org)`);
 let preview_emoji = $ref(
-	instance.recentlyPopularReactions.length > 1 ? `${instance.recentlyPopularReactions.filter((x) => x.name != ":iine_fav:")[0].name}` : ":emojiname:"
+	instance.recentlyPopularReactions.length > 1
+		? `${
+				instance.recentlyPopularReactions.filter(
+					(x) => x.name != ":iine_fav:"
+				)[0].name
+		  }`
+		: ":emojiname:"
 );
 let preview_bold = $ref(`**${i18n.ts._mfm.dummy}**`);
 let preview_small = $ref(`<small>${i18n.ts._mfm.dummy}</small>`);

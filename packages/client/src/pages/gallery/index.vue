@@ -15,11 +15,7 @@
 				:modules="[Virtual]"
 				:space-between="20"
 				:virtual="true"
-				:allow-touch-move="
-					!(
-						!defaultStore.state.swipeOnDesktop
-					)
-				"
+				:allow-touch-move="!!defaultStore.state.swipeOnDesktop"
 				@swiper="setSwiperRef"
 				@slide-change="onSlideChange"
 			>

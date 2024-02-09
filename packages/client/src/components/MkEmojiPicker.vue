@@ -19,34 +19,94 @@
 			<div ref="emojis" class="emojis">
 				<section class="result">
 					<div v-if="!allCustomEmojis && q && q.includes('@')">
-						<header class="_acrylic">{{ (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) ? "他サーバー絵文字の辞書データがありません。" : "@（他鯖絵文字検索）はリアクション時のみ使用可能です。" }}</header>
+						<header class="_acrylic">
+							{{
+								props.asReactionPicker ||
+								$store.state.showRemoteEmojiPostForm
+									? "他サーバー絵文字の辞書データがありません。"
+									: "@（他鯖絵文字検索）はリアクション時のみ使用可能です。"
+							}}
+						</header>
 					</div>
 					<div v-else>
-						<header class="_acrylic" v-if="!(q == null || q === '')">
-							{{ `${q.includes('@') ? (remoteEmojiMode === "all" ? "他サーバー絵文字検索 " : "他サーバー絵文字検索(ミニ) ") : "検索結果 "}
-							${!(waitingFlg || searchingFlg) ? (searchResultCustomStart.length + searchResultUnicodeStart.length + searchResultCustom.length + searchResultUnicode.length) !== 0 
-								? `${`${searchResultCustomStart.length + searchResultUnicodeStart.length} / ${searchResultCustom.length + searchResultUnicode.length}`} 件` 
-								: "0 件" : searchingFlg ? "検索中……" : "入力待機中……" }${allCustomEmojis && !q.includes('@') ? " (@で他サーバー絵文字検索)" : ""}
-							` }}
+						<header
+							class="_acrylic"
+							v-if="!(q == null || q === '')"
+						>
+							{{
+								`${
+									q.includes("@")
+										? remoteEmojiMode === "all"
+											? "他サーバー絵文字検索 "
+											: "他サーバー絵文字検索(ミニ) "
+										: "検索結果 "
+								}
+							${
+								!(waitingFlg || searchingFlg)
+									? searchResultCustomStart.length +
+											searchResultUnicodeStart.length +
+											searchResultCustom.length +
+											searchResultUnicode.length !==
+									  0
+										? `${`${
+												searchResultCustomStart.length +
+												searchResultUnicodeStart.length
+										  } / ${
+												searchResultCustom.length +
+												searchResultUnicode.length
+										  }`} 件`
+										: "0 件"
+									: searchingFlg
+									? "検索中……"
+									: "入力待機中……"
+							}${
+									allCustomEmojis && !q.includes("@")
+										? " (@で他サーバー絵文字検索)"
+										: ""
+								}
+							`
+							}}
 						</header>
 					</div>
 					<div v-if="searchResultCustomStart.length > 0" class="body">
 						<template v-for="emoji in searchResultCustomStart">
 							<button
 								:key="emoji.id"
-								v-if="!errorEmojis.has(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
-								v-tooltip="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
+								v-if="
+									!errorEmojis.has(
+										`:${emoji.name}${
+											emoji.host ? `@${emoji.host}` : ''
+										}:`
+									)
+								"
+								v-tooltip="
+									`:${emoji.name}${
+										emoji.host ? `@${emoji.host}` : ''
+									}:`
+								"
 								class="_button item"
-								:title="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
+								:title="`:${emoji.name}${
+									emoji.host ? `@${emoji.host}` : ''
+								}:`"
 								tabindex="0"
 								@click="chosen(emoji, $event)"
 							>
 								<MkEmoji
 									class="emoji"
-									:emoji="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
+									:emoji="`:${emoji.name}${
+										emoji.host ? `@${emoji.host}` : ''
+									}:`"
 									:normal="true"
 									:isPicker="true"
-									@loaderror="errorEmojis.add(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
+									@loaderror="
+										errorEmojis.add(
+											`:${emoji.name}${
+												emoji.host
+													? `@${emoji.host}`
+													: ''
+											}:`
+										)
+									"
 								/>
 								<!--<img
 									class="emoji"
@@ -59,7 +119,10 @@
 							</button>
 						</template>
 					</div>
-					<div v-if="searchResultUnicodeStart.length > 0" class="body">
+					<div
+						v-if="searchResultUnicodeStart.length > 0"
+						class="body"
+					>
 						<button
 							v-for="emoji in searchResultUnicodeStart"
 							v-tooltip="emoji.name"
@@ -76,19 +139,41 @@
 						<template v-for="emoji in searchResultCustom">
 							<button
 								:key="emoji.id"
-								v-if="!errorEmojis.has(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
-								v-tooltip="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
+								v-if="
+									!errorEmojis.has(
+										`:${emoji.name}${
+											emoji.host ? `@${emoji.host}` : ''
+										}:`
+									)
+								"
+								v-tooltip="
+									`:${emoji.name}${
+										emoji.host ? `@${emoji.host}` : ''
+									}:`
+								"
 								class="_button item"
-								:title="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
+								:title="`:${emoji.name}${
+									emoji.host ? `@${emoji.host}` : ''
+								}:`"
 								tabindex="0"
 								@click="chosen(emoji, $event)"
 							>
 								<MkEmoji
 									class="emoji"
-									:emoji="`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`"
+									:emoji="`:${emoji.name}${
+										emoji.host ? `@${emoji.host}` : ''
+									}:`"
 									:normal="true"
 									:isPicker="true"
-									@loaderror="errorEmojis.add(`:${emoji.name}${emoji.host ? `@${emoji.host}` : ''}:`)"
+									@loaderror="
+										errorEmojis.add(
+											`:${emoji.name}${
+												emoji.host
+													? `@${emoji.host}`
+													: ''
+											}:`
+										)
+									"
 								/>
 								<!--<img
 									class="emoji"
@@ -116,11 +201,36 @@
 					</div>
 				</section>
 
-				<div v-if="!$store.state.hiddenReactionDeckAndRecent && tab === 'index' && searchResultCustom.length <= 0 && (q == null || q === '')" class="group index">
-					<template v-if="!showPinned || ((pinned2?.length ?? 0) + (pinned3?.length ?? 0) + (pinned4?.length ?? 0) + (pinned5?.length ?? 0)) === 0">
+				<div
+					v-if="
+						!$store.state.hiddenReactionDeckAndRecent &&
+						tab === 'index' &&
+						searchResultCustom.length <= 0 &&
+						(q == null || q === '')
+					"
+					class="group index"
+				>
+					<template
+						v-if="
+							!showPinned ||
+							(pinned2?.length ?? 0) +
+								(pinned3?.length ?? 0) +
+								(pinned4?.length ?? 0) +
+								(pinned5?.length ?? 0) ===
+								0
+						"
+					>
 						<section v-if="showPinned">
 							<div class="body">
-								<template v-for="emoji in pinned.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))">
+								<template
+									v-for="emoji in pinned.filter(
+										(x) =>
+											props.asReactionPicker ||
+											$store.state
+												.showRemoteEmojiPostForm ||
+											!x.includes('@')
+									)"
+								>
 									<button
 										:key="emoji"
 										v-if="!errorEmojis.has(emoji)"
@@ -128,19 +238,39 @@
 										tabindex="0"
 										@click="chosen(emoji, $event)"
 									>
-										<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.add(emoji)"/>
+										<MkEmoji
+											class="emoji"
+											:emoji="emoji"
+											:normal="true"
+											:isPicker="true"
+											@loaderror="errorEmojis.add(emoji)"
+										/>
 									</button>
 								</template>
 							</div>
 						</section>
-						
-						<section v-if="!showPinned && !$store.state.hiddenRecent && recentlyMostUsed?.length">
+
+						<section
+							v-if="
+								!showPinned &&
+								!$store.state.hiddenRecent &&
+								recentlyMostUsed?.length
+							"
+						>
 							<header class="_acrylic">
 								<i class="ph-alarm ph-bold ph-fw ph-lg"></i>
 								{{ i18n.ts.recentlyMostUsed }}
 							</header>
 							<div class="body">
-								<template v-for="emoji in recentlyMostUsed?.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))">
+								<template
+									v-for="emoji in recentlyMostUsed?.filter(
+										(x) =>
+											props.asReactionPicker ||
+											$store.state
+												.showRemoteEmojiPostForm ||
+											!x.includes('@')
+									)"
+								>
 									<button
 										:key="emoji"
 										v-if="!errorEmojis.has(emoji)"
@@ -148,7 +278,13 @@
 										class="_button item"
 										@click="chosen(emoji, $event)"
 									>
-										<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.add(emoji)"/>
+										<MkEmoji
+											class="emoji"
+											:emoji="emoji"
+											:normal="true"
+											:isPicker="true"
+											@loaderror="errorEmojis.add(emoji)"
+										/>
 									</button>
 								</template>
 							</div>
@@ -160,7 +296,15 @@
 								{{ i18n.ts.recentUsed }}
 							</header>
 							<div class="body">
-								<template v-for="emoji in recentlyUsedEmojis.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))">
+								<template
+									v-for="emoji in recentlyUsedEmojis.filter(
+										(x) =>
+											props.asReactionPicker ||
+											$store.state
+												.showRemoteEmojiPostForm ||
+											!x.includes('@')
+									)"
+								>
 									<button
 										:key="emoji"
 										v-if="!errorEmojis.has(emoji)"
@@ -168,7 +312,13 @@
 										class="_button item"
 										@click="chosen(emoji, $event)"
 									>
-										<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.add(emoji)"/>
+										<MkEmoji
+											class="emoji"
+											:emoji="emoji"
+											:normal="true"
+											:isPicker="true"
+											@loaderror="errorEmojis.add(emoji)"
+										/>
 									</button>
 								</template>
 							</div>
@@ -177,101 +327,210 @@
 					<template v-else>
 						<XSection
 							key="pinned:1"
-							v-if="pinned?.length != 0 && ((props.asReactionPicker && !$store.state.reactionsReactionHiddens) || (!props.asReactionPicker && !$store.state.reactionsPostHiddens))"
+							v-if="
+								pinned?.length != 0 &&
+								((props.asReactionPicker &&
+									!$store.state.reactionsReactionHiddens) ||
+									(!props.asReactionPicker &&
+										!$store.state.reactionsPostHiddens))
+							"
 							:initial-shown="$store.state.reactionsDefaultOpen"
 							:emojis="
-								pinned.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))
+								pinned.filter(
+									(x) =>
+										props.asReactionPicker ||
+										$store.state.showRemoteEmojiPostForm ||
+										!x.includes('@')
+								)
 							"
 							@chosen="chosen"
-							>{{ `${$store.state.reactionsFolderName || "ピン留め絵文字 : 1"} ` }}</XSection
+							>{{
+								`${
+									$store.state.reactionsFolderName ||
+									"ピン留め絵文字 : 1"
+								} `
+							}}</XSection
 						>
 						<XSection
 							key="pinned:2"
-							v-if="pinned2?.length != 0 && ((props.asReactionPicker && !$store.state.reactionsReactionHiddens2) || (!props.asReactionPicker && !$store.state.reactionsPostHiddens2))"
+							v-if="
+								pinned2?.length != 0 &&
+								((props.asReactionPicker &&
+									!$store.state.reactionsReactionHiddens2) ||
+									(!props.asReactionPicker &&
+										!$store.state.reactionsPostHiddens2))
+							"
 							:initial-shown="$store.state.reactions2DefaultOpen"
 							:emojis="
-								pinned2.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))
+								pinned2.filter(
+									(x) =>
+										props.asReactionPicker ||
+										$store.state.showRemoteEmojiPostForm ||
+										!x.includes('@')
+								)
 							"
 							@chosen="chosen"
-							>{{ `${$store.state.reactionsFolderName2 || "ピン留め絵文字 : 2"} ` }}</XSection
+							>{{
+								`${
+									$store.state.reactionsFolderName2 ||
+									"ピン留め絵文字 : 2"
+								} `
+							}}</XSection
 						>
 						<XSection
-							v-if="pinned3?.length != 0 && ((props.asReactionPicker && !$store.state.reactionsReactionHiddens3) || (!props.asReactionPicker && !$store.state.reactionsPostHiddens3))"
+							v-if="
+								pinned3?.length != 0 &&
+								((props.asReactionPicker &&
+									!$store.state.reactionsReactionHiddens3) ||
+									(!props.asReactionPicker &&
+										!$store.state.reactionsPostHiddens3))
+							"
 							key="pinned:3"
 							:initial-shown="$store.state.reactions3DefaultOpen"
 							:emojis="
-								pinned3.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))
+								pinned3.filter(
+									(x) =>
+										props.asReactionPicker ||
+										$store.state.showRemoteEmojiPostForm ||
+										!x.includes('@')
+								)
 							"
 							@chosen="chosen"
-							>{{ `${$store.state.reactionsFolderName3 || "ピン留め絵文字 : 3"} ` }}</XSection
+							>{{
+								`${
+									$store.state.reactionsFolderName3 ||
+									"ピン留め絵文字 : 3"
+								} `
+							}}</XSection
 						>
 						<XSection
-							v-if="pinned4?.length != 0 && ((props.asReactionPicker && !$store.state.reactionsReactionHiddens4) || (!props.asReactionPicker && !$store.state.reactionsPostHiddens4))"
+							v-if="
+								pinned4?.length != 0 &&
+								((props.asReactionPicker &&
+									!$store.state.reactionsReactionHiddens4) ||
+									(!props.asReactionPicker &&
+										!$store.state.reactionsPostHiddens4))
+							"
 							key="pinned:4"
 							:initial-shown="$store.state.reactions4DefaultOpen"
 							:emojis="
-								pinned4.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))
+								pinned4.filter(
+									(x) =>
+										props.asReactionPicker ||
+										$store.state.showRemoteEmojiPostForm ||
+										!x.includes('@')
+								)
 							"
 							@chosen="chosen"
-							>{{ `${$store.state.reactionsFolderName4 || "ピン留め絵文字 : 4"} ` }}</XSection
+							>{{
+								`${
+									$store.state.reactionsFolderName4 ||
+									"ピン留め絵文字 : 4"
+								} `
+							}}</XSection
 						>
 						<XSection
-							v-if="pinned5?.length != 0 && ((props.asReactionPicker && !$store.state.reactionsReactionHiddens5) || (!props.asReactionPicker && !$store.state.reactionsPostHiddens5))"
+							v-if="
+								pinned5?.length != 0 &&
+								((props.asReactionPicker &&
+									!$store.state.reactionsReactionHiddens5) ||
+									(!props.asReactionPicker &&
+										!$store.state.reactionsPostHiddens5))
+							"
 							key="pinned:5"
 							:initial-shown="$store.state.reactions5DefaultOpen"
 							:emojis="
-								pinned5.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))
+								pinned5.filter(
+									(x) =>
+										props.asReactionPicker ||
+										$store.state.showRemoteEmojiPostForm ||
+										!x.includes('@')
+								)
 							"
 							@chosen="chosen"
-							>{{ `${$store.state.reactionsFolderName5 || "ピン留め絵文字 : 5"} ` }}</XSection
+							>{{
+								`${
+									$store.state.reactionsFolderName5 ||
+									"ピン留め絵文字 : 5"
+								} `
+							}}</XSection
 						>
 						<XSection
-							v-if="recentlyUsedEmojis?.length != 0 && !$store.state.hiddenRecent"
+							v-if="
+								recentlyUsedEmojis?.length != 0 &&
+								!$store.state.hiddenRecent
+							"
 							key="recentlyUsed"
-							:initial-shown="$store.state.recentlyUsedDefaultOpen"
+							:initial-shown="
+								$store.state.recentlyUsedDefaultOpen
+							"
 							:emojis="
-								recentlyUsedEmojis.filter((x) => (props.asReactionPicker || $store.state.showRemoteEmojiPostForm) || !x.includes('@'))
+								recentlyUsedEmojis.filter(
+									(x) =>
+										props.asReactionPicker ||
+										$store.state.showRemoteEmojiPostForm ||
+										!x.includes('@')
+								)
 							"
 							@chosen="chosen"
 							>{{ i18n.ts.recentUsed }}</XSection
 						>
 					</template>
 				</div>
-				<div v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
+				<div
+					v-if="
+						searchResultCustom.length <= 0 &&
+						(q == null || q === '')
+					"
+					class="group"
+				>
 					<header>{{ i18n.ts.customEmojis }}</header>
 					<XSection
 						key="custom:recentlyAddEmojis"
 						:initial-shown="false"
 						:emojis="
 							customEmojis
-								.filter((e) => e.createdAt ? new Date().valueOf() - new Date(e.createdAt).valueOf() < 7 * 24 * 60 * 60 * 1000 : false)
-								.sort((a,b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf())
-								.slice(0,255)
+								.filter((e) =>
+									e.createdAt
+										? new Date().valueOf() -
+												new Date(
+													e.createdAt
+												).valueOf() <
+										  7 * 24 * 60 * 60 * 1000
+										: false
+								)
+								.sort(
+									(a, b) =>
+										new Date(b.createdAt).valueOf() -
+										new Date(a.createdAt).valueOf()
+								)
+								.slice(0, 255)
 								.map((e) => ':' + e.name + ':')
 						"
 						@chosen="chosen"
 						>{{ i18n.ts.recentlyAddEmojis }}</XSection
 					>
 					<XSection
-						v-if="recentlyPopularReactions && recentlyPopularReactions.length"
+						v-if="
+							recentlyPopularReactions &&
+							recentlyPopularReactions.length
+						"
 						key="custom:recentlyPopularReactions"
 						:initial-shown="false"
 						:emojis="
 							recentlyPopularReactions
-							.filter((e) => e.name !== ':iine_fav:')
-							.map((e) => e.name)
-							.slice(0,99)
+								.filter((e) => e.name !== ':iine_fav:')
+								.map((e) => e.name)
+								.slice(0, 99)
 						"
 						@chosen="chosen"
 						>{{ i18n.ts.recentlyPopularReactions }}</XSection
 					>
-					<XSection 
+					<XSection
 						v-once
 						key="custom:random"
 						:initial-shown="false"
-						:emojis="
-							randomSubset.map((e) => ':' + e.name + ':')
-						"
+						:emojis="randomSubset.map((e) => ':' + e.name + ':')"
 						@chosen="chosen"
 						>{{ i18n.ts.random }}</XSection
 					>
@@ -294,8 +553,26 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[aiueo]/i.test(formatRoomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.name?.slice(0,1).toLowerCase()) - sortWord.indexOf(b.name?.slice(0,1).toLowerCase()))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[aiueo]/i.test(
+												formatRoomaji(e.name)
+											)
+									)
+									.sort(
+										(a, b) =>
+											sortWord.indexOf(
+												a.name
+													?.slice(0, 1)
+													.toLowerCase()
+											) -
+											sortWord.indexOf(
+												b.name
+													?.slice(0, 1)
+													.toLowerCase()
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -306,9 +583,39 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[kg]([aiueo]|y[aiueo])/i.test(formatRoomaji(e.name)))
-									.sort((a,b) => ['k','g'].indexOf(a.name?.slice(0,1).toLowerCase()) - ['k','g'].indexOf(b.name?.slice(0,1).toLowerCase()))
-									.sort((a,b) => sortWord.indexOf(a.name?.slice(1,2).toLowerCase()) - sortWord.indexOf(b.name?.slice(1,2).toLowerCase()))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[kg]([aiueo]|y[aiueo])/i.test(
+												formatRoomaji(e.name)
+											)
+									)
+									.sort(
+										(a, b) =>
+											['k', 'g'].indexOf(
+												a.name
+													?.slice(0, 1)
+													.toLowerCase()
+											) -
+											['k', 'g'].indexOf(
+												b.name
+													?.slice(0, 1)
+													.toLowerCase()
+											)
+									)
+									.sort(
+										(a, b) =>
+											sortWord.indexOf(
+												a.name
+													?.slice(1, 2)
+													.toLowerCase()
+											) -
+											sortWord.indexOf(
+												b.name
+													?.slice(1, 2)
+													.toLowerCase()
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -319,9 +626,39 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[sz]([aiueo]|y[aiueo])/i.test(formatRoomaji(e.name)))
-									.sort((a,b) => ['s','z'].indexOf(a.name?.slice(0,1).toLowerCase()) - ['s','z'].indexOf(b.name?.slice(0,1).toLowerCase()))
-									.sort((a,b) => sortWord.indexOf(a.name?.slice(1,2).toLowerCase()) - sortWord.indexOf(b.name?.slice(1,2).toLowerCase()))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[sz]([aiueo]|y[aiueo])/i.test(
+												formatRoomaji(e.name)
+											)
+									)
+									.sort(
+										(a, b) =>
+											['s', 'z'].indexOf(
+												a.name
+													?.slice(0, 1)
+													.toLowerCase()
+											) -
+											['s', 'z'].indexOf(
+												b.name
+													?.slice(0, 1)
+													.toLowerCase()
+											)
+									)
+									.sort(
+										(a, b) =>
+											sortWord.indexOf(
+												a.name
+													?.slice(1, 2)
+													.toLowerCase()
+											) -
+											sortWord.indexOf(
+												b.name
+													?.slice(1, 2)
+													.toLowerCase()
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -332,9 +669,39 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[td]([aiueo]|y[aiueo])/i.test(formatRoomaji(e.name)))
-									.sort((a,b) => ['t','d'].indexOf(a.name?.slice(0,1).toLowerCase()) - ['t','d'].indexOf(b.name?.slice(0,1).toLowerCase()))
-									.sort((a,b) => sortWord.indexOf(a.name?.slice(1,2).toLowerCase()) - sortWord.indexOf(b.name?.slice(1,2).toLowerCase()))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[td]([aiueo]|y[aiueo])/i.test(
+												formatRoomaji(e.name)
+											)
+									)
+									.sort(
+										(a, b) =>
+											['t', 'd'].indexOf(
+												a.name
+													?.slice(0, 1)
+													.toLowerCase()
+											) -
+											['t', 'd'].indexOf(
+												b.name
+													?.slice(0, 1)
+													.toLowerCase()
+											)
+									)
+									.sort(
+										(a, b) =>
+											sortWord.indexOf(
+												a.name
+													?.slice(1, 2)
+													.toLowerCase()
+											) -
+											sortWord.indexOf(
+												b.name
+													?.slice(1, 2)
+													.toLowerCase()
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -345,8 +712,26 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^n([aiueo]|y[aiueo])/i.test(formatRoomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.name?.slice(1,2).toLowerCase()) - sortWord.indexOf(b.name?.slice(1,2).toLowerCase()))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^n([aiueo]|y[aiueo])/i.test(
+												formatRoomaji(e.name)
+											)
+									)
+									.sort(
+										(a, b) =>
+											sortWord.indexOf(
+												a.name
+													?.slice(1, 2)
+													.toLowerCase()
+											) -
+											sortWord.indexOf(
+												b.name
+													?.slice(1, 2)
+													.toLowerCase()
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -357,9 +742,39 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[hfbp]([aiueo]|y[aiueo])/i.test(formatRoomaji(e.name)))
-									.sort((a,b) => ['h','f','b','p'].indexOf(a.name?.slice(0,1).toLowerCase()) - ['h','f','b','p'].indexOf(b.name?.slice(0,1).toLowerCase()))
-									.sort((a,b) => sortWord.indexOf(a.name?.slice(1,2).toLowerCase()) - sortWord.indexOf(b.name?.slice(1,2).toLowerCase()))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[hfbp]([aiueo]|y[aiueo])/i.test(
+												formatRoomaji(e.name)
+											)
+									)
+									.sort(
+										(a, b) =>
+											['h', 'f', 'b', 'p'].indexOf(
+												a.name
+													?.slice(0, 1)
+													.toLowerCase()
+											) -
+											['h', 'f', 'b', 'p'].indexOf(
+												b.name
+													?.slice(0, 1)
+													.toLowerCase()
+											)
+									)
+									.sort(
+										(a, b) =>
+											sortWord.indexOf(
+												a.name
+													?.slice(1, 2)
+													.toLowerCase()
+											) -
+											sortWord.indexOf(
+												b.name
+													?.slice(1, 2)
+													.toLowerCase()
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -370,8 +785,26 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^m([aiueo]|y[aiueo])/i.test(formatRoomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.name?.slice(1,2).toLowerCase()) - sortWord.indexOf(b.name?.slice(1,2).toLowerCase()))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^m([aiueo]|y[aiueo])/i.test(
+												formatRoomaji(e.name)
+											)
+									)
+									.sort(
+										(a, b) =>
+											sortWord.indexOf(
+												a.name
+													?.slice(1, 2)
+													.toLowerCase()
+											) -
+											sortWord.indexOf(
+												b.name
+													?.slice(1, 2)
+													.toLowerCase()
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -382,8 +815,26 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[y]([aiueo]|y[aiueo])/i.test(formatRoomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.name?.slice(1,2).toLowerCase()) - sortWord.indexOf(b.name?.slice(1,2).toLowerCase()))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[y]([aiueo]|y[aiueo])/i.test(
+												formatRoomaji(e.name)
+											)
+									)
+									.sort(
+										(a, b) =>
+											sortWord.indexOf(
+												a.name
+													?.slice(1, 2)
+													.toLowerCase()
+											) -
+											sortWord.indexOf(
+												b.name
+													?.slice(1, 2)
+													.toLowerCase()
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -394,8 +845,26 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[r]([aiueo]|y[aiueo])/i.test(formatRoomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.name?.slice(1,2).toLowerCase()) - sortWord.indexOf(b.name?.slice(1,2).toLowerCase()))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[r]([aiueo]|y[aiueo])/i.test(
+												formatRoomaji(e.name)
+											)
+									)
+									.sort(
+										(a, b) =>
+											sortWord.indexOf(
+												a.name
+													?.slice(1, 2)
+													.toLowerCase()
+											) -
+											sortWord.indexOf(
+												b.name
+													?.slice(1, 2)
+													.toLowerCase()
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -406,8 +875,26 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^([w]([aiueo]|y[aiueo])|n([^aiueoy]))/i.test(formatRoomaji(e.name)))
-									.sort((a,b) => sortWord.indexOf(a.name?.slice(1,2).toLowerCase()) - sortWord.indexOf(b.name?.slice(1,2).toLowerCase()))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^([w]([aiueo]|y[aiueo])|n([^aiueoy]))/i.test(
+												formatRoomaji(e.name)
+											)
+									)
+									.sort(
+										(a, b) =>
+											sortWord.indexOf(
+												a.name
+													?.slice(1, 2)
+													.toLowerCase()
+											) -
+											sortWord.indexOf(
+												b.name
+													?.slice(1, 2)
+													.toLowerCase()
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -418,7 +905,13 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && !/^(?![aiueo]|[kgsztdnhbpmyrwaiueo][aiueoy])/i.test(e.name))
+									.filter(
+										(e) =>
+											!e.category &&
+											!/^(?![aiueo]|[kgsztdnhbpmyrwaiueo][aiueoy])/i.test(
+												e.name
+											)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -431,7 +924,11 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[a-d]/i.test(e.name))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[a-d]/i.test(e.name)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -442,7 +939,11 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[e-g]/i.test(e.name))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[e-g]/i.test(e.name)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -453,7 +954,11 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[h-k]/i.test(e.name))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[h-k]/i.test(e.name)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -464,7 +969,11 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[l-n]/i.test(e.name))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[l-n]/i.test(e.name)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -475,7 +984,11 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[o-q]/i.test(e.name))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[o-q]/i.test(e.name)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -486,7 +999,11 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[r-t]/i.test(e.name))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[r-t]/i.test(e.name)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -497,7 +1014,11 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[u-w]/i.test(e.name))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[u-w]/i.test(e.name)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -508,7 +1029,11 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && /^[x-z]/i.test(e.name))
+									.filter(
+										(e) =>
+											!e.category &&
+											/^[x-z]/i.test(e.name)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -519,7 +1044,11 @@
 							:initial-shown="false"
 							:emojis="
 								customEmojis
-									.filter((e) => !e.category && !/^[a-z]/i.test(e.name))
+									.filter(
+										(e) =>
+											!e.category &&
+											!/^[a-z]/i.test(e.name)
+									)
 									.map((e) => ':' + e.name + ':')
 							"
 							@chosen="chosen"
@@ -527,7 +1056,14 @@
 						>
 					</template>
 				</div>
-				<div v-once v-if="searchResultCustom.length <= 0 && (q == null || q === '')" class="group">
+				<div
+					v-once
+					v-if="
+						searchResultCustom.length <= 0 &&
+						(q == null || q === '')
+					"
+					class="group"
+				>
 					<header>{{ i18n.ts.emoji }}</header>
 					<XSection
 						v-for="category in categories"
@@ -630,28 +1166,37 @@ const {
 } = defaultStore.reactiveState;
 
 const size = computed(() =>
-	props.asReactionPicker || defaultStore.state.usePickerSizePostForm ? reactionPickerSize.value : 1
+	props.asReactionPicker || defaultStore.state.usePickerSizePostForm
+		? reactionPickerSize.value
+		: 1
 );
 const width = computed(() =>
-	props.asReactionPicker || defaultStore.state.usePickerSizePostForm ? reactionPickerWidth.value : 3
+	props.asReactionPicker || defaultStore.state.usePickerSizePostForm
+		? reactionPickerWidth.value
+		: 3
 );
 const height = computed(() =>
-	props.asReactionPicker || defaultStore.state.usePickerSizePostForm ? reactionPickerHeight.value : 2
+	props.asReactionPicker || defaultStore.state.usePickerSizePostForm
+		? reactionPickerHeight.value
+		: 2
 );
 const customEmojiCategories = emojiCategories;
-const customEmojis = computed(() => 
-	instance.emojis
+const customEmojis = computed(() => instance.emojis);
+let allCustomEmojis = computed(() =>
+	props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm
+		? instance.allEmojis
+		: undefined
 );
-let allCustomEmojis = computed(() => 
-	(props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm) ? instance.allEmojis : undefined
+const remoteEmojiMode = computed(() => instance.remoteEmojiMode);
+const emojiStr = computed(() =>
+	(props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm) &&
+	unref(allCustomEmojis)
+		? unref(allCustomEmojis).map((x) => `:${x.name}@${x.host}:`)
+		: undefined
 );
-const remoteEmojiMode = computed(() => 
-	instance.remoteEmojiMode
+const recentlyPopularReactions = computed(
+	() => instance.recentlyPopularReactions
 );
-const emojiStr = computed(() => 
-	(props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm) && unref(allCustomEmojis) ? unref(allCustomEmojis).map((x) => `:${x.name}@${x.host}:`) : undefined
-);
-const recentlyPopularReactions = computed(() => instance.recentlyPopularReactions);
 const randomSubset = computed(() => {
 	let copy = [...unref(customEmojis)];
 	let result = [];
@@ -663,10 +1208,19 @@ const randomSubset = computed(() => {
 	return result;
 });
 const recentlyMostUsed = computed(() => {
-  if (!instance.emojiStats) return [];
+	if (!instance.emojiStats) return [];
 
-  const pinnedValues = [...pinned.value, ...pinned2.value, ...pinned3.value, ...pinned4.value, ...pinned5.value];
-  return instance.emojiStats.recentlySentReactions.map((x) => x.name).filter((x) => !pinnedValues.includes(x)).slice(0, 50);
+	const pinnedValues = [
+		...pinned.value,
+		...pinned2.value,
+		...pinned3.value,
+		...pinned4.value,
+		...pinned5.value,
+	];
+	return instance.emojiStats.recentlySentReactions
+		.map((x) => x.name)
+		.filter((x) => !pinnedValues.includes(x))
+		.slice(0, 50);
 });
 const q = ref<string | null>(null);
 const errorEmojis = ref(new Set());
@@ -675,7 +1229,7 @@ const searchResultCustomStart = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultUnicode = ref<UnicodeEmojiDef[]>([]);
 const searchResultUnicodeStart = ref<UnicodeEmojiDef[]>([]);
 const tab = ref<"index" | "custom" | "unicode" | "tags">("index");
-const sortWord = ["a","i","u","e","o","y"];
+const sortWord = ["a", "i", "u", "e", "o", "y"];
 let singleTapTime = undefined;
 let singleTapEmoji = undefined;
 let singleTapEl = undefined;
@@ -686,24 +1240,29 @@ let debounceTimer;
 
 watch(q, (nQ, oQ) => {
 	clearTimeout(debounceTimer);
-	
+
 	waitingFlg.value = true;
-	
+
 	let searchInstant = false;
 	if (q.value.includes("*")) {
 		q.value = oQ;
 	}
-	if (oQ?.includes("*")){
+	if (oQ?.includes("*")) {
 		searchInstant = true;
 	}
-	if (q.value.includes("＠")) q.value = nQ.replaceAll("＠","@");
-	
-	const enableInstanceEmojiSearch = defaultStore.state.enableInstanceEmojiSearch;
-	
-	if (!nQ || (!enableInstanceEmojiSearch && (oQ + "@" === nQ || nQ + "@" === oQ))) searchInstant = true;
-	
+	if (q.value.includes("＠")) q.value = nQ.replaceAll("＠", "@");
+
+	const enableInstanceEmojiSearch =
+		defaultStore.state.enableInstanceEmojiSearch;
+
+	if (
+		!nQ ||
+		(!enableInstanceEmojiSearch && (oQ + "@" === nQ || nQ + "@" === oQ))
+	)
+		searchInstant = true;
+
 	let waitTime;
-	
+
 	if (!searchInstant && nQ?.length + 1 === oQ?.length && nQ + "@" !== oQ) {
 		// 1文字消しただけで消した文字が@じゃない場合は次の更新まで1.2秒待つ
 		// ただし@が入っている場合は2秒待つ
@@ -719,20 +1278,25 @@ watch(q, (nQ, oQ) => {
 		// すべてに当てはまらない場合は0.4秒
 		waitTime = 400;
 	}
-	
+
 	debounceTimer = setTimeout(() => {
 		searchingFlg.value = true;
 		waitingFlg.value = false;
-		emojiSearch(nQ, oQ); 
+		emojiSearch(nQ, oQ);
 	}, waitTime);
 });
 
 function emojiSearch(nQ, oQ) {
-	if (!defaultStore.state.enableInstanceEmojiSearch && nQ.includes("@") && !nQ.endsWith("@")) q.value = `${nQ.replaceAll("@", "").replace("*", "")}@`;
+	if (
+		!defaultStore.state.enableInstanceEmojiSearch &&
+		nQ.includes("@") &&
+		!nQ.endsWith("@")
+	)
+		q.value = `${nQ.replaceAll("@", "").replace("*", "")}@`;
 
 	if (emojis.value) emojis.value.scrollTop = 0;
-	
-	if (q.value == null || q.value.replace(/[:@]/g,"") === "") {
+
+	if (q.value == null || q.value.replace(/[:@]/g, "") === "") {
 		searchResultCustom.value = [];
 		searchResultCustomStart.value = [];
 		searchResultUnicode.value = [];
@@ -740,15 +1304,14 @@ function emojiSearch(nQ, oQ) {
 		searchingFlg.value = false;
 		return;
 	}
-	
-	if ((nQ.endsWith('!'))) {
+
+	if (nQ.endsWith("!")) {
 		searchingFlg.value = false;
 		return;
 	}
-	
-	
+
 	let searchHost: string | undefined;
-	
+
 	if (nQ.includes("@") && defaultStore.state.enableInstanceEmojiSearch) {
 		// ホスト名絞り込み
 		searchHost = /@(\S+?):?$/.exec(q.value)?.[1];
@@ -756,81 +1319,119 @@ function emojiSearch(nQ, oQ) {
 
 	const isAllSearch = !!unref(allCustomEmojis) && q.value.includes("@");
 	const newQ = kanaToHira(formatRoomaji(q.value.replace(/@\S*$|:/g, "")));
-	const roomajiQ = formatRoomaji(jaToRoomaji(q.value.replace(/@\S*$|:/g, "")));
+	const roomajiQ = formatRoomaji(
+		jaToRoomaji(q.value.replace(/@\S*$|:/g, ""))
+	);
 	const allEmojis = unref(allCustomEmojis);
 
 	const shouldSkipEmoji = (emoji) => {
-    return searchHost && !emoji.host.includes(searchHost);
+		return searchHost && !emoji.host.includes(searchHost);
 	};
 
-	const nameSearch = (emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?, startsWith?) => {
+	const nameSearch = (
+		emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef,
+		keywords: string | string[],
+		matches: Set<Misskey.entities.CustomEmoji>,
+		max?,
+		startsWith?
+	) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];
 		for (const emoji of emojis) {
 			if (shouldSkipEmoji(emoji)) continue;
 			if (
-				keywords.every(
-					(keyword) =>
-						startsWith
-							? formatRoomaji(emoji.name).startsWith(keyword)
-							: !formatRoomaji(emoji.name).startsWith(keyword) && formatRoomaji(emoji.name).includes(keyword)
+				keywords.every((keyword) =>
+					startsWith
+						? formatRoomaji(emoji.name).startsWith(keyword)
+						: !formatRoomaji(emoji.name).startsWith(keyword) &&
+						  formatRoomaji(emoji.name).includes(keyword)
 				)
 			) {
-				matches.add(!startsWith ? emoji : {
-					emoji: emoji,
-					key: formatRoomaji(emoji.name),
-				});
+				matches.add(
+					!startsWith
+						? emoji
+						: {
+								emoji: emoji,
+								key: formatRoomaji(emoji.name),
+						  }
+				);
 				if (matches.size >= (max ?? 99)) break;
 			}
 		}
-	}
-	const aliasSearch = (emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji | UnicodeEmojiDef | {emoji:Misskey.entities.CustomEmoji | UnicodeEmojiDef; key: string;}>, max?, startsWith?) => {
+	};
+	const aliasSearch = (
+		emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef,
+		keywords: string | string[],
+		matches: Set<
+			| Misskey.entities.CustomEmoji
+			| UnicodeEmojiDef
+			| {
+					emoji: Misskey.entities.CustomEmoji | UnicodeEmojiDef;
+					key: string;
+			  }
+		>,
+		max?,
+		startsWith?
+	) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];
 		for (const emoji of emojis) {
 			if (shouldSkipEmoji(emoji)) continue;
 			if (
-				keywords.every(
-					(keyword) =>
-						(emoji.aliases || emoji.keywords).some((alias) =>
-							startsWith
-								? kanaToHira(formatRoomaji(alias)).startsWith(keyword)
-								: !kanaToHira(formatRoomaji(alias)).startsWith(keyword) && formatRoomaji(alias).includes(keyword)
-						)
+				keywords.every((keyword) =>
+					(emoji.aliases || emoji.keywords).some((alias) =>
+						startsWith
+							? kanaToHira(formatRoomaji(alias)).startsWith(
+									keyword
+							  )
+							: !kanaToHira(formatRoomaji(alias)).startsWith(
+									keyword
+							  ) && formatRoomaji(alias).includes(keyword)
+					)
 				)
 			) {
-				matches.add(!startsWith ? emoji : {
-					emoji: emoji,
-					key: formatRoomaji(emoji.name),
-				});
+				matches.add(
+					!startsWith
+						? emoji
+						: {
+								emoji: emoji,
+								key: formatRoomaji(emoji.name),
+						  }
+				);
 				if (matches.size >= (max ?? 99)) break;
-				}
 			}
-	}
-	const andSearch = (emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef, keywords: string | string[], matches: Set<Misskey.entities.CustomEmoji>, max?) => {
+		}
+	};
+	const andSearch = (
+		emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef,
+		keywords: string | string[],
+		matches: Set<Misskey.entities.CustomEmoji>,
+		max?
+	) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];
 		for (const emoji of emojis) {
 			if (shouldSkipEmoji(emoji)) continue;
 			if (
 				keywords.every(
 					(keyword) =>
-							formatRoomaji(emoji.name).includes(keyword) ||
-							(emoji.aliases || emoji.keywords).some((alias) =>
-								kanaToHira(formatRoomaji(alias)).includes(keyword)
-							)
+						formatRoomaji(emoji.name).includes(keyword) ||
+						(emoji.aliases || emoji.keywords).some((alias) =>
+							kanaToHira(formatRoomaji(alias)).includes(keyword)
+						)
 				)
 			) {
 				matches.add(emoji);
 				if (matches.size >= (max ?? 99)) break;
 			}
 		}
-	}
-	
+	};
+
 	const searchCustom = () => {
 		const max = 99;
 		const emojis = unref(customEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 
 		// 設定で無効にされている場合は即終了
-		if (isAllSearch && defaultStore.state.disableAllIncludesSearch) return matches;
+		if (isAllSearch && defaultStore.state.disableAllIncludesSearch)
+			return matches;
 
 		if (newQ.includes(" ")) {
 			// AND検索
@@ -859,7 +1460,10 @@ function emojiSearch(nQ, oQ) {
 		const emojis = unref(customEmojis);
 		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
-		const beforeSort = new Set<{emoji:Misskey.entities.CustomEmoji | UnicodeEmojiDef; key: string;}>();
+		const beforeSort = new Set<{
+			emoji: Misskey.entities.CustomEmoji | UnicodeEmojiDef;
+			key: string;
+		}>();
 
 		if (newQ.includes(" ")) {
 			// AND検索
@@ -868,21 +1472,31 @@ function emojiSearch(nQ, oQ) {
 			if (isAllSearch) {
 				nameSearch(allEmojis, roomajiQ, beforeSort, max, true);
 			} else {
-				const exactMatch = emojis.find((emoji) => emoji.name === roomajiQ);
-				if (exactMatch) beforeSort.add({emoji: exactMatch,key: formatRoomaji(exactMatch.name),});
+				const exactMatch = emojis.find(
+					(emoji) => emoji.name === roomajiQ
+				);
+				if (exactMatch)
+					beforeSort.add({
+						emoji: exactMatch,
+						key: formatRoomaji(exactMatch.name),
+					});
 				nameSearch(emojis, roomajiQ, beforeSort, max, true);
 				aliasSearch(emojis, newQ, beforeSort, max, true);
 			}
 		}
 
-		return new Set(Array.from(beforeSort).sort((a, b) => a.key.length - b.key.length).map((x) => x.emoji));
+		return new Set(
+			Array.from(beforeSort)
+				.sort((a, b) => a.key.length - b.key.length)
+				.map((x) => x.emoji)
+		);
 	};
-	
+
 	const searchUnicode = () => {
 		const max = 30;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
-		
+
 		if (isAllSearch) return matches;
 		if (newQ.includes(" ")) {
 			// AND検索
@@ -896,16 +1510,25 @@ function emojiSearch(nQ, oQ) {
 
 		return matches;
 	};
-	
+
 	const searchUnicodeStart = () => {
 		const max = 45;
 		const emojis = emojilist;
 		const matches = new Set<UnicodeEmojiDef>();
-		const beforeSort = new Set<{emoji:Misskey.entities.CustomEmoji | UnicodeEmojiDef; key: string;}>();
+		const beforeSort = new Set<{
+			emoji: Misskey.entities.CustomEmoji | UnicodeEmojiDef;
+			key: string;
+		}>();
 
 		if (isAllSearch) return matches;
-		const exactMatch = emojis.find((emoji) => formatRoomaji(emoji.name) === roomajiQ);
-		if (exactMatch) beforeSort.add({emoji: exactMatch,key: formatRoomaji(exactMatch.name),});
+		const exactMatch = emojis.find(
+			(emoji) => formatRoomaji(emoji.name) === roomajiQ
+		);
+		if (exactMatch)
+			beforeSort.add({
+				emoji: exactMatch,
+				key: formatRoomaji(exactMatch.name),
+			});
 
 		if (newQ.includes(" ")) {
 			// AND検索
@@ -914,22 +1537,30 @@ function emojiSearch(nQ, oQ) {
 			nameSearch(emojis, roomajiQ, beforeSort, max, true);
 			aliasSearch(emojis, roomajiQ, beforeSort, max, true);
 		}
-		
-		return new Set(Array.from(beforeSort).sort((a, b) => (a.key?.length ?? 0) - (b.key?.length ?? 0)).map((x) => x.emoji));
+
+		return new Set(
+			Array.from(beforeSort)
+				.sort((a, b) => (a.key?.length ?? 0) - (b.key?.length ?? 0))
+				.map((x) => x.emoji)
+		);
 	};
 
 	searchResultCustom.value = Array.from(searchCustom());
 	searchResultCustomStart.value = Array.from(searchCustomStart());
 	searchResultUnicode.value = Array.from(searchUnicode());
 	searchResultUnicodeStart.value = Array.from(searchUnicodeStart());
-	
-	searchingFlg.value = false;
 
+	searchingFlg.value = false;
 }
 
 function focus() {
 	// || (!["smartphone", "tablet"].includes(deviceKind) && !isTouchUsing) は一旦OFF
-	if ((!props.asReactionPicker && defaultStore.state.postAutoFocusSearchBar) || (props.asReactionPicker && defaultStore.state.reactionAutoFocusSearchBar)) {
+	if (
+		(!props.asReactionPicker &&
+			defaultStore.state.postAutoFocusSearchBar) ||
+		(props.asReactionPicker &&
+			defaultStore.state.reactionAutoFocusSearchBar)
+	) {
 		search.value?.focus({
 			preventScroll: true,
 		});
@@ -944,7 +1575,9 @@ function reset() {
 function getKey(
 	emoji: string | Misskey.entities.CustomEmoji | UnicodeEmojiDef
 ): string {
-	return typeof emoji === "string" ? emoji : emoji.char || `:${emoji.name}${emoji.host ? `@${emoji.host}` : ""}:`;
+	return typeof emoji === "string"
+		? emoji
+		: emoji.char || `:${emoji.name}${emoji.host ? `@${emoji.host}` : ""}:`;
 }
 
 function chosen(emoji: any, ev?: MouseEvent) {
@@ -953,26 +1586,34 @@ function chosen(emoji: any, ev?: MouseEvent) {
 		((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);
 	if (el) {
 		//誤爆防止ダブルタップリアクション機能
-		if (props.asReactionPicker && props.showPinned && defaultStore.state.doubleTapReaction){
-			if (!singleTapTime || singleTapEmoji !== emoji || (Date.now() - singleTapTime) > 2 * 1000){
+		if (
+			props.asReactionPicker &&
+			props.showPinned &&
+			defaultStore.state.doubleTapReaction
+		) {
+			if (
+				!singleTapTime ||
+				singleTapEmoji !== emoji ||
+				Date.now() - singleTapTime > 2 * 1000
+			) {
 				singleTapTime = Date.now();
 				singleTapEmoji = emoji;
-				
+
 				if (singleTapEl) {
-					singleTapEl.style.transition = '';
-					singleTapEl.style.backgroundColor = 'transparent';
+					singleTapEl.style.transition = "";
+					singleTapEl.style.backgroundColor = "transparent";
 				}
 				singleTapEl = el;
-				
+
 				//アニメーション
-				el.style.transition = '';
-				el.style.backgroundColor = 'var(--accent)';
+				el.style.transition = "";
+				el.style.backgroundColor = "var(--accent)";
 				setTimeout(() => {
-					el.style.transition = 'background-color 1s';
-					el.style.backgroundColor = 'transparent';
+					el.style.transition = "background-color 1s";
+					el.style.backgroundColor = "transparent";
 				}, 1500);
-				
-				return
+
+				return;
 			}
 		}
 		const rect = el.getBoundingClientRect();
@@ -985,7 +1626,13 @@ function chosen(emoji: any, ev?: MouseEvent) {
 	emit("chosen", key);
 
 	// 最近使った絵文字更新
-	if (!pinned.value.includes(key) && !pinned2.value.includes(key) && !pinned3.value.includes(key) && !pinned4.value.includes(key) && !pinned5.value.includes(key)) {
+	if (
+		!pinned.value.includes(key) &&
+		!pinned2.value.includes(key) &&
+		!pinned3.value.includes(key) &&
+		!pinned4.value.includes(key) &&
+		!pinned5.value.includes(key)
+	) {
 		let recents = defaultStore.state.recentlyUsedEmojis;
 		recents = recents.filter((emoji: any) => emoji !== key);
 		recents.unshift(key);
@@ -1003,33 +1650,32 @@ function paste(event: ClipboardEvent) {
 function done(query?: any): boolean | void {
 	if (query == null) query = q.value;
 	if (query == null || typeof query !== "string") return;
-	
 
 	const q2 = query.replaceAll(":", "");
-	if (q2.endsWith(' -f')) {
+	if (q2.endsWith(" -f")) {
 		const emojiForceStd = query.match(/([\w:\.\-@]*) \-f/);
-		if (emojiForceStd && emojiForceStd[1]){
-			chosen(`:${emojiForceStd[1]}:`)
+		if (emojiForceStd && emojiForceStd[1]) {
+			chosen(`:${emojiForceStd[1]}:`);
 			return true;
 		}
 	}
-	if (q2.endsWith('!')) {
+	if (q2.endsWith("!")) {
 		const emojiForceStd = query.match(/([\w:\.\-@]*)!/);
-		if (emojiForceStd && emojiForceStd[1]){
-			chosen(`:${emojiForceStd[1]}:`)
+		if (emojiForceStd && emojiForceStd[1]) {
+			chosen(`:${emojiForceStd[1]}:`);
 			return true;
 		}
 	}
-	const exactMatchUnicode = emojilist.find(
-		(emoji) => emoji.char === q2
-	);
+	const exactMatchUnicode = emojilist.find((emoji) => emoji.char === q2);
 	if (exactMatchUnicode) {
 		chosen(exactMatchUnicode);
 		return true;
 	}
-	if (q2.endsWith(' -f') || q2.endsWith('!')) {
+	if (q2.endsWith(" -f") || q2.endsWith("!")) {
 		const q3 = query.replace(/( -f|!)$/, "");
-		const exactMatchCustom = customEmojis.find((emoji) => emoji.name === q3);
+		const exactMatchCustom = customEmojis.find(
+			(emoji) => emoji.name === q3
+		);
 		if (exactMatchCustom) {
 			chosen(exactMatchCustom);
 			return true;
@@ -1229,27 +1875,32 @@ defineExpose({
 
 	&.w12 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 16);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr
+			1fr;
 	}
 
 	&.w13 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 17);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr
+			1fr 1fr;
 	}
 
 	&.w14 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 18);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr
+			1fr 1fr 1fr;
 	}
 
 	&.w15 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 19);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr
+			1fr 1fr 1fr 1fr;
 	}
 
 	&.w16 {
 		--eachWidth: calc(var(--EmojiPickerWidth) / 20);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr
+			1fr 1fr 1fr 1fr 1fr;
 	}
 
 	&.h1 {
@@ -1295,9 +1946,7 @@ defineExpose({
 	&.asDrawer {
 		width: 100% !important;
 		max-height: 90dvh;
-	&
-
-		> .emojis {
+		& > .emojis {
 			::v-deep(section) {
 				> header {
 					height: 32px;
@@ -1330,11 +1979,11 @@ defineExpose({
 		border: none;
 		background: transparent;
 		color: var(--fg);
-		
+
 		&:not(:focus):not(.filled) {
 			margin-bottom: env(safe-area-inset-bottom, 0px);
 		}
-		
+
 		&:not(.filled) {
 			order: 1;
 			z-index: 2;
@@ -1411,7 +2060,7 @@ defineExpose({
 				> .single {
 					background: var(--accent);
 				}
-				
+
 				> .item {
 					position: relative;
 					padding: 0;

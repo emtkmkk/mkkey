@@ -29,7 +29,11 @@
 			</button>
 			<button
 				key="public"
-				v-if="canVisibilitySwitch && canPublic && (!$i.blockPostNotLocalPublic || localOnly)"
+				v-if="
+					canVisibilitySwitch &&
+					canPublic &&
+					(!$i.blockPostNotLocalPublic || localOnly)
+				"
 				class="_button"
 				:class="[$style.item, { [$style.active]: v === 'public' }]"
 				data-index="1"
@@ -107,9 +111,16 @@
 					}}</span>
 				</div>
 			</button>
-			<div v-if="canVisibilitySwitch && (canPublic || canHome) && (canNotLocal || $i.blockPostNotLocalPublic)" :class="$style.divider"></div>
+			<div
+				v-if="
+					canVisibilitySwitch &&
+					(canPublic || canHome) &&
+					(canNotLocal || $i.blockPostNotLocalPublic)
+				"
+				:class="$style.divider"
+			></div>
 			<button
-			    v-if="canLocalSwitch && canNotLocal"
+				v-if="canLocalSwitch && canNotLocal"
 				key="localOnly"
 				:disabled="v === 'specified'"
 				class="_button"
@@ -143,7 +154,12 @@
 				</div>
 			</button>
 			<button
-			    v-if="!canLocalSwitch && !forceMode && (canPublic || canHome) && (canNotLocal || $i.blockPostNotLocalPublic)"
+				v-if="
+					!canLocalSwitch &&
+					!forceMode &&
+					(canPublic || canHome) &&
+					(canNotLocal || $i.blockPostNotLocalPublic)
+				"
 				key="localOnly"
 				class="_button"
 				:class="[

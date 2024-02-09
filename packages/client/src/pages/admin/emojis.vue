@@ -55,9 +55,9 @@
 								>Delete</MkButton
 							>
 						</div>
-						<div v-if="selectMode || selectedCount > 0"
-							>Select : {{ selectedCount }} </div
-						>
+						<div v-if="selectMode || selectedCount > 0">
+							Select : {{ selectedCount }}
+						</div>
 						<MkPagination
 							ref="emojisPaginationComponent"
 							:pagination="pagination"
@@ -93,12 +93,24 @@
 											<div class="name _monospace">
 												{{ emoji.name }}
 											</div>
-											<div v-if="!emoji.aliases?.length || !emoji.license?.length" class="info">
-												{{ 
+											<div
+												v-if="
+													!emoji.aliases?.length ||
+													!emoji.license?.length
+												"
+												class="info"
+											>
+												{{
 													[
-														emoji.aliases?.length ? "" : "NotTag",
-														emoji.license?.length ? "" : "NotLicense",
-													].filter(Boolean).join(", ")
+														emoji.aliases?.length
+															? ""
+															: "NotTag",
+														emoji.license?.length
+															? ""
+															: "NotLicense",
+													]
+														.filter(Boolean)
+														.join(", ")
 												}}
 											</div>
 											<div class="info">
@@ -151,13 +163,50 @@
 										<div class="body">
 											<div class="name _monospace">
 												{{ emoji.name }}
-												{{ instance.emojis?.some((x) => x.name === emoji.name) ? " ⭐" : "" }}
+												{{
+													instance.emojis?.some(
+														(x) =>
+															x.name ===
+															emoji.name
+													)
+														? " ⭐"
+														: ""
+												}}
 											</div>
 											<div class="info">
-												<i v-if="emoji.license?.includes('コピー可否 : conditional')" class="ph-bold ph-warning ph-lg" style="color: var(--warn);"/>
-												<i v-else-if="emoji.license?.includes('コピー可否 : deny')" class="ph-bold ph-prohibit ph-lg" style="color: var(--error);"/>
-												<i v-else-if="emoji.license?.includes('コピー可否 : allow')" class="ph-bold ph-check ph-lg" style="color: var(--success);"/>
-												<i v-else-if="emoji.license" class="ph-bold ph-info ph-lg" />
+												<i
+													v-if="
+														emoji.license?.includes(
+															'コピー可否 : conditional'
+														)
+													"
+													class="ph-bold ph-warning ph-lg"
+													style="color: var(--warn)"
+												/>
+												<i
+													v-else-if="
+														emoji.license?.includes(
+															'コピー可否 : deny'
+														)
+													"
+													class="ph-bold ph-prohibit ph-lg"
+													style="color: var(--error)"
+												/>
+												<i
+													v-else-if="
+														emoji.license?.includes(
+															'コピー可否 : allow'
+														)
+													"
+													class="ph-bold ph-check ph-lg"
+													style="
+														color: var(--success);
+													"
+												/>
+												<i
+													v-else-if="emoji.license"
+													class="ph-bold ph-info ph-lg"
+												/>
 												{{ emoji.host }}
 											</div>
 										</div>
@@ -191,7 +240,7 @@ import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { instance } from "@/instance";
-import MkCustomEmojiDetailedDialog from '@/components/MkCustomEmojiDetailedDialog.vue';
+import MkCustomEmojiDetailedDialog from "@/components/MkCustomEmojiDetailedDialog.vue";
 
 const emojisPaginationComponent = ref<InstanceType<typeof MkPagination>>();
 
@@ -223,10 +272,11 @@ const remotePagination = {
 	})),
 };
 
-
 const selectAll = () => {
 	if (selectedEmojis.value.length <= 0) {
-		selectedEmojis.value = emojisPaginationComponent.value.items.map(item => item.id);
+		selectedEmojis.value = emojisPaginationComponent.value.items.map(
+			(item) => item.id
+		);
 	}
 };
 
@@ -247,7 +297,13 @@ const toggleSelect = (emoji) => {
 };
 
 const add = async (ev: MouseEvent) => {
-	const files = await selectFiles(ev.currentTarget ?? ev.target, null, false, true, "emoji");
+	const files = await selectFiles(
+		ev.currentTarget ?? ev.target,
+		null,
+		false,
+		true,
+		"emoji"
+	);
 
 	const promise = Promise.all(
 		files.map((file) =>
@@ -311,17 +367,22 @@ const remoteMenu = async (emoji, ev: MouseEvent) => {
 			},
 			{
 				text: i18n.ts.info,
-				icon: 'ph-info ph-bold ph-lg',
+				icon: "ph-info ph-bold ph-lg",
 				action: () => {
-					os.apiGet('emoji', {
-							name: emoji.name,
-							...(emoji.host ? {host: emoji.host} : {}),
+					os.apiGet("emoji", {
+						name: emoji.name,
+						...(emoji.host ? { host: emoji.host } : {}),
 					}).then((res) => {
-						os.popup(MkCustomEmojiDetailedDialog, {
-							emoji: res
-						}, {
-							anchor: ev.target,
-						}, "closed");
+						os.popup(
+							MkCustomEmojiDetailedDialog,
+							{
+								emoji: res,
+							},
+							{
+								anchor: ev.target,
+							},
+							"closed"
+						);
 					});
 				},
 			},
@@ -357,7 +418,11 @@ const menu = (ev: MouseEvent) => {
 				text: i18n.ts.import,
 				action: async () => {
 					const file = await selectFile(
-						ev.currentTarget ?? ev.target,null,undefined,undefined,"emoji"
+						ev.currentTarget ?? ev.target,
+						null,
+						undefined,
+						undefined,
+						"emoji"
 					);
 					os.api("admin/emoji/import-zip", {
 						fileId: file.id,

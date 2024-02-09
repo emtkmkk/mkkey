@@ -7,14 +7,27 @@
 		v-size="{ max: [500, 450, 350, 300] }"
 		class="tkcbzcuz"
 		:tabindex="!isDeleted ? '-1' : null"
-		:class="[{ renote: isRenote } , `v-${appearNote.visibility === 'specified' && appearNote.ccUserIdsCount ? 'circle' : appearNote.visibility}` , { localOnly : appearNote.localOnly }]"
+		:class="[
+			{ renote: isRenote },
+			`v-${
+				appearNote.visibility === 'specified' &&
+				appearNote.ccUserIdsCount
+					? 'circle'
+					: appearNote.visibility
+			}`,
+			{ localOnly: appearNote.localOnly },
+		]"
 	>
 		<MkNoteSub
 			v-if="appearNote.reply && !detailedView"
 			:note="appearNote.reply"
 			class="reply-to"
 		/>
-		<div v-if="!detailedView" class="note-context" @click="noteContextClick">
+		<div
+			v-if="!detailedView"
+			class="note-context"
+			@click="noteContextClick"
+		>
 			<div class="line"></div>
 			<div v-if="appearNote._prId_" class="info">
 				<i class="ph-megaphone-simple-bold ph-lg"></i>
@@ -28,11 +41,30 @@
 				<i class="ph-lightning ph-bold ph-lg"></i>
 				{{ i18n.ts.featured }}
 			</div>
-			<div v-if="pinned" class="info" >
+			<div v-if="pinned" class="info">
 				<i class="ph-push-pin ph-bold ph-lg"></i
 				>{{ i18n.ts.pinnedNote }}
 			</div>
-			<div v-if="isRenote" class="renote" :class="[appearNote.visibility !== note.visibility || note.ccUserIdsCount ? `v-${note.visibility === 'specified' && note.ccUserIdsCount ? 'circle' : note.visibility}` : '' , { localOnly : appearNote.localOnly !== note.localOnly && note.localOnly }]">
+			<div
+				v-if="isRenote"
+				class="renote"
+				:class="[
+					appearNote.visibility !== note.visibility ||
+					note.ccUserIdsCount
+						? `v-${
+								note.visibility === 'specified' &&
+								note.ccUserIdsCount
+									? 'circle'
+									: note.visibility
+						  }`
+						: '',
+					{
+						localOnly:
+							appearNote.localOnly !== note.localOnly &&
+							note.localOnly,
+					},
+				]"
+			>
 				<i v-if="!pinned" class="ph-repeat ph-bold ph-lg"></i>
 				<I18n v-if="!pinned" :src="i18n.ts.renotedBy" tag="span">
 					<template #user>
@@ -42,16 +74,20 @@
 							:to="userPage(note.user)"
 							@click.stop
 						>
-							<MkUserName 
+							<MkUserName
 								:user="note.user"
-								:hostIcon="note.user.instance?.faviconUrl || note.user.instance?.iconUrl || note.user.host"
+								:hostIcon="
+									note.user.instance?.faviconUrl ||
+									note.user.instance?.iconUrl ||
+									note.user.host
+								"
 								:altIcon="note.user.instance?.iconUrl"
 							/>
 						</MkA>
 					</template>
 				</I18n>
 				<div class="info">
-				    <i v-if="pinned" class="ph-repeat ph-bold ph-lg"></i>
+					<i v-if="pinned" class="ph-repeat ph-bold ph-lg"></i>
 					<button
 						ref="renoteTime"
 						class="_button time"
@@ -72,7 +108,7 @@
 			@contextmenu.stop="onContextmenu"
 			@click="noteClick"
 		>
-			<div class="main" >
+			<div class="main">
 				<div class="header-container">
 					<MkAvatar class="avatar" :user="appearNote.user" />
 					<XNoteHeader
@@ -90,17 +126,18 @@
 						:parentId="appearNote.parentId"
 						@push="(e) => router.push(notePage(e))"
 						@focusfooter="footerEl.focus()"
-						@changeShowContent="(v) => showContent = v"
+						@changeShowContent="(v) => (showContent = v)"
 					></MkSubNoteContent>
 					<div v-if="info" class="translation">
 						<MkLoading v-if="!info.ready" mini />
 						<div v-else class="translated">
-							<b
-								>{{ info.title
-								}}
-							</b>
+							<b>{{ info.title }} </b>
 							<span v-if="info.copy"> · </span>
-							<a v-if="info.copy" @click.stop="copyToClipboard(info.copy)">{{ i18n.ts.copy }}</a>
+							<a
+								v-if="info.copy"
+								@click.stop="copyToClipboard(info.copy)"
+								>{{ i18n.ts.copy }}</a
+							>
 							<Mfm
 								v-if="info.mfm"
 								:text="info.text"
@@ -109,9 +146,15 @@
 								:custom-emojis="appearNote.emojis"
 							/>
 							<div
-								style="margin-top: 0.5em; white-space: pre-wrap; overflow-wrap: break-word;"
+								style="
+									margin-top: 0.5em;
+									white-space: pre-wrap;
+									overflow-wrap: break-word;
+								"
 								v-else
-							>{{ info.text }}</div>
+							>
+								{{ info.text }}
+							</div>
 						</div>
 					</div>
 					<div v-if="translating || translation" class="translation">
@@ -171,7 +214,14 @@
 						:count="appearNote.renoteCount"
 					/>
 					<XStarButtonNoEmoji
-						v-if="((!enableEmojiReactions && !detailedView) || !showContent) && ((!isMaxReacted && !isfavButtonReacted && isCanAction) || favButtonReactionIsFavorite)"
+						v-if="
+							((!enableEmojiReactions && !detailedView) ||
+								!showContent) &&
+							((!isMaxReacted &&
+								!isfavButtonReacted &&
+								isCanAction) ||
+								favButtonReactionIsFavorite)
+						"
 						class="button"
 						:note="appearNote"
 						:count="
@@ -185,7 +235,10 @@
 					<XStarButton
 						v-if="
 							(enableEmojiReactions || detailedView) &&
-							((!isMaxReacted && !isfavButtonReacted && isCanAction) || favButtonReactionIsFavorite) && 
+							((!isMaxReacted &&
+								!isfavButtonReacted &&
+								isCanAction) ||
+								favButtonReactionIsFavorite) &&
 							showContent
 						"
 						ref="starButton"
@@ -194,23 +247,52 @@
 					/>
 					<button
 						v-if="
-							(enableEmojiReactions || detailedView || showEmojiButton) &&
-							!isMaxReacted && isCanAction
+							(enableEmojiReactions ||
+								detailedView ||
+								showEmojiButton) &&
+							!isMaxReacted &&
+							isCanAction
 						"
-						:title="multiReaction ? ((appearNote.myReactions?.length ?? 0) + ' / ' + maxReactions) : ''"
+						:title="
+							multiReaction
+								? (appearNote.myReactions?.length ?? 0) +
+								  ' / ' +
+								  maxReactions
+								: ''
+						"
 						ref="reactButton"
-						v-tooltip.bottom="i18n.ts.reaction + (multiReaction ? (' (' + (appearNote.myReactions?.length ?? 0) + ' / ' + maxReactions + ')') : '')"
+						v-tooltip.bottom="
+							i18n.ts.reaction +
+							(multiReaction
+								? ' (' +
+								  (appearNote.myReactions?.length ?? 0) +
+								  ' / ' +
+								  maxReactions +
+								  ')'
+								: '')
+						"
 						class="button _button"
-						:class="{unsupported: appearNote.user.instance?.maxReactionsPerAccount === 0}"
+						:class="{
+							unsupported:
+								appearNote.user.instance
+									?.maxReactionsPerAccount === 0,
+						}"
 						@click="react()"
 					>
-						<i v-if="multiReaction" class="ph-smiley-wink ph-bold ph-lg"></i>
+						<i
+							v-if="multiReaction"
+							class="ph-smiley-wink ph-bold ph-lg"
+						></i>
 						<i v-else class="ph-smiley ph-bold ph-lg"></i>
 					</button>
 					<button
 						v-if="
-							(enableEmojiReactions || detailedView || (showEmojiButton && favButtonReactionIsFavorite)) &&
-							appearNote.myReaction != null && !multiReaction
+							(enableEmojiReactions ||
+								detailedView ||
+								(showEmojiButton &&
+									favButtonReactionIsFavorite)) &&
+							appearNote.myReaction != null &&
+							!multiReaction
 						"
 						ref="reactButton"
 						class="button _button reacted"
@@ -218,7 +300,10 @@
 					>
 						<i class="ph-minus ph-bold ph-lg"></i>
 					</button>
-					<XQuoteButton class="button" :note="developerQuote ? note : appearNote" />
+					<XQuoteButton
+						class="button"
+						:note="developerQuote ? note : appearNote"
+					/>
 					<button
 						ref="menuButton"
 						v-tooltip.bottom="i18n.ts.more"
@@ -231,13 +316,22 @@
 			</div>
 		</article>
 	</div>
-	<button v-else-if="summaryRenote" class="muted _button" @click="summaryRenote = false">
-		<div tag="small" style="padding: 0 3%; font-size:0.8em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-			{{ 
-				isRecentRenote
-					? "最近表示したRT : "
-					: "既に反応済のRT : "
-			}}
+	<button
+		v-else-if="summaryRenote"
+		class="muted _button"
+		@click="summaryRenote = false"
+	>
+		<div
+			tag="small"
+			style="
+				padding: 0 3%;
+				font-size: 0.8em;
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
+			"
+		>
+			{{ isRecentRenote ? "最近表示したRT : " : "既に反応済のRT : " }}
 			<MkA
 				v-user-preview="note.userId"
 				class="name"
@@ -255,11 +349,27 @@
 			</MkA>
 			{{ " の投稿" }}
 		</div>
-		<div tag="small" style="padding: 0 3%; font-size:0.8em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+		<div
+			tag="small"
+			style="
+				padding: 0 3%;
+				font-size: 0.8em;
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
+			"
+		>
 			{{ getNoteSummary(appearNote) }}
 		</div>
 	</button>
-	<button v-else-if="(!hiddenSoftMutes && muted.matched.join('').length !== 0) || excludeMute" class="muted _button" @click="muted.muted = false">
+	<button
+		v-else-if="
+			(!hiddenSoftMutes && muted.matched.join('').length !== 0) ||
+			excludeMute
+		"
+		class="muted _button"
+		@click="muted.muted = false"
+	>
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
 				<MkA
@@ -271,21 +381,23 @@
 				</MkA>
 			</template>
 			<template #reason>
-				{{ 
-					muted.matched.length === 0 
+				{{
+					muted.matched.length === 0
 						? isExcludeNotification
 							? "通知"
 							: ""
-						: muted.matched.join(", ") + 
-						( isExcludeNotification 
-							? " (通知)"
-							: ""
-						)
+						: muted.matched.join(", ") +
+						  (isExcludeNotification ? " (通知)" : "")
 				}}
 			</template>
 		</I18n>
 	</button>
-	<button v-else class="muted _button" @click="muted.muted = false" style="display: none;">
+	<button
+		v-else
+		class="muted _button"
+		@click="muted.muted = false"
+		style="display: none"
+	>
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
 				<MkA
@@ -297,16 +409,13 @@
 				</MkA>
 			</template>
 			<template #reason>
-				{{ 
-					muted.matched.length === 0 
+				{{
+					muted.matched.length === 0
 						? isExcludeNotification
 							? "通知"
 							: ""
-						: muted.matched.join(", ") + 
-						( isExcludeNotification 
-							? " (通知)"
-							: ""
-						)
+						: muted.matched.join(", ") +
+						  (isExcludeNotification ? " (通知)" : "")
 				}}
 			</template>
 		</I18n>
@@ -314,7 +423,15 @@
 </template>
 
 <script lang="ts" setup>
-import { unref, computed, inject, onMounted, onUnmounted, reactive, ref } from "vue";
+import {
+	unref,
+	computed,
+	inject,
+	onMounted,
+	onUnmounted,
+	reactive,
+	ref,
+} from "vue";
 import * as mfm from "mfm-js";
 import type { Ref } from "vue";
 import type * as misskey from "calckey-js";
@@ -390,9 +507,7 @@ const isRenote =
 	note.fileIds.length === 0 &&
 	note.poll == null;
 
-const isQuote =
-    note.renoteId != null &&
-	!isRenote;
+const isQuote = note.renoteId != null && !isRenote;
 
 const el = ref<HTMLElement>();
 const footerEl = ref<HTMLElement>();
@@ -405,27 +520,38 @@ let appearNote = $computed(() =>
 	isRenote ? (note.renote as misskey.entities.Note) : note
 );
 let quoteNote = $computed(() =>
-    isQuote ? (note.renote as misskey.entities.Note) : note
+	isQuote ? (note.renote as misskey.entities.Note) : note
 );
 let replyNote = $computed(() =>
 	note.reply != null ? (note.reply as misskey.entities.Note) : note
 );
 const isMyRenote = $i && $i.id === note.userId;
-const multiReaction = $i && $i.patron && (!appearNote.user.host || appearNote.user.instance?.maxReactionsPerAccount > 1);
-const maxReactions = multiReaction ? (Math.min(appearNote.user.instance?.maxReactionsPerAccount ?? 3, 64)) : 1;
+const multiReaction =
+	$i &&
+	$i.patron &&
+	(!appearNote.user.host ||
+		appearNote.user.instance?.maxReactionsPerAccount > 1);
+const maxReactions = multiReaction
+	? Math.min(appearNote.user.instance?.maxReactionsPerAccount ?? 3, 64)
+	: 1;
 const showContent = ref(false);
 const isDeleted = ref(false);
-const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords, props.endpoint));
+const muted = ref(
+	getWordSoftMute(note, $i, defaultStore.state.mutedWords, props.endpoint)
+);
 const translation = ref(null);
 const translating = ref(false);
 const info = ref(null);
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
 const showEmojiButton = defaultStore.state.showEmojiButton;
-const favButtonReactionIsFavorite = defaultStore.state.favButtonReaction === 'favorite';
+const favButtonReactionIsFavorite =
+	defaultStore.state.favButtonReaction === "favorite";
 const hiddenSoftMutes = defaultStore.state.hiddenSoftMutes;
 const muteExcludeReplyQuote = defaultStore.state.muteExcludeReplyQuote;
 const muteExcludeNotification = defaultStore.state.muteExcludeNotification;
-const isExcludeReplyQuote = muteExcludeReplyQuote && (unref(muted)?.what === "reply" || unref(muted)?.what === "renote");
+const isExcludeReplyQuote =
+	muteExcludeReplyQuote &&
+	(unref(muted)?.what === "reply" || unref(muted)?.what === "renote");
 const isExcludeNotification = muteExcludeNotification && props.notification;
 const isCanAction = $i && (!$i.isSilenced || note.user.isFollowed);
 const excludeMute = isExcludeReplyQuote || isExcludeNotification;
@@ -436,46 +562,72 @@ const recentRenoteId = $computed(
 	defaultStore.makeGetterSetter("recentRenoteId")
 );
 
-const isMaxReacted = $computed(() => multiReaction ? appearNote.myReactions?.length >= maxReactions : appearNote.myReaction != null)
+const isMaxReacted = $computed(() =>
+	multiReaction
+		? appearNote.myReactions?.length >= maxReactions
+		: appearNote.myReaction != null
+);
 const isfavButtonReacted = $computed(() => {
-	const favButtonReaction = multiReaction 
-	? defaultStore.state.woozyMode === true
-		? "🥴"
-		: defaultStore.state.favButtonReaction === "custom"
+	const favButtonReaction = multiReaction
+		? defaultStore.state.woozyMode === true
+			? "🥴"
+			: defaultStore.state.favButtonReaction === "custom"
 			? defaultStore.state.favButtonReactionCustom
 			: defaultStore.state.favButtonReaction === ""
-				? ":iine_fav:"
-				: defaultStore.state.favButtonReaction
-	: undefined;
-	return multiReaction 
-		? appearNote.myReactions?.map((x) => x.replace(/@[^:\s]?(:?)$/,"$1")).includes(favButtonReaction)
+			? ":iine_fav:"
+			: defaultStore.state.favButtonReaction
+		: undefined;
+	return multiReaction
+		? appearNote.myReactions
+				?.map((x) => x.replace(/@[^:\s]?(:?)$/, "$1"))
+				.includes(favButtonReaction)
 		: false;
-})
+});
 
-const isReactedRenote = $computed(() => !unref(muted)?.muted && defaultStore.state.reactedRenoteHidden && isRenote && appearNote.myReaction)
+const isReactedRenote = $computed(
+	() =>
+		!unref(muted)?.muted &&
+		defaultStore.state.reactedRenoteHidden &&
+		isRenote &&
+		appearNote.myReaction
+);
 
 const isRecentRenote = $computed(() => {
 	// 設定がオンでリノート時に判定
-	if (!unref(muted)?.muted && !isReactedRenote && isRenote){
+	if (!unref(muted)?.muted && !isReactedRenote && isRenote) {
 		//一時間以上前に確認したリノートを除外
 		const now = Date.now();
 		//無意味に書き込むことを回避
-		if (recentRenoteId.some((x) => (now - x.date) >= 60 * 60 * 1000)) recentRenoteId = recentRenoteId.filter((x) => (now - x.date) < 60 * 60 * 1000);
-		const targetRecentRenoteId = recentRenoteId.filter((x) => x.id === appearNote.id);
+		if (recentRenoteId.some((x) => now - x.date >= 60 * 60 * 1000))
+			recentRenoteId = recentRenoteId.filter(
+				(x) => now - x.date < 60 * 60 * 1000
+			);
+		const targetRecentRenoteId = recentRenoteId.filter(
+			(x) => x.id === appearNote.id
+		);
 		//設定がオフならここで処理終了
 		if (!defaultStore.state.recentRenoteHidden) return false;
 		//最近見たリノートリストに登録されているか
-		if (targetRecentRenoteId?.length !== 0){
+		if (targetRecentRenoteId?.length !== 0) {
 			if (targetRecentRenoteId.some((x) => x.fid === note.id)) {
 				//登録時のノートと同じ場合は畳まない。falseを返す
 				return false;
 			} else {
 				//リノート先が同じでノートが異なる場合は畳む。trueを返す
 				//ただし自分のノートの場合は表示する
-				if (isMyRenote){
+				if (isMyRenote) {
 					//タイムスタンプはそのままで自分のノートを登録
-					recentRenoteId = recentRenoteId.filter((x) => x.id !== appearNote.id);
-					recentRenoteId = [...recentRenoteId,{id: appearNote.id, fid: note.id, date: targetRecentRenoteId[0]?.date}];
+					recentRenoteId = recentRenoteId.filter(
+						(x) => x.id !== appearNote.id
+					);
+					recentRenoteId = [
+						...recentRenoteId,
+						{
+							id: appearNote.id,
+							fid: note.id,
+							date: targetRecentRenoteId[0]?.date,
+						},
+					];
 					return false;
 				} else {
 					return true;
@@ -483,10 +635,12 @@ const isRecentRenote = $computed(() => {
 			}
 		} else {
 			//されていない場合はリノートを除外したリスト+現在の双方のノートidを保存した後、falseを返す
-			recentRenoteId = [...recentRenoteId,{id: appearNote.id, fid: note.id, date: now}];
+			recentRenoteId = [
+				...recentRenoteId,
+				{ id: appearNote.id, fid: note.id, date: now },
+			];
 			return false;
 		}
-
 	} else {
 		return false;
 	}
@@ -513,7 +667,12 @@ useNoteCapture({
 
 function reply(viaKeyboard = false): void {
 	pleaseLogin();
-	if (false && appearNote.user.isBot && (["public", "home"].includes(appearNote.visibility) || appearNote.userId === $i?.id)){
+	if (
+		false &&
+		appearNote.user.isBot &&
+		(["public", "home"].includes(appearNote.visibility) ||
+			appearNote.userId === $i?.id)
+	) {
 		os.post(
 			{
 				renote: appearNote,
@@ -537,7 +696,10 @@ function reply(viaKeyboard = false): void {
 
 function react(viaKeyboard = false): void {
 	pleaseLogin();
-	if (defaultStore.state.mastodonOnetapFavorite && appearNote.user.instance?.maxReactionsPerAccount === 0) {
+	if (
+		defaultStore.state.mastodonOnetapFavorite &&
+		appearNote.user.instance?.maxReactionsPerAccount === 0
+	) {
 		os.api("notes/reactions/create", {
 			noteId: note.id,
 			reaction: "",
@@ -562,9 +724,9 @@ function react(viaKeyboard = false): void {
 async function undoReact(note): void {
 	const oldReaction = note.myReaction;
 	if (!oldReaction) return;
-	
+
 	const confirm = await os.confirm({
-		type: 'warning',
+		type: "warning",
 		text: i18n.ts.cancelReactionConfirm,
 	});
 	if (confirm.canceled) return;
@@ -667,7 +829,11 @@ function focusAfter() {
 }
 
 function noteClick(e) {
-	if (!defaultStore.state.showDetailNoteClick || document.getSelection().type === "Range" || props.detailedView) {
+	if (
+		!defaultStore.state.showDetailNoteClick ||
+		document.getSelection().type === "Range" ||
+		props.detailedView
+	) {
 		e.stopPropagation();
 	} else {
 		router.push(notePage(appearNote));

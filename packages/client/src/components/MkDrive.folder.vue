@@ -27,13 +27,22 @@
 		<p v-if="defaultStore.state.uploadFolder == folder.id" class="upload">
 			{{ i18n.ts.defaultFolder }}
 		</p>
-		<p v-if="defaultStore.state.uploadFolderAvatar == folder.id" class="upload">
+		<p
+			v-if="defaultStore.state.uploadFolderAvatar == folder.id"
+			class="upload"
+		>
 			{{ i18n.ts.defaultFolderAvatar }}
 		</p>
-		<p v-if="defaultStore.state.uploadFolderBanner == folder.id" class="upload">
+		<p
+			v-if="defaultStore.state.uploadFolderBanner == folder.id"
+			class="upload"
+		>
 			{{ i18n.ts.defaultFolderBanner }}
 		</p>
-		<p v-if="defaultStore.state.uploadFolderEmoji == folder.id" class="upload">
+		<p
+			v-if="defaultStore.state.uploadFolderEmoji == folder.id"
+			class="upload"
+		>
 			{{ i18n.ts.defaultFolderEmoji }}
 		</p>
 		<button

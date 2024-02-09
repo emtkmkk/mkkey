@@ -5,61 +5,119 @@
 			<FormSwitch v-model="enterSendsMessage" class="_formBlock">{{
 				i18n.ts.enterSendsMessage
 			}}</FormSwitch>
-			<FormSwitch v-model="plusInfoPostForm" class="_formBlock">{{
-				i18n.ts.plusInfoPostForm
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="openEmojiPicker" class="_formBlock">{{
-				i18n.ts.openEmojiPicker
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch :disabled="!openEmojiPicker" v-model="postAutoFocusSearchBar" class="_formBlock">{{
-				i18n.ts.postAutoFocusSearchBar
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch :disabled="!openEmojiPicker" v-model="notCloseEmojiPicker" class="_formBlock">{{
-				i18n.ts.notCloseEmojiPicker
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="showRemoteEmojiPostForm" class="_formBlock">{{
-				i18n.ts.showRemoteEmojiPostForm
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="plusInfoPostForm" class="_formBlock"
+				>{{ i18n.ts.plusInfoPostForm
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="openEmojiPicker" class="_formBlock"
+				>{{ i18n.ts.openEmojiPicker
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				:disabled="!openEmojiPicker"
+				v-model="postAutoFocusSearchBar"
+				class="_formBlock"
+				>{{ i18n.ts.postAutoFocusSearchBar
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				:disabled="!openEmojiPicker"
+				v-model="notCloseEmojiPicker"
+				class="_formBlock"
+				>{{ i18n.ts.notCloseEmojiPicker
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="showRemoteEmojiPostForm" class="_formBlock"
+				>{{ i18n.ts.showRemoteEmojiPostForm
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="usePickerSizePostForm" class="_formBlock">
-				{{ i18n.ts.usePickerSizePostForm }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>
+				{{ i18n.ts.usePickerSizePostForm
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
 			</FormSwitch>
-			<FormSwitch v-model="hiddenMentionButton" class="_formBlock">{{
-				i18n.ts.hiddenMentionButton
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch :disabled="hiddenMentionButton" v-model="openMentionWindow" class="_formBlock">{{
-				i18n.ts.openMentionWindow
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="hiddenCloseButton" class="_formBlock">{{
-				i18n.ts.hiddenCloseButton
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch :disabled="hiddenCloseButton" v-model="CloseAllClearButton" class="_formBlock">{{
-				i18n.ts.CloseAllClearButton
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="hiddenAccountButton" class="_formBlock">{{
-				i18n.ts.hiddenAccountButton
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock">{{
-				i18n.ts.hiddenMFMHelp
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="smartMFMInputer" class="_formBlock">{{
-				i18n.ts.smartMFMInputer
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-model="quickToggleSmartMFMInputer" class="_formBlock">{{
-				i18n.ts.quickToggleSmartMFMInputer
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch
-				v-model="keepPostCw"
-				class="_formBlock"
-				>{{ i18n.ts.keepPostCw }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch
+			<FormSwitch v-model="hiddenMentionButton" class="_formBlock"
+				>{{ i18n.ts.hiddenMentionButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
 			>
 			<FormSwitch
-				v-model="keepCw"
+				:disabled="hiddenMentionButton"
+				v-model="openMentionWindow"
 				class="_formBlock"
-				>{{ i18n.ts.keepCw }}</FormSwitch
+				>{{ i18n.ts.openMentionWindow
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="emojiPickerUseDrawerForMobile" class="_formBlock">{{
-				i18n.ts.emojiPickerUseDrawerForMobile
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<FormSwitch v-model="hiddenCloseButton" class="_formBlock"
+				>{{ i18n.ts.hiddenCloseButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				:disabled="hiddenCloseButton"
+				v-model="CloseAllClearButton"
+				class="_formBlock"
+				>{{ i18n.ts.CloseAllClearButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="hiddenAccountButton" class="_formBlock"
+				>{{ i18n.ts.hiddenAccountButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock"
+				>{{ i18n.ts.hiddenMFMHelp
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="smartMFMInputer" class="_formBlock"
+				>{{ i18n.ts.smartMFMInputer
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="quickToggleSmartMFMInputer" class="_formBlock"
+				>{{ i18n.ts.quickToggleSmartMFMInputer
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="keepPostCw" class="_formBlock"
+				>{{ i18n.ts.keepPostCw
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch v-model="keepCw" class="_formBlock">{{
+				i18n.ts.keepCw
+			}}</FormSwitch>
+			<FormSwitch
+				v-model="emojiPickerUseDrawerForMobile"
+				class="_formBlock"
+				>{{ i18n.ts.emojiPickerUseDrawerForMobile
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 		</FormSection>
 	</div>
 </template>
@@ -96,14 +154,14 @@ window.addEventListener("resize", () => {
 		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 
-const developer = computed(
-	defaultStore.makeGetterSetter("developer")
-);
+const developer = computed(defaultStore.makeGetterSetter("developer"));
 const showMkkeySettingTips = computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
 
-const emojiPickerUseDrawerForMobile = computed(defaultStore.makeGetterSetter("emojiPickerUseDrawerForMobile"));
+const emojiPickerUseDrawerForMobile = computed(
+	defaultStore.makeGetterSetter("emojiPickerUseDrawerForMobile")
+);
 const enterSendsMessage = computed(
 	defaultStore.makeGetterSetter("enterSendsMessage")
 );
@@ -116,9 +174,7 @@ const postAutoFocusSearchBar = computed(
 const notCloseEmojiPicker = computed(
 	defaultStore.makeGetterSetter("notCloseEmojiPicker")
 );
-const hiddenMFMHelp = computed(
-	defaultStore.makeGetterSetter("hiddenMFMHelp")
-);
+const hiddenMFMHelp = computed(defaultStore.makeGetterSetter("hiddenMFMHelp"));
 const hiddenMentionButton = computed(
 	defaultStore.makeGetterSetter("hiddenMentionButton")
 );
@@ -162,14 +218,9 @@ async function reloadAsk() {
 	unisonReload();
 }
 
-watch(
-	[
-		emojiPickerUseDrawerForMobile,
-	],
-	async () => {
-		await reloadAsk();
-	}
-);
+watch([emojiPickerUseDrawerForMobile], async () => {
+	await reloadAsk();
+});
 
 const headerActions = $computed(() => []);
 

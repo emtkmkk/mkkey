@@ -5,9 +5,10 @@
 		:z-priority="'middle'"
 		:prefer-type="
 			(asReactionPicker &&
-			defaultStore.state.reactionPickerUseDrawerForMobile === false) ||
+				defaultStore.state.reactionPickerUseDrawerForMobile ===
+					false) ||
 			(!asReactionPicker &&
-			defaultStore.state.emojiPickerUseDrawerForMobile === false) 
+				defaultStore.state.emojiPickerUseDrawerForMobile === false)
 				? 'popup'
 				: 'auto'
 		"
@@ -61,12 +62,13 @@ const emit = defineEmits<{
 const modal = ref<InstanceType<typeof MkModal>>();
 const picker = ref<InstanceType<typeof MkEmojiPicker>>();
 
-
-
 function chosen(emoji: any) {
 	emit("done", emoji);
-	if (defaultStore.state.notCloseEmojiPicker === false || (props.asReactionPicker)) {
-	    modal.value?.close();
+	if (
+		defaultStore.state.notCloseEmojiPicker === false ||
+		props.asReactionPicker
+	) {
+		modal.value?.close();
 	}
 }
 

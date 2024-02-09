@@ -185,7 +185,9 @@ const prev = reactive({} as typeof current);
 let jammedAudioBuffer: AudioBuffer | null = $ref(null);
 let jammedSoundNodePlaying: boolean = $ref(false);
 
-sound.loadAudio('syuilo/queue-jammed').then(buf => jammedAudioBuffer = buf ?? null);
+sound
+	.loadAudio("syuilo/queue-jammed")
+	.then((buf) => (jammedAudioBuffer = buf ?? null));
 
 for (const domain of ["inbox", "deliver"]) {
 	prev[domain] = deepClone(current[domain]);
@@ -208,7 +210,7 @@ const onStats = (stats) => {
 			const soundNode = sound.createSourceNode(jammedAudioBuffer, 1);
 			if (soundNode) {
 				jammedSoundNodePlaying = true;
-				soundNode.onended = () => jammedSoundNodePlaying = false;
+				soundNode.onended = () => (jammedSoundNodePlaying = false);
 				soundNode.start();
 			}
 		}

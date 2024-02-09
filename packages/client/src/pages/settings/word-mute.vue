@@ -22,15 +22,24 @@
 						}}</template
 					>
 				</FormTextarea>
-				<FormSwitch v-model="hiddenSoftMutes" class="_formBlock">{{
-					i18n.ts.hiddenSoftMutes
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-				<FormSwitch v-model="muteExcludeReplyQuote" class="_formBlock">{{
-					i18n.ts.muteExcludeReplyQuote
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-				<FormSwitch v-model="muteExcludeNotification" class="_formBlock">{{
-					i18n.ts.muteExcludeNotification
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+				<FormSwitch v-model="hiddenSoftMutes" class="_formBlock"
+					>{{ i18n.ts.hiddenSoftMutes
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
+				<FormSwitch v-model="muteExcludeReplyQuote" class="_formBlock"
+					>{{ i18n.ts.muteExcludeReplyQuote
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
+				<FormSwitch v-model="muteExcludeNotification" class="_formBlock"
+					>{{ i18n.ts.muteExcludeNotification
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
 			</div>
 			<div v-show="tab === 'hard'">
 				<MkInfo class="_formBlock"
@@ -56,13 +65,17 @@
 				</MkKeyValue>
 			</div>
 			<div v-show="tab === 'reaction'">
-				<MkInfo class="_formBlock">{{
-					i18n.ts._wordMute.emojiMutesDescription
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></MkInfo>
+				<MkInfo class="_formBlock"
+					>{{ i18n.ts._wordMute.emojiMutesDescription
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></MkInfo
+				>
 				<FormTextarea v-model="reactionMutedWords" class="_formBlock">
 					<span>{{ i18n.ts._wordMute.muteWords }}</span>
 					<template #caption
-						>{{ i18n.ts._wordMute.reactionMuteWordsDescription }}<br />{{
+						>{{ i18n.ts._wordMute.reactionMuteWordsDescription
+						}}<br />{{
 							i18n.ts._wordMute.reactionMuteWordsDescription2
 						}}</template
 					>
@@ -74,7 +87,16 @@
 			{{ i18n.ts.save }}</MkButton
 		>
 		<br />
-		<div v-show="tab === 'soft'" class="description" style="white-space: pre-line;"><br /><span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span>{{ i18n.ts._wordMute.muteWordsDescription3 }}</div>
+		<div
+			v-show="tab === 'soft'"
+			class="description"
+			style="white-space: pre-line"
+		>
+			<br /><span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span
+			>{{ i18n.ts._wordMute.muteWordsDescription3 }}
+		</div>
 	</div>
 </template>
 
@@ -103,7 +125,7 @@ const render = (mutedWords) =>
 			}
 		})
 		.join("\n");
-		
+
 const showMkkeySettingTips = $computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
@@ -181,7 +203,7 @@ async function save() {
 
 		return lines;
 	};
-	
+
 	const parseMutesSimple = (mutes, tab) => {
 		// split into lines, remove empty lines and unnecessary whitespace
 		return mutes
@@ -195,7 +217,10 @@ async function save() {
 	try {
 		softMutes = parseMutes(softMutedWords.value, i18n.ts._wordMute.soft);
 		hardMutes = parseMutes(hardMutedWords.value, i18n.ts._wordMute.hard);
-		reactionMutes = parseMutesSimple(reactionMutedWords.value, i18n.ts.reaction);
+		reactionMutes = parseMutesSimple(
+			reactionMutedWords.value,
+			i18n.ts.reaction
+		);
 	} catch (err) {
 		// already displayed error message in parseMutes
 		return;

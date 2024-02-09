@@ -25,11 +25,13 @@ const props = defineProps<{
 	multi?: boolean;
 }>();
 
-
 const reactions = computed(() => {
-	let _reactions = {...props.note.reactions};
+	let _reactions = { ...props.note.reactions };
 
-	if (props.note.tags && props.note.text?.includes("#ゴルベーザ百天王バトル")) {
+	if (
+		props.note.tags &&
+		props.note.text?.includes("#ゴルベーザ百天王バトル")
+	) {
 		if (_reactions["🅰️"] == null) {
 			_reactions["🅰️"] = 0;
 		}
@@ -38,7 +40,9 @@ const reactions = computed(() => {
 		}
 	}
 
-	const localReactions = Object.keys(_reactions).filter((x) => x.includes("@"));
+	const localReactions = Object.keys(_reactions).filter((x) =>
+		x.includes("@")
+	);
 	const mergeReactions = {};
 	const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
 		return {
@@ -46,58 +50,80 @@ const reactions = computed(() => {
 			exact: /^:@?\w+:$/.test(x),
 			hostmute: /^:?@[\w.-]/.test(x),
 		};
-	})
-	
+	});
+
 	localReactions.forEach((localReaction) => {
 		if (!_reactions || _reactions.length === 0) return;
-		const targetReactions = Object.keys(_reactions).filter(x => x.startsWith(localReaction.replace(/@[\w:\.\-]+:$/,"@")));
+		const targetReactions = Object.keys(_reactions).filter((x) =>
+			x.startsWith(localReaction.replace(/@[\w:\.\-]+:$/, "@"))
+		);
 		if (targetReactions?.length === 0) return;
 		let totalCount = 0;
-		let maxReaction = { reaction: localReaction, count: _reactions[localReaction] };
-		targetReactions.forEach(x => {
-			if (!localReaction.endsWith("@.:") && maxReaction.count < _reactions[x]) {
+		let maxReaction = {
+			reaction: localReaction,
+			count: _reactions[localReaction],
+		};
+		targetReactions.forEach((x) => {
+			if (
+				!localReaction.endsWith("@.:") &&
+				maxReaction.count < _reactions[x]
+			) {
 				maxReaction = { reaction: x, count: _reactions[x] };
 			}
 			totalCount += _reactions[x];
 			delete _reactions[x];
 		});
-		
+
 		//ミュートリアクション判定
-		if (reactionMuted.some(x => {
-				const emojiName = localReaction.replace(":", "").replace(/@[\w:\.\-]+:$/, "");
-				const emojiHost = localReaction.replace(/^:[\w:\.\-]+@/, "").replace(":", "");
-				return (!x.hostmute && !x.exact && emojiName.includes(x.name)) 
-				|| (!x.hostmute && x.name === emojiName)
-				|| (x.hostmute && !x.exact && emojiHost.includes(x.name)) 
-				|| (x.hostmute && x.name === emojiHost)
-		})
-		) totalCount = 0;
-		
+		if (
+			reactionMuted.some((x) => {
+				const emojiName = localReaction
+					.replace(":", "")
+					.replace(/@[\w:\.\-]+:$/, "");
+				const emojiHost = localReaction
+					.replace(/^:[\w:\.\-]+@/, "")
+					.replace(":", "");
+				return (
+					(!x.hostmute && !x.exact && emojiName.includes(x.name)) ||
+					(!x.hostmute && x.name === emojiName) ||
+					(x.hostmute && !x.exact && emojiHost.includes(x.name)) ||
+					(x.hostmute && x.name === emojiHost)
+				);
+			})
+		)
+			totalCount = 0;
+
 		mergeReactions[maxReaction.reaction] = totalCount;
 	});
-	return {...mergeReactions, ..._reactions};
+	return { ...mergeReactions, ..._reactions };
 });
 
-let lastSortedReactions = ["🅰️","🅱️"];
+let lastSortedReactions = ["🅰️", "🅱️"];
 
 const sortedReactions = computed(() => {
-	const arrayReactions = Object.keys(reactions.value).map((x) => { 
-		return {name:x, count:reactions.value[x],}; 
-	}).sort((a,b) => {
-		//前回取得時の並びを維持
-		//前回取得時に存在したものを左に（位置を変えない為）
-		//そうでない場合数順に
-		const _a = a.name.replace(/@[\w:\.\-]+:$/,"@");
-		const _b = b.name.replace(/@[\w:\.\-]+:$/,"@");
-		return lastSortedReactions.includes(_a) && lastSortedReactions.includes(_b)
-					? lastSortedReactions.indexOf(_a) - lastSortedReactions.indexOf(_b)
-					: lastSortedReactions.includes(_a)
-						? -1
-						: lastSortedReactions.includes(_b)
-							? 1
-							: b.count - a.count;
-	});
-	lastSortedReactions = arrayReactions.map((x) => x.name.replace(/@[\w:\.\-]+:$/,"@"));
+	const arrayReactions = Object.keys(reactions.value)
+		.map((x) => {
+			return { name: x, count: reactions.value[x] };
+		})
+		.sort((a, b) => {
+			//前回取得時の並びを維持
+			//前回取得時に存在したものを左に（位置を変えない為）
+			//そうでない場合数順に
+			const _a = a.name.replace(/@[\w:\.\-]+:$/, "@");
+			const _b = b.name.replace(/@[\w:\.\-]+:$/, "@");
+			return lastSortedReactions.includes(_a) &&
+				lastSortedReactions.includes(_b)
+				? lastSortedReactions.indexOf(_a) -
+						lastSortedReactions.indexOf(_b)
+				: lastSortedReactions.includes(_a)
+				? -1
+				: lastSortedReactions.includes(_b)
+				? 1
+				: b.count - a.count;
+		});
+	lastSortedReactions = arrayReactions.map((x) =>
+		x.name.replace(/@[\w:\.\-]+:$/, "@")
+	);
 	return arrayReactions;
 });
 

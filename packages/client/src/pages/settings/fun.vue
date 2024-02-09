@@ -1,43 +1,97 @@
 <template>
 	<div class="_formRoot">
 		<FormSection>
-			<template #label>{{ i18n.ts.power }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
-			<FormSwitch v-model="powerMode" class="_formBlock">{{
-				i18n.ts.powerMode
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="powerMode" v-model="powerModeColorful" class="_formBlock">{{
-				i18n.ts.powerModeColorful
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch v-if="powerMode" v-model="powerModeNoShake" class="_formBlock">{{
-				i18n.ts.powerModeNoShake
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<template #label
+				>{{ i18n.ts.power
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></template
+			>
+			<FormSwitch v-model="powerMode" class="_formBlock"
+				>{{ i18n.ts.powerMode
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-if="powerMode"
+				v-model="powerModeColorful"
+				class="_formBlock"
+				>{{ i18n.ts.powerModeColorful
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-if="powerMode"
+				v-model="powerModeNoShake"
+				class="_formBlock"
+				>{{ i18n.ts.powerModeNoShake
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 		</FormSection>
 		<FormSection>
-			<template #label>{{ i18n.ts.morse }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
-			<FormSwitch v-model="enableMorseDecode" class="_formBlock">{{
-				i18n.ts.enableMorseDecode
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<template #label
+				>{{ i18n.ts.morse
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></template
+			>
+			<FormSwitch v-model="enableMorseDecode" class="_formBlock"
+				>{{ i18n.ts.enableMorseDecode
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 		</FormSection>
 		<FormSection>
-			<template #label>{{ i18n.ts.forkids }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
-			<FormSwitch v-model="excludeSimo" class="_formBlock">{{
-				i18n.ts.excludeSimo
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
-				i18n.ts.excludeSimoDescription
-			}}</template></FormSwitch>
-			<FormSwitch v-model="excludeNSFW" class="_formBlock">{{
-				i18n.ts.excludeNSFW
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			<FormSwitch :disabled="!excludeNSFW" v-model="excludeNotFollowNSFW" class="_formBlock">{{
-				i18n.ts.excludeNotFollowNSFW
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+			<template #label
+				>{{ i18n.ts.forkids
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></template
+			>
+			<FormSwitch v-model="excludeSimo" class="_formBlock"
+				>{{ i18n.ts.excludeSimo
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span
+				><template #caption>{{
+					i18n.ts.excludeSimoDescription
+				}}</template></FormSwitch
+			>
+			<FormSwitch v-model="excludeNSFW" class="_formBlock"
+				>{{ i18n.ts.excludeNSFW
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				:disabled="!excludeNSFW"
+				v-model="excludeNotFollowNSFW"
+				class="_formBlock"
+				>{{ i18n.ts.excludeNotFollowNSFW
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 		</FormSection>
 		<FormSection>
-			<template #label>{{ i18n.ts.emojiReplace }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
-			<FormSwitch v-model="enableEmojiReplace" class="_formBlock">{{
-				i18n.ts.enableEmojiReplace
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
-			
+			<template #label
+				>{{ i18n.ts.emojiReplace
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></template
+			>
+			<FormSwitch v-model="enableEmojiReplace" class="_formBlock"
+				>{{ i18n.ts.enableEmojiReplace
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+
 			<div v-panel v-if="enableEmojiReplace" style="border-radius: 6px">
 				<XDraggable
 					v-model="allEmojiReplace"
@@ -52,7 +106,12 @@
 							class="_button item"
 							@click="remove(element, $event)"
 						>
-							<MkEmoji :emoji="element" :normal="true" :nofallback="true" noreplace />
+							<MkEmoji
+								:emoji="element"
+								:normal="true"
+								:nofallback="true"
+								noreplace
+							/>
 						</button>
 					</template>
 					<template #footer>
@@ -62,10 +121,12 @@
 					</template>
 				</XDraggable>
 			</div>
-			<FormButton v-if="enableEmojiReplace" inline danger @click="setEmpty"
-			><i
-				class="ph-trash ph-bold ph-lg"
-			></i>
+			<FormButton
+				v-if="enableEmojiReplace"
+				inline
+				danger
+				@click="setEmpty"
+				><i class="ph-trash ph-bold ph-lg"></i>
 				{{ i18n.ts.allDelete }}</FormButton
 			>
 		</FormSection>
@@ -101,17 +162,12 @@ window.addEventListener("resize", () => {
 		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 
-
-const developer = computed(
-	defaultStore.makeGetterSetter("developer")
-);
+const developer = computed(defaultStore.makeGetterSetter("developer"));
 const showMkkeySettingTips = computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
 
-const powerMode = computed(
-	defaultStore.makeGetterSetter("powerMode")
-);
+const powerMode = computed(defaultStore.makeGetterSetter("powerMode"));
 const powerModeColorful = computed(
 	defaultStore.makeGetterSetter("powerModeColorful")
 );
@@ -121,12 +177,8 @@ const powerModeNoShake = computed(
 const enableMorseDecode = computed(
 	defaultStore.makeGetterSetter("enableMorseDecode")
 );
-const excludeSimo = computed(
-	defaultStore.makeGetterSetter("excludeSimo")
-);
-const excludeNSFW = computed(
-	defaultStore.makeGetterSetter("excludeNSFW")
-);
+const excludeSimo = computed(defaultStore.makeGetterSetter("excludeSimo"));
+const excludeNSFW = computed(defaultStore.makeGetterSetter("excludeNSFW"));
 const excludeNotFollowNSFW = computed(
 	defaultStore.makeGetterSetter("excludeNotFollowNSFW")
 );
@@ -153,17 +205,23 @@ function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[
 			{
-				text: reaction.replace(/@(\S+)$/,"").replaceAll(":",""),
+				text: reaction.replace(/@(\S+)$/, "").replaceAll(":", ""),
 				type: "label",
 			},
-			reaction.includes("@") ? {
-				text: reaction.replace(/^(\S+)@/,"@").replaceAll(":",""),
-				type: "label",
-			} : undefined,
+			reaction.includes("@")
+				? {
+						text: reaction
+							.replace(/^(\S+)@/, "@")
+							.replaceAll(":", ""),
+						type: "label",
+				  }
+				: undefined,
 			{
 				text: i18n.ts.remove,
 				action: () => {
-					allEmojiReplace = allEmojiReplace.filter((x) => x !== reaction);
+					allEmojiReplace = allEmojiReplace.filter(
+						(x) => x !== reaction
+					);
 				},
 			},
 		].filter((x) => x !== undefined),
@@ -205,14 +263,9 @@ async function reloadAsk() {
 	unisonReload();
 }
 
-watch(
-	[
-		powerMode,
-	],
-	async () => {
-		await reloadAsk();
-	}
-);
+watch([powerMode], async () => {
+	await reloadAsk();
+});
 
 const headerActions = $computed(() => []);
 
@@ -241,4 +294,3 @@ definePageMetadata({
 	}
 }
 </style>
-

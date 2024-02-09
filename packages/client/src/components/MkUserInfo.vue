@@ -17,13 +17,10 @@
 				><MkUserName :user="user" :nowrap="false"
 			/></MkA>
 			<span
-				v-if="
-					$i &&
-					$i.id != user.id &&
-					user.isFollowed
-				"
+				v-if="$i && $i.id != user.id && user.isFollowed"
 				class="followed"
-				>   ⭐</span
+			>
+				⭐</span
 			>
 			<p class="username"><MkAcct :user="user" /></p>
 		</div>

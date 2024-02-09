@@ -68,7 +68,7 @@ let user = $ref<null | misskey.entities.UserDetailed>(null);
 let error = $ref(null);
 
 function userSearch() {
-	search(undefined,user?.id);
+	search(undefined, user?.id);
 }
 
 function fetchUser(): void {
@@ -109,12 +109,12 @@ const headerTabs = $computed(() =>
 				},
 				...(user.notesCount > 0
 					? [
-						{
-							key: "images",
-							title: i18n.ts._timelines.media,
-							icon: "ph-images ph-bold ph-lg",
-						},
-					]
+							{
+								key: "images",
+								title: i18n.ts._timelines.media,
+								icon: "ph-images ph-bold ph-lg",
+							},
+					  ]
 					: []),
 				...(($i && $i.id === user.id) || user.publicReactions
 					? [
@@ -127,27 +127,33 @@ const headerTabs = $computed(() =>
 					: []),
 				...(user.instance == null
 					? [
-							...(user.hasClips ? [
-								{
-									key: "clips",
-									title: i18n.ts.clips,
-									icon: "ph-paperclip ph-bold ph-lg",
-								}
-							] : []),
-							...(user.hasPages ? [
-								{
-									key: "pages",
-									title: i18n.ts.pages,
-									icon: "ph-file-text ph-bold ph-lg",
-								},
-							] : []),
-							...(user.hasGallerys ? [
-								{
-									key: "gallery",
-									title: i18n.ts.gallery,
-									icon: "ph-image-square ph-bold ph-lg",
-								},
-							] : []),
+							...(user.hasClips
+								? [
+										{
+											key: "clips",
+											title: i18n.ts.clips,
+											icon: "ph-paperclip ph-bold ph-lg",
+										},
+								  ]
+								: []),
+							...(user.hasPages
+								? [
+										{
+											key: "pages",
+											title: i18n.ts.pages,
+											icon: "ph-file-text ph-bold ph-lg",
+										},
+								  ]
+								: []),
+							...(user.hasGallerys
+								? [
+										{
+											key: "gallery",
+											title: i18n.ts.gallery,
+											icon: "ph-image-square ph-bold ph-lg",
+										},
+								  ]
+								: []),
 					  ]
 					: []),
 		  ]

@@ -42,11 +42,19 @@
 						>
 					</div>
 					<Transition name="fade">
-						<section v-if="tutorial === -1" key="0" class="_content">
+						<section
+							v-if="tutorial === -1"
+							key="0"
+							class="_content"
+						>
 							<h2 class="_title title">
 								すみません、すでにチュートリアルは完了しているようです!
 							</h2>
-							<h3>{{ `${i18n.ts.gotIt}を押下してダイアログを閉じてください。` }}</h3>
+							<h3>
+								{{
+									`${i18n.ts.gotIt}を押下してダイアログを閉じてください。`
+								}}
+							</h3>
 						</section>
 						<section v-if="tutorial === 0" key="1" class="_content">
 							<h2 class="_title title">
@@ -63,7 +71,10 @@
 									{{ i18n.ts._mfm.warn }}
 								</template>
 							</FormSwitch> -->
-							<FormSwitch v-model="reduceAnimation" class="_formBlock">
+							<FormSwitch
+								v-model="reduceAnimation"
+								class="_formBlock"
+							>
 								{{ i18n.ts.reduceUiAnimation }}
 							</FormSwitch>
 						</section>
@@ -283,7 +294,6 @@ function installPwa(ev: MouseEvent) {
 	const pwaInstall = document.getElementsByTagName("pwa-install")[0];
 	pwaInstall.showDialog();
 }
-
 </script>
 
 <style lang="scss" scoped>

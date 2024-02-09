@@ -19,7 +19,16 @@ const CURRENT_STICKY_TOP = "CURRENT_STICKY_TOP";
 </script>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, provide, inject, Ref, ref, watch, shallowRef } from "vue";
+import {
+	onMounted,
+	onUnmounted,
+	provide,
+	inject,
+	Ref,
+	ref,
+	watch,
+	shallowRef,
+} from "vue";
 
 const rootEl = shallowRef<HTMLElement>();
 const headerEl = shallowRef<HTMLElement>();
@@ -39,13 +48,15 @@ provide("CURRENT_STICKY_BOTTOM", childStickyBottom);
 const calc = () => {
 	// コンポーネントが表示されてないけどKeepAliveで残ってる場合などは null になる
 	if (headerEl.value != null) {
-		childStickyTop.value = parentStickyTop.value + headerEl.value.offsetHeight;
+		childStickyTop.value =
+			parentStickyTop.value + headerEl.value.offsetHeight;
 		headerHeight.value = headerEl.value.offsetHeight.toString();
 	}
 
 	// コンポーネントが表示されてないけどKeepAliveで残ってる場合などは null になる
 	if (footerEl.value != null) {
-		childStickyBottom.value = parentStickyBottom.value + footerEl.value.offsetHeight;
+		childStickyBottom.value =
+			parentStickyBottom.value + footerEl.value.offsetHeight;
 		footerHeight.value = footerEl.value.offsetHeight.toString();
 	}
 };
@@ -61,21 +72,35 @@ onMounted(() => {
 
 	watch([parentStickyTop, parentStickyBottom], calc);
 
-	watch(childStickyTop, () => {
-		if (bodyEl.value) {
-			bodyEl.value.style.setProperty("--stickyTop", `${childStickyTop.value}px`);
+	watch(
+		childStickyTop,
+		() => {
+			if (bodyEl.value) {
+				bodyEl.value.style.setProperty(
+					"--stickyTop",
+					`${childStickyTop.value}px`
+				);
+			}
+		},
+		{
+			immediate: true,
 		}
-	}, {
-		immediate: true,
-	});
+	);
 
-	watch(childStickyBottom, () => {
-		if (bodyEl.value) {
-			bodyEl.value.style.setProperty("--stickyBottom", `${childStickyBottom.value}px`);
+	watch(
+		childStickyBottom,
+		() => {
+			if (bodyEl.value) {
+				bodyEl.value.style.setProperty(
+					"--stickyBottom",
+					`${childStickyBottom.value}px`
+				);
+			}
+		},
+		{
+			immediate: true,
 		}
-	}, {
-		immediate: true,
-	});
+	);
 
 	headerEl.value.style.position = "sticky";
 	headerEl.value.style.top = "var(--stickyTop, 0)";

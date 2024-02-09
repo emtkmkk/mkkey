@@ -1,5 +1,9 @@
 <template>
-	<MkContainer class="photos-container" :max-height="limit <= 10 ? 300 : null" :foldable="limit <= 10">
+	<MkContainer
+		class="photos-container"
+		:max-height="limit <= 10 ? 300 : null"
+		:foldable="limit <= 10"
+	>
 		<template #header
 			><i class="ph-image ph-bold ph-lg" style="margin-right: 0.5em"></i
 			>{{ i18n.ts.images }}</template

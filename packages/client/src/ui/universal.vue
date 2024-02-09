@@ -80,8 +80,10 @@
 				v-if="tbitem"
 				class="button messaging _button"
 				@click="
-					navbarItemDef[tbitem].action ? navbarItemDef[tbitem].action($event) : mainRouter.push(navbarItemDef[tbitem].to);		
-					updateButtonState();		
+					navbarItemDef[tbitem].action
+						? navbarItemDef[tbitem].action($event)
+						: mainRouter.push(navbarItemDef[tbitem].to);
+					updateButtonState();
 				"
 			>
 				<div
@@ -107,7 +109,13 @@
 		</div>
 
 		<button
-			v-if="isMobile && mainRouter.currentRoute.value.name === 'index' || ($store.state.alwaysPostButton && mainRouter.currentRoute.value.name !== 'messaging' && !mainRouter.currentRoute.value.path.includes('messaging') && !mainRouter.currentRoute.value.path.includes('channels'))"
+			v-if="
+				(isMobile && mainRouter.currentRoute.value.name === 'index') ||
+				($store.state.alwaysPostButton &&
+					mainRouter.currentRoute.value.name !== 'messaging' &&
+					!mainRouter.currentRoute.value.path.includes('messaging') &&
+					!mainRouter.currentRoute.value.path.includes('channels'))
+			"
 			ref="postButton"
 			class="postButton button post _button"
 			@click="os.post()"
@@ -116,7 +124,8 @@
 		</button>
 		<button
 			v-if="
-				(isMobile || $store.state.alwaysPostButton) && mainRouter.currentRoute.value.name === 'messaging'
+				(isMobile || $store.state.alwaysPostButton) &&
+				mainRouter.currentRoute.value.name === 'messaging'
 			"
 			ref="postButton"
 			class="postButton button post _button"
@@ -156,7 +165,18 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, provide, onMounted, computed, ref, unref, shallowRef, watch, inject, Ref  } from "vue";
+import {
+	defineAsyncComponent,
+	provide,
+	onMounted,
+	computed,
+	ref,
+	unref,
+	shallowRef,
+	watch,
+	inject,
+	Ref,
+} from "vue";
 import XCommon from "./_common_/common.vue";
 import * as Acct from "calckey-js/built/acct";
 import type { ComputedRef } from "vue";
@@ -188,11 +208,14 @@ const MOBILE_THRESHOLD = 500;
 // デスクトップでウィンドウを狭くしたときモバイルUIが表示されて欲しいことはあるので deviceKind === 'desktop' の判定は行わない
 const isDesktop = ref(window.innerWidth >= DESKTOP_THRESHOLD);
 const isMobile = ref(
-	(deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD) && defaultStore.state.overridedDeviceKind !== "desktop-force"
+	(deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD) &&
+		defaultStore.state.overridedDeviceKind !== "desktop-force"
 );
 window.addEventListener("resize", () => {
 	isMobile.value =
-		(deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD) && defaultStore.state.overridedDeviceKind !== "desktop-force";
+		(deviceKind === "smartphone" ||
+			window.innerWidth <= MOBILE_THRESHOLD) &&
+		defaultStore.state.overridedDeviceKind !== "desktop-force";
 });
 
 const buttonAnimIndex = ref(0);
@@ -213,7 +236,7 @@ provideMetadataReceiver((info) => {
 });
 
 const tbitem = computed(() => {
-	if (navbarItemDef?.[defaultStore.state.mobileThirdButton]){
+	if (navbarItemDef?.[defaultStore.state.mobileThirdButton]) {
 		return defaultStore.state.mobileThirdButton;
 	} else {
 		return undefined;
@@ -239,7 +262,11 @@ function updateButtonState(): void {
 		buttonAnimIndex.value = 1;
 		return;
 	}
-	if (navbarItemDef[unref(tbitem)]?.to ? routerState.includes(navbarItemDef[unref(tbitem)].to) : false) {
+	if (
+		navbarItemDef[unref(tbitem)]?.to
+			? routerState.includes(navbarItemDef[unref(tbitem)].to)
+			: false
+	) {
 		buttonAnimIndex.value = 2;
 		return;
 	}
@@ -404,19 +431,29 @@ function top() {
 let navFooterHeight = $ref(0);
 provide<Ref<number>>("CURRENT_STICKY_BOTTOM", $$(navFooterHeight));
 
-watch($$(navFooter), () => {
-	if (navFooter) {
-		navFooterHeight = navFooter.offsetHeight;
-		document.body.style.setProperty('--stickyBottom', `${navFooterHeight}px`);
-		document.body.style.setProperty('--minBottomSpacing', 'var(--minBottomSpacingMobile)');
-	} else {
-		navFooterHeight = 0;
-		document.body.style.setProperty('--stickyBottom', '0px');
-		document.body.style.setProperty('--minBottomSpacing', '0px');
+watch(
+	$$(navFooter),
+	() => {
+		if (navFooter) {
+			navFooterHeight = navFooter.offsetHeight;
+			document.body.style.setProperty(
+				"--stickyBottom",
+				`${navFooterHeight}px`
+			);
+			document.body.style.setProperty(
+				"--minBottomSpacing",
+				"var(--minBottomSpacingMobile)"
+			);
+		} else {
+			navFooterHeight = 0;
+			document.body.style.setProperty("--stickyBottom", "0px");
+			document.body.style.setProperty("--minBottomSpacing", "0px");
+		}
+	},
+	{
+		immediate: true,
 	}
-}, {
-	immediate: true,
-});
+);
 
 const wallpaper = localStorage.getItem("wallpaper") != null;
 console.log(mainRouter.currentRoute.value.name);
@@ -675,7 +712,7 @@ console.log(mainRouter.currentRoute.value.name);
 	$widgets-hide-threshold: 1090px;
 
 	height: calc(var(--minBottomSpacing));
-	
+
 	@media (min-width: ($widgets-hide-threshold + 1px)) {
 		display: none;
 	}

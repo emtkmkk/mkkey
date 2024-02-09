@@ -1,8 +1,8 @@
 <template>
 	<MkSpacer :content-max="1100">
-		<MkPagination v-slot="{items}" :pagination="pagination">
+		<MkPagination v-slot="{ items }" :pagination="pagination">
 			<div :class="$style.stream">
-				<MkMedias v-for="note in items" :note="note"/>
+				<MkMedias v-for="note in items" :note="note" />
 			</div>
 		</MkPagination>
 	</MkSpacer>
@@ -19,7 +19,7 @@ const props = defineProps<{
 }>();
 
 const pagination = {
-	endpoint: 'users/notes' as const,
+	endpoint: "users/notes" as const,
 	limit: 20,
 	params: computed(() => ({
 		userId: props.user.id,

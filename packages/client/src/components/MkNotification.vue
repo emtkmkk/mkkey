@@ -57,7 +57,10 @@
 					class="ph-quotes ph-bold"
 				></i>
 				<i
-					v-else-if="notification.type === 'unreadAntenna' || notification.type === 'note'"
+					v-else-if="
+						notification.type === 'unreadAntenna' ||
+						notification.type === 'note'
+					"
 					class="ph-flying-saucer ph-bold"
 				></i>
 				<i
@@ -71,7 +74,9 @@
 				<!-- notification.reaction が null になることはまずないが、ここでoptional chaining使うと一部ブラウザで刺さるので念の為 -->
 				<XReactionIcon
 					v-else-if="
-						showEmojiReactions && notification.type === 'reaction' && notification.reaction
+						showEmojiReactions &&
+						notification.type === 'reaction' &&
+						notification.reaction
 					"
 					ref="reactionRef"
 					:reaction="
@@ -183,14 +188,22 @@
 				/>
 			</MkA>
 			<MkA
-				v-if="notification.note && (notification.type === 'unreadAntenna' || notification.type === 'note')"
+				v-if="
+					notification.note &&
+					(notification.type === 'unreadAntenna' ||
+						notification.type === 'note')
+				"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="notification.reaction"
 			>
 				<i class="ph-quotes ph-fill ph-lg"></i>
 				<Mfm
-					:text="notification.note.user.id === notification.user.id ? getNoteSummary(notification.note) : 'RT : ' + getNoteSummary(notification.note)"
+					:text="
+						notification.note.user.id === notification.user.id
+							? getNoteSummary(notification.note)
+							: 'RT : ' + getNoteSummary(notification.note)
+					"
 					:plain="true"
 					:nowrap="!full"
 					:custom-emojis="notification.note.emojis"
@@ -324,12 +337,24 @@ const props = withDefaults(
 const elRef = ref<HTMLElement>(null);
 const reactionRef = ref(null);
 
-const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {return {name: x.replaceAll(":",""), exact: /^:\w+:$/.test(x)};})
+const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
+	return { name: x.replaceAll(":", ""), exact: /^:\w+:$/.test(x) };
+});
 
-const isMuted = props.notification.type === 'reaction' && reactionMuted.some(x => 
-					(!x.exact && props.notification.reaction.replace(":","").replace(/@[\w:\.\-]+:$/,"").includes(x.name)) 
-					||  x.name === props.notification.reaction.replace(":","").replace(/@[\w:\.\-]+:$/,"")
-				)
+const isMuted =
+	props.notification.type === "reaction" &&
+	reactionMuted.some(
+		(x) =>
+			(!x.exact &&
+				props.notification.reaction
+					.replace(":", "")
+					.replace(/@[\w:\.\-]+:$/, "")
+					.includes(x.name)) ||
+			x.name ===
+				props.notification.reaction
+					.replace(":", "")
+					.replace(/@[\w:\.\-]+:$/, "")
+	);
 
 const showEmojiReactions =
 	defaultStore.state.enableEmojiReactions ||
@@ -374,7 +399,9 @@ const acceptFollowRequest = async () => {
 	const { canceled } = await os.confirm({
 		type: "question",
 		text: i18n.t("acceptConfirm", {
-			name: props.notification.user.name || props.notification.user.username,
+			name:
+				props.notification.user.name ||
+				props.notification.user.username,
 		}),
 	});
 	if (canceled) return;
@@ -386,7 +413,9 @@ const rejectFollowRequest = async () => {
 	const { canceled } = await os.confirm({
 		type: "warning",
 		text: i18n.t("rejectConfirm", {
-			name: props.notification.user.name || props.notification.user.username,
+			name:
+				props.notification.user.name ||
+				props.notification.user.username,
 		}),
 	});
 	if (canceled) return;
@@ -398,7 +427,9 @@ const ignoreFollowRequest = async () => {
 	const { canceled } = await os.confirm({
 		type: "warning",
 		text: i18n.t("ignoreConfirm", {
-			name: props.notification.user.name || props.notification.user.username,
+			name:
+				props.notification.user.name ||
+				props.notification.user.username,
 		}),
 	});
 	if (canceled) return;

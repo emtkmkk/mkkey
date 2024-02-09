@@ -21,7 +21,13 @@
 					class="_button item"
 					@click="emit('chosen', emoji, $event)"
 				>
-					<MkEmoji class="emoji" :emoji="emoji" :normal="true" :isPicker="true" @loaderror="errorEmojis.add(emoji)"/>
+					<MkEmoji
+						class="emoji"
+						:emoji="emoji"
+						:normal="true"
+						:isPicker="true"
+						@loaderror="errorEmojis.add(emoji)"
+					/>
 				</button>
 			</template>
 		</div>

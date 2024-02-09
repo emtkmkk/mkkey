@@ -8,25 +8,54 @@
 					itemKey="id"
 					:animation="150"
 					:handle="'.' + $style.itemHandle"
-					@start="e => e.item.classList.add('active')"
-					@end="e => e.item.classList.remove('active')"
+					@start="(e) => e.item.classList.add('active')"
+					@end="(e) => e.item.classList.remove('active')"
 				>
-					<template #item="{element,index}">
+					<template #item="{ element, index }">
 						<div
-							v-if="element.type === '-' || navbarItemDef[element.type]"
+							v-if="
+								element.type === '-' ||
+								navbarItemDef[element.type]
+							"
 							:class="$style.item"
 						>
-							<button class="_button" :class="$style.itemHandle"><i class="ph-bold ph-list ph-lg"></i></button>
-							<i class="ph-fw" :class="[$style.itemIcon, navbarItemDef[element.type]?.icon]"></i><span :class="$style.itemText">{{ i18n.ts[(navbarItemDef[element.type]?.title ?? divider)] }}</span>
-							<button class="_button" :class="$style.itemRemove" @click="removeItem(index)"><i class="ph-bold ph-lg ph-x"></i></button>
+							<button class="_button" :class="$style.itemHandle">
+								<i class="ph-bold ph-list ph-lg"></i>
+							</button>
+							<i
+								class="ph-fw"
+								:class="[
+									$style.itemIcon,
+									navbarItemDef[element.type]?.icon,
+								]"
+							></i
+							><span :class="$style.itemText">{{
+								i18n.ts[
+									navbarItemDef[element.type]?.title ??
+										divider
+								]
+							}}</span>
+							<button
+								class="_button"
+								:class="$style.itemRemove"
+								@click="removeItem(index)"
+							>
+								<i class="ph-bold ph-lg ph-x"></i>
+							</button>
 						</div>
 					</template>
 				</Sortable>
 			</MkContainer>
 		</FormSlot>
 		<div class="_buttons">
-			<FormButton @click="addItem"><i class="ph-bold ph-plus ph-lg"></i> {{ i18n.ts.addItem }}</FormButton>
-			<FormButton primary class="save" @click="save"><i class="ph-bold ph-floppy-disk ph-lg"></i> {{ i18n.ts.save }}</FormButton>
+			<FormButton @click="addItem"
+				><i class="ph-bold ph-plus ph-lg"></i>
+				{{ i18n.ts.addItem }}</FormButton
+			>
+			<FormButton primary class="save" @click="save"
+				><i class="ph-bold ph-floppy-disk ph-lg"></i>
+				{{ i18n.ts.save }}</FormButton
+			>
 		</div>
 
 		<FormRadios v-model="menuDisplay" class="_formBlock">
@@ -41,9 +70,18 @@
 			<!-- <MkRadio v-model="menuDisplay" value="hide" disabled>{{ i18n.ts._menuDisplay.hide }}</MkRadio>-->
 			<!-- TODO: サイドバーを完全に隠せるようにすると、別途ハンバーガーボタンのようなものをUIに表示する必要があり面倒 -->
 		</FormRadios>
-		
-		<FormRadios v-if="!freeThirdButton" v-model="mobileThirdButton" class="_formBlock">
-			<template #label>{{ i18n.ts.mobileThirdButton }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
+
+		<FormRadios
+			v-if="!freeThirdButton"
+			v-model="mobileThirdButton"
+			class="_formBlock"
+		>
+			<template #label
+				>{{ i18n.ts.mobileThirdButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></template
+			>
 			<option value="reload">
 				{{ i18n.ts.reload }}
 			</option>
@@ -69,9 +107,12 @@
 		<button v-if="freeThirdButton" class="_textButton" @click="setItem">
 			{{ i18n.ts.setItem }}
 		</button>
-		<FormSwitch v-model="freeThirdButton" class="_formBlock">{{
-			i18n.ts.freeThirdButton
-		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+		<FormSwitch v-model="freeThirdButton" class="_formBlock"
+			>{{ i18n.ts.freeThirdButton
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span></FormSwitch
+		>
 
 		<FormButton danger class="_formBlock" @click="reset()"
 			><i class="ph-arrow-clockwise ph-bold ph-lg"></i>
@@ -96,16 +137,26 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deepClone } from "@/scripts/clone";
 
-const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
+const Sortable = defineAsyncComponent(() =>
+	import("vuedraggable").then((x) => x.default)
+);
 
-const items = ref(defaultStore.state.menu.map(x => ({
-	id: Math.random().toString(),
-	type: x,
-})));
+const items = ref(
+	defaultStore.state.menu.map((x) => ({
+		id: Math.random().toString(),
+		type: x,
+	}))
+);
 
 const menuDisplay = computed(defaultStore.makeGetterSetter("menuDisplay"));
-const mobileThirdButton = computed(defaultStore.makeGetterSetter("mobileThirdButton"));
-const freeThirdButton = ref(!["reload","messaging","changeAccount","hidden"].includes(unref(mobileThirdButton)));
+const mobileThirdButton = computed(
+	defaultStore.makeGetterSetter("mobileThirdButton")
+);
+const freeThirdButton = ref(
+	!["reload", "messaging", "changeAccount", "hidden"].includes(
+		unref(mobileThirdButton)
+	)
+);
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({
@@ -135,14 +186,17 @@ async function addItem() {
 		],
 	});
 	if (canceled) return;
-	items.value = [...items.value, {
-		id: Math.random().toString(),
-		type: item,
-	}];
+	items.value = [
+		...items.value,
+		{
+			id: Math.random().toString(),
+			type: item,
+		},
+	];
 }
 
 async function setItem() {
-	const menu = Object.keys(navbarItemDef)
+	const menu = Object.keys(navbarItemDef);
 	const { canceled, result: item } = await os.select({
 		title: i18n.ts.setItem,
 		items: [
@@ -165,12 +219,15 @@ function removeItem(index: number) {
 }
 
 async function save() {
-	defaultStore.set("menu", items.value.map(x => x.type));
+	defaultStore.set(
+		"menu",
+		items.value.map((x) => x.type)
+	);
 	await reloadAsk();
 }
 
 function reset() {
-	items.value = defaultStore.def.menu.default.map(x => ({
+	items.value = defaultStore.def.menu.default.map((x) => ({
 		id: Math.random().toString(),
 		type: x,
 	}));
@@ -193,7 +250,6 @@ definePageMetadata({
 	icon: "ph-list-bullets ph-bold ph-lg",
 });
 </script>
-
 
 <style lang="scss" module>
 .item {

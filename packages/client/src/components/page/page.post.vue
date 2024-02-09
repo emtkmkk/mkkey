@@ -29,21 +29,14 @@
 		<span v-if="localOnly" class="local-only"
 			><i class="ph-hand-heart ph-bold ph-lg"></i
 		></span>
-		<div 
-			class="shareButton"
-			v-if="$i == null"
-		>
+		<div class="shareButton" v-if="$i == null">
 			<MkButton
 				v-if="$i == null"
 				class="button"
 				primary
 				@click="ioShare()"
 			>
-				<MkEmoji
-					class="emoji"
-					emoji=":io:"
-					style="height: 1.3em"
-				/>
+				<MkEmoji class="emoji" emoji=":io:" style="height: 1.3em" />
 			</MkButton>
 			<MkButton
 				v-if="$i == null"
@@ -91,27 +84,46 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			text: $i == null ? this.hpml.interpolate(this.block.text).replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase())).replaceAll("STAR","☆") : this.hpml.interpolate(this.block.text),
+			text:
+				$i == null
+					? this.hpml
+							.interpolate(this.block.text)
+							.replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, (m, p1) =>
+								p1.toUpperCase()
+							)
+							.replaceAll("STAR", "☆")
+					: this.hpml.interpolate(this.block.text),
 			posted: false,
 			posting: false,
-			localOnly: defaultStore.state.pagelocalAndFollower[this.hpml.page.id] || 
-			  (defaultStore.state.rememberNoteVisibility
-						? defaultStore.state.localAndFollower
-						: defaultStore.state.defaultNoteLocalAndFollower),
-			visibility: defaultStore.state.pageVisibility[this.hpml.page.id] || 
+			localOnly:
+				defaultStore.state.pagelocalAndFollower[this.hpml.page.id] ||
 				(defaultStore.state.rememberNoteVisibility
-						? defaultStore.state.visibility
-						: defaultStore.state.defaultNoteVisibility),
+					? defaultStore.state.localAndFollower
+					: defaultStore.state.defaultNoteLocalAndFollower),
+			visibility:
+				defaultStore.state.pageVisibility[this.hpml.page.id] ||
+				(defaultStore.state.rememberNoteVisibility
+					? defaultStore.state.visibility
+					: defaultStore.state.defaultNoteVisibility),
 		};
 	},
 	watch: {
 		"hpml.vars": {
 			handler() {
-				this.text = $i == null ? this.hpml.interpolate(this.block.text).replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, ((m,p1) => p1.toUpperCase())).replaceAll("STAR","☆") : this.hpml.interpolate(this.block.text);
+				this.text =
+					$i == null
+						? this.hpml
+								.interpolate(this.block.text)
+								.replaceAll(
+									/:\w*?_?([a-zA-Z0-9]+):/g,
+									(m, p1) => p1.toUpperCase()
+								)
+								.replaceAll("STAR", "☆")
+						: this.hpml.interpolate(this.block.text);
 			},
 			deep: true,
 		},
-		"text": {
+		text: {
 			handler() {
 				if (this.posting && this.posted) {
 					this.posting = false;
@@ -119,9 +131,10 @@ export default defineComponent({
 				}
 			},
 		},
-		"visibility": {
+		visibility: {
 			handler() {
-				if (this.visibility === "specified") this.visibility = "followers";
+				if (this.visibility === "specified")
+					this.visibility = "followers";
 			},
 			deep: true,
 		},
@@ -172,12 +185,20 @@ export default defineComponent({
 		},
 		ioShare() {
 			if (this.text !== "") {
-				window.open('https://misskey.io/share?text=' + encodeURIComponent(this.text), '_blank');
+				window.open(
+					"https://misskey.io/share?text=" +
+						encodeURIComponent(this.text),
+					"_blank"
+				);
 			}
 		},
 		misskeyShare() {
 			if (this.text !== "") {
-				window.open('https://misskeyshare.link/share.html?text=' + encodeURIComponent(this.text), '_blank');
+				window.open(
+					"https://misskeyshare.link/share.html?text=" +
+						encodeURIComponent(this.text),
+					"_blank"
+				);
 			}
 		},
 		setVisibility() {
@@ -199,13 +220,21 @@ export default defineComponent({
 					canDirect: false,
 				},
 				{
-					changeVisibility: (v: "public" | "home" | "followers" | "specified") => {
+					changeVisibility: (
+						v: "public" | "home" | "followers" | "specified"
+					) => {
 						this.visibility = v;
-						defaultStore.set("pageVisibility", {...defaultStore.state.pageVisibility, [this.hpml.page.id]: v});
+						defaultStore.set("pageVisibility", {
+							...defaultStore.state.pageVisibility,
+							[this.hpml.page.id]: v,
+						});
 					},
 					changeLocalOnly: (v) => {
 						this.localOnly = v;
-						defaultStore.set("pagelocalAndFollower", {...defaultStore.state.pagelocalAndFollower, [this.hpml.page.id]: v});
+						defaultStore.set("pagelocalAndFollower", {
+							...defaultStore.state.pagelocalAndFollower,
+							[this.hpml.page.id]: v,
+						});
 					},
 				},
 				"closed"
@@ -223,16 +252,16 @@ export default defineComponent({
 	box-shadow: 0 2px 8px var(--shadow);
 	z-index: 1;
 	text-align: left;
-	
+
 	> .shareButton {
 		text-align: left;
-		
+
 		> .button {
 			display: inline-block !important;
 			margin-top: 32px;
 		}
 	}
-	
+
 	> .button {
 		display: inline-block !important;
 		margin-top: 32px;
@@ -246,16 +275,16 @@ export default defineComponent({
 
 	@media (max-width: 600px) {
 		padding: 16px;
-		
+
 		> .shareButton {
 			text-align: left;
-			
+
 			> .button {
 				display: inline-block !important;
 				margin-top: 16px;
 			}
 		}
-		
+
 		> .button {
 			margin-top: 16px;
 		}

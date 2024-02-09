@@ -16,9 +16,7 @@
 				<span v-if="full">{{ i18n.ts.blocked }}</span
 				><i class="ph-prohibit ph-bold ph-lg"></i>
 			</template>
-			<template
-				v-else-if="hasPendingFollowRequestFromYou"
-			>
+			<template v-else-if="hasPendingFollowRequestFromYou">
 				<span v-if="full">{{ i18n.ts.followRequestPending }}</span
 				><i class="ph-hourglass-medium ph-bold ph-lg"></i>
 			</template>
@@ -93,9 +91,7 @@ function onFollowChange(user: Misskey.entities.UserDetailed) {
 }
 
 async function onClick() {
-
-	if ( $i == null ) {
-
+	if ($i == null) {
 		const hostname = props.user.host ?? config.host;
 
 		const { canceled, result: input } = await os.inputText({
@@ -103,20 +99,29 @@ async function onClick() {
 			text: `または、照会機能にて\n「<plain>@${props.user.username}@${hostname}</plain>」\nを入力してください。\n`,
 			placeholder: i18n.ts.hostnameInputPlaceholder,
 		});
-		if (canceled || !input || input.trim() === config.host || !/^[\w.-]+$/.test(input)) {
+		if (
+			canceled ||
+			!input ||
+			input.trim() === config.host ||
+			!/^[\w.-]+$/.test(input)
+		) {
 			return;
 		}
 
 		if (input.trim() === hostname) {
-			window.open(`https://${input.trim()}/@${props.user.username}`, '_blank');
+			window.open(
+				`https://${input.trim()}/@${props.user.username}`,
+				"_blank"
+			);
 		} else {
-			window.open(`https://${input.trim()}/@${props.user.username}@${hostname}`, '_blank');
+			window.open(
+				`https://${input.trim()}/@${props.user.username}@${hostname}`,
+				"_blank"
+			);
 		}
 
-		return
-
+		return;
 	} else {
-
 		wait = true;
 
 		try {
@@ -167,9 +172,7 @@ async function onClick() {
 		} finally {
 			wait = false;
 		}
-
 	}
-
 }
 
 onMounted(() => {

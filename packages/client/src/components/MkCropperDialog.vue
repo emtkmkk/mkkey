@@ -13,7 +13,9 @@
 		<template #default="{ width, height }">
 			<div
 				class="mk-cropper-dialog"
-				:style="`--vw: ${width ? `${width}px` : '100%'}; --vh: ${height ? `${height}px` : '100%'};`"
+				:style="`--vw: ${width ? `${width}px` : '100%'}; --vh: ${
+					height ? `${height}px` : '100%'
+				};`"
 			>
 				<Transition name="fade">
 					<div v-if="loading" class="loading">
@@ -72,18 +74,27 @@ const ok = async () => {
 		const croppedImage = await cropper?.getCropperImage();
 		const croppedSection = await cropper?.getCropperSelection();
 		// 拡大率を計算し、(ほぼ)元の大きさに戻す
-		const zoomedRate = croppedImage.getBoundingClientRect().width / croppedImage.clientWidth;
-		const widthToRender = croppedSection.getBoundingClientRect().width / zoomedRate;
-		const croppedCanvas = await croppedSection?.$toCanvas({ width: widthToRender });
+		const zoomedRate =
+			croppedImage.getBoundingClientRect().width /
+			croppedImage.clientWidth;
+		const widthToRender =
+			croppedSection.getBoundingClientRect().width / zoomedRate;
+		const croppedCanvas = await croppedSection?.$toCanvas({
+			width: widthToRender,
+		});
 		croppedCanvas.toBlob((blob) => {
 			const formData = new FormData();
 			formData.append("file", blob);
-			formData.append('name', `cropped_${props.file.name}`);
-			formData.append('isSensitive', props.file.isSensitive ? 'true' : 'false');
-			if (props.file.comment) { formData.append('comment', props.file.comment);}
+			formData.append("name", `cropped_${props.file.name}`);
+			formData.append(
+				"isSensitive",
+				props.file.isSensitive ? "true" : "false"
+			);
+			if (props.file.comment) {
+				formData.append("comment", props.file.comment);
+			}
 
-			const folderId =
-			props.uploadFolder
+			const folderId = props.uploadFolder
 				? props.uploadFolder
 				: defaultStore.state.uploadFolderAvatar && props.to === "avatar"
 				? defaultStore.state.uploadFolderAvatar

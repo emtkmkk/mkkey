@@ -92,7 +92,11 @@
 					class="_gap"
 					src="channel"
 					:channel="channelId"
-					:channelName="channel.description?.includes('[localOnly]') ? '' : channel.name"
+					:channelName="
+						channel.description?.includes('[localOnly]')
+							? ''
+							: channel.name
+					"
 					@before="before"
 					@after="after"
 				/>
@@ -138,7 +142,7 @@ function edit() {
 }
 
 function channelSearch() {
-	search(channel?.id,undefined);
+	search(channel?.id, undefined);
 }
 
 const headerActions = $computed(() => [

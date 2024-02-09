@@ -9,7 +9,17 @@ import MkUserOnlineIndicatorDummy from "@/components/MkUserOnlineIndicatorDummy.
 import { i18n } from "@/i18n";
 
 const props = defineProps<{
-	onlineStatus: "unknown" | "online" | "half-online" | "active" | "half-active" | "offline" | "half-sleeping" | "sleeping" | "deep-sleeping" | "super-sleeping";
+	onlineStatus:
+		| "unknown"
+		| "online"
+		| "half-online"
+		| "active"
+		| "half-active"
+		| "offline"
+		| "half-sleeping"
+		| "sleeping"
+		| "deep-sleeping"
+		| "super-sleeping";
 }>();
 
 const text = $computed(() => {

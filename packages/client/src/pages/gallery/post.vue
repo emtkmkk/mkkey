@@ -11,13 +11,11 @@
 				>
 					<div v-if="post" class="rkxwuolj">
 						<div class="files">
-							<div
-								:key="gallery"
-								class="file"
-								@click.stop
-							>
+							<div :key="gallery" class="file" @click.stop>
 								<template
-									v-for="file in post.files?.filter((x) => previewable(x))"
+									v-for="file in post.files?.filter((x) =>
+										previewable(x)
+									)"
 								>
 									<XVideo
 										v-if="file.type?.startsWith('video')"
@@ -25,7 +23,9 @@
 										:video="file"
 									/>
 									<XImage
-										v-else-if="file.type?.startsWith('image')"
+										v-else-if="
+											file.type?.startsWith('image')
+										"
 										:key="file.id"
 										class="image"
 										:data-id="file.id"
@@ -241,7 +241,7 @@ async function unlike() {
 }
 
 function edit() {
-	router	.push(`/gallery/${post.id}/edit`);
+	router.push(`/gallery/${post.id}/edit`);
 }
 
 const previewable = (file: misskey.entities.DriveFile): boolean => {

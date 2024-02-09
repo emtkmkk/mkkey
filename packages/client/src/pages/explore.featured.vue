@@ -12,10 +12,7 @@
 				<option value="local">{{ i18n.ts.local }}</option>
 			</MkTab>
 		</template>
-		<XNotes
-			v-if="tab === 'combined'"
-			:pagination="paginationForCombined"
-		/>
+		<XNotes v-if="tab === 'combined'" :pagination="paginationForCombined" />
 		<XNotes v-if="tab === 'local'" :pagination="paginationForLocal" />
 		<XNotes v-if="tab === 'poll'" :pagination="paginationForPoll" />
 	</MkSpacer>
@@ -58,7 +55,7 @@ const paginationForCombined = {
 };
 
 const paginationForPoll = {
-	endpoint: 'notes/polls/recommendation' as const,
+	endpoint: "notes/polls/recommendation" as const,
 	limit: 10,
 	offsetMode: false,
 };

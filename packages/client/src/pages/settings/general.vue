@@ -15,9 +15,15 @@
 			i18n.ts.showUpdates
 		}}</FormSwitch>
 
-		<FormSwitch v-if="developer" v-model="showMiniUpdates" class="_formBlock">{{
-			i18n.ts.showMiniUpdates
-		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+		<FormSwitch
+			v-if="developer"
+			v-model="showMiniUpdates"
+			class="_formBlock"
+			>{{ i18n.ts.showMiniUpdates
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span></FormSwitch
+		>
 
 		<FormSwitch
 			v-if="$i?.isAdmin"
@@ -26,15 +32,25 @@
 			>{{ i18n.ts.showAdminUpdates }}</FormSwitch
 		>
 
-		<FormSwitch v-model="showMkkeySettingTips" class="_formBlock">{{
-			i18n.ts.showMkkeySettingTips
-		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></FormSwitch>
+		<FormSwitch v-model="showMkkeySettingTips" class="_formBlock"
+			>{{ i18n.ts.showMkkeySettingTips
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span></FormSwitch
+		>
 
-		<FormSwitch v-if="defaultStore.state.unlockDeveloperSettings" v-model="developer" class="_formBlock">{{
-			i18n.ts.developerOption
-		}}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span><template #caption>{{
-					i18n.ts.developerOptionDescription
-				}}</template></FormSwitch>
+		<FormSwitch
+			v-if="defaultStore.state.unlockDeveloperSettings"
+			v-model="developer"
+			class="_formBlock"
+			>{{ i18n.ts.developerOption
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span
+			><template #caption>{{
+				i18n.ts.developerOptionDescription
+			}}</template></FormSwitch
+		>
 
 		<FormLink to="/settings/deck" class="_formBlock">{{
 			i18n.ts.deck
@@ -93,8 +109,6 @@ const showMiniUpdates = computed(
 	defaultStore.makeGetterSetter("showMiniUpdates")
 );
 
-
-
 async function reloadAsk() {
 	const { canceled } = await os.confirm({
 		type: "info",
@@ -105,13 +119,10 @@ async function reloadAsk() {
 	unisonReload();
 }
 
-const developer = computed(
-	defaultStore.makeGetterSetter("developer")
-);
+const developer = computed(defaultStore.makeGetterSetter("developer"));
 const showMkkeySettingTips = computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
-
 
 watch(lang, () => {
 	localStorage.setItem("lang", lang.value as string);
@@ -119,13 +130,7 @@ watch(lang, () => {
 });
 
 watch(
-	[
-		lang,
-		showAds,
-		showUpdates,
-		showMiniUpdates,
-		showAdminUpdates,
-	],
+	[lang, showAds, showUpdates, showMiniUpdates, showAdminUpdates],
 	async () => {
 		await reloadAsk();
 	}

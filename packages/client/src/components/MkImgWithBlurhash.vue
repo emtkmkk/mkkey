@@ -49,25 +49,25 @@ let loaded = $ref(false);
 
 function draw() {
 	if (canvas == null) return;
-  const ctx = canvas.getContext("2d");
+	const ctx = canvas.getContext("2d");
 	if (ctx == null) return;
-  
-  if (props.hash == null) {
-    const blackImageData = ctx.createImageData(props.size, props.size);
-    for (let i = 0; i < blackImageData.data.length; i += 4) {
-      blackImageData.data[i] = 0;
-      blackImageData.data[i + 1] = 0;
-      blackImageData.data[i + 2] = 0;
-      blackImageData.data[i + 3] = 255;
-    }
-    ctx.putImageData(blackImageData, 0, 0);
-    return;
-  }
 
-  const pixels = decode(props.hash, props.size, props.size);
-  const imageData = ctx.createImageData(props.size, props.size);
-  imageData.data.set(pixels);
-  ctx.putImageData(imageData, 0, 0);
+	if (props.hash == null) {
+		const blackImageData = ctx.createImageData(props.size, props.size);
+		for (let i = 0; i < blackImageData.data.length; i += 4) {
+			blackImageData.data[i] = 0;
+			blackImageData.data[i + 1] = 0;
+			blackImageData.data[i + 2] = 0;
+			blackImageData.data[i + 3] = 255;
+		}
+		ctx.putImageData(blackImageData, 0, 0);
+		return;
+	}
+
+	const pixels = decode(props.hash, props.size, props.size);
+	const imageData = ctx.createImageData(props.size, props.size);
+	imageData.data.set(pixels);
+	ctx.putImageData(imageData, 0, 0);
 }
 
 function onLoad() {

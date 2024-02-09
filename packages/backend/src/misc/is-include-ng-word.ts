@@ -1,6 +1,5 @@
 export function isIncludeNgWord(note: any): string {
 	if (
-		(note.cw?.trim() && note.cw?.trim() !== "CW") ||
 		!note.text ||
 		note.visibility != "public"
 	) {

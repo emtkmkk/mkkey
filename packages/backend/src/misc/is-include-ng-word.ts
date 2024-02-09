@@ -10,7 +10,7 @@ export function isIncludeNgWordIsNote(note: any): string {
 
 }
 
-export function isIncludeNgWord(text: string): string {
+export function isIncludeNgWord(txt: string): string {
 
 	const ngword1 = [
 		"ちんちん",
@@ -49,7 +49,7 @@ export function isIncludeNgWord(text: string): string {
 	];
 	const ngword3 = ["地震", "津波", "震災", "震度", "震源"];
 
-	const text = note.text
+	const text = txt
 		.replaceAll(/\s/g, "")
 		.replaceAll(/[!-\/:-@[-`{-~]+/g, "")
 		.replace(/[ァ-ン]/g, function (match) {

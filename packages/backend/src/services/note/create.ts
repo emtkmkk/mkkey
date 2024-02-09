@@ -57,7 +57,7 @@ import { getWordHardMute } from "@/misc/check-word-mute.js";
 import { addNoteToAntenna } from "../add-note-to-antenna.js";
 import { countSameRenotes } from "@/misc/count-same-renotes.js";
 import { deliverToRelays } from "../relay.js";
-import { isIncludeNgWord } from "@/misc/is-include-ng-word.js";
+import { isIncludeNgWordIsNote } from "@/misc/is-include-ng-word.js";
 import type { Channel } from "@/models/entities/channel.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import { getAntennas } from "@/misc/antenna-cache.js";
@@ -440,7 +440,7 @@ export default async (
 		}
 
 		if (!user.host && data.visibility === "public") {
-			const isIncludeNgWordRet = isIncludeNgWord(data);
+			const isIncludeNgWordRet = isIncludeNgWordIsNote(data);
 
 			if (isIncludeNgWordRet) {
 				if (!data.cw) {
@@ -458,7 +458,7 @@ export default async (
 			}
 
 			if (data.renote) {
-				const isIncludeNgWordRtRet = isIncludeNgWord(data.renote);
+				const isIncludeNgWordRtRet = isIncludeNgWordIsNote(data.renote);
 				if (isIncludeNgWordRtRet) {
 					if (data.text) {
 						if (!data.cw) {

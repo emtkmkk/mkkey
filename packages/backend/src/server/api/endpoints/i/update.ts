@@ -18,6 +18,7 @@ import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import { langmap } from "@/misc/langmap.js";
 import { ApiError } from "../../error.js";
 import define from "../../define.js";
+import { isIncludeNgWord } from "@/misc/is-include-ng-word.js";
 
 export const meta = {
 	tags: ["account"],
@@ -61,6 +62,12 @@ export const meta = {
 			message: "Invalid Regular Expression.",
 			code: "INVALID_REGEXP",
 			id: "0d786918-10df-41cd-8f33-8dec7d9a89a5",
+		},
+		
+		detectBannedWords: {
+			message: "Detect banned words.",
+			code: "DETECT_BANNED_WORDS",
+			id: "56f35758-7dd5-468b-8439-5d6fb8ec9b8e",
 		},
 	},
 
@@ -161,29 +168,33 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 
 	if (ps.name != null) {
 		if (
-			!_user.host &&
 			!_user.isAdmin &&
 			ps.name.toLowerCase().includes("admin")
 		)
-			throw new ApiError();
+			throw new ApiError(meta.errors.detectBannedWords, { reason: "You are not the admin." });
 		if (
-			!_user.host &&
-			!_user.isAdmin &&
-			!_user.isModerator &&
+			!(_user.isAdmin ||_user.isModerator ) &&
 			ps.name.toLowerCase().includes("moderator")
 		)
-			throw new ApiError();
+			throw new ApiError(meta.errors.detectBannedWords, { reason: "You are not a moderator." });
+		if (
+			isIncludeNgWord(ps.name)
+		)
+		throw new ApiError(meta.errors.detectBannedWords);
 		updates.name = ps.name;
 	}
 	if (ps.description != null) {
 		if (!_user.isAdmin && ps.description.toLowerCase().includes("admin"))
-			throw new ApiError();
+			throw new ApiError(meta.errors.detectBannedWords, { reason: "You are not the admin." });
 		if (
-			!_user.isAdmin &&
-			!_user.isModerator &&
+			!(_user.isAdmin ||_user.isModerator ) &&
 			ps.description.toLowerCase().includes("moderator")
 		)
-			throw new ApiError();
+			throw new ApiError(meta.errors.detectBannedWords);
+		if (
+			isIncludeNgWord(ps.description)
+		)
+			throw new ApiError(meta.errors.detectBannedWords);
 		profileUpdates.description = ps.description;
 	}
 	if (ps.lang !== undefined) profileUpdates.lang = ps.lang;

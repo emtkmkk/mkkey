@@ -447,6 +447,13 @@ export default async (
 					data.cw = `[強制CW] ${isIncludeNgWordRet}`;
 				} else if (!data.cw.trim() || data.cw.trim().toUpperCase() === "CW") {
 					data.cw = isIncludeNgWordRet;
+				} else if (
+					!(
+						data.cw?.includes(isIncludeNgWordRet) ||
+						data.cw?.includes(kana_to_hira(isIncludeNgWordRet))
+					)
+				) {
+					data.cw += ` (${isIncludeNgWordRet})`;
 				}
 			}
 
@@ -461,6 +468,13 @@ export default async (
 							data.cw.trim().toUpperCase() === "CW"
 						) {
 							data.cw = `${isIncludeNgWordRtRet} (引用先)`;
+						} else if (
+							!(
+								data.cw?.includes(isIncludeNgWordRet) ||
+								data.cw?.includes(kana_to_hira(isIncludeNgWordRet))
+							)
+						) {
+							data.cw += ` (${isIncludeNgWordRet})`;
 						}
 					} else {
 						data.visibility = "home";
@@ -1221,4 +1235,11 @@ export async function extractMentionedUsers(
 	);
 
 	return mentionedUsers;
+}
+
+function kana_to_hira(str) {
+	return str.replace(/[ァ-ン]/g, function (match) {
+		var chr = match.charCodeAt(0) - 0x60;
+		return String.fromCharCode(chr);
+	});
 }

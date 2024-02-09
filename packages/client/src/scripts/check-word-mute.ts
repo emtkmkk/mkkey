@@ -88,7 +88,11 @@ function checkWordMute(
 		}
 	}
 
-	if (defaultStore.state.excludeSimo && (note.cw?.includes("しも") || note.cw?.includes("シモ") || note.cw?.includes("下") || note.cw?.includes("そぎぎ"))) {
+	const SimoWords = ["しも", "シモ", "下", "そぎぎ", "汚"];
+
+	if (
+		defaultStore.state.excludeSimo &&
+		SimoWords.some((x) => note.cw?.includes(x))
 		result.muted = true;
 		result.matched.push("");
 	}

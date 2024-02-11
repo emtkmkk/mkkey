@@ -88,7 +88,7 @@ function checkWordMute(
 		}
 	}
 
-	const SimoWords = ["しも", "シモ", "下", "そぎぎ", "汚"];
+	const SimoWords = ["しも", "シモ", "下", "そぎぎ", "汚", "きたな"];
 
 	if (
 		defaultStore.state.excludeSimo &&

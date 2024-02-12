@@ -302,15 +302,14 @@ export default define(meta, paramDef, async (ps, user) => {
 		apHashtags: ps.noExtractHashtags ? [] : undefined,
 		apEmojis: ps.noExtractEmojis ? [] : undefined,
 	});
-	} catch(e) {
-		throw new ApiError({
-			message: e,
-			code: "NOTE_CREATE_ERROR" ,
-			id: "d390d7e1-8a5e-46ed-b625-06271cafd3d4",
-		})
-	}
-
 	return {
 		createdNote: await Notes.pack(note, user),
 	};
+	} catch(e) {
+		throw new ApiError({
+			message: e || "unknown error.",
+			code: "NOTE_CREATE_ERROR",
+			id: "d390d7e1-8a5e-46ed-b625-06271cafd3d4",
+		})
+	}
 });

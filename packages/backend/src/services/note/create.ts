@@ -444,7 +444,7 @@ export default async (
 
 			if (isIncludeNgWordRet) {
 				if (!data.cw) {
-					throw new Error("CW無しで投稿できないワードが本文に含まれています。");
+					return rej("CW無しで投稿できないワードが本文に含まれています。");
 					data.cw = `[強制CW] ${isIncludeNgWordRet}`;
 				} else if (!data.cw.trim() || data.cw.trim().toUpperCase() === "CW") {
 					data.cw = isIncludeNgWordRet;
@@ -547,7 +547,7 @@ export default async (
 				: undefined;
 
 			if (user.isSilenced && (!relation?.every((x) => x) ?? true)) {
-				throw new Error(
+				return rej(
 					"サイレンス中はフォロワーでないユーザにダイレクトは送信できません。",
 				);
 			}

@@ -25,6 +25,7 @@ export function isIncludeNgWord(txt: string): string {
 		"ぱいおつ",
 		"乳首",
 		"ちくび",
+		"けつ",
 	];
 	const ngword2 = [
 		"おなほ",

@@ -303,11 +303,11 @@ export default define(meta, paramDef, async (ps, user) => {
 		apEmojis: ps.noExtractEmojis ? [] : undefined,
 	});
 	} catch(e) {
-		throw new ApiError(
+		throw new ApiError({
 			message: e,
 			code: "NOTE_CREATE_ERROR" ,
 			id: "d390d7e1-8a5e-46ed-b625-06271cafd3d4",
-		)
+		})
 	}
 
 	return {

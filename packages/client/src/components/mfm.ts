@@ -387,7 +387,6 @@ export default defineComponent({
 								}
 								case "border": {
 									let color = token.props.args.color;
-									va;
 									color = validColor(color) ? `#${color}` : "var(--accent)";
 									let b_style = token.props.args.style;
 									if (

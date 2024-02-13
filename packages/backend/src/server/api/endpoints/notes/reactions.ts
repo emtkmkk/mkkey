@@ -75,27 +75,6 @@ export default define(meta, paramDef, async (ps, user) => {
 					.where("following.followerId = :followerId", { followerId: user.id })
 					.getMany()
 			).map((x) => x.followeeId);
-
-			const mutingUserIds = (
-				await Mutings.createQueryBuilder("muting")
-					.select("muting.muteeId")
-					.where("muting.muterId = :muterId", { muterId: user.id })
-					.getMany()
-			).map((x) => x.muteeId);
-
-			const blockingUserIds = (
-				await Blockings.createQueryBuilder("blocking")
-					.select("blocking.blockeeId")
-					.where("blocking.blockerId = :blockerId", { blockerId: user.id })
-					.getMany()
-			).map((x) => x.blockeeId);
-
-			const blockedUserIds = (
-				await Blockings.createQueryBuilder("blocking")
-					.select("blocking.blockerId")
-					.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
-					.getMany()
-			).map((x) => x.blockerId);
 			
 			if (followingUserIds.length > 0) {
 				query.andWhere(
@@ -109,19 +88,42 @@ export default define(meta, paramDef, async (ps, user) => {
 					"user.isExplorable = true",
 				);
 			}
-			if ([...mutingUserIds,...blockingUserIds,...blockedUserIds].length > 0) {
-				query.andWhere(
-					"reaction.userId NOT IN (:...mutingUserIds)",
-					{
-						mutingUserIds: [
-									...mutingUserIds,
-									...blockingUserIds,
-									...blockedUserIds,
-								],
-					}
-				);
-			}
 		}
+
+		const mutingUserIds = (
+			await Mutings.createQueryBuilder("muting")
+				.select("muting.muteeId")
+				.where("muting.muterId = :muterId", { muterId: user.id })
+				.getMany()
+		).map((x) => x.muteeId);
+
+		const blockingUserIds = (
+			await Blockings.createQueryBuilder("blocking")
+				.select("blocking.blockeeId")
+				.where("blocking.blockerId = :blockerId", { blockerId: user.id })
+				.getMany()
+		).map((x) => x.blockeeId);
+
+		const blockedUserIds = (
+			await Blockings.createQueryBuilder("blocking")
+				.select("blocking.blockerId")
+				.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
+				.getMany()
+		).map((x) => x.blockerId);
+
+		if ([...mutingUserIds,...blockingUserIds,...blockedUserIds].length > 0) {
+			query.andWhere(
+				"reaction.userId NOT IN (:...mutingUserIds)",
+				{
+					mutingUserIds: [
+								...mutingUserIds,
+								...blockingUserIds,
+								...blockedUserIds,
+							],
+				}
+			);
+		}
+
 	} else {
 		query.andWhere(
 			"user.isExplorable = true AND user.isRemoteExplorable = true",

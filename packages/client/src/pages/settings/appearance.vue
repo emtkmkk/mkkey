@@ -64,7 +64,7 @@
 			<FormSwitch v-model="squareAvatars" class="_formBlock">{{
 				i18n.ts.squareAvatars
 			}}</FormSwitch>
-			<MkSwitch v-model="showVisibilityColor">{{ i18n.ts.showVisibilityColor }}</MkSwitch>
+			<FormSwitch v-model="showVisibilityColor">{{ i18n.ts.showVisibilityColor }}</FormSwitch>
 			<MkColorInput v-if="showVisibilityColor" v-model="localOnlyColor">
 			<template #label>{{ i18n.ts._visibility.localAndFollower }}</template>
 			</MkColorInput>
@@ -236,6 +236,7 @@ import FormInput from "@/components/form/input.vue";
 import FormSelect from "@/components/form/select.vue";
 import FormRadios from "@/components/form/radios.vue";
 import FormRange from "@/components/form/range.vue";
+import MkColorInput from "@/components/MkColorInput.vue";
 import MkLink from "@/components/MkLink.vue";
 import * as os from "@/os";
 import { $i } from "@/account";

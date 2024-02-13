@@ -280,32 +280,32 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	// Create a post
 	try {
-	const note = await create(user, {
-		createdAt: new Date(),
-		files: files,
-		poll: ps.poll
-			? {
+		const note = await create(user, {
+			createdAt: new Date(),
+			files: files,
+			poll: ps.poll
+				? {
 					choices: ps.poll.choices,
 					multiple: ps.poll.multiple,
 					expiresAt: ps.poll.expiresAt ? new Date(ps.poll.expiresAt) : null,
-			  }
-			: undefined,
-		text: ps.text || undefined,
-		reply,
-		renote,
-		cw: ps.cw,
-		localOnly: ps.localOnly,
-		visibility: ps.visibility,
-		visibleUsers,
-		channel,
-		apMentions: ps.noExtractMentions ? [] : undefined,
-		apHashtags: ps.noExtractHashtags ? [] : undefined,
-		apEmojis: ps.noExtractEmojis ? [] : undefined,
-	});
-	return {
-		createdNote: await Notes.pack(note, user),
-	};
-	} catch(e) {
+				}
+				: undefined,
+			text: ps.text || undefined,
+			reply,
+			renote,
+			cw: ps.cw,
+			localOnly: ps.localOnly,
+			visibility: ps.visibility,
+			visibleUsers,
+			channel,
+			apMentions: ps.noExtractMentions ? [] : undefined,
+			apHashtags: ps.noExtractHashtags ? [] : undefined,
+			apEmojis: ps.noExtractEmojis ? [] : undefined,
+		});
+		return {
+			createdNote: await Notes.pack(note, user),
+		};
+	} catch (e) {
 		throw new ApiError({
 			message: e || "unknown error.",
 			code: "NOTE_CREATE_ERROR",

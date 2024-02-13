@@ -101,7 +101,9 @@
 					/>
 					<button
 						v-if="
+							$i &&
 							defaultStore.state.toolbarAirReply &&
+							$i.id !== appearNote.userId &&
 							appearNote.visibility !== 'specified'
 						"
 						v-tooltip.bottom="i18n.ts.airReply"

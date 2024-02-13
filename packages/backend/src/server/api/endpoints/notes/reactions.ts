@@ -100,15 +100,18 @@ export default define(meta, paramDef, async (ps, user) => {
 			query.andWhere(
 				"(reaction.userId IN (:...followingUserIds) OR user.isExplorable = true)",
 				{
-					followingUserIds: followingUserIds.filter(
-						(x) =>
-							![
+					followingUserIds
+				},
+			);
+			query.andWhere(
+				"reaction.userId NOT IN (:...mutingUserIds)",
+				{
+					mutingUserIds: [
 								...mutingUserIds,
 								...blockingUserIds,
 								...blockedUserIds,
-							].includes(x),
-					),
-				},
+							],
+				}
 			);
 		}
 	} else {

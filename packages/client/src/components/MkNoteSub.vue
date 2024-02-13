@@ -99,7 +99,7 @@
 						:note="appearNote"
 					/>
 					<button
-						v-if="defaultStore.state.toolbarAirReply"
+						v-if="defaultStore.state.toolbarAirReply && appearNote.visibility !== 'specified'"
 						v-tooltip.bottom="i18n.ts.airReply"
 						class="button _button"
 						@click="airReply()"

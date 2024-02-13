@@ -56,10 +56,11 @@
 						:time="new Date(item.def.createdAt)"
 						mode="relative"
 						dateOnly
-				/>
-				<span v-else>
-					{{ i18n.ts.basicSettings }}
-				</span></template>
+					/>
+					<span v-else>
+						{{ i18n.ts.basicSettings }}
+					</span></template
+				>
 			</FormLink>
 		</template>
 	</div>

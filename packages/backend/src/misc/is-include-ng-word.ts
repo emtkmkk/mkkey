@@ -1,17 +1,12 @@
 export function isIncludeNgWordIsNote(note: any): string {
-	if (
-		!note.text ||
-		note.visibility !== "public"
-	) {
+	if (!note.text || note.visibility !== "public") {
 		return "";
 	}
 
 	return isIncludeNgWord(note.text);
-
 }
 
 export function isIncludeNgWord(txt: string): string {
-
 	const ngword1 = [
 		"ちんちん",
 		"ちんぽ",

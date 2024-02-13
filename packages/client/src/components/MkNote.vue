@@ -200,7 +200,10 @@
 						:multi="multiReaction"
 					/>
 					<button
-						v-if="defaultStore.state.toolbarAirReply && appearNote.visibility !== 'specified'"
+						v-if="
+							defaultStore.state.toolbarAirReply &&
+							appearNote.visibility !== 'specified'
+						"
 						v-tooltip.bottom="i18n.ts.airReply"
 						class="button _button"
 						@click="airReply()"
@@ -678,8 +681,8 @@ useNoteCapture({
 function reply(viaKeyboard = false): void {
 	pleaseLogin();
 	os.post({
-			reply: appearNote,
-			animation: !viaKeyboard,
+		reply: appearNote,
+		animation: !viaKeyboard,
 	}).then(() => {
 		focus();
 	});

@@ -58,9 +58,7 @@
 						class="_formBlock"
 						:to="userPage(user)"
 						>招待したUser (
-						{{
-							`${inviteUser.username} - ${inviteUser.id}`
-						}}
+						{{ `${inviteUser.username} - ${inviteUser.id}` }}
 						)</FormLink
 					>
 

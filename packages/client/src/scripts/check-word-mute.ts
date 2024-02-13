@@ -320,7 +320,11 @@ export function getWordSoftMute(
 		return NotMuted;
 	}
 
-	if (mutedWords.length > 0 || defaultStore.state.excludeNSFW || defaultStore.state.excludeSimo) {
+	if (
+		mutedWords.length > 0 ||
+		defaultStore.state.excludeNSFW ||
+		defaultStore.state.excludeSimo
+	) {
 		let noteMuted = checkWordMute(note, mutedWords, "note", endpoint);
 		if (noteMuted.muted) {
 			noteMuted.what = "note";

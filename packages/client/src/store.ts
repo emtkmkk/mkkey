@@ -1342,30 +1342,30 @@ export const defaultStore = markRaw(
 			createdAt: "2024/2/8",
 		},
 		showVisibilityColor: {
-			where: 'device',
+			where: "device",
 			default: true,
 			createdAt: "2024/2/13",
 			page: "appearance",
 		},
 		homeColor: {
-			where: 'device',
-			default: '#24BE38',
+			where: "device",
+			default: "#24BE38",
 		},
 		followerColor: {
-			where: 'device',
-			default: '#B43784',
+			where: "device",
+			default: "#B43784",
 		},
 		circleColor: {
-			where: 'device',
-			default: '#FF743F',
+			where: "device",
+			default: "#FF743F",
 		},
 		specifiedColor: {
-			where: 'device',
-			default: '#BEBE32',
+			where: "device",
+			default: "#BEBE32",
 		},
 		localOnlyColor: {
-			where: 'device',
-			default: '#3278BD',
+			where: "device",
+			default: "#3278BD",
 		},
 	}),
 );

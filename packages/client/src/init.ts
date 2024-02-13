@@ -413,7 +413,7 @@ import {
 
 	function hexToRgb(hex) {
 		// 16進数のカラーコードから "#" を除去
-		hex = hex.replace(/^#/, '');
+		hex = hex.replace(/^#/, "");
 
 		// 16進数をRGBに変換
 		const r = parseInt(hex.substring(0, 2), 16);
@@ -423,11 +423,26 @@ import {
 		return `${r},${g},${b}`;
 	}
 
-	document.documentElement.style.setProperty('--homeColor', hexToRgb(defaultStore.state.homeColor));
-	document.documentElement.style.setProperty('--followerColor', hexToRgb(defaultStore.state.followerColor));
-	document.documentElement.style.setProperty('--specifiedColor', hexToRgb(defaultStore.state.specifiedColor));
-	document.documentElement.style.setProperty('--circleColor', hexToRgb(defaultStore.state.circleColor));
-	document.documentElement.style.setProperty('--localOnlyColor', hexToRgb(defaultStore.state.localOnlyColor));
+	document.documentElement.style.setProperty(
+		"--homeColor",
+		hexToRgb(defaultStore.state.homeColor),
+	);
+	document.documentElement.style.setProperty(
+		"--followerColor",
+		hexToRgb(defaultStore.state.followerColor),
+	);
+	document.documentElement.style.setProperty(
+		"--specifiedColor",
+		hexToRgb(defaultStore.state.specifiedColor),
+	);
+	document.documentElement.style.setProperty(
+		"--circleColor",
+		hexToRgb(defaultStore.state.circleColor),
+	);
+	document.documentElement.style.setProperty(
+		"--localOnlyColor",
+		hexToRgb(defaultStore.state.localOnlyColor),
+	);
 
 	if (defaultStore.state.randomCustomFont) {
 		if (defaultStore.state.includesRandomEsenapaj) {

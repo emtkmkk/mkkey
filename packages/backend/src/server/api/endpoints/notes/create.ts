@@ -285,10 +285,10 @@ export default define(meta, paramDef, async (ps, user) => {
 			files: files,
 			poll: ps.poll
 				? {
-					choices: ps.poll.choices,
-					multiple: ps.poll.multiple,
-					expiresAt: ps.poll.expiresAt ? new Date(ps.poll.expiresAt) : null,
-				}
+						choices: ps.poll.choices,
+						multiple: ps.poll.multiple,
+						expiresAt: ps.poll.expiresAt ? new Date(ps.poll.expiresAt) : null,
+				  }
 				: undefined,
 			text: ps.text || undefined,
 			reply,
@@ -310,6 +310,6 @@ export default define(meta, paramDef, async (ps, user) => {
 			message: e || "unknown error.",
 			code: "NOTE_CREATE_ERROR",
 			id: "d390d7e1-8a5e-46ed-b625-06271cafd3d4",
-		})
+		});
 	}
 });

@@ -66,6 +66,7 @@ import { ref, unref, computed, defineAsyncComponent } from "vue";
 import FormSwitch from "@/components/form/switch.vue";
 import FormLink from "@/components/form/link.vue";
 import MkButton from "@/components/MkButton.vue";
+import MkInput from "@/components/form/input.vue";
 import * as os from "@/os";
 import { popup, toast } from "@/os";
 import { defaultStore } from "@/store";

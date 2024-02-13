@@ -187,7 +187,7 @@
 		</FormSection>
 
 		<FormSection>
-			<template #label>{{ i18n.ts.showVisibilityColor }}</template>
+			<template #label>{{ i18n.ts.showColor }}</template>
 			<FormSwitch v-model="showVisibilityColor">{{
 				i18n.ts.showVisibilityColor
 			}}</FormSwitch>

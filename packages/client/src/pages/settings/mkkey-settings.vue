@@ -1,5 +1,17 @@
 <template>
 	<div class="_formRoot">
+		<div class="query">
+			<MkInput
+				v-model="q"
+				debounce
+				class=""
+				:placeholder="i18n.ts.search"
+			>
+				<template #prefix
+					><i class="ph-magnifying-glass ph-bold ph-lg"></i
+				></template>
+			</MkInput>
+		</div>
 		<FormSwitch v-model="notSetOnly" class="_formBlock">
 			{{ i18n.ts.notSetOnly }}
 		</FormSwitch>
@@ -61,6 +73,8 @@ import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
+const q = $ref("");
+
 const dontShowNotSet = computed(
 	defaultStore.makeGetterSetter("dontShowNotSet")
 );
@@ -70,11 +84,16 @@ const items = computed(() => {
 		.filter((x) => defaultStore.def[x].createdAt)
 		.filter((x) => defaultStore.def[x].page)
 		.filter((x) => i18n.ts[x])
+		.filter((x) => !q || i18n.ts[x].includes(q) || x.includes(q))
 		.map((x) => ({
 			key: x,
 			def: defaultStore.def[x],
 		}))
 		.sort((a, b) => {
+			if (q) {
+				if (i18n.ts[a.key].length < i18n.ts[b.key].length) return -1;
+				if (i18n.ts[b.key].length < i18n.ts[a.key].length) return 1;
+			}
 			if (a.def.createdAt === b.def.createdAt) {
 				if (a.key < b.key) return -1;
 				if (a.key > b.key) return 1;
@@ -115,3 +134,10 @@ definePageMetadata({
 	icon: "ph-list-plus ph-bold ph-lg",
 });
 </script>
+
+<style lang="scss" scoped>
+.query {
+	background: var(--bg);
+	padding: 16px;
+}
+</style>

@@ -64,6 +64,22 @@
 			<FormSwitch v-model="squareAvatars" class="_formBlock">{{
 				i18n.ts.squareAvatars
 			}}</FormSwitch>
+			<MkSwitch v-model="showVisibilityColor">{{ i18n.ts.showVisibilityColor }}</MkSwitch>
+			<MkColorInput v-if="showVisibilityColor" v-model="localOnlyColor">
+			<template #label>{{ i18n.ts._visibility.localAndFollower }}</template>
+			</MkColorInput>
+			<MkColorInput v-if="showVisibilityColor" v-model="homeColor">
+			<template #label>{{ i18n.ts._visibility.home }}</template>
+			</MkColorInput>
+			<MkColorInput v-if="showVisibilityColor" v-model="followerColor">
+			<template #label>{{ i18n.ts._visibility.followers }}</template>
+			</MkColorInput>
+			<MkColorInput v-if="showVisibilityColor" v-model="specifiedColor">
+			<template #label>{{ i18n.ts._visibility.specified }}</template>
+			</MkColorInput>
+			<MkColorInput v-if="showVisibilityColor" v-model="circleColor">
+			<template #label>{{ i18n.ts._visibility.circleOnly }}</template>
+			</MkColorInput>
 			<FormSwitch v-model="reactionShowBig" class="_formBlock">
 				{{ i18n.ts.reactionShowBig }}
 				<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -339,6 +355,38 @@ watch(useSystemFont, () => {
 	} else {
 		localStorage.removeItem("useSystemFont");
 	}
+});
+
+const showVisibilityColor = computed(defaultStore.makeGetterSetter('showVisibilityColor'));
+const homeColor = computed(defaultStore.makeGetterSetter('homeColor'));
+const followerColor = computed(defaultStore.makeGetterSetter('followerColor'));
+const specifiedColor = computed(defaultStore.makeGetterSetter('specifiedColor'));
+const circleColor = computed(defaultStore.makeGetterSetter('circleColor'));
+const localOnlyColor = computed(defaultStore.makeGetterSetter('localOnlyColor'));
+
+function hexToRgb(hex) {
+	// 16進数のカラーコードから "#" を除去
+	hex = hex.replace(/^#/, '');
+
+	// 16進数をRGBに変換
+	const r = parseInt(hex.substring(0, 2), 16);
+	const g = parseInt(hex.substring(2, 4), 16);
+	const b = parseInt(hex.substring(4, 6), 16);
+
+	return `${r},${g},${b}`;
+}
+
+document.documentElement.style.setProperty('--homeColor', hexToRgb(homeColor.value));
+document.documentElement.style.setProperty('--followerColor', hexToRgb(followerColor.value));
+document.documentElement.style.setProperty('--specifiedColor', hexToRgb(specifiedColor.value));
+document.documentElement.style.setProperty('--circleColor', hexToRgb(circleColor.value));
+document.documentElement.style.setProperty('--localOnlyColor', hexToRgb(localOnlyColor.value));
+watch([homeColor, specifiedColor, followerColor, circleColor, localOnlyColor], () => {
+	document.documentElement.style.setProperty('--homeColor', hexToRgb(homeColor.value));
+	document.documentElement.style.setProperty('--followerColor', hexToRgb(followerColor.value));
+	document.documentElement.style.setProperty('--specifiedColor', hexToRgb(specifiedColor.value));
+	document.documentElement.style.setProperty('--circleColor', hexToRgb(circleColor.value));
+	document.documentElement.style.setProperty('--localOnlyColor', hexToRgb(localOnlyColor.value));
 });
 
 async function reloadAsk() {

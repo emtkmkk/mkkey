@@ -17,6 +17,7 @@
 			class="main"
 			@click="noteClick"
 			:class="[
+				{ colored: defaultStore.state.showVisibilityColor },
 				`v-${
 					appearNote.visibility === 'specified' && note.ccUserIdsCount
 						? 'circle'

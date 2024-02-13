@@ -9,6 +9,7 @@
 		:tabindex="!isDeleted ? '-1' : null"
 		:class="[
 			{ renote: isRenote },
+			{ colored: defaultStore.state.showVisibilityColor },
 			`v-${
 				appearNote.visibility === 'specified' &&
 				appearNote.ccUserIdsCount
@@ -49,6 +50,7 @@
 				v-if="isRenote"
 				class="renote"
 				:class="[
+					{ colored: defaultStore.state.showVisibilityColor },
 					appearNote.visibility !== note.visibility ||
 					note.ccUserIdsCount
 						? `v-${

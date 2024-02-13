@@ -156,6 +156,26 @@ html {
 	&.useSystemFont {
 		font-family: sans-serif;
 	}
+	
+	&.colored.localonly {
+		background-color: rgba(var(--localOnlyColor), 0.20) !important;
+	}
+	
+	&.colored.v-home {
+		background-color: rgba(var(--homeColor), 0.20) !important;
+	}
+
+	&.colored.v-followers {
+		background-color: rgba(var(--followerColor), 0.20) !important;
+	}
+
+	&.colored.v-specified {
+		background-color: rgba(var(--specifiedColor), 0.20) !important;
+	}
+
+	&.colored.v-circle {
+		background-color: rgba(var(--circleColor), 0.20) !important;
+	}
 }
 body::-webkit-scrollbar {
 	width: 12px;

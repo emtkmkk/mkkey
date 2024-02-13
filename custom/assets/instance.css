@@ -29,23 +29,6 @@ a[href*="/tags/"] {
     border-style: none;
 }
 
-/* 公開範囲によって色をつける */
-.localOnly {
-    background-color: rgba(50, 120, 190, 0.2) !important;
-}
-.v-home {
-    background-color: rgba(36, 190, 56, 0.2) !important;
-}
-.v-followers {
-    background-color: rgba(180, 55, 132, 0.2) !important;
-}
-.v-specified {
-    background-color: rgba(190, 190, 50, 0.2) !important;
-}
-.v-circle {
-    background-color: rgba(255, 116, 63, 0.2) !important;
-}
-
 span > i.ph-bold.ph-envelope-simple-open::before,
 span > i.ph-bold.ph-hand-fist::before{
     color: var(--infoWarnFg);

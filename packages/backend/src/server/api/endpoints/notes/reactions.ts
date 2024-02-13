@@ -96,13 +96,19 @@ export default define(meta, paramDef, async (ps, user) => {
 					.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
 					.getMany()
 			).map((x) => x.blockerId);
-
-			query.andWhere(
-				"(reaction.userId IN (:...followingUserIds) OR user.isExplorable = true)",
-				{
-					followingUserIds
-				},
-			);
+			
+			if (followingUserIds.length > 0) {
+				query.andWhere(
+					"(reaction.userId IN (:...followingUserIds) OR user.isExplorable = true)",
+					{
+						followingUserIds
+					},
+				);
+			} else {
+				query.andWhere(
+					"user.isExplorable = true",
+				);
+			}
 			if ([...mutingUserIds,...blockingUserIds,...blockedUserIds].length > 0) {
 				query.andWhere(
 					"reaction.userId NOT IN (:...mutingUserIds)",

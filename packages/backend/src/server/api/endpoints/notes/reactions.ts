@@ -103,16 +103,18 @@ export default define(meta, paramDef, async (ps, user) => {
 					followingUserIds
 				},
 			);
-			query.andWhere(
-				"reaction.userId NOT IN (:...mutingUserIds)",
-				{
-					mutingUserIds: [
-								...mutingUserIds,
-								...blockingUserIds,
-								...blockedUserIds,
-							],
-				}
-			);
+			if ([...mutingUserIds,...blockingUserIds,...blockedUserIds].length > 0) {
+				query.andWhere(
+					"reaction.userId NOT IN (:...mutingUserIds)",
+					{
+						mutingUserIds: [
+									...mutingUserIds,
+									...blockingUserIds,
+									...blockedUserIds,
+								],
+					}
+				);
+			}
 		}
 	} else {
 		query.andWhere(

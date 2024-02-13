@@ -99,6 +99,14 @@
 						:note="appearNote"
 					/>
 					<button
+						v-if="defaultStore.state.toolbarAirReply"
+						v-tooltip.bottom="i18n.ts.airReply"
+						class="button _button"
+						@click="airReply()"
+					>
+						<i class="ph-paper-plane-tilt ph-bold ph-lg"></i>
+					</button>
+					<button
 						v-tooltip.noDelay.bottom="i18n.ts.reply"
 						class="button _button"
 						@click="reply()"
@@ -329,6 +337,22 @@ function reply(viaKeyboard = false): void {
 	pleaseLogin();
 	os.post({
 		reply: appearNote,
+		animation: !viaKeyboard,
+	}).then(() => {
+		focus();
+	});
+}
+
+function airReply(viaKeyboard = false): void {
+	const v =
+		appearNote.user.host != null && appearNote.visibility === "public"
+			? "home"
+			: appearNote.visibility;
+	os.post({
+		airReply: appearNote,
+		initialVisibility: v,
+		initialLocalOnly: appearNote.user.host == null,
+		key: appearNote.id,
 		animation: !viaKeyboard,
 	}).then(() => {
 		focus();

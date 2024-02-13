@@ -67,6 +67,12 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormSwitch v-model="toolbarAirReply" class="_formBlock"
+				>{{ i18n.ts.toolbarAirReply
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="hiddenActivityChart" class="_formBlock"
 				>{{ i18n.ts.hiddenActivityChart
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -387,6 +393,9 @@ const autoSwitchDataSaver = $computed(
 );
 const enabledAirReply = computed(
 	defaultStore.makeGetterSetter("enabledAirReply")
+);
+const toolbarAirReply = computed(
+	defaultStore.makeGetterSetter("toolbarAirReply")
 );
 const noteReactionMenu = $computed(
 	defaultStore.makeGetterSetter("noteReactionMenu")

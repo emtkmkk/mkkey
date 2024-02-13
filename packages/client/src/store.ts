@@ -1136,6 +1136,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/9/25",
 			page: "behavior",
 		},
+		toolbarAirReply: {
+			where: "account",
+			default: false,
+			createdAt: "2024/2/13",
+			page: "behavior",
+		},
 		hiddenReactionNumber: {
 			where: "device",
 			default: false,

@@ -193,7 +193,7 @@
 			}}</FormSwitch>
 			<MkColorInput
 				v-if="showVisibilityColor"
-				style="margin-top: 5px"
+				style="margin-top: 1.2em"
 				v-model="localOnlyColor"
 			>
 				<template #label>{{
@@ -211,12 +211,12 @@
 			</MkColorInput>
 			<MkColorInput
 				v-if="showVisibilityColor"
-				style="margin-bottom: 5px"
+				style="margin-bottom: 1.2em"
 				v-model="circleColor"
 			>
 				<template #label>{{ i18n.ts._visibility.circleOnly }}</template>
 			</MkColorInput>
-			<FormButton inline danger @click="setDefault"
+			<FormButton v-if="showVisibilityColor" inline danger @click="setDefault"
 				><i class="ph-arrow-counter-clockwise ph-bold ph-lg"></i>
 				{{ i18n.ts.default }}</FormButton
 			>

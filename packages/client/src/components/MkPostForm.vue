@@ -815,7 +815,7 @@ let canFollower = $ref(
 let canNotLocal = $ref(
 	(!reply || !reply.localOnly) &&
 		(!props.renote || !props.renote.localOnly) &&
-		(!props.airReply || !props.initialLocalOnly) &&
+		(!props.airReply || !props.airReply.localOnly) &&
 		!$i.blockPostNotLocal &&
 		!$i.isSilenced &&
 		!props.channel?.description?.includes("[localOnly]")

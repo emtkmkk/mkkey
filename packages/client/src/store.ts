@@ -1280,16 +1280,19 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: false,
 			createdAt: "2024/2/8",
+			page: "fun",
 		},
 		excludeNSFW: {
 			where: "account",
 			default: false,
 			createdAt: "2024/2/8",
+			page: "fun",
 		},
 		excludeNotFollowNSFW: {
 			where: "account",
 			default: false,
 			createdAt: "2024/2/8",
+			page: "fun",
 		},
 		excludeSensitiveEmoji: {
 			where: "account",

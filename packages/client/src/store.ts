@@ -32,6 +32,7 @@ export const defaultStore = markRaw(
 		keepCw: {
 			where: "account",
 			default: true,
+			page: "postform",
 		},
 		keepPostCw: {
 			where: "account",
@@ -46,10 +47,12 @@ export const defaultStore = markRaw(
 		rememberNoteVisibility: {
 			where: "account",
 			default: false,
+			page: "privacy",
 		},
 		defaultNoteVisibility: {
 			where: "account",
 			default: "public",
+			page: "privacy",
 		},
 		defaultNoteLocalOnly: {
 			where: "account",
@@ -59,10 +62,12 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: false,
 			createdAt: "2023/5/11",
+			page: "privacy",
 		},
 		uploadFolder: {
 			where: "account",
 			default: null as string | null,
+			page: "drive",
 		},
 		uploadFolderAvatar: {
 			where: "account",
@@ -88,6 +93,7 @@ export const defaultStore = markRaw(
 		keepOriginalUploading: {
 			where: "account",
 			default: false,
+			page: "drive",
 		},
 		memo: {
 			where: "account",
@@ -136,6 +142,7 @@ export const defaultStore = markRaw(
 				":tblob_avicii:",
 				":u_130e1_rainbow:",
 			],
+			page: "reaction",
 		},
 		reactionsFolderName: {
 			where: "account",
@@ -332,6 +339,7 @@ export const defaultStore = markRaw(
 		showAds: {
 			where: "account",
 			default: true,
+			page: "general",
 		},
 		enableAntennaTab: {
 			where: "account",
@@ -570,10 +578,12 @@ export const defaultStore = markRaw(
 				| "tablet"
 				| "desktop"
 				| "desktop-force",
+			page: "behavior",
 		},
 		showLocalPostsInTimeline: {
 			where: "deviceAccount",
 			default: "home" as "home" | "social" | "both" | "none",
+			page: "timeline",
 		},
 		showLocalPostsInfoPopup: {
 			where: "account",
@@ -598,22 +608,27 @@ export const defaultStore = markRaw(
 		serverDisconnectedBehavior: {
 			where: "device",
 			default: "nothing" as "nothing" | "quiet" | "reload" | "dialog",
+			page: "behavior",
 		},
 		seperateRenoteQuote: {
 			where: "device",
 			default: true,
+			page: "appearance",
 		},
 		nsfw: {
 			where: "device",
 			default: "respect" as "respect" | "toCW" | "force" | "ignore",
+			page: "timeline",
 		},
 		animation: {
 			where: "device",
 			default: true,
+			page: "appearance",
 		},
 		animatedMfm: {
 			where: "device",
 			default: true,
+			page: "appearance",
 		},
 		animatedMfmWarnShown: {
 			where: "device",
@@ -622,22 +637,27 @@ export const defaultStore = markRaw(
 		loadRawImages: {
 			where: "device",
 			default: true,
+			page: "appearance",
 		},
 		imageNewTab: {
 			where: "device",
 			default: false,
+			page: "behavior",
 		},
 		disableShowingAnimatedImages: {
 			where: "device",
 			default: false,
+			page: "appearance",
 		},
 		disablePagesScript: {
 			where: "device",
 			default: false,
+			page: "behavior",
 		},
 		useOsNativeEmojis: {
 			where: "device",
 			default: false,
+			page: "appearance",
 		},
 		useBigCustom: {
 			where: "device",
@@ -647,22 +667,27 @@ export const defaultStore = markRaw(
 		disableDrawer: {
 			where: "device",
 			default: false,
+			page: "appearance",
 		},
 		useBlurEffectForModal: {
 			where: "device",
 			default: false,
+			page: "appearance",
 		},
 		useBlurEffect: {
 			where: "device",
 			default: false,
+			page: "appearance",
 		},
 		showFixedPostForm: {
 			where: "device",
 			default: true,
+			page: "timeline",
 		},
 		enableInfiniteScroll: {
 			where: "device",
 			default: true,
+			page: "behavior",
 		},
 		useReactionPickerForContextMenu: {
 			where: "device",
@@ -671,26 +696,32 @@ export const defaultStore = markRaw(
 		showGapBetweenNotesInTimeline: {
 			where: "device",
 			default: false,
+			page: "timeline",
 		},
 		darkMode: {
 			where: "device",
 			default: true,
+			page: "theme",
 		},
 		instanceTicker: {
 			where: "device",
 			default: "always" as "none" | "remote" | "always",
+			page: "appearance",
 		},
 		reactionPickerSize: {
 			where: "device",
 			default: 3,
+			page: "reaction",
 		},
 		reactionPickerWidth: {
 			where: "device",
 			default: 3,
+			page: "reaction",
 		},
 		reactionPickerHeight: {
 			where: "device",
 			default: 3,
+			page: "reaction",
 		},
 		usePickerSizePostForm: {
 			where: "device",
@@ -701,11 +732,13 @@ export const defaultStore = markRaw(
 		emojiPickerUseDrawerForMobile: {
 			where: "device",
 			default: true,
+			page: "postform",
 		},
 		reactionPickerUseDrawerForMobile: {
 			where: "device",
 			default: true,
 			createdAt: "2023/4/25",
+			page: "reaction",
 		},
 		recentlyUsedEmojis: {
 			where: "device",
@@ -730,6 +763,7 @@ export const defaultStore = markRaw(
 		squareAvatars: {
 			where: "device",
 			default: true,
+			page: "appearance",
 		},
 		postFormWithHashtags: {
 			where: "device",
@@ -751,10 +785,12 @@ export const defaultStore = markRaw(
 		numberOfPageCache: {
 			where: "device",
 			default: 4,
+			page: "behavior",
 		},
 		enterSendsMessage: {
 			where: "device",
 			default: false,
+			page: "postform",
 		},
 		openEmojiPicker: {
 			where: "device",
@@ -783,6 +819,7 @@ export const defaultStore = markRaw(
 		showUpdates: {
 			where: "device",
 			default: true,
+			page: "general",
 		},
 		showMiniUpdates: {
 			where: "device",
@@ -792,6 +829,7 @@ export const defaultStore = markRaw(
 		swipeOnDesktop: {
 			where: "device",
 			default: true,
+			page: "behavior",
 		},
 		notTopToSwipeStop: {
 			where: "device",
@@ -827,19 +865,23 @@ export const defaultStore = markRaw(
 		enableCustomKaTeXMacro: {
 			where: "device",
 			default: false,
+			page: "general",
 		},
 		enableEmojiReactions: {
 			where: "account",
 			default: true,
 			createdAt: "2023/5/29",
+			page: "reaction",
 		},
 		showEmojiButton: {
 			where: "account",
 			default: true,
+			page: "reaction",
 		},
 		showEmojisInReactionNotifications: {
 			where: "account",
 			default: true,
+			page: "reaction",
 		},
 		favButtonReaction: {
 			where: "account",

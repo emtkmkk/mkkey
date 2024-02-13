@@ -52,10 +52,14 @@
 				>{{ i18n.ts[item.key] }}
 				<template #suffix
 					><MkTime
+						v-if="item.def.createdAt"
 						:time="new Date(item.def.createdAt)"
 						mode="relative"
 						dateOnly
-				/></template>
+				/>
+				<span v-else>
+					{{ i18n.ts.basicSettings }}
+				</span></template>
 			</FormLink>
 		</template>
 	</div>
@@ -82,7 +86,7 @@ const dontShowNotSet = computed(
 
 const items = computed(() => {
 	return Object.keys(defaultStore.def)
-		.filter((x) => defaultStore.def[x].createdAt)
+		.filter((x) => q || defaultStore.def[x].createdAt)
 		.filter((x) => defaultStore.def[x].page)
 		.filter((x) => i18n.ts[x])
 		.filter((x) => !q || i18n.ts[x].includes(q) || x.includes(q))

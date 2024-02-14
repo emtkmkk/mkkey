@@ -168,7 +168,7 @@ import {
 
 	//#region Set lang attr
 	const html = document.documentElement;
-	html.setAttribute("lang", lang);
+	html.setAttribute("lang", lang || "ja-JP");
 	//#endregion
 
 	//#region loginId

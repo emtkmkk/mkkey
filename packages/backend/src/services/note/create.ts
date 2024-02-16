@@ -518,8 +518,12 @@ export default async (
 			.filter((tag) => Array.from(tag || "").length <= 128)
 			.splice(0, 32);
 
-		if (user.host && tags?.includes("黒猫サーバー") && tags?.includes("kuroneko6423")) return rej("禁止ハッシュタグが含まれています。")
-		
+		//スパム対策
+		if (user.host && ["public","home"].includes(data.visibility) && user.notesCount < 10) {
+			if (tags?.includes("黒猫サーバー") && tags?.includes("kuroneko6423")) return rej("禁止ハッシュタグが含まれています。");
+			if (mentionedUsers?.length > 3 && data.text?.includes("https://discord.gg/")) return rej("禁止投稿です。");
+		}
+			
 		if (
 			data.reply &&
 			user.id !== data.reply.userId &&

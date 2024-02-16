@@ -529,8 +529,8 @@ export default async (
 			console.log(`localUser: ${mentionedUsers.filter((x) => !x.host || x.host === config.host).length}/${mentionedUsers?.length}`)
 			if (mentionedUsers?.length > 2 && mentionedUsers.filter((x) => !x.host || x.host === config.host).length > 0 && mentionedUsers.filter((x) => !x.host || x.host === config.host).length - mentionedUsers?.length <= -2 && !data.reply) {
 				const localRelation = await mentionedUsers.filter((x) => !x.host || x.host === config.host).every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);
-				console.log(`localRelation: ${localRelation}`)
-				if (!localRelation) return rej("禁止投稿です。(スパムの可能性が高い)")
+				console.log(`localRelation: ${!localRelation}`)
+				if (localRelation) return rej("禁止投稿です。(スパムの可能性が高い)")
 			}
 		}
 			

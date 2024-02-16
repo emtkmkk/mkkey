@@ -522,7 +522,7 @@ export default async (
 		if (user.host && ["public","home"].includes(data.visibility) && user.notesCount < 500) {
 			if (tags?.includes("黒猫サーバー") && tags?.includes("kuroneko6423")) return rej("禁止ハッシュタグが含まれています。");
 			if (mentionedUsers?.length > 3 && data.text?.includes("https://discord.gg/")) return rej("禁止投稿です。");
-			if (mentionedUsers?.length > 8 && (data.text?.includes("ap12") || data.text?.includes("黒猫"))) return rej("禁止投稿です。（メンション多すぎ）");
+			if (mentionedUsers?.length > 8 && (data.text?.includes("ap12") || data.text?.includes("猫"))) return rej("禁止投稿です。（メンション多すぎ）");
 		}
 			
 		if (

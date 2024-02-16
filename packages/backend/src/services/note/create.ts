@@ -520,10 +520,10 @@ export default async (
 
 		//スパム対策
 		if (user.host && ["public","home"].includes(data.visibility) && user.notesCount < 500) {
-			if (tags?.includes("黒猫サーバー") && tags?.includes("kuroneko6423")) return rej("禁止ハッシュタグが含まれています。");
-			if (mentionedUsers?.length > 3 && data.text?.includes("https://discord.gg/")) return rej("禁止投稿です。");
-			if (mentionedUsers?.length > 8 && (data.text?.includes("ap12") || data.text?.includes("猫"))) return rej("禁止投稿です。（メンション多すぎ）");
-			if (mentionedUsers?.length > 3 && data.text?.replaceAll(/[\s\\n]*@\w+(@[\-._\w]+)?[\s\\n]*/g,"").trim()?.length <= 3) return ret("禁止投稿です。（内容なさすぎ）");
+			if (tags?.some((x) => x.includes("黒猫サーバー") ||　x.includes("kuroneko6423") || x.includes("伊藤陽久"))) return rej("禁止タグが含まれています。");
+			if (mentionedUsers?.length > 3 && data.text?.includes("https://discord.gg/")) return rej("禁止投稿です。(discordへの誘導)");
+			if (mentionedUsers?.length > 7 && (data.text?.includes("ap12") || data.text?.includes("猫"))) return rej("禁止投稿です。(メンション多すぎ)");
+			if (mentionedUsers?.length > 3 && data.text?.replaceAll(/[\s\\n]*@\w+(@[\-._\w]+)?[\s\\n]*/gi,"").trim()?.length <= 3) return ret("禁止投稿です。(内容なさすぎ)");
 		}
 			
 		if (

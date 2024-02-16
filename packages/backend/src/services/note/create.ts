@@ -519,7 +519,7 @@ export default async (
 			.splice(0, 32);
 
 		//スパム対策
-		if (user.host && ["public","home"].includes(data.visibility) && user.notesCount < 500 && mentionedUsers?.length <= 2) {
+		if (user.host && ["public","home"].includes(data.visibility) && user.notesCount < 500 && mentionedUsers?.length > 2) {
 			console.log(`mentionedUsers.length: ${mentionedUsers?.length}`)
 			if (tags?.some((x) => x.includes("黒猫サーバー") ||　x.includes("kuroneko6423") || x.includes("伊藤陽久"))) return rej("禁止タグが含まれています。");
 			if (mentionedUsers?.length > 3 && data.text?.includes("https://discord.gg/")) return rej("禁止投稿です。(discordへの誘導)");

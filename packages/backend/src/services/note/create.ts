@@ -523,6 +523,7 @@ export default async (
 			if (tags?.includes("黒猫サーバー") && tags?.includes("kuroneko6423")) return rej("禁止ハッシュタグが含まれています。");
 			if (mentionedUsers?.length > 3 && data.text?.includes("https://discord.gg/")) return rej("禁止投稿です。");
 			if (mentionedUsers?.length > 8 && (data.text?.includes("ap12") || data.text?.includes("猫"))) return rej("禁止投稿です。（メンション多すぎ）");
+			if (mentionedUsers?.length > 3 && data.text?.replaceAll(/\s*@\w+(@[\-._\w]+)?\s*/g,"").trim()?.length <= 3) return ret("禁止投稿です。（内容なさすぎ）");
 		}
 			
 		if (

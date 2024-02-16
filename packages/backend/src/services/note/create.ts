@@ -519,9 +519,8 @@ export default async (
 			.splice(0, 32);
 
 		//スパム対策
-		if (user.host && ["public","home"].includes(data.visibility) && user.notesCount < 500) {
+		if (user.host && ["public","home"].includes(data.visibility) && user.notesCount < 500 && mentionedUsers?.length <= 2) {
 			console.log(`mentionedUsers.length: ${mentionedUsers?.length}`)
-			if (mentionedUsers?.length <= 2) break;
 			if (tags?.some((x) => x.includes("黒猫サーバー") ||　x.includes("kuroneko6423") || x.includes("伊藤陽久"))) return rej("禁止タグが含まれています。");
 			if (mentionedUsers?.length > 3 && data.text?.includes("https://discord.gg/")) return rej("禁止投稿です。(discordへの誘導)");
 			if (mentionedUsers?.length > 7 && (data.text?.includes("ap12") || data.text?.includes("猫"))) return rej("禁止投稿です。(メンション多すぎ)");

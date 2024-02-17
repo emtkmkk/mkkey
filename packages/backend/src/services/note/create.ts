@@ -535,7 +535,7 @@ export default async (
 			}
 		}
 
-		if (user.host && ["public","home"].includes(data.visibility) && user.notesCount < 500 && mentionedUsers.filter((x) => !x.host || x.host === config.host).length > 0 && Date.now() - new Date(user.createdAt).valueOf() < 2 * 24 * 60 * 60 && user.name === user.username && user.emojis?.length === 0 && user.avatarUrl?.includes("identicon")) {
+		if (user.host && ["public","home"].includes(data.visibility) && user.notesCount < 500 && mentionedUsers.filter((x) => !x.host || x.host === config.host).length > 0 && Date.now() - new Date(user.createdAt).valueOf() < 2 * 24 * 60 * 60 * 1000 && user.name === user.username && user.emojis?.length === 0 && user.avatarUrl?.includes("identicon")) {
 			const localRelation = await mentionedUsers.filter((x) => !x.host || x.host === config.host).every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);
 			console.log(`localRelation: ${!localRelation}`)
 			if (localRelation) return rej("禁止投稿です。(怪しいプロフィール)")

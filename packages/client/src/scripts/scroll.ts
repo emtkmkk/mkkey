@@ -123,6 +123,7 @@ export function scrollToBottom(
 	options: ScrollToOptions = {},
 	container = getScrollContainer(el),
 ) {
+	if (!el?.scrollHeight) return;
 	if (container) {
 		container.scroll({
 			top:

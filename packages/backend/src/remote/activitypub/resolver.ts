@@ -23,7 +23,7 @@ import renderCreate from "@/remote/activitypub/renderer/create.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderFollow from "@/remote/activitypub/renderer/follow.js";
 import { shouldBlockInstance } from "@/misc/should-block-instance.js";
-import { apLogger } from "../logger.js";
+import { apLogger } from "./logger.js";
 
 export default class Resolver {
 	private history: Set<string>;

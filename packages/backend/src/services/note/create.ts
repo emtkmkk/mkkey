@@ -525,7 +525,7 @@ export default async (
 			if (mentionedUsers?.length > 3 && data.text?.includes("https://discord.gg/")) return rej("禁止投稿です。(discordへの誘導)");
 			if (mentionedUsers?.length > 7 && (data.text?.includes("ap12") || data.text?.includes("猫"))) return rej("禁止投稿です。(メンション多すぎ)");
 			console.log(`maintext: ${data.text?.replaceAll(/[\s\\n]*@\w+(@[\-._\w]+)?[\s\\n]*/gi,"").trim()?.length}`)
-			if (mentionedUsers?.length > 3 && data.text?.replaceAll(/[\s\\n]*@\w+(@[\-._\w]+)?[\s\\n]*/gi,"").trim()?.length <= 3) return ret("禁止投稿です。(内容なさすぎ)");
+			if (mentionedUsers?.length > 3 && data.text?.replaceAll(/[\s\\n]*@\w+(@[\-._\w]+)?[\s\\n]*/gi,"").trim()?.length <= 3) return rej("禁止投稿です。(内容なさすぎ)");
 			console.log(`localUser: ${mentionedUsers.filter((x) => !x.host || x.host === config.host).length}/${mentionedUsers?.length}`)
 			if (mentionedUsers?.length > 2 && mentionedUsers.filter((x) => !x.host || x.host === config.host).length > 0 && mentionedUsers.filter((x) => !x.host || x.host === config.host).length - mentionedUsers?.length <= -2 && !data.reply) {
 				const localRelation = await mentionedUsers.filter((x) => !x.host || x.host === config.host).every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);

@@ -28,6 +28,7 @@ export function isBottomVisible(
 	tolerance = 1,
 	container = getScrollContainer(el),
 ) {
+	if (!el?.scrollHeight) return false;
 	if (container)
 		return (
 			el.scrollHeight <=

@@ -65,7 +65,8 @@ export function createSignedGet(args: {
 		method: "GET",
 		headers: objectAssignWithLcKey(
 			{
-				Accept: "application/activity+json, application/ld+json",
+				Accept:
+					'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
 				Date: new Date().toUTCString(),
 				Host: new URL(args.url).hostname,
 			},

@@ -1,10 +1,9 @@
 import config from "@/config/index.js";
-import { getJson } from "@/misc/fetch.js";
 import type { ILocalUser } from "@/models/entities/user.js";
 import { getInstanceActor } from "@/services/instance-actor.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { extractDbHost, isSelfHost } from "@/misc/convert-host.js";
-import { signedGet } from "./request.js";
+import { apGet } from "./request.js";
 import type { IObject, ICollection, IOrderedCollection } from "./type.js";
 import { isCollectionOrOrderedCollection, getApId } from "./type.js";
 import {
@@ -112,11 +111,10 @@ export default class Resolver {
 			this.user = await getInstanceActor();
 		}
 
-		const object = (
-			this.user
-				? await signedGet(value, this.user)
-				: await getJson(value, "application/activity+json, application/ld+json")
-		) as IObject;
+		apLogger.debug("Getting object from remote, authenticated as user:");
+		apLogger.debug(JSON.stringify(this.user, null, 2));
+
+		const object = await apGet(value, this.user);
 
 		if (
 			object == null ||

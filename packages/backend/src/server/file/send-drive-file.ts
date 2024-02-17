@@ -148,5 +148,80 @@ export default async function (ctx: Koa.Context) {
 		);
 		ctx.set("Cache-Control", "max-age=31536000, immutable");
 		ctx.set("Content-Disposition", contentDisposition("inline", file.name));
+		(contentType = FILE_TYPE_BROWSERSAFE.includes(file.type)
+			? file.type
+			: "application/octet-stream"),
+			(filename = file.name);
+		fileHandle = await InternalStorage.open(file.accessKey!, "r");
+	}
+
+	// We can let Koa evaluate conditionals by setting
+	// the status to 200, along with the lastModified
+	// and etag properties, then checking ctx.fresh.
+	// Additionally, Range is ignored if a conditional GET would
+	// result in a 304 response, so we can return early here.
+
+	ctx.status = 200;
+	ctx.etag = file.md5;
+	ctx.lastModified = file.createdAt;
+
+	// When doing a conditional request, we MUST return a "Cache-Control" header
+	// if a normal 200 response would have included.
+	if (contentType === "application/octet-stream") {
+		ctx.vary("Accept");
+		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");
+
+		if (ctx.header.accept?.match(/activity\+json|ld\+json/)) {
+			ctx.status = 400;
+			return;
+		}
+	} else {
+		ctx.set("Cache-Control", "max-age=2592000, s-maxage=172800, immutable");
+	}
+
+	if (ctx.fresh) {
+		ctx.status = 304;
+		return;
+	}
+
+	ctx.set("Content-Disposition", contentDisposition("inline", filename));
+	ctx.set("Content-Type", contentType);
+
+	const ranges = ByteRangeReadable.parseByteRanges(
+		BigInt(file.size),
+		MAX_BYTE_RANGES,
+		ctx.headers["range"],
+	);
+	const readable =
+		ranges.length === 0
+			? fileHandle.createReadStream()
+			: new ByteRangeReadable(
+					fileHandle.fd,
+					BigInt(file.size),
+					ranges,
+					contentType,
+			  );
+	readable.on("error", commonReadableHandlerGenerator(ctx));
+	ctx.body = readable;
+
+	if (ranges.length === 0) {
+		ctx.set("Accept-Ranges", "bytes");
+	} else {
+		ctx.status = 206;
+		readable.on("close", async () => {
+			await fileHandle.close();
+		});
+
+		if (ranges.length === 1) {
+			ctx.set(
+				"Content-Range",
+				`bytes ${ranges[0].start}-${ranges[0].end}/${file.size}`,
+			);
+		} else {
+			ctx.set(
+				"Content-Type",
+				`multipart/byteranges; boundary=${readable.boundary}`,
+			);
+		}
 	}
 }

@@ -524,7 +524,7 @@ export default async (
 			if (Date.now() - new Date(user.createdAt).valueOf() < 2 * 24 * 60 * 60 && user.name === user.username && user.emojis?.length === 0 && user.avatarUrl?.includes("identicon")) {
 				const localRelation = await mentionedUsers.filter((x) => !x.host || x.host === config.host).every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);
 				console.log(`localRelation: ${!localRelation}`)
-				if (localRelation) return rej("禁止投稿です。(プロフィール))
+				if (localRelation) return rej("禁止投稿です。(プロフィール)")
 			}
 			if (tags?.some((x) => x.includes("黒猫サーバー") ||　x.includes("kuroneko6423") || x.includes("伊藤陽久"))) return rej("禁止タグが含まれています。");
 			if (mentionedUsers?.length > 3 && data.text?.includes("https://discord.gg/")) return rej("禁止投稿です。(discordへの誘導)");

@@ -148,37 +148,32 @@ export function getNoteMenu(props: {
 
 	function showSource(): void {
 		let text;
+		let cw;
 		if (
 			defaultStore.state.copyPostRemoteEmojiCode &&
 			appearNote.user?.host != null
 		) {
-			if (appearNote.cw && appearNote.text) {
-				text = appearNote.cw.replaceAll(
-					/:(\w+):/g,
-					`:\$1@${appearNote.user?.host}:`,
-				) + "\n\n" + appearNote.text.replaceAll(
+			if (appearNote.cw) {
+				cw = appearNote.cw.replaceAll(
 					/:(\w+):/g,
 					`:\$1@${appearNote.user?.host}:`,
 				);
-			} else if (appearNote.text) {
-				text = appearNote.text.replaceAll(
-					/:(\w+):/g,
-					`:\$1@${appearNote.user?.host}:`,
-				);
-			} else {
-				text = "";
 			}
+			
+			text = (appearNote.text ?? "").replaceAll(
+				/:(\w+):/g,
+				`:\$1@${appearNote.user?.host}:`,
+			);
 		} else {
 			if (appearNote.cw) {
-				text = appearNote.cw + "\n\n" + (appearNote.text ?? "");
-			} else {
-				text = appearNote.text ?? "";
+				cw = appearNote.cw;
 			}
+			text = appearNote.text ?? "";
 		}
 		props.info.value = {
 			ready: true,
 			title: i18n.ts.noteSource,
-			text,
+			text: cw ? cw + "\n\n" + text : text,
 			copy: text,
 			mfm: false,
 		};

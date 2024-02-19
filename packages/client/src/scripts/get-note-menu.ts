@@ -156,7 +156,7 @@ export function getNoteMenu(props: {
 				text = appearNote.cw.replaceAll(
 					/:(\w+):/g,
 					`:\$1@${appearNote.user?.host}:`,
-				) + "\n" + appearNote.text.replaceAll(
+				) + "\n\n" + appearNote.text.replaceAll(
 					/:(\w+):/g,
 					`:\$1@${appearNote.user?.host}:`,
 				);
@@ -170,7 +170,7 @@ export function getNoteMenu(props: {
 			}
 		} else {
 			if (appearNote.cw) {
-				text = appearNote.cw + (appearNote.text ?? "");
+				text = appearNote.cw + "\n\n" + (appearNote.text ?? "");
 			} else {
 				text = appearNote.text ?? "";
 			}

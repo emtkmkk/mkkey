@@ -17,8 +17,14 @@
 			<i class="ph-caret-left ph-bold ph-lg"></i>
 		</button>
 		<div v-if="narrow" class="buttons left" @click="openAccountMenu">
+			<img
+				v-if="props.displayMyAvatar && $i && $store.state.hiddenHeaderIcon"
+				:src="$instance.iconUrl"
+				class="_ghost"
+				alt="icon"
+			/>
 			<MkAvatar
-				v-if="props.displayMyAvatar && $i"
+				v-else-if="props.displayMyAvatar && $i"
 				class="avatar"
 				:user="$i"
 				:disable-preview="true"

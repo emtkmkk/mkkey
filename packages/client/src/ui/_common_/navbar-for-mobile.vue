@@ -15,7 +15,14 @@
 					class="item _button account"
 					@click="openAccountMenu"
 				>
+					<img
+						v-if="$store.state.hiddenHeaderIcon"
+						:src="$instance.iconUrl"
+						class="_ghost"
+						alt="icon"
+					/>
 					<MkAvatar
+						v-else
 						:user="$i"
 						class="icon"
 						disableLink

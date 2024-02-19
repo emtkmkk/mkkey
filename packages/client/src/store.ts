@@ -1367,6 +1367,12 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: "#3278BD",
 		},
+		hiddenHeaderIcon: {
+			where: "device",
+			default: false,
+			createdAt: "2024/2/19",
+			page: "appearance",
+		},
 	}),
 );
 

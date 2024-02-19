@@ -9,6 +9,7 @@
 			blocking: isBlocking,
 		}"
 		:disabled="wait"
+		v-if="!(isFollowing && isFollowingHidden)"
 		@click="onClick"
 	>
 		<template v-if="!wait">

@@ -245,7 +245,7 @@
 				class="text"
 				style="opacity: 0.6"
 				>{{ i18n.ts.youGotNewFollower }}
-				<div v-if="full && notification.user.isFollowed">
+				<div v-if="full && (!notification.isRead || notification.isPrepend)">
 					<MkFollowButton
 						:user="notification.user"
 						:full="true"

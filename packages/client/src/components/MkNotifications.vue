@@ -84,6 +84,8 @@ const pagination: Paging = {
 const onNotification = (notification) => {
 	const isMuted = props.includeTypes
 		? !props.includeTypes.includes(notification.type)
+		: props.excludeTypes
+		? props.excludeTypes.includes(notification.type)
 		: $i.mutingNotificationTypes.includes(notification.type);
 	if (isMuted || document.visibilityState === "visible") {
 		stream.send("readNotification", {
@@ -94,6 +96,7 @@ const onNotification = (notification) => {
 	if (!isMuted) {
 		pagingComponent.value.prepend({
 			...notification,
+			isPrepend: true,
 			isRead: document.visibilityState === "visible",
 		});
 	}

@@ -18,7 +18,7 @@
 					<img
 						v-if="$store.state.hiddenHeaderIcon"
 						:src="$instance.iconUrl"
-						class="_ghost"
+						class="icon _ghost"
 						alt="icon"
 					/>
 					<MkAvatar

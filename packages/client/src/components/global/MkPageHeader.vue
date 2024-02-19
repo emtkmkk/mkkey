@@ -20,7 +20,7 @@
 			<img
 				v-if="props.displayMyAvatar && $i && $store.state.hiddenHeaderIcon"
 				:src="$instance.iconUrl"
-				class="_ghost"
+				class="avatar _ghost"
 				alt="icon"
 			/>
 			<MkAvatar
@@ -37,8 +37,14 @@
 				class="titleContainer"
 				@click="showTabsPopup"
 			>
+				<img
+					v-if="metadata.avatar && $store.state.hiddenHeaderIcon"
+					:src="$instance.iconUrl"
+					class="avatar _ghost"
+					alt="icon"
+				/>
 				<MkAvatar
-					v-if="metadata.avatar"
+					v-else-if="metadata.avatar"
 					class="avatar"
 					:user="metadata.avatar"
 					:disable-preview="true"

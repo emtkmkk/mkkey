@@ -576,6 +576,7 @@ const birthday = $computed(() => {
 		let _birthday = props.user.birthday
 			? new Date(props.user.birthday)
 			: new Date();
+		_birthday.setDate(1);
 		_birthday.setMonth(new Date().getMonth());
 		_birthday.setDate(new Date().getDate());
 		return `${_birthday.getFullYear()}-${(

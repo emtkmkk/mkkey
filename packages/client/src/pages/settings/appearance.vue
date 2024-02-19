@@ -216,7 +216,11 @@
 			>
 				<template #label>{{ i18n.ts._visibility.circleOnly }}</template>
 			</MkColorInput>
-			<FormButton v-if="showVisibilityColor" inline danger @click="setDefault"
+			<FormButton
+				v-if="showVisibilityColor"
+				inline
+				danger
+				@click="setDefault"
 				><i class="ph-arrow-counter-clockwise ph-bold ph-lg"></i>
 				{{ i18n.ts.default }}</FormButton
 			>

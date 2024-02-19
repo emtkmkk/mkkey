@@ -75,18 +75,16 @@ export default define(meta, paramDef, async (ps, user) => {
 					.where("following.followerId = :followerId", { followerId: user.id })
 					.getMany()
 			).map((x) => x.followeeId);
-			
+
 			if (followingUserIds.length > 0) {
 				query.andWhere(
 					"(reaction.userId IN (:...followingUserIds) OR user.isExplorable = true)",
 					{
-						followingUserIds
+						followingUserIds,
 					},
 				);
 			} else {
-				query.andWhere(
-					"user.isExplorable = true",
-				);
+				query.andWhere("user.isExplorable = true");
 			}
 		}
 
@@ -111,19 +109,15 @@ export default define(meta, paramDef, async (ps, user) => {
 				.getMany()
 		).map((x) => x.blockerId);
 
-		if ([...mutingUserIds,...blockingUserIds,...blockedUserIds].length > 0) {
-			query.andWhere(
-				"reaction.userId NOT IN (:...mutingUserIds)",
-				{
-					mutingUserIds: [
-								...mutingUserIds,
-								...blockingUserIds,
-								...blockedUserIds,
-							],
-				}
-			);
+		if ([...mutingUserIds, ...blockingUserIds, ...blockedUserIds].length > 0) {
+			query.andWhere("reaction.userId NOT IN (:...mutingUserIds)", {
+				mutingUserIds: [
+					...mutingUserIds,
+					...blockingUserIds,
+					...blockedUserIds,
+				],
+			});
 		}
-
 	} else {
 		query.andWhere(
 			"user.isExplorable = true AND user.isRemoteExplorable = true",

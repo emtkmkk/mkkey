@@ -25,7 +25,9 @@ export function generateMutedUserQuery(
 	// 投稿の作者をミュートしていない かつ
 	// 投稿の返信先の作者をミュートしていない かつ
 	// 投稿の引用元の作者をミュートしていない
-	q.andWhere(`(note.userId NOT IN (${mutingQuery.getQuery()}) OR (note.visibility = 'specified' AND note.userId = '9d5ts6in38'))`)
+	q.andWhere(
+		`(note.userId NOT IN (${mutingQuery.getQuery()}) OR (note.visibility = 'specified' AND note.userId = '9d5ts6in38'))`,
+	)
 		.andWhere(
 			new Brackets((qb) => {
 				qb.where("note.replyUserId IS NULL").orWhere(

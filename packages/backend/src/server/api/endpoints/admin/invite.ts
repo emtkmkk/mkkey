@@ -1,8 +1,10 @@
 import rndstr from "rndstr";
 import { ApiError } from "../../error.js";
 import define from "../../define.js";
-import { RegistrationTickets } from "@/models/index.js";
+import { RegistrationTickets, Users } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { MoreThan } from "typeorm";
+import { USER_HALFSLEEP_THRESHOLD } from "@/const.js";
 
 export const meta = {
 	tags: ["admin"],
@@ -25,6 +27,13 @@ export const meta = {
 			},
 		},
 	},
+	errors: {
+		noActiveAdmin: {
+			message: "1日以内にログインした管理人が存在しない為、現在招待コードを発行できません。",
+			code: "NO_ACTIVE_ADMIN",
+			id: "0d61e772-53b0-df53-de45-d294e76ab40b",
+		},
+	},
 } as const;
 
 export const paramDef = {
@@ -34,6 +43,18 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
+
+	const admin = await Users.countBy(
+		{ 
+			isAdmin: true,
+			lastActiveDate: MoreThan(new Date(Date.now() - USER_HALFSLEEP_THRESHOLD))
+		}
+	);
+
+	if (!admin) {
+		throw new ApiError(meta.errors.noActiveAdmin);
+	}
+
 	// 招待可能条件
 	// 登録から(7日-((投稿数-20)*1.5時間))経過
 	// ただし1日未満にはならない

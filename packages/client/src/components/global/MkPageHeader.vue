@@ -37,14 +37,8 @@
 				class="titleContainer"
 				@click="showTabsPopup"
 			>
-				<img
-					v-if="metadata.avatar && $store.state.hiddenHeaderIcon"
-					:src="$instance.iconUrl"
-					class="avatar _ghost"
-					alt="icon"
-				/>
 				<MkAvatar
-					v-else-if="metadata.avatar"
+					v-if="metadata.avatar"
 					class="avatar"
 					:user="metadata.avatar"
 					:disable-preview="true"

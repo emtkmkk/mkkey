@@ -4,13 +4,14 @@
 		:plain="plain"
 		:nowrap="nowrap"
 		:author="author"
-		:customEmojis="customEmojis"
-		:isNote="isNote"
-		:noteHost="noteHost"
+		:custom-emojis="customEmojis"
+		:is-note="isNote"
+		:note-host="noteHost"
 		class="havbbuyv"
 		:class="{ nowrap }"
 		:reaction-menu-enabled="reactionMenuEnabled"
 		:note="note"
+		:is-cw="isCw"
 	/>
 </template>
 
@@ -29,6 +30,7 @@ const props = withDefaults(
 		noteHost?: string;
 		reactionMenuEnabled?: boolean;
 		note?: any;
+		isCw?: boolean;
 	}>(),
 	{
 		plain: false,
@@ -38,6 +40,7 @@ const props = withDefaults(
 		noteHost: null,
 		reactionMenuEnabled: false,
 		note: null,
+		isCw: false,
 	}
 );
 </script>

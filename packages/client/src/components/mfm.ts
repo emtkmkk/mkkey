@@ -58,6 +58,10 @@ export default defineComponent({
 			type: Object,
 			default: null,
 		},
+		isCw: {
+			type: Boolean,
+			default: false,
+		},
 	},
 
 	render() {
@@ -648,6 +652,7 @@ export default defineComponent({
 						case "emojiCode": {
 							if (
 								isNote &&
+								!this.isCw &&
 								!isPlain &&
 								emojiAst != null &&
 								isEmojiOnly &&

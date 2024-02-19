@@ -33,7 +33,7 @@
 				`@${note.reply.user.username}${
 					note.reply.user.host
 						? `@${note.reply.user.host}`
-						: '@mkkey.net'
+						: `@${config.host}`
 				} ` + (note.cw ?? '★センシティブメディア')
 			"
 			:author="note.user"
@@ -41,6 +41,7 @@
 			:custom-emojis="note.emojis"
 			:reaction-menu-enabled="true"
 			:note="note"
+			is-cw
 		/>
 		<Mfm
 			v-else-if="cwDetermine"
@@ -51,6 +52,7 @@
 			:custom-emojis="note.emojis"
 			:reaction-menu-enabled="true"
 			:note="note"
+			is-cw
 		/>
 	</p>
 	<div class="wrmlmaau">
@@ -197,6 +199,7 @@ import { ref, watch } from "vue";
 import * as misskey from "calckey-js";
 import * as mfm from "mfm-js";
 import * as os from "@/os";
+import * as config from "@/config";
 import XNoteSimple from "@/components/MkNoteSimple.vue";
 import XMediaList from "@/components/MkMediaList.vue";
 import XPoll from "@/components/MkPoll.vue";

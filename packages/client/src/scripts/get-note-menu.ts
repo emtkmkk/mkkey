@@ -152,12 +152,28 @@ export function getNoteMenu(props: {
 			defaultStore.state.copyPostRemoteEmojiCode &&
 			appearNote.user?.host != null
 		) {
-			text = appearNote.text.replaceAll(
-				/:(\w+):/g,
-				`:\$1@${appearNote.user?.host}:`,
-			);
+			if (appearNote.cw && appearNote.text) {
+				text = appearNote.cw.replaceAll(
+					/:(\w+):/g,
+					`:\$1@${appearNote.user?.host}:`,
+				) + "\n" + appearNote.text.replaceAll(
+					/:(\w+):/g,
+					`:\$1@${appearNote.user?.host}:`,
+				);
+			} else if (appearNote.text) {
+				text = appearNote.text.replaceAll(
+					/:(\w+):/g,
+					`:\$1@${appearNote.user?.host}:`,
+				);
+			} else {
+				text = "";
+			}
 		} else {
-			text = appearNote.text;
+			if (appearNote.cw) {
+				text = appearNote.cw + (appearNote.text ?? "");
+			} else {
+				text = appearNote.text ?? "";
+			}
 		}
 		props.info.value = {
 			ready: true,
@@ -424,11 +440,12 @@ export function getNoteMenu(props: {
 				text: i18n.ts.showSource,
 				action: showSource,
 			}]
-			: [{
+			: ((appearNote.cw ?? "") + (appearNote.text ?? "")).length > 0 
+			? [{
 				icon: "ph-clipboard-text ph-bold ph-lg",
 				text: i18n.ts.copyContent,
 				action: copyContent,
-			}]),
+			}] : []),
 			{
 				icon: "ph-link-simple ph-bold ph-lg",
 				text: i18n.ts.copyLink,

@@ -587,7 +587,7 @@ export default async (
 		if (
 			user.host &&
 			["public", "home"].includes(data.visibility) &&
-			user.notesCount < 500 &&
+			user.notesCount < 5000 &&
 			mentionedUsers.filter((x) => !x.host || x.host === config.host).length >
 				0 &&
 			Date.now() - new Date(user.createdAt).valueOf() <

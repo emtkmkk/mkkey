@@ -418,11 +418,17 @@ export function getNoteMenu(props: {
 				text: i18n.ts.reaction,
 				action: showReactions,
 			},
-			{
+			...(/[\*<>$`\[\]_~:]|\\\(|\\\)/.test((appearNote.cw ?? "") + (appearNote.text ?? ""))
+			? [{
 				icon: "ph-clipboard-text ph-bold ph-lg",
 				text: i18n.ts.showSource,
 				action: showSource,
-			},
+			}]
+			: [{
+				icon: "ph-clipboard-text ph-bold ph-lg",
+				text: i18n.ts.copyContent,
+				action: copyContent,
+			}]),
 			{
 				icon: "ph-link-simple ph-bold ph-lg",
 				text: i18n.ts.copyLink,

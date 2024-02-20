@@ -256,8 +256,8 @@ watch(
 			{
 				root: unref(scrollableElement),
 				rootMargin: props.pagination.reversed
-					? "-100% 0 100% 0"
-					: "100% 0 -100% 0",
+					? "-100% 0px 100% 0px"
+					: "100% 0px -100% 0px",
 				threshold: 0.01,
 			}
 		);

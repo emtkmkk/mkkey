@@ -16,16 +16,16 @@
 a[href*="/tags/"] {
     color: var(--hashtag);
     background-color: rgba(113, 136, 217, 0.1);
-    padding: 5px 7px 5px 7px;
-    border-radius: 8px;
+    padding: 0.3125rem 0.4375rem 0.3125rem 0.4375rem;
+    border-radius: 0.5rem;
     border-style: dashed;
     border-color: var(--hashtag);
-    border-width: 1px;
+    border-width: 0.0625rem;
 }
 .wbrkwala>.tags>div>.tag>.a {
     background-color: transparent;
-    padding: 0px;
-    border-radius: 0px;
+    padding: 0;
+    border-radius: 0;
     border-style: none;
 }
 
@@ -54,24 +54,24 @@ span > i.ph-bold.ph-hand-fist::before{
 
 .hkzvhatu.canToggle {
     background: rgba(0,0,0,.08);
-    border-radius: 6px !important;
+    border-radius: 0.375rem !important;
 }
 
 .hkzvhatu {
-    height: 38px !important;
-    margin: 5px;
+    height: 2.375rem !important;
+    margin: 0.3125rem;
     max-width: 100%;
 }
 button.hkzvhatu > .mk-emoji.custom.normal {
     height: 1.6em;
     vertical-align: -.6em;
     max-width: 90%;
-    padding: 4px;
+    padding: 0.25rem;
 }
 .hkzvhatu>.count {
     font-size: 1.2em !important;
-    line-height: 32px !important;
-    margin: 0 0 0 8px !important;
+    line-height: 2rem !important;
+    margin: 0 0 0 0.5rem !important;
 
 }
 .tdflqwzn {
@@ -92,7 +92,7 @@ button.hkzvhatu > .mk-emoji.custom.normal {
 .omfetrab.w3,
 .omfetrab.w4,
 .omfetrab.w5{
-    width: calc(var(--EmojiPickerWidth) + (8px * 2)) !important;
+    width: calc(var(--EmojiPickerWidth) + (0.5rem * 2)) !important;
 }
 
 /* 1つあたりの絵文字のサイズの計算 */
@@ -154,14 +154,14 @@ html{
 }
 
 .gafaadew>.form>.preview {
-    padding: 4px 16px 16px 16px;
+    padding: 0.25rem 1rem 1rem 1rem;
 }
 
 :not(.note) > .reply-to {
 	display: none;
 }
 :not(.note) > .reply-to + .note-context {
-	margin-top: 14px;
+	margin-top: 10.25rem;
 }
 :not(.note) > .reply-to + .note-context .line::before {
 	content: unset !important;

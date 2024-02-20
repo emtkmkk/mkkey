@@ -56,22 +56,22 @@ function getInstanceIcon(instance): string {
 
 <style lang="scss" module>
 .root {
-	$bodyTitleHieght: 18px;
-	$bodyInfoHieght: 16px;
+	$bodyTitleHieght: 1.125rem;
+	$bodyInfoHieght: 1rem;
 
 	display: flex;
 	align-items: center;
-	padding: 16px;
+	padding: 1rem;
 	background: var(--panel);
-	border-radius: 8px;
+	border-radius: 0.5rem;
 
 	> :global(.icon) {
 		display: block;
 		width: ($bodyTitleHieght + $bodyInfoHieght);
 		height: ($bodyTitleHieght + $bodyInfoHieght);
 		object-fit: cover;
-		border-radius: 4px;
-		margin-right: 10px;
+		border-radius: 0.25rem;
+		margin-right: 0.625rem;
 	}
 
 	> :global(.body) {
@@ -79,7 +79,7 @@ function getInstanceIcon(instance): string {
 		overflow: hidden;
 		font-size: 0.9em;
 		color: var(--fg);
-		padding-right: 8px;
+		padding-right: 0.5rem;
 
 		> :global(.host) {
 			display: block;
@@ -103,7 +103,7 @@ function getInstanceIcon(instance): string {
 	}
 
 	> :global(.chart) {
-		height: 30px;
+		height: 1.875rem;
 	}
 
 	&:global(.yellow) {
@@ -118,7 +118,7 @@ function getInstanceIcon(instance): string {
 			transparent 66.67%,
 			transparent 100%
 		);
-		background-size: 16px 16px;
+		background-size: 1rem 1rem;
 	}
 
 	&:global(.red) {
@@ -133,7 +133,7 @@ function getInstanceIcon(instance): string {
 			transparent 66.67%,
 			transparent 100%
 		);
-		background-size: 16px 16px;
+		background-size: 1rem 1rem;
 	}
 
 	&:global(.purple) {
@@ -148,7 +148,7 @@ function getInstanceIcon(instance): string {
 			transparent 66.67%,
 			transparent 100%
 		);
-		background-size: 16px 16px;
+		background-size: 1rem 1rem;
 	}
 
 	&:global(.gray) {
@@ -163,7 +163,7 @@ function getInstanceIcon(instance): string {
 			transparent 66.67%,
 			transparent 100%
 		);
-		background-size: 16px 16px;
+		background-size: 1rem 1rem;
 	}
 }
 </style>

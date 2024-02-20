@@ -327,124 +327,124 @@ function syncSlide(index) {
 <style lang="scss" scoped>
 @keyframes iconShake1 {
 	0% {
-		transform: translate(2px, 0px) rotate(-1deg);
+		transform: translate(0.125rem, 0) rotate(-1deg);
 	}
 	10% {
-		transform: translate(2px, -3px) rotate(5deg);
+		transform: translate(0.125rem, -0.1875rem) rotate(5deg);
 	}
 	20% {
-		transform: translate(-1px, -3px) rotate(3deg);
+		transform: translate(-0.0625rem, -0.1875rem) rotate(3deg);
 	}
 	30% {
-		transform: translate(-2px, 0px) rotate(-1deg);
+		transform: translate(-0.125rem, 0) rotate(-1deg);
 	}
 	40% {
-		transform: translate(-2px, -1px) rotate(4deg);
+		transform: translate(-0.125rem, -0.0625rem) rotate(4deg);
 	}
 	50% {
-		transform: translate(-1px, -1px) rotate(1deg);
+		transform: translate(-0.0625rem, -0.0625rem) rotate(1deg);
 	}
 	60% {
-		transform: translate(-2px, 0px) rotate(-8deg);
+		transform: translate(-0.125rem, 0) rotate(-8deg);
 	}
 	70% {
-		transform: translate(1px, 2px) rotate(-2deg);
+		transform: translate(0.0625rem, 0.125rem) rotate(-2deg);
 	}
 	80% {
-		transform: translate(-1px, 2px) rotate(4deg);
+		transform: translate(-0.0625rem, 0.125rem) rotate(4deg);
 	}
 	90% {
-		transform: translate(-1px, 1px) rotate(11deg);
+		transform: translate(-0.0625rem, 0.0625rem) rotate(11deg);
 	}
 	100% {
-		transform: translate(-3px, -3px) rotate(-5deg);
+		transform: translate(-0.1875rem, -0.1875rem) rotate(-5deg);
 	}
 }
 
 @keyframes iconShake2 {
 	0% {
-		transform: translate(-1px, 5px) rotate(33deg);
+		transform: translate(-0.0625rem, 0.3125rem) rotate(33deg);
 	}
 	10% {
-		transform: translate(-2px, 7px) rotate(20deg);
+		transform: translate(-0.125rem, 0.4375rem) rotate(20deg);
 	}
 	20% {
-		transform: translate(8px, 5px) rotate(31deg);
+		transform: translate(0.5rem, 0.3125rem) rotate(31deg);
 	}
 	30% {
-		transform: translate(-2px, 5px) rotate(3deg);
+		transform: translate(-0.125rem, 0.3125rem) rotate(3deg);
 	}
 	40% {
-		transform: translate(4px, 6px) rotate(16deg);
+		transform: translate(0.25rem, 0.375rem) rotate(16deg);
 	}
 	50% {
-		transform: translate(8px, -3px) rotate(19deg);
+		transform: translate(0.5rem, -0.1875rem) rotate(19deg);
 	}
 	60% {
-		transform: translate(7px, -2px) rotate(0deg);
+		transform: translate(0.4375rem, -0.125rem) rotate(0deg);
 	}
 	70% {
-		transform: translate(4px, 4px) rotate(8deg);
+		transform: translate(0.25rem, 0.25rem) rotate(8deg);
 	}
 	80% {
-		transform: translate(7px, -3px) rotate(13deg);
+		transform: translate(0.4375rem, -0.1875rem) rotate(13deg);
 	}
 	90% {
-		transform: translate(6px, 7px) rotate(4deg);
+		transform: translate(0.375rem, 0.4375rem) rotate(4deg);
 	}
 	100% {
-		transform: translate(4px, -2px) rotate(-2deg);
+		transform: translate(0.25rem, -0.125rem) rotate(-2deg);
 	}
 }
 
 @keyframes iconShake3 {
 	0% {
-		transform: translate(12px, -2px) rotate(57deg);
+		transform: translate(0.75rem, -0.125rem) rotate(57deg);
 	}
 	10% {
-		transform: translate(10px, 2px) rotate(12deg);
+		transform: translate(0.625rem, 0.125rem) rotate(12deg);
 	}
 	20% {
-		transform: translate(10px, 4px) rotate(3deg);
+		transform: translate(0.625rem, 0.25rem) rotate(3deg);
 	}
 	30% {
-		transform: translate(17px, 11px) rotate(15deg);
+		transform: translate(1.0625rem, 0.6875rem) rotate(15deg);
 	}
 	40% {
-		transform: translate(12px, 20px) rotate(-11deg);
+		transform: translate(0.75rem, 1.25rem) rotate(-11deg);
 	}
 	50% {
-		transform: translate(5px, 12px) rotate(43deg);
+		transform: translate(0.3125rem, 0.75rem) rotate(43deg);
 	}
 	60% {
-		transform: translate(16px, 8px) rotate(-4deg);
+		transform: translate(1rem, 0.5rem) rotate(-4deg);
 	}
 	70% {
-		transform: translate(14px, 11px) rotate(22deg);
+		transform: translate(0.875rem, 0.6875rem) rotate(22deg);
 	}
 	80% {
-		transform: translate(9px, 19px) rotate(-3deg);
+		transform: translate(0.5625rem, 1.1875rem) rotate(-3deg);
 	}
 	90% {
-		transform: translate(0px, 12px) rotate(-3deg);
+		transform: translate(0, 0.75rem) rotate(-3deg);
 	}
 	100% {
-		transform: translate(17px, 3px) rotate(57deg);
+		transform: translate(1.0625rem, 0.1875rem) rotate(57deg);
 	}
 }
 
 @keyframes spinY {
 	0% {
-		transform: perspective(128px) rotateY(0deg);
+		transform: perspective(8rem) rotateY(0deg);
 	}
 	100% {
-		transform: perspective(128px) rotateY(360deg);
+		transform: perspective(8rem) rotateY(360deg);
 	}
 }
 
 .fwhjspax {
 	text-align: center;
-	border-radius: 10px;
+	border-radius: 0.625rem;
 	overflow: clip;
 	background-size: cover;
 	background-position: center center;
@@ -454,9 +454,9 @@ function syncSlide(index) {
 
 		> .icon {
 			display: block;
-			margin: 16px auto 0 auto;
-			height: 64px;
-			border-radius: 8px;
+			margin: 1rem auto 0 auto;
+			height: 4rem;
+			border-radius: 0.5rem;
 
 			&.noAnimation {
 				animation: none;
@@ -481,9 +481,9 @@ function syncSlide(index) {
 
 		> .name {
 			display: block;
-			padding: 16px;
+			padding: 1rem;
 			color: #e0def4;
-			text-shadow: 0 0 8px var(--shadow);
+			text-shadow: 0 0 0.5rem var(--shadow);
 			background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
 		}
 	}

@@ -77,7 +77,7 @@ defineProps<{
 	position: relative;
 
 	> .banner {
-		height: 84px;
+		height: 5.25rem;
 		background-color: rgba(0, 0, 0, 0.1);
 		background-size: cover;
 		background-position: center;
@@ -86,30 +86,30 @@ defineProps<{
 	> .avatar {
 		display: block;
 		position: absolute;
-		top: 62px;
-		left: 13px;
+		top: 3.875rem;
+		left: 0.8125rem;
 		z-index: 2;
-		width: 58px;
-		height: 58px;
-		border: solid 4px var(--panel);
+		width: 3.625rem;
+		height: 3.625rem;
+		border: solid 0.25rem var(--panel);
 	}
 
 	> .title {
 		display: block;
-		padding: 10px 0 10px 88px;
+		padding: 0.625rem 0 0.625rem 5.5rem;
 
 		> .name {
 			display: inline-block;
 			margin: 0;
 			font-weight: bold;
-			line-height: 16px;
+			line-height: 1rem;
 			word-break: break-all;
 		}
 
 		> .username {
 			display: block;
 			margin: 0;
-			line-height: 16px;
+			line-height: 1rem;
 			font-size: 0.8em;
 			color: var(--fg);
 			opacity: 0.7;
@@ -117,9 +117,9 @@ defineProps<{
 	}
 
 	> .description {
-		padding: 16px;
+		padding: 1rem;
 		font-size: 0.8em;
-		border-top: solid 0.5px var(--divider);
+		border-top: solid 0.0.3125rem var(--divider);
 
 		> .mfm {
 			display: -webkit-box;
@@ -130,8 +130,8 @@ defineProps<{
 	}
 
 	> .status {
-		padding: 10px 16px;
-		border-top: solid 0.5px var(--divider);
+		padding: 0.625rem 1rem;
+		border-top: solid 0.0.3125rem var(--divider);
 
 		> div {
 			display: inline-block;
@@ -152,8 +152,8 @@ defineProps<{
 
 	> .koudoku-button {
 		position: absolute;
-		top: 8px;
-		right: 8px;
+		top: 0.5rem;
+		right: 0.5rem;
 	}
 }
 </style>

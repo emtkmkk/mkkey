@@ -125,6 +125,6 @@ withDefaults(
 
 <style lang="scss" scoped>
 .xfhsjczc {
-	padding: 0 16px 0 16px;
+	padding: 0 1rem 0 1rem;
 }
 </style>

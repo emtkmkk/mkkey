@@ -785,11 +785,11 @@ onBeforeUnmount(() => {
 		display: flex;
 		z-index: 2;
 		width: 100%;
-		padding: 0 8px;
+		padding: 0 0.5rem;
 		box-sizing: border-box;
 		overflow: auto;
 		font-size: 0.9em;
-		box-shadow: 0 1px 0 var(--divider);
+		box-shadow: 0 0.0625rem 0 var(--divider);
 
 		&,
 		* {
@@ -799,14 +799,14 @@ onBeforeUnmount(() => {
 		> .path {
 			display: inline-block;
 			vertical-align: bottom;
-			line-height: 42px;
+			line-height: 2.625rem;
 			white-space: nowrap;
 
 			> * {
 				display: inline-block;
 				margin: 0;
-				padding: 0 8px;
-				line-height: 42px;
+				padding: 0 0.5rem;
+				line-height: 2.625rem;
 				cursor: pointer;
 
 				* {
@@ -841,7 +841,7 @@ onBeforeUnmount(() => {
 
 		> .menu {
 			margin-left: auto;
-			padding: 0 12px;
+			padding: 0 0.75rem;
 		}
 	}
 
@@ -868,7 +868,7 @@ onBeforeUnmount(() => {
 		}
 
 		&.uploading {
-			height: calc(100% - 38px - 100px);
+			height: calc(100% - 2.375rem - 6.25rem);
 		}
 
 		> .contents {
@@ -880,20 +880,20 @@ onBeforeUnmount(() => {
 				> .folder,
 				> .file {
 					flex-grow: 1;
-					width: 128px;
-					margin: 4px;
+					width: 8rem;
+					margin: 0.25rem;
 					box-sizing: border-box;
 				}
 
 				> .padding {
 					flex-grow: 1;
 					pointer-events: none;
-					width: 128px + 8px;
+					width: 8rem + 0.5rem;
 				}
 			}
 
 			> .empty {
-				padding: 16px;
+				padding: 1rem;
 				text-align: center;
 				pointer-events: none;
 				opacity: 0.5;
@@ -908,10 +908,10 @@ onBeforeUnmount(() => {
 	> .dropzone {
 		position: absolute;
 		left: 0;
-		top: 38px;
+		top: 2.375rem;
 		width: 100%;
-		height: calc(100% - 38px);
-		border: dashed 2px var(--focus);
+		height: calc(100% - 2.375rem);
+		border: dashed 0.125rem var(--focus);
 		pointer-events: none;
 	}
 

@@ -535,10 +535,10 @@ defineExpose({
 		border-radius: var(--radius);
 
 		> .header {
-			--height: 42px;
+			--height: 2.625rem;
 
 			&.mini {
-				--height: 38px;
+				--height: 2.375rem;
 			}
 
 			display: flex;
@@ -550,7 +550,7 @@ defineExpose({
 			background: var(--windowHeader);
 			-webkit-backdrop-filter: var(--blur, blur(15px));
 			backdrop-filter: var(--blur, blur(15px));
-			//border-bottom: solid 1px var(--divider);
+			//border-bottom: solid 0.0625rem var(--divider);
 			font-size: 95%;
 			font-weight: bold;
 
@@ -571,11 +571,11 @@ defineExpose({
 			}
 
 			> .left {
-				margin-right: 16px;
+				margin-right: 1rem;
 			}
 
 			> .right {
-				min-width: 16px;
+				min-width: 1rem;
 			}
 
 			> .title {
@@ -597,7 +597,7 @@ defineExpose({
 	}
 
 	> .handle {
-		$size: 8px;
+		$size: 0.5rem;
 
 		position: absolute;
 

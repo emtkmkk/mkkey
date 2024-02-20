@@ -180,16 +180,16 @@ onMounted(() => {
 	}
 
 	&.my .ckltabjg:first-child {
-		margin-top: 16px;
+		margin-top: 1rem;
 	}
 
 	.ckltabjg:not(:last-child) {
-		margin-bottom: 8px;
+		margin-bottom: 0.5rem;
 	}
 
-	@media (min-width: 500px) {
+	@media (min-width: 31.25rem) {
 		.ckltabjg:not(:last-child) {
-			margin-bottom: 16px;
+			margin-bottom: 1rem;
 		}
 	}
 }

@@ -32,7 +32,7 @@ const props = defineProps<{
 .ttasepnz {
 	display: block;
 	position: relative;
-	height: 200px;
+	height: 12.5rem;
 
 	&:hover {
 		text-decoration: none;
@@ -74,14 +74,14 @@ const props = defineProps<{
 			position: absolute;
 			top: 0;
 			width: 100%;
-			padding: 12px;
+			padding: 0.75rem;
 			box-sizing: border-box;
 			display: flex;
 
 			> .avatar {
 				margin-left: auto;
-				width: 32px;
-				height: 32px;
+				width: 2rem;
+				height: 2rem;
 			}
 		}
 
@@ -89,10 +89,10 @@ const props = defineProps<{
 			position: absolute;
 			bottom: 0;
 			width: 100%;
-			padding: 16px;
+			padding: 1rem;
 			box-sizing: border-box;
 			color: #fff;
-			text-shadow: 0 0 8px var(--shadow);
+			text-shadow: 0 0 0.5rem var(--shadow);
 			background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
 
 			&:before {

@@ -42,7 +42,7 @@
 							class="button"
 							inline
 							primary
-							style="margin-right: 12px"
+							style="margin-right: 0.75rem"
 							@click="save(ad)"
 							><i class="ph-floppy-disk-back ph-bold ph-lg"></i>
 							{{ i18n.ts.save }}</MkButton
@@ -148,7 +148,7 @@ definePageMetadata({
 <style lang="scss" scoped>
 .uqshojas {
 	> .ad {
-		padding: 32px;
+		padding: 2rem;
 
 		&:not(:last-child) {
 			margin-bottom: var(--margin);

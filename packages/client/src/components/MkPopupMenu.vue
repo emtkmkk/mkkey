@@ -47,7 +47,7 @@ let modal = $ref<InstanceType<typeof MkModal>>();
 <style lang="scss" scoped>
 .sfhdhdhq {
 	&.drawer {
-		border-radius: 24px;
+		border-radius: 1.5rem;
 		border-bottom-right-radius: 0;
 		border-bottom-left-radius: 0;
 	}

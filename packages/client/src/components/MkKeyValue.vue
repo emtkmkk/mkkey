@@ -66,7 +66,7 @@ const copy_ = () => {
 		> .key {
 			width: 30%;
 			font-size: 1em;
-			padding: 0 8px 0 0;
+			padding: 0 0.5rem 0 0;
 		}
 
 		> .value {

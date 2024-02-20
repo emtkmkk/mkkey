@@ -63,35 +63,35 @@ const XUserList = defineAsyncComponent(
 
 <style lang="scss" scoped>
 .dlrsnxqu {
-	font-size: 15px;
+	font-size: 0.9375rem;
 	background: var(--panel);
 
 	> .item {
-		--height: 24px;
-		--nameMargin: 10px;
+		--height: 1.5rem;
+		--nameMargin: 0.625rem;
 		font-size: 0.85em;
 
 		&.verySmall {
-			--nameMargin: 7px;
-			--height: 16px;
+			--nameMargin: 0.4375rem;
+			--height: 1rem;
 			font-size: 0.75em;
 		}
 
 		&.small {
-			--nameMargin: 8px;
-			--height: 20px;
+			--nameMargin: 0.5rem;
+			--height: 1.25rem;
 			font-size: 0.8em;
 		}
 
 		&.large {
-			--nameMargin: 12px;
-			--height: 26px;
+			--nameMargin: 0.75rem;
+			--height: 1.625rem;
 			font-size: 0.875em;
 		}
 
 		&.veryLarge {
-			--nameMargin: 14px;
-			--height: 30px;
+			--nameMargin: 0.875rem;
+			--height: 1.875rem;
 			font-size: 0.9em;
 		}
 

@@ -1,6 +1,6 @@
 <template>
 	<div class="_panel" :class="$style.root">
-		<MkSelect v-model="src" style="margin: 0 0 12px 0" small>
+		<MkSelect v-model="src" style="margin: 0 0 0.75rem 0" small>
 			<option value="notes">Posts</option>
 			<option value="active-users">Active users</option>
 			<option value="ap-requests-inbox-received">
@@ -26,6 +26,6 @@ let src = $ref("notes");
 
 <style lang="scss" module>
 .root {
-	padding: 20px;
+	padding: 1.25rem;
 }
 </style>

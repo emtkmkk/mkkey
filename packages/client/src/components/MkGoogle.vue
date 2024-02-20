@@ -26,30 +26,30 @@ const search = () => {
 <style lang="scss" scoped>
 .mk-google {
 	display: flex;
-	margin: 8px 0;
+	margin: 0.5rem 0;
 
 	> input {
 		flex-shrink: 1;
-		padding: 10px;
+		padding: 0.625rem;
 		width: 100%;
-		height: 40px;
-		font-size: 16px;
-		border: solid 1px var(--divider);
-		border-radius: 4px 0 0 4px;
+		height: 2.5rem;
+		font-size: 1rem;
+		border: solid 0.0625rem var(--divider);
+		border-radius: 0.25rem 0 0 0.25rem;
 		-webkit-appearance: none;
-		-webkit-border-radius: 4px 0 0 4px;
+		-webkit-border-radius: 0.25rem 0 0 0.25rem;
 	}
 
 	> button {
 		flex-shrink: 0;
 		margin: 0;
-		padding: 0 16px;
-		border: solid 1px var(--divider);
+		padding: 0 1rem;
+		border: solid 0.0625rem var(--divider);
 		border-left: none;
-		border-radius: 0 4px 4px 0;
+		border-radius: 0 0.25rem 0.25rem 0;
 
 		&:active {
-			box-shadow: 0 2px 4px rgba(#000, 0.15) inset;
+			box-shadow: 0 0.125rem 0.25rem rgba(#000, 0.15) inset;
 		}
 	}
 }

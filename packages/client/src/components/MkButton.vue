@@ -109,16 +109,16 @@ function onMousedown(evt: MouseEvent): void {
 	position: relative;
 	z-index: 1; // 他コンポーネントのbox-shadowに隠されないようにするため
 	display: block;
-	min-width: 100px;
+	min-width: 6.25rem;
 	width: max-content;
-	padding: 8px 16px;
+	padding: 0.5rem 1rem;
 	text-align: center;
 	font-weight: normal;
 	font-size: 1em;
 	box-shadow: none;
 	text-decoration: none;
 	background: var(--buttonBg);
-	border-radius: 5px;
+	border-radius: 0.3125rem;
 	overflow: clip;
 	box-sizing: border-box;
 	transition: background 0.1s ease;
@@ -201,7 +201,7 @@ function onMousedown(evt: MouseEvent): void {
 	&.inline {
 		display: inline-block;
 		width: auto;
-		min-width: 100px;
+		min-width: 6.25rem;
 	}
 
 	> .ripples {
@@ -211,13 +211,13 @@ function onMousedown(evt: MouseEvent): void {
 		left: 0;
 		width: 100%;
 		height: 100%;
-		border-radius: 6px;
+		border-radius: 0.375rem;
 		overflow: hidden;
 
 		::v-deep(div) {
 			position: absolute;
-			width: 2px;
-			height: 2px;
+			width: 0.125rem;
+			height: 0.125rem;
 			border-radius: 100%;
 			background: rgba(0, 0, 0, 0.1);
 			opacity: 1;

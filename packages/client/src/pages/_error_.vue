@@ -86,22 +86,22 @@ definePageMetadata({
 
 <style lang="scss" scoped>
 .mjndxjch {
-	padding: 32px;
+	padding: 2rem;
 	text-align: center;
 
 	> p {
-		margin: 0 0 12px 0;
+		margin: 0 0 0.75rem 0;
 	}
 
 	> .button {
-		margin: 8px auto;
+		margin: 0.5rem auto;
 	}
 
 	> img {
 		vertical-align: bottom;
-		height: 128px;
-		margin-bottom: 24px;
-		border-radius: 16px;
+		height: 8rem;
+		margin-bottom: 1.5rem;
+		border-radius: 1rem;
 	}
 
 	> .error {

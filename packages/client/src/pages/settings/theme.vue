@@ -277,11 +277,11 @@ definePageMetadata({
 
 <style lang="scss" scoped>
 .rfqxtzch {
-	border-radius: 6px;
+	border-radius: 0.375rem;
 
 	> .toggle {
 		position: relative;
-		padding: 26px 0;
+		padding: 1.625rem 0;
 		text-align: center;
 
 		&.disabled {
@@ -296,7 +296,7 @@ definePageMetadata({
 		> .toggleWrapper {
 			display: inline-block;
 			text-align: left;
-			padding: 0 100px;
+			padding: 0 6.25rem;
 			vertical-align: bottom;
 
 			input {
@@ -313,27 +313,27 @@ definePageMetadata({
 			cursor: pointer;
 			display: inline-block;
 			position: relative;
-			width: 90px;
-			height: 50px;
+			width: 5.625rem;
+			height: 3.125rem;
 			background-color: #83d8ff;
-			border-radius: 90px - 6;
+			border-radius: 5.625rem - 6;
 			transition: background-color 200ms
 				cubic-bezier(0.445, 0.05, 0.55, 0.95) !important;
 
 			> .before,
 			> .after {
 				position: absolute;
-				top: 15px;
+				top: 0.9375rem;
 				transition: color 1s ease;
 			}
 
 			> .before {
-				left: -70px;
+				left: -4.375rem;
 				color: var(--accent);
 			}
 
 			> .after {
-				right: -68px;
+				right: -4.25rem;
 				color: var(--fg);
 			}
 		}
@@ -342,13 +342,13 @@ definePageMetadata({
 			display: inline-block;
 			position: relative;
 			z-index: 1;
-			top: 3px;
-			left: 3px;
-			width: 50px - 6;
-			height: 50px - 6;
+			top: 0.1875rem;
+			left: 0.1875rem;
+			width: 3.125rem - 6;
+			height: 3.125rem - 6;
 			background-color: #ffcf96;
-			border-radius: 50px;
-			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+			border-radius: 3.125rem;
+			box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.3);
 			transition: all 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
 			transform: rotate(-45deg);
 
@@ -361,24 +361,24 @@ definePageMetadata({
 			}
 
 			.crater--1 {
-				top: 18px;
-				left: 10px;
-				width: 4px;
-				height: 4px;
+				top: 1.125rem;
+				left: 0.625rem;
+				width: 0.25rem;
+				height: 0.25rem;
 			}
 
 			.crater--2 {
-				top: 28px;
-				left: 22px;
-				width: 6px;
-				height: 6px;
+				top: 1.75rem;
+				left: 1.375rem;
+				width: 0.375rem;
+				height: 0.375rem;
 			}
 
 			.crater--3 {
-				top: 10px;
-				left: 25px;
-				width: 8px;
-				height: 8px;
+				top: 0.625rem;
+				left: 1.5625rem;
+				width: 0.5rem;
+				height: 0.5rem;
 			}
 		}
 
@@ -390,27 +390,27 @@ definePageMetadata({
 		}
 
 		.star--1 {
-			top: 10px;
-			left: 35px;
+			top: 0.625rem;
+			left: 2.1875rem;
 			z-index: 0;
-			width: 30px;
-			height: 3px;
+			width: 1.875rem;
+			height: 0.1875rem;
 		}
 
 		.star--2 {
-			top: 18px;
-			left: 28px;
+			top: 1.125rem;
+			left: 1.75rem;
 			z-index: 1;
-			width: 30px;
-			height: 3px;
+			width: 1.875rem;
+			height: 0.1875rem;
 		}
 
 		.star--3 {
-			top: 27px;
-			left: 40px;
+			top: 1.6875rem;
+			left: 2.5rem;
 			z-index: 0;
-			width: 30px;
-			height: 3px;
+			width: 1.875rem;
+			height: 0.1875rem;
 		}
 
 		.star--4,
@@ -421,30 +421,30 @@ definePageMetadata({
 		}
 
 		.star--4 {
-			top: 16px;
-			left: 11px;
+			top: 1rem;
+			left: 0.6875rem;
 			z-index: 0;
-			width: 2px;
-			height: 2px;
-			transform: translate3d(3px, 0, 0);
+			width: 0.125rem;
+			height: 0.125rem;
+			transform: translate3d(0.1875rem, 0, 0);
 		}
 
 		.star--5 {
-			top: 32px;
-			left: 17px;
+			top: 2rem;
+			left: 1.0625rem;
 			z-index: 0;
-			width: 3px;
-			height: 3px;
-			transform: translate3d(3px, 0, 0);
+			width: 0.1875rem;
+			height: 0.1875rem;
+			transform: translate3d(0.1875rem, 0, 0);
 		}
 
 		.star--6 {
-			top: 36px;
-			left: 28px;
+			top: 2.25rem;
+			left: 1.75rem;
 			z-index: 0;
-			width: 2px;
-			height: 2px;
-			transform: translate3d(3px, 0, 0);
+			width: 0.125rem;
+			height: 0.125rem;
+			transform: translate3d(0.1875rem, 0, 0);
 		}
 
 		input:checked {
@@ -461,7 +461,7 @@ definePageMetadata({
 
 				.toggle__handler {
 					background-color: #ffe5b5;
-					transform: translate3d(40px, 0, 0) rotate(0);
+					transform: translate3d(2.5rem, 0, 0) rotate(0);
 
 					.crater {
 						opacity: 1;
@@ -469,20 +469,20 @@ definePageMetadata({
 				}
 
 				.star--1 {
-					width: 2px;
-					height: 2px;
+					width: 0.125rem;
+					height: 0.125rem;
 				}
 
 				.star--2 {
-					width: 4px;
-					height: 4px;
-					transform: translate3d(-5px, 0, 0);
+					width: 0.25rem;
+					height: 0.25rem;
+					transform: translate3d(-0.3125rem, 0, 0);
 				}
 
 				.star--3 {
-					width: 2px;
-					height: 2px;
-					transform: translate3d(-7px, 0, 0);
+					width: 0.125rem;
+					height: 0.125rem;
+					transform: translate3d(-0.4375rem, 0, 0);
 				}
 
 				.star--4,
@@ -510,8 +510,8 @@ definePageMetadata({
 		}
 	}
 	> .sync {
-		padding: 14px 16px;
-		border-top: solid 0.5px var(--divider);
+		padding: 0.875rem 1rem;
+		border-top: solid 0.0.3125rem var(--divider);
 	}
 }
 
@@ -523,7 +523,7 @@ definePageMetadata({
 
 		> .select {
 			flex: 1;
-			min-width: 280px;
+			min-width: 17.5rem;
 		}
 	}
 }

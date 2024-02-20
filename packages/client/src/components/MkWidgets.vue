@@ -180,11 +180,11 @@ function onContextmenu(widget: Widget, ev: MouseEvent) {
 <style lang="scss" scoped>
 .vjoppmmu {
 	> header {
-		margin: 16px 0;
+		margin: 1rem 0;
 
 		> * {
 			width: 100%;
-			padding: 4px;
+			padding: 0.25rem;
 		}
 	}
 
@@ -206,20 +206,20 @@ function onContextmenu(widget: Widget, ev: MouseEvent) {
 		> .remove {
 			position: absolute;
 			z-index: 10000;
-			top: 8px;
-			width: 32px;
-			height: 32px;
+			top: 0.5rem;
+			width: 2rem;
+			height: 2rem;
 			color: #fff;
 			background: rgba(#000, 0.7);
-			border-radius: 4px;
+			border-radius: 0.25rem;
 		}
 
 		> .config {
-			right: 8px + 8px + 32px;
+			right: 0.5rem + 0.5rem + 2rem;
 		}
 
 		> .remove {
-			right: 8px;
+			right: 0.5rem;
 		}
 
 		> .handle {

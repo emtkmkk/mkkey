@@ -355,9 +355,9 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .rrevdjwt {
-	padding: 8px 0;
+	padding: 0.5rem 0;
 	box-sizing: border-box;
-	min-width: 200px;
+	min-width: 12.5rem;
 	overflow: auto;
 	overscroll-behavior: contain;
 
@@ -370,12 +370,12 @@ onBeforeUnmount(() => {
 	> .item {
 		display: block;
 		position: relative;
-		padding: 6px 16px;
+		padding: 0.375rem 1rem;
 		width: 100%;
 		box-sizing: border-box;
 		white-space: nowrap;
 		font-size: 0.9em;
-		line-height: 20px;
+		line-height: 1.25rem;
 		text-align: left;
 		outline: none;
 
@@ -387,10 +387,10 @@ onBeforeUnmount(() => {
 			left: 0;
 			right: 0;
 			margin: auto;
-			width: calc(100% - 16px);
+			width: calc(100% - 1rem);
 			margin-bottom: 0.2rem;
 			height: 100%;
-			border-radius: 6px;
+			border-radius: 0.375rem;
 		}
 
 		> * {
@@ -444,13 +444,13 @@ onBeforeUnmount(() => {
 		}
 
 		&:not(:active):focus-visible {
-			box-shadow: 0 0 0 2px var(--focus) inset;
+			box-shadow: 0 0 0 0.125rem var(--focus) inset;
 		}
 
 		&.label {
 			pointer-events: none;
 			font-size: 0.7em;
-			padding-bottom: 4px;
+			padding-bottom: 0.25rem;
 
 			> span {
 				opacity: 0.7;
@@ -487,55 +487,55 @@ onBeforeUnmount(() => {
 		}
 
 		> i {
-			margin-right: 5px;
-			width: 20px;
+			margin-right: 0.3125rem;
+			width: 1.25rem;
 		}
 
 		> .avatar {
-			margin-right: 5px;
-			width: 20px;
-			height: 20px;
+			margin-right: 0.3125rem;
+			width: 1.25rem;
+			height: 1.25rem;
 		}
 
 		> .indicator {
 			position: absolute;
-			top: 5px;
-			left: 13px;
+			top: 0.3125rem;
+			left: 0.8125rem;
 			color: var(--indicator);
-			font-size: 12px;
+			font-size: 0.75rem;
 			animation: blink 1s infinite;
 		}
 	}
 
 	> .divider {
-		margin: 8px 0;
-		border-top: solid 0.5px var(--divider);
+		margin: 0.5rem 0;
+		border-top: solid 0.0.3125rem var(--divider);
 	}
 
 	&.asDrawer {
-		padding: 12px 0 calc(env(safe-area-inset-bottom, 0px) + 12px) 0;
+		padding: 0.75rem 0 calc(env(safe-area-inset-bottom, 0) + 0.75rem) 0;
 		width: 100%;
-		border-radius: 24px;
+		border-radius: 1.5rem;
 		border-bottom-right-radius: 0;
 		border-bottom-left-radius: 0;
 
 		> .item {
 			font-size: 1em;
-			padding: 12px 24px;
+			padding: 0.75rem 1.5rem;
 
 			&:before {
-				width: calc(100% - 24px);
-				border-radius: 12px;
+				width: calc(100% - 1.5rem);
+				border-radius: 0.75rem;
 			}
 
 			> i {
-				margin-right: 14px;
-				width: 24px;
+				margin-right: 0.875rem;
+				width: 1.5rem;
 			}
 		}
 
 		> .divider {
-			margin: 12px 0;
+			margin: 0.75rem 0;
 		}
 	}
 }

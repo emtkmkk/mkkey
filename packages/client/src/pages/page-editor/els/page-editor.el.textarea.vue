@@ -37,13 +37,13 @@ withDefaults(
 		appearance: none;
 		width: 100%;
 		min-width: 100%;
-		min-height: 150px;
+		min-height: 9.375rem;
 		border: none;
 		box-shadow: none;
-		padding: 16px;
+		padding: 1rem;
 		background: transparent;
 		color: var(--fg);
-		font-size: 14px;
+		font-size: 0.875rem;
 		box-sizing: border-box;
 	}
 }

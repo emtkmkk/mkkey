@@ -167,17 +167,17 @@ definePageMetadata(
 				> .user {
 					display: flex;
 					align-items: center;
-					padding: 16px;
-					margin: 10px 0 auto;
+					padding: 1rem;
+					margin: 0.625rem 0 auto;
 
 					> .avatar {
-						width: 50px;
-						height: 50px;
+						width: 3.125rem;
+						height: 3.125rem;
 					}
 
 					> .body {
 						flex: 1;
-						padding: 8px;
+						padding: 0.5rem;
 
 						> .name {
 							display: block;

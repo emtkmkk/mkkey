@@ -253,12 +253,12 @@ function addInstance() {
 <style lang="scss" scoped>
 .shaynizk {
 	> .form {
-		padding: 32px;
+		padding: 2rem;
 	}
 
 	> .actions {
-		padding: 24px 32px;
-		border-top: solid 0.5px var(--divider);
+		padding: 1.5rem 2rem;
+		border-top: solid 0.0.3125rem var(--divider);
 	}
 }
 </style>

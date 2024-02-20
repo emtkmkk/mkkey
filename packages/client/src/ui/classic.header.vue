@@ -188,9 +188,9 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .azykntjl {
-	$height: 60px;
-	$avatar-size: 32px;
-	$avatar-margin: 8px;
+	$height: 3.75rem;
+	$avatar-size: 2rem;
+	$avatar-margin: 0.5rem;
 
 	position: sticky;
 	top: 0;
@@ -200,7 +200,7 @@ export default defineComponent({
 	background-color: var(--bg);
 
 	> .body {
-		max-width: 1380px;
+		max-width: 86.25rem;
 		margin: 0 auto;
 		display: flex;
 
@@ -210,7 +210,7 @@ export default defineComponent({
 				position: relative;
 				font-size: 0.9em;
 				display: inline-block;
-				padding: 0 12px;
+				padding: 0 0.75rem;
 				line-height: $height;
 
 				> i,
@@ -219,7 +219,7 @@ export default defineComponent({
 				}
 
 				> i {
-					left: 10px;
+					left: 0.625rem;
 				}
 
 				> .avatar {
@@ -233,7 +233,7 @@ export default defineComponent({
 					top: 0;
 					left: 0;
 					color: var(--navIndicator);
-					font-size: 8px;
+					font-size: 0.5rem;
 					animation: blink 1s infinite;
 				}
 
@@ -249,17 +249,17 @@ export default defineComponent({
 
 			> .divider {
 				display: inline-block;
-				height: 16px;
-				margin: 0 10px;
-				border-right: solid 0.5px var(--divider);
+				height: 1rem;
+				margin: 0 0.625rem;
+				border-right: solid 0.0.3125rem var(--divider);
 			}
 
 			> .post {
 				display: inline-block;
 
 				> .button {
-					width: 40px;
-					height: 40px;
+					width: 2.5rem;
+					height: 2.5rem;
 					padding: 0;
 					min-width: 0;
 				}
@@ -269,10 +269,10 @@ export default defineComponent({
 				display: inline-flex;
 				align-items: center;
 				vertical-align: top;
-				margin-right: 8px;
+				margin-right: 0.5rem;
 
 				> .acct {
-					margin-left: 8px;
+					margin-left: 0.5rem;
 				}
 			}
 		}

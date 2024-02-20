@@ -364,9 +364,9 @@ definePageMetadata({
 			> .color {
 				display: inline-block;
 				position: relative;
-				width: 64px;
-				height: 64px;
-				border-radius: 8px;
+				width: 4rem;
+				height: 4rem;
+				border-radius: 0.5rem;
 
 				> .preview {
 					position: absolute;
@@ -375,10 +375,10 @@ definePageMetadata({
 					right: 0;
 					bottom: 0;
 					margin: auto;
-					width: 42px;
-					height: 42px;
-					border-radius: 4px;
-					box-shadow: 0 2px 4px rgb(0 0 0 / 30%);
+					width: 2.625rem;
+					height: 2.625rem;
+					border-radius: 0.25rem;
+					box-shadow: 0 0.125rem 0.25rem rgb(0 0 0 / 30%);
 					transition: transform 0.15s ease;
 				}
 
@@ -389,7 +389,7 @@ definePageMetadata({
 				}
 
 				&.active {
-					box-shadow: 0 0 0 2px var(--divider) inset;
+					box-shadow: 0 0 0 0.125rem var(--divider) inset;
 				}
 
 				&.rounded {
@@ -401,7 +401,7 @@ definePageMetadata({
 				}
 
 				&.char {
-					line-height: 42px;
+					line-height: 2.625rem;
 				}
 			}
 		}

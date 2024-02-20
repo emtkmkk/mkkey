@@ -42,12 +42,12 @@ function toggle(): void {
 	display: inline-block;
 	text-align: left;
 	cursor: pointer;
-	padding: 8px 10px;
-	min-width: 60px;
+	padding: 0.5rem 0.625rem;
+	min-width: 3.75rem;
 	background-color: var(--panel);
 	background-clip: padding-box !important;
-	border: solid 1px var(--panel);
-	border-radius: 6px;
+	border: solid 0.0625rem var(--panel);
+	border-radius: 0.375rem;
 	transition: all 0.2s;
 
 	> * {
@@ -101,10 +101,10 @@ function toggle(): void {
 
 	> .button {
 		position: absolute;
-		width: 14px;
-		height: 14px;
+		width: 0.875rem;
+		height: 0.875rem;
 		background: none;
-		border: solid 2px var(--inputBorder);
+		border: solid 0.125rem var(--inputBorder);
 		border-radius: 100%;
 		transition: inherit;
 
@@ -112,10 +112,10 @@ function toggle(): void {
 			content: "";
 			display: block;
 			position: absolute;
-			top: 3px;
-			right: 3px;
-			bottom: 3px;
-			left: 3px;
+			top: 0.1875rem;
+			right: 0.1875rem;
+			bottom: 0.1875rem;
+			left: 0.1875rem;
 			border-radius: 100%;
 			opacity: 0;
 			transform: scale(0);
@@ -124,9 +124,9 @@ function toggle(): void {
 	}
 
 	> .label {
-		margin-left: 28px;
+		margin-left: 1.75rem;
 		display: block;
-		line-height: 20px;
+		line-height: 1.25rem;
 		cursor: pointer;
 	}
 }

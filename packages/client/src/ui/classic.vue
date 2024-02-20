@@ -213,7 +213,7 @@ onMounted(() => {
 .tray-enter-from,
 .tray-leave-active {
 	opacity: 0;
-	transform: translateX(240px);
+	transform: translateX(15rem);
 }
 
 .tray-back-enter-active,
@@ -230,7 +230,7 @@ onMounted(() => {
 	display: flex;
 	justify-content: center;
 	$ui-font-size: 1em;
-	$widgets-hide-threshold: 1200px;
+	$widgets-hide-threshold: 75rem;
 
 	// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
 	min-height: calc(var(--vh, 1vh) * 100);
@@ -255,7 +255,7 @@ onMounted(() => {
 		display: flex;
 		justify-content: center;
 		max-width: 100%;
-		//margin: 32px 0;
+		//margin: 2rem 0;
 
 		&.fullView {
 			margin: 0;
@@ -277,8 +277,8 @@ onMounted(() => {
 		}
 
 		> :deep(.sidebar) {
-			margin-left: -200px;
-			padding-left: 200px;
+			margin-left: -12.5rem;
+			padding-left: 12.5rem;
 			box-sizing: content-box;
 			.banner {
 				pointer-events: none;
@@ -328,34 +328,34 @@ onMounted(() => {
 
 		> .main {
 			min-width: 0;
-			width: 750px;
-			margin: 0 16px 0 0;
+			width: 46.875rem;
+			margin: 0 1rem 0 0;
 			background: var(--panel);
-			border-left: solid 1px var(--divider);
-			border-right: solid 1px var(--divider);
+			border-left: solid 0.0625rem var(--divider);
+			border-right: solid 0.0625rem var(--divider);
 			border-radius: 0;
 			overflow: clip;
-			--margin: 12px;
+			--margin: 0.75rem;
 			background: var(--bg);
 		}
 
 		> .widgets {
 			//--panelBorder: none;
-			width: 300px;
+			width: 18.75rem;
 
 			@media (max-width: $widgets-hide-threshold) {
 				display: none;
 			}
 
 			&.left {
-				margin-right: 16px;
+				margin-right: 1rem;
 			}
 		}
 
 		&.withGlobalHeader {
 			> .main {
 				margin-top: 0;
-				border: solid 1px var(--divider);
+				border: solid 0.0625rem var(--divider);
 				border-radius: var(--radius);
 				--stickyTop: var(--globalHeaderHeight);
 			}
@@ -366,11 +366,11 @@ onMounted(() => {
 			}
 		}
 
-		@media (max-width: 850px) {
+		@media (max-width: 53.125rem) {
 			margin: 0;
 
 			> :deep(.sidebar) {
-				border-right: solid 0.5px var(--divider);
+				border-right: solid 0.0.3125rem var(--divider);
 			}
 
 			> .main {
@@ -403,8 +403,8 @@ onMounted(() => {
 		position: fixed;
 		bottom: 0;
 		right: 0;
-		width: 300px;
-		height: 600px;
+		width: 18.75rem;
+		height: 37.5rem;
 		border: none;
 		pointer-events: none;
 	}

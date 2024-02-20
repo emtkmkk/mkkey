@@ -264,8 +264,8 @@ definePageMetadata({
 
 .itemIcon {
 	position: relative;
-	width: 32px;
-	margin-right: 8px;
+	width: 2rem;
+	margin-right: 0.5rem;
 }
 
 .itemText {
@@ -276,18 +276,18 @@ definePageMetadata({
 .itemRemove {
 	position: absolute;
 	z-index: 10000;
-	width: 32px;
-	height: 32px;
+	width: 2rem;
+	height: 2rem;
 	color: #ff2a2a;
-	right: 8px;
+	right: 0.5rem;
 	opacity: 0.8;
 }
 
 .itemHandle {
 	cursor: move;
-	width: 32px;
-	height: 32px;
-	margin: 0 8px;
+	width: 2rem;
+	height: 2rem;
+	margin: 0 0.5rem;
 	opacity: 0.5;
 }
 </style>

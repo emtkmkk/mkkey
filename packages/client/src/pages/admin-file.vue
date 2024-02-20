@@ -274,7 +274,7 @@ function syncSlide(index) {
 		display: block;
 
 		> .thumbnail {
-			height: 300px;
+			height: 18.75rem;
 			max-width: 100%;
 		}
 	}

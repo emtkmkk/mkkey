@@ -205,7 +205,7 @@ export default defineComponent({
 		text-align: center;
 		min-height: 100vh;
 		box-sizing: border-box;
-		padding: 16px;
+		padding: 1rem;
 
 		> .bg {
 			position: absolute;
@@ -226,42 +226,42 @@ export default defineComponent({
 
 		> .emojis {
 			position: absolute;
-			bottom: 32px;
-			left: 35px;
+			bottom: 2rem;
+			left: 2.1875rem;
 
 			> * {
-				margin-right: 8px;
+				margin-right: 0.5rem;
 			}
 
-			@media (max-width: 1200px) {
+			@media (max-width: 75rem) {
 				display: none;
 			}
 		}
 
 		> .main {
 			position: relative;
-			width: min(460px, 100%);
+			width: min(28.75rem, 100%);
 			margin: auto;
 
 			> .misskey {
-				width: 150px;
-				margin-bottom: 16px;
+				width: 9.375rem;
+				margin-bottom: 1rem;
 
-				@media (max-width: 450px) {
-					width: 130px;
+				@media (max-width: 28.125rem) {
+					width: 8.125rem;
 				}
 			}
 
 			> .form {
 				position: relative;
-				box-shadow: 0 12px 32px rgb(0 0 0 / 25%);
+				box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 25%);
 
 				> .bg {
 					position: absolute;
 					top: 0;
 					left: 0;
 					width: 100%;
-					height: 128px;
+					height: 8rem;
 					background-position: center;
 					background-size: cover;
 					opacity: 0.75;
@@ -271,7 +271,7 @@ export default defineComponent({
 						bottom: 0;
 						left: 0;
 						width: 100%;
-						height: 128px;
+						height: 8rem;
 						background: linear-gradient(
 							0deg,
 							var(--panel),
@@ -287,36 +287,36 @@ export default defineComponent({
 					> h1 {
 						display: block;
 						margin: 0;
-						padding: 32px 32px 24px 32px;
+						padding: 2rem 2rem 1.5rem 2rem;
 
 						> .logo {
 							vertical-align: bottom;
-							max-height: 120px;
+							max-height: 7.5rem;
 						}
 					}
 
 					> .about {
-						padding: 0 32px;
+						padding: 0 2rem;
 					}
 
 					> .action {
-						padding: 32px;
+						padding: 2rem;
 
 						> * {
-							line-height: 28px;
+							line-height: 1.75rem;
 						}
 					}
 
 					> .status {
-						border-top: solid 0.5px var(--divider);
-						padding: 32px;
+						border-top: solid 0.0.3125rem var(--divider);
+						padding: 2rem;
 						font-size: 90%;
 
 						> div {
 							> span:not(:last-child) {
 								padding-right: 1em;
 								margin-right: 1em;
-								border-right: solid 0.5px var(--divider);
+								border-right: solid 0.0.3125rem var(--divider);
 							}
 						}
 
@@ -333,11 +333,11 @@ export default defineComponent({
 
 					> .menu {
 						position: absolute;
-						top: 16px;
-						right: 16px;
-						width: 32px;
-						height: 32px;
-						border-radius: 8px;
+						top: 1rem;
+						right: 1rem;
+						width: 2rem;
+						height: 2rem;
+						border-radius: 0.5rem;
 					}
 				}
 			}
@@ -345,9 +345,9 @@ export default defineComponent({
 			> .nav {
 				position: relative;
 				z-index: 2;
-				margin-top: 20px;
+				margin-top: 1.25rem;
 				color: #fff;
-				text-shadow: 0 0 8px black;
+				text-shadow: 0 0 0.5rem black;
 				font-size: 0.9em;
 
 				> *:not(:last-child) {

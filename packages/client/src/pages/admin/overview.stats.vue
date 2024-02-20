@@ -132,24 +132,24 @@ onMounted(async () => {
 <style lang="scss" module>
 .root {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-	grid-gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(11.875rem, 1fr));
+	grid-gap: 0.75rem;
 
 	&:global {
 		> .item {
 			display: flex;
 			box-sizing: border-box;
-			padding: 12px;
+			padding: 0.75rem;
 
 			> .icon {
 				display: grid;
 				place-items: center;
 				height: 100%;
 				aspect-ratio: 1;
-				margin-right: 12px;
+				margin-right: 0.75rem;
 				background: var(--accentedBg);
 				color: var(--accent);
-				border-radius: 10px;
+				border-radius: 0.625rem;
 			}
 
 			&.users {
@@ -188,7 +188,7 @@ onMounted(async () => {
 			}
 
 			> .body {
-				padding: 2px 0;
+				padding: 0.125rem 0;
 
 				> .value {
 					font-size: 1.2em;

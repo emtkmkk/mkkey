@@ -157,18 +157,18 @@ definePageMetadata({
 <style lang="scss" scoped>
 .lcjjdxlm {
 	display: flex;
-	padding: 16px;
+	padding: 1rem;
 	width: 100%;
 	text-align: unset;
 
 	> .avatar {
 		display: block;
 		flex-shrink: 0;
-		margin: 0 12px 0 0;
+		margin: 0 0.75rem 0 0;
 
 		> .avatar {
-			width: 50px;
-			height: 50px;
+			width: 3.125rem;
+			height: 3.125rem;
 		}
 	}
 
@@ -176,7 +176,7 @@ definePageMetadata({
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		width: calc(100% - 62px);
+		width: calc(100% - 3.875rem);
 		position: relative;
 
 		> .name {

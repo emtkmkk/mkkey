@@ -11,7 +11,7 @@
 					<I18n
 						:src="i18n.ts._channel.usersCount"
 						tag="span"
-						style="margin-left: 4px"
+						style="margin-left: 0.25rem"
 					>
 						<template #n>
 							<b>{{ channel.usersCount }}</b>
@@ -23,7 +23,7 @@
 					<I18n
 						:src="i18n.ts._channel.notesCount"
 						tag="span"
-						style="margin-left: 4px"
+						style="margin-left: 0.25rem"
 					>
 						<template #n>
 							<b>{{ channel.notesCount }}</b>
@@ -79,7 +79,7 @@ const bannerStyle = computed(() => {
 	> .banner {
 		position: relative;
 		width: 100%;
-		height: 200px;
+		height: 12.5rem;
 		background-position: center;
 		background-size: cover;
 
@@ -88,15 +88,15 @@ const bannerStyle = computed(() => {
 			bottom: 0;
 			left: 0;
 			width: 100%;
-			height: 64px;
+			height: 4rem;
 			background: linear-gradient(0deg, var(--panel), var(--X15));
 		}
 
 		> .name {
 			position: absolute;
-			top: 16px;
-			left: 16px;
-			padding: 12px 16px;
+			top: 1rem;
+			left: 1rem;
+			padding: 0.75rem 1rem;
 			-webkit-backdrop-filter: var(--blur, blur(8px));
 			backdrop-filter: var(--blur, blur(8px));
 			background: rgba(0, 0, 0, 0.2);
@@ -108,20 +108,20 @@ const bannerStyle = computed(() => {
 		> .status {
 			position: absolute;
 			z-index: 1;
-			bottom: 16px;
-			right: 16px;
-			padding: 8px 12px;
+			bottom: 1rem;
+			right: 1rem;
+			padding: 0.5rem 0.75rem;
 			font-size: 80%;
 			-webkit-backdrop-filter: var(--blur, blur(8px));
 			backdrop-filter: var(--blur, blur(8px));
 			background: rgba(0, 0, 0, 0.2);
-			border-radius: 6px;
+			border-radius: 0.375rem;
 			color: #fff;
 		}
 	}
 
 	> article {
-		padding: 16px;
+		padding: 1rem;
 
 		> p {
 			margin: 0;
@@ -130,8 +130,8 @@ const bannerStyle = computed(() => {
 	}
 
 	> footer {
-		padding: 12px 16px;
-		border-top: solid 0.5px var(--divider);
+		padding: 0.75rem 1rem;
+		border-top: solid 0.0.3125rem var(--divider);
 
 		> span {
 			opacity: 0.7;
@@ -139,11 +139,11 @@ const bannerStyle = computed(() => {
 		}
 	}
 
-	@media (max-width: 550px) {
+	@media (max-width: 34.375rem) {
 		font-size: 0.9em;
 
 		> .banner {
-			height: 80px;
+			height: 5rem;
 
 			> .status {
 				display: none;
@@ -151,7 +151,7 @@ const bannerStyle = computed(() => {
 		}
 
 		> article {
-			padding: 12px;
+			padding: 0.75rem;
 		}
 
 		> footer {
@@ -159,15 +159,15 @@ const bannerStyle = computed(() => {
 		}
 	}
 
-	@media (max-width: 500px) {
+	@media (max-width: 31.25rem) {
 		font-size: 0.8em;
 
 		> .banner {
-			height: 70px;
+			height: 4.375rem;
 		}
 
 		> article {
-			padding: 8px;
+			padding: 0.5rem;
 		}
 	}
 }

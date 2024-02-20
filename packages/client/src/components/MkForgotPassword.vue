@@ -95,16 +95,16 @@ async function onSubmit() {
 <style lang="scss" scoped>
 .bafeceda {
 	> .main {
-		padding: 24px;
+		padding: 1.5rem;
 	}
 
 	> .sub {
-		border-top: solid 0.5px var(--divider);
-		padding: 24px;
+		border-top: solid 0.0.3125rem var(--divider);
+		padding: 1.5rem;
 	}
 }
 
 .bafecedb {
-	padding: 24px;
+	padding: 1.5rem;
 }
 </style>

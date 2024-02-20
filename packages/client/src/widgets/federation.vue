@@ -137,10 +137,10 @@ defineExpose<WidgetComponentExpose>({
 
 <style lang="scss" scoped>
 .wbrkwalb {
-	$bodyTitleHieght: 18px;
-	$bodyInfoHieght: 16px;
+	$bodyTitleHieght: 1.125rem;
+	$bodyInfoHieght: 1rem;
 
-	height: (62px + 1px) + (62px + 1px) + (62px + 1px) + (62px + 1px) + 62px;
+	height: (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + 3.875rem;
 	overflow: hidden;
 
 	> .instances {
@@ -151,16 +151,16 @@ defineExpose<WidgetComponentExpose>({
 		> .instance {
 			display: flex;
 			align-items: center;
-			padding: 14px 16px;
-			border-bottom: solid 0.5px var(--divider);
+			padding: 0.875rem 1rem;
+			border-bottom: solid 0.0.3125rem var(--divider);
 
 			> img {
 				display: block;
 				width: ($bodyTitleHieght + $bodyInfoHieght);
 				height: ($bodyTitleHieght + $bodyInfoHieght);
 				object-fit: cover;
-				border-radius: 4px;
-				margin-right: 8px;
+				border-radius: 0.25rem;
+				margin-right: 0.5rem;
 			}
 
 			> .body {
@@ -168,7 +168,7 @@ defineExpose<WidgetComponentExpose>({
 				overflow: hidden;
 				font-size: 0.9em;
 				color: var(--fg);
-				padding-right: 8px;
+				padding-right: 0.5rem;
 
 				> .a {
 					display: block;
@@ -191,7 +191,7 @@ defineExpose<WidgetComponentExpose>({
 			}
 
 			> .chart {
-				height: 30px;
+				height: 1.875rem;
 			}
 		}
 	}

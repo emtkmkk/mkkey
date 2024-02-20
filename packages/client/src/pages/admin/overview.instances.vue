@@ -50,8 +50,8 @@ useInterval(fetch, 1000 * 60, {
 .wbrkwale {
 	> .instances {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-		grid-gap: 12px;
+		grid-template-columns: repeat(auto-fill, minmax(11.25rem, 1fr));
+		grid-gap: 0.75rem;
 
 		> .instance:hover {
 			text-decoration: none;

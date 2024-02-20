@@ -285,10 +285,10 @@ onMounted(async () => {
 	&:global {
 		> .charts {
 			> .chart {
-				padding: 16px;
+				padding: 1rem;
 
 				&:first-child {
-					border-bottom: solid 0.5px var(--divider);
+					border-bottom: solid 0.0.3125rem var(--divider);
 				}
 			}
 		}

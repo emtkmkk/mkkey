@@ -38,19 +38,19 @@ const emit = defineEmits<{
 	text-align: left;
 
 	> .user {
-		line-height: 24px;
+		line-height: 1.5rem;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 
 		&:not(:last-child) {
-			margin-bottom: 3px;
+			margin-bottom: 0.1875rem;
 		}
 
 		> .avatar {
-			width: 24px;
-			height: 24px;
-			margin-right: 3px;
+			width: 1.5rem;
+			height: 1.5rem;
+			margin-right: 0.1875rem;
 		}
 	}
 }

@@ -70,9 +70,9 @@ console.log(data);
 .root {
 	margin: auto;
 	position: relative;
-	padding: 32px;
-	min-width: 320px;
-	max-width: 480px;
+	padding: 2rem;
+	min-width: 20rem;
+	max-width: 30rem;
 	box-sizing: border-box;
 	text-align: center;
 	background: var(--panel);
@@ -88,12 +88,12 @@ console.log(data);
 }
 
 .gotIt {
-	margin: 8px 0 0 0;
+	margin: 0.5rem 0 0 0;
 }
 
 .releaseNotes {
 	> img {
-		border-radius: 10px;
+		border-radius: 0.625rem;
 	}
 }
 </style>

@@ -7,7 +7,7 @@
 		<template #header
 			><i
 				class="ph-envelope-simple-open ph-bold ph-lg"
-				style="margin-right: 8px"
+				style="margin-right: 0.5rem"
 			></i
 			>{{ column.name }}</template
 		>

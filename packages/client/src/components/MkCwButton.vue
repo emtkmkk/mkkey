@@ -91,7 +91,7 @@ defineExpose({
 			padding: 0.4em 1em;
 			font-size: 0.8em;
 			border-radius: 999px;
-			box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+			box-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 20%);
 		}
 		&:hover {
 			> span {
@@ -108,10 +108,10 @@ defineExpose({
 		> span {
 			display: inline-block;
 			background: var(--panel);
-			padding: 6px 10px;
+			padding: 0.375rem 0.625rem;
 			font-size: 0.8em;
 			border-radius: 999px;
-			box-shadow: 0 0 7px 7px var(--bg);
+			box-shadow: 0 0 0.4375rem 0.4375rem var(--bg);
 		}
 	}
 }

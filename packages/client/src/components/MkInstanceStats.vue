@@ -47,7 +47,7 @@
 							</option>
 						</optgroup>
 					</MkSelect>
-					<MkSelect v-model="chartSpan" style="margin: 0 0 0 10px">
+					<MkSelect v-model="chartSpan" style="margin: 0 0 0 0.625rem">
 						<option value="hour">{{ i18n.ts.perHour }}</option>
 						<option value="day">{{ i18n.ts.perDay }}</option>
 					</MkSelect>
@@ -65,7 +65,7 @@
 
 		<MkFolder class="item">
 			<template #header>Active users heatmap</template>
-			<MkSelect v-model="heatmapSrc" style="margin: 0 0 12px 0">
+			<MkSelect v-model="heatmapSrc" style="margin: 0 0 0.75rem 0">
 				<option value="active-users">Active users</option>
 				<option value="notes">Posts</option>
 				<option value="ap-requests-inbox-received">
@@ -237,7 +237,7 @@ onMounted(() => {
 .root {
 	&:global {
 		> .item {
-			margin-bottom: 16px;
+			margin-bottom: 1rem;
 		}
 	}
 }
@@ -246,30 +246,30 @@ onMounted(() => {
 	&:global {
 		> .selects {
 			display: flex;
-			margin-bottom: 12px;
+			margin-bottom: 0.75rem;
 		}
 
 		> .chart {
-			padding: 16px;
+			padding: 1rem;
 		}
 	}
 }
 
 .heatmap {
-	padding: 16px;
-	margin-bottom: 16px;
+	padding: 1rem;
+	margin-bottom: 1rem;
 }
 
 .retention {
-	padding: 16px;
-	margin-bottom: 16px;
+	padding: 1rem;
+	margin-bottom: 1rem;
 }
 
 .federation {
 	&:global {
 		> .pies {
 			display: flex;
-			gap: 16px;
+			gap: 1rem;
 
 			> .sub,
 			> .pub {
@@ -278,17 +278,17 @@ onMounted(() => {
 				position: relative;
 				background: var(--panel);
 				border-radius: var(--radius);
-				padding: 24px;
-				max-height: 300px;
+				padding: 1.5rem;
+				max-height: 18.75rem;
 
 				> .title {
 					position: absolute;
-					top: 24px;
-					left: 24px;
+					top: 1.5rem;
+					left: 1.5rem;
 				}
 			}
 
-			@media (max-width: 600px) {
+			@media (max-width: 37.5rem) {
 				flex-direction: column;
 			}
 		}

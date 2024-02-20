@@ -2,7 +2,7 @@
 	<div class="msjugskd _block">
 		<i
 			class="ph-airplane-takeoff ph-bold ph-lg"
-			style="margin-right: 8px"
+			style="margin-right: 0.5rem"
 		/>
 		{{ i18n.ts.accountMoved }}
 		<MkMention class="link" :username="acct" :host="host" />
@@ -21,14 +21,14 @@ defineProps<{
 
 <style lang="scss" scoped>
 .msjugskd {
-	padding: 16px;
+	padding: 1rem;
 	font-size: 90%;
 	background: var(--infoWarnBg);
 	color: var(--error);
 	border-radius: var(--radius);
 
 	> .link {
-		margin-left: 4px;
+		margin-left: 0.25rem;
 		color: var(--accent);
 	}
 }

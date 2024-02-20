@@ -44,7 +44,7 @@ const onInput = () => {
 <style lang="scss" module>
 .label {
 	font-size: 0.85em;
-	padding: 0 0 8px 0;
+	padding: 0 0 0.5rem 0;
 	user-select: none;
 
 	&:empty {
@@ -54,7 +54,7 @@ const onInput = () => {
 
 .caption {
 	font-size: 0.85em;
-	padding: 8px 0 0 0;
+	padding: 0.5rem 0 0 0;
 	color: var(--fgTransparentWeak);
 
 	&:empty {
@@ -68,7 +68,7 @@ const onInput = () => {
 	&.focused {
 		> .inputCore {
 			border-color: var(--accent) !important;
-			//box-shadow: 0 0 0 4px var(--focus);
+			//box-shadow: 0 0 0 0.25rem var(--focus);
 		}
 	}
 
@@ -86,17 +86,17 @@ const onInput = () => {
 	appearance: none;
 	-webkit-appearance: none;
 	display: block;
-	height: 42px;
+	height: 2.625rem;
 	width: 100%;
 	margin: 0;
-	padding: 0 12px;
+	padding: 0 0.75rem;
 	font: inherit;
 	font-weight: normal;
 	font-size: 1em;
 	color: var(--fg);
 	background: var(--panel);
-	border: solid 1px var(--panel);
-	border-radius: 6px;
+	border: solid 0.0625rem var(--panel);
+	border-radius: 0.375rem;
 	outline: none;
 	box-shadow: none;
 	box-sizing: border-box;

@@ -129,20 +129,20 @@ definePageMetadata({
 
 <style lang="scss" scoped>
 .timnmucd {
-	padding: 16px;
+	padding: 1rem;
 
 	&:first-child {
-		border-top-left-radius: 6px;
-		border-top-right-radius: 6px;
+		border-top-left-radius: 0.375rem;
+		border-top-right-radius: 0.375rem;
 	}
 
 	&:last-child {
-		border-bottom-left-radius: 6px;
-		border-bottom-right-radius: 6px;
+		border-bottom-left-radius: 0.375rem;
+		border-bottom-right-radius: 0.375rem;
 	}
 
 	&:not(:last-child) {
-		border-bottom: solid 0.5px var(--divider);
+		border-bottom: solid 0.0.3125rem var(--divider);
 	}
 
 	> header {
@@ -168,7 +168,7 @@ definePageMetadata({
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
-			margin-right: 12px;
+			margin-right: 0.75rem;
 		}
 
 		> .time {

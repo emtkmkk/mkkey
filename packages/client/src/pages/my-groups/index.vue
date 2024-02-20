@@ -118,7 +118,7 @@ async function leave(group) {
 		font-weight: bold;
 	}
 	._content {
-		padding: 20px;
+		padding: 1.25rem;
 
 		> .defgtij {
 			padding: 0;

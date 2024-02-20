@@ -217,10 +217,10 @@ definePageMetadata(
 	> .users {
 		> .inputs {
 			display: flex;
-			margin-bottom: 16px;
+			margin-bottom: 1rem;
 
 			> * {
-				margin-right: 16px;
+				margin-right: 1rem;
 
 				&:last-child {
 					margin-right: 0;
@@ -231,8 +231,8 @@ definePageMetadata(
 		> .users {
 			margin-top: var(--margin);
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-			grid-gap: 12px;
+			grid-template-columns: repeat(auto-fill, minmax(16.875rem, 1fr));
+			grid-gap: 0.75rem;
 
 			> .user:hover {
 				text-decoration: none;

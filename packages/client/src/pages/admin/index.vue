@@ -446,9 +446,9 @@ defineExpose({
 
 		> .nav {
 			width: 32%;
-			max-width: 280px;
+			max-width: 17.5rem;
 			box-sizing: border-box;
-			border-right: solid 0.5px var(--divider);
+			border-right: solid 0.0.3125rem var(--divider);
 			overflow: auto;
 			height: 100%;
 		}
@@ -462,17 +462,17 @@ defineExpose({
 	> .nav {
 		.lxpfedzu {
 			> .info {
-				margin: 16px 0;
+				margin: 1rem 0;
 			}
 
 			> .banner {
-				margin: 16px;
+				margin: 1rem;
 
 				> .icon {
 					display: block;
 					margin: auto;
-					height: 42px;
-					border-radius: 8px;
+					height: 2.625rem;
+					border-radius: 0.5rem;
 				}
 			}
 		}

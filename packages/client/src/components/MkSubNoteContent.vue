@@ -298,7 +298,7 @@ function focusFooter(ev) {
 <style lang="scss" scoped>
 .reply-icon {
 	display: inline-block;
-	border-radius: 6px;
+	border-radius: 0.375rem;
 	padding: 0.2em 0.2em;
 	margin-right: 0.2em;
 	color: var(--accent);
@@ -313,10 +313,10 @@ function focusFooter(ev) {
 	display: block;
 	margin: 0;
 	padding: 0;
-	margin-bottom: 10px;
+	margin-bottom: 0.625rem;
 	overflow-wrap: break-word;
 	> .text {
-		margin-right: 8px;
+		margin-right: 0.5rem;
 	}
 }
 
@@ -326,13 +326,13 @@ function focusFooter(ev) {
 		> .body {
 			transition: filter 0.1s;
 			> .rp {
-				margin-left: 4px;
+				margin-left: 0.25rem;
 				font-style: oblique;
 				color: var(--renote);
 			}
 			.reply-icon {
 				display: inline-block;
-				border-radius: 6px;
+				border-radius: 0.375rem;
 				padding: 0.2em 0.2em;
 				margin-right: 0.2em;
 				color: var(--accent);
@@ -347,7 +347,7 @@ function focusFooter(ev) {
 				margin-bottom: 0.4em;
 			}
 			> .url-preview {
-				margin-top: 8px;
+				margin-top: 0.5rem;
 			}
 
 			> .poll {
@@ -355,11 +355,11 @@ function focusFooter(ev) {
 			}
 
 			> .renote {
-				padding-top: 8px;
+				padding-top: 0.5rem;
 				> * {
-					padding: 16px;
-					border: solid 1px var(--renote);
-					border-radius: 8px;
+					padding: 1rem;
+					border: solid 0.0625rem var(--renote);
+					border-radius: 0.5rem;
 					transition: background 0.2s;
 					&:hover,
 					&:focus-within {
@@ -372,18 +372,18 @@ function focusFooter(ev) {
 		&.collapsed,
 		&.showContent {
 			position: relative;
-			max-height: calc(9em + 50px);
+			max-height: calc(9em + 3.125rem);
 			> .body {
 				max-height: inherit;
-				mask: linear-gradient(black calc(100% - 64px), transparent);
+				mask: linear-gradient(black calc(100% - 4rem), transparent);
 				-webkit-mask: linear-gradient(
-					black calc(100% - 64px),
+					black calc(100% - 4rem),
 					transparent
 				);
-				padding-inline: 50px;
-				margin-inline: -50px;
-				margin-top: -50px;
-				padding-top: 50px;
+				padding-inline: 3.125rem;
+				margin-inline: -3.125rem;
+				margin-top: -3.125rem;
+				padding-top: 3.125rem;
 				overflow: hidden;
 				user-select: none;
 				-webkit-user-select: none;
@@ -407,7 +407,7 @@ function focusFooter(ev) {
 				}
 				:deep(.fade) {
 					inset: 0;
-					top: 40px;
+					top: 2.5rem;
 				}
 				&.minimumCw {
 					> .body {
@@ -433,7 +433,7 @@ function focusFooter(ev) {
 					padding: 0.4em 1em;
 					font-size: 0.8em;
 					border-radius: 999px;
-					box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+					box-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 20%);
 				}
 				&:hover {
 					> span {
@@ -452,10 +452,10 @@ function focusFooter(ev) {
 			> span {
 				display: inline-block;
 				background: var(--panel);
-				padding: 6px 10px;
+				padding: 0.375rem 0.625rem;
 				font-size: 0.8em;
 				border-radius: 999px;
-				box-shadow: 0 0 7px 7px var(--bg);
+				box-shadow: 0 0 0.4375rem 0.4375rem var(--bg);
 			}
 		}
 
@@ -464,7 +464,7 @@ function focusFooter(ev) {
 		}
 	}
 	> :deep(button) {
-		margin-top: 10px;
+		margin-top: 0.625rem;
 		margin-left: 0;
 		margin-right: 0.4rem;
 	}

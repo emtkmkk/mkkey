@@ -52,7 +52,7 @@
 			</FormButton>
 			<FormButton
 				@click="chooseUploadFolderAvatar()"
-				style="margin-top: 6px"
+				style="margin-top: 0.375rem"
 			>
 				{{ i18n.ts.uploadFolderAvatar }}
 				<template #suffix>{{
@@ -64,7 +64,7 @@
 			</FormButton>
 			<FormButton
 				@click="chooseUploadFolderBanner()"
-				style="margin-top: 6px"
+				style="margin-top: 0.375rem"
 			>
 				{{ i18n.ts.uploadFolderBanner }}
 				<template #suffix>{{
@@ -77,7 +77,7 @@
 			<FormButton
 				v-if="$i.isModerator || $i.isAdmin"
 				@click="chooseUploadFolderEmoji()"
-				style="margin-top: 6px"
+				style="margin-top: 0.375rem"
 			>
 				{{ i18n.ts.uploadFolderEmoji }}
 				<template #suffix>{{
@@ -290,7 +290,7 @@ definePageMetadata({
 
 .uawsfosz {
 	> .meter {
-		$size: 12px;
+		$size: 0.75rem;
 		background: rgba(0, 0, 0, 0.1);
 		border-radius: math.div($size, 2);
 		overflow: hidden;

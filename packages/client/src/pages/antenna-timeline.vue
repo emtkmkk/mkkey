@@ -145,15 +145,15 @@ definePageMetadata(
 
 	> .new {
 		position: sticky;
-		top: calc(var(--stickyTop, 0px) + 16px);
+		top: calc(var(--stickyTop, 0) + 1rem);
 		z-index: 1000;
 		width: 100%;
 
 		> button {
 			display: block;
 			margin: var(--margin) auto 0 auto;
-			padding: 8px 16px;
-			border-radius: 32px;
+			padding: 0.5rem 1rem;
+			border-radius: 2rem;
 		}
 	}
 
@@ -164,7 +164,7 @@ definePageMetadata(
 	}
 
 	&.min-width_800px {
-		max-width: 800px;
+		max-width: 50rem;
 		margin: 0 auto;
 	}
 }

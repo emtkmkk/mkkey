@@ -134,8 +134,8 @@ onUnmounted(() => {
 
 	> svg {
 		position: absolute;
-		top: -32px;
-		left: -32px;
+		top: -2rem;
+		left: -2rem;
 		pointer-events: none;
 	}
 }

@@ -103,32 +103,32 @@ definePageMetadata({
 <style lang="scss" scoped>
 .ieepwinx {
 	> .add {
-		margin: 0 auto 16px auto;
+		margin: 0 auto 1rem auto;
 	}
 
 	.uopelskx {
 		float: left;
-		min-width: 25px;
-		padding: 13px;
-		margin-right: 10px;
-		border: solid 1px var(--divider);
-		border-radius: 6px;
+		min-width: 1.5625rem;
+		padding: 0.8125rem;
+		margin-right: 0.625rem;
+		border: solid 0.0625rem var(--divider);
+		border-radius: 0.375rem;
 
 		&:hover {
-			border: solid 1px var(--accent);
+			border: solid 0.0625rem var(--accent);
 			text-decoration: none;
 		}
 	}
 
 	.ljoevbzj {
 		display: block;
-		padding: 16px;
-		margin-bottom: 8px;
-		border: solid 1px var(--divider);
-		border-radius: 6px;
+		padding: 1rem;
+		margin-bottom: 0.5rem;
+		border: solid 0.0625rem var(--divider);
+		border-radius: 0.375rem;
 
 		&:hover {
-			border: solid 1px var(--accent);
+			border: solid 0.0625rem var(--accent);
 			text-decoration: none;
 		}
 

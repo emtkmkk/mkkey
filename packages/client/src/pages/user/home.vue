@@ -8,8 +8,8 @@
 		>
 			<div class="main">
 				<!-- TODO -->
-				<!-- <div class="punished" v-if="user.isSuspended"><i class="ph-warning ph-bold ph-lg" style="margin-right: 8px;"></i> {{ i18n.ts.userSuspended }}</div> -->
-				<!-- <div class="punished" v-if="user.isSilenced"><i class="ph-warning ph-bold ph-lg" style="margin-right: 8px;"></i> {{ i18n.ts.userSilenced }}</div> -->
+				<!-- <div class="punished" v-if="user.isSuspended"><i class="ph-warning ph-bold ph-lg" style="margin-right: 0.5rem;"></i> {{ i18n.ts.userSuspended }}</div> -->
+				<!-- <div class="punished" v-if="user.isSilenced"><i class="ph-warning ph-bold ph-lg" style="margin-right: 0.5rem;"></i> {{ i18n.ts.userSilenced }}</div> -->
 
 				<div class="profile">
 					<MkMoved
@@ -473,7 +473,7 @@
 							$i &&
 							$i.id === user.id
 						"
-						style="margin: 12px 0"
+						style="margin: 0.75rem 0"
 						>{{ i18n.ts.userPagePinTip }}</MkInfo
 					>
 				</div>
@@ -759,7 +759,7 @@ onUnmounted(() => {
 	> .main {
 		> .punished {
 			font-size: 0.8em;
-			padding: 16px;
+			padding: 1rem;
 		}
 
 		> .profile {
@@ -769,7 +769,7 @@ onUnmounted(() => {
 
 				> .banner-container {
 					position: relative;
-					height: 250px;
+					height: 15.625rem;
 					overflow: hidden;
 					background-size: cover;
 					background-position: center;
@@ -779,7 +779,7 @@ onUnmounted(() => {
 						background-color: #26233a;
 						background-size: cover;
 						background-position: center;
-						box-shadow: 0 0 128px var(--shadow) inset;
+						box-shadow: 0 0 8rem var(--shadow) inset;
 						will-change: background-position;
 
 						&::after {
@@ -800,7 +800,7 @@ onUnmounted(() => {
 						bottom: 0;
 						left: 0;
 						width: 100%;
-						height: 78px;
+						height: 4.875rem;
 						background: linear-gradient(
 							transparent,
 							rgba(#000, 0.7)
@@ -809,34 +809,34 @@ onUnmounted(() => {
 
 					> .followed {
 						position: absolute;
-						top: 10px;
-						left: 120px;
-						padding: 4px 8px;
+						top: 0.625rem;
+						left: 7.5rem;
+						padding: 0.25rem 0.5rem;
 						color: #fff;
 						background: rgba(0, 0, 0, 0.7);
 						font-size: 0.7em;
-						border-radius: 6px;
+						border-radius: 0.375rem;
 					}
 
 					> .actions {
 						position: absolute;
-						top: 12px;
-						right: 12px;
-						padding: 8px;
-						border-radius: 24px;
+						top: 0.75rem;
+						right: 0.75rem;
+						padding: 0.5rem;
+						border-radius: 1.5rem;
 
 						> .menu {
 							vertical-align: bottom;
-							height: 31px;
-							width: 31px;
+							height: 1.9375rem;
+							width: 1.9375rem;
 							color: #fff;
-							text-shadow: 0 0 8px var(--shadow);
-							font-size: 16px;
+							text-shadow: 0 0 0.5rem var(--shadow);
+							font-size: 1rem;
 						}
 
 						> .koudoku {
-							margin-left: 4px;
-							width: 31px;
+							margin-left: 0.25rem;
+							width: 1.9375rem;
 							vertical-align: bottom;
 						}
 					}
@@ -846,7 +846,7 @@ onUnmounted(() => {
 						bottom: 0;
 						left: 0;
 						width: 100%;
-						padding: 0 0 8px 154px;
+						padding: 0 0 0.5rem 9.625rem;
 						box-sizing: border-box;
 						color: #fff;
 
@@ -854,29 +854,29 @@ onUnmounted(() => {
 							display: block;
 							> .name {
 								margin: 0;
-								line-height: 32px;
+								line-height: 2rem;
 								font-weight: bold;
 								font-size: 1.8em;
-								text-shadow: 0 0 8px var(--shadow);
+								text-shadow: 0 0 0.5rem var(--shadow);
 							}
 
 							> .followed {
 								position: relative;
-								top: -4px;
-								left: 4px;
-								padding: 4px 8px;
+								top: -0.25rem;
+								left: 0.25rem;
+								padding: 0.25rem 0.5rem;
 								color: #fff;
 								background: rgba(0, 0, 0, 0.6);
 								font-size: 0.7em;
-								border-radius: 24px;
+								border-radius: 1.5rem;
 							}
 						}
 
 						> .bottom {
 							> * {
 								display: inline-block;
-								margin-right: 16px;
-								line-height: 20px;
+								margin-right: 1rem;
+								line-height: 1.25rem;
 								opacity: 0.8;
 
 								&.username {
@@ -889,7 +889,7 @@ onUnmounted(() => {
 
 				> .follow-container {
 					position: relative;
-					height: 60px;
+					height: 3.75rem;
 					overflow: hidden;
 					background-size: cover;
 					background-position: center;
@@ -900,7 +900,7 @@ onUnmounted(() => {
 						bottom: 0;
 						left: 0;
 						width: 100%;
-						height: 78px;
+						height: 4.875rem;
 						background: linear-gradient(
 							transparent,
 							rgba(#000, 0.7)
@@ -909,21 +909,21 @@ onUnmounted(() => {
 
 					> .actions {
 						position: absolute;
-						top: 12px;
-						right: 12px;
-						padding: 8px;
-						border-radius: 24px;
+						top: 0.75rem;
+						right: 0.75rem;
+						padding: 0.5rem;
+						border-radius: 1.5rem;
 
 						> .menu {
 							vertical-align: bottom;
-							height: 31px;
-							width: 31px;
+							height: 1.9375rem;
+							width: 1.9375rem;
 							color: --fg;
-							font-size: 16px;
+							font-size: 1rem;
 						}
 
 						> .koudoku {
-							margin-left: 4px;
+							margin-left: 0.25rem;
 							vertical-align: bottom;
 						}
 					}
@@ -933,24 +933,24 @@ onUnmounted(() => {
 						bottom: 0;
 						left: 0;
 						width: 100%;
-						padding: 0 0 8px 154px;
+						padding: 0 0 0.5rem 9.625rem;
 						box-sizing: border-box;
 						color: #fff;
 
 						> .name {
 							display: block;
 							margin: 0;
-							line-height: 32px;
+							line-height: 2rem;
 							font-weight: bold;
 							font-size: 1.8em;
-							text-shadow: 0 0 8px var(--shadow);
+							text-shadow: 0 0 0.5rem var(--shadow);
 						}
 
 						> .bottom {
 							> * {
 								display: inline-block;
-								margin-right: 16px;
-								line-height: 20px;
+								margin-right: 1rem;
+								line-height: 1.25rem;
 								opacity: 0.8;
 
 								&.username {
@@ -964,48 +964,48 @@ onUnmounted(() => {
 				> .title {
 					display: none;
 					text-align: center;
-					padding: 50px 8px 16px 8px;
+					padding: 3.125rem 0.5rem 1rem 0.5rem;
 					font-weight: bold;
-					border-bottom: solid 0.5px var(--divider);
+					border-bottom: solid 0.0.3125rem var(--divider);
 
 					> .nameCollumn {
 						display: block;
 						> .name {
 							margin: 0;
 							align-content: center;
-							line-height: 32px;
+							line-height: 2rem;
 							font-weight: bold;
 							font-size: 1.8em;
-							text-shadow: 0 0 8px var(--shadow);
+							text-shadow: 0 0 0.5rem var(--shadow);
 						}
 
 						> .followed {
 							position: relative;
-							top: -4px;
-							left: 4px;
-							padding: 4px 8px;
+							top: -0.25rem;
+							left: 0.25rem;
+							padding: 0.25rem 0.5rem;
 							color: #fff;
 							background: rgba(0, 0, 0, 0.6);
 							font-size: 0.7em;
-							border-radius: 24px;
+							border-radius: 1.5rem;
 						}
 					}
 
 					> .followedWindow {
 						position: relative;
-						top: -25px;
-						left: 80px;
-						padding: 4px 8px;
+						top: -1.5625rem;
+						left: 5rem;
+						padding: 0.25rem 0.5rem;
 						color: #fff;
 						background: rgba(0, 0, 0, 0.6);
 						font-size: 0.7em;
-						border-radius: 24px;
+						border-radius: 1.5rem;
 					}
 
 					> .bottom {
 						> * {
 							display: inline-block;
-							margin-right: 8px;
+							margin-right: 0.5rem;
 							opacity: 0.8;
 						}
 						> .badge {
@@ -1017,18 +1017,18 @@ onUnmounted(() => {
 				> .avatar {
 					display: block;
 					position: absolute;
-					top: 170px;
-					left: 16px;
+					top: 10.625rem;
+					left: 1rem;
 					z-index: 2;
-					width: 120px;
-					height: 120px;
-					box-shadow: 1px 1px 3px rgba(#000, 0.2);
+					width: 7.5rem;
+					height: 7.5rem;
+					box-shadow: 0.0625rem 0.0625rem 0.1875rem rgba(#000, 0.2);
 				}
 
 				> .description {
-					padding: 72px 12px 2px 24px;
+					padding: 4.5rem 0.75rem 0.125rem 1.5rem;
 					font-size: 0.95em;
-					top: -55px;
+					top: -3.4375rem;
 					position: relative;
 
 					> .empty {
@@ -1039,9 +1039,9 @@ onUnmounted(() => {
 					> .role {
 						> .state {
 							display: none;
-							gap: 8px;
+							gap: 0.5rem;
 							flex-wrap: wrap;
-							margin-top: 4px;
+							margin-top: 0.25rem;
 
 							&:empty {
 								display: none;
@@ -1052,9 +1052,9 @@ onUnmounted(() => {
 							> .moderator,
 							> .admin {
 								display: inline-block;
-								border: solid 1px;
-								border-radius: 6px;
-								padding: 2px 6px;
+								border: solid 0.0625rem;
+								border-radius: 0.375rem;
+								padding: 0.125rem 0.375rem;
 								font-size: 85%;
 							}
 
@@ -1078,9 +1078,9 @@ onUnmounted(() => {
 				}
 
 				> .fields {
-					padding: 24px;
+					padding: 1.5rem;
 					font-size: 0.9em;
-					border-top: solid 0.5px var(--divider);
+					border-top: solid 0.0.3125rem var(--divider);
 
 					> .field {
 						display: flex;
@@ -1089,7 +1089,7 @@ onUnmounted(() => {
 						align-items: center;
 
 						&:not(:last-child) {
-							margin-bottom: 8px;
+							margin-bottom: 0.5rem;
 						}
 
 						> .name {
@@ -1116,8 +1116,8 @@ onUnmounted(() => {
 
 				> .status {
 					display: flex;
-					padding: 24px;
-					border-top: solid 0.5px var(--divider);
+					padding: 1.5rem;
+					border-top: solid 0.0.3125rem var(--divider);
 
 					> a {
 						flex: 1;
@@ -1133,7 +1133,7 @@ onUnmounted(() => {
 
 						> b {
 							display: block;
-							line-height: 16px;
+							line-height: 1rem;
 						}
 
 						> span {
@@ -1156,7 +1156,7 @@ onUnmounted(() => {
 		> .main {
 			> .profile > .main {
 				> .banner-container {
-					height: 140px;
+					height: 8.75rem;
 
 					> .fade {
 						display: none;
@@ -1172,37 +1172,37 @@ onUnmounted(() => {
 				}
 
 				> .avatar {
-					top: 90px;
+					top: 5.625rem;
 					left: 0;
 					right: 0;
-					width: 92px;
-					height: 92px;
+					width: 5.75rem;
+					height: 5.75rem;
 					margin: auto;
 				}
 
 				> .description {
-					padding: 16px;
+					padding: 1rem;
 					text-align: center;
 				}
 
 				> .fields {
-					padding: 16px;
+					padding: 1rem;
 				}
 
 				> .status {
-					padding: 16px;
+					padding: 1rem;
 				}
 
 				> .description {
-					top: -55px;
+					top: -3.4375rem;
 					position: relative;
 				}
 
 				> .follow-container {
 					overflow: visible !important;
 					> .actions {
-						top: -110px;
-						right: 0px;
+						top: -6.875rem;
+						right: 0;
 					}
 				}
 			}
@@ -1225,8 +1225,8 @@ onUnmounted(() => {
 		}
 
 		> .sub {
-			max-width: 350px;
-			min-width: 350px;
+			max-width: 21.875rem;
+			min-width: 21.875rem;
 			margin-left: var(--margin);
 		}
 	}

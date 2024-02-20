@@ -114,18 +114,18 @@ defineExpose<WidgetComponentExpose>({
 
 <style lang="scss" scoped>
 .otgbylcu {
-	padding-bottom: 28px + 16px;
+	padding-bottom: 1.75rem + 1rem;
 
 	> textarea {
 		display: block;
 		width: 100%;
 		max-width: 100%;
 		min-width: 100%;
-		padding: 16px;
+		padding: 1rem;
 		color: var(--fg);
 		background: transparent;
 		border: none;
-		border-bottom: solid 0.5px var(--divider);
+		border-bottom: solid 0.0.3125rem var(--divider);
 		border-radius: 0;
 		box-sizing: border-box;
 		font: inherit;
@@ -139,13 +139,13 @@ defineExpose<WidgetComponentExpose>({
 	> button {
 		display: block;
 		position: absolute;
-		bottom: 8px;
-		right: 8px;
+		bottom: 0.5rem;
+		right: 0.5rem;
 		margin: 0;
-		padding: 0 10px;
-		height: 28px;
+		padding: 0 0.625rem;
+		height: 1.75rem;
 		outline: none;
-		border-radius: 4px;
+		border-radius: 0.25rem;
 
 		&:disabled {
 			opacity: 0.7;

@@ -216,12 +216,12 @@ export default defineComponent({
 	left: 0;
 	top: 0;
 }
-@media (max-width: 850px) {
+@media (max-width: 53.125rem) {
 	.container {
 		flex-direction: column;
 	}
 	.top-caption {
-		padding-bottom: 8px;
+		padding-bottom: 0.5rem;
 	}
 }
 .fullwidth {
@@ -230,9 +230,9 @@ export default defineComponent({
 }
 .mk-dialog {
 	position: relative;
-	padding: 32px;
-	min-width: 320px;
-	max-width: 480px;
+	padding: 2rem;
+	min-width: 20rem;
+	max-width: 30rem;
 	box-sizing: border-box;
 	text-align: center;
 	background: var(--panel);
@@ -240,12 +240,12 @@ export default defineComponent({
 	margin: auto;
 
 	> header {
-		margin: 0 0 8px 0;
+		margin: 0 0 0.5rem 0;
 		position: relative;
 
 		> .title {
 			font-weight: bold;
-			font-size: 20px;
+			font-size: 1.25rem;
 		}
 
 		> .text-count {
@@ -256,20 +256,20 @@ export default defineComponent({
 	}
 
 	> .buttons {
-		margin-top: 16px;
+		margin-top: 1rem;
 
 		> * {
-			margin: 0 8px;
+			margin: 0 0.5rem;
 		}
 	}
 
 	> textarea {
 		display: block;
 		box-sizing: border-box;
-		padding: 0 24px;
+		padding: 0 1.5rem;
 		margin: 0;
 		width: 100%;
-		font-size: 16px;
+		font-size: 1rem;
 		border: none;
 		border-radius: 0;
 		background: transparent;
@@ -277,7 +277,7 @@ export default defineComponent({
 		font-family: inherit;
 		max-width: 100%;
 		min-width: 100%;
-		min-height: 90px;
+		min-height: 5.625rem;
 
 		&:focus-visible {
 			outline: none;
@@ -297,15 +297,15 @@ export default defineComponent({
 	> footer {
 		align-self: center;
 		display: inline-block;
-		padding: 6px 9px;
+		padding: 0.375rem 0.5625rem;
 		font-size: 90%;
 		background: rgba(0, 0, 0, 0.5);
-		border-radius: 6px;
+		border-radius: 0.375rem;
 		color: #fff;
 	}
 
 	> header {
-		margin-bottom: 8px;
+		margin-bottom: 0.5rem;
 		opacity: 0.9;
 	}
 
@@ -320,13 +320,13 @@ export default defineComponent({
 	}
 
 	> footer {
-		margin-top: 8px;
+		margin-top: 0.5rem;
 		opacity: 0.8;
 
 		> span + span {
 			margin-left: 0.5em;
 			padding-left: 0.5em;
-			border-left: solid 1px rgba(255, 255, 255, 0.5);
+			border-left: solid 0.0625rem rgba(255, 255, 255, 0.5);
 		}
 	}
 }

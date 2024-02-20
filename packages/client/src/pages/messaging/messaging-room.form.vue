@@ -325,9 +325,9 @@ defineExpose({
 		width: 100%;
 		min-width: 100%;
 		max-width: 100%;
-		min-height: 80px;
+		min-height: 5rem;
 		margin: 0;
-		padding: 16px 16px 0 16px;
+		padding: 1rem 1rem 0 1rem;
 		resize: none;
 		font-size: 1em;
 		font-family: inherit;
@@ -346,7 +346,7 @@ defineExpose({
 		background: var(--panel);
 
 		> .file {
-			padding: 8px;
+			padding: 0.5rem;
 			color: var(--fg);
 			background: transparent;
 			cursor: pointer;
@@ -356,7 +356,7 @@ defineExpose({
 	.files {
 		display: block;
 		margin: 0;
-		padding: 0 8px;
+		padding: 0 0.5rem;
 		list-style: none;
 
 		&:after {
@@ -368,10 +368,10 @@ defineExpose({
 		> li {
 			display: block;
 			float: left;
-			margin: 4px;
+			margin: 0.25rem;
 			padding: 0;
-			width: 64px;
-			height: 64px;
+			width: 4rem;
+			height: 4rem;
 			background-color: #eee;
 			background-repeat: no-repeat;
 			background-position: center center;
@@ -387,8 +387,8 @@ defineExpose({
 			> .remove {
 				display: none;
 				position: absolute;
-				right: -6px;
-				top: -6px;
+				right: -0.375rem;
+				top: -0.375rem;
 				margin: 0;
 				padding: 0;
 				background: transparent;
@@ -406,7 +406,7 @@ defineExpose({
 
 		._button {
 			margin: 0;
-			padding: 16px;
+			padding: 1rem;
 			font-size: 1em;
 			font-weight: normal;
 			text-decoration: none;

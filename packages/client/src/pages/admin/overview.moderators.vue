@@ -47,10 +47,10 @@ onMounted(async () => {
 <style lang="scss" module>
 .root {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(30px, 40px));
-	grid-gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(1.875rem, 2.5rem));
+	grid-gap: 0.75rem;
 	place-content: center;
-	padding: 12px;
+	padding: 0.75rem;
 
 	&:global {
 		> .user {

@@ -19,7 +19,7 @@
 							></template>
 							<template #label>{{ i18n.ts.search }}</template>
 						</MkInput>
-						<MkSwitch v-model="selectMode" style="margin: 8px 0">
+						<MkSwitch v-model="selectMode" style="margin: 0.5rem 0">
 							<template #label>Select mode</template>
 						</MkSwitch>
 						<div
@@ -561,16 +561,16 @@ definePageMetadata(
 
 		.ldhfsamy {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-			grid-gap: 12px;
+			grid-template-columns: repeat(auto-fill, minmax(11.875rem, 1fr));
+			grid-gap: 0.75rem;
 			margin: var(--margin) 0;
 
 			> .emoji {
 				display: flex;
 				align-items: center;
-				padding: 11px;
+				padding: 0.6875rem;
 				text-align: left;
-				border: solid 1px var(--panel);
+				border: solid 0.0625rem var(--panel);
 
 				&:hover {
 					border-color: var(--inputBorderHover);
@@ -581,12 +581,12 @@ definePageMetadata(
 				}
 
 				> .img {
-					max-width: 40px;
-					height: 24px;
+					max-width: 2.5rem;
+					height: 1.5rem;
 				}
 
 				> .body {
-					padding: 0 0 0 8px;
+					padding: 0 0 0 0.5rem;
 					white-space: nowrap;
 					overflow: hidden;
 
@@ -612,14 +612,14 @@ definePageMetadata(
 
 		.ldhfsamy {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-			grid-gap: 12px;
+			grid-template-columns: repeat(auto-fill, minmax(11.875rem, 1fr));
+			grid-gap: 0.75rem;
 			margin: var(--margin) 0;
 
 			> .emoji {
 				display: flex;
 				align-items: center;
-				padding: 12px;
+				padding: 0.75rem;
 				text-align: left;
 
 				&:hover {
@@ -627,12 +627,12 @@ definePageMetadata(
 				}
 
 				> .img {
-					max-width: 40px;
-					height: 24px;
+					max-width: 2.5rem;
+					height: 1.5rem;
 				}
 
 				> .body {
-					padding: 0 0 0 8px;
+					padding: 0 0 0 0.5rem;
 					white-space: nowrap;
 					overflow: hidden;
 

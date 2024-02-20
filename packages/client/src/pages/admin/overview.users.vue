@@ -53,8 +53,8 @@ useInterval(fetch, 1000 * 60, {
 			}
 
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-			grid-gap: 12px;
+			grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+			grid-gap: 0.75rem;
 
 			> .user:hover {
 				text-decoration: none;

@@ -105,7 +105,7 @@ useInterval(tick, Math.max(5000, props.refreshIntervalSec * 1000), {
 			height: var(--height);
 			aspect-ratio: 1;
 			vertical-align: bottom;
-			margin-right: 8px;
+			margin-right: 0.5rem;
 		}
 
 		> .text {
@@ -117,8 +117,8 @@ useInterval(tick, Math.max(5000, props.refreshIntervalSec * 1000), {
 
 		> .divider {
 			display: inline-block;
-			width: 0.5px;
-			height: 16px;
+			width: 0.0.3125rem;
+			height: 1rem;
 			margin: 0 3em;
 			background: currentColor;
 			opacity: 0;

@@ -320,23 +320,23 @@ function installPwa(ev: MouseEvent) {
 
 		> .step {
 			> .arrow {
-				padding: 4px;
+				padding: 0.25rem;
 
 				&:disabled {
 					opacity: 0.5;
 				}
 
 				&:first-child {
-					padding-right: 8px;
+					padding-right: 0.5rem;
 				}
 
 				&:last-child {
-					padding-left: 8px;
+					padding-left: 0.5rem;
 				}
 			}
 
 			> span {
-				margin: 0 4px;
+				margin: 0 0.25rem;
 			}
 		}
 

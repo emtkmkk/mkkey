@@ -79,9 +79,9 @@ definePageMetadata({
 		> ._content {
 			> img {
 				display: block;
-				max-height: 300px;
+				max-height: 18.75rem;
 				max-width: 100%;
-				border-radius: 10px;
+				border-radius: 0.625rem;
 				margin-top: 1rem;
 			}
 		}

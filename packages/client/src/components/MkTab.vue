@@ -51,12 +51,12 @@ export default defineComponent({
 	display: flex;
 	font-size: 90%;
 	border-radius: var(--radius);
-	padding: 10px 8px;
+	padding: 0.625rem 0.5rem;
 
 	> button {
 		flex: 1;
-		padding: 10px 8px;
-		margin: 0 8px;
+		padding: 0.625rem 0.5rem;
+		margin: 0 0.5rem;
 		border-radius: var(--radius);
 
 		&:disabled {
@@ -75,11 +75,11 @@ export default defineComponent({
 		}
 
 		&:not(:first-child) {
-			margin-left: 8px;
+			margin-left: 0.5rem;
 		}
 
 		> .icon {
-			margin-right: 6px;
+			margin-right: 0.375rem;
 		}
 	}
 
@@ -87,7 +87,7 @@ export default defineComponent({
 		font-size: 80%;
 
 		> button {
-			padding: 11px 8px;
+			padding: 0.6875rem 0.5rem;
 		}
 	}
 }

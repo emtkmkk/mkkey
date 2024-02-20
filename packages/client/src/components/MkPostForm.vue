@@ -494,7 +494,7 @@
 				</button>
 			</div>
 			<div v-if="visibility === 'specified'" class="to-specified">
-				<span style="margin-right: 8px">{{ i18n.ts.recipient }}</span>
+				<span style="margin-right: 0.5rem">{{ i18n.ts.recipient }}</span>
 				<div class="visibleUsers">
 					<span v-for="u in visibleUsers" :key="u.id">
 						<MkAcct :user="u" />
@@ -2116,18 +2116,18 @@ onMounted(() => {
 
 	&.modal {
 		width: 100%;
-		max-width: 520px;
+		max-width: 32.5rem;
 	}
 
 	> header {
 		z-index: 1000;
-		height: 66px;
+		height: 4.125rem;
 
 		> .cancel {
 			padding: 0;
-			font-size: 20px;
-			width: 64px;
-			line-height: 66px;
+			font-size: 1.25rem;
+			width: 4rem;
+			line-height: 4.125rem;
 		}
 
 		> .account {
@@ -2137,8 +2137,8 @@ onMounted(() => {
 			vertical-align: bottom;
 
 			> .avatar {
-				width: 28px;
-				height: 28px;
+				width: 1.75rem;
+				height: 1.75rem;
 				margin: auto;
 			}
 		}
@@ -2150,13 +2150,13 @@ onMounted(() => {
 
 			> .text-count {
 				opacity: 0.7;
-				line-height: 66px;
-				margin: 0 8px 0 0;
+				line-height: 4.125rem;
+				margin: 0 0.5rem 0 0;
 			}
 
 			> .visibility {
-				height: 34px;
-				width: 34px;
+				height: 2.125rem;
+				width: 2.125rem;
 				margin: 0 0 0 0;
 
 				& + .localOnly {
@@ -2165,19 +2165,19 @@ onMounted(() => {
 			}
 
 			> .local-only {
-				margin: 0 8px 0 4px;
+				margin: 0 0.5rem 0 0.25rem;
 				opacity: 0.7;
 			}
 
 			> .preview {
 				display: inline-block;
 				padding: 0;
-				margin: 0 8px 0 0;
+				margin: 0 0.5rem 0 0;
 				line-height: 1.4;
 				font-size: var(--fontSize);
-				width: 34px;
-				height: 34px;
-				border-radius: 6px;
+				width: 2.125rem;
+				height: 2.125rem;
+				border-radius: 0.375rem;
 
 				&:hover {
 					background: var(--X5);
@@ -2189,18 +2189,18 @@ onMounted(() => {
 			}
 
 			> .addblank {
-				margin: 0 8px 0 0 !important;
+				margin: 0 0.5rem 0 0 !important;
 			}
 
 			> .submit {
 				display: inline-flex;
 				align-items: center;
-				margin: 16px 16px 16px 0;
-				padding: 0 12px;
-				line-height: 34px;
+				margin: 1rem 1rem 1rem 0;
+				padding: 0 0.75rem;
+				line-height: 2.125rem;
 				font-weight: bold;
 				vertical-align: bottom;
-				border-radius: 4px;
+				border-radius: 0.25rem;
 				font-size: 0.9em;
 
 				&:disabled {
@@ -2208,19 +2208,19 @@ onMounted(() => {
 				}
 
 				> i {
-					margin-left: 6px;
+					margin-left: 0.375rem;
 				}
 			}
 
 			> .submit_h {
 				display: inline-flex;
 				align-items: center;
-				margin: 16px 16px 16px 0;
-				padding: 0 12px;
-				line-height: 34px;
+				margin: 1rem 1rem 1rem 0;
+				padding: 0 0.75rem;
+				line-height: 2.125rem;
 				font-weight: bold;
 				vertical-align: bottom;
-				border-radius: 4px;
+				border-radius: 0.25rem;
 				font-size: 0.9em;
 
 				&:disabled {
@@ -2228,20 +2228,20 @@ onMounted(() => {
 				}
 
 				> .subPostIcon {
-					margin-left: 6px;
+					margin-left: 0.375rem;
 				}
 
 				> .widePostButton {
-					margin-left: 12px;
-					margin-right: 12px;
+					margin-left: 0.75rem;
+					margin-right: 0.75rem;
 				}
 
 				> .widePostButton_left {
-					margin-left: calc(9px - 0.45em);
+					margin-left: calc(0.5625rem - 0.45em);
 				}
 
 				> .widePostButton_right {
-					margin-right: calc(9px - 0.45em);
+					margin-right: calc(0.5625rem - 0.45em);
 				}
 			}
 
@@ -2257,15 +2257,15 @@ onMounted(() => {
 
 	> .form {
 		> .preview {
-			padding: 16px;
+			padding: 1rem;
 		}
 
 		> .with-quote {
 			display: flex;
 			align-items: center;
 			gap: 0.4em;
-			margin-inline: 24px;
-			margin-bottom: 12px;
+			margin-inline: 1.5rem;
+			margin-bottom: 0.75rem;
 			color: var(--accent);
 
 			> button {
@@ -2284,40 +2284,40 @@ onMounted(() => {
 		}
 
 		> .to-specified {
-			padding: 6px 24px;
-			margin-bottom: 8px;
+			padding: 0.375rem 1.5rem;
+			margin-bottom: 0.5rem;
 			overflow: auto;
 			line-height: 2rem;
 
 			> .visibleUsers {
 				display: inline;
-				top: -1px;
-				font-size: 14px;
+				top: -0.0625rem;
+				font-size: 0.875rem;
 
 				> button {
-					padding: 2px;
-					border-radius: 8px;
+					padding: 0.125rem;
+					border-radius: 0.5rem;
 
 					> i {
-						transform: translateX(2px);
+						transform: translateX(0.125rem);
 					}
 				}
 
 				> span {
 					margin: 0.3rem;
-					padding: 4px 0 4px 4px;
+					padding: 0.25rem 0 0.25rem 0.25rem;
 					border-radius: 999px;
 					background: var(--X3);
 
 					> button {
-						padding: 4px 8px;
+						padding: 0.25rem 0.5rem;
 					}
 				}
 			}
 		}
 
 		> .hasNotSpecifiedMentions {
-			margin: 0 20px 16px 20px;
+			margin: 0 1.25rem 1rem 1.25rem;
 		}
 
 		> .cw,
@@ -2325,7 +2325,7 @@ onMounted(() => {
 		> .text {
 			display: block;
 			box-sizing: border-box;
-			padding: 0 24px;
+			padding: 0 1.5rem;
 			margin: 0;
 			width: 100%;
 			font-size: var(--fontSize);
@@ -2346,38 +2346,38 @@ onMounted(() => {
 
 		> .cw {
 			z-index: 1;
-			padding-bottom: 8px;
-			border-bottom: solid 0.5px var(--divider);
+			padding-bottom: 0.5rem;
+			border-bottom: solid 0.0.3125rem var(--divider);
 		}
 
 		> .hashtags {
 			z-index: 1;
-			padding-top: 8px;
-			padding-bottom: 8px;
-			border-top: solid 0.5px var(--divider);
+			padding-top: 0.5rem;
+			padding-bottom: 0.5rem;
+			border-top: solid 0.0.3125rem var(--divider);
 		}
 
 		> .text {
 			max-width: 100%;
 			min-width: 100%;
-			min-height: 90px;
+			min-height: 5.625rem;
 
 			&.withCw {
-				padding-top: 8px;
+				padding-top: 0.5rem;
 			}
 		}
 
 		> footer {
-			padding: 0 16px 0 16px;
+			padding: 0 1rem 0 1rem;
 
 			> button {
 				display: inline-block;
 				padding: 0;
 				margin: 0;
-				font-size: 16px;
-				width: 48px;
-				height: 48px;
-				border-radius: 6px;
+				font-size: 1rem;
+				width: 3rem;
+				height: 3rem;
+				border-radius: 0.375rem;
 
 				&:hover {
 					background: var(--X5);
@@ -2392,45 +2392,45 @@ onMounted(() => {
 
 	&.max-width_500px {
 		> header {
-			height: 50px;
+			height: 3.125rem;
 
 			> .cancel {
-				width: 50px;
-				line-height: 50px;
+				width: 3.125rem;
+				line-height: 3.125rem;
 			}
 
 			> .right {
 				> .text-count {
-					line-height: 50px;
+					line-height: 3.125rem;
 				}
 
 				> .submit {
-					margin: 8px 8px 8px 0;
+					margin: 0.5rem 0.5rem 0.5rem 0;
 				}
 
 				> .submit_h {
-					margin: 8px 8px 8px 0;
+					margin: 0.5rem 0.5rem 0.5rem 0;
 				}
 			}
 		}
 
 		> .form {
 			> .to-specified {
-				padding: 6px 16px;
+				padding: 0.375rem 1rem;
 			}
 
 			> .cw,
 			> .hashtags,
 			> .text {
-				padding: 0 16px;
+				padding: 0 1rem;
 			}
 
 			> .text {
-				min-height: 80px;
+				min-height: 5rem;
 			}
 
 			> footer {
-				padding: 0 8px 8px 8px;
+				padding: 0 0.5rem 0.5rem 0.5rem;
 			}
 		}
 	}
@@ -2439,9 +2439,9 @@ onMounted(() => {
 		> .form {
 			> footer {
 				> button {
-					font-size: 14px;
-					width: 44px;
-					height: 44px;
+					font-size: 0.875rem;
+					width: 2.75rem;
+					height: 2.75rem;
 				}
 			}
 		}

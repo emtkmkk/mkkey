@@ -139,13 +139,13 @@ definePageMetadata(
 	margin-bottom: var(--margin);
 
 	> .description {
-		padding: 16px;
+		padding: 1rem;
 	}
 
 	> .user {
-		$height: 32px;
-		padding: 16px;
-		border-top: solid 0.5px var(--divider);
+		$height: 2rem;
+		padding: 1rem;
+		border-top: solid 0.0.3125rem var(--divider);
 		line-height: $height;
 
 		> .avatar {

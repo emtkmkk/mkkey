@@ -472,19 +472,19 @@ useTooltip(reactionRef, (showing) => {
 .qglefbjs {
 	position: relative;
 	box-sizing: border-box;
-	padding: 24px 32px;
+	padding: 1.5rem 2rem;
 	font-size: 0.9em;
 	overflow-wrap: break-word;
 	display: flex;
 	contain: content;
 
 	&.max-width_600px {
-		padding: 16px;
+		padding: 1rem;
 		font-size: 0.9em;
 	}
 
 	&.max-width_500px {
-		padding: 12px;
+		padding: 0.75rem;
 		font-size: 0.85em;
 	}
 
@@ -492,29 +492,29 @@ useTooltip(reactionRef, (showing) => {
 		position: sticky;
 		top: 0;
 		flex-shrink: 0;
-		width: 42px;
-		height: 42px;
-		margin-right: 8px;
+		width: 2.625rem;
+		height: 2.625rem;
+		margin-right: 0.5rem;
 
 		> .icon {
 			display: block;
 			width: 100%;
 			height: 100%;
-			border-radius: 6px;
+			border-radius: 0.375rem;
 		}
 
 		> .sub-icon {
 			position: absolute;
 			z-index: 1;
-			bottom: -2px;
-			right: -2px;
-			width: 20px;
-			height: 20px;
+			bottom: -0.125rem;
+			right: -0.125rem;
+			width: 1.25rem;
+			height: 1.25rem;
 			box-sizing: border-box;
 			border-radius: 100%;
 			background: var(--panel);
-			box-shadow: 0 0 0 3px var(--panel);
-			font-size: 12px;
+			box-shadow: 0 0 0 0.1875rem var(--panel);
+			font-size: 0.75rem;
 			text-align: center;
 
 			&:empty {
@@ -533,43 +533,43 @@ useTooltip(reactionRef, (showing) => {
 			&.groupInvited,
 			&.unreadAntenna,
 			&.note {
-				padding: 3px;
+				padding: 0.1875rem;
 				background: #31748f;
 				pointer-events: none;
 			}
 
 			&.renote {
-				padding: 3px;
+				padding: 0.1875rem;
 				background: #31748f;
 				pointer-events: none;
 			}
 
 			&.quote {
-				padding: 3px;
+				padding: 0.1875rem;
 				background: #31748f;
 				pointer-events: none;
 			}
 
 			&.reply {
-				padding: 3px;
+				padding: 0.1875rem;
 				background: #c4a7e7;
 				pointer-events: none;
 			}
 
 			&.mention {
-				padding: 3px;
+				padding: 0.1875rem;
 				background: #908caa;
 				pointer-events: none;
 			}
 
 			&.pollVote {
-				padding: 3px;
+				padding: 0.1875rem;
 				background: #908caa;
 				pointer-events: none;
 			}
 
 			&.pollEnded {
-				padding: 3px;
+				padding: 0.1875rem;
 				background: #908caa;
 				pointer-events: none;
 			}
@@ -610,11 +610,11 @@ useTooltip(reactionRef, (showing) => {
 			}
 
 			> i:first-child {
-				margin-right: 4px;
+				margin-right: 0.25rem;
 			}
 
 			> i:last-child {
-				margin-left: 4px;
+				margin-left: 0.25rem;
 			}
 		}
 	}

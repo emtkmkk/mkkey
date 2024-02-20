@@ -44,7 +44,7 @@
 								"
 								:custom-emojis="note.emojis"
 							/>
-							<span style="margin-left: 4px">{{
+							<span style="margin-left: 0.25rem">{{
 								note.reactions[reaction]
 							}}</span>
 						</button>
@@ -136,14 +136,14 @@ onMounted(() => {
 <style lang="scss" module>
 .tabs {
 	display: flex;
-	gap: 8px;
+	gap: 0.5rem;
 	flex-wrap: wrap;
 }
 
 .tab {
-	padding: 4px 6px;
-	border: solid 1px var(--divider);
-	border-radius: 6px;
+	padding: 0.25rem 0.375rem;
+	border: solid 0.0625rem var(--divider);
+	border-radius: 0.375rem;
 }
 
 .tabActive {

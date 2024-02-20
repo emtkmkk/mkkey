@@ -86,22 +86,22 @@ function submit() {
 <style lang="scss" scoped>
 .mk-setup {
 	border-radius: var(--radius);
-	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 	overflow: hidden;
-	max-width: 500px;
-	margin: 32px auto;
+	max-width: 31.25rem;
+	margin: 2rem auto;
 
 	> h1 {
 		margin: 0;
 		font-size: 1.5em;
 		text-align: center;
-		padding: 32px;
+		padding: 2rem;
 		background: var(--accent);
 		color: #fff;
 	}
 
 	> div {
-		padding: 32px;
+		padding: 2rem;
 		background: var(--panel);
 
 		> p {

@@ -17,7 +17,7 @@
 				>
 					<i class="ph-caret-left ph-bold ph-lg"></i>
 				</button>
-				<span v-else style="display: inline-block; width: 20px"></span>
+				<span v-else style="display: inline-block; width: 1.25rem"></span>
 				<span v-if="pageMetadata?.value" class="title">
 					<i
 						v-if="pageMetadata?.value.icon"
@@ -160,15 +160,15 @@ function onContextmenu(ev: MouseEvent) {
 	border-radius: var(--radius);
 	margin: auto;
 
-	--root-margin: 24px;
+	--root-margin: 1.5rem;
 
-	@media (max-width: 500px) {
-		--root-margin: 16px;
+	@media (max-width: 31.25rem) {
+		--root-margin: 1rem;
 	}
 
 	> .header {
-		$height: 52px;
-		$height-narrow: 42px;
+		$height: 3.25rem;
+		$height-narrow: 2.625rem;
 		display: flex;
 		flex-shrink: 0;
 		height: $height;
@@ -190,10 +190,10 @@ function onContextmenu(ev: MouseEvent) {
 			}
 		}
 
-		@media (max-width: 500px) {
+		@media (max-width: 31.25rem) {
 			height: $height-narrow;
 			line-height: $height-narrow;
-			padding-left: 16px;
+			padding-left: 1rem;
 
 			> button {
 				height: $height-narrow;

@@ -39,8 +39,8 @@ os.apiGet("charts/user/notes", {
 
 <style lang="scss" module>
 .root {
-	$bodyTitleHieght: 18px;
-	$bodyInfoHieght: 16px;
+	$bodyTitleHieght: 1.125rem;
+	$bodyInfoHieght: 1rem;
 
 	display: flex;
 	align-items: center;
@@ -49,7 +49,7 @@ os.apiGet("charts/user/notes", {
 		display: block;
 		width: ($bodyTitleHieght + $bodyInfoHieght);
 		height: ($bodyTitleHieght + $bodyInfoHieght);
-		margin-right: 12px;
+		margin-right: 0.75rem;
 	}
 
 	> :global(.body) {
@@ -57,7 +57,7 @@ os.apiGet("charts/user/notes", {
 		overflow: hidden;
 		font-size: 0.9em;
 		color: var(--fg);
-		padding-right: 8px;
+		padding-right: 0.5rem;
 
 		> :global(.name) {
 			display: block;
@@ -81,7 +81,7 @@ os.apiGet("charts/user/notes", {
 	}
 
 	> :global(.chart) {
-		height: 30px;
+		height: 1.875rem;
 	}
 }
 </style>

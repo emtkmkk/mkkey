@@ -56,15 +56,15 @@ const modal = $ref<InstanceType<typeof MkModal>>();
 	> footer {
 		align-self: center;
 		display: inline-block;
-		padding: 6px 9px;
+		padding: 0.375rem 0.5625rem;
 		font-size: 90%;
 		background: rgba(0, 0, 0, 0.5);
-		border-radius: 6px;
+		border-radius: 0.375rem;
 		color: #fff;
 	}
 
 	> header {
-		margin-bottom: 8px;
+		margin-bottom: 0.5rem;
 		opacity: 0.9;
 	}
 
@@ -79,13 +79,13 @@ const modal = $ref<InstanceType<typeof MkModal>>();
 	}
 
 	> footer {
-		margin-top: 8px;
+		margin-top: 0.5rem;
 		opacity: 0.8;
 
 		> span + span {
 			margin-left: 0.5em;
 			padding-left: 0.5em;
-			border-left: solid 1px rgba(255, 255, 255, 0.5);
+			border-left: solid 0.0625rem rgba(255, 255, 255, 0.5);
 		}
 	}
 }

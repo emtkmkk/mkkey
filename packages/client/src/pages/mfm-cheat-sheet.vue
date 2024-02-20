@@ -503,8 +503,8 @@ definePageMetadata({
 		> .title {
 			position: sticky;
 			z-index: 1;
-			top: var(--stickyTop, 0px);
-			padding: 16px;
+			top: var(--stickyTop, 0);
+			padding: 1rem;
 			font-weight: bold;
 			-webkit-backdrop-filter: var(--blur, blur(10px));
 			backdrop-filter: var(--blur, blur(10px));
@@ -514,12 +514,12 @@ definePageMetadata({
 		> .content {
 			> p {
 				margin: 0;
-				padding: 16px;
+				padding: 1rem;
 			}
 
 			> .preview {
-				border-top: solid 0.5px var(--divider);
-				padding: 16px;
+				border-top: solid 0.0.3125rem var(--divider);
+				padding: 1rem;
 			}
 		}
 	}

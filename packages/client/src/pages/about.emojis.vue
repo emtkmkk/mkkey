@@ -155,16 +155,16 @@ export default defineComponent({
 
 	> .query {
 		background: var(--bg);
-		padding: 16px;
+		padding: 1rem;
 
 		> .tags {
 			> .tag {
 				display: inline-block;
-				margin: 8px 8px 0 0;
-				padding: 4px 8px;
+				margin: 0.5rem 0.5rem 0 0;
+				padding: 0.25rem 0.5rem;
 				font-size: 0.9em;
 				background: var(--accentedBg);
-				border-radius: 5px;
+				border-radius: 0.3125rem;
 
 				&.active {
 					background: var(--accent);
@@ -175,12 +175,12 @@ export default defineComponent({
 	}
 
 	> .emojis {
-		--x-padding: 0 16px;
+		--x-padding: 0 1rem;
 
 		.zuvgdzyt {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-			grid-gap: 12px;
+			grid-template-columns: repeat(auto-fill, minmax(11.875rem, 1fr));
+			grid-gap: 0.75rem;
 			margin: 0 var(--margin) var(--margin) var(--margin);
 		}
 	}

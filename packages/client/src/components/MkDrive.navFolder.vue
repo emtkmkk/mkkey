@@ -133,7 +133,7 @@ function onDrop(ev: DragEvent) {
 	}
 
 	> i {
-		margin-right: 4px;
+		margin-right: 0.25rem;
 	}
 }
 </style>

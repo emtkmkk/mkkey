@@ -70,12 +70,12 @@ const toggle = () => {
 		flex-shrink: 0;
 		margin: 0;
 		box-sizing: border-box;
-		width: 32px;
-		height: 23px;
+		width: 2rem;
+		height: 1.4375rem;
 		outline: none;
 		background: var(--switchOffBg);
 		background-clip: content-box;
-		border: solid 1px var(--switchOffBg);
+		border: solid 0.0625rem var(--switchOffBg);
 		border-radius: 999px;
 		cursor: pointer;
 		transition: inherit;
@@ -83,10 +83,10 @@ const toggle = () => {
 
 		> .knob {
 			position: absolute;
-			top: 3px;
-			left: 3px;
-			width: 15px;
-			height: 15px;
+			top: 0.1875rem;
+			left: 0.1875rem;
+			width: 0.9375rem;
+			height: 0.9375rem;
 			background: var(--switchOffFg);
 			border-radius: 999px;
 			transition: all 0.2s ease;
@@ -100,21 +100,21 @@ const toggle = () => {
 	}
 
 	> .label {
-		margin-left: 12px;
-		margin-top: 2px;
+		margin-left: 0.75rem;
+		margin-top: 0.125rem;
 		display: block;
 		transition: inherit;
 		color: var(--fg);
 
 		> span {
 			display: block;
-			line-height: 20px;
+			line-height: 1.25rem;
 			cursor: pointer;
 			transition: inherit;
 		}
 
 		> .caption {
-			margin: 8px 0 0 0;
+			margin: 0.5rem 0 0 0;
 			color: var(--fgTransparentWeak);
 			font-size: 0.85em;
 
@@ -135,7 +135,7 @@ const toggle = () => {
 			border-color: var(--switchOnBg) !important;
 
 			> .knob {
-				left: 12px;
+				left: 0.75rem;
 				background: var(--switchOnFg);
 			}
 		}

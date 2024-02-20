@@ -21,14 +21,14 @@ defineProps<{
 
 <style lang="scss" scoped>
 .jmgmzlwq {
-	padding: 16px;
+	padding: 1rem;
 	font-size: 90%;
 	background: var(--infoWarnBg);
 	color: var(--infoWarnFg);
 	border-radius: var(--radius);
 
 	> .link {
-		margin-left: 4px;
+		margin-left: 0.25rem;
 		color: var(--accent);
 	}
 }

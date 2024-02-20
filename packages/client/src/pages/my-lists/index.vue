@@ -104,17 +104,17 @@ definePageMetadata({
 	> .lists {
 		> .list {
 			display: block;
-			padding: 16px;
-			border: solid 1px var(--divider);
-			border-radius: 6px;
+			padding: 1rem;
+			border: solid 0.0625rem var(--divider);
+			border-radius: 0.375rem;
 
 			&:hover {
-				border: solid 1px var(--accent);
+				border: solid 0.0625rem var(--accent);
 				text-decoration: none;
 			}
 
 			> .name {
-				margin-bottom: 4px;
+				margin-bottom: 0.25rem;
 			}
 		}
 	}

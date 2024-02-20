@@ -173,16 +173,16 @@ const headerActions = $computed(() => [
 				> .user {
 					display: flex;
 					align-items: center;
-					padding: 16px;
+					padding: 1rem;
 
 					> .avatar {
-						width: 50px;
-						height: 50px;
+						width: 3.125rem;
+						height: 3.125rem;
 					}
 
 					> .body {
 						flex: 1;
-						padding: 8px;
+						padding: 0.5rem;
 
 						> .name {
 							display: block;

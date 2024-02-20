@@ -148,9 +148,9 @@ useTooltip(buttonRef, async (showing) => {
 <style lang="scss" module>
 .root {
 	display: inline-block;
-	height: 32px;
-	margin: 2px;
-	padding: 0 6px;
+	height: 2rem;
+	margin: 0.125rem;
+	padding: 0 0.375rem;
 }
 
 .yellow {
@@ -163,7 +163,7 @@ useTooltip(buttonRef, async (showing) => {
 
 .count {
 	display: inline;
-	margin: 0 0 0 8px;
+	margin: 0 0 0 0.5rem;
 	opacity: 0.7;
 }
 </style>

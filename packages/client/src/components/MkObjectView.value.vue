@@ -150,7 +150,7 @@ export default defineComponent({
 
 		> .element {
 			display: block;
-			padding-left: 16px;
+			padding-left: 1rem;
 		}
 	}
 
@@ -164,10 +164,10 @@ export default defineComponent({
 
 		> .kv {
 			display: block;
-			padding-left: 16px;
+			padding-left: 1rem;
 
 			> .toggle {
-				width: 16px;
+				width: 1rem;
 				color: var(--accent);
 				visibility: hidden;
 
@@ -178,7 +178,7 @@ export default defineComponent({
 
 			> .k {
 				display: inline;
-				margin-right: 8px;
+				margin-right: 0.5rem;
 			}
 
 			> .v {

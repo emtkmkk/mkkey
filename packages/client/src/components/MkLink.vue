@@ -58,7 +58,7 @@ useTooltip($$(el), (showing) => {
 	word-break: break-all;
 
 	> .icon {
-		padding-left: 2px;
+		padding-left: 0.125rem;
 		font-size: 0.9em;
 	}
 }

@@ -140,15 +140,15 @@ defineExpose({
 	container-type: inline-size;
 	border-radius: var(--radius);
 
-	--root-margin: 24px;
+	--root-margin: 1.5rem;
 
-	@media (max-width: 500px) {
-		--root-margin: 16px;
+	@media (max-width: 31.25rem) {
+		--root-margin: 1rem;
 	}
 
 	> .header {
-		$height: 46px;
-		$height-narrow: 42px;
+		$height: 2.875rem;
+		$height-narrow: 2.625rem;
 		display: flex;
 		flex-shrink: 0;
 		background: var(--windowHeader);
@@ -159,7 +159,7 @@ defineExpose({
 			height: $height;
 			width: $height;
 
-			@media (max-width: 500px) {
+			@media (max-width: 31.25rem) {
 				height: $height-narrow;
 				width: $height-narrow;
 			}
@@ -168,16 +168,16 @@ defineExpose({
 		> .title {
 			flex: 1;
 			line-height: $height;
-			padding-left: 32px;
+			padding-left: 2rem;
 			font-weight: bold;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
 			pointer-events: none;
 
-			@media (max-width: 500px) {
+			@media (max-width: 31.25rem) {
 				line-height: $height-narrow;
-				padding-left: 16px;
+				padding-left: 1rem;
 			}
 		}
 

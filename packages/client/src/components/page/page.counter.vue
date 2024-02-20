@@ -50,8 +50,8 @@ export default defineComponent({
 <style lang="scss" scoped>
 .llumlmnx {
 	display: inline-block;
-	min-width: 300px;
-	max-width: 450px;
-	margin: 8px 0;
+	min-width: 18.75rem;
+	max-width: 28.125rem;
+	margin: 0.5rem 0;
 }
 </style>

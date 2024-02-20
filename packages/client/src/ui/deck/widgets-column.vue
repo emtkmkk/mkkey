@@ -7,7 +7,7 @@
 		@parent-focus="($event) => emit('parent-focus', $event)"
 	>
 		<template #header
-			><i class="ph-browser ph-bold ph-lg" style="margin-right: 8px"></i
+			><i class="ph-browser ph-bold ph-lg" style="margin-right: 0.5rem"></i
 			>{{ column.name }}</template
 		>
 		<div class="wtdtxvec">
@@ -86,13 +86,13 @@ const menu = [
 
 <style lang="scss" scoped>
 .wtdtxvec {
-	--margin: 8px;
+	--margin: 0.5rem;
 	--panelBorder: none;
 
 	padding: 0 var(--margin);
 
 	> .intro {
-		padding: 16px;
+		padding: 1rem;
 		text-align: center;
 	}
 }

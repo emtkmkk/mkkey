@@ -65,7 +65,7 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .oyyftmcf {
 	> .preview {
-		height: 150px;
+		height: 9.375rem;
 	}
 }
 </style>

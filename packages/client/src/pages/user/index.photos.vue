@@ -100,27 +100,27 @@ onMounted(() => {
 }
 
 .ujigsodd {
-	padding: 8px;
+	padding: 0.5rem;
 
 	> .stream {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-		grid-gap: 6px;
+		grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+		grid-gap: 0.375rem;
 
 		> .img {
-			height: 128px;
-			border-radius: 6px;
+			height: 8rem;
+			border-radius: 0.375rem;
 			overflow: clip;
 		}
 	}
 
 	> .empty {
 		margin: 0;
-		padding: 16px;
+		padding: 1rem;
 		text-align: center;
 
 		> i {
-			margin-right: 4px;
+			margin-right: 0.25rem;
 		}
 	}
 }

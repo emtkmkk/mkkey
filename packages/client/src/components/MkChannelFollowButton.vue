@@ -70,20 +70,20 @@ async function onClick() {
 	font-weight: bold;
 	color: var(--accent);
 	background: transparent;
-	border: solid 1px var(--accent);
+	border: solid 0.0625rem var(--accent);
 	padding: 0;
-	height: 31px;
-	font-size: 16px;
-	border-radius: 32px;
+	height: 1.9375rem;
+	font-size: 1rem;
+	border-radius: 2rem;
 	background: #fff;
 
 	&.full {
-		padding: 0 8px 0 12px;
-		font-size: 14px;
+		padding: 0 0.5rem 0 0.75rem;
+		font-size: 0.875rem;
 	}
 
 	&:not(.full) {
-		width: 31px;
+		width: 1.9375rem;
 	}
 
 	&:focus-visible {
@@ -91,12 +91,12 @@ async function onClick() {
 			content: "";
 			pointer-events: none;
 			position: absolute;
-			top: -5px;
-			right: -5px;
-			bottom: -5px;
-			left: -5px;
-			border: 2px solid var(--focus);
-			border-radius: 32px;
+			top: -0.3125rem;
+			right: -0.3125rem;
+			bottom: -0.3125rem;
+			left: -0.3125rem;
+			border: 0.125rem solid var(--focus);
+			border-radius: 2rem;
 		}
 	}
 
@@ -129,7 +129,7 @@ async function onClick() {
 	}
 
 	> span {
-		margin-right: 6px;
+		margin-right: 0.375rem;
 	}
 }
 </style>

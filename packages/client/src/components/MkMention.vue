@@ -70,8 +70,8 @@ const bgCss = bg.toRgbString();
 <style lang="scss" scoped>
 .akbvjaqn {
 	display: inline-block;
-	padding: 2px 8px 2px 2px;
-	margin-block: 2px;
+	padding: 0.125rem 0.5rem 0.125rem 0.125rem;
+	margin-block: 0.125rem;
 	border-radius: 999px;
 	max-width: 100%;
 	white-space: nowrap;

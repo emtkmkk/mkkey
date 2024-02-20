@@ -170,7 +170,7 @@ definePageMetadata(
 
 <style lang="scss" scoped>
 .wqugxsfx {
-	height: 200px;
+	height: 12.5rem;
 	background-size: contain;
 	background-position: center;
 	background-repeat: no-repeat;
@@ -178,17 +178,17 @@ definePageMetadata(
 
 	> .name {
 		position: absolute;
-		top: 8px;
-		left: 9px;
-		padding: 8px;
+		top: 0.5rem;
+		left: 0.5625rem;
+		padding: 0.5rem;
 		background: var(--panel);
 	}
 
 	> .remove {
 		position: absolute;
-		top: 8px;
-		right: 9px;
-		padding: 8px;
+		top: 0.5rem;
+		right: 0.5625rem;
+		padding: 0.5rem;
 		background: var(--panel);
 	}
 }

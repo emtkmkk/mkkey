@@ -214,10 +214,10 @@ useTooltip(
 }
 .hkzvhatu {
 	display: inline-block;
-	height: 32px;
-	margin: 2px;
-	padding: 0 6px;
-	border-radius: 4px;
+	height: 2rem;
+	margin: 0.125rem;
+	padding: 0 0.375rem;
+	border-radius: 0.25rem;
 	pointer-events: all;
 	&.newlyAdded {
 		animation: scaleInSmall 0.3s cubic-bezier(0, 0, 0, 1.2);
@@ -253,7 +253,7 @@ useTooltip(
 	&.reacted:hover {
 		background: var(--accentedBg);
 		color: var(--accent);
-		box-shadow: 0 0 0px 1px var(--accent) inset;
+		box-shadow: 0 0 0 0.0625rem var(--accent) inset;
 
 		> .count {
 			color: var(--accent);
@@ -261,7 +261,7 @@ useTooltip(
 		}
 
 		> .icon {
-			filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+			filter: drop-shadow(0 0 0.125rem rgba(0, 0, 0, 0.5));
 		}
 	}
 
@@ -269,13 +269,13 @@ useTooltip(
 	&.reacted:hover {
 		background: var(--accentedBg);
 		color: var(--accent);
-		border: 1px solid var(--accent);
+		border: 0.0625rem solid var(--accent);
 	}
 
 	> .count {
 		font-size: 0.9em;
-		line-height: 32px;
-		margin: 0 0 0 4px;
+		line-height: 2rem;
+		margin: 0 0 0 0.25rem;
 
 		&:not(.reacted).count-increased {
 			animation: textColorChanged 1s;

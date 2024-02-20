@@ -19,7 +19,7 @@
 							columns
 								.filter((c) => ids.includes(c.id))
 								.some((c) => c.flexible)
-								? { flex: 1, minWidth: '350px' }
+								? { flex: 1, minWidth: '21.875rem' }
 								: {
 										width:
 											Math.max(
@@ -48,7 +48,7 @@
 						class="column"
 						:column="columns.find((c) => c.id === ids[0])"
 						:is-stacked="false"
-						:style="columns.find(c => c.id === ids[0])!.flexible ? { flex: 1, minWidth: '350px' } : { width: columns.find(c => c.id === ids[0])!.width + 'px' }"
+						:style="columns.find(c => c.id === ids[0])!.flexible ? { flex: 1, minWidth: '21.875rem' } : { width: columns.find(c => c.id === ids[0])!.width + 'px' }"
 						@parent-focus="moveFocus(ids[0], $event)"
 					/>
 				</template>
@@ -375,7 +375,7 @@ async function deleteProfile() {
 .menu-enter-from,
 .menu-leave-active {
 	opacity: 0;
-	transform: translateX(-240px);
+	transform: translateX(-15rem);
 }
 
 .menu-back-enter-active,
@@ -389,12 +389,12 @@ async function deleteProfile() {
 }
 
 .mk-deck {
-	$nav-hide-threshold: 650px; // TODO: どこかに集約したい
+	$nav-hide-threshold: 40.625rem; // TODO: どこかに集約したい
 
 	// TODO: ここではなくて、各カラムで自身の幅に応じて上書きするようにしたい
 	--margin: var(--marginHalf);
 
-	--deckDividerThickness: 5px;
+	--deckDividerThickness: 0.3125rem;
 
 	display: flex;
 	// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
@@ -403,7 +403,7 @@ async function deleteProfile() {
 	flex: 1;
 
 	&.isMobile {
-		padding-bottom: 100px;
+		padding-bottom: 6.25rem;
 	}
 
 	> .main {
@@ -448,7 +448,7 @@ async function deleteProfile() {
 			}
 
 			> .intro {
-				padding: 32px;
+				padding: 2rem;
 				height: min-content;
 				text-align: center;
 				margin: auto;
@@ -465,7 +465,7 @@ async function deleteProfile() {
 				display: flex;
 				flex-direction: column;
 				justify-content: center;
-				width: 44px;
+				width: 2.75rem;
 
 				> .top,
 				> .middle,
@@ -486,12 +486,12 @@ async function deleteProfile() {
 					margin-bottom: auto;
 
 					> .new {
-						font-size: 20px;
+						font-size: 1.25rem;
 						background-color: var(--accentedBg);
 						display: flex;
 						align-items: center;
 						justify-content: center;
-						border-radius: 10px;
+						border-radius: 0.625rem;
 						margin: -0.35rem;
 						transform: scale(0.8);
 					}
@@ -509,7 +509,7 @@ async function deleteProfile() {
 		z-index: 1000;
 		bottom: 0;
 		left: 0;
-		padding: 16px;
+		padding: 1rem;
 		display: flex;
 		width: 100%;
 		box-sizing: border-box;
@@ -519,20 +519,20 @@ async function deleteProfile() {
 			flex: 1;
 			padding: 0;
 			margin: auto;
-			height: 64px;
-			border-radius: 8px;
+			height: 4rem;
+			border-radius: 0.5rem;
 			background: var(--panel);
 			color: var(--fg);
 
 			&:not(:last-child) {
-				margin-right: 12px;
+				margin-right: 0.75rem;
 			}
 
-			@media (max-width: 400px) {
-				height: 60px;
+			@media (max-width: 25rem) {
+				height: 3.75rem;
 
 				&:not(:last-child) {
-					margin-right: 8px;
+					margin-right: 0.5rem;
 				}
 			}
 
@@ -545,7 +545,7 @@ async function deleteProfile() {
 				top: 0;
 				left: 0;
 				color: var(--indicator);
-				font-size: 16px;
+				font-size: 1rem;
 				animation: blink 1s infinite;
 			}
 
@@ -558,7 +558,7 @@ async function deleteProfile() {
 			}
 
 			> * {
-				font-size: 20px;
+				font-size: 1.25rem;
 			}
 
 			&:disabled {
@@ -582,7 +582,7 @@ async function deleteProfile() {
 		z-index: 1001;
 		// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
 		height: calc(var(--vh, 1vh) * 100);
-		width: 240px;
+		width: 15rem;
 		box-sizing: border-box;
 		contain: strict;
 		overflow: auto;

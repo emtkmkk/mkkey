@@ -16,7 +16,7 @@ defineProps<{
 
 <style lang="scss" scoped>
 .fpezltsf {
-	padding: 16px;
+	padding: 1rem;
 	font-size: 90%;
 	background: var(--infoBg);
 	color: var(--infoFg);
@@ -28,7 +28,7 @@ defineProps<{
 	}
 
 	> i {
-		margin-right: 4px;
+		margin-right: 0.25rem;
 	}
 }
 </style>

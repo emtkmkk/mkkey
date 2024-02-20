@@ -88,7 +88,7 @@ export default defineComponent({
 .novjtcto {
 	> .label {
 		font-size: 0.85em;
-		padding: 0 0 8px 0;
+		padding: 0 0 0.5rem 0;
 		user-select: none;
 
 		&:empty {
@@ -98,13 +98,13 @@ export default defineComponent({
 
 	> .body {
 		display: flex;
-		gap: 12px;
+		gap: 0.75rem;
 		flex-wrap: wrap;
 	}
 
 	> .caption {
 		font-size: 0.85em;
-		padding: 8px 0 0 0;
+		padding: 0.5rem 0 0 0;
 		color: var(--fgTransparentWeak);
 
 		&:empty {

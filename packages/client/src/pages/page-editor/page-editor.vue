@@ -560,7 +560,7 @@ definePageMetadata(
 .jqqmcavi {
 	> .button {
 		& + .button {
-			margin: 4px;
+			margin: 0.25rem;
 		}
 	}
 }
@@ -572,14 +572,14 @@ definePageMetadata(
 		> .title {
 			z-index: 1;
 			margin: 0;
-			padding: 0 16px;
-			line-height: 42px;
+			padding: 0 1rem;
+			line-height: 2.625rem;
 			font-size: 0.9em;
 			font-weight: bold;
-			box-shadow: 0 1px rgba(#000, 0.07);
+			box-shadow: 0 0.0625rem rgba(#000, 0.07);
 
 			> i {
-				margin-right: 6px;
+				margin-right: 0.375rem;
 			}
 
 			&:empty {
@@ -595,32 +595,32 @@ definePageMetadata(
 
 			> button {
 				padding: 0;
-				width: 42px;
+				width: 2.625rem;
 				font-size: 0.9em;
-				line-height: 42px;
+				line-height: 2.625rem;
 			}
 		}
 	}
 
 	> section {
-		padding: 0 32px 32px 32px;
+		padding: 0 2rem 2rem 2rem;
 
-		@media (max-width: 500px) {
-			padding: 0 16px 16px 16px;
+		@media (max-width: 31.25rem) {
+			padding: 0 1rem 1rem 1rem;
 		}
 
 		> .view {
 			display: inline-block;
-			margin: 16px 0 0 0;
-			font-size: 14px;
+			margin: 1rem 0 0 0;
+			font-size: 0.875rem;
 		}
 
 		> .content {
-			margin-bottom: 16px;
+			margin-bottom: 1rem;
 		}
 
 		> .eyeCatch {
-			margin-bottom: 16px;
+			margin-bottom: 1rem;
 
 			> div {
 				> img {
@@ -632,14 +632,14 @@ definePageMetadata(
 }
 
 .qmuvgica {
-	padding: 16px;
+	padding: 1rem;
 
 	> .variables {
-		margin-bottom: 16px;
+		margin-bottom: 1rem;
 	}
 
 	> .add {
-		margin-bottom: 16px;
+		margin-bottom: 1rem;
 	}
 }
 </style>

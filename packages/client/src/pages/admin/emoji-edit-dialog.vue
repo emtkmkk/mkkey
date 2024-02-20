@@ -119,7 +119,7 @@ async function del() {
 .yigymqpb {
 	> .img {
 		display: block;
-		height: 64px;
+		height: 4rem;
 		margin: 0 auto;
 	}
 }

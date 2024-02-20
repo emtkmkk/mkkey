@@ -247,9 +247,9 @@ export default defineComponent({
 <style lang="scss" scoped>
 .ngbfujlo {
 	position: relative;
-	padding: 32px;
-	border-radius: 6px;
-	box-shadow: 0 2px 8px var(--shadow);
+	padding: 2rem;
+	border-radius: 0.375rem;
+	box-shadow: 0 0.125rem 0.5rem var(--shadow);
 	z-index: 1;
 	text-align: left;
 
@@ -258,35 +258,35 @@ export default defineComponent({
 
 		> .button {
 			display: inline-block !important;
-			margin-top: 32px;
+			margin-top: 2rem;
 		}
 	}
 
 	> .button {
 		display: inline-block !important;
-		margin-top: 32px;
+		margin-top: 2rem;
 	}
 	> .visibility {
 		display: inline-block !important;
-		height: 34px;
-		width: 34px;
-		margin: 0 0 0 12px !important;
+		height: 2.125rem;
+		width: 2.125rem;
+		margin: 0 0 0 0.75rem !important;
 	}
 
-	@media (max-width: 600px) {
-		padding: 16px;
+	@media (max-width: 37.5rem) {
+		padding: 1rem;
 
 		> .shareButton {
 			text-align: left;
 
 			> .button {
 				display: inline-block !important;
-				margin-top: 16px;
+				margin-top: 1rem;
 			}
 		}
 
 		> .button {
-			margin-top: 16px;
+			margin-top: 1rem;
 		}
 	}
 }

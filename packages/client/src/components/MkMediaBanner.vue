@@ -85,8 +85,8 @@ onMounted(() => {
 <style lang="scss" scoped>
 .mk-media-banner {
 	width: 100%;
-	border-radius: 4px;
-	margin-top: 4px;
+	border-radius: 0.25rem;
+	margin-top: 0.25rem;
 	overflow: hidden;
 	--plyr-color-main: var(--accent);
 	--plyr-audio-controls-background: var(--panelHighlight);
@@ -97,8 +97,8 @@ onMounted(() => {
 	> .sensitive {
 		display: flex;
 		align-items: center;
-		font-size: 12px;
-		padding: 8px 12px;
+		font-size: 0.75rem;
+		padding: 0.5rem 0.75rem;
 		white-space: nowrap;
 
 		> * {

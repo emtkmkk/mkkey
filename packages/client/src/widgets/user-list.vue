@@ -130,7 +130,7 @@ defineExpose<WidgetComponentExpose>({
 <style lang="scss" module>
 .wsdlkfj {
 	> .init {
-		padding: 16px;
+		padding: 1rem;
 	}
 }
 </style>

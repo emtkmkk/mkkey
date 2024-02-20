@@ -648,7 +648,7 @@ definePageMetadata(
 }
 
 .profile {
-	padding: 20px;
+	padding: 1.25rem;
 	cursor: pointer;
 
 	&Name {

@@ -7,7 +7,7 @@
 	>
 		<template #header>
 			<i class="ph-list-bullets ph-bold ph-lg"></i
-			><span style="margin-left: 8px">{{ column.name }}</span>
+			><span style="margin-left: 0.5rem">{{ column.name }}</span>
 		</template>
 
 		<XTimeline

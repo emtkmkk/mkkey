@@ -9,30 +9,30 @@
 		@close="dialog.close()"
 		@closed="$emit('closed')"
 		@ok="ok()"
-		style="padding: 12px"
+		style="padding: 0.75rem"
 	>
 		<template #header>{{ title || i18n.ts.generateAccessToken }}</template>
 		<div v-if="information" class="_section">
 			<MkInfo warn>{{ information }}</MkInfo>
 		</div>
 		<div class="_section">
-			<div style="margin-bottom: 16px">
+			<div style="margin-bottom: 1rem">
 				<b>{{ i18n.ts.name }}</b>
 			</div>
-			<MkInput style="margin-bottom: 16px" v-model="name" />
+			<MkInput style="margin-bottom: 1rem" v-model="name" />
 		</div>
 		<div class="_section">
-			<div style="margin-bottom: 16px">
+			<div style="margin-bottom: 1rem">
 				<b>{{ i18n.ts.permission }}</b>
 			</div>
 			<MkButton inline @click="disableAll">{{
 				i18n.ts.disableAll
 			}}</MkButton>
-			<MkButton style="margin-bottom: 12px" inline @click="enableAll">{{
+			<MkButton style="margin-bottom: 0.75rem" inline @click="enableAll">{{
 				i18n.ts.enableAll
 			}}</MkButton>
 			<MkSwitch
-				style="margin-bottom: 6px"
+				style="margin-bottom: 0.375rem"
 				v-for="kind in initialPermissions || kinds"
 				:key="kind"
 				v-model="permissions[kind]"

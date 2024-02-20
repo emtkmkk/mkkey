@@ -9,7 +9,7 @@
 				:line-numbers="false"
 			/>
 			<MkButton
-				style="position: absolute; top: 8px; right: 8px"
+				style="position: absolute; top: 0.5rem; right: 0.5rem"
 				primary
 				@click="run()"
 				><i class="ph-play ph-bold ph-lg"></i
@@ -158,7 +158,7 @@ definePageMetadata({
 
 <style lang="scss" scoped>
 .iltifgqe {
-	padding: 16px;
+	padding: 1rem;
 
 	> .editor {
 		position: relative;
@@ -166,7 +166,7 @@ definePageMetadata({
 }
 
 .bepmlvbi {
-	padding: 16px;
+	padding: 1rem;
 
 	> .log {
 		&:not(.print) {

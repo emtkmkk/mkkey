@@ -393,7 +393,7 @@ defineExpose({
 	}
 
 	> .content {
-		transform: translateY(0px);
+		transform: translateY(0);
 		transition: opacity 0.3s ease-in,
 			transform 0.3s cubic-bezier(0.5, -0.5, 1, 0.5) !important;
 	}
@@ -407,7 +407,7 @@ defineExpose({
 	> .content {
 		pointer-events: none;
 		opacity: 0;
-		transform: translateY(-300px);
+		transform: translateY(-18.75rem);
 	}
 }
 
@@ -502,39 +502,39 @@ defineExpose({
 			left: 0;
 			right: 0;
 			margin: auto;
-			padding: 8px;
+			padding: 0.5rem;
 			// TODO: mask-imageはiOSだとやたら重い。なんとかしたい
 			-webkit-mask-image: linear-gradient(
 				0deg,
 				rgba(0, 0, 0, 0) 0%,
-				rgba(0, 0, 0, 1) 8px,
-				rgba(0, 0, 0, 1) calc(100% - 8px),
+				rgba(0, 0, 0, 1) 0.5rem,
+				rgba(0, 0, 0, 1) calc(100% - 0.5rem),
 				rgba(0, 0, 0, 0) 100%
 			);
 			mask-image: linear-gradient(
 				0deg,
 				rgba(0, 0, 0, 0) 0%,
-				rgba(0, 0, 0, 1) 8px,
-				rgba(0, 0, 0, 1) calc(100% - 8px),
+				rgba(0, 0, 0, 1) 0.5rem,
+				rgba(0, 0, 0, 1) calc(100% - 0.5rem),
 				rgba(0, 0, 0, 0) 100%
 			);
 			overflow: auto;
 			display: flex;
 
-			@media (max-width: 500px) {
-				padding: 4px;
+			@media (max-width: 31.25rem) {
+				padding: 0.25rem;
 				-webkit-mask-image: linear-gradient(
 					0deg,
 					rgba(0, 0, 0, 0) 0%,
-					rgba(0, 0, 0, 1) 4px,
-					rgba(0, 0, 0, 1) calc(100% - 4px),
+					rgba(0, 0, 0, 1) 0.25rem,
+					rgba(0, 0, 0, 1) calc(100% - 0.25rem),
 					rgba(0, 0, 0, 0) 100%
 				);
 				mask-image: linear-gradient(
 					0deg,
 					rgba(0, 0, 0, 0) 0%,
-					rgba(0, 0, 0, 1) 4px,
-					rgba(0, 0, 0, 1) calc(100% - 4px),
+					rgba(0, 0, 0, 1) 0.25rem,
+					rgba(0, 0, 0, 1) calc(100% - 0.25rem),
 					rgba(0, 0, 0, 0) 100%
 				);
 			}

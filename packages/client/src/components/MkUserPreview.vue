@@ -198,25 +198,25 @@ onMounted(() => {
 
 .fxxzrfni {
 	position: absolute;
-	width: 300px;
+	width: 18.75rem;
 	overflow: hidden;
 	transform-origin: center top;
 
 	> .info {
 		> .banner {
-			height: 84px;
+			height: 5.25rem;
 			background-color: rgba(0, 0, 0, 0.1);
 			background-size: cover;
 			background-position: center;
 			> .followed {
 				position: absolute;
-				top: 12px;
-				left: 12px;
-				padding: 4px 8px;
+				top: 0.75rem;
+				left: 0.75rem;
+				padding: 0.25rem 0.5rem;
 				color: #fff;
 				background: rgba(0, 0, 0, 0.7);
 				font-size: 0.7em;
-				border-radius: 6px;
+				border-radius: 0.375rem;
 			}
 
 			&::after {
@@ -235,31 +235,31 @@ onMounted(() => {
 		> .avatar {
 			display: block;
 			position: absolute;
-			top: 62px;
-			left: 13px;
+			top: 3.875rem;
+			left: 0.8125rem;
 			z-index: 2;
-			width: 58px;
-			height: 58px;
-			border: solid 3px var(--face);
-			border-radius: 8px;
+			width: 3.625rem;
+			height: 3.625rem;
+			border: solid 0.1875rem var(--face);
+			border-radius: 0.5rem;
 		}
 
 		> .title {
 			display: block;
-			padding: 8px 0 8px 82px;
+			padding: 0.5rem 0 0.5rem 5.125rem;
 
 			> .name {
 				display: inline-block;
 				margin: 0;
 				font-weight: bold;
-				line-height: 16px;
+				line-height: 1rem;
 				word-break: break-all;
 			}
 
 			> .username {
 				display: block;
 				margin: 0;
-				line-height: 16px;
+				line-height: 1rem;
 				font-size: 0.8em;
 				color: var(--fg);
 				opacity: 0.7;
@@ -267,15 +267,15 @@ onMounted(() => {
 		}
 
 		> .description {
-			padding: 0 16px;
+			padding: 0 1rem;
 			font-size: 0.8em;
 			color: var(--fg);
 			&.collapsed {
 				position: relative;
-				max-height: calc(9em + 50px);
-				mask: linear-gradient(black calc(100% - 64px), transparent);
+				max-height: calc(9em + 3.125rem);
+				mask: linear-gradient(black calc(100% - 4rem), transparent);
 				-webkit-mask: linear-gradient(
-					black calc(100% - 64px),
+					black calc(100% - 4rem),
 					transparent
 				);
 			}
@@ -292,7 +292,7 @@ onMounted(() => {
 				padding: 0.4em 1em;
 				font-size: 0.8em;
 				border-radius: 999px;
-				box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+				box-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 20%);
 			}
 			&:hover {
 				> span {
@@ -309,15 +309,15 @@ onMounted(() => {
 			> span {
 				display: inline-block;
 				background: var(--panel);
-				padding: 6px 10px;
+				padding: 0.375rem 0.625rem;
 				font-size: 0.8em;
 				border-radius: 999px;
-				box-shadow: 0 0 7px 7px var(--bg);
+				box-shadow: 0 0 0.4375rem 0.4375rem var(--bg);
 			}
 		}
 
 		> .fields {
-			padding: 0 16px;
+			padding: 0 1rem;
 			font-size: 0.8em;
 			margin-top: 1em;
 
@@ -328,7 +328,7 @@ onMounted(() => {
 				align-items: center;
 
 				&:not(:last-child) {
-					margin-bottom: 8px;
+					margin-bottom: 0.5rem;
 				}
 
 				:deep(span) {
@@ -355,7 +355,7 @@ onMounted(() => {
 		}
 
 		> .status {
-			padding: 8px 16px;
+			padding: 0.5rem 1rem;
 
 			> div {
 				display: inline-block;
@@ -379,8 +379,8 @@ onMounted(() => {
 
 		> .koudoku-button {
 			position: absolute;
-			top: 8px;
-			right: 8px;
+			top: 0.5rem;
+			right: 0.5rem;
 		}
 	}
 }

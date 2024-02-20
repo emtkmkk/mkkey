@@ -349,9 +349,9 @@ export default defineComponent({
 								}
 								case "rotate": {
 									const rotate = token.props.args.x
-										? "perspective(128px) rotateX"
+										? "perspective(8rem) rotateX"
 										: token.props.args.y
-										? "perspective(128px) rotateY"
+										? "perspective(8rem) rotateY"
 										: "rotate";
 									const degrees = parseFloat(token.props.args.deg ?? "90");
 									style = `transform: ${rotate}(${degrees}deg); transform-origin: center center;`;
@@ -464,7 +464,7 @@ export default defineComponent({
 										"span",
 										{
 											style:
-												"display: inline-block; font-size: 90%; border: solid 1px var(--divider); border-radius: 999px; padding: 4px 10px 4px 6px;",
+												"display: inline-block; font-size: 90%; border: solid 0.0625rem var(--divider); border-radius: 999px; padding: 0.25rem 0.625rem 0.25rem 0.375rem;",
 										},
 										[
 											h("i", {

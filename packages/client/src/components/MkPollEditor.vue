@@ -182,15 +182,15 @@ watch(
 
 <style lang="scss" scoped>
 .zmdxowus {
-	padding: 8px 16px;
+	padding: 0.5rem 1rem;
 
 	> .caution {
-		margin: 0 0 8px 0;
+		margin: 0 0 0.5rem 0;
 		font-size: 0.8em;
 		color: #f00;
 
 		> i {
-			margin-right: 4px;
+			margin-right: 0.25rem;
 		}
 	}
 
@@ -202,7 +202,7 @@ watch(
 
 		> li {
 			display: flex;
-			margin: 8px 0;
+			margin: 0.5rem 0;
 			padding: 0;
 			width: 100%;
 
@@ -211,26 +211,26 @@ watch(
 			}
 
 			> button {
-				width: 32px;
-				padding: 4px 0;
+				width: 2rem;
+				padding: 0.25rem 0;
 			}
 		}
 	}
 
 	> .add {
-		margin: 8px 0;
+		margin: 0.5rem 0;
 		z-index: 1;
 	}
 
 	> section {
-		margin: 16px 0 0 0;
+		margin: 1rem 0 0 0;
 
 		> div {
-			margin: 0 8px;
+			margin: 0 0.5rem;
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
-			gap: 12px;
+			gap: 0.75rem;
 
 			&:last-child {
 				flex: 1 0 auto;
@@ -244,7 +244,7 @@ watch(
 					flex-grow: 9999;
 					align-items: end;
 					display: flex;
-					gap: 4px;
+					gap: 0.25rem;
 
 					> .input {
 						flex: 1 1 auto;

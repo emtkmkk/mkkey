@@ -92,7 +92,7 @@
 				}}</span></FormSwitch
 			>
 
-			<div v-panel v-if="enableEmojiReplace" style="border-radius: 6px">
+			<div v-panel v-if="enableEmojiReplace" style="border-radius: 0.375rem">
 				<XDraggable
 					v-model="allEmojiReplace"
 					class="zoaiodol"
@@ -279,18 +279,18 @@ definePageMetadata({
 
 <style lang="scss" scoped>
 .zoaiodol {
-	padding: 12px;
+	padding: 0.75rem;
 	font-size: 1.1em;
 
 	> .item {
 		display: inline-block;
-		padding: 8px;
+		padding: 0.5rem;
 		cursor: move;
 	}
 
 	> .add {
 		display: inline-block;
-		padding: 8px;
+		padding: 0.5rem;
 	}
 }
 </style>

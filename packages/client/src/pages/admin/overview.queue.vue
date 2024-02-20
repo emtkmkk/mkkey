@@ -115,17 +115,17 @@ onUnmounted(() => {
 .root {
 	&:global {
 		> .status {
-			padding: 0 0 16px 0;
+			padding: 0 0 1rem 0;
 		}
 
 		> .charts {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
-			gap: 12px;
+			gap: 0.75rem;
 
 			> .chart {
 				min-width: 0;
-				padding: 16px;
+				padding: 1rem;
 				background: var(--panel);
 				border-radius: var(--radius);
 

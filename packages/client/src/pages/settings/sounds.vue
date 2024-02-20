@@ -22,7 +22,7 @@
 			<FormButton
 				v-for="type in Object.keys(sounds)"
 				:key="type"
-				style="margin-bottom: 8px"
+				style="margin-bottom: 0.5rem"
 				@click="edit(type)"
 			>
 				{{ i18n.t(`_sfx.${type}`) }}

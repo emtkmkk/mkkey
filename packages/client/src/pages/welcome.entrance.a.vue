@@ -55,7 +55,7 @@
 							rounded
 							gradate
 							data-cy-signup
-							style="margin-right: 12px"
+							style="margin-right: 0.75rem"
 							@click="signup()"
 							>{{ i18n.ts.signup }}</MkButton
 						>
@@ -69,7 +69,7 @@
 						<MkButton
 							inline
 							rounded
-							style="margin-left: 12px; margin-top: 12px"
+							style="margin-left: 0.75rem; margin-top: 0.75rem"
 							onclick="window.location.href='/explore'"
 							>覗いてみる</MkButton
 						>
@@ -197,7 +197,7 @@ function showMenu(ev) {
 		text-align: center;
 		min-height: 100vh;
 		box-sizing: border-box;
-		padding: 16px;
+		padding: 1rem;
 
 		> .bg {
 			position: absolute;
@@ -211,27 +211,27 @@ function showMenu(ev) {
 			position: absolute;
 			top: 0;
 			bottom: 0;
-			right: 64px;
+			right: 4rem;
 			margin: auto;
-			width: 500px;
-			height: calc(100% - 128px);
+			width: 31.25rem;
+			height: calc(100% - 8rem);
 			overflow: hidden;
 			-webkit-mask-image: linear-gradient(
 				0deg,
 				rgba(0, 0, 0, 0) 0%,
-				rgba(0, 0, 0, 1) 128px,
-				rgba(0, 0, 0, 1) calc(100% - 128px),
+				rgba(0, 0, 0, 1) 8rem,
+				rgba(0, 0, 0, 1) calc(100% - 8rem),
 				rgba(0, 0, 0, 0) 100%
 			);
 			mask-image: linear-gradient(
 				0deg,
 				rgba(0, 0, 0, 0) 0%,
-				rgba(0, 0, 0, 1) 128px,
-				rgba(0, 0, 0, 1) calc(100% - 128px),
+				rgba(0, 0, 0, 1) 8rem,
+				rgba(0, 0, 0, 1) calc(100% - 8rem),
 				rgba(0, 0, 0, 0) 100%
 			);
 
-			@media (max-width: 1200px) {
+			@media (max-width: 75rem) {
 				display: none;
 			}
 		}
@@ -258,57 +258,57 @@ function showMenu(ev) {
 
 		> .misskey {
 			position: absolute;
-			top: 42px;
-			left: 42px;
-			width: 140px;
+			top: 2.625rem;
+			left: 2.625rem;
+			width: 8.75rem;
 
-			@media (max-width: 450px) {
-				width: 130px;
+			@media (max-width: 28.125rem) {
+				width: 8.125rem;
 			}
 		}
 
 		> .emojis {
 			position: absolute;
-			bottom: 32px;
-			left: 115px;
+			bottom: 2rem;
+			left: 7.1875rem;
 			transform: scale(1.5);
 
 			> * {
-				margin-right: 8px;
+				margin-right: 0.5rem;
 			}
 
-			@media (max-width: 1200px) {
+			@media (max-width: 75rem) {
 				display: none;
 			}
 		}
 
 		> .main {
 			position: relative;
-			width: min(480px, 100%);
-			margin: auto auto auto 128px;
+			width: min(30rem, 100%);
+			margin: auto auto auto 8rem;
 			background: var(--panel);
 			border-radius: var(--radius);
-			box-shadow: 0 12px 32px rgb(0 0 0 / 25%);
+			box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 25%);
 
-			@media (max-width: 1200px) {
+			@media (max-width: 75rem) {
 				margin: auto;
 			}
 
 			> .icon {
-				width: 85px;
-				margin-top: -47px;
+				width: 5.3125rem;
+				margin-top: -2.9375rem;
 				border-radius: 100%;
 				vertical-align: bottom;
 			}
 
 			> .menu {
 				position: absolute;
-				top: 16px;
-				right: 16px;
-				width: 32px;
-				height: 32px;
-				border-radius: 8px;
-				font-size: 18px;
+				top: 1rem;
+				right: 1rem;
+				width: 2rem;
+				height: 2rem;
+				border-radius: 0.5rem;
+				font-size: 1.125rem;
 				z-index: 2;
 			}
 
@@ -319,26 +319,26 @@ function showMenu(ev) {
 				> h1 {
 					display: block;
 					margin: 0;
-					padding: 16px 32px 24px 32px;
+					padding: 1rem 2rem 1.5rem 2rem;
 					font-size: 1.4em;
 
 					> .logo {
 						vertical-align: bottom;
-						max-height: 120px;
-						max-width: min(100%, 300px);
+						max-height: 7.5rem;
+						max-width: min(100%, 18.75rem);
 					}
 				}
 
 				> .about {
-					padding: 0 32px;
+					padding: 0 2rem;
 				}
 
 				> .action {
-					padding: 32px;
-					padding-top: 22px;
+					padding: 2rem;
+					padding-top: 1.375rem;
 
 					> * {
-						line-height: 28px;
+						line-height: 1.75rem;
 					}
 				}
 			}
@@ -346,7 +346,7 @@ function showMenu(ev) {
 
 		> .federation {
 			position: absolute;
-			bottom: 16px;
+			bottom: 1rem;
 			left: 0;
 			right: 0;
 			margin: auto;
@@ -357,9 +357,9 @@ function showMenu(ev) {
 			overflow: clip;
 			width: 35%;
 			left: 50%;
-			padding: 8px 0;
+			padding: 0.5rem 0;
 
-			@media (max-width: 900px) {
+			@media (max-width: 56.25rem) {
 				display: none;
 			}
 		}
@@ -372,16 +372,16 @@ function showMenu(ev) {
 	display: inline-flex;
 	align-items: center;
 	vertical-align: bottom;
-	padding: 6px 12px 6px 6px;
-	margin: 0 10px 0 0;
+	padding: 0.375rem 0.75rem 0.375rem 0.375rem;
+	margin: 0 0.625rem 0 0;
 	background: var(--panel);
 	border-radius: 999px;
 
 	> :global(.icon) {
 		display: inline-block;
-		width: 20px;
-		height: 20px;
-		margin-right: 5px;
+		width: 1.25rem;
+		height: 1.25rem;
+		margin-right: 0.3125rem;
 		border-radius: 999px;
 	}
 }

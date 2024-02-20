@@ -123,9 +123,9 @@ const showTicker =
 	align-items: center;
 	white-space: nowrap;
 	justify-self: flex-end;
-	border-radius: 100px;
+	border-radius: 6.25rem;
 	font-size: 0.8em;
-	text-shadow: 0 2px 2px var(--shadow);
+	text-shadow: 0 0.125rem 0.125rem var(--shadow);
 	> .avatar {
 		width: 3.7em;
 		height: 3.7em;
@@ -162,7 +162,7 @@ const showTicker =
 			}
 		}
 		.name {
-			// flex: 1 1 0px;
+			// flex: 1 1 0;
 			display: inline;
 			margin: 0 0.5em 0 0;
 			padding: 0;
@@ -175,16 +175,16 @@ const showTicker =
 				flex-shrink: 0;
 				align-self: center;
 				margin: 0 0.5em 0 0;
-				padding: 1px 6px;
+				padding: 0.0625rem 0.375rem;
 				font-size: 80%;
-				border: solid 0.5px var(--divider);
-				border-radius: 3px;
+				border: solid 0.0.3125rem var(--divider);
+				border-radius: 0.1875rem;
 			}
 			.badge {
 				flex-shrink: 0;
 				align-self: center;
 				margin-right: 0.5em;
-				padding: 1px 6px;
+				padding: 0.0625rem 0.375rem;
 				vertical-align: middle;
 			}
 
@@ -219,7 +219,7 @@ const showTicker =
 			}
 			.reply-icon {
 				display: inline-block;
-				border-radius: 6px;
+				border-radius: 0.375rem;
 				color: var(--accent);
 				transition: background 0.2s;
 				&:hover,

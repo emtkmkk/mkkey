@@ -1712,89 +1712,89 @@ defineExpose({
 
 <style lang="scss" scoped>
 .omfetrab {
-	$pad: 8px;
+	$pad: 0.5rem;
 	display: flex;
 	flex-direction: column;
 	width: calc(var(--EmojiPickerWidth) + (#{$pad} * 2));
 	--EmojiPickerWidth: 95dvw;
 
 	&.s-6 {
-		--eachSize: 5px;
+		--eachSize: 0.3125rem;
 		--valign: 0em;
 	}
 
 	&.s-5 {
-		--eachSize: 10px;
+		--eachSize: 0.625rem;
 		--valign: 0em;
 	}
 
 	&.s-4 {
-		--eachSize: 15px;
+		--eachSize: 0.9375rem;
 		--valign: 0em;
 	}
 
 	&.s-3 {
-		--eachSize: 20px;
+		--eachSize: 1.25rem;
 		--valign: 0em;
 	}
 
 	&.s-2 {
-		--eachSize: 25px;
+		--eachSize: 1.5625rem;
 		--valign: 0em;
 	}
 
 	&.s-1 {
-		--eachSize: 30px;
+		--eachSize: 1.875rem;
 		--valign: 0em;
 	}
 
 	&.s0 {
-		--eachSize: 35px;
+		--eachSize: 2.1875rem;
 		--valign: -0.25em;
 	}
 
 	&.s1 {
-		--eachSize: 40px;
+		--eachSize: 2.5rem;
 		--valign: -0.25em;
 	}
 
 	&.s2 {
-		--eachSize: 45px;
+		--eachSize: 2.8125rem;
 		--valign: -0.25em;
 	}
 
 	&.s3 {
-		--eachSize: 50px;
+		--eachSize: 3.125rem;
 		--valign: -0.25em;
 	}
 
 	&.s4 {
-		--eachSize: 55px;
+		--eachSize: 3.4375rem;
 		--valign: -0.25em;
 	}
 
 	&.s5 {
-		--eachSize: 60px;
+		--eachSize: 3.75rem;
 		--valign: -0.25em;
 	}
 
 	&.s6 {
-		--eachSize: 65px;
+		--eachSize: 4.0625rem;
 		--valign: -0.25em;
 	}
 
 	&.s7 {
-		--eachSize: 70px;
+		--eachSize: 4.375rem;
 		--valign: -0.25em;
 	}
 
 	&.s8 {
-		--eachSize: 75px;
+		--eachSize: 4.6875rem;
 		--valign: -0.25em;
 	}
 
 	&.s9 {
-		--eachSize: 80px;
+		--eachSize: 5rem;
 		--valign: -0.25em;
 	}
 
@@ -1949,16 +1949,16 @@ defineExpose({
 		& > .emojis {
 			::v-deep(section) {
 				> header {
-					height: 32px;
-					line-height: 32px;
-					padding: 0 12px;
-					font-size: 15px;
+					height: 2rem;
+					line-height: 2rem;
+					padding: 0 0.75rem;
+					font-size: 0.9375rem;
 				}
 
 				> .body {
 					display: grid;
 					grid-template-columns: var(--columns);
-					font-size: 30px;
+					font-size: 1.875rem;
 
 					> .item {
 						width: var(--eachWidth);
@@ -1972,7 +1972,7 @@ defineExpose({
 
 	> .search {
 		width: 100%;
-		padding: 12px;
+		padding: 0.75rem;
 		box-sizing: border-box;
 		font-size: 1em;
 		outline: none;
@@ -1981,13 +1981,13 @@ defineExpose({
 		color: var(--fg);
 
 		&:not(:focus):not(.filled) {
-			margin-bottom: env(safe-area-inset-bottom, 0px);
+			margin-bottom: env(safe-area-inset-bottom, 0);
 		}
 
 		&:not(.filled) {
 			order: 1;
 			z-index: 2;
-			box-shadow: 0px -1px 0 0px var(--divider);
+			box-shadow: 0 -0.0625rem 0 0 var(--divider);
 		}
 	}
 
@@ -1997,11 +1997,11 @@ defineExpose({
 
 		> .tab {
 			flex: 1;
-			height: 38px;
-			border-top: solid 0.5px var(--divider);
+			height: 2.375rem;
+			border-top: solid 0.0.3125rem var(--divider);
 
 			&.active {
-				border-top: solid 1px var(--accent);
+				border-top: solid 0.0625rem var(--accent);
 				color: var(--accent);
 			}
 		}
@@ -2020,19 +2020,19 @@ defineExpose({
 
 		> .group {
 			&:not(.index) {
-				padding: 4px 0 8px 0;
-				border-top: solid 0.5px var(--divider);
+				padding: 0.25rem 0 0.5rem 0;
+				border-top: solid 0.0.3125rem var(--divider);
 			}
 
 			> header {
 				/*position: sticky;
 				top: 0;
 				left: 0;*/
-				height: 32px;
-				line-height: 32px;
+				height: 2rem;
+				line-height: 2rem;
 				z-index: 2;
-				padding: 0 8px;
-				font-size: 12px;
+				padding: 0 0.5rem;
+				font-size: 0.75rem;
 			}
 		}
 
@@ -2041,11 +2041,11 @@ defineExpose({
 				position: sticky;
 				top: 0;
 				left: 0;
-				height: 32px;
-				line-height: 32px;
+				height: 2rem;
+				line-height: 2rem;
 				z-index: 1;
-				padding: 0 8px;
-				font-size: 12px;
+				padding: 0 0.5rem;
+				font-size: 0.75rem;
 				cursor: pointer;
 
 				&:hover {
@@ -2067,11 +2067,11 @@ defineExpose({
 					width: var(--eachWidth);
 					height: var(--eachSize);
 					contain: strict;
-					border-radius: 4px;
-					font-size: 24px;
+					border-radius: 0.25rem;
+					font-size: 1.5rem;
 
 					&:focus-visible {
-						outline: solid 2px var(--focus);
+						outline: solid 0.125rem var(--focus);
 						z-index: 1;
 					}
 
@@ -2094,13 +2094,13 @@ defineExpose({
 			}
 
 			&.result {
-				border-bottom: solid 0.5px var(--divider);
+				border-bottom: solid 0.0.3125rem var(--divider);
 				header {
-					height: 32px;
-					line-height: 32px;
+					height: 2rem;
+					line-height: 2rem;
 					z-index: 2;
-					padding: 0 8px;
-					font-size: 12px;
+					padding: 0 0.5rem;
+					font-size: 0.75rem;
 				}
 				&:empty {
 					display: none;

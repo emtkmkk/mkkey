@@ -116,12 +116,12 @@ function isMe(message): boolean {
 			clear: both;
 		}
 
-		padding: 20px 30px;
+		padding: 1.25rem 1.875rem;
 
 		> header {
 			display: flex;
 			align-items: center;
-			margin-bottom: 2px;
+			margin-bottom: 0.125rem;
 			white-space: nowrap;
 			overflow: hidden;
 
@@ -136,7 +136,7 @@ function isMe(message): boolean {
 			}
 
 			> .username {
-				margin: 0 8px;
+				margin: 0 0.5rem;
 			}
 
 			> .time {
@@ -146,10 +146,10 @@ function isMe(message): boolean {
 
 		> .avatar {
 			float: left;
-			width: 54px;
-			height: 54px;
-			margin: 0 16px 0 0;
-			border-radius: 8px;
+			width: 3.375rem;
+			height: 3.375rem;
+			margin: 0 1rem 0 0;
+			border-radius: 0.5rem;
 			transition: all 0.1s ease;
 		}
 
@@ -172,7 +172,7 @@ function isMe(message): boolean {
 			> .image {
 				display: block;
 				max-width: 100%;
-				max-height: 512px;
+				max-height: 32rem;
 			}
 		}
 	}
@@ -182,16 +182,16 @@ function isMe(message): boolean {
 			&:not(.isMe):not(.isRead) {
 				> div {
 					background-image: none;
-					border-left: solid 4px #3aa2dc;
+					border-left: solid 0.25rem #3aa2dc;
 				}
 			}
 
 			> div {
-				padding: 16px;
+				padding: 1rem;
 				font-size: 0.9em;
 
 				> .avatar {
-					margin: 0 12px 0 0;
+					margin: 0 0.75rem 0 0;
 				}
 			}
 		}

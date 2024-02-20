@@ -370,15 +370,15 @@ definePageMetadata(INFO);
 		> .nav {
 			.baaadecd {
 				> .info {
-					margin: 16px 0;
+					margin: 1rem 0;
 				}
 
 				> .accounts {
 					> .avatar {
 						display: block;
-						width: 50px;
-						height: 50px;
-						margin: 8px auto 16px auto;
+						width: 3.125rem;
+						height: 3.125rem;
+						margin: 0.5rem auto 1rem auto;
 					}
 				}
 			}
@@ -397,7 +397,7 @@ definePageMetadata(INFO);
 
 			> .nav {
 				width: 34%;
-				padding-right: 32px;
+				padding-right: 2rem;
 				box-sizing: border-box;
 			}
 

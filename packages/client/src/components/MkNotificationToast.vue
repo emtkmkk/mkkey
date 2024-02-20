@@ -45,32 +45,32 @@ onMounted(() => {
 .notification-toast-enter-from,
 .notification-toast-leave-to {
 	opacity: 0;
-	transform: translateX(-250px);
+	transform: translateX(-15.625rem);
 }
 
 .mk-notification-toast {
 	position: fixed;
 	left: 0;
-	width: 250px;
-	top: 32px;
-	padding: 0 32px;
+	width: 15.625rem;
+	top: 2rem;
+	padding: 0 2rem;
 	pointer-events: none;
 
-	@media (max-width: 700px) {
+	@media (max-width: 43.75rem) {
 		top: initial;
-		bottom: 112px;
-		padding: 0 16px;
+		bottom: 7rem;
+		padding: 0 1rem;
 	}
 
-	@media (max-width: 500px) {
-		bottom: calc(env(safe-area-inset-bottom, 0px) + 92px);
-		padding: 0 8px;
+	@media (max-width: 31.25rem) {
+		bottom: calc(env(safe-area-inset-bottom, 0) + 5.75rem);
+		padding: 0 0.5rem;
 	}
 
 	> .notification {
 		height: 100%;
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-		border-radius: 8px;
+		box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.3);
+		border-radius: 0.5rem;
 		overflow: hidden;
 	}
 }

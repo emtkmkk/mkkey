@@ -152,7 +152,7 @@ defineExpose<WidgetComponentExpose>({
 
 .ekmkgxbk {
 	> .feed {
-		--height: 42px;
+		--height: 2.625rem;
 		padding: 0;
 		font-size: 0.9em;
 		line-height: var(--height);
@@ -167,8 +167,8 @@ defineExpose<WidgetComponentExpose>({
 
 			> .divider {
 				display: inline-block;
-				width: 0.5px;
-				height: 16px;
+				width: 0.0.3125rem;
+				height: 1rem;
 				margin: 0 1em;
 				background: var(--divider);
 			}

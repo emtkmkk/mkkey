@@ -283,9 +283,9 @@ onMounted(async () => {
 	background-image: repeating-linear-gradient(
 		45deg,
 		transparent,
-		transparent 8px,
-		var(--X5) 8px,
-		var(--X5) 14px
+		transparent 0.5rem,
+		var(--X5) 0.5rem,
+		var(--X5) 0.875rem
 	);
 	border-radius: var(--radius);
 	margin: auto;
@@ -295,15 +295,15 @@ onMounted(async () => {
 .aliases {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 3px;
+	gap: 0.1875rem;
 }
 
 .alias {
 	display: inline-block;
 	word-break: break-all;
-	padding: 3px 10px;
+	padding: 0.1875rem 0.625rem;
 	background-color: var(--X5);
-	border: solid 1px var(--divider);
+	border: solid 0.0625rem var(--divider);
 	border-radius: var(--radius);
 }
 

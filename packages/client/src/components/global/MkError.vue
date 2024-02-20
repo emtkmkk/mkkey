@@ -24,11 +24,11 @@ import { i18n } from "@/i18n";
 
 <style lang="scss" scoped>
 .mjndxjcg {
-	padding: 32px;
+	padding: 2rem;
 	text-align: center;
 
 	> p {
-		margin: 0 0 8px 0;
+		margin: 0 0 0.5rem 0;
 	}
 
 	> .button {
@@ -37,9 +37,9 @@ import { i18n } from "@/i18n";
 
 	> img {
 		vertical-align: bottom;
-		height: 128px;
-		margin-bottom: 16px;
-		border-radius: 16px;
+		height: 8rem;
+		margin-bottom: 1rem;
+		border-radius: 1rem;
 	}
 }
 </style>

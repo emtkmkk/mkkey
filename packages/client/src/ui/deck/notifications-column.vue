@@ -6,7 +6,7 @@
 		@parent-focus="($event) => emit('parent-focus', $event)"
 	>
 		<template #header
-			><i class="ph-bell ph-bold ph-lg" style="margin-right: 8px"></i
+			><i class="ph-bell ph-bold ph-lg" style="margin-right: 0.5rem"></i
 			>{{ column.name }}</template
 		>
 

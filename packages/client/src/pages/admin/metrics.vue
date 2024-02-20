@@ -547,8 +547,8 @@ export default defineComponent({
 <style lang="scss" scoped>
 .xhexznfu {
 	> div:nth-child(2) {
-		padding: 16px;
-		border-top: solid 0.5px var(--divider);
+		padding: 1rem;
+		border-top: solid 0.0.3125rem var(--divider);
 	}
 }
 </style>

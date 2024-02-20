@@ -175,13 +175,13 @@ onMounted(() => {
 		> .users {
 			flex: 1;
 			overflow: auto;
-			padding: 8px 0;
+			padding: 0.5rem 0;
 
 			> .user {
 				display: flex;
 				align-items: center;
-				padding: 8px var(--root-margin);
-				font-size: 14px;
+				padding: 0.5rem var(--root-margin);
+				font-size: 0.875rem;
 
 				&:hover {
 					background: var(--X7);
@@ -198,12 +198,12 @@ onMounted(() => {
 				}
 
 				> .avatar {
-					width: 45px;
-					height: 45px;
+					width: 2.8125rem;
+					height: 2.8125rem;
 				}
 
 				> .body {
-					padding: 0 8px;
+					padding: 0 0.5rem;
 					min-width: 0;
 
 					> .name {

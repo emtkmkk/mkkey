@@ -169,19 +169,19 @@ function onStatsLog(statsLog) {
 
 	> svg {
 		display: block;
-		padding: 10px;
+		padding: 0.625rem;
 		width: 50%;
 
 		&:first-child {
-			padding-right: 5px;
+			padding-right: 0.3125rem;
 		}
 
 		&:last-child {
-			padding-left: 5px;
+			padding-left: 0.3125rem;
 		}
 
 		> text {
-			font-size: 5px;
+			font-size: 0.3125rem;
 			fill: currentColor;
 
 			> tspan {

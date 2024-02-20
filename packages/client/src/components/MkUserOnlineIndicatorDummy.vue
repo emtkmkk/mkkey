@@ -50,7 +50,7 @@ const text = $computed(() => {
 
 <style lang="scss" scoped>
 .fzgwjkgc {
-	box-shadow: 0 0 0 3px var(--panel);
+	box-shadow: 0 0 0 0.1875rem var(--panel);
 	border-radius: 120%; // Blinkのバグか知らんけど、100%ぴったりにすると何故か若干楕円でレンダリングされる
 
 	&.online {

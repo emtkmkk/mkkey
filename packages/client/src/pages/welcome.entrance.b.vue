@@ -202,23 +202,23 @@ export default defineComponent({
 			position: absolute;
 			top: 0;
 			bottom: 0;
-			right: 64px;
+			right: 4rem;
 			margin: auto;
-			width: 500px;
-			height: calc(100% - 128px);
+			width: 31.25rem;
+			height: calc(100% - 8rem);
 			overflow: hidden;
 			-webkit-mask-image: linear-gradient(
 				0deg,
 				rgba(0, 0, 0, 0) 0%,
-				rgba(0, 0, 0, 1) 128px,
-				rgba(0, 0, 0, 1) calc(100% - 128px),
+				rgba(0, 0, 0, 1) 8rem,
+				rgba(0, 0, 0, 1) calc(100% - 8rem),
 				rgba(0, 0, 0, 0) 100%
 			);
 			mask-image: linear-gradient(
 				0deg,
 				rgba(0, 0, 0, 0) 0%,
-				rgba(0, 0, 0, 1) 128px,
-				rgba(0, 0, 0, 1) calc(100% - 128px),
+				rgba(0, 0, 0, 1) 8rem,
+				rgba(0, 0, 0, 1) calc(100% - 8rem),
 				rgba(0, 0, 0, 0) 100%
 			);
 		}
@@ -235,30 +235,30 @@ export default defineComponent({
 
 		> .misskey {
 			position: absolute;
-			bottom: 64px;
-			left: 64px;
-			width: 160px;
+			bottom: 4rem;
+			left: 4rem;
+			width: 10rem;
 		}
 
 		> .main {
 			position: relative;
-			width: min(450px, 100%);
-			padding: 64px;
+			width: min(28.125rem, 100%);
+			padding: 4rem;
 			color: #fff;
 			font-size: 1.1em;
 
-			@media (max-width: 1200px) {
+			@media (max-width: 75rem) {
 				margin: auto;
 			}
 
 			> h1 {
 				display: block;
-				margin: 0 0 32px 0;
+				margin: 0 0 2rem 0;
 				padding: 0;
 
 				> .logo {
 					vertical-align: bottom;
-					max-height: 100px;
+					max-height: 6.25rem;
 				}
 			}
 
@@ -267,10 +267,10 @@ export default defineComponent({
 			}
 
 			> .action {
-				margin: 32px 0;
+				margin: 2rem 0;
 
 				> * {
-					line-height: 32px;
+					line-height: 2rem;
 				}
 
 				> .signup {
@@ -285,17 +285,17 @@ export default defineComponent({
 			}
 
 			> .status {
-				margin: 32px 0;
-				border-top: solid 1px rgba(255, 255, 255, 0.5);
+				margin: 2rem 0;
+				border-top: solid 0.0625rem rgba(255, 255, 255, 0.5);
 				font-size: 90%;
 
 				> div {
-					padding: 16px 0;
+					padding: 1rem 0;
 
 					> span:not(:last-child) {
 						padding-right: 1em;
 						margin-right: 1em;
-						border-right: solid 1px rgba(255, 255, 255, 0.5);
+						border-right: solid 0.0625rem rgba(255, 255, 255, 0.5);
 					}
 				}
 			}

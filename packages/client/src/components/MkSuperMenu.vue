@@ -74,14 +74,14 @@ export default defineComponent({
 .rrevdjwu {
 	> .group {
 		& + .group {
-			margin-top: 16px;
-			padding-top: 16px;
-			border-top: solid 0.5px var(--divider);
+			margin-top: 1rem;
+			padding-top: 1rem;
+			border-top: solid 0.0.3125rem var(--divider);
 		}
 
 		> .title {
 			opacity: 0.7;
-			margin: 0 0 8px 0;
+			margin: 0 0 0.5rem 0;
 			font-size: 0.9em;
 		}
 
@@ -91,8 +91,8 @@ export default defineComponent({
 				align-items: center;
 				width: 100%;
 				box-sizing: border-box;
-				padding: 10px 16px 10px 8px;
-				border-radius: 9px;
+				padding: 0.625rem 1rem 0.625rem 0.5rem;
+				border-radius: 0.5625rem;
 				font-size: 0.9em;
 				margin-bottom: 0.3rem;
 
@@ -112,8 +112,8 @@ export default defineComponent({
 				}
 
 				> .icon {
-					width: 32px;
-					margin-right: 2px;
+					width: 2rem;
+					margin-right: 0.125rem;
 					flex-shrink: 0;
 					text-align: center;
 					opacity: 0.8;
@@ -123,7 +123,7 @@ export default defineComponent({
 					white-space: nowrap;
 					text-overflow: ellipsis;
 					overflow: hidden;
-					padding-right: 12px;
+					padding-right: 0.75rem;
 				}
 			}
 		}
@@ -142,26 +142,26 @@ export default defineComponent({
 			> .title {
 				font-size: 1em;
 				opacity: 0.7;
-				margin: 0 0 8px 16px;
+				margin: 0 0 0.5rem 1rem;
 			}
 
 			> .items {
 				display: grid;
-				grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-				grid-gap: 8px;
-				padding: 0 16px;
+				grid-template-columns: repeat(auto-fill, minmax(8.125rem, 1fr));
+				grid-gap: 0.5rem;
+				padding: 0 1rem;
 
 				> .item {
 					flex-direction: column;
-					padding: 18px 16px 16px 16px;
+					padding: 1.125rem 1rem 1rem 1rem;
 					background: var(--panel);
-					border-radius: 8px;
+					border-radius: 0.5rem;
 					text-align: center;
 
 					> .icon {
 						display: block;
 						margin-right: 0;
-						margin-bottom: 12px;
+						margin-bottom: 0.75rem;
 						font-size: 1.5em;
 					}
 

@@ -92,7 +92,7 @@ function updateWidgets(widgets) {
 
 	> * {
 		margin: var(--margin) 0;
-		width: 300px;
+		width: 18.75rem;
 
 		&:first-child {
 			margin-top: 0;

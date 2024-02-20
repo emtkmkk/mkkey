@@ -369,12 +369,12 @@ XMessage:last-of-type {
 
 		.more {
 			display: block;
-			margin: 16px auto;
-			padding: 0 12px;
-			line-height: 24px;
+			margin: 1rem auto;
+			padding: 0 0.75rem;
+			line-height: 1.5rem;
 			color: #fff;
 			background: rgba(#000, 0.3);
-			border-radius: 12px;
+			border-radius: 0.75rem;
 
 			&:hover {
 				background: rgba(#000, 0.4);
@@ -389,15 +389,15 @@ XMessage:last-of-type {
 			}
 
 			> i {
-				margin-right: 4px;
+				margin-right: 0.25rem;
 			}
 		}
 
 		.messages {
-			padding: 8px 0;
+			padding: 0.5rem 0;
 
 			> ::v-deep(*) {
-				margin-bottom: 16px;
+				margin-bottom: 1rem;
 			}
 		}
 	}
@@ -407,25 +407,25 @@ XMessage:last-of-type {
 		position: sticky;
 		z-index: 2;
 		bottom: 0;
-		padding-top: 8px;
-		bottom: calc(env(safe-area-inset-bottom, 0px) + var(--stickyBottom));
+		padding-top: 0.5rem;
+		bottom: calc(env(safe-area-inset-bottom, 0) + var(--stickyBottom));
 
 		> .new-message {
 			width: 100%;
-			padding-bottom: 8px;
+			padding-bottom: 0.5rem;
 			text-align: center;
 
 			> button {
 				display: inline-block;
 				margin: 0;
-				padding: 0 12px;
-				line-height: 32px;
-				font-size: 12px;
-				border-radius: 16px;
+				padding: 0 0.75rem;
+				line-height: 2rem;
+				font-size: 0.75rem;
+				border-radius: 1rem;
 
 				> i {
 					display: inline-block;
-					margin-right: 8px;
+					margin-right: 0.5rem;
 				}
 			}
 		}
@@ -433,7 +433,7 @@ XMessage:last-of-type {
 		> .typers {
 			position: absolute;
 			bottom: 100%;
-			padding: 0 8px 0 8px;
+			padding: 0 0.5rem 0 0.5rem;
 			font-size: 0.9em;
 			color: var(--fgTransparentWeak);
 
@@ -452,7 +452,7 @@ XMessage:last-of-type {
 		> .form {
 			max-height: 12em;
 			overflow-y: auto;
-			border-top: solid 0.5px var(--divider);
+			border-top: solid 0.0.3125rem var(--divider);
 		}
 	}
 }

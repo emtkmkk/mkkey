@@ -348,21 +348,21 @@ definePageMetadata(
 			> .clips {
 				> .title {
 					font-weight: bold;
-					padding: 12px;
+					padding: 0.75rem;
 				}
 
 				> .item {
 					display: block;
-					padding: 16px;
+					padding: 1rem;
 
 					> .description {
-						padding: 8px 0;
+						padding: 0.5rem 0;
 					}
 
 					> .user {
-						$height: 32px;
-						padding-top: 16px;
-						border-top: solid 0.5px var(--divider);
+						$height: 2rem;
+						padding-top: 1rem;
+						border-top: solid 0.0.3125rem var(--divider);
 						line-height: $height;
 
 						> .avatar {

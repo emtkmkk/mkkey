@@ -176,6 +176,6 @@ onMounted(async () => {
 
 <style lang="scss" module>
 .root {
-	padding: 20px;
+	padding: 1.25rem;
 }
 </style>

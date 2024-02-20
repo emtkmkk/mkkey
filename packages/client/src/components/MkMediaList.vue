@@ -189,7 +189,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 	> .gird-container {
 		position: relative;
 		width: 100%;
-		margin-top: 4px;
+		margin-top: 0.25rem;
 		border-radius: var(--radius);
 		overflow: hidden;
 		pointer-events: none;
@@ -219,13 +219,13 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 					bottom: 0;
 					left: 0;
 					display: grid;
-					grid-gap: 8px;
+					grid-gap: 0.5rem;
 					grid-template-columns: 1fr 1fr;
 					grid-template-rows: repeat($row-count, 1fr);
 
 					> * {
 						overflow: hidden;
-						border-radius: 6px;
+						border-radius: 0.375rem;
 						pointer-events: all;
 					}
 					@if $num == 1 or $num % 2 == 1 {
@@ -294,7 +294,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 	align-items: center;
 
 	position: absolute;
-	bottom: 30px;
+	bottom: 1.875rem;
 	left: 50%;
 	transform: translateX(-50%);
 
@@ -305,9 +305,9 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 	color: white;
 	margin: 0 auto;
 	text-align: center;
-	padding: 10px;
+	padding: 0.625rem;
 	background: rgba(0, 0, 0, 0.5);
-	border-radius: 5px;
+	border-radius: 0.3125rem;
 
 	max-height: 10vh;
 	overflow-x: clip;

@@ -96,16 +96,16 @@ export default defineComponent({
 		}
 
 		> .note {
-			margin: 16px 0 16px auto;
+			margin: 1rem 0 1rem auto;
 
 			> .content {
-				padding: 16px;
+				padding: 1rem;
 				margin: 0 0 0 auto;
 				max-width: max-content;
-				border-radius: 16px;
+				border-radius: 1rem;
 
 				> .richcontent {
-					min-width: 250px;
+					min-width: 15.625rem;
 				}
 			}
 		}

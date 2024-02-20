@@ -263,49 +263,49 @@ onUnmounted(() => {
 .mk-url-preview {
 	&.max-width_400px {
 		> .link {
-			font-size: 12px;
+			font-size: 0.75rem;
 
 			> .thumbnail {
-				/* height: 80px; */
+				/* height: 5rem; */
 			}
 
 			> article {
-				padding: 12px;
+				padding: 0.75rem;
 			}
 		}
 	}
 
 	&.max-width_350px {
 		> .link {
-			font-size: 10px;
+			font-size: 0.625rem;
 
 			> article {
-				padding: 8px;
+				padding: 0.5rem;
 
 				> header {
-					margin-bottom: 4px;
+					margin-bottom: 0.25rem;
 				}
 
 				> footer {
-					margin-top: 4px;
+					margin-top: 0.25rem;
 
 					> img {
-						width: 12px;
-						height: 12px;
+						width: 0.75rem;
+						height: 0.75rem;
 					}
 				}
 			}
 
 			&.compact {
 				> article {
-					padding: 4px;
+					padding: 0.25rem;
 
 					> header {
-						margin-bottom: 2px;
+						margin-bottom: 0.125rem;
 					}
 
 					> footer {
-						margin-top: 2px;
+						margin-top: 0.125rem;
 					}
 				}
 			}
@@ -313,20 +313,20 @@ onUnmounted(() => {
 	}
 
 	> .expandTweet {
-		margin-top: 3px;
+		margin-top: 0.1875rem;
 	}
 
 	> .showThumbnail {
-		margin-top: 3px;
+		margin-top: 0.1875rem;
 	}
 
 	> .link {
 		position: relative;
 		display: block;
-		font-size: 14px;
-		margin-top: 3px;
-		border: 1px solid var(--divider);
-		border-radius: 8px;
+		font-size: 0.875rem;
+		margin-top: 0.1875rem;
+		border: 0.0625rem solid var(--divider);
+		border-radius: 0.5rem;
 		overflow: hidden;
 		transition: background 0.2s;
 		pointer-events: none;
@@ -363,7 +363,7 @@ onUnmounted(() => {
 			}
 
 			& + article {
-				left: 0px;
+				left: 0;
 				width: 100%;
 			}
 		}
@@ -371,11 +371,11 @@ onUnmounted(() => {
 		> article {
 			position: relative;
 			box-sizing: border-box;
-			padding: 16px;
+			padding: 1rem;
 			pointer-events: auto;
 
 			> header {
-				margin-bottom: 8px;
+				margin-bottom: 0.5rem;
 
 				> h1 {
 					margin: 0;
@@ -389,14 +389,14 @@ onUnmounted(() => {
 			}
 
 			> footer {
-				margin-top: 8px;
-				height: 16px;
+				margin-top: 0.5rem;
+				height: 1rem;
 
 				> img {
 					display: inline-block;
-					width: 16px;
-					height: 16px;
-					margin-right: 4px;
+					width: 1rem;
+					height: 1rem;
+					margin-right: 0.25rem;
 					vertical-align: top;
 				}
 
@@ -405,7 +405,7 @@ onUnmounted(() => {
 					margin: 0;
 					color: var(--urlPreviewInfo);
 					font-size: 0.8em;
-					line-height: 16px;
+					line-height: 1rem;
 					vertical-align: top;
 				}
 			}
@@ -427,43 +427,43 @@ onUnmounted(() => {
 	&.legacyStyle {
 		&.max-width_400px > .link {
 			> .thumbnail {
-				height: 80px;
+				height: 5rem;
 			}
 		}
 
 		&.max-width_350px {
 			> .link {
 				> .thumbnail {
-					height: 70px;
+					height: 4.375rem;
 				}
 				&.compact {
 					> .thumbnail {
 						position: absolute;
-						width: 56px;
+						width: 3.5rem;
 						height: 100%;
 					}
 					> article {
-						left: 56px;
-						width: calc(100% - 56px);
+						left: 3.5rem;
+						width: calc(100% - 3.5rem);
 					}
 				}
 			}
 		}
 
 		> .expandTweet {
-			margin-top: 0px;
+			margin-top: 0;
 		}
 
 		> .showThumbnail {
-			margin-top: 0px;
+			margin-top: 0;
 		}
 
 		> .link {
-			margin-top: 0px;
+			margin-top: 0;
 			pointer-events: auto;
 			> .thumbnail {
 				position: absolute;
-				width: 100px;
+				width: 6.25rem;
 				height: 100%;
 				background-size: cover;
 				pointer-events: auto;
@@ -479,8 +479,8 @@ onUnmounted(() => {
 				}
 
 				& + article {
-					left: 100px;
-					width: calc(100% - 100px);
+					left: 6.25rem;
+					width: calc(100% - 6.25rem);
 				}
 			}
 		}

@@ -45,7 +45,7 @@
 								><I18n
 									:src="i18n.ts._channel.usersCount"
 									tag="span"
-									style="margin-left: 4px"
+									style="margin-left: 0.25rem"
 									><template #n
 										><b>{{
 											channel.usersCount
@@ -60,7 +60,7 @@
 								><I18n
 									:src="i18n.ts._channel.notesCount"
 									tag="span"
-									style="margin-left: 4px"
+									style="margin-left: 0.25rem"
 									><template #n
 										><b>{{
 											channel.notesCount
@@ -187,18 +187,18 @@ definePageMetadata(
 	> .subscribe {
 		position: absolute;
 		z-index: 1;
-		top: 16px;
-		left: 16px;
+		top: 1rem;
+		left: 1rem;
 	}
 
 	> .toggle {
 		position: absolute;
 		z-index: 2;
-		top: 8px;
-		right: 8px;
+		top: 0.5rem;
+		right: 0.5rem;
 		font-size: 1.2em;
-		width: 48px;
-		height: 48px;
+		width: 3rem;
+		height: 3rem;
 		color: #fff;
 		background: rgba(0, 0, 0, 0.5);
 		border-radius: 100%;
@@ -210,7 +210,7 @@ definePageMetadata(
 
 	> .banner {
 		position: relative;
-		height: 200px;
+		height: 12.5rem;
 		background-position: center;
 		background-size: cover;
 
@@ -219,25 +219,25 @@ definePageMetadata(
 			bottom: 0;
 			left: 0;
 			width: 100%;
-			height: 64px;
+			height: 4rem;
 			background: linear-gradient(0deg, var(--panel), var(--X15));
 		}
 
 		> .status {
 			position: absolute;
 			z-index: 1;
-			bottom: 16px;
-			right: 16px;
-			padding: 8px 12px;
+			bottom: 1rem;
+			right: 1rem;
+			padding: 0.5rem 0.75rem;
 			font-size: 80%;
 			background: rgba(0, 0, 0, 0.7);
-			border-radius: 6px;
+			border-radius: 0.375rem;
 			color: #fff;
 		}
 	}
 
 	> .description {
-		padding: 16px;
+		padding: 1rem;
 	}
 
 	> .hideOverlay {
@@ -247,8 +247,8 @@ definePageMetadata(
 		left: 0;
 		width: 100%;
 		height: 100%;
-		-webkit-backdrop-filter: var(--blur, blur(16px));
-		backdrop-filter: var(--blur, blur(16px));
+		-webkit-backdrop-filter: var(--blur, blur(1rem));
+		backdrop-filter: var(--blur, blur(1rem));
 		background: rgba(0, 0, 0, 0.3);
 	}
 
@@ -265,7 +265,7 @@ definePageMetadata(
 		}
 
 		> .banner {
-			height: 42px;
+			height: 2.625rem;
 			filter: blur(8px);
 
 			> * {

@@ -116,22 +116,22 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 
 <style lang="scss" module>
 .img {
-	height: 220px;
-	border-radius: 6px;
+	height: 13.75rem;
+	border-radius: 0.375rem;
 	overflow: clip;
 	position: relative;
 }
 
 .empty {
 	margin: 0;
-	padding: 16px;
+	padding: 1rem;
 	text-align: center;
 }
 
 .sensitive {
 	display: grid;
 	place-items: center;
-	height: 220px;
+	height: 13.75rem;
 	position: relative;
 
 	> .bg {
@@ -159,16 +159,16 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 .gif {
 	position: absolute;
 	background-color: var(--fg);
-	border-radius: 6px;
+	border-radius: 0.375rem;
 	color: var(--accentLighten);
 	display: inline-block;
-	font-size: 14px;
+	font-size: 0.875rem;
 	font-weight: bold;
-	left: 12px;
+	left: 0.75rem;
 	opacity: 0.5;
-	padding: 0 6px;
+	padding: 0 0.375rem;
 	text-align: center;
-	top: 12px;
+	top: 0.75rem;
 	pointer-events: none;
 }
 </style>

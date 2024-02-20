@@ -134,7 +134,7 @@ const isMe = computed(() => $i && $i.id === props.note.userId);
 
 <style lang="scss" scoped>
 .tdflqwzn {
-	margin-inline: -2px;
+	margin-inline: -0.125rem;
 	margin-top: 0.2em;
 	width: 100%;
 

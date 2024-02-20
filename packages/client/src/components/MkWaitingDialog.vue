@@ -63,17 +63,17 @@ watch(
 .root {
 	margin: auto;
 	position: relative;
-	padding: 32px;
+	padding: 2rem;
 	box-sizing: border-box;
 	text-align: center;
 	background: var(--panel);
 	border-radius: var(--radius);
-	width: 250px;
+	width: 15.625rem;
 
 	&.iconOnly {
 		padding: 0;
-		width: 96px;
-		height: 96px;
+		width: 6rem;
+		height: 6rem;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -81,7 +81,7 @@ watch(
 }
 
 .icon {
-	font-size: 32px;
+	font-size: 2rem;
 
 	&.success {
 		color: var(--accent);
@@ -93,6 +93,6 @@ watch(
 }
 
 .text {
-	margin-top: 16px;
+	margin-top: 1rem;
 }
 </style>

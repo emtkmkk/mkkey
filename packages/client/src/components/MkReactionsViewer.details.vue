@@ -91,15 +91,15 @@ const emit = defineEmits<{
 
 		> .icon {
 			display: block;
-			height: 25px !important;
-			font-size: 60px; // unicodeな絵文字についてはwidthが効かないため
+			height: 1.5625rem !important;
+			font-size: 3.75rem; // unicodeな絵文字についてはwidthが効かないため
 			margin: 0 auto;
 		}
 
 		> .bigIcon {
 			display: block;
-			height: 50px !important;
-			font-size: 120px; // unicodeな絵文字についてはwidthが効かないため
+			height: 3.125rem !important;
+			font-size: 7.5rem; // unicodeな絵文字についてはwidthが効かないため
 			margin: 0 auto;
 		}
 		> .name {
@@ -111,26 +111,26 @@ const emit = defineEmits<{
 		flex: 1;
 		min-width: 0;
 		font-size: 0.95em;
-		border-top: solid 0.5px var(--divider);
-		padding-top: 10px;
-		margin-top: 10px;
-		margin-bottom: 14px;
+		border-top: solid 0.0.3125rem var(--divider);
+		padding-top: 0.625rem;
+		margin-top: 0.625rem;
+		margin-bottom: 0.875rem;
 		text-align: center;
 
 		> .user {
-			line-height: 24px;
+			line-height: 1.5rem;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
 
 			&:not(:last-child) {
-				margin-bottom: 3px;
+				margin-bottom: 0.1875rem;
 			}
 
 			> .avatar {
-				width: 24px;
-				height: 24px;
-				margin-right: 3px;
+				width: 1.5rem;
+				height: 1.5rem;
+				margin-right: 0.1875rem;
 			}
 		}
 	}

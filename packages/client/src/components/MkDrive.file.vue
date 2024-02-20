@@ -222,9 +222,9 @@ async function deleteFile() {
 <style lang="scss" scoped>
 .ncvczrfv {
 	position: relative;
-	padding: 8px 0 0 0;
-	min-height: 180px;
-	border-radius: 8px;
+	padding: 0.5rem 0 0 0;
+	min-height: 11.25rem;
+	border-radius: 0.5rem;
 
 	&,
 	* {
@@ -315,16 +315,16 @@ async function deleteFile() {
 
 		&:before {
 			top: 0;
-			left: 57px;
-			width: 28px;
-			height: 8px;
+			left: 3.5625rem;
+			width: 1.75rem;
+			height: 0.5rem;
 		}
 
 		&:after {
-			top: 57px;
+			top: 3.5625rem;
 			left: 0;
-			width: 8px;
-			height: 28px;
+			width: 0.5rem;
+			height: 1.75rem;
 		}
 
 		&.red {
@@ -344,26 +344,26 @@ async function deleteFile() {
 		> p {
 			position: absolute;
 			z-index: 3;
-			top: 19px;
-			left: -28px;
-			width: 120px;
+			top: 1.1875rem;
+			left: -1.75rem;
+			width: 7.5rem;
 			margin: 0;
 			text-align: center;
-			line-height: 28px;
+			line-height: 1.75rem;
 			color: #fff;
 			transform: rotate(-45deg);
 		}
 	}
 
 	> .thumbnail {
-		width: 110px;
-		height: 110px;
+		width: 6.875rem;
+		height: 6.875rem;
 		margin: auto;
 	}
 
 	> .name {
 		display: block;
-		margin: 4px 0 0 0;
+		margin: 0.25rem 0 0 0;
 		font-size: 0.8em;
 		text-align: center;
 		word-break: break-all;

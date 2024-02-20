@@ -7,7 +7,7 @@
 			<MkSwitch v-model="flag">
 				<span>Switch is now {{ flag ? "on" : "off" }}</span>
 			</MkSwitch>
-			<div style="margin: 32px 0">
+			<div style="margin: 2rem 0">
 				<MkRadio v-model="radio" value="misskey">Calckey</MkRadio>
 				<MkRadio v-model="radio" value="mastodon">Mastodon</MkRadio>
 				<MkRadio v-model="radio" value="pleroma">Pleroma</MkRadio>

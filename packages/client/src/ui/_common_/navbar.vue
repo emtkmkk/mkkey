@@ -232,8 +232,8 @@ function more(ev: MouseEvent) {
 
 <style lang="scss" scoped>
 .mvcprjjd {
-	$nav-width: 250px;
-	$nav-icon-only-width: 80px;
+	$nav-width: 15.625rem;
+	$nav-icon-only-width: 5rem;
 	flex: 0 0 $nav-width;
 	width: $nav-width;
 	box-sizing: border-box;
@@ -257,8 +257,8 @@ function more(ev: MouseEvent) {
 
 	&:not(.iconOnly) {
 		> .body {
-			margin-left: -200px;
-			padding-left: 200px;
+			margin-left: -12.5rem;
+			padding-left: 12.5rem;
 			box-sizing: content-box;
 			width: $nav-width;
 
@@ -286,19 +286,19 @@ function more(ev: MouseEvent) {
 
 					> .icon {
 						display: inline-block;
-						width: 55px;
+						width: 3.4375rem;
 						aspect-ratio: 1;
 					}
 				}
 			}
 
 			> .bottom {
-				padding: 20px 0;
+				padding: 1.25rem 0;
 
 				> .post {
 					position: relative;
 					width: 100%;
-					height: 40px;
+					height: 2.5rem;
 					color: var(--fgOnAccent);
 					font-weight: bold;
 					text-align: left;
@@ -308,7 +308,7 @@ function more(ev: MouseEvent) {
 					&:before {
 						content: "";
 						display: block;
-						width: calc(100% - 38px);
+						width: calc(100% - 2.375rem);
 						height: 100%;
 						margin: auto;
 						position: absolute;
@@ -354,7 +354,7 @@ function more(ev: MouseEvent) {
 
 					> .icon {
 						display: inline-block;
-						width: 32px !important;
+						width: 2rem !important;
 						aspect-ratio: 1;
 						margin-top: 1rem;
 					}
@@ -370,7 +370,7 @@ function more(ev: MouseEvent) {
 
 					> .icon {
 						display: inline-block;
-						width: 38px;
+						width: 2.375rem;
 						aspect-ratio: 1;
 					}
 				}
@@ -380,14 +380,14 @@ function more(ev: MouseEvent) {
 				flex: 0.1;
 
 				> .divider {
-					margin: 16px 16px;
-					border-top: solid 0.5px var(--divider);
+					margin: 1rem 1rem;
+					border-top: solid 0.0.3125rem var(--divider);
 				}
 
 				> .item {
 					position: relative;
 					display: block;
-					padding-left: 30px;
+					padding-left: 1.875rem;
 					line-height: 2.85rem;
 					margin-bottom: 0.5rem;
 					white-space: nowrap;
@@ -398,17 +398,17 @@ function more(ev: MouseEvent) {
 
 					> .icon {
 						position: relative;
-						width: 32px;
-						margin-right: 8px;
+						width: 2rem;
+						margin-right: 0.5rem;
 						transform: translateY(0.15em);
 					}
 
 					> .indicator {
 						position: absolute;
 						top: 0;
-						left: 20px;
+						left: 1.25rem;
 						color: var(--navIndicator);
-						font-size: 8px;
+						font-size: 0.5rem;
 						animation: blink 1s infinite;
 					}
 
@@ -439,7 +439,7 @@ function more(ev: MouseEvent) {
 						&:before {
 							content: "";
 							display: block;
-							width: calc(100% - 34px);
+							width: calc(100% - 2.125rem);
 							height: 100%;
 							margin: auto;
 							position: absolute;
@@ -473,7 +473,7 @@ function more(ev: MouseEvent) {
 
 					> .icon {
 						display: inline-block;
-						width: 40px;
+						width: 2.5rem;
 						aspect-ratio: 1;
 						transform: translateY(0em);
 					}
@@ -481,14 +481,14 @@ function more(ev: MouseEvent) {
 			}
 
 			> .bottom {
-				padding: 20px 0;
+				padding: 1.25rem 0;
 
 				> .post {
 					display: block;
 					position: relative;
 					width: 100%;
-					height: 52px;
-					margin-bottom: 16px;
+					height: 3.25rem;
+					margin-bottom: 1rem;
 					text-align: center;
 
 					&:before {
@@ -500,7 +500,7 @@ function more(ev: MouseEvent) {
 						right: 0;
 						bottom: 0;
 						margin: auto;
-						width: 52px;
+						width: 3.25rem;
 						aspect-ratio: 1/1;
 						border-radius: 100%;
 						background: linear-gradient(
@@ -540,7 +540,7 @@ function more(ev: MouseEvent) {
 
 					> .icon {
 						display: inline-block;
-						width: 38px;
+						width: 2.375rem;
 						aspect-ratio: 1;
 					}
 				}
@@ -553,7 +553,7 @@ function more(ev: MouseEvent) {
 
 					> .icon {
 						display: inline-block;
-						width: 32px !important;
+						width: 2rem !important;
 						aspect-ratio: 1;
 					}
 				}
@@ -563,9 +563,9 @@ function more(ev: MouseEvent) {
 				flex: 0.1;
 
 				> .divider {
-					margin: 8px auto;
-					width: calc(100% - 32px);
-					border-top: solid 0.5px var(--divider);
+					margin: 0.5rem auto;
+					width: calc(100% - 2rem);
+					border-top: solid 0.0.3125rem var(--divider);
 				}
 
 				> .item {
@@ -589,10 +589,10 @@ function more(ev: MouseEvent) {
 
 					> .indicator {
 						position: absolute;
-						top: 6px;
-						left: 24px;
+						top: 0.375rem;
+						left: 1.5rem;
 						color: var(--navIndicator);
-						font-size: 8px;
+						font-size: 0.5rem;
 						animation: blink 1s infinite;
 					}
 

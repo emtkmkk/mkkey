@@ -106,11 +106,11 @@ onUnmounted(() => {
 .buebdbiu {
 	position: absolute;
 	font-size: 0.8em;
-	padding: 8px 12px;
+	padding: 0.5rem 0.75rem;
 	box-sizing: border-box;
 	text-align: center;
-	border-radius: 4px;
-	border: solid 0.5px var(--divider);
+	border-radius: 0.25rem;
+	border: solid 0.0.3125rem var(--divider);
 	pointer-events: none;
 	transform-origin: center center;
 }

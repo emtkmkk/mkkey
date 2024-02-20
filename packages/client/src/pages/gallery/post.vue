@@ -293,28 +293,28 @@ definePageMetadata(
 			> img {
 				display: block;
 				max-width: 100%;
-				max-height: 500px;
+				max-height: 31.25rem;
 				margin: 0 auto;
-				border-radius: 10px;
+				border-radius: 0.625rem;
 			}
 
 			& + .file {
-				margin-top: 16px;
+				margin-top: 1rem;
 			}
 		}
 	}
 
 	> .body {
-		padding: 32px;
+		padding: 2rem;
 
 		> .title {
 			font-weight: bold;
 			font-size: 1.2em;
-			margin-bottom: 16px;
+			margin-bottom: 1rem;
 		}
 
 		> .info {
-			margin-top: 16px;
+			margin-top: 1rem;
 			font-size: 90%;
 			opacity: 0.7;
 		}
@@ -322,9 +322,9 @@ definePageMetadata(
 		> .actions {
 			display: flex;
 			align-items: center;
-			margin-top: 16px;
-			padding: 16px 0 0 0;
-			border-top: solid 0.5px var(--divider);
+			margin-top: 1rem;
+			padding: 1rem 0 0 0;
+			border-top: solid 0.0.3125rem var(--divider);
 
 			> .like {
 				> .button {
@@ -344,8 +344,8 @@ definePageMetadata(
 				margin-left: auto;
 
 				> button {
-					padding: 8px;
-					margin: 0 8px;
+					padding: 0.5rem;
+					margin: 0 0.5rem;
 
 					&:hover {
 						color: var(--fgHighlighted);
@@ -355,19 +355,19 @@ definePageMetadata(
 		}
 
 		> .user {
-			margin-top: 16px;
-			padding: 16px 0 0 0;
-			border-top: solid 0.5px var(--divider);
+			margin-top: 1rem;
+			padding: 1rem 0 0 0;
+			border-top: solid 0.0.3125rem var(--divider);
 			display: flex;
 			align-items: center;
 
 			> .avatar {
-				width: 52px;
-				height: 52px;
+				width: 3.25rem;
+				height: 3.25rem;
 			}
 
 			> .name {
-				margin: 0 0 0 12px;
+				margin: 0 0 0 0.75rem;
 				font-size: 90%;
 			}
 
@@ -380,8 +380,8 @@ definePageMetadata(
 
 .sdrarzaf {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-	grid-gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(16.25rem, 1fr));
+	grid-gap: 0.75rem;
 	margin: var(--margin);
 
 	> .post {

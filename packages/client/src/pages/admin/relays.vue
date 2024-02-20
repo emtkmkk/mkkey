@@ -11,7 +11,7 @@
 				v-for="relay in relays"
 				:key="relay.inbox"
 				class="relaycxt _panel _block"
-				style="padding: 16px"
+				style="padding: 1rem"
 			>
 				<div>{{ relay.inbox }}</div>
 				<div class="status">
@@ -115,7 +115,7 @@ definePageMetadata({
 <style lang="scss" scoped>
 .relaycxt {
 	> .status {
-		margin: 8px 0;
+		margin: 0.5rem 0;
 
 		> .icon {
 			width: 1em;

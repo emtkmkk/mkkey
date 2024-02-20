@@ -155,9 +155,9 @@ function getInstanceIcon(instance): string {
 	height: 1.1em;
 	justify-self: flex-end;
 	padding: 0.2em 0.4em;
-	border-radius: 100px;
+	border-radius: 6.25rem;
 	font-size: 0.8em;
-	text-shadow: 0 2px 2px var(--shadow);
+	text-shadow: 0 0.125rem 0.125rem var(--shadow);
 	overflow: hidden;
 	.header > .body & {
 		width: max-content;
@@ -171,14 +171,14 @@ function getInstanceIcon(instance): string {
 
 	> .name {
 		display: none;
-		margin-left: 4px;
+		margin-left: 0.25rem;
 		font-size: 0.85em;
 		vertical-align: top;
 		font-weight: bold;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		text-shadow: -1px -1px 0 var(--bg), 1px -1px 0 var(--bg),
-			-1px 1px 0 var(--bg), 1px 1px 0 var(--bg);
+		text-shadow: -0.0625rem -0.0625rem 0 var(--bg), 0.0625rem -0.0625rem 0 var(--bg),
+			-0.0625rem 0.0625rem 0 var(--bg), 0.0625rem 0.0625rem 0 var(--bg);
 		.article > .main &,
 		.header > .body & {
 			display: unset;

@@ -281,9 +281,9 @@ onBeforeUnmount(() => {
 .root {
 	position: relative;
 	margin: auto;
-	padding: 32px;
-	min-width: 320px;
-	max-width: 480px;
+	padding: 2rem;
+	min-width: 20rem;
+	max-width: 30rem;
 	box-sizing: border-box;
 	text-align: center;
 	background: var(--panel);
@@ -291,10 +291,10 @@ onBeforeUnmount(() => {
 }
 
 .icon {
-	font-size: 24px;
+	font-size: 1.5rem;
 
 	& + .title {
-		margin-top: 8px;
+		margin-top: 0.5rem;
 	}
 }
 
@@ -320,23 +320,23 @@ onBeforeUnmount(() => {
 }
 
 .title {
-	margin: 0 0 8px 0;
+	margin: 0 0 0.5rem 0;
 	font-weight: bold;
 	font-size: 1.1em;
 
 	& + .text {
-		margin-top: 8px;
+		margin-top: 0.5rem;
 	}
 }
 
 .text {
-	margin: 16px 0 0 0;
+	margin: 1rem 0 0 0;
 }
 
 .buttons {
-	margin-top: 16px;
+	margin-top: 1rem;
 	display: flex;
-	gap: 8px;
+	gap: 0.5rem;
 	flex-wrap: wrap;
 	justify-content: center;
 }

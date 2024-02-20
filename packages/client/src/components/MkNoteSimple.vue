@@ -34,27 +34,27 @@ const showContent = $ref(false);
 
 	&.min-width_350px {
 		> .avatar {
-			margin: 0 10px 0 0;
-			width: 44px;
-			height: 44px;
+			margin: 0 0.625rem 0 0;
+			width: 2.75rem;
+			height: 2.75rem;
 		}
 	}
 
 	&.min-width_500px {
 		> .avatar {
-			margin: 0 12px 0 0;
-			width: 48px;
-			height: 48px;
+			margin: 0 0.75rem 0 0;
+			width: 3rem;
+			height: 3rem;
 		}
 	}
 
 	> .avatar {
 		flex-shrink: 0;
 		display: block;
-		margin: 0 10px 0 0;
-		width: 40px;
-		height: 40px;
-		border-radius: 8px;
+		margin: 0 0.625rem 0 0;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 0.5rem;
 	}
 
 	> .main {
@@ -62,7 +62,7 @@ const showContent = $ref(false);
 		min-width: 0;
 
 		> .header {
-			margin-bottom: 2px;
+			margin-bottom: 0.125rem;
 		}
 	}
 }

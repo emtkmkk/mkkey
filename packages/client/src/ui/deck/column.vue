@@ -316,8 +316,8 @@ function onDrop(ev) {
 
 <style lang="scss" scoped>
 .dnpfarvg {
-	--root-margin: 10px;
-	--deckColumnHeaderHeight: 42px;
+	--root-margin: 0.625rem;
+	--deckColumnHeaderHeight: 2.625rem;
 
 	height: 100%;
 	overflow: hidden;
@@ -365,7 +365,7 @@ function onDrop(ev) {
 		min-height: var(--deckColumnHeaderHeight);
 
 		> header.indicated {
-			box-shadow: 4px 0px var(--accent) inset;
+			box-shadow: 0.25rem 0 var(--accent) inset;
 		}
 	}
 
@@ -394,11 +394,11 @@ function onDrop(ev) {
 		z-index: 2;
 		line-height: var(--deckColumnHeaderHeight);
 		height: var(--deckColumnHeaderHeight);
-		padding: 0 16px;
+		padding: 0 1rem;
 		font-size: 0.9em;
 		color: var(--panelHeaderFg);
 		background: var(--panelHeaderBg);
-		box-shadow: 0 1px 0 0 var(--panelHeaderDivider);
+		box-shadow: 0 0.0625rem 0 0 var(--panelHeaderDivider);
 		cursor: pointer;
 
 		&,
@@ -407,7 +407,7 @@ function onDrop(ev) {
 		}
 
 		&.indicated {
-			box-shadow: 0 3px 0 0 var(--accent);
+			box-shadow: 0 0.1875rem 0 0 var(--accent);
 		}
 
 		> .header {
@@ -441,7 +441,7 @@ function onDrop(ev) {
 
 		> .toggleActive,
 		> .action {
-			margin-left: -16px;
+			margin-left: -1rem;
 		}
 
 		> .action {
@@ -454,7 +454,7 @@ function onDrop(ev) {
 
 		> .menu {
 			margin-left: auto;
-			margin-right: -16px;
+			margin-right: -1rem;
 		}
 	}
 

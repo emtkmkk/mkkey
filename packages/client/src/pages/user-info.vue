@@ -301,7 +301,7 @@
 						<div class="selects">
 							<MkSelect
 								v-model="chartSrc"
-								style="margin: 0 10px 0 0; flex: 1"
+								style="margin: 0 0.625rem 0 0; flex: 1"
 							>
 								<option value="per-user-notes">
 									{{ i18n.ts.notes }}
@@ -649,9 +649,9 @@ definePageMetadata(
 
 	> .avatar {
 		display: block;
-		width: 64px;
-		height: 64px;
-		margin-right: 16px;
+		width: 4rem;
+		height: 4rem;
+		margin-right: 1rem;
 	}
 
 	> .body {
@@ -678,9 +678,9 @@ definePageMetadata(
 
 		> .state {
 			display: flex;
-			gap: 8px;
+			gap: 0.5rem;
 			flex-wrap: wrap;
-			margin-top: 4px;
+			margin-top: 0.25rem;
 
 			&:empty {
 				display: none;
@@ -690,9 +690,9 @@ definePageMetadata(
 			> .silenced,
 			> .moderator {
 				display: inline-block;
-				border: solid 1px;
-				border-radius: 6px;
-				padding: 2px 6px;
+				border: solid 0.0625rem;
+				border-radius: 0.375rem;
+				padding: 0.125rem 0.375rem;
 				font-size: 85%;
 			}
 
@@ -717,12 +717,12 @@ definePageMetadata(
 .cmhjzshm {
 	> .selects {
 		display: flex;
-		margin: 0 0 16px 0;
+		margin: 0 0 1rem 0;
 	}
 
 	> .charts {
 		> .label {
-			margin-bottom: 12px;
+			margin-bottom: 0.75rem;
 			font-weight: bold;
 		}
 	}

@@ -149,7 +149,7 @@ defineExpose<WidgetComponentExpose>({
 
 <style lang="scss" scoped>
 .mkw-calendar {
-	padding: 16px 0;
+	padding: 1rem 0;
 
 	&:after {
 		content: "";
@@ -171,18 +171,18 @@ defineExpose<WidgetComponentExpose>({
 		> .month-and-year,
 		> .week-day {
 			margin: 0;
-			line-height: 18px;
+			line-height: 1.125rem;
 			font-size: 0.9em;
 
 			> .year,
 			> .month {
-				margin: 0 4px;
+				margin: 0 0.25rem;
 			}
 		}
 
 		> .day {
-			margin: 10px 0;
-			line-height: 32px;
+			margin: 0.625rem 0;
+			line-height: 2rem;
 			font-size: 1.75em;
 		}
 	}
@@ -191,24 +191,24 @@ defineExpose<WidgetComponentExpose>({
 		display: block;
 		float: left;
 		width: 40%;
-		padding: 0 16px 0 0;
+		padding: 0 1rem 0 0;
 		box-sizing: border-box;
 
 		> div {
-			margin-bottom: 8px;
+			margin-bottom: 0.5rem;
 
 			&:last-child {
-				margin-bottom: 4px;
+				margin-bottom: 0.25rem;
 			}
 
 			> p {
-				margin: 0 0 2px 0;
+				margin: 0 0 0.125rem 0;
 				font-size: 0.75em;
-				line-height: 18px;
+				line-height: 1.125rem;
 				opacity: 0.8;
 
 				> b {
-					margin-left: 2px;
+					margin-left: 0.125rem;
 				}
 			}
 
@@ -216,10 +216,10 @@ defineExpose<WidgetComponentExpose>({
 				width: 100%;
 				overflow: hidden;
 				background: var(--X11);
-				border-radius: 8px;
+				border-radius: 0.5rem;
 
 				> .val {
-					height: 4px;
+					height: 0.25rem;
 					transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 				}
 			}

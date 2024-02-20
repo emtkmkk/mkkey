@@ -100,11 +100,11 @@ export default defineComponent({
 }
 
 .wszdbhzo {
-	padding: 16px;
+	padding: 1rem;
 	text-align: center;
 
 	> .retry {
-		margin-top: 16px;
+		margin-top: 1rem;
 	}
 }
 </style>

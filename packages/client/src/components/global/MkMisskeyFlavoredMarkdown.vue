@@ -89,19 +89,19 @@ const props = withDefaults(
 
 @keyframes mfm-spinX {
 	0% {
-		transform: perspective(128px) rotateX(0deg);
+		transform: perspective(8rem) rotateX(0deg);
 	}
 	100% {
-		transform: perspective(128px) rotateX(360deg);
+		transform: perspective(8rem) rotateX(360deg);
 	}
 }
 
 @keyframes mfm-spinY {
 	0% {
-		transform: perspective(128px) rotateY(0deg);
+		transform: perspective(8rem) rotateY(0deg);
 	}
 	100% {
-		transform: perspective(128px) rotateY(360deg);
+		transform: perspective(8rem) rotateY(360deg);
 	}
 }
 
@@ -110,13 +110,13 @@ const props = withDefaults(
 		transform: translateY(0);
 	}
 	25% {
-		transform: translateY(-16px);
+		transform: translateY(-1rem);
 	}
 	50% {
 		transform: translateY(0);
 	}
 	75% {
-		transform: translateY(-8px);
+		transform: translateY(-0.5rem);
 	}
 	100% {
 		transform: translateY(0);
@@ -128,7 +128,7 @@ const props = withDefaults(
 		transform: translateY(0) scale(1, 1);
 	}
 	25% {
-		transform: translateY(-16px) scale(1, 1);
+		transform: translateY(-1rem) scale(1, 1);
 	}
 	50% {
 		transform: translateY(0) scale(1, 1);
@@ -146,67 +146,67 @@ const props = withDefaults(
 // for (let i = 0; i <= 100; i += 5) { css += `${i}% { transform: ${val()} }\n`; }
 @keyframes mfm-twitch {
 	0% {
-		transform: translate(7px, -2px);
+		transform: translate(0.4375rem, -0.125rem);
 	}
 	5% {
-		transform: translate(-3px, 1px);
+		transform: translate(-0.1875rem, 0.0625rem);
 	}
 	10% {
-		transform: translate(-7px, -1px);
+		transform: translate(-0.4375rem, -0.0625rem);
 	}
 	15% {
-		transform: translate(0px, -1px);
+		transform: translate(0, -0.0625rem);
 	}
 	20% {
-		transform: translate(-8px, 6px);
+		transform: translate(-0.5rem, 0.375rem);
 	}
 	25% {
-		transform: translate(-4px, -3px);
+		transform: translate(-0.25rem, -0.1875rem);
 	}
 	30% {
-		transform: translate(-4px, -6px);
+		transform: translate(-0.25rem, -0.375rem);
 	}
 	35% {
-		transform: translate(-8px, -8px);
+		transform: translate(-0.5rem, -0.5rem);
 	}
 	40% {
-		transform: translate(4px, 6px);
+		transform: translate(0.25rem, 0.375rem);
 	}
 	45% {
-		transform: translate(-3px, 1px);
+		transform: translate(-0.1875rem, 0.0625rem);
 	}
 	50% {
-		transform: translate(2px, -10px);
+		transform: translate(0.125rem, -0.625rem);
 	}
 	55% {
-		transform: translate(-7px, 0px);
+		transform: translate(-0.4375rem, 0);
 	}
 	60% {
-		transform: translate(-2px, 4px);
+		transform: translate(-0.125rem, 0.25rem);
 	}
 	65% {
-		transform: translate(3px, -8px);
+		transform: translate(0.1875rem, -0.5rem);
 	}
 	70% {
-		transform: translate(6px, 7px);
+		transform: translate(0.375rem, 0.4375rem);
 	}
 	75% {
-		transform: translate(-7px, -2px);
+		transform: translate(-0.4375rem, -0.125rem);
 	}
 	80% {
-		transform: translate(-7px, -8px);
+		transform: translate(-0.4375rem, -0.5rem);
 	}
 	85% {
-		transform: translate(9px, 3px);
+		transform: translate(0.5625rem, 0.1875rem);
 	}
 	90% {
-		transform: translate(-3px, -2px);
+		transform: translate(-0.1875rem, -0.125rem);
 	}
 	95% {
-		transform: translate(-10px, 2px);
+		transform: translate(-0.625rem, 0.125rem);
 	}
 	100% {
-		transform: translate(-2px, -6px);
+		transform: translate(-0.125rem, -0.375rem);
 	}
 }
 
@@ -215,67 +215,67 @@ const props = withDefaults(
 // for (let i = 0; i <= 100; i += 5) { css += `${i}% { transform: ${val()} }\n`; }
 @keyframes mfm-shake {
 	0% {
-		transform: translate(-3px, -1px) rotate(-8deg);
+		transform: translate(-0.1875rem, -0.0625rem) rotate(-8deg);
 	}
 	5% {
-		transform: translate(0px, -1px) rotate(-10deg);
+		transform: translate(0, -0.0625rem) rotate(-10deg);
 	}
 	10% {
-		transform: translate(1px, -3px) rotate(0deg);
+		transform: translate(0.0625rem, -0.1875rem) rotate(0deg);
 	}
 	15% {
-		transform: translate(1px, 1px) rotate(11deg);
+		transform: translate(0.0625rem, 0.0625rem) rotate(11deg);
 	}
 	20% {
-		transform: translate(-2px, 1px) rotate(1deg);
+		transform: translate(-0.125rem, 0.0625rem) rotate(1deg);
 	}
 	25% {
-		transform: translate(-1px, -2px) rotate(-2deg);
+		transform: translate(-0.0625rem, -0.125rem) rotate(-2deg);
 	}
 	30% {
-		transform: translate(-1px, 2px) rotate(-3deg);
+		transform: translate(-0.0625rem, 0.125rem) rotate(-3deg);
 	}
 	35% {
-		transform: translate(2px, 1px) rotate(6deg);
+		transform: translate(0.125rem, 0.0625rem) rotate(6deg);
 	}
 	40% {
-		transform: translate(-2px, -3px) rotate(-9deg);
+		transform: translate(-0.125rem, -0.1875rem) rotate(-9deg);
 	}
 	45% {
-		transform: translate(0px, -1px) rotate(-12deg);
+		transform: translate(0, -0.0625rem) rotate(-12deg);
 	}
 	50% {
-		transform: translate(1px, 2px) rotate(10deg);
+		transform: translate(0.0625rem, 0.125rem) rotate(10deg);
 	}
 	55% {
-		transform: translate(0px, -3px) rotate(8deg);
+		transform: translate(0, -0.1875rem) rotate(8deg);
 	}
 	60% {
-		transform: translate(1px, -1px) rotate(8deg);
+		transform: translate(0.0625rem, -0.0625rem) rotate(8deg);
 	}
 	65% {
-		transform: translate(0px, -1px) rotate(-7deg);
+		transform: translate(0, -0.0625rem) rotate(-7deg);
 	}
 	70% {
-		transform: translate(-1px, -3px) rotate(6deg);
+		transform: translate(-0.0625rem, -0.1875rem) rotate(6deg);
 	}
 	75% {
-		transform: translate(0px, -2px) rotate(4deg);
+		transform: translate(0, -0.125rem) rotate(4deg);
 	}
 	80% {
-		transform: translate(-2px, -1px) rotate(3deg);
+		transform: translate(-0.125rem, -0.0625rem) rotate(3deg);
 	}
 	85% {
-		transform: translate(1px, -3px) rotate(-10deg);
+		transform: translate(0.0625rem, -0.1875rem) rotate(-10deg);
 	}
 	90% {
-		transform: translate(1px, 0px) rotate(3deg);
+		transform: translate(0.0625rem, 0) rotate(3deg);
 	}
 	95% {
-		transform: translate(-2px, 0px) rotate(-3deg);
+		transform: translate(-0.125rem, 0) rotate(-3deg);
 	}
 	100% {
-		transform: translate(2px, 1px) rotate(2deg);
+		transform: translate(0.125rem, 0.0625rem) rotate(2deg);
 	}
 }
 
@@ -335,10 +335,10 @@ const props = withDefaults(
 
 	::v-deep(blockquote) {
 		display: block;
-		margin: 8px 0;
-		padding-left: 12px;
+		margin: 0.5rem 0;
+		padding-left: 0.75rem;
 		color: var(--fgTransparentWeak);
-		border-left: solid 4px var(--fgTransparent);
+		border-left: solid 0.25rem var(--fgTransparent);
 	}
 
 	::v-deep(pre) {
@@ -348,7 +348,7 @@ const props = withDefaults(
 	> ::v-deep(code) {
 		font-size: 0.8em;
 		word-break: break-all;
-		padding: 4px 6px;
+		padding: 0.25rem 0.375rem;
 	}
 }
 </style>

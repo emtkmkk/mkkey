@@ -107,18 +107,18 @@ function close() {
 <style lang="scss" scoped>
 .szkkfdyq {
 	max-height: 100%;
-	width: min(460px, 100vw);
-	padding: 24px;
+	width: min(28.75rem, 100vw);
+	padding: 1.5rem;
 	box-sizing: border-box;
 	overflow: auto;
 	overscroll-behavior: contain;
 	text-align: left;
-	border-radius: 16px;
+	border-radius: 1rem;
 
 	&.asDrawer {
 		width: 100%;
-		padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 16px) 16px;
-		border-radius: 24px;
+		padding: 1rem 1rem calc(env(safe-area-inset-bottom, 0) + 1rem) 1rem;
+		border-radius: 1.5rem;
 		border-bottom-right-radius: 0;
 		border-bottom-left-radius: 0;
 		text-align: center;
@@ -127,7 +127,7 @@ function close() {
 	> .main,
 	> .sub {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(6.25rem, 1fr));
 
 		> * {
 			position: relative;
@@ -136,8 +136,8 @@ function close() {
 			align-items: center;
 			justify-content: center;
 			vertical-align: bottom;
-			height: 100px;
-			border-radius: 10px;
+			height: 6.25rem;
+			border-radius: 0.625rem;
 
 			&:hover,
 			&:focus-visible {
@@ -147,36 +147,36 @@ function close() {
 			}
 
 			> .icon {
-				font-size: 24px;
-				height: 24px;
+				font-size: 1.5rem;
+				height: 1.5rem;
 			}
 
 			> .text {
-				margin-top: 12px;
+				margin-top: 0.75rem;
 				font-size: 0.8em;
 				line-height: 1.5em;
 			}
 
 			> .indicator {
 				position: absolute;
-				top: 32px;
-				left: 32px;
+				top: 2rem;
+				left: 2rem;
 				color: var(--indicator);
-				font-size: 8px;
+				font-size: 0.5rem;
 				animation: blink 1s infinite;
 
-				@media (max-width: 500px) {
-					top: 16px;
-					left: 16px;
+				@media (max-width: 31.25rem) {
+					top: 1rem;
+					left: 1rem;
 				}
 			}
 		}
 	}
 
 	> .sub {
-		margin-top: 8px;
-		padding-top: 8px;
-		border-top: solid 0.5px var(--divider);
+		margin-top: 0.5rem;
+		padding-top: 0.5rem;
+		border-top: solid 0.0.3125rem var(--divider);
 	}
 }
 </style>

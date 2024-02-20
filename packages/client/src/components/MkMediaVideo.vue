@@ -103,16 +103,16 @@ const hide = ref(
 	> i {
 		display: block;
 		position: absolute;
-		border-radius: 6px;
+		border-radius: 0.375rem;
 		background-color: var(--fg);
 		color: var(--accentLighten);
-		font-size: 14px;
+		font-size: 0.875rem;
 		opacity: 0.5;
-		padding: 9px 15px;
+		padding: 0.5625rem 0.9375rem;
 		text-align: center;
 		cursor: pointer;
-		top: 0px;
-		right: 0px;
+		top: 0;
+		right: 0;
 	}
 
 	> video {

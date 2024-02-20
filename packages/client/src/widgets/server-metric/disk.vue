@@ -28,12 +28,12 @@ const available = $computed(() => props.meta.fs.total - props.meta.fs.used);
 <style lang="scss" scoped>
 .zbwaqsat {
 	display: flex;
-	padding: 16px;
+	padding: 1rem;
 
 	> .pie {
-		height: 82px;
+		height: 5.125rem;
 		flex-shrink: 0;
-		margin-right: 16px;
+		margin-right: 1rem;
 	}
 
 	> div {
@@ -45,10 +45,10 @@ const available = $computed(() => props.meta.fs.total - props.meta.fs.used);
 
 			&:first-child {
 				font-weight: bold;
-				margin-bottom: 4px;
+				margin-bottom: 0.25rem;
 
 				> i {
-					margin-right: 4px;
+					margin-right: 0.25rem;
 				}
 			}
 		}

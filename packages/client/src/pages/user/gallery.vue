@@ -38,8 +38,8 @@ const pagination = {
 <style lang="scss" scoped>
 .jrnovfpt {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-	grid-gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(16.25rem, 1fr));
+	grid-gap: 0.75rem;
 	margin: var(--margin);
 }
 </style>

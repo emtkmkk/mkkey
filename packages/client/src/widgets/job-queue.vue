@@ -258,10 +258,10 @@ defineExpose<WidgetComponentExpose>({
 	font-size: 0.9em;
 
 	> div {
-		padding: 16px;
+		padding: 1rem;
 
 		&:not(:first-child) {
-			border-top: solid 0.5px var(--divider);
+			border-top: solid 0.0.3125rem var(--divider);
 		}
 
 		> .label {

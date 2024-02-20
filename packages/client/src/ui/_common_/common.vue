@@ -97,16 +97,16 @@ if ($i) {
 	display: block;
 	position: fixed;
 	z-index: 4000000;
-	top: 15px;
-	right: 15px;
+	top: 0.9375rem;
+	right: 0.9375rem;
 
 	&:before {
 		content: "";
 		display: block;
-		width: 18px;
-		height: 18px;
+		width: 1.125rem;
+		height: 1.125rem;
 		box-sizing: border-box;
-		border: solid 2px transparent;
+		border: solid 0.125rem transparent;
 		border-top-color: var(--accent);
 		border-left-color: var(--accent);
 		border-radius: 50%;
@@ -121,8 +121,8 @@ if ($i) {
 	z-index: 2147483647;
 	color: #f6c177;
 	background: #6e6a86;
-	padding: 4px 5px;
-	font-size: 14px;
+	padding: 0.25rem 0.3125rem;
+	font-size: 0.875rem;
 	pointer-events: none;
 	user-select: none;
 
@@ -144,8 +144,8 @@ if ($i) {
 	z-index: 2147483647;
 	color: #ff0;
 	background: rgba(0, 0, 0, 0.5);
-	padding: 4px 7px;
-	font-size: 14px;
+	padding: 0.25rem 0.4375rem;
+	font-size: 0.875rem;
 	pointer-events: none;
 	user-select: none;
 	> span {

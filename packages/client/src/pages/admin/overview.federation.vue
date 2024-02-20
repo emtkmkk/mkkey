@@ -129,29 +129,29 @@ onMounted(async () => {
 	&:global {
 		> .pies {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-			grid-gap: 12px;
-			margin-bottom: 12px;
+			grid-template-columns: repeat(auto-fill, minmax(11.875rem, 1fr));
+			grid-gap: 0.75rem;
+			margin-bottom: 0.75rem;
 
 			> .pie {
 				position: relative;
-				padding: 12px;
+				padding: 0.75rem;
 
 				> .title {
 					position: absolute;
-					top: 20px;
-					left: 20px;
+					top: 1.25rem;
+					left: 1.25rem;
 					font-size: 90%;
 				}
 
 				> .chart {
-					max-height: 150px;
+					max-height: 9.375rem;
 				}
 
 				> .subTitle {
 					position: absolute;
-					bottom: 20px;
-					right: 20px;
+					bottom: 1.25rem;
+					right: 1.25rem;
 					font-size: 85%;
 				}
 			}
@@ -159,23 +159,23 @@ onMounted(async () => {
 
 		> .items {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-			grid-gap: 12px;
+			grid-template-columns: repeat(auto-fill, minmax(11.875rem, 1fr));
+			grid-gap: 0.75rem;
 
 			> .item {
 				display: flex;
 				box-sizing: border-box;
-				padding: 12px;
+				padding: 0.75rem;
 
 				> .icon {
 					display: grid;
 					place-items: center;
 					height: 100%;
 					aspect-ratio: 1;
-					margin-right: 12px;
+					margin-right: 0.75rem;
 					background: var(--accentedBg);
 					color: var(--accent);
-					border-radius: 10px;
+					border-radius: 0.625rem;
 				}
 
 				&.sub {
@@ -193,7 +193,7 @@ onMounted(async () => {
 				}
 
 				> .body {
-					padding: 2px 0;
+					padding: 0.125rem 0;
 
 					> .value {
 						font-size: 1.2em;

@@ -135,7 +135,7 @@
 					<MkButton
 						:disabled="fields.length >= 16"
 						inline
-						style="margin-right: 8px"
+						style="margin-right: 0.5rem"
 						@click="addField"
 						><i class="ph-plus ph-bold ph-lg"></i>
 						{{ i18n.ts.add }}</MkButton
@@ -360,27 +360,27 @@ definePageMetadata({
 	position: relative;
 	background-size: cover;
 	background-position: center;
-	border: solid 1px var(--divider);
-	border-radius: 10px;
+	border: solid 0.0625rem var(--divider);
+	border-radius: 0.625rem;
 	overflow: clip;
 
 	> .avatar {
 		display: inline-block;
 		text-align: center;
-		padding: 16px;
+		padding: 1rem;
 
 		> .avatar {
 			display: inline-block;
-			width: 72px;
-			height: 72px;
-			margin: 0 auto 16px auto;
+			width: 4.5rem;
+			height: 4.5rem;
+			margin: 0 auto 1rem auto;
 		}
 	}
 
 	> .bannerEdit {
 		position: absolute;
-		top: 16px;
-		right: 16px;
+		top: 1rem;
+		right: 1rem;
 	}
 }
 </style>

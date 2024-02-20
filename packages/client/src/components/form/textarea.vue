@@ -211,7 +211,7 @@ export default defineComponent({
 .adhpbeos {
 	> .label {
 		font-size: 0.85em;
-		padding: 0 0 8px 0;
+		padding: 0 0 0.5rem 0;
 		user-select: none;
 
 		&:empty {
@@ -221,7 +221,7 @@ export default defineComponent({
 
 	> .caption {
 		font-size: 0.85em;
-		padding: 8px 0 0 0;
+		padding: 0.5rem 0 0 0;
 		color: var(--fgTransparentWeak);
 
 		&:empty {
@@ -239,16 +239,16 @@ export default defineComponent({
 			width: 100%;
 			min-width: 100%;
 			max-width: 100%;
-			min-height: 130px;
+			min-height: 8.125rem;
 			margin: 0;
-			padding: 12px;
+			padding: 0.75rem;
 			font: inherit;
 			font-weight: normal;
 			font-size: 1em;
 			color: var(--fg);
 			background: var(--panel);
-			border: solid 1px var(--panel);
-			border-radius: 6px;
+			border: solid 0.0625rem var(--panel);
+			border-radius: 0.375rem;
 			outline: none;
 			box-shadow: none;
 			box-sizing: border-box;
@@ -276,7 +276,7 @@ export default defineComponent({
 
 		&.tall {
 			> textarea {
-				min-height: 200px;
+				min-height: 12.5rem;
 			}
 		}
 
@@ -288,7 +288,7 @@ export default defineComponent({
 	}
 
 	> .save {
-		margin: 8px 0 0 0;
+		margin: 0.5rem 0 0 0;
 	}
 }
 </style>

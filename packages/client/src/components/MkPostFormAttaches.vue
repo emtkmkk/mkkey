@@ -185,7 +185,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .skeikyzd {
-	padding: 8px 16px;
+	padding: 0.5rem 1rem;
 	position: relative;
 
 	> .files {
@@ -194,10 +194,10 @@ export default defineComponent({
 
 		> .file {
 			position: relative;
-			width: 64px;
-			height: 64px;
-			margin-right: 4px;
-			border-radius: 4px;
+			width: 4rem;
+			height: 4rem;
+			margin-right: 0.25rem;
+			border-radius: 0.25rem;
 			cursor: move;
 
 			&:hover > .remove {
@@ -214,8 +214,8 @@ export default defineComponent({
 			> .sensitive {
 				display: flex;
 				position: absolute;
-				width: 64px;
-				height: 64px;
+				width: 4rem;
+				height: 4rem;
 				top: 0;
 				left: 0;
 				z-index: 2;
@@ -232,8 +232,8 @@ export default defineComponent({
 	> .remain {
 		display: block;
 		position: absolute;
-		top: 8px;
-		right: 8px;
+		top: 0.5rem;
+		right: 0.5rem;
 		margin: 0;
 		padding: 0;
 	}

@@ -189,7 +189,7 @@ onUnmounted(() => {
 .matxzzsk {
 	> .label {
 		font-size: 0.85em;
-		padding: 0 0 8px 0;
+		padding: 0 0 0.5rem 0;
 		user-select: none;
 
 		&:empty {
@@ -199,7 +199,7 @@ onUnmounted(() => {
 
 	> .caption {
 		font-size: 0.85em;
-		padding: 8px 0 0 0;
+		padding: 0.5rem 0 0 0;
 		color: var(--fgTransparentWeak);
 
 		&:empty {
@@ -217,14 +217,14 @@ onUnmounted(() => {
 			height: v-bind("height + 'px'");
 			width: 100%;
 			margin: 0;
-			padding: 0 12px;
+			padding: 0 0.75rem;
 			font: inherit;
 			font-weight: normal;
 			font-size: 1em;
 			color: var(--fg);
 			background: var(--panel);
-			border: solid 1px var(--panel);
-			border-radius: 6px;
+			border: solid 0.0625rem var(--panel);
+			border-radius: 0.375rem;
 			outline: none;
 			box-shadow: none;
 			box-sizing: border-box;
@@ -242,7 +242,7 @@ onUnmounted(() => {
 			position: absolute;
 			z-index: 1;
 			top: 0;
-			padding: 0 12px;
+			padding: 0 0.75rem;
 			font-size: 1em;
 			height: v-bind("height + 'px'");
 			pointer-events: none;
@@ -253,8 +253,8 @@ onUnmounted(() => {
 
 			> * {
 				display: inline-block;
-				min-width: 16px;
-				max-width: 150px;
+				min-width: 1rem;
+				max-width: 9.375rem;
 				overflow: hidden;
 				white-space: nowrap;
 				text-overflow: ellipsis;
@@ -263,12 +263,12 @@ onUnmounted(() => {
 
 		> .prefix {
 			left: 0;
-			padding-right: 6px;
+			padding-right: 0.375rem;
 		}
 
 		> .suffix {
 			right: 0;
-			padding-left: 6px;
+			padding-left: 0.375rem;
 		}
 
 		&.inline {
@@ -279,7 +279,7 @@ onUnmounted(() => {
 		&.focused {
 			> input {
 				border-color: var(--accent) !important;
-				//box-shadow: 0 0 0 4px var(--focus);
+				//box-shadow: 0 0 0 0.25rem var(--focus);
 			}
 		}
 
@@ -294,7 +294,7 @@ onUnmounted(() => {
 	}
 
 	> .save {
-		margin: 8px 0 0 0;
+		margin: 0.5rem 0 0 0;
 	}
 }
 </style>

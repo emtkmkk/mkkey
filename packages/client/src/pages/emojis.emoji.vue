@@ -65,22 +65,22 @@ async function menu(ev) {
 .zuvgdzyu {
 	display: flex;
 	align-items: center;
-	padding: 12px;
+	padding: 0.75rem;
 	text-align: left;
 	background: var(--panel);
-	border-radius: 8px;
+	border-radius: 0.5rem;
 
 	&:hover {
 		border-color: var(--accent);
 	}
 
 	> .img {
-		width: 42px;
-		height: 42px;
+		width: 2.625rem;
+		height: 2.625rem;
 	}
 
 	> .body {
-		padding: 0 0 0 8px;
+		padding: 0 0 0 0.5rem;
 		white-space: nowrap;
 		overflow: hidden;
 

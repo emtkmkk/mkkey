@@ -249,23 +249,23 @@ defineExpose<WidgetComponentExpose>({
 		opacity: 0.7;
 
 		&.a {
-			top: 14px;
-			left: 14px;
+			top: 0.875rem;
+			left: 0.875rem;
 		}
 
 		&.b {
-			top: 14px;
-			right: 14px;
+			top: 0.875rem;
+			right: 0.875rem;
 		}
 
 		&.c {
-			bottom: 14px;
-			left: 14px;
+			bottom: 0.875rem;
+			left: 0.875rem;
 		}
 
 		&.d {
-			bottom: 14px;
-			right: 14px;
+			bottom: 0.875rem;
+			right: 0.875rem;
 		}
 	}
 
@@ -274,26 +274,26 @@ defineExpose<WidgetComponentExpose>({
 	}
 
 	&.small {
-		padding: 12px;
+		padding: 0.75rem;
 
 		> .clock {
-			height: 100px;
+			height: 6.25rem;
 		}
 	}
 
 	&.medium {
-		padding: 14px;
+		padding: 0.875rem;
 
 		> .clock {
-			height: 150px;
+			height: 9.375rem;
 		}
 	}
 
 	&.large {
-		padding: 16px;
+		padding: 1rem;
 
 		> .clock {
-			height: 200px;
+			height: 12.5rem;
 		}
 	}
 }

@@ -5,7 +5,7 @@
 			{{ i18n.ts._pages.blocks.note }}</template
 		>
 
-		<section style="padding: 0 16px 0 16px">
+		<section style="padding: 0 1rem 0 1rem">
 			<MkInput v-model="id">
 				<template #label>{{ i18n.ts._pages.blocks._note.id }}</template>
 				<template #caption>{{
@@ -23,13 +23,13 @@
 				v-if="note && !value.detailed"
 				:key="note.id + ':normal'"
 				v-model:note="note"
-				style="margin-bottom: 16px"
+				style="margin-bottom: 1rem"
 			/>
 			<XNoteDetailed
 				v-if="note && value.detailed"
 				:key="note.id + ':detail'"
 				v-model:note="note"
-				style="margin-bottom: 16px"
+				style="margin-bottom: 1rem"
 			/>
 		</section>
 	</XContainer>

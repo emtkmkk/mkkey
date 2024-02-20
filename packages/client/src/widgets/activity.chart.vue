@@ -110,7 +110,7 @@ function render() {
 <style lang="scss" scoped>
 svg {
 	display: block;
-	padding: 16px;
+	padding: 1rem;
 	width: 100%;
 	box-sizing: border-box;
 	cursor: all-scroll;

@@ -29,16 +29,16 @@
 					<p class="is-deleted">{{ i18n.ts.deletedChat }}</p>
 				</div>
 			</div>
-			<div v-if="message.file" class="file" width="400px">
+			<div v-if="message.file" class="file" width="25rem">
 				<XMediaList
 					v-if="
 						message.file.type.split('/')[0] == 'image' ||
 						message.file.type.split('/')[0] == 'video'
 					"
 					:in-dm="true"
-					width="400px"
+					width="25rem"
 					:media-list="[message.file]"
-					style="border-radius: 5px"
+					style="border-radius: 0.3125rem"
 				/>
 				<a
 					v-else
@@ -55,7 +55,7 @@
 				v-for="url in urls"
 				:key="url"
 				:url="url"
-				style="margin: 8px 0"
+				style="margin: 0.5rem 0"
 			/>
 			<footer>
 				<template v-if="isGroup">
@@ -117,10 +117,10 @@ function del(): void {
 
 	> .avatar {
 		position: sticky;
-		top: calc(var(--stickyTop, 0px) + 20px);
+		top: calc(var(--stickyTop, 0) + 1.25rem);
 		display: block;
-		width: 45px;
-		height: 45px;
+		width: 2.8125rem;
+		height: 2.8125rem;
 		transition: all 0.1s ease;
 	}
 
@@ -132,8 +132,8 @@ function del(): void {
 			display: inline-flex;
 			align-items: center;
 			padding: 0;
-			min-height: 38px;
-			border-radius: 16px;
+			min-height: 2.375rem;
+			border-radius: 1rem;
 			max-width: 100%;
 
 			& + * {
@@ -150,8 +150,8 @@ function del(): void {
 				display: none;
 				position: absolute;
 				z-index: 1;
-				top: -4px;
-				right: -4px;
+				top: -0.25rem;
+				right: -0.25rem;
 				margin: 0;
 				padding: 0;
 				cursor: pointer;
@@ -163,8 +163,8 @@ function del(): void {
 
 				> img {
 					vertical-align: bottom;
-					width: 16px;
-					height: 16px;
+					width: 1rem;
+					height: 1rem;
 					cursor: pointer;
 				}
 			}
@@ -186,7 +186,7 @@ function del(): void {
 				> .text {
 					display: block;
 					margin: 0;
-					padding: 12px 18px;
+					padding: 0.75rem 1.125rem;
 					overflow: hidden;
 					overflow-wrap: break-word;
 					word-break: break-word;
@@ -195,7 +195,7 @@ function del(): void {
 
 					& + .file {
 						> a {
-							border-radius: 0 0 16px 16px;
+							border-radius: 0 0 1rem 1rem;
 						}
 					}
 				}
@@ -204,7 +204,7 @@ function del(): void {
 					> a {
 						display: block;
 						max-width: 100%;
-						border-radius: 16px;
+						border-radius: 1rem;
 						overflow: hidden;
 						text-decoration: none;
 
@@ -220,13 +220,13 @@ function del(): void {
 							display: block;
 							margin: 0;
 							width: 100%;
-							max-height: 512px;
+							max-height: 32rem;
 							object-fit: contain;
 							box-sizing: border-box;
 						}
 
 						> p {
-							padding: 30px;
+							padding: 1.875rem;
 							text-align: center;
 							color: #6e6a86;
 							background: #ddd;
@@ -238,15 +238,15 @@ function del(): void {
 
 		> footer {
 			display: block;
-			margin: 2px 0 0 0;
+			margin: 0.125rem 0 0 0;
 			font-size: 0.65em;
 
 			> .read {
-				margin: 0 8px;
+				margin: 0 0.5rem;
 			}
 
 			> i {
-				margin-left: 4px;
+				margin-left: 0.25rem;
 			}
 		}
 	}
@@ -255,8 +255,8 @@ function del(): void {
 		padding-left: var(--margin);
 
 		> .content {
-			padding-left: 16px;
-			padding-right: 32px;
+			padding-left: 1rem;
+			padding-right: 2rem;
 
 			> .balloon {
 				$color: var(--X4);
@@ -267,11 +267,11 @@ function del(): void {
 				}
 
 				&:not(.noText):before {
-					left: -14px;
-					border-top: solid 8px transparent;
-					border-right: solid 8px $color;
-					border-bottom: solid 8px transparent;
-					border-left: solid 8px transparent;
+					left: -0.875rem;
+					border-top: solid 0.5rem transparent;
+					border-right: solid 0.5rem $color;
+					border-bottom: solid 0.5rem transparent;
+					border-left: solid 0.5rem transparent;
 				}
 
 				> .content {
@@ -293,8 +293,8 @@ function del(): void {
 		right: var(--margin); // 削除時にposition: absoluteになったときに使う
 
 		> .content {
-			padding-right: 16px;
-			padding-left: 32px;
+			padding-right: 1rem;
+			padding-left: 2rem;
 			text-align: right;
 
 			> .balloon {
@@ -311,12 +311,12 @@ function del(): void {
 				}
 
 				&:not(.noText):before {
-					right: -14px;
+					right: -0.875rem;
 					left: auto;
-					border-top: solid 8px transparent;
-					border-right: solid 8px transparent;
-					border-bottom: solid 8px transparent;
-					border-left: solid 8px $me-balloon-color;
+					border-top: solid 0.5rem transparent;
+					border-right: solid 0.5rem transparent;
+					border-bottom: solid 0.5rem transparent;
+					border-left: solid 0.5rem $me-balloon-color;
 				}
 
 				> .content {
@@ -345,8 +345,8 @@ function del(): void {
 
 	&.max-width_400px {
 		> .avatar {
-			width: 48px;
-			height: 48px;
+			width: 3rem;
+			height: 3rem;
 		}
 
 		> .content {
@@ -365,7 +365,7 @@ function del(): void {
 			> .balloon {
 				> .content {
 					> .text {
-						padding: 8px 16px;
+						padding: 0.5rem 1rem;
 					}
 				}
 			}

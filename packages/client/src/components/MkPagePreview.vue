@@ -55,7 +55,7 @@ defineProps<{
 
 	> .thumbnail {
 		width: 100%;
-		height: 200px;
+		height: 12.5rem;
 		background-position: center;
 		background-size: cover;
 		display: flex;
@@ -73,16 +73,16 @@ defineProps<{
 		}
 
 		& + article {
-			left: 100px;
-			width: calc(100% - 100px);
+			left: 6.25rem;
+			width: calc(100% - 6.25rem);
 		}
 	}
 
 	> article {
-		padding: 16px;
+		padding: 1rem;
 
 		> header {
-			margin-bottom: 8px;
+			margin-bottom: 0.5rem;
 
 			> h1 {
 				margin: 0;
@@ -98,14 +98,14 @@ defineProps<{
 		}
 
 		> footer {
-			margin-top: 8px;
-			height: 16px;
+			margin-top: 0.5rem;
+			height: 1rem;
 
 			> img {
 				display: inline-block;
-				width: 16px;
-				height: 16px;
-				margin-right: 4px;
+				width: 1rem;
+				height: 1rem;
+				margin-right: 0.25rem;
 				vertical-align: top;
 			}
 
@@ -114,17 +114,17 @@ defineProps<{
 				margin: 0;
 				color: var(--urlPreviewInfo);
 				font-size: 0.8em;
-				line-height: 16px;
+				line-height: 1rem;
 				vertical-align: top;
 			}
 		}
 	}
 
-	@media (max-width: 700px) {
+	@media (max-width: 43.75rem) {
 		> .thumbnail {
 			position: relative;
 			width: 100%;
-			height: 100px;
+			height: 6.25rem;
 
 			& + article {
 				left: 0;
@@ -133,38 +133,38 @@ defineProps<{
 		}
 	}
 
-	@media (max-width: 550px) {
-		font-size: 12px;
+	@media (max-width: 34.375rem) {
+		font-size: 0.75rem;
 
 		> .thumbnail {
-			height: 80px;
+			height: 5rem;
 		}
 
 		> article {
-			padding: 12px;
+			padding: 0.75rem;
 		}
 	}
 
-	@media (max-width: 500px) {
-		font-size: 10px;
+	@media (max-width: 31.25rem) {
+		font-size: 0.625rem;
 
 		> .thumbnail {
-			height: 70px;
+			height: 4.375rem;
 		}
 
 		> article {
-			padding: 8px;
+			padding: 0.5rem;
 
 			> header {
-				margin-bottom: 4px;
+				margin-bottom: 0.25rem;
 			}
 
 			> footer {
-				margin-top: 4px;
+				margin-top: 0.25rem;
 
 				> img {
-					width: 12px;
-					height: 12px;
+					width: 0.75rem;
+					height: 0.75rem;
 				}
 			}
 		}

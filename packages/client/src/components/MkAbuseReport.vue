@@ -97,15 +97,15 @@ function resolve() {
 		width: 35%;
 		box-sizing: border-box;
 		text-align: left;
-		padding: 24px;
-		border-right: solid 1px var(--divider);
+		padding: 1.5rem;
+		border-right: solid 0.0625rem var(--divider);
 
 		> .info {
 			display: flex;
 			box-sizing: border-box;
 			align-items: center;
-			padding: 14px;
-			border-radius: 8px;
+			padding: 0.875rem;
+			border-radius: 0.5rem;
 			--c: rgb(255 196 0 / 15%);
 			background-image: linear-gradient(
 				45deg,
@@ -117,16 +117,16 @@ function resolve() {
 				transparent 66.67%,
 				transparent 100%
 			);
-			background-size: 16px 16px;
+			background-size: 1rem 1rem;
 
 			> .avatar {
-				width: 42px;
-				height: 42px;
+				width: 2.625rem;
+				height: 2.625rem;
 			}
 
 			> .names {
 				margin-left: 0.3em;
-				padding: 0 8px;
+				padding: 0 0.5rem;
 				flex: 1;
 
 				> .name {
@@ -138,7 +138,7 @@ function resolve() {
 
 	> .detail {
 		flex: 1;
-		padding: 24px;
+		padding: 1.5rem;
 	}
 }
 </style>

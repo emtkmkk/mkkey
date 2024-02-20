@@ -268,10 +268,10 @@ async function doRenote(data, ev?: MouseEvent) {
 <style lang="scss" scoped>
 .eddddedb {
 	display: inline-block;
-	height: 32px;
-	margin: 2px;
-	padding: 0 6px;
-	border-radius: 4px;
+	height: 2rem;
+	margin: 0.125rem;
+	padding: 0 0.375rem;
+	border-radius: 0.25rem;
 
 	&:not(.canRenote) {
 		cursor: default;
@@ -283,7 +283,7 @@ async function doRenote(data, ev?: MouseEvent) {
 
 	> .count {
 		display: inline;
-		margin-left: 8px;
+		margin-left: 0.5rem;
 		opacity: 0.7;
 	}
 }

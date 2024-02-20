@@ -5,7 +5,7 @@
 			{{ i18n.ts._pages.blocks.radioButton }}</template
 		>
 
-		<section style="padding: 0 16px 16px 16px">
+		<section style="padding: 0 1rem 1rem 1rem">
 			<MkInput v-model="value.name"
 				><template #prefix
 					><i class="ph-magic-wand ph-bold ph-lg"></i></template

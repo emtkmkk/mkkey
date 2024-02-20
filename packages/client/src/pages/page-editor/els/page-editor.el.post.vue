@@ -5,7 +5,7 @@
 			{{ i18n.ts._pages.blocks.post }}</template
 		>
 
-		<section style="padding: 16px">
+		<section style="padding: 1rem">
 			<MkTextarea v-model="value.text"
 				><template #label>{{
 					i18n.ts._pages.blocks._post.text

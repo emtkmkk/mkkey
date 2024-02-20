@@ -215,8 +215,8 @@ function star(ev?: MouseEvent): void {
 <style lang="scss" scoped>
 .skdfgljsdkf {
 	display: inline-block;
-	height: 32px;
-	margin: 2px;
-	padding: 0 6px;
+	height: 2rem;
+	margin: 0.125rem;
+	padding: 0 0.375rem;
 }
 </style>

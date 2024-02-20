@@ -129,7 +129,7 @@
 				:href="`${apiUrl}/signin/twitter`"
 				><i
 					class="ph-twitter-logo ph-bold ph-lg"
-					style="margin-right: 4px"
+					style="margin-right: 0.25rem"
 				></i
 				>{{ i18n.t("signinWith", { x: "Twitter" }) }}</a
 			>
@@ -139,7 +139,7 @@
 				:href="`${apiUrl}/signin/github`"
 				><i
 					class="ph-github-logo ph-bold ph-lg"
-					style="margin-right: 4px"
+					style="margin-right: 0.25rem"
 				></i
 				>{{ i18n.t("signinWith", { x: "GitHub" }) }}</a
 			>
@@ -149,7 +149,7 @@
 				:href="`${apiUrl}/signin/discord`"
 				><i
 					class="ph-discord-logo ph-bold ph-lg"
-					style="margin-right: 4px"
+					style="margin-right: 0.25rem"
 				></i
 				>{{ i18n.t("signinWith", { x: "Discord" }) }}</a
 			>
@@ -374,8 +374,8 @@ function resetPassword() {
 	> .auth {
 		> .avatar {
 			margin: 0 auto 0 auto;
-			width: 64px;
-			height: 64px;
+			width: 4rem;
+			height: 4rem;
 			background: #ddd;
 			background-position: center;
 			background-size: cover;

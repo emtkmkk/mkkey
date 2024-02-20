@@ -197,7 +197,7 @@ const onMousedown = (ev: MouseEvent | TouchEvent) => {
 
 	> .label {
 		font-size: 0.85em;
-		padding: 0 0 8px 0;
+		padding: 0 0 0.5rem 0;
 		user-select: none;
 
 		&:empty {
@@ -207,7 +207,7 @@ const onMousedown = (ev: MouseEvent | TouchEvent) => {
 
 	> .caption {
 		font-size: 0.85em;
-		padding: 8px 0 0 0;
+		padding: 0.5rem 0 0 0;
 		color: var(--fgTransparentWeak);
 
 		&:empty {
@@ -215,14 +215,14 @@ const onMousedown = (ev: MouseEvent | TouchEvent) => {
 		}
 	}
 
-	$thumbHeight: 20px;
-	$thumbWidth: 20px;
+	$thumbHeight: 1.25rem;
+	$thumbWidth: 1.25rem;
 
 	> .body {
-		padding: 10px 12px;
+		padding: 0.625rem 0.75rem;
 		background: var(--panel);
-		border: solid 1px var(--panel);
-		border-radius: 6px;
+		border: solid 0.0625rem var(--panel);
+		border-radius: 0.375rem;
 
 		> .container {
 			position: relative;
@@ -236,7 +236,7 @@ const onMousedown = (ev: MouseEvent | TouchEvent) => {
 				right: 0;
 				margin: auto;
 				width: calc(100% - #{$thumbWidth});
-				height: 3px;
+				height: 0.1875rem;
 				background: rgba(0, 0, 0, 0.1);
 				border-radius: 999px;
 				overflow: clip;
@@ -252,7 +252,7 @@ const onMousedown = (ev: MouseEvent | TouchEvent) => {
 			}
 
 			> .ticks {
-				$tickWidth: 3px;
+				$tickWidth: 0.1875rem;
 
 				position: absolute;
 				top: 0;
@@ -266,7 +266,7 @@ const onMousedown = (ev: MouseEvent | TouchEvent) => {
 					position: absolute;
 					bottom: 0;
 					width: $tickWidth;
-					height: 3px;
+					height: 0.1875rem;
 					margin-left: math.div($tickWidth, 2);
 					background: var(--divider);
 					border-radius: 999px;

@@ -191,7 +191,7 @@ const onClick = (ev: MouseEvent) => {
 .vblkjoeq {
 	> .label {
 		font-size: 0.85em;
-		padding: 0 0 8px 0;
+		padding: 0 0 0.5rem 0;
 		user-select: none;
 
 		&:empty {
@@ -201,7 +201,7 @@ const onClick = (ev: MouseEvent) => {
 
 	> .caption {
 		font-size: 0.85em;
-		padding: 8px 0 0 0;
+		padding: 0.5rem 0 0 0;
 		color: var(--fgTransparentWeak);
 
 		&:empty {
@@ -228,14 +228,14 @@ const onClick = (ev: MouseEvent) => {
 			height: v-bind("height + 'px'");
 			width: 100%;
 			margin: 0;
-			padding: 0 12px;
+			padding: 0 0.75rem;
 			font: inherit;
 			font-weight: normal;
 			font-size: 1em;
 			color: var(--fg);
 			background: var(--panel);
-			border: solid 1px var(--panel);
-			border-radius: 6px;
+			border: solid 0.0625rem var(--panel);
+			border-radius: 0.375rem;
 			outline: none;
 			box-shadow: none;
 			box-sizing: border-box;
@@ -252,7 +252,7 @@ const onClick = (ev: MouseEvent) => {
 			position: absolute;
 			z-index: 1;
 			top: 0;
-			padding: 0 12px;
+			padding: 0 0.75rem;
 			font-size: 1em;
 			height: v-bind("height + 'px'");
 			pointer-events: none;
@@ -263,8 +263,8 @@ const onClick = (ev: MouseEvent) => {
 
 			> * {
 				display: inline-block;
-				min-width: 16px;
-				max-width: 150px;
+				min-width: 1rem;
+				max-width: 9.375rem;
 				overflow: hidden;
 				white-space: nowrap;
 				text-overflow: ellipsis;
@@ -273,12 +273,12 @@ const onClick = (ev: MouseEvent) => {
 
 		> .prefix {
 			left: 0;
-			padding-right: 6px;
+			padding-right: 0.375rem;
 		}
 
 		> .suffix {
 			right: 0;
-			padding-left: 6px;
+			padding-left: 0.375rem;
 		}
 
 		&.inline {

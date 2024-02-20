@@ -21,7 +21,7 @@ const minWidth = `${props.minWidth}px`;
 .terlnhxf {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(v-bind("minWidth"), 1fr));
-	grid-gap: 12px;
+	grid-gap: 0.75rem;
 
 	> ::v-deep(*) {
 		margin: 0 !important;

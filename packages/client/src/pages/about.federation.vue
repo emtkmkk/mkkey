@@ -154,14 +154,14 @@ function getStatus(instance) {
 .taeiyria {
 	> .query {
 		background: var(--bg);
-		margin-bottom: 16px;
+		margin-bottom: 1rem;
 	}
 }
 
 .dqokceoi {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-	grid-gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(16.875rem, 1fr));
+	grid-gap: 0.75rem;
 
 	> .instance:hover {
 		text-decoration: none;

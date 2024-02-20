@@ -195,29 +195,29 @@ export default defineComponent({
 
 			> h1 {
 				margin: 0;
-				padding: 0px 32px 0 32px;
-				text-shadow: 0 0 8px black;
+				padding: 0 2rem 0 2rem;
+				text-shadow: 0 0 0.5rem black;
 
 				> .logo {
 					vertical-align: bottom;
-					max-height: 0px;
+					max-height: 0;
 				}
 			}
 
 			> .about {
-				padding: 32px;
-				max-width: 580px;
+				padding: 2rem;
+				max-width: 36.25rem;
 				margin: 0 auto;
 				box-sizing: border-box;
-				text-shadow: 0 0 8px black;
+				text-shadow: 0 0 0.5rem black;
 			}
 
 			> .action {
-				padding-bottom: 64px;
+				padding-bottom: 4rem;
 
 				> button {
 					display: inline-block;
-					padding: 10px 20px;
+					padding: 0.625rem 1.25rem;
 					box-sizing: border-box;
 					text-align: center;
 					border-radius: 999px;
@@ -230,7 +230,7 @@ export default defineComponent({
 					}
 
 					&:first-child {
-						margin-right: 16px;
+						margin-right: 1rem;
 					}
 				}
 			}
@@ -259,12 +259,12 @@ export default defineComponent({
 
 			> h1 {
 				margin: 0;
-				padding: 16px;
-				text-shadow: 0 0 8px black;
+				padding: 1rem;
+				text-shadow: 0 0 0.5rem black;
 
 				> .logo {
 					vertical-align: bottom;
-					max-height: 48px;
+					max-height: 3rem;
 				}
 			}
 		}
@@ -283,14 +283,14 @@ export default defineComponent({
 			}
 
 			> .powered-by {
-				padding: 28px;
-				font-size: 14px;
+				padding: 1.75rem;
+				font-size: 0.875rem;
 				text-align: center;
-				border-top: 1px solid var(--divider);
+				border-top: 0.0625rem solid var(--divider);
 
 				> small {
 					display: block;
-					margin-top: 8px;
+					margin-top: 0.5rem;
 					opacity: 0.5;
 				}
 			}

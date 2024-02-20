@@ -49,9 +49,9 @@ const toggle = (): void => {
 		align-items: center;
 		width: 100%;
 		box-sizing: border-box;
-		padding: 12px 14px 12px 14px;
+		padding: 0.75rem 0.875rem 0.75rem 0.875rem;
 		background: var(--buttonBg);
-		border-radius: 6px;
+		border-radius: 0.375rem;
 
 		&:hover {
 			text-decoration: none;
@@ -73,7 +73,7 @@ const toggle = (): void => {
 				display: none;
 
 				& + .text {
-					padding-left: 4px;
+					padding-left: 0.25rem;
 				}
 			}
 		}
@@ -82,7 +82,7 @@ const toggle = (): void => {
 			white-space: nowrap;
 			text-overflow: ellipsis;
 			overflow: hidden;
-			padding-right: 12px;
+			padding-right: 0.75rem;
 		}
 
 		> .right {
@@ -98,12 +98,12 @@ const toggle = (): void => {
 
 	> .body {
 		background: var(--panel);
-		border-radius: 0 0 6px 6px;
+		border-radius: 0 0 0.375rem 0.375rem;
 	}
 
 	&.opened {
 		> .header {
-			border-radius: 6px 6px 0 0;
+			border-radius: 0.375rem 0.375rem 0 0;
 		}
 	}
 }

@@ -83,6 +83,6 @@ async function add() {
 
 <style lang="scss" scoped>
 .romcojzs {
-	padding: 0 16px 16px 16px;
+	padding: 0 1rem 1rem 1rem;
 }
 </style>

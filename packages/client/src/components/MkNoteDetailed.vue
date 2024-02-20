@@ -413,9 +413,9 @@ onUnmounted(() => {
 			right: 0;
 			bottom: 0;
 			margin: auto;
-			width: calc(100% - 8px);
-			height: calc(100% - 8px);
-			border: solid 1px var(--focus);
+			width: calc(100% - 0.5rem);
+			height: calc(100% - 0.5rem);
+			border: solid 0.0625rem var(--focus);
 			border-radius: var(--radius);
 			box-sizing: border-box;
 		}
@@ -425,29 +425,29 @@ onUnmounted(() => {
 		opacity: 1;
 	}
 	> .reply-to {
-		margin-bottom: -16px;
-		padding-bottom: 16px;
+		margin-bottom: -1rem;
+		padding-bottom: 1rem;
 	}
 
 	> .renote {
 		display: flex;
 		align-items: center;
-		padding: 16px 32px 8px 32px;
-		line-height: 28px;
+		padding: 1rem 2rem 0.5rem 2rem;
+		line-height: 1.75rem;
 		white-space: pre;
 		color: var(--renote);
 
 		> .avatar {
 			flex-shrink: 0;
 			display: inline-block;
-			width: 28px;
-			height: 28px;
-			margin: 0 8px 0 0;
-			border-radius: 6px;
+			width: 1.75rem;
+			height: 1.75rem;
+			margin: 0 0.5rem 0 0;
+			border-radius: 0.375rem;
 		}
 
 		> i {
-			margin-right: 4px;
+			margin-right: 0.25rem;
 		}
 
 		> span {
@@ -470,19 +470,19 @@ onUnmounted(() => {
 				color: inherit;
 
 				> .dropdownIcon {
-					margin-right: 4px;
+					margin-right: 0.25rem;
 				}
 			}
 		}
 	}
 
 	> .renote + .article {
-		padding-top: 8px;
+		padding-top: 0.5rem;
 	}
 
 	> .article {
-		padding-block: 28px 6px;
-		padding-top: 12px;
+		padding-block: 1.75rem 0.375rem;
+		padding-top: 0.75rem;
 		font-size: 1.1rem;
 		overflow: clip;
 		outline: none;
@@ -491,15 +491,15 @@ onUnmounted(() => {
 			cursor: unset;
 		}
 		&:first-of-type {
-			padding-top: 28px;
+			padding-top: 1.75rem;
 		}
 	}
 
 	> .reply {
-		border-top: solid 0.5px var(--divider);
+		border-top: solid 0.0.3125rem var(--divider);
 		cursor: pointer;
-		padding-top: 24px;
-		padding-bottom: 10px;
+		padding-top: 1.5rem;
+		padding-bottom: 0.625rem;
 		@media (pointer: coarse) {
 			cursor: default;
 		}
@@ -513,8 +513,8 @@ onUnmounted(() => {
 		&::before {
 			content: "";
 			position: absolute;
-			inset: -12px -24px;
-			bottom: -0px;
+			inset: -0.75rem -1.5rem;
+			bottom: -0;
 			background: var(--panelHighlight);
 			border-radius: var(--radius);
 			opacity: 0;
@@ -523,16 +523,16 @@ onUnmounted(() => {
 		}
 		&.reply-to {
 			&::before {
-				inset: 0px 8px;
+				inset: 0 0.5rem;
 			}
 			&:not(.max-width_450px)::before {
-				bottom: 12px;
+				bottom: 0.75rem;
 			}
 			&:first-of-type::before {
-				top: 12px;
+				top: 0.75rem;
 			}
 			&.reply.max-width_500px:first-of-type::before {
-				top: 4px;
+				top: 0.25rem;
 			}
 		}
 		// &::after {
@@ -571,16 +571,16 @@ onUnmounted(() => {
 	}
 	&.max-width_450px {
 		> .reply-to:first-child {
-			padding-top: 14px;
+			padding-top: 0.875rem;
 		}
 		> .renote {
-			padding: 8px 16px 0 16px;
+			padding: 0.5rem 1rem 0 1rem;
 		}
 
 		> .article {
-			padding: 6px 0 0 0;
+			padding: 0.375rem 0 0 0;
 			> .header > .body {
-				padding-left: 10px;
+				padding-left: 0.625rem;
 			}
 		}
 	}
@@ -591,7 +591,7 @@ onUnmounted(() => {
 				> .footer {
 					> .button {
 						&:not(:last-child) {
-							margin-right: 18px;
+							margin-right: 1.125rem;
 						}
 					}
 				}
@@ -607,7 +607,7 @@ onUnmounted(() => {
 				> .footer {
 					> .button {
 						&:not(:last-child) {
-							margin-right: 12px;
+							margin-right: 0.75rem;
 						}
 					}
 				}
@@ -617,7 +617,7 @@ onUnmounted(() => {
 }
 
 .muted {
-	padding: 8px;
+	padding: 0.5rem;
 	text-align: center;
 	opacity: 0.7;
 }

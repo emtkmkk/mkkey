@@ -90,10 +90,10 @@ watch(
 
 <style lang="scss">
 .defgtij {
-	padding: 12px;
-	grid-gap: 12px;
+	padding: 0.75rem;
+	grid-gap: 0.75rem;
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(30px, 40px));
+	grid-template-columns: repeat(auto-fill, minmax(1.875rem, 2.5rem));
 	place-content: center;
 
 	> .avatar-holder {

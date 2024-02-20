@@ -204,20 +204,20 @@ export default defineComponent({
 
 	> header {
 		position: sticky;
-		top: var(--stickyTop, 0px);
+		top: var(--stickyTop, 0);
 		left: 0;
 		color: var(--panelHeaderFg);
 		background: var(--panelHeaderBg);
-		border-bottom: solid 0.5px var(--panelHeaderDivider);
+		border-bottom: solid 0.0.3125rem var(--panelHeaderDivider);
 		z-index: 2;
 		line-height: 1.4em;
 
 		> .title {
 			margin: 0;
-			padding: 12px 16px;
+			padding: 0.75rem 1rem;
 
 			> ::v-deep(i) {
-				margin-right: 6px;
+				margin-right: 0.375rem;
 				transform: translateY(0.1em);
 			}
 
@@ -234,14 +234,14 @@ export default defineComponent({
 			height: 100%;
 
 			> ::v-deep(button) {
-				width: 42px;
+				width: 2.625rem;
 				height: 100%;
 			}
 		}
 	}
 
 	> .content {
-		--stickyTop: 0px;
+		--stickyTop: 0;
 
 		&.omitted {
 			position: relative;
@@ -255,16 +255,16 @@ export default defineComponent({
 				bottom: 0;
 				left: 0;
 				width: 100%;
-				height: 64px;
+				height: 4rem;
 				background: linear-gradient(0deg, var(--panel), var(--X15));
 
 				> span {
 					display: inline-block;
 					background: var(--panel);
-					padding: 6px 10px;
+					padding: 0.375rem 0.625rem;
 					font-size: 0.8em;
 					border-radius: 999px;
-					box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+					box-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 20%);
 				}
 
 				&:hover {
@@ -280,7 +280,7 @@ export default defineComponent({
 	&.thin {
 		> header {
 			> .title {
-				padding: 8px 10px;
+				padding: 0.5rem 0.625rem;
 				font-size: 0.9em;
 			}
 		}
@@ -293,7 +293,7 @@ export default defineComponent({
 ._forceContainerFull_ .ukygtjoj {
 	> header {
 		> .title {
-			padding: 12px 16px !important;
+			padding: 0.75rem 1rem !important;
 		}
 	}
 }
@@ -301,7 +301,7 @@ export default defineComponent({
 ._forceContainerFull_.ukygtjoj {
 	> header {
 		> .title {
-			padding: 12px 16px !important;
+			padding: 0.75rem 1rem !important;
 		}
 	}
 }

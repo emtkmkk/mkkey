@@ -161,11 +161,11 @@ defineExpose<WidgetComponentExpose>({
 		width: 100%;
 		max-width: 100%;
 		min-width: 100%;
-		padding: 16px;
+		padding: 1rem;
 		color: var(--fg);
 		background: transparent;
 		border: none;
-		border-bottom: solid 0.5px var(--divider);
+		border-bottom: solid 0.0.3125rem var(--divider);
 		border-radius: 0;
 		box-sizing: border-box;
 		font: inherit;
@@ -177,11 +177,11 @@ defineExpose<WidgetComponentExpose>({
 
 	> button {
 		display: inline-block;
-		margin: 8px;
-		padding: 0 10px;
-		height: 28px;
+		margin: 0.5rem;
+		padding: 0 0.625rem;
+		height: 1.75rem;
 		outline: none;
-		border-radius: 4px;
+		border-radius: 0.25rem;
 
 		&:disabled {
 			opacity: 0.7;
@@ -190,9 +190,9 @@ defineExpose<WidgetComponentExpose>({
 	}
 
 	> .logs {
-		border-top: solid 0.5px var(--divider);
+		border-top: solid 0.0.3125rem var(--divider);
 		text-align: left;
-		padding: 16px;
+		padding: 1rem;
 
 		&:empty {
 			display: none;

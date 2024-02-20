@@ -95,7 +95,7 @@
 		<section
 			v-else-if="modelValue.type === 'fn'"
 			class=""
-			style="padding: 0 16px 16px 16px"
+			style="padding: 0 1rem 1rem 1rem"
 		>
 			<MkTextarea v-model="slots">
 				<template #label>{{
@@ -118,7 +118,7 @@
 		<section
 			v-else-if="modelValue.type.startsWith('fn:')"
 			class=""
-			style="padding: 16px"
+			style="padding: 1rem"
 		>
 			<XV
 				v-for="(x, i) in modelValue.args"
@@ -133,7 +133,7 @@
 				:name="name"
 			/>
 		</section>
-		<section v-else class="" style="padding: 16px">
+		<section v-else class="" style="padding: 1rem">
 			<XV
 				v-for="(x, i) in modelValue.args"
 				:key="i"
@@ -369,7 +369,7 @@ export default defineComponent({
 
 .pbglfege {
 	opacity: 0.5;
-	padding: 16px;
+	padding: 1rem;
 	text-align: center;
 	cursor: pointer;
 	color: var(--fg);
@@ -387,25 +387,25 @@ export default defineComponent({
 		min-width: 100%;
 		border: none;
 		box-shadow: none;
-		padding: 16px;
-		font-size: 16px;
+		padding: 1rem;
+		font-size: 1rem;
 		background: transparent;
 		color: var(--fg);
 		box-sizing: border-box;
 	}
 
 	> textarea {
-		min-height: 100px;
+		min-height: 6.25rem;
 	}
 }
 
 .hpdwcrvs {
-	padding: 16px;
+	padding: 1rem;
 
 	> select {
 		display: block;
-		padding: 4px;
-		font-size: 16px;
+		padding: 0.25rem;
+		font-size: 1rem;
 		width: 100%;
 	}
 }

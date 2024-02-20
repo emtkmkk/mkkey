@@ -22,11 +22,11 @@
 						cy="25"
 						r="20"
 						fill="none"
-						stroke-width="6px"
+						stroke-width="0.375rem"
 						style="
 							fill: none;
 							stroke: currentColor;
-							stroke-width: 6px;
+							stroke-width: 0.375rem;
 							stroke-dasharray: 125.664;
 						"
 						:style="{ strokeDashoffset: circleDashoffset }"
@@ -134,11 +134,11 @@ watch(progress, (newVal) => {
 }
 
 .root {
-	padding: 32px;
+	padding: 2rem;
 	text-align: center;
 	cursor: wait;
 
-	--size: 40px;
+	--size: 2.5rem;
 
 	&.colored {
 		color: var(--accent);
@@ -147,12 +147,12 @@ watch(progress, (newVal) => {
 	&.inline {
 		display: inline;
 		padding: 0;
-		--size: 32px;
+		--size: 2rem;
 	}
 
 	&.mini {
-		padding: 16px;
-		--size: 32px;
+		padding: 1rem;
+		--size: 2rem;
 	}
 	&.em {
 		display: inline-block;

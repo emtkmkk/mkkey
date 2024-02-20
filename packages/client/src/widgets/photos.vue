@@ -114,8 +114,8 @@ defineExpose<WidgetComponentExpose>({
 	}
 
 	.img {
-		border: solid 4px transparent;
-		border-radius: 8px;
+		border: solid 0.25rem transparent;
+		border-radius: 0.5rem;
 	}
 }
 
@@ -123,18 +123,18 @@ defineExpose<WidgetComponentExpose>({
 	display: flex;
 	justify-content: center;
 	flex-wrap: wrap;
-	padding: 8px;
+	padding: 0.5rem;
 
 	.img {
 		flex: 1 1 33%;
 		width: 33%;
-		height: 80px;
+		height: 5rem;
 		box-sizing: border-box;
 		background-position: center center;
 		background-size: cover;
 		background-clip: content-box;
-		border: solid 2px transparent;
-		border-radius: 4px;
+		border: solid 0.125rem transparent;
+		border-radius: 0.25rem;
 	}
 }
 </style>

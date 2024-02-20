@@ -432,15 +432,15 @@ function noteClick(e) {
 
 <style lang="scss" scoped>
 .wrpstxzv {
-	padding: 16px 32px;
+	padding: 1rem 2rem;
 	&.children {
-		padding: 10px 0 0 var(--indent);
+		padding: 0.625rem 0 0 var(--indent);
 		padding-left: var(--indent) !important;
 		font-size: 1em;
 		cursor: auto;
 
 		&.max-width_450px {
-			padding: 10px 0 0 8px;
+			padding: 0.625rem 0 0 0.5rem;
 		}
 	}
 
@@ -449,37 +449,37 @@ function noteClick(e) {
 		cursor: pointer;
 
 		> .avatar-container {
-			margin-right: 8px;
+			margin-right: 0.5rem;
 			> .avatar {
 				flex-shrink: 0;
 				display: block;
-				width: 38px;
-				height: 38px;
-				border-radius: 8px;
+				width: 2.375rem;
+				height: 2.375rem;
+				border-radius: 0.5rem;
 			}
 		}
 
 		> .body {
 			flex: 1;
 			min-width: 0;
-			margin: 0 -200px;
-			padding: 0 200px;
+			margin: 0 -12.5rem;
+			padding: 0 12.5rem;
 			overflow: clip;
 			@media (pointer: coarse) {
 				cursor: default;
 			}
 
 			> .header {
-				margin-bottom: 2px;
+				margin-bottom: 0.125rem;
 				cursor: auto;
 			}
 
 			> .body {
 				> .translation {
-					border: solid 0.5px var(--divider);
+					border: solid 0.0.3125rem var(--divider);
 					border-radius: var(--radius);
-					padding: 12px;
-					margin-top: 8px;
+					padding: 0.75rem;
+					margin-top: 0.5rem;
 				}
 			}
 			> .footer {
@@ -491,7 +491,7 @@ function noteClick(e) {
 
 				> .button {
 					margin: 0;
-					padding: 8px;
+					padding: 0.5rem;
 					opacity: 0.7;
 					flex-grow: 1;
 					max-width: 3.5em;
@@ -508,7 +508,7 @@ function noteClick(e) {
 
 					> .count {
 						display: inline;
-						margin: 0 0 0 8px;
+						margin: 0 0 0 0.5rem;
 						opacity: 0.7;
 					}
 
@@ -524,18 +524,18 @@ function noteClick(e) {
 		}
 	}
 	&:first-child > .main > .body {
-		margin-top: -200px;
-		padding-top: 200px;
+		margin-top: -12.5rem;
+		padding-top: 12.5rem;
 	}
 	&.reply {
-		--avatarSize: 38px;
+		--avatarSize: 2.375rem;
 		.avatar-container {
-			margin-right: 8px !important;
+			margin-right: 0.5rem !important;
 		}
 	}
 	> .reply,
 	> .more {
-		margin-top: 10px;
+		margin-top: 0.625rem;
 		&.single {
 			padding: 0 !important;
 			> .line {
@@ -546,16 +546,16 @@ function noteClick(e) {
 
 	> .more {
 		display: flex;
-		padding-block: 10px;
+		padding-block: 0.625rem;
 		font-weight: 600;
 		> .line {
 			flex-grow: 0 !important;
-			margin-top: -10px !important;
-			margin-bottom: 10px !important;
-			margin-right: 10px !important;
+			margin-top: -0.625rem !important;
+			margin-bottom: 0.625rem !important;
+			margin-right: 0.625rem !important;
 			&::before {
 				border-left-style: dashed !important;
-				border-bottom-left-radius: 100px !important;
+				border-bottom-left-radius: 6.25rem !important;
 			}
 		}
 		i {
@@ -590,10 +590,10 @@ function noteClick(e) {
 	&.reply-to-more {
 		padding-bottom: 0;
 		&:first-child {
-			padding-top: 24px;
+			padding-top: 1.5rem;
 		}
 		.line::before {
-			margin-bottom: -16px;
+			margin-bottom: -1rem;
 		}
 	}
 
@@ -601,13 +601,13 @@ function noteClick(e) {
 	&.reply,
 	&.reply-to,
 	&.reply-to-more {
-		--indent: calc(var(--avatarSize) - 5px);
+		--indent: calc(var(--avatarSize) - 0.3125rem);
 		> .main {
 			> .avatar-container {
 				display: flex;
 				flex-direction: column;
 				align-items: center;
-				margin-right: 14px;
+				margin-right: 0.875rem;
 				width: var(--avatarSize);
 				> .avatar {
 					width: var(--avatarSize);
@@ -621,28 +621,28 @@ function noteClick(e) {
 			width: var(--avatarSize);
 			display: flex;
 			flex-grow: 1;
-			margin-bottom: -10px;
+			margin-bottom: -0.625rem;
 			&::before {
 				content: "";
 				position: absolute;
-				border-left: 2px solid var(--X13);
-				margin-left: calc((var(--avatarSize) / 2) - 1px);
+				border-left: 0.125rem solid var(--X13);
+				margin-left: calc((var(--avatarSize) / 2) - 0.0625rem);
 				width: calc(var(--indent) / 2);
 				inset-block: 0;
-				min-height: 8px;
+				min-height: 0.5rem;
 			}
 		}
 	}
 	&.reply-to,
 	&.reply-to-more {
 		> .main > .avatar-container > .line {
-			margin-bottom: 0px !important;
+			margin-bottom: 0 !important;
 		}
 	}
 	&.single,
 	&.singleStart {
 		> .main > .avatar-container > .line {
-			margin-bottom: -10px !important;
+			margin-bottom: -0.625rem !important;
 		}
 	}
 	.reply.children:not(:last-child) {
@@ -665,18 +665,18 @@ function noteClick(e) {
 			&::after {
 				content: "";
 				position: absolute;
-				border-left: 2px solid var(--X13);
-				border-bottom: 2px solid var(--X13);
-				margin-left: calc((var(--avatarSize) / 2) - 1px);
+				border-left: 0.125rem solid var(--X13);
+				border-bottom: 0.125rem solid var(--X13);
+				margin-left: calc((var(--avatarSize) / 2) - 0.0625rem);
 				width: calc(var(--indent) / 2);
 				height: calc((var(--avatarSize) / 2));
 				border-bottom-left-radius: calc(var(--indent) / 2);
-				top: 8px;
+				top: 0.5rem;
 			}
 		}
 		&:not(:last-child) > .line::after {
-			mask: linear-gradient(to right, transparent 2px, black 2px);
-			-webkit-mask: linear-gradient(to right, transparent 2px, black 2px);
+			mask: linear-gradient(to right, transparent 0.125rem, black 0.125rem);
+			-webkit-mask: linear-gradient(to right, transparent 0.125rem, black 0.125rem);
 		}
 	}
 	// End Reply Divider
@@ -687,10 +687,10 @@ function noteClick(e) {
 		}
 		// &::after {
 		// 	content: "";
-		// 	border-top: 1px solid var(--X13);
+		// 	border-top: 0.0625rem solid var(--X13);
 		// 	position: absolute;
 		// 	bottom: 0;
-		// 	margin-left: calc(var(--avatarSize) + 12px);
+		// 	margin-left: calc(var(--avatarSize) + 0.75rem);
 		// 	inset-inline: 0;
 		// }
 	}
@@ -705,39 +705,39 @@ function noteClick(e) {
 	&.max-width_500px {
 		:not(.reply) > & {
 			.reply {
-				--avatarSize: 24px;
-				--indent: calc(var(--avatarSize) - 4px);
+				--avatarSize: 1.5rem;
+				--indent: calc(var(--avatarSize) - 0.25rem);
 			}
 		}
 		&.firstColumn {
 			> .main,
 			> .line,
 			> .children:not(.single) > .line {
-				--avatarSize: 35px;
-				--indent: 35px;
+				--avatarSize: 2.1875rem;
+				--indent: 2.1875rem;
 			}
 			> .children:not(.single) {
-				padding-left: 28px !important;
+				padding-left: 1.75rem !important;
 			}
 		}
 	}
 	&.max-width_450px {
-		padding: 14px 16px;
+		padding: 0.875rem 1rem;
 		&.reply-to,
 		&.reply-to-more {
-			padding: 14px 16px;
-			padding-top: 14px !important;
+			padding: 0.875rem 1rem;
+			padding-top: 0.875rem !important;
 			padding-bottom: 0 !important;
 			margin-bottom: 0 !important;
 		}
 		> .main > .avatar-container {
-			margin-right: 10px;
+			margin-right: 0.625rem;
 		}
 	}
 }
 
 .muted {
-	padding: 8px;
+	padding: 0.5rem;
 	text-align: center;
 	opacity: 0.7;
 }

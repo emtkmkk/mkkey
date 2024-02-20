@@ -255,7 +255,7 @@ os.api("hashtags/list", {
 <style lang="scss" scoped>
 .vxjfqztj {
 	> * {
-		margin-right: 16px;
+		margin-right: 1rem;
 
 		&.local {
 			font-weight: bold;

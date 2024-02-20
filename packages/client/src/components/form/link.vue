@@ -50,9 +50,9 @@ const props = defineProps<{
 		align-items: center;
 		width: 100%;
 		box-sizing: border-box;
-		padding: 10px 14px;
+		padding: 0.625rem 0.875rem;
 		background: var(--buttonBg);
-		border-radius: 6px;
+		border-radius: 0.375rem;
 		font-size: 0.9em;
 
 		&:hover {
@@ -75,7 +75,7 @@ const props = defineProps<{
 				display: none;
 
 				& + .text {
-					padding-left: 4px;
+					padding-left: 0.25rem;
 				}
 			}
 		}
@@ -84,7 +84,7 @@ const props = defineProps<{
 			white-space: nowrap;
 			text-overflow: ellipsis;
 			overflow: hidden;
-			padding-right: 12px;
+			padding-right: 0.75rem;
 		}
 
 		> .right {

@@ -49,7 +49,7 @@
 										v-tooltip="i18n.ts._pages.viewSource"
 										:to="`/@${username}/pages/${pageName}/view-source`"
 										class="menu _button"
-										style="transform: translateY(2px)"
+										style="transform: translateY(0.125rem)"
 										><i class="ph-code ph-bold ph-lg"
 									/></MkA>
 									<template
@@ -59,7 +59,7 @@
 											v-tooltip="i18n.ts._pages.editPage"
 											class="menu _button"
 											:to="`/pages/edit/${page.id}`"
-											style="transform: translateY(2px)"
+											style="transform: translateY(0.125rem)"
 											><i class="ph-pencil ph-bold ph-lg"
 										/></MkA>
 										<button
@@ -347,18 +347,18 @@ definePageMetadata(
 				// TODO: 良い感じのアスペクト比で表示
 				display: block;
 				width: 100%;
-				height: 150px;
+				height: 9.375rem;
 				background-position: center;
 				background-size: cover;
 				background-image: v-bind("bgImg");
 
 				> .header {
-					padding: 16px;
+					padding: 1rem;
 
 					> h1 {
 						margin: 0;
 						color: white;
-						text-shadow: 0 0 8px var(--shadow);
+						text-shadow: 0 0 0.5rem var(--shadow);
 					}
 				}
 
@@ -366,24 +366,24 @@ definePageMetadata(
 					-webkit-backdrop-filter: var(--blur, blur(8px));
 					backdrop-filter: var(--blur, blur(8px));
 					background: rgba(0, 0, 0, 0.2);
-					padding: 8px;
-					border-radius: 24px;
+					padding: 0.5rem;
+					border-radius: 1.5rem;
 					width: fit-content;
 					position: relative;
-					top: -10px;
+					top: -0.625rem;
 					left: 1rem;
 
 					> .menu {
 						vertical-align: bottom;
-						height: 31px;
-						width: 31px;
+						height: 1.9375rem;
+						width: 1.9375rem;
 						color: #fff;
-						text-shadow: 0 0 8px var(--shadow);
-						font-size: 16px;
+						text-shadow: 0 0 0.5rem var(--shadow);
+						font-size: 1rem;
 					}
 
 					> .koudoku {
-						margin-left: 4px;
+						margin-left: 0.25rem;
 						vertical-align: bottom;
 					}
 				}
@@ -391,15 +391,15 @@ definePageMetadata(
 		}
 
 		> .content {
-			padding: 16px 0;
+			padding: 1rem 0;
 		}
 
 		> .actions {
 			display: flex;
 			align-items: center;
-			margin-top: 16px;
-			padding: 16px 0;
-			border-top: solid 0.5px var(--divider);
+			margin-top: 1rem;
+			padding: 1rem 0;
+			border-top: solid 0.0.3125rem var(--divider);
 
 			> .like {
 				> .button {
@@ -417,8 +417,8 @@ definePageMetadata(
 
 			> .other {
 				> button {
-					padding: 2px;
-					margin: 0 8px;
+					padding: 0.125rem;
+					margin: 0 0.5rem;
 
 					&:hover {
 						color: var(--fgHighlighted);
@@ -432,12 +432,12 @@ definePageMetadata(
 				align-items: center;
 
 				> .avatar {
-					width: 40px;
-					height: 40px;
+					width: 2.5rem;
+					height: 2.5rem;
 				}
 
 				> .name {
-					margin: 0 0 0 12px;
+					margin: 0 0 0 0.75rem;
 					font-size: 90%;
 				}
 
@@ -449,9 +449,9 @@ definePageMetadata(
 		}
 
 		> .links {
-			margin-top: 16px;
-			padding: 14px 0;
-			border-top: solid 0.5px var(--divider);
+			margin-top: 1rem;
+			padding: 0.875rem 0;
+			border-top: solid 0.0.3125rem var(--divider);
 
 			> .link {
 				margin-right: 2em;

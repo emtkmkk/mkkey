@@ -446,8 +446,8 @@ watch(
 			);
 		} else {
 			navFooterHeight = 0;
-			document.body.style.setProperty("--stickyBottom", "0px");
-			document.body.style.setProperty("--minBottomSpacing", "0px");
+			document.body.style.setProperty("--stickyBottom", "0");
+			document.body.style.setProperty("--minBottomSpacing", "0");
 		}
 	},
 	{
@@ -470,7 +470,7 @@ console.log(mainRouter.currentRoute.value.name);
 .widgetsDrawer-enter-from,
 .widgetsDrawer-leave-active {
 	opacity: 0;
-	transform: translateX(240px);
+	transform: translateX(15rem);
 }
 
 .widgetsDrawer-back-enter-active,
@@ -493,7 +493,7 @@ console.log(mainRouter.currentRoute.value.name);
 .menuDrawer-enter-from,
 .menuDrawer-leave-active {
 	opacity: 0;
-	transform: translateX(-240px);
+	transform: translateX(-15rem);
 }
 
 .menuDrawer-back-enter-active,
@@ -508,7 +508,7 @@ console.log(mainRouter.currentRoute.value.name);
 
 .dkgtipfy {
 	$ui-font-size: 1em; // TODO: どこかに集約したい
-	$widgets-hide-threshold: 1090px;
+	$widgets-hide-threshold: 68.125rem;
 
 	// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
 	min-height: calc(var(--vh, 1vh) * 100);
@@ -521,7 +521,7 @@ console.log(mainRouter.currentRoute.value.name);
 	}
 
 	> .sidebar {
-		border-right: solid 0.5px var(--divider);
+		border-right: solid 0.0.3125rem var(--divider);
 	}
 
 	> .contents {
@@ -531,7 +531,7 @@ console.log(mainRouter.currentRoute.value.name);
 
 	> .widgets {
 		padding: 0 var(--margin);
-		border-left: solid 0.5px var(--divider);
+		border-left: solid 0.0.3125rem var(--divider);
 
 		@media (max-width: $widgets-hide-threshold) {
 			display: none;
@@ -558,7 +558,7 @@ console.log(mainRouter.currentRoute.value.name);
 
 	> .postButton,
 	.widgetButton {
-		bottom: calc(env(safe-area-inset-bottom, 0px) + var(--stickyBottom));
+		bottom: calc(env(safe-area-inset-bottom, 0) + var(--stickyBottom));
 		right: 1.5rem;
 		height: 4rem;
 		width: 4rem;
@@ -567,9 +567,9 @@ console.log(mainRouter.currentRoute.value.name);
 		color: var(--fg);
 		position: fixed !important;
 		z-index: 1000;
-		font-size: 16px;
-		border-radius: 10px;
-		box-shadow: var(--shadow) 0px 0px 25px;
+		font-size: 1rem;
+		border-radius: 0.625rem;
+		box-shadow: var(--shadow) 0 0 1.5625rem;
 		transition: background 0.6s;
 		transition: transform 0.3s;
 
@@ -593,7 +593,7 @@ console.log(mainRouter.currentRoute.value.name);
 		z-index: 1000;
 		bottom: 0;
 		left: 0;
-		padding: 12px 12px calc(env(safe-area-inset-bottom, 0px) + 12px) 12px;
+		padding: 0.75rem 0.75rem calc(env(safe-area-inset-bottom, 0) + 0.75rem) 0.75rem;
 		display: flex;
 		width: 100%;
 		box-sizing: border-box;
@@ -605,7 +605,7 @@ console.log(mainRouter.currentRoute.value.name);
 			padding: 0;
 			margin: auto;
 			height: 3.5rem;
-			border-radius: 8px;
+			border-radius: 0.5rem;
 			background-position: center;
 			transition: background 0.6s;
 			color: var(--fg);
@@ -633,20 +633,20 @@ console.log(mainRouter.currentRoute.value.name);
 					top: 0;
 					left: 0;
 					color: var(--indicator);
-					font-size: 16px;
+					font-size: 1rem;
 					animation: blink 1s infinite;
 				}
 			}
 
 			&:not(:last-child) {
-				margin-right: 12px;
+				margin-right: 0.75rem;
 			}
 
-			@media (max-width: 400px) {
-				height: 60px;
+			@media (max-width: 25rem) {
+				height: 3.75rem;
 
 				&:not(:last-child) {
-					margin-right: 8px;
+					margin-right: 0.5rem;
 				}
 			}
 			> .indicator {
@@ -654,7 +654,7 @@ console.log(mainRouter.currentRoute.value.name);
 				top: 0;
 				left: 0;
 				color: var(--indicator);
-				font-size: 16px;
+				font-size: 1rem;
 				animation: blink 1s infinite;
 			}
 
@@ -667,7 +667,7 @@ console.log(mainRouter.currentRoute.value.name);
 			}
 
 			> * {
-				font-size: 16px;
+				font-size: 1rem;
 			}
 
 			&:disabled {
@@ -691,7 +691,7 @@ console.log(mainRouter.currentRoute.value.name);
 		z-index: 1001;
 		// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
 		height: calc(var(--vh, 1vh) * 100);
-		width: 240px;
+		width: 15rem;
 		box-sizing: border-box;
 		contain: strict;
 		overflow: auto;
@@ -709,11 +709,11 @@ console.log(mainRouter.currentRoute.value.name);
 }
 
 .spacer {
-	$widgets-hide-threshold: 1090px;
+	$widgets-hide-threshold: 68.125rem;
 
 	height: calc(var(--minBottomSpacing));
 
-	@media (min-width: ($widgets-hide-threshold + 1px)) {
+	@media (min-width: ($widgets-hide-threshold + 0.0625rem)) {
 		display: none;
 	}
 }

@@ -71,13 +71,13 @@ const zIndex = os.claimZIndex("high");
 <style lang="scss" scoped>
 .mk-uploader {
 	position: fixed;
-	right: 16px;
-	width: 300px;
-	top: 32px;
-	padding: 16px 20px;
+	right: 1rem;
+	width: 18.75rem;
+	top: 2rem;
+	padding: 1rem 1.25rem;
 	pointer-events: none;
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-	border-radius: 8px;
+	box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.3);
+	border-radius: 0.5rem;
 }
 .mk-uploader:empty {
 	display: none;
@@ -90,14 +90,14 @@ const zIndex = os.claimZIndex("high");
 }
 .mk-uploader > ol > li {
 	display: grid;
-	margin: 8px 0 0 0;
+	margin: 0.5rem 0 0 0;
 	padding: 0;
-	height: 36px;
+	height: 2.25rem;
 	width: 100%;
-	border-top: solid 8px transparent;
-	grid-template-columns: 36px calc(100% - 44px);
-	grid-template-rows: 1fr 8px;
-	column-gap: 8px;
+	border-top: solid 0.5rem transparent;
+	grid-template-columns: 2.25rem calc(100% - 2.75rem);
+	grid-template-rows: 1fr 0.5rem;
+	column-gap: 0.5rem;
 	box-sizing: content-box;
 }
 .mk-uploader > ol > li:first-child {
@@ -119,7 +119,7 @@ const zIndex = os.claimZIndex("high");
 }
 .mk-uploader > ol > li > .top > .name {
 	display: block;
-	padding: 0 8px 0 0;
+	padding: 0 0.5rem 0 0;
 	margin: 0;
 	font-size: 0.8em;
 	white-space: nowrap;
@@ -128,7 +128,7 @@ const zIndex = os.claimZIndex("high");
 	flex-shrink: 1;
 }
 .mk-uploader > ol > li > .top > .name > i {
-	margin-right: 4px;
+	margin-right: 0.25rem;
 }
 .mk-uploader > ol > li > .top > .status {
 	display: block;
@@ -143,7 +143,7 @@ const zIndex = os.claimZIndex("high");
 }
 .mk-uploader > ol > li > .top > .status > .percentage {
 	display: inline-block;
-	width: 48px;
+	width: 3rem;
 	text-align: right;
 }
 .mk-uploader > ol > li > .top > .status > .percentage:after {
@@ -153,13 +153,13 @@ const zIndex = os.claimZIndex("high");
 	display: block;
 	background: transparent;
 	border: none;
-	border-radius: 4px;
+	border-radius: 0.25rem;
 	overflow: hidden;
 	grid-column: 2/3;
 	grid-row: 2/3;
 	z-index: 2;
 	width: 100%;
-	height: 8px;
+	height: 0.5rem;
 }
 .mk-uploader > ol > li > progress::-webkit-progress-value {
 	background: var(--accent);

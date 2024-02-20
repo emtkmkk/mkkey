@@ -153,14 +153,14 @@ export default defineComponent({
 	&[data-direction="up"] {
 		> .list-enter-from {
 			opacity: 0;
-			transform: translateY(64px);
+			transform: translateY(4rem);
 		}
 	}
 
 	&[data-direction="down"] {
 		> .list-enter-from {
 			opacity: 0;
-			transform: translateY(-64px);
+			transform: translateY(-4rem);
 		}
 	}
 
@@ -171,26 +171,26 @@ export default defineComponent({
 			display: inline-block;
 			position: relative;
 			margin: 0;
-			padding: 0 16px;
-			line-height: 32px;
+			padding: 0 1rem;
+			line-height: 2rem;
 			text-align: center;
-			font-size: 12px;
+			font-size: 0.75rem;
 			color: var(--dateLabelFg);
 
 			> span {
 				&:first-child {
-					margin-right: 8px;
+					margin-right: 0.5rem;
 
 					> .icon {
-						margin-right: 8px;
+						margin-right: 0.5rem;
 					}
 				}
 
 				&:last-child {
-					margin-left: 8px;
+					margin-left: 0.5rem;
 
 					> .icon {
-						margin-left: 8px;
+						margin-left: 0.5rem;
 					}
 				}
 			}
@@ -212,7 +212,7 @@ export default defineComponent({
 			}
 
 			&:not(:last-child) {
-				border-bottom: solid 0.5px var(--divider);
+				border-bottom: solid 0.0.3125rem var(--divider);
 			}
 		}
 	}

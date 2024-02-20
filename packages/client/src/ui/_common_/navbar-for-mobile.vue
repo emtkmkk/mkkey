@@ -209,7 +209,7 @@ function more() {
 
 				> .icon {
 					display: inline-block;
-					width: 55px;
+					width: 3.4375rem;
 					aspect-ratio: 1;
 				}
 			}
@@ -218,7 +218,7 @@ function more() {
 		> .bottom {
 			position: sticky;
 			bottom: 0;
-			padding: 20px 0;
+			padding: 1.25rem 0;
 			background: var(--X14);
 			-webkit-backdrop-filter: var(--blur, blur(8px));
 			backdrop-filter: var(--blur, blur(8px));
@@ -228,7 +228,7 @@ function more() {
 				display: flex;
 				align-items: center;
 				width: 100%;
-				height: 40px;
+				height: 2.5rem;
 				color: var(--fgOnAccent);
 				font-weight: bold;
 				text-align: left;
@@ -236,7 +236,7 @@ function more() {
 				&:before {
 					content: "";
 					display: block;
-					width: calc(100% - 38px);
+					width: calc(100% - 2.375rem);
 					height: 100%;
 					margin: auto;
 					position: absolute;
@@ -261,9 +261,9 @@ function more() {
 
 				> .icon {
 					position: relative;
-					margin-left: 30px;
-					margin-right: 8px;
-					width: 32px;
+					margin-left: 1.875rem;
+					margin-right: 0.5rem;
+					width: 2rem;
 				}
 
 				> .text {
@@ -281,7 +281,7 @@ function more() {
 
 				> .icon {
 					display: inline-block;
-					width: 38px;
+					width: 2.375rem;
 					aspect-ratio: 1;
 				}
 			}
@@ -290,18 +290,18 @@ function more() {
 				position: relative;
 				display: flex;
 				align-items: center;
-				padding-left: 30px;
+				padding-left: 1.875rem;
 				text-overflow: ellipsis;
 				overflow: hidden;
 				white-space: nowrap;
 				width: 100%;
 				text-align: left;
 				box-sizing: border-box;
-				margin-top: 16px;
+				margin-top: 1rem;
 
 				> .icon {
 					position: relative;
-					width: 32px;
+					width: 2rem;
 					aspect-ratio: 1;
 					transform: translateX(-100%);
 					left: 50%;
@@ -313,14 +313,14 @@ function more() {
 			flex: 0.1;
 
 			> .divider {
-				margin: 16px 16px;
-				border-top: solid 0.5px var(--divider);
+				margin: 1rem 1rem;
+				border-top: solid 0.0.3125rem var(--divider);
 			}
 
 			> .item {
 				position: relative;
 				display: block;
-				padding-left: 24px;
+				padding-left: 1.5rem;
 				line-height: 2.85rem;
 				text-overflow: ellipsis;
 				overflow: hidden;
@@ -332,16 +332,16 @@ function more() {
 
 				> .icon {
 					position: relative;
-					width: 32px;
-					margin-right: 8px;
+					width: 2rem;
+					margin-right: 0.5rem;
 				}
 
 				> .indicator {
 					position: absolute;
 					top: 0;
-					left: 20px;
+					left: 1.25rem;
 					color: var(--navIndicator);
-					font-size: 8px;
+					font-size: 0.5rem;
 					animation: blink 1s infinite;
 				}
 
@@ -364,7 +364,7 @@ function more() {
 					&:before {
 						content: "";
 						display: block;
-						width: calc(100% - 24px);
+						width: calc(100% - 1.5rem);
 						height: 100%;
 						margin: auto;
 						position: absolute;

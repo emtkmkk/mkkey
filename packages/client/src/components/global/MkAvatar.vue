@@ -149,7 +149,7 @@ watch(
 	vertical-align: bottom;
 	flex-shrink: 0;
 	border-radius: 100%;
-	line-height: 16px;
+	line-height: 1rem;
 
 	> .inner {
 		position: absolute;
@@ -186,7 +186,7 @@ watch(
 		&:before,
 		&:after {
 			background: #ebbcba;
-			border: solid 4px currentColor;
+			border: solid 0.25rem currentColor;
 			box-sizing: border-box;
 			content: "";
 			display: inline-block;

@@ -56,7 +56,7 @@ const followersPagination = {
 .mk-following-or-followers {
 	> .users {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(16.25rem, 1fr));
 		grid-gap: var(--margin);
 	}
 }

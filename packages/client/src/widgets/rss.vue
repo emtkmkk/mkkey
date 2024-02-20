@@ -99,7 +99,7 @@ defineExpose<WidgetComponentExpose>({
 
 		> .item {
 			display: block;
-			padding: 8px 16px;
+			padding: 0.5rem 1rem;
 			color: var(--fg);
 			white-space: nowrap;
 			text-overflow: ellipsis;

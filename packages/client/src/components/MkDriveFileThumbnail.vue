@@ -86,7 +86,7 @@ const isThumbnailAvailable = computed(() => {
 	position: relative;
 	display: flex;
 	background: var(--panel);
-	border-radius: 8px;
+	border-radius: 0.5rem;
 	overflow: clip;
 	border: 0;
 	padding: 0;
@@ -104,7 +104,7 @@ const isThumbnailAvailable = computed(() => {
 	> .icon {
 		pointer-events: none;
 		margin: auto;
-		font-size: 32px;
+		font-size: 2rem;
 		color: #777;
 	}
 }

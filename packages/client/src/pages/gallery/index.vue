@@ -77,7 +77,7 @@
 					</MkPagination>
 				</swiper-slide>
 				<swiper-slide>
-					<MkA to="/gallery/new" class="_link" style="margin: 16px"
+					<MkA to="/gallery/new" class="_link" style="margin: 1rem"
 						><i class="ph-plus ph-bold ph-lg"></i>
 						{{ i18n.ts.postToGallery }}</MkA
 					>
@@ -207,8 +207,8 @@ onMounted(() => {
 <style lang="scss" scoped>
 .vfpdbgtk {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-	grid-gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(16.25rem, 1fr));
+	grid-gap: 0.75rem;
 	margin: 0 var(--margin);
 
 	> .post {

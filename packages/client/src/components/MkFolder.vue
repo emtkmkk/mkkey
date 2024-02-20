@@ -140,31 +140,31 @@ export default defineComponent({
 		position: relative;
 		z-index: 10;
 		position: sticky;
-		top: var(--stickyTop, 0px);
+		top: var(--stickyTop, 0);
 		padding: var(--x-padding);
 		-webkit-backdrop-filter: var(--blur, blur(8px));
 		backdrop-filter: var(--blur, blur(20px));
-		margin-inline: -12px;
-		padding-inline: 12px;
+		margin-inline: -0.75rem;
+		padding-inline: 0.75rem;
 		mask: linear-gradient(
 			to right,
 			transparent,
-			black 12px calc(100% - 12px),
+			black 0.75rem calc(100% - 0.75rem),
 			transparent
 		);
 		-webkit-mask: linear-gradient(
 			to right,
 			transparent,
-			black 12px calc(100% - 12px),
+			black 0.75rem calc(100% - 0.75rem),
 			transparent
 		);
 
 		> .title {
 			margin: 0;
-			padding: 12px 16px 12px 0;
+			padding: 0.75rem 1rem 0.75rem 0;
 
 			> i {
-				margin-right: 6px;
+				margin-right: 0.375rem;
 			}
 
 			&:empty {
@@ -175,19 +175,19 @@ export default defineComponent({
 		> .divider {
 			flex: 1;
 			margin: auto;
-			height: 1px;
+			height: 0.0625rem;
 			background: var(--divider);
 		}
 
 		> button {
-			padding: 12px 0 12px 16px;
+			padding: 0.75rem 0 0.75rem 1rem;
 		}
 	}
 
 	&.max-width_500px {
 		> header {
 			> .title {
-				padding: 8px 10px 8px 0;
+				padding: 0.5rem 0.625rem 0.5rem 0;
 			}
 		}
 	}

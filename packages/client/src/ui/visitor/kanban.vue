@@ -190,8 +190,8 @@ export default defineComponent({
 		overflow: auto;
 
 		> .wrapper {
-			max-width: 380px;
-			padding: 0 16px;
+			max-width: 23.75rem;
+			padding: 0 1rem;
 			box-sizing: border-box;
 			margin: 0 auto;
 
@@ -210,7 +210,7 @@ export default defineComponent({
 			> h1 {
 				display: block;
 				margin: 0;
-				padding: 16px 0 16px 0;
+				padding: 1rem 0 1rem 0;
 				color: #fff;
 
 				&.full {
@@ -218,7 +218,7 @@ export default defineComponent({
 
 					> .link {
 						> ::v-deep(.logo) {
-							max-height: 48px;
+							max-height: 3rem;
 						}
 					}
 				}
@@ -228,17 +228,17 @@ export default defineComponent({
 
 					> ::v-deep(.logo) {
 						vertical-align: bottom;
-						max-height: 48px;
+						max-height: 3rem;
 					}
 				}
 			}
 
 			> .about {
 				display: block;
-				margin: 24px 0;
+				margin: 1.5rem 0;
 				text-align: center;
 				box-sizing: border-box;
-				text-shadow: 0 0 8px black;
+				text-shadow: 0 0 0.5rem black;
 				color: #fff;
 			}
 
@@ -246,7 +246,7 @@ export default defineComponent({
 				> button {
 					display: block;
 					width: 100%;
-					padding: 10px;
+					padding: 0.625rem;
 					box-sizing: border-box;
 					text-align: center;
 					border-radius: 999px;
@@ -256,29 +256,29 @@ export default defineComponent({
 					}
 
 					&:first-child {
-						margin-bottom: 16px;
+						margin-bottom: 1rem;
 					}
 				}
 			}
 
 			> .announcements {
-				margin: 32px 0;
+				margin: 2rem 0;
 				text-align: left;
 
 				> header {
-					padding: 12px 16px;
-					border-bottom: solid 1px rgba(255, 255, 255, 0.5);
+					padding: 0.75rem 1rem;
+					border-bottom: solid 0.0625rem rgba(255, 255, 255, 0.5);
 				}
 
 				> .list {
-					max-height: 300px;
+					max-height: 18.75rem;
 					overflow: auto;
 
 					> .item {
-						padding: 12px 16px;
+						padding: 0.75rem 1rem;
 
 						& + .item {
-							border-top: solid 1px rgba(255, 255, 255, 0.5);
+							border-top: solid 0.0625rem rgba(255, 255, 255, 0.5);
 						}
 
 						> .title {
@@ -295,15 +295,15 @@ export default defineComponent({
 			}
 
 			> .powered-by {
-				padding: 28px;
-				font-size: 14px;
+				padding: 1.75rem;
+				font-size: 0.875rem;
 				text-align: center;
-				border-top: 1px solid rgba(255, 255, 255, 0.5);
+				border-top: 0.0625rem solid rgba(255, 255, 255, 0.5);
 				color: #fff;
 
 				> small {
 					display: block;
-					margin-top: 8px;
+					margin-top: 0.5rem;
 					opacity: 0.5;
 				}
 			}

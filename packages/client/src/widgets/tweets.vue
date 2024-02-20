@@ -149,7 +149,7 @@ defineExpose<WidgetComponentExpose>({
 .tweet {
 	border: none;
 	display: block;
-	padding: 1px 0 0 0;
+	padding: 0.0625rem 0 0 0;
 }
 
 .tweets {

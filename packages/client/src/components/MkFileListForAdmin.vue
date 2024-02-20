@@ -93,17 +93,17 @@ const props = defineProps<{
 			}
 
 			> .thumbnail {
-				width: 128px;
-				height: 128px;
+				width: 8rem;
+				height: 8rem;
 			}
 
 			> .body {
 				margin-left: 0.3em;
-				padding: 8px;
+				padding: 0.5rem;
 				flex: 1;
 
-				@media (max-width: 500px) {
-					font-size: 14px;
+				@media (max-width: 31.25rem) {
+					font-size: 0.875rem;
 				}
 			}
 		}
@@ -111,8 +111,8 @@ const props = defineProps<{
 
 	&.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-		grid-gap: 12px;
+		grid-template-columns: repeat(auto-fill, minmax(8.125rem, 1fr));
+		grid-gap: 0.75rem;
 		margin: var(--margin) 0;
 
 		> .file {
@@ -127,12 +127,12 @@ const props = defineProps<{
 			> .sensitive-label {
 				position: absolute;
 				z-index: 10;
-				top: 8px;
-				left: 8px;
-				padding: 2px 4px;
+				top: 0.5rem;
+				left: 0.5rem;
+				padding: 0.125rem 0.25rem;
 				background: #ff0000bf;
 				color: #fff;
-				border-radius: 4px;
+				border-radius: 0.25rem;
 				font-size: 85%;
 				animation: sensitive-blink 1s infinite;
 			}

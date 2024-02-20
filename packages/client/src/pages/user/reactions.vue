@@ -75,25 +75,25 @@ watch($$(q), () => { });
 <style lang="scss" scoped>
 .query {
 	background: var(--bg);
-	padding: 16px;
+	padding: 1rem;
 }
 .afdcfbfb {
 	> .header {
 		display: flex;
 		align-items: center;
-		padding: 8px 16px;
-		margin-bottom: 8px;
-		border-bottom: solid 2px var(--divider);
+		padding: 0.5rem 1rem;
+		margin-bottom: 0.5rem;
+		border-bottom: solid 0.125rem var(--divider);
 
 		> .avatar {
-			width: 24px;
-			height: 24px;
-			margin-right: 8px;
+			width: 1.5rem;
+			height: 1.5rem;
+			margin-right: 0.5rem;
 		}
 
 		> .reaction {
-			max-width: 160px;
-			height: 32px;
+			max-width: 10rem;
+			height: 2rem;
 			object-fit: fill;
 		}
 

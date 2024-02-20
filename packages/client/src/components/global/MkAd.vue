@@ -128,9 +128,9 @@ function reduceFrequency(): void {
 	background-image: repeating-linear-gradient(
 		45deg,
 		transparent,
-		transparent 8px,
-		var(--ad) 8px,
-		var(--ad) 14px
+		transparent 0.5rem,
+		var(--ad) 0.5rem,
+		var(--ad) 0.875rem
 	);
 
 	> .main {
@@ -151,16 +151,16 @@ function reduceFrequency(): void {
 				display: block;
 				object-fit: contain;
 				margin: auto;
-				border-radius: 5px;
+				border-radius: 0.3125rem;
 			}
 
 			> .menu {
 				position: absolute;
-				top: 1px;
-				right: 1px;
+				top: 0.0625rem;
+				right: 0.0625rem;
 
 				> .info-circle {
-					border: 3px solid var(--panel);
+					border: 0.1875rem solid var(--panel);
 					border-radius: 50%;
 					background: var(--panel);
 				}
@@ -170,51 +170,51 @@ function reduceFrequency(): void {
 		&.widget {
 			> a,
 			> a > img {
-				max-width: min(300px, 100%);
-				max-height: 300px;
+				max-width: min(18.75rem, 100%);
+				max-height: 18.75rem;
 			}
 		}
 
 		&.inline {
-			padding: 8px;
+			padding: 0.5rem;
 
 			> a,
 			> a > img {
-				max-width: min(600px, 100%);
-				max-height: 80px;
+				max-width: min(37.5rem, 100%);
+				max-height: 5rem;
 			}
 		}
 
 		&.inline-big {
-			padding: 8px;
+			padding: 0.5rem;
 
 			> a,
 			> a > img {
-				max-width: min(600px, 100%);
-				max-height: 250px;
+				max-width: min(37.5rem, 100%);
+				max-height: 15.625rem;
 			}
 		}
 
 		&.vertical {
 			> a,
 			> a > img {
-				max-width: min(100px, 100%);
+				max-width: min(6.25rem, 100%);
 			}
 		}
 	}
 
 	> .menu {
-		padding: 8px;
+		padding: 0.5rem;
 		text-align: center;
 
 		> .body {
-			padding: 8px;
+			padding: 0.5rem;
 			margin: 0 auto;
-			max-width: 400px;
-			border: solid 1px var(--divider);
+			max-width: 25rem;
+			border: solid 0.0625rem var(--divider);
 
 			> .button {
-				margin: 8px auto;
+				margin: 0.5rem auto;
 			}
 		}
 	}

@@ -294,16 +294,16 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .fdidabkb {
-	--height: 55px;
+	--height: 3.4375rem;
 	display: flex;
 	width: 100%;
 	-webkit-backdrop-filter: var(--blur, blur(15px));
 	backdrop-filter: var(--blur, blur(15px));
-	border-bottom: solid 0.5px var(--divider);
+	border-bottom: solid 0.0.3125rem var(--divider);
 	height: var(--height);
 
 	&.thin {
-		--height: 45px;
+		--height: 2.8125rem;
 
 		> .buttons {
 			> .button {
@@ -326,21 +326,21 @@ onUnmounted(() => {
 			}
 		}
 		> .tabs {
-			padding-inline: 12px;
+			padding-inline: 0.75rem;
 			mask: linear-gradient(
 				to right,
 				transparent,
-				black 10px 80%,
+				black 0.625rem 80%,
 				transparent
 			);
 			-webkit-mask: linear-gradient(
 				to right,
 				transparent,
-				black 10px 80%,
+				black 0.625rem 80%,
 				transparent
 			);
-			margin-left: -10px;
-			padding-left: 22px;
+			margin-left: -0.625rem;
+			padding-left: 1.375rem;
 			scrollbar-width: none;
 			&::before {
 				content: unset;
@@ -358,7 +358,7 @@ onUnmounted(() => {
 	}
 
 	> .buttons {
-		--margin: 8px;
+		--margin: 0.5rem;
 		display: flex;
 		align-items: center;
 		height: var(--height);
@@ -368,12 +368,12 @@ onUnmounted(() => {
 			margin-right: auto;
 
 			> .avatar {
-				$size: 32px;
+				$size: 2rem;
 				display: inline-block;
 				width: $size;
 				height: $size;
 				vertical-align: bottom;
-				margin: 0 8px;
+				margin: 0 0.5rem;
 				pointer-events: none;
 			}
 		}
@@ -395,7 +395,7 @@ onUnmounted(() => {
 			width: calc(var(--height) - (var(--margin) * 2));
 			box-sizing: border-box;
 			position: relative;
-			border-radius: 5px;
+			border-radius: 0.3125rem;
 
 			&:hover {
 				background: rgba(0, 0, 0, 0.05);
@@ -408,7 +408,7 @@ onUnmounted(() => {
 
 		> .fullButton {
 			& + .fullButton {
-				margin-left: 12px;
+				margin-left: 0.75rem;
 			}
 		}
 	}
@@ -423,28 +423,28 @@ onUnmounted(() => {
 	> .titleContainer {
 		display: flex;
 		align-items: center;
-		max-width: 400px;
+		max-width: 25rem;
 		overflow: auto;
 		white-space: nowrap;
 		text-align: left;
 		font-weight: bold;
 		flex-shrink: 0;
-		margin-left: 24px;
+		margin-left: 1.5rem;
 		margin-right: 1rem;
 
 		> .avatar {
-			$size: 32px;
+			$size: 2rem;
 			display: inline-block;
 			width: $size;
 			height: $size;
 			vertical-align: bottom;
-			margin: 0 8px;
+			margin: 0 0.5rem;
 			pointer-events: none;
 		}
 
 		> .icon {
-			margin-right: 8px;
-			width: 16px;
+			margin-right: 0.5rem;
+			width: 1rem;
 			text-align: center;
 			transform: translate(0em);
 		}
@@ -469,7 +469,7 @@ onUnmounted(() => {
 
 					> .chevron {
 						display: inline-block;
-						margin-left: 6px;
+						margin-left: 0.375rem;
 					}
 				}
 			}
@@ -488,22 +488,22 @@ onUnmounted(() => {
 			content: "";
 			display: inline-block;
 			height: 40%;
-			border-left: 1px solid var(--divider);
+			border-left: 0.0625rem solid var(--divider);
 			margin-right: 1em;
-			margin-left: 10px;
-			vertical-align: -1px;
+			margin-left: 0.625rem;
+			vertical-align: -0.0625rem;
 		}
 
 		> .tab {
 			display: inline-flex;
 			align-items: center;
 			position: relative;
-			border-inline: 10px solid transparent;
+			border-inline: 0.625rem solid transparent;
 			height: 100%;
 			font-weight: normal;
 			opacity: 0.7;
-			width: 38px;
-			--width: 38px;
+			width: 2.375rem;
+			--width: 2.375rem;
 			overflow: hidden;
 			transition: color 0.2s, opacity 0.2s, width 0.2s;
 
@@ -522,7 +522,7 @@ onUnmounted(() => {
 			}
 
 			> .icon + .title {
-				margin-left: 8px;
+				margin-left: 0.5rem;
 			}
 			> .title {
 				transition: opacity 0.2s;
@@ -533,7 +533,7 @@ onUnmounted(() => {
 			position: absolute;
 			bottom: 0;
 			left: 0;
-			height: 3px;
+			height: 0.1875rem;
 			background: var(--accent);
 			border-radius: 999px;
 			transition: width 0.2s, transform 0.2s;

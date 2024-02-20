@@ -882,7 +882,7 @@ function readPromo() {
 	// 今度はその処理自体がパフォーマンス低下の原因にならないか懸念される。また、被リアクションでも高さは変化するため、やはり多少のズレは生じる
 	// 一度レンダリングされた要素はブラウザがよしなにサイズを覚えておいてくれるような実装になるまで待った方が良さそう(なるのか？)
 	//content-visibility: auto;
-	//contain-intrinsic-size: 0 128px;
+	//contain-intrinsic-size: 0 8rem;
 
 	&:focus-visible {
 		outline: none;
@@ -898,9 +898,9 @@ function readPromo() {
 			right: 0;
 			bottom: 0;
 			margin: auto;
-			width: calc(100% - 8px);
-			height: calc(100% - 8px);
-			border: solid 1px var(--focus);
+			width: calc(100% - 0.5rem);
+			height: calc(100% - 0.5rem);
+			border: solid 0.0625rem var(--focus);
 			border-radius: var(--radius);
 			box-sizing: border-box;
 		}
@@ -920,36 +920,36 @@ function readPromo() {
 			.line::before {
 				content: "";
 				display: block;
-				margin-bottom: -10px;
-				margin-top: 16px;
-				border-left: 2px solid var(--X13);
-				margin-left: calc((var(--avatarSize) / 2) - 1px);
+				margin-bottom: -0.625rem;
+				margin-top: 1rem;
+				border-left: 0.125rem solid var(--X13);
+				margin-left: calc((var(--avatarSize) / 2) - 0.0625rem);
 			}
 		}
 	}
 
 	.note-context {
-		padding: 0 32px 0 32px;
+		padding: 0 2rem 0 2rem;
 		display: flex;
 		&:first-child {
-			margin-top: 20px;
+			margin-top: 1.25rem;
 		}
 		> :not(.line) {
 			width: 0;
 			flex-grow: 1;
 			position: relative;
-			line-height: 28px;
+			line-height: 1.75rem;
 		}
 		> .line {
 			width: var(--avatarSize);
 			display: flex;
-			margin-right: 14px;
+			margin-right: 0.875rem;
 			margin-top: 0;
 			flex-grow: 0;
 		}
 
 		> div > i {
-			margin-left: -0.5px;
+			margin-left: -0.0.3125rem;
 		}
 		> .info {
 			display: flex;
@@ -959,7 +959,7 @@ function readPromo() {
 			color: #f6c177;
 
 			> i {
-				margin-right: 4px;
+				margin-right: 0.25rem;
 			}
 
 			> .hide {
@@ -976,7 +976,7 @@ function readPromo() {
 			cursor: pointer;
 
 			> i {
-				margin-right: 4px;
+				margin-right: 0.25rem;
 			}
 
 			> span {
@@ -1001,7 +1001,7 @@ function readPromo() {
 					display: inline-flex;
 					align-items: center;
 					> .dropdownIcon {
-						margin-right: 4px;
+						margin-right: 0.25rem;
 					}
 				}
 			}
@@ -1009,7 +1009,7 @@ function readPromo() {
 	}
 
 	> .article {
-		padding: 4px 32px 10px;
+		padding: 0.25rem 2rem 0.625rem;
 		cursor: pointer;
 
 		@media (pointer: coarse) {
@@ -1021,7 +1021,7 @@ function readPromo() {
 			> .avatar {
 				flex-shrink: 0;
 				display: block;
-				margin: 0 14px 0 0;
+				margin: 0 0.875rem 0 0;
 				width: var(--avatarSize);
 				height: var(--avatarSize);
 				position: relative;
@@ -1040,17 +1040,17 @@ function readPromo() {
 			> .body {
 				margin-top: 0.7em;
 				> .translation {
-					border: solid 0.5px var(--divider);
+					border: solid 0.0.3125rem var(--divider);
 					border-radius: var(--radius);
-					padding: 12px;
-					margin-top: 8px;
+					padding: 0.75rem;
+					margin-top: 0.5rem;
 				}
 				> .renote {
-					padding-top: 8px;
+					padding-top: 0.5rem;
 					> * {
-						padding: 16px;
-						border: solid 1px var(--renote);
-						border-radius: 8px;
+						padding: 1rem;
+						border: solid 0.0625rem var(--renote);
+						border-radius: 0.5rem;
 						transition: background 0.2s;
 						&:hover,
 						&:focus-within {
@@ -1065,7 +1065,7 @@ function readPromo() {
 				}
 			}
 			> .info {
-				margin-block: 16px;
+				margin-block: 1rem;
 				opacity: 0.7;
 				font-size: 0.9em;
 			}
@@ -1078,7 +1078,7 @@ function readPromo() {
 				margin-top: 0.4em;
 				> .button {
 					margin: 0;
-					padding: 8px;
+					padding: 0.5rem;
 					opacity: 0.7;
 					flex-grow: 1;
 					max-width: 3.5em;
@@ -1095,7 +1095,7 @@ function readPromo() {
 
 					> .count {
 						display: inline;
-						margin: 0 0 0 8px;
+						margin: 0 0 0 0.5rem;
 						opacity: 0.7;
 					}
 
@@ -1111,7 +1111,7 @@ function readPromo() {
 	}
 
 	> .reply {
-		border-top: solid 0.5px var(--divider);
+		border-top: solid 0.0.3125rem var(--divider);
 	}
 
 	&.max-width_500px {
@@ -1119,25 +1119,25 @@ function readPromo() {
 	}
 
 	&.max-width_450px {
-		padding-top: 6px;
+		padding-top: 0.375rem;
 		> .note-context {
-			padding-inline: 16px;
-			margin-top: 8px;
+			padding-inline: 1rem;
+			margin-top: 0.5rem;
 			> :not(.line) {
-				margin-top: 0px;
+				margin-top: 0;
 			}
 			> .line {
-				margin-right: 10px;
+				margin-right: 0.625rem;
 				&::before {
-					margin-top: 8px;
+					margin-top: 0.5rem;
 				}
 			}
 		}
 		> .article {
-			padding: 4px 16px 8px;
+			padding: 0.25rem 1rem 0.5rem;
 			> .main > .header-container > .avatar {
-				margin-right: 10px;
-				// top: calc(14px + var(--stickyTop, 0px));
+				margin-right: 0.625rem;
+				// top: calc(0.875rem + var(--stickyTop, 0));
 			}
 		}
 	}
@@ -1147,7 +1147,7 @@ function readPromo() {
 }
 
 .muted {
-	padding: 8px;
+	padding: 0.5rem;
 	text-align: center;
 	opacity: 0.7;
 	width: 100%;

@@ -144,6 +144,6 @@ definePageMetadata({
 <style lang="scss" scoped>
 .query {
 	background: var(--bg);
-	padding: 16px;
+	padding: 1rem;
 }
 </style>

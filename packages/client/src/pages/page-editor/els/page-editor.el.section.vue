@@ -73,7 +73,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .ilrvjyvi {
 	> .children {
-		padding: 16px;
+		padding: 1rem;
 	}
 }
 </style>

@@ -256,19 +256,19 @@ function choose(visibility: (typeof misskey.noteVisibilities)[number]): void {
 
 <style lang="scss" module>
 .root {
-	width: 240px;
-	padding: 8px 0;
+	width: 15rem;
+	padding: 0.5rem 0;
 }
 
 .divider {
-	margin: 8px 0;
-	border-top: solid 0.5px var(--divider);
+	margin: 0.5rem 0;
+	border-top: solid 0.0.3125rem var(--divider);
 }
 
 .item {
 	display: flex;
-	padding: 8px 14px;
-	font-size: 12px;
+	padding: 0.5rem 0.875rem;
+	font-size: 0.75rem;
 	text-align: left;
 	width: 100%;
 	box-sizing: border-box;
@@ -296,8 +296,8 @@ function choose(visibility: (typeof misskey.noteVisibilities)[number]): void {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	margin-right: 10px;
-	width: 16px;
+	margin-right: 0.625rem;
+	width: 1rem;
 	top: 0;
 	bottom: 0;
 	margin-top: auto;
@@ -324,8 +324,8 @@ function choose(visibility: (typeof misskey.noteVisibilities)[number]): void {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	margin-left: 10px;
-	width: 16px;
+	margin-left: 0.625rem;
+	width: 1rem;
 	top: 0;
 	bottom: 0;
 	margin-top: auto;

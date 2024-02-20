@@ -50,10 +50,10 @@ export default defineComponent({
 <style lang="scss" scoped>
 .hkcxmtwj {
 	display: inline-block;
-	margin: 16px auto;
+	margin: 1rem auto;
 
 	& + .hkcxmtwj {
-		margin-left: 16px;
+		margin-left: 1rem;
 	}
 }
 </style>

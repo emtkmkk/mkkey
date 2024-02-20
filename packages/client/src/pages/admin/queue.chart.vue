@@ -42,7 +42,7 @@
 			<div v-if="jobs.length > 0">
 				<div v-for="job in jobs" :key="job[0]">
 					<span>{{ job[0] }}</span>
-					<span style="margin-left: 8px; opacity: 0.7"
+					<span style="margin-left: 0.5rem; opacity: 0.7"
 						>({{ number(job[1]) }} jobs)</span
 					>
 				</div>
@@ -137,30 +137,30 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .pumxzjhg {
 	> .status {
-		padding: 16px;
+		padding: 1rem;
 	}
 
 	> .charts {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 16px;
+		gap: 1rem;
 
 		> .chart {
 			min-width: 0;
-			padding: 16px;
+			padding: 1rem;
 			background: var(--panel);
 			border-radius: var(--radius);
 
 			> .title {
-				margin-bottom: 8px;
+				margin-bottom: 0.5rem;
 			}
 		}
 	}
 
 	> .jobs {
-		margin-top: 16px;
-		padding: 16px;
-		max-height: 180px;
+		margin-top: 1rem;
+		padding: 1rem;
+		max-height: 11.25rem;
 		overflow: auto;
 		background: var(--panel);
 		border-radius: var(--radius);

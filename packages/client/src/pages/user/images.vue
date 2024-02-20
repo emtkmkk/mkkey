@@ -30,18 +30,18 @@ const pagination = {
 
 <style lang="scss" module>
 .root {
-	padding: 8px;
+	padding: 0.5rem;
 }
 
 .stream {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-	grid-gap: 6px;
+	grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+	grid-gap: 0.375rem;
 }
 
-@media (min-width: 720px) {
+@media (min-width: 45rem) {
 	.stream {
-		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(15.625rem, 1fr));
 	}
 }
 </style>

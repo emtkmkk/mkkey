@@ -283,7 +283,7 @@ definePageMetadata({
 	> .about {
 		position: relative;
 		text-align: center;
-		padding: 16px;
+		padding: 1rem;
 		border-radius: var(--radius);
 
 		&.playing {
@@ -303,9 +303,9 @@ definePageMetadata({
 
 		> .icon {
 			display: block;
-			width: 100px;
+			width: 6.25rem;
 			margin: 0 auto;
-			border-radius: 16px;
+			border-radius: 1rem;
 		}
 
 		> .misskey {
@@ -327,8 +327,8 @@ definePageMetadata({
 
 			> .emoji {
 				pointer-events: none;
-				font-size: 16px;
-				height: 16px !important;
+				font-size: 1rem;
+				height: 1rem !important;
 				width: auto !important;
 			}
 		}

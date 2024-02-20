@@ -237,7 +237,7 @@ function setPosition() {
 		rootEl.value.style.marginTop = "0";
 	} else {
 		rootEl.value.style.top = `${props.y}px`;
-		rootEl.value.style.marginTop = "calc(1em + 8px)";
+		rootEl.value.style.marginTop = "calc(1em + 0.5rem)";
 	}
 }
 
@@ -512,23 +512,23 @@ onBeforeUnmount(() => {
 .swhvrteh {
 	position: fixed;
 	max-width: 100%;
-	margin-top: calc(1em + 8px);
+	margin-top: calc(1em + 0.5rem);
 	overflow: hidden;
 	transition: top 0.1s ease, left 0.1s ease;
 
 	> ol {
 		display: block;
 		margin: 0;
-		padding: 4px 0;
-		max-height: 190px;
-		max-width: 500px;
+		padding: 0.25rem 0;
+		max-height: 11.875rem;
+		max-width: 31.25rem;
 		overflow: auto;
 		list-style: none;
 
 		> li {
 			display: flex;
 			align-items: center;
-			padding: 4px 12px;
+			padding: 0.25rem 0.75rem;
 			white-space: nowrap;
 			overflow: hidden;
 			font-size: 0.9em;
@@ -570,33 +570,33 @@ onBeforeUnmount(() => {
 
 	> .users > li {
 		.avatar {
-			min-width: 28px;
-			min-height: 28px;
-			max-width: 28px;
-			max-height: 28px;
-			margin: 0 8px 0 0;
+			min-width: 1.75rem;
+			min-height: 1.75rem;
+			max-width: 1.75rem;
+			max-height: 1.75rem;
+			margin: 0 0.5rem 0 0;
 			border-radius: 100%;
 		}
 
 		.name {
-			margin: 0 8px 0 0;
+			margin: 0 0.5rem 0 0;
 		}
 	}
 
 	> .emojis > li {
 		.emoji {
 			display: inline-block;
-			margin: 0 4px 0 0;
-			min-width: 20px;
+			margin: 0 0.25rem 0 0;
+			min-width: 1.25rem;
 
 			> img {
-				height: 20px;
+				height: 1.25rem;
 				vertical-align: bottom;
 			}
 		}
 
 		.alias {
-			margin: 0 0 0 8px;
+			margin: 0 0 0 0.5rem;
 		}
 	}
 

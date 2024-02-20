@@ -25,7 +25,7 @@
 				v-else-if="column.tl === 'global'"
 				class="ph-planet ph-bold ph-lg"
 			></i>
-			<span style="margin-left: 8px">{{
+			<span style="margin-left: 0.5rem">{{
 				column.name +
 				(columnActive && indicated
 					? ` (${queue >= 29 ? "29+" : queue})`
@@ -169,10 +169,10 @@ const menu = [
 	text-align: center;
 
 	> p {
-		margin: 16px;
+		margin: 1rem;
 
 		&.desc {
-			font-size: 14px;
+			font-size: 0.875rem;
 		}
 	}
 }

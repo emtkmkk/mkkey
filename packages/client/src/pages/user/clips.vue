@@ -46,12 +46,12 @@ const pagination = {
 	> .list {
 		> .item {
 			display: block;
-			padding: 16px;
+			padding: 1rem;
 
 			> .description {
-				margin-top: 8px;
-				padding-top: 8px;
-				border-top: solid 0.5px var(--divider);
+				margin-top: 0.5rem;
+				padding-top: 0.5rem;
+				border-top: solid 0.0.3125rem var(--divider);
 			}
 		}
 	}

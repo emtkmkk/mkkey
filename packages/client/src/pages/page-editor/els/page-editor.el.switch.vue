@@ -48,6 +48,6 @@ withDefaults(
 
 <style lang="scss" scoped>
 .kjuadyyj {
-	padding: 0 16px 16px 16px;
+	padding: 0 1rem 1rem 1rem;
 }
 </style>

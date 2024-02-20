@@ -166,7 +166,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .sqxihjet {
-	$height: 60px;
+	$height: 3.75rem;
 	position: sticky;
 	top: 0;
 	left: 0;
@@ -178,15 +178,15 @@ export default defineComponent({
 
 	> .wide {
 		> .content {
-			max-width: 1400px;
+			max-width: 87.5em;
 			margin: 0 auto;
 			display: flex;
 			align-items: center;
 
 			> .link {
-				$line: 3px;
+				$line: 0.1875rem;
 				display: inline-block;
-				padding: 0 16px;
+				padding: 0 1rem;
 				line-height: $height - ($line * 2);
 				border-top: solid $line transparent;
 				border-bottom: solid $line transparent;
@@ -210,16 +210,16 @@ export default defineComponent({
 					position: relative;
 
 					> .icon + .text {
-						margin-left: 8px;
+						margin-left: 0.5rem;
 					}
 
 					> .avatar {
-						$size: 32px;
+						$size: 2rem;
 						display: inline-block;
 						width: $size;
 						height: $size;
 						vertical-align: middle;
-						margin-right: 8px;
+						margin-right: 0.5rem;
 						pointer-events: none;
 					}
 
@@ -230,13 +230,13 @@ export default defineComponent({
 					}
 
 					&.selected {
-						box-shadow: 0 -2px 0 0 var(--accent) inset;
+						box-shadow: 0 -0.125rem 0 0 var(--accent) inset;
 						color: var(--fgHighlighted);
 					}
 				}
 
 				> .action {
-					padding: 0 0 0 16px;
+					padding: 0 0 0 1rem;
 				}
 			}
 
@@ -246,9 +246,9 @@ export default defineComponent({
 				> .search {
 					background: var(--bg);
 					border-radius: 999px;
-					width: 230px;
-					line-height: $height - 20px;
-					margin-right: 16px;
+					width: 14.375rem;
+					line-height: $height - 1.25rem;
+					margin-right: 1rem;
 					text-align: left;
 
 					> * {
@@ -256,18 +256,18 @@ export default defineComponent({
 					}
 
 					> .icon {
-						padding: 0 16px;
+						padding: 0 1rem;
 					}
 				}
 
 				> .signup {
 					border-radius: 999px;
-					padding: 0 24px;
-					line-height: $height - 20px;
+					padding: 0 1.5rem;
+					line-height: $height - 1.25rem;
 				}
 
 				> .login {
-					padding: 0 16px;
+					padding: 0 1rem;
 				}
 			}
 		}
@@ -280,7 +280,7 @@ export default defineComponent({
 		> .action {
 			width: $height;
 			height: $height;
-			font-size: 20px;
+			font-size: 1.25rem;
 		}
 
 		> .title {
@@ -292,16 +292,16 @@ export default defineComponent({
 			text-align: center;
 
 			> .icon + .text {
-				margin-left: 8px;
+				margin-left: 0.5rem;
 			}
 
 			> .avatar {
-				$size: 32px;
+				$size: 2rem;
 				display: inline-block;
 				width: $size;
 				height: $size;
 				vertical-align: middle;
-				margin-right: 8px;
+				margin-right: 0.5rem;
 				pointer-events: none;
 			}
 		}

@@ -199,31 +199,31 @@
 							<FormLink
 								:to="`https://${host}/.well-known/host-meta`"
 								external
-								style="margin-bottom: 8px"
+								style="margin-bottom: 0.5rem"
 								>host-meta</FormLink
 							>
 							<FormLink
 								:to="`https://${host}/.well-known/host-meta.json`"
 								external
-								style="margin-bottom: 8px"
+								style="margin-bottom: 0.5rem"
 								>host-meta.json</FormLink
 							>
 							<FormLink
 								:to="`https://${host}/.well-known/nodeinfo`"
 								external
-								style="margin-bottom: 8px"
+								style="margin-bottom: 0.5rem"
 								>nodeinfo</FormLink
 							>
 							<FormLink
 								:to="`https://${host}/robots.txt`"
 								external
-								style="margin-bottom: 8px"
+								style="margin-bottom: 0.5rem"
 								>robots.txt</FormLink
 							>
 							<FormLink
 								:to="`https://${host}/manifest.json`"
 								external
-								style="margin-bottom: 8px"
+								style="margin-bottom: 0.5rem"
 								>manifest.json</FormLink
 							>
 						</FormSection>
@@ -235,7 +235,7 @@
 							<div class="selects">
 								<MkSelect
 									v-model="chartSrc"
-									style="margin: 0 10px 0 0; flex: 1"
+									style="margin: 0 0.625rem 0 0; flex: 1"
 								>
 									<option value="instance-requests">
 										{{ i18n.ts._instanceCharts.requests }}
@@ -311,9 +311,9 @@
 								display: grid;
 								grid-template-columns: repeat(
 									auto-fill,
-									minmax(270px, 1fr)
+									minmax(16.875rem, 1fr)
 								);
-								grid-gap: 12px;
+								grid-gap: 0.75rem;
 							"
 						>
 							<MkA
@@ -541,9 +541,9 @@ function syncSlide(index) {
 
 	> .icon {
 		display: block;
-		margin: 0 16px 0 0;
-		height: 64px;
-		border-radius: 8px;
+		margin: 0 1rem 0 0;
+		height: 4rem;
+		border-radius: 0.5rem;
 	}
 
 	> .name {
@@ -554,12 +554,12 @@ function syncSlide(index) {
 .cmhjzshl {
 	> .selects {
 		display: flex;
-		margin: 0 0 16px 0;
+		margin: 0 0 1rem 0;
 	}
 
 	> .charts {
 		> .label {
-			margin-bottom: 12px;
+			margin-bottom: 0.75rem;
 			font-weight: bold;
 		}
 	}

@@ -182,7 +182,7 @@ defineExpose({
 .tray-enter-from,
 .tray-leave-active {
 	opacity: 0;
-	transform: translateX(-240px);
+	transform: translateX(-15rem);
 }
 
 .tray-back-enter-active,
@@ -203,14 +203,14 @@ defineExpose({
 	background-attachment: fixed;
 
 	> .side {
-		width: 500px;
+		width: 31.25rem;
 		height: 100vh;
 
 		> .kanban {
 			position: fixed;
 			top: 0;
 			left: 0;
-			width: 500px;
+			width: 31.25rem;
 			height: 100vh;
 			overflow: auto;
 		}
@@ -228,14 +228,14 @@ defineExpose({
 			z-index: 1;
 
 			> .powered-by {
-				padding: 28px;
-				font-size: 14px;
+				padding: 1.75rem;
+				font-size: 0.875rem;
 				text-align: center;
-				border-top: 1px solid var(--divider);
+				border-top: 0.0625rem solid var(--divider);
 
 				> small {
 					display: block;
-					margin-top: 8px;
+					margin-top: 0.5rem;
 					opacity: 0.5;
 				}
 			}
@@ -256,13 +256,13 @@ defineExpose({
 		z-index: 1001;
 		top: 0;
 		left: 0;
-		width: 240px;
+		width: 15rem;
 		height: 100vh;
 		background: var(--panel);
 
 		> .link {
 			display: block;
-			padding: 16px;
+			padding: 1rem;
 
 			> .icon {
 				margin-right: 1em;
@@ -270,12 +270,12 @@ defineExpose({
 		}
 
 		> .action {
-			padding: 16px;
+			padding: 1rem;
 
 			> button {
 				display: block;
 				width: 100%;
-				padding: 10px;
+				padding: 0.625rem;
 				box-sizing: border-box;
 				text-align: center;
 				border-radius: 999px;
@@ -285,7 +285,7 @@ defineExpose({
 				}
 
 				&:first-child {
-					margin-bottom: 16px;
+					margin-bottom: 1rem;
 				}
 			}
 		}

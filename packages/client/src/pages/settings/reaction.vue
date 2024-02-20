@@ -78,7 +78,7 @@
 				<div
 					v-panel
 					v-if="tab === 'reactions'"
-					style="border-radius: 6px"
+					style="border-radius: 0.375rem"
 				>
 					<FormInput
 						v-model="reactionsFolderName"
@@ -125,7 +125,7 @@
 				<div
 					v-panel
 					v-if="tab === 'reactions2'"
-					style="border-radius: 6px"
+					style="border-radius: 0.375rem"
 				>
 					<FormInput
 						v-model="reactionsFolderName2"
@@ -165,7 +165,7 @@
 				<div
 					v-panel
 					v-if="tab === 'reactions3'"
-					style="border-radius: 6px"
+					style="border-radius: 0.375rem"
 				>
 					<FormInput
 						v-model="reactionsFolderName3"
@@ -205,7 +205,7 @@
 				<div
 					v-panel
 					v-if="tab === 'reactions4'"
-					style="border-radius: 6px"
+					style="border-radius: 0.375rem"
 				>
 					<FormInput
 						v-model="reactionsFolderName4"
@@ -245,7 +245,7 @@
 				<div
 					v-panel
 					v-if="tab === 'reactions5'"
-					style="border-radius: 6px"
+					style="border-radius: 0.375rem"
 				>
 					<FormInput
 						v-model="reactionsFolderName5"
@@ -1276,18 +1276,18 @@ definePageMetadata({
 
 <style lang="scss" scoped>
 .zoaiodol {
-	padding: 12px;
+	padding: 0.75rem;
 	font-size: 1.1em;
 
 	> .item {
 		display: inline-block;
-		padding: 8px;
+		padding: 0.5rem;
 		cursor: move;
 	}
 
 	> .add {
 		display: inline-block;
-		padding: 8px;
+		padding: 0.5rem;
 	}
 }
 </style>

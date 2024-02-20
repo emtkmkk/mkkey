@@ -9,7 +9,7 @@
 				<li v-for="instance in activeInstances" :key="instance.id">
 					<a @click.prevent="onInstanceClick(instance)">
 						<img
-							style="width: 32px"
+							style="width: 2rem"
 							:src="getInstanceIcon(instance)"
 						/>
 					</a>

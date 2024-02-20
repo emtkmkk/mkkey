@@ -93,37 +93,37 @@ export default defineComponent({
 	position: relative;
 	overflow: hidden;
 	background: var(--panel);
-	border: solid 2px var(--X12);
-	border-radius: 6px;
+	border: solid 0.125rem var(--X12);
+	border-radius: 0.375rem;
 
 	&:hover {
-		border: solid 2px var(--X13);
+		border: solid 0.125rem var(--X13);
 	}
 
 	&.warn {
-		border: solid 2px #f6c177;
+		border: solid 0.125rem #f6c177;
 	}
 
 	&.error {
-		border: solid 2px #eb6f92;
+		border: solid 0.125rem #eb6f92;
 	}
 
 	& + .cpjygsrt {
-		margin-top: 16px;
+		margin-top: 1rem;
 	}
 
 	> header {
 		> .title {
 			z-index: 1;
 			margin: 0;
-			padding: 0 16px;
-			line-height: 42px;
+			padding: 0 1rem;
+			line-height: 2.625rem;
 			font-size: 0.9em;
 			font-weight: bold;
-			box-shadow: 0 1px rgba(#000, 0.07);
+			box-shadow: 0 0.0625rem rgba(#000, 0.07);
 
 			> i {
-				margin-right: 6px;
+				margin-right: 0.375rem;
 			}
 
 			&:empty {
@@ -139,9 +139,9 @@ export default defineComponent({
 
 			> ._button {
 				padding: 0;
-				width: 42px;
+				width: 2.625rem;
 				font-size: 0.9em;
-				line-height: 42px;
+				line-height: 2.625rem;
 			}
 
 			.drag-handle {
@@ -153,26 +153,26 @@ export default defineComponent({
 	> .warn {
 		color: #ea9d34;
 		margin: 0;
-		padding: 16px 16px 0 16px;
-		font-size: 14px;
+		padding: 1rem 1rem 0 1rem;
+		font-size: 0.875rem;
 	}
 
 	> .error {
 		color: #b4637a;
 		margin: 0;
-		padding: 16px 16px 0 16px;
-		font-size: 14px;
+		padding: 1rem 1rem 0 1rem;
+		font-size: 0.875rem;
 	}
 
 	> .body {
 		::v-deep(.juejbjww),
 		::v-deep(.eiipwacr) {
 			&:not(.inline):first-child {
-				margin-top: 28px;
+				margin-top: 1.75rem;
 			}
 
 			&:not(.inline):last-child {
-				margin-bottom: 20px;
+				margin-bottom: 1.25rem;
 			}
 		}
 	}

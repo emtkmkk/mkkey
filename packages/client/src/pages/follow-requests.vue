@@ -153,27 +153,27 @@ definePageMetadata(
 .mk-follow-requests {
 	> .user {
 		display: flex;
-		padding: 16px;
-		margin: 10px 0 auto;
+		padding: 1rem;
+		margin: 0.625rem 0 auto;
 
 		> .avatar {
 			display: block;
 			flex-shrink: 0;
-			margin: 0 12px 0 0;
-			width: 42px;
-			height: 42px;
-			border-radius: 8px;
+			margin: 0 0.75rem 0 0;
+			width: 2.625rem;
+			height: 2.625rem;
+			border-radius: 0.5rem;
 		}
 
 		> .body {
 			display: flex;
-			width: calc(100% - 54px);
+			width: calc(100% - 3.375rem);
 			position: relative;
 
 			> .name {
 				width: 45%;
 
-				@media (max-width: 500px) {
+				@media (max-width: 31.25rem) {
 					width: 100%;
 				}
 
@@ -187,30 +187,30 @@ definePageMetadata(
 				}
 
 				> .name {
-					font-size: 16px;
-					line-height: 24px;
+					font-size: 1rem;
+					line-height: 1.5rem;
 				}
 
 				> .acct {
-					font-size: 15px;
-					line-height: 16px;
+					font-size: 0.9375rem;
+					line-height: 1rem;
 					opacity: 0.7;
 				}
 			}
 
 			> .description {
 				width: 55%;
-				line-height: 42px;
+				line-height: 2.625rem;
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
 				opacity: 0.7;
-				font-size: 14px;
-				padding-right: 40px;
-				padding-left: 8px;
+				font-size: 0.875rem;
+				padding-right: 2.5rem;
+				padding-left: 0.5rem;
 				box-sizing: border-box;
 
-				@media (max-width: 500px) {
+				@media (max-width: 31.25rem) {
 					display: none;
 				}
 			}
@@ -223,7 +223,7 @@ definePageMetadata(
 				margin: auto 0;
 
 				> button {
-					padding: 12px;
+					padding: 0.75rem;
 				}
 			}
 		}

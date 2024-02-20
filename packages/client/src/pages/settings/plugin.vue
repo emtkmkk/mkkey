@@ -12,7 +12,7 @@
 				v-for="plugin in plugins"
 				:key="plugin.id"
 				class="_formBlock _panel"
-				style="padding: 20px"
+				style="padding: 1.25rem"
 			>
 				<span style="display: flex"
 					><b>{{ plugin.name }}</b

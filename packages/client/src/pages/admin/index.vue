@@ -448,7 +448,7 @@ defineExpose({
 			width: 32%;
 			max-width: 17.5rem;
 			box-sizing: border-box;
-			border-right: solid 0.0.3125rem var(--divider);
+			border-right: solid 0.03125rem var(--divider);
 			overflow: auto;
 			height: 100%;
 		}

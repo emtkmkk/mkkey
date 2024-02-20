@@ -370,7 +370,7 @@ onMounted(() => {
 			margin: 0;
 
 			> :deep(.sidebar) {
-				border-right: solid 0.0.3125rem var(--divider);
+				border-right: solid 0.03125rem var(--divider);
 			}
 
 			> .main {

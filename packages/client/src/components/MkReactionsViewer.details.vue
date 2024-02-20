@@ -111,7 +111,7 @@ const emit = defineEmits<{
 		flex: 1;
 		min-width: 0;
 		font-size: 0.95em;
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 		padding-top: 0.625rem;
 		margin-top: 0.625rem;
 		margin-bottom: 0.875rem;

@@ -51,7 +51,7 @@ const strokeDashoffset = $computed(
 	}
 
 	> text {
-		font-size: 0.0.9375rem;
+		font-size: 0.009375rem;
 		fill: currentColor;
 	}
 }

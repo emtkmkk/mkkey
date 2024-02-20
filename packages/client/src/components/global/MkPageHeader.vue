@@ -299,7 +299,7 @@ onUnmounted(() => {
 	width: 100%;
 	-webkit-backdrop-filter: var(--blur, blur(15px));
 	backdrop-filter: var(--blur, blur(15px));
-	border-bottom: solid 0.0.3125rem var(--divider);
+	border-bottom: solid 0.03125rem var(--divider);
 	height: var(--height);
 
 	&.thin {

@@ -125,7 +125,7 @@ defineExpose<WidgetComponentExpose>({
 		color: var(--fg);
 		background: transparent;
 		border: none;
-		border-bottom: solid 0.0.3125rem var(--divider);
+		border-bottom: solid 0.03125rem var(--divider);
 		border-radius: 0;
 		box-sizing: border-box;
 		font: inherit;

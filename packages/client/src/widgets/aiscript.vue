@@ -165,7 +165,7 @@ defineExpose<WidgetComponentExpose>({
 		color: var(--fg);
 		background: transparent;
 		border: none;
-		border-bottom: solid 0.0.3125rem var(--divider);
+		border-bottom: solid 0.03125rem var(--divider);
 		border-radius: 0;
 		box-sizing: border-box;
 		font: inherit;
@@ -190,7 +190,7 @@ defineExpose<WidgetComponentExpose>({
 	}
 
 	> .logs {
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 		text-align: left;
 		padding: 1rem;
 

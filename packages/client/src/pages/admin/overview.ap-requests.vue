@@ -288,7 +288,7 @@ onMounted(async () => {
 				padding: 1rem;
 
 				&:first-child {
-					border-bottom: solid 0.0.3125rem var(--divider);
+					border-bottom: solid 0.03125rem var(--divider);
 				}
 			}
 		}

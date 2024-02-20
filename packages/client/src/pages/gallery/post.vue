@@ -324,7 +324,7 @@ definePageMetadata(
 			align-items: center;
 			margin-top: 1rem;
 			padding: 1rem 0 0 0;
-			border-top: solid 0.0.3125rem var(--divider);
+			border-top: solid 0.03125rem var(--divider);
 
 			> .like {
 				> .button {
@@ -357,7 +357,7 @@ definePageMetadata(
 		> .user {
 			margin-top: 1rem;
 			padding: 1rem 0 0 0;
-			border-top: solid 0.0.3125rem var(--divider);
+			border-top: solid 0.03125rem var(--divider);
 			display: flex;
 			align-items: center;
 

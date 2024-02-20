@@ -2347,14 +2347,14 @@ onMounted(() => {
 		> .cw {
 			z-index: 1;
 			padding-bottom: 0.5rem;
-			border-bottom: solid 0.0.3125rem var(--divider);
+			border-bottom: solid 0.03125rem var(--divider);
 		}
 
 		> .hashtags {
 			z-index: 1;
 			padding-top: 0.5rem;
 			padding-bottom: 0.5rem;
-			border-top: solid 0.0.3125rem var(--divider);
+			border-top: solid 0.03125rem var(--divider);
 		}
 
 		> .text {

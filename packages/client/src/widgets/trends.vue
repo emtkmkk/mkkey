@@ -112,7 +112,7 @@ defineExpose<WidgetComponentExpose>({
 			display: flex;
 			align-items: center;
 			padding: 0.875rem 1rem;
-			border-bottom: solid 0.0.3125rem var(--divider);
+			border-bottom: solid 0.03125rem var(--divider);
 
 			> .tag {
 				flex: 1;

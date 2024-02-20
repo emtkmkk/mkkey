@@ -431,13 +431,13 @@ rt {
 		}
 
 		& + ._content {
-			border-top: solid 0.0.3125rem var(--divider);
+			border-top: solid 0.03125rem var(--divider);
 		}
 	}
 
 	// TODO: _cardFooter に
 	> ._footer {
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 		padding: 1.5rem 2rem;
 
 		@media (max-width: 31.25rem) {
@@ -453,7 +453,7 @@ rt {
 	padding: 0.625rem;
 	box-sizing: border-box;
 	text-align: center;
-	border: solid 0.0.3125rem var(--divider);
+	border: solid 0.03125rem var(--divider);
 	border-radius: var(--radius);
 
 	&:active {
@@ -478,7 +478,7 @@ rt {
 		}
 
 		& + ._section:not(:empty) {
-			border-top: solid 0.0.3125rem var(--divider);
+			border-top: solid 0.03125rem var(--divider);
 		}
 	}
 }

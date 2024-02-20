@@ -1998,7 +1998,7 @@ defineExpose({
 		> .tab {
 			flex: 1;
 			height: 2.375rem;
-			border-top: solid 0.0.3125rem var(--divider);
+			border-top: solid 0.03125rem var(--divider);
 
 			&.active {
 				border-top: solid 0.0625rem var(--accent);
@@ -2021,7 +2021,7 @@ defineExpose({
 		> .group {
 			&:not(.index) {
 				padding: 0.25rem 0 0.5rem 0;
-				border-top: solid 0.0.3125rem var(--divider);
+				border-top: solid 0.03125rem var(--divider);
 			}
 
 			> header {
@@ -2094,7 +2094,7 @@ defineExpose({
 			}
 
 			&.result {
-				border-bottom: solid 0.0.3125rem var(--divider);
+				border-bottom: solid 0.03125rem var(--divider);
 				header {
 					height: 2rem;
 					line-height: 2rem;

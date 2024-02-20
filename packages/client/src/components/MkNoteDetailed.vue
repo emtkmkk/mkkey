@@ -496,7 +496,7 @@ onUnmounted(() => {
 	}
 
 	> .reply {
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 		cursor: pointer;
 		padding-top: 1.5rem;
 		padding-bottom: 0.625rem;

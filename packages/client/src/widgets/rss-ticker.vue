@@ -167,7 +167,7 @@ defineExpose<WidgetComponentExpose>({
 
 			> .divider {
 				display: inline-block;
-				width: 0.0.3125rem;
+				width: 0.03125rem;
 				height: 1rem;
 				margin: 0 1em;
 				background: var(--divider);

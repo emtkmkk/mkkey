@@ -110,7 +110,7 @@ onUnmounted(() => {
 	box-sizing: border-box;
 	text-align: center;
 	border-radius: 0.25rem;
-	border: solid 0.0.3125rem var(--divider);
+	border: solid 0.03125rem var(--divider);
 	pointer-events: none;
 	transform-origin: center center;
 }

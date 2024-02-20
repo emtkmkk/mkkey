@@ -949,7 +949,7 @@ function readPromo() {
 		}
 
 		> div > i {
-			margin-left: -0.0.3125rem;
+			margin-left: -0.03125rem;
 		}
 		> .info {
 			display: flex;
@@ -1040,7 +1040,7 @@ function readPromo() {
 			> .body {
 				margin-top: 0.7em;
 				> .translation {
-					border: solid 0.0.3125rem var(--divider);
+					border: solid 0.03125rem var(--divider);
 					border-radius: var(--radius);
 					padding: 0.75rem;
 					margin-top: 0.5rem;
@@ -1111,7 +1111,7 @@ function readPromo() {
 	}
 
 	> .reply {
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 	}
 
 	&.max-width_500px {

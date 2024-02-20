@@ -258,7 +258,7 @@ function addInstance() {
 
 	> .actions {
 		padding: 1.5rem 2rem;
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 	}
 }
 </style>

@@ -99,7 +99,7 @@ async function onSubmit() {
 	}
 
 	> .sub {
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 		padding: 1.5rem;
 	}
 }

@@ -177,7 +177,7 @@ const showTicker =
 				margin: 0 0.5em 0 0;
 				padding: 0.0625rem 0.375rem;
 				font-size: 80%;
-				border: solid 0.0.3125rem var(--divider);
+				border: solid 0.03125rem var(--divider);
 				border-radius: 0.1875rem;
 			}
 			.badge {

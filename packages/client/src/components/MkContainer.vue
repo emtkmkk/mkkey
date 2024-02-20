@@ -208,7 +208,7 @@ export default defineComponent({
 		left: 0;
 		color: var(--panelHeaderFg);
 		background: var(--panelHeaderBg);
-		border-bottom: solid 0.0.3125rem var(--panelHeaderDivider);
+		border-bottom: solid 0.03125rem var(--panelHeaderDivider);
 		z-index: 2;
 		line-height: 1.4em;
 

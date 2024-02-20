@@ -11,8 +11,8 @@
 
 <style lang="scss" scoped>
 .vrtktovh {
-	border-top: solid 0.0.3125rem var(--divider);
-	border-bottom: solid 0.0.3125rem var(--divider);
+	border-top: solid 0.03125rem var(--divider);
+	border-bottom: solid 0.03125rem var(--divider);
 
 	& + .vrtktovh {
 		border-top: none;

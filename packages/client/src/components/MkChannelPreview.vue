@@ -131,7 +131,7 @@ const bannerStyle = computed(() => {
 
 	> footer {
 		padding: 0.75rem 1rem;
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 
 		> span {
 			opacity: 0.7;

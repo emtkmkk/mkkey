@@ -452,7 +452,7 @@ XMessage:last-of-type {
 		> .form {
 			max-height: 12em;
 			overflow-y: auto;
-			border-top: solid 0.0.3125rem var(--divider);
+			border-top: solid 0.03125rem var(--divider);
 		}
 	}
 }

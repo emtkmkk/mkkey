@@ -548,7 +548,7 @@ export default defineComponent({
 .xhexznfu {
 	> div:nth-child(2) {
 		padding: 1rem;
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 	}
 }
 </style>

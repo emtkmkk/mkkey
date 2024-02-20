@@ -509,7 +509,7 @@ onBeforeUnmount(() => {
 
 	> .divider {
 		margin: 0.5rem 0;
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 	}
 
 	&.asDrawer {

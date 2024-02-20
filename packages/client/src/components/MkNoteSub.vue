@@ -476,7 +476,7 @@ function noteClick(e) {
 
 			> .body {
 				> .translation {
-					border: solid 0.0.3125rem var(--divider);
+					border: solid 0.03125rem var(--divider);
 					border-radius: var(--radius);
 					padding: 0.75rem;
 					margin-top: 0.5rem;

@@ -145,7 +145,7 @@ definePageMetadata(
 	> .user {
 		$height: 2rem;
 		padding: 1rem;
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 		line-height: $height;
 
 		> .avatar {

@@ -381,7 +381,7 @@ function more(ev: MouseEvent) {
 
 				> .divider {
 					margin: 1rem 1rem;
-					border-top: solid 0.0.3125rem var(--divider);
+					border-top: solid 0.03125rem var(--divider);
 				}
 
 				> .item {
@@ -565,7 +565,7 @@ function more(ev: MouseEvent) {
 				> .divider {
 					margin: 0.5rem auto;
 					width: calc(100% - 2rem);
-					border-top: solid 0.0.3125rem var(--divider);
+					border-top: solid 0.03125rem var(--divider);
 				}
 
 				> .item {

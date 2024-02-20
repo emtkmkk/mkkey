@@ -119,7 +119,7 @@ defineProps<{
 	> .description {
 		padding: 1rem;
 		font-size: 0.8em;
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 
 		> .mfm {
 			display: -webkit-box;
@@ -131,7 +131,7 @@ defineProps<{
 
 	> .status {
 		padding: 0.625rem 1rem;
-		border-top: solid 0.0.3125rem var(--divider);
+		border-top: solid 0.03125rem var(--divider);
 
 		> div {
 			display: inline-block;

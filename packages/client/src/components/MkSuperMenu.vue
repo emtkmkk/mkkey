@@ -76,7 +76,7 @@ export default defineComponent({
 		& + .group {
 			margin-top: 1rem;
 			padding-top: 1rem;
-			border-top: solid 0.0.3125rem var(--divider);
+			border-top: solid 0.03125rem var(--divider);
 		}
 
 		> .title {

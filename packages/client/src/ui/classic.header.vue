@@ -251,7 +251,7 @@ export default defineComponent({
 				display: inline-block;
 				height: 1rem;
 				margin: 0 0.625rem;
-				border-right: solid 0.0.3125rem var(--divider);
+				border-right: solid 0.03125rem var(--divider);
 			}
 
 			> .post {

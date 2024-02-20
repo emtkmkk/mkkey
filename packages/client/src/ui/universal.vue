@@ -521,7 +521,7 @@ console.log(mainRouter.currentRoute.value.name);
 	}
 
 	> .sidebar {
-		border-right: solid 0.0.3125rem var(--divider);
+		border-right: solid 0.03125rem var(--divider);
 	}
 
 	> .contents {
@@ -531,7 +531,7 @@ console.log(mainRouter.currentRoute.value.name);
 
 	> .widgets {
 		padding: 0 var(--margin);
-		border-left: solid 0.0.3125rem var(--divider);
+		border-left: solid 0.03125rem var(--divider);
 
 		@media (max-width: $widgets-hide-threshold) {
 			display: none;

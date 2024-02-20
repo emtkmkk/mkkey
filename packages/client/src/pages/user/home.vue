@@ -966,7 +966,7 @@ onUnmounted(() => {
 					text-align: center;
 					padding: 3.125rem 0.5rem 1rem 0.5rem;
 					font-weight: bold;
-					border-bottom: solid 0.0.3125rem var(--divider);
+					border-bottom: solid 0.03125rem var(--divider);
 
 					> .nameCollumn {
 						display: block;
@@ -1080,7 +1080,7 @@ onUnmounted(() => {
 				> .fields {
 					padding: 1.5rem;
 					font-size: 0.9em;
-					border-top: solid 0.0.3125rem var(--divider);
+					border-top: solid 0.03125rem var(--divider);
 
 					> .field {
 						display: flex;
@@ -1117,7 +1117,7 @@ onUnmounted(() => {
 				> .status {
 					display: flex;
 					padding: 1.5rem;
-					border-top: solid 0.0.3125rem var(--divider);
+					border-top: solid 0.03125rem var(--divider);
 
 					> a {
 						flex: 1;

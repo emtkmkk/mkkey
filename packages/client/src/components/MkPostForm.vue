@@ -2112,6 +2112,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .right {
 	float: right;
+	margin-left: auto !important;
 }
 .gafaadew {
 	position: relative;
@@ -2149,6 +2150,10 @@ onMounted(() => {
 			position: absolute;
 			top: 0;
 			right: 0;
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+			max-width: 100%;
 
 			> .text-count {
 				opacity: 0.7;
@@ -2370,6 +2375,8 @@ onMounted(() => {
 		}
 
 		> footer {
+			display: flex;
+			flex-wrap: nowrap;
 			padding: 0 1rem 0 1rem;
 
 			> button {

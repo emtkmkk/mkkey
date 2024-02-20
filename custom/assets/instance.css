@@ -161,7 +161,7 @@ html{
 	display: none;
 }
 :not(.note) > .reply-to + .note-context {
-	margin-top: 10.25rem;
+	margin-top: 0.875rem;
 }
 :not(.note) > .reply-to + .note-context .line::before {
 	content: unset !important;

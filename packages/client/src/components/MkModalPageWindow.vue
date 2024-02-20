@@ -17,7 +17,10 @@
 				>
 					<i class="ph-caret-left ph-bold ph-lg"></i>
 				</button>
-				<span v-else style="display: inline-block; width: 1.25rem"></span>
+				<span
+					v-else
+					style="display: inline-block; width: 1.25rem"
+				></span>
 				<span v-if="pageMetadata?.value" class="title">
 					<i
 						v-if="pageMetadata?.value.icon"

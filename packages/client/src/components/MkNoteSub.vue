@@ -675,8 +675,16 @@ function noteClick(e) {
 			}
 		}
 		&:not(:last-child) > .line::after {
-			mask: linear-gradient(to right, transparent 0.125rem, black 0.125rem);
-			-webkit-mask: linear-gradient(to right, transparent 0.125rem, black 0.125rem);
+			mask: linear-gradient(
+				to right,
+				transparent 0.125rem,
+				black 0.125rem
+			);
+			-webkit-mask: linear-gradient(
+				to right,
+				transparent 0.125rem,
+				black 0.125rem
+			);
 		}
 	}
 	// End Reply Divider

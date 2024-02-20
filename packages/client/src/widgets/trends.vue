@@ -100,7 +100,8 @@ defineExpose<WidgetComponentExpose>({
 
 <style lang="scss" scoped>
 .wbrkwala {
-	height: (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + 3.875rem;
+	height: (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) +
+		(3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + 3.875rem;
 	overflow: hidden;
 
 	> .tags {

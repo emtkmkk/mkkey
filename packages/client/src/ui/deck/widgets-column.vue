@@ -7,7 +7,10 @@
 		@parent-focus="($event) => emit('parent-focus', $event)"
 	>
 		<template #header
-			><i class="ph-browser ph-bold ph-lg" style="margin-right: 0.5rem"></i
+			><i
+				class="ph-browser ph-bold ph-lg"
+				style="margin-right: 0.5rem"
+			></i
 			>{{ column.name }}</template
 		>
 		<div class="wtdtxvec">

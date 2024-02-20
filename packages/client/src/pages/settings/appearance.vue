@@ -26,11 +26,9 @@
 				class="_formBlock"
 				>{{ i18n.ts.showGapBetweenNotesInTimeline }}</FormSwitch
 			>
-			<FormSwitch
-				v-model="hiddenHeaderIcon"
-				class="_formBlock"
-				>{{ i18n.ts.hiddenHeaderIcon }}</FormSwitch
-			>
+			<FormSwitch v-model="hiddenHeaderIcon" class="_formBlock">{{
+				i18n.ts.hiddenHeaderIcon
+			}}</FormSwitch>
 			<FormSwitch v-model="alwaysXExpand" class="_formBlock">{{
 				i18n.ts.alwaysXExpand
 			}}</FormSwitch>
@@ -357,7 +355,9 @@ const includesRandomEsenapaj = $computed(
 const thumbnailCover = $computed(
 	defaultStore.makeGetterSetter("thumbnailCover")
 );
-const hiddenHeaderIcon = $computed(defaultStore.makeGetterSetter("hiddenHeaderIcon"));
+const hiddenHeaderIcon = $computed(
+	defaultStore.makeGetterSetter("hiddenHeaderIcon")
+);
 const alwaysXExpand = $computed(defaultStore.makeGetterSetter("alwaysXExpand"));
 const compactGrid = $computed(defaultStore.makeGetterSetter("compactGrid"));
 const compactGridUrl = $computed(

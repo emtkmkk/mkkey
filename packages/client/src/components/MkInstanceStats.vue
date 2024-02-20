@@ -47,7 +47,10 @@
 							</option>
 						</optgroup>
 					</MkSelect>
-					<MkSelect v-model="chartSpan" style="margin: 0 0 0 0.625rem">
+					<MkSelect
+						v-model="chartSpan"
+						style="margin: 0 0 0 0.625rem"
+					>
 						<option value="hour">{{ i18n.ts.perHour }}</option>
 						<option value="day">{{ i18n.ts.perDay }}</option>
 					</MkSelect>

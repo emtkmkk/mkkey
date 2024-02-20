@@ -28,9 +28,12 @@
 			<MkButton inline @click="disableAll">{{
 				i18n.ts.disableAll
 			}}</MkButton>
-			<MkButton style="margin-bottom: 0.75rem" inline @click="enableAll">{{
-				i18n.ts.enableAll
-			}}</MkButton>
+			<MkButton
+				style="margin-bottom: 0.75rem"
+				inline
+				@click="enableAll"
+				>{{ i18n.ts.enableAll }}</MkButton
+			>
 			<MkSwitch
 				style="margin-bottom: 0.375rem"
 				v-for="kind in initialPermissions || kinds"

@@ -177,8 +177,9 @@ function getInstanceIcon(instance): string {
 		font-weight: bold;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		text-shadow: -0.0625rem -0.0625rem 0 var(--bg), 0.0625rem -0.0625rem 0 var(--bg),
-			-0.0625rem 0.0625rem 0 var(--bg), 0.0625rem 0.0625rem 0 var(--bg);
+		text-shadow: -0.0625rem -0.0625rem 0 var(--bg),
+			0.0625rem -0.0625rem 0 var(--bg), -0.0625rem 0.0625rem 0 var(--bg),
+			0.0625rem 0.0625rem 0 var(--bg);
 		.article > .main &,
 		.header > .body & {
 			display: unset;

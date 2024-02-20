@@ -29,7 +29,8 @@ export const meta = {
 	},
 	errors: {
 		noActiveAdmin: {
-			message: "1日以内にログインした管理人が存在しない為、現在招待コードを発行できません。",
+			message:
+				"1日以内にログインした管理人が存在しない為、現在招待コードを発行できません。",
 			code: "NO_ACTIVE_ADMIN",
 			id: "0d61e772-53b0-df53-de45-d294e76ab40b",
 		},
@@ -43,13 +44,10 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-
-	const admin = await Users.countBy(
-		{ 
-			isAdmin: true,
-			lastActiveDate: MoreThan(new Date(Date.now() - USER_HALFSLEEP_THRESHOLD))
-		}
-	);
+	const admin = await Users.countBy({
+		isAdmin: true,
+		lastActiveDate: MoreThan(new Date(Date.now() - USER_HALFSLEEP_THRESHOLD)),
+	});
 
 	if (!admin) {
 		throw new ApiError(meta.errors.noActiveAdmin);

@@ -92,7 +92,11 @@
 				}}</span></FormSwitch
 			>
 
-			<div v-panel v-if="enableEmojiReplace" style="border-radius: 0.375rem">
+			<div
+				v-panel
+				v-if="enableEmojiReplace"
+				style="border-radius: 0.375rem"
+			>
 				<XDraggable
 					v-model="allEmojiReplace"
 					class="zoaiodol"

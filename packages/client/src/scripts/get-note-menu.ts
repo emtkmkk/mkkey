@@ -159,7 +159,7 @@ export function getNoteMenu(props: {
 					`:\$1@${appearNote.user?.host}:`,
 				);
 			}
-			
+
 			text = (appearNote.text ?? "").replaceAll(
 				/:(\w+):/g,
 				`:\$1@${appearNote.user?.host}:`,
@@ -429,18 +429,25 @@ export function getNoteMenu(props: {
 				text: i18n.ts.reaction,
 				action: showReactions,
 			},
-			...(/[\*<>$`\[\]_~:]|\\\(|\\\)/.test((appearNote.cw ?? "") + (appearNote.text ?? ""))
-			? [{
-				icon: "ph-clipboard-text ph-bold ph-lg",
-				text: i18n.ts.showSource,
-				action: showSource,
-			}]
-			: ((appearNote.cw ?? "") + (appearNote.text ?? "")).length > 0 
-			? [{
-				icon: "ph-clipboard-text ph-bold ph-lg",
-				text: i18n.ts.copyContent,
-				action: copyContent,
-			}] : []),
+			...(/[\*<>$`\[\]_~:]|\\\(|\\\)/.test(
+				(appearNote.cw ?? "") + (appearNote.text ?? ""),
+			)
+				? [
+						{
+							icon: "ph-clipboard-text ph-bold ph-lg",
+							text: i18n.ts.showSource,
+							action: showSource,
+						},
+				  ]
+				: ((appearNote.cw ?? "") + (appearNote.text ?? "")).length > 0
+				? [
+						{
+							icon: "ph-clipboard-text ph-bold ph-lg",
+							text: i18n.ts.copyContent,
+							action: copyContent,
+						},
+				  ]
+				: []),
 			{
 				icon: "ph-link-simple ph-bold ph-lg",
 				text: i18n.ts.copyLink,

@@ -18,7 +18,9 @@
 		</button>
 		<div v-if="narrow" class="buttons left" @click="openAccountMenu">
 			<img
-				v-if="props.displayMyAvatar && $i && $store.state.hiddenHeaderIcon"
+				v-if="
+					props.displayMyAvatar && $i && $store.state.hiddenHeaderIcon
+				"
 				:src="$instance.iconUrl"
 				class="avatar _ghost"
 				alt="icon"

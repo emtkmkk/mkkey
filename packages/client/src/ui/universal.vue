@@ -593,7 +593,8 @@ console.log(mainRouter.currentRoute.value.name);
 		z-index: 1000;
 		bottom: 0;
 		left: 0;
-		padding: 0.75rem 0.75rem calc(env(safe-area-inset-bottom, 0) + 0.75rem) 0.75rem;
+		padding: 0.75rem 0.75rem calc(env(safe-area-inset-bottom, 0) + 0.75rem)
+			0.75rem;
 		display: flex;
 		width: 100%;
 		box-sizing: border-box;

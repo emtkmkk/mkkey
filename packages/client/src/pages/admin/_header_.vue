@@ -36,7 +36,10 @@
 						class="fullButton"
 						primary
 						@click.stop="action.handler"
-						><i :class="action.icon" style="margin-right: 0.375rem"></i
+						><i
+							:class="action.icon"
+							style="margin-right: 0.375rem"
+						></i
 						>{{ action.text }}</MkButton
 					>
 					<button

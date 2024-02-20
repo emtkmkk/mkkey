@@ -140,7 +140,8 @@ defineExpose<WidgetComponentExpose>({
 	$bodyTitleHieght: 1.125rem;
 	$bodyInfoHieght: 1rem;
 
-	height: (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + 3.875rem;
+	height: (3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) +
+		(3.875rem + 0.0625rem) + (3.875rem + 0.0625rem) + 3.875rem;
 	overflow: hidden;
 
 	> .instances {

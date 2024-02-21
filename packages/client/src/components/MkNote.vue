@@ -307,8 +307,7 @@
 								(showEmojiButton &&
 									favButtonReactionIsFavorite)) &&
 							appearNote.myReaction != null &&
-							!multiReaction &&
-							isCanAction
+							!multiReaction
 						"
 						ref="reactButton"
 						class="button _button reacted"
@@ -569,7 +568,7 @@ const isExcludeReplyQuote =
 	muteExcludeReplyQuote &&
 	(unref(muted)?.what === "reply" || unref(muted)?.what === "renote");
 const isExcludeNotification = muteExcludeNotification && props.notification;
-const isCanAction = $i && (!$i.isSilenced || note.user.isFollowed);
+const isCanAction = $i && (!$i.isSilenced || appearNote.user.isFollowed);
 const excludeMute = isExcludeReplyQuote || isExcludeNotification;
 const developerRenote = defaultStore.state.developerRenote;
 const developerQuote = defaultStore.state.developerQuote;

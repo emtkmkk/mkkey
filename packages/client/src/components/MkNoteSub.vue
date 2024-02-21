@@ -153,10 +153,27 @@
 					<button
 						v-if="
 							enableEmojiReactions &&
-							appearNote.myReaction == null
+							!isMaxReacted &&
+							isCanAction
+						"
+						:title="
+							multiReaction
+								? (appearNote.myReactions?.length ?? 0) +
+								  ' / ' +
+								  maxReactions
+								: ''
 						"
 						ref="reactButton"
-						v-tooltip.noDelay.bottom="i18n.ts.reaction"
+						v-tooltip.bottom="
+							i18n.ts.reaction +
+							(multiReaction
+								? ' (' +
+								  (appearNote.myReactions?.length ?? 0) +
+								  ' / ' +
+								  maxReactions +
+								  ')'
+								: '')
+						"
 						class="button _button"
 						:class="{
 							unsupported:
@@ -165,12 +182,17 @@
 						}"
 						@click="react()"
 					>
-						<i class="ph-smiley ph-bold ph-lg"></i>
+						<i
+							v-if="multiReaction"
+							class="ph-smiley-wink ph-bold ph-lg"
+						></i>
+						<i v-else class="ph-smiley ph-bold ph-lg"></i>
 					</button>
 					<button
 						v-if="
 							enableEmojiReactions &&
-							appearNote.myReaction != null
+							appearNote.myReaction != null &&
+							!multiReaction
 						"
 						ref="reactButton"
 						class="button _button reacted"
@@ -290,6 +312,21 @@ const props = withDefaults(
 );
 
 let note = $ref(deepClone(props.note));
+
+const multiReaction =
+	$i &&
+	$i.patron &&
+	(!props.note.user.host ||
+		props.note.user.instance?.maxReactionsPerAccount > 1);
+const maxReactions = multiReaction
+	? Math.min(props.note.user.instance?.maxReactionsPerAccount ?? 3, 64)
+	: 1;
+const isCanAction = $i && (!$i.isSilenced || props.note.user.isFollowed);
+const isMaxReacted = $computed(() =>
+	multiReaction
+		? props.note.myReactions?.length >= maxReactions
+		: props.note.myReaction != null
+);
 
 const showContent = ref(false);
 

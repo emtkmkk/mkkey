@@ -307,7 +307,8 @@
 								(showEmojiButton &&
 									favButtonReactionIsFavorite)) &&
 							appearNote.myReaction != null &&
-							!multiReaction
+							!multiReaction &&
+							isCanAction
 						"
 						ref="reactButton"
 						class="button _button reacted"

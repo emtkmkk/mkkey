@@ -78,7 +78,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 
 	let buttonActions = [];
 
-	if (props.note.visibility === "public" && !props.note.localOnly) {
+	if (props.note.visibility === "public" && !props.note.localOnly && !$i?.isSilenced) {
 		buttonActions.push({
 			text: i18n.ts.renote,
 			textStyle: "font-weight: bold",
@@ -99,7 +99,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 
 	if (
 		["public", "home"].includes(props.note.visibility) &&
-		!props.note.localOnly
+		!props.note.localOnly && !$i?.isSilenced
 	) {
 		buttonActions.push({
 			text: i18n.ts.renoteAsUnlisted,
@@ -118,7 +118,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 		});
 	}
 
-	if (["public"].includes(props.note.visibility)) {
+	if (["public"].includes(props.note.visibility) && !$i?.isSilenced) {
 		buttonActions.push({
 			text:
 				props.note.localOnly && props.note.userId !== $i.id
@@ -141,7 +141,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 
 	if (
 		["public", "home"].includes(props.note.visibility) &&
-		props.note.localOnly
+		props.note.localOnly && !$i?.isSilenced
 	) {
 		buttonActions.push({
 			text: i18n.ts.renoteToLFLFHome,

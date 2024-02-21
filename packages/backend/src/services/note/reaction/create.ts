@@ -70,7 +70,7 @@ export default async (
 			: undefined
 		: undefined;
 
-	if (user.isSilenced && !note.user.isFollowed && !relation.isFollowed) {
+	if (user.isSilenced && relation && !relation.isFollowed) {
 		throw new IdentifiableError(
 			"5ab2b45b-c2b5-0560-793d-2a670084cc92",
 			"サイレンス中はフォロワー以外にリアクション出来ません。",

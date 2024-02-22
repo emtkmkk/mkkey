@@ -147,8 +147,8 @@ export function getNoteMenu(props: {
 	}
 
 	function showSource(): void {
-		let text;
-		let cw;
+		let text: string;
+		let cw: string | undefined;
 		if (
 			defaultStore.state.copyPostRemoteEmojiCode &&
 			appearNote.user?.host != null
@@ -170,10 +170,24 @@ export function getNoteMenu(props: {
 			}
 			text = appearNote.text ?? "";
 		}
+		const replacecw = cw?.replace(
+			/\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063/,
+			function (match) {
+				// マッチした文字の Unicode コードポイントを取得し、"(u+XXXX)" 形式に変換
+				return `[u+${match.charCodeAt(0).toString(16).toUpperCase()}]`;
+			},
+		);
+		const replaceText = text.replace(
+			/\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063/,
+			function (match) {
+				// マッチした文字の Unicode コードポイントを取得し、"(u+XXXX)" 形式に変換
+				return `[u+${match.charCodeAt(0).toString(16).toUpperCase()}]`;
+			},
+		);
 		props.info.value = {
 			ready: true,
 			title: i18n.ts.noteSource,
-			text: cw ? cw + "\n\n" + text : text,
+			text: replacecw ? replacecw + "\n\n" + replaceText : replaceText,
 			copy: text,
 			mfm: false,
 		};
@@ -429,7 +443,7 @@ export function getNoteMenu(props: {
 				text: i18n.ts.reaction,
 				action: showReactions,
 			},
-			...(/[\*<>$`\[\]_~:]|\\\(|\\\)/.test(
+			...(/[\*<>$`\[\]_~:\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]|\\\(|\\\)/.test(
 				(appearNote.cw ?? "") + (appearNote.text ?? ""),
 			)
 				? [

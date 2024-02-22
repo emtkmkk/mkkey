@@ -178,7 +178,7 @@ export function getNoteMenu(props: {
 			},
 		);
 		const replaceText = text.replace(
-			/\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063/,
+			/[\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]/,
 			function (match) {
 				// マッチした文字の Unicode コードポイントを取得し、"(u+XXXX)" 形式に変換
 				return `[u+${match.charCodeAt(0).toString(16).toUpperCase()}]`;
@@ -208,7 +208,7 @@ export function getNoteMenu(props: {
 		os.success();
 	}
 
-	function noteReplacer(key, value): void {
+	function noteReplacer(key: string, value: unknown) {
 		if (
 			key === "user" ||
 			key === "myReactionCnt" ||
@@ -216,12 +216,18 @@ export function getNoteMenu(props: {
 			value === null ||
 			value === false ||
 			value === 0 ||
-			(value.length !== undefined && value.length === 0) ||
+			(Array.isArray(value) && value.length !== undefined && value.length === 0) ||
 			(typeof value === "object" && Object.keys(value).length === 0)
 		) {
 			return undefined;
 		}
-		return value;
+		return typeof value === "string" ? value.replace(
+			/[\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]/,
+			function (match) {
+				// マッチした文字の Unicode コードポイントを取得し、"(u+XXXX)" 形式に変換
+				return `[u+${match.charCodeAt(0).toString(16).toUpperCase()}]`;
+			},
+		) : value;
 	}
 
 	function copyNote(): void {

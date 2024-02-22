@@ -152,9 +152,7 @@
 					/>
 					<button
 						v-if="
-							enableEmojiReactions &&
-							!isMaxReacted &&
-							isCanAction
+							enableEmojiReactions && !isMaxReacted && isCanAction
 						"
 						:title="
 							multiReaction

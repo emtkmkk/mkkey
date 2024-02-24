@@ -68,6 +68,8 @@ export type Endpoints = {
 	"admin/suspend-user": { req: TODO; res: TODO };
 	"admin/unsilence-user": { req: TODO; res: TODO };
 	"admin/unsuspend-user": { req: TODO; res: TODO };
+	"admin/canInvite-user": { req: TODO; res: TODO };
+	"admin/cantInvite-user": { req: TODO; res: TODO };
 	"admin/update-meta": { req: TODO; res: TODO };
 	"admin/vacuum": { req: TODO; res: TODO };
 	"admin/accounts/create": { req: TODO; res: TODO };

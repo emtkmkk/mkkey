@@ -487,9 +487,9 @@ async function toggleCanInvite(v) {
 		text: v ? i18n.ts.canInviteConfirm : i18n.ts.cantInviteConfirm,
 	});
 	if (confirm.canceled) {
-		silenced = !v;
+		canInvite = !v;
 	} else {
-		await os.api(v ? "admin/caninvite-user" : "admin/cantinvite-user", {
+		await os.api(v ? "admin/canInvite-user" : "admin/cantInvite-user", {
 			userId: user.id,
 		});
 		await refreshUser();

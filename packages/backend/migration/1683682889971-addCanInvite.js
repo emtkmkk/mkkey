@@ -1,5 +1,5 @@
-export class addLastSendActivityAt1683682889964 {
-	name = "addLastSendActivityAt1683682889964";
+export class addCanInvite1683682889971 {
+	name = "addCanInvite1683682889971";
 
 	async up(queryRunner) {
 		await queryRunner.query(

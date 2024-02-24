@@ -42,6 +42,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			isModerator: user.isModerator,
 			isSilenced: user.isSilenced,
 			isSuspended: user.isSuspended,
+			canInvite: user.canInvite,
 		};
 	}
 
@@ -76,5 +77,6 @@ export default define(meta, paramDef, async (ps, me) => {
 		moderationNote: profile.moderationNote,
 		inviteUserId: user.inviteUserId,
 		signins,
+		canInvite: user.canInvite,
 	};
 });

@@ -69,7 +69,7 @@ export default define(meta, paramDef, async (ps, me) => {
 					7 * 24 * 60 * 60 * 1000 - me.notesCount * 90 * 60 * 1000,
 					24 * 60 * 60 * 1000,
 			  );
-	const canInvite = eTime > inviteBorder && me.notesCount >= 20;
+	const canInvite = eTime > inviteBorder && me.notesCount >= 20 && me.canInvite;
 
 	if (me.isSilenced || !canInvite) {
 		throw new ApiError();

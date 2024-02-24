@@ -47,7 +47,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 				icon: "ph-lightbulb ph-bold ph-lg",
 				to: "/about-calckey",
 			} as MenuLink,
-			$i && !$i.isSilenced && canInvite
+			$i && !$i.isSilenced && $i.canInvite && $i.canInvite
 				? ({
 						type: "button",
 						action: async () => {
@@ -68,7 +68,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 						text: i18n.ts.showInviteCode,
 						icon: "ph-user-plus ph-bold ph-lg",
 				  } as MenuButton)
-				: $i && !$i.isSilenced && $i.notesCount >= 20
+				: $i && !$i.isSilenced && $i.canInvite && $i.notesCount >= 20
 				? ({
 						type: "label",
 						text: `招待可能まで後${

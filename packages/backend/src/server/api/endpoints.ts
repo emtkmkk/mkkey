@@ -60,8 +60,10 @@ import * as ep___admin_showUser from "./endpoints/admin/show-user.js";
 import * as ep___admin_showUsers from "./endpoints/admin/show-users.js";
 import * as ep___admin_silenceUser from "./endpoints/admin/silence-user.js";
 import * as ep___admin_suspendUser from "./endpoints/admin/suspend-user.js";
+import * as ep___admin_canInviteUser from "./endpoints/admin/canInvite-user.js";
 import * as ep___admin_unsilenceUser from "./endpoints/admin/unsilence-user.js";
 import * as ep___admin_unsuspendUser from "./endpoints/admin/unsuspend-user.js";
+import * as ep___admin_cantInviteUser from "./endpoints/admin/cantInvite-user.js";
 import * as ep___admin_updateMeta from "./endpoints/admin/update-meta.js";
 import * as ep___admin_vacuum from "./endpoints/admin/vacuum.js";
 import * as ep___admin_deleteAccount from "./endpoints/admin/delete-account.js";
@@ -421,8 +423,10 @@ const eps = [
 	["admin/show-users", ep___admin_showUsers],
 	["admin/silence-user", ep___admin_silenceUser],
 	["admin/suspend-user", ep___admin_suspendUser],
+	["admin/caninvite-user", ep___admin_canInviteUser],
 	["admin/unsilence-user", ep___admin_unsilenceUser],
 	["admin/unsuspend-user", ep___admin_unsuspendUser],
+	["admin/cantinvite-user", ep___admin_cantInviteUser],
 	["admin/update-meta", ep___admin_updateMeta],
 	["admin/vacuum", ep___admin_vacuum],
 	["admin/delete-account", ep___admin_deleteAccount],

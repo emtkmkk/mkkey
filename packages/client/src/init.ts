@@ -669,7 +669,7 @@ import {
 						  )
 					: undefined;
 				const canInvite = $i
-					? eTime > inviteBorder && $i.notesCount >= 20 && !$i.isSilenced
+					? eTime > inviteBorder && $i.notesCount >= 20 && !$i.isSilenced && $i.canInvite
 					: false;
 				if (defaultStore.state.tutorial === -1 && canInvite) {
 					await alert({

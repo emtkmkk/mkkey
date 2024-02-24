@@ -848,6 +848,7 @@ export const UserRepository = db.getRepository(User).extend({
 						lastActiveDate: user.lastActiveDate
 							? user.lastActiveDate.toISOString()
 							: null,
+						canInvite: user.canInvite || falsy,
 				  }
 				: {}),
 
@@ -869,6 +870,7 @@ export const UserRepository = db.getRepository(User).extend({
 							: [],
 						inviteUserId: user.inviteUserId,
 						isSilentLocked: user.isSilentLocked || falsy,
+						canInvite: user.canInvite || falsy,
 				  }
 				: {}),
 

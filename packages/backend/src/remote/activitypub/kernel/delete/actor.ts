@@ -20,7 +20,9 @@ export async function deleteActor(
 		logger.info("skip: already deleted");
 	}
 
-	const job = await createDeleteAccountJob(actor);
+	const job = await createDeleteAccountJob(actor, {
+		soft: true, // リモートユーザーの削除は、完全にDBから物理削除してしまうと再度連合してきてアカウントが復活する可能性があるため、soft指定する
+	});
 
 	await Users.update(actor.id, {
 		isDeleted: true,

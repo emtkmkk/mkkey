@@ -140,8 +140,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 		if (
 			user == null ||
-			(!isAdminOrModerator && user.isSuspended) ||
-			user.isDeleted
+			(!isAdminOrModerator && (user.isSuspended || user.isDeleted))
 		) {
 			throw new ApiError(meta.errors.noSuchUser);
 		}

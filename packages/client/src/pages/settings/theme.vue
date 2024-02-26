@@ -316,7 +316,7 @@ definePageMetadata({
 			width: 5.625rem;
 			height: 3.125rem;
 			background-color: #83d8ff;
-			border-radius: 5.625rem - 6;
+			border-radius: calc(5.625rem - 0.375rem);
 			transition: background-color 200ms
 				cubic-bezier(0.445, 0.05, 0.55, 0.95) !important;
 
@@ -344,8 +344,8 @@ definePageMetadata({
 			z-index: 1;
 			top: 0.1875rem;
 			left: 0.1875rem;
-			width: 3.125rem - 6;
-			height: 3.125rem - 6;
+			width: calc(3.125rem - 0.375rem);
+			height: calc(3.125rem - 0.375rem);
 			background-color: #ffcf96;
 			border-radius: 3.125rem;
 			box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.3);

@@ -58,7 +58,7 @@ export async function deleteAccount(
 			});
 			tryCount += 1;
 		}
-		if (deleteCount) logger.succ(`All of followees removed (${deleteCount})`);
+		if (deleteCount) logger.succ(`All of followees deleted (${deleteCount})`);
 	} catch {}
 
 	try {
@@ -85,7 +85,7 @@ export async function deleteAccount(
 			});
 			tryCount += 1;
 		}
-		if (deleteCount) logger.succ(`All of followers removed (${deleteCount})`);
+		if (deleteCount) logger.succ(`All of followers deleted (${deleteCount})`);
 	} catch {}
 
 	{

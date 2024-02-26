@@ -17,7 +17,7 @@ export async function deleteActor(
 
 	const user = await Users.findOneByOrFail({ id: actor.id });
 	if (user.isDeleted) {
-		logger.info("skip: already deleted");
+		logger.info(`skip: already deleted @${user.username}${user.host ? `@${user.host}` : ""}`);
 	}
 
 	const job = await createDeleteAccountJob(actor, {

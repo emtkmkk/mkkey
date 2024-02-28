@@ -493,7 +493,7 @@
 					<i class="ph-x ph-bold ph-lg"></i>
 				</button>
 			</div>
-			<div v-if="visibility === 'specified'" class="to-specified">
+			<div v-if="visibility === 'specified'" class="to-specified" :class="{ nomargin: visibility === 'specified' && defaultStore.state.enabledSpecifiedCc && $i?.canInvite }">
 				<span style="margin-right: 0.5rem">{{
 					i18n.ts.recipient
 				}}</span>
@@ -2337,6 +2337,10 @@ onMounted(() => {
 					color: var(--accentDarken30);
 				}
 			}
+		}
+
+		> .nomargin {
+			margin-bottom: 0px;
 		}
 
 		> .to-specified {

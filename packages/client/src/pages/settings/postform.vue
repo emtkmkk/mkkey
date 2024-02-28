@@ -118,6 +118,13 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormSwitch v-if="developer && $i?.canInvite" v-model="enabledSpecifiedCc" class="_formBlock">{{
+				i18n.ts.enabledSpecifiedCc
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span><template #caption>{{
+					i18n.ts.enabledSpecifiedCcDescription
+				}}</template></FormSwitch>
 		</FormSection>
 	</div>
 </template>

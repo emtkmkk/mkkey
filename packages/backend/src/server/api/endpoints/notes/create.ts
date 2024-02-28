@@ -1,4 +1,4 @@
-import { In } from "typeorm";
+import { In, IsNull } from "typeorm";
 import create from "@/services/note/create.js";
 import type { User } from "@/models/entities/user.js";
 import {
@@ -194,6 +194,13 @@ export default define(meta, paramDef, async (ps, user) => {
 			id: In(ps.visibleUserIds),
 		});
 	}
+	let ccUsers: User[] = [];
+	if (ps.ccUserIds && user.canInvite) {
+		ccUsers = await Users.findBy({
+			id: In(ps.ccUserIds),
+			host: IsNull(),
+		});
+	}
 
 	let files: DriveFile[] = [];
 	const fileIds =
@@ -297,6 +304,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			localOnly: ps.localOnly,
 			visibility: ps.visibility,
 			visibleUsers,
+			ccUsers,
 			channel,
 			apMentions: ps.noExtractMentions ? [] : undefined,
 			apHashtags: ps.noExtractHashtags ? [] : undefined,

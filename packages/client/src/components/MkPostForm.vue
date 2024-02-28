@@ -516,6 +516,25 @@
 					</button>
 				</div>
 			</div>
+			<div v-if="visibility === 'specified' && defaultStore.state.enabledSpecifiedCc && $i?.canInvite" class="to-specified">
+				<span style="margin-right: 0.5rem">{{
+					i18n.ts.recipientCc
+				}}</span>
+				<div class="visibleUsers">
+					<span v-for="u in visibleUsersCc" :key="u.id">
+						<MkAcct :user="u" />
+						<button
+							class="_button"
+							@click="removeVisibleUserCc(u)"
+						>
+							<i class="ph-x ph-bold ph-lg"></i>
+						</button>
+					</span>
+					<button class="_button" @click="addVisibleUserCc">
+						<i class="ph-plus ph-bold ph-md ph-fw ph-lg"></i>
+					</button>
+				</div>
+			</div>
 			<MkInfo
 				v-if="hasNotSpecifiedMentions"
 				warn
@@ -779,6 +798,7 @@ let visibility = $ref(
 					.defaultNoteVisibility) as (typeof misskey.noteVisibilities)[number])
 );
 let visibleUsers = $ref([]);
+let visibleUsersCc = $ref([]);
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }
@@ -1411,6 +1431,30 @@ function removeVisibleUser(user) {
 	visibleUsers = erase(user, visibleUsers);
 }
 
+function pushVisibleUserCc(user) {
+	if (
+		!visibleUsersCc.some(
+			(u) =>
+				u.username === user.username &&
+				(!user.host || u.host === user.host)
+		)
+	) {
+		visibleUsersCc.push(user);
+		saveDraft();
+	}
+}
+
+function addVisibleUserCc() {
+	os.selectUser().then((user) => {
+		pushVisibleUserCc(user);
+	});
+}
+
+function removeVisibleUserCc(user) {
+	visibleUsersCc = erase(user, visibleUsersCc);
+}
+
+
 function clear() {
 	text = "";
 	cw = "";
@@ -1771,6 +1815,11 @@ async function post() {
 			visibility === "specified"
 				? visibleUsers.map((u) => u.id)
 				: undefined,
+		ccUserIds:
+			visibility === "specified" && defaultStore.state.enabledSpecifiedCc
+				? visibleUsersCc.map((u) => u.id)
+				: undefined,
+		
 	};
 
 	if (withHashtags && hashtags && hashtags.trim() !== "") {

@@ -1373,6 +1373,12 @@ export const defaultStore = markRaw(
 			createdAt: "2024/2/19",
 			page: "appearance",
 		},
+		enabledSpecifiedCc: {
+			where: "device",
+			default: false,
+			createdAt: "2024/2/28",
+			page: "postform",
+		},
 	}),
 );
 

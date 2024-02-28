@@ -818,8 +818,9 @@ let visibility = $ref(
 			: defaultStore.state
 					.defaultNoteVisibility) as (typeof misskey.noteVisibilities)[number])
 );
+if (visibility === "specified") localOnly = false;
 let visibleUsers = $ref([]);
-let visibleUsersCc = $ref(!props.airReply?.user.host && props.airReply?.ccUserIdsCount && props.airReply?.userId !== $i.id ? [props.airReply.user] : []);
+let visibleUsersCc = $ref(!props.airReply?.user.host && visibility === "specified" && props.airReply?.ccUserIdsCount && props.airReply?.userId !== $i.id ? [props.airReply.user] : []);
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }

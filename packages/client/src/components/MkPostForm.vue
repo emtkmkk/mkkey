@@ -2391,9 +2391,9 @@ onMounted(() => {
 						transform: translateX(0.125rem);
 					}
 
-					&:active {
-						color: var(--accentDarken30);
-					}
+					&.active {
+					color: var(--accent);
+				}
 				}
 
 				> span {

@@ -819,7 +819,7 @@ let visibility = $ref(
 					.defaultNoteVisibility) as (typeof misskey.noteVisibilities)[number])
 );
 let visibleUsers = $ref([]);
-let visibleUsersCc = $ref(!props.airReply?.user.host && props.airReply?.ccUserIdsCount && props.airReply?.userId !== $i.id ? [props.airReply.userId] : []);
+let visibleUsersCc = $ref(!props.airReply?.user.host && props.airReply?.ccUserIdsCount && props.airReply?.userId !== $i.id ? [props.airReply.user] : []);
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }

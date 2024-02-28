@@ -851,7 +851,7 @@ let canNotLocal = $ref(
 		!$i.isSilenced &&
 		!props.channel?.description?.includes("[localOnly]")
 );
-let canCc = $ref(visibility === 'specified' && defaultStore.state.enabledSpecifiedCc && $i?.canInvite);
+let canCc = $computed(visibility === 'specified' && defaultStore.state.enabledSpecifiedCc && $i?.canInvite);
 let inheritCc = $ref(!reply?.user?.host);
 let requiredFilename = $ref(
 	props.channel?.description?.includes("[requiredFilename]")
@@ -1844,7 +1844,7 @@ async function post() {
 				? visibleUsers.map((u) => u.id)
 				: undefined,
 		ccUserIds:
-			visibility === "specified" && defaultStore.state.enabledSpecifiedCc
+			canCc
 				? visibleUsersCc.map((u) => u.id)
 				: undefined,
 		inheritCc,

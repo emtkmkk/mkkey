@@ -214,6 +214,9 @@ const showRemoteEmojiPostForm = $computed(
 const usePickerSizePostForm = $computed(
 	defaultStore.makeGetterSetter("usePickerSizePostForm")
 );
+const enabledSpecifiedCc = $computed(
+	defaultStore.makeGetterSetter("enabledSpecifiedCc")
+);
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({

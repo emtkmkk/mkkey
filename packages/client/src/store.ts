@@ -1377,7 +1377,6 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 			createdAt: "2024/2/28",
-			page: "postform",
 		},
 	}),
 );

@@ -1436,6 +1436,7 @@ function removeVisibleUser(user) {
 
 function pushVisibleUserCc(user) {
 	if (
+		!user.host &&
 		!visibleUsersCc.some(
 			(u) =>
 				u.username === user.username &&
@@ -1443,7 +1444,6 @@ function pushVisibleUserCc(user) {
 		)
 	) {
 		visibleUsersCc.push(user);
-		saveDraft();
 	}
 }
 

@@ -414,7 +414,7 @@ export function getNoteMenu(props: {
 				  ]
 				: []),
 			defaultStore.state.enabledAirReply &&
-			(appearNote.visibility !== 'specified' || appearNote?.ccUserIdsCount)
+			(appearNote.visibility !== 'specified' || (!appearNote?.user.host && appearNote?.ccUserIdsCount))
 				? {
 						icon: "ph-paper-plane-tilt ph-bold ph-lg",
 						text: i18n.ts.airReply,

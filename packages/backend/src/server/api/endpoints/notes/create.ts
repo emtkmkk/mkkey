@@ -254,6 +254,13 @@ export default define(meta, paramDef, async (ps, user) => {
 			throw new ApiError(meta.errors.cannotReplyToPureRenote);
 		}
 
+		if (reply.ccUserIds && ps.inheritCc) {
+			ccUsers = [...ccUsers, ...(await Users.findBy({
+				id: In(reply.ccUserIds),
+				host: IsNull(),
+			}))];
+		}
+
 		// Check blocking
 		if (reply.userId !== user.id) {
 			const block = await Blockings.findOneBy({

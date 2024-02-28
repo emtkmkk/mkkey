@@ -493,7 +493,7 @@
 					<i class="ph-x ph-bold ph-lg"></i>
 				</button>
 			</div>
-			<div v-if="visibility === 'specified'" class="to-specified" :class="{ nomargin: visibility === 'specified' && defaultStore.state.enabledSpecifiedCc && $i?.canInvite }">
+			<div v-if="visibility === 'specified'" class="to-specified" :class="{ nomargin: canCc }">
 				<span style="margin-right: 0.5rem">{{
 					i18n.ts.recipient
 				}}</span>
@@ -511,12 +511,15 @@
 							<i class="ph-arrow-bend-left-up ph-bold ph-lg"></i>
 						</button>
 					</span>
+					<button v-if="!canCc && reply.ccUserIdsCount" class="_button" @click="inheritCc = !inheritCc" :class="{ active: inheritCc }">
+						<i class="ph-list-checks ph-bold ph-md ph-fw ph-lg"></i>
+					</button>
 					<button class="_button" @click="addVisibleUser">
 						<i class="ph-plus ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
 				</div>
 			</div>
-			<div v-if="visibility === 'specified' && defaultStore.state.enabledSpecifiedCc && $i?.canInvite" class="to-specified">
+			<div v-if="canCc" class="to-specified">
 				<span style="margin-right: 0.5rem">{{
 					i18n.ts.recipientCc
 				}}</span>
@@ -530,6 +533,9 @@
 							<i class="ph-x ph-bold ph-lg"></i>
 						</button>
 					</span>
+					<button v-if="reply.ccUserIdsCount" class="_button" @click="inheritCc = !inheritCc" :class="{ active: inheritCc }">
+						<i class="ph-list-checks ph-bold ph-md ph-fw ph-lg"></i>
+					</button>
 					<button class="_button" @click="addVisibleUserCcToList">
 						<i class="ph-list-plus ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
@@ -845,6 +851,8 @@ let canNotLocal = $ref(
 		!$i.isSilenced &&
 		!props.channel?.description?.includes("[localOnly]")
 );
+let canCc = $ref(visibility === 'specified' && defaultStore.state.enabledSpecifiedCc && $i?.canInvite);
+let inheritCc = $ref(!reply?.user?.host);
 let requiredFilename = $ref(
 	props.channel?.description?.includes("[requiredFilename]")
 );
@@ -1839,6 +1847,7 @@ async function post() {
 			visibility === "specified" && defaultStore.state.enabledSpecifiedCc
 				? visibleUsersCc.map((u) => u.id)
 				: undefined,
+		inheritCc,
 		
 	};
 

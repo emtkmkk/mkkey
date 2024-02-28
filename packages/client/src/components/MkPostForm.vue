@@ -493,7 +493,7 @@
 					<i class="ph-x ph-bold ph-lg"></i>
 				</button>
 			</div>
-			<div v-if="visibility === 'specified'" class="to-specified" :class="{ nomargin: canCc }">
+			<div v-if="visibility === 'specified'" class="to-specified" :class="{ nomargin: canCc || (visibility === 'specified' && visibleUsersCc?.length > 0) }">
 				<span style="margin-right: 0.5rem">{{
 					i18n.ts.recipient
 				}}</span>
@@ -525,12 +525,12 @@
 					</button>
 				</div>
 			</div>
-			<div class="to-specified">
+			<div v-if="canCc || (visibility === 'specified' && visibleUsersCc?.length > 0)"  class="to-specified">
 				<span style="margin-right: 0.5rem">{{
 					i18n.ts.recipientCc
 				}}</span>
 				<div class="visibleUsers">
-					<span v-if="canCc || visibleUsersCc.length > 0" v-for="u in visibleUsersCc" :key="u.id">
+					<span v-for="u in visibleUsersCc" :key="u.id">
 						<MkAcct :user="u" />
 						<button
 							class="_button"

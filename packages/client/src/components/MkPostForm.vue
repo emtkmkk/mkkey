@@ -525,12 +525,12 @@
 					</button>
 				</div>
 			</div>
-			<div v-if="canCc" class="to-specified">
+			<div class="to-specified">
 				<span style="margin-right: 0.5rem">{{
 					i18n.ts.recipientCc
 				}}</span>
 				<div class="visibleUsers">
-					<span v-for="u in visibleUsersCc" :key="u.id">
+					<span v-if="canCc || visibleUsersCc.length > 0" v-for="u in visibleUsersCc" :key="u.id">
 						<MkAcct :user="u" />
 						<button
 							class="_button"
@@ -548,10 +548,10 @@
 					>
 						<i class="ph-list-checks ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
-					<button class="_button" @click="addVisibleUserCcToList">
+					<button v-if="canCc" class="_button" @click="addVisibleUserCcToList">
 						<i class="ph-list-plus ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
-					<button class="_button" @click="addVisibleUserCc">
+					<button v-if="canCc" class="_button" @click="addVisibleUserCc">
 						<i class="ph-plus ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
 				</div>
@@ -819,7 +819,7 @@ let visibility = $ref(
 					.defaultNoteVisibility) as (typeof misskey.noteVisibilities)[number])
 );
 let visibleUsers = $ref([]);
-let visibleUsersCc = $ref([]);
+let visibleUsersCc = $ref(props.airReply?.ccUserIdsCount && props.airReply?.userId !== $i.id ? [props.airReply.userId] : []);
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }
@@ -1856,7 +1856,7 @@ async function post() {
 				? visibleUsers.map((u) => u.id)
 				: undefined,
 		ccUserIds:
-			canCc
+			visibility === "specified"
 				? visibleUsersCc.map((u) => u.id)
 				: undefined,
 		inheritCc,

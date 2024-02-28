@@ -195,7 +195,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		});
 	}
 	let ccUsers: User[] = [];
-	if (ps.ccUserIds && user.canInvite) {
+	if (ps.ccUserIds && (ps.ccUserIds.length <= 1 || user.canInvite)) {
 		ccUsers = await Users.findBy({
 			id: In(ps.ccUserIds),
 			host: IsNull(),

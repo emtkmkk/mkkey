@@ -204,7 +204,7 @@
 							$i &&
 							defaultStore.state.toolbarAirReply &&
 							$i.id !== appearNote.userId &&
-							appearNote.visibility !== 'specified'
+							(appearNote.visibility !== 'specified' || appearNote?.ccUserIdsCount)
 						"
 						v-tooltip.bottom="i18n.ts.airReply"
 						class="button _button"

@@ -2390,6 +2390,10 @@ onMounted(() => {
 					> i {
 						transform: translateX(0.125rem);
 					}
+
+					&:active {
+						color: var(--accentDarken30);
+					}
 				}
 
 				> span {

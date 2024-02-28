@@ -2340,7 +2340,7 @@ onMounted(() => {
 		}
 
 		> .nomargin {
-			margin-bottom: 0px;
+			margin-bottom: 0 !important;
 		}
 
 		> .to-specified {

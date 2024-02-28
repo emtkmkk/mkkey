@@ -511,7 +511,13 @@
 							<i class="ph-arrow-bend-left-up ph-bold ph-lg"></i>
 						</button>
 					</span>
-					<button v-if="!canCc && reply?.ccUserIdsCount" class="_button" @click="inheritCc = !inheritCc" :class="{ active: inheritCc }">
+					<button
+						v-if="!canCc && reply?.ccUserIdsCount"
+						v-tooltip="`返信先のCC ${reply?.ccUserIdsCount} 名を引継ぐ`"
+						class="_button"
+						:class="{ active: inheritCc }"
+						@click="inheritCc = !inheritCc"
+					>
 						<i class="ph-list-checks ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
 					<button class="_button" @click="addVisibleUser">
@@ -533,7 +539,13 @@
 							<i class="ph-x ph-bold ph-lg"></i>
 						</button>
 					</span>
-					<button v-if="reply?.ccUserIdsCount" class="_button" @click="inheritCc = !inheritCc" :class="{ active: inheritCc }">
+					<button
+						v-if="reply?.ccUserIdsCount"
+						v-tooltip="`返信先のCC ${reply?.ccUserIdsCount} 名を引継ぐ`"
+						class="_button"
+						:class="{ active: inheritCc }"
+						@click="inheritCc = !inheritCc"
+					>
 						<i class="ph-list-checks ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
 					<button class="_button" @click="addVisibleUserCcToList">

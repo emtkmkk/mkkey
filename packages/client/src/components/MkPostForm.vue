@@ -851,7 +851,7 @@ let canNotLocal = $ref(
 		!$i.isSilenced &&
 		!props.channel?.description?.includes("[localOnly]")
 );
-let canCc = $computed(visibility === 'specified' && defaultStore.state.enabledSpecifiedCc && $i?.canInvite);
+let canCc = $computed(() => visibility === 'specified' && defaultStore.state.enabledSpecifiedCc && $i?.canInvite);
 let inheritCc = $ref(!reply?.user?.host);
 let requiredFilename = $ref(
 	props.channel?.description?.includes("[requiredFilename]")

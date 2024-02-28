@@ -530,6 +530,9 @@
 							<i class="ph-x ph-bold ph-lg"></i>
 						</button>
 					</span>
+					<button class="_button" @click="addVisibleUserCcToList">
+						<i class="ph-list-plus ph-bold ph-md ph-fw ph-lg"></i>
+					</button>
 					<button class="_button" @click="addVisibleUserCc">
 						<i class="ph-plus ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
@@ -1447,6 +1450,23 @@ function pushVisibleUserCc(user) {
 function addVisibleUserCc() {
 	os.selectUser().then((user) => {
 		pushVisibleUserCc(user);
+	});
+}
+
+async function addVisibleUserCcToList() {
+	const lists = await os.api("users/lists/list");
+	const { canceled, result: list } = await os.select({
+		title: i18n.ts.selectList,
+		items: lists.map((x) => ({
+			value: x,
+			text: x.name,
+		})),
+	});
+	if (canceled) return;
+	os.api("users/show", {
+		userIds: list.userIds,
+	}).then((users) => {
+		users.forEach((u) => pushVisibleUserCc(u))
 	});
 }
 

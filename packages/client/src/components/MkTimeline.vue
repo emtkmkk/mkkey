@@ -41,8 +41,8 @@ const tlComponent: InstanceType<typeof XNotes> = $ref();
 const prepend = (note) => {
 	if (travelDate) return;
 	if (
-		defaultStore.state.delayPostHidden &&
-		Date.now() > new Date(note.createdAt).valueOf() + 10 * 60 * 1000 &&
+		(defaultStore.state.delayPostHidden &&
+		Date.now() > new Date(note.createdAt).valueOf() + 10 * 60 * 1000) ||
 		note.invisible
 	)
 		return;

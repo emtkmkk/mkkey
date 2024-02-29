@@ -254,7 +254,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			throw new ApiError(meta.errors.cannotReplyToPureRenote);
 		}
 
-		if (reply.ccUserIds && ps.inheritCc) {
+		if (reply.ccUserIds.length && ps.inheritCc) {
 			let replyCc = [...reply.ccUserIds];
 			if (!reply.ccUserIds.includes(reply.userId)) replyCc.push(reply.userId);
 			ccUsers = [...ccUsers, ...(await Users.findBy({

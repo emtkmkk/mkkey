@@ -186,6 +186,11 @@ export const NoteRepository = db.getRepository(Note).extend({
 			}
 		}
 
+		// localOnly が true かつ 自分がログインしてなければ非表示
+		if (note.localOnly && meId == null) {
+			return false;
+		}
+
 		return true;
 	},
 
@@ -210,13 +215,15 @@ export const NoteRepository = db.getRepository(Note).extend({
 		const note =
 			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
 		const host = note.userHost;
-
+		const isVisible = (await this.isVisibleForMe(note, meId));
+		/*
 		if (!(await this.isVisibleForMe(note, meId))) {
 			throw new IdentifiableError(
 				"9725d0ce-ba28-4dde-95a7-2cbb2c15de24",
 				"No such note.",
 			);
 		}
+		*/
 
 		let text = note.text;
 
@@ -252,22 +259,22 @@ export const NoteRepository = db.getRepository(Note).extend({
 				detail: false,
 				relation: true,
 			}),
-			text: text,
-			cw: note.cw,
+			text: isVisible ? text : null,
+			cw: isVisible ? note.cw : undefined,
 			visibility: note.visibility,
 			localOnly: !!note.localOnly ?? undefined,
 			visibleUserIds:
-				note.visibility === "specified" ? note.visibleUserIds : undefined,
-			ccUserIdsCount: note.ccUserIds.length,
+				note.visibility === "specified" && isVisible ? note.visibleUserIds : undefined,
+			ccUserIdsCount: isVisible ? note.ccUserIds.length : undefined,
 			renoteCount: note.renoteCount,
 			repliesCount: note.repliesCount,
 			score: note.score,
 			reactions: convertLegacyReactions(note.reactions),
 			reactionEmojis: reactionEmoji,
-			emojis: noteEmoji,
-			tags: note.tags.length > 0 ? note.tags : undefined,
-			fileIds: note.fileIds,
-			files: DriveFiles.packMany(note.fileIds),
+			emojis: isVisible ? noteEmoji : undefined,
+			tags: note.tags.length > 0 && isVisible ? note.tags : undefined,
+			fileIds: isVisible ? note.fileIds : undefined,
+			files: isVisible ? DriveFiles.packMany(note.fileIds) : undefined,
 			replyId: note.replyId,
 			renoteId: note.renoteId,
 			channelId: note.channelId || undefined,
@@ -277,12 +284,13 @@ export const NoteRepository = db.getRepository(Note).extend({
 						name: channel.name,
 				  }
 				: undefined,
-			mentions: note.mentions.length > 0 ? note.mentions : undefined,
+			mentions: note.mentions.length > 0 && isVisible ? note.mentions : undefined,
 			uri: note.uri || undefined,
 			url: note.url || undefined,
 			updatedAt: note.updatedAt?.toISOString() || undefined,
 			deletedAt: note.deletedAt?.toISOString() || undefined,
 			isFirstNote: note.isFirstNote ? true : undefined,
+			isVisible: isVisible ? undefined : false,
 			...(opts.detail
 				? {
 						reply: note.replyId
@@ -299,7 +307,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 							  })
 							: undefined,
 
-						poll: note.hasPoll ? populatePoll(note, meId) : undefined,
+						poll: note.hasPoll && isVisible ? populatePoll(note, meId) : undefined,
 
 						...(meId
 							? {

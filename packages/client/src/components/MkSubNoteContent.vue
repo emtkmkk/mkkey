@@ -84,6 +84,9 @@
 				<span v-if="note.deletedAt" style="opacity: 0.5">{{
 					`(${i18n.ts.deleted})${note.text ? ` <${note.text}>` : ""}`
 				}}</span>
+				<span v-if="note.isVisible === false" style="opacity: 0.5">{{
+					`(${i18n.ts.invisibleNote})`
+				}}</span>
 				<template v-if="!cwView">
 					<MkA
 						v-if="!detailed && note.replyId"
@@ -112,13 +115,14 @@
 						note.text &&
 						!note.cw &&
 						!note.deletedAt &&
+						note.isVisible !== false &&
 						note.reply?.user &&
 						note.reply.user.id !== note.user.id &&
 						!note.text?.includes(`@`)
 					"
 					:text="
 						note.deletedAt
-							? i18n.ts.deletedNote
+							? i18n.ts.
 							: `@${note.reply.user.username}${
 									note.reply.user.host
 										? `@${note.reply.user.host}`
@@ -132,7 +136,7 @@
 					:note="note"
 				/>
 				<Mfm
-					v-else-if="note.text && !note.deletedAt"
+					v-else-if="note.text && !note.deletedAt && note.isVisible !== false"
 					:text="note.deletedAt ? i18n.ts.deletedNote : note.text"
 					:author="note.user"
 					:i="$i"

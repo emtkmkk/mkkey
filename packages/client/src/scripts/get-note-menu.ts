@@ -451,7 +451,7 @@ export function getNoteMenu(props: {
 			},
 			...(/[\*<>$`\[\]_~:\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]|\\\(|\\\)/.test(
 				(appearNote.cw ?? "") + (appearNote.text ?? ""),
-			)
+			) && !appearNote.deletedAt
 				? [
 						{
 							icon: "ph-clipboard-text ph-bold ph-lg",
@@ -459,7 +459,7 @@ export function getNoteMenu(props: {
 							action: showSource,
 						},
 				  ]
-				: ((appearNote.cw ?? "") + (appearNote.text ?? "")).length > 0
+				: ((appearNote.cw ?? "") + (appearNote.text ?? "")).length > 0 && !appearNote.deletedAt
 				? [
 						{
 							icon: "ph-clipboard-text ph-bold ph-lg",
@@ -498,14 +498,14 @@ export function getNoteMenu(props: {
 						},
 				  }
 				: undefined,
-			shareAvailable()
+			shareAvailable() && !appearNote.deletedAt
 				? {
 						icon: "ph-share-network ph-bold ph-lg",
 						text: i18n.ts.share,
 						action: share,
 				  }
 				: undefined,
-			instance.translatorAvailable
+			instance.translatorAvailable && !appearNote.deletedAt
 				? {
 						icon: "ph-translate ph-bold ph-lg",
 						text: i18n.ts.translate,

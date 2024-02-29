@@ -122,7 +122,7 @@
 					"
 					:text="
 						note.deletedAt
-							? i18n.ts.
+							? i18n.ts.deletedNote
 							: `@${note.reply.user.username}${
 									note.reply.user.host
 										? `@${note.reply.user.host}`

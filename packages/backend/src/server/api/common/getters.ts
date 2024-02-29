@@ -15,16 +15,16 @@ export async function getNote(
 		id: noteId,
 	});
 
-	generateVisibilityQuery(query, me);
+	//generateVisibilityQuery(query, me);
 
 	const note = await query.getOne();
 
-	if (note == null) {
+	/*if (note == null) {
 		throw new IdentifiableError(
 			"9725d0ce-ba28-4dde-95a7-2cbb2c15de24",
 			"No such note.",
 		);
-	}
+	}*/
 
 	return note;
 }

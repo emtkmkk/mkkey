@@ -78,6 +78,9 @@ export default abstract class Channel {
 
 				const packed = await Notes.pack(note, this.user, { detail: true });
 
+				// skip: note not visible to user
+				if (packed.invisible) return;
+
 				callback(packed);
 			} catch (err) {
 				if (

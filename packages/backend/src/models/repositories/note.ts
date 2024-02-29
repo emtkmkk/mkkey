@@ -290,7 +290,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			updatedAt: note.updatedAt?.toISOString() || undefined,
 			deletedAt: note.deletedAt?.toISOString() || undefined,
 			isFirstNote: note.isFirstNote ? true : undefined,
-			isVisible: isVisible ? undefined : false,
+			invisible: !isVisible ? true : undefined,
 			...(opts.detail
 				? {
 						reply: note.replyId

@@ -112,7 +112,12 @@ async function updated(type, sound) {
 	sounds.value[type] = v;
 }
 
-function reset() {
+async function reset() {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: `${i18n.ts.resetAreYouSure}`,
+	});
+	if (canceled) return;
 	for (const sound of Object.keys(sounds.value)) {
 		const v = ColdDeviceStorage.default[`sound_${sound}`];
 		ColdDeviceStorage.set(`sound_${sound}`, v);

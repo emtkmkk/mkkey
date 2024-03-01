@@ -22,6 +22,7 @@
 			<FormFolder
 				v-for="type in Object.keys(sounds)"
 				:key="type"
+				style="margin: 0.5rem 0;"
 			>
 				<template #label>{{
 				i18n.t(`_sfx.${type}`)
@@ -47,6 +48,7 @@ import FormRange from "@/components/form/range.vue";
 import FormButton from "@/components/MkButton.vue";
 import FormSection from "@/components/form/section.vue";
 import FormFolder from "@/components/form/folder.vue";
+import XSound from './sounds.sound.vue';
 import * as os from "@/os";
 import { ColdDeviceStorage } from "@/store";
 import { playFile } from "@/scripts/sound";

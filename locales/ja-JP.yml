@@ -1553,7 +1553,6 @@ _sfx:
   chatBg: "チャット(バックグラウンド)"
   antenna: "アンテナ受信"
   channel: "チャンネル通知"
-g
 _soundSettings:
   driveFile: "ドライブの音声を使用"
   driveFileWarn: "ドライブのファイルを選択してください"

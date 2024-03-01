@@ -31,7 +31,7 @@
 					getSoundTypeName(sounds[type].type) +
 					(sounds[type].type && sounds[type].volume !== 1 ? ` - ${(sounds[type].volume * 100).toFixed(0)}%` : "")
 				}}</template>
-				<XSound :type="sounds[type].type" :volume="sounds[type].volume" :fileId="sounds[type].fileId" :fileUrl="sounds[type].fileUrl" @update="(res) => updated(type, res)"/>
+				<XSound :type="sounds[type].type" :volume="sounds[type].volume" :fileId="sounds[type].fileId" :fileUrl="sounds[type].fileUrl" :soundsTypes="soundsTypes" @update="(res) => updated(type, res)"/>
 			</FormFolder>
 		</FormSection>
 
@@ -61,6 +61,7 @@ const notUseSound = computed(defaultStore.makeGetterSetter("notUseSound"));
 const useSoundOnlyWhenActive = computed(
 	defaultStore.makeGetterSetter("useSoundOnlyWhenActive")
 );
+const soundsTypes = await os.api("get-sounds");
 
 const masterVolume = computed({
 	get: () => {
@@ -84,7 +85,7 @@ function getSoundTypeName(f): string {
 		case '_driveFile_':
 			return i18n.ts._soundSettings.driveFile;
 		default:
-			return f;
+			return f.length > 14 ? f.replace(/^[^\/]+\//,"") : f;
 	}
 }
 

@@ -1,6 +1,6 @@
 <template>
 	<div class="_gaps_m">
-		<FormSelect v-model="type">
+		<FormSelect v-model="type" style="margin-bottom: 1rem;">
 			<template #label>{{ i18n.ts.sound }}</template>
 			<option v-for="x in soundsTypes" :key="x ?? 'null'" :value="x">{{ getSoundTypeName(x) }}</option>
 		</FormSelect>
@@ -34,6 +34,7 @@
 		fileId?: string;
 		fileUrl?: string;
 		volume: number;
+		soundsTypes: string[];
 	}>();
 	
 	const emit = defineEmits<{
@@ -45,7 +46,6 @@
 	const fileUrl = ref(props.fileUrl);
 	const fileName = ref<string>('');
 	const volume = ref(props.volume);
-	const soundsTypes = await os.api("get-sounds");
 	
 	if (type.value === '_driveFile_' && fileId.value) {
 		const apiRes = await os.api('drive/files/show', {
@@ -155,6 +155,7 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
+		margin-bottom: 1rem;
 	}
 	
 	.fileSelectorButton {

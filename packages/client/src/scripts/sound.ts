@@ -5,7 +5,7 @@ let ctx: AudioContext;
 const cache = new Map<string, AudioBuffer>();
 let canPlay = true;
 
-export async function oadAudio(sound, useCache = true) {
+export async function loadAudio(sound, useCache = true) {
 	if (sound.type === null || (sound.type === '_driveFile_' && !sound.fileUrl)) {
 		return;
 	}

@@ -1,9 +1,9 @@
 <template>
 	<div class="_gaps_m">
-		<MkSelect v-model="type">
+		<FormSelect v-model="type">
 			<template #label>{{ i18n.ts.sound }}</template>
 			<option v-for="x in soundsTypes" :key="x ?? 'null'" :value="x">{{ getSoundTypeName(x) }}</option>
-		</MkSelect>
+		</FormSelect>
 		<div v-if="type === '_driveFile_'" :class="$style.fileSelectorRoot">
 			<MkButton :class="$style.fileSelectorButton" inline rounded primary @click="selectSound">{{ i18n.ts.selectFile }}</MkButton>
 			<div :class="['_nowrap', !fileUrl && $style.fileNotSelected]">{{ friendlyFileName }}</div>
@@ -21,9 +21,9 @@
 	
 	<script lang="ts" setup>
 	import { ref, computed } from 'vue';
-	import MkSelect from '@/components/MkSelect.vue';
+	import FormSelect from '@/components/form/select.vue';
 	import MkButton from '@/components/MkButton.vue';
-	import MkRange from '@/components/MkRange.vue';
+	import FormRange from '@/components/form/range.vue';
 	import { i18n } from '@/i18n.js';
 	import * as os from '@/os.js';
 	import { playFile, getSoundDuration } from '@/scripts/sound.js';

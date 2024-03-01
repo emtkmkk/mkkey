@@ -14,7 +14,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async () => {
-	const music_files: (string | null)[] = [null];
+	const music_files: (string | null)[] = [null, "_driveFile_"];
 	const directory = (
 		await readdir("./assets/sounds", { withFileTypes: true })
 	).filter((potentialFolder) => potentialFolder.isDirectory());

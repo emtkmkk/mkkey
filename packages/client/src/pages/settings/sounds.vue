@@ -19,20 +19,19 @@
 
 		<FormSection>
 			<template #label>{{ i18n.ts.sounds }}</template>
-			<FormButton
+			<FormFolder
 				v-for="type in Object.keys(sounds)"
 				:key="type"
-				style="margin-bottom: 0.5rem"
-				@click="edit(type)"
 			>
-				{{ i18n.t(`_sfx.${type}`) }}
-				<template #suffix>{{
-					sounds[type].type || i18n.ts.none
+				<template #label>{{
+				i18n.t(`_sfx.${type}`)
 				}}</template>
-				<template #suffixIcon
-					><i class="ph-caret-down ph-bold ph-lg"></i
-				></template>
-			</FormButton>
+				<template #suffix>{{
+					getSoundTypeName(sounds[type].type) +
+					(sounds[type].type && sounds[type].volume !== 1 ? ` - ${(sounds[type].volume * 100).toFixed(0)}%` : "")
+				}}</template>
+				<XSound :type="sounds[type].type" :volume="sounds[type].volume" :fileId="sounds[type].fileId" :fileUrl="sounds[type].fileUrl" @update="(res) => updated(type, res)"/>
+			</FormFolder>
 		</FormSection>
 
 		<FormButton danger class="_formBlock" @click="reset()"
@@ -47,6 +46,7 @@ import { computed, ref } from "vue";
 import FormRange from "@/components/form/range.vue";
 import FormButton from "@/components/MkButton.vue";
 import FormSection from "@/components/form/section.vue";
+import FormFolder from "@/components/form/folder.vue";
 import * as os from "@/os";
 import { ColdDeviceStorage } from "@/store";
 import { playFile } from "@/scripts/sound";
@@ -75,6 +75,17 @@ const volumeIcon = computed(() =>
 		: "ph-speaker-high ph-bold ph-lg"
 );
 
+function getSoundTypeName(f): string {
+	switch (f) {
+		case null:
+			return i18n.ts.none;
+		case '_driveFile_':
+			return i18n.ts._soundSettings.driveFile;
+		default:
+			return f;
+	}
+}
+
 const sounds = ref({
 	note: ColdDeviceStorage.get("sound_note"),
 	noteMy: ColdDeviceStorage.get("sound_noteMy"),
@@ -86,41 +97,12 @@ const sounds = ref({
 	reaction: ColdDeviceStorage.get("sound_reaction"),
 });
 
-const soundsTypes = await os.api("get-sounds");
-
-async function edit(type) {
-	const { canceled, result } = await os.form(i18n.t(`_sfx.${type}`), {
-		type: {
-			type: "enum",
-			enum: soundsTypes.map((x) => ({
-				value: x,
-				label: x == null ? i18n.ts.none : x,
-			})),
-			label: i18n.ts.sound,
-			default: sounds.value[type].type,
-		},
-		volume: {
-			type: "range",
-			min: 0,
-			max: 1,
-			step: 0.05,
-			textConverter: (v) => `${Math.floor(v * 100)}%`,
-			label: i18n.ts.volume,
-			default: sounds.value[type].volume,
-		},
-		listen: {
-			type: "button",
-			content: i18n.ts.listen,
-			action: (_, values) => {
-				playFile(values.type, values.volume);
-			},
-		},
-	});
-	if (canceled) return;
-
+async function updated(type, sound) {
 	const v = {
-		type: result.type,
-		volume: result.volume,
+		type: sound.type,
+		fileId: sound.fileId,
+		fileUrl: sound.fileUrl,
+		volume: sound.volume,
 	};
 
 	ColdDeviceStorage.set(`sound_${type}`, v);

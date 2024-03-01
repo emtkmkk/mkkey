@@ -1,21 +1,59 @@
 import { ColdDeviceStorage } from "@/store";
 import { defaultStore } from "@/store.js";
 
-const ctx = new AudioContext();
+let ctx: AudioContext;
 const cache = new Map<string, AudioBuffer>();
 let canPlay = true;
 
-export async function loadAudio(file: string, useCache = true) {
-	if (useCache && cache.has(file)) {
-		return cache.get(file);
+export async function loadAudio(sound, useCache = true) {
+	if (sound.type === null || (sound.type === '_driveFile_' && !sound.fileUrl)) {
+		return;
+	}
+	if (ctx == null) {
+		ctx = new AudioContext();
+	}
+	if (useCache) {
+		if (sound.type === '_driveFile_' && cache.has(sound.fileId)) {
+			return cache.get(sound.fileId) as AudioBuffer;
+		} else if (cache.has(sound.type)) {
+			return cache.get(sound.type) as AudioBuffer;
+		}
 	}
 
-	const response = await fetch(`/client-assets/sounds/${file}.mp3`);
+	let response: Response;
+
+	if (sound.type === '_driveFile_') {
+		try {
+			response = await fetch(sound.fileUrl);
+		} catch (err) {
+			try {
+				// URLが変わっている可能性があるのでドライブ側からURLを取得するフォールバック
+				const apiRes = await os.api('drive/files/show', {
+					fileId: sound.fileId,
+				});
+				response = await fetch(apiRes.url);
+			} catch (fbErr) {
+				// それでも無理なら諦める
+				return;
+			}
+		}
+	} else {
+		try {
+			response = await fetch(`/client-assets/sounds/${sound.type}.mp3`);
+		} catch (err) {
+			return;
+		}
+	}
+
 	const arrayBuffer = await response.arrayBuffer();
 	const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
 	if (useCache) {
-		cache.set(file, audioBuffer);
+		if (sound.type === '_driveFile_') {
+			cache.set(sound.fileId, audioBuffer);
+		} else {
+			cache.set(sound.type, audioBuffer);
+		}
 	}
 
 	return audioBuffer;
@@ -33,24 +71,19 @@ export function setVolume(
 export function play(type: string) {
 	const sound = ColdDeviceStorage.get(`sound_${type}` as any);
 	if (sound.type == null || !canPlay) return;
-	(async () => {
-		canPlay = false;
-		try {
-			await playFile(sound.type, sound.volume);
-		} finally {
-			// ごく短時間に音が重複しないように
-			setTimeout(() => {
-				canPlay = true;
-			}, 25);
-		}
-	})();
+	canPlay = false;
+	playFile(sound).then(() => {
+		// ごく短時間に音が重複しないように
+		setTimeout(() => {
+			canPlay = true;
+		}, 25);
+	});
 }
 
-export async function playFile(file: string, volume: number) {
-	if (!file.toLowerCase().includes("none")) {
-		const buffer = await loadAudio(file);
-		createSourceNode(buffer, volume)?.start();
-	}
+export async function playFile(sound) {
+	const buffer = await loadAudio(soundStore);
+	if (!buffer) return;
+	createSourceNode(buffer, sound.volume)?.start();
 }
 
 export function createSourceNode(
@@ -68,6 +101,19 @@ export function createSourceNode(
 	soundSource.connect(gainNode).connect(ctx.destination);
 
 	return soundSource;
+}
+export async function getSoundDuration(file: string): Promise<number> {
+	const audioEl = document.createElement('audio');
+	audioEl.src = file;
+	return new Promise((resolve) => {
+		const si = setInterval(() => {
+			if (audioEl.readyState > 0) {
+				resolve(audioEl.duration * 1000);
+				clearInterval(si);
+				audioEl.remove();
+			}
+		}, 100);
+	});
 }
 
 export function isMute(): boolean {

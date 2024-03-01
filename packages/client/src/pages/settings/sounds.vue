@@ -48,7 +48,7 @@ import FormRange from "@/components/form/range.vue";
 import FormButton from "@/components/MkButton.vue";
 import FormSection from "@/components/form/section.vue";
 import FormFolder from "@/components/form/folder.vue";
-import XSound from './sounds.sound.vue';
+import XSound from '@/pages/settings/sounds.sound.vue';
 import * as os from "@/os";
 import { ColdDeviceStorage } from "@/store";
 import { playFile } from "@/scripts/sound";

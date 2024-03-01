@@ -5,7 +5,7 @@ let ctx: AudioContext;
 const cache = new Map<string, AudioBuffer>();
 let canPlay = true;
 
-export async function loadAudio(sound, useCache = true) {
+export async function oadAudio(sound, useCache = true) {
 	if (sound.type === null || (sound.type === '_driveFile_' && !sound.fileUrl)) {
 		return;
 	}
@@ -24,14 +24,18 @@ export async function loadAudio(sound, useCache = true) {
 
 	if (sound.type === '_driveFile_') {
 		try {
-			response = await fetch(sound.fileUrl);
+			response = await fetch(sound.fileUrl, {
+				mode: 'cors'
+			});
 		} catch (err) {
 			try {
 				// URLが変わっている可能性があるのでドライブ側からURLを取得するフォールバック
 				const apiRes = await os.api('drive/files/show', {
 					fileId: sound.fileId,
 				});
-				response = await fetch(apiRes.url);
+				response = await fetch(apiRes.url, {
+					mode: 'cors'
+				});
 			} catch (fbErr) {
 				// それでも無理なら諦める
 				return;

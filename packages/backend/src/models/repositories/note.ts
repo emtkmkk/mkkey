@@ -215,7 +215,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 		const note =
 			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
 		const host = note.userHost;
-		const isVisible = (await this.isVisibleForMe(note, meId));
+		const isVisible = await this.isVisibleForMe(note, meId);
 		/*
 		if (!(await this.isVisibleForMe(note, meId))) {
 			throw new IdentifiableError(
@@ -264,7 +264,9 @@ export const NoteRepository = db.getRepository(Note).extend({
 			visibility: note.visibility,
 			localOnly: !!note.localOnly ?? undefined,
 			visibleUserIds:
-				note.visibility === "specified" && isVisible ? note.visibleUserIds : undefined,
+				note.visibility === "specified" && isVisible
+					? note.visibleUserIds
+					: undefined,
 			ccUserIdsCount: isVisible ? note.ccUserIds.length : undefined,
 			renoteCount: note.renoteCount,
 			repliesCount: note.repliesCount,
@@ -284,7 +286,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 						name: channel.name,
 				  }
 				: undefined,
-			mentions: note.mentions.length > 0 && isVisible ? note.mentions : undefined,
+			mentions:
+				note.mentions.length > 0 && isVisible ? note.mentions : undefined,
 			uri: note.uri || undefined,
 			url: note.url || undefined,
 			updatedAt: note.updatedAt?.toISOString() || undefined,
@@ -307,7 +310,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 							  })
 							: undefined,
 
-						poll: note.hasPoll && isVisible ? populatePoll(note, meId) : undefined,
+						poll:
+							note.hasPoll && isVisible ? populatePoll(note, meId) : undefined,
 
 						...(meId
 							? {

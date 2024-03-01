@@ -229,12 +229,12 @@ export default async function (
 			);
 	}
 
-	if (await Followings.countBy(
-		{
+	if (
+		(await Followings.countBy({
 			followerId: follower.id,
 			followeeId: followee.id,
-		},
-	) > 0) {
+		})) > 0
+	) {
 		// すでにフォロー関係が存在している場合
 		if (Users.isRemoteUser(follower) && Users.isLocalUser(followee)) {
 			// リモート → ローカル: acceptを送り返しておしまい
@@ -246,7 +246,10 @@ export default async function (
 		}
 		if (Users.isLocalUser(follower)) {
 			// ローカル → リモート/ローカル: 例外
-			throw new IdentifiableError('ec3f65c0-a9d1-47d9-8791-b2e7b9dcdced', 'already following');
+			throw new IdentifiableError(
+				"ec3f65c0-a9d1-47d9-8791-b2e7b9dcdced",
+				"already following",
+			);
 		}
 	}
 

@@ -257,10 +257,15 @@ export default define(meta, paramDef, async (ps, user) => {
 		if (reply.ccUserIds.length && ps.inheritCc) {
 			let replyCc = [...reply.ccUserIds];
 			if (!reply.ccUserIds.includes(reply.userId)) replyCc.push(reply.userId);
-			ccUsers = [...ccUsers, ...(await Users.findBy({
-				id: In(replyCc.filter((x) => !ps.ccUserIds || !ps.ccUserIds.includes(x))),
-				host: IsNull(),
-			}))];
+			ccUsers = [
+				...ccUsers,
+				...(await Users.findBy({
+					id: In(
+						replyCc.filter((x) => !ps.ccUserIds || !ps.ccUserIds.includes(x)),
+					),
+					host: IsNull(),
+				})),
+			];
 		}
 
 		// Check blocking

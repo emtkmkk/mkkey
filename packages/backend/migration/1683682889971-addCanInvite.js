@@ -8,8 +8,6 @@ export class addCanInvite1683682889971 {
 	}
 
 	async down(queryRunner) {
-		await queryRunner.query(
-			`ALTER TABLE "user" DROP COLUMN "canInvite"`,
-		);
+		await queryRunner.query(`ALTER TABLE "user" DROP COLUMN "canInvite"`);
 	}
 }

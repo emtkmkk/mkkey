@@ -493,7 +493,16 @@
 					<i class="ph-x ph-bold ph-lg"></i>
 				</button>
 			</div>
-			<div v-if="visibility === 'specified'" class="to-specified" :class="{ nomargin: canCc || (visibility === 'specified' && visibleUsersCc?.length > 0) }">
+			<div
+				v-if="visibility === 'specified'"
+				class="to-specified"
+				:class="{
+					nomargin:
+						canCc ||
+						(visibility === 'specified' &&
+							visibleUsersCc?.length > 0),
+				}"
+			>
 				<span style="margin-right: 0.5rem">{{
 					i18n.ts.recipient
 				}}</span>
@@ -513,7 +522,9 @@
 					</span>
 					<button
 						v-if="!canCc && reply?.ccUserIdsCount"
-						v-tooltip="`返信先のCC ${reply?.ccUserIdsCount} 名を引継ぐ`"
+						v-tooltip="
+							`返信先のCC ${reply?.ccUserIdsCount} 名を引継ぐ`
+						"
 						class="_button"
 						:class="{ active: inheritCc }"
 						@click="inheritCc = !inheritCc"
@@ -525,33 +536,46 @@
 					</button>
 				</div>
 			</div>
-			<div v-if="canCc || (visibility === 'specified' && visibleUsersCc?.length > 0)"  class="to-specified">
+			<div
+				v-if="
+					canCc ||
+					(visibility === 'specified' && visibleUsersCc?.length > 0)
+				"
+				class="to-specified"
+			>
 				<span style="margin-right: 0.5rem">{{
 					i18n.ts.recipientCc
 				}}</span>
 				<div class="visibleUsers">
 					<span v-for="u in visibleUsersCc" :key="u.id">
 						<MkAcct :user="u" />
-						<button
-							class="_button"
-							@click="removeVisibleUserCc(u)"
-						>
+						<button class="_button" @click="removeVisibleUserCc(u)">
 							<i class="ph-x ph-bold ph-lg"></i>
 						</button>
 					</span>
 					<button
 						v-if="reply?.ccUserIdsCount"
-						v-tooltip="`返信先のCC ${reply?.ccUserIdsCount} 名を引継ぐ`"
+						v-tooltip="
+							`返信先のCC ${reply?.ccUserIdsCount} 名を引継ぐ`
+						"
 						class="_button"
 						:class="{ active: inheritCc }"
 						@click="inheritCc = !inheritCc"
 					>
 						<i class="ph-list-checks ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
-					<button v-if="canCc" class="_button" @click="addVisibleUserCcToList">
+					<button
+						v-if="canCc"
+						class="_button"
+						@click="addVisibleUserCcToList"
+					>
 						<i class="ph-list-plus ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
-					<button v-if="canCc" class="_button" @click="addVisibleUserCc">
+					<button
+						v-if="canCc"
+						class="_button"
+						@click="addVisibleUserCc"
+					>
 						<i class="ph-plus ph-bold ph-md ph-fw ph-lg"></i>
 					</button>
 				</div>
@@ -820,7 +844,14 @@ let visibility = $ref(
 );
 if (visibility === "specified") localOnly = false;
 let visibleUsers = $ref([]);
-let visibleUsersCc = $ref(!props.airReply?.user.host && visibility === "specified" && props.airReply?.ccUserIdsCount && props.airReply?.userId !== $i.id ? [props.airReply.user] : []);
+let visibleUsersCc = $ref(
+	!props.airReply?.user.host &&
+		visibility === "specified" &&
+		props.airReply?.ccUserIdsCount &&
+		props.airReply?.userId !== $i.id
+		? [props.airReply.user]
+		: []
+);
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }
@@ -864,7 +895,12 @@ let canNotLocal = $ref(
 		!$i.isSilenced &&
 		!props.channel?.description?.includes("[localOnly]")
 );
-let canCc = $computed(() => visibility === 'specified' && defaultStore.state.enabledSpecifiedCc && $i?.canInvite);
+let canCc = $computed(
+	() =>
+		visibility === "specified" &&
+		defaultStore.state.enabledSpecifiedCc &&
+		$i?.canInvite
+);
 let inheritCc = $ref(!reply?.user?.host);
 let requiredFilename = $ref(
 	props.channel?.description?.includes("[requiredFilename]")
@@ -1487,14 +1523,13 @@ async function addVisibleUserCcToList() {
 	os.api("users/show", {
 		userIds: list.userIds,
 	}).then((users) => {
-		users.forEach((u) => pushVisibleUserCc(u))
+		users.forEach((u) => pushVisibleUserCc(u));
 	});
 }
 
 function removeVisibleUserCc(user) {
 	visibleUsersCc = erase(user, visibleUsersCc);
 }
-
 
 function clear() {
 	text = "";
@@ -1861,7 +1896,6 @@ async function post() {
 				? visibleUsersCc.map((u) => u.id)
 				: undefined,
 		inheritCc,
-		
 	};
 
 	if (withHashtags && hashtags && hashtags.trim() !== "") {
@@ -2405,8 +2439,8 @@ onMounted(() => {
 					}
 
 					&.active {
-					color: var(--accent);
-				}
+						color: var(--accent);
+					}
 				}
 
 				> span {

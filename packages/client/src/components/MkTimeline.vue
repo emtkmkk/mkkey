@@ -42,7 +42,7 @@ const prepend = (note) => {
 	if (travelDate) return;
 	if (
 		(defaultStore.state.delayPostHidden &&
-		Date.now() > new Date(note.createdAt).valueOf() + 10 * 60 * 1000) ||
+			Date.now() > new Date(note.createdAt).valueOf() + 10 * 60 * 1000) ||
 		note.invisible
 	)
 		return;

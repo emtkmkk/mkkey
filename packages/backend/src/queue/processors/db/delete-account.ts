@@ -123,7 +123,12 @@ export async function deleteAccount(
 			}
 		}
 
-		if (deleteCount + failedCount) logger.succ(`All of notes deleted (${deleteCount}${failedCount ? ` / ${failedCount}` : ""})`);
+		if (deleteCount + failedCount)
+			logger.succ(
+				`All of notes deleted (${deleteCount}${
+					failedCount ? ` / ${failedCount}` : ""
+				})`,
+			);
 	}
 
 	{
@@ -178,9 +183,11 @@ export async function deleteAccount(
 	} else {
 		// await Users.delete(job.data.user.id);
 	}
-	logger.succ(`Finish deleting job ${job.data.user.id} @${user.username}${
-		user.host ? `@${user.host}` : ""
-	}`);
+	logger.succ(
+		`Finish deleting job ${job.data.user.id} @${user.username}${
+			user.host ? `@${user.host}` : ""
+		}`,
+	);
 
 	return "Account deleted";
 }

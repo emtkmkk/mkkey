@@ -81,7 +81,7 @@ export function play(type: string) {
 }
 
 export async function playFile(sound) {
-	const buffer = await loadAudio(soundStore);
+	const buffer = await loadAudio(sound);
 	if (!buffer) return;
 	createSourceNode(buffer, sound.volume)?.start();
 }

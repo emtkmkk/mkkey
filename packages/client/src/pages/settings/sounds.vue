@@ -29,7 +29,7 @@
 				}}</template>
 				<template #suffix>{{
 					getSoundTypeName(sounds[type].type) +
-					(sounds[type].type && sounds[type].volume !== 1 ? ` - ${(sounds[type].volume * 100).toFixed(0)}%` : "")
+					(sounds[type].type && sounds[type].volume !== 1 ? ` ${(sounds[type].volume * 100).toFixed(0)}%` : "")
 				}}</template>
 				<XSound :type="sounds[type].type" :volume="sounds[type].volume" :fileId="sounds[type].fileId" :fileUrl="sounds[type].fileUrl" :soundsTypes="soundsTypes" @update="(res) => updated(type, res)"/>
 			</FormFolder>

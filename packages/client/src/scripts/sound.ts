@@ -25,7 +25,10 @@ export async function loadAudio(sound, useCache = true) {
 	if (sound.type === '_driveFile_') {
 		try {
 			response = await fetch(sound.fileUrl, {
-				mode: 'cors'
+				mode: 'cors',
+				headers: {
+					'Origin': 'https://mkkey.net'
+				}
 			});
 		} catch (err) {
 			try {
@@ -34,7 +37,10 @@ export async function loadAudio(sound, useCache = true) {
 					fileId: sound.fileId,
 				});
 				response = await fetch(apiRes.url, {
-					mode: 'cors'
+					mode: 'cors',
+					headers: {
+						'Origin': 'https://mkkey.net'
+					}
 				});
 			} catch (fbErr) {
 				// それでも無理なら諦める

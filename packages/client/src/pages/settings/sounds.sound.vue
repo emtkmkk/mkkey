@@ -28,6 +28,7 @@
 	import * as os from '@/os.js';
 	import { playFile, getSoundDuration } from '@/scripts/sound.js';
 	import { selectFile } from '@/scripts/select-file.js';
+import { APIError } from 'calckey-js/built/api';
 	
 	const props = defineProps<{
 		type: any;
@@ -48,10 +49,25 @@
 	const volume = ref(props.volume);
 	
 	if (type.value === '_driveFile_' && fileId.value) {
-		const apiRes = await os.api('drive/files/show', {
-			fileId: fileId.value,
-		});
-		fileName.value = apiRes.name;
+		try {
+			const apiRes = await os.api('drive/files/show', {
+				fileId: fileId.value,
+			});
+			fileName.value = apiRes.name;
+		} catch (err) {
+			if (err.kind === "client") {
+				type.value = null;
+				fileId.value = undefined;
+				fileUrl.value = undefined;
+				fileName.value = '';
+				emit('update', {
+					type: type.value,
+					fileId: fileId.value,
+					fileUrl: fileUrl.value,
+					volume: volume.value,
+				});
+			}
+		}
 	}
 	
 	function getSoundTypeName(f): string {

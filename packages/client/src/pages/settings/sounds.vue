@@ -83,6 +83,7 @@ const sounds = ref({
 	chatBg: ColdDeviceStorage.get("sound_chatBg"),
 	antenna: ColdDeviceStorage.get("sound_antenna"),
 	channel: ColdDeviceStorage.get("sound_channel"),
+	reaction: ColdDeviceStorage.get("sound_reaction"),
 });
 
 const soundsTypes = await os.api("get-sounds");

@@ -98,6 +98,7 @@ import { useNoteCapture } from "@/scripts/use-note-capture";
 import { deepClone } from "@/scripts/clone";
 import { stream } from "@/stream";
 import { NoteUpdatedEvent } from "calckey-js/built/streaming.types";
+import * as sound from "@/scripts/sound.js";
 
 const router = useRouter();
 
@@ -209,6 +210,8 @@ function react(viaKeyboard = false): void {
 			os.api("notes/reactions/create", {
 				noteId: appearNote.id,
 				reaction: reaction,
+			}).then(() => {
+				sound.play("reaction");
 			});
 		},
 		() => {

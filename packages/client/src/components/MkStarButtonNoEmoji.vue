@@ -53,6 +53,7 @@ import { i18n } from "@/i18n";
 import { instance } from "@/instance";
 import { useTooltip } from "@/scripts/use-tooltip";
 import { reactionPicker } from "@/scripts/reaction-picker";
+import * as sound from "@/scripts/sound.js";
 
 const props = defineProps<{
 	note: Note;
@@ -75,6 +76,8 @@ function toggleStar(ev?: MouseEvent): void {
 					os.api("notes/reactions/create", {
 						noteId: props.note.id,
 						reaction: reaction,
+					}).then(() => {
+						sound.play("reaction");
 					});
 				},
 				() => {
@@ -92,6 +95,8 @@ function toggleStar(ev?: MouseEvent): void {
 						: defaultStore.state.favButtonReaction === ""
 						? instance.defaultReaction
 						: defaultStore.state.favButtonReaction,
+			}).then(() => {
+				sound.play("reaction");
 			});
 		} else {
 			os.apiWithDialog("notes/favorites/create", {

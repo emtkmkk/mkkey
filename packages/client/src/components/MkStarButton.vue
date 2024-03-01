@@ -64,6 +64,7 @@ import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 import { instance } from "@/instance";
 import { reactionPicker } from "@/scripts/reaction-picker";
+import * as sound from "@/scripts/sound.js";
 
 const props = defineProps<{
 	note: Note;
@@ -169,6 +170,8 @@ function star(ev?: MouseEvent): void {
 				os.api("notes/reactions/create", {
 					noteId: props.note.id,
 					reaction: reaction,
+				}).then(() => {
+					sound.play("reaction");
 				});
 			},
 			() => {
@@ -186,6 +189,8 @@ function star(ev?: MouseEvent): void {
 					: defaultStore.state.favButtonReaction === ""
 					? instance.defaultReaction
 					: defaultStore.state.favButtonReaction,
+		}).then(() => {
+			sound.play("reaction");
 		});
 	} else {
 		if (props.note.isFavorited) {

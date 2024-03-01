@@ -104,7 +104,9 @@
 							$i &&
 							defaultStore.state.toolbarAirReply &&
 							$i.id !== appearNote.userId &&
-							(appearNote.visibility !== 'specified' || (!appearNote?.user.host && appearNote?.ccUserIdsCount))
+							(appearNote.visibility !== 'specified' ||
+								(!appearNote?.user.host &&
+									appearNote?.ccUserIdsCount))
 						"
 						v-tooltip.bottom="i18n.ts.airReply"
 						class="button _button"
@@ -289,6 +291,7 @@ import { useNoteCapture } from "@/scripts/use-note-capture";
 import { defaultStore } from "@/store";
 import { deepClone } from "@/scripts/clone";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
+import * as sound from "@/scripts/sound.js";
 
 const router = useRouter();
 
@@ -409,6 +412,8 @@ function react(viaKeyboard = false): void {
 			os.api("notes/reactions/create", {
 				noteId: appearNote.id,
 				reaction: reaction,
+			}).then(() => {
+				sound.play("reaction");
 			});
 		},
 		() => {

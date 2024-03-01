@@ -43,6 +43,7 @@ import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
 import { openReactionMenu_ } from "@/scripts/reaction-menu";
+import * as sound from "@/scripts/sound.js";
 
 const props = defineProps<{
 	reaction: string;
@@ -107,6 +108,8 @@ async function toggleReaction(event) {
 				os.api("notes/reactions/create", {
 					noteId: props.note.id,
 					reaction: props.reaction,
+				}).then(() => {
+					sound.play("reaction");
 				});
 			}
 		} else {
@@ -125,6 +128,8 @@ async function toggleReaction(event) {
 						os.api("notes/reactions/create", {
 							noteId: props.note.id,
 							reaction: props.reaction,
+						}).then(() => {
+							sound.play("reaction");
 						});
 					}
 				});
@@ -132,6 +137,8 @@ async function toggleReaction(event) {
 				os.api("notes/reactions/create", {
 					noteId: props.note.id,
 					reaction: props.reaction,
+				}).then(() => {
+					sound.play("reaction");
 				});
 			}
 		}

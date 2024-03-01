@@ -204,7 +204,9 @@
 							$i &&
 							defaultStore.state.toolbarAirReply &&
 							$i.id !== appearNote.userId &&
-							(appearNote.visibility !== 'specified' || (!appearNote?.user.host && appearNote?.ccUserIdsCount))
+							(appearNote.visibility !== 'specified' ||
+								(!appearNote?.user.host &&
+									appearNote?.ccUserIdsCount))
 						"
 						v-tooltip.bottom="i18n.ts.airReply"
 						class="button _button"
@@ -480,6 +482,7 @@ import { notePage } from "@/filters/note";
 import { deepClone } from "@/scripts/clone";
 import { getNoteSummary } from "@/scripts/get-note-summary";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
+import * as sound from "@/scripts/sound.js";
 
 const router = useRouter();
 
@@ -715,6 +718,8 @@ function react(viaKeyboard = false): void {
 		os.api("notes/reactions/create", {
 			noteId: note.id,
 			reaction: "",
+		}).then(() => {
+			sound.play("reaction");
 		});
 	} else {
 		blur();
@@ -724,6 +729,8 @@ function react(viaKeyboard = false): void {
 				os.api("notes/reactions/create", {
 					noteId: appearNote.id,
 					reaction: reaction,
+				}).then(() => {
+					sound.play("reaction");
 				});
 			},
 			() => {

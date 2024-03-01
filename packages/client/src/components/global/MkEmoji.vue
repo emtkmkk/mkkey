@@ -95,6 +95,7 @@ import { openReactionMenu_ } from "@/scripts/reaction-menu";
 import * as os from "@/os";
 import * as config from "@/config";
 import seedrandom from "seedrandom";
+import * as sound from "@/scripts/sound.js";
 
 const props = defineProps<{
 	emoji: string;
@@ -374,6 +375,8 @@ const handleImgClick = async (event) => {
 		os.api("notes/reactions/create", {
 			noteId: props.note.id,
 			reaction: emoji,
+		}).then(() => {
+			sound.play("reaction");
 		});
 	}
 };

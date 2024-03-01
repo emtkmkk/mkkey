@@ -7,6 +7,7 @@ import MkRippleEffect from "@/components/MkRipple.vue";
 import { instance } from "@/instance";
 import { $i } from "@/account";
 import MkCustomEmojiDetailedDialog from "@/components/MkCustomEmojiDetailedDialog.vue";
+import * as sound from "@/scripts/sound.js";
 
 const createReaction = ({
 	noteId,
@@ -95,7 +96,9 @@ export async function openReactionMenu_(
 						action: (): void => {
 							rippleEffect(reactButton);
 
-							createReaction({ noteId, reaction });
+							createReaction({ noteId, reaction }).then(() => {
+								sound.play("reaction");
+							});
 						},
 					});
 				}
@@ -117,7 +120,9 @@ export async function openReactionMenu_(
 						action: (): void => {
 							rippleEffect(reactButton);
 
-							createReaction({ noteId, reaction });
+							createReaction({ noteId, reaction }).then(() => {
+								sound.play("reaction");
+							});
 						},
 					});
 				}

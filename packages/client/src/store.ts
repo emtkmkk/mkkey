@@ -1415,6 +1415,7 @@ export class ColdDeviceStorage {
 		sound_chatBg: { type: "syuilo/waon", volume: 1 },
 		sound_antenna: { type: "syuilo/triple", volume: 1 },
 		sound_channel: { type: "syuilo/square-pico", volume: 1 },
+		sound_reaction: { type: "syuilo/bubble2", volume: 1 },
 	};
 
 	public static watchers = [];

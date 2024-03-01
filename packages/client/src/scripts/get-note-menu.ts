@@ -216,18 +216,22 @@ export function getNoteMenu(props: {
 			value === null ||
 			value === false ||
 			value === 0 ||
-			(Array.isArray(value) && value.length !== undefined && value.length === 0) ||
+			(Array.isArray(value) &&
+				value.length !== undefined &&
+				value.length === 0) ||
 			(typeof value === "object" && Object.keys(value).length === 0)
 		) {
 			return undefined;
 		}
-		return typeof value === "string" ? value.replaceAll(
-			/[\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]/g,
-			function (match) {
-				// マッチした文字の Unicode コードポイントを取得し、"(u+XXXX)" 形式に変換
-				return `\\u${match.charCodeAt(0).toString(16).toLowerCase()}`;
-			},
-		) : value;
+		return typeof value === "string"
+			? value.replaceAll(
+					/[\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]/g,
+					function (match) {
+						// マッチした文字の Unicode コードポイントを取得し、"(u+XXXX)" 形式に変換
+						return `\\u${match.charCodeAt(0).toString(16).toLowerCase()}`;
+					},
+			  )
+			: value;
 	}
 
 	function copyNote(): void {
@@ -414,7 +418,8 @@ export function getNoteMenu(props: {
 				  ]
 				: []),
 			defaultStore.state.enabledAirReply &&
-			(appearNote.visibility !== 'specified' || (!appearNote?.user.host && appearNote?.ccUserIdsCount))
+			(appearNote.visibility !== "specified" ||
+				(!appearNote?.user.host && appearNote?.ccUserIdsCount))
 				? {
 						icon: "ph-paper-plane-tilt ph-bold ph-lg",
 						text: i18n.ts.airReply,
@@ -459,7 +464,8 @@ export function getNoteMenu(props: {
 							action: showSource,
 						},
 				  ]
-				: ((appearNote.cw ?? "") + (appearNote.text ?? "")).length > 0 && !appearNote.deletedAt
+				: ((appearNote.cw ?? "") + (appearNote.text ?? "")).length > 0 &&
+				  !appearNote.deletedAt
 				? [
 						{
 							icon: "ph-clipboard-text ph-bold ph-lg",

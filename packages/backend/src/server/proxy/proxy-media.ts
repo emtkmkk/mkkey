@@ -3,7 +3,7 @@ import net from "node:net";
 import { promises } from "node:dns";
 import type Koa from "koa";
 import sharp from "sharp";
-import { sharpBmp } from "sharp-read-bmp";
+import { sharpBmp } from "@misskey-dev/sharp-read-bmp";
 import type { IImage } from "@/services/drive/image-processor.js";
 import {
 	convertToWebp,

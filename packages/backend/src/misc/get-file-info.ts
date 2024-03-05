@@ -10,7 +10,7 @@ import isSvg from "is-svg";
 import probeImageSize from "probe-image-size";
 import { type predictionType } from "nsfwjs";
 import sharp from "sharp";
-import { sharpBmp } from "sharp-read-bmp";
+import { sharpBmp } from "@misskey-dev/sharp-read-bmp";
 import { encode } from "blurhash";
 import { detectSensitive } from "@/services/detect-sensitive.js";
 import { createTempDir } from "./create-temp.js";

@@ -1,7 +1,7 @@
 import { reactive, ref } from "vue";
 import * as Misskey from "calckey-js";
 import * as os from "@/os";
-import { readAndCompressImage } from "browser-image-resizer";
+import { readAndCompressImage } from "@misskey-dev/browser-image-resizer";
 import { defaultStore } from "@/store";
 import { apiUrl } from "@/config";
 import { $i } from "@/account";

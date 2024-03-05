@@ -4,7 +4,7 @@ import { v4 as uuid } from "uuid";
 
 import type S3 from "aws-sdk/clients/s3.js";
 import sharp from "sharp";
-import { sharpBmp } from "sharp-read-bmp";
+import { sharpBmp } from "@misskey-dev/sharp-read-bmp";
 import { IsNull } from "typeorm";
 import { publishMainStream, publishDriveStream } from "@/services/stream.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";

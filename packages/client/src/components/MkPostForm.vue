@@ -1017,8 +1017,9 @@ const placeholder = $computed((): string => {
 				!defaultStore.state.firstPostButtonVisibilityForce ||
 				visibility === "specified")
 				? `${
-						(localOnly ? "もこワー" : "") +
-						i18n.ts._visibility[visibility]
+						(localOnly ? "ローカル" : "") +
+						i18n.ts._visibility[visibility] +
+				(localOnly ? "/リモートフォロワー" : "")
 				  } : `
 				: "") +
 			new Date()

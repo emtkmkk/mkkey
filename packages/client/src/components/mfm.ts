@@ -707,6 +707,7 @@ export default defineComponent({
 						case "unicodeEmoji": {
 							if (
 								isNote &&
+								!this.isCw &&
 								!isPlain &&
 								emojiAst != null &&
 								isEmojiOnly &&

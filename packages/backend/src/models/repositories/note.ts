@@ -202,6 +202,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			_hint_?: {
 				myReactions: Map<Note["id"], NoteReaction | null>;
 			};
+			showInvisible?: boolean;
 		},
 	): Promise<Packed<"Note">> {
 		const opts = Object.assign(
@@ -216,14 +217,13 @@ export const NoteRepository = db.getRepository(Note).extend({
 			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
 		const host = note.userHost;
 		const isVisible = await this.isVisibleForMe(note, meId);
-		/*
-		if (!(await this.isVisibleForMe(note, meId))) {
+		
+		if (!(await this.isVisibleForMe(note, meId)) && !opts.showInvisible) {
 			throw new IdentifiableError(
 				"9725d0ce-ba28-4dde-95a7-2cbb2c15de24",
 				"No such note.",
 			);
 		}
-		*/
 
 		let text = note.text;
 

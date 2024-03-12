@@ -43,6 +43,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	return await Notes.pack(note, user, {
 		// FIXME: packing with detail may throw an error if the reply or renote is not visible (#8774)
 		detail: true,
+		showInvisible: true,
 	}).catch((err) => {
 		if (err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
 			throw new ApiError(meta.errors.noSuchNote);

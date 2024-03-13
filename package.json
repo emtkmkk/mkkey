@@ -1,10 +1,10 @@
 {
-	"name": "calckey",
-	"version": "14.0.0-d10",
+	"name": "firefish",
+	"version": "20230513",
 	"codename": "aqua",
 	"repository": {
 		"type": "git",
-		"url": "https://code.naskya.net/emtkmkk/mkkey.git"
+		"url": "https://github.com/emtkmkk/mkkey.git"
 	},
 	"packageManager": "pnpm@8.4.0",
 	"private": true,

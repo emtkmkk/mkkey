@@ -140,7 +140,9 @@ const tab = ref("soft");
 const softMutedWords = ref(render(defaultStore.state.mutedWords));
 const hardMutedWords = ref(render($i!.mutedWords));
 const reactionMutedWords = ref(render(defaultStore.state.reactionMutedWords));
-const remoteReactionMute = ref(render(defaultStore.state.remoteReactionMute));
+const remoteReactionMute = computed(
+	defaultStore.makeGetterSetter("remoteReactionMute")
+);
 const hardWordMutedNotesCount = ref(null);
 const hiddenSoftMutes = computed(
 	defaultStore.makeGetterSetter("hiddenSoftMutes")

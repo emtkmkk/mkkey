@@ -15,6 +15,7 @@
 <script lang="ts" setup>
 import { computed, unref } from "vue";
 import * as misskey from "calckey-js";
+import * as config from "@/config";
 import { $i } from "@/account";
 import XReaction from "@/components/MkReactionsViewer.reaction.vue";
 import { defaultStore } from "@/store";
@@ -84,6 +85,7 @@ const reactions = computed(() => {
 					.replace(/^:[\w:\.\-]+@/, "")
 					.replace(":", "");
 				return (
+					(defaultStore.state.remoteReactionMute && emojiHost && emojiHost !== "." && emojiHost !== config.host) ||
 					(!x.hostmute && !x.exact && emojiName.includes(x.name)) ||
 					(!x.hostmute && x.name === emojiName) ||
 					(x.hostmute && !x.exact && emojiHost.includes(x.name)) ||

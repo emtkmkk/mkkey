@@ -80,6 +80,12 @@
 						}}</template
 					>
 				</FormTextarea>
+				<FormSwitch v-model="remoteReactionMute" class="_formBlock"
+					>{{ i18n.ts.remoteReactionMute
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
 			</div>
 		</div>
 		<MkButton primary inline :disabled="!changed" @click="save()"
@@ -134,12 +140,16 @@ const tab = ref("soft");
 const softMutedWords = ref(render(defaultStore.state.mutedWords));
 const hardMutedWords = ref(render($i!.mutedWords));
 const reactionMutedWords = ref(render(defaultStore.state.reactionMutedWords));
+const remoteReactionMute = ref(render(defaultStore.state.remoteReactionMute));
 const hardWordMutedNotesCount = ref(null);
 const hiddenSoftMutes = computed(
 	defaultStore.makeGetterSetter("hiddenSoftMutes")
 );
 const muteExcludeReplyQuote = computed(
 	defaultStore.makeGetterSetter("muteExcludeReplyQuote")
+);
+const muteExcludeNotification = computed(
+	defaultStore.makeGetterSetter("muteExcludeNotification")
 );
 const muteExcludeNotification = computed(
 	defaultStore.makeGetterSetter("muteExcludeNotification")

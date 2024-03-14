@@ -91,9 +91,6 @@ let note = $ref<misskey.entities.Note>();
 let tab = $ref<string>();
 let reactions = ref<string[]>();
 let users = $ref();
-const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
-	return { name: x.replaceAll(":", ""), exact: /^:\w+:$/.test(x) };
-});
 /*let reactionFilterMuted = computed(() => {
 	//ミュートリアクションを除外
 	reactions.filter((x) => 

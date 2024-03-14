@@ -332,6 +332,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/7/21",
 			page: "word-mute",
 		},
+		remoteReactionMute: {
+			where: "account",
+			default: [],
+			createdAt: "2024/3/14",
+			page: "word-mute",
+		},
 		mutedAds: {
 			where: "account",
 			default: [] as string[],

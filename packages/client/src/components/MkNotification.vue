@@ -313,6 +313,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import * as misskey from "calckey-js";
+import * as config from "@/config";
 import XReactionIcon from "@/components/MkReactionIcon.vue";
 import MkFollowButton from "@/components/MkFollowButton.vue";
 import XReactionTooltip from "@/components/MkReactionTooltip.vue";
@@ -342,23 +343,43 @@ const elRef = ref<HTMLElement>(null);
 const reactionRef = ref(null);
 
 const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
-	return { name: x.replaceAll(":", ""), exact: /^:\w+:$/.test(x) };
+	return { 
+		name: x?.replaceAll(":", "").replace("@", ""),
+		exact: /^:\w+:$/.test(x),
+		hostmute: /^:?@[\w.-]/.test(x),
+	 };
 });
 
 const isMuted =
-	props.notification.type === "reaction" &&
-	reactionMuted.some(
-		(x) =>
-			(!x.exact &&
-				props.notification.reaction
-					.replace(":", "")
-					.replace(/@[\w:\.\-]+:$/, "")
-					.includes(x.name)) ||
-			x.name ===
-				props.notification.reaction
-					.replace(":", "")
-					.replace(/@[\w:\.\-]+:$/, "")
-	);
+	props.notification.type === "reaction" && reactionMuted.some((x) => {
+		const emojiName = props.notification.reaction.replace(":", "").replace(/@[\w:\.\-]+:$/, "");
+		const emojiHost = props.notification.reaction.replace(/^:[\w:\.\-]+@/, "").replace(":", "");
+		if (defaultStore.state.remoteReactionMute && emojiHost && emojiHost !== "." && emojiHost !== config.host) {
+			return true;
+		}
+		if (x.exact) {
+			if (x.hostmute) {
+				if (x.name === emojiHost) {
+					return true;
+				}
+			} else {
+				if (x.name === emojiName) {
+					return true;
+				}
+			}
+		} else {
+			if (x.hostmute) {
+				if (emojiHost.includes(x.name)) {
+					return true;
+				}
+			} else {
+				if (emojiName.includes(x.name)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	});
 
 const showEmojiReactions =
 	defaultStore.state.enableEmojiReactions ||

@@ -151,9 +151,6 @@ const muteExcludeReplyQuote = computed(
 const muteExcludeNotification = computed(
 	defaultStore.makeGetterSetter("muteExcludeNotification")
 );
-const muteExcludeNotification = computed(
-	defaultStore.makeGetterSetter("muteExcludeNotification")
-);
 const changed = ref(false);
 
 os.api("i/get-word-muted-notes-count", {}).then((response) => {

@@ -214,9 +214,10 @@ export default async (
 							? `${emoji.name}@${emoji.host}`
 							: `${emoji.name}@.`,
 						url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
-				  }
+					}
 				: null,
 		userId: user.id,
+		targetUserId: note.isPublicLikeList ? null : [user.id, note.userId],
 	});
 
 	// Create notification if the reaction target is a local user.

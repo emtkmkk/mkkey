@@ -138,10 +138,12 @@ export interface NoteStreamTypes {
 			url: string;
 		} | null;
 		userId: User["id"];
+		targetUserId: User["id"][] | null;
 	};
 	unreacted: {
 		reaction: string;
 		userId: User["id"];
+		targetUserId: User["id"][] | null;
 	};
 	replied: {
 		id: Note["id"];

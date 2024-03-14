@@ -428,20 +428,22 @@ export default class Connection {
 				});
 			} else if (payload.type === "reacted" || payload.type === "unreacted") {
 				// reaction
-				const client = getClient(this.host, this.accessToken);
-				client.getStatus(payload.id).then((data) => {
-					const newPost = toTextWithReaction([data.data], this.host);
-					const targetPost = newPost[0];
-					for (const stream of this.currentSubscribe) {
-						this.wsConnection.send(
-							JSON.stringify({
-								stream,
-								event: "status.update",
-								payload: JSON.stringify(targetPost),
-							}),
-						);
-					}
-				});
+				if (!payload?.body?.body?.targetUserId || payload?.body?.body?.targetUserId.includes(this.user?.id)) {
+					const client = getClient(this.host, this.accessToken);
+					client.getStatus(payload.id).then((data) => {
+						const newPost = toTextWithReaction([data.data], this.host);
+						const targetPost = newPost[0];
+						for (const stream of this.currentSubscribe) {
+							this.wsConnection.send(
+								JSON.stringify({
+									stream,
+									event: "status.update",
+									payload: JSON.stringify(targetPost),
+								}),
+							);
+						}
+					});
+				}
 			} else if (payload.type === "deleted") {
 				// delete
 				for (const stream of this.currentSubscribe) {

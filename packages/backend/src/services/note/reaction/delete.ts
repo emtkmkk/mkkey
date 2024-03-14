@@ -72,6 +72,7 @@ export default async (
 	publishNoteStream(note.id, "unreacted", {
 		reaction: decodeReaction(exist.reaction).reaction,
 		userId: user.id,
+		targetUserId: note.isPublicLikeList ? null : [user.id, note.userId],
 	});
 
 	//#region 配信

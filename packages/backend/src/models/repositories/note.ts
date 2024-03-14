@@ -241,7 +241,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 
 		const myReactions = meId ? await populateMyReactions(note, meId) : undefined;
 
-		const reactions = note.isPublicLikeList ? note.reactions : myReactions?.myReactions ? myReactions.myReactions.reduce((acc, curr) => (acc[curr] = 1, acc), {}) : {}
+		const reactions = note.isPublicLikeList || meId === note.userId ? note.reactions : myReactions?.myReactions ? myReactions.myReactions.reduce((acc, curr) => (acc[curr] = 1, acc), {}) : {}
 
 		const reactionEmojiNames = Object.keys(reactions)
 			.filter((x) => x?.startsWith(":"))

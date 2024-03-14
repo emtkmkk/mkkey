@@ -124,7 +124,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		);
 	}
 
-	if (ps.type && note?.isPublicLikeList) {
+	if (ps.type && (note.userId === user.id || note?.isPublicLikeList)) {
 		// ローカルリアクションはホスト名が . とされているが
 		// DB 上ではそうではないので、必要に応じて変換
 		// @.指定の場合、同名絵文字のリアクションを全て返す

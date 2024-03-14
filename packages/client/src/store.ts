@@ -334,7 +334,7 @@ export const defaultStore = markRaw(
 		},
 		remoteReactionMute: {
 			where: "account",
-			default: [],
+			default: false,
 			createdAt: "2024/3/14",
 			page: "word-mute",
 		},

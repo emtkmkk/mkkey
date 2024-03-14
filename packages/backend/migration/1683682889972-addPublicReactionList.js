@@ -1,5 +1,5 @@
 export class addPublicReactionList1683682889972 {
-	name = "addCanInvite1683682889971";
+	name = "addPublicReactionList1683682889972";
 
 	async up(queryRunner) {
 		await queryRunner.query(

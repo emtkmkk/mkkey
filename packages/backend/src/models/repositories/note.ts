@@ -239,7 +239,11 @@ export const NoteRepository = db.getRepository(Note).extend({
 				: await Channels.findOneBy({ id: note.channelId })
 			: null;
 
-		const reactionEmojiNames = Object.keys(note.reactions)
+		const myReactions = meId ? await populateMyReactions(note, meId) : undefined;
+
+		const reactions = note.isPublicLikeList ? note.reactions : myReactions?.myReactions ? myReactions.myReactions.reduce((acc, curr) => (acc[curr] = 1, acc), {}) : {}
+
+		const reactionEmojiNames = Object.keys(reactions)
 			.filter((x) => x?.startsWith(":"))
 			.map((x) => decodeReaction(x).reaction)
 			.map((x) => x.replace(/:/g, ""));
@@ -271,7 +275,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			renoteCount: note.renoteCount,
 			repliesCount: note.repliesCount,
 			score: note.score,
-			reactions: convertLegacyReactions(note.reactions),
+			reactions: convertLegacyReactions(reactions),
 			reactionEmojis: reactionEmoji,
 			emojis: isVisible ? noteEmoji : [],
 			tags: note.tags.length > 0 && isVisible ? note.tags : undefined,
@@ -316,7 +320,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 						...(meId
 							? {
 									myReaction: populateMyReaction(note, meId, options?._hint_),
-									...(await populateMyReactions(note, meId)),
+									...myReactions,
 									isFavorited: (await NoteFavorites.count({
 										where: {
 											userId: meId,

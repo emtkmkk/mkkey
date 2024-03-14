@@ -258,6 +258,11 @@ export class Note {
 	public lastSendActivityAt: Date;
 
 	@Column('boolean', {
+		default: true,
+	})
+	public isPublicLikeList: boolean;
+
+	@Column('boolean', {
 		default: false,
 	})
 	public isFirstNote: boolean;

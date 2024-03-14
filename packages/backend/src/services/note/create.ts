@@ -157,6 +157,7 @@ type Option = {
 	uri?: string | null;
 	url?: string | null;
 	app?: App | null;
+	isPublicLikeList?: boolean | null;
 	isFirstNote?: boolean | null;
 };
 
@@ -175,6 +176,7 @@ export default async (
 		avatarId: User["avatarId"];
 		notesCount: User["notesCount"];
 		onlineStatus: User["onlineStatus"];
+		isPublicLikeList: User["isPublicLikeList"];
 		blockPostPublic: User["blockPostPublic"];
 		blockPostHome: User["blockPostHome"];
 		blockPostNotLocal: User["blockPostNotLocal"];
@@ -555,17 +557,6 @@ export default async (
 				}`,
 			);
 			if (
-				mentionedUsers?.length > 3 &&
-				data.text?.replaceAll(/[\s\\n]*@\w+(@[\-._\w]+)?[\s\\n]*/gi, "").trim()
-					?.length <= 3
-			)
-				return rej("禁止投稿です。(内容なさすぎ)");
-			console.log(
-				`localUser: ${
-					mentionedUsers.filter((x) => !x.host || x.host === config.host).length
-				}/${mentionedUsers?.length}`,
-			);
-			if (
 				mentionedUsers?.length > 2 &&
 				mentionedUsers.filter((x) => !x.host || x.host === config.host).length >
 					0 &&
@@ -654,6 +645,8 @@ export default async (
 						}
 			*/
 		}
+
+		data.isPublicLikeList = user.isPublicLikeList;
 
 		const note = await insertNote(user, data, tags, emojis, mentionedUsers);
 
@@ -1121,6 +1114,7 @@ async function insertNote(
 					: []
 				: [],
 		attachedFileTypes: data.files ? data.files.map((file) => file.type) : [],
+		isPublicLikeList: data.isPublicLikeList ?? undefined,
 		isFirstNote: !!data.isFirstNote,
 		// 以下非正規化データ
 		replyUserId: data.reply ? data.reply.userId : null,

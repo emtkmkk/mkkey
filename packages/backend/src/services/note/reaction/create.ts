@@ -283,7 +283,7 @@ export default async (
 			dm.addDirectRecipe(reactee as IRemoteUser);
 		}
 
-		if (user.isExplorable && user.isRemoteExplorable) {
+		if (user.isExplorable && user.isRemoteExplorable && note.isPublicLikeList) {
 			if (["public", "home", "followers"].includes(note.visibility)) {
 				if (note.userId !== user.id && note.userHost === null) {
 					const u = await Users.findOneBy({ id: note.userId });

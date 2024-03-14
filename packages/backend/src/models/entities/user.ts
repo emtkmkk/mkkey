@@ -302,6 +302,11 @@ export class User {
 	})
 	public isRemoteLocked: boolean;
 
+	@Column('boolean', {
+		default: true,
+	})
+	public isPublicLikeList: boolean;
+
 	@Index({ unique: true })
 	@Column('char', {
 		length: 16, nullable: true, unique: true,

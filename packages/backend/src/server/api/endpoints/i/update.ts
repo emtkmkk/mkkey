@@ -133,6 +133,7 @@ export const paramDef = {
 		blockPostNotLocalPublic: { type: "boolean" },
 		isSilentLocked: { type: "boolean" },
 		isRemoteLocked: { type: "boolean" },
+		isPublicLikeList: { type: "boolean" },
 		pinnedPageId: { type: "string", format: "misskey:id", nullable: true },
 		mutedWords: { type: "array" },
 		mutedInstances: {
@@ -274,6 +275,9 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	}
 	if (typeof ps.isRemoteLocked === "boolean") {
 		updates.isRemoteLocked = ps.isRemoteLocked;
+	}
+	if (typeof ps.isPublicLikeList === "boolean") {
+		updates.isPublicLikeList = ps.isPublicLikeList;
 	}
 	if (typeof ps.showDonateBadges === "boolean")
 		profileUpdates.showDonateBadges = ps.showDonateBadges;

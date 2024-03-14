@@ -849,6 +849,7 @@ export const UserRepository = db.getRepository(User).extend({
 							? user.lastActiveDate.toISOString()
 							: null,
 						canInvite: user.canInvite || falsy,
+						isPublicLikeList: user.isPublicLikeList ?? truthy,
 				  }
 				: {}),
 

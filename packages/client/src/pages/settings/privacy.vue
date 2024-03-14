@@ -107,6 +107,17 @@
 			}}</template>
 		</FormSwitch>
 
+		<FormSwitch
+			v-model="isPublicLikeList"
+			class="_formBlock"
+			@update:modelValue="save()"
+		>
+			{{ i18n.ts.isPublicLikeList }}
+			<template #caption>{{
+				i18n.ts.isPublicLikeListDescription
+			}}</template>
+		</FormSwitch>
+
 		<FormSelect
 			v-model="ffVisibility"
 			class="_formBlock"
@@ -649,7 +660,7 @@ let autoAcceptFollowed = $ref($i.autoAcceptFollowed);
 let noCrawle = $ref($i.noCrawle);
 let isExplorable = $ref($i.isExplorable);
 let isRemoteBlockExplorable = $ref(!$i.isRemoteExplorable);
-let hideOnlineStatus = $ref($i.hideOnlineStatus);
+let isPublicLikeList = $ref($i.isPublicLikeList);
 let publicReactions = $ref($i.publicReactions);
 let ffVisibility = $ref($i.ffVisibility);
 let preventAiLearning = $ref($i.preventAiLearning);
@@ -731,6 +742,7 @@ function save() {
 		publicReactions: !!publicReactions,
 		preventAiLearning: !!preventAiLearning,
 		ffVisibility: ffVisibility,
+		isPublicLikeList: !!isPublicLikeList,
 	});
 }
 

@@ -78,6 +78,21 @@
 			}
 		"
 	/>
+	<img
+		v-else-if="
+			isCustom &&
+			customEmojiName &&
+			isReaction
+		"
+		class="mk-emoji"
+		:class="{
+			normal,
+			noStyle,
+		}"
+		src="/static-assets/user-unknown.png"
+		:alt="alt"
+		decoding="async"
+	/>
 	<span v-else>{{
 		isCustom && customEmojiName && !isReaction
 			? `:${customEmojiName}:`

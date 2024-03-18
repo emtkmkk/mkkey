@@ -103,13 +103,13 @@ export async function fetchInstanceMetadata(
 							mastodonInfo.fedibird_capabilities?.includes("emoji_reaction")
 								? 1
 								: 0);
+						if (updates.maxReactionsPerAccount === 128) updates.maxReactionsPerAccount = 127;
 					}
 				}
 				// features に pleroma_emoji_reactions が含まれる場合
 				else if (info.metadata?.features?.includes("pleroma_emoji_reactions")) {
 					// 無限なので128とする
 					updates.maxReactionsPerAccount = 128;
-					updates.
 				}
 				// それ以外
 				else {

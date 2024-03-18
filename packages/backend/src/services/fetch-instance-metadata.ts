@@ -70,6 +70,8 @@ export async function fetchInstanceMetadata(
 				: null;
 			updates.maxReactionsPerAccount = info.metadata?.maxReactionsPerAccount;
 
+			if (updates.maxReactionsPerAccount === 128) updates.maxReactionsPerAccount = 127;
+
 			// 最大リアクション数がnodeinfoで取得できなかった場合
 			if (!updates.maxReactionsPerAccount) {
 				// mastodon または upstreamがmastodon の場合
@@ -107,6 +109,7 @@ export async function fetchInstanceMetadata(
 				else if (info.metadata?.features?.includes("pleroma_emoji_reactions")) {
 					// 無限なので128とする
 					updates.maxReactionsPerAccount = 128;
+					updates.
 				}
 				// それ以外
 				else {

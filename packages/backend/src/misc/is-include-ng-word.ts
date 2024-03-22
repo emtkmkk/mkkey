@@ -44,7 +44,7 @@ export function isIncludeNgWord(txt: string): string {
 		"勃起",
 	];
 	const ngword3 = ["地震", "津波", "震災", "震度", "震源"];
-	const ngword4 = ["ぬるぽ"]
+	const ngword4 = ["るぽ"]
 
 	const text = txt
 		.replaceAll(/\s/g, "")

@@ -449,7 +449,7 @@ export default async (
 			data.visibility = "home";
 		}
 
-		if (!user.host && user.maxRankPoint < 1200 && !user.canInvite && data.reply?.userHost == null && /^(@\w+\s?)?:[\w@._\-]:$/.test(data.text ?? "")) {
+		if (!user.host && user.maxRankPoint < 1200 && !user.canInvite && data.reply?.userHost == null && /^(@\w+\s*)?:[\w@._\-]:$/.test(data.text ?? "")) {
 			return rej("この内容の返信は現在制限されています。絵文字だけの返信なら、リアクション機能を使用してみませんか？");
 		}
 

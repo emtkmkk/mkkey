@@ -18,12 +18,12 @@ export async function search(channel?: string, user?: string) {
 
 	const q = query.trim();
 
-	if (q.startsWith("@") && !q.includes(" ")) {
+	if (!(channel || user) && q.startsWith("@") && !q.includes(" ")) {
 		mainRouter.push(`/${q}`);
 		return;
 	}
 
-	if (q.startsWith("#")) {
+	if (!(channel || user) && q.startsWith("#")) {
 		mainRouter.push(`/tags/${encodeURIComponent(q.substr(1))}`);
 		return;
 	}
@@ -50,7 +50,7 @@ export async function search(channel?: string, user?: string) {
 		return;
 	}
 
-	if (q.startsWith("https://")) {
+	if (!(channel || user) && q.startsWith("https://")) {
 		const promise = os.api("ap/show", {
 			uri: q,
 		});

@@ -615,6 +615,10 @@ const birthday = $computed(() => {
 	if (isNaN(dyearint)) return props.user.birthday;
 
 	_birthday.setFullYear(today.getFullYear() - dyearint);
+	_birthday.setHours(0);
+	_birthday.setMinutes(0);
+	_birthday.setSeconds(0);
+	_birthday.setMilliseconds(0);
 
 	const y8date = new Date();
 	y8date.setFullYear(today.getFullYear() - dyearint);
@@ -623,7 +627,7 @@ const birthday = $computed(() => {
 	y8date.setSeconds(0);
 	y8date.setMilliseconds(0);
 
-	if (_birthday >= y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
+	if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
 
 	return `${_birthday.getFullYear()}-${(
 		"00" +

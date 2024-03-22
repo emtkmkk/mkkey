@@ -623,7 +623,7 @@ const birthday = $computed(() => {
 	y8date.setSeconds(0);
 	y8date.setMilliseconds(0);
 
-	if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
+	if (_birthday >= y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
 
 	return `${_birthday.getFullYear()}-${(
 		"00" +

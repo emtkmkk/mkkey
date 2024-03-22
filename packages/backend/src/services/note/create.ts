@@ -867,7 +867,9 @@ export default async (
 
 			// If it is renote
 			if (data.renote) {
-				const type = data.text ? "quote" : "renote";
+				const isRenote = !(data.text || data.files?.length || data.poll);
+
+				const type = !isRenote ? "quote" : "renote";
 
 				// Notify
 				if (data.renote.userHost === null) {

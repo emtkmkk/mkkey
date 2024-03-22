@@ -174,8 +174,10 @@ export default async (
 		isModerator: User["isModerator"];
 		isBot: User["isBot"];
 		avatarId: User["avatarId"];
+		canInvite: User["canInvite"];
 		notesCount: User["notesCount"];
 		onlineStatus: User["onlineStatus"];
+		maxRankPoint: User["maxRankPoint"];
 		isPublicLikeList: User["isPublicLikeList"];
 		blockPostPublic: User["blockPostPublic"];
 		blockPostHome: User["blockPostHome"];
@@ -443,11 +445,21 @@ export default async (
 			data.text = null;
 		}
 
+		if (!user.host && data.renote && user.maxRankPoint < 1200 && !user.canInvite && data.visibility === "public" && data.renote.userHost != null) {
+			data.visibility = "home";
+		}
+
+		if (!user.host && user.maxRankPoint < 1200 && !user.canInvite && data.reply?.userHost == null && /^(@\w+\s?)?:[\w@._\-]:$/.test(data.text ?? "")) {
+			return rej("この内容の返信は現在制限されています。絵文字だけの返信なら、リアクション機能を使用してみませんか？");
+		}
+
 		if (!user.host && data.visibility === "public") {
 			const isIncludeNgWordRet = isIncludeNgWordIsNote(data);
 
 			if (isIncludeNgWordRet) {
-				if (!data.cw) {
+				if (isIncludeNgWordRet === "NG") {
+					if (user.maxRankPoint < 1200 && !user.canInvite) data.visibility = "home";
+				} else if (!data.cw) {
 					return rej("CW無しで投稿できないワードが本文に含まれています。");
 					data.cw = `[強制CW] ${isIncludeNgWordRet}`;
 				} else if (!data.cw.trim() || data.cw.trim().toUpperCase() === "CW") {
@@ -469,7 +481,9 @@ export default async (
 			if (data.renote) {
 				const isIncludeNgWordRtRet = isIncludeNgWordIsNote(data.renote);
 				if (isIncludeNgWordRtRet) {
-					if (data.text) {
+					if (isIncludeNgWordRet === "NG") {
+						if (user.maxRankPoint < 1200) data.visibility = "home";
+					} else if (data.text) {
 						if (!data.cw) {
 							data.cw = `[強制CW (引用先)] ${isIncludeNgWordRtRet}`;
 						} else if (
@@ -523,6 +537,7 @@ export default async (
 			.splice(0, 32);
 
 		//スパム対策
+		/*
 		if (
 			user.host &&
 			["public", "home"].includes(data.visibility) &&
@@ -552,7 +567,7 @@ export default async (
 			console.log(
 				`maintext: ${
 					data.text
-						?.replaceAll(/[\s\\n]*@\w+(@[\-._\w]+)?[\s\\n]*/gi, "")
+						?.replaceAll(/[\s\\n]*@\w+(@[\-._\w]+)?[\s\\n]{0,}/gi, "")
 						.trim()?.length
 				}`,
 			);
@@ -595,6 +610,8 @@ export default async (
 			console.log(`localRelation: ${!localRelation}`);
 			if (localRelation) return rej("禁止投稿です。(怪しいプロフィール)");
 		}
+
+		*/
 
 		if (
 			data.reply &&

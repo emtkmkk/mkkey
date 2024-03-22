@@ -1,9 +1,9 @@
 export function isIncludeNgWordIsNote(note: any): string {
-	if (!note.text || note.visibility !== "public") {
+	if (!note.text ||  note.visibility !== "public") {
 		return "";
 	}
 
-	return isIncludeNgWord(note.text);
+	return isIncludeNgWord([note.cw,note.text].filter(Boolean).join("_"));
 }
 
 export function isIncludeNgWord(txt: string): string {
@@ -44,6 +44,7 @@ export function isIncludeNgWord(txt: string): string {
 		"勃起",
 	];
 	const ngword3 = ["地震", "津波", "震災", "震度", "震源"];
+	const ngword4 = ["ぬるぽ"]
 
 	const text = txt
 		.replaceAll(/\s/g, "")
@@ -80,5 +81,10 @@ export function isIncludeNgWord(txt: string): string {
 		return "暗いニュース";
 	};
 */
+	if (ngword4.some((x) => {
+		return text.includes(x);
+	}) || /^(\S{3,})\1$/.test(text)) {
+		return "NG";
+	};
 	return "";
 }

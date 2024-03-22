@@ -236,7 +236,7 @@ export default async (
 
 		for (const webhook of webhooks) {
 			webhookDeliver(webhook, "reaction", {
-				note: await Notes.pack(note, user),
+				note: await Notes.pack(note, { id: note.userId }),
 				reaction: {
 					user: await Users.pack(user, { id: note.userId }),
 					emojiName: decodedReaction.name

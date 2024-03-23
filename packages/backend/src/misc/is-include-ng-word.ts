@@ -83,7 +83,7 @@ export function isIncludeNgWord(txt: string): string {
 */
 	if (ngword4.some((x) => {
 		return text.includes(x);
-	}) || /^([^\s:]{4,})\1$/.test(text)) {
+	}) || /^([^\s:]{4,})\1+$/.test(text)) {
 		return "NG";
 	};
 	return "";

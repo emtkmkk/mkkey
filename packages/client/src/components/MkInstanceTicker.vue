@@ -6,7 +6,7 @@
 		"
 		class="hpaizdrt"
 		v-tooltip="
-			instance.name + '/' + capitalize(instance.softwareName || '???')
+			(!defaultStore.state.tickerShowName ? (instance.softwareVersion || '???') + '/' : '') + instance.name + '/' + capitalize(instance.softwareName || '???')
 		"
 		ref="ticker"
 		:style="bg"
@@ -23,7 +23,7 @@
 			v-if="
 				defaultStore.state.tickerShowIcon && 
 				getInstanceIcon(instance) &&
-				instance.faviconUrl !== instance.iconUrl &&
+				(!defaultStore.state.tickerShowFavicon || instance.faviconUrl !== instance.iconUrl) &&
 				!errorIcon
 			"
 			:src="getInstanceIcon(instance)"
@@ -35,7 +35,7 @@
 	<div
 		v-else-if="$store.state.developerTicker"
 		class="hpaizdrt"
-		v-tooltip="instance.name"
+		v-tooltip="(!defaultStore.state.tickerShowName ? (capitalize(instance.softwareName || '???') + '/' +(instance.softwareVersion || '???')) + "/" : "") + instance.name"
 		ref="ticker"
 		:style="bg"
 	>
@@ -51,7 +51,7 @@
 			v-if="
 				defaultStore.state.tickerShowIcon && 
 				getInstanceIcon(instance) &&
-				instance.faviconUrl !== instance.iconUrl &&
+				(!defaultStore.state.tickerShowFavicon || instance.faviconUrl !== instance.iconUrl) &&
 				!errorIcon
 			"
 			:src="getInstanceIcon(instance)"
@@ -68,6 +68,7 @@
 		v-else
 		class="hpaizdrt"
 		v-tooltip="
+			(!defaultStore.state.tickerShowName ? instance.name + '/' : '') +
 			capitalize(instance.softwareName || '???') +
 			'/' +
 			(instance.softwareVersion || '???')

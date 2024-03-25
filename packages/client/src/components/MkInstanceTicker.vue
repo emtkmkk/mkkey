@@ -13,7 +13,7 @@
 	>
 		<img
 			class="icon"
-			v-if="getInstanceFavicon(instance) && !errorFavicon"
+			v-if="defaultStore.state.tickerShowFavicon && getInstanceFavicon(instance) && !errorFavicon"
 			:src="getInstanceFavicon(instance)"
 			aria-hidden="true"
 			@error="errorFavicon = true"
@@ -21,6 +21,7 @@
 		<img
 			class="icon"
 			v-if="
+				defaultStore.state.tickerShowIcon && 
 				getInstanceIcon(instance) &&
 				instance.faviconUrl !== instance.iconUrl &&
 				!errorIcon
@@ -29,7 +30,7 @@
 			aria-hidden="true"
 			@error="errorIcon = true"
 		/>
-		<span class="name">{{ instance.softwareVersion || "???" }}</span>
+		<span class="name" v-if="defaultStore.state.tickerShowName">{{ instance.softwareVersion || "???" }}</span>
 	</div>
 	<div
 		v-else-if="$store.state.developerTicker"
@@ -40,7 +41,7 @@
 	>
 		<img
 			class="icon"
-			v-if="getInstanceFavicon(instance) && !errorFavicon"
+			v-if="defaultStore.state.tickerShowFavicon && getInstanceFavicon(instance) && !errorFavicon"
 			:src="getInstanceFavicon(instance)"
 			aria-hidden="true"
 			@error="errorFavicon = true"
@@ -48,6 +49,7 @@
 		<img
 			class="icon"
 			v-if="
+				defaultStore.state.tickerShowIcon && 
 				getInstanceIcon(instance) &&
 				instance.faviconUrl !== instance.iconUrl &&
 				!errorIcon
@@ -56,7 +58,7 @@
 			aria-hidden="true"
 			@error="errorIcon = true"
 		/>
-		<span class="name">{{
+		<span class="name" v-if="defaultStore.state.tickerShowName">{{
 			capitalize(instance.softwareName || "???") +
 			"/" +
 			(instance.softwareVersion || "???")
@@ -75,7 +77,7 @@
 	>
 		<img
 			class="icon"
-			v-if="getInstanceFavicon(instance) && !errorFavicon"
+			v-if="defaultStore.state.tickerShowFavicon && getInstanceFavicon(instance) && !errorFavicon"
 			:src="getInstanceFavicon(instance)"
 			aria-hidden="true"
 			@error="errorFavicon = true"
@@ -83,15 +85,16 @@
 		<img
 			class="icon"
 			v-if="
+				defaultStore.state.tickerShowIcon && 
 				getInstanceIcon(instance) &&
-				instance.faviconUrl !== instance.iconUrl &&
+				(!defaultStore.state.tickerShowFavicon || instance.faviconUrl !== instance.iconUrl) &&
 				!errorIcon
 			"
 			:src="getInstanceIcon(instance)"
 			aria-hidden="true"
 			@error="errorIcon = true"
 		/>
-		<span class="name">{{ instance.name }}</span>
+		<span class="name" v-if="defaultStore.state.tickerShowName">{{ instance.name }}</span>
 	</div>
 </template>
 

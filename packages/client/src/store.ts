@@ -714,6 +714,24 @@ export const defaultStore = markRaw(
 			default: "always" as "none" | "remote" | "always",
 			page: "appearance",
 		},
+		tickerShowFavicon: {
+			where: "device",
+			default: true,
+			createdAt: "2024/3/25",
+			page: "appearance",
+		},
+		tickerShowIcon: {
+			where: "device",
+			default: true,
+			createdAt: "2024/3/25",
+			page: "appearance",
+		},
+		tickerShowName: {
+			where: "device",
+			default: true,
+			createdAt: "2024/3/25",
+			page: "appearance",
+		},
 		reactionPickerSize: {
 			where: "device",
 			default: 3,

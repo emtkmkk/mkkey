@@ -237,6 +237,31 @@
 		</FormSelect>
 
 		<FormSwitch
+			v-model="tickerShowName"
+			class="_formBlock"
+			>{{ i18n.ts.tickerShowName
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span></FormSwitch
+		>
+		<FormSwitch
+			v-model="tickerShowFavicon"
+			class="_formBlock"
+			>{{ i18n.ts.tickerShowFavicon
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span></FormSwitch
+		>
+		<FormSwitch
+			v-model="tickerShowIcon"
+			class="_formBlock"
+			>{{ i18n.ts.tickerShowIcon
+			}}<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span></FormSwitch
+		>
+
+		<FormSwitch
 			v-if="developer"
 			v-model="developerTicker"
 			class="_formBlock"
@@ -328,6 +353,15 @@ const showRelationMark = computed(
 const loadRawImages = computed(defaultStore.makeGetterSetter("loadRawImages"));
 const instanceTicker = computed(
 	defaultStore.makeGetterSetter("instanceTicker")
+);
+const tickerShowName = computed(
+	defaultStore.makeGetterSetter("tickerShowName")
+);
+const tickerShowFavicon = computed(
+	defaultStore.makeGetterSetter("tickerShowFavicon")
+);
+const tickerShowIcon = computed(
+	defaultStore.makeGetterSetter("tickerShowIcon")
 );
 const seperateRenoteQuote = computed(
 	defaultStore.makeGetterSetter("seperateRenoteQuote")

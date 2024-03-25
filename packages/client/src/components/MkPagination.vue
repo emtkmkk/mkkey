@@ -245,7 +245,7 @@ const BACKGROUND_PAUSE_WAIT_SEC = 10;
 let scrollObserver = $ref<IntersectionObserver>();
 
 watch(
-	[() => props.pagination.reversed, $$(scrollableElement)],
+	[() => props.pagination.reversed, $$(scrollableElement), $$(scrollableElement?.scrollHeight)],
 	() => {
 		if (scrollObserver) scrollObserver.disconnect();
 
@@ -258,7 +258,7 @@ watch(
 				rootMargin: props.pagination.reversed
 					? "-100% 0px 100% 0px"
 					: "100% 0px -100% 0px",
-				threshold: 0.01,
+				threshold: Math.min(0.02 / ((unref(scrollableElement)?.scrollHeight ?? window.innerHeight) / window.innerHeight), 0.01),
 			}
 		);
 	},

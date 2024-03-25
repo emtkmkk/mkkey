@@ -35,7 +35,7 @@
 	<div
 		v-else-if="$store.state.developerTicker"
 		class="hpaizdrt"
-		v-tooltip="(!defaultStore.state.tickerShowName ? (capitalize(instance.softwareName || '???') + '/' +(instance.softwareVersion || '???')) + "/" : "") + instance.name"
+		v-tooltip="(!defaultStore.state.tickerShowName ? (capitalize(instance.softwareName || '???') + '/' + (instance.softwareVersion || '???')) + '/' : '') + instance.name"
 		ref="ticker"
 		:style="bg"
 	>

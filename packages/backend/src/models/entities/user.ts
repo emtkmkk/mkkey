@@ -307,6 +307,11 @@ export class User {
 	})
 	public isPublicLikeList: boolean;
 
+	@Column('boolean', {
+		default: true,
+	})
+	public disableNyaise: boolean;
+
 	@Index({ unique: true })
 	@Column('char', {
 		length: 16, nullable: true, unique: true,

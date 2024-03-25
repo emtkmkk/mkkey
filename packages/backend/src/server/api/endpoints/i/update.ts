@@ -134,6 +134,7 @@ export const paramDef = {
 		isSilentLocked: { type: "boolean" },
 		isRemoteLocked: { type: "boolean" },
 		isPublicLikeList: { type: "boolean" },
+		disableNyaise: { type: "boolean" },
 		pinnedPageId: { type: "string", format: "misskey:id", nullable: true },
 		mutedWords: { type: "array" },
 		mutedInstances: {
@@ -278,6 +279,9 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	}
 	if (typeof ps.isPublicLikeList === "boolean") {
 		updates.isPublicLikeList = ps.isPublicLikeList;
+	}
+	if (typeof ps.disableNyaise === "boolean") {
+		updates.disableNyaise = ps.disableNyaise;
 	}
 	if (typeof ps.showDonateBadges === "boolean")
 		profileUpdates.showDonateBadges = ps.showDonateBadges;

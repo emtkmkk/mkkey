@@ -34,6 +34,22 @@
 		</FormSection>
 		<FormSection>
 			<template #label
+				>{{ i18n.ts.item
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></template
+			>
+			<FormSwitch v-model="disableNyaise" class="_formBlock" @update:modelValue="update()"
+				>{{ i18n.ts.disableNyaise
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span><template #caption>{{
+					i18n.ts.disableNyaiseDescription
+				}}</template></FormSwitch
+			>
+		</FormSection>
+		<FormSection>
+			<template #label
 				>{{ i18n.ts.morse
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -193,6 +209,7 @@ let allEmojiReplace = $ref(deepClone(defaultStore.state.allEmojiReplace));
 const enableEmojiReplace = computed(
 	defaultStore.makeGetterSetter("enableEmojiReplace")
 );
+let disableNyaise = $ref($i.disableNyaise);
 
 function chooseEmoji(ev: MouseEvent) {
 	os.pickEmoji(ev.currentTarget ?? ev.target, {
@@ -245,6 +262,12 @@ watch(
 
 function save() {
 	defaultStore.set("allEmojiReplace", allEmojiReplace);
+}
+
+function update() {
+	os.api("i/update", {
+		disableNyaise: !!disableNyaise,
+	});
 }
 
 async function setEmpty() {

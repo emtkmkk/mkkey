@@ -850,6 +850,7 @@ export const UserRepository = db.getRepository(User).extend({
 							: null,
 						canInvite: user.canInvite || falsy,
 						isPublicLikeList: user.isPublicLikeList ?? truthy,
+						disableNyaise: user.disableNyaise || falsy,
 				  }
 				: {}),
 

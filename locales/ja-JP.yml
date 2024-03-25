@@ -1255,6 +1255,9 @@ preventAiLearning: "AIによる学習を防止"
 preventAiLearningDescription: "投稿したノート、添付した画像などのコンテンツを学習の対象にしないようAIに要求します。これはnoaiフラグをHTMLレスポンスに含めることによって実現されます。"
 pwa: "PWAをインストール"
 countdownDone: "時間です！"
+item: "道具"
+disableNyaise: "ラーの鏡"
+disableNyaiseDescription: "真実を映し出す鏡。猫のフリをしているユーザの本当の姿を見破ることが出来る。（全ユーザの猫語変換を解除します。）"
 
 _sensitiveMediaDetection:
   description: "機械学習を使って自動でセンシティブなメディアを検出し、モデレーションに役立てられます。サーバーの負荷が少し増えます。"

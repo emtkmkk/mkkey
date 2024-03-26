@@ -586,8 +586,8 @@ const birthday = $computed(() => {
 	}
 
 	const regtest =
-		/(\d{1,2})(yo|歳|sai)/.test(props.user.name ?? "") ||
-		/(\d{1,2})(yo|歳|sai)/.test(props.user.description ?? "");
+		/(\d{1,2})(yo|歳|sai)([^以]|$)/.test(props.user.name ?? "") ||
+		/(\d{1,2})(yo|歳|sai)([^以]|$)/.test(props.user.description ?? "");
 
 	if (!regtest) {
 		return props.user.birthday;
@@ -605,8 +605,8 @@ const birthday = $computed(() => {
 	}
 
 	const dyear =
-		/(\d{1,2})(yo|歳|sai)/.exec(props.user.name ?? "")?.[1] ??
-		/(\d{1,2})(yo|歳|sai)/.exec(props.user.description ?? "")?.[1];
+		/(\d{1,2})(yo|歳|sai)([^以]|$)/.exec(props.user.name ?? "")?.[1] ??
+		/(\d{1,2})(yo|歳|sai)([^以]|$)/.exec(props.user.description ?? "")?.[1];
 
 	if (dyear == null) return props.user.birthday;
 

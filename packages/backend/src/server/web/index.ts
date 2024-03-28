@@ -919,14 +919,15 @@ router.get("(.*)", async (ctx) => {
 		} else if (now.getDate() > 15) {
 			motd.push("確定申告、終わりましたか？");
 		}
+		if (now.getDate() == 29) {
+			motd.push("今日は閏日ですね");
+		}
 	} else if (now.getMonth() == 2) {
 		motd.push("春が始まりますね");
 		if (now.getDate() == 3) {
 			motd.push("明かりをつけましょぼんぼりに");
 		} else if (now.getDate() == 14) {
-			motd.push("今日はホワイトデーです");
-		} else if (now.getDate() == 29) {
-			motd.push("今日は閏日ですね");
+			motd.push("今日はホワイトデーです"); 
 		}
 		if (now.getDate() <= 10) {
 			motd.push("確定申告、終わりましたか？");

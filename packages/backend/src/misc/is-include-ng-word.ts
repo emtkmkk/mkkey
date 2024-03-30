@@ -20,7 +20,7 @@ export function isIncludeNgWord(txt: string): string {
 		"ぱいおつ",
 		"乳首",
 		"ちくび",
-		"けつ",
+		"おむつ",
 	];
 	const ngword2 = [
 		"おなほ",
@@ -42,11 +42,21 @@ export function isIncludeNgWord(txt: string): string {
 		"受精",
 		"自慰",
 		"勃起",
+		"sex",
+		"fuck",
+		"淫",
+		"なかだし",
+		"中出し",
+		"せいし",
+		"精子",
+		"騎乗位",
+		"孕",
 	];
 	const ngword3 = ["地震", "津波", "震災", "震度", "震源"];
 	const ngword4 = ["るぽ"]
 
 	const text = txt
+		.toLowerCase()
 		.replaceAll(/\s/g, "")
 		.replaceAll(/[!-\/:-@[-`{-~]+/g, "")
 		.replace(/[ァ-ン]/g, function (match) {

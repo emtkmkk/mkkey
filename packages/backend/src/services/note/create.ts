@@ -68,6 +68,8 @@ import type { UserProfile } from "@/models/entities/user-profile.js";
 import { db } from "@/db/postgre.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
+import renderDelete from "@/remote/activitypub/renderer/delete.js";
+import renderTombstone from "@/remote/activitypub/renderer/tombstone.js";
 
 const mutedWordsCache = new Cache<
 	{ userId: UserProfile["userId"]; mutedWords: UserProfile["mutedWords"] }[]
@@ -371,11 +373,29 @@ export default async (
 		}
 
 		if (data.reply?.deletedAt) {
-			return rej("削除された投稿に対しては返信できません。");
+			if (data.reply?.userHost == null && user.host != null) {
+				const content = renderActivity(renderDelete(renderTombstone(`${config.url}/notes/${data.reply?.id}`), {id: data.reply.userId, host: data.reply.userHost}));
+				const dm = new DeliverManager({id: data.reply.userId, host: data.reply.userHost}, content);
+				const u = await Users.findOneBy({ id: user.id });
+				if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+				dm.execute();
+				return rej("削除された投稿に対して返信されました。削除リクエストを送信しました。");
+			} else {
+				return rej("削除された投稿に対しては返信できません。");
+			}
 		}
 
 		if (data.renote?.deletedAt) {
-			return rej("削除された投稿はRTできません。");
+			if (data.renote?.userHost == null && user.host != null) {
+				const content = renderActivity(renderDelete(renderTombstone(`${config.url}/notes/${data.renote?.id}`), {id: data.renote.userId, host: data.renote.userHost}));
+				const dm = new DeliverManager({id: data.renote.userId, host: data.renote.userHost}, content);
+				const u = await Users.findOneBy({ id: user.id });
+				if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+				dm.execute();
+				return rej("削除された投稿がRTされました。削除リクエストを送信しました。");
+			} else {
+				return rej("削除された投稿はRTできません。");
+			}
 		}
 
 		// Reject if the target of the renote is a public range other than "Home or Entire".

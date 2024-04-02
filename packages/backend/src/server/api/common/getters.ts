@@ -10,21 +10,24 @@ import { generateVisibilityQuery } from "./generate-visibility-query.js";
 export async function getNote(
 	noteId: Note["id"],
 	me: { id: User["id"] } | null,
+	showInvisible = false,
 ) {
 	const query = Notes.createQueryBuilder("note").where("note.id = :id", {
 		id: noteId,
 	});
 
-	//generateVisibilityQuery(query, me);
-
+	if (!showInvisible) {
+		generateVisibilityQuery(query, me);
+	}
+	
 	const note = await query.getOne();
 
-	/*if (note == null) {
+	if (note == null && !showInvisible) {
 		throw new IdentifiableError(
 			"9725d0ce-ba28-4dde-95a7-2cbb2c15de24",
 			"No such note.",
 		);
-	}*/
+	}
 
 	return note;
 }

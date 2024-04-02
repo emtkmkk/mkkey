@@ -37,7 +37,6 @@
 		<iframe
 			ref="tweet"
 			allow="fullscreen;web-share"
-			sandbox="allow-popups allow-scripts allow-same-origin"
 			scrolling="no"
 			frameborder="no"
 			:style="{

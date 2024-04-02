@@ -480,8 +480,11 @@ export default async (
 				if (isIncludeNgWordRet === "NG") {
 					if (user.maxRankPoint < 1200 && !user.canInvite) data.visibility = "home";
 				} else if (!data.cw) {
-					return rej("CW無しで投稿できないワードが本文に含まれています。");
-					data.cw = `[強制CW] ${isIncludeNgWordRet}`;
+					if (user.isBot) {
+						data.cw = `[強制CW] ${isIncludeNgWordRet}`;
+					} else {
+						return rej("CW無しで投稿できないワードが本文に含まれています。");
+					}
 				} else if (!data.cw.trim() || data.cw.trim().toUpperCase() === "CW") {
 					data.cw = isIncludeNgWordRet;
 				} else if (

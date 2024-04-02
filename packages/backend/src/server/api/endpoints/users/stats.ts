@@ -393,7 +393,6 @@ export default define(meta, paramDef, async (ps, me) => {
 			.andWhere("note.createdAt >= :borderDate", {
 				borderDate: borderDate.toISOString(),
 			})
-			.cache(CACHE_TIME)
 			.getCount(),
 		repliesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
@@ -693,6 +692,9 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (!(!firstLocalFollower && user.host)) {
 		let updates: any = {};
+		if (user.notesCount !== result.notesCount) {
+			updates.notesCount = result.notesCount
+		}
 		if (user.maxRankPoint < Math.floor(_rankPower)) {
 			updates.maxRankPoint = Math.floor(_rankPower);
 		}

@@ -523,7 +523,8 @@ const isRenote =
 	note.renoteId != null &&
 	note.text == null &&
 	note.fileIds.length === 0 &&
-	note.poll == null;
+	note.poll == null; &&
+	!note.invisible
 
 const isQuote = note.renoteId != null && !isRenote;
 

@@ -9,6 +9,7 @@
 				>
 					<span v-for="note in notes" :key="note.id" class="item">
 						<img
+							v-if="!defaultStore.state.hiddenIconUserIds?.includes(note.user.id)" 
 							class="avatar"
 							:src="note.user.avatarUrl"
 							decoding="async"
@@ -41,6 +42,7 @@ import * as os from "@/os";
 import { useInterval } from "@/scripts/use-interval";
 import { getNoteSummary } from "@/scripts/get-note-summary";
 import { notePage } from "@/filters/note";
+import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	userListId?: string;

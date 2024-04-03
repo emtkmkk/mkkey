@@ -24,6 +24,7 @@
 				</p>
 				<footer>
 					<img
+						v-if="!defaultStore.state.hiddenIconUserIds?.includes(page.user.id)" 
 						class="icon"
 						:src="page.user.avatarUrl"
 						aria-label="none"
@@ -38,6 +39,7 @@
 <script lang="ts" setup>
 import { userName } from "@/filters/user";
 import { ui } from "@/config";
+import { defaultStore } from "@/store";
 
 defineProps<{
 	page: any;

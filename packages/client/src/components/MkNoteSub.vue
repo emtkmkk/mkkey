@@ -345,7 +345,8 @@ const isRenote =
 	note.renote != null &&
 	note.text == null &&
 	note.fileIds.length === 0 &&
-	note.poll == null;
+	note.poll == null &&
+	!note.invisible;
 
 const el = ref<HTMLElement>();
 const footerEl = ref<HTMLElement>();

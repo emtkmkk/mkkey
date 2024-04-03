@@ -11,7 +11,8 @@
 		:title="acct(user)"
 		@click="onClick"
 	>
-		<img class="inner" :src="url" decoding="async" />
+		<img v-if="!errorIcon && !defaultStore.state.hiddenIconUserIds?.includes(user.id)" class="inner" :src="url" @error="errorIcon=true" decoding="async" />
+		<img v-else class="inner" src="/static-assets/user-unknown.png" decoding="async" />
 		<MkUserOnlineIndicator
 			v-if="showIndicator && user.onlineStatus !== 'unknown'"
 			class="indicator"
@@ -32,7 +33,8 @@
 		:target="target"
 		@click.stop="showAvatar"
 	>
-		<img class="inner" :src="url" decoding="async" />
+		<img v-if="!errorIcon && !defaultStore.state.hiddenIconUserIds?.includes(user.id)" class="inner" :src="url" @error="errorIcon=true" decoding="async" />
+		<img v-else class="inner" src="/static-assets/user-unknown.png" decoding="async" />
 		<MkUserOnlineIndicator
 			v-if="showIndicator && user.onlineStatus !== 'unknown'"
 			class="indicator"
@@ -94,6 +96,7 @@ function showAvatar(ev: MouseEvent) {
 }
 
 let color = $ref();
+let errorIcon = $ref(false);
 
 watch(
 	() => props.user.avatarBlurhash,

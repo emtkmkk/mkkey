@@ -9,6 +9,7 @@ import { $i, iAmModerator } from "@/account";
 import { mainRouter } from "@/router";
 import { Router } from "@/nirax";
 import * as config from "@/config";
+import { defaultStore } from "@/store";
 
 export function getUserMenu(user, router: Router = mainRouter) {
 	const meId = $i ? $i.id : null;
@@ -140,6 +141,18 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		).then(() => {
 			user.isRenoteMuted = !user.isRenoteMuted;
 		});
+	}
+
+	async function addHiddenIconUserIds(): Promise<void> {
+		let hiddenIconUserIds = defaultStore.state.hiddenIconUserIds
+		hiddenIconUserIds.push(user.id)
+		defaultStore.set("hiddenIconUserIds", hiddenIconUserIds)
+	}
+
+	async function delHiddenIconUserIds(): Promise<void> {
+		let hiddenIconUserIds = defaultStore.state.hiddenIconUserIds
+		hiddenIconUserIds = hiddenIconUserIds.filter((x) => x !== user.id)
+		defaultStore.set("hiddenIconUserIds", hiddenIconUserIds)
 	}
 
 	async function setCustomName(): Promise<void> {
@@ -340,6 +353,20 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			  ]
 			: []),
 		null,
+		meId !== user.id && !defaultStore.state.hiddenIconUserIds?.includes(user.id)
+			? {
+					icon: "ph-eye-slash ph-bold ph-lg",
+					text: i18n.ts.addHiddenIconUserIds,
+					action: addHiddenIconUserIds,
+				}
+			: undefined,
+		meId !== user.id && defaultStore.state.hiddenIconUserIds?.includes(user.id)
+			? {
+					icon: "ph-eye ph-bold ph-lg",
+					text: i18n.ts.delHiddenIconUserIds,
+					action: delHiddenIconUserIds,
+				}
+			: undefined,
 		meId !== user.id
 			? {
 					icon: "ph-note-pencil ph-bold ph-lg",

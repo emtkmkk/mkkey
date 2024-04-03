@@ -1402,6 +1402,11 @@ export const defaultStore = markRaw(
 			default: false,
 			createdAt: "2024/2/28",
 		},
+		hiddenIconUserIds: {
+			where: "account",
+			default: [] as string[],
+			createdAt: "2024/4/3",
+		},
 	}),
 );
 

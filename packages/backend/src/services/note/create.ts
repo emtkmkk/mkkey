@@ -1060,6 +1060,8 @@ export async function appendNoteVisibleUser(
 
 async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 	if (data.localOnly && data.channel) return null;
+	// リモートでRT出来ないはずの投稿がRTされている場合、連合しない
+	if (data.renote?.localOnly) return null;
 	// ローカル＆フォロワー
 	if (
 		data.localOnly &&

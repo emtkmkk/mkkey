@@ -40,7 +40,7 @@ import {
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { App } from "@/models/entities/app.js";
 import { Not, In, IsNull } from "typeorm";
-import type { User, ILocalUser, IRemoteUser } from "@/models/entities/user.js";
+import { User, ILocalUser, IRemoteUser } from "@/models/entities/user.js";
 import { genId } from "@/misc/gen-id.js";
 import {
 	notesChart,
@@ -1061,7 +1061,7 @@ export async function appendNoteVisibleUser(
 async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 	if (data.localOnly && data.channel) return null;
 	// リモートでRT出来ないはずの投稿がRTされている場合、連合しない
-	if (data.renote?.localOnly) return null;
+	if (data.renote?.userId !== note.userId && data.renote?.localOnly) return null;
 	// ローカル＆フォロワー
 	if (
 		data.localOnly &&

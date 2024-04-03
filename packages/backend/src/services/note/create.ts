@@ -282,7 +282,7 @@ export default async (
 			data.text?.includes("http://twitter.com")
 		) {
 			data.text = data.text.replaceAll(
-				/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?\S*)/gi,
+				/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?[^\s\)]*)/gi,
 				"$1",
 			);
 		}
@@ -292,7 +292,7 @@ export default async (
 			data.text?.includes("http://x.com")
 		) {
 			data.text = data.text.replaceAll(
-				/(https?:\/\/x.com\/\S*\/status\/\S*)(\?\S*)/gi,
+				/(https?:\/\/x.com\/\S*\/status\/\S*)(\?[^\s\)]*)/gi,
 				"$1",
 			);
 		}

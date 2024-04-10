@@ -317,11 +317,11 @@ export const NoteRepository = db.getRepository(Note).extend({
 							: undefined,
 
 						references: note.referenceIds.length
-							? note.referenceIds.map((x) => this.pack(x, me, {
+							? note.referenceIds.map(async (x) => (await this.pack(x, me, {
 									detail: true,
 									_hint_: options?._hint_,
 									showInvisible: options?.showInvisible,
-								}))
+								})))
 							: undefined,
 
 						poll:
@@ -372,7 +372,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			}
 		}
 		
-		if (packed.text?.includes("[[参照]]")) packed.text?.replaceAll("[[参照]]","[<参照>]");
+		if (packed.text?.includes("[[参照]]")) packed.text = packed.text?.replaceAll("[[参照]]","?[<参照>]");
 
 		return packed;
 	},

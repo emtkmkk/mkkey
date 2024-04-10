@@ -339,8 +339,10 @@ export async function createNote(
 		if (isCollectionOrOrderedCollection(collection)) {
 			
 			if (collection.first?.items) {
-					let items = await Promise.all(
-						toArray(collection.first.items).map((x) => resolver?.resolve(x)),
+					let items = await (await Promise.allSettled(
+						toArray(collection.first.items).map((x) => resolver?.resolve(x))
+					)).flatMap((result) =>
+						result.status === "fulfilled" ? [result.value] : [],
 					);
 					let next = collection.first.next;
 					while (next) {
@@ -353,7 +355,9 @@ export async function createNote(
 						);
 			
 						for (let i = 0; i < json_data.items?.length; i++) {
-							items = [...items, ...(await Promise.all([resolver?.resolve(json_data.items[i])]))];
+							items = [...items, ...(await (await Promise.allSettled([resolver?.resolve(json_data.items[i])])).flatMap((result) =>
+								result.status === "fulfilled" ? [result.value] : [],
+							))];
 						}
 						next = json_data.next
 					}

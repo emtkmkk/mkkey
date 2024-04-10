@@ -319,7 +319,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 
 						references: note.referenceIds.length
 							? note.referenceIds.map(async (x) => {
-								return await this.pack(x, me, {
+								const reference = await this.findOneByOrFail({ id: x })
+								return await this.pack(reference || x, me, {
 									detail: true,
 									_hint_: options?._hint_,
 									showInvisible: options?.showInvisible,

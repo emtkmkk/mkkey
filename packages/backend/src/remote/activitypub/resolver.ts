@@ -60,7 +60,7 @@ export default class Resolver {
 		}
 	}
 
-	public async resolve(value: string | IObject): Promise<IObject> {
+	public async resolve(value: string | IObject, ignoreHistory: boolean = false): Promise<IObject> {
 		if (value == null) {
 			throw new Error("resolvee is null (or undefined)");
 		}
@@ -82,13 +82,13 @@ export default class Resolver {
 			throw new Error(`cannot resolve URL with fragment: ${value}`);
 		}
 
-		if (this.history.has(value)) {
+		if (!ignoreHistory && this.history.has(value)) {
 			throw new Error("cannot resolve already resolved one");
 		}
 		if (this.recursionLimit && this.history.size > this.recursionLimit) {
 			throw new Error("hit recursion limit");
 		}
-		this.history.add(value);
+		if (!ignoreHistory) this.history.add(value);
 
 		const host = extractDbHost(value);
 		if (isSelfHost(host)) {

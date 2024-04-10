@@ -343,7 +343,7 @@ export async function createNote(
 			
 			if (collection.first?.items) {
 					let items = (await Promise.allSettled(
-						toArray(collection.first.items).map((x) => resolver?.resolve(x))
+						toArray(collection.first.items).map((x) => resolver?.resolve(x, true))
 					)).flatMap((result) => result.status === "fulfilled" ? [result.value] : []
 					);
 					let next = collection.first.next;
@@ -357,7 +357,7 @@ export async function createNote(
 						);
 			
 						for (let i = 0; i < json_data.items?.length; i++) {
-							items = [...items, ...(await Promise.allSettled([resolver?.resolve(json_data.items[i])])).flatMap((result) => result.status === "fulfilled" ? [result.value] : [])];
+							items = [...items, ...(await Promise.allSettled([resolver?.resolve(json_data.items[i], true)])).flatMap((result) => result.status === "fulfilled" ? [result.value] : [])];
 						}
 						next = json_data.next
 					}

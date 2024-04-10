@@ -351,7 +351,7 @@ export async function createNote(
 							`references_next: ${JSON.stringify(json_data,undefined,"\t")}`,
 						);
 			
-						for (let i = 0; i < json_data.items; i++) {
+						for (let i = 0; i < json_data.items?.length; i++) {
 							items = [...items, ...(await Promise.all([resolver?.resolve(json_data.items[i])]))];
 						}
 						next = json_data.next

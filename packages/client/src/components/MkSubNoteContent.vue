@@ -170,7 +170,7 @@
 					>
 						<XNoteSimple :note="note.renote" />
 					</div>
-					<MkFolder v-if="note.references?.length" class="references" no-style>
+					<MkFolder v-if="note.references?.length" class="references" :expanded="false" no-style>
 						<template #header>{{ note.references.length + " 件の参照" }}</template>
 						<div
 							v-for="reference in note.references"
@@ -386,8 +386,8 @@ function focusFooter(ev) {
 			}
 			> .references {
 				padding-top: 0.5rem;
-			 	> .reference {
-				padding-top: 0.5rem;
+			 	.reference {
+					padding-top: 0.5rem;
 					> * {
 						padding: 1rem;
 						border: solid 0.0625rem var(--accent);

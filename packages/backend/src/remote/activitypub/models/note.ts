@@ -59,6 +59,7 @@ import { In } from "typeorm";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 import { truncate } from "@/misc/truncate.js";
 import emoji from "../renderer/emoji.js";
+import { ArrayBuffertohex } from "jsrsasign";
 
 const logger = apLogger;
 
@@ -327,15 +328,23 @@ export async function createNote(
 	}
 
 	// References
-	let references: Note["id"][] = [];
+	let references = new Set<Note["id"]>([]);
 	if (note.references) {
+		logger.info(
+			`references: ${note.references}`,
+		);
 		// Resolve to Collection Object
 		const collection = await resolver.resolveCollection(note.references);
 		if (isCollectionOrOrderedCollection(collection)) {
-
+			logger.info(
+				`collection: ${collection}`,
+			);
 			const unresolvedItems = isCollection(collection)
 			? collection.items
 			: collection.orderedItems;
+			logger.info(
+				`items: ${unresolvedItems}`,
+			);
 			const items = await Promise.all(
 				toArray(unresolvedItems).map((x) => resolver?.resolve(x)),
 			);
@@ -349,7 +358,7 @@ export async function createNote(
 					.map((item) => limit(() => resolveNote(item, resolver))),
 			);
 			for (const note of referencedNotes.filter((note) => note != null)) {
-				references.push(note!.id);
+				references.add(note!.id);
 			}
 		}
 	}
@@ -462,7 +471,7 @@ export async function createNote(
 			files,
 			reply,
 			renote: quote,
-			references,
+			references: toArray(references),
 			name: note.name,
 			cw,
 			text,

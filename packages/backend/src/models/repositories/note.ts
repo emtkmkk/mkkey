@@ -319,13 +319,18 @@ export const NoteRepository = db.getRepository(Note).extend({
 
 						references: note.referenceIds.filter((x) => !/\W/.test(x)).length
 							? note.referenceIds.filter((x) => !/\W/.test(x)).map(async (x) => {
-								const reference = await this.findOneByOrFail({ id: x })
-								return await this.pack(reference || x, me, {
-									detail: true,
-									_hint_: options?._hint_,
-									showInvisible: options?.showInvisible,
-								})
-							})
+								console.log(`reference : ${x}`)
+								try {
+									return await this.pack(x, me, {
+										detail: true,
+										_hint_: options?._hint_,
+										showInvisible: options?.showInvisible,
+									});
+								} catch (e) {
+									console.log(`reference err ${x} : ${JSON.stringify(e,undefined,"\t")}`)
+									return null;
+								}
+							}).filter(Boolean)
 							: undefined,
 
 						poll:

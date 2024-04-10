@@ -316,6 +316,14 @@ export const NoteRepository = db.getRepository(Note).extend({
 							  })
 							: undefined,
 
+						references: note.referenceIds
+							? note.referenceIds.map((x) => this.pack(x, me, {
+									detail: true,
+									_hint_: options?._hint_,
+									showInvisible: options?.showInvisible,
+								}))
+							: undefined,
+
 						poll:
 							note.hasPoll && isVisible ? populatePoll(note, meId) : undefined,
 

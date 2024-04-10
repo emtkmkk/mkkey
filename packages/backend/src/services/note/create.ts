@@ -145,6 +145,7 @@ type Option = {
 	text?: string | null;
 	reply?: Note | null;
 	renote?: Note | null;
+	references?: string[] | null;
 	files?: DriveFile[] | null;
 	poll?: IPoll | null;
 	localOnly?: boolean | null;
@@ -1158,6 +1159,7 @@ async function insertNote(
 					: []
 				: [],
 		attachedFileTypes: data.files ? data.files.map((file) => file.type) : [],
+		referenceIds: data.references || [],
 		isPublicLikeList: data.isPublicLikeList ?? undefined,
 		isFirstNote: !!data.isFirstNote,
 		// 以下非正規化データ

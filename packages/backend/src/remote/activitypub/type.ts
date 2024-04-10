@@ -139,6 +139,7 @@ export interface IPost extends IObject {
 	_misskey_quote?: string;
 	quoteUrl?: string;
 	quoteUri?: string;
+	references?: ICollection;
 	_misskey_talk: boolean;
 }
 

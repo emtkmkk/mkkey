@@ -240,6 +240,13 @@ export class Note {
 	})
 	public renoteUserHost: string | null;
 
+	@Index()
+	@Column({
+		...id(),
+		array: true, default: '{}',
+	})
+	public referenceIds: Note["id"][];
+
 	@Column('timestamp with time zone', {
 		nullable: true,
 		comment: 'The updated date of the Note.',

@@ -170,6 +170,16 @@
 					>
 						<XNoteSimple :note="note.renote" />
 					</div>
+					<MkFolder v-if="note.references?.length" class="references">
+						<template #header>{{ note.references.length + " 件の参照" }}</template>
+						<div
+							v-for="reference in note.references"
+							class="reference"
+							@click.stop="emit('push', reference)"
+						>
+							<XNoteSimple :note="reference" />
+						</div>
+					</MkFolder>
 				</template>
 				<div
 					v-if="cwView && !showContent"
@@ -211,6 +221,7 @@ import MkUrlPreview from "@/components/MkUrlPreview.vue";
 import XShowMoreButton from "@/components/MkShowMoreButton.vue";
 import XCwButton from "@/components/MkCwButton.vue";
 import MkButton from "@/components/MkButton.vue";
+import MkFolder from "@/components/MkFolder.vue";
 import { extractUrlFromMfm } from "@/scripts/extract-url-from-mfm";
 import { extractMfmWithAnimation } from "@/scripts/extract-mfm";
 import { i18n } from "@/i18n";
@@ -251,7 +262,9 @@ const urls = props.note.text
 			.filter(
 				(url) =>
 					props.note.renote?.url !== url &&
-					props.note.renote?.uri !== url
+					props.note.renote?.uri !== url &&
+					(!props.note.references?.length || !props.note.references.map((x) => x.url).includes(url)) &&
+					(!props.note.references?.length || !props.note.references.map((x) => x.uri).includes(url))
 			)
 			.slice(0, 5)
 	: null;
@@ -363,6 +376,19 @@ function focusFooter(ev) {
 				> * {
 					padding: 1rem;
 					border: solid 0.0625rem var(--renote);
+					border-radius: 0.5rem;
+					transition: background 0.2s;
+					&:hover,
+					&:focus-within {
+						background-color: var(--panelHighlight);
+					}
+				}
+			}
+			> .references > .reference {
+				padding-top: 0.5rem;
+				> * {
+					padding: 1rem;
+					border: solid 0.0625rem var(--accent);
 					border-radius: 0.5rem;
 					transition: background 0.2s;
 					&:hover,

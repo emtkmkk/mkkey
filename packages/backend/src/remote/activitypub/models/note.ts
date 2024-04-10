@@ -40,6 +40,8 @@ import {
 	validPost,
 	isEmoji,
 	getApType,
+	isCollection,
+	isCollectionOrOrderedCollection,
 } from "../type.js";
 import type { Emoji } from "@/models/entities/emoji.js";
 import { genId } from "@/misc/gen-id.js";
@@ -324,6 +326,34 @@ export async function createNote(
 		}
 	}
 
+	// References
+	let references: Note["id"][] = [];
+	if (note.references) {
+		// Resolve to Collection Object
+		const collection = await resolver.resolveCollection(note.references);
+		if (isCollectionOrOrderedCollection(collection)) {
+
+			const unresolvedItems = isCollection(collection)
+			? collection.items
+			: collection.orderedItems;
+			const items = await Promise.all(
+				toArray(unresolvedItems).map((x) => resolver?.resolve(x)),
+			);
+
+			// Resolve and regist Notes
+			const limit = promiseLimit<Note | null>(2);
+			const referencedNotes = await Promise.all(
+				items
+					.filter((item) => getApType(item) === "Note") // TODO: Maybe it doesn't have to be a Note.
+					.slice(0, 100)
+					.map((item) => limit(() => resolveNote(item, resolver))),
+			);
+			for (const note of referencedNotes.filter((note) => note != null)) {
+				references.push(note!.id);
+			}
+		}
+	}
+
 	const cw = note.summary === "" ? null : note.summary;
 
 	// Text parsing
@@ -432,6 +462,7 @@ export async function createNote(
 			files,
 			reply,
 			renote: quote,
+			references,
 			name: note.name,
 			cw,
 			text,

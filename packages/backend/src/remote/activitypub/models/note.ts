@@ -331,13 +331,13 @@ export async function createNote(
 	let references = new Set<Note["id"]>();
 	if (note.references) {
 		logger.info(
-			`references: ${note.references}`,
+			`references: ${JSON.stringify(note.references,undefined,"\t")}`,
 		);
 		// Resolve to Collection Object
 		const collection = await resolver.resolveCollection(note.references);
 		if (isCollectionOrOrderedCollection(collection)) {
 			logger.info(
-				`collection: ${collection}`,
+				`collection: ${JSON.stringify(collection,undefined,"\t")}`,
 			);
 			const unresolvedItems = isCollection(collection)
 			? collection.items

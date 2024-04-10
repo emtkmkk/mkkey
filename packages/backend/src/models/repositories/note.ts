@@ -283,6 +283,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			files: isVisible ? DriveFiles.packMany(note.fileIds) : [],
 			replyId: note.replyId,
 			renoteId: note.renoteId,
+			referenceIds: note.referenceIds,
 			channelId: note.channelId || undefined,
 			channel: channel
 				? {
@@ -317,11 +318,13 @@ export const NoteRepository = db.getRepository(Note).extend({
 							: undefined,
 
 						references: note.referenceIds.length
-							? note.referenceIds.map(async (x) => (await this.pack(x, me, {
+							? note.referenceIds.map(async (x) => {
+								return await this.pack(x, me, {
 									detail: true,
 									_hint_: options?._hint_,
 									showInvisible: options?.showInvisible,
-								})))
+								})
+							})
 							: undefined,
 
 						poll:

@@ -471,7 +471,7 @@ export async function createNote(
 			files,
 			reply,
 			renote: quote,
-			references: toArray(references),
+			references: Array.from(references),
 			name: note.name,
 			cw,
 			text,

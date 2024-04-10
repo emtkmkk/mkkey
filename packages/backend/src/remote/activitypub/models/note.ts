@@ -300,6 +300,7 @@ export async function createNote(
 					};
 				}
 			} catch (e) {
+				console.log(JSON.stringify(e,undefined,"\t"));
 				return {
 					status:
 						e instanceof StatusError && !e.isRetryable

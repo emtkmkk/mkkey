@@ -2,7 +2,7 @@
 	<div v-size="{ max: [500] }" class="ssazuxis">
 		<header
 			class="_button"
-			:style="{ background: bg }"
+			:style="noStyle ? undefined : { background: bg }"
 			@click="showBody = !showBody"
 		>
 			<div class="title"><slot name="header"></slot></div>
@@ -48,6 +48,11 @@ export default defineComponent({
 			required: false,
 			default: null,
 		},
+		noStyle: {
+			type: Boolean,
+			required: false,
+			default: false,
+		}
 	},
 	data() {
 		return {

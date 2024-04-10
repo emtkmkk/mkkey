@@ -319,7 +319,6 @@ export const NoteRepository = db.getRepository(Note).extend({
 
 						references: note.referenceIds.filter((x) => !/\W/.test(x)).length
 							? (await Promise.allSettled(note.referenceIds.filter((x) => !/\W/.test(x)).map(async (x) => {
-								console.log(`reference : ${x}`);
 								try {
 									return (await this.pack(x, me, {
 										detail: true,
@@ -327,7 +326,6 @@ export const NoteRepository = db.getRepository(Note).extend({
 										showInvisible: options?.showInvisible,
 									}));
 								} catch (e) {
-									console.log(`reference err ${x} : ${JSON.stringify(e, undefined, "\t")}`);
 									return null;
 								}
 							}))).flatMap((result) =>

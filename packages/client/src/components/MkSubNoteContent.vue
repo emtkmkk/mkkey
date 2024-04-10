@@ -170,8 +170,8 @@
 					>
 						<XNoteSimple :note="note.renote" />
 					</div>
-					<MkFolder v-if="note.references?.filter((x) => !/\W/.test(x)).length" class="references">
-						<template #header>{{ note.references.filter(Boolean).length + " 件の参照" }}</template>
+					<MkFolder v-if="note.references?.length" class="references" no-style>
+						<template #header>{{ note.references.length + " 件の参照" }}</template>
 						<div
 							v-for="reference in note.references"
 							class="reference"
@@ -384,16 +384,19 @@ function focusFooter(ev) {
 					}
 				}
 			}
-			> .references > .reference {
+			> .references {
 				padding-top: 0.5rem;
-				> * {
-					padding: 1rem;
-					border: solid 0.0625rem var(--accent);
-					border-radius: 0.5rem;
-					transition: background 0.2s;
-					&:hover,
-					&:focus-within {
-						background-color: var(--panelHighlight);
+			 	> .reference {
+				padding-top: 0.5rem;
+					> * {
+						padding: 1rem;
+						border: solid 0.0625rem var(--accent);
+						border-radius: 0.5rem;
+						transition: background 0.2s;
+						&:hover,
+						&:focus-within {
+							background-color: var(--panelHighlight);
+						}
 					}
 				}
 			}

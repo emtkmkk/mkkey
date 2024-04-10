@@ -126,6 +126,7 @@
 						:detailed="true"
 						:detailedView="detailedView"
 						:parentId="appearNote.parentId"
+						:option="option"
 						@push="(e) => router.push(notePage(e))"
 						@focusfooter="footerEl.focus()"
 						@changeShowContent="(v) => (showContent = v)"
@@ -492,6 +493,7 @@ const props = defineProps<{
 	detailedView?: boolean;
 	notification?: boolean;
 	endpoint?: string;
+	option?: string;
 }>();
 
 const inChannel = inject("inChannel", null);

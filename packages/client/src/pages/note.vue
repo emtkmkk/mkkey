@@ -67,6 +67,7 @@
 									:key="note.id"
 									v-model:note="note"
 									class="note"
+									:option="option"
 								/>
 							</div>
 							<div
@@ -170,6 +171,7 @@ import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	noteId: string;
+	option?: string;
 }>();
 
 let note = $ref<null | misskey.entities.Note>();

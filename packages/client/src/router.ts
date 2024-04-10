@@ -51,6 +51,11 @@ export const routes = [
 		component: page(() => import("./pages/note.vue")),
 	},
 	{
+		name: "note-option",
+		path: "/notes/:noteId/:option",
+		component: page(() => import("./pages/note.vue")),
+	},
+	{
 		path: "/clips/:clipId",
 		component: page(() => import("./pages/clip.vue")),
 	},

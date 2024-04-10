@@ -170,7 +170,7 @@
 					>
 						<XNoteSimple :note="note.renote" />
 					</div>
-					<MkFolder v-if="note.references?.length" class="references" :expanded="false" no-style>
+					<MkFolder v-if="note.references?.length" class="references" :expanded="refExpand" no-style>
 						<template #header>{{ note.references.length + " 件の参照" }}</template>
 						<div
 							v-for="reference in note.references"
@@ -234,6 +234,7 @@ const props = defineProps<{
 	conversation?;
 	detailed?: boolean;
 	detailedView?: boolean;
+	option?: string;
 }>();
 
 const emit = defineEmits<{
@@ -268,6 +269,7 @@ const urls = props.note.text
 			)
 			.slice(0, 5)
 	: null;
+let refExpand = $ref(props.option?.includes("references"));
 
 let showContent = ref(!cwView);
 

@@ -27,6 +27,7 @@
 				tabindex="-1"
 				:note="appearNote"
 				:detailedView="true"
+				:option="option"
 			></MkNote>
 		</div>
 
@@ -106,6 +107,7 @@ const props = defineProps<{
 	note: misskey.entities.Note;
 	pinned?: boolean;
 	notAutoFocus?: boolean;
+	option?: string;
 }>();
 
 const inChannel = inject("inChannel", null);

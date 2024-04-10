@@ -170,8 +170,8 @@
 					>
 						<XNoteSimple :note="note.renote" />
 					</div>
-					<MkFolder v-if="note.references?.length" class="references">
-						<template #header>{{ note.references.length + " 件の参照" }}</template>
+					<MkFolder v-if="note.references?.filter(Boolean).length" class="references">
+						<template #header>{{ note.references.filter(Boolean).length + " 件の参照" }}</template>
 						<div
 							v-for="reference in note.references"
 							class="reference"

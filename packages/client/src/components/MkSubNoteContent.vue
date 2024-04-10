@@ -269,7 +269,7 @@ const urls = props.note.text
 			)
 			.slice(0, 5)
 	: null;
-let refExpand = $ref(props.option?.includes("references"));
+let refExpand = $ref(!!props.option?.includes("references"));
 
 let showContent = ref(!cwView);
 

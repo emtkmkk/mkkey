@@ -328,7 +328,7 @@ export async function createNote(
 	}
 
 	// References
-	let references = new Set<Note["id"]>([]);
+	let references = new Set<Note["id"]>();
 	if (note.references) {
 		logger.info(
 			`references: ${note.references}`,

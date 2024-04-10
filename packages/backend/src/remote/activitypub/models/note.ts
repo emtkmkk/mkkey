@@ -338,7 +338,7 @@ export async function createNote(
 		if (isCollectionOrOrderedCollection(collection)) {
 			
 			if (collection.first?.items) {
-					const items = await Promise.all(
+					let items = await Promise.all(
 						toArray(collection.first.items).map((x) => resolver?.resolve(x)),
 					);
 					let next = collection.first.next;
@@ -347,6 +347,9 @@ export async function createNote(
 							headers: { Accept: "application/json" },
 						});
 						let json_data = JSON.parse(await data.text());
+						logger.info(
+							`references_next: ${JSON.stringify(json_data,undefined,"\t")}`,
+						);
 			
 						for (let i = 0; i < json_data.items; i++) {
 							items.push(await resolver?.resolve(json_data.items[i]));

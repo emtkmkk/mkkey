@@ -316,7 +316,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 							  })
 							: undefined,
 
-						references: note.referenceIds
+						references: note.referenceIds.length
 							? note.referenceIds.map((x) => this.pack(x, me, {
 									detail: true,
 									_hint_: options?._hint_,

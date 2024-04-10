@@ -336,29 +336,22 @@ export async function createNote(
 		// Resolve to Collection Object
 		const collection = await resolver.resolveCollection(note.references);
 		if (isCollectionOrOrderedCollection(collection)) {
-			logger.info(
-				`collection: ${JSON.stringify(collection,undefined,"\t")}`,
-			);
-			const unresolvedItems = isCollection(collection)
-			? collection.items
-			: collection.orderedItems;
-			logger.info(
-				`items: ${unresolvedItems}`,
-			);
-			const items = await Promise.all(
-				toArray(unresolvedItems).map((x) => resolver?.resolve(x)),
-			);
+			if (collection.first?.items) {
+					const items = await Promise.all(
+						toArray(collection.first.items).map((x) => resolver?.resolve(x)),
+					);
 
-			// Resolve and regist Notes
-			const limit = promiseLimit<Note | null>(2);
-			const referencedNotes = await Promise.all(
-				items
-					.filter((item) => getApType(item) === "Note") // TODO: Maybe it doesn't have to be a Note.
-					.slice(0, 100)
-					.map((item) => limit(() => resolveNote(item, resolver))),
-			);
-			for (const note of referencedNotes.filter((note) => note != null)) {
-				references.add(note!.id);
+				// Resolve and regist Notes
+				const limit = promiseLimit<Note | null>(2);
+				const referencedNotes = await Promise.all(
+					items
+						.filter((item) => getApType(item) === "Note") // TODO: Maybe it doesn't have to be a Note.
+						.slice(0, 100)
+						.map((item) => limit(() => resolveNote(item, resolver))),
+				);
+				for (const note of referencedNotes.filter((note) => note != null)) {
+					references.add(note!.id);
+				}
 			}
 		}
 	}

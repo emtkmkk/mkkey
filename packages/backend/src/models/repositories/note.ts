@@ -363,6 +363,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 				
 			}
 		}
+		
+		if (packed.text?.includes("[[参照]]")) packed.text?.replaceAll("[[参照]]","[<参照>]");
 
 		return packed;
 	},

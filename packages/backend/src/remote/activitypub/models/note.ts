@@ -285,8 +285,10 @@ export async function createNote(
 					status: "permerror" | "temperror";
 			  }
 		> => {
-			if (typeof uri !== "string" || !uri.match(/^https?:/))
+			if (typeof uri !== "string" || !uri.match(/^https?:/)) {
+				console.log(`ResolveNoteErr : ${uri}`);
 				return { status: "permerror" };
+			}
 			try {
 				const res = await resolveNote(uri);
 				if (res) {
@@ -295,12 +297,13 @@ export async function createNote(
 						res,
 					};
 				} else {
+					console.log("ResolveNoteErr : !res");
 					return {
 						status: "permerror",
 					};
 				}
 			} catch (e) {
-				console.log(JSON.stringify(e,undefined,"\t"));
+				console.log(`ResolveNoteErr : ${JSON.stringify(e,undefined,"\t")}`);
 				return {
 					status:
 						e instanceof StatusError && !e.isRetryable
@@ -339,10 +342,9 @@ export async function createNote(
 		if (isCollectionOrOrderedCollection(collection)) {
 			
 			if (collection.first?.items) {
-					let items = await (await Promise.allSettled(
+					let items = (await Promise.allSettled(
 						toArray(collection.first.items).map((x) => resolver?.resolve(x))
-					)).flatMap((result) =>
-						result.status === "fulfilled" ? [result.value] : [],
+					)).flatMap((result) => result.status === "fulfilled" ? [result.value] : []
 					);
 					let next = collection.first.next;
 					while (next) {
@@ -355,9 +357,7 @@ export async function createNote(
 						);
 			
 						for (let i = 0; i < json_data.items?.length; i++) {
-							items = [...items, ...(await (await Promise.allSettled([resolver?.resolve(json_data.items[i])])).flatMap((result) =>
-								result.status === "fulfilled" ? [result.value] : [],
-							))];
+							items = [...items, ...(await Promise.allSettled([resolver?.resolve(json_data.items[i])])).flatMap((result) => result.status === "fulfilled" ? [result.value] : [])];
 						}
 						next = json_data.next
 					}

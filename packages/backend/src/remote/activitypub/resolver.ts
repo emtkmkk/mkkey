@@ -30,7 +30,7 @@ export default class Resolver {
 	private user?: ILocalUser;
 	private recursionLimit?: number;
 
-	constructor(recursionLimit = 100) {
+	constructor(recursionLimit = 500) {
 		this.history = new Set();
 		this.recursionLimit = recursionLimit;
 	}

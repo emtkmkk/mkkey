@@ -336,10 +336,23 @@ export async function createNote(
 		// Resolve to Collection Object
 		const collection = await resolver.resolveCollection(note.references);
 		if (isCollectionOrOrderedCollection(collection)) {
+			
 			if (collection.first?.items) {
 					const items = await Promise.all(
 						toArray(collection.first.items).map((x) => resolver?.resolve(x)),
 					);
+					let next = collection.first.next;
+					while (next) {
+						let data = await fetch(next, {
+							headers: { Accept: "application/json" },
+						});
+						let json_data = JSON.parse(await data.text());
+			
+						for (let i = 0; i < json_data.items; i++) {
+							items.push(await resolver?.resolve(json_data.items[i]));
+						}
+						next = json_data.next
+					}
 
 				// Resolve and regist Notes
 				const limit = promiseLimit<Note | null>(2);

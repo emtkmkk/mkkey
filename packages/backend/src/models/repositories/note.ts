@@ -318,19 +318,21 @@ export const NoteRepository = db.getRepository(Note).extend({
 							: undefined,
 
 						references: note.referenceIds.filter((x) => !/\W/.test(x)).length
-							? note.referenceIds.filter((x) => !/\W/.test(x)).map(async (x) => {
-								console.log(`reference : ${x}`)
+							? (await Promise.allSettled(note.referenceIds.filter((x) => !/\W/.test(x)).map(async (x) => {
+								console.log(`reference : ${x}`);
 								try {
-									return await this.pack(x, me, {
+									return (await this.pack(x, me, {
 										detail: true,
 										_hint_: options?._hint_,
 										showInvisible: options?.showInvisible,
-									});
+									}));
 								} catch (e) {
-									console.log(`reference err ${x} : ${JSON.stringify(e,undefined,"\t")}`)
+									console.log(`reference err ${x} : ${JSON.stringify(e, undefined, "\t")}`);
 									return null;
 								}
-							}).filter(Boolean)
+							}))).flatMap((result) =>
+								result.status === "fulfilled" ? [result.value] : [],
+							)
 							: undefined,
 
 						poll:

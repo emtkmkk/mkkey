@@ -317,8 +317,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 							  })
 							: undefined,
 
-						references: note.referenceIds.length
-							? note.referenceIds.map(async (x) => {
+						references: note.referenceIds.filter((x) => !/\W/.test(x)).length
+							? note.referenceIds.filter((x) => !/\W/.test(x)).map(async (x) => {
 								const reference = await this.findOneByOrFail({ id: x })
 								return await this.pack(reference || x, me, {
 									detail: true,

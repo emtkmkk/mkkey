@@ -352,7 +352,7 @@ export async function createNote(
 						);
 			
 						for (let i = 0; i < json_data.items; i++) {
-							items.push(await resolver?.resolve(json_data.items[i]));
+							items = [...items, ...(await Promise.all([resolver?.resolve(json_data.items[i])]))];
 						}
 						next = json_data.next
 					}

@@ -100,6 +100,7 @@ const nodeinfo2 = async () => {
 			enableServiceWorker: meta.enableServiceWorker,
 			proxyAccountName: proxyAccount ? proxyAccount.username : null,
 			themeColor: meta.themeColor || "#31748f",
+			features: ["emoji_reaction", "quote", "status_reference", "circle"],
 		},
 	};
 };

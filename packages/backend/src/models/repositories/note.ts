@@ -317,8 +317,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 							  })
 							: undefined,
 
-						references: note.referenceIds.filter((x) => !/\W/.test(x)).length
-							? (await Promise.allSettled(note.referenceIds.filter((x) => !/\W/.test(x)).map(async (x) => {
+						references: note.referenceIds.filter((x) => !/\W/.test(x) && x !== note.renoteId).length
+							? (await Promise.allSettled(note.referenceIds.filter((x) => !/\W/.test(x) && x !== note.renoteId).map(async (x) => {
 								try {
 									return (await this.pack(x, me, {
 										detail: true,

@@ -97,7 +97,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			)
 				.map((emoji) => {
 					if (
-						["voskey.icalo.net", "9ineverse.com"].includes(emoji.host) ||
+						["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(emoji.host) ||
 						emoji.license?.includes("コピー可否 : deny") ||
 						emoji.category?.startsWith("!")
 					) {

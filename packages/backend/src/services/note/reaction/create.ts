@@ -272,7 +272,7 @@ export default async (
 		// ブラックリストに登録済みのホスト または リモート絵文字でライセンスにコピー拒否がある場合 は いいねに変更して外部に送信
 		// TODO : リアクション解除時も変換をかけた方が良いかも
 		if (
-			["voskey.icalo.net", "9ineverse.com"].includes(emoji?.host) ||
+			["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(emoji?.host) ||
 			(emoji?.host && emoji?.license?.includes("コピー可否 : deny"))
 		)
 			record.reaction = await getFallbackReaction();

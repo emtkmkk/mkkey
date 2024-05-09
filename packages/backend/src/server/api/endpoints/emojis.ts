@@ -97,7 +97,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			)
 				.map((emoji) => {
 					if (
-						["voskey.icalo.net", "9ineverse.com"].includes(emoji.host) ||
+						["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(emoji.host) ||
 						emoji.license?.includes("コピー可否 : deny") ||
 						emoji.category?.startsWith("!")
 					) {
@@ -181,7 +181,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		).filter(
 			(x) =>
 				!emojiNames.includes(x.name) &&
-				!["voskey.icalo.net", "9ineverse.com"].includes(x.host) &&
+				!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(x.host) &&
 				(x.host?.length ?? 0) < 50 &&
 				x.license?.includes("コピー可否 : allow"),
 		);
@@ -220,7 +220,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		).filter(
 			(x) =>
 				!emojiNames.includes(x.name) &&
-				!["voskey.icalo.net", "9ineverse.com"].includes(x.host) &&
+				!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(x.host) &&
 				(x.name?.length ?? 0) < 100 &&
 				(x.host?.length ?? 0) < 50 &&
 				!x.license?.includes("コピー可否 : deny"),

@@ -198,13 +198,13 @@ async function spawnWorkers(
 	bootLogger.info(
 		`Starting ${clusterLimits?.web} web workers and ${clusterLimits?.queue} queue workers (total ${total})...`,
 	);
-	await Promise.all(workers.map((mode) => spawnWorker(mode)));
+	await Promise.all(workers.map((mode, index) => spawnWorker(mode, `${index}`)));
 	bootLogger.succ("All workers started");
 }
 
-function spawnWorker(mode: "web" | "queue"): Promise<void> {
+function spawnWorker(mode: "web" | "queue", index = "?"): Promise<void> {
 	return new Promise((res) => {
-		const worker = cluster.fork({ mode });
+		const worker = cluster.fork({ mode, index });
 		worker.on("message", (message) => {
 			if (message === "listenFailed") {
 				bootLogger.error("The server listen failed due to the previous error.");

@@ -24,7 +24,7 @@ export default async function () {
 			? `(${process.env.mode})`
 			: "";
 	const type = cluster.isPrimary ? "(master)" : "(worker)";
-	process.title = `Calckey ${mode} ${type}`;
+	process.title = ["Calckey",mode,type].filter(Boolean).join(" ");
 
 	if (cluster.isPrimary || envOption.disableClustering) {
 		await masterMain();

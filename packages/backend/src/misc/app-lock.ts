@@ -14,7 +14,7 @@ const retryDelay = 100;
  */
 export async function getApLock(
 	uri: string,
-	timeout = 30 * 1000,
+	timeout = 15 * 1000,
 ): Promise<Mutex> {
 	const lock = new Mutex(redisClient, `ap-object:${uri}`, {
 		lockTimeout: timeout,
@@ -26,7 +26,7 @@ export async function getApLock(
 
 export async function getFetchInstanceMetadataLock(
 	host: string,
-	timeout = 30 * 1000,
+	timeout = 15 * 1000,
 ): Promise<Mutex> {
 	const lock = new Mutex(redisClient, `instance:${host}`, {
 		lockTimeout: timeout,
@@ -38,7 +38,7 @@ export async function getFetchInstanceMetadataLock(
 
 export async function getChartInsertLock(
 	lockKey: string,
-	timeout = 30 * 1000,
+	timeout = 15 * 1000,
 ): Promise<Mutex> {
 	const lock = new Mutex(redisClient, `chart-insert:${lockKey}`, {
 		lockTimeout: timeout,

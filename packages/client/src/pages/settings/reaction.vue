@@ -15,7 +15,7 @@
 		</FormSwitch>
 		<div v-if="!enableEmojiReactions">
 			<FormSwitch
-				v-model="showEmojisInRectionNotifications"
+				v-model="showEmojisInReactionNotifications"
 				class="_formBlock"
 			>
 				{{ i18n.ts.showEmojisInReactionNotifications }}

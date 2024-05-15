@@ -347,20 +347,22 @@ export default define(meta, paramDef, async (ps, user) => {
 						url: url.url.trim(),
 						user,
 						folderId: url?.folderId ?? undefined,
-						sensitive: url?.isSensitive || false,
-						force: url?.force || false,
+						sensitive: url?.isSensitive,
+						force: url?.force,
 						comment: url?.comment ?? undefined,
 					})
 				}
 			}
-			const packedFile = await DriveFiles.pack(file, { self: true })
-			publishMainStream(user.id, "urlUploadFinished", {
-				marker: typeof url === "string" ? null : url.marker,
-				file: packedFile,
-			});
-			files.push(file)
-			if (files.length >= 16) {
-				break;
+			if (file) {
+				const packedFile = await DriveFiles.pack(file, { self: true })
+				publishMainStream(user.id, "urlUploadFinished", {
+					marker: typeof url === "string" ? null : url.marker,
+					file: packedFile,
+				});
+				files.push(file)
+				if (files.length >= 16) {
+					break;
+				}
 			}
 		}
 	}

@@ -344,10 +344,10 @@ export default define(meta, paramDef, async (ps, user) => {
 				file = await uploadFromUrl({
 					url: url.url,
 					user,
-					folderId: url?.folderId,
-					sensitive: url?.isSensitive,
-					force: url?.force,
-					comment: url?.comment,
+					folderId: url?.folderId ?? undefined,
+					sensitive: url?.isSensitive ?? undefined,
+					force: url?.force ?? undefined,
+					comment: url?.comment ?? undefined,
 				})
 			}
 			const packedFile = await DriveFiles.pack(file, { self: true })

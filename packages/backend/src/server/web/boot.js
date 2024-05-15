@@ -119,7 +119,7 @@
 	}
 	if (wallpapers) {
 		const parseWps = JSON.parse(wallpapers);
-		document.documentElement.style.backgroundImage = `url(${wallpapers[Math.floor(Math.random() * parseWps.length)]})`;
+		document.documentElement.style.backgroundImage = `url(${parseWps[Math.floor(Math.random() * parseWps.length)]})`;
 	}
 	
 

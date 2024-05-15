@@ -148,7 +148,7 @@
 			inline
 			class="_formBlock"
 			style="margin-left: 2em"
-			@click="location.reload()"
+			@click="reloadWindow"
 			>{{ i18n.ts.reload }}</FormButton
 		>
 
@@ -156,7 +156,7 @@
 			<MkLink :url="wallpaper" target="_blank" style="margin-right: 2em">{{
 				i18n.ts.wallpaper + (index + 1)
 			}}</MkLink>
-			<FormButton inline class="_formBlock" @click="wallpapers.value = wallpapers.value.filter((x) => {x !== wallpaper})">{{
+			<FormButton inline class="_formBlock" @click="removeWallpaper(wallpaper)">{{
 				i18n.ts.removeWallpaper
 			}}</FormButton>
 		</div>
@@ -277,10 +277,18 @@ fetchThemes().then(() => {
 	installedThemes.value = getThemes();
 });
 
+function reloadWindow() {
+	location.reload();
+}
+
 function setWallpaper(event) {
 	selectFile(event.currentTarget ?? event.target, null).then((file) => {
 		wallpapers.value = [...wallpapers.value, file.url];
 	});
+}
+
+function removeWallpaper(wallpaper) {
+	wallpapers.value = wallpapers.value.filter((x) => {x !== wallpaper});
 }
 
 const headerActions = $computed(() => []);

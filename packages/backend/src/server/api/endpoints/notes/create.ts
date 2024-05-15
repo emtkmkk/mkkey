@@ -154,6 +154,7 @@ export const paramDef = {
 		},
 		fileUrls:  {
 			type: "array",
+			nullable: true,
 			uniqueItems: true,
 			minItems: 1,
 			maxItems: 16,

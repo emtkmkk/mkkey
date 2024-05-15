@@ -474,7 +474,7 @@ export default async (
 			return rej("この内容の返信は現在制限されています。絵文字だけの返信なら、リアクション機能を使用してみませんか？");
 		}
 
-		if (!user.host && (data.visibility === "public" || data.cw.trim().toUpperCase() === "CW")) {
+		if (!user.host && (data.visibility === "public" || data.cw?.trim().toUpperCase() === "CW")) {
 			const isIncludeNgWordRet = isIncludeNgWordIsNote(data);
 
 			if (isIncludeNgWordRet) {

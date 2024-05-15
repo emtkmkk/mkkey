@@ -1,5 +1,5 @@
 export function isIncludeNgWordIsNote(note: any): string {
-	if (!note.text ||  note.visibility !== "public") {
+	if (!note.text) {
 		return "";
 	}
 

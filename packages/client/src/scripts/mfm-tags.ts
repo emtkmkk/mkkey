@@ -165,6 +165,13 @@ export const MFM_TAGS_JP = [
 		defaultOption: "$[handaku ",
 	},
 	{
+		name: "space",
+		ja: "空白付与",
+		exportLeft: "$[space ",
+		exportRight: "]",
+		defaultOption: "$[space ",
+	},
+	{
 		name: "morse",
 		ja: "モールス",
 		exportLeft: "$[morse ",
@@ -173,9 +180,9 @@ export const MFM_TAGS_JP = [
 	},
 	{ name: "ruby", ja: "ルビ振り", exportLeft: "$[ruby ", exportRight: "]" },
 	{
-		name: "unixtime",
+		name: "time",
 		ja: "時間",
-		exportLeft: `$[unixtime ${new Date().toLocaleString()}`,
+		exportLeft: `$[time ${new Date().toLocaleString()}`,
 		exportRight: "]",
 	},
 	{ name: "code", ja: "行コード", exportLeft: "`", exportRight: "`" },

@@ -57,6 +57,19 @@ export function preprocess(text: string): string {
 				node.props.text = mfm.toString(node.children);
 				node.children = undefined;
 			}
+			if (node.type === "fn" && node.props.name === "space") {
+				mfm.inspect(node.children, (x) => {
+					if (x.type !== "text" || !x.props.text) return;
+					x.props.text = x.props.text
+						.split("")
+						.map((x) => (/[\s　]/.test(x) ? x : `${x}　`))
+						.join("")
+						.replace(/(.*)　$/,"$1");
+				});
+				node.type = "text";
+				node.props.text = mfm.toString(node.children);
+				node.children = undefined;
+			}
 			if (
 				node.type === "fn" &&
 				(node.props.name === "center" || node.props.name === "c")

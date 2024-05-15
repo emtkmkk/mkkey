@@ -474,7 +474,7 @@ export default async (
 			return rej("この内容の返信は現在制限されています。絵文字だけの返信なら、リアクション機能を使用してみませんか？");
 		}
 
-		if (!user.host && data.visibility === "public") {
+		if (!user.host && (data.visibility === "public" || data.cw.trim().toUpperCase() === "CW")) {
 			const isIncludeNgWordRet = isIncludeNgWordIsNote(data);
 
 			if (isIncludeNgWordRet) {
@@ -505,7 +505,7 @@ export default async (
 			if (data.renote) {
 				const isIncludeNgWordRtRet = isIncludeNgWordIsNote(data.renote);
 				if (isIncludeNgWordRtRet) {
-					if (isIncludeNgWordRet === "NG") {
+					if (isIncludeNgWordRtRet === "NG") {
 						if (user.maxRankPoint < 1200) data.visibility = "home";
 					} else if (data.text) {
 						if (!data.cw) {

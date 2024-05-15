@@ -262,7 +262,7 @@ watch(wallpapers, () => {
 	if (!wallpapers || !wallpapers.value.length) {
 		localStorage.removeItem("wallpapers");
 	} else {
-		localStorage.setItem("wallpapers", JSON.stringify(wallpapers));
+		localStorage.setItem("wallpapers", JSON.stringify(wallpapers.value));
 	}
 	reloadFlg.value = true;
 });

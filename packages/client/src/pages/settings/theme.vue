@@ -141,6 +141,14 @@
 			@click="setWallpaper"
 			>{{ i18n.ts.setWallpaper }}</FormButton
 		>
+		<FormButton
+			primary
+			inline
+			class="_formBlock"
+			style="margin-left: 2em"
+			@click="location.reload()"
+			>{{ i18n.ts.reload }}</FormButton
+		>
 
 		<div v-for="(wallpaper, index) in wallpapers">
 			<MkLink :url="wallpaper" target="_blank" style="margin-right: 2em">{{
@@ -237,8 +245,10 @@ const darkMode = computed(defaultStore.makeGetterSetter("darkMode"));
 const syncDeviceDarkMode = computed(
 	ColdDeviceStorage.makeGetterSetter("syncDeviceDarkMode")
 );
-const wallpapers = ref(JSON.parse(localStorage.getItem("wallpapers") ?? "") || []);
+const wallpapers = ref(JSON.parse(localStorage.getItem("wallpapers") ?? "[]") || []);
 const themesCount = installedThemes.value.length;
+
+const reloadFlg = ref(false);
 
 watch(syncDeviceDarkMode, () => {
 	if (syncDeviceDarkMode.value) {
@@ -252,6 +262,7 @@ watch(wallpapers, () => {
 	} else {
 		localStorage.setItem("wallpapers", JSON.stringify(wallpapers));
 	}
+	reloadFlg.value = true;
 });
 
 onActivated(() => {

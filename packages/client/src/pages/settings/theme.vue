@@ -144,7 +144,7 @@
 
 		<div v-for="(wallpaper, index) in wallpapers">
 			<MkLink :url="wallpaper" target="_blank" style="margin-right: 2em">{{
-				i18n.ts.wallpaper + index
+				i18n.ts.wallpaper + (index + 1)
 			}}</MkLink>
 			<FormButton inline class="_formBlock" @click="wallpapers = wallpapers.filter((x) => {x !== wallpaper})">{{
 				i18n.ts.removeWallpaper

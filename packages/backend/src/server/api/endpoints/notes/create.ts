@@ -172,10 +172,10 @@ export const paramDef = {
 								format: "misskey:id",
 								nullable: true,
 							},
-							isSensitive: { type: "boolean", default: false },
+							isSensitive: { type: "boolean" },
 							comment: { type: "string", nullable: true, maxLength: 512 },
 							marker: { type: "string", nullable: true },
-							force: { type: "boolean", default: false },
+							force: { type: "boolean" },
 						},
 						required: ["url"],
 					},
@@ -344,8 +344,8 @@ export default define(meta, paramDef, async (ps, user) => {
 					url: url.url,
 					user,
 					folderId: url?.folderId ?? undefined,
-					sensitive: url?.isSensitive ?? undefined,
-					force: url?.force ?? undefined,
+					sensitive: url?.isSensitive || false,
+					force: url?.force || false,
 					comment: url?.comment ?? undefined,
 				})
 			}

@@ -137,11 +137,13 @@
 		</FormSection>
 
 		<FormButton
+			inline
 			class="_formBlock"
 			@click="setWallpaper"
 			>{{ i18n.ts.setWallpaper }}</FormButton
 		>
 		<FormButton
+			v-if="reloadFlg"
 			primary
 			inline
 			class="_formBlock"

@@ -288,7 +288,7 @@ function setWallpaper(event) {
 }
 
 function removeWallpaper(index) {
-	wallpapers.value = wallpapers.value.filter((x, i) => {i !== index});
+	wallpapers.value = wallpapers.value.filter((x, i) => i !== index);
 }
 
 const headerActions = $computed(() => []);

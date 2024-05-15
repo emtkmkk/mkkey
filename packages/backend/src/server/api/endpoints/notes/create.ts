@@ -335,19 +335,23 @@ export default define(meta, paramDef, async (ps, user) => {
 		for (const url of ps.fileUrls) {
 			let file;
 			if (typeof url === "string") {
-				file = await uploadFromUrl({
-					url,
-					user
-				})
+				if (url.trim()) {
+					file = await uploadFromUrl({
+						url: url.trim(),
+						user
+					})
+				}
 			} else {
-				file = await uploadFromUrl({
-					url: url.url,
-					user,
-					folderId: url?.folderId ?? undefined,
-					sensitive: url?.isSensitive || false,
-					force: url?.force || false,
-					comment: url?.comment ?? undefined,
-				})
+				if (url.url.trim()) {
+					file = await uploadFromUrl({
+						url: url.url.trim(),
+						user,
+						folderId: url?.folderId ?? undefined,
+						sensitive: url?.isSensitive || false,
+						force: url?.force || false,
+						comment: url?.comment ?? undefined,
+					})
+				}
 			}
 			const packedFile = await DriveFiles.pack(file, { self: true })
 			publishMainStream(user.id, "urlUploadFinished", {

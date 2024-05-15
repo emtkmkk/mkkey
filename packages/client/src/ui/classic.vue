@@ -80,7 +80,7 @@ let pageMetadata = $ref<null | ComputedRef<PageMetadata>>();
 let widgetsShowing = $ref(false);
 let fullView = $ref(false);
 let globalHeaderHeight = $ref(0);
-const wallpaper = localStorage.getItem("wallpaper") != null;
+const wallpapers = localStorage.getItem("wallpapers") != null && JSON.parse(localStorage.getItem("wallpapers") ?? "").length;
 const showMenuOnTop = $computed(() => defaultStore.state.menuDisplay === "top");
 let live2d = $ref<HTMLIFrameElement>();
 let widgetsLeft = $ref();

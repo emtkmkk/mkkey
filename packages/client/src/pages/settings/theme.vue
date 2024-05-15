@@ -137,14 +137,19 @@
 		</FormSection>
 
 		<FormButton
-			v-if="wallpaper == null"
 			class="_formBlock"
 			@click="setWallpaper"
 			>{{ i18n.ts.setWallpaper }}</FormButton
 		>
-		<FormButton v-else class="_formBlock" @click="wallpaper = null">{{
-			i18n.ts.removeWallpaper
-		}}</FormButton>
+
+		<div v-for="(wallpaper, index) in wallpapers">
+			<MkLink :url="wallpaper" target="_blank" style="margin-right: 2em">{{
+				i18n.ts.wallpaper + index
+			}}</MkLink>
+			<FormButton inline class="_formBlock" @click="wallpapers = wallpapers.filter((x) => {x !== wallpaper})">{{
+				i18n.ts.removeWallpaper
+			}}</FormButton>
+		</div>
 	</div>
 </template>
 
@@ -156,6 +161,7 @@ import FormSelect from "@/components/form/select.vue";
 import FormSection from "@/components/form/section.vue";
 import FormLink from "@/components/form/link.vue";
 import FormButton from "@/components/MkButton.vue";
+import MkLink from "@/components/MkLink.vue";
 import { getBuiltinThemesRef } from "@/scripts/theme";
 import { selectFile } from "@/scripts/select-file";
 import { isDeviceDarkmode } from "@/scripts/is-device-darkmode";
@@ -231,7 +237,7 @@ const darkMode = computed(defaultStore.makeGetterSetter("darkMode"));
 const syncDeviceDarkMode = computed(
 	ColdDeviceStorage.makeGetterSetter("syncDeviceDarkMode")
 );
-const wallpaper = ref(localStorage.getItem("wallpaper"));
+const wallpapers = ref(JSON.parse(localStorage.getItem("wallpapers") ?? "") || []);
 const themesCount = installedThemes.value.length;
 
 watch(syncDeviceDarkMode, () => {
@@ -240,13 +246,12 @@ watch(syncDeviceDarkMode, () => {
 	}
 });
 
-watch(wallpaper, () => {
-	if (wallpaper.value == null) {
-		localStorage.removeItem("wallpaper");
+watch(wallpapers, () => {
+	if (!wallpapers || !wallpapers.value.length) {
+		localStorage.removeItem("wallpapers");
 	} else {
-		localStorage.setItem("wallpaper", wallpaper.value);
+		localStorage.setItem("wallpapers", JSON.stringify(wallpapers));
 	}
-	location.reload();
 });
 
 onActivated(() => {
@@ -261,7 +266,7 @@ fetchThemes().then(() => {
 
 function setWallpaper(event) {
 	selectFile(event.currentTarget ?? event.target, null).then((file) => {
-		wallpaper.value = file.url;
+		wallpapers.value.push(file.url);
 	});
 }
 

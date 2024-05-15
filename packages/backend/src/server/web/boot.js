@@ -111,9 +111,17 @@
 	}
 
 	const wallpaper = localStorage.getItem("wallpaper");
-	if (wallpaper) {
-		document.documentElement.style.backgroundImage = `url(${wallpaper})`;
+	let wallpapers = localStorage.getItem("wallpapers");
+	if (wallpaper && !wallpapers) {
+		wallpapers = JSON.stringify([wallpaper]);
+		localStorage.setItem("wallpapers",wallpapers);
+		localStorage.removeItem("wallpaper");
 	}
+	if (wallpapers) {
+		const parseWps = JSON.parse(wallpapers);
+		document.documentElement.style.backgroundImage = `url(${wallpapers[Math.floor(Math.random() * parseWps.length)]})`;
+	}
+	
 
 	const customCss = localStorage.getItem("customCss");
 	if (customCss && customCss.length > 0) {

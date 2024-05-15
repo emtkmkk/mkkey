@@ -17,6 +17,8 @@ import { ApiError } from "../../error.js";
 import define from "../../define.js";
 import { HOUR } from "@/const.js";
 import { getNote } from "../../common/getters.js";
+import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
+import { publishMainStream } from "@/services/stream.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -149,6 +151,36 @@ export const paramDef = {
 				expiredAfter: { type: "integer", nullable: true, minimum: 1 },
 			},
 			required: ["choices"],
+		},
+		fileUrls:  {
+			type: "array",
+			uniqueItems: true,
+			minItems: 1,
+			maxItems: 16,
+			items: {
+				anyOf: [
+					{
+						type: "string",
+					},
+					{
+						type: "object",
+						properties: {
+							url: { type: "string" },
+							folderId: {
+								type: "string",
+								format: "misskey:id",
+								nullable: true,
+								default: null,
+							},
+							isSensitive: { type: "boolean", default: false },
+							comment: { type: "string", nullable: true, maxLength: 512, default: null },
+							marker: { type: "string", nullable: true, default: null },
+							force: { type: "boolean", default: false },
+						},
+						required: ["url"],
+					},
+				],
+			},
 		},
 	},
 	anyOf: [
@@ -296,6 +328,36 @@ export default define(meta, paramDef, async (ps, user) => {
 
 		if (channel == null) {
 			throw new ApiError(meta.errors.noSuchChannel);
+		}
+	}
+
+	if (files.length < 16 && ps.fileUrls?.length) {
+		for (const url of ps.fileUrls) {
+			let file;
+			if (typeof url === "string") {
+				file = await uploadFromUrl({
+					url,
+					user
+				})
+			} else {
+				file = await uploadFromUrl({
+					url: url.url,
+					user,
+					folderId: url?.folderId,
+					sensitive: url?.isSensitive,
+					force: url?.force,
+					comment: url?.comment,
+				})
+			}
+			const packedFile = await DriveFiles.pack(file, { self: true })
+			publishMainStream(user.id, "urlUploadFinished", {
+				marker: typeof url === "string" ? null : url.marker,
+				file: packedFile,
+			});
+			files.push(file)
+			if (files.length >= 16) {
+				break;
+			}
 		}
 	}
 

@@ -152,7 +152,7 @@ export const paramDef = {
 			},
 			required: ["choices"],
 		},
-		fileUrls:  {
+		fileUrls: {
 			type: "array",
 			nullable: true,
 			uniqueItems: true,
@@ -333,36 +333,40 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	if (files.length < 16 && ps.fileUrls?.length) {
 		for (const url of ps.fileUrls) {
-			let file;
-			if (typeof url === "string") {
-				if (url.trim() && url.trim().startsWith("http")) {
-					file = await uploadFromUrl({
-						url: url.trim(),
-						user
-					})
+			try {
+				let file;
+				if (typeof url === "string") {
+					if (url.trim() && url.trim().startsWith("http")) {
+						file = await uploadFromUrl({
+							url: url.trim(),
+							user
+						})
+					}
+				} else {
+					if (url.url.trim() && url.url.trim().startsWith("http")) {
+						file = await uploadFromUrl({
+							url: url.url.trim(),
+							user,
+							folderId: url?.folderId ?? undefined,
+							sensitive: url?.isSensitive,
+							force: url?.force,
+							comment: url?.comment ?? undefined,
+						})
+					}
 				}
-			} else {
-				if (url.url.trim() && url.url.trim().startsWith("http")) {
-					file = await uploadFromUrl({
-						url: url.url.trim(),
-						user,
-						folderId: url?.folderId ?? undefined,
-						sensitive: url?.isSensitive,
-						force: url?.force,
-						comment: url?.comment ?? undefined,
-					})
+				if (file) {
+					const packedFile = await DriveFiles.pack(file, { self: true })
+					publishMainStream(user.id, "urlUploadFinished", {
+						marker: typeof url === "string" ? null : url.marker,
+						file: packedFile,
+					});
+					files.push(file)
+					if (files.length >= 16) {
+						break;
+					}
 				}
-			}
-			if (file) {
-				const packedFile = await DriveFiles.pack(file, { self: true })
-				publishMainStream(user.id, "urlUploadFinished", {
-					marker: typeof url === "string" ? null : url.marker,
-					file: packedFile,
-				});
-				files.push(file)
-				if (files.length >= 16) {
-					break;
-				}
+			} catch (e) {
+				console.log(e?.message);
 			}
 		}
 	}
@@ -374,10 +378,10 @@ export default define(meta, paramDef, async (ps, user) => {
 			files: files,
 			poll: ps.poll
 				? {
-						choices: ps.poll.choices,
-						multiple: ps.poll.multiple,
-						expiresAt: ps.poll.expiresAt ? new Date(ps.poll.expiresAt) : null,
-				  }
+					choices: ps.poll.choices,
+					multiple: ps.poll.multiple,
+					expiresAt: ps.poll.expiresAt ? new Date(ps.poll.expiresAt) : null,
+				}
 				: undefined,
 			text: ps.text || undefined,
 			reply,

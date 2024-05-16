@@ -335,14 +335,14 @@ export default define(meta, paramDef, async (ps, user) => {
 		for (const url of ps.fileUrls) {
 			let file;
 			if (typeof url === "string") {
-				if (url.trim()) {
+				if (url.trim() && URL.canParse(url.trim())) {
 					file = await uploadFromUrl({
 						url: url.trim(),
 						user
 					})
 				}
 			} else {
-				if (url.url.trim()) {
+				if (url.url.trim() && URL.canParse(url.url.trim()) {
 					file = await uploadFromUrl({
 						url: url.url.trim(),
 						user,

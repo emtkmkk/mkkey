@@ -342,7 +342,7 @@ export default define(meta, paramDef, async (ps, user) => {
 					})
 				}
 			} else {
-				if (url.url.trim() && URL.canParse(url.url.trim()) {
+				if (url.url.trim() && URL.canParse(url.url.trim())) {
 					file = await uploadFromUrl({
 						url: url.url.trim(),
 						user,

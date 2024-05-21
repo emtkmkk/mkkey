@@ -79,6 +79,8 @@ export async function sleep() {
 	});
 	if (canceled2) return;
 
+	defaultStore.set("defaultSleepTime", period);
+
 	const date = new Date();
 
 	const time = period?.endsWith("min") ? parseInt(period.replace("min","")) : parseInt(period.replace("hour","")) * 60

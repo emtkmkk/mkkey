@@ -33,6 +33,10 @@ export async function fetchInstanceMetadata(
 
 	logger.info(`Fetching metadata of ${instance.host} ...`);
 
+	const updates = {
+		infoUpdatedAt: new Date(),
+	} as Record<string, any>;
+
 	try {
 		const [info, dom, manifest] = await Promise.all([
 			fetchNodeinfo(instance).catch(() => null),
@@ -49,10 +53,6 @@ export async function fetchInstanceMetadata(
 		]);
 
 		logger.succ(`Successfuly fetched metadata of ${instance.host}`);
-
-		const updates = {
-			infoUpdatedAt: new Date(),
-		} as Record<string, any>;
 
 		if (info) {
 			updates.softwareName = info.software?.name.toLowerCase();
@@ -150,6 +150,7 @@ export async function fetchInstanceMetadata(
 		logger.succ(`Successfuly updated metadata of ${instance.host}`);
 	} catch (e) {
 		logger.error(`Failed to update metadata of ${instance.host}: ${e}`);
+		logger.error(JSON.stringify(updates, undefined, "\t"));
 	} finally {
 		await lock.release();
 	}

@@ -136,6 +136,7 @@ export const paramDef = {
 		userId: { type: "string", format: "misskey:id" },
 		limit: { type: "integer" },
 		localOnly: { type: "boolean", default: false },
+		remoteOnly: { type: "boolean", default: false },
 	},
 	//required: ["userId"],
 } as const;
@@ -171,6 +172,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				userId: user.id,
 			})
 			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
+			.andWhere(ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE")
 			.groupBy("reaction.reaction")
 			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)
@@ -193,6 +195,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				userId: user.id,
 			})
 			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
+			.andWhere(ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE")
 			.groupBy("reaction.reaction")
 			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)
@@ -218,6 +221,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				borderDate: borderDate.toISOString(),
 			})
 			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
+			.andWhere(ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE")
 			.groupBy("reaction.reaction")
 			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)
@@ -232,6 +236,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				borderDate: borderDate.toISOString(),
 			})
 			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
+			.andWhere(ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE")
 			.groupBy("reaction.reaction")
 			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)

@@ -11,7 +11,7 @@ export async function sleep() {
 	});
 	if (canceled) return;
 
-	const { canceled, result: period } = await os.select({
+	const { canceled: canceled2, result: period } = await os.select({
 		title: i18n.ts.sleepPeriod,
 		items: [
 			{
@@ -77,7 +77,7 @@ export async function sleep() {
 		],
 		default: defaultStore.state.defaultSleepTime,
 	});
-	if (canceled) return;
+	if (canceled2) return;
 
 	const date = new Date();
 

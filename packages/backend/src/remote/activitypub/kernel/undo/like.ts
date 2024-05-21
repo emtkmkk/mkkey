@@ -24,7 +24,10 @@ export default async (actor: CacheableRemoteUser, activity: ILike) => {
 	const emoji = await extractEmojis(activity.tag || [], actor.host).catch(
 		() => null,
 	);
-	const reactEmoji = emoji?.filter(
+	const reactEmoji = 
+	emoji?.length === 1
+		? emoji :
+		emoji?.filter(
 		(x) =>
 			x.name === reactName &&
 			(!reactHost || (x.host ?? config.host) === reactHost),
@@ -33,7 +36,12 @@ export default async (actor: CacheableRemoteUser, activity: ILike) => {
 	await deleteReaction(
 		actor,
 		note,
-		reactName ? reactName + (reactEmoji?.[0]?.host ? `@${reactEmoji[0].host}` : "") : null,
+		(reactEmoji?.length ?? 0) > 0
+			? `:${
+					reactEmoji?.[0]?.name +
+					(reactEmoji?.[0]?.host ? `@${reactEmoji[0].host}` : "")
+			  }:`
+			: reactName,
 	).catch((e) => {
 		if (e.id === "60527ec9-b4cb-4a88-a6bd-32d3ad26817d") return;
 		throw e;

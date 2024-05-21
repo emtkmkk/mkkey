@@ -113,7 +113,7 @@ export async function toDbReaction(
 	}
 
 	console.log(`NotFound Emoji : ${reaction}`);
-	return await getFallbackReaction();
+	throw new Error(`NotFound Emoji : ${reaction}`);
 }
 
 type DecodedReaction = {

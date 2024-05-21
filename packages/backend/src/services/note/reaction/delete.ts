@@ -28,7 +28,14 @@ export default async (
 		);
 	}
 
-	emoji = await toDbReaction(emoji, user.host);
+	try {
+		emoji = await toDbReaction(emoji, user.host, note.user?.host);
+	} catch(err) {
+		throw new IdentifiableError(
+			"770a3ede-67d2-fc9d-f2e2-6163ba0443af",
+			"指定された絵文字が存在しません。",
+		);
+	}
 
 	// if already unreacted
 	const exist = await NoteReactions.findOneBy({

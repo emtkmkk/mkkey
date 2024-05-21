@@ -85,7 +85,14 @@ export default async (
 	}
 
 	// TODO: cache
-	reaction = await toDbReaction(reaction, user.host, note.user?.host);
+	try {
+		reaction = await toDbReaction(reaction, user.host, note.user?.host);
+	} catch(err) {
+		throw new IdentifiableError(
+			"770a3ede-67d2-fc9d-f2e2-6163ba0443af",
+			"指定された絵文字が存在しません。",
+		);
+	}
 
 	const record: NoteReaction = {
 		id: genId(),

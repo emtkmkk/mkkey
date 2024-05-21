@@ -14,7 +14,7 @@ export async function sleep() {
 
 	date.setMinutes(date.getMinutes() + 120)
 
-	localStorage.setItem("sleepTime", date.toISOString);
+	localStorage.setItem("sleepTime", date.toISOString());
 
 	location.reload();
 

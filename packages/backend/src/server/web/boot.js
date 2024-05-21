@@ -316,7 +316,7 @@
 			<button class="button-big" onclick="location.reload(true);">
 				<span class="button-label-big">リロード</span>
 			</button>
-			${count >= 3 ? `
+			${count >= 4 ? `
 			<br>
 			<button class="button-small" onclick="localStorage.removeItem('sleepTime');location.reload(true);">
 				<span class="button-label-small">睡眠モードを解除</span>

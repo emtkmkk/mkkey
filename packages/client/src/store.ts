@@ -1407,6 +1407,11 @@ export const defaultStore = markRaw(
 			default: [] as string[],
 			createdAt: "2024/4/3",
 		},
+		defaultSleepTime: {
+			where: "device",
+			default: "2hour",
+			createdAt: "2024/5/21",
+		},
 	}),
 );
 

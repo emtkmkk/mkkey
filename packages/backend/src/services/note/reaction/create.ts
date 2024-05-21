@@ -86,7 +86,7 @@ export default async (
 
 	// TODO: cache
 	try {
-		reaction = await toDbReaction(reaction, user.host, note.user?.host);
+		reaction = await toDbReaction(reaction, user.host, note.userHost);
 	} catch(err) {
 		throw new IdentifiableError(
 			"770a3ede-67d2-fc9d-f2e2-6163ba0443af",

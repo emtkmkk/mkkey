@@ -249,7 +249,7 @@ export default async (
 					emojiName: decodedReaction.name
 						? `:${decodedReaction.name}:`
 						: reaction + (existCount > 0 ? ` (+${existCount})` : ""),
-					customEmoji: decodedReaction.name ? emoji : undefined,
+					customEmoji: decodedReaction.name && emoji != null ? emoji : undefined,
 				},
 			});
 		}

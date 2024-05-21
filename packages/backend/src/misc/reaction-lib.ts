@@ -83,33 +83,30 @@ export async function toDbReaction(
 
 	const custom = reaction.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/);
 
-	// ローカルユーザの場合 : ローカル絵文字の場合、まずローカルで持ってこれるか試行する
-	// リモートユーザでホスト名が無い場合 : reacterHost絵文字があるかどうか試行する
+	// ローカルユーザの場合 : 指定されたサーバの絵文字 -> ローカルの絵文字 -> 投稿元のサーバの絵文字
+	// リモートユーザの場合 : 指定されたサーバの絵文字 -> リアクション者のサーバの絵文字 -> ローカルの絵文字
+
 	if (custom) {
-		const name = custom[1];
-		const emoji = await Emojis.findOneBy({
-			host: reacterHost || IsNull(),
-			name,
-		});
+		const hosts = (reacterHost 
+			? custom?.[2] === config.host ? [IsNull(), reacterHost] : [custom?.[2], reacterHost, IsNull()]
+			: [custom?.[2] === config.host ? undefined : custom?.[2], IsNull(), noteHost ?? "misskey.io"]).filter(Boolean)
+		for (const host of hosts) {
+			const name = custom[1];
+			const emoji = await Emojis.findOneBy({
+				host,
+				name,
+			});
 
-		if (emoji)
-			return emoji.host ? `:${emoji.name}@${emoji.host}:` : `:${emoji.name}:`;
+			if (emoji)
+				return emoji.host ? `:${emoji.name}@${emoji.host}:` : `:${emoji.name}:`;
+		}
 
-		// 無理ならリモートから
-		// ローカルユーザの場合 : host情報がない場合、noteHost絵文字で、ローカル相手ならmisskey.io絵文字で試行してみる
-		// リモートユーザの場合 : host情報がない場合、reacterHost絵文字ではなくローカル絵文字で試行してみる
-		const host =
-			(reacterHost && custom?.[2] === config.host ? IsNull() : custom?.[2]) ||
-			(reacterHost ? IsNull() : noteHost ?? "misskey.io");
-		const emoji2 = await Emojis.findOneBy({
-			host,
-			name,
-		});
-
-		if (emoji2)
-			return emoji2.host
-				? `:${emoji2.name}@${emoji2.host}:`
-				: `:${emoji2.name}:`;
+		// リモートユーザの場合、絵文字がローカルのみ or 何らかの理由で取得できなかった
+		// 絵文字の名前だけでも保存する
+		if (reacterHost && custom?.[2] !== config.host) {
+			console.log(`NotFound Emoji : :${custom?.[1]}@${custom?.[2] || reacterHost}:`);
+			return `:${custom?.[1]}@${custom?.[2] || reacterHost}:`
+		}
 	}
 
 	console.log(`NotFound Emoji : ${reaction}`);

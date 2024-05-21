@@ -595,7 +595,7 @@
 				class="hasNotSpecifiedMentions"
 				>{{ i18n.ts.includesOtherServerEmojiWarning }}</MkInfo
 			>
-			<input
+			<textarea
 				v-show="useCw"
 				ref="cwInputEl"
 				v-model="cw"
@@ -808,7 +808,7 @@ const emit = defineEmits<{
 }>();
 
 const textareaEl = $ref<HTMLTextAreaElement | null>(null);
-const cwInputEl = $ref<HTMLInputElement | null>(null);
+const cwInputEl = $ref<HTMLTextAreaElement | null>(null);
 const hashtagsInputEl = $ref<HTMLInputElement | null>(null);
 const visibilityButton = $ref<HTMLElement | null>(null);
 

@@ -572,6 +572,7 @@ export async function extractEmojis(
 			//含まれてない場合は
 			//1 : nameに@がある場合はその後ろの文字をhostとする
 			//2 : fedibirdやmarunaiさんの実装と同じ方法でhost判定を行う
+			console.log(JSON.stringify(tag, undefined, "\t"));
 			let detectHost = undefined;
 			try {
 				detectHost = tag.host || name.split("@")?.[1] || new URL(tag.id).host;

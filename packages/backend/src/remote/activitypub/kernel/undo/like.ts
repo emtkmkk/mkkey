@@ -30,7 +30,7 @@ export default async (actor: CacheableRemoteUser, activity: ILike) => {
 	await deleteReaction(
 		actor,
 		note,
-		reactName + (reactEmoji?.[0]?.host ? `@${reactEmoji[0].host}` : ""),
+		reactName ? reactName + (reactEmoji?.[0]?.host ? `@${reactEmoji[0].host}` : "") : null,
 	).catch((e) => {
 		if (e.id === "60527ec9-b4cb-4a88-a6bd-32d3ad26817d") return;
 		throw e;

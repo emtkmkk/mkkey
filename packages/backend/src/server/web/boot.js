@@ -24,7 +24,9 @@
 
 	//#region Sleep Mode
 	if (localStorage.getItem("sleepTime") && new Date(localStorage.getItem("sleepTime")) > new Date()) {
-		renderSleep("SLEEPING", `残り ${Math.ceil(new Date(localStorage.getItem("sleepTime")) - new Date() / (60 * 1000))} 分`);
+		const count = (localStorage.getItem("openCount") ?? 0) + 1;
+		localStorage.setItem("openCount", count);
+		renderSleep("SLEEPING", `残り ${Math.ceil((new Date(localStorage.getItem("sleepTime")) - new Date()) / (60 * 1000))} 分`, count);
 		return;
 	}
 	//#endregion
@@ -304,24 +306,23 @@
 	}
 
 
-	function renderSleep(code, details) {
+	function renderSleep(code, details, count) {
 		let errorsElement = document.getElementById("errors");
 
 		if (!errorsElement) {
 			document.body.innerHTML = `
-			<svg class="icon-warning" xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-alert-triangle" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-				<path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-				<path d="M12 9v2m0 4v.01"></path>
-				<path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
-			</svg>
 			<h1>おやすみなさい。</h1>
+			<br>
 			<button class="button-big" onclick="location.reload(true);">
 				<span class="button-label-big">リロード</span>
 			</button>
+			${count >= 3 ? `
 			<br>
-			<button class="button-small" onclick="localStorage.removeItem("sleepTime");location.reload(true);">
+			<button class="button-small" onclick="localStorage.removeItem('sleepTime');location.reload(true);">
 				<span class="button-label-small">睡眠モードを解除</span>
 			</button>
+			` : ""}
+			<br>
 			<br>
 			<div id="errors"></div>
 			`;
@@ -331,7 +332,7 @@
 		detailsElement.innerHTML = `
 		<br>
 		<summary>
-			<code>ERROR CODE: ${code}</code>
+			<code>${code}</code>
 		</summary>
 		<code>${details}</code>`;
 		errorsElement.appendChild(detailsElement);

@@ -10,11 +10,13 @@ export async function sleep() {
 	});
 	if (canceled) return;
 
-	const date = new Date()
+	const date = new Date();
 
-	date.setMinutes(date.getMinutes() + 120)
+	date.setMinutes(date.getMinutes() + 120);
 
 	localStorage.setItem("sleepTime", date.toISOString());
+
+	localStorage.setItem("openCount", 0);
 
 	location.reload();
 

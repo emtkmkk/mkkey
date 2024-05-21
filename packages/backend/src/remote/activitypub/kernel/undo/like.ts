@@ -14,6 +14,9 @@ export default async (actor: CacheableRemoteUser, activity: ILike) => {
 	const note = await fetchNote(targetUri);
 	if (!note) return `skip: target note not found ${targetUri}`;
 
+	
+	console.log(JSON.stringify(activity, undefined, "\t"));
+
 	const react = activity._misskey_reaction || activity.content || activity.name;
 	const reactName = react?.split("@")?.[0];
 	const reactHost = react?.split("@")?.[1] ?? undefined;

@@ -1,6 +1,7 @@
 import { computed, ref, reactive } from "vue";
 import { $i, openAccountMenu as openAccountMenu_ } from "./account";
 import { search } from "@/scripts/search";
+import { sleep } from "@/scripts/sleep";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { ui } from "@/config";
@@ -71,6 +72,11 @@ export const navbarItemDef = reactive({
 		title: "search",
 		icon: "ph-magnifying-glass ph-bold ph-lg",
 		action: () => search(),
+	},
+	sleep: {
+		title: "sleep",
+		icon: "ph-moon-stars ph-bold ph-lg",
+		action: () => sleep(),
 	},
 	lists: {
 		title: "lists",

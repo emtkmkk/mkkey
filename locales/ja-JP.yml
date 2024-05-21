@@ -1260,6 +1260,9 @@ disableNyaise: "ラーの鏡"
 disableNyaiseDescription: "真実を映し出す鏡。猫のフリをしているユーザの本当の姿を見破ることが出来る。（全ユーザの猫語変換を解除します。）"
 addHiddenIconUserIds: "アイコンを非表示"
 delHiddenIconUserIds: "アイコンを再表示"
+sleep: "睡眠モード"
+sleepConfirm: "睡眠モードを開始しますか？"
+sleepText: "2時間の間、もこきーの起動がブロックされます。"
 
 _sensitiveMediaDetection:
   description: "機械学習を使って自動でセンシティブなメディアを検出し、モデレーションに役立てられます。サーバーの負荷が少し増えます。"

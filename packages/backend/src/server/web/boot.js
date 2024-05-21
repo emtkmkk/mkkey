@@ -22,6 +22,13 @@
 		renderError("SOMETHING_HAPPENED_IN_PROMISE", e);
 	};
 
+	//#region Sleep Mode
+	if (localStorage.getItem("sleepTime") && new Date(localStorage.getItem("sleepTime")) > new Date()) {
+		renderSleep("SLEEPING", `残り ${Math.ceil(new Date(localStorage.getItem("sleepTime")) - new Date() / (60 * 1000))} 分`);
+		return;
+	}
+	//#endregion
+
 	//#region Detect language & fetch translations
 	const v = localStorage.getItem("v") || VERSION;
 
@@ -182,6 +189,151 @@
 			<code>ERROR CODE: ${code}</code>
 		</summary>
 		<code>${JSON.stringify(details)}</code>`;
+		errorsElement.appendChild(detailsElement);
+		addStyle(`
+		* {
+			font-family: BIZ UDGothic, Roboto, HelveticaNeue, Arial, sans-serif;
+		}
+
+		#calckey_app,
+		#splash {
+			display: none !important;
+		}
+
+		body,
+		html {
+			background-color: #191724;
+			color: #e0def4;
+			justify-content: center;
+			margin: auto;
+			padding: 10px;
+			text-align: center;
+		}
+
+		button {
+			border-radius: 999px;
+			padding: 0px 12px 0px 12px;
+			border: none;
+			cursor: pointer;
+			margin-bottom: 12px;
+		}
+
+		.button-big {
+			background: linear-gradient(90deg, rgb(196, 167, 231), rgb(235, 188, 186));
+			line-height: 50px;
+		}
+
+		.button-big:hover {
+			background: rgb(49, 116, 143);
+		}
+
+		.button-small {
+			background: #444;
+			line-height: 40px;
+		}
+
+		.button-small:hover {
+			background: #555;
+		}
+
+		.button-label-big {
+			color: #191724;
+			font-weight: bold;
+			font-size: 20px;
+			padding: 12px;
+		}
+
+		.button-label-small {
+			color: rgb(156, 207, 216);
+			font-size: 16px;
+			padding: 12px;
+		}
+
+		a {
+			color: rgb(156, 207, 216);
+			text-decoration: none;
+		}
+
+		p,
+		li {
+			font-size: 16px;
+		}
+
+		.dont-worry,
+		#msg {
+			font-size: 18px;
+		}
+
+		.icon-warning {
+			color: #f6c177;
+			height: 4rem;
+			padding-top: 2rem;
+		}
+
+		h1 {
+			font-size: 32px;
+		}
+
+		code {
+			font-family: Fira, FiraCode, monospace;
+		}
+
+		details {
+			background: #1f1d2e;
+			margin-bottom: 2rem;
+			padding: 0.5rem 1rem;
+			width: 40rem;
+			border-radius: 10px;
+			justify-content: center;
+			margin: auto;
+		}
+
+		summary {
+			cursor: pointer;
+		}
+
+		summary > * {
+			display: inline;
+		}
+
+		@media screen and (max-width: 500px) {
+			details {
+				width: 50%;
+			}
+		`);
+	}
+
+
+	function renderSleep(code, details) {
+		let errorsElement = document.getElementById("errors");
+
+		if (!errorsElement) {
+			document.body.innerHTML = `
+			<svg class="icon-warning" xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-alert-triangle" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+				<path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+				<path d="M12 9v2m0 4v.01"></path>
+				<path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
+			</svg>
+			<h1>おやすみなさい。</h1>
+			<button class="button-big" onclick="location.reload(true);">
+				<span class="button-label-big">リロード</span>
+			</button>
+			<br>
+			<button class="button-small" onclick="localStorage.removeItem("sleepTime");location.reload(true);">
+				<span class="button-label-small">睡眠モードを解除</span>
+			</button>
+			<br>
+			<div id="errors"></div>
+			`;
+			errorsElement = document.getElementById("errors");
+		}
+		const detailsElement = document.createElement("details");
+		detailsElement.innerHTML = `
+		<br>
+		<summary>
+			<code>ERROR CODE: ${code}</code>
+		</summary>
+		<code>${details}</code>`;
 		errorsElement.appendChild(detailsElement);
 		addStyle(`
 		* {

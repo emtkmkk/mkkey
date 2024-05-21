@@ -73,11 +73,6 @@ export const navbarItemDef = reactive({
 		icon: "ph-magnifying-glass ph-bold ph-lg",
 		action: () => search(),
 	},
-	sleep: {
-		title: "sleep",
-		icon: "ph-moon-stars ph-bold ph-lg",
-		action: () => sleep(),
-	},
 	lists: {
 		title: "lists",
 		icon: "ph-list-bullets ph-bold ph-lg",
@@ -129,6 +124,11 @@ export const navbarItemDef = reactive({
 		title: "groups",
 		icon: "ph-users-three ph-bold ph-lg",
 		to: "/my/groups",
+	},
+	sleep: {
+		title: "sleep",
+		icon: "ph-moon-stars ph-bold ph-lg",
+		action: () => sleep(),
 	},
 	changeAccount: {
 		title: "changeAccount",

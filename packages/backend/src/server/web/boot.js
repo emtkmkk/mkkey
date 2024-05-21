@@ -24,7 +24,7 @@
 
 	//#region Sleep Mode
 	if (localStorage.getItem("sleepTime") && new Date(localStorage.getItem("sleepTime")) > new Date()) {
-		const count = (localStorage.getItem("openCount") ?? 0) + 1;
+		const count = parseInt(localStorage.getItem("openCount") ?? "0") + 1;
 		localStorage.setItem("openCount", count);
 		renderSleep("SLEEPING", `残り ${Math.ceil((new Date(localStorage.getItem("sleepTime")) - new Date()) / (60 * 1000))} 分`, count);
 		return;

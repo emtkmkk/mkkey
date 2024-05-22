@@ -587,6 +587,7 @@ export async function updatePerson(
 				method: "POST",
 				headers: 
 					{
+						"Content-Type": "application/json",
 						"User-Agent": config.userAgent,
 						Accept: "application/json, */*",
 					},

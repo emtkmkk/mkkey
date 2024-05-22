@@ -1412,6 +1412,12 @@ export const defaultStore = markRaw(
 			default: "2hour",
 			createdAt: "2024/5/21",
 		},
+		postStartSleep: {
+			where: "device",
+			default: false,
+			createdAt: "2024/5/22",
+			page: "fun",
+		},
 	}),
 );
 

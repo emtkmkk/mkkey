@@ -37,7 +37,7 @@ import { applyFont, fontList } from "@/scripts/font";
 import { applyTheme } from "@/scripts/theme";
 import { isDeviceDarkmode } from "@/scripts/is-device-darkmode";
 import { i18n } from "@/i18n";
-import { confirm, alert, post, popup, toast, yesno } from "@/os";
+import { confirm, alert, post, popup, toast, yesno, api } from "@/os";
 import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i, refreshAccount, login, updateAccount, signout } from "@/account";
@@ -563,6 +563,19 @@ import {
 				type: "warning",
 				text: i18n.ts.accountDeletionInProgress,
 			});
+		}
+
+		if (defaultStore.state.postStartSleep && localStorage.getItem('sleepCancel') === "y") {
+			api("notes/create",{
+				text: "#睡眠モード を解除しました",
+				visibility: defaultStore.state.rememberNoteVisibility
+					? defaultStore.state.visibility
+					: defaultStore.state.defaultNoteVisibility,
+				localOnly: defaultStore.state.rememberNoteVisibility
+				? defaultStore.state.localAndFollower
+				: defaultStore.state.defaultNoteLocalAndFollower,
+			});
+			localStorage.removeItem('sleepCancel');
 		}
 
 		fetchInstanceMetaPromise.then(async () => {

@@ -96,6 +96,18 @@
 		</FormSection>
 		<FormSection>
 			<template #label
+				></template
+			>
+			<FormSwitch v-model="postStartSleep" class="_formBlock"
+				>{{ i18n.ts.postStartSleep
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span
+				></FormSwitch
+			>
+		</FormSection>
+		<FormSection>
+			<template #label
 				>{{ i18n.ts.emojiReplace
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -204,6 +216,9 @@ const excludeNotFollowNSFW = computed(
 );
 const excludeSensitiveEmoji = computed(
 	defaultStore.makeGetterSetter("excludeSensitiveEmoji")
+);
+const postStartSleep = computed(
+	defaultStore.makeGetterSetter("postStartSleep")
 );
 let allEmojiReplace = $ref(deepClone(defaultStore.state.allEmojiReplace));
 const enableEmojiReplace = computed(

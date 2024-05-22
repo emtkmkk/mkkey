@@ -89,7 +89,19 @@ export async function sleep() {
 
 	localStorage.setItem("sleepTime", date.toISOString());
 
-	localStorage.setItem("openCount", 0);
+	localStorage.setItem("openCount", "0");
+
+	if (defaultStore.state.postStartSleep) {
+		await os.apiWithDialog("notes/create",{
+			text: `#睡眠モード を開始しました！（${period.replace("min","分").replace("hour","時間")}） #おやすみなさい`,
+			visibility: defaultStore.state.rememberNoteVisibility
+				? defaultStore.state.visibility
+				: defaultStore.state.defaultNoteVisibility,
+			localOnly: defaultStore.state.rememberNoteVisibility
+			? defaultStore.state.localAndFollower
+			: defaultStore.state.defaultNoteLocalAndFollower,
+		})
+	}
 
 	location.reload();
 

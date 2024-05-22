@@ -318,7 +318,7 @@
 			</button>
 			${count >= 4 ? `
 			<br>
-			<button class="button-small" onclick="localStorage.removeItem('sleepTime');location.reload(true);">
+			<button class="button-small" onclick="localStorage.removeItem('sleepTime');localStorage.setItem('sleepCancel','y');location.reload(true);">
 				<span class="button-label-small">睡眠モードを解除</span>
 			</button>
 			` : ""}

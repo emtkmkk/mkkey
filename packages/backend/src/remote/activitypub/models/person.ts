@@ -575,8 +575,122 @@ export async function updatePerson(
 
 	const emojiNames = emojis.map((emoji) => emoji.name);
 
-	const { fields } = analyzeAttachments(person.attachment || []);
+	let { fields } = analyzeAttachments(person.attachment || []);
 
+	const host = exist.host;
+
+	if (host === "misskey.io") {
+		try {
+			console.log(`fetch AddUserInfo1 @${person.preferredUsername}@${host}`)
+			const userInfo = await (await getResponse({
+				url: `https://${host}/api/users/search-by-username-and-host`,
+				method: "POST",
+				headers: 
+					{
+						"User-Agent": config.userAgent,
+						Accept: "application/json, */*",
+					},
+				body: 
+					JSON.stringify({
+						username: person.preferredUsername,
+						host
+					}),
+				timeout: 5000,
+			})).json();
+			if (Array.isArray(userInfo) && (userInfo).length === 1 && userInfo[0].id) {
+				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`)
+				const skebInfo = (await getJson(
+					`https://${host}/api/users/get-skeb-status?userId=${userInfo[0].id}`,
+					"application/json, */*",
+					5000,
+				)) as Record<string, unknown>;
+				if (skebInfo) {
+					let status = ''
+
+					if (skebInfo.isAcceptable || skebInfo.isCreator) {
+
+						if (skebInfo.isAcceptable && Array.isArray(skebInfo.skills) && skebInfo.skills.length > 0 && typeof skebInfo.skills[0].amount === "number") {
+							let genre = "❓️"
+							switch (skebInfo.skills[0].genre){
+								case 'art':
+									genre = "🎨";
+									break;
+								case 'comic':
+									genre = "📖";
+									break;
+								case 'voice':
+									genre = "💬";
+									break;
+								case 'novel':
+									genre = "✒";
+									break;
+								case 'video':
+									genre = "📼";
+									break;
+								case 'music':
+									genre = "🎵";
+									break;
+								case 'correction':
+									genre = "📚";
+									break;
+							}
+							status += `${genre} ${Math.ceil(skebInfo.skills[0].amount / 100) / 10}k`;
+							if (skebInfo.skills.length > 1 && typeof skebInfo.skills[1].amount === "number") {
+								let genre = "❓️"
+								switch (skebInfo.skills[1].genre){
+									case 'art':
+										genre = "🎨";
+										break;
+									case 'comic':
+										genre = "📖";
+										break;
+									case 'voice':
+										genre = "💬";
+										break;
+									case 'novel':
+										genre = "✒";
+										break;
+									case 'video':
+										genre = "📼";
+										break;
+									case 'music':
+										genre = "🎵";
+										break;
+									case 'correction':
+										genre = "📚";
+										break;
+								}
+								status += ` ${genre} ${Math.ceil(skebInfo.skills[1].amount / 100) / 10}k`;
+							}
+						}
+						if (typeof skebInfo.creatorRequestCount === "number" && skebInfo.creatorRequestCount > 0) {
+							if (skebInfo.isAcceptable) {
+								status += ' | ';
+							}
+							status += `${skebInfo.creatorRequestCount.toLocaleString()}件`;
+						}
+					} else {
+						if (typeof skebInfo.clientRequestCount === "number") {
+							status = `${skebInfo.clientRequestCount.toLocaleString()}件`
+						}
+					}
+					if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
+						fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+					}
+					if (fields?.length < 16) {
+						fields.push({
+							name: ":skeb:Skeb",
+							value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? " " + status : ""}](https://skeb.jp/@${skebInfo.screenName})`
+						})
+					}
+				}
+			}
+		} catch (e) {
+			logger.warn(`fetch AddUserInfo err : ${e}`);
+		}
+
+	}
+	
 	const tags = extractApHashtags(person.tag)
 		.map((tag) => normalizeForSearch(tag))
 		.splice(0, 32);

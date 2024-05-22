@@ -680,7 +680,7 @@ export async function updatePerson(
 					}
 					if (fields?.length < 16) {
 						fields.push({
-							name: ":skeb:Skeb",
+							name: "★Skeb",
 							value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? " " + status : ""}](https://skeb.jp/@${skebInfo.screenName})`
 						})
 					}

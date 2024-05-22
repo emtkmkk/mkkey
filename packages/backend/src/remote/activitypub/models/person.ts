@@ -643,7 +643,7 @@ export async function updatePerson(
 										genre = "🎨";
 										break;
 									case 'comic':
-										genre = "📖";
+										genre = "🖼️";
 										break;
 									case 'voice':
 										genre = "💬";

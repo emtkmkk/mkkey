@@ -227,7 +227,7 @@ export async function createPerson(
 									genre = "🎨";
 									break;
 								case 'comic':
-									genre = "📖";
+									genre = "🖼";
 									break;
 								case 'voice':
 									genre = "💬";
@@ -253,7 +253,7 @@ export async function createPerson(
 										genre = "🎨";
 										break;
 									case 'comic':
-										genre = "📖";
+										genre = "🖼";
 										break;
 									case 'voice':
 										genre = "💬";
@@ -290,7 +290,7 @@ export async function createPerson(
 					}
 					if (fields?.length < 16) {
 						fields.push({
-							name: ":skeb:Skeb",
+							name: "★Skeb",
 							value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? " " + status : ""}](https://skeb.jp/@${skebInfo.screenName})`
 						})
 					}
@@ -585,7 +585,7 @@ export async function updatePerson(
 	if (host === "misskey.io") {
 		try {
 			console.log(`fetch AddUserInfo1 @${person.preferredUsername}@${host}`)
-			const userInfo = await (await getResponse({
+			let userInfo = await (await getResponse({
 				url: `https://${host}/api/users/search-by-username-and-host`,
 				method: "POST",
 				headers: 
@@ -601,6 +601,9 @@ export async function updatePerson(
 					}),
 				timeout: 5000,
 			})).json();
+			if (Array.isArray(userInfo) && (userInfo).length > 1) {
+				userInfo = userInfo.filter((x) => person.preferredUsername.toLowerCase() === x.username.toLowerCase());
+			}
 			if (Array.isArray(userInfo) && (userInfo).length === 1 && userInfo[0].id) {
 				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`)
 				const skebInfo = (await getJson(
@@ -620,7 +623,7 @@ export async function updatePerson(
 									genre = "🎨";
 									break;
 								case 'comic':
-									genre = "📖";
+									genre = "🖼";
 									break;
 								case 'voice':
 									genre = "💬";

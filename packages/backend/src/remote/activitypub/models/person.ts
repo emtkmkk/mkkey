@@ -189,19 +189,24 @@ export async function createPerson(
 
 	if (host === "misskey.io") {
 		try {
+			console.log(`fetch AddUserInfo1 @${person.preferredUsername}@${host}`)
 			const userInfo = await (await getResponse({
 				url: `https://${host}/api/users/search-by-username-and-host`,
 				method: "POST",
-				headers: Object.assign(
+				headers: 
 					{
 						"User-Agent": config.userAgent,
 						Accept: "application/json, */*",
 					},
-					{},
-				),
+				body: 
+					JSON.stringify({
+						username: person.preferredUsername,
+						host
+					}),
 				timeout: 5000,
 			})).json();
 			if (Array.isArray(userInfo) && (userInfo).length === 1 && userInfo[0].id) {
+				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`)
 				const skebInfo = (await getJson(
 					`https://${host}/api/users/get-skeb-status?userId=${userInfo[0].id}`,
 					"application/json, */*",
@@ -289,7 +294,7 @@ export async function createPerson(
 				}
 			}
 		} catch (e) {
-			logger.warn(`fetch UserInfo err : ${e}`);
+			logger.warn(`fetch AddUserInfo err : ${e}`);
 		}
 
 	}

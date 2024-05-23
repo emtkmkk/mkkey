@@ -220,60 +220,24 @@ export async function createPerson(
 
 					if (skebInfo.isAcceptable || skebInfo.isCreator) {
 
-						if (skebInfo.isAcceptable && Array.isArray(skebInfo.skills) && skebInfo.skills.length > 0 && typeof skebInfo.skills[0].amount === "number") {
-							let genre = "❓️"
-							switch (skebInfo.skills[0].genre){
-								case 'art':
-									genre = "🎨";
-									break;
-								case 'comic':
-									genre = "🖼";
-									break;
-								case 'voice':
-									genre = "💬";
-									break;
-								case 'novel':
-									genre = "✒";
-									break;
-								case 'video':
-									genre = "🎞️";
-									break;
-								case 'music':
-									genre = "🎵";
-									break;
-								case 'correction':
-									genre = "📚";
-									break;
-							}
-							status += `${genre}${Math.ceil(skebInfo.skills[0].amount / 100) / 10}k`;
-							if (skebInfo.skills.length === 2 && typeof skebInfo.skills[1].amount === "number") {
-								let genre = "❓️"
-								switch (skebInfo.skills[1].genre){
-									case 'art':
-										genre = "🎨";
-										break;
-									case 'comic':
-										genre = "🖼";
-										break;
-									case 'voice':
-										genre = "💬";
-										break;
-									case 'novel':
-										genre = "✒";
-										break;
-									case 'video':
-										genre = "🎞️";
-										break;
-									case 'music':
-										genre = "🎵";
-										break;
-									case 'correction':
-										genre = "📚";
-										break;
+						if (skebInfo.isAcceptable && Array.isArray(skebInfo.skills) && skebInfo.skills.length > 0) {
+							const amounts = new Map<string,string>();
+							const amounts_n = new Map<string,number>();
+							for (const skill of skebInfo.skills) {
+								if (skill !== null && typeof skill.amount === "number"){
+									const genre = getSkebGenreIcon(skill.genre);
+									const str = `${Math.ceil(skill.amount / 100) / 10}k`;
+									amounts.set(str, (amounts.get(str) ?? "") + genre)
+									amounts_n.set(str, (amounts_n.get(str) ?? 0) + 1)
 								}
-								status += ` ${genre}${Math.ceil(skebInfo.skills[1].amount / 100) / 10}k`;
-							} else if (skebInfo.skills.length > 2) {
-								status += `(+${skebInfo.skills.length - 1})`;
+							}
+							if (amounts.size >= 1) {
+								status += `${amounts.get(Array.from(amounts.keys())[0])}${Array.from(amounts.keys())[0]}`;
+								if (amounts.size === 2) {
+									status += ` ${amounts.get(Array.from(amounts.keys())[1])}${Array.from(amounts.keys())[1]}`;
+								} else if (amounts.size > 2 && amounts_n.size > 0) {
+									status += ` (+${skebInfo.skills.length - (amounts_n.get(Array.from(amounts_n.keys())[0]) ?? 1)})`;
+								}
 							}
 						}
 						if (typeof skebInfo.creatorRequestCount === "number" && skebInfo.creatorRequestCount > 0) {
@@ -618,60 +582,24 @@ export async function updatePerson(
 
 					if (skebInfo.isAcceptable || skebInfo.isCreator) {
 
-						if (skebInfo.isAcceptable && Array.isArray(skebInfo.skills) && skebInfo.skills.length > 0 && typeof skebInfo.skills[0].amount === "number") {
-							let genre = "❓️"
-							switch (skebInfo.skills[0].genre){
-								case 'art':
-									genre = "🎨";
-									break;
-								case 'comic':
-									genre = "🖼";
-									break;
-								case 'voice':
-									genre = "💬";
-									break;
-								case 'novel':
-									genre = "✒";
-									break;
-								case 'video':
-									genre = "🎞️";
-									break;
-								case 'music':
-									genre = "🎵";
-									break;
-								case 'correction':
-									genre = "📚";
-									break;
-							}
-							status += `${genre}${Math.ceil(skebInfo.skills[0].amount / 100) / 10}k`;
-							if (skebInfo.skills.length === 2 && typeof skebInfo.skills[1].amount === "number") {
-								let genre = "❓️"
-								switch (skebInfo.skills[1].genre){
-									case 'art':
-										genre = "🎨";
-										break;
-									case 'comic':
-										genre = "";
-										break;
-									case 'voice':
-										genre = "💬";
-										break;
-									case 'novel':
-										genre = "✒";
-										break;
-									case 'video':
-										genre = "🎞️";
-										break;
-									case 'music':
-										genre = "🎵";
-										break;
-									case 'correction':
-										genre = "📚";
-										break;
+						if (skebInfo.isAcceptable && Array.isArray(skebInfo.skills) && skebInfo.skills.length > 0) {
+							const amounts = new Map<string,string>();
+							const amounts_n = new Map<string,number>();
+							for (const skill of skebInfo.skills) {
+								if (skill !== null && typeof skill.amount === "number"){
+									const genre = getSkebGenreIcon(skill.genre);
+									const str = `${Math.ceil(skill.amount / 100) / 10}k`;
+									amounts.set(str, (amounts.get(str) ?? "") + genre)
+									amounts_n.set(str, (amounts_n.get(str) ?? 0) + 1)
 								}
-								status += ` ${genre}${Math.ceil(skebInfo.skills[1].amount / 100) / 10}k`;
-							} else if (skebInfo.skills.length > 2) {
-								status += `(+${skebInfo.skills.length - 1})`;
+							}
+							if (amounts.size >= 1) {
+								status += `${amounts.get(Array.from(amounts.keys())[0])}${Array.from(amounts.keys())[0]}`;
+								if (amounts.size === 2) {
+									status += ` ${amounts.get(Array.from(amounts.keys())[1])}${Array.from(amounts.keys())[1]}`;
+								} else if (amounts.size > 2 && amounts_n.size > 0) {
+									status += ` (+${skebInfo.skills.length - (amounts_n.get(Array.from(amounts_n.keys())[0]) ?? 1)})`;
+								}
 							}
 						}
 						if (typeof skebInfo.creatorRequestCount === "number" && skebInfo.creatorRequestCount > 0) {
@@ -996,4 +924,25 @@ export async function updateFeatured(userId: User["id"], resolver?: Resolver) {
 			});
 		}
 	});
+}
+
+function getSkebGenreIcon(genre: string) {
+	switch (genre){
+		case 'art':
+			return "🎨";
+		case 'comic':
+			return "🖼";
+		case 'voice':
+			return "💬";
+		case 'novel':
+			return "✒";
+		case 'video':
+			return "🎞️";
+		case 'music':
+			return "🎵";
+		case 'correction':
+			return "📚";
+		default:
+			return "❓️"
+	}
 }

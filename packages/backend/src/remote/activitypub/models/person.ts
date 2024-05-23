@@ -265,7 +265,7 @@ export async function createPerson(
 							if (fields?.length < 16) {
 								fields.push({
 									name: "★Skeb",
-									value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
+									value: `[クライアント${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
 								})
 							}
 						}
@@ -636,7 +636,7 @@ export async function updatePerson(
 							if (fields?.length < 16) {
 								fields.push({
 									name: "★Skeb",
-									value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
+									value: `[クライアント${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
 								})
 							}
 						}

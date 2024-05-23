@@ -232,9 +232,9 @@ export async function createPerson(
 								}
 							}
 							if (amounts.size >= 1) {
-								status += `${amounts.get(Array.from(amounts.keys())[0])}${Array.from(amounts.keys())[0]}`;
+								status += `${amounts.get(Array.from(amounts.keys())[0])} ${Array.from(amounts.keys())[0]}`;
 								if (amounts.size === 2) {
-									status += ` ${amounts.get(Array.from(amounts.keys())[1])}${Array.from(amounts.keys())[1]}`;
+									status += ` ${amounts.get(Array.from(amounts.keys())[1])} ${Array.from(amounts.keys())[1]}`;
 								} else if (amounts.size > 2 && amounts_n.size > 0) {
 									status += ` (+${skebInfo.skills.length - (amounts_n.get(Array.from(amounts_n.keys())[0]) ?? 1)})`;
 								}
@@ -594,9 +594,9 @@ export async function updatePerson(
 								}
 							}
 							if (amounts.size >= 1) {
-								status += `${amounts.get(Array.from(amounts.keys())[0])}${Array.from(amounts.keys())[0]}`;
+								status += `${amounts.get(Array.from(amounts.keys())[0])} ${Array.from(amounts.keys())[0]}`;
 								if (amounts.size === 2) {
-									status += ` ${amounts.get(Array.from(amounts.keys())[1])}${Array.from(amounts.keys())[1]}`;
+									status += ` ${amounts.get(Array.from(amounts.keys())[1])} ${Array.from(amounts.keys())[1]}`;
 								} else if (amounts.size > 2 && amounts_n.size > 0) {
 									status += ` (+${skebInfo.skills.length - (amounts_n.get(Array.from(amounts_n.keys())[0]) ?? 1)})`;
 								}

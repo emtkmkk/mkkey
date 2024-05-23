@@ -195,6 +195,7 @@ export async function createPerson(
 				method: "POST",
 				headers: 
 					{
+						"Content-Type": "application/json",
 						"User-Agent": config.userAgent,
 						Accept: "application/json, */*",
 					},
@@ -246,19 +247,28 @@ export async function createPerson(
 							}
 							status += `${skebInfo.creatorRequestCount.toLocaleString()}件`;
 						}
-					} else {
-						if (typeof skebInfo.clientRequestCount === "number") {
-							status = `${skebInfo.clientRequestCount.toLocaleString()}件`
+						if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
+							fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
 						}
-					}
-					if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
-						fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
-					}
-					if (fields?.length < 16) {
-						fields.push({
-							name: "★Skeb",
-							value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
-						})
+						if (fields?.length < 16) {
+							fields.push({
+								name: "★Skeb",
+								value: `[${skebInfo.isAcceptable ? "募集中" : "停止中"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
+							})
+						}
+					} else {
+						if (typeof skebInfo.clientRequestCount === "number" && skebInfo.clientRequestCount > 0) {
+							status = `${skebInfo.clientRequestCount.toLocaleString()}件`
+							if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
+								fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+							}
+							if (fields?.length < 16) {
+								fields.push({
+									name: "★Skeb",
+									value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
+								})
+							}
+						}
 					}
 				}
 			}
@@ -608,19 +618,28 @@ export async function updatePerson(
 							}
 							status += `${skebInfo.creatorRequestCount.toLocaleString()}件`;
 						}
-					} else {
-						if (typeof skebInfo.clientRequestCount === "number") {
-							status = `${skebInfo.clientRequestCount.toLocaleString()}件`
+						if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
+							fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
 						}
-					}
-					if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
-						fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
-					}
-					if (fields?.length < 16) {
-						fields.push({
-							name: "★Skeb",
-							value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
-						})
+						if (fields?.length < 16) {
+							fields.push({
+								name: "★Skeb",
+								value: `[${skebInfo.isAcceptable ? "募集中" : "停止中"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
+							})
+						}
+					} else {
+						if (typeof skebInfo.clientRequestCount === "number" && skebInfo.clientRequestCount > 0) {
+							status = `${skebInfo.clientRequestCount.toLocaleString()}件`
+							if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
+								fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+							}
+							if (fields?.length < 16) {
+								fields.push({
+									name: "★Skeb",
+									value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
+								})
+							}
+						}
 					}
 				}
 			}

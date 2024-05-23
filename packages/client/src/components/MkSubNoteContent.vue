@@ -170,8 +170,15 @@
 					>
 						<XNoteSimple :note="note.renote" />
 					</div>
-					<MkFolder v-if="note.references?.length" class="references" :expanded="refExpand" no-style>
-						<template #header>{{ note.references.length + " 件の参照" }}</template>
+					<MkFolder
+						v-if="note.references?.length"
+						class="references"
+						:expanded="refExpand"
+						no-style
+					>
+						<template #header>{{
+							note.references.length + " 件の参照"
+						}}</template>
 						<div
 							v-for="reference in note.references"
 							class="reference"
@@ -264,8 +271,12 @@ const urls = props.note.text
 				(url) =>
 					props.note.renote?.url !== url &&
 					props.note.renote?.uri !== url &&
-					(!props.note.references?.length || !props.note.references.map((x) => x.url).includes(url)) &&
-					(!props.note.references?.length || !props.note.references.map((x) => x.uri).includes(url))
+					(!props.note.references?.length ||
+						!props.note.references
+							.map((x) => x.url)
+							.includes(url)) &&
+					(!props.note.references?.length ||
+						!props.note.references.map((x) => x.uri).includes(url))
 			)
 			.slice(0, 5)
 	: null;
@@ -388,7 +399,7 @@ function focusFooter(ev) {
 			}
 			> .references {
 				padding-top: 0.5rem;
-			 	.reference {
+				.reference {
 					padding-top: 0.5rem;
 					> * {
 						padding: 1rem;

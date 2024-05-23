@@ -303,7 +303,7 @@ export async function createNote(
 					};
 				}
 			} catch (e) {
-				console.log(`ResolveNoteErr : ${JSON.stringify(e,undefined,"\t")}`);
+				console.log(`ResolveNoteErr : ${JSON.stringify(e, undefined, "\t")}`);
 				return {
 					status:
 						e instanceof StatusError && !e.isRetryable
@@ -335,32 +335,45 @@ export async function createNote(
 	let references = new Set<Note["id"]>();
 	if (note.references) {
 		logger.info(
-			`references: ${JSON.stringify(note.references,undefined,"\t")}`,
+			`references: ${JSON.stringify(note.references, undefined, "\t")}`,
 		);
 		// Resolve to Collection Object
 		const collection = await resolver.resolveCollection(note.references);
 		if (isCollectionOrOrderedCollection(collection)) {
-			
 			if (collection.first?.items) {
-					let items = (await Promise.allSettled(
-						toArray(collection.first.items).map((x) => resolver?.resolve(x, true))
-					)).flatMap((result) => result.status === "fulfilled" ? [result.value] : []
+				let items = (
+					await Promise.allSettled(
+						toArray(collection.first.items).map((x) =>
+							resolver?.resolve(x, true),
+						),
+					)
+				).flatMap((result) =>
+					result.status === "fulfilled" ? [result.value] : [],
+				);
+				let next = collection.first.next;
+				while (next) {
+					let data = await fetch(next, {
+						headers: { Accept: "application/json" },
+					});
+					let json_data = JSON.parse(await data.text());
+					logger.info(
+						`references_next: ${JSON.stringify(json_data, undefined, "\t")}`,
 					);
-					let next = collection.first.next;
-					while (next) {
-						let data = await fetch(next, {
-							headers: { Accept: "application/json" },
-						});
-						let json_data = JSON.parse(await data.text());
-						logger.info(
-							`references_next: ${JSON.stringify(json_data,undefined,"\t")}`,
-						);
-			
-						for (let i = 0; i < json_data.items?.length; i++) {
-							items = [...items, ...(await Promise.allSettled([resolver?.resolve(json_data.items[i], true)])).flatMap((result) => result.status === "fulfilled" ? [result.value] : [])];
-						}
-						next = json_data.next
+
+					for (let i = 0; i < json_data.items?.length; i++) {
+						items = [
+							...items,
+							...(
+								await Promise.allSettled([
+									resolver?.resolve(json_data.items[i], true),
+								])
+							).flatMap((result) =>
+								result.status === "fulfilled" ? [result.value] : [],
+							),
+						];
 					}
+					next = json_data.next;
+				}
 
 				// Resolve and regist Notes
 				const limit = promiseLimit<Note | null>(2);

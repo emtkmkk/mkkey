@@ -7,7 +7,7 @@ export async function sleep() {
 	const { canceled } = await os.yesno({
 		type: "question",
 		title: i18n.ts.sleepConfirm,
-		text: i18n.ts.sleepText
+		text: i18n.ts.sleepText,
 	});
 	if (canceled) return;
 
@@ -83,7 +83,9 @@ export async function sleep() {
 
 	const date = new Date();
 
-	const time = period?.endsWith("min") ? parseInt(period.replace("min","")) : parseInt(period.replace("hour","")) * 60
+	const time = period?.endsWith("min")
+		? parseInt(period.replace("min", ""))
+		: parseInt(period.replace("hour", "")) * 60;
 
 	date.setMinutes(date.getMinutes() + time);
 
@@ -92,17 +94,18 @@ export async function sleep() {
 	localStorage.setItem("openCount", "0");
 
 	if (defaultStore.state.postStartSleep) {
-		await os.apiWithDialog("notes/create",{
-			text: `#睡眠モード を開始しました！（${period.replace("min","分").replace("hour","時間")}） #おやすみなさい`,
+		await os.apiWithDialog("notes/create", {
+			text: `#睡眠モード を開始しました！（${period
+				.replace("min", "分")
+				.replace("hour", "時間")}） #おやすみなさい`,
 			visibility: defaultStore.state.rememberNoteVisibility
 				? defaultStore.state.visibility
 				: defaultStore.state.defaultNoteVisibility,
 			localOnly: defaultStore.state.rememberNoteVisibility
-			? defaultStore.state.localAndFollower
-			: defaultStore.state.defaultNoteLocalAndFollower,
-		})
+				? defaultStore.state.localAndFollower
+				: defaultStore.state.defaultNoteLocalAndFollower,
+		});
 	}
 
 	location.reload();
-
 }

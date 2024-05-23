@@ -6,14 +6,23 @@
 		"
 		class="hpaizdrt"
 		v-tooltip="
-			(!defaultStore.state.tickerShowName ? (instance.softwareVersion || '???') + '/' : '') + instance.name + '/' + capitalize(instance.softwareName || '???')
+			(!defaultStore.state.tickerShowName
+				? (instance.softwareVersion || '???') + '/'
+				: '') +
+			instance.name +
+			'/' +
+			capitalize(instance.softwareName || '???')
 		"
 		ref="ticker"
 		:style="bg"
 	>
 		<img
 			class="icon"
-			v-if="defaultStore.state.tickerShowFavicon && getInstanceFavicon(instance) && !errorFavicon"
+			v-if="
+				defaultStore.state.tickerShowFavicon &&
+				getInstanceFavicon(instance) &&
+				!errorFavicon
+			"
 			:src="getInstanceFavicon(instance)"
 			aria-hidden="true"
 			@error="errorFavicon = true"
@@ -21,27 +30,41 @@
 		<img
 			class="icon"
 			v-if="
-				defaultStore.state.tickerShowIcon && 
+				defaultStore.state.tickerShowIcon &&
 				getInstanceIcon(instance) &&
-				(!defaultStore.state.tickerShowFavicon || instance.faviconUrl !== instance.iconUrl) &&
+				(!defaultStore.state.tickerShowFavicon ||
+					instance.faviconUrl !== instance.iconUrl) &&
 				!errorIcon
 			"
 			:src="getInstanceIcon(instance)"
 			aria-hidden="true"
 			@error="errorIcon = true"
 		/>
-		<span class="name" v-if="defaultStore.state.tickerShowName">{{ instance.softwareVersion || "???" }}</span>
+		<span class="name" v-if="defaultStore.state.tickerShowName">{{
+			instance.softwareVersion || "???"
+		}}</span>
 	</div>
 	<div
 		v-else-if="$store.state.developerTicker"
 		class="hpaizdrt"
-		v-tooltip="(!defaultStore.state.tickerShowName ? (capitalize(instance.softwareName || '???') + '/' + (instance.softwareVersion || '???')) + '/' : '') + instance.name"
+		v-tooltip="
+			(!defaultStore.state.tickerShowName
+				? capitalize(instance.softwareName || '???') +
+				  '/' +
+				  (instance.softwareVersion || '???') +
+				  '/'
+				: '') + instance.name
+		"
 		ref="ticker"
 		:style="bg"
 	>
 		<img
 			class="icon"
-			v-if="defaultStore.state.tickerShowFavicon && getInstanceFavicon(instance) && !errorFavicon"
+			v-if="
+				defaultStore.state.tickerShowFavicon &&
+				getInstanceFavicon(instance) &&
+				!errorFavicon
+			"
 			:src="getInstanceFavicon(instance)"
 			aria-hidden="true"
 			@error="errorFavicon = true"
@@ -49,9 +72,10 @@
 		<img
 			class="icon"
 			v-if="
-				defaultStore.state.tickerShowIcon && 
+				defaultStore.state.tickerShowIcon &&
 				getInstanceIcon(instance) &&
-				(!defaultStore.state.tickerShowFavicon || instance.faviconUrl !== instance.iconUrl) &&
+				(!defaultStore.state.tickerShowFavicon ||
+					instance.faviconUrl !== instance.iconUrl) &&
 				!errorIcon
 			"
 			:src="getInstanceIcon(instance)"
@@ -78,7 +102,11 @@
 	>
 		<img
 			class="icon"
-			v-if="defaultStore.state.tickerShowFavicon && getInstanceFavicon(instance) && !errorFavicon"
+			v-if="
+				defaultStore.state.tickerShowFavicon &&
+				getInstanceFavicon(instance) &&
+				!errorFavicon
+			"
 			:src="getInstanceFavicon(instance)"
 			aria-hidden="true"
 			@error="errorFavicon = true"
@@ -86,16 +114,19 @@
 		<img
 			class="icon"
 			v-if="
-				defaultStore.state.tickerShowIcon && 
+				defaultStore.state.tickerShowIcon &&
 				getInstanceIcon(instance) &&
-				(!defaultStore.state.tickerShowFavicon || instance.faviconUrl !== instance.iconUrl) &&
+				(!defaultStore.state.tickerShowFavicon ||
+					instance.faviconUrl !== instance.iconUrl) &&
 				!errorIcon
 			"
 			:src="getInstanceIcon(instance)"
 			aria-hidden="true"
 			@error="errorIcon = true"
 		/>
-		<span class="name" v-if="defaultStore.state.tickerShowName">{{ instance.name }}</span>
+		<span class="name" v-if="defaultStore.state.tickerShowName">{{
+			instance.name
+		}}</span>
 	</div>
 </template>
 

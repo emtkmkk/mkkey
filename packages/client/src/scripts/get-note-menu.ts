@@ -454,9 +454,11 @@ export function getNoteMenu(props: {
 				text: i18n.ts.reaction,
 				action: showReactions,
 			},
-			...((/[\*<>$`\[\]_~:\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]|\\\(|\\\)/.test(
+			...(/[\*<>$`\[\]_~:\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]|\\\(|\\\)/.test(
 				(appearNote.cw ?? "") + (appearNote.text ?? ""),
-			) && !props.info?.value?.ready) && !appearNote.deletedAt
+			) &&
+			!props.info?.value?.ready &&
+			!appearNote.deletedAt
 				? [
 						{
 							icon: "ph-clipboard-text ph-bold ph-lg",

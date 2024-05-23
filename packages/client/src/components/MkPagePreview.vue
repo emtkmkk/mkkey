@@ -24,7 +24,11 @@
 				</p>
 				<footer>
 					<img
-						v-if="!defaultStore.state.hiddenIconUserIds?.includes(page.user.id)" 
+						v-if="
+							!defaultStore.state.hiddenIconUserIds?.includes(
+								page.user.id
+							)
+						"
 						class="icon"
 						:src="page.user.avatarUrl"
 						aria-label="none"

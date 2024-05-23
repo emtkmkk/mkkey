@@ -144,15 +144,15 @@ export function getUserMenu(user, router: Router = mainRouter) {
 	}
 
 	async function addHiddenIconUserIds(): Promise<void> {
-		let hiddenIconUserIds = defaultStore.state.hiddenIconUserIds
-		hiddenIconUserIds.push(user.id)
-		defaultStore.set("hiddenIconUserIds", hiddenIconUserIds)
+		let hiddenIconUserIds = defaultStore.state.hiddenIconUserIds;
+		hiddenIconUserIds.push(user.id);
+		defaultStore.set("hiddenIconUserIds", hiddenIconUserIds);
 	}
 
 	async function delHiddenIconUserIds(): Promise<void> {
-		let hiddenIconUserIds = defaultStore.state.hiddenIconUserIds
-		hiddenIconUserIds = hiddenIconUserIds.filter((x) => x !== user.id)
-		defaultStore.set("hiddenIconUserIds", hiddenIconUserIds)
+		let hiddenIconUserIds = defaultStore.state.hiddenIconUserIds;
+		hiddenIconUserIds = hiddenIconUserIds.filter((x) => x !== user.id);
+		defaultStore.set("hiddenIconUserIds", hiddenIconUserIds);
 	}
 
 	async function setCustomName(): Promise<void> {
@@ -358,14 +358,14 @@ export function getUserMenu(user, router: Router = mainRouter) {
 					icon: "ph-eye-slash ph-bold ph-lg",
 					text: i18n.ts.addHiddenIconUserIds,
 					action: addHiddenIconUserIds,
-				}
+			  }
 			: undefined,
 		meId !== user.id && defaultStore.state.hiddenIconUserIds?.includes(user.id)
 			? {
 					icon: "ph-eye ph-bold ph-lg",
 					text: i18n.ts.delHiddenIconUserIds,
 					action: delHiddenIconUserIds,
-				}
+			  }
 			: undefined,
 		meId !== user.id
 			? {

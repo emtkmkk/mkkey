@@ -11,7 +11,11 @@ export class addPublicReactionList1683682889972 {
 	}
 
 	async down(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "user" DROP COLUMN "isPublicLikeList"`);
-		await queryRunner.query(`ALTER TABLE "note" DROP COLUMN "isPublicLikeList"`);
+		await queryRunner.query(
+			`ALTER TABLE "user" DROP COLUMN "isPublicLikeList"`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "note" DROP COLUMN "isPublicLikeList"`,
+		);
 	}
 }

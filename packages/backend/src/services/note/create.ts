@@ -375,12 +375,22 @@ export default async (
 
 		if (data.reply?.deletedAt) {
 			if (data.reply?.userHost == null && user.host != null) {
-				const content = renderActivity(renderDelete(renderTombstone(`${config.url}/notes/${data.reply?.id}`), {id: data.reply.userId, host: data.reply.userHost}));
-				const dm = new DeliverManager({id: data.reply.userId, host: data.reply.userHost}, content);
+				const content = renderActivity(
+					renderDelete(
+						renderTombstone(`${config.url}/notes/${data.reply?.id}`),
+						{ id: data.reply.userId, host: data.reply.userHost },
+					),
+				);
+				const dm = new DeliverManager(
+					{ id: data.reply.userId, host: data.reply.userHost },
+					content,
+				);
 				const u = await Users.findOneBy({ id: user.id });
 				if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
 				dm.execute();
-				return rej("削除された投稿に対して返信されました。削除リクエストを送信しました。");
+				return rej(
+					"削除された投稿に対して返信されました。削除リクエストを送信しました。",
+				);
 			} else {
 				return rej("削除された投稿に対しては返信できません。");
 			}
@@ -388,12 +398,22 @@ export default async (
 
 		if (data.renote?.deletedAt) {
 			if (data.renote?.userHost == null && user.host != null) {
-				const content = renderActivity(renderDelete(renderTombstone(`${config.url}/notes/${data.renote?.id}`), {id: data.renote.userId, host: data.renote.userHost}));
-				const dm = new DeliverManager({id: data.renote.userId, host: data.renote.userHost}, content);
+				const content = renderActivity(
+					renderDelete(
+						renderTombstone(`${config.url}/notes/${data.renote?.id}`),
+						{ id: data.renote.userId, host: data.renote.userHost },
+					),
+				);
+				const dm = new DeliverManager(
+					{ id: data.renote.userId, host: data.renote.userHost },
+					content,
+				);
 				const u = await Users.findOneBy({ id: user.id });
 				if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
 				dm.execute();
-				return rej("削除された投稿がRTされました。削除リクエストを送信しました。");
+				return rej(
+					"削除された投稿がRTされました。削除リクエストを送信しました。",
+				);
 			} else {
 				return rej("削除された投稿はRTできません。");
 			}
@@ -466,20 +486,39 @@ export default async (
 			data.text = null;
 		}
 
-		if (!user.host && data.renote && user.maxRankPoint < 1200 && !user.canInvite && data.visibility === "public" && data.renote.userHost != null) {
+		if (
+			!user.host &&
+			data.renote &&
+			user.maxRankPoint < 1200 &&
+			!user.canInvite &&
+			data.visibility === "public" &&
+			data.renote.userHost != null
+		) {
 			data.visibility = "home";
 		}
 
-		if (!user.host && user.maxRankPoint < 1200 && !user.canInvite && data.reply?.userHost == null && /^(@\w+\s*)?:[\w@._\-]:$/.test(data.text ?? "")) {
-			return rej("この内容の返信は現在制限されています。絵文字だけの返信なら、リアクション機能を使用してみませんか？");
+		if (
+			!user.host &&
+			user.maxRankPoint < 1200 &&
+			!user.canInvite &&
+			data.reply?.userHost == null &&
+			/^(@\w+\s*)?:[\w@._\-]:$/.test(data.text ?? "")
+		) {
+			return rej(
+				"この内容の返信は現在制限されています。絵文字だけの返信なら、リアクション機能を使用してみませんか？",
+			);
 		}
 
-		if (!user.host && (data.visibility === "public" || data.cw?.trim().toUpperCase() === "CW")) {
+		if (
+			!user.host &&
+			(data.visibility === "public" || data.cw?.trim().toUpperCase() === "CW")
+		) {
 			const isIncludeNgWordRet = isIncludeNgWordIsNote(data);
 
 			if (isIncludeNgWordRet) {
 				if (isIncludeNgWordRet === "NG") {
-					if (user.maxRankPoint < 1200 && !user.canInvite) data.visibility = "home";
+					if (user.maxRankPoint < 1200 && !user.canInvite)
+						data.visibility = "home";
 				} else if (!data.cw) {
 					if (user.isBot) {
 						data.cw = `[強制CW] ${isIncludeNgWordRet}`;
@@ -1062,7 +1101,8 @@ export async function appendNoteVisibleUser(
 async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 	if (data.localOnly && data.channel) return null;
 	// リモートでRT出来ないはずの投稿がRTされている場合、連合しない
-	if (data.renote?.userId !== note.userId && data.renote?.localOnly) return null;
+	if (data.renote?.userId !== note.userId && data.renote?.localOnly)
+		return null;
 	// ローカル＆フォロワー
 	if (
 		data.localOnly &&

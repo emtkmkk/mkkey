@@ -39,11 +39,15 @@
 					i18n.ts.mkkey
 				}}</span></template
 			>
-			<FormSwitch v-model="disableNyaise" class="_formBlock" @update:modelValue="update()"
+			<FormSwitch
+				v-model="disableNyaise"
+				class="_formBlock"
+				@update:modelValue="update()"
 				>{{ i18n.ts.disableNyaise
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
-				}}</span><template #caption>{{
+				}}</span
+				><template #caption>{{
 					i18n.ts.disableNyaiseDescription
 				}}</template></FormSwitch
 			>
@@ -95,15 +99,12 @@
 			>
 		</FormSection>
 		<FormSection>
-			<template #label
-				></template
-			>
+			<template #label></template>
 			<FormSwitch v-model="postStartSleep" class="_formBlock"
 				>{{ i18n.ts.postStartSleep
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
-				}}</span
-				></FormSwitch
+				}}</span></FormSwitch
 			>
 		</FormSection>
 		<FormSection>

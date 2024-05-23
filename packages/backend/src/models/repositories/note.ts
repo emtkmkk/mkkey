@@ -217,7 +217,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
 		const host = note.userHost;
 		const isVisible = await this.isVisibleForMe(note, meId);
-		
+
 		if (!(await this.isVisibleForMe(note, meId)) && !opts.showInvisible) {
 			throw new IdentifiableError(
 				"9725d0ce-ba28-4dde-95a7-2cbb2c15de24",
@@ -239,9 +239,19 @@ export const NoteRepository = db.getRepository(Note).extend({
 				: await Channels.findOneBy({ id: note.channelId })
 			: null;
 
-		const myReactions = meId ? await populateMyReactions(note, meId) : undefined;
+		const myReactions = meId
+			? await populateMyReactions(note, meId)
+			: undefined;
 
-		const reactions = note.isPublicLikeList || meId === note.userId ? note.reactions : myReactions?.myReactions ? myReactions.myReactions.reduce((acc, curr) => (acc[curr] = 1, acc), {}) : {}
+		const reactions =
+			note.isPublicLikeList || meId === note.userId
+				? note.reactions
+				: myReactions?.myReactions
+				? myReactions.myReactions.reduce(
+						(acc, curr) => ((acc[curr] = 1), acc),
+						{},
+				  )
+				: {};
 
 		const reactionEmojiNames = Object.keys(reactions)
 			.filter((x) => x?.startsWith(":"))
@@ -317,20 +327,28 @@ export const NoteRepository = db.getRepository(Note).extend({
 							  })
 							: undefined,
 
-						references: note.referenceIds.filter((x) => !/\W/.test(x) && x !== note.renoteId).length
-							? (await Promise.allSettled(note.referenceIds.filter((x) => !/\W/.test(x) && x !== note.renoteId).map(async (x) => {
-								try {
-									return (await this.pack(x, me, {
-										detail: true,
-										_hint_: options?._hint_,
-										showInvisible: options?.showInvisible,
-									}));
-								} catch (e) {
-									return null;
-								}
-							}))).flatMap((result) =>
-								result.status === "fulfilled" ? [result.value] : [],
-							)
+						references: note.referenceIds.filter(
+							(x) => !/\W/.test(x) && x !== note.renoteId,
+						).length
+							? (
+									await Promise.allSettled(
+										note.referenceIds
+											.filter((x) => !/\W/.test(x) && x !== note.renoteId)
+											.map(async (x) => {
+												try {
+													return await this.pack(x, me, {
+														detail: true,
+														_hint_: options?._hint_,
+														showInvisible: options?.showInvisible,
+													});
+												} catch (e) {
+													return null;
+												}
+											}),
+									)
+							  ).flatMap((result) =>
+									result.status === "fulfilled" ? [result.value] : [],
+							  )
 							: undefined,
 
 						poll:
@@ -360,28 +378,28 @@ export const NoteRepository = db.getRepository(Note).extend({
 		});
 
 		if (packed.user.isCat && packed.user.speakAsCat && packed.text) {
-			const me = meId ? (await Users.findOneByOrFail({ id: meId })) : undefined;
-			if (!(me?.disableNyaise)) {
+			const me = meId ? await Users.findOneByOrFail({ id: meId }) : undefined;
+			if (!me?.disableNyaise) {
 				const tokens = packed.text ? mfm.parse(packed.text) : [];
 				function nyaizeNode(node: mfm.MfmNode) {
 					if (node.type === "quote") return;
 					if (node.type === "text") node.props.text = nyaize(node.props.text);
-	
+
 					if (node.children) {
 						for (const child of node.children) {
 							nyaizeNode(child);
 						}
 					}
 				}
-	
+
 				for (const node of tokens) nyaizeNode(node);
-	
+
 				packed.text = mfm.toString(tokens);
-				
 			}
 		}
-		
-		if (packed.text?.includes("[[参照]]")) packed.text = packed.text?.replaceAll("[[参照]]","?[<参照>]");
+
+		if (packed.text?.includes("[[参照]]"))
+			packed.text = packed.text?.replaceAll("[[参照]]", "?[<参照>]");
 
 		return packed;
 	},

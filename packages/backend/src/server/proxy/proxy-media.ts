@@ -30,7 +30,10 @@ export async function proxyMedia(ctx: Koa.Context) {
 	url = url.replace("//", "/");
 
 	//.ioメディアの正常化処理
-	url = url.replace("media.misskeyusercontent.com", "media.misskeyusercontent.jp");
+	url = url.replace(
+		"media.misskeyusercontent.com",
+		"media.misskeyusercontent.jp",
+	);
 
 	let resolvedIps;
 	try {

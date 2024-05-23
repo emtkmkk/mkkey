@@ -1019,7 +1019,7 @@ const placeholder = $computed((): string => {
 				? `${
 						(localOnly ? "ローカル" : "") +
 						i18n.ts._visibility[visibility] +
-				(localOnly ? "/リモートフォロワー" : "")
+						(localOnly ? "/リモートフォロワー" : "")
 				  } : `
 				: "") +
 			new Date()

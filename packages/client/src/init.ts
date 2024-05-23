@@ -565,17 +565,20 @@ import {
 			});
 		}
 
-		if (defaultStore.state.postStartSleep && localStorage.getItem('sleepCancel') === "y") {
-			api("notes/create",{
+		if (
+			defaultStore.state.postStartSleep &&
+			localStorage.getItem("sleepCancel") === "y"
+		) {
+			api("notes/create", {
 				text: "#睡眠モード を解除しました",
 				visibility: defaultStore.state.rememberNoteVisibility
 					? defaultStore.state.visibility
 					: defaultStore.state.defaultNoteVisibility,
 				localOnly: defaultStore.state.rememberNoteVisibility
-				? defaultStore.state.localAndFollower
-				: defaultStore.state.defaultNoteLocalAndFollower,
+					? defaultStore.state.localAndFollower
+					: defaultStore.state.defaultNoteLocalAndFollower,
 			});
-			localStorage.removeItem('sleepCancel');
+			localStorage.removeItem("sleepCancel");
 		}
 
 		fetchInstanceMetaPromise.then(async () => {

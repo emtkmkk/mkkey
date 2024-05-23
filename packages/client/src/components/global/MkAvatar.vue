@@ -11,8 +11,22 @@
 		:title="acct(user)"
 		@click="onClick"
 	>
-		<img v-if="!errorIcon && !defaultStore.state.hiddenIconUserIds?.includes(user.id)" class="inner" :src="url" @error="errorIcon=true" decoding="async" />
-		<img v-else class="inner" src="/static-assets/user-unknown.png" decoding="async" />
+		<img
+			v-if="
+				!errorIcon &&
+				!defaultStore.state.hiddenIconUserIds?.includes(user.id)
+			"
+			class="inner"
+			:src="url"
+			@error="errorIcon = true"
+			decoding="async"
+		/>
+		<img
+			v-else
+			class="inner"
+			src="/static-assets/user-unknown.png"
+			decoding="async"
+		/>
 		<MkUserOnlineIndicator
 			v-if="showIndicator && user.onlineStatus !== 'unknown'"
 			class="indicator"
@@ -33,8 +47,22 @@
 		:target="target"
 		@click.stop="showAvatar"
 	>
-		<img v-if="!errorIcon && !defaultStore.state.hiddenIconUserIds?.includes(user.id)" class="inner" :src="url" @error="errorIcon=true" decoding="async" />
-		<img v-else class="inner" src="/static-assets/user-unknown.png" decoding="async" />
+		<img
+			v-if="
+				!errorIcon &&
+				!defaultStore.state.hiddenIconUserIds?.includes(user.id)
+			"
+			class="inner"
+			:src="url"
+			@error="errorIcon = true"
+			decoding="async"
+		/>
+		<img
+			v-else
+			class="inner"
+			src="/static-assets/user-unknown.png"
+			decoding="async"
+		/>
 		<MkUserOnlineIndicator
 			v-if="showIndicator && user.onlineStatus !== 'unknown'"
 			class="indicator"

@@ -97,7 +97,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		sentReactions: NoteReactions.createQueryBuilder("reaction")
 			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
 			.where(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
-			.andWhere(ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE")
+			.andWhere(
+				ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE",
+			)
 			.groupBy("reaction.reaction")
 			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)
@@ -116,7 +118,9 @@ export default define(meta, paramDef, async (ps, me) => {
 				borderDate: borderDate.toISOString(),
 			})
 			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
-			.andWhere(ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE")
+			.andWhere(
+				ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE",
+			)
 			.groupBy("reaction.reaction")
 			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)

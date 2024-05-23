@@ -79,11 +79,7 @@
 		"
 	/>
 	<img
-		v-else-if="
-			isCustom &&
-			customEmojiName &&
-			isReaction
-		"
+		v-else-if="isCustom && customEmojiName && isReaction"
 		class="mk-emoji"
 		:class="{
 			normal,

@@ -136,12 +136,9 @@
 			</div>
 		</FormSection>
 
-		<FormButton
-			inline
-			class="_formBlock"
-			@click="setWallpaper"
-			>{{ i18n.ts.setWallpaper }}</FormButton
-		>
+		<FormButton inline class="_formBlock" @click="setWallpaper">{{
+			i18n.ts.setWallpaper
+		}}</FormButton>
 		<FormButton
 			v-if="reloadFlg"
 			primary
@@ -153,12 +150,18 @@
 		>
 
 		<div class="_formBlock" v-for="(wallpaper, index) in wallpapers">
-			<MkLink :url="wallpaper" target="_blank" style="margin-right: 2em">{{
-				i18n.ts.wallpaper + (index + 1)
-			}}</MkLink>
-			<FormButton inline class="_formBlock" @click="removeWallpaper(index)">{{
-				i18n.ts.removeWallpaper
-			}}</FormButton>
+			<MkLink
+				:url="wallpaper"
+				target="_blank"
+				style="margin-right: 2em"
+				>{{ i18n.ts.wallpaper + (index + 1) }}</MkLink
+			>
+			<FormButton
+				inline
+				class="_formBlock"
+				@click="removeWallpaper(index)"
+				>{{ i18n.ts.removeWallpaper }}</FormButton
+			>
 		</div>
 	</div>
 </template>
@@ -247,7 +250,9 @@ const darkMode = computed(defaultStore.makeGetterSetter("darkMode"));
 const syncDeviceDarkMode = computed(
 	ColdDeviceStorage.makeGetterSetter("syncDeviceDarkMode")
 );
-const wallpapers = ref(JSON.parse(localStorage.getItem("wallpapers") ?? "[]") || []);
+const wallpapers = ref(
+	JSON.parse(localStorage.getItem("wallpapers") ?? "[]") || []
+);
 const themesCount = installedThemes.value.length;
 
 const reloadFlg = ref(false);

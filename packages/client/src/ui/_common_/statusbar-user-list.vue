@@ -9,7 +9,11 @@
 				>
 					<span v-for="note in notes" :key="note.id" class="item">
 						<img
-							v-if="!defaultStore.state.hiddenIconUserIds?.includes(note.user.id)" 
+							v-if="
+								!defaultStore.state.hiddenIconUserIds?.includes(
+									note.user.id
+								)
+							"
 							class="avatar"
 							:src="note.user.avatarUrl"
 							decoding="async"

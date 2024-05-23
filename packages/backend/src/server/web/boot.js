@@ -23,10 +23,20 @@
 	};
 
 	//#region Sleep Mode
-	if (localStorage.getItem("sleepTime") && new Date(localStorage.getItem("sleepTime")) > new Date()) {
+	if (
+		localStorage.getItem("sleepTime") &&
+		new Date(localStorage.getItem("sleepTime")) > new Date()
+	) {
 		const count = parseInt(localStorage.getItem("openCount") ?? "0") + 1;
 		localStorage.setItem("openCount", count);
-		renderSleep("SLEEPING", `残り ${Math.ceil((new Date(localStorage.getItem("sleepTime")) - new Date()) / (60 * 1000))} 分`, count);
+		renderSleep(
+			"SLEEPING",
+			`残り ${Math.ceil(
+				(new Date(localStorage.getItem("sleepTime")) - new Date()) /
+					(60 * 1000),
+			)} 分`,
+			count,
+		);
 		return;
 	}
 	//#endregion
@@ -123,14 +133,15 @@
 	let wallpapers = localStorage.getItem("wallpapers");
 	if (wallpaper && !wallpapers) {
 		wallpapers = JSON.stringify([wallpaper]);
-		localStorage.setItem("wallpapers",wallpapers);
+		localStorage.setItem("wallpapers", wallpapers);
 		localStorage.removeItem("wallpaper");
 	}
 	if (wallpapers) {
 		const parseWps = JSON.parse(wallpapers);
-		document.documentElement.style.backgroundImage = `url(${parseWps[Math.floor(Math.random() * parseWps.length)]})`;
+		document.documentElement.style.backgroundImage = `url(${
+			parseWps[Math.floor(Math.random() * parseWps.length)]
+		})`;
 	}
-	
 
 	const customCss = localStorage.getItem("customCss");
 	if (customCss && customCss.length > 0) {
@@ -305,7 +316,6 @@
 		`);
 	}
 
-
 	function renderSleep(code, details, count) {
 		let errorsElement = document.getElementById("errors");
 
@@ -316,12 +326,16 @@
 			<button class="button-big" onclick="location.reload(true);">
 				<span class="button-label-big">リロード</span>
 			</button>
-			${count >= 4 ? `
+			${
+				count >= 4
+					? `
 			<br>
 			<button class="button-small" onclick="localStorage.removeItem('sleepTime');localStorage.setItem('sleepCancel','y');location.reload(true);">
 				<span class="button-label-small">睡眠モードを解除</span>
 			</button>
-			` : ""}
+			`
+					: ""
+			}
 			<br>
 			<br>
 			<div id="errors"></div>

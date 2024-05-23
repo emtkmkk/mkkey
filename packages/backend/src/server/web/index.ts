@@ -927,7 +927,7 @@ router.get("(.*)", async (ctx) => {
 		if (now.getDate() == 3) {
 			motd.push("明かりをつけましょぼんぼりに");
 		} else if (now.getDate() == 14) {
-			motd.push("今日はホワイトデーです"); 
+			motd.push("今日はホワイトデーです");
 		}
 		if (now.getDate() <= 10) {
 			motd.push("確定申告、終わりましたか？");

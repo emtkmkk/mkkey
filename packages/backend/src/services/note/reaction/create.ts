@@ -87,7 +87,7 @@ export default async (
 	// TODO: cache
 	try {
 		reaction = await toDbReaction(reaction, user.host, note.userHost);
-	} catch(err) {
+	} catch (err) {
 		throw new IdentifiableError(
 			"770a3ede-67d2-fc9d-f2e2-6163ba0443af",
 			"指定された絵文字が存在しません。",
@@ -221,7 +221,7 @@ export default async (
 							? `${emoji.name}@${emoji.host}`
 							: `${emoji.name}@.`,
 						url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
-					}
+				  }
 				: null,
 		userId: user.id,
 		targetUserId: note.isPublicLikeList ? null : [user.id, note.userId],
@@ -249,7 +249,8 @@ export default async (
 					emojiName: decodedReaction.name
 						? `:${decodedReaction.name}:`
 						: reaction + (existCount > 0 ? ` (+${existCount})` : ""),
-					customEmoji: decodedReaction.name && emoji != null ? emoji : undefined,
+					customEmoji:
+						decodedReaction.name && emoji != null ? emoji : undefined,
 				},
 			});
 		}
@@ -279,7 +280,9 @@ export default async (
 		// ブラックリストに登録済みのホスト または リモート絵文字でライセンスにコピー拒否がある場合 は いいねに変更して外部に送信
 		// TODO : リアクション解除時も変換をかけた方が良いかも
 		if (
-			["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(emoji?.host) ||
+			["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
+				emoji?.host,
+			) ||
 			(emoji?.host && emoji?.license?.includes("コピー可否 : deny"))
 		)
 			record.reaction = await getFallbackReaction();

@@ -236,25 +236,19 @@
 			<option value="always">{{ i18n.ts._instanceTicker.always }}</option>
 		</FormSelect>
 
-		<FormSwitch
-			v-model="tickerShowName"
-			class="_formBlock"
+		<FormSwitch v-model="tickerShowName" class="_formBlock"
 			>{{ i18n.ts.tickerShowName
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{
 				i18n.ts.mkkey
 			}}</span></FormSwitch
 		>
-		<FormSwitch
-			v-model="tickerShowFavicon"
-			class="_formBlock"
+		<FormSwitch v-model="tickerShowFavicon" class="_formBlock"
 			>{{ i18n.ts.tickerShowFavicon
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{
 				i18n.ts.mkkey
 			}}</span></FormSwitch
 		>
-		<FormSwitch
-			v-model="tickerShowIcon"
-			class="_formBlock"
+		<FormSwitch v-model="tickerShowIcon" class="_formBlock"
 			>{{ i18n.ts.tickerShowIcon
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{
 				i18n.ts.mkkey

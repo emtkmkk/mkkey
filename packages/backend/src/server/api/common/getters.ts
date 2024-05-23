@@ -19,7 +19,7 @@ export async function getNote(
 	if (!showInvisible) {
 		generateVisibilityQuery(query, me);
 	}
-	
+
 	const note = await query.getOne();
 
 	if (note == null && !showInvisible) {

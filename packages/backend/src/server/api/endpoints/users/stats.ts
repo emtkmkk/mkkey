@@ -693,7 +693,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (!(!firstLocalFollower && user.host)) {
 		let updates: any = {};
 		if (user.notesCount !== result.notesCount && !user.host) {
-			updates.notesCount = result.notesCount
+			updates.notesCount = result.notesCount;
 		}
 		if (user.maxRankPoint < Math.floor(_rankPower)) {
 			updates.maxRankPoint = Math.floor(_rankPower);

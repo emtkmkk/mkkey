@@ -30,7 +30,7 @@ export default async (
 
 	try {
 		emoji = await toDbReaction(emoji, user.host, note.user?.host);
-	} catch(err) {
+	} catch (err) {
 		if (existCount > 1) {
 			throw new IdentifiableError(
 				"770a3ede-67d2-fc9d-f2e2-6163ba0443af",

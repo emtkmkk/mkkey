@@ -13,7 +13,13 @@
 				@click="complete(type, user)"
 				@keydown="onKeydown"
 			>
-				<img class="avatar" v-if="!defaultStore.state.hiddenIconUserIds?.includes(user.id)" :src="user.avatarUrl" />
+				<img
+					class="avatar"
+					v-if="
+						!defaultStore.state.hiddenIconUserIds?.includes(user.id)
+					"
+					:src="user.avatarUrl"
+				/>
 				<span class="name">
 					<MkUserName :key="user.id" :user="user" />
 				</span>

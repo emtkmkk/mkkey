@@ -22,16 +22,23 @@
 			<FormFolder
 				v-for="type in Object.keys(sounds)"
 				:key="type"
-				style="margin: 0.5rem 0;"
+				style="margin: 0.5rem 0"
 			>
-				<template #label>{{
-				i18n.t(`_sfx.${type}`)
-				}}</template>
+				<template #label>{{ i18n.t(`_sfx.${type}`) }}</template>
 				<template #suffix>{{
 					getSoundTypeName(sounds[type].type) +
-					(sounds[type].type && sounds[type].volume !== 1 ? ` ${(sounds[type].volume * 100).toFixed(0)}%` : "")
+					(sounds[type].type && sounds[type].volume !== 1
+						? ` ${(sounds[type].volume * 100).toFixed(0)}%`
+						: "")
 				}}</template>
-				<XSound :type="sounds[type].type" :volume="sounds[type].volume" :fileId="sounds[type].fileId" :fileUrl="sounds[type].fileUrl" :soundsTypes="soundsTypes" @update="(res) => updated(type, res)"/>
+				<XSound
+					:type="sounds[type].type"
+					:volume="sounds[type].volume"
+					:fileId="sounds[type].fileId"
+					:fileUrl="sounds[type].fileUrl"
+					:soundsTypes="soundsTypes"
+					@update="(res) => updated(type, res)"
+				/>
 			</FormFolder>
 		</FormSection>
 
@@ -48,7 +55,7 @@ import FormRange from "@/components/form/range.vue";
 import FormButton from "@/components/MkButton.vue";
 import FormSection from "@/components/form/section.vue";
 import FormFolder from "@/components/form/folder.vue";
-import XSound from '@/pages/settings/sounds.sound.vue';
+import XSound from "@/pages/settings/sounds.sound.vue";
 import * as os from "@/os";
 import { ColdDeviceStorage } from "@/store";
 import { playFile } from "@/scripts/sound";
@@ -82,10 +89,10 @@ function getSoundTypeName(f): string {
 	switch (f) {
 		case null:
 			return i18n.ts.none;
-		case '_driveFile_':
+		case "_driveFile_":
 			return i18n.ts._soundSettings.driveFile;
 		default:
-			return f.length > 14 ? f.replace(/^[^\/]+\//,"") : f;
+			return f.length > 14 ? f.replace(/^[^\/]+\//, "") : f;
 	}
 }
 

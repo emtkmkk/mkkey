@@ -48,7 +48,7 @@ export function useNoteCapture(props: {
 
 			case "unreacted": {
 				if (body.targetUserId && !body.targetUserId?.includes($i.id)) return;
-				
+
 				const reaction = body.reaction;
 
 				// TODO: reactionsプロパティがない場合ってあったっけ？ なければ || {} は消せる

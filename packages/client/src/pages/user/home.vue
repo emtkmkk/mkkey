@@ -585,7 +585,7 @@ const birthday = $computed(() => {
 		).slice(-2)}-${("00" + _birthday.getDate()).slice(-2)}`;
 	}
 
-	const canceltest = 
+	const canceltest =
 		/(\d{1,2})(yo|歳|sai)([以未])/.test(props.user.name ?? "") ||
 		/(\d{1,2})(yo|歳|sai)([以未])/.test(props.user.description ?? "");
 
@@ -610,7 +610,9 @@ const birthday = $computed(() => {
 
 	const dyear =
 		/(\d{1,2})(yo|歳|sai)([^以未]|$)/.exec(props.user.name ?? "")?.[1] ??
-		/(\d{1,2})(yo|歳|sai)([^以未]|$)/.exec(props.user.description ?? "")?.[1];
+		/(\d{1,2})(yo|歳|sai)([^以未]|$)/.exec(
+			props.user.description ?? ""
+		)?.[1];
 
 	if (dyear == null) return props.user.birthday;
 

@@ -428,7 +428,10 @@ export default class Connection {
 				});
 			} else if (payload.type === "reacted" || payload.type === "unreacted") {
 				// reaction
-				if (!payload?.body?.body?.targetUserId || payload?.body?.body?.targetUserId.includes(this.user?.id)) {
+				if (
+					!payload?.body?.body?.targetUserId ||
+					payload?.body?.body?.targetUserId.includes(this.user?.id)
+				) {
 					const client = getClient(this.host, this.accessToken);
 					client.getStatus(payload.id).then((data) => {
 						const newPost = toTextWithReaction([data.data], this.host);

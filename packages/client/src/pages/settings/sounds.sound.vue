@@ -1,185 +1,218 @@
 <template>
 	<div class="_gaps_m">
-		<FormSelect v-model="type" style="margin-bottom: 1rem;">
+		<FormSelect v-model="type" style="margin-bottom: 1rem">
 			<template #label>{{ i18n.ts.sound }}</template>
-			<option v-for="x in soundsTypes" :key="x ?? 'null'" :value="x">{{ getSoundTypeName(x) }}</option>
+			<option v-for="x in soundsTypes" :key="x ?? 'null'" :value="x">
+				{{ getSoundTypeName(x) }}
+			</option>
 		</FormSelect>
 		<div v-if="type === '_driveFile_'" :class="$style.fileSelectorRoot">
-			<MkButton :class="$style.fileSelectorButton" inline rounded primary @click="selectSound">{{ i18n.ts.selectFile }}</MkButton>
-			<div :class="['_nowrap', !fileUrl && $style.fileNotSelected]">{{ friendlyFileName }}</div>
+			<MkButton
+				:class="$style.fileSelectorButton"
+				inline
+				rounded
+				primary
+				@click="selectSound"
+				>{{ i18n.ts.selectFile }}</MkButton
+			>
+			<div :class="['_nowrap', !fileUrl && $style.fileNotSelected]">
+				{{ friendlyFileName }}
+			</div>
 		</div>
-		<FormRange v-model="volume" :min="0" :max="1" :step="0.05" :textConverter="(v) => `${Math.floor(v * 100)}%`" style="margin-bottom: 1rem;">
+		<FormRange
+			v-model="volume"
+			:min="0"
+			:max="1"
+			:step="0.05"
+			:textConverter="(v) => `${Math.floor(v * 100)}%`"
+			style="margin-bottom: 1rem"
+		>
 			<template #label>{{ i18n.ts.volume }}</template>
 		</FormRange>
-	
+
 		<div class="_buttons">
-			<MkButton inline @click="listen"><i class="ti ti-player-play"></i> {{ i18n.ts.listen }}</MkButton>
-			<MkButton inline primary @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
+			<MkButton inline @click="listen"
+				><i class="ti ti-player-play"></i>
+				{{ i18n.ts.listen }}</MkButton
+			>
+			<MkButton inline primary @click="save"
+				><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton
+			>
 		</div>
 	</div>
-	</template>
-	
-	<script lang="ts" setup>
-	import { ref, computed } from 'vue';
-	import FormSelect from '@/components/form/select.vue';
-	import MkButton from '@/components/MkButton.vue';
-	import FormRange from '@/components/form/range.vue';
-	import { i18n } from '@/i18n.js';
-	import * as os from '@/os.js';
-	import { playFile, getSoundDuration } from '@/scripts/sound.js';
-	import { selectFile } from '@/scripts/select-file.js';
-import { APIError } from 'calckey-js/built/api';
-	
-	const props = defineProps<{
-		type: any;
-		fileId?: string;
-		fileUrl?: string;
-		volume: number;
-		soundsTypes: string[];
-	}>();
-	
-	const emit = defineEmits<{
-		(ev: 'update', result: { type; fileId?: string; fileUrl?: string; volume: number; }): void;
-	}>();
-	
-	const type = ref(props.type);
-	const fileId = ref(props.fileId);
-	const fileUrl = ref(props.fileUrl);
-	const fileName = ref<string>('');
-	const volume = ref(props.volume);
-	
-	if (type.value === '_driveFile_' && fileId.value) {
-		try {
-			const apiRes = await os.api('drive/files/show', {
-				fileId: fileId.value,
-			});
-			fileName.value = apiRes.name;
-		} catch (err) {
-			if (err.kind === "client") {
-				type.value = null;
-				fileId.value = undefined;
-				fileUrl.value = undefined;
-				fileName.value = '';
-				emit('update', {
-					type: type.value,
-					fileId: fileId.value,
-					fileUrl: fileUrl.value,
-					volume: volume.value,
-				});
-			}
-		}
-	}
-	
-	function getSoundTypeName(f): string {
-		switch (f) {
-			case null:
-				return i18n.ts.none;
-			case '_driveFile_':
-				return i18n.ts._soundSettings.driveFile;
-			default:
-				return f;
-		}
-	}
-	
-	const friendlyFileName = computed<string>(() => {
-		if (fileName.value) {
-			return fileName.value;
-		}
-		if (fileUrl.value) {
-			return fileUrl.value;
-		}
-	
-		return i18n.ts._soundSettings.driveFileWarn;
-	});
-	
-	function selectSound(ev) {
-		selectFile(ev.currentTarget ?? ev.target, i18n.ts._soundSettings.driveFile).then(async (file) => {
-			if (!file.type.startsWith('audio')) {
-				os.alert({
-					type: 'warning',
-					title: i18n.ts._soundSettings.driveFileTypeWarn,
-					text: i18n.ts._soundSettings.driveFileTypeWarnDescription,
-				});
-				return;
-			}
-			const duration = await getSoundDuration(file.url);
-			if (duration >= 2000) {
-				const { canceled } = await os.confirm({
-					type: 'warning',
-					title: i18n.ts._soundSettings.driveFileDurationWarn,
-					text: i18n.ts._soundSettings.driveFileDurationWarnDescription,
-					okText: i18n.ts.continue,
-					cancelText: i18n.ts.cancel,
-				});
-				if (canceled) return;
-			}
-	
-			fileUrl.value = file.url;
-			fileName.value = file.name;
-			fileId.value = file.id;
-		});
-	}
-	
-	function listen() {
-		if (type.value === '_driveFile_' && (!fileUrl.value || !fileId.value)) {
-			os.alert({
-				type: 'warning',
-				text: i18n.ts._soundSettings.driveFileWarn,
-			});
-			return;
-		}
-	
-		playFile(type.value === '_driveFile_' ? {
-			type: '_driveFile_',
-			fileId: fileId.value as string,
-			fileUrl: fileUrl.value as string,
-			volume: volume.value,
-		} : {
-			type: type.value,
-			volume: volume.value,
-		});
-	}
-	
-	function save() {
-		if (type.value === '_driveFile_' && !fileUrl.value) {
-			os.alert({
-				type: 'warning',
-				text: i18n.ts._soundSettings.driveFileWarn,
-			});
-			return;
-		}
-	
-		if (type.value !== '_driveFile_') {
-			fileUrl.value = undefined;
-			fileName.value = '';
-			fileId.value = undefined;
-		}
-	
-		emit('update', {
-			type: type.value,
+</template>
+
+<script lang="ts" setup>
+import { ref, computed } from "vue";
+import FormSelect from "@/components/form/select.vue";
+import MkButton from "@/components/MkButton.vue";
+import FormRange from "@/components/form/range.vue";
+import { i18n } from "@/i18n.js";
+import * as os from "@/os.js";
+import { playFile, getSoundDuration } from "@/scripts/sound.js";
+import { selectFile } from "@/scripts/select-file.js";
+import { APIError } from "calckey-js/built/api";
+
+const props = defineProps<{
+	type: any;
+	fileId?: string;
+	fileUrl?: string;
+	volume: number;
+	soundsTypes: string[];
+}>();
+
+const emit = defineEmits<{
+	(
+		ev: "update",
+		result: { type; fileId?: string; fileUrl?: string; volume: number }
+	): void;
+}>();
+
+const type = ref(props.type);
+const fileId = ref(props.fileId);
+const fileUrl = ref(props.fileUrl);
+const fileName = ref<string>("");
+const volume = ref(props.volume);
+
+if (type.value === "_driveFile_" && fileId.value) {
+	try {
+		const apiRes = await os.api("drive/files/show", {
 			fileId: fileId.value,
-			fileUrl: fileUrl.value,
-			volume: volume.value,
 		});
-	
-		os.success();
+		fileName.value = apiRes.name;
+	} catch (err) {
+		if (err.kind === "client") {
+			type.value = null;
+			fileId.value = undefined;
+			fileUrl.value = undefined;
+			fileName.value = "";
+			emit("update", {
+				type: type.value,
+				fileId: fileId.value,
+				fileUrl: fileUrl.value,
+				volume: volume.value,
+			});
+		}
 	}
-	</script>
-	
-	<style module>
-	.fileSelectorRoot {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		margin-bottom: 1rem;
+}
+
+function getSoundTypeName(f): string {
+	switch (f) {
+		case null:
+			return i18n.ts.none;
+		case "_driveFile_":
+			return i18n.ts._soundSettings.driveFile;
+		default:
+			return f;
 	}
-	
-	.fileSelectorButton {
-		flex-shrink: 0;
+}
+
+const friendlyFileName = computed<string>(() => {
+	if (fileName.value) {
+		return fileName.value;
 	}
-	
-	.fileNotSelected {
-		font-weight: 700;
-		color: var(--infoWarnFg);
+	if (fileUrl.value) {
+		return fileUrl.value;
 	}
-	</style>
+
+	return i18n.ts._soundSettings.driveFileWarn;
+});
+
+function selectSound(ev) {
+	selectFile(
+		ev.currentTarget ?? ev.target,
+		i18n.ts._soundSettings.driveFile
+	).then(async (file) => {
+		if (!file.type.startsWith("audio")) {
+			os.alert({
+				type: "warning",
+				title: i18n.ts._soundSettings.driveFileTypeWarn,
+				text: i18n.ts._soundSettings.driveFileTypeWarnDescription,
+			});
+			return;
+		}
+		const duration = await getSoundDuration(file.url);
+		if (duration >= 2000) {
+			const { canceled } = await os.confirm({
+				type: "warning",
+				title: i18n.ts._soundSettings.driveFileDurationWarn,
+				text: i18n.ts._soundSettings.driveFileDurationWarnDescription,
+				okText: i18n.ts.continue,
+				cancelText: i18n.ts.cancel,
+			});
+			if (canceled) return;
+		}
+
+		fileUrl.value = file.url;
+		fileName.value = file.name;
+		fileId.value = file.id;
+	});
+}
+
+function listen() {
+	if (type.value === "_driveFile_" && (!fileUrl.value || !fileId.value)) {
+		os.alert({
+			type: "warning",
+			text: i18n.ts._soundSettings.driveFileWarn,
+		});
+		return;
+	}
+
+	playFile(
+		type.value === "_driveFile_"
+			? {
+					type: "_driveFile_",
+					fileId: fileId.value as string,
+					fileUrl: fileUrl.value as string,
+					volume: volume.value,
+			  }
+			: {
+					type: type.value,
+					volume: volume.value,
+			  }
+	);
+}
+
+function save() {
+	if (type.value === "_driveFile_" && !fileUrl.value) {
+		os.alert({
+			type: "warning",
+			text: i18n.ts._soundSettings.driveFileWarn,
+		});
+		return;
+	}
+
+	if (type.value !== "_driveFile_") {
+		fileUrl.value = undefined;
+		fileName.value = "";
+		fileId.value = undefined;
+	}
+
+	emit("update", {
+		type: type.value,
+		fileId: fileId.value,
+		fileUrl: fileUrl.value,
+		volume: volume.value,
+	});
+
+	os.success();
+}
+</script>
+
+<style module>
+.fileSelectorRoot {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 1rem;
+}
+
+.fileSelectorButton {
+	flex-shrink: 0;
+}
+
+.fileNotSelected {
+	font-weight: 700;
+	color: var(--infoWarnFg);
+}
+</style>

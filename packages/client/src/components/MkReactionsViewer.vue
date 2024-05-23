@@ -85,7 +85,10 @@ const reactions = computed(() => {
 					.replace(/^:[\w:\.\-]+@/, "")
 					.replace(":", "");
 				return (
-					(defaultStore.state.remoteReactionMute && emojiHost && emojiHost !== "." && emojiHost !== config.host) ||
+					(defaultStore.state.remoteReactionMute &&
+						emojiHost &&
+						emojiHost !== "." &&
+						emojiHost !== config.host) ||
 					(!x.hostmute && !x.exact && emojiName.includes(x.name)) ||
 					(!x.hostmute && x.name === emojiName) ||
 					(x.hostmute && !x.exact && emojiHost.includes(x.name)) ||

@@ -343,18 +343,28 @@ const elRef = ref<HTMLElement>(null);
 const reactionRef = ref(null);
 
 const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
-	return { 
+	return {
 		name: x?.replaceAll(":", "").replace("@", ""),
 		exact: /^:\w+:$/.test(x),
 		hostmute: /^:?@[\w.-]/.test(x),
-	 };
+	};
 });
 
 const isMuted =
-	props.notification.type === "reaction" && reactionMuted.some((x) => {
-		const emojiName = props.notification.reaction.replace(":", "").replace(/@[\w:\.\-]+:$/, "");
-		const emojiHost = props.notification.reaction.replace(/^:[\w:\.\-]+@/, "").replace(":", "");
-		if (defaultStore.state.remoteReactionMute && emojiHost && emojiHost !== "." && emojiHost !== config.host) {
+	props.notification.type === "reaction" &&
+	reactionMuted.some((x) => {
+		const emojiName = props.notification.reaction
+			.replace(":", "")
+			.replace(/@[\w:\.\-]+:$/, "");
+		const emojiHost = props.notification.reaction
+			.replace(/^:[\w:\.\-]+@/, "")
+			.replace(":", "");
+		if (
+			defaultStore.state.remoteReactionMute &&
+			emojiHost &&
+			emojiHost !== "." &&
+			emojiHost !== config.host
+		) {
 			return true;
 		}
 		if (x.exact) {

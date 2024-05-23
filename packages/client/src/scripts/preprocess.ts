@@ -64,7 +64,7 @@ export function preprocess(text: string): string {
 						.split("")
 						.map((x) => (/[\s　]/.test(x) ? x : `${x}　`))
 						.join("")
-						.replace(/(.*)　$/,"$1");
+						.replace(/(.*)　$/, "$1");
 				});
 				node.type = "text";
 				node.props.text = mfm.toString(node.children);

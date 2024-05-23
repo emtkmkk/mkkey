@@ -52,7 +52,7 @@ export default defineComponent({
 			type: Boolean,
 			required: false,
 			default: false,
-		}
+		},
 	},
 	data() {
 		return {

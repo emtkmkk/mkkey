@@ -135,25 +135,13 @@ async function init() {
 	}
 
 	// X
-	if (
-		rText?.includes("https://x.com") ||
-		rText?.includes("http://x.com")
-	) {
-		rText = rText.replaceAll(
-			/(https?:\/\/x.com\/[^\s]*)(\?[^\s]*)/g,
-			"$1"
-		);
+	if (rText?.includes("https://x.com") || rText?.includes("http://x.com")) {
+		rText = rText.replaceAll(/(https?:\/\/x.com\/[^\s]*)(\?[^\s]*)/g, "$1");
 	}
 
 	// X
-	if (
-		rUrl?.includes("https://x.com") ||
-		rUrl?.includes("http://x.com")
-	) {
-		rUrl = rUrl.replaceAll(
-			/(https?:\/\/x.com\/[^\s]*)(\?[^\s]*)/g,
-			"$1"
-		);
+	if (rUrl?.includes("https://x.com") || rUrl?.includes("http://x.com")) {
+		rUrl = rUrl.replaceAll(/(https?:\/\/x.com\/[^\s]*)(\?[^\s]*)/g, "$1");
 	}
 
 	if (rUrl) {

@@ -198,7 +198,9 @@ async function spawnWorkers(
 	bootLogger.info(
 		`Starting ${clusterLimits?.web} web workers and ${clusterLimits?.queue} queue workers (total ${total})...`,
 	);
-	await Promise.all(workers.map((mode, index) => spawnWorker(mode, `${index}`)));
+	await Promise.all(
+		workers.map((mode, index) => spawnWorker(mode, `${index}`)),
+	);
 	bootLogger.succ("All workers started");
 }
 

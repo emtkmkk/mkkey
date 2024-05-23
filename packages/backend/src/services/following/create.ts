@@ -103,16 +103,20 @@ export async function insertFollowingDoc(
 
 	//#region Increment counts
 	await Promise.all([
-		follower.host == null ? Users.update(follower.id, {
-			followingCount: (await Followings.createQueryBuilder("following")
-				.where("following.followerId = :userId", { userId: follower.id })
-				.getCount()),
-		}) : Users.increment({ id: follower.id }, "followingCount", 1),
-		followee.host == null ? Users.update(followee.id, {
-			followersCount: (await Followings.createQueryBuilder("following")
-				.where("following.followeeId = :userId", { userId: followee.id })
-				.getCount()),
-		}) : Users.increment({ id: followee.id }, "followersCount", 1),
+		follower.host == null
+			? Users.update(follower.id, {
+					followingCount: await Followings.createQueryBuilder("following")
+						.where("following.followerId = :userId", { userId: follower.id })
+						.getCount(),
+			  })
+			: Users.increment({ id: follower.id }, "followingCount", 1),
+		followee.host == null
+			? Users.update(followee.id, {
+					followersCount: await Followings.createQueryBuilder("following")
+						.where("following.followeeId = :userId", { userId: followee.id })
+						.getCount(),
+			  })
+			: Users.increment({ id: followee.id }, "followersCount", 1),
 	]);
 	//#endregion
 
@@ -272,14 +276,14 @@ export default async function (
 		follower.followingCount > 7500
 			? followingRate > 1.1
 			: follower.followingCount > 1000
-				? followingRate > 2
-				: follower.followingCount > 500
-					? followingRate > 3
-					: follower.followingCount > 300
-						? followingRate > 4
-						: follower.followingCount > 100
-							? followingRate > 5
-							: false;
+			? followingRate > 2
+			: follower.followingCount > 500
+			? followingRate > 3
+			: follower.followingCount > 300
+			? followingRate > 4
+			: follower.followingCount > 100
+			? followingRate > 5
+			: false;
 
 	// フォロー対象が鍵アカウントである or
 	// The follower is silenced, or

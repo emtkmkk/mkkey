@@ -6,14 +6,14 @@ const cache = new Map<string, AudioBuffer>();
 let canPlay = true;
 
 export async function loadAudio(sound, useCache = true) {
-	if (sound.type === null || (sound.type === '_driveFile_' && !sound.fileUrl)) {
+	if (sound.type === null || (sound.type === "_driveFile_" && !sound.fileUrl)) {
 		return;
 	}
 	if (ctx == null) {
 		ctx = new AudioContext();
 	}
 	if (useCache) {
-		if (sound.type === '_driveFile_' && cache.has(sound.fileId)) {
+		if (sound.type === "_driveFile_" && cache.has(sound.fileId)) {
 			return cache.get(sound.fileId) as AudioBuffer;
 		} else if (cache.has(sound.type)) {
 			return cache.get(sound.type) as AudioBuffer;
@@ -22,25 +22,25 @@ export async function loadAudio(sound, useCache = true) {
 
 	let response: Response;
 
-	if (sound.type === '_driveFile_') {
+	if (sound.type === "_driveFile_") {
 		try {
 			response = await fetch(sound.fileUrl, {
-				mode: 'cors',
+				mode: "cors",
 				headers: {
-					'Origin': 'https://mkkey.net'
-				}
+					Origin: "https://mkkey.net",
+				},
 			});
 		} catch (err) {
 			try {
 				// URLが変わっている可能性があるのでドライブ側からURLを取得するフォールバック
-				const apiRes = await os.api('drive/files/show', {
+				const apiRes = await os.api("drive/files/show", {
 					fileId: sound.fileId,
 				});
 				response = await fetch(apiRes.url, {
-					mode: 'cors',
+					mode: "cors",
 					headers: {
-						'Origin': 'https://mkkey.net'
-					}
+						Origin: "https://mkkey.net",
+					},
 				});
 			} catch (fbErr) {
 				// それでも無理なら諦める
@@ -59,7 +59,7 @@ export async function loadAudio(sound, useCache = true) {
 	const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
 	if (useCache) {
-		if (sound.type === '_driveFile_') {
+		if (sound.type === "_driveFile_") {
 			cache.set(sound.fileId, audioBuffer);
 		} else {
 			cache.set(sound.type, audioBuffer);
@@ -113,7 +113,7 @@ export function createSourceNode(
 	return soundSource;
 }
 export async function getSoundDuration(file: string): Promise<number> {
-	const audioEl = document.createElement('audio');
+	const audioEl = document.createElement("audio");
 	audioEl.src = file;
 	return new Promise((resolve) => {
 		const si = setInterval(() => {

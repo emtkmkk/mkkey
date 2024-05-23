@@ -60,7 +60,10 @@ export default class Resolver {
 		}
 	}
 
-	public async resolve(value: string | IObject, ignoreHistory: boolean = false): Promise<IObject> {
+	public async resolve(
+		value: string | IObject,
+		ignoreHistory: boolean = false,
+	): Promise<IObject> {
 		if (value == null) {
 			throw new Error("resolvee is null (or undefined)");
 		}

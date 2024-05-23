@@ -87,9 +87,17 @@ export async function toDbReaction(
 	// リモートユーザの場合 : 指定されたサーバの絵文字 -> リアクション者のサーバの絵文字 -> ローカルの絵文字
 
 	if (custom) {
-		const hosts = (reacterHost 
-			? custom?.[2] === config.host ? [IsNull(), reacterHost] : [custom?.[2], reacterHost, IsNull()]
-			: [custom?.[2] === config.host ? undefined : custom?.[2], IsNull(), noteHost ?? "misskey.io"]).filter(Boolean)
+		const hosts = (
+			reacterHost
+				? custom?.[2] === config.host
+					? [IsNull(), reacterHost]
+					: [custom?.[2], reacterHost, IsNull()]
+				: [
+						custom?.[2] === config.host ? undefined : custom?.[2],
+						IsNull(),
+						noteHost ?? "misskey.io",
+				  ]
+		).filter(Boolean);
 		for (const host of hosts) {
 			const name = custom[1];
 			const emoji = await Emojis.findOneBy({
@@ -104,8 +112,10 @@ export async function toDbReaction(
 		// リモートユーザの場合、絵文字がローカルのみ or 何らかの理由で取得できなかった
 		// 絵文字の名前だけでも保存する
 		if (reacterHost && custom?.[2] !== config.host) {
-			console.log(`NotFound Emoji : :${custom?.[1]}@${custom?.[2] || reacterHost}:`);
-			return `:${custom?.[1]}@${custom?.[2] || reacterHost}:`
+			console.log(
+				`NotFound Emoji : :${custom?.[1]}@${custom?.[2] || reacterHost}:`,
+			);
+			return `:${custom?.[1]}@${custom?.[2] || reacterHost}:`;
 		}
 	}
 

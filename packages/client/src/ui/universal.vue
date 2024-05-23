@@ -455,7 +455,9 @@ watch(
 	}
 );
 
-const wallpaper = localStorage.getItem("wallpapers") != null && JSON.parse(localStorage.getItem("wallpapers") ?? "").length;
+const wallpaper =
+	localStorage.getItem("wallpapers") != null &&
+	JSON.parse(localStorage.getItem("wallpapers") ?? "").length;
 console.log(mainRouter.currentRoute.value.name);
 </script>
 

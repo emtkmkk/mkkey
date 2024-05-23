@@ -189,84 +189,120 @@ export async function createPerson(
 
 	if (host === "misskey.io") {
 		try {
-			console.log(`fetch AddUserInfo1 @${person.preferredUsername}@${host}`)
-			let userInfo = await (await getResponse({
-				url: `https://${host}/api/users/search-by-username-and-host`,
-				method: "POST",
-				headers: 
-					{
+			console.log(`fetch AddUserInfo1 @${person.preferredUsername}@${host}`);
+			let userInfo = await (
+				await getResponse({
+					url: `https://${host}/api/users/search-by-username-and-host`,
+					method: "POST",
+					headers: {
 						"Content-Type": "application/json",
 						"User-Agent": config.userAgent,
 						Accept: "application/json, */*",
 					},
-				body: 
-					JSON.stringify({
+					body: JSON.stringify({
 						username: person.preferredUsername,
-						host
+						host,
 					}),
-				timeout: 5000,
-			})).json();
-			if (Array.isArray(userInfo) && (userInfo).length > 1) {
-				userInfo = userInfo.filter((x) => person.preferredUsername?.toLowerCase() === x.username.toLowerCase());
+					timeout: 5000,
+				})
+			).json();
+			if (Array.isArray(userInfo) && userInfo.length > 1) {
+				userInfo = userInfo.filter(
+					(x) =>
+						person.preferredUsername?.toLowerCase() ===
+						x.username.toLowerCase(),
+				);
 			}
-			if (Array.isArray(userInfo) && (userInfo).length === 1 && userInfo[0].id) {
-				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`)
+			if (Array.isArray(userInfo) && userInfo.length === 1 && userInfo[0].id) {
+				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`);
 				const skebInfo = (await getJson(
 					`https://${host}/api/users/get-skeb-status?userId=${userInfo[0].id}`,
 					"application/json, */*",
 					5000,
 				)) as Record<string, unknown>;
 				if (skebInfo) {
-					let status = ''
+					let status = "";
 
 					if (skebInfo.isAcceptable || skebInfo.isCreator) {
-
-						if (skebInfo.isAcceptable && Array.isArray(skebInfo.skills) && skebInfo.skills.length > 0) {
-							const amounts = new Map<string,string>();
-							const amounts_n = new Map<string,number>();
+						if (
+							skebInfo.isAcceptable &&
+							Array.isArray(skebInfo.skills) &&
+							skebInfo.skills.length > 0
+						) {
+							const amounts = new Map<string, string>();
+							const amounts_n = new Map<string, number>();
 							for (const skill of skebInfo.skills) {
-								if (skill !== null && typeof skill.amount === "number"){
+								if (skill !== null && typeof skill.amount === "number") {
 									const genre = getSkebGenreIcon(skill.genre);
 									const str = `${Math.ceil(skill.amount / 100) / 10}k`;
-									amounts.set(str, (amounts.get(str) ?? "") + genre)
-									amounts_n.set(str, (amounts_n.get(str) ?? 0) + 1)
+									amounts.set(str, (amounts.get(str) ?? "") + genre);
+									amounts_n.set(str, (amounts_n.get(str) ?? 0) + 1);
 								}
 							}
 							if (amounts.size >= 1) {
-								status += `${amounts.get(Array.from(amounts.keys())[0])} ${Array.from(amounts.keys())[0]}`;
+								status += `${amounts.get(Array.from(amounts.keys())[0])} ${
+									Array.from(amounts.keys())[0]
+								}`;
 								if (amounts.size === 2) {
-									status += ` ${amounts.get(Array.from(amounts.keys())[1])} ${Array.from(amounts.keys())[1]}`;
+									status += ` ${amounts.get(Array.from(amounts.keys())[1])} ${
+										Array.from(amounts.keys())[1]
+									}`;
 								} else if (amounts.size > 2 && amounts_n.size > 0) {
-									status += ` (+${skebInfo.skills.length - (amounts_n.get(Array.from(amounts_n.keys())[0]) ?? 1)})`;
+									status += ` (+${
+										skebInfo.skills.length -
+										(amounts_n.get(Array.from(amounts_n.keys())[0]) ?? 1)
+									})`;
 								}
 							}
 						}
-						if (typeof skebInfo.creatorRequestCount === "number" && skebInfo.creatorRequestCount > 0) {
+						if (
+							typeof skebInfo.creatorRequestCount === "number" &&
+							skebInfo.creatorRequestCount > 0
+						) {
 							if (skebInfo.isAcceptable) {
-								status += ' | ';
+								status += " | ";
 							}
 							status += `${skebInfo.creatorRequestCount.toLocaleString()}件`;
 						}
-						if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
-							fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+						if (
+							fields?.length >= 16 &&
+							fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+								.length < 16
+						) {
+							fields = fields.filter(
+								(x) => !x.name.toLowerCase().includes("skeb"),
+							);
 						}
 						if (fields?.length < 16) {
 							fields.push({
 								name: "★Skeb",
-								value: `[${skebInfo.isAcceptable ? "募集中" : "停止中"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
-							})
+								value: `[${skebInfo.isAcceptable ? "募集中" : "停止中"}${
+									status ? ` ${status}` : ""
+								}](https://skeb.jp/@${skebInfo.screenName})`,
+							});
 						}
 					} else {
-						if (typeof skebInfo.clientRequestCount === "number" && skebInfo.clientRequestCount > 0) {
-							status = `${skebInfo.clientRequestCount.toLocaleString()}件`
-							if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
-								fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+						if (
+							typeof skebInfo.clientRequestCount === "number" &&
+							skebInfo.clientRequestCount > 0
+						) {
+							status = `${skebInfo.clientRequestCount.toLocaleString()}件`;
+							if (
+								fields?.length >= 16 &&
+								fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+									.length < 16
+							) {
+								fields = fields.filter(
+									(x) => !x.name.toLowerCase().includes("skeb"),
+								);
 							}
 							if (fields?.length < 16) {
 								fields.push({
 									name: "★Skeb",
-									value: `[クライアント${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
-								})
+									value: `[クライアント${
+										status ? ` ${status}` : ""
+									}](https://skeb.jp/@${skebInfo.screenName})`,
+								});
 							}
 						}
 					}
@@ -275,7 +311,6 @@ export async function createPerson(
 		} catch (e) {
 			logger.warn(`fetch AddUserInfo err : ${e}`);
 		}
-
 	}
 
 	const tags = extractApHashtags(person.tag)
@@ -560,84 +595,120 @@ export async function updatePerson(
 
 	if (host === "misskey.io") {
 		try {
-			console.log(`fetch AddUserInfo1 @${person.preferredUsername}@${host}`)
-			let userInfo = await (await getResponse({
-				url: `https://${host}/api/users/search-by-username-and-host`,
-				method: "POST",
-				headers: 
-					{
+			console.log(`fetch AddUserInfo1 @${person.preferredUsername}@${host}`);
+			let userInfo = await (
+				await getResponse({
+					url: `https://${host}/api/users/search-by-username-and-host`,
+					method: "POST",
+					headers: {
 						"Content-Type": "application/json",
 						"User-Agent": config.userAgent,
 						Accept: "application/json, */*",
 					},
-				body: 
-					JSON.stringify({
+					body: JSON.stringify({
 						username: person.preferredUsername,
-						host
+						host,
 					}),
-				timeout: 5000,
-			})).json();
-			if (Array.isArray(userInfo) && (userInfo).length > 1) {
-				userInfo = userInfo.filter((x) => person.preferredUsername?.toLowerCase() === x.username.toLowerCase());
+					timeout: 5000,
+				})
+			).json();
+			if (Array.isArray(userInfo) && userInfo.length > 1) {
+				userInfo = userInfo.filter(
+					(x) =>
+						person.preferredUsername?.toLowerCase() ===
+						x.username.toLowerCase(),
+				);
 			}
-			if (Array.isArray(userInfo) && (userInfo).length === 1 && userInfo[0].id) {
-				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`)
+			if (Array.isArray(userInfo) && userInfo.length === 1 && userInfo[0].id) {
+				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`);
 				const skebInfo = (await getJson(
 					`https://${host}/api/users/get-skeb-status?userId=${userInfo[0].id}`,
 					"application/json, */*",
 					5000,
 				)) as Record<string, unknown>;
 				if (skebInfo) {
-					let status = ''
+					let status = "";
 
 					if (skebInfo.isAcceptable || skebInfo.isCreator) {
-
-						if (skebInfo.isAcceptable && Array.isArray(skebInfo.skills) && skebInfo.skills.length > 0) {
-							const amounts = new Map<string,string>();
-							const amounts_n = new Map<string,number>();
+						if (
+							skebInfo.isAcceptable &&
+							Array.isArray(skebInfo.skills) &&
+							skebInfo.skills.length > 0
+						) {
+							const amounts = new Map<string, string>();
+							const amounts_n = new Map<string, number>();
 							for (const skill of skebInfo.skills) {
-								if (skill !== null && typeof skill.amount === "number"){
+								if (skill !== null && typeof skill.amount === "number") {
 									const genre = getSkebGenreIcon(skill.genre);
 									const str = `${Math.ceil(skill.amount / 100) / 10}k`;
-									amounts.set(str, (amounts.get(str) ?? "") + genre)
-									amounts_n.set(str, (amounts_n.get(str) ?? 0) + 1)
+									amounts.set(str, (amounts.get(str) ?? "") + genre);
+									amounts_n.set(str, (amounts_n.get(str) ?? 0) + 1);
 								}
 							}
 							if (amounts.size >= 1) {
-								status += `${amounts.get(Array.from(amounts.keys())[0])} ${Array.from(amounts.keys())[0]}`;
+								status += `${amounts.get(Array.from(amounts.keys())[0])} ${
+									Array.from(amounts.keys())[0]
+								}`;
 								if (amounts.size === 2) {
-									status += ` ${amounts.get(Array.from(amounts.keys())[1])} ${Array.from(amounts.keys())[1]}`;
+									status += ` ${amounts.get(Array.from(amounts.keys())[1])} ${
+										Array.from(amounts.keys())[1]
+									}`;
 								} else if (amounts.size > 2 && amounts_n.size > 0) {
-									status += ` (+${skebInfo.skills.length - (amounts_n.get(Array.from(amounts_n.keys())[0]) ?? 1)})`;
+									status += ` (+${
+										skebInfo.skills.length -
+										(amounts_n.get(Array.from(amounts_n.keys())[0]) ?? 1)
+									})`;
 								}
 							}
 						}
-						if (typeof skebInfo.creatorRequestCount === "number" && skebInfo.creatorRequestCount > 0) {
+						if (
+							typeof skebInfo.creatorRequestCount === "number" &&
+							skebInfo.creatorRequestCount > 0
+						) {
 							if (skebInfo.isAcceptable) {
-								status += ' | ';
+								status += " | ";
 							}
 							status += `${skebInfo.creatorRequestCount.toLocaleString()}件`;
 						}
-						if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
-							fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+						if (
+							fields?.length >= 16 &&
+							fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+								.length < 16
+						) {
+							fields = fields.filter(
+								(x) => !x.name.toLowerCase().includes("skeb"),
+							);
 						}
 						if (fields?.length < 16) {
 							fields.push({
 								name: "★Skeb",
-								value: `[${skebInfo.isAcceptable ? "募集中" : "停止中"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
-							})
+								value: `[${skebInfo.isAcceptable ? "募集中" : "停止中"}${
+									status ? ` ${status}` : ""
+								}](https://skeb.jp/@${skebInfo.screenName})`,
+							});
 						}
 					} else {
-						if (typeof skebInfo.clientRequestCount === "number" && skebInfo.clientRequestCount > 0) {
-							status = `${skebInfo.clientRequestCount.toLocaleString()}件`
-							if (fields?.length >= 16 && fields.filter((x) => !x.name.toLowerCase().includes("skeb")).length < 16) {
-								fields = fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+						if (
+							typeof skebInfo.clientRequestCount === "number" &&
+							skebInfo.clientRequestCount > 0
+						) {
+							status = `${skebInfo.clientRequestCount.toLocaleString()}件`;
+							if (
+								fields?.length >= 16 &&
+								fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
+									.length < 16
+							) {
+								fields = fields.filter(
+									(x) => !x.name.toLowerCase().includes("skeb"),
+								);
 							}
 							if (fields?.length < 16) {
 								fields.push({
 									name: "★Skeb",
-									value: `[クライアント${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
-								})
+									value: `[クライアント${
+										status ? ` ${status}` : ""
+									}](https://skeb.jp/@${skebInfo.screenName})`,
+								});
 							}
 						}
 					}
@@ -646,9 +717,8 @@ export async function updatePerson(
 		} catch (e) {
 			logger.warn(`fetch AddUserInfo err : ${e}`);
 		}
-
 	}
-	
+
 	const tags = extractApHashtags(person.tag)
 		.map((tag) => normalizeForSearch(tag))
 		.splice(0, 32);
@@ -946,22 +1016,22 @@ export async function updateFeatured(userId: User["id"], resolver?: Resolver) {
 }
 
 function getSkebGenreIcon(genre: string) {
-	switch (genre){
-		case 'art':
+	switch (genre) {
+		case "art":
 			return "🎨";
-		case 'comic':
+		case "comic":
 			return "🖼";
-		case 'voice':
+		case "voice":
 			return "💬";
-		case 'novel':
+		case "novel":
 			return "✒";
-		case 'video':
+		case "video":
 			return "🎞️";
-		case 'music':
+		case "music":
 			return "🎵";
-		case 'correction':
+		case "correction":
 			return "📚";
 		default:
-			return "❓️"
+			return "❓️";
 	}
 }

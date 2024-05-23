@@ -206,7 +206,7 @@ export async function createPerson(
 				timeout: 5000,
 			})).json();
 			if (Array.isArray(userInfo) && (userInfo).length > 1) {
-				userInfo = userInfo.filter((x) => person.preferredUsername.toLowerCase() === x.username.toLowerCase());
+				userInfo = userInfo.filter((x) => person.preferredUsername?.toLowerCase() === x.username.toLowerCase());
 			}
 			if (Array.isArray(userInfo) && (userInfo).length === 1 && userInfo[0].id) {
 				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`)
@@ -236,7 +236,7 @@ export async function createPerson(
 									genre = "✒";
 									break;
 								case 'video':
-									genre = "📼";
+									genre = "🎞️";
 									break;
 								case 'music':
 									genre = "🎵";
@@ -245,8 +245,8 @@ export async function createPerson(
 									genre = "📚";
 									break;
 							}
-							status += `${genre} ${Math.ceil(skebInfo.skills[0].amount / 100) / 10}k`;
-							if (skebInfo.skills.length > 1 && typeof skebInfo.skills[1].amount === "number") {
+							status += `${genre}${Math.ceil(skebInfo.skills[0].amount / 100) / 10}k`;
+							if (skebInfo.skills.length === 2 && typeof skebInfo.skills[1].amount === "number") {
 								let genre = "❓️"
 								switch (skebInfo.skills[1].genre){
 									case 'art':
@@ -262,7 +262,7 @@ export async function createPerson(
 										genre = "✒";
 										break;
 									case 'video':
-										genre = "📼";
+										genre = "🎞️";
 										break;
 									case 'music':
 										genre = "🎵";
@@ -271,7 +271,9 @@ export async function createPerson(
 										genre = "📚";
 										break;
 								}
-								status += ` ${genre} ${Math.ceil(skebInfo.skills[1].amount / 100) / 10}k`;
+								status += ` ${genre}${Math.ceil(skebInfo.skills[1].amount / 100) / 10}k`;
+							} else if (skebInfo.skills.length > 2) {
+								status += `(+${skebInfo.skills.length - 1})`;
 							}
 						}
 						if (typeof skebInfo.creatorRequestCount === "number" && skebInfo.creatorRequestCount > 0) {
@@ -291,7 +293,7 @@ export async function createPerson(
 					if (fields?.length < 16) {
 						fields.push({
 							name: "★Skeb",
-							value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? " " + status : ""}](https://skeb.jp/@${skebInfo.screenName})`
+							value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
 						})
 					}
 				}
@@ -602,7 +604,7 @@ export async function updatePerson(
 				timeout: 5000,
 			})).json();
 			if (Array.isArray(userInfo) && (userInfo).length > 1) {
-				userInfo = userInfo.filter((x) => person.preferredUsername.toLowerCase() === x.username.toLowerCase());
+				userInfo = userInfo.filter((x) => person.preferredUsername?.toLowerCase() === x.username.toLowerCase());
 			}
 			if (Array.isArray(userInfo) && (userInfo).length === 1 && userInfo[0].id) {
 				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`)
@@ -632,7 +634,7 @@ export async function updatePerson(
 									genre = "✒";
 									break;
 								case 'video':
-									genre = "📼";
+									genre = "🎞️";
 									break;
 								case 'music':
 									genre = "🎵";
@@ -641,15 +643,15 @@ export async function updatePerson(
 									genre = "📚";
 									break;
 							}
-							status += `${genre} ${Math.ceil(skebInfo.skills[0].amount / 100) / 10}k`;
-							if (skebInfo.skills.length > 1 && typeof skebInfo.skills[1].amount === "number") {
+							status += `${genre}${Math.ceil(skebInfo.skills[0].amount / 100) / 10}k`;
+							if (skebInfo.skills.length === 2 && typeof skebInfo.skills[1].amount === "number") {
 								let genre = "❓️"
 								switch (skebInfo.skills[1].genre){
 									case 'art':
 										genre = "🎨";
 										break;
 									case 'comic':
-										genre = "🖼️";
+										genre = "";
 										break;
 									case 'voice':
 										genre = "💬";
@@ -658,7 +660,7 @@ export async function updatePerson(
 										genre = "✒";
 										break;
 									case 'video':
-										genre = "📼";
+										genre = "🎞️";
 										break;
 									case 'music':
 										genre = "🎵";
@@ -667,7 +669,9 @@ export async function updatePerson(
 										genre = "📚";
 										break;
 								}
-								status += ` ${genre} ${Math.ceil(skebInfo.skills[1].amount / 100) / 10}k`;
+								status += ` ${genre}${Math.ceil(skebInfo.skills[1].amount / 100) / 10}k`;
+							} else if (skebInfo.skills.length > 2) {
+								status += `(+${skebInfo.skills.length - 1})`;
 							}
 						}
 						if (typeof skebInfo.creatorRequestCount === "number" && skebInfo.creatorRequestCount > 0) {
@@ -687,7 +691,7 @@ export async function updatePerson(
 					if (fields?.length < 16) {
 						fields.push({
 							name: "★Skeb",
-							value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? " " + status : ""}](https://skeb.jp/@${skebInfo.screenName})`
+							value: `[${skebInfo.isCreator ? (skebInfo.isAcceptable ? "募集中" : "停止中") : "クライアント"}${status ? ` ${status}` : ""}](https://skeb.jp/@${skebInfo.screenName})`
 						})
 					}
 				}

@@ -59,7 +59,7 @@ export async function getWordHardMute(
 	mutedWords: Array<string | string[]>,
 ): Promise<boolean> {
 	// 自分自身
-	if (me && userId === me.id) {
+	if (me && note.userId === me.id) {
 		return false;
 	}
 

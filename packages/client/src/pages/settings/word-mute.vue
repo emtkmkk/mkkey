@@ -258,7 +258,7 @@ async function save() {
 			reactionMutedWords.value,
 			`${i18n.ts._wordMute.reaction}/${i18n.ts._wordMute.soft}`
 		);
-		reactionHardMutes = parseMutes(hardMutedWords.value, `${i18n.ts._wordMute.reaction}/${i18n.ts._wordMute.hard}`);
+		reactionHardMutes = parseMutes(reactionHardMutedWords.value, `${i18n.ts._wordMute.reaction}/${i18n.ts._wordMute.hard}`);
 	} catch (err) {
 		// already displayed error message in parseMutes
 		return;

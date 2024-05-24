@@ -269,7 +269,7 @@ async function save() {
 	await os.api("i/update", {
 		mutedWords: hardMutes,
 		reactionMutedWords: reactionHardMutes,
-		rejectMuteReaction,
+		rejectMuteReaction: !!rejectMuteReaction.value,
 	});
 
 	changed.value = false;

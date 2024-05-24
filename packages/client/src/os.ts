@@ -53,7 +53,7 @@ export const api = ((
 				} else {
 					if (!suppressToast) {
 						toast(
-							`**${res.status}** ${body.error.message}`
+							`${[res.status, body.error.message].join(" ")}`
 						);
 					}
 					reject(body.error);
@@ -104,7 +104,7 @@ export const apiGet = ((
 				} else {
 					if (!suppressToast) {
 						toast(
-							`${res.status} ${body.error.message}`
+							`${[res.status, body.error.message].join(" ")}`
 						);
 					}
 					reject(body.error);

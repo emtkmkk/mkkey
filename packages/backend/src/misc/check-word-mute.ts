@@ -1,7 +1,7 @@
 import RE2 from "re2";
 import type { Note } from "@/models/entities/note.js";
 import type { User } from "@/models/entities/user.js";
-import config from "@/config";
+import config from "@/config/index.js";
 
 type NoteLike = {
 	userId: Note["userId"];

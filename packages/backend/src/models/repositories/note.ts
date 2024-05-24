@@ -245,7 +245,10 @@ export const NoteRepository = db.getRepository(Note).extend({
 
 		const reactions =
 			note.isPublicLikeList || meId === note.userId
-				? note.reactions
+				? {...(myReactions?.myReactions.length ? myReactions.myReactions.reduce(
+					(acc, curr) => ((acc[curr] = 1), acc),
+					{},
+				) : {}), ...note.reactions}
 				: myReactions?.myReactions
 				? myReactions.myReactions.reduce(
 						(acc, curr) => ((acc[curr] = 1), acc),

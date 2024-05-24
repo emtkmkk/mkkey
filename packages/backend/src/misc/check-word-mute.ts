@@ -74,12 +74,12 @@ export async function getWordHardMute(
 	return false;
 }
 
-export async function checkReactionMute(
+export function checkReactionMute(
 	reaction: string,
 	note: Note,
 	user: User,
 	mutedWords: Array<string | string[]>,
-): boolean {
+): boolean | {muted: boolean, reject?: boolean} {
 
 	if (!reaction) return false;
 
@@ -88,8 +88,11 @@ export async function checkReactionMute(
 
 	for (const mutePattern of mutedWords) {
 		if (Array.isArray(mutePattern)) {
+
+			const reject = mutePattern.filter((keyword) => keyword.startsWith("reject:")).length > 0 ? ["true", "yes", "on"].includes(mutePattern.filter((keyword) => keyword.startsWith("reject:"))[0].replace("reject:","")) : undefined;
+
 			// Clean up
-			const keywords = mutePattern.filter((keyword) => keyword !== "");
+			const keywords = mutePattern.filter((keyword) => keyword !== "" && !keyword.startsWith("reject:"));
 
 			if (
 				keywords.length > 0 &&
@@ -167,7 +170,7 @@ export async function checkReactionMute(
 					return text.includes(keyword)
 				})
 			)
-				return true;
+				return reject === undefined ? true : {muted: true, reject: reject};
 		} else {
 			// represents RegExp
 			const regexp = mutePattern.match(/^\/(.+)\/(.*)$/);

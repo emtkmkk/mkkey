@@ -181,8 +181,12 @@ export function checkReactionMute(
 				continue;
 			}
 
+			let reject = false;
+			if (regexp[2].includes("r")) {
+				reject = true;
+			}
 			try {
-				if (new RE2(regexp[1], regexp[2]).test(text)) return true;
+				if (new RE2(regexp[1], regexp[2]?.replaceAll("r","")).test(text)) return reject ? {muted: true, reject: true} : true;
 			} catch (err) {
 				// This should never happen due to input sanitisation.
 			}

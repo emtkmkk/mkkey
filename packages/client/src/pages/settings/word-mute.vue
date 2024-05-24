@@ -217,7 +217,7 @@ async function save() {
 			if (regexp) {
 				// check that the RegExp is valid
 				try {
-					new RegExp(regexp[1], regexp[2]);
+					new RegExp(regexp[1], regexp[2]?.replaceAll("r",""));
 					// note that regex lines will not be split by spaces!
 				} catch (err: any) {
 					// invalid syntax: do not save, do not reset changed flag
@@ -256,9 +256,9 @@ async function save() {
 		hardMutes = parseMutes(hardMutedWords.value, `${i18n.ts._wordMute.post}/${i18n.ts._wordMute.hard}`);
 		reactionMutes = parseMutesSimple(
 			reactionMutedWords.value,
-			`${i18n.ts._wordMute.reaction}/${i18n.ts._wordMute.soft}`
+			`${i18n.ts._wordMute.emojiMutes}/${i18n.ts._wordMute.soft}`
 		);
-		reactionHardMutes = parseMutes(reactionHardMutedWords.value, `${i18n.ts._wordMute.reaction}/${i18n.ts._wordMute.hard}`);
+		reactionHardMutes = parseMutes(reactionHardMutedWords.value, `${i18n.ts._wordMute.emojiMutes}/${i18n.ts._wordMute.hard}`);
 	} catch (err) {
 		// already displayed error message in parseMutes
 		return;

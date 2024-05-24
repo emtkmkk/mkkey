@@ -8,7 +8,7 @@ import type { User, IRemoteUser, ILocalUser } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
 import { NoteReactions, Users, Notes, UserProfiles } from "@/models/index.js";
 import { toDbReaction, decodeReaction } from "@/misc/reaction-lib.js";
-import { checkReactionMute } from "@/misc/check-word-mute";
+import { checkReactionMute } from "@/misc/check-word-mute.js";
 
 export default async (
 	user: { id: User["id"]; host: User["host"] },

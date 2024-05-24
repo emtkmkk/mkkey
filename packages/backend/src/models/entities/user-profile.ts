@@ -230,7 +230,7 @@ export class UserProfile {
 
 	@Index()
 	@Column('boolean', {
-		default: false, select: false,
+		default: false,
 	})
 	public rejectMuteReaction: boolean;
 

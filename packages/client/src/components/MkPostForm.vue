@@ -1935,7 +1935,7 @@ async function post() {
 	}
 
 	posting = true;
-	os.api("notes/create", postData, token)
+	os.api("notes/create", postData, token, true)
 		.then(() => {
 			clear();
 			nextTick(() => {

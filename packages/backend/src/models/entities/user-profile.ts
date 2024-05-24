@@ -217,6 +217,23 @@ export class UserProfile {
 	})
 	public mutedWords: string[][];
 
+	@Index()
+	@Column('boolean', {
+		default: false, select: false,
+	})
+	public enableReactionMute: boolean;
+
+	@Column('jsonb', {
+		default: [],
+	})
+	public reactionMutedWords: string[][];
+
+	@Index()
+	@Column('boolean', {
+		default: false, select: false,
+	})
+	public rejectMuteReaction: boolean;
+
 	@Column('jsonb', {
 		default: [],
 		comment: 'List of instances muted by the user.',

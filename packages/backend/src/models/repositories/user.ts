@@ -834,6 +834,8 @@ export const UserRepository = db.getRepository(User).extend({
 							this.getHasPendingReceivedFollowRequest(user.id),
 						integrations: profile!.integrations,
 						mutedWords: profile!.mutedWords,
+						rejectMuteReaction: profile!.rejectMuteReaction,
+						reactionMutedWords: profile!.reactionMutedWords,
 						mutedInstances: profile!.mutedInstances,
 						mutingNotificationTypes: profile!.mutingNotificationTypes,
 						emailNotificationTypes: profile!.emailNotificationTypes,

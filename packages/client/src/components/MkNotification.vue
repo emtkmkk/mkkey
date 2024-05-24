@@ -92,7 +92,7 @@
 				/>
 				<XReactionIcon
 					v-else-if="
-						!showEmojiReactions && notification.type === 'reaction'
+						!showEmojiReactions && notification.type === 'reaction' && !isMuted
 					"
 					:reaction="defaultReaction"
 					:no-style="true"
@@ -119,7 +119,7 @@
 				/>
 			</header>
 			<MkA
-				v-if="notification.note && notification.type === 'reaction'"
+				v-if="notification.note && notification.type === 'reaction' && !isMuted"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="getNoteSummary(notification.note)"
@@ -350,7 +350,7 @@ const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
 	};
 });
 
-const isMuted =
+const isMuted = $computed(() => {
 	props.notification.type === "reaction" &&
 	reactionMuted.some((x) => {
 		const emojiName = props.notification.reaction
@@ -389,7 +389,8 @@ const isMuted =
 			}
 		}
 		return false;
-	});
+	})
+});
 
 const showEmojiReactions =
 	defaultStore.state.enableEmojiReactions ||

@@ -17,6 +17,7 @@ import {
 	Emojis,
 	Blockings,
 	Instances,
+	UserProfiles,
 } from "@/models/index.js";
 import { IsNull, Not } from "typeorm";
 import { perUserReactionsChart } from "@/services/chart/index.js";
@@ -29,6 +30,9 @@ import { IdentifiableError } from "@/misc/identifiable-error.js";
 import { webhookDeliver } from "@/queue/index.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { MAX_REACTION_PER_ACCOUNT } from "@/const.js";
+import { Cache } from "@/misc/cache.js";
+import type { UserProfile } from "@/models/entities/user-profile.js";
+import { checkReactionMute } from "@/misc/check-word-mute.js";
 
 export default async (
 	user: {
@@ -94,6 +98,28 @@ export default async (
 		);
 	}
 
+	let isMutedReaction = false;
+	if (note.userId !== user.id) {
+		// Word mute
+		const muteInfo = await UserProfiles.findOne({
+				where: {
+					userId: note.userId,
+					enableReactionMute: true,
+				},
+				select: ["userId", "reactionMutedWords","rejectMuteReaction"],
+		})
+		if (muteInfo) {
+			isMutedReaction = checkReactionMute(reaction, note, muteInfo.reactionMutedWords)
+			if (muteInfo.rejectMuteReaction) {
+				throw new IdentifiableError(
+					"119b8757-2ba5-385e-82cf-7fa4bc73c4d1",
+					"投稿者のリアクションミュート条件に一致した為、リアクションが拒否されました。",
+				);
+			}
+		}
+	}
+	
+
 	const record: NoteReaction = {
 		id: genId(),
 		createdAt: new Date(),
@@ -109,15 +135,15 @@ export default async (
 		},
 	});
 
-	if (existCount != 0) {
+	if (existCount !== 0) {
 		let maxReactionsPerAccount = 1;
 		let maxReactionsNote = 1;
 		if (!user.host) {
 			maxReactionsPerAccount =
-				user.driveCapacityOverrideMb > 5120 ? MAX_REACTION_PER_ACCOUNT : 1;
+				(user.driveCapacityOverrideMb ?? 5120) > 5120 ? MAX_REACTION_PER_ACCOUNT : 1;
 		} else {
 			const instance = await Instances.findOneBy({ host: user.host });
-			maxReactionsPerAccount = instance.maxReactionsPerAccount;
+			maxReactionsPerAccount = instance?.maxReactionsPerAccount ?? 1;
 		}
 
 		if (maxReactionsPerAccount >= 2) {
@@ -127,7 +153,7 @@ export default async (
 				maxReactionsNote = maxReactionsPerAccount;
 			} else {
 				const instance = await Instances.findOneBy({ host: noteUser.host });
-				maxReactionsNote = instance.maxReactionsPerAccount;
+				maxReactionsNote = instance?.maxReactionsPerAccount ?? 1;
 				if (!user.host) maxReactionsPerAccount = maxReactionsNote;
 			}
 		}
@@ -176,23 +202,24 @@ export default async (
 			// 同じリアクションがすでにされていたらエラー
 			throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
 			//}
-		} else {
-			throw e;
 		}
+			throw e;
 	}
 
-	// Increment reactions count
-	const sql = `jsonb_set("reactions", '{${reaction}}', (COALESCE("reactions"->>'${reaction}', '0')::int + 1)::text::jsonb)`;
-	await Notes.createQueryBuilder()
-		.update()
-		.set({
-			reactions: () => sql,
-			...(existCount === 0
-				? { score: () => `"score" + ${user.host ? "1" : "3"}` }
-				: {}),
-		})
-		.where("id = :id", { id: note.id })
-		.execute();
+	if (!isMutedReaction) {
+		// Increment reactions count
+		const sql = `jsonb_set("reactions", '{${reaction}}', (COALESCE("reactions"->>'${reaction}', '0')::int + 1)::text::jsonb)`;
+		await Notes.createQueryBuilder()
+			.update()
+			.set({
+				reactions: () => sql,
+				...(existCount === 0
+					? { score: () => `"score" + ${user.host ? "1" : "3"}` }
+					: {}),
+			})
+			.where("id = :id", { id: note.id })
+			.execute();
+	}
 
 	perUserReactionsChart.update(user, note);
 
@@ -224,11 +251,11 @@ export default async (
 				  }
 				: null,
 		userId: user.id,
-		targetUserId: note.isPublicLikeList ? null : [user.id, note.userId],
+		targetUserId: note.isPublicLikeList ? !isMutedReaction ? null : [user.id] : [user.id, note.userId],
 	});
 
 	// Create notification if the reaction target is a local user.
-	if (note.userHost === null) {
+	if (note.userHost === null && !isMutedReaction) {
 		createNotification(note.userId, "reaction", {
 			notifierId: user.id,
 			note: note,
@@ -256,71 +283,75 @@ export default async (
 		}
 	}
 
-	// Fetch watchers
-	NoteWatchings.findBy({
-		noteId: note.id,
-		userId: Not(user.id),
-	}).then((watchers) => {
-		for (const watcher of watchers) {
-			createNotification(watcher.userId, "reaction", {
-				notifierId: user.id,
-				note: note,
-				noteId: note.id,
-				reaction: reaction,
-			});
-		}
-	});
-
-	//#region deliver
-	if (
-		Users.isLocalUser(user) &&
-		!(note.channelId && note.localOnly) &&
-		note.visibility !== "hidden"
-	) {
-		// ブラックリストに登録済みのホスト または リモート絵文字でライセンスにコピー拒否がある場合 は いいねに変更して外部に送信
-		// TODO : リアクション解除時も変換をかけた方が良いかも
+	if (!isMutedReaction) {
+		
+		// Fetch watchers
+		NoteWatchings.findBy({
+			noteId: note.id,
+			userId: Not(user.id),
+		}).then((watchers) => {
+			for (const watcher of watchers) {
+				createNotification(watcher.userId, "reaction", {
+					notifierId: user.id,
+					note: note,
+					noteId: note.id,
+					reaction: reaction,
+				});
+			}
+		});
+	
+		//#region deliver
 		if (
-			["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-				emoji?.host,
-			) ||
-			(emoji?.host && emoji?.license?.includes("コピー可否 : deny"))
-		)
-			record.reaction = await getFallbackReaction();
-
-		const content = renderActivity(await renderLike(record, note));
-		const dm = new DeliverManager(user, content);
-		if (note.userHost !== null) {
-			const reactee = await Users.findOneBy({ id: note.userId });
-			dm.addDirectRecipe(reactee as IRemoteUser);
-		}
-
-		if (user.isExplorable && user.isRemoteExplorable && note.isPublicLikeList) {
-			if (["public", "home", "followers"].includes(note.visibility)) {
-				if (note.userId !== user.id && note.userHost === null) {
-					const u = await Users.findOneBy({ id: note.userId });
-					dm.addFollowersRecipe(u as ILocalUser);
-				} else {
-					dm.addFollowersRecipe();
-				}
-			} else if (note.visibility === "specified") {
-				const visibleUsers = await Promise.all(
-					note.visibleUserIds.map((id) => Users.findOneBy({ id })),
-				);
-				for (const u of visibleUsers.filter(
-					(u) => u && Users.isRemoteUser(u),
-				)) {
-					dm.addDirectRecipe(u as IRemoteUser);
-				}
-				const ccUsers = await Promise.all(
-					note.ccUserIds.map((id) => Users.findOneBy({ id })),
-				);
-				for (const u of ccUsers.filter((u) => u && Users.isRemoteUser(u))) {
-					dm.addDirectRecipe(u as IRemoteUser);
+			Users.isLocalUser(user) &&
+			!(note.channelId && note.localOnly) &&
+			note.visibility !== "hidden"
+		) {
+			// ブラックリストに登録済みのホスト または リモート絵文字でライセンスにコピー拒否がある場合 は いいねに変更して外部に送信
+			// TODO : リアクション解除時も変換をかけた方が良いかも
+			if (
+				["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
+					emoji?.host,
+				) ||
+				(emoji?.host && emoji?.license?.includes("コピー可否 : deny"))
+			)
+				record.reaction = await getFallbackReaction();
+	
+			const content = renderActivity(await renderLike(record, note));
+			const dm = new DeliverManager(user, content);
+			if (note.userHost !== null) {
+				const reactee = await Users.findOneBy({ id: note.userId });
+				dm.addDirectRecipe(reactee as IRemoteUser);
+			}
+	
+			if (user.isExplorable && user.isRemoteExplorable && note.isPublicLikeList) {
+				if (["public", "home", "followers"].includes(note.visibility)) {
+					if (note.userId !== user.id && note.userHost === null) {
+						const u = await Users.findOneBy({ id: note.userId });
+						dm.addFollowersRecipe(u as ILocalUser);
+					} else {
+						dm.addFollowersRecipe();
+					}
+				} else if (note.visibility === "specified") {
+					const visibleUsers = await Promise.all(
+						note.visibleUserIds.map((id) => Users.findOneBy({ id })),
+					);
+					for (const u of visibleUsers.filter(
+						(u) => u && Users.isRemoteUser(u),
+					)) {
+						dm.addDirectRecipe(u as IRemoteUser);
+					}
+					const ccUsers = await Promise.all(
+						note.ccUserIds.map((id) => Users.findOneBy({ id })),
+					);
+					for (const u of ccUsers.filter((u) => u && Users.isRemoteUser(u))) {
+						dm.addDirectRecipe(u as IRemoteUser);
+					}
 				}
 			}
+	
+			dm.execute();
 		}
+		//#endregion
 
-		dm.execute();
 	}
-	//#endregion
 };

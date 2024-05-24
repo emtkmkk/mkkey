@@ -22,6 +22,7 @@ export const api = ((
 	endpoint: string,
 	data: Record<string, any> = {},
 	token?: string | null | undefined,
+	suppressToast = false,
 ) => {
 	pendingApiRequestsCount.value++;
 
@@ -50,6 +51,11 @@ export const api = ((
 				} else if (res.status === 204) {
 					resolve();
 				} else {
+					if (!suppressToast) {
+						toast(
+							`**${res.status}** ${body.error.message}`
+						);
+					}
 					reject(body.error);
 				}
 			})
@@ -65,6 +71,7 @@ export const apiGet = ((
 	endpoint: string,
 	data: Record<string, any> = {},
 	token?: string | null | undefined,
+	suppressToast = false,
 ) => {
 	pendingApiRequestsCount.value++;
 
@@ -95,6 +102,11 @@ export const apiGet = ((
 				} else if (res.status === 204) {
 					resolve();
 				} else {
+					if (!suppressToast) {
+						toast(
+							`**${res.status}** ${body.error.message}`
+						);
+					}
 					reject(body.error);
 				}
 			})
@@ -111,7 +123,7 @@ export const apiWithDialog = ((
 	data: Record<string, any> = {},
 	token?: string | null | undefined,
 ) => {
-	const promise = api(endpoint, data, token);
+	const promise = api(endpoint, data, token, true);
 	promiseDialog(promise, null, (err) => {
 		alert({
 			type: "error",

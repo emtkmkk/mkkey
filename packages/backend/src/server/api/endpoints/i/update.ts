@@ -137,6 +137,8 @@ export const paramDef = {
 		disableNyaise: { type: "boolean" },
 		pinnedPageId: { type: "string", format: "misskey:id", nullable: true },
 		mutedWords: { type: "array" },
+		reactionMutedWords: { type: "array" },
+		rejectMuteReaction: { type: "boolean" },
 		mutedInstances: {
 			type: "array",
 			items: {
@@ -222,6 +224,29 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 
 		profileUpdates.mutedWords = ps.mutedWords;
 		profileUpdates.enableWordMute = ps.mutedWords.length > 0;
+		profileUpdates.reactionMutedWords = ps.reactionMutedWords;
+	}
+	if (ps.reactionMutedWords !== undefined) {
+		// validate regular expression syntax
+		ps.reactionMutedWords
+			.filter((x) => !Array.isArray(x))
+			.forEach((x) => {
+				const regexp = x.match(/^\/(.+)\/(.*)$/);
+				if (!regexp) throw new ApiError(meta.errors.invalidRegexp);
+
+				try {
+					new RE2(regexp[1], regexp[2]);
+				} catch (err) {
+					throw new ApiError(meta.errors.invalidRegexp);
+				}
+			});
+
+		profileUpdates.enableReactionMute = ps.reactionMutedWords.length > 0;
+		profileUpdates.reactionMutedWords = ps.reactionMutedWords;
+	}
+	
+	if (ps.rejectMuteReaction !== undefined) {
+		profileUpdates.rejectMuteReaction = ps.rejectMuteReaction
 	}
 	if (ps.mutedInstances !== undefined)
 		profileUpdates.mutedInstances = ps.mutedInstances;

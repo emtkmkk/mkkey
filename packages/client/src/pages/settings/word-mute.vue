@@ -1,16 +1,19 @@
 <template>
 	<div class="_formRoot">
+		<MkTab v-model="tab2" class="_formBlock">
+			<option value="post">{{ i18n.ts._wordMute.soft }}</option>
+			<option value="reaction">{{ i18n.ts._wordMute.emojiMutes }}</option>
+		</MkTab>
 		<MkTab v-model="tab" class="_formBlock">
 			<option value="soft">{{ i18n.ts._wordMute.soft }}</option>
 			<option value="hard">{{ i18n.ts._wordMute.hard }}</option>
-			<option value="reaction">{{ i18n.ts._wordMute.emojiMutes }}</option>
 		</MkTab>
 		<MkButton primary inline :disabled="!changed" @click="save()"
 			><i class="ph-floppy-disk-back ph-bold ph-lg"></i>
 			{{ i18n.ts.save }}</MkButton
 		>
 		<div class="_formBlock">
-			<div v-show="tab === 'soft'">
+			<div v-show="tab === 'soft' && tab2 == 'post'">
 				<MkInfo class="_formBlock">{{
 					i18n.ts._wordMute.softDescription
 				}}</MkInfo>
@@ -41,7 +44,7 @@
 					}}</span></FormSwitch
 				>
 			</div>
-			<div v-show="tab === 'hard'">
+			<div v-show="tab === 'hard' && tab2 == 'post'">
 				<MkInfo class="_formBlock"
 					>{{ i18n.ts._wordMute.hardDescription }}
 					{{ i18n.ts.reflectMayTakeTime }}</MkInfo
@@ -64,7 +67,7 @@
 					}}</template>
 				</MkKeyValue>
 			</div>
-			<div v-show="tab === 'reaction'">
+			<div v-show="tab == 'soft' && tab2 === 'reaction'">
 				<MkInfo class="_formBlock"
 					>{{ i18n.ts._wordMute.emojiMutesDescription
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -82,6 +85,26 @@
 				</FormTextarea>
 				<FormSwitch v-model="remoteReactionMute" class="_formBlock"
 					>{{ i18n.ts.remoteReactionMute
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
+			</div>
+			<div v-show="tab == 'hard' && tab2 === 'reaction'">
+				<MkInfo class="_formBlock"
+					>{{ i18n.ts._wordMute.emojiMutesHardDescription }}
+					{{ i18n.ts.reflectMayTakeTime }}</MkInfo
+				>
+				<FormTextarea v-model="reactionHardMutedWords" class="_formBlock">
+					<span>{{ i18n.ts._wordMute.muteWords }}</span>
+					<template #caption
+						>{{ i18n.ts._wordMute.muteWordsDescription }}<br />{{
+							i18n.ts._wordMute.muteWordsDescription2
+						}}</template
+					>
+				</FormTextarea>
+				<FormSwitch v-model="rejectMuteReaction" class="_formBlock"
+					>{{ i18n.ts.rejectMuteReaction
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></FormSwitch
@@ -137,9 +160,12 @@ const showMkkeySettingTips = $computed(
 );
 
 const tab = ref("soft");
+const tab2 = ref("post");
 const softMutedWords = ref(render(defaultStore.state.mutedWords));
 const hardMutedWords = ref(render($i!.mutedWords));
 const reactionMutedWords = ref(render(defaultStore.state.reactionMutedWords));
+const reactionHardMutedWords = ref(render($i!.reactionMutedWords));
+const rejectMuteReaction = ref($i!.rejectMuteReaction);
 const remoteReactionMute = computed(
 	defaultStore.makeGetterSetter("remoteReactionMute")
 );
@@ -171,6 +197,10 @@ watch(reactionMutedWords, () => {
 	changed.value = true;
 });
 
+watch(reactionHardMutedWords, () => {
+	changed.value = true;
+});
+
 async function save() {
 	const parseMutes = (mutes, tab) => {
 		// split into lines, remove empty lines and unnecessary whitespace
@@ -195,12 +225,10 @@ async function save() {
 						type: "error",
 						title: i18n.ts.regexpError,
 						text:
-							i18n.t("regexpErrorDescription", {
+							`${i18n.t("regexpErrorDescription", {
 								tab,
 								line: i + 1,
-							}) +
-							"\n" +
-							err.toString(),
+							})}\n${err.toString()}`,
 					});
 					// re-throw error so these invalid settings are not saved
 					throw err;
@@ -222,14 +250,15 @@ async function save() {
 			.filter((line) => line !== "");
 	};
 
-	let softMutes, hardMutes, reactionMutes;
+	let softMutes, hardMutes, reactionMutes, reactionHardMutes;
 	try {
-		softMutes = parseMutes(softMutedWords.value, i18n.ts._wordMute.soft);
-		hardMutes = parseMutes(hardMutedWords.value, i18n.ts._wordMute.hard);
+		softMutes = parseMutes(softMutedWords.value, `${i18n.ts._wordMute.post}/${i18n.ts._wordMute.soft}`);
+		hardMutes = parseMutes(hardMutedWords.value, `${i18n.ts._wordMute.post}/${i18n.ts._wordMute.hard}`);
 		reactionMutes = parseMutesSimple(
 			reactionMutedWords.value,
-			i18n.ts.reaction
+			`${i18n.ts._wordMute.reaction}/${i18n.ts._wordMute.soft}`
 		);
+		reactionHardMutes = parseMutes(hardMutedWords.value, `${i18n.ts._wordMute.reaction}/${i18n.ts._wordMute.hard}`);
 	} catch (err) {
 		// already displayed error message in parseMutes
 		return;
@@ -239,6 +268,8 @@ async function save() {
 	defaultStore.set("reactionMutedWords", reactionMutes);
 	await os.api("i/update", {
 		mutedWords: hardMutes,
+		reactionMutedWords: reactionHardMutes,
+		rejectMuteReaction,
 	});
 
 	changed.value = false;

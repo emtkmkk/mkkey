@@ -6,8 +6,9 @@ import DeliverManager from "@/remote/activitypub/deliver-manager.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 import type { User, IRemoteUser, ILocalUser } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
-import { NoteReactions, Users, Notes } from "@/models/index.js";
+import { NoteReactions, Users, Notes, UserProfiles } from "@/models/index.js";
 import { toDbReaction, decodeReaction } from "@/misc/reaction-lib.js";
+import { checkReactionMute } from "@/misc/check-word-mute";
 
 export default async (
 	user: { id: User["id"]; host: User["host"] },
@@ -36,9 +37,8 @@ export default async (
 				"770a3ede-67d2-fc9d-f2e2-6163ba0443af",
 				"指定された絵文字が存在しません。",
 			);
-		} else {
-			emoji = null;
 		}
+		emoji = null;
 	}
 
 	// if already unreacted
@@ -65,6 +65,22 @@ export default async (
 		);
 	}
 
+	let isMutedReaction = false;
+	if (note.userId !== user.id) {
+		// Word mute
+		const muteInfo = await UserProfiles.findOne({
+				where: {
+					userId: note.userId,
+					enableReactionMute: true,
+				},
+				select: ["userId", "reactionMutedWords","rejectMuteReaction"],
+		})
+		if (muteInfo) {
+			isMutedReaction = checkReactionMute(emoji, note, muteInfo.reactionMutedWords)
+		}
+	}
+
+	if (!isMutedReaction) {
 	// Decrement reactions count
 	const sql = `jsonb_set("reactions", '{${exist.reaction}}', (COALESCE("reactions"->>'${exist.reaction}', '0')::int - 1)::text::jsonb)`;
 
@@ -76,33 +92,36 @@ export default async (
 		.where("id = :id", { id: note.id })
 		.execute();
 
-	if (existCount === 1) {
-		Notes.decrement({ id: note.id }, "score", user.host ? "1" : "3");
+		if (existCount === 1) {
+			Notes.decrement({ id: note.id }, "score", user.host ? "1" : "3");
+		}
 	}
 
 	publishNoteStream(note.id, "unreacted", {
 		reaction: decodeReaction(exist.reaction).reaction,
 		userId: user.id,
-		targetUserId: note.isPublicLikeList ? null : [user.id, note.userId],
+		targetUserId: note.isPublicLikeList ? !isMutedReaction ? null : [user.id] : [user.id, note.userId],
 	});
 
-	//#region 配信
-	if (Users.isLocalUser(user) && !(note.channelId && note.localOnly)) {
-		const content = renderActivity(
-			renderUndo(await renderLike(exist, note), user),
-		);
-		const dm = new DeliverManager(user, content);
-		if (note.userHost !== null) {
-			const reactee = await Users.findOneBy({ id: note.userId });
-			dm.addDirectRecipe(reactee as IRemoteUser);
+	if (!isMutedReaction) {
+		//#region 配信
+		if (Users.isLocalUser(user) && !(note.channelId && note.localOnly)) {
+			const content = renderActivity(
+				renderUndo(await renderLike(exist, note), user),
+			);
+			const dm = new DeliverManager(user, content);
+			if (note.userHost !== null) {
+				const reactee = await Users.findOneBy({ id: note.userId });
+				dm.addDirectRecipe(reactee as IRemoteUser);
+			}
+			if (note.userId !== user.id && note.userHost === null) {
+				const u = await Users.findOneBy({ id: note.userId });
+				dm.addFollowersRecipe(u as ILocalUser);
+			} else {
+				dm.addFollowersRecipe();
+			}
+			dm.execute();
 		}
-		if (note.userId !== user.id && note.userHost === null) {
-			const u = await Users.findOneBy({ id: note.userId });
-			dm.addFollowersRecipe(u as ILocalUser);
-		} else {
-			dm.addFollowersRecipe();
-		}
-		dm.execute();
+		//#endregion
 	}
-	//#endregion
 };

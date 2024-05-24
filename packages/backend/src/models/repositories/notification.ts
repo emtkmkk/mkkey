@@ -15,6 +15,7 @@ import {
 	AccessTokens,
 	NoteReactions,
 	Antennas,
+	FollowBlockings,
 } from "../index.js";
 
 export const NotificationRepository = db.getRepository(Notification).extend({
@@ -33,6 +34,18 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 					id: notification.appAccessTokenId,
 			  })
 			: null;
+
+		if (notification.type === "receiveFollowRequest" && notification.notifierId) {
+
+			const followBlocking = (await FollowBlockings.findBy({
+				blockerId: notification.notifieeId,
+			})).map((x) => x.blockeeId);
+			
+			if (followBlocking.includes(notification.notifierId)) {
+				return null;
+			}
+
+		}
 
 		return await awaitAll({
 			id: notification.id,

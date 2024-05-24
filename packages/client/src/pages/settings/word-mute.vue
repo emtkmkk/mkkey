@@ -1,7 +1,7 @@
 <template>
 	<div class="_formRoot">
 		<MkTab v-model="tab2" class="_formBlock">
-			<option value="post">{{ i18n.ts._wordMute.soft }}</option>
+			<option value="post">{{ i18n.ts._wordMute.post }}</option>
 			<option value="reaction">{{ i18n.ts._wordMute.emojiMutes }}</option>
 		</MkTab>
 		<MkTab v-model="tab" class="_formBlock">

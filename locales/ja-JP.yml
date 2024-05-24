@@ -1265,6 +1265,7 @@ sleepConfirm: "睡眠モードを開始しますか？"
 sleepText: "一定時間、もこきーの起動がブロックされます。"
 sleepPeriod: "睡眠モードにする時間"
 postStartSleep: "睡眠モード開始／解除時に自動で投稿"
+rejectMuteReaction: "ミュートされたリアクションをされた際に、相手に伝える"
 
 _sensitiveMediaDetection:
   description: "機械学習を使って自動でセンシティブなメディアを検出し、モデレーションに役立てられます。サーバーの負荷が少し増えます。"
@@ -1484,7 +1485,6 @@ _wordMute:
   hard: "ハード"
   post: "投稿"
   mutedNotes: "ミュートされた投稿"
-  rejectMuteReaction: "ミュートされたリアクションを付与された際に、その事を相手に伝える"
 _instanceMute:
   instanceMuteDescription: "ミュートしたサーバーのユーザーへの返信を含めて、設定したサーバーの全ての投稿とRTをミュートします。"
   instanceMuteDescription2: "改行で区切って設定します"

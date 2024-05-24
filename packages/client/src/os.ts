@@ -104,7 +104,7 @@ export const apiGet = ((
 				} else {
 					if (!suppressToast) {
 						toast(
-							`**${res.status}** ${body.error.message}`
+							`${res.status} ${body.error.message}`
 						);
 					}
 					reject(body.error);

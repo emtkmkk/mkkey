@@ -59,7 +59,7 @@ export async function getWordHardMute(
 	mutedWords: Array<string | string[]>,
 ): Promise<boolean> {
 	// 自分自身
-	if (me && note.userId === me.id) {
+	if (me && userId === me.id) {
 		return false;
 	}
 
@@ -77,6 +77,7 @@ export async function getWordHardMute(
 export async function checkReactionMute(
 	reaction: string,
 	note: Note,
+	user: User,
 	mutedWords: Array<string | string[]>,
 ): boolean {
 
@@ -97,44 +98,44 @@ export async function checkReactionMute(
 						const fromKeyword = keyword
 							.replace("from:", "")
 							.replace(`@${config.host}`, "");
-						return !note.user
+						return !user
 							? false
-							: note.user.host
-							? `${note.user.username}@${note.user.host}` === fromKeyword
-							: note.user.username === fromKeyword;
+							: user.host
+							? `${user.username}@${user.host}` === fromKeyword
+							: user.username === fromKeyword;
 					}
 					if (keyword.startsWith("host:")) {
 						const hostKeyword = keyword.replace("host:", "");
-						return !note.user
+						return !user
 							? false
 							: hostKeyword === config.host
-							? !note.user.host
-							: note.user.host === hostKeyword;
+							? !user.host
+							: user.host === hostKeyword;
 					}
 					if (keyword.startsWith("fuzzyHost:")) {
 						const hostKeyword = keyword.replace("fuzzyHost:", "");
-						return !note.userHost
+						return !user.host
 							? false
-							: (config.host.includes(hostKeyword) && !note.userHost) ||
-									note.userHost.includes(hostKeyword);
+							: (config.host.includes(hostKeyword) && !user.host) ||
+									user.host.includes(hostKeyword);
 					}
 					if (keyword.startsWith("username:")) {
 						const usernameKeyword = keyword.replace("username:", "");
-						return !note.user ? false : note.user.username === usernameKeyword;
+						return !user ? false : user.username === usernameKeyword;
 					}
 					if (keyword.startsWith("fuzzyUsername:")) {
 						const usernameKeyword = keyword.replace("fuzzyUsername:", "");
-						return !note.user
+						return !user
 							? false
-							: note.user.username.includes(usernameKeyword);
+							: user.username.includes(usernameKeyword);
 					}
 					if (keyword.startsWith("name:")) {
 						const nameKeyword = keyword.replace("name:", "");
-						return !note.user?.name ? false : note.user.name === nameKeyword;
+						return !user?.name ? false : user.name === nameKeyword;
 					}
 					if (keyword.startsWith("fuzzyName:")) {
 						const nameKeyword = keyword.replace("fuzzyName:", "");
-						return !note.user?.name ? false : note.user.name.includes(nameKeyword);
+						return !user?.name ? false : user.name.includes(nameKeyword);
 					}
 					if (keyword.startsWith("visibility:")) {
 						const visibilityKeyword = keyword.replace("visibility:", "").toLowerCase();
@@ -158,23 +159,6 @@ export async function checkReactionMute(
 						if (["true", "yes", "on"].includes(localOnlyKeyword)) return note.localOnly;
 						if (["false", "no", "off"].includes(localOnlyKeyword))
 							return !note.localOnly;
-						return false;
-					}
-					if (keyword.startsWith("relation:")) {
-						const relationKeyword = keyword.replace("relation:", "").toLowerCase();
-						if (note.user?.isFollowing == null) return false;
-						if (["follow", "following"].includes(relationKeyword))
-							return note.user.isFollowing;
-						if (["followonly", "followingonly"].includes(relationKeyword))
-							return note.user.isFollowing && !note.user.isFollowed;
-						if (["follower", "followed"].includes(relationKeyword))
-							return note.user.isFollowed;
-						if (["followeronly", "followedonly"].includes(relationKeyword))
-							return !note.user.isFollowing && note.user.isFollowed;
-						if (relationKeyword === "both")
-							return note.user.isFollowed && note.user.isFollowing;
-						if (relationKeyword === "none")
-							return !note.user.isFollowed && !note.user.isFollowing;
 						return false;
 					}
 					if (keyword.startsWith(":") && keyword.endsWith(":")) {

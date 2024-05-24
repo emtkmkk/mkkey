@@ -177,6 +177,9 @@ export async function checkReactionMute(
 							return !note.user.isFollowed && !note.user.isFollowing;
 						return false;
 					}
+					if (keyword.startsWith(":") && keyword.endsWith(":")) {
+						return keyword === reaction.replace(/@[^@]:/,":")
+					}
 					return text.includes(keyword)
 				})
 			)

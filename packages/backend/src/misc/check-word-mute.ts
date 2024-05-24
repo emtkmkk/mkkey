@@ -165,7 +165,7 @@ export function checkReactionMute(
 						return false;
 					}
 					if (keyword.startsWith(":") && keyword.endsWith(":")) {
-						return keyword === reaction.replace(/@[^@]:/,":")
+						return keyword === reaction.replace(/@[^@]:/,":") || keyword === reaction
 					}
 					return text.includes(keyword)
 				})

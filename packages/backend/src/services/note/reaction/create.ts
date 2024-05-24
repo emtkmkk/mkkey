@@ -99,9 +99,9 @@ export default async (
 	}
 
 	let isMutedReaction: boolean | {
-    muted: boolean;
-    reject?: boolean | undefined;
-} = false;
+			muted: boolean;
+			reject?: boolean | undefined;
+	} = false;
 	if (note.userId !== user.id) {
 		// Word mute
 		const muteInfo = await UserProfiles.findOne({

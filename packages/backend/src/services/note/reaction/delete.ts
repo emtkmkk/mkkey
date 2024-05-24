@@ -65,7 +65,10 @@ export default async (
 		);
 	}
 
-	let isMutedReaction = false;
+	let isMutedReaction: boolean | {
+			muted: boolean;
+			reject?: boolean | undefined;
+	} = false;
 	if (note.userId !== user.id) {
 		// Word mute
 		const muteInfo = await UserProfiles.findOne({
@@ -76,7 +79,10 @@ export default async (
 				select: ["userId", "reactionMutedWords","rejectMuteReaction"],
 		})
 		if (muteInfo) {
-			isMutedReaction = checkReactionMute(emoji, note, muteInfo.reactionMutedWords)
+			isMutedReaction = checkReactionMute(emoji, note, user, muteInfo.reactionMutedWords)
+			if (typeof isMutedReaction !== "boolean") {
+				isMutedReaction = isMutedReaction.muted;
+			}
 		}
 	}
 

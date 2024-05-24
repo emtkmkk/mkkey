@@ -102,26 +102,24 @@ export default async (
 			muted: boolean;
 			reject?: boolean | undefined;
 	} = false;
-	if (note.userId !== user.id) {
-		// Word mute
-		const muteInfo = await UserProfiles.findOne({
-				where: {
-					userId: note.userId,
-					enableReactionMute: true,
-				},
-				select: ["userId", "reactionMutedWords","rejectMuteReaction"],
-		})
-		if (muteInfo) {
-			isMutedReaction = checkReactionMute(reaction, note, user, muteInfo.reactionMutedWords)
-			if ((typeof isMutedReaction !== "boolean" ? isMutedReaction.reject : undefined) ?? muteInfo.rejectMuteReaction) {
-				throw new IdentifiableError(
-					"119b8757-2ba5-385e-82cf-7fa4bc73c4d1",
-					"投稿者のリアクションミュート設定の為、リアクションが拒否されました。",
-				);
-			}
-			if (typeof isMutedReaction !== "boolean") {
-				isMutedReaction = isMutedReaction.muted;
-			}
+	// Word mute
+	const muteInfo = await UserProfiles.findOne({
+			where: {
+				userId: note.userId,
+				enableReactionMute: true,
+			},
+			select: ["userId", "reactionMutedWords","rejectMuteReaction"],
+	})
+	if (muteInfo) {
+		isMutedReaction = checkReactionMute(reaction, note, user, muteInfo.reactionMutedWords)
+		if ((typeof isMutedReaction !== "boolean" ? isMutedReaction.reject : undefined) ?? muteInfo.rejectMuteReaction) {
+			throw new IdentifiableError(
+				"119b8757-2ba5-385e-82cf-7fa4bc73c4d1",
+				"投稿者のリアクションミュート設定の為、リアクションが拒否されました。",
+			);
+		}
+		if (typeof isMutedReaction !== "boolean") {
+			isMutedReaction = isMutedReaction.muted;
 		}
 	}
 	

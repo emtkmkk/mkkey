@@ -201,7 +201,7 @@
 				>
 
 				<FormSelect v-model="defaultNoteVisibility" class="_formBlock">
-					<option value="public">
+					<option value="public" v-if="!$i.isMiniSilenced">
 						{{ i18n.ts._visibility.public }}
 					</option>
 					<option value="home">{{ i18n.ts._visibility.home }}</option>

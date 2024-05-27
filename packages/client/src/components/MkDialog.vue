@@ -108,7 +108,7 @@
 						@click="ok"
 						>{{
 							showCancelButton || input || select
-								? oktext ? okText : i18n.ts.ok
+								? okText ? okText : i18n.ts.ok
 								: i18n.ts.gotIt
 						}}</MkButton
 					>

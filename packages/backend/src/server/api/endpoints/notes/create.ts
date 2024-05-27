@@ -228,7 +228,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	if (user.movedToUri != null) throw new ApiError(meta.errors.accountLocked);
 	let visibleUsers: User[] = [];
-	if (!ps.web && user.isMiniSilenced) {
+	if (!ps.web && user.isMiniSilenced && ps.visibility === "public") {
 		throw new ApiError(meta.errors.appBlockPublic);
 	}
 	if (ps.visibleUserIds) {

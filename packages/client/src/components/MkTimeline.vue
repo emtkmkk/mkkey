@@ -176,9 +176,14 @@ const timetravel = (date?: Date) => {
 	travelDate = date || undefined;
 };
 
+const reload = () => {
+	tlComponent.pagingComponent?.reload();
+};
+
 defineExpose({
 	tlComponent,
 	focus,
 	timetravel,
+	reload,
 });
 </script>

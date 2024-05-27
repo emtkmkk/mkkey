@@ -379,6 +379,11 @@ function focus(): void {
 		? tlComponent.value?.[0]?.focus()
 		: tlComponent.value?.focus();
 }
+function tlReload(): void {
+	Array.isArray(tlComponent.value)
+		? tlComponent.value?.[0]?.reload()
+		: tlComponent.value?.reload();
+}
 const headerActions = $computed(() => [
 	...(defaultStore.state.showTimeTravelButton || travelDate
 		? [
@@ -425,6 +430,17 @@ const headerActions = $computed(() => [
 					text: i18n.ts.antennas,
 					iconOnly: true,
 					handler: chooseAntenna,
+				},
+		  ]
+		: []),
+	...(defaultStore.state.showTlReloadButton
+		? [
+				{
+					icon: "ph-arrows-clockwise ph-bold ph-lg",
+					title: i18n.ts.reload,
+					text: i18n.ts.reload,
+					iconOnly: true,
+					handler: tlReload,
 				},
 		  ]
 		: []),

@@ -116,6 +116,12 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormSwitch v-model="showTlReloadButton" class="_formBlock"
+				>{{ i18n.ts.showTlReloadButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
 				i18n.ts.showFixedPostForm
 			}}</FormSwitch>
@@ -247,6 +253,9 @@ const showAntennaButton = computed(
 );
 const showTimeTravelButton = computed(
 	defaultStore.makeGetterSetter("showTimeTravelButton")
+);
+const showTlReloadButton = computed(
+	defaultStore.makeGetterSetter("showTlReloadButton")
 );
 const showFixedPostForm = computed(
 	defaultStore.makeGetterSetter("showFixedPostForm")

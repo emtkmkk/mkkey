@@ -1337,6 +1337,12 @@ export const defaultStore = markRaw(
 			createdAt: "2024/01/25",
 			page: "timeline",
 		},
+		showTlReloadButton: {
+			where: "deviceAccount",
+			default: false,
+			createdAt: "2024/05/27",
+			page: "timeline",
+		},
 		lastBackedDate: {
 			where: "device",
 			default: {},

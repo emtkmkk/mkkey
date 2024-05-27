@@ -43,6 +43,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			isSilenced: user.isSilenced,
 			isSuspended: user.isSuspended,
 			canInvite: user.canInvite,
+			isMiniSilenced: user.isMiniSilenced,
 		};
 	}
 
@@ -78,5 +79,6 @@ export default define(meta, paramDef, async (ps, me) => {
 		inviteUserId: user.inviteUserId,
 		signins,
 		canInvite: user.canInvite,
+		isMiniSilenced: user.isMiniSilenced,
 	};
 });

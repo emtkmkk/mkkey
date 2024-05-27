@@ -11,7 +11,7 @@ export const meta = {
 
 	errors: {
 		noSuchClip: {
-			message: "No such clip.",
+			message: "そのclipは存在しません。",
 			code: "NO_SUCH_CLIP",
 			id: "70ca08ba-6865-4630-b6fb-8494759aa754",
 		},

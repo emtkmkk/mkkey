@@ -20,19 +20,19 @@ export const meta = {
 
 	errors: {
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "fcd2eef9-a9b2-4c4f-8624-038099e90aa5",
 		},
 
 		followeeIsYourself: {
-			message: "Followee is yourself.",
+			message: "自分をFolloweeに指定する事は出来ません。",
 			code: "FOLLOWEE_IS_YOURSELF",
 			id: "26fbe7bb-a331-4857-af17-205b426669a9",
 		},
 
 		alreadyFollowing: {
-			message: "You are already following that user.",
+			message: "既にこのユーザをfollowingしています。",
 			code: "ALREADY_FOLLOWING",
 			id: "35387507-38c7-4cb9-9197-300b93783fa0",
 		},

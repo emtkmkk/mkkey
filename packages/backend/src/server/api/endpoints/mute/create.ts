@@ -15,19 +15,19 @@ export const meta = {
 
 	errors: {
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "6fef56f3-e765-4957-88e5-c6f65329b8a5",
 		},
 
 		muteeIsYourself: {
-			message: "Mutee is yourself.",
+			message: "自分をMuteeに指定する事は出来ません。",
 			code: "MUTEE_IS_YOURSELF",
 			id: "a4619cb2-5f23-484b-9301-94c903074e10",
 		},
 
 		alreadyMuting: {
-			message: "You are already muting that user.",
+			message: "既にこのユーザをmutingしています。",
 			code: "ALREADY_MUTING",
 			id: "7e7359cb-160c-4956-b08f-4d1c653cd007",
 		},

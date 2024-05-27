@@ -18,8 +18,14 @@ export class addReactionHardMute1683682889975 {
 
 	async down(queryRunner) {
 		await queryRunner.query(`DROP INDEX "IDX_3befe6f999c86aff06eb0257b5"`);
-		await queryRunner.query(`ALTER TABLE "user_profile" DROP COLUMN "rejectMuteReaction"`);
-		await queryRunner.query(`ALTER TABLE "user_profile" DROP COLUMN "reactionMutedWords"`);
-		await queryRunner.query(`ALTER TABLE "user_profile" DROP COLUMN "enableReactionMute"`);
+		await queryRunner.query(
+			`ALTER TABLE "user_profile" DROP COLUMN "rejectMuteReaction"`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "user_profile" DROP COLUMN "reactionMutedWords"`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "user_profile" DROP COLUMN "enableReactionMute"`,
+		);
 	}
 }

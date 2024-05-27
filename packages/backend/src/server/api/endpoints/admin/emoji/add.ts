@@ -16,12 +16,12 @@ export const meta = {
 
 	errors: {
 		noSuchFile: {
-			message: "No such file.",
+			message: "そのファイルは存在しません。",
 			code: "MO_SUCH_FILE",
 			id: "fc46b5a4-6b92-4c33-ac66-b806659bb5cf",
 		},
 		duplicateEmojiName: {
-			message: "The specified emoji name already exists.",
+			message: "絵文字名が重複しています。",
 			code: "DUPLICATE_EMOJI_NAME",
 			id: "a7f2bc3d-b1c2-4678-b023-9f8c5d4e2abc",
 		},

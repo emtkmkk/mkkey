@@ -20,7 +20,7 @@ export const meta = {
 
 	errors: {
 		noSuchGroup: {
-			message: "No such group.",
+			message: "そのgroupは存在しません。",
 			code: "NO_SUCH_GROUP",
 			id: "9081cda3-7a9e-4fac-a6ce-908d70f282f6",
 		},

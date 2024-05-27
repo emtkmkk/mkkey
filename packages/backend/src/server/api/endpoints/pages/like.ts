@@ -12,7 +12,7 @@ export const meta = {
 
 	errors: {
 		noSuchPage: {
-			message: "No such page.",
+			message: "そのpageは存在しません。",
 			code: "NO_SUCH_PAGE",
 			id: "cc98a8a2-0dc3-4123-b198-62c71df18ed3",
 		},

@@ -15,13 +15,13 @@ export const meta = {
 
 	errors: {
 		noSuchList: {
-			message: "No such list.",
+			message: "そのlistは存在しません。",
 			code: "NO_SUCH_LIST",
 			id: "2214501d-ac96-4049-b717-91e42272a711",
 		},
 
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "a89abd3d-f0bc-4cce-beb1-2f446f4f1e6a",
 		},

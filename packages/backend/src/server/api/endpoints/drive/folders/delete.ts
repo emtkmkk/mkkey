@@ -12,7 +12,7 @@ export const meta = {
 
 	errors: {
 		noSuchFolder: {
-			message: "No such folder.",
+			message: "そのfolderは存在しません。",
 			code: "NO_SUCH_FOLDER",
 			id: "1069098f-c281-440f-b085-f9932edbe091",
 		},

@@ -48,7 +48,7 @@ export const meta = {
 
 	errors: {
 		noSuchRenoteTarget: {
-			message: "No such renote target.",
+			message: "その投稿は存在しません。",
 			code: "NO_SUCH_RENOTE_TARGET",
 			id: "b5c90186-4ab0-49c8-9bba-a1f76c282ba4",
 		},
@@ -60,7 +60,7 @@ export const meta = {
 		},
 
 		noSuchReplyTarget: {
-			message: "No such reply target.",
+			message: "そのreply targetは存在しません。",
 			code: "NO_SUCH_REPLY_TARGET",
 			id: "749ee0f6-d3da-459a-bf02-282e2da4292c",
 		},
@@ -72,25 +72,25 @@ export const meta = {
 		},
 
 		cannotCreateAlreadyExpiredPoll: {
-			message: "Poll is already expired.",
+			message: "投票は既に終了しています。",
 			code: "CANNOT_CREATE_ALREADY_EXPIRED_POLL",
 			id: "04da457d-b083-4055-9082-955525eda5a5",
 		},
 
 		noSuchChannel: {
-			message: "No such channel.",
+			message: "そのchannelは存在しません。",
 			code: "NO_SUCH_CHANNEL",
 			id: "b1653923-5453-4edc-b786-7c4f39bb0bbb",
 		},
 
 		youHaveBeenBlocked: {
-			message: "You have been blocked by this user.",
+			message: "あなたはこのユーザーからブロックされています。",
 			code: "YOU_HAVE_BEEN_BLOCKED",
 			id: "b390d7e1-8a5e-46ed-b625-06271cafd3d3",
 		},
 
 		accountLocked: {
-			message: "You migrated. Your account is now locked.",
+			message: "移行しました。アカウントがロックされています。",
 			code: "ACCOUNT_LOCKED",
 			id: "d390d7e1-8a5e-46ed-b625-06271cafd3d3",
 		},

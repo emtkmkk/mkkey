@@ -13,7 +13,7 @@ export const meta = {
 
 	errors: {
 		noSuchAnnouncement: {
-			message: "No such announcement.",
+			message: "そのお知らせは存在しません。",
 			code: "NO_SUCH_ANNOUNCEMENT",
 			id: "184663db-df88-4bc2-8b52-fb85f0681939",
 		},

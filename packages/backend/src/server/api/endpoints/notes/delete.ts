@@ -20,13 +20,13 @@ export const meta = {
 
 	errors: {
 		noSuchNote: {
-			message: "No such note.",
+			message: "その投稿は存在しません。",
 			code: "NO_SUCH_NOTE",
 			id: "490be23f-8c1f-4796-819f-94cb4f9d1630",
 		},
 
 		accessDenied: {
-			message: "Access denied.",
+			message: "アクセスが拒否されました。",
 			code: "ACCESS_DENIED",
 			id: "fe8d7103-0ea8-4ec3-814d-f8b401dc69e9",
 		},

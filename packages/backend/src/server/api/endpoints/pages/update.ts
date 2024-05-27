@@ -18,19 +18,19 @@ export const meta = {
 
 	errors: {
 		noSuchPage: {
-			message: "No such page.",
+			message: "そのpageは存在しません。",
 			code: "NO_SUCH_PAGE",
 			id: "21149b9e-3616-4778-9592-c4ce89f5a864",
 		},
 
 		accessDenied: {
-			message: "Access denied.",
+			message: "アクセスが拒否されました。",
 			code: "ACCESS_DENIED",
 			id: "3c15cd52-3b4b-4274-967d-6456fc4f792b",
 		},
 
 		noSuchFile: {
-			message: "No such file.",
+			message: "そのファイルは存在しません。",
 			code: "NO_SUCH_FILE",
 			id: "cfc23c7c-3887-490e-af30-0ed576703c82",
 		},

@@ -31,12 +31,12 @@ export const meta = {
 
 	errors: {
 		stlDisabled: {
-			message: "Hybrid timeline has been disabled.",
+			message: "STLは無効化されています。",
 			code: "STL_DISABLED",
 			id: "620763f4-f621-4533-ab33-0577a1a3c342",
 		},
 		queryError: {
-			message: "Please follow more users.",
+			message: "フォロー数を増やしてください。",
 			code: "QUERY_ERROR",
 			id: "620763f4-f621-4533-ab33-0577a1a3c343",
 		},

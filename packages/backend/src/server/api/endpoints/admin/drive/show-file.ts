@@ -10,7 +10,7 @@ export const meta = {
 
 	errors: {
 		noSuchFile: {
-			message: "No such file.",
+			message: "そのファイルは存在しません。",
 			code: "NO_SUCH_FILE",
 			id: "caf3ca38-c6e5-472e-a30c-b05377dcc240",
 		},

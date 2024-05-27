@@ -3,7 +3,7 @@ export const errors = {
 		INVALID_PARAM: {
 			value: {
 				error: {
-					message: "Invalid param.",
+					message: "パラメータが正しくありません。",
 					code: "INVALID_PARAM",
 					id: "3d81ceae-475f-4600-b2a8-2bc116157532",
 				},
@@ -14,7 +14,7 @@ export const errors = {
 		CREDENTIAL_REQUIRED: {
 			value: {
 				error: {
-					message: "Credential required.",
+					message: "認証が必要です。",
 					code: "CREDENTIAL_REQUIRED",
 					id: "1384574d-a912-4b81-8601-c7b1c4085df1",
 				},
@@ -26,7 +26,7 @@ export const errors = {
 			value: {
 				error: {
 					message:
-						"Authentication failed. Please ensure your token is correct.",
+						"認証に失敗しました。トークンが正しいことを確認してください。",
 					code: "AUTHENTICATION_FAILED",
 					id: "b0a7f5f8-dc2f-4171-b91f-de88ad238e14",
 				},
@@ -49,7 +49,8 @@ export const errors = {
 		RATE_LIMIT_EXCEEDED: {
 			value: {
 				error: {
-					message: "Rate limit exceeded. Please try again later.",
+					message:
+						"レートリミットに到達しました。時間をおいて再度お試しください。",
 					code: "RATE_LIMIT_EXCEEDED",
 					id: "d5826d14-3982-4d2e-8011-b9e9f02499ef",
 				},
@@ -61,7 +62,7 @@ export const errors = {
 			value: {
 				error: {
 					message:
-						"Internal error occurred. Please contact us if the error persists.",
+						"サーバ側でなにかエラーが発生しました。連続で出る場合はご連絡ください。",
 					code: "INTERNAL_ERROR",
 					id: "5d37dbcb-891e-41ca-a3d6-e690c97775ac",
 				},

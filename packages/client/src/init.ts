@@ -255,7 +255,11 @@ import {
 		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
 		// エラーログのテキストを生成
-		const logtext = `${formattedDate} - ${err.toString()} - ${info}`;
+		const logtext = `${formattedDate} - VueError: ${[
+			err?.toString(),
+			vm?.toString(),
+			info,
+		].join(" - ")}`;
 
 		let currentLogs = (await get("errorLog")) || [];
 		currentLogs.push(logtext);

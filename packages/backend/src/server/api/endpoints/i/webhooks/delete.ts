@@ -12,7 +12,7 @@ export const meta = {
 
 	errors: {
 		noSuchWebhook: {
-			message: "No such webhook.",
+			message: "そのwebhookは存在しません。",
 			code: "NO_SUCH_WEBHOOK",
 			id: "bae73e5a-5522-4965-ae19-3a8688e71d82",
 		},

@@ -18,7 +18,7 @@ export const meta = {
 
 	errors: {
 		noSuchChannel: {
-			message: "No such channel.",
+			message: "そのchannelは存在しません。",
 			code: "NO_SUCH_CHANNEL",
 			id: "f9c5467f-d492-4c3c-9a8d-a70dacc86512",
 		},
@@ -30,7 +30,7 @@ export const meta = {
 		},
 
 		noSuchFile: {
-			message: "No such file.",
+			message: "そのファイルは存在しません。",
 			code: "NO_SUCH_FILE",
 			id: "e86c14a4-0da2-4032-8df3-e737a04c7f3b",
 		},

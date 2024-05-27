@@ -35,14 +35,14 @@ export const meta = {
 
 	errors: {
 		failedToResolveRemoteUser: {
-			message: "Failed to resolve remote user.",
+			message: "リモートユーザ情報の解決に失敗しました。",
 			code: "FAILED_TO_RESOLVE_REMOTE_USER",
 			id: "ef7b9be4-9cba-4e6f-ab41-90ed171c7d3c",
 			kind: "server",
 		},
 
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "4362f8dc-731f-4ad8-a694-be5a88922a24",
 		},

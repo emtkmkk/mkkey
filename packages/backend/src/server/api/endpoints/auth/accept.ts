@@ -14,7 +14,7 @@ export const meta = {
 
 	errors: {
 		noSuchSession: {
-			message: "No such session.",
+			message: "そのsessionは存在しません。",
 			code: "NO_SUCH_SESSION",
 			id: "9c72d8de-391a-43c1-9d06-08d29efde8df",
 		},

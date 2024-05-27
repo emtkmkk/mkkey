@@ -36,12 +36,12 @@ export const meta = {
 
 	errors: {
 		noSuchList: {
-			message: "No such list.",
+			message: "そのlistは存在しません。",
 			code: "NO_SUCH_LIST",
 			id: "8fb1fbd5-e476-4c37-9fb0-43d55b63a2ff",
 		},
 		queryError: {
-			message: "Please follow more users.",
+			message: "フォロー数を増やしてください。",
 			code: "QUERY_ERROR",
 			id: "620763f4-f621-4533-ab33-0577a1a3c343",
 		},

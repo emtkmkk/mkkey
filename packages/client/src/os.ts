@@ -11,6 +11,7 @@ import MkToast from "@/components/MkToast.vue";
 import MkDialog from "@/components/MkDialog.vue";
 import { MenuItem } from "@/types/menu";
 import { $i } from "@/account";
+import { get, set } from "@/scripts/idb-proxy";
 
 export const pendingApiRequestsCount = ref(0);
 
@@ -52,9 +53,7 @@ export const api = ((
 					resolve();
 				} else {
 					if (!suppressToast) {
-						toast(
-							`${[res.status, body.error.message].join(" ")}`
-						);
+						errortoast(res, body, data);
 					}
 					reject(body.error);
 				}
@@ -103,9 +102,7 @@ export const apiGet = ((
 					resolve();
 				} else {
 					if (!suppressToast) {
-						toast(
-							`${[res.status, body.error.message].join(" ")}`
-						);
+						errortoast(res, body, data);
 					}
 					reject(body.error);
 				}
@@ -890,6 +887,34 @@ export function post(props: Record<string, any> = {}) {
 }
 
 export const deckGlobalEvents = new EventEmitter();
+
+async function errortoast(res, body, parameter) {
+	const message = body.error.message;
+
+	toast(`${[res.status, message].join(" ")}`);
+
+	const currentDate = new Date();
+	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
+
+	// エラーログのテキストを生成
+	const logtext = `${formattedDate} - ApiError: ${res} - ${JSON.stringify(
+		{
+			...body,
+			parameter: Object.keys(parameter).length ? parameter : undefined,
+		},
+		undefined,
+		"\t",
+	)}`;
+
+	let currentLogs = (await get("errorLog")) || [];
+	currentLogs.push(logtext);
+
+	if (currentLogs.length > 50) {
+		currentLogs = currentLogs.slice(-50);
+	}
+
+	await set("errorLog", currentLogs);
+}
 
 /*
 export function checkExistence(fileData: ArrayBuffer): Promise<any> {

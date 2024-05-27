@@ -12,19 +12,19 @@ export const meta = {
 
 	errors: {
 		noSuchFolder: {
-			message: "No such folder.",
+			message: "そのfolderは存在しません。",
 			code: "NO_SUCH_FOLDER",
 			id: "f7974dac-2c0d-4a27-926e-23583b28e98e",
 		},
 
 		noSuchParentFolder: {
-			message: "No such parent folder.",
+			message: "そのparent folderは存在しません。",
 			code: "NO_SUCH_PARENT_FOLDER",
 			id: "ce104e3a-faaf-49d5-b459-10ff0cbbcaa1",
 		},
 
 		recursiveNesting: {
-			message: "It can not be structured like nesting folders recursively.",
+			message: "フォルダを再帰的にネストするような構造にはできません。",
 			code: "NO_SUCH_PARENT_FOLDER",
 			id: "ce104e3a-faaf-49d5-b459-10ff0cbbcaa1",
 		},

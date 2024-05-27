@@ -14,7 +14,7 @@ export const meta = {
 
 	errors: {
 		noSuchFile: {
-			message: "No such file.",
+			message: "そのファイルは存在しません。",
 			code: "NO_SUCH_FILE",
 			id: "b98644cf-a5ac-4277-a502-0b8054a709a3",
 		},
@@ -26,13 +26,13 @@ export const meta = {
 		},
 
 		tooBigFile: {
-			message: "That file is too big.",
+			message: "ファイルサイズが大きすぎます。",
 			code: "TOO_BIG_FILE",
 			id: "dee9d4ed-ad07-43ed-8b34-b2856398bc60",
 		},
 
 		emptyFile: {
-			message: "That file is empty.",
+			message: "ファイルが空です。",
 			code: "EMPTY_FILE",
 			id: "31a1b42c-06f7-42ae-8a38-a661c5c9f691",
 		},

@@ -27,7 +27,7 @@ export const meta = {
 
 	errors: {
 		noSuchMoveTarget: {
-			message: "No such move target.",
+			message: "そのmove targetは存在しません。",
 			code: "NO_SUCH_MOVE_TARGET",
 			id: "b5c90186-4ab0-49c8-9bba-a1f76c202ba4",
 		},
@@ -48,7 +48,7 @@ export const meta = {
 			id: "4362e8dc-731f-4ad8-a694-be2a88922a24",
 		},
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "fcd2eef9-a9b2-4c4f-8624-038099e90aa5",
 		},

@@ -13,7 +13,7 @@ export const meta = {
 
 	errors: {
 		noSuchEmoji: {
-			message: "No such emoji.",
+			message: "その絵文字は存在しません。",
 			code: "NO_SUCH_EMOJI",
 			id: "be83669b-773a-44b7-b1f8-e5e5170ac3c2",
 		},

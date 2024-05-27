@@ -11,7 +11,7 @@ export const meta = {
 
 	errors: {
 		noSuchPost: {
-			message: "No such post.",
+			message: "そのpostは存在しません。",
 			code: "NO_SUCH_POST",
 			id: "c32e6dd0-b555-4413-925e-b3757d19ed84",
 		},

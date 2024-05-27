@@ -12,7 +12,7 @@ export const meta = {
 
 	errors: {
 		noSuchChannel: {
-			message: "No such channel.",
+			message: "そのchannelは存在しません。",
 			code: "NO_SUCH_CHANNEL",
 			id: "19959ee9-0153-4c51-bbd9-a98c49dc59d6",
 		},

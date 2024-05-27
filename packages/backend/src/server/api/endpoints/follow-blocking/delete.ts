@@ -12,13 +12,13 @@ export const meta = {
 
 	errors: {
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "b851d00b-8ab1-4a56-8b1b-e24187cb48ef",
 		},
 
 		notMuting: {
-			message: "You are not blocking that user.",
+			message: "あなたはそのユーザをblockingしていない様です。",
 			code: "NOT_BLOCKING",
 			id: "5467d020-daa9-4553-81e1-135c0c35a96d",
 		},

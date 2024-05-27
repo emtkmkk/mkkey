@@ -98,21 +98,33 @@ export default async (
 		);
 	}
 
-	let isMutedReaction: boolean | {
-			muted: boolean;
-			reject?: boolean | undefined;
-	} = false;
+	let isMutedReaction:
+		| boolean
+		| {
+				muted: boolean;
+				reject?: boolean | undefined;
+		  } = false;
 	// Word mute
 	const muteInfo = await UserProfiles.findOne({
-			where: {
-				userId: note.userId,
-				enableReactionMute: true,
-			},
-			select: ["userId", "reactionMutedWords","rejectMuteReaction"],
-	})
+		where: {
+			userId: note.userId,
+			enableReactionMute: true,
+		},
+		select: ["userId", "reactionMutedWords", "rejectMuteReaction"],
+	});
 	if (muteInfo) {
-		isMutedReaction = checkReactionMute(reaction, note, user, muteInfo.reactionMutedWords)
-		if ((typeof isMutedReaction !== "boolean" ? isMutedReaction.reject : undefined) ?? muteInfo.rejectMuteReaction) {
+		isMutedReaction = checkReactionMute(
+			reaction,
+			note,
+			user,
+			muteInfo.reactionMutedWords,
+		);
+		if (
+			(typeof isMutedReaction !== "boolean"
+				? isMutedReaction.reject
+				: undefined) ??
+			muteInfo.rejectMuteReaction
+		) {
 			throw new IdentifiableError(
 				"119b8757-2ba5-385e-82cf-7fa4bc73c4d1",
 				"投稿者のリアクションミュート設定の為、リアクションが拒否されました。",
@@ -122,7 +134,6 @@ export default async (
 			isMutedReaction = isMutedReaction.muted;
 		}
 	}
-	
 
 	const record: NoteReaction = {
 		id: genId(),
@@ -144,7 +155,9 @@ export default async (
 		let maxReactionsNote = 1;
 		if (!user.host) {
 			maxReactionsPerAccount =
-				(user.driveCapacityOverrideMb ?? 5120) > 5120 ? MAX_REACTION_PER_ACCOUNT : 1;
+				(user.driveCapacityOverrideMb ?? 5120) > 5120
+					? MAX_REACTION_PER_ACCOUNT
+					: 1;
 		} else {
 			const instance = await Instances.findOneBy({ host: user.host });
 			maxReactionsPerAccount = instance?.maxReactionsPerAccount ?? 1;
@@ -207,7 +220,7 @@ export default async (
 			throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
 			//}
 		}
-			throw e;
+		throw e;
 	}
 
 	if (!isMutedReaction) {
@@ -255,7 +268,11 @@ export default async (
 				  }
 				: null,
 		userId: user.id,
-		targetUserId: note.isPublicLikeList ? !isMutedReaction ? null : [user.id] : [user.id, note.userId],
+		targetUserId: note.isPublicLikeList
+			? !isMutedReaction
+				? null
+				: [user.id]
+			: [user.id, note.userId],
 	});
 
 	// Create notification if the reaction target is a local user.
@@ -288,7 +305,6 @@ export default async (
 	}
 
 	if (!isMutedReaction) {
-		
 		// Fetch watchers
 		NoteWatchings.findBy({
 			noteId: note.id,
@@ -303,7 +319,7 @@ export default async (
 				});
 			}
 		});
-	
+
 		//#region deliver
 		if (
 			Users.isLocalUser(user) &&
@@ -319,15 +335,19 @@ export default async (
 				(emoji?.host && emoji?.license?.includes("コピー可否 : deny"))
 			)
 				record.reaction = await getFallbackReaction();
-	
+
 			const content = renderActivity(await renderLike(record, note));
 			const dm = new DeliverManager(user, content);
 			if (note.userHost !== null) {
 				const reactee = await Users.findOneBy({ id: note.userId });
 				dm.addDirectRecipe(reactee as IRemoteUser);
 			}
-	
-			if (user.isExplorable && user.isRemoteExplorable && note.isPublicLikeList) {
+
+			if (
+				user.isExplorable &&
+				user.isRemoteExplorable &&
+				note.isPublicLikeList
+			) {
 				if (["public", "home", "followers"].includes(note.visibility)) {
 					if (note.userId !== user.id && note.userHost === null) {
 						const u = await Users.findOneBy({ id: note.userId });
@@ -352,10 +372,9 @@ export default async (
 					}
 				}
 			}
-	
+
 			dm.execute();
 		}
 		//#endregion
-
 	}
 };

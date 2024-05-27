@@ -26,7 +26,7 @@ export const meta = {
 
 	errors: {
 		reactionsNotPublic: {
-			message: "Reactions of the user is not public.",
+			message: "このユーザはリアクションを公開していません。",
 			code: "REACTIONS_NOT_PUBLIC",
 			id: "673a7dd2-6924-1093-e0c0-e68456ceae5c",
 		},

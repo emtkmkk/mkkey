@@ -12,19 +12,19 @@ export const meta = {
 
 	errors: {
 		noSuchNote: {
-			message: "No such note.",
+			message: "その投稿は存在しません。",
 			code: "NO_SUCH_NOTE",
 			id: "56734f8b-3928-431e-bf80-6ff87df40cb3",
 		},
 
 		pinLimitExceeded: {
-			message: "You can not pin notes any more.",
+			message: "これ以上投稿を固定することはできません。",
 			code: "PIN_LIMIT_EXCEEDED",
 			id: "72dab508-c64d-498f-8740-a8eec1ba385a",
 		},
 
 		alreadyPinned: {
-			message: "That note has already been pinned.",
+			message: "この投稿は既に固定しています。",
 			code: "ALREADY_PINNED",
 			id: "8b18c2b7-68fe-4edb-9892-c0cbaeb6c913",
 		},

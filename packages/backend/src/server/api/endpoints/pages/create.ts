@@ -26,12 +26,12 @@ export const meta = {
 
 	errors: {
 		noSuchFile: {
-			message: "No such file.",
+			message: "そのファイルは存在しません。",
 			code: "NO_SUCH_FILE",
 			id: "b7b97489-0f66-4b12-a5ff-b21bd63f6e1c",
 		},
 		nameAlreadyExists: {
-			message: "Specified name already exists.",
+			message: "ページ名が重複しています。",
 			code: "NAME_ALREADY_EXISTS",
 			id: "4650348e-301c-499a-83c9-6aa988c66bc1",
 		},

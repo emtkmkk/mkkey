@@ -27,18 +27,18 @@ export const meta = {
 
 	errors: {
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "63e4aba4-4156-4e53-be25-c9559e42d71b",
 		},
 
 		forbidden: {
-			message: "Forbidden.",
+			message: "禁止されています。",
 			code: "FORBIDDEN",
 			id: "f6cdb0df-c19f-ec5c-7dbb-0ba84a1f92ba",
 		},
 		cannot_find: {
-			message: "Cannot find the following.",
+			message: "見つかりませんでした。",
 			code: "CANNOT_FIND",
 			id: "7a55f0d7-8e06-4a7e-9c77-ee7d59b25a82",
 		},

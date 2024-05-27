@@ -65,36 +65,43 @@ export default async (
 		);
 	}
 
-	let isMutedReaction: boolean | {
-			muted: boolean;
-			reject?: boolean | undefined;
-	} = false;
+	let isMutedReaction:
+		| boolean
+		| {
+				muted: boolean;
+				reject?: boolean | undefined;
+		  } = false;
 	// Word mute
 	const muteInfo = await UserProfiles.findOne({
-			where: {
-				userId: note.userId,
-				enableReactionMute: true,
-			},
-			select: ["userId", "reactionMutedWords","rejectMuteReaction"],
-	})
+		where: {
+			userId: note.userId,
+			enableReactionMute: true,
+		},
+		select: ["userId", "reactionMutedWords", "rejectMuteReaction"],
+	});
 	if (muteInfo) {
-		isMutedReaction = checkReactionMute(emoji, note, user, muteInfo.reactionMutedWords)
+		isMutedReaction = checkReactionMute(
+			emoji,
+			note,
+			user,
+			muteInfo.reactionMutedWords,
+		);
 		if (typeof isMutedReaction !== "boolean") {
 			isMutedReaction = isMutedReaction.muted;
 		}
 	}
 
 	if (!isMutedReaction) {
-	// Decrement reactions count
-	const sql = `jsonb_set("reactions", '{${exist.reaction}}', (COALESCE("reactions"->>'${exist.reaction}', '0')::int - 1)::text::jsonb)`;
+		// Decrement reactions count
+		const sql = `jsonb_set("reactions", '{${exist.reaction}}', (COALESCE("reactions"->>'${exist.reaction}', '0')::int - 1)::text::jsonb)`;
 
-	await Notes.createQueryBuilder()
-		.update()
-		.set({
-			reactions: () => sql,
-		})
-		.where("id = :id", { id: note.id })
-		.execute();
+		await Notes.createQueryBuilder()
+			.update()
+			.set({
+				reactions: () => sql,
+			})
+			.where("id = :id", { id: note.id })
+			.execute();
 
 		if (existCount === 1) {
 			Notes.decrement({ id: note.id }, "score", user.host ? "1" : "3");
@@ -104,7 +111,11 @@ export default async (
 	publishNoteStream(note.id, "unreacted", {
 		reaction: decodeReaction(exist.reaction).reaction,
 		userId: user.id,
-		targetUserId: note.isPublicLikeList ? !isMutedReaction ? null : [user.id] : [user.id, note.userId],
+		targetUserId: note.isPublicLikeList
+			? !isMutedReaction
+				? null
+				: [user.id]
+			: [user.id, note.userId],
 	});
 
 	if (!isMutedReaction) {

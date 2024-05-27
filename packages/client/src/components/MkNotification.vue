@@ -92,7 +92,9 @@
 				/>
 				<XReactionIcon
 					v-else-if="
-						!showEmojiReactions && notification.type === 'reaction' && !isMuted
+						!showEmojiReactions &&
+						notification.type === 'reaction' &&
+						!isMuted
 					"
 					:reaction="defaultReaction"
 					:no-style="true"
@@ -119,7 +121,11 @@
 				/>
 			</header>
 			<MkA
-				v-if="notification.note && notification.type === 'reaction' && !isMuted"
+				v-if="
+					notification.note &&
+					notification.type === 'reaction' &&
+					!isMuted
+				"
 				class="text"
 				:to="notePage(notification.note)"
 				:title="getNoteSummary(notification.note)"
@@ -352,44 +358,44 @@ const reactionMuted = defaultStore.state.reactionMutedWords.map((x) => {
 
 const isMuted = $computed(() => {
 	props.notification.type === "reaction" &&
-	reactionMuted.some((x) => {
-		const emojiName = props.notification.reaction
-			.replace(":", "")
-			.replace(/@[\w:\.\-]+:$/, "");
-		const emojiHost = props.notification.reaction
-			.replace(/^:[\w:\.\-]+@/, "")
-			.replace(":", "");
-		if (
-			defaultStore.state.remoteReactionMute &&
-			emojiHost &&
-			emojiHost !== "." &&
-			emojiHost !== config.host
-		) {
-			return true;
-		}
-		if (x.exact) {
-			if (x.hostmute) {
-				if (x.name === emojiHost) {
-					return true;
+		reactionMuted.some((x) => {
+			const emojiName = props.notification.reaction
+				.replace(":", "")
+				.replace(/@[\w:\.\-]+:$/, "");
+			const emojiHost = props.notification.reaction
+				.replace(/^:[\w:\.\-]+@/, "")
+				.replace(":", "");
+			if (
+				defaultStore.state.remoteReactionMute &&
+				emojiHost &&
+				emojiHost !== "." &&
+				emojiHost !== config.host
+			) {
+				return true;
+			}
+			if (x.exact) {
+				if (x.hostmute) {
+					if (x.name === emojiHost) {
+						return true;
+					}
+				} else {
+					if (x.name === emojiName) {
+						return true;
+					}
 				}
 			} else {
-				if (x.name === emojiName) {
-					return true;
+				if (x.hostmute) {
+					if (emojiHost.includes(x.name)) {
+						return true;
+					}
+				} else {
+					if (emojiName.includes(x.name)) {
+						return true;
+					}
 				}
 			}
-		} else {
-			if (x.hostmute) {
-				if (emojiHost.includes(x.name)) {
-					return true;
-				}
-			} else {
-				if (emojiName.includes(x.name)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	})
+			return false;
+		});
 });
 
 const showEmojiReactions =

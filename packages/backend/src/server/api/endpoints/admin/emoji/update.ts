@@ -13,12 +13,12 @@ export const meta = {
 
 	errors: {
 		noSuchEmoji: {
-			message: "No such emoji.",
+			message: "その絵文字は存在しません。",
 			code: "NO_SUCH_EMOJI",
 			id: "684dec9d-a8c2-4364-9aa8-456c49cb1dc8",
 		},
 		duplicateEmojiName: {
-			message: "The specified emoji name already exists.",
+			message: "絵文字名が重複しています。",
 			code: "DUPLICATE_EMOJI_NAME",
 			id: "a7f2bc3d-b1c2-4678-b023-9f8c5d4e2abc",
 		},

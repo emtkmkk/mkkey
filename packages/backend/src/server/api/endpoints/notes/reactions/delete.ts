@@ -19,13 +19,13 @@ export const meta = {
 
 	errors: {
 		noSuchNote: {
-			message: "No such note.",
+			message: "その投稿は存在しません。",
 			code: "NO_SUCH_NOTE",
 			id: "764d9fce-f9f2-4a0e-92b1-6ceac9a7ad37",
 		},
 
 		notReacted: {
-			message: "You are not reacting to that note.",
+			message: "この投稿にリアクションしていません。",
 			code: "NOT_REACTED",
 			id: "92f4426d-4196-4125-aa5b-02943e2ec8fc",
 		},

@@ -30,12 +30,12 @@ export const meta = {
 
 	errors: {
 		rtlDisabled: {
-			message: "Recommended timeline has been disabled.",
+			message: "RTLは無効化されています。",
 			code: "RTL_DISABLED",
 			id: "45a6eb02-7695-4393-b023-dd3be9aaaefe",
 		},
 		queryError: {
-			message: "Please follow more users.",
+			message: "フォロー数を増やしてください。",
 			code: "QUERY_ERROR",
 			id: "620763f4-f621-4533-ab33-0577a1a3c343",
 		},

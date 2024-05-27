@@ -9,7 +9,7 @@ export const meta = {
 
 	errors: {
 		noSuchKey: {
-			message: "No such key.",
+			message: "そのkeyは存在しません。",
 			code: "NO_SUCH_KEY",
 			id: "ac3ed68a-62f0-422b-a7bc-d5e09e8f6a6a",
 		},

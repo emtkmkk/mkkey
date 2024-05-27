@@ -13,7 +13,7 @@ export const meta = {
 
 	errors: {
 		noSuchNote: {
-			message: "No such note.",
+			message: "その投稿は存在しません。",
 			code: "NO_SUCH_NOTE",
 			id: "6dd26674-e060-4816-909a-45ba3f4da458",
 		},

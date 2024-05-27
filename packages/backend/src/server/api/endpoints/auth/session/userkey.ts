@@ -29,19 +29,19 @@ export const meta = {
 
 	errors: {
 		noSuchApp: {
-			message: "No such app.",
+			message: "そのappは存在しません。",
 			code: "NO_SUCH_APP",
 			id: "fcab192a-2c5a-43b7-8ad8-9b7054d8d40d",
 		},
 
 		noSuchSession: {
-			message: "No such session.",
+			message: "そのsessionは存在しません。",
 			code: "NO_SUCH_SESSION",
 			id: "5b5a1503-8bc8-4bd0-8054-dc189e8cdcb3",
 		},
 
 		pendingSession: {
-			message: "This session is not completed yet.",
+			message: "このセッションはまだ終了していません。",
 			code: "PENDING_SESSION",
 			id: "8c8a4145-02cc-4cca-8e66-29ba60445a8e",
 		},

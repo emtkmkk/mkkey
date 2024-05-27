@@ -19,13 +19,13 @@ export const meta = {
 
 	errors: {
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "5b12c78d-2b28-4dca-99d2-f56139b42ff8",
 		},
 
 		followerIsYourself: {
-			message: "Follower is yourself.",
+			message: "自分をFollowerに指定する事は出来ません。",
 			code: "FOLLOWER_IS_YOURSELF",
 			id: "07dc03b9-03da-422d-885b-438313707662",
 		},

@@ -28,7 +28,7 @@ export const meta = {
 
 	errors: {
 		noSuchObject: {
-			message: "No such object.",
+			message: "そのobjectは存在しません。",
 			code: "NO_SUCH_OBJECT",
 			id: "dc94d745-1262-4e63-a17d-fecaa57efc82",
 		},

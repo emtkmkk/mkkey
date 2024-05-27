@@ -34,13 +34,13 @@ export const meta = {
 		},
 
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "11795c64-40ea-4198-b06e-3c873ed9039d",
 		},
 
 		noSuchGroup: {
-			message: "No such group.",
+			message: "そのgroupは存在しません。",
 			code: "NO_SUCH_GROUP",
 			id: "c94e2a5d-06aa-4914-8fa6-6a42e73d6537",
 		},
@@ -52,7 +52,7 @@ export const meta = {
 		},
 
 		noSuchFile: {
-			message: "No such file.",
+			message: "そのファイルは存在しません。",
 			code: "NO_SUCH_FILE",
 			id: "4372b8e2-185d-4146-8749-2f68864a3e5f",
 		},

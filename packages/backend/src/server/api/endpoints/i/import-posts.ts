@@ -13,13 +13,13 @@ export const meta = {
 	},
 	errors: {
 		noSuchFile: {
-			message: "No such file.",
+			message: "そのファイルは存在しません。",
 			code: "NO_SUCH_FILE",
 			id: "e674141e-bd2a-ba85-e616-aefb187c9c2a",
 		},
 
 		emptyFile: {
-			message: "That file is empty.",
+			message: "ファイルが空です。",
 			code: "EMPTY_FILE",
 			id: "d2f12af1-e7b4-feac-86a3-519548f2728e",
 		},

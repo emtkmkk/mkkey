@@ -29,12 +29,12 @@ export const meta = {
 
 	errors: {
 		gtlDisabled: {
-			message: "Global timeline has been disabled.",
+			message: "GTLは無効化されています。",
 			code: "GTL_DISABLED",
 			id: "0332fc13-6ab2-4427-ae80-a9fadffd1a6b",
 		},
 		queryError: {
-			message: "Please follow more users.",
+			message: "フォロー数を増やしてください。",
 			code: "QUERY_ERROR",
 			id: "620763f4-f621-4533-ab33-0577a1a3c343",
 		},

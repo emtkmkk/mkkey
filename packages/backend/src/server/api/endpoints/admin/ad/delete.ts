@@ -10,7 +10,7 @@ export const meta = {
 
 	errors: {
 		noSuchAd: {
-			message: "No such ad.",
+			message: "その広告は存在しません。",
 			code: "NO_SUCH_AD",
 			id: "ccac9863-3a03-416e-b899-8a64041118b1",
 		},

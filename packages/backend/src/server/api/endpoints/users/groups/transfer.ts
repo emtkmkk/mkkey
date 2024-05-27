@@ -22,19 +22,19 @@ export const meta = {
 
 	errors: {
 		noSuchGroup: {
-			message: "No such group.",
+			message: "そのgroupは存在しません。",
 			code: "NO_SUCH_GROUP",
 			id: "8e31d36b-2f88-4ccd-a438-e2d78a9162db",
 		},
 
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "711f7ebb-bbb9-4dfa-b540-b27809fed5e9",
 		},
 
 		noSuchGroupMember: {
-			message: "No such group member.",
+			message: "そのgroup memberは存在しません。",
 			code: "NO_SUCH_GROUP_MEMBER",
 			id: "d31bebee-196d-42c2-9a3e-9474d4be6cc4",
 		},

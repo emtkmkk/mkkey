@@ -14,7 +14,7 @@ import type { AccessToken } from "@/models/entities/access-token.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 
 const accessDenied = {
-	message: "Access denied.",
+	message: "アクセスが拒否されました。",
 	code: "ACCESS_DENIED",
 	id: "56f35758-7dd5-468b-8439-5d6fb8ec9b8e",
 };
@@ -35,7 +35,7 @@ export default async (
 
 	if (ep == null) {
 		throw new ApiError({
-			message: "No such endpoint.",
+			message: "そのエンドポイントは存在しません。",
 			code: "NO_SUCH_ENDPOINT",
 			id: "f8080b67-5f9c-4eb7-8c18-7f1eeae8f709",
 			httpStatusCode: 404,
@@ -67,7 +67,8 @@ export default async (
 			limitActor,
 		).catch((e) => {
 			throw new ApiError({
-				message: "Rate limit exceeded. Please try again later.",
+				message:
+					"レートリミットに到達しました。時間をおいて再度お試しください。",
 				code: "RATE_LIMIT_EXCEEDED",
 				id: "d5826d14-3982-4d2e-8011-b9e9f02499ef",
 				httpStatusCode: 429,
@@ -77,7 +78,7 @@ export default async (
 
 	if (ep.meta.requireCredential && user == null) {
 		throw new ApiError({
-			message: "Credential required.",
+			message: "認証が必要です。",
 			code: "CREDENTIAL_REQUIRED",
 			id: "1384574d-a912-4b81-8601-c7b1c4085df1",
 			httpStatusCode: 401,
@@ -86,7 +87,7 @@ export default async (
 
 	if (ep.meta.requireCredential && user!.isSuspended) {
 		throw new ApiError({
-			message: "Your account has been suspended.",
+			message: "アカウントが凍結されています。",
 			code: "YOUR_ACCOUNT_SUSPENDED",
 			id: "a8c724b3-6e9c-4b46-b1a8-bc3ed6258370",
 			httpStatusCode: 403,
@@ -94,11 +95,13 @@ export default async (
 	}
 
 	if (ep.meta.requireAdmin && !user!.isAdmin) {
-		throw new ApiError(accessDenied, { reason: "You are not the admin." });
+		throw new ApiError(accessDenied, { reason: "管理者権限がありません。" });
 	}
 
 	if (ep.meta.requireModerator && !isModerator) {
-		throw new ApiError(accessDenied, { reason: "You are not a moderator." });
+		throw new ApiError(accessDenied, {
+			reason: "モデレータ権限がありません。",
+		});
 	}
 
 	if (
@@ -108,7 +111,7 @@ export default async (
 	) {
 		throw new ApiError({
 			message:
-				"Your app does not have the necessary permissions to use this endpoint.",
+				"このトークンには、このエンドポイントを使用するために必要な権限がありません。",
 			code: "PERMISSION_DENIED",
 			id: "1370e5b7-d4eb-4566-bb1d-7748ee6a1838",
 		});
@@ -122,7 +125,7 @@ export default async (
 		user == null
 	) {
 		throw new ApiError({
-			message: "Credential required.",
+			message: "認証が必要です。",
 			code: "CREDENTIAL_REQUIRED",
 			id: "1384574d-a912-4b81-8601-c7b1c4085df1",
 			httpStatusCode: 401,
@@ -142,7 +145,7 @@ export default async (
 				} catch (e) {
 					throw new ApiError(
 						{
-							message: "Invalid param.",
+							message: "パラメータが不正です。",
 							code: "INVALID_PARAM",
 							id: "0b5f1631-7c1a-41a6-b399-cce335f34d85",
 						},

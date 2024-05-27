@@ -27,13 +27,13 @@ export const meta = {
 
 	errors: {
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "27fa5435-88ab-43de-9360-387de88727cd",
 		},
 
 		forbidden: {
-			message: "Forbidden.",
+			message: "禁止されています。",
 			code: "FORBIDDEN",
 			id: "3c6a84db-d619-26af-ca14-06232a21df8a",
 		},

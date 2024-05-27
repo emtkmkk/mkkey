@@ -35,16 +35,19 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			  })
 			: null;
 
-		if (notification.type === "receiveFollowRequest" && notification.notifierId) {
+		if (
+			notification.type === "receiveFollowRequest" &&
+			notification.notifierId
+		) {
+			const followBlocking = (
+				await FollowBlockings.findBy({
+					blockerId: notification.notifieeId,
+				})
+			).map((x) => x.blockeeId);
 
-			const followBlocking = (await FollowBlockings.findBy({
-				blockerId: notification.notifieeId,
-			})).map((x) => x.blockeeId);
-			
 			if (followBlocking.includes(notification.notifierId)) {
 				return null;
 			}
-
 		}
 
 		return await awaitAll({

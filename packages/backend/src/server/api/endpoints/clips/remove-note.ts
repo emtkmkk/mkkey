@@ -12,13 +12,13 @@ export const meta = {
 
 	errors: {
 		noSuchClip: {
-			message: "No such clip.",
+			message: "そのclipは存在しません。",
 			code: "NO_SUCH_CLIP",
 			id: "b80525c6-97f7-49d7-a42d-ebccd49cfd52",
 		},
 
 		noSuchNote: {
-			message: "No such note.",
+			message: "その投稿は存在しません。",
 			code: "NO_SUCH_NOTE",
 			id: "aff017de-190e-434b-893e-33a9ff5049d8",
 		},

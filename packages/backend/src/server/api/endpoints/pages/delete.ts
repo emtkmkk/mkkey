@@ -11,13 +11,13 @@ export const meta = {
 
 	errors: {
 		noSuchPage: {
-			message: "No such page.",
+			message: "そのpageは存在しません。",
 			code: "NO_SUCH_PAGE",
 			id: "eb0c6e1d-d519-4764-9486-52a7e1c6392a",
 		},
 
 		accessDenied: {
-			message: "Access denied.",
+			message: "アクセスが拒否されました。",
 			code: "ACCESS_DENIED",
 			id: "8b741b3e-2c22-44b3-a15f-29949aa1601e",
 		},

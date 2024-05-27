@@ -13,13 +13,13 @@ export const meta = {
 
 	errors: {
 		noSuchUserList: {
-			message: "No such user list.",
+			message: "そのuser listは存在しません。",
 			code: "NO_SUCH_USER_LIST",
 			id: "95063e93-a283-4b8b-9aa5-bcdb8df69a7f",
 		},
 
 		noSuchUserGroup: {
-			message: "No such user group.",
+			message: "そのuser groupは存在しません。",
 			code: "NO_SUCH_USER_GROUP",
 			id: "aa3c0b9a-8cae-47c0-92ac-202ce5906682",
 		},

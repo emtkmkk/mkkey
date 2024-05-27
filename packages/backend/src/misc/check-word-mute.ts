@@ -79,8 +79,7 @@ export function checkReactionMute(
 	note: Note,
 	user: User,
 	mutedWords: Array<string | string[]>,
-): boolean | {muted: boolean, reject?: boolean} {
-
+): boolean | { muted: boolean; reject?: boolean } {
 	if (!reaction) return false;
 
 	const text = reaction.trim();
@@ -88,11 +87,20 @@ export function checkReactionMute(
 
 	for (const mutePattern of mutedWords) {
 		if (Array.isArray(mutePattern)) {
-
-			const reject = mutePattern.filter((keyword) => keyword.startsWith("reject:")).length > 0 ? ["true", "yes", "on"].includes(mutePattern.filter((keyword) => keyword.startsWith("reject:"))[0].replace("reject:","")) : undefined;
+			const reject =
+				mutePattern.filter((keyword) => keyword.startsWith("reject:")).length >
+				0
+					? ["true", "yes", "on"].includes(
+							mutePattern
+								.filter((keyword) => keyword.startsWith("reject:"))[0]
+								.replace("reject:", ""),
+					  )
+					: undefined;
 
 			// Clean up
-			const keywords = mutePattern.filter((keyword) => keyword !== "" && !keyword.startsWith("reject:"));
+			const keywords = mutePattern.filter(
+				(keyword) => keyword !== "" && !keyword.startsWith("reject:"),
+			);
 
 			if (
 				keywords.length > 0 &&
@@ -128,9 +136,7 @@ export function checkReactionMute(
 					}
 					if (keyword.startsWith("fuzzyUsername:")) {
 						const usernameKeyword = keyword.replace("fuzzyUsername:", "");
-						return !user
-							? false
-							: user.username.includes(usernameKeyword);
+						return !user ? false : user.username.includes(usernameKeyword);
 					}
 					if (keyword.startsWith("name:")) {
 						const nameKeyword = keyword.replace("name:", "");
@@ -141,7 +147,9 @@ export function checkReactionMute(
 						return !user?.name ? false : user.name.includes(nameKeyword);
 					}
 					if (keyword.startsWith("visibility:")) {
-						const visibilityKeyword = keyword.replace("visibility:", "").toLowerCase();
+						const visibilityKeyword = keyword
+							.replace("visibility:", "")
+							.toLowerCase();
 						if (visibilityKeyword === "visitor")
 							return (
 								["public", "home", "hidden"].includes(note.visibility) &&
@@ -159,18 +167,22 @@ export function checkReactionMute(
 							.replace("localOnly:", "")
 							.replace("localAndFollower:", "")
 							.toLowerCase();
-						if (["true", "yes", "on"].includes(localOnlyKeyword)) return note.localOnly;
+						if (["true", "yes", "on"].includes(localOnlyKeyword))
+							return note.localOnly;
 						if (["false", "no", "off"].includes(localOnlyKeyword))
 							return !note.localOnly;
 						return false;
 					}
 					if (keyword.startsWith(":") && keyword.endsWith(":")) {
-						return keyword === reaction.replace(/@[^@]:/,":") || keyword === reaction
+						return (
+							keyword === reaction.replace(/@[^@]:/, ":") ||
+							keyword === reaction
+						);
 					}
-					return text.includes(keyword)
+					return text.includes(keyword);
 				})
 			)
-				return reject === undefined ? true : {muted: true, reject: reject};
+				return reject === undefined ? true : { muted: true, reject: reject };
 		} else {
 			// represents RegExp
 			const regexp = mutePattern.match(/^\/(.+)\/(.*)$/);
@@ -186,7 +198,8 @@ export function checkReactionMute(
 				reject = true;
 			}
 			try {
-				if (new RE2(regexp[1], regexp[2]?.replaceAll("r","")).test(text)) return reject ? {muted: true, reject: true} : true;
+				if (new RE2(regexp[1], regexp[2]?.replaceAll("r", "")).test(text))
+					return reject ? { muted: true, reject: true } : true;
 			} catch (err) {
 				// This should never happen due to input sanitisation.
 			}

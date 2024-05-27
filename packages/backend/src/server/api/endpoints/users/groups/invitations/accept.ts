@@ -15,7 +15,7 @@ export const meta = {
 
 	errors: {
 		noSuchInvitation: {
-			message: "No such invitation.",
+			message: "そのinvitationは存在しません。",
 			code: "NO_SUCH_INVITATION",
 			id: "98c11eca-c890-4f42-9806-c8c8303ebb5e",
 		},

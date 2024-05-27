@@ -14,13 +14,13 @@ export const meta = {
 
 	errors: {
 		noSuchUser: {
-			message: "No such user.",
+			message: "そのユーザは存在しません。",
 			code: "NO_SUCH_USER",
 			id: "4e68c551-fc4c-4e46-bb41-7d4a37bf9dab",
 		},
 
 		followRequestNotFound: {
-			message: "Follow request not found.",
+			message: "フォローリクエストがありません。",
 			code: "FOLLOW_REQUEST_NOT_FOUND",
 			id: "089b125b-d338-482a-9a09-e2622ac9f8d4",
 		},

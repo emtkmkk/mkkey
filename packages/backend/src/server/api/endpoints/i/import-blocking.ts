@@ -15,25 +15,25 @@ export const meta = {
 
 	errors: {
 		noSuchFile: {
-			message: "No such file.",
+			message: "そのファイルは存在しません。",
 			code: "NO_SUCH_FILE",
 			id: "ebb53e5f-6574-9c0c-0b92-7ca6def56d7e",
 		},
 
 		unexpectedFileType: {
-			message: "We need csv file.",
+			message: "CSVファイルである必要があります。",
 			code: "UNEXPECTED_FILE_TYPE",
 			id: "b6fab7d6-d945-d67c-dfdb-32da1cd12cfe",
 		},
 
 		tooBigFile: {
-			message: "That file is too big.",
+			message: "ファイルサイズが大きすぎます。",
 			code: "TOO_BIG_FILE",
 			id: "b7fbf0b1-aeef-3b21-29ef-fadd4cb72ccf",
 		},
 
 		emptyFile: {
-			message: "That file is empty.",
+			message: "ファイルが空です。",
 			code: "EMPTY_FILE",
 			id: "6f3a4dcc-f060-a707-4950-806fbdbe60d6",
 		},

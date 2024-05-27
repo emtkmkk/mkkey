@@ -12,19 +12,19 @@ export const meta = {
 
 	errors: {
 		noSuchAntenna: {
-			message: "No such antenna.",
+			message: "そのantennaは存在しません。",
 			code: "NO_SUCH_ANTENNA",
 			id: "10c673ac-8852-48eb-aa1f-f5b67f069290",
 		},
 
 		noSuchUserList: {
-			message: "No such user list.",
+			message: "そのuser listは存在しません。",
 			code: "NO_SUCH_USER_LIST",
 			id: "1c6b35c9-943e-48c2-81e4-2844989407f7",
 		},
 
 		noSuchUserGroup: {
-			message: "No such user group.",
+			message: "そのuser groupは存在しません。",
 			code: "NO_SUCH_USER_GROUP",
 			id: "109ed789-b6eb-456e-b8a9-6059d567d385",
 		},

@@ -12,7 +12,7 @@ export const meta = {
 
 	errors: {
 		noSuchAntenna: {
-			message: "No such antenna.",
+			message: "そのantennaは存在しません。",
 			code: "NO_SUCH_ANTENNA",
 			id: "b34dcf9d-348f-44bb-99d0-6c9314cfe2df",
 		},

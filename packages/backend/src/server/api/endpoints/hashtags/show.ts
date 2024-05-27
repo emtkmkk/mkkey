@@ -18,7 +18,7 @@ export const meta = {
 
 	errors: {
 		noSuchHashtag: {
-			message: "No such hashtag.",
+			message: "そのhashtagは存在しません。",
 			code: "NO_SUCH_HASHTAG",
 			id: "110ee688-193e-4a3a-9ecf-c167b2e6981e",
 		},

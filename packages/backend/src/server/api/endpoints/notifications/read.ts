@@ -12,7 +12,7 @@ export const meta = {
 
 	errors: {
 		noSuchNotification: {
-			message: "No such notification.",
+			message: "そのnotificationは存在しません。",
 			code: "NO_SUCH_NOTIFICATION",
 			id: "efa929d5-05b5-47d1-beec-e6a4dbed011e",
 		},

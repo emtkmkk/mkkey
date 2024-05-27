@@ -15,12 +15,12 @@ export const meta = {
 
 	errors: {
 		noSuchUser: {
-			message: "No such user.",
+			message: "ユーザが存在しません。",
 			code: "NO_SUCH_USER",
 			id: "1acefcb5-0959-43fd-9685-b48305736cb5",
 		},
 		noEmail: {
-			message: "No email for user.",
+			message: "メールアドレスが登録されていません。",
 			code: "NO_EMAIL",
 			id: "ac9d2d22-ef73-11ed-a05b-0242ac120003",
 		},

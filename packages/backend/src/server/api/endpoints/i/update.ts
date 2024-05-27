@@ -29,43 +29,43 @@ export const meta = {
 
 	errors: {
 		noSuchAvatar: {
-			message: "No such avatar file.",
+			message: "そのアイコンは存在しません。",
 			code: "NO_SUCH_AVATAR",
 			id: "539f3a45-f215-4f81-a9a8-31293640207f",
 		},
 
 		noSuchBanner: {
-			message: "No such banner file.",
+			message: "そのバナーは存在しません。",
 			code: "NO_SUCH_BANNER",
 			id: "0d8f5629-f210-41c2-9433-735831a58595",
 		},
 
 		avatarNotAnImage: {
-			message: "The file specified as an avatar is not an image.",
+			message: "アイコンとして指定されたファイルは画像ではありません。",
 			code: "AVATAR_NOT_AN_IMAGE",
 			id: "f419f9f8-2f4d-46b1-9fb4-49d3a2fd7191",
 		},
 
 		bannerNotAnImage: {
-			message: "The file specified as a banner is not an image.",
+			message: "バナーとして指定されたファイルは画像ではありません。",
 			code: "BANNER_NOT_AN_IMAGE",
 			id: "75aedb19-2afd-4e6d-87fc-67941256fa60",
 		},
 
 		noSuchPage: {
-			message: "No such page.",
+			message: "そのpageは存在しません。",
 			code: "NO_SUCH_PAGE",
 			id: "8e01b590-7eb9-431b-a239-860e086c408e",
 		},
 
 		invalidRegexp: {
-			message: "Invalid Regular Expression.",
+			message: "正規表現が正しくありません。",
 			code: "INVALID_REGEXP",
 			id: "0d786918-10df-41cd-8f33-8dec7d9a89a5",
 		},
 
 		detectBannedWords: {
-			message: "Detect banned words.",
+			message: "禁止ワードが含まれています。",
 			code: "DETECT_BANNED_WORDS",
 			id: "56f35758-7dd5-468b-8439-5d6fb8ec9b8e",
 		},
@@ -244,9 +244,9 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		profileUpdates.enableReactionMute = ps.reactionMutedWords.length > 0;
 		profileUpdates.reactionMutedWords = ps.reactionMutedWords;
 	}
-	
+
 	if (ps.rejectMuteReaction !== undefined) {
-		profileUpdates.rejectMuteReaction = ps.rejectMuteReaction
+		profileUpdates.rejectMuteReaction = ps.rejectMuteReaction;
 	}
 	if (ps.mutedInstances !== undefined)
 		profileUpdates.mutedInstances = ps.mutedInstances;

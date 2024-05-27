@@ -2,7 +2,7 @@ import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
 import { genId } from "@/misc/gen-id.js";
-import { Mutings, NoteWatchings } from "@/models/index.js";
+import { Users, Mutings, NoteWatchings } from "@/models/index.js";
 import type { Muting } from "@/models/entities/muting.js";
 import { publishUserEvent } from "@/services/stream.js";
 
@@ -62,6 +62,13 @@ export default define(meta, paramDef, async (ps, user) => {
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
+
+	// 管理人はミュートできるが、永続が指定されている場合ミニサイレンス状態になる
+	if (!muter.host && !muter.isAdmin && mutee.isAdmin && !ps.expiresAt) {
+		Users.update(muter.id, {
+			isMiniSilenced: true,
+		});
+	}
 
 	// Check if already muting
 	const exist = await Mutings.findOneBy({

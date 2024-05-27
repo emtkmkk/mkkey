@@ -568,23 +568,6 @@ import {
 				text: i18n.ts.accountDeletionInProgress,
 			});
 		}
-
-		if (
-			defaultStore.state.postStartSleep &&
-			localStorage.getItem("sleepCancel") === "y"
-		) {
-			api("notes/create", {
-				text: "#睡眠モード を解除しました",
-				visibility: defaultStore.state.rememberNoteVisibility
-					? defaultStore.state.visibility
-					: defaultStore.state.defaultNoteVisibility,
-				localOnly: defaultStore.state.rememberNoteVisibility
-					? defaultStore.state.localAndFollower
-					: defaultStore.state.defaultNoteLocalAndFollower,
-			});
-			localStorage.removeItem("sleepCancel");
-		}
-
 		fetchInstanceMetaPromise.then(async () => {
 			fetchEmoji();
 			fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
@@ -737,6 +720,31 @@ import {
 				defaultStore.state.developer
 			) {
 				defaultStore.set("unlockDeveloperSettings", true);
+			}
+			if ($i.isMiniSilenced) {
+				if (defaultStore.state.rememberNoteVisibility) {
+					if (defaultStore.state.visibility === "public")
+						defaultStore.set("visibility", "home");
+				} else {
+					if (defaultStore.state.defaultNoteVisibility === "public")
+						defaultStore.set("defaultNoteVisibility", "home");
+				}
+			}
+
+			if (
+				defaultStore.state.postStartSleep &&
+				localStorage.getItem("sleepCancel") === "y"
+			) {
+				api("notes/create", {
+					text: "#睡眠モード を解除しました",
+					visibility: defaultStore.state.rememberNoteVisibility
+						? defaultStore.state.visibility
+						: defaultStore.state.defaultNoteVisibility,
+					localOnly: defaultStore.state.rememberNoteVisibility
+						? defaultStore.state.localAndFollower
+						: defaultStore.state.defaultNoteLocalAndFollower,
+				});
+				localStorage.removeItem("sleepCancel");
 			}
 		});
 

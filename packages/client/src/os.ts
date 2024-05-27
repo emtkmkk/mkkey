@@ -25,6 +25,10 @@ export const api = ((
 	token?: string | null | undefined,
 	suppressToast = false,
 ) => {
+	if ($i?.isMiniSilenced && endpoint === "notes/create") {
+		data.web = true;
+	}
+
 	pendingApiRequestsCount.value++;
 
 	const onFinally = () => {

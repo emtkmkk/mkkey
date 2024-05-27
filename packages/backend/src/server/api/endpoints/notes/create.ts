@@ -89,6 +89,13 @@ export const meta = {
 			id: "b390d7e1-8a5e-46ed-b625-06271cafd3d3",
 		},
 
+		appBlockPublic: {
+			message:
+				"アプリからの公開投稿を禁止されています。Webで行うか、ホーム以下の公開範囲に設定してください。",
+			code: "APP_BLOCK_PUBLIC",
+			id: "b390d7e1-8a5e-46ed-b625-06271cafd3d3",
+		},
+
 		accountLocked: {
 			message: "移行しました。アカウントがロックされています。",
 			code: "ACCOUNT_LOCKED",
@@ -221,6 +228,9 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	if (user.movedToUri != null) throw new ApiError(meta.errors.accountLocked);
 	let visibleUsers: User[] = [];
+	if (!ps.web && user.isMiniSilenced) {
+		throw new ApiError(meta.errors.appBlockPublic);
+	}
 	if (ps.visibleUserIds) {
 		visibleUsers = await Users.findBy({
 			id: In(ps.visibleUserIds),

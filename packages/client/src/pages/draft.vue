@@ -273,6 +273,18 @@ function menu(ev: MouseEvent, draftKey: string) {
 												jsonParse[draftKey].data.cw
 										  )
 										: "";
+									if (
+										$i.isMiniSilenced &&
+										jsonParse[draftKey].data.visibility ===
+											"public"
+									) {
+										const { canceled } = await os.confirm({
+											type: "warning",
+											text: "公開投稿は自身がローカル投稿をある程度確認している状態でもこきーのユーザ全員に見せたい投稿にのみ使用し、ローカル投稿を普段非表示にしている場合や限られた範囲が対象の投稿の場合はホーム、フォロワー限定の投稿範囲を使用してください。\n\n※このメッセージはもこきーの公開投稿の場合でのサーバールールに反していると判定されたユーザに表示されています。心当たりがない場合は、再度サーバールールをご一読ください。",
+											okText: "公開で投稿",
+										});
+										if (canceled) return;
+									}
 									await os.apiWithDialog("notes/create", {
 										text:
 											processedText === ""

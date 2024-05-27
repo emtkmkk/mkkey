@@ -25,16 +25,31 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new Error("user not found");
 	}
 
-	await Users.update(user.id, {
-		isSilenced: false,
-	});
+	if (ps.mini) {
+		await Users.update(user.id, {
+			isMiniSilenced: false,
+		});
 
-	publishInternalEvent("userChangeSilencedState", {
-		id: user.id,
-		isSilenced: false,
-	});
+		publishInternalEvent("userChangeSilencedState", {
+			id: user.id,
+			isMiniSilenced: false,
+		});
 
-	insertModerationLog(me, "unsilence", {
-		targetId: user.id,
-	});
+		insertModerationLog(me, "mini-unsilence", {
+			targetId: user.id,
+		});
+	} else {
+		await Users.update(user.id, {
+			isSilenced: false,
+		});
+
+		publishInternalEvent("userChangeSilencedState", {
+			id: user.id,
+			isSilenced: false,
+		});
+
+		insertModerationLog(me, "unsilence", {
+			targetId: user.id,
+		});
+	}
 });

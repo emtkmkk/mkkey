@@ -141,6 +141,11 @@ export class User {
 	@Column('boolean', {
 		default: false,
 	})
+	public isMiniSilenced: boolean;
+
+	@Column('boolean', {
+		default: false,
+	})
 	public canInvite: boolean;
 
 	@Column('boolean', {

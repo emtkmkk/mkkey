@@ -94,13 +94,18 @@ export async function sleep() {
 	localStorage.setItem("openCount", "0");
 
 	if (defaultStore.state.postStartSleep) {
+		let visibility = defaultStore.state.rememberNoteVisibility
+			? defaultStore.state.visibility
+			: defaultStore.state.defaultNoteVisibility;
+
+		if ($i.isMiniSilenced && visibility === "public") {
+			visibility = "home";
+		}
 		await os.apiWithDialog("notes/create", {
 			text: `#睡眠モード を開始しました！（${period
 				.replace("min", "分")
 				.replace("hour", "時間")}） #おやすみなさい`,
-			visibility: defaultStore.state.rememberNoteVisibility
-				? defaultStore.state.visibility
-				: defaultStore.state.defaultNoteVisibility,
+			visibility,
 			localOnly: defaultStore.state.rememberNoteVisibility
 				? defaultStore.state.localAndFollower
 				: defaultStore.state.defaultNoteLocalAndFollower,

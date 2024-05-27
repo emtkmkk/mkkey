@@ -203,6 +203,12 @@
 						>{{ i18n.ts.canInvite }}</FormSwitch
 					>
 					<FormSwitch
+						v-model="miniSilenced"
+						class="_formBlock"
+						@update:modelValue="toggleMiniSilence"
+						>{{ i18n.ts.miniSilence }}</FormSwitch
+					>
+					<FormSwitch
 						v-model="silenced"
 						class="_formBlock"
 						@update:modelValue="toggleSilence"
@@ -394,6 +400,7 @@ let ips = $ref(null);
 let ap = $ref(null);
 let moderator = $ref(false);
 let canInvite = $ref(false);
+let miniSilenced = $ref(false);
 let silenced = $ref(false);
 let suspended = $ref(false);
 let driveCapacityOverrideMb: number | null = $ref(0);
@@ -434,6 +441,7 @@ function createFetcher() {
 				}
 				moderator = info.isModerator;
 				canInvite = info.canInvite;
+				miniSilenced = info.isMiniSilenced;
 				silenced = info.isSilenced;
 				suspended = info.isSuspended;
 				driveCapacityOverrideMb = user.driveCapacityOverrideMb;
@@ -496,6 +504,21 @@ async function toggleCanInvite(v) {
 	}
 }
 
+async function toggleMiniSilence(v) {
+	const confirm = await os.confirm({
+		type: "warning",
+		text: v ? i18n.ts.silenceConfirm : i18n.ts.unsilenceConfirm,
+	});
+	if (confirm.canceled) {
+		silenced = !v;
+	} else {
+		await os.api(v ? "admin/silence-user" : "admin/unsilence-user", {
+			userId: user.id,
+			mini: true,
+		});
+		await refreshUser();
+	}
+}
 async function toggleSilence(v) {
 	const confirm = await os.confirm({
 		type: "warning",

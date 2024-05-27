@@ -875,6 +875,7 @@ export const UserRepository = db.getRepository(User).extend({
 						inviteUserId: user.inviteUserId,
 						isSilentLocked: user.isSilentLocked || falsy,
 						canInvite: user.canInvite || falsy,
+						isMiniSilenced: user.isMiniSilenced || falsy,
 				  }
 				: {}),
 

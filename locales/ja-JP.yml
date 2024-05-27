@@ -1266,6 +1266,7 @@ sleepText: "一定時間、もこきーの起動がブロックされます。"
 sleepPeriod: "睡眠モードにする時間"
 postStartSleep: "睡眠モード開始／解除時に自動で投稿"
 rejectMuteReaction: "ミュートされたリアクションをされた際に、相手に伝える"
+miniSilence: "ミニサイレンス"
 
 _sensitiveMediaDetection:
   description: "機械学習を使って自動でセンシティブなメディアを検出し、モデレーションに役立てられます。サーバーの負荷が少し増えます。"

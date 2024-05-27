@@ -29,16 +29,31 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new Error("cannot silence admin");
 	}
 
-	await Users.update(user.id, {
-		isSilenced: true,
-	});
+	if (ps.mini) {
+		await Users.update(user.id, {
+			isMiniSilenced: true,
+		});
 
-	publishInternalEvent("userChangeSilencedState", {
-		id: user.id,
-		isSilenced: true,
-	});
+		publishInternalEvent("userChangeSilencedState", {
+			id: user.id,
+			isMiniSilenced: true,
+		});
 
-	insertModerationLog(me, "silence", {
-		targetId: user.id,
-	});
+		insertModerationLog(me, "mini-silence", {
+			targetId: user.id,
+		});
+	} else {
+		await Users.update(user.id, {
+			isSilenced: true,
+		});
+
+		publishInternalEvent("userChangeSilencedState", {
+			id: user.id,
+			isSilenced: true,
+		});
+
+		insertModerationLog(me, "silence", {
+			targetId: user.id,
+		});
+	}
 });

@@ -196,7 +196,7 @@ import {
 			console.log("account cache found. refreshing...");
 		}
 
-		refreshAccount();
+		await refreshAccount();
 	} else {
 		if (_DEV_) {
 			console.log("no account cache found.");
@@ -751,7 +751,7 @@ import {
 		if (!lastUsed && $i.lastActiveDate)
 			lastUsed = new Date($i.lastActiveDate).valueOf().toString();
 		if (lastUsed) {
-			let lastUsedDate = parseInt(lastUsed, 10);
+			let lastUsedDate = Number.parseInt(lastUsed, 10);
 			if (
 				$i.lastActiveDate &&
 				new Date($i.lastActiveDate).valueOf() > lastUsedDate

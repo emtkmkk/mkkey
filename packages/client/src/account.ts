@@ -124,8 +124,8 @@ export function updateAccount(accountData) {
 	localStorage.setItem("account", JSON.stringify($i));
 }
 
-export function refreshAccount() {
-	return fetchAccount($i.token).then(updateAccount);
+export async function refreshAccount() {
+	return updateAccount(await fetchAccount($i?.token));
 }
 
 export async function login(token: Account["token"], redirect?: string) {

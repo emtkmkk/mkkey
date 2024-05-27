@@ -57,7 +57,7 @@ export const api = ((
 					resolve();
 				} else {
 					if (!suppressToast) {
-						errortoast(res, body, data);
+						errortoast(res, body, endpoint, data);
 					}
 					reject(body.error);
 				}
@@ -106,7 +106,7 @@ export const apiGet = ((
 					resolve();
 				} else {
 					if (!suppressToast) {
-						errortoast(res, body, data);
+						errortoast(res, body, endpoint, data);
 					}
 					reject(body.error);
 				}
@@ -892,7 +892,7 @@ export function post(props: Record<string, any> = {}) {
 
 export const deckGlobalEvents = new EventEmitter();
 
-async function errortoast(res, body, parameter) {
+async function errortoast(res, body, endpoint, parameter) {
 	const message = body.error.message;
 
 	toast(`${[res.status, message].join(" ")}`);
@@ -901,13 +901,12 @@ async function errortoast(res, body, parameter) {
 	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
 	// エラーログのテキストを生成
-	const logtext = `${formattedDate} - ApiError: ${res} - ${JSON.stringify(
+	const logtext = `${formattedDate} - ApiError: ${res.status} - ${JSON.stringify(
 		{
 			...body,
+			endpoint: endpoint ? endpoint : undefined,
 			parameter: Object.keys(parameter).length ? parameter : undefined,
-		},
-		undefined,
-		"\t",
+		}
 	)}`;
 
 	let currentLogs = (await get("errorLog")) || [];

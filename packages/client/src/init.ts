@@ -93,7 +93,7 @@ import {
 		const currentDate = new Date();
 		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
-		const logtext = `${formattedDate} - Unhandled promise rejection: ${event.reason}`;
+		const logtext = `${formattedDate} - Unhandled promise rejection: ${typeof event.reason === "object" ? JSON.stringify(event.reason) : event.reason}`;
 
 		let currentLogs = (await get("errorLog")) || [];
 		currentLogs.push(logtext);
@@ -257,7 +257,6 @@ import {
 		// エラーログのテキストを生成
 		const logtext = `${formattedDate} - VueError: ${[
 			err?.toString(),
-			vm?.toString(),
 			info,
 		].join(" - ")}`;
 

@@ -6,6 +6,7 @@
 					display: flex;
 					align-items: flex-start;
 					flex-flow: column;
+					width: 100%
 				"
 			>
 				<div style="display: flex; align-items: center; width: 100%">
@@ -32,7 +33,7 @@
 						v-model="data[key]"
 						@update:modelValue="emitUpdate"
 					/>
-					<span v-if="checkBackground(value) || isColor(value)">
+					<span v-if="value && (checkBackground(value) || isColor(value))">
 						<MkColorInput
 							shape="circle"
 							no-style
@@ -40,7 +41,7 @@
 							v-model="data[key]"
 						></MkColorInput>
 					</span>
-					<span v-else-if="getColor(value)">
+					<span v-else-if="value && (getColor(value))">
 						<MkColorInput
 							format="rgb"
 							shape="circle"
@@ -121,6 +122,7 @@ const addProperty = () => {
 }
 
 const createObject = (key: string) => {
+	const newKey = `${key}-1`
 	localData[key] = {}
 	emitUpdate()
 }

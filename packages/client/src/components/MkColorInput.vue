@@ -54,7 +54,8 @@ const { modelValue, ...filteredProps } = toRefs(props);
 const isGradient =
 	modelValue.value &&
 	!/^#[0-9A-F]{6}$/i.test(modelValue.value) &&
-	!/^#[0-9A-F]{8}$/i.test(modelValue.value);
+	!/^#[0-9A-F]{8}$/i.test(modelValue.value) &&
+	!/^rgba?\(/i.test(modelValue.value);
 const pureColor = ref(isGradient ? "" : modelValue.value);
 const gradientColor = ref(isGradient ? modelValue.value : "");
 const activeKey = ref(isGradient ? "gradient" : "pure");
@@ -64,8 +65,8 @@ watch([pureColor, gradientColor, activeKey], () => {
 	emit(
 		"update:modelValue",
 		(activeKey.value === "gradient"
-			? gradientColor.value
-			: pureColor.value) ?? ""
+			? gradientColor.value ||　pureColor.value
+			: pureColor.value || gradientColor.value) ?? ""
 	);
 });
 </script>

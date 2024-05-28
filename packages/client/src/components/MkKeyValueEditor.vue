@@ -10,7 +10,7 @@
 				"
 			>
 				<div style="display: flex; align-items: center; width: 100%">
-					<span>{{ key }} :</span>
+					<span>{{ key + (i18n.ts._theme.keys[key] ? ` (${i18n.ts._theme.keys[key]})` : "") }} :</span>
 				</div>
 				<div style="display: flex; align-items: center; width: 100%" v-if="typeof value === 'object' && value !== null">
 					<MkKeyValueEditor :data="value" @update="updateProperty(key, $event)" />
@@ -38,13 +38,13 @@
 							@update:modelValue="updateProperty(key,data[key])"
 						></MkColorInput>
 					</span>
-					<span v-else-if="value && getColor(value)?.toRgbString()">
+					<span v-else-if="value && getColor(value, true)?.toRgbString()">
 						<MkColorInput
 							format="rgb"
 							shape="circle"
 							no-style
 							class="colorInput"
-							:model-value="getColor(value)?.toRgbString() ?? ''"
+							:model-value="getColor(value, true)?.toRgbString() ?? ''"
 							:disabled="true"
 						></MkColorInput>
 					</span>
@@ -72,6 +72,8 @@
 import { defineProps, defineEmits, reactive, toRefs, watch } from 'vue'
 import MkInput from "@/components/form/input.vue";
 import MkColorInput from "@/components/MkColorInput.vue";
+import { i18n } from "@/i18n";
+import tinycolor from "tinycolor2";
 
 const props = defineProps<{ data: Record<string, any>, isRoot?: boolean }>()
 const emit = defineEmits<{ (e: 'update', value: Record<string, any>): void }>()
@@ -119,7 +121,7 @@ function checkBackground(value) {
   return element.style.background !== '';
 }
 
-function getColor(val: string): tinycolor.Instance | undefined {
+function getColor(val: string, isRoot?: boolean): tinycolor.Instance | undefined {
 		// ref (prop)
 		if (val[0] === "@") {
 			return getColor(localData[val.substr(1)]);
@@ -155,7 +157,7 @@ function getColor(val: string): tinycolor.Instance | undefined {
 		}
 
 		// other case
-		return undefined;
+		return isRoot ? undefined : tinycolor(val);
 	}
 </script>
 

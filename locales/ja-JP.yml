@@ -1567,6 +1567,11 @@ _theme:
     accentDarken: "アクセント (暗め)"
     accentLighten: "アクセント (明るめ)"
     fgHighlighted: "強調された文字"
+    base: "元にしたテーマ"
+    desc: "テーマの説明"
+    name: "テーマの名前"
+    props: "テーマの情報"
+    author: "テーマの作者"
 _sfx:
   note: "投稿(受信)"
   noteMy: "投稿(送信)"

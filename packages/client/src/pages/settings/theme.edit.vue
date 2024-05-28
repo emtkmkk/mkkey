@@ -5,14 +5,14 @@
 			style="display: flex; gap: var(--margin); flex-wrap: wrap"
 		>
 			<FormButton
-				:disable="installThemeCode && !Object.keys(installThemeCode?.value)?.length"
+				:disable="!installThemeCode || !Object.keys(installThemeCode?.value)?.length"
 				inline
 				@click="() => preview(JSON.stringify(installThemeCode?.value, null, '\t'))"
 				><i class="ph-eye ph-bold ph-lg"></i>
 				{{ i18n.ts.preview }}</FormButton
 			>
 			<FormButton
-				:disable="installThemeCode && !Object.keys(installThemeCode?.value)?.length"
+				:disable="!installThemeCode || !Object.keys(installThemeCode?.value)?.length"
 				primary
 				inline
 				@click="() => install(JSON.stringify(installThemeCode?.value, null, '\t'))"

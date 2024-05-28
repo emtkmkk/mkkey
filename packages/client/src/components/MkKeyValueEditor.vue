@@ -32,7 +32,7 @@
 					<MkInput
 						:style="{ width: '100%' }"
 						v-model="data[key]"
-						@update:modelValue="emitUpdate"
+						@update:modelValue="updateProperty(key,data[key])"
 					/>
 					<span v-if="value && (checkBackground(value) || isColor(value))">
 						<MkColorInput
@@ -40,6 +40,7 @@
 							no-style
 							class="colorInput"
 							v-model="data[key]"
+							@update:modelValue="updateProperty(key,data[key])"
 						></MkColorInput>
 					</span>
 					<span v-else-if="value && (getColor(value))">
@@ -48,7 +49,7 @@
 							shape="circle"
 							no-style
 							class="colorInput"
-							:model-value="getColor(value)?.toRgbString()"
+							:modelValue="getColor(value)?.toRgbString()"
 							:disabled="true"
 						></MkColorInput>
 					</span>

@@ -5,7 +5,7 @@
 				<MkInput inline v-model="localKeys[key]" @update:modelValue="emitUpdateKey(key, localKeys[key])" />
 				<span>:</span>
 				<div v-if="typeof value === 'object' && value !== null">
-					<JSONEditor :data="value" @update="updateProperty(key, $event)" />
+					<MkKeyValueEditor :data="value" @update="updateProperty(key, $event)" />
 				</div>
 				<template v-else>
 					<MkInput inline v-model="data[key]" @update:modelValue="emitUpdate" />
@@ -13,7 +13,7 @@
 						<ColorPicker :color="value" @change="updateColor(key, $event)" />
 					</span>
 				</template>
-				<button v-if="!value || (typeof value === 'object' && Object.keys(value).length <= 0) || (typeof value !== 'object' && value.length <= 0)" @click="removeProperty(key)">削除</button>
+				<button v-if="!value || (typeof value === 'object' && Object.keys(value).length <= 0) || (typeof value !== 'object' && value.length <= 0)" @click="removeProperty(key)"><i class="ph-bold ph-lg ph-x"></i></button>
 			</div>
 		</div>
 		<button @click="addProperty">プロパティ追加</button>

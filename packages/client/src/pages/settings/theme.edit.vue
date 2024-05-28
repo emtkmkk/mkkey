@@ -38,6 +38,8 @@ import { ColdDeviceStorage, defaultStore } from "@/store";
 
 let installThemeCode = $ref<Record<string, any> | null>(null);
 
+let nowTheme = "";
+
 function parseThemeCode(code: string) {
 	let theme;
 
@@ -70,7 +72,12 @@ function parseThemeCode(code: string) {
 
 function preview(code: string): void {
 	const theme = parseThemeCode(code);
-	if (theme) applyTheme(theme, false);
+	if (theme && nowTheme === theme) {
+		showPreview();
+	} else {
+		nowTheme = theme;
+		applyTheme(theme, false);
+	}
 }
 
 async function install(code: string): Promise<void> {
@@ -95,6 +102,10 @@ function loadTheme() {
 
 const updateThemeData = (updatedData: Record<string, any>) => {
   installThemeCode = updatedData
+}
+
+function showPreview() {
+	os.pageWindow("/preview");
 }
 
 onActivated(() => {

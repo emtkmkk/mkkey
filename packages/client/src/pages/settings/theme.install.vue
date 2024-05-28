@@ -48,6 +48,7 @@ import { ColdDeviceStorage, defaultStore } from "@/store";
 import { defaults } from "chart.js";
 
 let installThemeCode = $ref<string | null>(null);
+let nowTheme = "";
 
 function parseThemeCode(code: string) {
 	let theme;
@@ -81,9 +82,13 @@ function parseThemeCode(code: string) {
 
 function preview(code: string): void {
 	const theme = parseThemeCode(code);
-	if (theme) applyTheme(theme, false);
+	if (theme && nowTheme === theme) {
+		showPreview();
+	} else {
+		nowTheme = theme;
+		applyTheme(theme, false);
+	}
 }
-
 async function install(code: string): Promise<void> {
 	const theme = parseThemeCode(code);
 	if (!theme) return;

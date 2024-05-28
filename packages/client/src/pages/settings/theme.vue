@@ -126,7 +126,7 @@
 						></i></template
 					>{{ i18n.ts._theme.install }}</FormLink
 				>
-				<FormLink to="/theme-editor"
+				<FormLink to="/settings/theme/editor"
 					><template #icon
 						><i
 							class="ph-paint-brush-broad ph-bold ph-lg"

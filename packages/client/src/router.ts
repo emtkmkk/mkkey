@@ -154,6 +154,11 @@ export const routes = [
 				component: page(() => import("./pages/settings/theme.manage.vue")),
 			},
 			{
+				path: "/theme/editor",
+				name: "theme",
+				component: page(() => import("./pages/settings/theme.edit.vue")),
+			},
+			{
 				path: "/theme",
 				name: "theme",
 				component: page(() => import("./pages/settings/theme.vue")),
@@ -344,7 +349,7 @@ export const routes = [
 	},
 	{
 		path: "/theme-editor",
-		component: page(() => import("./pages/settings/theme.edit.vue")),
+		component: page(() => import("./pages/theme-editor.vue")),
 		loginRequired: true,
 	},
 	{

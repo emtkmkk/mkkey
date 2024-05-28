@@ -13,6 +13,7 @@
 					<MkInput
 						:style="{ width: '100%' }"
 						v-model="localKeys[key]"
+						debounce
 						@update:modelValue="emitUpdateKey(key, localKeys[key])"
 					/>
 					<span :style="{ margin: '0.625rem' }">:</span>
@@ -74,16 +75,13 @@
 <script lang="ts" setup>
 import { defineProps, defineEmits, reactive, toRefs, watch } from 'vue'
 import MkInput from "@/components/form/input.vue";
+import MkColorInput from "@/components/MkColorInput.vue";
 
 const props = defineProps<{ data: Record<string, any>, isRoot?: boolean }>()
 const emit = defineEmits<{ (e: 'update', value: Record<string, any>): void }>()
 
 const localData = reactive({ ...props.data })
-const localKeys = reactive<{ [key: string]: string }>({})
-
-for (const key in localData) {
-	localKeys[key] = key
-}
+const localKeys = reactive<{ [key: string]: string }>(Object.fromEntries(Object.keys(localData).map(key => [key, key])))
 
 watch(() => props.data, (newData) => {
 	Object.assign(localData, newData)

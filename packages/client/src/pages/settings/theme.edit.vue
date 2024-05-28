@@ -5,14 +5,14 @@
 			style="display: flex; gap: var(--margin); flex-wrap: wrap"
 		>
 			<FormButton
-				:disable="!Object.keys(installThemeCode?.value)?.length"
+				:disable="installThemeCode && !Object.keys(installThemeCode?.value)?.length"
 				inline
 				@click="() => preview(JSON.stringify(installThemeCode?.value, null, '\t'))"
 				><i class="ph-eye ph-bold ph-lg"></i>
 				{{ i18n.ts.preview }}</FormButton
 			>
 			<FormButton
-				:disable="!Object.keys(installThemeCode?.value)?.length"
+				:disable="installThemeCode && !Object.keys(installThemeCode?.value)?.length"
 				primary
 				inline
 				@click="() => install(JSON.stringify(installThemeCode?.value, null, '\t'))"
@@ -20,7 +20,7 @@
 				{{ i18n.ts.install }}</FormButton
 			>
 		</div>
-		<MkKeyValueEditor :data="installThemeCode?.value" @update="updateThemeData" />
+		<MkKeyValueEditor v-if="installThemeCode != null" :data="installThemeCode?.value" @update="updateThemeData" />
 	</div>
 </template>
 
@@ -37,7 +37,6 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { ColdDeviceStorage, defaultStore } from "@/store";
 
 let installThemeCode = $ref<Record<string, any> | null>(null);
-let type = $ref<Record<string, string>>([]);
 
 function parseThemeCode(code: string) {
 	let theme;

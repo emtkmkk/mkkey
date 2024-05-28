@@ -11,7 +11,7 @@
 			<FormButton
 				v-show="installThemeCode == null"
 				inline
-				@click="() => loadTheme"
+				@click="() => loadTheme()"
 				><i class="ph-palette ph-bold ph-lg"></i>
 				{{ i18n.ts.loadTheme }}</FormButton
 			>

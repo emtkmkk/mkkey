@@ -1,6 +1,6 @@
 <template>
-	<div :style="{ marginLeft: !isRoot ? '0.625rem' : undefined }">
-		<div v-for="(value, key) in data" :key="key">
+	<div style="width:100%" :style="{ marginLeft: !isRoot ? '0.625rem' : undefined }">
+		<div v-for="(value, key) in data" :key="key" style="width:100%">
 			<div
 				style="
 					display: flex;
@@ -153,12 +153,12 @@ function checkBackground(value) {
 function getColor(val: string): tinycolor.Instance | undefined {
 		// ref (prop)
 		if (val[0] === "@") {
-			return getColor(localData.props[val.substr(1)]);
+			return getColor(localData[val.substr(1)]);
 		}
 
 		// ref (const)
 		if (val[0] === "$") {
-			return getColor(localData.props[val]);
+			return getColor(localData[val]);
 		}
 
 		// func

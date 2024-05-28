@@ -40,7 +40,7 @@ const props = withDefaults(defineProps<{
 		required: false,
 		readonly: false,
 		disabled: false,
-		format: "hex8",
+		format: "rgb",
 		pickerType: "chrome",
 		useType: "both",
 		noStyle: false,

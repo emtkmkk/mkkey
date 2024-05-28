@@ -10,13 +10,7 @@
 				"
 			>
 				<div style="display: flex; align-items: center; width: 100%">
-					<MkInput
-						:style="{ width: '100%' }"
-						v-model="localKeys[key]"
-						debounce
-						@update:modelValue="emitUpdateKey(key, localKeys[key])"
-					/>
-					<span :style="{ margin: '0.625rem' }">:</span>
+					<span>{{ key }} :</span>
 				</div>
 				<div style="display: flex; align-items: center; width: 100%" v-if="typeof value === 'object' && value !== null">
 					<MkKeyValueEditor :data="value" @update="updateProperty(key, $event)" />
@@ -36,6 +30,7 @@
 					/>
 					<span v-if="value && (checkBackground(value) || isColor(value))">
 						<MkColorInput
+							format="rgb"
 							shape="circle"
 							no-style
 							class="colorInput"
@@ -43,13 +38,13 @@
 							@update:modelValue="updateProperty(key,data[key])"
 						></MkColorInput>
 					</span>
-					<span v-else-if="value && (getColor(value))">
+					<span v-else-if="value && getColor(value)?.toRgbString()">
 						<MkColorInput
 							format="rgb"
 							shape="circle"
 							no-style
 							class="colorInput"
-							:modelValue="getColor(value)?.toRgbString()"
+							:model-value="getColor(value)?.toRgbString()"
 							:disabled="true"
 						></MkColorInput>
 					</span>
@@ -82,53 +77,28 @@ const props = defineProps<{ data: Record<string, any>, isRoot?: boolean }>()
 const emit = defineEmits<{ (e: 'update', value: Record<string, any>): void }>()
 
 const localData = reactive({ ...props.data })
-const localKeys = reactive<{ [key: string]: string }>(Object.fromEntries(Object.keys(localData).map(key => [key, key])))
-
-watch(() => props.data, (newData) => {
-	Object.assign(localData, newData)
-	for (const key in newData) {
-		localKeys[key] = key
-	}
-}, { deep: true })
 
 const updateProperty = (key: string, value: any) => {
 	localData[key] = value
 	emitUpdate()
 }
 const emitUpdate = () => {
-	const updatedData: Record<string, any> = {}
-	for (const key in localData) {
-		updatedData[localKeys[key]] = localData[key]
-	}
-	emit('update', updatedData)
-}
-
-const emitUpdateKey = (oldKey: string, newKey: string) => {
-	if (oldKey !== newKey) {
-		localKeys[newKey] = newKey
-		localData[newKey] = localData[oldKey]
-		delete localKeys[oldKey]
-		delete localData[oldKey]
-		emitUpdate()
-	}
+	emit('update', localData)
 }
 
 const addProperty = () => {
 	const newKey = `newProperty${Object.keys(localData).length + 1}`
 	localData[newKey] = ''
-	localKeys[newKey] = newKey
 	emitUpdate()
 }
 
 const createObject = (key: string) => {
-	const newKey = `${key}-1`
 	localData[key] = {}
 	emitUpdate()
 }
 
 const removeProperty = (key: string) => {
 	delete localData[key]
-	delete localKeys[key]
 	emitUpdate()
 }
 
@@ -201,12 +171,10 @@ button {
 
 .colorInput {
 	height: 100%;
-	aspect-ratio: 1 / 1;
 }
 
 .add .delete {
 	height: 100%;
-	aspect-ratio: 1 / 1;
 	padding: 0.3125rem;
 }
 </style>

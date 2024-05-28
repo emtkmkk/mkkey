@@ -52,7 +52,7 @@ const toggle = () => {
 	width: 100%;
 	> span {
 		display: inline-block;
-		background: var(--panel);
+		background: var(--tlPanel);
 		padding: 0.4em 1em;
 		font-size: 0.8em;
 		border-radius: 999px;
@@ -60,7 +60,7 @@ const toggle = () => {
 	}
 	&:hover {
 		> span {
-			background: var(--panelHighlight);
+			background: var(--tlPanelHighlight);
 		}
 	}
 }
@@ -72,7 +72,7 @@ const toggle = () => {
 
 	> span {
 		display: inline-block;
-		background: var(--panel);
+		background: var(--tlPanel);
 		padding: 0.375rem 0.625rem;
 		font-size: 0.8em;
 		border-radius: 999px;

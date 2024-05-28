@@ -27,12 +27,12 @@ export async function addTheme(theme: Theme): Promise<void> {
 	theme.name = theme.name.replace(/\\(v\\d+\\)$/, "");
 	await fetchThemes();
 	const sameName = getThemes().filter((x) =>
-		new RegExp(`^${theme.name}(\\(v\\d+\\))?$`).test(x.name),
+		x.id !== theme.id && new RegExp(`^${theme.name}(\\(v\\d+\\))?$`).test(x.name),
 	);
 	if (sameName.length) {
 		theme.name = `${theme.name}(v${sameName.length + 1})`;
 	}
-	const themes = getThemes().concat(theme);
+	const themes = getThemes().filter((x) => x.id !== theme.id).concat(theme);
 	await api("i/registry/set", {
 		scope: ["client"],
 		key: "themes",

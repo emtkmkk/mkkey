@@ -64,14 +64,14 @@ defineExpose({
 .giivymft {
 	&.noGap {
 		> .notes {
-			background: var(--panel) !important;
+			background: var(--tlPanel) !important;
 			border-radius: var(--radius);
 		}
 	}
 	&:not(.noGap) {
 		> .notes {
 			.qtqtichx {
-				background: var(--panel);
+				background: var(--tlPanel);
 				border-radius: var(--radius);
 			}
 		}

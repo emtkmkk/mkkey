@@ -75,6 +75,7 @@ function parseThemeCode(code: string) {
 		});
 		return false;
 	}
+	/*
 	if (getThemes().some((t) => t.id === theme.id)) {
 		os.alert({
 			type: "info",
@@ -82,6 +83,7 @@ function parseThemeCode(code: string) {
 		});
 		return false;
 	}
+	*/
 
 	return theme;
 }

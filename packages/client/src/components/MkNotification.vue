@@ -554,8 +554,8 @@ useTooltip(reactionRef, (showing) => {
 			height: 1.25rem;
 			box-sizing: border-box;
 			border-radius: 100%;
-			background: var(--panel);
-			box-shadow: 0 0 0 0.1875rem var(--panel);
+			background: var(--tlPanel);
+			box-shadow: 0 0 0 0.1875rem var(--tlPanel);
 			font-size: 0.75rem;
 			text-align: center;
 

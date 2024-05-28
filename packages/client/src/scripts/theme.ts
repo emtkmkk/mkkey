@@ -14,6 +14,7 @@ export type Theme = {
 import lightTheme from "@/themes/_light.json5";
 import darkTheme from "@/themes/_dark.json5";
 import { deepClone } from "./clone";
+import { v4 as uuid } from "uuid";
 
 export const themeProps = Object.keys(lightTheme.props).filter(
 	(key) => !key.startsWith("X"),
@@ -163,7 +164,7 @@ function genValue(c: tinycolor.Instance): string {
 }
 
 export function validateTheme(theme: Record<string, any>): boolean {
-	if (theme.id == null || typeof theme.id !== "string") return false;
+	if (theme.id == null || typeof theme.id !== "string") theme.id = uuid();
 	if (theme.name == null || typeof theme.name !== "string") return false;
 	if (theme.base == null || !["light", "dark"].includes(theme.base))
 		return false;

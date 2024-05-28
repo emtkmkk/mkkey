@@ -46,6 +46,8 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { ColdDeviceStorage, defaultStore } from "@/store";
 import { defaults } from "chart.js";
+import lightTheme from "@/themes/_light.json5";
+import darkTheme from "@/themes/_dark.json5";
 
 let installThemeCode = $ref<string | null>(null);
 let nowTheme = "";
@@ -102,19 +104,29 @@ async function install(code: string): Promise<void> {
 function loadTheme() {
 	const darkMode = defaultStore.state.darkMode;
 
+	let theme;
 	if (darkMode) {
-		installThemeCode = JSON5.stringify(
-			ColdDeviceStorage.ref("darkTheme")?.value,
-			null,
-			"\t"
-		);
+		theme = ColdDeviceStorage.ref("darkTheme")?.value;
 	} else {
-		installThemeCode = JSON5.stringify(
-			ColdDeviceStorage.ref("lightTheme")?.value,
-			null,
-			"\t"
-		);
+		theme = ColdDeviceStorage.ref("lightTheme")?.value;
 	}
+	
+	if (theme?.base) {
+		const base = [lightTheme, darkTheme].find(
+			(x) => x.id === theme?.base
+		);
+		if (base)
+			theme.props = Object.assign(
+				{},
+				base.props,
+				theme.props
+			);
+	}
+	installThemeCode = JSON5.stringify(
+		theme,
+		null,
+		"\t"
+	);
 }
 
 const headerActions = $computed(() => []);

@@ -181,7 +181,7 @@ const vote = async (id) => {
 				position: relative;
 				display: inline-block;
 				padding: 0.1875rem 0.3125rem;
-				background: var(--panel);
+				background: var(--tlPanel);
 				border-radius: 0.1875rem;
 
 				> i {

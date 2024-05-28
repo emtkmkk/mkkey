@@ -148,7 +148,7 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .elsfgstc {
-	background: var(--panel);
+	background: var(--tlPanel);
 	border-radius: var(--radius);
 }
 </style>

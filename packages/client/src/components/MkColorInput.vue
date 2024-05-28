@@ -10,7 +10,10 @@
 				v-bind="filteredProps"
 				:class="noStyle ? undefined : $style.inputCore"
 				:picker-type="pickerType"
+				:format="format"
+				:sharp="sharp"
 				:use-type="useType"
+				:z-index="2000000"
 				lang="En"
 				:theme="defaultStore.state.darkMode ? 'black' : 'white'"
 				><slot></slot
@@ -34,6 +37,7 @@ const props = withDefaults(defineProps<{
 	format?: string;
 	pickerType?: string;
 	useType?: string;
+	sharp?: string;
 	noStyle?: boolean;
 }>(),
 	{
@@ -43,6 +47,7 @@ const props = withDefaults(defineProps<{
 		format: "rgb",
 		pickerType: "chrome",
 		useType: "both",
+		sharp: "square",
 		noStyle: false,
 	});
 
@@ -65,7 +70,7 @@ watch([pureColor, gradientColor, activeKey], () => {
 	emit(
 		"update:modelValue",
 		(activeKey.value === "gradient"
-			? gradientColor.value ||　pureColor.value
+			? gradientColor.value || pureColor.value
 			: pureColor.value || gradientColor.value) ?? ""
 	);
 });

@@ -69,17 +69,29 @@ html {
 
 		&::-webkit-scrollbar-track {
 			background: inherit;
+			background-size: cover;
+			background-size: auto calc(100dvh - var(--minBottomSpacingMobile));
+			background-attachment: fixed;
 		}
 
 		&::-webkit-scrollbar-thumb {
 			background: var(--scrollbarHandle);
+			background-size: cover;
+			background-size: auto calc(100dvh - var(--minBottomSpacingMobile));
+			background-attachment: fixed;
 
 			&:hover {
 				background: var(--scrollbarHandleHover);
+				background-size: cover;
+				background-size: auto calc(100dvh - var(--minBottomSpacingMobile));
+				background-attachment: fixed;
 			}
 
 			&:active {
 				background: var(--accent);
+				background-size: cover;
+				background-size: auto calc(100dvh - var(--minBottomSpacingMobile));
+				background-attachment: fixed;
 			}
 		}
 	}

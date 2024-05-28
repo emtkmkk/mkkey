@@ -393,7 +393,7 @@ function focusFooter(ev) {
 					transition: background 0.2s;
 					&:hover,
 					&:focus-within {
-						background: var(--panelHighlight);
+						background: var(--tlPanelHighlight);
 					}
 				}
 			}
@@ -408,7 +408,7 @@ function focusFooter(ev) {
 						transition: background 0.2s;
 						&:hover,
 						&:focus-within {
-							background: var(--panelHighlight);
+							background: var(--tlPanelHighlight);
 						}
 					}
 				}
@@ -475,7 +475,7 @@ function focusFooter(ev) {
 				width: 100%;
 				> span {
 					display: inline-block;
-					background: var(--panel);
+					background: var(--tlPanel);
 					padding: 0.4em 1em;
 					font-size: 0.8em;
 					border-radius: 999px;
@@ -483,7 +483,7 @@ function focusFooter(ev) {
 				}
 				&:hover {
 					> span {
-						background: var(--panelHighlight);
+						background: var(--tlPanelHighlight);
 					}
 				}
 			}
@@ -497,7 +497,7 @@ function focusFooter(ev) {
 
 			> span {
 				display: inline-block;
-				background: var(--panel);
+				background: var(--tlPanel);
 				padding: 0.375rem 0.625rem;
 				font-size: 0.8em;
 				border-radius: 999px;

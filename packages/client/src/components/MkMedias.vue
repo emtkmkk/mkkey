@@ -158,7 +158,7 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 
 .gif {
 	position: absolute;
-	background-color: var(--fg);
+	background: var(--fg);
 	border-radius: 0.375rem;
 	color: var(--accentLighten);
 	display: inline-block;

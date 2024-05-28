@@ -5,22 +5,34 @@
 			style="display: flex; gap: var(--margin); flex-wrap: wrap"
 		>
 			<FormButton
-				:disable="!installThemeCode || !Object.keys(installThemeCode)?.length"
+				:disable="
+					!installThemeCode || !Object.keys(installThemeCode)?.length
+				"
 				inline
-				@click="() => preview(JSON5.stringify(installThemeCode, null, '\t'))"
+				@click="
+					() => preview(JSON5.stringify(installThemeCode, null, '\t'))
+				"
 				><i class="ph-eye ph-bold ph-lg"></i>
 				{{ i18n.ts.preview }}</FormButton
 			>
 			<FormButton
-				:disable="!installThemeCode || !Object.keys(installThemeCode)?.length"
+				:disable="
+					!installThemeCode || !Object.keys(installThemeCode)?.length
+				"
 				primary
-				inlinet
-				@click="() => install(JSON5.stringify(installThemeCode, null, '\t'))"
+				inline
+				@click="
+					() => install(JSON5.stringify(installThemeCode, null, '\t'))
+				"
 				><i class="ph-check ph-bold ph-lg"></i>
 				{{ i18n.ts.install }}</FormButton
 			>
 		</div>
-		<MkKeyValueEditor v-if="installThemeCode != null" :data="installThemeCode" @update="updateThemeData" />
+		<MkKeyValueEditor
+			v-if="installThemeCode != null"
+			:data="installThemeCode"
+			@update="updateThemeData"
+		/>
 	</div>
 </template>
 
@@ -35,6 +47,8 @@ import { addTheme, getThemes } from "@/theme-store";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { ColdDeviceStorage, defaultStore } from "@/store";
+import lightTheme from "@/themes/_light.json5";
+import darkTheme from "@/themes/_dark.json5";
 
 let installThemeCode = $ref<Record<string, any> | null>(null);
 
@@ -48,7 +62,9 @@ function parseThemeCode(code: string) {
 	} catch (err) {
 		os.alert({
 			type: "error",
-			text: [i18n.ts._theme.invalid, err?.message].filter(Boolean).join("\n"),
+			text: [i18n.ts._theme.invalid, err?.message]
+				.filter(Boolean)
+				.join("\n"),
 		});
 		return false;
 	}
@@ -98,11 +114,22 @@ function loadTheme() {
 	} else {
 		installThemeCode = ColdDeviceStorage.ref("lightTheme")?.value;
 	}
+	if (installThemeCode?.base) {
+		const base = [lightTheme, darkTheme].find(
+			(x) => x.id === installThemeCode?.base
+		);
+		if (base)
+			installThemeCode.props = Object.assign(
+				{},
+				base.props,
+				installThemeCode.props
+			);
+	}
 }
 
 const updateThemeData = (updatedData: Record<string, any>) => {
-  installThemeCode = updatedData
-}
+	installThemeCode = updatedData;
+};
 
 function showPreview() {
 	os.pageWindow("/preview");

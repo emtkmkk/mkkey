@@ -584,7 +584,7 @@ console.log(mainRouter.currentRoute.value.name);
 		}
 
 		&:active {
-			background-color: var(--accentedBg);
+			background: var(--accentedBg);
 			background-size: 100%;
 			transition: background 0.1s;
 		}
@@ -600,7 +600,7 @@ console.log(mainRouter.currentRoute.value.name);
 		display: flex;
 		width: 100%;
 		box-sizing: border-box;
-		background-color: var(--bg);
+		background: var(--bg);
 
 		> .button {
 			position: relative;
@@ -614,7 +614,7 @@ console.log(mainRouter.currentRoute.value.name);
 			color: var(--fg);
 
 			&:active {
-				background-color: var(--accentedBg);
+				background: var(--accentedBg);
 				background-size: 100%;
 				transition: background 0.1s;
 			}
@@ -624,7 +624,7 @@ console.log(mainRouter.currentRoute.value.name);
 				justify-content: center;
 
 				&.on {
-					background-color: var(--accentedBg);
+					background: var(--accentedBg);
 					width: 100%;
 					border-radius: 999px;
 					transform: translateY(-0.5em);

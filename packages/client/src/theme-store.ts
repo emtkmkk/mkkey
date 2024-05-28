@@ -24,11 +24,13 @@ export async function fetchThemes(): Promise<void> {
 }
 
 export async function addTheme(theme: Theme): Promise<void> {
-	theme.name = theme.name.replace(/\\(v\\d+\\)$/,"");
+	theme.name = theme.name.replace(/\\(v\\d+\\)$/, "");
 	await fetchThemes();
-	const sameName = getThemes().filter((x) => new RegExp(`^${theme.name}(\\(v\\d+\\))?$`).test(x.name));
+	const sameName = getThemes().filter((x) =>
+		new RegExp(`^${theme.name}(\\(v\\d+\\))?$`).test(x.name),
+	);
 	if (sameName.length) {
-		theme.name = `${theme.name}(v${sameName.length + 1})`
+		theme.name = `${theme.name}(v${sameName.length + 1})`;
 	}
 	const themes = getThemes().concat(theme);
 	await api("i/registry/set", {

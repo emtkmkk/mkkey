@@ -901,13 +901,13 @@ async function errortoast(res, body, endpoint, parameter) {
 	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
 	// エラーログのテキストを生成
-	const logtext = `${formattedDate} - ApiError: ${res.status} - ${JSON.stringify(
-		{
-			...body,
-			endpoint: endpoint ? endpoint : undefined,
-			parameter: Object.keys(parameter).length ? parameter : undefined,
-		}
-	)}`;
+	const logtext = `${formattedDate} - ApiError: ${
+		res.status
+	} - ${JSON.stringify({
+		...body,
+		endpoint: endpoint ? endpoint : undefined,
+		parameter: Object.keys(parameter).length ? parameter : undefined,
+	})}`;
 
 	let currentLogs = (await get("errorLog")) || [];
 	currentLogs.push(logtext);

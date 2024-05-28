@@ -103,9 +103,17 @@ function loadTheme() {
 	const darkMode = defaultStore.state.darkMode;
 
 	if (darkMode) {
-		installThemeCode = JSON5.stringify(ColdDeviceStorage.ref("darkTheme")?.value, null, "\t");
+		installThemeCode = JSON5.stringify(
+			ColdDeviceStorage.ref("darkTheme")?.value,
+			null,
+			"\t"
+		);
 	} else {
-		installThemeCode = JSON5.stringify(ColdDeviceStorage.ref("lightTheme")?.value, null, "\t");
+		installThemeCode = JSON5.stringify(
+			ColdDeviceStorage.ref("lightTheme")?.value,
+			null,
+			"\t"
+		);
 	}
 }
 

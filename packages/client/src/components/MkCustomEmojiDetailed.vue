@@ -302,7 +302,7 @@ onMounted(async () => {
 	display: inline-block;
 	word-break: break-all;
 	padding: 0.1875rem 0.625rem;
-	background-color: var(--X5);
+	background: var(--X5);
 	border: solid 0.0625rem var(--divider);
 	border-radius: var(--radius);
 }

@@ -264,7 +264,7 @@ onBeforeUnmount(() => {
 }
 
 .blocking {
-	background-color: var(--bg) !important;
+	background: var(--bg) !important;
 	border: none;
 }
 </style>

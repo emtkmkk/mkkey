@@ -44,7 +44,7 @@ function toggle(): void {
 	cursor: pointer;
 	padding: 0.5rem 0.625rem;
 	min-width: 3.75rem;
-	background-color: var(--panel);
+	background: var(--panel);
 	background-clip: padding-box !important;
 	border: solid 0.0625rem var(--panel);
 	border-radius: 0.375rem;
@@ -71,7 +71,7 @@ function toggle(): void {
 	}
 
 	&.checked {
-		background-color: var(--accentedBg) !important;
+		background: var(--accentedBg) !important;
 		border-color: var(--accentedBg) !important;
 		color: var(--accent);
 
@@ -84,7 +84,7 @@ function toggle(): void {
 			border-color: var(--accent);
 
 			&:after {
-				background-color: var(--accent);
+				background: var(--accent);
 				transform: scale(1);
 				opacity: 1;
 			}

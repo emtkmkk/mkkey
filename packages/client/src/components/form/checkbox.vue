@@ -134,7 +134,7 @@ const toggle = () => {
 
 	&.checked {
 		> .button {
-			background-color: var(--accent) !important;
+			background: var(--accent) !important;
 			border-color: var(--accent) !important;
 
 			> .check {

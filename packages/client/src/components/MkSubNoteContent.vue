@@ -393,7 +393,7 @@ function focusFooter(ev) {
 					transition: background 0.2s;
 					&:hover,
 					&:focus-within {
-						background-color: var(--panelHighlight);
+						background: var(--panelHighlight);
 					}
 				}
 			}
@@ -408,7 +408,7 @@ function focusFooter(ev) {
 						transition: background 0.2s;
 						&:hover,
 						&:focus-within {
-							background-color: var(--panelHighlight);
+							background: var(--panelHighlight);
 						}
 					}
 				}

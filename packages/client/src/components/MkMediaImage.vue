@@ -150,7 +150,7 @@ watch(
 		display: block;
 		position: absolute;
 		border-radius: 0.375rem;
-		background-color: var(--accentedBg);
+		background: var(--accentedBg);
 		-webkit-backdrop-filter: var(--blur, blur(15px));
 		backdrop-filter: var(--blur, blur(15px));
 		color: var(--accent);
@@ -181,7 +181,7 @@ watch(
 
 		> .gif {
 			position: absolute;
-			background-color: var(--fg);
+			background: var(--fg);
 			border-radius: 0.375rem;
 			color: var(--accentLighten);
 			display: inline-block;

@@ -41,7 +41,7 @@
 
 ::selection {
 	color: #fff;
-	background-color: var(--accent);
+	background: var(--accent);
 }
 
 html {
@@ -675,23 +675,23 @@ rt {
 }
 
 .colored.localOnly {
-	background-color: rgba(var(--localOnlyColor), 0.20) !important;
+	background-color: rgba(var(--localOnlyColor)) !important;
 }
 
 .colored.v-home {
-	background-color: rgba(var(--homeColor), 0.20) !important;
+	background-color: rgba(var(--homeColor)) !important;
 }
 
 .colored.v-followers {
-	background-color: rgba(var(--followerColor), 0.20) !important;
+	background-color: rgba(var(--followerColor)) !important;
 }
 
 .colored.v-specified {
-	background-color: rgba(var(--specifiedColor), 0.20) !important;
+	background-color: rgba(var(--specifiedColor)) !important;
 }
 
 .colored.v-circle {
-	background-color: rgba(var(--circleColor), 0.20) !important;
+	background-color: rgba(var(--circleColor)) !important;
 }
 
 @keyframes blink {

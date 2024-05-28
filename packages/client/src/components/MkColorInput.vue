@@ -2,43 +2,75 @@
 	<div>
 		<div :class="$style.label"><slot name="label"></slot></div>
 		<div :class="[$style.input, { disabled }]">
-			<input
+			<ColorPicker
 				ref="inputEl"
-				v-model="v"
-				v-adaptive-border
-				:class="$style.inputCore"
-				type="color"
-				:disabled="disabled"
-				:required="required"
-				:readonly="readonly"
-				@input="onInput"
-			/>
+				v-model:pureColor="pureColor"
+				v-model:gradientColor="gradientColor"
+				v-model:activeKey="activeKey"
+				v-bind="filteredProps"
+				:class="noStyle ? undefined : $style.inputCore"
+				:picker-type="pickerType"
+				:use-type="useType"
+				lang="En"
+				:theme="defaultStore.state.darkMode ? 'black' : 'white'"
+				><slot></slot
+			></ColorPicker>
 		</div>
 		<div :class="$style.caption"><slot name="caption"></slot></div>
 	</div>
 </template>
 
 <script lang="ts" setup>
-import { ref, shallowRef, toRefs } from "vue";
+import { ref, shallowRef, toRefs, watch } from "vue";
+import { defaultStore } from "@/store";
+import { ColorPicker } from "vue3-colorpicker";
+import "vue3-colorpicker/style.css";
 
 const props = defineProps<{
 	modelValue: string | null;
 	required?: boolean;
 	readonly?: boolean;
 	disabled?: boolean;
+	format: {
+		type: string;
+		default: "hex8";
+	};
+	pickerType: {
+		type: string;
+		default: "chrome";
+	};
+	useType: {
+		type: string;
+		default: "both";
+	};
+	noStyle: {
+		type: boolean;
+		default: false;
+	};
 }>();
 
 const emit = defineEmits<{
 	(ev: "update:modelValue", value: string): void;
 }>();
 
-const { modelValue } = toRefs(props);
-const v = ref(modelValue.value);
+const { modelValue, ...filteredProps } = toRefs(props);
+const isGradient =
+	modelValue.value &&
+	!/^#[0-9A-F]{6}$/i.test(modelValue.value) &&
+	!/^#[0-9A-F]{8}$/i.test(modelValue.value);
+const pureColor = ref(isGradient ? "" : modelValue.value);
+const gradientColor = ref(isGradient ? modelValue.value : "");
+const activeKey = ref(isGradient ? "gradient" : "pure");
 const inputEl = shallowRef<HTMLElement>();
 
-const onInput = () => {
-	emit("update:modelValue", v.value ?? "");
-};
+watch([pureColor, gradientColor, activeKey], () => {
+	emit(
+		"update:modelValue",
+		(activeKey.value === "gradient"
+			? gradientColor.value
+			: pureColor.value) ?? ""
+	);
+});
 </script>
 
 <style lang="scss" module>
@@ -73,7 +105,7 @@ const onInput = () => {
 	}
 
 	&.disabled {
-		opacity: 0.7;
+		pointer-events: none;
 
 		&,
 		> .inputCore {

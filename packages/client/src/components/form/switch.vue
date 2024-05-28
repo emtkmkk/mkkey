@@ -135,7 +135,7 @@ const toggle = () => {
 
 	&.checked {
 		> .button {
-			background-color: var(--swutchOnBg) !important;
+			background: var(--swutchOnBg) !important;
 			border-color: var(--swutchOnBg) !important;
 
 			> .knob {

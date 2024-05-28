@@ -487,7 +487,7 @@ async function deleteProfile() {
 
 					> .new {
 						font-size: 1.25rem;
-						background-color: var(--accentedBg);
+						background: var(--accentedBg);
 						display: flex;
 						align-items: center;
 						justify-content: center;

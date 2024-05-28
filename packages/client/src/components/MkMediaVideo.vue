@@ -104,7 +104,7 @@ const hide = ref(
 		display: block;
 		position: absolute;
 		border-radius: 0.375rem;
-		background-color: var(--fg);
+		background: var(--fg);
 		color: var(--accentLighten);
 		font-size: 0.875rem;
 		opacity: 0.5;

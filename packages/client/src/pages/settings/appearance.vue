@@ -430,15 +430,22 @@ const localOnlyColor = computed(
 );
 
 function hexToRgb(hex) {
-	// 16進数のカラーコードから "#" を除去
-	hex = hex.replace(/^#/, "");
+	if (/^#[0-9A-F]{6}$/i.test(hex) || /^#[0-9A-F]{8}$/i.test(hex)) {
+		// 16進数のカラーコードから "#" を除去
+		hex = hex.replace(/^#/, "");
 
-	// 16進数をRGBに変換
-	const r = parseInt(hex.substring(0, 2), 16);
-	const g = parseInt(hex.substring(2, 4), 16);
-	const b = parseInt(hex.substring(4, 6), 16);
+		// 16進数をRGBに変換
+		const r = Number.parseInt(hex.substring(0, 2), 16);
+		const g = Number.parseInt(hex.substring(2, 4), 16);
+		const b = Number.parseInt(hex.substring(4, 6), 16);
+		let a = 32;
+		if (hex.length >= 8) {
+			a = Number.parseInt(hex.substring(6, 8), 16);
+		}
 
-	return `${r},${g},${b}`;
+		return `${r},${g},${b},${a}`;
+	}
+	return hex;
 }
 
 document.documentElement.style.setProperty(

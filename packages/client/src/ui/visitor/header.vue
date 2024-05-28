@@ -174,7 +174,7 @@ export default defineComponent({
 	line-height: $height;
 	-webkit-backdrop-filter: var(--blur, blur(32px));
 	backdrop-filter: var(--blur, blur(32px));
-	background-color: var(--X16);
+	background: var(--X16);
 
 	> .wide {
 		> .content {

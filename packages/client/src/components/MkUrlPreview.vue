@@ -332,7 +332,7 @@ onUnmounted(() => {
 		&:hover,
 		&:focus-within {
 			text-decoration: none;
-			background-color: var(--panelHighlight);
+			background: var(--panelHighlight);
 			> article > header > h1 {
 				text-decoration: underline;
 			}

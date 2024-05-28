@@ -197,7 +197,7 @@ export default defineComponent({
 	z-index: 1000;
 	width: 100%;
 	height: $height;
-	background-color: var(--bg);
+	background: var(--bg);
 
 	> .body {
 		max-width: 86.25rem;

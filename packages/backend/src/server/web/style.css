@@ -1,5 +1,5 @@
 html {
-	background-color: var(--bg);
+	background: var(--bg);
 	color: var(--fg);
 }
 
@@ -11,7 +11,7 @@ html {
 	width: 100vw;
 	height: 100vh;
 	cursor: wait;
-	background-color: var(--bg);
+	background: var(--bg);
 	opacity: 1;
 	transition: opacity 0.2s ease;
 }

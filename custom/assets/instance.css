@@ -36,20 +36,20 @@ span > i.ph-bold.ph-hand-fist::before{
 
 .tkcbzcuz>.article>.main>.body>.content>.renote>*,
 .yohlumlk[data-v-db9cdae8]{
-    background-color: var(--panel) !important;
+    background: var(--panel) !important;
 }
 .tkcbzcuz>.article>.main>.body>.content>.renote>*:has(.ph-house),
 .yohlumlk[data-v-db9cdae8]:has(.ph-house) {
     background-color: rgba(36, 190, 56, 0) !important;
 }
 .mk-url-preview>.link{
-        background-color: var(--panel) !important;
+        background: var(--panel) !important;
 }
 .hkzvhatu.canToggle{
-        background-color: var(--panel);
+        background: var(--panel);
 }
 .hkzvhatu.reacted, .hkzvhatu.reacted:hover{
-    background-color: var(--accentLighten);
+    background: var(--accentLighten);
 }
 
 .hkzvhatu.canToggle {

@@ -108,7 +108,9 @@
 						@click="ok"
 						>{{
 							showCancelButton || input || select
-								? okText ? okText : i18n.ts.ok
+								? okText
+									? okText
+									: i18n.ts.ok
 								: i18n.ts.gotIt
 						}}</MkButton
 					>
@@ -116,7 +118,9 @@
 						v-if="showCancelButton || input || select"
 						inline
 						@click="cancel"
-						>{{ cancelText ? cancelText : i18n.ts.cancel }}</MkButton
+						>{{
+							cancelText ? cancelText : i18n.ts.cancel
+						}}</MkButton
 					>
 				</div>
 				<div v-else>

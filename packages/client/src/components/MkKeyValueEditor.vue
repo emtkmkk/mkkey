@@ -1,31 +1,68 @@
 <template>
-	<div>
-		<div v-for="(value, key) in data" :key="key" style="margin-left: 20px;">
-			<div style="display: flex; align-items: center;">
-				<MkInput inline v-model="localKeys[key]" @update:modelValue="emitUpdateKey(key, localKeys[key])" />
-				<span>:</span>
-				<div v-if="typeof value === 'object' && value !== null">
-					<MkKeyValueEditor :data="value" @update="updateProperty(key, $event)" />
+	<div :style="{ marginLeft: !isRoot ? '0.625rem' : undefined }">
+		<div v-for="(value, key) in data" :key="key">
+			<div
+				style="
+					display: flex;
+					align-items: flex-start;
+					flex-flow: column;
+				"
+			>
+				<div style="display: flex; align-items: center">
+					<MkInput
+						:style="{ width: '100%' }"
+						v-model="localKeys[key]"
+						@update:modelValue="emitUpdateKey(key, localKeys[key])"
+					/>
+					<span :style="{ margin: '0.625rem' }">:</span>
 				</div>
-				<template v-else>
-					<MkInput inline v-model="data[key]" @update:modelValue="emitUpdate" />
-					<span v-if="isColor(value)" style="margin-left: 5px;">
-						<ColorPicker :color="value" @change="updateColor(key, $event)" />
+				<div style="display: flex; align-items: center">
+					<MkInput
+						:style="{ width: '100%' }"
+						v-model="data[key]"
+						@update:modelValue="emitUpdate"
+					/>
+					<span v-if="getColor(value) || checkBackground(value)">
+						<MkColorInput
+							format="rgb"
+							shape="circle"
+							no-style
+							class="colorInput"
+							v-model="data[key]"
+						></MkColorInput>
 					</span>
-				</template>
-				<button v-if="!value || (typeof value === 'object' && Object.keys(value).length <= 0) || (typeof value !== 'object' && value.length <= 0)" @click="removeProperty(key)"><i class="ph-bold ph-lg ph-x"></i></button>
+					<span v-else-if="getColor(value)">
+						<MkColorInput
+							format="rgb"
+							shape="circle"
+							no-style
+							class="colorInput"
+							:model-value="getColor(value)?.toRgbString()"
+							:disabled="true"
+						></MkColorInput>
+					</span>
+					<button
+						v-if="!value"
+						class="_button delete"
+						@click="removeProperty(key)"
+					>
+						<i class="ph-bold ph-lg ph-x"></i>
+					</button>
+				</div>
 			</div>
 		</div>
-		<button @click="addProperty">プロパティ追加</button>
+		<br />
+		<button class="_button add" @click="addProperty">
+			<i class="ph-plus ph-bold ph-lg"></i>
+		</button>
 	</div>
 </template>
 
 <script lang="ts" setup>
 import { defineProps, defineEmits, reactive, toRefs, watch } from 'vue'
 import MkInput from "@/components/form/input.vue";
-import { ColorPicker } from 'vue3-colorpicker';
 
-const props = defineProps<{ data: Record<string, any> }>()
+const props = defineProps<{ data: Record<string, any>, isRoot?: boolean }>()
 const emit = defineEmits<{ (e: 'update', value: Record<string, any>): void }>()
 
 const localData = reactive({ ...props.data })
@@ -79,22 +116,74 @@ const removeProperty = (key: string) => {
 }
 const isColor = (value: any): boolean => {
   if (typeof value !== 'string') return false
-  return /^rgba?\(/.test(value) || /^#([0-9A-F]{3}){1,2}$/i.test(value)
+  return /^rgba?\(/.test(value) || /^#([0-9A-F]{3}){1,2}$/i.test(value) || /^#([0-9A-F]{8})$/i.test(value)
 }
 
-const updateColor = (color: any, key: string) => {
-  const rgba = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
-  updateProperty(key, rgba);
+function checkBackground(value) {
+	const element = document.createElement('div');
+  element.style.background = '';
+  element.style.background = value;
+  return element.style.background !== '';
 }
+
+function getColor(val: string): tinycolor.Instance | undefined {
+		// ref (prop)
+		if (val[0] === "@") {
+			return getColor(localData.props[val.substr(1)]);
+		}
+
+		// ref (const)
+		if (val[0] === "$") {
+			return getColor(localData.props[val]);
+		}
+
+		// func
+		try {
+			if (val[0] === ":") {
+				const parts = val.split("<");
+				const func = parts.shift().substr(1);
+				const arg = Number.parseFloat(parts.shift());
+				const color = getColor(parts.join("<"));
+
+				switch (func) {
+					case "darken":
+						return color?.darken(arg);
+					case "lighten":
+						return color?.lighten(arg);
+					case "alpha":
+						return color?.setAlpha(arg);
+					case "hue":
+						return color?.spin(arg);
+					case "saturate":
+						return color?.saturate(arg);
+				}
+			}
+		} catch {
+		}
+
+		// other case
+		return undefined;
+	}
 </script>
 
 <style scoped>
 label {
 	font-weight: bold;
-	margin-right: 10px;
+	margin-right: 0.625rem;
 }
 
 button {
-	margin-left: 5px;
+	margin-left: 0.3125rem;
+}
+
+.colorInput {
+	height: 100%;
+	aspect-ratio: 1 / 1;
+}
+
+.add .delete {
+	height: 100%;
+	aspect-ratio: 1 / 1;
+	padding: 0.3125rem;
 }
 </style>

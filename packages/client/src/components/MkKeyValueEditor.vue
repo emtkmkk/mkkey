@@ -8,7 +8,7 @@
 					flex-flow: column;
 				"
 			>
-				<div style="display: flex; align-items: center">
+				<div style="display: flex; align-items: center; width: 100%">
 					<MkInput
 						:style="{ width: '100%' }"
 						v-model="localKeys[key]"
@@ -16,15 +16,24 @@
 					/>
 					<span :style="{ margin: '0.625rem' }">:</span>
 				</div>
-				<div style="display: flex; align-items: center">
+				<div style="display: flex; align-items: center; width: 100%" v-if="typeof value === 'object' && value !== null">
+					<MkKeyValueEditor :data="value" @update="updateProperty(key, $event)" />
+					<button
+						v-if="Object.keys(value).length <= 0"
+						class="_button delete"
+						@click="removeObject(key)"
+					>
+						<i class="ph-bold ph-lg ph-x"></i>
+					</button>
+				</div>
+				<div v-else style="display: flex; align-items: center; width: 100%">
 					<MkInput
 						:style="{ width: '100%' }"
 						v-model="data[key]"
 						@update:modelValue="emitUpdate"
 					/>
-					<span v-if="getColor(value) || checkBackground(value)">
+					<span v-if="checkBackground(value) || isColor(value)">
 						<MkColorInput
-							format="rgb"
 							shape="circle"
 							no-style
 							class="colorInput"
@@ -41,6 +50,9 @@
 							:disabled="true"
 						></MkColorInput>
 					</span>
+					<button v-if="!value" class="_button add" @click="createObject(key)">
+						<i class="ph-plus ph-bold ph-lg"></i>
+					</button>
 					<button
 						v-if="!value"
 						class="_button delete"
@@ -83,7 +95,6 @@ const updateProperty = (key: string, value: any) => {
 	localData[key] = value
 	emitUpdate()
 }
-
 const emitUpdate = () => {
 	const updatedData: Record<string, any> = {}
 	for (const key in localData) {
@@ -109,11 +120,22 @@ const addProperty = () => {
 	emitUpdate()
 }
 
+const createObject = (key: string) => {
+	localData[key] = {}
+	emitUpdate()
+}
+
 const removeProperty = (key: string) => {
 	delete localData[key]
 	delete localKeys[key]
 	emitUpdate()
 }
+
+const removeObject = (key: string) => {
+	localData[key] = ""
+	emitUpdate()
+}
+
 const isColor = (value: any): boolean => {
   if (typeof value !== 'string') return false
   return /^rgba?\(/.test(value) || /^#([0-9A-F]{3}){1,2}$/i.test(value) || /^#([0-9A-F]{8})$/i.test(value)

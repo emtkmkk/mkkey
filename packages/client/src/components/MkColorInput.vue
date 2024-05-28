@@ -26,28 +26,25 @@ import { defaultStore } from "@/store";
 import { ColorPicker } from "vue3-colorpicker";
 import "vue3-colorpicker/style.css";
 
-const props = defineProps<{
-	modelValue: string | null;
+const props = withDefaults(defineProps<{
+	modelValue: string;
 	required?: boolean;
 	readonly?: boolean;
 	disabled?: boolean;
-	format: {
-		type: string;
-		default: "hex8";
-	};
-	pickerType: {
-		type: string;
-		default: "chrome";
-	};
-	useType: {
-		type: string;
-		default: "both";
-	};
-	noStyle: {
-		type: boolean;
-		default: false;
-	};
-}>();
+	format?: string;
+	pickerType?: string;
+	useType?: string;
+	noStyle?: boolean;
+}>(),
+	{
+		required: false,
+		readonly: false,
+		disabled: false,
+		format: "hex8",
+		pickerType: "chrome",
+		useType: "both",
+		noStyle: false,
+	});
 
 const emit = defineEmits<{
 	(ev: "update:modelValue", value: string): void;

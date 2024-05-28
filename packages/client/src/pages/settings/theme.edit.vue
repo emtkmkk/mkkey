@@ -5,22 +5,22 @@
 			style="display: flex; gap: var(--margin); flex-wrap: wrap"
 		>
 			<FormButton
-				:disable="!installThemeCode?.value || !Object.keys(installThemeCode?.value)?.length"
+				:disable="!installThemeCode || !Object.keys(installThemeCode)?.length"
 				inline
-				@click="() => preview(JSON.stringify(installThemeCode?.value, null, '\t'))"
+				@click="() => preview(JSON5.stringify(installThemeCode, null, '\t'))"
 				><i class="ph-eye ph-bold ph-lg"></i>
 				{{ i18n.ts.preview }}</FormButton
 			>
 			<FormButton
-				:disable="!installThemeCode?.value || !Object.keys(installThemeCode?.value)?.length"
+				:disable="!installThemeCode || !Object.keys(installThemeCode)?.length"
 				primary
-				inline
-				@click="() => install(JSON.stringify(installThemeCode?.value, null, '\t'))"
+				inlinet
+				@click="() => install(JSON5.stringify(installThemeCode, null, '\t'))"
 				><i class="ph-check ph-bold ph-lg"></i>
 				{{ i18n.ts.install }}</FormButton
 			>
 		</div>
-		<MkKeyValueEditor v-if="installThemeCode?.value != null" :data="installThemeCode?.value" @update="updateThemeData" />
+		<MkKeyValueEditor v-if="installThemeCode != null" :data="installThemeCode" @update="updateThemeData" />
 	</div>
 </template>
 
@@ -48,7 +48,7 @@ function parseThemeCode(code: string) {
 	} catch (err) {
 		os.alert({
 			type: "error",
-			text: i18n.ts._theme.invalid,
+			text: [i18n.ts._theme.invalid, err?.message].filter(Boolean).join("\n"),
 		});
 		return false;
 	}

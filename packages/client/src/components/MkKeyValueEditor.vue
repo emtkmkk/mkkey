@@ -44,8 +44,9 @@
 							shape="circle"
 							no-style
 							class="colorInput"
-							:model-value="getColor(value, true)?.toRgbString() ?? ''"
-							:disabled="true"
+							:modelValue="getColor(value, true)?.toRgbString() ?? ''"
+							disabled
+							style='pointer-events: none;'
 						></MkColorInput>
 					</span>
 					<button v-if="!value" class="_button add" @click="createObject(key)">
@@ -79,7 +80,8 @@ const props = defineProps<{ data: Record<string, any>, isRoot?: boolean }>()
 const emit = defineEmits<{ (e: 'update', value: Record<string, any>): void }>()
 
 const localData = reactive({ ...props.data })
-
+const defaultKey = Object.keys(props.data)
+	
 const updateProperty = (key: string, value: any) => {
 	localData[key] = value
 	emitUpdate()
@@ -89,7 +91,11 @@ const emitUpdate = () => {
 }
 
 const addProperty = () => {
-	const newKey = `newProperty${Object.keys(localData).length + 1}`
+	const { canceled, result: title } = await os.inputText({
+		title: "キーを入力",
+	});
+	if (canceled || !title || Object.keys(localData)?.includes(title)) return;
+	newKey = title;
 	localData[newKey] = ''
 	emitUpdate()
 }
@@ -122,6 +128,7 @@ function checkBackground(value) {
 }
 
 function getColor(val: string, isRoot?: boolean): tinycolor.Instance | undefined {
+	try {
 		// ref (prop)
 		if (val[0] === "@") {
 			return getColor(localData[val.substr(1)]);
@@ -133,7 +140,6 @@ function getColor(val: string, isRoot?: boolean): tinycolor.Instance | undefined
 		}
 
 		// func
-		try {
 			if (val[0] === ":") {
 				const parts = val.split("<");
 				const func = parts.shift().substr(1);
@@ -153,11 +159,12 @@ function getColor(val: string, isRoot?: boolean): tinycolor.Instance | undefined
 						return color?.saturate(arg);
 				}
 			}
+		return isRoot ? undefined : tinycolor(val);
 		} catch {
 		}
 
 		// other case
-		return isRoot ? undefined : tinycolor(val);
+		return undefined;
 	}
 </script>
 

@@ -344,7 +344,7 @@ export const routes = [
 	},
 	{
 		path: "/theme-editor",
-		component: page(() => import("./pages/theme-editor.vue")),
+		component: page(() => import("./pages/settings/theme.edit.vue")),
 		loginRequired: true,
 	},
 	{

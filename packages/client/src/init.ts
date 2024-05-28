@@ -419,7 +419,7 @@ import {
 	//#endregion
 
 	function hexToRgb(hex) {
-		if (/^#[0-9A-F]{6}$/i.test(hex) || /^#[0-9A-F]{8}$/i.test(hex)) {
+		if (/^#[0-9A-Fa-f]{6}$/i.test(hex) || /^#[0-9A-Fa-f]{8}$/i.test(hex)) {
 			// 16進数のカラーコードから "#" を除去
 			hex = hex.replace(/^#/, "");
 
@@ -432,7 +432,7 @@ import {
 				a = Number.parseInt(hex.substring(6, 8), 16);
 			}
 
-			return `${r},${g},${b},${a}`;
+			return `rgba(${r},${g},${b},${a/255})`;
 		}
 		return hex;
 	}

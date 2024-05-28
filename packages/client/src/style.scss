@@ -675,23 +675,23 @@ rt {
 }
 
 .colored.localOnly {
-	background-color: rgba(var(--localOnlyColor)) !important;
+	background: var(--localOnlyColor) !important;
 }
 
 .colored.v-home {
-	background-color: rgba(var(--homeColor)) !important;
+	background: var(--homeColor) !important;
 }
 
 .colored.v-followers {
-	background-color: rgba(var(--followerColor)) !important;
+	background: var(--followerColor) !important;
 }
 
 .colored.v-specified {
-	background-color: rgba(var(--specifiedColor)) !important;
+	background: var(--specifiedColor) !important;
 }
 
 .colored.v-circle {
-	background-color: rgba(var(--circleColor)) !important;
+	background: var(--circleColor) !important;
 }
 
 @keyframes blink {

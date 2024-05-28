@@ -9,14 +9,21 @@
 			style="display: flex; gap: var(--margin); flex-wrap: wrap"
 		>
 			<FormButton
-				:disabled="installThemeCode == null"
+				v-show="installThemeCode == null"
+				inline
+				@click="() => loadTheme"
+				><i class="ph-eye ph-bold ph-lg"></i>
+				{{ i18n.ts.loadTheme }}</FormButton
+			>
+			<FormButton
+				v-show="installThemeCode != null"
 				inline
 				@click="() => preview(installThemeCode)"
 				><i class="ph-eye ph-bold ph-lg"></i>
 				{{ i18n.ts.preview }}</FormButton
 			>
 			<FormButton
-				:disabled="installThemeCode == null"
+				v-show="installThemeCode != null"
 				primary
 				inline
 				@click="() => install(installThemeCode)"
@@ -37,8 +44,10 @@ import * as os from "@/os";
 import { addTheme, getThemes } from "@/theme-store";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { ColdDeviceStorage, defaultStore } from "@/store";
+import { defaults } from "chart.js";
 
-let installThemeCode = $ref(null);
+let installThemeCode: string = $ref(null);
 
 function parseThemeCode(code: string) {
 	let theme;
@@ -83,6 +92,16 @@ async function install(code: string): Promise<void> {
 		type: "success",
 		text: i18n.t("_theme.installed", { name: theme.name }),
 	});
+}
+
+function loadTheme() {
+	const darkMode = defaultStore.state.darkMode;
+
+	if (darkMode) {
+		installThemeCode = JSON5.stringify(ColdDeviceStorage.ref("darkTheme"), null, "\t");
+	} else {
+		installThemeCode = JSON5.stringify(ColdDeviceStorage.ref("lightTheme"), null, "\t");
+	}
 }
 
 const headerActions = $computed(() => []);

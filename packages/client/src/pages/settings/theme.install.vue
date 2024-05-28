@@ -12,7 +12,7 @@
 				v-show="installThemeCode == null"
 				inline
 				@click="() => loadTheme"
-				><i class="ph-eye ph-bold ph-lg"></i>
+				><i class="ph-palette ph-bold ph-lg"></i>
 				{{ i18n.ts.loadTheme }}</FormButton
 			>
 			<FormButton
@@ -47,7 +47,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { ColdDeviceStorage, defaultStore } from "@/store";
 import { defaults } from "chart.js";
 
-let installThemeCode: string = $ref(null);
+let installThemeCode = $ref<string | null>(null);
 
 function parseThemeCode(code: string) {
 	let theme;
@@ -98,9 +98,9 @@ function loadTheme() {
 	const darkMode = defaultStore.state.darkMode;
 
 	if (darkMode) {
-		installThemeCode = JSON5.stringify(ColdDeviceStorage.ref("darkTheme"), null, "\t");
+		installThemeCode = JSON5.stringify(ColdDeviceStorage.ref("darkTheme")?.value, null, "\t");
 	} else {
-		installThemeCode = JSON5.stringify(ColdDeviceStorage.ref("lightTheme"), null, "\t");
+		installThemeCode = JSON5.stringify(ColdDeviceStorage.ref("lightTheme")?.value, null, "\t");
 	}
 }
 

@@ -44,7 +44,7 @@
 							shape="circle"
 							no-style
 							class="colorInput"
-							:model-value="getColor(value)?.toRgbString()"
+							:model-value="getColor(value)?.toRgbString() ?? ''"
 							:disabled="true"
 						></MkColorInput>
 					</span>

@@ -50,7 +50,7 @@ html {
 	background-size: cover;
 	background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
 	background-position: top;
-	background-repeat: no-repeat;
+	background-repeat: repeat-y;
 	color: var(--fg);
 	accent-color: var(--accent);
 	overflow: auto;
@@ -80,7 +80,7 @@ html {
 			background-size: cover;
 			background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
 			background-position: top;
-			background-repeat: no-repeat;
+			background-repeat: repeat-y;
 
 			&:hover {
 				background: var(--scrollbarHandleHover);
@@ -88,7 +88,7 @@ html {
 				background-size: cover;
 				background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
 				background-position: top;
-				background-repeat: no-repeat;
+				background-repeat: repeat-y;
 			}
 
 			&:active {
@@ -97,7 +97,7 @@ html {
 				background-size: cover;
 				background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
 				background-position: top;
-				background-repeat: no-repeat;
+				background-repeat: repeat-y;
 			}
 		}
 	}

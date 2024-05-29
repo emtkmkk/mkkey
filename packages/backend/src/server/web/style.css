@@ -4,7 +4,7 @@ html {
 	background-size: cover;
 	background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
 	background-position: top;
-	background-repeat: no-repeat;
+	background-repeat: repeat-y;
 	color: var(--fg);
 }
 
@@ -21,7 +21,7 @@ html {
 	background-size: cover;
 	background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
 	background-position: top;
-	background-repeat: no-repeat;
+	background-repeat: repeat-y;
 	opacity: 1;
 	transition: opacity 0.2s ease;
 }

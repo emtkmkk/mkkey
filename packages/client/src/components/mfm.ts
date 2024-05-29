@@ -132,7 +132,7 @@ export default defineComponent({
 								const dot = '[.・]';
 								const space = '[ 　]';
 								const regexPattern1 = new RegExp(`(${long}${dot}${dot}${long}${long}${long}${space}+(.+)${space}${dot}${dot}${dot}${long}${dot}|${long}${dot}${dot}${dot}${long}${space}(.+)${space}${dot}${long}${dot}${long}${dot})`);
-								const regexPattern2 = new RegExp(`(((${long}|${dot})+?(${space}|$)+?){2,})`);
+								const regexPattern2 = new RegExp(`(((${long}|${dot})+?(${space}|$){1,2}){2,})`);
 
 								while (regexPattern1.test(text)) {
 										const exec = regexPattern1.exec(text);
@@ -145,7 +145,7 @@ export default defineComponent({
 						
 								while (regexPattern2.test(text)) {
 										const exec = regexPattern2.exec(text);
-										if (exec?.[0] && exec?.[0]?.replaceAll(/[ 　]/g,"").length > 3) {
+										if (exec?.[0]) {
 												text = text.replace(regexPattern2, `("${mr_to_str(exec?.[0], true)}")`);
 										} else {
 												text = text.replace(regexPattern2, `("")`);

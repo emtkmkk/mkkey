@@ -108,7 +108,7 @@ function copyThemeCode() {
 }
 
 function copyShareCode() {
-	copyToClipboard(JSON5.stringify(shareCode.value));
+	copyToClipboard(shareCode.value);
 	os.success();
 }
 

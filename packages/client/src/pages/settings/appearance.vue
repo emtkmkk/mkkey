@@ -194,17 +194,15 @@
 			<FormSwitch v-model="showVisibilityColor">{{
 				i18n.ts.showVisibilityColor
 			}}</FormSwitch>
-			<MkColorInput v-if="showVisibilityColor" v-model="publicColor">
-				<template #label>{{ i18n.ts._visibility.public }}</template>
-			</MkColorInput>
-			<MkColorInput
+			<MkColorInput 
 				v-if="showVisibilityColor"
 				style="margin-top: 1.2em"
-				v-model="localOnlyColor"
+				v-model="publicColor"
 			>
-				<template #label>{{
-					i18n.ts._visibility.localAndFollower
-				}}</template>
+				<template #label>{{ i18n.ts._visibility.public }}</template>
+			</MkColorInput>
+			<MkColorInput v-if="showVisibilityColor" v-model="localOnlyColor">
+				<template #label>{{ i18n.ts._visibility.localAndFollower }}</template>
 			</MkColorInput>
 			<MkColorInput v-if="showVisibilityColor" v-model="homeColor">
 				<template #label>{{ i18n.ts._visibility.home }}</template>

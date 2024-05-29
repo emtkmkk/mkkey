@@ -153,6 +153,7 @@ import {
 	// TODO: いつの日にか消したい
 	const vh = window.innerHeight * 0.01;
 	document.documentElement.style.setProperty("--vh", `${vh}px`);
+	document.documentElement.style.setProperty("--wph", `${vh * 100}px`);
 	window.addEventListener("resize", () => {
 		const vh = window.innerHeight * 0.01;
 		document.documentElement.style.setProperty("--vh", `${vh}px`);

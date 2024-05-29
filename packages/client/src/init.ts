@@ -439,6 +439,10 @@ import {
 	}
 
 	document.documentElement.style.setProperty(
+		"--publicColor",
+		hexToRgb(defaultStore.state.publicColor),
+	);
+	document.documentElement.style.setProperty(
 		"--homeColor",
 		hexToRgb(defaultStore.state.homeColor),
 	);

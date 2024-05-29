@@ -2,7 +2,7 @@ html {
 	background: var(--bg);
 	background-attachment: fixed;
 	background-size: cover;
-	background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+	background-size: auto calc(var(--vh) * 100 - var(--minBottomSpacing, 0));
 	background-position: center;
 	color: var(--fg);
 }
@@ -18,7 +18,7 @@ html {
 	background: var(--bg);
 	background-attachment: fixed;
 	background-size: cover;
-	background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+	background-size: auto calc(var(--vh) * 100 - var(--minBottomSpacing, 0));
 	background-position: center;
 	opacity: 1;
 	transition: opacity 0.2s ease;

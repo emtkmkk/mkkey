@@ -1940,12 +1940,12 @@ defineExpose({
 	}
 
 	&.h10 {
-		height: 90dvh;
+		height: calc(var(--vh) * 90);
 	}
 
 	&.asDrawer {
 		width: 100% !important;
-		max-height: 90dvh;
+		max-height: calc(var(--vh) * 90);
 		& > .emojis {
 			::v-deep(section) {
 				> header {

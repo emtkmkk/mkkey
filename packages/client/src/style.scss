@@ -48,7 +48,7 @@ html {
 	touch-action: manipulation;
 	background-attachment: fixed;
 	background-size: cover;
-	background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+	background-size: auto calc(var(--vh) * 100 - var(--minBottomSpacing, 0));
 	background-position: center;
 	color: var(--fg);
 	accent-color: var(--accent);
@@ -77,14 +77,14 @@ html {
 			background: var(--scrollbarHandle);
 			background-attachment: fixed;
 			background-size: cover;
-			background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+			background-size: auto calc(var(--vh) * 100 - var(--minBottomSpacing, 0));
 			background-position: center;
 
 			&:hover {
 				background: var(--scrollbarHandleHover);
 				background-attachment: fixed;
 				background-size: cover;
-				background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+				background-size: auto calc(var(--vh) * 100 - var(--minBottomSpacing, 0));
 				background-position: center;
 			}
 
@@ -92,7 +92,7 @@ html {
 				background: var(--accent);
 				background-attachment: fixed;
 				background-size: cover;
-				background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+				background-size: auto calc(var(--vh) * 100 - var(--minBottomSpacing, 0));
 				background-position: center;
 			}
 		}

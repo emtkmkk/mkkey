@@ -3,7 +3,7 @@ html {
 	background-attachment: fixed;
 	background-size: cover;
 	background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
-	background-position: center;
+	background-position: top;
 	color: var(--fg);
 }
 
@@ -19,7 +19,7 @@ html {
 	background-attachment: fixed;
 	background-size: cover;
 	background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
-	background-position: center;
+	background-position: top;
 	opacity: 1;
 	transition: opacity 0.2s ease;
 }
@@ -34,7 +34,7 @@ html {
 	width: 64px;
 	height: 64px;
 	pointer-events: none;
-	animation-duration: 1s;
+	animation-duration: 2s;
 	animation-iteration-count: infinite;
 	animation-name: tada;
 }

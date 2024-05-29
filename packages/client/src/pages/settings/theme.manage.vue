@@ -42,6 +42,18 @@
 					</button></template
 				>
 			</FormTextarea>
+			<FormTextarea
+				readonly
+				tall
+				:model-value="shareCode"
+				class="_formBlock"
+			>
+				<template #label>{{ "共有コード" }}</template><template #caption
+					><button class="_textButton" @click="copyShareCode()">
+						{{ i18n.ts.copy }}
+					</button></template
+				>
+			</FormTextarea>
 			<FormButton
 				v-if="!builtinThemes.some((t) => t.id == selectedTheme.id)"
 				class="_formBlock"
@@ -72,6 +84,8 @@ const installedThemes = ref(getThemes());
 const builtinThemes = getBuiltinThemesRef();
 const selectedThemeId = ref(null);
 
+const shareCode = computed(() => Buffer.from(JSON5.stringify(selectedTheme.value)).toString('base64'));
+
 const themes = computed(() => [
 	...installedThemes.value,
 	...builtinThemes.value,
@@ -89,6 +103,11 @@ const selectedThemeCode = computed(() => {
 
 function copyThemeCode() {
 	copyToClipboard(selectedThemeCode.value);
+	os.success();
+}
+
+function copyShareCode() {
+	copyToClipboard(JSON5.stringify(selectedTheme));
 	os.success();
 }
 

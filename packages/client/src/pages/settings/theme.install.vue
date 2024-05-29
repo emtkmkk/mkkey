@@ -58,11 +58,15 @@ function parseThemeCode(code: string) {
 	try {
 		theme = JSON5.parse(code);
 	} catch (err) {
-		os.alert({
-			type: "error",
-			text: i18n.ts._theme.invalid,
-		});
-		return false;
+		try {
+			theme = JSON5.parse(Buffer.from(code, 'base64').toString());
+		} catch {
+			os.alert({
+				type: "error",
+				text: i18n.ts._theme.invalid,
+			});
+			return false;
+		}
 	}
 	if (!validateTheme(theme)) {
 		os.alert({

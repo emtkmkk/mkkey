@@ -1377,6 +1377,10 @@ export const defaultStore = markRaw(
 			createdAt: "2024/2/13",
 			page: "appearance",
 		},
+		publicColor: {
+			where: "device",
+			default: "rgba(128, 128, 128, 0)",
+		},
 		homeColor: {
 			where: "device",
 			default: "#24BE38",

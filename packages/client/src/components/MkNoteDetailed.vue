@@ -39,7 +39,7 @@
 			:conversation="replies"
 		/>
 	</div>
-	<div v-else class="_panel muted" @click="muted.muted = false">
+	<div v-else class="_tlPanel muted" @click="muted.muted = false">
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
 				<MkA

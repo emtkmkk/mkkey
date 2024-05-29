@@ -79,7 +79,7 @@
 									v-for="item in clips"
 									:key="item.id"
 									:to="`/clips/${item.id}`"
-									class="item _panel _gap"
+									class="item _tlPanel _gap"
 								>
 									<b>{{ item.name }}</b>
 									<div

@@ -1,5 +1,9 @@
 html {
 	background: var(--bg);
+	background-attachment: fixed;
+	background-size: cover;
+	background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+	background-position: center;
 	color: var(--fg);
 }
 
@@ -12,6 +16,10 @@ html {
 	height: 100vh;
 	cursor: wait;
 	background: var(--bg);
+	background-attachment: fixed;
+	background-size: cover;
+	background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+	background-position: center;
 	opacity: 1;
 	transition: opacity 0.2s ease;
 }

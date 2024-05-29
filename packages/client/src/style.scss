@@ -48,6 +48,7 @@ html {
 	touch-action: manipulation;
 	background-attachment: fixed;
 	background-size: cover;
+	background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
 	background-position: center;
 	color: var(--fg);
 	accent-color: var(--accent);
@@ -69,29 +70,30 @@ html {
 
 		&::-webkit-scrollbar-track {
 			background: inherit;
-			background-size: cover;
-			background-size: auto calc(100dvh - var(--minBottomSpacingMobile));
 			background-attachment: fixed;
 		}
 
 		&::-webkit-scrollbar-thumb {
 			background: var(--scrollbarHandle);
-			background-size: cover;
-			background-size: auto calc(100dvh - var(--minBottomSpacingMobile));
 			background-attachment: fixed;
+			background-size: cover;
+			background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+			background-position: center;
 
 			&:hover {
 				background: var(--scrollbarHandleHover);
-				background-size: cover;
-				background-size: auto calc(100dvh - var(--minBottomSpacingMobile));
 				background-attachment: fixed;
+				background-size: cover;
+				background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+				background-position: center;
 			}
 
 			&:active {
 				background: var(--accent);
-				background-size: cover;
-				background-size: auto calc(100dvh - var(--minBottomSpacingMobile));
 				background-attachment: fixed;
+				background-size: cover;
+				background-size: auto calc(100dvh - var(--minBottomSpacingMobile, 0));
+				background-position: center;
 			}
 		}
 	}
@@ -398,6 +400,12 @@ rt {
 	overflow: clip;
 }
 
+._tlPanel {
+	background: var(--panel);
+	border-radius: var(--radius);
+	overflow: clip;
+}
+
 ._block {
 	@extend ._panel;
 
@@ -684,6 +692,10 @@ rt {
 .zoom-enter-from, .zoom-leave-to {
 	opacity: 0;
 	transform: scale(0.9);
+}
+
+.colored.v-public {
+	background: var(--publicColor) !important;
 }
 
 .colored.localOnly {

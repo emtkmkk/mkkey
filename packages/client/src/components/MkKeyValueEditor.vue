@@ -75,12 +75,12 @@ import MkInput from "@/components/form/input.vue";
 import MkColorInput from "@/components/MkColorInput.vue";
 import { i18n } from "@/i18n";
 import tinycolor from "tinycolor2";
+import * as os from "@/os";
 
 const props = defineProps<{ data: Record<string, any>, isRoot?: boolean }>()
 const emit = defineEmits<{ (e: 'update', value: Record<string, any>): void }>()
 
 const localData = reactive({ ...props.data })
-const defaultKey = Object.keys(props.data)
 	
 const updateProperty = (key: string, value: any) => {
 	localData[key] = value
@@ -90,12 +90,12 @@ const emitUpdate = () => {
 	emit('update', localData)
 }
 
-const addProperty = () => {
+const addProperty = async () => {
 	const { canceled, result: title } = await os.inputText({
 		title: "キーを入力",
 	});
 	if (canceled || !title || Object.keys(localData)?.includes(title)) return;
-	newKey = title;
+	const newKey = title;
 	localData[newKey] = ''
 	emitUpdate()
 }
@@ -179,6 +179,7 @@ button {
 }
 
 .colorInput {
+	margin-left: 0.3125rem
 	height: 100%;
 }
 

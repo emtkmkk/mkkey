@@ -194,6 +194,9 @@
 			<FormSwitch v-model="showVisibilityColor">{{
 				i18n.ts.showVisibilityColor
 			}}</FormSwitch>
+			<MkColorInput v-if="showVisibilityColor" v-model="publicColor">
+				<template #label>{{ i18n.ts._visibility.public }}</template>
+			</MkColorInput>
 			<MkColorInput
 				v-if="showVisibilityColor"
 				style="margin-top: 1.2em"
@@ -428,6 +431,9 @@ const circleColor = computed(defaultStore.makeGetterSetter("circleColor"));
 const localOnlyColor = computed(
 	defaultStore.makeGetterSetter("localOnlyColor")
 );
+const publicColor = computed(
+	defaultStore.makeGetterSetter("publicColor")
+);
 
 function hexToRgb(hex) {
 	if (/^#[0-9A-Fa-f]{6}$/i.test(hex) || /^#[0-9A-Fa-f]{8}$/i.test(hex)) {
@@ -468,8 +474,12 @@ document.documentElement.style.setProperty(
 	"--localOnlyColor",
 	hexToRgb(localOnlyColor.value)
 );
+document.documentElement.style.setProperty(
+	"--publicColor",
+	hexToRgb(publicColor.value)
+);
 watch(
-	[homeColor, specifiedColor, followerColor, circleColor, localOnlyColor],
+	[homeColor, specifiedColor, followerColor, circleColor, localOnlyColor, publicColor],
 	() => {
 		document.documentElement.style.setProperty(
 			"--homeColor",
@@ -490,6 +500,10 @@ watch(
 		document.documentElement.style.setProperty(
 			"--localOnlyColor",
 			hexToRgb(localOnlyColor.value)
+		);
+		document.documentElement.style.setProperty(
+			"--publicColor",
+			hexToRgb(publicColor.value)
 		);
 	}
 );

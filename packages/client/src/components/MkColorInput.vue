@@ -74,6 +74,16 @@ watch([pureColor, gradientColor, activeKey], () => {
 			: pureColor.value || gradientColor.value) ?? ""
 	);
 });
+watch(modelValue, (newValue) => {
+	const isGradient =
+		modelValue.value &&
+		!/^#[0-9A-F]{6}$/i.test(modelValue.value) &&
+		!/^#[0-9A-F]{8}$/i.test(modelValue.value) &&
+		!/^rgba?\(/i.test(modelValue.value);
+	pureColor.value = isGradient ? "" : modelValue.value;
+	gradientColor.value = isGradient ? modelValue.value : "";
+	activeKey.value = isGradient ? "gradient" : "pure";
+});
 </script>
 
 <style lang="scss" module>

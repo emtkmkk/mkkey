@@ -34,7 +34,7 @@
 					:notification="notification"
 					:with-time="true"
 					:full="true"
-					class="_panel notification"
+					class="_tlPanel notification"
 				/>
 			</XList>
 		</template>

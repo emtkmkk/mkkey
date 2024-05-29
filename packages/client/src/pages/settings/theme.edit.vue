@@ -37,11 +37,11 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated } from "vue";
+import { onActivated, watch } from "vue";
 import JSON5 from "json5";
 import MkKeyValueEditor from "@/components/MkKeyValueEditor.vue";
 import FormButton from "@/components/MkButton.vue";
-import { applyTheme, validateTheme } from "@/scripts/theme";
+import { Theme, applyTheme, validateTheme } from "@/scripts/theme";
 import * as os from "@/os";
 import { addTheme, getThemes } from "@/theme-store";
 import { i18n } from "@/i18n";
@@ -52,7 +52,18 @@ import darkTheme from "@/themes/_dark.json5";
 
 let installThemeCode = $ref<Record<string, any> | null>(null);
 
-let nowTheme = "";
+let nowTheme =  $ref<Record<string, any> | null>(null);
+
+watch($$(installThemeCode), apply, { deep: true });
+
+function apply() {
+	try{
+		applyTheme(installThemeCode as Theme, false);
+		nowTheme = installThemeCode
+	} catch {
+
+	}
+}
 
 function parseThemeCode(code: string) {
 	let theme;
@@ -90,11 +101,13 @@ function parseThemeCode(code: string) {
 
 function preview(code: string): void {
 	const theme = parseThemeCode(code);
-	if (theme && nowTheme === theme) {
+	if (theme && nowTheme === installThemeCode) {
 		showPreview();
 	} else {
-		nowTheme = theme;
-		applyTheme(theme, false);
+		if (theme) {
+			nowTheme = installThemeCode;
+			applyTheme(theme, false);
+		}
 	}
 }
 

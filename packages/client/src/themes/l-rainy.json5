@@ -10,7 +10,7 @@
 		accent: '#5db0da',
 		bg: 'rgb(246 248 249)',
 		fg: '#636b71',
-		panel: '#fff',
+		panel: '#ffffff',
 		divider: 'rgb(230 233 234)',
 		panelHeaderDivider: '@divider',
 		renote: '@accent',

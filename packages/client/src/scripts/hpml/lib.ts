@@ -200,7 +200,7 @@ export function initAiLib(hpml: Hpml) {
 						enabled: false,
 					},
 					chartArea: {
-						backgroundColor: '#fff'
+						backgroundColor: '#ffffff'
 					},
 					...(opts.value.get('type').value === 'radar' ? {
 						scale: {

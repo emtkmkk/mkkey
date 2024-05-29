@@ -10,7 +10,7 @@
 		accent: 'rgb(206, 102, 65)',
 		bg: 'rgb(31, 33, 31)',
 		fg: '#cdd8c7',
-		fgHighlighted: '#fff',
+		fgHighlighted: '#ffffff',
 		divider: 'rgba(255, 255, 255, 0.14)',
 		panel: 'rgb(41, 43, 41)',
 		infoFg: '@fg',

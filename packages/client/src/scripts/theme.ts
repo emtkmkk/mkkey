@@ -148,8 +148,16 @@ function compile(theme: Theme): Record<string, string> {
 
 	const props = {};
 
+	function checkBackground(value) {
+		const element = document.createElement('div');
+		element.style.background = '';
+		element.style.background = value;
+		return element.style.background !== '';
+	}
+
 	for (const [k, v] of Object.entries(theme.props)) {
 		if (k.startsWith("$")) continue; // ignore const
+		if (checkBackground(v)) continue;
 
 		props[k] = v.startsWith('"')
 			? v.replace(/^"\s*/, "")

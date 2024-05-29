@@ -157,9 +157,8 @@ function compile(theme: Theme): Record<string, string> {
 
 	for (const [k, v] of Object.entries(theme.props)) {
 		if (k.startsWith("$")) continue; // ignore const
-		if (checkBackground(v)) continue;
 
-		props[k] = v.startsWith('"')
+		props[k] = v.startsWith('"') || v.includes("gradient")
 			? v.replace(/^"\s*/, "")
 			: genValue(getColor(v));
 	}

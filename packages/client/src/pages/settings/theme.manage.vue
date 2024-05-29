@@ -43,6 +43,7 @@
 				>
 			</FormTextarea>
 			<FormTextarea
+				v-if="shareCode.length > 0"
 				readonly
 				tall
 				:model-value="shareCode"
@@ -84,7 +85,7 @@ const installedThemes = ref(getThemes());
 const builtinThemes = getBuiltinThemesRef();
 const selectedThemeId = ref(null);
 
-const shareCode = computed(() => Buffer.from(JSON5.stringify(selectedTheme.value)).toString('base64'));
+const shareCode = computed(() => btoa(encodeURIComponent(JSON5.stringify(selectedTheme.value))));
 
 const themes = computed(() => [
 	...installedThemes.value,
@@ -107,7 +108,7 @@ function copyThemeCode() {
 }
 
 function copyShareCode() {
-	copyToClipboard(JSON5.stringify(selectedTheme));
+	copyToClipboard(JSON5.stringify(shareCode.value));
 	os.success();
 }
 

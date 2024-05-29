@@ -59,7 +59,7 @@ function parseThemeCode(code: string) {
 		theme = JSON5.parse(code);
 	} catch (err) {
 		try {
-			theme = JSON5.parse(Buffer.from(code, 'base64').toString());
+			theme = JSON5.parse(decodeURIComponent(atob(code)));
 		} catch {
 			os.alert({
 				type: "error",

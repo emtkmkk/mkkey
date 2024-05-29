@@ -1383,23 +1383,23 @@ export const defaultStore = markRaw(
 		},
 		homeColor: {
 			where: "device",
-			default: "#24BE38",
+			default: "rgba(36, 190, 56, 0.2)",
 		},
 		followerColor: {
 			where: "device",
-			default: "#B43784",
+			default: "rgba(180, 55, 132, 0.2)",
 		},
 		circleColor: {
 			where: "device",
-			default: "#FF743F",
+			default: "rgba(255, 116, 63, 0.2)",
 		},
 		specifiedColor: {
 			where: "device",
-			default: "#BEBE32",
+			default: "rgba(190, 190, 50, 0.2)",
 		},
 		localOnlyColor: {
 			where: "device",
-			default: "#3278BD",
+			default: "rgba(50, 120, 189, 0.2)",
 		},
 		hiddenHeaderIcon: {
 			where: "device",

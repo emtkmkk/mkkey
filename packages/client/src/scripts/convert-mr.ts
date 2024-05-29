@@ -104,8 +104,8 @@ export const jpdict = {
 	セ: "01110",
 	ス: "11101",
 	ン: "01010",
-	"゛": "00",
-	"゜": "00110",
+	゛: "00",
+	゜: "00110",
 	ー: "01101",
 	"、": "010101",
 	"」": "010100",
@@ -166,7 +166,7 @@ export function str_to_mr(str) {
 		.replaceAll("（", "(")
 		.replaceAll("）", ")")
 		.replaceAll("。", "」")
-		.replaceAll(/[\s　]+/g, "");
+		.replaceAll(/[ 　]+/g, "");
 
 	let jpmode = !/^[A-Z0-9.,:?!_+\-*^=\/@\(\)"']+$/.test(_str);
 	let _jpmode = jpmode;
@@ -235,7 +235,7 @@ export function mr_to_str(mr, jpmode = true) {
 	const mrarr = mr
 		.replaceAll(/[-－ー_]/g, "1")
 		.replaceAll(/[.・]/g, "0")
-		.split(/[\s ]+/);
+		.split(/[ 　]+/);
 	const rdict = {};
 	const rjpdict = {};
 	Object.keys(dict).forEach((x) => (rdict[dict[x]] = x));

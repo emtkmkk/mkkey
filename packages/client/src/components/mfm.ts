@@ -128,42 +128,28 @@ export default defineComponent({
 							}*/
 
 							if (defaultStore.state.enableMorseDecode) {
-								while (
-									/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/.test(
-										text,
-									)
-								) {
-									const exec =
-										/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/.exec(
-											text,
-										);
-									if (exec?.[2] || exec?.[3]) {
-										text = text.replace(
-											/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/,
-											`("${mr_to_str(exec?.[2] || exec?.[3], !!exec?.[2])}")`,
-										);
-									} else {
-										text = text.replace(
-											/([-－ー_][.・][.・][-－ー_][-－ー_][-－ー_][\s　]+(.+)[\s　][.・][.・][.・][-－ー_][.・]|[-－ー_][.・][.・][.・][-－ー_][\s　]+(.+)[\s　][.・][-－ー_][.・][-－ー_][.・])/,
-											`("")`,
-										);
-									}
+								const long = '[-－ー_]';
+								const dot = '[.・]';
+								const space = '[ 　]';
+								const regexPattern1 = new RegExp(`(${long}${dot}${dot}${long}${long}${long}${space}+(.+)${space}${dot}${dot}${dot}${long}${dot}|${long}${dot}${dot}${dot}${long}${space}(.+)${space}${dot}${long}${dot}${long}${dot})`);
+								const regexPattern2 = new RegExp(`(((${long}|${dot})+?(${space}|$)+?){2,})`);
+
+								while (regexPattern1.test(text)) {
+										const exec = regexPattern1.exec(text);
+										if (exec?.[2] || exec?.[3]) {
+												text = text.replace(regexPattern1, `("${mr_to_str(exec?.[2] || exec?.[3], !!exec?.[2])}")`);
+										} else {
+												text = text.replace(regexPattern1, `("")`);
+										}
 								}
-								while (/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/.test(text)) {
-									const exec = /(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/.exec(
-										text,
-									);
-									if (exec?.[0]) {
-										text = text.replace(
-											/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/,
-											`("${mr_to_str(exec?.[0], true)}")`,
-										);
-									} else {
-										text = text.replace(
-											/(([-－ー_]|[.・])+?([\s　]|$)+?){2,}/,
-											`("")`,
-										);
-									}
+						
+								while (regexPattern2.test(text)) {
+										const exec = regexPattern2.exec(text);
+										if (exec?.[0] && exec?.[0].length > 3) {
+												text = text.replace(regexPattern2, `("${mr_to_str(exec?.[0], true)}")`);
+										} else {
+												text = text.replace(regexPattern2, `("")`);
+										}
 								}
 							}
 

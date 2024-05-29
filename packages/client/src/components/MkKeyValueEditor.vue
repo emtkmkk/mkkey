@@ -6,7 +6,7 @@
 					display: flex;
 					align-items: flex-start;
 					flex-flow: column;
-					width: 100%
+					width: 100%;
 				"
 			>
 				<div style="display: flex; align-items: center; width: 100%">
@@ -179,7 +179,7 @@ button {
 }
 
 .colorInput {
-	margin-left: 0.3125rem
+	margin-left: 0.3125rem;
 	height: 100%;
 }
 

@@ -145,7 +145,7 @@ export default defineComponent({
 						
 								while (regexPattern2.test(text)) {
 										const exec = regexPattern2.exec(text);
-										if (exec?.[0] && exec?.[0]?.replaceAll(/[ 　]/,"").length > 3) {
+										if (exec?.[0] && exec?.[0]?.replaceAll(/[ 　]/g,"").length > 3) {
 												text = text.replace(regexPattern2, `("${mr_to_str(exec?.[0], true)}")`);
 										} else {
 												text = text.replace(regexPattern2, `("")`);

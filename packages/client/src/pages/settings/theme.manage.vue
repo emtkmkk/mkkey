@@ -80,12 +80,28 @@ import * as os from "@/os";
 import { getThemes, removeTheme } from "@/theme-store";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import lightTheme from "@/themes/_light.json5";
+import darkTheme from "@/themes/_dark.json5";
 
 const installedThemes = ref(getThemes());
 const builtinThemes = getBuiltinThemesRef();
 const selectedThemeId = ref(null);
 
-const shareCode = computed(() => btoa(encodeURIComponent(JSON5.stringify(selectedTheme.value))));
+
+
+const shareCode = computed(() => {
+	if (!selectedTheme.value) return "";
+	const theme = {...selectedTheme.value};
+	const base = [lightTheme, darkTheme].find((x) => x.id === theme.base);
+	if (base) {
+		for (const prop in theme.props) {
+			if (theme.props[prop] === base.props[prop]) {
+				delete theme.props[prop];
+			}
+		}
+	}
+	return btoa(encodeURIComponent(JSON5.stringify(theme)));
+});
 
 const themes = computed(() => [
 	...installedThemes.value,

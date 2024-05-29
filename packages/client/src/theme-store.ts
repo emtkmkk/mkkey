@@ -1,6 +1,8 @@
 import { api } from "@/os";
 import { $i } from "@/account";
 import { Theme } from "./scripts/theme";
+import lightTheme from "@/themes/_light.json5";
+import darkTheme from "@/themes/_dark.json5";
 
 const lsCacheKey = $i ? `themes:${$i.id}` : "";
 
@@ -24,6 +26,14 @@ export async function fetchThemes(): Promise<void> {
 }
 
 export async function addTheme(theme: Theme): Promise<void> {
+	const base = [lightTheme, darkTheme].find((x) => x.id === theme.base);
+	if (base) {
+		for (const prop in theme.props) {
+			if (theme.props[prop] === base.props[prop]) {
+				delete theme.props[prop];
+			}
+		}
+	}
 	theme.name = theme.name.replace(/\\(v\\d+\\)$/, "");
 	await fetchThemes();
 	const sameName = getThemes().filter((x) =>

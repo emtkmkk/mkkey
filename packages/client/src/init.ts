@@ -152,12 +152,21 @@ import {
 	//#region SEE: https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
 	// TODO: いつの日にか消したい
 	const vh = window.innerHeight * 0.01;
-	document.documentElement.style.setProperty("--vh", `${vh}px`);
-	document.documentElement.style.setProperty("--wph", `${vh * 100}px`);
-	window.addEventListener("resize", () => {
-		const vh = window.innerHeight * 0.01;
+	if (CSS.supports('height', '100lvh')) {
+		document.documentElement.style.setProperty("--vh", "1lvh");
+		document.documentElement.style.setProperty("--wph", "100lvh");
+	} else {
 		document.documentElement.style.setProperty("--vh", `${vh}px`);
+		document.documentElement.style.setProperty("--wph", `${window.innerHeight}px`);
+	}
+	
+	window.addEventListener("resize", () => {
+		if (!CSS.supports('height', '100lvh')) {
+			const vh = window.innerHeight * 0.01;
+			document.documentElement.style.setProperty("--vh", `${vh}px`);
+		}
 	});
+	
 	//#endregion
 
 	// If mobile, insert the viewport meta tag

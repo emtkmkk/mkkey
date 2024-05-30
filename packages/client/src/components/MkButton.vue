@@ -219,7 +219,7 @@ function onMousedown(evt: MouseEvent): void {
 			width: 0.125rem;
 			height: 0.125rem;
 			border-radius: 100%;
-			background: var(--ripples);
+			background: var(--ripple);
 			opacity: 1;
 			transform: scale(1);
 			transition: all 0.5s cubic-bezier(0, 0.5, 0, 1);
@@ -227,7 +227,7 @@ function onMousedown(evt: MouseEvent): void {
 	}
 
 	&.primary > .ripples ::v-deep(div) {
-		background: var(--primaryRipples);
+		background: var(--primaryRipple);
 	}
 
 	> .content {

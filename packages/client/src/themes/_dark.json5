@@ -68,8 +68,8 @@
 		swutchOffFg: '@fg',
 		swutchOnBg: '@accentedBg',
 		swutchOnFg: '@accent',
-		ripples: 'rgba(255, 255, 255, 0.1)'
-		primaryRipples: 'rgba(255, 255, 255, 0.15)'
+		ripple: 'rgba(255, 255, 255, 0.1)',
+		primaryRipple: 'rgba(255, 255, 255, 0.15)',
 		inputBorder: 'rgba(255, 255, 255, 0.1)',
 		inputBorderHover: 'rgba(255, 255, 255, 0.2)',
 		listItemHoverBg: 'rgba(255, 255, 255, 0.03)',

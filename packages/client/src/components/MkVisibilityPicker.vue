@@ -274,11 +274,11 @@ function choose(visibility: (typeof misskey.noteVisibilities)[number]): void {
 	box-sizing: border-box;
 
 	&:hover {
-		background: rgba(0, 0, 0, 0.05);
+		background: var(--buttonBg);
 	}
 
 	&:active {
-		background: rgba(0, 0, 0, 0.1);
+		background: var(--buttonHoverBg)
 	}
 
 	&.active {

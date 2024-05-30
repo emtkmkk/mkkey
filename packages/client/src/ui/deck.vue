@@ -513,6 +513,7 @@ async function deleteProfile() {
 		display: flex;
 		width: 100%;
 		box-sizing: border-box;
+		background: var(--footer);
 
 		> .button {
 			position: relative;

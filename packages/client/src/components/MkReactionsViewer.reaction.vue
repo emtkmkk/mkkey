@@ -245,10 +245,10 @@ useTooltip(
 		}
 	}
 	&.canToggle {
-		background: rgba(0, 0, 0, 0.05);
+		background: var(--buttonBg);
 
 		&:hover {
-			background: rgba(0, 0, 0, 0.1);
+			background: var(--buttonHoverBg)
 		}
 	}
 

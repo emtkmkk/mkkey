@@ -291,7 +291,7 @@ definePageMetadata({
 .uawsfosz {
 	> .meter {
 		$size: 0.75rem;
-		background: rgba(0, 0, 0, 0.1);
+		background: var(--X11);
 		border-radius: math.div($size, 2);
 		overflow: hidden;
 

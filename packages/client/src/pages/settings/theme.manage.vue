@@ -82,6 +82,9 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import lightTheme from "@/themes/_light.json5";
 import darkTheme from "@/themes/_dark.json5";
+import { v4 as uuid } from "uuid";
+import * as config from "@/config";
+import { $i } from "@/account";
 
 const installedThemes = ref(getThemes());
 const builtinThemes = getBuiltinThemesRef();
@@ -100,6 +103,8 @@ const shareCode = computed(() => {
 			}
 		}
 	}
+	theme.id = uuid();
+	if (!theme.author) theme.author = [$i?.username ? `@${$i?.username}` : undefined, config.host].join("@")
 	return btoa(encodeURIComponent(JSON5.stringify(theme)));
 });
 

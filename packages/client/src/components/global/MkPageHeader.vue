@@ -227,7 +227,7 @@ function goBack(): void {
 }
 
 const calcBg = () => {
-	const rawBg = metadata?.bg || "var(--bg)";
+	const rawBg = metadata?.bg || "var(--header)";
 	const tinyBg = tinycolor(
 		rawBg.startsWith("var(")
 			? getComputedStyle(document.documentElement).getPropertyValue(
@@ -235,7 +235,7 @@ const calcBg = () => {
 			  )
 			: rawBg
 	);
-	tinyBg.setAlpha(0.85);
+	//tinyBg.setAlpha(0.85);
 	bg.value = tinyBg.toRgbString();
 };
 
@@ -400,7 +400,7 @@ onUnmounted(() => {
 			border-radius: 0.3125rem;
 
 			&:hover {
-				background: rgba(0, 0, 0, 0.05);
+				background: var(--buttonBg);
 			}
 
 			&.highlighted {

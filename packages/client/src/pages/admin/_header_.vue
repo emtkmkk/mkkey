@@ -233,7 +233,7 @@ onUnmounted(() => {
 			border-radius: 0.3125rem;
 
 			&:hover {
-				background: rgba(0, 0, 0, 0.05);
+				background: var(--buttonBg);
 			}
 
 			&.highlighted {

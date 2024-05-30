@@ -600,7 +600,7 @@ console.log(mainRouter.currentRoute.value.name);
 		display: flex;
 		width: 100%;
 		box-sizing: border-box;
-		background: var(--bg);
+		background: var(--footer);
 
 		> .button {
 			position: relative;

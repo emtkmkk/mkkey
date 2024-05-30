@@ -59,6 +59,7 @@ const { t, ts } = i18n;
 import { MenuA, MenuButton, MenuItem, MenuLink } from "@/types/menu";
 import { notePage } from "@/filters/note";
 import { preprocess } from "@/scripts/preprocess";
+import { $i } from "@/account";
 
 const emit = defineEmits<{
 	(ev: "done", v: { canceled: boolean; result: any }): void;
@@ -274,7 +275,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 										  )
 										: "";
 									if (
-										$i.isMiniSilenced &&
+										$i?.isMiniSilenced &&
 										jsonParse[draftKey].data.visibility ===
 											"public"
 									) {

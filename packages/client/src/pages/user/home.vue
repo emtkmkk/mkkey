@@ -435,22 +435,26 @@
 								pinFull
 							"
 						>
-							<XNote
-								v-for="note in user.pinnedNotes"
-								:key="note.id"
-								class="note _block"
-								:note="note"
-								:pinned="true"
-							/>
+							<div class="notes">
+								<XNote
+									v-for="note in user.pinnedNotes"
+									:key="note.id"
+									class="note _block"
+									:note="note"
+									:pinned="true"
+								/>
+							</div>
 						</template>
 						<template v-else>
-							<XNote
-								v-for="note in visiblePinnedNotes"
-								:key="note.id"
-								class="note _block"
-								:note="note"
-								:pinned="true"
-							/>
+							<div class="notes">
+								<XNote
+									v-for="note in visiblePinnedNotes"
+									:key="note.id"
+									class="note _block"
+									:note="note"
+									:pinned="true"
+								/>
+							</div>
 							<MkButton
 								style="
 									text-align: center;
@@ -501,13 +505,15 @@
 					style="margin-top: var(--margin)"
 				/>
 				<div v-if="user.pinnedNotes.length > 0" class="_gap">
-					<XNote
-						v-for="note in user.pinnedNotes"
-						:key="note.id"
-						class="note _block"
-						:note="note"
-						:pinned="true"
-					/>
+					<div class="notes">
+						<XNote
+							v-for="note in user.pinnedNotes"
+							:key="note.id"
+							class="note _block"
+							:note="note"
+							:pinned="true"
+						/>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -1240,5 +1246,10 @@ onUnmounted(() => {
 			margin-left: var(--margin);
 		}
 	}
+}
+
+.notes {
+	background: var(--tlPanel) !important;
+	border-radius: var(--radius);
 }
 </style>

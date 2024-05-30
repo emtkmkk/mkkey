@@ -1,8 +1,9 @@
 import { api } from "@/os";
 import { $i } from "@/account";
-import { Theme } from "./scripts/theme";
+import { Theme, applyTheme } from "./scripts/theme";
 import lightTheme from "@/themes/_light.json5";
 import darkTheme from "@/themes/_dark.json5";
+import { ColdDeviceStorage, defaultStore } from "@/store";
 
 const lsCacheKey = $i ? `themes:${$i.id}` : "";
 
@@ -48,6 +49,15 @@ export async function addTheme(theme: Theme): Promise<void> {
 		key: "themes",
 		value: themes,
 	});
+	let nowThemeId
+	if (defaultStore.state.darkMode) {
+		nowThemeId = ColdDeviceStorage.ref("darkTheme")?.value.id;
+	} else {
+		nowThemeId = ColdDeviceStorage.ref("lightTheme")?.value.id;
+	}
+	if (nowThemeId === theme.id) {
+		applyTheme(theme,true);
+	}
 	localStorage.setItem(lsCacheKey, JSON.stringify(themes));
 }
 

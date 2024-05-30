@@ -36,7 +36,8 @@
 		windowHeader: ':alpha<0.85<@panel',
 		popup: ':lighten<3<@panel',
 		shadow: 'rgba(0, 0, 0, 0.3)',
-		header: ':alpha<0.7<@panel',
+		header: ':alpha<0.85<@bg',
+		footer: '@bg',
 		navBg: '@panel',
 		navFg: '@fg',
 		navHoverFg: ':lighten<17<@fg',
@@ -67,6 +68,8 @@
 		swutchOffFg: '@fg',
 		swutchOnBg: '@accentedBg',
 		swutchOnFg: '@accent',
+		ripples: 'rgba(255, 255, 255, 0.1)'
+		primaryRipples: 'rgba(255, 255, 255, 0.15)'
 		inputBorder: 'rgba(255, 255, 255, 0.1)',
 		inputBorderHover: 'rgba(255, 255, 255, 0.2)',
 		listItemHoverBg: 'rgba(255, 255, 255, 0.03)',

@@ -15,6 +15,7 @@ import lightTheme from "@/themes/_light.json5";
 import darkTheme from "@/themes/_dark.json5";
 import { deepClone } from "./clone";
 import { v4 as uuid } from "uuid";
+import { ColdDeviceStorage } from "@/store";
 
 export const themeProps = Object.keys(lightTheme.props).filter(
 	(key) => !key.startsWith("X"),
@@ -103,6 +104,11 @@ export function applyTheme(theme: Theme, persist = true) {
 	if (persist) {
 		localStorage.setItem("theme", JSON.stringify(props));
 		localStorage.setItem("colorSchema", colorSchema);
+		if (colorSchema === "dark") {
+			ColdDeviceStorage.set("darkTheme", theme);
+		} else {
+			ColdDeviceStorage.set("lightTheme", theme);
+		}
 	}
 
 	// Site-wide notification that the theme has changed

@@ -28,7 +28,7 @@
 						v-model="data[key]"
 						@update:modelValue="updateProperty(key,data[key])"
 					/>
-					<span v-if="value && (checkBackground(value) || isColor(value))">
+					<span v-if="!value || checkBackground(value) || isColor(value)">
 						<MkColorInput
 							format="rgb"
 							shape="circle"

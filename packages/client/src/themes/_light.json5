@@ -26,7 +26,7 @@
 		divider: 'rgba(0, 0, 0, 0.1)',
 		indicator: '@accent',
 		panel: ':lighten<3<@bg',
-		tlPanel: ':alpha<1<@panel',
+		tlPanel: '@panel',
 		panelHighlight: ':darken<3<@panel',
 		panelHeaderBg: ':lighten<3<@panel',
 		panelHeaderFg: '@fg',

@@ -358,13 +358,26 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 		"default-src 'none'; style-src 'unsafe-inline'",
 	);
 
+
 	if (emoji == null) {
 		if ("fallback" in ctx.query) {
 			return await ctx.redirect("/static-assets/user-unknown.png");
-		} else {
-			ctx.status = 404;
-			return;
 		}
+		ctx.status = 404;
+		return;
+	}
+
+	const ngEmoji = 
+	["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(emoji.host ?? config.host) ||
+	emoji.license?.includes("コピー可否 : deny") ||
+	emoji.category?.startsWith("!");
+
+	if (ngEmoji) {
+		if ("fallback" in ctx.query) {
+			return await ctx.redirect("/static-assets/user-unknown.png");
+		}
+		ctx.status = 404;
+		return;
 	}
 
 	let proxy;

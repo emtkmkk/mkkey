@@ -92,6 +92,12 @@ export const packedDriveFileSchema = {
 			nullable: true,
 			format: "url",
 		},
+		originalUrl: {
+			type: "string",
+			optional: false,
+			nullable: true,
+			format: "url",
+		},
 		comment: {
 			type: "string",
 			optional: false,

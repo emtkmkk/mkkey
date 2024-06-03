@@ -44,7 +44,7 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 		return file.properties;
 	},
 
-	getPublicUrl(file: DriveFile, thumbnail = false): string | null {
+	getPublicUrl(file: DriveFile, thumbnail = false, original = false): string | null {
 		// リモートかつメディアプロキシ
 		if (
 			file.uri != null &&
@@ -83,9 +83,16 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 				"image/avif",
 			].includes(file.type);
 
-		return thumbnail
-			? file.thumbnailUrl || (isImage ? file.webpublicUrl || file.url : null)
-			: file.webpublicUrl || file.url;
+		const url = original
+			? file.webpublicUrl && file.url ? file.url : null 
+			: thumbnail
+				? file.thumbnailUrl || (isImage ? file.webpublicUrl || file.url : null)
+				: file.webpublicUrl || file.url;
+
+		return url?.replace(
+			"media.misskeyusercontent.com",
+			"media.misskeyusercontent.jp",
+		) ?? null;
 	},
 
 	async calcDriveUsageOf(
@@ -159,6 +166,7 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 			properties: opts.self ? file.properties : this.getPublicProperties(file),
 			url: opts.self ? file.url : this.getPublicUrl(file, false),
 			thumbnailUrl: this.getPublicUrl(file, true),
+			originalUrl: this.getPublicUrl(file, false, true),
 			comment: file.comment,
 			folderId: file.folderId,
 			folder:

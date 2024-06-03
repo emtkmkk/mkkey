@@ -41,6 +41,9 @@
 			<FormSwitch v-model="loadRawImages" class="_formBlock">{{
 				i18n.ts.loadRawImages
 			}}</FormSwitch>
+			<FormSwitch v-model="loadOriginalImages" class="_formBlock">{{
+				i18n.ts.loadOriginalImages
+			}}</FormSwitch>
 			<FormSwitch v-model="thumbnailCover" class="_formBlock"
 				>{{ i18n.ts.thumbnailCover
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -346,6 +349,7 @@ const showRelationMark = computed(
 	defaultStore.makeGetterSetter("showRelationMark")
 );
 const loadRawImages = computed(defaultStore.makeGetterSetter("loadRawImages"));
+const loadOriginalImages = computed(defaultStore.makeGetterSetter("loadOriginalImages"));
 const instanceTicker = computed(
 	defaultStore.makeGetterSetter("instanceTicker")
 );

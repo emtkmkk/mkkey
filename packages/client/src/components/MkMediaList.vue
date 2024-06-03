@@ -76,7 +76,7 @@ onMounted(() => {
 			})
 			.map((media) => {
 				const item = {
-					src: media.url,
+					src: defaultStore.state.loadOriginalImages ? media.originalUrl || media.url : media.url,
 					w: media.properties.width,
 					h: media.properties.height,
 					title: media.name,

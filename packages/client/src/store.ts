@@ -645,6 +645,12 @@ export const defaultStore = markRaw(
 			default: true,
 			page: "appearance",
 		},
+		loadOriginalImages: {
+			where: "device",
+			default: false,
+			page: "appearance",
+			createdAt: "2024/6/3",
+		},
 		imageNewTab: {
 			where: "device",
 			default: false,

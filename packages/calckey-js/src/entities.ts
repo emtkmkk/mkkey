@@ -127,6 +127,7 @@ export type DriveFile = {
 	name: string;
 	thumbnailUrl: string;
 	url: string;
+	originalUrl: string;
 	type: string;
 	size: number;
 	md5: string;

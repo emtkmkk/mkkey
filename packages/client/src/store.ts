@@ -1439,6 +1439,11 @@ export const defaultStore = markRaw(
 			default: false,
 			createdAt: "2024/6/3",
 		},
+		confirmShowImgCompress: {
+			where: "device",
+			default: false,
+			createdAt: "2024/6/3",
+		},
 	}),
 );
 

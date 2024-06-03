@@ -52,6 +52,8 @@
 				<template #label>{{ "共有コード" }}</template><template #caption
 					><button class="_textButton" @click="copyShareCode()">
 						{{ i18n.ts.copy }}
+					</button><span>{{ " ・ " }}</span><button class="_textButton" @click="postShareCode()">
+						{{ i18n.ts.note }}
 					</button></template
 				>
 			</FormTextarea>
@@ -62,6 +64,7 @@
 				@click="uninstall()"
 				><i class="ph-trash ph-bold ph-lg"></i>
 				{{ i18n.ts.uninstall }}</FormButton
+			>
 			>
 		</template>
 	</div>
@@ -131,6 +134,16 @@ function copyThemeCode() {
 function copyShareCode() {
 	copyToClipboard(shareCode.value);
 	os.success();
+}
+
+async function postShareCode() {
+	if (selectedTheme.value && shareCode.value) {
+		os.post({
+			initialText: `${[selectedTheme.value?.name ? `テーマ名：${selectedTheme.value.name}` : "",selectedTheme.value?.desc ? `説明：${selectedTheme.value.desc}` : "", selectedTheme.value?.author ? `作者：${selectedTheme.value.author}` : [$i?.username ? `@${$i?.username}` : undefined, config.host].join("@")].filter(Boolean).join("\n")}\n\n共有コード：\n\`\`\`\n${shareCode.value}\n\`\`\``,
+			initialLocalOnly: true,
+			instant: true,
+		});
+	}
 }
 
 function uninstall() {

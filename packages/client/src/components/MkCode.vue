@@ -1,10 +1,13 @@
 <template>
-	<div :class="$style.codeBlockRoot">
-		<button :class="$style.codeBlockCopyButton" class="_button" @click="copy">
-			<i class="ph-bold ph-lg ph-copy"></i>
-		</button>
-		<XCode :code="code" :lang="lang" :inline="inline" />
-	</div>
+	<template v-if="!inline">
+		<div :class="$style.codeBlockRoot">
+			<button :class="$style.codeBlockCopyButton" class="_button" @click="copy">
+				<i class="ph-bold ph-lg ph-copy"></i>
+			</button>
+			<XCode :code="code" :lang="lang" :inline="inline" />
+		</div>
+	</template>
+	<XCode v-else :code="code" :lang="lang" :inline="inline" />
 </template>
 
 <script lang="ts" setup>

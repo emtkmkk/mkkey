@@ -112,7 +112,7 @@ const shareCode = computed(() => {
 		}
 	}
 	theme.id = uuid();
-	if (!theme.author.trim()) theme.author = [$i?.username ? `@${$i?.username}` : undefined, config.host].join("@")
+	if (!theme.author?.trim()) theme.author = [$i?.username ? `@${$i?.username}` : undefined, config.host].join("@")
 	return btoa(encodeURIComponent(JSON5.stringify(theme)));
 });
 
@@ -144,7 +144,7 @@ function copyShareCode() {
 async function postShareCode() {
 	if (selectedTheme.value && shareCode.value) {
 		os.post({
-			initialText: `${[selectedTheme.value?.name?.trim() ? `テーマ名：${selectedTheme.value.name}` : "",selectedTheme.value?.desc.trim() ? `説明：${selectedTheme.value.desc}` : "", selectedTheme.value?.author.trim() ? `作者：${selectedTheme.value.author}` : [$i?.username ? `@${$i?.username}` : undefined, config.host].join("@")].filter(Boolean).join("\n")}\n\n共有コード：\n\`\`\`\n${shareCode.value}\n\`\`\``,
+			initialText: `${[selectedTheme.value?.name?.trim() ? `テーマ名：${selectedTheme.value.name}` : "テーマ",selectedTheme.value?.desc?.trim() ? `説明：${selectedTheme.value.desc}` : "", selectedTheme.value?.author?.trim() ? `作者：${selectedTheme.value.author}` : [$i?.username ? `@${$i?.username}` : undefined, config.host].join("@")].filter(Boolean).join("\n")}\n\n共有コード：\n\`\`\`\n${shareCode.value}\n\`\`\``,
 			initialLocalOnly: true,
 			instant: true,
 		});

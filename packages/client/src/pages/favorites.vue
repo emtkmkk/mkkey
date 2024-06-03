@@ -22,11 +22,12 @@
 						:no-gap="false"
 						:ad="false"
 					>
-						<XNote
-							:key="item.id"
-							:note="item.note"
-							:class="$style.note"
-						/>
+						<div :class="$style.note">
+							<XNote
+								:key="item.id"
+								:note="item.note"
+							/>
+						</div>
 					</XList>
 				</template>
 			</MkPagination>
@@ -57,7 +58,7 @@ definePageMetadata({
 
 <style lang="scss" module>
 .note {
-	background: var(--panel);
+	background: var(--tlPanel);
 	border-radius: var(--radius);
 }
 </style>

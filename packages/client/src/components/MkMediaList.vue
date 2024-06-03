@@ -122,7 +122,7 @@ onMounted(() => {
 		const id = element.dataset.id;
 		const file = props.mediaList.find((media) => media.id === id);
 
-		itemData.src = file.url;
+		itemData.src = defaultStore.state.loadOriginalImages ? file.originalUrl || file.url : file.url;
 		itemData.w = Number(file.properties.width);
 		itemData.h = Number(file.properties.height);
 		if (

@@ -27,12 +27,13 @@
 					:ad="true"
 					class="notes"
 				>
-					<XNote
-						:key="note._featuredId_ || note._prId_ || note.id"
-						class="qtqtichx"
-						:note="note"
-						:endpoint="pagination.endpoint"
-					/>
+					<div class="qtqtichx">
+						<XNote
+							:key="note._featuredId_ || note._prId_ || note.id"
+							:note="note"
+							:endpoint="pagination.endpoint"
+						/>
+					</div>
 				</XList>
 			</div>
 		</template>

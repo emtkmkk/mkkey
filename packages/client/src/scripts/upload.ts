@@ -49,7 +49,7 @@ export function uploadFile(
 			if (!defaultStore.state.confirmImgCompress && file.type in compressTypeMap) {
 				const { canceled } = await os.yesno({
 					type: "question",
-					text: "アップロードした画像を圧縮しますか？\njpg/webpの場合、画質が下がりpng画像に変換されます。\n画像に付与されているメタデータが削除されます。\n縦幅、または横幅のどちらかが2048pxを超えている場合、2048pxに収まるように画像が縮小されます。\n\nここで選択した設定は次回以降のデフォルトとして設定されます。",
+					text: "アップロードした画像を圧縮しますか？\n\njpg/webpの場合、画質が下がりpng画像に変換されます。\n画像に付与されているメタデータが削除されます。\n縦幅、または横幅のどちらかが2048pxを超えている場合、2048pxに収まるように画像が縮小されます。\n\nここで選択した設定は次回以降のデフォルトとして設定されます。",
 				})
 				defaultStore.set("keepOriginalUploading", canceled);
 				keepOriginal = canceled;

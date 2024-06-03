@@ -390,9 +390,9 @@ onMounted(async () => {
 					type: "question",
 					text: "この投稿には高画質のオリジナル画像が添付されています。\n画像を拡大表示した際に常に高画質のオリジナル画像を表示しますか？\n\nはいにした場合、通信量が増加します。\nいいえにした場合、横幅か縦幅の長い方が2048pxまで縮小されます。（画像ダウンロードの際の画質にも影響します。）\n\nここで選択した設定は次回以降のデフォルトとして設定されます。",
 				})
-				defaultStore.set("loadOriginalImages", canceled);
+				defaultStore.set("loadOriginalImages", !canceled);
 				defaultStore.set("confirmShowImgCompress", true);
-				if (canceled) location.reload();
+				if (!canceled) location.reload();
 	}
 });
 

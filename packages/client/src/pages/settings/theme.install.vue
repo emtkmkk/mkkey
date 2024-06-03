@@ -9,21 +9,21 @@
 			style="display: flex; gap: var(--margin); flex-wrap: wrap"
 		>
 			<FormButton
-				v-show="!installThemeCode?.length"
+				v-show="!installThemeCode?.trim().length"
 				inline
 				@click="() => loadTheme()"
 				><i class="ph-palette ph-bold ph-lg"></i>
 				{{ i18n.ts.loadTheme }}</FormButton
 			>
 			<FormButton
-				v-show="installThemeCode?.length"
+				v-show="installThemeCode?.trim().length"
 				inline
 				@click="() => preview(installThemeCode)"
 				><i class="ph-eye ph-bold ph-lg"></i>
 				{{ i18n.ts.preview }}</FormButton
 			>
 			<FormButton
-				v-show="installThemeCode?.length"
+				v-show="installThemeCode?.trim().length"
 				primary
 				inline
 				@click="() => install(installThemeCode)"

@@ -177,7 +177,7 @@ function genValue(c: tinycolor.Instance): string {
 }
 
 export function validateTheme(theme: Record<string, any>): boolean {
-	if (theme.id == null || !theme.id || typeof theme.id !== "string") theme.id = uuid();
+	if (theme.id == null || typeof theme.id !== "string" || !theme.id.trim()) theme.id = uuid();
 	if (theme.name == null || typeof theme.name !== "string") return false;
 	if (theme.base == null || !["light", "dark"].includes(theme.base))
 		return false;

@@ -30,7 +30,7 @@ export async function addTheme(theme: Theme): Promise<void> {
 	const base = [lightTheme, darkTheme].find((x) => x.id === theme.base);
 	if (base) {
 		for (const prop in theme.props) {
-			if (theme.props[prop] === base.props[prop]) {
+			if (theme.props[prop] === base.props[prop] || !theme.props[prop].trim()) {
 				delete theme.props[prop];
 			}
 		}

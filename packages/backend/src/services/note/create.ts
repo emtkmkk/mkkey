@@ -70,6 +70,7 @@ import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
 import renderDelete from "@/remote/activitypub/renderer/delete.js";
 import renderTombstone from "@/remote/activitypub/renderer/tombstone.js";
+import { fetchMeta } from "@/misc/fetch-meta.js";
 
 const mutedWordsCache = new Cache<
 	{ userId: UserProfile["userId"]; mutedWords: UserProfile["mutedWords"] }[]
@@ -276,6 +277,13 @@ export default async (
 			data.text += ` #${data.channel!.name}`;
 		}
 		if (data.visibility === "hidden") data.visibility = "public";
+		//LTLが無効ならホームに
+		if (!user.host && data.channel == null && data.visibility === "public") {
+			const m = await fetchMeta();
+			if (m.disableLocalTimeline) {
+				data.visibility = "home";
+			}
+		}
 
 		// Twitterのstatusリンクの場合、?以降を取り除く
 		if (

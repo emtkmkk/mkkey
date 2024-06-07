@@ -135,7 +135,7 @@ let queueActive = $ref(false);
 let timelines = [];
 
 if (
-	isLocalTimelineAvailable &&
+	(!isLocalTimelineAvailable && defaultStore.state.showLocalPostsInTimeline === "none" ) ||
 	(defaultStore.state.showLocalPostsInTimeline === "social" ||
 		defaultStore.state.showLocalPostsInTimeline === "both")
 ) {
@@ -449,7 +449,7 @@ const headerActions = $computed(() => [
 // Swap home timeline with social's functionality
 
 const headerTabs = $computed(() => [
-	...(isLocalTimelineAvailable &&
+	...((!isLocalTimelineAvailable && defaultStore.state.showLocalPostsInTimeline === "none" ) ||
 	(defaultStore.state.showLocalPostsInTimeline === "social" ||
 		defaultStore.state.showLocalPostsInTimeline === "both")
 		? [
@@ -591,7 +591,8 @@ definePageMetadata(
 				: src === "global"
 				? "ph-planet ph-bold ph-lg"
 				: src === "home" &&
-				  defaultStore.state.showLocalPostsInTimeline === "home"
+				  defaultStore.state.showLocalPostsInTimeline === "home" &&
+					isLocalTimelineAvailable
 				? "ph-handshake ph-bold ph-lg"
 				: "ph-house ph-bold ph-lg",
 	}))

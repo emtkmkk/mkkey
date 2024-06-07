@@ -656,7 +656,8 @@ import {
 			if (
 				defaultStore.state.tutorial === -1 &&
 				defaultStore.isDefault("showLocalPostsInfoPopup") &&
-				$i.followingCount >= 10
+				$i.followingCount >= 10 &&
+				!instance.disableLocalTimeline
 			) {
 				if (defaultStore.isDefault("showLocalPostsInTimeline")) {
 					const { canceled } = await yesno({

@@ -65,6 +65,7 @@ import { $i } from "@/account";
 import { PostBlock } from "@/scripts/hpml/block";
 import { Hpml } from "@/scripts/hpml/evaluator";
 import { defaultStore } from "@/store";
+import { instance } from "@/instance";
 
 export default defineComponent({
 	components: {
@@ -222,7 +223,7 @@ export default defineComponent({
 					canLocalSwitch: false,
 					canVisibilitySwitch: true,
 					forceMode: false,
-					canPublic: !$i.blockPostPublic && !$i.isSilenced,
+					canPublic: !$i.blockPostPublic && !$i.isSilenced && !instance.disableLocalTimeline,
 					canHome: !$i.blockPostHome && !$i.isSilenced,
 					canFollower: true,
 					canNotLocal: !$i.blockPostNotLocal && !$i.isSilenced,

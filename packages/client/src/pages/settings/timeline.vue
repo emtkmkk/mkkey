@@ -2,9 +2,9 @@
 	<div class="_formRoot">
 		<FormSection>
 			<template #label></template>
-			<FormRadios v-model="showLocalPostsInTimeline" class="_formBlock">
+			<FormRadios v v-model="showLocalPostsInTimeline" class="_formBlock">
 				<template #label>{{ i18n.ts.showLocalPosts }}</template>
-				<option value="home">
+				<option v-if="!instance.disableLocalTimeline" value="home">
 					<i class="ph-handshake ph-bold ph-lg" />
 					{{ i18n.ts.homeTimeline }}
 				</option>
@@ -12,7 +12,7 @@
 					<i class="ph-house ph-bold ph-lg" />
 					{{ i18n.ts.socialTimeline }}
 				</option>
-				<option value="both">
+				<option v-if="!instance.disableLocalTimeline" value="both">
 					<i class="ph-house ph-bold ph-lg" />
 					<i class="ph-handshake ph-bold ph-lg" />
 					{{ i18n.ts.bothTimeline }}
@@ -21,7 +21,7 @@
 					{{ i18n.ts.hidden }}
 				</option>
 			</FormRadios>
-			<FormSwitch v-model="hiddenLTL" class="_formBlock"
+			<FormSwitch :disable="instance.disableLocalTimeline" v-model="hiddenLTL" class="_formBlock"
 				>{{ i18n.ts.hiddenLTL
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -41,7 +41,7 @@
 					}}{{ i18n.ts.hiddenLTLDescription }}</template
 				></FormSwitch
 			>
-			<FormSwitch v-model="hiddenGTL" class="_formBlock"
+			<FormSwitch :disable="instance.disableGlobalTimeline" v-model="hiddenGTL" class="_formBlock"
 				>{{ i18n.ts.hiddenGTL
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -139,6 +139,7 @@
 			>
 			<FormSwitch
 				v-model="showLocalTimelineBelowPublic"
+				:disable="instance.disableLocalTimeline"
 				class="_formBlock"
 				>{{ i18n.ts.showLocalTimelineBelowPublic
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -224,6 +225,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
+import { instance } from "@/instance";
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;

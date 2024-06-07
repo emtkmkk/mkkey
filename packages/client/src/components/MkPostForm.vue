@@ -871,7 +871,9 @@ let canPublic = $ref(
 		(!props.renote || props.renote.visibility === "public") &&
 		(!props.airReply || props.initialVisibility === "public") &&
 		!$i.blockPostPublic &&
-		!$i.isSilenced
+		!$i.isSilenced && 
+		!instance.disableLocalTimeline
+
 );
 let canHome = $ref(
 	(!reply || ["public", "home"].includes(reply.visibility)) &&

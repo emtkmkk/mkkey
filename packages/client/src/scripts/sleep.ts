@@ -2,6 +2,7 @@ import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { mainRouter } from "@/router";
 import { defaultStore } from "@/store";
+import { $i } from "@/account";
 
 export async function sleep() {
 	const { canceled } = await os.yesno({

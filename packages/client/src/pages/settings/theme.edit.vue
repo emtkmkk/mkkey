@@ -5,7 +5,7 @@
 			style="display: flex; gap: var(--margin); flex-wrap: wrap"
 		>
 			<FormButton
-				:disable="
+				:disabled="
 					!installThemeCode || !Object.keys(installThemeCode)?.length
 				"
 				inline
@@ -16,7 +16,7 @@
 				{{ i18n.ts.preview }}</FormButton
 			>
 			<FormButton
-				:disable="
+				:disabled="
 					!installThemeCode || !Object.keys(installThemeCode)?.length
 				"
 				primary

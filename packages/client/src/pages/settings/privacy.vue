@@ -47,6 +47,7 @@
 		<FormSection>
 			<FormSwitch
 				v-model="blockPostPublic"
+				:disabled="instance.disableLocalTimeline"
 				class="_formBlock"
 				@update:modelValue="save()"
 				>{{ i18n.ts.blockPostPublic
@@ -648,11 +649,12 @@ import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 import { $i } from "@/account";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { instance } from "@/instance";
 
 let isLocked = $ref($i.isLocked);
 let isSilentLocked = $ref($i.isSilentLocked);
 let isRemoteLocked = $ref($i.isRemoteLocked);
-let blockPostPublic = $ref($i.blockPostPublic);
+let blockPostPublic = $ref($i.blockPostPublic || instance.disableLocalTimeline);
 let blockPostHome = $ref($i.blockPostHome);
 let blockPostNotLocal = $ref($i.blockPostNotLocal);
 let blockPostNotLocalPublic = $ref($i.blockPostNotLocalPublic);

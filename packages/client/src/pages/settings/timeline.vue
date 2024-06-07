@@ -2,9 +2,9 @@
 	<div class="_formRoot">
 		<FormSection>
 			<template #label></template>
-			<FormRadios v v-model="showLocalPostsInTimeline" class="_formBlock">
+			<FormRadios v-if="!instance.disableLocalTimeline" v-model="showLocalPostsInTimeline" class="_formBlock">
 				<template #label>{{ i18n.ts.showLocalPosts }}</template>
-				<option v-if="!instance.disableLocalTimeline" value="home">
+				<option value="home">
 					<i class="ph-handshake ph-bold ph-lg" />
 					{{ i18n.ts.homeTimeline }}
 				</option>
@@ -12,7 +12,7 @@
 					<i class="ph-house ph-bold ph-lg" />
 					{{ i18n.ts.socialTimeline }}
 				</option>
-				<option v-if="!instance.disableLocalTimeline" value="both">
+				<option value="both">
 					<i class="ph-house ph-bold ph-lg" />
 					<i class="ph-handshake ph-bold ph-lg" />
 					{{ i18n.ts.bothTimeline }}
@@ -21,7 +21,17 @@
 					{{ i18n.ts.hidden }}
 				</option>
 			</FormRadios>
-			<FormSwitch :disable="instance.disableLocalTimeline" v-model="hiddenLTL" class="_formBlock"
+			<FormRadios v-else v-model="showLocalPostsInTimeline" class="_formBlock">
+				<template #label>{{ i18n.ts.showLocalPosts }}</template>
+				<option value="social">
+					<i class="ph-house ph-bold ph-lg" />
+					{{ i18n.ts.socialTimeline }}
+				</option>
+				<option value="none">
+					{{ i18n.ts.hidden }}
+				</option>
+			</FormRadios>
+			<FormSwitch :disabled="instance.disableLocalTimeline" v-model="hiddenLTL" class="_formBlock"
 				>{{ i18n.ts.hiddenLTL
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -41,7 +51,7 @@
 					}}{{ i18n.ts.hiddenLTLDescription }}</template
 				></FormSwitch
 			>
-			<FormSwitch :disable="instance.disableGlobalTimeline" v-model="hiddenGTL" class="_formBlock"
+			<FormSwitch :disabled="instance.disableGlobalTimeline" v-model="hiddenGTL" class="_formBlock"
 				>{{ i18n.ts.hiddenGTL
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -139,7 +149,7 @@
 			>
 			<FormSwitch
 				v-model="showLocalTimelineBelowPublic"
-				:disable="instance.disableLocalTimeline"
+				:disabled="instance.disableLocalTimeline"
 				class="_formBlock"
 				>{{ i18n.ts.showLocalTimelineBelowPublic
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{

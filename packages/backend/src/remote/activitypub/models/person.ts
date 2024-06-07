@@ -828,6 +828,7 @@ export async function updatePerson(
 		movedToUri: person.movedTo || null,
 		alsoKnownAs: person.alsoKnownAs || null,
 		isExplorable: !!person.discoverable,
+		isDeleted: false,
 	} as Partial<User>;
 
 	if (avatar) {

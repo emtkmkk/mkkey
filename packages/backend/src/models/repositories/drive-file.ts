@@ -90,6 +90,9 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 				: file.webpublicUrl || file.url;
 
 		return url?.replace(
+			"s3.arkjp.net",
+			"media.misskeyusercontent.jp",
+		)?.replace(
 			"media.misskeyusercontent.com",
 			"media.misskeyusercontent.jp",
 		) ?? null;

@@ -55,6 +55,7 @@ import {
 	FollowBlockings,
 } from "../index.js";
 import type { Instance } from "../entities/instance.js";
+import { resolveUser } from "@/remote/resolve-user.js";
 
 const userInstanceCache = new Cache<Instance | null>(1000 * 60 * 60 * 3);
 
@@ -466,6 +467,13 @@ export const UserRepository = db.getRepository(User).extend({
 					banner: true,
 				},
 			});
+		}
+
+		if (user.host && user.lastFetchedAt && Date.now() - new Date(user.lastFetchedAt).getTime() > (48 * 60 * 60 * 1000)) {
+			const ruser = await resolveUser(user.username, user.host).catch((e) => {
+				console.log(`failed to resolve remote user: ${e}`);
+			});
+			if (ruser) user = ruser;
 		}
 
 		const meId = me ? me.id : null;

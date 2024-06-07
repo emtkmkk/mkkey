@@ -473,7 +473,15 @@ export const UserRepository = db.getRepository(User).extend({
 			const ruser = await resolveUser(user.username, user.host).catch((e) => {
 				console.log(`failed to resolve remote user: ${e}`);
 			});
-			if (ruser) user = ruser;
+			if (ruser) {
+				user = await this.findOneOrFail({
+					where: { id: ruser.id },
+					relations: {
+						avatar: true,
+						banner: true,
+					},
+				});
+			}
 		}
 
 		const meId = me ? me.id : null;

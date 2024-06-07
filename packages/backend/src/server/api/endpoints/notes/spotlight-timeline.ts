@@ -69,12 +69,14 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	const m = await fetchMeta();
-	if (m.disableLocalTimeline) {
-		if (user == null || !(user.isAdmin || user.isModerator)) {
-			throw new ApiError(meta.errors.ltlDisabled);
+	/*
+		const m = await fetchMeta();
+		if (m.disableLocalTimeline) {
+			if (user == null || !(user.isAdmin || user.isModerator)) {
+				throw new ApiError(meta.errors.ltlDisabled);
+			}
 		}
-	}
+	*/
 
 	const followees = await Followings.createQueryBuilder("following")
 		.select("following.followeeId")

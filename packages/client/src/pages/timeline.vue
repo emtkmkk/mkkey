@@ -135,7 +135,7 @@ let queueActive = $ref(false);
 let timelines = [];
 
 if (
-	(!isLocalTimelineAvailable && defaultStore.state.showLocalPostsInTimeline === "none" ) ||
+	(!isLocalTimelineAvailable && defaultStore.state.showLocalPostsInTimeline !== "none" ) ||
 	(defaultStore.state.showLocalPostsInTimeline === "social" ||
 		defaultStore.state.showLocalPostsInTimeline === "both")
 ) {
@@ -449,7 +449,7 @@ const headerActions = $computed(() => [
 // Swap home timeline with social's functionality
 
 const headerTabs = $computed(() => [
-	...((!isLocalTimelineAvailable && defaultStore.state.showLocalPostsInTimeline === "none" ) ||
+	...((!isLocalTimelineAvailable && defaultStore.state.showLocalPostsInTimeline !== "none" ) ||
 	(defaultStore.state.showLocalPostsInTimeline === "social" ||
 		defaultStore.state.showLocalPostsInTimeline === "both")
 		? [

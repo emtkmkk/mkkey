@@ -36,6 +36,7 @@ const fetchData = async () => {
 		).filter((x) =>
 			props.hiddenOfflineSleep
 				? !(
+						x.onlineStatus?.includes("unknown") ||
 						x.onlineStatus?.includes("offline") ||
 						x.onlineStatus?.includes("sleep")
 				  )

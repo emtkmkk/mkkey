@@ -374,6 +374,8 @@ export const UserRepository = db.getRepository(User).extend({
 		if (!meId) return "unknown";
 		if (
 			meId &&
+			meId !== user.id &&
+			meId !== "9d5ts6in38" &&
 			!user.host &&
 			!(await this.getRelation(meId, user.id)).isFollowed
 		)

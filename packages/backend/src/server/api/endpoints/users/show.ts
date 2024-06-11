@@ -122,7 +122,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				}),
 			),
 		);
-	} else {
+	}
 		// Lookup user
 		if (typeof ps.host === "string" && typeof ps.username === "string") {
 			user = await resolveUser(ps.username, ps.host).catch((e) => {
@@ -133,7 +133,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			const q: FindOptionsWhere<User> =
 				ps.userId != null
 					? { id: ps.userId }
-					: { usernameLower: ps.username!.toLowerCase(), host: IsNull() };
+					: { usernameLower: ps.username?.toLowerCase(), host: IsNull() };
 
 			user = await Users.findOneBy(q);
 		}
@@ -148,5 +148,4 @@ export default define(meta, paramDef, async (ps, me) => {
 		return await Users.pack(user, me, {
 			detail: true,
 		});
-	}
 });

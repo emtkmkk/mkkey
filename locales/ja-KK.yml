@@ -12,7 +12,6 @@ driveFileDeleteConfirm: "ファイル「{name}」を削除しますか？この�
 note: "ｶｷｰｺ"
 notes: "ｶｷｰｺ"
 cantRenote: "このｶｷｰｺはRTできません。"
-pinnedNote: "ピン留めされたｶｷｰｺ"
 noteReactionMenu: "ｶｷｰｺの絵文字タップ時メニューを表示"
 reactionsPostHiddens: "このフォルダをｶｷｰｺ時非表示に"
 firstPostButtonVisibilityForce: "1つ目のｶｷｰｺボタンを使用した際、強制的にこの公開範囲でｶｷｰｺする"

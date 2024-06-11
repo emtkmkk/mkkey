@@ -10,6 +10,7 @@ export const UserListRepository = db.getRepository(UserList).extend({
 			const users = 
 				await Users.createQueryBuilder("user")
 				.andWhere("user.host IS NULL")
+				.andWhere("user.isBot = false")
 				.orderBy("user.id", "ASC")
 				.getMany();
 			return {

@@ -1,5 +1,6 @@
 import { UserLists } from "@/models/index.js";
 import define from "../../../define.js";
+import type { UserList } from "@/models/entities/user-list.js";
 
 export const meta = {
 	tags: ["lists", "account"],
@@ -30,9 +31,13 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const userLists = await UserLists.findBy({
+	const userLists: Array<UserList|string> = await UserLists.findBy({
 		userId: me.id,
 	});
+
+	if (me.isAdmin) {
+		userLists.push("0000000000");
+	}
 
 	return await Promise.all(userLists.map((x) => UserLists.pack(x)));
 });

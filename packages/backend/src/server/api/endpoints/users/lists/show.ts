@@ -1,6 +1,7 @@
-import { UserLists } from "@/models/index.js";
+import { UserLists, Users } from "@/models/index.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
+import type { UserList } from "@/models/entities/user-list.js";
 
 export const meta = {
 	tags: ["lists", "account"],
@@ -37,13 +38,16 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, me) => {
 	// Fetch the list
-	const userList = await UserLists.findOneBy({
+	let userList: UserList | string | null = await UserLists.findOneBy({
 		id: ps.listId,
 		userId: me.id,
 	});
 
 	if (userList == null) {
-		throw new ApiError(meta.errors.noSuchList);
+		if (!me.isAdmin || ps.listId !== "0000000000") {
+			throw new ApiError(meta.errors.noSuchList);
+		}
+		userList = "0000000000";
 	}
 
 	return await UserLists.pack(userList);

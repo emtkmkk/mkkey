@@ -9,7 +9,7 @@ export const UserListRepository = db.getRepository(UserList).extend({
 		if (typeof src === "object" ? src.id === "0000000000" : src === "0000000000" ) {
 			const users = 
 				await Users.createQueryBuilder("user")
-				.andWhere("user.host IS NOT NULL")
+				.andWhere("user.host IS NULL")
 				.orderBy("user.id", "ASC")
 				.getMany();
 			return {

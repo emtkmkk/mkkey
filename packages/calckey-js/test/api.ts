@@ -161,7 +161,7 @@ describe("API", () => {
 				body: JSON.stringify({
 					error: {
 						message:
-							"Internal error occurred. Please contact us if the error persists.",
+							"サーバ側でなにかエラーが発生しました。連続で出る場合はご連絡ください。",
 						code: "INTERNAL_ERROR",
 						id: "5d37dbcb-891e-41ca-a3d6-e690c97775ac",
 						kind: "server",

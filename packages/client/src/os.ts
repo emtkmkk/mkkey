@@ -893,7 +893,12 @@ export function post(props: Record<string, any> = {}) {
 export const deckGlobalEvents = new EventEmitter();
 
 async function errortoast(res, body, endpoint, parameter) {
-	const message = body.error.message;
+	const message = 
+		body.error.code === "INTERNAL_ERROR" 
+		? body.error.info?.code === "QueryFailedError" && body.error.info?.message.includes("timeout")
+			? "DBから応答が返ってきませんでした。サーバー負荷が高い状態の可能性があります。" 
+			: body.error.info?.message || body.error.message 
+		: body.error.message;
 
 	toast(`${[res.status, message].join(" ")}`);
 

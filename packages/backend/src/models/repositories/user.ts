@@ -706,6 +706,7 @@ export const UserRepository = db.getRepository(User).extend({
 					? "🗑"
 					: user.name
 				: undefined,
+			fixedName: user.fixedName,
 			memo: memo?.memo ? memo.memo : undefined,
 			...(opts.detail
 				? {

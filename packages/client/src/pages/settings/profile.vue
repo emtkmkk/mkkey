@@ -45,6 +45,21 @@
 			<template #label>{{ i18n.ts._profile.name }}</template>
 		</FormInput>
 
+		<FormInput
+			v-if="!$i?.fixedName"
+			v-model="profile.fixedName"
+			ref="nameareaEl"
+			:disabled="$i?.fixedName"
+			:max="30"
+			manual-save
+			class="_formBlock"
+		>
+			<template #label>{{ i18n.ts._profile.fixedName }}</template>
+			<template #caption>{{
+				i18n.ts._profile.fixedNameDescription
+			}}</template>
+		</FormInput>
+
 		<FormTextarea
 			v-model="profile.description"
 			ref="descriptionareaEl"
@@ -179,6 +194,20 @@
 				i18n.ts.mkkey
 			}}</span></FormSwitch
 		>
+		<FormInput
+			v-if="$i?.fixedName"
+			v-model="profile.fixedName"
+			ref="nameareaEl"
+			:disabled="$i?.fixedName"
+			:max="30"
+			manual-save
+			class="_formBlock"
+		>
+			<template #label>{{ i18n.ts._profile.fixedName }}</template>
+			<template #caption>{{
+				i18n.ts._profile.fixedNameDescription
+			}}</template>
+		</FormInput>
 		<div v-if="saveButton == true">
 			<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 		</div>
@@ -209,6 +238,7 @@ const nameareaEl = $ref(null);
 
 const profile = reactive({
 	name: $i?.name,
+	fixedName: $i?.fixedName,
 	description: $i?.description,
 	location: $i?.location,
 	birthday: $i?.birthday,
@@ -273,6 +303,7 @@ function saveFields() {
 function save() {
 	os.apiWithDialog("i/update", {
 		name: profile.name || null,
+		fixedName: profile.fixedName || null,
 		description: profile.description || null,
 		location: profile.location || null,
 		birthday: profile.birthday || null,

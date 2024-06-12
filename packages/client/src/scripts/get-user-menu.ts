@@ -158,8 +158,8 @@ export function getUserMenu(user, router: Router = mainRouter) {
 	async function setCustomName(): Promise<void> {
 		const { canceled, result: input } = await os.inputText({
 			title: i18n.ts.addCustomname,
-			placeholder: user.originalName || "",
-			default: user.originalName ? user.name : "",
+			placeholder: user.fixedName || user.originalName || "",
+			default: user.originalName ? user.name : user.fixedName || "",
 		});
 		if (canceled) {
 			return;

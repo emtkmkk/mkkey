@@ -139,6 +139,7 @@ export const paramDef = {
 		mutedWords: { type: "array" },
 		reactionMutedWords: { type: "array" },
 		rejectMuteReaction: { type: "boolean" },
+		fixedName: { ...Users.nameSchema, nullable: true },
 		mutedInstances: {
 			type: "array",
 			items: {
@@ -199,6 +200,22 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		if (isIncludeNgWord(ps.description))
 			throw new ApiError(meta.errors.detectBannedWords);
 		profileUpdates.description = ps.description;
+	}
+	if (ps.fixedName != null) {
+		if (!_user.isAdmin && ps.name.toLowerCase().includes("admin"))
+			throw new ApiError(meta.errors.detectBannedWords, {
+				reason: "You are not the admin.",
+			});
+		if (
+			!(_user.isAdmin || _user.isModerator) &&
+			ps.name.toLowerCase().includes("moderator")
+		)
+			throw new ApiError(meta.errors.detectBannedWords, {
+				reason: "You are not a moderator.",
+			});
+		if (isIncludeNgWord(ps.name))
+			throw new ApiError(meta.errors.detectBannedWords);
+		updates.fixedName = ps.fixedName;
 	}
 	if (ps.lang !== undefined) profileUpdates.lang = ps.lang;
 	if (ps.location !== undefined) profileUpdates.location = ps.location;

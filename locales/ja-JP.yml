@@ -1840,6 +1840,7 @@ _drafts:
 _profile:
   name: "名前"
   username: "ユーザー名"
+  fixedName: "自分を示す名前"
   description: "自己紹介"
   youCanIncludeHashtags: "MFMやハッシュタグを含められます。"
   metadata: "追加情報"
@@ -1850,6 +1851,7 @@ _profile:
   changeAvatar: "アバター画像を変更"
   changeBanner: "バナー画像を変更"
   locationDescription: "英語表記の都市名から始まる内容を入力すると、現地時間がユーザーページに表示されます。"
+  fixedNameDescription: "一度設定すると変更できません。他サービスなどで使用している、自分を示すなるべくユニークな名前を入力してください。基本表示されませんが、ユーザがニックネームを設定する際などにヒントとして表示されます。（表示箇所は今後増える可能性があります）"
 _exportOrImport:
   allNotes: "全ての投稿"
   followingList: "フォロー"

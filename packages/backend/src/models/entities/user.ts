@@ -336,6 +336,12 @@ export class User {
 	})
 	public inviteUserId: string;
 
+	@Column('varchar', {
+		length: 128, nullable: true,
+		comment: 'The name of the User.',
+	})
+	public fixedName: string | null;
+
 	@Column('integer', {
 		default: 0,
 	})

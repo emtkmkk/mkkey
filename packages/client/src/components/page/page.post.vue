@@ -1,5 +1,5 @@
 <template>
-	<div v-if="text" class="ngbfujlo">
+	<div v-if="text && ($i != null || !forceLocalOnly)" class="ngbfujlo">
 		<MkTextarea :model-value="text" readonly style="margin: 0"></MkTextarea>
 		<MkButton
 			v-if="$i != null"
@@ -97,10 +97,12 @@ export default defineComponent({
 			posted: false,
 			posting: false,
 			localOnly:
+				this.block.localOnly ||
 				defaultStore.state.pagelocalAndFollower[this.hpml.page.id] ||
 				(defaultStore.state.rememberNoteVisibility
 					? defaultStore.state.localAndFollower
 					: defaultStore.state.defaultNoteLocalAndFollower),
+			forceLocalOnly: this.block.localOnly,
 			visibility:
 				defaultStore.state.pageVisibility[this.hpml.page.id] ||
 				(defaultStore.state.rememberNoteVisibility
@@ -188,7 +190,7 @@ export default defineComponent({
 				text: this.text === "" ? null : this.text,
 				fileIds: file ? [file.id] : undefined,
 				visibility: this.visibility,
-				localOnly: this.localOnly,
+				localOnly: this.forceLocalOnly || this.localOnly,
 			}).then(() => {
 				this.posted = true;
 			});
@@ -226,7 +228,7 @@ export default defineComponent({
 					canPublic: !$i.blockPostPublic && !$i.isSilenced && !instance.disableLocalTimeline,
 					canHome: !$i.blockPostHome && !$i.isSilenced,
 					canFollower: true,
-					canNotLocal: !$i.blockPostNotLocal && !$i.isSilenced,
+					canNotLocal: this.forceLocalOnly && !$i.blockPostNotLocal && !$i.isSilenced,
 					canDirect: false,
 				},
 				{

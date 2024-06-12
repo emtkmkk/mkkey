@@ -47,6 +47,7 @@ export type TextareaBlock = BlockBase & {
 export type PostBlock = BlockBase & {
 	type: "post";
 	text: string;
+	localOnly: boolean;
 	attachCanvasImage: boolean;
 	canvasId: string;
 };

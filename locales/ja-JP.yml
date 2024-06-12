@@ -1949,6 +1949,7 @@ _pages:
       text: "内容"
       attachCanvasImage: "キャンバスの画像を添付する"
       canvasId: "キャンバスID"
+      localOnly: "リモートフォロワーを強制させる（未ログイン使用不可）"
     textInput: "テキスト入力"
     _textInput:
       name: "変数名"

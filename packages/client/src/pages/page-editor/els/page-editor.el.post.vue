@@ -11,6 +11,11 @@
 					i18n.ts._pages.blocks._post.text
 				}}</template></MkTextarea
 			>
+			<MkSwitch v-model="value.localOnly"
+				><span>{{
+					i18n.ts._pages.blocks._post.localOnly
+				}}</span></MkSwitch
+			>
 			<MkSwitch v-model="value.attachCanvasImage"
 				><span>{{
 					i18n.ts._pages.blocks._post.attachCanvasImage
@@ -41,6 +46,7 @@ withDefaults(
 		value: {
 			text: "",
 			attachCanvasImage: false,
+			localOnly: false,
 			canvasId: "",
 		},
 	}

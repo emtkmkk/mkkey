@@ -228,7 +228,7 @@ export default defineComponent({
 					canPublic: !$i.blockPostPublic && !$i.isSilenced && !instance.disableLocalTimeline,
 					canHome: !$i.blockPostHome && !$i.isSilenced,
 					canFollower: true,
-					canNotLocal: this.forceLocalOnly && !$i.blockPostNotLocal && !$i.isSilenced,
+					canNotLocal: !this.forceLocalOnly && !$i.blockPostNotLocal && !$i.isSilenced,
 					canDirect: false,
 				},
 				{

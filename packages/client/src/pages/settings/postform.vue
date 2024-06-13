@@ -101,6 +101,12 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormSwitch v-model="hiddenDraftButton" class="_formBlock"
+				>{{ i18n.ts.hiddenDraftButton
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="keepPostCw" class="_formBlock"
 				>{{ i18n.ts.keepPostCw
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -189,6 +195,9 @@ const notCloseEmojiPicker = computed(
 const hiddenMFMHelp = computed(defaultStore.makeGetterSetter("hiddenMFMHelp"));
 const hiddenMentionButton = computed(
 	defaultStore.makeGetterSetter("hiddenMentionButton")
+);
+const hiddenDraftButton = computed(
+	defaultStore.makeGetterSetter("hiddenDraftButton")
 );
 const hiddenCloseButton = computed(
 	defaultStore.makeGetterSetter("hiddenCloseButton")

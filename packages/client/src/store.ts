@@ -1345,7 +1345,7 @@ export const defaultStore = markRaw(
 		},
 		showTlReloadButton: {
 			where: "deviceAccount",
-			default: false,
+			default: true,
 			createdAt: "2024/05/27",
 			page: "timeline",
 		},
@@ -1443,6 +1443,11 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 			createdAt: "2024/6/3",
+		},
+		hiddenDraftButton: {
+			where: "device",
+			default: false,
+			createdAt: "2024/6/13",
 		},
 	}),
 );

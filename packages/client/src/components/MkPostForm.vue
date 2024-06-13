@@ -83,6 +83,7 @@
 					></span>
 				</button>
 				<button
+					v-if="!$store.state.hiddenDraftButton"
 					class="_button visibility"
 					:class="{ addblank: $store.state.hiddenMFMHelp }"
 					@click="openDraft"

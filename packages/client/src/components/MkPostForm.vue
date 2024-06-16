@@ -795,6 +795,7 @@ const props = withDefaults(
 		autofocus?: boolean;
 		key?: string;
 		airReply?: misskey.entities.Note;
+		forceSpecified?: boolean;
 	}>(),
 	{
 		initialVisibleUsers: () => [],
@@ -873,7 +874,8 @@ let canPublic = $ref(
 		(!props.airReply || props.initialVisibility === "public") &&
 		!$i.blockPostPublic &&
 		!$i.isSilenced && 
-		!instance.disableLocalTimeline
+		!instance.disableLocalTimeline &&
+		!props.forceSpecified
 
 );
 let canHome = $ref(
@@ -883,12 +885,14 @@ let canHome = $ref(
 		(!props.airReply ||
 			["public", "home"].includes(props.initialVisibility)) &&
 		!$i.blockPostHome &&
-		!$i.isSilenced
+		!$i.isSilenced &&
+		!props.forceSpecified
 );
 let canFollower = $ref(
 	(!reply || reply.visibility !== "specified") &&
 		(!props.renote || props.renote.visibility !== "specified") &&
-		(!props.airReply || props.initialVisibility !== "specified")
+		(!props.airReply || props.initialVisibility !== "specified") &&
+		!props.forceSpecified
 );
 let canNotLocal = $ref(
 	(!reply || !reply.localOnly) &&
@@ -902,7 +906,8 @@ let canCc = $computed(
 	() =>
 		visibility === "specified" &&
 		defaultStore.state.enabledSpecifiedCc &&
-		$i?.canInvite
+		$i?.canInvite &&
+		!props.forceSpecified
 );
 let inheritCc = $ref(!reply?.user?.host);
 let requiredFilename = $ref(

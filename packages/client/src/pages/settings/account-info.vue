@@ -307,6 +307,11 @@
 			><template #icon><i class="ph-wrench ph-bold ph-lg"></i></template
 			>{{ i18n.ts.bios }}</FormLink
 		>
+
+		<FormLink to="/settings/delete-account" class="_formBlock"
+			><template #icon><i class="ph-warning ph-bold ph-lg"></i></template
+			>{{ "アカウント削除申請" }}</FormLink
+		>
 	</div>
 </template>
 

@@ -178,7 +178,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
 	if (ps.name != null) {
-		if (_user.name && !ps.fixedName && !_user.fixedName)
+		if (_user.name && _user.name !== ps.name && !ps.fixedName && !_user.fixedName)
 			throw new ApiError(meta.errors.noFixedName);
 		if (!_user.isAdmin && ps.name.toLowerCase().includes("admin"))
 			throw new ApiError(meta.errors.detectBannedWords, {

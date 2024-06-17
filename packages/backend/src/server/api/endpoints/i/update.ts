@@ -69,6 +69,12 @@ export const meta = {
 			code: "DETECT_BANNED_WORDS",
 			id: "56f35758-7dd5-468b-8439-5d6fb8ec9b8e",
 		},
+
+		noFixedName: {
+			message: "名前を変更する前に自分を示す名前を入力する必要があります。",
+			code: "NO_FIXED_NAME",
+			id: "9a897e6e-6df9-c98b-9531-c6739f133acd",
+		},
 	},
 
 	res: {
@@ -172,6 +178,8 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
 	if (ps.name != null) {
+		if (_user.name && !ps.fixedName && !_user.fixedName)
+			throw new ApiError(meta.errors.noFixedName);
 		if (!_user.isAdmin && ps.name.toLowerCase().includes("admin"))
 			throw new ApiError(meta.errors.detectBannedWords, {
 				reason: "You are not the admin.",

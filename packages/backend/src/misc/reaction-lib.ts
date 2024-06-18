@@ -83,7 +83,7 @@ export async function toDbReaction(
 
 	const custom = reaction.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/);
 
-	// ローカルユーザの場合 : 指定されたサーバの絵文字 -> ローカルの絵文字 -> 投稿元のサーバの絵文字
+	// ローカルユーザの場合 : ローカルの絵文字 -> 指定されたサーバの絵文字 -> 投稿元のサーバの絵文字
 	// リモートユーザの場合 : 指定されたサーバの絵文字 -> リアクション者のサーバの絵文字 -> ローカルの絵文字
 
 	if (custom) {
@@ -93,8 +93,8 @@ export async function toDbReaction(
 					? [IsNull(), reacterHost]
 					: [custom?.[2], reacterHost, IsNull()]
 				: [
-						custom?.[2] === config.host ? undefined : custom?.[2],
 						IsNull(),
+						custom?.[2] === config.host ? undefined : custom?.[2],
 						noteHost ?? "misskey.io",
 				  ]
 		).filter(Boolean);

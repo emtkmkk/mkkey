@@ -56,6 +56,13 @@
 			decoding="async"
 		/>
 		<img
+			v-else-if="!errorAltIcon"
+			class="inner"
+			:src="`${config.url}/avatar-alt/@${acct(user)}`"
+			@error="errorAltIcon = true"
+			decoding="async"
+		/>
+		<img
 			v-else
 			class="inner"
 			src="/static-assets/user-unknown.png"
@@ -124,6 +131,7 @@ function showAvatar(ev: MouseEvent) {
 
 let color = $ref();
 let errorIcon = $ref(false);
+let errorAltIcon = $ref(false);
 
 watch(
 	() => props.user.avatarBlurhash,

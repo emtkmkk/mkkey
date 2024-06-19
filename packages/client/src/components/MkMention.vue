@@ -8,7 +8,7 @@
 		:style="{ background: bgCss }"
 		@click.stop
 	>
-		<img class="icon" v-if="!$store.state.hiddenIconUserAccts?.includes(`${username}@${host}`)" :src="`/avatar/@${username}@${host}`" alt="" />
+		<img class="icon" v-if="!$store.state.hiddenIconUserAccts?.map((x) => x.toLowerCase()).includes(`${username?.toLowerCase()}@${host?.toLowerCase()}`)" :src="`/avatar/@${username}@${host}`" alt="" />
 		<img class="icon" v-else :src="`/avatar-alt/@${username}@${host}`" alt="" />
 		<span class="main">
 			<span class="username">@{{ username }}</span>

@@ -1127,7 +1127,7 @@ import * as os from "@/os";
 import { isTouchUsing } from "@/scripts/touch";
 import { deviceKind } from "@/scripts/device-kind";
 import { formatRoomaji, kanaToHira, jaToRoomaji } from "@/scripts/convert-jp";
-import { emojiCategories, instance } from "@/instance";
+import { emojiCategories, emojiMap, instance } from "@/instance";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
 import { FocusTrap } from "focus-trap-vue";
@@ -1468,12 +1468,12 @@ function emojiSearch(nQ, oQ) {
 		if (newQ.includes(" ")) {
 			// AND検索
 			return matches;
-		} else {
+		}
 			if (isAllSearch) {
 				nameSearch(allEmojis, roomajiQ, beforeSort, max, true);
 			} else {
-				const exactMatch = emojis.find(
-					(emoji) => emoji.name === roomajiQ
+				const exactMatch = emojiMap.value.get(
+					roomajiQ
 				);
 				if (exactMatch)
 					beforeSort.add({
@@ -1483,7 +1483,6 @@ function emojiSearch(nQ, oQ) {
 				nameSearch(emojis, roomajiQ, beforeSort, max, true);
 				aliasSearch(emojis, newQ, beforeSort, max, true);
 			}
-		}
 
 		return new Set(
 			Array.from(beforeSort)
@@ -1673,8 +1672,8 @@ function done(query?: any): boolean | void {
 	}
 	if (q2.endsWith(" -f") || q2.endsWith("!")) {
 		const q3 = query.replace(/( -f|!)$/, "");
-		const exactMatchCustom = customEmojis.find(
-			(emoji) => emoji.name === q3
+		const exactMatchCustom = emojiMap.value.get(
+			q3
 		);
 		if (exactMatchCustom) {
 			chosen(exactMatchCustom);

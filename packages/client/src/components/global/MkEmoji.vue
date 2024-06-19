@@ -101,7 +101,7 @@ import { CustomEmoji } from "calckey-js/built/entities";
 import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import { char2filePath } from "@/scripts/twemoji-base";
 import { defaultStore } from "@/store";
-import { instance } from "@/instance";
+import { instance, emojiMap } from "@/instance";
 import { openReactionMenu_ } from "@/scripts/reaction-menu";
 import * as os from "@/os";
 import * as config from "@/config";
@@ -196,7 +196,6 @@ const isMuted = computed(() => {
 	});
 });
 
-const ce = computed(() => instance.emojis ?? []);
 const customEmoji = computed(() => {
 	if (!isCustom.value) return null;
 
@@ -205,7 +204,7 @@ const customEmoji = computed(() => {
 		hostmatch.value?.[2] || (!replace ? props.noteHost : undefined);
 
 	const matchprops = props.customEmojis?.find(
-		(x) => x.name === emoji.substr(1, emoji.length - 2) && x.url
+		(x) => x.url && x.name === emoji.substr(1, emoji.length - 2)
 	);
 
 	if (matchprops) {
@@ -213,7 +212,7 @@ const customEmoji = computed(() => {
 	} else if (host && host !== "." && host !== config.host) {
 		return { name, host };
 	} else {
-		const cefind = ce.value.find((x) => x.name === name);
+		const cefind = emojiMap.value.get(name);
 		if (cefind || props.nofallback) {
 			return cefind;
 		} else {

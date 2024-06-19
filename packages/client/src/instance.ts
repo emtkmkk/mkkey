@@ -155,6 +155,19 @@ export const emojiTags = computed(() => {
 	return Array.from(tags);
 });
 
+export const emojiMap = computed((): Map<string, any> => {
+  const emojisArray = instance.emojis ?? [];
+  const emojisMap = new Map();
+  
+  emojisArray.forEach(emoji => {
+    if (emoji.name) {
+      emojisMap.set(emoji.name, emoji);
+    }
+  });
+  
+  return emojisMap;
+});
+
 // このファイルに書きたくないけどここに書かないと何故かVeturが認識しない
 declare module "@vue/runtime-core" {
 	interface ComponentCustomProperties {

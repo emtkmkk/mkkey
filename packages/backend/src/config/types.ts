@@ -6,6 +6,7 @@ export type Source = {
 	feedback_url?: string;
 	url: string;
 	port: number;
+	portproxy: number;
 	disableHsts?: boolean;
 	db: {
 		host: string;

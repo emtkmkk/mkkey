@@ -192,7 +192,10 @@ async function spawnWorkers(
 
 	const total = modes.reduce((acc, mode) => acc + clusterLimits[mode], 0);
 	const workers = new Array(total);
-	workers.fill("web", 0, clusterLimits?.web);
+	const proxyClusterLimit = clusterLimits?.proxy ?? 1
+
+	workers.fill("proxyweb", 0, proxyClusterLimit);
+	workers.fill("web", proxyClusterLimit, clusterLimits?.web);
 	workers.fill("queue", clusterLimits?.web);
 
 	bootLogger.info(
@@ -204,9 +207,14 @@ async function spawnWorkers(
 	bootLogger.succ("All workers started");
 }
 
-function spawnWorker(mode: "web" | "queue", index = "?"): Promise<void> {
+function spawnWorker(mode: "web" | "queue" | "proxyweb", index = "?"): Promise<void> {
+	let proxy = "0";
+	if (mode === "proxyweb") {
+		mode = "web";
+		proxy = "1";
+	}
 	return new Promise((res) => {
-		const worker = cluster.fork({ mode, index });
+		const worker = cluster.fork({ mode, index, proxy });
 		worker.on("message", (message) => {
 			if (message === "listenFailed") {
 				bootLogger.error("The server listen failed due to the previous error.");

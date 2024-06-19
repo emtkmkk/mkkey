@@ -55,6 +55,7 @@ export type Source = {
 	clusterLimits?: {
 		web?: number;
 		queue?: number;
+		proxy?: number;
 	};
 
 	id: string;

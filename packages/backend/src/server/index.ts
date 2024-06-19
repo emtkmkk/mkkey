@@ -70,7 +70,9 @@ if (config.url.startsWith("https") && !config.disableHsts) {
 
 app.use(mount("/api", apiServer));
 app.use(mount("/files", fileServer));
-app.use(mount("/proxy", proxyServer));
+if (process.env.proxy === "1") {
+	app.use(mount("/proxy", proxyServer));
+}
 
 // Init router
 const router = new Router();

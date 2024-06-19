@@ -122,7 +122,7 @@ import { defaultStore } from "@/store";
 import { emojilist } from "@/scripts/emojilist";
 import { instance } from "@/instance";
 import { i18n } from "@/i18n";
-import config from "@/config/index.js";
+import * as config from "@/config";
 
 
 type EmojiDef = {

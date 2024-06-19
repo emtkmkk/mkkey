@@ -43,7 +43,7 @@ import { getNoteSummary } from "@/scripts/get-note-summary";
 import { notePage } from "@/filters/note";
 import { defaultStore } from "@/store";
 import { acct } from "@/filters/user";
-import config from "@/config/index.js";
+import * as config from "@/config";
 
 const props = defineProps<{
 	userListId?: string;

@@ -38,9 +38,9 @@
 <script lang="ts" setup>
 import { userName } from "@/filters/user";
 import { ui } from "@/config";
-import { defaultStore } from "@/store";6
+import { defaultStore } from "@/store";
 import { acct } from "@/filters/user";
-import config from "@/config/index.js";
+import * as config from "@/config";
 
 defineProps<{
 	page: any;

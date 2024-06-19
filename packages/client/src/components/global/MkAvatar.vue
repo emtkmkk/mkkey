@@ -84,7 +84,7 @@ import { extractAvgColorFromBlurhash } from "@/scripts/extract-avg-color-from-bl
 import { acct, userPage } from "@/filters/user";
 import MkUserOnlineIndicator from "@/components/MkUserOnlineIndicator.vue";
 import { defaultStore } from "@/store";
-import config from "@/config/index.js";
+import * as config from "@/config";
 
 const props = withDefaults(
 	defineProps<{

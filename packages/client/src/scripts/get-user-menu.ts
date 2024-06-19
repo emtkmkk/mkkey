@@ -10,6 +10,7 @@ import { mainRouter } from "@/router";
 import { Router } from "@/nirax";
 import * as config from "@/config";
 import { defaultStore } from "@/store";
+import { acct } from "@/filters/user";
 
 export function getUserMenu(user, router: Router = mainRouter) {
 	const meId = $i ? $i.id : null;
@@ -147,12 +148,18 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		let hiddenIconUserIds = defaultStore.state.hiddenIconUserIds;
 		hiddenIconUserIds.push(user.id);
 		defaultStore.set("hiddenIconUserIds", hiddenIconUserIds);
+		let hiddenIconUserAccts = defaultStore.state.hiddenIconUserAccts;
+		hiddenIconUserAccts.push(acct(user));
+		defaultStore.set("hiddenIconUserAccts", hiddenIconUserAccts);
 	}
 
 	async function delHiddenIconUserIds(): Promise<void> {
 		let hiddenIconUserIds = defaultStore.state.hiddenIconUserIds;
 		hiddenIconUserIds = hiddenIconUserIds.filter((x) => x !== user.id);
 		defaultStore.set("hiddenIconUserIds", hiddenIconUserIds);
+		let hiddenIconUserAccts = defaultStore.state.hiddenIconUserAccts;
+		hiddenIconUserAccts = hiddenIconUserAccts.filter((x) => x !== acct(user));
+		defaultStore.set("hiddenIconUserAccts", hiddenIconUserAccts);
 	}
 
 	async function setCustomName(): Promise<void> {

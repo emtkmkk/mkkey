@@ -15,10 +15,7 @@
 			>
 				<img
 					class="avatar"
-					v-if="
-						!defaultStore.state.hiddenIconUserIds?.includes(user.id)
-					"
-					:src="user.avatarUrl"
+					:src="defaultStore.state.hiddenIconUserIds?.includes(user.id) ? `${config.url}/avatar-alt/@${acct(user)}` : user.avatarUrl"
 				/>
 				<span class="name">
 					<MkUserName :key="user.id" :user="user" />
@@ -125,6 +122,8 @@ import { defaultStore } from "@/store";
 import { emojilist } from "@/scripts/emojilist";
 import { instance } from "@/instance";
 import { i18n } from "@/i18n";
+import config from "@/config/index.js";
+
 
 type EmojiDef = {
 	emoji: string;

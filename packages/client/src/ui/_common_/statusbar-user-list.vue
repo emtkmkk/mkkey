@@ -9,13 +9,8 @@
 				>
 					<span v-for="note in notes" :key="note.id" class="item">
 						<img
-							v-if="
-								!defaultStore.state.hiddenIconUserIds?.includes(
-									note.user.id
-								)
-							"
 							class="avatar"
-							:src="note.user.avatarUrl"
+							:src="defaultStore.state.hiddenIconUserIds?.includes(note.user.id) ? `${config.url}/avatar-alt/@${acct(note.user)}` : note.user.avatarUrl"
 							decoding="async"
 						/>
 						<MkA class="text" :to="notePage(note)">
@@ -47,6 +42,8 @@ import { useInterval } from "@/scripts/use-interval";
 import { getNoteSummary } from "@/scripts/get-note-summary";
 import { notePage } from "@/filters/note";
 import { defaultStore } from "@/store";
+import { acct } from "@/filters/user";
+import config from "@/config/index.js";
 
 const props = defineProps<{
 	userListId?: string;

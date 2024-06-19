@@ -24,13 +24,8 @@
 				</p>
 				<footer>
 					<img
-						v-if="
-							!defaultStore.state.hiddenIconUserIds?.includes(
-								page.user.id
-							)
-						"
 						class="icon"
-						:src="page.user.avatarUrl"
+						:src="defaultStore.state.hiddenIconUserIds?.includes(page.user.id) ? `${config.url}/avatar-alt/@${acct(page.user)}` : page.user.avatarUrl"
 						aria-label="none"
 					/>
 					<p>{{ userName(page.user) }}</p>
@@ -43,7 +38,9 @@
 <script lang="ts" setup>
 import { userName } from "@/filters/user";
 import { ui } from "@/config";
-import { defaultStore } from "@/store";
+import { defaultStore } from "@/store";6
+import { acct } from "@/filters/user";
+import config from "@/config/index.js";
 
 defineProps<{
 	page: any;

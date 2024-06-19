@@ -13,11 +13,10 @@
 	>
 		<img
 			v-if="
-				!errorIcon &&
-				!defaultStore.state.hiddenIconUserIds?.includes(user.id)
+				!errorIcon
 			"
 			class="inner"
-			:src="url"
+			:src="defaultStore.state.hiddenIconUserIds?.includes(user.id) ? `${config.url}/avatar-alt/@${acct(user)}` : url"
 			@error="errorIcon = true"
 			decoding="async"
 		/>
@@ -49,11 +48,10 @@
 	>
 		<img
 			v-if="
-				!errorIcon &&
-				!defaultStore.state.hiddenIconUserIds?.includes(user.id)
+				!errorIcon
 			"
 			class="inner"
-			:src="url"
+			:src="defaultStore.state.hiddenIconUserIds?.includes(user.id) ? `${config.url}/avatar-alt/@${acct(user)}` : url"
 			@error="errorIcon = true"
 			decoding="async"
 		/>
@@ -79,6 +77,7 @@ import { extractAvgColorFromBlurhash } from "@/scripts/extract-avg-color-from-bl
 import { acct, userPage } from "@/filters/user";
 import MkUserOnlineIndicator from "@/components/MkUserOnlineIndicator.vue";
 import { defaultStore } from "@/store";
+import config from "@/config/index.js";
 
 const props = withDefaults(
 	defineProps<{

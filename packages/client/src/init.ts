@@ -65,6 +65,7 @@ import {
 	isMobileData,
 	initializeDetectNetworkChange,
 } from "@/scripts/datasaver";
+import { acct } from "./filters/user";
 
 (async () => {
 	console.info(`Calckey v${version}`);
@@ -738,6 +739,16 @@ import {
 					powerMode.shake = !defaultStore.state.powerModeNoShake;
 					powerMode.colorful = !!defaultStore.state.powerModeColorful;
 					window.addEventListener("input", powerMode);
+				});
+			}
+			if (defaultStore.state.hiddenIconUserIds?.length && defaultStore.state.hiddenIconUserIds?.length !== defaultStore.state.hiddenIconUserAccts?.length) {
+				api("users/show", {
+					userIds: defaultStore.state.hiddenIconUserIds,
+				}).then((_users) => {
+					const userIds = _users.map((x) => x.id);
+					const userAccts = _users.map((x) => acct(x));
+					defaultStore.set("hiddenIconUserIds", userIds);
+					defaultStore.set("hiddenIconUserAccts", userAccts);
 				});
 			}
 			if (

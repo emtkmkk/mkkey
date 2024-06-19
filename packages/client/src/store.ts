@@ -1423,6 +1423,11 @@ export const defaultStore = markRaw(
 			default: [] as string[],
 			createdAt: "2024/4/3",
 		},
+		hiddenIconUserAccts: {
+			where: "account",
+			default: [] as string[],
+			createdAt: "2024/6/19",
+		},
 		defaultSleepTime: {
 			where: "device",
 			default: "2hour",

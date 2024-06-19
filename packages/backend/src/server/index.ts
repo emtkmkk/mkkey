@@ -14,7 +14,7 @@ import * as slow from "koa-slow";
 import { IsNull } from "typeorm";
 import config from "@/config/index.js";
 import Logger from "@/services/logger.js";
-import { UserProfiles, Users } from "@/models/index.js";
+import { DriveFiles, UserProfiles, Users } from "@/models/index.js";
 import { genIdenticon } from "@/misc/gen-identicon.js";
 import { createTemp } from "@/misc/create-temp.js";
 import { publishMainStream } from "@/services/stream.js";
@@ -117,15 +117,38 @@ router.get("/avatar/@:acct", async (ctx) => {
 	}
 });
 
+router.get("/avatar-alt/@:acct", async (ctx) => {
+	const { username, host } = Acct.parse(ctx.params.acct);
+	const user = await Users.findOne({
+		where: {
+			usernameLower: username.toLowerCase(),
+			host: host == null || host === config.host ? IsNull() : host,
+			isSuspended: false,
+		},
+		relations: ["avatar"],
+	});
+
+	if (user) {
+		if (user.avatar?.md5) {
+			return ctx.redirect(`/identicon/${user.avatar.md5}`);
+		}
+		return ctx.redirect("/static-assets/missing.png");
+	}
+	ctx.redirect("/static-assets/user-unknown.png");
+});
+
 router.get("/identicon/:x", async (ctx) => {
 	ctx.set("Content-Type", "image/png");
 	ctx.set("Cache-Control", "public, max-age=86400");
-	return ctx.redirect("/static-assets/missing.png");
-	/*
 	const [temp, cleanup] = await createTemp();
 	await genIdenticon(ctx.params.x, fs.createWriteStream(temp));
 	ctx.body = fs.createReadStream(temp).on("close", () => cleanup());
-	*/
+});
+
+router.get("/missing", async (ctx) => {
+	ctx.set("Content-Type", "image/png");
+	ctx.set("Cache-Control", "public, max-age=86400");
+	return ctx.redirect("/static-assets/missing.png");
 });
 
 mastoRouter.get("/oauth/authorize", async (ctx) => {

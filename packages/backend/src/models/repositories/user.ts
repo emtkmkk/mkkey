@@ -429,7 +429,7 @@ export const UserRepository = db.getRepository(User).extend({
 	},
 
 	getIdenticonUrl(userId: User["id"]): string {
-		return `${config.url}/identicon/${userId}`;
+		return `${config.url}/missing`;
 	},
 
 	async pack<

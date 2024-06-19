@@ -741,7 +741,7 @@ import { acct } from "./filters/user";
 					window.addEventListener("input", powerMode);
 				});
 			}
-			if (defaultStore.state.hiddenIconUserIds?.length && defaultStore.state.hiddenIconUserIds?.length !== defaultStore.state.hiddenIconUserAccts?.length) {
+			if (defaultStore.state.hiddenIconUserIds?.length && defaultStore.state.hiddenIconUserIds?.length !== defaultStore.state.hiddenIconUserAccts?.filter((x) => x.includes("@")).length) {
 				api("users/show", {
 					userIds: defaultStore.state.hiddenIconUserIds,
 				}).then((_users) => {

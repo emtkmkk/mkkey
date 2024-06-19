@@ -18,7 +18,8 @@ import { Cache } from "@/misc/cache.js";
 import { uriPersonCache, userByIdCache } from "@/services/user-cache.js";
 import type { IObject } from "./type.js";
 import { getApId } from "./type.js";
-import { resolvePerson } from "./models/person.js";
+import { resolvePerson, updatePerson } from "./models/person.js";
+
 
 const publicKeyCache = new Cache<UserPublickey | null>(Infinity);
 const publicKeyByUserIdCache = new Cache<UserPublickey | null>(Infinity);
@@ -176,4 +177,15 @@ export default class DbResolver {
 			key,
 		};
 	}
+	public async refetchPublicKeyForApId(
+		user: CacheableRemoteUser,
+	): Promise<UserPublickey | null> {
+		await updatePerson(user.uri!, undefined, undefined, user);
+		const key = await UserPublickeys.findOneBy({ userId: user.id });
+		if (key != null) {
+			await publicKeyByUserIdCache.set(user.id, key);
+		}
+		return key;
+	}
+
 }

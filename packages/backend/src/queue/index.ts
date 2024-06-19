@@ -505,7 +505,7 @@ export default function () {
 		"resyncCharts",
 		{},
 		{
-			repeat: { cron: "0 19 * * *" },
+			repeat: { cron: "40 3 * * *" },
 			removeOnComplete: true,
 		},
 	);
@@ -514,7 +514,7 @@ export default function () {
 		"cleanCharts",
 		{},
 		{
-			repeat: { cron: "0 19 * * *" },
+			repeat: { cron: "40 3 * * *" },
 			removeOnComplete: true,
 		},
 	);
@@ -523,7 +523,7 @@ export default function () {
 		"clean",
 		{},
 		{
-			repeat: { cron: "0 19 * * *" },
+			repeat: { cron: "40 3 * * *" },
 			removeOnComplete: true,
 		},
 	);

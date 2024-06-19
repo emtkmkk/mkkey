@@ -196,7 +196,7 @@ export default async (
 				}
 			} else {
 				// 絵文字上限超過エラー
-				throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
+				throw new IdentifiableError("058b5325-c56c-99d1-9677-6eaeedd9f3f4");
 			}
 		}
 	}

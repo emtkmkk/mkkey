@@ -18,9 +18,15 @@ export const meta = {
 		},
 
 		alreadyReacted: {
-			message: "リアクション数の上限に到達しました。",
+			message: "既にその絵文字でリアクション済みです。",
 			code: "ALREADY_REACTED",
 			id: "71efcf98-86d6-4e2b-b2ad-9d032369366b",
+		},
+
+		reachReactLimit: {
+			message: "リアクション数の上限に到達しました。",
+			code: "REACH_REACT_LIMIT",
+			id: "5c6afbd0-b2a4-1856-1704-fce9af4c22d6",
 		},
 
 		youHaveBeenBlocked: {
@@ -54,6 +60,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw err;
 	});
 	await createReaction(user, note, ps.reaction).catch((e) => {
+		if (e.id === "058b5325-c56c-99d1-9677-6eaeedd9f3f4")
+			throw new ApiError(meta.errors.reachReactLimit);
 		if (e.id === "51c42bb4-931a-456b-bff7-e5a8a70dd298")
 			throw new ApiError(meta.errors.alreadyReacted);
 		if (e.id === "e70412a4-7197-4726-8e74-f3e0deb92aa7")

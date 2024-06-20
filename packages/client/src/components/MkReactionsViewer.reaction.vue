@@ -153,6 +153,7 @@ async function onContextmenu(event) {
 				| HTMLElement
 				| null
 				| undefined);
+		event.preventDefault()
 		await openReactionMenu_(
 			props.reaction?.replace("@.", ""),
 			props.note,

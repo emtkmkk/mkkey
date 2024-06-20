@@ -478,6 +478,12 @@
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
+			<FormSwitch v-model="showReactionMenuContext" class="_formBlock"
+				>{{ i18n.ts.showReactionMenuContext
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch
 				v-model="recentlyUsedDefaultOpen"
 				class="_formBlock"
@@ -910,6 +916,9 @@ const reactionsReactionHiddens5 = $computed(
 );
 const mastodonOnetapFavorite = $computed(
 	defaultStore.makeGetterSetter("mastodonOnetapFavorite")
+);
+const showReactionMenuContext = $computed(
+	defaultStore.makeGetterSetter("showReactionMenuContext")
 );
 let customEmojis = computed(() => instance.emojis);
 let allCustomEmojis = computed(() => instance.allEmojis);

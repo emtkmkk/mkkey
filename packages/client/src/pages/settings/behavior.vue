@@ -16,6 +16,12 @@
 				</option>
 				<option value="doNothing">{{ i18n.ts.doNothing }}</option>
 			</FormSelect>
+			<FormSwitch v-model="showReactionMenuContext" class="_formBlock"
+				>{{ i18n.ts.showReactionMenuContext
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="alwaysPostButton" class="_formBlock"
 				>{{ i18n.ts.alwaysPostButton
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -399,6 +405,9 @@ const toolbarAirReply = computed(
 );
 const noteReactionMenu = $computed(
 	defaultStore.makeGetterSetter("noteReactionMenu")
+);
+const showReactionMenuContext = $computed(
+	defaultStore.makeGetterSetter("showReactionMenuContext")
 );
 async function reloadAsk() {
 	const { canceled } = await os.confirm({

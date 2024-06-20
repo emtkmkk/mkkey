@@ -1454,6 +1454,11 @@ export const defaultStore = markRaw(
 			default: false,
 			createdAt: "2024/6/13",
 		},
+		showReactionMenuContext: {
+			where: "device",
+			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
+			createdAt: "2024/6/20",
+		}
 	}),
 );
 

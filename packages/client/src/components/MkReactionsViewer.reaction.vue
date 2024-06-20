@@ -10,7 +10,7 @@
 			newlyAdded: !isInitial,
 		}"
 		@click="toggleReaction"
-		@contextmenu.stop="onContextmenu"
+		@contextmenu="onContextmenu"
 	>
 		<XReactionIcon
 			class="icon"
@@ -147,20 +147,23 @@ async function toggleReaction(event) {
 }
 
 async function onContextmenu(event) {
-	const el =
-			event &&
-			((event.currentTarget ?? event.target) as
-				| HTMLElement
-				| null
-				| undefined);
+	if (defaultStore.state.showReactionMenuContext) {
+		event.stopPropagation()
 		event.preventDefault()
-		await openReactionMenu_(
-			props.reaction?.replace("@.", ""),
-			props.note,
-			canToggle.value,
-			props.multi,
-			el
-		);
+		const el =
+				event &&
+				((event.currentTarget ?? event.target) as
+					| HTMLElement
+					| null
+					| undefined);
+			await openReactionMenu_(
+				props.reaction?.replace("@.", ""),
+				props.note,
+				canToggle.value,
+				props.multi,
+				el
+			);
+	}
 }
 
 watch(

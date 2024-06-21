@@ -790,6 +790,7 @@ const props = withDefaults(
 		initialLocalOnly?: boolean;
 		initialVisibleUsers?: misskey.entities.User[];
 		initialNote?: misskey.entities.Note;
+		initialHashTags?: string;
 		instant?: boolean;
 		fixed?: boolean;
 		autofocus?: boolean;
@@ -1084,6 +1085,11 @@ const withHashtags = $computed(
 	defaultStore.makeGetterSetter("postFormWithHashtags")
 );
 const hashtags = $computed(defaultStore.makeGetterSetter("postFormHashtags"));
+
+if (props.initialHashTags) {
+	withHashtags.value = true;
+	hashtags.value = props.initialHashTags;
+}
 
 const hashtagsPreview = $computed(() => {
 	if (withHashtags && hashtags && hashtags.trim() !== "") {

@@ -74,7 +74,7 @@ watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
 function post() {
 	os.post({
-		initialText: ` #${props.tag} `,
+		initialHashTags: `${props.tag}`,
 		instant: true,
 	});
 }

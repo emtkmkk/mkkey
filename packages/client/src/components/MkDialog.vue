@@ -108,11 +108,11 @@
 						:disabled="!canOk"
 						@click="ok"
 						>{{
-							showCancelButton || input || select
+							(showCancelButton || input || select
 								? okText
 									? okText
 									: i18n.ts.ok
-								: i18n.ts.gotIt
+								: i18n.ts.gotIt) + (counter ? `(${counter})` : "")
 						}}</MkButton
 					>
 					<MkButton
@@ -237,7 +237,8 @@ const modal = shallowRef<InstanceType<typeof MkModal>>();
 
 const inputValue = ref(props.input?.default || null);
 const selectedValue = ref(props.select?.default || null);
-const canOk = ref(!props.wait)
+const canOk = ref(!props.wait);
+const counter = ref(props.wait || 0);
 
 function done(canceled: boolean, result?) {
 	emit("done", { canceled, result });
@@ -278,9 +279,14 @@ function onInputKeydown(evt: KeyboardEvent) {
 onMounted(() => {
 	document.addEventListener("keydown", onKeydown);
 	if (props.wait) {
-		setTimeout(() => {
-        canOk.value = true;
-    }, props.wait * 1000);
+    const intervalId = setInterval(() => {
+        counter.value--;
+
+        if (counter.value <= 0) {
+            canOk.value = true;
+            clearInterval(intervalId);
+        }
+    }, 1000);
 	}
 });
 

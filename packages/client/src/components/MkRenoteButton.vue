@@ -263,7 +263,7 @@ async function doRenote(data, ev?: MouseEvent) {
 			type: "warning",
 			text: i18n.ts.miniSilenceWarn,
 			okText: "公開でRT",
-			wait: 5,
+			wait: 7,
 		});
 		if (canceled) return;
 	}

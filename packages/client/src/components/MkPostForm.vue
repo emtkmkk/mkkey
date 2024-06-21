@@ -1953,7 +1953,7 @@ async function post() {
 			type: "warning",
 			text: i18n.ts.miniSilenceWarn,
 			okText: "公開で投稿",
-			wait: 5,
+			wait: 7,
 		});
 		if (canceled) return;
 	}

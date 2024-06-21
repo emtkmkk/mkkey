@@ -261,7 +261,7 @@ async function doRenote(data, ev?: MouseEvent) {
 	if ($i.isMiniSilenced && data.visibility === "public") {
 		const { canceled } = await os.confirm({
 			type: "warning",
-			text: i18n.ts.miniSilence,
+			text: i18n.ts.miniSilenceWarn,
 			okText: "公開でRT",
 			wait: 5,
 		});

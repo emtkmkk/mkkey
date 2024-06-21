@@ -281,7 +281,7 @@ function menu(ev: MouseEvent, draftKey: string) {
 									) {
 										const { canceled } = await os.confirm({
 											type: "warning",
-											text: i18n.ts.miniSilence,
+											text: i18n.ts.miniSilenceWarn,
 											okText: "公開で投稿",
 											wait: 5,
 										});

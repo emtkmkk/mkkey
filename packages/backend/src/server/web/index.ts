@@ -1048,6 +1048,7 @@ router.get("(.*)", async (ctx) => {
 		themeColor: meta.themeColor,
 		randomMOTD: motd[Math.floor(Math.random() * motd.length)],
 		privateMode: meta.privateMode,
+		noindex: (ctx.path?.length ?? 0) > 1
 	});
 	ctx.set("Cache-Control", "public, max-age=15");
 });

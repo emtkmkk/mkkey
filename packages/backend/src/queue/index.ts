@@ -414,7 +414,6 @@ export function createDeleteAccountJob(
 		},
 		{
 			removeOnComplete: true,
-			removeOnFail: true,
 		},
 	);
 }
@@ -515,6 +514,7 @@ export default function () {
 		{},
 		{
 			repeat: { cron: "50 3 * * *" },
+			jobId: "clean",
 		},
 	);
 

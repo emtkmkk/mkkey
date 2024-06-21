@@ -37,6 +37,10 @@ export async function exportMute(
 		let exportedCount = 0;
 		let cursor: any = null;
 
+		const total = await Mutings.countBy({
+			muterId: user.id,
+		});
+
 		while (true) {
 			const mutes = await Mutings.find({
 				where: {
@@ -78,10 +82,6 @@ export async function exportMute(
 				});
 				exportedCount++;
 			}
-
-			const total = await Mutings.countBy({
-				muterId: user.id,
-			});
 
 			job.progress(+(exportedCount / total * 100).toFixed(1));
 		}

@@ -24,6 +24,10 @@ export async function deleteDriveFiles(
 	let deletedCount = 0;
 	let cursor: any = null;
 
+	const total = await DriveFiles.countBy({
+		userId: user.id,
+	});
+
 	while (true) {
 		const files = await DriveFiles.find({
 			where: {
@@ -47,10 +51,6 @@ export async function deleteDriveFiles(
 			await deleteFileSync(file);
 			deletedCount++;
 		}
-
-		const total = await DriveFiles.countBy({
-			userId: user.id,
-		});
 
 		job.progress(+(deletedCount / total * 100).toFixed(1));
 	}

@@ -31,6 +31,10 @@ export async function exportBlocking(
 	logger.info(`Temp file is ${path}`);
 	job.log("info - " + `Temp file is ${path}`);
 
+	const total = await Blockings.countBy({
+		blockerId: user.id,
+	});
+
 	try {
 		const stream = fs.createWriteStream(path, { flags: "a" });
 
@@ -77,10 +81,6 @@ export async function exportBlocking(
 				});
 				exportedCount++;
 			}
-
-			const total = await Blockings.countBy({
-				blockerId: user.id,
-			});
 
 			job.progress(+(exportedCount / total * 100).toFixed(1));
 		}

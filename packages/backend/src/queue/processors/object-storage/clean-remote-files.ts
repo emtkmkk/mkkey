@@ -17,6 +17,11 @@ export default async function cleanRemoteFiles(
 	let deletedCount = 0;
 	let cursor: any = null;
 
+	const total = await DriveFiles.countBy({
+		userHost: Not(IsNull()),
+		isLink: false,
+	});
+
 	while (true) {
 		const files = await DriveFiles.find({
 			where: {
@@ -40,11 +45,6 @@ export default async function cleanRemoteFiles(
 		await Promise.all(files.map((file) => deleteFileSync(file, true)));
 
 		deletedCount += 8;
-
-		const total = await DriveFiles.countBy({
-			userHost: Not(IsNull()),
-			isLink: false,
-		});
 
 		job.progress(+(deletedCount / total * 100).toFixed(1));
 	}

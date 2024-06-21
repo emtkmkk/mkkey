@@ -22,7 +22,7 @@ export async function clean(
 	logger.succ("UserIps Cleaned.");
 	job.log("succ - " + "UserIps Cleaned.");
 
-	job.progress(10);
+	job.progress(0);
 
 	logger.info("Notes Cleaning...");
 	job.log("info - " + "Notes Cleaning...");
@@ -94,7 +94,7 @@ export async function clean(
 				);
 				failedCount += notes.length;
 			}
-			job.progress(10 + (+((deleteCount + failedCount) / total * 90).toFixed(1)));
+			job.progress(+((deleteCount + failedCount) / total * 100).toFixed(2));
 		}
 
 		if (deleteCount + failedCount)

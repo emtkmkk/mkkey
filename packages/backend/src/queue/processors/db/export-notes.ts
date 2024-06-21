@@ -32,6 +32,10 @@ export async function exportNotes(
 	logger.info(`Temp file is ${path}`);
 	job.log("info - " + `Temp file is ${path}`);
 
+	const total = await Notes.countBy({
+		userId: user.id,
+	});
+
 	try {
 		const stream = fs.createWriteStream(path, { flags: "a" });
 
@@ -83,10 +87,6 @@ export async function exportNotes(
 				await write(isFirst ? content : ",\n" + content);
 				exportedNotesCount++;
 			}
-
-			const total = await Notes.countBy({
-				userId: user.id,
-			});
 
 			job.progress(+(exportedNotesCount / total * 100).toFixed(1));
 		}

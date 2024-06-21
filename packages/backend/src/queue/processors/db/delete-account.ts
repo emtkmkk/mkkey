@@ -42,6 +42,11 @@ export async function deleteAccount(
 	try {
 		let tryCount = 0;
 		let deleteCount = 0;
+
+		const total = await Followings.countBy({
+				followerId: user.id,
+		});
+
 		while (tryCount <= 100) {
 			const relations = await Followings.find({
 				where: {
@@ -63,13 +68,18 @@ export async function deleteAccount(
 				} catch {}
 			});
 			tryCount += 1;
+			job.progress(+(deleteCount / total * 25).toFixed(1))
 		}
+		job.progress(25)
 		if (deleteCount) logger.succ(`All of followees deleted (${deleteCount})`);
 	} catch {}
 
 	try {
 		let tryCount = 0;
 		let deleteCount = 0;
+		const total = await Followings.countBy({
+			followeeId: user.id,
+		});
 		while (tryCount <= 100) {
 			const relations = await Followings.find({
 				where: {
@@ -91,7 +101,9 @@ export async function deleteAccount(
 				} catch {}
 			});
 			tryCount += 1;
+			job.progress(25 + (+(deleteCount / total * 25).toFixed(1)))
 		}
+		job.progress(50)
 		if (deleteCount) logger.succ(`All of followers deleted (${deleteCount})`);
 	} catch {}
 
@@ -100,6 +112,12 @@ export async function deleteAccount(
 		let failedCount = 0;
 		// Delete notes
 		let cursor: Note["id"] | null = null;
+
+		const total = await Notes.countBy({
+					userId: user.id,
+					deletedAt: IsNull(),
+					...(cursor ? { id: MoreThan(cursor) } : {}),
+		});
 
 		while (true) {
 			const notes = (await Notes.find({
@@ -128,7 +146,7 @@ export async function deleteAccount(
 					failedCount += 1;
 				}
 			}
-			
+			job.progress(50 + (+((deleteCount + failedCount) / total * 25).toFixed(1)))
 			logger.info(
 				`Notes deleting... (Total: ${deleteCount}${
 					failedCount ? ` / ${failedCount}` : ""
@@ -141,6 +159,7 @@ export async function deleteAccount(
 			);
 		}
 
+		job.progress(75)
 		if (deleteCount + failedCount)
 			logger.succ(
 				`All of notes deleted (${deleteCount}${
@@ -158,6 +177,10 @@ export async function deleteAccount(
 		let deleteCount = 0;
 		// Delete files
 		let cursor: DriveFile["id"] | null = null;
+
+		const total = await DriveFiles.countBy({
+			userId: user.id,
+		});
 
 		while (true) {
 			const files = (await DriveFiles.find({
@@ -183,8 +206,10 @@ export async function deleteAccount(
 			}
 		}
 
+		job.progress(75 + (+(deleteCount / total * 24.9).toFixed(1)))
 		if (deleteCount) logger.succ(`All of files deleted (${deleteCount})`);
 	}
+	job.progress(99.9)
 
 	{
 		// Send email notification
@@ -207,6 +232,7 @@ export async function deleteAccount(
 	} else {
 		// await Users.delete(job.data.user.id);
 	}
+	job.progress(100)
 	logger.succ(
 		`Finish deleting job ${job.data.user.id} @${user.username}${
 			user.host ? `@${user.host}` : ""

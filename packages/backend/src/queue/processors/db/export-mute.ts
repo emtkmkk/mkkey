@@ -83,7 +83,7 @@ export async function exportMute(
 				muterId: user.id,
 			});
 
-			job.progress(exportedCount / total * 100);
+			job.progress(+(exportedCount / total * 100).toFixed(1));
 		}
 
 		stream.end();

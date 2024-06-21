@@ -46,7 +46,7 @@ export default async function cleanRemoteFiles(
 			isLink: false,
 		});
 
-		job.progress(deletedCount / total * 100);
+		job.progress(+(deletedCount / total * 100).toFixed(1));
 	}
 
 	logger.succ("All cahced remote files has been deleted.");

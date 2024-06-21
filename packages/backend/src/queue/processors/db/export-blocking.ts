@@ -82,7 +82,7 @@ export async function exportBlocking(
 				blockerId: user.id,
 			});
 
-			job.progress(exportedCount / total * 100);
+			job.progress(+(exportedCount / total * 100).toFixed(1));
 		}
 
 		stream.end();

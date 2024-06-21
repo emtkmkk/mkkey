@@ -94,7 +94,7 @@ export async function clean(
 				);
 				failedCount += notes.length;
 			}
-			job.progress(10 + ((deleteCount + failedCount) / total * 90));
+			job.progress(10 + (+((deleteCount + failedCount) / total * 90).toFixed(1)));
 		}
 
 		if (deleteCount + failedCount)

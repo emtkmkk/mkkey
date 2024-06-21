@@ -45,7 +45,7 @@ export async function cleanEmojis(
 			}
 
 			// biome-ignore lint/complexity/noForEach: <explanation>
-			emojis.forEach(async (x) => {
+			for ( x of emojis ) {
 				try {
 					await getResponse({
 						url: x.publicUrl || x.originalUrl,
@@ -76,7 +76,7 @@ export async function cleanEmojis(
 					job.log(`info - error Emoji ${x.name}@${x.host} (Total: ${deleteCount})`);
 					job.progress(+((deleteCount + foundCount) / total * 100).toFixed(1));
 				}
-			});
+			}
 
 		}
 

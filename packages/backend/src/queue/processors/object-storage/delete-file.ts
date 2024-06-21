@@ -7,5 +7,6 @@ export default async (job: Bull.Job<ObjectStorageFileJobData>) => {
 
 	await deleteObjectStorageFile(key);
 
+	job.progress(100);
 	return "Success";
 };

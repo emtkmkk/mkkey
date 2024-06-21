@@ -89,8 +89,11 @@ export async function importCustomEmojis(
 
 		logger.succ("Imported");
 		job.log("succ - " + "Imported");
+		job.progress(100);
 		done();
 	});
 	logger.succ(`Unzipping to ${outputPath}`);
 	job.log("succ - " + `Unzipping to ${outputPath}`);
+	job.progress(100);
+	done();
 }

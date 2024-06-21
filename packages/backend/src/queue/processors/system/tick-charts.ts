@@ -40,5 +40,6 @@ export async function tickCharts(
 
 	logger.succ("All charts successfully ticked.");
 	job.log("succ - " + "All charts successfully ticked.");
+	job.progress(100);
 	done();
 }

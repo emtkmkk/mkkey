@@ -182,6 +182,7 @@ export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
 			return `skip: signerHost(${signerHost}) !== activity.id host(${activityIdHost}`;
 		}
 	}
+	job.progress(25);
 
 	// Update stats
 	registerOrFetchInstanceDoc(authUser.user.host).then((i) => {
@@ -197,8 +198,10 @@ export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
 		apRequestChart.inbox();
 		federationChart.inbox(i.host);
 	});
+	job.progress(50);
 
 	// アクティビティを処理
 	await perform(authUser.user, activity, job.data.user?.id);
+	job.progress(100);
 	return "ok";
 };

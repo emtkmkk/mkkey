@@ -615,6 +615,7 @@ export default async (job: Bull.Job<WebhookDeliverJobData>) => {
 			},
 		);
 
+		job.progress(100);
 		return "Success";
 	} catch (res) {
 		Webhooks.update(

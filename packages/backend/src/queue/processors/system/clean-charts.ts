@@ -40,5 +40,6 @@ export async function cleanCharts(
 
 	logger.succ("All charts successfully cleaned.");
 	job.log("succ - " + "All charts successfully cleaned.");
+	job.progress(100);
 	done();
 }

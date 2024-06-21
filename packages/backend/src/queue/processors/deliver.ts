@@ -32,6 +32,7 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 		}
 
 		await request(job.data.user, job.data.to, job.data.content);
+		job.progress(50);
 
 		// Update stats
 		registerOrFetchInstanceDoc(host).then((i) => {
@@ -49,6 +50,7 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 			federationChart.deliverd(i.host, true);
 		});
 
+		job.progress(100);
 		return "Success";
 	} catch (res) {
 		// Update stats

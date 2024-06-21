@@ -22,5 +22,6 @@ export async function resyncCharts(
 
 	logger.succ("All charts successfully resynced.");
 	job.log("succ - " + "All charts successfully resynced.");
+	job.progress(100);
 	done();
 }

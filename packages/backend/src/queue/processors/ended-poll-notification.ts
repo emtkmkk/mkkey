@@ -32,5 +32,6 @@ export async function endedPollNotification(
 		});
 	}
 
+	job.progress(100);
 	done();
 }

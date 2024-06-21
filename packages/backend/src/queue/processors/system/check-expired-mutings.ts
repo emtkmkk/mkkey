@@ -31,5 +31,6 @@ export async function checkExpiredMutings(
 
 	logger.succ("All expired mutings checked.");
 	job.log("succ - " + "All expired mutings checked.");
+	job.progress(100);
 	done();
 }

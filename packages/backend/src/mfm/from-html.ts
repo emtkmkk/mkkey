@@ -1,6 +1,7 @@
 import { URL } from "node:url";
 import * as parse5 from "parse5";
 import * as TreeAdapter from "../../node_modules/parse5/dist/tree-adapters/default.js";
+import { normalizeForSearch } from "../misc/normalize-for-search.js";
 
 const treeAdapter = TreeAdapter.defaultTreeAdapter;
 
@@ -11,6 +12,8 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
 	// some AP servers like Pixelfed use br tags as well as newlines
 	html = html.replace(/<br\s?\/?>\r?\n/gi, "\n");
 	html = html.replace(/\u200b:(\w+(@[\w.\-]+\.[\w.\-]+)?):\u200b/g, ":$1:");
+	
+	const normalizedHashtagNames = hashtagNames == null ? undefined : new Set<string>(hashtagNames.map(x => normalizeForSearch(x)));
 
 	const dom = parse5.parseFragment(html);
 
@@ -64,9 +67,9 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
 
 				// ハッシュタグ
 				if (
-					hashtagNames &&
+					normalizedHashtagNames && 
 					href &&
-					hashtagNames.map((x) => x.toLowerCase()).includes(txt.toLowerCase())
+					normalizedHashtagNames.has(normalizeForSearch(txt))
 				) {
 					text += txt;
 					// メンション

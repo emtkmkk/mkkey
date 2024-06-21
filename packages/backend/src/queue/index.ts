@@ -490,6 +490,7 @@ export default function () {
 		{},
 		{
 			repeat: { cron: "55 * * * *" },
+			removeOnComplete: true,
 		},
 	);
 
@@ -498,6 +499,7 @@ export default function () {
 		{},
 		{
 			repeat: { cron: "50 3 * * *" },
+			removeOnComplete: true,
 		},
 	);
 
@@ -506,6 +508,7 @@ export default function () {
 		{},
 		{
 			repeat: { cron: "50 3 * * *" },
+			removeOnComplete: true,
 		},
 	);
 
@@ -524,6 +527,15 @@ export default function () {
 		{
 			repeat: { cron: "*/5 * * * *" },
 			removeOnComplete: true,
+		},
+	);
+
+	systemQueue.add(
+		"cleanEmojis",
+		{},
+		{
+			repeat: { cron: "0 14 * * *" },
+			jobId: "clean-emojis",
 		},
 	);
 

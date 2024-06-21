@@ -70,18 +70,7 @@ export async function clean(
 
 			try {
 				await Notes.delete(notes.map((note) => note.id));
-				logger.info(
-					`Notes Cleaning... (Total: ${deleteCount}${
-						failedCount ? ` / ${failedCount}` : ""
-					})`,
-				);
-				job.log("info - " +
-					`Notes Cleaning... (Total: ${deleteCount}${
-						failedCount ? ` / ${failedCount}` : ""
-					})`,
-				);
 				deleteCount += notes.length;
-			} catch {
 				logger.info(
 					`Notes Cleaning... (Total: ${deleteCount}${
 						failedCount ? ` / ${failedCount}` : ""
@@ -92,7 +81,18 @@ export async function clean(
 						failedCount ? ` / ${failedCount}` : ""
 					})`,
 				);
+			} catch {
 				failedCount += notes.length;
+				logger.info(
+					`Notes Cleaning... (Total: ${deleteCount}${
+						failedCount ? ` / ${failedCount}` : ""
+					})`,
+				);
+				job.log("info - " +
+					`Notes Cleaning... (Total: ${deleteCount}${
+						failedCount ? ` / ${failedCount}` : ""
+					})`,
+				);
 			}
 			job.progress(+((deleteCount + failedCount) / total * 100).toFixed(2));
 		}

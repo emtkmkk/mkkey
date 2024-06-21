@@ -66,6 +66,7 @@ import { PostBlock } from "@/scripts/hpml/block";
 import { Hpml } from "@/scripts/hpml/evaluator";
 import { defaultStore } from "@/store";
 import { instance } from "@/instance";
+import { i18n } from "@/i18n";
 
 export default defineComponent({
 	components: {
@@ -181,8 +182,9 @@ export default defineComponent({
 			if ($i.isMiniSilenced && this.visibility === "public") {
 				const { canceled } = await os.confirm({
 					type: "warning",
-					text: "公開投稿は自身がローカル投稿をある程度確認している状態でもこきーのユーザ全員に見せたい投稿にのみ使用し、ローカル投稿を普段非表示にしている場合や限られた範囲が対象の投稿の場合はホーム、フォロワー限定の投稿範囲を使用してください。\n\n※このメッセージはもこきーの公開投稿の場合でのサーバールールに反していると判定されたユーザに表示されています。心当たりがない場合は、再度サーバールールをご一読ください。",
+					text: i18n.ts.miniSilence,
 					okText: "公開で投稿",
+					wait: 5,
 				});
 				if (canceled) return;
 			}

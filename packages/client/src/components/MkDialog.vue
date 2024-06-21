@@ -105,6 +105,7 @@
 						inline
 						primary
 						:autofocus="!input && !select"
+						:disabled="!canOk"
 						@click="ok"
 						>{{
 							showCancelButton || input || select
@@ -215,6 +216,7 @@ const props = withDefaults(
 		cancelableByBgClick?: boolean;
 		okText?: string;
 		cancelText?: string;
+		wait?: number;
 	}>(),
 	{
 		type: "info",
@@ -235,6 +237,7 @@ const modal = shallowRef<InstanceType<typeof MkModal>>();
 
 const inputValue = ref(props.input?.default || null);
 const selectedValue = ref(props.select?.default || null);
+const canOk = ref(!props.wait)
 
 function done(canceled: boolean, result?) {
 	emit("done", { canceled, result });
@@ -242,7 +245,7 @@ function done(canceled: boolean, result?) {
 }
 
 async function ok() {
-	if (!props.showOkButton) return;
+	if (!props.showOkButton || !canOk.value) return;
 
 	const result = props.input
 		? inputValue.value
@@ -274,6 +277,11 @@ function onInputKeydown(evt: KeyboardEvent) {
 
 onMounted(() => {
 	document.addEventListener("keydown", onKeydown);
+	if (props.wait) {
+		setTimeout(() => {
+        canOk.value = true;
+    }, props.wait * 1000);
+	}
 });
 
 onBeforeUnmount(() => {

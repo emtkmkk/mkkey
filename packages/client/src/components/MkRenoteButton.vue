@@ -261,8 +261,9 @@ async function doRenote(data, ev?: MouseEvent) {
 	if ($i.isMiniSilenced && data.visibility === "public") {
 		const { canceled } = await os.confirm({
 			type: "warning",
-			text: "公開投稿は自身がローカル投稿をある程度確認している状態でもこきーのユーザ全員に見せたい投稿にのみ使用し、ローカル投稿を普段非表示にしている場合や限られた範囲が対象の投稿の場合はホーム、フォロワー限定の投稿範囲を使用してください。\n\n※このメッセージはもこきーの公開投稿の場合でのサーバールールに反していると判定されたユーザに表示されています。心当たりがない場合は、再度サーバールールをご一読ください。",
+			text: i18n.ts.miniSilence,
 			okText: "公開でRT",
+			wait: 5,
 		});
 		if (canceled) return;
 	}

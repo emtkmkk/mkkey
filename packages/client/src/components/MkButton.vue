@@ -4,6 +4,7 @@
 		class="bghgjjyj _button"
 		:class="{ inline, primary, gradate, danger, rounded, full }"
 		:type="type"
+		:disabled="disabled"
 		@click="emit('click', $event)"
 		@mousedown="onMousedown"
 	>
@@ -41,6 +42,7 @@ const props = defineProps<{
 	wait?: boolean;
 	danger?: boolean;
 	full?: boolean;
+	disabled?: boolean;
 }>();
 
 const emit = defineEmits<{

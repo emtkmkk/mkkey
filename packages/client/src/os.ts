@@ -296,6 +296,7 @@ export function confirm(props: {
 	text?: string | null;
 	okText?: string;
 	cancelText?: string;
+	wait?: number;
 }): Promise<{ canceled: boolean }> {
 	return new Promise((resolve, reject) => {
 		popup(

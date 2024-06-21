@@ -18,6 +18,7 @@ export async function exportFollowing(
 	done: () => void,
 ): Promise<void> {
 	logger.info(`Exporting following of ${job.data.user.id} ...`);
+	job.log("info - " + `Exporting following of ${job.data.user.id} ...`);
 
 	const user = await Users.findOneBy({ id: job.data.user.id });
 	if (user == null) {
@@ -29,6 +30,7 @@ export async function exportFollowing(
 	const [path, cleanup] = await createTemp();
 
 	logger.info(`Temp file is ${path}`);
+	job.log("info - " + `Temp file is ${path}`);
 
 	try {
 		const stream = fs.createWriteStream(path, { flags: "a" });
@@ -81,6 +83,7 @@ export async function exportFollowing(
 					stream.write(content + "\n", (err) => {
 						if (err) {
 							logger.error(err);
+							job.log("error - " + err);
 							rej(err);
 						} else {
 							res();
@@ -92,6 +95,7 @@ export async function exportFollowing(
 
 		stream.end();
 		logger.succ(`Exported to: ${path}`);
+		job.log("succ - " + `Exported to: ${path}`);
 
 		const fileName = `following-${dateFormat(
 			new Date(),
@@ -105,6 +109,7 @@ export async function exportFollowing(
 		});
 
 		logger.succ(`Exported to: ${driveFile.id}`);
+		job.log("succ - " + `Exported to: ${driveFile.id}`);
 	} finally {
 		cleanup();
 	}

@@ -14,6 +14,7 @@ export default async function indexAllNotes(
 	done: DoneCallback,
 ): Promise<void> {
 	logger.info("Indexing all notes...");
+	job.log("info - " + "Indexing all notes...");
 
 	let cursor: string | null = (job.data.cursor as string) ?? null;
 	let indexedCount: number = (job.data.indexedCount as number) ?? 0;
@@ -24,6 +25,11 @@ export default async function indexAllNotes(
 	const batch = 100;
 	while (running) {
 		logger.info(
+			`Querying for ${take} notes ${indexedCount}/${
+				total ? total : "?"
+			} at ${cursor}`,
+		);
+		job.log("info - " + 
 			`Querying for ${take} notes ${indexedCount}/${
 				total ? total : "?"
 			} at ${cursor}`,
@@ -43,6 +49,7 @@ export default async function indexAllNotes(
 			});
 		} catch (e: any) {
 			logger.error(`Failed to query notes ${e}`);
+			job.log("error - " + `Failed to query notes ${e}`);
 			done(e);
 			break;
 		}
@@ -68,6 +75,7 @@ export default async function indexAllNotes(
 			await job.update({ indexedCount, cursor, total });
 			await job.progress(+pct.toFixed(1));
 			logger.info(`Indexed notes ${indexedCount}/${total ? total : "?"}`);
+			job.log("info - " + `Indexed notes ${indexedCount}/${total ? total : "?"}`);
 		}
 		cursor = notes[notes.length - 1].id;
 		await job.update({ indexedCount, cursor, total });
@@ -79,4 +87,5 @@ export default async function indexAllNotes(
 
 	done();
 	logger.info("All notes have been indexed.");
+	job.log("info - " + "All notes have been indexed.");
 }

@@ -17,6 +17,7 @@ export async function importFollowing(
 	done: any,
 ): Promise<void> {
 	logger.info(`Importing following of ${job.data.user.id} ...`);
+	job.log("info - " + `Importing following of ${job.data.user.id} ...`);
 
 	const user = await Users.findOneBy({ id: job.data.user.id });
 	if (user == null) {
@@ -65,10 +66,12 @@ export async function importFollowing(
 				if (target.id === job.data.user.id) continue;
 
 				logger.info(`Follow[${linenum}] ${target.id} ...`);
+				job.log("info - " + `Follow[${linenum}] ${target.id} ...`);
 
 				follow(user, target);
 			} catch (e) {
 				logger.warn(`Error in line:${linenum} ${e}`);
+				job.log("warn - " + `Error in line:${linenum} ${e}`);
 			}
 		}
 	} else {
@@ -103,14 +106,17 @@ export async function importFollowing(
 				if (target.id === job.data.user.id) continue;
 
 				logger.info(`Follow[${linenum}] ${target.id} ...`);
+				job.log("info - " + `Follow[${linenum}] ${target.id} ...`);
 
 				follow(user, target);
 			} catch (e) {
 				logger.warn(`Error in line:${linenum} ${e}`);
+				job.log("warn - " + `Error in line:${linenum} ${e}`);
 			}
 		}
 	}
 
 	logger.succ("Imported");
+	job.log("succ - " + "Imported");
 	done();
 }

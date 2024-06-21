@@ -12,6 +12,7 @@ export default async function cleanRemoteFiles(
 	done: any,
 ): Promise<void> {
 	logger.info("Deleting cached remote files...");
+	job.log("info - " + "Deleting cached remote files...");
 
 	let deletedCount = 0;
 	let cursor: any = null;
@@ -49,5 +50,6 @@ export default async function cleanRemoteFiles(
 	}
 
 	logger.succ("All cahced remote files has been deleted.");
+	job.log("succ - " + "All cahced remote files has been deleted.");
 	done();
 }

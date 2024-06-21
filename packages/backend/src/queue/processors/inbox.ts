@@ -35,6 +35,7 @@ export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
 	const info = Object.assign({}, activity) as any;
 	info["@context"] = undefined;
 	logger.debug(JSON.stringify(info, null, 2));
+	job.log("debug - " + JSON.stringify(info, null, 2));
 
 	if (!signature?.keyId) {
 		const err = `Invalid signature: ${signature}`;

@@ -23,6 +23,7 @@ export async function importUserLists(
 	done: any,
 ): Promise<void> {
 	logger.info(`Importing user lists of ${job.data.user.id} ...`);
+	job.log("info - " + `Importing user lists of ${job.data.user.id} ...`);
 
 	const user = await Users.findOneBy({ id: job.data.user.id });
 	if (user == null) {
@@ -88,9 +89,11 @@ export async function importUserLists(
 			pushUserToUserList(target, list!);
 		} catch (e) {
 			logger.warn(`Error in line:${linenum} ${e}`);
+			job.log("warn - " + `Error in line:${linenum} ${e}`);
 		}
 	}
 
 	logger.succ("Imported");
+	job.log("succ - " + "Imported");
 	done();
 }

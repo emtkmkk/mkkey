@@ -17,6 +17,7 @@ export async function importBlocking(
 	done: any,
 ): Promise<void> {
 	logger.info(`Importing blocking of ${job.data.user.id} ...`);
+	job.log("info - " + `Importing blocking of ${job.data.user.id} ...`);
 
 	const user = await Users.findOneBy({ id: job.data.user.id });
 	if (user == null) {
@@ -67,13 +68,16 @@ export async function importBlocking(
 			if (target.id === job.data.user.id) continue;
 
 			logger.info(`Block[${linenum}] ${target.id} ...`);
+			job.log("info - " + `Block[${linenum}] ${target.id} ...`);
 
 			await block(user, target);
 		} catch (e) {
 			logger.warn(`Error in line:${linenum} ${e}`);
+			job.log("warn - " + `Error in line:${linenum} ${e}`);
 		}
 	}
 
 	logger.succ("Imported");
+	job.log("succ - " + "Imported");
 	done();
 }

@@ -22,6 +22,7 @@ export async function cleanCharts(
 	done: any,
 ): Promise<void> {
 	logger.info("Clean charts...");
+	job.log("info - " + "Clean charts...");
 
 	await Promise.all([
 		federationChart.clean(),
@@ -38,5 +39,6 @@ export async function cleanCharts(
 	]);
 
 	logger.succ("All charts successfully cleaned.");
+	job.log("succ - " + "All charts successfully cleaned.");
 	done();
 }

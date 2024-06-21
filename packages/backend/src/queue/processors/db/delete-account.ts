@@ -33,6 +33,11 @@ export async function deleteAccount(
 			user.host ? `@${user.host}` : ""
 		} ...`,
 	);
+	job.log("info - " + 
+		`Deleting account of ${job.data.user.id} @${user.username}${
+			user.host ? `@${user.host}` : ""
+		} ...`,
+	);
 
 	try {
 		let tryCount = 0;
@@ -129,6 +134,11 @@ export async function deleteAccount(
 					failedCount ? ` / ${failedCount}` : ""
 				})`,
 			);
+			job.log("succ - " + 
+				`All of notes deleted (${deleteCount}${
+					failedCount ? ` / ${failedCount}` : ""
+				})`,
+			);
 	}
 
 	{
@@ -174,6 +184,7 @@ export async function deleteAccount(
 				"あなたのアカウントは消去されました。",
 			);
 			logger.succ("Email sent completed");
+			job.log("succ - " + "Email sent completed");
 		}
 	}
 
@@ -184,6 +195,11 @@ export async function deleteAccount(
 		// await Users.delete(job.data.user.id);
 	}
 	logger.succ(
+		`Finish deleting job ${job.data.user.id} @${user.username}${
+			user.host ? `@${user.host}` : ""
+		}`,
+	);
+	job.log("succ - " + 
 		`Finish deleting job ${job.data.user.id} @${user.username}${
 			user.host ? `@${user.host}` : ""
 		}`,

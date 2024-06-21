@@ -19,6 +19,7 @@ export async function importPosts(
 	done: any,
 ): Promise<void> {
 	logger.info(`Importing posts of ${job.data.user.id} ...`);
+	job.log("info - " + `Importing posts of ${job.data.user.id} ...`);
 
 	const user = await Users.findOneBy({ id: job.data.user.id });
 	if (user == null) {
@@ -42,6 +43,7 @@ export async function importPosts(
 		const parsed = JSON.parse(json);
 		if (parsed instanceof Array) {
 			logger.info("Parsing key style posts");
+			job.log("info - " + "Parsing key style posts");
 			for (const post of JSON.parse(json)) {
 				try {
 					linenum++;
@@ -57,6 +59,7 @@ export async function importPosts(
 					const { text, cw, localOnly, createdAt } = Post.parse(post);
 
 					logger.info(`Posting[${linenum}] ...`);
+					job.log("info - " + `Posting[${linenum}] ...`);
 
 					const note = await create(user, {
 						createdAt: createdAt,
@@ -76,10 +79,12 @@ export async function importPosts(
 					});
 				} catch (e) {
 					logger.warn(`Error in line:${linenum} ${e}`);
+					job.log("warn - " + `Error in line:${linenum} ${e}`);
 				}
 			}
 		} else if (parsed instanceof Object) {
 			logger.info("Parsing animal style posts");
+			job.log("info - " + "Parsing animal style posts");
 			for (const post of parsed.orderedItems) {
 				async () => {
 					try {
@@ -103,6 +108,7 @@ export async function importPosts(
 							return;
 						}
 						logger.info(`Posting[${linenum}] ...`);
+						job.log("info - " + `Posting[${linenum}] ...`);
 
 						const note = await create(user, {
 							createdAt: new Date(post.object.published),
@@ -122,6 +128,7 @@ export async function importPosts(
 						});
 					} catch (e) {
 						logger.warn(`Error in line:${linenum} ${e}`);
+						job.log("warn - " + `Error in line:${linenum} ${e}`);
 					}
 				};
 			}
@@ -129,8 +136,10 @@ export async function importPosts(
 	} catch (e) {
 		// handle error
 		logger.warn(`Error reading: ${e}`);
+		job.log("warn - " + `Error reading: ${e}`);
 	}
 
 	logger.succ("Imported");
+	job.log("succ - " + "Imported");
 	done();
 }

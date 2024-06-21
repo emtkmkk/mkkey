@@ -13,6 +13,7 @@ export async function deleteDriveFiles(
 	done: any,
 ): Promise<void> {
 	logger.info(`Deleting drive files of ${job.data.user.id} ...`);
+	job.log("info - " + `Deleting drive files of ${job.data.user.id} ...`);
 
 	const user = await Users.findOneBy({ id: job.data.user.id });
 	if (user == null) {
@@ -55,6 +56,9 @@ export async function deleteDriveFiles(
 	}
 
 	logger.succ(
+		`All drive files (${deletedCount}) of ${user.id} has been deleted.`,
+	);
+	job.log("succ - " + 
 		`All drive files (${deletedCount}) of ${user.id} has been deleted.`,
 	);
 	done();

@@ -19,6 +19,7 @@ export async function importCustomEmojis(
 	done: any,
 ): Promise<void> {
 	logger.info("Importing custom emojis ...");
+	job.log("info - " + "Importing custom emojis ...");
 
 	const file = await DriveFiles.findOneBy({
 		id: job.data.fileId,
@@ -31,6 +32,7 @@ export async function importCustomEmojis(
 	const [path, cleanup] = await createTempDir();
 
 	logger.info(`Temp dir is ${path}`);
+	job.log("info - " + `Temp dir is ${path}`);
 
 	const destPath = `${path}/emojis.zip`;
 
@@ -41,6 +43,7 @@ export async function importCustomEmojis(
 		// TODO: 何度か再試行
 		if (e instanceof Error || typeof e === "string") {
 			logger.error(e);
+			job.log("error - " + e);
 		}
 		throw e;
 	}
@@ -85,7 +88,9 @@ export async function importCustomEmojis(
 		cleanup();
 
 		logger.succ("Imported");
+		job.log("succ - " + "Imported");
 		done();
 	});
 	logger.succ(`Unzipping to ${outputPath}`);
+	job.log("succ - " + `Unzipping to ${outputPath}`);
 }

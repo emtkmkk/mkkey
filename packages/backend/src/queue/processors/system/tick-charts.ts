@@ -22,6 +22,7 @@ export async function tickCharts(
 	done: any,
 ): Promise<void> {
 	logger.info("Tick charts...");
+	job.log("info - " + "Tick charts...");
 
 	await Promise.all([
 		federationChart.tick(false),
@@ -38,5 +39,6 @@ export async function tickCharts(
 	]);
 
 	logger.succ("All charts successfully ticked.");
+	job.log("succ - " + "All charts successfully ticked.");
 	done();
 }

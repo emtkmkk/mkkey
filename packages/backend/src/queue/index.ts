@@ -399,10 +399,6 @@ export function createImportCustomEmojisJob(
 			user: user,
 			fileId: fileId,
 		},
-		{
-			removeOnComplete: true,
-			removeOnFail: true,
-		},
 	);
 }
 
@@ -441,8 +437,6 @@ export function createCleanRemoteFilesJob() {
 		"cleanRemoteFiles",
 		{},
 		{
-			removeOnComplete: true,
-			removeOnFail: true,
 		},
 	);
 }
@@ -497,7 +491,6 @@ export default function () {
 		{},
 		{
 			repeat: { cron: "55 * * * *" },
-			removeOnComplete: true,
 		},
 	);
 
@@ -505,8 +498,7 @@ export default function () {
 		"resyncCharts",
 		{},
 		{
-			repeat: { cron: "40 3 * * *" },
-			removeOnComplete: true,
+			repeat: { cron: "50 3 * * *" },
 		},
 	);
 
@@ -514,8 +506,7 @@ export default function () {
 		"cleanCharts",
 		{},
 		{
-			repeat: { cron: "40 3 * * *" },
-			removeOnComplete: true,
+			repeat: { cron: "50 3 * * *" },
 		},
 	);
 
@@ -523,8 +514,7 @@ export default function () {
 		"clean",
 		{},
 		{
-			repeat: { cron: "40 3 * * *" },
-			removeOnComplete: true,
+			repeat: { cron: "50 3 * * *" },
 		},
 	);
 

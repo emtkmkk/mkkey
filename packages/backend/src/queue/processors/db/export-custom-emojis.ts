@@ -21,6 +21,7 @@ export async function exportCustomEmojis(
 	done: () => void,
 ): Promise<void> {
 	logger.info("Exporting custom emojis ...");
+	job.log("info - " + "Exporting custom emojis ...");
 
 	const user = await Users.findOneBy({ id: job.data.user.id });
 	if (user == null) {
@@ -31,6 +32,7 @@ export async function exportCustomEmojis(
 	const [path, cleanup] = await createTempDir();
 
 	logger.info(`Temp dir is ${path}`);
+	job.log("info - " + `Temp dir is ${path}`);
 
 	const metaPath = `${path}/meta.json`;
 
@@ -43,6 +45,7 @@ export async function exportCustomEmojis(
 			metaStream.write(text, (err) => {
 				if (err) {
 					logger.error(err);
+					job.log("error - " + err);
 					rej(err);
 				} else {
 					res();
@@ -79,6 +82,7 @@ export async function exportCustomEmojis(
 		} catch (e) {
 			// TODO: 何度か再試行
 			logger.error(e instanceof Error ? e : new Error(e as string));
+			job.log("error - " + e instanceof Error ? e : new Error(e as string));
 		}
 
 		if (!downloaded) {
@@ -107,6 +111,7 @@ export async function exportCustomEmojis(
 	});
 	archiveStream.on("close", async () => {
 		logger.succ(`Exported to: ${archivePath}`);
+		job.log("succ - " + `Exported to: ${archivePath}`);
 
 		const fileName = `custom-emojis-${dateFormat(
 			new Date(),
@@ -120,6 +125,7 @@ export async function exportCustomEmojis(
 		});
 
 		logger.succ(`Exported to: ${driveFile.id}`);
+		job.log("succ - " + `Exported to: ${driveFile.id}`);
 		cleanup();
 		archiveCleanup();
 		done();

@@ -28,6 +28,7 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 	try {
 		if (latest !== (latest = JSON.stringify(job.data.content, null, 2))) {
 			logger.debug(`delivering ${latest}`);
+			job.log("debug - " + `delivering ${latest}`);
 		}
 
 		await request(job.data.user, job.data.to, job.data.content);

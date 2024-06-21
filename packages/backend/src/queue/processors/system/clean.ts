@@ -11,15 +11,19 @@ export async function clean(
 	done: any,
 ): Promise<void> {
 	logger.info("Cleaning...");
+	job.log("info - " + "Cleaning...");
 
 	logger.info("UserIps Cleaning...");
+	job.log("info - " + "UserIps Cleaning...");
 	UserIps.delete({
 		createdAt: LessThan(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)),
 	});
 
 	logger.succ("UserIps Cleaned.");
+	job.log("succ - " + "UserIps Cleaned.");
 
 	logger.info("Notes Cleaning...");
+	job.log("info - " + "Notes Cleaning...");
 
 	{
 		let deleteCount = 0;
@@ -58,6 +62,11 @@ export async function clean(
 
 		if (deleteCount + failedCount)
 			logger.succ(
+				`Notes Cleaned. (${deleteCount}${
+					failedCount ? ` / ${failedCount}` : ""
+				})`,
+			);
+			job.log("succ - " + 
 				`Notes Cleaned. (${deleteCount}${
 					failedCount ? ` / ${failedCount}` : ""
 				})`,

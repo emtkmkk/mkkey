@@ -10,6 +10,7 @@ export async function resyncCharts(
 	done: any,
 ): Promise<void> {
 	logger.info("Resync charts...");
+	job.log("info - " + "Resync charts...");
 
 	// TODO: ユーザーごとのチャートも更新する
 	// TODO: インスタンスごとのチャートも更新する
@@ -20,5 +21,6 @@ export async function resyncCharts(
 	]);
 
 	logger.succ("All charts successfully resynced.");
+	job.log("succ - " + "All charts successfully resynced.");
 	done();
 }

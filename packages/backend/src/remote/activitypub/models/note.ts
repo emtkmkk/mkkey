@@ -229,7 +229,8 @@ export async function createNote(
 		? [note.attachment]
 		: [];
 	const files = note.attachment.map(
-		(attach) => (attach.sensitive = note.sensitive),
+		// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
+		(attach) => (attach.sensitive ??= note.sensitive),
 	)
 		? (
 				await Promise.all(

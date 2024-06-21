@@ -534,7 +534,7 @@ export default function () {
 		"cleanEmojis",
 		{},
 		{
-			repeat: { cron: "0 14 * * *" },
+			repeat: { cron: "50 3 * * *" },
 			jobId: "clean-emojis",
 		},
 	);

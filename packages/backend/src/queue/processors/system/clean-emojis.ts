@@ -44,8 +44,7 @@ export async function cleanEmojis(
 				break;
 			}
 
-			// biome-ignore lint/complexity/noForEach: <explanation>
-			for ( x of emojis ) {
+			for ( const x of emojis ) {
 				try {
 					await getResponse({
 						url: x.publicUrl || x.originalUrl,

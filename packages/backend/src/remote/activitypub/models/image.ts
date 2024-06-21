@@ -8,6 +8,7 @@ import type { DriveFile } from "@/models/entities/drive-file.js";
 import { DriveFiles, Users } from "@/models/index.js";
 import { truncate } from "@/misc/truncate.js";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
+import { isDocument, type IObject } from '../type.js';
 
 const logger = apLogger;
 
@@ -24,13 +25,15 @@ export async function createImage(
 	}
 
 	const image = (await new Resolver().resolve(value)) as any;
+	
+	if (!isDocument(image)) return null;
 
 	if (image.url == null) {
-		throw new Error("invalid image: url not privided");
+		return null;
 	}
 
 	if (!image.url.startsWith("https://") && !image.url.startsWith("http://")) {
-		throw new Error(`invalid image: unexpected shcema of url: ${image.url}`);
+		return null;
 	}
 
 	logger.info(`Creating the Image: ${image.url}`);

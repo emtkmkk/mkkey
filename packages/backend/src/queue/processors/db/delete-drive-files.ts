@@ -52,7 +52,7 @@ export async function deleteDriveFiles(
 			userId: user.id,
 		});
 
-		job.progress(deletedCount / total);
+		job.progress(deletedCount / total * 100);
 	}
 
 	logger.succ(

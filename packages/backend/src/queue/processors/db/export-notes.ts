@@ -88,7 +88,7 @@ export async function exportNotes(
 				userId: user.id,
 			});
 
-			job.progress(exportedNotesCount / total);
+			job.progress(exportedNotesCount / total * 100);
 		}
 
 		await write("]");

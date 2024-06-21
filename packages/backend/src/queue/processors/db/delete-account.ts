@@ -59,6 +59,7 @@ export async function deleteAccount(
 					const followee = await getUser(x.followeeId);
 					deleteCount += 1;
 					if (followee) await deleteFollowing(user, followee);
+					tryCount = 0;
 				} catch {}
 			});
 			tryCount += 1;
@@ -86,6 +87,7 @@ export async function deleteAccount(
 					const follower = await getUser(x.followerId);
 					deleteCount += 1;
 					if (follower) await deleteFollowing(follower, user);
+					tryCount = 0;
 				} catch {}
 			});
 			tryCount += 1;
@@ -126,6 +128,17 @@ export async function deleteAccount(
 					failedCount += 1;
 				}
 			}
+			
+			logger.info(
+				`Notes deleting... (Total: ${deleteCount}${
+					failedCount ? ` / ${failedCount}` : ""
+				})`,
+			);
+			job.log("info - " +
+				`Notes deleting... (Total: ${deleteCount}${
+					failedCount ? ` / ${failedCount}` : ""
+				})`,
+			);
 		}
 
 		if (deleteCount + failedCount)

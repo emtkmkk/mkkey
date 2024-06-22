@@ -60,7 +60,7 @@ export default function <T extends IEndpointMeta, Ps extends Schema>(
 
 		if (meta.requireFile) {
 			cleanup = () => {
-				fs.unlink(file.path, () => {});
+				if (file) fs.unlink(file.path, () => {});
 			};
 
 			if (file == null)

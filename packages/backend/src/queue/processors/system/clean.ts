@@ -107,8 +107,6 @@ export async function clean(
 					failedCount ? ` / ${failedCount}` : ""
 				})`,
 			);
-	} catch {
-		
 	}
 
 	done();

@@ -38,10 +38,9 @@ export async function clean(
 		.andWhere(new Brackets(qb => {
 				qb.where("note.visibility = :public", { public: 'public' })
 					.orWhere("note.visibility = :home", { home: 'home' });
-		})
+		}))
 		.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
 		.andWhere("note.score = :score", { score: 0 })
-		)
 		.getCount())
 
 		logger.info(`Clean Notes Count: ${total}`);
@@ -50,13 +49,13 @@ export async function clean(
 		while (true) {
 			const notes = (await Notes.createQueryBuilder('note')
 			.where("note.createdAt < :date", { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) })
-			.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
-			.andWhere("note.score = :score", { score: 0 })
-			.andWhere("note.userHost IS NOT NULL")
-			.andWhere(new Brackets(qb => {
-					qb.where("note.visibility = :public", { public: 'public' })
-						.orWhere("note.visibility = :home", { home: 'home' });
-			}))
+		.andWhere("note.userHost IS NOT NULL")
+		.andWhere(new Brackets(qb => {
+				qb.where("note.visibility = :public", { public: 'public' })
+					.orWhere("note.visibility = :home", { home: 'home' });
+		}))
+		.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
+		.andWhere("note.score = :score", { score: 0 })
 			.andWhere(cursor ? "note.id > :cursor" : "1=1", { cursor })
 			.orderBy("note.id", "ASC")
 			.take(300)

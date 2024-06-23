@@ -32,17 +32,19 @@ export async function clean(
 		let failedCount = 0;
 		// Delete notes
 		let cursor: Note["id"] | null = null;
-
+		try {
 		const total = (await Notes.createQueryBuilder('note')
 		.where("note.createdAt < :date", { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) })
-		.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
-		.andWhere("note.score = :score", { score: 0 })
 		.andWhere("note.userHost IS NOT NULL")
 		.andWhere(new Brackets(qb => {
 				qb.where("note.visibility = :public", { public: 'public' })
 					.orWhere("note.visibility = :home", { home: 'home' });
-		}))
+		})
+		.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
+		.andWhere("note.score = :score", { score: 0 })
+		)
 		.getCount())
+		} catch ()
 
 		logger.info(`Clean Notes Count: ${total}`);
 		job.log(`info - Clean Notes Count: ${total}`);
@@ -108,6 +110,8 @@ export async function clean(
 					failedCount ? ` / ${failedCount}` : ""
 				})`,
 			);
+	} catch {
+		
 	}
 
 	done();

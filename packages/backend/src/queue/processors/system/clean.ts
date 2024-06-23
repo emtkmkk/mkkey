@@ -32,7 +32,6 @@ export async function clean(
 		let failedCount = 0;
 		// Delete notes
 		let cursor: Note["id"] | null = null;
-		try {
 		const total = (await Notes.createQueryBuilder('note')
 		.where("note.createdAt < :date", { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) })
 		.andWhere("note.userHost IS NOT NULL")
@@ -44,7 +43,6 @@ export async function clean(
 		.andWhere("note.score = :score", { score: 0 })
 		)
 		.getCount())
-		} catch ()
 
 		logger.info(`Clean Notes Count: ${total}`);
 		job.log(`info - Clean Notes Count: ${total}`);
@@ -61,7 +59,7 @@ export async function clean(
 			}))
 			.andWhere(cursor ? "note.id > :cursor" : "1=1", { cursor })
 			.orderBy("note.id", "ASC")
-			.take(100)
+			.take(300)
 			.getMany()) as Note[];
 
 			if (notes.length === 0) {

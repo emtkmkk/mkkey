@@ -442,21 +442,21 @@
 									:note="note"
 									:pinned="true"
 								/>
-								<MkButton
-									style="
-										text-align: center;
-										margin: auto;
-										margin-top: calc(var(--margin) / 2);
-									"
-									v-if="user.pinnedNotes.length > 2"
-									@click="defaultStore.set('shortPinUsers', {...defaultStore.state.shortPinUsers, [user.id]: !(defaultStore.state.shortPinUsers[user.id] ?? isShortPin)})"
-									>{{
-										(defaultStore.state.shortPinUsers[user.id] ?? isShortPin) ?
-										i18n.ts.nextShowPinFull :
-										i18n.ts.nextShowPinShort
-									}}</MkButton
-								>
 							</div>
+							<MkButton
+								style="
+									text-align: center;
+									margin: auto;
+									margin-top: calc(var(--margin) / 2);
+								"
+								v-if="user.pinnedNotes.length > 2"
+								@click="defaultStore.set('shortPinUsers', {...defaultStore.reactiveState.shortPinUsers, [user.id]: !(defaultStore.reactiveState.shortPinUsers[user.id] ?? isShortPin)})"
+								>{{
+									(defaultStore.reactiveState.shortPinUsers[user.id] ?? isShortPin) ?
+									i18n.ts.nextShowPinFull :
+									i18n.ts.nextShowPinShort
+								}}</MkButton
+							>
 						</template>
 						<template v-else>
 							<div class="notes">

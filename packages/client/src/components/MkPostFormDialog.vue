@@ -36,6 +36,7 @@ const props = defineProps<{
 	initialLocalOnly?: boolean;
 	initialVisibleUsers?: misskey.entities.User[];
 	initialNote?: misskey.entities.Note;
+	initialHashTags?: string;
 	instant?: boolean;
 	fixed?: boolean;
 	autofocus?: boolean;

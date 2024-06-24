@@ -6,6 +6,7 @@ import { envOption } from "../env.js";
 import config from "@/config/index.js";
 
 import * as SyslogPro from "syslog-pro";
+import { json } from "stream/consumers";
 
 type Domain = {
 	name: string;
@@ -110,7 +111,7 @@ export default class Logger {
 				? message
 				: null;
 
-		let log = `${l} ${worker}\t[${domains.join(" ")}]\t${m}`;
+		let log = `${l} ${worker}\t[${domains.join(" ")}]\t${m}${level === "error" ? `\n${JSON.stringify(data, undefined, "\t")}` : ""}`;
 		if (envOption.withLogTime) log = `${chalk.gray(time)} ${log}`;
 
 		console.log(important ? chalk.bold(log) : log);

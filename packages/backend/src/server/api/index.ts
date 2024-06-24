@@ -30,6 +30,8 @@ import {
 	IdConvertType as IdType,
 } from "../../../native-utils/built/index.js";
 import { convertAttachment } from "./mastodon/converters.js";
+import { v4 as uuid } from "uuid";
+import path from "node:path";
 
 // re-export native rust id conversion (function and enum)
 export { IdType, convertId };
@@ -56,8 +58,21 @@ const mastoFileRouter = new Router();
 const errorRouter = new Router();
 
 // Init multer instance
+const storage = multer.diskStorage({
+	filename: (req, file, cb) => {
+		if (!file.originalname) {
+			cb(null, `${uuid()}`);
+		} else {
+			const originalName = file.originalname;
+			const extension = path.extname(originalName);
+			const baseName = path.basename(originalName, extension);
+			cb(null, `${baseName}${extension}`);
+		}
+	}
+});
+
 const upload = multer({
-	storage: multer.diskStorage({}),
+	storage: storage,
 	limits: {
 		fileSize: config.maxFileSize || 262144000,
 		files: 1,

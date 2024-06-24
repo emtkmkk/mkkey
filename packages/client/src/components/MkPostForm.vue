@@ -738,6 +738,7 @@ import {
 	onMounted,
 	onUnmounted,
 	defineAsyncComponent,
+	computed,
 } from "vue";
 import * as mfm from "mfm-js";
 import * as misskey from "calckey-js";
@@ -1081,14 +1082,14 @@ const canPost = $computed((): boolean => {
 	);
 });
 
-const withHashtags = $computed(
+const withHashtags = computed(
 	defaultStore.makeGetterSetter("postFormWithHashtags")
 );
-const hashtags = $computed(defaultStore.makeGetterSetter("postFormHashtags"));
+const hashtags = computed(defaultStore.makeGetterSetter("postFormHashtags"));
 
 if (props.initialHashTags) {
-	withHashtags = true;
-	hashtags = props.initialHashTags;
+	hashtags.value = [withHashtags.value ? hashtags.value : null, props.initialHashTags].filter(Boolean).join(" ");
+	withHashtags.value = true;
 }
 
 const hashtagsPreview = $computed(() => {

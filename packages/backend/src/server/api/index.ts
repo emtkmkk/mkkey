@@ -153,6 +153,21 @@ mastoRouter.use(async (ctx, next) => {
 
 apiMastodonCompatible(mastoRouter);
 
+const uploadFile = (ctx) => {
+	console.log("Found File.")
+	upload.single("file");
+	if (ctx.file == null) {
+		console.log("Not Found File. Perform any search...")
+		upload.any();
+		if (ctx.files && ctx.files.length === 1) {
+			console.log(`${ctx.files.length} Files Found.`)
+			ctx.file = ctx.files[0]; // 最初のファイルをctx.fileに格納
+		} else {
+			console.log(`${ctx.files.length} Files Found.`)
+		}
+	}
+}
+
 /**
  * Register endpoint handlers
  */
@@ -160,7 +175,7 @@ for (const endpoint of [...endpoints, ...compatibility]) {
 	if (endpoint.meta.requireFile) {
 		router.post(
 			`/${endpoint.name}`,
-			upload.single("file"),
+			async (ctx) => {await uploadFile(ctx)},
 			handler.bind(null, endpoint),
 		);
 	} else {

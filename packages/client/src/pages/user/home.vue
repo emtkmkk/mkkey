@@ -430,8 +430,7 @@
 					>
 						<template
 							v-if="
-								$i == null ||
-								($i.id != user.id && !user.isFollowing) ||
+								!isShortPin ||
 								pinFull
 							"
 						>
@@ -443,6 +442,20 @@
 									:note="note"
 									:pinned="true"
 								/>
+								<MkButton
+									style="
+										text-align: center;
+										margin: auto;
+										margin-top: calc(var(--margin) / 2);
+									"
+									v-if="user.pinnedNotes.length > 2"
+									@click="defaultStore.set('shortPinUsers', {...defaultStore.state.shortPinUsers, [user.id]: !(defaultStore.state.shortPinUsers[user.id] ?? isShortPin)})"
+									>{{
+										(defaultStore.state.shortPinUsers[user.id] ?? isShortPin) ?
+										i18n.ts.nextShowPinFull :
+										i18n.ts.nextShowPinShort
+									}}</MkButton
+								>
 							</div>
 						</template>
 						<template v-else>
@@ -558,6 +571,8 @@ const router = useRouter();
 
 const stats = ref<any>({});
 
+const isShortPin = $computed(() => defaultStore.state.shortPinUsers?.[props.user.id] ?? ($i != null && ($i.id === props.user.id || props.user.isFollowing)))
+
 let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
@@ -565,7 +580,7 @@ let bannerEl = $ref<null | HTMLElement>(null);
 const pinFull = $ref(false);
 const mkBadge = $ref(props.user.badges || []);
 const visiblePinnedNotes = $computed(() => {
-	return pinFull.value
+	return pinFull
 		? props.user.pinnedNotes
 		: props.user.pinnedNotes.slice(0, 2);
 });

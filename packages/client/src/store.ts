@@ -1458,6 +1458,11 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
 			createdAt: "2024/6/20",
+		},
+		shortPinUsers: {
+			where: "device",
+			default: {},
+			createdAt: "2024/6/24",
 		}
 	}),
 );

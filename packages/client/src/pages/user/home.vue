@@ -450,9 +450,9 @@
 									margin-top: calc(var(--margin) / 2);
 								"
 								v-if="user.pinnedNotes.length > 2"
-								@click="defaultStore.set('shortPinUsers', {...defaultStore.reactiveState.shortPinUsers, [user.id]: !(defaultStore.reactiveState.shortPinUsers[user.id] ?? isShortPin)})"
+								@click="shortPinUsers = {...shortPinUsers, [user.id]: !(shortPinUsers[user.id] ?? isShortPin)}"
 								>{{
-									(defaultStore.reactiveState.shortPinUsers[user.id] ?? isShortPin) ?
+									(shortPinUsers[user.id] ?? isShortPin) ?
 									i18n.ts.nextShowPinFull :
 									i18n.ts.nextShowPinShort
 								}}</MkButton
@@ -571,7 +571,8 @@ const router = useRouter();
 
 const stats = ref<any>({});
 
-const isShortPin = $computed(() => defaultStore.state.shortPinUsers?.[props.user.id] ?? ($i != null && ($i.id === props.user.id || props.user.isFollowing)))
+const isShortPin = $computed(() => shortPinUsers?.[props.user.id] ?? ($i != null && ($i.id === props.user.id || props.user.isFollowing)))
+const shortPinUsers = $computed(defaultStore.makeGetterSetter("shortPinUsers"));
 
 let parallaxAnimationId = $ref<null | number>(null);
 let narrow = $ref<null | boolean>(null);

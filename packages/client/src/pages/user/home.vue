@@ -450,9 +450,9 @@
 									margin-top: calc(var(--margin) / 2);
 								"
 								v-if="user.pinnedNotes.length > 2"
-								@click="shortPinUsers = {...shortPinUsers, [user.id]: !(shortPinUsers[user.id] ?? isShortPin)}"
+								@click="shortPinUsers = {...shortPinUsers, [user.id]: !(shortPinUsers?.[user.id] ?? isShortPin)}"
 								>{{
-									(shortPinUsers[user.id] ?? isShortPin) ?
+									(shortPinUsers?.[user.id] ?? isShortPin) ?
 									i18n.ts.nextShowPinFull :
 									i18n.ts.nextShowPinShort
 								}}</MkButton

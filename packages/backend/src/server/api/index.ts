@@ -155,7 +155,7 @@ mastoRouter.use(async (ctx, next) => {
 
 apiMastodonCompatible(mastoRouter);
 
-const uploadFile = (ctx) => {
+const uploadFile = async (ctx) => {
 	console.log("Found File.")
 	let ret = upload.single("file");
 	if (ctx.file == null) {
@@ -178,7 +178,7 @@ for (const endpoint of [...endpoints, ...compatibility]) {
 	if (endpoint.meta.requireFile) {
 		router.post(
 			`/${endpoint.name}`,
-			async (ctx) => {uploadFile(ctx)},
+			async (ctx) => {await uploadFile(ctx)},
 			handler.bind(null, endpoint),
 		);
 	} else {

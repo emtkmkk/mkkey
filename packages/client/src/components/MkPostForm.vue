@@ -1088,8 +1088,8 @@ const withHashtags = $computed(
 const hashtags = $computed(defaultStore.makeGetterSetter("postFormHashtags"));
 
 if (props.initialHashTags) {
-	$(hashtags).value = ([(withHashtags && hashtags ? hashtags : null), props.initialHashTags].filter(Boolean).join(" ")) ?? "";
-	$(withHashtags).value = true;
+	hashtags.set([(withHashtags && hashtags ? hashtags : null), props.initialHashTags].filter(Boolean).join(" ") ?? "");
+	withHashtags.set(true);
 }
 
 const hashtagsPreview = $computed(() => {

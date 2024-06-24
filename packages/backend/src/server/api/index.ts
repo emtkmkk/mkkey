@@ -163,7 +163,7 @@ const uploadFile = (ctx) => {
 			console.log(`${ctx.files.length} Files Found.`)
 			ctx.file = ctx.files[0]; // 最初のファイルをctx.fileに格納
 		} else {
-			console.log(`${ctx.files.length} Files Found.`)
+			console.log(`${ctx.files?.length ?? 0} Files Found.`)
 		}
 	}
 }

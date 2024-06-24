@@ -195,7 +195,8 @@ const isMuted = computed(() => {
 		return false;
 	});
 });
-
+	
+const ce = computed(() => instance.emojis ?? []);
 const customEmoji = computed(() => {
 	if (!isCustom.value) return null;
 

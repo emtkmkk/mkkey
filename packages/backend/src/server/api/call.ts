@@ -165,9 +165,7 @@ export default async (
 		.exec(data, user, token, ctx?.file, ctx?.ip, ctx?.headers)
 		.catch((e: Error) => {
 			if (e instanceof ApiError) {
-				throw e;
-			} else {
-				apiLogger.error(`Internal error occurred in ${ep.name}: ${e.message}`, {
+				apiLogger.error(`Api Error in ${ep.name}: ${e.message}`, {
 					ep: ep.name,
 					ps: data,
 					e: {
@@ -176,19 +174,29 @@ export default async (
 						stack: e.stack,
 					},
 				});
-				throw new ApiError(null, {
-					e: {
-						message: e.message,
-						code: e.name,
-						stack: e.stack,
-					},
-				});
+				throw e;
 			}
+			apiLogger.error(`Internal error occurred in ${ep.name}: ${e.message}`, {
+				ep: ep.name,
+				ps: data,
+				e: {
+					message: e.message,
+					code: e.name,
+					stack: e.stack,
+				},
+			});
+			throw new ApiError(null, {
+				e: {
+					message: e.message,
+					code: e.name,
+					stack: e.stack,
+				},
+			});
 		})
 		.finally(() => {
 			const after = performance.now();
 			const time = after - before;
-			if (time > 2000) {
+			if (time > 10000) {
 				apiLogger.warn(
 					`SLOW API CALL DETECTED: ${ep.name} (${time.toFixed(0)}ms)`,
 				);

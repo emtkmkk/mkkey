@@ -335,9 +335,6 @@ export async function createNote(
 	// References
 	let references = new Set<Note["id"]>();
 	if (note.references) {
-		logger.info(
-			`references: ${JSON.stringify(note.references, undefined, "\t")}`,
-		);
 		// Resolve to Collection Object
 		const collection = await resolver.resolveCollection(note.references);
 		if (isCollectionOrOrderedCollection(collection)) {

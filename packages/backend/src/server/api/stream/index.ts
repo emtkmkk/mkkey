@@ -60,7 +60,7 @@ export default class Connection {
 		accessToken: string,
 		prepareStream: string | undefined,
 	) {
-		console.log("constructor", prepareStream);
+		//console.log("constructor", prepareStream);
 		this.wsConnection = wsConnection;
 		this.subscriber = subscriber;
 		if (user) this.user = user;
@@ -89,7 +89,7 @@ export default class Connection {
 
 			this.subscriber.on(`user:${this.user.id}`, this.onUserEvent);
 		}
-		console.log("prepare", prepareStream);
+		//console.log("prepare", prepareStream);
 		if (prepareStream) {
 			this.onWsConnectionMessage({
 				type: "utf8",

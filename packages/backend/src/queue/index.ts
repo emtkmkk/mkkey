@@ -516,6 +516,7 @@ export default function () {
 		"clean",
 		{},
 		{
+			attempts: 10,
 			repeat: { cron: "50 3 * * *" },
 			jobId: "clean",
 		},

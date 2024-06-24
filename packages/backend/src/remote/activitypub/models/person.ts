@@ -189,7 +189,6 @@ export async function createPerson(
 
 	if (host === "misskey.io") {
 		try {
-			console.log(`fetch AddUserInfo1 @${person.preferredUsername}@${host}`);
 			let userInfo = await (
 				await getResponse({
 					url: `https://${host}/api/users/search-by-username-and-host`,
@@ -214,7 +213,6 @@ export async function createPerson(
 				);
 			}
 			if (Array.isArray(userInfo) && userInfo.length === 1 && userInfo[0].id) {
-				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`);
 				const skebInfo = (await getJson(
 					`https://${host}/api/users/get-skeb-status?userId=${userInfo[0].id}`,
 					"application/json, */*",
@@ -595,7 +593,6 @@ export async function updatePerson(
 
 	if (host === "misskey.io") {
 		try {
-			console.log(`fetch AddUserInfo1 @${person.preferredUsername}@${host}`);
 			let userInfo = await (
 				await getResponse({
 					url: `https://${host}/api/users/search-by-username-and-host`,
@@ -620,7 +617,6 @@ export async function updatePerson(
 				);
 			}
 			if (Array.isArray(userInfo) && userInfo.length === 1 && userInfo[0].id) {
-				console.log(`fetch AddUserInfo2 @${person.preferredUsername}@${host}`);
 				const skebInfo = (await getJson(
 					`https://${host}/api/users/get-skeb-status?userId=${userInfo[0].id}`,
 					"application/json, */*",

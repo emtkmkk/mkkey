@@ -1082,14 +1082,14 @@ const canPost = $computed((): boolean => {
 	);
 });
 
-const withHashtags = computed(
+const withHashtags = $computed(
 	defaultStore.makeGetterSetter("postFormWithHashtags")
 );
-const hashtags = computed(defaultStore.makeGetterSetter("postFormHashtags"));
+const hashtags = $computed(defaultStore.makeGetterSetter("postFormHashtags"));
 
 if (props.initialHashTags) {
-	hashtags.value = ([(withHashtags.value && hashtags.value ? hashtags.value : null), props.initialHashTags].filter(Boolean).join(" ")) ?? "";
-	withHashtags.value = true;
+	$(hashtags).value = ([(withHashtags && hashtags ? hashtags : null), props.initialHashTags].filter(Boolean).join(" ")) ?? "";
+	$(withHashtags).value = true;
 }
 
 const hashtagsPreview = $computed(() => {

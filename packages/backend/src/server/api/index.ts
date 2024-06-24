@@ -155,20 +155,36 @@ mastoRouter.use(async (ctx, next) => {
 
 apiMastodonCompatible(mastoRouter);
 
-const uploadFile = async (ctx) => {
-	console.log("Found File.")
-	let ret = upload.single("file");
-	if (ctx.file == null) {
-		console.log("Not Found File. Perform any search...")
-		ret = upload.any();
+const uploadFile = async (ctx, next) => {
+
+	await new Promise((resolve, reject) => {
+		upload.single('file')(ctx, (err) => {
+			if (err) return reject(err);
+			resolve("");
+		});
+	});
+
+	if (!ctx.file) {
+		console.log("Not Found File. Perform any search...");
+
+		await new Promise((resolve, reject) => {
+			upload.any()(ctx, (err) => {
+				if (err) return reject(err);
+				resolve("");
+			});
+		});
+
 		if (ctx.files && ctx.files.length === 1) {
-			console.log(`${ctx.files.length} Files Found.`)
-			ctx.file = ctx.files[0]; // 最初のファイルをctx.fileに格納
+			console.log(`${ctx.files.length} Files Found.`);
+			ctx.file = ctx.files[0];
 		} else {
-			console.log(`${ctx.files?.length ?? 0} Files Found.`)
+			console.log(`${ctx.files?.length ?? 0} Files Found.`);
 		}
+	} else {
+		console.log("Found File.");
 	}
-	return ret;
+
+	await next();
 }
 
 /**
@@ -178,7 +194,7 @@ for (const endpoint of [...endpoints, ...compatibility]) {
 	if (endpoint.meta.requireFile) {
 		router.post(
 			`/${endpoint.name}`,
-			async (ctx) => {await uploadFile(ctx)},
+			uploadFile,
 			handler.bind(null, endpoint),
 		);
 	} else {

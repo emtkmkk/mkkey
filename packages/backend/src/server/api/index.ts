@@ -61,8 +61,10 @@ const errorRouter = new Router();
 const storage = multer.diskStorage({
 	filename: (req, file, cb) => {
 		if (!file.originalname) {
+			console.log('nothing Originalname');
 			cb(null, `${uuid()}`);
 		} else {
+			console.log(`Originalname: ${file.originalname}`);
 			const originalName = file.originalname;
 			const extension = path.extname(originalName);
 			const baseName = path.basename(originalName, extension);

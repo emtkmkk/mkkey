@@ -32,6 +32,8 @@ import {
 import { convertAttachment } from "./mastodon/converters.js";
 import { v4 as uuid } from "uuid";
 import path from "node:path";
+import reject from "@/remote/activitypub/renderer/reject.js";
+import { resolve } from "path";
 
 // re-export native rust id conversion (function and enum)
 export { IdType, convertId };
@@ -166,6 +168,7 @@ const uploadFile = (ctx) => {
 			console.log(`${ctx.files?.length ?? 0} Files Found.`)
 		}
 	}
+	resolve();
 }
 
 /**
@@ -175,7 +178,7 @@ for (const endpoint of [...endpoints, ...compatibility]) {
 	if (endpoint.meta.requireFile) {
 		router.post(
 			`/${endpoint.name}`,
-			async (ctx) => {await uploadFile(ctx)},
+			async (ctx) => {uploadFile(ctx)},
 			handler.bind(null, endpoint),
 		);
 	} else {

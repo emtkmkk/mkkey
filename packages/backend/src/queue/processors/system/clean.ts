@@ -33,8 +33,9 @@ export async function clean(
 		let failedCount = 0;
 		// Delete notes
 		let cursor: Note["id"] | null = null;
+		const maxDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 60)
 		const total = (await Notes.createQueryBuilder('note')
-			.where("note.id < :maxId", { maxId: genId(new Date(Date.now() - 1000 * 60 * 60 * 24 * 60)) })
+			.where("note.id < :maxId", { maxId: genId(maxDate) })
 			.andWhere(new Brackets(qb => {
 				qb.where("note.visibility = :public", { public: 'public' })
 					.orWhere("note.visibility = :home", { home: 'home' });
@@ -49,7 +50,7 @@ export async function clean(
 
 		while (true) {
 			const notes = (await Notes.createQueryBuilder('note')
-				.where("note.id < :maxId", { maxId: genId(new Date(Date.now() - 1000 * 60 * 60 * 24 * 60)) })
+				.where("note.id < :maxId", { maxId: genId(maxDate) })
 				.andWhere(cursor ? "note.id > :cursor" : "1=1", { cursor })
 				.andWhere(new Brackets(qb => {
 					qb.where("note.visibility = :public", { public: 'public' })

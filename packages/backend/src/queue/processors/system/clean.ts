@@ -3,6 +3,7 @@ import { Brackets, IsNull, LessThan } from "typeorm";
 import { Notes, UserIps } from "@/models/index.js";
 
 import { queueLogger } from "../../logger.js";
+import { genId } from "@/misc/gen-id.js";
 
 const logger = queueLogger.createSubLogger("clean");
 
@@ -33,33 +34,33 @@ export async function clean(
 		// Delete notes
 		let cursor: Note["id"] | null = null;
 		const total = (await Notes.createQueryBuilder('note')
-		.where("note.createdAt < :date", { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) })
-		.andWhere("note.userHost IS NOT NULL")
-		.andWhere(new Brackets(qb => {
+			.where("note.id < :maxId", { maxId: genId(new Date(Date.now() - 1000 * 60 * 60 * 24 * 60)) })
+			.andWhere(new Brackets(qb => {
 				qb.where("note.visibility = :public", { public: 'public' })
 					.orWhere("note.visibility = :home", { home: 'home' });
-		}))
-		.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
-		.andWhere("note.score = :score", { score: 0 })
-		.getCount())
+			}))
+			.andWhere("note.userHost IS NOT NULL")
+			.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
+			.andWhere("note.score = :score", { score: 0 })
+			.getCount())
 
 		logger.info(`Clean Notes Count: ${total}`);
 		job.log(`info - Clean Notes Count: ${total}`);
 
 		while (true) {
 			const notes = (await Notes.createQueryBuilder('note')
-			.where("note.createdAt < :date", { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) })
-		.andWhere("note.userHost IS NOT NULL")
-		.andWhere(new Brackets(qb => {
-				qb.where("note.visibility = :public", { public: 'public' })
-					.orWhere("note.visibility = :home", { home: 'home' });
-		}))
-		.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
-		.andWhere("note.score = :score", { score: 0 })
-			.andWhere(cursor ? "note.id > :cursor" : "1=1", { cursor })
-			.orderBy("note.id", "ASC")
-			.take(300)
-			.getMany()) as Note[];
+				.where("note.id < :maxId", { maxId: genId(new Date(Date.now() - 1000 * 60 * 60 * 24 * 60)) })
+				.andWhere(cursor ? "note.id > :cursor" : "1=1", { cursor })
+				.andWhere(new Brackets(qb => {
+					qb.where("note.visibility = :public", { public: 'public' })
+						.orWhere("note.visibility = :home", { home: 'home' });
+				}))
+				.andWhere("note.userHost IS NOT NULL")
+				.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
+				.andWhere("note.score = :score", { score: 0 })
+				.orderBy("note.id", "ASC")
+				.take(300)
+				.getMany()) as Note[];
 
 			if (notes.length === 0) {
 				break;
@@ -71,25 +72,21 @@ export async function clean(
 				await Notes.delete(notes.map((note) => note.id));
 				deleteCount += notes.length;
 				logger.info(
-					`Notes Cleaning... (Total: ${deleteCount}${
-						failedCount ? ` / ${failedCount}` : ""
+					`Notes Cleaning... (Total: ${deleteCount}${failedCount ? ` / ${failedCount}` : ""
 					})`,
 				);
 				job.log("info - " +
-					`Notes Cleaning... (Total: ${deleteCount}${
-						failedCount ? ` / ${failedCount}` : ""
+					`Notes Cleaning... (Total: ${deleteCount}${failedCount ? ` / ${failedCount}` : ""
 					})`,
 				);
 			} catch {
 				failedCount += notes.length;
 				logger.info(
-					`Notes Cleaning... (Total: ${deleteCount}${
-						failedCount ? ` / ${failedCount}` : ""
+					`Notes Cleaning... (Total: ${deleteCount}${failedCount ? ` / ${failedCount}` : ""
 					})`,
 				);
 				job.log("info - " +
-					`Notes Cleaning... (Total: ${deleteCount}${
-						failedCount ? ` / ${failedCount}` : ""
+					`Notes Cleaning... (Total: ${deleteCount}${failedCount ? ` / ${failedCount}` : ""
 					})`,
 				);
 			}
@@ -98,15 +95,13 @@ export async function clean(
 
 		if (deleteCount + failedCount)
 			logger.succ(
-				`Notes Cleaned. (${deleteCount}${
-					failedCount ? ` / ${failedCount}` : ""
+				`Notes Cleaned. (${deleteCount}${failedCount ? ` / ${failedCount}` : ""
 				})`,
 			);
-			job.log("succ - " + 
-				`Notes Cleaned. (${deleteCount}${
-					failedCount ? ` / ${failedCount}` : ""
-				})`,
-			);
+		job.log("succ - " +
+			`Notes Cleaned. (${deleteCount}${failedCount ? ` / ${failedCount}` : ""
+			})`,
+		);
 	}
 
 	done();

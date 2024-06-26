@@ -72,27 +72,20 @@ export function preprocess(text: string): string {
 			}
 			if (
 				node.type === "fn" &&
-				(node.props.name === "center" || node.props.name === "c")
-			) {
-				centerFlg = true;
-				node.type = "text";
-				node.props.text = mfm.toString(node.children);
-				node.children = undefined;
-			}
-			if (
-				node.type === "fn" &&
 				[
 					"b",
 					"s",
 					"q",
 					"i",
 					"p",
+					"c",
 					"bold",
 					"small",
 					"quote",
 					"italic",
 					"strike",
 					"plain",
+					"center",
 				].includes(node.props.name)
 			) {
 				if (node.props.name.length === 1) {
@@ -101,7 +94,8 @@ export function preprocess(text: string): string {
 						.replace("q", "quote")
 						.replace("i", "italic")
 						.replace("p", "plain")
-						.replace("s", "small");
+						.replace("s", "small")
+						.replace("c", "center");
 				}
 				node.type = node.props.name;
 				node.props.name = undefined;
@@ -145,9 +139,5 @@ export function preprocess(text: string): string {
 		}
 	}
 
-	if (centerFlg || /<center>(.*)<\/center>/.test(text)) {
-		return `<center>${text.replaceAll(/<\/?center>/g, "")}</center>`;
-	} else {
-		return text;
-	}
+	return text;
 }

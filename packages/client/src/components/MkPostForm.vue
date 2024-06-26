@@ -1244,7 +1244,7 @@ if (
 	cw = "";
 }
 // keep cw when reply
-if (defaultStore.state.keepCw && reply && reply.cw) {
+if (defaultStore.state.keepCw && reply && reply.cw && !reply.user?.isBot) {
 	useCw = true;
 	if (reply.userId === $i.id) {
 		cw = `${reply.cw}`;

@@ -160,6 +160,12 @@
 									><i class="ph-wrench ph-bold"></i
 								></span>
 								<span
+										v-if="user.isSilenced"
+										:title="i18n.ts.isSilenced"
+										style="color: var(--warn)"
+										><i class="ph-speaker-x ph-bold ph-lg"></i
+									></span>
+								<span
 									v-if="user.isLocked"
 									:title="i18n.ts.isLocked"
 									><i class="ph-lock ph-bold ph-lg"></i

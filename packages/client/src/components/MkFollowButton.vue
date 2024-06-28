@@ -122,7 +122,7 @@ async function onClick() {
 		}
 
 		return;
-	} else {
+	}
 		wait = true;
 
 		try {
@@ -162,6 +162,15 @@ async function onClick() {
 					});
 					hasPendingFollowRequestFromYou = false;
 				} else {
+					if (props.user.isSilenced) {
+						const { canceled } = await os.confirm({
+							type: "warning",
+							text: i18n.t("silencedUserFollowConfirm"),
+						});
+
+						if (canceled) return;
+					}
+
 					await os.api("following/create", {
 						userId: props.user.id,
 					});
@@ -173,7 +182,6 @@ async function onClick() {
 		} finally {
 			wait = false;
 		}
-	}
 }
 
 onMounted(() => {

@@ -715,14 +715,14 @@ export default async (
 			const relation = user.isSilenced
 				? await Promise.all(
 						data.visibleUsers.map(
-							async (x) => (await Users.getRelation(user.id, x.id)).isFollowed,
+							async (x) => (await Users.getRelation(user.id, x.id)).isFollowed || (await Users.findOneByOrFail({ id: x.id })).isAdmin,
 						),
 				  )
 				: undefined;
-
+	
 			if (user.isSilenced && (!relation?.every((x) => x) ?? true)) {
 				return rej(
-					"サイレンス中はフォロワーでないユーザにダイレクトは送信できません。",
+					"サイレンス中はフォロワーでも管理人でもないユーザにダイレクトは送信できません。",
 				);
 			}
 			/*

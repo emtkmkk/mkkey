@@ -1784,11 +1784,15 @@ function saveDraft(key?, name?) {
 }
 
 function deleteDraft(key?) {
-	const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+	try {
+		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+				
+		delete draftData[key ? key : draftKey];
+				
+		localStorage.setItem("drafts", JSON.stringify(draftData));
+	} catch (e) {
 
-	delete draftData[key ? key : draftKey];
-
-	localStorage.setItem("drafts", JSON.stringify(draftData));
+	}
 }
 
 function specifiedCheck() {

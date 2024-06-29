@@ -49,12 +49,14 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.sinceId,
 		ps.untilId,
 	).andWhere("file.userId = :userId", { userId: user.id });
+	query.orderBy("file.userId", "ASC");
 
 	if (ps.folderId) {
 		query.andWhere("file.folderId = :folderId", { folderId: ps.folderId });
 	} else {
 		query.andWhere("file.folderId IS NULL");
 	}
+	query.addOrderBy("file.folderId", "ASC");
 
 	if (ps.type) {
 		if (ps.type.endsWith("/*")) {
@@ -64,7 +66,9 @@ export default define(meta, paramDef, async (ps, user) => {
 		} else {
 			query.andWhere("file.type = :type", { type: ps.type });
 		}
+		query.addOrderBy("file.type", "ASC");
 	}
+	query.addOrderBy("file.id", "DESC");
 
 	const files = await query.take(ps.limit).getMany();
 

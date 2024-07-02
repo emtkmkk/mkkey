@@ -151,6 +151,30 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
 				break;
 			}
 
+			case "ruby": {
+				text += "$[ruby"
+				appendChildren(node.childNodes.filter((x) => x.nodeName === "rb"));
+				appendChildren(node.childNodes.filter((x) => x.nodeName === "rt"));
+				text += "]";
+				break;
+			}
+			
+			case "rb": {
+				text += " "
+				const beforeText = text;
+				appendChildren(node.childNodes);
+				text = beforeText + text.slice(beforeText.length).replaceAll(" ", "");
+				break;
+			}
+
+			case "rt": {
+				text += " "
+				const beforeText = text;
+				appendChildren(node.childNodes);
+				text = beforeText + text.slice(beforeText.length).replaceAll(" ", "");
+				break;
+			}
+
 			// block code (<pre><code>)
 			case "pre": {
 				if (

@@ -86,6 +86,7 @@ export function preprocess(text: string): string {
 					"strike",
 					"plain",
 					"center",
+					"x1",
 				].includes(node.props.name)
 			) {
 				if (node.props.name.length === 1) {
@@ -95,7 +96,8 @@ export function preprocess(text: string): string {
 						.replace("i", "italic")
 						.replace("p", "plain")
 						.replace("s", "small")
-						.replace("c", "center");
+						.replace("c", "center")
+						.replace("x1", "scale");
 				}
 				node.type = node.props.name;
 				node.props.name = undefined;

@@ -423,6 +423,22 @@ export default defineComponent({
 										return genEl(children);
 									}
 
+									if (typeof token.props.args.rb === "string" && token.props.args.rb) {
+										rb = [token.props.args.rb];
+
+										if (children.length !== 0 && !(typeof token.props.args.rt === "string" && token.props.args.rt)){
+											rt = genEl(children);
+										}
+									}
+
+									if (typeof token.props.args.rt === "string" && token.props.args.rt){
+										rt = [token.props.args.rt];
+
+										if (children.length !== 0 && !(typeof token.props.args.rb === "string" && token.props.args.rb)){
+											rb = genEl(children);
+										}
+									}
+
 									if (
 										typeof rb[0] === "string" &&
 										typeof rt[0] === "string" &&
@@ -479,7 +495,7 @@ export default defineComponent({
 									...genEl(token.children),
 									"]",
 								]);
-							} else {
+							}
 								return h(
 									"span",
 									{
@@ -487,21 +503,9 @@ export default defineComponent({
 									},
 									genEl(token.children),
 								);
-							}
 						}
 
 						case "small": {
-							//ルート要素にあり、子要素に絵文字かsmallしかない場合x1で表示する
-							if (
-								isNote &&
-								firstAst.length === 1 &&
-								firstAst === ast &&
-								token.children.every((x) =>
-									["emojiCode", "unicodeEmoji", "small"].includes(x.type),
-								)
-							) {
-								return h("span", {}, genEl(token.children));
-							}
 							return [
 								h(
 									"small",

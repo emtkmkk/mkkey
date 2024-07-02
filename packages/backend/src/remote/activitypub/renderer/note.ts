@@ -1,5 +1,6 @@
 import { In, IsNull } from "typeorm";
 import config from "@/config/index.js";
+import * as url from "@/prelude/url.js";
 import type { Note, IMentionedRemoteUsers } from "@/models/entities/note.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import { DriveFiles, Notes, Users, Emojis, Polls } from "@/models/index.js";
@@ -10,6 +11,7 @@ import renderEmoji from "./emoji.js";
 import renderMention from "./mention.js";
 import renderHashtag from "./hashtag.js";
 import renderDocument from "./document.js";
+import { getNote } from "@/server/api/common/getters.js";
 
 export default async function renderNote(
 	note: Note,
@@ -84,8 +86,8 @@ export default async function renderNote(
 	const mentionedUsers =
 		note.mentions.length > 0
 			? await Users.findBy({
-					id: In(note.mentions),
-			  })
+				id: In(note.mentions),
+			})
 			: [];
 
 	const hashtagTags = (note.tags || []).map((tag) => renderHashtag(tag));
@@ -121,29 +123,29 @@ export default async function renderNote(
 
 	const asPoll = poll
 		? {
-				type: "Question",
-				content: toHtml(
-					Object.assign({}, note, {
-						text: text,
-					}),
-				),
-				[poll.expiresAt && poll.expiresAt < new Date() ? "closed" : "endTime"]:
-					poll.expiresAt,
-				[poll.multiple ? "anyOf" : "oneOf"]: poll.choices.map((text, i) => ({
-					type: "Note",
-					name: text,
-					replies: {
-						type: "Collection",
-						totalItems: poll!.votes[i],
-					},
-				})),
-		  }
+			type: "Question",
+			content: toHtml(
+				Object.assign({}, note, {
+					text: text,
+				}),
+			),
+			[poll.expiresAt && poll.expiresAt < new Date() ? "closed" : "endTime"]:
+				poll.expiresAt,
+			[poll.multiple ? "anyOf" : "oneOf"]: poll.choices.map((text, i) => ({
+				type: "Note",
+				name: text,
+				replies: {
+					type: "Collection",
+					totalItems: poll!.votes[i],
+				},
+			})),
+		}
 		: {};
 
 	const asTalk = isTalk
 		? {
-				_misskey_talk: true,
-		  }
+			_misskey_talk: true,
+		}
 		: {};
 
 	return {
@@ -170,6 +172,7 @@ export default async function renderNote(
 		attachment: files.map(renderDocument),
 		sensitive: note.cw != null || files.some((file) => file.isSensitive),
 		tag,
+		references: getReferences(note),
 		...asPoll,
 		...asTalk,
 	};
@@ -188,4 +191,53 @@ export async function getEmojis(names: string[]): Promise<Emoji[]> {
 	);
 
 	return emojis.filter((emoji) => emoji != null) as Emoji[];
+}
+
+export async function getReferences(note: Note, page?: string | boolean | undefined) {
+
+	const limit = page !== undefined || !(["public", "home"].includes(note.visibility) && !note.localOnly) ? 100 : 5;
+
+	let referenceIds = [...(note.referenceIds ?? [])]
+
+	if (typeof page === "string") {
+		referenceIds = referenceIds.filter((x) => x > page);
+	}
+
+	// 「次のページ」があるかどうか
+	const inStock = referenceIds.length > limit;
+
+	referenceIds = referenceIds.slice(0, limit)
+
+	let renderedReferenceUrls: string[] = [];
+
+	if (!referenceIds.length) {
+		renderedReferenceUrls = (await Promise.allSettled(
+			referenceIds.map(async (x) => {
+				const note = await getNote(x, null, true);
+				if (!note) throw new Error("Note not found");
+				return note.uri ?? `${config.url}/notes/${note.id}`;
+			})
+		)).filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
+			.map(result => result.value);
+	}
+
+	const collectionPage = {
+		id: page ? `${config.url}/notes/${note.id}/references?${url.query({
+			page: "true",
+			cursor: typeof page === "string" ? page : undefined
+		})}` : `${config.url}/notes/${note.id}/references`,
+		type: "CollectionPage",
+		next: inStock ? `${config.url}/notes/${note.id}/references?${url.query({
+			page: "true",
+			cursor: referenceIds.reduce((pre, cur) => pre > cur ? pre : cur)
+		})}` : undefined,
+		partOf: `${config.url}/notes/${note.id}/references`,
+		items: renderedReferenceUrls,
+	}
+
+	return page ? collectionPage : {
+		id: `${config.url}/notes/${note.id}/references`,
+		type: "Collection",
+		first: collectionPage,
+	};
 }

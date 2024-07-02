@@ -551,11 +551,14 @@ export const WellKnownContext = {
 			// Fedibird
 			fedibird: "http://fedibird.com/ns#",
 			copyPermission: "fedibird:copyPermission",
-			schema: "http://schema.org#",
 			license: "schema:license",
 			keywords: "schema:keywords",
 			usageInfo: "schema:usageInfo",
 			isBasedOnUrl: "schema:isBasedOnUrl",
+			references: {
+				"@id": "fedibird:references",
+				"@type": "@id",
+			},
 			// vcard
 			vcard: "http://www.w3.org/2006/vcard/ns#",
 		},

@@ -4,7 +4,7 @@ import httpSignature from "@peertube/http-signature";
 
 import { In, IsNull, Not } from "typeorm";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
-import renderNote from "@/remote/activitypub/renderer/note.js";
+import renderNote, { getReferences } from "@/remote/activitypub/renderer/note.js";
 import renderKey from "@/remote/activitypub/renderer/key.js";
 import { renderPerson } from "@/remote/activitypub/renderer/person.js";
 import renderEmoji from "@/remote/activitypub/renderer/emoji.js";
@@ -66,9 +66,9 @@ async function inbox(ctx: Router.RouterContext) {
 
 	const user = userId
 		? await Users.findOneBy({
-				id: userId,
-				host: IsNull(),
-		  })
+			id: userId,
+			host: IsNull(),
+		})
 		: null;
 
 	if (userId && user == null) {
@@ -212,6 +212,41 @@ router.get("/notes/:note/activity", async (ctx) => {
 	}
 
 	ctx.body = renderActivity(await packActivity(note));
+	const meta = await fetchMeta();
+	if (meta.secureMode || meta.privateMode) {
+		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");
+	} else {
+		ctx.set("Cache-Control", "public, max-age=180");
+	}
+	setResponseType(ctx);
+});
+
+// note reference
+router.get("/notes/:note/reference", async (ctx) => {
+	const verify = await checkFetch(ctx.req);
+	if (verify !== 200) {
+		ctx.status = verify;
+		return;
+	}
+
+	const note = await Notes.findOneBy({
+		id: ctx.params.note,
+		userHost: IsNull(),
+		visibility: In(["public" as const, "home" as const]),
+		localOnly: false,
+	});
+
+	if (note == null) {
+		ctx.status = 404;
+		return;
+	}
+
+	if ((ctx.request.query.cursor || ctx.request.query.min_id) && typeof (ctx.request.query.cursor || ctx.request.query.min_id) !== "string") {
+		ctx.status = 400;
+		return;
+	}
+
+	ctx.body = renderActivity(getReferences(note, (ctx.request.query.cursor || ctx.request.query.min_id) as string | undefined || !!ctx.request.query.page));
 	const meta = await fetchMeta();
 	if (meta.secureMode || meta.privateMode) {
 		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");

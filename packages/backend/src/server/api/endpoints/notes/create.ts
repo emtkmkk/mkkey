@@ -141,6 +141,7 @@ export const paramDef = {
 		},
 		replyId: { type: "string", format: "misskey:id", nullable: true },
 		renoteId: { type: "string", format: "misskey:id", nullable: true },
+		referenceIds: { type: "array", uniqueItems: true, minItems: 1, maxItems: 100, items: { type: "string", format: "misskey:id" }, },
 		channelId: { type: "string", format: "misskey:id", nullable: true },
 		poll: {
 			type: "object",
@@ -222,6 +223,10 @@ export const paramDef = {
 			// pure renote
 			required: ["renoteId"],
 		},
+		{
+			// reference
+			required: ["referenceIds"],
+		},
 	],
 } as const;
 
@@ -279,6 +284,24 @@ export default define(meta, paramDef, async (ps, user) => {
 			});
 			if (block) {
 				throw new ApiError(meta.errors.youHaveBeenBlocked);
+			}
+		}
+	}
+
+	
+	if (ps.referenceIds?.length) {
+		for (const noteId of ps.referenceIds) {
+			// Fetch renote to note
+			const reference = await getNote(noteId, user).catch((e) => {
+				if (e.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
+					throw new ApiError(meta.errors.noSuchRenoteTarget);
+				throw e;
+			});
+
+			if (!reference) continue;
+
+			if (reference.renoteId && !reference.text && !reference.fileIds && !reference.hasPoll) {
+				throw new ApiError(meta.errors.cannotReRenote);
 			}
 		}
 	}
@@ -396,6 +419,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			text: ps.text || undefined,
 			reply,
 			renote,
+			references: ps.referenceIds?.length ? ps.referenceIds : undefined,
 			cw: ps.cw,
 			localOnly: ps.localOnly,
 			visibility: ps.visibility,

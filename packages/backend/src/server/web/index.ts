@@ -610,7 +610,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 				return;
 			}
 		}
-	} catch { }
+	} catch (e) {console.log(JSON.stringify(e))}
 
 	await next();
 });

@@ -514,6 +514,108 @@ router.get("/users/:user", async (ctx) => {
 	ctx.redirect(`/@${user.username}${user.host == null ? "" : `@${user.host}`}`);
 });
 
+router.get("/notes/:note/references", async (ctx, next) => {
+	console.log("notereferences: " + ctx.params.note)
+	const note = await Notes.findOneBy({
+		id: ctx.params.note,
+	});
+
+	try {
+		if (note) {
+			console.log("notereferences: 2")
+			const user = await Users.findOneByOrFail({
+				id: note.userId,
+			});
+
+			const _note: Note =
+				["public", "home"].includes(note.visibility) && !note.localOnly
+					? await Notes.pack(note)
+					: { id: note.id, user: user, fileIds: [], files: [], referenceIds: [] };
+					
+			const profile = await UserProfiles.findOneByOrFail({
+				userId: note.userId,
+			});
+			const userName = user.name?.replaceAll(/ ?:.*?:/g, "").trim()
+				? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${user.host ? `@${user.host}` : ""
+				}`
+				: `@${user.username}${user.host ? `@${user.host}` : ""}`;
+
+			const meta = await fetchMeta();
+			if (_note.referenceIds?.length) {
+				console.log("notereferences: 3")
+				let referenceNote;
+				for (const noteId of _note.referenceIds) {
+					console.log("notereferences: 4")
+					const note =
+						await Notes.findOneBy({
+							id: noteId,
+						});
+					if (!note || !["public", "home"].includes(note.visibility) || note.localOnly) {
+						continue;
+					}
+					referenceNote = note;
+					break;
+				}
+				if (!referenceNote){
+					console.log("notereferences: 5")
+					await ctx.render("references", {
+						note: _note,
+						profile,
+						avatarUrl: await Users.getAvatarUrl(user),
+						// TODO: Let locale changeable by instance setting
+						title: `投稿の参照 (${_note.referenceIds?.length}件)`,
+						summary: "",
+						userName,
+						instanceName: meta.name || "Calckey",
+						icon: meta.iconUrl,
+						privateMode: meta.privateMode,
+						themeColor: meta.themeColor,
+					});
+
+					ctx.set("Cache-Control", "public, max-age=15");
+	
+					return;
+				}
+				console.log("notereferences: 6")
+				const referenceUser = await Users.findOneByOrFail({
+					id: referenceNote.userId,
+				});
+				const refProfile = await UserProfiles.findOneByOrFail({
+					userId: referenceNote.userId,
+				});
+				const refUserName = referenceUser.name?.replaceAll(/ ?:.*?:/g, "").trim()
+					? `${referenceUser.name?.replaceAll(/ ?:.*?:/g, "")}${referenceUser.host ? `@${referenceUser.host}` : ""
+					}`
+					: `@${referenceUser.username}${referenceUser.host ? `@${referenceUser.host}` : ""}`;
+				let summary = ""
+				summary = getNoteSummary(await Notes.pack(referenceNote));
+				summary = [_note.referenceIds.length > 1 ? `他${_note.referenceIds.length - 1}件` : "", summary].join(" / ");
+				console.log("notereferences: 7")
+				await ctx.render("references", {
+					note: referenceNote,
+					profile: refProfile,
+					avatarUrl: await Users.getAvatarUrl(referenceUser),
+					// TODO: Let locale changeable by instance setting
+					title: `投稿の参照 (${_note.referenceIds?.length}件)`,
+					summary,
+					userName: refUserName,
+					instanceName: meta.name || "Calckey",
+					icon: meta.iconUrl,
+					privateMode: meta.privateMode,
+					themeColor: meta.themeColor,
+				});
+
+				ctx.set("Cache-Control", "public, max-age=15");
+
+				return;
+			}
+		}
+	} catch { }
+
+	await next();
+});
+
+
 // Note
 router.get("/notes/:note", async (ctx, next) => {
 	const note = await Notes.findOneBy({
@@ -564,99 +666,6 @@ router.get("/notes/:note", async (ctx, next) => {
 			ctx.set("Cache-Control", "public, max-age=15");
 
 			return;
-		}
-	} catch { }
-
-	await next();
-});
-router.get("/notes/:note/references", async (ctx, next) => {
-	const note = await Notes.findOneBy({
-		id: ctx.params.note,
-	});
-
-	try {
-		if (note) {
-			const user = await Users.findOneByOrFail({
-				id: note.userId,
-			});
-
-			const _note: Note =
-				["public", "home"].includes(note.visibility) && !note.localOnly
-					? await Notes.pack(note)
-					: { id: note.id, user: user, fileIds: [], files: [], referenceIds: [] };
-					
-			const profile = await UserProfiles.findOneByOrFail({
-				userId: note.userId,
-			});
-			const userName = user.name?.replaceAll(/ ?:.*?:/g, "").trim()
-				? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${user.host ? `@${user.host}` : ""
-				}`
-				: `@${user.username}${user.host ? `@${user.host}` : ""}`;
-
-			const meta = await fetchMeta();
-			if (_note.referenceIds?.length) {
-				let referenceNote;
-				for (const noteId of _note.referenceIds) {
-					const note =
-						await Notes.findOneBy({
-							id: noteId,
-						});
-					if (!note || !["public", "home"].includes(note.visibility) || note.localOnly) {
-						continue;
-					}
-					referenceNote = note;
-					break;
-				}
-				if (!referenceNote){
-					await ctx.render("references", {
-						note: _note,
-						profile,
-						avatarUrl: await Users.getAvatarUrl(user),
-						// TODO: Let locale changeable by instance setting
-						title: `投稿の参照 (${_note.referenceIds?.length}件)`,
-						summary: "",
-						userName,
-						instanceName: meta.name || "Calckey",
-						icon: meta.iconUrl,
-						privateMode: meta.privateMode,
-						themeColor: meta.themeColor,
-					});
-
-					ctx.set("Cache-Control", "public, max-age=15");
-	
-					return;
-				}
-				const referenceUser = await Users.findOneByOrFail({
-					id: referenceNote.userId,
-				});
-				const refProfile = await UserProfiles.findOneByOrFail({
-					userId: referenceNote.userId,
-				});
-				const refUserName = referenceUser.name?.replaceAll(/ ?:.*?:/g, "").trim()
-					? `${referenceUser.name?.replaceAll(/ ?:.*?:/g, "")}${referenceUser.host ? `@${referenceUser.host}` : ""
-					}`
-					: `@${referenceUser.username}${referenceUser.host ? `@${referenceUser.host}` : ""}`;
-				let summary = ""
-				summary = getNoteSummary(await Notes.pack(referenceNote));
-				summary = [_note.referenceIds.length > 1 ? `他${_note.referenceIds.length - 1}件` : "", summary].join(" / ");
-				await ctx.render("references", {
-					note: referenceNote,
-					profile: refProfile,
-					avatarUrl: await Users.getAvatarUrl(referenceUser),
-					// TODO: Let locale changeable by instance setting
-					title: `投稿の参照 (${_note.referenceIds?.length}件)`,
-					summary,
-					userName: refUserName,
-					instanceName: meta.name || "Calckey",
-					icon: meta.iconUrl,
-					privateMode: meta.privateMode,
-					themeColor: meta.themeColor,
-				});
-
-				ctx.set("Cache-Control", "public, max-age=15");
-
-				return;
-			}
 		}
 	} catch { }
 

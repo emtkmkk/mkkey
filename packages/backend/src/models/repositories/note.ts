@@ -182,7 +182,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 				in which case we can never know the following. Instead we have
 				to assume that the users are following each other.
 				*/
-				return following > 0 || (note.userHost != null && user.host != null);
+				return following > 0 || (note?.userHost != null && user.host != null);
 			}
 		}
 
@@ -215,7 +215,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 		const meId = me ? me.id : null;
 		const note =
 			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
-		const host = note.userHost;
+		const host = note?.userHost;
 		const isVisible = await this.isVisibleForMe(note, meId);
 
 		if (!(await this.isVisibleForMe(note, meId)) && !opts.showInvisible) {

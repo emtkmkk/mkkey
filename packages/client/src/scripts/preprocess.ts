@@ -86,7 +86,6 @@ export function preprocess(text: string): string {
 					"strike",
 					"plain",
 					"center",
-					"x1",
 				].includes(node.props.name)
 			) {
 				if (node.props.name.length === 1) {
@@ -97,7 +96,6 @@ export function preprocess(text: string): string {
 						.replace("p", "plain")
 						.replace("s", "small")
 						.replace("c", "center")
-						.replace("x1", "scale");
 				}
 				node.type = node.props.name;
 				node.props.name = undefined;
@@ -111,6 +109,12 @@ export function preprocess(text: string): string {
 				node.props.content = `${mfm
 					.toString(node.children)
 					.replaceAll("\n", " ")} [Search]`;
+			}
+			if (
+				node.type === "fn" &&
+				node.props.name === "x1"
+			) {
+				node.props.name = "scale"
 			}
 			if (
 				node.type === "fn" &&

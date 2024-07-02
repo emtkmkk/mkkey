@@ -36,6 +36,7 @@ import { urlPreviewHandler } from "./url-preview.js";
 import { manifestHandler } from "./manifest.js";
 import packFeed from "./feed.js";
 import { MINUTE, DAY } from "@/const.js";
+import type { Note } from "@/models/entities/note.js";
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
@@ -89,11 +90,11 @@ app.use(
 				process.env.NODE_ENV === "production"
 					? config.clientEntry
 					: JSON.parse(
-							readFileSync(
-								`${_dirname}/../../../../../built/_client_dist_/manifest.json`,
-								"utf-8",
-							),
-					  )["src/init.ts"],
+						readFileSync(
+							`${_dirname}/../../../../../built/_client_dist_/manifest.json`,
+							"utf-8",
+						),
+					)["src/init.ts"],
 			config,
 		},
 	}),
@@ -367,10 +368,10 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 		return;
 	}
 
-	const ngEmoji = 
-	["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(emoji.host ?? config.host) ||
-	emoji.license?.includes("コピー可否 : deny") ||
-	emoji.category?.startsWith("!");
+	const ngEmoji =
+		["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(emoji.host ?? config.host) ||
+		emoji.license?.includes("コピー可否 : deny") ||
+		emoji.category?.startsWith("!");
 
 	if (ngEmoji) {
 		if ("fallback" in ctx.query) {
@@ -478,8 +479,8 @@ const userPage: Router.Middleware = async (ctx, next) => {
 	const meta = await fetchMeta();
 	const me = profile.fields
 		? profile.fields
-				.filter((filed) => filed.value?.match(/^https?:/))
-				.map((field) => field.value)
+			.filter((filed) => filed.value?.match(/^https?:/))
+			.map((field) => field.value)
 		: [];
 
 	const userDetail = {
@@ -535,17 +536,15 @@ router.get("/notes/:note", async (ctx, next) => {
 			});
 			const meta = await fetchMeta();
 			const userName = user.name?.replaceAll(/ ?:.*?:/g, "").trim()
-				? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${
-						user.host ? `@${user.host}` : ""
-				  }`
+				? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${user.host ? `@${user.host}` : ""
+				}`
 				: `@${user.username}${user.host ? `@${user.host}` : ""}`;
 			let summary = "";
 			if (!["public", "home"].includes(note.visibility) || note.localOnly) {
-				summary = `${
-					note.visibility === "followers"
-						? `${userName}さんのフォロワー限定の投稿`
-						: "公開範囲が限定されている投稿"
-				}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`;
+				summary = `${note.visibility === "followers"
+					? `${userName}さんのフォロワー限定の投稿`
+					: "公開範囲が限定されている投稿"
+					}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`;
 			} else {
 				summary = getNoteSummary(_note);
 			}
@@ -566,7 +565,100 @@ router.get("/notes/:note", async (ctx, next) => {
 
 			return;
 		}
-	} catch {}
+	} catch { }
+
+	await next();
+});
+router.get("/notes/:note/references", async (ctx, next) => {
+	const note = await Notes.findOneBy({
+		id: ctx.params.note,
+	});
+
+	try {
+		if (note) {
+			const user = await Users.findOneByOrFail({
+				id: note.userId,
+			});
+
+			const _note: Note =
+				["public", "home"].includes(note.visibility) && !note.localOnly
+					? await Notes.pack(note)
+					: { id: note.id, user: user, fileIds: [], files: [], referenceIds: [] };
+					
+			const profile = await UserProfiles.findOneByOrFail({
+				userId: note.userId,
+			});
+			const userName = user.name?.replaceAll(/ ?:.*?:/g, "").trim()
+				? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${user.host ? `@${user.host}` : ""
+				}`
+				: `@${user.username}${user.host ? `@${user.host}` : ""}`;
+
+			const meta = await fetchMeta();
+			if (_note.referenceIds?.length) {
+				let referenceNote;
+				for (const noteId of _note.referenceIds) {
+					const note =
+						await Notes.findOneBy({
+							id: noteId,
+						});
+					if (!note || !["public", "home"].includes(note.visibility) || note.localOnly) {
+						continue;
+					}
+					referenceNote = note;
+					break;
+				}
+				if (!referenceNote){
+					await ctx.render("references", {
+						note: _note,
+						profile,
+						avatarUrl: await Users.getAvatarUrl(user),
+						// TODO: Let locale changeable by instance setting
+						title: `投稿の参照 (${_note.referenceIds?.length}件)`,
+						summary: "",
+						userName,
+						instanceName: meta.name || "Calckey",
+						icon: meta.iconUrl,
+						privateMode: meta.privateMode,
+						themeColor: meta.themeColor,
+					});
+
+					ctx.set("Cache-Control", "public, max-age=15");
+	
+					return;
+				}
+				const referenceUser = await Users.findOneByOrFail({
+					id: referenceNote.userId,
+				});
+				const refProfile = await UserProfiles.findOneByOrFail({
+					userId: referenceNote.userId,
+				});
+				const refUserName = referenceUser.name?.replaceAll(/ ?:.*?:/g, "").trim()
+					? `${referenceUser.name?.replaceAll(/ ?:.*?:/g, "")}${referenceUser.host ? `@${referenceUser.host}` : ""
+					}`
+					: `@${referenceUser.username}${referenceUser.host ? `@${referenceUser.host}` : ""}`;
+				let summary = ""
+				summary = getNoteSummary(await Notes.pack(referenceNote));
+				summary = [_note.referenceIds.length > 1 ? `他${_note.referenceIds.length - 1}件` : "", summary].join(" / ");
+				await ctx.render("references", {
+					note: referenceNote,
+					profile: refProfile,
+					avatarUrl: await Users.getAvatarUrl(referenceUser),
+					// TODO: Let locale changeable by instance setting
+					title: `投稿の参照 (${_note.referenceIds?.length}件)`,
+					summary,
+					userName: refUserName,
+					instanceName: meta.name || "Calckey",
+					icon: meta.iconUrl,
+					privateMode: meta.privateMode,
+					themeColor: meta.themeColor,
+				});
+
+				ctx.set("Cache-Control", "public, max-age=15");
+
+				return;
+			}
+		}
+	} catch { }
 
 	await next();
 });
@@ -591,17 +683,15 @@ router.get("/posts/:note", async (ctx, next) => {
 		});
 		const meta = await fetchMeta();
 		const userName = user.name?.replaceAll(/ ?:.*?:/g, "").trim()
-			? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${
-					user.host ? `@${user.host}` : ""
-			  }`
+			? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${user.host ? `@${user.host}` : ""
+			}`
 			: `@${user.username}${user.host ? `@${user.host}` : ""}`;
 		let summary = "";
 		if (!["public", "home"].includes(note.visibility) || note.localOnly) {
-			summary = `${
-				note.visibility === "followers"
-					? `${userName}さんのフォロワー限定の投稿`
-					: "公開範囲が限定されている投稿"
-			}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`;
+			summary = `${note.visibility === "followers"
+				? `${userName}さんのフォロワー限定の投稿`
+				: "公開範囲が限定されている投稿"
+				}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`;
 		} else {
 			summary = getNoteSummary(_note);
 		}
@@ -895,7 +985,7 @@ router.get("(.*)", async (ctx) => {
 	);
 	const yearDaysCnt = Math.floor(
 		(yearNextFirstDay.valueOf() - yearFirstDay.valueOf()) /
-			(24 * 60 * 60 * 1000),
+		(24 * 60 * 60 * 1000),
 	);
 	motdd.push(
 		`${now.getFullYear()}年 進行度 ${nowDaysCnt} / ${yearDaysCnt} ( ${(
@@ -1035,7 +1125,7 @@ router.get("(.*)", async (ctx) => {
 	if (meta.customSplashIcons.length > 0) {
 		splashIconUrl =
 			meta.customSplashIcons[
-				Math.floor(Math.random() * meta.customSplashIcons.length)
+			Math.floor(Math.random() * meta.customSplashIcons.length)
 			];
 	}
 	await ctx.render("base", {

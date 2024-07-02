@@ -206,7 +206,7 @@ export async function getReferences(note: Note, page?: string | boolean | undefi
 	// 「次のページ」があるかどうか
 	const inStock = referenceIds.length > limit;
 
-	referenceIds = referenceIds.slice(0, limit)
+	referenceIds = referenceIds.sort((a,b) => a < b ? -1 : 1).slice(0, limit)
 
 	let renderedReferenceUrls: string[] = [];
 

@@ -210,7 +210,7 @@ export async function getReferences(note: Note, page?: string | boolean | undefi
 
 	let renderedReferenceUrls: string[] = [];
 
-	if (!referenceIds.length) {
+	if (referenceIds?.length) {
 		renderedReferenceUrls = (await Promise.allSettled(
 			referenceIds.map(async (x) => {
 				const note = await getNote(x, null, true);

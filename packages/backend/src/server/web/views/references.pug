@@ -2,7 +2,6 @@ extends ./base
 
 block vars
 	- const user = note.user;
-	- const title = privateMode ? instanceName : title;
 	- const url = `${config.url}/notes/${note.id}/references`;
 
 block title
@@ -31,7 +30,7 @@ block meta
 		meta(name='misskey:user-username' content=user.username)
 		meta(name='misskey:user-id' content=user.id)
 		meta(name='misskey:note-id' content=note.id)
-
+		
 		if !user.host
 			link(rel='alternate' href=url type='application/activity+json')
 		if note.uri

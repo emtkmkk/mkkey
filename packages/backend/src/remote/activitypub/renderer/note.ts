@@ -172,7 +172,7 @@ export default async function renderNote(
 		attachment: files.map(renderDocument),
 		sensitive: note.cw != null || files.some((file) => file.isSensitive),
 		tag,
-		references: getReferences(note),
+		references: await getReferences(note),
 		...asPoll,
 		...asTalk,
 	};

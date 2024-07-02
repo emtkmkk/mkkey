@@ -131,7 +131,6 @@ router.get("/notes/:note", async (ctx, next) => {
 	const note = await Notes.findOneBy({
 		id: ctx.params.note,
 		visibility: In(["public" as const, "home" as const, "followers" as const]),
-		localOnly: false,
 	});
 
 	if (note == null || note.deletedAt) {
@@ -149,7 +148,7 @@ router.get("/notes/:note", async (ctx, next) => {
 		return;
 	}
 
-	if (note.visibility === "followers") {
+	if (note.visibility === "followers" && (!note.channelId && note.localOnly)) {
 		serverLogger.debug(
 			"Responding to request for follower-only note, validating access...",
 		);
@@ -222,7 +221,8 @@ router.get("/notes/:note/activity", async (ctx) => {
 });
 
 // note reference
-router.get("/notes/:note/reference", async (ctx) => {
+router.get("/notes/:note/references", async (ctx, next) => {
+	if (!isActivityPubReq(ctx)) return await next();
 	const verify = await checkFetch(ctx.req);
 	if (verify !== 200) {
 		ctx.status = verify;
@@ -232,13 +232,43 @@ router.get("/notes/:note/reference", async (ctx) => {
 	const note = await Notes.findOneBy({
 		id: ctx.params.note,
 		userHost: IsNull(),
-		visibility: In(["public" as const, "home" as const]),
-		localOnly: false,
+		visibility: In(["public" as const, "home" as const, "followers" as const]),
 	});
 
-	if (note == null) {
+	if (note == null || note.deletedAt) {
 		ctx.status = 404;
 		return;
+	}
+
+	if (note.visibility === "followers" && (!note.channelId && note.localOnly)) {
+		serverLogger.debug(
+			"Responding to request for follower-only note, validating access...",
+		);
+		const remoteUser = await getSignatureUser(ctx.req);
+		serverLogger.debug("Local note author user:");
+		serverLogger.debug(JSON.stringify(note, null, 2));
+		serverLogger.debug("Authenticated remote user:");
+		serverLogger.debug(JSON.stringify(remoteUser, null, 2));
+
+		if (remoteUser == null) {
+			serverLogger.debug("Rejecting: no user");
+			ctx.status = 401;
+			return;
+		}
+
+		const relation = await Users.getRelation(remoteUser.user.id, note.userId);
+		serverLogger.debug("Relation:");
+		serverLogger.debug(JSON.stringify(relation, null, 2));
+
+		if (!relation.isFollowing || relation.isBlocked) {
+			serverLogger.debug(
+				"Rejecting: authenticated user is not following us or was blocked by us",
+			);
+			ctx.status = 403;
+			return;
+		}
+
+		serverLogger.debug("Accepting: access criteria met");
 	}
 
 	if ((ctx.request.query.cursor || ctx.request.query.min_id) && typeof (ctx.request.query.cursor || ctx.request.query.min_id) !== "string") {
@@ -246,7 +276,7 @@ router.get("/notes/:note/reference", async (ctx) => {
 		return;
 	}
 
-	ctx.body = renderActivity(getReferences(note, (ctx.request.query.cursor || ctx.request.query.min_id) as string | undefined || !!ctx.request.query.page));
+	ctx.body = renderActivity(await getReferences(note, (ctx.request.query.cursor || ctx.request.query.min_id) as string |  || !!ctx.request.query.page));
 	const meta = await fetchMeta();
 	if (meta.secureMode || meta.privateMode) {
 		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");

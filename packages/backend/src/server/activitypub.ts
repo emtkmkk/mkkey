@@ -276,7 +276,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 		return;
 	}
 
-	ctx.body = renderActivity(await getReferences(note, (ctx.request.query.cursor || ctx.request.query.min_id) as string |  || !!ctx.request.query.page));
+	ctx.body = renderActivity(await getReferences(note, (ctx.request.query.cursor || ctx.request.query.min_id) as string | undefined || !!ctx.request.query.page));
 	const meta = await fetchMeta();
 	if (meta.secureMode || meta.privateMode) {
 		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");

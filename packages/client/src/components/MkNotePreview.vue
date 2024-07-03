@@ -73,7 +73,11 @@ watch(
     if (newReferenceIds) {
       for (const referenceId of newReferenceIds) {
         if (!notes.value[referenceId]) {
-          notes.value[referenceId] = await getNote(referenceId);
+          try {
+            notes.value[referenceId] = await getNote(referenceId);
+          } catch (error) {
+            console.error(`Failed to get note for referenceId ${referenceId}:`, error);
+          }
         }
       }
     }

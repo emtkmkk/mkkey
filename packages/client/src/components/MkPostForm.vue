@@ -494,7 +494,11 @@
 					<i class="ph-x ph-bold ph-lg"></i>
 				</button>
 			</div>
-			<div v-if="referenceIds?.length" class="with-references">
+			<div v-if="referenceIds?.length" class="with-references" :class={refOn: referencesFlg}>
+				<button class="_button" @click="referencesFlg = !referencesFlg">
+					<i v-show="referencesFlg" class="ph-check-square ph-bold ph-lg"></i>
+					<i v-show="!referencesFlg" class="ph-square ph-bold ph-lg"></i>
+				</button>
 				<i class="ph-stack ph-bold ph-lg"></i>
 				{{ `${i18n.ts.referencesAttached} ×${referenceIds?.length}` }}
 				<button class="_button" @click="referenceIds = []">
@@ -724,7 +728,7 @@
 				class="preview"
 				:text="text + (withHashtags ? ' ' + hashtagsPreview : '')"
 				:cw="useCw ? cw ?? '' : null"
-				:referenceIds="referenceIds"
+				:referenceIds="referencesFlg ? referenceIds : []"
 			/>
 			<datalist id="hashtags">
 				<option
@@ -926,6 +930,7 @@ let requiredFilename = $ref(
 let imeText = $ref("");
 let shortcutKeyValue = $ref(0);
 let fileselecting = $ref(false);
+let referencesFlg = $ref(false);
 
 const publicIcon = $computed((): String => {
 	if (!canNotLocal && (canPublic || canHome)) {
@@ -1788,6 +1793,7 @@ function saveDraft(key?, name?) {
 				visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
 			replyId: reply?.id ? reply.id : null,
 			quoteId: quoteId ? quoteId : props.renote ? props.renote.id : null,
+			referencesFlg: referencesFlg,
 		},
 	};
 
@@ -1932,7 +1938,7 @@ async function post() {
 				? visibleUsersCc.map((u) => u.id)
 				: undefined,
 		inheritCc,
-		referenceIds: referenceIds?.length ? referenceIds : undefined,
+		referenceIds: referenceIds?.length && referencesFlg ? referenceIds : undefined,
 	};
 
 	if (withHashtags && hashtags && hashtags.trim() !== "") {
@@ -1984,7 +1990,7 @@ async function post() {
 	os.api("notes/create", postData, token, true)
 		.then(() => {
 			clear();
-			referenceIds = [];
+			if (referencesFlg) referenceIds = [];
 			nextTick(() => {
 				deleteDraft();
 				emit("posted");
@@ -2176,6 +2182,7 @@ function loadDraft(key?) {
 			) {
 				quoteId = draft.data.quoteId;
 			}
+			referencesFlg = draft.data.referencesFlg ?? true
 			if (
 				!key &&
 				draftKey === "note" &&
@@ -2469,8 +2476,11 @@ onMounted(() => {
 			gap: 0.4em;
 			margin-inline: 1.5rem;
 			margin-bottom: 0.75rem;
-			color: var(--accent);
 
+			&.refOn{
+				color: var(--accent);
+			}
+			
 			> button {
 				display: flex;
 				padding: 0;

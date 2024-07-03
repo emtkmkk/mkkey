@@ -1691,27 +1691,45 @@ async function onPaste(ev: ClipboardEvent) {
 
 	const paste = ev.clipboardData.getData("text");
 
-	if (!props.renote && !quoteId && paste.startsWith(`${url}/notes/`)) {
+	if (paste.startsWith(`${url}/notes/`)) {
 		ev.preventDefault();
 
-		os.confirm({
-			type: "info",
-			text: i18n.ts.quoteQuestion,
-			showThirdButton: true,
-			okText: "引用(QT)",
-			thirdText: "参照",
-			cancelText: "URL貼付"
-		}).then((result) => {
-			if (result?.canceled) {
+		if (!props.renote && !quoteId) {
+			os.confirm({
+				type: "info",
+				text: i18n.ts.quoteQuestion,
+				showThirdButton: true,
+				okText: "引用(QT)",
+				thirdText: "参照",
+				cancelText: "URL貼付"
+			}).then((result) => {
+				if (result?.canceled) {
+					insertTextAtCursor(textareaEl, paste);
+					return;
+				}
+				if (result?.result === "third") {
+					referenceIds = Array.from(new Set([...referenceIds, paste.substr(url.length).match(/^\/notes\/(.+?)\/?$/)[1]]))
+				} else {
+					quoteId = paste.substr(url.length).match(/^\/notes\/(.+?)\/?$/)[1];
+				}
+			});
+		} else {
+			if (referencesFlg) {
+				os.confirm({
+					type: "info",
+					text: i18n.ts.referencesQuestion,
+				}).then((result) => {
+					if (result?.canceled) {
+						insertTextAtCursor(textareaEl, paste);
+						return;
+					}
+					referenceIds = Array.from(new Set([...referenceIds, paste.substr(url.length).match(/^\/notes\/(.+?)\/?$/)[1]]))
+				});
+			} else {
 				insertTextAtCursor(textareaEl, paste);
 				return;
 			}
-			if (result?.result === "third") {
-				referenceIds = Array.from(new Set([...referenceIds, paste.substr(url.length).match(/^\/notes\/(.+?)\/?$/)[1]]))
-			} else {
-				quoteId = paste.substr(url.length).match(/^\/notes\/(.+?)\/?$/)[1];
-			}
-		});
+		}
 	}
 }
 

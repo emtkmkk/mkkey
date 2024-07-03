@@ -95,18 +95,18 @@ export default async function renderNote(
 
 	const files = await getPromisedFiles(note.fileIds);
 
-	const text = note.text ?? "";
+	let text = note.text ?? "";
 	let poll: Poll | null = null;
 
 	if (note.hasPoll) {
 		poll = await Polls.findOneBy({ noteId: note.id });
 	}
 
-	let apText = text;
-
-	if (note.referenceIds.length) {
-		apText += ` [参照](${config.url}/notes/${note.id}/references)`;
+	if (note.referenceIds?.length) {
+		text += ` [参照](${config.url}/notes/${note.id}/references)`;
 	}
+
+	let apText = text;
 
 	if (quote) {
 		apText += `\n\nRE: ${quote}`;

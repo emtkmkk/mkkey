@@ -179,7 +179,7 @@ export function toHtml(
 			const a = doc.createElement("a");
 			a.href = node.props.url;
 			appendChildren(node.children, a);
-			if (new RegExp(`^${config.url}/notes/(\w+)/references$`).test(node.props.url)) {
+			if (new RegExp(`^${config.url}/notes/(\\w+)/references$`).test(node.props.url)) {
 				const span = doc.createElement("span")
 				span.className = "reference-link-inline"
 				span.appendChild(a)

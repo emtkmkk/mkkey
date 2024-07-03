@@ -808,6 +808,11 @@ export const defaultStore = markRaw(
 			default: "",
 			createdAt: "2023/5/26",
 		},
+		postFormReferenceIds: {
+			where: "device",
+			default: [] as string[],
+			createdAt: "2024/7/3"
+		},
 		themeInitial: {
 			where: "device",
 			default: true,

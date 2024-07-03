@@ -116,6 +116,14 @@
 						}}</MkButton
 					>
 					<MkButton
+						v-if="showThirdButton"
+						inline
+						@click="third"
+						>{{
+							thirdText ? thirdText : i18n.ts.ok
+						}}</MkButton
+					>
+					<MkButton
 						v-if="showCancelButton || input || select"
 						inline
 						@click="cancel"
@@ -211,11 +219,13 @@ const props = withDefaults(
 		}[];
 		showOkButton?: boolean;
 		showCancelButton?: boolean;
+		showThirdButton?: boolean;
 		isYesNo?: boolean;
 
 		cancelableByBgClick?: boolean;
 		okText?: string;
 		cancelText?: string;
+		thirdText?: string;
 		wait?: number;
 	}>(),
 	{
@@ -223,6 +233,7 @@ const props = withDefaults(
 		showOkButton: true,
 		showCancelButton: false,
 		isYesNo: false,
+		showThirdButton: false,
 
 		cancelableByBgClick: true,
 	}
@@ -253,6 +264,17 @@ async function ok() {
 		: props.select
 		? selectedValue.value
 		: true;
+	done(false, result);
+}
+
+async function third() {
+	if (!props.showThirdButton || !canOk.value) return;
+
+	const result = props.input
+		? inputValue.value
+		: props.select
+		? selectedValue.value
+		: "third";
 	done(false, result);
 }
 

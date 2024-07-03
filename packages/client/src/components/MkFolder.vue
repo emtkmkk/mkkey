@@ -3,7 +3,7 @@
 		<header
 			class="_button"
 			:style="noStyle ? undefined : { background: bg }"
-			@click="showBody = !showBody"
+			@click.stop="showBody = !showBody"
 		>
 			<div class="title"><slot name="header"></slot></div>
 			<div class="divider"></div>

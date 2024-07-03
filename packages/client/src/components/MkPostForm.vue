@@ -494,6 +494,13 @@
 					<i class="ph-x ph-bold ph-lg"></i>
 				</button>
 			</div>
+			<div v-if="referenceIds?.length" class="with-references">
+				<i class="ph-stack ph-bold ph-lg"></i>
+				{{ `${i18n.ts.referencesAttached} ×${referenceIds?.length}` }}
+				<button class="_button" @click="referenceIds = []">
+					<i class="ph-x ph-bold ph-lg"></i>
+				</button>
+			</div>
 			<div
 				v-if="visibility === 'specified'"
 				class="to-specified"
@@ -717,6 +724,7 @@
 				class="preview"
 				:text="text + (withHashtags ? ' ' + hashtagsPreview : '')"
 				:cw="useCw ? cw ?? '' : null"
+				:referenceIds="referenceIds"
 			/>
 			<datalist id="hashtags">
 				<option
@@ -1086,6 +1094,7 @@ const withHashtags = $computed(
 	defaultStore.makeGetterSetter("postFormWithHashtags")
 );
 const hashtags = $computed(defaultStore.makeGetterSetter("postFormHashtags"));
+const referenceIds = $computed(defaultStore.makeGetterSetter("postFormReferenceIds"));
 
 if (props.initialHashTags) {
 	hashtags = [(withHashtags && hashtags ? hashtags : null), props.initialHashTags].filter(Boolean).join(" ") ?? "";
@@ -1682,13 +1691,20 @@ async function onPaste(ev: ClipboardEvent) {
 		os.confirm({
 			type: "info",
 			text: i18n.ts.quoteQuestion,
-		}).then(({ canceled }) => {
-			if (canceled) {
+			showThirdButton: true,
+			okText: "引用(QT)",
+			thirdText: "参照",
+			cancelText: "URL貼付"
+		}).then((result) => {
+			if (result?.canceled) {
 				insertTextAtCursor(textareaEl, paste);
 				return;
 			}
-
-			quoteId = paste.substr(url.length).match(/^\/notes\/(.+?)\/?$/)[1];
+			if (result?.result === "third") {
+				referenceIds = Array.from(new Set([...referenceIds, paste.substr(url.length).match(/^\/notes\/(.+?)\/?$/)[1]]))
+			} else {
+				quoteId = paste.substr(url.length).match(/^\/notes\/(.+?)\/?$/)[1];
+			}
 		});
 	}
 }
@@ -1916,6 +1932,7 @@ async function post() {
 				? visibleUsersCc.map((u) => u.id)
 				: undefined,
 		inheritCc,
+		referenceIds,
 	};
 
 	if (withHashtags && hashtags && hashtags.trim() !== "") {
@@ -2423,6 +2440,29 @@ onMounted(() => {
 		}
 
 		> .with-quote {
+			display: flex;
+			align-items: center;
+			gap: 0.4em;
+			margin-inline: 1.5rem;
+			margin-bottom: 0.75rem;
+			color: var(--renote);
+
+			> button {
+				display: flex;
+				padding: 0;
+				color: var(--accentAlpha04);
+
+				&:hover {
+					color: var(--accentAlpha06);
+				}
+
+				&:active {
+					color: var(--accentDarken30);
+				}
+			}
+		}
+
+		> .with-references {
 			display: flex;
 			align-items: center;
 			gap: 0.4em;

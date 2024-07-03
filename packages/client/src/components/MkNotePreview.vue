@@ -26,21 +26,60 @@
 						:i="$i"
 						reaction-menu-enabled
 					/>
+					<MkFolder
+						v-if="referenceIds?.length"
+						class="references"
+						:expanded="refExpand"
+						no-style
+					>
+						<template #header>{{ referenceIds?.length + " 件の参照" }}</template>
+						<div v-for="reference in referenceIds" :key="reference" class="reference">
+							<XNoteSimple v-if="notes[reference]" :note="notes[reference]" />
+						</div>
+					</MkFolder>
 				</div>
+
 			</div>
 		</div>
 	</div>
 </template>
 
 <script lang="ts" setup>
-import {} from "vue";
+import { ref, watch } from "vue";
 import { preprocess } from "@/scripts/preprocess";
 import { i18n } from "@/i18n";
+import XNoteSimple from "@/components/MkNoteSimple.vue";
+import MkFolder from "@/components/MkFolder.vue";
+import * as os from "@/os";
+import type { Note } from "calckey-js/built/entities";
 
 const props = defineProps<{
 	text: string;
 	cw?: string;
+	referenceIds?: string[];
 }>();
+
+let refExpand = $ref(false);
+
+const notes = ref<Record<string, Note | null>>({});
+
+const getNote = async (noteId: string): Promise<Note> => {
+  return (await os.api("notes/show", { noteId })) as Note;
+};
+
+watch(
+  () => props.referenceIds,
+  async (newReferenceIds) => {
+    if (newReferenceIds) {
+      for (const referenceId of newReferenceIds) {
+        if (!notes.value[referenceId]) {
+          notes.value[referenceId] = await getNote(referenceId);
+        }
+      }
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -104,6 +143,23 @@ const props = defineProps<{
 					cursor: default;
 					margin: 0;
 					padding: 0;
+				}
+				
+				> .references {
+					padding-top: 0.5rem;
+					.reference {
+						padding-top: 0.5rem;
+						> * {
+							padding: 1rem;
+							border: solid 0.0625rem var(--accent);
+							border-radius: 0.5rem;
+							transition: background 0.2s;
+							&:hover,
+							&:focus-within {
+								background: var(--tlPanelHighlight);
+							}
+						}
+					}
 				}
 			}
 		}

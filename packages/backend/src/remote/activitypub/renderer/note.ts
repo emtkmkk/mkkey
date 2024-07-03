@@ -104,6 +104,10 @@ export default async function renderNote(
 
 	let apText = text;
 
+	if (note.referenceIds.length) {
+		apText += ` [参照](${config.url}/notes/${note.id}/references)`;
+	}
+
 	if (quote) {
 		apText += `\n\nRE: ${quote}`;
 	}

@@ -296,8 +296,10 @@ export function confirm(props: {
 	text?: string | null;
 	okText?: string;
 	cancelText?: string;
+	showThirdButton?: boolean;
+	thirdText?: string
 	wait?: number;
-}): Promise<{ canceled: boolean }> {
+}): Promise<{ canceled: true } | { canceled: false, result: any }> {
 	return new Promise((resolve, reject) => {
 		popup(
 			MkDialog,

@@ -93,6 +93,10 @@ export function getNoteMenu(props: {
 				noteId: appearNote.id,
 			});
 
+			if (appearNote.referenceIds?.length) {
+				defaultStore.set("postFormReferenceIds",Array.from(new Set([...defaultStore.state.postFormReferenceIds, ...appearNote.referenceIds])));
+			}
+
 			os.post({
 				initialNote: appearNote,
 				renote: appearNote.renote,
@@ -388,6 +392,16 @@ export function getNoteMenu(props: {
 		);
 	}
 
+	function addReferences(): void {
+		defaultStore.set("postFormReferenceIds", Array.from(new Set([...defaultStore.state.postFormReferenceIds, appearNote.id])))
+		os.success();
+	}
+
+	function removeReferences(): void {
+		defaultStore.set("postFormReferenceIds", defaultStore.state.postFormReferenceIds.filter((x) => x !== appearNote.id))
+		os.success();
+	}
+
 	async function translate(): Promise<void> {
 		if (props.translation.value != null) return;
 		props.translating.value = true;
@@ -506,6 +520,15 @@ export function getNoteMenu(props: {
 						},
 				  }
 				: undefined,
+			!defaultStore.state.postFormReferenceIds.includes(appearNote.id) ?  {
+				icon: "ph-stack-minus ph-bold ph-lg",
+				text: i18n.ts.removeReferences,
+				action: removeReferences,
+			} : {
+				icon: "ph-stack-plus ph-bold ph-lg",
+				text: i18n.ts.addReferences,
+				action: addReferences,
+			},
 			shareAvailable() && !appearNote.deletedAt
 				? {
 						icon: "ph-share-network ph-bold ph-lg",

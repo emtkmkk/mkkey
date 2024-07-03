@@ -563,7 +563,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 						profile,
 						avatarUrl: await Users.getAvatarUrl(user),
 						// TODO: Let locale changeable by instance setting
-						title: `投稿の参照 (${_note.referenceIds?.length}件) by ${userName}`,
+						title: `投稿の参照 (${_note.referenceIds?.length}件) by ${userName} (@${Acct.toString(user)})`,
 						summary: "",
 						userName,
 						instanceName: meta.name || "Calckey",
@@ -590,14 +590,14 @@ router.get("/notes/:note/references", async (ctx, next) => {
 					: `@${referenceUser.username}${referenceUser.host ? `@${referenceUser.host}` : ""}`;
 				let summary = ""
 				summary = getNoteSummary(await Notes.pack(referenceNote));
-				summary = [_note.referenceIds.length > 1 ? `他${_note.referenceIds.length - 1}件` : "", summary].join(" / ");
+				summary = [_note.referenceIds.length > 1 ? `他${_note.referenceIds.length - 1}件` : "", summary].filter(Boolean).join(" / ");
 				console.log("notereferences: 7")
 				await ctx.render("references", {
 					note: refNote || _note,
 					profile: refProfile || profile,
 					avatarUrl: await Users.getAvatarUrl(referenceUser || user),
 					// TODO: Let locale changeable by instance setting
-					title: `投稿の参照 (${_note.referenceIds?.length}件) by ${userName}`,
+					title: `投稿の参照 (${_note.referenceIds?.length}件) by ${userName} (@${Acct.toString(user)})`,
 					summary,
 					userName: refUserName || userName,
 					instanceName: meta.name || "Calckey",

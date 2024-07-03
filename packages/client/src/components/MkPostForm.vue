@@ -1932,7 +1932,7 @@ async function post() {
 				? visibleUsersCc.map((u) => u.id)
 				: undefined,
 		inheritCc,
-		referenceIds,
+		referenceIds: referenceIds?.length ? referenceIds : undefined,
 	};
 
 	if (withHashtags && hashtags && hashtags.trim() !== "") {

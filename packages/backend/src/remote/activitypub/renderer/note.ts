@@ -103,7 +103,7 @@ export default async function renderNote(
 	}
 
 	if (note.referenceIds?.length) {
-		text += ` [参照](${config.url}/notes/${note.id}/references)`;
+		text = [text.trim(),`[<参照>](${config.url}/notes/${note.id}/references)`].filter(Boolean).join(" ");
 	}
 
 	let apText = text;

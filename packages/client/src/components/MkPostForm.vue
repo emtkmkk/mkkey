@@ -1984,6 +1984,7 @@ async function post() {
 	os.api("notes/create", postData, token, true)
 		.then(() => {
 			clear();
+			referenceIds = [];
 			nextTick(() => {
 				deleteDraft();
 				emit("posted");

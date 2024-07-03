@@ -930,7 +930,7 @@ let requiredFilename = $ref(
 let imeText = $ref("");
 let shortcutKeyValue = $ref(0);
 let fileselecting = $ref(false);
-let referencesFlg = $ref(false);
+let referencesFlg = $ref(true);
 
 const publicIcon = $computed((): String => {
 	if (!canNotLocal && (canPublic || canHome)) {

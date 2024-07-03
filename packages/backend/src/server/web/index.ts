@@ -563,7 +563,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 						profile,
 						avatarUrl: await Users.getAvatarUrl(user),
 						// TODO: Let locale changeable by instance setting
-						title: `投稿の参照 (${_note.referenceIds?.length}件)`,
+						title: `投稿の参照 (${_note.referenceIds?.length}件) by ${userName}`,
 						summary: "",
 						userName,
 						instanceName: meta.name || "Calckey",
@@ -576,6 +576,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 	
 					return;
 				}
+				const refNote = await Notes.pack(referenceNote)
 				console.log("notereferences: 6")
 				const referenceUser = await Users.findOneByOrFail({
 					id: referenceNote.userId,
@@ -591,25 +592,12 @@ router.get("/notes/:note/references", async (ctx, next) => {
 				summary = getNoteSummary(await Notes.pack(referenceNote));
 				summary = [_note.referenceIds.length > 1 ? `他${_note.referenceIds.length - 1}件` : "", summary].join(" / ");
 				console.log("notereferences: 7")
-				console.log(`ref:${JSON.stringify({
-					note: referenceNote || _note,
-					profile: refProfile || profile,
-					avatarUrl: await Users.getAvatarUrl(referenceUser || user),
-					// TODO: Let locale changeable by instance setting
-					title: `投稿の参照 (${_note.referenceIds?.length}件)`,
-					summary,
-					userName: refUserName || userName,
-					instanceName: meta.name || "Calckey",
-					icon: meta.iconUrl,
-					privateMode: meta.privateMode,
-					themeColor: meta.themeColor,
-				})}`)
 				await ctx.render("references", {
-					note: referenceNote || _note,
+					note: refNote || _note,
 					profile: refProfile || profile,
 					avatarUrl: await Users.getAvatarUrl(referenceUser || user),
 					// TODO: Let locale changeable by instance setting
-					title: `投稿の参照 (${_note.referenceIds?.length}件)`,
+					title: `投稿の参照 (${_note.referenceIds?.length}件) by ${userName}`,
 					summary,
 					userName: refUserName || userName,
 					instanceName: meta.name || "Calckey",

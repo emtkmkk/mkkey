@@ -100,6 +100,15 @@
 						:note="appearNote"
 					/>
 					<button
+						v-if="referenceIds && referenceIds.length"
+						v-tooltip.bottom="i18n.ts.referencesAttached"
+						class="button _button"
+						:class= "{reacted: referenceIds?.includes(appearNote.id)}"
+						@click="toggleReference()"
+					>
+						<i class="ph-stack ph-bold ph-lg"></i>
+					</button>
+					<button
 						v-if="
 							$i &&
 							defaultStore.state.toolbarAirReply &&
@@ -328,6 +337,9 @@ const isMaxReacted = $computed(() =>
 		? props.note.myReactions?.length >= maxReactions
 		: props.note.myReaction != null
 );
+const referenceIds = $computed(
+	defaultStore.makeGetterSetter("postFormReferenceIds")
+);
 
 const showContent = ref(false);
 
@@ -467,6 +479,14 @@ function noteClick(e) {
 		e.stopPropagation();
 	} else {
 		router.push(notePage(props.note));
+	}
+}
+
+function toggleReference() {
+	if (referenceIds?.includes(appearNote.id)) {
+		referenceIds = referenceIds.filter((x) => x !== appearNote.id)
+	} else {
+		referenceIds = Array.from(new Set([...referenceIds, appearNote.id]))
 	}
 }
 </script>

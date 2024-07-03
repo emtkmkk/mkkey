@@ -201,6 +201,15 @@
 						:multi="multiReaction"
 					/>
 					<button
+						v-if="referenceIds && referenceIds.length"
+						v-tooltip.bottom="i18n.ts.referencesAttached"
+						class="button _button"
+						:class= "{reacted: referenceIds?.includes(appearNote.id)}"
+						@click="toggleReference()"
+					>
+						<i class="ph-stack ph-bold ph-lg"></i>
+					</button>
+					<button
 						v-if="
 							$i &&
 							defaultStore.state.toolbarAirReply &&
@@ -579,6 +588,9 @@ const excludeMute = isExcludeReplyQuote || isExcludeNotification;
 const developerRenote = defaultStore.state.developerRenote;
 const developerQuote = defaultStore.state.developerQuote;
 const developerNoteMenu = defaultStore.state.developerNoteMenu;
+const referenceIds = $computed(
+	defaultStore.makeGetterSetter("postFormReferenceIds")
+);
 const recentRenoteId = $computed(
 	defaultStore.makeGetterSetter("recentRenoteId")
 );
@@ -876,6 +888,14 @@ function readPromo() {
 	});
 	isDeleted.value = true;
 }
+
+function toggleReference() {
+	if (referenceIds?.includes(appearNote.id)) {
+		referenceIds = referenceIds.filter((x) => x !== appearNote.id)
+	} else {
+		referenceIds = Array.from(new Set([...referenceIds, appearNote.id]))
+	}
+}
 </script>
 
 <style lang="scss" scoped>
@@ -1110,6 +1130,10 @@ function readPromo() {
 					}
 
 					&.reacted {
+						color: var(--accent);
+					}
+
+					&.referenced {
 						color: var(--accent);
 					}
 				}

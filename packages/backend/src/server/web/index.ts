@@ -591,14 +591,27 @@ router.get("/notes/:note/references", async (ctx, next) => {
 				summary = getNoteSummary(await Notes.pack(referenceNote));
 				summary = [_note.referenceIds.length > 1 ? `他${_note.referenceIds.length - 1}件` : "", summary].join(" / ");
 				console.log("notereferences: 7")
-				await ctx.render("references", {
-					note: referenceNote,
-					profile: refProfile,
-					avatarUrl: await Users.getAvatarUrl(referenceUser),
+				console.log(`ref:${JSON.stringify({
+					note: referenceNote || _note,
+					profile: refProfile || profile,
+					avatarUrl: await Users.getAvatarUrl(referenceUser || user),
 					// TODO: Let locale changeable by instance setting
 					title: `投稿の参照 (${_note.referenceIds?.length}件)`,
 					summary,
-					userName: refUserName,
+					userName: refUserName || userName,
+					instanceName: meta.name || "Calckey",
+					icon: meta.iconUrl,
+					privateMode: meta.privateMode,
+					themeColor: meta.themeColor,
+				})}`)
+				await ctx.render("references", {
+					note: referenceNote || _note,
+					profile: refProfile || profile,
+					avatarUrl: await Users.getAvatarUrl(referenceUser || user),
+					// TODO: Let locale changeable by instance setting
+					title: `投稿の参照 (${_note.referenceIds?.length}件)`,
+					summary,
+					userName: refUserName || userName,
 					instanceName: meta.name || "Calckey",
 					icon: meta.iconUrl,
 					privateMode: meta.privateMode,

@@ -520,7 +520,7 @@ export function getNoteMenu(props: {
 						},
 				  }
 				: undefined,
-			!defaultStore.state.postFormReferenceIds.includes(appearNote.id) ?  {
+			defaultStore.state.postFormReferenceIds.includes(appearNote.id) ?  {
 				icon: "ph-stack-minus ph-bold ph-lg",
 				text: i18n.ts.removeReferences,
 				action: removeReferences,

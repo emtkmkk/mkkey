@@ -118,6 +118,8 @@
 					<MkButton
 						v-if="showThirdButton"
 						inline
+						primary
+						:disabled="!canOk"
 						@click="third"
 						>{{
 							thirdText ? thirdText : i18n.ts.ok

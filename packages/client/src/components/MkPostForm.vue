@@ -1293,6 +1293,7 @@ function watchForDraft() {
 	watch($$(files), () => saveDraft(), { deep: true });
 	watch($$(visibility), () => saveDraft());
 	watch($$(localOnly), () => saveDraft());
+	watch($$(referencesFlg), () => saveDraft());
 }
 
 function checkIncludesOtherServerEmoji() {
@@ -1769,7 +1770,7 @@ function onDrop(ev): void {
 }
 
 function saveDraft(key?, name?) {
-	if (!(text || (useCw && cw) || files?.length || poll)) {
+	if (!(text || (useCw && cw) || files?.length || poll || referencesFlg !== true)) {
 		if (!key) {
 			deleteDraft(key);
 		}
@@ -2159,7 +2160,8 @@ function loadDraft(key?) {
 			draft.data.text ||
 			(draft.data.useCw && draft.data.cw) ||
 			draft.data.files?.length ||
-			draft.data.poll
+			draft.data.poll ||
+			draft.data.referencesFlg !== true
 		) {
 			text = draft.data.text;
 			useCw = draft.data.useCw;

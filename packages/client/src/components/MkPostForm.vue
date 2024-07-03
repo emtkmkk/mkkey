@@ -494,7 +494,7 @@
 					<i class="ph-x ph-bold ph-lg"></i>
 				</button>
 			</div>
-			<div v-if="referenceIds?.length" class="with-references" :class={refOn: referencesFlg}>
+			<div v-if="referenceIds?.length" class="with-references" :class="{refOn: referencesFlg}">
 				<button class="_button" @click="referencesFlg = !referencesFlg">
 					<i v-show="referencesFlg" class="ph-check-square ph-bold ph-lg"></i>
 					<i v-show="!referencesFlg" class="ph-square ph-bold ph-lg"></i>

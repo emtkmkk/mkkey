@@ -203,6 +203,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 				myReactions: Map<Note["id"], NoteReaction | null>;
 			};
 			showInvisible?: boolean;
+			blockCheck?: boolean;
 		},
 	): Promise<Packed<"Note">> {
 		const opts = Object.assign(
@@ -218,11 +219,21 @@ export const NoteRepository = db.getRepository(Note).extend({
 		const host = note?.userHost;
 		const isVisible = await this.isVisibleForMe(note, meId);
 
-		if (!(await this.isVisibleForMe(note, meId)) && !opts.showInvisible) {
+		if (!isVisible && !opts.showInvisible) {
 			throw new IdentifiableError(
 				"9725d0ce-ba28-4dde-95a7-2cbb2c15de24",
-				"No such note.",
+				"投稿が存在しません。",
 			);
+		}
+
+		if (opts.blockCheck && meId) {
+			const relation = await Users.getRelation(meId, note.userId);
+			if (relation.isMuted && relation.isBlocked) {
+				throw new IdentifiableError(
+					"281827eb-bd11-3625-ac9d-336a0d80fac2",
+					"ブロックされているユーザの投稿です。",
+				);
+			}
 		}
 
 		let text = note.text;
@@ -347,7 +358,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 													return await this.pack(x, me, {
 														detail: true,
 														_hint_: options?._hint_,
-														showInvisible: options?.showInvisible,
+														showInvisible: false,
+														blockCheck: true,
 													});
 												} catch (e) {
 													return null;
@@ -356,7 +368,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 									)
 							  ).flatMap((result) =>
 									result.status === "fulfilled" ? [result.value] : [],
-							  )
+							  ).filter(Boolean)
 							: undefined,
 
 						poll:

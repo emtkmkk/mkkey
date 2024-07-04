@@ -5,7 +5,7 @@ export default (v, digits = 0, minDigits = 3) => {
 	const isMinus = v < 0;
 	if (isMinus) v = -v;
 	let i = Math.floor(Math.log(v) / Math.log(1024));
-	while (i <= 0 || (v / 1024 ** i).toFixed(digits).replace(".","").length < minDigits) {
+	while (i > 0 && (v / 1024 ** i).toFixed(digits).replace(".","").length < minDigits) {
 		i -= 1
 	}
 	return (

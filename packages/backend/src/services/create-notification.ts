@@ -22,7 +22,7 @@ export async function createNotification(
 	if (data.notifierId && notifieeId === data.notifierId) {
 		return null;
 	}
-
+	
 	if (
 		data.notifierId &&
 		[
@@ -37,34 +37,33 @@ export async function createNotification(
 		const notifier = await Users.findOneBy({ id: data.notifierId });
 		// suppress if the notifier does not exist or is silenced.
 		if (!notifier) return null;
-
+	
 		// suppress if the notifier is silenced or in a silenced instance, and not followed by the notifiee.
-		if (
-			(notifier.isSilenced ||
-				(Users.isRemoteUser(notifier) &&
-					(await shouldSilenceInstance(notifier.host)))) &&
-			!(await Followings.exist({
-				where: { followerId: notifieeId, followeeId: data.notifierId },
-			}))
-		)
-			return null;
-	}
-
-	const profile = await UserProfiles.findOneBy({ userId: notifieeId });
-
-	const isMuted = profile?.mutingNotificationTypes.includes(type);
-
-	if (data.note != null) {
-		const threadMute = await NoteThreadMutings.findOneBy({
-			userId: notifieeId,
-			threadId: data.note.threadId || data.note.id,
-		});
-
-		if (threadMute) {
+		const [shouldSilence, isFollowed] = await Promise.all([
+			Users.isRemoteUser(notifier) && shouldSilenceInstance(notifier.host),
+			Followings.exist({ where: { followerId: notifieeId, followeeId: data.notifierId } }),
+		]);
+	
+		if ((notifier.isSilenced || shouldSilence) && !isFollowed) {
 			return null;
 		}
 	}
-
+	
+	const profilePromise = UserProfiles.findOneBy({ userId: notifieeId });
+	
+	const threadMutePromise = data.note != null ? NoteThreadMutings.findOneBy({
+		userId: notifieeId,
+		threadId: data.note.threadId || data.note.id,
+	}) : Promise.resolve(null);
+	
+	const [profile, threadMute] = await Promise.all([profilePromise, threadMutePromise]);
+	
+	const isMuted = profile?.mutingNotificationTypes.includes(type);
+	
+	if (threadMute) {
+		return null;
+	}
+	
 	// Create notification
 	const notification = await Notifications.insert({
 		id: genId(),
@@ -77,12 +76,12 @@ export async function createNotification(
 	} as Partial<Notification>).then((x) =>
 		Notifications.findOneByOrFail(x.identifiers[0]),
 	);
-
+	
 	const packed = await Notifications.pack(notification, {});
-
+	
 	// Publish notification event
 	publishMainStream(notifieeId, "notification", packed);
-
+	
 	// 3秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
 	setTimeout(async () => {
 		const fresh = await Notifications.findOneBy({ id: notification.id });
@@ -91,7 +90,7 @@ export async function createNotification(
 		// when it is best to show push notifications
 		pushNotification(notifieeId, "notification", packed);
 		if (fresh.isRead) return;
-
+	
 		//#region ただしミュートしているユーザーからの通知なら無視
 		const mutings = await Mutings.findBy({
 			muterId: notifieeId,
@@ -103,9 +102,9 @@ export async function createNotification(
 			return;
 		}
 		//#endregion
-
+	
 		publishMainStream(notifieeId, "unreadNotification", packed);
-
+	
 		if (type === "follow")
 			sendEmailNotification.follow(
 				notifieeId,
@@ -117,6 +116,6 @@ export async function createNotification(
 				await Users.findOneByOrFail({ id: data.notifierId! }),
 			);
 	}, 3000);
-
-	return notification;
+	
+	return notification;	
 }

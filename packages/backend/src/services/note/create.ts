@@ -607,83 +607,6 @@ export default async (
 			.filter((tag) => Array.from(tag || "").length <= 128)
 			.splice(0, 32);
 
-		//スパム対策
-		/*
-		if (
-			user.host &&
-			["public", "home"].includes(data.visibility) &&
-			user.notesCount < 500 &&
-			mentionedUsers?.length > 2
-		) {
-			console.log(`mentionedUsers.length: ${mentionedUsers?.length}`);
-			if (
-				tags?.some(
-					(x) =>
-						x.includes("黒猫サーバー") ||
-						x.includes("kuroneko6423") ||
-						x.includes("伊藤陽久"),
-				)
-			)
-				return rej("禁止タグが含まれています。");
-			if (
-				mentionedUsers?.length > 3 &&
-				data.text?.includes("https://discord.gg/")
-			)
-				return rej("禁止投稿です。(discordへの誘導)");
-			if (
-				mentionedUsers?.length > 7 &&
-				(data.text?.includes("ap12") || data.text?.includes("猫"))
-			)
-				return rej("禁止投稿です。(メンション多すぎ)");
-			console.log(
-				`maintext: ${
-					data.text
-						?.replaceAll(/[\s\\n]*@\w+(@[\-._\w]+)?[\s\\n]{0,}/gi, "")
-						.trim()?.length
-				}`,
-			);
-			if (
-				mentionedUsers?.length > 2 &&
-				mentionedUsers.filter((x) => !x.host || x.host === config.host).length >
-					0 &&
-				mentionedUsers.filter((x) => !x.host || x.host === config.host).length -
-					mentionedUsers?.length <=
-					-2 &&
-				!data.reply
-			) {
-				const localRelation = await mentionedUsers
-					.filter((x) => !x.host || x.host === config.host)
-					.every(
-						async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed,
-					);
-				console.log(`localRelation: ${!localRelation}`);
-				if (localRelation) return rej("禁止投稿です。(スパムの可能性が高い)");
-			}
-		}
-
-		if (
-			user.host &&
-			["public", "home"].includes(data.visibility) &&
-			user.notesCount < 5000 &&
-			mentionedUsers.filter((x) => !x.host || x.host === config.host).length >
-				0 &&
-			Date.now() - new Date(user.createdAt).valueOf() <
-				2 * 24 * 60 * 60 * 1000 &&
-			(!user.name || user.name === user.username) &&
-			!user.emojis?.length &&
-			(!user.avatarId || user.avatarUrl?.includes("identicon"))
-		) {
-			const localRelation = await mentionedUsers
-				.filter((x) => !x.host || x.host === config.host)
-				.every(
-					async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed,
-				);
-			console.log(`localRelation: ${!localRelation}`);
-			if (localRelation) return rej("禁止投稿です。(怪しいプロフィール)");
-		}
-
-		*/
-
 		if (
 			data.reply &&
 			user.id !== data.reply.userId &&
@@ -725,13 +648,6 @@ export default async (
 					"サイレンス中はフォロワーでも管理人でもないユーザにダイレクトは送信できません。",
 				);
 			}
-			/*
-						const localRelation = !user.isBot || !user.host ? false :await data.visibleUsers.filter((x) => !x.host || !x.isBot || x.host === config.host).every(async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed);
-
-						if (!user.isBot && user.host && (localRelation ?? true)) {
-							data.text = " [ **[ ]内はもこきーからのシステムメッセージです。もしかしたらスパムかもなので本文中のリンクを全てh抜きにしています。内容に問題があれば通報をお願いしますね。** ] \n\n[ **以下、本文です** ]\n\n" + data.text?.replaceAll(/h(ttps?:\/\/)/gi, "$1");
-						}
-			*/
 		}
 
 		data.isPublicLikeList = user.isPublicLikeList;

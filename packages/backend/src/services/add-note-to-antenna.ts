@@ -16,44 +16,48 @@ export async function addNoteToAntenna(
 ) {
 	// 通知しない設定になっているか、自分自身の投稿なら既読にする
 	const read = !antenna.notify || antenna.userId === noteUser.id;
-
+	
 	AntennaNotes.insert({
 		id: genId(),
 		antennaId: antenna.id,
 		noteId: note.id,
 		read: read,
 	});
-
+	
 	publishAntennaStream(antenna.id, "note", note);
-
+	
 	if (!read) {
-		const mutings = await Mutings.find({
+		const mutingsPromise = Mutings.find({
 			where: {
 				muterId: antenna.userId,
 			},
 			select: ["muteeId"],
 		});
-
-		// Copy
-		const _note: Note = {
-			...note,
-		};
-
-		if (note.replyId != null) {
-			_note.reply = await Notes.findOneByOrFail({ id: note.replyId });
-		}
-		if (note.renoteId != null) {
-			_note.renote = await Notes.findOneByOrFail({ id: note.renoteId });
-		}
-
+	
+		const notePromises = (async () => {
+			const _note: Note = { ...note };
+	
+			const [reply, renote] = await Promise.all([
+				note.replyId ? Notes.findOneBy({ id: note.replyId }) : null,
+				note.renoteId ? Notes.findOneBy({ id: note.renoteId }) : null,
+			]);
+	
+			_note.reply = reply;
+			_note.renote = renote;
+	
+			if (noteUser.id != null) {
+				_note.user = await Users.findOneBy({ id: noteUser.id });
+			}
+	
+			return _note;
+		})();
+	
+		const [mutings, _note] = await Promise.all([mutingsPromise, notePromises]);
+	
 		if (isUserRelated(_note, new Set<string>(mutings.map((x) => x.muteeId)))) {
 			return;
 		}
-
-		if (noteUser.id != null) {
-			_note.user = await Users.findOneByOrFail({ id: noteUser.id });
-		}
-
+	
 		// 3秒経っても既読にならなかったら通知
 		setTimeout(async () => {
 			const unread = await AntennaNotes.findOneBy({
@@ -62,9 +66,9 @@ export async function addNoteToAntenna(
 			});
 			if (unread) {
 				publishMainStream(antenna.userId, "unreadAntenna", antenna);
-
+	
 				const __note = note.renoteId && !note.text ? _note.renote : note;
-
+	
 				// 通知を作成
 				createNotification(antenna.userId, "unreadAntenna", {
 					notifierId: noteUser.id,
@@ -72,7 +76,7 @@ export async function addNoteToAntenna(
 					noteId: __note.id,
 					reaction: antenna.name,
 				});
-
+	
 				const webhooks = await getActiveWebhooks().then((webhooks) =>
 					webhooks.filter(
 						(x) =>
@@ -81,12 +85,12 @@ export async function addNoteToAntenna(
 							!x.on.includes(`exclude-${x.id}`),
 					),
 				);
-
-				for (const webhook of webhooks) {
+	
+				const webhookPromises = webhooks.map(async (webhook) => {
 					const antennaUser = await Users.findOneByOrFail({
 						id: antenna.userId,
 					});
-					webhookDeliver(webhook, "antenna", {
+					await webhookDeliver(webhook, "antenna", {
 						note: await Notes.pack(__note, antennaUser),
 						antenna: {
 							id: antenna.id,
@@ -94,8 +98,10 @@ export async function addNoteToAntenna(
 							noteUser: _note.user,
 						},
 					});
-				}
+				});
+	
+				await Promise.all(webhookPromises);
 			}
 		}, 3000);
-	}
+	}	
 }

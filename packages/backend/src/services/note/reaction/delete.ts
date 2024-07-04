@@ -15,73 +15,73 @@ export default async (
 	note: Note,
 	emoji?: any,
 ) => {
-	const existCount = await NoteReactions.count({
+	const existCountPromise = NoteReactions.count({
 		where: {
 			noteId: note.id,
 			userId: user.id,
 		},
 	});
 
-	if (emoji == null && existCount > 1) {
-		throw new IdentifiableError(
-			"60527ec9-b4cb-4a88-a6bd-32d3ad26817d",
-			"Unable to process due to multiple targets",
-		);
-	}
-
-	try {
-		emoji = await toDbReaction(emoji, user.host, note.user?.host);
-	} catch (err) {
-		if (existCount > 1) {
-			throw new IdentifiableError(
-				"770a3ede-67d2-fc9d-f2e2-6163ba0443af",
-				"指定された絵文字が存在しません。",
-			);
+	const emojiPromise = (async () => {
+		try {
+			return await toDbReaction(emoji, user.host, note.user?.host);
+		} catch (err) {
+			if ((await existCountPromise) > 1) {
+				throw new IdentifiableError(
+					"770a3ede-67d2-fc9d-f2e2-6163ba0443af",
+					"指定された絵文字が存在しません。",
+				);
+			}
+			return null;
 		}
-		emoji = null;
-	}
-
-	// if already unreacted
-	const exist = await NoteReactions.findOneBy({
-		noteId: note.id,
-		userId: user.id,
-		...(emoji ? { reaction: emoji } : {}),
-	});
-
-	if (exist == null) {
-		throw new IdentifiableError(
-			"60527ec9-b4cb-4a88-a6bd-32d3ad26817d",
-			"not reacted",
-		);
-	}
-
-	// Delete reaction
-	const result = await NoteReactions.delete(exist.id);
-
-	if (result.affected !== 1) {
-		throw new IdentifiableError(
-			"60527ec9-b4cb-4a88-a6bd-32d3ad26817d",
-			"not reacted",
-		);
-	}
-
-	let isMutedReaction:
-		| boolean
-		| {
-				muted: boolean;
-				reject?: boolean | undefined;
-		  } = false;
-	// Word mute
-	const muteInfo = await UserProfiles.findOne({
+	})();
+	
+	const muteInfoPromise = UserProfiles.findOne({
 		where: {
 			userId: note.userId,
 			enableReactionMute: true,
 		},
 		select: ["userId", "reactionMutedWords", "rejectMuteReaction"],
 	});
+	
+	// Await initial checks and processing
+	const [existCount, processedEmoji, muteInfo] = await Promise.all([existCountPromise, emojiPromise, muteInfoPromise]);
+	
+	if (emoji == null && existCount > 1) {
+		throw new IdentifiableError(
+			"60527ec9-b4cb-4a88-a6bd-32d3ad26817d",
+			"Unable to process due to multiple targets",
+		);
+	}
+	
+	// if already unreacted
+	const exist = await NoteReactions.findOneBy({
+		noteId: note.id,
+		userId: user.id,
+		...(processedEmoji ? { reaction: processedEmoji } : {}),
+	});
+	
+	if (exist == null) {
+		throw new IdentifiableError(
+			"60527ec9-b4cb-4a88-a6bd-32d3ad26817d",
+			"not reacted",
+		);
+	}
+	
+	// Delete reaction
+	const result = await NoteReactions.delete(exist.id);
+	
+	if (result.affected !== 1) {
+		throw new IdentifiableError(
+			"60527ec9-b4cb-4a88-a6bd-32d3ad26817d",
+			"not reacted",
+		);
+	}
+	
+	let isMutedReaction: boolean | { muted: boolean; reject?: boolean | undefined } = false;
 	if (muteInfo) {
 		isMutedReaction = checkReactionMute(
-			emoji,
+			processedEmoji,
 			note,
 			user,
 			muteInfo.reactionMutedWords,
@@ -90,11 +90,11 @@ export default async (
 			isMutedReaction = isMutedReaction.muted;
 		}
 	}
-
+	
 	if (!isMutedReaction) {
 		// Decrement reactions count
 		const sql = `jsonb_set("reactions", '{${exist.reaction}}', (COALESCE("reactions"->>'${exist.reaction}', '0')::int - 1)::text::jsonb)`;
-
+	
 		await Notes.createQueryBuilder()
 			.update()
 			.set({
@@ -102,12 +102,12 @@ export default async (
 			})
 			.where("id = :id", { id: note.id })
 			.execute();
-
+	
 		if (existCount === 1) {
 			Notes.decrement({ id: note.id }, "score", user.host ? "1" : "3");
 		}
 	}
-
+	
 	publishNoteStream(note.id, "unreacted", {
 		reaction: decodeReaction(exist.reaction).reaction,
 		userId: user.id,
@@ -117,7 +117,7 @@ export default async (
 				: [user.id]
 			: [user.id, note.userId],
 	});
-
+	
 	if (!isMutedReaction) {
 		//#region 配信
 		if (Users.isLocalUser(user) && !(note.channelId && note.localOnly)) {

@@ -149,7 +149,6 @@ export const paramDef = {
 			properties: {
 				choices: {
 					type: "array",
-					uniqueItems: true,
 					minItems: 2,
 					maxItems: 10,
 					items: { type: "string", minLength: 1, maxLength: 50 },
@@ -232,212 +231,222 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, user) => {
 	if (user.movedToUri != null) throw new ApiError(meta.errors.accountLocked);
-	let visibleUsers: User[] = [];
 	if (!ps.web && user.isMiniSilenced && ps.visibility === "public") {
-		throw new ApiError(meta.errors.appBlockPublic);
+			throw new ApiError(meta.errors.appBlockPublic);
 	}
-	if (ps.visibleUserIds) {
-		visibleUsers = await Users.findBy({
-			id: In(ps.visibleUserIds),
-		});
-	}
-	let ccUsers: User[] = [];
-	if (ps.ccUserIds && (ps.ccUserIds.length <= 1 || user.canInvite)) {
-		ccUsers = await Users.findBy({
-			id: In(ps.ccUserIds),
-			host: IsNull(),
-		});
-	}
-
-	let files: DriveFile[] = [];
-	const fileIds =
-		ps.fileIds != null ? ps.fileIds : ps.mediaIds != null ? ps.mediaIds : null;
-	if (fileIds != null) {
-		files = await DriveFiles.createQueryBuilder("file")
-			.where("file.userId = :userId AND file.id IN (:...fileIds)", {
-				userId: user.id,
-				fileIds,
-			})
-			.orderBy('array_position(ARRAY[:...fileIds], "id"::text)')
-			.setParameters({ fileIds })
-			.getMany();
-	}
-
-	let renote: Note | null = null;
-	if (ps.renoteId != null) {
-		// Fetch renote to note
-		renote = await getNote(ps.renoteId, user).catch((e) => {
-			if (e.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
-				throw new ApiError(meta.errors.noSuchRenoteTarget);
-			throw e;
-		});
-
-		if (renote.renoteId && !renote.text && !renote.fileIds && !renote.hasPoll) {
-			throw new ApiError(meta.errors.cannotReRenote);
-		}
-
-		// Check blocking
-		if (renote.userId !== user.id) {
-			const block = await Blockings.findOneBy({
-				blockerId: renote.userId,
-				blockeeId: user.id,
-			});
-			if (block) {
-				throw new ApiError(meta.errors.youHaveBeenBlocked);
-			}
-		}
-	}
-
 	
-	if (ps.referenceIds?.length) {
-		for (const noteId of ps.referenceIds) {
-			// Fetch renote to note
-			const reference = await getNote(noteId, user).catch((e) => {
-				if (e.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
-					throw new ApiError(meta.errors.noSuchRenoteTarget);
-				throw e;
-			});
-
-			if (!reference) continue;
-
-			if (reference.renoteId && !reference.text && !reference.fileIds && !reference.hasPoll) {
-				throw new ApiError(meta.errors.cannotReRenote);
-			}
-		}
-	}
-
-	let reply: Note | null = null;
-	if (ps.replyId != null) {
-		// Fetch reply
-		reply = await getNote(ps.replyId, user).catch((e) => {
-			if (e.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
-				throw new ApiError(meta.errors.noSuchReplyTarget);
-			throw e;
-		});
-
-		if (reply.renoteId && !reply.text && !reply.fileIds && !reply.hasPoll) {
-			throw new ApiError(meta.errors.cannotReplyToPureRenote);
-		}
-
-		if (reply.ccUserIds.length && ps.inheritCc) {
-			let replyCc = [...reply.ccUserIds];
-			if (!reply.ccUserIds.includes(reply.userId)) replyCc.push(reply.userId);
-			ccUsers = [
-				...ccUsers,
-				...(await Users.findBy({
-					id: In(
-						replyCc.filter((x) => !ps.ccUserIds || !ps.ccUserIds.includes(x)),
-					),
-					host: IsNull(),
-				})),
-			];
-		}
-
-		// Check blocking
-		if (reply.userId !== user.id) {
-			const block = await Blockings.findOneBy({
-				blockerId: reply.userId,
-				blockeeId: user.id,
-			});
-			if (block) {
-				throw new ApiError(meta.errors.youHaveBeenBlocked);
-			}
-		}
-	}
-
-	if (ps.poll) {
-		if (typeof ps.poll.expiresAt === "number") {
-			if (ps.poll.expiresAt < Date.now()) {
-				throw new ApiError(meta.errors.cannotCreateAlreadyExpiredPoll);
-			}
-		} else if (typeof ps.poll.expiredAfter === "number") {
-			ps.poll.expiresAt = Date.now() + ps.poll.expiredAfter;
-		}
-	}
-
-	let channel: Channel | null = null;
-	if (ps.channelId != null) {
-		channel = await Channels.findOneBy({ id: ps.channelId });
-
-		if (channel == null) {
-			throw new ApiError(meta.errors.noSuchChannel);
-		}
-	}
-
-	if (files.length < 16 && ps.fileUrls?.length) {
-		for (const url of ps.fileUrls) {
-			try {
-				let file;
-				if (typeof url === "string") {
-					if (url.trim() && url.trim().startsWith("http")) {
-						file = await uploadFromUrl({
-							url: url.trim(),
-							user,
-						});
+	// Initial parallel promises for fetching visible users, cc users, files, renote, and channel
+	const visibleUsersPromise = ps.visibleUserIds ? Users.findBy({ id: In(ps.visibleUserIds) }) : Promise.resolve([]);
+	
+	const ccUsersPromise = ps.ccUserIds && (ps.ccUserIds.length <= 1 || user.canInvite)
+			? Users.findBy({ id: In(ps.ccUserIds), host: IsNull() })
+			: Promise.resolve([]);
+	
+	const fileIds = ps.fileIds != null ? ps.fileIds : ps.mediaIds != null ? ps.mediaIds : null;
+	
+	const filesPromise = fileIds != null
+			? DriveFiles.createQueryBuilder("file")
+					.where("file.userId = :userId AND file.id IN (:...fileIds)", {
+							userId: user.id,
+							fileIds,
+					})
+					.orderBy('array_position(ARRAY[:...fileIds], "id"::text)')
+					.setParameters({ fileIds })
+					.getMany()
+			: Promise.resolve([]);
+	
+	const channelPromise = ps.channelId != null
+			? Channels.findOneBy({ id: ps.channelId }).then((channel) => {
+					if (channel == null) {
+							throw new ApiError(meta.errors.noSuchChannel);
 					}
-				} else {
-					if (url.url.trim() && url.url.trim().startsWith("http")) {
-						file = await uploadFromUrl({
-							url: url.url.trim(),
-							user,
-							folderId: url?.folderId ?? undefined,
-							sensitive: url?.isSensitive,
-							force: url?.force,
-							comment: url?.comment ?? undefined,
-						});
-					}
-				}
-				if (file) {
-					const packedFile = await DriveFiles.pack(file, { self: true });
-					publishMainStream(user.id, "urlUploadFinished", {
-						marker: typeof url === "string" ? null : url.marker,
-						file: packedFile,
+					return channel;
+			})
+			: Promise.resolve(null);
+	
+	const renotePromise = (async () => {
+			let renote: Note | null = null;
+			if (ps.renoteId != null) {
+					renote = await getNote(ps.renoteId, user).catch((e) => {
+							if (e.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
+									throw new ApiError(meta.errors.noSuchRenoteTarget);
+							throw e;
 					});
-					files.push(file);
-					if (files.length >= 16) {
-						break;
+	
+					if (!renote) throw new ApiError(meta.errors.noSuchRenoteTarget);
+	
+					if (renote.renoteId && !renote.text && !renote.fileIds && !renote.hasPoll) {
+							throw new ApiError(meta.errors.cannotReRenote);
 					}
-				}
-			} catch (e) {
-				console.log(e?.message);
+	
+					if (renote.userId !== user.id) {
+							const block = await Blockings.findOneBy({
+									blockerId: renote.userId,
+									blockeeId: user.id,
+							});
+							if (block) {
+									throw new ApiError(meta.errors.youHaveBeenBlocked);
+							}
+					}
 			}
-		}
+			return renote;
+	})();
+	
+	const referencePromises = ps.referenceIds?.length
+			? ps.referenceIds.map(noteId => getNote(noteId, user).catch((e) => {
+					if (e.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
+							throw new ApiError(meta.errors.noSuchRenoteTarget);
+					throw e;
+			}).then((reference) => {
+					if (reference?.renoteId && !reference.text && !reference.fileIds && !reference.hasPoll) {
+							throw new ApiError(meta.errors.cannotReRenote);
+					}
+					return reference;
+			}))
+			: [];
+	
+	const replyPromise = (async () => {
+			let reply: Note | null = null;
+			if (ps.replyId != null) {
+					// Fetch reply
+					reply = await getNote(ps.replyId, user).catch((e) => {
+							if (e.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
+									throw new ApiError(meta.errors.noSuchReplyTarget);
+							throw e;
+					});
+	
+					if (!reply) throw new ApiError(meta.errors.noSuchReplyTarget);
+	
+					if (reply.renoteId && !reply.text && !reply.fileIds && !reply.hasPoll) {
+							throw new ApiError(meta.errors.cannotReplyToPureRenote);
+					}
+	
+					if (reply.ccUserIds.length && ps.inheritCc) {
+							let replyCc = [...reply.ccUserIds];
+							if (!reply.ccUserIds.includes(reply.userId)) replyCc.push(reply.userId);
+							const additionalCcUsers = await Users.findBy({
+									id: In(replyCc.filter(x => !ps.ccUserIds || !ps.ccUserIds.includes(x))),
+									host: IsNull(),
+							});
+							ccUsers = [...ccUsers, ...additionalCcUsers];
+					}
+	
+					// Check blocking
+					if (reply.userId !== user.id) {
+							const block = await Blockings.findOneBy({
+									blockerId: reply.userId,
+									blockeeId: user.id,
+							});
+							if (block) {
+									throw new ApiError(meta.errors.youHaveBeenBlocked);
+							}
+					}
+			}
+			return reply;
+	})();
+	
+	const [visibleUsers, ccUsers, files, channel, renote, references, reply] = await Promise.all([
+			visibleUsersPromise,
+			ccUsersPromise,
+			filesPromise,
+			channelPromise,
+			renotePromise,
+			Promise.all(referencePromises),
+			replyPromise
+	]);
+	
+	const choices = new Set()
+	if (ps.poll) {
+			if (ps.poll.choices?.length) {
+				for (const choice of ps.poll.choices) {
+					let _choice = choice;
+					while (choices.has(_choice)){
+						_choice += "\u200B"
+					}
+					choices.add(choice)
+				}
+			}
+			if (typeof ps.poll.expiresAt === "number") {
+					if (ps.poll.expiresAt < Date.now()) {
+							throw new ApiError(meta.errors.cannotCreateAlreadyExpiredPoll);
+					}
+			} else if (typeof ps.poll.expiredAfter === "number") {
+					ps.poll.expiresAt = Date.now() + ps.poll.expiredAfter;
+			}
 	}
-
+	
+	const fileUrlsPromises = (files.length < 16 && ps.fileUrls?.length)
+			? ps.fileUrls.map(async (url) => {
+					try {
+							let file: DriveFile | undefined;
+							if (typeof url === "string") {
+									if (url.trim()?.startsWith("http")) {
+											file = await uploadFromUrl({ url: url.trim(), user });
+									}
+							} else {
+									if (url.url.trim()?.startsWith("http")) {
+											file = await uploadFromUrl({
+													url: url.url.trim(),
+													user,
+													folderId: url?.folderId ?? undefined,
+													sensitive: url?.isSensitive,
+													force: url?.force,
+													comment: url?.comment ?? undefined,
+											});
+									}
+							}
+							if (file) {
+									const packedFile = await DriveFiles.pack(file, { self: true });
+									publishMainStream(user.id, "urlUploadFinished", {
+											marker: typeof url === "string" ? null : url.marker,
+											file: packedFile,
+									});
+									return file;
+							}
+					} catch (e) {
+							console.log(e?.message);
+					}
+					return null;
+			}).filter(promise => promise !== null)
+			: [];
+	
+	const fileUrls = await Promise.all(fileUrlsPromises);
+	files.push(...(fileUrls.filter((x) => x != null)));
+	
 	// Create a post
 	try {
-		const note = await create(user, {
-			createdAt: new Date(),
-			files: files,
-			poll: ps.poll
-				? {
-						choices: ps.poll.choices,
-						multiple: ps.poll.multiple,
-						expiresAt: ps.poll.expiresAt ? new Date(ps.poll.expiresAt) : null,
-				  }
-				: undefined,
-			text: ps.text || undefined,
-			reply,
-			renote,
-			references: ps.referenceIds?.length ? ps.referenceIds : undefined,
-			cw: ps.cw,
-			localOnly: ps.localOnly,
-			visibility: ps.visibility,
-			visibleUsers,
-			ccUsers,
-			channel,
-			apMentions: ps.noExtractMentions ? [] : undefined,
-			apHashtags: ps.noExtractHashtags ? [] : undefined,
-			apEmojis: ps.noExtractEmojis ? [] : undefined,
-		});
-		return {
-			createdNote: await Notes.pack(note, user),
-		};
+			const note = await create(user, {
+					createdAt: new Date(),
+					files: files,
+					poll: ps.poll
+							? {
+									choices: Array.from(choices),
+									multiple: ps.poll.multiple,
+									expiresAt: ps.poll.expiresAt ? new Date(ps.poll.expiresAt) : null,
+							}
+							: undefined,
+					text: ps.text || undefined,
+					reply,
+					renote,
+					references: ps.referenceIds?.length ? ps.referenceIds : undefined,
+					cw: ps.cw,
+					localOnly: ps.localOnly,
+					visibility: ps.visibility,
+					visibleUsers,
+					ccUsers,
+					channel,
+					apMentions: ps.noExtractMentions ? [] : undefined,
+					apHashtags: ps.noExtractHashtags ? [] : undefined,
+					apEmojis: ps.noExtractEmojis ? [] : undefined,
+			});
+			return {
+					createdNote: await Notes.pack(note, user),
+			};
 	} catch (e) {
-		throw new ApiError({
-			message: e || "unknown error.",
-			code: "NOTE_CREATE_ERROR",
-			id: "d390d7e1-8a5e-46ed-b625-06271cafd3d4",
-		});
+			throw new ApiError({
+					message: e || "unknown error.",
+					code: "NOTE_CREATE_ERROR",
+					id: "d390d7e1-8a5e-46ed-b625-06271cafd3d4",
+			});
 	}
 });

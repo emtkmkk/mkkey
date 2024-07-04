@@ -50,43 +50,51 @@ export default async (
 	reaction?: string,
 ) => {
 	// Check blocking
-	if (note.userId !== user.id) {
-		const block = await Blockings.findOneBy({
-			blockerId: note.userId,
-			blockeeId: user.id,
-		});
-		if (block) {
-			throw new IdentifiableError("e70412a4-7197-4726-8e74-f3e0deb92aa7");
+	const blockPromise = (async () => {
+		if (note.userId !== user.id) {
+			const block = await Blockings.findOneBy({
+				blockerId: note.userId,
+				blockeeId: user.id,
+			});
+			if (block) {
+				throw new IdentifiableError("e70412a4-7197-4726-8e74-f3e0deb92aa7");
+			}
 		}
-	}
+	})();
 
 	// check visibility
-	if (!(await Notes.isVisibleForMe(note, user.id))) {
-		throw new IdentifiableError(
-			"68e9d2d1-48bf-42c2-b90a-b20e09fd3d48",
-			"Note not accessible for you.",
-		);
-	}
+	const visibilityPromise = (async () => {
+		if (!(await Notes.isVisibleForMe(note, user.id))) {
+			throw new IdentifiableError(
+				"68e9d2d1-48bf-42c2-b90a-b20e09fd3d48",
+				"Note not accessible for you.",
+			);
+		}
+	})();
 
-	const relation = user.isSilenced
-		? note.userId !== user.id
-			? await Users.getRelation(user.id, note.userId)
-			: undefined
-		: undefined;
+	const relationPromise = (async () => {
+		if (user.isSilenced && note.userId !== user.id) {
+			const relation = await Users.getRelation(user.id, note.userId);
+			if (relation && !relation.isFollowed) {
+				throw new IdentifiableError(
+					"5ab2b45b-c2b5-0560-793d-2a670084cc92",
+					"サイレンス中はフォロワー以外にリアクション出来ません。",
+				);
+			}
+		}
+	})();
 
-	if (user.isSilenced && relation && !relation.isFollowed) {
-		throw new IdentifiableError(
-			"5ab2b45b-c2b5-0560-793d-2a670084cc92",
-			"サイレンス中はフォロワー以外にリアクション出来ません。",
-		);
-	}
+	const noteDeletedCheckPromise = (async () => {
+		if (note.deletedAt) {
+			throw new IdentifiableError(
+				"639cc3a5-fe68-b071-0c20-413c887054cd",
+				"削除された投稿に対してはリアクション出来ません。",
+			);
+		}
+	})();
 
-	if (note.deletedAt) {
-		throw new IdentifiableError(
-			"639cc3a5-fe68-b071-0c20-413c887054cd",
-			"削除された投稿に対してはリアクション出来ません。",
-		);
-	}
+	// Await all initial checks concurrently
+	await Promise.all([blockPromise, visibilityPromise, relationPromise, noteDeletedCheckPromise]);
 
 	// TODO: cache
 	try {
@@ -98,12 +106,7 @@ export default async (
 		);
 	}
 
-	let isMutedReaction:
-		| boolean
-		| {
-				muted: boolean;
-				reject?: boolean | undefined;
-		  } = false;
+	let isMutedReaction: boolean | { muted: boolean; reject?: boolean | undefined } = false;
 	// Word mute
 	const muteInfo = await UserProfiles.findOne({
 		where: {
@@ -261,11 +264,11 @@ export default async (
 		emoji:
 			emoji != null
 				? {
-						name: emoji.host
-							? `${emoji.name}@${emoji.host}`
-							: `${emoji.name}@.`,
-						url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
-				  }
+					name: emoji.host
+						? `${emoji.name}@${emoji.host}`
+						: `${emoji.name}@.`,
+					url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
+				}
 				: null,
 		userId: user.id,
 		targetUserId: note.isPublicLikeList
@@ -306,19 +309,19 @@ export default async (
 
 	if (!isMutedReaction) {
 		// Fetch watchers
-		NoteWatchings.findBy({
+		const watchers = await NoteWatchings.findBy({
 			noteId: note.id,
 			userId: Not(user.id),
-		}).then((watchers) => {
-			for (const watcher of watchers) {
-				createNotification(watcher.userId, "reaction", {
-					notifierId: user.id,
-					note: note,
-					noteId: note.id,
-					reaction: reaction,
-				});
-			}
 		});
+
+		for (const watcher of watchers) {
+			createNotification(watcher.userId, "reaction", {
+				notifierId: user.id,
+				note: note,
+				noteId: note.id,
+				reaction: reaction,
+			});
+		}
 
 		//#region deliver
 		if (

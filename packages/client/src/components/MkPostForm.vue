@@ -1715,7 +1715,7 @@ async function onPaste(ev: ClipboardEvent) {
 			});
 		} else {
 			if (referencesFlg) {
-				os.confirm({
+				os.yesno({
 					type: "info",
 					text: i18n.ts.referencesQuestion,
 				}).then((result) => {
@@ -1933,6 +1933,24 @@ async function post() {
 		!$i.blockPostNotLocalPublic
 	)
 		localOnly = true;
+
+	if (!props.renote && !quoteId && referencesFlg && referenceIds?.length === 1) {
+		try {
+			const note = await os.api("notes/show", { noteId: referenceIds[0] });
+			if (note.userId === $i.id) {
+				const { canceled } = await os.yesno({
+					type: "info",
+					text: "自身の投稿1件を参照している様です。\nこの投稿を引用に変更しますか？",
+				});
+				if (!canceled) {
+					quoteId = referenceIds[0];
+					referenceIds = [];
+				}
+			}
+		} catch (e) {
+			console.log(e);
+		}
+	}
 
 	let postData = {
 		text: processedText === "" ? undefined : processedText,

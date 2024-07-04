@@ -28,7 +28,7 @@
 						v-else-if="item.type === 'link'"
 						:to="item.to"
 						class="_button item"
-						@click="clicked(item.action, $event)"
+						@click.stop="clicked(item.action, $event)"
 						@mouseenter.passive="onItemMouseEnter(item)"
 						@mouseleave.passive="onItemMouseLeave(item)"
 					>
@@ -63,7 +63,7 @@
 						:target="item.target"
 						:download="item.download"
 						class="_button item"
-						@click="clicked(item.action, $event)"
+						@click.stop="clicked(item.action, $event)"
 						@mouseenter.passive="onItemMouseEnter(item)"
 						@mouseleave.passive="onItemMouseLeave(item)"
 					>
@@ -91,7 +91,7 @@
 						class="_button item"
 						:class="{ active: item.active }"
 						:disabled="item.active"
-						@click="clicked(item.action, $event)"
+						@click.stop="clicked(item.action, $event)"
 						@mouseenter.passive="onItemMouseEnter(item)"
 						@mouseleave.passive="onItemMouseLeave(item)"
 					>
@@ -123,7 +123,7 @@
 						class="_button item parent"
 						:class="{ childShowing: childShowingItem === item }"
 						@mouseenter="showChildren(item, $event)"
-						@click="showChildren(item, $event)"
+						@click.stop="showChildren(item, $event)"
 					>
 						<i
 							v-if="item.icon"
@@ -151,7 +151,7 @@
 						class="_button item"
 						:class="{ danger: item.danger, active: item.active }"
 						:disabled="item.active"
-						@click="clicked(item.action, $event)"
+						@click.stop="clicked(item.action, $event)"
 						@mouseenter.passive="onItemMouseEnter(item)"
 						@mouseleave.passive="onItemMouseLeave(item)"
 					>

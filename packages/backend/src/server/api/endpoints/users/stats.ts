@@ -245,7 +245,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		.cache(CACHE_TIME)
 		.getCount();
 
-	const result = await awaitAll({
+	const [ result, rankResult ] = await awaitAll([awaitAll({
 		notesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.visibility <> 'specified'")
@@ -385,9 +385,7 @@ export default define(meta, paramDef, async (ps, me) => {
 						.cache(CACHE_TIME)
 						.getCount()
 				: undefined,
-	});
-
-	const rankResult = await awaitAll({
+	}),awaitAll({
 		notesCount: Notes.createQueryBuilder("note")
 			.where("note.userId = :userId", { userId: user.id })
 			.andWhere("note.createdAt >= :borderDate", {
@@ -525,7 +523,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			})
 			.cache(CACHE_TIME)
 			.getCount(),
-	});
+	})]);
 
 	result.followingCount = user.host
 		? user.followingCount

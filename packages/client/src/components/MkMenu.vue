@@ -28,7 +28,7 @@
 						v-else-if="item.type === 'link'"
 						:to="item.to"
 						class="_button item"
-						@click.stop="clicked(item.action, $event)"
+						@click.passive="clicked(item.action, $event)"
 						@mouseenter.passive="onItemMouseEnter(item)"
 						@mouseleave.passive="onItemMouseLeave(item)"
 					>
@@ -63,7 +63,7 @@
 						:target="item.target"
 						:download="item.download"
 						class="_button item"
-						@click.stop="clicked(item.action, $event)"
+						@click="clicked(item.action, $event)"
 						@mouseenter.passive="onItemMouseEnter(item)"
 						@mouseleave.passive="onItemMouseLeave(item)"
 					>
@@ -91,7 +91,7 @@
 						class="_button item"
 						:class="{ active: item.active }"
 						:disabled="item.active"
-						@click.stop="clicked(item.action, $event)"
+						@click="clicked(item.action, $event)"
 						@mouseenter.passive="onItemMouseEnter(item)"
 						@mouseleave.passive="onItemMouseLeave(item)"
 					>
@@ -122,7 +122,7 @@
 						v-else-if="item.type === 'parent'"
 						class="_button item parent"
 						:class="{ childShowing: childShowingItem === item }"
-						@mouseenter="showChildren(item, $event)"
+						@mouseenter.passive="showChildren(item, $event)"
 						@click.stop="showChildren(item, $event)"
 					>
 						<i
@@ -151,7 +151,7 @@
 						class="_button item"
 						:class="{ danger: item.danger, active: item.active }"
 						:disabled="item.active"
-						@click.stop="clicked(item.action, $event)"
+						@click="clicked(item.action, $event)"
 						@mouseenter.passive="onItemMouseEnter(item)"
 						@mouseleave.passive="onItemMouseLeave(item)"
 					>
@@ -193,6 +193,8 @@
 					:root-element="itemsEl"
 					showing
 					@actioned="childActioned"
+					@closed="closeChild"
+
 				/>
 			</div>
 		</div>
@@ -303,6 +305,7 @@ function onItemMouseLeave(item) {
 }
 
 async function showChildren(item: MenuItem, ev: MouseEvent) {
+	if (ev.type === "mouseenter") return;
 	if (props.asDrawer) {
 		os.popupMenu(item.children, ev.currentTarget ?? ev.target);
 		close();

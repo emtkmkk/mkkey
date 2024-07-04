@@ -1,7 +1,7 @@
 <template>
 	<div v-size="{ min: [350, 500] }" class="yohlumlk"
 		:class="[
-			{ colored: defaultStore.state.showVisibilityColor },
+			{ colored: !nocolor && defaultStore.state.showVisibilityColor },
 			`v-${
 				note.visibility === 'specified' &&
 				note.ccUserIdsCount
@@ -30,6 +30,7 @@ import { defaultStore } from "@/store";
 const props = defineProps<{
 	note: misskey.entities.Note;
 	pinned?: boolean;
+	nocolor?: boolean;
 }>();
 
 const showContent = $ref(false);

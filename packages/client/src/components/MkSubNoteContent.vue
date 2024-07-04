@@ -168,7 +168,7 @@
 						class="renote"
 						@click.stop="emit('push', note.renote)"
 					>
-						<XNoteSimple :note="note.renote" />
+						<XNoteSimple :note="note.renote" nocolor />
 					</div>
 					<MkFolder
 						v-if="note.references?.length"

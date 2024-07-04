@@ -478,8 +478,8 @@
 			</div>
 		</header>
 		<div class="form" :class="{ fixed }">
-			<XNoteSimple v-if="reply" class="preview" :note="reply" />
-			<XNoteSimple v-if="renote" class="preview" :note="renote" />
+			<XNoteSimple v-if="reply" class="preview" :note="reply" nocolor />
+			<XNoteSimple v-if="renote" class="preview" :note="renote" nocolor />
 			<div v-if="quoteId" class="with-quote">
 				<i class="ph-quotes ph-bold ph-lg"></i>
 				<button

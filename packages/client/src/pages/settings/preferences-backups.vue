@@ -76,6 +76,7 @@ import { version, host } from "@/config";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { applyProfile, getSettings } from "@/scripts/backup";
 const { t, ts } = i18n;
+import FormSwitch from "@/components/form/switch.vue";
 
 useCssModule();
 

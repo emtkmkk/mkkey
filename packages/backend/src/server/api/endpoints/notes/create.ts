@@ -71,6 +71,12 @@ export const meta = {
 			id: "3ac74a84-8fd5-4bb0-870f-01804f82ce15",
 		},
 
+		cannotCreateNoChoicesPoll: {
+			message: "投票には最低でも選択肢が1つ必要です。",
+			code: "CANNOT_CREATE_NO_CHOICES_POLL",
+			id: "08a88f84-118a-80ef-eb88-e2e1983ed74d",
+		},
+
 		cannotCreateAlreadyExpiredPoll: {
 			message: "投票は既に終了しています。",
 			code: "CANNOT_CREATE_ALREADY_EXPIRED_POLL",
@@ -149,7 +155,7 @@ export const paramDef = {
 			properties: {
 				choices: {
 					type: "array",
-					minItems: 2,
+					minItems: 1,
 					maxItems: 10,
 					items: { type: "string", minLength: 1, maxLength: 50 },
 				},
@@ -359,14 +365,16 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (ps.poll) {
 			if (ps.poll.choices?.length) {
 				for (const choice of ps.poll.choices) {
+					if (!choice || (typeof choice === "string" && !choice.trim().length)) continue;
 					let _choice = choice;
 					while (choices.has(_choice)){
 						_choice += "\u200B"
 					}
-					choices.add(choice)
+					choices.add(_choice)
 				}
 			}
-			if (typeof ps.poll.expiresAt === "number") {
+			if (!choices.size) throw new ApiError(meta.errors.cannotCreateNoChoicesPoll)
+		if (typeof ps.poll.expiresAt === "number") {
 					if (ps.poll.expiresAt < Date.now()) {
 							throw new ApiError(meta.errors.cannotCreateAlreadyExpiredPoll);
 					}

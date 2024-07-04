@@ -345,7 +345,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			return reply;
 	})();
 	
-	const [visibleUsers, ccUsers, files, channel, renote, references, reply] = await Promise.all([
+	let [visibleUsers, ccUsers, files, channel, renote, references, reply] = await Promise.all([
 			visibleUsersPromise,
 			ccUsersPromise,
 			filesPromise,

@@ -534,6 +534,7 @@ resetPassword: "パスワードをリセット"
 newPasswordIs: "新しいパスワードは「{password}」です"
 reduceUiAnimation: "UIのアニメーションを減らす"
 share: "共有"
+infoAndShare: "投稿情報・共有"
 notFound: "見つかりません"
 notFoundDescription: "指定されたURLに該当するページはありませんでした。"
 uploadFolder: "デフォルトのアップロード先を指定"
@@ -1280,6 +1281,8 @@ rejectMuteReaction: "ミュートされたリアクションをされた際に�
 miniSilence: "ミニサイレンス"
 addReferences: "参照に追加"
 removeReferences: "参照を解除"
+autoSaveBackup: "自動でバックアップを保存する"
+shortNoteMenu: "短い投稿のメニューを使用する"
 
 _sensitiveMediaDetection:
   description: "機械学習を使って自動でセンシティブなメディアを検出し、モデレーションに役立てられます。サーバーの負荷が少し増えます。"

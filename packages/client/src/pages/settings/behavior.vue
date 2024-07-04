@@ -16,6 +16,12 @@
 				</option>
 				<option value="doNothing">{{ i18n.ts.doNothing }}</option>
 			</FormSelect>
+			<FormSwitch v-model="shortNoteMenu" class="_formBlock"
+				>{{ i18n.ts.shortNoteMenu
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="showReactionMenuContext" class="_formBlock"
 				>{{ i18n.ts.showReactionMenuContext
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -408,6 +414,9 @@ const noteReactionMenu = $computed(
 );
 const showReactionMenuContext = $computed(
 	defaultStore.makeGetterSetter("showReactionMenuContext")
+);
+const shortNoteMenu = $computed(
+	defaultStore.makeGetterSetter("shortNoteMenu")
 );
 async function reloadAsk() {
 	const { canceled } = await os.confirm({

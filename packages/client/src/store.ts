@@ -1468,6 +1468,16 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: {},
 			createdAt: "2024/6/24",
+		},
+		autoSaveBackup: {
+			where: "device",
+			default: true,
+			createdAt: "2024/7/4",
+		},
+		shortNoteMenu: {
+			where: "device",
+			default: false,
+			createdAt: "2024/7/4",
 		}
 	}),
 );

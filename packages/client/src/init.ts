@@ -66,7 +66,7 @@ import {
 	initializeDetectNetworkChange,
 } from "@/scripts/datasaver";
 import { acct } from "./filters/user";
-import { applyProfile, autoSave } from "./pages/settings/preferences-backups.vue";
+import { applyProfile, autoSave } from "./scripts/backup";
 
 (async () => {
 	console.info(`Calckey v${version}`);

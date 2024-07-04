@@ -66,6 +66,7 @@ import {
 	initializeDetectNetworkChange,
 } from "@/scripts/datasaver";
 import { acct } from "./filters/user";
+import { applyProfile, autoSave } from "./pages/settings/preferences-backups.vue";
 
 (async () => {
 	console.info(`Calckey v${version}`);
@@ -781,6 +782,54 @@ import { acct } from "./filters/user";
 						: defaultStore.state.defaultNoteLocalAndFollower,
 				});
 				localStorage.removeItem("sleepCancel");
+			}
+
+			const lastBackup = (await get("lastBackup")) ? Number.parseInt(await get("lastBackup")) : 0;
+			if (
+				defaultStore.state.autoSaveBackup &&
+				Date.now() - lastBackup > (70 * 60 * 60 * 1000)
+			) {
+				if (lastBackup === 0) {
+					try {
+						const profiles = (await api("i/registry/get-all", { scope: ["clientPreferencesProfiles"] })) || {}
+						if (Object.values(profiles).some((x) => x.name === `AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`)){
+							const entry = Object.entries(profiles).find(([key, value]) => value.name === `AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`);
+							if (entry) {
+								const [key, value] = entry;
+								const { canceled } = await yesno({
+									type: "question",
+									text: "サーバ上に設定の自動保存が存在する様です。\n設定を復元しますか？",
+								});
+								if (!canceled) {
+									applyProfile(key)
+									await set("lastBackup", Date.now())
+								} else {
+									defaultStore.set("autoSaveBackup", false)
+								}
+							}
+						} else {
+							if ($i?.createdAt && Date.now() - Date.parse($i?.createdAt) > (70 * 60 * 60 * 1000)) {
+								try {
+									await autoSave(true)
+									await set("lastBackup", Date.now())
+								} catch(e) {
+									console.log(e)
+								}
+								toast("端末設定を自動保存しました！")
+							}
+						}
+					} catch (e) {
+						console.log(e)
+					}
+				} else {
+					try {
+						await autoSave(lastBackup <= 1)
+						await set("lastBackup", Date.now())
+					} catch(e) {
+						console.log(e)
+					}
+					toast("端末設定を自動保存しました！")
+				}
 			}
 		});
 

@@ -8,6 +8,11 @@
 				ts._preferencesBackups.loadFile
 			}}</MkButton>
 		</div>
+		<div>
+			<FormSwitch v-model="autoSaveBackup" class="_formBlock">{{
+				i18n.ts.autoSaveBackup
+			}}</FormSwitch>
+		</div>
 
 		<FormSection>
 			<template #label>{{ ts._preferencesBackups.list }}</template>
@@ -72,6 +77,10 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 const { t, ts } = i18n;
 
 useCssModule();
+
+const autoSaveBackup = $computed(
+	defaultStore.makeGetterSetter("autoSaveBackup")
+);
 
 const defaultStoreSaveKeys: (keyof (typeof defaultStore)["state"])[] = [
 	"menu",
@@ -305,13 +314,13 @@ function validate(profile: unknown): void {
 
 function getSettings(deviceOnly): Profile["settings"] {
 	const hot = {} as Record<keyof typeof defaultStoreSaveKeys, unknown>;
-	for (const key of defaultStoreSaveKeys) {
+	for (const key of Object.keys(defaultStore.def) as (keyof typeof defaultStore.def)[]) {
 		if (deviceOnly && defaultStore.def?.[key]?.where !== "device") continue;
 		hot[key] = defaultStore.state[key];
 	}
 
 	const cold = {} as Record<keyof typeof coldDeviceStorageSaveKeys, unknown>;
-	for (const key of coldDeviceStorageSaveKeys) {
+	for (const key of Object.keys(ColdDeviceStorage.default) as (keyof typeof ColdDeviceStorage.default)[]) {
 		cold[key] = ColdDeviceStorage.get(key);
 	}
 
@@ -356,6 +365,41 @@ async function saveNew(): Promise<void> {
 		settings: getSettings(cancel2),
 	};
 	await os.apiWithDialog("i/registry/set", {
+		scope,
+		key: id,
+		value: profile,
+	});
+}
+
+
+export async function autoSave(blockUpdate = false): Promise<void> {
+	if (!profiles) return;
+
+	let id = uuid();
+	let name: Profile["name"] = `AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`
+	let createdAt: Profile["createdAt"] = new Date().toISOString();
+	let updatedAt: Profile["updatedAt"] = null;
+
+	if (Object.values(profiles).some((x) => x.name === name)) {
+		if (blockUpdate) return;
+		const entry = Object.entries(profiles).find(([key, value]) => value.name === name);
+		if (entry) {
+			const [key, value] = entry;
+			id = key;
+			name = value.name;
+			createdAt = value.createdAt;
+			updatedAt = new Date().toISOString()
+		}
+	}
+	const profile: Profile = {
+		name,
+		createdAt,
+		updatedAt,
+		misskeyVersion: version,
+		host,
+		settings: getSettings(true),
+	};
+	await os.api("i/registry/set", {
 		scope,
 		key: id,
 		value: profile,
@@ -410,7 +454,7 @@ function loadFile(): void {
 	input.click();
 }
 
-async function applyProfile(id: string): Promise<void> {
+export async function applyProfile(id: string): Promise<void> {
 	if (!profiles) return;
 
 	const profile = profiles[id];

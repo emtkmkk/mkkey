@@ -1,5 +1,15 @@
 <template>
-	<div v-size="{ min: [350, 500] }" class="yohlumlk">
+	<div v-size="{ min: [350, 500] }" class="yohlumlk"
+		:class="[
+			{ colored: defaultStore.state.showVisibilityColor },
+			`v-${
+				note.visibility === 'specified' &&
+				note.ccUserIdsCount
+					? 'circle'
+					: note.visibility
+			}`,
+			{ localOnly: note.localOnly },
+		]">
 		<MkAvatar class="avatar" :user="note.user" />
 		<div class="main">
 			<XNoteHeader class="header" :note="note" :mini="true" />
@@ -15,6 +25,7 @@ import {} from "vue";
 import * as misskey from "calckey-js";
 import XNoteHeader from "@/components/MkNoteHeader.vue";
 import MkSubNoteContent from "@/components/MkSubNoteContent.vue";
+import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	note: misskey.entities.Note;

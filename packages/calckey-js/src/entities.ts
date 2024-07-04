@@ -155,6 +155,7 @@ export type Note = {
 	fileIds: DriveFile["id"][];
 	visibility: "public" | "home" | "followers" | "specified";
 	visibleUserIds?: User["id"][];
+	ccUserIdsCount?: number;
 	localOnly?: boolean;
 	myReaction?: string;
 	reactions: Record<string, number>;

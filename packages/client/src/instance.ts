@@ -19,7 +19,7 @@ export const instance: Misskey.entities.InstanceMetadata = reactive(
 		  },
 );
 
-export let followCategories = $ref([]);
+export let followCategories = $ref(localStorage.getItem("followCategories") ?? []);
 
 stream.on("emojiAdded", (emojiData) => {
 	instance.emojis = [emojiData.emoji, ...instance.emojis];
@@ -43,7 +43,10 @@ stream.on("emojiDeleted", (emojiData) => {
 });
 
 export async function emojiLoad() {
-	await fetchCustomCategory()
+	if (!localStorage.getItem("followCategoriesTime") || Date.now() - localStorage.getItem("followCategoriesTime") > 60 * 60 * 1000) {
+		await fetchCustomCategory()
+		localStorage.setItem("followCategoriesTime", Date.now())
+	}
 	if (!instance.remoteEmojiMode) {
 		const remoteEmoji = await get("remoteEmojiData");
 
@@ -63,6 +66,7 @@ export async function fetchCustomCategory() {
 	} else {
 		followCategories = []
 	}
+	localStorage.setItem("followCategories", followCategories)
 }
 
 export async function fetchInstance() {

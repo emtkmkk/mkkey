@@ -69,7 +69,7 @@ function chosen(emoji: any) {
 	if (
 		(defaultStore.state.notCloseEmojiPicker === false ||
 		props.asReactionPicker) &&
-		!afterChosenNotClose
+		!props.afterChosenNotClose
 	) {
 		modal.value?.close();
 	}

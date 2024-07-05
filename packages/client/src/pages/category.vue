@@ -184,7 +184,7 @@ import copyToClipboard from "@/scripts/copy-to-clipboard";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { shareAvailable } from "@/scripts/share-available";
 import JSON5 from "json5";
-import { instance } from "@/instance";
+import { fetchCustomCategory } from "@/instance";
 import { defaultStore } from "@/store";
 
 const props = defineProps<{
@@ -227,13 +227,13 @@ function copyUrl() {
 
 function follow() {
 	defaultStore.set("followCategories", [...defaultStore.state.followCategories, category.id]);
-	instance.fetchCustomCategory()
+	fetchCustomCategory()
 	os.success();
 }
 
 function unFollow() {
 	defaultStore.set("followCategories", defaultStore.state.followCategories.filter((x) => x.id !== category.id));
-	instance.fetchCustomCategory()
+	fetchCustomCategory()
 	os.success();
 }
 
@@ -248,7 +248,7 @@ function downloadCategory() {
 }
 const exportEmojiDecks = (ev) => {
 	const a = document.createElement("a");
-	a.href = href;
+	a.href = downloadCategory();
 	a.download = `${name}.json`;
 	a.click();
 };

@@ -786,9 +786,9 @@ import { applyProfile, autoSave } from "./scripts/backup";
 			if (!defaultStore.state.pickerConfigMigration) {
 				if (defaultStore.state.reactionPickerSize < 0) defaultStore.set("reactionPickerVAlign", 0)
 				if (!defaultStore.isDefault("reactionPickerWidth")) defaultStore.set("reactionPickerWidth", defaultStore.state.reactionPickerWidth + 4)
-				if (!defaultStore.isDefault("reactionPickerHeight")) defaultStore.set("reactionPickerHeight", defaultStore.def.reactionPickerHeight.default)
 				defaultStore.set("pickerConfigMigration", true)
 			}
+			if (defaultStore.state.reactionPickerHeight　< 10) defaultStore.set("reactionPickerHeight", 65)
 			if ($i) {
 				const lastBackupData = await get("lastBackup")
 				if (!lastBackupData) await set("lastBackup", {});

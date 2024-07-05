@@ -195,6 +195,11 @@ const props = defineProps<{
 let category = $ref(null);
 let bgImg = $ref(null);
 let error = $ref(null);
+
+const followCategories = $computed(
+	defaultStore.makeGetterSetter("followCategories")
+);
+	
 const otherPostsPagination = {
 	endpoint: "users/categories" as const,
 	limit: 6,
@@ -226,13 +231,13 @@ function copyUrl() {
 }
 
 function follow() {
-	defaultStore.set("followCategories", [...defaultStore.state.followCategories, category.id]);
+	followCategories = [...defaultStore.state.followCategories, category.id];
 	fetchCustomCategory()
 	os.success();
 }
 
 function unFollow() {
-	defaultStore.set("followCategories", defaultStore.state.followCategories.filter((x) => x.id !== category.id));
+	followCategories = defaultStore.state.followCategories.filter((x) => x.id !== category.id);
 	fetchCustomCategory()
 	os.success();
 }
@@ -249,7 +254,7 @@ function downloadCategory() {
 const exportEmojiDecks = (ev) => {
 	const a = document.createElement("a");
 	a.href = downloadCategory();
-	a.download = `${name}.json`;
+	a.download = `${category.id}.json`;
 	a.click();
 };
 
@@ -265,7 +270,7 @@ function share() {
 	navigator.share({
 		title: category.title ?? category.name,
 		text: category.summary,
-		url: `${url}/@${category.user.username}/categories/${category.name}`,
+		url: `${url}/@${category.user.username}/categories/${category.id}`,
 	});
 }
 
@@ -273,7 +278,7 @@ function shareWithNote() {
 	os.post({
 		initialText: `${category.title || category.name} ${url}/@${
 			category.user.username
-		}/categories/${category.name}`,
+		}/categories/${category.id}`,
 		instant: true,
 	});
 }

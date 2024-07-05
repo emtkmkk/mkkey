@@ -219,7 +219,7 @@ function fetchCategory() {
 
 function copyUrl() {
 	copyToClipboard(
-		`${url}/@${category.user.username}/categories/${category.name}`,
+		`${url}/@${category.user.username}/categories/${category.id}`,
 	);
 	os.success();
 }

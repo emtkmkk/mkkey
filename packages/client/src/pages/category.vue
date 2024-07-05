@@ -237,7 +237,7 @@ function follow() {
 }
 
 function unFollow() {
-	followCategories = defaultStore.state.followCategories.filter((x) => x.id !== category.id);
+	followCategories = defaultStore.state.followCategories.filter((x) => x !== category.id);
 	fetchCustomCategory()
 	os.success();
 }

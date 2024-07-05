@@ -21,6 +21,7 @@
 					<XClips v-else-if="tab === 'clips'" :user="user" />
 					<XPages v-else-if="tab === 'pages'" :user="user" />
 					<XGallery v-else-if="tab === 'gallery'" :user="user" />
+					<XCategories v-else-if="tab === 'category'" :user="user" />
 				</div>
 				<MkError v-else-if="error" @retry="fetchUser()" />
 				<MkLoading v-else />
@@ -50,6 +51,7 @@ const XReactions = defineAsyncComponent(() => import("./reactions.vue"));
 const XClips = defineAsyncComponent(() => import("./clips.vue"));
 const XPages = defineAsyncComponent(() => import("./pages.vue"));
 const XGallery = defineAsyncComponent(() => import("./gallery.vue"));
+const XCategories = defineAsyncComponent(() => import("./categories.vue"));
 
 const props = withDefaults(
 	defineProps<{
@@ -151,6 +153,15 @@ const headerTabs = $computed(() =>
 											key: "gallery",
 											title: i18n.ts.gallery,
 											icon: "ph-image-square ph-bold ph-lg",
+										},
+								  ]
+								: []),
+							...(user.hasCategories
+								? [
+										{
+											key: "category",
+											title: i18n.ts.category,
+											icon: "ph-folder-user ph-bold ph-lg",
 										},
 								  ]
 								: []),

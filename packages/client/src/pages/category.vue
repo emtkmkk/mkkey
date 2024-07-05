@@ -1,0 +1,444 @@
+<template>
+	<MkStickyContainer>
+		<template #header
+			><MkPageHeader
+				:actions="headerActions"
+				:tabs="headerTabs"
+				:display-back-button="true"
+		/></template>
+		<MkSpacer :content-max="800">
+			<transition
+				:name="$store.state.animation ? 'fade' : ''"
+				mode="out-in"
+			>
+				<div
+					v-if="category"
+					:key="category.id"
+					v-size="{ max: [450] }"
+					class="xcukqgmh"
+				>
+					<div class="footer">
+						<div>
+							<i class="ph-alarm ph-bold" />
+							{{ i18n.ts.createdAt }}:
+							<MkTime :time="category.createdAt" mode="detail" />
+						</div>
+						<div v-if="category.createdAt != category.updatedAt">
+							<i class="ph-alarm ph-bold"></i>
+							{{ i18n.ts.updatedAt }}:
+							<MkTime :time="category.updatedAt" mode="detail" />
+						</div>
+					</div>
+					<div class="_block main">
+						<div class="banner">
+							<div class="banner-image">
+								<div class="header">
+									<h1>{{ category.title }}</h1>
+								</div>
+								<div class="menu-actions">
+									<button
+										v-tooltip="i18n.ts.copyUrl"
+										@click="copyUrl"
+										class="menu _button"
+									>
+										<i
+											class="ph-link-simple ph-bold ph-lg"
+										/>
+									</button>
+									<button
+										v-tooltip="i18n.ts.download"
+										@click="exportEmojiDecks($event)"
+										class="menu _button"
+									>
+										<i
+											class="ph-download-simple ph-bold ph-lg"
+										/>
+									</button>
+									<button
+										v-if="!defaultStore.state.followCategories.includes(category.id)"
+										v-tooltip="i18n.ts.follow"
+										@click="follow"
+										class="menu _button"
+									>
+										<i
+											class="ph-plus ph-bold ph-lg"
+										/>
+									</button>
+									<button
+										v-else
+										v-tooltip="i18n.ts.unfollow"
+										@click="unfollow"
+										class="menu _button"
+									>
+										<i
+											class="ph-minus ph-bold ph-lg"
+										/>
+									</button>
+									<template
+										v-if="$i && $i.id === category.userId"
+									>
+										<MkA
+											v-tooltip="i18n.ts._categories.editCategory"
+											class="menu _button"
+											:to="`/categories/edit/${category.id}`"
+											style="
+												transform: translateY(0.125rem);
+											"
+											><i class="ph-pencil ph-bold ph-lg"
+										/></MkA>
+									</template>
+								</div>
+							</div>
+						</div>
+						<div class="content">
+							<XCategory :category="category" />
+						</div>
+						<div class="actions">
+							<div class="other">
+								<button
+									v-tooltip="i18n.ts.shareWithNote"
+									v-click-anime
+									class="_button"
+									@click="shareWithNote"
+								>
+									<i
+										class="ph-repeat ph-bold ph-lg ph-fw ph-lg"
+									></i>
+								</button>
+								<button
+									v-if="shareAvailable()"
+									v-tooltip="i18n.ts.share"
+									v-click-anime
+									class="_button"
+									@click="share"
+								>
+									<i
+										class="ph-share-network ph-bold ph-lg ph-fw ph-lg"
+									></i>
+								</button>
+							</div>
+							<div class="user">
+								<MkAvatar :user="category.user" class="avatar" />
+								<div class="name">
+									<MkUserName
+										:user="category.user"
+										style="display: block"
+									/>
+									<MkAcct :user="category.user" />
+								</div>
+								<MkFollowButton
+									v-if="!$i || $i.id != category.user.id"
+									:user="category.user"
+									:inline="true"
+									:transparent="false"
+									:full="true"
+									class="koudoku"
+									is-following-hidden
+								/>
+							</div>
+						</div>
+					</div>
+					<MkAd :prefer="['inline', 'inline-big']" />
+					<MkContainer
+						:max-height="300"
+						:foldable="true"
+						:expanded="false"
+						class="other"
+					>
+						<template #header
+							><i class="ph-clock ph-bold ph-lg"></i>
+							{{ i18n.ts.recentPosts }}</template
+						>
+						<MkPagination
+							v-slot="{ items }"
+							:pagination="otherPostsPagination"
+						>
+							<MkCategoryPreview
+								v-for="category in items"
+								:key="category.id"
+								:category="category"
+								class="_gap"
+							/>
+						</MkPagination>
+					</MkContainer>
+				</div>
+				<MkError v-else-if="error" @retry="fetchCategory()" />
+				<MkLoading v-else />
+			</transition>
+		</MkSpacer>
+	</MkStickyContainer>
+</template>
+
+<script lang="ts" setup>
+import { computed, watch } from "vue";
+import XCategory from "@/components/category.vue";
+import MkButton from "@/components/MkButton.vue";
+import * as os from "@/os";
+import { url } from "@/config";
+import MkFollowButton from "@/components/MkFollowButton.vue";
+import MkContainer from "@/components/MkContainer.vue";
+import MkPagination from "@/components/MkPagination.vue";
+import MkCategoryPreview from "@/components/MkCategoryPreview.vue";
+import { i18n } from "@/i18n";
+import copyToClipboard from "@/scripts/copy-to-clipboard";
+import { definePageMetadata } from "@/scripts/page-metadata";
+import { shareAvailable } from "@/scripts/share-available";
+import JSON5 from "json5";
+import { instance } from "@/instance";
+
+const props = defineProps<{
+	categoryId: string;
+	username: string;
+}>();
+
+let category = $ref(null);
+let bgImg = $ref(null);
+let error = $ref(null);
+const otherPostsPagination = {
+	endpoint: "users/categories" as const,
+	limit: 6,
+	params: computed(() => ({
+		userId: category.user.id,
+	})),
+};
+const path = $computed(() => `${props.username}/${props.categoryId}`);
+
+function fetchCategory() {
+	category = null;
+	os.api("categories/show", {
+		categoryId: props.categoryId,
+	})
+		.then((_category) => {
+			category = _category;
+			bgImg = getBgImg();
+		})
+		.catch((err) => {
+			error = err;
+		});
+}
+
+function copyUrl() {
+	copyToClipboard(
+		`${url}/@${category.user.username}/categories/${category.name}`,
+	);
+	os.success();
+}
+
+function follow() {
+	defaultStore.set("followCategories", [...defaultStore.state.followCategories, category.id]);
+	instance.fetchCustomCategory()
+	os.success();
+}
+
+function unFollow() {
+	defaultStore.set("followCategories", defaultStore.state.followCategories.filter((x) => x.id !== category.id));
+	instance.fetchCustomCategory()
+	os.success();
+}
+
+function downloadCategory() {
+	const href = $computed(() => {
+		return URL.createObjectURL(
+			new Blob([JSON5.stringify(category.contents, null, 2)], {
+				type: "application/json",
+			}),
+		);
+	});
+}
+const exportEmojiDecks = (ev) => {
+	const a = document.createElement("a");
+	a.href = href;
+	a.download = `${name}.json`;
+	a.click();
+};
+
+function getBgImg(): string {
+	if (category.eyeCatchingImage != null) {
+		return `url(${category.eyeCatchingImage.url})`;
+	} else {
+		return "linear-gradient(to bottom right, #31748f, #9ccfd8)";
+	}
+}
+
+function share() {
+	navigator.share({
+		title: category.title ?? category.name,
+		text: category.summary,
+		url: `${url}/@${category.user.username}/categories/${category.name}`,
+	});
+}
+
+function shareWithNote() {
+	os.post({
+		initialText: `${category.title || category.name} ${url}/@${
+			category.user.username
+		}/categories/${category.name}`,
+		instant: true,
+	});
+}
+
+watch(() => path, fetchCategory, { immediate: true });
+
+const headerActions = $computed(() => []);
+
+const headerTabs = $computed(() => []);
+
+definePageMetadata(
+	computed(() =>
+		category
+			? {
+					title: computed(() => category.title || category.name),
+					avatar: category.user,
+					path: `/@${category.user.username}/categories/${category.name}`,
+					share: {
+						title: category.title || category.name,
+						text: category.summary,
+					},
+				}
+			: null,
+	),
+);
+</script>
+
+<style lang="scss" scoped>
+.fade-enter-active,
+.fade-leave-active {
+	transition: opacity 0.125s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+	opacity: 0;
+}
+
+.xcukqgmh {
+	> .main {
+		> * {
+			margin: 1rem;
+		}
+
+		> .banner {
+			margin: 0rem !important;
+
+			> .banner-image {
+				// TODO: 良い感じのアスペクト比で表示
+				display: block;
+				width: 100%;
+				height: 9.375rem;
+				background-position: center;
+				background-size: cover;
+				background-image: v-bind("bgImg");
+
+				> .header {
+					padding: 1rem;
+
+					> h1 {
+						margin: 0;
+						color: white;
+						text-shadow: 0 0 0.5rem var(--shadow);
+					}
+				}
+
+				> .menu-actions {
+					-webkit-backdrop-filter: var(--blur, blur(8px));
+					backdrop-filter: var(--blur, blur(8px));
+					background: rgba(0, 0, 0, 0.2);
+					padding: 0.5rem;
+					border-radius: 1.5rem;
+					width: fit-content;
+					position: relative;
+					top: -0.625rem;
+					left: 1rem;
+
+					> .menu {
+						vertical-align: bottom;
+						height: 1.9375rem;
+						width: 1.9375rem;
+						color: #fff;
+						text-shadow: 0 0 0.5rem var(--shadow);
+						font-size: 1rem;
+					}
+
+					> .koudoku {
+						margin-left: 0.25rem;
+						vertical-align: bottom;
+					}
+				}
+			}
+		}
+
+		> .content {
+			padding: 1rem 0;
+		}
+
+		> .actions {
+			display: flex;
+			align-items: center;
+			margin-top: 1rem;
+			padding: 1rem 0;
+			border-top: solid 0.03125rem var(--divider);
+
+			> .like {
+				> .button {
+					--accent: #eb6f92;
+					--X8: #eb6f92;
+					--buttonBg: rgb(216 71 106 / 5%);
+					--buttonHoverBg: rgb(216 71 106 / 10%);
+					color: #eb6f92;
+
+					::v-deep(.count) {
+						margin-left: 0.5em;
+					}
+				}
+			}
+
+			> .other {
+				> button {
+					padding: 0.125rem;
+					margin: 0 0.5rem;
+
+					&:hover {
+						color: var(--fgHighlighted);
+					}
+				}
+			}
+
+			> .user {
+				margin-left: auto;
+				display: flex;
+				align-items: center;
+
+				> .avatar {
+					width: 2.5rem;
+					height: 2.5rem;
+				}
+
+				> .name {
+					margin: 0 0 0 0.75rem;
+					font-size: 90%;
+				}
+
+				> .koudoku {
+					margin-left: auto;
+					margin: 1rem;
+				}
+			}
+		}
+
+		> .links {
+			margin-top: 1rem;
+			padding: 0.875rem 0;
+			border-top: solid 0.03125rem var(--divider);
+
+			> .link {
+				margin-right: 2em;
+			}
+		}
+	}
+
+	> .footer {
+		margin: var(--margin) 0 var(--margin) 0;
+		font-size: 85%;
+		opacity: 0.75;
+	}
+}
+</style>

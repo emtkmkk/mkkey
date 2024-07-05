@@ -53,6 +53,7 @@ import {
 	UserSecurityKeys,
 	UserMemos,
 	FollowBlockings,
+	EmojiCustomCategories,
 } from "../index.js";
 import type { Instance } from "../entities/instance.js";
 import { resolveUser } from "@/remote/resolve-user.js";
@@ -757,6 +758,12 @@ export const UserRepository = db.getRepository(User).extend({
 									where: { userId: user.id },
 									take: 1,
 							  }).then((count) => count > 0)
+							: false,
+						hasCategories: !user.host
+							? EmojiCustomCategories.count({
+									where: { userId: user.id },
+									take: 1,
+								}).then((count) => count > 0)
 							: false,
 						pinnedNoteIds: pins.map((pin) => pin.noteId),
 						pinnedNotes: Notes.packMany(

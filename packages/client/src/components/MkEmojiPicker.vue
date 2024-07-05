@@ -486,6 +486,15 @@
 				>
 					<header>{{ i18n.ts.customEmojis }}</header>
 					<XSection
+						v-once
+						v-for="category in instance.followCategories"
+						:key="'custom:' + category.id"
+						:initial-shown="false"
+						:emojis="category.contents"
+						@chosen="chosen"
+						>{{ category.name }}</XSection
+					>
+					<XSection
 						key="custom:recentlyAddEmojis"
 						:initial-shown="false"
 						:emojis="

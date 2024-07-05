@@ -202,6 +202,7 @@ import * as ep___i_importUserLists from "./endpoints/i/import-user-lists.js";
 import * as ep___i_notifications from "./endpoints/i/notifications.js";
 import * as ep___i_pageLikes from "./endpoints/i/page-likes.js";
 import * as ep___i_pages from "./endpoints/i/pages.js";
+import * as ep___i_categories from "./endpoints/i/categories.js";
 import * as ep___i_pin from "./endpoints/i/pin.js";
 import * as ep___i_readAllMessagingMessages from "./endpoints/i/read-all-messaging-messages.js";
 import * as ep___i_readAllUnreadNotes from "./endpoints/i/read-all-unread-notes.js";
@@ -290,6 +291,11 @@ import * as ep___pages_like from "./endpoints/pages/like.js";
 import * as ep___pages_show from "./endpoints/pages/show.js";
 import * as ep___pages_unlike from "./endpoints/pages/unlike.js";
 import * as ep___pages_update from "./endpoints/pages/update.js";
+import * as ep___categories_create from "./endpoints/categories/create.js";
+import * as ep___categories_delete from "./endpoints/categories/delete.js";
+import * as ep___categories_featured from "./endpoints/categories/featured.js";
+import * as ep___categories_show from "./endpoints/categories/show.js";
+import * as ep___categories_update from "./endpoints/categories/update.js";
 import * as ep___ping from "./endpoints/ping.js";
 import * as ep___recommendedInstances from "./endpoints/recommended-instances.js";
 import * as ep___pinnedUsers from "./endpoints/pinned-users.js";
@@ -339,6 +345,7 @@ import * as ep___users_lists_update from "./endpoints/users/lists/update.js";
 import * as ep___users_featuredNotes from "./endpoints/users/featured-notes.js";
 import * as ep___users_notes from "./endpoints/users/notes.js";
 import * as ep___users_pages from "./endpoints/users/pages.js";
+import * as ep___users_categories from "./endpoints/users/categories.js";
 import * as ep___users_reactions from "./endpoints/users/reactions.js";
 import * as ep___users_recommendation from "./endpoints/users/recommendation.js";
 import * as ep___users_relation from "./endpoints/users/relation.js";
@@ -567,6 +574,7 @@ const eps = [
 	["i/notifications", ep___i_notifications],
 	["i/page-likes", ep___i_pageLikes],
 	["i/pages", ep___i_pages],
+	["i/categories", ep___i_categories],
 	["i/pin", ep___i_pin],
 	["i/read-all-messaging-messages", ep___i_readAllMessagingMessages],
 	["i/read-all-unread-notes", ep___i_readAllUnreadNotes],
@@ -648,6 +656,11 @@ const eps = [
 	["pages/show", ep___pages_show],
 	["pages/unlike", ep___pages_unlike],
 	["pages/update", ep___pages_update],
+	["categories/create", ep___categories_create],
+	["categories/delete", ep___categories_delete],
+	["categories/featured", ep___categories_featured],
+	["categories/show", ep___categories_show],
+	["categories/update", ep___categories_update],
 	["ping", ep___ping],
 	["pinned-users", ep___pinnedUsers],
 	["recommended-instances", ep___recommendedInstances],
@@ -703,6 +716,7 @@ const eps = [
 	["users/featured-notes", ep___users_featuredNotes],
 	["users/notes", ep___users_notes],
 	["users/pages", ep___users_pages],
+	["users/categories", ep___users_categories],
 	["users/reactions", ep___users_reactions],
 	["users/recommendation", ep___users_recommendation],
 	["users/relation", ep___users_relation],

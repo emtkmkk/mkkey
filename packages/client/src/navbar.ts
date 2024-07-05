@@ -115,6 +115,11 @@ export const navbarItemDef = reactive({
 		show: computed(() => $i != null),
 		to: "/my/clips",
 	},
+	categories: {
+		title: "categories",
+		icon: "ph-folder-user ph-bold ph-lg",
+		to: "/categories",
+	},
 	channels: {
 		title: "channel",
 		icon: "ph-television ph-bold ph-lg",

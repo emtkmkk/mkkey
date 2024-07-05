@@ -3,6 +3,7 @@ import { api } from "./os";
 import { stream } from "@/stream";
 import type * as Misskey from "calckey-js";
 import { get, set } from "./scripts/idb-proxy";
+import { defaultStore } from "./store";
 
 // TODO: 他のタブと永続化されたstateを同期
 
@@ -17,6 +18,8 @@ export const instance: Misskey.entities.InstanceMetadata = reactive(
 				// TODO: set default values
 		  },
 );
+
+export let followCategories = $ref([]);
 
 stream.on("emojiAdded", (emojiData) => {
 	instance.emojis = [emojiData.emoji, ...instance.emojis];
@@ -40,6 +43,7 @@ stream.on("emojiDeleted", (emojiData) => {
 });
 
 export async function emojiLoad() {
+	await fetchCustomCategory()
 	if (!instance.remoteEmojiMode) {
 		const remoteEmoji = await get("remoteEmojiData");
 
@@ -48,6 +52,14 @@ export async function emojiLoad() {
 				instance[k] = v;
 			}
 		}
+	}
+}
+
+export async function fetchCustomCategory() {
+	if (defaultStore.state.followCategories?.length) {
+		followCategories = await api("categories/show", {
+			categoryId: defaultStore.state.followCategories
+		});
 	}
 }
 

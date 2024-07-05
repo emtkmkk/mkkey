@@ -33,6 +33,10 @@ export const routes = [
 		component: page(() => import("./pages/page.vue")),
 	},
 	{
+		path: "/@:username/categories/:categoryName",
+		component: page(() => import("./pages/category.vue")),
+	},
+	{
 		path: "/@:acct/following",
 		component: page(() => import("./pages/user/following.vue")),
 	},
@@ -431,6 +435,20 @@ export const routes = [
 	{
 		path: "/pages",
 		component: page(() => import("./pages/pages.vue")),
+	},
+	{
+		path: "/categories",
+		component: page(() => import("./pages/categories.vue")),
+	},
+	{
+		path: "/categories/edit/:initCategoryId",
+		component: page(() => import("./pages/category/edit.vue")),
+		loginRequired: true,
+	},
+	{
+		path: "/categories/new",
+		component: page(() => import("./pages/category/edit.vue")),
+		loginRequired: true,
 	},
 	{
 		path: "/gallery/:postId/edit",

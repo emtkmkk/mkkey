@@ -167,6 +167,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import FormRadios from "@/components/form/radios.vue";
 import { $i } from "@/account";
 import { instance } from "@/instance";
+import { defaultStore } from "@/store";
 
 const XDraggable = defineAsyncComponent(() =>
 	import("vuedraggable").then((x) => x.default)
@@ -186,7 +187,7 @@ let categoryId = $ref(null);
 let currentName = $ref(null);
 let title = $ref("");
 let summary = $ref(null);
-let name = $ref(Date.now().toString());
+let name = $ref(null);
 let eyeCatchingImage = $ref(null);
 let eyeCatchingImageId = $ref(null);
 let contents = $ref([]);
@@ -452,6 +453,21 @@ definePageMetadata(
 </script>
 
 <style lang="scss" scoped>
+.zoaiodol {
+	padding: 0.75rem;
+	font-size: 1.1em;
+
+	> .item {
+		display: inline-block;
+		padding: 0.5rem;
+		cursor: move;
+	}
+
+	> .add {
+		display: inline-block;
+		padding: 0.5rem;
+	}
+}
 .jqqmcavi {
 	> .button {
 		& + .button {

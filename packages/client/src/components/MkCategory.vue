@@ -63,6 +63,7 @@ export default defineComponent({
 	}
 }
 .emojis {
+	  $pad: 0.5rem;
 		height: 100%;
 		overflow-y: auto;
 		overflow-x: hidden;

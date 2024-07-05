@@ -236,7 +236,7 @@ function follow() {
 	os.success();
 }
 
-function unFollow() {
+function unfollow() {
 	followCategories = followCategories.filter((x) => x !== category.id);
 	fetchCustomCategory()
 	os.success();

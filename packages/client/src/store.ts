@@ -743,15 +743,29 @@ export const defaultStore = markRaw(
 			default: 3,
 			page: "reaction",
 		},
+		reactionPickerVAlign: {
+			where: "device",
+			default: -4,
+			page: "reaction",
+		},
 		reactionPickerWidth: {
 			where: "device",
-			default: 3,
+			default: 7,
+			page: "reaction",
+		},
+		reactionPickerAllWidth: {
+			where: "device",
+			default: 95,
 			page: "reaction",
 		},
 		reactionPickerHeight: {
 			where: "device",
-			default: 3,
+			default: 90,
 			page: "reaction",
+		},
+		pickerConfigMigration: {
+			where: "device",
+			default: false,
 		},
 		usePickerSizePostForm: {
 			where: "device",

@@ -652,61 +652,81 @@
 				</FormRadios>
 			</FormSection>
 
-			<FormRadios v-model="reactionPickerSize" class="_formBlock">
-				<template #label>{{ i18n.ts.size }}</template>
-				<option :value="-6">{{ i18n.ts.small }}-7</option>
-				<option :value="-5">{{ i18n.ts.small }}-6</option>
-				<option :value="-4">{{ i18n.ts.small }}-5</option>
-				<option :value="-3">{{ i18n.ts.small }}-4</option>
-				<option :value="-2">{{ i18n.ts.small }}-3</option>
-				<option :value="-1">{{ i18n.ts.small }}-2</option>
-				<option :value="0">{{ i18n.ts.small }}-1</option>
-				<option :value="1">{{ i18n.ts.small }}</option>
-				<option :value="2">{{ i18n.ts.medium }}</option>
-				<option :value="3">{{ i18n.ts.large }}</option>
-				<option :value="4">{{ i18n.ts.large }}+1</option>
-				<option :value="5">{{ i18n.ts.large }}+2</option>
-				<option :value="6">{{ i18n.ts.large }}+3</option>
-				<option :value="7">{{ i18n.ts.large }}+4</option>
-				<option :value="8">{{ i18n.ts.large }}+5</option>
-				<option :value="9">{{ i18n.ts.large }}+6</option>
-			</FormRadios>
-			<FormRadios v-model="reactionPickerWidth" class="_formBlock">
-				<template #label>{{ i18n.ts.numberOfColumn }}</template>
-				<option :value="-3">1</option>
-				<option :value="-2">2</option>
-				<option :value="-1">3</option>
-				<option :value="0">4</option>
-				<option :value="1">5</option>
-				<option :value="2">6</option>
-				<option :value="3">7</option>
-				<option :value="4">8</option>
-				<option :value="5">9</option>
-				<option :value="6">10</option>
-				<option :value="7">11</option>
-				<option :value="8">12</option>
-				<option :value="9">13</option>
-				<option :value="10">14</option>
-				<option :value="11">15</option>
-				<option :value="12">16</option>
-				<option :value="13">17</option>
-				<option :value="14">18</option>
-				<option :value="15">19</option>
-				<option :value="16">20</option>
-			</FormRadios>
-			<FormRadios v-model="reactionPickerHeight" class="_formBlock">
-				<template #label>{{ i18n.ts.height }}</template>
-				<option :value="1">{{ i18n.ts.small }}</option>
-				<option :value="2">{{ i18n.ts.medium }}</option>
-				<option :value="3">{{ i18n.ts.large }}</option>
-				<option :value="4">{{ i18n.ts.large }}+1</option>
-				<option :value="5">{{ i18n.ts.large }}+2</option>
-				<option :value="6">{{ i18n.ts.large }}+3</option>
-				<option :value="7">{{ i18n.ts.large }}+4</option>
-				<option :value="8">{{ i18n.ts.large }}+5</option>
-				<option :value="9">{{ i18n.ts.large }}+6</option>
-				<option :value="10">Auto(90%)</option>
-			</FormRadios>
+			<FormRange
+				v-model="reactionPickerSize"
+				:min="-7"
+				:max="20"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.size }}</template
+				>
+				<template #caption
+					>{{  [(reactionPickerSize <= 1 ? `小${reactionPickerSize <= 0 ? `${reactionPickerSize - 1}` : ""}` : reactionPickerSize === 2 ? "中" : `大${reactionPickerSize >= 4 ? `+${reactionPickerSize - 3}` : ""}`), "デフォルト: 2"].filter(Boolean).join(" ") }}</template
+				>
+			</FormRange>
+			<FormRange
+				v-model="reactionPickerVAlign"
+				:min="-14"
+				:max="14"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.vAlign }}</template
+				>
+				<template #caption
+					>{{ (reactionPickerSize < 0 ? "推奨: 0 " : "") + "デフォルト: -4" }}</template
+				>
+			</FormRange>
+			<FormRange
+				v-model="reactionPickerWidth"
+				:min="1"
+				:max="40"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.numberOfColumn }}</template
+				>
+				<template #caption
+					>{{ "デフォルト: 7" }}</template
+				>
+			</FormRange>
+			<FormRange
+				v-model="reactionPickerAllWidth"
+				:min="1"
+				:max="100"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.width }}</template
+				>
+				<template #caption
+					>{{ "画面幅に対するピッカーの幅 デフォルト: 95" }}</template
+				>
+			</FormRange>
+			<FormRange
+				v-model="reactionPickerHeight"
+				:min="1"
+				:max="100"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.height }}</template
+				>
+				<template #caption
+					>{{ "画面幅に対するピッカーの高さ デフォルト: 90" }}</template
+				>
+			</FormRange>
 
 			<FormSwitch v-model="usePickerSizePostForm" class="_formBlock">
 				{{ i18n.ts.usePickerSizePostForm
@@ -763,6 +783,7 @@ import FormButton from "@/components/MkButton.vue";
 import FormSection from "@/components/form/section.vue";
 import FormSwitch from "@/components/form/switch.vue";
 import MkTab from "@/components/MkTab.vue";
+import FormRange from "@/components/form/range.vue";
 import * as os from "@/os";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";

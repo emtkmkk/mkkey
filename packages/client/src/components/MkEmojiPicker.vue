@@ -2,7 +2,7 @@
 	<FocusTrap v-bind:active="isActive">
 		<div
 			class="omfetrab"
-			:class="['s' + size, 'w' + width, 'h' + height, { asDrawer }]"
+			:class="[dynamicStyles, { asDrawer }]"
 			:style="{ maxHeight: maxHeight ? maxHeight + 'px' : undefined }"
 			tabindex="-1"
 		>
@@ -1170,16 +1170,34 @@ const size = computed(() =>
 		? reactionPickerSize.value
 		: 1
 );
+const vAlign = computed(() =>
+	props.asReactionPicker || defaultStore.state.usePickerSizePostForm
+		? reactionPickerVAlign.value
+		: -2
+);
 const width = computed(() =>
 	props.asReactionPicker || defaultStore.state.usePickerSizePostForm
 		? reactionPickerWidth.value
-		: 3
+		: 7
+);
+const allWidth = computed(() =>
+	props.asReactionPicker || defaultStore.state.usePickerSizePostForm
+		? reactionPickerAllWidth.value
+		: 95
 );
 const height = computed(() =>
 	props.asReactionPicker || defaultStore.state.usePickerSizePostForm
 		? reactionPickerHeight.value
-		: 2
+		: 60
 );
+const dynamicStyles = computed(() => ({
+  '--eachSize': `${2.1875 + size.value * 0.3125}rem`,
+  '--valign': `${vAlign.value * 0.612}rem`,
+  '--EmojiPickerWidth': `${allWidth.value}dvw`,
+  '--eachWidth': `calc(var(--EmojiPickerWidth) / ${width.value})`,
+  '--columns': `repeat(${width.value}, 1fr)`,
+  '--pickerHeight': `calc(var(--vh) * ${height.value})`
+}));
 const customEmojiCategories = emojiCategories;
 const customEmojis = computed(() => instance.emojis);
 let allCustomEmojis = computed(() =>
@@ -1715,232 +1733,7 @@ defineExpose({
 	display: flex;
 	flex-direction: column;
 	width: calc(var(--EmojiPickerWidth) + (#{$pad} * 2));
-	--EmojiPickerWidth: 95dvw;
-
-	&.s-6 {
-		--eachSize: 0.3125rem;
-		--valign: 0em;
-	}
-
-	&.s-5 {
-		--eachSize: 0.625rem;
-		--valign: 0em;
-	}
-
-	&.s-4 {
-		--eachSize: 0.9375rem;
-		--valign: 0em;
-	}
-
-	&.s-3 {
-		--eachSize: 1.25rem;
-		--valign: 0em;
-	}
-
-	&.s-2 {
-		--eachSize: 1.5625rem;
-		--valign: 0em;
-	}
-
-	&.s-1 {
-		--eachSize: 1.875rem;
-		--valign: 0em;
-	}
-
-	&.s0 {
-		--eachSize: 2.1875rem;
-		--valign: -0.25em;
-	}
-
-	&.s1 {
-		--eachSize: 2.5rem;
-		--valign: -0.25em;
-	}
-
-	&.s2 {
-		--eachSize: 2.8125rem;
-		--valign: -0.25em;
-	}
-
-	&.s3 {
-		--eachSize: 3.125rem;
-		--valign: -0.25em;
-	}
-
-	&.s4 {
-		--eachSize: 3.4375rem;
-		--valign: -0.25em;
-	}
-
-	&.s5 {
-		--eachSize: 3.75rem;
-		--valign: -0.25em;
-	}
-
-	&.s6 {
-		--eachSize: 4.0625rem;
-		--valign: -0.25em;
-	}
-
-	&.s7 {
-		--eachSize: 4.375rem;
-		--valign: -0.25em;
-	}
-
-	&.s8 {
-		--eachSize: 4.6875rem;
-		--valign: -0.25em;
-	}
-
-	&.s9 {
-		--eachSize: 5rem;
-		--valign: -0.25em;
-	}
-
-	&.w-3 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 1);
-		--columns: 1fr;
-	}
-
-	&.w-2 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 2);
-		--columns: 1fr 1fr;
-	}
-
-	&.w-1 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 3);
-		--columns: 1fr 1fr 1fr;
-	}
-
-	&.w0 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 4);
-		--columns: 1fr 1fr 1fr 1fr;
-	}
-
-	&.w1 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 5);
-		--columns: 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w2 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 6);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w3 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 7);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w4 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 8);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w5 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 9);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w6 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 10);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w7 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 11);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w8 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 12);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w9 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 13);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w10 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 14);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w11 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 15);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.w12 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 16);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr
-			1fr;
-	}
-
-	&.w13 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 17);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr
-			1fr 1fr;
-	}
-
-	&.w14 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 18);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr
-			1fr 1fr 1fr;
-	}
-
-	&.w15 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 19);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr
-			1fr 1fr 1fr 1fr;
-	}
-
-	&.w16 {
-		--eachWidth: calc(var(--EmojiPickerWidth) / 20);
-		--columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr
-			1fr 1fr 1fr 1fr 1fr;
-	}
-
-	&.h1 {
-		height: calc((var(--eachSize) * 4) + (#{$pad} * 2));
-	}
-
-	&.h2 {
-		height: calc((var(--eachSize) * 6) + (#{$pad} * 2));
-	}
-
-	&.h3 {
-		height: calc((var(--eachSize) * 8) + (#{$pad} * 2));
-	}
-
-	&.h4 {
-		height: calc((var(--eachSize) * 10) + (#{$pad} * 2));
-	}
-
-	&.h5 {
-		height: calc((var(--eachSize) * 12) + (#{$pad} * 2));
-	}
-
-	&.h6 {
-		height: calc((var(--eachSize) * 14) + (#{$pad} * 2));
-	}
-
-	&.h7 {
-		height: calc((var(--eachSize) * 16) + (#{$pad} * 2));
-	}
-
-	&.h8 {
-		height: calc((var(--eachSize) * 18) + (#{$pad} * 2));
-	}
-
-	&.h9 {
-		height: calc((var(--eachSize) * 20) + (#{$pad} * 2));
-	}
-
-	&.h10 {
-		height: calc(var(--vh) * 90);
-	}
+	height: var(--pickerHeight);
 
 	&.asDrawer {
 		width: 100% !important;

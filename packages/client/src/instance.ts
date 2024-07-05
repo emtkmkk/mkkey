@@ -19,8 +19,7 @@ export const instance: Misskey.entities.InstanceMetadata = reactive(
 		  },
 );
 
-if (localStorage.getItem("followCategories")?.includes("object Object")) localStorage.setItem("followCategories", "[]") 
-export let followCategories = $ref(localStorage.getItem("followCategories")?.includes("object Object") ? [] : JSON.parse(localStorage.getItem("followCategories") ?? "[]"));
+export let followCategories = $ref((localStorage.getItem("followCategoriesTime") ?? 0) < new Date("2023/7/6").getTime() ? [] : JSON.parse(localStorage.getItem("followCategories") ?? "[]"));
 
 stream.on("emojiAdded", (emojiData) => {
 	instance.emojis = [emojiData.emoji, ...instance.emojis];

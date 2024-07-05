@@ -2,8 +2,8 @@
 	<FocusTrap v-bind:active="isActive">
 		<div
 			class="omfetrab"
-			:class="[dynamicStyles, { asDrawer }]"
-			:style="{ maxHeight: maxHeight ? maxHeight + 'px' : undefined }"
+			:class="[{ asDrawer }]"
+			:style="[dynamicStyles, { maxHeight: maxHeight ? maxHeight + 'px' : undefined }]"
 			tabindex="-1"
 		>
 			<input

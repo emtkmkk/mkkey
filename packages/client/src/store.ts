@@ -1035,7 +1035,7 @@ export const defaultStore = markRaw(
 		},
 		nullCategoryHidden: {
 			where: "account",
-			default: false,
+			default: true,
 			createdAt: "2024/7/5",
 			page: "reaction",
 		},

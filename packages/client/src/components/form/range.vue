@@ -122,6 +122,12 @@ const steps = computed(() => {
 	}
 });
 
+// Watch for changes in min and max props to recalculate rawValue
+watch([() => props.min, () => props.max], () => {
+	rawValue.value = (props.modelValue - props.min) / (props.max - props.min);
+	calcThumbPosition();
+});
+
 const onMousedown = (ev: MouseEvent | TouchEvent) => {
 	ev.preventDefault();
 

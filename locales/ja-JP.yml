@@ -154,6 +154,8 @@ showEmojisInReactionNotifications: "通知にて貰った絵文字を表示す�
 reactionSetting: "ピッカーに表示するリアクション"
 reactionSettingDescription2: "ドラッグして並び替え、クリックして削除、＋を押して追加します。"
 japanCategory: "ひらがな順でカテゴリ分けする"
+nullCategoryHidden: "未分類のタブを表示しない"
+categoryHidden: "カテゴリのタブを表示しない"
 hiddenRecent: "最近使用した絵文字を表示しない"
 hiddenReactionDeckAndRecent: "デッキ絵文字と最近使用を表示しない"
 doubleTapReaction: "ダブルタップでリアクションする"

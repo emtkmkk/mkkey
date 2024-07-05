@@ -1033,6 +1033,18 @@ export const defaultStore = markRaw(
 			createdAt: "2023/7/7",
 			page: "reaction",
 		},
+		nullCategoryHidden: {
+			where: "account",
+			default: false,
+			createdAt: "2024/7/5",
+			page: "reaction",
+		},
+		categoryHidden: {
+			where: "account",
+			default: false,
+			createdAt: "2024/7/5",
+			page: "reaction",
+		},
 		remoteEmojisFetch: {
 			where: "device",
 			default: "all" as "all" | "plus" | "keep" | "none" | "always" | "once",

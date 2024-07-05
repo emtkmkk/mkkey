@@ -522,8 +522,20 @@
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch v-model="japanCategory" class="_formBlock">
+			<FormSwitch v-model="japanCategory" class="_formBlock" :disabled="nullCategoryHidden || categoryHidden">
 				{{ i18n.ts.japanCategory
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
+			</FormSwitch>
+			<FormSwitch v-model="nullCategoryHidden" class="_formBlock" :disabled="categoryHidden">
+				{{ i18n.ts.nullCategoryHidden
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
+			</FormSwitch>
+			<FormSwitch v-model="categoryHidden" class="_formBlock">
+				{{ i18n.ts.categoryHidden
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span>
@@ -655,7 +667,7 @@
 			<FormRange
 				v-model="reactionPickerSize"
 				:min="-7"
-				:max="20"
+				:max="reactionPickerSize >= 11 ? (Math.floor(reactionPickerSize / 5) + 1) * 5 : 11"
 				:step="1"
 				easing
 				class="_formBlock"
@@ -669,8 +681,8 @@
 			</FormRange>
 			<FormRange
 				v-model="reactionPickerVAlign"
-				:min="-15"
-				:max="15"
+				:min="reactionPickerVAlign <= -10 ? (Math.floor(reactionPickerVAlign / -5) + 1) * -5 : -10"
+				:max="reactionPickerVAlign >= 10 ? (Math.floor(reactionPickerVAlign / 5) + 1) * 5 : 10"
 				:step="1"
 				easing
 				class="_formBlock"
@@ -679,13 +691,13 @@
 					>{{ i18n.ts.vAlign }}</template
 				>
 				<template #caption
-					>{{ (reactionPickerSize < 0 ? "推奨: 0 " : "") + "デフォルト: -4" }}</template
+					>{{ "デフォルト: -4" }}</template
 				>
 			</FormRange>
 			<FormRange
 				v-model="reactionPickerWidth"
 				:min="1"
-				:max="30"
+				:max="reactionPickerWidth >= 20 ? (Math.floor(reactionPickerWidth / 10) + 1) * 10 : 20"
 				:step="1"
 				easing
 				class="_formBlock"
@@ -899,6 +911,8 @@ const reactionAutoFocusSearchBar = $computed(
 	defaultStore.makeGetterSetter("reactionAutoFocusSearchBar")
 );
 const japanCategory = $computed(defaultStore.makeGetterSetter("japanCategory"));
+const nullCategoryHidden = $computed(defaultStore.makeGetterSetter("nullCategoryHidden"));
+const categoryHidden = $computed(defaultStore.makeGetterSetter("categoryHidden"));
 const remoteEmojisFetch = $computed(
 	defaultStore.makeGetterSetter("remoteEmojisFetch")
 );

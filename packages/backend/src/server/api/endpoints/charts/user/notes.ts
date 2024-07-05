@@ -1,6 +1,7 @@
 import { getJsonSchema } from "@/services/chart/core.js";
 import { perUserNotesChart } from "@/services/chart/index.js";
 import define from "../../../define.js";
+import { Users } from "@/models/index.js";
 
 export const meta = {
 	tags: ["charts", "users", "notes"],
@@ -24,10 +25,43 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps) => {
-	return await perUserNotesChart.getChart(
-		ps.span,
-		ps.limit,
-		ps.offset ? new Date(ps.offset) : null,
-		ps.userId,
-	);
+	if (ps.addInfo) {
+		const user = await Users.findOneByOrFail({ id: ps.userId })
+		const getUserChart = async () => {
+			return perUserNotesChart.getChart(
+				ps.span,
+				ps.limit,
+				ps.offset ? new Date(ps.offset) : null,
+				ps.userId,
+			);
+		};
+		
+		const getAddInfo = async () => {
+			const users = await Users.findBy({ usernameLower: user.username?.toLowerCase() });
+			const filteredUsers = users.filter((x) => x.id !== ps.userId);
+			const promises = filteredUsers.map(async (x) => ({
+				id: x.id,
+				host: x.host,
+				...(await perUserNotesChart.getChart(
+					ps.span,
+					ps.limit,
+					ps.offset ? new Date(ps.offset) : null,
+					x.id,
+				)),
+			}));
+			return Promise.all(promises);
+		};
+		
+		const [userChart, addInfo] = await Promise.all([
+			getUserChart(),
+			getAddInfo()
+		]);
+		return {...userChart, add: addInfo}
+	}
+		return await perUserNotesChart.getChart(
+			ps.span,
+			ps.limit,
+			ps.offset ? new Date(ps.offset) : null,
+			ps.userId,
+		);
 });

@@ -56,10 +56,12 @@ export async function emojiLoad() {
 }
 
 export async function fetchCustomCategory() {
-	if (defaultStore.get("followCategories")?.length) {
+	if (defaultStore.state.followCategories?.length) {
 		followCategories = await api("categories/show", {
-			categoryId: Array.from(new Set(defaultStore.get("followCategories")))
+			categoryId: Array.from(new Set(defaultStore.state.followCategories))
 		});
+	} else {
+		followCategories = []
 	}
 }
 

@@ -70,7 +70,10 @@ export class EmojiCustomCategory {
 	public eyeCatchingImage: DriveFile | null;
 	
 	@Column({
-		array: true, default: '{}',
+			type: "varchar" as const,
+			length: 256,
+			array: true,
+			default: '{}',
 	})
 	public contents: string[];
 

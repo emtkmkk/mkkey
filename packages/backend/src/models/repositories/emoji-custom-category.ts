@@ -21,7 +21,7 @@ export const EmojiCustomCategoryRepository = db.getRepository(EmojiCustomCategor
 			updatedAt: category.updatedAt.toISOString(),
 			userId: category.userId,
 			user: Users.pack(category.user || category.userId, me),
-			content: category.contents,
+			contents: category.contents,
 			title: category.title,
 			name: category.name,
 			summary: category.summary,

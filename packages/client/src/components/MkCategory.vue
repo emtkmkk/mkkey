@@ -17,6 +17,7 @@
 <script lang="ts">
 import {
 	ref,
+	toRefs,
 	defineComponent,
 	onMounted,
 	nextTick,

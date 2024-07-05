@@ -13,7 +13,7 @@
 					class="button"
 					inline
 					link
-					:to="`/@${author.username}/categories/${currentName}`"
+					:to="`/@${author.username}/categories/${categoryId}`"
 					><i class="ph-arrow-square-out ph-bold ph-lg"></i>
 					{{ i18n.ts._categories.viewCategory }}</MkButton
 				>

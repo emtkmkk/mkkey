@@ -99,6 +99,7 @@ export default defineComponent({
     dynamicStyles,
     parentElement,
   };
+	}
 });
 </script>
 

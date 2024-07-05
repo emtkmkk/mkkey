@@ -31,13 +31,13 @@ import XSection from "@/components/MkEmojiPicker.section.vue";
 export default defineComponent({
 	props: {
 		category: {
-			type: Array as PropType<string[]>,
+			type: Object,
 			required: true,
 		},
 	},
 	setup(props, ctx) {
 		return {
-			category
+			props.category
 		};
 	},
 });

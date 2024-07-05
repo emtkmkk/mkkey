@@ -91,6 +91,7 @@
 							</div>
 						</div>
 						<div class="content">
+							<div>{{ category.summary }}</div>
 							<XCategory :category="category" />
 						</div>
 						<div class="actions">

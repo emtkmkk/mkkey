@@ -231,13 +231,13 @@ function copyUrl() {
 }
 
 function follow() {
-	followCategories = [...defaultStore.state.followCategories, category.id];
+	followCategories = [...followCategories, category.id];
 	fetchCustomCategory()
 	os.success();
 }
 
 function unFollow() {
-	followCategories = defaultStore.state.followCategories.filter((x) => x !== category.id);
+	followCategories = followCategories.filter((x) => x !== category.id);
 	fetchCustomCategory()
 	os.success();
 }

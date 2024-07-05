@@ -47,7 +47,7 @@
 									</button>
 									<button
 										v-tooltip="i18n.ts.download"
-										@click="exportEmojiDecks($event)"
+										@click="downloadCategory($event)"
 										class="menu _button"
 									>
 										<i
@@ -55,7 +55,7 @@
 										/>
 									</button>
 									<button
-										v-if="!$store.state.followCategories.includes(category.id)"
+										v-if="!followCategories.includes(category.id)"
 										v-tooltip="i18n.ts.follow"
 										@click="follow"
 										class="menu _button"
@@ -250,13 +250,11 @@ function downloadCategory() {
 			}),
 		);
 	});
-}
-const exportEmojiDecks = (ev) => {
 	const a = document.createElement("a");
-	a.href = downloadCategory();
+	a.href = href
 	a.download = `${category.id}.json`;
 	a.click();
-};
+}
 
 function getBgImg(): string {
 	if (category.eyeCatchingImage != null) {

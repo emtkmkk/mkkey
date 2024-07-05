@@ -185,6 +185,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { shareAvailable } from "@/scripts/share-available";
 import JSON5 from "json5";
 import { instance } from "@/instance";
+import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	categoryId: string;

@@ -50,7 +50,7 @@
 						<div class="buttoncontainer">
 							<MkButton class="new primary" @click="create()"
 								><i class="ph-plus ph-bold ph-lg"></i>
-								{{ i18n.ts._categorys.newPage }}</MkButton
+								{{ i18n.ts._categories.newCategory }}</MkButton
 							>
 						</div>
 						<MkPagination
@@ -96,16 +96,16 @@ const tabs = ["featured", "following", "my"];
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
 const featuredCategoriesPagination = {
-	endpoint: "categorys/featured" as const,
+	endpoint: "categories/featured" as const,
 	limit: 20,
 };
 const myCategoriesPagination = {
-	endpoint: "i/categorys" as const,
+	endpoint: "i/categories" as const,
 	limit: 10,
 };
 
 function create() {
-	router.push("/categorys/new");
+	router.push("/categories/new");
 }
 
 const headerActions = $computed(() => [
@@ -136,7 +136,7 @@ const headerTabs = $computed(() => [
 
 definePageMetadata(
 	computed(() => ({
-		title: i18n.ts.categorys,
+		title: i18n.ts.categories,
 		icon: "ph-file-text ph-bold ph-lg",
 	}))
 );

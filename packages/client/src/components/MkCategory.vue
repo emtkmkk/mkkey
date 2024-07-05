@@ -30,6 +30,9 @@ import { defaultStore } from "@/store";
 import XSection from "@/components/MkEmojiPicker.section.vue";
 
 export default defineComponent({
+	components: {
+		XSection,
+	},
 	props: {
 		category: {
 			type: Object,

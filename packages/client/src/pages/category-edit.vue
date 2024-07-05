@@ -237,6 +237,10 @@ function copyDeck() {
 	}
 }
 
+function deleteReac(reaction) {
+		contents = contents.filter((x) => x !== reaction);
+	}
+
 function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
 		[

@@ -1065,7 +1065,8 @@
 					v-once
 					v-if="
 						searchResultCustom.length <= 0 &&
-						(q == null || q === '')
+						(q == null || q === '') &&
+						!$store.state.categoryHidden
 					"
 					class="group"
 				>

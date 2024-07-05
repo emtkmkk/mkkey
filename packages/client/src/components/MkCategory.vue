@@ -2,6 +2,7 @@
 	<div
 		v-if="category.contents"
 		class="iroscrza emojis"
+		:style="dynamicStyles"
 	>
 		<div class="group">
 		<XSection
@@ -42,9 +43,42 @@ export default defineComponent({
 		},
 	},
 	setup(props) {
+const {
+	reactionPickerSize,
+	reactionPickerWidth,
+	reactionPickerHeight,
+	reactionPickerVAlign,
+	reactionPickerAllWidth,
+	disableShowingAnimatedImages,
+} = defaultStore.reactiveState;
+
+const size = computed(() =>
+	reactionPickerSize.value
+);
+const vAlign = computed(() =>
+	reactionPickerVAlign.value
+);
+const width = computed(() =>
+	reactionPickerWidth.value
+);
+const allWidth = computed(() =>
+	reactionPickerAllWidth.value
+);
+const height = computed(() =>
+	reactionPickerHeight.value
+);
+const dynamicStyles = computed(() => ({
+  '--eachSize': `${2.1875 + size.value * 0.3125}rem`,
+  '--valign': `${vAlign.value * -0.06125}rem`,
+  '--EmojiPickerWidth': `${props.asDrawer ? 95 : allWidth.value}dvw`,
+  '--eachWidth': `calc(var(--EmojiPickerWidth) / ${width.value})`,
+  '--columns': `repeat(${width.value}, 1fr)`,
+  '--pickerHeight': `calc(var(--vh) * ${height.value})`
+}));
 		const { category } = toRefs(props);
 		return {
 			category,
+			dynamicStyles,
 		};
 	},
 });

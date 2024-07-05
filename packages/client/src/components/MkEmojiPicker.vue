@@ -1161,6 +1161,8 @@ const {
 	reactionPickerSize,
 	reactionPickerWidth,
 	reactionPickerHeight,
+	reactionPickerVAlign,
+	reactionPickerAllWidth,
 	disableShowingAnimatedImages,
 	recentlyUsedEmojis,
 } = defaultStore.reactiveState;

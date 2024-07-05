@@ -35,9 +35,10 @@ export default defineComponent({
 			required: true,
 		},
 	},
-	setup(props, ctx) {
+	setup(props) {
+		const { category } = toRefs(props);
 		return {
-			props.category
+			category,
 		};
 	},
 });

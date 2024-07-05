@@ -228,7 +228,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		}
 		return inboxes.size;
 	};
-	const [sendMessageCount, readMessageCount, result, rankResult] = await awaitAll([
+	const [sendMessageCount, readMessageCount, result, rankResult] = await Promise.all([
 		MessagingMessages.createQueryBuilder(
 			"messaging_message",
 		)

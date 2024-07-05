@@ -15,6 +15,14 @@
 </template>
 
 <script lang="ts">
+import {
+	ref,
+	defineComponent,
+	onMounted,
+	nextTick,
+	onUnmounted,
+	PropType,
+} from "vue";
 import { url } from "@/config";
 import { $i } from "@/account";
 import { defaultStore } from "@/store";

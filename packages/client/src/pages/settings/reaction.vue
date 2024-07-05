@@ -875,7 +875,7 @@ const reactionPickerUseDrawerForMobile = $computed(
 	defaultStore.makeGetterSetter("reactionPickerUseDrawerForMobile")
 );
 const reactionPickerVAlign = $computed(
-	defaultStore.makeGetterSetter("reactionPickerSize")
+	defaultStore.makeGetterSetter("reactionPickerVAlign")
 );
 const reactionPickerAllWidth = $computed(
 	defaultStore.makeGetterSetter("reactionPickerAllWidth")

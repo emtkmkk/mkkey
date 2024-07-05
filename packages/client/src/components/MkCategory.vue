@@ -1,5 +1,6 @@
 <template>
 	<div
+		ref="parentElement"
 		v-if="category.contents"
 		class="iroscrza emojis"
 		:style="dynamicStyles"
@@ -21,6 +22,7 @@
 import {
 	ref,
 	toRefs,
+	computed,
 	defineComponent,
 	onMounted,
 	nextTick,
@@ -35,6 +37,7 @@ import XSection from "@/components/MkEmojiPicker.section.vue";
 export default defineComponent({
 	components: {
 		XSection,
+		computed,
 	},
 	props: {
 		category: {
@@ -43,44 +46,59 @@ export default defineComponent({
 		},
 	},
 	setup(props) {
-const {
-	reactionPickerSize,
-	reactionPickerWidth,
-	reactionPickerHeight,
-	reactionPickerVAlign,
-	reactionPickerAllWidth,
-	disableShowingAnimatedImages,
-} = defaultStore.reactiveState;
+  const parentElement = ref<HTMLElement | null>(null);
+  const parentWidth = ref(0);
 
-const size = computed(() =>
-	reactionPickerSize.value
-);
-const vAlign = computed(() =>
-	reactionPickerVAlign.value
-);
-const width = computed(() =>
-	reactionPickerWidth.value
-);
-const allWidth = computed(() =>
-	reactionPickerAllWidth.value
-);
-const height = computed(() =>
-	reactionPickerHeight.value
-);
-const dynamicStyles = computed(() => ({
-  '--eachSize': `${2.1875 + size.value * 0.3125}rem`,
-  '--valign': `${vAlign.value * -0.06125}rem`,
-  '--EmojiPickerWidth': `${props.asDrawer ? 95 : allWidth.value}dvw`,
-  '--eachWidth': `calc(var(--EmojiPickerWidth) / ${width.value})`,
-  '--columns': `repeat(${width.value}, 1fr)`,
-  '--pickerHeight': `calc(var(--vh) * ${height.value})`
-}));
-		const { category } = toRefs(props);
-		return {
-			category,
-			dynamicStyles,
-		};
-	},
+  const { reactionPickerSize, reactionPickerWidth, reactionPickerHeight, reactionPickerVAlign, reactionPickerAllWidth } = defaultStore.reactiveState;
+
+  const size = computed(() => reactionPickerSize.value);
+  const vAlign = computed(() => reactionPickerVAlign.value);
+  const width = computed(() => reactionPickerWidth.value);
+  const height = computed(() => reactionPickerHeight.value);
+
+  onMounted(() => {
+    if (parentElement.value) {
+      parentWidth.value = parentElement.value.clientWidth;
+    }
+    window.addEventListener('resize', updateParentWidth);
+  });
+
+  const updateParentWidth = () => {
+    if (parentElement.value) {
+      parentWidth.value = parentElement.value.clientWidth;
+    }
+  };
+
+  watch(parentWidth, () => {
+    updateDynamicStyles();
+  });
+
+  const dynamicStyles = ref({
+    '--eachSize': `${2.1875 + size.value * 0.3125}rem`,
+    '--valign': `${vAlign.value * -0.06125}rem`,
+    '--EmojiPickerWidth': `${parentWidth.value}px`,
+    '--eachWidth': `calc(var(--EmojiPickerWidth) / ${width.value})`,
+    '--columns': `repeat(${width.value}, 1fr)`,
+    '--pickerHeight': `calc(var(--vh) * ${height.value})`
+  });
+
+  const updateDynamicStyles = () => {
+    dynamicStyles.value = {
+      '--eachSize': `${2.1875 + size.value * 0.3125}rem`,
+      '--valign': `${vAlign.value * -0.06125}rem`,
+      '--EmojiPickerWidth': `${parentWidth.value}px`,
+      '--eachWidth': `calc(var(--EmojiPickerWidth) / ${width.value})`,
+      '--columns': `repeat(${width.value}, 1fr)`,
+      '--pickerHeight': `calc(var(--vh) * ${height.value})`
+    };
+  };
+
+  const { category } = toRefs(props);
+  return {
+    category,
+    dynamicStyles,
+    parentElement,
+  };
 });
 </script>
 

@@ -1195,7 +1195,7 @@ const height = computed(() =>
 const dynamicStyles = computed(() => ({
   '--eachSize': `${2.1875 + size.value * 0.3125}rem`,
   '--valign': `${vAlign.value * -0.06125}rem`,
-  '--EmojiPickerWidth': `${props.asDrawer ? 100 : allWidth.value}dvw`,
+  '--EmojiPickerWidth': `${props.asDrawer ? 95 : allWidth.value}dvw`,
   '--eachWidth': `calc(var(--EmojiPickerWidth) / ${width.value})`,
   '--columns': `repeat(${width.value}, 1fr)`,
   '--pickerHeight': `calc(var(--vh) * ${height.value})`

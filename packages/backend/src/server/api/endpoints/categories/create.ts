@@ -56,7 +56,7 @@ export const paramDef = {
 			nullable: true,
 		},
 	},
-	required: ["title", "name", "content", "variables", "script"],
+	required: ["title", "name", "contents"],
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {

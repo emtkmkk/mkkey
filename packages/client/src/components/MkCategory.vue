@@ -25,6 +25,7 @@ import {
 	computed,
 	defineComponent,
 	onMounted,
+	watch,
 	nextTick,
 	onUnmounted,
 	PropType,

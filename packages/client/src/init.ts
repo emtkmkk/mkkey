@@ -791,7 +791,8 @@ import { applyProfile, autoSave } from "./scripts/backup";
 			}
 			if ($i) {
 				const lastBackupData = await get("lastBackup")
-				if (!lastBackupData || typeof lastBackupData === "number") await set("lastBackup", {});
+				if (!lastBackupData) await set("lastBackup", {});
+				if (typeof lastBackupData === "number") await set("lastBackup", {[$i.id]: lastBackupData});
 				const lastBackup = lastBackupData?.[$i.id] ? Number.parseInt(lastBackupData?.[$i.id]) : 0;
 				if (
 					defaultStore.state.autoSaveBackup &&

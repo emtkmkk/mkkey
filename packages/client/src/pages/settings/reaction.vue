@@ -874,6 +874,12 @@ const reactionPickerHeight = $computed(
 const reactionPickerUseDrawerForMobile = $computed(
 	defaultStore.makeGetterSetter("reactionPickerUseDrawerForMobile")
 );
+const reactionPickerVAlign = $computed(
+	defaultStore.makeGetterSetter("reactionPickerSize")
+);
+const reactionPickerAllWidth = $computed(
+	defaultStore.makeGetterSetter("reactionPickerAllWidth")
+);
 const enableEmojiReactions = $computed(
 	defaultStore.makeGetterSetter("enableEmojiReactions")
 );

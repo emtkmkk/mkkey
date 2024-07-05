@@ -33,7 +33,7 @@ export const routes = [
 		component: page(() => import("./pages/page.vue")),
 	},
 	{
-		path: "/@:username/categories/:categoryName",
+		path: "/@:username/categories/:categoryId",
 		component: page(() => import("./pages/category.vue")),
 	},
 	{
@@ -442,12 +442,12 @@ export const routes = [
 	},
 	{
 		path: "/categories/edit/:initCategoryId",
-		component: page(() => import("./pages/category/edit.vue")),
+		component: page(() => import("./pages/category-edit.vue")),
 		loginRequired: true,
 	},
 	{
 		path: "/categories/new",
-		component: page(() => import("./pages/category/edit.vue")),
+		component: page(() => import("./pages/category-edit.vue")),
 		loginRequired: true,
 	},
 	{

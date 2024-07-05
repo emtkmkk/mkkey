@@ -3,7 +3,7 @@ export class createEmojiCustomCategory1683682889978 {
 
 	async up(queryRunner) {
 		await queryRunner.query(
-			`CREATE TABLE "emoji_custom_category" ("id" character varying(32) NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL, "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL, "userId" character varying(32) NOT NULL, "title" character varying(256) NOT NULL, "name" character varying(256) NOT NULL, "summary" character varying(256),"eyeCatchingImageId" character varying(32), "content" jsonb NOT NULL DEFAULT '[]', CONSTRAINT "PK_ddc924606e033c31ac670b4ca2a" PRIMARY KEY ("id"))`,
+			`CREATE TABLE "emoji_custom_category" ("id" character varying(32) NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL, "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL, "userId" character varying(32) NOT NULL, "title" character varying(256) NOT NULL, "name" character varying(256) NOT NULL, "summary" character varying(256),"eyeCatchingImageId" character varying(32), "contents" character varying(256) array NOT NULL DEFAULT '{}'::varchar[], CONSTRAINT "PK_ddc924606e033c31ac670b4ca2a" PRIMARY KEY ("id"))`,
 		);
 		await queryRunner.query(
 			`CREATE INDEX "IDX_3f053796a31419e41a0129a5e9" ON "emoji_custom_category" ("createdAt") `,

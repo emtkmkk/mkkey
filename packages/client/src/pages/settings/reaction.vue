@@ -714,7 +714,7 @@
 			</FormRange>
 			<FormRange
 				v-model="reactionPickerHeight"
-				:min="1"
+				:min="11"
 				:max="100"
 				:step="1"
 				easing

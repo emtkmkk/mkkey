@@ -297,16 +297,28 @@ function remove(reaction, ev: MouseEvent) {
 }
 
 function chooseEmoji(ev: MouseEvent) {
-	os.pickEmoji(ev.currentTarget ?? ev.target, {
+	os.popup(
+			defineAsyncComponent(
+				() => import("@/components/MkEmojiPickerDialog.vue"),
+			),
+			{
+				ev.currentTarget ?? ev.target,
+				...{
 		showPinned: false,
 		asReactionPicker: true,
 		afterChosenNotClose: true,
-	}).then((emoji) => {
-		if (!contents.includes(emoji)) {
+				},
+			},
+			{
+				done: (emoji) => {
+					if (!contents.includes(emoji)) {
 			contents.push(emoji);
-		}
-	});
-}
+					}
+				},
+			},
+			"closed",
+		);
+	}
 
 function getSaveOptions() {
 	return {

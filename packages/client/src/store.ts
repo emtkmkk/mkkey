@@ -760,7 +760,7 @@ export const defaultStore = markRaw(
 		},
 		reactionPickerHeight: {
 			where: "device",
-			default: 90,
+			default: 65,
 			page: "reaction",
 		},
 		pickerConfigMigration: {

@@ -669,8 +669,8 @@
 			</FormRange>
 			<FormRange
 				v-model="reactionPickerVAlign"
-				:min="-14"
-				:max="14"
+				:min="-15"
+				:max="15"
 				:step="1"
 				easing
 				class="_formBlock"
@@ -685,7 +685,7 @@
 			<FormRange
 				v-model="reactionPickerWidth"
 				:min="1"
-				:max="40"
+				:max="30"
 				:step="1"
 				easing
 				class="_formBlock"
@@ -724,7 +724,7 @@
 					>{{ i18n.ts.height }}</template
 				>
 				<template #caption
-					>{{ "画面幅に対するピッカーの高さ デフォルト: 90" }}</template
+					>{{ "画面幅に対するピッカーの高さ デフォルト: 65" }}</template
 				>
 			</FormRange>
 

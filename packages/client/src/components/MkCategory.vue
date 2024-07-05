@@ -7,6 +7,7 @@
 	>
 		<div class="group">
 		<XSection
+			v-once
 			:key="'custom:' + category.id"
 			:initial-shown="true"
 			:emojis="
@@ -57,42 +58,14 @@ export default defineComponent({
   const width = computed(() => reactionPickerWidth.value);
   const height = computed(() => reactionPickerHeight.value);
 
-  onMounted(() => {
-    if (parentElement.value) {
-      parentWidth.value = parentElement.value.clientWidth;
-    }
-    window.addEventListener('resize', updateParentWidth);
-  });
-
-  const updateParentWidth = () => {
-    if (parentElement.value) {
-      parentWidth.value = parentElement.value.clientWidth;
-    }
-  };
-
-  watch(parentWidth, () => {
-    updateDynamicStyles();
-  });
-
   const dynamicStyles = ref({
     '--eachSize': `${2.1875 + size.value * 0.3125}rem`,
     '--valign': `${vAlign.value * -0.06125}rem`,
-    '--EmojiPickerWidth': `${parentWidth.value}px`,
+    '--EmojiPickerWidth': `95%`,
     '--eachWidth': `calc(var(--EmojiPickerWidth) / ${width.value})`,
     '--columns': `repeat(${width.value}, 1fr)`,
     '--pickerHeight': `calc(var(--vh) * ${height.value})`
   });
-
-  const updateDynamicStyles = () => {
-    dynamicStyles.value = {
-      '--eachSize': `${2.1875 + size.value * 0.3125}rem`,
-      '--valign': `${vAlign.value * -0.06125}rem`,
-      '--EmojiPickerWidth': `${parentWidth.value}px`,
-      '--eachWidth': `calc(var(--EmojiPickerWidth) / ${width.value})`,
-      '--columns': `repeat(${width.value}, 1fr)`,
-      '--pickerHeight': `calc(var(--vh) * ${height.value})`
-    };
-  };
 
   const { category } = toRefs(props);
   return {

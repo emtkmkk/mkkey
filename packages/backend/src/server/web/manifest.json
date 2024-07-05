@@ -7,8 +7,13 @@
 	"display": "standalone",
 	"background_color": "#1f1d2e",
 	"theme_color": "#31748f",
-	"orientation": "portrait-primary",
 	"icons": [
+		{
+			"src": "https://s3.ap-northeast-2.wasabisys.com/mkkey/data/7250fb54-2895-47b1-b735-a52aec2d70eb.png",
+			"sizes": "182x184",
+			"type": "image/png",
+			"purpose": "any"
+		},
 		{
 			"src": "/static-assets/icons/192.png",
 			"sizes": "192x192",
@@ -42,22 +47,6 @@
 			"url": "url"
 		}
 	},
-	"screenshots" : [
-		{
-			"src": "/static-assets/screenshots/1.webp",
-			"sizes": "579x1195",
-			"type": "image/webp",
-			"platform": "narrow",
-			"label": "PWAの画像 1"
-		},
-		{
-			"src": "/static-assets/screenshots/2.webp",
-			"sizes": "579x1195",
-			"type": "image/webp",
-			"platform": "narrow",
-			"label": "PWAの画像 2"
-		}
-	],
 	"shortcuts" : [
 		{
 			"name": "新しい投稿",

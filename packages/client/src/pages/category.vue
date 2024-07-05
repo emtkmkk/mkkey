@@ -55,7 +55,7 @@
 										/>
 									</button>
 									<button
-										v-if="!defaultStore.state.followCategories.includes(category.id)"
+										v-if="!$store.state.followCategories.includes(category.id)"
 										v-tooltip="i18n.ts.follow"
 										@click="follow"
 										class="menu _button"

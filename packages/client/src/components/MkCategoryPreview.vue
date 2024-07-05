@@ -1,7 +1,7 @@
 <template>
 	<template v-if="category">
 		<MkA
-			:to="`/@${category.user.username}/categorys/${category.name}`"
+			:to="`/@${category.user.username}/categories/${category.id}`"
 			class="vhpxefrj _block"
 			tabindex="-1"
 			:behavior="`${ui === 'deck' ? 'window' : null}`"

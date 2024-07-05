@@ -171,7 +171,7 @@
 
 <script lang="ts" setup>
 import { computed, watch } from "vue";
-import XCategory from "@/components/category.vue";
+import XCategory from "@/components/MkCategory.vue";
 import MkButton from "@/components/MkButton.vue";
 import * as os from "@/os";
 import { url } from "@/config";

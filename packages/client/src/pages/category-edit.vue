@@ -106,38 +106,90 @@
 						</template>
 					</XDraggable>
 					<template v-if="!contents?.length">
-						<FormRadios v-model="copyDeckType" class="_formBlock">
-							<option value="1">
-								{{
-									defaultStore.state.reactionsFolderName ||
-									"1ページ目"
-								}}
-							</option>
-							<option value="2">
-								{{
-									defaultStore.state.reactionsFolderName2 ||
-									"2ページ目"
-								}}
-							</option>
-							<option value="3">
-								{{
-									defaultStore.state.reactionsFolderName3 ||
-									"3ページ目"
-								}}
-							</option>
-							<option value="4">
-								{{
-									defaultStore.state.reactionsFolderName4 ||
-									"4ページ目"
-								}}
-							</option>
-							<option value="5">
-								{{
-									defaultStore.state.reactionsFolderName5 ||
-									"5ページ目"
-								}}
-							</option>
-						</FormRadios>
+						<template v-if="defaultStore.state.enableEmojiReplace">
+							<FormRadios v-model="copyDeckType" class="_formBlock">
+								<option value="1">
+									{{
+										defaultStore.state.reactionsFolderName ||
+										"1ページ目"
+									}}
+								</option>
+								<option value="2">
+									{{
+										defaultStore.state.reactionsFolderName2 ||
+										"2ページ目"
+									}}
+								</option>
+								<option value="3">
+									{{
+										defaultStore.state.reactionsFolderName3 ||
+										"3ページ目"
+									}}
+								</option>
+								<option value="4">
+									{{
+										defaultStore.state.reactionsFolderName4 ||
+										"4ページ目"
+									}}
+								</option>
+								<option value="5">
+									{{
+										defaultStore.state.reactionsFolderName5 ||
+										"5ページ目"
+									}}
+								</option>
+								<option value="6">{{ "全絵文字置換" }}</option>
+								<option value="7">
+									{{
+										defaultStore.state.reactionsFolderName5 ||
+										"JSON / JSON5"
+									}}
+								</option>
+							</FormRadios>
+						</template>
+						<template v-else>
+							<FormRadios v-model="copyDeckType" class="_formBlock">
+								<option value="1">
+									{{
+										defaultStore.state.reactionsFolderName ||
+										"1ページ目"
+									}}
+								</option>
+								<option value="2">
+									{{
+										defaultStore.state.reactionsFolderName2 ||
+										"2ページ目"
+									}}
+								</option>
+								<option value="3">
+									{{
+										defaultStore.state.reactionsFolderName3 ||
+										"3ページ目"
+									}}
+								</option>
+								<option value="4">
+									{{
+										defaultStore.state.reactionsFolderName4 ||
+										"4ページ目"
+									}}
+								</option>
+								<option value="5">
+									{{
+										defaultStore.state.reactionsFolderName5 ||
+										"5ページ目"
+									}}
+								</option>
+								<option value="7">
+									{{
+										defaultStore.state.reactionsFolderName5 ||
+										"JSON / JSON5"
+									}}
+								</option>
+							</FormRadios>
+						</template>
+						<FormTextarea v-model="code" tall class="_formBlock">
+							<template #label>{{ i18n.ts.code }}</template>
+						</FormTextarea>
 						<MkButton
 							@click="copyDeck"
 							><i class="ph-copy ph-bold ph-lg"></i>
@@ -153,11 +205,13 @@
 <script lang="ts" setup>
 import { defineAsyncComponent, computed, provide, watch, unref } from "vue";
 import { v4 as uuid } from "uuid";
+import JSON5 from "json5";
 import MkTextarea from "@/components/form/textarea.vue";
 import MkButton from "@/components/MkButton.vue";
 import MkSelect from "@/components/form/select.vue";
 import MkSwitch from "@/components/form/switch.vue";
 import MkInput from "@/components/form/input.vue";
+import FormTextarea from "@/components/form/textarea.vue";
 import { url } from "@/config";
 import * as os from "@/os";
 import { selectFile } from "@/scripts/select-file";
@@ -168,6 +222,9 @@ import FormRadios from "@/components/form/radios.vue";
 import { $i } from "@/account";
 import { instance } from "@/instance";
 import { defaultStore } from "@/store";
+import * as config from "@/config";
+import type { MenuLabel } from "@/types/menu";
+import type { DriveFile } from "calckey-js/built/entities";
 
 const XDraggable = defineAsyncComponent(() =>
 	import("vuedraggable").then((x) => x.default)
@@ -188,22 +245,23 @@ let currentName = $ref(null);
 let title = $ref("");
 let summary = $ref(null);
 let name = $ref(null);
-let eyeCatchingImage = $ref(null);
+let eyeCatchingImage = $ref<DriveFile | null>(null);
 let eyeCatchingImageId = $ref(null);
-let contents = $ref([]);
-let customEmojis = computed(() => instance.emojis);
-let allCustomEmojis = computed(() => instance.allEmojis);
-let emojiStr = computed(() =>
-	unref(customEmojis)
-		? unref(customEmojis).map((x) => `:${x.name}:`)
-		: undefined
-);
-let remoteEmojiStr = computed(() =>
-	unref(allCustomEmojis)
-		? unref(allCustomEmojis).map((x) => `:${x.name}@${x.host}:`)
-		: undefined
-);
+let contents = $ref<string[]>([]);
+let code = $ref<string>();
 let copyDeckType = $ref("1");
+const customEmojis = $computed(() => instance.emojis);
+const allCustomEmojis = $computed(() => instance.allEmojis);
+const emojiStr = $computed(() =>
+	customEmojis
+		? customEmojis.map((x) => `:${x.name}:`)
+		: undefined
+);
+const remoteEmojiStr = $computed(() =>
+	allCustomEmojis
+		? allCustomEmojis.map((x) => `:${x.name}@${x.host}:`)
+		: undefined
+);
 
 provide("readonly", readonly);
 
@@ -234,8 +292,76 @@ function copyDeck() {
 		case "5":
 			contents = defaultStore.state.reactions5;
 			break;
+		case "6":
+			contents = defaultStore.state.allEmojiReplace;
+			break;
+		case "7":
+			jsonImport();
+			break;
 	}
 }
+
+const onError = (ev) => {
+	os.alert({
+		type: "error",
+		text: ev.message,
+	});
+};
+
+const jsonImport = () => {
+	try {
+		if (!code) return;
+		let parsedData;
+		try {
+			parsedData = JSON5.parse(code);
+		} catch (parseError) {
+			onError(parseError);
+			return;
+		}
+
+		if (
+			Array.isArray(parsedData) &&
+			parsedData.every((item) => typeof item === "string")
+		) {
+			let deck: string[] = [];
+			// biome-ignore lint/complexity/noForEach: <explanation>
+			parsedData.forEach((x) => {
+				if (!x.startsWith(":") || !x.endsWith(":")) {
+					if (!deck.includes(x) && [...x].length === 1) {
+						deck.push(x);
+					}
+					return;
+				}
+				const emojiName = x.split("@")?.[0]?.replaceAll(":", "");
+				const emojiHost = x.split("@")?.[1]?.replaceAll(":", "");
+				if (emojiStr?.includes(x) || emojiHost === config.host) {
+					if (!deck.includes(`:${emojiName}:`)) {
+						deck.push(`:${emojiName}:`);
+					}
+					return;
+				}
+				if (emojiHost) {
+					if (!deck.includes(`:${emojiName}@${emojiHost}:`)) {
+						deck.push(`:${emojiName}@${emojiHost}:`);
+					}
+					return;
+				}
+				if (!deck.includes(`:${emojiName}:`)) {
+					deck.push(`:${emojiName}:`);
+				}
+				return
+			});
+			contents = deck;
+			code = "";
+		} else {
+			onError(
+				new Error("Invalid data format. Expected an array of strings.")
+			);
+		}
+	} catch (error) {
+		onError(error);
+	}
+};
 
 function deleteReac(reaction) {
 		contents = contents.filter((x) => x !== reaction);
@@ -247,18 +373,18 @@ function remove(reaction, ev: MouseEvent) {
 			{
 				text: reaction.replace(/@(\S+)$/, "").replaceAll(":", ""),
 				type: "label",
-			},
+			} as MenuLabel,
 			reaction.includes("@")
 				? {
 						text: reaction
 							.replace(/^(\S+)@/, "@")
 							.replaceAll(":", ""),
 						type: "label",
-				  }
+				  } as MenuLabel
 				: undefined,
 			!reaction.includes("@") &&
-			!unref(emojiStr)?.includes(reaction) &&
-			unref(customEmojis).some((x) =>
+			!emojiStr?.includes(reaction) &&
+			customEmojis.some((x) =>
 				x.aliases?.some(
 					(y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", "")
 				)
@@ -267,21 +393,21 @@ function remove(reaction, ev: MouseEvent) {
 						text: "代替絵文字に変換",
 						action: () => {
 								contents[contents.indexOf(reaction)] = `:${
-									unref(customEmojis).find((x) =>
+									customEmojis.find((x) =>
 										x.aliases?.some(
 											(y) =>
 												/^\w+$/.test(y) &&
 												y ===
 													reaction.replaceAll(":", "")
 										)
-									).name
+									)?.name
 								}:`;
 						},
 				  }
 				: undefined,
 			reaction.includes("@") &&
-			!unref(remoteEmojiStr)?.includes(reaction) &&
-			unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/, ":"))
+			!remoteEmojiStr?.includes(reaction) &&
+			emojiStr?.includes(reaction.replace(/@(\S+)$/, ":"))
 				? {
 						text: "ローカル絵文字に変換",
 						action: () => {
@@ -326,7 +452,7 @@ function chooseEmoji(ev: MouseEvent) {
 function getSaveOptions() {
 	return {
 		title: title.trim(),
-		name: name.trim(),
+		name: (name ?? "").trim(),
 		summary: summary,
 		contents: contents,
 		eyeCatchingImageId: eyeCatchingImageId,

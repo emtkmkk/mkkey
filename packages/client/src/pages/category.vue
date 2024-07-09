@@ -1,22 +1,11 @@
 <template>
 	<MkStickyContainer>
-		<template #header
-			><MkPageHeader
-				:actions="headerActions"
-				:tabs="headerTabs"
-				:display-back-button="true"
-		/></template>
+		<template #header>
+			<MkPageHeader :actions="headerActions" :tabs="headerTabs" :display-back-button="true" />
+		</template>
 		<MkSpacer :content-max="800">
-			<transition
-				:name="$store.state.animation ? 'fade' : ''"
-				mode="out-in"
-			>
-				<div
-					v-if="category"
-					:key="category.id"
-					v-size="{ max: [450] }"
-					class="xcukqgmh"
-				>
+			<transition :name="$store.state.animation ? 'fade' : ''" mode="out-in">
+				<div v-if="category" :key="category.id" v-size="{ max: [450] }" class="xcukqgmh">
 					<div class="footer">
 						<div>
 							<i class="ph-alarm ph-bold" />
@@ -41,38 +30,14 @@
 										@click="copyUrl"
 										class="menu _button"
 									>
-										<i
-											class="ph-link-simple ph-bold ph-lg"
-										/>
+										<i class="ph-link-simple ph-bold ph-lg" />
 									</button>
 									<button
 										v-tooltip="i18n.ts.download"
 										@click="downloadCategory($event)"
 										class="menu _button"
 									>
-										<i
-											class="ph-download-simple ph-bold ph-lg"
-										/>
-									</button>
-									<button
-										v-if="!followCategories.includes(category.id)"
-										v-tooltip="i18n.ts.follow"
-										@click="follow"
-										class="menu _button"
-									>
-										<i
-											class="ph-plus ph-bold ph-lg"
-										/>
-									</button>
-									<button
-										v-else
-										v-tooltip="i18n.ts.unfollow"
-										@click="unfollow"
-										class="menu _button"
-									>
-										<i
-											class="ph-minus ph-bold ph-lg"
-										/>
+										<i class="ph-download-simple ph-bold ph-lg" />
 									</button>
 									<template
 										v-if="$i && $i.id === category.userId"
@@ -88,6 +53,11 @@
 										/></MkA>
 									</template>
 								</div>
+								<MkCategoryFollowButton 
+									:categoryId="category.id" 
+									class="follow-toggle" 
+									:initialValue="followCategories.includes(category.id)"
+								/>
 							</div>
 						</div>
 						<div class="content">
@@ -102,9 +72,7 @@
 									class="_button"
 									@click="shareWithNote"
 								>
-									<i
-										class="ph-repeat ph-bold ph-lg ph-fw ph-lg"
-									></i>
+									<i class="ph-repeat ph-bold ph-lg ph-fw ph-lg"></i>
 								</button>
 								<button
 									v-if="shareAvailable()"
@@ -113,18 +81,13 @@
 									class="_button"
 									@click="share"
 								>
-									<i
-										class="ph-share-network ph-bold ph-lg ph-fw ph-lg"
-									></i>
+									<i class="ph-share-network ph-bold ph-lg ph-fw ph-lg"></i>
 								</button>
 							</div>
 							<div class="user">
 								<MkAvatar :user="category.user" class="avatar" />
 								<div class="name">
-									<MkUserName
-										:user="category.user"
-										style="display: block"
-									/>
+									<MkUserName :user="category.user" style="display: block" />
 									<MkAcct :user="category.user" />
 								</div>
 								<MkFollowButton
@@ -140,26 +103,13 @@
 						</div>
 					</div>
 					<MkAd :prefer="['inline', 'inline-big']" />
-					<MkContainer
-						:max-height="300"
-						:foldable="true"
-						:expanded="false"
-						class="other"
-					>
-						<template #header
-							><i class="ph-clock ph-bold ph-lg"></i>
-							{{ i18n.ts.recentPosts }}</template
-						>
-						<MkPagination
-							v-slot="{ items }"
-							:pagination="otherPostsPagination"
-						>
-							<MkCategoryPreview
-								v-for="category in items"
-								:key="category.id"
-								:category="category"
-								class="_gap"
-							/>
+					<MkContainer :max-height="300" :foldable="true" :expanded="false" class="other">
+						<template #header>
+							<i class="ph-clock ph-bold ph-lg"></i>
+							{{ i18n.ts.recentPosts }}
+						</template>
+						<MkPagination v-slot="{ items }" :pagination="otherPostsPagination">
+							<MkCategoryPreview v-for="category in items" :key="category.id" :category="category" class="_gap" />
 						</MkPagination>
 					</MkContainer>
 				</div>
@@ -174,6 +124,7 @@
 import { computed, watch } from "vue";
 import XCategory from "@/components/MkCategory.vue";
 import MkButton from "@/components/MkButton.vue";
+import MkCategoryFollowButton from "@/components/MkCategoryFollowButton.vue";
 import * as os from "@/os";
 import { url } from "@/config";
 import MkFollowButton from "@/components/MkFollowButton.vue";
@@ -197,10 +148,8 @@ let category = $ref(null);
 let bgImg = $ref(null);
 let error = $ref(null);
 
-const followCategories = $computed(
-	defaultStore.makeGetterSetter("followCategories")
-);
-	
+const followCategories = $computed(defaultStore.makeGetterSetter("followCategories"));
+
 const otherPostsPagination = {
 	endpoint: "users/categories" as const,
 	limit: 6,
@@ -208,6 +157,7 @@ const otherPostsPagination = {
 		userId: category.user.id,
 	})),
 };
+
 const path = $computed(() => `${props.username}/${props.categoryId}`);
 
 function fetchCategory() {
@@ -225,21 +175,7 @@ function fetchCategory() {
 }
 
 function copyUrl() {
-	copyToClipboard(
-		`${url}/@${category.user.username}/categories/${category.id}`,
-	);
-	os.success();
-}
-
-function follow() {
-	followCategories = [...followCategories, category.id];
-	fetchCustomCategory()
-	os.success();
-}
-
-function unfollow() {
-	followCategories = followCategories.filter((x) => x !== category.id);
-	fetchCustomCategory()
+	copyToClipboard(`${url}/@${category.user.username}/categories/${category.id}`);
 	os.success();
 }
 
@@ -252,7 +188,7 @@ function downloadCategory() {
 		);
 	});
 	const a = document.createElement("a");
-	a.href = href
+	a.href = href;
 	a.download = `${category.id}.json`;
 	a.click();
 }
@@ -275,9 +211,7 @@ function share() {
 
 function shareWithNote() {
 	os.post({
-		initialText: `${category.title || category.name} ${url}/@${
-			category.user.username
-		}/categories/${category.id}`,
+		initialText: `${category.title || category.name} ${url}/@${category.user.username}/categories/${category.id}`,
 		instant: true,
 	});
 }
@@ -367,6 +301,12 @@ definePageMetadata(
 						margin-left: 0.25rem;
 						vertical-align: bottom;
 					}
+				}
+
+				> .follow-toggle {
+					position: relative;
+					top: -0.625rem;
+					right: 1rem;
 				}
 			}
 		}

@@ -36,14 +36,24 @@
 					</div>
 				</swiper-slide>
 				<swiper-slide>
-					<div class="rknalgpo">
-						<MkCategoryPreview
-							v-for="item in instance.followCategories"
-							:key="item?.id"
-							class="ckltabjg"
-							:category="item"
-						/>
-					</div>
+					<XDraggable
+						v-model="followCategoryIds"
+						class="zoaiodol"
+						:item-key="(item) => item"
+						animation="150"
+						delay="100"
+						delay-on-touch-only="true"
+					>
+						<template #item="{ element }">
+							<div v-if="followCategories.map((x) => x.id).includes(element)" class="rknalgpo">
+								<MkCategoryPreview
+									:key="element"
+									class="ckltabjg"
+									:category="followCategories.find((x) => x.id === element)"
+								/>
+							</div>
+						</template>
+					</XDraggable>
 				</swiper-slide>
 				<swiper-slide>
 					<div class="rknalgpo my">
@@ -74,7 +84,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, onMounted } from "vue";
+import { computed, watch, onMounted, defineAsyncComponent } from "vue";
 import { Virtual } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import MkCategoryPreview from "@/components/MkCategoryPreview.vue";
@@ -85,11 +95,19 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deviceKind } from "@/scripts/device-kind";
 import { defaultStore } from "@/store";
-import { instance } from "@/instance";
+import { followCategories } from "@/instance";
 import "swiper/scss";
 import "swiper/scss/virtual";
 
 const router = useRouter();
+
+const XDraggable = defineAsyncComponent(() =>
+	import("vuedraggable").then((x) => x.default)
+);
+
+const followCategoryIds = $computed(
+	defaultStore.makeGetterSetter("followCategories")
+);
 
 let tab = $ref("featured");
 const tabs = ["featured", "following", "my"];

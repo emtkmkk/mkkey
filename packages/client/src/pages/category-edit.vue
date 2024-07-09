@@ -299,6 +299,7 @@ function chooseEmoji(ev: MouseEvent) {
 	os.pickEmoji(ev.currentTarget ?? ev.target, {
 		showPinned: false,
 		asReactionPicker: true,
+		notAddRecents: true,
 	}).then((emoji) => {
 		if (!contents.includes(emoji)) {
 			contents.push(emoji);

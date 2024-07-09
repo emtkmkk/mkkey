@@ -28,6 +28,7 @@
 			:as-reaction-picker="asReactionPicker"
 			:as-drawer="type === 'drawer'"
 			:max-height="maxHeight"
+			:notAddRecents="notAddRecents"
 			@chosen="chosen"
 		/>
 	</MkModal>
@@ -45,6 +46,7 @@ const props = withDefaults(
 		src?: HTMLElement;
 		showPinned?: boolean;
 		asReactionPicker?: boolean;
+		notAddRecents: boolean
 	}>(),
 	{
 		manualShowing: null,

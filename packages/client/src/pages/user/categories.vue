@@ -22,7 +22,7 @@ const props = defineProps<{
 }>();
 
 const pagination = {
-	endpoint: "users/categorys" as const,
+	endpoint: "users/categories",
 	limit: 20,
 	params: computed(() => ({
 		userId: props.user.id,

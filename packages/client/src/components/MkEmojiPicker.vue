@@ -1154,9 +1154,11 @@ const props = withDefaults(
 		asReactionPicker?: boolean;
 		maxHeight?: number;
 		asDrawer?: boolean;
+		notAddRecents?: boolean
 	}>(),
 	{
 		showPinned: true,
+		notAddRecents: false,
 	}
 );
 
@@ -1665,7 +1667,8 @@ function chosen(emoji: any, ev?: MouseEvent) {
 		!pinned2.value.includes(key) &&
 		!pinned3.value.includes(key) &&
 		!pinned4.value.includes(key) &&
-		!pinned5.value.includes(key)
+		!pinned5.value.includes(key) &&
+		!props.notAddRecents
 	) {
 		let recents = defaultStore.state.recentlyUsedEmojis;
 		recents = recents.filter((emoji: any) => emoji !== key);

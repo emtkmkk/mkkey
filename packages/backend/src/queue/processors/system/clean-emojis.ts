@@ -22,7 +22,7 @@ export async function cleanEmojis(
 
 		const total = await Emojis.countBy({
 			host: Not(IsNull()),
-			updatedAt: LessThan(new Date(Date.now() - 1000 * 60 * 60 * 24 * (365 / 2))),
+			updatedAt: LessThan(new Date(Date.now() - 1000 * 60 * 60 * 24 * (365 / 4))),
 		});
 
 		logger.info(`Clean Emojis Count: ${total}`);
@@ -32,7 +32,7 @@ export async function cleanEmojis(
 			const emojis = (await Emojis.find({
 				where: {
 					host: Not(IsNull()),
-					updatedAt: LessThan(new Date(Date.now() - 1000 * 60 * 60 * 24 * (365 / 2))),
+					updatedAt: LessThan(new Date(Date.now() - 1000 * 60 * 60 * 24 * (365 / 4))),
 				},
 				take: 100,
 				order: {
@@ -80,7 +80,8 @@ export async function cleanEmojis(
 		}
 
 		logger.succ("All emojis successfully cleaned.");
-		job.log("succ - " + "All emojis successfully cleaned.");
+		job.log(`succ - All emojis successfully cleaned. (${deleteCount}${foundCount ? ` / ${foundCount}` : ""
+			})`);
 		job.progress(100);
 		done();
 	}

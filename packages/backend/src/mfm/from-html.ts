@@ -97,15 +97,13 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
 							// #6383: Missing text node
 							if (href.value.match(urlRegexFull)) {
 								return href.value;
-							} else {
-								return `<${href.value}>`;
 							}
+								return `<${href.value}>`;
 						}
 						if (href.value.match(urlRegex) && !href.value.match(urlRegexFull)) {
 							return `[${txt}](<${href.value}>)`; // #6846
-						} else {
-							return `[${txt}](${href.value})`;
 						}
+							return `[${txt}](${href.value})`;
 					};
 
 					text += generateLink();
@@ -153,8 +151,8 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
 
 			case "ruby": {
 				text += "$[ruby"
-				appendChildren(node.childNodes.filter((x) => x.nodeName === "rb"));
-				appendChildren(node.childNodes.filter((x) => x.nodeName === "rt"));
+				appendChildren(node.childNodes.filter((x) => x.nodeName === "rb").slice(0, 1));
+				appendChildren(node.childNodes.filter((x) => x.nodeName === "rt").slice(0, 1));
 				text += "]";
 				break;
 			}
@@ -233,6 +231,8 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
 
 			default: {
 				// includes inline elements
+				// これは参照のリンク 参照に対応している為除外
+				if (node.nodeName === "span" && node.attrs.some(attr => attr.name === "class" && attr.value.includes("reference-link-inline"))) break;
 				appendChildren(node.childNodes);
 				break;
 			}

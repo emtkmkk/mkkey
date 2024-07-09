@@ -187,7 +187,7 @@
 								</option>
 							</FormRadios>
 						</template>
-						<FormTextarea v-model="code" v-if="copyDeckType === 7" tall class="_formBlock">
+						<FormTextarea v-model="code" v-if="copyDeckType === '7'" tall class="_formBlock">
 							<template #label>{{ i18n.ts.code }}</template>
 						</FormTextarea>
 						<MkButton

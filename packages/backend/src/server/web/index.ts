@@ -27,6 +27,7 @@ import {
 	Channels,
 	Clips,
 	GalleryPosts,
+	EmojiCustomCategories,
 } from "@/models/index.js";
 import * as Acct from "@/misc/acct.js";
 import { getNoteSummary } from "@/misc/get-note-summary.js";
@@ -814,6 +815,42 @@ router.get("/gallery/:post", async (ctx, next) => {
 			avatarUrl: await Users.getAvatarUrl(
 				await Users.findOneByOrFail({ id: post.userId }),
 			),
+			instanceName: meta.name || "Calckey",
+			icon: meta.iconUrl,
+			themeColor: meta.themeColor,
+			privateMode: meta.privateMode,
+		});
+
+		ctx.set("Cache-Control", "public, max-age=15");
+
+		return;
+	}
+
+	await next();
+});
+
+
+// Categories
+router.get("/@:user/categories/:post", async (ctx, next) => {
+	const post = await EmojiCustomCategories.findOneBy({ id: ctx.params.post });
+
+	if (post == null) return;
+
+	const user = await Users.findOneBy({
+		id: post.userId
+	});
+
+	if (user == null) return;
+
+	if (post) {
+		const _category = await EmojiCustomCategories.pack(post);
+		const profile = await UserProfiles.findOneByOrFail({ userId: post.userId });
+		const meta = await fetchMeta();
+		await ctx.render("category", {
+			category: _category,
+			profile,
+			summary: [(_category.contents ?? []).length ? `${_category.contents.length}個の絵文字` : "", _category.summary].filter(Boolean).join(" / "),
+			avatarUrl: await Users.getAvatarUrl(user),
 			instanceName: meta.name || "Calckey",
 			icon: meta.iconUrl,
 			themeColor: meta.themeColor,

@@ -1,5 +1,6 @@
 import { EmojiCustomCategories } from "@/models/index.js";
 import define from "../../define.js";
+import { makePaginationQuery } from "../../common/make-pagination-query.js";
 
 export const meta = {
 	tags: ["categories"],
@@ -24,13 +25,18 @@ export const paramDef = {
 	type: "object",
 	properties: {
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		sinceId: { type: "string", format: "misskey:id" },
+		untilId: { type: "string", format: "misskey:id" },
 	},
 	required: [],
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const query = EmojiCustomCategories.createQueryBuilder("category")
-		.orderBy("id", "DESC");
+	const query = makePaginationQuery(
+		EmojiCustomCategories.createQueryBuilder("category"),
+		ps.sinceId,
+		ps.untilId,
+	);
 
 	const categories = await query.take(ps.limit || 10).getMany();
 

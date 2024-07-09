@@ -60,6 +60,18 @@ export async function fetchCustomCategory() {
 		followCategories = await api("categories/show", {
 			categoryId: defaultStore.state.followCategories
 		});
+		let emojiStr = $computed(() =>
+			instance.emojis.map((x) => `:${x.name}:`)
+		);
+		followCategories = followCategories.map((x) => {
+			if (!x.contents) return x;
+			x.contents = x.contents.map((emoji) => {
+				if (emoji.includes("@") && emojiStr?.includes(emoji.replace(/@(\S+)$/, ":"))) {
+					return emoji.replace(/@(\S+)$/, ":")
+				}
+			})
+			return x;
+		})
 	}
 }
 

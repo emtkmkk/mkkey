@@ -72,6 +72,7 @@ export async function fetchCustomCategory() {
 				if (emoji.includes("@") && emojiStr?.includes(emoji.replace(/@(\S+)$/, ":"))) {
 					return emoji.replace(/@(\S+)$/, ":")
 				}
+				return emoji;
 			})
 			return x;
 		})

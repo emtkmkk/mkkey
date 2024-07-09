@@ -23,6 +23,7 @@
 import { ref, watch, computed } from "vue";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
+import { fetchCustomCategory } from "@/instance";
 
 const emit = defineEmits(["update:active"]);
 const props = withDefaults(
@@ -53,6 +54,7 @@ function toggle() {
 		followCategories.push(props.categoryId);
 	}
 	isActive = !isActive;
+	fetchCustomCategory();
 	emit("update:active", isActive);
 }
 

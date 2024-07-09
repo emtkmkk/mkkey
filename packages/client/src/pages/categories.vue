@@ -38,7 +38,7 @@
 				<swiper-slide>
 					<XDraggable
 						v-model="followCategoryIds"
-						class="zoaiodol"
+						class="zoaiodol _gap"
 						:item-key="(item) => item"
 						animation="150"
 						delay="100"
@@ -95,7 +95,7 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deviceKind } from "@/scripts/device-kind";
 import { defaultStore } from "@/store";
-import { followCategories } from "@/instance";
+import { followCategories, sortCustomCategory } from "@/instance";
 import "swiper/scss";
 import "swiper/scss/virtual";
 
@@ -112,7 +112,8 @@ const followCategoryIds = $computed(
 let tab = $ref("featured");
 const tabs = ["featured", "following", "my"];
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
-
+watch($$(followCategoryIds), sortCustomCategory())
+	
 const featuredCategoriesPagination = {
 	endpoint: "categories/featured" as const,
 	limit: 20,

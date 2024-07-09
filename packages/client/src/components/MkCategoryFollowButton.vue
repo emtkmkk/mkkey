@@ -43,7 +43,7 @@ const followCategories = $computed(defaultStore.makeGetterSetter("followCategori
 const isActive = $ref(props.initialValue);
 
 watch(() => followCategories, () => {
-	isActive = followCategories.value.includes(props.categoryId);
+	isActive = followCategories.includes(props.categoryId);
 }, { immediate: true });
 
 function toggle() {

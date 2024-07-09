@@ -60,6 +60,8 @@ import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 import { truncate } from "@/misc/truncate.js";
 import emoji from "../renderer/emoji.js";
 import { ArrayBuffertohex } from "jsrsasign";
+import * as parse5 from "parse5";
+import * as TreeAdapter from "../../../../node_modules/parse5/dist/tree-adapters/default.js";
 
 const logger = apLogger;
 
@@ -226,49 +228,49 @@ export async function createNote(
 	note.attachment = Array.isArray(note.attachment)
 		? note.attachment
 		: note.attachment
-		? [note.attachment]
-		: [];
+			? [note.attachment]
+			: [];
 	const files = note.attachment.map(
 		// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
 		(attach) => (attach.sensitive ??= note.sensitive),
 	)
 		? (
-				await Promise.all(
-					note.attachment.map(
-						(x) => limit(() => resolveImage(actor, x)) as Promise<DriveFile>,
-					),
-				)
-		  ).filter((image) => image != null)
+			await Promise.all(
+				note.attachment.map(
+					(x) => limit(() => resolveImage(actor, x)) as Promise<DriveFile>,
+				),
+			)
+		).filter((image) => image != null)
 		: [];
 
 	// Reply
 	const reply: Note | null = note.inReplyTo
 		? await resolveNote(note.inReplyTo, resolver)
-				.then((x) => {
-					if (x == null) {
-						logger.warn("Specified inReplyTo, but nout found");
-						throw new Error("inReplyTo not found");
-					} else {
-						return x;
+			.then((x) => {
+				if (x == null) {
+					logger.warn("Specified inReplyTo, but nout found");
+					throw new Error("inReplyTo not found");
+				} else {
+					return x;
+				}
+			})
+			.catch(async (e) => {
+				// トークだったらinReplyToのエラーは無視
+				const uri = getApId(note.inReplyTo);
+				if (uri.startsWith(`${config.url}/`)) {
+					const id = uri.split("/").pop();
+					const talk = await MessagingMessages.findOneBy({ id });
+					if (talk) {
+						isTalk = true;
+						return null;
 					}
-				})
-				.catch(async (e) => {
-					// トークだったらinReplyToのエラーは無視
-					const uri = getApId(note.inReplyTo);
-					if (uri.startsWith(`${config.url}/`)) {
-						const id = uri.split("/").pop();
-						const talk = await MessagingMessages.findOneBy({ id });
-						if (talk) {
-							isTalk = true;
-							return null;
-						}
-					}
+				}
 
-					logger.warn(
-						`Error in inReplyTo ${note.inReplyTo} - ${e.statusCode || e}`,
-					);
-					throw e;
-				})
+				logger.warn(
+					`Error in inReplyTo ${note.inReplyTo} - ${e.statusCode || e}`,
+				);
+				throw e;
+			})
 		: null;
 
 	// Quote
@@ -279,12 +281,12 @@ export async function createNote(
 			uri: string,
 		): Promise<
 			| {
-					status: "ok";
-					res: Note | null;
-			  }
+				status: "ok";
+				res: Note | null;
+			}
 			| {
-					status: "permerror" | "temperror";
-			  }
+				status: "permerror" | "temperror";
+			}
 		> => {
 			if (typeof uri !== "string" || !uri.match(/^https?:/)) {
 				console.log(`ResolveNoteErr : ${uri}`);
@@ -404,10 +406,9 @@ export async function createNote(
 	}
 	if (quote && text) {
 		let reg = new RegExp(
-			`(\n\n|^)[^\n]+${
-				quote.uri
-					? quote.uri.replaceAll("/", "\\/")
-					: `${config.url}/notes/${quote.id}`.replaceAll("/", "\\/")
+			`(\n\n|^)[^\n]+${quote.uri
+				? quote.uri.replaceAll("/", "\\/")
+				: `${config.url}/notes/${quote.id}`.replaceAll("/", "\\/")
 			}$`,
 			"i",
 		);
@@ -419,6 +420,60 @@ export async function createNote(
 			);
 			text = text.replace(reg, "");
 		}
+	}
+	if (references && text) {
+
+		const searchRefUrl = (_html: string | undefined): string | null => {
+			let html: string | undefined = _html;
+			if (!html) return null;
+
+			html = html.replace(/<br\s?\/?>\r?\n/gi, "\n");
+			html = html.replace(/\u200b:(\w+(@[\w.\-]+\.[\w.\-]+)?):\u200b/g, ":$1:");
+			const dom: TreeAdapter.Node = parse5.parseFragment(html);
+
+			const findReferenceLinkInline = (node: TreeAdapter.Node): string | null => {
+				try {
+					if (TreeAdapter.isElementNode(node) && node.tagName === 'span') {
+						const elementNode = node;
+						const classAttr = elementNode.attrs.find((attr: { name: string; }) => attr.name === 'class');
+						if (classAttr?.value.includes('reference-link-inline')) {
+							const anchorNode = elementNode.childNodes.find(child => TreeAdapter.isElementNode(child) && (child).tagName === 'a');
+							if (anchorNode) {
+								const anchorElement = anchorNode;
+								const hrefAttr = anchorElement.attrs.find((attr: { name: string; }) => attr.name === 'href');
+								return hrefAttr ? hrefAttr.value : null;
+							}
+						}
+					}
+					if (node.childNodes) {
+						for (const childNode of node.childNodes) {
+							const result = findReferenceLinkInline(childNode);
+							if (result) {
+								return result;
+							}
+						}
+					}
+					return null;
+				} catch (e) {
+					console.log(e);
+					return null
+				}
+			};
+
+			return findReferenceLinkInline(dom);
+		};
+
+		const refUrl = searchRefUrl(note.content);
+
+		if (refUrl) {
+			const reg = new RegExp(
+				`\\[.+?\\]\\(${refUrl.replaceAll("/", "\\/")}\\)$`,
+				"i",
+			);
+
+			text = text.replace(reg, "");
+		}
+
 	}
 
 	// vote
@@ -586,7 +641,7 @@ export async function extractEmojis(
 			let detectHost = undefined;
 			try {
 				detectHost = tag.host || name.split("@")?.[1] || new URL(tag.id).host;
-			} catch (err) {}
+			} catch (err) { }
 
 			//@以降はもう不要なので消す
 			name = name.split("@")?.[0] ?? name;
@@ -629,9 +684,7 @@ export async function extractEmojis(
 				beforeD7Date.setDate(beforeD7Date.getDate() - 7);
 				if (
 					!exists ||
-					(exists.updatedAt || exists.createdAt) < beforeD7Date ||
-					(exists.updatedAt || exists.createdAt) <
-						new Date("2024/01/19 18:35:00")
+					(exists.updatedAt || exists.createdAt) < beforeD7Date
 				) {
 					emojiInfoFlg = true;
 
@@ -670,26 +723,24 @@ export async function extractEmojis(
 								licenseData.copyPermission = licenseData.copyPermission
 									? licenseData.copyPermission
 									: packJson.pack["can-download"] &&
-									  packJson.pack["share-flies"] !== false
-									? "allow"
-									: !(
+										packJson.pack["share-flies"] !== false
+										? "allow"
+										: !(
 											packJson.pack["can-download"] !== false ||
 											packJson.pack["share-flies"]
-									  )
-									? "deny"
-									: "none";
+										)
+											? "deny"
+											: "none";
 								licenseData.license = packJson.pack["license"];
 								licenseData.description = packJson.pack["description"];
 								licenseData.usageInfo = packJson.pack["homepage"]
-									? `pack:${pack}${
-											(packJson["files_count"] ?? 0) > 1
-												? `(${packJson["files_count"]})`
-												: ""
-									  }\n${packJson.pack["homepage"]}${
-											packJson.pack["fallback-src"]
-												? `\n(${packJson.pack["fallback-src"]})`
-												: ""
-									  }`
+									? `pack:${pack}${(packJson["files_count"] ?? 0) > 1
+										? `(${packJson["files_count"]})`
+										: ""
+									}\n${packJson.pack["homepage"]}${packJson.pack["fallback-src"]
+										? `\n(${packJson.pack["fallback-src"]})`
+										: ""
+									}`
 									: "";
 							}
 

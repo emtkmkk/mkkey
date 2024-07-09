@@ -112,7 +112,7 @@ const followCategoryIds = $computed(
 let tab = $ref("featured");
 const tabs = ["featured", "following", "my"];
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
-watch($$(followCategoryIds), sortCustomCategory())
+watch($$(followCategoryIds), () => sortCustomCategory())
 	
 const featuredCategoriesPagination = {
 	endpoint: "categories/featured" as const,

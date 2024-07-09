@@ -52,12 +52,12 @@
 											><i class="ph-pencil ph-bold ph-lg"
 										/></MkA>
 									</template>
-								</div>
-								<MkCategoryFollowButton 
+									<MkCategoryFollowButton 
 									:categoryId="category.id" 
 									class="follow-toggle" 
 									:initialValue="followCategories.includes(category.id)"
-								/>
+								  />
+								</div>
 							</div>
 						</div>
 						<div class="content">

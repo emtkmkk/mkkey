@@ -19,7 +19,7 @@ export const instance: Misskey.entities.InstanceMetadata = reactive(
 		  },
 );
 
-export let followCategories = $ref([]);
+export let followCategories = $ref((localStorage.getItem("followCategoriesTime") ?? 0) < new Date("2023/7/6").getTime() ? [] : JSON.parse(localStorage.getItem("followCategories") ?? "[]"));
 
 stream.on("emojiAdded", (emojiData) => {
 	instance.emojis = [emojiData.emoji, ...instance.emojis];
@@ -43,7 +43,10 @@ stream.on("emojiDeleted", (emojiData) => {
 });
 
 export async function emojiLoad() {
-	await fetchCustomCategory()
+	if (!localStorage.getItem("followCategoriesTime") || Date.now() - localStorage.getItem("followCategoriesTime") > 60 * 60 * 1000) {
+		await fetchCustomCategory()
+		
+	}
 	if (!instance.remoteEmojiMode) {
 		const remoteEmoji = await get("remoteEmojiData");
 
@@ -58,7 +61,7 @@ export async function emojiLoad() {
 export async function fetchCustomCategory() {
 	if (defaultStore.state.followCategories?.length) {
 		followCategories = await api("categories/show", {
-			categoryId: defaultStore.state.followCategories
+			categoryId: Array.from(new Set(defaultStore.state.followCategories))
 		});
 		let emojiStr = $computed(() =>
 			instance.emojis.map((x) => `:${x.name}:`)
@@ -72,7 +75,11 @@ export async function fetchCustomCategory() {
 			})
 			return x;
 		})
+	} else {
+		followCategories = []
 	}
+	localStorage.setItem("followCategories", JSON.stringify(followCategories))
+	localStorage.setItem("followCategoriesTime", String(Date.now()))
 }
 
 export async function fetchInstance() {

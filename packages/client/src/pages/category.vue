@@ -47,7 +47,7 @@
 									</button>
 									<button
 										v-tooltip="i18n.ts.download"
-										@click="exportEmojiDecks($event)"
+										@click="downloadCategory($event)"
 										class="menu _button"
 									>
 										<i
@@ -55,7 +55,7 @@
 										/>
 									</button>
 									<button
-										v-if="!defaultStore.state.followCategories.includes(category.id)"
+										v-if="!followCategories.includes(category.id)"
 										v-tooltip="i18n.ts.follow"
 										@click="follow"
 										class="menu _button"
@@ -91,6 +91,7 @@
 							</div>
 						</div>
 						<div class="content">
+							<div>{{ category.summary }}</div>
 							<XCategory :category="category" />
 						</div>
 						<div class="actions">
@@ -184,7 +185,8 @@ import copyToClipboard from "@/scripts/copy-to-clipboard";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { shareAvailable } from "@/scripts/share-available";
 import JSON5 from "json5";
-import { instance } from "@/instance";
+import { fetchCustomCategory } from "@/instance";
+import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	categoryId: string;
@@ -194,6 +196,11 @@ const props = defineProps<{
 let category = $ref(null);
 let bgImg = $ref(null);
 let error = $ref(null);
+
+const followCategories = $computed(
+	defaultStore.makeGetterSetter("followCategories")
+);
+	
 const otherPostsPagination = {
 	endpoint: "users/categories" as const,
 	limit: 6,
@@ -219,20 +226,20 @@ function fetchCategory() {
 
 function copyUrl() {
 	copyToClipboard(
-		`${url}/@${category.user.username}/categories/${category.name}`,
+		`${url}/@${category.user.username}/categories/${category.id}`,
 	);
 	os.success();
 }
 
 function follow() {
-	defaultStore.set("followCategories", [...defaultStore.state.followCategories, category.id]);
-	instance.fetchCustomCategory()
+	followCategories = [...followCategories, category.id];
+	fetchCustomCategory()
 	os.success();
 }
 
-function unFollow() {
-	defaultStore.set("followCategories", defaultStore.state.followCategories.filter((x) => x.id !== category.id));
-	instance.fetchCustomCategory()
+function unfollow() {
+	followCategories = followCategories.filter((x) => x !== category.id);
+	fetchCustomCategory()
 	os.success();
 }
 
@@ -244,13 +251,11 @@ function downloadCategory() {
 			}),
 		);
 	});
-}
-const exportEmojiDecks = (ev) => {
 	const a = document.createElement("a");
-	a.href = href;
-	a.download = `${name}.json`;
+	a.href = href
+	a.download = `${category.id}.json`;
 	a.click();
-};
+}
 
 function getBgImg(): string {
 	if (category.eyeCatchingImage != null) {
@@ -264,7 +269,7 @@ function share() {
 	navigator.share({
 		title: category.title ?? category.name,
 		text: category.summary,
-		url: `${url}/@${category.user.username}/categories/${category.name}`,
+		url: `${url}/@${category.user.username}/categories/${category.id}`,
 	});
 }
 
@@ -272,7 +277,7 @@ function shareWithNote() {
 	os.post({
 		initialText: `${category.title || category.name} ${url}/@${
 			category.user.username
-		}/categories/${category.name}`,
+		}/categories/${category.id}`,
 		instant: true,
 	});
 }

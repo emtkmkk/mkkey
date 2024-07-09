@@ -13,7 +13,7 @@
 					class="button"
 					inline
 					link
-					:to="`/@${author.username}/categories/${currentName}`"
+					:to="`/@${author.username}/categories/${categoryId}`"
 					><i class="ph-arrow-square-out ph-bold ph-lg"></i>
 					{{ i18n.ts._categories.viewCategory }}</MkButton
 				>
@@ -151,7 +151,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, computed, provide, watch } from "vue";
+import { defineAsyncComponent, computed, provide, watch, unref } from "vue";
 import { v4 as uuid } from "uuid";
 import MkTextarea from "@/components/form/textarea.vue";
 import MkButton from "@/components/MkButton.vue";
@@ -167,6 +167,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import FormRadios from "@/components/form/radios.vue";
 import { $i } from "@/account";
 import { instance } from "@/instance";
+import { defaultStore } from "@/store";
 
 const XDraggable = defineAsyncComponent(() =>
 	import("vuedraggable").then((x) => x.default)
@@ -186,7 +187,7 @@ let categoryId = $ref(null);
 let currentName = $ref(null);
 let title = $ref("");
 let summary = $ref(null);
-let name = $ref(Date.now().toString());
+let name = $ref(null);
 let eyeCatchingImage = $ref(null);
 let eyeCatchingImageId = $ref(null);
 let contents = $ref([]);
@@ -235,6 +236,10 @@ function copyDeck() {
 			break;
 	}
 }
+
+function deleteReac(reaction) {
+		contents = contents.filter((x) => x !== reaction);
+	}
 
 function remove(reaction, ev: MouseEvent) {
 	os.popupMenu(
@@ -294,18 +299,29 @@ function remove(reaction, ev: MouseEvent) {
 		ev.currentTarget ?? ev.target
 	);
 }
-
+	
 function chooseEmoji(ev: MouseEvent) {
-	os.pickEmoji(ev.currentTarget ?? ev.target, {
-		showPinned: false,
-		asReactionPicker: true,
-		notAddRecents: true,
-	}).then((emoji) => {
-		if (!contents.includes(emoji)) {
-			contents.push(emoji);
-		}
-	});
-}
+	os.popup(
+			defineAsyncComponent(
+				() => import("@/components/MkEmojiPickerDialog.vue"),
+			),
+			{
+				src: ev.currentTarget ?? ev.target,
+				showPinned: false,
+				asReactionPicker: true,
+				afterChosenNotClose: true,
+				notAddRecents: true,
+			},
+			{
+				done: (emoji) => {
+					if (!contents.includes(emoji)) {
+						contents.push(emoji);
+					}
+				},
+			},
+			"closed",
+		);
+	}
 
 function getSaveOptions() {
 	return {
@@ -453,6 +469,21 @@ definePageMetadata(
 </script>
 
 <style lang="scss" scoped>
+.zoaiodol {
+	padding: 0.75rem;
+	font-size: 1.1em;
+
+	> .item {
+		display: inline-block;
+		padding: 0.5rem;
+		cursor: move;
+	}
+
+	> .add {
+		display: inline-block;
+		padding: 0.5rem;
+	}
+}
 .jqqmcavi {
 	> .button {
 		& + .button {

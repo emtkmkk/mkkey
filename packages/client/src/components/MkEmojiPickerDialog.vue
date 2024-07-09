@@ -47,11 +47,14 @@ const props = withDefaults(
 		showPinned?: boolean;
 		asReactionPicker?: boolean;
 		notAddRecents: boolean
+		afterChosenNotClose?: boolean;
 	}>(),
 	{
 		manualShowing: null,
 		showPinned: true,
 		asReactionPicker: false,
+		notAddRecents: false,
+		afterChosenNotClose: false,
 	}
 );
 
@@ -67,8 +70,9 @@ const picker = ref<InstanceType<typeof MkEmojiPicker>>();
 function chosen(emoji: any) {
 	emit("done", emoji);
 	if (
-		defaultStore.state.notCloseEmojiPicker === false ||
-		props.asReactionPicker
+		(defaultStore.state.notCloseEmojiPicker === false ||
+		props.asReactionPicker) &&
+		!props.afterChosenNotClose
 	) {
 		modal.value?.close();
 	}

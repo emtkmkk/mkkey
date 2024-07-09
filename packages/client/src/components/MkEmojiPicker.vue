@@ -487,7 +487,7 @@
 					<header>{{ i18n.ts.customEmojis }}</header>
 					<XSection
 						v-once
-						v-for="category in instance.followCategories"
+						v-for="category in followCategories"
 						:key="'custom:' + category.id"
 						:initial-shown="false"
 						:emojis="category.contents"
@@ -1142,7 +1142,7 @@ import * as os from "@/os";
 import { isTouchUsing } from "@/scripts/touch";
 import { deviceKind } from "@/scripts/device-kind";
 import { formatRoomaji, kanaToHira, jaToRoomaji } from "@/scripts/convert-jp";
-import { emojiCategories, emojiMap, instance } from "@/instance";
+import { emojiCategories, emojiMap, instance, followCategories } from "@/instance";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
 import { FocusTrap } from "focus-trap-vue";

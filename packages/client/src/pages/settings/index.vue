@@ -6,7 +6,7 @@
 				:tabs="headerTabs"
 				:display-back-button="true"
 		/></template>
-		<MkSpacer :content-max="900" :margin-min="20" :margin-max="32">
+		<MkSpacer :content-max="900" :margin-min="10" :margin-max="32">
 			<div ref="el" class="vvcocwet" :class="{ wide: !narrow }">
 				<div class="body">
 					<div

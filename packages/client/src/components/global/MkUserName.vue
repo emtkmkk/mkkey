@@ -16,7 +16,7 @@
 	{{ hostIcon && user.host ? "@" : "" }}
 	<img
 		class="icon"
-		style="height: 1.1em; border-radis: 0.3rem; vertical-align: middle"
+		style="height: 1.1em; border-radius: 0.3rem; vertical-align: middle"
 		v-if="hostIcon && getIcon(hostIcon) && !errorIcon"
 		:src="getIcon(hostIcon)"
 		aria-hidden="true"
@@ -24,7 +24,7 @@
 	/>
 	<img
 		class="icon"
-		style="height: 1.1em; border-radis: 0.3rem; vertical-align: middle"
+		style="height: 1.1em; border-radius: 0.3rem; vertical-align: middle"
 		v-if="altIcon && getIcon(altIcon) && errorIcon && !erroraltIcon"
 		:src="getIcon(altIcon)"
 		aria-hidden="true"

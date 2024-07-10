@@ -26,9 +26,9 @@ export default {
 			src.style.backgroundColor = "var(--bg)";
 		} else {
 			src.style.backgroundColor = "var(--panel)";
-			src.style.borderRadius: "var(--radius)";
-	    src.style.overflow: "clip";
-			src.style.padding: "0.5rem";
+			src.style.borderRadius = "var(--radius)";
+	    src.style.overflow = "clip";
+			src.style.padding = "0.5rem";
 		}
 	},
 } as Directive;

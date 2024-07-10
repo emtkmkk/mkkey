@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormLink to="/settings/plugin/install"
 			><template #icon
 				><i class="ph-download-simple ph-bold ph-lg"></i></template

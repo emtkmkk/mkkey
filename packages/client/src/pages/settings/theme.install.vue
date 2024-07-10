@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormTextarea v-model="installThemeCode" class="_formBlock">
 			<template #label>{{ i18n.ts._theme.code }}</template>
 		</FormTextarea>

@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSection>
 			<template #label></template>
 			<FormRadios v-if="!instance.disableLocalTimeline" v-model="showLocalPostsInTimeline" class="_formBlock">

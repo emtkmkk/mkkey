@@ -38,14 +38,14 @@
 				<swiper-slide>
 					<XDraggable
 						v-model="followCategoryIds"
-						class="zoaiodol _gap"
+						class="zoaiodol"
 						:item-key="(item) => item"
 						animation="150"
 						delay="100"
 						delay-on-touch-only="true"
 					>
 						<template #item="{ element }">
-							<div v-if="followCategories.map((x) => x.id).includes(element)" class="rknalgpo">
+							<div v-if="followCategories.map((x) => x.id).includes(element)" class="rknalgpo _gap">
 								<MkCategoryPreview
 									:key="element"
 									class="ckltabjg"

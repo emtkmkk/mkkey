@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<div :class="$style.buttons">
 			<MkButton inline primary @click="saveNew">{{
 				ts._preferencesBackups.saveNew

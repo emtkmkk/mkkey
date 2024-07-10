@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormRange
 			v-model="masterVolume"
 			:min="0"

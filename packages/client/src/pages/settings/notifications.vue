@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormButton class="_formBlock" @click="configure"
 			><template #icon><i class="ph-gear-six ph-bold ph-lg"></i></template
 			>{{ i18n.ts.notificationSetting }}</FormButton

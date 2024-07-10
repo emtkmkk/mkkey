@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSelect v-model="selectedThemeId" class="_formBlock">
 			<template #label>{{ i18n.ts.theme }}</template>
 			<optgroup :label="i18n.ts._theme.installedThemes">

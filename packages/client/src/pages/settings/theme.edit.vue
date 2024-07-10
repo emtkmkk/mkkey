@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<div
 			class="_formBlock"
 			style="display: flex; gap: var(--margin); flex-wrap: wrap"

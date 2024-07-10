@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormInfo warn class="_formBlock">{{
 			i18n.ts._accountDelete.mayTakeTime
 		}}</FormInfo>

@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSection>
 			<template #label></template>
 			<FormSwitch v-model="imageNewTab" class="_formBlock">{{

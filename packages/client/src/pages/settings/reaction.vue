@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSwitch v-model="enableEmojiReactions" class="_formBlock">
 			{{ i18n.ts.enableEmojiReactions }}
 		</FormSwitch>

@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSelect
 			v-model="statusbar.type"
 			placeholder="Please select"

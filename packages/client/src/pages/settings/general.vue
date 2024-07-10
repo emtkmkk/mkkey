@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSelect v-model="lang" class="_formBlock">
 			<template #label>{{ i18n.ts.uiLanguage }}</template>
 			<option v-for="x in langs" :key="x[0]" :value="x[0]">

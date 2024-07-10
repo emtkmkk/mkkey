@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormInfo class="_formBlock">{{
 			i18n.ts.customKaTeXMacroDescription
 		}}</FormInfo>

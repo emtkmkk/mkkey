@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSwitch
 			v-model="isLocked"
 			:disabled="isRemoteLocked"

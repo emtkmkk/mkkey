@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormFolder v-for="x in statusbars" :key="x.id" class="_formBlock">
 			<template #label>{{ x.type ?? i18n.ts.notSet }}</template>
 			<template #suffix>{{ x.name }}</template>

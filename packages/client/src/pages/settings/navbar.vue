@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSlot>
 			<template #label>{{ i18n.ts.navbar }}</template>
 			<MkContainer :showHeader="false">

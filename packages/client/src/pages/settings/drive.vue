@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSection v-if="!fetching">
 			<template #label>{{ i18n.ts.usageAmount }}</template>
 			<div class="_formBlock uawsfosz">

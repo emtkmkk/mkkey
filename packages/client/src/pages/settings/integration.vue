@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSection v-if="instance.enableDiscordIntegration">
 			<template #label
 				><i class="ph-discord-logo ph-bold ph-lg"></i> Discord</template

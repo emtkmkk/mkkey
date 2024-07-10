@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSwitch v-model="navWindow"
 			>{{ i18n.ts.defaultNavigationBehaviour }}:
 			{{ i18n.ts.openInWindow }}</FormSwitch

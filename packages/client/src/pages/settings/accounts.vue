@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot">
+	<div class="_formRoot" v-panel>
 		<FormSuspense :p="init">
 			<FormButton primary @click="addAccount"
 				><i class="ph-plus ph-bold ph-lg"></i>

@@ -13,6 +13,7 @@
 			:emojis="
 				category.contents
 			"
+			@chosen="chosen"
 			>{{ category.name }}</XSection
 		>
 		</div>
@@ -35,11 +36,13 @@ import { url } from "@/config";
 import { $i } from "@/account";
 import { defaultStore } from "@/store";
 import XSection from "@/components/MkEmojiPicker.section.vue";
+import { openReactionMenu_ } from "@/scripts/reaction-menu";
 
 export default defineComponent({
 	components: {
 		XSection,
 		computed,
+		openReactionMenu_,
 	},
 	props: {
 		category: {
@@ -48,32 +51,50 @@ export default defineComponent({
 		},
 	},
 	setup(props) {
-  const parentElement = ref<HTMLElement | null>(null);
-  const parentWidth = ref(0);
+		const parentElement = ref<HTMLElement | null>(null);
+		const parentWidth = ref(0);
 
-  const { reactionPickerSize, reactionPickerWidth, reactionPickerHeight, reactionPickerVAlign, reactionPickerAllWidth } = defaultStore.reactiveState;
+		const {
+			reactionPickerSize,
+			reactionPickerWidth,
+			reactionPickerHeight,
+			reactionPickerVAlign,
+			reactionPickerAllWidth,
+		} = defaultStore.reactiveState;
 
-  const size = computed(() => reactionPickerSize.value);
-  const vAlign = computed(() => reactionPickerVAlign.value);
-  const width = computed(() => reactionPickerWidth.value);
-  const height = computed(() => reactionPickerHeight.value);
+		const size = computed(() => reactionPickerSize.value);
+		const vAlign = computed(() => reactionPickerVAlign.value);
+		const width = computed(() => reactionPickerWidth.value);
+		const height = computed(() => reactionPickerHeight.value);
 
-  const dynamicStyles = ref({
-    '--eachSize': `${2.1875 + size.value * 0.3125}rem`,
-    '--valign': `${vAlign.value * -0.06125}rem`,
-    '--EmojiPickerWidth': `95%`,
-    '--eachWidth': `calc(var(--EmojiPickerWidth) / ${width.value})`,
-    '--columns': `repeat(${width.value}, 1fr)`,
-    '--pickerHeight': `calc(var(--vh) * ${height.value})`
-  });
+		const dynamicStyles = ref({
+			"--eachSize": `${2.1875 + size.value * 0.3125}rem`,
+			"--valign": `${vAlign.value * -0.06125}rem`,
+			"--EmojiPickerWidth": "95%",
+			"--eachWidth": `calc(var(--EmojiPickerWidth) / ${width.value})`,
+			"--columns": `repeat(${width.value}, 1fr)`,
+			"--pickerHeight": `calc(var(--vh) * ${height.value})`,
+		});
 
-  const { category } = toRefs(props);
-  return {
-    category,
-    dynamicStyles,
-    parentElement,
-  };
-	}
+		async function chosen(emoji: any, ev?: MouseEvent) {
+			event.stopPropagation();
+			const el =
+				event &&
+				((event.currentTarget ?? event.target) as
+					| HTMLElement
+					| null
+					| undefined);
+			await openReactionMenu_(emoji, null, false, false, el);
+		}
+
+		const { category } = toRefs(props);
+		return {
+			category,
+			dynamicStyles,
+			parentElement,
+			chosen,
+		};
+	},
 });
 </script>
 

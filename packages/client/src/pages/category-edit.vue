@@ -79,32 +79,34 @@
 
 			<div v-else-if="tab === 'contents'">
 				<div>
-					<XDraggable
-						v-model="contents"
-						class="zoaiodol"
-						:item-key="(item) => item"
-						animation="150"
-						delay="100"
-						delay-on-touch-only="true"
-					>
-						<template #item="{ element }">
-							<button
-								class="_button item"
-								@click="remove(element, $event)"
-							>
-								<MkEmoji
-									:emoji="element"
-									:normal="true"
-									:nofallback="true"
-								/>
-							</button>
-						</template>
-						<template #footer>
-							<button class="_button add" @click="chooseEmoji">
-								<i class="ph-plus ph-bold ph-lg"></i>
-							</button>
-						</template>
-					</XDraggable>
+					<div v-panel>
+						<XDraggable
+							v-model="contents"
+							class="zoaiodol"
+							:item-key="(item) => item"
+							animation="150"
+							delay="100"
+							delay-on-touch-only="true"
+						>
+							<template #item="{ element }">
+								<button
+									class="_button item"
+									@click="remove(element, $event)"
+								>
+									<MkEmoji
+										:emoji="element"
+										:normal="true"
+										:nofallback="true"
+									/>
+								</button>
+							</template>
+							<template #footer>
+								<button class="_button add" @click="chooseEmoji">
+									<i class="ph-plus ph-bold ph-lg"></i>
+								</button>
+							</template>
+						</XDraggable>
+					</div>
 					<template v-if="!contents?.length">
 						<template v-if="defaultStore.state.enableEmojiReplace">
 							<FormRadios v-model="copyDeckType" class="_formBlock">
@@ -141,7 +143,6 @@
 								<option value="6">{{ "全絵文字置換" }}</option>
 								<option value="7">
 									{{
-										defaultStore.state.reactionsFolderName5 ||
 										"JSON / JSON5"
 									}}
 								</option>
@@ -181,7 +182,6 @@
 								</option>
 								<option value="7">
 									{{
-										defaultStore.state.reactionsFolderName5 ||
 										"JSON / JSON5"
 									}}
 								</option>
@@ -193,7 +193,7 @@
 						<MkButton
 							@click="copyDeck"
 							><i class="ph-copy ph-bold ph-lg"></i>
-							{{ i18n.ts._categories.copyDeck }}</MkButton
+							{{ copyDeckType === '7' ? "読み込む" : i18n.ts._categories.copyDeck }}</MkButton
 						>
 					</template>
 				</div>

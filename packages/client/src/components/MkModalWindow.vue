@@ -122,7 +122,7 @@ const ro = new ResizeObserver(() => {
 
 onMounted(() => {
 	updateBodyDimensions();
-	ro.observe(rootEl.value!);
+	if (rootEl.value) ro.observe(rootEl.value);
 });
 
 onUnmounted(() => {

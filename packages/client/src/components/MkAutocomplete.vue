@@ -100,6 +100,7 @@
 import {
 	markRaw,
 	ref,
+	unref,
 	onUpdated,
 	onMounted,
 	onBeforeUnmount,
@@ -229,21 +230,31 @@ function complete(type: string, value: any) {
 }
 
 function setPosition() {
-	if (!rootEl.value) return;
-	if (props.x + rootEl.value.offsetWidth > window.innerWidth) {
-		rootEl.value.style.left = `${
-			window.innerWidth - rootEl.value.offsetWidth
-		}px`;
-	} else {
-		rootEl.value.style.left = `${props.x}px`;
-	}
-	if (props.y + rootEl.value.offsetHeight > window.innerHeight) {
-		rootEl.value.style.top = `${props.y - rootEl.value.offsetHeight}px`;
-		rootEl.value.style.marginTop = "0";
-	} else {
-		rootEl.value.style.top = `${props.y}px`;
-		rootEl.value.style.marginTop = "calc(1em + 0.5rem)";
-	}
+		if (!(rootEl.value || rootEl)) {
+        console.error("rootEl is null or undefined.");
+        return;
+    }
+    const element = unref(rootEl.value || rootEl);
+    if (!element) {
+        console.error("rootEl is null or undefined.");
+        return;
+    }
+    if (typeof element.offsetWidth === 'undefined' || typeof element.offsetHeight === 'undefined') {
+        console.error("rootEl does not have offsetWidth or offsetHeight.");
+        return;
+    }
+    if (props.x + element.offsetWidth > window.innerWidth) {
+        element.style.left = `${window.innerWidth - element.offsetWidth}px`;
+    } else {
+        element.style.left = `${props.x}px`;
+    }
+    if (props.y + element.offsetHeight > window.innerHeight) {
+        element.style.top = `${props.y - element.offsetHeight}px`;
+        element.style.marginTop = "0";
+    } else {
+        element.style.top = `${props.y}px`;
+        element.style.marginTop = "calc(1em + 0.5rem)";
+    }
 }
 
 function exec() {
@@ -469,10 +480,10 @@ function applySelect() {
 }
 
 function chooseUser() {
+	props.close();
 	os.selectUser().then((user) => {
-		props.textarea.focus();
+		props.textarea?.focus();
 		complete("user", user);
-		props.close();
 	});
 }
 

@@ -89,13 +89,13 @@ export default define(meta, paramDef, async (ps, me) => {
 					.andWhere("user.id != :meId", { meId: me.id })
 					.andWhere("user.isSuspended = FALSE")
 					if (ps.host) {
-						query.andWhere("coalesce(user.host, :url) LIKE :host", {
+						otherQuery.andWhere("coalesce(user.host, :url) LIKE :host", {
 							url: config.host,
 							host: `${ps.host === "." ? config.host : ps.host.toLowerCase()}%`,
 						});
 					}
 					if (ps.username) {
-						query.andWhere("user.usernameLower LIKE :username", {
+						otherQuery.andWhere("user.usernameLower LIKE :username", {
 							username: `${ps.username.toLowerCase()}%`,
 						});
 					}

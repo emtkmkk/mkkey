@@ -12,26 +12,31 @@ export function calcPopupPosition(
 		y?: number;
 	},
 ): { top: number; left: number; transformOrigin: string } {
+	if (!el || typeof el.offsetWidth === 'undefined' || typeof el.offsetHeight === 'undefined') {
+		console.error("Invalid element provided.");
+		return { top: 0, left: 0, transformOrigin: "center center" };
+	}
+
 	const contentWidth = el.offsetWidth;
 	const contentHeight = el.offsetHeight;
 
-	let rect: DOMRect;
+	let rect: DOMRect = new DOMRect();
 
 	if (props.anchorElement) {
 		rect = props.anchorElement.getBoundingClientRect();
+	} else {
+		rect = { left: 0, top: 0, width: 0, height: 0, right: 0, bottom: 0, x: 0, y: 0, toJSON: () => ({}) };
 	}
 
 	const calcPosWhenTop = () => {
-		let left: number;
-		let top: number;
+		let left: number = props.x || 0;
+		let top: number = props.y || 0;
 
 		if (props.anchorElement) {
-			left =
-				rect.left + window.pageXOffset + props.anchorElement.offsetWidth / 2;
+			left = rect.left + window.pageXOffset + props.anchorElement.offsetWidth / 2;
 			top = rect.top + window.pageYOffset - contentHeight - props.innerMargin;
 		} else {
-			left = props.x;
-			top = props.y - contentHeight - props.innerMargin;
+			top = (props.y || 0) - contentHeight - props.innerMargin;
 		}
 
 		left -= el.offsetWidth / 2;
@@ -44,20 +49,14 @@ export function calcPopupPosition(
 	};
 
 	const calcPosWhenBottom = () => {
-		let left: number;
-		let top: number;
+		let left: number = props.x || 0;
+		let top: number = props.y || 0;
 
 		if (props.anchorElement) {
-			left =
-				rect.left + window.pageXOffset + props.anchorElement.offsetWidth / 2;
-			top =
-				rect.top +
-				window.pageYOffset +
-				props.anchorElement.offsetHeight +
-				props.innerMargin;
+			left = rect.left + window.pageXOffset + props.anchorElement.offsetWidth / 2;
+			top = rect.top + window.pageYOffset + props.anchorElement.offsetHeight + props.innerMargin;
 		} else {
-			left = props.x;
-			top = props.y + props.innerMargin;
+			top = (props.y || 0) + props.innerMargin;
 		}
 
 		left -= el.offsetWidth / 2;
@@ -70,16 +69,12 @@ export function calcPopupPosition(
 	};
 
 	const calcPosWhenLeft = () => {
-		let left: number;
-		let top: number;
+		let left: number = (props.x || 0) - contentWidth - props.innerMargin;
+		let top: number = props.y || 0;
 
 		if (props.anchorElement) {
 			left = rect.left + window.pageXOffset - contentWidth - props.innerMargin;
-			top =
-				rect.top + window.pageYOffset + props.anchorElement.offsetHeight / 2;
-		} else {
-			left = props.x - contentWidth - props.innerMargin;
-			top = props.y;
+			top = rect.top + window.pageYOffset + props.anchorElement.offsetHeight / 2;
 		}
 
 		top -= el.offsetHeight / 2;
@@ -92,30 +87,23 @@ export function calcPopupPosition(
 	};
 
 	const calcPosWhenRight = () => {
-		let left: number;
-		let top: number;
+		let left: number = (props.x || 0) + props.innerMargin;
+		let top: number = props.y || 0;
 
 		if (props.anchorElement) {
-			left =
-				rect.left +
-				props.anchorElement.offsetWidth +
-				window.pageXOffset +
-				props.innerMargin;
+			left = rect.left + props.anchorElement.offsetWidth + window.pageXOffset + props.innerMargin;
 
 			if (props.align === "top") {
 				top = rect.top + window.pageYOffset;
 				if (props.alignOffset != null) top += props.alignOffset;
 			} else if (props.align === "bottom") {
-				// TODO
+				top = rect.bottom + window.pageYOffset - el.offsetHeight;
+				if (props.alignOffset != null) top -= props.alignOffset;
 			} else {
-				// center
-				top =
-					rect.top + window.pageYOffset + props.anchorElement.offsetHeight / 2;
+				top = rect.top + window.pageYOffset + props.anchorElement.offsetHeight / 2;
 				top -= el.offsetHeight / 2;
 			}
 		} else {
-			left = props.x + props.innerMargin;
-			top = props.y;
 			top -= el.offsetHeight / 2;
 		}
 
@@ -126,11 +114,7 @@ export function calcPopupPosition(
 		return [left, top];
 	};
 
-	const calc = (): {
-		left: number;
-		top: number;
-		transformOrigin: string;
-	} => {
+	const calc = (): { left: number; top: number; transformOrigin: string } => {
 		switch (props.direction) {
 			case "top": {
 				const [left, top] = calcPosWhenTop();
@@ -146,7 +130,11 @@ export function calcPopupPosition(
 
 			case "bottom": {
 				const [left, top] = calcPosWhenBottom();
-				// TODO: ツールチップを下に向かって表示するスペースがなければ上に向かって出す
+				// ツールチップを下に向かって表示するスペースがなければ上に向かって出す
+				if (top + contentHeight - window.pageYOffset > window.innerHeight) {
+					const [left, top] = calcPosWhenTop();
+					return { left, top, transformOrigin: "center bottom" };
+				}
 				return { left, top, transformOrigin: "center top" };
 			}
 
@@ -164,9 +152,17 @@ export function calcPopupPosition(
 
 			case "right": {
 				const [left, top] = calcPosWhenRight();
-				// TODO: ツールチップを右に向かって表示するスペースがなければ左に向かって出す
+				// ツールチップを右に向かって表示するスペースがなければ左に向かって出す
+				if (left + contentWidth - window.pageXOffset > window.innerWidth) {
+					const [left, top] = calcPosWhenLeft();
+					return { left, top, transformOrigin: "right center" };
+				}
 				return { left, top, transformOrigin: "left center" };
 			}
+
+			default:
+				console.error("Invalid direction provided.");
+				return { top: 0, left: 0, transformOrigin: "center center" };
 		}
 	};
 

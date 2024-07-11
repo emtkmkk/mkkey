@@ -14,7 +14,9 @@ type Uploading = {
 	progressMax: number | undefined;
 	progressValue: number | undefined;
 	img: string;
+	retry: () => void;
 };
+
 export const uploads = ref<Uploading[]>([]);
 
 const compressTypeMap = {
@@ -45,174 +47,201 @@ export function uploadFile(
 
 		const reader = new FileReader();
 		reader.onload = async (ev) => {
+			try {
+				if (!defaultStore.state.confirmImgCompress && file.type in compressTypeMap) {
+					const { canceled } = await os.yesno({
+						type: "question",
+						text: "アップロードした画像を圧縮しますか？\n\njpg/webpの場合、画質が下がりpng画像に変換されます。\n画像に付与されているメタデータが削除されます。\n横幅、または縦幅のどちらかが2048pxを超えている場合、2048pxに収まるように画像が縮小されます。\n\nここで選択した設定は次回以降のデフォルトとして設定されます。",
+					});
+					defaultStore.set("keepOriginalUploading", canceled);
+					keepOriginal = canceled;
+					defaultStore.set("confirmImgCompress", true);
+				}
+				const { canceled } =
+					file.type === "video/quicktime"
+						? await os.yesno({
+								type: "question",
+								text: "このファイルはmov形式の為、iOS端末以外で正しく再生されない可能性があります。\nアプリ「VideoConvert」を使用するか、LINEでアップロード後に再度保存するなどでmp4形式に変換する事をオススメします。\nアップロードを続けますか？",
+						  })
+						: { canceled: false };
 
-			if (!defaultStore.state.confirmImgCompress && file.type in compressTypeMap) {
-				const { canceled } = await os.yesno({
-					type: "question",
-					text: "アップロードした画像を圧縮しますか？\n\njpg/webpの場合、画質が下がりpng画像に変換されます。\n画像に付与されているメタデータが削除されます。\n横幅、または縦幅のどちらかが2048pxを超えている場合、2048pxに収まるように画像が縮小されます。\n\nここで選択した設定は次回以降のデフォルトとして設定されます。",
-				})
-				defaultStore.set("keepOriginalUploading", canceled);
-				keepOriginal = canceled;
-				defaultStore.set("confirmImgCompress", true);
-			}
-			const { canceled } =
-				file.type === "video/quicktime"
-					? await os.yesno({
-							type: "question",
-							text: "このファイルはmov形式の為、iOS端末以外で正しく再生されない可能性があります。\nアプリ「VideoConvert」を使用するか、LINEでアップロード後に再度保存するなどでmp4形式に変換する事をオススメします。\nアップロードを続けますか？",
-					  })
-					: { canceled: false };
+				if (canceled) {
+					reject(new Error("Upload canceled by user"));
+					return;
+				}
 
-			if (canceled) {
-				reject();
-				return;
-			}
+				const ext = /\.\w+$/.exec(file.name) ?? "";
 
-			const ext = /\.\w+$/.exec(file.name) ?? undefined;
+				let inputName: string | undefined;
 
-			let inputName = undefined;
+				if (requiredFilename || defaultStore.state.alwaysInputFilename) {
+					const { canceled, result: input } = await os.inputText({
+						title: i18n.ts.filenameInput,
+						text: ext || ".???",
+						placeholder:
+							(name || file.name.replace(/\.\w+$/, "")) + ext,
+						default: name || file.name.replace(/\.\w+$/, ""),
+					});
+					if (!input || canceled) {
+						reject(new Error("Filename input canceled or invalid"));
+						return;
+					}
+					inputName = input
+						.toLowerCase()
+						.replace(/\.\w+$/, "")
+						.replaceAll(/[\\\/:\*\?\"<>\|]+/g, "")
+						.trim();
+					if (!inputName) {
+						reject(new Error("Invalid filename"));
+						return;
+					}
+					inputName = inputName + ext;
+				}
 
-			if (requiredFilename || defaultStore.state.alwaysInputFilename) {
-				const { canceled, result: input } = await os.inputText({
-					title: i18n.ts.filenameInput,
-					text: ext ?? ".???",
-					placeholder:
-						(name || (file.name ? file.name.replace(/\.\w+$/, "") : "")) +
-						(ext ?? ".???"),
-					default: name || (file.name ? file.name.replace(/\.\w+$/, "") : ""),
+				const ctx = reactive<Uploading>({
+					id: id,
+					name:
+						inputName ||
+						name ||
+						(keepFileName ? file.name : `${$i.username}-${id.replaceAll(".", "")}${ext}`),
+					progressMax: undefined,
+					progressValue: undefined,
+					img: window.URL.createObjectURL(file),
+					retry: () => retryUpload(ctx),
 				});
-				if (!input || canceled) {
-					reject();
-					return;
+
+				uploads.value.push(ctx);
+
+				let resizedImage: File | undefined;
+				if (!keepOriginal && file.type in compressTypeMap) {
+					const imgConfig = compressTypeMap[file.type];
+
+					const config = {
+						maxWidth: 2048,
+						maxHeight: 2048,
+						debug: true,
+						...imgConfig,
+					};
+
+					try {
+						resizedImage = await readAndCompressImage(file, config);
+						ctx.name =
+							file.type !== imgConfig.mimeType
+								? `${ctx.name.replace(/\.\w+$/, "")}.${
+										mimeTypeMap[compressTypeMap[file.type].mimeType]
+								  }`
+								: ctx.name;
+					} catch (err) {
+						console.error("Failed to resize image", err);
+					}
 				}
-				inputName = input;
-				inputName = inputName
-					.toLowerCase()
-					.replace(/\.\w+$/, "")
-					.replaceAll(/[\\\/:\*\?\"<>\|]+/g, "")
-					.trim();
-				if (!inputName) {
-					reject();
-					return;
-				}
-				inputName = inputName + ext;
-			}
 
-			const ctx = reactive<Uploading>({
-				id: id,
-				name:
-					inputName ||
-					name ||
-					(keepFileName ? file.name : undefined) ||
-					`${$i.username}-${id.replaceAll(".", "")}${ext?.[0] ?? ""}`,
-				progressMax: undefined,
-				progressValue: undefined,
-				img: window.URL.createObjectURL(file),
-			});
+				const formData = new FormData();
+				formData.append("force", "true");
+				formData.append("file", resizedImage || file);
+				formData.append("name", ctx.name);
+				if (folder) formData.append("folderId", folder);
 
-			uploads.value.push(ctx);
+				const xhr = new XMLHttpRequest();
+				xhr.open("POST", `${apiUrl}/drive/files/create`, true);
+				xhr.setRequestHeader("Authorization", `Bearer ${$i.token}`);
+				xhr.onload = (ev) => {
+					if (
+						xhr.status !== 200 ||
+						ev.target == null ||
+						ev.target.response == null
+					) {
+						uploads.value = uploads.value.filter((x) => x.id !== id);
 
-			let resizedImage: any;
-			if (!keepOriginal && file.type in compressTypeMap) {
-				const imgConfig = compressTypeMap[file.type];
-
-				const config = {
-					maxWidth: 2048,
-					maxHeight: 2048,
-					debug: true,
-					...imgConfig,
-				};
-
-				try {
-					resizedImage = await readAndCompressImage(file, config);
-					ctx.name =
-						file.type !== imgConfig.mimeType
-							? `${ctx.name.replace(/\.\w+$/, "")}.${
-									mimeTypeMap[compressTypeMap[file.type].mimeType]
-							  }`
-							: ctx.name;
-				} catch (err) {
-					console.error("Failed to resize image", err);
-				}
-			}
-
-			const formData = new FormData();
-			formData.append("force", "true");
-			formData.append("file", resizedImage || file);
-			formData.append("name", ctx.name);
-			if (folder) formData.append("folderId", folder);
-
-			const xhr = new XMLHttpRequest();
-			xhr.open("POST", `${apiUrl}/drive/files/create`, true);
-			xhr.setRequestHeader("Authorization", `Bearer ${$i.token}`);
-			xhr.onload = (ev) => {
-				if (
-					xhr.status !== 200 ||
-					ev.target == null ||
-					ev.target.response == null
-				) {
-					// TODO: 消すのではなくて(ネットワーク的なエラーなら)再送できるようにしたい
-					uploads.value = uploads.value.filter((x) => x.id !== id);
-
-					if (xhr.status === 413) {
-						alert({
-							type: "error",
-							title: i18n.ts.failedToUpload,
-							text: i18n.ts.cannotUploadBecauseExceedsFileSizeLimit,
-						});
-					} else if (ev.target?.response) {
-						const res = JSON.parse(ev.target.response);
-						if (res.error?.id === "bec5bd69-fba3-43c9-b4fb-2894b66ad5d2") {
+						if (xhr.status === 413) {
 							alert({
 								type: "error",
 								title: i18n.ts.failedToUpload,
-								text: i18n.ts.cannotUploadBecauseInappropriate,
+								text: i18n.ts.cannotUploadBecauseExceedsFileSizeLimit,
 							});
-						} else if (
-							res.error?.id === "d08dbc37-a6a9-463a-8c47-96c32ab5f064"
-						) {
-							alert({
-								type: "error",
-								title: i18n.ts.failedToUpload,
-								text: i18n.ts.cannotUploadBecauseNoFreeSpace,
-							});
+						} else if (ev.target?.response) {
+							const res = JSON.parse(ev.target.response);
+							if (res.error?.id === "bec5bd69-fba3-43c9-b4fb-2894b66ad5d2") {
+								alert({
+									type: "error",
+									title: i18n.ts.failedToUpload,
+									text: i18n.ts.cannotUploadBecauseInappropriate,
+								});
+							} else if (
+								res.error?.id === "d08dbc37-a6a9-463a-8c47-96c32ab5f064"
+							) {
+								alert({
+									type: "error",
+									title: i18n.ts.failedToUpload,
+									text: i18n.ts.cannotUploadBecauseNoFreeSpace,
+								});
+							} else {
+								alert({
+									type: "error",
+									title: i18n.ts.failedToUpload,
+									text: `${res.error?.message}\n${res.error?.code}\n${res.error?.id}`,
+								});
+							}
 						} else {
 							alert({
 								type: "error",
-								title: i18n.ts.failedToUpload,
-								text: `${res.error?.message}\n${res.error?.code}\n${res.error?.id}`,
+								title: "Failed to upload",
+								text: `${JSON.stringify(ev.target?.response)}, ${JSON.stringify(
+									xhr.response,
+								)}`,
 							});
 						}
-					} else {
-						alert({
-							type: "error",
-							title: "Failed to upload",
-							text: `${JSON.stringify(ev.target?.response)}, ${JSON.stringify(
-								xhr.response,
-							)}`,
-						});
+
+						reject(new Error("Failed to upload"));
+						return;
 					}
 
-					reject();
-					return;
-				}
+					const driveFile = JSON.parse(ev.target.response);
 
-				const driveFile = JSON.parse(ev.target.response);
+					resolve(driveFile);
 
-				resolve(driveFile);
+					uploads.value = uploads.value.filter((x) => x.id !== id);
+				};
 
-				uploads.value = uploads.value.filter((x) => x.id !== id);
-			};
+				xhr.upload.onprogress = (ev) => {
+					if (ev.lengthComputable) {
+						ctx.progressMax = ev.total;
+						ctx.progressValue = ev.loaded;
+					}
+				};
 
-			xhr.upload.onprogress = (ev) => {
-				if (ev.lengthComputable) {
-					ctx.progressMax = ev.total;
-					ctx.progressValue = ev.loaded;
-				}
-			};
+				xhr.onerror = () => {
+					alert({
+						type: "error",
+						title: i18n.ts.failedToUpload,
+						text: i18n.ts.networkErrorRetry,
+					});
+					reject(new Error("Network error"));
+				};
 
-			xhr.send(formData);
+				xhr.send(formData);
+			} catch (error) {
+				reject(error);
+			}
 		};
+		reader.onerror = () => reject(new Error("File reading failed"));
 		reader.readAsArrayBuffer(file);
 	});
+
+	function retryUpload(ctx: Uploading) {
+		uploadFile(
+			file,
+			folder,
+			ctx.name,
+			keepOriginal,
+			keepFileName,
+			requiredFilename,
+		)
+			.then((driveFile) => {
+				resolve(driveFile);
+			})
+			.catch((error) => {
+				console.error("Retry upload failed", error);
+			});
+	}
 }

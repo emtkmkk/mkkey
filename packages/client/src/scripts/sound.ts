@@ -15,7 +15,8 @@ export async function loadAudio(sound, useCache = true) {
 	if (useCache) {
 		if (sound.type === "_driveFile_" && cache.has(sound.fileId)) {
 			return cache.get(sound.fileId) as AudioBuffer;
-		} else if (cache.has(sound.type)) {
+		}
+		if (cache.has(sound.type)) {
 			return cache.get(sound.type) as AudioBuffer;
 		}
 	}

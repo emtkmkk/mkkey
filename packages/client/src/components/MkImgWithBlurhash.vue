@@ -14,6 +14,9 @@
 			:type="type"
 			:alt="alt"
 			@load="onLoad"
+			@click.prevent
+			@mousedown.prevent
+			@touchstart.prevent
 		/>
 	</div>
 </template>

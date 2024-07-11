@@ -6,7 +6,7 @@ function isEnableDataSaver(type: string): boolean {
 
 export function isSupportNavigatorConnection(): boolean {
 	const connection = (navigator as any).connection;
-	return connection && connection.type && "onchange" in connection;
+	return connection && typeof connection.type === 'string' && 'onchange' in connection;
 }
 
 export function isMobileData(): boolean {
@@ -16,11 +16,18 @@ export function isMobileData(): boolean {
 }
 
 export function initializeDetectNetworkChange(): void {
-	const connection = (navigator as any).connection;
 	if (!isSupportNavigatorConnection()) return;
 
-	connection.addEventListener("change", () => {
-		if (!connection || !connection.type) return;
-		defaultStore.set("enableDataSaverMode", isEnableDataSaver(connection.type));
-	});
+	const connection = (navigator as any).connection;
+
+	const handleChange = () => {
+		if (!connection || typeof connection.type !== 'string') return;
+		const isDataSaverEnabled = isEnableDataSaver(connection.type);
+		defaultStore.set("enableDataSaverMode", isDataSaverEnabled);
+	};
+
+	connection.addEventListener("change", handleChange);
+
+	// 初期状態の確認
+	handleChange();
 }

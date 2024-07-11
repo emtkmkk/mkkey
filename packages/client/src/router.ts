@@ -756,42 +756,76 @@ window.history.replaceState(
 
 const scrollPosStore = new Map<string, number>();
 
+// スクロール位置を定期的に保存する
 window.setInterval(() => {
-	scrollPosStore.set(window.history.state?.key, window.scrollY);
+	const key = window.history.state?.key;
+	if (key) {
+		scrollPosStore.set(key, window.scrollY);
+	}
 }, 1000);
 
-mainRouter.addListener("push", (ctx) => {
-	window.history.pushState({ key: ctx.key }, "", ctx.path);
-	const scrollPos = scrollPosStore.get(ctx.key) ?? 0;
-	window.scroll({ top: scrollPos, behavior: "instant" });
+function restoreScrollPosition(key: string) {
+	const scrollPos = scrollPosStore.get(key) ?? 0;
+	window.scrollTo({ top: scrollPos, behavior: "instant" });
+	// 遷移直後はタイミングによってはコンポーネントが復元し切ってない可能性も考えられるため少し時間を空けて再度スクロール
 	window.setTimeout(() => {
-		// 遷移直後はタイミングによってはコンポーネントが復元し切ってない可能性も考えられるため少し時間を空けて再度スクロール
-		window.scroll({ top: scrollPos, behavior: "instant" });
+		window.scrollTo({ top: scrollPos, behavior: "instant" });
 	}, 100);
+}
+
+mainRouter.addListener("push", (ctx) => {
+	try {
+		window.history.pushState({ key: ctx.key }, "", ctx.path);
+		restoreScrollPosition(ctx.key);
+	} catch (error) {
+		console.error("Error in push listener:", error);
+	}
 });
 
 mainRouter.addListener("replace", (ctx) => {
-	window.history.replaceState({ key: ctx.key }, "", ctx.path);
+	try {
+		window.history.replaceState({ key: ctx.key }, "", ctx.path);
+	} catch (error) {
+		console.error("Error in replace listener:", error);
+	}
 });
 
 mainRouter.addListener("same", () => {
-	window.scroll({ top: 0, behavior: "smooth" });
+	try {
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	} catch (error) {
+		console.error("Error in same listener:", error);
+	}
 });
 
 window.addEventListener("popstate", (event) => {
-	mainRouter.replace(
-		location.pathname + location.search + location.hash,
-		event.state?.key,
-		false,
-	);
-	const scrollPos = scrollPosStore.get(event.state?.key) ?? 0;
-	window.scroll({ top: scrollPos, behavior: "instant" });
-	window.setTimeout(() => {
-		// 遷移直後はタイミングによってはコンポーネントが復元し切ってない可能性も考えられるため少し時間を空けて再度スクロール
-		window.scroll({ top: scrollPos, behavior: "instant" });
-	}, 100);
+	try {
+		const key = event.state?.key;
+		if (key) {
+			mainRouter.replace(
+				location.pathname + location.search + location.hash,
+				key,
+				false,
+			);
+			restoreScrollPosition(key);
+		} else {
+			window.scrollTo({ top: 0, behavior: "instant" });
+		}
+	} catch (error) {
+		console.error("Error in popstate listener:", error);
+	}
 });
 
+window.addEventListener("load", () => {
+	try {
+		const key = window.history.state?.key;
+		if (key) {
+			restoreScrollPosition(key);
+		}
+	} catch (error) {
+		console.error("Error in load event:", error);
+	}
+});
 export function useRouter(): Router {
 	return inject<Router | null>("router", null) ?? mainRouter;
 }

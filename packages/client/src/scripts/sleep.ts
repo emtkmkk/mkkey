@@ -85,8 +85,8 @@ export async function sleep() {
 	const date = new Date();
 
 	const time = period?.endsWith("min")
-		? parseInt(period.replace("min", ""))
-		: parseInt(period.replace("hour", "")) * 60;
+		? Number.parseInt(period.replace("min", ""))
+		: Number.parseInt(period.replace("hour", "")) * 60;
 
 	date.setMinutes(date.getMinutes() + time);
 

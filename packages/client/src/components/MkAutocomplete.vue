@@ -469,10 +469,10 @@ function applySelect() {
 }
 
 function chooseUser() {
-	props.close();
 	os.selectUser().then((user) => {
 		props.textarea.focus();
 		complete("user", user);
+		props.close();
 	});
 }
 

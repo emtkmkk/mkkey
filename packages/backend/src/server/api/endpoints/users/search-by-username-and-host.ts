@@ -42,26 +42,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, me) => {
 	const activeThreshold = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30); // 30日
 
-	if (ps.host) {
-		const q = Users.createQueryBuilder("user")
-			.where("user.isSuspended = FALSE")
-			.andWhere(`coalesce(user.host,${config.host}) LIKE :host`, {
-				host: `${ps.host === "." ? config.host : ps.host.toLowerCase()}%`,
-			});
-
-		if (ps.username) {
-			q.andWhere("user.usernameLower LIKE :username", {
-				username: `${ps.username.toLowerCase()}%`,
-			});
-		}
-
-		q.andWhere("user.updatedAt IS NOT NULL");
-		q.orderBy("user.updatedAt", "DESC");
-
-		const users = await q.take(ps.limit).getMany();
-
-		return await Users.packMany(users, me, { detail: ps.detail });
-	} else if (ps.username) {
+	if (ps.username || ps.host) {
 		let users: User[] = [];
 
 		if (me) {
@@ -69,21 +50,31 @@ export default define(meta, paramDef, async (ps, me) => {
 				.select("following.followeeId")
 				.where("following.followerId = :followerId", { followerId: me.id });
 
-			const query = Users.createQueryBuilder("user")
-				.where(`user.id IN (${followingQuery.getQuery()})`)
-				.andWhere("user.id != :meId", { meId: me.id })
-				.andWhere("user.isSuspended = FALSE")
-				.andWhere("user.usernameLower LIKE :username", {
-					username: `${ps.username.toLowerCase()}%`,
-				})
-				.andWhere(
-					new Brackets((qb) => {
-						qb.where("user.updatedAt IS NULL").orWhere(
-							"user.updatedAt > :activeThreshold",
-							{ activeThreshold: activeThreshold },
-						);
-					}),
-				);
+			const query = Users.createQueryBuilder("user");
+				query.where(`user.id IN (${followingQuery.getQuery()})`)
+				query.andWhere("user.id != :meId", { meId: me.id })
+				query.andWhere("user.isSuspended = FALSE")
+				if (ps.host) {
+					query.andWhere("coalesce(user.host, :url) LIKE :host", {
+						url: config.host,
+						host: `${ps.host === "." ? config.host : ps.host.toLowerCase()}%`,
+					});
+				}
+				if (ps.username) {
+					query.andWhere("user.usernameLower LIKE :username", {
+						username: `${ps.username.toLowerCase()}%`,
+					});
+				}
+				if (!ps.username || !ps.host) {
+					query.andWhere(
+						new Brackets((qb) => {
+							qb.where(
+								"user.lastActiveDate > :activeThreshold",
+								{ activeThreshold: activeThreshold },
+							);
+						}),
+					);
+				}
 
 			query.setParameters(followingQuery.getParameters());
 
@@ -93,32 +84,47 @@ export default define(meta, paramDef, async (ps, me) => {
 				.getMany();
 
 			if (users.length < ps.limit) {
-				const otherQuery = await Users.createQueryBuilder("user")
+				const otherQuery = Users.createQueryBuilder("user")
 					.where(`user.id NOT IN (${followingQuery.getQuery()})`)
 					.andWhere("user.id != :meId", { meId: me.id })
 					.andWhere("user.isSuspended = FALSE")
-					.andWhere("user.usernameLower LIKE :username", {
-						username: `${ps.username.toLowerCase()}%`,
-					})
-					.andWhere("user.updatedAt IS NOT NULL");
+					if (ps.host) {
+						query.andWhere("coalesce(user.host, :url) LIKE :host", {
+							url: config.host,
+							host: `${ps.host === "." ? config.host : ps.host.toLowerCase()}%`,
+						});
+					}
+					if (ps.username) {
+						query.andWhere("user.usernameLower LIKE :username", {
+							username: `${ps.username.toLowerCase()}%`,
+						});
+					}
 
 				otherQuery.setParameters(followingQuery.getParameters());
 
 				const otherUsers = await otherQuery
-					.orderBy("user.updatedAt", "DESC")
+					.orderBy("user.usernameLower", "ASC")
 					.take(ps.limit - users.length)
 					.getMany();
 
 				users = users.concat(otherUsers);
 			}
 		} else {
-			users = await Users.createQueryBuilder("user")
+			const query = Users.createQueryBuilder("user")
 				.where("user.isSuspended = FALSE")
-				.andWhere("user.usernameLower LIKE :username", {
-					username: `${ps.username.toLowerCase()}%`,
-				})
-				.andWhere("user.updatedAt IS NOT NULL")
-				.orderBy("user.updatedAt", "DESC")
+				if (ps.host) {
+					query.andWhere("coalesce(user.host, :url) LIKE :host", {
+						url: config.host,
+						host: `${ps.host === "." ? config.host : ps.host.toLowerCase()}%`,
+					});
+				}
+				if (ps.username) {
+					query.andWhere("user.usernameLower LIKE :username", {
+						username: `${ps.username.toLowerCase()}%`,
+					});
+				}
+				query.andWhere("user.updatedAt IS NOT NULL")
+				users = await query.orderBy("user.usernameLower", "ASC")
 				.take(ps.limit - users.length)
 				.getMany();
 		}

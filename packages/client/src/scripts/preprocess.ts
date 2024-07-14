@@ -90,12 +90,12 @@ export function preprocess(text: string): string {
 			) {
 				if (node.props.name.length === 1) {
 					node.props.name = node.props.name
-						.replace("b", "bold")
-						.replace("q", "quote")
-						.replace("i", "italic")
-						.replace("p", "plain")
-						.replace("s", "small")
-						.replace("c", "center")
+						.replace(/^b$/, "bold")
+						.replace(/^q$/, "quote")
+						.replace(/^i$/, "italic")
+						.replace(/^p$/, "plain")
+						.replace(/^s$/, "small")
+						.replace(/^c$/, "center")
 				}
 				node.type = node.props.name;
 				node.props.name = undefined;

@@ -272,7 +272,8 @@ export default () =>
 				process.exit(1);
 			}
 		});
-
+		const port = process.env.proxy === "1" ? config.portproxy : config.port
+		console.log("listen port: " + port)
 		// @ts-ignore
-		server.listen(config.port, resolve);
+		server.listen(port, resolve);
 	});

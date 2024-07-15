@@ -235,7 +235,9 @@ export const startServer = () => {
 
 	initializeStreamingServer(server);
 
-	server.listen(process.env.proxy === "1" ? config.portproxy : config.port);
+	const port = process.env.proxy === "1" ? config.portproxy : config.port
+	console.log("listen port: " + port)
+	server.listen(port);
 
 	return server;
 };

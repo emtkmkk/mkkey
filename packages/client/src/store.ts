@@ -1291,6 +1291,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/11/9",
 			page: "timeline",
 		},
+		showPublicTimelineReplyMode: {
+			where: "account",
+			default: "notBotOnly" as "all" | "notBotOnly" | "personalOnly",
+			createdAt: "2024/7/16",
+			page: "timeline",
+		},
 		noteReactionMenu: {
 			where: "device",
 			default: true,
@@ -1509,7 +1515,12 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 			createdAt: "2024/7/4",
-		}
+		},
+		enableHotkeyDarkMode: {
+			where: "device",
+			default: false,
+			createdAt: "2024/7/16",
+		},
 	}),
 );
 

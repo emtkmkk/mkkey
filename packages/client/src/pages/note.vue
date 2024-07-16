@@ -202,12 +202,14 @@ const prevPagination = {
 								withBelowPublic:
 									defaultStore.state
 										.showLocalTimelineBelowPublic,
+								showReplyMode: defaultStore.state.showPublicTimelineReplyMode,
 						  }
 						: showPrev === "local"
 						? {
 								withBelowPublic:
 									defaultStore.state
 										.showLocalTimelineBelowPublic,
+									showReplyMode: defaultStore.state.showPublicTimelineReplyMode,
 						  }
 						: showPrev === "channel"
 						? { channelId: note.channelId }
@@ -241,12 +243,14 @@ const nextPagination = {
 								withBelowPublic:
 									defaultStore.state
 										.showLocalTimelineBelowPublic,
+								showReplyMode: defaultStore.state.showPublicTimelineReplyMode,
 						  }
 						: showNext === "local"
 						? {
 								withBelowPublic:
 									defaultStore.state
 										.showLocalTimelineBelowPublic,
+								showReplyMode: defaultStore.state.showPublicTimelineReplyMode,
 						  }
 						: showNext === "channel"
 						? { channelId: note.channelId }

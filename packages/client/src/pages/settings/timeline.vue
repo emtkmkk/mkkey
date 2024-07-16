@@ -197,7 +197,13 @@
 				}}<template #caption
 					>{{ i18n.ts.flagShowTimelineRepliesDescription }}
 					{{ i18n.ts.reflectMayTakeTime }}</template
-				></FormSwitch
+				></FormSwitch>
+				<FormSelect v-model="showPublicTimelineReplyMode" class="_formBlock">
+					<template #label>{{ i18n.ts.showPublicTimelineReplyMode }}</template>
+					<option value="all">{{ i18n.ts.replyMode.all }}</option>
+					<option value="notBotOnly">{{ i18n.ts.replyMode.notBotOnly }}</option>
+					<option value="personalOnly">{{ i18n.ts.replyMode.personalOnly }}</option>
+				</FormSelect>
 			>
 
 			<FormSelect v-model="nsfw" class="_formBlock">
@@ -299,6 +305,9 @@ const hiddenLTL = $computed(defaultStore.makeGetterSetter("hiddenLTL"));
 const hiddenGTL = $computed(defaultStore.makeGetterSetter("hiddenGTL"));
 const showLocalTimelineBelowPublic = $computed(
 	defaultStore.makeGetterSetter("showLocalTimelineBelowPublic")
+);
+const showPublicTimelineReplyMode = $computed(
+	defaultStore.makeGetterSetter("showPublicTimelineReplyMode")
 );
 let localShowRenote = $ref($i.localShowRenote);
 let remoteShowRenote = $ref($i.remoteShowRenote);

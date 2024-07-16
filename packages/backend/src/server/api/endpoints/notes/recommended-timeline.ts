@@ -1,6 +1,6 @@
 import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Notes } from "@/models/index.js";
+import { Followings, Notes } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -57,6 +57,11 @@ export const paramDef = {
 			},
 		},
 		excludeNsfw: { type: "boolean", default: false },
+		showReplyMode: {
+			type: "string",
+			enum: ["all", "notBotOnly", "personalOnly"],
+			default: "all",
+		},
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: "string", format: "misskey:id" },
 		untilId: { type: "string", format: "misskey:id" },
@@ -99,7 +104,15 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
 
 	generateChannelQuery(query, user);
-	generateRepliesQuery(query, user);
+	if (user) {
+		const followingQuery = Followings.createQueryBuilder("following")
+			.select("following.followeeId")
+			.where("following.followerId = :followerId", { followerId: user.id });
+		query.setParameters(followingQuery.getParameters());
+		generateRepliesQuery(query, user, followingQuery.getQuery(), ps.showReplyMode ?? "all");
+	} else {
+		generateRepliesQuery(query, user);
+	}
 	generateVisibilityQuery(query, user);
 
 	if (user) generateMutedUserQuery(query, user);

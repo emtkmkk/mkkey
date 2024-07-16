@@ -30,6 +30,9 @@
 				<FormSwitch v-model="syncDeviceDarkMode">{{
 					i18n.ts.syncDeviceDarkMode
 				}}</FormSwitch>
+				<FormSwitch v-model="enableHotkeyDarkMode">{{
+					i18n.ts.enableHotkeyDarkMode
+				}}</FormSwitch>
 			</div>
 		</div>
 
@@ -249,6 +252,9 @@ const lightThemeId = computed({
 const darkMode = computed(defaultStore.makeGetterSetter("darkMode"));
 const syncDeviceDarkMode = computed(
 	ColdDeviceStorage.makeGetterSetter("syncDeviceDarkMode")
+);
+const enableHotkeyDarkMode = computed(
+	defaultStore.makeGetterSetter("enableHotkeyDarkMode")
 );
 const wallpapers = ref(
 	JSON.parse(localStorage.getItem("wallpapers") ?? "[]") || []

@@ -96,14 +96,21 @@ if (props.src === "antenna") {
 	endpoint = "notes/local-timeline";
 	query = {
 		withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,
+		showReplyMode: defaultStore.state.showPublicTimelineReplyMode,
 	};
 	connection = stream.useChannel("localTimeline", {
 		withBelowPublic: defaultStore.state.showLocalTimelineBelowPublic,
+		showReplyMode: defaultStore.state.showPublicTimelineReplyMode,
 	});
 	connection.on("note", prepend);
 } else if (props.src === "recommended") {
 	endpoint = "notes/recommended-timeline";
-	connection = stream.useChannel("recommendedTimeline");
+	query = {
+		showReplyMode: defaultStore.state.showPublicTimelineReplyMode,
+	};
+	connection = stream.useChannel("recommendedTimeline", {
+		showReplyMode: defaultStore.state.showPublicTimelineReplyMode,
+	});
 	connection.on("note", prepend);
 } else if (props.src === "social") {
 	endpoint = "notes/hybrid-timeline";
@@ -111,7 +118,12 @@ if (props.src === "antenna") {
 	connection.on("note", prepend);
 } else if (props.src === "global") {
 	endpoint = "notes/global-timeline";
-	connection = stream.useChannel("globalTimeline");
+	query = {
+		showReplyMode: defaultStore.state.showPublicTimelineReplyMode,
+	};
+	connection = stream.useChannel("globalTimeline", {
+		showReplyMode: defaultStore.state.showPublicTimelineReplyMode,
+	});
 	connection.on("note", prepend);
 } else if (props.src === "spotlight") {
 	endpoint = "notes/spotlight-timeline";

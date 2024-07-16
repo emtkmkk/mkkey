@@ -9,6 +9,7 @@ export default class extends Channel {
 	public readonly chName = "globalTimeline";
 	public static shouldShare = true;
 	public static requireCredential = false;
+	private showReplyMode: "all" | "notBotOnly" | "personalOnly"
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
@@ -22,6 +23,8 @@ export default class extends Channel {
 				return;
 		}
 
+		this.showReplyMode = params?.showReplyMode || "all";
+
 		// Subscribe events
 		this.subscriber.on("notesStream", this.onNote);
 	}
@@ -32,7 +35,7 @@ export default class extends Channel {
 		// 関係ない返信は除外
 		if (!this.user && note.reply) {
 			return;
-		} else if (note.reply && !this.user!.showTimelineReplies) {
+		} if (note.reply && !this.user!.showTimelineReplies) {
 			const reply = note.reply;
 			// 「フォロー中同士の会話」でもなければ、「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信（ただし一つ上の投稿へ遡る）」でもない場合
 			let replyFollowing =
@@ -45,9 +48,11 @@ export default class extends Channel {
 						this.following.has(note.userId));
 			}
 			if (
+				this.showReplyMode !== "personalOnly" &&
 				!replyFollowing &&
 				reply.userId !== this.user!.id &&
-				note.userId !== this.user!.id
+				note.userId !== this.user!.id &&
+				(this.showReplyMode !== "notBotOnly" || (!reply.user.isBot && !note.user.isBot))
 			)
 				return;
 		}

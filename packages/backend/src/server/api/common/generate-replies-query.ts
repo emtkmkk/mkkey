@@ -5,7 +5,8 @@ import { Brackets } from "typeorm";
 export function generateRepliesQuery(
 	q: SelectQueryBuilder<any>,
 	me?: Pick<User, "id" | "showTimelineReplies"> | null,
-	following?: String | null,
+	following?: string | null,
+	mode?: "all" | "notBotOnly" | "personalOnly"
 ) {
 	if (me == null) {
 		q.andWhere(
@@ -52,16 +53,22 @@ export function generateRepliesQuery(
 									);
 							}),
 						)
-						.orWhere(
-							new Brackets((qb) => {
-								qb.where(
-									// 返信だけどノート主、返信先をフォローしている
-									"note.replyId IS NOT NULL",
-								)
-									.andWhere(`note.replyUserId IN (${following})`)
-									.andWhere(`note.userId IN (${following})`);
-							}),
-						);
+						if (mode !== "personalOnly") {
+							qb.orWhere(
+								new Brackets((qb) => {
+									qb.where(
+										// 返信だけどノート主、返信先をフォローしている
+										"note.replyId IS NOT NULL",
+									)
+										.andWhere(`note.replyUserId IN (${following})`)
+										.andWhere(`note.userId IN (${following})`);
+										if (mode === "notBotOnly") {
+											qb.andWhere("replyUser.isBot = false")
+											qb.andWhere("user.isBot = false")
+										}
+								}),
+							);
+						}
 				}),
 			);
 		} else {

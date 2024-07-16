@@ -9,6 +9,7 @@ export default class extends Channel {
 	public readonly chName = "recommendedTimeline";
 	public static shouldShare = true;
 	public static requireCredential = true;
+	private showReplyMode: "all" | "notBotOnly" | "personalOnly"
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
@@ -23,6 +24,8 @@ export default class extends Channel {
 			!this.user!.isModerator
 		)
 			return;
+
+		this.showReplyMode = params?.showReplyMode || "all";
 
 		// Subscribe events
 		this.subscriber.on("notesStream", this.onNote);

@@ -579,7 +579,9 @@ import { applyProfile, autoSave } from "./scripts/backup";
 
 	const hotkeys = {
 		d: (): void => {
-			defaultStore.set("darkMode", !defaultStore.state.darkMode);
+			if (defaultStore.state.enableHotkeyDarkMode) {
+				defaultStore.set("darkMode", !defaultStore.state.darkMode);
+			}
 		},
 		s: search,
 	};
@@ -598,12 +600,12 @@ import { applyProfile, autoSave } from "./scripts/backup";
 			fetchEmoji();
 			fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
 			const lastEmojiFetchDate = (await get("remoteEmojiData"))
-				? await get("remoteEmojiData")?.emojiFetchDate
+				? (await get("remoteEmojiData"))?.emojiFetchDate
 				: undefined;
 			const emojiFetchDateInt = Math.max(
 				lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0,
 				(await get("emojiFetchAttemptDate"))
-					? parseInt(await get("emojiFetchAttemptDate"), 10)
+					? Number.parseInt(await get("emojiFetchAttemptDate"), 10)
 					: 0,
 			);
 			let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";

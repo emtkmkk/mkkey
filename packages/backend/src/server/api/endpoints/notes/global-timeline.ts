@@ -49,6 +49,11 @@ export const paramDef = {
 			default: false,
 			description: "Only show notes that have attached files.",
 		},
+		showReplyMode: {
+			type: "string",
+			enum: ["all", "notBotOnly", "personalOnly"],
+			default: "all",
+		},
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: "string", format: "misskey:id" },
 		untilId: { type: "string", format: "misskey:id" },
@@ -93,7 +98,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			.select("following.followeeId")
 			.where("following.followerId = :followerId", { followerId: user.id });
 		query.setParameters(followingQuery.getParameters());
-		generateRepliesQuery(query, user, followingQuery.getQuery());
+		generateRepliesQuery(query, user, followingQuery.getQuery(), ps.showReplyMode ?? "all");
 	} else {
 		generateRepliesQuery(query, user);
 	}

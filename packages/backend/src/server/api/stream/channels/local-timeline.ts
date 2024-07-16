@@ -9,6 +9,7 @@ export default class extends Channel {
 	public static shouldShare = true;
 	public static requireCredential = false;
 	private withBelowPublic: boolean;
+	private showReplyMode: "all" | "notBotOnly" | "personalOnly"
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
@@ -23,6 +24,8 @@ export default class extends Channel {
 		}
 
 		this.withBelowPublic = params?.withBelowPublic || false;
+
+		this.showReplyMode = params?.showReplyMode || "all";
 
 		// Subscribe events
 		this.subscriber.on("notesStream", this.onNote);
@@ -63,9 +66,11 @@ export default class extends Channel {
 						this.following.has(note.userId));
 			}
 			if (
+				this.showReplyMode !== "personalOnly" &&
 				!replyFollowing &&
 				reply.userId !== this.user!.id &&
-				note.userId !== this.user!.id
+				note.userId !== this.user!.id &&
+				(this.showReplyMode !== "notBotOnly" || (!reply.user.isBot && !note.user.isBot))
 			)
 				return;
 		}

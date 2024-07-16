@@ -26,12 +26,8 @@ function getClassOrder(width: number, queue: Value): ClassOrder {
 
 	return {
 		add: [
-			...(queue.max
-				? queue.max.filter((v) => width <= v).map(getMaxClass)
-				: []),
-			...(queue.min
-				? queue.min.filter((v) => width >= v).map(getMinClass)
-				: []),
+			...(queue.max ? queue.max.filter((v) => width <= v).map(getMaxClass) : []),
+			...(queue.min ? queue.min.filter((v) => width >= v).map(getMinClass) : []),
 		],
 		remove: [
 			...(queue.max ? queue.max.filter((v) => width > v).map(getMaxClass) : []),
@@ -59,32 +55,26 @@ function getOrderName(width: number, queue: Value): string {
 	}`;
 }
 
-function setupIntersectionObserver(el: Element, calcFn: () => void) {
-	let observer = new IntersectionObserver((entries) => {
-		if (entries.some(entry => entry.isIntersecting)) {
-			observer.disconnect();
-			calcFn();
-		}
-	});
-	observer.observe(el);
-	return observer;
-}
-
-const throttledCalc = throttle(3000, (el: Element) => {
+const throttledCalc = throttle(500, (el: Element) => {
 	const info = mountings.get(el);
 	const width = el.clientWidth;
 
 	if (!info || info.previousWidth === width) return;
 
+	// アクティベート前などでsrcが描画されていない場合
 	if (!width) {
+		// IntersectionObserverで表示検出する
 		if (!info.intersection) {
-			info.intersection = setupIntersectionObserver(el, () => throttledCalc(el));
+			info.intersection = new IntersectionObserver((entries) => {
+				if (entries.some((entry) => entry.isIntersecting)) {
+					throttledCalc(el);
+					info.intersection.disconnect();
+					info.intersection = undefined;
+				}
+			});
+			info.intersection.observe(el);
 		}
 		return;
-	}
-	if (info.intersection) {
-		info.intersection.disconnect();
-		info.intersection = undefined;
 	}
 
 	mountings.set(el, Object.assign(info, { previousWidth: width }));
@@ -116,11 +106,11 @@ export default {
 	},
 
 	updated(src, binding, vn) {
-		mountings.set(
-			src,
-			Object.assign({}, mountings.get(src), { value: binding.value }),
-		);
-		throttledCalc(src);
+		const info = mountings.get(src);
+		if (info) {
+			info.value = binding.value;
+			throttledCalc(src);
+		}
 	},
 
 	unmounted(src, binding, vn) {

@@ -1788,39 +1788,43 @@ function onDrop(ev): void {
 }
 
 function saveDraft(key?, name?) {
-	if (!(text || (useCw && cw) || files?.length || poll || referencesFlg !== true)) {
-		if (!key) {
-			deleteDraft(key);
+	try {
+		if (!(text || (useCw && cw) || files?.length || poll || referencesFlg !== true)) {
+			if (!key) {
+				deleteDraft(key);
+			}
+			return;
 		}
-		return;
-	}
-
-	const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
-
-	draftData[key ? key : draftKey] = {
-		updatedAt: new Date(),
-		name: name ? name : undefined,
-		data: {
-			text: text,
-			useCw: useCw,
-			cw: cw,
-			visibility: visibility,
-			localOnly: localOnly,
-			files: files,
-			poll: poll,
-			visibleUserIds:
-				visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
-			replyId: reply?.id ? reply.id : null,
-			quoteId: quoteId ? quoteId : props.renote ? props.renote.id : null,
-			referencesFlg: referencesFlg,
-		},
-	};
-
-	localStorage.setItem("drafts", JSON.stringify(draftData));
-
-	if (key) {
-		clear();
-		deleteDraft();
+	
+		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+	
+		draftData[key ? key : draftKey] = {
+			updatedAt: new Date(),
+			name: name ? name : undefined,
+			data: {
+				text: text,
+				useCw: useCw,
+				cw: cw,
+				visibility: visibility,
+				localOnly: localOnly,
+				files: files,
+				poll: poll,
+				visibleUserIds:
+					visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
+				replyId: reply?.id ? reply.id : null,
+				quoteId: quoteId ? quoteId : props.renote ? props.renote.id : null,
+				referencesFlg: referencesFlg,
+			},
+		};
+	
+		localStorage.setItem("drafts", JSON.stringify(draftData));
+	
+		if (key) {
+			clear();
+			deleteDraft();
+		}
+	} catch (e) {
+		console.log(e)
 	}
 }
 

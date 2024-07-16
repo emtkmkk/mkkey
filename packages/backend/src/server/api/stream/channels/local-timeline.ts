@@ -66,11 +66,10 @@ export default class extends Channel {
 						this.following.has(note.userId));
 			}
 			if (
-				this.showReplyMode !== "personalOnly" &&
-				!replyFollowing &&
+				(this.showReplyMode === "personalOnly" || !replyFollowing) &&
 				reply.userId !== this.user!.id &&
 				note.userId !== this.user!.id &&
-				(this.showReplyMode !== "notBotOnly" || (!reply.user.isBot && !note.user.isBot))
+				(this.showReplyMode === "notBotOnly" && (reply.user.isBot || note.user.isBot))
 			)
 				return;
 		}

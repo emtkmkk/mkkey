@@ -47,13 +47,10 @@ export default class extends Channel {
 					(this.following.has(reply.reply.userId) &&
 						this.following.has(note.userId));
 			}
+			if (reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "notBotOnly" && (reply.user.isBot || note.user.isBot))) return;
 			if (
-				(this.showReplyMode === "personalOnly" || !replyFollowing) &&
-				reply.userId !== this.user!.id &&
-				note.userId !== this.user!.id &&
-				(this.showReplyMode !== "notBotOnly" || (reply.user.isBot || note.user.isBot))
-			)
-				return;
+				reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "personalOnly" || !replyFollowing)
+			) return;
 		}
 		// Ignore notes from instances the user has muted
 		if (

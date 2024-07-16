@@ -80,7 +80,7 @@ const childInfo = ref(null);
 const router = useRouter();
 
 let narrow = $ref(false);
-const NARROW_THRESHOLD = 600;
+const NARROW_THRESHOLD = 500;
 
 let currentPage = $computed(() => router.currentRef.value.child);
 

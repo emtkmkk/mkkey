@@ -9,6 +9,7 @@ const mountings = new Map<
     resize: ResizeObserver;
     intersection?: IntersectionObserver;
     previousWidth: number;
+    classChangeTimestamps: number[]; // Track timestamps of class changes
   }
 >();
 
@@ -87,6 +88,16 @@ function calc(el: Element) {
 
   mountings.set(el, Object.assign(info, { previousWidth: width }));
 
+  const now = Date.now();
+  info.classChangeTimestamps = info.classChangeTimestamps.filter(
+    (timestamp) => now - timestamp < 1000
+  );
+  if (info.classChangeTimestamps.length >= 5) {
+    console.warn("Class changes are happening too frequently. Stopping further changes.");
+    return;
+  }
+  info.classChangeTimestamps.push(now);
+
   const cached = cache.get(getOrderName(width, info.value));
   if (cached) {
     applyClassOrder(el, cached);
@@ -107,6 +118,7 @@ export default {
       value: binding.value,
       resize,
       previousWidth: 0,
+      classChangeTimestamps: [], // Initialize class change timestamps
     });
 
     calc(src);

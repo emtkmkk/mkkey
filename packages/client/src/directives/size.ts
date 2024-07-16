@@ -1,123 +1,131 @@
 import { Directive } from "vue";
-import { throttle } from "throttle-debounce";
 
 type Value = { max?: number[]; min?: number[] };
 
 const mountings = new Map<
-	Element,
-	{
-		value: Value;
-		resize: ResizeObserver;
-		intersection?: IntersectionObserver;
-		previousWidth: number;
-	}
+  Element,
+  {
+    value: Value;
+    resize: ResizeObserver;
+    intersection?: IntersectionObserver;
+    previousWidth: number;
+  }
 >();
 
 type ClassOrder = {
-	add: string[];
-	remove: string[];
+  add: string[];
+  remove: string[];
 };
 
 const cache = new Map<string, ClassOrder>();
 
 function getClassOrder(width: number, queue: Value): ClassOrder {
-	const getMaxClass = (v: number) => `max-width_${v}px`;
-	const getMinClass = (v: number) => `min-width_${v}px`;
+  const getMaxClass = (v: number) => `max-width_${v}px`;
+  const getMinClass = (v: number) => `min-width_${v}px`;
 
-	return {
-		add: [
-			...(queue.max ? queue.max.filter((v) => width <= v).map(getMaxClass) : []),
-			...(queue.min ? queue.min.filter((v) => width >= v).map(getMinClass) : []),
-		],
-		remove: [
-			...(queue.max ? queue.max.filter((v) => width > v).map(getMaxClass) : []),
-			...(queue.min ? queue.min.filter((v) => width < v).map(getMinClass) : []),
-		],
-	};
+  let maxClassesToAdd: string[] = [];
+  let minClassesToAdd: string[] = [];
+  let maxClassesToRemove: string[] = [];
+  let minClassesToRemove: string[] = [];
+
+  if (queue.max) {
+    const maxToAdd = queue.max.filter((v) => width <= v);
+    const maxToRemove = queue.max.filter((v) => width > v);
+    if (maxToAdd.length > 0) {
+      const largestMaxToAdd = Math.min(...maxToAdd);
+      maxClassesToAdd = [getMaxClass(largestMaxToAdd)];
+    }
+    maxClassesToRemove = maxToRemove.map(getMaxClass);
+  }
+
+  if (queue.min) {
+    const minToAdd = queue.min.filter((v) => width >= v);
+    const minToRemove = queue.min.filter((v) => width < v);
+    if (minToAdd.length > 0) {
+      const smallestMinToAdd = Math.max(...minToAdd);
+      minClassesToAdd = [getMinClass(smallestMinToAdd)];
+    }
+    minClassesToRemove = minToRemove.map(getMinClass);
+  }
+
+  return {
+    add: [...maxClassesToAdd, ...minClassesToAdd],
+    remove: [...maxClassesToRemove, ...minClassesToRemove],
+  };
 }
 
 function applyClassOrder(el: Element, order: ClassOrder) {
-	const currentClasses = new Set(el.classList);
-	const classesToAdd = order.add.filter((cls) => !currentClasses.has(cls));
-	const classesToRemove = order.remove.filter((cls) => currentClasses.has(cls));
-	
-	if (classesToAdd.length > 0) {
-		el.classList.add(...classesToAdd);
-	}
-	if (classesToRemove.length > 0) {
-		el.classList.remove(...classesToRemove);
-	}
+  el.classList.add(...order.add);
+  el.classList.remove(...order.remove);
 }
 
 function getOrderName(width: number, queue: Value): string {
-	return `${width}|${queue.max ? queue.max.join(",") : ""}|${
-		queue.min ? queue.min.join(",") : ""
-	}`;
+  return `${width}|${queue.max ? queue.max.join(",") : ""}|${
+    queue.min ? queue.min.join(",") : ""
+  }`;
 }
 
-const throttledCalc = throttle(500, (el: Element) => {
-	const info = mountings.get(el);
-	const width = el.clientWidth;
+function calc(el: Element) {
+  const info = mountings.get(el);
+  const width = el.clientWidth;
 
-	if (!info || info.previousWidth === width) return;
+  if (!info || info.previousWidth === width) return;
 
-	// アクティベート前などでsrcが描画されていない場合
-	if (!width) {
-		// IntersectionObserverで表示検出する
-		if (!info.intersection) {
-			info.intersection = new IntersectionObserver((entries) => {
-				if (entries.some((entry) => entry.isIntersecting)) {
-					throttledCalc(el);
-					info.intersection.disconnect();
-					info.intersection = undefined;
-				}
-			});
-			info.intersection.observe(el);
-		}
-		return;
-	}
+  if (!width) {
+    if (!info.intersection) {
+      info.intersection = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) calc(el);
+      });
+    }
+    info.intersection.observe(el);
+    return;
+  }
+  if (info.intersection) {
+    info.intersection.disconnect();
+    info.intersection = undefined;
+  }
 
-	mountings.set(el, Object.assign(info, { previousWidth: width }));
+  mountings.set(el, Object.assign(info, { previousWidth: width }));
 
-	const cached = cache.get(getOrderName(width, info.value));
-	if (cached) {
-		applyClassOrder(el, cached);
-	} else {
-		const order = getClassOrder(width, info.value);
-		cache.set(getOrderName(width, info.value), order);
-		applyClassOrder(el, order);
-	}
-});
+  const cached = cache.get(getOrderName(width, info.value));
+  if (cached) {
+    applyClassOrder(el, cached);
+  } else {
+    const order = getClassOrder(width, info.value);
+    cache.set(getOrderName(width, info.value), order);
+    applyClassOrder(el, order);
+  }
+}
 
 export default {
-	mounted(src, binding, vn) {
-		const resize = new ResizeObserver(() => {
-			throttledCalc(src);
-		});
+  mounted(src, binding, vn) {
+    const resize = new ResizeObserver((entries, observer) => {
+      calc(src);
+    });
 
-		mountings.set(src, {
-			value: binding.value,
-			resize,
-			previousWidth: 0,
-		});
+    mountings.set(src, {
+      value: binding.value,
+      resize,
+      previousWidth: 0,
+    });
 
-		throttledCalc(src);
-		resize.observe(src);
-	},
+    calc(src);
+    resize.observe(src);
+  },
 
-	updated(src, binding, vn) {
-		const info = mountings.get(src);
-		if (info) {
-			info.value = binding.value;
-			throttledCalc(src);
-		}
-	},
+  updated(src, binding, vn) {
+    mountings.set(
+      src,
+      Object.assign({}, mountings.get(src), { value: binding.value }),
+    );
+    calc(src);
+  },
 
-	unmounted(src, binding, vn) {
-		const info = mountings.get(src);
-		if (!info) return;
-		info.resize.disconnect();
-		if (info.intersection) info.intersection.disconnect();
-		mountings.delete(src);
-	},
+  unmounted(src, binding, vn) {
+    const info = mountings.get(src);
+    if (!info) return;
+    info.resize.disconnect();
+    if (info.intersection) info.intersection.disconnect();
+    mountings.delete(src);
+  },
 } as Directive<Element, Value>;

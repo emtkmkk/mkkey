@@ -61,6 +61,7 @@ import { signout, $i } from "@/account";
 import { unisonReload } from "@/scripts/unison-reload";
 import { instance } from "@/instance";
 import { useRouter } from "@/router";
+import { deviceKind } from "@/scripts/device-kind";
 import {
 	definePageMetadata,
 	provideMetadataReceiver,
@@ -80,7 +81,7 @@ const childInfo = ref(null);
 const router = useRouter();
 
 let narrow = $ref(false);
-const NARROW_THRESHOLD = 650;
+const NARROW_THRESHOLD = 660
 
 let currentPage = $computed(() => router.currentRef.value.child);
 
@@ -368,7 +369,7 @@ definePageMetadata(INFO);
 .vvcocwet {
 	background-color: var(--bg);
   border-radius: 10px;
-  padding: 2rem;
+  padding: 1rem;
 	> .body {
 		> .nav {
 			.baaadecd {

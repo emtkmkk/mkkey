@@ -3,7 +3,6 @@ import { throttle } from "throttle-debounce";
 
 type Value = { max?: number[]; min?: number[] };
 
-//const observers = new Map<Element, ResizeObserver>();
 const mountings = new Map<
 	Element,
 	{
@@ -60,21 +59,27 @@ function getOrderName(width: number, queue: Value): string {
 	}`;
 }
 
-const throttledCalc = throttle(100, (el: Element) => {
+function setupIntersectionObserver(el: Element, calcFn: () => void) {
+	let observer = new IntersectionObserver((entries) => {
+		if (entries.some(entry => entry.isIntersecting)) {
+			observer.disconnect();
+			calcFn();
+		}
+	});
+	observer.observe(el);
+	return observer;
+}
+
+const throttledCalc = throttle(3000, (el: Element) => {
 	const info = mountings.get(el);
 	const width = el.clientWidth;
 
 	if (!info || info.previousWidth === width) return;
 
-	// アクティベート前などでsrcが描画されていない場合
 	if (!width) {
-		// IntersectionObserverで表示検出する
 		if (!info.intersection) {
-			info.intersection = new IntersectionObserver((entries) => {
-				if (entries.some((entry) => entry.isIntersecting)) throttledCalc(el);
-			});
+			info.intersection = setupIntersectionObserver(el, () => throttledCalc(el));
 		}
-		info.intersection.observe(el);
 		return;
 	}
 	if (info.intersection) {
@@ -96,7 +101,7 @@ const throttledCalc = throttle(100, (el: Element) => {
 
 export default {
 	mounted(src, binding, vn) {
-		const resize = new ResizeObserver((entries, observer) => {
+		const resize = new ResizeObserver(() => {
 			throttledCalc(src);
 		});
 

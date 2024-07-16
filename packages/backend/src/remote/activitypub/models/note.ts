@@ -422,7 +422,7 @@ export async function createNote(
 		}
 	}
 	if (references && text) {
-
+/*
 		const searchRefUrl = (_html: string | undefined): string | null => {
 			let html: string | undefined = _html;
 			if (!html) return null;
@@ -473,7 +473,7 @@ export async function createNote(
 
 			text = text.replace(reg, "");
 		}
-
+*/
 	}
 
 	// vote

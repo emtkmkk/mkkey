@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, ref, shallowRef } from "vue";
 import { FocusTrap } from "focus-trap-vue";
 import MkModal from "./MkModal.vue";
 
@@ -87,38 +87,42 @@ const emit = defineEmits<{
 	(event: "ok"): void;
 }>();
 
-let modal = $shallowRef<InstanceType<typeof MkModal>>();
-let rootEl = $shallowRef<HTMLElement>();
-let headerEl = $shallowRef<HTMLElement>();
-let bodyWidth = $ref(0);
-let bodyHeight = $ref(0);
+let modal = shallowRef<InstanceType<typeof MkModal>>();
+let rootEl = shallowRef<HTMLElement>();
+let headerEl = shallowRef<HTMLElement>();
+let bodyWidth = ref(0);
+let bodyHeight = ref(0);
 
 const close = () => {
-	modal.close();
+	modal.value?.close();
 };
 
 const onBgClick = () => {
 	emit("click");
 };
 
-const onKeydown = (evt) => {
-	if (evt.which === 27) {
-		// Esc
+const onKeydown = (evt: KeyboardEvent) => {
+	if (evt.key === 'Escape') {
 		evt.preventDefault();
 		evt.stopPropagation();
 		close();
 	}
 };
 
-const ro = new ResizeObserver((entries, observer) => {
-	bodyWidth = rootEl.offsetWidth;
-	bodyHeight = rootEl.offsetHeight - headerEl.offsetHeight;
+const updateBodyDimensions = () => {
+	if (rootEl.value && headerEl.value) {
+		bodyWidth.value = rootEl.value.offsetWidth;
+		bodyHeight.value = rootEl.value.offsetHeight - headerEl.value.offsetHeight;
+	}
+};
+
+const ro = new ResizeObserver(() => {
+	updateBodyDimensions();
 });
 
 onMounted(() => {
-	bodyWidth = rootEl.offsetWidth;
-	bodyHeight = rootEl.offsetHeight - headerEl.offsetHeight;
-	ro.observe(rootEl);
+	updateBodyDimensions();
+	if (rootEl.value) ro.observe(rootEl.value);
 });
 
 onUnmounted(() => {

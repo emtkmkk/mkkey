@@ -472,7 +472,7 @@ export const UserRepository = db.getRepository(User).extend({
 			});
 		}
 
-		if (user.host && user.lastFetchedAt && Date.now() - new Date(user.lastFetchedAt).getTime() > (48 * 60 * 60 * 1000)) {
+		if (user.host && user.lastFetchedAt && Date.now() - new Date(user.lastFetchedAt).getTime() > (7 * 24 * 60 * 60 * 1000)) {
 			const ruser = await resolveUser(user.username, user.host).catch((e) => {
 				console.log(`failed to resolve remote user: ${e}`);
 			});

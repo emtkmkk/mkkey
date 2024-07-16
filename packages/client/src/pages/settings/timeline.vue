@@ -200,11 +200,10 @@
 				></FormSwitch>
 				<FormSelect v-model="showPublicTimelineReplyMode" class="_formBlock">
 					<template #label>{{ i18n.ts.showPublicTimelineReplyMode }}</template>
-					<option value="all">{{ i18n.ts.replyMode.all }}</option>
-					<option value="notBotOnly">{{ i18n.ts.replyMode.notBotOnly }}</option>
-					<option value="personalOnly">{{ i18n.ts.replyMode.personalOnly }}</option>
+					<option value="all">{{ i18n.ts._replyMode.all }}</option>
+					<option value="notBotOnly">{{ i18n.ts._replyMode.notBotOnly }}</option>
+					<option value="personalOnly">{{ i18n.ts._replyMode.personalOnly }}</option>
 				</FormSelect>
-			>
 
 			<FormSelect v-model="nsfw" class="_formBlock">
 				<template #label>{{ i18n.ts.nsfw }}</template>

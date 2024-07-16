@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<FormSection>
 			<template #label>{{ i18n.ts.emailAddress }}</template>
 			<FormInput v-model="emailAddress" type="email" manual-save>

@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<MkTab v-model="tab" style="margin-bottom: var(--margin)">
 			<option value="rnmute">{{ i18n.ts.rnMutedUsers }}</option>
 			<option value="followblock">

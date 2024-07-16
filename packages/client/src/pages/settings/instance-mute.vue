@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<MkInfo>{{ i18n.ts._instanceMute.title }}</MkInfo>
 		<FormTextarea v-model="instanceMutes" class="_formBlock">
 			<template #label>{{ i18n.ts._instanceMute.heading }}</template>

@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<MkKeyValue>
 			<template #key>ID</template>
 			<template #value

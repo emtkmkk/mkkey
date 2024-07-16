@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<div v-if="saveButton == true">
 			<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 		</div>
@@ -118,7 +118,7 @@
 				></template>
 				<template #label>{{ i18n.ts._profile.metadataEdit }}</template>
 
-				<div class="_formRoot" v-panel>
+				<div class="_formRoot">
 					<FormSplit
 						v-for="(record, i) in fields"
 						:min-width="250"

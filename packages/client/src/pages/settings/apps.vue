@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<FormPagination ref="list" :pagination="pagination">
 			<template #empty>
 				<div class="_fullinfo">

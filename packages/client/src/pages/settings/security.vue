@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<FormSection>
 			<template #label>{{ i18n.ts.password }}</template>
 			<FormButton primary @click="change()">{{

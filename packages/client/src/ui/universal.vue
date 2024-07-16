@@ -446,8 +446,8 @@ watch(
 			);
 		} else {
 			navFooterHeight = 0;
-			document.body.style.setProperty("--stickyBottom", "0");
-			document.body.style.setProperty("--minBottomSpacing", "0");
+			document.body.style.setProperty("--stickyBottom", "0px");
+			document.body.style.setProperty("--minBottomSpacing", "0px");
 		}
 	},
 	{

@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<FormSection>
 			<template #label></template>
 			<FormSwitch v-model="enterSendsMessage" class="_formBlock">{{

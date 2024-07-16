@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<FormSwitch
 			v-model="$i.injectFeaturedNote"
 			class="_formBlock"

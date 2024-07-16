@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<MkTab v-model="tab2" class="_formBlock">
 			<option value="post">{{ i18n.ts._wordMute.post }}</option>
 			<option value="reaction">{{ i18n.ts._wordMute.emojiMutes }}</option>

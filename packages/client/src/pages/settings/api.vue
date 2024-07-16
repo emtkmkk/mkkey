@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<FormButton primary class="_formBlock" @click="generateToken">{{
 			i18n.ts.generateAccessToken
 		}}</FormButton>

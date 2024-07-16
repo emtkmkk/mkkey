@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<FormSection>
 			<FormLink :to="`/settings/webhook/new-simple`">
 				Discord通知転送簡単設定<span

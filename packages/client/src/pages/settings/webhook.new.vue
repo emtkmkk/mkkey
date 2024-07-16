@@ -1,5 +1,5 @@
 <template>
-	<div class="_formRoot" v-panel>
+	<div class="_formRoot">
 		<FormInput v-model="name" class="_formBlock">
 			<template #label>Webhookの名前</template>
 		</FormInput>

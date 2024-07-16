@@ -1,4 +1,5 @@
 import { Directive } from "vue";
+import { throttle } from "throttle-debounce";
 
 type Value = { max?: number[]; min?: number[] };
 
@@ -41,8 +42,16 @@ function getClassOrder(width: number, queue: Value): ClassOrder {
 }
 
 function applyClassOrder(el: Element, order: ClassOrder) {
-	el.classList.add(...order.add);
-	el.classList.remove(...order.remove);
+	const currentClasses = new Set(el.classList);
+	const classesToAdd = order.add.filter((cls) => !currentClasses.has(cls));
+	const classesToRemove = order.remove.filter((cls) => currentClasses.has(cls));
+	
+	if (classesToAdd.length > 0) {
+		el.classList.add(...classesToAdd);
+	}
+	if (classesToRemove.length > 0) {
+		el.classList.remove(...classesToRemove);
+	}
 }
 
 function getOrderName(width: number, queue: Value): string {
@@ -51,7 +60,7 @@ function getOrderName(width: number, queue: Value): string {
 	}`;
 }
 
-function calc(el: Element) {
+const throttledCalc = throttle(100, (el: Element) => {
 	const info = mountings.get(el);
 	const width = el.clientWidth;
 
@@ -62,7 +71,7 @@ function calc(el: Element) {
 		// IntersectionObserverで表示検出する
 		if (!info.intersection) {
 			info.intersection = new IntersectionObserver((entries) => {
-				if (entries.some((entry) => entry.isIntersecting)) calc(el);
+				if (entries.some((entry) => entry.isIntersecting)) throttledCalc(el);
 			});
 		}
 		info.intersection.observe(el);
@@ -83,12 +92,12 @@ function calc(el: Element) {
 		cache.set(getOrderName(width, info.value), order);
 		applyClassOrder(el, order);
 	}
-}
+});
 
 export default {
 	mounted(src, binding, vn) {
 		const resize = new ResizeObserver((entries, observer) => {
-			calc(src);
+			throttledCalc(src);
 		});
 
 		mountings.set(src, {
@@ -97,7 +106,7 @@ export default {
 			previousWidth: 0,
 		});
 
-		calc(src);
+		throttledCalc(src);
 		resize.observe(src);
 	},
 
@@ -106,7 +115,7 @@ export default {
 			src,
 			Object.assign({}, mountings.get(src), { value: binding.value }),
 		);
-		calc(src);
+		throttledCalc(src);
 	},
 
 	unmounted(src, binding, vn) {

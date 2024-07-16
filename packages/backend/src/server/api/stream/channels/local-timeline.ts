@@ -9,7 +9,7 @@ export default class extends Channel {
 	public static shouldShare = true;
 	public static requireCredential = false;
 	private withBelowPublic: boolean;
-	private showReplyMode: "all" | "notBotOnly" | "personalOnly"
+	private showReplyMode: "all" | "notBotOnly" | "personalOnly";
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
@@ -65,13 +65,10 @@ export default class extends Channel {
 					(this.following.has(reply.reply.userId) &&
 						this.following.has(note.userId));
 			}
+			if (reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "notBotOnly" && (reply.user.isBot || note.user.isBot))) return;
 			if (
-				(this.showReplyMode === "personalOnly" || !replyFollowing) &&
-				reply.userId !== this.user!.id &&
-				note.userId !== this.user!.id &&
-				(this.showReplyMode !== "notBotOnly" || (reply.user.isBot || note.user.isBot))
-			)
-				return;
+				reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "personalOnly" || !replyFollowing)
+			) return;
 		}
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する

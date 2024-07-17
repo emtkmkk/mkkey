@@ -150,23 +150,19 @@ export type apiData = {
 	draftData?: any;
 }
 
-export let queueDatas = ref<apiData[]>([]);
+export const queueDatas = ref<apiData[]>([]);
 
-export const addQueue = (
-  data: apiData
-) => {
+export const addQueue = (data: apiData) => {
   const id = uuid();
-	const addData = {id, ...data};
+  const addData = { id, ...data };
   queueDatas.value = [...queueDatas.value, addData];
-	defaultStore.set("queueDatas", queueDatas.value);
-	return addData;
+  defaultStore.set("queueDatas", queueDatas.value);
+  return addData;
 };
 
-export const removeQueue = (
-	id: string,
-) => {
-	queueDatas = queueDatas.value.filter((x) => x.id !== id);
-	defaultStore.set("queueDatas", queueDatas.value);
+export const removeQueue = (id: string) => {
+  queueDatas.value = queueDatas.value.filter((x) => x.id !== id);
+  defaultStore.set("queueDatas", queueDatas.value);
 }
 
 export const queueApi = (

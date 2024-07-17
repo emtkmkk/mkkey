@@ -1,5 +1,5 @@
 <template>
-  <div class="mk-uploader _acrylic" :style="{ zIndex }">
+  <div class="mk-uploader _acrylic" :class="{ 'all-no-img': allUploads.every(ctx => !ctx.img) }" :style="{ zIndex }">
     <ol v-if="allUploads.length > 0">
       <li v-for="ctx in allUploads" :key="ctx.id" :class="{ 'no-img': !ctx.img, 'no-progress': ctx.progressValue === undefined || ctx.progressMax === undefined }">
         <div
@@ -84,7 +84,7 @@ const queueDataUploads = computed(() => {
 });
 
 const allUploads = computed(() => {
-  return [...uploads.value, ...queueDataUploads.value];
+  return [...queueDataUploads.value, ...uploads.value];
 });
 
 let intervalId: string | number | NodeJS.Timer | undefined;
@@ -110,6 +110,9 @@ onUnmounted(() => {
   pointer-events: none;
   box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.3);
   border-radius: 0.5rem;
+}
+.mk-uploader.all-no-img {
+  width: calc(100% - 2.25rem);
 }
 .mk-uploader:empty {
   display: none;
@@ -139,7 +142,7 @@ onUnmounted(() => {
   grid-template-rows: 1fr;
 }
 .mk-uploader > ol > li.no-img {
-  grid-template-columns: 0 calc(100% - 0.5rem);
+  grid-template-columns: calc(100% - 0.5rem);
   width: calc(100% - 2.25rem);
 }
 .mk-uploader > ol > li:first-child {
@@ -149,7 +152,7 @@ onUnmounted(() => {
 }
 .mk-uploader > ol > li > .img {
   display: block;
-  background-size: cover;
+  background-size: contain;
   background-position: center center;
   grid-column: 1/2;
   grid-row: 1/3;

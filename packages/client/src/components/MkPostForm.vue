@@ -931,7 +931,7 @@ let requiredFilename = $ref(
 );
 let imeText = $ref("");
 let shortcutKeyValue = $ref(0);
-let fileselecting = $ref(false);
+let filePromises = $ref<Promise<void>[]>([]);
 let fileError = $ref(false);
 let referencesFlg = $ref(true);
 
@@ -1089,7 +1089,7 @@ const canPost = $computed((): boolean => {
 		!posting &&
 		(1 <= textLength ||
 			1 <= files.length ||
-			!!fileselecting ||
+			!allPromisesResolved() ||
 			!!poll ||
 			!!props.renote ||
 			!!quoteId ||
@@ -1412,26 +1412,31 @@ function focus() {
 }
 
 function chooseFileFrom(ev) {
-	fileError = false;
-	fileselecting = true;
-	selectFiles(
-		ev.currentTarget ?? ev.target,
-		i18n.ts.attachFile,
-		requiredFilename
-	)
-		.then((files_) => {
-			for (const file of files_) {
-				files.push(file);
-			}
-			fileselecting = false;
-		})
-		.catch(() => {
-			fileError = true;
-			fileselecting = false;
-		})
-		.finally(() => {
-			fileselecting = false;
-		});
+    fileError = false;
+
+    const promise = selectFiles(
+        ev.currentTarget ?? ev.target,
+        i18n.ts.attachFile,
+        requiredFilename
+    )
+    .then((files_) => {
+        for (const file of files_) {
+            files.push(file);
+        }
+    })
+    .catch(() => {
+        fileError = true;
+    })
+    .finally(() => {
+        // 完了したプロミスをfilePromisesから削除
+        filePromises = filePromises.filter(p => p !== promise);
+    });
+
+    filePromises.push(promise);
+}
+
+function allPromisesResolved() {
+    return filePromises.length === 0;
 }
 
 function detachFile(id) {
@@ -1451,26 +1456,28 @@ function updateFileName(file, name) {
 }
 
 function upload(file: File, name?: string) {
-	fileError = false;
-	fileselecting = true;
-	uploadFile(
-		file,
-		defaultStore.state.uploadFolder,
-		name,
-		undefined,
-		undefined,
-		requiredFilename
-	).then((res) => {
-		files.push(res);
-		fileselecting = false;
-	})
-	.catch(() => {
-		fileError = true;
-		fileselecting = false;
-	})
-	.finally(() => {
-		fileselecting = false;
-	});
+    fileError = false;
+
+    const promise = uploadFile(
+        file,
+        defaultStore.state.uploadFolder,
+        name,
+        undefined,
+        undefined,
+        requiredFilename
+    )
+    .then((res) => {
+        files.push(res);
+    })
+    .catch(() => {
+        fileError = true;
+    })
+    .finally(() => {
+        // 完了したプロミスをfilePromisesから削除
+        filePromises = filePromises.filter(p => p !== promise);
+    });
+
+    filePromises.push(promise);
 }
 
 function setVisibility() {
@@ -2134,7 +2141,7 @@ async function post() {
 
 function waitForFileSelectingToBeFalse(backupDraftData) {
 	let addData: { id: any; endpoint?: string; data?: Record<string, any> | undefined; token?: string | null | undefined; suppressToast?: boolean | undefined; comment?: string | undefined; draftData?: any; };
-	if (fileselecting) {
+	if (!allPromisesResolved()) {
 		addData = os.addQueue({
 			endpoint: "notes/create",
 			data: {},
@@ -2146,13 +2153,13 @@ function waitForFileSelectingToBeFalse(backupDraftData) {
 		if (addData) os.removeQueue(addData.id)
 	};
   return new Promise((resolve, reject) => {
-		if (!fileselecting) resolve("OK");
+		if (allPromisesResolved()) resolve("OK");
     const checkInterval = setInterval(() => {
 			if (fileError) {
         clearInterval(checkInterval);
 				reject("アップロードに失敗しました。")
 			}
-      if (!fileselecting) {
+      if (!fileError && allPromisesResolved()) {
         clearInterval(checkInterval);
         resolve("OK");
       }

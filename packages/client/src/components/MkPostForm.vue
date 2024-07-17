@@ -787,6 +787,7 @@ import { deepClone } from "@/scripts/clone";
 import XDraft from "@/components/MkDraftDialog.vue";
 import XCheatSheet from "@/components/MkCheatSheetDialog.vue";
 import { preprocess } from "@/scripts/preprocess";
+import { id } from "date-fns/locale";
 
 const modal = inject("modal");
 
@@ -931,6 +932,7 @@ let requiredFilename = $ref(
 let imeText = $ref("");
 let shortcutKeyValue = $ref(0);
 let fileselecting = $ref(false);
+let fileError = $ref(false);
 let referencesFlg = $ref(true);
 
 const publicIcon = $computed((): String => {
@@ -1089,10 +1091,10 @@ const canPost = $computed((): boolean => {
 			1 <= files.length ||
 			!!poll ||
 			!!props.renote ||
-			!!quoteId) &&
+			!!quoteId ||
+			(!!referencesFlg && referenceIds?.length)) &&
 		textLength <= maxTextLength &&
-		(!poll || poll.choices.length >= 2) &&
-		!fileselecting
+		(!poll || poll.choices.length >= 1)
 	);
 });
 
@@ -1409,6 +1411,7 @@ function focus() {
 }
 
 function chooseFileFrom(ev) {
+	fileError = false;
 	fileselecting = true;
 	selectFiles(
 		ev.currentTarget ?? ev.target,
@@ -1416,10 +1419,14 @@ function chooseFileFrom(ev) {
 		requiredFilename
 	)
 		.then((files_) => {
-			fileselecting = false;
 			for (const file of files_) {
 				files.push(file);
 			}
+			fileselecting = false;
+		})
+		.catch(() => {
+			fileError = true;
+			fileselecting = false;
 		})
 		.finally(() => {
 			fileselecting = false;
@@ -1443,6 +1450,8 @@ function updateFileName(file, name) {
 }
 
 function upload(file: File, name?: string) {
+	fileError = false;
+	fileselecting = true;
 	uploadFile(
 		file,
 		defaultStore.state.uploadFolder,
@@ -1452,6 +1461,14 @@ function upload(file: File, name?: string) {
 		requiredFilename
 	).then((res) => {
 		files.push(res);
+		fileselecting = false;
+	})
+	.catch(() => {
+		fileError = true;
+		fileselecting = false;
+	})
+	.finally(() => {
+		fileselecting = false;
 	});
 }
 
@@ -1851,8 +1868,11 @@ function backupDraft(key?) {
 		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
 
 		backupDraftData = {...draftData[key ? key : draftKey]}
+
+		return backupDraftData;
 	} catch (e) {
 		console.log(e)
+		return undefined;
 	}
 }
 
@@ -2074,7 +2094,7 @@ async function post() {
 	}
 
 	backupData()
-	backupDraft();
+	const backupDraftData = backupDraft();
 	clear();
 	nextTick(() => {
 		deleteDraft();
@@ -2095,18 +2115,47 @@ async function post() {
 	});
 
 	posting = true;
-	os.queueApi("notes/create", postData, token, true, "投稿中…")
-		.then(() => {
-			posting = false;
-			postAccount = null;
+	try {
+		await waitForFileSelectingToBeFalse(backupDraftData);
+		postData.fileIds = files.length > 0 ? files.map((f) => f.id) : undefined;
+		await os.queueApi("notes/create", postData, token, true, "投稿中…", {key: draftKey, ...backupDraftData})
+		posting = false;
+		postAccount = null;
+	} catch (err) {
+		posting = false;
+		restoreData();
+		restoreDraft();
+		const errId = (err as any).id;
+		os.toast([err.message, errId].join(" : "));
+	}
+}
+
+function waitForFileSelectingToBeFalse(backupDraftData) {
+	let addData: { id: any; endpoint?: string; data?: Record<string, any> | undefined; token?: string | null | undefined; suppressToast?: boolean | undefined; comment?: string | undefined; draftData?: any; };
+	if (!fileselecting) {
+		addData = os.addQueue({
+			endpoint: "notes/create",
+			data: {},
+			comment: "画像アップロード待機中…",
+			draftData: {key: draftKey, ...backupDraftData}
 		})
-		.catch((err) => {
-			posting = false;
-			restoreData();
-			restoreDraft();
-			const errId = (err as any).id;
-			os.toast([err.message, errId].join(" : "));
-		});
+	}
+	const onFinally = () => {
+		if (addData) os.removeQueue(addData.id)
+	};
+  return new Promise((resolve, reject) => {
+		if (!fileselecting) resolve("OK");
+    const checkInterval = setInterval(() => {
+			if (fileError) {
+        clearInterval(checkInterval);
+				reject("アップロードに失敗しました。")
+			}
+      if (!fileselecting) {
+        clearInterval(checkInterval);
+        resolve("OK");
+      }
+    }, 200); // 200ミリ秒ごとにチェック
+  }).finally(onFinally);
 }
 
 function cancel() {

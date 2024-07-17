@@ -1,6 +1,7 @@
 import { markRaw, ref } from "vue";
 import { Storage } from "./pizzax";
 import { Theme } from "./scripts/theme";
+import { apiData } from "./os";
 
 export const postFormActions = [];
 export const userActions = [];
@@ -1495,11 +1496,13 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 			createdAt: "2024/6/13",
+			page: "postform",
 		},
 		showReactionMenuContext: {
 			where: "device",
 			default: !/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()),
 			createdAt: "2024/6/20",
+			page: "behavior",
 		},
 		shortPinUsers: {
 			where: "device",
@@ -1515,11 +1518,18 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 			createdAt: "2024/7/4",
+			page: "behavior",
 		},
 		enableHotkeyDarkMode: {
 			where: "device",
 			default: false,
 			createdAt: "2024/7/16",
+			page: "theme",
+		},
+		queueDatas: {
+			where: "device",
+			default: [] as apiData[],
+			createdAt: "2024/7/17",
 		},
 	}),
 );

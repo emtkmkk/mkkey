@@ -14,6 +14,7 @@ import { $i } from "@/account";
 import { get, set } from "@/scripts/idb-proxy";
 import { v4 as uuid } from "uuid";
 import { resolve } from "chart.js/dist/helpers/helpers.options";
+import { defaultStore } from "./store";
 
 export const pendingApiRequestsCount = ref(0);
 
@@ -139,22 +140,42 @@ export const apiWithDialog = ((
 
 
 
-type apiData = {
-	id: string;
+export type apiData = {
+	id?: string;
 	endpoint: string;
 	data?: Record<string, any>;
 	token?: string | null | undefined;
 	suppressToast?: boolean;
 	comment?: string;
+	draftData?: any;
 }
 
 export let queueDatas: apiData[] = [];
+
+export const addQueue = (
+  data: apiData
+) => {
+  const id = uuid();
+	const addData = {id, ...data};
+  queueDatas.push(addData);
+	defaultStore.set("queueDatas", queueDatas);
+	return addData;
+};
+
+export const removeQueue = (
+	id: string,
+) => {
+	queueDatas = queueDatas.filter((x) => x.id !== id);
+	defaultStore.set("queueDatas", queueDatas);
+}
+
 export const queueApi = (
   endpoint: string,
   data: Record<string, any> = {},
   token?: string | null | undefined,
   suppressToast = false,
 	comment?: string | undefined,
+	draftData?: any,
 ): Promise<any> => { // 戻り値の型をPromiseに変更
   if (endpoint === "notes/create") {
     const isDuplicate = queueDatas.some(item => 
@@ -168,12 +189,10 @@ export const queueApi = (
     }
   }
 
-  const id = uuid();
-  queueDatas.push({ id, endpoint, data, token, suppressToast, comment });
+  const addData = addQueue({ endpoint, data, token, suppressToast, comment, draftData });
 
   const onFinally = () => {
-    // IDが一致する要素だけを残す
-    queueDatas = queueDatas.filter((x) => x.id !== id);
+    removeQueue(addData.id);
   };
   
   return api(endpoint, data, token, suppressToast).finally(onFinally);

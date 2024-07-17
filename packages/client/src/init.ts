@@ -67,6 +67,7 @@ import {
 } from "@/scripts/datasaver";
 import { acct } from "./filters/user";
 import { applyProfile, autoSave } from "./scripts/backup";
+import { v4 as uuid } from "uuid";
 
 (async () => {
 	console.info(`Calckey v${version}`);
@@ -657,6 +658,30 @@ import { applyProfile, autoSave } from "./scripts/backup";
 		});
 
 		defaultStore.loaded.then(async () => {
+			if (defaultStore.state.queueDatas?.length) {
+				for (let i = defaultStore.state.queueDatas?.length - 1; i >= 0; i--) {
+					try {
+						const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+	
+						const key = defaultStore.state.queueDatas[i].draftData.key ?? `auto:${uuid()?.slice(0, 8)}`
+	
+						const data = draftData[key]
+						if (data?.data) {
+							if ((data.data.text || (data.data.useCw && data.data.cw) || data.data.files?.length || data.data.poll || data.data.referencesFlg !== true)) {
+								draftData[`auto:${uuid()?.slice(0, 8)}`] = defaultStore.state.queueDatas[i].draftData;
+								localStorage.setItem("drafts", JSON.stringify(draftData));
+								return;
+							}
+						}
+						draftData[key] = defaultStore.state.queueDatas[i].draftData
+						localStorage.setItem("drafts", JSON.stringify(draftData));
+					} catch (e) {
+						console.log(e)
+					}
+				}
+				defaultStore.set("queueDatas", []);
+				toast("前回未送信の投稿を下書きに保存しました。")
+			}
 			if (
 				defaultStore.state.tutorial === -1 &&
 				defaultStore.isDefault("showLocalPostsInfoPopup") &&

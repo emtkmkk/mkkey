@@ -1,6 +1,6 @@
 <template>
 	<div class="zmdxowus">
-		<p v-if="choices.length < 2" class="caution">
+		<p v-if="choices.length < 1" class="caution">
 			<i class="ph-warning ph-bold ph-lg"></i
 			>{{ i18n.ts._poll.noOnlyOneChoice }}
 		</p>
@@ -19,7 +19,7 @@
 				</button>
 			</li>
 		</ul>
-		<MkButton v-if="choices.length < 10" class="add" @click="add">{{
+		<MkButton v-if="choices.length < 20" class="add" @click="add">{{
 			i18n.ts.add
 		}}</MkButton>
 		<MkButton v-else class="add" disabled>{{
@@ -102,13 +102,13 @@ const emit = defineEmits<{
 
 const choices = ref(props.modelValue.choices);
 const multiple = ref(props.modelValue.multiple);
-const expiration = ref("infinite");
+const expiration = ref("after");
 const atDate = ref(
 	formatDateTimeString(addTime(new Date(), 1, "day"), "yyyy-MM-dd")
 );
 const atTime = ref("00:00");
-const after = ref(0);
-const unit = ref("second");
+const after = ref(24);
+const unit = ref("hour");
 
 if (props.modelValue.expiresAt) {
 	expiration.value = "at";

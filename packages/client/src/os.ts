@@ -142,6 +142,7 @@ export const apiWithDialog = ((
 
 export type apiData = {
 	id?: string;
+	date?: Date;
 	endpoint: string;
 	data?: Record<string, any>;
 	token?: string | null | undefined;
@@ -154,7 +155,8 @@ export const queueDatas = ref<apiData[]>([]);
 
 export const addQueue = (data: apiData) => {
   const id = uuid();
-  const addData = { id, ...data };
+	const date = new Date();
+  const addData = { id, date, ...data };
   queueDatas.value.push(addData);
   defaultStore.set("queueDatas", queueDatas.value);
   return addData;

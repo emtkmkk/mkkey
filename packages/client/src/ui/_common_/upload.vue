@@ -61,21 +61,44 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import * as os from "@/os";
 import { uploads } from "@/scripts/upload";
 import { i18n } from "@/i18n";
 
 const zIndex = os.claimZIndex("high");
 
+const queueDatas = ref(os.queueDatas.value);
+
+const updateQueueDatas = () => {
+  queueDatas.value = os.queueDatas.value.filter((x) => {
+    // Check if x.date exists and is a valid Date object
+    if (x.date instanceof Date) {
+      return Date.now() - x.date.getTime() > 500;
+    }
+    return false;
+  });
+};
+
 const queueDataUploads = computed(() => {
-	return os.queueDatas.map(data => ({
-		id: data.id,
-		name: data.comment || data.endpoint,
-		progressValue: undefined,
-		progressMax: undefined,
-		img: null
-	}));
+  return queueDatas.value.map(data => ({
+    id: data.id,
+    name: data.comment || data.endpoint,
+    progressValue: undefined,
+    progressMax: undefined,
+    img: null
+  }));
+});
+
+let intervalId: string | number | NodeJS.Timer | undefined;
+
+onMounted(() => {
+  intervalId = setInterval(updateQueueDatas, 200);
+});
+
+onUnmounted(() => {
+  if (intervalId) clearInterval(intervalId);
+	intervalId = undefined;
 });
 
 const allUploads = computed(() => {

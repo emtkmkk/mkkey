@@ -174,7 +174,7 @@ export const queueApi = (
 	draftData?: any,
 ): Promise<any> => { // 戻り値の型をPromiseに変更
   if (endpoint === "notes/create") {
-    const isDuplicate = queueDatas.some(item => 
+    const isDuplicate = queueDatas.value.some(item => 
       item.endpoint === "notes/create" &&
       item.data?.cw === data?.cw &&
       item.data?.text === data?.text

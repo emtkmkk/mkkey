@@ -662,6 +662,8 @@ import { v4 as uuid } from "uuid";
 				for (let i = defaultStore.state.queueDatas?.length - 1; i >= 0; i--) {
 					try {
 						const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+
+						if (!defaultStore.state.queueDatas[i].draftData?.key || !defaultStore.state.queueDatas[i].draftData?.data) continue;
 	
 						const key = defaultStore.state.queueDatas[i].draftData.key ?? `auto:${uuid()?.slice(0, 8)}`
 	

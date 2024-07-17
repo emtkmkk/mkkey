@@ -325,6 +325,7 @@ export function modalPageWindow(path: string) {
 }
 
 export function toast(message: string) {
+	if (!message) return;
 	popup(
 		MkToast,
 		{

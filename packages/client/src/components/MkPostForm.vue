@@ -1870,12 +1870,12 @@ function saveDraft(key?, name?) {
 	}
 }
 
-let backupDraftData = {};
+let backupDraftData: any;
 function backupDraft(key?) {
 	try {
 		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
 
-		backupDraftData = {...draftData[key ? key : draftKey]}
+		backupDraftData = {...draftData[key ? key : draftKey]};
 
 		return backupDraftData;
 	} catch (e) {
@@ -2134,7 +2134,7 @@ async function post() {
 		restoreData();
 		restoreDraft();
 		const errId = (err as any).id;
-		os.toast([err.message, errId].join(" : "));
+		os.toast([err.message, errId].filter(Boolean).join(" : "));
 		loadDraft();
 	}
 }
@@ -2818,4 +2818,9 @@ onMounted(() => {
 		}
 	}
 }
-</style>
+</style>import { ReactiveVariable } from "vue/macros";
+import { ReactiveVariable } from "vue/macros";
+import { ReactiveVariable } from "vue/macros";
+import { ComputedVariable } from "vue/macros";
+import { ReactiveVariable } from "vue/macros";
+: string: string: { currentTarget: any; target: any; }: string: ReactiveVariable<{ id: misskey.entities.ID; createdAt: misskey.entities.DateString; isSensitive: boolean; name: string; thumbnailUrl: string; url: string; type: string; size: number; md5: string; blurhash: string; comment: string | null; properties: Record<string, any>; }[]>: { id: string; }: boolean: { id: string; }: string: ReactiveVariable<"public"> | ReactiveVariable<"home"> | ReactiveVariable<"followers"> | ReactiveVariable<"specified"> | ReactiveVariable<readonly ["public", "home", "followers", "specified"]>: ReactiveVariable<false> | ReactiveVariable<true>: unknown: any: unknown: any: { dataTransfer: { items: { kind: string; }[]; types: string[]; effectAllowed: any; dropEffect: string; }; preventDefault: () => void; }: any: any: { dataTransfer: { files: string | any[] | Iterable<unknown> | ArrayLike<unknown>; getData: (arg0: string) => any; }; preventDefault: () => void; }: string | undefined: undefined: any: undefined: undefined: undefined: string: string: any: { canceled: any; }: { canceled: any; key: ComputedVariable<string>; name: any; }: { canceled: any; key: any; name: any; }: { canceled: any; key: any; }: undefined: any: any: { currentTarget: any; target: any; }: string: ReactiveVariable<string>

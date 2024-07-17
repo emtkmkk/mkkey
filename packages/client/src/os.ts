@@ -155,7 +155,7 @@ export const queueDatas = ref<apiData[]>([]);
 export const addQueue = (data: apiData) => {
   const id = uuid();
   const addData = { id, ...data };
-  queueDatas.value = [...queueDatas.value, addData];
+  queueDatas.value.push(addData);
   defaultStore.set("queueDatas", queueDatas.value);
   return addData;
 };

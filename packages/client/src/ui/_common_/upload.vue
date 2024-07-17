@@ -1,67 +1,67 @@
 <template>
-	<div class="mk-uploader _acrylic" :style="{ zIndex }">
-		<ol v-if="allUploads.length > 0">
-			<li v-for="ctx in allUploads" :key="ctx.id">
-				<div
-					v-if="ctx.img"
-					class="img"
-					:style="{ backgroundImage: `url(${ctx.img})` }"
-				></div>
-				<div class="top">
-					<p class="name">
-						<i class="ph-circle-notch ph-bold ph-lg fa-pulse"></i
-						>{{ ctx.name }}
-					</p>
-					<p class="status">
-						<span
-							v-if="ctx.progressValue === undefined"
-							class="initing"
-							>{{ i18n.ts.waiting }}<MkEllipsis
-						/></span>
-						<span v-if="ctx.progressValue !== undefined" class="kb"
-							>{{
-								String(
-									Math.floor(ctx.progressValue / 1024)
-								).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
-							}}<i>KB</i> /
-							{{
-								String(
-									Math.floor(ctx.progressMax / 1024)
-								).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
-							}}<i>KB</i></span
-						>
-						<span
-							v-if="ctx.progressValue !== undefined"
-							class="percentage"
-							>{{
-								(
-									Math.floor(
-										(ctx.progressValue / ctx.progressMax) *
-											999.9
-									) / 10
-								).toFixed(1)
-							}}</span
-						>
-					</p>
-				</div>
-				<progress
-					v-if="ctx.progressValue && ctx.progressMax"
-					:value="ctx.progressValue || 0"
-					:max="ctx.progressMax || 0"
-					:class="{
-						initing: ctx.progressValue === undefined,
-						waiting:
-							ctx.progressValue !== undefined &&
-							ctx.progressValue === ctx.progressMax,
-					}"
-				></progress>
-			</li>
-		</ol>
-	</div>
+  <div class="mk-uploader _acrylic" :style="{ zIndex }">
+    <ol v-if="allUploads.length > 0">
+      <li v-for="ctx in allUploads" :key="ctx.id">
+        <div
+          v-if="ctx.img"
+          class="img"
+          :style="{ backgroundImage: `url(${ctx.img})` }"
+        ></div>
+        <div class="top">
+          <p class="name">
+            <i class="ph-circle-notch ph-bold ph-lg fa-pulse"></i
+            >{{ ctx.name }}
+          </p>
+          <p class="status">
+            <span
+              v-if="ctx.progressValue === undefined"
+              class="initing"
+              >{{ i18n.ts.waiting }}<MkEllipsis
+            /></span>
+            <span v-if="ctx.progressValue !== undefined" class="kb"
+              >{{
+                String(
+                  Math.floor(ctx.progressValue / 1024)
+                ).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
+              }}<i>KB</i> /
+              {{
+                String(
+                  Math.floor(ctx.progressMax / 1024)
+                ).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
+              }}<i>KB</i></span
+            >
+            <span
+              v-if="ctx.progressValue !== undefined"
+              class="percentage"
+              >{{
+                (
+                  Math.floor(
+                    (ctx.progressValue / ctx.progressMax) *
+                      999.9
+                  ) / 10
+                ).toFixed(1)
+              }}</span
+            >
+          </p>
+        </div>
+        <progress
+          v-if="ctx.progressValue && ctx.progressMax"
+          :value="ctx.progressValue || 0"
+          :max="ctx.progressMax || 0"
+          :class="{
+            initing: ctx.progressValue === undefined,
+            waiting:
+              ctx.progressValue !== undefined &&
+              ctx.progressValue === ctx.progressMax,
+          }"
+        ></progress>
+      </li>
+    </ol>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import * as os from "@/os";
 import { uploads } from "@/scripts/upload";
 import { i18n } from "@/i18n";
@@ -71,138 +71,138 @@ const zIndex = os.claimZIndex("high");
 const queueDatas = ref(os.queueDatas.value);
 
 const updateQueueDatas = () => {
-  queueDatas.value = os.queueDatas.value.filter((x) => {
-    // Check if x.date exists and is a valid Date object
-    if (x.date instanceof Date) {
-      return Date.now() - x.date.getTime() > 500;
-    }
-    return false;
-  });
+	queueDatas.value = os.queueDatas.value.filter((x) => {
+		if (x.date instanceof Date) {
+			return Date.now() - x.date.getTime() > 500;
+		}
+		return false;
+	});
 };
 
 const queueDataUploads = computed(() => {
-  return queueDatas.value.map(data => ({
-    id: data.id,
-    name: data.comment || data.endpoint,
-    progressValue: undefined,
-    progressMax: undefined,
-    img: null
-  }));
-});
-
-let intervalId: string | number | NodeJS.Timer | undefined;
-
-onMounted(() => {
-  intervalId = setInterval(updateQueueDatas, 200);
-});
-
-onUnmounted(() => {
-  if (intervalId) clearInterval(intervalId);
-	intervalId = undefined;
+	return queueDatas.value.map((data) => ({
+		id: data.id,
+		name: data.comment || data.endpoint,
+		progressValue: undefined,
+		progressMax: undefined,
+		img: null,
+	}));
 });
 
 const allUploads = computed(() => {
 	return [...uploads.value, ...queueDataUploads.value];
 });
+
+let intervalId: string | number | NodeJS.Timer | undefined;
+
+onMounted(() => {
+	updateQueueDatas();
+	intervalId = setInterval(updateQueueDatas, 200);
+});
+
+onUnmounted(() => {
+	if (intervalId !== undefined) clearInterval(intervalId);
+	intervalId = undefined;
+});
 </script>
 
 <style lang="scss" scoped>
 .mk-uploader {
-	position: fixed;
-	right: 1rem;
-	width: 18.75rem;
-	top: 2rem;
-	padding: 1rem 1.25rem;
-	pointer-events: none;
-	box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.3);
-	border-radius: 0.5rem;
+  position: fixed;
+  right: 1rem;
+  width: 18.75rem;
+  top: 2rem;
+  padding: 1rem 1.25rem;
+  pointer-events: none;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.3);
+  border-radius: 0.5rem;
 }
 .mk-uploader:empty {
-	display: none;
+  display: none;
 }
 .mk-uploader > ol {
-	display: block;
-	margin: 0;
-	padding: 0;
-	list-style: none;
+  display: block;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .mk-uploader > ol > li {
-	display: grid;
-	margin: 0.5rem 0 0 0;
-	padding: 0;
-	height: 2.25rem;
-	width: 100%;
-	border-top: solid 0.5rem transparent;
-	grid-template-columns: 2.25rem calc(100% - 2.75rem);
-	grid-template-rows: 1fr 0.5rem;
-	column-gap: 0.5rem;
-	box-sizing: content-box;
+  display: grid;
+  margin: 0.5rem 0 0 0;
+  padding: 0;
+  height: 2.25rem;
+  width: 100%;
+  border-top: solid 0.5rem transparent;
+  grid-template-columns: 2.25rem calc(100% - 2.75rem);
+  grid-template-rows: 1fr 0.5rem;
+  column-gap: 0.5rem;
+  box-sizing: content-box;
 }
 .mk-uploader > ol > li:first-child {
-	margin: 0;
-	box-shadow: none;
-	border-top: none;
+  margin: 0;
+  box-shadow: none;
+  border-top: none;
 }
 .mk-uploader > ol > li > .img {
-	display: block;
-	background-size: cover;
-	background-position: center center;
-	grid-column: 1/2;
-	grid-row: 1/3;
+  display: block;
+  background-size: cover;
+  background-position: center center;
+  grid-column: 1/2;
+  grid-row: 1/3;
 }
 .mk-uploader > ol > li > .top {
-	display: flex;
-	grid-column: 2/3;
-	grid-row: 1/2;
+  display: flex;
+  grid-column: 2/3;
+  grid-row: 1/2;
 }
 .mk-uploader > ol > li > .top > .name {
-	display: block;
-	padding: 0 0.5rem 0 0;
-	margin: 0;
-	font-size: 0.8em;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
-	flex-shrink: 1;
+  display: block;
+  padding: 0 0.5rem 0 0;
+  margin: 0;
+  font-size: 0.8em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  flex-shrink: 1;
 }
 .mk-uploader > ol > li > .top > .name > i {
-	margin-right: 0.25rem;
+  margin-right: 0.25rem;
 }
 .mk-uploader > ol > li > .top > .status {
-	display: block;
-	margin: 0 0 0 auto;
-	padding: 0;
-	font-size: 0.8em;
-	flex-shrink: 0;
+  display: block;
+  margin: 0 0 0 auto;
+  padding: 0;
+  font-size: 0.8em;
+  flex-shrink: 0;
 }
 .mk-uploader > ol > li > .top > .status > .initing {
 }
 .mk-uploader > ol > li > .top > .status > .kb {
 }
 .mk-uploader > ol > li > .top > .status > .percentage {
-	display: inline-block;
-	width: 3rem;
-	text-align: right;
+  display: inline-block;
+  width: 3rem;
+  text-align: right;
 }
 .mk-uploader > ol > li > .top > .status > .percentage:after {
-	content: "%";
+  content: "%";
 }
 .mk-uploader > ol > li > progress {
-	display: block;
-	background: transparent;
-	border: none;
-	border-radius: 0.25rem;
-	overflow: hidden;
-	grid-column: 2/3;
-	grid-row: 2/3;
-	z-index: 2;
-	width: 100%;
-	height: 0.5rem;
+  display: block;
+  background: transparent;
+  border: none;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  grid-column: 2/3;
+  grid-row: 2/3;
+  z-index: 2;
+  width: 100%;
+  height: 0.5rem;
 }
 .mk-uploader > ol > li > progress::-webkit-progress-value {
-	background: var(--accent);
+  background: var(--accent);
 }
 .mk-uploader > ol > li > progress::-webkit-progress-bar {
-	background: transparent;
+  background: transparent;
 }
 </style>

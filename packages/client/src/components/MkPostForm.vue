@@ -1089,6 +1089,7 @@ const canPost = $computed((): boolean => {
 		!posting &&
 		(1 <= textLength ||
 			1 <= files.length ||
+			!!fileselecting ||
 			!!poll ||
 			!!props.renote ||
 			!!quoteId ||

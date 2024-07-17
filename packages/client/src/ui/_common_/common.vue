@@ -7,7 +7,7 @@
 		v-on="popup.events"
 	/>
 
-	<XUpload v-if="uploads.length > 0" />
+	<XUpload v-if="uploads.length + (os.queueDatas.value?.length ?? 0) > 0" />
 
 	<XStreamIndicator />
 
@@ -29,6 +29,7 @@ import * as sound from "@/scripts/sound";
 import { $i } from "@/account";
 import { stream } from "@/stream";
 import { i18n } from "@/i18n";
+import * as os from "@/os";
 
 const XStreamIndicator = defineAsyncComponent(
 	() => import("./stream-indicator.vue")

@@ -45,6 +45,7 @@
           </p>
         </div>
         <progress
+					v-if="ctx.progressValue && ctx.progressMax"
           :value="ctx.progressValue || 0"
           :max="ctx.progressMax || 0"
           :class="{

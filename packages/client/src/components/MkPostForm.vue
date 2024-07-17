@@ -2115,25 +2115,23 @@ async function post() {
 		}
 	});
 
-	posting = true;
 	try {
 		await waitForFileSelectingToBeFalse(backupDraftData);
 		postData.fileIds = (postData?.fileIds?.length ?? 0) + files.length > 0 ? [...(postData.fileIds?.length ? postData.fileIds : []), ...files.map((f) => f.id)] : undefined;
 		await os.queueApi("notes/create", postData, token, true, "投稿中…", {key: draftKey, ...backupDraftData})
-		posting = false;
 		postAccount = null;
 	} catch (err) {
-		posting = false;
 		restoreData();
 		restoreDraft();
 		const errId = (err as any).id;
 		os.toast([err.message, errId].join(" : "));
+		loadDraft();
 	}
 }
 
 function waitForFileSelectingToBeFalse(backupDraftData) {
 	let addData: { id: any; endpoint?: string; data?: Record<string, any> | undefined; token?: string | null | undefined; suppressToast?: boolean | undefined; comment?: string | undefined; draftData?: any; };
-	if (!fileselecting) {
+	if (fileselecting) {
 		addData = os.addQueue({
 			endpoint: "notes/create",
 			data: {},

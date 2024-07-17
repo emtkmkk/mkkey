@@ -211,6 +211,7 @@ export function uploadFile(
 				};
 
 				xhr.onerror = () => {
+						uploads.value = uploads.value.filter((x) => x.id !== id);
 					alert({
 						type: "error",
 						title: i18n.ts.failedToUpload,

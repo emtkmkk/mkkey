@@ -2118,7 +2118,7 @@ async function post() {
 	posting = true;
 	try {
 		await waitForFileSelectingToBeFalse(backupDraftData);
-		postData.fileIds = files.length > 0 ? files.map((f) => f.id) : undefined;
+		postData.fileIds = (postData?.fileIds?.length ?? 0) + files.length > 0 ? [...(postData.fileIds?.length ? postData.fileIds : []), ...files.map((f) => f.id)] : undefined;
 		await os.queueApi("notes/create", postData, token, true, "投稿中…", {key: draftKey, ...backupDraftData})
 		posting = false;
 		postAccount = null;

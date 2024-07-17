@@ -45,7 +45,6 @@
           </p>
         </div>
         <progress
-          v-if="ctx.progressValue && ctx.progressMax"
           :value="ctx.progressValue || 0"
           :max="ctx.progressMax || 0"
           :class="{
@@ -73,7 +72,7 @@ const queueDatas = ref(os.queueDatas.value);
 const updateQueueDatas = () => {
 	queueDatas.value = os.queueDatas.value.filter((x) => {
 		if (x.date instanceof Date) {
-			return Date.now() - x.date.getTime() > 500;
+			return Date.now() - x.date.getTime() > 1000;
 		}
 		return false;
 	});
@@ -97,7 +96,7 @@ let intervalId: string | number | NodeJS.Timer | undefined;
 
 onMounted(() => {
 	updateQueueDatas();
-	intervalId = setInterval(updateQueueDatas, 200);
+	intervalId = setInterval(updateQueueDatas, 500);
 });
 
 onUnmounted(() => {

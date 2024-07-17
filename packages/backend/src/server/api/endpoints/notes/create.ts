@@ -156,7 +156,7 @@ export const paramDef = {
 				choices: {
 					type: "array",
 					minItems: 1,
-					maxItems: 10,
+					maxItems: 20,
 					items: { type: "string", minLength: 1, maxLength: 50 },
 				},
 				multiple: { type: "boolean", default: false },

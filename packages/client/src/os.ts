@@ -157,7 +157,7 @@ export const addQueue = (
 ) => {
   const id = uuid();
 	const addData = {id, ...data};
-  queueDatas.push(addData);
+  queueDatas.value = [...queueDatas.value, addData];
 	defaultStore.set("queueDatas", queueDatas.value);
 	return addData;
 };
@@ -165,7 +165,7 @@ export const addQueue = (
 export const removeQueue = (
 	id: string,
 ) => {
-	queueDatas = queueDatas.filter((x) => x.id !== id);
+	queueDatas = queueDatas.value.filter((x) => x.id !== id);
 	defaultStore.set("queueDatas", queueDatas.value);
 }
 

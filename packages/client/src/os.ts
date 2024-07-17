@@ -150,7 +150,7 @@ export type apiData = {
 	draftData?: any;
 }
 
-export let queueDatas: apiData[] = [];
+export let queueDatas = ref<apiData[]>([]);
 
 export const addQueue = (
   data: apiData

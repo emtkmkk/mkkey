@@ -2114,13 +2114,16 @@ async function post() {
 			);
 		}
 	});
-
+	posting = true;
 	try {
 		await waitForFileSelectingToBeFalse(backupDraftData);
 		postData.fileIds = (postData?.fileIds?.length ?? 0) + files.length > 0 ? [...(postData.fileIds?.length ? postData.fileIds : []), ...files.map((f) => f.id)] : undefined;
-		await os.queueApi("notes/create", postData, token, true, "投稿中…", {key: draftKey, ...backupDraftData})
+		clear();
+		await os.queueApi("notes/create", postData, token, true, "投稿データをサーバに送信中…", {key: draftKey, ...backupDraftData})
+		posting = false;
 		postAccount = null;
 	} catch (err) {
+		posting = false;
 		restoreData();
 		restoreDraft();
 		const errId = (err as any).id;
@@ -2135,7 +2138,7 @@ function waitForFileSelectingToBeFalse(backupDraftData) {
 		addData = os.addQueue({
 			endpoint: "notes/create",
 			data: {},
-			comment: "画像アップロード待機中…",
+			comment: "ファイルのアップロードを待機中…",
 			draftData: {key: draftKey, ...backupDraftData}
 		})
 	}

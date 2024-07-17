@@ -176,15 +176,18 @@ export const queueApi = (
 	draftData?: any,
 ): Promise<any> => { // 戻り値の型をPromiseに変更
   if (endpoint === "notes/create") {
-    const isDuplicate = queueDatas.value.some(item => 
-      item.endpoint === "notes/create" &&
-      item.data?.cw === data?.cw &&
-      item.data?.text === data?.text
-    );
-    if (isDuplicate) {
-      toast("重複した投稿が検出されました。リクエストはキャンセルされました。");
-      return Promise.reject(new Error("重複した投稿が検出されました。")); // 重複時にPromiseを拒否
-    }
+		try {
+			const isDuplicate = queueDatas.value.some(item => 
+				item.endpoint === "notes/create" &&
+				JSON.stringify(item.data) === JSON.stringify(data)
+			);
+			if (isDuplicate) {
+				toast("重複した投稿が検出されました。リクエストはキャンセルされました。");
+				return Promise.reject(new Error("重複した投稿が検出されました。")); // 重複時にPromiseを拒否
+			}
+		} catch (e) {
+			console.log(e);
+		}
   }
 
   const addData = addQueue({ endpoint, data, token, suppressToast, comment, draftData });

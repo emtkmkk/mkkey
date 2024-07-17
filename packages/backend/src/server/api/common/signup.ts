@@ -1150,7 +1150,7 @@ const famousAccounts = [
 ]
 
 	if ([
-		...preservedUsernames
+		...preservedUsernames,
 		...atpSpecific,
 		...commonlyReserved,
 		...famousAccounts,

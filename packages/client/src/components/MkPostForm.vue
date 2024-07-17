@@ -845,6 +845,7 @@ let backupCw = cw;
 let backupFiles = files;
 let backupQuoteId = null;
 let backupPoll = null;
+let backupPostData = null;
 let localOnly = $ref<boolean>(
 	props.initialLocalOnly ??
 		(defaultStore.state.rememberNoteVisibility
@@ -1562,12 +1563,28 @@ function removeVisibleUserCc(user) {
 	visibleUsersCc = erase(user, visibleUsersCc);
 }
 
+function backupData() {
+	backupPostData = {
+		text,
+		cw,
+		files,
+		poll,
+		quoteId,
+		referenceIds: referencesFlg ? referenceIds : undefined,
+	}
+}
+
+function restoreData() {
+  if (!referenceIds?.length && backupPostData?.referenceIds) referenceIds = backupPostData.referenceIds;
+}
+
 function clear() {
 	text = "";
 	cw = "";
 	files = [];
 	poll = null;
 	quoteId = null;
+	if (referencesFlg) referenceIds = [];
 }
 
 function onKeyup(ev: KeyboardEvent) {
@@ -1828,6 +1845,35 @@ function saveDraft(key?, name?) {
 	}
 }
 
+let backupDraftData = {};
+function backupDraft(key?) {
+	try {
+		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+
+		backupDraftData = {...draftData[key ? key : draftKey]}
+	} catch (e) {
+		console.log(e)
+	}
+}
+
+function restoreDraft(key?) {
+	try {
+		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+
+		const data = draftData[key ? key : draftKey]
+		if (data?.data) {
+			if ((data.data.text || (data.data.useCw && data.data.cw) || data.data.files?.length || data.data.poll || data.data.referencesFlg !== true)) {
+				draftData[`auto:${uuid()?.slice(0, 8)}`] = backupDraftData;
+				localStorage.setItem("drafts", JSON.stringify(draftData));
+				return;
+			}
+		}
+		draftData[key ? key : draftKey] = backupDraftData
+		localStorage.setItem("drafts", JSON.stringify(draftData));
+	} catch (e) {
+		console.log(e)
+	}
+}
 function deleteDraft(key?) {
 	try {
 		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
@@ -1836,7 +1882,7 @@ function deleteDraft(key?) {
 				
 		localStorage.setItem("drafts", JSON.stringify(draftData));
 	} catch (e) {
-
+		console.log(e)
 	}
 }
 
@@ -2027,37 +2073,39 @@ async function post() {
 		if (canceled) return;
 	}
 
+	backupData()
+	backupDraft();
+	clear();
+	nextTick(() => {
+		deleteDraft();
+		emit("posted");
+		if (postData.text && postData.text !== "") {
+			const hashtags_ = mfm
+				.parse(postData.text)
+				.filter((x) => x.type === "hashtag")
+				.map((x) => x.props.hashtag);
+			const history = JSON.parse(
+				localStorage.getItem("hashtags") || "[]"
+			) as string[];
+			localStorage.setItem(
+				"hashtags",
+				JSON.stringify(unique(hashtags_.concat(history)))
+			);
+		}
+	});
+
 	posting = true;
-	os.api("notes/create", postData, token, true)
+	os.queueApi("notes/create", postData, token, true, "投稿中…")
 		.then(() => {
-			clear();
-			if (referencesFlg) referenceIds = [];
-			nextTick(() => {
-				deleteDraft();
-				emit("posted");
-				if (postData.text && postData.text !== "") {
-					const hashtags_ = mfm
-						.parse(postData.text)
-						.filter((x) => x.type === "hashtag")
-						.map((x) => x.props.hashtag);
-					const history = JSON.parse(
-						localStorage.getItem("hashtags") || "[]"
-					) as string[];
-					localStorage.setItem(
-						"hashtags",
-						JSON.stringify(unique(hashtags_.concat(history)))
-					);
-				}
-				posting = false;
-				postAccount = null;
-			});
+			posting = false;
+			postAccount = null;
 		})
 		.catch((err) => {
 			posting = false;
-			os.alert({
-				type: "error",
-				text: `${err.message}\n${(err as any).id}`,
-			});
+			restoreData();
+			restoreDraft();
+			const errId = (err as any).id;
+			os.toast([err.message, errId].join(" : "));
 		});
 }
 

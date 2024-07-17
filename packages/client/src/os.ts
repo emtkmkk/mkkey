@@ -12,6 +12,8 @@ import MkDialog from "@/components/MkDialog.vue";
 import { MenuItem } from "@/types/menu";
 import { $i } from "@/account";
 import { get, set } from "@/scripts/idb-proxy";
+import { v4 as uuid } from "uuid";
+import { resolve } from "chart.js/dist/helpers/helpers.options";
 
 export const pendingApiRequestsCount = ref(0);
 
@@ -134,6 +136,48 @@ export const apiWithDialog = ((
 
 	return promise;
 }) as typeof api;
+
+
+
+type apiData = {
+	id: string;
+	endpoint: string;
+	data?: Record<string, any>;
+	token?: string | null | undefined;
+	suppressToast?: boolean;
+	comment?: string;
+}
+
+export let queueDatas: apiData[] = [];
+export const queueApi = (
+  endpoint: string,
+  data: Record<string, any> = {},
+  token?: string | null | undefined,
+  suppressToast = false,
+	comment?: string | undefined,
+): Promise<any> => { // 戻り値の型をPromiseに変更
+  if (endpoint === "notes/create") {
+    const isDuplicate = queueDatas.some(item => 
+      item.endpoint === "notes/create" &&
+      item.data?.cw === data?.cw &&
+      item.data?.text === data?.text
+    );
+    if (isDuplicate) {
+      toast("重複した投稿が検出されました。リクエストはキャンセルされました。");
+      return Promise.reject(new Error("重複した投稿が検出されました。")); // 重複時にPromiseを拒否
+    }
+  }
+
+  const id = uuid();
+  queueDatas.push({ id, endpoint, data, token, suppressToast, comment });
+
+  const onFinally = () => {
+    // IDが一致する要素だけを残す
+    queueDatas = queueDatas.filter((x) => x.id !== id);
+  };
+  
+  return api(endpoint, data, token, suppressToast).finally(onFinally);
+};
 
 export function promiseDialog<T extends Promise<any>>(
 	promise: T,

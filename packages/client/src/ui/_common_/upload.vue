@@ -1,7 +1,7 @@
 <template>
 	<div class="mk-uploader _acrylic" :style="{ zIndex }">
-		<ol v-if="uploads.length > 0">
-			<li v-for="ctx in uploads" :key="ctx.id">
+		<ol v-if="allUploads.length > 0">
+			<li v-for="ctx in allUploads" :key="ctx.id">
 				<div
 					v-if="ctx.img"
 					class="img"
@@ -45,6 +45,7 @@
 					</p>
 				</div>
 				<progress
+					v-if="ctx.progressValue && ctx.progressMax"
 					:value="ctx.progressValue || 0"
 					:max="ctx.progressMax || 0"
 					:class="{
@@ -60,12 +61,26 @@
 </template>
 
 <script lang="ts" setup>
-import {} from "vue";
+import { ref, computed } from "vue";
 import * as os from "@/os";
 import { uploads } from "@/scripts/upload";
 import { i18n } from "@/i18n";
 
 const zIndex = os.claimZIndex("high");
+
+const queueDataUploads = computed(() => {
+	return os.queueDatas.map(data => ({
+		id: data.id,
+		name: data.comment || data.endpoint,
+		progressValue: undefined,
+		progressMax: undefined,
+		img: null
+	}));
+});
+
+const allUploads = computed(() => {
+	return [...uploads.value, ...queueDataUploads.value];
+});
 </script>
 
 <style lang="scss" scoped>
@@ -165,7 +180,6 @@ const zIndex = os.claimZIndex("high");
 	background: var(--accent);
 }
 .mk-uploader > ol > li > progress::-webkit-progress-bar {
-	//background: var(--accentAlpha01);
 	background: transparent;
 }
 </style>

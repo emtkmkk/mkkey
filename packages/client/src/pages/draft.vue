@@ -74,7 +74,7 @@ let jsonParse = $ref(JSON.parse(localStorage.getItem("drafts") || "{}"));
 
 let drafts = $computed(() => {
 	return Object.keys(jsonParse)
-		.filter((x) => !jsonParse[x]?.data)
+		.filter((x) => jsonParse[x]?.data)
 		.map((x) => {
 			return { key: x, value: jsonParse[x] };
 		})

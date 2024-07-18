@@ -3,7 +3,7 @@
 		<FormInfo warn class="_formBlock">{{
 			i18n.ts._accountDelete.mayTakeTime
 		}}</FormInfo>
-		<FormInfo v-if="$i" warn class="_formBlock">{{
+		<FormInfo v-if="$i" warn class="_formBlock" style="white-space: pre-wrap;">{{
 			i18n.t("_accountDelete.warn", {name: $i.username, note: $i.notesCount?.toLocaleString(), follower: $i.followersCount?.toLocaleString()})
 		}}</FormInfo>
 		<FormInfo class="_formBlock">{{

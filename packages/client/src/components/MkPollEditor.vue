@@ -104,20 +104,22 @@ const choices = ref(props.modelValue.choices);
 const multiple = ref(props.modelValue.multiple);
 const expiration = ref("after");
 const atDate = ref(
-	formatDateTimeString(addTime(new Date(), 1, "day"), "yyyy-MM-dd")
+	formatDateTimeString(addTime(new Date(), new Date().getHour() >= 22 ? 2 : 1, "day"), "yyyy-MM-dd")
 );
 const atTime = ref("00:00");
-const after = ref(24);
+const after = ref(1);
 const unit = ref("hour");
 
 if (props.modelValue.expiresAt) {
 	expiration.value = "at";
-	atDate.value = atTime.value = props.modelValue.expiresAt;
+	atDate.value = formatDateTimeString(new Date(props.modelValue.expiresAt), "yyyy-MM-dd")
+	atTime.value = formatDateTimeString(new Date(props.modelValue.expiresAt), "hh:mm");
 } else if (typeof props.modelValue.expiredAfter === "number") {
 	expiration.value = "after";
 	after.value = props.modelValue.expiredAfter / 1000;
+	unit.value = "second"
 } else {
-	expiration.value = "infinite";
+	expiration.value = "at";
 }
 
 function onInput(i, value) {

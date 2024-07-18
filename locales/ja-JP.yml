@@ -1781,7 +1781,7 @@ _cw:
   chars: "📝{count}"
   files: "📎{count}"
 _poll:
-  noOnlyOneChoice: "選択肢は最低2つ必要です"
+  noOnlyOneChoice: "選択肢は最低1つ必要です"
   choiceN: "選択肢{n}"
   noMore: "これ以上追加できません"
   canMultipleVote: "複数回答可"

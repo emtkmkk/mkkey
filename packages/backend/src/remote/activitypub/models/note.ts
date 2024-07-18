@@ -807,6 +807,7 @@ export async function extractEmojis(
 			}).toLowerCase();
 
 			const copydeny =
+				name?.includes("no_import") ||
 				emojiInfo?.localOnly ||
 				roleOnly ||
 				licenseText.includes("prohibited") ||

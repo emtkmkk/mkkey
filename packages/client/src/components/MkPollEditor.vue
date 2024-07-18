@@ -104,7 +104,7 @@ const choices = ref(props.modelValue.choices);
 const multiple = ref(props.modelValue.multiple);
 const expiration = ref("after");
 const atDate = ref(
-	formatDateTimeString(addTime(new Date(), new Date().getHour() >= 22 ? 2 : 1, "day"), "yyyy-MM-dd")
+	formatDateTimeString(addTime(new Date(), new Date().getHours() >= 22 ? 2 : 1, "day"), "yyyy-MM-dd")
 );
 const atTime = ref("00:00");
 const after = ref(1);

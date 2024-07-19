@@ -70,11 +70,13 @@ import { acct } from "./filters/user";
 import { applyProfile, autoSave } from "./scripts/backup";
 import { v4 as uuid } from "uuid";
 
+let waitMessages: string[] = [];
+
 // 指定したミリ秒だけ待つ非同期関数
-const wait = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const wait = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ヘックスカラーコードをRGBAに変換する関数
-const hexToRgb = (hex) => {
+const hexToRgb = (hex: string) => {
 	if (/^#[0-9A-Fa-f]{6}$/i.test(hex) || /^#[0-9A-Fa-f]{8}$/i.test(hex)) {
 		hex = hex.replace(/^#/, "");
 		const r = Number.parseInt(hex.substring(0, 2), 16);
@@ -91,12 +93,14 @@ const hexToRgb = (hex) => {
 
 // エラーログの初期化
 const initializeErrorLogging = async () => {
+	const waitMsg = "エラーログ出力機能を初期化中..."
+	waitMessages.push(waitMsg);
 	const currentDate = new Date();
 	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
 	await set("errorLog", [`${formattedDate} - Calckey v${version}`]);
 
-	const logError = async (message) => {
+	const logError = async (message: string) => {
 		const logtext = `${formattedDate} - ${message}`;
 		let currentLogs = (await get("errorLog")) || [];
 		currentLogs.push(logtext);
@@ -145,10 +149,14 @@ const initializeErrorLogging = async () => {
 			*/
 		});
 	}
+	waitMessages = waitMessages.filter((x) => x !== waitMsg);
 };
 
 // ビューポートの初期化
 const initializeViewport = () => {
+	const waitMsg = "ビューポートの初期化中..."
+	waitMessages.push(waitMsg);
+
 	// タッチデバイスでCSSの:hoverを機能させる
 	document.addEventListener("touchend", () => { }, { passive: true });
 
@@ -187,6 +195,7 @@ const initializeViewport = () => {
 			)}, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover`,
 		);
 	}
+	waitMessages = waitMessages.filter((x) => x !== waitMsg);
 };
 
 // ログインIDの初期化
@@ -195,6 +204,8 @@ const initializeLoginId = async () => {
 	const loginId = params.get("loginId");
 
 	if (loginId) {
+		const waitMsg = "ログインIDを初期化中..."
+		waitMessages.push(waitMsg);
 		const target = getUrlWithoutLoginId(location.href);
 		if (!$i || $i.id !== loginId) {
 			const account = await getAccountFromId(loginId);
@@ -203,6 +214,7 @@ const initializeLoginId = async () => {
 			}
 		}
 		history.replaceState({ misskey: "loginId" }, "", target);
+		waitMessages = waitMessages.filter((x) => x !== waitMsg);
 	}
 };
 
@@ -210,10 +222,15 @@ const initializeLoginId = async () => {
 const fetchUserAccount = async () => {
 	await initializeLoginId();
 	if ($i?.token) {
+		const waitMsg = "アカウント情報を取得中..."
+		waitMessages.push(waitMsg);
 		if (_DEV_) console.log("account cache found. refreshing...");
 		await refreshAccount();
+		waitMessages = waitMessages.filter((x) => x !== waitMsg);
 	} else {
-		if (_DEV_) console.log("no account cache found。");
+		const waitMsg = "ログイン中..."
+		waitMessages.push(waitMsg);
+		if (_DEV_) console.log("no account cache found");
 		const i = (document.cookie.match(/igi=(\w+)/) || [null, null])[1];
 		if (i && i !== "null") {
 			try {
@@ -225,21 +242,30 @@ const fetchUserAccount = async () => {
 		} else {
 			if (_DEV_) console.log("not signed in");
 		}
+		waitMessages = waitMessages.filter((x) => x !== waitMsg);
 	}
 };
 
 // サービスワーカーとインスタンスメタ情報の取得の初期化
 const initializeServiceWorkerAndFetchInstanceMeta = async () => {
+	const waitInstanceMsg = "インスタンス情報の取得中..."
+	waitMessages.push(waitInstanceMsg);
 	const fetchInstanceMetaPromise = fetchInstance();
 	fetchInstanceMetaPromise.then(() => {
+		waitMessages = waitMessages.filter((x) => x !== waitInstanceMsg);
+		const waitMsg = "サービスワーカーの初期化中..."
+		waitMessages.push(waitMsg);
 		localStorage.setItem("v", instance.version);
 		initializeSw();
+		waitMessages = waitMessages.filter((x) => x !== waitMsg);
 	});
 	return fetchInstanceMetaPromise;
 };
 
 // アプリの初期化
-const initializeApp = async (minimumLoadPromise) => {
+const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
+	const waitMsg = "アプリの初期化中..."
+	waitMessages.push(waitMsg);
 	const app = createApp(
 		window.location.search === "?zen"
 			? defineAsyncComponent(() => import("@/ui/zen.vue"))
@@ -253,6 +279,8 @@ const initializeApp = async (minimumLoadPromise) => {
 	);
 
 	app.config.errorHandler = async (err, vm, info) => {
+		const waitMsg = "エラーログ出力機能を初期化中(2)..."
+		waitMessages.push(waitMsg);
 		const currentDate = new Date();
 		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
@@ -270,6 +298,7 @@ const initializeApp = async (minimumLoadPromise) => {
 		}
 
 		await set("errorLog", currentLogs);
+		waitMessages = waitMessages.filter((x) => x !== waitMsg);
 	};
 
 	if (_DEV_) {
@@ -288,6 +317,7 @@ const initializeApp = async (minimumLoadPromise) => {
 	directives(app);
 	components(app);
 
+	waitMessages = waitMessages.filter((x) => x !== waitMsg);
 	initializeSplashScreen(minimumLoadPromise);
 
 	// https://github.com/misskey-dev/misskey/pull/8575#issuecomment-1114239210
@@ -316,7 +346,11 @@ const initializeApp = async (minimumLoadPromise) => {
 };
 
 // スプラッシュスクリーンの初期化
-const initializeSplashScreen = async (minimumLoadPromise) => {
+const initializeSplashScreen = async (minimumLoadPromise: Promise<unknown>) => {
+
+	const waitMsg = "スプラッシュスクリーンの解除中..."
+	waitMessages.push(waitMsg);
+
 	const splashText = document.getElementById("splashText");
 
 	if (splashText) await minimumLoadPromise;
@@ -328,6 +362,7 @@ const initializeSplashScreen = async (minimumLoadPromise) => {
 		});
 		splash.style.opacity = "0";
 		splash.style.pointerEvents = "none";
+		waitMessages = waitMessages.filter((x) => x !== waitMsg);
 	}
 };
 
@@ -853,7 +888,7 @@ const autoSaveConfig = async () => {
 	}
 };
 
-const showLastUsedToast = (ms) => {
+const showLastUsedToast = (ms: number) => {
 	if (!$i) return;
 	// 三日前以上前なら
 	if (ms > 1000 * 60 * 60 * 72) {
@@ -999,6 +1034,26 @@ const initializeStream = () => {
 	// 最低ロード時間の開始
 	const minimumLoadPromise = wait(2200);
 
+	// タイムアウト用のタイマーをセット
+	let intervalId: string | number | NodeJS.Timeout | undefined;
+	let splashTextContent: string | null;
+	const splashText = document.getElementById("splashText");
+
+	const splashTimeout = setTimeout(() => {
+		if (splashText) {
+			splashTextContent = splashText.textContent
+		}
+		intervalId = setInterval(() => {
+			if (splashText) {
+				if (!waitMessages.length && splashTextContent) {
+					splashText.textContent = splashTextContent
+				} else {
+					splashText.textContent = waitMessages.join("\n");
+				}
+			}
+		}, 200);
+	}, 7000);
+
 	initializeViewport();
 
 	//#region Set lang attr
@@ -1015,6 +1070,9 @@ const initializeStream = () => {
 	]);
 
 	await initializeApp(minimumLoadPromise);
+
+	if (splashTimeout) clearTimeout(splashTimeout);
+	if (intervalId) clearInterval(intervalId);
 
 	reactionPicker.init();
 

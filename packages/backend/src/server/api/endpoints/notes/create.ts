@@ -147,7 +147,7 @@ export const paramDef = {
 		},
 		replyId: { type: "string", format: "misskey:id", nullable: true },
 		renoteId: { type: "string", format: "misskey:id", nullable: true },
-		referenceIds: { type: "array", uniqueItems: true, minItems: 1, maxItems: 100, items: { type: "string", format: "misskey:id" }, },
+		referenceIds: { type: "array", uniqueItems: true, minItems: 1, maxItems: 300, items: { type: "string", format: "misskey:id" }, },
 		channelId: { type: "string", format: "misskey:id", nullable: true },
 		poll: {
 			type: "object",
@@ -300,12 +300,10 @@ export default define(meta, paramDef, async (ps, user) => {
 	
 	const referencePromises = ps.referenceIds?.length
 			? ps.referenceIds.map(noteId => getNote(noteId, user).catch((e) => {
-					if (e.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
-							throw new ApiError(meta.errors.noSuchRenoteTarget);
-					throw e;
+					return null;
 			}).then((reference) => {
 					if (reference?.renoteId && !reference.text && !reference.fileIds && !reference.hasPoll) {
-							throw new ApiError(meta.errors.cannotReRenote);
+						return null;
 					}
 					return reference;
 			}))
@@ -351,14 +349,14 @@ export default define(meta, paramDef, async (ps, user) => {
 			return reply;
 	})();
 	
-	let [visibleUsers, ccUsers, files, channel, renote, references, reply] = await Promise.all([
+	let [visibleUsers, ccUsers, files, channel, renote, reply] = await Promise.all([
 			visibleUsersPromise,
 			ccUsersPromise,
 			filesPromise,
 			channelPromise,
 			renotePromise,
-			Promise.all(referencePromises),
-			replyPromise
+			replyPromise,
+			//Promise.all(referencePromises),
 	]);
 	
 	const choices = new Set()

@@ -91,7 +91,6 @@ const hexToRgb = (hex) => {
 
 // エラーログの初期化
 const initializeErrorLogging = async () => {
-
 	const currentDate = new Date();
 	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
@@ -150,8 +149,6 @@ const initializeErrorLogging = async () => {
 
 // ビューポートの初期化
 const initializeViewport = () => {
-
-
 	// タッチデバイスでCSSの:hoverを機能させる
 	document.addEventListener("touchend", () => { }, { passive: true });
 
@@ -192,7 +189,6 @@ const initializeViewport = () => {
 	}
 };
 
-
 // ログインIDの初期化
 const initializeLoginId = async () => {
 	const params = new URLSearchParams(location.search);
@@ -231,7 +227,6 @@ const fetchUserAccount = async () => {
 		}
 	}
 };
-
 
 // サービスワーカーとインスタンスメタ情報の取得の初期化
 const initializeServiceWorkerAndFetchInstanceMeta = async () => {
@@ -322,7 +317,6 @@ const initializeApp = async (minimumLoadPromise) => {
 
 // スプラッシュスクリーンの初期化
 const initializeSplashScreen = async (minimumLoadPromise) => {
-
 	const splashText = document.getElementById("splashText");
 
 	if (splashText) await minimumLoadPromise;
@@ -452,7 +446,7 @@ const initializeTheme = () => {
 			darkTheme?.name === "Rosé Pine" && lightTheme?.name === "l-rosepinedawn";
 		if (
 			defaultStore.state.themeInitial ||
-			(reInit && !defaultStore.state.completedInit)
+			(reInit && !defaultStore.state.completedReInit)
 		) {
 			if (instance.defaultLightTheme != null)
 				ColdDeviceStorage.set(
@@ -468,7 +462,7 @@ const initializeTheme = () => {
 			defaultStore.set("completedReInit", true);
 		}
 	} catch (e) {
-		console.log(e)
+		console.log(e);
 	}
 };
 
@@ -625,9 +619,9 @@ const saveFailedQueueDatas = () => {
 
 				if (!defaultStore.state.queueDatas[i].draftData?.key || !defaultStore.state.queueDatas[i].draftData?.data) continue;
 
-				const key = defaultStore.state.queueDatas[i].draftData.key ?? `auto:${uuid()?.slice(0, 8)}`
+				const key = defaultStore.state.queueDatas[i].draftData.key ?? `auto:${uuid()?.slice(0, 8)}`;
 
-				const data = draftData[key]
+				const data = draftData[key];
 				if (data?.data) {
 					if ((data.data.text || (data.data.useCw && data.data.cw) || data.data.files?.length || data.data.poll || data.data.referencesFlg !== true)) {
 						draftData[`auto:${uuid()?.slice(0, 8)}`] = defaultStore.state.queueDatas[i].draftData;
@@ -635,14 +629,14 @@ const saveFailedQueueDatas = () => {
 						return;
 					}
 				}
-				draftData[key] = defaultStore.state.queueDatas[i].draftData
+				draftData[key] = defaultStore.state.queueDatas[i].draftData;
 				localStorage.setItem("drafts", JSON.stringify(draftData));
 			} catch (e) {
-				console.log(e)
+				console.log(e);
 			}
 		}
 		defaultStore.set("queueDatas", []);
-		toast("前回未送信の投稿を下書きに保存しました。")
+		toast("前回未送信の投稿を下書きに保存しました。");
 	}
 };
 
@@ -799,15 +793,15 @@ const postSleepModeCancel = () => {
 
 const storeConfigMigration = () => {
 	if (!defaultStore.state.pickerConfigMigration) {
-		if (defaultStore.state.reactionPickerSize < 0) defaultStore.set("reactionPickerVAlign", 0)
-		if (!defaultStore.isDefault("reactionPickerWidth")) defaultStore.set("reactionPickerWidth", defaultStore.state.reactionPickerWidth + 4)
-		defaultStore.set("pickerConfigMigration", true)
+		if (defaultStore.state.reactionPickerSize < 0) defaultStore.set("reactionPickerVAlign", 0);
+		if (!defaultStore.isDefault("reactionPickerWidth")) defaultStore.set("reactionPickerWidth", defaultStore.state.reactionPickerWidth + 4);
+		defaultStore.set("pickerConfigMigration", true);
 	}
-	if (defaultStore.state.reactionPickerHeight < 11) defaultStore.set("reactionPickerHeight", 65)
+	if (defaultStore.state.reactionPickerHeight < 11) defaultStore.set("reactionPickerHeight", 65);
 };
 
 const autoSaveConfig = async () => {
-	const lastBackupData = await get("lastBackup")
+	const lastBackupData = await get("lastBackup");
 	if (!lastBackupData) await set("lastBackup", {});
 	if (typeof lastBackupData === "number") await set("lastBackup", { [$i.id]: lastBackupData });
 	const lastBackup = lastBackupData?.[$i.id] ? Number.parseInt(lastBackupData?.[$i.id]) : 0;
@@ -817,7 +811,7 @@ const autoSaveConfig = async () => {
 	) {
 		if (lastBackup === 0) {
 			try {
-				const profiles = (await api("i/registry/get-all", { scope: ["clientPreferencesProfiles"] })) || {}
+				const profiles = (await api("i/registry/get-all", { scope: ["clientPreferencesProfiles"] })) || {};
 				if (Object.values(profiles).some((x) => x.name === `AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`)) {
 					const entry = Object.entries(profiles).find(([key, value]) => value.name === `AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`);
 					if (entry) {
@@ -827,34 +821,34 @@ const autoSaveConfig = async () => {
 							text: "サーバ上に設定の自動保存が存在する様です。\n設定を復元しますか？",
 						});
 						if (!canceled) {
-							applyProfile(key)
+							applyProfile(key);
 							await set("lastBackup", { ...lastBackupData, [$i.id]: Date.now() });
 						} else {
-							defaultStore.set("autoSaveBackup", false)
+							defaultStore.set("autoSaveBackup", false);
 						}
 					}
 				} else {
 					if ($i?.createdAt && Date.now() - Date.parse($i?.createdAt) > (66 * 60 * 60 * 1000)) {
 						try {
-							await autoSave(true)
+							await autoSave(true);
 							await set("lastBackup", { ...lastBackupData, [$i.id]: Date.now() });
 						} catch (e) {
-							console.log(e)
+							console.log(e);
 						}
-						toast("端末設定を自動保存しました！")
+						toast("端末設定を自動保存しました！");
 					}
 				}
 			} catch (e) {
-				console.log(e)
+				console.log(e);
 			}
 		} else {
 			try {
-				await autoSave(lastBackup <= 1)
+				await autoSave(lastBackup <= 1);
 				await set("lastBackup", { ...lastBackupData, [$i.id]: Date.now() });
 			} catch (e) {
-				console.log(e)
+				console.log(e);
 			}
-			toast("端末設定を自動保存しました！")
+			toast("端末設定を自動保存しました！");
 		}
 	}
 };
@@ -1020,7 +1014,7 @@ const initializeStream = () => {
 		defaultStore.loaded,
 	]);
 
-	await initializeApp(minimumLoadPromise)
+	await initializeApp(minimumLoadPromise);
 
 	reactionPicker.init();
 
@@ -1033,7 +1027,7 @@ const initializeStream = () => {
 
 	initializeBlurEffect();
 
-	initializeReloadDialog()
+	initializeReloadDialog();
 
 	initializePlugins();
 
@@ -1091,9 +1085,9 @@ const initializeStream = () => {
 				lastUsedDate = new Date($i.lastActiveDate).valueOf();
 			}
 			if (Date.now() - lastUsedDate < 1000 * 60 * 60 * 66) {
-				autoSaveConfig()
+				autoSaveConfig();
 			}
-			showLastUsedToast(Date.now() - lastUsedDate)
+			showLastUsedToast(Date.now() - lastUsedDate);
 		}
 		localStorage.setItem("lastUsed", Date.now().toString());
 

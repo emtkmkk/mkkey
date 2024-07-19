@@ -1198,7 +1198,7 @@ _cw:
   chars: "{count} টি অক্ষর"
   files: "{count} টি ফাইল"
 _poll:
-  noOnlyOneChoice: "সর্বনিম্ন 2 টি অপশন বেছে নিতে হবে"
+  noOnlyOneChoice: "সর্বনিম্ন 1 টি অপশন বেছে নিতে হবে"
   choiceN: "বিকল্পগুলি {n}"
   noMore: "আপনি আর কোন বিকল্প যোগ করতে পারবেন না"
   canMultipleVote: "একাধিক বিকল্প বাছাই করা যাবে"

@@ -1430,7 +1430,7 @@ _cw:
   chars: "{count} caracteres"
   files: "{count} archivos"
 _poll:
-  noOnlyOneChoice: "Se necesitan al menos 2 opciones"
+  noOnlyOneChoice: "Se necesitan al menos 1 opciones"
   choiceN: "Opción {n}"
   noMore: "No se pueden agregar más"
   canMultipleVote: "Permitir más de una respuesta"

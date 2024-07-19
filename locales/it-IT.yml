@@ -1122,7 +1122,7 @@ _cw:
   chars: "{count} caratteri"
   files: "{count} file"
 _poll:
-  noOnlyOneChoice: "Sono necessarie almeno 2 risposte"
+  noOnlyOneChoice: "Sono necessarie almeno 1 risposte"
   choiceN: "Opzione {n}"
   noMore: "Hai aggiunto il numero massimo di opzioni."
   canMultipleVote: "Possibilità di risposte multiple"

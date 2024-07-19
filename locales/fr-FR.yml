@@ -1355,7 +1355,7 @@ _cw:
   chars: "{count} caractères"
   files: "{count} fichiers"
 _poll:
-  noOnlyOneChoice: "Au moins 2 réponses nécéssaires"
+  noOnlyOneChoice: "Au moins 1 réponses nécéssaires"
   choiceN: "Choix {n}"
   noMore: "Vous ne pouvez pas en ajouter davantage"
   canMultipleVote: "Autoriser le multi-choix"

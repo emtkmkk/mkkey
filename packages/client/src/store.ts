@@ -1259,7 +1259,7 @@ export const defaultStore = markRaw(
 		},
 		customFont: {
 			where: "device",
-			default: null,
+			default: null as string | null,
 			createdAt: "2023/11/16",
 			page: "appearance",
 		},

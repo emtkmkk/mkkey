@@ -242,11 +242,12 @@ useTooltip(
 }
 .hkzvhatu {
 	display: inline-block;
-	height: 2rem;
+	height: 2.375rem;
 	margin: 0.125rem;
 	padding: 0 0.375rem;
 	border-radius: 0.25rem;
 	pointer-events: all;
+  max-width: 100%;
 	&.newlyAdded {
 		animation: scaleInSmall 0.3s cubic-bezier(0, 0, 0, 1.2);
 		:deep(.mk-emoji) {

@@ -147,7 +147,7 @@ export const paramDef = {
 		},
 		replyId: { type: "string", format: "misskey:id", nullable: true },
 		renoteId: { type: "string", format: "misskey:id", nullable: true },
-		referenceIds: { type: "array", uniqueItems: true, minItems: 1, maxItems: 300, items: { type: "string", format: "misskey:id" }, },
+		referenceIds: { type: "array", uniqueItems: true, minItems: 1, maxItems: 1000, items: { type: "string", format: "misskey:id" }, },
 		channelId: { type: "string", format: "misskey:id", nullable: true },
 		poll: {
 			type: "object",

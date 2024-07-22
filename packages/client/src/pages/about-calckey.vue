@@ -51,9 +51,11 @@
 					<div v-if="patronsResp.commitCount && patronsResp.yearlyCommits && patronsResp.lastCommitDate" class="_formBlock" style="text-align: center">
 						{{ i18n.ts._aboutMisskey.mkkey }}
 						<br />
-						{{ "過去1年間で " + patronsResp.yearlyCommits.toLocaleString() + " コミットが行われています。" }}
+						{{ "直近4週間で " + patronsResp.monthlyCommits.toLocaleString() + " コミットされています。" }}
 						<br />
-						{{ "これまでに " + patronsResp.commitCount.toLocaleString() + " コミットが行われています。" }}
+						{{ "直近1年間で " + patronsResp.yearlyCommits.toLocaleString() + " コミットされています。" }}
+						<br />
+						{{ "これまでに " + patronsResp.commitCount.toLocaleString() + " コミットされています。" }}
 						<br />
 						{{ "最終コミット時刻は " }}
 						<MkTime :time="patronsResp.lastCommitDate" mode="relative" />

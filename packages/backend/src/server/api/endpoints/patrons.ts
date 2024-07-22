@@ -129,11 +129,13 @@ export default define(meta, paramDef, async (ps) => {
 
       const totalCommits = userStats.total;
       const yearlyCommits = participationData.owner.reduce((sum, weekCommits) => sum + weekCommits, 0);
+      const monthlyCommits = participationData.owner.slice(-4).reduce((sum, weekCommits) => sum + weekCommits, 0);
 
       repoStats = {
         commitCount: totalCommits,
         lastCommitDate: latestCommit.commit.author.date,
         yearlyCommits: yearlyCommits,
+				monthlyCommits: monthlyCommits,
       };
 
       await redisClient.set(cacheKey, JSON.stringify(repoStats), "EX", 3600);
@@ -145,6 +147,7 @@ export default define(meta, paramDef, async (ps) => {
           commitCount: 0,
           lastCommitDate: null,
           yearlyCommits: 0,
+					monthlyCommits: 0,
         };
       }
     }
@@ -156,5 +159,6 @@ export default define(meta, paramDef, async (ps) => {
     commitCount: repoStats.commitCount,
     lastCommitDate: repoStats.lastCommitDate,
     yearlyCommits: repoStats.yearlyCommits,
+    monthlyCommits: repoStats.monthlyCommits,
   };
 });

@@ -334,7 +334,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 							? this.pack(note.reply || note.replyId, me, {
 									detail: false,
 									_hint_: options?._hint_,
-									showInvisible: options?.showInvisible,
+									showInvisible: true,
 							  })
 							: undefined,
 
@@ -342,7 +342,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 							? this.pack(note.renote || note.renoteId, me, {
 									detail: true,
 									_hint_: options?._hint_,
-									showInvisible: options?.showInvisible,
+									showInvisible: true,
 							  })
 							: undefined,
 

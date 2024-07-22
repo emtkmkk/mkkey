@@ -39,11 +39,85 @@
 					>{{ i18n.ts.powerModeParticleSize }}</template
 				>
 			</FormRange>
+			<FormRange
+				v-if="powerMode"
+				v-model="powerModeParticleX"
+				:min="powerModeParticleX <= -10 ? (Math.floor(powerModeParticleX / -5) + 1) * -5 : -10"
+				:max="powerModeParticleX >= 10 ? (Math.floor(powerModeParticleX / 5) + 1) * 5 : 10"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.powerModeParticleX }}</template
+				>
+			</FormRange>
+			<FormRange
+				v-if="powerMode"
+				v-model="powerModeParticleY"
+				:min="powerModeParticleY <= -10 ? (Math.floor(powerModeParticleY / -5) + 1) * -5 : -10"
+				:max="powerModeParticleY >= 10 ? (Math.floor(powerModeParticleY / 5) + 1) * 5 : 10"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.powerModeParticleY }}</template
+				>
+			</FormRange>
+			<FormRange
+				v-if="powerMode"
+				v-model="powerModeParticleSpreadX"
+				:min="0"
+				:max="powerModeParticleSpreadX >= 20 ? (Math.floor(powerModeParticleSpreadX / 10) + 1) * 10 : 20"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.powerModeParticleSpreadX }}</template
+				>
+			</FormRange>
+			<FormRange
+				v-if="powerMode"
+				v-model="powerModeParticleSpreadY"
+				:min="0"
+				:max="powerModeParticleSpreadY >= 20 ? (Math.floor(powerModeParticleSpreadY / 10) + 1) * 10 : 20"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.powerModeParticleSpreadY }}</template
+				>
+			</FormRange>
+			<FormRange
+				v-if="powerMode"
+				v-model="powerModeParticleGravity"
+				:min="0"
+				:max="powerModeParticleGravity >= 60 ? (Math.floor(powerModeParticleGravity / 30) + 1) * 30 : 60"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.powerModeParticleGravity }}</template
+				>
+			</FormRange>
 			<FormSwitch
 				v-if="powerMode"
 				v-model="powerModeColorful"
 				class="_formBlock"
 				>{{ i18n.ts.powerModeColorful
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+			<FormSwitch
+				v-if="powerMode"
+				v-model="powerModeSuperColorful"
+				class="_formBlock"
+				>{{ i18n.ts.powerModeSuperColorful
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
@@ -245,6 +319,14 @@ const powerModeParticleCount = computed(defaultStore.makeGetterSetter("powerMode
 const powerModeColorful = computed(
 	defaultStore.makeGetterSetter("powerModeColorful")
 );
+const powerModeSuperColorful = computed(
+	defaultStore.makeGetterSetter("powerModeSuperColorful")
+);
+const powerModeParticleX = computed(defaultStore.makeGetterSetter("powerModeParticleX"));
+const powerModeParticleY = computed(defaultStore.makeGetterSetter("powerModeParticleY"));
+const powerModeParticleSpreadX = computed(defaultStore.makeGetterSetter("powerModeParticleSpreadX"));
+const powerModeParticleSpreadY = computed(defaultStore.makeGetterSetter("powerModeParticleSpreadY"));
+const powerModeParticleGravity = computed(defaultStore.makeGetterSetter("powerModeParticleGravity"));
 const powerModeParticleSize = computed(defaultStore.makeGetterSetter("powerModeParticleSize"));
 const powerModeShakePower = computed(defaultStore.makeGetterSetter("powerModeShakePower"));
 const powerModeNoShake = computed(

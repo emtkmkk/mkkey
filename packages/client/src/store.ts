@@ -953,19 +953,61 @@ export const defaultStore = markRaw(
 		powerModeParticleCount: {
 			where: "device",
 			default: 10,
-			createdAt: "2023/7/22",
+			createdAt: "2024/7/22",
 			page: "fun",
 		},
 		powerModeParticleSize: {
 			where: "device",
 			default: 3,
-			createdAt: "2023/7/22",
+			createdAt: "2024/7/22",
+			page: "fun",
+		},
+		powerModeParticleX: {
+			where: "device",
+			default: 0,
+			createdAt: "2024/7/22",
+			page: "fun",
+		},
+		powerModeParticleY: {
+			where: "device",
+			default: 0,
+			createdAt: "2024/7/22",
+			page: "fun",
+		},
+		powerModeParticleSpreadX: {
+			where: "device",
+			default: 10,
+			createdAt: "2024/7/22",
+			page: "fun",
+		},
+		powerModeParticleSpreadY: {
+			where: "device",
+			default: 10,
+			createdAt: "2024/7/22",
+			page: "fun",
+		},
+		powerModeParticleGravity: {
+			where: "device",
+			default: 30,
+			createdAt: "2024/7/22",
+			page: "fun",
+		},
+		powerModeParticleAliveTime: {
+			where: "device",
+			default: 5,
+			createdAt: "2024/7/22",
 			page: "fun",
 		},
 		powerModeColorful: {
 			where: "device",
 			default: false,
 			createdAt: "2023/5/15",
+			page: "fun",
+		},
+		powerModeSuperColorful: {
+			where: "device",
+			default: false,
+			createdAt: "2024/7/22",
 			page: "fun",
 		},
 		powerModeNoShake: {
@@ -977,7 +1019,7 @@ export const defaultStore = markRaw(
 		powerModeShakePower: {
 			where: "device",
 			default: 5,
-			createdAt: "2023/7/22",
+			createdAt: "2024/7/22",
 			page: "fun",
 		},
 		developer: {

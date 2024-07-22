@@ -950,6 +950,18 @@ export const defaultStore = markRaw(
 			createdAt: "2023/5/15",
 			page: "fun",
 		},
+		powerModeParticleCount: {
+			where: "device",
+			default: 10,
+			createdAt: "2023/7/22",
+			page: "fun",
+		},
+		powerModeParticleSize: {
+			where: "device",
+			default: 3,
+			createdAt: "2023/7/22",
+			page: "fun",
+		},
 		powerModeColorful: {
 			where: "device",
 			default: false,
@@ -960,6 +972,12 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: false,
 			createdAt: "2023/5/15",
+			page: "fun",
+		},
+		powerModeShakePower: {
+			where: "device",
+			default: 5,
+			createdAt: "2023/7/22",
 			page: "fun",
 		},
 		developer: {

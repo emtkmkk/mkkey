@@ -13,6 +13,32 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormRange
+				v-if="powerMode"
+				v-model="powerModeParticleCount"
+				:min="0"
+				:max="powerModeParticleCount >= 20 ? (Math.floor(powerModeParticleCount / 10) + 1) * 10 : 20"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.powerModeParticleCount }}</template
+				>
+			</FormRange>
+			<FormRange
+				v-if="powerMode"
+				v-model="powerModeParticleSize"
+				:min="0"
+				:max="powerModeParticleSize >= 6 ? (Math.floor(powerModeParticleSize / 3) + 1) * 3 : 6"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.powerModeParticleSize }}</template
+				>
+			</FormRange>
 			<FormSwitch
 				v-if="powerMode"
 				v-model="powerModeColorful"
@@ -31,6 +57,19 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormRange
+				v-if="powerMode && !powerModeNoShake"
+				v-model="powerModeShakePower"
+				:min="0"
+				:max="powerModeShakePower >= 10 ? (Math.floor(powerModeShakePower / 5) + 1) * 5 : 10"
+				:step="1"
+				easing
+				class="_formBlock"
+			>
+				<template #label
+					>{{ i18n.ts.powerModeShakePower }}</template
+				>
+			</FormRange>
 		</FormSection>
 		<FormSection>
 			<template #label
@@ -171,6 +210,7 @@ import { ref, computed, watch } from "vue";
 import XDraggable from "vuedraggable";
 import FormButton from "@/components/MkButton.vue";
 import FormLink from "@/components/form/link.vue";
+import FormRange from "@/components/form/range.vue";
 import FormSection from "@/components/form/section.vue";
 import FormSwitch from "@/components/form/switch.vue";
 import * as os from "@/os";
@@ -201,9 +241,12 @@ const showMkkeySettingTips = computed(
 );
 
 const powerMode = computed(defaultStore.makeGetterSetter("powerMode"));
+const powerModeParticleCount = computed(defaultStore.makeGetterSetter("powerModeParticleCount"));
 const powerModeColorful = computed(
 	defaultStore.makeGetterSetter("powerModeColorful")
 );
+const powerModeParticleSize = computed(defaultStore.makeGetterSetter("powerModeParticleSize"));
+const powerModeShakePower = computed(defaultStore.makeGetterSetter("powerModeShakePower"));
 const powerModeNoShake = computed(
 	defaultStore.makeGetterSetter("powerModeNoShake")
 );

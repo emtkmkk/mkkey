@@ -769,6 +769,15 @@ const initializePowerMode = () => {
 			const powerMode = module.default;
 			powerMode.shake = !defaultStore.state.powerModeNoShake;
 			powerMode.colorful = !!defaultStore.state.powerModeColorful;
+			if (powerMode.setSettings) {
+				powerMode.setSettings({
+					particleMinCount: defaultStore.state.powerModeParticleCount, // パーティクルの最低数
+					particleMaxCount: Math.round(defaultStore.state.powerModeParticleCount * 2.5), // パーティクルの最大数
+					shakeMinIntensity: Math.ceil(defaultStore.state.powerModeShakePower / 5), // 画面の揺れの最低強度
+					shakeMaxIntensity: defaultStore.state.powerModeShakePower, // 画面の揺れの最高強度
+					particleSize: defaultStore.state.powerModeParticleSize, // パーティクルのサイズ
+				})
+			}
 			window.addEventListener("input", powerMode);
 		});
 	}

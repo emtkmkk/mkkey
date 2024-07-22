@@ -89,6 +89,9 @@
 							</FormLink>
 						</div>
 					</FormSection>
+				</div>
+			</MkSpacer>
+		</div>
 	</MkStickyContainer>
 </template>
 
@@ -128,7 +131,7 @@ function iconLoaded() {
 				...(defaultStore.state.hiddenRecent
 					? []
 					: defaultStore.state.recentlyUsedEmojis),
-		  ];
+			];
 	const containerWidth = containerEl?.offsetWidth;
 	const emojisCnt = emojis.length;
 	for (let i = 0; i < Math.min(emojisCnt, 128); i++) {

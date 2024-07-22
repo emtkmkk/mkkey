@@ -153,6 +153,7 @@ onUnmounted(() => {
 .mk-uploader > ol > li > .img {
   display: block;
   background-size: contain;
+	background-repeat: no-repeat;
   background-position: center center;
   grid-column: 1/2;
   grid-row: 1/3;

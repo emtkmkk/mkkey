@@ -43,21 +43,42 @@
 					</div>
 					<div class="_formBlock" style="text-align: center">
 						{{ i18n.ts._aboutMisskey.about }}<br /><a
-							href="https://joinfirefish.org/"
+							href="https://firefish.dev/"
 							target="_blank"
 							class="_link"
 							>{{ i18n.ts.learnMore }}</a
 						>
 					</div>
+					<div v-if="patronsResp.commitCount && patronsResp.yearlyCommits && patronsResp.lastCommitDate" class="_formBlock" style="text-align: center">
+						{{ i18n.ts._aboutMisskey.mkkey }}<br />
+						{{ "もこきーはこれまでに " + patronsResp.commitCount.toLocaleString() + " コミットが行われています" }}<br />
+						{{ "過去1年間では、 " + patronsResp.yearlyCommits.toLocaleString() + " コミットが行われています。", }}<br />
+						{{ "最終コミット時刻は、 " }}<MkTime :time="patronsResp.lastCommitDate" mode="relative" /> {{ " です。" }}
+					</div>
+					<div class="_formBlock" style="text-align: center"></div>
+						<MkButton primary rounded inline @click="iLoveMisskey('Mkkey')"
+							>I <Mfm text="$[jelly ❤]" /> #Mkkey</MkButton
+						>
+					</div>
 					<div class="_formBlock" style="text-align: center">
-						<MkButton primary rounded inline @click="iLoveMisskey"
+						<MkButton primary rounded inline @click="iLoveMisskey('Calckey')"
 							>I <Mfm text="$[jelly ❤]" /> #Calckey</MkButton
+						>
+					</div>
+					<div class="_formBlock" style="text-align: center">
+						<MkButton primary rounded inline @click="iLoveMisskey('Firefish')"
+							>I <Mfm text="$[jelly ❤]" /> #Firefish</MkButton
+						>
+					</div>
+					<div class="_formBlock" style="text-align: center">
+						<MkButton primary rounded inline @click="iLoveMisskey('Misskey')"
+							>I <Mfm text="$[jelly ❤]" /> #Misskey</MkButton
 						>
 					</div>
 					<FormSection>
 						<div class="_formLinks">
 							<FormLink
-								to="https://git.joinfirefish.org/firefish/firefish"
+								to="https://firefish.dev/firefish/firefish"
 								external
 							>
 								<template #icon
@@ -66,126 +87,8 @@
 								{{ i18n.ts._aboutMisskey.source }}
 								<template #suffix></template>
 							</FormLink>
-							<FormLink
-								to="https://opencollective.com/firefish"
-								external
-							>
-								<template #icon
-									><i class="ph-money ph-bold ph-lg"></i
-								></template>
-								{{ i18n.ts._aboutMisskey.donate }}
-								<template #suffix>Donate</template>
-							</FormLink>
 						</div>
 					</FormSection>
-					<FormSection>
-						<template #label>{{
-							i18n.ts._aboutCalckey.contributors
-						}}</template>
-						<div class="_formLinks">
-							<FormLink to="/@kainoa@firefish.social"
-								><Mfm
-									:text="'$[sparkle @kainoa@firefish.social] (Main developer)'"
-							/></FormLink>
-							<FormLink to="/@freeplay@firefish.social"
-								><Mfm
-									:text="'@freeplay@firefish.social (UI/UX)'"
-							/></FormLink>
-							<FormLink to="/@namekuji@firefish.social"
-								><Mfm
-									:text="'@namekuji@firefish.social (Backend)'"
-							/></FormLink>
-							<FormLink to="/@dev@post.naskya.net"
-								><Mfm :text="'@dev@post.naskya.net (Backend)'"
-							/></FormLink>
-							<FormLink to="/@panos@firefish.social"
-								><Mfm
-									:text="'@panos@firefish.social (Project Coordinator)'"
-							/></FormLink>
-							<FormLink
-								to="https://www.youtube.com/c/Henkiwashere"
-								external
-								>Henki (error images artist)</FormLink
-							>
-						</div>
-						<template #caption
-							><MkLink
-								url="https://git.joinfirefish.org/firefish/firefish/activity"
-								>{{
-									i18n.ts._aboutFirefish.allContributors
-								}}</MkLink
-							></template
-						>
-					</FormSection>
-					<FormSection>
-						<template #label>{{
-							i18n.ts._aboutMisskey.contributors
-						}}</template>
-						<div class="_formLinks">
-							<FormLink to="/@syuilo@misskey.io"
-								><Mfm :text="'@syuilo@misskey.io'"
-							/></FormLink>
-							<FormLink to="/@aqz@p1.a9z.dev"
-								><Mfm :text="'@aqz@p1.a9z.dev'"
-							/></FormLink>
-							<FormLink to="/@ac@misskey.cloud"
-								><Mfm :text="'@ac@misskey.cloud'"
-							/></FormLink>
-							<FormLink to="/@rinsuki@mstdn.rinsuki.net"
-								><Mfm :text="'@rinsuki@mstdn.rinsuki.net'"
-							/></FormLink>
-							<FormLink to="/@mei23@misskey.m544.net"
-								><Mfm :text="'@mei23@misskey.m544.net'"
-							/></FormLink>
-							<FormLink to="/@robflop@misskey.io"
-								><Mfm :text="'@robflop@misskey.io'"
-							/></FormLink>
-						</div>
-					</FormSection>
-					<FormSection>
-						<template #label
-							><Mfm
-								:text="`$[x2 $[jelly ❤] ${i18n.ts._aboutFirefish.sponsors}]`"
-							/>
-						</template>
-						<MkSparkle>
-							<span
-								v-for="sponsor in sponsors"
-								:key="sponsor"
-								style="
-									margin-bottom: 0.5rem;
-									margin-right: 0.5rem;
-									font-size: 1.7rem;
-								"
-							>
-								<Mfm :text="`${sponsor}`" />
-							</span>
-						</MkSparkle>
-					</FormSection>
-					<FormSection>
-						<template #label
-							><Mfm text="$[jelly ❤]" />
-							{{ i18n.ts._aboutMisskey.patrons }}</template
-						>
-						<MkSparkle>
-							<span
-								v-for="patron in patrons"
-								:key="patron"
-								style="
-									margin-bottom: 0.5rem;
-									margin-right: 0.5rem;
-								"
-							>
-								<Mfm :text="`${patron}`" />
-							</span>
-						</MkSparkle>
-						<template #caption>{{
-							i18n.ts._aboutMisskey.morePatrons
-						}}</template>
-					</FormSection>
-				</div>
-			</MkSpacer>
-		</div>
 	</MkStickyContainer>
 </template>
 
@@ -207,10 +110,6 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 let patrons = [];
 let sponsors = [];
 const patronsResp = await os.api("patrons", { forceUpdate: true });
-patrons = patronsResp.patrons;
-sponsors = patronsResp.sponsors;
-
-patrons = patrons.filter((patron) => !sponsors.includes(patron));
 
 let easterEggReady = false;
 let easterEggEmojis = $ref([]);
@@ -255,9 +154,9 @@ function gravity() {
 	easterEggEngine = physics(containerEl);
 }
 
-function iLoveMisskey() {
+function iLoveMisskey(softwareName = "Calckey") {
 	os.post({
-		initialText: "I $[jelly ❤] #Calckey",
+		initialText: `I $[jelly ❤] #${softwareName}`,
 		instant: true,
 	});
 }

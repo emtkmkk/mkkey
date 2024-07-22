@@ -1087,7 +1087,9 @@ const maxTextLength = $computed((): number => {
 const canPost = $computed((): boolean => {
 	return (
 		!posting &&
-		(1 <= textLength ||
+		(
+			1 <= textLength ||
+			(withHashtags && hashtags && typeof hashtags === "string" && 1 <= hashtags.trim().length) ||
 			1 <= files.length ||
 			!allPromisesResolved() ||
 			!!poll ||

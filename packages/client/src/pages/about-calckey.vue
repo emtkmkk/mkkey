@@ -1,8 +1,8 @@
 <template>
 	<MkStickyContainer>
-		<template #header
-			><MkPageHeader :actions="headerActions" :tabs="headerTabs"
-		/></template>
+		<template #header>
+			<MkPageHeader :actions="headerActions" :tabs="headerTabs" />
+		</template>
 		<div style="overflow: clip">
 			<MkSpacer :content-max="600" :margin-min="20">
 				<div class="_formRoot znqjceqz">
@@ -29,61 +29,62 @@
 							class="emoji"
 							:data-physics-x="emoji.left"
 							:data-physics-y="emoji.top"
-							:class="{
-								_physics_circle_: !emoji.emoji.startsWith(':'),
-							}"
-							><MkEmoji
+							:class="{ _physics_circle_: !emoji.emoji.startsWith(':') }"
+						>
+							<MkEmoji
 								class="emoji"
 								:emoji="emoji.emoji"
 								:custom-emojis="$instance.emojis"
 								:is-reaction="false"
 								:normal="true"
 								:no-style="true"
-						/></span>
+							/>
+						</span>
 					</div>
 					<div class="_formBlock" style="text-align: center">
-						{{ i18n.ts._aboutMisskey.about }}<br /><a
-							href="https://firefish.dev/"
-							target="_blank"
-							class="_link"
-							>{{ i18n.ts.learnMore }}</a
-						>
+						{{ i18n.ts._aboutMisskey.about }}
+						<br />
+						<a href="https://firefish.dev/" target="_blank" class="_link">
+							{{ i18n.ts.learnMore }}
+						</a>
 					</div>
 					<div v-if="patronsResp.commitCount && patronsResp.yearlyCommits && patronsResp.lastCommitDate" class="_formBlock" style="text-align: center">
-						{{ i18n.ts._aboutMisskey.mkkey }}<br />
-						{{ "もこきーはこれまでに " + patronsResp.commitCount.toLocaleString() + " コミットが行われています" }}<br />
-						{{ "過去1年間では、 " + patronsResp.yearlyCommits.toLocaleString() + " コミットが行われています。", }}<br />
-						{{ "最終コミット時刻は、 " }}<MkTime :time="patronsResp.lastCommitDate" mode="relative" /> {{ " です。" }}
-					</div>
-					<div class="_formBlock" style="text-align: center"></div>
-						<MkButton primary rounded inline @click="iLoveMisskey('Mkkey')"
-							>I <Mfm text="$[jelly ❤]" /> #Mkkey</MkButton
-						>
-					</div>
-					<div class="_formBlock" style="text-align: center">
-						<MkButton primary rounded inline @click="iLoveMisskey('Calckey')"
-							>I <Mfm text="$[jelly ❤]" /> #Calckey</MkButton
-						>
+						{{ i18n.ts._aboutMisskey.mkkey }}
+						<br />
+						{{ "もこきーはこれまでに " + patronsResp.commitCount.toLocaleString() + " コミットが行われています" }}
+						<br />
+						{{ "過去1年間では、 " + patronsResp.yearlyCommits.toLocaleString() + " コミットが行われています。" }}
+						<br />
+						{{ "最終コミット時刻は、 " }}
+						<MkTime :time="patronsResp.lastCommitDate" mode="relative" />
+						{{ " です。" }}
 					</div>
 					<div class="_formBlock" style="text-align: center">
-						<MkButton primary rounded inline @click="iLoveMisskey('Firefish')"
-							>I <Mfm text="$[jelly ❤]" /> #Firefish</MkButton
-						>
+						<MkButton primary rounded inline @click="iLoveMisskey('Mkkey')">
+							I <Mfm text="$[jelly ❤]" /> #Mkkey
+						</MkButton>
 					</div>
 					<div class="_formBlock" style="text-align: center">
-						<MkButton primary rounded inline @click="iLoveMisskey('Misskey')"
-							>I <Mfm text="$[jelly ❤]" /> #Misskey</MkButton
-						>
+						<MkButton primary rounded inline @click="iLoveMisskey('Calckey')">
+							I <Mfm text="$[jelly ❤]" /> #Calckey
+						</MkButton>
+					</div>
+					<div class="_formBlock" style="text-align: center">
+						<MkButton primary rounded inline @click="iLoveMisskey('Firefish')">
+							I <Mfm text="$[jelly ❤]" /> #Firefish
+						</MkButton>
+					</div>
+					<div class="_formBlock" style="text-align: center">
+						<MkButton primary rounded inline @click="iLoveMisskey('Misskey')">
+							I <Mfm text="$[jelly ❤]" /> #Misskey
+						</MkButton>
 					</div>
 					<FormSection>
 						<div class="_formLinks">
-							<FormLink
-								to="https://firefish.dev/firefish/firefish"
-								external
-							>
-								<template #icon
-									><i class="ph-code ph-bold ph-lg"></i
-								></template>
+							<FormLink to="https://firefish.dev/firefish/firefish" external>
+								<template #icon>
+									<i class="ph-code ph-bold ph-lg"></i>
+								</template>
 								{{ i18n.ts._aboutMisskey.source }}
 								<template #suffix></template>
 							</FormLink>

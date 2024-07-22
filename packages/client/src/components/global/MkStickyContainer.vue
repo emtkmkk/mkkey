@@ -3,7 +3,7 @@
 		<div ref="headerEl">
 			<slot name="header"></slot>
 		</div>
-		<div ref="bodyEl" :data-sticky-container-header-height="headerHeight">
+		<div ref="bodyEl" :data-sticky-container-header-height="headerHeight" :data-sticky-container-footer-height="footerHeight">
 			<slot></slot>
 		</div>
 		<div ref="footerEl">
@@ -102,16 +102,22 @@ onMounted(() => {
 		}
 	);
 
-	headerEl.value.style.position = "sticky";
-	headerEl.value.style.top = "var(--stickyTop, 0)";
-	headerEl.value.style.zIndex = "1000";
+    if (headerEl.value) {
+        headerEl.value.style.position = "-webkit-sticky";
+        headerEl.value.style.position = "sticky";
+        headerEl.value.style.top = "var(--stickyTop, 0px)";
+        headerEl.value.style.zIndex = "1000";
+				observer.observe(headerEl.value);
+    }
 
-	footerEl.value.style.position = "sticky";
-	footerEl.value.style.bottom = "var(--stickyBottom, 0)";
-	footerEl.value.style.zIndex = "1000";
+    if (footerEl.value) {
+        footerEl.value.style.position = "-webkit-sticky";
+        footerEl.value.style.position = "sticky";
+        footerEl.value.style.bottom = "var(--stickyBottom, 0px)";
+        footerEl.value.style.zIndex = "1000";
+				observer.observe(footerEl.value);
+    }
 
-	observer.observe(headerEl.value);
-	observer.observe(footerEl.value);
 });
 
 onUnmounted(() => {

@@ -169,16 +169,16 @@ const initializeViewport = () => {
 	//#region SEE: https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
 	// TODO: いつの日にか消したい
 	const vh = window.innerHeight * 0.01;
-	if (CSS.supports('height', '100lvh')) {
-		document.documentElement.style.setProperty("--vh", "1lvh");
-		document.documentElement.style.setProperty("--wph", "100lvh");
+	if (CSS.supports('height', '100dvh')) {
+		document.documentElement.style.setProperty("--vh", "1dvh");
+		document.documentElement.style.setProperty("--wph", "100dvh");
 	} else {
 		document.documentElement.style.setProperty("--vh", `${vh}px`);
 		document.documentElement.style.setProperty("--wph", `${window.innerHeight}px`);
 	}
 
 	window.addEventListener("resize", () => {
-		if (!CSS.supports('height', '100lvh')) {
+		if (!CSS.supports('height', '100dvh')) {
 			const vh = window.innerHeight * 0.01;
 			document.documentElement.style.setProperty("--vh", `${vh}px`);
 		}

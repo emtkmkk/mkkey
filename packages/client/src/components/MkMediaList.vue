@@ -309,7 +309,7 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 	background: rgba(0, 0, 0, 0.5);
 	border-radius: 0.3125rem;
 
-	max-height: 10vh;
+	max-height: calc(var(--vh, 1vh) * 10);
 	overflow-x: clip;
 	overflow-y: auto;
 	overscroll-behavior: contain;

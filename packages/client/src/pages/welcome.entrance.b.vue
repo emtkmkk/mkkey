@@ -187,7 +187,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .rsqzvsbo {
 	> .top {
-		min-height: 100vh;
+		min-height: calc(var(--vh, 1vh) * 100);
 		box-sizing: border-box;
 
 		> .bg {

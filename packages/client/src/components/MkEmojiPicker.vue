@@ -1215,7 +1215,7 @@ const dynamicStyles = computed(() => ({
   '--EmojiPickerWidth': `${props.asDrawer ? 95 : allWidth.value}dvw`,
   '--eachWidth': `calc(var(--EmojiPickerWidth) / ${width.value})`,
   '--columns': `repeat(${width.value}, 1fr)`,
-  '--pickerHeight': `calc(var(--vh) * ${height.value})`
+  '--pickerHeight': `calc(var(--vh, 1vh) * ${height.value})`
 }));
 const customEmojiCategories = emojiCategories;
 const customEmojis = computed(() => instance.emojis);
@@ -1757,7 +1757,7 @@ defineExpose({
 
 	&.asDrawer {
 		width: 100% !important;
-		max-height: calc(var(--vh) * 90);
+		max-height: calc(var(--vh, 1vh) * 90);
 		& > .emojis {
 			::v-deep(section) {
 				> header {

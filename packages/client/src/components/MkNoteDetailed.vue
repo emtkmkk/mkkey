@@ -501,7 +501,7 @@ onUnmounted(() => {
 		font-size: 1.1rem;
 		overflow: clip;
 		outline: none;
-		scroll-margin-top: calc(var(--stickyTop) + 20vh);
+		scroll-margin-top: calc(var(--stickyTop) + (var(--vh, 1vh) * 20));
 		:deep(.article) {
 			cursor: unset;
 		}

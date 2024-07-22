@@ -4,7 +4,7 @@
 			<PrismEditor
 				v-model="code"
 				class="_code code"
-				style="height: 30vh"
+				style="height: calc(var(--vh, 1vh) * 30)"
 				:highlight="highlighter"
 				:line-numbers="false"
 			/>

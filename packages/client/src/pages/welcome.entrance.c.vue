@@ -203,7 +203,7 @@ export default defineComponent({
 	> .top {
 		display: flex;
 		text-align: center;
-		min-height: 100vh;
+		min-height: calc(var(--vh, 1vh) * 100);
 		box-sizing: border-box;
 		padding: 1rem;
 

@@ -86,7 +86,7 @@ function updateWidgets(widgets) {
 .efzpzdvf {
 	position: sticky;
 	height: min-content;
-	min-height: 100vh;
+	min-height: calc(var(--vh, 1vh) * 100);
 	padding: var(--margin) 0;
 	box-sizing: border-box;
 

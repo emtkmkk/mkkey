@@ -238,9 +238,8 @@ provideMetadataReceiver((info) => {
 const tbitem = computed(() => {
 	if (navbarItemDef?.[defaultStore.state.mobileThirdButton]) {
 		return defaultStore.state.mobileThirdButton;
-	} else {
-		return undefined;
 	}
+	return undefined;
 });
 
 const menuIndicated = computed(() => {
@@ -253,7 +252,7 @@ const menuIndicated = computed(() => {
 });
 
 function updateButtonState(): void {
-	let routerState = window.location.pathname;
+	const routerState = window.location.pathname;
 	if (routerState === "/") {
 		buttonAnimIndex.value = 0;
 		return;
@@ -390,7 +389,7 @@ const onContextmenu = (ev: MouseEvent) => {
 		["INPUT", "TEXTAREA", "IMG", "VIDEO", "CANVAS"].includes(
 			ev.target.tagName
 		) ||
-		ev.target.attributes["contenteditable"]
+		ev.target.attributes.contenteditable
 	)
 		return;
 	if (window.getSelection()?.toString() !== "") return;
@@ -481,7 +480,8 @@ console.log(mainRouter.currentRoute.value.name);
 	transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .widgetsDrawer-back-enter-from,
-.widgetsDrawer-back-leave-active {
+.widgetsDrawer-back-leave-active,
+.widgetsDrawer-leave-active {
 	opacity: 0;
 }
 
@@ -489,8 +489,7 @@ console.log(mainRouter.currentRoute.value.name);
 .menuDrawer-leave-active {
 	opacity: 1;
 	transform: translateX(0);
-	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1),
-		opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .menuDrawer-enter-from,
 .menuDrawer-leave-active {
@@ -504,7 +503,8 @@ console.log(mainRouter.currentRoute.value.name);
 	transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .menuDrawer-back-enter-from,
-.menuDrawer-back-leave-active {
+.menuDrawer-back-leave-active,
+.menuDrawer-leave-active {
 	opacity: 0;
 }
 

@@ -73,7 +73,7 @@ export default defineComponent({
 			"--EmojiPickerWidth": "95%",
 			"--eachWidth": `calc(var(--EmojiPickerWidth) / ${width.value})`,
 			"--columns": `repeat(${width.value}, 1fr)`,
-			"--pickerHeight": `calc(var(--vh) * ${height.value})`,
+			"--pickerHeight": `calc(var(--vh, 1vh) * ${height.value})`,
 		});
 
 		async function chosen(emoji: any, ev?: MouseEvent) {

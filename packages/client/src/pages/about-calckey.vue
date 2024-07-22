@@ -48,14 +48,14 @@
 							{{ i18n.ts.learnMore }}
 						</a>
 					</div>
-					<div v-if="patronsResp.commitCount && patronsResp.yearlyCommits && patronsResp.lastCommitDate" class="_formBlock" style="text-align: center">
+					<div class="_formBlock" style="text-align: center" v-if="patronsResp.commitCount && patronsResp.yearlyCommits && patronsResp.lastCommitDate" class="_formBlock" style="text-align: center">
 						{{ i18n.ts._aboutMisskey.mkkey }}
 						<br />
-						{{ "もこきーはこれまでに " + patronsResp.commitCount.toLocaleString() + " コミットが行われています" }}
+						{{ "過去1年間で " + patronsResp.yearlyCommits.toLocaleString() + " コミットが行われています。" }}
 						<br />
-						{{ "過去1年間では、 " + patronsResp.yearlyCommits.toLocaleString() + " コミットが行われています。" }}
+						{{ "これまでに " + patronsResp.commitCount.toLocaleString() + " コミットが行われています。" }}
 						<br />
-						{{ "最終コミット時刻は、 " }}
+						{{ "最終コミット時刻は " }}
 						<MkTime :time="patronsResp.lastCommitDate" mode="relative" />
 						{{ " です。" }}
 					</div>

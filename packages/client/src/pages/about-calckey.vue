@@ -48,7 +48,7 @@
 							{{ i18n.ts.learnMore }}
 						</a>
 					</div>
-					<div class="_formBlock" style="text-align: center" v-if="patronsResp.commitCount && patronsResp.yearlyCommits && patronsResp.lastCommitDate" class="_formBlock" style="text-align: center">
+					<div v-if="patronsResp.commitCount && patronsResp.yearlyCommits && patronsResp.lastCommitDate" class="_formBlock" style="text-align: center">
 						{{ i18n.ts._aboutMisskey.mkkey }}
 						<br />
 						{{ "過去1年間で " + patronsResp.yearlyCommits.toLocaleString() + " コミットが行われています。" }}

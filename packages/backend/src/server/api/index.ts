@@ -37,12 +37,13 @@ export { IdType, convertId };
 
 // Init app
 const app = new Koa();
-
+/*
 app.use(
 	cors({
 		origin: "*",
 	}),
 );
+*/
 
 // No caching
 app.use(async (ctx, next) => {

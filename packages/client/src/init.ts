@@ -800,7 +800,7 @@ const initializePowerMode = () => {
 					), // 画面の揺れの最低強度
 					shakeMaxIntensity: defaultStore.state.powerModeShakePower, // 画面の揺れの最高強度
 					particleSize: defaultStore.state.powerModeParticleSize, // パーティクルのサイズ
-					gravity: defaultStore.state.powerModeParticleGravity / 40, // 重力
+					gravity: defaultStore.state.powerModeParticleGravity / 400, // 重力
 					xOffset: defaultStore.state.powerModeParticleX, // 出現位置の横のずれ
 					yOffset: defaultStore.state.powerModeParticleY, // 出現位置の縦のずれ
 					spreadX: defaultStore.state.powerModeParticleSpreadX, // パーティクルの飛び散る広さ X
@@ -838,7 +838,7 @@ const initializePowerMode = () => {
 							), // 画面の揺れの最低強度
 							shakeMaxIntensity: defaultStore.state.powerModeShakePower, // 画面の揺れの最高強度
 							particleSize: defaultStore.state.powerModeParticleSize, // パーティクルのサイズ
-							gravity: defaultStore.state.powerModeParticleGravity / 40, // 重力
+							gravity: defaultStore.state.powerModeParticleGravity / 400, // 重力
 							xOffset: defaultStore.state.powerModeParticleX, // 出現位置の横のずれ
 							yOffset: defaultStore.state.powerModeParticleY, // 出現位置の縦のずれ
 							spreadX: defaultStore.state.powerModeParticleSpreadX, // パーティクルの飛び散る広さ X

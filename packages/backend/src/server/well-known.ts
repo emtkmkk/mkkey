@@ -39,7 +39,7 @@ router.use(allPath, async (ctx, next) => {
 	ctx.set({
 		"Access-Control-Allow-Headers": "Accept",
 		"Access-Control-Allow-Methods": "GET, OPTIONS",
-		"Access-Control-Allow-Origin": "*",
+		//"Access-Control-Allow-Origin": "*",
 		"Access-Control-Expose-Headers": "Vary",
 	});
 	await next();

@@ -522,7 +522,6 @@ function more(ev: MouseEvent) {
 					> .icon {
 						position: relative;
 						color: var(--fgOnAccent);
-						transform: translate(0.15em, 0em);
 					}
 
 					> .text {

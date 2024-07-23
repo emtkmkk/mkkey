@@ -46,9 +46,6 @@
 											v-tooltip="i18n.ts._categories.editCategory"
 											class="menu _button"
 											:to="`/categories/edit/${category.id}`"
-											style="
-												transform: translateY(0.125rem);
-											"
 											><i class="ph-pencil ph-bold ph-lg"
 										/></MkA>
 									</template>

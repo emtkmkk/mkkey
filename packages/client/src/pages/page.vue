@@ -49,7 +49,6 @@
 										v-tooltip="i18n.ts._pages.viewSource"
 										:to="`/@${username}/pages/${pageName}/view-source`"
 										class="menu _button"
-										style="transform: translateY(0.125rem)"
 										><i class="ph-code ph-bold ph-lg"
 									/></MkA>
 									<template
@@ -59,9 +58,6 @@
 											v-tooltip="i18n.ts._pages.editPage"
 											class="menu _button"
 											:to="`/pages/edit/${page.id}`"
-											style="
-												transform: translateY(0.125rem);
-											"
 											><i class="ph-pencil ph-bold ph-lg"
 										/></MkA>
 										<button

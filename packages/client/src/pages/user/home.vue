@@ -669,7 +669,7 @@ const birthday = $computed(() => {
 
 	if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
 
-	return `${_birthday.getFullYear().padStart(4, "0")}-${String(_birthday.getMonth() + 1).padStart(2, "0")}-${String(_birthday.getDate()).padStart(2, "0")}`;
+	return `${String(_birthday.getFullYear()).padStart(4, "0")}-${String(_birthday.getMonth() + 1).padStart(2, "0")}-${String(_birthday.getDate()).padStart(2, "0")}`;
 });
 
 const style = $computed(() => {

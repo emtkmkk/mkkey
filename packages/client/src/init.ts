@@ -12,7 +12,7 @@ import "@phosphor-icons/web/fill";
 //#region account indexedDB migration
 import { get, set, del } from "@/scripts/idb-proxy";
 
-const accounts = localStorage.getItem("accounts")
+const accounts = localStorage.getItem("accounts");
 if (accounts != null) {
 	set("accounts", JSON.parse(accounts));
 	localStorage.removeItem("accounts");
@@ -73,7 +73,8 @@ import { v4 as uuid } from "uuid";
 let waitMessages: string[] = [];
 
 // 指定したミリ秒だけ待つ非同期関数
-const wait = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const wait = async (ms: number) =>
+	new Promise((resolve) => setTimeout(resolve, ms));
 
 // ヘックスカラーコードをRGBAに変換する関数
 const hexToRgb = (hex: string) => {
@@ -93,7 +94,7 @@ const hexToRgb = (hex: string) => {
 
 // エラーログの初期化
 const initializeErrorLogging = async () => {
-	const waitMsg = "エラーログ出力機能を初期化中..."
+	const waitMsg = "エラーログ出力機能を初期化中...";
 	waitMessages.push(waitMsg);
 	const currentDate = new Date();
 	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
@@ -111,11 +112,16 @@ const initializeErrorLogging = async () => {
 	};
 
 	window.addEventListener("error", async (event) => {
-		await logError(`${event.message} at ${event.filename}:${event.lineno}:${event.colno}`);
+		await logError(
+			`${event.message} at ${event.filename}:${event.lineno}:${event.colno}`,
+		);
 	});
 
 	window.addEventListener("unhandledrejection", async (event) => {
-		const reason = typeof event.reason === "object" ? JSON.stringify(event.reason) : event.reason;
+		const reason =
+			typeof event.reason === "object"
+				? JSON.stringify(event.reason)
+				: event.reason;
 		await logError(`Unhandled promise rejection: ${reason}`);
 	});
 
@@ -154,11 +160,11 @@ const initializeErrorLogging = async () => {
 
 // ビューポートの初期化
 const initializeViewport = () => {
-	const waitMsg = "ビューポートの初期化中..."
+	const waitMsg = "ビューポートの初期化中...";
 	waitMessages.push(waitMsg);
 
 	// タッチデバイスでCSSの:hoverを機能させる
-	document.addEventListener("touchend", () => { }, { passive: true });
+	document.addEventListener("touchend", () => {}, { passive: true });
 
 	// 一斉リロード
 	reloadChannel.addEventListener("message", (path) => {
@@ -169,16 +175,19 @@ const initializeViewport = () => {
 	//#region SEE: https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
 	// TODO: いつの日にか消したい
 	const vh = window.innerHeight * 0.01;
-	if (CSS.supports('height', '100dvh')) {
+	if (CSS.supports("height", "100dvh")) {
 		document.documentElement.style.setProperty("--vh", "1dvh");
 		document.documentElement.style.setProperty("--wph", "100dvh");
 	} else {
 		document.documentElement.style.setProperty("--vh", `${vh}px`);
-		document.documentElement.style.setProperty("--wph", `${window.innerHeight}px`);
+		document.documentElement.style.setProperty(
+			"--wph",
+			`${window.innerHeight}px`,
+		);
 	}
 
 	window.addEventListener("resize", () => {
-		if (!CSS.supports('height', '100dvh')) {
+		if (!CSS.supports("height", "100dvh")) {
 			const vh = window.innerHeight * 0.01;
 			document.documentElement.style.setProperty("--vh", `${vh}px`);
 		}
@@ -204,7 +213,7 @@ const initializeLoginId = async () => {
 	const loginId = params.get("loginId");
 
 	if (loginId) {
-		const waitMsg = "ログインIDを初期化中..."
+		const waitMsg = "ログインIDを初期化中...";
 		waitMessages.push(waitMsg);
 		const target = getUrlWithoutLoginId(location.href);
 		if (!$i || $i.id !== loginId) {
@@ -222,13 +231,13 @@ const initializeLoginId = async () => {
 const fetchUserAccount = async () => {
 	await initializeLoginId();
 	if ($i?.token) {
-		const waitMsg = "アカウント情報を取得中..."
+		const waitMsg = "アカウント情報を取得中...";
 		waitMessages.push(waitMsg);
 		if (_DEV_) console.log("account cache found. refreshing...");
 		await refreshAccount();
 		waitMessages = waitMessages.filter((x) => x !== waitMsg);
 	} else {
-		const waitMsg = "ログイン中..."
+		const waitMsg = "ログイン中...";
 		waitMessages.push(waitMsg);
 		if (_DEV_) console.log("no account cache found");
 		const i = (document.cookie.match(/igi=(\w+)/) || [null, null])[1];
@@ -248,12 +257,12 @@ const fetchUserAccount = async () => {
 
 // サービスワーカーとインスタンスメタ情報の取得の初期化
 const initializeServiceWorkerAndFetchInstanceMeta = async () => {
-	const waitInstanceMsg = "インスタンス情報の取得中..."
+	const waitInstanceMsg = "インスタンス情報の取得中...";
 	waitMessages.push(waitInstanceMsg);
 	const fetchInstanceMetaPromise = fetchInstance();
 	fetchInstanceMetaPromise.then(() => {
 		waitMessages = waitMessages.filter((x) => x !== waitInstanceMsg);
-		const waitMsg = "サービスワーカーの初期化中..."
+		const waitMsg = "サービスワーカーの初期化中...";
 		waitMessages.push(waitMsg);
 		localStorage.setItem("v", instance.version);
 		initializeSw();
@@ -264,7 +273,7 @@ const initializeServiceWorkerAndFetchInstanceMeta = async () => {
 
 // アプリの初期化
 const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
-	const waitMsg = "アプリの初期化中..."
+	const waitMsg = "アプリの初期化中...";
 	waitMessages.push(waitMsg);
 	const app = createApp(
 		window.location.search === "?zen"
@@ -279,7 +288,7 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 	);
 
 	app.config.errorHandler = async (err, vm, info) => {
-		const waitMsg = "エラーログ出力機能を初期化中(2)..."
+		const waitMsg = "エラーログ出力機能を初期化中(2)...";
 		waitMessages.push(waitMsg);
 		const currentDate = new Date();
 		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
@@ -347,8 +356,7 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 
 // スプラッシュスクリーンの初期化
 const initializeSplashScreen = async (minimumLoadPromise: Promise<unknown>) => {
-
-	const waitMsg = "スプラッシュスクリーンの解除中..."
+	const waitMsg = "スプラッシュスクリーンの解除中...";
 	waitMessages.push(waitMsg);
 
 	const splashText = document.getElementById("splashText");
@@ -620,8 +628,7 @@ const initializeEmoji = async () => {
 		}
 		// 一度だけ更新の場合、データモードを前回と同じにしておく
 		if (fetchModeMax === "once") {
-			const lastFetchModeMax =
-				(await get("lastFetchModeMax")) ?? fetchModeMax;
+			const lastFetchModeMax = (await get("lastFetchModeMax")) ?? fetchModeMax;
 			fetchModeMax = lastFetchModeMax;
 			defaultStore.set("remoteEmojisFetch", lastFetchModeMax);
 		}
@@ -652,14 +659,27 @@ const saveFailedQueueDatas = () => {
 			try {
 				const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
 
-				if (!defaultStore.state.queueDatas[i].draftData?.key || !defaultStore.state.queueDatas[i].draftData?.data) continue;
+				if (
+					!defaultStore.state.queueDatas[i].draftData?.key ||
+					!defaultStore.state.queueDatas[i].draftData?.data
+				)
+					continue;
 
-				const key = defaultStore.state.queueDatas[i].draftData.key ?? `auto:${uuid()?.slice(0, 8)}`;
+				const key =
+					defaultStore.state.queueDatas[i].draftData.key ??
+					`auto:${uuid()?.slice(0, 8)}`;
 
 				const data = draftData[key];
 				if (data?.data) {
-					if ((data.data.text || (data.data.useCw && data.data.cw) || data.data.files?.length || data.data.poll || data.data.referencesFlg !== true)) {
-						draftData[`auto:${uuid()?.slice(0, 8)}`] = defaultStore.state.queueDatas[i].draftData;
+					if (
+						data.data.text ||
+						(data.data.useCw && data.data.cw) ||
+						data.data.files?.length ||
+						data.data.poll ||
+						data.data.referencesFlg !== true
+					) {
+						draftData[`auto:${uuid()?.slice(0, 8)}`] =
+							defaultStore.state.queueDatas[i].draftData;
 						localStorage.setItem("drafts", JSON.stringify(draftData));
 						return;
 					}
@@ -719,15 +739,15 @@ const showInviteTutorial = async () => {
 			? eTime > 7 * 24 * 60 * 60 * 1000
 				? 7 * 24 * 60 * 60 * 1000
 				: Math.max(
-					7 * 24 * 60 * 60 * 1000 - $i.notesCount * 90 * 60 * 1000,
-					24 * 60 * 60 * 1000,
-				)
+						7 * 24 * 60 * 60 * 1000 - $i.notesCount * 90 * 60 * 1000,
+						24 * 60 * 60 * 1000,
+					)
 			: undefined;
 		const canInvite = $i
 			? (eTime ?? 0) > (inviteBorder ?? 0) &&
-			$i.notesCount >= 20 &&
-			!$i.isSilenced &&
-			$i.canInvite
+				$i.notesCount >= 20 &&
+				!$i.isSilenced &&
+				$i.canInvite
 			: false;
 		if (defaultStore.state.tutorial === -1 && canInvite) {
 			await alert({
@@ -772,31 +792,81 @@ const initializePowerMode = () => {
 			if (powerMode.setSettings) {
 				powerMode.setSettings({
 					particleMinCount: defaultStore.state.powerModeParticleCount, // パーティクルの最低数
-					particleMaxCount: Math.round(defaultStore.state.powerModeParticleCount * 2.5), // パーティクルの最大数
-					shakeMinIntensity: Math.ceil(defaultStore.state.powerModeShakePower / 5), // 画面の揺れの最低強度
+					particleMaxCount: Math.round(
+						defaultStore.state.powerModeParticleCount * 2.5,
+					), // パーティクルの最大数
+					shakeMinIntensity: Math.ceil(
+						defaultStore.state.powerModeShakePower / 5,
+					), // 画面の揺れの最低強度
 					shakeMaxIntensity: defaultStore.state.powerModeShakePower, // 画面の揺れの最高強度
 					particleSize: defaultStore.state.powerModeParticleSize, // パーティクルのサイズ
-					gravity: defaultStore.state.powerModeParticleGravity / 20, // 重力
+					gravity: defaultStore.state.powerModeParticleGravity / 40, // 重力
 					xOffset: defaultStore.state.powerModeParticleX, // 出現位置の横のずれ
 					yOffset: defaultStore.state.powerModeParticleY, // 出現位置の縦のずれ
 					spreadX: defaultStore.state.powerModeParticleSpreadX, // パーティクルの飛び散る広さ X
 					spreadY: defaultStore.state.powerModeParticleSpreadY, // パーティクルの飛び散る広さ Y
 					alphaDecay: 0.96, // パーティクルの透明度減衰度
 					colorfulParticles: defaultStore.state.powerModeSuperColorful, // パーティクルの色を個別にするかどうか
-				})
+				});
 			}
 			window.addEventListener("input", powerMode);
+			watch(
+				[
+					defaultStore.reactiveState.powerModeNoShake,
+					defaultStore.reactiveState.powerModeColorful,
+					defaultStore.reactiveState.powerModeParticleCount,
+					defaultStore.reactiveState.powerModeShakePower,
+					defaultStore.reactiveState.powerModeParticleSize,
+					defaultStore.reactiveState.powerModeParticleGravity,
+					defaultStore.reactiveState.powerModeParticleX,
+					defaultStore.reactiveState.powerModeParticleY,
+					defaultStore.reactiveState.powerModeParticleSpreadX,
+					defaultStore.reactiveState.powerModeParticleSpreadY,
+					defaultStore.reactiveState.powerModeSuperColorful,
+				],
+				() => {
+					powerMode.shake = !defaultStore.state.powerModeNoShake;
+					powerMode.colorful = !!defaultStore.state.powerModeColorful;
+					if (powerMode.setSettings) {
+						powerMode.setSettings({
+							particleMinCount: defaultStore.state.powerModeParticleCount, // パーティクルの最低数
+							particleMaxCount: Math.round(
+								defaultStore.state.powerModeParticleCount * 2.5,
+							), // パーティクルの最大数
+							shakeMinIntensity: Math.ceil(
+								defaultStore.state.powerModeShakePower / 5,
+							), // 画面の揺れの最低強度
+							shakeMaxIntensity: defaultStore.state.powerModeShakePower, // 画面の揺れの最高強度
+							particleSize: defaultStore.state.powerModeParticleSize, // パーティクルのサイズ
+							gravity: defaultStore.state.powerModeParticleGravity / 40, // 重力
+							xOffset: defaultStore.state.powerModeParticleX, // 出現位置の横のずれ
+							yOffset: defaultStore.state.powerModeParticleY, // 出現位置の縦のずれ
+							spreadX: defaultStore.state.powerModeParticleSpreadX, // パーティクルの飛び散る広さ X
+							spreadY: defaultStore.state.powerModeParticleSpreadY, // パーティクルの飛び散る広さ Y
+							alphaDecay: 0.96, // パーティクルの透明度減衰度
+							colorfulParticles: defaultStore.state.powerModeSuperColorful, // パーティクルの色を個別にするかどうか
+						});
+					}
+				},
+			);
 		});
 	}
 };
 
 const initializeHiddenIconUsers = () => {
-	if (defaultStore.state.hiddenIconUserIds?.length && defaultStore.state.hiddenIconUserIds?.length !== defaultStore.state.hiddenIconUserAccts?.filter((x) => x.includes("@")).length) {
+	if (
+		defaultStore.state.hiddenIconUserIds?.length &&
+		defaultStore.state.hiddenIconUserIds?.length !==
+			defaultStore.state.hiddenIconUserAccts?.filter((x) => x.includes("@"))
+				.length
+	) {
 		api("users/show", {
 			userIds: defaultStore.state.hiddenIconUserIds,
 		}).then((_users) => {
 			const userIds = _users.map((x) => x.id);
-			const userAccts = _users.map((x) => acct(x) + (x.host == null ? `@${host}` : ""));
+			const userAccts = _users.map(
+				(x) => acct(x) + (x.host == null ? `@${host}` : ""),
+			);
 			defaultStore.set("hiddenIconUserIds", userIds);
 			defaultStore.set("hiddenIconUserAccts", userAccts);
 		});
@@ -844,27 +914,49 @@ const postSleepModeCancel = () => {
 
 const storeConfigMigration = () => {
 	if (!defaultStore.state.pickerConfigMigration) {
-		if (defaultStore.state.reactionPickerSize < 0) defaultStore.set("reactionPickerVAlign", 0);
-		if (!defaultStore.isDefault("reactionPickerWidth")) defaultStore.set("reactionPickerWidth", defaultStore.state.reactionPickerWidth + 4);
+		if (defaultStore.state.reactionPickerSize < 0)
+			defaultStore.set("reactionPickerVAlign", 0);
+		if (!defaultStore.isDefault("reactionPickerWidth"))
+			defaultStore.set(
+				"reactionPickerWidth",
+				defaultStore.state.reactionPickerWidth + 4,
+			);
 		defaultStore.set("pickerConfigMigration", true);
 	}
-	if (defaultStore.state.reactionPickerHeight < 11) defaultStore.set("reactionPickerHeight", 65);
+	if (defaultStore.state.reactionPickerHeight < 11)
+		defaultStore.set("reactionPickerHeight", 65);
 };
 
 const autoSaveConfig = async () => {
 	const lastBackupData = await get("lastBackup");
 	if (!lastBackupData) await set("lastBackup", {});
-	if (typeof lastBackupData === "number") await set("lastBackup", { [$i.id]: lastBackupData });
-	const lastBackup = lastBackupData?.[$i.id] ? Number.parseInt(lastBackupData?.[$i.id]) : 0;
+	if (typeof lastBackupData === "number")
+		await set("lastBackup", { [$i.id]: lastBackupData });
+	const lastBackup = lastBackupData?.[$i.id]
+		? Number.parseInt(lastBackupData?.[$i.id])
+		: 0;
 	if (
 		defaultStore.state.autoSaveBackup &&
-		Date.now() - lastBackup > (66 * 60 * 60 * 1000)
+		Date.now() - lastBackup > 66 * 60 * 60 * 1000
 	) {
 		if (lastBackup === 0) {
 			try {
-				const profiles = (await api("i/registry/get-all", { scope: ["clientPreferencesProfiles"] })) || {};
-				if (Object.values(profiles).some((x) => x.name === `AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`)) {
-					const entry = Object.entries(profiles).find(([key, value]) => value.name === `AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`);
+				const profiles =
+					(await api("i/registry/get-all", {
+						scope: ["clientPreferencesProfiles"],
+					})) || {};
+				if (
+					Object.values(profiles).some(
+						(x) =>
+							x.name ===
+							`AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`,
+					)
+				) {
+					const entry = Object.entries(profiles).find(
+						([key, value]) =>
+							value.name ===
+							`AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`,
+					);
 					if (entry) {
 						const [key, value] = entry;
 						const { canceled } = await yesno({
@@ -873,16 +965,25 @@ const autoSaveConfig = async () => {
 						});
 						if (!canceled) {
 							applyProfile(key);
-							await set("lastBackup", { ...lastBackupData, [$i.id]: Date.now() });
+							await set("lastBackup", {
+								...lastBackupData,
+								[$i.id]: Date.now(),
+							});
 						} else {
 							defaultStore.set("autoSaveBackup", false);
 						}
 					}
 				} else {
-					if ($i?.createdAt && Date.now() - Date.parse($i?.createdAt) > (66 * 60 * 60 * 1000)) {
+					if (
+						$i?.createdAt &&
+						Date.now() - Date.parse($i?.createdAt) > 66 * 60 * 60 * 1000
+					) {
 						try {
 							await autoSave(true);
-							await set("lastBackup", { ...lastBackupData, [$i.id]: Date.now() });
+							await set("lastBackup", {
+								...lastBackupData,
+								[$i.id]: Date.now(),
+							});
 						} catch (e) {
 							console.log(e);
 						}
@@ -910,9 +1011,7 @@ const showLastUsedToast = (ms: number) => {
 	if (ms > 1000 * 60 * 60 * 72) {
 		toast(
 			i18n.t("welcomeBackWithNameLong", {
-				days: Math.floor(
-					(ms) / (1000 * 60 * 60 * 24),
-				),
+				days: Math.floor(ms / (1000 * 60 * 60 * 24)),
 				name: getUserName($i, true),
 			}),
 		);
@@ -1057,12 +1156,12 @@ const initializeStream = () => {
 
 	const splashTimeout = setTimeout(() => {
 		if (splashText) {
-			splashTextContent = splashText.textContent
+			splashTextContent = splashText.textContent;
 		}
 		intervalId = setInterval(() => {
 			if (splashText) {
 				if (!waitMessages.length && splashTextContent) {
-					splashText.textContent = splashTextContent
+					splashText.textContent = splashTextContent;
 				} else {
 					splashText.textContent = waitMessages.join("\n");
 				}

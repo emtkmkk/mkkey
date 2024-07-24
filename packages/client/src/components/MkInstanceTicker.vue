@@ -125,7 +125,7 @@
 			@error="errorIcon = true"
 		/>
 		<span class="name" v-if="defaultStore.state.tickerShowName">{{
-			instance.name
+			instance.name || instance.host || '???'
 		}}</span>
 	</div>
 </template>
@@ -138,6 +138,7 @@ import { defaultStore } from "@/store";
 
 const props = defineProps<{
 	instance?: {
+		host?: string;
 		faviconUrl?: string;
 		iconUrl?: string;
 		name: string;
@@ -153,6 +154,7 @@ let errorIcon = $ref(false);
 
 // if no instance data is given, this is for the local instance
 const instance = props.instance ?? {
+	host: Instance.host,
 	faviconUrl: Instance.faviconUrl,
 	iconUrl: Instance.iconUrl,
 	name: instanceName,

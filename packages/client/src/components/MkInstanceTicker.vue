@@ -9,7 +9,7 @@
 			(!defaultStore.state.tickerShowName
 				? (instance.softwareVersion || '???') + '/'
 				: '') +
-			instance.name +
+			(instance.name || instance.host || '???') +
 			'/' +
 			capitalize(instance.softwareName || '???')
 		"
@@ -53,7 +53,7 @@
 				  '/' +
 				  (instance.softwareVersion || '???') +
 				  '/'
-				: '') + instance.name
+				: '') + (instance.name || instance.host || '???')
 		"
 		ref="ticker"
 		:style="bg"
@@ -174,7 +174,7 @@ const themeColor =
 	instance.themeColor ?? computedStyle.getPropertyValue("--bg");
 
 const bg = {
-	background: `linear-gradient(90deg, ${themeColor}, ${themeColor}55)`,
+	background: instance.themeColor ? `linear-gradient(90deg, ${themeColor}, ${themeColor}55)` : themeColor,
 };
 
 function getInstanceFavicon(instance): string {

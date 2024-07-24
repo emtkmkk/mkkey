@@ -677,6 +677,7 @@ export const UserRepository = db.getRepository(User).extend({
 							instance
 								? {
 										name: instance.name,
+								  	host: instance.host,
 										softwareName: instance.softwareName,
 										softwareVersion: instance.softwareVersion,
 										iconUrl: instance.iconUrl,

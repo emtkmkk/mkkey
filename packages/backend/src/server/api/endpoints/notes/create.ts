@@ -439,7 +439,7 @@ export default define(meta, paramDef, async (ps, user) => {
 					cw: ps.cw,
 					localOnly: ps.localOnly,
 					visibility: ps.visibility,
-			  	visibilityForce,
+			  	visibilityForce: ps.visibilityForce,
 					visibleUsers,
 					ccUsers,
 					channel,

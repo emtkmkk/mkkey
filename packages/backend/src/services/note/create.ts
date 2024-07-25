@@ -152,6 +152,7 @@ type Option = {
 	localOnly?: boolean | null;
 	cw?: string | null;
 	visibility?: string;
+	visibilityForce?: boolean | null;
 	visibleUsers?: MinimumUser[] | null;
 	ccUsers?: MinimumUser[] | null;
 	channel?: Channel | null;
@@ -239,22 +240,32 @@ export default async (
 		//指定がなければpublicでlocalOnlyOFF
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
-		//チャンネル投稿でリプライ、リノートでないならpublic
-		if (data.channel != null && !data.reply && !data.renote)
-			data.visibility = "public";
-		//publicをブロックする設定でpublic設定ならhomeに設定
-		if (user.blockPostPublic && data.visibility === "public")
-			data.visibility = "home";
-		//homeをブロックする設定でhome設定ならfollowersに設定
-		if (user.blockPostHome && data.visibility === "home")
-			data.visibility = "followers";
-		//非localOnlyをブロックする設定で非localOnly設定ならlocalOnlyに設定
-		if (
-			user.blockPostNotLocal &&
-			data.localOnly === false &&
-			(!user.blockPostNotLocalPublic || data.visibility === "public")
-		)
-			data.localOnly = true;
+		if (!data.visibilityForce) {
+			//チャンネル投稿でリプライ、リノートでないならpublic
+			if (data.channel != null && !data.reply && !data.renote)
+				data.visibility = "public";
+			//publicをブロックする設定でpublic設定ならhomeに設定
+			if (user.blockPostPublic && data.visibility === "public")
+				data.visibility = "home";
+			//homeをブロックする設定でhome設定ならfollowersに設定
+			if (user.blockPostHome && data.visibility === "home")
+				data.visibility = "followers";
+			//非localOnlyをブロックする設定で非localOnly設定ならlocalOnlyに設定
+			if (
+				user.blockPostNotLocal &&
+				data.localOnly === false &&
+				(!user.blockPostNotLocalPublic || data.visibility === "public")
+			)
+				data.localOnly = true;
+			if (data.visibility === "hidden") data.visibility = "public";
+			//LTLが無効ならホームに
+			if (!user.host && data.channel == null && data.visibility === "public") {
+				const m = await fetchMeta();
+				if (m.disableLocalTimeline) {
+					data.visibility = "home";
+				}
+			}
+		}
 		//ただしspecifiedならlocalOnlyOFF
 		if (data.visibility === "specified" && data.localOnly === true)
 			data.localOnly = false;
@@ -275,14 +286,6 @@ export default async (
 			//ローカル投稿でチャンネルで連合有りで返信でなくテキストがあり、
 			//すでにタグが含まれていない場合はハッシュタグを自動で付ける
 			data.text += ` #${data.channel!.name}`;
-		}
-		if (data.visibility === "hidden") data.visibility = "public";
-		//LTLが無効ならホームに
-		if (!user.host && data.channel == null && data.visibility === "public") {
-			const m = await fetchMeta();
-			if (m.disableLocalTimeline) {
-				data.visibility = "home";
-			}
 		}
 
 		// Twitterのstatusリンクの場合、?以降を取り除く
@@ -437,6 +440,7 @@ export default async (
 			return rej("Renote target is not public or home");
 		}
 
+		if (!data.visibilityForce) {
 		// If the target of the renote is not public, make it home.
 		if (
 			data.renote &&
@@ -486,6 +490,8 @@ export default async (
 		// If you reply to local only, make it local only.
 		if (data.reply?.localOnly) {
 			data.localOnly = true;
+		}
+
 		}
 
 		if (data.text) {

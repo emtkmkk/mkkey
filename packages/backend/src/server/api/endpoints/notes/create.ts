@@ -114,6 +114,7 @@ export const paramDef = {
 	type: "object",
 	properties: {
 		visibility: { type: "string", enum: noteVisibilities, default: "public" },
+		visibilityForce: { type: "boolean", default: false },
 		visibleUserIds: {
 			type: "array",
 			uniqueItems: true,
@@ -438,6 +439,7 @@ export default define(meta, paramDef, async (ps, user) => {
 					cw: ps.cw,
 					localOnly: ps.localOnly,
 					visibility: ps.visibility,
+			  	visibilityForce,
 					visibleUsers,
 					ccUsers,
 					channel,

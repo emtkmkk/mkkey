@@ -82,9 +82,11 @@ export default async function (
 
 	const isPhysical =
 		!isAdmin &&
+		!note.score &&
+		!note.repliesCount &&
 		(isRenote ||
 			deletedAt.valueOf() <
-				note.createdAt.valueOf() + (1000 * 60 * 3 - note.score * 10000));
+				note.createdAt.valueOf() + (1000 * 60 * 3));
 
 	if (!quiet) {
 		publishNoteStream(note.id, "deleted", {

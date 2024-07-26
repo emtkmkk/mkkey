@@ -494,6 +494,13 @@ export const UserRepository = db.getRepository(User).extend({
 			meId && !isMe && (opts.detail || opts.relation)
 				? await this.getRelation(meId, user.id)
 				: null;
+		const isRenoteMuted = meId && !relation && (opts.detail || opts.relation) ? RenoteMutings.count({
+				where: {
+					muterId: me,
+					muteeId: target,
+				},
+				take: 1,
+			}).then((n) => n > 0) : null,
 		const pins = opts.detail
 			? await UserNotePinings.createQueryBuilder("pin")
 					.where("pin.userId = :userId", { userId: user.id })
@@ -921,6 +928,12 @@ export const UserRepository = db.getRepository(User).extend({
 						isInviter: relation.isInviter ? true : undefined,
 				  }
 				: {}),
+			...(
+				isRenoteMuted 
+				? {
+					isRenoteMuted: await isRenoteMuted,
+				} : {}
+			)
 		} as Promiseable<Packed<"User">> as Promiseable<
 			IsMeAndIsUserDetailed<ExpectsMe, D>
 		>;

@@ -27,12 +27,12 @@ export function preprocess(text: string): string {
 			if (node.type === "fn" && node.props.args?.fps) {
 				let fpsnum;
 				try {
-					fpsnum = parseInt(node.props.args.fps);
+					fpsnum = parseInt(node.props.args.fps?.replaceAll(/[^0-9.]+/g,""));
 				} catch(e) {
 					console.log(e);
 				}
 				if (fpsnum && !Number.isNaN(fpsnum)) {
-					node.props.args.speed = (1/fpsnum).toFixed(15) + "s"
+					node.props.args.speed = (1/fpsnum).toFixed(24) + "s"
 					delete node.props.args.fps
 				}
 			}

@@ -123,7 +123,7 @@ export default async (
 			muteInfo.reactionMutedWords,
 		);
 		if (typeof isMutedReaction === "boolean") {
-			isMutedReaction = { muted: isMutedReaction.muted };
+			isMutedReaction = { muted: isMutedReaction };
 		}
 		if (
 			isMutedReaction.muted &&

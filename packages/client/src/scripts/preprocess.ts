@@ -32,7 +32,7 @@ export function preprocess(text: string): string {
 					console.log(e);
 				}
 				if (fpsnum && !Number.isNaN(fpsnum)) {
-					node.props.args.speed = (1/fpsnum).tofixed(15) + "s"
+					node.props.args.speed = (1/fpsnum).toFixed(15) + "s"
 					delete node.props.args.fps
 				}
 			}

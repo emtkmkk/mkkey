@@ -105,6 +105,7 @@ export function checkReactionMute(
 			if (
 				keywords.length > 0 &&
 				keywords.every((keyword) => {
+					console.log(keyword + " = " + reaction);
 					if (keyword.startsWith("from:")) {
 						const fromKeyword = keyword
 							.replace("from:", "")

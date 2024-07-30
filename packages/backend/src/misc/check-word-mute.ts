@@ -175,10 +175,8 @@ export function checkReactionMute(
 						return false;
 					}
 					if (keyword.startsWith(":") && keyword.endsWith(":")) {
-						return (
-							keyword === text.replace(/@[^@]:/, ":") ||
-							keyword === text
-						);
+						return 
+							keyword === text.replace(/@[^@]+:/, ":") || keyword === text;
 					}
 					return text.includes(keyword);
 				})

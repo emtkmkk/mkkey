@@ -176,15 +176,14 @@ export function checkReactionMute(
 					}
 					if (keyword.startsWith(":") && keyword.endsWith(":")) {
 						console.log(text.replace(/@[^@]+:/, ":") + " === " + text);
-						console.log(keyword === text.replace(/@[^@]+:/, ":") || keyword === text);
-						return 
-							keyword === text.replace(/@[^@]+:/, ":") || keyword === text;
+						const muted = keyword === text.replace(/@[^@]+:/, ":") || keyword === text;
+						console.log(muted);
+						return muted;
 					}
 					console.log("normal" + text.includes(keyword));
 					return text.includes(keyword);
 				})
-			)
-				return reject === undefined ? true : { muted: true, reject: reject };
+			) return reject === undefined ? true : { muted: true, reject: reject };
 		} else {
 			// represents RegExp
 			const regexp = mutePattern.match(/^\/(.+)\/(.*)$/);

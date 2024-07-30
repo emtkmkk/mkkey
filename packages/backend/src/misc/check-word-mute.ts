@@ -175,9 +175,12 @@ export function checkReactionMute(
 						return false;
 					}
 					if (keyword.startsWith(":") && keyword.endsWith(":")) {
+						console.log(text.replace(/@[^@]+:/, ":") + " === " + text);
+						console.log(keyword === text.replace(/@[^@]+:/, ":") || keyword === text);
 						return 
 							keyword === text.replace(/@[^@]+:/, ":") || keyword === text;
 					}
+					console.log("normal" + text.includes(keyword));
 					return text.includes(keyword);
 				})
 			)

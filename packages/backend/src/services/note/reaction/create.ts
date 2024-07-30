@@ -126,7 +126,7 @@ export default async (
 			(typeof isMutedReaction !== "boolean"
 				? isMutedReaction.reject
 				: undefined) ??
-			isMutedReaction && typeof isMutedReaction === "boolean" && muteInfo.rejectMuteReaction
+			(isMutedReaction && typeof isMutedReaction === "boolean" && muteInfo.rejectMuteReaction)
 		) {
 			throw new IdentifiableError(
 				"119b8757-2ba5-385e-82cf-7fa4bc73c4d1",

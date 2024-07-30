@@ -27,7 +27,7 @@ export function preprocess(text: string): string {
 			if (node.type === "fn" && node.props.args?.fps) {
 				let fpsnum;
 				try {
-					fps = parseInt(node.props.args.fps);
+					fpsnum = parseInt(node.props.args.fps);
 				} catch(e) {
 					console.log(e);
 				}

@@ -105,7 +105,7 @@ export function checkReactionMute(
 			if (
 				keywords.length > 0 &&
 				keywords.every((keyword) => {
-					console.log(keyword + " = " + reaction);
+					console.log(keyword + " = " + text);
 					if (keyword.startsWith("from:")) {
 						const fromKeyword = keyword
 							.replace("from:", "")
@@ -176,8 +176,8 @@ export function checkReactionMute(
 					}
 					if (keyword.startsWith(":") && keyword.endsWith(":")) {
 						return (
-							keyword === reaction.replace(/@[^@]:/, ":") ||
-							keyword === reaction
+							keyword === text.replace(/@[^@]:/, ":") ||
+							keyword === text
 						);
 					}
 					return text.includes(keyword);

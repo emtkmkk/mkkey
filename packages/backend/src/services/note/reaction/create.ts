@@ -122,20 +122,19 @@ export default async (
 			user,
 			muteInfo.reactionMutedWords,
 		);
+		if (typeof isMutedReaction === "boolean") {
+			isMutedReaction = { muted: isMutedReaction.muted };
+		}
 		if (
-			(typeof isMutedReaction !== "boolean"
-				? isMutedReaction.reject
-				: undefined) ??
-			(isMutedReaction && typeof isMutedReaction === "boolean" && muteInfo.rejectMuteReaction)
+			isMutedReaction.muted &&
+			(isMutedReaction.reject ?? muteInfo.rejectMuteReaction)
 		) {
 			throw new IdentifiableError(
 				"119b8757-2ba5-385e-82cf-7fa4bc73c4d1",
 				"投稿者のリアクションミュート設定の為、リアクションが拒否されました。",
 			);
 		}
-		if (typeof isMutedReaction !== "boolean") {
-			isMutedReaction = isMutedReaction.muted;
-		}
+		isMutedReaction = isMutedReaction.muted
 	}
 
 	const record: NoteReaction = {

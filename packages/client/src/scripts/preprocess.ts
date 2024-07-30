@@ -24,6 +24,18 @@ export function preprocess(text: string): string {
 					);
 				}
 			}
+			if (node.type === "fn" && node.props.args?.fps) {
+				let fpsnum;
+				try {
+					fps = parseInt(node.props.args.fps);
+				} catch(e) {
+					console.log(e);
+				}
+				if (fpsnum && !Number.isNaN(fpsnum)) {
+					node.props.args.speed = (1/fpsnum).tofixed(15) + "s"
+					delete node.props.args.fps
+				}
+			}
 			if (node.type === "fn" && node.props.name === "morse") {
 				mfm.inspect(node.children, (x) => {
 					if (x.type !== "text" || !x.props.text) return;

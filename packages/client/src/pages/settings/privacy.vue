@@ -109,6 +109,7 @@
 		</FormSwitch>
 
 		<FormSwitch
+			v-if="false"
 			v-model="isPublicLikeList"
 			class="_formBlock"
 			@update:modelValue="save()"
@@ -744,7 +745,7 @@ function save() {
 		publicReactions: !!publicReactions,
 		preventAiLearning: !!preventAiLearning,
 		ffVisibility: ffVisibility,
-		isPublicLikeList: !!isPublicLikeList,
+		isPublicLikeList: true,
 	});
 }
 

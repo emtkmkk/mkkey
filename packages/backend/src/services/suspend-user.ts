@@ -36,6 +36,8 @@ export async function doPostSuspend(user: {
 			(x) => x.followerSharedInbox || x.followeeSharedInbox,
 		);
 
+		console.log("delete Activity Send: " + inboxes.length)
+
 		for (const inbox of inboxes) {
 			if (inbox != null && !queue.includes(inbox)) queue.push(inbox);
 		}

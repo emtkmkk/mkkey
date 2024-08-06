@@ -11,7 +11,7 @@
 							i18n.ts._apps.crossPlatform
 						}}</template>
 						<div class="_formBlock" style="text-align: center">
-							<pwa-install />
+							<pwa-install disable-screenshots="true" />
 							<MkButton
 								primary
 								rounded
@@ -116,7 +116,7 @@ const headerTabs = $computed(() => []);
 
 function installPwa(ev: MouseEvent) {
 	const pwaInstall = document.getElementsByTagName("pwa-install")[0];
-	pwaInstall.showDialog();
+	pwaInstall.install();
 }
 
 definePageMetadata({

@@ -187,7 +187,7 @@
 						>
 							<h3>{{ i18n.ts._tutorial.step7_1 }}</h3>
 							<div>{{ i18n.ts._tutorial.step7_2 }}</div>
-							<pwa-install />
+							<pwa-install disable-screenshots="true" />
 							<MkButton
 								primary
 								rounded
@@ -292,7 +292,7 @@ function close(res) {
 
 function installPwa(ev: MouseEvent) {
 	const pwaInstall = document.getElementsByTagName("pwa-install")[0];
-	pwaInstall.showDialog();
+	pwaInstall.install();
 }
 </script>
 

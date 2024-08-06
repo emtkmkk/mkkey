@@ -104,7 +104,7 @@
 					<i class="icon ph-pencil ph-bold ph-lg ph-fw ph-lg"></i
 					><span class="text">{{ i18n.ts.note }}</span>
 				</button>
-				<pwa-install />
+				<pwa-install disable-screenshots="true" />
 				<button
 					v-tooltip.noDelay.right="i18n.ts.help"
 					class="item _button help"

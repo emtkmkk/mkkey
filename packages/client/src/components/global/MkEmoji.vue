@@ -29,7 +29,7 @@
 		"
 	/>
 	<img
-		v-else-if="char && !useOsNativeEmojis"
+		v-else-if="char && !useOsNativeEmojis && !errorAlt"
 		class="mk-emoji"
 		:class="{ ['mfm-x' + (size || 2)]: mfmx }"
 		:src="url"
@@ -37,9 +37,20 @@
 		:alt="alt"
 		decoding="async"
 		@click="handleImgClick"
+		@error="
+			() => {
+				errorAlt = true;
+				if (!instance.errorEmojiAlt) {
+					instance.errorEmojiAlt = {};
+				}
+				instance.errorEmojiAlt[
+					emoji
+				] = true;
+			}
+		"
 	/>
 	<span
-		v-else-if="char && useOsNativeEmojis"
+		v-else-if="char && (useOsNativeEmojis || errorAlt)"
 		@click="handleImgClick"
 		:class="{ ['mfm-x' + (size || 2)]: mfmx }"
 		>{{ char }}</span

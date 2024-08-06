@@ -104,7 +104,6 @@
 					<i class="icon ph-pencil ph-bold ph-lg ph-fw ph-lg"></i
 					><span class="text">{{ i18n.ts.note }}</span>
 				</button>
-				<pwa-install disable-screenshots="true" />
 				<button
 					v-tooltip.noDelay.right="i18n.ts.help"
 					class="item _button help"
@@ -132,7 +131,6 @@ import { openAccountMenu as openAccountMenu_ } from "@/account";
 import { openHelpMenu_ } from "@/scripts/helpMenu";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
-import "@khmyznikov/pwa-install";
 
 const menu = toRef(defaultStore.state, "menu");
 const otherMenuItemIndicated = computed(() => {

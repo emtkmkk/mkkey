@@ -11,6 +11,8 @@
 
 	<XStreamIndicator />
 
+	<pwa-install disable-screenshots="true" />
+
 	<!-- <div v-if="pendingApiRequestsCount > 0" id="wait"></div> -->
 
 	<div v-if="dev" id="devTicker"><span>DEV BUILD</span></div>
@@ -30,6 +32,7 @@ import { $i } from "@/account";
 import { stream } from "@/stream";
 import { i18n } from "@/i18n";
 import * as os from "@/os";
+import "@khmyznikov/pwa-install";
 
 const XStreamIndicator = defineAsyncComponent(
 	() => import("./stream-indicator.vue")

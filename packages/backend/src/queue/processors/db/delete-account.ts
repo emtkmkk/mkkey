@@ -42,41 +42,6 @@ export async function deleteAccount(
 	try {
 		let tryCount = 0;
 		let deleteCount = 0;
-
-		const total = await Followings.countBy({
-				followerId: user.id,
-		});
-
-		while (tryCount <= 100) {
-			const relations = await Followings.find({
-				where: {
-					followerId: user.id,
-				},
-				take: 100,
-			});
-
-			if (relations.length === 0) {
-				break;
-			}
-
-			relations.forEach(async (x) => {
-				try {
-					const followee = await getUser(x.followeeId);
-					deleteCount += 1;
-					if (followee) await deleteFollowing(user, followee);
-					tryCount = 0;
-				} catch {}
-			});
-			tryCount += 1;
-			job.progress(+(deleteCount / total * 25).toFixed(1))
-		}
-		job.progress(25)
-		if (deleteCount) logger.succ(`All of followees deleted (${deleteCount})`);
-	} catch {}
-
-	try {
-		let tryCount = 0;
-		let deleteCount = 0;
 		const total = await Followings.countBy({
 			followeeId: user.id,
 		});
@@ -146,7 +111,7 @@ export async function deleteAccount(
 					failedCount += 1;
 				}
 			}
-			job.progress(50 + (+((deleteCount + failedCount) / total * 25).toFixed(1)))
+			job.progress(0 + (+((deleteCount + failedCount) / total * 50).toFixed(1)))
 			logger.info(
 				`Notes deleting... (Total: ${deleteCount}${
 					failedCount ? ` / ${failedCount}` : ""
@@ -159,7 +124,7 @@ export async function deleteAccount(
 			);
 		}
 
-		job.progress(75)
+		job.progress(50)
 		if (deleteCount + failedCount)
 			logger.succ(
 				`All of notes deleted (${deleteCount}${
@@ -206,9 +171,44 @@ export async function deleteAccount(
 			}
 		}
 
-		job.progress(75 + (+(deleteCount / total * 24.9).toFixed(1)))
+		job.progress(50 + (+(deleteCount / total * 24.9).toFixed(1)))
 		if (deleteCount) logger.succ(`All of files deleted (${deleteCount})`);
 	}
+
+	try {
+		let tryCount = 0;
+		let deleteCount = 0;
+
+		const total = await Followings.countBy({
+				followerId: user.id,
+		});
+
+		while (tryCount <= 100) {
+			const relations = await Followings.find({
+				where: {
+					followerId: user.id,
+				},
+				take: 100,
+			});
+
+			if (relations.length === 0) {
+				break;
+			}
+
+			relations.forEach(async (x) => {
+				try {
+					const followee = await getUser(x.followeeId);
+					deleteCount += 1;
+					if (followee) await deleteFollowing(user, followee);
+					tryCount = 0;
+				} catch {}
+			});
+			tryCount += 1;
+			job.progress(+(deleteCount / total * 25).toFixed(1))
+		}
+		if (deleteCount) logger.succ(`All of followees deleted (${deleteCount})`);
+	} catch {}
+	
 	job.progress(99.9)
 
 	{

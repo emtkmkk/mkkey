@@ -102,6 +102,10 @@ const onNotification = (notification) => {
 	}
 };
 
+defineExpose({
+	pagingComponent,
+});
+
 let connection;
 
 onMounted(() => {

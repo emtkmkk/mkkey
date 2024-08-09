@@ -22,13 +22,13 @@
 			>
 				<swiper-slide>
 					<XNotifications
-						v-if="!defaultStore.state.enableAntennaTab"
+						v-if="!defaultStore.state.enableAntennaTab && tab === 'all'"
 						class="notifications"
 						:include-types="includeTypes"
 						:unread-only="false"
 					/>
 					<XNotifications
-						v-else
+						v-else-if="tab === 'all'"
 						class="notifications"
 						:include-types="includeTypes"
 						:exclude-types="typeUnreadAntenna"
@@ -37,13 +37,15 @@
 				</swiper-slide>
 				<swiper-slide>
 					<XNotifications
-						v-if="!defaultStore.state.enableAntennaTab"
+						ref="notificationsComponent"
+						v-if="!defaultStore.state.enableAntennaTab && tab === 'unread'"
 						class="notifications"
 						:include-types="includeTypes"
 						:unread-only="true"
 					/>
 					<XNotifications
-						v-else
+						ref="notificationsComponent"
+						v-else-if="tab === 'unread'"
 						class="notifications"
 						:include-types="includeTypes"
 						:exclude-types="typeUnreadAntenna"
@@ -52,6 +54,8 @@
 				</swiper-slide>
 				<swiper-slide v-if="defaultStore.state.enableAntennaTab">
 					<XNotifications
+						ref="notificationsComponent"
+						v-if="tab === 'antenna'"
 						class="notifications"
 						:include-types="typeUnreadAntenna"
 						:unread-only="false"
@@ -59,6 +63,7 @@
 				</swiper-slide>
 				<swiper-slide>
 					<XNotes
+						ref="notificationsComponent"
 						key="mentions"
 						v-if="tab === 'mentions'"
 						:pagination="mentionsPagination"
@@ -66,6 +71,7 @@
 				</swiper-slide>
 				<swiper-slide>
 					<XNotes
+						ref="notificationsComponent"
 						key="directNotes"
 						v-if="tab === 'directNotes'"
 						:pagination="directNotesPagination"
@@ -101,6 +107,8 @@ let includeTypes = $ref<string[] | null>(null);
 let typeUnreadAntenna = $ref(["unreadAntenna"]);
 let unreadOnly = $computed(() => tab === "unread");
 os.api("notifications/mark-all-as-read");
+
+const notificationsComponent: InstanceType<typeof XNotifications | typeof XNotes> = $ref();
 
 const MOBILE_THRESHOLD = 500;
 const isMobile = ref(
@@ -149,6 +157,9 @@ function setFilter(ev) {
 	os.popupMenu(items, ev.currentTarget ?? ev.target);
 }
 
+function reload(): void {
+	notificationsComponent?.pagingComponent?.reload();
+}
 const headerActions = $computed(() =>
 	[
 		tab === "all"
@@ -168,6 +179,13 @@ const headerActions = $computed(() =>
 					},
 			  }
 			: undefined,
+			{
+				icon: "ph-arrows-clockwise ph-bold ph-lg",
+				title: i18n.ts.reload,
+				text: i18n.ts.reload,
+				iconOnly: true,
+				handler: reload,
+			},
 	].filter((x) => x !== undefined)
 );
 

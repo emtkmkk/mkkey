@@ -23,12 +23,14 @@
 				<swiper-slide>
 					<XNotifications
 						v-if="!defaultStore.state.enableAntennaTab && tab === 'all'"
+						ref="notificationsComponent"
 						class="notifications"
 						:include-types="includeTypes"
 						:unread-only="false"
 					/>
 					<XNotifications
 						v-else-if="tab === 'all'"
+						ref="notificationsComponent"
 						class="notifications"
 						:include-types="includeTypes"
 						:exclude-types="typeUnreadAntenna"

@@ -422,7 +422,7 @@ export const routes = [
 		path: "/tags/:tag",
 		component: page(() => import("./pages/tag.vue")),
 		query: {
-			user: "userId",
+			userId: "user",
 		},
 	},
 	{

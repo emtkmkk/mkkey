@@ -217,6 +217,7 @@
 								:author="user"
 								:i="$i"
 								:custom-emojis="user.emojis"
+								user-page
 							/>
 							<p v-else class="empty">
 								{{ i18n.ts.noAccountDescription }}
@@ -370,6 +371,7 @@
 										:is-note="false"
 										:custom-emojis="user.emojis"
 										:colored="false"
+										user-page
 									/>
 								</dd>
 							</dl>

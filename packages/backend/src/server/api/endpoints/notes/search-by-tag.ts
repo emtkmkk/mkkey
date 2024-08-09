@@ -44,6 +44,12 @@ export const paramDef = {
 		{
 			properties: {
 				tag: { type: "string", minLength: 1 },
+				userId: {
+					type: "string",
+					format: "misskey:id",
+					nullable: true,
+					default: null,
+				},
 			},
 			required: ["tag"],
 		},
@@ -92,8 +98,9 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (me) generateBlockedUserQuery(query, me);
 
 	try {
-		if (ps.tag) {
+		if (ps.tag && !Array.isArray(ps.tag)) {
 			if (!safeForSql(normalizeForSearch(ps.tag))) throw "Injection";
+			if (ps.userId) query.andWhere("note.userId = :id", { id: ps.userId });
 			query.andWhere(`'{"${normalizeForSearch(ps.tag)}"}' <@ note.tags`);
 		} else {
 			query.andWhere(
@@ -104,6 +111,7 @@ export default define(meta, paramDef, async (ps, me) => {
 								for (const tag of tags) {
 									if (!safeForSql(normalizeForSearch(ps.tag)))
 										throw "Injection";
+									if (ps.userId) qb.andWhere("note.userId = :id", { id: ps.userId });
 									qb.andWhere(`'{"${normalizeForSearch(tag)}"}' <@ note.tags`);
 								}
 							}),

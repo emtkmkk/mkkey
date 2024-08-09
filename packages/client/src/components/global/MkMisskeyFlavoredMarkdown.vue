@@ -12,6 +12,7 @@
 		:reaction-menu-enabled="reactionMenuEnabled"
 		:note="note"
 		:is-cw="isCw"
+		:user-page="userPage"
 	/>
 </template>
 
@@ -27,10 +28,11 @@ const props = withDefaults(
 		author?: any;
 		customEmojis?: any;
 		isNote?: boolean;
-		noteHost?: string;
+		noteHost?: string | null;
 		reactionMenuEnabled?: boolean;
 		note?: any;
 		isCw?: boolean;
+		userPage?: boolean;
 	}>(),
 	{
 		plain: false,
@@ -41,6 +43,7 @@ const props = withDefaults(
 		reactionMenuEnabled: false,
 		note: null,
 		isCw: false,
+		userPage: false,
 	}
 );
 </script>

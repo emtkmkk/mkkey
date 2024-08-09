@@ -22,7 +22,7 @@
 				<swiper-slide>
 					<XNotes ref="notes" :pagination="notesPagination" />
 				</swiper-slide>
-				<swiper-slide>
+				<swiper-slide v-if="!userId">
 					<XUserList
 						ref="users"
 						class="_gap"
@@ -49,6 +49,7 @@ import "swiper/scss/virtual";
 
 const props = defineProps<{
 	tag: string;
+	userId?: string;
 }>();
 
 const notesPagination = {
@@ -56,6 +57,7 @@ const notesPagination = {
 	limit: 10,
 	params: computed(() => ({
 		tag: props.tag,
+		userId: props.userId,
 	})),
 };
 
@@ -68,7 +70,8 @@ const usersPagination = {
 	})),
 };
 
-const tabs = ["notes", "users"];
+let tabs = ["notes"];
+if (!props.userId) tabs.push("users")
 let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
@@ -94,11 +97,11 @@ const headerTabs = $computed(() => [
 		icon: "ph-note ph-bold ph-lg",
 		title: i18n.ts.notes,
 	},
-	{
+	...(!props.userId ? [{
 		key: "users",
 		icon: "ph-users ph-bold ph-lg",
 		title: i18n.ts.users,
-	},
+	}] : []),
 ]);
 
 let swiperRef = null;

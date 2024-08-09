@@ -62,6 +62,10 @@ export default defineComponent({
 			type: Boolean,
 			default: false,
 		},
+		userPage: {
+			type: Boolean,
+			default: false,
+		}
 	},
 
 	render() {
@@ -595,7 +599,7 @@ export default defineComponent({
 									MkA,
 									{
 										key: Math.random(),
-										to: `/tags/${encodeURIComponent(token.props.hashtag)}`,
+										to: `/tags/${encodeURIComponent(token.props.hashtag)}${this.userPage && this.author ? `&user=${encodeURIComponent(this.author.id)}` : ""}`,
 										style: "color:var(--hashtag);",
 									},
 									`#${token.props.hashtag}`,

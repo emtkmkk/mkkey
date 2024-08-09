@@ -48,7 +48,6 @@ export const paramDef = {
 					type: "string",
 					format: "misskey:id",
 					nullable: true,
-					default: null,
 				},
 			},
 			required: ["tag"],

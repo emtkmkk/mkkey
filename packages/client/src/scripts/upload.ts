@@ -14,7 +14,6 @@ type Uploading = {
 	progressMax: number | undefined;
 	progressValue: number | undefined;
 	img: string;
-	retry: () => void;
 };
 
 export const uploads = ref<Uploading[]>([]);
@@ -77,7 +76,7 @@ export function uploadFile(
 				if (requiredFilename || defaultStore.state.alwaysInputFilename) {
 					const { canceled, result: input } = await os.inputText({
 						title: i18n.ts.filenameInput,
-						text: ext || ".???",
+						text: ext?.[0] || ".???",
 						placeholder:
 							(name || file.name.replace(/\.\w+$/, "")) + ext,
 						default: name || file.name.replace(/\.\w+$/, ""),
@@ -103,11 +102,10 @@ export function uploadFile(
 					name:
 						inputName ||
 						name ||
-						(keepFileName ? file.name : `${$i.username}-${id.replaceAll(".", "")}${ext}`),
+						(keepFileName ? file.name : `${$i?.username}-${id.replaceAll(".", "")}${ext}`),
 					progressMax: undefined,
 					progressValue: undefined,
 					img: window.URL.createObjectURL(file),
-					retry: () => retryUpload(ctx),
 				});
 
 				uploads.value.push(ctx);
@@ -228,21 +226,4 @@ export function uploadFile(
 		reader.onerror = () => reject(new Error("File reading failed"));
 		reader.readAsArrayBuffer(file);
 	});
-
-	function retryUpload(ctx: Uploading) {
-		uploadFile(
-			file,
-			folder,
-			ctx.name,
-			keepOriginal,
-			keepFileName,
-			requiredFilename,
-		)
-			.then((driveFile) => {
-				resolve(driveFile);
-			})
-			.catch((error) => {
-				console.error("Retry upload failed", error);
-			});
-	}
 }

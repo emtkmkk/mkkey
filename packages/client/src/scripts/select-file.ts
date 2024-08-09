@@ -51,7 +51,8 @@ function select(
 						res(multiple ? driveFiles : driveFiles[0]);
 					})
 					.catch((err) => {
-						// アップロードのエラーは uploadFile 内でハンドリングされているためアラートダイアログを出したりはしてはいけない
+						// エラー発生時にリジェクトする
+						rej(err);
 					});
 
 				// 一応廃棄
@@ -69,6 +70,8 @@ function select(
 			doAction = true;
 			os.selectDriveFile(multiple).then((files) => {
 				res(files);
+			}).catch((err) => {
+				rej(err); // エラー発生時にリジェクト
 			});
 		};
 
@@ -95,12 +98,16 @@ function select(
 					url: url,
 					folderId,
 					marker,
+				}).catch((err) => {
+					rej(err); // エラー発生時にリジェクト
 				});
 
 				os.alert({
 					title: i18n.ts.uploadFromUrlRequested,
 					text: i18n.ts.uploadFromUrlMayTakeTime,
 				});
+			}).catch((err) => {
+				rej(err); // エラー発生時にリジェクト
 			});
 		};
 
@@ -153,8 +160,10 @@ function select(
 			src,
 		).then(() => {
 			setTimeout(() => {
-				if (!doAction) rej();
+				if (!doAction) rej(new Error("No action was taken"));
 			}, 500);
+		}).catch((err) => {
+			rej(err); // エラー発生時にリジェクト
 		});
 	});
 }

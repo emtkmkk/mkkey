@@ -22,7 +22,10 @@
 				<swiper-slide>
 					<XNotes ref="notes" :pagination="notesPagination" />
 				</swiper-slide>
-				<swiper-slide v-if="!userId">
+				<swiper-slide v-if="user">
+					<XNotes ref="notes" :pagination="allnotesPagination" />
+				</swiper-slide>
+				<swiper-slide v-if="!user">
 					<XUserList
 						ref="users"
 						class="_gap"
@@ -49,7 +52,7 @@ import "swiper/scss/virtual";
 
 const props = defineProps<{
 	tag: string;
-	userId?: string;
+	user?: string;
 }>();
 
 const notesPagination = {
@@ -57,7 +60,15 @@ const notesPagination = {
 	limit: 10,
 	params: computed(() => ({
 		tag: props.tag,
-		userId: props.userId,
+		userId: props.user,
+	})),
+};
+
+const allnotesPagination = {
+	endpoint: "notes/search-by-tag" as const,
+	limit: 10,
+	params: computed(() => ({
+		tag: props.tag,
 	})),
 };
 
@@ -71,7 +82,8 @@ const usersPagination = {
 };
 
 let tabs = ["notes"];
-if (!props.userId) tabs.push("users")
+if (!props.user) tabs.push("users")
+if (props.user) tabs.push("allnotes")
 let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
@@ -97,7 +109,12 @@ const headerTabs = $computed(() => [
 		icon: "ph-note ph-bold ph-lg",
 		title: i18n.ts.notes,
 	},
-	...(!props.userId ? [{
+	...(props.user ? [{
+		key: "allnotes",
+		icon: "ph-notebook ph-bold ph-lg",
+		title: `全ての${i18n.ts.notes}`,
+	}] : []),
+	...(!props.user ? [{
 		key: "users",
 		icon: "ph-users ph-bold ph-lg",
 		title: i18n.ts.users,

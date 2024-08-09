@@ -599,7 +599,7 @@ export default defineComponent({
 									MkA,
 									{
 										key: Math.random(),
-										to: `/tags/${encodeURIComponent(token.props.hashtag)}${this.userPage && this.author ? `&user=${encodeURIComponent(this.author.id)}` : ""}`,
+										to: `/tags/${encodeURIComponent(token.props.hashtag)}${this.userPage && this.author ? `?user=${encodeURIComponent(this.author.id)}` : ""}`,
 										style: "color:var(--hashtag);",
 									},
 									`#${token.props.hashtag}`,

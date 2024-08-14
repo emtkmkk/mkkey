@@ -198,7 +198,7 @@ export const emojiMap = computed((): Map<string, any> => {
   
   emojisArray.forEach(emoji => {
     if (emoji.name) {
-      emojisMap.set(emoji.name, emoji);
+      emojisMap.set(emoji.name.toLowerCase(), emoji);
     }
   });
   

@@ -677,8 +677,8 @@ export async function updatePerson(
 						}
 						if (fields?.length < 16) {
 							fields.push({
-								name: "★Skeb",
-								value: `[${skebInfo.isAcceptable ? "募集中" : "停止中"}${
+								name: "Skeb(自動)",
+								value: `[${skebInfo.isAcceptable ? "$[border.radius=5,color=FFF $[bg.color=F14668 $[fg.color=FFF  募集中 ]]]" : "$[border.radius=5,color=FFF $[bg.color=363636 $[fg.color=FFF  停止中 ]]]"}${
 									status ? ` ${status}` : ""
 								}](https://skeb.jp/@${skebInfo.screenName})`,
 							});
@@ -700,8 +700,8 @@ export async function updatePerson(
 							}
 							if (fields?.length < 16) {
 								fields.push({
-									name: "★Skeb",
-									value: `[クライアント${
+									name: "Skeb(自動)",
+									value: `[$[border.radius=5,color=FFF $[bg.color=363636 $[fg.color=FFF  クライアント ]]]${
 										status ? ` ${status}` : ""
 									}](https://skeb.jp/@${skebInfo.screenName})`,
 								});
@@ -1027,7 +1027,7 @@ function getSkebGenreIcon(genre: string) {
 		case "music":
 			return "🎵";
 		case "correction":
-			return "📚";
+			return "⭐️";
 		default:
 			return "❓️";
 	}

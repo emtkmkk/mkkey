@@ -111,7 +111,7 @@ onMounted(() => {
 
 			window.setTimeout(() => {
 				add();
-			}, 500 + Math.random() * 500);
+			}, 200 + Math.random() * 200);
 		};
 		add();
 	}

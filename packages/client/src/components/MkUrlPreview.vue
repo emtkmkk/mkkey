@@ -130,7 +130,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { url as local, lang } from "@/config";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
@@ -221,6 +221,38 @@ function adjustTweetHeight(message: any) {
 }
 
 (window as any).addEventListener("message", adjustTweetHeight);
+
+onMounted(() => {
+	const checkIframeContent = () => {
+		const tweetIframe = document.querySelector(`iframe[src*="twitter.com"], iframe[src*="x.com"]`) as HTMLIFrameElement;
+		if (tweetIframe) {
+			tweetIframe.onload = () => {
+				const iframeDocument = tweetIframe.contentDocument || tweetIframe.contentWindow?.document;
+				if (iframeDocument) {
+					const spanElements = Array.from(iframeDocument.querySelectorAll("span"));
+					for (const span of spanElements) {
+						const textContent = span.textContent?.trim();
+						if (textContent === "Not found") {
+							tweetExpanded = false;
+							tweetId = null;
+							break;
+						}
+						if (textContent && textContent !== "Not found") {
+							console.log(`x span: ${textContent}`)
+							break;
+						}
+					}
+				}
+			};
+		}
+	};
+
+	watch(tweetExpanded, () => {
+		if (tweetExpanded) {
+			checkIframeContent();
+		}
+	});
+});
 
 onUnmounted(() => {
 	(window as any).removeEventListener("message", adjustTweetHeight);

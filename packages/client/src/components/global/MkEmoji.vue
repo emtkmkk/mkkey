@@ -216,7 +216,7 @@ const customEmoji = computed(() => {
 		hostmatch.value?.[2] || (!replace ? props.noteHost : undefined);
 
 	const matchprops = props.customEmojis?.find(
-		(x) => x.url && x.name === emoji.substr(1, emoji.length - 2)
+		(x) => x.url && x.name === emoji.toLowerCase().substr(1, emoji.length - 2)
 	);
 
 	if (matchprops) {
@@ -224,14 +224,14 @@ const customEmoji = computed(() => {
 	} else if (host && host !== "." && host !== config.host) {
 		return { name, host };
 	} else {
-		const cefind = emojiMap.value.get(name);
+		const cefind = emojiMap.value.get(name?.toLowerCase());
 		if (cefind || props.nofallback) {
 			return cefind;
 		} else {
 			emit("loaderror", "");
 			// ローカル絵文字が見つからない場合、aliasesを検索
 			return ce.value.find((x) =>
-				x.aliases?.some((y) => /^\w+$/.test(y) && y === name)
+				x.aliases?.some((y) => /^\w+$/.test(y) && y === name?.toLowerCase())
 			);
 		}
 	}

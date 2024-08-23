@@ -63,10 +63,15 @@ export default async function renderNote(
 
 	const attributedTo = `${config.url}/users/${note.userId}`;
 
-	const mentions = (
-		JSON.parse(note.mentionedRemoteUsers) as IMentionedRemoteUsers
-	).map((x) => x.uri);
-
+	let mentions: string[] = [];
+	try {
+		mentions = (
+			JSON.parse(note.mentionedRemoteUsers) as IMentionedRemoteUsers
+		)?.map((x) => x.uri);
+	} catch(e) {
+		console.log(e);
+	}
+	
 	let to: string[] = [];
 	let cc: string[] = [];
 

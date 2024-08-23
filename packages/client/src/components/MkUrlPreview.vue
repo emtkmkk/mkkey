@@ -247,7 +247,13 @@ onMounted(() => {
 		}
 	};
 
-	watch(tweetExpanded, () => {
+	// 初期化時にも checkIframeContent を実行
+	if (tweetExpanded) {
+		checkIframeContent();
+	}
+
+	// watch で tweetExpanded の変化を監視
+	watch($$(tweetExpanded), () => {
 		if (tweetExpanded) {
 			checkIframeContent();
 		}

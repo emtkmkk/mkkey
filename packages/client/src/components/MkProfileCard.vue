@@ -2,7 +2,7 @@
 	<MkModalWindow
 		ref="dialogEl"
 		:width="1000"
-		:height="600"
+		:height="900"
 		:scroll="false"
 		:withOkButton="false"
 		@close="cancel"
@@ -47,8 +47,8 @@
 							<template #caption>{{ i18n.ts._profileCardGen.nameDescription }}</template>
 						</MkInput>
 						<div style="margin-top: 1em" class="_buttons">
-							<MkButton :disabled="canvasLoading" @click="applyToPreview">{{ i18n.ts._profileCardGen.applyToPreview }}</MkButton>
-							<MkButton :disabled="canvasLoading" primary @click="generate">{{ i18n.ts._profileCardGen.generateImage }} <i class="ph-arrow-right ph-bold ph-lg"></i></MkButton>
+							<MkButton inline :disabled="canvasLoading" @click="applyToPreview">{{ i18n.ts._profileCardGen.applyToPreview }}</MkButton>
+							<MkButton inline :disabled="canvasLoading" primary @click="generate">{{ i18n.ts._profileCardGen.generateImage }} <i class="ph-arrow-right ph-bold ph-lg"></i></MkButton>
 						</div>
 					</div>
 				</div>
@@ -64,7 +64,7 @@
 							<MkButton rounded inline @click="note"><i class="ph-pencil ph-bold ph-lg"></i> {{ i18n.ts.note }}</MkButton>
 							<MkButton rounded inline @click="download"><i class="ph-download-simple ph-bold ph-lg"></i> {{ i18n.ts.download }}</MkButton>
 							<MkButton rounded inline @click="postToX"><i class="ph-x-logo ph-bold ph-lg"></i> {{ i18n.ts._profileCardGen.shareToX }}</MkButton>
-							<MkButton rounded inline v-if="shareAvailable()" @click="shareEtc"><i class="ph-share-network ph-bold ph-lg"></i> {{ i18n.ts._profileCardGen.share }}</MkButton>
+							<MkButton rounded inline v-if="shareAvailable() && canFileShareAvailable()" @click="shareEtc"><i class="ph-share-network ph-bold ph-lg"></i> {{ i18n.ts._profileCardGen.share }}</MkButton>
 						</div>
 						<div :class="$style.ProfileCardGenResultWarning">{{ i18n.ts._profileCardGen.shareWarning }}</div>
 						<div class="_buttons">
@@ -151,7 +151,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
     avatarShape: 'square',
     avatarPosition: { x: 32, y: 32 },
     avatarSize: { width: 190, height: 190 },
-    maxNameLength: 20,
+    maxNameLength: 40,
     nameStyle: {
       font: 'bold 48px "M PLUS Rounded 1c"',
       x: 256,
@@ -169,7 +169,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         style: {
           font: 'bold 20px "M PLUS Rounded 1c"',
           x: 1247,
-          y: 48,
+          y: 46,
           fillStyle: '#6E6E6E',
           alignRight: true,
         },
@@ -189,7 +189,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
           x: 466,
-          y: 299,
+          y: 303,
           fillStyle: '#E97979',
           alignRight: true,
         },
@@ -199,7 +199,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
           x: 754,
-          y: 296,
+          y: 303,
           fillStyle: '#E97979',
           alignRight: true,
         },
@@ -208,18 +208,18 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `${stats?.value?.averagePostCount?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
-          x: 1040,
-          y: 296,
+          x: 1041,
+          y: 303,
           fillStyle: '#E97979',
           alignRight: true,
         },
       },
       {
-        value: `${stats?.value?.powerRank} ${stats?.value?.rankPoint?.toLocaleString()}`,
+        value: `${stats?.value?.powerRank} ${stats?.value?.rankPower?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
           x: 670,
-          y: 416,
+          y: 417,
           fillStyle: '#E97979',
           alignRight: true,
         },
@@ -229,7 +229,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         style: {
           font: 'bold 24px "M PLUS Rounded 1c"',
           x: 1242,
-          y: 590,
+          y: 600,
           fillStyle: '#6E6E6E',
           alignRight: true,
         },
@@ -250,8 +250,6 @@ const bg = new Image();
 bg.crossOrigin = 'anonymous';
 const avatar = new Image();
 avatar.crossOrigin = 'anonymous';
-
-const fontFace = new FontFace('M PLUS Rounded 1c', 'url(https://fonts.gstatic.com/s/mplusrounded1c/v16/VdGBAYIAV6gnpUpoWwNkYvrugw9RuM064ZsPrfqk33YqOjLBxkUhdkeuqyIMwGYkDA.0.woff2)');
 
 function drawText(ctx: CanvasRenderingContext2D, text: string, style: TextStyle) {
   if (text.includes("undefined")) return;
@@ -403,12 +401,21 @@ function download() {
   a.remove();
 }
 
+function canFileShareAvailable() {
+	const file = result.value ? new File([result.value], `profile-card-${Date.now()}.png`) : undefined;
+	return navigator.canShare({
+		text: i18n.ts._profileCardGen.shareText,
+		url: `https://${host}/@${$i?.username}`,
+		files: file && navigator.canShare({files: [file]}) ? [file] : undefined,
+	})
+}
+
 function shareEtc() {
 	const file = result.value ? new File([result.value], `profile-card-${Date.now()}.png`) : undefined;
 	navigator.share({
 		text: i18n.ts._profileCardGen.shareText,
 		url: `https://${host}/@${$i?.username}`,
-		files: file && navigator.canShare({files: [file]}) ? [file] : [],
+		files: file && navigator.canShare({files: [file]}) ? [file] : undefined,
 	});
 }
 
@@ -443,7 +450,7 @@ async function note() {
   if (!file) return;
 
   os.post({
-    text: i18n.ts._profileCardGen.shareTextForLocal,
+    initialText: i18n.ts._profileCardGen.shareTextForLocal,
     initialFiles: [file],
     instant: true,
   });
@@ -457,10 +464,10 @@ onMounted(() => {
     style = document.createElement("style");
     style.id = "card-custom-font";
     document.head.appendChild(style);
+		style.innerHTML = `
+			@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@100;300;400;500;700;800;900&display=swap');
+		`;
   }
-  style.innerHTML = `
-    @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@100;300;400;500;700;800;900&display=swap');
-  `;
 
   if ($i) {
     os.api("users/stats", {
@@ -479,10 +486,12 @@ onMounted(() => {
 
 // $i と stats が揃ったかを確認する関数
 function checkCanvasReady() {
-  if ($i && stats.value) {
-    canvasReady.value = true;
-    initCanvas();
-  }
+	document.fonts.ready.then(() => {
+		if ($i && stats.value) {
+			canvasReady.value = true;
+			initCanvas();
+  	}
+	})
 }
 
 onDeactivated(() => {

@@ -153,7 +153,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
     avatarSize: { width: 190, height: 190 },
     maxNameLength: 20,
     nameStyle: {
-      font: 'bold 48px "roundedMplus1c"',
+      font: 'bold 48px "M PLUS Rounded 1c"',
       x: 256,
       y: 84,
       fillStyle: '#333333',
@@ -165,11 +165,11 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
     },
     embeddedValues: [
       {
-        value: `No.${stats?.userNo}`,
+        value: `No.${stats?.value?.userNo}`,
         style: {
-          font: 'bold 20px "roundedMplus1c"',
-          x: 636,
-          y: 36,
+          font: 'bold 20px "M PLUS Rounded 1c"',
+          x: 1252,
+          y: 48,
           fillStyle: '#6E6E6E',
           alignRight: true,
         },
@@ -177,9 +177,9 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
       {
         value: `@${$i?.username}`,
         style: {
-          font: 'bold 40px "roundedMplus1c"',
-          x: 252,
-          y: 168,
+          font: 'bold 40px "M PLUS Rounded 1c"',
+          x: 259,
+          y: 170,
           fillStyle: '#6E6E6E',
           alignRight: true,
         },
@@ -187,17 +187,17 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
       {
         value: `${Math.ceil((Date.now() - (new Date($i?.createdAt ?? "")?.getTime() ?? Date.now())) / (1000 * 60 * 60 * 24))?.toLocaleString()}`,
         style: {
-          font: 'bold 32px "roundedMplus1c"',
-          x: 469,
-          y: 296,
+          font: 'bold 32px "M PLUS Rounded 1c"',
+          x: 471,
+          y: 299,
           fillStyle: '#E97979',
           alignRight: true,
         },
       },
       {
-        value: `${$i?.postCount?.toLocaleString()}`,
+        value: `${$i?.notesCount?.toLocaleString()}`,
         style: {
-          font: 'bold 32px "roundedMplus1c"',
+          font: 'bold 32px "M PLUS Rounded 1c"',
           x: 759,
           y: 296,
           fillStyle: '#E97979',
@@ -205,9 +205,9 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         },
       },
       {
-        value: `${stats?.averagePostCount?.toLocaleString()}`,
+        value: `${stats?.value?.averagePostCount?.toLocaleString()}`,
         style: {
-          font: 'bold 32px "roundedMplus1c"',
+          font: 'bold 32px "M PLUS Rounded 1c"',
           x: 1045,
           y: 296,
           fillStyle: '#E97979',
@@ -215,10 +215,10 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         },
       },
       {
-        value: `${stats?.powerRank} ${stats?.rankPoint?.toLocaleString()}`,
+        value: `${stats?.value?.powerRank} ${stats?.value?.rankPoint?.toLocaleString()}`,
         style: {
-          font: 'bold 32px "roundedMplus1c"',
-          x: 665,
+          font: 'bold 32px "M PLUS Rounded 1c"',
+          x: 675,
           y: 416,
           fillStyle: '#E97979',
           alignRight: true,
@@ -227,9 +227,9 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
       {
         value: `https://${host}/@${$i?.username}`,
         style: {
-          font: 'bold 24px "roundedMplus1c"',
-          x: 1045,
-          y: 296,
+          font: 'bold 24px "M PLUS Rounded 1c"',
+          x: 1247,
+          y: 590,
           fillStyle: '#6E6E6E',
           alignRight: true,
         },
@@ -254,6 +254,7 @@ avatar.crossOrigin = 'anonymous';
 function drawText(ctx: CanvasRenderingContext2D, text: string, style: TextStyle) {
   ctx.font = style.font;
   ctx.fillStyle = style.fillStyle;
+	ctx.textBaseline = "top";
 
   if (style.alignRight) {
     // 右揃えの場合、テキストの右端を基準に描画
@@ -281,7 +282,7 @@ async function initCanvas() {
 
   function loadBg() {
     return new Promise<void>((resolve) => {
-      bg.addEventListener('load', () => {
+      bg.addEventListener('load', () => {                                 
         canvas!.width = backgroundImage.size.width;
         canvas!.height = backgroundImage.size.height;
         ctx!.drawImage(bg, 0, 0, backgroundImage.size.width, backgroundImage.size.height);
@@ -303,8 +304,8 @@ async function initCanvas() {
 
         ctx!.drawImage(
           avatar,
-          avatarPosition.x - avatarSize.width / 2,
-          avatarPosition.y - avatarSize.height / 2,
+          avatarPosition.x,
+          avatarPosition.y,
           avatarSize.width,
           avatarSize.height
         );

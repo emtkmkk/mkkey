@@ -78,10 +78,10 @@ export function openHelpMenu_(ev: MouseEvent) {
 				: undefined,
 			{
 				type: "button",
-				text: i18n.ts._apps.apps,
-				icon: "ph-device-mobile ph-bold ph-lg",
+				text: i18n.ts.mkkeyOfuse,
+				icon: "ph-piggy-bank ph-bold ph-lg",
 				action: () => {
-					window.open("https://calckey.org/apps", "_blank");
+					window.open("https://ofuse.me/mkkey", "_blank");
 				},
 			} as MenuButton,
 			{

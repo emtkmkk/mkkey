@@ -42,11 +42,11 @@
 							<option v-for="(value, key) in canvasTemplates" :key="key" :value="key">{{value.name ?? key}}</option>
 						</MkSelect>
 						<div :class="$style.caption" v-if="canvasSettings.author">{{ `${canvasSettings.author ? `テンプレートの作者: ` + canvasSettings.author : ""}` }}<br>{{ `新しいテンプレートを常に募集中です！` }}</div>
-						<MkInput style="margin-top: 0.25em" v-model="name" :disabled="canvasLoading">
+						<MkInput style="margin-top: 1em" v-model="name" :disabled="canvasLoading">
 							<template #label>{{ i18n.ts.name }}</template>
 							<template #caption>{{ i18n.ts._profileCardGen.nameDescription }}</template>
 						</MkInput>
-						<div style="margin-top: 0.25em" class="_buttons">
+						<div style="margin-top: 1em" class="_buttons">
 							<MkButton :disabled="canvasLoading" @click="applyToPreview">{{ i18n.ts._profileCardGen.applyToPreview }}</MkButton>
 							<MkButton :disabled="canvasLoading" primary @click="generate">{{ i18n.ts._profileCardGen.generateImage }} <i class="ph-arrow-right ph-bold ph-lg"></i></MkButton>
 						</div>
@@ -160,7 +160,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
       alignRight: false,
     },
     backgroundImage: {
-      url: 'https://static-assets/cards/simple-card.png',
+      url: `https://${host}/static-assets/cards/simple-card.png`,
       size: { width: 1280, height: 670 },
     },
     embeddedValues: [
@@ -432,7 +432,7 @@ async function note() {
   if (!file) return;
 
   os.post({
-    text: i18n.ts._profileCardGen.shareText({ url: `https://${host}/@${$i?.username}` }),
+    text: i18n.ts._profileCardGen.shareTextTo({ url: `https://${host}/@${$i?.username}` }),
     initialFiles: [file],
     instant: true,
   });

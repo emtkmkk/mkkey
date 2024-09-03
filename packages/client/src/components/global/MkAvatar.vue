@@ -12,6 +12,7 @@
 		@click="onClick"
 	>
 		<img
+			crossOrigin="anonymous"
 			v-if="
 				!errorIcon
 			"
@@ -47,6 +48,7 @@
 		@click.stop="showAvatar"
 	>
 		<img
+			crossOrigin="anonymous"
 			v-if="
 				!errorIcon
 			"

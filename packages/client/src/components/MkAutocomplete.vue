@@ -14,6 +14,7 @@
 				@keydown="onKeydown"
 			>
 				<img
+					crossOrigin="anonymous"
 					class="avatar"
 					:src="defaultStore.state.hiddenIconUserIds?.includes(user.id) ? `${config.url}/avatar-alt/@${acct(user)}` : user.avatarUrl"
 				/>

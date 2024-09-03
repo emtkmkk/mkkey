@@ -24,6 +24,7 @@
 				</p>
 				<footer>
 					<img
+						crossOrigin="anonymous"
 						class="icon"
 						:src="defaultStore.state.hiddenIconUserIds?.includes(page.user.id) ? `${config.url}/avatar-alt/@${acct(page.user)}` : page.user.avatarUrl"
 						aria-label="none"

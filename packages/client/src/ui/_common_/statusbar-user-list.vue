@@ -9,6 +9,7 @@
 				>
 					<span v-for="note in notes" :key="note.id" class="item">
 						<img
+							crossOrigin="anonymous"
 							class="avatar"
 							:src="defaultStore.state.hiddenIconUserIds?.includes(note.user.id) ? `${config.url}/avatar-alt/@${acct(note.user)}` : note.user.avatarUrl"
 							decoding="async"

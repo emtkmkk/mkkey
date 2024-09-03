@@ -41,13 +41,12 @@
 							<template #label>テンプレートを選択</template>
 							<option v-for="(value, key) in canvasTemplates" :key="key" :value="key">{{value.name ?? key}}</option>
 						</MkSelect>
-						<div :class="$style.caption" v-if="canvasSettings.author">{{ canvasSettings.author ? `テンプレートの作者: ` + canvasSettings.author : "" }}</div>
-						<div :class="$style.caption">{{ "新しいテンプレートを常に募集中です！" }}</div>
-						<MkInput v-model="name" :disabled="canvasLoading">
+						<div :class="$style.caption" v-if="canvasSettings.author">{{ `${canvasSettings.author ? `テンプレートの作者: ` + canvasSettings.author : ""}` }}<br>{{ `新しいテンプレートを常に募集中です！` }}</div>
+						<MkInput style="margin-top: 0.25em" v-model="name" :disabled="canvasLoading">
 							<template #label>{{ i18n.ts.name }}</template>
 							<template #caption>{{ i18n.ts._profileCardGen.nameDescription }}</template>
 						</MkInput>
-						<div class="_buttons">
+						<div style="margin-top: 0.25em" class="_buttons">
 							<MkButton :disabled="canvasLoading" @click="applyToPreview">{{ i18n.ts._profileCardGen.applyToPreview }}</MkButton>
 							<MkButton :disabled="canvasLoading" primary @click="generate">{{ i18n.ts._profileCardGen.generateImage }} <i class="ph-arrow-right ph-bold ph-lg"></i></MkButton>
 						</div>
@@ -61,14 +60,14 @@
 							<div :class="$style.ProfileCardGenResultDescription">{{ i18n.ts._profileCardGen.imageGeneratedDescription }}</div>
 						</div>
 						<img v-if="resultUrl" :class="$style.ProfileCardGenResultImage" :src="resultUrl" alt="Generated image"/>
-						<div class="_buttonsCenter">
+						<div class="_buttons">
 							<MkButton rounded @click="note"><i class="ph-pencil ph-bold ph-lg"></i> {{ i18n.ts.note }}</MkButton>
 							<MkButton rounded @click="download"><i class="ph-download-simple ph-bold ph-lg"></i> {{ i18n.ts.download }}</MkButton>
 							<MkButton rounded @click="postToX"><i class="ph-x-logo ph-bold ph-lg"></i> {{ i18n.ts._profileCardGen.shareToX }}</MkButton>
 							<MkButton rounded v-if="shareAvailable()" @click="share"><i class="ph-share-network ph-bold ph-lg"></i> {{ i18n.ts._profileCardGen.share }}</MkButton>
 						</div>
 						<div :class="$style.ProfileCardGenResultWarning">{{ i18n.ts._profileCardGen.shareWarning }}</div>
-						<div class="_buttonsCenter">
+						<div class="_buttons">
 							<MkButton rounded transparent @click="returnToInput"><i class="ph-arrow-left ph-bold ph-lg"></i> {{ i18n.ts.goBack }}</MkButton>
 							<MkButton rounded transparent @click="closeAndNotShowAgain">{{ i18n.ts.close }}</MkButton>
 						</div>
@@ -144,8 +143,6 @@ const canvasEl = shallowRef<HTMLCanvasElement>();
 const canvasLoading = ref(true);
 
 const name = ref($i?.name ?? $i?.username ?? "");
-
-const fontFace = new FontFace('roundedMplus1c', 'url(https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@100;300;400;500;700;800;900&display=swap)');
 
 const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
   default: {
@@ -277,13 +274,10 @@ async function initCanvas() {
 
   canvasLoading.value = true;
 
-  await fontFace.load();
-  document.fonts.add(fontFace);
-
   const { backgroundImage, avatarShape, avatarPosition, avatarSize, nameStyle, embeddedValues } = canvasSettings.value;
 
   function loadBg() {
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve) => {
       bg.addEventListener('load', () => {
         canvas!.width = backgroundImage.size.width;
         canvas!.height = backgroundImage.size.height;
@@ -295,26 +289,27 @@ async function initCanvas() {
   }
 
   function loadAvatar() {
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve) => {
       avatar.addEventListener('load', () => {
         if (avatarShape === 'circle') {
-					ctx!.save();
-					ctx!.beginPath();
-					ctx!.arc(avatarPosition.x, avatarPosition.y, avatarSize.width / 2, 0, Math.PI * 2);
-					ctx!.clip();
-				}
+          ctx!.save();
+          ctx!.beginPath();
+          ctx!.arc(avatarPosition.x, avatarPosition.y, avatarSize.width / 2, 0, Math.PI * 2);
+          ctx!.clip();
+        }
 
-				ctx!.drawImage(
-					avatar,
-					avatarPosition.x - avatarSize.width / 2,
-					avatarPosition.y - avatarSize.height / 2,
-					avatarSize.width,
-					avatarSize.height
-				);
+        ctx!.drawImage(
+          avatar,
+          avatarPosition.x - avatarSize.width / 2,
+          avatarPosition.y - avatarSize.height / 2,
+          avatarSize.width,
+          avatarSize.height
+        );
+
         if (avatarShape === 'circle') ctx!.restore();
         resolve();
       });
-      avatar.src = $i.avatarUrl ?? '/static-assets/avatar.png';
+      avatar.src = $i?.avatarUrl ?? '/static-assets/avatar.png';
     });
   }
 
@@ -445,6 +440,16 @@ async function note() {
 //#endregion
 
 onMounted(() => {
+	// フォントをインポート
+  let style = document.getElementById("card-custom-font");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "card-custom-font";
+    document.head.appendChild(style);
+  }
+  style.innerHTML = `
+    @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@100;300;400;500;700;800;900&display=swap');
+  `;
   if ($i) {
     os.api("users/stats", {
       userId: $i.id,

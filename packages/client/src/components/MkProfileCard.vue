@@ -266,6 +266,9 @@ function drawText(ctx: CanvasRenderingContext2D, text: string, style: TextStyle)
 }
 
 async function initCanvas() {
+	//設定を再読み込み
+	canvasSettings.value = canvasTemplates[currentTemplate.value];
+
   const canvas = canvasEl.value;
   if (!canvas) return;
 
@@ -432,7 +435,7 @@ async function note() {
   if (!file) return;
 
   os.post({
-    text: i18n.ts._profileCardGen.shareTextTo({ url: `https://${host}/@${$i?.username}` }),
+    text: i18n.ts._profileCardGen.shareTextForLocal({ url: `https://${host}/@${$i?.username}` }),
     initialFiles: [file],
     instant: true,
   });

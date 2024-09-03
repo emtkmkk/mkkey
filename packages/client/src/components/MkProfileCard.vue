@@ -249,7 +249,6 @@ function switchCanvasTemplate() {
 const bg = new Image();
 bg.crossOrigin = 'anonymous';
 const avatar = new Image();
-avatar.crossOrigin = 'anonymous';
 
 function drawText(ctx: CanvasRenderingContext2D, text: string, style: TextStyle) {
   if (text.includes("undefined")) return;
@@ -315,8 +314,6 @@ async function initCanvas() {
         if (avatarShape === 'circle') ctx!.restore();
         resolve();
       });
-			avatar.crossOrigin = 'anonymous';
-			
       avatar.src = `${$i?.avatarUrl}` ?? '/static-assets/avatar.png';
     });
   }

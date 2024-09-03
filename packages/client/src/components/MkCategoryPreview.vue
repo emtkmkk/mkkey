@@ -24,7 +24,6 @@
 				</p>
 				<footer>
 					<img
-						crossOrigin="anonymous"
 						class="icon"
 						:src="defaultStore.state.hiddenIconUserIds?.includes(category.user.id) ? `${config.url}/avatar-alt/@${acct(category.user)}` : category.user.avatarUrl"
 						aria-label="none"

@@ -2,7 +2,7 @@
 	<MkModalWindow
 		ref="dialogEl"
 		:width="1000"
-		:height="900"
+		:height="800"
 		:scroll="false"
 		:withOkButton="false"
 		@close="cancel"
@@ -175,7 +175,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         },
       },
       {
-        value: `@${$i?.username}`,
+        value: `@${$i?.username}@${host}`,
         style: {
           font: 'bold 40px "M PLUS Rounded 1c"',
           x: 260,
@@ -208,18 +208,18 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `${stats?.value?.averagePostCount?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
-          x: 1041,
+          x: 1043,
           y: 303,
           fillStyle: '#E97979',
           alignRight: true,
         },
       },
       {
-        value: `${stats?.value?.powerRank} ${stats?.value?.rankPower?.toLocaleString()}`,
+        value: `${stats?.value?.powerRank} ${stats?.value?.power?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
           x: 670,
-          y: 417,
+          y: 419,
           fillStyle: '#E97979',
           alignRight: true,
         },
@@ -229,7 +229,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         style: {
           font: 'bold 24px "M PLUS Rounded 1c"',
           x: 1242,
-          y: 600,
+          y: 610,
           fillStyle: '#6E6E6E',
           alignRight: true,
         },
@@ -525,7 +525,7 @@ onDeactivated(() => {
 .ProfileCardGenInputRoot {
 	height: 100%;
 	display: grid;
-	grid-template-columns: 1fr 400px;
+	grid-template-columns: 1fr 600px;
 }
 
 .ProfileCardGenPreviewRoot {

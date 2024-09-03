@@ -86,6 +86,7 @@ import { defaultStore } from '@/store';
 import * as os from '@/os';
 import { $i } from "@/account";
 import { shareAvailable } from "@/scripts/share-available";
+import { getProxiedImageUrlNullable } from "@/scripts/media-proxy";
 
 import MkSelect from "@/components/form/select.vue";
 import MkButton from "@/components/MkButton.vue";
@@ -315,7 +316,7 @@ async function initCanvas() {
         if (avatarShape === 'circle') ctx!.restore();
         resolve();
       });
-      avatar.src = `${$i?.avatarUrl}` ?? '/static-assets/avatar.png';
+      avatar.src = getProxiedImageUrlNullable(`${$i?.avatarUrl}`) ?? '/static-assets/avatar.png';
     });
   }
 

@@ -175,7 +175,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         },
       },
       {
-        value: `@${$i?.username}`,
+        value: `@${$i?.username}@${host}`,
         style: {
           font: 'bold 40px "M PLUS Rounded 1c"',
           x: 260,
@@ -208,14 +208,14 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `${stats?.value?.averagePostCount?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
-          x: 1041,
+          x: 1043,
           y: 303,
           fillStyle: '#E97979',
           alignRight: true,
         },
       },
       {
-        value: `${stats?.value?.powerRank} ${stats?.value?.rankPower?.toLocaleString()}`,
+        value: `${stats?.value?.powerRank} ${stats?.value?.power?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
           x: 670,
@@ -229,7 +229,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         style: {
           font: 'bold 24px "M PLUS Rounded 1c"',
           x: 1242,
-          y: 600,
+          y: 610,
           fillStyle: '#6E6E6E',
           alignRight: true,
         },

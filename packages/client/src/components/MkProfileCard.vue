@@ -315,11 +315,13 @@ async function initCanvas() {
         if (avatarShape === 'circle') ctx!.restore();
         resolve();
       });
-      avatar.src = $i?.avatarUrl ?? '/static-assets/avatar.png';
+			avatar.crossOrigin = 'anonymous';
+      avatar.src = `${$i?.avatarUrl}&` ?? '/static-assets/avatar.png';
     });
   }
 
 	await document.fonts.ready;
+	await document.fonts.load('bold 32px "M PLUS Rounded 1c"');
 
   await loadBg();
   await loadAvatar();
@@ -486,7 +488,7 @@ onMounted(() => {
 
 // $i と stats が揃ったかを確認する関数
 function checkCanvasReady() {
-	document.fonts.ready.then(() => {
+	document.fonts.load('bold 32px "M PLUS Rounded 1c"').then(() => {
 		if ($i && stats.value) {
 			canvasReady.value = true;
 			initCanvas();

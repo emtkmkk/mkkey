@@ -147,7 +147,7 @@ const name = ref($i?.name ?? $i?.username ?? "");
 
 const fontFace = new FontFace('roundedMplus1c', 'url(https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@100;300;400;500;700;800;900&display=swap)');
 
-const canvasTemplates: Record<string, CanvasTemplate> = {
+const canvasTemplates: Record<string, CanvasTemplate> = $computed({
   default: {
 		name: "シンプル",
 		author: "@magi@minazukey.uk",
@@ -188,7 +188,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = {
         },
       },
       {
-        value: `${Math.ceil((Date.now() - (new Date($i?.createdAt ?? "")?.getTime() ?? Date.now())) / (1000 * 60 * 60 * 24)).toLocaleString()}`,
+        value: `${Math.ceil((Date.now() - (new Date($i?.createdAt ?? "")?.getTime() ?? Date.now())) / (1000 * 60 * 60 * 24))?.toLocaleString()}`,
         style: {
           font: 'bold 32px "roundedMplus1c"',
           x: 469,
@@ -198,7 +198,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = {
         },
       },
       {
-        value: `${$i?.postCount.toLocaleString()}`,
+        value: `${$i?.postCount?.toLocaleString()}`,
         style: {
           font: 'bold 32px "roundedMplus1c"',
           x: 759,
@@ -208,7 +208,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = {
         },
       },
       {
-        value: `${stats?.averagePostCount.toLocaleString()}`,
+        value: `${stats?.averagePostCount?.toLocaleString()}`,
         style: {
           font: 'bold 32px "roundedMplus1c"',
           x: 1045,
@@ -218,7 +218,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = {
         },
       },
       {
-        value: `${stats?.powerRank} ${stats.rankPoint.toLocaleString()}`,
+        value: `${stats?.powerRank} ${stats?.rankPoint?.toLocaleString()}`,
         style: {
           font: 'bold 32px "roundedMplus1c"',
           x: 665,
@@ -239,7 +239,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = {
       },
     ],
   },
-};
+});
 
 const currentTemplate = ref('default'); // 初期テンプレートを設定
 const canvasSettings = ref(canvasTemplates[currentTemplate.value]); // 初期設定を適用

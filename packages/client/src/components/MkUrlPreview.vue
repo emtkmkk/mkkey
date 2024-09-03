@@ -173,6 +173,8 @@ const requestUrl = new URL(props.url);
 if (!["http:", "https:"].includes(requestUrl.protocol))
 	throw new Error("invalid url");
 
+let tweet = ""
+
 if (
 	requestUrl.hostname === "twitter.com" ||
 	requestUrl.hostname === "mobile.twitter.com" ||
@@ -180,7 +182,7 @@ if (
 	requestUrl.hostname === "mobile.x.com"
 ) {
 	const m = requestUrl.pathname.match(/^\/.+\/status(?:es)?\/(\d+)/);
-	if (m) tweetId = m[1];
+	if (m) tweet = m[1];
 }
 
 if (
@@ -209,6 +211,9 @@ fetch(
 		fetching = false;
 		player = info.player;
 	});
+	if (title !== "X") {
+		tweetId = tweet;
+	}
 });
 
 function adjustTweetHeight(message: any) {

@@ -98,12 +98,14 @@ const hide = ref(
 
 async function show() {
 	if (props.video.isSensitive && defaultStore.state.openPopupNsfwToCarrior && isMobileData()) {
-		const ret = await os.yesno({type: "warning", title: "センシティブメディアを表示しようとしています。\n本当に開きますか？"})
+		const ret = await os.yesno({type: "warning", text: "センシティブメディアを表示しようとしています。\n本当に開きますか？"})
 		if (ret.canceled) {
 			return;
 		}
+		hide.value = false;
+	} else {
+		hide.value = false;
 	}
-	hide.value = false;
 }
 </script>
 

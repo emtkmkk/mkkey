@@ -97,9 +97,8 @@ async function show() {
 		const ret = await os.yesno({type: "warning", text: "センシティブメディアを表示しようとしています。\n本当に開きますか？"})
 		if (ret.canceled) {
 			return;
-		} else {
-			hide = false;
 		}
+		hide = false;
 	} else {
 		hide = false;
 	}

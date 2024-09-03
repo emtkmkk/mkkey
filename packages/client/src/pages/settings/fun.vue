@@ -40,7 +40,7 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormFolder class="_formBlock">
+			<FormFolder v-if="powerMode" class="_formBlock">
 				<template #label>{{ i18n.ts.powerModeOption }}</template>
 				<FormRange
 					v-if="powerMode"
@@ -307,6 +307,7 @@ import { defaultStore } from "@/store";
 import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
 import { deepClone } from "@/scripts/clone";
+import FormFolder from "@/components/form/folder.vue";
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;

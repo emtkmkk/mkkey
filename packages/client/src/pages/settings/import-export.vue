@@ -236,7 +236,7 @@
 					{{ i18n.ts.export }}</MkButton
 				>
 			</FormFolder>
-			<FormFolder class="_formBlock">
+			<FormFolder v-if="false" class="_formBlock">
 				<template #label>{{ i18n.ts.import }}</template>
 				<template #icon
 					><i class="ph-upload-simple ph-bold ph-lg"></i

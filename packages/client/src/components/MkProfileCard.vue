@@ -59,17 +59,17 @@
 							<div :class="$style.ProfileCardGenResultHeading">{{ i18n.ts._profileCardGen.imageGenerated }}</div>
 							<div :class="$style.ProfileCardGenResultDescription">{{ i18n.ts._profileCardGen.imageGeneratedDescription }}</div>
 						</div>
-						<img v-if="resultUrl" :class="$style.ProfileCardGenResultImage" :src="resultUrl" alt="Generated image"/>
-						<div class="_buttons">
-							<MkButton rounded @click="note"><i class="ph-pencil ph-bold ph-lg"></i> {{ i18n.ts.note }}</MkButton>
-							<MkButton rounded @click="download"><i class="ph-download-simple ph-bold ph-lg"></i> {{ i18n.ts.download }}</MkButton>
-							<MkButton rounded @click="postToX"><i class="ph-x-logo ph-bold ph-lg"></i> {{ i18n.ts._profileCardGen.shareToX }}</MkButton>
-							<MkButton rounded v-if="shareAvailable()" @click="share"><i class="ph-share-network ph-bold ph-lg"></i> {{ i18n.ts._profileCardGen.share }}</MkButton>
+						<img style="margin-top: 1em" v-if="resultUrl" :class="$style.ProfileCardGenResultImage" :src="resultUrl" alt="Generated image"/>
+						<div style="margin-top: 1em" class="_buttons">
+							<MkButton rounded inline @click="note"><i class="ph-pencil ph-bold ph-lg"></i> {{ i18n.ts.note }}</MkButton>
+							<MkButton rounded inline @click="download"><i class="ph-download-simple ph-bold ph-lg"></i> {{ i18n.ts.download }}</MkButton>
+							<MkButton rounded inline @click="postToX"><i class="ph-x-logo ph-bold ph-lg"></i> {{ i18n.ts._profileCardGen.shareToX }}</MkButton>
+							<MkButton rounded inline v-if="shareAvailable()" @click="shareEtc"><i class="ph-share-network ph-bold ph-lg"></i> {{ i18n.ts._profileCardGen.share }}</MkButton>
 						</div>
 						<div :class="$style.ProfileCardGenResultWarning">{{ i18n.ts._profileCardGen.shareWarning }}</div>
 						<div class="_buttons">
-							<MkButton rounded transparent @click="returnToInput"><i class="ph-arrow-left ph-bold ph-lg"></i> {{ i18n.ts.goBack }}</MkButton>
-							<MkButton rounded transparent @click="closeAndNotShowAgain">{{ i18n.ts.close }}</MkButton>
+							<MkButton rounded inline transparent @click="returnToInput"><i class="ph-arrow-left ph-bold ph-lg"></i> {{ i18n.ts.goBack }}</MkButton>
+							<MkButton rounded inline transparent @click="closeAndNotShowAgain">{{ i18n.ts.close }}</MkButton>
 						</div>
 					</div>
 				</div>
@@ -92,7 +92,7 @@ import MkButton from "@/components/MkButton.vue";
 import MkInput from '@/components/form/input.vue';
 import MkModalWindow from "@/components/MkModalWindow.vue";
 
-const stats = ref<any>({});
+const stats = ref<any>(null);
 const canvasReady = ref(false); // キャンバスを描画して良いかどうかのフラグ
 
 // TypeScript 型定義
@@ -168,7 +168,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `No.${stats?.value?.userNo}`,
         style: {
           font: 'bold 20px "M PLUS Rounded 1c"',
-          x: 1252,
+          x: 1247,
           y: 48,
           fillStyle: '#6E6E6E',
           alignRight: true,
@@ -178,17 +178,17 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `@${$i?.username}`,
         style: {
           font: 'bold 40px "M PLUS Rounded 1c"',
-          x: 259,
+          x: 260,
           y: 170,
           fillStyle: '#6E6E6E',
-          alignRight: true,
+          alignRight: false,
         },
       },
       {
         value: `${Math.ceil((Date.now() - (new Date($i?.createdAt ?? "")?.getTime() ?? Date.now())) / (1000 * 60 * 60 * 24))?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
-          x: 471,
+          x: 466,
           y: 299,
           fillStyle: '#E97979',
           alignRight: true,
@@ -198,7 +198,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `${$i?.notesCount?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
-          x: 759,
+          x: 754,
           y: 296,
           fillStyle: '#E97979',
           alignRight: true,
@@ -208,7 +208,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `${stats?.value?.averagePostCount?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
-          x: 1045,
+          x: 1040,
           y: 296,
           fillStyle: '#E97979',
           alignRight: true,
@@ -218,7 +218,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `${stats?.value?.powerRank} ${stats?.value?.rankPoint?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
-          x: 675,
+          x: 670,
           y: 416,
           fillStyle: '#E97979',
           alignRight: true,
@@ -228,7 +228,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `https://${host}/@${$i?.username}`,
         style: {
           font: 'bold 24px "M PLUS Rounded 1c"',
-          x: 1247,
+          x: 1242,
           y: 590,
           fillStyle: '#6E6E6E',
           alignRight: true,
@@ -251,8 +251,11 @@ bg.crossOrigin = 'anonymous';
 const avatar = new Image();
 avatar.crossOrigin = 'anonymous';
 
+const fontFace = new FontFace('M PLUS Rounded 1c', 'url(https://fonts.gstatic.com/s/mplusrounded1c/v16/VdGBAYIAV6gnpUpoWwNkYvrugw9RuM064ZsPrfqk33YqOjLBxkUhdkeuqyIMwGYkDA.0.woff2)');
+
 function drawText(ctx: CanvasRenderingContext2D, text: string, style: TextStyle) {
-  ctx.font = style.font;
+  if (text.includes("undefined")) return;
+	ctx.font = style.font;
   ctx.fillStyle = style.fillStyle;
 	ctx.textBaseline = "top";
 
@@ -267,6 +270,7 @@ function drawText(ctx: CanvasRenderingContext2D, text: string, style: TextStyle)
 }
 
 async function initCanvas() {
+	if (!stats) return
 	//設定を再読み込み
 	canvasSettings.value = canvasTemplates[currentTemplate.value];
 
@@ -316,6 +320,8 @@ async function initCanvas() {
       avatar.src = $i?.avatarUrl ?? '/static-assets/avatar.png';
     });
   }
+
+	await document.fonts.ready;
 
   await loadBg();
   await loadAvatar();
@@ -381,7 +387,7 @@ async function generate() {
 
 function postToX() {
   const url = new URL('https://x.com/intent/tweet');
-  url.searchParams.set('text', i18n.ts._profileCardGen.shareTextForX({ url: `https://${host}/@${$i?.username}` }));
+  url.searchParams.set('text', i18n.t("_profileCardGen.shareTextForX", { url: `https://${host}/@${$i?.username}` }));
   url.searchParams.set('url', '');
 
   window.open(url.toString(), '_blank', 'noopener,noreferrer');
@@ -397,11 +403,12 @@ function download() {
   a.remove();
 }
 
-function share() {
+function shareEtc() {
+	const file = result.value ? new File([result.value], `profile-card-${Date.now()}.png`) : undefined;
 	navigator.share({
 		text: i18n.ts._profileCardGen.shareText,
 		url: `https://${host}/@${$i?.username}`,
-		files: result.value ? [new File([result.value], `profile-card-${Date.now()}.png`)] : undefined,
+		files: file && navigator.canShare({files: [file]}) ? [file] : [],
 	});
 }
 
@@ -436,7 +443,7 @@ async function note() {
   if (!file) return;
 
   os.post({
-    text: i18n.ts._profileCardGen.shareTextForLocal({ url: `https://${host}/@${$i?.username}` }),
+    text: i18n.ts._profileCardGen.shareTextForLocal,
     initialFiles: [file],
     instant: true,
   });
@@ -454,6 +461,7 @@ onMounted(() => {
   style.innerHTML = `
     @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@100;300;400;500;700;800;900&display=swap');
   `;
+
   if ($i) {
     os.api("users/stats", {
       userId: $i.id,
@@ -601,7 +609,7 @@ onDeactivated(() => {
 }
 
 .ProfileCardGenResultImage {
-	width: auto;
+	width: 100%;
 	height: auto;
 	min-height: 0;
 	object-fit: contain;

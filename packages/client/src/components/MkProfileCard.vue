@@ -147,7 +147,7 @@ const name = ref($i?.name ?? $i?.username ?? "");
 
 const fontFace = new FontFace('roundedMplus1c', 'url(https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@100;300;400;500;700;800;900&display=swap)');
 
-const canvasTemplates: Record<string, CanvasTemplate> = $computed({
+const canvasTemplates: Record<string, CanvasTemplate> = $computed(({
   default: {
 		name: "シンプル",
 		author: "@magi@minazukey.uk",
@@ -239,7 +239,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed({
       },
     ],
   },
-});
+}));
 
 const currentTemplate = ref('default'); // 初期テンプレートを設定
 const canvasSettings = ref(canvasTemplates[currentTemplate.value]); // 初期設定を適用

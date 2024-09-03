@@ -1,5 +1,5 @@
 <template>
-	<button v-if="hide" class="qjewsnkg" @click="show">
+	<button v-if="hide" class="qjewsnkg" @click.stop="show">
 		<ImgWithBlurhash
 			class="bg"
 			:hash="image.blurhash"
@@ -94,12 +94,15 @@ const url =
 	
 async function show() {
 	if (props.image.isSensitive && defaultStore.state.openPopupNsfwToCarrior && isMobileData()) {
-		const ret = await os.yesno({type: "warning", title: "センシティブメディアを表示しようとしています。\n本当に開きますか？"})
+		const ret = await os.yesno({type: "warning", text: "センシティブメディアを表示しようとしています。\n本当に開きますか？"})
 		if (ret.canceled) {
 			return;
+		} else {
+			hide = false;
 		}
+	} else {
+		hide = false;
 	}
-	hide = false;
 }
 
 // Plugin:register_note_view_interruptor を使って書き換えられる可能性があるためwatchする

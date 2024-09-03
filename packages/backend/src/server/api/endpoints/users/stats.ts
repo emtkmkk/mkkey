@@ -244,6 +244,15 @@ export default define(meta, paramDef, async (ps, me) => {
 			.cache(CACHE_TIME)
 			.getCount(),
 		awaitAll({
+			userNo: !user.host ? (await Users.createQueryBuilder("user")
+				.select("count(user.id) count")
+				.where("user.host IS NULL")
+				.andWhere("user.createdAt <= :borderDate", {
+					borderDate: new Date(user.createdAt).toISOString(),
+				})
+				.cache(CACHE_TIME * 100)
+				.getRawOne()
+			).count + 1 : undefined,
 			notesCount: Notes.createQueryBuilder("note")
 				.where("note.userId = :userId", { userId: user.id })
 				.andWhere("note.visibility <> 'specified'")

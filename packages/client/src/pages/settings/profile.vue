@@ -211,11 +211,13 @@
 		<div v-if="saveButton == true">
 			<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 		</div>
+		
+		<MkButton @click="profileCard">{{ i18n.ts._profileCardGen.title }}</MkButton>
 	</div>
 </template>
 
 <script lang="ts" setup>
-import { reactive, watch, onMounted } from "vue";
+import { reactive, watch, onMounted, defineAsyncComponent } from "vue";
 import MkButton from "@/components/MkButton.vue";
 import FormInput from "@/components/form/input.vue";
 import FormTextarea from "@/components/form/textarea.vue";
@@ -379,6 +381,16 @@ function changeBanner(ev) {
 const headerActions = $computed(() => []);
 
 const headerTabs = $computed(() => []);
+
+function profileCard() {
+	if ($i) {
+		const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkProfileCard.vue')), {}, {
+			closed: () => {
+				dispose();
+			},
+		});
+	}
+}
 
 definePageMetadata({
 	title: i18n.ts.profile,

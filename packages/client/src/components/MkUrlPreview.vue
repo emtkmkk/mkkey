@@ -210,10 +210,10 @@ fetch(
 		sitename = info.sitename;
 		fetching = false;
 		player = info.player;
+		if (title !== "X") {
+			tweetId = tweet;
+		}
 	});
-	if (title !== "X") {
-		tweetId = tweet;
-	}
 });
 
 function adjustTweetHeight(message: any) {

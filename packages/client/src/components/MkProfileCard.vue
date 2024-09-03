@@ -316,7 +316,8 @@ async function initCanvas() {
         resolve();
       });
 			avatar.crossOrigin = 'anonymous';
-      avatar.src = `${$i?.avatarUrl}&` ?? '/static-assets/avatar.png';
+			
+      avatar.src = `${$i?.avatarUrl}` ?? '/static-assets/avatar.png';
     });
   }
 

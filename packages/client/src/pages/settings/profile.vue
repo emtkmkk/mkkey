@@ -265,6 +265,16 @@ const showMkkeySettingTips = $computed(
 );
 
 onMounted(() => {
+	// フォントをインポート
+  let style = document.getElementById("card-custom-font");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "card-custom-font";
+    document.head.appendChild(style);
+		style.innerHTML = `
+			@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@100;300;400;500;700;800;900&display=swap');
+		`;
+	}
 	new Autocomplete(nameareaEl, $$(profile.name));
 	new Autocomplete(descriptionareaEl, $$(profile.description));
 });

@@ -2,7 +2,7 @@
 	<MkModalWindow
 		ref="dialogEl"
 		:width="1000"
-		:height="900"
+		:height="800"
 		:scroll="false"
 		:withOkButton="false"
 		@close="cancel"
@@ -219,7 +219,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
           x: 670,
-          y: 417,
+          y: 419,
           fillStyle: '#E97979',
           alignRight: true,
         },
@@ -523,7 +523,7 @@ onDeactivated(() => {
 .ProfileCardGenInputRoot {
 	height: 100%;
 	display: grid;
-	grid-template-columns: 1fr 400px;
+	grid-template-columns: 1fr 600px;
 }
 
 .ProfileCardGenPreviewRoot {

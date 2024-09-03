@@ -13,97 +13,6 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormRange
-				v-if="powerMode"
-				v-model="powerModeParticleCount"
-				:min="0"
-				:max="powerModeParticleCount >= 20 ? (Math.floor(powerModeParticleCount / 10) + 1) * 10 : 20"
-				:step="1"
-				easing
-				class="_formBlock"
-			>
-				<template #label
-					>{{ i18n.ts.powerModeParticleCount }}</template
-				>
-			</FormRange>
-			<FormRange
-				v-if="powerMode"
-				v-model="powerModeParticleSize"
-				:min="0"
-				:max="powerModeParticleSize >= 6 ? (Math.floor(powerModeParticleSize / 3) + 1) * 3 : 6"
-				:step="1"
-				easing
-				class="_formBlock"
-			>
-				<template #label
-					>{{ i18n.ts.powerModeParticleSize }}</template
-				>
-			</FormRange>
-			<FormRange
-				v-if="powerMode"
-				v-model="powerModeParticleX"
-				:min="powerModeParticleX <= -10 ? (Math.floor(powerModeParticleX / -5) + 1) * -5 : -10"
-				:max="powerModeParticleX >= 10 ? (Math.floor(powerModeParticleX / 5) + 1) * 5 : 10"
-				:step="1"
-				easing
-				class="_formBlock"
-			>
-				<template #label
-					>{{ i18n.ts.powerModeParticleX }}</template
-				>
-			</FormRange>
-			<FormRange
-				v-if="powerMode"
-				v-model="powerModeParticleY"
-				:min="powerModeParticleY <= -10 ? (Math.floor(powerModeParticleY / -5) + 1) * -5 : -10"
-				:max="powerModeParticleY >= 10 ? (Math.floor(powerModeParticleY / 5) + 1) * 5 : 10"
-				:step="1"
-				easing
-				class="_formBlock"
-			>
-				<template #label
-					>{{ i18n.ts.powerModeParticleY }}</template
-				>
-			</FormRange>
-			<FormRange
-				v-if="powerMode"
-				v-model="powerModeParticleSpreadX"
-				:min="0"
-				:max="powerModeParticleSpreadX >= 20 ? (Math.floor(powerModeParticleSpreadX / 10) + 1) * 10 : 20"
-				:step="1"
-				easing
-				class="_formBlock"
-			>
-				<template #label
-					>{{ i18n.ts.powerModeParticleSpreadX }}</template
-				>
-			</FormRange>
-			<FormRange
-				v-if="powerMode"
-				v-model="powerModeParticleSpreadY"
-				:min="0"
-				:max="powerModeParticleSpreadY >= 20 ? (Math.floor(powerModeParticleSpreadY / 10) + 1) * 10 : 20"
-				:step="1"
-				easing
-				class="_formBlock"
-			>
-				<template #label
-					>{{ i18n.ts.powerModeParticleSpreadY }}</template
-				>
-			</FormRange>
-			<FormRange
-				v-if="powerMode"
-				v-model="powerModeParticleGravity"
-				:min="0"
-				:max="powerModeParticleGravity >= 60 ? (Math.floor(powerModeParticleGravity / 30) + 1) * 30 : 60"
-				:step="1"
-				easing
-				class="_formBlock"
-			>
-				<template #label
-					>{{ i18n.ts.powerModeParticleGravity }}</template
-				>
-			</FormRange>
 			<FormSwitch
 				v-if="powerMode"
 				v-model="powerModeColorful"
@@ -131,19 +40,113 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormRange
-				v-if="powerMode && !powerModeNoShake"
-				v-model="powerModeShakePower"
-				:min="0"
-				:max="powerModeShakePower >= 10 ? (Math.floor(powerModeShakePower / 5) + 1) * 5 : 10"
-				:step="1"
-				easing
-				class="_formBlock"
-			>
-				<template #label
-					>{{ i18n.ts.powerModeShakePower }}</template
+			<FormFolder class="_formBlock">
+				<template #label>{{ i18n.ts.powerModeOption }}</template>
+				<FormRange
+					v-if="powerMode"
+					v-model="powerModeParticleCount"
+					:min="0"
+					:max="powerModeParticleCount >= 20 ? (Math.floor(powerModeParticleCount / 10) + 1) * 10 : 20"
+					:step="1"
+					easing
+					class="_formBlock"
 				>
-			</FormRange>
+					<template #label
+						>{{ i18n.ts.powerModeParticleCount }}</template
+					>
+				</FormRange>
+				<FormRange
+					v-if="powerMode"
+					v-model="powerModeParticleSize"
+					:min="0"
+					:max="powerModeParticleSize >= 6 ? (Math.floor(powerModeParticleSize / 3) + 1) * 3 : 6"
+					:step="1"
+					easing
+					class="_formBlock"
+				>
+					<template #label
+						>{{ i18n.ts.powerModeParticleSize }}</template
+					>
+				</FormRange>
+				<FormRange
+					v-if="powerMode"
+					v-model="powerModeParticleX"
+					:min="powerModeParticleX <= -10 ? (Math.floor(powerModeParticleX / -5) + 1) * -5 : -10"
+					:max="powerModeParticleX >= 10 ? (Math.floor(powerModeParticleX / 5) + 1) * 5 : 10"
+					:step="1"
+					easing
+					class="_formBlock"
+				>
+					<template #label
+						>{{ i18n.ts.powerModeParticleX }}</template
+					>
+				</FormRange>
+				<FormRange
+					v-if="powerMode"
+					v-model="powerModeParticleY"
+					:min="powerModeParticleY <= -10 ? (Math.floor(powerModeParticleY / -5) + 1) * -5 : -10"
+					:max="powerModeParticleY >= 10 ? (Math.floor(powerModeParticleY / 5) + 1) * 5 : 10"
+					:step="1"
+					easing
+					class="_formBlock"
+				>
+					<template #label
+						>{{ i18n.ts.powerModeParticleY }}</template
+					>
+				</FormRange>
+				<FormRange
+					v-if="powerMode"
+					v-model="powerModeParticleSpreadX"
+					:min="0"
+					:max="powerModeParticleSpreadX >= 20 ? (Math.floor(powerModeParticleSpreadX / 10) + 1) * 10 : 20"
+					:step="1"
+					easing
+					class="_formBlock"
+				>
+					<template #label
+						>{{ i18n.ts.powerModeParticleSpreadX }}</template
+					>
+				</FormRange>
+				<FormRange
+					v-if="powerMode"
+					v-model="powerModeParticleSpreadY"
+					:min="0"
+					:max="powerModeParticleSpreadY >= 20 ? (Math.floor(powerModeParticleSpreadY / 10) + 1) * 10 : 20"
+					:step="1"
+					easing
+					class="_formBlock"
+				>
+					<template #label
+						>{{ i18n.ts.powerModeParticleSpreadY }}</template
+					>
+				</FormRange>
+				<FormRange
+					v-if="powerMode"
+					v-model="powerModeParticleGravity"
+					:min="0"
+					:max="powerModeParticleGravity >= 60 ? (Math.floor(powerModeParticleGravity / 30) + 1) * 30 : 60"
+					:step="1"
+					easing
+					class="_formBlock"
+				>
+					<template #label
+						>{{ i18n.ts.powerModeParticleGravity }}</template
+					>
+				</FormRange>
+				<FormRange
+					v-if="powerMode && !powerModeNoShake"
+					v-model="powerModeShakePower"
+					:min="0"
+					:max="powerModeShakePower >= 10 ? (Math.floor(powerModeShakePower / 5) + 1) * 5 : 10"
+					:step="1"
+					easing
+					class="_formBlock"
+				>
+					<template #label
+						>{{ i18n.ts.powerModeShakePower }}</template
+					>
+				</FormRange>
+			</FormFolder>
 		</FormSection>
 		<FormSection>
 			<template #label
@@ -206,6 +209,15 @@
 				v-model="excludeNotFollowNSFW"
 				class="_formBlock"
 				>{{ i18n.ts.excludeNotFollowNSFW
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
+		</FormSection>
+		<FormSection>
+			<template #label></template>
+			<FormSwitch v-model="postReplaceMark" class="_formBlock"
+				>{{ i18n.ts.postReplaceMark
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
@@ -342,6 +354,9 @@ const excludeNotFollowNSFW = computed(
 );
 const excludeSensitiveEmoji = computed(
 	defaultStore.makeGetterSetter("excludeSensitiveEmoji")
+);
+const postReplaceMark = computed(
+	defaultStore.makeGetterSetter("postReplaceMark")
 );
 const postStartSleep = computed(
 	defaultStore.makeGetterSetter("postStartSleep")

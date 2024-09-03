@@ -2,7 +2,7 @@
 	<div
 		v-if="hide"
 		class="icozogqfvdetwohsdglrbswgrejoxbdj"
-		@click="hide = false"
+		@click="show"
 	>
 		<ImgWithBlurhash
 			class="bg"
@@ -71,11 +71,13 @@
 import { ref, computed } from "vue";
 import VuePlyr from "vue-plyr";
 import type * as misskey from "calckey-js";
+import * as os from "@/os";
 import ImgWithBlurhash from "@/components/MkImgWithBlurhash.vue";
 import { defaultStore } from "@/store";
 import "vue-plyr/dist/vue-plyr.css";
 import { i18n } from "@/i18n";
 import bytes from "@/filters/bytes";
+import { isMobileData } from "@/scripts/datasaver";
 
 const props = defineProps<{
 	video: misskey.entities.DriveFile;
@@ -93,6 +95,16 @@ const hide = ref(
 		? true
 		: props.video.isSensitive && defaultStore.state.nsfw !== "ignore"
 );
+
+async function show() {
+	if (props.video.isSensitive && defaultStore.state.openPopupNsfwToCarrior && isMobileData()) {
+		const ret = await os.yesno({type: "warning", title: "センシティブメディアを表示しようとしています。\n本当に開きますか？"})
+		if (ret.canceled) {
+			return;
+		}
+	}
+	hide.value = false;
+}
 </script>
 
 <style lang="scss" scoped>

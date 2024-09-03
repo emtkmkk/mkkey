@@ -24,6 +24,9 @@ export function preprocess(text: string): string {
 					);
 				}
 			}
+			if (defaultStore.state.postReplaceMark && node.type === "text" && node.props.text) {
+				node.props.text = node.props.text.replace(/([ぁ-んァ-ヶ一-龠々])(\.|．)/g, '$1。').replace(/([ぁ-んァ-ヶ一-龠々])(,|，)/g, '$1、')
+			}
 			if (node.type === "fn" && node.props.args?.fps) {
 				let fpsnum;
 				try {

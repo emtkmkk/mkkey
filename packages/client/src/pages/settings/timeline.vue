@@ -212,6 +212,12 @@
 				<option value="force">{{ i18n.ts._nsfw.force }}</option>
 				<option value="toCW">{{ i18n.ts._nsfw.toCW }}</option>
 			</FormSelect>
+			<FormSwitch v-model="openPopupNsfwToCarrior" :disabled="!supportAutoDataSaver" class="_formBlock"
+				>{{ i18n.ts.openPopupNsfwToCarrior
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="noteAllCw" class="_formBlock"
 				>{{ i18n.ts.noteAllCw
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -241,6 +247,7 @@ import { defaultStore } from "@/store";
 import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
 import { instance } from "@/instance";
+import { isSupportNavigatorConnection } from "@/scripts/datasaver";
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;
@@ -255,6 +262,7 @@ window.addEventListener("resize", () => {
 		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 
+const supportAutoDataSaver = computed(() => isSupportNavigatorConnection());
 const showLocalPostsInTimeline = computed(
 	defaultStore.makeGetterSetter("showLocalPostsInTimeline")
 );
@@ -278,6 +286,7 @@ const showFixedPostForm = computed(
 	defaultStore.makeGetterSetter("showFixedPostForm")
 );
 const nsfw = computed(defaultStore.makeGetterSetter("nsfw"));
+const openPopupNsfwToCarrior = computed(defaultStore.makeGetterSetter("openPopupNsfwToCarrior"));
 const recentRenoteHidden = $computed(
 	defaultStore.makeGetterSetter("recentRenoteHidden")
 );

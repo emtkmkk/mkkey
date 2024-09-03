@@ -627,6 +627,16 @@ export const defaultStore = markRaw(
 			default: "respect" as "respect" | "toCW" | "force" | "ignore",
 			page: "timeline",
 		},
+		openPopupNsfwToCarrior: {
+			where: "device",
+			default: false,
+			page: "timeline",
+		},
+		postReplaceMark: {
+			where: "account",
+			default: false,
+			page: "fun",
+		},
 		animation: {
 			where: "device",
 			default: true,

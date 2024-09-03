@@ -1,5 +1,5 @@
 <template>
-	<button v-if="hide" class="qjewsnkg" @click="hide = false">
+	<button v-if="hide" class="qjewsnkg" @click="show">
 		<ImgWithBlurhash
 			class="bg"
 			:hash="image.blurhash"
@@ -75,6 +75,8 @@ import ImgWithBlurhash from "@/components/MkImgWithBlurhash.vue";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 import bytes from "@/filters/bytes";
+import * as os from "@/os";
+import { isMobileData } from "@/scripts/datasaver";
 
 const props = defineProps<{
 	image: misskey.entities.DriveFile;
@@ -89,6 +91,16 @@ const url =
 		: defaultStore.state.disableShowingAnimatedImages
 		? getStaticImageUrl(props.image.thumbnailUrl)
 		: props.image.thumbnailUrl;
+	
+async function show() {
+	if (props.image.isSensitive && defaultStore.state.openPopupNsfwToCarrior && isMobileData()) {
+		const ret = await os.yesno({type: "warning", title: "センシティブメディアを表示しようとしています。\n本当に開きますか？"})
+		if (ret.canceled) {
+			return;
+		}
+	}
+	hide = false;
+}
 
 // Plugin:register_note_view_interruptor を使って書き換えられる可能性があるためwatchする
 watch(

@@ -90,7 +90,7 @@ import { shareAvailable } from "@/scripts/share-available";
 
 import MkSelect from "@/components/form/select.vue";
 import MkButton from "@/components/MkButton.vue";
-import MkInput from '@/components/MkInput.vue';
+import MkInput from '@/components/form/input.vue';
 import MkModalWindow from "@/components/MkModalWindow.vue";
 
 const stats = ref<any>({});

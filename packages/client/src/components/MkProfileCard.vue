@@ -212,8 +212,8 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `@${$i?.username}@${host}`,
         style: {
           font: 'bold 40px "M PLUS Rounded 1c"',
-          x: 260,
-          y: 168,
+          x: 256,
+          y: 167,
           fillStyle: '#6E6E6E',
           alignRight: false,
         },

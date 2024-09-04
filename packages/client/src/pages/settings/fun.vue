@@ -222,9 +222,12 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-		</FormSection>
-		<FormSection>
-			<template #label></template>
+			<FormSelect v-model="replaceMakudo" class="_formBlock">
+				<template #label>{{ i18n.ts.replaceMakudo }}</template>
+				<option value="">{{ i18n.ts.replaceMakudo0 }}</option>
+				<option value="makudo">{{ i18n.ts.replaceMakudo1 }}</option>
+				<option value="makku">{{ i18n.ts.replaceMakudo2 }}</option>
+			</FormSelect>
 			<FormSwitch v-model="postStartSleep" class="_formBlock"
 				>{{ i18n.ts.postStartSleep
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -356,6 +359,9 @@ const excludeNotFollowNSFW = computed(
 const excludeSensitiveEmoji = computed(
 	defaultStore.makeGetterSetter("excludeSensitiveEmoji")
 );
+const replaceMakudo = computed(
+	defaultStore.makeGetterSetter("replaceMakudo")
+)
 const postReplaceMark = computed(
 	defaultStore.makeGetterSetter("postReplaceMark")
 );

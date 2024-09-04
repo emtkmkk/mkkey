@@ -630,11 +630,13 @@ export const defaultStore = markRaw(
 		openPopupNsfwToCarrior: {
 			where: "device",
 			default: false,
+			createdAt: "2024/9/3",
 			page: "timeline",
 		},
 		postReplaceMark: {
 			where: "account",
 			default: false,
+			createdAt: "2024/9/3",
 			page: "fun",
 		},
 		animation: {
@@ -1600,6 +1602,12 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: [] as apiData[],
 			createdAt: "2024/7/17",
+		},
+		replaceMakudo: {
+			where: "account",
+			default: "" as "makudo" | "makku" | "",
+			createdAt: "2024/9/4",
+			page: "fun",
 		},
 	}),
 );

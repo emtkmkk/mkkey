@@ -177,6 +177,19 @@ export default defineComponent({
 								} while (matchFound);
 							}
 
+							if (defaultStore.state.replaceMakudo) {
+								if (defaultStore.state.replaceMakudo === "makku") {
+									text = text.replace(/マクド(?![ァ-ヶ])/g, 'マック');
+									text = text.replace(/まくど(?![ぁ-ん])/g, 'まっく');
+									text = text.replace(/makudo(?![a-zA-Z])/gi, 'makku');
+								}
+								if (defaultStore.state.replaceMakudo === "makudo") {
+									text = text.replace(/マック(?![ァ-ヶ])/g, 'マクド');
+									text = text.replace(/まっく(?![ぁ-ん])/g, 'まくど');
+									text = text.replace(/makku(?![a-zA-Z])/gi, 'makudo');
+								}
+							}
+
 							if (!this.plain) {
 								const res = [];
 								for (const t of text.split("\n")) {

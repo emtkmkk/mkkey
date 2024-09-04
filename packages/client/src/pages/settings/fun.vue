@@ -302,6 +302,7 @@ import FormLink from "@/components/form/link.vue";
 import FormRange from "@/components/form/range.vue";
 import FormSection from "@/components/form/section.vue";
 import FormSwitch from "@/components/form/switch.vue";
+import FormSelect from "@/components/form/select.vue";
 import * as os from "@/os";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";

@@ -72,7 +72,6 @@ import FormSelect from "@/components/form/select.vue";
 import FormRadios from "@/components/form/radios.vue";
 import FormRange from "@/components/form/range.vue";
 import FormSection from "@/components/form/section.vue";
-import FormSelect from "@/components/form/select.vue";
 import FormLink from "@/components/form/link.vue";
 import MkLink from "@/components/MkLink.vue";
 import { ui, langs } from "@/config";

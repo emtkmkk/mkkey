@@ -50,8 +50,8 @@
 							<template #label>{{ i18n.ts._profileCardGen.offsetFolder }}</template>
 							<FormRange
 								v-model="offsetX"
-								:min="-10"
-								:max="10"
+								:min="-20"
+								:max="20"
 								:step="1"
 								:disabled="canvasLoading"
 								easing
@@ -63,8 +63,8 @@
 							</FormRange>
 							<FormRange
 								v-model="offsetY"
-								:min="-10"
-								:max="10"
+								:min="-20"
+								:max="20"
 								:step="1"
 								:disabled="canvasLoading"
 								easing
@@ -189,7 +189,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
     nameStyle: {
       font: 'bold 48px "M PLUS Rounded 1c"',
       x: 256,
-      y: 84,
+      y: 82,
       fillStyle: '#333333',
       alignRight: false,
     },
@@ -202,7 +202,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `No.${stats?.value?.userNo}`,
         style: {
           font: 'bold 20px "M PLUS Rounded 1c"',
-          x: 1247,
+          x: 1242,
           y: 46,
           fillStyle: '#6E6E6E',
           alignRight: true,
@@ -213,7 +213,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         style: {
           font: 'bold 40px "M PLUS Rounded 1c"',
           x: 260,
-          y: 170,
+          y: 168,
           fillStyle: '#6E6E6E',
           alignRight: false,
         },
@@ -242,7 +242,7 @@ const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
         value: `${stats?.value?.averagePostCount?.toLocaleString()}`,
         style: {
           font: 'bold 32px "M PLUS Rounded 1c"',
-          x: 1043,
+          x: 1044,
           y: 303,
           fillStyle: '#E97979',
           alignRight: true,

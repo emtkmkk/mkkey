@@ -39,6 +39,11 @@ export function preprocess(text: string): string {
 					delete node.props.args.fps
 				}
 			}
+			if (node.type === "fn" && node.props.name === "zwsp") {
+				node.type = "text";
+				node.props.text = "​";
+				node.children = undefined;
+			}
 			if (node.type === "fn" && node.props.name === "morse") {
 				mfm.inspect(node.children, (x) => {
 					if (x.type !== "text" || !x.props.text) return;

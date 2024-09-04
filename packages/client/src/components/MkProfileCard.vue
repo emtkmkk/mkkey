@@ -46,6 +46,35 @@
 							<template #label>{{ i18n.ts.name }}</template>
 							<template #caption>{{ i18n.ts._profileCardGen.nameDescription }}</template>
 						</MkInput>
+						<FormFolder style="margin-top: 1em" class="_formBlock">
+							<template #label>{{ i18n.ts._profileCardGen.offsetFolder }}</template>
+							<FormRange
+								v-model="offsetX"
+								:min="-10"
+								:max="10"
+								:step="1"
+								:disabled="canvasLoading"
+								easing
+								class="_formBlock"
+							>
+								<template #label
+									>{{ i18n.ts._profileCardGen.offsetX }}</template
+								>
+							</FormRange>
+							<FormRange
+								v-model="offsetY"
+								:min="-10"
+								:max="10"
+								:step="1"
+								:disabled="canvasLoading"
+								easing
+								class="_formBlock"
+							>
+								<template #label
+									>{{ i18n.ts._profileCardGen.offsetY }}</template
+								>
+							</FormRange>
+						</FormFolder>
 						<div style="margin-top: 1em" class="_buttons">
 							<MkButton inline :disabled="canvasLoading" @click="applyToPreview">{{ i18n.ts._profileCardGen.applyToPreview }}</MkButton>
 							<MkButton inline :disabled="canvasLoading" primary @click="generate">{{ i18n.ts._profileCardGen.generateImage }} <i class="ph-arrow-right ph-bold ph-lg"></i></MkButton>
@@ -92,9 +121,13 @@ import MkSelect from "@/components/form/select.vue";
 import MkButton from "@/components/MkButton.vue";
 import MkInput from '@/components/form/input.vue';
 import MkModalWindow from "@/components/MkModalWindow.vue";
+import FormRange from "@/components/form/range.vue";
+import FormFolder from "@/components/form/folder.vue";
 
 const stats = ref<any>(null);
 const canvasReady = ref(false); // キャンバスを描画して良いかどうかのフラグ
+const offsetX = ref(0);
+const offsetY = ref(0);
 
 // TypeScript 型定義
 type TextStyle = {
@@ -258,13 +291,16 @@ function drawText(ctx: CanvasRenderingContext2D, text: string, style: TextStyle)
   ctx.fillStyle = style.fillStyle;
 	ctx.textBaseline = "top";
 
+	const x = style.x + offsetX.value;
+	const y = style.y + offsetY.value;
+
   if (style.alignRight) {
     // 右揃えの場合、テキストの右端を基準に描画
     const textWidth = ctx.measureText(text).width;
-    ctx.fillText(text, style.x - textWidth, style.y);
+    ctx.fillText(text, x - textWidth, y);
   } else {
     // 左揃えの場合、指定されたX座標から描画
-    ctx.fillText(text, style.x, style.y);
+    ctx.fillText(text, x, y);
   }
 }
 

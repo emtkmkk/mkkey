@@ -2365,6 +2365,9 @@ _offlineScreen:
 _profileCardGen:
   title: "プロフィールカード"
   nameDescription: "名前にMFMを使用していたり、文字数が多すぎたりした場合は、ここで上書きできます。"
+  offsetFolder: "微調整"
+  offsetX: "文字横位置"
+  offsetY: "文字縦位置"
   applyToPreview: "プレビューに反映"
   generateImage: "画像を出力"
   imageGenerated: "プロフィールカードが完成しました"

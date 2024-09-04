@@ -137,24 +137,44 @@ export default defineComponent({
 								const space = '[ 　]';
 								const regexPattern1 = new RegExp(`(${long}${dot}${dot}${long}${long}${long}${space}+(.+)${space}${dot}${dot}${dot}${long}${dot}|${long}${dot}${dot}${dot}${long}${space}(.+)${space}${dot}${long}${dot}${long}${dot})`);
 								const regexPattern2 = new RegExp(`(((${long}|${dot})+?(${space}|$){1,2}){2,})`);
-
-								while (regexPattern1.test(text)) {
-										const exec = regexPattern1.exec(text);
-										if (exec?.[2] || exec?.[3]) {
-												text = text.replace(regexPattern1, `("${mr_to_str(exec?.[2] || exec?.[3], !!exec?.[2])}")`);
-										} else {
-												text = text.replace(regexPattern1, `("")`);
-										}
-								}
 						
-								while (regexPattern2.test(text)) {
-										const exec = regexPattern2.exec(text);
-										if (exec?.[0]) {
-												text = text.replace(regexPattern2, `("${mr_to_str(exec?.[0], true)}")`);
-										} else {
-												text = text.replace(regexPattern2, `("")`);
-										}
-								}
+								const isValidMorse = (str) => {
+									const morseChars = str.replace(new RegExp(space, 'g'), '');
+									return morseChars.length >= 5;
+								};
+						
+								const hasConsecutiveMarks = (str) => {
+									const consecutivePattern = new RegExp(`(${long}${dot}|${dot}${long}|${long}{2,}|${dot}{2,})`);
+									return consecutivePattern.test(str);
+								};
+						
+								let matchFound: boolean;
+						
+								do {
+									matchFound = false;
+									const exec1 = regexPattern1.exec(text);
+									if (exec1) {
+											const morseStr1 = exec1[2] || exec1[3] || '';
+					
+											if (isValidMorse(morseStr1) || hasConsecutiveMarks(morseStr1)) {
+													text = text.replace(regexPattern1, `("${mr_to_str(morseStr1, !!exec1[2])}")`);
+													matchFound = true;
+											}
+									}
+								} while (matchFound);
+					
+								do {
+									matchFound = false;
+									const exec2 = regexPattern2.exec(text);
+									if (exec2) {
+											const morseStr2 = exec2[0] || '';
+					
+											if (isValidMorse(morseStr2) || hasConsecutiveMarks(morseStr2)) {
+													text = text.replace(regexPattern2, `("${mr_to_str(morseStr2, true)}")`);
+													matchFound = true;
+											}
+									}
+								} while (matchFound);
 							}
 
 							if (!this.plain) {

@@ -143,7 +143,7 @@ const phase = ref<'input' | 'share'>('input');
 const canvasEl = shallowRef<HTMLCanvasElement>();
 const canvasLoading = ref(true);
 
-const name = ref($i?.name ?? $i?.username ?? "");
+const name = ref($i?.name?.replaceAll(/\s?:\w+?:/g, "").trim() || $i?.username || "");
 
 const canvasTemplates: Record<string, CanvasTemplate> = $computed(() => ({
   default: {

@@ -41,7 +41,7 @@ export function preprocess(text: string): string {
 			}
 			if (node.type === "fn" && node.props.name === "zwsp") {
 				node.type = "text";
-				node.props.text = "​";
+				node.props.text = `​${mfm.toString(node.children)}`;
 				node.children = undefined;
 			}
 			if (node.type === "fn" && node.props.name === "morse") {

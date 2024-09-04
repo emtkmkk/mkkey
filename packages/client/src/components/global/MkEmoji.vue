@@ -153,6 +153,8 @@ const emoji = replace
 				)() * defaultStore.state.allEmojiReplace.length
 			)
 	  ]
+	: defaultStore.state.replaceMakudo === "makku" ? props.emoji?.replace(":makudo:",":makku:")
+	: defaultStore.state.replaceMakudo === "makudo" ? props.emoji?.replace(":makku:",":makudo:")
 	: props.emoji;
 const isCustom = computed(() => emoji.startsWith(":"));
 const bigCustom = computed(() => defaultStore.state.useBigCustom);

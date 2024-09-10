@@ -45,6 +45,7 @@ export default async (
 		driveCapacityOverrideMb: User["driveCapacityOverrideMb"];
 		isExplorable: User["isExplorable"];
 		isRemoteExplorable: User["isRemoteExplorable"];
+		isBot: User["isBot"];
 	},
 	note: Note,
 	reaction?: string,
@@ -231,7 +232,7 @@ export default async (
 		throw e;
 	}
 
-	if (!isMutedReaction) {
+	if (!isMutedReaction && !user.isBot) {
 		// Increment reactions count
 		const sql = `jsonb_set("reactions", '{${reaction}}', (COALESCE("reactions"->>'${reaction}', '0')::int + 1)::text::jsonb)`;
 		await Notes.createQueryBuilder()

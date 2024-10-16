@@ -90,7 +90,6 @@ export function isIncludeNgWord(txt: string): string {
 	})) {
 		return "暗いニュース";
 	};
-*/
 	if (
 		ngword4.some((x) => {
 			return text.includes(x);
@@ -99,5 +98,6 @@ export function isIncludeNgWord(txt: string): string {
 	) {
 		return "NG";
 	}
+ */
 	return "";
 }

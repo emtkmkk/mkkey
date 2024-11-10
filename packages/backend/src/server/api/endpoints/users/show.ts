@@ -91,6 +91,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	const isAdminOrModerator = me && (me.isAdmin || me.isModerator);
 
 	if (ps.userIds) {
+		if (!isAdminOrModerator) ps.userIds = ps.userIds.filter((x) => x !== "9hlr56vkeu");
 		if (ps.userIds.length === 0) {
 			return [];
 		}

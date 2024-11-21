@@ -99,7 +99,7 @@
 			  <span class="steam-current-price">
 				{{ steamCurrentPrice }}
 			  </span>
-			</p>
+			</footer>
 		  </article>
 		</component>
 	  </transition>

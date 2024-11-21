@@ -40,7 +40,14 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       }`;
 
       // getJsonを使用してSteamデータを取得
-      const data = await getJson(steamApiUrl);
+      const data = await getJson(
+        steamApiUrl,
+        "application/json, */*",
+        5000,
+        {
+          cookie: "steamCountry=JP"
+        },
+      );
 
       const appData = data[steamAppId]?.data;
 
@@ -52,7 +59,12 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         `${meta.summalyProxy}?${query({
           url: url,
           lang: lang ?? "en-US",
-        })}`
+        })}`,
+        "application/json, */*",
+        5000,
+        {
+          cookie: "steamCountry=JP"
+        },
         )
       : await summaly.default(url, {
         followRedirects: false,
@@ -98,7 +110,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 			}
           },
         };
-        
+
 		/*
         // 動画情報をplayerにセット
         if (appData.movies && Array.isArray(appData.movies)) {

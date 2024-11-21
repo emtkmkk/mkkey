@@ -696,9 +696,8 @@
 			  align-items: center;
 			  margin: 0;
 			  font-size: 1em;
-			  overflow: hidden;
-			  white-space: nowrap;
-			  text-overflow: ellipsis;
+			  overflow: visible;
+			  white-space: normal;
   
 			  .favicon {
 				width: 24px;
@@ -722,6 +721,11 @@
 				text-overflow: ellipsis;
 			}
 		  }
+
+		  p {
+			overflow: visible;
+			white-space: normal;
+		  }
   
 		  .steam-row.steam-pricing {
 			display: flex;
@@ -734,7 +738,7 @@
 			.steam-discount {
 			  background-color: green;
 			  color: white;
-			  padding: 0.2rem 0.5rem;
+			  padding: 0 0.5rem;
 			  border-radius: 0.25rem;
 			  margin-right: 0.5rem;
 			  font-weight: bold;

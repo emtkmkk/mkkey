@@ -698,6 +698,8 @@
 			  font-size: 1em;
 			  overflow: visible;
 			  white-space: normal;
+			  word-break: normal;
+			  word-break: auto-phrase;
   
 			  .favicon {
 				width: 24px;
@@ -725,6 +727,8 @@
 		  p {
 			overflow: visible;
 			white-space: normal;
+			word-break: normal;
+			word-break: auto-phrase;
 		  }
   
 		  .steam-row.steam-pricing {

@@ -29,6 +29,32 @@
 		/>
 	</div>
 	<div
+		v-else-if="isSteam"
+		class="steam-preview"
+		@click.stop
+	>
+		<div class="steam-row steam-header">
+			<img :src="icon || defaultIcon" class="favicon" />
+			<span class="steam-game-name">
+			<span v-if="steamAgeLimit">[{{ steamAgeLimit }}+] </span>{{ steamGameName }}
+			</span>
+		</div>
+		<div v-if="steamDeveloper" class="steam-row steam-developer">
+			{{ steamDeveloper }}
+		</div>
+		<div class="steam-row steam-pricing">
+			<span v-if="steamOnSale" class="steam-discount">
+			-{{ Math.floor(steamDiscount * 10) / 10 }}%
+			</span>
+			<span v-if="steamOnSale" class="steam-original-price">
+			{{ steamOriginalPrice }}
+			</span>
+			<span class="steam-current-price">
+			{{ steamCurrentPrice }}
+			</span>
+		</div>
+	</div>
+	<div
 		v-else-if="tweetId && tweetExpanded"
 		ref="twitter"
 		class="twitter"
@@ -137,15 +163,15 @@ import { defaultStore } from "@/store";
 import MkButton from "@/components/MkButton.vue";
 
 const props = withDefaults(
-	defineProps<{
-		url: string;
-		detail?: boolean;
-		compact?: boolean;
-	}>(),
-	{
-		detail: false,
-		compact: false,
-	}
+  defineProps<{
+    url: string;
+    detail?: boolean;
+    compact?: boolean;
+  }>(),
+  {
+    detail: false,
+    compact: false,
+  }
 );
 
 const self = props.url.startsWith(local);
@@ -158,9 +184,9 @@ let thumbnail = $ref<string | null>(null);
 let icon = $ref<string | null>(null);
 let sitename = $ref<string | null>(null);
 let player = $ref({
-	url: null,
-	width: null,
-	height: null,
+  url: null,
+  width: null,
+  height: null,
 });
 let playerEnabled = $ref(false);
 let showThumbnail = $ref(false);
@@ -169,104 +195,196 @@ let tweetExpanded = $ref(defaultStore.state.alwaysXExpand || props.detail);
 const embedId = `embed${Math.random().toString().replace(/\D/, "")}`;
 let tweetHeight = $ref(150);
 
+// Steam専用のリアクティブ変数
+let isSteam = $ref(false);
+let steamAgeLimit = $ref<string | null>(null);
+let steamGameName = $ref<string>("");
+let steamDeveloper = $ref<string>("");
+let steamOnSale = $ref(false);
+let steamDiscount = $ref<number>(0);
+let steamOriginalPrice = $ref<string>("");
+let steamCurrentPrice = $ref<string>("");
+const defaultIcon = "https://store.steampowered.com/favicon.ico"; // デフォルトのファビコンURL
+
+// Steamゲームデータを取得する関数
+const fetchSteamData = async (steamAppId: string) => {
+  try {
+    const response = await fetch(
+      `https://store.steampowered.com/api/appdetails?appids=${steamAppId}&cc=jp&l=ja`
+    );
+    const data = await response.json();
+    const gameData = data[steamAppId]?.data;
+    if (gameData && data[steamAppId].success) {
+      steamGameName = gameData.name;
+      // ファビコンを通常の処理で取得
+      icon = `https://store.steampowered.com/favicon.ico`;
+
+      // 年齢制限の取得
+      if (gameData.required_age && gameData.required_age !== "0") {
+        steamAgeLimit = gameData.required_age;
+      }
+
+      // 開発者情報の取得
+      if (gameData.developers && gameData.developers.length > 0) {
+        steamDeveloper = gameData.developers.join(", ");
+      }
+
+      // 価格情報
+      if (gameData.price_overview) {
+        const priceOverview = gameData.price_overview;
+        steamCurrentPrice = priceOverview.final_formatted;
+        if (priceOverview.discount_percent > 0) {
+          steamOnSale = true;
+          steamDiscount = priceOverview.discount_percent;
+          steamOriginalPrice = priceOverview.initial_formatted;
+        }
+      } else if (gameData.is_free) {
+        steamCurrentPrice = "無料プレイ";
+      } else {
+        steamCurrentPrice = "価格情報なし";
+      }
+      fetching = false;
+    }
+  } catch (error) {
+    console.error("Steamデータの取得中にエラーが発生しました:", error);
+    fetching = false;
+  }
+};
+
+// URLがSteamストアのものかどうかを判定し、App IDを抽出
+const parseSteamUrl = (url: string): string | null => {
+  try {
+    const parsedUrl = new URL(url);
+    if (
+      parsedUrl.hostname === "store.steampowered.com" ||
+      parsedUrl.hostname.endsWith(".steampowered.com")
+    ) {
+      const pathSegments = parsedUrl.pathname.split("/");
+      const appIndex = pathSegments.indexOf("app");
+      if (appIndex !== -1 && pathSegments.length > appIndex + 1) {
+        return pathSegments[appIndex + 1];
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error("無効なURLです:", error);
+    return null;
+  }
+};
+
+const steamAppId = parseSteamUrl(props.url);
+if (steamAppId) {
+  isSteam = true;
+}
+
 const requestUrl = new URL(props.url);
 if (!["http:", "https:"].includes(requestUrl.protocol))
-	throw new Error("invalid url");
+  throw new Error("無効なURLです");
 
-let tweet = ""
+let tweet = "";
 
 if (
-	requestUrl.hostname === "twitter.com" ||
-	requestUrl.hostname === "mobile.twitter.com" ||
-	requestUrl.hostname === "x.com" ||
-	requestUrl.hostname === "mobile.x.com"
+  requestUrl.hostname === "twitter.com" ||
+  requestUrl.hostname === "mobile.twitter.com" ||
+  requestUrl.hostname === "x.com" ||
+  requestUrl.hostname === "mobile.x.com"
 ) {
-	const m = requestUrl.pathname.match(/^\/.+\/status(?:es)?\/(\d+)/);
-	if (m) tweet = m[1];
+  const m = requestUrl.pathname.match(/^\/.+\/status(?:es)?\/(\d+)/);
+  if (m) tweet = m[1];
 }
 
 if (
-	requestUrl.hostname === "music.youtube.com" &&
-	requestUrl.pathname.match("^/(?:watch|channel)")
+  requestUrl.hostname === "music.youtube.com" &&
+  requestUrl.pathname.match("^/(?:watch|channel)")
 ) {
-	requestUrl.hostname = "www.youtube.com";
+  requestUrl.hostname = "www.youtube.com";
 }
 
 const requestLang = (lang || "ja-JP")
-	.replace("ja-KS", "ja-JP")
-	.replace("ja-KK", "ja-JP");
+  .replace("ja-KS", "ja-JP")
+  .replace("ja-KK", "ja-JP");
 
 requestUrl.hash = "";
 
-fetch(
-	`/url?url=${encodeURIComponent(requestUrl.href)}&lang=${requestLang}`
-).then((res) => {
-	res.json().then((info) => {
-		if (info.url == null) return;
-		title = info.title;
-		description = info.description;
-		thumbnail = info.thumbnail;
-		icon = info.icon;
-		sitename = info.sitename;
-		fetching = false;
-		player = info.player;
-		if (title !== "X") {
-			tweetId = tweet;
-		}
-	});
-});
+// Steamでない場合は一般的なURL情報を取得
+if (!isSteam) {
+  fetch(`/url?url=${encodeURIComponent(requestUrl.href)}&lang=${requestLang}`)
+    .then((res) => res.json())
+    .then((info) => {
+      if (info.url == null) return;
+      title = info.title;
+      description = info.description;
+      thumbnail = info.thumbnail;
+      icon = info.icon;
+      sitename = info.sitename;
+      fetching = false;
+      player = info.player;
+      if (title !== "X") {
+        tweetId = tweet;
+      }
+    });
+} else {
+  // Steamの場合はSteamデータを取得
+  fetchSteamData(steamAppId!);
+}
 
 function adjustTweetHeight(message: any) {
-	if (message.origin !== "https://platform.twitter.com") return;
-	const embed = message.data?.["twttr.embed"];
-	if (embed?.method !== "twttr.private.resize") return;
-	if (embed?.id !== embedId) return;
-	const height = embed?.params[0]?.height;
-	if (height) tweetHeight = height;
+  if (message.origin !== "https://platform.twitter.com") return;
+  const embed = message.data?.["twttr.embed"];
+  if (embed?.method !== "twttr.private.resize") return;
+  if (embed?.id !== embedId) return;
+  const height = embed?.params[0]?.height;
+  if (height) tweetHeight = height;
 }
 
 (window as any).addEventListener("message", adjustTweetHeight);
 
 onMounted(() => {
-	const checkIframeContent = () => {
-		const tweetIframe = document.querySelector(`iframe[src*="twitter.com"], iframe[src*="x.com"]`) as HTMLIFrameElement;
-		if (tweetIframe) {
-			tweetIframe.onload = () => {
-				const iframeDocument = tweetIframe.contentDocument || tweetIframe.contentWindow?.document;
-				if (iframeDocument) {
-					const spanElements = Array.from(iframeDocument.querySelectorAll("span"));
-					for (const span of spanElements) {
-						const textContent = span.textContent?.trim();
-						if (textContent === "Not found") {
-							tweetExpanded = false;
-							tweetId = null;
-							break;
-						}
-						if (textContent && textContent !== "Not found") {
-							console.log(`x span: ${textContent}`)
-							break;
-						}
-					}
-				}
-			};
-		}
-	};
+  const checkIframeContent = () => {
+    const tweetIframe = document.querySelector(
+      `iframe[src*="twitter.com"], iframe[src*="x.com"]`
+    ) as HTMLIFrameElement;
+    if (tweetIframe) {
+      tweetIframe.onload = () => {
+        const iframeDocument =
+          tweetIframe.contentDocument || tweetIframe.contentWindow?.document;
+        if (iframeDocument) {
+          const spanElements = Array.from(iframeDocument.querySelectorAll("span"));
+          for (const span of spanElements) {
+            const textContent = span.textContent?.trim();
+            if (textContent === "Not found") {
+              tweetExpanded = false;
+              tweetId = null;
+              break;
+            }
+            if (textContent && textContent !== "Not found") {
+              console.log(`x span: ${textContent}`);
+              break;
+            }
+          }
+        }
+      };
+    }
+  };
 
-	// 初期化時にも checkIframeContent を実行
-	if (tweetExpanded) {
-		checkIframeContent();
-	}
+  // 初期化時にも checkIframeContent を実行
+  if (tweetExpanded) {
+    checkIframeContent();
+  }
 
-	// watch で tweetExpanded の変化を監視
-	watch($$(tweetExpanded), () => {
-		if (tweetExpanded) {
-			checkIframeContent();
-		}
-	});
+  // tweetExpanded の変化を監視
+  watch(
+    () => tweetExpanded,
+    () => {
+      if (tweetExpanded) {
+        checkIframeContent();
+      }
+    }
+  );
 });
 
 onUnmounted(() => {
-	(window as any).removeEventListener("message", adjustTweetHeight);
+  (window as any).removeEventListener("message", adjustTweetHeight);
 });
 </script>
 
@@ -523,6 +641,70 @@ onUnmounted(() => {
 				& + article {
 					left: 6.25rem;
 					width: calc(100% - 6.25rem);
+				}
+			}
+		}
+	}
+	.steam-preview {
+		border: 1px solid var(--divider);
+		border-radius: 0.5rem;
+		padding: 0.5rem 1rem;
+		background-color: var(--background);
+		display: flex;
+		flex-direction: column;
+		pointer-events: auto;
+
+		.steam-row {
+			display: flex;
+			align-items: center;
+			margin-bottom: 0.25rem;
+
+			&.steam-header {
+			justify-content: flex-start;
+
+				.favicon {
+					width: 24px;
+					height: 24px;
+					margin-right: 0.5rem;
+				}
+
+				.steam-game-name {
+					font-size: 1em;
+					font-weight: bold;
+				}
+			}
+
+			&.steam-developer {
+				justify-content: flex-start;
+				font-size: 0.9em;
+				color: rgba(0, 0, 0, 0.6);
+				margin-left: 2.5rem;
+				margin-bottom: 0.5rem;
+			}
+
+			&.steam-pricing {
+			justify-content: flex-end;
+			align-items: center;
+
+				.steam-discount {
+					background-color: green;
+					color: white;
+					padding: 0.2rem 0.5rem;
+					border-radius: 0.25rem;
+					margin-right: 0.5rem;
+					font-weight: bold;
+				}
+
+				.steam-original-price {
+					text-decoration: line-through;
+					color: rgba(0, 0, 0, 0.7
+					);
+					margin-right: 0.5rem;
+				}
+
+				.steam-current-price {
+					font-size: 1em;
+					font-weight: bold;
 				}
 			}
 		}

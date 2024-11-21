@@ -47,17 +47,17 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       if (appData && data[steamAppId].success) {
 		
 	  
-		const _summary = meta.summalyProxy
-		? await getJson(
-			`${meta.summalyProxy}?${query({
-			  url: url,
-			  lang: lang ?? "en-US",
-			})}`
-		  )
-		: await summaly.default(url, {
-			followRedirects: false,
-			lang: lang ?? "en-US",
-		  });
+      const _summary = meta.summalyProxy
+      ? await getJson(
+        `${meta.summalyProxy}?${query({
+          url: url,
+          lang: lang ?? "en-US",
+        })}`
+        )
+      : await summaly.default(url, {
+        followRedirects: false,
+        lang: lang ?? "en-US",
+        });
 
 		
         // summaryオブジェクトを構築
@@ -98,9 +98,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 			}
           },
         };
-
-        // 開発者情報を説明に設定
-        summary.description = summary.steam.developer;
+        
 		/*
         // 動画情報をplayerにセット
         if (appData.movies && Array.isArray(appData.movies)) {

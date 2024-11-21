@@ -84,8 +84,8 @@
 			</header>
 			<p v-if="description" :title="description">
 			  {{
-				description.length > 100
-				  ? `${description.slice(0, 100)}…`
+				description.length > 250
+				  ? `${description.slice(0, 250)}…`
 				  : description
 			  }}
 			</p>
@@ -673,17 +673,18 @@
 	}
 	&.steam {
 	  .link {
-		pointer-events: auto;
+		pointer-events: none;
 		display: flex;
 		flex-direction: column;
   
 		.thumbnail {
 		  order: 1;
-		  height: auto;
+		  pointer-events: none;
 		}
   
 		article {
 		  order: 2;
+		  pointer-events: auto;
   
 		  header {
 			display: flex;
@@ -725,7 +726,6 @@
 		  .steam-row.steam-pricing {
 			display: flex;
 			align-items: center;
-			margin: 0.25rem 0;
 			font-size: 0.9em;
 			overflow: hidden;
 			white-space: nowrap;

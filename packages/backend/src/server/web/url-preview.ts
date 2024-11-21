@@ -86,7 +86,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 
         // 開発者情報を説明に設定
         summary.description = summary.steam.developer;
-
+				/*
         // 動画情報をplayerにセット
         if (appData.movies && Array.isArray(appData.movies)) {
           const highlightedMovies = appData.movies.filter(
@@ -105,7 +105,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
             }
           }
         }
-
+				*/
         // サムネイルとアイコンをラップ
         summary.icon = wrap(summary.icon) ?? "";
         summary.thumbnail = wrap(summary.thumbnail);

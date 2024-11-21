@@ -81,16 +81,20 @@
 			  </h1>
 			</header>
 			<p v-if="isSteam">
-			  {{ steamDeveloper }}<br />
-			  <span v-if="steamOnSale" class="steam-discount">
-				-{{ steamDiscount }}%
-			  </span>
-			  <span v-if="steamOnSale" class="steam-original-price">
-				¥{{ steamOriginalPrice }}
-			  </span>
-			  <span class="steam-current-price">
-				¥{{ steamCurrentPrice }}
-			  </span>
+				<div v-if="steamDeveloper">
+			  		{{ steamDeveloper }}
+				</div>
+				<div class="steam-row steam-pricing">
+					<span v-if="steamOnSale" class="steam-discount">
+					-{{ Math.floor(steamDiscount * 10) / 10 }}%
+					</span>
+					<span v-if="steamOnSale" class="steam-original-price">
+					{{ steamOriginalPrice }}
+					</span>
+					<span class="steam-current-price">
+					{{ steamCurrentPrice }}
+					</span>
+				</div>
 			</p>
 			<p v-else-if="description" :title="description">
 			  {{
@@ -254,133 +258,104 @@ let steamGameName = $ref<string>("");
 let steamDeveloper = $ref<string>("");
 let steamOnSale = $ref(false);
 let steamDiscount = $ref<number>(0);
-let steamOriginalPrice = $ref<string>("");
-let steamCurrentPrice = $ref<string>("");
+let steamOriginalPrice = $ref<string | null>(null);
+let steamCurrentPrice = $ref<string | null>(null);
 
 // SteamファビコンのデフォルトURL（通常のfaviconを使用）
-const defaultIcon = "https://store.steampowered.com/favicon.ico"; 
+const defaultIcon = "https://store.steampowered.com/favicon.ico";
 
-// Steamゲームデータを取得する関数
-const fetchSteamData = async (steamAppId: string) => {
+// URL情報の取得
+const fetchUrlData = async () => {
+  const requestLang = (lang || "ja-JP")
+    .replace("ja-KS", "ja-JP")
+    .replace("ja-KK", "ja-JP");
+
   try {
-    const response = await fetch(
-      `https://store.steampowered.com/api/appdetails?appids=${steamAppId}&cc=jp&l=ja`
-    );
-    const data = await response.json();
-    const gameData = data[steamAppId]?.data;
-    if (gameData && data[steamAppId].success) {
-      steamGameName = gameData.name;
-      // ファビコンを通常の処理で取得
-      icon = `https://store.steampowered.com/favicon.ico`;
+    const response = await fetch(`/url?url=${encodeURIComponent(props.url)}&lang=${requestLang}`);
+    const info = await response.json();
+    if (info.url == null) return;
 
-      // 年齢制限の取得
-      if (gameData.required_age && gameData.required_age !== "0") {
-        steamAgeLimit = gameData.required_age;
-      }
-
-      // 開発者情報の取得
-      if (gameData.developers && gameData.developers.length > 0) {
-        steamDeveloper = gameData.developers.join(", ");
-      }
-
-      // 価格情報
-      if (gameData.price_overview) {
-        const priceOverview = gameData.price_overview;
-        steamCurrentPrice = (priceOverview.final / 100).toLocaleString();
-        if (priceOverview.discount_percent > 0) {
-          steamOnSale = true;
-          steamDiscount = priceOverview.discount_percent;
-          steamOriginalPrice = (priceOverview.initial / 100).toLocaleString();
-        }
-      } else if (gameData.is_free) {
-        steamCurrentPrice = "無料プレイ";
-      } else {
-        steamCurrentPrice = "価格情報なし";
-      }
-      fetching = false;
-    }
-  } catch (error) {
-    console.error("Steamデータの取得中にエラーが発生しました:", error);
-    fetching = false;
-  }
-};
-
-// URLがSteamストアのものかどうかを判定し、App IDを抽出
-const parseSteamUrl = (url: string): string | null => {
-  try {
-    const parsedUrl = new URL(url);
-    if (
-      parsedUrl.hostname === "store.steampowered.com" ||
-      parsedUrl.hostname.endsWith(".steampowered.com")
-    ) {
-      const pathSegments = parsedUrl.pathname.split("/");
-      const appIndex = pathSegments.indexOf("app");
-      if (appIndex !== -1 && pathSegments.length > appIndex + 1) {
-        return pathSegments[appIndex + 1];
-      }
-    }
-    return null;
-  } catch (error) {
-    console.error("無効なURLです:", error);
-    return null;
-  }
-};
-
-const steamAppId = parseSteamUrl(props.url);
-if (steamAppId) {
-  isSteam = true;
-}
-
-const requestUrl = new URL(props.url);
-if (!["http:", "https:"].includes(requestUrl.protocol))
-  throw new Error("無効なURLです");
-
-let tweet = "";
-
-if (
-  requestUrl.hostname === "twitter.com" ||
-  requestUrl.hostname === "mobile.twitter.com" ||
-  requestUrl.hostname === "x.com" ||
-  requestUrl.hostname === "mobile.x.com"
-) {
-  const m = requestUrl.pathname.match(/^\/.+\/status(?:es)?\/(\d+)/);
-  if (m) tweet = m[1];
-}
-
-if (
-  requestUrl.hostname === "music.youtube.com" &&
-  requestUrl.pathname.match("^/(?:watch|channel)")
-) {
-  requestUrl.hostname = "www.youtube.com";
-}
-
-const requestLang = (lang || "ja-JP")
-  .replace("ja-KS", "ja-JP")
-  .replace("ja-KK", "ja-JP");
-
-requestUrl.hash = "";
-
-// Steamでない場合は一般的なURL情報を取得
-if (!isSteam) {
-  fetch(`/url?url=${encodeURIComponent(requestUrl.href)}&lang=${requestLang}`)
-    .then((res) => res.json())
-    .then((info) => {
-      if (info.url == null) return;
+    // Steamの場合の処理
+    if (info.steam) {
+      isSteam = true;
+      steamGameName = info.title;
+      icon = info.icon;
+      thumbnail = info.thumbnail;
+      steamAgeLimit = info.steam.ageLimit;
+      steamDeveloper = info.steam.developer;
+      steamOnSale = info.steam.onSale;
+      steamDiscount = info.steam.discountPercent;
+      steamOriginalPrice = info.steam.originalPrice;
+      steamCurrentPrice = info.steam.currentPrice ||
+	   (info.steam.isFree
+        ? "無料プレイ"
+        : "価格情報なし");
+    } else {
+      // 既存の処理
       title = info.title;
       description = info.description;
       thumbnail = info.thumbnail;
       icon = info.icon;
       sitename = info.sitename;
-      fetching = false;
       player = info.player;
-      if (title !== "X") {
-        tweetId = tweet;
+
+      // ツイートIDの取得
+      const requestUrl = new URL(props.url);
+		if (!["http:", "https:"].includes(requestUrl.protocol))
+			throw new Error("invalid url");
+
+      let tweet = "";
+
+      if (
+        requestUrl.hostname === "twitter.com" ||
+        requestUrl.hostname === "mobile.twitter.com" ||
+        requestUrl.hostname === "x.com" ||
+        requestUrl.hostname === "mobile.x.com"
+      ) {
+        const m = requestUrl.pathname.match(/^\/.+\/status(?:es)?\/(\d+)/);
+        if (m) tweet = m[1];
       }
-    });
-} else {
-  // Steamの場合はSteamデータを取得
-  fetchSteamData(steamAppId!);
-}
+
+		if (
+			requestUrl.hostname === "music.youtube.com" &&
+			requestUrl.pathname.match("^/(?:watch|channel)")
+		) {
+			requestUrl.hostname = "www.youtube.com";
+		}
+
+		const requestLang = (lang || "ja-JP")
+			.replace("ja-KS", "ja-JP")
+			.replace("ja-KK", "ja-JP");
+
+		requestUrl.hash = "";
+
+		fetch(
+			`/url?url=${encodeURIComponent(requestUrl.href)}&lang=${requestLang}`
+		).then((res) => {
+			res.json().then((info) => {
+				if (info.url == null) return;
+				title = info.title;
+				description = info.description;
+				thumbnail = info.thumbnail;
+				icon = info.icon;
+				sitename = info.sitename;
+				fetching = false;
+				player = info.player;
+				if (title !== "X") {
+					tweetId = tweet;
+				}
+			});
+		});
+    }
+    fetching = false;
+  } catch (error) {
+    console.error("URLデータの取得中にエラーが発生しました:", error);
+    fetching = false;
+  }
+};
+
+// 初期化時にデータを取得
+fetchUrlData();
 
 function adjustTweetHeight(message: any) {
   if (message.origin !== "https://platform.twitter.com") return;

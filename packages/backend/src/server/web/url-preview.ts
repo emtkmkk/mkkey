@@ -45,12 +45,27 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       const appData = data[steamAppId]?.data;
 
       if (appData && data[steamAppId].success) {
+		
+	  
+		const _summary = meta.summalyProxy
+		? await getJson(
+			`${meta.summalyProxy}?${query({
+			  url: url,
+			  lang: lang ?? "en-US",
+			})}`
+		  )
+		: await summaly.default(url, {
+			followRedirects: false,
+			lang: lang ?? "en-US",
+		  });
+
+		
         // summaryオブジェクトを構築
         const summary = {
           url: url,
           title: appData.name,
-          description: "", // 後で設定
-          thumbnail: appData.header_image,
+          description: appData.short_description,
+          thumbnail: "",
           icon: "https://store.steampowered.com/favicon.ico",
           sitename: "Steam",
           player: null as any, // 動画情報を追加
@@ -86,7 +101,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 
         // 開発者情報を説明に設定
         summary.description = summary.steam.developer;
-				/*
+		/*
         // 動画情報をplayerにセット
         if (appData.movies && Array.isArray(appData.movies)) {
           const highlightedMovies = appData.movies.filter(
@@ -105,10 +120,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
             }
           }
         }
-				*/
+		*/
         // サムネイルとアイコンをラップ
-        summary.icon = wrap(summary.icon) ?? "";
-        summary.thumbnail = wrap(summary.thumbnail);
+        summary.icon = wrap(_summary.icon) ?? "";
+        summary.thumbnail = wrap(_summary.thumbnail) ?? "";
 
         // Cache 7days
         ctx.set("Cache-Control", "max-age=604800, immutable");

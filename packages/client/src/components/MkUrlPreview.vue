@@ -79,10 +79,17 @@
 				<span v-if="steamDeveloper && (steamReleaseDate && !steamComingSoon)"> | </span>
 				<span v-if="steamReleaseDate && !steamComingSoon">{{ steamReleaseDate }} リリース</span>
 			  </div>
+			<div class="steam-genres" v-if="steamComingSoon">リリース前<span v-if="steamReleaseDate"> リリース日: {{ steamReleaseDate }}</span></p>
+			<div class="steam-genres" v-if="steamGenres">{{ steamGenres }}</p>
 			</header>
-			<p class="steam-genres" v-if="steamGenres">{{ steamGenres }}</p>
-			<p class="steam-genres" v-if="steamComingSoon">リリース前<span v-if="steamReleaseDate"> リリース日: {{ steamReleaseDate }}</span></p>
-			<p class="steam-row steam-pricing">
+			<p v-if="description" :title="description">
+			  {{
+				description.length > 100
+				  ? `${description.slice(0, 100)}…`
+				  : description
+			  }}
+			</p>
+			<footer class="steam-row steam-pricing">
 			  <span v-if="steamOnSale" class="steam-discount">
 				-{{ Math.floor(steamDiscount * 10) / 10 }}%
 			  </span>
@@ -264,6 +271,7 @@
 	  if (info.steam) {
 		isSteam = true;
 		steamGameName = info.title;
+		description = info.description;
 		icon = info.icon;
 		thumbnail = info.thumbnail;
 		steamAgeLimit = info.steam.ageLimit;
@@ -704,20 +712,14 @@
 			  overflow: hidden;
 			  white-space: nowrap;
 			  text-overflow: ellipsis;
-  
-			  .steam-developer {
-				margin-right: 0.25rem;
-			  }
 			}
-		  }
-  
-		  .steam-genres {
-			margin: 0.25rem 0;
-			font-size: 0.9em;
-			color: var(--fg);
-			overflow: hidden;
-			white-space: nowrap;
-			text-overflow: ellipsis;
+			.steam-genres {
+				font-size: 0.9em;
+				color: var(--fg);
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
+			}
 		  }
   
 		  .steam-row.steam-pricing {
@@ -740,7 +742,7 @@
   
 			.steam-original-price {
 			  text-decoration: line-through;
-			  color: rgba(0, 0, 0, 0.7);
+			  opacity: 0.6;
 			  margin-right: 0.5rem;
 			}
   

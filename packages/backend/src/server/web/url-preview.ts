@@ -45,7 +45,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         "application/json, */*",
         5000,
         {
-          cookie: "steamCountry=JP"
+          cookie: "steamCountry=JP",
+					"accept-language": "ja-jp",
         },
       );
 

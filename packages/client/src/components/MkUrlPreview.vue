@@ -55,7 +55,7 @@
 		  :title="url"
 		>
 		  <div
-			v-if="thumbnail && (!showThumbnail || !$store.state.enableDataSaverMode)"
+			v-if="thumbnail && (showThumbnail || !$store.state.enableDataSaverMode)"
 			class="thumbnail"
 			:style="`background-image: url('${thumbnail}')`"
 		  >
@@ -153,7 +153,7 @@
 		  :title="url"
 		>
 		  <div
-			v-if="thumbnail && (!showThumbnail || !$store.state.enableDataSaverMode)"
+			v-if="thumbnail && (showThumbnail || !$store.state.enableDataSaverMode)"
 			class="thumbnail"
 			:style="`background-image: url('${thumbnail}')`"
 		  >
@@ -241,6 +241,7 @@
   let steamOriginalPrice = $ref<string | null>(null);
   let steamCurrentPrice = $ref<string | null>(null);
   let steamGenres = $ref<string>("");
+	let steamComingSoon = $ref(false);
   let steamReleaseDate = $ref<string>("");
   
   // SteamファビコンのデフォルトURL（通常のfaviconを使用）

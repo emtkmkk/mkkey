@@ -72,7 +72,7 @@
 			<header>
 			  <h1 :title="steamGameName">
 				<img v-if="icon" :src="icon" alt="Favicon" class="favicon" />
-				<span v-if="steamAgeLimit">[{{ steamAgeLimit }}+] </span>{{ steamGameName }}
+				<span v-if="steamAgeLimit" style="margin-right:0.5em">[{{ steamAgeLimit }}+] </span>{{ steamGameName }}
 			  </h1>
 			  <div class="developer-release">
 				<span v-if="steamDeveloper" class="steam-developer">{{ steamDeveloper }}</span>

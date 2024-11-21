@@ -274,7 +274,7 @@
 		  info.steam.currentPrice ||
 		  (info.steam.isFree ? "無料プレイ" : "");
 		steamGenres = info.steam.genres;
-		steamComingSoon = info.steam.releaseDate.comingSoon;
+		steamComingSoon = !!info.steam.releaseDate.comingSoon;
 		steamReleaseDate = info.steam.releaseDate.date;
 	  } else {
 		// 既存の処理
@@ -675,7 +675,6 @@
   
 		article {
 		  order: 2;
-		  padding: 0.5rem 0;
   
 		  header {
 			display: flex;

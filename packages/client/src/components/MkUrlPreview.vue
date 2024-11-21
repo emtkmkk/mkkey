@@ -1,160 +1,212 @@
 <template>
 	<div
-		v-if="playerEnabled"
-		class="player"
-		:style="`padding: ${
-			((player.height || 0) / (player.width || 1)) * 100
-		}% 0 0`"
-		@click.stop
+	  v-if="playerEnabled"
+	  class="player"
+	  :style="`padding: ${
+		((player.height || 0) / (player.width || 1)) * 100
+	  }% 0 0`"
+	  @click.stop
 	>
-		<button
-			class="disablePlayer"
-			:title="i18n.ts.disablePlayer"
-			@click="playerEnabled = false"
-		>
-			<i class="ph-x ph-bold ph-lg"></i>
-		</button>
-		<iframe
-			:src="
-				player.url +
-				(player.url.match(/\?/)
-					? '&autoplay=1&auto_play=1'
-					: '?autoplay=1&auto_play=1')
-			"
-			:width="player.width || '100%'"
-			:heigth="player.height || 250"
-			frameborder="0"
-			allow="autoplay; encrypted-media"
-			allowfullscreen
-		/>
+	  <button
+		class="disablePlayer"
+		:title="i18n.ts.disablePlayer"
+		@click="playerEnabled = false"
+	  >
+		<i class="ph-x ph-bold ph-lg"></i>
+	  </button>
+	  <iframe
+		:src="
+		  player.url +
+		  (player.url.match(/\?/)
+			? '&autoplay=1&auto_play=1'
+			: '?autoplay=1&auto_play=1')
+		"
+		:width="player.width || '100%'"
+		:heigth="player.height || 250"
+		frameborder="0"
+		allow="autoplay; encrypted-media"
+		allowfullscreen
+	  />
 	</div>
+  
 	<div
-		v-else-if="isSteam"
-		class="steam-preview"
-		@click.stop
+	  v-else-if="isSteam"
+	  class="mk-url-preview steam"
+	  :class="{ legacyStyle: $store.state.compactGridUrl }"
+	  @click.stop
 	>
-		<div class="steam-row steam-header">
-			<img :src="icon || defaultIcon" class="favicon" />
-			<span class="steam-game-name">
-			<span v-if="steamAgeLimit">[{{ steamAgeLimit }}+] </span>{{ steamGameName }}
-			</span>
-		</div>
-		<div v-if="steamDeveloper" class="steam-row steam-developer">
-			{{ steamDeveloper }}
-		</div>
-		<div class="steam-row steam-pricing">
-			<span v-if="steamOnSale" class="steam-discount">
-			-{{ Math.floor(steamDiscount * 10) / 10 }}%
-			</span>
-			<span v-if="steamOnSale" class="steam-original-price">
-			{{ steamOriginalPrice }}
-			</span>
-			<span class="steam-current-price">
-			{{ steamCurrentPrice }}
-			</span>
-		</div>
-	</div>
-	<div
-		v-else-if="tweetId && tweetExpanded"
-		ref="twitter"
-		class="twitter"
-		@click.stop
-	>
-		<iframe
-			ref="tweet"
-			allow="fullscreen;web-share"
-			scrolling="no"
-			frameborder="no"
-			:style="{
-				position: 'relative',
-				width: '100%',
-				height: `${tweetHeight}px`,
-			}"
-			:src="`https://platform.twitter.com/embed/index.html?embedId=${embedId}&amp;hideCard=false&amp;hideThread=false&amp;lang=en&amp;theme=${
-				$store.state.darkMode ? 'dark' : 'light'
-			}&amp;id=${tweetId}`"
-		></iframe>
-	</div>
-	<div
-		v-else
-		v-size="{ max: [400, 350] }"
-		class="mk-url-preview"
-		:class="{ legacyStyle: $store.state.compactGridUrl }"
-		@click.stop
-	>
-		<MkButton
-			v-if="tweetId"
-			:small="true"
-			class="expandTweet"
-			@click="tweetExpanded = true"
+	  <MkButton
+		v-if="showThumbnail && thumbnail"
+		class="showThumbnail"
+		:small="true"
+		@click="showThumbnail = true"
+	  >
+		<i class="ph-image ph-bold ph-lg"></i> {{ i18n.ts.showThumbnail }}
+	  </MkButton>
+	  <transition :name="$store.state.animation ? 'zoom' : ''" mode="out-in">
+		<component
+		  :is="self ? 'MkA' : 'a'"
+		  v-if="!fetching"
+		  class="link"
+		  :class="{ compact }"
+		  :[attr]="self ? url.substr(local.length) : url"
+		  rel="nofollow noopener"
+		  :target="target"
+		  :title="url"
 		>
-			{{ i18n.ts.expandTweet }}
-		</MkButton>
-		<MkButton
-			v-if="
-				thumbnail && $store.state.enableDataSaverMode && !showThumbnail
-			"
-			class="showThumbnail"
-			:small="true"
-			@click="showThumbnail = true"
-		>
-			<i class="ph-image ph-bold ph-lg"></i> {{ i18n.ts.showThumbnail }}
-		</MkButton>
-		<transition :name="$store.state.animation ? 'zoom' : ''" mode="out-in">
-			<component
-				:is="self ? 'MkA' : 'a'"
-				v-if="!fetching"
-				class="link"
-				:class="{ compact }"
-				:[attr]="self ? url.substr(local.length) : url"
-				rel="nofollow noopener"
-				:target="target"
-				:title="url"
+		  <div
+			v-if="thumbnail && (showThumbnail || !$store.state.enableDataSaverMode)"
+			class="thumbnail"
+			:style="`background-image: url('${thumbnail}')`"
+		  >
+			<button
+			  v-if="!playerEnabled && player.url"
+			  class="_button"
+			  :title="i18n.ts.enablePlayer"
+			  @click.prevent="playerEnabled = true"
 			>
-				<div
-					v-if="
-						thumbnail &&
-						(!defaultStore.state.enableDataSaverMode ||
-							showThumbnail)
-					"
-					class="thumbnail"
-					:style="`background-image: url('${thumbnail}')`"
-				>
-					<button
-						v-if="!playerEnabled && player.url"
-						class="_button"
-						:title="i18n.ts.enablePlayer"
-						@click.prevent="playerEnabled = true"
-					>
-						<i class="ph-play-circle ph-bold ph-7x"></i>
-					</button>
-				</div>
-				<article>
-					<header>
-						<h1 :title="title">{{ title }}</h1>
-					</header>
-					<p v-if="description" :title="description">
-						{{
-							description.length > 85
-								? `${description.slice(0, 85)}…`
-								: description
-						}}
-					</p>
-					<footer>
-						<img
-							v-if="icon"
-							class="icon"
-							:src="icon"
-							@error="icon = ''"
-						/>
-						<p :title="sitename">{{ sitename }}</p>
-					</footer>
-				</article>
-			</component>
-		</transition>
+			  <i class="ph-play-circle ph-bold ph-7x"></i>
+			</button>
+		  </div>
+		  <article>
+			<header>
+			  <h1 :title="title">
+				<img v-if="icon" :src="icon" alt="Favicon" class="favicon" />
+				<span v-if="isSteam">
+				  <span v-if="steamAgeLimit">[{{ steamAgeLimit }}+] </span>{{ steamGameName }}
+				</span>
+				<span v-else>
+				  {{ title }}
+				</span>
+			  </h1>
+			</header>
+			<p v-if="isSteam">
+			  {{ steamDeveloper }}<br />
+			  <span v-if="steamOnSale" class="steam-discount">
+				-{{ steamDiscount }}%
+			  </span>
+			  <span v-if="steamOnSale" class="steam-original-price">
+				¥{{ steamOriginalPrice }}
+			  </span>
+			  <span class="steam-current-price">
+				¥{{ steamCurrentPrice }}
+			  </span>
+			</p>
+			<p v-else-if="description" :title="description">
+			  {{
+				description.length > 85
+				  ? `${description.slice(0, 85)}…`
+				  : description
+			  }}
+			</p>
+			<footer>
+			  <img
+				v-if="icon && !isSteam"
+				class="icon"
+				:src="icon"
+				@error="icon = ''"
+			  />
+			  <p v-if="!isSteam" :title="sitename">{{ sitename }}</p>
+			</footer>
+		  </article>
+		</component>
+	  </transition>
 	</div>
-</template>
-
+  
+	<div
+	  v-else-if="tweetId && tweetExpanded"
+	  ref="twitter"
+	  class="twitter"
+	  @click.stop
+	>
+	  <iframe
+		ref="tweet"
+		allow="fullscreen;web-share"
+		scrolling="no"
+		frameborder="no"
+		:style="{
+		  position: 'relative',
+		  width: '100%',
+		  height: `${tweetHeight}px`,
+		}"
+		:src="`https://platform.twitter.com/embed/index.html?embedId=${embedId}&amp;hideCard=false&amp;hideThread=false&amp;lang=en&amp;theme=${
+		  $store.state.darkMode ? 'dark' : 'light'
+		}&amp;id=${tweetId}`"
+	  ></iframe>
+	</div>
+	<div
+	  v-else
+	  v-size="{ max: [400, 350] }"
+	  class="mk-url-preview"
+	  :class="{ legacyStyle: $store.state.compactGridUrl }"
+	  @click.stop
+	>
+	  <MkButton
+		v-if="tweetId"
+		:small="true"
+		class="expandTweet"
+		@click="tweetExpanded = true"
+	  >
+		{{ i18n.ts.expandTweet }}
+	  </MkButton>
+	  <MkButton
+		v-if="thumbnail && $store.state.enableDataSaverMode && !showThumbnail"
+		class="showThumbnail"
+		:small="true"
+		@click="showThumbnail = true"
+	  >
+		<i class="ph-image ph-bold ph-lg"></i> {{ i18n.ts.showThumbnail }}
+	  </MkButton>
+	  <transition :name="$store.state.animation ? 'zoom' : ''" mode="out-in">
+		<component
+		  :is="self ? 'MkA' : 'a'"
+		  v-if="!fetching"
+		  class="link"
+		  :class="{ compact }"
+		  :[attr]="self ? url.substr(local.length) : url"
+		  rel="nofollow noopener"
+		  :target="target"
+		  :title="url"
+		>
+		  <div
+			v-if="thumbnail && (!showThumbnail || !$store.state.enableDataSaverMode)"
+			class="thumbnail"
+			:style="`background-image: url('${thumbnail}')`"
+		  >
+			<button
+			  v-if="!playerEnabled && player.url"
+			  class="_button"
+			  :title="i18n.ts.enablePlayer"
+			  @click.prevent="playerEnabled = true"
+			>
+			  <i class="ph-play-circle ph-bold ph-7x"></i>
+			</button>
+		  </div>
+		  <article>
+			<header>
+			  <h1 :title="title">{{ title }}</h1>
+			</header>
+			<p v-if="description" :title="description">
+			  {{
+				description.length > 85
+				  ? `${description.slice(0, 85)}…`
+				  : description
+			  }}
+			</p>
+			<footer>
+			  <img
+				v-if="icon && !isSteam"
+				class="icon"
+				:src="icon"
+				@error="icon = ''"
+			  />
+			  <p v-if="!isSteam" :title="sitename">{{ sitename }}</p>
+			</footer>
+		  </article>
+		</component>
+	  </transition>
+	</div>
+  </template>  
 <script lang="ts" setup>
 import { onMounted, onUnmounted, watch } from "vue";
 import { url as local, lang } from "@/config";
@@ -204,7 +256,9 @@ let steamOnSale = $ref(false);
 let steamDiscount = $ref<number>(0);
 let steamOriginalPrice = $ref<string>("");
 let steamCurrentPrice = $ref<string>("");
-const defaultIcon = "https://store.steampowered.com/favicon.ico"; // デフォルトのファビコンURL
+
+// SteamファビコンのデフォルトURL（通常のfaviconを使用）
+const defaultIcon = "https://store.steampowered.com/favicon.ico"; 
 
 // Steamゲームデータを取得する関数
 const fetchSteamData = async (steamAppId: string) => {
@@ -232,11 +286,11 @@ const fetchSteamData = async (steamAppId: string) => {
       // 価格情報
       if (gameData.price_overview) {
         const priceOverview = gameData.price_overview;
-        steamCurrentPrice = priceOverview.final_formatted;
+        steamCurrentPrice = (priceOverview.final / 100).toLocaleString();
         if (priceOverview.discount_percent > 0) {
           steamOnSale = true;
           steamDiscount = priceOverview.discount_percent;
-          steamOriginalPrice = priceOverview.initial_formatted;
+          steamOriginalPrice = (priceOverview.initial / 100).toLocaleString();
         }
       } else if (gameData.is_free) {
         steamCurrentPrice = "無料プレイ";
@@ -645,69 +699,67 @@ onUnmounted(() => {
 			}
 		}
 	}
-	.steam-preview {
-		border: 1px solid var(--divider);
-		border-radius: 0.5rem;
-		padding: 0.5rem 1rem;
-		background-color: var(--background);
-		display: flex;
-		flex-direction: column;
-		pointer-events: auto;
-
-		.steam-row {
+	.steam {
+		.link {
+			pointer-events: auto;
 			display: flex;
-			align-items: center;
-			margin-bottom: 0.25rem;
+			flex-direction: column;
 
-			&.steam-header {
-			justify-content: flex-start;
+			.thumbnail {
+				order: 1;
+				height: auto;
+			}
 
-				.favicon {
+			article {
+				order: 2;
+				padding: 0.5rem 0;
+				
+				header {
+					display: flex;
+					align-items: center;
+
+					.favicon {
 					width: 24px;
 					height: 24px;
 					margin-right: 0.5rem;
-				}
+					}
 
-				.steam-game-name {
+					.steam-game-name {
 					font-size: 1em;
 					font-weight: bold;
+					}
 				}
-			}
 
-			&.steam-developer {
-				justify-content: flex-start;
-				font-size: 0.9em;
-				color: rgba(0, 0, 0, 0.6);
-				margin-left: 2.5rem;
-				margin-bottom: 0.5rem;
-			}
+				p {
+					margin: 0.5rem 0;
+					font-size: 0.9em;
 
-			&.steam-pricing {
-			justify-content: flex-end;
-			align-items: center;
-
-				.steam-discount {
+					.steam-discount {
 					background-color: green;
 					color: white;
 					padding: 0.2rem 0.5rem;
 					border-radius: 0.25rem;
 					margin-right: 0.5rem;
 					font-weight: bold;
-				}
+					}
 
-				.steam-original-price {
+					.steam-original-price {
 					text-decoration: line-through;
-					color: rgba(0, 0, 0, 0.7
-					);
+					color: rgba(0, 0, 0, 0.5); /* 不透明度を下げた色 */
 					margin-right: 0.5rem;
+					}
+
+					.steam-current-price {
+					font-weight: bold;
+					}
 				}
 
-				.steam-current-price {
-					font-size: 1em;
-					font-weight: bold;
+				footer {
+					display: none; /* Steamの場合は通常のフッターを非表示 */
 				}
 			}
 		}
 	}
+
 }
 </style>

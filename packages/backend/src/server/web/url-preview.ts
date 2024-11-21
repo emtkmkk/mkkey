@@ -35,7 +35,9 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   if (steamAppId) {
     // Steamの場合の処理
     try {
-      const steamApiUrl = `https://store.steampowered.com/api/appdetails?appids=${steamAppId}&cc=jp&l=${lang ?? 'ja'}`;
+      const steamApiUrl = `https://store.steampowered.com/api/appdetails?appids=${steamAppId}&cc=jp&l=${
+        lang ?? "ja"
+      }`;
 
       // getJsonを使用してSteamデータを取得
       const data = await getJson(steamApiUrl);
@@ -47,25 +49,62 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         const summary = {
           url: url,
           title: appData.name,
-          description: '', // 後で設定
+          description: "", // 後で設定
           thumbnail: appData.header_image,
-          icon: 'https://store.steampowered.com/favicon.ico',
-          sitename: 'Steam',
-          player: null,
+          icon: "https://store.steampowered.com/favicon.ico",
+          sitename: "Steam",
+          player: null as any, // 動画情報を追加
           // 追加のSteam専用データ
           steam: {
-            ageLimit: appData.required_age && appData.required_age !== '0' ? appData.required_age : null,
-            developer: appData.developers ? appData.developers.join(', ') : '',
-            onSale: appData.price_overview ? appData.price_overview.discount_percent > 0 : false,
-            discountPercent: appData.price_overview ? appData.price_overview.discount_percent : 0,
-            originalPrice: appData.price_overview ? appData.price_overview.initial_formatted : null,
-            currentPrice: appData.price_overview ? appData.price_overview.final_formatted : null,
+            ageLimit:
+              appData.required_age && appData.required_age !== "0"
+                ? appData.required_age
+                : null,
+            developer: appData.developers ? appData.developers.join(", ") : "",
+            onSale: appData.price_overview
+              ? appData.price_overview.discount_percent > 0
+              : false,
+            discountPercent: appData.price_overview
+              ? appData.price_overview.discount_percent
+              : 0,
+            originalPrice: appData.price_overview
+              ? appData.price_overview.initial_formatted
+              : null,
+            currentPrice: appData.price_overview
+              ? appData.price_overview.final_formatted
+              : null,
             isFree: appData.is_free,
+            genres: appData.genres
+              ? appData.genres.map((genre) => genre.description).join(", ")
+              : "",
+            releaseDate: {
+				comingSoon: appData.release_date ? appData.release_date.coming_soon : false,
+				date: appData.release_date ? appData.release_date.date : "",
+			}
           },
         };
 
         // 開発者情報を説明に設定
         summary.description = summary.steam.developer;
+
+        // 動画情報をplayerにセット
+        if (appData.movies && Array.isArray(appData.movies)) {
+          const highlightedMovies = appData.movies.filter(
+            (movie) => movie.highlight
+          );
+          if (highlightedMovies.length > 0) {
+            // IDでソートして最も古い動画を取得
+            highlightedMovies.sort((a, b) => a.id - b.id);
+            const oldestMovie = highlightedMovies[0];
+            if (oldestMovie.webm && oldestMovie.webm["480"]) {
+              summary.player = {
+                url: oldestMovie.webm["480"],
+                width: oldestMovie.width,
+                height: oldestMovie.height,
+              };
+            }
+          }
+        }
 
         // サムネイルとアイコンをラップ
         summary.icon = wrap(summary.icon) ?? "";
@@ -77,7 +116,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         ctx.body = summary;
         return;
       } else {
-        throw new Error('Failed to get Steam app data');
+        throw new Error("Failed to get Steam app data");
       }
     } catch (err) {
       logger.warn(`Failed to get Steam data for ${url}: ${err}`);

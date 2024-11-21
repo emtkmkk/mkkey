@@ -79,9 +79,8 @@
 				<span v-if="steamDeveloper && (steamReleaseDate && !steamComingSoon)"> | </span>
 				<span v-if="steamReleaseDate && !steamComingSoon">{{ steamReleaseDate }} リリース</span>
 			  </div>
-			<div class="steam-genres" v-if="steamComingSoon">リリース前<span v-if="steamReleaseDate"> リリース日: {{ steamReleaseDate }}</span></p>
-			<div class="steam-genres" v-if="steamGenres">{{ steamGenres }}</p>
-			</header>
+			<div class="steam-genres" v-if="steamComingSoon">リリース前<span v-if="steamReleaseDate"> リリース日: {{ steamReleaseDate }}</span></div>
+			<div class="steam-genres" v-if="steamGenres">{{ steamGenres }}</div>
 			<p v-if="description" :title="description">
 			  {{
 				description.length > 100

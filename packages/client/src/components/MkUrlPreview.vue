@@ -81,6 +81,7 @@
 			  </div>
 			<div class="steam-genres" v-if="steamComingSoon">リリース前<span v-if="steamReleaseDate"> リリース日: {{ steamReleaseDate }}</span></div>
 			<div class="steam-genres" v-if="steamGenres">{{ steamGenres }}</div>
+			</header>
 			<p v-if="description" :title="description">
 			  {{
 				description.length > 100
@@ -748,10 +749,6 @@
 			.steam-current-price {
 			  font-weight: bold;
 			}
-		  }
-  
-		  footer {
-			display: none; /* Steamの場合は通常のフッターを非表示 */
 		  }
 		}
 	  }

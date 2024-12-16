@@ -45,6 +45,7 @@ export default async (
 		driveCapacityOverrideMb: User["driveCapacityOverrideMb"];
 		isExplorable: User["isExplorable"];
 		isRemoteExplorable: User["isRemoteExplorable"];
+		isBot: User["isBot"];
 	},
 	note: Note,
 	reaction?: string,
@@ -239,7 +240,7 @@ export default async (
 			.set({
 				reactions: () => sql,
 				...(existCount === 0
-					? { score: () => `"score" + ${user.host ? "1" : "3"}` }
+					? { score: () => `"score" + ${user.isBot ? "0" : user.host ? "1" : "3"}` }
 					: {}),
 			})
 			.where("id = :id", { id: note.id })

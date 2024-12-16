@@ -23,9 +23,14 @@
 							{{
 								props.asReactionPicker ||
 								$store.state.showRemoteEmojiPostForm
-									? "他サーバー絵文字の辞書データがありません。"
+									? "他サーバー絵文字の辞書データがありません。 "
 									: "@（他鯖絵文字検索）はリアクション時のみ使用可能です。"
 							}}
+							<a
+								v-if="(props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && $store.state.remoteEmojisFetch !== 'none'"
+								@click.stop="refetchEmoji"
+								>{{ i18n.ts.refetch + "？" }}</a
+							>
 						</header>
 					</div>
 					<div v-else>
@@ -1147,6 +1152,7 @@ import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
 import { FocusTrap } from "focus-trap-vue";
 import { $i } from "@/account";
+import { unisonReload } from "@/scripts/unison-reload";
 
 const props = withDefaults(
 	defineProps<{
@@ -1365,6 +1371,13 @@ function emojiSearch(nQ, oQ) {
 		return searchHost && !emoji.host.includes(searchHost);
 	};
 
+	const charSearch = (
+		emojis: UnicodeEmojiDef[],
+		keyword: string,
+	) => {
+		return emojis.find((emoji) => emoji.char === keyword);
+	};
+
 	const nameSearch = (
 		emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef,
 		keywords: string | string[],
@@ -1557,13 +1570,11 @@ function emojiSearch(nQ, oQ) {
 		}>();
 
 		if (isAllSearch) return matches;
-		const exactMatch = emojis.find(
-			(emoji) => formatRoomaji(emoji.name) === roomajiQ
-		);
+		const exactMatch = charSearch(emojis, roomajiQ);
 		if (exactMatch)
 			beforeSort.add({
 				emoji: exactMatch,
-				key: formatRoomaji(exactMatch.name),
+				key: formatRoomaji(exactMatch.char),
 			});
 
 		if (newQ.includes(" ")) {
@@ -1735,6 +1746,11 @@ function done(query?: any): boolean | void {
 	} else {
 		q.value = `${query}*`;
 	}
+}
+
+function refetchEmoji() {
+	defaultStore.set("remoteEmojisFetch", "once");
+	unisonReload();
 }
 
 onMounted(() => {

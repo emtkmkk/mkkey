@@ -71,7 +71,18 @@ html
 					if (storedTheme) {
 						var parsedTheme = JSON.parse(storedTheme);
 						if (parsedTheme && parsedTheme.bg) {
-							splashColor = parsedTheme.bg;
+							var bgVal = parsedTheme.bg;
+		
+							if (bgVal.includes('linear-gradient')) {
+								var match = bgVal.match(/#([0-9a-fA-F]{3,8})/);
+								if (match && match[0]) {
+									splashColor = match[0];
+								} else {
+									splashColor = "#{themeColor || '#31748f'}";
+								}
+							} else {
+								splashColor = bgVal;
+							}
 						} else {
 							if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
 								splashColor = '#000000';
@@ -96,6 +107,7 @@ html
 					console.warn("iosPWASplash failed to load or execute:", err);
 				}
 			})();
+
 
 
 	body

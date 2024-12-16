@@ -90,7 +90,11 @@ html
 					splashColor = "#{themeColor || '#31748f'}";
 				}
 
-				iosPWASplash("#{icon || '/apple-touch-icon.png'}", splashColor);
+				try {
+					iosPWASplash("#{icon || '/apple-touch-icon.png'}", splashColor);
+				} catch(e) {
+					console.error(e);
+				}
 			})();
 
 	body

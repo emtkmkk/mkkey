@@ -61,6 +61,43 @@ html
 		script
 			include ../boot.js
 
+		script(src="https://cdn.jsdelivr.net/npm/ios-pwa-splash@1.0.0/cdn.min.js")
+
+		script.
+			(function() {
+				var splashColor = "#{themeColor || '#31748f'}";
+				try {
+					var storedTheme = localStorage.getItem('theme');
+					if (storedTheme) {
+						var parsedTheme = JSON.parse(storedTheme);
+						if (parsedTheme && parsedTheme.bg) {
+							splashColor = parsedTheme.bg;
+						} else {
+							if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+								splashColor = '#000000';
+							} else {
+								splashColor = '#ffffff';
+							}
+						}
+					} else {
+						if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+							splashColor = '#000000';
+						} else {
+							splashColor = '#ffffff';
+						}
+					}
+				} catch(e) {
+					splashColor = "#{themeColor || '#31748f'}";
+				}
+		
+				try {
+					iosPWASplash("/apple-touch-icon.png", splashColor);
+				} catch (err) {
+					console.warn("iosPWASplash failed to load or execute:", err);
+				}
+			})();
+
+
 	body
 		noscript: p
 			| JavaScriptを有効にしてください

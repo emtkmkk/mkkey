@@ -61,55 +61,6 @@ html
 		script
 			include ../boot.js
 
-		script(src="https://cdn.jsdelivr.net/npm/ios-pwa-splash@1.0.0/cdn.min.js")
-
-		script.
-			(function() {
-				var splashColor = "#{themeColor || '#31748f'}";
-				try {
-					var storedTheme = localStorage.getItem('theme');
-					if (storedTheme) {
-						var parsedTheme = JSON.parse(storedTheme);
-						if (parsedTheme && parsedTheme.bg) {
-							var bgVal = parsedTheme.bg;
-		
-							if (bgVal.includes('linear-gradient')) {
-								var match = bgVal.match(/#([0-9a-fA-F]{3,8})/);
-								if (match && match[0]) {
-									splashColor = match[0];
-								} else {
-									splashColor = "#{themeColor || '#31748f'}";
-								}
-							} else {
-								splashColor = bgVal;
-							}
-						} else {
-							if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-								splashColor = '#000000';
-							} else {
-								splashColor = '#ffffff';
-							}
-						}
-					} else {
-						if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-							splashColor = '#000000';
-						} else {
-							splashColor = '#ffffff';
-						}
-					}
-				} catch(e) {
-					splashColor = "#{themeColor || '#31748f'}";
-				}
-		
-				try {
-					iosPWASplash("/apple-touch-icon.png", splashColor);
-				} catch (err) {
-					console.warn("iosPWASplash failed to load or execute:", err);
-				}
-			})();
-
-
-
 	body
 		noscript: p
 			| JavaScriptを有効にしてください

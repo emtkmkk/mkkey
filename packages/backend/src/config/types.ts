@@ -125,6 +125,7 @@ export type Source = {
 		s3ForcePathStyle?: boolean;
 	};
 	summalyProxyUrl?: string;
+	userAgent?: string;
 };
 
 /**

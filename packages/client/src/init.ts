@@ -979,7 +979,7 @@ const loadIosPwaSplash = async () => {
   iosPWASplashScript.src = "https://cdn.jsdelivr.net/npm/ios-pwa-splash@1.0.0/cdn.min.js";
   iosPWASplashScript.onload = () => {
     try {
-      iosPWASplash(icon || '/apple-touch-icon.png', splashColor);
+      iosPWASplash('/apple-touch-icon.png', splashColor);
     } catch (err) {
       console.warn("iosPWASplash failed to load or execute:", err);
     }

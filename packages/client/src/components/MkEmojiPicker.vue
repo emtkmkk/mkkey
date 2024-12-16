@@ -1365,6 +1365,13 @@ function emojiSearch(nQ, oQ) {
 		return searchHost && !emoji.host.includes(searchHost);
 	};
 
+	const charSearch = (
+		emojis: UnicodeEmojiDef[],
+		keywords: string,
+	) => {
+		return emojis.find((emoji) => emoji.char === keyword);
+	};
+
 	const nameSearch = (
 		emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef,
 		keywords: string | string[],
@@ -1557,13 +1564,11 @@ function emojiSearch(nQ, oQ) {
 		}>();
 
 		if (isAllSearch) return matches;
-		const exactMatch = emojis.find(
-			(emoji) => formatRoomaji(emoji.name) === roomajiQ
-		);
+		const exactMatch = charSearch(emojis, roomajiQ);
 		if (exactMatch)
 			beforeSort.add({
 				emoji: exactMatch,
-				key: formatRoomaji(exactMatch.name),
+				key: formatRoomaji(exactMatch.char),
 			});
 
 		if (newQ.includes(" ")) {

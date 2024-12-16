@@ -5,13 +5,7 @@ block loadClientEntry
 
 doctype html
 
-//
-		Thank you for using Calckey!
-		If you are reading this message... how about joining the development?
-		https://codeberg.org/calckey/calckey
-
 html
-
 	- var timestamp = Date.now();
 
 	head
@@ -66,6 +60,38 @@ html
 
 		script
 			include ../boot.js
+
+		script(src="https://cdn.jsdelivr.net/npm/ios-pwa-splash@1.0.0/cdn.min.js")
+
+		script.
+			(function() {
+				var splashColor = "#{themeColor || '#31748f'}";
+				try {
+					var storedTheme = localStorage.getItem('theme');
+					if (storedTheme) {
+						var parsedTheme = JSON.parse(storedTheme);
+						if (parsedTheme && parsedTheme.bg) {
+							splashColor = parsedTheme.bg;
+						} else {
+							if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+								splashColor = '#000000';
+							} else {
+								splashColor = '#ffffff';
+							}
+						}
+					} else {
+						if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+							splashColor = '#000000';
+						} else {
+							splashColor = '#ffffff';
+						}
+					}
+				} catch(e) {
+					splashColor = "#{themeColor || '#31748f'}";
+				}
+
+				iosPWASplash("#{icon || '/apple-touch-icon.png'}", splashColor);
+			})();
 
 	body
 		noscript: p

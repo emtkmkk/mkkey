@@ -246,6 +246,12 @@ export class UserProfile {
 		default: [],
 	})
 	public mutingNotificationTypes: typeof notificationTypes[number][];
+	
+	// フォローされた際のメッセージ
+	@Column('varchar', {
+		length: 256, nullable: true,
+	})
+	public followedMessage: string | null;
 
 	//#region Denormalized fields
 	@Index()

@@ -266,7 +266,21 @@
 				v-if="notification.type === 'followRequestAccepted'"
 				class="text"
 				style="opacity: 0.6"
-				>{{ i18n.ts.followRequestAccepted }}</span
+				>{{ i18n.ts.followRequestAccepted }}
+				<div
+					v-if="
+						notification.user?.followedMessage
+					"
+				>
+					<i class="ph-quotes ph-fill ph-lg"></i>
+					<Mfm
+						:text="notification.user?.followedMessage"
+						:plain="true"
+						:nowrap="!full"
+						:custom-emojis="notification.user.emojis"
+					/>
+					<i class="ph-quotes ph-fill ph-lg"></i></div
+			></span
 			>
 			<span
 				v-if="notification.type === 'receiveFollowRequest'"

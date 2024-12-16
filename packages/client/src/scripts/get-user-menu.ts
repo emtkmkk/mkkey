@@ -299,6 +299,13 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		os.api("following/requests/reject", { userId: user.id });
 	}
 
+	async function showFollowedMessage() {
+		await os.alert({
+			type: "info",
+			text: user.followedMessage,
+		});
+	}
+
 	let menu = [
 		{
 			icon: "ph-at ph-bold ph-lg",
@@ -360,6 +367,12 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			  ]
 			: []),
 		null,
+		meId !== user.id && user.isFollowed && user.followedMessage
+			? {
+				icon: "ph-chat-dots ph-bold ph-lg",
+				text: "フォロー時のメッセージ",
+				action: showFollowedMessage,
+			} : undefined,
 		meId !== user.id && !defaultStore.state.hiddenIconUserIds?.includes(user.id)
 			? {
 					icon: "ph-eye-slash ph-bold ph-lg",

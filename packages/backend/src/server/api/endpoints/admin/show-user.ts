@@ -59,6 +59,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	return {
 		email: profile.email,
 		emailVerified: profile.emailVerified,
+		followedMessage: profile.followedMessage,
 		autoAcceptFollowed: profile.autoAcceptFollowed,
 		noCrawle: profile.noCrawle,
 		preventAiLearning: profile.preventAiLearning,

@@ -96,6 +96,7 @@ const birthdaySchema = {
 	type: "string",
 	pattern: /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.toString().slice(1, -1),
 } as const;
+export const followedMessageSchema = { type: 'string', minLength: 1, maxLength: 256 } as const;
 
 function isLocalUser(user: User): user is ILocalUser;
 function isLocalUser<T extends { host: User["host"] }>(
@@ -132,6 +133,7 @@ export const UserRepository = db.getRepository(User).extend({
 	descriptionSchema,
 	locationSchema,
 	birthdaySchema,
+	followedMessageSchema,
 
 	//#region Validators
 	validateLocalUsername: ajv.compile(localUsernameSchema),
@@ -830,6 +832,7 @@ export const UserRepository = db.getRepository(User).extend({
 				? {
 						avatarId: user.avatarId,
 						bannerId: user.bannerId,
+						followedMessage: profile!.followedMessage,
 						injectFeaturedNote: profile!.injectFeaturedNote,
 						receiveAnnouncementEmail: profile!.receiveAnnouncementEmail,
 						alwaysMarkNsfw: profile!.alwaysMarkNsfw,
@@ -919,6 +922,7 @@ export const UserRepository = db.getRepository(User).extend({
 						isRenoteMuted: relation.isRenoteMuted,
 						isFollowBlocking: relation.isFollowBlocking,
 						isInviter: relation.isInviter ? true : undefined,
+						followedMessage: relation.isFollowing && profile ? profile.followedMessage : undefined,
 				  }
 				: {}),
 			...(

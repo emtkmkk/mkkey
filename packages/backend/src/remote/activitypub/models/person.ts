@@ -450,6 +450,7 @@ export async function createPerson(
 					birthday: bday ? bday[0] : null,
 					location: person["vcard:Address"] || null,
 					userHost: host,
+					followedMessage: person._misskey_followedMessage != null ? truncate(person._misskey_followedMessage, 256) : null,
 				}),
 			);
 
@@ -857,6 +858,7 @@ export async function updatePerson(
 			description: _description,
 			birthday: bday ? bday[0] : null,
 			location: person["vcard:Address"] || null,
+			followedMessage: person._misskey_followedMessage != null ? truncate(person._misskey_followedMessage, 256) : null,
 		},
 	);
 

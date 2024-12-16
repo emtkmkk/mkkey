@@ -90,6 +90,7 @@ export const paramDef = {
 	properties: {
 		name: { ...Users.nameSchema, nullable: true },
 		description: { ...Users.descriptionSchema, nullable: true },
+		followedMessage: { ...Users.followedMessageSchema, nullable: true },
 		location: { ...Users.locationSchema, nullable: true },
 		birthday: { ...Users.birthdaySchema, nullable: true },
 		lang: {
@@ -230,6 +231,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	if (ps.birthday !== undefined) profileUpdates.birthday = ps.birthday;
 	if (ps.ffVisibility !== undefined)
 		profileUpdates.ffVisibility = ps.ffVisibility;
+	if (ps.followedMessage !== undefined) profileUpdates.followedMessage = ps.followedMessage;
 	if (ps.avatarId !== undefined) updates.avatarId = ps.avatarId;
 	if (ps.bannerId !== undefined) updates.bannerId = ps.bannerId;
 	if (ps.mutedWords !== undefined) {
@@ -399,6 +401,10 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		profileUpdates.fields === undefined
 			? profile.fields
 			: profileUpdates.fields;
+	const newFollowedMessage =
+		profileUpdates.followedMessage === undefined
+			? profile.followedMessage
+			: profileUpdates.followedMessage;
 
 	if (newName != null) {
 		let _newName = newName;
@@ -453,6 +459,11 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 			emojis = emojis.concat(extractCustomEmojisFromMfm(valueTokens!));
 		});
 	}
+
+	if (newFollowedMessage != null) {
+		emojis = emojis.concat(extractCustomEmojisFromMfm(mfm.parseSimple(newFollowedMessage)));
+	}
+	
 
 	updates.emojis = emojis;
 	updates.tags = tags;

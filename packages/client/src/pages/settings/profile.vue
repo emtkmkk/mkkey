@@ -166,6 +166,14 @@
 			}}</template>
 		</FormSlot>
 
+		<FormInput v-model="profile.followedMessage" :max="200" manualSave class="_formBlock">
+			<template #label>{{ i18n.ts.followedMessage }}</template>
+			<template #caption>
+				<div>{{ i18n.ts.followedMessageDescription }}</div>
+				<div>{{ i18n.ts.followedMessageDescriptionForLockedAccount }}</div>
+			</template>
+		</FormInput>
+
 		<FormSwitch v-model="profile.isCat" class="_formBlock"
 			>{{ i18n.ts.flagAsCat
 			}}<template #caption>{{
@@ -242,6 +250,7 @@ const profile = reactive({
 	name: $i?.name,
 	fixedName: $i?.fixedName,
 	description: $i?.description,
+	followedMessage: $i?.followedMessage,
 	location: $i?.location,
 	birthday: $i?.birthday,
 	lang: $i?.lang,
@@ -317,6 +326,7 @@ function save() {
 		name: profile.name || null,
 		fixedName: profile.fixedName || null,
 		description: profile.description || null,
+		followedMessage: profile.followedMessage || null,
 		location: profile.location || null,
 		birthday: profile.birthday || null,
 		lang: profile.lang || null,

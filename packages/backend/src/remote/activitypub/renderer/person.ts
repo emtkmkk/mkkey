@@ -75,6 +75,7 @@ export async function renderPerson(user: ILocalUser) {
 			? toHtml(mfm.parse(profile.description))
 			: null,
 		_misskey_summary: profile.description,
+		_misskey_followedMessage: profile.followedMessage,
 		icon: avatar ? renderImage(avatar) : null,
 		image: banner ? renderImage(banner) : null,
 		tag,

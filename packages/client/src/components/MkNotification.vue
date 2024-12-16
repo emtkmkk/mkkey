@@ -262,15 +262,16 @@
 						is-following-hidden
 					/></div
 			></span>
-			<span
-				v-if="notification.type === 'followRequestAccepted'"
-				class="text"
-				style="opacity: 0.6"
-				>{{ i18n.ts.followRequestAccepted }}
+			<template v-if="notification.type === 'followRequestAccepted'">
+				<span
+					class="text"
+					style="opacity: 0.6"
+				>{{ i18n.ts.followRequestAccepted }}</span>
 				<div
 					v-if="
 						notification.customBody
 					"
+					class="text"
 				>
 					<i class="ph-quotes ph-fill ph-lg"></i>
 					<Mfm
@@ -279,9 +280,9 @@
 						:nowrap="!full"
 						:custom-emojis="notification.user.emojis"
 					/>
-					<i class="ph-quotes ph-fill ph-lg"></i></div
-			></span
-			>
+					<i class="ph-quotes ph-fill ph-lg"></i>
+				</div>
+			</template>
 			<span
 				v-if="notification.type === 'receiveFollowRequest'"
 				class="text"

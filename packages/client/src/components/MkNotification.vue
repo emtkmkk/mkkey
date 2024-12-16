@@ -269,12 +269,12 @@
 				>{{ i18n.ts.followRequestAccepted }}
 				<div
 					v-if="
-						notification.user?.followedMessage
+						notification.customBody
 					"
 				>
 					<i class="ph-quotes ph-fill ph-lg"></i>
 					<Mfm
-						:text="notification.user?.followedMessage"
+						:text="notification.customBody"
 						:plain="true"
 						:nowrap="!full"
 						:custom-emojis="notification.user.emojis"

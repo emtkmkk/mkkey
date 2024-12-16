@@ -56,6 +56,7 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			type: notification.type === "unreadAntenna" ? "note" : notification.type,
 			isRead: notification.isRead,
 			userId: notification.notifierId,
+			customBody: notification.customBody || undefined,
 			user: notification.notifierId
 				? Users.pack(notification.notifier || notification.notifierId, {
 						id: notification.notifieeId,

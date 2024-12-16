@@ -96,10 +96,15 @@ export async function insertFollowingDoc(
 
 	if (alreadyFollowed) return;
 
-		// Create notification that request was accepted.
-		createNotification(follower.id, "followRequestAccepted", {
-			notifierId: followee.id,
-		});
+	const followeeProfile = await UserProfiles.findOneByOrFail({
+		userId: followee.id,
+	});
+
+	// Create notification that request was accepted.
+	createNotification(follower.id, "followRequestAccepted", {
+		notifierId: followee.id,
+		customBody: followeeProfile.followedMessage,
+	});
 
 	//#region Increment counts
 	await Promise.all([

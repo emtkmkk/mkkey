@@ -237,6 +237,7 @@ export type Notification = {
 			type: "followRequestAccepted";
 			user: User;
 			userId: User["id"];
+			customBody?: string | null;
 	  }
 	| {
 			type: "receiveFollowRequest";

@@ -92,14 +92,14 @@ export async function insertFollowingDoc(
 			followeeId: followee.id,
 			followerId: follower.id,
 		});
+	}
+
+	if (alreadyFollowed) return;
 
 		// Create notification that request was accepted.
 		createNotification(follower.id, "followRequestAccepted", {
 			notifierId: followee.id,
 		});
-	}
-
-	if (alreadyFollowed) return;
 
 	//#region Increment counts
 	await Promise.all([

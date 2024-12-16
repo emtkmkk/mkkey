@@ -927,6 +927,70 @@ const storeConfigMigration = () => {
 		defaultStore.set("reactionPickerHeight", 65);
 };
 
+const loadIosPwaSplash = async () => {
+  // PWA判定
+  const isPwa = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+  // PWAとして起動している場合、実行せずreturn
+  if (isPwa) {
+    return;
+  }
+
+	const themeColor = "#31748f"
+  let splashColor = themeColor || '#31748f';
+  try {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      const parsedTheme = JSON.parse(storedTheme);
+      if (parsedTheme && parsedTheme.bg) {
+        const bgVal = parsedTheme.bg;
+        if (bgVal.includes('linear-gradient')) {
+          // グラデーションがある場合、HEXカラーを抽出
+          const match = bgVal.match(/#([0-9a-fA-F]{3,8})/);
+          if (match && match[0]) {
+            splashColor = match[0];
+          } else {
+            splashColor = themeColor || '#31748f';
+          }
+        } else {
+          splashColor = bgVal;
+        }
+      } else {
+        // bgが無い場合
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          splashColor = '#000000';
+        } else {
+          splashColor = '#ffffff';
+        }
+      }
+    } else {
+      // themeが無い場合
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        splashColor = '#000000';
+      } else {
+        splashColor = '#ffffff';
+      }
+    }
+  } catch (e) {
+    splashColor = themeColor || '#31748f';
+  }
+
+  const iosPWASplashScript = document.createElement('script');
+  iosPWASplashScript.src = "https://cdn.jsdelivr.net/npm/ios-pwa-splash@1.0.0/cdn.min.js";
+  iosPWASplashScript.onload = () => {
+    try {
+      iosPWASplash(icon || '/apple-touch-icon.png', splashColor);
+    } catch (err) {
+      console.warn("iosPWASplash failed to load or execute:", err);
+    }
+  };
+  iosPWASplashScript.onerror = (err) => {
+    console.warn("Failed to load iosPWASplash script:", err);
+  };
+  document.head.appendChild(iosPWASplashScript);
+};
+
+
 const autoSaveConfig = async () => {
 	const lastBackupData = await get("lastBackup");
 	if (!lastBackupData) await set("lastBackup", {});
@@ -1245,6 +1309,8 @@ const initializeStream = () => {
 		postSleepModeCancel();
 
 		storeConfigMigration();
+
+		loadIosPwaSplash();
 
 		let lastUsed = localStorage.getItem("lastUsed");
 		if (!lastUsed && $i.lastActiveDate)

@@ -599,7 +599,7 @@ export async function updatePerson(
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
-						"User-Agent": config.userAgent,
+						"User-Agent": config.userAgent2 ?? config.userAgent,
 						Accept: "application/json, */*",
 					},
 					body: JSON.stringify({
@@ -621,6 +621,7 @@ export async function updatePerson(
 					`https://${host}/api/users/get-skeb-status?userId=${userInfo[0].id}`,
 					"application/json, */*",
 					5000,
+					{"User-Agent": config.userAgent2 ?? config.userAgent},
 				)) as Record<string, unknown>;
 				if (skebInfo) {
 					let status = "";

@@ -23,9 +23,14 @@
 							{{
 								props.asReactionPicker ||
 								$store.state.showRemoteEmojiPostForm
-									? "他サーバー絵文字の辞書データがありません。"
+									? "他サーバー絵文字の辞書データがありません。 "
 									: "@（他鯖絵文字検索）はリアクション時のみ使用可能です。"
 							}}
+							<a
+								v-if="(props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && $store.state.remoteEmojisFetch !== 'none'"
+								@click.stop="refetchEmoji"
+								>{{ i18n.ts.refetch + "？" }}</a
+							>
 						</header>
 					</div>
 					<div v-else>
@@ -1740,6 +1745,11 @@ function done(query?: any): boolean | void {
 	} else {
 		q.value = `${query}*`;
 	}
+}
+
+function refetchEmoji() {
+	defaultStore.set("remoteEmojisFetch", "once");
+	unisonReload();
 }
 
 onMounted(() => {

@@ -1373,7 +1373,7 @@ function emojiSearch(nQ, oQ) {
 
 	const charSearch = (
 		emojis: UnicodeEmojiDef[],
-		keywords: string,
+		keyword: string,
 	) => {
 		return emojis.find((emoji) => emoji.char === keyword);
 	};

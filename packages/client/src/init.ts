@@ -1268,6 +1268,8 @@ const initializeStream = () => {
 
 	initializePlugins();
 
+	loadIosPwaSplash();
+
 	const hotkeys = {
 		d: (): void => {
 			if (defaultStore.state.enableHotkeyDarkMode) {
@@ -1309,8 +1311,6 @@ const initializeStream = () => {
 		postSleepModeCancel();
 
 		storeConfigMigration();
-
-		loadIosPwaSplash();
 
 		let lastUsed = localStorage.getItem("lastUsed");
 		if (!lastUsed && $i.lastActiveDate)

@@ -808,6 +808,7 @@ export async function extractEmojis(
 
 			const copydeny =
 				name?.includes("no_import") ||
+				name?.includes("misskey_flowers") ||
 				emojiInfo?.localOnly ||
 				roleOnly ||
 				licenseText.includes("prohibited") ||

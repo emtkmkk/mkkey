@@ -36,7 +36,7 @@ export default class extends Channel {
 		if (
 			note.user.host !== null &&
 			!meta.recommendedInstances.includes(
-				`${note.user.username}@${note.user.host}`,
+				`${note.user.host}`,
 			)
 		)
 			return;

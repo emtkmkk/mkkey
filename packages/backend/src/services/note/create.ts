@@ -737,7 +737,9 @@ export default async (
 
 		// 統計を更新
 		notesChart.update(note, true, user.isBot);
-		perUserNotesChart.update(user, note, true, user.isBot);
+		if (data.visibility !== "specified") {
+			perUserNotesChart.update(user, note, true, user.isBot);
+		}
 
 		// Register host
 		if (Users.isRemoteUser(user)) {

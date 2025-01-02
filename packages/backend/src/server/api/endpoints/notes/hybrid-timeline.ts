@@ -87,10 +87,9 @@ export default define(meta, paramDef, async (ps, user) => {
 					`((note.userId IN (${followingQuery.getQuery()})) OR (note.userId = :meId))`,
 					{ meId: user.id },
 				).orWhere(
-					`(note.visibility = 'public') AND ((note.userHost IS NULL) OR (user.username || '@' || note."userHost" = ANY ('{"${m.recommendedInstances.join(
-						'","',
-					)}"}')))`,
-				);
+                `(note.visibility = 'public') AND (note.userHost IS NULL OR note.userHost = ANY (:recommendedHosts))`,
+                { recommendedHosts: m.recommendedInstances },
+            )
 			}),
 		)
 		.innerJoinAndSelect("note.user", "user")

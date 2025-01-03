@@ -36,7 +36,7 @@ export default class extends Channel {
 		if (
 			note.user.host !== null &&
 			!meta.recommendedInstances.includes(
-				`${note.user.host}`,
+				note.user.host,
 			)
 		)
 			return;
@@ -47,7 +47,7 @@ export default class extends Channel {
 			!this.following.has(note.userId)
 		)
 			return;
-		if (note.replyId != null && note.reply?.user.host != null) return;
+		if (note.replyId != null && !(note.reply?.user.host == null || meta.recommendedInstances.includes(note.reply?.user.host))) return;
 
 		// 関係ない返信は除外
 		if (!this.user && note.reply) {

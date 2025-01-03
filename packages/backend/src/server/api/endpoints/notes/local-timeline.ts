@@ -108,7 +108,7 @@ export default define(meta, paramDef, async (ps, user) => {
           `(note.userHost IS NULL OR note.userHost = ANY (:recommendedHosts))`,
           { recommendedHosts: m.recommendedInstances },
       )
-			.andWhere("(note.replyId IS NULL OR reply.userHost IS NULL OR reply.userHost = ANY (:recommendedHosts)",
+			.andWhere("(note.replyId IS NULL OR reply.userHost IS NULL OR reply.userHost = ANY (:recommendedHosts))",
 							 { recommendedHosts: m.recommendedInstances },
 			);
 	} else {

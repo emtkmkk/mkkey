@@ -75,7 +75,10 @@ export default async function renderNote(
 	let to: string[] = [];
 	let cc: string[] = [];
 
-	if (note.visibility === "public") {
+	if (note.localOnly && ["public", "home"].includes(note.visibility)) {
+		to = [`${attributedTo}/followers`];
+		cc = mentions;
+	} else if (note.visibility === "public") {
 		to = ["https://www.w3.org/ns/activitystreams#Public"];
 		cc = [`${attributedTo}/followers`].concat(mentions);
 	} else if (note.visibility === "home") {

@@ -15,8 +15,10 @@ export default (object: any, note: Note) => {
 
 	let to: string[] = [];
 	let cc: string[] = [];
-
-	if (note.visibility === "public") {
+	
+	if (note.localOnly && ["public", "home"].includes(note.visibility)) {
+		to = [`${attributedTo}/followers`];
+	} else if (note.visibility === "public") {
 		to = ["https://www.w3.org/ns/activitystreams#Public"];
 		cc = [`${attributedTo}/followers`];
 	} else if (note.visibility === "home") {

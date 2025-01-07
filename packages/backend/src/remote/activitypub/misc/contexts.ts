@@ -551,6 +551,8 @@ export const WellKnownContext = {
 			isCat: "misskey:isCat",
 			// Fedibird
 			fedibird: "http://fedibird.com/ns#",
+			host: "schema:host",
+			author: "schema:author",
 			copyPermission: "fedibird:copyPermission",
 			license: "schema:license",
 			keywords: "schema:keywords",

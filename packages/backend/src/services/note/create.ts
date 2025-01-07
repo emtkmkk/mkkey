@@ -197,7 +197,7 @@ export default async (
 		// 最初に投稿時刻を確定させる
 		if (data.createdAt == null) data.createdAt = new Date();
 
-		const firstVisibility = data.visibility;
+		const firstVisibility = data.visibility ?? "public";
 
 		const dontFederateInitially =
 			(data.localOnly && data.channel) || data.visibility === "hidden";

@@ -141,6 +141,7 @@ export interface IPost extends IObject {
 	quoteUri?: string;
 	references?: ICollection;
 	_misskey_talk: boolean;
+	_mk_localVisibility?: "public" | "home" | "followers" | "specified" | undefined;
 }
 
 export interface IQuestion extends IObject {

@@ -75,7 +75,9 @@ export default async function renderNote(
 	let to: string[] = [];
 	let cc: string[] = [];
 
-	if (note.localOnly && ["public", "home"].includes(note.visibility)) {
+	const remoteFollowerOnly = note.localOnly && ["public", "home"].includes(note.visibility);
+
+	if (remoteFollowerOnly) {
 		to = [`${attributedTo}/followers`];
 		cc = mentions;
 	} else if (note.visibility === "public") {
@@ -102,6 +104,27 @@ export default async function renderNote(
 	const mentionTags = mentionedUsers.map((u) => renderMention(u));
 
 	const files = await getPromisedFiles(note.fileIds);
+
+	if (
+		/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.cw ?? "") ||
+		/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.text ?? "")
+	) {
+		// 他鯖絵文字が入っている場合、外部には@以下をトリミングして配信する
+		if (note.cw)
+			note.cw = note.cw?.replaceAll(
+				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
+				":$1:",
+			);
+		if (note.text)
+			note.text = note.text?.replaceAll(
+				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
+				":$1:",
+			);
+		if (note.emojis)
+			note.emojis = note.emojis?.map((x) =>
+				x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]*)$/gi, "$1"),
+			);
+	}
 
 	let text = note.text ?? "";
 	let poll: Poll | null = null;
@@ -187,6 +210,7 @@ export default async function renderNote(
 		references: await getReferences(note),
 		...asPoll,
 		...asTalk,
+		_mk_localVisibility: remoteFollowerOnly ? note.visibility : undefined,
 	};
 }
 

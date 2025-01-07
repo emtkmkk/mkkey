@@ -1112,33 +1112,6 @@ async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 	// リモートでRT出来ないはずの投稿がRTされている場合、連合しない
 	if (data.renote?.userId !== note.userId && data.renote?.localOnly)
 		return null;
-	// ローカル＆フォロワー
-	if (
-		data.localOnly &&
-		data.visibility !== "hidden" &&
-		data.visibility !== "specified"
-	)
-		note.visibility = "followers";
-	if (
-		/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.cw ?? "") ||
-		/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.text ?? "")
-	) {
-		// 他鯖絵文字が入っている場合、外部には@以下をトリミングして配信する
-		if (note.cw)
-			note.cw = note.cw?.replaceAll(
-				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
-				":$1:",
-			);
-		if (note.text)
-			note.text = note.text?.replaceAll(
-				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
-				":$1:",
-			);
-		if (note.emojis)
-			note.emojis = note.emojis?.map((x) =>
-				x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]*)$/gi, "$1"),
-			);
-	}
 
 	const content =
 		data.renote &&

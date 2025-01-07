@@ -58,10 +58,7 @@ import { UserProfiles } from "@/models/index.js";
 import { In } from "typeorm";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 import { truncate } from "@/misc/truncate.js";
-import emoji from "../renderer/emoji.js";
-import { ArrayBuffertohex } from "jsrsasign";
-import * as parse5 from "parse5";
-import * as TreeAdapter from "../../../../node_modules/parse5/dist/tree-adapters/default.js";
+import { fetchMeta } from "@/misc/fetch-meta.js";
 
 const logger = apLogger;
 
@@ -185,6 +182,15 @@ export async function createNote(
 
 	const noteAudience = await parseAudience(actor, note.to, note.cc);
 	let visibility = noteAudience.visibility;
+	let localOnly = false;
+
+	if (note._mk_localVisibility && visibility === "followers") {
+		const m = await fetchMeta();
+		if (m.recommendedInstances.includes(actor.host)) {
+			visibility = note._mk_localVisibility;
+			localOnly = true;
+		}
+	}
 	const visibleUsers = noteAudience.visibleUsers;
 	const ccUsers = [];
 
@@ -555,7 +561,7 @@ export async function createNote(
 			name: note.name,
 			cw,
 			text,
-			localOnly: false,
+			localOnly,
 			visibility,
 			visibleUsers,
 			ccUsers,

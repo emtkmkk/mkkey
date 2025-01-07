@@ -565,6 +565,9 @@ export const WellKnownContext = {
 			},
 			// vcard
 			vcard: "http://www.w3.org/2006/vcard/ns#",
+			// mkkey
+			mkkey: 'https://mkkey.net/ns#',
+			_mk_localVisibility: 'mkkey:_mk_localVisibility'
 		},
 	],
 };

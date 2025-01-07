@@ -15,7 +15,7 @@ export default (emoji: Emoji) => ({
 		mediaType: emoji.type || "image/png",
 		url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
 	},
-	keyword: emoji.aliases,
+	keywords: emoji.aliases,
 	...(!emoji.host && emoji.license === "文字だけ"
 		? {
 				copyPermission: "allow",

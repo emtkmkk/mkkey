@@ -735,7 +735,7 @@ export default async (
 
 		const note = await insertNote(user, data, tags, emojis, mentionedUsers);
 		
-		console.log(`${note.id}:可視性変更 ${data.firstVisibility} -> ${note.visibility}`);
+		if (firstVisibility != note.visibility) console.log(`${note.id}:可視性変更 ${firstVisibility} -> ${note.visibility}`);
 
 		res(note);
 

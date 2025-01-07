@@ -197,6 +197,8 @@ export default async (
 		// 最初に投稿時刻を確定させる
 		if (data.createdAt == null) data.createdAt = new Date();
 
+		const firstVisibility = data.visibility;
+
 		const dontFederateInitially =
 			(data.localOnly && data.channel) || data.visibility === "hidden";
 
@@ -732,6 +734,8 @@ export default async (
 		data.isPublicLikeList = user.isPublicLikeList;
 
 		const note = await insertNote(user, data, tags, emojis, mentionedUsers);
+		
+		console.log(`${note.id}:可視性変更 ${data.firstVisibility} -> ${note.visibility}`);
 
 		res(note);
 

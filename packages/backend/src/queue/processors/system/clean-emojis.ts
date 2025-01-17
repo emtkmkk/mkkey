@@ -5,6 +5,7 @@ import { Emojis, Notes } from "@/models/index.js";
 import { Brackets, IsNull, LessThan, Not } from "typeorm";
 import { getResponse } from "@/misc/fetch.js";
 import config from "@/config/index.js";
+import type { Emoji } from "@/models/entities/emoji.js";
 
 const logger = queueLogger.createSubLogger("clean-emojis");
 
@@ -38,7 +39,7 @@ export async function cleanEmojis(
 				order: {
 					id: 1,
 				},
-			})) as Emojis[];
+			})) as Emoji[];
 
 			if (emojis.length === 0) {
 				break;

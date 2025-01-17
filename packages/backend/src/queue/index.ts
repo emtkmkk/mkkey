@@ -540,6 +540,24 @@ export default function () {
 		},
 	);
 
+	systemQueue.add(
+		"cleanReactions",
+		{},
+		{
+			repeat: { cron: "0 15 * * *" },
+			jobId: "clean-reactions",
+		},
+	);
+
+	systemQueue.add(
+		"cleanAntennaNotes",
+		{},
+		{
+			repeat: { cron: "0 15 * * *" },
+			jobId: "clean-antennanotes",
+		},
+	);
+
 	processSystemQueue(systemQueue);
 }
 

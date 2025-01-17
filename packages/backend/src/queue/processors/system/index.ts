@@ -5,6 +5,8 @@ import { cleanCharts } from "./clean-charts.js";
 import { checkExpiredMutings } from "./check-expired-mutings.js";
 import { clean } from "./clean.js";
 import { cleanEmojis } from "./clean-emojis.js";
+import { cleanReactions } from "./clean-reactions.js";
+import { cleanAntennaNotes } from "./clean-antennaNote.js";
 
 const jobs = {
 	tickCharts,
@@ -13,6 +15,8 @@ const jobs = {
 	checkExpiredMutings,
 	clean,
 	cleanEmojis,
+	cleanReactions,
+	cleanAntennaNotes,
 } as Record<
 	string,
 	| Bull.ProcessCallbackFunction<Record<string, unknown>>

@@ -34,9 +34,9 @@ export async function cleanAntennaNotes(
 		job.log(`info - Clean AntennaNotes Count: ${total}`);
 
 		while (true) {
-			const notes = (await AntennaNotes.createQueryBuilder('note')
+			const notes = (await AntennaNotes.createQueryBuilder('antenna')
 				.where("antenna.id < :maxId", { maxId: genId(maxDate) })
-				.andWhere(cursor ? "antenna.id > :cursor" : "1=1", { cursor })
+				.andWhere(cursor ? "antenna.id > :cursor " : "1=1", { cursor })
 				.orderBy("antenna.id", "ASC")
 				.take(300)
 				.getMany()) as AntennaNote[];

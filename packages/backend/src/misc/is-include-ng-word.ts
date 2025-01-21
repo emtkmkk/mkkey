@@ -42,7 +42,6 @@ export function isIncludeNgWord(txt: string): string {
 		"受精",
 		"自慰",
 		"勃起",
-		"sex",
 		"fuck",
 		"淫",
 		"なかだし",

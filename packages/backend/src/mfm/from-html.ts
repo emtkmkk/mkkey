@@ -9,10 +9,10 @@ const urlRegex = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+/;
 const urlRegexFull = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+$/;
 
 export function fromHtml(html: string, hashtagNames?: string[]): string {
-	// some AP servers like Pixelfed use br tags as well as newlines
+	// APサーバー（例：Pixelfed）はbrタグと改行を使用する
 	html = html.replace(/<br\s?\/?>\r?\n/gi, "\n");
 	html = html.replace(/\u200b:(\w+(@[\w.\-]+\.[\w.\-]+)?):\u200b/g, ":$1:");
-	
+
 	const normalizedHashtagNames = hashtagNames == null ? undefined : new Set<string>(hashtagNames.map(x => normalizeForSearch(x)));
 
 	const dom = parse5.parseFragment(html);
@@ -51,7 +51,7 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
 			return;
 		}
 
-		// Skip comment or document type node
+		// コメントやドキュメントタイプノードをスキップ
 		if (!treeAdapter.isElementNode(node)) return;
 
 		switch (node.nodeName) {
@@ -67,7 +67,7 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
 
 				// ハッシュタグ
 				if (
-					normalizedHashtagNames && 
+					normalizedHashtagNames &&
 					href &&
 					normalizedHashtagNames.has(normalizeForSearch(txt))
 				) {
@@ -98,12 +98,12 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
 							if (href.value.match(urlRegexFull)) {
 								return href.value;
 							}
-								return `<${href.value}>`;
+							return `<${href.value}>`;
 						}
 						if (href.value.match(urlRegex) && !href.value.match(urlRegexFull)) {
 							return `[${txt}](<${href.value}>)`; // #6846
 						}
-							return `[${txt}](${href.value})`;
+						return `[${txt}](${href.value})`;
 					};
 
 					text += generateLink();
@@ -150,26 +150,65 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
 			}
 
 			case "ruby": {
-				text += "$[ruby"
-				appendChildren(node.childNodes.filter((x) => x.nodeName === "rb").slice(0, 1));
-				appendChildren(node.childNodes.filter((x) => x.nodeName === "rt").slice(0, 1));
-				text += "]";
-				break;
-			}
-			
-			case "rb": {
-				text += " "
-				const beforeText = text;
-				appendChildren(node.childNodes);
-				text = beforeText + text.slice(beforeText.length).replaceAll(" ", "");
-				break;
-			}
+				const rbNodes = node.childNodes.filter((x) => x.nodeName === "rb");
+				const rtNodes = node.childNodes.filter((x) => x.nodeName === "rt");
 
-			case "rt": {
-				text += " "
-				const beforeText = text;
-				appendChildren(node.childNodes);
-				text = beforeText + text.slice(beforeText.length).replaceAll(" ", "");
+				// テキストノードも含めて基底テキストを取得（<rb>がない場合用）
+				const textNodes = node.childNodes.filter((x) => treeAdapter.isTextNode(x));
+
+				if (rbNodes.length > 0) {
+					if (rbNodes.length === rtNodes.length) {
+						// <rb> と <rt> の数が一致する場合、ペアごとに処理
+						for (let i = 0; i < rbNodes.length; i++) {
+							let baseText = getText(rbNodes[i]).trim();
+							const rubyText = rtNodes[i] ? getText(rtNodes[i]).trim() : "";
+
+							// baseText のすべての空白文字を削除
+							baseText = baseText.replace(/\s+/g, '');
+
+							// baseText と rubyText が両方空白でない場合のみ追加
+							if (baseText || rubyText) {
+								if (rubyText) {
+									text += `$[ruby ${baseText} ${rubyText}]`;
+								} else {
+									text += `$[ruby ${baseText}]`;
+								}
+							}
+						}
+					} else {
+						// <rb> と <rt> の数が一致しない場合、全てを結合して1つのruby表現に
+						let concatenatedBaseText = rbNodes.map(getText).join("").trim();
+						const concatenatedRubyText = rtNodes.map(getText).join("").trim();
+
+						// baseText のすべての空白文字を削除
+						concatenatedBaseText = concatenatedBaseText.replace(/\s+/g, '');
+
+						// concatenatedBaseText と concatenatedRubyText が両方空白でない場合のみ追加
+						if (concatenatedBaseText || concatenatedRubyText) {
+							if (concatenatedRubyText) {
+								text += `$[ruby ${concatenatedBaseText} ${concatenatedRubyText}]`;
+							} else {
+								text += `$[ruby ${concatenatedBaseText}]`;
+							}
+						}
+					}
+				} else {
+					// <rb> が存在しない場合、テキストノードを基底テキストとして扱う
+					let baseText = textNodes.map(getText).join("").trim();
+					const rubyText = rtNodes.map(getText).join("").trim();
+
+					// baseText のすべての空白文字を削除
+					baseText = baseText.replace(/\s+/g, '');
+
+					// baseText と rubyText が両方空白でない場合のみ追加
+					if (baseText || rubyText) {
+						if (rubyText) {
+							text += `$[ruby ${baseText} ${rubyText}]`;
+						} else {
+							text += `$[ruby ${baseText}]`;
+						}
+					}
+				}
 				break;
 			}
 

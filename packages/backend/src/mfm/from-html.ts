@@ -165,7 +165,7 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
                 // テキストノードも含めて基底テキストを取得（<rb>がない場合用）
                 const textNodes = node.childNodes.filter((x) => treeAdapter.isTextNode(x));
 
-                const rubySegments: string[] = [];
+                const rubySegments: { base: string; ruby: string; }[] = [];
 
                 if (rbNodes.length > 0) {
                     if (rbNodes.length === rtNodes.length) {
@@ -173,120 +173,78 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
                         for (let i = 0; i < rbNodes.length; i++) {
                             let baseText = getText(rbNodes[i]).trim();
                             const rubyText = rtNodes[i] ? getText(rtNodes[i]).trim() : "";
-
-                            // baseText のすべてのスペースを削除
-                            baseText = baseText.replace(/ /g, '');
-
-                            // 特殊文字を削除
-                            baseText = removeSpecialChars(baseText);
-                            const cleanedRubyText = removeSpecialChars(rubyText);
-
-                            // baseText と rubyText が両方空白でない場合のみ追加
-                            if (baseText || cleanedRubyText) {
-                                if (cleanedRubyText) {
-                                    rubySegments.push(`$[ruby ${baseText} ${cleanedRubyText}]`);
-                                } else {
-                                    rubySegments.push(`$[ruby ${baseText}]`);
-                                }
-                            }
+                            rubySegments.push({ base: baseText, ruby: rubyText });
                         }
                     } else {
                         // <rb> と <rt> の数が一致しない場合、全てを結合して処理
                         let concatenatedBaseText = rbNodes.map(getText).join("").trim();
                         let concatenatedRubyText = rtNodes.map(getText).join("").trim();
-
-                        // concatenatedBaseText のすべてのスペースを削除
-                        concatenatedBaseText = concatenatedBaseText.replace(/ /g, '');
-
-                        // 特殊文字を削除
-                        concatenatedBaseText = removeSpecialChars(concatenatedBaseText);
-                        const cleanedConcatenatedRubyText = removeSpecialChars(concatenatedRubyText);
-
-                        // concatenatedBaseText と cleanedConcatenatedRubyText が両方空白でない場合のみ追加
-                        if (concatenatedBaseText || cleanedConcatenatedRubyText) {
-                            // スペースの数をカウント
-                            const baseSpaceCount = (concatenatedBaseText.match(/ /g) || []).length;
-                            const rubySpaceCount = (cleanedConcatenatedRubyText.match(/ /g) || []).length;
-
-                            if (baseSpaceCount === rubySpaceCount && baseSpaceCount > 0) {
-                                // スペースの数が同じ場合、空白で分割してペアごとに処理
-                                const baseSegments = concatenatedBaseText.split(" ");
-                                const rubySegmentsSplit = cleanedConcatenatedRubyText.split(" ");
-
-                                for (let i = 0; i < baseSegments.length; i++) {
-                                    const base = removeSpecialChars(baseSegments[i].replace(/ /g, ''));
-                                    const ruby = rubySegmentsSplit[i] || '';
-
-                                    if (base || ruby) {
-                                        if (ruby) {
-                                            rubySegments.push(`$[ruby ${base} ${ruby}]`);
-                                        } else {
-                                            rubySegments.push(`$[ruby ${base}]`);
-                                        }
-                                    }
-                                }
-                            } else {
-                                // スペースの数が異なる場合、concatenatedBaseText の空白をすべて削除して1つのruby表現に
-                                concatenatedBaseText = concatenatedBaseText.replace(/ /g, '');
-                                if (cleanedConcatenatedRubyText) {
-                                    rubySegments.push(`$[ruby ${concatenatedBaseText} ${cleanedConcatenatedRubyText}]`);
-                                } else {
-                                    rubySegments.push(`$[ruby ${concatenatedBaseText}]`);
-                                }
-                            }
-                        }
+                        rubySegments.push({ base: concatenatedBaseText, ruby: concatenatedRubyText });
                     }
                 } else {
-                    // <rb> が存在しない場合、テキストノードを基底テキストとして扱う
-                    let baseText = textNodes.map(getText).join("").trim();
-                    const rubyText = rtNodes.map(getText).join("").trim();
-
-                    // baseText と rubyText が両方空白でない場合のみ追加
-                    if (baseText || rubyText) {
-                        // baseText 内のスペースの数と rubyText 内のスペースの数をカウント
-                        const baseSpaceCount = (baseText.match(/ /g) || []).length;
-                        const rubySpaceCount = (rubyText.match(/ /g) || []).length;
-
-                        if (baseSpaceCount === rubySpaceCount && baseSpaceCount > 0) {
-                            // スペースの数が同じ場合、空白で分割してペアごとに処理
-                            const baseSegments = baseText.split(" ");
-                            const rubySegmentsSplit = rubyText.split(" ");
-
-                            for (let i = 0; i < baseSegments.length; i++) {
-                                const base = removeSpecialChars(baseSegments[i].replace(/ /g, ''));
-                                const ruby = removeSpecialChars(rubySegmentsSplit[i] || '');
-
-                                if (base || ruby) {
-                                    if (ruby) {
-                                        rubySegments.push(`$[ruby ${base} ${ruby}]`);
-                                    } else {
-                                        rubySegments.push(`$[ruby ${base}]`);
-                                    }
-                                }
-                            }
-                        } else {
-                            // スペースの数が異なる場合、baseText の空白をすべて削除して1つのruby表現に
-                            baseText = baseText.replace(/ /g, '');
-                            baseText = removeSpecialChars(baseText);
-                            const cleanedRubyText = removeSpecialChars(rubyText);
-
-                            if (cleanedRubyText) {
-                                rubySegments.push(`$[ruby ${baseText} ${cleanedRubyText}]`);
-                            } else {
-                                rubySegments.push(`$[ruby ${baseText}]`);
-                            }
+                    // <rb> が存在しない場合、テキストノードと <rt> のペアを処理
+                    if (textNodes.length === rtNodes.length) {
+                        // テキストノード と <rt> の数が一致する場合、ペアごとに処理
+                        for (let i = 0; i < textNodes.length; i++) {
+                            let baseText = getText(textNodes[i]).trim();
+                            const rubyText = rtNodes[i] ? getText(rtNodes[i]).trim() : "";
+                            rubySegments.push({ base: baseText, ruby: rubyText });
                         }
+                    } else {
+                        // テキストノード と <rt> の数が一致しない場合、全てを結合して処理
+                        let concatenatedBaseText = textNodes.map(getText).join("").trim();
+                        let concatenatedRubyText = rtNodes.map(getText).join("").trim();
+                        rubySegments.push({ base: concatenatedBaseText, ruby: concatenatedRubyText });
                     }
                 }
 
-                // rubySegments が存在する場合、スペースで結合してテキストに追加
-                if (rubySegments.length > 0) {
-                    if (rbNodes.length > 0) {
-                        // <rb> が存在する場合、スペースを挿入せずに結合
-                        text += rubySegments.join('');
+                // rubySegments の処理
+                const processedSegments: { base: string; ruby: string; spaceSplit?: boolean; }[] = [];
+
+                for (const segment of rubySegments) {
+                    const { base, ruby } = segment;
+
+                    // base と ruby のスペース数をカウント
+                    const baseSpaceCount = (base.match(/ /g) || []).length;
+                    const rubySpaceCount = (ruby.match(/ /g) || []).length;
+
+                    if (baseSpaceCount === rubySpaceCount) {
+                        // スペースの数が同じ場合、空白で分割してペアを分割
+                        const baseParts = base.split(" ");
+                        const rubyParts = ruby.split(" ");
+                        const minLength = Math.min(baseParts.length, rubyParts.length);
+
+                        for (let i = 0; i < minLength; i++) {
+                            const partBase = baseParts[i];
+                            const partRuby = rubyParts[i];
+                            processedSegments.push({base: partBase, ruby: partRuby, spaceSplit: i < minLength - 1});
+                        }
                     } else {
-                        // <rb> が存在しない場合、スペースで区切って結合
-                        text += rubySegments.join(' ');
+                        // スペースの数が異なる場合、base のスペースをすべて削除
+                        const cleanedBase = base.replace(/ /g, '');
+                        processedSegments.push({base: cleanedBase, ruby: ruby, spaceSplit: false});
+                    }
+                }
+
+                if (processedSegments.length > 0) {
+                    for (const segment of processedSegments) {
+                        let { base, ruby } = segment;
+
+                        base = removeSpecialChars(base).trim();
+                        ruby = removeSpecialChars(ruby).trim();
+
+                        if (processedSegments.length > 1) ruby = ruby.replace(/ /g, '');
+
+                        if (base && ruby) {
+                            text += `$[ruby ${base} ${ruby}]`;
+                        } else {
+                            if (base) text += `$[ruby ${base}]`;
+                            if (ruby) text += `$[ruby ${ruby}]`;
+                        }
+
+                        if ((base || ruby) && segment.spaceSplit) {
+                            text += " "
+                        }
                     }
                 } else {
                     // rubySegments が0個の場合、子ノードをそのまま処理

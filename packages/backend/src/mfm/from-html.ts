@@ -226,6 +226,8 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
                     }
                 }
 
+                let finalSegmentsCount = 0;
+
                 if (processedSegments.length > 0) {
                     for (const segment of processedSegments) {
                         let { base, ruby } = segment;
@@ -236,20 +238,27 @@ export function fromHtml(html: string, hashtagNames?: string[]): string {
                         if (processedSegments.length > 1) ruby = ruby.replace(/ /g, '');
 
                         if (base && ruby) {
+                            finalSegmentsCount += 1;
                             text += `$[ruby ${base} ${ruby}]`;
                         } else {
-                            if (base) text += `$[ruby ${base}]`;
-                            if (ruby) text += `$[ruby ${ruby}]`;
+                            if (base) {
+                                finalSegmentsCount += 1;
+                                text += `$[ruby ${base}]`;
+                            }
+                            if (ruby) {
+                                finalSegmentsCount += 1;
+                                text += `$[ruby ${ruby}]`;
+                            }
                         }
 
                         if ((base || ruby) && segment.spaceSplit) {
                             text += " "
                         }
                     }
-                } else {
-                    // rubySegments が0個の場合、子ノードをそのまま処理
-                    appendChildren(node.childNodes);
                 }
+
+                // rubySegments が0個の場合、子ノードをそのまま処理
+                if (finalSegmentsCount <= 0) appendChildren(node.childNodes);
 
                 break;
             }

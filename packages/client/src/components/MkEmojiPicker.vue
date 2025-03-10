@@ -1224,7 +1224,7 @@ const dynamicStyles = computed(() => ({
   '--pickerHeight': `calc(var(--vh, 1vh) * ${height.value})`
 }));
 const customEmojis = computed(() => instance.emojis);
-const customEmojiCategories = emojiCategories.filter((c) => customEmojis.value.filter((e) => e.category === c).length > 9);
+const customEmojiCategories = computed(() => emojiCategories.value.filter((c) => customEmojis.value.filter((e) => e.category === c).length > 9));
 let allCustomEmojis = computed(() =>
 	props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm
 		? instance.allEmojis

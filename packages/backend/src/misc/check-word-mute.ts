@@ -27,6 +27,10 @@ function checkWordMute(
 			// Clean up
 			const keywords = mutePattern.filter((keyword) => keyword !== "");
 
+			if (keywords.length == 1 && note.id == keywords[0]) {
+				return true;
+			}
+
 			if (
 				keywords.length > 0 &&
 				keywords.every((keyword) => text.includes(keyword))
@@ -105,7 +109,6 @@ export function checkReactionMute(
 			if (
 				keywords.length > 0 &&
 				keywords.every((keyword) => {
-					console.log(keyword + " = " + text);
 					if (keyword.startsWith("from:")) {
 						const fromKeyword = keyword
 							.replace("from:", "")
@@ -175,12 +178,9 @@ export function checkReactionMute(
 						return false;
 					}
 					if (keyword.startsWith(":") && keyword.endsWith(":")) {
-						console.log(text.replace(/@[^@]+:/, ":") + " === " + text);
 						const muted = keyword === text.replace(/@[^@]+:/, ":") || keyword === text;
-						console.log(muted);
 						return muted;
 					}
-					console.log("normal" + text.includes(keyword));
 					return text.includes(keyword);
 				})
 			) return reject === undefined ? true : { muted: true, reject: reject };

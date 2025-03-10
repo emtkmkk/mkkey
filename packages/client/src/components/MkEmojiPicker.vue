@@ -491,15 +491,6 @@
 				>
 					<header>{{ i18n.ts.customEmojis }}</header>
 					<XSection
-						v-once
-						v-for="category in followCategories"
-						:key="'custom:' + category.id"
-						:initial-shown="false"
-						:emojis="category.contents"
-						@chosen="chosen"
-						>{{ category.name }}</XSection
-					>
-					<XSection
 						key="custom:recentlyAddEmojis"
 						:initial-shown="false"
 						:emojis="
@@ -533,7 +524,7 @@
 						:initial-shown="false"
 						:emojis="
 							recentlyPopularReactions
-								.filter((e) => e.name !== ':iine_fav:')
+								.filter((e) => e.name !== ':iine_fav:' && !e.name.includes('mk_'))
 								.map((e) => e.name)
 								.slice(0, 99)
 						"
@@ -547,6 +538,15 @@
 						:emojis="randomSubset.map((e) => ':' + e.name + ':')"
 						@chosen="chosen"
 						>{{ i18n.ts.random }}</XSection
+					>
+					<XSection
+						v-once
+						v-for="category in followCategories"
+						:key="'custom:' + category.id"
+						:initial-shown="false"
+						:emojis="category.contents"
+						@chosen="chosen"
+						>{{ category.name }}</XSection
 					>
 					<template v-if="!$store.state.categoryHidden">
 						<XSection
@@ -1223,7 +1223,7 @@ const dynamicStyles = computed(() => ({
   '--columns': `repeat(${width.value}, 1fr)`,
   '--pickerHeight': `calc(var(--vh, 1vh) * ${height.value})`
 }));
-const customEmojiCategories = emojiCategories;
+const customEmojiCategories = emojiCategories.filter(customEmojis.filter((e) => e.category === category).length > 9);
 const customEmojis = computed(() => instance.emojis);
 let allCustomEmojis = computed(() =>
 	props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm

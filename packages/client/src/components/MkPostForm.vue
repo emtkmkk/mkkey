@@ -602,6 +602,12 @@
 				</button></MkInfo
 			>
 			<MkInfo
+				v-if="hasNotMentions && visibility !== 'specified'"
+				warn
+				class="hasNotSpecifiedMentions"
+				>{{ "この投稿には呼びかけが含まれていますが、返信として扱われていない為、投稿を確認可能な全てのユーザのタイムラインに表示されます。" }}</MkInfo
+			>
+			<MkInfo
 				v-if="includesOtherServerEmoji"
 				warn
 				class="hasNotSpecifiedMentions"
@@ -881,6 +887,7 @@ let draghover = $ref(false);
 let reply = $ref(props.reply);
 let replyId = $ref(null);
 let quoteId = $ref(null);
+let hasNotMentions = $ref(false);
 let hasNotSpecifiedMentions = $ref(false);
 let includesOtherServerEmoji = $ref(false);
 let recentHashtags = $ref(JSON.parse(localStorage.getItem("hashtags") || "[]"));
@@ -1335,6 +1342,15 @@ function checkMissingMention() {
 			}
 		}
 		hasNotSpecifiedMentions = false;
+	} else {
+		if (!reply) {
+			const ast = mfm.parse(text);
+			if (extractMentions(ast)?.length) {
+				hasNotMentions = true;
+			} else {
+				hasNotMentions = false;
+			}
+		}
 	}
 }
 

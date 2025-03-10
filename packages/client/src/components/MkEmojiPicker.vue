@@ -524,7 +524,7 @@
 						:initial-shown="false"
 						:emojis="
 							recentlyPopularReactions
-								.filter((e) => e.name !== ':iine_fav:' && !e.name.includes('mk_'))
+								.filter((e) => e.name !== ':iine_fav:' && !e.name.includes('mk'))
 								.map((e) => e.name)
 								.slice(0, 99)
 						"

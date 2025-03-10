@@ -605,7 +605,7 @@
 				v-if="hasNotMentions && visibility !== 'specified'"
 				warn
 				class="hasNotSpecifiedMentions"
-				>{{ "この投稿には呼びかけが含まれていますが、返信として扱われていない為、投稿を確認可能な全てのユーザのタイムラインに表示されます。" }}</MkInfo
+				>{{ "この投稿は返信として扱われていない為、投稿を確認可能な全てのユーザに表示されます。" }}</MkInfo
 			>
 			<MkInfo
 				v-if="includesOtherServerEmoji"

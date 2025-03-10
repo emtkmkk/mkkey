@@ -1294,12 +1294,6 @@ const initializeStream = () => {
 
 		saveFailedQueueDatas();
 
-		await showLocalPostsTutorial();
-
-		await showInviteTutorial();
-
-		await showMultiReactionTutorial();
-
 		initializePowerMode();
 
 		initializeHiddenIconUsers();
@@ -1307,8 +1301,6 @@ const initializeStream = () => {
 		checkUnlockDeveloperMode();
 
 		processMiniSilenced();
-
-		postSleepModeCancel();
 
 		storeConfigMigration();
 
@@ -1336,6 +1328,14 @@ const initializeStream = () => {
 				Notification.requestPermission();
 			}
 		}
+
+		await showLocalPostsTutorial();
+
+		await showInviteTutorial();
+
+		await showMultiReactionTutorial();
+
+		postSleepModeCancel();
 
 		initializeStream();
 	}

@@ -66,7 +66,7 @@ export async function autoSave(blockUpdate = false): Promise<void> {
 export function getSettings(deviceOnly): Profile["settings"] {
 	const hot = {} as Record<keyof typeof defaultStore.def, unknown>;
 	for (const key of Object.keys(defaultStore.def) as (keyof typeof defaultStore.def)[]) {
-		if (deviceOnly && defaultStore.def?.[key]?.where !== "device") continue;
+		if (deviceOnly && defaultStore.def?.[key]?.where !== "device" && defaultStore.def?.[key]?.where !== "deviceAccount") continue;
 		hot[key] = defaultStore.state[key];
 	}
 
@@ -100,20 +100,26 @@ export async function applyProfile(id: string): Promise<void> {
 	});
 	if (cancel1) return;
 
-	const { canceled: cancel3 } = await os.yesno({
-		type: "question",
-		text: "アカウント依存設定を読み込みますか？",
-	});
-
 	// TODO: バージョン or ホストが違ったらさらに警告を表示
 
 	const settings = profile.settings;
 
+	let accountLoad = false
+	let accountQuestion = false;
+
 	// defaultStore
 	for (const key of Object.keys(defaultStore.def) as (keyof typeof defaultStore.def)[]) {
+		if (!accountQuestion && defaultStore.def?.[key]?.where === "account") {
+			{ canceled: cancel3 } = await os.yesno({
+				type: "question",
+				text: "アカウント依存設定を読み込みますか？",
+			});
+			accountLoad = !cancel3;
+			accountQuestion = true;
+		}
 		if (
 			settings.hot[key] !== undefined &&
-			(!cancel3 || defaultStore.def?.[key]?.where === "device")
+			(!accountLoad || defaultStore.def?.[key]?.where === "device" || defaultStore.def?.[key]?.where === "deviceAccount")
 		) {
 			defaultStore.set(key, settings.hot[key]);
 		}

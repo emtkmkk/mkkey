@@ -109,7 +109,7 @@ export async function applyProfile(id: string): Promise<void> {
 
 	// defaultStore
 	for (const key of Object.keys(defaultStore.def) as (keyof typeof defaultStore.def)[]) {
-		if (!accountQuestion && defaultStore.def?.[key]?.where === "account") {
+		if (!accountQuestion && settings.hot[key] && defaultStore.def?.[key]?.where === "account") {
 			const { canceled: cancel3 } = await os.yesno({
 				type: "question",
 				text: "アカウント依存設定を読み込みますか？",

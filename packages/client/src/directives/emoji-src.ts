@@ -6,17 +6,23 @@ const emojiSrc: Directive = {
   mounted(el: HTMLImageElement, binding) {
     // isEmojiLoading が false になるまでポーリング
     const waitForEmojiLoad = (): Promise<void> => {
+      let delayLogged = false;
       return new Promise<void>((resolve) => {
         const check = () => {
           if (!isEmojiLoading) {
             resolve();
           } else {
+            if (!delayLogged) {
+                console.log("v-emoji-src: isEmojiLoading (mounted)");
+              delayLogged = true;
+            }
             setTimeout(check, 50);
           }
         };
         check();
       });
     };
+
 
     // 読み込み開始時に5秒後に強制リセットするタイマーを設定
     const setLoadingTimeout = () => {
@@ -28,7 +34,11 @@ const emojiSrc: Directive = {
       }, 5000);
     };
 
-    if (binding.value && typeof binding.value === "string" && binding.value.includes("/emoji/")) {
+    if (
+      binding.value &&
+      typeof binding.value === "string" &&
+      (binding.value.includes("/emoji/") || binding.value.includes("/proxy/"))
+    ) {
       waitForEmojiLoad().then(() => {
         // 読み込み開始前にフラグをオンし、タイマーを設定
         isEmojiLoading = true;
@@ -57,13 +67,23 @@ const emojiSrc: Directive = {
   },
 
   updated(el: HTMLImageElement, binding) {
-    if (binding.value && typeof binding.value === "string" && binding.value.includes("/emoji/") && el.src !== binding.value) {
+    if (
+      binding.value &&
+      typeof binding.value === "string" &&
+      (binding.value.includes("/emoji/") || binding.value.includes("/proxy/")) &&
+      el.src !== binding.value
+    ) {
       const waitForEmojiLoad = (): Promise<void> => {
+        let delayLogged = false;
         return new Promise<void>((resolve) => {
           const check = () => {
             if (!isEmojiLoading) {
               resolve();
             } else {
+              if (!delayLogged) {
+                console.log("v-emoji-src: isEmojiLoading (updated)");
+                delayLogged = true;
+              }
               setTimeout(check, 50);
             }
           };

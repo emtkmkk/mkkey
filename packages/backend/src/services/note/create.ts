@@ -690,9 +690,9 @@ export default async (
 			if (localRelation) return rej("禁止投稿です。(怪しいプロフィール)");
 		}
 
-		if (user.host && config.specialServerHosts?.includes(user.host) &&
+		if (user.host && ["public", "home"].includes(data.visibility) && config.specialServerHosts?.includes(user.host) &&
 			mentionedUsers.filter((x) => !x.host || x.host === config.host).length == 0 && Math.random() < 0.1) {
-			return rej(user.host);
+			return rej("スパムの可能性あり");
 		}
 	
 		if (

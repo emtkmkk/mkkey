@@ -632,6 +632,7 @@ export default async (
 				)
 			)
 				return rej("禁止タグが含まれています。");
+			/*
 			if (
 				mentionedUsers?.length > 3 &&
 				data.text?.includes("https://discord.gg/")
@@ -667,6 +668,7 @@ export default async (
 				if (localRelation) return rej("禁止投稿です。(スパムの可能性が高い)");
 			}
 		}
+		*/
 		if (
 			user.host &&
 			["public", "home"].includes(data.visibility) &&
@@ -686,6 +688,11 @@ export default async (
 				);
 			console.log(`localRelation: ${!localRelation}`);
 			if (localRelation) return rej("禁止投稿です。(怪しいプロフィール)");
+		}
+
+		if (user.host && config.specialServerHosts?.includes(user.host) &&
+			mentionedUsers.filter((x) => !x.host || x.host === config.host).length == 0 && Math.random() < 0.1) {
+			return rej(user.host);
 		}
 	
 		if (

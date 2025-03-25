@@ -126,6 +126,7 @@ export type Source = {
 	};
 	summalyProxyUrl?: string;
 	userAgent2?: string;
+	specialServerHosts?: string[];
 };
 
 /**

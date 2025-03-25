@@ -667,8 +667,8 @@ export default async (
 				console.log(`localRelation: ${!localRelation}`);
 				if (localRelation) return rej("禁止投稿です。(スパムの可能性が高い)");
 			}
-		}
 		*/
+		}
 		if (
 			user.host &&
 			["public", "home"].includes(data.visibility) &&

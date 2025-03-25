@@ -9,7 +9,7 @@
 			custom: !bigCustom,
 			['mfm-x' + (size || 2)]: mfmx,
 		}"
-		:src="url"
+		v-emoji-src="url"
 		:title="title"
 		:alt="alt"
 		decoding="async"
@@ -32,7 +32,7 @@
 		v-else-if="char && !useOsNativeEmojis && !errorAlt"
 		class="mk-emoji"
 		:class="{ ['mfm-x' + (size || 2)]: mfmx }"
-		:src="url"
+		v-emoji-src="url"
 		:title="title"
 		:alt="alt"
 		decoding="async"
@@ -72,7 +72,7 @@
 			custom: !bigCustom,
 			['mfm-x' + (size || 2)]: mfmx,
 		}"
-		:src="altimgUrl"
+		v-emoji-src="altimgUrl"
 		:title="title + ' [localOnly]'"
 		:alt="alt"
 		v-tooltip="emojiHost + ' localOnly'"

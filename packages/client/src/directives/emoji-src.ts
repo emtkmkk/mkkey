@@ -14,6 +14,7 @@ const emojiSrc: Directive = {
           } else {
             if (!delayLogged) {
                 console.log("v-emoji-src: isEmojiLoading (mounted)");
+							el.src = 'https://mkkey.net/static-assets/loading.png';
               delayLogged = true;
             }
             setTimeout(check, 50);
@@ -82,6 +83,7 @@ const emojiSrc: Directive = {
             } else {
               if (!delayLogged) {
                 console.log("v-emoji-src: isEmojiLoading (updated)");
+								el.src = 'https://mkkey.net/static-assets/loading.png';
                 delayLogged = true;
               }
               setTimeout(check, 50);

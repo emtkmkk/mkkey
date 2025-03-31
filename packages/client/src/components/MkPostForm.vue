@@ -788,7 +788,7 @@ import {
 	getAccounts,
 	openAccountMenu as openAccountMenu_,
 } from "@/account";
-import { uploadFile } from "@/scripts/upload";
+import { uploads, uploadFile } from "@/scripts/upload";
 import { deepClone } from "@/scripts/clone";
 import XDraft from "@/components/MkDraftDialog.vue";
 import XCheatSheet from "@/components/MkCheatSheetDialog.vue";
@@ -2158,7 +2158,15 @@ async function post() {
 }
 
 function waitForFileSelectingToBeFalse(backupDraftData) {
-	let addData: { id: any; endpoint?: string; data?: Record<string, any> | undefined; token?: string | null | undefined; suppressToast?: boolean | undefined; comment?: string | undefined; draftData?: any; };
+	let addData: {
+		id: any;
+		endpoint?: string;
+		data?: Record<string, any> | undefined;
+		token?: string | null | undefined;
+		suppressToast?: boolean | undefined;
+		comment?: string | undefined;
+		draftData?: any;
+	};
 	if (!allPromisesResolved()) {
 		addData = os.addQueue({
 			endpoint: "notes/create",
@@ -2171,16 +2179,28 @@ function waitForFileSelectingToBeFalse(backupDraftData) {
 		if (addData) os.removeQueue(addData.id)
 	};
   return new Promise((resolve, reject) => {
-		if (allPromisesResolved()) resolve("OK");
+	if (!addData || allPromisesResolved()) resolve("OK");
+	let noQueueUploadsCount = 0;
     const checkInterval = setInterval(() => {
-			if (fileError) {
-        clearInterval(checkInterval);
-				reject("アップロードに失敗しました。")
+		if (fileError) {
+			clearInterval(checkInterval);
+			reject("アップロードに失敗しました。")
+		}
+		if (!fileError && allPromisesResolved()) {
+			clearInterval(checkInterval);
+			resolve("OK");
+		}
+		if (!uploads.value.length) {
+			if (noQueueUploadsCount >= 15) {
+				noQueueUploadsCount = 0;
+				console.log("ファイルを待機しているはずですが、アップロード中のファイルがありません。");
+				clearInterval(checkInterval);
+				resolve("OK");
 			}
-      if (!fileError && allPromisesResolved()) {
-        clearInterval(checkInterval);
-        resolve("OK");
-      }
+			noQueueUploadsCount += 1;
+		} else {
+			noQueueUploadsCount = 0;
+		}
     }, 200); // 200ミリ秒ごとにチェック
   }).finally(onFinally);
 }

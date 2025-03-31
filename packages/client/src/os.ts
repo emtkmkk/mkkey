@@ -154,12 +154,12 @@ export type apiData = {
 export const queueDatas = ref<apiData[]>([]);
 
 export const addQueue = (data: apiData) => {
-  const id = uuid();
+	const id = uuid();
 	const date = new Date();
-  const addData = { id, date, ...data };
-  queueDatas.value.push(addData);
-  defaultStore.set("queueDatas", queueDatas.value);
-  return addData;
+	const addData = { id, date, ...data };
+	queueDatas.value.push(addData);
+	defaultStore.set("queueDatas", queueDatas.value);
+	return addData;
 };
 
 export const removeQueue = (id: string) => {
@@ -168,13 +168,13 @@ export const removeQueue = (id: string) => {
 }
 
 export const queueApi = (
-  endpoint: string,
-  data: Record<string, any> = {},
-  token?: string | null | undefined,
-  suppressToast = false,
+	endpoint: string,
+	data: Record<string, any> = {},
+	token?: string | null | undefined,
+	suppressToast = false,
 	comment?: string | undefined,
 	draftData?: any,
-): Promise<any> => { // 戻り値の型をPromiseに変更
+): Promise<any> => {
   if (endpoint === "notes/create") {
 		try {
 			const isDuplicate = queueDatas.value.some(item => 

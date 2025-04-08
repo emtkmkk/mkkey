@@ -258,6 +258,11 @@ function isVRCUrl(url: string): string | null {
         return pathSegments[appIndex + 1];
       }
     }
+    // ?worldId= のクエリパラメータからワールドIDを取得
+    const worldId = parsedUrl.searchParams.get("worldId");
+    if (worldId) {
+      return worldId;
+    }
     return null;
   } catch (error) {
     logger.warn("Invalid URL:", error);

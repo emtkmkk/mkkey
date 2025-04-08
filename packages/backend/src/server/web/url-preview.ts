@@ -31,6 +31,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 
   // SteamのApp IDを取得
   const steamAppId = isSteamUrl(url);
+  const VRCWorldId = isVRCUrl(url);
 
   if (steamAppId) {
     // Steamの場合の処理
@@ -188,10 +189,27 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     ) {
       throw new Error("unsupported schema included");
     }
+    
+    if (VRCWorldId) {
+      // VRCの場合の処理
+      const VRCApiUrl = `https://api.vrchat.cloud/api/1/worlds/${VRCWorldId}`;
+  
+      // getJsonを使用してSteamデータを取得
+      const data = await getJson(
+        VRCApiUrl,
+        "application/json, */*",
+        5000,
+      );
+
+      if (data.name) {
+        summary.title = "VRChat - " + data.name;
+        summary.description = data.description;
+        summary.thumbnail = data.thumbnailImageUrl;
+      }
+    }
 
     summary.icon = wrap(summary.icon);
     summary.thumbnail = wrap(summary.thumbnail);
-
     // Cache 7days
     ctx.set("Cache-Control", "max-age=604800, immutable");
 
@@ -214,6 +232,28 @@ function isSteamUrl(url: string): string | null {
     ) {
       const pathSegments = parsedUrl.pathname.split("/");
       const appIndex = pathSegments.indexOf("app");
+      if (appIndex !== -1 && pathSegments.length > appIndex + 1) {
+        return pathSegments[appIndex + 1];
+      }
+    }
+    return null;
+  } catch (error) {
+    logger.warn("Invalid URL:", error);
+    return null;
+  }
+}
+
+
+// VRChatのWorldのURLを判定し、World IDを取得する関数
+function isVRCUrl(url: string): string | null {
+  try {
+    const parsedUrl = new URL(url);
+    if (
+      parsedUrl.hostname === "vrchat.com" ||
+      parsedUrl.hostname.endsWith(".vrchat.com")
+    ) {
+      const pathSegments = parsedUrl.pathname.split("/");
+      const appIndex = pathSegments.indexOf("world");
       if (appIndex !== -1 && pathSegments.length > appIndex + 1) {
         return pathSegments[appIndex + 1];
       }

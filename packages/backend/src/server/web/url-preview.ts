@@ -202,9 +202,9 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       );
 
       if (data.name) {
-        summary.title = "VRChat - " + data.name;
-        summary.description = data.description;
-        summary.thumbnail = data.thumbnailImageUrl;
+        summary.title = ["VRChat", data.name, data.authorName].filter(Boolean).join(" - ");
+        summary.description = data.description || summary.description;
+        summary.thumbnail = data.imageUrl || data.thumbnailImageUrl || summary.thumbnail;
       }
     }
 

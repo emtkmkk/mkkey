@@ -1758,7 +1758,7 @@ function done(query?: any): boolean | void {
 	}
 }
 
-function refetchEmoji() {
+async function refetchEmoji() {
 	let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
 	if (fetchModeMax === "always") {
 		await set("emojiFetchAttemptDate", Date.now());

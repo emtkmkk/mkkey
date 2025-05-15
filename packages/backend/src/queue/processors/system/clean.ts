@@ -5,6 +5,7 @@ import { Notes, UserIps } from "@/models/index.js";
 import { queueLogger } from "../../logger.js";
 import { genId } from "@/misc/gen-id.js";
 import { Note } from "@/models/entities/note.js";
+import { db } from "@/db/postgre.js";
 
 const logger = queueLogger.createSubLogger("clean");
 
@@ -106,6 +107,11 @@ export async function clean(
 		);
 	}
 
+	db.query(`VACUUM ANALYZE`);
+
+	logger.succ(`VACUUM ANALYZE`);
+	job.log(`succ - VACUUM ANALYZE`),
+	
 	job.progress(100);
 	done();
 }

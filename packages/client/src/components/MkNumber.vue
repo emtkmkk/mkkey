@@ -1,5 +1,5 @@
 <template>
-	<span>{{ number(Math.floor(tweened.number)) }}</span>
+	<span>{{ !isNaN(Number(n)) ? number(Math.floor(tweened.number)) : (n || "?") }}</span>
 </template>
 
 <script lang="ts" setup>
@@ -18,10 +18,8 @@ const tweened = reactive({
 watch(
 	() => props.value,
 	(n) => {
-		if (isNaN(Number(n))) {
-			return n || "?";
-		} else {
-			return gsap.to(tweened, { duration: 0.6, number: Number(n) || 0 });
+		if (!isNaN(Number(n))) {
+			gsap.to(tweened, { duration: 0.6, number: Number(n) || 0 });
 		}
 	},
 	{

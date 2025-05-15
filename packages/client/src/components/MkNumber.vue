@@ -1,5 +1,5 @@
 <template>
-	<span>{{ !isNaN(Number(n)) ? number(Math.floor(tweened.number)) : (n || "?") }}</span>
+	<span>{{ !isNaN(Number(value)) ? number(Math.floor(tweened.number)) : (value || "?") }}</span>
 </template>
 
 <script lang="ts" setup>

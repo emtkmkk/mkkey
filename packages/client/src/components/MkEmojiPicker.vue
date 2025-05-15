@@ -501,7 +501,7 @@
 												new Date(
 													e.createdAt
 												).valueOf() <
-										  7 * 24 * 60 * 60 * 1000
+										  365 * 24 * 60 * 60 * 1000
 										: false
 								)
 								.sort(
@@ -509,7 +509,7 @@
 										new Date(b.createdAt).valueOf() -
 										new Date(a.createdAt).valueOf()
 								)
-								.slice(0, 255)
+								.slice(0, 99)
 								.map((e) => ':' + e.name + ':')
 						"
 						@chosen="chosen"
@@ -1147,7 +1147,17 @@ import * as os from "@/os";
 import { isTouchUsing } from "@/scripts/touch";
 import { deviceKind } from "@/scripts/device-kind";
 import { formatRoomaji, kanaToHira, jaToRoomaji } from "@/scripts/convert-jp";
-import { emojiCategories, emojiMap, instance, followCategories } from "@/instance";
+import {
+	emojiCategories,
+	emojiMap,
+	emojiLoad,
+	fetchEmoji,
+	fetchPlusEmoji,
+	fetchAllEmoji,
+	fetchAllEmojiNoCache,
+	followCategories,
+	instance,
+} from "@/instance";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
 import { FocusTrap } from "focus-trap-vue";
@@ -1749,8 +1759,22 @@ function done(query?: any): boolean | void {
 }
 
 function refetchEmoji() {
-	defaultStore.set("remoteEmojisFetch", "once");
-	unisonReload();
+	let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
+	if (fetchModeMax === "always") {
+		await set("emojiFetchAttemptDate", Date.now());
+		fetchAllEmojiNoCache();
+	} else if (fetchModeMax === "all") {
+		await set("emojiFetchAttemptDate", Date.now());
+		fetchAllEmoji().catch(() => {
+			// 保存に失敗した場合は軽量版リモート絵文字の取得を試行
+			fetchPlusEmoji();
+		});
+	} else if (fetchModeMax === "plus") {
+		await set("emojiFetchAttemptDate", Date.now());
+		fetchPlusEmoji();
+	}
+	// 絵文字を読み込み直す
+	emojiLoad();
 }
 
 onMounted(() => {

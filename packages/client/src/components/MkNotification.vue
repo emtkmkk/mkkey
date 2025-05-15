@@ -253,7 +253,7 @@
 				>{{ i18n.ts.youGotNewFollower }}
 				<div
 					v-if="
-						full && (!notification.isRead || notification.isPrepend)
+						full && (!notification.firstRead || notification.isPrepend)
 					"
 				>
 					<MkFollowButton
@@ -422,8 +422,10 @@ const defaultReaction = ["⭐", "👍", "❤️"].includes(instance.defaultReact
 
 let readObserver: IntersectionObserver | undefined;
 let connection;
+let firstRead = false;
 
 onMounted(() => {
+	firstRead = props.notification.isRead;
 	if (!props.notification.isRead) {
 		readObserver = new IntersectionObserver((entries, observer) => {
 			if (!entries.some((entry) => entry.isIntersecting)) return;

@@ -337,7 +337,7 @@
 												: ""
 										}}
 									</template>
-									<MkNumber :value="stats.power" />
+									<MkNumber :value="stats.power ?? '計算中・・・'" />
 								</dd>
 							</dl>
 						</div>

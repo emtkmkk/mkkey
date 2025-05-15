@@ -206,14 +206,14 @@ export const MFM_TAGS_JP = [
 		ja: "文字色変更",
 		exportLeft: "$[fg ",
 		exportRight: "]",
-		defaultOption: "$[fg.color=FF0000FF ",
+		defaultOption: "$[fg.color=FF0000 ",
 	},
 	{
 		name: "bg",
 		ja: "背景色変更",
 		exportLeft: "$[bg ",
 		exportRight: "]",
-		defaultOption: "$[bg.color=FF0000FF ",
+		defaultOption: "$[bg.color=FF0000 ",
 	},
 	{
 		name: "crop",

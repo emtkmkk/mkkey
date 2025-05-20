@@ -70,6 +70,8 @@ const showContent = $ref(false);
 	}
 
 	> .main {
+	    display: flex;
+		flex-direction: column;
 		flex: 1;
 		min-width: 0;
 

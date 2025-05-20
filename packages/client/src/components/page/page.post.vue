@@ -15,6 +15,7 @@
 			ref="visibilityButton"
 			class="_button visibility"
 			@click="setVisibility"
+			v-if="$i != null"
 		>
 			<span v-if="visibility === 'public'"
 				><i class="ph-planet ph-bold ph-lg"></i
@@ -26,7 +27,7 @@
 				><i class="ph-lock-simple ph-bold ph-lg"></i
 			></span>
 		</button>
-		<span v-if="localOnly" class="local-only"
+		<span v-if="$i != null && localOnly" class="local-only"
 			><i class="ph-hand-heart ph-bold ph-lg"></i
 		></span>
 		<div class="shareButton" v-if="$i == null">
@@ -91,7 +92,7 @@ export default defineComponent({
 					? this.hpml
 							.interpolate(this.block.text)
 							.replaceAll(/:\w*?_?([a-zA-Z0-9]+):/g, (m, p1) =>
-								p1.toUpperCase()
+								p1.toUpperCase().includes("STAR") ? p1.toUpperCase() : ""
 							)
 							.replaceAll("STAR", "☆")
 					: this.hpml.interpolate(this.block.text),

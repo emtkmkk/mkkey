@@ -1163,6 +1163,7 @@ import { defaultStore } from "@/store";
 import { FocusTrap } from "focus-trap-vue";
 import { $i } from "@/account";
 import { unisonReload } from "@/scripts/unison-reload";
+import { get, set, del } from "@/scripts/idb-proxy";
 
 const props = withDefaults(
 	defineProps<{

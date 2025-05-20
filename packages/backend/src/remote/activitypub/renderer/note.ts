@@ -124,6 +124,11 @@ export default async function renderNote(
 			note.emojis = note.emojis?.map((x) =>
 				x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]*)$/gi, "$1"),
 			);
+		if (note.cw && !note.cw.includes("投稿に連合先表示不可の絵文字") && !note.cw.includes("投稿にリモート表示不可の絵文字")) {
+			note.cw = "投稿に連合先表示不可の絵文字が含まれます " + note.cw;
+		} else {
+			note.cw = "投稿に連合先表示不可の絵文字が含まれます";
+		}
 	}
 
 	let text = note.text ?? "";

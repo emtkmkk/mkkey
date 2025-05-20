@@ -1040,11 +1040,11 @@ router.get("(.*)", async (ctx) => {
 			100
 		).toFixed(1)}% ) です`,
 	);
-	motdt.push(`${meta.name}のユーザ数は ${usersCount} です`);
-	motdt.push(`${meta.name}の合計投稿数は ${notesCount} です`);
-	motdt.push(`${meta.name}の連合ユーザ数は ${gUsersCount} です`);
-	motdt.push(`${meta.name}の連合投稿数は ${gNotesCount} です`);
-	motdt.push(`${meta.name}の絵文字数は ${emojisCount} です`);
+	motdt.push(`${meta.name}のユーザ数は ${usersCount.toLocaleString("ja-JP")} です`);
+	motdt.push(`${meta.name}の合計投稿数は ${notesCount.toLocaleString("ja-JP")} です`);
+	motdt.push(`${meta.name}の連合ユーザ数は ${gUsersCount.toLocaleString("ja-JP")} です`);
+	motdt.push(`${meta.name}の連合投稿数は ${gNotesCount.toLocaleString("ja-JP")} です`);
+	motdt.push(`${meta.name}の絵文字数は ${emojisCount.toLocaleString("ja-JP")} です`);
 	//季節メッセージ
 	if (now.getMonth() === 0) {
 		motd.push("冬ですね");
@@ -1094,13 +1094,21 @@ router.get("(.*)", async (ctx) => {
 		motd.push("春ももうすぐ終わりですね");
 		if (now.getDate() == 5) {
 			motd.push("屋根より高い🎏");
+		} else if (now.getDate() >= 20 && now.getDate() < 27) {
+			motd.push(`5/27は${meta.name} ${now.getFullYear() - 2023}.5 周年の日みたいです`);
+		} else if (now.getDate() == 27) {
+			motd = [
+				`今日は${meta.name} ${now.getFullYear() - 2023}.5 周年の日です！🎉`,
+			];
+			motdd = [];
+			motdt = [];
 		}
 	} else if (now.getMonth() == 5) {
 		motd.push("梅雨の季節ですね");
 		if (now.getDate() == 6) {
-			motd.push("UFOがあっちいってこっちいって落っこちる日");
+			motd.push("UFOがあっちいってこっちいって落っこちる日です");
 		} else if (now.getDate() >= 19 && now.getDate() <= 23) {
-			motd.push("大体このへんで昼が最も長いらしい");
+			motd.push("大体このへんで昼が最も長いらしいです");
 		}
 	} else if (now.getMonth() == 6) {
 		motd.push("夏ですね");
@@ -1119,7 +1127,7 @@ router.get("(.*)", async (ctx) => {
 		if (now.getDate() == 15) {
 			motd.push("今日は十五夜らしいです");
 		} else if (now.getDate() >= 24 && now.getDate() <= 28) {
-			motd.push("大体このへんで昼と夜の長さが同じぐらいになるらしい");
+			motd.push("大体このへんで昼と夜の長さが同じぐらいになるらしいです");
 		}
 	} else if (now.getMonth() == 9) {
 		motd.push("秋ですね");
@@ -1127,8 +1135,10 @@ router.get("(.*)", async (ctx) => {
 			motd.push("Halloweeeeeeen");
 		}
 	} else if (now.getMonth() == 10) {
-		motd.push("秋か冬かよく分からない時期ですね");
-		if (now.getDate() == 26) {
+		motd.push("秋か冬かよく分からない時期ですね"); 
+		if (now.getDate() >= 19 && now.getDate() < 26) {
+			motd.push(`11/26は${meta.name} ${now.getFullYear() - 2022} 周年の日みたいです`);
+		} else if (now.getDate() == 26) {
 			motd = [
 				`今日は${meta.name} ${now.getFullYear() - 2022} 周年の日です！🎉`,
 			];
@@ -1167,7 +1177,13 @@ router.get("(.*)", async (ctx) => {
 		...motdd,
 		...motdd,
 		...motdt,
+		"🍙",
 	];
+	let randomMOTD = motd[Math.floor(Math.random() * motd.length)]
+	//旬の食べ物情報の生成
+	if (randomMOTD = "🍙") {
+		randomMOTD = `旬の食べ物: ${pickWeighted(getSeasonalProduce(now))}`
+	}
 	let splashIconUrl = meta.iconUrl;
 	if (meta.customSplashIcons.length > 0) {
 		splashIconUrl =
@@ -1179,16 +1195,199 @@ router.get("(.*)", async (ctx) => {
 		img: meta.iconUrl,
 		title: meta.name || "Calckey",
 		instanceName: meta.name || "Calckey",
-		desc: `FediverseのSNSサーバーの${meta.name}です\n\n${nowDate}時点の\nユーザ数 : ${usersCount}\n合計投稿数 : ${notesCount}\n絵文字数 : ${emojisCount}\n連合ユーザ数 : ${gUsersCount}\n連合投稿数 : ${gNotesCount}\n連合絵文字数 : ${gEmojisCount}`,
+		desc: `FediverseのSNSサーバーの${meta.name}です\n\n${nowDate}時点の\nユーザ数 : ${usersCount.toLocaleString("ja-JP")}\n合計投稿数 : ${notesCount.toLocaleString("ja-JP")}\n絵文字数 : ${emojisCount.toLocaleString("ja-JP")}\n連合ユーザ数 : ${gUsersCount.toLocaleString("ja-JP")}\n連合投稿数 : ${gNotesCount.toLocaleString("ja-JP")}\n連合絵文字数 : ${gEmojisCount.toLocaleString("ja-JP")}`,
 		icon: meta.iconUrl,
 		splashIcon: splashIconUrl,
 		themeColor: meta.themeColor,
-		randomMOTD: motd[Math.floor(Math.random() * motd.length)],
+		randomMOTD,
 		privateMode: meta.privateMode,
 		noindex: (ctx.path?.length ?? 0) > 1
 	});
 	ctx.set("Cache-Control", "public, max-age=15");
 });
+
+function getSeasonalProduce(date: Date = new Date()): Record<string, number> {
+  const m = date.getMonth(); // 0～11
+  let items: Record<string, number> = {};
+
+  switch (m) {
+    case 0: // 1月
+      items = {
+        // 果物
+        "いちご": 16, "柑橘": 14, "りんご": 9, "みかん": 15,
+        "キウイフルーツ": 13,
+        // 野菜
+        "カリフラワー": 12
+      };
+      break;
+
+    case 1: // 2月
+      items = {
+        // 果物
+        "いちご": 18, "柑橘": 21, "りんご": 11, "みかん": 9,
+        "アボカド": 9, "キウイフルーツ": 15,
+        // 野菜
+        "カリフラワー": 11
+      };
+      break;
+
+    case 2: // 3月
+      items = {
+        // 果物
+        "いちご": 22, "柑橘": 22, "りんご": 11,
+        "バナナ": 9, "レモン": 9, "グレープフルーツ": 9,
+        "アボカド": 9, "キウイフルーツ": 15,
+        // 野菜
+        "ブロッコリー": 11,
+      };
+      break;
+
+    case 3: // 4月
+      items = {
+        // 果物
+        "いちご": 19, "柑橘": 17, "りんご": 9, "びわ": 23,
+        "メロン": 6, "マンゴー": 11, "バナナ": 9,
+        "レモン": 9, "パイン": 12,
+        "キウイフルーツ": 10, "ブルーベリー": 10,
+        // 野菜
+        "たけのこ": 67, "キャベツ": 10, "ピーマン": 10,
+      };
+      break;
+
+    case 4: // 5月
+      items = {
+        // 果物
+        "いちご": 11, "びわ": 51,
+        "メロン": 18, "すいか": 16, "さくらんぼ": 9,
+        "うめ": 21, "マンゴー": 22, "バナナ": 9,
+        "パパイア": 12,
+        "アボカド": 9, "パイン": 14,
+        "ブルーベリー": 12,
+        // 野菜
+        "きゅうり": 11, "トマト": 11, "ピーマン": 11,
+      };
+      break;
+
+    case 5: // 6月
+      items = {
+        // 果物
+        "びわ": 22, "メロン": 25, "すいか": 23,
+        "さくらんぼ": 71,
+        "すもも": 21, "あんず": 52, "もも": 10,
+        "うめ": 78, "マンゴー": 24, "バナナ": 9,
+        "パパイア": 9, "グレープフルーツ": 9,
+        "パイン": 13,
+        "ブルーベリー": 27,
+        // 野菜
+        "なす": 11, "とうもろこし": 29, "オクラ": 15,
+      };
+      break;
+
+    case 6: // 7月
+      items = {
+        // 果物
+        "メロン": 19, "すいか": 32, "ぶどう": 9, "さくらんぼ": 17,
+        "すもも": 40,
+        "あんず": 47, "もも": 44, "マンゴー": 31,
+        "バナナ": 9,
+        "すだち": 9,
+        "グレープフルーツ": 9,
+        "パイン": 10,
+        "ブルーベリー": 34, "プルーン": 16,
+        // 野菜
+        "なす": 11, "とうもろこし": 35, "オクラ": 23,
+      };
+      break;
+
+    case 7: // 8月
+      items = {
+        // 果物
+        "メロン": 12, "すいか": 18, "ぶどう": 23,
+        "日本梨": 37, "いちじく": 32, "すもも": 24,
+        "もも": 36,
+        "すだち": 17,
+        "シャインマスカット": 16, "グレープフルーツ": 10,
+        "アボカド": 9, "ブルーベリー": 9, "プルーン": 35,
+        // 野菜
+		"きゅうり": 11, "トマト": 11,
+        "なす": 12, "とうもろこし": 22, "オクラ": 20,
+      };
+      break;
+
+    case 8: // 9月
+      items = {
+        // 果物
+        "りんご": 9,
+        "ぶどう": 32, "西洋梨": 11,
+        "かき": 13, "くり": 47, "日本梨": 42, "いちじく": 30,
+        "すもも": 12, "もも": 9, "すだち": 18,
+        "シャインマスカット": 39, "グレープフルーツ": 9,
+        "アボカド": 9,
+        "プルーン": 36,
+        // 野菜
+        "れんこん": 11, "オクラ": 12,
+      };
+      break;
+
+    case 9: // 10月
+      items = {
+        // 果物
+        "りんご": 12, "みかん": 12,
+        "ぶどう": 19, "西洋梨": 21, "かき": 43, "くり": 43,
+        "日本梨": 13, "いちじく": 16,
+        "レモン": 9, "パパイア": 10, "すだち": 13,
+        "シャインマスカット": 26,
+        "プルーン": 12,
+        // 野菜
+        "れんこん": 13, "カリフラワー": 14
+      };
+      break;
+
+    case 10: // 11月
+      items = {
+        // 果物
+        "りんご": 12, "みかん": 23, "西洋梨": 38, "かき": 32,
+        "ゆず": 12, "レモン": 10, "パパイア": 10, "すだち": 9,
+        // 野菜
+        "かぶ": 11, "れんこん": 12, "ほうれんそう": 11, "カリフラワー": 13
+      };
+      break;
+
+    case 11: // 12月
+      items = {
+        // 果物
+        "いちご": 10, "りんご": 10, "みかん": 33,
+        "西洋梨": 22, "かき": 10, "ゆず": 63, "レモン": 11,
+        "パパイア": 14,
+        // 野菜
+        "かぶ": 11, "ごぼう": 15, "れんこん": 16, "ねぎ": 11, "カリフラワー": 13
+      };
+      break;
+
+    default:
+      items = {};
+  }
+
+  return items;
+}
+
+function pickWeighted<TKey extends string>(weights: Record<TKey, number>): TKey {
+  // entries: [key, weight][]
+  const entries = Object.entries(weights) as [TKey, number][];
+  // 重みの合計を計算
+  const total = entries.reduce((sum, [, w]) => sum + w, 0);
+  // 0以上 total 未満 の乱数を生成
+  let r = Math.random() * total;
+  // 累積でキーを選ぶ
+  for (const [key, weight] of entries) {
+    if (r < weight) {
+      return key;
+    }
+    r -= weight;
+  }
+  // 万が一の保険として最後のキーを返す
+  return entries[entries.length - 1][0];
+}
 
 // Register router
 app.use(router.routes());

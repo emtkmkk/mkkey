@@ -1181,7 +1181,7 @@ router.get("(.*)", async (ctx) => {
 	];
 	let randomMOTD = motd[Math.floor(Math.random() * motd.length)]
 	//旬の食べ物情報の生成
-	if (randomMOTD = "🍙") {
+	if (randomMOTD == "🍙") {
 		randomMOTD = `旬の食べ物: ${pickWeighted(getSeasonalProduce(now))}`
 	}
 	let splashIconUrl = meta.iconUrl;

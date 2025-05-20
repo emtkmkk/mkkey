@@ -3,12 +3,16 @@
 		v-if="inline"
 		:class="`language-${prismLang}`"
 		v-html="html"
+		@touchstart.stop
+		@touchmove.stop
 	></code>
 	<pre
 		v-else
 		:class="`language-${prismLang}`"
+		@touchstart.stop
+		@touchmove.stop
 	>
-		<code :class="`language-${prismLang}`" v-html="html"></code>
+<code :class="`language-${prismLang}`" v-html="html"></code>
 	</pre>
 </template>
 

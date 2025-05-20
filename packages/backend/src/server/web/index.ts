@@ -1182,7 +1182,10 @@ router.get("(.*)", async (ctx) => {
 	let randomMOTD = motd[Math.floor(Math.random() * motd.length)]
 	//旬の食べ物情報の生成
 	if (randomMOTD == "🍙") {
-		randomMOTD = `旬の食べ物: ${pickWeighted(getSeasonalProduce(now))}`
+		randomMOTD = `今が旬の食べ物: ${pickWeighted(getSeasonalProduce(now))}`
+	}
+	if (Math.random() < 0.001) {
+		randomMOTD = `このメッセージは 1 / 1000 (0.1%) の確率で表示されます`;
 	}
 	let splashIconUrl = meta.iconUrl;
 	if (meta.customSplashIcons.length > 0) {

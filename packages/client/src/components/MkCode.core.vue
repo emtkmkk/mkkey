@@ -11,9 +11,7 @@
 		:class="`language-${prismLang}`"
 		@touchstart.stop
 		@touchmove.stop
-	>
-<code :class="`language-${prismLang}`" v-html="html"></code>
-	</pre>
+	><code :class="`language-${prismLang}`" v-html="html"></code></pre>
 </template>
 
 <script lang="ts" setup>

@@ -29,6 +29,7 @@
 	) {
 		const count = parseInt(localStorage.getItem("openCount") ?? "0") + 1;
 		localStorage.setItem("openCount", count);
+		document.addEventListener('DOMContentLoaded', () => {
 		renderSleep(
 			"SLEEPING",
 			`残り ${Math.ceil(
@@ -38,7 +39,7 @@
 			count,
 		);
 		return;
-	}
+		}})
 	//#endregion
 
 	//#region Detect language & fetch translations

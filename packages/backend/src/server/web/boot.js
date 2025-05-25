@@ -39,7 +39,7 @@
 			count,
 		);
 		return;
-		}})
+		})}
 	//#endregion
 
 	//#region Detect language & fetch translations

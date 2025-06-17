@@ -26,7 +26,7 @@ export async function getApLock(
 
 export async function getFetchInstanceMetadataLock(
 	host: string,
-	timeout = 90 * 1000,
+	timeout = 10 * 1000,
 ): Promise<Mutex> {
 	const lock = new Mutex(redisClient, `instance:${host}`, {
 		lockTimeout: timeout,

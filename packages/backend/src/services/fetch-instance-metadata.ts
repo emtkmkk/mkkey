@@ -17,19 +17,18 @@ export async function fetchInstanceMetadata(
 	instance: Instance,
 	force = false,
 ): Promise<void> {
-	const lock = await getFetchInstanceMetadataLock(instance.host);
-
-	if (!force) {
+		if (!force) {
 		const _instance = await Instances.findOneBy({ host: instance.host });
 		const now = Date.now();
 		if (
 			_instance?.infoUpdatedAt &&
 			now - _instance.infoUpdatedAt.getTime() < 1000 * 60 * 60 * 24
 		) {
-			await lock.release();
 			return;
 		}
 	}
+
+	const lock = await getFetchInstanceMetadataLock(instance.host);
 
 	logger.info(`Fetching metadata of ${instance.host} ...`);
 

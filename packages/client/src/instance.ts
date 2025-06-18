@@ -89,16 +89,52 @@ export function sortCustomCategory() {
 }
 
 export async function fetchInstance() {
-	const meta = await api("meta", {
+	const cachedInstance = localStorage.getItem("instance");
+
+	// 初回: キャッシュがない場合は必ず待機
+	if (!cachedInstance) {
+		const meta = await api("meta", {
+			detail: false,
+			excludeEmoji: true,
+		});
+		for (const [k, v] of Object.entries(meta)) {
+			instance[k] = v;
+		}
+		localStorage.setItem("instance", JSON.stringify(meta));
+		return meta;
+	}
+
+	// 2回目以降: タイムアウト付きでAPI呼び出し
+	const apiPromise = api("meta", {
 		detail: false,
 		excludeEmoji: true,
 	});
+	const timeoutPromise = new Promise<"timeout">((resolve) =>
+		setTimeout(() => resolve("timeout"), 3000)
+	);
 
-	for (const [k, v] of Object.entries(meta)) {
-		instance[k] = v;
+	const result = await Promise.race([apiPromise, timeoutPromise]);
+
+	if (result === "timeout") {
+		// タイムアウト時はキャッシュを即返却し、APIで裏更新
+		apiPromise
+			.then((meta) => {
+				for (const [k, v] of Object.entries(meta)) {
+					instance[k] = v;
+				}
+				localStorage.setItem("instance", JSON.stringify(meta));
+			})
+			.catch(() => {});
+		return JSON.parse(cachedInstance);
+	} else {
+		// 通常通り取得できた場合
+		const meta = result;
+		for (const [k, v] of Object.entries(meta)) {
+			instance[k] = v;
+		}
+		localStorage.setItem("instance", JSON.stringify(meta));
+		return meta;
 	}
-
-	localStorage.setItem("instance", JSON.stringify(meta));
 }
 
 export async function fetchEmoji() {

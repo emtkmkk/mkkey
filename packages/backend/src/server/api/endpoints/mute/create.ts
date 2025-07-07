@@ -65,9 +65,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	// 管理人はミュートできるが、永続が指定されている場合ミニサイレンス状態になる
 	if (!muter.host && !muter.isAdmin && mutee.isAdmin && !ps.expiresAt) {
-		Users.update(muter.id, {
-			isMiniSilenced: true,
-		});
+		throw new ApiError();
 	}
 
 	// Check if already muting

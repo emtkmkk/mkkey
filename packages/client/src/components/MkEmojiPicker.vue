@@ -28,7 +28,7 @@
 							}}
 							<a
 								v-if="(props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && $store.state.remoteEmojisFetch !== 'none'"
-								@click.stop="refetchEmoji"
+                                                                @click.stop="refetchEmoji(true)"
 								>{{ i18n.ts.refetch + "？" }}</a
 							>
 						</header>
@@ -1759,23 +1759,25 @@ function done(query?: any): boolean | void {
 	}
 }
 
-async function refetchEmoji() {
-	let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
-	if (fetchModeMax === "always") {
-		await set("emojiFetchAttemptDate", Date.now());
-		fetchAllEmojiNoCache();
-	} else if (fetchModeMax === "all") {
-		await set("emojiFetchAttemptDate", Date.now());
-		fetchAllEmoji().catch(() => {
-			// 保存に失敗した場合は軽量版リモート絵文字の取得を試行
-			fetchPlusEmoji();
-		});
-	} else if (fetchModeMax === "plus") {
-		await set("emojiFetchAttemptDate", Date.now());
-		fetchPlusEmoji();
-	}
-	// 絵文字を読み込み直す
-	emojiLoad();
+async function refetchEmoji(showToast = false) {
+        if (showToast) os.toast(i18n.ts.remoteEmojiRefetching);
+        let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
+        if (fetchModeMax === "always") {
+                await set("emojiFetchAttemptDate", Date.now());
+                await fetchAllEmojiNoCache();
+        } else if (fetchModeMax === "all") {
+                await set("emojiFetchAttemptDate", Date.now());
+                await fetchAllEmoji().catch(() => {
+                        // 保存に失敗した場合は軽量版リモート絵文字の取得を試行
+                        fetchPlusEmoji();
+                });
+        } else if (fetchModeMax === "plus") {
+                await set("emojiFetchAttemptDate", Date.now());
+                await fetchPlusEmoji();
+        }
+        // 絵文字を読み込み直す
+        await emojiLoad();
+        if (showToast) os.toast(i18n.ts.remoteEmojiRefetched);
 }
 
 onMounted(() => {

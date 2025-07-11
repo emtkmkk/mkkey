@@ -242,7 +242,7 @@ export default async (
 		//指定がなければpublicでlocalOnlyOFF
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
-		if (!data.visibilityForce) {
+               if (!data.visibilityForce && data.visibility !== "specified") {
 			//チャンネル投稿でリプライ、リノートでないならpublic
 			if (data.channel != null && !data.reply && !data.renote)
 				data.visibility = "public";
@@ -442,20 +442,20 @@ export default async (
 			return rej("Renote target is not public or home");
 		}
 
-		if (!data.visibilityForce) {
-		// If the target of the renote is not public, make it home.
-		if (
-			data.renote &&
-			data.renote.visibility !== "public" &&
-			data.visibility === "public"
-		) {
-			data.visibility = "home";
-		}
+               if (!data.visibilityForce && data.visibility !== "specified") {
+                        // If the target of the renote is not public, make it home.
+                        if (
+                                data.renote &&
+                                data.renote.visibility !== "public" &&
+                                data.visibility === "public"
+                        ) {
+                                data.visibility = "home";
+                        }
 
-		// If the target of Renote is followers, make it followers.
-		if (data.renote && data.renote.visibility === "followers") {
-			data.visibility = "followers";
-		}
+                        // If the target of Renote is followers, make it followers.
+                        if (data.renote && data.renote.visibility === "followers") {
+                                data.visibility = "followers";
+                        }
 
 		// If the reply target is not public, make it home.
 		if (

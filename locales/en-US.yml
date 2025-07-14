@@ -1318,6 +1318,21 @@ _wordMute:
   soft: "Soft"
   hard: "Hard"
   mutedNotes: "Muted posts"
+  wordMuteBuilder: "Word mute builder"
+  generatedCommand: "Generated command"
+_wordMuteBuilder:
+  keyword: "Keyword"
+  from: "from"
+  name: "name"
+  visibility: "Visibility"
+  filter: "filter"
+  include: "include"
+  exclude: "exclude"
+  pname: "pname"
+  invert: "Invert"
+  invertField: "Invert"
+  addField: "Add {field}"
+  removeField: "Delete"
 _instanceMute:
   instanceMuteDescription: "This will mute any posts/boosts from the listed instances,\
     \ including those of users replying to a user from a muted instance."

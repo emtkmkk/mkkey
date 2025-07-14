@@ -17,14 +17,18 @@
 				<MkInfo class="_formBlock">{{
 					i18n.ts._wordMute.softDescription
 				}}</MkInfo>
-				<FormTextarea v-model="softMutedWords" class="_formBlock">
-					<span>{{ i18n.ts._wordMute.muteWords }}</span>
-					<template #caption
-						>{{ i18n.ts._wordMute.muteWordsDescription }}<br />{{
-							i18n.ts._wordMute.muteWordsDescription2
-						}}</template
-					>
-				</FormTextarea>
+                                <FormTextarea v-model="softMutedWords" class="_formBlock">
+                                        <span>{{ i18n.ts._wordMute.muteWords }}</span>
+                                        <template #caption
+                                                >{{ i18n.ts._wordMute.muteWordsDescription }}<br />{{
+                                                        i18n.ts._wordMute.muteWordsDescription2
+                                                }}</template
+                                        >
+                                </FormTextarea>
+                                <MkButton small @click="openBuilder('soft')" class="_formBlock">
+                                        <i class="ph-wrench ph-bold ph-lg"></i>
+                                        {{ i18n.ts.wordMuteBuilder }}
+                                </MkButton>
 				<FormSwitch v-model="hiddenSoftMutes" class="_formBlock"
 					>{{ i18n.ts.hiddenSoftMutes
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -49,14 +53,18 @@
 					>{{ i18n.ts._wordMute.hardDescription }}
 					{{ i18n.ts.reflectMayTakeTime }}</MkInfo
 				>
-				<FormTextarea v-model="hardMutedWords" class="_formBlock">
-					<span>{{ i18n.ts._wordMute.muteWords }}</span>
-					<template #caption
-						>{{ i18n.ts._wordMute.muteWordsDescription }}<br />{{
-							i18n.ts._wordMute.muteWordsDescription2
-						}}</template
-					>
-				</FormTextarea>
+                                <FormTextarea v-model="hardMutedWords" class="_formBlock">
+                                        <span>{{ i18n.ts._wordMute.muteWords }}</span>
+                                        <template #caption
+                                                >{{ i18n.ts._wordMute.muteWordsDescription }}<br />{{
+                                                        i18n.ts._wordMute.muteWordsDescription2
+                                                }}</template
+                                        >
+                                </FormTextarea>
+                                <MkButton small @click="openBuilder('hard')" class="_formBlock">
+                                        <i class="ph-wrench ph-bold ph-lg"></i>
+                                        {{ i18n.ts.wordMuteBuilder }}
+                                </MkButton>
 				<MkKeyValue
 					v-if="hardWordMutedNotesCount != null"
 					class="_formBlock"
@@ -74,15 +82,19 @@
 						i18n.ts.mkkey
 					}}</span></MkInfo
 				>
-				<FormTextarea v-model="reactionMutedWords" class="_formBlock">
-					<span>{{ i18n.ts._wordMute.muteWords }}</span>
-					<template #caption
-						>{{ i18n.ts._wordMute.reactionMuteWordsDescription
-						}}<br />{{
-							i18n.ts._wordMute.reactionMuteWordsDescription2
-						}}</template
-					>
-				</FormTextarea>
+                                <FormTextarea v-model="reactionMutedWords" class="_formBlock">
+                                        <span>{{ i18n.ts._wordMute.muteWords }}</span>
+                                        <template #caption
+                                                >{{ i18n.ts._wordMute.reactionMuteWordsDescription
+                                                }}<br />{{
+                                                        i18n.ts._wordMute.reactionMuteWordsDescription2
+                                                }}</template
+                                        >
+                                </FormTextarea>
+                                <MkButton small @click="openBuilder('reaction')" class="_formBlock">
+                                        <i class="ph-wrench ph-bold ph-lg"></i>
+                                        {{ i18n.ts.wordMuteBuilder }}
+                                </MkButton>
 				<FormSwitch v-model="remoteReactionMute" class="_formBlock"
 					>{{ i18n.ts.remoteReactionMute
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -106,6 +118,10 @@
 						}}</template
 					>
 				</FormTextarea>
+                                <MkButton small @click="openBuilder('reactionHard')" class="_formBlock">
+                                        <i class="ph-wrench ph-bold ph-lg"></i>
+                                        {{ i18n.ts.wordMuteBuilder }}
+                                </MkButton>
 				<FormSwitch v-model="rejectMuteReaction" class="_formBlock"
 					>{{ i18n.ts.rejectMuteReaction
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -201,8 +217,35 @@ watch(reactionMutedWords, () => {
 });
 
 watch(reactionHardMutedWords, () => {
-	changed.value = true;
+        changed.value = true;
 });
+
+function openBuilder(target: 'soft' | 'hard' | 'reaction' | 'reactionHard') {
+        os.popup(
+                MkWordMuteBuilder,
+                {},
+                {
+                        done(cmd: string) {
+                                if (!cmd) return;
+                                if (target === 'soft') {
+                                        softMutedWords.value +=
+                                                (softMutedWords.value ? '\n' : '') + cmd;
+                                } else if (target === 'hard') {
+                                        hardMutedWords.value +=
+                                                (hardMutedWords.value ? '\n' : '') + cmd;
+                                } else if (target === 'reaction') {
+                                        reactionMutedWords.value +=
+                                                (reactionMutedWords.value ? '\n' : '') + cmd;
+                                } else {
+                                        reactionHardMutedWords.value +=
+                                                (reactionHardMutedWords.value ? '\n' : '') + cmd;
+                                }
+                                changed.value = true;
+                        },
+                },
+                'closed',
+        );
+}
 
 async function save() {
 	const parseMutes = (mutes, tab) => {

@@ -215,6 +215,17 @@ type Item = { id: string; [another: string]: unknown };
 const rootEl = $ref<HTMLElement>();
 const items = ref<Item[]>([]);
 const queue = ref<Item[]>([]);
+const DUP_CHECK_RANGE = 50;
+
+function hasRecent(id: Item["id"]): boolean {
+       for (const item of queue.value) {
+               if (item.id === id) return true;
+       }
+       for (let i = 0; i < Math.min(items.value.length, DUP_CHECK_RANGE); i++) {
+               if (items.value[i].id === id) return true;
+       }
+       return false;
+}
 const offset = ref(0);
 const fetching = ref(true);
 const moreFetching = ref(false);
@@ -614,11 +625,13 @@ watch(visibility, () => {
 });
 
 const prepend = (item: Item): void => {
-	// 初回表示時はunshiftだけでOK
-	if (!rootEl) {
-		items.value.unshift(item);
-		return;
-	}
+       if (hasRecent(item.id)) return;
+
+       // 初回表示時はunshiftだけでOK
+       if (!rootEl) {
+               items.value.unshift(item);
+               return;
+       }
 
 	if (isTop() && !isPausingUpdate) unshiftItems([item]);
 	else prependQueue(item);
@@ -638,10 +651,12 @@ function executeQueue() {
 }
 
 function prependQueue(newItem: Item) {
-	queue.value.unshift(newItem);
-	if (queue.value.length >= props.displayLimit) {
-		queue.value.pop();
-	}
+       if (hasRecent(newItem.id)) return;
+
+       queue.value.unshift(newItem);
+       if (queue.value.length >= props.displayLimit) {
+               queue.value.pop();
+       }
 }
 
 const append = (item: Item): void => {

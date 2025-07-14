@@ -1,117 +1,119 @@
 <template>
-  <MkModalWindow ref="dialog" :width="400" :height="450" @close="close" @closed="$emit('closed')">
-    <template #header>{{ i18n.ts.wordMuteBuilder }}</template>
-    <div class="_formRoot">
-      <FormInput v-model="pname" class="_formBlock">
-        <template #label>{{ i18n.ts._wordMuteBuilder.pname }}</template>
-      </FormInput>
-      <FormInput v-model="keyword" class="_formBlock">
-        <template #label>{{ i18n.ts._wordMuteBuilder.keyword }}</template>
-      </FormInput>
-      <div class="_formBlock" v-for="(item, idx) in froms" :key="`from-${idx}`">
-        <FormInput v-model="item.value" :small="true">
-          <template #label>{{ i18n.ts._wordMuteBuilder.from }}</template>
+  <MkModalWindow ref="dialog" @close="close" @closed="$emit('closed')">
+    <MkSpacer :content-max="600" :margin-min="20">
+      <template #header>{{ i18n.ts.wordMuteBuilder }}</template>
+      <div class="_formRoot">
+        <FormInput v-model="pname" class="_formBlock">
+          <template #label>{{ i18n.ts._wordMuteBuilder.pname }}</template>
         </FormInput>
-        <FormCheckbox v-model="item.invert" small>
-          {{ i18n.ts._wordMuteBuilder.invertField }}
-        </FormCheckbox>
-        <MkButton small @click="removeFrom(idx)">
-          <i class="ph-minus ph-bold"></i>
-          {{ i18n.ts._wordMuteBuilder.removeField }}
+        <FormInput v-model="keyword" class="_formBlock">
+          <template #label>{{ i18n.ts._wordMuteBuilder.keyword }}</template>
+        </FormInput>
+        <div class="_formBlock" v-for="(item, idx) in froms" :key="`from-${idx}`">
+          <FormInput v-model="item.value" :small="true">
+            <template #label>{{ i18n.ts._wordMuteBuilder.from }}</template>
+          </FormInput>
+          <FormCheckbox v-model="item.invert" small>
+            {{ i18n.ts._wordMuteBuilder.invertField }}
+          </FormCheckbox>
+          <MkButton small @click="removeFrom(idx)">
+            <i class="ph-minus ph-bold"></i>
+            {{ i18n.ts._wordMuteBuilder.removeField }}
+          </MkButton>
+        </div>
+        <MkButton small @click="addFrom" class="_formBlock">
+          <i class="ph-plus ph-bold"></i>
+          {{ i18n.ts._wordMuteBuilder.addField.replace('{field}', i18n.ts._wordMuteBuilder.from) }}
         </MkButton>
-      </div>
-      <MkButton small @click="addFrom" class="_formBlock">
-        <i class="ph-plus ph-bold"></i>
-        {{ i18n.ts._wordMuteBuilder.addField.replace('{field}', i18n.ts._wordMuteBuilder.from) }}
-      </MkButton>
 
-      <div class="_formBlock" v-for="(item, idx) in names" :key="`name-${idx}`">
-        <FormInput v-model="item.value" :small="true">
-          <template #label>{{ i18n.ts._wordMuteBuilder.name }}</template>
-        </FormInput>
-        <FormCheckbox v-model="item.invert" small>
+        <div class="_formBlock" v-for="(item, idx) in names" :key="`name-${idx}`">
+          <FormInput v-model="item.value" :small="true">
+            <template #label>{{ i18n.ts._wordMuteBuilder.name }}</template>
+          </FormInput>
+          <FormCheckbox v-model="item.invert" small>
+            {{ i18n.ts._wordMuteBuilder.invertField }}
+          </FormCheckbox>
+          <MkButton small @click="removeName(idx)">
+            <i class="ph-minus ph-bold"></i>
+            {{ i18n.ts._wordMuteBuilder.removeField }}
+          </MkButton>
+        </div>
+        <MkButton small @click="addName" class="_formBlock">
+          <i class="ph-plus ph-bold"></i>
+          {{ i18n.ts._wordMuteBuilder.addField.replace('{field}', i18n.ts._wordMuteBuilder.name) }}
+        </MkButton>
+        <FormSelect v-model="visibility.value" class="_formBlock">
+          <template #label>{{ i18n.ts._wordMuteBuilder.visibility }}</template>
+          <option value=""></option>
+          <option value="public">public</option>
+          <option value="home">home</option>
+          <option value="hidden">hidden</option>
+          <option value="followers">followers</option>
+          <option value="specified">specified</option>
+        </FormSelect>
+        <FormCheckbox v-model="visibility.invert" class="_formBlock">
           {{ i18n.ts._wordMuteBuilder.invertField }}
         </FormCheckbox>
-        <MkButton small @click="removeName(idx)">
-          <i class="ph-minus ph-bold"></i>
-          {{ i18n.ts._wordMuteBuilder.removeField }}
-        </MkButton>
-      </div>
-      <MkButton small @click="addName" class="_formBlock">
-        <i class="ph-plus ph-bold"></i>
-        {{ i18n.ts._wordMuteBuilder.addField.replace('{field}', i18n.ts._wordMuteBuilder.name) }}
-      </MkButton>
-      <FormSelect v-model="visibility.value" class="_formBlock">
-        <template #label>{{ i18n.ts._wordMuteBuilder.visibility }}</template>
-        <option value=""></option>
-        <option value="public">public</option>
-        <option value="home">home</option>
-        <option value="hidden">hidden</option>
-        <option value="followers">followers</option>
-        <option value="specified">specified</option>
-      </FormSelect>
-      <FormCheckbox v-model="visibility.invert" class="_formBlock">
-        {{ i18n.ts._wordMuteBuilder.invertField }}
-      </FormCheckbox>
-      <div class="_formBlock">
-        <span class="label">{{ i18n.ts._wordMuteBuilder.filter }}</span>
-        <div class="filters">
-          <div v-for="opt in filterOptions" :key="opt.value" class="_filterItem">
-            <FormCheckbox v-model="filters[opt.value].checked">
-              {{ opt.label }}
-            </FormCheckbox>
-            <FormCheckbox v-model="filters[opt.value].invert" small>
-              {{ i18n.ts._wordMuteBuilder.invertField }}
-            </FormCheckbox>
+        <div class="_formBlock">
+          <span class="label">{{ i18n.ts._wordMuteBuilder.filter }}</span>
+          <div class="filters">
+            <div v-for="opt in filterOptions" :key="opt.value" class="_filterItem">
+              <FormCheckbox v-model="filters[opt.value].checked">
+                {{ opt.label }}
+              </FormCheckbox>
+              <FormCheckbox v-model="filters[opt.value].invert" small>
+                {{ i18n.ts._wordMuteBuilder.invertField }}
+              </FormCheckbox>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="_formBlock" v-for="(item, idx) in includes" :key="`include-${idx}`">
-        <FormInput v-model="item.value" :small="true">
-          <template #label>{{ i18n.ts._wordMuteBuilder.include }}</template>
-        </FormInput>
-        <FormCheckbox v-model="item.invert" small>
-          {{ i18n.ts._wordMuteBuilder.invertField }}
+        <div class="_formBlock" v-for="(item, idx) in includes" :key="`include-${idx}`">
+          <FormInput v-model="item.value" :small="true">
+            <template #label>{{ i18n.ts._wordMuteBuilder.include }}</template>
+          </FormInput>
+          <FormCheckbox v-model="item.invert" small>
+            {{ i18n.ts._wordMuteBuilder.invertField }}
+          </FormCheckbox>
+          <MkButton small @click="removeInclude(idx)">
+            <i class="ph-minus ph-bold"></i>
+            {{ i18n.ts._wordMuteBuilder.removeField }}
+          </MkButton>
+        </div>
+        <MkButton small @click="addInclude" class="_formBlock">
+          <i class="ph-plus ph-bold"></i>
+          {{ i18n.ts._wordMuteBuilder.addField.replace('{field}', i18n.ts._wordMuteBuilder.include) }}
+        </MkButton>
+
+        <div class="_formBlock" v-for="(item, idx) in excludes" :key="`exclude-${idx}`">
+          <FormInput v-model="item.value" :small="true">
+            <template #label>{{ i18n.ts._wordMuteBuilder.exclude }}</template>
+          </FormInput>
+          <FormCheckbox v-model="item.invert" small>
+            {{ i18n.ts._wordMuteBuilder.invertField }}
+          </FormCheckbox>
+          <MkButton small @click="removeExclude(idx)">
+            <i class="ph-minus ph-bold"></i>
+            {{ i18n.ts._wordMuteBuilder.removeField }}
+          </MkButton>
+        </div>
+        <MkButton small @click="addExclude" class="_formBlock">
+          <i class="ph-plus ph-bold"></i>
+          {{ i18n.ts._wordMuteBuilder.addField.replace('{field}', i18n.ts._wordMuteBuilder.exclude) }}
+        </MkButton>
+
+        <FormCheckbox v-model="inverted" class="_formBlock">
+          {{ i18n.ts._wordMuteBuilder.invert }}
         </FormCheckbox>
-        <MkButton small @click="removeInclude(idx)">
-          <i class="ph-minus ph-bold"></i>
-          {{ i18n.ts._wordMuteBuilder.removeField }}
+
+        <FormTextarea readonly v-model="command" class="_formBlock">
+          <template #label>{{ i18n.ts.generatedCommand }}</template>
+        </FormTextarea>
+        <MkButton primary class="_formBlock" @click="submit">
+          <i class="ph-plus ph-bold ph-lg"></i>
+          {{ i18n.ts.add }}
         </MkButton>
       </div>
-      <MkButton small @click="addInclude" class="_formBlock">
-        <i class="ph-plus ph-bold"></i>
-        {{ i18n.ts._wordMuteBuilder.addField.replace('{field}', i18n.ts._wordMuteBuilder.include) }}
-      </MkButton>
-
-      <div class="_formBlock" v-for="(item, idx) in excludes" :key="`exclude-${idx}`">
-        <FormInput v-model="item.value" :small="true">
-          <template #label>{{ i18n.ts._wordMuteBuilder.exclude }}</template>
-        </FormInput>
-        <FormCheckbox v-model="item.invert" small>
-          {{ i18n.ts._wordMuteBuilder.invertField }}
-        </FormCheckbox>
-        <MkButton small @click="removeExclude(idx)">
-          <i class="ph-minus ph-bold"></i>
-          {{ i18n.ts._wordMuteBuilder.removeField }}
-        </MkButton>
-      </div>
-      <MkButton small @click="addExclude" class="_formBlock">
-        <i class="ph-plus ph-bold"></i>
-        {{ i18n.ts._wordMuteBuilder.addField.replace('{field}', i18n.ts._wordMuteBuilder.exclude) }}
-      </MkButton>
-
-      <FormCheckbox v-model="inverted" class="_formBlock">
-        {{ i18n.ts._wordMuteBuilder.invert }}
-      </FormCheckbox>
-
-      <FormTextarea readonly v-model="command" class="_formBlock">
-        <template #label>{{ i18n.ts.generatedCommand }}</template>
-      </FormTextarea>
-      <MkButton primary class="_formBlock" @click="submit">
-        <i class="ph-plus ph-bold ph-lg"></i>
-        {{ i18n.ts.add }}
-      </MkButton>
-    </div>
+    </MkSpacer>
   </MkModalWindow>
 </template>
 

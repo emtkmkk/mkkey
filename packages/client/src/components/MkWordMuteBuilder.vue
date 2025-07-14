@@ -1,5 +1,5 @@
 <template>
-  <MkModalWindow ref="dialog" :width="500" @close="close" @closed="$emit('closed')">
+  <MkModalWindow ref="dialog" :width="400" :height="450" @close="close" @closed="$emit('closed')">
     <template #header>{{ i18n.ts.wordMuteBuilder }}</template>
     <div class="_formRoot">
       <FormInput v-model="pname" class="_formBlock">

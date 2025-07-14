@@ -57,6 +57,7 @@ import { i18n } from "@/i18n";
 import MkInfo from "@/components/MkInfo.vue";
 import MkSuperMenu from "@/components/MkSuperMenu.vue";
 import { scroll } from "@/scripts/scroll";
+import { nextTick } from "vue";
 import { signout, $i } from "@/account";
 import { unisonReload } from "@/scripts/unison-reload";
 import { instance } from "@/instance";
@@ -313,21 +314,23 @@ const menuDef = computed(() => [
 watch($$(narrow), () => {});
 
 onMounted(() => {
-	ro.observe(el.value);
+        ro.observe(el.value);
 
-	narrow = el.value.offsetWidth < NARROW_THRESHOLD;
+        narrow = el.value.offsetWidth < NARROW_THRESHOLD;
 
-	if (!narrow && currentPage?.route.name == null) {
-		router.replace("/settings/profile");
-	}
+        if (!narrow && currentPage?.route.name == null) {
+                router.replace("/settings/profile");
+        }
+        scrollToSettingFromQuery();
 });
 
 onActivated(() => {
-	narrow = el.value.offsetWidth < NARROW_THRESHOLD;
+        narrow = el.value.offsetWidth < NARROW_THRESHOLD;
 
-	if (!narrow && currentPage?.route.name == null) {
-		router.replace("/settings/profile");
-	}
+        if (!narrow && currentPage?.route.name == null) {
+                router.replace("/settings/profile");
+        }
+        scrollToSettingFromQuery();
 });
 
 onUnmounted(() => {
@@ -335,13 +338,14 @@ onUnmounted(() => {
 });
 
 watch(router.currentRef, (to) => {
-	if (
-		to.route.name === "settings" &&
-		to.child?.route.name == null &&
-		!narrow
-	) {
-		router.replace("/settings/profile");
-	}
+        if (
+                to.route.name === "settings" &&
+                to.child?.route.name == null &&
+                !narrow
+        ) {
+                router.replace("/settings/profile");
+        }
+        scrollToSettingFromQuery();
 });
 
 const emailNotConfigured = computed(
@@ -361,6 +365,23 @@ const headerActions = $computed(() => []);
 const headerTabs = $computed(() => []);
 
 definePageMetadata(INFO);
+
+function scrollToSettingFromQuery() {
+       const key = router.currentRoute.value.query.setting as string | undefined;
+       if (!key) return;
+       nextTick(() => {
+               const rootEl = el.value;
+               const blocks = rootEl?.querySelectorAll("._formBlock");
+               const text = i18n.ts[key] as unknown as string | undefined;
+               if (!blocks || !text) return;
+               for (const block of blocks) {
+                       if (block.textContent && block.textContent.includes(text)) {
+                               scroll(block as HTMLElement, { behavior: "smooth" });
+                               break;
+                       }
+               }
+       });
+}
 // w 890
 // h 700
 </script>

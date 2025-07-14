@@ -29,13 +29,13 @@
 			>{{ "？" }}</MkButton
 		>
 		<template v-for="item in items">
-			<FormLink
-				:key="item.key"
-				v-if="!notSetOnly || defaultStore.isDefault(item.key)"
-				:to="`/settings/${item.def.page}`"
-				style="overflow: hidden; text-overflow: ellipsis"
-				class="_formBlock"
-			>
+                        <FormLink
+                                :key="item.key"
+                                v-if="!notSetOnly || defaultStore.isDefault(item.key)"
+                                :to="`/settings/${item.def.page}?setting=${item.key}`"
+                                style="overflow: hidden; text-overflow: ellipsis"
+                                class="_formBlock"
+                        >
 				<span
 					v-if="
 						!notSetOnly &&

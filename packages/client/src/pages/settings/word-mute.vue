@@ -61,10 +61,6 @@
                                                 }}</template
                                         >
                                 </FormTextarea>
-                                <MkButton small @click="openBuilder('hard')" class="_formBlock">
-                                        <i class="ph-wrench ph-bold ph-lg"></i>
-                                        {{ i18n.ts.wordMuteBuilder }}
-                                </MkButton>
 				<MkKeyValue
 					v-if="hardWordMutedNotesCount != null"
 					class="_formBlock"
@@ -91,10 +87,6 @@
                                                 }}</template
                                         >
                                 </FormTextarea>
-                                <MkButton small @click="openBuilder('reaction')" class="_formBlock">
-                                        <i class="ph-wrench ph-bold ph-lg"></i>
-                                        {{ i18n.ts.wordMuteBuilder }}
-                                </MkButton>
 				<FormSwitch v-model="remoteReactionMute" class="_formBlock"
 					>{{ i18n.ts.remoteReactionMute
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -118,10 +110,6 @@
 						}}</template
 					>
 				</FormTextarea>
-                                <MkButton small @click="openBuilder('reactionHard')" class="_formBlock">
-                                        <i class="ph-wrench ph-bold ph-lg"></i>
-                                        {{ i18n.ts.wordMuteBuilder }}
-                                </MkButton>
 				<FormSwitch v-model="rejectMuteReaction" class="_formBlock"
 					>{{ i18n.ts.rejectMuteReaction
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -156,6 +144,7 @@ import MkKeyValue from "@/components/MkKeyValue.vue";
 import MkButton from "@/components/MkButton.vue";
 import MkInfo from "@/components/MkInfo.vue";
 import MkTab from "@/components/MkTab.vue";
+import MkWordMuteBuilder from "@/components/MkWordMuteBuilder.vue";
 import * as os from "@/os";
 import number from "@/filters/number";
 import { defaultStore } from "@/store";

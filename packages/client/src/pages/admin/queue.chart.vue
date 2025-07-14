@@ -40,12 +40,18 @@
 		</div>
 		<div class="jobs">
 			<div v-if="jobs.length > 0">
-				<div v-for="job in jobs" :key="job[0]">
-					<span>{{ job[0] }}</span>
-					<span style="margin-left: 0.5rem; opacity: 0.7"
-						>({{ number(job[1]) }} jobs)</span
-					>
-				</div>
+                                <div v-for="job in jobs" :key="job[0]">
+                                        <MkA
+                                                class="_link"
+                                                :to="`/instance-info/${job[0]}`"
+                                        >
+                                                {{ job[0] }}
+                                        </MkA>
+                                        <span
+                                                style="margin-left: 0.5rem; opacity: 0.7"
+                                                >({{ number(job[1]) }} jobs)</span
+                                        >
+                                </div>
 			</div>
 			<span v-else style="opacity: 0.5">{{ i18n.ts.noJobs }}</span>
 		</div>

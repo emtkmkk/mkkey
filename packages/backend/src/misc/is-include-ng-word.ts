@@ -64,7 +64,8 @@ export function isIncludeNgWord(txt: string): string {
 		})
 		.replaceAll("金", "きん")
 		.replaceAll("玉", "たま")
-		.replaceAll("ぱちんこ", "ぱチんこ");
+		.replaceAll("ぱちんこ", "ぱチんこ")
+		.replaceAll("ゆにせっくす", "ゆにセっくす");
 
 	if (
 		ngword2.some((x) => {

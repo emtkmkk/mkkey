@@ -73,10 +73,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		limit: { type: "integer" },
-		localOnly: { type: "boolean", default: false },
-		remoteOnly: { type: "boolean", default: false },
-	},
+               limit: { type: "integer" },
+               localOnly: { type: "boolean", default: false },
+               remoteOnly: { type: "boolean", default: false },
+               excludeBots: { type: "boolean", default: false },
+       },
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
@@ -94,37 +95,43 @@ export default define(meta, paramDef, async (ps, me) => {
 	borderDate.setMilliseconds(0);
 
 	const result = await awaitAll({
-		sentReactions: NoteReactions.createQueryBuilder("reaction")
-			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
-			.where(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
-			.andWhere(
-				ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE",
-			)
+                sentReactions: NoteReactions.createQueryBuilder("reaction")
+                        .innerJoin("reaction.user", "user")
+                        .select(["reaction.reaction AS name", "COUNT(*) AS count"])
+                        .where(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
+                        .andWhere(
+                                ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE",
+                        )
+                       .andWhere(ps.excludeBots ? "user.isBot = FALSE" : "TRUE")
 			.groupBy("reaction.reaction")
 			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
-		sentReactionsCount: (
-			await NoteReactions.createQueryBuilder("reaction")
-				.select("reaction.reaction")
-				.where("reaction.reaction ~ '^:[^@]+:$'")
-				.groupBy("reaction.reaction")
-				.cache(CACHE_TIME)
-				.getRawMany()
-		).length,
-		recentlySentReactions: NoteReactions.createQueryBuilder("reaction")
-			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
-			.where("reaction.createdAt >= :borderDate", {
-				borderDate: borderDate.toISOString(),
-			})
-			.andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
-			.andWhere(
-				ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE",
-			)
-			.groupBy("reaction.reaction")
-			.orderBy("count", "DESC")
-			.cache(CACHE_TIME)
-			.getRawMany(),
+                sentReactionsCount: (
+                        await NoteReactions.createQueryBuilder("reaction")
+                                .innerJoin("reaction.user", "user")
+                                .select("reaction.reaction")
+                                .where("reaction.reaction ~ '^:[^@]+:$'")
+                               .andWhere(ps.excludeBots ? "user.isBot = FALSE" : "TRUE")
+                                .groupBy("reaction.reaction")
+                                .cache(CACHE_TIME)
+                                .getRawMany()
+                ).length,
+                recentlySentReactions: NoteReactions.createQueryBuilder("reaction")
+                        .innerJoin("reaction.user", "user")
+                        .select(["reaction.reaction AS name", "COUNT(*) AS count"])
+                        .where("reaction.createdAt >= :borderDate", {
+                                borderDate: borderDate.toISOString(),
+                        })
+                        .andWhere(ps.localOnly ? "reaction.reaction ~ '^:[^@]+:$'" : "TRUE")
+                        .andWhere(
+                                ps.remoteOnly ? "reaction.reaction ~ '^:[^@]+@[^@]+:$'" : "TRUE",
+                        )
+                       .andWhere(ps.excludeBots ? "user.isBot = FALSE" : "TRUE")
+                        .groupBy("reaction.reaction")
+                        .orderBy("count", "DESC")
+                        .cache(CACHE_TIME)
+                        .getRawMany(),
 	});
 
 	if (limit) {

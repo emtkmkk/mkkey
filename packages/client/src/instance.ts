@@ -198,10 +198,11 @@ export async function fetchAllEmojiNoCache() {
 }
 
 export async function fetchEmojiStats(limit) {
-	const emojiStats = await api("emoji-stats", {
-		limit,
-		localOnly: true,
-	});
+       const emojiStats = await api("emoji-stats", {
+               limit,
+               localOnly: true,
+               excludeBots: true,
+       });
 
 	instance.recentlyPopularReactions = emojiStats.recentlySentReactions;
 }

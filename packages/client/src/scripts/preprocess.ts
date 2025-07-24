@@ -176,19 +176,33 @@ export function preprocess(text: string): string {
 function sortByCharCode(text: string): string {
         const nodes = mfm.parse(text);
         const chars: string[] = [];
+  
+        // Collect sortable characters while preserving whitespace positions
         mfm.inspect(nodes, node => {
                 if (node.type === "text" && node.props.text) {
-                        chars.push(...[...node.props.text]);
+                        for (const ch of [...node.props.text]) {
+                                if (!(/[\s]|\u3000/.test(ch))) {
+                                        chars.push(ch);
+                                }
+                        }
                 }
         });
+
         chars.sort();
+
+        // Reassign characters back to each text node, skipping whitespace
         let index = 0;
         mfm.inspect(nodes, node => {
                 if (node.type === "text" && node.props.text) {
-                        const len = [...node.props.text].length;
-                        node.props.text = chars.slice(index, index + len).join("");
-                        index += len;
+                        const arr = [...node.props.text];
+                        for (let i = 0; i < arr.length; i++) {
+                                if (!(/[\s]|\u3000/.test(arr[i]))) {
+                                        arr[i] = chars[index++] ?? "";
+                                }
+                        }
+                        node.props.text = arr.join("");
                 }
         });
+  
         return mfm.toString(nodes);
 }

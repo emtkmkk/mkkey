@@ -8,6 +8,7 @@ import renderNote, { getReferences } from "@/remote/activitypub/renderer/note.js
 import renderKey from "@/remote/activitypub/renderer/key.js";
 import { renderPerson } from "@/remote/activitypub/renderer/person.js";
 import renderEmoji from "@/remote/activitypub/renderer/emoji.js";
+import renderDelete from "@/remote/activitypub/renderer/delete.js";
 import { inbox as processInbox } from "@/queue/index.js";
 import { isSelfHost, toPuny } from "@/misc/convert-host.js";
 import {
@@ -34,10 +35,62 @@ import Followers from "./activitypub/followers.js";
 import Outbox, { packActivity } from "./activitypub/outbox.js";
 import { serverLogger } from "./index.js";
 import config from "@/config/index.js";
+import { deliverToUser } from "@/remote/activitypub/deliver-manager.js";
 import Koa from "koa";
 
 // Init router
 const router = new Router();
+
+async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
+        const deleted = await Users.findOneBy({
+                id: userId,
+                host: IsNull(),
+                isDeleted: true,
+        });
+
+        if (!deleted) {
+                serverLogger.debug(
+                        `resendDeleteAccount: local deleted user ${userId} not found`,
+                );
+                return;
+        }
+
+        let host: string | undefined;
+        try {
+                const sig = httpSignature.parseRequest(ctx.req, { headers: [] });
+                host = new URL(sig.keyId).hostname;
+        } catch {
+                // No valid signature to identify requester
+                serverLogger.debug("resendDeleteAccount: no valid signature");
+                return;
+        }
+
+        if (!host) return;
+
+        serverLogger.debug(`resendDeleteAccount: requester host ${host}`);
+
+        const remote = await Users.findOne({
+                where: { host: toPuny(host), sharedInbox: Not(IsNull()) },
+        });
+
+        if (!remote) {
+                serverLogger.debug(
+                        `resendDeleteAccount: no remote user with sharedInbox for ${host}`,
+                );
+        }
+
+        if (!remote || !Users.isRemoteUser(remote)) return;
+
+        const activity = renderActivity(
+                renderDelete(`${config.url}/users/${deleted.id}`, deleted as ILocalUser),
+        );
+
+        serverLogger.info(
+                `resendDeleteAccount: sending delete for ${deleted.id} to ${host}`,
+        );
+
+        await deliverToUser(deleted as ILocalUser, activity, remote);
+}
 
 //#region Routing
 
@@ -128,15 +181,25 @@ router.get("/notes/:note", async (ctx, next) => {
 		return;
 	}
 
-	const note = await Notes.findOneBy({
-		id: ctx.params.note,
-		visibility: In(["public" as const, "home" as const, "followers" as const]),
-	});
+        const note = await Notes.findOne({
+                where: {
+                        id: ctx.params.note,
+                        visibility: In(["public" as const, "home" as const, "followers" as const]),
+                },
+                relations: { user: true },
+        });
 
-	if (note == null || note.deletedAt) {
-		ctx.status = 404;
-		return;
-	}
+        if (note == null || note.deletedAt) {
+                const maybe = await Notes.findOne({
+                        where: { id: ctx.params.note },
+                        relations: { user: true },
+                });
+                if (maybe?.user && maybe.user.host == null && maybe.user.isDeleted) {
+                        await resendDeleteAccount(ctx, maybe.user.id);
+                }
+                ctx.status = 404;
+                return;
+        }
 
 	// redirect if remote
 	if (note.userHost !== null) {
@@ -198,17 +261,27 @@ router.get("/notes/:note/activity", async (ctx) => {
 		return;
 	}
 
-	const note = await Notes.findOneBy({
-		id: ctx.params.note,
-		userHost: IsNull(),
-		visibility: In(["public" as const, "home" as const]),
-		localOnly: false,
-	});
+        const note = await Notes.findOne({
+                where: {
+                        id: ctx.params.note,
+                        userHost: IsNull(),
+                        visibility: In(["public" as const, "home" as const]),
+                        localOnly: false,
+                },
+                relations: { user: true },
+        });
 
-	if (note == null) {
-		ctx.status = 404;
-		return;
-	}
+        if (note == null) {
+                const maybe = await Notes.findOne({
+                        where: { id: ctx.params.note },
+                        relations: { user: true },
+                });
+                if (maybe?.user && maybe.user.host == null && maybe.user.isDeleted) {
+                        await resendDeleteAccount(ctx, maybe.user.id);
+                }
+                ctx.status = 404;
+                return;
+        }
 
 	ctx.body = renderActivity(await packActivity(note));
 	const meta = await fetchMeta();
@@ -229,16 +302,26 @@ router.get("/notes/:note/references", async (ctx, next) => {
 		return;
 	}
 
-	const note = await Notes.findOneBy({
-		id: ctx.params.note,
-		userHost: IsNull(),
-		visibility: In(["public" as const, "home" as const, "followers" as const]),
-	});
+        const note = await Notes.findOne({
+                where: {
+                        id: ctx.params.note,
+                        userHost: IsNull(),
+                        visibility: In(["public" as const, "home" as const, "followers" as const]),
+                },
+                relations: { user: true },
+        });
 
-	if (note == null || note.deletedAt) {
-		ctx.status = 404;
-		return;
-	}
+        if (note == null || note.deletedAt) {
+                const maybe = await Notes.findOne({
+                        where: { id: ctx.params.note },
+                        relations: { user: true },
+                });
+                if (maybe?.user && maybe.user.host == null && maybe.user.isDeleted) {
+                        await resendDeleteAccount(ctx, maybe.user.id);
+                }
+                ctx.status = 404;
+                return;
+        }
 
 	if (note.visibility === "followers" && (!note.channelId && note.localOnly)) {
 		serverLogger.debug(
@@ -378,14 +461,18 @@ router.get("/users/:user", async (ctx, next) => {
 
 	const userId = ctx.params.user;
 
-	const user = await Users.findOneBy({
-		id: userId,
-		host: IsNull(),
-		isSuspended: false,
-		isDeleted: false,
-	});
+        const user = await Users.findOneBy({
+                id: userId,
+                host: IsNull(),
+                isSuspended: false,
+                isDeleted: false,
+        });
 
-	await userInfo(ctx, user);
+        if (!user) {
+                await resendDeleteAccount(ctx, userId);
+        }
+
+        await userInfo(ctx, user);
 });
 
 router.get("/@:user", async (ctx, next) => {
@@ -403,14 +490,23 @@ router.get("/@:user", async (ctx, next) => {
 		return;
 	}
 
-	const user = await Users.findOneBy({
-		usernameLower: ctx.params.user.toLowerCase(),
-		host: IsNull(),
-		isSuspended: false,
-		isDeleted: false,
-	});
+        const user = await Users.findOneBy({
+                usernameLower: ctx.params.user.toLowerCase(),
+                host: IsNull(),
+                isSuspended: false,
+                isDeleted: false,
+        });
 
-	await userInfo(ctx, user);
+        if (!user) {
+                const deleted = await Users.findOneBy({
+                        usernameLower: ctx.params.user.toLowerCase(),
+                        host: IsNull(),
+                        isDeleted: true,
+                });
+                if (deleted) await resendDeleteAccount(ctx, deleted.id);
+        }
+
+        await userInfo(ctx, user);
 });
 
 router.get("/actor", async (ctx, next) => {

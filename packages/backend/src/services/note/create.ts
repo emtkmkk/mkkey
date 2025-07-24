@@ -6,7 +6,7 @@ import {
 	publishNotesStream,
 	publishNoteStream,
 } from "@/services/stream.js";
-import DeliverManager from "@/remote/activitypub/deliver-manager.js";
+import DeliverManager, { deliverToUser } from "@/remote/activitypub/deliver-manager.js";
 import renderNote from "@/remote/activitypub/renderer/note.js";
 import renderCreate from "@/remote/activitypub/renderer/create.js";
 import renderAnnounce from "@/remote/activitypub/renderer/announce.js";
@@ -417,16 +417,33 @@ export default async (
 						{ id: data.renote.userId, host: data.renote.userHost },
 					),
 				);
-				const dm = new DeliverManager(
-					{ id: data.renote.userId, host: data.renote.userHost },
-					content,
-				);
-				const u = await Users.findOneBy({ id: user.id });
-				if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
-				dm.execute();
-				return rej(
-					"削除された投稿がRTされました。削除リクエストを送信しました。",
-				);
+                                const dm = new DeliverManager(
+                                        { id: data.renote.userId, host: data.renote.userHost },
+                                        content,
+                                );
+                                const u = await Users.findOneBy({ id: user.id });
+                                if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+                                dm.execute();
+
+                                const author = await Users.findOne({
+                                        where: {
+                                                id: data.renote.userId,
+                                                host: IsNull(),
+                                                isDeleted: true,
+                                        },
+                                });
+                                if (author && u && Users.isRemoteUser(u)) {
+                                        const del = renderActivity(
+                                                renderDelete(
+                                                        `${config.url}/users/${author.id}`,
+                                                        author as ILocalUser,
+                                                ),
+                                        );
+                                        await deliverToUser(author as ILocalUser, del, u);
+                                }
+                                return rej(
+                                        "削除された投稿がRTされました。削除リクエストを送信しました。",
+                                );
 			} else {
 				return rej("削除された投稿はRTできません。");
 			}

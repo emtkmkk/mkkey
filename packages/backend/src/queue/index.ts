@@ -562,7 +562,7 @@ export default function () {
                 "checkSuspendedInstances",
                 {},
                 {
-                        repeat: { cron: "0 4 */14 * *" },
+                        repeat: { cron: "0 4 * * *" },
                         jobId: "check-suspended-instances",
                 },
         );

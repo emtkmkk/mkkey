@@ -36,7 +36,10 @@ import Outbox, { packActivity } from "./activitypub/outbox.js";
 import { serverLogger } from "./index.js";
 import config from "@/config/index.js";
 import { deliverToUser } from "@/remote/activitypub/deliver-manager.js";
+import { redisClient } from "@/db/redis.js";
 import Koa from "koa";
+
+const DELETE_RESEND_COOLDOWN_SEC = 60 * 15;
 
 // Init router
 const router = new Router();
@@ -69,6 +72,14 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
 
         serverLogger.debug(`resendDeleteAccount: requester host ${host}`);
 
+        const key = `deleteResend:${toPuny(host)}:${deleted.id}`;
+        if ((await redisClient.exists(key)) > 0) {
+                serverLogger.debug(
+                        `resendDeleteAccount: cooldown active for ${host}`,
+                );
+                return;
+        }
+
         const remote = await Users.findOne({
                 where: { host: toPuny(host), sharedInbox: Not(IsNull()) },
         });
@@ -90,6 +101,7 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
         );
 
         await deliverToUser(deleted as ILocalUser, activity, remote);
+        await redisClient.set(key, 1, "EX", DELETE_RESEND_COOLDOWN_SEC);
 }
 
 //#region Routing

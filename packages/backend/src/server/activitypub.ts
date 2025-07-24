@@ -6,7 +6,7 @@ import { In, IsNull, Not } from "typeorm";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderNote, { getReferences } from "@/remote/activitypub/renderer/note.js";
 import renderKey from "@/remote/activitypub/renderer/key.js";
-import { renderPerson } from "@/remote/activitypub/renderer/person.js";
+import { renderPerson, renderDeletedPerson } from "@/remote/activitypub/renderer/person.js";
 import renderEmoji from "@/remote/activitypub/renderer/emoji.js";
 import renderDelete from "@/remote/activitypub/renderer/delete.js";
 import { inbox as processInbox } from "@/queue/index.js";
@@ -36,7 +36,10 @@ import Outbox, { packActivity } from "./activitypub/outbox.js";
 import { serverLogger } from "./index.js";
 import config from "@/config/index.js";
 import { deliverToUser } from "@/remote/activitypub/deliver-manager.js";
+import { redisClient } from "@/db/redis.js";
 import Koa from "koa";
+
+const DELETE_RESEND_COOLDOWN_SEC = 60 * 15;
 
 // Init router
 const router = new Router();
@@ -69,6 +72,14 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
 
         serverLogger.debug(`resendDeleteAccount: requester host ${host}`);
 
+        const key = `deleteResend:${toPuny(host)}:${deleted.id}`;
+        if ((await redisClient.exists(key)) > 0) {
+                serverLogger.debug(
+                        `resendDeleteAccount: cooldown active for ${host}`,
+                );
+                return;
+        }
+
         const remote = await Users.findOne({
                 where: { host: toPuny(host), sharedInbox: Not(IsNull()) },
         });
@@ -90,6 +101,7 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
         );
 
         await deliverToUser(deleted as ILocalUser, activity, remote);
+        await redisClient.set(key, 1, "EX", DELETE_RESEND_COOLDOWN_SEC);
 }
 
 //#region Routing
@@ -434,7 +446,10 @@ async function userInfo(ctx: Router.RouterContext, user: User | null) {
 		return;
 	}
 
-	ctx.body = renderActivity(await renderPerson(user as ILocalUser));
+        const body = user.isDeleted
+                ? await renderDeletedPerson(user as ILocalUser)
+                : await renderPerson(user as ILocalUser);
+        ctx.body = renderActivity(body);
 	const meta = await fetchMeta();
 	if (meta.secureMode || meta.privateMode) {
 		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");
@@ -459,9 +474,9 @@ router.get("/users/:user", async (ctx, next) => {
 		return;
 	}
 
-	const userId = ctx.params.user;
+        const userId = ctx.params.user;
 
-        const user = await Users.findOneBy({
+        let user = await Users.findOneBy({
                 id: userId,
                 host: IsNull(),
                 isSuspended: false,
@@ -469,7 +484,20 @@ router.get("/users/:user", async (ctx, next) => {
         });
 
         if (!user) {
-                await resendDeleteAccount(ctx, userId);
+                const deleted = await Users.findOneBy({
+                        id: userId,
+                        host: IsNull(),
+                        isDeleted: true,
+                });
+
+                if (deleted) {
+                        await resendDeleteAccount(ctx, deleted.id);
+                        await userInfo(ctx, deleted);
+                        return;
+                }
+
+                ctx.status = 404;
+                return;
         }
 
         await userInfo(ctx, user);
@@ -490,7 +518,7 @@ router.get("/@:user", async (ctx, next) => {
 		return;
 	}
 
-        const user = await Users.findOneBy({
+        let user = await Users.findOneBy({
                 usernameLower: ctx.params.user.toLowerCase(),
                 host: IsNull(),
                 isSuspended: false,
@@ -503,7 +531,15 @@ router.get("/@:user", async (ctx, next) => {
                         host: IsNull(),
                         isDeleted: true,
                 });
-                if (deleted) await resendDeleteAccount(ctx, deleted.id);
+
+                if (deleted) {
+                        await resendDeleteAccount(ctx, deleted.id);
+                        await userInfo(ctx, deleted);
+                        return;
+                }
+
+                ctx.status = 404;
+                return;
         }
 
         await userInfo(ctx, user);

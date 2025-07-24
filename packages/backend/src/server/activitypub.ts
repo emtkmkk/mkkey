@@ -48,7 +48,12 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
                 isDeleted: true,
         });
 
-        if (!deleted) return;
+        if (!deleted) {
+                serverLogger.debug(
+                        `resendDeleteAccount: local deleted user ${userId} not found`,
+                );
+                return;
+        }
 
         let host: string | undefined;
         try {

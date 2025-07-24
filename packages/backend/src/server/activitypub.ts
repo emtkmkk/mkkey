@@ -471,9 +471,9 @@ router.get("/users/:user", async (ctx, next) => {
 		return;
 	}
 
-	const userId = ctx.params.user;
+        const userId = ctx.params.user;
 
-        const user = await Users.findOneBy({
+        let user = await Users.findOneBy({
                 id: userId,
                 host: IsNull(),
                 isSuspended: false,
@@ -481,7 +481,20 @@ router.get("/users/:user", async (ctx, next) => {
         });
 
         if (!user) {
-                await resendDeleteAccount(ctx, userId);
+                const deleted = await Users.findOneBy({
+                        id: userId,
+                        host: IsNull(),
+                        isDeleted: true,
+                });
+
+                if (deleted) {
+                        await resendDeleteAccount(ctx, deleted.id);
+                        await userInfo(ctx, deleted);
+                        return;
+                }
+
+                ctx.status = 404;
+                return;
         }
 
         await userInfo(ctx, user);
@@ -502,7 +515,7 @@ router.get("/@:user", async (ctx, next) => {
 		return;
 	}
 
-        const user = await Users.findOneBy({
+        let user = await Users.findOneBy({
                 usernameLower: ctx.params.user.toLowerCase(),
                 host: IsNull(),
                 isSuspended: false,
@@ -515,7 +528,15 @@ router.get("/@:user", async (ctx, next) => {
                         host: IsNull(),
                         isDeleted: true,
                 });
-                if (deleted) await resendDeleteAccount(ctx, deleted.id);
+
+                if (deleted) {
+                        await resendDeleteAccount(ctx, deleted.id);
+                        await userInfo(ctx, deleted);
+                        return;
+                }
+
+                ctx.status = 404;
+                return;
         }
 
         await userInfo(ctx, user);

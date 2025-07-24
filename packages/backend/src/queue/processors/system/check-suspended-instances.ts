@@ -1,7 +1,7 @@
 import type Bull from "bull";
 import { Instances } from "@/models/index.js";
 import { fetchInstanceMetadata } from "@/services/fetch-instance-metadata.js";
-import { LessThan } from "typeorm";
+import { LessThan, Not } from "typeorm";
 import { queueLogger } from "../../logger.js";
 
 const logger = queueLogger.createSubLogger("check-suspended-instances");
@@ -22,6 +22,7 @@ export async function checkSuspendedInstances(
                         infoUpdatedAt: LessThan(twoWeeksAgo),
                         latestRequestReceivedAt: LessThan(twoWeeksAgo),
                         lastCommunicatedAt: LessThan(twoWeeksAgo),
+                        latestStatus: Not(410),
                 },
         });
 
@@ -56,6 +57,22 @@ export async function checkSuspendedInstances(
                         logger.warn(`check failed for ${inst.host}: ${err}`);
                         job.log(`warn - check failed for ${inst.host}: ${err}`);
                 }
+        }
+
+        const goneServers = await Instances.find({
+                where: {
+                        isSuspended: false,
+                        latestStatus: 410,
+                },
+        });
+
+        for (const inst of goneServers) {
+                await Instances.update(inst.id, {
+                        latestRequestSentAt: new Date(),
+                        isSuspended: true,
+                });
+                logger.warn(`suspend ${inst.host} by 410`);
+                job.log(`warn - suspend ${inst.host} by 410`);
         }
 
         const targets = await Instances.find({

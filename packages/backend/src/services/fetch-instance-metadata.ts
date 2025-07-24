@@ -37,12 +37,16 @@ export async function fetchInstanceMetadata(
 		infoUpdatedAt: new Date(),
 	} as Record<string, any>;
 
-	try {
-		const [info, dom, manifest] = await Promise.all([
-			fetchNodeinfo(instance).catch(() => null),
-			fetchDom(instance).catch(() => null),
-			fetchManifest(instance).catch(() => null),
-		]);
+        try {
+                const [info, dom, manifest] = await Promise.all([
+                        fetchNodeinfo(instance).catch(() => null),
+                        fetchDom(instance).catch(() => null),
+                        fetchManifest(instance).catch(() => null),
+                ]);
+
+                if (!info && !dom && !manifest) {
+                        throw new Error("all fetch failed");
+                }
 
 		const [favicon, icon, themeColor, name, description] = await Promise.all([
 			fetchFaviconUrl(instance, dom).catch(() => null),

@@ -8,8 +8,8 @@ export function preprocess(text: string): string {
 		localStorage.getItem("customKaTeXMacroParsed") ?? "{}";
 	const maxNumberOfExpansions = 200; // to prevent infinite expansion loops
 
-	let _text = text;
-	let centerFlg = false;
+        let _text = text;
+        let centerFlg = false;
 
 	for (let i = 0; i < 50; i++) {
 		let nodes = mfm.parse(_text);
@@ -90,24 +90,24 @@ export function preprocess(text: string): string {
 				node.props.text = mfm.toString(node.children);
 				node.children = undefined;
 			}
-			if (
-				node.type === "fn" &&
-				[
-					"b",
-					"s",
-					"q",
-					"i",
-					"p",
-					"c",
-					"bold",
-					"small",
-					"quote",
-					"italic",
-					"strike",
-					"plain",
-					"center",
-				].includes(node.props.name)
-			) {
+                        if (
+                                node.type === "fn" &&
+                                [
+                                        "b",
+                                        "s",
+                                        "q",
+                                        "i",
+                                        "p",
+                                        "c",
+                                        "bold",
+                                        "small",
+                                        "quote",
+                                        "italic",
+                                        "strike",
+                                        "plain",
+                                        "center",
+                                ].includes(node.props.name)
+                        ) {
 				if (node.props.name.length === 1) {
 					node.props.name = node.props.name
 						.replace(/^b$/, "bold")
@@ -120,10 +120,15 @@ export function preprocess(text: string): string {
 				node.type = node.props.name;
 				node.props.name = undefined;
 			}
-			if (
-				node.type === "fn" &&
-				(node.props.name === "search" || node.props.name === "f")
-			) {
+                        if (node.type === "fn" && node.props.name === "sort") {
+                                node.type = "text";
+                                node.props.text = sortByCharCode(mfm.toString(node.children));
+                                node.children = undefined;
+                        }
+                        if (
+                                node.type === "fn" &&
+                                (node.props.name === "search" || node.props.name === "f")
+                        ) {
 				node.type = "search";
 				node.props.query = mfm.toString(node.children).replaceAll("\n", " ");
 				node.props.content = `${mfm
@@ -165,5 +170,39 @@ export function preprocess(text: string): string {
 		}
 	}
 
-	return text;
+        return text;
+}
+
+function sortByCharCode(text: string): string {
+        const nodes = mfm.parse(text);
+        const chars: string[] = [];
+
+        // Collect sortable characters while preserving whitespace positions
+        mfm.inspect(nodes, node => {
+                if (node.type === "text" && node.props.text) {
+                        for (const ch of [...node.props.text]) {
+                                if (!(/[\s]|\u3000/.test(ch))) {
+                                        chars.push(ch);
+                                }
+                        }
+                }
+        });
+
+        chars.sort();
+
+        // Reassign characters back to each text node, skipping whitespace
+        let index = 0;
+        mfm.inspect(nodes, node => {
+                if (node.type === "text" && node.props.text) {
+                        const arr = [...node.props.text];
+                        for (let i = 0; i < arr.length; i++) {
+                                if (!(/[\s]|\u3000/.test(arr[i]))) {
+                                        arr[i] = chars[index++] ?? "";
+                                }
+                        }
+                        node.props.text = arr.join("");
+                }
+        });
+
+        return mfm.toString(nodes);
 }

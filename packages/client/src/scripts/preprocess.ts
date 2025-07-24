@@ -176,7 +176,7 @@ export function preprocess(text: string): string {
 function sortByCharCode(text: string): string {
         const nodes = mfm.parse(text);
         const chars: string[] = [];
-
+  
         // Collect sortable characters while preserving whitespace positions
         mfm.inspect(nodes, node => {
                 if (node.type === "text" && node.props.text) {
@@ -203,6 +203,6 @@ function sortByCharCode(text: string): string {
                         node.props.text = arr.join("");
                 }
         });
-
+  
         return mfm.toString(nodes);
 }

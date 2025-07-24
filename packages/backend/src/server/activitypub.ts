@@ -72,7 +72,7 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
 
         serverLogger.debug(`resendDeleteAccount: requester host ${host}`);
 
-        const key = `deleteResend:${toPuny(host)}`;
+        const key = `deleteResend:${toPuny(host)}:${deleted.id}`;
         if ((await redisClient.exists(key)) > 0) {
                 serverLogger.debug(
                         `resendDeleteAccount: cooldown active for ${host}`,

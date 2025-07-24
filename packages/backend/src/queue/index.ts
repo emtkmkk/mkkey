@@ -549,16 +549,25 @@ export default function () {
 		},
 	);
 
-	systemQueue.add(
-		"cleanAntennaNotes",
-		{},
-		{
-			repeat: { cron: "0 15 * * *" },
-			jobId: "clean-antennanotes",
-		},
-	);
+        systemQueue.add(
+                "cleanAntennaNotes",
+                {},
+                {
+                        repeat: { cron: "0 15 * * *" },
+                        jobId: "clean-antennanotes",
+                },
+        );
 
-	processSystemQueue(systemQueue);
+        systemQueue.add(
+                "checkSuspendedInstances",
+                {},
+                {
+                        repeat: { cron: "0 4 */14 * *" },
+                        jobId: "check-suspended-instances",
+                },
+        );
+
+        processSystemQueue(systemQueue);
 }
 
 export function destroy() {

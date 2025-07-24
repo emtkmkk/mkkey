@@ -106,3 +106,32 @@ export async function renderPerson(user: ILocalUser) {
 
 	return person;
 }
+
+export async function renderDeletedPerson(user: ILocalUser) {
+        const id = `${config.url}/users/${user.id}`;
+        const keypair = await getUserKeypair(user.id);
+        return {
+                type: "Person",
+                id,
+                inbox: `${id}/inbox`,
+                outbox: `${id}/outbox`,
+                followers: `${id}/followers`,
+                following: `${id}/following`,
+                featured: `${id}/collections/featured`,
+                sharedInbox: `${config.url}/inbox`,
+                endpoints: { sharedInbox: `${config.url}/inbox` },
+                url: `${config.url}/@${user.username}`,
+                preferredUsername: user.username,
+                name: "",
+                summary: "",
+                _misskey_summary: "",
+                _misskey_followedMessage: "",
+                icon: null,
+                image: null,
+                tag: [],
+                manuallyApprovesFollowers: false,
+                discoverable: false,
+                publicKey: renderKey(user, keypair, "#main-key"),
+                isCat: false,
+        } as any;
+}

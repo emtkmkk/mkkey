@@ -6,7 +6,7 @@ import { In, IsNull, Not } from "typeorm";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderNote, { getReferences } from "@/remote/activitypub/renderer/note.js";
 import renderKey from "@/remote/activitypub/renderer/key.js";
-import { renderPerson } from "@/remote/activitypub/renderer/person.js";
+import { renderPerson, renderDeletedPerson } from "@/remote/activitypub/renderer/person.js";
 import renderEmoji from "@/remote/activitypub/renderer/emoji.js";
 import renderDelete from "@/remote/activitypub/renderer/delete.js";
 import { inbox as processInbox } from "@/queue/index.js";
@@ -446,7 +446,10 @@ async function userInfo(ctx: Router.RouterContext, user: User | null) {
 		return;
 	}
 
-	ctx.body = renderActivity(await renderPerson(user as ILocalUser));
+        const body = user.isDeleted
+                ? await renderDeletedPerson(user as ILocalUser)
+                : await renderPerson(user as ILocalUser);
+        ctx.body = renderActivity(body);
 	const meta = await fetchMeta();
 	if (meta.secureMode || meta.privateMode) {
 		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");

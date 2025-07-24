@@ -14,19 +14,20 @@ import type { DOMWindow } from "jsdom";
 const logger = new Logger("metadata", "cyan");
 
 export async function fetchInstanceMetadata(
-	instance: Instance,
-	force = false,
-): Promise<void> {
-		if (!force) {
-		const _instance = await Instances.findOneBy({ host: instance.host });
-		const now = Date.now();
-		if (
-			_instance?.infoUpdatedAt &&
-			now - _instance.infoUpdatedAt.getTime() < 1000 * 60 * 60 * 24
-		) {
-			return;
-		}
-	}
+        instance: Instance,
+        force = false,
+): Promise<boolean> {
+        let success = false;
+        if (!force) {
+                const _instance = await Instances.findOneBy({ host: instance.host });
+                const now = Date.now();
+                if (
+                        _instance?.infoUpdatedAt &&
+                        now - _instance.infoUpdatedAt.getTime() < 1000 * 60 * 60 * 24
+                ) {
+                        return true;
+                }
+        }
 
 	const lock = await getFetchInstanceMetadataLock(instance.host);
 
@@ -36,12 +37,16 @@ export async function fetchInstanceMetadata(
 		infoUpdatedAt: new Date(),
 	} as Record<string, any>;
 
-	try {
-		const [info, dom, manifest] = await Promise.all([
-			fetchNodeinfo(instance).catch(() => null),
-			fetchDom(instance).catch(() => null),
-			fetchManifest(instance).catch(() => null),
-		]);
+        try {
+                const [info, dom, manifest] = await Promise.all([
+                        fetchNodeinfo(instance).catch(() => null),
+                        fetchDom(instance).catch(() => null),
+                        fetchManifest(instance).catch(() => null),
+                ]);
+
+                if (!info && !dom && !manifest) {
+                        throw new Error("all fetch failed");
+                }
 
 		const [favicon, icon, themeColor, name, description] = await Promise.all([
 			fetchFaviconUrl(instance, dom).catch(() => null),
@@ -146,15 +151,18 @@ export async function fetchInstanceMetadata(
 		if (favicon) updates.faviconUrl = favicon;
 		if (themeColor) updates.themeColor = themeColor;
 
-		await Instances.update(instance.id, updates);
+                await Instances.update(instance.id, updates);
 
-		logger.succ(`Successfuly updated metadata of ${instance.host}`);
+                logger.succ(`Successfuly updated metadata of ${instance.host}`);
+                success = true;
 	} catch (e) {
 		logger.error(`Failed to update metadata of ${instance.host}: ${e}`);
 		logger.error(JSON.stringify(updates, undefined, "\t"));
 	} finally {
-		await lock.release();
-	}
+                await lock.release();
+        }
+
+        return success;
 }
 
 type NodeInfo = {

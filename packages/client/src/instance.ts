@@ -59,28 +59,37 @@ export async function emojiLoad() {
 }
 
 export async function fetchCustomCategory() {
-	if (defaultStore.state.followCategories?.length) {
-		followCategories = await api("categories/show", {
-			categoryId: Array.from(new Set(defaultStore.state.followCategories))
-		});
-		let emojiStr = $computed(() =>
-			instance.emojis.map((x) => `:${x.name}:`)
-		);
-		followCategories = followCategories.map((x) => {
-			if (!x.contents) return x;
-			x.contents = x.contents.map((emoji) => {
-				if (emoji.includes("@") && emojiStr?.includes(emoji.replace(/@(\S+)$/, ":"))) {
-					return emoji.replace(/@(\S+)$/, ":")
-				}
-				return emoji;
-			})
-			return x;
-		})
-	} else {
-		followCategories = []
-	}
-	localStorage.setItem("followCategories", JSON.stringify(followCategories))
-	localStorage.setItem("followCategoriesTime", String(Date.now()))
+        if (defaultStore.state.followCategories?.length) {
+                try {
+                        followCategories = await api("categories/show", {
+                                categoryId: Array.from(new Set(defaultStore.state.followCategories))
+                        });
+                        let emojiStr = $computed(() =>
+                                instance.emojis.map((x) => `:${x.name}:`)
+                        );
+                        followCategories = followCategories.map((x) => {
+                                if (!x.contents) return x;
+                                x.contents = x.contents.map((emoji) => {
+                                        if (emoji.includes("@") && emojiStr?.includes(emoji.replace(/@(\S+)$/, ":"))) {
+                                                return emoji.replace(/@(\S+)$/, ":")
+                                        }
+                                        return emoji;
+                                })
+                                return x;
+                        })
+                        localStorage.setItem("followCategories", JSON.stringify(followCategories))
+                        localStorage.setItem("followCategoriesTime", String(Date.now()))
+                } catch (_) {
+                        const cache = localStorage.getItem("followCategories");
+                        if (cache) {
+                                followCategories = JSON.parse(cache);
+                        }
+                }
+        } else {
+                followCategories = []
+                localStorage.setItem("followCategories", JSON.stringify(followCategories))
+                localStorage.setItem("followCategoriesTime", String(Date.now()))
+        }
 }
 
 export function sortCustomCategory() {

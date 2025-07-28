@@ -330,13 +330,14 @@
 						</section>
 					</template>
 					<template v-else>
-						<XSection
-							key="pinned:1"
-							v-if="
-								pinned?.length != 0 &&
-								((props.asReactionPicker &&
-									!$store.state.reactionsReactionHiddens) ||
-									(!props.asReactionPicker &&
+                                                <XSection
+                                                        key="pinned:1"
+                                                        data-section="pinned1"
+                                                        v-if="
+                                                                pinned?.length != 0 &&
+                                                                ((props.asReactionPicker &&
+                                                                        !$store.state.reactionsReactionHiddens) ||
+                                                                        (!props.asReactionPicker &&
 										!$store.state.reactionsPostHiddens))
 							"
 							:initial-shown="$store.state.reactionsDefaultOpen"
@@ -356,8 +357,9 @@
 								} `
 							}}</XSection
 						>
-						<XSection
-							key="pinned:2"
+                                                <XSection
+                                                        key="pinned:2"
+                                                        data-section="pinned2"
 							v-if="
 								pinned2?.length != 0 &&
 								((props.asReactionPicker &&
@@ -382,15 +384,16 @@
 								} `
 							}}</XSection
 						>
-						<XSection
-							v-if="
-								pinned3?.length != 0 &&
-								((props.asReactionPicker &&
-									!$store.state.reactionsReactionHiddens3) ||
-									(!props.asReactionPicker &&
-										!$store.state.reactionsPostHiddens3))
-							"
-							key="pinned:3"
+                                                <XSection
+                                                        v-if="
+                                                                pinned3?.length != 0 &&
+                                                                ((props.asReactionPicker &&
+                                                                        !$store.state.reactionsReactionHiddens3) ||
+                                                                        (!props.asReactionPicker &&
+                                                                               !$store.state.reactionsPostHiddens3))
+                                                       "
+                                                       key="pinned:3"
+                                                        data-section="pinned3"
 							:initial-shown="$store.state.reactions3DefaultOpen"
 							:emojis="
 								pinned3.filter(
@@ -408,15 +411,16 @@
 								} `
 							}}</XSection
 						>
-						<XSection
-							v-if="
-								pinned4?.length != 0 &&
-								((props.asReactionPicker &&
-									!$store.state.reactionsReactionHiddens4) ||
-									(!props.asReactionPicker &&
-										!$store.state.reactionsPostHiddens4))
-							"
-							key="pinned:4"
+                                                <XSection
+                                                        v-if="
+                                                                pinned4?.length != 0 &&
+                                                                ((props.asReactionPicker &&
+                                                                        !$store.state.reactionsReactionHiddens4) ||
+                                                                        (!props.asReactionPicker &&
+                                                                               !$store.state.reactionsPostHiddens4))
+                                                       "
+                                                       key="pinned:4"
+                                                        data-section="pinned4"
 							:initial-shown="$store.state.reactions4DefaultOpen"
 							:emojis="
 								pinned4.filter(
@@ -434,15 +438,16 @@
 								} `
 							}}</XSection
 						>
-						<XSection
-							v-if="
-								pinned5?.length != 0 &&
-								((props.asReactionPicker &&
-									!$store.state.reactionsReactionHiddens5) ||
-									(!props.asReactionPicker &&
-										!$store.state.reactionsPostHiddens5))
-							"
-							key="pinned:5"
+                                                <XSection
+                                                        v-if="
+                                                                pinned5?.length != 0 &&
+                                                                ((props.asReactionPicker &&
+                                                                        !$store.state.reactionsReactionHiddens5) ||
+                                                                        (!props.asReactionPicker &&
+                                                                               !$store.state.reactionsPostHiddens5))
+                                                       "
+                                                       key="pinned:5"
+                                                        data-section="pinned5"
 							:initial-shown="$store.state.reactions5DefaultOpen"
 							:emojis="
 								pinned5.filter(
@@ -460,15 +465,16 @@
 								} `
 							}}</XSection
 						>
-						<XSection
-							v-if="
-								recentlyUsedEmojis?.length != 0 &&
-								!$store.state.hiddenRecent
-							"
-							key="recentlyUsed"
-							:initial-shown="
-								$store.state.recentlyUsedDefaultOpen
-							"
+                                                <XSection
+                                                        v-if="
+                                                                recentlyUsedEmojis?.length != 0 &&
+                                                                !$store.state.hiddenRecent
+                                                        "
+                                                        key="recentlyUsed"
+                                                        data-section="recentlyUsed"
+                                                        :initial-shown="
+                                                                $store.state.recentlyUsedDefaultOpen
+                                                        "
 							:emojis="
 								recentlyUsedEmojis.filter(
 									(x) =>
@@ -490,9 +496,10 @@
 					class="group"
 				>
 					<header>{{ i18n.ts.customEmojis }}</header>
-					<XSection
-						key="custom:recentlyAddEmojis"
-						:initial-shown="false"
+                                        <XSection
+                                                key="custom:recentlyAddEmojis"
+                                                data-section="recentlyAddEmojis"
+                                                :initial-shown="false"
 						:emojis="
 							customEmojis
 								.filter((e) =>
@@ -515,13 +522,14 @@
 						@chosen="chosen"
 						>{{ i18n.ts.recentlyAddEmojis }}</XSection
 					>
-					<XSection
-						v-if="
-							recentlyPopularReactions &&
-							recentlyPopularReactions.length
-						"
-						key="custom:recentlyPopularReactions"
-						:initial-shown="false"
+                                        <XSection
+                                                v-if="
+                                                        recentlyPopularReactions &&
+                                                        recentlyPopularReactions.length
+                                                "
+                                                key="custom:recentlyPopularReactions"
+                                                data-section="recentlyPopularReactions"
+                                                :initial-shown="false"
 						:emojis="
 							recentlyPopularReactions
 								.filter((e) => e.name !== ':iine_fav:' && !e.name.includes('mk'))
@@ -531,29 +539,32 @@
 						@chosen="chosen"
 						>{{ i18n.ts.recentlyPopularReactions }}</XSection
 					>
-					<XSection
-						v-once
-						key="custom:random"
-						:initial-shown="false"
+                                        <XSection
+                                                v-once
+                                                data-section="random"
+                                                key="custom:random"
+                                                :initial-shown="false"
 						:emojis="randomSubset.map((e) => ':' + e.name + ':')"
 						@chosen="chosen"
 						>{{ i18n.ts.random }}</XSection
 					>
-					<XSection
-						v-once
-						v-for="category in followCategories"
-						:key="'custom:' + category.id"
+                                        <XSection
+                                                v-once
+                                                v-for="category in followCategories"
+                                                :key="'custom:' + category.id"
+                                                :data-section="'followedCategories-' + category.id"
 						:initial-shown="false"
 						:emojis="category.contents"
 						@chosen="chosen"
 						>{{ category.name }}</XSection
 					>
 					<template v-if="!$store.state.categoryHidden">
-						<XSection
-							v-once
-							v-for="category in customEmojiCategories"
-							:key="'custom:' + category"
-							:initial-shown="false"
+                                                <XSection
+                                                        v-once
+                                                        v-for="category in customEmojiCategories"
+                                                        :key="'custom:' + category"
+                                                        data-section="customCategories"
+                                                        :initial-shown="false"
 							:emojis="
 								customEmojis
 									.filter((e) => e.category === category)
@@ -565,9 +576,10 @@
 						
 						<template v-if="!$store.state.nullCategoryHidden">
 							<template v-once v-if="$store.state.japanCategory">
-								<XSection
-									key="custom:null/A"
-									:initial-shown="false"
+                                                                <XSection
+                                                                        key="custom:null/A" data-section="uncategorized"
+                                                                        data-section="uncategorized"
+                                                                        :initial-shown="false"
 									:emojis="
 										customEmojis
 											.filter(
@@ -596,7 +608,7 @@
 									>{{ "未設定 / あ行" }}</XSection
 								>
 								<XSection
-									key="custom:null/KG"
+									key="custom:null/KG" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -639,7 +651,7 @@
 									>{{ "未設定 / か行" }}</XSection
 								>
 								<XSection
-									key="custom:null/SZ"
+									key="custom:null/SZ" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -682,7 +694,7 @@
 									>{{ "未設定 / さ行" }}</XSection
 								>
 								<XSection
-									key="custom:null/TD"
+									key="custom:null/TD" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -725,7 +737,7 @@
 									>{{ "未設定 / た行" }}</XSection
 								>
 								<XSection
-									key="custom:null/N"
+									key="custom:null/N" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -755,7 +767,7 @@
 									>{{ "未設定 / な行" }}</XSection
 								>
 								<XSection
-									key="custom:null/HBP"
+									key="custom:null/HBP" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -798,7 +810,7 @@
 									>{{ "未設定 / は行" }}</XSection
 								>
 								<XSection
-									key="custom:null/M"
+									key="custom:null/M" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -828,7 +840,7 @@
 									>{{ "未設定 / ま行" }}</XSection
 								>
 								<XSection
-									key="custom:null/Y"
+									key="custom:null/Y" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -858,7 +870,7 @@
 									>{{ "未設定 / や行" }}</XSection
 								>
 								<XSection
-									key="custom:null/R"
+									key="custom:null/R" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -888,7 +900,7 @@
 									>{{ "未設定 / ら行" }}</XSection
 								>
 								<XSection
-									key="custom:null/W"
+									key="custom:null/W" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -918,7 +930,7 @@
 									>{{ "未設定 / わ行" }}</XSection
 								>
 								<XSection
-									key="custom:null/jpetc"
+									key="custom:null/jpetc" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -937,7 +949,7 @@
 							</template>
 							<template v-once v-else>
 								<XSection
-									key="custom:null/A-D"
+									key="custom:null/A-D" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -952,7 +964,7 @@
 									>{{ "未設定 / A-D" }}</XSection
 								>
 								<XSection
-									key="custom:null/E-G"
+									key="custom:null/E-G" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -967,7 +979,7 @@
 									>{{ "未設定 / E-G" }}</XSection
 								>
 								<XSection
-									key="custom:null/H-K"
+									key="custom:null/H-K" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -982,7 +994,7 @@
 									>{{ "未設定 / H-K" }}</XSection
 								>
 								<XSection
-									key="custom:null/L-N"
+									key="custom:null/L-N" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -997,7 +1009,7 @@
 									>{{ "未設定 / L-N" }}</XSection
 								>
 								<XSection
-									key="custom:null/O-Q"
+									key="custom:null/O-Q" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -1012,7 +1024,7 @@
 									>{{ "未設定 / O-Q" }}</XSection
 								>
 								<XSection
-									key="custom:null/R-T"
+									key="custom:null/R-T" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -1027,7 +1039,7 @@
 									>{{ "未設定 / R-T" }}</XSection
 								>
 								<XSection
-									key="custom:null/U-W"
+									key="custom:null/U-W" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -1042,7 +1054,7 @@
 									>{{ "未設定 / U-W" }}</XSection
 								>
 								<XSection
-									key="custom:null/X-Z"
+									key="custom:null/X-Z" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -1057,7 +1069,7 @@
 									>{{ "未設定 / X-Z" }}</XSection
 								>
 								<XSection
-									key="custom:null/etc"
+									key="custom:null/etc" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
 										customEmojis
@@ -1085,13 +1097,14 @@
 					class="group"
 				>
 					<header>{{ i18n.ts.emoji }}</header>
-					<XSection
-						v-for="category in categories"
-						:key="category"
-						:emojis="
-							emojilist
-								.filter((e) => e.category === category)
-								.map((e) => e.char)
+                                        <XSection
+                                                v-for="category in categories"
+                                                :key="category"
+                                                data-section="unicode"
+                                                :emojis="
+                                                        emojilist
+                                                                .filter((e) => e.category === category)
+                                                                .map((e) => e.char)
 						"
 						@chosen="chosen"
 						>{{ category }}</XSection
@@ -1781,8 +1794,46 @@ async function refetchEmoji(showToast = false) {
 }
 
 onMounted(() => {
-	focus();
+       focus();
+       if (defaultStore.state.enableEmojiPickerOrder) reorderSections();
 });
+
+watch(
+       () => [defaultStore.state.enableEmojiPickerOrder, defaultStore.state.emojiPickerOrder],
+       () => {
+               if (defaultStore.state.enableEmojiPickerOrder) reorderSections();
+               else restoreSections();
+       },
+       { deep: true }
+);
+
+let original: HTMLElement[] | null = null;
+
+function reorderSections() {
+       if (!emojis.value) return;
+       if (!original) original = Array.from(emojis.value.children) as HTMLElement[];
+       const order = defaultStore.state.emojiPickerOrder;
+       const sections = Array.from(
+               emojis.value.querySelectorAll<HTMLElement>("[data-section]")
+       );
+       const map: Record<string, HTMLElement[]> = {};
+       for (const el of sections) {
+               const key = el.dataset.section ?? "";
+               (map[key] ||= []).push(el);
+       }
+       for (const key of order) {
+               for (const k in map) {
+                       if (k === key || k.startsWith(key + "-")) {
+                               for (const el of map[k]) emojis.value.appendChild(el);
+                       }
+               }
+       }
+}
+
+function restoreSections() {
+       if (!emojis.value || !original) return;
+       for (const el of original) emojis.value.appendChild(el);
+}
 
 defineExpose({
 	focus,

@@ -63,11 +63,12 @@ import { instance } from "@/instance";
 import { useRouter } from "@/router";
 import { deviceKind } from "@/scripts/device-kind";
 import {
-	definePageMetadata,
-	provideMetadataReceiver,
-	setPageMetadata,
+        definePageMetadata,
+        provideMetadataReceiver,
+        setPageMetadata,
 } from "@/scripts/page-metadata";
 import * as os from "@/os";
+import { defaultStore } from "@/store";
 
 const indexInfo = {
 	title: i18n.ts.settings,
@@ -195,17 +196,23 @@ const menuDef = computed(() => [
 				to: "/settings/theme",
 				active: currentPage?.route.name === "theme",
 			},
-			{
-				icon: "ph-list ph-bold ph-lg",
-				text: i18n.ts.navbar,
-				to: "/settings/navbar",
-				active: currentPage?.route.name === "navbar",
-			},
-			{
-				icon: "ph-traffic-signal ph-bold ph-lg",
-				text: i18n.ts.statusbar,
-				to: "/settings/statusbar",
-				active: currentPage?.route.name === "statusbar",
+                        {
+                                icon: "ph-list ph-bold ph-lg",
+                                text: i18n.ts.navbar,
+                                to: "/settings/navbar",
+                                active: currentPage?.route.name === "navbar",
+                        },
+                        defaultStore.state.enableEmojiPickerOrder && {
+                                icon: "ph-list-bullets ph-bold ph-lg",
+                                text: i18n.ts.emojiPickerOrder,
+                                to: "/settings/emoji-picker-order",
+                                active: currentPage?.route.name === "emoji-picker-order",
+                        },
+                        {
+                                icon: "ph-traffic-signal ph-bold ph-lg",
+                                text: i18n.ts.statusbar,
+                                to: "/settings/statusbar",
+                                active: currentPage?.route.name === "statusbar",
 			},
 			{
 				icon: "ph-speaker-high ph-bold ph-lg",

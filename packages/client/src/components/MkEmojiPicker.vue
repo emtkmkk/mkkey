@@ -206,15 +206,15 @@
 					</div>
 				</section>
 
-				<div
-					v-if="
-						!$store.state.hiddenReactionDeckAndRecent &&
-						tab === 'index' &&
-						searchResultCustom.length <= 0 &&
-						(q == null || q === '')
-					"
-					class="group index"
-				>
+                               <div
+                                       v-if="
+                                               !$store.state.hiddenReactionDeckAndRecent &&
+                                               tab === 'index' &&
+                                               searchResultCustom.length <= 0 &&
+                                               (q == null || q === '')
+                                       "
+                                       class="group index"
+                               >
 					<template
 						v-if="
 							!showPinned ||
@@ -488,13 +488,13 @@
 						>
 					</template>
 				</div>
-				<div
-					v-if="
-						searchResultCustom.length <= 0 &&
-						(q == null || q === '')
-					"
-					class="group"
-				>
+                               <div
+                                       v-if="
+                                               searchResultCustom.length <= 0 &&
+                                               (q == null || q === '')
+                                       "
+                                       class="group"
+                               >
 					<header>{{ i18n.ts.customEmojis }}</header>
                                         <XSection
                                                 key="custom:recentlyAddEmojis"
@@ -1105,12 +1105,16 @@
                                                                .filter((e) => e.category === category)
                                                                .map((e) => e.char)
                                                "
-						@chosen="chosen"
-						>{{ category }}</XSection
-					>
-				</div>
+                                               @chosen="chosen"
+                                               >{{
+                                                       defaultStore.state.enableEmojiPickerOrder
+                                                               ? `Unicode / ${category}`
+                                                               : category
+                                               }}</XSection
+                                       >
+                                </div>
 			</div>
-			<div class="tabs">
+                        <div class="tabs">
 				<button
 					class="_button tab"
 					:class="{ active: tab === 'index' }"
@@ -1145,7 +1149,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, unref, computed, watch, onMounted } from "vue";
+import { ref, unref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import * as Misskey from "calckey-js";
 import XSection from "@/components/MkEmojiPicker.section.vue";
 import {
@@ -1794,74 +1798,103 @@ async function refetchEmoji(showToast = false) {
 
 onMounted(() => {
        focus();
-       if (defaultStore.state.enableEmojiPickerOrder) reorderSections();
+       if (defaultStore.state.enableEmojiPickerOrder) {
+               reorderSections();
+       }
+       if (emojis.value) {
+               observer = new MutationObserver(() => {
+                       if (ignoreMutation) return;
+                       if (defaultStore.state.enableEmojiPickerOrder && !q.value)
+                               reorderSections();
+               });
+               observer.observe(emojis.value, { childList: true });
+       }
 });
 
 watch(
-       () => [defaultStore.state.enableEmojiPickerOrder, defaultStore.state.emojiPickerOrder],
-       () => {
-               if (defaultStore.state.enableEmojiPickerOrder) reorderSections();
-               else restoreSections();
+       () => [
+               defaultStore.reactiveState.enableEmojiPickerOrder.value,
+               defaultStore.reactiveState.emojiPickerOrder.value,
+       ],
+       ([enabled]) => {
+               if (enabled) {
+                       if (!q.value) reorderSections();
+                       else restoreSections();
+               } else {
+                       restoreSections();
+               }
        },
        { deep: true }
 );
 
+watch(q, (nv) => {
+       if (!defaultStore.state.enableEmojiPickerOrder) return;
+       if (nv) restoreSections();
+       else reorderSections();
+});
+
 let original: HTMLElement[] | null = null;
+let observer: MutationObserver | null = null;
+let ignoreMutation = false;
 
 function reorderSections() {
        if (!emojis.value) return;
-       if (!original) {
-               original = Array.from(
-                       emojis.value.querySelectorAll<HTMLElement>("[data-section]")
-               );
-       } else {
-               original = original.filter((el) => emojis.value?.contains(el));
-       }
+       const current = Array.from(
+               emojis.value.querySelectorAll<HTMLElement>("[data-section]")
+       );
+       original = current.slice();
 
        const order = defaultStore.state.emojiPickerOrder;
 
-       const sections = Array.from(
-               emojis.value.querySelectorAll<HTMLElement>("[data-section]")
-       );
        const map: Record<string, HTMLElement[]> = {};
-
-       for (const el of sections) {
+       for (const el of current) {
                const key = el.dataset.section ?? "";
                if (!key) continue;
                (map[key] ||= []).push(el);
        }
 
+       ignoreMutation = true;
+       for (const el of current) {
+               el.remove();
+       }
+  
        for (const key of order) {
                for (const k in map) {
                        if (k === key || k.startsWith(key + "-")) {
                                for (const el of map[k]) {
-                                       el.style.display = "";
-                                       emojis.value.appendChild(el);
+                                       emojis.value!.appendChild(el);
                                }
                                delete map[k];
                        }
                }
        }
 
-       for (const k in map) {
-               for (const el of map[k]) {
-                       el.style.display = "none";
-               }
-       }
+       ignoreMutation = false;
 }
 
 function restoreSections() {
        if (!emojis.value || !original) return;
-       original = original.filter((el) => emojis.value?.contains(el));
-       for (const el of original) {
-               el.style.display = "";
-               emojis.value.appendChild(el);
+       ignoreMutation = true;
+       const current = Array.from(emojis.value.querySelectorAll<HTMLElement>("[data-section]"));
+       for (const el of current) {
+               el.remove();
        }
+       original = original.filter((el) => document.body.contains(el));
+       for (const el of original) {
+               if (document.body.contains(el)) {
+                       emojis.value.appendChild(el);
+               }
+       }
+       ignoreMutation = false;
 }
 
 defineExpose({
-	focus,
-	reset,
+        focus,
+        reset,
+});
+
+onBeforeUnmount(() => {
+       observer?.disconnect();
 });
 </script>
 

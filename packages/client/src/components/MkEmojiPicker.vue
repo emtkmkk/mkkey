@@ -206,15 +206,16 @@
 					</div>
 				</section>
 
-				<div
-					v-if="
-						!$store.state.hiddenReactionDeckAndRecent &&
-						tab === 'index' &&
-						searchResultCustom.length <= 0 &&
-						(q == null || q === '')
-					"
-					class="group index"
-				>
+                               <div
+                                       v-if="
+                                               !$store.state.hiddenReactionDeckAndRecent &&
+                                               tab === 'index' &&
+                                               searchResultCustom.length <= 0 &&
+                                               (q == null || q === '') &&
+                                               !defaultStore.state.enableEmojiPickerOrder
+                                       "
+                                       class="group index"
+                               >
 					<template
 						v-if="
 							!showPinned ||
@@ -488,13 +489,14 @@
 						>
 					</template>
 				</div>
-				<div
-					v-if="
-						searchResultCustom.length <= 0 &&
-						(q == null || q === '')
-					"
-					class="group"
-				>
+                               <div
+                                       v-if="
+                                               searchResultCustom.length <= 0 &&
+                                               (q == null || q === '') &&
+                                               !defaultStore.state.enableEmojiPickerOrder
+                                       "
+                                       class="group"
+                               >
 					<header>{{ i18n.ts.customEmojis }}</header>
                                         <XSection
                                                 key="custom:recentlyAddEmojis"
@@ -1087,31 +1089,34 @@
 						</template>
 					</template>
 				</div>
-				<div
-					v-once
-					v-if="
-						searchResultCustom.length <= 0 &&
-						(q == null || q === '') &&
-						!$store.state.categoryHidden
-					"
-					class="group"
-				>
-					<header>{{ i18n.ts.emoji }}</header>
-                                        <XSection
-                                                v-for="category in categories"
-                                                :key="category"
-                                                data-section="unicode"
-                                                :emojis="
-                                                        emojilist
-                                                                .filter((e) => e.category === category)
-                                                                .map((e) => e.char)
-						"
-						@chosen="chosen"
-						>{{ category }}</XSection
-					>
-				</div>
+                               <div
+                                       v-if="
+                                               searchResultCustom.length <= 0 &&
+                                               (q == null || q === '') &&
+                                               !$store.state.categoryHidden
+                                       "
+                                       class="group"
+                                       data-section="unicode"
+                               >
+                                       <header>{{ i18n.ts.emoji }}</header>
+                                       <XSection
+                                               v-for="category in categories"
+                                               :key="category"
+                                               :emojis="
+                                                       emojilist
+                                                               .filter((e) => e.category === category)
+                                                               .map((e) => e.char)
+                                               "
+                                                @chosen="chosen"
+                                                >{{
+                                                        defaultStore.state.enableEmojiPickerOrder
+                                                                ? `Unicode / ${category}`
+                                                                : category
+                                                }}</XSection
+                                        >
+                                </div>
 			</div>
-			<div class="tabs">
+                        <div class="tabs" v-if="!defaultStore.state.enableEmojiPickerOrder">
 				<button
 					class="_button tab"
 					:class="{ active: tab === 'index' }"
@@ -1295,7 +1300,9 @@ const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultCustomStart = ref<Misskey.entities.CustomEmoji[]>([]);
 const searchResultUnicode = ref<UnicodeEmojiDef[]>([]);
 const searchResultUnicodeStart = ref<UnicodeEmojiDef[]>([]);
-const tab = ref<"index" | "custom" | "unicode" | "tags">("index");
+const tab = ref<"index" | "custom" | "unicode" | "tags">(
+       defaultStore.state.enableEmojiPickerOrder ? "unicode" : "index"
+);
 const sortWord = ["a", "i", "u", "e", "o", "y"];
 let singleTapTime = undefined;
 let singleTapEmoji = undefined;
@@ -1795,44 +1802,86 @@ async function refetchEmoji(showToast = false) {
 
 onMounted(() => {
        focus();
-       if (defaultStore.state.enableEmojiPickerOrder) reorderSections();
+       if (defaultStore.state.enableEmojiPickerOrder) {
+               tab.value = 'unicode';
+               reorderSections();
+       }
 });
 
 watch(
-       () => [defaultStore.state.enableEmojiPickerOrder, defaultStore.state.emojiPickerOrder],
-       () => {
-               if (defaultStore.state.enableEmojiPickerOrder) reorderSections();
-               else restoreSections();
+       () => [
+               defaultStore.reactiveState.enableEmojiPickerOrder.value,
+               defaultStore.reactiveState.emojiPickerOrder.value,
+       ],
+       ([enabled]) => {
+               if (enabled) {
+                       tab.value = 'unicode';
+                       if (!q.value) reorderSections();
+                       else restoreSections();
+               } else {
+                       restoreSections();
+               }
        },
        { deep: true }
 );
+
+watch(q, (nv) => {
+       if (!defaultStore.state.enableEmojiPickerOrder) return;
+       if (nv) restoreSections();
+       else reorderSections();
+});
 
 let original: HTMLElement[] | null = null;
 
 function reorderSections() {
        if (!emojis.value) return;
-       if (!original) original = Array.from(emojis.value.children) as HTMLElement[];
+       if (!original) {
+               original = Array.from(
+                       emojis.value.querySelectorAll<HTMLElement>("[data-section]")
+               );
+       } else {
+               original = original.filter((el) => emojis.value?.contains(el));
+       }
+
        const order = defaultStore.state.emojiPickerOrder;
+
        const sections = Array.from(
                emojis.value.querySelectorAll<HTMLElement>("[data-section]")
        );
        const map: Record<string, HTMLElement[]> = {};
+
        for (const el of sections) {
                const key = el.dataset.section ?? "";
+               if (!key) continue;
                (map[key] ||= []).push(el);
        }
+
        for (const key of order) {
                for (const k in map) {
                        if (k === key || k.startsWith(key + "-")) {
-                               for (const el of map[k]) emojis.value.appendChild(el);
+                               for (const el of map[k]) {
+                                       el.style.display = "";
+                                       emojis.value.appendChild(el);
+                               }
+                               delete map[k];
                        }
+               }
+       }
+
+       for (const k in map) {
+               for (const el of map[k]) {
+                       el.style.display = "none";
                }
        }
 }
 
 function restoreSections() {
        if (!emojis.value || !original) return;
-       for (const el of original) emojis.value.appendChild(el);
+       original = original.filter((el) => emojis.value?.contains(el));
+       for (const el of original) {
+               el.style.display = "";
+               emojis.value.appendChild(el);
+       }
 }
 
 defineExpose({

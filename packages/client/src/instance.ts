@@ -86,15 +86,20 @@ export async function fetchCustomCategory() {
                         }
                 }
         } else {
-                followCategories = []
+                const cache = localStorage.getItem("followCategories");
+                if (cache) {
+                        followCategories = JSON.parse(cache);
+                } else {
+                        followCategories = [];
+                }
                 localStorage.setItem("followCategories", JSON.stringify(followCategories))
                 localStorage.setItem("followCategoriesTime", String(Date.now()))
         }
 }
 
 export function sortCustomCategory() {
-	followCategories　= defaultStore.state.followCategories.map((x) => followCategories.find((y) => x === y.id)).filter(Boolean);
-	localStorage.setItem("followCategories", JSON.stringify(followCategories))
+        followCategories = defaultStore.state.followCategories.map((x) => followCategories.find((y) => x === y.id)).filter(Boolean);
+        localStorage.setItem("followCategories", JSON.stringify(followCategories))
 }
 
 export async function fetchInstance() {

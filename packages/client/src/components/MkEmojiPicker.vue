@@ -1087,25 +1087,24 @@
 						</template>
 					</template>
 				</div>
-				<div
-					v-once
-					v-if="
-						searchResultCustom.length <= 0 &&
-						(q == null || q === '') &&
-						!$store.state.categoryHidden
-					"
-					class="group"
-				>
-					<header>{{ i18n.ts.emoji }}</header>
-                                        <XSection
-                                                v-for="category in categories"
-                                                :key="category"
-                                                data-section="unicode"
-                                                :emojis="
-                                                        emojilist
-                                                                .filter((e) => e.category === category)
-                                                                .map((e) => e.char)
-						"
+                               <div
+                                       v-if="
+                                               searchResultCustom.length <= 0 &&
+                                               (q == null || q === '') &&
+                                               !$store.state.categoryHidden
+                                       "
+                                       class="group"
+                                       data-section="unicode"
+                               >
+                                       <header>{{ i18n.ts.emoji }}</header>
+                                       <XSection
+                                               v-for="category in categories"
+                                               :key="category"
+                                               :emojis="
+                                                       emojilist
+                                                               .filter((e) => e.category === category)
+                                                               .map((e) => e.char)
+                                               "
 						@chosen="chosen"
 						>{{ category }}</XSection
 					>
@@ -1811,28 +1810,53 @@ let original: HTMLElement[] | null = null;
 
 function reorderSections() {
        if (!emojis.value) return;
-       if (!original) original = Array.from(emojis.value.children) as HTMLElement[];
+       if (!original) {
+               original = Array.from(
+                       emojis.value.querySelectorAll<HTMLElement>("[data-section]")
+               );
+       } else {
+               original = original.filter((el) => emojis.value?.contains(el));
+       }
+
        const order = defaultStore.state.emojiPickerOrder;
+
        const sections = Array.from(
                emojis.value.querySelectorAll<HTMLElement>("[data-section]")
        );
        const map: Record<string, HTMLElement[]> = {};
+
        for (const el of sections) {
                const key = el.dataset.section ?? "";
+               if (!key) continue;
                (map[key] ||= []).push(el);
        }
+
        for (const key of order) {
                for (const k in map) {
                        if (k === key || k.startsWith(key + "-")) {
-                               for (const el of map[k]) emojis.value.appendChild(el);
+                               for (const el of map[k]) {
+                                       el.style.display = "";
+                                       emojis.value.appendChild(el);
+                               }
+                               delete map[k];
                        }
+               }
+       }
+
+       for (const k in map) {
+               for (const el of map[k]) {
+                       el.style.display = "none";
                }
        }
 }
 
 function restoreSections() {
        if (!emojis.value || !original) return;
-       for (const el of original) emojis.value.appendChild(el);
+       original = original.filter((el) => emojis.value?.contains(el));
+       for (const el of original) {
+               el.style.display = "";
+               emojis.value.appendChild(el);
+       }
 }
 
 defineExpose({

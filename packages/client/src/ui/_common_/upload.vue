@@ -112,7 +112,7 @@ onUnmounted(() => {
   border-radius: 0.5rem;
 }
 .mk-uploader.all-no-img {
-  width: calc(100% - 2.25rem);
+  width: 18.75rem;
 }
 .mk-uploader:empty {
   display: none;

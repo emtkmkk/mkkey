@@ -577,7 +577,7 @@
 						<template v-if="!$store.state.nullCategoryHidden">
 							<template v-once v-if="$store.state.japanCategory">
                                                                 <XSection
-                                                                        key="custom:null/A" data-section="uncategorized"
+                                                                        key="custom:null/A"
                                                                         data-section="uncategorized"
                                                                         :initial-shown="false"
 									:emojis="

@@ -1149,7 +1149,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, unref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, unref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import * as Misskey from "calckey-js";
 import XSection from "@/components/MkEmojiPicker.section.vue";
 import {
@@ -1869,7 +1869,9 @@ function reorderSections() {
                }
        }
 
-       ignoreMutation = false;
+       nextTick(() => {
+               ignoreMutation = false;
+       });
 }
 
 function restoreSections() {
@@ -1885,7 +1887,9 @@ function restoreSections() {
                        emojis.value.appendChild(el);
                }
        }
-       ignoreMutation = false;
+       nextTick(() => {
+               ignoreMutation = false;
+       });
 }
 
 defineExpose({

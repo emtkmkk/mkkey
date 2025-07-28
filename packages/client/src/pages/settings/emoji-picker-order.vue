@@ -72,7 +72,7 @@ const items = ref(
 );
 
 async function addItem() {
-  const remain = Object.keys(orderItemDef).filter(k => !defaultStore.state.emojiPickerOrder.includes(k));
+  const remain = Object.keys(orderItemDef).filter(k => !items.value.some(i => i.type === k));
   const { canceled, result } = await os.select({
     title: i18n.ts.addItem,
     items: remain.map(k => ({ value: k, text: i18n.ts._emojiPickerSections[k] })),

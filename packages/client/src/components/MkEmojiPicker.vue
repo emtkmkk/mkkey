@@ -1857,7 +1857,7 @@ function reorderSections() {
        for (const el of current) {
                el.remove();
        }
-
+  
        for (const key of order) {
                for (const k in map) {
                        if (k === key || k.startsWith(key + "-")) {

@@ -184,16 +184,21 @@ export const routes = [
 				name: "account-info",
 				component: page(() => import("./pages/settings/account-info.vue")),
 			},
-			{
-				path: "/navbar",
-				name: "navbar",
-				component: page(() => import("./pages/settings/navbar.vue")),
-			},
-			{
-				path: "/statusbar",
-				name: "statusbar",
-				component: page(() => import("./pages/settings/statusbar.vue")),
-			},
+                        {
+                                path: "/navbar",
+                                name: "navbar",
+                                component: page(() => import("./pages/settings/navbar.vue")),
+                        },
+                        {
+                                path: "/emoji-picker-order",
+                                name: "emoji-picker-order",
+                                component: page(() => import("./pages/settings/emoji-picker-order.vue")),
+                        },
+                        {
+                                path: "/statusbar",
+                                name: "statusbar",
+                                component: page(() => import("./pages/settings/statusbar.vue")),
+                        },
 			{
 				path: "/sounds",
 				name: "sounds",

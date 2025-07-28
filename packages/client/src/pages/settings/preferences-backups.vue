@@ -225,9 +225,11 @@ const defaultStoreSaveKeys: (keyof (typeof defaultStore)["state"])[] = [
 	"reactedRenoteHidden",
 	"showDetailNoteClick",
 	"showMkkeySettingTips",
-	"showSpotlight",
-	"mobileThirdButton",
-	"enableInstanceEmojiSearch",
+        "showSpotlight",
+        "mobileThirdButton",
+        "enableInstanceEmojiSearch",
+        "enableEmojiPickerOrder",
+        "emojiPickerOrder",
 ];
 const coldDeviceStorageSaveKeys: (keyof typeof ColdDeviceStorage.default)[] = [
 	"lightTheme",

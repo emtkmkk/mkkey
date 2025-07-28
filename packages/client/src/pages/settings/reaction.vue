@@ -780,6 +780,10 @@
 					>
 				</div>
 			</FormSection>
+			<FormLink to="/settings/emoji-picker-order" class="_formBlock"
+				><template #icon><i class="ph-list-bullets ph-bold ph-lg"></i></template
+				>{{ i18n.ts.emojiPickerOrder }}</FormLink
+			>
 		</div>
 	</div>
 </template>

@@ -202,12 +202,6 @@ const menuDef = computed(() => [
                                 to: "/settings/navbar",
                                 active: currentPage?.route.name === "navbar",
                         },
-                        defaultStore.state.enableEmojiPickerOrder && {
-                                icon: "ph-list-bullets ph-bold ph-lg",
-                                text: i18n.ts.emojiPickerOrder,
-                                to: "/settings/emoji-picker-order",
-                                active: currentPage?.route.name === "emoji-picker-order",
-                        },
                         {
                                 icon: "ph-traffic-signal ph-bold ph-lg",
                                 text: i18n.ts.statusbar,

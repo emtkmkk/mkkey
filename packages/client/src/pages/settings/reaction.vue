@@ -809,6 +809,7 @@ import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
 import { instance } from "@/instance";
 import { $i } from "@/account";
+import FormLink from "@/components/form/link.vue";
 
 const MOBILE_THRESHOLD = 500;
 

@@ -1810,10 +1810,13 @@ let original: HTMLElement[] | null = null;
 
 function reorderSections() {
        if (!emojis.value) return;
-       if (!original)
+       if (!original) {
                original = Array.from(
                        emojis.value.querySelectorAll<HTMLElement>("[data-section]")
                );
+       } else {
+               original = original.filter((el) => emojis.value?.contains(el));
+       }
 
        const order = defaultStore.state.emojiPickerOrder;
 
@@ -1849,6 +1852,7 @@ function reorderSections() {
 
 function restoreSections() {
        if (!emojis.value || !original) return;
+       original = original.filter((el) => emojis.value?.contains(el));
        for (const el of original) {
                el.style.display = "";
                emojis.value.appendChild(el);

@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import * as misskey from "calckey-js";
 import PhotoSwipeLightbox from "photoswipe/lightbox";
 import PhotoSwipe from "photoswipe";
@@ -63,110 +63,127 @@ const props = defineProps<{
 
 const gallery = ref(null);
 const pswpZIndex = os.claimZIndex("middle");
+let lightbox: PhotoSwipeLightbox | null = null;
+
+function initLightbox(): void {
+        lightbox = new PhotoSwipeLightbox({
+                dataSource: props.mediaList
+                        .filter((media) => {
+                                if (media.type === "image/svg+xml") return true; // svgのwebpublicはpngなのでtrue
+                                return (
+                                        media.type.startsWith("image") &&
+                                        FILE_TYPE_BROWSERSAFE.includes(media.type)
+                                );
+                        })
+                        .map((media) => {
+                                const item = {
+                                        src: defaultStore.state.loadOriginalImages ? media.originalUrl || media.url : media.url,
+                                        w: media.properties.width,
+                                        h: media.properties.height,
+                                        title: media.name,
+                                        alt: media.comment,
+                                };
+                                if (
+                                        media.properties.orientation != null &&
+                                        media.properties.orientation >= 5
+                                ) {
+                                        [item.w, item.h] = [item.h, item.w];
+                                }
+                                return item;
+                        }),
+                gallery: gallery.value,
+                children: ".image",
+                thumbSelector: ".image",
+                loop: false,
+                padding:
+                        window.innerWidth > 500
+                                ? {
+                                                top: 32,
+                                                bottom: 32,
+                                                left: 32,
+                                                right: 32,
+                                  }
+                                : {
+                                                top: 0,
+                                                bottom: 0,
+                                                left: 0,
+                                                right: 0,
+                                  },
+                imageClickAction: "close",
+                tapAction: "toggle-controls",
+                pswpModule: PhotoSwipe,
+        });
+
+        lightbox.on("itemData", (ev) => {
+                const { itemData } = ev;
+
+                // element is children
+                const { element } = itemData;
+
+                const id = element.dataset.id;
+                const file = props.mediaList.find((media) => media.id === id);
+
+                itemData.src = defaultStore.state.loadOriginalImages ? file.originalUrl || file.url : file.url;
+                itemData.w = Number(file.properties.width);
+                itemData.h = Number(file.properties.height);
+                if (
+                        file.properties.orientation != null &&
+                        file.properties.orientation >= 5
+                ) {
+                        [itemData.w, itemData.h] = [itemData.h, itemData.w];
+                }
+                itemData.title = file.name;
+                itemData.msrc = file.thumbnailUrl;
+                itemData.alt = file.comment;
+                itemData.thumbCropped = true;
+        });
+
+        lightbox.on("uiRegister", () => {
+                lightbox!.pswp.ui.registerElement({
+                        name: "altText",
+                        className: "pwsp__alt-text-container",
+                        appendTo: "wrapper",
+                        onInit: (el, pwsp) => {
+                                let textBox = document.createElement("p");
+                                textBox.className = "pwsp__alt-text";
+                                el.appendChild(textBox);
+
+                                let preventProp = function (ev: Event): void {
+                                        ev.stopPropagation();
+                                };
+
+                                // Allow scrolling/text selection
+                                el.onwheel = preventProp;
+                                el.onclick = preventProp;
+                                el.onpointerdown = preventProp;
+                                el.onpointercancel = preventProp;
+                                el.onpointermove = preventProp;
+
+                                pwsp.on("change", () => {
+                                        textBox.textContent = pwsp.currSlide.data.alt?.trim();
+                                });
+                        },
+                });
+        });
+
+        lightbox.init();
+}
 
 onMounted(() => {
-	const lightbox = new PhotoSwipeLightbox({
-		dataSource: props.mediaList
-			.filter((media) => {
-				if (media.type === "image/svg+xml") return true; // svgのwebpublicはpngなのでtrue
-				return (
-					media.type.startsWith("image") &&
-					FILE_TYPE_BROWSERSAFE.includes(media.type)
-				);
-			})
-			.map((media) => {
-				const item = {
-					src: defaultStore.state.loadOriginalImages ? media.originalUrl || media.url : media.url,
-					w: media.properties.width,
-					h: media.properties.height,
-					title: media.name,
-					alt: media.comment,
-				};
-				if (
-					media.properties.orientation != null &&
-					media.properties.orientation >= 5
-				) {
-					[item.w, item.h] = [item.h, item.w];
-				}
-				return item;
-			}),
-		gallery: gallery.value,
-		children: ".image",
-		thumbSelector: ".image",
-		loop: false,
-		padding:
-			window.innerWidth > 500
-				? {
-						top: 32,
-						bottom: 32,
-						left: 32,
-						right: 32,
-				  }
-				: {
-						top: 0,
-						bottom: 0,
-						left: 0,
-						right: 0,
-				  },
-		imageClickAction: "close",
-		tapAction: "toggle-controls",
-		pswpModule: PhotoSwipe,
-	});
-
-	lightbox.on("itemData", (ev) => {
-		const { itemData } = ev;
-
-		// element is children
-		const { element } = itemData;
-
-		const id = element.dataset.id;
-		const file = props.mediaList.find((media) => media.id === id);
-
-		itemData.src = defaultStore.state.loadOriginalImages ? file.originalUrl || file.url : file.url;
-		itemData.w = Number(file.properties.width);
-		itemData.h = Number(file.properties.height);
-		if (
-			file.properties.orientation != null &&
-			file.properties.orientation >= 5
-		) {
-			[itemData.w, itemData.h] = [itemData.h, itemData.w];
-		}
-		itemData.title = file.name;
-		itemData.msrc = file.thumbnailUrl;
-		itemData.alt = file.comment;
-		itemData.thumbCropped = true;
-	});
-
-	lightbox.on("uiRegister", () => {
-		lightbox.pswp.ui.registerElement({
-			name: "altText",
-			className: "pwsp__alt-text-container",
-			appendTo: "wrapper",
-			onInit: (el, pwsp) => {
-				let textBox = document.createElement("p");
-				textBox.className = "pwsp__alt-text";
-				el.appendChild(textBox);
-
-				let preventProp = function (ev: Event): void {
-					ev.stopPropagation();
-				};
-
-				// Allow scrolling/text selection
-				el.onwheel = preventProp;
-				el.onclick = preventProp;
-				el.onpointerdown = preventProp;
-				el.onpointercancel = preventProp;
-				el.onpointermove = preventProp;
-
-				pwsp.on("change", () => {
-					textBox.textContent = pwsp.currSlide.data.alt?.trim();
-				});
-			},
-		});
-	});
-
-	lightbox.init();
+        if (!defaultStore.state.imageNewTab) initLightbox();
 });
+
+watch(
+        () => defaultStore.state.imageNewTab,
+        (val) => {
+                if (val) {
+                        lightbox?.destroy();
+                        lightbox = null;
+                } else {
+                        initLightbox();
+                }
+        }
+);
 
 const previewable = (file: misskey.entities.DriveFile): boolean => {
 	if (file.type === "image/svg+xml") return true; // svgのwebpublic/thumbnailはpngなのでtrue

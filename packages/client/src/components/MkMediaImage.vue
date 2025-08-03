@@ -32,19 +32,21 @@
 		</div>
 	</button>
 	<div v-else class="gqnyydlz">
-		<a
-			class="imageView"
-			:class="{
-				imageContain: !defaultStore.state.thumbnailCover,
-				imageCover: defaultStore.state.thumbnailCover,
-			}"
-			:href="image.url"
-			:title="image.name"
-		>
-			<ImgWithBlurhash
-				:hash="image.blurhash"
-				:src="url"
-				:alt="image.comment || image.name"
+                <a
+                        class="imageView"
+                        :class="{
+                                imageContain: !defaultStore.state.thumbnailCover,
+                                imageCover: defaultStore.state.thumbnailCover,
+                        }"
+                        :href="image.url"
+                        :title="image.name"
+                        :target="defaultStore.state.imageNewTab ? '_blank' : undefined"
+                        @click="onAnchorClick"
+                >
+                        <ImgWithBlurhash
+                                :hash="image.blurhash"
+                                :src="url"
+                                :alt="image.comment || image.name"
 				:type="image.type"
 				:title="image.name"
 				:cover="defaultStore.state.thumbnailCover"
@@ -100,8 +102,14 @@ async function show() {
 		}
 		hide = false;
 	} else {
-		hide = false;
-	}
+                hide = false;
+        }
+}
+
+function onAnchorClick(ev: MouseEvent) {
+        if (!defaultStore.state.imageNewTab) {
+                ev.preventDefault();
+        }
 }
 
 // Plugin:register_note_view_interruptor を使って書き換えられる可能性があるためwatchする

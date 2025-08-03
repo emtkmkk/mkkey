@@ -77,7 +77,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, watch } from "vue";
+import { watch } from "vue";
 import * as misskey from "calckey-js";
 import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import { extractAvgColorFromBlurhash } from "@/scripts/extract-avg-color-from-blurhash";
@@ -116,17 +116,49 @@ const url = $computed(() =>
 		: props.user.avatarUrl
 );
 
+async function openAvatarImage() {
+        if (defaultStore.state.imageNewTab) {
+                window.open(url);
+                return;
+        }
+
+        await import("photoswipe/style.css");
+        const [pswp, pswpLightbox] = await Promise.all([
+                import("photoswipe"),
+                import("photoswipe/lightbox"),
+        ]);
+
+        const img = new Image();
+        img.onload = () => {
+                const lightbox = new pswpLightbox.default({
+                        dataSource: [
+                                {
+                                        src: url,
+                                        w: img.naturalWidth,
+                                        h: img.naturalHeight,
+                                },
+                        ],
+                        pswpModule: pswp.default,
+                        loop: false,
+                        padding:
+                                window.innerWidth > 500
+                                        ? { top: 32, bottom: 32, left: 32, right: 32 }
+                                        : { top: 0, bottom: 0, left: 0, right: 0 },
+                });
+                lightbox.on("close", () => lightbox.destroy());
+                lightbox.init();
+                lightbox.loadAndOpen(0);
+        };
+        img.src = url;
+}
+
 function onClick(ev: MouseEvent) {
-	if (props.clickToJumpAvatarImage) {
-		window.open(url);
-	}
-	emit("click", ev);
+        if (props.clickToJumpAvatarImage) openAvatarImage();
+        emit("click", ev);
 }
 
 function showAvatar(ev: MouseEvent) {
-	if (props.clickToJumpAvatarImage) {
-		window.open(url);
-	}
+        if (props.clickToJumpAvatarImage) openAvatarImage();
 }
 
 let color = $ref();

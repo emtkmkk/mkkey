@@ -48,11 +48,11 @@ watch(() => followCategories, () => {
 }, { immediate: true });
 
 function toggle() {
-	if (isActive) {
-		followCategories = followCategories.filter(id => id !== props.categoryId);
-	} else {
-		followCategories.push(props.categoryId);
-	}
+       if (isActive) {
+               followCategories = followCategories.filter(id => id !== props.categoryId);
+       } else {
+               followCategories = [...followCategories, props.categoryId];
+       }
 	isActive = !isActive;
 	fetchCustomCategory();
 	emit("update:active", isActive);

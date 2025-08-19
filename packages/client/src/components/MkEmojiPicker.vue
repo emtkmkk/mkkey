@@ -1799,13 +1799,13 @@ async function refetchEmoji(showToast = false) {
 onMounted(() => {
        focus();
        if (defaultStore.state.enableEmojiPickerOrder) {
-               reorderSections();
+               safeReorderSections();
        }
        if (emojis.value) {
                observer = new MutationObserver(() => {
                        if (ignoreMutation) return;
                        if (defaultStore.state.enableEmojiPickerOrder && !q.value)
-                               reorderSections();
+                               safeReorderSections();
                });
                observer.observe(emojis.value, { childList: true });
        }
@@ -1818,7 +1818,7 @@ watch(
        ],
        ([enabled]) => {
                if (enabled) {
-                       if (!q.value) reorderSections();
+                       if (!q.value) safeReorderSections();
                        else restoreSections();
                } else {
                        restoreSections();
@@ -1830,12 +1830,21 @@ watch(
 watch(q, (nv) => {
        if (!defaultStore.state.enableEmojiPickerOrder) return;
        if (nv) restoreSections();
-       else reorderSections();
+       else safeReorderSections();
 });
 
 let original: HTMLElement[] | null = null;
 let observer: MutationObserver | null = null;
 let ignoreMutation = false;
+
+function safeReorderSections() {
+       try {
+               reorderSections();
+       } catch (err) {
+               console.error("Failed to reorder emoji sections", err);
+               restoreSections();
+       }
+}
 
 function reorderSections() {
        if (!emojis.value) return;

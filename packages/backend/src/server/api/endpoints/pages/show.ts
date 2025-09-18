@@ -24,6 +24,11 @@ export const meta = {
 			code: "NO_SUCH_PAGE",
 			id: "222120c0-3ead-4528-811b-b96f233388d7",
 		},
+		inactiveUserPage: {
+			message: "そのpageは削除された、または現在非アクティブのユーザが作成した為、非公開に設定されています。",
+			code: "INACTIVE_USER_PAGE",
+			id: "97f6c408-4947-4100-96d1-67af190aa0c3",
+		},
 	},
 } as const;
 
@@ -80,7 +85,7 @@ export default define(meta, paramDef, async (ps, user) => {
                 pageAuthor.isDeleted ||
                 (pageAuthor.updatedAt != null && pageAuthor.updatedAt < activeThreshold)
         ) {
-                throw new ApiError(meta.errors.noSuchPage);
+                throw new ApiError(meta.errors.inactiveUserPage);
         }
 
         if (page && user && user.id !== page.userId) {

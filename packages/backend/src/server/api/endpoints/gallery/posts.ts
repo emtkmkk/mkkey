@@ -1,6 +1,7 @@
-import define from "../../define.js";
-import { makePaginationQuery } from "../../common/make-pagination-query.js";
+import { DAY } from "@/const.js";
 import { GalleryPosts } from "@/models/index.js";
+import { makePaginationQuery } from "../../common/make-pagination-query.js";
+import define from "../../define.js";
 
 export const meta = {
 	tags: ["gallery"],
@@ -30,13 +31,21 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const query = makePaginationQuery(
-		GalleryPosts.createQueryBuilder("post"),
-		ps.sinceId,
-		ps.untilId,
-	).innerJoinAndSelect("post.user", "user");
+        const activeThreshold = new Date(Date.now() - 60 * DAY);
 
-	const posts = await query.take(ps.limit).getMany();
+        const query = makePaginationQuery(
+                GalleryPosts.createQueryBuilder("post"),
+                ps.sinceId,
+                ps.untilId,
+        )
+                .innerJoinAndSelect("post.user", "user")
+                .andWhere("user.isDeleted = false")
+                .andWhere(
+                        "(user.updatedAt IS NULL OR user.updatedAt >= :activeThreshold)",
+                        { activeThreshold },
+                );
+
+        const posts = await query.take(ps.limit).getMany();
 
 	return await GalleryPosts.packMany(posts, me);
 });

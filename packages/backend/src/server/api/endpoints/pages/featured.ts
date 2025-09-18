@@ -41,8 +41,8 @@ export default define(meta, paramDef, async (ps, me) => {
                         "(user.updatedAt IS NULL OR user.updatedAt >= :activeThreshold)",
                         { activeThreshold },
                 )
-                .andWhere("(page.likedCount * 10) + page.userPv > 0")
-                .orderBy("(page.likedCount * 10) + page.userPv", "DESC");
+                .andWhere("page.likedCount * 10 + page.userPv > 0")
+                .orderBy("page.likedCount * 10 + page.userPv", "DESC");
 
         const pages = await query.take(ps.limit || 10).getMany();
 

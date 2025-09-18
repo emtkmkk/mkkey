@@ -1,6 +1,7 @@
-import define from "../../../define.js";
+import { DAY } from "@/const.js";
 import { GalleryLikes } from "@/models/index.js";
 import { makePaginationQuery } from "../../../common/make-pagination-query.js";
+import define from "../../../define.js";
 
 export const meta = {
 	tags: ["account", "gallery"],
@@ -46,15 +47,23 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	const query = makePaginationQuery(
-		GalleryLikes.createQueryBuilder("like"),
-		ps.sinceId,
-		ps.untilId,
-	)
-		.andWhere("like.userId = :meId", { meId: user.id })
-		.leftJoinAndSelect("like.post", "post");
+        const activeThreshold = new Date(Date.now() - 60 * DAY);
 
-	const likes = await query.take(ps.limit).getMany();
+        const query = makePaginationQuery(
+                GalleryLikes.createQueryBuilder("like"),
+                ps.sinceId,
+                ps.untilId,
+        )
+                .andWhere("like.userId = :meId", { meId: user.id })
+                .innerJoinAndSelect("like.post", "post")
+                .innerJoinAndSelect("post.user", "postUser")
+                .andWhere("postUser.isDeleted = false")
+                .andWhere(
+                        "(postUser.updatedAt IS NULL OR postUser.updatedAt >= :activeThreshold)",
+                        { activeThreshold },
+                );
+
+        const likes = await query.take(ps.limit).getMany();
 
 	return await GalleryLikes.packMany(likes, user);
 });

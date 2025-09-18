@@ -1,5 +1,6 @@
-import define from "../../define.js";
+import { DAY } from "@/const.js";
 import { GalleryPosts } from "@/models/index.js";
+import define from "../../define.js";
 
 export const meta = {
 	tags: ["gallery"],
@@ -27,9 +28,17 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const query = GalleryPosts.createQueryBuilder("post")
-		.andWhere("post.likedCount > 0")
-		.orderBy("post.likedCount", "DESC");
+        const activeThreshold = new Date(Date.now() - 60 * DAY);
+
+        const query = GalleryPosts.createQueryBuilder("post")
+                .innerJoinAndSelect("post.user", "user")
+                .andWhere("post.likedCount > 0")
+                .andWhere("user.isDeleted = false")
+                .andWhere(
+                        "(user.updatedAt IS NULL OR user.updatedAt >= :activeThreshold)",
+                        { activeThreshold },
+                )
+                .orderBy("post.likedCount", "DESC");
 
 	const posts = await query.take(10).getMany();
 

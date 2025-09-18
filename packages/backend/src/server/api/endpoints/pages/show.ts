@@ -1,5 +1,6 @@
-import { IsNull } from "typeorm";
+import { DAY } from "@/const.js";
 import { Pages, Users } from "@/models/index.js";
+import { IsNull } from "typeorm";
 import type { Page } from "@/models/entities/page.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -71,10 +72,21 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.noSuchPage);
 	}
 
-	if (page && user && user.id !== page.userId) {
-		if (user) {
-			Pages.createQueryBuilder()
-				.update()
+        const activeThreshold = new Date(Date.now() - 60 * DAY);
+        const pageAuthor = await Users.findOneBy({ id: page.userId });
+
+        if (
+                pageAuthor == null ||
+                pageAuthor.isDeleted ||
+                (pageAuthor.updatedAt != null && pageAuthor.updatedAt < activeThreshold)
+        ) {
+                throw new ApiError(meta.errors.noSuchPage);
+        }
+
+        if (page && user && user.id !== page.userId) {
+                if (user) {
+                        Pages.createQueryBuilder()
+                                .update()
 				.set({
 					userpv: () => `"userpv" + 1`,
 				})

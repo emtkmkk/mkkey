@@ -1,6 +1,7 @@
+import { DAY } from "@/const.js";
+import { GalleryPosts } from "@/models/index.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
-import { GalleryPosts } from "@/models/index.js";
 
 export const meta = {
 	tags: ["gallery"],
@@ -33,13 +34,25 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const post = await GalleryPosts.findOneBy({
-		id: ps.postId,
-	});
+        const post = await GalleryPosts.findOne({
+                where: { id: ps.postId },
+                relations: { user: true },
+        });
 
-	if (post == null) {
-		throw new ApiError(meta.errors.noSuchPost);
-	}
+        if (post == null) {
+                throw new ApiError(meta.errors.noSuchPost);
+        }
 
-	return await GalleryPosts.pack(post, me);
+        const activeThreshold = new Date(Date.now() - 60 * DAY);
+        const author = post.user;
+
+        if (
+                author == null ||
+                author.isDeleted ||
+                (author.updatedAt != null && author.updatedAt < activeThreshold)
+        ) {
+                throw new ApiError(meta.errors.noSuchPost);
+        }
+
+        return await GalleryPosts.pack(post, me);
 });

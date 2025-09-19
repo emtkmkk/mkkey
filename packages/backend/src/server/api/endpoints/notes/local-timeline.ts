@@ -12,6 +12,7 @@ import { generateMutedNoteQuery } from "../../common/generate-muted-note-query.j
 import { generateChannelQuery } from "../../common/generate-channel-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
+import type { Packed } from "@/misc/schema.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -44,9 +45,9 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: "object",
-	properties: {
-		withFiles: {
+        type: "object",
+        properties: {
+                withFiles: {
 			type: "boolean",
 			default: false,
 			description: "Only show notes that have attached files.",
@@ -71,12 +72,87 @@ export const paramDef = {
 		untilDate: { type: "integer" },
 		host: { type: "string" },
 	},
-	required: [],
+        required: [],
 } as const;
 
+function hasRenoteOnlyContent(note: Packed<"Note">): boolean {
+        if (!note.text && (!note.files || note.files.length === 0) && !note.poll) {
+                return false;
+        }
+
+        if (note.text && note.text.trim().length > 0) {
+                return true;
+        }
+
+        if (note.files && note.files.length > 0) {
+                return true;
+        }
+
+        if (note.poll) {
+                return true;
+        }
+
+        return false;
+}
+
+function isRenoteOnly(note: Packed<"Note">): boolean {
+        if (!note.renote) return false;
+
+        return !hasRenoteOnlyContent(note);
+}
+
+function filterRenoteOnlyForLocalTimeline(
+        notes: Packed<"Note">[],
+): Packed<"Note">[] {
+        if (notes.length === 0) return notes;
+
+        const noteMap = new Map<string, Packed<"Note">>();
+        const renoteOnlyMap = new Map<string, Packed<"Note">[]>();
+
+        for (const note of notes) {
+                noteMap.set(note.id, note);
+
+                if (!isRenoteOnly(note)) continue;
+
+                const targetId = note.renote?.id;
+                if (!targetId) continue;
+
+                if (!renoteOnlyMap.has(targetId)) {
+                        renoteOnlyMap.set(targetId, []);
+                }
+
+                renoteOnlyMap.get(targetId)!.push(note);
+        }
+
+        return notes.filter((note) => {
+                if (!isRenoteOnly(note)) return true;
+
+                const targetId = note.renote?.id;
+                if (!targetId) return true;
+
+                if (noteMap.has(targetId)) {
+                        return false;
+                }
+
+                const candidates = renoteOnlyMap.get(targetId);
+                if (!candidates || candidates.length === 0) {
+                        return true;
+                }
+
+                let oldest = candidates[0];
+                for (const candidate of candidates) {
+                        if (candidate.id < oldest.id) {
+                                oldest = candidate;
+                        }
+                }
+
+                return note.id === oldest.id;
+        });
+}
+
 export default define(meta, paramDef, async (ps, user) => {
-	const m = await fetchMeta();
-	if (m.disableLocalTimeline) {
+        const m = await fetchMeta();
+        if (m.disableLocalTimeline) {
 		if (user == null || !(user.isAdmin || user.isModerator)) {
 			throw new ApiError(meta.errors.ltlDisabled);
 		}
@@ -221,23 +297,31 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	// We fetch more than requested because some may be filtered out, and if there's less than
 	// requested, the pagination stops.
-	const found = [];
-	const take = Math.floor(ps.limit * 1.5);
-	let skip = 0;
-	try {
-		while (found.length < ps.limit) {
-			const notes = await query.take(take).skip(skip).getMany();
-			found.push(...(await Notes.packMany(notes, user)));
-			skip += take;
-			if (notes.length < take) break;
-		}
-	} catch (error) {
-		throw new ApiError(meta.errors.queryError);
-	}
+        const rawNotes: Packed<"Note">[] = [];
+        const take = Math.floor(ps.limit * 1.5);
+        let skip = 0;
+        try {
+                while (true) {
+                        const notes = await query.take(take).skip(skip).getMany();
+                        if (notes.length === 0) break;
 
-	if (found.length > ps.limit) {
-		found.length = ps.limit;
-	}
+                        const packedNotes = await Notes.packMany(notes, user);
+                        rawNotes.push(...packedNotes);
 
-	return found;
+                        const filtered = filterRenoteOnlyForLocalTimeline(rawNotes);
+                        if (filtered.length >= ps.limit) {
+                                return filtered.slice(0, ps.limit);
+                        }
+
+                        if (notes.length < take) {
+                                return filtered;
+                        }
+
+                        skip += take;
+                }
+        } catch (error) {
+                throw new ApiError(meta.errors.queryError);
+        }
+
+        return filterRenoteOnlyForLocalTimeline(rawNotes).slice(0, ps.limit);
 });

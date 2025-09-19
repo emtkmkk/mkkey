@@ -313,11 +313,11 @@ export default class Connection {
 		this.sendMessageToWs(data.type, data.body);
 	}
 
-	public cacheNote(note: Packed<"Note">) {
-		const add = (note: Packed<"Note">) => {
-			const existIndex = this.cachedNotes.findIndex((n) => n.id === note.id);
-			if (existIndex > -1) {
-				this.cachedNotes[existIndex] = note;
+        public cacheNote(note: Packed<"Note">) {
+                const add = (note: Packed<"Note">) => {
+                        const existIndex = this.cachedNotes.findIndex((n) => n.id === note.id);
+                        if (existIndex > -1) {
+                                this.cachedNotes[existIndex] = note;
 				return;
 			}
 
@@ -328,9 +328,13 @@ export default class Connection {
 		};
 
 		add(note);
-		if (note.reply) add(note.reply);
-		if (note.renote) add(note.renote);
-	}
+                if (note.reply) add(note.reply);
+                if (note.renote) add(note.renote);
+        }
+
+        public hasCachedNote(id: string): boolean {
+                return this.cachedNotes.some((note) => note.id === id);
+        }
 
 	private readNote(body: any) {
 		const id = body.id;

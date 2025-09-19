@@ -4,12 +4,41 @@ import { getWordHardMute } from "@/misc/check-word-mute.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
 import type { Packed } from "@/misc/schema.js";
 
+const RECENT_RENOTE_TARGET_LIMIT = 128;
+
+function hasRenoteOnlyContent(note: Packed<"Note">): boolean {
+        if (!note.text && (!note.files || note.files.length === 0) && !note.poll) {
+                return false;
+        }
+
+        if (note.text && note.text.trim().length > 0) {
+                return true;
+        }
+
+        if (note.files && note.files.length > 0) {
+                return true;
+        }
+
+        if (note.poll) {
+                return true;
+        }
+
+        return false;
+}
+
+function isRenoteOnly(note: Packed<"Note">): boolean {
+        if (!note.renote) return false;
+
+        return !hasRenoteOnlyContent(note);
+}
+
 export default class extends Channel {
-	public readonly chName = "localTimeline";
-	public static shouldShare = true;
-	public static requireCredential = false;
-	private withBelowPublic: boolean;
-	private showReplyMode: "all" | "notBotOnly" | "personalOnly";
+        public readonly chName = "localTimeline";
+        public static shouldShare = true;
+        public static requireCredential = false;
+        private withBelowPublic: boolean;
+        private showReplyMode: "all" | "notBotOnly" | "personalOnly";
+        private recentRenoteTargets: Map<string, string> = new Map();
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
@@ -78,17 +107,21 @@ export default class extends Channel {
 
 		if (note.renote && !note.text && isUserRelated(note, this.renoteMuting))
 			return;
-		if (
-			note.renote &&
-			!note.text &&
-			(!this.user || !this.user!.localShowRenote)
-		)
-			return;
+                if (
+                        note.renote &&
+                        !note.text &&
+                        (!this.user || !this.user!.localShowRenote)
+                )
+                        return;
 
-		// 流れてきたNoteがミュートすべきNoteだったら無視する
-		// TODO: 将来的には、単にMutedNoteテーブルにレコードがあるかどうかで判定したい(以下の理由により難しそうではある)
-		// 現状では、ワードミュートにおけるMutedNoteレコードの追加処理はストリーミングに流す処理と並列で行われるため、
-		// レコードが追加されるNoteでも追加されるより先にここのストリーミングの処理に到達することが起こる。
+                if (isRenoteOnly(note) && this.shouldSkipRenoteOnly(note)) {
+                        return;
+                }
+
+                // 流れてきたNoteがミュートすべきNoteだったら無視する
+                // TODO: 将来的には、単にMutedNoteテーブルにレコードがあるかどうかで判定したい(以下の理由により難しそうではある)
+                // 現状では、ワードミュートにおけるMutedNoteレコードの追加処理はストリーミングに流す処理と並列で行われるため、
+                // レコードが追加されるNoteでも追加されるより先にここのストリーミングの処理に到達することが起こる。
 		// そのためレコードが存在するかのチェックでは不十分なので、改めてgetWordHardMuteを呼んでいる
 		if (
 			this.userProfile &&
@@ -96,13 +129,56 @@ export default class extends Channel {
 		)
 			return;
 
-		this.connection.cacheNote(note);
+                this.connection.cacheNote(note);
 
-		this.send("note", note);
-	}
+                if (isRenoteOnly(note)) {
+                        this.rememberRenoteOnly(note);
+                } else if (this.recentRenoteTargets.has(note.id)) {
+                        this.recentRenoteTargets.delete(note.id);
+                }
 
-	public dispose() {
-		// Unsubscribe events
-		this.subscriber.off("notesStream", this.onNote);
-	}
+                this.send("note", note);
+        }
+
+        public dispose() {
+                // Unsubscribe events
+                this.subscriber.off("notesStream", this.onNote);
+        }
+
+        private shouldSkipRenoteOnly(note: Packed<"Note">): boolean {
+                if (!isRenoteOnly(note)) return false;
+
+                const targetId = note.renote?.id;
+                if (!targetId) return false;
+
+                if (this.connection.hasCachedNote(targetId)) {
+                        return true;
+                }
+
+                const existing = this.recentRenoteTargets.get(targetId);
+                if (!existing) {
+                        return false;
+                }
+
+                if (existing <= note.id) {
+                        return true;
+                }
+
+                this.recentRenoteTargets.set(targetId, note.id);
+                return false;
+        }
+
+        private rememberRenoteOnly(note: Packed<"Note">) {
+                const targetId = note.renote?.id;
+                if (!targetId) return;
+
+                this.recentRenoteTargets.set(targetId, note.id);
+
+                if (this.recentRenoteTargets.size > RECENT_RENOTE_TARGET_LIMIT) {
+                        const oldestKey = this.recentRenoteTargets.keys().next().value;
+                        if (oldestKey !== undefined) {
+                                this.recentRenoteTargets.delete(oldestKey);
+                        }
+                }
+        }
 }

@@ -103,6 +103,7 @@ function isRenoteOnly(note: Packed<"Note">): boolean {
 
 function filterRenoteOnlyForLocalTimeline(
         notes: Packed<"Note">[],
+        meId?: string,
 ): Packed<"Note">[] {
         if (notes.length === 0) return notes;
 
@@ -126,6 +127,7 @@ function filterRenoteOnlyForLocalTimeline(
 
         return notes.filter((note) => {
                 if (!isRenoteOnly(note)) return true;
+                if (meId && note.userId === meId) return true;
 
                 const targetId = note.renote?.id;
                 if (!targetId) return true;
@@ -229,19 +231,20 @@ export default define(meta, paramDef, async (ps, user) => {
 	} else {
 		query.andWhere("(note.visibility = 'public')");
 	}
-	if (user && !user.localShowRenote) {
-		query.andWhere(
-			new Brackets((qb) => {
-				qb.where("note.renoteId IS NULL");
-				qb.orWhere("note.text IS NOT NULL");
-				qb.orWhere("note.fileIds != '{}'");
-				qb.orWhere(
-					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
-				);
-				qb.orWhere("note.userHost IS NOT NULL");
-			}),
-		);
-	}
+        if (user && !user.localShowRenote) {
+                query.andWhere(
+                        new Brackets((qb) => {
+                                qb.where("note.renoteId IS NULL");
+                                qb.orWhere("note.text IS NOT NULL");
+                                qb.orWhere("note.fileIds != '{}'");
+                                qb.orWhere(
+                                        '0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
+                                );
+                                qb.orWhere("note.userHost IS NOT NULL");
+                                qb.orWhere("note.userId = :meId", { meId: user.id });
+                        }),
+                );
+        }
 
 	if (user && !user.remoteShowRenote) {
 		query.andWhere(
@@ -308,7 +311,7 @@ export default define(meta, paramDef, async (ps, user) => {
                         const packedNotes = await Notes.packMany(notes, user);
                         rawNotes.push(...packedNotes);
 
-                        const filtered = filterRenoteOnlyForLocalTimeline(rawNotes);
+                        const filtered = filterRenoteOnlyForLocalTimeline(rawNotes, user?.id);
                         if (filtered.length >= ps.limit) {
                                 return filtered.slice(0, ps.limit);
                         }
@@ -323,5 +326,5 @@ export default define(meta, paramDef, async (ps, user) => {
                 throw new ApiError(meta.errors.queryError);
         }
 
-        return filterRenoteOnlyForLocalTimeline(rawNotes).slice(0, ps.limit);
+        return filterRenoteOnlyForLocalTimeline(rawNotes, user?.id).slice(0, ps.limit);
 });

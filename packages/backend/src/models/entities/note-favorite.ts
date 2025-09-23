@@ -31,8 +31,9 @@ export class NoteFavorite {
 	@JoinColumn()
 	public user: User | null;
 
-	@Column(id())
-	public noteId: Note["id"];
+        @Index()
+        @Column(id())
+        public noteId: Note["id"];
 
 	@ManyToOne(type => Note, {
 		onDelete: 'CASCADE',

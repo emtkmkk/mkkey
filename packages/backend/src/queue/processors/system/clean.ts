@@ -37,36 +37,42 @@ export async function clean(
 		const maxDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 60)
 		const minDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)
 		let cursor: Note["id"] | null = genId(minDate);
-		const total = (await Notes.createQueryBuilder('note')
-			.where("note.id < :maxId", { maxId: genId(maxDate) })
-			.andWhere(cursor ? "note.id > :cursor" : "1=1", { cursor })
-			.andWhere(new Brackets(qb => {
-				qb.where("note.visibility = :public", { public: 'public' })
-					.orWhere("note.visibility = :home", { home: 'home' })
-					.orWhere("note.deletedAt IS NOT NULL");
-			}))
-			.andWhere("note.userHost IS NOT NULL")
-			.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
-			.andWhere("note.score = :score", { score: 0 })
-			.getCount())
+                const total = (await Notes.createQueryBuilder('note')
+                        .where("note.id < :maxId", { maxId: genId(maxDate) })
+                        .andWhere(cursor ? "note.id > :cursor" : "1=1", { cursor })
+                        .andWhere(new Brackets(qb => {
+                                qb.where("note.visibility = :public", { public: 'public' })
+                                        .orWhere("note.visibility = :home", { home: 'home' })
+                                        .orWhere("note.deletedAt IS NOT NULL");
+                        }))
+                        .andWhere("note.userHost IS NOT NULL")
+                        .andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
+                        .andWhere("note.score = :score", { score: 0 })
+                        .andWhere('NOT EXISTS (SELECT 1 FROM "note_favorite" nf WHERE nf."noteId" = note.id)')
+                        .andWhere('NOT EXISTS (SELECT 1 FROM "clip_note" cn WHERE cn."noteId" = note.id)')
+                        .andWhere('NOT EXISTS (SELECT 1 FROM "antenna_note" an WHERE an."noteId" = note.id)')
+                        .getCount())
 
 		logger.info(`Clean Notes Count: ${total}`);
 		job.log(`info - Clean Notes Count: ${total}`);
 
 		while (true) {
-			const notes = (await Notes.createQueryBuilder('note')
-				.where("note.id < :maxId", { maxId: genId(maxDate) })
-				.andWhere(cursor ? "note.id > :cursor" : "1=1", { cursor })
-				.andWhere(new Brackets(qb => {
-					qb.where("note.visibility = :public", { public: 'public' })
-						.orWhere("note.visibility = :home", { home: 'home' });
-				}))
-				.andWhere("note.userHost IS NOT NULL")
-				.andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
-				.andWhere("note.score = :score", { score: 0 })
-				.orderBy("note.id", "ASC")
-				.take(300)
-				.getMany()) as Note[];
+                        const notes = (await Notes.createQueryBuilder('note')
+                                .where("note.id < :maxId", { maxId: genId(maxDate) })
+                                .andWhere(cursor ? "note.id > :cursor" : "1=1", { cursor })
+                                .andWhere(new Brackets(qb => {
+                                        qb.where("note.visibility = :public", { public: 'public' })
+                                                .orWhere("note.visibility = :home", { home: 'home' });
+                                }))
+                                .andWhere("note.userHost IS NOT NULL")
+                                .andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })
+                                .andWhere("note.score = :score", { score: 0 })
+                                .andWhere('NOT EXISTS (SELECT 1 FROM "note_favorite" nf WHERE nf."noteId" = note.id)')
+                                .andWhere('NOT EXISTS (SELECT 1 FROM "clip_note" cn WHERE cn."noteId" = note.id)')
+                                .andWhere('NOT EXISTS (SELECT 1 FROM "antenna_note" an WHERE an."noteId" = note.id)')
+                                .orderBy("note.id", "ASC")
+                                .take(300)
+                                .getMany()) as Note[];
 
 			if (notes.length === 0) {
 				break;

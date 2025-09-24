@@ -8,27 +8,32 @@ import renderReject from "@/remote/activitypub/renderer/reject.js";
 import type { Blocking } from "@/models/entities/blocking.js";
 import type { User } from "@/models/entities/user.js";
 import {
-	Blockings,
-	Users,
-	FollowRequests,
-	Followings,
-	UserListJoinings,
-	UserLists,
+        Blockings,
+        Users,
+        FollowRequests,
+        Followings,
+        UserListJoinings,
+        UserLists,
 } from "@/models/index.js";
 import { perUserFollowingChart } from "@/services/chart/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { webhookDeliver } from "@/queue/index.js";
+import { ensureProxyFollowsListedUser } from "../user-list/ensure-proxy-follow.js";
 
 export default async function (blocker: User, blockee: User) {
-	await Promise.all([
-		cancelRequest(blocker, blockee),
-		cancelRequest(blockee, blocker),
-		unFollow(blocker, blockee),
-		unFollow(blockee, blocker),
-		removeFromList(blockee, blocker),
-	]);
+        await Promise.all([
+                cancelRequest(blocker, blockee),
+                cancelRequest(blockee, blocker),
+                unFollow(blocker, blockee),
+                unFollow(blockee, blocker),
+                removeFromList(blockee, blocker),
+        ]);
+
+        if (Users.isLocalUser(blocker) && Users.isRemoteUser(blockee)) {
+                await ensureProxyFollowsListedUser(blockee);
+        }
 
 	const blocking = {
 		id: genId(),

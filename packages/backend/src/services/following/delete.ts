@@ -6,6 +6,7 @@ import renderReject from "@/remote/activitypub/renderer/reject.js";
 import { deliver, webhookDeliver } from "@/queue/index.js";
 import Logger from "../logger.js";
 import { registerOrFetchInstanceDoc } from "../register-or-fetch-instance-doc.js";
+import { ensureProxyFollowsListedUser } from "../user-list/ensure-proxy-follow.js";
 import type { User } from "@/models/entities/user.js";
 import { Followings, Users, Instances } from "@/models/index.js";
 import {
@@ -83,12 +84,13 @@ export default async function (
 		});
 	}
 
-	if (Users.isLocalUser(follower) && Users.isRemoteUser(followee)) {
-		const content = renderActivity(
-			renderUndo(renderFollow(follower, followee), follower),
-		);
-		deliver(follower, content, followee.inbox);
-	}
+        if (Users.isLocalUser(follower) && Users.isRemoteUser(followee)) {
+                const content = renderActivity(
+                        renderUndo(renderFollow(follower, followee), follower),
+                );
+                deliver(follower, content, followee.inbox);
+                await ensureProxyFollowsListedUser(followee.id);
+        }
 
 	if (Users.isLocalUser(followee) && Users.isRemoteUser(follower)) {
 		// local user has null host

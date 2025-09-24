@@ -1,11 +1,18 @@
 import type Bull from "bull";
-import { Brackets, IsNull, LessThan } from "typeorm";
-import { Notes, UserIps } from "@/models/index.js";
+import { Brackets, LessThan } from "typeorm";
+import { Notes, UserIps, Users } from "@/models/index.js";
 
 import { queueLogger } from "../../logger.js";
 import { genId } from "@/misc/gen-id.js";
 import { Note } from "@/models/entities/note.js";
 import { db } from "@/db/postgre.js";
+import type { User } from "@/models/entities/user.js";
+import { fetchProxyAccount } from "@/misc/fetch-proxy-account.js";
+import createFollowing from "@/services/following/create.js";
+import deleteFollowing from "@/services/following/delete.js";
+import { UserListJoining } from "@/models/entities/user-list-joining.js";
+import { Following } from "@/models/entities/following.js";
+import { FollowRequest } from "@/models/entities/follow-request.js";
 
 const logger = queueLogger.createSubLogger("clean");
 
@@ -22,12 +29,12 @@ export async function clean(
 		createdAt: LessThan(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)),
 	});
 
-	logger.succ("UserIps Cleaned.");
-	job.log("succ - " + "UserIps Cleaned.");
+        logger.succ("UserIps Cleaned.");
+        job.log("succ - " + "UserIps Cleaned.");
 
-	job.progress(0);
+        job.progress(0);
 
-	logger.info("Notes Cleaning...");
+        logger.info("Notes Cleaning...");
 	job.log("info - " + "Notes Cleaning...");
 
 	{
@@ -111,9 +118,149 @@ export async function clean(
 		job.log(`succ - Notes Cleaned. (${deleteCount}${failedCount ? ` / ${failedCount}` : ""
 			})`,
 		);
-	}
+        }
 
-	db.query(`VACUUM ANALYZE`);
+        logger.info("Proxyアカウントのフォロー状態を確認します...");
+        job.log("info - Proxyアカウントのフォロー状態を確認します...");
+
+        const proxy = await fetchProxyAccount();
+        if (!proxy) {
+                logger.info("Proxyアカウントが設定されていないためスキップします。");
+                job.log("info - Proxyアカウントが設定されていないためスキップします。");
+        } else {
+                const describeUser = (user: User) =>
+                        `${user.username}${user.host ? `@${user.host}` : ""} (${user.id})`;
+
+                const initialFollowingCount = proxy.followingCount ?? 0;
+                let currentProxyFollowingCount = initialFollowingCount;
+
+                const followCandidates = await Users.createQueryBuilder("user")
+                        .select("user.id", "id")
+                        .innerJoin(UserListJoining, "joining", "joining.userId = user.id")
+                        .leftJoin(
+                                Following,
+                                "localFollow",
+                                "localFollow.followeeId = user.id AND localFollow.followerHost IS NULL",
+                        )
+                        .leftJoin(
+                                Following,
+                                "proxyFollow",
+                                "proxyFollow.followeeId = user.id AND proxyFollow.followerId = :proxyId",
+                                { proxyId: proxy.id },
+                        )
+                        .leftJoin(
+                                FollowRequest,
+                                "proxyRequest",
+                                "proxyRequest.followeeId = user.id AND proxyRequest.followerId = :proxyId",
+                                { proxyId: proxy.id },
+                        )
+                        .where("user.host IS NOT NULL")
+                        .andWhere("proxyFollow.id IS NULL")
+                        .andWhere("proxyRequest.id IS NULL")
+                        .groupBy("user.id")
+                        .having("COUNT(localFollow.id) = 0")
+                        .getRawMany<{ id: string }>();
+
+                logger.info(`Proxyフォロー追加候補: ${followCandidates.length}件`);
+                job.log(`info - Proxyフォロー追加候補: ${followCandidates.length}件`);
+
+                for (const { id } of followCandidates) {
+                        const target = await Users.findOneBy({ id });
+                        if (!target) {
+                                logger.warn(`対象ユーザーが見つかりません: ${id}`);
+                                job.log(`warn - 対象ユーザーが見つかりません: ${id}`);
+                                continue;
+                        }
+
+                        const description = describeUser(target);
+
+                        logger.info(`Proxyでフォロー処理を実行します: ${description}`);
+                        job.log(`info - Proxyでフォロー処理を実行します: ${description}`);
+
+                        try {
+                                await createFollowing(proxy, target);
+                                currentProxyFollowingCount += 1;
+                                proxy.followingCount = currentProxyFollowingCount;
+                                logger.succ(`Proxyでフォローしました: ${description}`);
+                                job.log(`succ - Proxyでフォローしました: ${description}`);
+                        } catch (err) {
+                                const errorMessage = err instanceof Error ? err.message : `${err}`;
+                                logger.error(
+                                        `Proxyでのフォローに失敗しました: ${description} - ${errorMessage}`,
+                                );
+                                job.log(
+                                        `error - Proxyでのフォローに失敗しました: ${description} - ${errorMessage}`,
+                                );
+                        }
+                }
+
+                const unfollowCandidates = await Users.createQueryBuilder("user")
+                        .select("user.id", "id")
+                        .innerJoin(
+                                Following,
+                                "proxyFollow",
+                                "proxyFollow.followeeId = user.id AND proxyFollow.followerId = :proxyId",
+                                { proxyId: proxy.id },
+                        )
+                        .leftJoin(UserListJoining, "joining", "joining.userId = user.id")
+                        .where("user.host IS NOT NULL")
+                        .andWhere("joining.id IS NULL")
+                        .getRawMany<{ id: string }>();
+
+                logger.info(`Proxyフォロー解除候補: ${unfollowCandidates.length}件`);
+                job.log(`info - Proxyフォロー解除候補: ${unfollowCandidates.length}件`);
+
+                for (const { id } of unfollowCandidates) {
+                        const target = await Users.findOneBy({ id });
+                        if (!target) {
+                                logger.warn(`対象ユーザーが見つかりません: ${id}`);
+                                job.log(`warn - 対象ユーザーが見つかりません: ${id}`);
+                                continue;
+                        }
+
+                        const description = describeUser(target);
+
+                        logger.info(`Proxyでフォロー解除処理を実行します: ${description}`);
+                        job.log(`info - Proxyでフォロー解除処理を実行します: ${description}`);
+
+                        try {
+                                await deleteFollowing(proxy, target, true);
+                                currentProxyFollowingCount = Math.max(
+                                        0,
+                                        currentProxyFollowingCount - 1,
+                                );
+                                proxy.followingCount = currentProxyFollowingCount;
+                                logger.succ(`Proxyでフォロー解除しました: ${description}`);
+                                job.log(`succ - Proxyでフォロー解除しました: ${description}`);
+                        } catch (err) {
+                                const errorMessage = err instanceof Error ? err.message : `${err}`;
+                                logger.error(
+                                        `Proxyでのフォロー解除に失敗しました: ${description} - ${errorMessage}`,
+                                );
+                                job.log(
+                                        `error - Proxyでのフォロー解除に失敗しました: ${description} - ${errorMessage}`,
+                                );
+                        }
+                }
+
+                const latestProxy = await Users.findOneBy({ id: proxy.id });
+                if (latestProxy) {
+                        const finalFollowingCount = latestProxy.followingCount ?? 0;
+                        const diff = finalFollowingCount - initialFollowingCount;
+                        const diffText = diff > 0 ? `+${diff}` : `${diff}`;
+                        logger.info(
+                                `Proxyフォロー数変動: ${initialFollowingCount} -> ${finalFollowingCount} (${diffText})`,
+                        );
+                        job.log(
+                                `info - Proxyフォロー数変動: ${initialFollowingCount} -> ${finalFollowingCount} (${diffText})`,
+                        );
+                } else {
+                        logger.warn("Proxyアカウントの最終状態取得に失敗しました。");
+                        job.log("warn - Proxyアカウントの最終状態取得に失敗しました。");
+                }
+        }
+
+        db.query(`VACUUM ANALYZE`);
 
 	logger.succ(`VACUUM ANALYZE`);
 	job.log(`succ - VACUUM ANALYZE`),

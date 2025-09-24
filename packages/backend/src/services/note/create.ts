@@ -71,6 +71,7 @@ import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
 import renderDelete from "@/remote/activitypub/renderer/delete.js";
 import renderTombstone from "@/remote/activitypub/renderer/tombstone.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { StatusError } from "@/misc/fetch.js";
 
 const mutedWordsCache = new Cache<
 	{ userId: UserProfile["userId"]; mutedWords: UserProfile["mutedWords"] }[]
@@ -401,11 +402,21 @@ export default async (
 				const u = await Users.findOneBy({ id: user.id });
 				if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
 				dm.execute();
-				return rej(
-					"削除された投稿に対して返信されました。削除リクエストを送信しました。",
-				);
+                                return rej(
+                                        new StatusError(
+                                                "削除された投稿に対して返信されました。削除リクエストを送信しました。",
+                                                403,
+                                                "削除された投稿に対して返信されました。削除リクエストを送信しました。",
+                                        ),
+                                );
 			} else {
-				return rej("削除された投稿に対しては返信できません。");
+                                return rej(
+                                        new StatusError(
+                                                "削除された投稿に対しては返信できません。",
+                                                403,
+                                                "削除された投稿に対しては返信できません。",
+                                        ),
+                                );
 			}
 		}
 
@@ -442,10 +453,20 @@ export default async (
                                         await deliverToUser(author as ILocalUser, del, u);
                                 }
                                 return rej(
-                                        "削除された投稿がRTされました。削除リクエストを送信しました。",
+                                        new StatusError(
+                                                "削除された投稿がRTされました。削除リクエストを送信しました。",
+                                                403,
+                                                "削除された投稿がRTされました。削除リクエストを送信しました。",
+                                        ),
                                 );
 			} else {
-				return rej("削除された投稿はRTできません。");
+                                return rej(
+                                        new StatusError(
+                                                "削除された投稿はRTできません。",
+                                                403,
+                                                "削除された投稿はRTできません。",
+                                        ),
+                                );
 			}
 		}
 
@@ -456,7 +477,13 @@ export default async (
 			data.renote.visibility !== "home" &&
 			data.renote.userId !== user.id
 		) {
-			return rej("Renote target is not public or home");
+                        return rej(
+                                new StatusError(
+                                        "Renote target is not public or home",
+                                        403,
+                                        "Renote target is not public or home",
+                                ),
+                        );
 		}
 
                if (!data.visibilityForce && data.visibility !== "specified") {
@@ -537,9 +564,13 @@ export default async (
 			data.reply?.userHost == null &&
 			/^(@\w+\s*)?:[\w@._\-]:$/.test(data.text ?? "")
 		) {
-			return rej(
-				"この内容の返信は現在制限されています。絵文字だけの返信なら、リアクション機能を使用してみませんか？",
-			);
+                        return rej(
+                                new StatusError(
+                                        "この内容の返信は現在制限されています。絵文字だけの返信なら、リアクション機能を使用してみませんか？",
+                                        403,
+                                        "この内容の返信は現在制限されています。絵文字だけの返信なら、リアクション機能を使用してみませんか？",
+                                ),
+                        );
 		}
 
 		if (
@@ -556,7 +587,13 @@ export default async (
 					if (user.isBot) {
 						data.cw = `[強制CW] ${isIncludeNgWordRet}`;
 					} else {
-						return rej("CW無しで投稿できないワードが本文に含まれています。");
+                                                return rej(
+                                                        new StatusError(
+                                                                "CW無しで投稿できないワードが本文に含まれています。",
+                                                                403,
+                                                                "CW無しで投稿できないワードが本文に含まれています。",
+                                                        ),
+                                                );
 					}
 				} else if (!data.cw.trim() || data.cw.trim().toUpperCase() === "CW") {
 					data.cw = isIncludeNgWordRet;
@@ -647,19 +684,37 @@ export default async (
 						x.includes("kuroneko6423") ||
 						x.includes("伊藤陽久"),
 				)
-			)
-				return rej("禁止タグが含まれています。");
+                        )
+                                return rej(
+                                        new StatusError(
+                                                "禁止タグが含まれています。",
+                                                403,
+                                                "禁止タグが含まれています。",
+                                        ),
+                                );
 			/*
-			if (
-				mentionedUsers?.length > 3 &&
-				data.text?.includes("https://discord.gg/")
-			)
-				return rej("禁止投稿です。(discordへの誘導)");
-			if (
-				mentionedUsers?.length > 7 &&
-				(data.text?.includes("ap12") || data.text?.includes("猫"))
-			)
-				return rej("禁止投稿です。(メンション多すぎ)");
+                        if (
+                                mentionedUsers?.length > 3 &&
+                                data.text?.includes("https://discord.gg/")
+                        )
+                                return rej(
+                                        new StatusError(
+                                                "禁止投稿です。(discordへの誘導)",
+                                                403,
+                                                "禁止投稿です。(discordへの誘導)",
+                                        ),
+                                );
+                        if (
+                                mentionedUsers?.length > 7 &&
+                                (data.text?.includes("ap12") || data.text?.includes("猫"))
+                        )
+                                return rej(
+                                        new StatusError(
+                                                "禁止投稿です。(メンション多すぎ)",
+                                                403,
+                                                "禁止投稿です。(メンション多すぎ)",
+                                        ),
+                                );
 			console.log(
 				`maintext: ${
 					data.text
@@ -682,7 +737,14 @@ export default async (
 						async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed,
 					);
 				console.log(`localRelation: ${!localRelation}`);
-				if (localRelation) return rej("禁止投稿です。(スパムの可能性が高い)");
+                                if (localRelation)
+                                        return rej(
+                                                new StatusError(
+                                                        "禁止投稿です。(スパムの可能性が高い)",
+                                                        403,
+                                                        "禁止投稿です。(スパムの可能性が高い)",
+                                                ),
+                                        );
 			}
 		*/
 		}
@@ -704,12 +766,25 @@ export default async (
 					async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed,
 				);
 			console.log(`localRelation: ${!localRelation}`);
-			if (localRelation) return rej("禁止投稿です。(怪しいプロフィール)");
+                        if (localRelation)
+                                return rej(
+                                        new StatusError(
+                                                "禁止投稿です。(怪しいプロフィール)",
+                                                403,
+                                                "禁止投稿です。(怪しいプロフィール)",
+                                        ),
+                                );
 		}
 
 		if (user.host && ["public", "home"].includes(data.visibility) && config.specialServerHosts?.includes(user.host) &&
 			mentionedUsers.filter((x) => !x.host || x.host === config.host).length == 0 && Math.random() < 0.1) {
-			return rej("スパムの可能性あり");
+                        return rej(
+                                new StatusError(
+                                        "スパムの可能性あり",
+                                        403,
+                                        "スパムの可能性あり",
+                                ),
+                        );
 		}
 	
 		if (
@@ -749,9 +824,13 @@ export default async (
 				: undefined;
 	
 			if (user.isSilenced && (!relation?.every((x) => x) ?? true)) {
-				return rej(
-					"サイレンス中はフォロワーでも管理人でもないユーザにダイレクトは送信できません。",
-				);
+                                return rej(
+                                        new StatusError(
+                                                "サイレンス中はフォロワーでも管理人でもないユーザにダイレクトは送信できません。",
+                                                403,
+                                                "サイレンス中はフォロワーでも管理人でもないユーザにダイレクトは送信できません。",
+                                        ),
+                                );
 			}
 		}
 

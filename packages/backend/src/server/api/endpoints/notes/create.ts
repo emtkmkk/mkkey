@@ -14,6 +14,7 @@ import type { Channel } from "@/models/entities/channel.js";
 import { MAX_NOTE_TEXT_LENGTH } from "@/const.js";
 import { noteVisibilities } from "../../../../types.js";
 import { ApiError } from "../../error.js";
+import { StatusError } from "@/misc/fetch.js";
 import define from "../../define.js";
 import { HOUR } from "@/const.js";
 import { getNote } from "../../common/getters.js";
@@ -450,11 +451,33 @@ export default define(meta, paramDef, async (ps, user) => {
 			return {
 					createdNote: await Notes.pack(note, user),
 			};
-	} catch (e) {
-			throw new ApiError({
-					message: e || "unknown error.",
-					code: "NOTE_CREATE_ERROR",
-					id: "d390d7e1-8a5e-46ed-b625-06271cafd3d4",
-			});
-	}
+        } catch (e) {
+                        if (e instanceof ApiError) throw e;
+
+                        const statusError = e instanceof StatusError ? e : null;
+                        const message =
+                                        typeof e === "string"
+                                                ? e
+                                                : e instanceof Error
+                                                ? e.message
+                                                : "unknown error.";
+
+                        throw new ApiError(
+                                        {
+                                                        message,
+                                                        code: "NOTE_CREATE_ERROR",
+                                                        id: "d390d7e1-8a5e-46ed-b625-06271cafd3d4",
+                                                        ...(statusError
+                                                                        ? {
+                                                                                        httpStatusCode:
+                                                                                                statusError.statusCode,
+                                                                                        kind: statusError.isClientError
+                                                                                                ? "client"
+                                                                                                : "server",
+                                                                                }
+                                                                        : {}),
+                                        },
+                                        e instanceof Error ? e : undefined,
+                        );
+        }
 });

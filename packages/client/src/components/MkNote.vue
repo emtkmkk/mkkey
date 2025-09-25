@@ -240,25 +240,13 @@
 						:note="developerRenote ? note : appearNote"
 						:count="appearNote.renoteCount"
 					/>
-					<XStarButtonNoEmoji
-						v-if="
-							((!enableEmojiReactions && !detailedView) ||
-								!showContent) &&
-							((!isMaxReacted &&
-								!isfavButtonReacted &&
-								isCanAction) ||
-								favButtonReactionIsFavorite)
-						"
-						class="button"
-						:note="appearNote"
-						:count="
-							Object.values(appearNote.reactions).reduce(
-								(partialSum, val) => partialSum + val,
-								0
-							)
-						"
-						:reacted="appearNote.myReaction != null"
-					/>
+                                       <XStarButtonNoEmoji
+                                               v-if="showStarButtonNoEmoji"
+                                               class="button"
+                                               :note="appearNote"
+                                               :count="totalReactions"
+                                               :reacted="appearNote.myReaction != null"
+                                       />
 					<XStarButton
 						v-if="
 							(enableEmojiReactions || detailedView) &&
@@ -272,19 +260,13 @@
 						class="button"
 						:note="appearNote"
 					/>
-					<button
-						v-if="
-							(enableEmojiReactions ||
-								detailedView ||
-								showEmojiButton) &&
-							!isMaxReacted &&
-							isCanAction
-						"
-						:title="
-							multiReaction
-								? (appearNote.myReactions?.length ?? 0) +
-								  ' / ' +
-								  maxReactions
+                                       <button
+                                               v-if="showReactionPickerButton"
+                                               :title="
+                                                       multiReaction
+                                                               ? (appearNote.myReactions?.length ?? 0) +
+                                                                 ' / ' +
+                                                                 maxReactions
 								: ''
 						"
 						ref="reactButton"
@@ -304,14 +286,17 @@
 								appearNote.user.instance
 									?.maxReactionsPerAccount === 0,
 						}"
-						@click="react()"
-					>
-						<i
-							v-if="multiReaction"
-							class="ph-smiley-wink ph-bold ph-lg"
-						></i>
-						<i v-else class="ph-smiley ph-bold ph-lg"></i>
-					</button>
+                                               @click="react()"
+                                       >
+                                               <i
+                                                       v-if="multiReaction"
+                                                       class="ph-smiley-wink ph-bold ph-lg"
+                                               ></i>
+                                               <i v-else class="ph-smiley ph-bold ph-lg"></i>
+                                               <template v-if="showReactionPickerCount">
+                                                       <p class="count">{{ totalReactions }}</p>
+                                               </template>
+                                       </button>
 					<button
 						v-if="
 							(enableEmojiReactions ||
@@ -574,8 +559,36 @@ const translating = ref(false);
 const info = ref(null);
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
 const showEmojiButton = defaultStore.state.showEmojiButton;
+const isDetailedView = $computed(() => props.detailedView ?? false);
+const totalReactions = $computed(() =>
+        Object.values(appearNote.reactions ?? {}).reduce(
+                (sum, val) => sum + val,
+                0
+        )
+);
+const showStarButtonNoEmoji = $computed(() => {
+        const canShow =
+                ((!enableEmojiReactions && !isDetailedView) || !showContent.value) &&
+                ((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
+                        favButtonReactionIsFavorite);
+        return canShow && defaultStore.state.favButtonReaction !== "hidden";
+});
+const showReactionPickerButton = $computed(
+        () =>
+                (enableEmojiReactions || isDetailedView || showEmojiButton) &&
+                !isMaxReacted &&
+                isCanAction
+);
+const showReactionPickerCount = $computed(
+        () =>
+                totalReactions > 0 &&
+                !enableEmojiReactions &&
+                !isDetailedView &&
+                showReactionPickerButton &&
+                !showStarButtonNoEmoji
+);
 const favButtonReactionIsFavorite =
-	defaultStore.state.favButtonReaction === "favorite";
+        defaultStore.state.favButtonReaction === "favorite";
 const hiddenSoftMutes = defaultStore.state.hiddenSoftMutes;
 const muteExcludeReplyQuote = defaultStore.state.muteExcludeReplyQuote;
 const muteExcludeNotification = defaultStore.state.muteExcludeNotification;

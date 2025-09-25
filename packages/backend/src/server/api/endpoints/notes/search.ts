@@ -33,438 +33,646 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: "object",
-	properties: {
-		query: { type: "string" },
-		sinceId: { type: "string", format: "misskey:id" },
-		untilId: { type: "string", format: "misskey:id" },
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
-		offset: { type: "integer", default: 0 },
-		host: {
-			type: "string",
-			nullable: true,
-			description: "The local host is represented with `null`.",
-		},
-		userId: {
-			type: "string",
-			format: "misskey:id",
-			nullable: true,
-			default: null,
-		},
-		channelId: {
-			type: "string",
-			format: "misskey:id",
-			nullable: true,
-			default: null,
-		},
-	},
-	required: ["query"],
+        type: "object",
+        properties: {
+                query: { type: "string" },
+                sinceId: { type: "string", format: "misskey:id" },
+                untilId: { type: "string", format: "misskey:id" },
+                limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+                offset: { type: "integer", default: 0 },
+                host: {
+                        type: "string",
+                        nullable: true,
+                        description: "The local host is represented with `null`.",
+                },
+                userId: {
+                        type: "string",
+                        format: "misskey:id",
+                        nullable: true,
+                        default: null,
+                },
+                channelId: {
+                        type: "string",
+                        format: "misskey:id",
+                        nullable: true,
+                        default: null,
+                },
+                visibility: {
+                        type: "string",
+                        nullable: true,
+                        default: null,
+                },
+                local: {
+                        type: "boolean",
+                        nullable: true,
+                        default: null,
+                },
+                minScore: {
+                        type: "integer",
+                        nullable: true,
+                        default: null,
+                },
+                excludeUserIds: {
+                        type: "array",
+                        items: {
+                                type: "string",
+                                format: "misskey:id",
+                        },
+                        nullable: true,
+                        default: [],
+                },
+        },
+        required: ["query"],
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	let que = ps.query;
-	if (es == null && sonic == null) {
-		let plusQueryCount = 0;
-		const query = makePaginationQuery(
-			Notes.createQueryBuilder("note"),
-			ps.sinceId,
-			ps.untilId,
-		);
+        const tokens = ps.query.split(/[\s\+]+/).filter((token) => token.length > 0);
 
-		if (
-			ps.userId ||
-			que.includes("user:") ||
-			que.toLowerCase().includes("from:me")
-		) {
-			let qUserId = ps.userId;
-			if (que.toLowerCase().includes("from:me")) {
-				if (me) {
-					qUserId = me.id;
-				}
-				que = que.replace(/from:me/i, "");
-			}
-			if (!qUserId) {
-				const match = /(^|[\s\+])user:(\w{10})($|[\s\+])/i.exec(que);
-				qUserId = match?.[2];
-				que = que.replace(/(^|[\s\+])user:(\w{10})($|[\s\+])/i, "");
-			}
-			if (qUserId) {
-				query.andWhere("note.userId = :userId", { userId: qUserId });
-			}
-		}
-		if (ps.channelId || que.includes("channel:")) {
-			let qChannelId = ps.channelId;
-			if (!qChannelId) {
-				const match = /(^|[\s\+])channel:(\w{10})($|[\s\+])/i.exec(que);
-				qChannelId = match?.[2];
-				que = que.replace(/(^|[\s\+])channel:(\w{10})($|[\s\+])/i, "");
-			}
-			if (qChannelId) {
-				query.andWhere("note.channelId = :channelId", {
-					channelId: qChannelId,
-				});
-			}
-		}
-		if (ps.host || que.includes("host:")) {
-			let qHost = ps.host;
-			if (!qHost) {
-				const match = /(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i.exec(que);
-				qHost = match?.[2];
-				que = que.replace(/(^|[\s\+])host:([^\s\+]+)($|[\s\+])/i, "");
-			}
-			if (qHost) {
-				plusQueryCount += 1;
-				if (qHost === "." || qHost === config.host) {
-					query.andWhere("note.userHost IS NULL");
-				} else {
-					query.andWhere("note.userHost = :host", {
-						host: qHost,
-					});
-				}
-			}
-		}
-		if (ps.visibility || que.includes("visibility:")) {
-			let qVisibility = ps.visibility;
-			if (!qVisibility) {
-				const match = /(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i.exec(que);
-				qVisibility = match?.[2];
-				que = que.replace(/(^|[\s\+])visibility:([^\s\+]+)($|[\s\+])/i, "");
-			}
-			if (qVisibility) {
-				plusQueryCount += 1;
-				if (qVisibility === "サークル" || qVisibility === "circle") {
-					query.andWhere("note.visibility = 'specified'");
-					query.andWhere("note.ccUserIds != '{}'");
-				} else {
-					if (qVisibility === "全公開") qVisibility = "public";
-					if (qVisibility === "ホーム") qVisibility = "home";
-					if (qVisibility === "フォロワー") qVisibility = "followers";
-					if (qVisibility === "ダイレクト" || qVisibility === "direct")
-						qVisibility = "specified";
-					query.andWhere("note.visibility = :visibility", {
-						visibility: qVisibility,
-					});
-				}
-			}
-		}
-		if (ps.local || que.includes("local:")) {
-			let qLocal = ps.local;
-			if (!qLocal) {
-				const match = /(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i.exec(que);
-				qLocal = ["true", "on", "yes", "only"].includes(
-					match?.[2]?.toLowerCase(),
-				);
-				que = que.replace(/(^|[\s\+])local:([^\s\+]+)($|[\s\+])/i, "");
-			}
-			if (qLocal) {
-				plusQueryCount += 1;
-				query.andWhere("note.localOnly = :localOnly", {
-					localOnly: qLocal ? true : false,
-				});
-			}
-		}
-		if (ps.minScore || que.includes("score:")) {
-			let qScore = ps.score;
-			if (!qScore) {
-				const match = /(^|[\s\+])score:(\d+)($|[\s\+])/i.exec(que);
-				qScore = match?.[2];
-				que = que.replace(/(^|[\s\+])score:(\d+)($|[\s\+])/i, "");
-			}
-			if (qScore) {
-				plusQueryCount += 1;
-				query.andWhere("note.score > :score", {
-					score: qScore,
-				});
-			}
-		}
-		if (que.includes("until:")) {
-			let qUntil;
-			if (!qUntil) {
-				const match = /(^|[\s\+])until:([^\s\+]+)($|[\s\+])/i.exec(que);
-				qUntil = match?.[2];
-				que = que.replace(/(^|[\s\+])until:([^\s\+]+)($|[\s\+])/i, "");
-			}
-			if (qUntil) {
-				const untilDate = new Date(qUntil);
-				if (!isNaN(untilDate.valueOf())) {
-					plusQueryCount += 1;
-					query.andWhere("note.id < :id", {
-						id: genId(untilDate),
-					});
-				}
-			}
-		}
-		if (que.includes("since:")) {
-			let qSince;
-			if (!qSince) {
-				const match = /(^|[\s\+])until:([^\s\+]+)($|[\s\+])/i.exec(que);
-				qSince = match?.[2];
-				que = que.replace(/(^|[\s\+])until:([^\s\+]+)($|[\s\+])/i, "");
-			}
-			if (qSince) {
-				const untilDate = new Date(qSince);
-				if (!isNaN(untilDate.valueOf())) {
-					plusQueryCount += 1;
-					query.andWhere("note.id > :id", {
-						id: genId(untilDate),
-					});
-				}
-			}
-		}
-		let loopCount = 0;
-		while (que.includes("filter:") && plusQueryCount < 15 && loopCount < 15) {
-			loopCount++;
-			let qFilter;
-			if (!qFilter) {
-				const match = /(^|[\s\+])filter:([^\s\+]+)($|[\s\+])/i.exec(que);
-				qFilter = match?.[2];
-				que = que.replace(/(^|[\s\+])filter:([^\s\+]+)($|[\s\+])/i, "");
-			}
-			if (qFilter) {
-				plusQueryCount += 1;
-				switch (qFilter) {
-					case "follows":
-						if (me) {
-							const followingQuery = Followings.createQueryBuilder("following")
-								.select("following.followeeId")
-								.where("following.followerId = :followerId", {
-									followerId: me.id,
-								});
-							query.andWhere(
-								`((note.userId IN (${followingQuery.getQuery()})) OR (note.userId = :meId))`,
-								{ meId: me.id },
-							);
-							query.setParameters(followingQuery.getParameters());
-						}
-						break;
-					case "cw":
-						query.andWhere("note.cw IS NOT NULL");
-						break;
-					case "poll":
-						query.andWhere("note.poll IS NOT NULL");
-						break;
-					case "media":
-					case "images":
-					case "videos":
-						query.andWhere("note.fileIds != '{}'");
-						break;
-					case "hashtags":
-						query.andWhere("note.tags != '{}'");
-						break;
-					case "mention":
-						query.andWhere("note.mentions != '{}'");
-						break;
-					case "replies":
-						query.andWhere("note.replyId IS NOT NULL");
-						query.andWhere("note.replyUserId != note.userId");
-						break;
-					case "self_threads":
-						query.andWhere("note.replyId IS NOT NULL");
-						query.andWhere("note.replyUserId = note.userId");
-						break;
-					case "quote":
-						query.andWhere("note.renoteId IS NOT NULL");
-						query.andWhere("(note.text IS NOT NULL OR note.fileIds != '{}')");
-						break;
-					case "safe":
-						query.andWhere(`(note.cw NOT ILIKE '%シモ%' OR note.cw IS NULL)`);
-						query.andWhere(`(note.cw NOT ILIKE '%そぎぎ%' OR note.cw IS NULL)`);
-						break;
-				}
-			}
-		}
+        let userId = ps.userId ?? null;
+        let channelId = ps.channelId ?? null;
+        let host = ps.host ?? undefined;
+        let visibility = ps.visibility ?? null;
+        let localOnly = ps.local === true ? true : null;
+        let minScore = ps.minScore ?? null;
+        let sinceDate: Date | null = null;
+        let untilDate: Date | null = null;
 
-		if (que.replaceAll(/[\s\+]/g, "") === "" && plusQueryCount === 0) return [];
+        const filters: string[] = [];
+        const includeWords: string[] = [];
+        const excludeWords: string[] = [];
+        const excludeUserIdsFromQuery: string[] = [];
 
-		const queWords = que.replaceAll(/\s/g, "+").split("+");
+        for (const rawToken of tokens) {
+                const token = rawToken.trim();
+                if (token.length === 0) continue;
 
-		queWords.forEach((x) => {
-			if (x.startsWith("-")) {
-				query.andWhere(
-					`(note.cw NOT ILIKE '%${x.substring(1)}%' OR note.cw IS NULL)`,
-				);
-				query.andWhere(`note.text NOT ILIKE '%${x.substring(1)}%'`);
-			} else {
-				plusQueryCount += 1;
-				query.andWhere(`(note.cw ILIKE '%${x}%' OR note.text ILIKE '%${x}%')`);
-			}
-		});
+                const lowerToken = token.toLowerCase();
 
-		if (plusQueryCount === 0) return [];
+                if (lowerToken === "from:me") {
+                        if (me) {
+                                userId = me.id;
+                        }
+                        continue;
+                }
 
-		query
-			.andWhere("note.deletedAt IS NULL")
-			.innerJoinAndSelect("note.user", "user")
-			.leftJoinAndSelect("user.avatar", "avatar")
-			.leftJoinAndSelect("user.banner", "banner")
-			.leftJoinAndSelect("note.reply", "reply")
-			.leftJoinAndSelect("note.renote", "renote")
-			.leftJoinAndSelect("reply.user", "replyUser")
-			.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
-			.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
-			.leftJoinAndSelect("renote.user", "renoteUser")
-			.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
-			.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+                if (lowerToken.startsWith("-user:")) {
+                        const value = token.substring(token.indexOf(":") + 1);
+                        if (value) excludeUserIdsFromQuery.push(value);
+                        continue;
+                }
 
-		generateVisibilityQuery(query, me);
-		if (me) generateMutedUserQuery(query, me);
-		if (me) generateBlockedUserQuery(query, me);
+                if (token.startsWith("-")) {
+                        if (token.length > 1) excludeWords.push(token.substring(1));
+                        continue;
+                }
 
-		const notes: Note[] = await query.take(ps.limit).getMany();
+                const colonIndex = token.indexOf(":");
+                if (colonIndex === -1) {
+                        includeWords.push(token);
+                        continue;
+                }
 
-		return await Notes.packMany(notes, me);
-	} else if (sonic) {
-		let start = 0;
-		const chunkSize = 100;
+                const key = token.substring(0, colonIndex).toLowerCase();
+                const value = token.substring(colonIndex + 1);
 
-		// Use sonic to fetch and step through all search results that could match the requirements
-		const ids = [];
-		while (true) {
-			const results = await sonic.search.query(
-				sonic.collection,
-				sonic.bucket,
-				ps.query,
-				{
-					limit: chunkSize,
-					offset: start,
-				},
-			);
+                switch (key) {
+                        case "user":
+                                if (value) userId = value;
+                                break;
+                        case "channel":
+                                if (value) channelId = value;
+                                break;
+                        case "host":
+                                if (value === "." || value === "" || value.toLowerCase() === "null") {
+                                        host = null;
+                                } else {
+                                        host = value;
+                                }
+                                break;
+                        case "visibility":
+                                if (value) visibility = value;
+                                break;
+                        case "local":
+                                if (value) {
+                                        const lowered = value.toLowerCase();
+                                        localOnly = ["true", "on", "yes", "only", "1"].includes(lowered)
+                                                ? true
+                                                : localOnly;
+                                }
+                                break;
+                        case "score": {
+                                const parsed = Number(value);
+                                if (!Number.isNaN(parsed)) {
+                                        minScore = parsed;
+                                }
+                                break;
+                        }
+                        case "filter":
+                                if (value) filters.push(value.toLowerCase());
+                                break;
+                        case "until": {
+                                const parsed = new Date(value);
+                                if (!Number.isNaN(parsed.valueOf())) {
+                                        untilDate = parsed;
+                                }
+                                break;
+                        }
+                        case "since": {
+                                const parsed = new Date(value);
+                                if (!Number.isNaN(parsed.valueOf())) {
+                                        sinceDate = parsed;
+                                }
+                                break;
+                        }
+                        default:
+                                includeWords.push(token);
+                                break;
+                }
+        }
 
-			start += chunkSize;
+        const excludeUserIds = Array.from(
+                new Set([...(ps.excludeUserIds ?? []), ...excludeUserIdsFromQuery]),
+        ).filter((id) => !!id);
 
-			if (results.length === 0) {
-				break;
-			}
+        const loweredIncludeWords = includeWords.map((word) => word.toLowerCase());
+        const loweredExcludeWords = excludeWords.map((word) => word.toLowerCase());
 
-			const res = results
-				.map((k) => JSON.parse(k))
-				.filter((key) => {
-					if (ps.userId && key.userId !== ps.userId) {
-						return false;
-					}
-					if (ps.channelId && key.channelId !== ps.channelId) {
-						return false;
-					}
-					if (ps.sinceId && key.id <= ps.sinceId) {
-						return false;
-					}
-					if (ps.untilId && key.id >= ps.untilId) {
-						return false;
-					}
-					return true;
-				})
-				.map((key) => key.id);
+        const hasSearchCondition =
+                includeWords.length > 0 ||
+                excludeWords.length > 0 ||
+                filters.length > 0 ||
+                excludeUserIds.length > 0 ||
+                userId != null ||
+                channelId != null ||
+                host !== undefined ||
+                visibility != null ||
+                localOnly === true ||
+                minScore != null ||
+                sinceDate != null ||
+                untilDate != null;
 
-			ids.push(...res);
-		}
+        if (!hasSearchCondition) {
+                return [];
+        }
 
-		// Sort all the results by note id DESC (newest first)
-		ids.sort((a, b) => b - a);
+        const normalizeVisibility = (value: string | null) => {
+                if (value == null) return null;
+                switch (value) {
+                        case "サークル":
+                        case "circle":
+                                return "circle";
+                        case "全公開":
+                                return "public";
+                        case "ホーム":
+                                return "home";
+                        case "フォロワー":
+                                return "followers";
+                        case "ダイレクト":
+                        case "direct":
+                                return "specified";
+                        default:
+                                return value;
+                }
+        };
 
-		// Fetch the notes from the database until we have enough to satisfy the limit
-		start = 0;
-		const found = [];
-		while (found.length < ps.limit && start < ids.length) {
-			const chunk = ids.slice(start, start + chunkSize);
-			const notes: Note[] = await Notes.find({
-				where: {
-					id: In(chunk),
-				},
-				order: {
-					id: "DESC",
-				},
-			});
+        const normalizedVisibility = normalizeVisibility(visibility);
+        const circleVisibility = normalizedVisibility === "circle";
+        const untilId = untilDate ? genId(untilDate) : null;
+        const sinceId = sinceDate ? genId(sinceDate) : null;
 
-			// The notes are checked for visibility and muted/blocked users when packed
-			found.push(...(await Notes.packMany(notes, me)));
-			start += chunkSize;
-		}
+        const createNoteMatcher = (followeeIds: Set<string> | null) => {
+                return (note: Note): boolean => {
+                        if (userId && note.userId !== userId) return false;
+                        if (excludeUserIds.includes(note.userId)) return false;
+                        if (channelId && note.channelId !== channelId) return false;
+                        if (host !== undefined) {
+                                if (host === null || host === config.host) {
+                                        if (note.userHost != null) return false;
+                                } else if (note.userHost !== host) {
+                                        return false;
+                                }
+                        }
+                        if (normalizedVisibility) {
+                                if (circleVisibility) {
+                                        if (note.visibility !== "specified") return false;
+                                        if (!note.ccUserIds || note.ccUserIds.length === 0) return false;
+                                } else if (note.visibility !== normalizedVisibility) {
+                                        return false;
+                                }
+                        }
+                        if (localOnly && !note.localOnly) return false;
+                        if (minScore != null && !(note.score > minScore)) return false;
+                        if (sinceId && note.id <= sinceId) return false;
+                        if (untilId && note.id >= untilId) return false;
+                        if (ps.sinceId && note.id <= ps.sinceId) return false;
+                        if (ps.untilId && note.id >= ps.untilId) return false;
 
-		// If we have more results than the limit, trim them
-		if (found.length > ps.limit) {
-			found.length = ps.limit;
-		}
+                        const cwLower = note.cw?.toLowerCase() ?? "";
+                        const textLower = note.text?.toLowerCase() ?? "";
 
-		return found;
-	} else {
-		const userQuery =
-			ps.userId != null
-				? [
-						{
-							term: {
-								userId: ps.userId,
-							},
-						},
-				  ]
-				: [];
+                        for (const word of loweredIncludeWords) {
+                                if (!cwLower.includes(word) && !textLower.includes(word)) {
+                                        return false;
+                                }
+                        }
 
-		const hostQuery =
-			ps.userId == null
-				? ps.host === null
-					? [
-							{
-								bool: {
-									must_not: {
-										exists: {
-											field: "userHost",
-										},
-									},
-								},
-							},
-					  ]
-					: ps.host !== undefined
-					? [
-							{
-								term: {
-									userHost: ps.host,
-								},
-							},
-					  ]
-					: []
-				: [];
+                        for (const word of loweredExcludeWords) {
+                                if ((note.cw != null && cwLower.includes(word)) || textLower.includes(word)) {
+                                        return false;
+                                }
+                        }
 
-		const result = await es.search({
-			index: config.elasticsearch.index || "misskey_note",
-			body: {
-				size: ps.limit,
-				from: ps.offset,
-				query: {
-					bool: {
-						must: [
-							{
-								simple_query_string: {
-									fields: ["text"],
-									query: ps.query.toLowerCase(),
-									default_operator: "and",
-								},
-							},
-							...hostQuery,
-							...userQuery,
-						],
-					},
-				},
-				sort: [
-					{
-						_doc: "desc",
-					},
-				],
-			},
-		});
+                        for (const filter of filters) {
+                                switch (filter) {
+                                        case "follows":
+                                                if (me) {
+                                                        if (!followeeIds) return false;
+                                                        if (!followeeIds.has(note.userId) && note.userId !== me.id) {
+                                                                return false;
+                                                        }
+                                                }
+                                                break;
+                                        case "cw":
+                                                if (!note.cw) return false;
+                                                break;
+                                        case "poll":
+                                                if (!note.hasPoll) return false;
+                                                break;
+                                        case "media":
+                                        case "images":
+                                        case "videos":
+                                                if (!note.fileIds || note.fileIds.length === 0) return false;
+                                                break;
+                                        case "hashtags":
+                                                if (!note.tags || note.tags.length === 0) return false;
+                                                break;
+                                        case "mention":
+                                                if (!note.mentions || note.mentions.length === 0) return false;
+                                                break;
+                                        case "replies":
+                                                if (!note.replyId || note.replyUserId === note.userId) return false;
+                                                break;
+                                        case "self_threads":
+                                                if (!note.replyId || note.replyUserId !== note.userId) return false;
+                                                break;
+                                        case "quote":
+                                                if (!note.renoteId) return false;
+                                                if (!note.text && (!note.fileIds || note.fileIds.length === 0)) return false;
+                                                break;
+                                        case "safe":
+                                                if (cwLower.includes("シモ")) return false;
+                                                if (cwLower.includes("そぎぎ")) return false;
+                                                break;
+                                        default:
+                                                break;
+                                }
+                        }
 
-		const hits = result.body.hits.hits.map((hit: any) => hit._id);
+                        return true;
+                };
+        };
 
-		if (hits.length === 0) return [];
+        if (es == null && sonic == null) {
+                const query = makePaginationQuery(
+                        Notes.createQueryBuilder("note"),
+                        ps.sinceId,
+                        ps.untilId,
+                );
 
-		// Fetch found notes
-		const notes = await Notes.find({
-			where: {
-				id: In(hits),
-			},
-			order: {
-				id: -1,
-			},
-		});
+                if (userId) {
+                        query.andWhere("note.userId = :userId", { userId });
+                }
 
-		return await Notes.packMany(notes, me);
-	}
+                if (excludeUserIds.length > 0) {
+                        query.andWhere("note.userId NOT IN (:...excludeUserIds)", {
+                                excludeUserIds,
+                        });
+                }
+
+                if (channelId) {
+                        query.andWhere("note.channelId = :channelId", { channelId });
+                }
+
+                if (host !== undefined) {
+                        if (host === null || host === config.host) {
+                                query.andWhere("note.userHost IS NULL");
+                        } else {
+                                query.andWhere("note.userHost = :host", { host });
+                        }
+                }
+
+                if (normalizedVisibility) {
+                        if (circleVisibility) {
+                                query.andWhere("note.visibility = 'specified'");
+                                query.andWhere("note.ccUserIds != '{}'");
+                        } else {
+                                query.andWhere("note.visibility = :visibility", {
+                                        visibility: normalizedVisibility,
+                                });
+                        }
+                }
+
+                if (localOnly) {
+                        query.andWhere("note.localOnly = true");
+                }
+
+                if (minScore != null) {
+                        query.andWhere("note.score > :minScore", { minScore });
+                }
+
+                if (untilId) {
+                        query.andWhere("note.id < :untilId", { untilId });
+                }
+
+                if (sinceId) {
+                        query.andWhere("note.id > :sinceId", { sinceId });
+                }
+
+                filters.slice(0, 15).forEach((filter) => {
+                        switch (filter) {
+                                case "follows":
+                                        if (me) {
+                                                const followingQuery = Followings.createQueryBuilder("following")
+                                                        .select("following.followeeId")
+                                                        .where("following.followerId = :followerId", {
+                                                                followerId: me.id,
+                                                        });
+                                                query.andWhere(
+                                                        `((note.userId IN (${followingQuery.getQuery()})) OR (note.userId = :meId))`,
+                                                        { meId: me.id },
+                                                );
+                                                query.setParameters(followingQuery.getParameters());
+                                        }
+                                        break;
+                                case "cw":
+                                        query.andWhere("note.cw IS NOT NULL");
+                                        break;
+                                case "poll":
+                                        query.andWhere("note.hasPoll = TRUE");
+                                        break;
+                                case "media":
+                                case "images":
+                                case "videos":
+                                        query.andWhere("note.fileIds != '{}'");
+                                        break;
+                                case "hashtags":
+                                        query.andWhere("note.tags != '{}'");
+                                        break;
+                                case "mention":
+                                        query.andWhere("note.mentions != '{}'");
+                                        break;
+                                case "replies":
+                                        query.andWhere("note.replyId IS NOT NULL");
+                                        query.andWhere("note.replyUserId != note.userId");
+                                        break;
+                                case "self_threads":
+                                        query.andWhere("note.replyId IS NOT NULL");
+                                        query.andWhere("note.replyUserId = note.userId");
+                                        break;
+                                case "quote":
+                                        query.andWhere("note.renoteId IS NOT NULL");
+                                        query.andWhere("(note.text IS NOT NULL OR note.fileIds != '{}')");
+                                        break;
+                                case "safe":
+                                        query.andWhere(`(note.cw NOT ILIKE '%シモ%' OR note.cw IS NULL)`);
+                                        query.andWhere(`(note.cw NOT ILIKE '%そぎぎ%' OR note.cw IS NULL)`);
+                                        break;
+                                default:
+                                        break;
+                        }
+                });
+
+                includeWords.forEach((word, index) => {
+                        const param = `includeWord${index}`;
+                        const likeValue = `%${word}%`;
+                        query.andWhere(`(note.cw ILIKE :${param} OR note.text ILIKE :${param})`, {
+                                [param]: likeValue,
+                        });
+                });
+
+                excludeWords.forEach((word, index) => {
+                        const cwParam = `excludeCw${index}`;
+                        const textParam = `excludeText${index}`;
+                        const likeValue = `%${word}%`;
+                        query.andWhere(`(note.cw NOT ILIKE :${cwParam} OR note.cw IS NULL)`, {
+                                [cwParam]: likeValue,
+                        });
+                        query.andWhere(`note.text NOT ILIKE :${textParam}`, {
+                                [textParam]: likeValue,
+                        });
+                });
+
+                query
+                        .andWhere("note.deletedAt IS NULL")
+                        .innerJoinAndSelect("note.user", "user")
+                        .leftJoinAndSelect("user.avatar", "avatar")
+                        .leftJoinAndSelect("user.banner", "banner")
+                        .leftJoinAndSelect("note.reply", "reply")
+                        .leftJoinAndSelect("note.renote", "renote")
+                        .leftJoinAndSelect("reply.user", "replyUser")
+                        .leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
+                        .leftJoinAndSelect("replyUser.banner", "replyUserBanner")
+                        .leftJoinAndSelect("renote.user", "renoteUser")
+                        .leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
+                        .leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+
+                generateVisibilityQuery(query, me);
+                if (me) generateMutedUserQuery(query, me);
+                if (me) generateBlockedUserQuery(query, me);
+
+                const notes: Note[] = await query.take(ps.limit).getMany();
+
+                return await Notes.packMany(notes, me);
+        } else if (sonic) {
+                const chunkSize = 100;
+                let offset = 0;
+
+                const ids: string[] = [];
+                while (true) {
+                        const results = await sonic.search.query(
+                                sonic.collection,
+                                sonic.bucket,
+                                ps.query,
+                                {
+                                        limit: chunkSize,
+                                        offset,
+                                },
+                        );
+
+                        offset += chunkSize;
+
+                        if (results.length === 0) {
+                                break;
+                        }
+
+                        const res = results
+                                .map((k) => JSON.parse(k))
+                                .filter((key: { id: string; userId: string; userHost: string | null; channelId: string | null }) => {
+                                        if (userId && key.userId !== userId) return false;
+                                        if (excludeUserIds.includes(key.userId)) return false;
+                                        if (channelId && key.channelId !== channelId) return false;
+                                        if (host !== undefined) {
+                                                if (host === null || host === config.host) {
+                                                        if (key.userHost != null) return false;
+                                                } else if (key.userHost !== host) {
+                                                        return false;
+                                                }
+                                        }
+                                        if (ps.sinceId && key.id <= ps.sinceId) return false;
+                                        if (ps.untilId && key.id >= ps.untilId) return false;
+                                        if (sinceId && key.id <= sinceId) return false;
+                                        if (untilId && key.id >= untilId) return false;
+                                        return true;
+                                })
+                                .map((key) => key.id);
+
+                        ids.push(...res);
+                }
+
+                ids.sort((a, b) => b.localeCompare(a));
+
+                const followeeIds =
+                        filters.includes("follows") && me
+                                ? new Set(
+                                          (
+                                                  await Followings.createQueryBuilder("following")
+                                                          .select("following.followeeId", "followeeId")
+                                                          .where("following.followerId = :followerId", {
+                                                                  followerId: me.id,
+                                                          })
+                                                          .getRawMany()
+                                          ).map((row) => row.followeeId as string),
+                                  )
+                                : null;
+
+                const matchesFilters = createNoteMatcher(followeeIds);
+
+                const found: Note[] = [];
+                let index = 0;
+                while (found.length < ps.limit && index < ids.length) {
+                        const chunk = ids.slice(index, index + chunkSize);
+                        const notes: Note[] = await Notes.find({
+                                where: { id: In(chunk) },
+                                order: { id: "DESC" },
+                        });
+
+                        const filtered = notes.filter(matchesFilters);
+                        if (filtered.length > 0) {
+                                found.push(...filtered);
+                        }
+
+                        index += chunkSize;
+                }
+
+                found.sort((a, b) => b.id.localeCompare(a.id));
+
+                const packed = await Notes.packMany(found.slice(0, ps.limit), me);
+
+                return packed;
+        } else {
+                const must: any[] = [
+                        {
+                                simple_query_string: {
+                                        fields: ["text"],
+                                        query: ps.query.toLowerCase(),
+                                        default_operator: "and",
+                                },
+                        },
+                ];
+
+                const mustNot: any[] = [];
+
+                if (userId) {
+                        must.push({ term: { userId } });
+                }
+
+                if (channelId) {
+                        must.push({ term: { channelId } });
+                }
+
+                if (host !== undefined) {
+                        if (host === null || host === config.host) {
+                                must.push({
+                                        bool: {
+                                                must_not: {
+                                                        exists: { field: "userHost" },
+                                                },
+                                        },
+                                });
+                        } else {
+                                must.push({ term: { userHost: host } });
+                        }
+                }
+
+                if (excludeUserIds.length > 0) {
+                        mustNot.push({ terms: { userId: excludeUserIds } });
+                }
+
+                if (ps.sinceId) {
+                        must.push({ range: { id: { gt: ps.sinceId } } });
+                }
+
+                if (ps.untilId) {
+                        must.push({ range: { id: { lt: ps.untilId } } });
+                }
+
+                if (sinceId) {
+                        must.push({ range: { id: { gt: sinceId } } });
+                }
+
+                if (untilId) {
+                        must.push({ range: { id: { lt: untilId } } });
+                }
+
+                const result = await es.search({
+                        index: config.elasticsearch.index || "misskey_note",
+                        body: {
+                                size: ps.limit,
+                                from: ps.offset,
+                                query: {
+                                        bool: {
+                                                must,
+                                                must_not: mustNot,
+                                        },
+                                },
+                                sort: [
+                                        {
+                                                _doc: "desc",
+                                        },
+                                ],
+                        },
+                });
+
+                const hits = result.body.hits.hits.map((hit: any) => hit._id as string);
+
+                if (hits.length === 0) return [];
+
+                const followeeIds =
+                        filters.includes("follows") && me
+                                ? new Set(
+                                          (
+                                                  await Followings.createQueryBuilder("following")
+                                                          .select("following.followeeId", "followeeId")
+                                                          .where("following.followerId = :followerId", {
+                                                                  followerId: me.id,
+                                                          })
+                                                          .getRawMany()
+                                          ).map((row) => row.followeeId as string),
+                                  )
+                                : null;
+
+                const matcher = createNoteMatcher(followeeIds);
+
+                const notes = await Notes.find({
+                        where: { id: In(hits) },
+                });
+
+                notes.sort((a, b) => b.id.localeCompare(a.id));
+
+                const filtered = notes.filter(matcher);
+
+                const packed = await Notes.packMany(filtered.slice(0, ps.limit), me);
+
+                return packed;
+        }
 });

@@ -166,16 +166,17 @@
 
 <script lang="ts" setup>
 import {
-	defineAsyncComponent,
-	provide,
-	onMounted,
-	computed,
-	ref,
-	unref,
-	shallowRef,
-	watch,
-	inject,
-	Ref,
+        defineAsyncComponent,
+        provide,
+        onMounted,
+        onBeforeUnmount,
+        computed,
+        ref,
+        unref,
+        shallowRef,
+        watch,
+        inject,
+        Ref,
 } from "vue";
 import XCommon from "./_common_/common.vue";
 import * as Acct from "calckey-js/built/acct";
@@ -430,29 +431,54 @@ function top() {
 let navFooterHeight = $ref(0);
 provide<Ref<number>>("CURRENT_STICKY_BOTTOM", $$(navFooterHeight));
 
+const applyNavFooterMetrics = (height: number) => {
+        navFooterHeight = height;
+        document.body.style.setProperty("--stickyBottom", `${height}px`);
+        document.body.style.setProperty(
+                "--minBottomSpacing",
+                "var(--minBottomSpacingMobile)"
+        );
+};
+
+const resetNavFooterMetrics = () => {
+        navFooterHeight = 0;
+        document.body.style.setProperty("--stickyBottom", "0px");
+        document.body.style.setProperty("--minBottomSpacing", "0px");
+};
+
+let navFooterObserver: ResizeObserver | null = null;
+
+const observeNavFooter = (el: HTMLElement) => {
+        const update = () => applyNavFooterMetrics(el.offsetHeight);
+        update();
+        navFooterObserver = new ResizeObserver(() => {
+                update();
+        });
+        navFooterObserver.observe(el);
+};
+
 watch(
-	$$(navFooter),
-	() => {
-		if (navFooter) {
-			navFooterHeight = navFooter.offsetHeight;
-			document.body.style.setProperty(
-				"--stickyBottom",
-				`${navFooterHeight}px`
-			);
-			document.body.style.setProperty(
-				"--minBottomSpacing",
-				"var(--minBottomSpacingMobile)"
-			);
-		} else {
-			navFooterHeight = 0;
-			document.body.style.setProperty("--stickyBottom", "0px");
-			document.body.style.setProperty("--minBottomSpacing", "0px");
-		}
-	},
-	{
-		immediate: true,
-	}
+        $$(navFooter),
+        (el) => {
+                navFooterObserver?.disconnect();
+                navFooterObserver = null;
+
+                if (el) {
+                        observeNavFooter(el);
+                } else {
+                        resetNavFooterMetrics();
+                }
+        },
+        {
+                immediate: true,
+        }
 );
+
+onBeforeUnmount(() => {
+        navFooterObserver?.disconnect();
+        navFooterObserver = null;
+        resetNavFooterMetrics();
+});
 
 const wallpaper =
 	localStorage.getItem("wallpapers") != null &&

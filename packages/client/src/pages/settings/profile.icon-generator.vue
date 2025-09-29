@@ -214,6 +214,7 @@ let historySuppressUntil = 0;
 let lastSelectionSnapshot: SelectionSnapshot | null = null;
 let pendingPreviewSnapshot: SelectionSnapshot | null = null;
 let imageAspectRatio = $ref(1);
+const MIN_SELECTION_SIZE = 0.001;
 
 const canUndo = $computed(() => historyIndex > 0);
 const canRedo = $computed(
@@ -338,6 +339,21 @@ type CropperImageTransformDetail = {
         matrix?: number[];
 };
 
+type NaturalSelectionSnapshot = {
+        x: number;
+        y: number;
+        size: number;
+};
+
+function getNaturalDimensions() {
+        const naturalWidth = imgEl?.naturalWidth ?? 0;
+        const naturalHeight = imgEl?.naturalHeight ?? 0;
+        if (!naturalWidth || !naturalHeight) {
+                return null;
+        }
+        return { naturalWidth, naturalHeight };
+}
+
 function getSelectionBounds(): SelectionBounds | null {
         if (!cropperCanvas) return null;
         const canvasRect = cropperCanvas.getBoundingClientRect();
@@ -371,6 +387,58 @@ function getNaturalScaleX(bounds: SelectionBounds | null = getSelectionBounds())
         if (!naturalWidth) return 1;
         const scale = naturalWidth / Math.max(1, bounds.width);
         return Number.isFinite(scale) && scale > 0 ? scale : 1;
+}
+
+function toNaturalSelection(
+        snapshot: SelectionSnapshot,
+        bounds: SelectionBounds | null = getSelectionBounds(),
+): NaturalSelectionSnapshot | null {
+        const dimensions = getNaturalDimensions();
+        if (!bounds || !dimensions) {
+                return null;
+        }
+        const { naturalWidth, naturalHeight } = dimensions;
+        const scaleX = getNaturalScaleX(bounds);
+        const scaleY = getNaturalScaleY(bounds);
+        const sizeScale = Math.max(scaleX, scaleY);
+        if (!Number.isFinite(sizeScale) || sizeScale <= 0) {
+                return null;
+        }
+
+        const safeSize = Math.max(1, snapshot.width * sizeScale);
+        const maxSize = Math.max(1, Math.min(naturalWidth, naturalHeight));
+        const size = clamp(safeSize, 1, maxSize);
+
+        const baseX = (snapshot.x - bounds.offsetX) * scaleX;
+        const baseY = (snapshot.y - bounds.offsetY) * scaleY;
+        const maxX = Math.max(0, naturalWidth - size);
+        const maxY = Math.max(0, naturalHeight - size);
+
+        const x = clamp(baseX, 0, maxX);
+        const y = clamp(baseY, 0, maxY);
+
+        return { x, y, size };
+}
+
+function fromNaturalSelection(
+        natural: NaturalSelectionSnapshot,
+        bounds: SelectionBounds | null = getSelectionBounds(),
+): SelectionSnapshot | null {
+        if (!bounds) {
+                return null;
+        }
+        const scaleX = getNaturalScaleX(bounds);
+        const scaleY = getNaturalScaleY(bounds);
+        const sizeScale = Math.max(scaleX, scaleY);
+        if (!Number.isFinite(sizeScale) || sizeScale <= 0) {
+                return null;
+        }
+
+        const width = natural.size / sizeScale;
+        const x = bounds.offsetX + natural.x / scaleX;
+        const y = bounds.offsetY + natural.y / scaleY;
+
+        return clampSelectionSnapshot({ x, y, width, height: width });
 }
 
 function getNaturalScaleY(bounds: SelectionBounds | null = getSelectionBounds()) {
@@ -492,38 +560,49 @@ function clampSelectionSnapshot(snapshot: SelectionSnapshot): SelectionSnapshot 
         }
 
         const maxSize = Math.min(bounds.width, bounds.height);
-        let size = Math.round(Math.max(1, Math.min(snapshot.width, snapshot.height)));
-        if (size > maxSize) {
-                size = maxSize;
-        }
+        const safeWidth = Number.isFinite(snapshot.width)
+                ? Math.max(MIN_SELECTION_SIZE, snapshot.width)
+                : MIN_SELECTION_SIZE;
+        const safeHeight = Number.isFinite(snapshot.height)
+                ? Math.max(MIN_SELECTION_SIZE, snapshot.height)
+                : MIN_SELECTION_SIZE;
+        const size = clamp(Math.max(safeWidth, safeHeight), MIN_SELECTION_SIZE, maxSize);
 
         const maxX = bounds.offsetX + Math.max(0, bounds.width - size);
         const maxY = bounds.offsetY + Math.max(0, bounds.height - size);
 
-        const x = clamp(Math.round(snapshot.x), bounds.offsetX, maxX);
-        const y = clamp(Math.round(snapshot.y), bounds.offsetY, maxY);
+        const x = clamp(
+                Number.isFinite(snapshot.x) ? snapshot.x : bounds.offsetX,
+                bounds.offsetX,
+                maxX,
+        );
+        const y = clamp(
+                Number.isFinite(snapshot.y) ? snapshot.y : bounds.offsetY,
+                bounds.offsetY,
+                maxY,
+        );
 
         return { x, y, width: size, height: size };
 }
 
+function isNearlyEqual(a: number, b: number, epsilon = 0.001) {
+        return Math.abs(a - b) <= epsilon;
+}
+
 function isSameSelection(a: SelectionSnapshot, b: SelectionSnapshot) {
         return (
-                a.x === b.x &&
-                a.y === b.y &&
-                a.width === b.width &&
-                a.height === b.height
+                isNearlyEqual(a.x, b.x) &&
+                isNearlyEqual(a.y, b.y) &&
+                isNearlyEqual(a.width, b.width) &&
+                isNearlyEqual(a.height, b.height)
         );
 }
 
 function syncSelectionInputs() {
-        const bounds = getSelectionBounds();
-        const scaleX = getNaturalScaleX(bounds);
-        const scaleY = getNaturalScaleY(bounds);
-        const sizeScale = Math.max(scaleX, scaleY);
-        selectionInputs.x = Math.round(selectionInfo.x * scaleX).toString();
-        selectionInputs.y = Math.round(selectionInfo.y * scaleY).toString();
+        selectionInputs.x = Math.round(selectionInfo.x).toString();
+        selectionInputs.y = Math.round(selectionInfo.y).toString();
         const size = Math.max(selectionInfo.width, selectionInfo.height);
-        selectionInputs.size = Math.round(size * sizeScale).toString();
+        selectionInputs.size = Math.round(size).toString();
 }
 
 function setHandleAction(element: Element | null | undefined, action: string) {
@@ -552,10 +631,10 @@ function toSelectionSnapshot(source: CropperSelectionData | SelectionSnapshot): 
                 Number.isFinite(widthValue) ? widthValue : 0,
                 Number.isFinite(heightValue) ? heightValue : 0,
         );
-        const size = Math.round(Math.max(0, sizeSource));
+        const size = Math.max(MIN_SELECTION_SIZE, sizeSource);
         return {
-                x: Math.round(Number(x) || 0),
-                y: Math.round(Number(y) || 0),
+                x: Number(x) || 0,
+                y: Number(y) || 0,
                 width: size,
                 height: size,
         };
@@ -596,26 +675,19 @@ function captureSelectionData(
         if (!snapshot) return null;
 
         const bounds = getSelectionBounds();
-        if (bounds) {
-                const x = clamp(
-                        snapshot.x - bounds.offsetX,
-                        0,
-                        Math.max(0, bounds.width - snapshot.width),
-                );
-                const y = clamp(
-                        snapshot.y - bounds.offsetY,
-                        0,
-                        Math.max(0, bounds.height - snapshot.height),
-                );
-                selectionInfo.x = x;
-                selectionInfo.y = y;
+        const natural = bounds ? toNaturalSelection(snapshot, bounds) : null;
+        if (natural) {
+                selectionInfo.x = natural.x;
+                selectionInfo.y = natural.y;
+                selectionInfo.width = natural.size;
+                selectionInfo.height = natural.size;
         } else {
+                const size = Math.max(snapshot.width, snapshot.height);
                 selectionInfo.x = snapshot.x;
                 selectionInfo.y = snapshot.y;
+                selectionInfo.width = size;
+                selectionInfo.height = size;
         }
-        const size = Math.max(snapshot.width, snapshot.height);
-        selectionInfo.width = size;
-        selectionInfo.height = size;
         syncSelectionInputs();
 
         if (!recordHistory) {
@@ -705,41 +777,42 @@ function adjustSelection(key: SelectionUiKey, delta: number) {
         if (!bounds) return;
         const snapshot = getSelectionSnapshot();
         if (!snapshot) return;
-        const updated: SelectionSnapshot = { ...snapshot };
-        const scaleX = getNaturalScaleX(bounds);
-        const scaleY = getNaturalScaleY(bounds);
-        const sizeScale = Math.max(scaleX, scaleY);
+        const natural = toNaturalSelection(snapshot, bounds);
+        const dimensions = getNaturalDimensions();
+        if (!natural || !dimensions) {
+                return;
+        }
+
+        const { naturalWidth, naturalHeight } = dimensions;
+        const maxNaturalSize = Math.max(1, Math.min(naturalWidth, naturalHeight));
+        natural.size = clamp(Math.round(natural.size), 1, maxNaturalSize);
+        natural.x = clamp(Math.round(natural.x), 0, Math.max(0, naturalWidth - natural.size));
+        natural.y = clamp(Math.round(natural.y), 0, Math.max(0, naturalHeight - natural.size));
 
         if (key === "x" || key === "y") {
-                const offsetKey = key === "x" ? "offsetX" : "offsetY";
-                const scaleValue = key === "x" ? scaleX : scaleY;
-                const currentDisplay =
-                        key === "x" ? updated.x - bounds.offsetX : updated.y - bounds.offsetY;
-                const maxDisplay = key === "x"
-                        ? Math.max(0, bounds.width - updated.width)
-                        : Math.max(0, bounds.height - updated.height);
-                const currentNatural = Math.round(currentDisplay * scaleValue);
-                const maxNatural = Math.round(maxDisplay * scaleValue);
-                const nextNatural = Math.round(clamp(currentNatural + delta, 0, maxNatural));
-                const nextDisplay = nextNatural / scaleValue;
-                updated[key] = Math.round(nextDisplay + bounds[offsetKey]);
+                const maxValue =
+                        key === "x"
+                                ? Math.max(0, naturalWidth - natural.size)
+                                : Math.max(0, naturalHeight - natural.size);
+                const current = key === "x" ? natural.x : natural.y;
+                const next = clamp(Math.round(current) + delta, 0, maxValue);
+                if (key === "x") {
+                        natural.x = next;
+                } else {
+                        natural.y = next;
+                }
         } else if (key === "size") {
-                const maxSize = Math.min(bounds.width, bounds.height);
-                const currentSize = Math.max(updated.width, updated.height);
-                const currentNatural = Math.round(currentSize * sizeScale);
-                const maxNatural = Math.round(maxSize * sizeScale);
-                const desiredNatural = Math.round(
-                        clamp(currentNatural + delta, 1, Math.max(1, maxNatural)),
-                );
-                const desiredSize = desiredNatural / sizeScale;
-                const roundedSize = Math.max(1, Math.round(desiredSize));
-                updated.width = roundedSize;
-                updated.height = roundedSize;
+                const desiredSize = clamp(Math.round(natural.size) + delta, 1, maxNaturalSize);
+                natural.size = desiredSize;
+                const maxX = Math.max(0, naturalWidth - natural.size);
+                const maxY = Math.max(0, naturalHeight - natural.size);
+                natural.x = clamp(Math.round(natural.x), 0, maxX);
+                natural.y = clamp(Math.round(natural.y), 0, maxY);
+        }
 
-                const maxX = bounds.offsetX + Math.max(0, bounds.width - roundedSize);
-                const maxY = bounds.offsetY + Math.max(0, bounds.height - roundedSize);
-                updated.x = clamp(updated.x, bounds.offsetX, maxX);
-                updated.y = clamp(updated.y, bounds.offsetY, maxY);
+        const updated = fromNaturalSelection(natural, bounds);
+        if (!updated) {
+                return;
         }
 
         cropperSelection.$change(
@@ -765,34 +838,44 @@ function commitSelectionInput(key: SelectionUiKey) {
                 return;
         }
 
-        const updated: SelectionSnapshot = { ...snapshot };
-        const scaleX = getNaturalScaleX(bounds);
-        const scaleY = getNaturalScaleY(bounds);
-        const sizeScale = Math.max(scaleX, scaleY);
+        const natural = toNaturalSelection(snapshot, bounds);
+        const dimensions = getNaturalDimensions();
+        if (!natural || !dimensions) {
+                syncSelectionInputs();
+                return;
+        }
+
+        const { naturalWidth, naturalHeight } = dimensions;
+        const maxNaturalSize = Math.max(1, Math.min(naturalWidth, naturalHeight));
+        natural.size = clamp(Math.round(natural.size), 1, maxNaturalSize);
+        natural.x = clamp(Math.round(natural.x), 0, Math.max(0, naturalWidth - natural.size));
+        natural.y = clamp(Math.round(natural.y), 0, Math.max(0, naturalHeight - natural.size));
+        const roundedValue = Math.round(parsedValue);
 
         if (key === "x" || key === "y") {
-                const scaleValue = key === "x" ? scaleX : scaleY;
-                const maxDisplay = key === "x"
-                        ? Math.max(0, bounds.width - updated.width)
-                        : Math.max(0, bounds.height - updated.height);
-                const maxValue = Math.round(maxDisplay * scaleValue);
-                const offsetKey = key === "x" ? "offsetX" : "offsetY";
-                const value = clamp(Math.round(parsedValue), 0, Math.max(0, maxValue));
-                const displayValue = value / scaleValue;
-                updated[key] = Math.round(displayValue + bounds[offsetKey]);
+                const maxValue =
+                        key === "x"
+                                ? Math.max(0, naturalWidth - Math.round(natural.size))
+                                : Math.max(0, naturalHeight - Math.round(natural.size));
+                const clampedValue = clamp(roundedValue, 0, maxValue);
+                if (key === "x") {
+                        natural.x = clampedValue;
+                } else {
+                        natural.y = clampedValue;
+                }
         } else if (key === "size") {
-                const maxSize = Math.min(bounds.width, bounds.height);
-                const maxValue = Math.round(maxSize * sizeScale);
-                const value = clamp(Math.round(parsedValue), 1, Math.max(1, maxValue));
-                const displaySize = value / sizeScale;
-                const roundedSize = Math.max(1, Math.round(displaySize));
-                updated.width = roundedSize;
-                updated.height = roundedSize;
+                const clampedSize = clamp(roundedValue, 1, maxNaturalSize);
+                natural.size = clampedSize;
+                const maxX = Math.max(0, naturalWidth - natural.size);
+                const maxY = Math.max(0, naturalHeight - natural.size);
+                natural.x = clamp(Math.round(natural.x), 0, maxX);
+                natural.y = clamp(Math.round(natural.y), 0, maxY);
+        }
 
-                const maxX = bounds.offsetX + Math.max(0, bounds.width - roundedSize);
-                const maxY = bounds.offsetY + Math.max(0, bounds.height - roundedSize);
-                updated.x = clamp(updated.x, bounds.offsetX, maxX);
-                updated.y = clamp(updated.y, bounds.offsetY, maxY);
+        const updated = fromNaturalSelection(natural, bounds);
+        if (!updated) {
+                syncSelectionInputs();
+                return;
         }
 
         cropperSelection.$change(

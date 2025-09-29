@@ -26,7 +26,7 @@
                 <p class="description">{{ i18n.ts._profile.iconGeneratorDescription }}</p>
                 <div class="content">
                         <div class="cropper-area">
-                                <div class="cropper-panel">
+                                <div class="cropper-panel" :style="cropperPanelStyle">
                                         <div v-if="!selectedFile" class="empty">
                                                 <i class="ph-user-circle-plus ph-bold"></i>
                                                 <p>{{ i18n.ts._profile.iconGeneratorEmpty }}</p>
@@ -212,12 +212,20 @@ let pendingHistory: SelectionSnapshot | null = null;
 let historySuppressUntil = 0;
 let lastSelectionSnapshot: SelectionSnapshot | null = null;
 let pendingPreviewSnapshot: SelectionSnapshot | null = null;
+let imageAspectRatio = $ref(1);
 
 const canUndo = $computed(() => historyIndex > 0);
 const canRedo = $computed(
         () => historyIndex >= 0 && historyIndex < selectionHistory.length - 1,
 );
 type CropperHandleElement = HTMLElement & { action?: string };
+const cropperPanelStyle = $computed(() => {
+        const ratio = selectedFile ? imageAspectRatio : 1;
+        const safeRatio = Number.isFinite(ratio) && ratio > 0 ? ratio : 1;
+        return {
+                "--cropper-panel-aspect": String(safeRatio),
+        };
+});
 
 let selectedFile = $ref<DriveFile | null>(null);
 let imgEl = $ref<HTMLImageElement | null>(null);
@@ -256,6 +264,7 @@ function resetSelectionState() {
         cancelPendingHistory();
         lastSelectionSnapshot = null;
         pendingPreviewSnapshot = null;
+        imageAspectRatio = 1;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -269,6 +278,10 @@ type SelectionBounds = {
         offsetY: number;
         width: number;
         height: number;
+};
+
+type CropperImageTransformDetail = {
+        matrix?: number[];
 };
 
 function getSelectionBounds(): SelectionBounds | null {
@@ -296,6 +309,36 @@ function getSelectionBounds(): SelectionBounds | null {
                 width: Math.round(canvasRect.width),
                 height: Math.round(canvasRect.height),
         };
+}
+
+function enforceContainTransform(event: Event) {
+        if (!cropperCanvas || !cropperImage) return;
+        const transformEvent = event as CustomEvent<CropperImageTransformDetail>;
+        const matrix = transformEvent.detail?.matrix;
+        if (!matrix || matrix.length !== 6) {
+                return;
+        }
+
+        const cropperCanvasRect = cropperCanvas.getBoundingClientRect();
+        const cropperImageClone = cropperImage.cloneNode() as CropperImage;
+        cropperImageClone.style.transform = `matrix(${matrix.join(", ")})`;
+        cropperImageClone.style.opacity = "0";
+
+        cropperCanvas.appendChild(cropperImageClone);
+        const cropperImageRect = cropperImageClone.getBoundingClientRect();
+        cropperCanvas.removeChild(cropperImageClone);
+
+        const epsilon = 0.5;
+        const isOverflowing =
+                cropperImageRect.top < cropperCanvasRect.top - epsilon ||
+                cropperImageRect.left < cropperCanvasRect.left - epsilon ||
+                cropperImageRect.bottom > cropperCanvasRect.bottom + epsilon ||
+                cropperImageRect.right > cropperCanvasRect.right + epsilon;
+
+        if (isOverflowing) {
+                transformEvent.preventDefault();
+                cropperImage.$center("contain");
+        }
 }
 
 function clampSelectionSnapshot(snapshot: SelectionSnapshot): SelectionSnapshot {
@@ -641,6 +684,11 @@ async function pickImage(ev?: Event) {
 }
 
 function onImageLoad() {
+        if (imgEl?.naturalWidth && imgEl.naturalHeight) {
+                imageAspectRatio = imgEl.naturalWidth / imgEl.naturalHeight;
+        } else {
+                imageAspectRatio = 1;
+        }
         loading = false;
 }
 
@@ -701,8 +749,11 @@ function setupCropper() {
                                 imageTransformListener as EventListener,
                         );
                 }
-                imageTransformListener = () => {
-                        if (!cropperSelection) return;
+                imageTransformListener = (event: Event) => {
+                        enforceContainTransform(event);
+                        if (event.defaultPrevented || !cropperSelection) {
+                                return;
+                        }
                         handleSelectionChange(false, {
                                 x: cropperSelection.x,
                                 y: cropperSelection.y,
@@ -1048,8 +1099,13 @@ definePageMetadata({
 }
 
 .cropper-panel {
+        --cropper-panel-aspect: 1;
         position: relative;
-        min-height: 22rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: min(22rem, 70vh);
+        max-height: min(70vh, 40rem);
         min-width: 0;
         width: 100%;
         max-width: 100%;
@@ -1058,21 +1114,32 @@ definePageMetadata({
         border-radius: var(--radius);
         background: var(--panel);
         overflow: hidden;
+        aspect-ratio: var(--cropper-panel-aspect, 1);
 }
 
 .cropper-wrapper {
         position: relative;
+        display: flex;
+        flex: 1 1 auto;
         min-width: 0;
+        min-height: 0;
         max-width: 100%;
         width: 100%;
         height: 100%;
 
         > ::v-deep(.cropper-container) {
+                flex: 1 1 auto;
+                min-height: 0;
                 width: 100% !important;
                 max-width: 100%;
                 height: 100% !important;
         }
 
+}
+
+.cropper-panel > .empty {
+        flex: 1 1 auto;
+        width: 100%;
 }
 
 .cropper-container {

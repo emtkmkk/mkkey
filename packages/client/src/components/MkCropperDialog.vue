@@ -70,64 +70,121 @@ let cropper: Cropper | null = null;
 let loading = $ref(true);
 
 const ok = async () => {
-	const promise = new Promise<misskey.entities.DriveFile>(async (res) => {
-		const croppedImage = await cropper?.getCropperImage();
-		const croppedSection = await cropper?.getCropperSelection();
-		// 拡大率を計算し、(ほぼ)元の大きさに戻す
-		const zoomedRate =
-			croppedImage.getBoundingClientRect().width /
-			croppedImage.clientWidth;
-		const widthToRender =
-			croppedSection.getBoundingClientRect().width / zoomedRate;
-		const croppedCanvas = await croppedSection?.$toCanvas({
-			width: widthToRender,
-		});
-		croppedCanvas.toBlob((blob) => {
-			const formData = new FormData();
-			formData.append("file", blob);
-			formData.append("name", `cropped_${props.file.name}`);
-			formData.append(
-				"isSensitive",
-				props.file.isSensitive ? "true" : "false"
-			);
-			if (props.file.comment) {
-				formData.append("comment", props.file.comment);
-			}
+        const promise = new Promise<misskey.entities.DriveFile>(async (res, rej) => {
+                const croppedImage = await cropper?.getCropperImage();
+                const croppedSection = await cropper?.getCropperSelection();
+                let failureNotified = false;
+                const failed = () => {
+                        if (failureNotified) return;
+                        failureNotified = true;
+                        os.alert({
+                                type: "error",
+                                text: i18n.ts.somethingHappened,
+                        });
+                        rej(new Error("failed to crop image"));
+                };
+                if (!croppedImage || !croppedSection) {
+                        failed();
+                        return;
+                }
+                // 拡大率を計算し、(ほぼ)元の大きさに戻す
+                const zoomedRate =
+                        croppedImage.getBoundingClientRect().width /
+                        croppedImage.clientWidth;
+                const widthToRender =
+                        croppedSection.getBoundingClientRect().width / zoomedRate;
+                const croppedCanvas = await croppedSection.$toCanvas({
+                        width: widthToRender,
+                });
+                if (!croppedCanvas) {
+                        failed();
+                        return;
+                }
 
-			const folderId = props.uploadFolder
-				? props.uploadFolder
-				: defaultStore.state.uploadFolderAvatar && props.to === "avatar"
-				? defaultStore.state.uploadFolderAvatar
-				: defaultStore.state.uploadFolderBanner && props.to === "banner"
-				? defaultStore.state.uploadFolderBanner
-				: defaultStore.state.uploadFolderEmoji && props.to === "emoji"
-				? defaultStore.state.uploadFolderEmoji
-				: defaultStore.state.uploadFolder;
+                const preferredMime = (() => {
+                        const extension = props.file.name?.split(".").pop()?.toLowerCase();
+                        switch (extension) {
+                                case "webp":
+                                        return "image/webp";
+                                case "png":
+                                case "apng":
+                                        return "image/png";
+                                case "avif":
+                                        return "image/avif";
+                                default:
+                                        return "image/png";
+                        }
+                })();
 
-			if (folderId) {
-				formData.append("folderId", folderId);
-			}
+                const triedTypes = Array.from(
+                        new Set([preferredMime, "image/png"]),
+                );
+                let blob: Blob | null = null;
+                for (const type of triedTypes) {
+                        blob = await new Promise<Blob | null>((resolve) => {
+                                croppedCanvas.toBlob((canvasBlob) => {
+                                        resolve(canvasBlob);
+                                }, type);
+                        });
+                        if (blob) break;
+                }
 
-			fetch(`${apiUrl}/drive/files/create`, {
-				method: "POST",
-				body: formData,
-				headers: {
-					authorization: `Bearer ${$i.token}`,
-				},
-			})
-				.then((response) => response.json())
-				.then((f) => {
-					res(f);
-				});
-		});
-	});
+                if (!blob) {
+                        failed();
+                        return;
+                }
 
-	os.promiseDialog(promise);
+                const formData = new FormData();
+                formData.append("file", blob, `cropped_${props.file.name}`);
+                formData.append("name", `cropped_${props.file.name}`);
+                formData.append(
+                        "isSensitive",
+                        props.file.isSensitive ? "true" : "false"
+                );
+                if (props.file.comment) {
+                        formData.append("comment", props.file.comment);
+                }
 
-	const f = await promise;
+                const folderId = props.uploadFolder
+                        ? props.uploadFolder
+                        : defaultStore.state.uploadFolderAvatar && props.to === "avatar"
+                        ? defaultStore.state.uploadFolderAvatar
+                        : defaultStore.state.uploadFolderBanner && props.to === "banner"
+                        ? defaultStore.state.uploadFolderBanner
+                        : defaultStore.state.uploadFolderEmoji && props.to === "emoji"
+                        ? defaultStore.state.uploadFolderEmoji
+                        : defaultStore.state.uploadFolder;
 
-	emit("ok", f);
-	dialogEl.close();
+                if (folderId) {
+                        formData.append("folderId", folderId);
+                }
+
+                fetch(`${apiUrl}/drive/files/create`, {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                                authorization: `Bearer ${$i.token}`,
+                        },
+                })
+                        .then((response) => response.json())
+                        .then((f) => {
+                                res(f);
+                        })
+                        .catch(() => {
+                                failed();
+                        });
+        });
+
+        os.promiseDialog(promise);
+
+        try {
+                const f = await promise;
+
+                emit("ok", f);
+                dialogEl.close();
+        } catch {
+                // noop: エラーはすでに通知済み
+        }
 };
 
 const cancel = () => {

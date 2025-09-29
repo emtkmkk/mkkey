@@ -293,24 +293,21 @@
                                                        class="ph-smiley-wink ph-bold ph-lg"
                                                ></i>
                                                <i v-else class="ph-smiley ph-bold ph-lg"></i>
-                                               <template v-if="showReactionPickerCount">
+                                               <template v-if="showReactionCount && showReactionPickerButton">
                                                        <p class="count">{{ totalReactions }}</p>
                                                </template>
                                        </button>
-                                        <button
-                                                v-if="
-                                                        (enableEmojiReactions ||
-                                                                detailedView ||
-                                                                showEmojiButton) &&
-                                                        appearNote.myReaction != null &&
-                                                        !multiReaction
-                                                "
-                                                ref="reactButton"
-                                                class="button _button reacted"
-                                                @click="undoReact(appearNote)"
-                                        >
-                                                <i class="ph-minus ph-bold ph-lg"></i>
-                                        </button>
+                                       <button
+                                               v-if="showUndoReactionButton"
+                                               ref="reactButton"
+                                               class="button _button reacted"
+                                               @click="undoReact(appearNote)"
+                                       >
+                                               <i class="ph-minus ph-bold ph-lg"></i>
+                                               <template v-if="showReactionCount && showUndoReactionButton">
+                                                       <p class="count">{{ totalReactions }}</p>
+                                               </template>
+                                       </button>
 					<XQuoteButton
 						class="button"
 						:note="developerQuote ? note : appearNote"
@@ -578,13 +575,19 @@ const showReactionPickerButton = $computed(
                 !isMaxReacted &&
                 isCanAction
 );
-const showReactionPickerCount = $computed(
+const showUndoReactionButton = $computed(
+        () =>
+                (enableEmojiReactions || isDetailedView || showEmojiButton) &&
+                appearNote.myReaction != null &&
+                !multiReaction
+);
+const showReactionCount = $computed(
         () =>
                 totalReactions > 0 &&
                 !enableEmojiReactions &&
                 !isDetailedView &&
-                showReactionPickerButton &&
-                !showStarButtonNoEmoji
+                !showStarButtonNoEmoji &&
+                (showReactionPickerButton || showUndoReactionButton)
 );
 const favButtonReactionIsFavorite =
         defaultStore.state.favButtonReaction === "favorite";

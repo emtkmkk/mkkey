@@ -224,7 +224,6 @@
 		
                 <div class="profileActions">
                         <MkButton
-                                rounded
                                 class="avatarGenerator"
                                 @click="openIconGenerator"
                                 >{{ i18n.ts._profile.openIconGenerator }}</MkButton

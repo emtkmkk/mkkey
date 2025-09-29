@@ -164,8 +164,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         "accept-language": normalizedLang,
       });
 
-      const $ = load(html);
-      const productData = extractAmazonProductData($);
+      const productData = extractAmazonProductData(html);
 
       if (!productData) throw new Error("product data not found");
 
@@ -352,11 +351,10 @@ function sanitizeAsin(segment: string): string {
   return segment.replace(/[^A-Z0-9]/gi, "").slice(0, 10) || segment;
 }
 
-function extractAmazonProductData($: ReturnType<typeof load>): any | null {
-  const scripts = Array.from($('script[type="application/ld+json"]').toArray());
+function extractAmazonProductData(html: string): any | null {
+  const scripts = extractJsonLdScripts(html);
 
-  for (const script of scripts) {
-    const content = $(script).contents().text().trim();
+  for (const content of scripts) {
     if (!content) continue;
 
     const candidates = buildJsonCandidates(content);
@@ -372,6 +370,17 @@ function extractAmazonProductData($: ReturnType<typeof load>): any | null {
   }
 
   return null;
+}
+
+function extractJsonLdScripts(html: string): string[] {
+  const scripts: string[] = [];
+  const regex = /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const content = match[1]?.trim();
+    if (content) scripts.push(content);
+  }
+  return scripts;
 }
 
 function buildJsonCandidates(content: string): string[] {

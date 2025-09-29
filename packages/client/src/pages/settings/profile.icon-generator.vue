@@ -154,7 +154,6 @@
 <script lang="ts" setup>
 import { nextTick, onBeforeUnmount, reactive } from "vue";
 import Cropper from "cropperjs";
-import type { CropperCanvas, CropperImage, CropperSelection } from "cropperjs";
 import type { DriveFile } from "calckey-js/built/entities";
 import MkButton from "@/components/MkButton.vue";
 import { selectFile } from "@/scripts/select-file";
@@ -207,17 +206,10 @@ type SelectionKey = (typeof selectionItems)[number]["key"];
 
 type SelectionSnapshot = Record<SelectionKey, number>;
 type CropperSelectionData = Partial<Record<SelectionKey, number | null>> | null | undefined;
-type CropperHandleElement = HTMLElement & { action?: string };
 
 let selectedFile = $ref<DriveFile | null>(null);
 let imgEl = $ref<HTMLImageElement | null>(null);
 let cropper: Cropper | null = null;
-let cropperCanvas: CropperCanvas | null = null;
-let cropperImage: CropperImage | null = null;
-let cropperSelection: CropperSelection | null = null;
-let selectionChangeListener: ((event: Event) => void) | null = null;
-let canvasActionEndListener: ((event: Event) => void) | null = null;
-let imageTransformListener: ((event: Event) => void) | null = null;
 let loading = $ref(false);
 let downloading = $ref(false);
 let previewUpdating = false;
@@ -245,99 +237,6 @@ function resetSelectionState() {
         cancelPendingHistory();
         lastSelectionSnapshot = null;
         pendingPreviewSnapshot = null;
-}
-
-function clamp(value: number, min: number, max: number) {
-        if (value < min) return min;
-        if (value > max) return max;
-        return value;
-}
-
-function clampSelectionSnapshot(snapshot: SelectionSnapshot): SelectionSnapshot {
-        if (!cropperCanvas) {
-                return { ...snapshot };
-        }
-        const canvasRect = cropperCanvas.getBoundingClientRect();
-        const imageRect = cropperImage?.getBoundingClientRect();
-        const hasImageBounds =
-                !!imageRect &&
-                imageRect.width > 0 &&
-                imageRect.height > 0 &&
-                !!canvasRect.width &&
-                !!canvasRect.height;
-        const bounds = hasImageBounds
-                ? {
-                          left: imageRect.left - canvasRect.left,
-                          top: imageRect.top - canvasRect.top,
-                          width: imageRect.width,
-                          height: imageRect.height,
-                  }
-                : {
-                          left: 0,
-                          top: 0,
-                          width: canvasRect.width,
-                          height: canvasRect.height,
-                  };
-
-        let ratio = snapshot.height > 0 ? snapshot.width / snapshot.height : 1;
-        if (!Number.isFinite(ratio) || ratio <= 0) {
-                ratio = 1;
-        }
-
-        let width = Math.min(snapshot.width, bounds.width);
-        let height = Math.min(snapshot.height, bounds.height);
-
-        if (width <= 0 || height <= 0) {
-                const size = Math.min(bounds.width, bounds.height);
-                width = size;
-                height = size / ratio;
-        }
-
-        const currentRatio = height > 0 ? width / height : ratio;
-        if (currentRatio > ratio) {
-                width = Math.round(height * ratio);
-        } else if (currentRatio < ratio) {
-                height = Math.round(width / ratio);
-        }
-
-        if (width > bounds.width) {
-                width = Math.round(bounds.width);
-                height = Math.round(width / ratio);
-        }
-
-        if (height > bounds.height) {
-                height = Math.round(bounds.height);
-                width = Math.round(height * ratio);
-        }
-
-        width = Math.max(1, Math.min(Math.round(width), Math.round(bounds.width)));
-        height = Math.max(1, Math.min(Math.round(height), Math.round(bounds.height)));
-
-        const maxX = bounds.left + Math.max(0, Math.round(bounds.width) - width);
-        const maxY = bounds.top + Math.max(0, Math.round(bounds.height) - height);
-
-        const x = clamp(Math.round(snapshot.x), Math.round(bounds.left), maxX);
-        const y = clamp(Math.round(snapshot.y), Math.round(bounds.top), maxY);
-
-        return { x, y, width, height };
-}
-
-function isSameSelection(a: SelectionSnapshot, b: SelectionSnapshot) {
-        return (
-                a.x === b.x &&
-                a.y === b.y &&
-                a.width === b.width &&
-                a.height === b.height
-        );
-}
-
-function setHandleAction(element: Element | null | undefined, action: string) {
-        const handle = element as CropperHandleElement | null;
-        if (!handle) return;
-        if (typeof handle.action !== "undefined") {
-                handle.action = action;
-        }
-        handle.setAttribute("action", action);
 }
 
 function toSelectionSnapshot(source: CropperSelectionData | SelectionSnapshot): SelectionSnapshot | null {
@@ -370,13 +269,9 @@ function getSelectionSnapshot(source?: CropperSelectionData | SelectionSnapshot)
                 return { ...lastSelectionSnapshot };
         }
 
-        if (cropperSelection) {
-                const fallback = toSelectionSnapshot({
-                        x: cropperSelection.x,
-                        y: cropperSelection.y,
-                        width: cropperSelection.width,
-                        height: cropperSelection.height,
-                });
+        if (cropper && typeof (cropper as { getData?: (rounded?: boolean) => unknown }).getData === "function") {
+                const data = cropper.getData(true) as CropperSelectionData;
+                const fallback = toSelectionSnapshot(data);
                 if (fallback) {
                         lastSelectionSnapshot = fallback;
                         return { ...fallback };
@@ -410,25 +305,7 @@ function handleSelectionChange(
         recordHistory: boolean,
         source?: CropperSelectionData | SelectionSnapshot,
 ) {
-        const rawSnapshot = getSelectionSnapshot(source);
-        if (!rawSnapshot) return;
-        const clamped = clampSelectionSnapshot(rawSnapshot);
-        if (cropperSelection && !isSameSelection(rawSnapshot, clamped)) {
-                cropperSelection.$change(
-                        clamped.x,
-                        clamped.y,
-                        clamped.width,
-                        clamped.height,
-                );
-                if (recordHistory) {
-                        const snapshot = captureSelectionData(true, clamped);
-                        if (snapshot) {
-                                schedulePreviewUpdate(snapshot);
-                        }
-                }
-                return;
-        }
-        const snapshot = captureSelectionData(recordHistory, clamped);
+        const snapshot = captureSelectionData(recordHistory, source);
         if (!snapshot) return;
         schedulePreviewUpdate(snapshot);
 }
@@ -480,7 +357,7 @@ function cancelPendingHistory() {
 }
 
 function adjustSelection(key: SelectionKey, delta: number) {
-        if (!cropperSelection) return;
+        if (!cropper) return;
         const snapshot = getSelectionSnapshot();
         if (!snapshot) return;
         const updated: SelectionSnapshot = { ...snapshot };
@@ -488,28 +365,35 @@ function adjustSelection(key: SelectionKey, delta: number) {
         if ((key === "width" || key === "height") && updated[key] < 1) {
                 updated[key] = 1;
         }
-        cropperSelection.$change(
-                updated.x,
-                updated.y,
-                updated.width,
-                updated.height,
-        );
-        handleSelectionChange(true, updated);
+        cropper.setData({
+                x: updated.x,
+                y: updated.y,
+                width: updated.width,
+                height: updated.height,
+        });
+        const nextSnapshot = captureSelectionData(true, updated);
+        if (nextSnapshot) {
+                schedulePreviewUpdate(nextSnapshot);
+        }
 }
 
 function applyHistory(index: number) {
-        if (!cropperSelection) return;
+        if (!cropper) return;
         const snapshot = selectionHistory[index];
         if (!snapshot) return;
         cancelPendingHistory();
         historyIndex = index;
         historySuppressUntil = Date.now() + 200;
-        cropperSelection.$change(
-                snapshot.x,
-                snapshot.y,
-                snapshot.width,
-                snapshot.height,
-        );
+        cropper.setData({
+                x: snapshot.x,
+                y: snapshot.y,
+                width: snapshot.width,
+                height: snapshot.height,
+        });
+        const nextSnapshot = captureSelectionData(false, snapshot);
+        if (nextSnapshot) {
+                schedulePreviewUpdate(nextSnapshot);
+        }
 }
 
 function undo() {
@@ -556,190 +440,39 @@ function setupCropper() {
 
         destroyCropper();
 
-        cropper = new Cropper(imgEl);
+        cropper = new Cropper(imgEl, {
+                dragMode: "none",
+                aspectRatio: 1,
+                viewMode: 2,
+                autoCrop: true,
+                autoCropArea: 1,
+                background: false,
+                responsive: true,
+                ready(event) {
+                        loading = false;
+                        handleSelectionChange(true, event?.detail ?? null);
+                },
+                crop(event) {
+                        handleSelectionChange(false, event?.detail ?? null);
+                },
+                cropend(event) {
+                        handleSelectionChange(true, event?.detail ?? null);
+                },
+                zoom(event) {
+                        handleSelectionChange(false, event?.detail ?? null);
+                },
+        });
 
-        const initializeElements = (attempt = 0) => {
-                if (!cropper) return;
-
-                const canvas = cropper.getCropperCanvas();
-                const image = cropper.getCropperImage();
-                const selection = cropper.getCropperSelection();
-
-                if (!canvas || !image || !selection) {
-                        if (attempt < 60) {
-                                window.setTimeout(() => initializeElements(attempt + 1), 50);
-                        }
-                        return;
-                }
-
-                cropperCanvas = canvas;
-                cropperCanvas.background = false;
-                cropperImage = image;
-                if (cropperImage) {
-                        cropperImage.translatable = false;
-                }
-                cropperSelection = selection;
-
-                if (selectionChangeListener) {
-                        selection.removeEventListener(
-                                "change",
-                                selectionChangeListener as EventListener,
-                        );
-                }
-                selectionChangeListener = (event: Event) => {
-                        const detail = (event as CustomEvent<CropperSelectionData>).detail ?? {
-                                x: selection.x,
-                                y: selection.y,
-                                width: selection.width,
-                                height: selection.height,
-                        };
-                        handleSelectionChange(false, detail);
-                };
-                selection.addEventListener(
-                        "change",
-                        selectionChangeListener as EventListener,
-                );
-
-                if (imageTransformListener) {
-                        image.removeEventListener(
-                                "transform",
-                                imageTransformListener as EventListener,
-                        );
-                }
-                imageTransformListener = () => {
-                        if (!cropperSelection) return;
-                        handleSelectionChange(false, {
-                                x: cropperSelection.x,
-                                y: cropperSelection.y,
-                                width: cropperSelection.width,
-                                height: cropperSelection.height,
-                        });
-                };
-                image.addEventListener(
-                        "transform",
-                        imageTransformListener as EventListener,
-                );
-
-                if (canvasActionEndListener) {
-                        canvas.removeEventListener(
-                                "actionend",
-                                canvasActionEndListener as EventListener,
-                        );
-                }
-                canvasActionEndListener = () => {
-                        if (!cropperSelection) return;
-                        handleSelectionChange(true, {
-                                x: cropperSelection.x,
-                                y: cropperSelection.y,
-                                width: cropperSelection.width,
-                                height: cropperSelection.height,
-                        });
-                };
-                canvas.addEventListener(
-                        "actionend",
-                        canvasActionEndListener as EventListener,
-                );
-
-                selection.aspectRatio = 1;
-                selection.initialAspectRatio = 1;
-                selection.initialCoverage = 1;
-                selection.movable = false;
-                selection.resizable = true;
-                selection.keyboard = true;
-                selection.outlined = true;
-                selection.precise = true;
-
-                setHandleAction(
-                        canvas.querySelector('cropper-handle[action="select"]'),
-                        "none",
-                );
-                selection
-                        .querySelectorAll('cropper-handle[action="move"]')
-                        .forEach((handle) => setHandleAction(handle, "none"));
-
-                const initializeSelection = () => {
-                        if (!cropperSelection || cropperSelection !== selection) {
-                                return;
-                        }
-                        cropperImage?.$center("contain");
-                        const canvasRect = canvas.getBoundingClientRect();
-                        if (canvasRect.width > 0 && canvasRect.height > 0) {
-                                const size = Math.min(canvasRect.width, canvasRect.height);
-                                const x = (canvasRect.width - size) / 2;
-                                const y = (canvasRect.height - size) / 2;
-                                const initial = clampSelectionSnapshot({
-                                        x,
-                                        y,
-                                        width: size,
-                                        height: size,
-                                });
-                                selection.$change(
-                                        initial.x,
-                                        initial.y,
-                                        initial.width,
-                                        initial.height,
-                                        1,
-                                );
-                        }
-                        selection.$center();
-                        handleSelectionChange(true, {
-                                x: selection.x,
-                                y: selection.y,
-                                width: selection.width,
-                                height: selection.height,
-                        });
-                };
-
-                window.setTimeout(initializeSelection, 50);
-        };
-
-        initializeElements();
 }
 
 function destroyCropper() {
-        if (cropperSelection && selectionChangeListener) {
-                cropperSelection.removeEventListener(
-                        "change",
-                        selectionChangeListener as EventListener,
-                );
-        }
-        if (cropperImage && imageTransformListener) {
-                cropperImage.removeEventListener(
-                        "transform",
-                        imageTransformListener as EventListener,
-                );
-        }
-        if (cropperCanvas && canvasActionEndListener) {
-                cropperCanvas.removeEventListener(
-                        "actionend",
-                        canvasActionEndListener as EventListener,
-                );
-        }
-        selectionChangeListener = null;
-        canvasActionEndListener = null;
-        imageTransformListener = null;
-        cropperCanvas = null;
-        cropperImage = null;
-        cropperSelection = null;
-
-        if (cropper) {
-                const container = cropper.container;
-                if (container && imgEl) {
-                        let next = imgEl.nextElementSibling;
-                        while (next && next.tagName.startsWith("CROPPER-")) {
-                                const current = next;
-                                next = next.nextElementSibling;
-                                current.remove();
-                        }
-                }
-        }
-
+        cropper?.destroy();
         cropper = null;
         resetSelectionState();
 }
 
 function schedulePreviewUpdate(source?: CropperSelectionData | SelectionSnapshot) {
-        if (!selectedFile || !cropperSelection) return;
+        if (!selectedFile || !cropper) return;
         const snapshot = source
                 ? getSelectionSnapshot(source)
                 : lastSelectionSnapshot
@@ -766,7 +499,7 @@ function schedulePreviewUpdate(source?: CropperSelectionData | SelectionSnapshot
 }
 
 async function updatePreviews(snapshot?: SelectionSnapshot | null) {
-        if (!cropperSelection) return;
+        if (!cropper) return;
         const target = snapshot
                 ?? (lastSelectionSnapshot ? { ...lastSelectionSnapshot } : getSelectionSnapshot());
         if (!target || !target.width || !target.height) {
@@ -775,22 +508,17 @@ async function updatePreviews(snapshot?: SelectionSnapshot | null) {
                 });
                 return;
         }
-        const canvases = await Promise.all(
-                previewSizes.map(async (size) => {
-                        try {
-                                return await cropperSelection.$toCanvas({
-                                        width: size,
-                                        height: size,
-                                        beforeDraw: (context) => {
-                                                context.imageSmoothingEnabled = true;
-                                                context.imageSmoothingQuality = "high";
-                                        },
-                                });
-                        } catch (err) {
-                                return null;
-                        }
-                }),
-        );
+        const canvases = previewSizes.map((size) => {
+                try {
+                        return cropper.getCroppedCanvas({
+                                width: size,
+                                height: size,
+                                imageSmoothingQuality: "high",
+                        });
+                } catch (err) {
+                        return null;
+                }
+        });
         canvases.forEach((canvas, index) => {
                 const size = previewSizes[index];
                 previewSources[size] = canvas ? canvas.toDataURL("image/png") : null;
@@ -798,7 +526,7 @@ async function updatePreviews(snapshot?: SelectionSnapshot | null) {
 }
 
 async function cropSelection(): Promise<{ blob: Blob; filename: string }> {
-        if (!selectedFile || !cropperSelection) {
+        if (!selectedFile || !cropper) {
                 throw new Error("cropper is not ready");
         }
 
@@ -822,13 +550,10 @@ async function cropSelection(): Promise<{ blob: Blob; filename: string }> {
 
         let croppedCanvas: HTMLCanvasElement | null = null;
         try {
-                croppedCanvas = await cropperSelection.$toCanvas({
+                croppedCanvas = cropper.getCroppedCanvas({
                         width: Math.round(Math.max(1, snapshot.width)),
                         height: Math.round(Math.max(1, snapshot.height)),
-                        beforeDraw: (context) => {
-                                context.imageSmoothingEnabled = true;
-                                context.imageSmoothingQuality = "high";
-                        },
+                        imageSmoothingQuality: "high",
                 });
         } catch (err) {
                 croppedCanvas = null;

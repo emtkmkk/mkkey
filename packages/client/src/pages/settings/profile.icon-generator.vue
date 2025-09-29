@@ -6,7 +6,7 @@
                                 {{ i18n.ts.back }}
                         </MkButton>
                         <div class="spacer"></div>
-                        <MkButton inline :disabled="saving" @click="pickImage">
+                        <MkButton inline :disabled="downloading" @click="pickImage">
                                 <i class="ph-image ph-bold ph-lg"></i>
                                 {{
                                         selectedFile
@@ -17,53 +17,105 @@
                         <MkButton
                                 inline
                                 primary
-                                :disabled="!selectedFile || saving"
-                                @click="save"
+                                :disabled="!selectedFile || downloading"
+                                @click="downloadImage"
                         >
-                                {{ saving ? i18n.ts.processing : i18n.ts.save }}
+                                {{ downloading ? i18n.ts.processing : i18n.ts.download }}
                         </MkButton>
                 </div>
                 <p class="description">{{ i18n.ts._profile.iconGeneratorDescription }}</p>
                 <div class="content">
-                        <div class="cropper-panel">
-                                <div v-if="!selectedFile" class="empty">
-                                        <i class="ph-user-circle-plus ph-bold"></i>
-                                        <p>{{ i18n.ts._profile.iconGeneratorEmpty }}</p>
-                                        <MkButton primary @click="pickImage">
-                                                {{ i18n.ts._profile.selectImage }}
-                                        </MkButton>
-                                </div>
-                                <div v-else class="cropper-wrapper">
-                                        <Transition name="fade">
-                                                <div v-if="loading" class="loading">
-                                                        <MkLoading />
+                        <div class="cropper-area">
+                                <div class="cropper-panel">
+                                        <div v-if="!selectedFile" class="empty">
+                                                <i class="ph-user-circle-plus ph-bold"></i>
+                                                <p>{{ i18n.ts._profile.iconGeneratorEmpty }}</p>
+                                                <MkButton primary @click="pickImage">
+                                                        {{ i18n.ts._profile.selectImage }}
+                                                </MkButton>
+                                        </div>
+                                        <div v-else class="cropper-wrapper">
+                                                <Transition name="fade">
+                                                        <div v-if="loading" class="loading">
+                                                                <MkLoading />
+                                                        </div>
+                                                </Transition>
+                                                <div class="cropper-container">
+                                                        <img
+                                                                v-if="imgUrl"
+                                                                ref="imgEl"
+                                                                :src="imgUrl"
+                                                                style="display: none"
+                                                                @load="onImageLoad"
+                                                        />
                                                 </div>
-                                        </Transition>
-                                        <div class="cropper-container">
-                                                <img
-                                                        v-if="imgUrl"
-                                                        ref="imgEl"
-                                                        :src="imgUrl"
-                                                        style="display: none"
-                                                        @load="onImageLoad"
-                                                />
+                                        </div>
+                                </div>
+                                <div
+                                        v-if="selectedFile"
+                                        class="selection-panel"
+                                >
+                                        <div class="selection-values">
+                                                <div
+                                                        v-for="item in selectionItems"
+                                                        :key="item.key"
+                                                        class="selection-item"
+                                                >
+                                                        <span class="selection-label">
+                                                                {{ item.label }}
+                                                        </span>
+                                                        <div class="selection-control">
+                                                                <button
+                                                                        type="button"
+                                                                        class="selection-button"
+                                                                        @click="adjustSelection(item.key, -1)"
+                                                                >
+                                                                        -1
+                                                                </button>
+                                                                <span class="selection-value">
+                                                                        {{ selectionInfo[item.key] }}
+                                                                </span>
+                                                                <button
+                                                                        type="button"
+                                                                        class="selection-button"
+                                                                        @click="adjustSelection(item.key, 1)"
+                                                                >
+                                                                        +1
+                                                                </button>
+                                                        </div>
+                                                </div>
+                                        </div>
+                                        <div class="history-controls">
+                                                <MkButton
+                                                        inline
+                                                        :disabled="!canUndo"
+                                                        title="元に戻す"
+                                                        aria-label="元に戻す"
+                                                        @click="undo"
+                                                >
+                                                        <i class="ph-arrow-counter-clockwise ph-bold"></i>
+                                                </MkButton>
+                                                <MkButton
+                                                        inline
+                                                        :disabled="!canRedo"
+                                                        title="やり直す"
+                                                        aria-label="やり直す"
+                                                        @click="redo"
+                                                >
+                                                        <i class="ph-arrow-clockwise ph-bold"></i>
+                                                </MkButton>
                                         </div>
                                 </div>
                         </div>
                         <div v-if="selectedFile" class="preview-panel">
                                 <h2>{{ i18n.ts.preview }}</h2>
-                                <p class="hint">
-                                        {{ i18n.ts._profile.iconGeneratorPreviewNote }}
-                                </p>
                                 <div class="preview-list">
                                         <div
                                                 v-for="size in previewSizes"
                                                 :key="size"
                                                 class="preview-row"
                                         >
-                                                <div class="preview-label">
-                                                        {{ size }}×{{ size }}
-                                                </div>
+                                                <div class="preview-label">{{ size }}px</div>
                                                 <div class="preview-boxes">
                                                         <div class="preview-box">
                                                                 <div
@@ -77,9 +129,6 @@
                                                                         />
                                                                         <span v-else>{{ i18n.ts.notSet }}</span>
                                                                 </div>
-                                                                <span class="preview-caption">
-                                                                        {{ i18n.ts._profile.previewSquare }}
-                                                                </span>
                                                         </div>
                                                         <div class="preview-box">
                                                                 <div
@@ -93,9 +142,6 @@
                                                                         />
                                                                         <span v-else>{{ i18n.ts.notSet }}</span>
                                                                 </div>
-                                                                <span class="preview-caption">
-                                                                        {{ i18n.ts._profile.previewCircle }}
-                                                                </span>
                                                         </div>
                                                 </div>
                                         </div>
@@ -115,11 +161,9 @@ import { selectFile } from "@/scripts/select-file";
 import { i18n } from "@/i18n";
 import { useRouter } from "@/router";
 import { definePageMetadata } from "@/scripts/page-metadata";
-import { url, apiUrl } from "@/config";
+import { url } from "@/config";
 import { query } from "@/scripts/url";
-import { defaultStore } from "@/store";
 import * as os from "@/os";
-import { $i } from "@/account";
 
 const router = useRouter();
 
@@ -130,13 +174,44 @@ const previewSources = reactive<Record<number, string | null>>({
         32: null,
 });
 
+const selectionInfo = reactive<SelectionSnapshot>({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+});
+
+const selectionHistory = reactive<SelectionSnapshot[]>([]);
+const MAX_HISTORY = 16;
+const HISTORY_COMMIT_DELAY = 1000;
+let historyIndex = $ref(-1);
+let historyTimer: ReturnType<typeof window.setTimeout> | null = null;
+let pendingHistory: SelectionSnapshot | null = null;
+let historySuppressUntil = 0;
+
+const canUndo = $computed(() => historyIndex > 0);
+const canRedo = $computed(
+        () => historyIndex >= 0 && historyIndex < selectionHistory.length - 1,
+);
+
+const selectionItems = [
+        { key: "x", label: "開始位置X" },
+        { key: "y", label: "開始位置Y" },
+        { key: "width", label: "サイズX" },
+        { key: "height", label: "サイズY" },
+] as const;
+
+type SelectionKey = (typeof selectionItems)[number]["key"];
+
+type SelectionSnapshot = Record<SelectionKey, number>;
+
 let selectedFile = $ref<DriveFile | null>(null);
 let imgEl = $ref<HTMLImageElement | null>(null);
 let cropper: Cropper | null = null;
 let cropperSelection: any = null;
 let cropperImage: any = null;
 let loading = $ref(false);
-let saving = $ref(false);
+let downloading = $ref(false);
 let previewUpdating = false;
 let previewPending = false;
 let selectionListener: (() => void) | null = null;
@@ -155,6 +230,132 @@ function resetPreviews() {
         });
 }
 
+function resetSelectionState() {
+        selectionInfo.x = 0;
+        selectionInfo.y = 0;
+        selectionInfo.width = 0;
+        selectionInfo.height = 0;
+        selectionHistory.length = 0;
+        historyIndex = -1;
+        cancelPendingHistory();
+}
+
+function getSelectionSnapshot(): SelectionSnapshot | null {
+        if (!cropper) return null;
+        const data = cropper.getData();
+        if (!data) return null;
+        return {
+                x: Math.round(data.x ?? 0),
+                y: Math.round(data.y ?? 0),
+                width: Math.round(data.width ?? 0),
+                height: Math.round(data.height ?? 0),
+        };
+}
+
+function captureSelectionData(recordHistory = false) {
+        const snapshot = getSelectionSnapshot();
+        if (!snapshot) return;
+
+        selectionInfo.x = snapshot.x;
+        selectionInfo.y = snapshot.y;
+        selectionInfo.width = snapshot.width;
+        selectionInfo.height = snapshot.height;
+
+        if (!recordHistory) {
+                return;
+        }
+
+        scheduleHistoryCommit(snapshot);
+}
+
+function handleSelectionChange() {
+        captureSelectionData(true);
+        schedulePreviewUpdate();
+}
+
+function scheduleHistoryCommit(snapshot: SelectionSnapshot) {
+        if (Date.now() < historySuppressUntil) {
+                return;
+        }
+
+        pendingHistory = { ...snapshot };
+        if (historyTimer) {
+                window.clearTimeout(historyTimer);
+        }
+        historyTimer = window.setTimeout(() => {
+                historyTimer = null;
+                if (!pendingHistory) return;
+                commitHistorySnapshot(pendingHistory);
+                pendingHistory = null;
+        }, HISTORY_COMMIT_DELAY);
+}
+
+function commitHistorySnapshot(snapshot: SelectionSnapshot) {
+        if (
+                historyIndex >= 0 &&
+                historyIndex < selectionHistory.length &&
+                selectionHistory[historyIndex].x === snapshot.x &&
+                selectionHistory[historyIndex].y === snapshot.y &&
+                selectionHistory[historyIndex].width === snapshot.width &&
+                selectionHistory[historyIndex].height === snapshot.height
+        ) {
+                return;
+        }
+
+        selectionHistory.splice(historyIndex + 1);
+        selectionHistory.push({ ...snapshot });
+        if (selectionHistory.length > MAX_HISTORY) {
+                const overflow = selectionHistory.length - MAX_HISTORY;
+                selectionHistory.splice(0, overflow);
+        }
+        historyIndex = selectionHistory.length - 1;
+}
+
+function cancelPendingHistory() {
+        if (historyTimer) {
+                window.clearTimeout(historyTimer);
+                historyTimer = null;
+        }
+        pendingHistory = null;
+}
+
+function adjustSelection(key: SelectionKey, delta: number) {
+        if (!cropper) return;
+        const snapshot = getSelectionSnapshot();
+        if (!snapshot) return;
+        const updated: SelectionSnapshot = { ...snapshot };
+        updated[key] += delta;
+        if ((key === "width" || key === "height") && updated[key] < 1) {
+                updated[key] = 1;
+        }
+        cropper.setData(updated);
+        captureSelectionData(true);
+        schedulePreviewUpdate();
+}
+
+function applyHistory(index: number) {
+        if (!cropper) return;
+        const snapshot = selectionHistory[index];
+        if (!snapshot) return;
+        cancelPendingHistory();
+        historyIndex = index;
+        historySuppressUntil = Date.now() + 200;
+        cropper.setData(snapshot);
+        captureSelectionData(false);
+        schedulePreviewUpdate();
+}
+
+function undo() {
+        if (historyIndex <= 0) return;
+        applyHistory(historyIndex - 1);
+}
+
+function redo() {
+        if (historyIndex < 0) return;
+        if (historyIndex >= selectionHistory.length - 1) return;
+        applyHistory(historyIndex + 1);
+}
+
 function goBack() {
         router.push("/settings/profile");
 }
@@ -170,6 +371,7 @@ async function pickImage(ev?: Event) {
                 );
                 selectedFile = file;
                 loading = true;
+                resetSelectionState();
                 resetPreviews();
                 await nextTick();
                 setupCropper();
@@ -182,6 +384,7 @@ function onImageLoad() {
         loading = false;
         cropperImage?.$center?.("contain");
         cropperSelection?.$center?.();
+        captureSelectionData(true);
         schedulePreviewUpdate();
 }
 
@@ -190,7 +393,9 @@ function setupCropper() {
 
         destroyCropper();
 
-        cropper = new Cropper(imgEl, {});
+        cropper = new Cropper(imgEl, {
+                dragMode: "move",
+        });
         cropperSelection = cropper.getCropperSelection();
         cropperImage = cropper.getCropperImage();
 
@@ -202,8 +407,8 @@ function setupCropper() {
                 cropperSelection.aspectRatio = 1;
                 cropperSelection.initialAspectRatio = 1;
                 cropperSelection.outlined = true;
-                selectionListener = () => schedulePreviewUpdate();
-                pointerListener = () => schedulePreviewUpdate();
+                selectionListener = () => handleSelectionChange();
+                pointerListener = () => handleSelectionChange();
                 cropperSelection.addEventListener("change", selectionListener);
                 cropperSelection.addEventListener("pointerup", pointerListener);
                 cropperSelection.addEventListener("pointermove", pointerListener);
@@ -211,7 +416,7 @@ function setupCropper() {
         }
 
         if (cropperImage) {
-                imageListener = () => schedulePreviewUpdate();
+                imageListener = () => handleSelectionChange();
                 cropperImage.addEventListener("transform", imageListener);
                 cropperImage.addEventListener("wheel", imageListener);
         }
@@ -219,11 +424,13 @@ function setupCropper() {
         window.setTimeout(() => {
                 cropperImage?.$center?.("contain");
                 cropperSelection?.$center?.();
+                captureSelectionData(true);
                 schedulePreviewUpdate();
         }, 100);
         window.setTimeout(() => {
                 cropperImage?.$center?.("contain");
                 cropperSelection?.$center?.();
+                captureSelectionData(true);
                 schedulePreviewUpdate();
         }, 500);
 }
@@ -250,6 +457,7 @@ function destroyCropper() {
         selectionListener = null;
         pointerListener = null;
         imageListener = null;
+        resetSelectionState();
 }
 
 function schedulePreviewUpdate() {
@@ -284,123 +492,107 @@ async function updatePreviews() {
         });
 }
 
-async function cropAndUpload(): Promise<DriveFile> {
+async function cropSelection(): Promise<{ blob: Blob; filename: string }> {
         if (!selectedFile || !cropperSelection || !cropperImage) {
                 throw new Error("cropper is not ready");
         }
 
-        const promise = new Promise<DriveFile>(async (resolve, reject) => {
-                const croppedImage = cropperImage;
-                const croppedSection = cropperSelection;
-                let failureNotified = false;
-                const failed = () => {
-                        if (failureNotified) return;
-                        failureNotified = true;
-                        os.alert({
-                                type: "error",
-                                text: i18n.ts.somethingHappened,
-                        });
-                        reject(new Error("failed to crop image"));
-                };
-
-                const zoomedRate =
-                        croppedImage.getBoundingClientRect().width /
-                        croppedImage.clientWidth;
-                const widthToRender =
-                        croppedSection.getBoundingClientRect().width / zoomedRate;
-                const croppedCanvas = await croppedSection.$toCanvas({
-                        width: widthToRender,
+        const croppedImage = cropperImage;
+        const croppedSection = cropperSelection;
+        let failureNotified = false;
+        const fail = (): never => {
+                if (failureNotified) {
+                        throw new Error("failed to crop image");
+                }
+                failureNotified = true;
+                os.alert({
+                        type: "error",
+                        text: i18n.ts.somethingHappened,
                 });
-                if (!croppedCanvas) {
-                        failed();
-                        return;
-                }
+                throw new Error("failed to crop image");
+        };
 
-                const preferredMime = (() => {
-                        const extension = selectedFile.name?.split(".").pop()?.toLowerCase();
-                        switch (extension) {
-                                case "webp":
-                                        return "image/webp";
-                                case "png":
-                                case "apng":
-                                        return "image/png";
-                                case "avif":
-                                        return "image/avif";
-                                default:
-                                        return "image/png";
-                        }
-                })();
-
-                const triedTypes = Array.from(new Set([preferredMime, "image/png"]));
-                let blob: Blob | null = null;
-                for (const type of triedTypes) {
-                        blob = await new Promise<Blob | null>((resolve) => {
-                                croppedCanvas.toBlob((canvasBlob) => {
-                                        resolve(canvasBlob);
-                                }, type);
-                        });
-                        if (blob) break;
-                }
-
-                if (!blob) {
-                        failed();
-                        return;
-                }
-
-                const formData = new FormData();
-                formData.append("file", blob, `cropped_${selectedFile.name}`);
-                formData.append("name", `cropped_${selectedFile.name}`);
-                formData.append(
-                        "isSensitive",
-                        selectedFile.isSensitive ? "true" : "false",
-                );
-                if (selectedFile.comment) {
-                        formData.append("comment", selectedFile.comment);
-                }
-
-                const folderId = defaultStore.state.uploadFolderAvatar
-                        ? defaultStore.state.uploadFolderAvatar
-                        : defaultStore.state.uploadFolder;
-
-                if (folderId) {
-                        formData.append("folderId", folderId);
-                }
-
-                fetch(`${apiUrl}/drive/files/create`, {
-                        method: "POST",
-                        body: formData,
-                        headers: {
-                                authorization: `Bearer ${$i.token}`,
-                        },
-                })
-                        .then((response) => response.json())
-                        .then((f) => {
-                                resolve(f as DriveFile);
-                        })
-                        .catch(() => {
-                                failed();
-                        });
+        const zoomedRate =
+                croppedImage.getBoundingClientRect().width /
+                croppedImage.clientWidth;
+        const widthToRender =
+                croppedSection.getBoundingClientRect().width / zoomedRate;
+        const croppedCanvas = await croppedSection.$toCanvas({
+                width: widthToRender,
         });
+        if (!croppedCanvas) {
+                return fail();
+        }
 
-        os.promiseDialog(promise);
-        return promise;
+        const preferredMime = (() => {
+                const extension = selectedFile.name?.split(".").pop()?.toLowerCase();
+                switch (extension) {
+                        case "webp":
+                                return "image/webp";
+                        case "png":
+                        case "apng":
+                                return "image/png";
+                        case "avif":
+                                return "image/avif";
+                        default:
+                                return "image/png";
+                }
+        })();
+
+        const triedTypes = Array.from(new Set([preferredMime, "image/png"]));
+        let blob: Blob | null = null;
+        for (const type of triedTypes) {
+                blob = await new Promise<Blob | null>((resolve) => {
+                        croppedCanvas?.toBlob((canvasBlob) => {
+                                resolve(canvasBlob);
+                        }, type);
+                });
+                if (blob) break;
+        }
+
+        if (!blob) {
+                return fail();
+        }
+
+        const extensionFromMime = (mime: string) => {
+                switch (mime) {
+                        case "image/webp":
+                                return "webp";
+                        case "image/avif":
+                                return "avif";
+                        case "image/png":
+                        default:
+                                return "png";
+                }
+        };
+
+        const baseName = selectedFile.name
+                ? selectedFile.name.replace(/\.[^/.]+$/, "")
+                : "icon";
+        const safeBlob = blob;
+        const extension = extensionFromMime(safeBlob.type || preferredMime);
+        const filename = `cropped_${baseName}.${extension}`;
+
+        return { blob: safeBlob, filename };
 }
 
-async function save() {
-        if (!selectedFile || saving) return;
-        saving = true;
+async function downloadImage() {
+        if (!selectedFile || downloading) return;
+        downloading = true;
         try {
-                const cropped = await cropAndUpload();
-                const updated = await os.apiWithDialog("i/update", {
-                        avatarId: cropped.id,
-                });
-                $i.avatarId = updated.avatarId;
-                $i.avatarUrl = updated.avatarUrl;
-                router.push("/settings/profile");
+                const { blob, filename } = await cropSelection();
+                const objectUrl = URL.createObjectURL(blob);
+                const anchor = document.createElement("a");
+                anchor.href = objectUrl;
+                anchor.download = filename;
+                document.body.appendChild(anchor);
+                anchor.click();
+                document.body.removeChild(anchor);
+                URL.revokeObjectURL(objectUrl);
         } catch (err) {
                 // noop
         } finally {
-                saving = false;
+                downloading = false;
         }
 }
 
@@ -449,9 +641,18 @@ definePageMetadata({
         }
 }
 
+.cropper-area {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+}
+
 .cropper-panel {
         position: relative;
         min-height: 22rem;
+        min-width: 0;
+        width: min(100%, 100vw);
+        margin: 0 auto;
         border: 1px solid var(--divider);
         border-radius: var(--radius);
         background: var(--panel);
@@ -460,18 +661,106 @@ definePageMetadata({
 
 .cropper-wrapper {
         position: relative;
+        min-width: 0;
+        max-width: 100%;
         width: 100%;
         height: 100%;
+
+        > ::v-deep(.cropper-container) {
+                width: 100% !important;
+                max-width: 100%;
+                height: 100% !important;
+        }
 }
 
 .cropper-container {
+        min-width: 0;
         width: 100%;
         height: 100%;
 
         > ::v-deep(cropper-canvas) {
-                width: 100%;
-                height: 100%;
+                width: 100% !important;
+                height: 100% !important;
         }
+
+        > ::v-deep(.cropper-wrap-box),
+        > ::v-deep(.cropper-canvas),
+        > ::v-deep(.cropper-drag-box),
+        > ::v-deep(.cropper-crop-box),
+        > ::v-deep(.cropper-face) {
+                max-width: 100%;
+        }
+}
+
+@media (min-width: 960px) {
+        .cropper-panel {
+                width: 100%;
+        }
+}
+
+.selection-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        border: 1px solid var(--divider);
+        border-radius: var(--radius);
+        background: var(--panel);
+        padding: 1rem;
+}
+
+.selection-values {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+        gap: 0.75rem;
+}
+
+.selection-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+}
+
+.selection-label {
+        font-weight: 600;
+        min-width: 5rem;
+}
+
+.selection-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+}
+
+.selection-button {
+        border: 1px solid var(--divider);
+        background: var(--panelHighlight);
+        color: var(--fg);
+        border-radius: var(--radius-sm);
+        padding: 0.25rem 0.5rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s ease;
+
+        &:hover {
+                background: var(--panelHighlightSolid);
+        }
+
+        &:focus-visible {
+                outline: 2px solid var(--accent);
+                outline-offset: 1px;
+        }
+}
+
+.selection-value {
+        font-variant-numeric: tabular-nums;
+        min-width: 3rem;
+        text-align: center;
+}
+
+.history-controls {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
 }
 
 .loading {
@@ -514,12 +803,6 @@ definePageMetadata({
         > h2 {
                 margin: 0;
                 font-size: 1.1rem;
-        }
-
-        > .hint {
-                margin: 0;
-                color: var(--fgFade);
-                font-size: 0.9rem;
         }
 }
 

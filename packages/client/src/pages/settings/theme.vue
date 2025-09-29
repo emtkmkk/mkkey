@@ -139,34 +139,49 @@
 			</div>
 		</FormSection>
 
-		<FormButton inline class="_formBlock" @click="setWallpaper">{{
-			i18n.ts.setWallpaper
-		}}</FormButton>
-		<FormButton
-			v-if="reloadFlg"
-			primary
-			inline
-			class="_formBlock"
+                <FormButton inline class="_formBlock" @click="setWallpaper">{{
+                        i18n.ts.setWallpaper
+                }}</FormButton>
+                <FormSection v-if="wallpapers.length" class="wallpaperGallerySection">
+                        <template #label>{{ i18n.ts.wallpaper }}</template>
+                        <div class="wallpaperGallery">
+                                <div
+                                        v-for="(wallpaper, index) in wallpapers"
+                                        :key="wallpaper + index"
+                                        class="wallpaperCard"
+                                >
+                                        <div
+                                                class="wallpaperPreview"
+                                                :style="{ backgroundImage: `url('${wallpaper}')` }"
+                                        >
+                                                <span class="wallpaperBadge">#{{ index + 1 }}</span>
+                                        </div>
+                                        <div class="wallpaperActions">
+                                                <MkLink
+                                                        :url="wallpaper"
+                                                        target="_blank"
+                                                        class="wallpaperLink"
+                                                >{{ i18n.ts.openInNewTab }}</MkLink>
+                                                <FormButton
+                                                        inline
+                                                        class="removeButton"
+                                                        @click="removeWallpaper(index)"
+                                                >{{ i18n.ts.removeWallpaper }}</FormButton>
+                                        </div>
+                                </div>
+                        </div>
+                </FormSection>
+                <FormButton
+                        v-if="reloadFlg"
+                        primary
+                        inline
+                        class="_formBlock"
 			style="margin-left: 2em"
 			@click="reloadWindow"
 			>{{ i18n.ts.reload }}</FormButton
 		>
 
-		<div class="_formBlock" v-for="(wallpaper, index) in wallpapers">
-			<MkLink
-				:url="wallpaper"
-				target="_blank"
-				style="margin-right: 2em"
-				>{{ i18n.ts.wallpaper + (index + 1) }}</MkLink
-			>
-			<FormButton
-				inline
-				class="_formBlock"
-				@click="removeWallpaper(index)"
-				>{{ i18n.ts.removeWallpaper }}</FormButton
-			>
-		</div>
-	</div>
+        </div>
 </template>
 
 <script lang="ts" setup>
@@ -314,9 +329,9 @@ definePageMetadata({
 
 <style lang="scss" scoped>
 .rfqxtzch {
-	border-radius: 0.375rem;
+        border-radius: 0.375rem;
 
-	> .toggle {
+        > .toggle {
 		position: relative;
 		padding: 1.625rem 0;
 		text-align: center;
@@ -563,5 +578,76 @@ definePageMetadata({
 			min-width: 17.5rem;
 		}
 	}
+}
+
+.wallpaperGallerySection {
+        margin-top: 1.5rem;
+}
+
+.wallpaperGallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+        gap: 1.25rem;
+}
+
+.wallpaperCard {
+        background: var(--panel);
+        border-radius: 0.75rem;
+        box-shadow: 0 0.25rem 1.5rem rgba(0, 0, 0, 0.08);
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        border: solid 0.0625rem var(--divider);
+}
+
+.wallpaperPreview {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%;
+        border-radius: 0.625rem;
+        background-size: cover;
+        background-position: center;
+        overflow: hidden;
+}
+
+.wallpaperBadge {
+        position: absolute;
+        left: 0.75rem;
+        top: 0.75rem;
+        background: rgba(0, 0, 0, 0.55);
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        letter-spacing: 0.05em;
+}
+
+.wallpaperActions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+}
+
+.wallpaperLink {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+}
+
+.removeButton {
+        margin-left: auto;
+}
+
+@media (max-width: 600px) {
+        .wallpaperGallery {
+                grid-template-columns: 1fr;
+        }
+
+        .wallpaperCard {
+                padding: 0.75rem;
+        }
 }
 </style>

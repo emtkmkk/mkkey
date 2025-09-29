@@ -1,5 +1,5 @@
 import { computed, reactive } from "vue";
-import { api } from "./os";
+import { api, queueApi } from "./os";
 import { stream } from "@/stream";
 import type * as Misskey from "calckey-js";
 import { get, set } from "./scripts/idb-proxy";
@@ -163,10 +163,35 @@ export async function fetchEmoji() {
 	}
 }
 
-export async function fetchPlusEmoji() {
-	const meta = await api("emojis", {
-		remoteEmojis: "mini",
-	});
+type EmojiFetchOptions = {
+        useQueue?: boolean;
+        comment?: string;
+};
+
+async function requestEmojis(
+        params: Record<string, any>,
+        options?: EmojiFetchOptions,
+) {
+        if (options?.useQueue) {
+                return await queueApi(
+                        "emojis",
+                        params,
+                        undefined,
+                        false,
+                        options.comment,
+                );
+        }
+
+        return await api("emojis", params);
+}
+
+export async function fetchPlusEmoji(options?: EmojiFetchOptions) {
+        const meta = await requestEmojis(
+                {
+                        remoteEmojis: "mini",
+                },
+                options,
+        );
 
 	const remoteEmojiData = {
 		emojiFetchDate: meta.emojiFetchDate,
@@ -182,10 +207,13 @@ export async function fetchPlusEmoji() {
 	}
 }
 
-export async function fetchAllEmoji() {
-	const meta = await api("emojis", {
-		remoteEmojis: "all",
-	});
+export async function fetchAllEmoji(options?: EmojiFetchOptions) {
+        const meta = await requestEmojis(
+                {
+                        remoteEmojis: "all",
+                },
+                options,
+        );
 
 	const remoteEmojiData = {
 		emojiFetchDate: meta.emojiFetchDate,
@@ -201,10 +229,13 @@ export async function fetchAllEmoji() {
 	}
 }
 
-export async function fetchAllEmojiNoCache() {
-	const meta = await api("emojis", {
-		remoteEmojis: "all",
-	});
+export async function fetchAllEmojiNoCache(options?: EmojiFetchOptions) {
+        const meta = await requestEmojis(
+                {
+                        remoteEmojis: "all",
+                },
+                options,
+        );
 
 	for (const [k, v] of Object.entries(meta)) {
 		instance[k] = v;

@@ -209,14 +209,19 @@ const props = defineProps({
 });
 
 function onUsernameChange() {
-	os.api("users/show", {
-		username: username,
-	}).then(
-		(userResponse) => {
-			user = userResponse;
-		},
-		() => {
-			user = null;
+        os.api(
+                "users/show",
+                {
+                        username: username,
+                },
+                undefined,
+                true,
+        ).then(
+                (userResponse) => {
+                        user = userResponse;
+                },
+                () => {
+                        user = null;
 		}
 	);
 }

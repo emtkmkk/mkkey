@@ -236,6 +236,8 @@ let cropperSelection: CropperSelection | null = null;
 let selectionChangeListener: ((event: Event) => void) | null = null;
 let canvasActionEndListener: ((event: Event) => void) | null = null;
 let imageTransformListener: ((event: Event) => void) | null = null;
+let containEnforcementFrame: number | null = null;
+let suppressContainEnforcement = false;
 let loading = $ref(false);
 let downloading = $ref(false);
 let previewUpdating = false;
@@ -311,34 +313,63 @@ function getSelectionBounds(): SelectionBounds | null {
         };
 }
 
-function enforceContainTransform(event: Event) {
+function runWithContainSuppressed(callback: () => void) {
+        suppressContainEnforcement = true;
+        try {
+                callback();
+        } finally {
+                if (typeof window !== "undefined") {
+                        window.requestAnimationFrame(() => {
+                                suppressContainEnforcement = false;
+                        });
+                } else {
+                        suppressContainEnforcement = false;
+                }
+        }
+}
+
+function isImageOverflowing() {
+        if (!cropperCanvas || !cropperImage) return false;
+        const canvasRect = cropperCanvas.getBoundingClientRect();
+        const imageRect = cropperImage.getBoundingClientRect();
+        if (!canvasRect.width || !canvasRect.height) return false;
+        if (!imageRect.width || !imageRect.height) return false;
+
+        const epsilon = 0.5;
+        return (
+                imageRect.top < canvasRect.top - epsilon ||
+                imageRect.left < canvasRect.left - epsilon ||
+                imageRect.bottom > canvasRect.bottom + epsilon ||
+                imageRect.right > canvasRect.right + epsilon
+        );
+}
+
+function requestContainEnforcement() {
         if (!cropperCanvas || !cropperImage) return;
-        const transformEvent = event as CustomEvent<CropperImageTransformDetail>;
-        const matrix = transformEvent.detail?.matrix;
-        if (!matrix || matrix.length !== 6) {
+        if (typeof window === "undefined") return;
+        if (suppressContainEnforcement) return;
+        if (containEnforcementFrame != null) {
                 return;
         }
 
-        const cropperCanvasRect = cropperCanvas.getBoundingClientRect();
-        const cropperImageClone = cropperImage.cloneNode() as CropperImage;
-        cropperImageClone.style.transform = `matrix(${matrix.join(", ")})`;
-        cropperImageClone.style.opacity = "0";
+        containEnforcementFrame = window.requestAnimationFrame(() => {
+                containEnforcementFrame = null;
+                if (!cropperCanvas || !cropperImage) return;
+                if (suppressContainEnforcement) return;
+                if (!isImageOverflowing()) {
+                        return;
+                }
+                runWithContainSuppressed(() => {
+                        cropperImage?.$center("contain");
+                });
+        });
+}
 
-        cropperCanvas.appendChild(cropperImageClone);
-        const cropperImageRect = cropperImageClone.getBoundingClientRect();
-        cropperCanvas.removeChild(cropperImageClone);
-
-        const epsilon = 0.5;
-        const isOverflowing =
-                cropperImageRect.top < cropperCanvasRect.top - epsilon ||
-                cropperImageRect.left < cropperCanvasRect.left - epsilon ||
-                cropperImageRect.bottom > cropperCanvasRect.bottom + epsilon ||
-                cropperImageRect.right > cropperCanvasRect.right + epsilon;
-
-        if (isOverflowing) {
-                transformEvent.preventDefault();
-                cropperImage.$center("contain");
+function cancelContainEnforcement() {
+        if (containEnforcementFrame != null && typeof window !== "undefined") {
+                window.cancelAnimationFrame(containEnforcementFrame);
         }
+        containEnforcementFrame = null;
 }
 
 function clampSelectionSnapshot(snapshot: SelectionSnapshot): SelectionSnapshot {
@@ -749,9 +780,9 @@ function setupCropper() {
                                 imageTransformListener as EventListener,
                         );
                 }
-                imageTransformListener = (event: Event) => {
-                        enforceContainTransform(event);
-                        if (event.defaultPrevented || !cropperSelection) {
+                imageTransformListener = () => {
+                        requestContainEnforcement();
+                        if (!cropperSelection) {
                                 return;
                         }
                         handleSelectionChange(false, {
@@ -807,7 +838,9 @@ function setupCropper() {
                         if (!cropperSelection || cropperSelection !== selection) {
                                 return;
                         }
-                        cropperImage?.$center("contain");
+                        runWithContainSuppressed(() => {
+                                cropperImage?.$center("contain");
+                        });
                         const bounds = getSelectionBounds();
                         if (bounds) {
                                 const size = Math.min(bounds.width, bounds.height);
@@ -843,6 +876,8 @@ function setupCropper() {
 }
 
 function destroyCropper() {
+        cancelContainEnforcement();
+        suppressContainEnforcement = false;
         if (cropperSelection && selectionChangeListener) {
                 cropperSelection.removeEventListener(
                         "change",

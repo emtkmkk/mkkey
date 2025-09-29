@@ -847,9 +847,6 @@ function setupCropper() {
                         canvas.querySelector('cropper-handle[action="select"]'),
                         "none",
                 );
-                selection
-                        .querySelectorAll('cropper-handle[action="move"]')
-                        .forEach((handle) => setHandleAction(handle, "none"));
 
                 const initializeSelection = () => {
                         if (!cropperSelection || cropperSelection !== selection) {
@@ -1399,7 +1396,6 @@ definePageMetadata({
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
-                image-rendering: pixelated;
         }
 
         > span {

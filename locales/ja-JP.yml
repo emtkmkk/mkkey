@@ -1934,7 +1934,7 @@ _profile:
   iconGenerator: "アイコンジェネレーター"
   iconGeneratorDescription: "画像を正方形に切り抜き、プレビューをリアルタイムで確認できます。"
   iconGeneratorEmpty: "まずは画像を選択してアイコン作りを始めましょう。"
-  iconGeneratorPreviewNote: "四角と丸の両方で、184・64・32ピクセルの表示をリアルタイムに確認できます。"
+  iconGeneratorPreviewNote: "四角と丸の両方で、184・92・64・32ピクセルの表示をリアルタイムに確認できます。"
   selectImage: "画像を選択"
   replaceImage: "別の画像を選ぶ"
   previewSquare: "四角"

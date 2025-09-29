@@ -26,7 +26,7 @@
                 <p class="description">{{ i18n.ts._profile.iconGeneratorDescription }}</p>
                 <div class="content">
                         <div class="cropper-area">
-                                <div class="cropper-panel">
+                                <div class="cropper-panel" :style="cropperPanelStyle">
                                         <div v-if="!selectedFile" class="empty">
                                                 <i class="ph-user-circle-plus ph-bold"></i>
                                                 <p>{{ i18n.ts._profile.iconGeneratorEmpty }}</p>
@@ -212,12 +212,20 @@ let pendingHistory: SelectionSnapshot | null = null;
 let historySuppressUntil = 0;
 let lastSelectionSnapshot: SelectionSnapshot | null = null;
 let pendingPreviewSnapshot: SelectionSnapshot | null = null;
+let imageAspectRatio = $ref(1);
 
 const canUndo = $computed(() => historyIndex > 0);
 const canRedo = $computed(
         () => historyIndex >= 0 && historyIndex < selectionHistory.length - 1,
 );
 type CropperHandleElement = HTMLElement & { action?: string };
+const cropperPanelStyle = $computed(() => {
+        const ratio = selectedFile ? imageAspectRatio : 1;
+        const safeRatio = Number.isFinite(ratio) && ratio > 0 ? ratio : 1;
+        return {
+                "--cropper-panel-aspect": String(safeRatio),
+        };
+});
 
 let selectedFile = $ref<DriveFile | null>(null);
 let imgEl = $ref<HTMLImageElement | null>(null);
@@ -256,6 +264,7 @@ function resetSelectionState() {
         cancelPendingHistory();
         lastSelectionSnapshot = null;
         pendingPreviewSnapshot = null;
+        imageAspectRatio = 1;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -641,6 +650,11 @@ async function pickImage(ev?: Event) {
 }
 
 function onImageLoad() {
+        if (imgEl?.naturalWidth && imgEl.naturalHeight) {
+                imageAspectRatio = imgEl.naturalWidth / imgEl.naturalHeight;
+        } else {
+                imageAspectRatio = 1;
+        }
         loading = false;
 }
 
@@ -1048,8 +1062,13 @@ definePageMetadata({
 }
 
 .cropper-panel {
+        --cropper-panel-aspect: 1;
         position: relative;
-        min-height: 22rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: min(22rem, 70vh);
+        max-height: min(70vh, 40rem);
         min-width: 0;
         width: 100%;
         max-width: 100%;
@@ -1058,21 +1077,32 @@ definePageMetadata({
         border-radius: var(--radius);
         background: var(--panel);
         overflow: hidden;
+        aspect-ratio: var(--cropper-panel-aspect, 1);
 }
 
 .cropper-wrapper {
         position: relative;
+        display: flex;
+        flex: 1 1 auto;
         min-width: 0;
+        min-height: 0;
         max-width: 100%;
         width: 100%;
         height: 100%;
 
         > ::v-deep(.cropper-container) {
+                flex: 1 1 auto;
+                min-height: 0;
                 width: 100% !important;
                 max-width: 100%;
                 height: 100% !important;
         }
 
+}
+
+.cropper-panel > .empty {
+        flex: 1 1 auto;
+        width: 100%;
 }
 
 .cropper-container {

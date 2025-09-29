@@ -208,8 +208,8 @@
 						@click="toggleReference()"
 					>
 						<i class="ph-stack ph-bold ph-lg"></i>
-					</button>
-					<button
+                                        </button>
+                                        <button
 						v-if="
 							$i &&
 							defaultStore.state.toolbarAirReply &&
@@ -297,21 +297,20 @@
                                                        <p class="count">{{ totalReactions }}</p>
                                                </template>
                                        </button>
-					<button
-						v-if="
-							(enableEmojiReactions ||
-								detailedView ||
-								(showEmojiButton &&
-									favButtonReactionIsFavorite)) &&
-							appearNote.myReaction != null &&
-							!multiReaction
-						"
-						ref="reactButton"
-						class="button _button reacted"
-						@click="undoReact(appearNote)"
-					>
-						<i class="ph-minus ph-bold ph-lg"></i>
-					</button>
+                                        <button
+                                                v-if="
+                                                        (enableEmojiReactions ||
+                                                                detailedView ||
+                                                                showEmojiButton) &&
+                                                        appearNote.myReaction != null &&
+                                                        !multiReaction
+                                                "
+                                                ref="reactButton"
+                                                class="button _button reacted"
+                                                @click="undoReact(appearNote)"
+                                        >
+                                                <i class="ph-minus ph-bold ph-lg"></i>
+                                        </button>
 					<XQuoteButton
 						class="button"
 						:note="developerQuote ? note : appearNote"

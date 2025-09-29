@@ -173,9 +173,10 @@ import * as os from "@/os";
 
 const router = useRouter();
 
-const previewSizes = [184, 64, 32] as const;
+const previewSizes = [184, 92, 64, 32] as const;
 const previewSources = reactive<Record<number, string | null>>({
         184: null,
+        92: null,
         64: null,
         32: null,
 });

@@ -154,7 +154,6 @@
 <script lang="ts" setup>
 import { nextTick, onBeforeUnmount, reactive } from "vue";
 import Cropper from "cropperjs";
-import tinycolor from "tinycolor2";
 import type { DriveFile } from "calckey-js/built/entities";
 import MkButton from "@/components/MkButton.vue";
 import { selectFile } from "@/scripts/select-file";
@@ -208,15 +207,10 @@ type SelectionSnapshot = Record<SelectionKey, number>;
 let selectedFile = $ref<DriveFile | null>(null);
 let imgEl = $ref<HTMLImageElement | null>(null);
 let cropper: Cropper | null = null;
-let cropperSelection: any = null;
-let cropperImage: any = null;
 let loading = $ref(false);
 let downloading = $ref(false);
 let previewUpdating = false;
 let previewPending = false;
-let selectionListener: (() => void) | null = null;
-let pointerListener: (() => void) | null = null;
-let imageListener: (() => void) | null = null;
 
 const imgUrl = $computed(() =>
         selectedFile
@@ -242,13 +236,21 @@ function resetSelectionState() {
 
 function getSelectionSnapshot(): SelectionSnapshot | null {
         if (!cropper) return null;
-        const data = cropper.getData();
-        if (!data) return null;
+        const data = cropper.getData(true);
+        const { x, y, width, height } = data;
+        if (
+                x == null ||
+                y == null ||
+                width == null ||
+                height == null
+        ) {
+                return null;
+        }
         return {
-                x: Math.round(data.x ?? 0),
-                y: Math.round(data.y ?? 0),
-                width: Math.round(data.width ?? 0),
-                height: Math.round(data.height ?? 0),
+                x: Math.round(Number(x) || 0),
+                y: Math.round(Number(y) || 0),
+                width: Math.round(Number(width) || 0),
+                height: Math.round(Number(height) || 0),
         };
 }
 
@@ -268,8 +270,8 @@ function captureSelectionData(recordHistory = false) {
         scheduleHistoryCommit(snapshot);
 }
 
-function handleSelectionChange() {
-        captureSelectionData(true);
+function handleSelectionChange(recordHistory: boolean) {
+        captureSelectionData(recordHistory);
         schedulePreviewUpdate();
 }
 
@@ -328,7 +330,12 @@ function adjustSelection(key: SelectionKey, delta: number) {
         if ((key === "width" || key === "height") && updated[key] < 1) {
                 updated[key] = 1;
         }
-        cropper.setData(updated);
+        cropper.setData({
+                x: updated.x,
+                y: updated.y,
+                width: updated.width,
+                height: updated.height,
+        });
         captureSelectionData(true);
         schedulePreviewUpdate();
 }
@@ -340,7 +347,12 @@ function applyHistory(index: number) {
         cancelPendingHistory();
         historyIndex = index;
         historySuppressUntil = Date.now() + 200;
-        cropper.setData(snapshot);
+        cropper.setData({
+                x: snapshot.x,
+                y: snapshot.y,
+                width: snapshot.width,
+                height: snapshot.height,
+        });
         captureSelectionData(false);
         schedulePreviewUpdate();
 }
@@ -382,10 +394,6 @@ async function pickImage(ev?: Event) {
 
 function onImageLoad() {
         loading = false;
-        cropperImage?.$center?.("contain");
-        cropperSelection?.$center?.();
-        captureSelectionData(true);
-        schedulePreviewUpdate();
 }
 
 function setupCropper() {
@@ -395,73 +403,38 @@ function setupCropper() {
 
         cropper = new Cropper(imgEl, {
                 dragMode: "move",
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCrop: true,
+                autoCropArea: 1,
+                background: false,
+                responsive: true,
+                ready() {
+                        loading = false;
+                        captureSelectionData(true);
+                        schedulePreviewUpdate();
+                },
+                crop() {
+                        handleSelectionChange(false);
+                },
+                cropend() {
+                        handleSelectionChange(true);
+                },
+                zoom() {
+                        handleSelectionChange(false);
+                },
         });
-        cropperSelection = cropper.getCropperSelection();
-        cropperImage = cropper.getCropperImage();
 
-        const computedStyle = getComputedStyle(document.documentElement);
-        const accentColor = tinycolor(computedStyle.getPropertyValue("--accent")).toHexString();
-
-        if (cropperSelection) {
-                cropperSelection.themeColor = accentColor;
-                cropperSelection.aspectRatio = 1;
-                cropperSelection.initialAspectRatio = 1;
-                cropperSelection.outlined = true;
-                selectionListener = () => handleSelectionChange();
-                pointerListener = () => handleSelectionChange();
-                cropperSelection.addEventListener("change", selectionListener);
-                cropperSelection.addEventListener("pointerup", pointerListener);
-                cropperSelection.addEventListener("pointermove", pointerListener);
-                cropperSelection.addEventListener("wheel", pointerListener);
-        }
-
-        if (cropperImage) {
-                imageListener = () => handleSelectionChange();
-                cropperImage.addEventListener("transform", imageListener);
-                cropperImage.addEventListener("wheel", imageListener);
-        }
-
-        window.setTimeout(() => {
-                cropperImage?.$center?.("contain");
-                cropperSelection?.$center?.();
-                captureSelectionData(true);
-                schedulePreviewUpdate();
-        }, 100);
-        window.setTimeout(() => {
-                cropperImage?.$center?.("contain");
-                cropperSelection?.$center?.();
-                captureSelectionData(true);
-                schedulePreviewUpdate();
-        }, 500);
 }
 
 function destroyCropper() {
-        if (cropperSelection && selectionListener) {
-                cropperSelection.removeEventListener("change", selectionListener);
-        }
-        if (cropperSelection && pointerListener) {
-                cropperSelection.removeEventListener("pointerup", pointerListener);
-                cropperSelection.removeEventListener("pointermove", pointerListener);
-                cropperSelection.removeEventListener("wheel", pointerListener);
-        }
-        if (cropperImage && imageListener) {
-                cropperImage.removeEventListener("transform", imageListener);
-                cropperImage.removeEventListener("wheel", imageListener);
-        }
-        if ((cropper as any)?.destroy) {
-                (cropper as any).destroy();
-        }
+        cropper?.destroy();
         cropper = null;
-        cropperSelection = null;
-        cropperImage = null;
-        selectionListener = null;
-        pointerListener = null;
-        imageListener = null;
         resetSelectionState();
 }
 
 function schedulePreviewUpdate() {
-        if (!selectedFile || !cropperSelection) return;
+        if (!selectedFile || !cropper) return;
         if (previewUpdating) {
                 previewPending = true;
                 return;
@@ -479,13 +452,25 @@ function schedulePreviewUpdate() {
 }
 
 async function updatePreviews() {
-        if (!cropperSelection) return;
-        const canvases = await Promise.all(
-                previewSizes.map((size) => cropperSelection.$toCanvas({
-                        width: size,
-                        height: size,
-                })),
-        );
+        if (!cropper) return;
+        const data = cropper.getData(true);
+        if (!data.width || !data.height) {
+                previewSizes.forEach((size) => {
+                        previewSources[size] = null;
+                });
+                return;
+        }
+        const canvases = previewSizes.map((size) => {
+                try {
+                        return cropper.getCroppedCanvas({
+                                width: size,
+                                height: size,
+                                imageSmoothingQuality: "high",
+                        });
+                } catch (err) {
+                        return null;
+                }
+        });
         canvases.forEach((canvas, index) => {
                 const size = previewSizes[index];
                 previewSources[size] = canvas ? canvas.toDataURL("image/png") : null;
@@ -493,12 +478,10 @@ async function updatePreviews() {
 }
 
 async function cropSelection(): Promise<{ blob: Blob; filename: string }> {
-        if (!selectedFile || !cropperSelection || !cropperImage) {
+        if (!selectedFile || !cropper) {
                 throw new Error("cropper is not ready");
         }
 
-        const croppedImage = cropperImage;
-        const croppedSection = cropperSelection;
         let failureNotified = false;
         const fail = (): never => {
                 if (failureNotified) {
@@ -512,14 +495,21 @@ async function cropSelection(): Promise<{ blob: Blob; filename: string }> {
                 throw new Error("failed to crop image");
         };
 
-        const zoomedRate =
-                croppedImage.getBoundingClientRect().width /
-                croppedImage.clientWidth;
-        const widthToRender =
-                croppedSection.getBoundingClientRect().width / zoomedRate;
-        const croppedCanvas = await croppedSection.$toCanvas({
-                width: widthToRender,
-        });
+        const data = cropper.getData(true);
+        if (!data.width || !data.height) {
+                return fail();
+        }
+
+        let croppedCanvas: HTMLCanvasElement | null = null;
+        try {
+                croppedCanvas = cropper.getCroppedCanvas({
+                        width: Math.round(Math.max(1, data.width)),
+                        height: Math.round(Math.max(1, data.height)),
+                        imageSmoothingQuality: "high",
+                });
+        } catch (err) {
+                croppedCanvas = null;
+        }
         if (!croppedCanvas) {
                 return fail();
         }
@@ -651,7 +641,8 @@ definePageMetadata({
         position: relative;
         min-height: 22rem;
         min-width: 0;
-        width: min(100%, 100vw);
+        width: 100%;
+        max-width: 100%;
         margin: 0 auto;
         border: 1px solid var(--divider);
         border-radius: var(--radius);
@@ -670,6 +661,17 @@ definePageMetadata({
                 width: 100% !important;
                 max-width: 100%;
                 height: 100% !important;
+        }
+
+        > ::v-deep(cropper-image) {
+                width: 100% !important;
+                max-width: 100% !important;
+        }
+
+        > ::v-deep(cropper-image img) {
+                width: 100% !important;
+                height: auto !important;
+                max-width: 100% !important;
         }
 }
 

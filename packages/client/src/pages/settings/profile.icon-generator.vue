@@ -280,6 +280,10 @@ type SelectionBounds = {
         height: number;
 };
 
+type CropperImageTransformDetail = {
+        matrix?: number[];
+};
+
 function getSelectionBounds(): SelectionBounds | null {
         if (!cropperCanvas) return null;
         const canvasRect = cropperCanvas.getBoundingClientRect();
@@ -305,6 +309,38 @@ function getSelectionBounds(): SelectionBounds | null {
                 width: Math.round(canvasRect.width),
                 height: Math.round(canvasRect.height),
         };
+}
+
+function enforceContainTransform(event: Event) {
+        if (!cropperCanvas || !cropperImage) return;
+        const transformEvent = event as CustomEvent<CropperImageTransformDetail>;
+        const matrix = transformEvent.detail?.matrix;
+        if (!matrix || matrix.length !== 6) {
+                return;
+        }
+
+        const cropperCanvasRect = cropperCanvas.getBoundingClientRect();
+        const cropperImageClone = cropperImage.cloneNode() as CropperImage;
+        cropperImageClone.style.transform = `matrix(${matrix.join(", ")})`;
+        cropperImageClone.style.opacity = "0";
+
+        cropperCanvas.appendChild(cropperImageClone);
+        const cropperImageRect = cropperImageClone.getBoundingClientRect();
+        cropperCanvas.removeChild(cropperImageClone);
+
+        const isOverflowing =
+                (cropperImageRect.top > cropperCanvasRect.top &&
+                        cropperImageRect.right < cropperCanvasRect.right) ||
+                (cropperImageRect.right < cropperCanvasRect.right &&
+                        cropperImageRect.bottom < cropperCanvasRect.bottom) ||
+                (cropperImageRect.bottom < cropperCanvasRect.bottom &&
+                        cropperImageRect.left > cropperCanvasRect.left) ||
+                (cropperImageRect.left > cropperCanvasRect.left &&
+                        cropperImageRect.top > cropperCanvasRect.top);
+
+        if (isOverflowing) {
+                transformEvent.preventDefault();
+        }
 }
 
 function clampSelectionSnapshot(snapshot: SelectionSnapshot): SelectionSnapshot {
@@ -715,8 +751,11 @@ function setupCropper() {
                                 imageTransformListener as EventListener,
                         );
                 }
-                imageTransformListener = () => {
-                        if (!cropperSelection) return;
+                imageTransformListener = (event: Event) => {
+                        enforceContainTransform(event);
+                        if (event.defaultPrevented || !cropperSelection) {
+                                return;
+                        }
                         handleSelectionChange(false, {
                                 x: cropperSelection.x,
                                 y: cropperSelection.y,

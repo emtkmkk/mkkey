@@ -300,10 +300,10 @@
                                        <button
                                                v-if="showUndoReactionButton"
                                                ref="reactButton"
-                                               class="button _button reacted"
+                                               class="button _button"
                                                @click="undoReact(appearNote)"
                                        >
-                                               <i class="ph-minus ph-bold ph-lg"></i>
+                                               <i class="ph-minus ph-bold ph-lg" style="color: var(--accent);"></i>
                                                <template v-if="showReactionCount && showUndoReactionButton">
                                                        <p class="count">{{ totalReactions }}</p>
                                                </template>
@@ -543,7 +543,7 @@ const multiReaction =
 	(!appearNote.user.host ||
 		appearNote.user.instance?.maxReactionsPerAccount > 1);
 const maxReactions = multiReaction
-	? Math.min(appearNote.user.instance?.maxReactionsPerAccount ?? 3, 64)
+	? Math.min(appearNote.user.instance?.maxReactionsPerAccount ?? 3, 3)
 	: 1;
 const showContent = ref(false);
 const isDeleted = ref(false);

@@ -1932,7 +1932,7 @@ _profile:
   changeBanner: "バナー画像を変更"
   openIconGenerator: "アイコンジェネレーターを開く"
   iconGenerator: "アイコンジェネレーター"
-  iconGeneratorDescription: "フルスクリーンのエディターで正方形に切り抜き、複数サイズのプレビューをリアルタイムで確認できます。"
+  iconGeneratorDescription: "画像を正方形に切り抜き、プレビューをリアルタイムで確認できます。"
   iconGeneratorEmpty: "まずは画像を選択してアイコン作りを始めましょう。"
   iconGeneratorPreviewNote: "四角と丸の両方で、184・64・32ピクセルの表示をリアルタイムに確認できます。"
   selectImage: "画像を選択"

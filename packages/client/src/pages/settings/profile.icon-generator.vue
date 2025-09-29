@@ -236,6 +236,8 @@ let cropperSelection: CropperSelection | null = null;
 let selectionChangeListener: ((event: Event) => void) | null = null;
 let canvasActionEndListener: ((event: Event) => void) | null = null;
 let imageTransformListener: ((event: Event) => void) | null = null;
+let containEnforcementFrame: number | null = null;
+let suppressContainEnforcement = false;
 let loading = $ref(false);
 let downloading = $ref(false);
 let previewUpdating = false;
@@ -278,6 +280,10 @@ type SelectionBounds = {
         offsetY: number;
         width: number;
         height: number;
+};
+
+type CropperImageTransformDetail = {
+        matrix?: number[];
 };
 
 function getSelectionBounds(): SelectionBounds | null {
@@ -666,9 +672,6 @@ async function pickImage(ev?: Event) {
                 const file = await selectFile(
                         ev?.currentTarget ?? ev?.target ?? undefined,
                         i18n.ts.avatar,
-                        undefined,
-                        undefined,
-                        "avatar",
                 );
                 selectedFile = file;
                 loading = true;
@@ -792,7 +795,7 @@ function setupCropper() {
                 selection.aspectRatio = 1;
                 selection.initialAspectRatio = 1;
                 selection.initialCoverage = 1;
-                selection.movable = false;
+                selection.movable = true;
                 selection.resizable = true;
                 selection.keyboard = true;
                 selection.outlined = true;
@@ -810,7 +813,9 @@ function setupCropper() {
                         if (!cropperSelection || cropperSelection !== selection) {
                                 return;
                         }
-                        cropperImage?.$center("contain");
+                        runWithContainSuppressed(() => {
+                                cropperImage?.$center("contain");
+                        });
                         const bounds = getSelectionBounds();
                         if (bounds) {
                                 const size = Math.min(bounds.width, bounds.height);
@@ -846,6 +851,8 @@ function setupCropper() {
 }
 
 function destroyCropper() {
+        cancelContainEnforcement();
+        suppressContainEnforcement = false;
         if (cropperSelection && selectionChangeListener) {
                 cropperSelection.removeEventListener(
                         "change",

@@ -27,11 +27,11 @@
 		allow="autoplay; encrypted-media"
 		allowfullscreen
 	  />
-	</div>
-  
-	<div
-	  v-else-if="isSteam"
-	  class="mk-url-preview steam"
+        </div>
+
+        <div
+          v-else-if="isSteam"
+          class="mk-url-preview steam"
 	  :class="{ legacyStyle: $store.state.compactGridUrl }"
 	  @click.stop
 	>
@@ -103,12 +103,93 @@
 		  </article>
 		</component>
 	  </transition>
-	</div>
-	<div
-	  v-else-if="tweetId && tweetExpanded"
-	  ref="twitter"
-	  class="twitter"
-	  @click.stop
+        </div>
+        <div
+          v-else-if="isAmazon"
+          class="mk-url-preview amazon"
+          :class="{ legacyStyle: $store.state.compactGridUrl }"
+          @click.stop
+        >
+          <MkButton
+                v-if="thumbnail && $store.state.enableDataSaverMode && !showThumbnail"
+                class="showThumbnail"
+                :small="true"
+                @click="showThumbnail = true"
+          >
+                <i class="ph-image ph-bold ph-lg"></i> {{ i18n.ts.showThumbnail }}
+          </MkButton>
+          <transition :name="$store.state.animation ? 'zoom' : ''" mode="out-in">
+                <component
+                  :is="self ? 'MkA' : 'a'"
+                  v-if="!fetching"
+                  class="link"
+                  :class="{ compact }"
+                  :[attr]="self ? url.substr(local.length) : url"
+                  rel="nofollow noopener"
+                  :target="target"
+                  :title="url"
+                >
+                  <div
+                        v-if="thumbnail && (showThumbnail || !$store.state.enableDataSaverMode)"
+                        class="thumbnail"
+                        :style="`background-image: url('${thumbnail}')`"
+                  >
+                        <button
+                          v-if="!playerEnabled && player.url"
+                          class="_button"
+                          :title="i18n.ts.enablePlayer"
+                          @click.prevent="playerEnabled = true"
+                        >
+                          <i class="ph-play-circle ph-bold ph-7x"></i>
+                        </button>
+                  </div>
+                  <article>
+                        <header>
+                          <h1 :title="title">
+                                <img v-if="icon" :src="icon" alt="Favicon" class="favicon" />
+                                {{ title }}
+                          </h1>
+                          <div class="amazon-brand" v-if="amazonBrand">{{ amazonBrand }}</div>
+                        </header>
+                        <p v-if="description" :title="description">
+                          {{
+                                description.length > 250
+                                  ? `${description.slice(0, 250)}…`
+                                  : description
+                          }}
+                        </p>
+                        <footer class="amazon-footer">
+                          <div class="amazon-price-row" v-if="amazonPriceText || amazonPrime">
+                                <span class="amazon-price" v-if="amazonPriceText">
+                                  {{ amazonPriceText }}
+                                </span>
+                                <span class="amazon-prime-badge" v-if="amazonPrime">Prime</span>
+                          </div>
+                          <div class="amazon-rating" v-if="amazonRatingValue !== null">
+                                <span class="amazon-star">★</span>
+                                <span class="amazon-rating-value">
+                                  {{ formatRatingValue(amazonRatingValue) }}
+                                </span>
+                                <span class="amazon-rating-best" v-if="amazonRatingBest">
+                                  / {{ amazonRatingBest }}
+                                </span>
+                                <span class="amazon-rating-count" v-if="amazonRatingCount !== null">
+                                  ({{ formatCountValue(amazonRatingCount) }})
+                                </span>
+                          </div>
+                          <div class="amazon-availability" v-if="amazonAvailability">
+                                {{ amazonAvailability }}
+                          </div>
+                        </footer>
+                  </article>
+                </component>
+          </transition>
+        </div>
+        <div
+          v-else-if="tweetId && tweetExpanded"
+          ref="twitter"
+          class="twitter"
+          @click.stop
 	>
 	  <iframe
 		ref="tweet"
@@ -217,9 +298,54 @@
 	}
   );
   
-  const self = props.url.startsWith(local);
-  const attr = self ? "to" : "href";
-  const target = self ? null : "_blank";
+const self = props.url.startsWith(local);
+const attr = self ? "to" : "href";
+const target = self ? null : "_blank";
+const normalizedLang = (lang || "ja-JP")
+  .replace("ja-KS", "ja-JP")
+  .replace("ja-KK", "ja-JP");
+
+function createNumberFormatter(
+  locale: string,
+  options?: Intl.NumberFormatOptions
+): Intl.NumberFormat {
+  try {
+    return new Intl.NumberFormat(locale, options);
+  } catch (error) {
+    console.warn("Failed to create Intl.NumberFormat", error);
+    return new Intl.NumberFormat("en-US", options);
+  }
+}
+
+const countFormatter = createNumberFormatter(normalizedLang);
+const ratingFormatter = createNumberFormatter(normalizedLang, {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+const formatRatingValue = (value: number | null) =>
+  value == null ? "" : ratingFormatter.format(value).replace(/\.0$/, "");
+const formatCountValue = (value: number | null) =>
+  value == null ? "" : countFormatter.format(value);
+const formatCurrencyValue = (value: number | null, currency: string | null) => {
+  if (value == null || !currency) return null;
+  try {
+    return new Intl.NumberFormat(normalizedLang, {
+      style: "currency",
+      currency,
+    }).format(value);
+  } catch (error) {
+    console.warn("Failed to format currency", error);
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency,
+      }).format(value);
+    } catch {
+      return value.toString();
+    }
+  }
+};
   let fetching = $ref(true);
   let title = $ref<string | null>(null);
   let description = $ref<string | null>(null);
@@ -238,58 +364,119 @@
   const embedId = `embed${Math.random().toString().replace(/\D/, "")}`;
   let tweetHeight = $ref(150);
   
-  // Steam専用のリアクティブ変数
-  let isSteam = $ref(false);
-  let steamAgeLimit = $ref<string | null>(null);
-  let steamGameName = $ref<string>("");
+// Steam専用のリアクティブ変数
+let isSteam = $ref(false);
+let steamAgeLimit = $ref<string | null>(null);
+let steamGameName = $ref<string>("");
   let steamDeveloper = $ref<string>("");
   let steamOnSale = $ref(false);
   let steamDiscount = $ref<number>(0);
   let steamOriginalPrice = $ref<string | null>(null);
   let steamCurrentPrice = $ref<string | null>(null);
-  let steamGenres = $ref<string>("");
-	let steamComingSoon = $ref(false);
-  let steamReleaseDate = $ref<string>("");
-  
-  // SteamファビコンのデフォルトURL（通常のfaviconを使用）
-  const defaultIcon = "https://store.steampowered.com/favicon.ico";
-  
-  // URL情報の取得
-  const fetchUrlData = async () => {
-	const requestLang = (lang || "ja-JP")
-	  .replace("ja-KS", "ja-JP")
-	  .replace("ja-KK", "ja-JP");
-  
-	try {
-	  const response = await fetch(
+let steamGenres = $ref<string>("");
+      let steamComingSoon = $ref(false);
+let steamReleaseDate = $ref<string>("");
+
+// Amazon専用のリアクティブ変数
+let isAmazon = $ref(false);
+let amazonAsin = $ref<string | null>(null);
+let amazonPriceText = $ref<string | null>(null);
+let amazonPriceValue = $ref<number | null>(null);
+let amazonPriceCurrency = $ref<string | null>(null);
+let amazonAvailability = $ref<string | null>(null);
+let amazonPrime = $ref(false);
+let amazonRatingValue = $ref<number | null>(null);
+let amazonRatingBest = $ref<number | null>(null);
+let amazonRatingCount = $ref<number | null>(null);
+let amazonBrand = $ref<string | null>(null);
+
+// SteamファビコンのデフォルトURL（通常のfaviconを使用）
+const defaultIcon = "https://store.steampowered.com/favicon.ico";
+
+// URL情報の取得
+const fetchUrlData = async () => {
+  const requestLang = normalizedLang;
+
+  // 状態の初期化
+  isSteam = false;
+  isAmazon = false;
+  steamAgeLimit = null;
+  steamGameName = "";
+  steamDeveloper = "";
+  steamOnSale = false;
+  steamDiscount = 0;
+  steamOriginalPrice = null;
+  steamCurrentPrice = null;
+  steamGenres = "";
+  steamComingSoon = false;
+  steamReleaseDate = "";
+  amazonAsin = null;
+  amazonPriceText = null;
+  amazonPriceValue = null;
+  amazonPriceCurrency = null;
+  amazonAvailability = null;
+  amazonPrime = false;
+  amazonRatingValue = null;
+  amazonRatingBest = null;
+  amazonRatingCount = null;
+  amazonBrand = null;
+  tweetId = null;
+  tweetExpanded = defaultStore.state.alwaysXExpand || props.detail;
+  playerEnabled = false;
+  showThumbnail = false;
+
+  try {
+    const response = await fetch(
 		`/url?url=${encodeURIComponent(props.url)}&lang=${requestLang}`
 	  );
 	  const info = await response.json();
 	  if (info.url == null) return;
   
 	  // Steamの場合の処理
-	  if (info.steam) {
-		isSteam = true;
-		steamGameName = info.title;
-		description = info.description;
-		icon = info.icon;
-		thumbnail = info.thumbnail;
-		steamAgeLimit = info.steam.ageLimit;
-		steamDeveloper = info.steam.developer;
-		steamOnSale = info.steam.onSale;
-		steamDiscount = info.steam.discountPercent;
-		steamOriginalPrice = info.steam.originalPrice;
-		steamCurrentPrice =
-		  info.steam.currentPrice ||
-		  (info.steam.isFree ? "無料プレイ" : "");
-		steamGenres = info.steam.genres;
-		steamComingSoon = !!info.steam.releaseDate.comingSoon;
-		steamReleaseDate = info.steam.releaseDate.date;
-	  } else {
-		// 既存の処理
-		title = info.title;
-		description = info.description;
-		thumbnail = info.thumbnail;
+        if (info.steam) {
+          isSteam = true;
+          steamGameName = info.title;
+          description = info.description;
+          icon = info.icon;
+          thumbnail = info.thumbnail;
+          steamAgeLimit = info.steam.ageLimit;
+          steamDeveloper = info.steam.developer;
+          steamOnSale = info.steam.onSale;
+          steamDiscount = info.steam.discountPercent;
+          steamOriginalPrice = info.steam.originalPrice;
+          steamCurrentPrice =
+            info.steam.currentPrice ||
+            (info.steam.isFree ? "無料プレイ" : "");
+          steamGenres = info.steam.genres;
+          steamComingSoon = !!info.steam.releaseDate.comingSoon;
+          steamReleaseDate = info.steam.releaseDate.date;
+        } else if (info.amazon) {
+          isAmazon = true;
+          title = info.title;
+          description = info.description;
+          thumbnail = info.thumbnail;
+          icon = info.icon;
+          sitename = info.sitename;
+          player = info.player;
+          amazonAsin = info.amazon.asin ?? null;
+          amazonPriceValue = info.amazon.price?.value ?? null;
+          amazonPriceCurrency = info.amazon.price?.currency ?? null;
+          amazonPriceText =
+            info.amazon.price?.display ??
+            (amazonPriceValue != null && amazonPriceCurrency
+              ? formatCurrencyValue(amazonPriceValue, amazonPriceCurrency)
+              : null);
+          amazonAvailability = info.amazon.availability ?? null;
+          amazonPrime = !!info.amazon.prime;
+          amazonRatingValue = info.amazon.rating?.value ?? null;
+          amazonRatingBest = info.amazon.rating?.best ?? null;
+          amazonRatingCount = info.amazon.rating?.count ?? null;
+          amazonBrand = info.amazon.brand ?? null;
+        } else {
+          // 既存の処理
+          title = info.title;
+          description = info.description;
+          thumbnail = info.thumbnail;
 		icon = info.icon;
 		sitename = info.sitename;
 		player = info.player;
@@ -318,17 +505,13 @@
 		  requestUrl.hostname = "www.youtube.com";
 		}
   
-		const requestLang = (lang || "ja-JP")
-		  .replace("ja-KS", "ja-JP")
-		  .replace("ja-KK", "ja-JP");
-  
-		requestUrl.hash = "";
-  
-		fetch(
-		  `/url?url=${encodeURIComponent(requestUrl.href)}&lang=${requestLang}`
-		).then((res) => {
-		  res.json().then((info) => {
-			if (info.url == null) return;
+                requestUrl.hash = "";
+
+                fetch(
+                  `/url?url=${encodeURIComponent(requestUrl.href)}&lang=${normalizedLang}`
+                ).then((res) => {
+                  res.json().then((info) => {
+                        if (info.url == null) return;
 			title = info.title;
 			description = info.description;
 			thumbnail = info.thumbnail;
@@ -671,11 +854,11 @@
 		}
 	  }
 	}
-	&.steam {
-	  .link {
-		pointer-events: none;
-		display: flex;
-		flex-direction: column;
+        &.steam {
+          .link {
+                pointer-events: none;
+                display: flex;
+                flex-direction: column;
   
 		.thumbnail {
 		  order: 1;
@@ -759,8 +942,117 @@
 			}
 		  }
 		}
-	  }
-	}
+          }
+        }
+        &.amazon {
+          .link {
+                pointer-events: none;
+                display: flex;
+                flex-direction: column;
+
+                .thumbnail {
+                  order: 1;
+                  pointer-events: none;
+                }
+
+                article {
+                  order: 2;
+                  pointer-events: auto;
+
+                  header {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+
+                        h1 {
+                          display: flex;
+                          align-items: center;
+                          margin: 0;
+                          font-size: 1em;
+                          overflow: visible;
+                          white-space: normal;
+                          word-break: normal;
+                          word-break: auto-phrase;
+
+                          .favicon {
+                                width: 24px;
+                                height: 24px;
+                                margin-right: 0.5rem;
+                          }
+                        }
+
+                        .amazon-brand {
+                          margin-top: 0.25rem;
+                          font-size: 0.9em;
+                          color: var(--fg);
+                          opacity: 0.8;
+                        }
+                  }
+
+                  p {
+                        overflow: visible;
+                        white-space: normal;
+                        word-break: normal;
+                        word-break: auto-phrase;
+                  }
+
+                  .amazon-footer {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.35rem;
+                        font-size: 0.9em;
+
+                        .amazon-price-row {
+                          display: flex;
+                          align-items: center;
+                          gap: 0.5rem;
+
+                          .amazon-price {
+                                font-size: 1.15em;
+                                font-weight: 700;
+                                color: #c45500;
+                          }
+
+                          .amazon-prime-badge {
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 0.2rem;
+                                padding: 0.1rem 0.35rem;
+                                border-radius: 0.25rem;
+                                font-size: 0.85em;
+                                font-weight: 700;
+                                background: linear-gradient(90deg, #00a8e1, #1f3b8f);
+                                color: #fff;
+                          }
+                        }
+
+                        .amazon-rating {
+                          display: flex;
+                          align-items: center;
+                          gap: 0.25rem;
+
+                          .amazon-star {
+                                color: #ffa41c;
+                                font-size: 1.1em;
+                          }
+
+                          .amazon-rating-value {
+                                font-weight: 600;
+                          }
+
+                          .amazon-rating-count {
+                                opacity: 0.8;
+                          }
+                        }
+
+                        .amazon-availability {
+                          color: var(--fg);
+                          opacity: 0.85;
+                        }
+                  }
+                }
+          }
+        }
   }
   </style>
-  
+

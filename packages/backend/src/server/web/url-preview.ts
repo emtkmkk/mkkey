@@ -1,10 +1,11 @@
 import type Koa from "koa";
 import summaly from "summaly";
+import { load } from "cheerio";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import Logger from "@/services/logger.js";
 import config from "@/config/index.js";
 import { query } from "@/prelude/url.js";
-import { getJson } from "@/misc/fetch.js";
+import { getHtml, getJson } from "@/misc/fetch.js";
 
 const logger = new Logger("url-preview");
 
@@ -32,6 +33,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   // SteamのApp IDを取得
   const steamAppId = isSteamUrl(url);
   const VRCWorldId = isVRCUrl(url);
+  const amazonProduct = isAmazonProductUrl(url);
 
   if (steamAppId) {
     // Steamの場合の処理
@@ -154,6 +156,70 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     }
   }
 
+  if (amazonProduct) {
+    try {
+      const localeInfo = getAmazonLocaleInfo(amazonProduct.hostname);
+      const normalizedLang = normalizeLang(lang ?? localeInfo.locale);
+      const html = await getHtml(url, "text/html, */*", 10000, {
+        "accept-language": normalizedLang,
+      });
+
+      const $ = load(html);
+      const productData = extractAmazonProductData($);
+
+      if (!productData) throw new Error("product data not found");
+
+      const description = sanitizeAmazonDescription(productData.description);
+      const image = selectAmazonImage(productData);
+      const offer = selectAmazonOffer(productData.offers);
+      const priceValue = extractPriceValue(offer);
+      const priceCurrency = extractPriceCurrency(offer) ?? localeInfo.currency;
+      const priceDisplay =
+        formatAmazonPrice(priceValue, priceCurrency, normalizedLang) ??
+        offer?.price ??
+        null;
+      const availability =
+        typeof offer?.availability === "string"
+          ? humanizeAvailability(offer.availability, normalizedLang)
+          : null;
+      const rating = normalizeAmazonRating(productData.aggregateRating);
+      const brand = extractBrand(productData.brand);
+      const primeEligible = Boolean(productData.isPrimeEligible);
+
+      const iconHost = amazonProduct.hostname.replace(/^smile\./, "");
+      const favicon = `https://${iconHost}/favicon.ico`;
+
+      const summary = {
+        url,
+        title: productData.name ?? productData.headline ?? "Amazon",
+        description,
+        thumbnail: wrap(image) ?? "",
+        icon: wrap(favicon) ?? favicon,
+        sitename: formatAmazonSitename(iconHost),
+        player: null as any,
+        amazon: {
+          asin: amazonProduct.asin,
+          price: {
+            value: priceValue,
+            currency: priceCurrency,
+            display: priceDisplay,
+          },
+          availability,
+          rating,
+          brand,
+          prime: primeEligible,
+        },
+      };
+
+      ctx.set("Cache-Control", "max-age=604800, immutable");
+      ctx.body = summary;
+      return;
+    } catch (err) {
+      logger.warn(`Failed to get Amazon data for ${url}: ${err}`);
+      // フォールバックとして通常のサマリーを取得する
+    }
+  }
+
   // 既存の処理
   try {
     const summary = meta.summalyProxy
@@ -222,6 +288,11 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   }
 };
 
+function normalizeLang(lang?: string | null): string {
+  if (!lang) return "en-US";
+  return lang.replace("ja-KS", "ja-JP").replace("ja-KK", "ja-JP");
+}
+
 // SteamのURLを判定し、App IDを取得する関数
 function isSteamUrl(url: string): string | null {
   try {
@@ -241,6 +312,285 @@ function isSteamUrl(url: string): string | null {
     logger.warn("Invalid URL:", error);
     return null;
   }
+}
+
+
+function isAmazonProductUrl(url: string): { asin: string | null; hostname: string } | null {
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname;
+    if (!/amazon\./i.test(hostname)) return null;
+
+    const segments = parsedUrl.pathname.split("/").filter(Boolean);
+    if (segments.length === 0) return { asin: null, hostname };
+
+    const dpIndex = segments.findIndex((segment) => segment.toLowerCase() === "dp");
+    if (dpIndex !== -1 && segments.length > dpIndex + 1) {
+      return { asin: sanitizeAsin(segments[dpIndex + 1]), hostname };
+    }
+
+    const gpIndex = segments.findIndex((segment) => segment.toLowerCase() === "product");
+    if (gpIndex > 0 && segments[gpIndex - 1].toLowerCase() === "gp") {
+      const asin = segments[gpIndex + 1];
+      if (asin) return { asin: sanitizeAsin(asin), hostname };
+    }
+
+    const awIndex = segments.findIndex((segment) => segment.toLowerCase() === "d");
+    if (awIndex > 0 && segments[awIndex - 1].toLowerCase() === "aw") {
+      const asin = segments[awIndex + 1];
+      if (asin) return { asin: sanitizeAsin(asin), hostname };
+    }
+
+    return { asin: null, hostname };
+  } catch (error) {
+    logger.warn("Invalid URL:", error);
+    return null;
+  }
+}
+
+function sanitizeAsin(segment: string): string {
+  return segment.replace(/[^A-Z0-9]/gi, "").slice(0, 10) || segment;
+}
+
+function extractAmazonProductData($: ReturnType<typeof load>): any | null {
+  const scripts = Array.from($('script[type="application/ld+json"]').toArray());
+
+  for (const script of scripts) {
+    const content = $(script).contents().text().trim();
+    if (!content) continue;
+
+    const candidates = buildJsonCandidates(content);
+    for (const candidate of candidates) {
+      try {
+        const json = JSON.parse(candidate);
+        const product = findProductNode(json);
+        if (product) return product;
+      } catch (err) {
+        continue;
+      }
+    }
+  }
+
+  return null;
+}
+
+function buildJsonCandidates(content: string): string[] {
+  const trimmed = content
+    .replace(/<!--.*?-->/gs, "")
+    .replace(/\s*;\s*$/, "")
+    .trim();
+  const candidates = new Set<string>();
+  if (!trimmed) return [];
+
+  candidates.add(trimmed);
+
+  if (!trimmed.startsWith("[")) {
+    const arrayWrapped = `[${trimmed.replace(/}\s*{/g, "},{")}]`;
+    candidates.add(arrayWrapped);
+  }
+
+  return Array.from(candidates.values());
+}
+
+function findProductNode(node: any): any | null {
+  if (!node) return null;
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const found = findProductNode(item);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  if (typeof node === "object") {
+    const type = node["@type"];
+    const types = Array.isArray(type) ? type : type ? [type] : [];
+    if (types.some((t) => typeof t === "string" && t.toLowerCase() === "product")) {
+      return node;
+    }
+
+    if (node.mainEntity) {
+      const found = findProductNode(node.mainEntity);
+      if (found) return found;
+    }
+
+    if (node["@graph"]) {
+      const found = findProductNode(node["@graph"]);
+      if (found) return found;
+    }
+
+    if (node.itemListElement) {
+      const found = findProductNode(node.itemListElement);
+      if (found) return found;
+    }
+  }
+
+  return null;
+}
+
+function selectAmazonImage(productData: any): string | null {
+  const image = productData?.image;
+  if (!image) return null;
+  if (typeof image === "string") return image;
+  if (Array.isArray(image)) {
+    for (const entry of image) {
+      if (typeof entry === "string") return entry;
+      if (entry && typeof entry === "object" && typeof entry.url === "string") {
+        return entry.url;
+      }
+    }
+  }
+  if (typeof image === "object" && typeof image.url === "string") return image.url;
+  return null;
+}
+
+function selectAmazonOffer(offers: any): any | null {
+  if (!offers) return null;
+  if (Array.isArray(offers)) {
+    for (const offer of offers) {
+      if (offer && typeof offer === "object") {
+        return offer;
+      }
+    }
+    return null;
+  }
+  return typeof offers === "object" ? offers : null;
+}
+
+function extractPriceValue(offer: any): number | null {
+  if (!offer) return null;
+  const candidates = [offer.price, offer.lowPrice, offer.priceSpecification?.price];
+  for (const candidate of candidates) {
+    if (candidate == null) continue;
+    const numeric = Number(
+      String(candidate)
+        .replace(/[^0-9.,-]/g, "")
+        .replace(/,(?=\d{3}(?:\D|$))/g, "")
+        .replace(/,/g, "")
+    );
+    if (!Number.isNaN(numeric) && Number.isFinite(numeric)) {
+      return numeric;
+    }
+  }
+  return null;
+}
+
+function extractPriceCurrency(offer: any): string | null {
+  if (!offer) return null;
+  return (
+    offer.priceCurrency ||
+    offer.priceSpecification?.priceCurrency ||
+    offer.priceSpecification?.currency ||
+    offer.currency
+  ) ?? null;
+}
+
+function formatAmazonPrice(
+  value: number | null,
+  currency: string | null,
+  lang: string
+): string | null {
+  if (value == null || !currency) return null;
+  try {
+    return new Intl.NumberFormat(lang, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(value);
+  } catch (err) {
+    return value.toString();
+  }
+}
+
+function humanizeAvailability(value: string, lang: string): string {
+  const key = value.split("/").pop()?.toLowerCase() ?? value.toLowerCase();
+  const isJapanese = lang.startsWith("ja");
+  switch (key) {
+    case "instock":
+      return isJapanese ? "在庫あり" : "In stock";
+    case "outofstock":
+      return isJapanese ? "在庫切れ" : "Out of stock";
+    case "presale":
+    case "preorder":
+      return isJapanese ? "予約受付中" : "Preorder";
+    case "preorderavailable":
+      return isJapanese ? "予約可能" : "Preorder available";
+    case "discontinued":
+      return isJapanese ? "販売終了" : "Discontinued";
+    case "limitedavailability":
+      return isJapanese ? "在庫僅少" : "Limited availability";
+    default:
+      return value;
+  }
+}
+
+function normalizeAmazonRating(rating: any): {
+  value: number | null;
+  best: number | null;
+  count: number | null;
+} {
+  if (!rating || typeof rating !== "object") {
+    return { value: null, best: null, count: null };
+  }
+  const value = rating.ratingValue ?? rating.rating ?? null;
+  const best = rating.bestRating ?? rating.best ?? null;
+  const count = rating.ratingCount ?? rating.reviewCount ?? null;
+
+  return {
+    value: value != null ? Number(value) : null,
+    best: best != null ? Number(best) : null,
+    count: count != null ? Number(count) : null,
+  };
+}
+
+function extractBrand(brand: any): string | null {
+  if (!brand) return null;
+  if (typeof brand === "string") return brand;
+  if (typeof brand === "object") {
+    if (typeof brand.name === "string") return brand.name;
+    if (typeof brand.brand === "string") return brand.brand;
+  }
+  return null;
+}
+
+function sanitizeAmazonDescription(description: unknown): string {
+  if (typeof description !== "string") return "";
+  return description.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function getAmazonLocaleInfo(hostname: string): { locale: string; currency: string } {
+  const normalizedHost = hostname.replace(/^smile\./, "").replace(/^www\./, "");
+  const mapping: Record<string, { locale: string; currency: string }> = {
+    "amazon.co.jp": { locale: "ja-JP", currency: "JPY" },
+    "amazon.com": { locale: "en-US", currency: "USD" },
+    "amazon.co.uk": { locale: "en-GB", currency: "GBP" },
+    "amazon.de": { locale: "de-DE", currency: "EUR" },
+    "amazon.fr": { locale: "fr-FR", currency: "EUR" },
+    "amazon.it": { locale: "it-IT", currency: "EUR" },
+    "amazon.es": { locale: "es-ES", currency: "EUR" },
+    "amazon.ca": { locale: "en-CA", currency: "CAD" },
+    "amazon.com.mx": { locale: "es-MX", currency: "MXN" },
+    "amazon.com.au": { locale: "en-AU", currency: "AUD" },
+    "amazon.in": { locale: "en-IN", currency: "INR" },
+    "amazon.com.br": { locale: "pt-BR", currency: "BRL" },
+    "amazon.ae": { locale: "ar-AE", currency: "AED" },
+    "amazon.sa": { locale: "ar-SA", currency: "SAR" },
+    "amazon.sg": { locale: "en-SG", currency: "SGD" },
+    "amazon.nl": { locale: "nl-NL", currency: "EUR" },
+    "amazon.se": { locale: "sv-SE", currency: "SEK" },
+    "amazon.pl": { locale: "pl-PL", currency: "PLN" },
+    "amazon.com.tr": { locale: "tr-TR", currency: "TRY" },
+    "amazon.com.be": { locale: "nl-BE", currency: "EUR" },
+    "amazon.eg": { locale: "ar-EG", currency: "EGP" },
+  };
+
+  return mapping[normalizedHost] ?? { locale: "en-US", currency: "USD" };
+}
+
+function formatAmazonSitename(hostname: string): string {
+  const normalizedHost = hostname.replace(/^smile\./, "").replace(/^www\./, "");
+  const suffix = normalizedHost.replace(/^amazon\./i, "");
+  return suffix ? `Amazon.${suffix}` : "Amazon";
 }
 
 

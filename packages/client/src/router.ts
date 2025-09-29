@@ -77,11 +77,21 @@ export const routes = [
 		component: page(() => import("./pages/settings/index.vue")),
 		loginRequired: true,
 		children: [
-			{
-				path: "/profile",
-				name: "profile",
-				component: page(() => import("./pages/settings/profile.vue")),
-			},
+                        {
+                                path: "/profile",
+                                name: "profile",
+                                component: page(() => import("./pages/settings/profile.vue")),
+                        },
+                        {
+                                path: "/profile/icon-generator",
+                                name: "profile-icon-generator",
+                                component: page(
+                                        () =>
+                                                import(
+                                                        "./pages/settings/profile.icon-generator.vue"
+                                                ),
+                                ),
+                        },
 			{
 				path: "/privacy",
 				name: "privacy",

@@ -1650,6 +1650,15 @@ _profile:
   metadataContent: "Content"
   changeAvatar: "Change avatar"
   changeBanner: "Change banner"
+  openIconGenerator: "Open icon generator"
+  iconGenerator: "Icon generator"
+  iconGeneratorDescription: "Crop your avatar image on a full page and preview multiple sizes in real time."
+  iconGeneratorEmpty: "Select an image to start creating your avatar."
+  iconGeneratorPreviewNote: "These previews show how your avatar appears as squares and circles at common sizes."
+  selectImage: "Select image"
+  replaceImage: "Select another image"
+  previewSquare: "Square"
+  previewCircle: "Round"
   locationDescription: "If you enter your city first, it will display your local time\
     \ to other users."
 _exportOrImport:

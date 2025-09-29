@@ -10,29 +10,31 @@
 				backgroundImage: $i.bannerUrl ? `url(${$i.bannerUrl})` : null,
 			}"
 		>
-			<div class="avatar">
-				<MkAvatar
-					class="avatar"
-					:user="$i"
-					:disable-link="true"
-					@click="changeAvatar"
-				/>
-				<MkButton
-					primary
-					rounded
-					class="avatarEdit"
-					@click="changeAvatar"
-					>{{ i18n.ts._profile.changeAvatar }}</MkButton
-				>
-			</div>
-			<MkButton
-				primary
-				rounded
-				class="bannerEdit"
-				@click="changeBanner"
-				>{{ i18n.ts._profile.changeBanner }}</MkButton
-			>
-		</div>
+                        <div class="avatar">
+                                <MkAvatar
+                                        class="avatar"
+                                        :user="$i"
+                                        :disable-link="true"
+                                        @click="changeAvatar"
+                                />
+                                <div class="avatarActions">
+                                        <MkButton
+                                                primary
+                                                rounded
+                                                class="avatarEdit"
+                                                @click="changeAvatar"
+                                                >{{ i18n.ts._profile.changeAvatar }}</MkButton
+                                        >
+                                </div>
+                        </div>
+                        <MkButton
+                                primary
+                                rounded
+                                class="bannerEdit"
+                                @click="changeBanner"
+                                >{{ i18n.ts._profile.changeBanner }}</MkButton
+                        >
+                </div>
 
 		<FormInput
 			v-model="profile.name"
@@ -220,8 +222,16 @@
 			<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 		</div>
 		
-		<MkButton @click="profileCard">{{ i18n.ts._profileCardGen.title }}</MkButton>
-	</div>
+                <div class="profileActions">
+                        <MkButton
+                                rounded
+                                class="avatarGenerator"
+                                @click="openIconGenerator"
+                                >{{ i18n.ts._profile.openIconGenerator }}</MkButton
+                        >
+                        <MkButton @click="profileCard">{{ i18n.ts._profileCardGen.title }}</MkButton>
+                </div>
+        </div>
 </template>
 
 <script lang="ts" setup>
@@ -242,6 +252,7 @@ import { $i } from "@/account";
 import { langmap } from "@/scripts/langmap";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
+import { useRouter } from "@/router";
 
 const descriptionareaEl = $ref(null);
 const nameareaEl = $ref(null);
@@ -270,8 +281,10 @@ const props = withDefaults(
 let saveButton = $ref(props.saveButton ?? false);
 
 const showMkkeySettingTips = $computed(
-	defaultStore.makeGetterSetter("showMkkeySettingTips")
+        defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
+
+const router = useRouter();
 
 onMounted(() => {
 	// フォントをインポート
@@ -339,14 +352,14 @@ function save() {
 }
 
 function changeAvatar(ev) {
-	selectFile(
-		ev.currentTarget ?? ev.target,
-		i18n.ts.avatar,
-		undefined,
-		undefined,
-		"avatar"
-	).then(async (file) => {
-		let originalOrCropped = file;
+        selectFile(
+                ev.currentTarget ?? ev.target,
+                i18n.ts.avatar,
+                undefined,
+                undefined,
+                "avatar"
+        ).then(async (file) => {
+                let originalOrCropped = file;
 
 		const { canceled } = await os.yesno({
 			type: "question",
@@ -366,6 +379,10 @@ function changeAvatar(ev) {
 		$i.avatarId = i.avatarId;
 		$i.avatarUrl = i.avatarUrl;
 	});
+}
+
+function openIconGenerator() {
+        router.push("/settings/profile/icon-generator");
 }
 
 function changeBanner(ev) {
@@ -427,23 +444,37 @@ definePageMetadata({
 	border-radius: 0.625rem;
 	overflow: clip;
 
-	> .avatar {
-		display: inline-block;
-		text-align: center;
-		padding: 1rem;
+        > .avatar {
+                display: inline-block;
+                text-align: center;
+                padding: 1rem;
 
-		> .avatar {
-			display: inline-block;
-			width: 4.5rem;
-			height: 4.5rem;
-			margin: 0 auto 1rem auto;
-		}
-	}
+                > .avatar {
+                        display: inline-block;
+                        width: 4.5rem;
+                        height: 4.5rem;
+                        margin: 0 auto 1rem auto;
+                }
+
+                > .avatarActions {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.5rem;
+                        align-items: stretch;
+                }
+        }
 
 	> .bannerEdit {
 		position: absolute;
 		top: 1rem;
 		right: 1rem;
 	}
+}
+
+.profileActions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
 }
 </style>

@@ -328,18 +328,16 @@ function enforceContainTransform(event: Event) {
         const cropperImageRect = cropperImageClone.getBoundingClientRect();
         cropperCanvas.removeChild(cropperImageClone);
 
+        const epsilon = 0.5;
         const isOverflowing =
-                (cropperImageRect.top > cropperCanvasRect.top &&
-                        cropperImageRect.right < cropperCanvasRect.right) ||
-                (cropperImageRect.right < cropperCanvasRect.right &&
-                        cropperImageRect.bottom < cropperCanvasRect.bottom) ||
-                (cropperImageRect.bottom < cropperCanvasRect.bottom &&
-                        cropperImageRect.left > cropperCanvasRect.left) ||
-                (cropperImageRect.left > cropperCanvasRect.left &&
-                        cropperImageRect.top > cropperCanvasRect.top);
+                cropperImageRect.top < cropperCanvasRect.top - epsilon ||
+                cropperImageRect.left < cropperCanvasRect.left - epsilon ||
+                cropperImageRect.bottom > cropperCanvasRect.bottom + epsilon ||
+                cropperImageRect.right > cropperCanvasRect.right + epsilon;
 
         if (isOverflowing) {
                 transformEvent.preventDefault();
+                cropperImage.$center("contain");
         }
 }
 

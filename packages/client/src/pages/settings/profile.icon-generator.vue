@@ -313,10 +313,6 @@ function getSelectionBounds(): SelectionBounds | null {
         };
 }
 
-type CropperImageTransformDetail = {
-        matrix: number[];
-};
-
 function shouldPreventContainTransform(matrix: number[]) {
         if (!cropperCanvas || !cropperImage) return false;
 

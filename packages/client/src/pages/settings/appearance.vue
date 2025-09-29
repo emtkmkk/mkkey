@@ -1,196 +1,211 @@
 <template>
 	<div class="_formRoot">
-		<FormSection>
-			<template #label></template>
-			<FormSwitch v-model="autoplayMfm" class="_formBlock">
-				{{ i18n.ts._mfm.alwaysPlay }}
-				<template #caption>
-					<i
-						class="ph-warning ph-bold ph-lg"
-						style="color: var(--warn)"
-					></i>
-					{{ i18n.ts._mfm.warn }}
-				</template>
-			</FormSwitch>
-			<FormSwitch v-model="reduceAnimation" class="_formBlock">{{
-				i18n.ts.reduceUiAnimation
-			}}</FormSwitch>
-			<FormSwitch v-model="useBlurEffect" class="_formBlock">{{
-				i18n.ts.useBlurEffect
-			}}</FormSwitch>
-			<FormSwitch v-model="useBlurEffectForModal" class="_formBlock">{{
-				i18n.ts.useBlurEffectForModal
-			}}</FormSwitch>
-			<FormSwitch
-				v-model="showGapBetweenNotesInTimeline"
-				class="_formBlock"
-				>{{ i18n.ts.showGapBetweenNotesInTimeline }}</FormSwitch
-			>
-			<FormSwitch v-model="hiddenHeaderIcon" class="_formBlock">{{
-				i18n.ts.hiddenHeaderIcon
-			}}</FormSwitch>
-			<FormSwitch v-model="alwaysXExpand" class="_formBlock">{{
-				i18n.ts.alwaysXExpand
-			}}</FormSwitch>
-			<FormSwitch v-model="showRelationMark" class="_formBlock"
-				>{{ i18n.ts.showRelationMark
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="loadRawImages" class="_formBlock">{{
-				i18n.ts.loadRawImages
-			}}</FormSwitch>
-			<FormSwitch v-model="loadOriginalImages" class="_formBlock">{{
-				i18n.ts.loadOriginalImages
-			}}</FormSwitch>
-			<FormSwitch v-model="thumbnailCover" class="_formBlock"
-				>{{ i18n.ts.thumbnailCover
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="compactGrid" class="_formBlock"
-				>{{ i18n.ts.compactGrid
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="compactGridUrl" class="_formBlock"
-				>{{ i18n.ts.compactGridUrl
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch
-				v-model="disableShowingAnimatedImages"
-				class="_formBlock"
-				>{{ i18n.ts.disableShowingAnimatedImages }}</FormSwitch
-			>
-			<FormSwitch v-model="squareAvatars" class="_formBlock">{{
-				i18n.ts.squareAvatars
-			}}</FormSwitch>
-			<FormSwitch v-model="reactionShowBig" class="_formBlock">
-				{{ i18n.ts.reactionShowBig }}
-				<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="reactionShowUsername" class="_formBlock">
-				{{ i18n.ts.reactionShowUsername }}
-				<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="reactionShowShort" class="_formBlock">
-				{{ i18n.ts.reactionShowShort }}
-				<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="seperateRenoteQuote" class="_formBlock">{{
-				i18n.ts.seperateRenoteQuote
-			}}</FormSwitch>
-			<FormSwitch v-model="useSystemFont" class="_formBlock">{{
-				i18n.ts.useSystemFont
-			}}</FormSwitch>
-			<FormSwitch v-model="useOsNativeEmojis" class="_formBlock">
-				{{ i18n.ts.useOsNativeEmojis }}
-				<div>
-					<Mfm :key="useOsNativeEmojis" text="🍮🍦🍭🍩🍰🍫🍬🥞🍪" />
-				</div>
-			</FormSwitch>
-			<FormSelect v-model="customFont">
-				<template #label
-					>{{ i18n.ts.customFont
-					}}<span v-if="showMkkeySettingTips" class="_beta">{{
-						i18n.ts.mkkey
-					}}</span></template
-				>
-				<option :value="null">{{ i18n.ts.default }}</option>
-				<option
-					v-for="[name, font] of Object.entries(fontList)"
-					:value="name"
-				>
-					{{ font.name }}
-				</option>
-			</FormSelect>
-			<FormSwitch v-model="randomCustomFont" class="_formBlock">
-				{{ i18n.ts.randomCustomFont }}
-				<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch
-				v-if="
-					includesRandomEsenapaj ||
-					(customFont === 'esenapaj' && randomCustomFont)
-				"
-				v-model="includesRandomEsenapaj"
-				class="_formBlock"
-			>
-				{{ i18n.ts.includesRandomEsenapaj }}
-				<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="disableDrawer" class="_formBlock">{{
-				i18n.ts.disableDrawer
-			}}</FormSwitch>
-		</FormSection>
-		<FormSection>
-			<template #label></template>
+                <FormSection>
+                        <template #label>{{ i18n.ts.appearanceDisplayEffects }}</template>
+                        <FormSwitch v-model="autoplayMfm" class="_formBlock">
+                                {{ i18n.ts._mfm.alwaysPlay }}
+                                <template #caption>
+                                        <i
+                                                class="ph-warning ph-bold ph-lg"
+                                                style="color: var(--warn)"
+                                        ></i>
+                                        {{ i18n.ts._mfm.warn }}
+                                </template>
+                        </FormSwitch>
+                        <FormSwitch v-model="reduceAnimation" class="_formBlock">{{
+                                i18n.ts.reduceUiAnimation
+                        }}</FormSwitch>
+                        <FormSwitch v-model="useBlurEffect" class="_formBlock">{{
+                                i18n.ts.useBlurEffect
+                        }}</FormSwitch>
+                        <FormSwitch v-model="useBlurEffectForModal" class="_formBlock">{{
+                                i18n.ts.useBlurEffectForModal
+                        }}</FormSwitch>
+                </FormSection>
 
-			<FormRadios v-model="fontSize" class="_formBlock">
-				<template #label>{{ i18n.ts.fontSize }}</template>
-				<option value="-5">
-					<span style="font-size: 0.6875rem">11</span>
-				</option>
-				<option :value="-3">
-					<span style="font-size: 0.8125rem">13</span>
-				</option>
-				<option value="-2">
-					<span style="font-size: 0.875rem">14</span>
-				</option>
-				<option value="-1">
-					<span style="font-size: 0.9375rem">15</span>
-				</option>
-				<option value="null">
-					<span style="font-size: 1rem">16</span>
-				</option>
-				<option value="1">
-					<span style="font-size: 1.0625rem">17</span>
-				</option>
-				<option value="2">
-					<span style="font-size: 1.125rem">18</span>
-				</option>
-				<option value="3">
-					<span style="font-size: 1.1875rem">19</span>
-				</option>
-				<option value="5">
-					<span style="font-size: 1.3125rem">21</span>
-				</option>
-			</FormRadios>
+                <FormSection>
+                        <template #label>{{ i18n.ts.appearanceTimelineAndMedia }}</template>
+                        <FormSwitch
+                                v-model="showGapBetweenNotesInTimeline"
+                                class="_formBlock"
+                                >{{ i18n.ts.showGapBetweenNotesInTimeline }}</FormSwitch
+                        >
+                        <FormSwitch v-model="loadRawImages" class="_formBlock">{{
+                                i18n.ts.loadRawImages
+                        }}</FormSwitch>
+                        <FormSwitch v-model="loadOriginalImages" class="_formBlock">{{
+                                i18n.ts.loadOriginalImages
+                        }}</FormSwitch>
+                        <FormSwitch v-model="thumbnailCover" class="_formBlock"
+                                >{{ i18n.ts.thumbnailCover
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="compactGrid" class="_formBlock"
+                                >{{ i18n.ts.compactGrid
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="compactGridUrl" class="_formBlock"
+                                >{{ i18n.ts.compactGridUrl
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch
+                                v-model="disableShowingAnimatedImages"
+                                class="_formBlock"
+                                >{{ i18n.ts.disableShowingAnimatedImages }}</FormSwitch
+                        >
+                        <FormSwitch v-model="seperateRenoteQuote" class="_formBlock">{{
+                                i18n.ts.seperateRenoteQuote
+                        }}</FormSwitch>
+                </FormSection>
 
-			<FormRadios v-model="avatarSize" class="_formBlock">
-				<template #label
-					>{{ i18n.ts.avatarSize
-					}}<span v-if="showMkkeySettingTips" class="_beta">{{
-						i18n.ts.mkkey
-					}}</span></template
-				>
-				<option value="-2">極小</option>
-				<option value="-1">小</option>
-				<option value="null">中</option>
-				<option value="1">大</option>
-				<option value="2">特大</option>
-				<option value="-3">豆粒</option>
-				<option value="-4">非表示</option>
-				<option value="f-1">固定（小）</option>
-				<option value="f">固定（中）</option>
-				<option value="f1">固定（大）</option>
-			</FormRadios>
-		</FormSection>
+                <FormSection>
+                        <template #label>{{ i18n.ts.appearanceInterface }}</template>
+                        <FormSwitch v-model="hiddenHeaderIcon" class="_formBlock">{{
+                                i18n.ts.hiddenHeaderIcon
+                        }}</FormSwitch>
+                        <FormSwitch v-model="alwaysXExpand" class="_formBlock">{{
+                                i18n.ts.alwaysXExpand
+                        }}</FormSwitch>
+                        <FormSwitch v-model="showRelationMark" class="_formBlock"
+                                >{{ i18n.ts.showRelationMark
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="disableDrawer" class="_formBlock">{{
+                                i18n.ts.disableDrawer
+                        }}</FormSwitch>
+                </FormSection>
+
+                <FormSection>
+                        <template #label>{{ i18n.ts.appearanceReactions }}</template>
+                        <FormSwitch v-model="reactionShowBig" class="_formBlock">
+                                {{ i18n.ts.reactionShowBig }}
+                                <span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="reactionShowUsername" class="_formBlock">
+                                {{ i18n.ts.reactionShowUsername }}
+                                <span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="reactionShowShort" class="_formBlock">
+                                {{ i18n.ts.reactionShowShort }}
+                                <span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                </FormSection>
+
+                <FormSection>
+                        <template #label>{{ i18n.ts.appearanceFonts }}</template>
+                        <FormRadios v-model="fontSize" class="_formBlock">
+                                <template #label>{{ i18n.ts.fontSize }}</template>
+                                <option value="-5">
+                                        <span style="font-size: 0.6875rem">11</span>
+                                </option>
+                                <option :value="-3">
+                                        <span style="font-size: 0.8125rem">13</span>
+                                </option>
+                                <option value="-2">
+                                        <span style="font-size: 0.875rem">14</span>
+                                </option>
+                                <option value="-1">
+                                        <span style="font-size: 0.9375rem">15</span>
+                                </option>
+                                <option value="null">
+                                        <span style="font-size: 1rem">16</span>
+                                </option>
+                                <option value="1">
+                                        <span style="font-size: 1.0625rem">17</span>
+                                </option>
+                                <option value="2">
+                                        <span style="font-size: 1.125rem">18</span>
+                                </option>
+                                <option value="3">
+                                        <span style="font-size: 1.1875rem">19</span>
+                                </option>
+                                <option value="5">
+                                        <span style="font-size: 1.3125rem">21</span>
+                                </option>
+                        </FormRadios>
+                        <FormSwitch v-model="useSystemFont" class="_formBlock">{{
+                                i18n.ts.useSystemFont
+                        }}</FormSwitch>
+                        <FormSwitch v-model="useOsNativeEmojis" class="_formBlock">
+                                {{ i18n.ts.useOsNativeEmojis }}
+                                <div>
+                                        <Mfm :key="useOsNativeEmojis" text="🍮🍦🍭🍩🍰🍫🍬🥞🍪" />
+                                </div>
+                        </FormSwitch>
+                        <FormSelect v-model="customFont">
+                                <template #label
+                                        >{{ i18n.ts.customFont
+                                        }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></template
+                                >
+                                <option :value="null">{{ i18n.ts.default }}</option>
+                                <option
+                                        v-for="[name, font] of Object.entries(fontList)"
+                                        :value="name"
+                                >
+                                        {{ font.name }}
+                                </option>
+                        </FormSelect>
+                        <FormSwitch v-model="randomCustomFont" class="_formBlock">
+                                {{ i18n.ts.randomCustomFont }}
+                                <span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch
+                                v-if="
+                                        includesRandomEsenapaj ||
+                                        (customFont === 'esenapaj' && randomCustomFont)
+                                "
+                                v-model="includesRandomEsenapaj"
+                                class="_formBlock"
+                        >
+                                {{ i18n.ts.includesRandomEsenapaj }}
+                                <span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                </FormSection>
+
+                <FormSection>
+                        <template #label>{{ i18n.ts.appearanceAvatars }}</template>
+                        <FormSwitch v-model="squareAvatars" class="_formBlock">{{
+                                i18n.ts.squareAvatars
+                        }}</FormSwitch>
+                        <FormRadios v-model="avatarSize" class="_formBlock">
+                                <template #label
+                                        >{{ i18n.ts.avatarSize
+                                        }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></template
+                                >
+                                <option value="-2">極小</option>
+                                <option value="-1">小</option>
+                                <option value="null">中</option>
+                                <option value="1">大</option>
+                                <option value="2">特大</option>
+                                <option value="-3">豆粒</option>
+                                <option value="-4">非表示</option>
+                                <option value="f-1">固定（小）</option>
+                                <option value="f">固定（中）</option>
+                                <option value="f1">固定（大）</option>
+                        </FormRadios>
+                </FormSection>
 
 		<FormSection>
 			<template #label>{{ i18n.ts.showColor }}</template>
@@ -233,41 +248,41 @@
 			>
 		</FormSection>
 
-		<FormSelect v-model="instanceTicker" class="_formBlock">
-			<template #label>{{ i18n.ts.instanceTicker }}</template>
-			<option value="none">{{ i18n.ts._instanceTicker.none }}</option>
-			<option value="remote">{{ i18n.ts._instanceTicker.remote }}</option>
-			<option value="always">{{ i18n.ts._instanceTicker.always }}</option>
-		</FormSelect>
-
-		<FormSwitch v-model="tickerShowName" class="_formBlock"
-			>{{ i18n.ts.tickerShowName
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{
-				i18n.ts.mkkey
-			}}</span></FormSwitch
-		>
-		<FormSwitch v-model="tickerShowFavicon" class="_formBlock"
-			>{{ i18n.ts.tickerShowFavicon
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{
-				i18n.ts.mkkey
-			}}</span></FormSwitch
-		>
-		<FormSwitch v-model="tickerShowIcon" class="_formBlock"
-			>{{ i18n.ts.tickerShowIcon
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{
-				i18n.ts.mkkey
-			}}</span></FormSwitch
-		>
-
-		<FormSwitch
-			v-if="developer"
-			v-model="developerTicker"
-			class="_formBlock"
-			>{{ i18n.ts.developerTicker
-			}}<span v-if="showMkkeySettingTips" class="_beta">{{
-				i18n.ts.mkkey
-			}}</span></FormSwitch
-		>
+                <FormSection>
+                        <template #label>{{ i18n.ts.instanceTicker }}</template>
+                        <FormSelect v-model="instanceTicker" class="_formBlock">
+                                <option value="none">{{ i18n.ts._instanceTicker.none }}</option>
+                                <option value="remote">{{ i18n.ts._instanceTicker.remote }}</option>
+                                <option value="always">{{ i18n.ts._instanceTicker.always }}</option>
+                        </FormSelect>
+                        <FormSwitch v-model="tickerShowName" class="_formBlock"
+                                >{{ i18n.ts.tickerShowName
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="tickerShowFavicon" class="_formBlock"
+                                >{{ i18n.ts.tickerShowFavicon
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="tickerShowIcon" class="_formBlock"
+                                >{{ i18n.ts.tickerShowIcon
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch
+                                v-if="developer"
+                                v-model="developerTicker"
+                                class="_formBlock"
+                                >{{ i18n.ts.developerTicker
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                </FormSection>
 
 		<FormLink to="/settings/custom-css" class="_formBlock"
 			><template #icon><i class="ph-code ph-bold ph-lg"></i></template

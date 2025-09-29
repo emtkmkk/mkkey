@@ -282,6 +282,10 @@ type SelectionBounds = {
         height: number;
 };
 
+type CropperImageTransformDetail = {
+        matrix?: number[];
+};
+
 function getSelectionBounds(): SelectionBounds | null {
         if (!cropperCanvas) return null;
         const canvasRect = cropperCanvas.getBoundingClientRect();
@@ -816,7 +820,7 @@ function setupCropper() {
                 selection.aspectRatio = 1;
                 selection.initialAspectRatio = 1;
                 selection.initialCoverage = 1;
-                selection.movable = false;
+                selection.movable = true;
                 selection.resizable = true;
                 selection.keyboard = true;
                 selection.outlined = true;

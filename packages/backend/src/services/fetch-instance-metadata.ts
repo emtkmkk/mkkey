@@ -74,8 +74,8 @@ export async function fetchInstanceMetadata(
 				: null;
 			updates.maxReactionsPerAccount = info.metadata?.maxReactionsPerAccount;
 
-			if (updates.maxReactionsPerAccount === 128)
-				updates.maxReactionsPerAccount = 127;
+			if (updates.maxReactionsPerAccount > 3)
+				updates.maxReactionsPerAccount = 3;
 
 			// 最大リアクション数がnodeinfoで取得できなかった場合
 			if (!updates.maxReactionsPerAccount) {
@@ -108,14 +108,14 @@ export async function fetchInstanceMetadata(
 							mastodonInfo.fedibird_capabilities?.includes("emoji_reaction")
 								? 1
 								: 0);
-						if (updates.maxReactionsPerAccount === 128)
-							updates.maxReactionsPerAccount = 127;
+						if (updates.maxReactionsPerAccount > 3)
+							updates.maxReactionsPerAccount = 3;
 					}
 				}
 				// features に pleroma_emoji_reactions が含まれる場合
 				else if (info.metadata?.features?.includes("pleroma_emoji_reactions")) {
-					// 無限なので128とする
-					updates.maxReactionsPerAccount = 128;
+					// 無限なので3とする
+					updates.maxReactionsPerAccount = 3;
 				}
 				// それ以外
 				else {

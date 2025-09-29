@@ -243,6 +243,51 @@ let downloading = $ref(false);
 let previewUpdating = false;
 let previewPending = false;
 
+function ensureContainEnforcement() {
+        if (containEnforcementFrame != null) {
+                return;
+        }
+
+        const step = () => {
+                if (!cropperImage) {
+                        containEnforcementFrame = null;
+                        return;
+                }
+
+                if (!suppressContainEnforcement) {
+                        try {
+                                cropperImage?.$center("contain");
+                        } catch (err) {
+                                // noop - guard against unexpected runtime issues
+                        }
+                }
+
+                containEnforcementFrame = window.requestAnimationFrame(step);
+        };
+
+        containEnforcementFrame = window.requestAnimationFrame(step);
+}
+
+function cancelContainEnforcement() {
+        if (containEnforcementFrame != null) {
+                window.cancelAnimationFrame(containEnforcementFrame);
+                containEnforcementFrame = null;
+        }
+}
+
+function runWithContainSuppressed(callback: () => void) {
+        const previous = suppressContainEnforcement;
+        suppressContainEnforcement = true;
+        try {
+                callback();
+        } finally {
+                suppressContainEnforcement = previous;
+                if (!previous) {
+                        ensureContainEnforcement();
+                }
+        }
+}
+
 const imgUrl = $computed(() =>
         selectedFile
                 ? `${url}/proxy/image.webp?${query({ url: selectedFile.url })}`
@@ -718,6 +763,7 @@ function setupCropper() {
                         cropperImage.rotatable = false;
                         cropperImage.scalable = true;
                 }
+                ensureContainEnforcement();
                 cropperSelection = selection;
 
                 if (selectionChangeListener) {

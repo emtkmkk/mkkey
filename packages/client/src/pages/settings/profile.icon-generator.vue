@@ -313,63 +313,36 @@ function getSelectionBounds(): SelectionBounds | null {
         };
 }
 
-function runWithContainSuppressed(callback: () => void) {
-        suppressContainEnforcement = true;
-        try {
-                callback();
-        } finally {
-                if (typeof window !== "undefined") {
-                        window.requestAnimationFrame(() => {
-                                suppressContainEnforcement = false;
-                        });
-                } else {
-                        suppressContainEnforcement = false;
-                }
-        }
-}
+type CropperImageTransformDetail = {
+        matrix: number[];
+};
 
-function isImageOverflowing() {
+function shouldPreventContainTransform(matrix: number[]) {
         if (!cropperCanvas || !cropperImage) return false;
+
         const canvasRect = cropperCanvas.getBoundingClientRect();
-        const imageRect = cropperImage.getBoundingClientRect();
-        if (!canvasRect.width || !canvasRect.height) return false;
-        if (!imageRect.width || !imageRect.height) return false;
+        if (!canvasRect.width || !canvasRect.height) {
+                return false;
+        }
 
-        const epsilon = 0.5;
+        const clone = cropperImage.cloneNode() as CropperImage;
+        clone.style.transform = `matrix(${matrix.join(", ")})`;
+        clone.style.opacity = "0";
+        cropperCanvas.appendChild(clone);
+
+        const imageRect = clone.getBoundingClientRect();
+        cropperCanvas.removeChild(clone);
+
+        if (!imageRect.width || !imageRect.height) {
+                return false;
+        }
+
         return (
-                imageRect.top < canvasRect.top - epsilon ||
-                imageRect.left < canvasRect.left - epsilon ||
-                imageRect.bottom > canvasRect.bottom + epsilon ||
-                imageRect.right > canvasRect.right + epsilon
+                (imageRect.top > canvasRect.top && imageRect.right < canvasRect.right) ||
+                (imageRect.right < canvasRect.right && imageRect.bottom < canvasRect.bottom) ||
+                (imageRect.bottom < canvasRect.bottom && imageRect.left > canvasRect.left) ||
+                (imageRect.left > canvasRect.left && imageRect.top > canvasRect.top)
         );
-}
-
-function requestContainEnforcement() {
-        if (!cropperCanvas || !cropperImage) return;
-        if (typeof window === "undefined") return;
-        if (suppressContainEnforcement) return;
-        if (containEnforcementFrame != null) {
-                return;
-        }
-
-        containEnforcementFrame = window.requestAnimationFrame(() => {
-                containEnforcementFrame = null;
-                if (!cropperCanvas || !cropperImage) return;
-                if (suppressContainEnforcement) return;
-                if (!isImageOverflowing()) {
-                        return;
-                }
-                runWithContainSuppressed(() => {
-                        cropperImage?.$center("contain");
-                });
-        });
-}
-
-function cancelContainEnforcement() {
-        if (containEnforcementFrame != null && typeof window !== "undefined") {
-                window.cancelAnimationFrame(containEnforcementFrame);
-        }
-        containEnforcementFrame = null;
 }
 
 function clampSelectionSnapshot(snapshot: SelectionSnapshot): SelectionSnapshot {
@@ -699,9 +672,6 @@ async function pickImage(ev?: Event) {
                 const file = await selectFile(
                         ev?.currentTarget ?? ev?.target ?? undefined,
                         i18n.ts.avatar,
-                        undefined,
-                        undefined,
-                        "avatar",
                 );
                 selectedFile = file;
                 loading = true;
@@ -748,9 +718,9 @@ function setupCropper() {
                 cropperCanvas.background = false;
                 cropperImage = image;
                 if (cropperImage) {
-                        cropperImage.translatable = false;
+                        cropperImage.translatable = true;
                         cropperImage.rotatable = false;
-                        cropperImage.scalable = false;
+                        cropperImage.scalable = true;
                 }
                 cropperSelection = selection;
 
@@ -780,8 +750,13 @@ function setupCropper() {
                                 imageTransformListener as EventListener,
                         );
                 }
-                imageTransformListener = () => {
-                        requestContainEnforcement();
+                imageTransformListener = (event: Event) => {
+                        const detail = (event as CustomEvent<CropperImageTransformDetail>).detail;
+                        const matrix = detail?.matrix;
+                        if (matrix && shouldPreventContainTransform(matrix)) {
+                                event.preventDefault();
+                                return;
+                        }
                         if (!cropperSelection) {
                                 return;
                         }

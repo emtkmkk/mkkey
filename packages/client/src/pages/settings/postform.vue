@@ -1,156 +1,155 @@
 <template>
 	<div class="_formRoot">
-		<FormSection>
-			<template #label></template>
-			<FormSwitch v-model="enterSendsMessage" class="_formBlock">{{
-				i18n.ts.enterSendsMessage
-			}}</FormSwitch>
-			<FormSwitch v-model="plusInfoPostForm" class="_formBlock"
-				>{{ i18n.ts.plusInfoPostForm
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="openEmojiPicker" class="_formBlock"
-				>{{ i18n.ts.openEmojiPicker
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch
-				:disabled="!openEmojiPicker"
-				v-model="postAutoFocusSearchBar"
-				class="_formBlock"
-				>{{ i18n.ts.postAutoFocusSearchBar
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch
-				:disabled="!openEmojiPicker"
-				v-model="notCloseEmojiPicker"
-				class="_formBlock"
-				>{{ i18n.ts.notCloseEmojiPicker
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="showRemoteEmojiPostForm" class="_formBlock"
-				>{{ i18n.ts.showRemoteEmojiPostForm
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="usePickerSizePostForm" class="_formBlock">
-				{{ i18n.ts.usePickerSizePostForm
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span>
-			</FormSwitch>
-			<FormSwitch v-model="hiddenMentionButton" class="_formBlock"
-				>{{ i18n.ts.hiddenMentionButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch
-				:disabled="hiddenMentionButton"
-				v-model="openMentionWindow"
-				class="_formBlock"
-				>{{ i18n.ts.openMentionWindow
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="hiddenCloseButton" class="_formBlock"
-				>{{ i18n.ts.hiddenCloseButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch
-				:disabled="hiddenCloseButton"
-				v-model="CloseAllClearButton"
-				class="_formBlock"
-				>{{ i18n.ts.CloseAllClearButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="hiddenAccountButton" class="_formBlock"
-				>{{ i18n.ts.hiddenAccountButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="hiddenMFMHelp" class="_formBlock"
-				>{{ i18n.ts.hiddenMFMHelp
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="smartMFMInputer" class="_formBlock"
-				>{{ i18n.ts.smartMFMInputer
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="quickToggleSmartMFMInputer" class="_formBlock"
-				>{{ i18n.ts.quickToggleSmartMFMInputer
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="hiddenDraftButton" class="_formBlock"
-				>{{ i18n.ts.hiddenDraftButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="keepPostCw" class="_formBlock"
-				>{{ i18n.ts.keepPostCw
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch v-model="keepCw" class="_formBlock">{{
-				i18n.ts.keepCw
-			}}</FormSwitch>
-			<FormSwitch
-				v-model="emojiPickerUseDrawerForMobile"
-				class="_formBlock"
-				>{{ i18n.ts.emojiPickerUseDrawerForMobile
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
-			>
-			<FormSwitch
-				v-if="developer && $i?.canInvite"
-				v-model="enabledSpecifiedCc"
-				class="_formBlock"
-				>{{ i18n.ts.enabledSpecifiedCc
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span
-				><template #caption>{{
-					i18n.ts.enabledSpecifiedCcDescription
-				}}</template></FormSwitch
-			>
-		</FormSection>
+            <FormSection>
+                        <template #label>{{ i18n.ts.behavior }}</template>
+                        <FormSwitch v-model="enterSendsMessage" class="_formBlock">{{
+                                i18n.ts.enterSendsMessage
+                        }}</FormSwitch>
+                        <FormSwitch v-model="keepPostCw" class="_formBlock"
+                                >{{ i18n.ts.keepPostCw
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="keepCw" class="_formBlock">{{
+                                i18n.ts.keepCw
+                        }}</FormSwitch>
+                        <FormSwitch v-model="smartMFMInputer" class="_formBlock"
+                                >{{ i18n.ts.smartMFMInputer
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="quickToggleSmartMFMInputer" class="_formBlock"
+                                >{{ i18n.ts.quickToggleSmartMFMInputer
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch
+                                v-if="developer && $i?.canInvite"
+                                v-model="enabledSpecifiedCc"
+                                class="_formBlock"
+                                >{{ i18n.ts.enabledSpecifiedCc
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span
+                                ><template #caption>{{
+                                        i18n.ts.enabledSpecifiedCcDescription
+                                }}</template></FormSwitch
+                        >
+            </FormSection>
+            <FormSection>
+                        <template #label>{{ i18n.ts.emoji }}</template>
+                        <FormSwitch v-model="openEmojiPicker" class="_formBlock"
+                                >{{ i18n.ts.openEmojiPicker
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch
+                                :disabled="!openEmojiPicker"
+                                v-model="postAutoFocusSearchBar"
+                                class="_formBlock"
+                                >{{ i18n.ts.postAutoFocusSearchBar
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch
+                                :disabled="!openEmojiPicker"
+                                v-model="notCloseEmojiPicker"
+                                class="_formBlock"
+                                >{{ i18n.ts.notCloseEmojiPicker
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="showRemoteEmojiPostForm" class="_formBlock"
+                                >{{ i18n.ts.showRemoteEmojiPostForm
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="usePickerSizePostForm" class="_formBlock">
+                                {{ i18n.ts.usePickerSizePostForm
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span>
+                        </FormSwitch>
+                        <FormSwitch
+                                v-model="emojiPickerUseDrawerForMobile"
+                                class="_formBlock"
+                                >{{ i18n.ts.emojiPickerUseDrawerForMobile
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+            </FormSection>
+            <FormSection>
+                        <template #label>{{ i18n.ts.display }}</template>
+                        <FormSwitch v-model="plusInfoPostForm" class="_formBlock"
+                                >{{ i18n.ts.plusInfoPostForm
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="hiddenMentionButton" class="_formBlock"
+                                >{{ i18n.ts.hiddenMentionButton
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch
+                                :disabled="hiddenMentionButton"
+                                v-model="openMentionWindow"
+                                class="_formBlock"
+                                >{{ i18n.ts.openMentionWindow
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="hiddenCloseButton" class="_formBlock"
+                                >{{ i18n.ts.hiddenCloseButton
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch
+                                :disabled="hiddenCloseButton"
+                                v-model="CloseAllClearButton"
+                                class="_formBlock"
+                                >{{ i18n.ts.CloseAllClearButton
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="hiddenAccountButton" class="_formBlock"
+                                >{{ i18n.ts.hiddenAccountButton
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="hiddenMFMHelp" class="_formBlock"
+                                >{{ i18n.ts.hiddenMFMHelp
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+                        <FormSwitch v-model="hiddenDraftButton" class="_formBlock"
+                                >{{ i18n.ts.hiddenDraftButton
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
+                        >
+            </FormSection>
 	</div>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, watch } from "vue";
-import FormButton from "@/components/MkButton.vue";
-import FormLink from "@/components/form/link.vue";
 import FormSection from "@/components/form/section.vue";
 import FormSwitch from "@/components/form/switch.vue";
-import FormInput from "@/components/form/input.vue";
-import FormSelect from "@/components/form/select.vue";
-import FormRadios from "@/components/form/radios.vue";
-import FormRange from "@/components/form/range.vue";
-import MkLink from "@/components/MkLink.vue";
 import * as os from "@/os";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
@@ -165,11 +164,11 @@ const MOBILE_THRESHOLD = 500;
 // デスクトップでウィンドウを狭くしたときモバイルUIが表示されて欲しいことはあるので deviceKind === 'desktop' の判定は行わない
 const isDesktop = ref(window.innerWidth >= DESKTOP_THRESHOLD);
 const isMobile = ref(
-	deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD
+        deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD
 );
 window.addEventListener("resize", () => {
-	isMobile.value =
-		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
+        isMobile.value =
+                deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 
 const developer = computed(defaultStore.makeGetterSetter("developer"));

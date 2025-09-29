@@ -1,5 +1,6 @@
 import type Koa from "koa";
 import summaly from "summaly";
+import { load } from "cheerio";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import Logger from "@/services/logger.js";
 import config from "@/config/index.js";

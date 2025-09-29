@@ -752,7 +752,7 @@ function setupCropper() {
                 selection.aspectRatio = 1;
                 selection.initialAspectRatio = 1;
                 selection.initialCoverage = 1;
-                selection.movable = false;
+                selection.movable = true;
                 selection.resizable = true;
                 selection.keyboard = true;
                 selection.outlined = true;

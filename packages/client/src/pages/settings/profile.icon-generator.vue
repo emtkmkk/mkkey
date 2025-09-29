@@ -111,7 +111,6 @@ import Cropper from "cropperjs";
 import tinycolor from "tinycolor2";
 import type { DriveFile } from "calckey-js/built/entities";
 import MkButton from "@/components/MkButton.vue";
-import MkLoading from "@/components/MkLoading.vue";
 import { selectFile } from "@/scripts/select-file";
 import { i18n } from "@/i18n";
 import { useRouter } from "@/router";

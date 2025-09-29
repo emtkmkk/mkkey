@@ -327,6 +327,12 @@ type SelectionBounds = {
         height: number;
 };
 
+type SelectionRenderInfo = {
+        sourceX: number;
+        sourceY: number;
+        sourceSize: number;
+};
+
 type CropperImageTransformDetail = {
         matrix?: number[];
 };
@@ -356,6 +362,98 @@ function getSelectionBounds(): SelectionBounds | null {
                 width: Math.round(canvasRect.width),
                 height: Math.round(canvasRect.height),
         };
+}
+
+function getNaturalScaleX(bounds: SelectionBounds | null = getSelectionBounds()) {
+        if (!bounds) return 1;
+        const naturalWidth = imgEl?.naturalWidth;
+        if (!naturalWidth) return 1;
+        const scale = naturalWidth / Math.max(1, bounds.width);
+        return Number.isFinite(scale) && scale > 0 ? scale : 1;
+}
+
+function getNaturalScaleY(bounds: SelectionBounds | null = getSelectionBounds()) {
+        if (!bounds) return 1;
+        const naturalHeight = imgEl?.naturalHeight;
+        if (!naturalHeight) return 1;
+        const scale = naturalHeight / Math.max(1, bounds.height);
+        return Number.isFinite(scale) && scale > 0 ? scale : 1;
+}
+
+function getSelectionRenderInfo(
+        snapshot: SelectionSnapshot | null = getSelectionSnapshot(),
+): SelectionRenderInfo | null {
+        if (!snapshot) return null;
+        const bounds = getSelectionBounds();
+        if (!bounds) return null;
+        const naturalWidth = imgEl?.naturalWidth;
+        const naturalHeight = imgEl?.naturalHeight;
+        if (!naturalWidth || !naturalHeight) return null;
+
+        const scaleX = naturalWidth / Math.max(1, bounds.width);
+        const scaleY = naturalHeight / Math.max(1, bounds.height);
+        const sizeScale = Math.max(scaleX, scaleY);
+
+        const relativeX = snapshot.x - bounds.offsetX;
+        const relativeY = snapshot.y - bounds.offsetY;
+
+        const baseX = Math.round(relativeX * scaleX);
+        const baseY = Math.round(relativeY * scaleY);
+        const baseSize = Math.round(snapshot.width * sizeScale);
+
+        const clampedX = clamp(baseX, 0, Math.max(0, naturalWidth - 1));
+        const clampedY = clamp(baseY, 0, Math.max(0, naturalHeight - 1));
+        const maxSize = Math.min(
+                Math.max(1, naturalWidth - clampedX),
+                Math.max(1, naturalHeight - clampedY),
+        );
+        const sourceSize = Math.max(1, Math.min(baseSize, maxSize));
+
+        return {
+                sourceX: clampedX,
+                sourceY: clampedY,
+                sourceSize,
+        };
+}
+
+function renderSelectionCanvas(
+        snapshot: SelectionSnapshot | null,
+        targetSize?: number,
+        smoothing = true,
+): HTMLCanvasElement | null {
+        if (!imgEl) return null;
+        const renderInfo = getSelectionRenderInfo(snapshot);
+        if (!renderInfo) return null;
+
+        const outputSize = Math.round(
+                Math.max(1, targetSize ?? renderInfo.sourceSize),
+        );
+
+        const canvas = document.createElement("canvas");
+        canvas.width = outputSize;
+        canvas.height = outputSize;
+
+        const context = canvas.getContext("2d");
+        if (!context) {
+                return null;
+        }
+
+        context.imageSmoothingEnabled = smoothing;
+        context.imageSmoothingQuality = smoothing ? "high" : "low";
+        context.clearRect(0, 0, outputSize, outputSize);
+        context.drawImage(
+                imgEl,
+                renderInfo.sourceX,
+                renderInfo.sourceY,
+                renderInfo.sourceSize,
+                renderInfo.sourceSize,
+                0,
+                0,
+                outputSize,
+                outputSize,
+        );
+
+        return canvas;
 }
 
 function shouldPreventContainTransform(matrix: number[]) {
@@ -417,10 +515,14 @@ function isSameSelection(a: SelectionSnapshot, b: SelectionSnapshot) {
 }
 
 function syncSelectionInputs() {
-        selectionInputs.x = selectionInfo.x.toString();
-        selectionInputs.y = selectionInfo.y.toString();
+        const bounds = getSelectionBounds();
+        const scaleX = getNaturalScaleX(bounds);
+        const scaleY = getNaturalScaleY(bounds);
+        const sizeScale = Math.max(scaleX, scaleY);
+        selectionInputs.x = Math.round(selectionInfo.x * scaleX).toString();
+        selectionInputs.y = Math.round(selectionInfo.y * scaleY).toString();
         const size = Math.max(selectionInfo.width, selectionInfo.height);
-        selectionInputs.size = size.toString();
+        selectionInputs.size = Math.round(size * sizeScale).toString();
 }
 
 function setHandleAction(element: Element | null | undefined, action: string) {
@@ -603,24 +705,38 @@ function adjustSelection(key: SelectionUiKey, delta: number) {
         const snapshot = getSelectionSnapshot();
         if (!snapshot) return;
         const updated: SelectionSnapshot = { ...snapshot };
+        const scaleX = getNaturalScaleX(bounds);
+        const scaleY = getNaturalScaleY(bounds);
+        const sizeScale = Math.max(scaleX, scaleY);
 
         if (key === "x" || key === "y") {
-                const currentValue = key === "x" ? selectionInfo.x : selectionInfo.y;
-                const maxValue = key === "x"
+                const offsetKey = key === "x" ? "offsetX" : "offsetY";
+                const scaleValue = key === "x" ? scaleX : scaleY;
+                const currentDisplay =
+                        key === "x" ? updated.x - bounds.offsetX : updated.y - bounds.offsetY;
+                const maxDisplay = key === "x"
                         ? Math.max(0, bounds.width - updated.width)
                         : Math.max(0, bounds.height - updated.height);
-                const offsetKey = key === "x" ? "offsetX" : "offsetY";
-                const nextValue = Math.round(clamp(currentValue + delta, 0, maxValue));
-                updated[key] = nextValue + bounds[offsetKey];
+                const currentNatural = Math.round(currentDisplay * scaleValue);
+                const maxNatural = Math.round(maxDisplay * scaleValue);
+                const nextNatural = Math.round(clamp(currentNatural + delta, 0, maxNatural));
+                const nextDisplay = nextNatural / scaleValue;
+                updated[key] = Math.round(nextDisplay + bounds[offsetKey]);
         } else if (key === "size") {
                 const maxSize = Math.min(bounds.width, bounds.height);
                 const currentSize = Math.max(updated.width, updated.height);
-                const desiredSize = Math.round(clamp(currentSize + delta, 1, maxSize));
-                updated.width = desiredSize;
-                updated.height = desiredSize;
+                const currentNatural = Math.round(currentSize * sizeScale);
+                const maxNatural = Math.round(maxSize * sizeScale);
+                const desiredNatural = Math.round(
+                        clamp(currentNatural + delta, 1, Math.max(1, maxNatural)),
+                );
+                const desiredSize = desiredNatural / sizeScale;
+                const roundedSize = Math.max(1, Math.round(desiredSize));
+                updated.width = roundedSize;
+                updated.height = roundedSize;
 
-                const maxX = bounds.offsetX + Math.max(0, bounds.width - desiredSize);
-                const maxY = bounds.offsetY + Math.max(0, bounds.height - desiredSize);
+                const maxX = bounds.offsetX + Math.max(0, bounds.width - roundedSize);
+                const maxY = bounds.offsetY + Math.max(0, bounds.height - roundedSize);
                 updated.x = clamp(updated.x, bounds.offsetX, maxX);
                 updated.y = clamp(updated.y, bounds.offsetY, maxY);
         }
@@ -649,22 +765,31 @@ function commitSelectionInput(key: SelectionUiKey) {
         }
 
         const updated: SelectionSnapshot = { ...snapshot };
+        const scaleX = getNaturalScaleX(bounds);
+        const scaleY = getNaturalScaleY(bounds);
+        const sizeScale = Math.max(scaleX, scaleY);
 
         if (key === "x" || key === "y") {
-                const maxValue = key === "x"
+                const scaleValue = key === "x" ? scaleX : scaleY;
+                const maxDisplay = key === "x"
                         ? Math.max(0, bounds.width - updated.width)
                         : Math.max(0, bounds.height - updated.height);
+                const maxValue = Math.round(maxDisplay * scaleValue);
                 const offsetKey = key === "x" ? "offsetX" : "offsetY";
-                const value = clamp(Math.round(parsedValue), 0, maxValue);
-                updated[key] = value + bounds[offsetKey];
+                const value = clamp(Math.round(parsedValue), 0, Math.max(0, maxValue));
+                const displayValue = value / scaleValue;
+                updated[key] = Math.round(displayValue + bounds[offsetKey]);
         } else if (key === "size") {
                 const maxSize = Math.min(bounds.width, bounds.height);
-                const value = clamp(Math.round(parsedValue), 1, maxSize);
-                updated.width = value;
-                updated.height = value;
+                const maxValue = Math.round(maxSize * sizeScale);
+                const value = clamp(Math.round(parsedValue), 1, Math.max(1, maxValue));
+                const displaySize = value / sizeScale;
+                const roundedSize = Math.max(1, Math.round(displaySize));
+                updated.width = roundedSize;
+                updated.height = roundedSize;
 
-                const maxX = bounds.offsetX + Math.max(0, bounds.width - value);
-                const maxY = bounds.offsetY + Math.max(0, bounds.height - value);
+                const maxX = bounds.offsetX + Math.max(0, bounds.width - roundedSize);
+                const maxY = bounds.offsetY + Math.max(0, bounds.height - roundedSize);
                 updated.x = clamp(updated.x, bounds.offsetX, maxX);
                 updated.y = clamp(updated.y, bounds.offsetY, maxY);
         }
@@ -961,7 +1086,6 @@ function schedulePreviewUpdate(source?: CropperSelectionData | SelectionSnapshot
 }
 
 async function updatePreviews(snapshot?: SelectionSnapshot | null) {
-        if (!cropperSelection) return;
         const target = snapshot
                 ?? (lastSelectionSnapshot ? { ...lastSelectionSnapshot } : getSelectionSnapshot());
         if (!target || !target.width || !target.height) {
@@ -970,20 +1094,8 @@ async function updatePreviews(snapshot?: SelectionSnapshot | null) {
                 });
                 return;
         }
-        const canvases = await Promise.all(
-                previewSizes.map(async (size) => {
-                        try {
-                                return await cropperSelection.$toCanvas({
-                                        width: size,
-                                        height: size,
-                                });
-                        } catch (err) {
-                                return null;
-                        }
-                }),
-        );
-        canvases.forEach((canvas, index) => {
-                const size = previewSizes[index];
+        previewSizes.forEach((size) => {
+                const canvas = renderSelectionCanvas(target, size, true);
                 previewSources[size] = canvas ? canvas.toDataURL("image/png") : null;
         });
 }
@@ -1011,15 +1123,7 @@ async function cropSelection(): Promise<{ blob: Blob; filename: string }> {
                 return fail();
         }
 
-        let croppedCanvas: HTMLCanvasElement | null = null;
-        try {
-                croppedCanvas = await cropperSelection.$toCanvas({
-                        width: Math.round(Math.max(1, snapshot.width)),
-                        height: Math.round(Math.max(1, snapshot.height)),
-                });
-        } catch (err) {
-                croppedCanvas = null;
-        }
+        const croppedCanvas = renderSelectionCanvas(snapshot, undefined, false);
         if (!croppedCanvas) {
                 return fail();
         }

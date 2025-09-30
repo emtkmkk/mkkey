@@ -176,7 +176,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         },
       );
 
-			bundleData = data && Array.isArray(data) && data.length > 0 ? data[0] : undefined;
+			const bundleData = data && Array.isArray(data) && data.length > 0 ? data[0] : undefined;
 
       if (bundleData) {
 				
@@ -218,7 +218,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
             isFree: false,
             genres: "",
             releaseDate: {
-							comingSoon: appData.coming_soon,
+							comingSoon: bundleData.coming_soon,
 							date: "",
 						}
           },

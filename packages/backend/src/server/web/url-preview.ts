@@ -32,6 +32,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 
   // SteamのApp IDを取得
   const steamAppId = isSteamUrl(url);
+	const steamBundleId = isSteamBundleUrl(url);
   const VRCWorldId = isVRCUrl(url);
   const amazonProduct = isAmazonProductUrl(url);
 
@@ -135,6 +136,94 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           }
         }
 		*/
+        // サムネイルとアイコンをラップ
+        summary.icon = wrap(_summary.icon) ?? "";
+        summary.thumbnail = wrap(_summary.thumbnail) ?? "";
+
+        // Cache 7days
+        ctx.set("Cache-Control", "max-age=604800, immutable");
+
+        ctx.body = summary;
+        return;
+      } else {
+        throw new Error("Failed to get Steam app data");
+      }
+    } catch (err) {
+      logger.warn(`Failed to get Steam data for ${url}: ${err}`);
+      ctx.status = 200;
+      ctx.set("Cache-Control", "max-age=86400, immutable");
+      ctx.body = "{}";
+      return;
+    }
+  }
+
+	
+  if (steamBundleId) {
+    // SteamBundleの場合の処理
+    try {
+      const steamApiUrl = `https://store.steampowered.com/actions/ajaxresolvebundles?bundleids=${steamBundleId}&cc=jp&l=${
+        lang ?? "ja"
+      }`;
+
+      // getJsonを使用してSteamデータを取得
+      const data = await getJson(
+        steamApiUrl,
+        "application/json, */*",
+        5000,
+        {
+          cookie: "steamCountry=JP",
+					"accept-language": "ja-jp",
+        },
+      );
+
+			bundleData = data && Array.isArray(data) && data.length > 0 ? data[0] : undefined;
+
+      if (bundleData) {
+				
+      const _summary = meta.summalyProxy
+      ? await getJson(
+        `${meta.summalyProxy}?${query({
+          url: url,
+          lang: lang ?? "en-US",
+        })}`,
+        "application/json, */*",
+        5000,
+        {
+          cookie: "steamCountry=JP"
+        },
+        )
+      : await summaly.default(url, {
+        followRedirects: false,
+        lang: lang ?? "en-US",
+        });
+
+		
+        // summaryオブジェクトを構築
+        const summary = {
+          url: url,
+          title: bundleData.name,
+          description: bundleData.appids?.length ? `バンドル - ${bundleData.appids?.length} 個のコンテンツ` : "",
+          thumbnail: "",
+          icon: "https://store.steampowered.com/favicon.ico",
+          sitename: "Steam",
+          player: null as any, // 動画情報を追加
+          // 追加のSteam専用データ
+          steam: {
+            ageLimit: null,
+            developer: "",
+            onSale: bundleData.discount_percent
+            discountPercent: bundleData.discount_percent
+            originalPrice: bundleData.formatted_orig_price
+            currentPrice: bundleData.formatted_final_price,
+            isFree: false,
+            genres: "",
+            releaseDate: {
+							comingSoon: appData.coming_soon,
+							date: "",
+						}
+          },
+        };
+				
         // サムネイルとアイコンをラップ
         summary.icon = wrap(_summary.icon) ?? "";
         summary.thumbnail = wrap(_summary.thumbnail) ?? "";
@@ -267,7 +356,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       );
 
       if (data.name) {
-        summary.title = ["VRChat", data.name, data.authorName].filter(Boolean).join(" - ");
+        summary.title = [data.name, data.authorName, "VRChat"].filter(Boolean).join(" - ");
         summary.description = data.description || summary.description;
         summary.thumbnail = data.imageUrl || data.thumbnailImageUrl || summary.thumbnail;
       }
@@ -313,6 +402,25 @@ function isSteamUrl(url: string): string | null {
   }
 }
 
+function isSteamBundleUrl(url: string): string | null {
+  try {
+    const parsedUrl = new URL(url);
+    if (
+      parsedUrl.hostname === "store.steampowered.com" ||
+      parsedUrl.hostname.endsWith(".steampowered.com")
+    ) {
+      const pathSegments = parsedUrl.pathname.split("/");
+      const appIndex = pathSegments.indexOf("bundle");
+      if (appIndex !== -1 && pathSegments.length > appIndex + 1) {
+        return pathSegments[appIndex + 1];
+      }
+    }
+    return null;
+  } catch (error) {
+    logger.warn("Invalid URL:", error);
+    return null;
+  }
+}
 
 function isAmazonProductUrl(url: string): { asin: string | null; hostname: string } | null {
   try {

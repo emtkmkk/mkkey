@@ -223,10 +223,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
               ? subData.price.discount_percent
               : 0,
             originalPrice: subData.price
-              ? subData.price.initial_formatted ?? `\ ${(subData.price.initial / 100).toLocaleString("ja-JP")}`
+              ? subData.price.initial_formatted ?? `\\ ${(subData.price.initial / 100).toLocaleString("ja-JP")}`
               : null,
             currentPrice: subData.price
-              ? subData.price.final_formatted ?? `\ ${(subData.price.final / 100).toLocaleString("ja-JP")}`
+              ? subData.price.final_formatted ?? `\\ ${(subData.price.final / 100).toLocaleString("ja-JP")}`
               : null,
             isFree: subData.is_free,
             genres: subData.genres

@@ -32,6 +32,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 
   // SteamのApp IDを取得
   const steamAppId = isSteamUrl(url);
+  const steamPackageId = isSteamPackageUrl(url);
 	const steamBundleId = isSteamBundleUrl(url);
   const VRCWorldId = isVRCUrl(url);
   const amazonProduct = isAmazonProductUrl(url);
@@ -157,6 +158,107 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     }
   }
 
+	
+  if (steamPackageId) {
+    // SteamPackageの場合の処理
+    try {
+      const steamApiUrl = `https://store.steampowered.com/api/packagedetails?packageids=${steamPackageId}&cc=jp&l=${
+        lang ?? "ja"
+      }`;
+
+      // getJsonを使用してSteamデータを取得
+      const data = await getJson(
+        steamApiUrl,
+        "application/json, */*",
+        5000,
+        {
+          cookie: "steamCountry=JP",
+					"accept-language": "ja-jp",
+        },
+      );
+
+      const subData = data[steamPackageId]?.data;
+
+      if (subData && data[steamPackageId].success) {
+		
+	  
+      const _summary = meta.summalyProxy
+      ? await getJson(
+        `${meta.summalyProxy}?${query({
+          url: url,
+          lang: lang ?? "en-US",
+        })}`,
+        "application/json, */*",
+        5000,
+        {
+          cookie: "steamCountry=JP"
+        },
+        )
+      : await summaly.default(url, {
+        followRedirects: false,
+        lang: lang ?? "en-US",
+        });
+
+		
+        // summaryオブジェクトを構築
+        const summary = {
+          url: url,
+          title: subData.name,
+          description: subData.page_content?.split("\r\n")?.[0]?.slice(0, 160),
+          thumbnail: "",
+          icon: "https://store.steampowered.com/favicon.ico",
+          sitename: "Steam",
+          player: null as any, // 動画情報を追加
+          // 追加のSteam専用データ
+          steam: {
+            ageLimit:
+              subData.required_age && subData.required_age !== "0"
+                ? subData.required_age
+                : null,
+            developer: subData.developers ? subData.developers.join(", ") : "",
+            onSale: subData.price
+              ? subData.price.discount_percent > 0
+              : false,
+            discountPercent: subData.price
+              ? subData.price.discount_percent
+              : 0,
+            originalPrice: subData.price
+              ? subData.price.initial_formatted ?? `\ ${(subData.price.initial / 100).toLocaleString("ja-JP")}`
+              : null,
+            currentPrice: subData.price
+              ? subData.price.final_formatted ?? `\ ${(subData.price.final / 100).toLocaleString("ja-JP")}`
+              : null,
+            isFree: subData.is_free,
+            genres: subData.genres
+              ? subData.genres.map((genre) => genre.description).join(", ")
+              : "",
+            releaseDate: {
+				comingSoon: subData.release_date ? subData.release_date.coming_soon : false,
+				date: subData.release_date ? subData.release_date.date : "",
+			}
+          },
+        };
+
+        // サムネイルとアイコンをラップ
+        summary.icon = wrap(_summary.icon) ?? "";
+        summary.thumbnail = wrap(_summary.thumbnail) ?? "";
+
+        // Cache 7days
+        ctx.set("Cache-Control", "max-age=604800, immutable");
+
+        ctx.body = summary;
+        return;
+      } else {
+        throw new Error("Failed to get Steam app data");
+      }
+    } catch (err) {
+      logger.warn(`Failed to get Steam data for ${url}: ${err}`);
+      ctx.status = 200;
+      ctx.set("Cache-Control", "max-age=86400, immutable");
+      ctx.body = "{}";
+      return;
+    }
+  }
 	
   if (steamBundleId) {
     // SteamBundleの場合の処理
@@ -391,6 +493,29 @@ function isSteamUrl(url: string): string | null {
     ) {
       const pathSegments = parsedUrl.pathname.split("/");
       const appIndex = pathSegments.indexOf("app");
+      if (appIndex !== -1 && pathSegments.length > appIndex + 1) {
+        return pathSegments[appIndex + 1];
+      }
+    }
+    return null;
+  } catch (error) {
+    logger.warn("Invalid URL:", error);
+    return null;
+  }
+}
+function isSteamPackageUrl(url: string): string | null {
+  try {
+    const parsedUrl = new URL(url);
+    if (
+      parsedUrl.hostname === "store.steampowered.com" ||
+      parsedUrl.hostname.endsWith(".steampowered.com")
+    ) {
+      const pathSegments = parsedUrl.pathname.split("/");
+      const appIndex = pathSegments.indexOf("sub");
+      if (appIndex !== -1 && pathSegments.length > appIndex + 1) {
+        return pathSegments[appIndex + 1];
+      }
+      const appIndex = pathSegments.indexOf("package");
       if (appIndex !== -1 && pathSegments.length > appIndex + 1) {
         return pathSegments[appIndex + 1];
       }

@@ -511,11 +511,11 @@ function isSteamPackageUrl(url: string): string | null {
       parsedUrl.hostname.endsWith(".steampowered.com")
     ) {
       const pathSegments = parsedUrl.pathname.split("/");
-      const appIndex = pathSegments.indexOf("sub");
+      let appIndex = pathSegments.indexOf("sub");
       if (appIndex !== -1 && pathSegments.length > appIndex + 1) {
         return pathSegments[appIndex + 1];
       }
-      const appIndex = pathSegments.indexOf("package");
+      appIndex = pathSegments.indexOf("package");
       if (appIndex !== -1 && pathSegments.length > appIndex + 1) {
         return pathSegments[appIndex + 1];
       }

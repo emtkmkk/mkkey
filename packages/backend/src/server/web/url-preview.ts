@@ -211,8 +211,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           steam: {
             ageLimit: null,
             developer: "",
-            onSale: bundleData.discount_percent
-            discountPercent: bundleData.discount_percent
+            onSale: !!bundleData.discount_percent,
+            discountPercent: bundleData.discount_percent,
             originalPrice: bundleData.formatted_orig_price
             currentPrice: bundleData.formatted_final_price,
             isFree: false,

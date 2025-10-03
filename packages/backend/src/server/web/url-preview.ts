@@ -6,6 +6,13 @@ import Logger from "@/services/logger.js";
 import config from "@/config/index.js";
 import { query } from "@/prelude/url.js";
 import { getHtml, getJson } from "@/misc/fetch.js";
+import { translateWithDeepl } from "@/services/translation/deepl.js";
+
+const JAPANESE_CHAR_REGEX = /[\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9faf\uf900-\ufa6d\uff66-\uff9f]/u;
+
+function containsJapanese(text: string): boolean {
+  return JAPANESE_CHAR_REGEX.test(text);
+}
 
 const logger = new Logger("url-preview");
 
@@ -117,7 +124,22 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           },
         };
 
-		/*
+        if (
+          summary.description &&
+          meta.deeplAuthKey &&
+          !containsJapanese(summary.description)
+        ) {
+          const translated = await translateWithDeepl(
+            summary.description,
+            "JA",
+            meta,
+          );
+          if (translated?.text) {
+            summary.description = translated.text;
+          }
+        }
+
+                /*
         // 動画情報をplayerにセット
         if (appData.movies && Array.isArray(appData.movies)) {
           const highlightedMovies = appData.movies.filter(
@@ -238,6 +260,21 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 			}
           },
         };
+        if (
+          summary.description &&
+          meta.deeplAuthKey &&
+          !containsJapanese(summary.description)
+        ) {
+          const translated = await translateWithDeepl(
+            summary.description,
+            "JA",
+            meta,
+          );
+          if (translated?.text) {
+            summary.description = translated.text;
+          }
+        }
+
 
         // サムネイルとアイコンをラップ
         summary.icon = wrap(_summary.icon) ?? "";

@@ -746,16 +746,26 @@ const fetchUrlData = async () => {
 		> header {
 		  margin-bottom: 0.5rem;
   
-		  > h1 {
-			margin: 0;
-			font-size: 1em;
-		  }
-		}
-  
-		> p {
-		  margin: 0;
-		  font-size: 0.8em;
-		}
+                  > h1 {
+                        margin: 0;
+                        font-size: 1em;
+                        overflow: hidden;
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        word-break: break-word;
+                  }
+                }
+
+                > p {
+                  margin: 0;
+                  font-size: 0.8em;
+                  overflow: hidden;
+                  display: -webkit-box;
+                  -webkit-line-clamp: 2;
+                  -webkit-box-orient: vertical;
+                  word-break: break-word;
+                }
   
 		> footer {
 		  margin-top: 0.5rem;

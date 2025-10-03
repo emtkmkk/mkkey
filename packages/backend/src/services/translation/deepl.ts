@@ -11,6 +11,22 @@ export interface DeeplTranslationResult {
   sourceLang: string | null;
 }
 
+export function formatDeeplTranslationPrefix(sourceLang: string | null): string {
+  if (!sourceLang) {
+    return "??から翻訳:";
+  }
+
+  const normalized = sourceLang.trim().toLowerCase();
+  const base = normalized.split("-")[0] || normalized;
+  const short = base.length > 2 ? base.slice(0, 2) : base;
+
+  if (!short) {
+    return "??から翻訳:";
+  }
+
+  return `${short}から翻訳:`;
+}
+
 export async function translateWithDeepl(
   text: string,
   targetLang: string,

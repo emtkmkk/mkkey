@@ -1203,19 +1203,20 @@ const search = ref<HTMLInputElement>();
 const emojis = ref<HTMLDivElement>();
 
 const {
-	reactions: pinned,
-	reactions2: pinned2,
-	reactions3: pinned3,
-	reactions4: pinned4,
-	reactions5: pinned5,
-	reactionPickerSize,
-	reactionPickerWidth,
-	reactionPickerHeight,
-	reactionPickerVAlign,
-	reactionPickerAllWidth,
-	disableShowingAnimatedImages,
-	recentlyUsedEmojis,
+        reactions: pinned,
+        reactions2: pinned2,
+        reactions3: pinned3,
+        reactions4: pinned4,
+        reactions5: pinned5,
+        reactionPickerSize,
+        reactionPickerWidth,
+        reactionPickerHeight,
+        reactionPickerVAlign,
+        reactionPickerAllWidth,
+        disableShowingAnimatedImages,
+        recentlyUsedEmojis,
 } = defaultStore.reactiveState;
+const defaultRemoteEmojisFetchMode = defaultStore.def.remoteEmojisFetch.default;
 
 const size = computed(() =>
 	props.asReactionPicker || defaultStore.state.usePickerSizePostForm
@@ -1278,10 +1279,10 @@ const randomSubset = computed(() => {
 	return result;
 });
 const recentlyMostUsed = computed(() => {
-	if (!instance.emojiStats) return [];
+        if (!instance.emojiStats) return [];
 
-	const pinnedValues = [
-		...pinned.value,
+        const pinnedValues = [
+                ...pinned.value,
 		...pinned2.value,
 		...pinned3.value,
 		...pinned4.value,
@@ -1310,13 +1311,20 @@ const refetchingRemoteEmojis = ref(false);
 let debounceTimer;
 
 watch(q, (nQ, oQ) => {
-	clearTimeout(debounceTimer);
+        clearTimeout(debounceTimer);
 
-	waitingFlg.value = true;
+        if (nQ?.includes("@") && defaultStore.isDefault("remoteEmojisFetch")) {
+                void (async () => {
+                        await defaultStore.set("remoteEmojisFetch", "all");
+                        await refetchEmoji();
+                })();
+        }
 
-	let searchInstant = false;
-	if (q.value.includes("*")) {
-		q.value = oQ;
+        waitingFlg.value = true;
+
+        let searchInstant = false;
+        if (q.value.includes("*")) {
+                q.value = oQ;
 	}
 	if (oQ?.includes("*")) {
 		searchInstant = true;
@@ -1783,7 +1791,8 @@ async function refetchEmoji(showQueue = false) {
         const queueOptions = showQueue
                 ? { useQueue: true, comment: i18n.ts.remoteEmojiRefetching }
                 : undefined;
-        let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
+        let fetchModeMax =
+                defaultStore.state.remoteEmojisFetch ?? defaultRemoteEmojisFetchMode ?? "all";
         try {
                 if (fetchModeMax === "always") {
                         await set("emojiFetchAttemptDate", Date.now());

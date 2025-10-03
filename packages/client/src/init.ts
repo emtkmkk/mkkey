@@ -606,7 +606,9 @@ const initializeEmoji = async () => {
 			? Number.parseInt(await get("emojiFetchAttemptDate"), 10)
 			: 0,
 	);
-	let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
+	const defaultRemoteEmojisFetchMode = defaultStore.def.remoteEmojisFetch.default;
+	let fetchModeMax =
+		defaultStore.state.remoteEmojisFetch ?? defaultRemoteEmojisFetchMode ?? "all";
 	// 更新間隔 : データセーバーなら、24時間 そうでないなら、6時間
 	const fetchTimeBorder = defaultStore.state.enableDataSaverMode
 		? 1000 * 60 * 60 * 24

@@ -1306,6 +1306,7 @@ let singleTapEl = undefined;
 
 let waitingFlg = ref(false);
 let searchingFlg = ref(false);
+const refetchingRemoteEmojis = ref(false);
 let debounceTimer;
 
 watch(q, (nQ, oQ) => {
@@ -1776,26 +1777,39 @@ function done(query?: any): boolean | void {
 }
 
 async function refetchEmoji(showQueue = false) {
+        if (refetchingRemoteEmojis.value) return;
+
+        refetchingRemoteEmojis.value = true;
         const queueOptions = showQueue
                 ? { useQueue: true, comment: i18n.ts.remoteEmojiRefetching }
                 : undefined;
         let fetchModeMax = defaultStore.state.remoteEmojisFetch ?? "all";
-        if (fetchModeMax === "always") {
-                await set("emojiFetchAttemptDate", Date.now());
-                await fetchAllEmojiNoCache(queueOptions);
-        } else if (fetchModeMax === "all") {
-                await set("emojiFetchAttemptDate", Date.now());
-                await fetchAllEmoji(queueOptions).catch(() => {
-                        // 保存に失敗した場合は軽量版リモート絵文字の取得を試行
-                        fetchPlusEmoji(queueOptions);
-                });
-        } else if (fetchModeMax === "plus") {
-                await set("emojiFetchAttemptDate", Date.now());
-                await fetchPlusEmoji(queueOptions);
+        try {
+                if (fetchModeMax === "always") {
+                        await set("emojiFetchAttemptDate", Date.now());
+                        await fetchAllEmojiNoCache(queueOptions);
+                } else if (fetchModeMax === "all") {
+                        await set("emojiFetchAttemptDate", Date.now());
+                        await fetchAllEmoji(queueOptions).catch(() => {
+                                // 保存に失敗した場合は軽量版リモート絵文字の取得を試行
+                                fetchPlusEmoji(queueOptions);
+                        });
+                } else if (fetchModeMax === "plus") {
+                        await set("emojiFetchAttemptDate", Date.now());
+                        await fetchPlusEmoji(queueOptions);
+                }
+                // 絵文字を読み込み直す
+                await emojiLoad();
+
+                if (emojis.value?.isConnected && q.value != null) {
+                        const currentQuery = q.value;
+                        emojiSearch(currentQuery, currentQuery);
+                }
+
+                if (showQueue) os.toast(i18n.ts.remoteEmojiRefetched);
+        } finally {
+                refetchingRemoteEmojis.value = false;
         }
-        // 絵文字を読み込み直す
-        await emojiLoad();
-        if (showQueue) os.toast(i18n.ts.remoteEmojiRefetched);
 }
 
 onMounted(() => {

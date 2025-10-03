@@ -8,6 +8,25 @@ import { popup, alert } from "@/os";
 const start = isTouchUsing ? "touchstart" : "mouseover";
 const end = isTouchUsing ? "touchend" : "mouseleave";
 
+function isElementHidden(el: HTMLElement): boolean {
+        const style = window.getComputedStyle(el);
+
+        if (style.display === "none" || style.visibility === "hidden") {
+                return true;
+        }
+
+        if (style.opacity === "0") {
+                return true;
+        }
+
+        if (!el.offsetParent && style.position !== "fixed") {
+                return true;
+        }
+
+        const rect = el.getBoundingClientRect();
+        return rect.width === 0 && rect.height === 0;
+}
+
 export default {
 	mounted(el: HTMLElement, binding, vn) {
 		const delay = binding.modifiers.noDelay ? 0 : 100;
@@ -15,10 +34,11 @@ export default {
 		const self = ((el as any)._tooltipDirective_ = {} as any);
 
 		self.text = binding.value as string;
-		self._close = null;
-		self.showTimer = null;
-		self.hideTimer = null;
-		self.checkTimer = null;
+                self._close = null;
+                self.showTimer = null;
+                self.hideTimer = null;
+                self.checkTimer = null;
+                self.missingSince = null;
 
 		if (!binding.modifiers.noLabel) {
 			if (!document.body.contains(el)) return;
@@ -26,13 +46,15 @@ export default {
 			el.setAttribute("aria-label", self.text);
 		}
 
-		self.close = () => {
-			if (self._close) {
-				window.clearInterval(self.checkTimer);
-				self._close();
-				self._close = null;
-			}
-		};
+                self.close = () => {
+                        if (self._close) {
+                                window.clearInterval(self.checkTimer);
+                                self.checkTimer = null;
+                                self.missingSince = null;
+                                self._close();
+                                self._close = null;
+                        }
+                };
 
 		if (binding.arg === "dialog") {
 			el.addEventListener("click", (ev) => {
@@ -73,10 +95,28 @@ export default {
 				"closed",
 			);
 
-			self._close = () => {
-				showing.value = false;
-			};
-		};
+                        self._close = () => {
+                                showing.value = false;
+                        };
+
+                        window.clearInterval(self.checkTimer);
+                        self.missingSince = null;
+                        self.checkTimer = window.setInterval(() => {
+                                const isDisconnected = !el.isConnected;
+                                const isHidden = !isDisconnected && isElementHidden(el);
+                                const isMissing = isDisconnected || isHidden;
+
+                                if (isMissing) {
+                                        if (self.missingSince == null) {
+                                                self.missingSince = performance.now();
+                                        } else if (performance.now() - self.missingSince >= 3000) {
+                                                self.close();
+                                        }
+                                } else {
+                                        self.missingSince = null;
+                                }
+                        }, 200);
+                };
 
 		el.addEventListener("selectstart", (ev) => {
 			ev.preventDefault();

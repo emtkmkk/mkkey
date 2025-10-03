@@ -16,10 +16,15 @@ export function formatDeeplTranslationPrefix(sourceLang: string | null): string 
     return "??から翻訳:";
   }
 
-  const normalized = sourceLang.toUpperCase();
+  const normalized = sourceLang.trim().toLowerCase();
   const base = normalized.split("-")[0] || normalized;
+  const short = base.length > 2 ? base.slice(0, 2) : base;
 
-  return `${base}から翻訳:`;
+  if (!short) {
+    return "??から翻訳:";
+  }
+
+  return `${short}から翻訳:`;
 }
 
 export async function translateWithDeepl(

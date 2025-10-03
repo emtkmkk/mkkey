@@ -10,11 +10,34 @@ import {
   translateWithDeepl,
   formatDeeplTranslationPrefix,
 } from "@/services/translation/deepl.js";
+import type { Meta } from "@/models/entities/meta.js";
 
 const JAPANESE_CHAR_REGEX = /[\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9faf\uf900-\ufa6d\uff66-\uff9f]/u;
 
 function containsJapanese(text: string): boolean {
   return JAPANESE_CHAR_REGEX.test(text);
+}
+
+async function translateDescriptionToJapaneseIfNeeded(
+  description: string | null | undefined,
+  meta: Meta,
+): Promise<string | null | undefined> {
+  if (description == null || description === "") {
+    return description;
+  }
+
+  if (!meta.deeplAuthKey || containsJapanese(description)) {
+    return description;
+  }
+
+  const translated = await translateWithDeepl(description, "JA", meta);
+
+  if (!translated?.text) {
+    return description;
+  }
+
+  const prefix = formatDeeplTranslationPrefix(translated.sourceLang);
+  return `${prefix} ${translated.text}`;
 }
 
 const logger = new Logger("url-preview");
@@ -127,21 +150,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           },
         };
 
-        if (
-          summary.description &&
-          meta.deeplAuthKey &&
-          !containsJapanese(summary.description)
-        ) {
-          const translated = await translateWithDeepl(
-            summary.description,
-            "JA",
-            meta,
-          );
-          if (translated?.text) {
-            const prefix = formatDeeplTranslationPrefix(translated.sourceLang);
-            summary.description = `${prefix} ${translated.text}`;
-          }
-        }
+        summary.description = await translateDescriptionToJapaneseIfNeeded(
+          summary.description,
+          meta,
+        );
 
                 /*
         // 動画情報をplayerにセット
@@ -264,21 +276,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 			}
           },
         };
-        if (
-          summary.description &&
-          meta.deeplAuthKey &&
-          !containsJapanese(summary.description)
-        ) {
-          const translated = await translateWithDeepl(
-            summary.description,
-            "JA",
-            meta,
-          );
-          if (translated?.text) {
-            const prefix = formatDeeplTranslationPrefix(translated.sourceLang);
-            summary.description = `${prefix} ${translated.text}`;
-          }
-        }
+        summary.description = await translateDescriptionToJapaneseIfNeeded(
+          summary.description,
+          meta,
+        );
 
 
         // サムネイルとアイコンをラップ

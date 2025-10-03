@@ -1,7 +1,6 @@
 import fetch from "node-fetch";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { getAgentByUrl } from "@/misc/fetch.js";
-import { Notes } from "@/models/index.js";
 import {
         translateWithDeepl,
         formatDeeplTranslationPrefix,
@@ -93,10 +92,12 @@ export default define(meta, paramDef, async (ps, user) => {
 			translatedText: string;
 		};
 
-		return {
-			sourceLang: json.detectedLanguage?.language,
-			text: json.translatedText,
-		};
+                const sourceLang = json.detectedLanguage?.language ?? null;
+
+                return {
+                        sourceLang: sourceLang ?? undefined,
+                        text: `${formatDeeplTranslationPrefix(sourceLang)} ${json.translatedText}`,
+                };
 	}
 
         const translation = await translateWithDeepl(

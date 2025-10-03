@@ -1151,7 +1151,7 @@ export const defaultStore = markRaw(
                 },
                 remoteEmojisFetch: {
                         where: "device",
-                        default: "all" as "all" | "plus" | "keep" | "none" | "always" | "once",
+                        default: "none" as "all" | "plus" | "keep" | "none" | "always" | "once",
                         createdAt: "2023/7/10",
                         page: "reaction",
 		},

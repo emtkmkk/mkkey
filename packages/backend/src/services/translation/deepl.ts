@@ -24,7 +24,7 @@ export function formatDeeplTranslationPrefix(sourceLang: string | null): string 
     return "??から翻訳:";
   }
 
-  return `${short}から翻訳:`;
+  return `${short.toUpperCase()}から翻訳:`;
 }
 
 export async function translateWithDeepl(

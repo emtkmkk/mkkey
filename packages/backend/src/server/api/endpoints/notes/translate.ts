@@ -1,10 +1,7 @@
 import fetch from "node-fetch";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { getAgentByUrl } from "@/misc/fetch.js";
-import {
-        translateWithDeepl,
-        formatDeeplTranslationPrefix,
-} from "@/services/translation/deepl.js";
+import { translateWithDeepl } from "@/services/translation/deepl.js";
 import { ApiError } from "../../error.js";
 import { getNote } from "../../common/getters.js";
 import define from "../../define.js";
@@ -96,7 +93,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
                 return {
                         sourceLang: sourceLang ?? undefined,
-                        text: `${formatDeeplTranslationPrefix(sourceLang)} ${json.translatedText}`,
+                        text: json.translatedText,
                 };
 	}
 
@@ -112,6 +109,6 @@ export default define(meta, paramDef, async (ps, user) => {
 
         return {
                 sourceLang: translation.sourceLang ?? undefined,
-                text: `${formatDeeplTranslationPrefix(translation.sourceLang)} ${translation.text}`,
+                text: translation.text,
         };
 });

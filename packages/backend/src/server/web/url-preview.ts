@@ -6,10 +6,7 @@ import Logger from "@/services/logger.js";
 import config from "@/config/index.js";
 import { query } from "@/prelude/url.js";
 import { getHtml, getJson } from "@/misc/fetch.js";
-import {
-  translateWithDeepl,
-  formatDeeplTranslationPrefix,
-} from "@/services/translation/deepl.js";
+import { translateWithDeepl } from "@/services/translation/deepl.js";
 import type { Meta } from "@/models/entities/meta.js";
 
 const JAPANESE_CHAR_REGEX = /[\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9faf\uf900-\ufa6d\uff66-\uff9f]/u;
@@ -36,8 +33,7 @@ async function translateDescriptionToJapaneseIfNeeded(
     return description;
   }
 
-  const prefix = formatDeeplTranslationPrefix(translated.sourceLang);
-  return `${prefix} ${translated.text}`;
+  return translated.text;
 }
 
 const logger = new Logger("url-preview");

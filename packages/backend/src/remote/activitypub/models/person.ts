@@ -996,23 +996,27 @@ export async function updateFeatured(userId: User["id"], resolver?: Resolver) {
 			.map((item) => limit(() => resolveNote(item, resolver))),
 	);
 
-	await db.transaction(async (transactionalEntityManager) => {
-		await transactionalEntityManager.delete(UserNotePining, {
-			userId: user.id,
-		});
+        await db.transaction(async (transactionalEntityManager) => {
+                await transactionalEntityManager.delete(UserNotePining, {
+                        userId: user.id,
+                });
 
-		// For now, generate the id at a different time and maintain the order.
-		let td = 0;
-		for (const note of featuredNotes.filter((note) => note != null)) {
-			td -= 1000;
-			transactionalEntityManager.insert(UserNotePining, {
-				id: genId(new Date(Date.now() + td)),
-				createdAt: new Date(),
-				userId: user.id,
-				noteId: note!.id,
-			});
-		}
-	});
+                // For now, generate the id at a different time and maintain the order.
+                let td = 0;
+                const insertedNoteIds = new Set<string>();
+                for (const note of featuredNotes.filter((note) => note != null)) {
+                        if (insertedNoteIds.has(note!.id)) continue;
+                        insertedNoteIds.add(note!.id);
+
+                        td -= 1000;
+                        await transactionalEntityManager.insert(UserNotePining, {
+                                id: genId(new Date(Date.now() + td)),
+                                createdAt: new Date(),
+                                userId: user.id,
+                                noteId: note!.id,
+                        });
+                }
+        });
 }
 
 function getSkebGenreIcon(genre: string) {

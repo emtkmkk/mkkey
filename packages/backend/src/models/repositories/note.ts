@@ -435,24 +435,26 @@ export const NoteRepository = db.getRepository(Note).extend({
 		if (notes.length === 0) return [];
 
 		const meId = me ? me.id : null;
-		const myReactionsMap = new Map<Note["id"], NoteReaction | null>();
-		if (meId) {
-			const renoteIds = notes
-				.filter((n) => n.renoteId != null)
-				.map((n) => n.renoteId!);
-			const targets = [...notes.map((n) => n.id), ...renoteIds];
-			const myReactions = await NoteReactions.findBy({
-				userId: meId,
-				noteId: In(targets),
-			});
+                const myReactionsMap = new Map<Note["id"], NoteReaction | null>();
+                if (meId) {
+                        const renoteIds = notes
+                                .filter((n) => n.renoteId != null)
+                                .map((n) => n.renoteId!);
+                        const targets = [...notes.map((n) => n.id), ...renoteIds];
+                        const myReactions = await NoteReactions.findBy({
+                                userId: meId,
+                                noteId: In(targets),
+                        });
 
-			for (const target of targets) {
-				myReactionsMap.set(
-					target,
-					myReactions.find((reaction) => reaction.noteId === target) || null,
-				);
-			}
-		}
+                        const myReactionsByNoteId = new Map<Note["id"], NoteReaction>();
+                        for (const reaction of myReactions) {
+                                myReactionsByNoteId.set(reaction.noteId, reaction);
+                        }
+
+                        for (const target of targets) {
+                                myReactionsMap.set(target, myReactionsByNoteId.get(target) ?? null);
+                        }
+                }
 
 		await prefetchEmojis(aggregateNoteEmojis(notes));
 

@@ -72,12 +72,16 @@ type NoteReactionHint = Map<
         NoteReaction | NoteReaction[] | null
 >;
 
+type NotePackHint = {
+        myReactions?: NoteReactionHint;
+        favorites?: Set<Note["id"]>;
+        me?: User;
+};
+
 async function populateMyReaction(
         note: Note,
         meId: User["id"],
-        _hint_?: {
-                myReactions: NoteReactionHint;
-        },
+        _hint_?: Pick<NotePackHint, "myReactions">,
 ) {
         if (_hint_?.myReactions?.has(note.id)) {
                 const reaction = _hint_.myReactions.get(note.id);
@@ -113,9 +117,7 @@ async function populateMyReaction(
 async function populateMyReactions(
         note: Note,
         meId: User["id"],
-        _hint_?: {
-                myReactions: NoteReactionHint;
-        },
+        _hint_?: Pick<NotePackHint, "myReactions">,
 ) {
         if (_hint_?.myReactions?.has(note.id)) {
                 const reactions = _hint_.myReactions.get(note.id);
@@ -170,12 +172,16 @@ async function populateMyReactions(
 }
 
 export const NoteRepository = db.getRepository(Note).extend({
-	async isVisibleForMe(note: Note, meId: User["id"] | null): Promise<boolean> {
-		// This code must always be synchronized with the checks in generateVisibilityQuery.
-		if (!note?.visibility) return false;
-		// visibility が specified かつ自分が指定されていなかったら非表示
-		if (note.visibility === "specified") {
-			if (meId == null) {
+        async isVisibleForMe(
+                note: Note,
+                meId: User["id"] | null,
+                _hint_?: Pick<NotePackHint, "me">,
+        ): Promise<boolean> {
+                // This code must always be synchronized with the checks in generateVisibilityQuery.
+                if (!note?.visibility) return false;
+                // visibility が specified かつ自分が指定されていなかったら非表示
+                if (note.visibility === "specified") {
+                        if (meId == null) {
 				return false;
 			} else if (meId === note.userId) {
 				return true;
@@ -201,21 +207,23 @@ export const NoteRepository = db.getRepository(Note).extend({
 				// 自分へのメンション
 				return true;
 			} else {
-				// フォロワーかどうか
-				const [following, user] = await Promise.all([
-					Followings.count({
-						where: {
-							followeeId: note.userId,
-							followerId: meId,
-						},
-						take: 1,
-					}),
-					Users.findOneByOrFail({ id: meId }),
-				]);
+                                // フォロワーかどうか
+                                const [following, user] = await Promise.all([
+                                        Followings.count({
+                                                where: {
+                                                        followeeId: note.userId,
+                                                        followerId: meId,
+                                                },
+                                                take: 1,
+                                        }),
+                                        _hint_?.me
+                                                ? Promise.resolve(_hint_.me)
+                                                : Users.findOneByOrFail({ id: meId }),
+                                ]);
 
-				/* If we know the following, everyhting is fine.
+                                /* If we know the following, everyhting is fine.
 
-				But if we do not know the following, it might be that both the
+                                But if we do not know the following, it might be that both the
 				author of the note and the author of the like are remote users,
 				in which case we can never know the following. Instead we have
 				to assume that the users are following each other.
@@ -232,36 +240,39 @@ export const NoteRepository = db.getRepository(Note).extend({
 		return true;
 	},
 
-	async pack(
-		src: Note["id"] | Note,
-		me?: { id: User["id"] } | null | undefined,
-		options?: {
-			detail?: boolean;
-                        _hint_?: {
-                                myReactions: NoteReactionHint;
-                                favorites?: Set<Note["id"]>;
-                        };
-			showInvisible?: boolean;
-			blockCheck?: boolean;
-		},
-	): Promise<Packed<"Note">> {
-		const opts = Object.assign(
+        async pack(
+                src: Note["id"] | Note,
+                me?: { id: User["id"] } | null | undefined,
+                options?: {
+                        detail?: boolean;
+                        _hint_?: NotePackHint;
+                        showInvisible?: boolean;
+                        blockCheck?: boolean;
+                },
+        ): Promise<Packed<"Note">> {
+                const opts = Object.assign(
 			{
 				detail: true,
 			},
 			options,
-		);
+                );
 
-		const meId = me ? me.id : null;
-		const note =
-			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
-		const host = note?.userHost;
-		const isVisible = await this.isVisibleForMe(note, meId);
+                const meId = me ? me.id : null;
+                const note =
+                        typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
+                const host = note?.userHost;
+                const hint: NotePackHint = opts._hint_ ?? (opts._hint_ = {});
+                let meUser = hint.me;
+                if (meId && !meUser) {
+                        meUser = await Users.findOneByOrFail({ id: meId });
+                        hint.me = meUser;
+                }
+                const isVisible = await this.isVisibleForMe(note, meId, hint);
 
-		if (!isVisible && !opts.showInvisible) {
-			throw new IdentifiableError(
-				"9725d0ce-ba28-4dde-95a7-2cbb2c15de24",
-				"投稿が存在しません。",
+                if (!isVisible && !opts.showInvisible) {
+                        throw new IdentifiableError(
+                                "9725d0ce-ba28-4dde-95a7-2cbb2c15de24",
+                                "投稿が存在しません。",
 			);
 		}
 
@@ -291,7 +302,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 
                 let isFavorited: true | undefined;
                 if (meId) {
-                        const favoritedFromHint = options?._hint_?.favorites;
+                        const favoritedFromHint = hint.favorites;
                         if (favoritedFromHint) {
                                 isFavorited = favoritedFromHint.has(note.id)
                                         ? true
@@ -310,11 +321,11 @@ export const NoteRepository = db.getRepository(Note).extend({
                 }
 
                 const myReactions = meId
-                        ? await populateMyReactions(note, meId, options?._hint_)
+                        ? await populateMyReactions(note, meId, hint)
                         : undefined;
 
-		const reactions =
-			note.isPublicLikeList || meId === note.userId
+                const reactions =
+                        note.isPublicLikeList || meId === note.userId
 				? {
 						...(myReactions?.myReactions?.length
 							? myReactions.myReactions.reduce(
@@ -389,38 +400,38 @@ export const NoteRepository = db.getRepository(Note).extend({
 			invisible: !isVisible ? true : undefined,
 			...(opts.detail
 				? {
-						reply: note.replyId
-							? this.pack(note.reply || note.replyId, me, {
-									detail: false,
-									_hint_: options?._hint_,
-									showInvisible: true,
-							  })
-							: undefined,
+                                                reply: note.replyId
+                                                        ? this.pack(note.reply || note.replyId, me, {
+                                                                        detail: false,
+                                                                        _hint_: opts._hint_,
+                                                                        showInvisible: true,
+                                                          })
+                                                        : undefined,
 
-						renote: note.renoteId
-							? this.pack(note.renote || note.renoteId, me, {
-									detail: true,
-									_hint_: options?._hint_,
-									showInvisible: true,
-							  })
-							: undefined,
+                                                renote: note.renoteId
+                                                        ? this.pack(note.renote || note.renoteId, me, {
+                                                                        detail: true,
+                                                                        _hint_: opts._hint_,
+                                                                        showInvisible: true,
+                                                          })
+                                                        : undefined,
 
-						references: note.referenceIds.filter(
-							(x) => !/\W/.test(x) && x !== note.renoteId,
-						).length
-							? (
-									await Promise.allSettled(
-										note.referenceIds
-											.filter((x) => !/\W/.test(x) && x !== note.renoteId)
-											.map(async (x) => {
-												try {
-													return await this.pack(x, me, {
-														detail: true,
-														_hint_: options?._hint_,
-														showInvisible: false,
-														blockCheck: true,
-													});
-												} catch (e) {
+                                                references: note.referenceIds.filter(
+                                                        (x) => !/\W/.test(x) && x !== note.renoteId,
+                                                ).length
+                                                        ? (
+                                                                        await Promise.allSettled(
+                                                                                note.referenceIds
+                                                                                        .filter((x) => !/\W/.test(x) && x !== note.renoteId)
+                                                                                        .map(async (x) => {
+                                                                                                try {
+                                                                                                        return await this.pack(x, me, {
+                                                                                                                detail: true,
+                                                                                                                _hint_: opts._hint_,
+                                                                                                                showInvisible: false,
+                                                                                                                blockCheck: true,
+                                                                                                        });
+                                                                                                } catch (e) {
 													return null;
 												}
 											}),
@@ -433,28 +444,28 @@ export const NoteRepository = db.getRepository(Note).extend({
 						poll:
 							note.hasPoll && isVisible ? populatePoll(note, meId) : undefined,
 
-						...(meId
-							? {
-                                                                        myReaction: populateMyReaction(note, meId, options?._hint_),
-									...myReactions,
+                                                ...(meId
+                                                        ? {
+                                                                        myReaction: populateMyReaction(note, meId, hint),
+                                                                        ...myReactions,
                                                                         isFavorited,
-									lastSendActivityAt:
-										meId === note.userId
+                                                                        lastSendActivityAt:
+                                                                                meId === note.userId
 											? note.lastSendActivityAt?.toISOString() || undefined
 											: undefined,
 							  }
 							: {}),
 				  }
 				: {}),
-		});
+                });
 
-		if (packed.user.isCat && packed.user.speakAsCat && packed.text) {
-			const me = meId ? await Users.findOneByOrFail({ id: meId }) : undefined;
-			if (!me?.disableNyaise) {
-				const tokens = packed.text ? mfm.parse(packed.text) : [];
-				function nyaizeNode(node: mfm.MfmNode) {
-					if (node.type === "quote") return;
-					if (node.type === "text") node.props.text = nyaize(node.props.text);
+                if (packed.user.isCat && packed.user.speakAsCat && packed.text) {
+                        const me = meUser;
+                        if (!me?.disableNyaise) {
+                                const tokens = packed.text ? mfm.parse(packed.text) : [];
+                                function nyaizeNode(node: mfm.MfmNode) {
+                                        if (node.type === "quote") return;
+                                        if (node.type === "text") node.props.text = nyaize(node.props.text);
 
 					if (node.children) {
 						for (const child of node.children) {
@@ -475,11 +486,11 @@ export const NoteRepository = db.getRepository(Note).extend({
 		return packed;
 	},
 
-	async packMany(
-		notes: Note[],
-		me?: { id: User["id"] } | null | undefined,
-		options?: {
-			detail?: boolean;
+        async packMany(
+                notes: Note[],
+                me?: { id: User["id"] } | null | undefined,
+                options?: {
+                        detail?: boolean;
 		},
 	) {
 		if (notes.length === 0) return [];
@@ -487,6 +498,7 @@ export const NoteRepository = db.getRepository(Note).extend({
                 const meId = me ? me.id : null;
                 const myReactionsMap: NoteReactionHint = new Map();
                 let favoritedNoteIds: Set<Note["id"]> | undefined;
+                let meUser: User | undefined;
                 if (meId) {
                         const renoteIds = notes
                                 .filter((n) => n.renoteId != null)
@@ -515,18 +527,23 @@ export const NoteRepository = db.getRepository(Note).extend({
                                 noteId: In(targets),
                         });
                         favoritedNoteIds = new Set(favorites.map((favorite) => favorite.noteId));
+
+                        meUser = await Users.findOneByOrFail({ id: meId });
                 }
 
                 await prefetchEmojis(aggregateNoteEmojis(notes));
 
+                const hint: NotePackHint = {
+                        myReactions: myReactionsMap,
+                        favorites: favoritedNoteIds,
+                        me: meUser,
+                };
+
                 const promises = await Promise.allSettled(
-			notes.map((n) =>
+                        notes.map((n) =>
                                 this.pack(n, me, {
                                         ...options,
-                                        _hint_: {
-                                                myReactions: myReactionsMap,
-                                                favorites: favoritedNoteIds,
-                                        },
+                                        _hint_: hint,
                                 }),
                         ),
                 );

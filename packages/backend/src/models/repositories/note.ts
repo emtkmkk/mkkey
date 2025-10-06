@@ -68,11 +68,12 @@ export async function populatePoll(note: Note, meId: User["id"] | null) {
 }
 
 async function populateMyReaction(
-	note: Note,
-	meId: User["id"],
-	_hint_?: {
-		myReactions: Map<Note["id"], NoteReaction | null>;
-	},
+        note: Note,
+        meId: User["id"],
+        _hint_?: {
+                myReactions: Map<Note["id"], NoteReaction | null>;
+                favoritedNoteIds?: Set<Note["id"]>;
+        },
 ) {
 	if (_hint_?.myReactions) {
 		const reaction = _hint_.myReactions.get(note.id);
@@ -133,7 +134,7 @@ async function populateMyReactions(note: Note, meId: User["id"]) {
 }
 
 export const NoteRepository = db.getRepository(Note).extend({
-	async isVisibleForMe(note: Note, meId: User["id"] | null): Promise<boolean> {
+        async isVisibleForMe(note: Note, meId: User["id"] | null): Promise<boolean> {
 		// This code must always be synchronized with the checks in generateVisibilityQuery.
 		if (!note?.visibility) return false;
 		// visibility が specified かつ自分が指定されていなかったら非表示
@@ -195,18 +196,19 @@ export const NoteRepository = db.getRepository(Note).extend({
 		return true;
 	},
 
-	async pack(
-		src: Note["id"] | Note,
-		me?: { id: User["id"] } | null | undefined,
-		options?: {
-			detail?: boolean;
-			_hint_?: {
-				myReactions: Map<Note["id"], NoteReaction | null>;
-			};
-			showInvisible?: boolean;
-			blockCheck?: boolean;
-		},
-	): Promise<Packed<"Note">> {
+        async pack(
+                src: Note["id"] | Note,
+                me?: { id: User["id"] } | null | undefined,
+                options?: {
+                        detail?: boolean;
+                        _hint_?: {
+                                myReactions: Map<Note["id"], NoteReaction | null>;
+                                favoritedNoteIds?: Set<Note["id"]>;
+                        };
+                        showInvisible?: boolean;
+                        blockCheck?: boolean;
+                },
+        ): Promise<Packed<"Note">> {
 		const opts = Object.assign(
 			{
 				detail: true,
@@ -285,7 +287,24 @@ export const NoteRepository = db.getRepository(Note).extend({
 
 		const reactionEmoji = await populateEmojis(reactionEmojiNames, host);
 
-		const packed: Packed<"Note"> = await awaitAll({
+		const hintFavoritedNoteIds = options?._hint_?.favoritedNoteIds;
+		const isFavorited = meId
+			? hintFavoritedNoteIds
+				? hintFavoritedNoteIds.has(note.id)
+					? true
+					: undefined
+				: (await NoteFavorites.count({
+					where: {
+						userId: meId,
+						noteId: note.id,
+					},
+					take: 1,
+				}))
+					? true
+					: undefined
+			: undefined;
+
+                const packed: Packed<"Note"> = await awaitAll({
 			id: note.id,
 			createdAt: note.createdAt.toISOString(),
 			userId: note.userId,
@@ -377,17 +396,9 @@ export const NoteRepository = db.getRepository(Note).extend({
 
 						...(meId
 							? {
-									myReaction: populateMyReaction(note, meId, options?._hint_),
-									...myReactions,
-									isFavorited: (await NoteFavorites.count({
-										where: {
-											userId: meId,
-											noteId: note.id,
-										},
-										take: 1,
-									}))
-										? true
-										: undefined,
+                                                myReaction: populateMyReaction(note, meId, options?._hint_),
+                                                ...myReactions,
+                                                isFavorited,
 									lastSendActivityAt:
 										meId === note.userId
 											? note.lastSendActivityAt?.toISOString() || undefined
@@ -435,26 +446,33 @@ export const NoteRepository = db.getRepository(Note).extend({
 		if (notes.length === 0) return [];
 
 		const meId = me ? me.id : null;
-                const myReactionsMap = new Map<Note["id"], NoteReaction | null>();
-                if (meId) {
-                        const renoteIds = notes
-                                .filter((n) => n.renoteId != null)
-                                .map((n) => n.renoteId!);
-                        const targets = [...notes.map((n) => n.id), ...renoteIds];
-                        const myReactions = await NoteReactions.findBy({
-                                userId: meId,
-                                noteId: In(targets),
-                        });
+		const myReactionsMap = new Map<Note["id"], NoteReaction | null>();
+		let favoritedNoteIds: Set<Note["id"]> | undefined;
+		if (meId) {
+			const renoteIds = notes
+				.filter((n) => n.renoteId != null)
+				.map((n) => n.renoteId!);
+			const targets = Array.from(new Set([...notes.map((n) => n.id), ...renoteIds]));
+			const myReactions = await NoteReactions.findBy({
+				userId: meId,
+				noteId: In(targets),
+			});
 
-                        const myReactionsByNoteId = new Map<Note["id"], NoteReaction>();
-                        for (const reaction of myReactions) {
-                                myReactionsByNoteId.set(reaction.noteId, reaction);
-                        }
+			const myReactionsByNoteId = new Map<Note["id"], NoteReaction>();
+			for (const reaction of myReactions) {
+				myReactionsByNoteId.set(reaction.noteId, reaction);
+			}
 
-                        for (const target of targets) {
-                                myReactionsMap.set(target, myReactionsByNoteId.get(target) ?? null);
-                        }
-                }
+			for (const target of targets) {
+				myReactionsMap.set(target, myReactionsByNoteId.get(target) ?? null);
+			}
+
+			const favorites = await NoteFavorites.findBy({
+				userId: meId,
+				noteId: In(targets),
+			});
+			favoritedNoteIds = new Set(favorites.map((favorite) => favorite.noteId));
+		}
 
 		await prefetchEmojis(aggregateNoteEmojis(notes));
 
@@ -464,6 +482,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 					...options,
 					_hint_: {
 						myReactions: myReactionsMap,
+						favoritedNoteIds,
 					},
 				}),
 			),

@@ -24,6 +24,7 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 		options: {
 			_hintForEachNotes_?: {
 				myReactions: Map<Note["id"], NoteReaction | null>;
+				favoritedNoteIds?: Set<Note["id"]>;
 			};
 		},
 	): Promise<Packed<"Notification">> {

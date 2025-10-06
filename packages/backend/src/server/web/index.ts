@@ -78,9 +78,6 @@ createBullBoard({
 });
 
 serverAdapter.setBasePath(bullBoardPath);
-serverAdapter.setUIConfig({
-        boardTitle: "Queue Dashboard",
-});
 app.use(serverAdapter.registerPlugin());
 //#endregion
 

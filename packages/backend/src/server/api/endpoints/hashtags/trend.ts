@@ -3,6 +3,7 @@ import define from "../../define.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Notes } from "@/models/index.js";
 import type { Note } from "@/models/entities/note.js";
+import { safeForSql } from "@/misc/safe-for-sql.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 
 /*
@@ -114,100 +115,58 @@ export default define(meta, paramDef, async () => {
 	}
 
 	// タグを人気順に並べ替え
-        const hots = tags
-                .sort((a, b) => b.users.length - a.users.length)
-                .map((tag) => tag.name)
-                .slice(0, max);
+	const hots = tags
+		.sort((a, b) => b.users.length - a.users.length)
+		.map((tag) => tag.name)
+		.slice(0, max);
 
-        if (hots.length === 0) {
-                return [];
-        }
+	//#region 2(または3)で話題と判定されたタグそれぞれについて過去の投稿数グラフを取得する
+	const countPromises: Promise<number[]>[] = [];
 
-        //#region 2(または3)で話題と判定されたタグそれぞれについて過去の投稿数グラフを取得する
-        const range = 20;
+	const range = 20;
 
-        // 10分
-        const interval = 1000 * 60 * 10;
-        const bucketStart = new Date(now.getTime() - interval * range);
-        const bucketSeconds = interval / 1000;
-        const bucketStartSec = Math.floor(bucketStart.getTime() / 1000);
+	// 10分
+	const interval = 1000 * 60 * 10;
 
-        const tagIndexMap = new Map(hots.map((tag, index) => [tag, index] as const));
+	for (let i = 0; i < range; i++) {
+		countPromises.push(
+			Promise.all(
+				hots.map((tag) =>
+					Notes.createQueryBuilder("note")
+						.select("count(distinct note.userId)")
+						.where(
+							`'{"${safeForSql(tag) ? tag : "aichan_kawaii"}"}' <@ note.tags`,
+						)
+						.andWhere("note.createdAt < :lt", {
+							lt: new Date(now.getTime() - interval * i),
+						})
+						.andWhere("note.createdAt > :gt", {
+							gt: new Date(now.getTime() - interval * (i + 1)),
+						})
+						.cache(60000) // 1 min
+						.getRawOne()
+						.then((x) => parseInt(x.count, 10)),
+				),
+			),
+		);
+	}
 
-        const bucketizedNotesQb = Notes.createQueryBuilder("note")
-                .select("note.\"userId\"", "userId")
-                .addSelect("unnest(note.tags)", "tag")
-                .addSelect(
-                        `FLOOR((EXTRACT(EPOCH FROM note."createdAt") - :bucketStartSec) / ${bucketSeconds})`,
-                        "bucket",
-                )
-                .where("note.createdAt > :bucketStart", { bucketStart })
-                .andWhere("note.createdAt < :bucketEnd", { bucketEnd: now })
-                .andWhere(
-                        new Brackets((qb) => {
-                                qb.where(`note.visibility = 'public'`).orWhere(
-                                        `note.visibility = 'home'`,
-                                );
-                        }),
-                )
-                .andWhere(`note.tags != '{}'`)
-                .setParameter("bucketStartSec", bucketStartSec);
+	const countsLog = await Promise.all(countPromises);
+	//#endregion
 
-        const bucketCountsRaw = await Notes.createQueryBuilder()
-                .select("tag", "tag")
-                .addSelect("bucket", "bucket")
-                .addSelect("COUNT(DISTINCT \"tagged_notes\".\"userId\")", "count")
-                .from(`(${bucketizedNotesQb.getQuery()})`, "tagged_notes")
-                .where("tag = ANY(:hots)", { hots })
-                .groupBy("tag")
-                .addGroupBy("bucket")
-                .setParameters(bucketizedNotesQb.getParameters())
-                .cache(60000) // 1 min
-                .getRawMany();
-
-        // インデックス検討: note(tags) のGINインデックスや createdAt との複合で更に高速化の余地あり
-
-        const countsLog = Array.from({ length: range }, () => hots.map(() => 0));
-        for (const row of bucketCountsRaw) {
-                const tagIndex = tagIndexMap.get(row.tag);
-                if (tagIndex === undefined) continue;
-
-                const bucketIndex = Number.parseInt(row.bucket, 10);
-                if (!Number.isFinite(bucketIndex) || bucketIndex < 0 || bucketIndex >= range) continue;
-
-                const targetIndex = range - 1 - bucketIndex;
-                countsLog[targetIndex][tagIndex] = Number.parseInt(row.count, 10);
-        }
-        //#endregion
-
-        const totalsSubQuery = Notes.createQueryBuilder("note")
-                .select("note.\"userId\"", "userId")
-                .addSelect("unnest(note.tags)", "tag")
-                .where("note.createdAt > :totalStart", {
-                        totalStart: new Date(now.getTime() - rangeA),
-                })
-                .andWhere("note.createdAt < :totalEnd", { totalEnd: now })
-                .andWhere(
-                        new Brackets((qb) => {
-                                qb.where(`note.visibility = 'public'`).orWhere(
-                                        `note.visibility = 'home'`,
-                                );
-                        }),
-                )
-                .andWhere(`note.tags != '{}'`);
-
-        const totalCountsRaw = await Notes.createQueryBuilder()
-                .select("tag", "tag")
-                .addSelect("COUNT(DISTINCT \"recent_tagged\".\"userId\")", "count")
-                .from(`(${totalsSubQuery.getQuery()})`, "recent_tagged")
-                .where("tag = ANY(:hots)", { hots })
-                .groupBy("tag")
-                .setParameters(totalsSubQuery.getParameters())
-                .cache(60000 * 60) // 60 min
-                .getRawMany();
-
-        const totalCountsMap = new Map(totalCountsRaw.map((row) => [row.tag, Number.parseInt(row.count, 10)]));
-        const totalCounts = hots.map((tag) => totalCountsMap.get(tag) ?? 0);
+	const totalCounts = await Promise.all(
+		hots.map((tag) =>
+			Notes.createQueryBuilder("note")
+				.select("count(distinct note.userId)")
+				.where(`'{"${safeForSql(tag) ? tag : "aichan_kawaii"}"}' <@ note.tags`)
+				.andWhere("note.createdAt > :gt", {
+					gt: new Date(now.getTime() - rangeA),
+				})
+				.cache(60000 * 60) // 60 min
+				.getRawOne()
+				.then((x) => parseInt(x.count, 10)),
+		),
+	);
 
 	const stats = hots.map((tag, i) => ({
 		tag,

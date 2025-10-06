@@ -13,6 +13,7 @@ import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 
 @Entity()
 @Index(['userId', 'folderId', 'id'])
+@Index(['userHost', 'createdAt', 'id'])
 export class DriveFile {
 	@PrimaryColumn(id())
 	public id: string;

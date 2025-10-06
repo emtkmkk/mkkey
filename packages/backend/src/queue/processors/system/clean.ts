@@ -1,6 +1,6 @@
 import type Bull from "bull";
 import { Brackets, LessThan } from "typeorm";
-import { Notes, UserIps, Users } from "@/models/index.js";
+import { DriveFiles, Notes, UserIps, Users } from "@/models/index.js";
 
 import { queueLogger } from "../../logger.js";
 import { genId } from "@/misc/gen-id.js";
@@ -10,6 +10,7 @@ import type { User } from "@/models/entities/user.js";
 import { fetchProxyAccount } from "@/misc/fetch-proxy-account.js";
 import createFollowing from "@/services/following/create.js";
 import deleteFollowing from "@/services/following/delete.js";
+import { deleteFileSync } from "@/services/drive/delete-file.js";
 import { UserListJoining } from "@/models/entities/user-list-joining.js";
 import { Following } from "@/models/entities/following.js";
 import { FollowRequest } from "@/models/entities/follow-request.js";
@@ -118,6 +119,58 @@ export async function clean(
 		job.log(`succ - Notes Cleaned. (${deleteCount}${failedCount ? ` / ${failedCount}` : ""
 			})`,
 		);
+        }
+
+        logger.info("リモートDriveFileの参照状態を確認します...");
+        job.log("info - " + "リモートDriveFileの参照状態を確認します...");
+
+        const driveFileThreshold = new Date(Date.now() - 1000 * 60 * 60 * 24 * 365);
+        let driveFileCursor: string | null = null;
+        let driveFileDeleteCount = 0;
+        let driveFileFailedCount = 0;
+
+        while (true) {
+                const files = await DriveFiles.createQueryBuilder("file")
+                        .where("file.createdAt < :threshold", { threshold: driveFileThreshold })
+                        .andWhere("file.userHost IS NOT NULL")
+                        .andWhere(
+                                `NOT EXISTS (SELECT 1 FROM note WHERE note."fileIds" && ARRAY[file."id"]::varchar[])`,
+                        )
+                        .andWhere(driveFileCursor ? "file.id > :cursor" : "1=1", { cursor: driveFileCursor })
+                        .orderBy("file.id", "ASC")
+                        .take(100)
+                        .getMany();
+
+                if (files.length === 0) {
+                        break;
+                }
+
+                driveFileCursor = files[files.length - 1].id;
+
+                for (const file of files) {
+                        try {
+                                await deleteFileSync(file);
+                                driveFileDeleteCount += 1;
+                        } catch (err) {
+                                driveFileFailedCount += 1;
+                                const errorMessage = err instanceof Error ? err.message : `${err}`;
+                                logger.warn(
+                                        `DriveFileの削除に失敗しました: ${file.id} - ${errorMessage}`,
+                                );
+                                job.log(
+                                        `warn - DriveFileの削除に失敗しました: ${file.id} - ${errorMessage}`,
+                                );
+                        }
+                }
+        }
+
+        if (driveFileDeleteCount + driveFileFailedCount > 0) {
+                logger.info(
+                        `不要なDriveFileを削除しました: ${driveFileDeleteCount}${driveFileFailedCount ? ` / ${driveFileFailedCount}` : ""}`,
+                );
+                job.log(
+                        `info - 不要なDriveFileを削除しました: ${driveFileDeleteCount}${driveFileFailedCount ? ` / ${driveFileFailedCount}` : ""}`,
+                );
         }
 
         logger.info("Proxyアカウントのフォロー状態を確認します...");

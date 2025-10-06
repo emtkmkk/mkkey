@@ -10,6 +10,7 @@ import type { UserNotePining } from "@/models/entities/user-note-pining.js";
 import { genId } from "@/misc/gen-id.js";
 import { deliverToFollowers } from "@/remote/activitypub/deliver-manager.js";
 import { deliverToRelays } from "../relay.js";
+import { QueryFailedError } from "typeorm";
 
 /**
  * 指定した投稿をピン留めします
@@ -42,26 +43,41 @@ export async function addPinned(
 		);
 	}
 
-	if (pinings.some((pining) => pining.noteId === note.id)) {
-		// すでに登録済みの場合、上に持ってくるためにID・登録日を更新
-		await UserNotePinings.update(
-			{
-				userId: user.id,
-				noteId: note.id,
-			},
-			{
-				id: genId(),
-				createdAt: new Date(),
-			} as UserNotePining,
-		);
-	} else {
-		await UserNotePinings.insert({
-			id: genId(),
-			createdAt: new Date(),
-			userId: user.id,
-			noteId: note.id,
-		} as UserNotePining);
-	}
+        const updateExisting = async () =>
+                UserNotePinings.update(
+                        {
+                                userId: user.id,
+                                noteId: note.id,
+                        },
+                        {
+                                id: genId(),
+                                createdAt: new Date(),
+                        } as UserNotePining,
+                );
+
+        if (pinings.some((pining) => pining.noteId === note.id)) {
+                // すでに登録済みの場合、上に持ってくるためにID・登録日を更新
+                await updateExisting();
+        } else {
+                try {
+                        await UserNotePinings.insert({
+                                id: genId(),
+                                createdAt: new Date(),
+                                userId: user.id,
+                                noteId: note.id,
+                        } as UserNotePining);
+                } catch (err) {
+                        if (
+                                err instanceof QueryFailedError &&
+                                err.driverError?.code === "23505"
+                        ) {
+                                // 挿入競合時は既存レコードを更新
+                                await updateExisting();
+                        } else {
+                                throw err;
+                        }
+                }
+        }
 
 	// Deliver to remote followers
 	if (

@@ -312,7 +312,8 @@ export async function generateAlts(
 	}
 
 	// #region webpublic
-	let webpublic: IImage | null = null;
+        let webpublic: IImage | null = null;
+        let thumbnail: IImage | null = null;
 
         const needWebpublic = generateWeb && !satisfyWebpublic;
         const needThumbnail =
@@ -411,8 +412,6 @@ export async function generateAlts(
 	// #endregion webpublic
 
 	// #region thumbnail
-	let thumbnail: IImage | null = null;
-
         if (!(needWebpublic && needThumbnail)) {
                 try {
                         if (needThumbnail) {

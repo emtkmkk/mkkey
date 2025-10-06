@@ -112,25 +112,39 @@ class NotificationManager {
 		}
 	}
 
-	public async deliver() {
-		for (const x of this.queue) {
-			// ミュート情報を取得
-			const mentioneeMutes = await Mutings.findBy({
-				muterId: x.target,
-			});
+        public async deliver() {
+                const targets = [...new Set(this.queue.map((x) => x.target))];
 
-			const mentioneesMutedUserIds = mentioneeMutes.map((m) => m.muteeId);
+                const mentioneeMutes =
+                        targets.length === 0
+                                ? []
+                                : await Mutings.findBy({
+                                          muterId: In(targets),
+                                  });
 
-			// 通知される側のユーザーが通知する側のユーザーをミュートしていない限りは通知する
-			if (!mentioneesMutedUserIds.includes(this.notifier.id)) {
-				createNotification(x.target, x.reason, {
-					notifierId: this.notifier.id,
-					noteId: this.note.id,
-					note: this.note,
-				});
-			}
-		}
-	}
+                const mentioneeMutesMap = new Map<ILocalUser["id"], User["id"][]>();
+
+                for (const mute of mentioneeMutes) {
+                        if (!mentioneeMutesMap.has(mute.muterId)) {
+                                mentioneeMutesMap.set(mute.muterId, []);
+                        }
+
+                        mentioneeMutesMap.get(mute.muterId)!.push(mute.muteeId);
+                }
+
+                for (const x of this.queue) {
+                        const mentioneesMutedUserIds = mentioneeMutesMap.get(x.target) ?? [];
+
+                        // 通知される側のユーザーが通知する側のユーザーをミュートしていない限りは通知する
+                        if (!mentioneesMutedUserIds.includes(this.notifier.id)) {
+                                createNotification(x.target, x.reason, {
+                                        notifierId: this.notifier.id,
+                                        noteId: this.note.id,
+                                        note: this.note,
+                                });
+                        }
+                }
+        }
 }
 
 type MinimumUser = {

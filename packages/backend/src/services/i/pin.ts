@@ -67,10 +67,11 @@ export async function addPinned(
                                 noteId: note.id,
                         } as UserNotePining);
                 } catch (err) {
-                        if (
-                                err instanceof QueryFailedError &&
-                                err.driverError?.code === "23505"
-                        ) {
+                        const driverErrorCode =
+                                (err as QueryFailedError)?.driverError?.code ??
+                                (err as { code?: string }).code;
+
+                        if (driverErrorCode === "23505") {
                                 // 挿入競合時は既存レコードを更新
                                 await updateExisting();
                         } else {

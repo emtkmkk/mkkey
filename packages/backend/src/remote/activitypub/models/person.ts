@@ -1009,12 +1009,33 @@ export async function updateFeatured(userId: User["id"], resolver?: Resolver) {
                         insertedNoteIds.add(note!.id);
 
                         td -= 1000;
-                        await transactionalEntityManager.insert(UserNotePining, {
-                                id: genId(new Date(Date.now() + td)),
-                                createdAt: new Date(),
-                                userId: user.id,
-                                noteId: note!.id,
-                        });
+                        const id = genId(new Date(Date.now() + td));
+                        const createdAt = new Date();
+
+                        try {
+                                await transactionalEntityManager.insert(UserNotePining, {
+                                        id,
+                                        createdAt,
+                                        userId: user.id,
+                                        noteId: note!.id,
+                                });
+                        } catch (err) {
+                                if (isDuplicateKeyValueError(err)) {
+                                        await transactionalEntityManager.update(
+                                                UserNotePining,
+                                                {
+                                                        userId: user.id,
+                                                        noteId: note!.id,
+                                                },
+                                                {
+                                                        id,
+                                                        createdAt,
+                                                },
+                                        );
+                                } else {
+                                        throw err;
+                                }
+                        }
                 }
         });
 }

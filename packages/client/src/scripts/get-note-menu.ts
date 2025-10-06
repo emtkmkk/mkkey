@@ -215,7 +215,7 @@ export function getNoteMenu(props: {
 	function noteReplacer(key: string, value: unknown) {
 		if (
 			key === "user" ||
-			key === "myReactionCnt" ||
+                        key === "myReactionsCnt" ||
 			key.startsWith("_") ||
 			value === null ||
 			value === false ||

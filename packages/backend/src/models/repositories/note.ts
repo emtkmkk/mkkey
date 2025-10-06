@@ -67,27 +67,36 @@ export async function populatePoll(note: Note, meId: User["id"] | null) {
 	};
 }
 
-async function populateMyReaction(
-	note: Note,
-	meId: User["id"],
-	_hint_?: {
-		myReactions: Map<Note["id"], NoteReaction | null>;
-	},
-) {
-	if (_hint_?.myReactions) {
-		const reaction = _hint_.myReactions.get(note.id);
-		if (reaction) {
-			return convertLegacyReaction(reaction.reaction);
-		} else if (reaction === null) {
-			return undefined;
-		}
-		// 実装上抜けがあるだけかもしれないので、「ヒントに含まれてなかったら(=undefinedなら)return」のようにはしない
-	}
+type NoteReactionHint = Map<
+        Note["id"],
+        NoteReaction | NoteReaction[] | null
+>;
 
-	// パフォーマンスのためノートが作成されてから1秒以上経っていない場合はリアクションを取得しない
-	if (note.createdAt.getTime() + 1000 > Date.now()) {
-		return undefined;
-	}
+async function populateMyReaction(
+        note: Note,
+        meId: User["id"],
+        _hint_?: {
+                myReactions: NoteReactionHint;
+        },
+) {
+        if (_hint_?.myReactions?.has(note.id)) {
+                const reaction = _hint_.myReactions.get(note.id);
+                if (Array.isArray(reaction)) {
+                        const firstReaction = reaction[0];
+                        if (firstReaction) {
+                                return convertLegacyReaction(firstReaction.reaction);
+                        }
+                        return undefined;
+                } else if (reaction) {
+                        return convertLegacyReaction(reaction.reaction);
+                }
+                return undefined;
+        }
+
+        // パフォーマンスのためノートが作成されてから1秒以上経っていない場合はリアクションを取得しない
+        if (note.createdAt.getTime() + 1000 > Date.now()) {
+                return undefined;
+        }
 
 	const reaction = await NoteReactions.findOneBy({
 		userId: meId,
@@ -101,12 +110,40 @@ async function populateMyReaction(
 	return undefined;
 }
 
-async function populateMyReactions(note: Note, meId: User["id"]) {
-	// パフォーマンスのためノートが作成されてから1秒以上経っていない場合はリアクションを取得しない
-	if (note.createdAt.getTime() + 1000 > Date.now()) {
-		return {
-			myReactions: [],
-			myReactionsCnt: 0,
+async function populateMyReactions(
+        note: Note,
+        meId: User["id"],
+        _hint_?: {
+                myReactions: NoteReactionHint;
+        },
+) {
+        if (_hint_?.myReactions?.has(note.id)) {
+                const reactions = _hint_.myReactions.get(note.id);
+                if (reactions && Array.isArray(reactions) && reactions.length !== 0) {
+                        return {
+                                myReactions: reactions.map((reaction) =>
+                                        convertLegacyReaction(reaction.reaction),
+                                ),
+                                myReactionsCnt: reactions.length,
+                        };
+                } else if (reactions && !Array.isArray(reactions)) {
+                        return {
+                                myReactions: [convertLegacyReaction(reactions.reaction)],
+                                myReactionsCnt: 1,
+                        };
+                }
+
+                return {
+                        myReactions: [],
+                        myReactionsCnt: 0,
+                };
+        }
+
+        // パフォーマンスのためノートが作成されてから1秒以上経っていない場合はリアクションを取得しない
+        if (note.createdAt.getTime() + 1000 > Date.now()) {
+                return {
+                        myReactions: [],
+                        myReactionsCnt: 0,
 		};
 	}
 
@@ -117,19 +154,19 @@ async function populateMyReactions(note: Note, meId: User["id"]) {
 		},
 	});
 
-	if (reactions && reactions.length != 0) {
-		return {
-			myReactions: reactions.map((reaction) =>
-				convertLegacyReaction(reaction.reaction),
-			),
-			myReactionsCnt: reactions.length,
-		};
-	}
+        if (reactions && reactions.length != 0) {
+                return {
+                        myReactions: reactions.map((reaction) =>
+                                convertLegacyReaction(reaction.reaction),
+                        ),
+                        myReactionsCnt: reactions.length,
+                };
+        }
 
-	return {
-		myReactions: [],
-		myReactionCnt: 0,
-	};
+        return {
+                myReactions: [],
+                myReactionsCnt: 0,
+        };
 }
 
 export const NoteRepository = db.getRepository(Note).extend({
@@ -200,9 +237,9 @@ export const NoteRepository = db.getRepository(Note).extend({
 		me?: { id: User["id"] } | null | undefined,
 		options?: {
 			detail?: boolean;
-			_hint_?: {
-				myReactions: Map<Note["id"], NoteReaction | null>;
-			};
+                        _hint_?: {
+                                myReactions: NoteReactionHint;
+                        };
 			showInvisible?: boolean;
 			blockCheck?: boolean;
 		},
@@ -251,9 +288,9 @@ export const NoteRepository = db.getRepository(Note).extend({
 				: await Channels.findOneBy({ id: note.channelId })
 			: null;
 
-		const myReactions = meId
-			? await populateMyReactions(note, meId)
-			: undefined;
+                const myReactions = meId
+                        ? await populateMyReactions(note, meId, options?._hint_)
+                        : undefined;
 
 		const reactions =
 			note.isPublicLikeList || meId === note.userId
@@ -377,7 +414,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 
 						...(meId
 							? {
-									myReaction: populateMyReaction(note, meId, options?._hint_),
+                                                                        myReaction: populateMyReaction(note, meId, options?._hint_),
 									...myReactions,
 									isFavorited: (await NoteFavorites.count({
 										where: {
@@ -435,7 +472,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 		if (notes.length === 0) return [];
 
 		const meId = me ? me.id : null;
-                const myReactionsMap = new Map<Note["id"], NoteReaction | null>();
+                const myReactionsMap: NoteReactionHint = new Map();
                 if (meId) {
                         const renoteIds = notes
                                 .filter((n) => n.renoteId != null)
@@ -446,13 +483,15 @@ export const NoteRepository = db.getRepository(Note).extend({
                                 noteId: In(targets),
                         });
 
-                        const myReactionsByNoteId = new Map<Note["id"], NoteReaction>();
+                        const myReactionsByNoteId = new Map<Note["id"], NoteReaction[]>();
                         for (const reaction of myReactions) {
-                                myReactionsByNoteId.set(reaction.noteId, reaction);
+                                const reactions = myReactionsByNoteId.get(reaction.noteId) ?? [];
+                                reactions.push(reaction);
+                                myReactionsByNoteId.set(reaction.noteId, reactions);
                         }
 
                         for (const target of targets) {
-                                myReactionsMap.set(target, myReactionsByNoteId.get(target) ?? null);
+                                myReactionsMap.set(target, myReactionsByNoteId.get(target) ?? []);
                         }
                 }
 

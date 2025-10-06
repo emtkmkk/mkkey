@@ -271,12 +271,13 @@ export async function generateAlts(
 		};
 	}
 
-	let img: sharp.Sharp | null = null;
-	let satisfyWebpublic: boolean;
+        let img: sharp.Sharp | null = null;
+        let satisfyWebpublic: boolean;
 
-	try {
-		img = await sharpBmp(path, type);
-		const metadata = await img.metadata();
+        try {
+                const sharpResult = await sharpBmp(path, type);
+                img = sharpResult.clone();
+                const metadata = await sharpResult.metadata();
 		const isAnimated = metadata.pages && metadata.pages > 1;
 
 		// skip animated
@@ -313,23 +314,92 @@ export async function generateAlts(
 	// #region webpublic
 	let webpublic: IImage | null = null;
 
-	if (generateWeb && !satisfyWebpublic) {
-		logger.info("creating web image");
+        const needWebpublic = generateWeb && !satisfyWebpublic;
+        const needThumbnail =
+                [
+                        "image/jpeg",
+                        "image/webp",
+                        "image/png",
+                        "image/svg+xml",
+                        "image/avif",
+                        "image/bmp",
+                ].includes(type);
 
-		try {
-			if (["image/jpeg"].includes(type)) {
-				webpublic = await convertSharpToWebp(img, 2048, 2048);
-			} else if (["image/webp"].includes(type)) {
-				webpublic = await convertSharpToWebp(img, 2048, 2048);
-			} else if (["image/png"].includes(type)) {
-				webpublic = await convertSharpToWebp(img, 2048, 2048, 100);
-			} else if (["image/svg+xml"].includes(type)) {
-				webpublic = await convertSharpToWebp(img, 2048, 2048);
-			} else if (["image/bmp"].includes(type)) {
-				webpublic = await convertSharpToWebp(img, 2048, 2048);
-			} else {
-				logger.debug("web image not created (not an required image)");
-			}
+        if (needWebpublic && needThumbnail) {
+                logger.info("creating web image");
+
+                const webpublicPromise = (async () => {
+                        try {
+                                if (["image/jpeg"].includes(type)) {
+                                        return await convertSharpToWebp(img!.clone(), 2048, 2048);
+                                } else if (["image/webp"].includes(type)) {
+                                        return await convertSharpToWebp(img!.clone(), 2048, 2048);
+                                } else if (["image/png"].includes(type)) {
+                                        return await convertSharpToWebp(
+                                                img!.clone(),
+                                                2048,
+                                                2048,
+                                                100,
+                                        );
+                                } else if (["image/svg+xml"].includes(type)) {
+                                        return await convertSharpToWebp(img!.clone(), 2048, 2048);
+                                } else if (["image/bmp"].includes(type)) {
+                                        return await convertSharpToWebp(img!.clone(), 2048, 2048);
+                                } else {
+                                        logger.debug(
+                                                "web image not created (not an required image)",
+                                        );
+                                        return null;
+                                }
+                        } catch (err) {
+                                logger.warn(
+                                        "web image not created (an error occured)",
+                                        err as Error,
+                                );
+                                return null;
+                        }
+                })();
+
+                const thumbnailPromise = (async () => {
+                        try {
+                                return await convertSharpToWebp(img!.clone(), 996, 560);
+                        } catch (err) {
+                                logger.warn(
+                                        "thumbnail not created (an error occured)",
+                                        err as Error,
+                                );
+                                return null;
+                        }
+                })();
+
+                const [webpublicResult, thumbnailResult] = await Promise.all([
+                        webpublicPromise,
+                        thumbnailPromise,
+                ]);
+                webpublic = webpublicResult;
+                thumbnail = thumbnailResult;
+        } else if (needWebpublic) {
+                logger.info("creating web image");
+
+                try {
+                        if (["image/jpeg"].includes(type)) {
+                                webpublic = await convertSharpToWebp(img!.clone(), 2048, 2048);
+                        } else if (["image/webp"].includes(type)) {
+                                webpublic = await convertSharpToWebp(img!.clone(), 2048, 2048);
+                        } else if (["image/png"].includes(type)) {
+                                webpublic = await convertSharpToWebp(
+                                        img!.clone(),
+                                        2048,
+                                        2048,
+                                        100,
+                                );
+                        } else if (["image/svg+xml"].includes(type)) {
+                                webpublic = await convertSharpToWebp(img!.clone(), 2048, 2048);
+                        } else if (["image/bmp"].includes(type)) {
+                                webpublic = await convertSharpToWebp(img!.clone(), 2048, 2048);
+                        } else {
+                                logger.debug("web image not created (not an required image)");
+                        }
 		} catch (err) {
 			logger.warn("web image not created (an error occured)", err as Error);
 		}
@@ -343,24 +413,17 @@ export async function generateAlts(
 	// #region thumbnail
 	let thumbnail: IImage | null = null;
 
-	try {
-		if (
-			[
-				"image/jpeg",
-				"image/webp",
-				"image/png",
-				"image/svg+xml",
-				"image/avif",
-				"image/bmp",
-			].includes(type)
-		) {
-			thumbnail = await convertSharpToWebp(img, 996, 560);
-		} else {
-			logger.debug("thumbnail not created (not an required file)");
-		}
-	} catch (err) {
-		logger.warn("thumbnail not created (an error occured)", err as Error);
-	}
+        if (!(needWebpublic && needThumbnail)) {
+                try {
+                        if (needThumbnail) {
+                                thumbnail = await convertSharpToWebp(img!.clone(), 996, 560);
+                        } else {
+                                logger.debug("thumbnail not created (not an required file)");
+                        }
+                } catch (err) {
+                        logger.warn("thumbnail not created (an error occured)", err as Error);
+                }
+        }
 	// #endregion thumbnail
 
 	return {

@@ -239,6 +239,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			detail?: boolean;
                         _hint_?: {
                                 myReactions: NoteReactionHint;
+                                favorites?: Set<Note["id"]>;
                         };
 			showInvisible?: boolean;
 			blockCheck?: boolean;
@@ -282,11 +283,31 @@ export const NoteRepository = db.getRepository(Note).extend({
 			}`;
 		}
 
-		const channel = note.channelId
-			? note.channel
-				? note.channel
-				: await Channels.findOneBy({ id: note.channelId })
-			: null;
+                const channel = note.channelId
+                        ? note.channel
+                                ? note.channel
+                                : await Channels.findOneBy({ id: note.channelId })
+                        : null;
+
+                let isFavorited: true | undefined;
+                if (meId) {
+                        const favoritedFromHint = options?._hint_?.favorites;
+                        if (favoritedFromHint) {
+                                isFavorited = favoritedFromHint.has(note.id)
+                                        ? true
+                                        : undefined;
+                        } else {
+                                isFavorited = (await NoteFavorites.count({
+                                        where: {
+                                                userId: meId,
+                                                noteId: note.id,
+                                        },
+                                        take: 1,
+                                }))
+                                        ? true
+                                        : undefined;
+                        }
+                }
 
                 const myReactions = meId
                         ? await populateMyReactions(note, meId, options?._hint_)
@@ -416,15 +437,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 							? {
                                                                         myReaction: populateMyReaction(note, meId, options?._hint_),
 									...myReactions,
-									isFavorited: (await NoteFavorites.count({
-										where: {
-											userId: meId,
-											noteId: note.id,
-										},
-										take: 1,
-									}))
-										? true
-										: undefined,
+                                                                        isFavorited,
 									lastSendActivityAt:
 										meId === note.userId
 											? note.lastSendActivityAt?.toISOString() || undefined
@@ -471,13 +484,16 @@ export const NoteRepository = db.getRepository(Note).extend({
 	) {
 		if (notes.length === 0) return [];
 
-		const meId = me ? me.id : null;
+                const meId = me ? me.id : null;
                 const myReactionsMap: NoteReactionHint = new Map();
+                let favoritedNoteIds: Set<Note["id"]> | undefined;
                 if (meId) {
                         const renoteIds = notes
                                 .filter((n) => n.renoteId != null)
                                 .map((n) => n.renoteId!);
-                        const targets = [...notes.map((n) => n.id), ...renoteIds];
+                        const targets = Array.from(
+                                new Set([...notes.map((n) => n.id), ...renoteIds]),
+                        );
                         const myReactions = await NoteReactions.findBy({
                                 userId: meId,
                                 noteId: In(targets),
@@ -493,20 +509,27 @@ export const NoteRepository = db.getRepository(Note).extend({
                         for (const target of targets) {
                                 myReactionsMap.set(target, myReactionsByNoteId.get(target) ?? []);
                         }
+
+                        const favorites = await NoteFavorites.findBy({
+                                userId: meId,
+                                noteId: In(targets),
+                        });
+                        favoritedNoteIds = new Set(favorites.map((favorite) => favorite.noteId));
                 }
 
-		await prefetchEmojis(aggregateNoteEmojis(notes));
+                await prefetchEmojis(aggregateNoteEmojis(notes));
 
-		const promises = await Promise.allSettled(
+                const promises = await Promise.allSettled(
 			notes.map((n) =>
-				this.pack(n, me, {
-					...options,
-					_hint_: {
-						myReactions: myReactionsMap,
-					},
-				}),
-			),
-		);
+                                this.pack(n, me, {
+                                        ...options,
+                                        _hint_: {
+                                                myReactions: myReactionsMap,
+                                                favorites: favoritedNoteIds,
+                                        },
+                                }),
+                        ),
+                );
 
 		// filter out rejected promises, only keep fulfilled values
 		return promises.flatMap((result) =>

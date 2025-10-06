@@ -1419,44 +1419,63 @@ async function notifyToWatchersOfReplyee(
 }
 
 async function createMentionedEvents(
-	mentionedUsers: MinimumUser[],
-	note: Note,
-	nm: NotificationManager,
+        mentionedUsers: MinimumUser[],
+        note: Note,
+        nm: NotificationManager,
 ) {
-	for (const u of mentionedUsers.filter((u) => Users.isLocalUser(u))) {
-		const threadMuted = await NoteThreadMutings.findOneBy({
-			userId: u.id,
-			threadId: note.threadId || note.id,
-		});
+        const localMentionedUsers = mentionedUsers.filter((u) => Users.isLocalUser(u));
+        if (localMentionedUsers.length === 0) return;
 
-		if (threadMuted) {
-			continue;
-		}
+        const targetThreadId = note.threadId || note.id;
 
-		// note with "specified" visibility might not be visible to mentioned users
-		try {
-			const detailPackedNote = await Notes.pack(note, u, {
-				detail: true,
-			});
+        const mutedThreadUserIds = new Set<MinimumUser["id"]>();
+        const threadMutings = await NoteThreadMutings.findBy({
+                userId: In(localMentionedUsers.map((u) => u.id)),
+                threadId: targetThreadId,
+        });
 
-			publishMainStream(u.id, "mention", detailPackedNote);
+        for (const muting of threadMutings) {
+                mutedThreadUserIds.add(muting.userId);
+        }
 
-			const webhooks = (await getActiveWebhooks()).filter(
-				(x) => x.userId === u.id && x.on.includes("mention"),
-			);
-			for (const webhook of webhooks) {
-				webhookDeliver(webhook, "mention", {
-					note: detailPackedNote,
-				});
-			}
-		} catch (err) {
-			if (err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24") continue;
-			throw err;
-		}
+        const webhooks = await getActiveWebhooks();
+        const mentionWebhooksByUser = new Map<MinimumUser["id"], typeof webhooks>();
+        for (const webhook of webhooks) {
+                if (!webhook.on.includes("mention")) continue;
+                const list = mentionWebhooksByUser.get(webhook.userId) ?? [];
+                list.push(webhook);
+                mentionWebhooksByUser.set(webhook.userId, list);
+        }
 
-		// Create notification
-		nm.push(u.id, "mention");
-	}
+        for (const u of localMentionedUsers) {
+                if (mutedThreadUserIds.has(u.id)) {
+                        continue;
+                }
+
+                // note with "specified" visibility might not be visible to mentioned users
+                try {
+                        const detailPackedNote = await Notes.pack(note, u, {
+                                detail: true,
+                        });
+
+                        publishMainStream(u.id, "mention", detailPackedNote);
+
+                        const mentionWebhooks = mentionWebhooksByUser.get(u.id);
+                        if (mentionWebhooks) {
+                                for (const webhook of mentionWebhooks) {
+                                        webhookDeliver(webhook, "mention", {
+                                                note: detailPackedNote,
+                                        });
+                                }
+                        }
+                } catch (err) {
+                        if (err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24") continue;
+                        throw err;
+                }
+
+                // Create notification
+                nm.push(u.id, "mention");
+        }
 }
 
 function saveReply(reply: Note, note: Note) {

@@ -156,7 +156,7 @@ export default define(meta, paramDef, async () => {
         const bucketCountsRaw = await Notes.createQueryBuilder()
                 .select("tag", "tag")
                 .addSelect("bucket", "bucket")
-                .addSelect("COUNT(DISTINCT userId)", "count")
+                .addSelect("COUNT(DISTINCT \"tagged_notes\".\"userId\")", "count")
                 .from(`(${bucketizedNotesQb.getQuery()})`, "tagged_notes")
                 .where("tag = ANY(:hots)", { hots })
                 .groupBy("tag")
@@ -198,7 +198,7 @@ export default define(meta, paramDef, async () => {
 
         const totalCountsRaw = await Notes.createQueryBuilder()
                 .select("tag", "tag")
-                .addSelect("COUNT(DISTINCT userId)", "count")
+                .addSelect("COUNT(DISTINCT \"recent_tagged\".\"userId\")", "count")
                 .from(`(${totalsSubQuery.getQuery()})`, "recent_tagged")
                 .where("tag = ANY(:hots)", { hots })
                 .groupBy("tag")

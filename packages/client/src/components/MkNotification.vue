@@ -135,6 +135,7 @@
 					:text="getNoteSummary(notification.note)"
 					:plain="true"
 					:nowrap="!full"
+					:is-note="false"
 					:custom-emojis="notification.note.emojis"
 				/>
 				<i class="ph-quotes ph-fill ph-lg"></i>
@@ -150,6 +151,7 @@
 					:text="getNoteSummary(notification.note.renote)"
 					:plain="true"
 					:nowrap="!full"
+					:is-note="false"
 					:custom-emojis="notification.note.renote.emojis"
 				/>
 				<i class="ph-quotes ph-fill ph-lg"></i>
@@ -164,6 +166,7 @@
 					:text="getNoteSummary(notification.note)"
 					:plain="true"
 					:nowrap="!full"
+					:is-note="false"
 					:custom-emojis="notification.note.emojis"
 				/>
 			</MkA>
@@ -177,6 +180,7 @@
 					:text="getNoteSummary(notification.note)"
 					:plain="true"
 					:nowrap="!full"
+					:is-note="false"
 					:custom-emojis="notification.note.emojis"
 				/>
 			</MkA>
@@ -190,6 +194,7 @@
 					:text="getNoteSummary(notification.note)"
 					:plain="true"
 					:nowrap="!full"
+					:is-note="false"
 					:custom-emojis="notification.note.emojis"
 				/>
 			</MkA>
@@ -212,6 +217,7 @@
 					"
 					:plain="true"
 					:nowrap="!full"
+					:is-note="false"
 					:custom-emojis="notification.note.emojis"
 				/>
 				<i class="ph-quotes ph-fill ph-lg"></i>
@@ -227,6 +233,7 @@
 					:text="getNoteSummary(notification.note)"
 					:plain="true"
 					:nowrap="!full"
+					:is-note="false"
 					:custom-emojis="notification.note.emojis"
 				/>
 				<i class="ph-quotes ph-fill ph-lg"></i>
@@ -242,6 +249,7 @@
 					:text="getNoteSummary(notification.note)"
 					:plain="true"
 					:nowrap="!full"
+					:is-note="false"
 					:custom-emojis="notification.note.emojis"
 				/>
 				<i class="ph-quotes ph-fill ph-lg"></i>

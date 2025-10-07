@@ -569,6 +569,7 @@ import * as os from "@/os";
 import { useRouter } from "@/router";
 import { i18n } from "@/i18n";
 import { $i } from "@/account";
+import { useRemoteImageWithProxy } from "@/scripts/use-remote-image-with-proxy";
 
 const XPhotos = defineAsyncComponent(() => import("./index.photos.vue"));
 const XActivity = defineAsyncComponent(() => import("./index.activity.vue"));
@@ -594,6 +595,10 @@ let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
 const pinFull = $ref(false);
 const mkBadge = $ref(props.user.badges || []);
+const bannerImageUrl = useRemoteImageWithProxy(
+        () => props.user.bannerUrl ?? null,
+        () => props.user.host != null,
+);
 const visiblePinnedNotes = $computed(() => {
 	return pinFull
 		? props.user.pinnedNotes
@@ -675,15 +680,20 @@ const birthday = $computed(() => {
 });
 
 const style = $computed(() => {
-	if (
-		props.user.bannerUrl == null ||
-		(defaultStore.state.enableDataSaverMode &&
-			defaultStore.state.dataSaverDisabledBanner)
-	)
-		return {};
-	return {
-		backgroundImage: `url(${props.user.bannerUrl})`,
-	};
+        if (
+                props.user.bannerUrl == null ||
+                (defaultStore.state.enableDataSaverMode &&
+                        defaultStore.state.dataSaverDisabledBanner)
+        )
+                return {};
+
+        const resolvedUrl = bannerImageUrl.value ?? props.user.bannerUrl;
+
+        if (!resolvedUrl) return {};
+
+        return {
+                backgroundImage: `url(${resolvedUrl})`,
+        };
 });
 
 const age = $computed(() => {

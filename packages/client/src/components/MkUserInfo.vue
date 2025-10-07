@@ -1,11 +1,6 @@
 <template>
 	<div class="_panel vjnjpkug">
-		<div
-			class="banner"
-			:style="
-				user.bannerUrl ? `background-image: url(${user.bannerUrl})` : ''
-			"
-		></div>
+                <div class="banner" :style="bannerStyle"></div>
 		<MkAvatar
 			class="avatar"
 			:user="user"
@@ -61,15 +56,28 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from "vue";
 import * as misskey from "calckey-js";
 import MkFollowButton from "@/components/MkFollowButton.vue";
 import MkNumber from "@/components/MkNumber.vue";
 import { userPage } from "@/filters/user";
 import { i18n } from "@/i18n";
+import { useRemoteImageWithProxy } from "@/scripts/use-remote-image-with-proxy";
 
-defineProps<{
-	user: misskey.entities.UserDetailed;
+const props = defineProps<{
+        user: misskey.entities.UserDetailed;
 }>();
+
+const bannerImageUrl = useRemoteImageWithProxy(
+        () => props.user.bannerUrl ?? null,
+        () => props.user.host != null,
+);
+
+const bannerStyle = computed(() =>
+        bannerImageUrl.value ? `background-image: url(${bannerImageUrl.value})` : "",
+);
+
+const user = computed(() => props.user);
 </script>
 
 <style lang="scss" scoped>

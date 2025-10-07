@@ -1,6 +1,7 @@
 import accept from "./accept.js";
 import type { User } from "@/models/entities/user.js";
 import { FollowRequests, Users } from "@/models/index.js";
+import { In } from "typeorm";
 
 /**
  * Approve all follow requests for the specified user
@@ -17,8 +18,18 @@ export default async function (user: {
 		followeeId: user.id,
 	});
 
-	for (const request of requests) {
-		const follower = await Users.findOneByOrFail({ id: request.followerId });
-		accept(user, follower);
-	}
+        const followerIds = Array.from(new Set(requests.map((request) => request.followerId)));
+
+        if (followerIds.length === 0) return;
+
+        const followers = await Users.findBy({ id: In(followerIds) });
+        const followerMap = new Map(followers.map((follower) => [follower.id, follower]));
+
+        for (const request of requests) {
+                const follower =
+                        followerMap.get(request.followerId) ??
+                        (await Users.findOneByOrFail({ id: request.followerId }));
+
+                accept(user, follower);
+        }
 }

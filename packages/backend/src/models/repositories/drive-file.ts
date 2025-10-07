@@ -8,6 +8,7 @@ import config from "@/config/index.js";
 import { query, appendQuery } from "@/prelude/url.js";
 import { Meta } from "@/models/entities/meta.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { In } from "typeorm";
 import { Users, DriveFolders } from "../index.js";
 import { deepClone } from "@/misc/clone.js";
 
@@ -225,13 +226,46 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 		});
 	},
 
-	async packMany(
-		files: (DriveFile["id"] | DriveFile)[],
-		options?: PackOptions,
-	): Promise<Packed<"DriveFile">[]> {
-		const items = await Promise.all(
-			files.map((f) => this.packNullable(f, options)),
-		);
-		return items.filter((x): x is Packed<"DriveFile"> => x != null);
-	},
+        async packMany(
+                files: (DriveFile["id"] | DriveFile)[],
+                options?: PackOptions,
+        ): Promise<Packed<"DriveFile">[]> {
+                const idsToFetch = new Set<DriveFile["id"]>();
+                const providedFiles = new Map<DriveFile["id"], DriveFile>();
+
+                for (const file of files) {
+                        if (typeof file === "object") {
+                                providedFiles.set(file.id, file);
+                                idsToFetch.delete(file.id);
+                        } else if (!providedFiles.has(file)) {
+                                idsToFetch.add(file);
+                        }
+                }
+
+                const fetchedFiles =
+                        idsToFetch.size > 0
+                                ? await this.findBy({ id: In([...idsToFetch]) })
+                                : [];
+
+                for (const file of fetchedFiles) {
+                        if (!providedFiles.has(file.id)) {
+                                providedFiles.set(file.id, file);
+                        }
+                }
+
+                const items = await Promise.all(
+                        files.map((file) => {
+                                if (typeof file === "object") {
+                                        return this.packNullable(file, options);
+                                }
+
+                                const resolved = providedFiles.get(file);
+                                return resolved
+                                        ? this.packNullable(resolved, options)
+                                        : Promise.resolve(null);
+                        }),
+                );
+
+                return items.filter((x): x is Packed<"DriveFile"> => x != null);
+        },
 });

@@ -6,27 +6,33 @@ import type { Hashtag } from "@/models/entities/hashtag.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 
 export async function updateHashtags(
-	user: { id: User["id"]; host: User["host"] },
-	tags: string[],
+        user: { id: User["id"]; host: User["host"] },
+        tags: string[],
 ) {
-	for (const tag of tags) {
-		await updateHashtag(user, tag);
-	}
+        const uniqueTags = uniqueNormalizedTags(tags);
+
+        await Promise.all(uniqueTags.map((tag) => updateHashtag(user, tag)));
 }
 
 export async function updateUsertags(user: User, tags: string[]) {
-	for (const tag of tags) {
-		await updateHashtag(user, tag, true, true);
-	}
+        const uniqueTags = uniqueNormalizedTags(tags);
 
-	for (const tag of (user.tags || []).filter((x) => !tags.includes(x))) {
-		await updateHashtag(user, tag, true, false);
-	}
+        await Promise.all(uniqueTags.map((tag) => updateHashtag(user, tag, true, true)));
+
+        const newTagSet = new Set(uniqueTags);
+        const currentTags = uniqueNormalizedTags(user.tags || []);
+        const detachedTags = currentTags.filter((tag) => !newTagSet.has(tag));
+
+        if (detachedTags.length > 0) {
+                await Promise.all(
+                        detachedTags.map((tag) => updateHashtag(user, tag, true, false)),
+                );
+        }
 }
 
 export async function updateHashtag(
-	user: { id: User["id"]; host: User["host"] },
-	tag: string,
+        user: { id: User["id"]; host: User["host"] },
+        tag: string,
 	isUserAttached = false,
 	inc = true,
 ) {
@@ -155,4 +161,19 @@ export async function updateHashtag(
 	if (!isUserAttached) {
 		//hashtagChart.update(tag, user);
 	}
+}
+
+function uniqueNormalizedTags(tags: string[]): string[] {
+        const seen = new Set<string>();
+        const result: string[] = [];
+
+        for (const tag of tags) {
+                const normalized = normalizeForSearch(tag);
+                if (seen.has(normalized)) continue;
+
+                seen.add(normalized);
+                result.push(normalized);
+        }
+
+        return result;
 }

@@ -52,10 +52,12 @@ export default async function (
 		  );
 
 	const myAntennas = (await getAntennas()).filter((a) => a.userId === userId);
-	const readMentions: (Note | Packed<"Note">)[] = [];
-	const readSpecifiedNotes: (Note | Packed<"Note">)[] = [];
-	const readChannelNotes: (Note | Packed<"Note">)[] = [];
-	const readAntennaNotes: (Note | Packed<"Note">)[] = [];
+        const readMentions: (Note | Packed<"Note">)[] = [];
+        const readSpecifiedNotes: (Note | Packed<"Note">)[] = [];
+        const readChannelNotes: (Note | Packed<"Note">)[] = [];
+        const readAntennaNotes: (Note | Packed<"Note">)[] = [];
+        const readAntennaNoteIds = new Set<Note["id"]>();
+        const followingArray = Array.from(following);
 
 	for (const note of notes) {
 		if (note.mentions?.includes(userId)) {
@@ -68,23 +70,26 @@ export default async function (
 			readChannelNotes.push(note);
 		}
 
-		if (note.user != null) {
-			// たぶんnullになることは無いはずだけど一応
-			for (const antenna of myAntennas) {
-				if (
-					await checkHitAntenna(
-						antenna,
-						note,
-						note.user,
-						undefined,
-						Array.from(following),
-					)
-				) {
-					readAntennaNotes.push(note);
-				}
-			}
-		}
-	}
+                if (note.user != null && myAntennas.length > 0) {
+                        // たぶんnullになることは無いはずだけど一応
+                        const results = await Promise.all(
+                                myAntennas.map((antenna) =>
+                                        checkHitAntenna(
+                                                antenna,
+                                                note,
+                                                note.user!,
+                                                undefined,
+                                                followingArray,
+                                        ),
+                                ),
+                        );
+
+                        if (results.some(Boolean) && !readAntennaNoteIds.has(note.id)) {
+                                readAntennaNoteIds.add(note.id);
+                                readAntennaNotes.push(note);
+                        }
+                }
+        }
 
 	if (
 		readMentions.length > 0 ||
@@ -152,17 +157,22 @@ export default async function (
 			},
 		);
 
-		// TODO: まとめてクエリしたい
-		for (const antenna of myAntennas) {
-			const count = await AntennaNotes.countBy({
-				antennaId: antenna.id,
-				read: false,
-			});
+                // TODO: まとめてクエリしたい
+                const antennaCounts = await Promise.all(
+                        myAntennas.map(async (antenna) => ({
+                                antenna,
+                                count: await AntennaNotes.countBy({
+                                        antennaId: antenna.id,
+                                        read: false,
+                                }),
+                        })),
+                );
 
-			if (count === 0) {
-				publishMainStream(userId, "readAntenna", antenna);
-			}
-		}
+                for (const { antenna, count } of antennaCounts) {
+                        if (count === 0) {
+                                publishMainStream(userId, "readAntenna", antenna);
+                        }
+                }
 
 		Users.getHasUnreadAntenna(userId).then((unread) => {
 			if (!unread) {

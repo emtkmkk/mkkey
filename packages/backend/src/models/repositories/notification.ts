@@ -1,4 +1,4 @@
-import { In, Repository } from "typeorm";
+import { In } from "typeorm";
 import { Notification } from "@/models/entities/notification.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import type { Packed } from "@/misc/schema.js";
@@ -25,7 +25,8 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			_hintForEachNotes_?: {
 				myReactions: Map<Note["id"], NoteReaction | null>;
 			};
-		},
+			_followBlockingMap_?: Map<User["id"], Set<User["id"]>>;
+		} = {},
 	): Promise<Packed<"Notification">> {
 		const notification =
 			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
@@ -39,13 +40,20 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			notification.type === "receiveFollowRequest" &&
 			notification.notifierId
 		) {
-			const followBlocking = (
-				await FollowBlockings.findBy({
-					blockerId: notification.notifieeId,
-				})
-			).map((x) => x.blockeeId);
+			let blockingSet = options._followBlockingMap_?.get(
+				notification.notifieeId,
+			);
 
-			if (followBlocking.includes(notification.notifierId)) {
+			if (blockingSet == null) {
+				const followBlocking = await FollowBlockings.findBy({
+					blockerId: notification.notifieeId,
+				});
+				blockingSet = new Set(
+					followBlocking.map((x) => x.blockeeId),
+				);
+			}
+
+			if (blockingSet.has(notification.notifierId)) {
 				return null;
 			}
 		}
@@ -202,6 +210,49 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			);
 		}
 
+		const followRequestNotifieeMap = new Map<User["id"], Set<User["id"]>>();
+
+		for (const notification of notifications) {
+			if (
+					notification.type === "receiveFollowRequest" &&
+					notification.notifierId
+			) {
+				if (!followRequestNotifieeMap.has(notification.notifieeId)) {
+					followRequestNotifieeMap.set(
+						notification.notifieeId,
+						new Set<User["id"]>(),
+					);
+				}
+				followRequestNotifieeMap
+					.get(notification.notifieeId)!
+					.add(notification.notifierId);
+			}
+		}
+
+		const followBlockingMap = new Map<User["id"], Set<User["id"]>>();
+
+		if (followRequestNotifieeMap.size > 0) {
+			const blockerIds = [...followRequestNotifieeMap.keys()];
+			const followBlockings = await FollowBlockings.findBy({
+				blockerId: In(blockerIds),
+			});
+
+			for (const blockerId of blockerIds) {
+				followBlockingMap.set(blockerId, new Set<User["id"]>());
+			}
+
+			for (const blocking of followBlockings) {
+				let blockeeSet = followBlockingMap.get(blocking.blockerId);
+
+				if (blockeeSet == null) {
+					blockeeSet = new Set<User["id"]>();
+					followBlockingMap.set(blocking.blockerId, blockeeSet);
+				}
+
+				blockeeSet.add(blocking.blockeeId);
+			}
+		}
+
 		await prefetchEmojis(aggregateNoteEmojis(notes));
 
 		const results = await Promise.all(
@@ -210,6 +261,10 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 					_hintForEachNotes_: {
 						myReactions: myReactionsMap,
 					},
+					_followBlockingMap_:
+						followBlockingMap.size > 0
+							? followBlockingMap
+							: undefined,
 				}).catch((e) => null),
 			),
 		);

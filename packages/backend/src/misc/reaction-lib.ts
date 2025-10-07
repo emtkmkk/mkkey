@@ -1,4 +1,7 @@
-import { emojiRegex } from "./emoji-regex.js";
+import {
+        emojiRegex,
+        unicodeEmojiRegexAtStartToEnd,
+} from "./emoji-regex.js";
 import { fetchMeta } from "./fetch-meta.js";
 import { Emojis } from "@/models/index.js";
 import { toPunyNullable } from "./convert-host.js";
@@ -76,11 +79,17 @@ export async function toDbReaction(
 	if (emoji) return emoji;
 
 	// Allow unicode reactions
-	const match = emojiRegex.exec(reaction);
-	if (match) {
-		const unicode = match[0];
-		return unicode;
-	}
+        const match = emojiRegex.exec(reaction);
+        if (match) {
+                const unicode = match[0];
+                return unicode;
+        }
+
+        const unicodeMatch = unicodeEmojiRegexAtStartToEnd.exec(reaction);
+        if (unicodeMatch) {
+                const unicode = unicodeMatch[1] ?? unicodeMatch[0];
+                return unicode;
+        }
 
 	const custom = reaction.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/);
 

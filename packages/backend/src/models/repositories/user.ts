@@ -64,15 +64,29 @@ type IsUserDetailed<Detailed extends boolean> = Detailed extends true
 	? Packed<"UserDetailed">
 	: Packed<"UserLite">;
 type IsMeAndIsUserDetailed<
-	ExpectsMe extends boolean | null,
-	Detailed extends boolean,
+        ExpectsMe extends boolean | null,
+        Detailed extends boolean,
 > = Detailed extends true
-	? ExpectsMe extends true
-		? Packed<"MeDetailed">
-		: ExpectsMe extends false
-		? Packed<"UserDetailedNotMe">
-		: Packed<"UserDetailed">
-	: Packed<"UserLite">;
+        ? ExpectsMe extends true
+                ? Packed<"MeDetailed">
+                : ExpectsMe extends false
+                ? Packed<"UserDetailedNotMe">
+                : Packed<"UserDetailed">
+        : Packed<"UserLite">;
+
+export type UserRelation = {
+        id: User["id"];
+        isFollowing: boolean;
+        isFollowed: boolean;
+        hasPendingFollowRequestFromYou: boolean;
+        hasPendingFollowRequestToYou: boolean;
+        isBlocking: boolean;
+        isBlocked: boolean;
+        isMuted: boolean;
+        isRenoteMuted: boolean;
+        isFollowBlocking: boolean;
+        isInviter: boolean;
+};
 
 const ajv = new Ajv();
 
@@ -144,81 +158,167 @@ export const UserRepository = db.getRepository(User).extend({
 	validateBirthday: ajv.compile(birthdaySchema),
 	//#endregion
 
-	async getRelation(me: User["id"], target: User["id"]) {
-		return awaitAll({
-			id: target,
-			isFollowing: Followings.count({
-				where: {
-					followerId: me,
-					followeeId: target,
-				},
-				take: 1,
-			}).then((n) => n > 0),
-			isFollowed: Followings.count({
-				where: {
-					followerId: target,
-					followeeId: me,
-				},
-				take: 1,
-			}).then((n) => n > 0),
-			hasPendingFollowRequestFromYou: FollowRequests.count({
-				where: {
-					followerId: me,
-					followeeId: target,
-				},
-				take: 1,
-			}).then((n) => n > 0),
-			hasPendingFollowRequestToYou: FollowRequests.count({
-				where: {
-					followerId: target,
-					followeeId: me,
-				},
-				take: 1,
-			}).then((n) => n > 0),
-			isBlocking: Blockings.count({
-				where: {
-					blockerId: me,
-					blockeeId: target,
-				},
-				take: 1,
-			}).then((n) => n > 0),
-			isBlocked: Blockings.count({
-				where: {
-					blockerId: target,
-					blockeeId: me,
-				},
-				take: 1,
-			}).then((n) => n > 0),
-			isMuted: Mutings.count({
-				where: {
-					muterId: me,
-					muteeId: target,
-				},
-				take: 1,
-			}).then((n) => n > 0),
-			isRenoteMuted: RenoteMutings.count({
-				where: {
-					muterId: me,
-					muteeId: target,
-				},
-				take: 1,
-			}).then((n) => n > 0),
-			isFollowBlocking: FollowBlockings.count({
-				where: {
-					blockerId: me,
-					blockeeId: target,
-				},
-				take: 1,
-			}).then((n) => n > 0),
-			isInviter:
-				me ===
-				(
-					await this.findOneOrFail({
-						where: { id: target },
-					})
-				)?.inviteUserId,
-		});
-	},
+        async getRelation(me: User["id"], target: User["id"]): Promise<UserRelation> {
+                const relations = await this.getRelationsBulk(me, [target]);
+                const relation = relations.get(target);
+                if (relation == null) {
+                        return {
+                                id: target,
+                                isFollowing: false,
+                                isFollowed: false,
+                                hasPendingFollowRequestFromYou: false,
+                                hasPendingFollowRequestToYou: false,
+                                isBlocking: false,
+                                isBlocked: false,
+                                isMuted: false,
+                                isRenoteMuted: false,
+                                isFollowBlocking: false,
+                                isInviter: false,
+                        } as UserRelation;
+                }
+
+                return relation;
+        },
+
+        async getRelationsBulk(
+                meId: User["id"],
+                targetIds: User["id"][],
+        ): Promise<Map<User["id"], UserRelation>> {
+                const uniqueTargetIds = Array.from(
+                        new Set(targetIds.filter((id) => id !== meId)),
+                );
+
+                const relationsMap = new Map<User["id"], UserRelation>();
+
+                if (uniqueTargetIds.length === 0) {
+                        return relationsMap;
+                }
+
+                for (const id of uniqueTargetIds) {
+                        relationsMap.set(id, {
+                                id,
+                                isFollowing: false,
+                                isFollowed: false,
+                                hasPendingFollowRequestFromYou: false,
+                                hasPendingFollowRequestToYou: false,
+                                isBlocking: false,
+                                isBlocked: false,
+                                isMuted: false,
+                                isRenoteMuted: false,
+                                isFollowBlocking: false,
+                                isInviter: false,
+                        });
+                }
+
+                const [
+                        followings,
+                        followers,
+                        pendingFromYou,
+                        pendingToYou,
+                        blockings,
+                        blockedBy,
+                        mutings,
+                        renoteMutings,
+                        followBlockings,
+                        invitees,
+                ] = await Promise.all([
+                        Followings.findBy({
+                                followerId: meId,
+                                followeeId: In(uniqueTargetIds),
+                        }),
+                        Followings.findBy({
+                                followerId: In(uniqueTargetIds),
+                                followeeId: meId,
+                        }),
+                        FollowRequests.findBy({
+                                followerId: meId,
+                                followeeId: In(uniqueTargetIds),
+                        }),
+                        FollowRequests.findBy({
+                                followerId: In(uniqueTargetIds),
+                                followeeId: meId,
+                        }),
+                        Blockings.findBy({
+                                blockerId: meId,
+                                blockeeId: In(uniqueTargetIds),
+                        }),
+                        Blockings.findBy({
+                                blockerId: In(uniqueTargetIds),
+                                blockeeId: meId,
+                        }),
+                        Mutings.findBy({
+                                muterId: meId,
+                                muteeId: In(uniqueTargetIds),
+                        }),
+                        RenoteMutings.findBy({
+                                muterId: meId,
+                                muteeId: In(uniqueTargetIds),
+                        }),
+                        FollowBlockings.findBy({
+                                blockerId: meId,
+                                blockeeId: In(uniqueTargetIds),
+                        }),
+                        this.find({
+                                select: { id: true, inviteUserId: true },
+                                where: {
+                                        id: In(uniqueTargetIds),
+                                        inviteUserId: meId,
+                                },
+                        }),
+                ]);
+
+                for (const following of followings) {
+                        const relation = relationsMap.get(following.followeeId);
+                        if (relation) relation.isFollowing = true;
+                }
+
+                for (const follower of followers) {
+                        const relation = relationsMap.get(follower.followerId);
+                        if (relation) relation.isFollowed = true;
+                }
+
+                for (const request of pendingFromYou) {
+                        const relation = relationsMap.get(request.followeeId);
+                        if (relation) relation.hasPendingFollowRequestFromYou = true;
+                }
+
+                for (const request of pendingToYou) {
+                        const relation = relationsMap.get(request.followerId);
+                        if (relation) relation.hasPendingFollowRequestToYou = true;
+                }
+
+                for (const blocking of blockings) {
+                        const relation = relationsMap.get(blocking.blockeeId);
+                        if (relation) relation.isBlocking = true;
+                }
+
+                for (const blocked of blockedBy) {
+                        const relation = relationsMap.get(blocked.blockerId);
+                        if (relation) relation.isBlocked = true;
+                }
+
+                for (const muting of mutings) {
+                        const relation = relationsMap.get(muting.muteeId);
+                        if (relation) relation.isMuted = true;
+                }
+
+                for (const muting of renoteMutings) {
+                        const relation = relationsMap.get(muting.muteeId);
+                        if (relation) relation.isRenoteMuted = true;
+                }
+
+                for (const followBlocking of followBlockings) {
+                        const relation = relationsMap.get(followBlocking.blockeeId);
+                        if (relation) relation.isFollowBlocking = true;
+                }
+
+                for (const invitee of invitees) {
+                        const relation = relationsMap.get(invitee.id);
+                        if (relation) relation.isInviter = true;
+                }
+
+                return relationsMap;
+        },
 
 	async getHasUnreadMessagingMessage(userId: User["id"]): Promise<boolean> {
 		const mute = await Mutings.findBy({
@@ -358,13 +458,14 @@ export const UserRepository = db.getRepository(User).extend({
 		return count > 0;
 	},
 
-	async getOnlineStatus(
-		user: User,
-		meId?: string,
-	): Promise<
-		| "unknown"
-		| "online"
-		| "half-online"
+        async getOnlineStatus(
+                user: User,
+                meId?: string | null,
+                relationHint?: Pick<UserRelation, "isFollowed"> | null,
+        ): Promise<
+                | "unknown"
+                | "online"
+                | "half-online"
 		| "active"
 		| "half-active"
 		| "offline"
@@ -373,18 +474,22 @@ export const UserRepository = db.getRepository(User).extend({
 		| "deep-sleeping"
 		| "never-sleeping"
 		| "super-sleeping"
-	> {
-		if (!meId) return "unknown";
-		if (
-			meId &&
-			meId !== user.id &&
-			meId !== "9d5ts6in38" &&
-			!user.host &&
-			!(await this.getRelation(meId, user.id)).isFollowed
-		)
-			return "unknown";
-		if (user.lastActiveDate == null) return "unknown";
-		const elapsed = Date.now() - user.lastActiveDate.getTime();
+        > {
+                if (!meId) return "unknown";
+
+                if (meId !== user.id && meId !== "9d5ts6in38" && !user.host) {
+                        let isFollowed = relationHint?.isFollowed;
+
+                        if (isFollowed == null) {
+                                isFollowed = (await this.getRelation(meId, user.id)).isFollowed;
+                        }
+
+                        if (!isFollowed) {
+                                return "unknown";
+                        }
+                }
+                if (user.lastActiveDate == null) return "unknown";
+                const elapsed = Date.now() - user.lastActiveDate.getTime();
 		return elapsed < USER_ONLINE_THRESHOLD
 			? "online"
 			: elapsed < USER_HALFONLINE_THRESHOLD
@@ -435,22 +540,26 @@ export const UserRepository = db.getRepository(User).extend({
 		return `${config.url}/missing`;
 	},
 
-	async pack<
-		ExpectsMe extends boolean | null = null,
-		D extends boolean = false,
-	>(
-		src: User["id"] | User,
-		me?: { id: User["id"] } | null | undefined,
-		options?: {
-			detail?: D;
-			relation?: D;
-			includeSecrets?: boolean;
-		},
-	): Promise<IsMeAndIsUserDetailed<ExpectsMe, D>> {
-		const opts = Object.assign(
-			{
-				detail: false,
-				relation: false,
+        async pack<
+                ExpectsMe extends boolean | null = null,
+                D extends boolean = false,
+        >(
+                src: User["id"] | User,
+                me?: { id: User["id"] } | null | undefined,
+                options?: {
+                        detail?: D;
+                        relation?: D;
+                        includeSecrets?: boolean;
+                },
+                hints?: {
+                        relation?: UserRelation | null;
+                        memo?: Awaited<ReturnType<typeof UserMemos.findOneBy>> | null;
+                },
+        ): Promise<IsMeAndIsUserDetailed<ExpectsMe, D>> {
+                const opts = Object.assign(
+                        {
+                                detail: false,
+                                relation: false,
 				includeSecrets: false,
 			},
 			options,
@@ -492,10 +601,12 @@ export const UserRepository = db.getRepository(User).extend({
 		const meId = me ? me.id : null;
 		const isMe = meId === user.id;
 
-		const relation =
-			meId && !isMe && (opts.detail || opts.relation)
-				? await this.getRelation(meId, user.id)
-				: null;
+                const relationHintProvided = hints != null && "relation" in hints;
+                const relation = relationHintProvided
+                        ? hints?.relation ?? null
+                        : meId && !isMe && (opts.detail || opts.relation)
+                        ? await this.getRelation(meId, user.id)
+                        : null;
 		const pins = opts.detail
 			? await UserNotePinings.createQueryBuilder("pin")
 					.where("pin.userId = :userId", { userId: user.id })
@@ -646,13 +757,15 @@ export const UserRepository = db.getRepository(User).extend({
 
 		const isDeleted = user.isDeleted;
 
-		const memo =
-			meId == null
-				? null
-				: await UserMemos.findOneBy({
-						userId: meId,
-						targetUserId: user.id,
-				  }).then((row) => row ?? null);
+                const memo =
+                        meId == null
+                                ? null
+                                : hints?.memo !== undefined
+                                ? hints.memo ?? null
+                                : await UserMemos.findOneBy({
+                                                userId: meId,
+                                                targetUserId: user.id,
+                                  }).then((row) => row ?? null);
 
 		const packed = {
 			id: user.id,
@@ -692,7 +805,11 @@ export const UserRepository = db.getRepository(User).extend({
 						)
 				: undefined,
 			emojis: populateEmojis(user.emojis, user.host),
-			onlineStatus: await this.getOnlineStatus(user, meId),
+                        onlineStatus: await this.getOnlineStatus(
+                                user,
+                                meId,
+                                relation ?? undefined,
+                        ),
 			patron: user.host
 				? undefined
 				: (user.driveCapacityOverrideMb ?? DEFAULT_DRIVE_SIZE / MB) >
@@ -909,12 +1026,12 @@ export const UserRepository = db.getRepository(User).extend({
 				  }
 				: {}),
 
-			...(relation
-				? {
-						isFollowing: relation.isFollowing,
-						isFollowed: relation.isFollowed,
-						hasPendingFollowRequestFromYou:
-							relation.hasPendingFollowRequestFromYou,
+                        ...(relation
+                                ? {
+                                                isFollowing: relation.isFollowing,
+                                                isFollowed: relation.isFollowed,
+                                                hasPendingFollowRequestFromYou:
+                                                        relation.hasPendingFollowRequestFromYou,
 						hasPendingFollowRequestToYou: relation.hasPendingFollowRequestToYou,
 						isBlocking: relation.isBlocking,
 						isBlocked: relation.isBlocked,
@@ -944,17 +1061,81 @@ export const UserRepository = db.getRepository(User).extend({
 		return await awaitAll(packed);
 	},
 
-	packMany<D extends boolean = false>(
-		users: (User["id"] | User)[],
-		me?: { id: User["id"] } | null | undefined,
-		options?: {
-			detail?: D;
-			relation?: D;
-			includeSecrets?: boolean;
-		},
-	): Promise<IsUserDetailed<D>[]> {
-		return Promise.all(users.map((u) => this.pack(u, me, options)));
-	},
+        async packMany<D extends boolean = false>(
+                users: (User["id"] | User)[],
+                me?: { id: User["id"] } | null | undefined,
+                options?: {
+                        detail?: D;
+                        relation?: D;
+                        includeSecrets?: boolean;
+                },
+        ): Promise<IsUserDetailed<D>[]> {
+                const opts = Object.assign(
+                        {
+                                detail: false,
+                                relation: false,
+                                includeSecrets: false,
+                        },
+                        options,
+                );
+
+                const meId = me?.id ?? null;
+                const ids = users
+                        .map((u) => (typeof u === "object" ? u.id : u))
+                        .filter((id): id is User["id"] => id != null);
+                const uniqueIds = Array.from(new Set(ids));
+
+                const relationsMap =
+                        meId && uniqueIds.length > 0 && (opts.detail || opts.relation)
+                                ? await this.getRelationsBulk(meId, uniqueIds)
+                                : null;
+
+                const memoMap =
+                        meId && uniqueIds.length > 0
+                                ? new Map<
+                                          User["id"],
+                                          Awaited<ReturnType<typeof UserMemos.findOneBy>>
+                                  >(
+                                          (
+                                                  await UserMemos.findBy({
+                                                          userId: meId,
+                                                          targetUserId: In(uniqueIds),
+                                                  })
+                                          ).map((row) => [row.targetUserId, row]),
+                                  )
+                                : null;
+
+                return Promise.all(
+                        users.map((u) => {
+                                const id = typeof u === "object" ? u.id : u;
+
+                                let hints: {
+                                        relation?: UserRelation | null;
+                                        memo?: Awaited<ReturnType<typeof UserMemos.findOneBy>> | null;
+                                } | undefined;
+
+                                if (relationsMap || memoMap) {
+                                        hints = {};
+
+                                        if (relationsMap) {
+                                                hints.relation = relationsMap.get(id) ?? null;
+                                        }
+
+                                        if (memoMap) {
+                                                hints.memo = memoMap.has(id)
+                                                        ? memoMap.get(id) ?? null
+                                                        : null;
+                                        }
+
+                                        if (!Object.keys(hints).length) {
+                                                hints = undefined;
+                                        }
+                                }
+
+                                return this.pack(u, me, options, hints);
+                        }),
+                );
+        },
 
 	isLocalUser,
 	isRemoteUser,

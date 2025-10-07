@@ -144,9 +144,22 @@ export const UserRepository = db.getRepository(User).extend({
 	validateBirthday: ajv.compile(birthdaySchema),
 	//#endregion
 
-	async getRelation(me: User["id"], target: User["id"]) {
-		return awaitAll({
-			id: target,
+        async getRelation(
+                me: User["id"],
+                target: User["id"],
+                targetUser?: Pick<User, "id" | "inviteUserId">,
+        ) {
+                const inviteUserId =
+                        targetUser !== undefined
+                                ? targetUser.inviteUserId
+                                : (
+                                          await this.findOneOrFail({
+                                                  where: { id: target },
+                                          })
+                                  ).inviteUserId;
+
+                return awaitAll({
+                        id: target,
 			isFollowing: Followings.count({
 				where: {
 					followerId: me,
@@ -210,15 +223,9 @@ export const UserRepository = db.getRepository(User).extend({
 				},
 				take: 1,
 			}).then((n) => n > 0),
-			isInviter:
-				me ===
-				(
-					await this.findOneOrFail({
-						where: { id: target },
-					})
-				)?.inviteUserId,
-		});
-	},
+                        isInviter: me === inviteUserId,
+                });
+        },
 
 	async getHasUnreadMessagingMessage(userId: User["id"]): Promise<boolean> {
 		const mute = await Mutings.findBy({
@@ -380,7 +387,7 @@ export const UserRepository = db.getRepository(User).extend({
 			meId !== user.id &&
 			meId !== "9d5ts6in38" &&
 			!user.host &&
-			!(await this.getRelation(meId, user.id)).isFollowed
+                        !(await this.getRelation(meId, user.id, user)).isFollowed
 		)
 			return "unknown";
 		if (user.lastActiveDate == null) return "unknown";
@@ -493,8 +500,8 @@ export const UserRepository = db.getRepository(User).extend({
 		const isMe = meId === user.id;
 
 		const relation =
-			meId && !isMe && (opts.detail || opts.relation)
-				? await this.getRelation(meId, user.id)
+                        meId && !isMe && (opts.detail || opts.relation)
+                                ? await this.getRelation(meId, user.id, user)
 				: null;
 		const pins = opts.detail
 			? await UserNotePinings.createQueryBuilder("pin")

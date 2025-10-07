@@ -75,7 +75,11 @@ export default async (
 
 	const relationPromise = (async () => {
 		if (user.isSilenced && note.userId !== user.id) {
-			const relation = await Users.getRelation(user.id, note.userId);
+                        const relation = await Users.getRelation(
+                                user.id,
+                                note.userId,
+                                note.user ?? undefined,
+                        );
 			if (relation && !relation.isFollowed) {
 				throw new IdentifiableError(
 					"5ab2b45b-c2b5-0560-793d-2a670084cc92",

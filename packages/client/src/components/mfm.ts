@@ -190,18 +190,23 @@ export default defineComponent({
 								}
 							}
 
-							if (!this.plain) {
-								const res = [];
-								for (const t of text.split("\n")) {
-									res.push(h("br"));
-									res.push(t);
-								}
-								res.shift();
-								return res;
-							} else {
-								return [text.replace(/\n/g, " ")];
-							}
-						}
+                                                        if (!this.plain) {
+                                                                const res = [];
+                                                                for (const t of text.split("\n")) {
+                                                                        res.push(h("br"));
+                                                                        res.push(t);
+                                                                }
+                                                                res.shift();
+                                                                return res;
+                                                        } else {
+                                                                const res = [];
+                                                                text.split("\n").forEach((line, index) => {
+                                                                        if (index > 0) res.push(h("br"));
+                                                                        res.push(line);
+                                                                });
+                                                                return res;
+                                                        }
+                                                }
 
 						case "bold": {
 							return [h("b", genEl(token.children))];

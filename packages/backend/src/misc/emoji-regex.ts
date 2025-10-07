@@ -6,8 +6,7 @@ const generalEmojiRegex = emojiRegexFactory();
 
 export const emojiRegex = new RegExp(`(${twemojiRegex.source})`);
 export const emojiRegexAtStartToEnd = new RegExp(`^(${twemojiRegex.source})$`);
-export const unicodeEmojiRegex = new RegExp(`(${generalEmojiRegex.source})`, "u");
+export const unicodeEmojiRegex = new RegExp(`(${generalEmojiRegex.source})`);
 export const unicodeEmojiRegexAtStartToEnd = new RegExp(
         `^(${generalEmojiRegex.source})$`,
-        "u",
 );

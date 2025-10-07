@@ -76,6 +76,7 @@ type NotePackHint = {
         myReactions?: NoteReactionHint;
         favorites?: Set<Note["id"]>;
         me?: User;
+        followings?: Map<User["id"], boolean>;
 };
 
 async function populateMyReaction(
@@ -175,7 +176,7 @@ export const NoteRepository = db.getRepository(Note).extend({
         async isVisibleForMe(
                 note: Note,
                 meId: User["id"] | null,
-                _hint_?: Pick<NotePackHint, "me">,
+                _hint_?: Pick<NotePackHint, "me" | "followings">,
         ): Promise<boolean> {
                 // This code must always be synchronized with the checks in generateVisibilityQuery.
                 if (!note?.visibility) return false;
@@ -208,29 +209,40 @@ export const NoteRepository = db.getRepository(Note).extend({
 				return true;
 			} else {
                                 // フォロワーかどうか
-                                const [following, user] = await Promise.all([
-                                        Followings.count({
-                                                where: {
-                                                        followeeId: note.userId,
-                                                        followerId: meId,
-                                                },
-                                                take: 1,
-                                        }),
-                                        _hint_?.me
-                                                ? Promise.resolve(_hint_.me)
-                                                : Users.findOneByOrFail({ id: meId }),
-                                ]);
+                                const userPromise = _hint_?.me
+                                        ? Promise.resolve(_hint_.me)
+                                        : Users.findOneByOrFail({ id: meId });
+                                let following: boolean;
+                                let user: User;
 
-                                /* If we know the following, everyhting is fine.
+                                if (_hint_?.followings?.has(note.userId)) {
+                                        following = !!_hint_.followings.get(note.userId);
+                                        user = await userPromise;
+                                } else {
+                                        const [followingCount, resolvedUser] = await Promise.all([
+                                                Followings.count({
+                                                        where: {
+                                                                followeeId: note.userId,
+                                                                followerId: meId,
+                                                        },
+                                                        take: 1,
+                                                }),
+                                                userPromise,
+                                        ]);
+                                        following = followingCount > 0;
+                                        user = resolvedUser;
+                                }
+
+                                /* If we know the following, everything is fine.
 
                                 But if we do not know the following, it might be that both the
-				author of the note and the author of the like are remote users,
-				in which case we can never know the following. Instead we have
+                                author of the note and the author of the like are remote users,
+                                in which case we can never know the following. Instead we have
 				to assume that the users are following each other.
 				*/
-				return following > 0 || (note?.userHost != null && user.host != null);
-			}
-		}
+                                return following || (note?.userHost != null && user.host != null);
+                        }
+                }
 
 		// localOnly が true かつ 自分がログインしてなければ非表示
 		if (note.localOnly && meId == null) {
@@ -533,10 +545,41 @@ export const NoteRepository = db.getRepository(Note).extend({
 
                 await prefetchEmojis(aggregateNoteEmojis(notes));
 
+                let followingsMap: Map<User["id"], boolean> | undefined;
+                if (meId) {
+                        const userIds = new Set<User["id"]>();
+                        for (const note of notes) {
+                                if (note.userId) userIds.add(note.userId);
+                                if (note.renoteUserId) userIds.add(note.renoteUserId);
+                                if (note.renote?.userId) userIds.add(note.renote.userId);
+                                if (note.replyUserId) userIds.add(note.replyUserId);
+                                if (note.reply?.userId) userIds.add(note.reply.userId);
+                        }
+
+                        if (userIds.size > 0) {
+                                const followeeIds = Array.from(userIds);
+                                followingsMap = new Map(
+                                        followeeIds.map((id) => [id, false] as [User["id"], boolean]),
+                                );
+
+                                const followings = await Followings.findBy({
+                                        followerId: meId,
+                                        followeeId: In(followeeIds),
+                                });
+
+                                for (const following of followings) {
+                                        followingsMap.set(following.followeeId, true);
+                                }
+                        } else {
+                                followingsMap = new Map();
+                        }
+                }
+
                 const hint: NotePackHint = {
                         myReactions: myReactionsMap,
                         favorites: favoritedNoteIds,
                         me: meUser,
+                        followings: followingsMap,
                 };
 
                 const promises = await Promise.allSettled(

@@ -158,8 +158,16 @@ export const UserRepository = db.getRepository(User).extend({
 	validateBirthday: ajv.compile(birthdaySchema),
 	//#endregion
 
-        async getRelation(me: User["id"], target: User["id"]): Promise<UserRelation> {
-                const relations = await this.getRelationsBulk(me, [target]);
+        async getRelation(
+                me: User["id"],
+                target: User["id"],
+                targetUser?: Pick<User, "id" | "inviteUserId"> | null,
+        ): Promise<UserRelation> {
+                const relations = await this.getRelationsBulk(
+                        me,
+                        [target],
+                        targetUser ? [targetUser] : undefined,
+                );
                 const relation = relations.get(target);
                 if (relation == null) {
                         return {
@@ -183,12 +191,26 @@ export const UserRepository = db.getRepository(User).extend({
         async getRelationsBulk(
                 meId: User["id"],
                 targetIds: User["id"][],
+                targetUsers?: (Pick<User, "id" | "inviteUserId"> | null | undefined)[],
         ): Promise<Map<User["id"], UserRelation>> {
                 const uniqueTargetIds = Array.from(
                         new Set(targetIds.filter((id) => id !== meId)),
                 );
 
                 const relationsMap = new Map<User["id"], UserRelation>();
+
+                const targetUserMap = new Map<
+                        User["id"],
+                        Pick<User, "id" | "inviteUserId">
+                >();
+
+                if (targetUsers) {
+                        for (const info of targetUsers) {
+                                if (info) {
+                                        targetUserMap.set(info.id, info);
+                                }
+                        }
+                }
 
                 if (uniqueTargetIds.length === 0) {
                         return relationsMap;
@@ -258,13 +280,24 @@ export const UserRepository = db.getRepository(User).extend({
                                 blockerId: meId,
                                 blockeeId: In(uniqueTargetIds),
                         }),
-                        this.find({
-                                select: { id: true, inviteUserId: true },
-                                where: {
-                                        id: In(uniqueTargetIds),
-                                        inviteUserId: meId,
-                                },
-                        }),
+                        (async () => {
+                                const idsToFetch = uniqueTargetIds.filter((id) => {
+                                        const info = targetUserMap.get(id);
+                                        return !(info && info.inviteUserId === meId);
+                                });
+
+                                if (idsToFetch.length === 0) {
+                                        return [] as Pick<User, "id" | "inviteUserId">[];
+                                }
+
+                                return this.find({
+                                        select: { id: true, inviteUserId: true },
+                                        where: {
+                                                id: In(idsToFetch),
+                                                inviteUserId: meId,
+                                        },
+                                });
+                        })(),
                 ]);
 
                 for (const following of followings) {
@@ -310,6 +343,13 @@ export const UserRepository = db.getRepository(User).extend({
                 for (const followBlocking of followBlockings) {
                         const relation = relationsMap.get(followBlocking.blockeeId);
                         if (relation) relation.isFollowBlocking = true;
+                }
+
+                for (const info of targetUserMap.values()) {
+                        if (info.inviteUserId === meId) {
+                                const relation = relationsMap.get(info.id);
+                                if (relation) relation.isInviter = true;
+                        }
                 }
 
                 for (const invitee of invitees) {
@@ -481,7 +521,9 @@ export const UserRepository = db.getRepository(User).extend({
                         let isFollowed = relationHint?.isFollowed;
 
                         if (isFollowed == null) {
-                                isFollowed = (await this.getRelation(meId, user.id)).isFollowed;
+                                isFollowed = (
+                                        await this.getRelation(meId, user.id, user)
+                                ).isFollowed;
                         }
 
                         if (!isFollowed) {
@@ -605,7 +647,7 @@ export const UserRepository = db.getRepository(User).extend({
                 const relation = relationHintProvided
                         ? hints?.relation ?? null
                         : meId && !isMe && (opts.detail || opts.relation)
-                        ? await this.getRelation(meId, user.id)
+                        ? await this.getRelation(meId, user.id, user)
                         : null;
 		const pins = opts.detail
 			? await UserNotePinings.createQueryBuilder("pin")
@@ -1085,9 +1127,13 @@ export const UserRepository = db.getRepository(User).extend({
                         .filter((id): id is User["id"] => id != null);
                 const uniqueIds = Array.from(new Set(ids));
 
+                const targetUsers = users.map((u) =>
+                        typeof u === "object" ? (u as Pick<User, "id" | "inviteUserId">) : undefined,
+                );
+
                 const relationsMap =
                         meId && uniqueIds.length > 0 && (opts.detail || opts.relation)
-                                ? await this.getRelationsBulk(meId, uniqueIds)
+                                ? await this.getRelationsBulk(meId, uniqueIds, targetUsers)
                                 : null;
 
                 const memoMap =

@@ -289,7 +289,11 @@ export const NoteRepository = db.getRepository(Note).extend({
 		}
 
 		if (opts.blockCheck && meId) {
-			const relation = await Users.getRelation(meId, note.userId);
+                        const relation = await Users.getRelation(
+                                meId,
+                                note.userId,
+                                note.user ?? undefined,
+                        );
 			if (relation.isMuted || relation.isBlocked) {
 				throw new IdentifiableError(
 					"281827eb-bd11-3625-ac9d-336a0d80fac2",

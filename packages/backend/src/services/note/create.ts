@@ -748,7 +748,14 @@ export default async (
 				const localRelation = await mentionedUsers
 					.filter((x) => !x.host || x.host === config.host)
 					.every(
-						async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed,
+                                            async (x) =>
+                                                    !(
+                                                            await Users.getRelation(
+                                                                    user.id,
+                                                                    x.id,
+                                                                    x,
+                                                            )
+                                                    ).isFollowed,
 					);
 				console.log(`localRelation: ${!localRelation}`);
                                 if (localRelation)
@@ -777,7 +784,14 @@ export default async (
 			const localRelation = await mentionedUsers
 				.filter((x) => !x.host || x.host === config.host)
 				.every(
-					async (x) => !(await Users.getRelation(user.id, x.id)).isFollowed,
+                                    async (x) =>
+                                            !(
+                                                    await Users.getRelation(
+                                                            user.id,
+                                                            x.id,
+                                                            x,
+                                                    )
+                                            ).isFollowed,
 				);
 			console.log(`localRelation: ${!localRelation}`);
                         if (localRelation)
@@ -832,7 +846,15 @@ export default async (
 			const relation = user.isSilenced
 				? await Promise.all(
 						data.visibleUsers.map(
-							async (x) => (await Users.getRelation(user.id, x.id)).isFollowed || (await Users.findOneByOrFail({ id: x.id })).isAdmin,
+                                                    async (x) =>
+                                                            (
+                                                                    await Users.getRelation(
+                                                                            user.id,
+                                                                            x.id,
+                                                                            x,
+                                                                    )
+                                                            ).isFollowed ||
+                                                            (await Users.findOneByOrFail({ id: x.id })).isAdmin,
 						),
 				  )
 				: undefined;

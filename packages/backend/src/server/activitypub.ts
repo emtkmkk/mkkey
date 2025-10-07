@@ -239,7 +239,11 @@ router.get("/notes/:note", async (ctx, next) => {
 			return;
 		}
 
-		const relation = await Users.getRelation(remoteUser.user.id, note.userId);
+                const relation = await Users.getRelation(
+                        remoteUser.user.id,
+                        note.userId,
+                        note.user ?? undefined,
+                );
 		serverLogger.debug("Relation:");
 		serverLogger.debug(JSON.stringify(relation, null, 2));
 
@@ -351,7 +355,11 @@ router.get("/notes/:note/references", async (ctx, next) => {
 			return;
 		}
 
-		const relation = await Users.getRelation(remoteUser.user.id, note.userId);
+            const relation = await Users.getRelation(
+                    remoteUser.user.id,
+                    note.userId,
+                    note.user ?? undefined,
+            );
 		serverLogger.debug("Relation:");
 		serverLogger.debug(JSON.stringify(relation, null, 2));
 

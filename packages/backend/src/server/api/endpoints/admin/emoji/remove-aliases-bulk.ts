@@ -37,16 +37,22 @@ export default define(meta, paramDef, async (ps) => {
 		id: In(ps.ids),
 	});
 
-	for (const emoji of emojis) {
-		await Emojis.update(emoji.id, {
-			updatedAt: new Date(),
-			aliases: emoji.aliases.filter((x) => !ps.aliases.includes(x)),
-		});
-	}
+        await Promise.all(
+                emojis.map(async (emoji) => {
+                        const aliases = emoji.aliases.filter((x) => !ps.aliases.includes(x));
+                        emoji.aliases = aliases;
+                        emoji.updatedAt = new Date();
 
-	publishBroadcastStream("emojiUpdated", {
-		emojis: await Emojis.packMany(emojis),
-	});
+                        await Emojis.update(emoji.id, {
+                                updatedAt: emoji.updatedAt,
+                                aliases,
+                        });
+                }),
+        );
 
-	await db.queryResultCache!.remove(["meta_emojis"]);
+        publishBroadcastStream("emojiUpdated", {
+                emojis: await Emojis.packMany(emojis),
+        });
+
+        await db.queryResultCache!.remove(["meta_emojis"]);
 });

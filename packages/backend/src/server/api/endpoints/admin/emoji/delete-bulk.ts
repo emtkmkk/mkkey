@@ -28,23 +28,23 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const emojis = await Emojis.findBy({
-		id: In(ps.ids),
-	});
+        const emojis = await Emojis.findBy({
+                id: In(ps.ids),
+        });
 
-	for (const emoji of emojis) {
-		await Emojis.delete(emoji.id);
+        await Promise.all(
+                emojis.map(async (emoji) => {
+                        await Emojis.delete(emoji.id);
 
-		await db.queryResultCache!.remove(["meta_emojis"]);
+                        await insertModerationLog(me, "deleteEmoji", {
+                                emoji,
+                        });
+                }),
+        );
 
-		const pack = await Emojis.pack(emoji.id);
+        await db.queryResultCache!.remove(["meta_emojis"]);
 
-		insertModerationLog(me, "deleteEmoji", {
-			emoji: emoji,
-		});
-	}
-
-	publishBroadcastStream("emojiDeleted", {
-		emojis: await Emojis.packMany(emojis),
-	});
+        publishBroadcastStream("emojiDeleted", {
+                emojis: await Emojis.packMany(emojis),
+        });
 });

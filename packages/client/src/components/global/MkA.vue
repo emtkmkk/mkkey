@@ -1,11 +1,10 @@
 <template>
-	<a
-		:href="to"
-		:class="active ? activeClass : null"
-		@click="nav"
-		@contextmenu.prevent.stop="onContextmenu"
-		@click.stop
-	>
+        <a
+                :href="to"
+                :class="active ? activeClass : null"
+                @click="nav"
+                @contextmenu.prevent.stop="onContextmenu"
+        >
 		<slot></slot>
 	</a>
 </template>
@@ -99,27 +98,32 @@ function popout() {
 }
 
 function nav(ev: MouseEvent) {
-	if (!ev.ctrlKey) {
-		ev.preventDefault();
+        if (ev.button !== 0) return;
 
-		if (props.behavior === "browser") {
-			location.href = props.to;
-			return;
-		}
+        if (ev.ctrlKey || ev.altKey || ev.metaKey) {
+                return;
+        }
 
-		if (props.behavior) {
-			if (props.behavior === "window") {
-				return openWindow();
-			} else if (props.behavior === "modalWindow") {
-				return modalWindow();
-			}
-		}
+        ev.preventDefault();
+        ev.stopPropagation();
 
-		if (ev.shiftKey) {
-			return openWindow();
-		}
+        if (props.behavior === "browser") {
+                location.href = props.to;
+                return;
+        }
 
-		router.push(props.to, ev.ctrlKey ? "forcePage" : null);
-	}
+        if (props.behavior) {
+                if (props.behavior === "window") {
+                        return openWindow();
+                } else if (props.behavior === "modalWindow") {
+                        return modalWindow();
+                }
+        }
+
+        if (ev.shiftKey) {
+                return openWindow();
+        }
+
+        router.push(props.to);
 }
 </script>

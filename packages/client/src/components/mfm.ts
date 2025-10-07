@@ -189,19 +189,17 @@ export default defineComponent({
 									text = text.replace(/makku(?![a-zA-Z])/gi, 'makudo');
 								}
 							}
-
-                                                        const lines = text.split("\n");
-
                                                         if (!this.plain || isNote) {
+                                                        		const lines = text.split("\n");
                                                                 const res = [];
                                                                 lines.forEach((line, index) => {
                                                                         if (index > 0) res.push(h("br"));
                                                                         res.push(line);
                                                                 });
                                                                 return res;
-                                                        }
-
-                                                        return [text];
+                                                        } else {
+															return [text.replace(/\n/g, " ")];
+														}
                                                 }
 
 						case "bold": {

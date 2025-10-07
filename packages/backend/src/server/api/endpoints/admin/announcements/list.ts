@@ -81,24 +81,25 @@ export default define(meta, paramDef, async (ps) => {
 
 	const announcements = await query.take(ps.limit).getMany();
 
-	const reads = new Map<Announcement, number>();
+        const readCounts = await Promise.all(
+                announcements.map((announcement) =>
+                        AnnouncementReads.countBy({
+                                announcementId: announcement.id,
+                        }),
+                ),
+        );
 
-	for (const announcement of announcements) {
-		reads.set(
-			announcement,
-			await AnnouncementReads.countBy({
-				announcementId: announcement.id,
-			}),
-		);
-	}
+        const reads = new Map<Announcement["id"], number>(
+                announcements.map((announcement, index) => [announcement.id, readCounts[index]]),
+        );
 
-	return announcements.map((announcement) => ({
-		id: announcement.id,
-		createdAt: announcement.createdAt.toISOString(),
-		updatedAt: announcement.updatedAt?.toISOString() ?? null,
-		title: announcement.title,
-		text: announcement.text,
-		imageUrl: announcement.imageUrl,
-		reads: reads.get(announcement)!,
-	}));
+        return announcements.map((announcement) => ({
+                id: announcement.id,
+                createdAt: announcement.createdAt.toISOString(),
+                updatedAt: announcement.updatedAt?.toISOString() ?? null,
+                title: announcement.title,
+                text: announcement.text,
+                imageUrl: announcement.imageUrl,
+                reads: reads.get(announcement.id)!,
+        }));
 });

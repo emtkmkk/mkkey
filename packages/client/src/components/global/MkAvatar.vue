@@ -11,15 +11,15 @@
 		:title="acct(user)"
 		@click="onClick"
 	>
-		<img
-			v-if="
-				!errorIcon
-			"
-			class="inner"
-			:src="defaultStore.state.hiddenIconUserIds?.includes(user.id) ? `${config.url}/avatar-alt/@${acct(user)}` : url"
-			@error="errorIcon = true"
-			decoding="async"
-		/>
+                <img
+                        v-if="
+                                !errorIcon
+                        "
+                        class="inner"
+                        :src="hiddenIconUrl ?? displayUrl ?? undefined"
+                        @error="handleAvatarError"
+                        decoding="async"
+                />
 		<img
 			v-else
 			class="inner"
@@ -46,15 +46,15 @@
 		:target="target"
 		@click.stop="showAvatar"
 	>
-		<img
-			v-if="
-				!errorIcon
-			"
-			class="inner"
-			:src="defaultStore.state.hiddenIconUserIds?.includes(user.id) ? `${config.url}/avatar-alt/@${acct(user)}` : url"
-			@error="errorIcon = true"
-			decoding="async"
-		/>
+                <img
+                        v-if="
+                                !errorIcon
+                        "
+                        class="inner"
+                        :src="hiddenIconUrl ?? displayUrl ?? undefined"
+                        @error="handleAvatarError"
+                        decoding="async"
+                />
 		<img
 			v-else-if="!errorAltIcon"
 			class="inner"
@@ -80,6 +80,7 @@
 import { watch } from "vue";
 import * as misskey from "calckey-js";
 import { getStaticImageUrl } from "@/scripts/get-static-image-url";
+import { getProxiedImageUrl } from "@/scripts/media-proxy";
 import { extractAvgColorFromBlurhash } from "@/scripts/extract-avg-color-from-blurhash";
 import { acct, userPage } from "@/filters/user";
 import MkUserOnlineIndicator from "@/components/MkUserOnlineIndicator.vue";
@@ -111,14 +112,26 @@ const emit = defineEmits<{
 }>();
 
 const url = $computed(() =>
-	defaultStore.state.disableShowingAnimatedImages
-		? getStaticImageUrl(props.user.avatarUrl)
-		: props.user.avatarUrl
+        defaultStore.state.disableShowingAnimatedImages
+                ? getStaticImageUrl(props.user.avatarUrl)
+                : props.user.avatarUrl
+);
+const proxiedUrl = $computed(() =>
+        props.user.host ? getProxiedImageUrl(props.user.avatarUrl) : null,
+);
+const hiddenIconUrl = $computed(() =>
+        defaultStore.state.hiddenIconUserIds?.includes(props.user.id)
+                ? `${config.url}/avatar-alt/@${acct(props.user)}`
+                : null,
 );
 
+let displayUrl = $ref<string | null>(null);
+let triedProxy = $ref(false);
+
 async function openAvatarImage() {
+        const targetUrl = displayUrl ?? url;
         if (defaultStore.state.imageNewTab) {
-                window.open(url);
+                if (targetUrl) window.open(targetUrl);
                 return;
         }
 
@@ -133,7 +146,7 @@ async function openAvatarImage() {
                 const lightbox = new pswpLightbox.default({
                         dataSource: [
                                 {
-                                        src: url,
+                                        src: targetUrl,
                                         w: img.naturalWidth,
                                         h: img.naturalHeight,
                                 },
@@ -149,7 +162,9 @@ async function openAvatarImage() {
                 lightbox.init();
                 lightbox.loadAndOpen(0);
         };
-        img.src = url;
+        if (targetUrl) {
+                img.src = targetUrl;
+        }
 }
 
 function onClick(ev: MouseEvent) {
@@ -164,6 +179,33 @@ function showAvatar(ev: MouseEvent) {
 let color = $ref();
 let errorIcon = $ref(false);
 let errorAltIcon = $ref(false);
+
+watch(
+        () => url,
+        (newUrl) => {
+                displayUrl = newUrl;
+                triedProxy = false;
+                errorIcon = false;
+                errorAltIcon = false;
+        },
+        { immediate: true },
+);
+
+function handleAvatarError() {
+        if (
+                !triedProxy &&
+                props.user.host != null &&
+                hiddenIconUrl == null &&
+                proxiedUrl != null &&
+                displayUrl !== proxiedUrl
+        ) {
+                triedProxy = true;
+                displayUrl = proxiedUrl;
+                return;
+        }
+
+        errorIcon = true;
+}
 
 watch(
 	() => props.user.avatarBlurhash,

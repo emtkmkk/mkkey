@@ -20,14 +20,7 @@
 			"
 		>
 			<div v-if="user != null" class="info">
-				<div
-					class="banner"
-					:style="
-						user.bannerUrl
-							? `background-image: url(${user.bannerUrl})`
-							: ''
-					"
-				>
+                                <div class="banner" :style="bannerStyle">
 					<span
 						v-if="$i && $i.id != user.id && user.isFollowed"
 						class="followed"
@@ -125,7 +118,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import * as Acct from "calckey-js/built/acct";
 import type * as misskey from "calckey-js";
 import MkFollowButton from "@/components/MkFollowButton.vue";
@@ -134,6 +127,7 @@ import XShowMoreButton from "@/components/MkShowMoreButton.vue";
 import * as os from "@/os";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
+import { useRemoteImageWithProxy } from "@/scripts/use-remote-image-with-proxy";
 
 const props = defineProps<{
 	showing: boolean;
@@ -154,6 +148,15 @@ let left = $ref(0);
 
 let isLong = $ref(false);
 let collapsed = $ref(!isLong);
+
+const bannerImageUrl = useRemoteImageWithProxy(
+        () => user?.bannerUrl ?? null,
+        () => Boolean(user?.host),
+);
+
+const bannerStyle = computed(() =>
+        bannerImageUrl.value ? `background-image: url(${bannerImageUrl.value})` : "",
+);
 
 onMounted(() => {
 	if (typeof props.q === "object") {

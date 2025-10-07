@@ -5,6 +5,7 @@ import type { User } from "@/models/entities/user.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { doPostSuspend } from "@/services/suspend-user.js";
 import { publishUserEvent } from "@/services/stream.js";
+import pLimit from "p-limit";
 
 export const meta = {
 	tags: ["admin"],
@@ -57,21 +58,29 @@ export default define(meta, paramDef, async (ps, me) => {
 });
 
 async function unFollowAll(follower: User) {
-	const followings = await Followings.findBy({
-		followerId: follower.id,
-	});
+        const followings = await Followings.findBy({
+                followerId: follower.id,
+        });
 
-	for (const following of followings) {
-		const followee = await Users.findOneBy({
-			id: following.followeeId,
-		});
+        const limit = pLimit(8);
 
-		if (followee == null) {
-			throw new Error(`Cant find followee ${following.followeeId}`);
-		}
+        await Promise.all(
+                followings.map((following) =>
+                        limit(async () => {
+                                const followee = await Users.findOneBy({
+                                        id: following.followeeId,
+                                });
 
-		await deleteFollowing(follower, followee, true);
-	}
+                                if (followee == null) {
+                                        throw new Error(
+                                                `Cant find followee ${following.followeeId}`,
+                                        );
+                                }
+
+                                await deleteFollowing(follower, followee, true);
+                        }),
+                ),
+        );
 }
 
 async function readAllNotify(notifier: User) {

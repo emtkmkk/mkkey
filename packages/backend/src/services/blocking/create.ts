@@ -160,14 +160,16 @@ async function unFollow(follower: User, followee: User) {
 }
 
 async function removeFromList(listOwner: User, user: User) {
-	const userLists = await UserLists.findBy({
-		userId: listOwner.id,
-	});
+        const userLists = await UserLists.findBy({
+                userId: listOwner.id,
+        });
 
-	for (const userList of userLists) {
-		await UserListJoinings.delete({
-			userListId: userList.id,
-			userId: user.id,
-		});
-	}
+        const deletePromises = userLists.map((userList) =>
+                UserListJoinings.delete({
+                        userListId: userList.id,
+                        userId: user.id,
+                }),
+        );
+
+        await Promise.all(deletePromises);
 }

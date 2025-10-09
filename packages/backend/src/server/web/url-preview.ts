@@ -399,37 +399,79 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       });
 
       const productData = extractAmazonProductData(html);
+      const fallbackData = extractAmazonFallbackData(html);
 
-      if (!productData) throw new Error("product data not found");
+      if (!productData && !fallbackData) throw new Error("product data not found");
 
-      const description = sanitizeAmazonDescription(productData.description);
-      const image = selectAmazonImage(productData);
-      const offer = selectAmazonOffer(productData.offers);
-      const priceValue = extractPriceValue(offer);
-      const priceCurrency = extractPriceCurrency(offer) ?? localeInfo.currency;
+      const description = sanitizeAmazonDescription(
+        productData?.description ?? fallbackData?.description ?? null,
+      );
+      const image = selectAmazonImage(productData) ?? fallbackData?.thumbnail ?? null;
+      const offer = selectAmazonOffer(productData?.offers);
+      const fallbackOffer =
+        fallbackData?.priceText || fallbackData?.priceCurrency
+          ? {
+              price: fallbackData?.priceText ?? null,
+              priceCurrency: fallbackData?.priceCurrency ?? null,
+            }
+          : null;
+      const priceValue =
+        extractPriceValue(offer) ??
+        (fallbackOffer ? extractPriceValue(fallbackOffer) : null);
+      const priceCurrency =
+        extractPriceCurrency(offer) ??
+        extractPriceCurrency(fallbackOffer) ??
+        fallbackData?.priceCurrency ??
+        localeInfo.currency;
       const priceDisplay =
         formatAmazonPrice(priceValue, priceCurrency, normalizedLang) ??
         offer?.price ??
+        fallbackData?.priceText ??
         null;
       const availability =
         typeof offer?.availability === "string"
           ? humanizeAvailability(offer.availability, normalizedLang)
-          : null;
-      const rating = normalizeAmazonRating(productData.aggregateRating);
-      const brand = extractBrand(productData.brand);
-      const primeEligible = Boolean(productData.isPrimeEligible);
+          : fallbackData?.availability ?? null;
+      let rating = normalizeAmazonRating(productData?.aggregateRating);
+      if (fallbackData) {
+        rating = {
+          value: rating.value ?? fallbackData.ratingValue ?? null,
+          best:
+            rating.best ??
+            fallbackData.ratingBest ??
+            (rating.value ?? fallbackData.ratingValue ? 5 : null),
+          count: rating.count ?? fallbackData.ratingCount ?? null,
+        };
+      }
+      const brand = extractBrand(productData?.brand) ?? fallbackData?.brand ?? null;
+      const primeEligible =
+        productData?.isPrimeEligible ?? fallbackData?.prime ?? false;
+      const player = fallbackData?.playerUrl
+        ? {
+            url: fallbackData.playerUrl,
+            width: fallbackData.playerWidth ?? null,
+            height: fallbackData.playerHeight ?? null,
+            allow:
+              fallbackData.playerAllow ??
+              (fallbackData.playerUrl ? ["fullscreen", "encrypted-media"] : []),
+          }
+        : null;
 
       const iconHost = amazonProduct.hostname.replace(/^smile\./, "");
       const favicon = `https://${iconHost}/favicon.ico`;
 
       const summary = {
         url,
-        title: productData.name ?? productData.headline ?? "Amazon",
+        title:
+          productData?.name ??
+          productData?.headline ??
+          fallbackData?.title ??
+          "Amazon",
         description,
         thumbnail: wrap(image) ?? "",
         icon: wrap(favicon) ?? favicon,
         sitename: formatAmazonSitename(iconHost),
-        player: null as any,
+        player: player ?? (null as any),
         amazon: {
           asin: amazonProduct.asin,
           price: {
@@ -648,6 +690,130 @@ function extractAmazonProductData(html: string): any | null {
   return null;
 }
 
+type AmazonFallbackData = {
+  title: string | null;
+  description: string | null;
+  thumbnail: string | null;
+  priceText: string | null;
+  priceCurrency: string | null;
+  availability: string | null;
+  ratingValue: number | null;
+  ratingBest: number | null;
+  ratingCount: number | null;
+  brand: string | null;
+  prime: boolean;
+  playerUrl: string | null;
+  playerWidth: number | null;
+  playerHeight: number | null;
+  playerAllow: string[] | null;
+};
+
+function extractAmazonFallbackData(html: string): AmazonFallbackData | null {
+  const $ = load(html);
+
+  const title = cleanAmazonText(
+    $("#title").text() ||
+      $('meta[property="og:title"]').attr("content") ||
+      $('meta[name="title"]').attr("content") ||
+      $("title").first().text(),
+  );
+
+  const description = cleanAmazonText(
+    $("#productDescription").text() ||
+      $('meta[name="description"]').attr("content") ||
+      $('meta[property="og:description"]').attr("content"),
+  );
+
+  const thumbnail = cleanAmazonAttr(
+    $("#landingImage").attr("src") ||
+      $('meta[property="og:image"]').attr("content") ||
+      $('meta[name="twitter:image"]').attr("content"),
+  );
+
+  const priceText = cleanAmazonText(
+    $("#priceblock_ourprice").text() ||
+      $("#priceblock_dealprice").text() ||
+      $("span.a-price .a-offscreen").first().text(),
+  );
+
+  const priceCurrency =
+    cleanAmazonAttr(
+      $('meta[property="og:price:currency"]').attr("content") ||
+        $('meta[name="priceCurrency"]').attr("content"),
+    ) ?? null;
+
+  const availability = cleanAmazonText(
+    $("#availability span").text() ||
+      $("div#availability span").text() ||
+      $("span[data-availability]").attr("data-availability"),
+  );
+
+  const prime =
+    $(".a-icon-prime").length > 0 ||
+    $("#prime-availability-badge").length > 0 ||
+    $("[data-asin-prime-info]").length > 0 ||
+    $("i[data-component-type='s-prime']").length > 0;
+
+  const ratingValue = parseAmazonRatingValue(
+    $("#acrPopover").attr("title") ||
+      $("span[data-hook='rating-out-of-text']").first().text(),
+  );
+  const ratingCount = parseAmazonInteger(
+    $("#acrCustomerReviewText").text() ||
+      $("span[data-hook='total-review-count']").text(),
+  );
+  const ratingBest = ratingValue != null ? 5 : null;
+
+  const brand = normalizeAmazonBrand(
+    $("#bylineInfo").text() ||
+      $("a#bylineInfo").text() ||
+      $("tr.po-brand td.po-break-word").text() ||
+      $("div#bylineInfo").text(),
+  );
+
+  const playerUrl = cleanAmazonAttr(
+    $('meta[property="twitter:player"]').attr("content") ||
+      $('meta[name="twitter:player"]').attr("content"),
+  );
+  const playerWidth = parseAmazonInteger(
+    $('meta[property="twitter:player:width"]').attr("content") ||
+      $('meta[name="twitter:player:width"]').attr("content"),
+  );
+  const playerHeight = parseAmazonInteger(
+    $('meta[property="twitter:player:height"]').attr("content") ||
+      $('meta[name="twitter:player:height"]').attr("content"),
+  );
+  const playerAllow = playerUrl ? ["fullscreen", "encrypted-media"] : [];
+
+  const hasMeaningfulData =
+    Boolean(title || description || thumbnail || priceText || availability || brand || playerUrl) ||
+    ratingValue != null ||
+    ratingCount != null ||
+    prime;
+
+  if (!hasMeaningfulData) {
+    return null;
+  }
+
+  return {
+    title,
+    description,
+    thumbnail,
+    priceText,
+    priceCurrency,
+    availability,
+    ratingValue,
+    ratingBest,
+    ratingCount,
+    brand,
+    prime,
+    playerUrl,
+    playerWidth,
+    playerHeight,
+    playerAllow,
+  };
+}
+
 function extractJsonLdScripts(html: string): string[] {
   const scripts: string[] = [];
   const regex = /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
@@ -675,6 +841,47 @@ function buildJsonCandidates(content: string): string[] {
   }
 
   return Array.from(candidates.values());
+}
+
+function cleanAmazonText(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const text = value.replace(/\s+/g, " ").trim();
+  return text.length > 0 ? text : null;
+}
+
+function cleanAmazonAttr(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function parseAmazonRatingValue(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const match = value.match(/([0-9]+[.,]?[0-9]*)/);
+  if (!match) return null;
+  const normalized = match[1].replace(/,/g, ".");
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseAmazonInteger(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const normalized = value.replace(/[^0-9]/g, "");
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeAmazonBrand(value: string | null | undefined): string | null {
+  const text = cleanAmazonText(value);
+  if (!text) return null;
+  const normalized = text
+    .replace(/^ブランド[:：]?\s*/i, "")
+    .replace(/^Brand[:：]?\s*/i, "")
+    .replace(/^Visit the\s+/i, "")
+    .replace(/\s+Store$/i, "")
+    .trim();
+  return normalized.length > 0 ? normalized : null;
 }
 
 function findProductNode(node: any): any | null {
@@ -838,9 +1045,13 @@ function extractBrand(brand: any): string | null {
   return null;
 }
 
-function sanitizeAmazonDescription(description: unknown): string {
-  if (typeof description !== "string") return "";
-  return description.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+function sanitizeAmazonDescription(description: unknown): string | null {
+  if (typeof description !== "string") {
+    return description == null ? null : cleanAmazonText(String(description));
+  }
+
+  const sanitized = description.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  return sanitized.length > 0 ? sanitized : null;
 }
 
 function getAmazonLocaleInfo(hostname: string): { locale: string; currency: string } {

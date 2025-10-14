@@ -1,6 +1,6 @@
 import type Koa from "koa";
 import summaly from "summaly";
-import { load } from "cheerio";
+import * as cheerio from "cheerio";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import Logger from "@/services/logger.js";
 import config from "@/config/index.js";
@@ -820,7 +820,7 @@ type AmazonFallbackData = {
 };
 
 function extractAmazonFallbackData(html: string): AmazonFallbackData | null {
-  const $ = load(html);
+  const $ = cheerio.load(html);
 
   const title = cleanAmazonText(
     $("#title").text() ||

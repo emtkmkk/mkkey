@@ -1,4 +1,4 @@
-import twemoji from "twemoji-parser/dist/lib/regex.js";
+import twemoji from "@twemoji-parser/dist/lib/regex.js";
 import emojiRegexFactory from "emoji-regex";
 
 const twemojiRegex = twemoji.default;

@@ -582,8 +582,7 @@ const showUndoReactionButton = $computed(
 const showReactionCount = $computed(
         () =>
                 totalReactions > 0 &&
-                !enableEmojiReactions &&
-                !isDetailedView &&
+                ((!enableEmojiReactions && !isDetailedView) || !showContent.value) &&
                 !showStarButtonNoEmoji &&
                 (showReactionPickerButton || showUndoReactionButton)
 );

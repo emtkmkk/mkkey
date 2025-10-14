@@ -139,18 +139,13 @@
 						:note="appearNote"
 						:count="appearNote.renoteCount"
 					/>
-					<XStarButtonNoEmoji
-						v-if="!enableEmojiReactions || !showContent"
-						class="button"
-						:note="appearNote"
-						:count="
-							Object.values(appearNote.reactions).reduce(
-								(partialSum, val) => partialSum + val,
-								0
-							)
-						"
-						:reacted="appearNote.myReaction != null"
-					/>
+                                        <XStarButtonNoEmoji
+                                                v-if="!enableEmojiReactions || !showContent"
+                                                class="button"
+                                                :note="appearNote"
+                                                :count="totalReactions"
+                                                :reacted="appearNote.myReaction != null"
+                                        />
 					<XStarButton
 						v-if="
 							enableEmojiReactions &&
@@ -301,6 +296,7 @@ import { defaultStore } from "@/store";
 import { deepClone } from "@/scripts/clone";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
 import * as sound from "@/scripts/sound.js";
+import { getVisibleReactionsTotal } from "@/scripts/reaction-utils";
 
 const router = useRouter();
 
@@ -383,6 +379,9 @@ const replies: misskey.entities.Note[] =
 		)
 		.reverse() ?? [];
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
+const totalReactions = $computed(() =>
+        getVisibleReactionsTotal(appearNote as misskey.entities.Note)
+);
 
 useNoteCapture({
 	rootEl: el,

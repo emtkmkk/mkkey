@@ -68,28 +68,88 @@ export async function getResponse(args: {
 		? parseBearcaps(args.url)
 		: undefined;
 
-	const res = await fetch(bearcaps?.url ?? args.url, {
-		method: args.method,
-		headers: {
-			...(args.headers ?? {}),
-			...(bearcaps?.token ? { Authorization: `Bearer ${bearcaps.token}` } : {}),
-		},
-		body: args.body,
-		timeout,
-		size: args.size || 10 * 1024 * 1024,
-		agent: getAgentByUrl,
-		signal: controller.signal,
-	});
+	const baseHeaders = { ...(args.headers ?? {}) };
+	const cookieHeaderKey = Object.keys(baseHeaders).find(
+		(key) => key.toLowerCase() === "cookie",
+	);
+	const cookieJar = parseCookieHeaderValue(
+		cookieHeaderKey ? baseHeaders[cookieHeaderKey] : undefined,
+	);
+	if (cookieHeaderKey) {
+		delete baseHeaders[cookieHeaderKey];
+	}
 
-	if (!res.ok) {
+	let attempted429Retry = false;
+
+	while (true) {
+		const headers: Record<string, string> = {
+			...baseHeaders,
+			...(cookieJar.size > 0
+				? { Cookie: serializeCookieJar(cookieJar) }
+				: {}),
+			...(bearcaps?.token ? { Authorization: `Bearer ${bearcaps.token}` } : {}),
+		};
+
+		const res = await fetch(bearcaps?.url ?? args.url, {
+			method: args.method,
+			headers,
+			body: args.body,
+			timeout,
+			size: args.size || 10 * 1024 * 1024,
+			agent: getAgentByUrl,
+			signal: controller.signal,
+		});
+
+		if (res.ok) {
+			return res;
+		}
+
+		const rawHeaders = (res.headers as unknown as {
+			raw?: () => Record<string, string[]>;
+		}).raw?.();
+		const setCookieHeaders = rawHeaders?.["set-cookie"];
+		const retryAfterHeader = res.headers.get("retry-after");
+		const retryAfterSeconds =
+			retryAfterHeader == null ? null : Number(retryAfterHeader);
+		const canRetryImmediately =
+			retryAfterSeconds != null &&
+			!Number.isNaN(retryAfterSeconds) &&
+			retryAfterSeconds <= 0;
+
+		if (
+			res.status === 429 &&
+			!attempted429Retry &&
+			canRetryImmediately &&
+			setCookieHeaders &&
+			setCookieHeaders.length > 0
+		) {
+			applySetCookieHeaders(cookieJar, setCookieHeaders);
+			attempted429Retry = true;
+
+			const body = res.body as unknown as {
+				cancel?: () => Promise<void> | void;
+				destroy?: () => void;
+			} | null;
+
+			try {
+				if (body?.cancel) {
+					await body.cancel();
+				} else if (body?.destroy) {
+					body.destroy();
+				}
+			} catch {
+				// ignore cleanup errors
+			}
+
+			continue;
+		}
+
 		throw new StatusError(
 			`${res.status} ${res.statusText}`,
 			res.status,
 			res.statusText,
 		);
 	}
-
-	return res;
 }
 
 const cache = new CacheableLookup({
@@ -194,5 +254,42 @@ export class StatusError extends Error {
 			this.statusCode >= 400 &&
 			this.statusCode < 500;
 		this.isRetryable = !this.isClientError || this.statusCode === 429;
+	}
+}
+
+function parseCookieHeaderValue(header: string | undefined): Map<string, string> {
+	const jar = new Map<string, string>();
+
+	if (!header) return jar;
+
+	for (const part of header.split(";")) {
+		const index = part.indexOf("=");
+		if (index === -1) continue;
+		const key = part.slice(0, index).trim();
+		const value = part.slice(index + 1).trim();
+		if (key) {
+			jar.set(key, value);
+		}
+	}
+
+	return jar;
+}
+
+function serializeCookieJar(jar: Map<string, string>): string {
+	return Array.from(jar.entries())
+		.map(([key, value]) => `${key}=${value}`)
+		.join("; ");
+}
+
+function applySetCookieHeaders(jar: Map<string, string>, setCookieHeaders: string[]): void {
+	for (const header of setCookieHeaders) {
+		const cookie = header.split(";")[0];
+		const index = cookie.indexOf("=");
+		if (index === -1) continue;
+		const key = cookie.slice(0, index).trim();
+		const value = cookie.slice(index + 1).trim();
+		if (key) {
+			jar.set(key, value);
+		}
 	}
 }

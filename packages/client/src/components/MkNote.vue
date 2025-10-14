@@ -474,6 +474,7 @@ import { deepClone } from "@/scripts/clone";
 import { getNoteSummary } from "@/scripts/get-note-summary";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
 import * as sound from "@/scripts/sound.js";
+import { getVisibleReactionsTotal } from "@/scripts/reaction-utils";
 
 const router = useRouter();
 
@@ -557,10 +558,7 @@ const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
 const showEmojiButton = defaultStore.state.showEmojiButton;
 const isDetailedView = $computed(() => props.detailedView ?? false);
 const totalReactions = $computed(() =>
-        Object.values(appearNote.reactions ?? {}).reduce(
-                (sum, val) => sum + val,
-                0
-        )
+        getVisibleReactionsTotal(appearNote as misskey.entities.Note)
 );
 const showStarButtonNoEmoji = $computed(() => {
         const canShow =

@@ -1,19 +1,20 @@
 <template>
-	<MfmCore
-		:text="text"
-		:plain="plain"
-		:nowrap="nowrap"
-		:author="author"
-		:custom-emojis="customEmojis"
-		:is-note="isNote"
-		:note-host="noteHost"
-		class="havbbuyv"
-		:class="{ nowrap }"
-		:reaction-menu-enabled="reactionMenuEnabled"
-		:note="note"
-		:is-cw="isCw"
-		:user-page="userPage"
-	/>
+        <MfmCore
+                :text="text"
+                :plain="plain"
+                :nowrap="nowrap"
+                :author="author"
+                :custom-emojis="customEmojis"
+                :is-note="isNote"
+                :note-host="noteHost"
+                class="havbbuyv"
+                :class="{ nowrap }"
+                :reaction-menu-enabled="reactionMenuEnabled"
+                :note="note"
+                :is-cw="isCw"
+                :user-page="userPage"
+                :rel-me="relMe"
+        />
 </template>
 
 <script lang="ts" setup>
@@ -26,25 +27,27 @@ const props = withDefaults(
 		plain?: boolean;
 		nowrap?: boolean;
 		author?: any;
-		customEmojis?: any;
-		isNote?: boolean;
-		noteHost?: string | null;
-		reactionMenuEnabled?: boolean;
-		note?: any;
-		isCw?: boolean;
-		userPage?: boolean;
-	}>(),
-	{
-		plain: false,
-		nowrap: false,
-		author: null,
-		isNote: true,
-		noteHost: null,
-		reactionMenuEnabled: false,
-		note: null,
-		isCw: false,
-		userPage: false,
-	}
+                customEmojis?: any;
+                isNote?: boolean;
+                noteHost?: string | null;
+                reactionMenuEnabled?: boolean;
+                note?: any;
+                isCw?: boolean;
+                userPage?: boolean;
+                relMe?: boolean;
+        }>(),
+        {
+                plain: false,
+                nowrap: false,
+                author: null,
+                isNote: true,
+                noteHost: null,
+                reactionMenuEnabled: false,
+                note: null,
+                isCw: false,
+                userPage: false,
+                relMe: false,
+        }
 );
 </script>
 

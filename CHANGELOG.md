@@ -14,6 +14,8 @@ All changes from v13.0.0 onwards, for a full list of differences read CALCKEY.md
 
 - Feat: Unblock with follow button
 
+- Feat: プロフィールでのリンク検証
+
 - Refresh user when changed
 
 - Feature/help_menu ([#9587](https://github.com/orhun/git-cliff/issues/9587))

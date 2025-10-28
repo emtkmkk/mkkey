@@ -105,9 +105,10 @@ describe("ユーザー", () => {
 			description: user.description,
 			location: user.location,
 			birthday: user.birthday,
-			lang: user.lang,
-			fields: user.fields,
-			followersCount: user.followersCount,
+                        lang: user.lang,
+                        fields: user.fields,
+                        verifiedLinks: user.verifiedLinks,
+                        followersCount: user.followersCount,
 			followingCount: user.followingCount,
 			notesCount: user.notesCount,
 			pinnedNoteIds: user.pinnedNoteIds,
@@ -432,8 +433,9 @@ describe("ユーザー", () => {
 		assert.strictEqual(response.description, null);
 		assert.strictEqual(response.location, null);
 		assert.strictEqual(response.birthday, null);
-		assert.strictEqual(response.lang, null);
-		assert.deepStrictEqual(response.fields, []);
+                assert.strictEqual(response.lang, null);
+                assert.deepStrictEqual(response.fields, []);
+                assert.deepStrictEqual(response.verifiedLinks, []);
 		assert.strictEqual(response.followersCount, 0);
 		assert.strictEqual(response.followingCount, 0);
 		assert.strictEqual(response.notesCount, 0);

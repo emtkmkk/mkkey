@@ -1,9 +1,10 @@
 import RE2 from "re2";
 import * as mfm from "mfm-js";
+import { JSDOM } from "jsdom";
 import {
-	publishMainStream,
-	publishUserEvent,
-	publishInternalEvent,
+        publishMainStream,
+        publishUserEvent,
+        publishInternalEvent,
 } from "@/services/stream.js";
 import acceptAllFollowRequests from "@/services/following/requests/accept-all.js";
 import { publishToFollowers } from "@/services/i/update.js";
@@ -11,11 +12,15 @@ import { extractCustomEmojisFromMfm } from "@/misc/extract-custom-emojis-from-mf
 import { extractHashtags } from "@/misc/extract-hashtags.js";
 import { updateUsertags } from "@/services/update-hashtag.js";
 import { Users, DriveFiles, UserProfiles, Pages } from "@/models/index.js";
-import type { User } from "@/models/entities/user.js";
+import type { User, ILocalUser } from "@/models/entities/user.js";
 import type { UserProfile } from "@/models/entities/user-profile.js";
 import { notificationTypes } from "@/types.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import { langmap } from "@/misc/langmap.js";
+import { getHtml } from "@/misc/fetch.js";
+import { safeForSql } from "@/misc/safe-for-sql.js";
+import { HOUR } from "@/const.js";
+import config from "@/config/index.js";
 import { ApiError } from "../../error.js";
 import define from "../../define.js";
 import { isIncludeNgWord } from "@/misc/is-include-ng-word.js";
@@ -25,9 +30,14 @@ export const meta = {
 
 	requireCredential: true,
 
-	kind: "write:account",
+        kind: "write:account",
 
-	errors: {
+        limit: {
+                duration: HOUR,
+                max: 10,
+        },
+
+        errors: {
 		noSuchAvatar: {
 			message: "そのアイコンは存在しません。",
 			code: "NO_SUCH_AVATAR",
@@ -369,19 +379,15 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		profileUpdates.pinnedPageId = null;
 	}
 
-	if (ps.fields) {
-		profileUpdates.fields = ps.fields
-			.filter(
-				(x) =>
-					typeof x.name === "string" &&
-					x.name !== "" &&
-					typeof x.value === "string" &&
-					x.value !== "",
-			)
-			.map((x) => {
-				return { name: x.name, value: x.value };
-			});
-	}
+        if (ps.fields) {
+                profileUpdates.fields = ps.fields
+                        .filter((x) => typeof x.name === "string" && typeof x.value === "string")
+                        .map((x) => ({
+                                name: x.name.trim(),
+                                value: x.value.trim(),
+                        }))
+                        .filter((x) => x.name !== "" && x.value !== "");
+        }
 
 	//#region emojis/tags
 
@@ -472,14 +478,19 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	updateUsertags(user, tags);
 	//#endregion
 
-	if (Object.keys(updates).length > 0) await Users.update(user.id, updates);
-	if (Object.keys(profileUpdates).length > 0)
-		await UserProfiles.update(user.id, profileUpdates);
+        if (Object.keys(updates).length > 0) await Users.update(user.id, updates);
 
-	const iObj = await Users.pack<true, true>(user.id, user, {
-		detail: true,
-		includeSecrets: isSecure,
-	});
+        await UserProfiles.update(user.id, {
+                ...profileUpdates,
+                verifiedLinks: [],
+        });
+
+        const updatedProfile = await UserProfiles.findOneByOrFail({ userId: user.id });
+
+        const iObj = await Users.pack<true, true>(user.id, user, {
+                detail: true,
+                includeSecrets: isSecure,
+        });
 
 	// Publish meUpdated event
 	publishMainStream(user.id, "meUpdated", iObj);
@@ -501,7 +512,54 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	*/
 
 	// フォロワーにUpdateを配信
-	publishToFollowers(user.id);
+        publishToFollowers(user.id);
 
-	return iObj;
+        if (Users.isLocalUser(user)) {
+                updatedProfile.fields
+                        .filter((field) => field.value.startsWith("https://"))
+                        .forEach((field) => {
+                                void verifyLink(field.value, user);
+                        });
+        }
+
+        return iObj;
 });
+
+async function verifyLink(url: string, user: ILocalUser) {
+        if (!safeForSql(url)) return;
+
+        try {
+                const html = await getHtml(url);
+                const { window } = new JSDOM(html);
+                const doc = window.document;
+
+                const myLink = `${config.url}/@${user.username}`;
+
+                const anchorElements = Array.from(doc.getElementsByTagName("a"));
+                const linkElements = Array.from(doc.getElementsByTagName("link"));
+
+                const includesMyLink = anchorElements.some((a) => a.href === myLink);
+                const includesRelMeLinks = [...anchorElements, ...linkElements].some((link) => {
+                        if (link.href !== myLink) return false;
+                        if (typeof link.rel === "string" && link.rel !== "") {
+                                if (link.rel === "me") return true;
+                                return link.rel.split(/\s+/).includes("me");
+                        }
+                        return (link.relList as DOMTokenList | undefined)?.contains("me") ?? false;
+                });
+
+                if (includesMyLink || includesRelMeLinks) {
+                        await UserProfiles.createQueryBuilder("profile")
+                                .update()
+                                .where("userId = :userId", { userId: user.id })
+                                .andWhere("NOT :url = ANY(\"verifiedLinks\")", { url })
+                                .set({
+                                        verifiedLinks: () => 'array_append("verifiedLinks", :url)',
+                                })
+                                .setParameters({ url })
+                                .execute();
+                }
+        } catch (err) {
+                // ignore errors during link verification
+        }
+}

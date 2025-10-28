@@ -357,25 +357,32 @@
 									/>
 								</dt>
 								<dd class="value">
-									<Mfm
-										:text="
-											field.value.includes('skeb')
-												? field.value
-												: field.value.replace(
-														/^https?:\/\/([\w.-]+?)\/@([\w]+)$/,
-														'@$2@$1'
-												  )
-										"
-										:author="user"
-										:i="$i"
-										:is-note="false"
-										:custom-emojis="user.emojis"
-										:colored="false"
-										user-page
-									/>
-								</dd>
-							</dl>
-						</div>
+                                                                <Mfm
+                                                                                :text="
+                                                                                        field.value.includes('skeb')
+                                                                                                ? field.value
+                                                                                                : field.value.replace(
+                                                                                                                /^https?:\/\/([\w.-]+?)\/@([\w]+)$/,
+                                                                                                                '@$2@$1'
+                                                                                                  )
+                                                                                "
+                                                                                :author="user"
+                                                                                :i="$i"
+                                                                                :is-note="false"
+                                                                                :custom-emojis="user.emojis"
+                                                                                :colored="false"
+                                                                                user-page
+                                                                                rel-me
+                                                                        />
+                                                                        <i
+                                                                                v-if="user.verifiedLinks?.includes(field.value)"
+                                                                                v-tooltip="i18n.ts.verifiedLink"
+                                                                                class="ph-check-circle ph-bold"
+                                                                                :class="$style.verifiedLink"
+                                                                        ></i>
+                                                                </dd>
+                                                        </dl>
+                                                </div>
 						<div class="status">
 							<MkA
 								v-click-anime
@@ -1155,18 +1162,23 @@ onUnmounted(() => {
 							text-align: center;
 						}
 
-						> .value {
-							width: 70%;
-							overflow: hidden;
-							white-space: nowrap;
-							text-overflow: ellipsis;
-							margin: 0;
-						}
-					}
+                                                > .value {
+                                                        width: 70%;
+                                                        overflow: hidden;
+                                                        white-space: nowrap;
+                                                        text-overflow: ellipsis;
+                                                        margin: 0;
 
-					&.system > .field > .name {
-					}
-				}
+                                                        > i.verifiedLink {
+                                                                margin-left: 0.25rem;
+                                                                color: var(--success);
+                                                        }
+                                                }
+                                        }
+
+                                        &.system > .field > .name {
+                                        }
+                                }
 
 				> .status {
 					display: flex;

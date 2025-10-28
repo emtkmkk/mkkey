@@ -25,6 +25,7 @@ import { ApiError } from "../../error.js";
 import define from "../../define.js";
 import { isIncludeNgWord } from "@/misc/is-include-ng-word.js";
 import { resolveUser } from "@/remote/resolve-user.js";
+import { extractMentions } from "@/misc/extract-mentions.js";
 
 export const meta = {
 	tags: ["account"],
@@ -570,42 +571,52 @@ async function verifyLink(url: string, user: ILocalUser) {
 async function verifyMutualMentions(fields: UserProfile["fields"], user: ILocalUser) {
         const selfAcct = `@${user.username}@${config.host}`.toLowerCase();
 
+        const mentions = fields.flatMap((field) => {
+                const tokens = mfm.parse(field.value) ?? [];
+
+                return extractMentions(tokens).map((mention) => ({
+                        mention,
+                        original: field.value,
+                }));
+        });
+
         await Promise.all(
-                fields
-                        .map((field) => ({
-                                original: field.value,
-                                mention: field.value.trim(),
-                        }))
-                        .filter(({ mention }) => /^@[a-z0-9_]+@[a-z0-9_.-]+$/i.test(mention))
-                        .map(async ({ mention, original }) => {
-                                const [, username, host] = /^@([a-z0-9_]+)@([a-z0-9_.-]+)$/i.exec(mention)!;
+                mentions.map(async ({ mention, original }) => {
+                        const host = mention.host ?? config.host;
 
-                                try {
-                                        const target = await resolveUser(username, host);
-                                        const targetProfile = await UserProfiles.findOneBy({
-                                                userId: target.id,
+                        try {
+                                const target = await resolveUser(mention.username, host);
+                                const targetProfile = await UserProfiles.findOneBy({
+                                        userId: target.id,
+                                });
+
+                                if (!targetProfile) return;
+
+                                const hasSelfMention = targetProfile.fields.some((field) => {
+                                        const tokens = mfm.parse(field.value) ?? [];
+
+                                        return extractMentions(tokens).some((selfMention) => {
+                                                const selfHost = selfMention.host ?? config.host;
+                                                const acct = `@${selfMention.username}@${selfHost}`.toLowerCase();
+
+                                                return acct === selfAcct;
                                         });
+                                });
 
-                                        if (!targetProfile) return;
+                                if (!hasSelfMention) return;
 
-                                        const hasSelfMention = targetProfile.fields.some((field) => {
-                                                return field.value.trim().toLowerCase() === selfAcct;
-                                        });
-
-                                        if (!hasSelfMention) return;
-
-                                        await UserProfiles.createQueryBuilder("profile")
-                                                .update()
-                                                .where("userId = :userId", { userId: user.id })
-                                                .andWhere("NOT :value = ANY(\"verifiedLinks\")", { value: original })
-                                                .set({
-                                                        verifiedLinks: () => 'array_append("verifiedLinks", :value)',
-                                                })
-                                                .setParameters({ value: original })
-                                                .execute();
-                                } catch (err) {
-                                        // 無視
-                                }
-                        }),
+                                await UserProfiles.createQueryBuilder("profile")
+                                        .update()
+                                        .where("userId = :userId", { userId: user.id })
+                                        .andWhere("NOT :value = ANY(\"verifiedLinks\")", { value: original })
+                                        .set({
+                                                verifiedLinks: () => 'array_append("verifiedLinks", :value)',
+                                        })
+                                        .setParameters({ value: original })
+                                        .execute();
+                        } catch (err) {
+                                // 無視
+                        }
+                }),
         );
 }

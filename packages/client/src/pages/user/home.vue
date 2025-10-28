@@ -377,8 +377,7 @@
                                                                         <i
                                                                                 v-if="user.verifiedLinks?.includes(field.value)"
                                                                                 v-tooltip="i18n.ts.verifiedLink"
-                                                                                class="ph-check-circle ph-bold"
-                                                                                :class="$style.verifiedLink"
+                                                                                class="verifiedLink ph-check-circle ph-bold"
                                                                         ></i>
                                                                 </dd>
                                                         </dl>

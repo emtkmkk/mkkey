@@ -2639,6 +2639,7 @@ type UserDetailed = UserLite & {
         name: string;
         value: string;
     }[];
+    verifiedLinks: string[];
     followersCount: number;
     followingCount: number;
     hasPendingFollowRequestFromYou: boolean;

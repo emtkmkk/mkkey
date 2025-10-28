@@ -62,11 +62,15 @@ export default defineComponent({
 			type: Boolean,
 			default: false,
 		},
-		userPage: {
-			type: Boolean,
-			default: false,
-		}
-	},
+                userPage: {
+                        type: Boolean,
+                        default: false,
+                },
+                relMe: {
+                        type: Boolean,
+                        default: false,
+                },
+        },
 
 	render() {
 		if (this.text == null || this.text === "") return;
@@ -586,29 +590,33 @@ export default defineComponent({
 							];
 						}
 
-						case "url": {
-							return [
-								h(MkUrl, {
-									key: Math.random(),
-									url: token.props.url,
-									rel: "nofollow noopener",
-								}),
-							];
-						}
+                                                case "url": {
+                                                        return [
+                                                                h(MkUrl, {
+                                                                        key: Math.random(),
+                                                                        url: token.props.url,
+                                                                        rel: this.relMe
+                                                                                ? "me noopener nofollow"
+                                                                                : "nofollow noopener",
+                                                                }),
+                                                        ];
+                                                }
 
-						case "link": {
-							return [
-								h(
-									MkLink,
-									{
-										key: Math.random(),
-										url: token.props.url,
-										rel: "nofollow noopener",
-									},
-									genEl(token.children),
-								),
-							];
-						}
+                                                case "link": {
+                                                        return [
+                                                                h(
+                                                                        MkLink,
+                                                                        {
+                                                                                key: Math.random(),
+                                                                                url: token.props.url,
+                                                                                rel: this.relMe
+                                                                                        ? "me noopener nofollow"
+                                                                                        : "nofollow noopener",
+                                                                        },
+                                                                        genEl(token.children),
+                                                                ),
+                                                        ];
+                                                }
 
 						case "mention": {
 							return [

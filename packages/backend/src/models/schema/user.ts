@@ -216,34 +216,45 @@ export const packedUserDetailedNotMeOnlySchema = {
 			optional: false,
 			example: "ja-JP",
 		},
-		fields: {
-			type: "array",
-			nullable: false,
-			optional: false,
-			items: {
-				type: "object",
-				nullable: false,
-				optional: false,
-				properties: {
-					name: {
-						type: "string",
-						nullable: false,
-						optional: false,
-					},
-					value: {
-						type: "string",
-						nullable: false,
-						optional: false,
-					},
-				},
-				maxLength: 4,
-			},
-		},
-		followersCount: {
-			type: "number",
-			nullable: false,
-			optional: false,
-		},
+                fields: {
+                        type: "array",
+                        nullable: false,
+                        optional: false,
+                        items: {
+                                type: "object",
+                                nullable: false,
+                                optional: false,
+                                properties: {
+                                        name: {
+                                                type: "string",
+                                                nullable: false,
+                                                optional: false,
+                                        },
+                                        value: {
+                                                type: "string",
+                                                nullable: false,
+                                                optional: false,
+                                        },
+                                },
+                                maxLength: 4,
+                        },
+                },
+                verifiedLinks: {
+                        type: "array",
+                        nullable: false,
+                        optional: false,
+                        items: {
+                                type: "string",
+                                nullable: false,
+                                optional: false,
+                                format: "url",
+                        },
+                },
+                followersCount: {
+                        type: "number",
+                        nullable: false,
+                        optional: false,
+                },
 		followingCount: {
 			type: "number",
 			nullable: false,

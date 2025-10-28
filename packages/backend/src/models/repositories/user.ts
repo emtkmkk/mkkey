@@ -896,10 +896,11 @@ export const UserRepository = db.getRepository(User).extend({
 						isSuspended: user.isSuspended || falsy,
 						description: isDeleted ? "" : profile!.description,
 						location: isDeleted ? "" : profile!.location,
-						birthday: isDeleted ? "" : profile!.birthday,
-						lang: isDeleted ? "" : profile!.lang,
-						fields: isDeleted ? "" : profile!.fields,
-						followersCount: followersCount ?? "N/A",
+                                                birthday: isDeleted ? "" : profile!.birthday,
+                                                lang: isDeleted ? "" : profile!.lang,
+                                                fields: isDeleted ? "" : profile!.fields,
+                                                verifiedLinks: isDeleted ? [] : profile!.verifiedLinks,
+                                                followersCount: followersCount ?? "N/A",
 						followingCount: followingCount ?? "N/A",
 						hasClips: !user.host
 							? Clips.count({

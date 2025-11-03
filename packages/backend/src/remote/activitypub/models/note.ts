@@ -827,7 +827,7 @@ export async function extractEmojis(
 				);
 
 			const copyallow =
-				/(\W|^)(public\s*domain|pd|cc0|他サーバー使用：可)(\W|$)/.test(
+				/(\W|^)(public\s*domain|pd|cc0|パブリック|元ネタのみ|他サーバー使用：可)(\W|$)/.test(
 					licenseText,
 				);
 

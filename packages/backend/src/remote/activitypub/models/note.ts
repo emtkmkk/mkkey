@@ -818,6 +818,7 @@ export async function extractEmojis(
 				emojiInfo?.localOnly ||
 				roleOnly ||
 				licenseText.includes("prohibited") ||
+				licenseText.includes("連合のみ可") ||
 				/(インポート|コピー|他サーバー使用：?)[\s　]*(NG|不可|禁止)/.test(
 					category ?? "",
 				) ||

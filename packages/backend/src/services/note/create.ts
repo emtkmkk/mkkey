@@ -679,9 +679,32 @@ export default async (
 				data.apMentions || (await extractMentionedUsers(user, combinedTokens));
 		}
 
-		tags = tags
-			.filter((tag) => Array.from(tag || "").length <= 128)
-			.splice(0, 32);
+                tags = tags
+                        .filter((tag) => Array.from(tag || "").length <= 128)
+                        .splice(0, 32);
+
+                if (!user.host && tags?.some((tag) => tag?.toLowerCase() === "misshaialert")) {
+                        const now = new Date();
+                        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        const startOfYesterday = new Date(startOfToday);
+                        startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
+                        const yesterdayCount = await Notes.createQueryBuilder("note")
+                                .where("note.userId = :userId", { userId: user.id })
+                                .andWhere("note.createdAt >= :startOfYesterday", { startOfYesterday })
+                                .andWhere("note.createdAt < :startOfToday", { startOfToday })
+                                .getCount();
+
+                        if (yesterdayCount <= 1) {
+                                return rej(
+                                        new StatusError(
+                                                "前日の投稿数が1以下のため、このハッシュタグ付きの投稿はできません。",
+                                                403,
+                                                "前日の投稿数が1以下のため、このハッシュタグ付きの投稿はできません。",
+                                        ),
+                                );
+                        }
+                }
 
 		//スパム対策
 		if (

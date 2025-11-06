@@ -214,12 +214,16 @@ function sortByCharCode(text: string): string {
 
 function uniqueText(text: string): string {
         const nodes = mfm.parse(text);
+        const seen = new Set<string>();
 
         mfm.inspect(nodes, node => {
                 if (node.type === "text" && node.props.text) {
-                        const seen = new Set<string>();
                         node.props.text = [...node.props.text]
                                 .filter((ch) => {
+                                        if (/\s/.test(ch) || ch === "　") {
+                                                return true;
+                                        }
+
                                         if (seen.has(ch)) return false;
                                         seen.add(ch);
                                         return true;

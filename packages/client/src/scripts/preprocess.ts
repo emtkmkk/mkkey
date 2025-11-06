@@ -125,6 +125,11 @@ export function preprocess(text: string): string {
                                 node.props.text = sortByCharCode(mfm.toString(node.children));
                                 node.children = undefined;
                         }
+                        if (node.type === "fn" && node.props.name === "unique") {
+                                node.type = "text";
+                                node.props.text = uniqueText(mfm.toString(node.children));
+                                node.children = undefined;
+                        }
                         if (
                                 node.type === "fn" &&
                                 (node.props.name === "search" || node.props.name === "f")
@@ -203,6 +208,25 @@ function sortByCharCode(text: string): string {
                         node.props.text = arr.join("");
                 }
         });
-  
+
+        return mfm.toString(nodes);
+}
+
+function uniqueText(text: string): string {
+        const nodes = mfm.parse(text);
+
+        mfm.inspect(nodes, node => {
+                if (node.type === "text" && node.props.text) {
+                        const seen = new Set<string>();
+                        node.props.text = [...node.props.text]
+                                .filter((ch) => {
+                                        if (seen.has(ch)) return false;
+                                        seen.add(ch);
+                                        return true;
+                                })
+                                .join("");
+                }
+        });
+
         return mfm.toString(nodes);
 }

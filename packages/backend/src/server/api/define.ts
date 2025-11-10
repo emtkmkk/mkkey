@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import Ajv from "ajv";
+import addFormats from "ajv-formats";
 import type { CacheableLocalUser } from "@/models/entities/user.js";
 import { ILocalUser } from "@/models/entities/user.js";
 import type { Schema, SchemaType } from "@/misc/schema.js";
@@ -25,8 +26,10 @@ type executor<T extends IEndpointMeta, Ps extends Schema> = (
 >;
 
 const ajv = new Ajv({
-	useDefaults: true,
+        useDefaults: true,
 });
+
+addFormats(ajv);
 
 ajv.addFormat("misskey:id", /^[a-zA-Z0-9]+$/);
 

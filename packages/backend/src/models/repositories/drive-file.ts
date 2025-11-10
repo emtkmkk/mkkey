@@ -173,7 +173,6 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
                         originalUrl: this.getPublicUrl(file, false, true),
                         comment: file.comment,
                         folderId: file.folderId,
-                        usageCount: file.usageCount,
                         folder:
                                 opts.detail && file.folderId
                                         ? DriveFolders.pack(file.folderId, {
@@ -216,7 +215,6 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
                         originalUrl: this.getPublicUrl(file, false, true),
                         comment: file.comment,
                         folderId: file.folderId,
-                        usageCount: file.usageCount,
                         folder:
                                 opts.detail && file.folderId
                                         ? DriveFolders.pack(file.folderId, {

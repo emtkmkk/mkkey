@@ -288,7 +288,6 @@ type DriveFile = {
     name: string;
     thumbnailUrl: string;
     url: string;
-    usageCount: number;
     type: string;
     size: number;
     md5: string;

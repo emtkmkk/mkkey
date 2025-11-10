@@ -110,11 +110,6 @@ export const packedDriveFileSchema = {
                         format: "id",
                         example: "xxxxxxxxxx",
                 },
-                usageCount: {
-                        type: "number",
-                        optional: false,
-                        nullable: false,
-                },
                 folder: {
                         type: "object",
                         optional: true,

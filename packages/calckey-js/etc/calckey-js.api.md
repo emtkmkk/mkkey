@@ -288,6 +288,7 @@ type DriveFile = {
     name: string;
     thumbnailUrl: string;
     url: string;
+    usageCount: number;
     type: string;
     size: number;
     md5: string;
@@ -952,6 +953,9 @@ export type Endpoints = {
             limit?: number;
             sinceId?: DriveFile['id'];
             untilId?: DriveFile['id'];
+            fromDate?: string | null;
+            untilDate?: string | null;
+            frequentlyUsed?: boolean;
         };
         res: DriveFile[];
     };

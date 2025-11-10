@@ -98,22 +98,27 @@ export const packedDriveFileSchema = {
 			nullable: true,
 			format: "url",
 		},
-		comment: {
-			type: "string",
-			optional: false,
-			nullable: true,
-		},
-		folderId: {
-			type: "string",
-			optional: false,
-			nullable: true,
-			format: "id",
-			example: "xxxxxxxxxx",
-		},
-		folder: {
-			type: "object",
-			optional: true,
-			nullable: true,
+                comment: {
+                        type: "string",
+                        optional: false,
+                        nullable: true,
+                },
+                folderId: {
+                        type: "string",
+                        optional: false,
+                        nullable: true,
+                        format: "id",
+                        example: "xxxxxxxxxx",
+                },
+                usageCount: {
+                        type: "number",
+                        optional: false,
+                        nullable: false,
+                },
+                folder: {
+                        type: "object",
+                        optional: true,
+                        nullable: true,
 			ref: "DriveFolder",
 		},
 		userId: {

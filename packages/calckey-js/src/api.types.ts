@@ -389,16 +389,19 @@ export type Endpoints = {
 
 	// drive
 	drive: { req: NoParams; res: { capacity: number; usage: number } };
-	"drive/files": {
-		req: {
-			folderId?: DriveFolder["id"] | null;
-			type?: DriveFile["type"] | null;
-			limit?: number;
-			sinceId?: DriveFile["id"];
-			untilId?: DriveFile["id"];
-		};
-		res: DriveFile[];
-	};
+        "drive/files": {
+                req: {
+                        folderId?: DriveFolder["id"] | null;
+                        type?: DriveFile["type"] | null;
+                        limit?: number;
+                        sinceId?: DriveFile["id"];
+                        untilId?: DriveFile["id"];
+                        fromDate?: string | null;
+                        untilDate?: string | null;
+                        frequentlyUsed?: boolean;
+                };
+                res: DriveFile[];
+        };
 	"drive/files/attached-notes": { req: TODO; res: TODO };
 	"drive/files/check-existence": { req: TODO; res: TODO };
 	"drive/files/create": { req: TODO; res: TODO };

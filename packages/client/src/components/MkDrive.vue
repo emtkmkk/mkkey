@@ -221,6 +221,9 @@ type AutoFoldersData = {
                 type: string;
                 count: number;
         }[];
+        frequentlyUsed: {
+                count: number;
+        } | null;
 };
 
 const autoFoldersCache = ref<{
@@ -249,6 +252,18 @@ watch(
         () => props.type,
         () => {
                 autoFoldersCache.value = null;
+                if (
+                        isVirtualDriveFolder(folder.value) &&
+                        folder.value.kind === "frequentlyUsedRoot"
+                ) {
+                        folder.value = {
+                                ...folder.value,
+                                query: {
+                                        ...(folder.value.query ?? {}),
+                                        type: props.type ?? null,
+                                },
+                        } as VirtualDriveFolder;
+                }
                 if (isVirtualDriveFolder(folder.value) || folder.value == null) {
                         fetch();
                 }
@@ -257,6 +272,7 @@ watch(
 
 const AUTO_YEAR_MONTH_ROOT_ID = "virtual:year-month-root";
 const AUTO_FILE_TYPE_ROOT_ID = "virtual:file-type-root";
+const AUTO_FREQUENTLY_USED_ROOT_ID = "virtual:frequently-used-root";
 
 function autoFoldersCacheKey(): string | null {
         return props.type ?? null;
@@ -273,6 +289,7 @@ async function getAutoFoldersData(): Promise<AutoFoldersData> {
                         data: {
                                 months: response.months ?? [],
                                 types: response.types ?? [],
+                                frequentlyUsed: response.frequentlyUsed ?? null,
                         },
                 };
         }
@@ -370,6 +387,24 @@ function createFileTypeRootFolder(): VirtualDriveFolder {
         };
 }
 
+function createFrequentlyUsedRootFolder(count: number): VirtualDriveFolder {
+        return {
+                id: AUTO_FREQUENTLY_USED_ROOT_ID,
+                name: i18n.ts.driveAutoFolderByUsage,
+                parentId: null,
+                parent: null,
+                isVirtual: true,
+                kind: "frequentlyUsedRoot",
+                query: {
+                        frequentlyUsed: true,
+                        type: props.type ?? null,
+                },
+                meta: {
+                        count,
+                },
+        };
+}
+
 function createFileTypeFolder(
         entry: AutoFoldersData["types"][number],
         parent: VirtualDriveFolder,
@@ -427,6 +462,8 @@ function matchesCurrentFolder(file: Misskey.entities.DriveFile): boolean {
 
                 if (!matchesTypeFilter(effectiveType, file.type)) return false;
 
+                if (query.frequentlyUsed && (file.usageCount ?? 0) < 2) return false;
+
                 if (query.fromDate) {
                         const from = new Date(query.fromDate);
                         const createdAt = new Date(file.createdAt);
@@ -451,7 +488,9 @@ function matchesCurrentFolder(file: Misskey.entities.DriveFile): boolean {
 function refreshVirtualStructureIfNeeded() {
         if (
                 isVirtualDriveFolder(folder.value) &&
-                (folder.value.kind === "yearMonthRoot" || folder.value.kind === "fileTypeRoot")
+                (folder.value.kind === "yearMonthRoot" ||
+                        folder.value.kind === "fileTypeRoot" ||
+                        folder.value.kind === "frequentlyUsedRoot")
         ) {
                 fetch();
         }
@@ -874,26 +913,53 @@ async function fetch() {
         const foldersMax = 30;
         const filesMax = 30;
 
-        if (
-                isVirtualDriveFolder(folder.value) &&
-                (folder.value.kind === "yearMonthRoot" || folder.value.kind === "fileTypeRoot")
-        ) {
-                try {
-                        const autoData = await getAutoFoldersData();
-                        const current = folder.value;
-                        const entries =
-                                current.kind === "yearMonthRoot"
-                                        ? autoData.months.map((entry) =>
-                                                createYearMonthFolder(entry, current),
-                                          )
-                                        : autoData.types.map((entry) =>
-                                                createFileTypeFolder(entry, current),
-                                          );
-                        folders.value = entries;
-                } finally {
-                        fetching.value = false;
+        if (isVirtualDriveFolder(folder.value)) {
+                if (
+                        folder.value.kind === "yearMonthRoot" ||
+                        folder.value.kind === "fileTypeRoot"
+                ) {
+                        try {
+                                const autoData = await getAutoFoldersData();
+                                const current = folder.value;
+                                const entries =
+                                        current.kind === "yearMonthRoot"
+                                                ? autoData.months.map((entry) =>
+                                                        createYearMonthFolder(entry, current),
+                                                  )
+                                                : autoData.types.map((entry) =>
+                                                        createFileTypeFolder(entry, current),
+                                                  );
+                                folders.value = entries;
+                        } finally {
+                                fetching.value = false;
+                        }
+                        return;
                 }
-                return;
+
+                if (folder.value.kind === "frequentlyUsedRoot") {
+                        try {
+                                const response = (await os.api("drive/files", {
+                                        frequentlyUsed: true,
+                                        type:
+                                                folder.value.query?.type ??
+                                                props.type ??
+                                                undefined,
+                                        limit: filesMax + 1,
+                                })) as Misskey.entities.DriveFile[];
+
+                                if (response.length === filesMax + 1) {
+                                        moreFiles.value = true;
+                                        response.pop();
+                                } else {
+                                        moreFiles.value = false;
+                                }
+
+                                files.value = response;
+                        } finally {
+                                fetching.value = false;
+                        }
+                        return;
+                }
         }
 
         const isVirtual = isVirtualDriveFolder(folder.value);
@@ -950,6 +1016,11 @@ async function fetch() {
                 if (autoData.types.length > 0) {
                         folders.value.push(createFileTypeRootFolder());
                 }
+                if (autoData.frequentlyUsed) {
+                        folders.value.push(
+                                createFrequentlyUsedRootFolder(autoData.frequentlyUsed.count),
+                        );
+                }
         }
 
         for (const x of fetchedFolders) appendFolder(x);
@@ -984,6 +1055,9 @@ function fetchMoreFiles() {
                 untilDate: isVirtualDriveFolder(folder.value)
                         ? folder.value.query?.untilDate
                         : undefined,
+                frequentlyUsed: isVirtualDriveFolder(folder.value)
+                        ? folder.value.query?.frequentlyUsed ?? false
+                        : false,
                 untilId: files.value[files.value.length - 1].id,
                 limit: max + 1,
         }).then((files) => {

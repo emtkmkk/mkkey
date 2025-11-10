@@ -40,6 +40,15 @@ export const meta = {
                                 },
                                 default: [],
                         },
+                        frequentlyUsed: {
+                                type: "object",
+                                nullable: true,
+                                optional: true,
+                                properties: {
+                                        count: { type: "integer" },
+                                },
+                                required: ["count"],
+                        },
                 },
         },
 } as const;
@@ -117,8 +126,30 @@ export default define(meta, paramDef, async (ps, user) => {
                         count: Number(row.count),
                 }));
 
+        const maxUsageRow = await applyTypeFilter(
+                DriveFiles.createQueryBuilder("file")
+                        .select("MAX(file.usageCount)", "max")
+                        .where("file.userId = :userId", { userId: user.id }),
+        ).getRawOne<{ max: string | null }>();
+
+        let frequentlyUsed: { count: number } | null = null;
+
+        if ((maxUsageRow?.max ? Number(maxUsageRow.max) : 0) > 5) {
+                const frequentCountRow = await applyTypeFilter(
+                        DriveFiles.createQueryBuilder("file")
+                                .select("COUNT(*)", "count")
+                                .where("file.userId = :userId", { userId: user.id })
+                                .andWhere("file.usageCount >= 2"),
+                ).getRawOne<{ count: string }>();
+
+                frequentlyUsed = {
+                        count: Number(frequentCountRow?.count ?? 0),
+                };
+        }
+
         return {
                 months,
                 types,
+                frequentlyUsed,
         };
 });

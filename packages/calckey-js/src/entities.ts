@@ -131,10 +131,11 @@ export type DriveFile = {
 	originalUrl: string;
 	type: string;
 	size: number;
-	md5: string;
-	blurhash: string;
-	comment: string | null;
-	properties: Record<string, any>;
+        md5: string;
+        blurhash: string;
+        comment: string | null;
+        usageCount: number;
+        properties: Record<string, any>;
 };
 
 export type DriveFolder = TODO;

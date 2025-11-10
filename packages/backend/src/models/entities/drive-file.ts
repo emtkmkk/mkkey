@@ -132,18 +132,25 @@ export class DriveFile {
 	})
 	public thumbnailAccessKey: string | null;
 
-	@Index({ unique: true })
-	@Column('varchar', {
-		length: 256, nullable: true,
-	})
-	public webpublicAccessKey: string | null;
+        @Index({ unique: true })
+        @Column('varchar', {
+                length: 256, nullable: true,
+        })
+        public webpublicAccessKey: string | null;
 
-	@Index()
-	@Column('varchar', {
-		length: 512, nullable: true,
-		comment: 'The URI of the DriveFile. it will be null when the DriveFile is local.',
-	})
-	public uri: string | null;
+        @Index("IDX_drive_file_usage_count")
+        @Column('integer', {
+                default: 0,
+                comment: 'The number of times the DriveFile has been used in posts.',
+        })
+        public usageCount: number;
+
+        @Index()
+        @Column('varchar', {
+                length: 512, nullable: true,
+                comment: 'The URI of the DriveFile. it will be null when the DriveFile is local.',
+        })
+        public uri: string | null;
 
 	@Column('varchar', {
 		length: 512, nullable: true,

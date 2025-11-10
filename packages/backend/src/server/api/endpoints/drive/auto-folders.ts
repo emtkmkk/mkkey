@@ -92,10 +92,10 @@ export default define(meta, paramDef, async (ps, user) => {
 
         const months = monthsRaw.map((row: { month: string; count: string }) => {
                 const monthDate = new Date(row.month);
-                const year = monthDate.getUTCFullYear();
-                const month = monthDate.getUTCMonth();
-                const from = new Date(Date.UTC(year, month, 1));
-                const until = new Date(Date.UTC(year, month + 1, 1));
+                const year = monthDate.getFullYear();
+                const month = monthDate.getMonth();
+                const from = new Date(year, month, 1);
+                const until = new Date(year, month + 1, 1);
 
                 return {
                         year,

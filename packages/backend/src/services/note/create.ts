@@ -23,9 +23,10 @@ import { extractHashtags } from "@/misc/extract-hashtags.js";
 import type { IMentionedRemoteUsers } from "@/models/entities/note.js";
 import { Note } from "@/models/entities/note.js";
 import {
-	Mutings,
-	Users,
-	NoteWatchings,
+        DriveFiles,
+        Mutings,
+        Users,
+        NoteWatchings,
 	Notes,
 	Instances,
 	UserProfiles,
@@ -680,7 +681,7 @@ export default async (
 		}
 
                 tags = tags
-                        .filter((tag) => Array.from(tag || "").length <= 128)
+                        ?.filter((tag) => Array.from(tag || "").length <= 128)
                         .splice(0, 32);
 
                 if (!user.host && tags?.some((tag) => tag?.toLowerCase() === "misshaialert")) {
@@ -896,7 +897,18 @@ export default async (
 		data.isPublicLikeList = user.isPublicLikeList;
 
 		const note = await insertNote(user, data, tags, emojis, mentionedUsers);
-		
+
+		const usageTargetIds = (data.files ?? [])
+			.map((file) => file?.id)
+			.filter((id): id is DriveFile["id"] => Boolean(id));
+		if (usageTargetIds.length > 0) {
+			try {
+				await DriveFiles.adjustUsageCount(usageTargetIds, 1);
+			} catch (err) {
+				console.warn("Failed to increment drive file usage count", err);
+			}
+		}
+
 		if (firstVisibility != note.visibility) console.log(`${note.id}:可視性変更 ${firstVisibility} -> ${note.visibility}`);
 
 		res(note);

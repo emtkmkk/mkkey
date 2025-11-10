@@ -170,12 +170,13 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 			properties: opts.self ? file.properties : this.getPublicProperties(file),
 			url: opts.self ? file.url : this.getPublicUrl(file, false),
 			thumbnailUrl: this.getPublicUrl(file, true),
-			originalUrl: this.getPublicUrl(file, false, true),
-			comment: file.comment,
-			folderId: file.folderId,
-			folder:
-				opts.detail && file.folderId
-					? DriveFolders.pack(file.folderId, {
+                        originalUrl: this.getPublicUrl(file, false, true),
+                        comment: file.comment,
+                        folderId: file.folderId,
+                        usageCount: file.usageCount,
+                        folder:
+                                opts.detail && file.folderId
+                                        ? DriveFolders.pack(file.folderId, {
 							detail: true,
 					  })
 					: null,
@@ -212,12 +213,13 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 			properties: opts.self ? file.properties : this.getPublicProperties(file),
 			url: opts.self ? file.url : this.getPublicUrl(file, false),
 			thumbnailUrl: this.getPublicUrl(file, true),
-			originalUrl: this.getPublicUrl(file, false, true),
-			comment: file.comment,
-			folderId: file.folderId,
-			folder:
-				opts.detail && file.folderId
-					? DriveFolders.pack(file.folderId, {
+                        originalUrl: this.getPublicUrl(file, false, true),
+                        comment: file.comment,
+                        folderId: file.folderId,
+                        usageCount: file.usageCount,
+                        folder:
+                                opts.detail && file.folderId
+                                        ? DriveFolders.pack(file.folderId, {
 							detail: true,
 					  })
 					: null,
@@ -267,5 +269,32 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
                 );
 
                 return items.filter((x): x is Packed<"DriveFile"> => x != null);
+        },
+
+        async adjustUsageCount(
+                fileIds: DriveFile["id"][],
+                delta: number,
+        ): Promise<void> {
+                const uniqueIds = [...new Set(fileIds)].filter((id) => id != null);
+                if (uniqueIds.length === 0 || delta === 0) return;
+
+                const qb = this.createQueryBuilder()
+                        .update()
+                        .whereInIds(uniqueIds);
+
+                if (delta > 0) {
+                        await qb
+                                .set({ usageCount: () => '"usageCount" + :delta' })
+                                .setParameters({ delta })
+                                .execute();
+                } else {
+                        await qb
+                                .set({
+                                        usageCount: () =>
+                                                'GREATEST("usageCount" + :delta, 0)',
+                                })
+                                .setParameters({ delta })
+                                .execute();
+                }
         },
 });

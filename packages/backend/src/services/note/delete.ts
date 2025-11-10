@@ -8,7 +8,7 @@ import renderTombstone from "@/remote/activitypub/renderer/tombstone.js";
 import config from "@/config/index.js";
 import type { User, ILocalUser, IRemoteUser } from "@/models/entities/user.js";
 import type { Note, IMentionedRemoteUsers } from "@/models/entities/note.js";
-import { Notes, Users, Instances } from "@/models/index.js";
+import { Notes, Users, Instances, DriveFiles } from "@/models/index.js";
 import {
 	notesChart,
 	perUserNotesChart,
@@ -55,6 +55,8 @@ export default async function (
 		}
 		return;
 	}
+
+	const attachedFileIds = Array.isArray(note.fileIds) ? [...note.fileIds] : [];
 
 	const isRenote =
 		note.renoteId &&
@@ -159,6 +161,14 @@ export default async function (
 					deletedAt: deletedAt,
 				},
 			);
+		}
+	}
+
+	if (attachedFileIds.length > 0) {
+		try {
+			await DriveFiles.adjustUsageCount(attachedFileIds, -1);
+		} catch (err) {
+			console.warn("Failed to decrement drive file usage count", err);
 		}
 	}
 

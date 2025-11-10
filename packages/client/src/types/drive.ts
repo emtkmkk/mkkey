@@ -4,7 +4,8 @@ export type VirtualDriveFolderKind =
         | "yearMonthRoot"
         | "yearMonth"
         | "fileTypeRoot"
-        | "fileType";
+        | "fileType"
+        | "frequentlyUsedRoot";
 
 export interface VirtualDriveFolder {
         id: string;
@@ -17,6 +18,7 @@ export interface VirtualDriveFolder {
                 type?: string | null;
                 fromDate?: string;
                 untilDate?: string;
+                frequentlyUsed?: boolean;
         };
         meta?: {
                 year?: number;

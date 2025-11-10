@@ -1,5 +1,6 @@
 import define from "../../define.js";
 import { DriveFiles } from "@/models/index.js";
+import { Brackets } from "typeorm";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 
 export const meta = {
@@ -47,17 +48,180 @@ export const paramDef = {
                         type: "string",
                         nullable: true,
                 },
+                frequentlyUsed: {
+                        type: "boolean",
+                        default: false,
+                },
         },
         required: [],
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	const query = makePaginationQuery(
-		DriveFiles.createQueryBuilder("file"),
-		ps.sinceId,
-		ps.untilId,
-	).andWhere("file.userId = :userId", { userId: user.id });
-	query.orderBy("file.userId", "ASC");
+        const baseQuery = DriveFiles.createQueryBuilder("file").where(
+                "file.userId = :userId",
+                { userId: user.id },
+        );
+
+        if (ps.frequentlyUsed) {
+                baseQuery.andWhere("file.usageCount >= 2");
+
+                if (ps.type) {
+                        if (ps.type.endsWith("/*")) {
+                                baseQuery.andWhere("file.type like :type", {
+                                        type: `${ps.type.replace("/*", "/")}%`,
+                                });
+                        } else {
+                                baseQuery.andWhere("file.type = :type", { type: ps.type });
+                        }
+                }
+
+                if (ps.fromDate) {
+                        const from = new Date(ps.fromDate);
+                        if (!Number.isNaN(from.valueOf())) {
+                                baseQuery.andWhere("file.createdAt >= :fromDate", {
+                                        fromDate: from,
+                                });
+                        }
+                }
+
+                if (ps.untilDate) {
+                        const until = new Date(ps.untilDate);
+                        if (!Number.isNaN(until.valueOf())) {
+                                baseQuery.andWhere("file.createdAt < :untilDate", {
+                                        untilDate: until,
+                                });
+                        }
+                }
+
+                if (ps.sinceId) {
+                        const sinceFile = await DriveFiles.findOneBy({
+                                id: ps.sinceId,
+                                userId: user.id,
+                        });
+
+                        if (sinceFile) {
+                                baseQuery.andWhere(
+                                        new Brackets((qb) => {
+                                                qb.where("file.usageCount > :sinceUsage", {
+                                                        sinceUsage: sinceFile.usageCount,
+                                                })
+                                                        .orWhere(
+                                                                new Brackets((qb2) => {
+                                                                        qb2.where(
+                                                                                "file.usageCount = :sinceUsage",
+                                                                                { sinceUsage: sinceFile.usageCount },
+                                                                        )
+                                                                                .andWhere(
+                                                                                        "file.createdAt > :sinceCreated",
+                                                                                        {
+                                                                                                sinceCreated:
+                                                                                                        sinceFile.createdAt,
+                                                                                        },
+                                                                                )
+                                                                                .orWhere(
+                                                                                        new Brackets(
+                                                                                                (qb3) => {
+                                                                                                        qb3.where(
+                                                                                                                "file.usageCount = :sinceUsage",
+                                                                                                                {
+                                                                                                                        sinceUsage:
+                                                                                                                                sinceFile.usageCount,
+                                                                                                                },
+                                                                                                        )
+                                                                                                                .andWhere(
+                                                                                                                        "file.createdAt = :sinceCreated",
+                                                                                                                        {
+                                                                                                                                sinceCreated:
+                                                                                                                                        sinceFile.createdAt,
+                                                                                                                        },
+                                                                                                                )
+                                                                                                                .andWhere(
+                                                                                                                        "file.id > :sinceId",
+                                                                                                                        {
+                                                                                                                                sinceId:
+                                                                                                                                        ps.sinceId,
+                                                                                                                        },
+                                                                                                                );
+                                                                                                },
+                                                                                        ),
+                                                                                );
+                                                                }),
+                                                        );
+                                        }),
+                                );
+                        }
+                }
+
+                if (ps.untilId) {
+                        const untilFile = await DriveFiles.findOneBy({
+                                id: ps.untilId,
+                                userId: user.id,
+                        });
+
+                        if (untilFile) {
+                                baseQuery.andWhere(
+                                        new Brackets((qb) => {
+                                                qb.where("file.usageCount < :untilUsage", {
+                                                        untilUsage: untilFile.usageCount,
+                                                })
+                                                        .orWhere(
+                                                                new Brackets((qb2) => {
+                                                                        qb2.where(
+                                                                                "file.usageCount = :untilUsage",
+                                                                                { untilUsage: untilFile.usageCount },
+                                                                        )
+                                                                                .andWhere(
+                                                                                        "file.createdAt < :untilCreated",
+                                                                                        {
+                                                                                                untilCreated:
+                                                                                                        untilFile.createdAt,
+                                                                                        },
+                                                                                )
+                                                                                .orWhere(
+                                                                                        new Brackets(
+                                                                                                (qb3) => {
+                                                                                                        qb3.where(
+                                                                                                                "file.usageCount = :untilUsage",
+                                                                                                                {
+                                                                                                                        untilUsage:
+                                                                                                                                untilFile.usageCount,
+                                                                                                                },
+                                                                                                        )
+                                                                                                                .andWhere(
+                                                                                                                        "file.createdAt = :untilCreated",
+                                                                                                                        {
+                                                                                                                                untilCreated:
+                                                                                                                                        untilFile.createdAt,
+                                                                                                                        },
+                                                                                                                )
+                                                                                                                .andWhere(
+                                                                                                                        "file.id < :untilId",
+                                                                                                                        {
+                                                                                                                                untilId:
+                                                                                                                                        ps.untilId,
+                                                                                                                        },
+                                                                                                                );
+                                                                                                },
+                                                                                        ),
+                                                                                );
+                                                                }),
+                                                        );
+                                        }),
+                                );
+                        }
+                }
+
+                baseQuery
+                        .orderBy("file.usageCount", "DESC")
+                        .addOrderBy("file.createdAt", "DESC")
+                        .addOrderBy("file.id", "DESC");
+
+                const files = await baseQuery.take(ps.limit).getMany();
+                return await DriveFiles.packMany(files, { detail: false, self: true });
+        }
+
+        const query = makePaginationQuery(baseQuery, ps.sinceId, ps.untilId);
+        query.orderBy("file.userId", "ASC");
 
         if (ps.folderId) {
                 query.andWhere("file.folderId = :folderId", { folderId: ps.folderId });
@@ -68,11 +232,11 @@ export default define(meta, paramDef, async (ps, user) => {
 
         if (ps.type) {
                 if (ps.type.endsWith("/*")) {
-			query.andWhere("file.type like :type", {
-				type: `${ps.type.replace("/*", "/")}%`,
-			});
-		} else {
-			query.andWhere("file.type = :type", { type: ps.type });
+                        query.andWhere("file.type like :type", {
+                                type: `${ps.type.replace("/*", "/")}%`,
+                        });
+                } else {
+                        query.andWhere("file.type = :type", { type: ps.type });
                 }
                 query.addOrderBy("file.type", "ASC");
         }
@@ -96,7 +260,7 @@ export default define(meta, paramDef, async (ps, user) => {
         }
         query.addOrderBy("file.id", "DESC");
 
-	const files = await query.take(ps.limit).getMany();
+        const files = await query.take(ps.limit).getMany();
 
-	return await DriveFiles.packMany(files, { detail: false, self: true });
+        return await DriveFiles.packMany(files, { detail: false, self: true });
 });

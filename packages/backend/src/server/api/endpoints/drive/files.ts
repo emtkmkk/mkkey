@@ -41,12 +41,10 @@ export const paramDef = {
                 },
                 fromDate: {
                         type: "string",
-                        format: "date-time",
                         nullable: true,
                 },
                 untilDate: {
                         type: "string",
-                        format: "date-time",
                         nullable: true,
                 },
         },

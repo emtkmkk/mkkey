@@ -14,29 +14,34 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import * as Misskey from "calckey-js";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
+import {
+        isVirtualDriveFolder,
+        type DriveFolderLike,
+} from "@/types/drive";
 
 const props = defineProps<{
-	folder?: Misskey.entities.DriveFolder;
-	parentFolder: Misskey.entities.DriveFolder | null;
+        folder?: DriveFolderLike;
+        parentFolder: DriveFolderLike | null;
 }>();
 
 const emit = defineEmits<{
-	(ev: "move", v?: Misskey.entities.DriveFolder): void;
-	(
-		ev: "upload",
-		file: File,
-		folder?: Misskey.entities.DriveFolder | null
-	): void;
-	(ev: "removeFile", v: Misskey.entities.DriveFile["id"]): void;
-	(ev: "removeFolder", v: Misskey.entities.DriveFolder["id"]): void;
+        (ev: "move", v?: DriveFolderLike): void;
+        (
+                ev: "upload",
+                file: File,
+                folder?: DriveFolderLike | null
+        ): void;
+        (ev: "removeFile", v: Misskey.entities.DriveFile["id"]): void;
+        (ev: "removeFolder", v: Misskey.entities.DriveFolder["id"]): void;
 }>();
 
 const hover = ref(false);
 const draghover = ref(false);
+const isVirtual = computed(() => (props.folder ? isVirtualDriveFolder(props.folder) : false));
 
 function onClick() {
 	emit("move", props.folder);
@@ -51,7 +56,11 @@ function onMouseout() {
 }
 
 function onDragover(ev: DragEvent) {
-	if (!ev.dataTransfer) return;
+        if (isVirtual.value) {
+                        if (ev.dataTransfer) ev.dataTransfer.dropEffect = "none";
+                        return false;
+        }
+        if (!ev.dataTransfer) return;
 
 	// このフォルダがルートかつカレントディレクトリならドロップ禁止
 	if (props.folder == null && props.parentFolder == null) {
@@ -74,17 +83,23 @@ function onDragover(ev: DragEvent) {
 }
 
 function onDragenter() {
-	if (props.folder || props.parentFolder) draghover.value = true;
+        if (isVirtual.value) return;
+        if (props.folder || props.parentFolder) draghover.value = true;
 }
 
 function onDragleave() {
-	if (props.folder || props.parentFolder) draghover.value = false;
+        if (isVirtual.value) return;
+        if (props.folder || props.parentFolder) draghover.value = false;
 }
 
 function onDrop(ev: DragEvent) {
-	draghover.value = false;
+        if (isVirtual.value) {
+                draghover.value = false;
+                return;
+        }
+        draghover.value = false;
 
-	if (!ev.dataTransfer) return;
+        if (!ev.dataTransfer) return;
 
 	// ファイルだったら
 	if (ev.dataTransfer.files.length > 0) {

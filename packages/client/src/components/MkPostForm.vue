@@ -789,6 +789,7 @@ import {
 	openAccountMenu as openAccountMenu_,
 } from "@/account";
 import { uploads, uploadFile } from "@/scripts/upload";
+import type { UploadFileOptions } from "@/scripts/upload";
 import { deepClone } from "@/scripts/clone";
 import XDraft from "@/components/MkDraftDialog.vue";
 import XCheatSheet from "@/components/MkCheatSheetDialog.vue";
@@ -1473,7 +1474,7 @@ function updateFileName(file, name) {
 	files[files.findIndex((x) => x.id === file.id)].name = name;
 }
 
-function upload(file: File, name?: string) {
+function upload(file: File, name?: string, options?: UploadFileOptions) {
     fileError = false;
 
     const promise = uploadFile(
@@ -1482,7 +1483,8 @@ function upload(file: File, name?: string) {
         name,
         undefined,
         undefined,
-        requiredFilename
+        requiredFilename,
+        options
     )
     .then((res) => {
         files.push(res);

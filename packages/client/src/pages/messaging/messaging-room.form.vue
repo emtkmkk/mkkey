@@ -69,6 +69,7 @@ import { stream } from "@/stream";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 import { uploadFile } from "@/scripts/upload";
+import type { UploadFileOptions } from "@/scripts/upload";
 
 const props = defineProps<{
 	user?: Misskey.entities.UserDetailed | null;
@@ -205,12 +206,20 @@ function onChangeFile() {
 	if (fileEl.files![0]) upload(fileEl.files[0]);
 }
 
-function upload(fileToUpload: File, name?: string) {
-	uploadFile(fileToUpload, defaultStore.state.uploadFolder, name).then(
-		(res) => {
-			file = res;
-		}
-	);
+function upload(fileToUpload: File, name?: string, options?: UploadFileOptions) {
+        uploadFile(
+                fileToUpload,
+                defaultStore.state.uploadFolder,
+                name,
+                undefined,
+                undefined,
+                undefined,
+                options,
+        ).then(
+                (res) => {
+                        file = res;
+                }
+        );
 }
 
 function send() {

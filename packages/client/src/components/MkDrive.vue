@@ -217,8 +217,8 @@ type AutoFoldersData = {
                 count: number;
         }[];
         types: {
-                majorType: string;
-                type: string | null;
+                majorType: string | null;
+                type: string;
                 count: number;
         }[];
 };
@@ -291,7 +291,20 @@ function formatYearMonthLabel(year: number, month: number): string {
         });
 }
 
-function getFileTypeLabel(majorType: string): string {
+function formatMimeType(type: string): string {
+        const [major, minor] = type.split("/");
+        if (!major || !minor) return type;
+
+        const formattedMajor = `${major.charAt(0).toUpperCase()}${major.slice(1)}`;
+        return `${formattedMajor}/${minor.toUpperCase()}`;
+}
+
+function getFileTypeLabel(entry: AutoFoldersData["types"][number]): string {
+        if (entry.type) {
+                return formatMimeType(entry.type);
+        }
+
+        const majorType = entry.majorType;
         switch (majorType) {
                 case "image":
                         return i18n.ts.driveFileTypeImage;
@@ -306,7 +319,9 @@ function getFileTypeLabel(majorType: string): string {
                 case "model":
                         return i18n.ts.driveFileTypeModel;
                 default:
-                        return i18n.t("driveFileTypeOther", { type: majorType });
+                        return majorType
+                                ? i18n.t("driveFileTypeOther", { type: majorType })
+                                : i18n.ts.unknown;
         }
 }
 
@@ -360,8 +375,8 @@ function createFileTypeFolder(
         parent: VirtualDriveFolder,
 ): VirtualDriveFolder {
         return {
-                id: `${AUTO_FILE_TYPE_ROOT_ID}:${entry.majorType}`,
-                name: getFileTypeLabel(entry.majorType),
+                id: `${AUTO_FILE_TYPE_ROOT_ID}:${encodeURIComponent(entry.type)}`,
+                name: getFileTypeLabel(entry),
                 parentId: parent.id,
                 parent,
                 isVirtual: true,
@@ -371,6 +386,7 @@ function createFileTypeFolder(
                 },
                 meta: {
                         majorType: entry.majorType,
+                        type: entry.type,
                         count: entry.count,
                 },
         };

@@ -99,28 +99,23 @@ export default define(meta, paramDef, async (ps, user) => {
 
         const typesRaw = await applyTypeFilter(
                 DriveFiles.createQueryBuilder("file")
-                        .select("split_part(file.type, '/', 1)", "major")
+                        .select("file.type", "type")
+                        .addSelect("split_part(file.type, '/', 1)", "major")
                         .addSelect("COUNT(*)", "count")
                         .where("file.userId = :userId", { userId: user.id })
         )
-                .groupBy("major")
+                .groupBy("type")
+                .addGroupBy("major")
                 .orderBy("count", "DESC")
                 .getRawMany();
 
         const types = typesRaw
-                .filter((row: { major: string | null }) => row.major)
-                .map((row: { major: string; count: string }) => {
-                        const majorType = row.major;
-                        const type =
-                                ps.type && !ps.type.endsWith("/*")
-                                        ? ps.type
-                                        : `${majorType}/*`;
-                        return {
-                                majorType,
-                                type,
-                                count: Number(row.count),
-                        };
-                });
+                .filter((row: { type: string | null }) => row.type)
+                .map((row: { type: string; major: string | null; count: string }) => ({
+                        majorType: row.major ?? row.type.split("/")[0],
+                        type: row.type,
+                        count: Number(row.count),
+                }));
 
         return {
                 months,

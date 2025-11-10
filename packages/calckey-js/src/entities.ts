@@ -134,7 +134,6 @@ export type DriveFile = {
         md5: string;
         blurhash: string;
         comment: string | null;
-        usageCount: number;
         properties: Record<string, any>;
 };
 

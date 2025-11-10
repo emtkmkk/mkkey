@@ -462,7 +462,12 @@ function matchesCurrentFolder(file: Misskey.entities.DriveFile): boolean {
 
                 if (!matchesTypeFilter(effectiveType, file.type)) return false;
 
-                if (query.frequentlyUsed && (file.usageCount ?? 0) < 2) return false;
+                if (query.frequentlyUsed) {
+                        const alreadyListed = files.value.some(
+                                (existing) => existing.id === file.id,
+                        );
+                        if (!alreadyListed) return false;
+                }
 
                 if (query.fromDate) {
                         const from = new Date(query.fromDate);

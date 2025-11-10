@@ -147,23 +147,33 @@ export const react = async (
  * @param user User
  * @param _path Optional, absolute path or relative from ./resources/
  */
-export const uploadFile = async (user: any, _path?: string): Promise<any> => {
-	const absPath =
-		_path == null
-			? `${_dirname}/resources/Lenna.jpg`
-			: path.isAbsolute(_path)
-			? _path
-			: `${_dirname}/resources/${_path}`;
+export type UploadTestFileOptions = {
+        force?: boolean;
+};
 
-	const formData = new FormData() as any;
-	formData.append("i", user.token);
-	formData.append("file", fs.createReadStream(absPath));
-	formData.append("force", "true");
+export const uploadFile = async (
+        user: any,
+        _path?: string,
+        options: UploadTestFileOptions = {},
+): Promise<{ status: number; body: any }> => {
+        const absPath =
+                _path == null
+                        ? `${_dirname}/resources/Lenna.jpg`
+                        : path.isAbsolute(_path)
+                        ? _path
+                        : `${_dirname}/resources/${_path}`;
 
-	const res = await got<string>(
-		`http://localhost:${port}/api/drive/files/create`,
-		{
-			method: "POST",
+        const formData = new FormData() as any;
+        formData.append("i", user.token);
+        formData.append("file", fs.createReadStream(absPath));
+        if (options.force ?? true) {
+                formData.append("force", "true");
+        }
+
+        const res = await got<string>(
+                `http://localhost:${port}/api/drive/files/create`,
+                {
+                        method: "POST",
 			body: formData,
 			retry: {
 				limit: 0,
@@ -171,9 +181,10 @@ export const uploadFile = async (user: any, _path?: string): Promise<any> => {
 		},
 	);
 
-	const body = res.statusCode !== 204 ? await JSON.parse(res.body) : null;
+        const status = res.statusCode;
+        const body = res.statusCode !== 204 ? await JSON.parse(res.body) : null;
 
-	return body;
+        return { status, body };
 };
 
 export const uploadUrl = async (user: any, url: string) => {

@@ -31,13 +31,18 @@ const mimeTypeMap = {
 	"image/avif": "avif",
 } as const;
 
+export interface UploadFileOptions {
+        force?: boolean;
+}
+
 export function uploadFile(
-	file: File,
-	folder?: any,
-	name?: string,
-	keepOriginal: boolean = defaultStore.state.keepOriginalUploading,
-	keepFileName: boolean = defaultStore.state.keepFileName,
-	requiredFilename: boolean = false,
+        file: File,
+        folder?: any,
+        name?: string,
+        keepOriginal: boolean = defaultStore.state.keepOriginalUploading,
+        keepFileName: boolean = defaultStore.state.keepFileName,
+        requiredFilename: boolean = false,
+        options: UploadFileOptions = {},
 ): Promise<Misskey.entities.DriveFile> {
 	if (folder && typeof folder === "object") folder = folder.id;
 
@@ -134,8 +139,8 @@ export function uploadFile(
 					}
 				}
 
-				const formData = new FormData();
-				formData.append("force", "true");
+                                const formData = new FormData();
+                                if (options.force) formData.append("force", "true");
 				formData.append("file", resizedImage || file);
 				formData.append("name", ctx.name);
 				if (folder) formData.append("folderId", folder);

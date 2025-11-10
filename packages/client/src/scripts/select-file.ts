@@ -4,15 +4,16 @@ import * as os from "@/os";
 import { stream } from "@/stream";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
-import { uploadFile } from "@/scripts/upload";
+import { uploadFile, type UploadFileOptions } from "@/scripts/upload";
 
 function select(
-	src: any,
-	label: string | null,
-	multiple: boolean,
-	requiredFilename?: boolean,
-	keepFilename?: boolean,
-	to?: string,
+        src: any,
+        label: string | null,
+        multiple: boolean,
+        requiredFilename?: boolean,
+        keepFilename?: boolean,
+        to?: string,
+        uploadOptions?: UploadFileOptions,
 ): Promise<DriveFile | DriveFile[]> {
 	return new Promise((res, rej) => {
 		const keepOriginal = ref(
@@ -35,16 +36,17 @@ function select(
 			input.type = "file";
 			input.multiple = multiple;
 			input.onchange = () => {
-				const promises = Array.from(input.files).map((file) =>
-					uploadFile(
-						file,
-						folderId,
-						undefined,
-						keepOriginal.value,
-						keepFileName.value,
-						requiredFilename,
-					),
-				);
+                                const promises = Array.from(input.files).map((file) =>
+                                        uploadFile(
+                                                file,
+                                                folderId,
+                                                undefined,
+                                                keepOriginal.value,
+                                                keepFileName.value,
+                                                requiredFilename,
+                                                uploadOptions,
+                                        ),
+                                );
 
 				Promise.all(promises)
 					.then((driveFiles) => {
@@ -169,35 +171,39 @@ function select(
 }
 
 export function selectFile(
-	src: any,
-	label: string | null = null,
-	requiredFilename?: boolean,
-	keepFilename?: boolean,
-	to?: string,
+        src: any,
+        label: string | null = null,
+        requiredFilename?: boolean,
+        keepFilename?: boolean,
+        to?: string,
+        uploadOptions?: UploadFileOptions,
 ): Promise<DriveFile> {
-	return select(
-		src,
-		label,
-		false,
-		requiredFilename,
-		keepFilename,
-		to,
-	) as Promise<DriveFile>;
+        return select(
+                src,
+                label,
+                false,
+                requiredFilename,
+                keepFilename,
+                to,
+                uploadOptions,
+        ) as Promise<DriveFile>;
 }
 
 export function selectFiles(
-	src: any,
-	label: string | null = null,
-	requiredFilename?: boolean,
-	keepFilename?: boolean,
-	to?: string,
+        src: any,
+        label: string | null = null,
+        requiredFilename?: boolean,
+        keepFilename?: boolean,
+        to?: string,
+        uploadOptions?: UploadFileOptions,
 ): Promise<DriveFile[]> {
-	return select(
-		src,
-		label,
-		true,
-		requiredFilename,
-		keepFilename,
-		to,
-	) as Promise<DriveFile[]>;
+        return select(
+                src,
+                label,
+                true,
+                requiredFilename,
+                keepFilename,
+                to,
+                uploadOptions,
+        ) as Promise<DriveFile[]>;
 }

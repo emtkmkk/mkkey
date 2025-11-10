@@ -3,14 +3,14 @@ process.env.NODE_ENV = "test";
 import * as assert from "assert";
 import * as childProcess from "child_process";
 import {
-	async,
-	signup,
-	request,
-	post,
-	react,
-	uploadFile,
-	startServer,
-	shutdownServer,
+        async,
+        signup,
+        request,
+        post,
+        react,
+        uploadFile,
+        startServer,
+        shutdownServer,
 } from "./utils.js";
 
 describe("API", () => {
@@ -30,14 +30,14 @@ describe("API", () => {
 		await shutdownServer(p);
 	});
 
-	describe("General validation", () => {
-		it("wrong type", async(async () => {
-			const res = await request("/test", {
-				required: true,
-				string: 42,
-			});
-			assert.strictEqual(res.status, 400);
-		}));
+        describe("General validation", () => {
+                it("wrong type", async(async () => {
+                        const res = await request("/test", {
+                                required: true,
+                                string: 42,
+                        });
+                        assert.strictEqual(res.status, 400);
+                }));
 
 		it("missing require param", async(async () => {
 			const res = await request("/test", {
@@ -80,13 +80,24 @@ describe("API", () => {
 			assert.strictEqual(res.body.nullableDefault, null);
 		}));
 
-		it("cannot set undefined if it has default value", async(async () => {
-			const res = await request("/test", {
-				required: true,
-				nullableDefault: undefined,
-			});
-			assert.strictEqual(res.status, 200);
-			assert.strictEqual(res.body.nullableDefault, "hello");
-		}));
-	});
+                it("cannot set undefined if it has default value", async(async () => {
+                        const res = await request("/test", {
+                                required: true,
+                                nullableDefault: undefined,
+                        });
+                        assert.strictEqual(res.status, 200);
+                        assert.strictEqual(res.body.nullableDefault, "hello");
+                }));
+        });
+
+        describe("Drive ファイルの重複アップロード", () => {
+                it("同一ユーザーが同一ファイルを2回アップロードすると既存ファイルが再利用される", async(async () => {
+                        const first = await uploadFile(alice, undefined, { force: false });
+                        const second = await uploadFile(alice, undefined, { force: false });
+
+                        assert.strictEqual(first.status, 200);
+                        assert.strictEqual(second.status, 200);
+                        assert.strictEqual(second.body?.id, first.body?.id);
+                }));
+        });
 });

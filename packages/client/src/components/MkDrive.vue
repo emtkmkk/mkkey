@@ -150,6 +150,7 @@ import { stream } from "@/stream";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 import { uploadFile, uploads } from "@/scripts/upload";
+import type { UploadFileOptions } from "@/scripts/upload";
 import {
         isVirtualDriveFolder,
         type DriveFolderLike,
@@ -745,7 +746,11 @@ function onChangeFileInput() {
 	}
 }
 
-function upload(file: File, folderToUpload?: DriveFolderLike | null) {
+function upload(
+        file: File,
+        folderToUpload?: DriveFolderLike | null,
+        options?: UploadFileOptions,
+) {
         const targetFolderId =
                 folderToUpload && !isVirtualDriveFolder(folderToUpload)
                         ? folderToUpload.id
@@ -755,10 +760,12 @@ function upload(file: File, folderToUpload?: DriveFolderLike | null) {
                 targetFolderId,
                 undefined,
                 keepOriginal.value,
-                keepFileName.value
+                keepFileName.value,
+                undefined,
+                options
         ).then((res) => {
                 addFile(res, true);
-	});
+        });
 }
 
 function chooseFile(file: Misskey.entities.DriveFile) {

@@ -59,10 +59,10 @@ export default define(meta, paramDef, async (ps, user) => {
 	).andWhere("file.userId = :userId", { userId: user.id });
 	query.orderBy("file.userId", "ASC");
 
-	if (ps.folderId) {
-		query.andWhere("file.folderId = :folderId", { folderId: ps.folderId });
-	} else {
-		query.andWhere("file.folderId IS NULL");
+        if (ps.folderId) {
+                query.andWhere("file.folderId = :folderId", { folderId: ps.folderId });
+        } else if (!ps.type && !ps.fromDate && !ps.untilDate) {
+                query.andWhere("file.folderId IS NULL");
         }
         query.addOrderBy("file.folderId", "ASC");
 

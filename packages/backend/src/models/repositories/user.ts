@@ -1,6 +1,7 @@
 import { URL } from "url";
 import { In, Not } from "typeorm";
 import Ajv from "ajv";
+import addFormats from "ajv-formats";
 import type { ILocalUser, IRemoteUser } from "@/models/entities/user.js";
 import { User } from "@/models/entities/user.js";
 import config from "@/config/index.js";
@@ -89,6 +90,8 @@ export type UserRelation = {
 };
 
 const ajv = new Ajv();
+
+addFormats(ajv);
 
 const localUsernameSchema = {
 	type: "string",

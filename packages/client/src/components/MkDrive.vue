@@ -150,6 +150,11 @@ import { stream } from "@/stream";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 import { uploadFile, uploads } from "@/scripts/upload";
+import {
+        isVirtualDriveFolder,
+        type DriveFolderLike,
+        type VirtualDriveFolder,
+} from "@/types/drive";
 
 const props = withDefaults(
 	defineProps<{
@@ -181,12 +186,12 @@ const emit = defineEmits<{
 const loadMoreFiles = ref<InstanceType<typeof MkButton>>();
 const fileInput = ref<HTMLInputElement>();
 
-const folder = ref<Misskey.entities.DriveFolder | null>(null);
+const folder = ref<DriveFolderLike | null>(null);
 const files = ref<Misskey.entities.DriveFile[]>([]);
-const folders = ref<Misskey.entities.DriveFolder[]>([]);
+const folders = ref<DriveFolderLike[]>([]);
 const moreFiles = ref(false);
 const moreFolders = ref(false);
-const hierarchyFolders = ref<Misskey.entities.DriveFolder[]>([]);
+const hierarchyFolders = ref<DriveFolderLike[]>([]);
 const selectedFiles = ref<Misskey.entities.DriveFile[]>([]);
 const selectedFolders = ref<Misskey.entities.DriveFolder[]>([]);
 const uploadings = uploads;
@@ -203,52 +208,283 @@ const isDragSource = ref(false);
 
 const fetching = ref(true);
 
+type AutoFoldersData = {
+        months: {
+                year: number;
+                month: number;
+                from: string;
+                until: string;
+                count: number;
+        }[];
+        types: {
+                majorType: string;
+                type: string | null;
+                count: number;
+        }[];
+};
+
+const autoFoldersCache = ref<{
+        typeKey: string | null;
+        data: AutoFoldersData;
+} | null>(null);
+
 const ilFilesObserver = new IntersectionObserver(
-	(entries) =>
-		entries.some((entry) => entry.isIntersecting) &&
-		!fetching.value &&
-		moreFiles.value &&
-		fetchMoreFiles()
+        (entries) =>
+                entries.some((entry) => entry.isIntersecting) &&
+                !fetching.value &&
+                moreFiles.value &&
+                fetchMoreFiles()
 );
 
-watch(folder, () => emit("cd", folder.value));
+watch(folder, () =>
+        emit(
+                "cd",
+                isVirtualDriveFolder(folder.value)
+                        ? null
+                        : (folder.value as Misskey.entities.DriveFolder | null),
+        ),
+);
+
+watch(
+        () => props.type,
+        () => {
+                autoFoldersCache.value = null;
+                if (isVirtualDriveFolder(folder.value) || folder.value == null) {
+                        fetch();
+                }
+        },
+);
+
+const AUTO_YEAR_MONTH_ROOT_ID = "virtual:year-month-root";
+const AUTO_FILE_TYPE_ROOT_ID = "virtual:file-type-root";
+
+function autoFoldersCacheKey(): string | null {
+        return props.type ?? null;
+}
+
+async function getAutoFoldersData(): Promise<AutoFoldersData> {
+        const key = autoFoldersCacheKey();
+        if (autoFoldersCache.value?.typeKey !== key) {
+                const response = (await os.api("drive/auto-folders", {
+                        type: props.type ?? undefined,
+                })) as AutoFoldersData;
+                autoFoldersCache.value = {
+                        typeKey: key,
+                        data: {
+                                months: response.months ?? [],
+                                types: response.types ?? [],
+                        },
+                };
+        }
+        return autoFoldersCache.value.data;
+}
+
+function invalidateAutoFolders() {
+        autoFoldersCache.value = null;
+}
+
+function formatYearMonthLabel(year: number, month: number): string {
+        const paddedMonth = month.toString().padStart(2, "0");
+        return i18n.t("driveYearMonthLabel", {
+                year,
+                month: paddedMonth,
+        });
+}
+
+function getFileTypeLabel(majorType: string): string {
+        switch (majorType) {
+                case "image":
+                        return i18n.ts.driveFileTypeImage;
+                case "video":
+                        return i18n.ts.driveFileTypeVideo;
+                case "audio":
+                        return i18n.ts.driveFileTypeAudio;
+                case "text":
+                        return i18n.ts.driveFileTypeText;
+                case "application":
+                        return i18n.ts.driveFileTypeApplication;
+                case "model":
+                        return i18n.ts.driveFileTypeModel;
+                default:
+                        return i18n.t("driveFileTypeOther", { type: majorType });
+        }
+}
+
+function createYearMonthRootFolder(): VirtualDriveFolder {
+        return {
+                id: AUTO_YEAR_MONTH_ROOT_ID,
+                name: i18n.ts.driveAutoFolderByYearMonth,
+                parentId: null,
+                parent: null,
+                isVirtual: true,
+                kind: "yearMonthRoot",
+        };
+}
+
+function createYearMonthFolder(
+        entry: AutoFoldersData["months"][number],
+        parent: VirtualDriveFolder,
+): VirtualDriveFolder {
+        return {
+                id: `${AUTO_YEAR_MONTH_ROOT_ID}:${entry.year}-${entry.month}`,
+                name: formatYearMonthLabel(entry.year, entry.month),
+                parentId: parent.id,
+                parent,
+                isVirtual: true,
+                kind: "yearMonth",
+                query: {
+                        fromDate: entry.from,
+                        untilDate: entry.until,
+                },
+                meta: {
+                        year: entry.year,
+                        month: entry.month,
+                        count: entry.count,
+                },
+        };
+}
+
+function createFileTypeRootFolder(): VirtualDriveFolder {
+        return {
+                id: AUTO_FILE_TYPE_ROOT_ID,
+                name: i18n.ts.driveAutoFolderByType,
+                parentId: null,
+                parent: null,
+                isVirtual: true,
+                kind: "fileTypeRoot",
+        };
+}
+
+function createFileTypeFolder(
+        entry: AutoFoldersData["types"][number],
+        parent: VirtualDriveFolder,
+): VirtualDriveFolder {
+        return {
+                id: `${AUTO_FILE_TYPE_ROOT_ID}:${entry.majorType}`,
+                name: getFileTypeLabel(entry.majorType),
+                parentId: parent.id,
+                parent,
+                isVirtual: true,
+                kind: "fileType",
+                query: {
+                        type: entry.type,
+                },
+                meta: {
+                        majorType: entry.majorType,
+                        count: entry.count,
+                },
+        };
+}
+
+function buildHierarchyFrom(folderToDive: DriveFolderLike | null) {
+        const stack: DriveFolderLike[] = [];
+        let pointer = folderToDive?.parent ?? null;
+        while (pointer) {
+                stack.unshift(pointer);
+                pointer = pointer.parent ?? null;
+        }
+        hierarchyFolders.value = stack;
+}
+
+function matchesTypeFilter(
+        filter: string | null | undefined,
+        fileType: string | null | undefined,
+): boolean {
+        if (!filter) return true;
+        if (!fileType) return false;
+        if (filter.endsWith("/*")) {
+                return fileType.startsWith(filter.replace("/*", "/"));
+        }
+        return fileType === filter;
+}
+
+function matchesCurrentFolder(file: Misskey.entities.DriveFile): boolean {
+        const baseTypeFilter = props.type;
+
+        if (!folder.value) {
+                return file.folderId == null && matchesTypeFilter(baseTypeFilter, file.type);
+        }
+
+        if (isVirtualDriveFolder(folder.value)) {
+                const query = folder.value.query ?? {};
+                const effectiveType = query.type ?? baseTypeFilter;
+
+                if (!matchesTypeFilter(effectiveType, file.type)) return false;
+
+                if (query.fromDate) {
+                        const from = new Date(query.fromDate);
+                        const createdAt = new Date(file.createdAt);
+                        if (Number.isFinite(from.valueOf()) && createdAt < from) return false;
+                }
+
+                if (query.untilDate) {
+                        const until = new Date(query.untilDate);
+                        const createdAt = new Date(file.createdAt);
+                        if (Number.isFinite(until.valueOf()) && createdAt >= until) return false;
+                }
+
+                return true;
+        }
+
+        return (
+                folder.value.id === file.folderId &&
+                matchesTypeFilter(baseTypeFilter, file.type)
+        );
+}
+
+function refreshVirtualStructureIfNeeded() {
+        if (
+                isVirtualDriveFolder(folder.value) &&
+                (folder.value.kind === "yearMonthRoot" || folder.value.kind === "fileTypeRoot")
+        ) {
+                fetch();
+        }
+}
 
 function onStreamDriveFileCreated(file: Misskey.entities.DriveFile) {
-	addFile(file, true);
+        invalidateAutoFolders();
+        addFile(file, true);
+        refreshVirtualStructureIfNeeded();
 }
 
 function onStreamDriveFileUpdated(file: Misskey.entities.DriveFile) {
-	const current = folder.value ? folder.value.id : null;
-	if (current !== file.folderId) {
-		removeFile(file);
-	} else {
-		addFile(file, true);
-	}
+        invalidateAutoFolders();
+        if (!matchesCurrentFolder(file)) {
+                removeFile(file);
+        } else {
+                addFile(file, true);
+        }
+        refreshVirtualStructureIfNeeded();
 }
 
 function onStreamDriveFileDeleted(fileId: string) {
-	removeFile(fileId);
+        invalidateAutoFolders();
+        removeFile(fileId);
+        refreshVirtualStructureIfNeeded();
 }
 
 function onStreamDriveFolderCreated(
-	createdFolder: Misskey.entities.DriveFolder
+        createdFolder: Misskey.entities.DriveFolder
 ) {
-	addFolder(createdFolder, true);
+        if (isVirtualDriveFolder(folder.value)) return;
+        addFolder(createdFolder, true);
 }
 
 function onStreamDriveFolderUpdated(
-	updatedFolder: Misskey.entities.DriveFolder
+        updatedFolder: Misskey.entities.DriveFolder
 ) {
-	const current = folder.value ? folder.value.id : null;
-	if (current !== updatedFolder.parentId) {
-		removeFolder(updatedFolder);
-	} else {
-		addFolder(updatedFolder, true);
-	}
+        if (isVirtualDriveFolder(folder.value)) return;
+        const current = folder.value ? folder.value.id : null;
+        if (current !== updatedFolder.parentId) {
+                removeFolder(updatedFolder);
+        } else {
+                addFolder(updatedFolder, true);
+        }
 }
 
 function onStreamDriveFolderDeleted(folderId: string) {
-	removeFolder(folderId);
+        if (isVirtualDriveFolder(folder.value)) return;
+        removeFolder(folderId);
 }
 
 function onDragover(ev: DragEvent): any {
@@ -284,44 +520,55 @@ function onDragleave() {
 }
 
 function onDrop(ev: DragEvent): any {
-	draghover.value = false;
+        draghover.value = false;
 
-	if (!ev.dataTransfer) return;
+        if (!ev.dataTransfer) return;
 
-	// ドロップされてきたものがファイルだったら
-	if (ev.dataTransfer.files.length > 0) {
-		for (const file of Array.from(ev.dataTransfer.files)) {
-			upload(file, folder.value);
+        const targetFolderId =
+                !isVirtualDriveFolder(folder.value) && folder.value
+                        ? folder.value.id
+                        : null;
+
+        // ドロップされてきたものがファイルだったら
+        if (ev.dataTransfer.files.length > 0) {
+                for (const file of Array.from(ev.dataTransfer.files)) {
+                        upload(file, folder.value);
 		}
 		return;
 	}
 
 	//#region ドライブのファイル
-	const driveFile = ev.dataTransfer.getData(_DATA_TRANSFER_DRIVE_FILE_);
-	if (driveFile != null && driveFile !== "") {
-		const file = JSON.parse(driveFile);
-		if (files.value.some((f) => f.id === file.id)) return;
-		removeFile(file.id);
-		os.api("drive/files/update", {
-			fileId: file.id,
-			folderId: folder.value ? folder.value.id : null,
-		});
-	}
-	//#endregion
+        const driveFile = ev.dataTransfer.getData(_DATA_TRANSFER_DRIVE_FILE_);
+        if (driveFile != null && driveFile !== "") {
+                if (isVirtualDriveFolder(folder.value)) {
+                        return;
+                }
+                const file = JSON.parse(driveFile);
+                if (files.value.some((f) => f.id === file.id)) return;
+                removeFile(file.id);
+                os.api("drive/files/update", {
+                        fileId: file.id,
+                        folderId: targetFolderId,
+                });
+        }
+        //#endregion
 
-	//#region ドライブのフォルダ
-	const driveFolder = ev.dataTransfer.getData(_DATA_TRANSFER_DRIVE_FOLDER_);
-	if (driveFolder != null && driveFolder !== "") {
-		const droppedFolder = JSON.parse(driveFolder);
+        //#region ドライブのフォルダ
+        const driveFolder = ev.dataTransfer.getData(_DATA_TRANSFER_DRIVE_FOLDER_);
+        if (driveFolder != null && driveFolder !== "") {
+                if (isVirtualDriveFolder(folder.value)) {
+                        return;
+                }
+                const droppedFolder = JSON.parse(driveFolder);
 
-		// 移動先が自分自身ならreject
-		if (folder.value && droppedFolder.id === folder.value.id) return false;
-		if (folders.value.some((f) => f.id === droppedFolder.id)) return false;
-		removeFolder(droppedFolder.id);
-		os.api("drive/folders/update", {
-			folderId: droppedFolder.id,
-			parentId: folder.value ? folder.value.id : null,
-		})
+                // 移動先が自分自身ならreject
+                if (folder.value && droppedFolder.id === folder.value.id) return false;
+                if (folders.value.some((f) => f.id === droppedFolder.id)) return false;
+                removeFolder(droppedFolder.id);
+                os.api("drive/folders/update", {
+                        folderId: droppedFolder.id,
+                        parentId: targetFolderId,
+                })
 			.then(() => {
 				// noop
 			})
@@ -349,37 +596,43 @@ function selectLocalFile() {
 }
 
 function urlUpload() {
-	os.inputText({
-		title: i18n.ts.uploadFromUrl,
-		type: "url",
-		placeholder: i18n.ts.uploadFromUrlDescription,
-	}).then(({ canceled, result: url }) => {
-		if (canceled || !url) return;
-		os.api("drive/files/upload-from-url", {
-			url: url,
-			folderId: folder.value ? folder.value.id : undefined,
-		});
+        os.inputText({
+                title: i18n.ts.uploadFromUrl,
+                type: "url",
+                placeholder: i18n.ts.uploadFromUrlDescription,
+        }).then(({ canceled, result: url }) => {
+                if (canceled || !url) return;
+                os.api("drive/files/upload-from-url", {
+                        url: url,
+                        folderId:
+                                !isVirtualDriveFolder(folder.value) && folder.value
+                                        ? folder.value.id
+                                        : undefined,
+                });
 
-		os.alert({
-			title: i18n.ts.uploadFromUrlRequested,
-			text: i18n.ts.uploadFromUrlMayTakeTime,
+                os.alert({
+                        title: i18n.ts.uploadFromUrlRequested,
+                        text: i18n.ts.uploadFromUrlMayTakeTime,
 		});
 	});
 }
 
 function createFolder() {
-	os.inputText({
-		title: i18n.ts.createFolder,
-		placeholder: i18n.ts.folderName,
-	}).then(({ canceled, result: name }) => {
-		if (canceled) return;
-		os.api("drive/folders/create", {
-			name: name,
-			parentId: folder.value ? folder.value.id : undefined,
-		}).then((createdFolder) => {
-			addFolder(createdFolder, true);
-		});
-	});
+        os.inputText({
+                title: i18n.ts.createFolder,
+                placeholder: i18n.ts.folderName,
+        }).then(({ canceled, result: name }) => {
+                if (canceled) return;
+                os.api("drive/folders/create", {
+                        name: name,
+                        parentId:
+                                !isVirtualDriveFolder(folder.value) && folder.value
+                                        ? folder.value.id
+                                        : undefined,
+                }).then((createdFolder) => {
+                        addFolder(createdFolder, true);
+                });
+        });
 }
 
 function renameFolder(folderToRename: Misskey.entities.DriveFolder) {
@@ -432,20 +685,19 @@ function onChangeFileInput() {
 	}
 }
 
-function upload(
-	file: File,
-	folderToUpload?: Misskey.entities.DriveFolder | null
-) {
-	uploadFile(
-		file,
-		folderToUpload && typeof folderToUpload === "object"
-			? folderToUpload.id
-			: null,
-		undefined,
-		keepOriginal.value,
-		keepFileName.value
-	).then((res) => {
-		addFile(res, true);
+function upload(file: File, folderToUpload?: DriveFolderLike | null) {
+        const targetFolderId =
+                folderToUpload && !isVirtualDriveFolder(folderToUpload)
+                        ? folderToUpload.id
+                        : null;
+        uploadFile(
+                file,
+                targetFolderId,
+                undefined,
+                keepOriginal.value,
+                keepFileName.value
+        ).then((res) => {
+                addFile(res, true);
 	});
 }
 
@@ -470,12 +722,13 @@ function chooseFile(file: Misskey.entities.DriveFile) {
 	}
 }
 
-function chooseFolder(folderToChoose: Misskey.entities.DriveFolder) {
-	const isAlreadySelected = selectedFolders.value.some(
-		(f) => f.id === folderToChoose.id
-	);
-	if (props.multiple) {
-		if (isAlreadySelected) {
+function chooseFolder(folderToChoose: DriveFolderLike) {
+        if (isVirtualDriveFolder(folderToChoose)) return;
+        const isAlreadySelected = selectedFolders.value.some(
+                (f) => f.id === folderToChoose.id
+        );
+        if (props.multiple) {
+                if (isAlreadySelected) {
 			selectedFolders.value = selectedFolders.value.filter(
 				(f) => f.id !== folderToChoose.id
 			);
@@ -493,42 +746,46 @@ function chooseFolder(folderToChoose: Misskey.entities.DriveFolder) {
 	}
 }
 
-function move(target?: Misskey.entities.DriveFolder) {
-	if (!target) {
-		goRoot();
-		return;
-	} else if (typeof target === "object") {
-		target = target.id;
-	}
+function move(target?: DriveFolderLike | string) {
+        if (!target) {
+                goRoot();
+                return;
+        }
 
-	fetching.value = true;
+        if (typeof target === "object") {
+                if (isVirtualDriveFolder(target)) {
+                        folder.value = target;
+                        buildHierarchyFrom(target);
+                        fetch();
+                        return;
+                }
+                target = target.id;
+        }
 
-	os.api("drive/folders/show", {
-		folderId: target,
-	}).then((folderToMove) => {
-		folder.value = folderToMove;
-		hierarchyFolders.value = [];
+        fetching.value = true;
 
-		const dive = (folderToDive) => {
-			hierarchyFolders.value.unshift(folderToDive);
-			if (folderToDive.parent) dive(folderToDive.parent);
-		};
+        os.api("drive/folders/show", {
+                folderId: target,
+        }).then((folderToMove) => {
+                folder.value = folderToMove;
+                buildHierarchyFrom(folderToMove);
 
-		if (folderToMove.parent) dive(folderToMove.parent);
-
-		emit("open-folder", folderToMove);
-		fetch();
-	});
+                emit("open-folder", folderToMove);
+                fetch();
+        });
 }
 
-function addFolder(folderToAdd: Misskey.entities.DriveFolder, unshift = false) {
-	const current = folder.value ? folder.value.id : null;
-	if (current !== folderToAdd.parentId) return;
+function addFolder(folderToAdd: DriveFolderLike, unshift = false) {
+        if (isVirtualDriveFolder(folderToAdd)) return;
+        if (isVirtualDriveFolder(folder.value)) return;
 
-	if (folders.value.some((f) => f.id === folderToAdd.id)) {
-		const exist = folders.value.map((f) => f.id).indexOf(folderToAdd.id);
-		folders.value[exist] = folderToAdd;
-		return;
+        const current = folder.value ? folder.value.id : null;
+        if (current !== folderToAdd.parentId) return;
+
+        if (folders.value.some((f) => f.id === folderToAdd.id)) {
+                const exist = folders.value.map((f) => f.id).indexOf(folderToAdd.id);
+                folders.value[exist] = folderToAdd;
+                return;
 	}
 
 	if (unshift) {
@@ -539,13 +796,12 @@ function addFolder(folderToAdd: Misskey.entities.DriveFolder, unshift = false) {
 }
 
 function addFile(fileToAdd: Misskey.entities.DriveFile, unshift = false) {
-	const current = folder.value ? folder.value.id : null;
-	if (current !== fileToAdd.folderId) return;
+        if (!matchesCurrentFolder(fileToAdd)) return;
 
-	if (files.value.some((f) => f.id === fileToAdd.id)) {
-		const exist = files.value.map((f) => f.id).indexOf(fileToAdd.id);
-		files.value[exist] = fileToAdd;
-		return;
+        if (files.value.some((f) => f.id === fileToAdd.id)) {
+                const exist = files.value.map((f) => f.id).indexOf(fileToAdd.id);
+                files.value[exist] = fileToAdd;
+                return;
 	}
 
 	if (unshift) {
@@ -570,8 +826,8 @@ function appendFile(file: Misskey.entities.DriveFile) {
 	addFile(file);
 }
 
-function appendFolder(folderToAppend: Misskey.entities.DriveFolder) {
-	addFolder(folderToAppend);
+function appendFolder(folderToAppend: DriveFolderLike) {
+        addFolder(folderToAppend);
 }
 /*
 function prependFile(file: Misskey.entities.DriveFile) {
@@ -583,77 +839,140 @@ function prependFolder(folderToPrepend: Misskey.entities.DriveFolder) {
 }
 */
 function goRoot() {
-	// 既にrootにいるなら何もしない
-	if (folder.value == null) return;
+        // 既にrootにいるなら何もしない
+        if (folder.value == null) return;
 
-	folder.value = null;
-	hierarchyFolders.value = [];
-	emit("move-root");
-	fetch();
+        folder.value = null;
+        buildHierarchyFrom(null);
+        emit("move-root");
+        fetch();
 }
 
 async function fetch() {
-	folders.value = [];
-	files.value = [];
-	moreFolders.value = false;
-	moreFiles.value = false;
-	fetching.value = true;
+        folders.value = [];
+        files.value = [];
+        moreFolders.value = false;
+        moreFiles.value = false;
+        fetching.value = true;
 
-	const foldersMax = 30;
-	const filesMax = 30;
+        const foldersMax = 30;
+        const filesMax = 30;
 
-	const foldersPromise = os
-		.api("drive/folders", {
-			folderId: folder.value ? folder.value.id : null,
-			limit: foldersMax + 1,
-		})
-		.then((fetchedFolders) => {
-			if (fetchedFolders.length === foldersMax + 1) {
-				moreFolders.value = true;
-				fetchedFolders.pop();
-			}
-			return fetchedFolders;
-		});
+        if (
+                isVirtualDriveFolder(folder.value) &&
+                (folder.value.kind === "yearMonthRoot" || folder.value.kind === "fileTypeRoot")
+        ) {
+                try {
+                        const autoData = await getAutoFoldersData();
+                        const current = folder.value;
+                        const entries =
+                                current.kind === "yearMonthRoot"
+                                        ? autoData.months.map((entry) =>
+                                                createYearMonthFolder(entry, current),
+                                          )
+                                        : autoData.types.map((entry) =>
+                                                createFileTypeFolder(entry, current),
+                                          );
+                        folders.value = entries;
+                } finally {
+                        fetching.value = false;
+                }
+                return;
+        }
 
-	const filesPromise = os
-		.api("drive/files", {
-			folderId: folder.value ? folder.value.id : null,
-			type: props.type,
-			limit: filesMax + 1,
-		})
-		.then((fetchedFiles) => {
-			if (fetchedFiles.length === filesMax + 1) {
-				moreFiles.value = true;
-				fetchedFiles.pop();
-			}
-			return fetchedFiles;
-		});
+        const isVirtual = isVirtualDriveFolder(folder.value);
+        const query = isVirtual ? folder.value.query ?? {} : {};
+        const folderId = !isVirtual && folder.value ? folder.value.id : null;
 
-	const [fetchedFolders, fetchedFiles] = await Promise.all([
-		foldersPromise,
-		filesPromise,
-	]);
+        const shouldFetchFolders = !isVirtual;
+        const foldersPromise = shouldFetchFolders
+                ? os
+                              .api("drive/folders", {
+                                      folderId: folderId,
+                                      limit: foldersMax + 1,
+                              })
+                              .then((fetchedFolders) => {
+                                      if (fetchedFolders.length === foldersMax + 1) {
+                                              moreFolders.value = true;
+                                              fetchedFolders.pop();
+                                      }
+                                      return fetchedFolders as DriveFolderLike[];
+                              })
+                : Promise.resolve<DriveFolderLike[]>([]);
 
-	for (const x of fetchedFolders) appendFolder(x);
-	for (const x of fetchedFiles) appendFile(x);
+        const filesPromise = os
+                .api("drive/files", {
+                        folderId: folderId,
+                        type: query.type ?? props.type,
+                        fromDate: query.fromDate,
+                        untilDate: query.untilDate,
+                        limit: filesMax + 1,
+                })
+                .then((fetchedFiles) => {
+                        if (fetchedFiles.length === filesMax + 1) {
+                                moreFiles.value = true;
+                                fetchedFiles.pop();
+                        }
+                        return fetchedFiles;
+                });
 
-	fetching.value = false;
+        const autoDataPromise =
+                !isVirtual && folder.value == null
+                        ? getAutoFoldersData().catch(() => null)
+                        : Promise.resolve<AutoFoldersData | null>(null);
+
+        const [fetchedFolders, fetchedFiles, autoData] = await Promise.all([
+                foldersPromise,
+                filesPromise,
+                autoDataPromise,
+        ]);
+
+        if (!isVirtual && folder.value == null && autoData) {
+                if (autoData.months.length > 0) {
+                        folders.value.push(createYearMonthRootFolder());
+                }
+                if (autoData.types.length > 0) {
+                        folders.value.push(createFileTypeRootFolder());
+                }
+        }
+
+        for (const x of fetchedFolders) appendFolder(x);
+        for (const x of fetchedFiles) appendFile(x);
+
+        fetching.value = false;
 }
 
 function fetchMoreFiles() {
-	fetching.value = true;
+        fetching.value = true;
 
-	const max = 30;
+        const max = 30;
 
-	// ファイル一覧取得
-	os.api("drive/files", {
-		folderId: folder.value ? folder.value.id : null,
-		type: props.type,
-		untilId: files.value[files.value.length - 1].id,
-		limit: max + 1,
-	}).then((files) => {
-		if (files.length === max + 1) {
-			moreFiles.value = true;
+        if (files.value.length === 0) {
+                fetching.value = false;
+                return;
+        }
+
+        // ファイル一覧取得
+        os.api("drive/files", {
+                folderId:
+                        !isVirtualDriveFolder(folder.value) && folder.value
+                                ? folder.value.id
+                                : null,
+                type:
+                        (isVirtualDriveFolder(folder.value)
+                                ? folder.value.query?.type
+                                : undefined) ?? props.type,
+                fromDate: isVirtualDriveFolder(folder.value)
+                        ? folder.value.query?.fromDate
+                        : undefined,
+                untilDate: isVirtualDriveFolder(folder.value)
+                        ? folder.value.query?.untilDate
+                        : undefined,
+                untilId: files.value[files.value.length - 1].id,
+                limit: max + 1,
+        }).then((files) => {
+                if (files.length === max + 1) {
+                        moreFiles.value = true;
 			files.pop();
 		} else {
 			moreFiles.value = false;
@@ -664,11 +983,18 @@ function fetchMoreFiles() {
 }
 
 function getMenu() {
-	return [
-		{
-			text: i18n.ts.addFile,
-			type: "label",
-		},
+        const isVirtualCurrent = isVirtualDriveFolder(folder.value);
+        const currentFolderName = folder.value
+                ? isVirtualCurrent
+                        ? folder.value.name
+                        : (folder.value as Misskey.entities.DriveFolder).name
+                : i18n.ts.drive;
+
+        return [
+                {
+                        text: i18n.ts.addFile,
+                        type: "label",
+                },
 		{
 			text: i18n.ts.upload,
 			icon: "ph-upload-simple ph-bold ph-lg",
@@ -689,44 +1015,48 @@ function getMenu() {
 			text: i18n.ts.keepOriginalUploading,
 			ref: keepOriginal,
 		},
-		{
-			type: "switch",
-			text: i18n.ts.keepFileName,
-			ref: keepFileName,
-		},
-		null,
-		{
-			text: folder.value ? folder.value.name : i18n.ts.drive,
-			type: "label",
-		},
-		folder.value
-			? {
-					text: i18n.ts.renameFolder,
-					icon: "ph-cursor-text ph-bold ph-lg",
-					action: () => {
-						renameFolder(folder.value);
-					},
-			  }
-			: undefined,
-		folder.value
-			? {
-					text: i18n.ts.deleteFolder,
-					icon: "ph-trash ph-bold ph-lg",
-					action: () => {
-						deleteFolder(
-							folder.value as Misskey.entities.DriveFolder
-						);
-					},
-			  }
-			: undefined,
-		{
-			text: i18n.ts.createFolder,
-			icon: "ph-folder-notch-plus ph-bold ph-lg",
-			action: () => {
-				createFolder();
-			},
-		},
-	];
+                {
+                        type: "switch",
+                        text: i18n.ts.keepFileName,
+                        ref: keepFileName,
+                },
+                null,
+                {
+                        text: currentFolderName,
+                        type: "label",
+                },
+                !isVirtualCurrent && folder.value
+                        ? {
+                                        text: i18n.ts.renameFolder,
+                                        icon: "ph-cursor-text ph-bold ph-lg",
+                                        action: () => {
+                                                renameFolder(
+                                                        folder.value as Misskey.entities.DriveFolder,
+                                                );
+                                        },
+                          }
+                        : undefined,
+                !isVirtualCurrent && folder.value
+                        ? {
+                                        text: i18n.ts.deleteFolder,
+                                        icon: "ph-trash ph-bold ph-lg",
+                                        action: () => {
+                                                deleteFolder(
+                                                        folder.value as Misskey.entities.DriveFolder
+                                                );
+                                        },
+                          }
+                        : undefined,
+                !isVirtualCurrent
+                        ? {
+                                        text: i18n.ts.createFolder,
+                                        icon: "ph-folder-notch-plus ph-bold ph-lg",
+                                        action: () => {
+                                                createFolder();
+                                        },
+                          }
+                        : undefined,
+        ];
 }
 
 function showMenu(ev: MouseEvent) {

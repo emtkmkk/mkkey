@@ -1,13 +1,13 @@
 <template>
-	<div
-		class="rghtznwe"
-		:class="{ draghover }"
-		draggable="true"
-		:title="title"
-		@click="onClick"
-		@contextmenu.stop="onContextmenu"
-		@mouseover="onMouseover"
-		@mouseout="onMouseout"
+        <div
+                class="rghtznwe"
+                :class="{ draghover }"
+                :draggable="!isVirtual"
+                :title="title"
+                @click="onClick"
+                @contextmenu.stop="onContextmenu"
+                @mouseover="onMouseover"
+                @mouseout="onMouseout"
 		@dragover.prevent.stop="onDragover"
 		@dragenter.prevent="onDragenter"
 		@dragleave="onDragleave"
@@ -24,34 +24,34 @@
 			></template>
 			{{ folder.name }}
 		</p>
-		<p v-if="defaultStore.state.uploadFolder == folder.id" class="upload">
-			{{ i18n.ts.defaultFolder }}
-		</p>
-		<p
-			v-if="defaultStore.state.uploadFolderAvatar == folder.id"
-			class="upload"
-		>
-			{{ i18n.ts.defaultFolderAvatar }}
-		</p>
-		<p
-			v-if="defaultStore.state.uploadFolderBanner == folder.id"
-			class="upload"
-		>
-			{{ i18n.ts.defaultFolderBanner }}
-		</p>
-		<p
-			v-if="defaultStore.state.uploadFolderEmoji == folder.id"
-			class="upload"
-		>
-			{{ i18n.ts.defaultFolderEmoji }}
-		</p>
-		<button
-			v-if="selectMode"
-			class="checkbox _button"
-			:class="{ checked: isSelected }"
-			@click.prevent.stop="checkboxClicked"
-		></button>
-	</div>
+                <p v-if="!isVirtual && defaultStore.state.uploadFolder == folder.id" class="upload">
+                        {{ i18n.ts.defaultFolder }}
+                </p>
+                <p
+                        v-if="!isVirtual && defaultStore.state.uploadFolderAvatar == folder.id"
+                        class="upload"
+                >
+                        {{ i18n.ts.defaultFolderAvatar }}
+                </p>
+                <p
+                        v-if="!isVirtual && defaultStore.state.uploadFolderBanner == folder.id"
+                        class="upload"
+                >
+                        {{ i18n.ts.defaultFolderBanner }}
+                </p>
+                <p
+                        v-if="!isVirtual && defaultStore.state.uploadFolderEmoji == folder.id"
+                        class="upload"
+                >
+                        {{ i18n.ts.defaultFolderEmoji }}
+                </p>
+                <button
+                        v-if="selectMode && !isVirtual"
+                        class="checkbox _button"
+                        :class="{ checked: isSelected }"
+                        @click.prevent.stop="checkboxClicked"
+                ></button>
+        </div>
 </template>
 
 <script lang="ts" setup>
@@ -60,27 +60,31 @@ import * as Misskey from "calckey-js";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
+import {
+        isVirtualDriveFolder,
+        type DriveFolderLike,
+} from "@/types/drive";
 
 const props = withDefaults(
-	defineProps<{
-		folder: Misskey.entities.DriveFolder;
-		isSelected?: boolean;
-		selectMode?: boolean;
-	}>(),
-	{
-		isSelected: false,
+        defineProps<{
+                folder: DriveFolderLike;
+                isSelected?: boolean;
+                selectMode?: boolean;
+        }>(),
+        {
+                isSelected: false,
 		selectMode: false,
 	}
 );
 
 const emit = defineEmits<{
-	(ev: "chosen", v: Misskey.entities.DriveFolder): void;
-	(ev: "move", v: Misskey.entities.DriveFolder): void;
-	(ev: "upload", file: File, folder: Misskey.entities.DriveFolder);
-	(ev: "removeFile", v: Misskey.entities.DriveFile["id"]): void;
-	(ev: "removeFolder", v: Misskey.entities.DriveFolder["id"]): void;
-	(ev: "dragstart"): void;
-	(ev: "dragend"): void;
+        (ev: "chosen", v: Misskey.entities.DriveFolder): void;
+        (ev: "move", v: DriveFolderLike): void;
+        (ev: "upload", file: File, folder: DriveFolderLike);
+        (ev: "removeFile", v: Misskey.entities.DriveFile["id"]): void;
+        (ev: "removeFolder", v: Misskey.entities.DriveFolder["id"]): void;
+        (ev: "dragstart"): void;
+        (ev: "dragend"): void;
 }>();
 
 const hover = ref(false);
@@ -88,17 +92,19 @@ const draghover = ref(false);
 const isDragging = ref(false);
 
 const title = computed(() => props.folder.name);
+const isVirtual = computed(() => isVirtualDriveFolder(props.folder));
 
 function checkboxClicked() {
-	emit("chosen", props.folder);
+        if (isVirtual.value) return;
+        emit("chosen", props.folder as Misskey.entities.DriveFolder);
 }
 
 function onClick() {
-	emit("move", props.folder);
+        emit("move", props.folder);
 }
 
 function onMouseover() {
-	hover.value = true;
+        hover.value = true;
 }
 
 function onMouseout() {
@@ -106,7 +112,11 @@ function onMouseout() {
 }
 
 function onDragover(ev: DragEvent) {
-	if (!ev.dataTransfer) return;
+        if (isVirtual.value) {
+                if (ev.dataTransfer) ev.dataTransfer.dropEffect = "none";
+                return;
+        }
+        if (!ev.dataTransfer) return;
 
 	// 自分自身がドラッグされている場合
 	if (isDragging.value) {
@@ -129,31 +139,37 @@ function onDragover(ev: DragEvent) {
 }
 
 function onDragenter() {
-	if (!isDragging.value) draghover.value = true;
+        if (isVirtual.value) return;
+        if (!isDragging.value) draghover.value = true;
 }
 
 function onDragleave() {
-	draghover.value = false;
+        if (isVirtual.value) return;
+        draghover.value = false;
 }
 
 function onDrop(ev: DragEvent) {
-	draghover.value = false;
+        draghover.value = false;
 
-	if (!ev.dataTransfer) return;
+        if (!ev.dataTransfer) return;
 
-	// ファイルだったら
-	if (ev.dataTransfer.files.length > 0) {
-		for (const file of Array.from(ev.dataTransfer.files)) {
-			emit("upload", file, props.folder);
-		}
-		return;
-	}
+        // ファイルだったら
+        if (ev.dataTransfer.files.length > 0) {
+                for (const file of Array.from(ev.dataTransfer.files)) {
+                        emit("upload", file, props.folder);
+                }
+                return;
+        }
 
-	//#region ドライブのファイル
-	const driveFile = ev.dataTransfer.getData(_DATA_TRANSFER_DRIVE_FILE_);
-	if (driveFile != null && driveFile !== "") {
-		const file = JSON.parse(driveFile);
-		emit("removeFile", file.id);
+        if (isVirtual.value) {
+                return;
+        }
+
+        //#region ドライブのファイル
+        const driveFile = ev.dataTransfer.getData(_DATA_TRANSFER_DRIVE_FILE_);
+        if (driveFile != null && driveFile !== "") {
+                const file = JSON.parse(driveFile);
+                emit("removeFile", file.id);
 		os.api("drive/files/update", {
 			fileId: file.id,
 			folderId: props.folder.id,
@@ -197,7 +213,11 @@ function onDrop(ev: DragEvent) {
 }
 
 function onDragstart(ev: DragEvent) {
-	if (!ev.dataTransfer) return;
+        if (isVirtual.value) {
+                ev.preventDefault();
+                return;
+        }
+        if (!ev.dataTransfer) return;
 
 	ev.dataTransfer.effectAllowed = "move";
 	ev.dataTransfer.setData(

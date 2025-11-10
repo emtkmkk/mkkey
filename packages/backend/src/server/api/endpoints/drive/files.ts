@@ -37,7 +37,7 @@ export const paramDef = {
                 type: {
                         type: "string",
                         nullable: true,
-                        pattern: /^[a-zA-Z\/\-*]+$/.toString().slice(1, -1),
+                        pattern: /^[0-9a-zA-Z!#$&^_.+\/\-*]+$/.toString().slice(1, -1),
                 },
                 fromDate: {
                         type: "string",

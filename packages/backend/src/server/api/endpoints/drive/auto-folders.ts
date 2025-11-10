@@ -134,7 +134,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
         let frequentlyUsed: { count: number } | null = null;
 
-        if ((maxUsageRow?.max ? Number(maxUsageRow.max) : 0) > 5) {
+        if ((maxUsageRow?.max ? Number(maxUsageRow.max) : 0) > 4) {
                 const frequentCountRow = await applyTypeFilter(
                         DriveFiles.createQueryBuilder("file")
                                 .select("COUNT(*)", "count")

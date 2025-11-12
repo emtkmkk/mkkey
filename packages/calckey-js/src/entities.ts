@@ -312,12 +312,13 @@ export type LiteInstanceMetadata = {
 	maxNoteTextLength: number;
 	enableEmail: boolean;
 	enableTwitterIntegration: boolean;
-	enableGithubIntegration: boolean;
-	enableDiscordIntegration: boolean;
-	enableServiceWorker: boolean;
-	emojis: CustomEmoji[];
-	ads: {
-		id: ID;
+        enableGithubIntegration: boolean;
+        enableDiscordIntegration: boolean;
+        enableServiceWorker: boolean;
+        emojiUpdatedAt: DateString | null;
+        emojis: CustomEmoji[];
+        ads: {
+                id: ID;
 		ratio: number;
 		place: string;
 		url: string;

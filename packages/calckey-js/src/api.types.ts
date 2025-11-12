@@ -362,24 +362,27 @@ export type Endpoints = {
 		};
 		res: TODO;
 	};
-	"charts/users": {
-		req: { span: "day" | "hour"; limit?: number; offset?: number | null };
-		res: {
-			local: {
-				dec: number[];
-				inc: number[];
-				total: number[];
-			};
-			remote: {
-				dec: number[];
-				inc: number[];
-				total: number[];
-			};
-		};
-	};
+        "charts/users": {
+                req: { span: "day" | "hour"; limit?: number; offset?: number | null };
+                res: {
+                        local: {
+                                dec: number[];
+                                inc: number[];
+                                total: number[];
+                        };
+                        remote: {
+                                dec: number[];
+                                inc: number[];
+                                total: number[];
+                        };
+                };
+        };
 
-	// clips
-	"clips/add-note": { req: TODO; res: TODO };
+        // emojis
+        "emojis/latest": { req: NoParams; res: { emojiUpdatedAt: DateString | null } };
+
+        // clips
+        "clips/add-note": { req: TODO; res: TODO };
 	"clips/create": { req: TODO; res: TODO };
 	"clips/delete": { req: { clipId: Clip["id"] }; res: null };
 	"clips/list": { req: TODO; res: TODO };

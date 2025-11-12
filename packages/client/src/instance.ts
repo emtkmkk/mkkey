@@ -43,10 +43,24 @@ stream.on("emojiDeleted", (emojiData) => {
 });
 
 export async function emojiLoad() {
-	if (!localStorage.getItem("followCategoriesTime") || Date.now() - localStorage.getItem("followCategoriesTime") > 60 * 60 * 1000) {
-		await fetchCustomCategory()
-		
-	}
+        const cachedEmojiData = await get("emojiData");
+
+        if (cachedEmojiData?.emojis) {
+                instance.emojis = cachedEmojiData.emojis as typeof instance.emojis;
+        }
+
+        if (cachedEmojiData?.emojiUpdatedAt) {
+                instance.emojiUpdatedAt = cachedEmojiData.emojiUpdatedAt;
+        }
+
+        if (cachedEmojiData?.emojiFetchDate) {
+                instance.emojiFetchDate = cachedEmojiData.emojiFetchDate;
+        }
+
+        if (!localStorage.getItem("followCategoriesTime") || Date.now() - localStorage.getItem("followCategoriesTime") > 60 * 60 * 1000) {
+                await fetchCustomCategory()
+
+        }
 	if (!instance.remoteEmojiMode) {
 		const remoteEmoji = await get("remoteEmojiData");
 
@@ -152,15 +166,18 @@ export async function fetchInstance() {
 }
 
 export async function fetchEmoji() {
-	const meta = await api("emojis", {
-		includeUrl: true,
-	});
+        const meta = await api("emojis", {
+                includeUrl: true,
+        });
 
-	await set("emojiData", meta);
+        const emojiFetchDate = new Date().toISOString();
+        const storedMeta = { ...meta, emojiFetchDate };
 
-	for (const [k, v] of Object.entries(meta)) {
-		instance[k] = v;
-	}
+        await set("emojiData", storedMeta);
+
+        for (const [k, v] of Object.entries(storedMeta)) {
+                instance[k] = v;
+        }
 }
 
 type EmojiFetchOptions = {
@@ -193,18 +210,27 @@ export async function fetchPlusEmoji(options?: EmojiFetchOptions) {
                 options,
         );
 
-	const remoteEmojiData = {
-		emojiFetchDate: meta.emojiFetchDate,
-		remoteEmojiMode: meta.remoteEmojiMode,
-		remoteEmojiCount: meta.remoteEmojiCount,
-		allEmojis: meta.allEmojis,
-	};
+        const remoteEmojiData = {
+                emojiFetchDate: meta.emojiFetchDate,
+                remoteEmojiMode: meta.remoteEmojiMode,
+                remoteEmojiCount: meta.remoteEmojiCount,
+                allEmojis: meta.allEmojis,
+                emojiUpdatedAt: meta.emojiUpdatedAt,
+        };
 
-	await set("remoteEmojiData", remoteEmojiData);
+        await set("remoteEmojiData", remoteEmojiData);
 
-	for (const [k, v] of Object.entries(meta)) {
-		instance[k] = v;
-	}
+        const localEmojiSnapshot = {
+                emojis: meta.emojis,
+                emojiUpdatedAt: meta.emojiUpdatedAt,
+                emojiFetchDate: meta.emojiFetchDate ?? new Date().toISOString(),
+        };
+
+        await set("emojiData", localEmojiSnapshot);
+
+        for (const [k, v] of Object.entries(meta)) {
+                instance[k] = v;
+        }
 }
 
 export async function fetchAllEmoji(options?: EmojiFetchOptions) {
@@ -215,18 +241,27 @@ export async function fetchAllEmoji(options?: EmojiFetchOptions) {
                 options,
         );
 
-	const remoteEmojiData = {
-		emojiFetchDate: meta.emojiFetchDate,
-		remoteEmojiMode: meta.remoteEmojiMode,
-		remoteEmojiCount: meta.remoteEmojiCount,
-		allEmojis: meta.allEmojis,
-	};
+        const remoteEmojiData = {
+                emojiFetchDate: meta.emojiFetchDate,
+                remoteEmojiMode: meta.remoteEmojiMode,
+                remoteEmojiCount: meta.remoteEmojiCount,
+                allEmojis: meta.allEmojis,
+                emojiUpdatedAt: meta.emojiUpdatedAt,
+        };
 
-	await set("remoteEmojiData", remoteEmojiData);
+        await set("remoteEmojiData", remoteEmojiData);
 
-	for (const [k, v] of Object.entries(meta)) {
-		instance[k] = v;
-	}
+        const localEmojiSnapshot = {
+                emojis: meta.emojis,
+                emojiUpdatedAt: meta.emojiUpdatedAt,
+                emojiFetchDate: meta.emojiFetchDate ?? new Date().toISOString(),
+        };
+
+        await set("emojiData", localEmojiSnapshot);
+
+        for (const [k, v] of Object.entries(meta)) {
+                instance[k] = v;
+        }
 }
 
 export async function fetchAllEmojiNoCache(options?: EmojiFetchOptions) {
@@ -237,9 +272,17 @@ export async function fetchAllEmojiNoCache(options?: EmojiFetchOptions) {
                 options,
         );
 
-	for (const [k, v] of Object.entries(meta)) {
-		instance[k] = v;
-	}
+        const localEmojiSnapshot = {
+                emojis: meta.emojis,
+                emojiUpdatedAt: meta.emojiUpdatedAt,
+                emojiFetchDate: meta.emojiFetchDate ?? new Date().toISOString(),
+        };
+
+        await set("emojiData", localEmojiSnapshot);
+
+        for (const [k, v] of Object.entries(meta)) {
+                instance[k] = v;
+        }
 }
 
 export async function fetchEmojiStats(limit) {

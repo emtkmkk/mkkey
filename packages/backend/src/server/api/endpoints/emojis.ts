@@ -4,6 +4,16 @@ import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Ads, Emojis, Users, RegistryItems } from "@/models/index.js";
 import define from "../define.js";
 
+async function getEmojiUpdatedAt() {
+        const latestEmoji = await Emojis.createQueryBuilder("emoji")
+                .select("MAX(COALESCE(emoji.updatedAt, emoji.createdAt))", "updatedAt")
+                .where("emoji.oldEmoji = :oldEmoji", { oldEmoji: false })
+                .andWhere("emoji.host IS NULL")
+                .getRawOne<{ updatedAt: Date | string | null }>();
+
+        return latestEmoji?.updatedAt ? new Date(latestEmoji.updatedAt) : null;
+}
+
 export const meta = {
 	tags: ["meta"],
 
@@ -15,13 +25,13 @@ export const meta = {
 		type: "object",
 		optional: false,
 		nullable: false,
-		properties: {
-			emojis: {
-				type: "array",
-				optional: false,
-				nullable: false,
-				items: {
-					type: "object",
+                properties: {
+                        emojis: {
+                                type: "array",
+                                optional: false,
+                                nullable: false,
+                                items: {
+                                        type: "object",
 					optional: false,
 					nullable: false,
 					properties: {
@@ -58,11 +68,17 @@ export const meta = {
 							nullable: false,
 							format: "url",
 						},
-					},
-				},
-			},
-		},
-	},
+                                        },
+                                },
+                        },
+                        emojiUpdatedAt: {
+                                type: "string",
+                                optional: true,
+                                nullable: true,
+                                format: "date-time",
+                        },
+                },
+        },
 } as const;
 
 export const paramDef = {
@@ -72,9 +88,11 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	if (Object.keys(ps ?? {})?.filter((x) => x !== "i").length === 0 && me) {
-		const item = RegistryItems.createQueryBuilder("item")
-			.where("item.domain IS NULL")
+        const emojiUpdatedAtPromise = getEmojiUpdatedAt();
+
+        if (Object.keys(ps ?? {})?.filter((x) => x !== "i").length === 0 && me) {
+                const item = RegistryItems.createQueryBuilder("item")
+                        .where("item.domain IS NULL")
 			.andWhere("item.userId = :userId", { userId: me.id })
 			.andWhere("item.key = 'externalOutputAllEmojis'")
 			.andWhere("item.scope = :scope", { scope: ["client", "base"] })
@@ -126,12 +144,13 @@ export default define(meta, paramDef, async (ps, me) => {
 						updatedAt: emoji.updatedAt,
 					};
 				})
-				.filter(Boolean);
-			return {
-				emojis,
-			};
-		}
-	}
+                                .filter(Boolean);
+                        return {
+                                emojis,
+                                emojiUpdatedAt: await emojiUpdatedAtPromise,
+                        };
+                }
+        }
 
 	let emojis = await Emojis.find({
 		where: {
@@ -250,11 +269,12 @@ export default define(meta, paramDef, async (ps, me) => {
 		remoteEmojiMode = "all";
 	}
 
-	return {
-		emojis: await Emojis.packMany(
-			emojis.filter((x) => !x.category?.startsWith("!")),
-		),
-		...(remoteEmojiMode && remoteEmojis && me
+        return {
+                emojiUpdatedAt: await emojiUpdatedAtPromise,
+                emojis: await Emojis.packMany(
+                        emojis.filter((x) => !x.category?.startsWith("!")),
+                ),
+                ...(remoteEmojiMode && remoteEmojis && me
 			? {
 					emojiFetchDate: new Date(),
 					remoteEmojiMode: remoteEmojiMode,

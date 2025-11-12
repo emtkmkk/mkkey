@@ -525,6 +525,7 @@ let smartMFMInputer = $computed(
 );
 let draghover = $ref(false);
 let reply = $ref(props.reply);
+let renote = $ref(props.renote);
 let replyId = $ref(null);
 let quoteId = $ref(null);
 let hasNotMentions = $ref(false);

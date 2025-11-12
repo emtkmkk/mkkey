@@ -950,9 +950,9 @@ function createSequentialQuickVisibilitySlots(
                 if (orderA == null) return 1;
                 if (orderB == null) return -1;
                 if (orderA !== orderB) {
-                        return orderB - orderA;
+                        return orderA - orderB;
                 }
-                return b.quickType.localeCompare(a.quickType);
+                return a.quickType.localeCompare(b.quickType);
         });
 }
 
@@ -1039,30 +1039,42 @@ const submitButtonConfigs = $computed<QuickPostButtonConfig[]>(() => {
 		}
 	);
 
-        let sequentialChainBroken = false;
+        const sequentialQuickButtons: {
+                key: string;
+                config: Omit<QuickPostButtonConfig, "key">;
+        }[] = [];
         for (const preset of quickVisibilityPresets) {
+                if (preset.order != null && !preset.isEnabled) {
+                        break;
+                }
                 if (!preset.isEnabled) {
-                        sequentialChainBroken = true;
                         continue;
                 }
-                if (sequentialChainBroken) {
-                        continue;
-                }
-                addButton(
-                        `quick-${preset.quickType}`,
-                        !isChannel && visibility !== "specified",
-                        {
+                sequentialQuickButtons.unshift({
+                        key: `quick-${preset.quickType}`,
+                        config: {
                                 label: zeroWidthSpace,
                                 buttonClass: "submit_h _buttonGradate",
                                 classObject: createShortcutClasses(preset.order ?? null),
-                                disabled: !canPost && preset.parsed.visibility !== "specified",
+                                disabled:
+                                        !canPost &&
+                                        preset.parsed.visibility !== "specified",
                                 iconClass: joinClasses(
-                                        getVisibilityIconClass(preset.parsed.visibility, preset.parsed.localOnly),
+                                        getVisibilityIconClass(
+                                                preset.parsed.visibility,
+                                                preset.parsed.localOnly
+                                        ),
                                         preset.isWide ? "widePostButton" : undefined
                                 ),
-                                behavior: { type: "quick", quickType: preset.quickType },
-                        }
-                );
+                                behavior: {
+                                        type: "quick",
+                                        quickType: preset.quickType,
+                                },
+                        },
+                });
+        }
+        for (const entry of sequentialQuickButtons) {
+                addButton(entry.key, !isChannel && visibility !== "specified", entry.config);
         }
 
 	addButton(

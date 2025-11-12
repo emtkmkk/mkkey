@@ -404,6 +404,7 @@ import { length } from "stringz";
 import { toASCII } from "punycode/";
 import * as Acct from "calckey-js/built/acct";
 import { throttle } from "throttle-debounce";
+import { useDebounceFn } from "@vueuse/core";
 import { v4 as uuid } from "uuid";
 import XNoteSimple from "@/components/MkNoteSimple.vue";
 import XNotePreview from "@/components/MkNotePreview.vue";
@@ -1318,15 +1319,19 @@ if (defaultStore.state.keepCw && props.airReply && props.airReply.cw) {
 	cw = replyCwText;
 }
 
+const debouncedSaveDraft = useDebounceFn(() => {
+        saveDraft();
+}, 300);
+
 function watchForDraft() {
-	watch($$(text), () => saveDraft());
-	watch($$(useCw), () => saveDraft());
-	watch($$(cw), () => saveDraft());
-	watch($$(poll), () => saveDraft());
-	watch($$(files), () => saveDraft(), { deep: true });
-	watch($$(visibility), () => saveDraft());
-	watch($$(localOnly), () => saveDraft());
-	watch($$(referencesFlg), () => saveDraft());
+        watch($$(text), debouncedSaveDraft);
+        watch($$(useCw), debouncedSaveDraft);
+        watch($$(cw), debouncedSaveDraft);
+        watch($$(poll), debouncedSaveDraft);
+        watch($$(files), debouncedSaveDraft, { deep: true });
+        watch($$(visibility), debouncedSaveDraft);
+        watch($$(localOnly), debouncedSaveDraft);
+        watch($$(referencesFlg), debouncedSaveDraft);
 }
 
 function checkIncludesOtherServerEmoji() {
@@ -1868,89 +1873,147 @@ function onDrop(ev): void {
 	//#endregion
 }
 
-function saveDraft(key?, name?) {
-	try {
-		if (!(text || (useCw && cw) || files?.length || poll || referencesFlg !== true)) {
-			if (!key) {
-				deleteDraft(key);
-			}
-			return;
-		}
-	
-		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
-	
-		draftData[key ? key : draftKey] = {
-			updatedAt: new Date(),
-			name: name ? name : undefined,
-			data: {
-				text: text,
-				useCw: useCw,
-				cw: cw,
-				visibility: visibility,
-				localOnly: localOnly,
-				files: files,
-				poll: poll,
-				visibleUserIds:
-					visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
-				replyId: reply?.id ? reply.id : null,
-				quoteId: quoteId ? quoteId : props.renote ? props.renote.id : null,
-				referencesFlg: referencesFlg,
-			},
-		};
-	
-		localStorage.setItem("drafts", JSON.stringify(draftData));
-	
-		if (key) {
-			clear();
-			deleteDraft();
-		}
-	} catch (e) {
-		console.log(e)
-	}
+type DraftEntry = {
+        updatedAt: Date | string;
+        name?: string;
+        data: {
+                text: string;
+                useCw: boolean;
+                cw: string;
+                visibility: (typeof misskey.noteVisibilities)[number];
+                localOnly: boolean;
+                files: typeof files;
+                poll: typeof poll;
+                visibleUserIds: string[];
+                replyId: string | null;
+                quoteId: string | null;
+                referencesFlg: boolean | undefined;
+        };
+};
+
+type DraftMap = Record<string, DraftEntry | undefined>;
+
+function hasCurrentDraftContent(): boolean {
+        return Boolean(
+                text ||
+                        (useCw && cw) ||
+                        files?.length ||
+                        poll ||
+                        referencesFlg !== true
+        );
 }
 
-let backupDraftData: any;
-function backupDraft(key?) {
-	try {
-		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+function hasStoredDraftContent(entry?: DraftEntry): boolean {
+        const data = entry?.data;
+        if (!data) return false;
 
-		backupDraftData = {...draftData[key ? key : draftKey]};
-
-		return backupDraftData;
-	} catch (e) {
-		console.log(e)
-		return undefined;
-	}
+        return Boolean(
+                data.text ||
+                        (data.useCw && data.cw) ||
+                        data.files?.length ||
+                        data.poll ||
+                        data.referencesFlg !== true
+        );
 }
 
-function restoreDraft(key?) {
-	try {
-		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
-
-		const data = draftData[key ? key : draftKey]
-		if (data?.data) {
-			if ((data.data.text || (data.data.useCw && data.data.cw) || data.data.files?.length || data.data.poll || data.data.referencesFlg !== true)) {
-				draftData[`auto:${uuid()?.slice(0, 8)}`] = backupDraftData;
-				localStorage.setItem("drafts", JSON.stringify(draftData));
-				return;
-			}
-		}
-		draftData[key ? key : draftKey] = backupDraftData
-		localStorage.setItem("drafts", JSON.stringify(draftData));
-	} catch (e) {
-		console.log(e)
-	}
+function loadDrafts(): DraftMap | null {
+        try {
+                const raw = localStorage.getItem("drafts");
+                if (!raw) return {} as DraftMap;
+                const parsed = JSON.parse(raw) as DraftMap | null;
+                return (parsed ?? {}) as DraftMap;
+        } catch (error) {
+                console.error(error);
+                return null;
+        }
 }
-function deleteDraft(key?) {
-	try {
-		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
-				
-		delete draftData[key ? key : draftKey];
-				
-		localStorage.setItem("drafts", JSON.stringify(draftData));
-	} catch (e) {
-		console.log(e)
-	}
+
+function writeDrafts(drafts: DraftMap): boolean {
+        try {
+                localStorage.setItem("drafts", JSON.stringify(drafts));
+                return true;
+        } catch (error) {
+                console.error(error);
+                return false;
+        }
+}
+
+function saveDraft(key?, name?): boolean {
+        if (!hasCurrentDraftContent()) {
+                if (!key) {
+                        return deleteDraft();
+                }
+                return true;
+        }
+
+        const drafts = loadDrafts();
+        if (drafts == null) return false;
+
+        drafts[key ?? draftKey] = {
+                updatedAt: new Date(),
+                name: name ? name : undefined,
+                data: {
+                        text: text,
+                        useCw: useCw,
+                        cw: cw,
+                        visibility: visibility,
+                        localOnly: localOnly,
+                        files: files,
+                        poll: poll,
+                        visibleUserIds:
+                                visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
+                        replyId: reply?.id ? reply.id : null,
+                        quoteId: quoteId ? quoteId : props.renote ? props.renote.id : null,
+                        referencesFlg: referencesFlg,
+                },
+        };
+
+        const success = writeDrafts(drafts);
+
+        if (success && key) {
+                clear();
+                deleteDraft();
+        }
+
+        return success;
+}
+
+let backupDraftData: DraftEntry | undefined;
+
+function backupDraft(key?): DraftEntry | undefined {
+        const drafts = loadDrafts();
+        if (drafts == null) return undefined;
+
+        const target = drafts[key ?? draftKey];
+        backupDraftData = target ? { ...target } : undefined;
+
+        return backupDraftData;
+}
+
+function restoreDraft(key?): boolean {
+        if (!backupDraftData) return false;
+
+        const drafts = loadDrafts();
+        if (drafts == null) return false;
+
+        const targetKey = key ?? draftKey;
+        const currentEntry = drafts[targetKey];
+
+        if (hasStoredDraftContent(currentEntry)) {
+                drafts[`auto:${uuid()?.slice(0, 8)}`] = backupDraftData;
+                return writeDrafts(drafts);
+        }
+
+        drafts[targetKey] = backupDraftData;
+        return writeDrafts(drafts);
+}
+
+function deleteDraft(key?): boolean {
+        const drafts = loadDrafts();
+        if (drafts == null) return false;
+
+        delete drafts[key ?? draftKey];
+        return writeDrafts(drafts);
 }
 
 function specifiedCheck() {
@@ -2324,51 +2387,49 @@ async function openDraft(ev: MouseEvent) {
 }
 
 function loadDraft(key?) {
-	const draft = JSON.parse(localStorage.getItem("drafts") || "{}")[
-		key ? key : draftKey
-	];
-	if (draft) {
-		if (
-			draft.data.text ||
-			(draft.data.useCw && draft.data.cw) ||
-			draft.data.files?.length ||
-			draft.data.poll ||
-			draft.data.referencesFlg !== true
-		) {
-			text = draft.data.text;
-			useCw = draft.data.useCw;
-			if (useCw) cw = draft.data.cw;
-			visibility = draft.data.visibility;
-			localOnly = draft.data.localOnly;
-			files = (draft.data.files || []).filter((draftFile) => draftFile);
-			draft.data.visibleUserIds?.forEach((x) =>
-				os.api("users/show", { userId: x }).then((user) => {
-					pushVisibleUser(user);
-				})
-			);
-			if (draft.data.poll) {
-				poll = draft.data.poll;
-			}
-			if (
-				draft.data.quoteId &&
-				(!props.reply || props.reply.id !== draft.data.quoteId) &&
-				(!props.renote || props.renote.id !== draft.data.quoteId)
-			) {
-				quoteId = draft.data.quoteId;
-			}
-			referencesFlg = draft.data.referencesFlg ?? true
-			if (
-				!key &&
-				draftKey === "note" &&
-				Date.now() > Date.parse(draft.updatedAt) + 300 * 1000
-			) {
-				saveDraft(`note:${uuid()?.slice(0, 8)}`);
-				return;
-			}
-		} else {
-			deleteDraft(key);
-		}
-	}
+        const drafts = loadDrafts();
+        if (drafts == null) return;
+
+        const draft = drafts[key ?? draftKey];
+        if (draft && hasStoredDraftContent(draft)) {
+                text = draft.data.text;
+                useCw = draft.data.useCw;
+                if (useCw) cw = draft.data.cw;
+                visibility = draft.data.visibility;
+                localOnly = draft.data.localOnly;
+                files = (draft.data.files || []).filter((draftFile) => draftFile);
+                draft.data.visibleUserIds?.forEach((x) =>
+                        os.api("users/show", { userId: x }).then((user) => {
+                                pushVisibleUser(user);
+                        })
+                );
+                if (draft.data.poll) {
+                        poll = draft.data.poll;
+                }
+                if (
+                        draft.data.quoteId &&
+                        (!props.reply || props.reply.id !== draft.data.quoteId) &&
+                        (!props.renote || props.renote.id !== draft.data.quoteId)
+                ) {
+                        quoteId = draft.data.quoteId;
+                }
+                referencesFlg = draft.data.referencesFlg ?? true;
+                const updatedAt =
+                        draft.updatedAt instanceof Date
+                                ? draft.updatedAt.getTime()
+                                : Date.parse(`${draft.updatedAt ?? ""}`);
+                if (
+                        !key &&
+                        draftKey === "note" &&
+                        !Number.isNaN(updatedAt) &&
+                        Date.now() > updatedAt + 300 * 1000
+                ) {
+                        saveDraft(`note:${uuid()?.slice(0, 8)}`);
+                        return;
+                }
+        } else if (draft) {
+                deleteDraft(key);
+        }
 }
 
 function showActions(ev) {

@@ -403,8 +403,7 @@ import insertTextAtCursor from "insert-text-at-cursor";
 import { length } from "stringz";
 import { toASCII } from "punycode/";
 import * as Acct from "calckey-js/built/acct";
-import { throttle } from "throttle-debounce";
-import { useDebounceFn } from "@vueuse/core";
+import { debounce, throttle } from "throttle-debounce";
 import { v4 as uuid } from "uuid";
 import XNoteSimple from "@/components/MkNoteSimple.vue";
 import XNotePreview from "@/components/MkNotePreview.vue";
@@ -1351,9 +1350,9 @@ if (defaultStore.state.keepCw && props.airReply && props.airReply.cw) {
 	cw = replyCwText;
 }
 
-const debouncedSaveDraft = useDebounceFn(() => {
+const debouncedSaveDraft = debounce(300, () => {
         saveDraft();
-}, 300);
+});
 
 function watchForDraft() {
         watch($$(text), debouncedSaveDraft);

@@ -137,12 +137,16 @@ export class Note {
 	})
 	public score: number;
 
-	@Index()
-	@Column({
-		...id(),
-		array: true, default: '{}',
-	})
-	public fileIds: DriveFile["id"][];
+        /**
+         * ファイル添付の有無を判定するクエリでは、必ず CARDINALITY(note."fileIds") を使用すること。
+         * 文字列リテラルの '{}' との比較は禁止（部分インデックスと同条件に揃えるため）。
+         */
+        @Index()
+        @Column({
+                ...id(),
+                array: true, default: '{}',
+        })
+        public fileIds: DriveFile["id"][];
 
 	@Index()
 	@Column('varchar', {

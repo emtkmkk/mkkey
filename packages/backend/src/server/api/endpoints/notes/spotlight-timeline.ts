@@ -213,12 +213,12 @@ export default define(meta, paramDef, async (ps, user) => {
 		);
 	}
 
-	if (ps.withFiles) {
-		query.andWhere("note.fileIds != '{}'");
-	}
+        if (ps.withFiles) {
+                query.andWhere('CARDINALITY(note."fileIds") > 0');
+        }
 
-	if (ps.fileType != null) {
-		query.andWhere("note.fileIds != '{}'");
+        if (ps.fileType != null) {
+                query.andWhere('CARDINALITY(note."fileIds") > 0');
 		query.andWhere(
 			new Brackets((qb) => {
 				for (const type of ps.fileType!) {

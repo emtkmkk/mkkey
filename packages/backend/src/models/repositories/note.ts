@@ -219,17 +219,16 @@ export const NoteRepository = db.getRepository(Note).extend({
                                         following = !!_hint_.followings.get(note.userId);
                                         user = await userPromise;
                                 } else {
-                                        const [followingCount, resolvedUser] = await Promise.all([
-                                                Followings.count({
+                                        const [isFollowing, resolvedUser] = await Promise.all([
+                                                Followings.exist({
                                                         where: {
                                                                 followeeId: note.userId,
                                                                 followerId: meId,
                                                         },
-                                                        take: 1,
                                                 }),
                                                 userPromise,
                                         ]);
-                                        following = followingCount > 0;
+                                        following = isFollowing;
                                         user = resolvedUser;
                                 }
 

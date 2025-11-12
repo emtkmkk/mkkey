@@ -59,13 +59,11 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	const hasFollowing =
-		(await Followings.count({
-			where: {
-				followerId: user.id,
-			},
-			take: 1,
-		})) !== 0;
+        const hasFollowing = await Followings.exist({
+                where: {
+                        followerId: user.id,
+                },
+        });
 
 	//#region Construct query
 	const followingQuery = Followings.createQueryBuilder("following")

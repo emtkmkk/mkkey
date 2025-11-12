@@ -95,12 +95,12 @@ export default define(meta, paramDef, async (ps, me) => {
 		generateBlockedUserQuery(query, me);
 	}
 
-	if (ps.withFiles) {
-		query.andWhere("note.fileIds != '{}'");
-	}
+        if (ps.withFiles) {
+                query.andWhere('CARDINALITY(note."fileIds") > 0');
+        }
 
-	if (ps.fileType != null) {
-		query.andWhere("note.fileIds != '{}'");
+        if (ps.fileType != null) {
+                query.andWhere('CARDINALITY(note."fileIds") > 0');
 		query.andWhere(
 			new Brackets((qb) => {
 				for (const type of ps.fileType!) {
@@ -137,7 +137,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				qb.orWhere("note.userId != :userId", { userId: user.id });
 				qb.orWhere("note.renoteId IS NULL");
 				qb.orWhere("note.text IS NOT NULL");
-				qb.orWhere("note.fileIds != '{}'");
+                                qb.orWhere('CARDINALITY(note."fileIds") > 0');
 				qb.orWhere(
 					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
 				);

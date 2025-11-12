@@ -413,7 +413,7 @@ export default define(meta, paramDef, async (ps, me) => {
                                 case "media":
                                 case "images":
                                 case "videos":
-                                        query.andWhere("note.fileIds != '{}'");
+                                        query.andWhere('CARDINALITY(note."fileIds") > 0');
                                         break;
                                 case "hashtags":
                                         query.andWhere("note.tags != '{}'");
@@ -431,7 +431,7 @@ export default define(meta, paramDef, async (ps, me) => {
                                         break;
                                 case "quote":
                                         query.andWhere("note.renoteId IS NOT NULL");
-                                        query.andWhere("(note.text IS NOT NULL OR note.fileIds != '{}')");
+                                        query.andWhere('(note.text IS NOT NULL OR CARDINALITY(note."fileIds") > 0)');
                                         break;
                                 case "safe":
                                         query.andWhere(`(note.cw NOT ILIKE '%シモ%' OR note.cw IS NULL)`);

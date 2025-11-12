@@ -140,9 +140,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		}
 	}
 
-	if (ps.withFiles) {
-		query.andWhere("note.fileIds != '{}'");
-	}
+        if (ps.withFiles) {
+                query.andWhere('CARDINALITY(note."fileIds") > 0');
+        }
 
 	if (ps.poll != null) {
 		if (ps.poll) {

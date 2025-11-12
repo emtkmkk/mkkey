@@ -70,11 +70,13 @@ export default define(meta, paramDef, async (ps) => {
 		);
 	}
 
-	if (ps.withFiles !== undefined) {
-		query.andWhere(
-			ps.withFiles ? "note.fileIds != '{}'" : "note.fileIds = '{}'",
-		);
-	}
+        if (ps.withFiles !== undefined) {
+                query.andWhere(
+                        ps.withFiles
+                                ? 'CARDINALITY(note."fileIds") > 0'
+                                : 'CARDINALITY(note."fileIds") = 0',
+                );
+        }
 
 	if (ps.poll !== undefined) {
 		query.andWhere(ps.poll ? "note.hasPoll = TRUE" : "note.hasPoll = FALSE");

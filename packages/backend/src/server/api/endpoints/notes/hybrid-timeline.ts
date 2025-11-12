@@ -120,7 +120,7 @@ export default define(meta, paramDef, async (ps, user) => {
 				qb.orWhere("note.userId = :meId", { meId: user.id });
 				qb.orWhere("note.renoteId IS NULL");
 				qb.orWhere("note.text IS NOT NULL");
-				qb.orWhere("note.fileIds != '{}'");
+                                qb.orWhere('CARDINALITY(note."fileIds") > 0');
 				qb.orWhere(
 					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
 				);
@@ -134,7 +134,7 @@ export default define(meta, paramDef, async (ps, user) => {
 				qb.orWhere("note.userId != :meId", { meId: user.id });
 				qb.orWhere("note.renoteId IS NULL");
 				qb.orWhere("note.text IS NOT NULL");
-				qb.orWhere("note.fileIds != '{}'");
+                                qb.orWhere('CARDINALITY(note."fileIds") > 0');
 				qb.orWhere(
 					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
 				);
@@ -148,7 +148,7 @@ export default define(meta, paramDef, async (ps, user) => {
 				qb.orWhere("note.renoteUserId != :meId", { meId: user.id });
 				qb.orWhere("note.renoteId IS NULL");
 				qb.orWhere("note.text IS NOT NULL");
-				qb.orWhere("note.fileIds != '{}'");
+                                qb.orWhere('CARDINALITY(note."fileIds") > 0');
 				qb.orWhere(
 					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
 				);
@@ -162,7 +162,7 @@ export default define(meta, paramDef, async (ps, user) => {
 				qb.orWhere("note.renoteUserHost IS NOT NULL");
 				qb.orWhere("note.renoteId IS NULL");
 				qb.orWhere("note.text IS NOT NULL");
-				qb.orWhere("note.fileIds != '{}'");
+                                qb.orWhere('CARDINALITY(note."fileIds") > 0');
 				qb.orWhere(
 					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
 				);
@@ -170,9 +170,9 @@ export default define(meta, paramDef, async (ps, user) => {
 		);
 	}
 
-	if (ps.withFiles) {
-		query.andWhere("note.fileIds != '{}'");
-	}
+        if (ps.withFiles) {
+                query.andWhere('CARDINALITY(note."fileIds") > 0');
+        }
 
 	query.andWhere("note.visibility != 'hidden'");
 	//#endregion

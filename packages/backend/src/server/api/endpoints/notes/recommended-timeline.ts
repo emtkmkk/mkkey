@@ -86,10 +86,10 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.untilId,
 		ps.sinceDate,
 		ps.untilDate,
-	)
-		.andWhere(
-			"(note.fileIds != '{}' OR (note.renoteId IS NOT NULL AND note.text IS NULL AND renote.fileIds != '{}'))",
-		)
+        )
+                .andWhere(
+                        '(CARDINALITY(note."fileIds") > 0 OR (note.renoteId IS NOT NULL AND note.text IS NULL AND CARDINALITY(renote."fileIds") > 0))',
+                )
 		.andWhere("(note.visibility = 'public')")
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
@@ -139,12 +139,12 @@ export default define(meta, paramDef, async (ps, user) => {
 		);
 	}
 
-	if (ps.withFiles) {
-		query.andWhere("note.fileIds != '{}'");
-	}
+        if (ps.withFiles) {
+                query.andWhere('CARDINALITY(note."fileIds") > 0');
+        }
 
-	if (ps.fileType != null) {
-		query.andWhere("note.fileIds != '{}'");
+        if (ps.fileType != null) {
+                query.andWhere('CARDINALITY(note."fileIds") > 0');
 		query.andWhere(
 			new Brackets((qb) => {
 				for (const type of ps.fileType!) {

@@ -1,11 +1,12 @@
-import { Users, Followings } from "@/models/index.js";
+import { Users } from "@/models/index.js";
 import define from "../../define.js";
 import { generateMutedUserQueryForUsers } from "../../common/generate-muted-user-query.js";
 import {
-	generateBlockedUserQuery,
-	generateBlockQueryForUsers,
+        generateBlockedUserQuery,
+        generateBlockQueryForUsers,
 } from "../../common/generate-block-query.js";
 import { DAY } from "@/const.js";
+import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 
 export const meta = {
 	tags: ["users"],
@@ -54,13 +55,11 @@ export default define(meta, paramDef, async (ps, me) => {
 	generateBlockQueryForUsers(query, me);
 	generateBlockedUserQuery(query, me);
 
-	const followingQuery = Followings.createQueryBuilder("following")
-		.select("following.followeeId")
-		.where("following.followerId = :followerId", { followerId: me.id });
+        const followingCondition = createFollowingExistsCondition(me.id);
 
-	query.andWhere(`user.id NOT IN (${followingQuery.getQuery()})`);
+        query.andWhere(`NOT ${followingCondition.clause("user.id")}`);
 
-	query.setParameters(followingQuery.getParameters());
+        query.setParameters(followingCondition.parameters);
 
 	const users = await query.take(ps.limit).skip(ps.offset).getMany();
 

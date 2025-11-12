@@ -1,4 +1,4 @@
-import { In } from "typeorm";
+import { In, Brackets } from "typeorm";
 import { Followings, Notes } from "@/models/index.js";
 import { Note } from "@/models/entities/note.js";
 import config from "@/config/index.js";
@@ -10,6 +10,7 @@ import { generateVisibilityQuery } from "../../common/generate-visibility-query.
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { genId } from "@/misc/gen-id.js";
+import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -392,16 +393,15 @@ export default define(meta, paramDef, async (ps, me) => {
                         switch (filter) {
                                 case "follows":
                                         if (me) {
-                                                const followingQuery = Followings.createQueryBuilder("following")
-                                                        .select("following.followeeId")
-                                                        .where("following.followerId = :followerId", {
-                                                                followerId: me.id,
-                                                        });
+                                                const followingCondition = createFollowingExistsCondition(me.id);
                                                 query.andWhere(
-                                                        `((note.userId IN (${followingQuery.getQuery()})) OR (note.userId = :meId))`,
-                                                        { meId: me.id },
+                                                        new Brackets((qb) => {
+                                                                qb.where(
+                                                                        followingCondition.clause("note.userId"),
+                                                                ).orWhere("note.userId = :meId", { meId: me.id });
+                                                        }),
                                                 );
-                                                query.setParameters(followingQuery.getParameters());
+                                                query.setParameters(followingCondition.parameters);
                                         }
                                         break;
                                 case "cw":

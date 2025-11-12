@@ -1,7 +1,7 @@
 import define from "../../define.js";
 import { Brackets } from "typeorm";
 import { ApiError } from "../../error.js";
-import { Notes, Channels, Followings } from "@/models/index.js";
+import { Notes, Channels } from "@/models/index.js";
 import { safeForSql } from "@/misc/safe-for-sql.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
@@ -12,6 +12,7 @@ import { generateRepliesQuery } from "../../common/generate-replies-query.js";
 import { generateMutedNoteQuery } from "../../common/generate-muted-note-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
+import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 
 export const meta = {
 	tags: ["notes", "channels"],
@@ -86,15 +87,13 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner")
 		.leftJoinAndSelect("note.channel", "channel");
 
-	if (user) {
-		const followingQuery = Followings.createQueryBuilder("following")
-			.select("following.followeeId")
-			.where("following.followerId = :followerId", { followerId: user.id });
-		query.setParameters(followingQuery.getParameters());
-		generateRepliesQuery(query, user, followingQuery.getQuery());
-	} else {
-		generateRepliesQuery(query, user);
-	}
+        if (user) {
+                const followingCondition = createFollowingExistsCondition(user.id);
+                query.setParameters(followingCondition.parameters);
+                generateRepliesQuery(query, user, followingCondition);
+        } else {
+                generateRepliesQuery(query, user);
+        }
 	generateVisibilityQuery(query, user);
 	if (user) generateMutedUserQuery(query, user);
 	if (user) generateMutedNoteQuery(query, user);

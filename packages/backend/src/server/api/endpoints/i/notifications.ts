@@ -1,16 +1,11 @@
 import { Brackets } from "typeorm";
-import {
-	Notifications,
-	Followings,
-	Mutings,
-	Users,
-	UserProfiles,
-} from "@/models/index.js";
+import { Notifications, Mutings, Users, UserProfiles } from "@/models/index.js";
 import { notificationTypes } from "@/types.js";
 import read from "@/services/note/read.js";
 import { readNotification } from "../../common/read-notification.js";
 import define from "../../define.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
+import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 
 export const meta = {
 	tags: ["account", "notifications"],
@@ -73,9 +68,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (notificationTypes.every((type) => ps.excludeTypes?.includes(type))) {
 		return [];
 	}
-	const followingQuery = Followings.createQueryBuilder("following")
-		.select("following.followeeId")
-		.where("following.followerId = :followerId", { followerId: user.id });
+        const followingCondition = createFollowingExistsCondition(user.id);
 
 	const mutingQuery = Mutings.createQueryBuilder("muting")
 		.select("muting.muteeId")
@@ -140,13 +133,16 @@ export default define(meta, paramDef, async (ps, user) => {
 		}),
 	);
 
-	if (ps.following) {
-		query.andWhere(
-			`((notification.notifierId IN (${followingQuery.getQuery()})) OR (notification.notifierId = :meId))`,
-			{ meId: user.id },
-		);
-		query.setParameters(followingQuery.getParameters());
-	}
+        if (ps.following) {
+                query.andWhere(
+                        new Brackets((qb) => {
+                                qb.where(
+                                        followingCondition.clause("notification.notifierId"),
+                                ).orWhere("notification.notifierId = :meId", { meId: user.id });
+                        }),
+                );
+                query.setParameters(followingCondition.parameters);
+        }
 
 	if (false && !ps.allTypes) {
 		query.andWhere("notification.type <> 'unreadAntenna'");

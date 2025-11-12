@@ -12,6 +12,7 @@ import { generateMutedNoteQuery } from "../../common/generate-muted-note-query.j
 import { generateChannelQuery } from "../../common/generate-channel-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
+import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -70,28 +71,29 @@ export default define(meta, paramDef, async (ps, user) => {
 	}
 
 	//#region Construct query
-	const followingQuery = Followings.createQueryBuilder("following")
-		.select("following.followeeId")
-		.where("following.followerId = :followerId", { followerId: user.id });
+        const followingCondition = createFollowingExistsCondition(user.id);
 
-	const query = makePaginationQuery(
-		Notes.createQueryBuilder("note"),
+        const query = makePaginationQuery(
+                Notes.createQueryBuilder("note"),
 		ps.sinceId,
 		ps.untilId,
 		ps.sinceDate,
 		ps.untilDate,
 	)
-		.andWhere(
-			new Brackets((qb) => {
-				qb.where(
-					`((note.userId IN (${followingQuery.getQuery()})) OR (note.userId = :meId))`,
-					{ meId: user.id },
-				).orWhere(
+                .andWhere(
+                        new Brackets((qb) => {
+                                qb.where(
+                                        new Brackets((qb) => {
+                                                qb.where(
+                                                        followingCondition.clause("note.userId"),
+                                                ).orWhere("note.userId = :meId", { meId: user.id });
+                                        }),
+                                ).orWhere(
                 `(note.visibility = 'public') AND (note.userHost IS NULL OR note.userHost = ANY (:recommendedHosts))`,
                 { recommendedHosts: m.recommendedInstances },
             )
-			}),
-		)
+                        }),
+                )
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner")
@@ -100,13 +102,13 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("reply.user", "replyUser")
 		.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
 		.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
-		.leftJoinAndSelect("renote.user", "renoteUser")
-		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
-		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner")
-		.setParameters(followingQuery.getParameters());
+                .leftJoinAndSelect("renote.user", "renoteUser")
+                .leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
+                .leftJoinAndSelect("renoteUser.banner", "renoteUserBanner")
+                .setParameters(followingCondition.parameters);
 
-	generateChannelQuery(query, user);
-	generateRepliesQuery(query, user, followingQuery.getQuery());
+        generateChannelQuery(query, user);
+        generateRepliesQuery(query, user, followingCondition);
 	generateVisibilityQuery(query, user);
 	generateMutedUserQuery(query, user);
 	generateMutedNoteQuery(query, user);

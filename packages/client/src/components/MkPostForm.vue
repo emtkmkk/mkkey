@@ -941,12 +941,18 @@ function createSequentialQuickVisibilitySlots(
         }
 
         return slots.sort((a, b) => {
-                const orderA = a.order ?? Number.POSITIVE_INFINITY;
-                const orderB = b.order ?? Number.POSITIVE_INFINITY;
-                if (orderA !== orderB) {
-                        return orderA - orderB;
+                const orderA = a.order;
+                const orderB = b.order;
+
+                if (orderA == null && orderB == null) {
+                        return a.quickType.localeCompare(b.quickType);
                 }
-                return a.quickType.localeCompare(b.quickType);
+                if (orderA == null) return 1;
+                if (orderB == null) return -1;
+                if (orderA !== orderB) {
+                        return orderB - orderA;
+                }
+                return b.quickType.localeCompare(a.quickType);
         });
 }
 

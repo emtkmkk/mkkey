@@ -431,7 +431,13 @@ function top() {
 let navFooterHeight = $ref(0);
 provide<Ref<number>>("CURRENT_STICKY_BOTTOM", $$(navFooterHeight));
 
-const applyNavFooterMetrics = (height: number) => {
+const applyNavFooterMetrics = (el: HTMLElement) => {
+        const style = window.getComputedStyle(el);
+        const paddingBottom = Number.parseFloat(style.paddingBottom) || 0;
+        const paddingTop = Number.parseFloat(style.paddingTop) || 0;
+        const safeAreaInsetBottom = Math.max(paddingBottom - paddingTop, 0);
+        const height = Math.max(el.offsetHeight - safeAreaInsetBottom, 0);
+
         navFooterHeight = height;
         document.body.style.setProperty("--stickyBottom", `${height}px`);
         document.body.style.setProperty(
@@ -449,7 +455,7 @@ const resetNavFooterMetrics = () => {
 let navFooterObserver: ResizeObserver | null = null;
 
 const observeNavFooter = (el: HTMLElement) => {
-        const update = () => applyNavFooterMetrics(el.offsetHeight);
+        const update = () => applyNavFooterMetrics(el);
         update();
         navFooterObserver = new ResizeObserver(() => {
                 update();
@@ -584,9 +590,9 @@ console.log(mainRouter.currentRoute.value.name);
 		background: var(--bg);
 	}
 
-	> .postButton,
-	.widgetButton {
-		bottom: calc(env(safe-area-inset-bottom, 0) + var(--stickyBottom));
+        > .postButton,
+        .widgetButton {
+                bottom: var(--stickyBottom);
 		right: 1.5rem;
 		height: 4rem;
 		width: 4rem;

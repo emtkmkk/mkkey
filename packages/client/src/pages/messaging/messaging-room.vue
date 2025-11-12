@@ -408,7 +408,7 @@ XMessage:last-of-type {
 		z-index: 2;
 		bottom: 0;
 		padding-top: 0.5rem;
-		bottom: calc(env(safe-area-inset-bottom, 0) + var(--stickyBottom));
+                bottom: var(--stickyBottom);
 
 		> .new-message {
 			width: 100%;

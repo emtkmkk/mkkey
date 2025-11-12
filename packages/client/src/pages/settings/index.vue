@@ -367,20 +367,30 @@ const headerTabs = $computed(() => []);
 definePageMetadata(INFO);
 
 function scrollToSettingFromQuery() {
-       const key = router.currentRoute.value.query.setting as string | undefined;
-       if (!key) return;
-       nextTick(() => {
-               const rootEl = el.value;
-               const blocks = rootEl?.querySelectorAll("._formBlock");
-               const text = i18n.ts[key] as unknown as string | undefined;
-               if (!blocks || !text) return;
-               for (const block of blocks) {
-                       if (block.textContent && block.textContent.includes(text)) {
-                               scroll(block as HTMLElement, { behavior: "smooth" });
-                               break;
-                       }
-               }
-       });
+        const currentPath = router.getCurrentPath();
+        if (typeof window === "undefined") return;
+
+        let key: string | null = null;
+        try {
+                key = new URL(currentPath, window.location.origin).searchParams.get("setting");
+        } catch (error) {
+                return;
+        }
+
+        if (!key) return;
+
+        nextTick(() => {
+                const rootEl = el.value;
+                const blocks = rootEl?.querySelectorAll("._formBlock");
+                const text = i18n.ts[key] as unknown as string | undefined;
+                if (!blocks || !text) return;
+                for (const block of blocks) {
+                        if (block.textContent && block.textContent.includes(text)) {
+                                scroll(block as HTMLElement, { behavior: "smooth" });
+                                break;
+                        }
+                }
+        });
 }
 // w 890
 // h 700

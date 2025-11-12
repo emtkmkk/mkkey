@@ -15,10 +15,13 @@ export async function insertNoteUnread(
 ) {
 	//#region ミュートしているなら無視
 	// TODO: 現在の仕様ではChannelにミュートは適用されないのでよしなにケアする
-	const mute = await Mutings.findBy({
-		muterId: userId,
+	const isMuted = await Mutings.exist({
+		where: {
+			muterId: userId,
+			muteeId: note.userId,
+		},
 	});
-	if (mute.map((m) => m.muteeId).includes(note.userId)) return;
+	if (isMuted) return;
 	//#endregion
 
 	// スレッドミュート

@@ -97,10 +97,13 @@ export async function createMessage(
 			if (freshMessage.isRead) return; // 既読
 
 			//#region ただしミュートされているなら発行しない
-			const mute = await Mutings.findBy({
-				muterId: recipientUser.id,
+			const isSenderMuted = await Mutings.exist({
+				where: {
+					muterId: recipientUser.id,
+					muteeId: user.id,
+				},
 			});
-			if (mute.map((m) => m.muteeId).includes(user.id)) return;
+			if (isSenderMuted) return;
 			//#endregion
 
 			publishMainStream(recipientUser.id, "unreadMessagingMessage", messageObj);

@@ -1,12 +1,13 @@
 import { Brackets } from "typeorm";
 import read from "@/services/note/read.js";
-import { Notes, Followings } from "@/models/index.js";
+import { Notes } from "@/models/index.js";
 import define from "../../define.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedNoteThreadQuery } from "../../common/generate-muted-note-thread-query.js";
+import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -39,9 +40,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	const followingQuery = Followings.createQueryBuilder("following")
-		.select("following.followeeId")
-		.where("following.followerId = :followerId", { followerId: user.id });
+        const followingCondition = createFollowingExistsCondition(user.id);
 
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
@@ -84,13 +83,17 @@ export default define(meta, paramDef, async (ps, user) => {
 		});
 	}
 
-	if (ps.following) {
-		query.andWhere(
-			`((note.userId IN (${followingQuery.getQuery()})) OR (note.userId = :meId))`,
-			{ meId: user.id },
-		);
-		query.setParameters(followingQuery.getParameters());
-	}
+        if (ps.following) {
+                query.andWhere(
+                        new Brackets((qb) => {
+                                qb.where(followingCondition.clause("note.userId")).orWhere(
+                                        "note.userId = :meId",
+                                        { meId: user.id },
+                                );
+                        }),
+                );
+                query.setParameters(followingCondition.parameters);
+        }
 
 	// We fetch more than requested because some may be filtered out, and if there's less than
 	// requested, the pagination stops.

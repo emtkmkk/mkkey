@@ -1,6 +1,6 @@
 import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Notes, Followings } from "@/models/index.js";
+import { Notes } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -10,6 +10,7 @@ import { generateRepliesQuery } from "../../common/generate-replies-query.js";
 import { generateMutedNoteQuery } from "../../common/generate-muted-note-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
+import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -93,15 +94,13 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
 
-	if (user) {
-		const followingQuery = Followings.createQueryBuilder("following")
-			.select("following.followeeId")
-			.where("following.followerId = :followerId", { followerId: user.id });
-		query.setParameters(followingQuery.getParameters());
-		generateRepliesQuery(query, user, followingQuery.getQuery(), ps.showReplyMode ?? "all");
-	} else {
-		generateRepliesQuery(query, user);
-	}
+        if (user) {
+                const followingCondition = createFollowingExistsCondition(user.id);
+                query.setParameters(followingCondition.parameters);
+                generateRepliesQuery(query, user, followingCondition, ps.showReplyMode ?? "all");
+        } else {
+                generateRepliesQuery(query, user);
+        }
 	if (user) {
 		generateMutedUserQuery(query, user);
 		generateMutedNoteQuery(query, user);

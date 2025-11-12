@@ -1,9 +1,10 @@
 import { Brackets } from "typeorm";
-import { Followings, Users } from "@/models/index.js";
+import { Users } from "@/models/index.js";
 import { USER_ACTIVE_THRESHOLD } from "@/const.js";
 import type { User } from "@/models/entities/user.js";
 import define from "../../define.js";
 import config from "@/config/index.js";
+import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 
 export const meta = {
 	tags: ["users"],
@@ -46,14 +47,12 @@ export default define(meta, paramDef, async (ps, me) => {
 		let users: User[] = [];
 
 		if (me) {
-			const followingQuery = Followings.createQueryBuilder("following")
-				.select("following.followeeId")
-				.where("following.followerId = :followerId", { followerId: me.id });
+                        const followingCondition = createFollowingExistsCondition(me.id);
 
-			const query = Users.createQueryBuilder("user");
-				query.where(`user.id IN (${followingQuery.getQuery()})`)
-				query.andWhere("user.id != :meId", { meId: me.id })
-				query.andWhere("user.isSuspended = FALSE")
+                        const query = Users.createQueryBuilder("user");
+                                query.where(followingCondition.clause("user.id"))
+                                query.andWhere("user.id != :meId", { meId: me.id })
+                                query.andWhere("user.isSuspended = FALSE")
 				if (ps.host) {
 					query.andWhere("coalesce(user.host, :url) LIKE :host", {
 						url: config.host,
@@ -76,7 +75,7 @@ export default define(meta, paramDef, async (ps, me) => {
 					);
 				}
 
-			query.setParameters(followingQuery.getParameters());
+                        query.setParameters(followingCondition.parameters);
 
 			users = await query
 				.orderBy("user.usernameLower", "ASC")
@@ -84,8 +83,8 @@ export default define(meta, paramDef, async (ps, me) => {
 				.getMany();
 
 			if (users.length < ps.limit) {
-				const otherQuery = Users.createQueryBuilder("user")
-					.where(`user.id NOT IN (${followingQuery.getQuery()})`)
+                                const otherQuery = Users.createQueryBuilder("user")
+                                        .where(`NOT ${followingCondition.clause("user.id")}`)
 					.andWhere("user.id != :meId", { meId: me.id })
 					.andWhere("user.isSuspended = FALSE")
 					if (ps.host) {
@@ -100,7 +99,7 @@ export default define(meta, paramDef, async (ps, me) => {
 						});
 					}
 
-				otherQuery.setParameters(followingQuery.getParameters());
+                                otherQuery.setParameters(followingCondition.parameters);
 
 				const otherUsers = await otherQuery
 					.orderBy("user.usernameLower", "ASC")

@@ -1,7 +1,7 @@
 import type { User } from "@/models/entities/user.js";
-import { Followings } from "@/models/index.js";
 import type { SelectQueryBuilder } from "typeorm";
 import { Brackets } from "typeorm";
+import { createFollowingExistsCondition } from "./following-exists-condition.js";
 
 export function generateVisibilityQuery(
 	q: SelectQueryBuilder<any>,
@@ -16,13 +16,14 @@ export function generateVisibilityQuery(
 				);
 			}),
 		).andWhere(`note.localOnly = false`);
-	} else {
-		const followingQuery = Followings.createQueryBuilder("following")
-			.select("following.followeeId")
-			.where("following.followerId = :meId");
+        } else {
+                const followingCondition = createFollowingExistsCondition(me.id, {
+                        parameterName: "visibilityFollowerId",
+                        alias: "following_visibility",
+                });
 
-		q.andWhere(
-			new Brackets((qb) => {
+                q.andWhere(
+                        new Brackets((qb) => {
 				qb
 					// 公開投稿である
 					.where(
@@ -41,22 +42,30 @@ export function generateVisibilityQuery(
 					.orWhere(
 						new Brackets((qb) => {
 							qb
-								// または フォロワー宛ての投稿であり、
-								.where(`note.visibility = 'followers'`)
-								.andWhere(
-									new Brackets((qb) => {
-										qb
-											// 自分がフォロワーである
-											.where(`note.userId IN (${followingQuery.getQuery()})`)
-											// または 自分の投稿へのリプライ
-											.orWhere("note.replyUserId = :meId");
-									}),
-								);
-						}),
-					);
-			}),
-		);
+                                                                // または フォロワー宛ての投稿であり、
+                                                                .where(`note.visibility = 'followers'`)
+                                                                .andWhere(
+                                                                        new Brackets((qb) => {
+                                                                                qb
+                                                                                        // 自分がフォロワーである
+                                                                                        .where(
+                                                                                                followingCondition.clause(
+                                                                                                        "note.userId",
+                                                                                                ),
+                                                                                        )
+                                                                                        // または 自分の投稿へのリプライ
+                                                                                        .orWhere("note.replyUserId = :meId");
+                                                                        }),
+                                                                );
+                                                }),
+                                        );
+                        }),
+                );
 
-		q.setParameters({ meId: me.id, meIdAsList: [me.id] });
-	}
+                q.setParameters({
+                        meId: me.id,
+                        meIdAsList: [me.id],
+                        ...followingCondition.parameters,
+                });
+        }
 }

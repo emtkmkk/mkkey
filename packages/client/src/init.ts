@@ -174,24 +174,51 @@ const initializeViewport = () => {
 
 	//#region SEE: https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
 	// TODO: いつの日にか消したい
-	const vh = window.innerHeight * 0.01;
-	if (CSS.supports("height", "100dvh")) {
-		document.documentElement.style.setProperty("--vh", "1dvh");
-		document.documentElement.style.setProperty("--wph", "100dvh");
-	} else {
-		document.documentElement.style.setProperty("--vh", `${vh}px`);
-		document.documentElement.style.setProperty(
-			"--wph",
-			`${window.innerHeight}px`,
-		);
-	}
+        const supportsDynamicViewport = CSS.supports("height", "100dvh");
+        const rootStyle = document.documentElement.style;
+        const setViewportVariables = (height: number) => {
+                const vh = height * 0.01;
+                rootStyle.setProperty("--vh", `${vh}px`);
+                rootStyle.setProperty("--wph", `${height}px`);
+        };
+        // キーボード展開時に追従させたくない用途向けの安定値
+        const setStableViewportVariables = (height: number) => {
+                const vh = height * 0.01;
+                rootStyle.setProperty("--vh-stable", `${vh}px`);
+                rootStyle.setProperty("--wph-stable", `${height}px`);
+        };
+        const applyWindowInnerHeight = (height: number) => {
+                setStableViewportVariables(height);
+                if (!supportsDynamicViewport) {
+                        setViewportVariables(height);
+                }
+        };
 
-	window.addEventListener("resize", () => {
-		if (!CSS.supports("height", "100dvh")) {
-			const vh = window.innerHeight * 0.01;
-			document.documentElement.style.setProperty("--vh", `${vh}px`);
-		}
-	});
+        if (supportsDynamicViewport) {
+                rootStyle.setProperty("--vh", "1dvh");
+                rootStyle.setProperty("--wph", "100dvh");
+        } else {
+                setViewportVariables(window.innerHeight);
+        }
+
+        applyWindowInnerHeight(window.innerHeight);
+
+        window.addEventListener("resize", () => {
+                applyWindowInnerHeight(window.innerHeight);
+        });
+
+        const visualViewport = window.visualViewport;
+        if (!supportsDynamicViewport && visualViewport) {
+                const updateWithVisualViewport = () => {
+                        setViewportVariables(visualViewport.height);
+                };
+                visualViewport.addEventListener("resize", updateWithVisualViewport, {
+                        passive: true,
+                });
+                visualViewport.addEventListener("scroll", updateWithVisualViewport, {
+                        passive: true,
+                });
+        }
 	//#endregion
 
 	// If mobile, insert the viewport meta tag

@@ -48,7 +48,7 @@ html {
 	touch-action: manipulation;
 	background-attachment: fixed;
 	background-size: cover;
-	background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
+	background-size: auto calc(var(--wph-stable, var(--wph)) - var(--minBottomSpacing, 0));
 	background-position: top;
 	background-repeat: repeat-y;
 	color: var(--fg);
@@ -78,7 +78,7 @@ html {
 			background: var(--scrollbarHandle);
 			background-attachment: fixed;
 			background-size: cover;
-			background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
+			background-size: auto calc(var(--wph-stable, var(--wph)) - var(--minBottomSpacing, 0));
 			background-position: top;
 			background-repeat: repeat-y;
 
@@ -86,7 +86,7 @@ html {
 				background: var(--scrollbarHandleHover);
 				background-attachment: fixed;
 				background-size: cover;
-				background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
+				background-size: auto calc(var(--wph-stable, var(--wph)) - var(--minBottomSpacing, 0));
 				background-position: top;
 				background-repeat: repeat-y;
 			}
@@ -95,7 +95,7 @@ html {
 				background: var(--accent);
 				background-attachment: fixed;
 				background-size: cover;
-				background-size: auto calc(var(--wph) - var(--minBottomSpacing, 0));
+				background-size: auto calc(var(--wph-stable, var(--wph)) - var(--minBottomSpacing, 0));
 				background-position: top;
 				background-repeat: repeat-y;
 			}

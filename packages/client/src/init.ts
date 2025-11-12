@@ -622,64 +622,108 @@ const initializePlugins = () => {
 };
 
 const initializeEmoji = async () => {
-	fetchEmoji();
-	fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
-	const lastEmojiFetchDate = (await get("remoteEmojiData"))
-		? (await get("remoteEmojiData"))?.emojiFetchDate
-		: undefined;
-	const emojiFetchDateInt = Math.max(
-		lastEmojiFetchDate ? new Date(lastEmojiFetchDate).valueOf() : 0,
-		(await get("emojiFetchAttemptDate"))
-			? Number.parseInt(await get("emojiFetchAttemptDate"), 10)
-			: 0,
-	);
-	const defaultRemoteEmojisFetchMode = defaultStore.def.remoteEmojisFetch.default;
-	let fetchModeMax =
-		defaultStore.state.remoteEmojisFetch ?? defaultRemoteEmojisFetchMode ?? "all";
-	// 更新間隔 : データセーバーなら、24時間 そうでないなら、6時間
-	const fetchTimeBorder = defaultStore.state.enableDataSaverMode
-		? 1000 * 60 * 60 * 24
-		: 1000 * 60 * 60 * 6;
+        fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
 
-	if (
-		fetchModeMax === "always" ||
-		Date.now() - emojiFetchDateInt > fetchTimeBorder ||
-		fetchModeMax !== ((await get("lastFetchModeMax")) ?? fetchModeMax)
-	) {
-		// 常に取得がon or 最終取得日が無い or 前回取得から更新間隔以上 or 取得設定が前回と異なる場合絵文字を取得
-		//一度キャッシュを破棄
-		if (fetchModeMax !== "keep") {
-			localStorage.removeItem("emojiData");
-			localStorage.removeItem("remoteEmojiData");
-			localStorage.removeItem("lastFetchModeMax");
-			localStorage.removeItem("emojiFetchAttemptDate");
-			await del("remoteEmojiData");
-		}
-		// 一度だけ更新の場合、データモードを前回と同じにしておく
-		if (fetchModeMax === "once") {
-			const lastFetchModeMax = (await get("lastFetchModeMax")) ?? fetchModeMax;
-			fetchModeMax = lastFetchModeMax;
-			defaultStore.set("remoteEmojisFetch", lastFetchModeMax);
-		}
-		// 取得設定を保存
-		await set("lastFetchModeMax", fetchModeMax);
-		// 最終試行日を更新する
-		await set("emojiFetchAttemptDate", Date.now());
-		if (fetchModeMax === "always") {
-			fetchAllEmojiNoCache();
-		} else if (fetchModeMax === "all") {
-			fetchAllEmoji().catch(() => {
-				// 保存に失敗した場合は軽量版リモート絵文字の取得を試行
-				fetchPlusEmoji();
-			});
-		} else if (fetchModeMax === "plus") {
-			fetchPlusEmoji();
-		}
-	}
-	// 取得設定を保存
-	await set("lastFetchModeMax", fetchModeMax);
-	// 絵文字を読み込み直す
-	emojiLoad();
+        const [remoteEmojiData, cachedEmojiData, emojiFetchAttemptDateRaw, lastFetchModeMaxRaw] =
+                await Promise.all([
+                        get("remoteEmojiData"),
+                        get("emojiData"),
+                        get("emojiFetchAttemptDate"),
+                        get("lastFetchModeMax"),
+                ]);
+
+        const toTimestamp = (value: unknown): number | null => {
+                if (value == null) return null;
+                if (typeof value === "number") {
+                        return Number.isFinite(value) ? value : null;
+                }
+                const date = value instanceof Date ? value : new Date(value as any);
+                const timestamp = date.valueOf();
+                return Number.isNaN(timestamp) ? null : timestamp;
+        };
+
+        let serverUpdatedAt: number | null = null;
+        try {
+                const latest = await api("emojis/latest");
+                serverUpdatedAt = toTimestamp(latest?.emojiUpdatedAt);
+        } catch (err) {
+                console.warn("絵文字の更新時刻の取得に失敗しました", err);
+        }
+
+        const localUpdatedAt = toTimestamp((cachedEmojiData as any)?.emojiUpdatedAt);
+        const serverMatchesLocalCache =
+                serverUpdatedAt !== null &&
+                localUpdatedAt !== null &&
+                serverUpdatedAt <= localUpdatedAt;
+
+        const TWELVE_HOURS = 1000 * 60 * 60 * 12;
+
+        const localFetchDate = toTimestamp((cachedEmojiData as any)?.emojiFetchDate);
+        const hasLocalEmojis = Array.isArray((cachedEmojiData as any)?.emojis)
+                ? ((cachedEmojiData as any)?.emojis?.length ?? 0) > 0
+                : false;
+        const localFetchIsStale =
+                localFetchDate === null || Date.now() - localFetchDate >= TWELVE_HOURS;
+
+        if (!hasLocalEmojis || !serverMatchesLocalCache || localFetchIsStale) {
+                fetchEmoji();
+        }
+
+        const defaultRemoteEmojisFetchMode = defaultStore.def.remoteEmojisFetch.default;
+        let fetchModeMax =
+                defaultStore.state.remoteEmojisFetch ?? defaultRemoteEmojisFetchMode ?? "all";
+
+        const storedLastFetchModeMax =
+                typeof lastFetchModeMaxRaw === "string" ? lastFetchModeMaxRaw : undefined;
+        const fetchModeChanged =
+                storedLastFetchModeMax !== undefined && fetchModeMax !== storedLastFetchModeMax;
+
+        const fetchAttemptDate = toTimestamp(emojiFetchAttemptDateRaw);
+        const remoteFetchDate = toTimestamp((remoteEmojiData as any)?.emojiFetchDate);
+        const emojiFetchDateInt = Math.max(remoteFetchDate ?? 0, fetchAttemptDate ?? 0);
+
+        const fetchTimeBorder = defaultStore.state.enableDataSaverMode
+                ? 1000 * 60 * 60 * 24
+                : 1000 * 60 * 60 * 6;
+
+        const remoteFetchIsStale =
+                emojiFetchDateInt === 0 || Date.now() - emojiFetchDateInt >= fetchTimeBorder;
+
+        if (
+                fetchModeMax === "always" ||
+                remoteFetchIsStale ||
+                fetchModeChanged
+        ) {
+                if (fetchModeMax !== "keep") {
+                        localStorage.removeItem("emojiData");
+                        localStorage.removeItem("remoteEmojiData");
+                        localStorage.removeItem("lastFetchModeMax");
+                        localStorage.removeItem("emojiFetchAttemptDate");
+                        await del("remoteEmojiData");
+                }
+
+                if (fetchModeMax === "once") {
+                        const lastFetchModeMax = storedLastFetchModeMax ?? fetchModeMax;
+                        fetchModeMax = lastFetchModeMax;
+                        defaultStore.set("remoteEmojisFetch", lastFetchModeMax);
+                }
+
+                await set("lastFetchModeMax", fetchModeMax);
+                await set("emojiFetchAttemptDate", Date.now());
+
+                if (fetchModeMax === "always") {
+                        fetchAllEmojiNoCache();
+                } else if (fetchModeMax === "all") {
+                        fetchAllEmoji().catch(() => {
+                                fetchPlusEmoji();
+                        });
+                } else if (fetchModeMax === "plus") {
+                        fetchPlusEmoji();
+                }
+        }
+
+        await set("lastFetchModeMax", fetchModeMax);
+        emojiLoad();
 };
 
 const saveFailedQueueDatas = () => {

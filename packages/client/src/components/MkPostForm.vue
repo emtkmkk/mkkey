@@ -1921,11 +1921,15 @@ function loadDrafts(): DraftMap | null {
         try {
                 const raw = localStorage.getItem("drafts");
                 if (!raw) return {} as DraftMap;
-                const parsed = JSON.parse(raw) as DraftMap | null;
-                return (parsed ?? {}) as DraftMap;
+                const parsed = JSON.parse(raw);
+                if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+                        return {} as DraftMap;
+                }
+                return parsed as DraftMap;
         } catch (error) {
                 console.error(error);
-                return null;
+                localStorage.removeItem("drafts");
+                return {} as DraftMap;
         }
 }
 

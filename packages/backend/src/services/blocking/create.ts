@@ -19,6 +19,7 @@ import { perUserFollowingChart } from "@/services/chart/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
+import { invalidateListMembersCache } from "@/misc/antenna-members-cache.js";
 import { webhookDeliver } from "@/queue/index.js";
 import { ensureProxyFollowsListedUser } from "../user-list/ensure-proxy-follow.js";
 
@@ -172,4 +173,8 @@ async function removeFromList(listOwner: User, user: User) {
         );
 
         await Promise.all(deletePromises);
+
+        for (const userList of userLists) {
+                invalidateListMembersCache(userList.id);
+        }
 }

@@ -1,5 +1,6 @@
 import { publishUserListStream } from "@/services/stream.js";
 import { UserLists, UserListJoinings, Users } from "@/models/index.js";
+import { invalidateListMembersCache } from "@/misc/antenna-members-cache.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
 import { getUser } from "../../../common/getters.js";
@@ -56,7 +57,9 @@ export default define(meta, paramDef, async (ps, me) => {
 	});
 
 	// Pull the user
-	await UserListJoinings.delete({ userListId: userList.id, userId: user.id });
+        await UserListJoinings.delete({ userListId: userList.id, userId: user.id });
 
-	publishUserListStream(userList.id, "userRemoved", await Users.pack(user));
+        invalidateListMembersCache(userList.id);
+
+        publishUserListStream(userList.id, "userRemoved", await Users.pack(user));
 });

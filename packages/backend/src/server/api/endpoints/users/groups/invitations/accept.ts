@@ -1,5 +1,6 @@
 import { UserGroupJoinings, UserGroupInvitations } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { invalidateGroupMembersCache } from "@/misc/antenna-members-cache.js";
 import type { UserGroupJoining } from "@/models/entities/user-group-joining.js";
 import { ApiError } from "../../../../error.js";
 import define from "../../../../define.js";
@@ -45,12 +46,14 @@ export default define(meta, paramDef, async (ps, user) => {
 	}
 
 	// Push the user
-	await UserGroupJoinings.insert({
-		id: genId(),
-		createdAt: new Date(),
-		userId: user.id,
-		userGroupId: invitation.userGroupId,
-	} as UserGroupJoining);
+        await UserGroupJoinings.insert({
+                id: genId(),
+                createdAt: new Date(),
+                userId: user.id,
+                userGroupId: invitation.userGroupId,
+        } as UserGroupJoining);
 
-	UserGroupInvitations.delete(invitation.id);
+        invalidateGroupMembersCache(invitation.userGroupId);
+
+        UserGroupInvitations.delete(invitation.id);
 });

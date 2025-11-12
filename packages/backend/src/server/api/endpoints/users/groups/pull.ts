@@ -1,4 +1,5 @@
 import { UserGroups, UserGroupJoinings } from "@/models/index.js";
+import { invalidateGroupMembersCache } from "@/misc/antenna-members-cache.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
 import { getUser } from "../../../common/getters.js";
@@ -66,8 +67,10 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	// Pull the user
-	await UserGroupJoinings.delete({
-		userGroupId: userGroup.id,
-		userId: user.id,
-	});
+        await UserGroupJoinings.delete({
+                userGroupId: userGroup.id,
+                userId: user.id,
+        });
+
+        invalidateGroupMembersCache(userGroup.id);
 });

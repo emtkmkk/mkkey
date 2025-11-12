@@ -388,14 +388,14 @@
 
 <script lang="ts" setup>
 import {
-	unref,
-	inject,
-	watch,
-	nextTick,
-	onMounted,
-	onUnmounted,
-	defineAsyncComponent,
-	computed,
+        unref,
+        inject,
+        watch,
+        nextTick,
+        onMounted,
+        onUnmounted,
+        defineAsyncComponent,
+        computed,
 } from "vue";
 import * as mfm from "mfm-js";
 import * as misskey from "calckey-js";
@@ -2603,19 +2603,28 @@ function openAccountMenu(ev: MouseEvent) {
 	);
 }
 
+const autocompleteInstances: Autocomplete[] = [];
+
 onMounted(() => {
-	if (props.autofocus) {
-		focus();
+        if (props.autofocus) {
+                focus();
 
-		nextTick(() => {
-			focus();
-		});
-	}
+                nextTick(() => {
+                        focus();
+                });
+        }
 
-	// TODO: detach when unmount
-	new Autocomplete(textareaEl, $$(text));
-	new Autocomplete(cwInputEl, $$(cw));
-	new Autocomplete(hashtagsInputEl, $$(hashtags));
+        if (textareaEl) {
+                autocompleteInstances.push(new Autocomplete(textareaEl, $$(text)));
+        }
+
+        if (cwInputEl) {
+                autocompleteInstances.push(new Autocomplete(cwInputEl, $$(cw)));
+        }
+
+        if (hashtagsInputEl) {
+                autocompleteInstances.push(new Autocomplete(hashtagsInputEl, $$(hashtags)));
+        }
 
 	nextTick(() => {
 		// 書きかけの投稿を復元
@@ -2651,6 +2660,12 @@ onMounted(() => {
 
 		nextTick(() => watchForDraft());
 	});
+});
+
+onUnmounted(() => {
+        for (const instance of autocompleteInstances) {
+                instance.detach();
+        }
 });
 </script>
 

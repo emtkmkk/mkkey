@@ -428,7 +428,7 @@ import {
 	getAccounts,
 	openAccountMenu as openAccountMenu_,
 } from "@/account";
-import { uploads, uploadFile } from "@/scripts/upload";
+import { uploadFile } from "@/scripts/upload";
 import type { UploadFileOptions } from "@/scripts/upload";
 import { deepClone } from "@/scripts/clone";
 import XDraft from "@/components/MkDraftDialog.vue";
@@ -582,6 +582,38 @@ let shortcutKeyValue = $ref(0);
 let filePromises = $ref<Promise<void>[]>([]);
 let fileError = $ref(false);
 let referencesFlg = $ref(true);
+
+function enqueueUpload(
+        promiseFactory: () => Promise<misskey.entities.DriveFile[] | misskey.entities.DriveFile>,
+): Promise<void> {
+        fileError = false;
+
+        let basePromise: Promise<misskey.entities.DriveFile[] | misskey.entities.DriveFile>;
+        try {
+                basePromise = promiseFactory();
+        } catch (err) {
+                fileError = true;
+                throw err;
+        }
+
+        const trackedPromise = basePromise
+                .then((result) => (Array.isArray(result) ? result : [result]))
+                .then((result) => {
+                        for (const file of result) {
+                                files.push(file);
+                        }
+                })
+                .catch((err) => {
+                        fileError = true;
+                        throw err;
+                })
+                .finally(() => {
+                        filePromises = filePromises.filter((p) => p !== trackedPromise);
+                });
+
+        filePromises.push(trackedPromise);
+        return trackedPromise;
+}
 
 const publicIcon = $computed((): String => {
 	if (!canNotLocal && (canPublic || canHome)) {
@@ -1118,8 +1150,8 @@ const canPost = $computed((): boolean => {
 		(
 			1 <= textLength ||
 			(withHashtags && hashtags && typeof hashtags === "string" && 1 <= hashtags.trim().length) ||
-			1 <= files.length ||
-			!allPromisesResolved() ||
+                        1 <= files.length ||
+                        filePromises.length > 0 ||
 			!!poll ||
 			!!props.renote ||
 			!!quoteId ||
@@ -1455,31 +1487,13 @@ function focus() {
 }
 
 function chooseFileFrom(ev) {
-    fileError = false;
-
-    const promise = selectFiles(
-        ev.currentTarget ?? ev.target,
-        i18n.ts.attachFile,
-        requiredFilename
-    )
-    .then((files_) => {
-        for (const file of files_) {
-            files.push(file);
-        }
-    })
-    .catch(() => {
-        fileError = true;
-    })
-    .finally(() => {
-        // 完了したプロミスをfilePromisesから削除
-        filePromises = filePromises.filter(p => p !== promise);
-    });
-
-    filePromises.push(promise);
-}
-
-function allPromisesResolved() {
-    return filePromises.length === 0;
+        enqueueUpload(() =>
+                selectFiles(
+                        ev.currentTarget ?? ev.target,
+                        i18n.ts.attachFile,
+                        requiredFilename,
+                ),
+        );
 }
 
 function detachFile(id) {
@@ -1499,29 +1513,17 @@ function updateFileName(file, name) {
 }
 
 function upload(file: File, name?: string, options?: UploadFileOptions) {
-    fileError = false;
-
-    const promise = uploadFile(
-        file,
-        defaultStore.state.uploadFolder,
-        name,
-        undefined,
-        undefined,
-        requiredFilename,
-        options
-    )
-    .then((res) => {
-        files.push(res);
-    })
-    .catch(() => {
-        fileError = true;
-    })
-    .finally(() => {
-        // 完了したプロミスをfilePromisesから削除
-        filePromises = filePromises.filter(p => p !== promise);
-    });
-
-    filePromises.push(promise);
+        enqueueUpload(() =>
+                uploadFile(
+                        file,
+                        defaultStore.state.uploadFolder,
+                        name,
+                        undefined,
+                        undefined,
+                        requiredFilename,
+                        options,
+                ),
+        );
 }
 
 function setVisibility() {
@@ -2208,52 +2210,29 @@ async function post() {
 	}
 }
 
-function waitForFileSelectingToBeFalse(backupDraftData) {
-	let addData: {
-		id: any;
-		endpoint?: string;
-		data?: Record<string, any> | undefined;
-		token?: string | null | undefined;
-		suppressToast?: boolean | undefined;
-		comment?: string | undefined;
-		draftData?: any;
-	};
-	if (!allPromisesResolved()) {
-		addData = os.addQueue({
-			endpoint: "notes/create",
-			data: {},
-			comment: "ファイルのアップロードを待機中…",
-			draftData: {key: draftKey, ...backupDraftData}
-		})
-	}
-	const onFinally = () => {
-		if (addData) os.removeQueue(addData.id)
-	};
-  return new Promise((resolve, reject) => {
-	if (!addData || allPromisesResolved()) resolve("OK");
-	let noQueueUploadsCount = 0;
-    const checkInterval = setInterval(() => {
-		if (fileError) {
-			clearInterval(checkInterval);
-			reject("アップロードに失敗しました。")
-		}
-		if (!fileError && allPromisesResolved()) {
-			clearInterval(checkInterval);
-			resolve("OK");
-		}
-		if (!uploads.value.length) {
-			if (noQueueUploadsCount >= 15) {
-				noQueueUploadsCount = 0;
-				console.log("ファイルを待機しているはずですが、アップロード中のファイルがありません。");
-				clearInterval(checkInterval);
-				resolve("OK");
-			}
-			noQueueUploadsCount += 1;
-		} else {
-			noQueueUploadsCount = 0;
-		}
-    }, 200); // 200ミリ秒ごとにチェック
-  }).finally(onFinally);
+async function waitForFileSelectingToBeFalse(backupDraftData) {
+        if (filePromises.length === 0) return;
+
+        const addData = os.addQueue({
+                endpoint: "notes/create",
+                data: {},
+                comment: "ファイルのアップロードを待機中…",
+                draftData: { key: draftKey, ...backupDraftData },
+        });
+
+        try {
+                await Promise.all([...filePromises]);
+        } catch (err) {
+                throw new Error("アップロードに失敗しました。");
+        } finally {
+                if (addData) {
+                        os.removeQueue(addData.id);
+                }
+        }
+
+        if (fileError) {
+                throw new Error("アップロードに失敗しました。");
+        }
 }
 
 function cancel() {

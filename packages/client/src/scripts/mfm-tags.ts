@@ -109,12 +109,18 @@ export const MFM_TAGS_JP = [
 		defaultOption: "$[space ",
 	},
 	{
-		name: "morse",
-		ja: "モールス",
-		exportLeft: "$[morse ",
+		name: "unique",
+		ja: "ユニーク化",
+		exportLeft: "$[unique ",
 		exportRight: "]",
-		defaultOption: "$[morse ",
 	},
+        {
+                name: "morse",
+                ja: "モールス",
+                exportLeft: "$[morse ",
+                exportRight: "]",
+                defaultOption: "$[morse ",
+        },
 	{ name: "ruby", ja: "ルビ振り", exportLeft: "$[ruby ", exportRight: "]" },
 	{
 		name: "time",

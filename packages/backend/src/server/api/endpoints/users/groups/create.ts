@@ -1,5 +1,6 @@
 import { UserGroups, UserGroupJoinings } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { invalidateGroupMembersCache } from "@/misc/antenna-members-cache.js";
 import type { UserGroup } from "@/models/entities/user-group.js";
 import type { UserGroupJoining } from "@/models/entities/user-group-joining.js";
 import define from "../../../define.js";
@@ -38,12 +39,14 @@ export default define(meta, paramDef, async (ps, user) => {
 	} as UserGroup).then((x) => UserGroups.findOneByOrFail(x.identifiers[0]));
 
 	// Push the owner
-	await UserGroupJoinings.insert({
-		id: genId(),
-		createdAt: new Date(),
-		userId: user.id,
-		userGroupId: userGroup.id,
-	} as UserGroupJoining);
+        await UserGroupJoinings.insert({
+                id: genId(),
+                createdAt: new Date(),
+                userId: user.id,
+                userGroupId: userGroup.id,
+        } as UserGroupJoining);
 
-	return await UserGroups.pack(userGroup);
+        invalidateGroupMembersCache(userGroup.id);
+
+        return await UserGroups.pack(userGroup);
 });

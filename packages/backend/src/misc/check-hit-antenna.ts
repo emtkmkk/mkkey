@@ -1,16 +1,13 @@
 import type { Antenna } from "@/models/entities/antenna.js";
 import type { Note } from "@/models/entities/note.js";
 import type { User } from "@/models/entities/user.js";
-import {
-	UserListJoinings,
-	UserGroupJoinings,
-	Blockings,
-} from "@/models/index.js";
+import { Blockings, UserGroupJoinings } from "@/models/index.js";
 import { getFullApAccount } from "./convert-host.js";
 import * as Acct from "@/misc/acct.js";
 import type { Packed } from "./schema.js";
 import { Cache } from "./cache.js";
 import config from "@/config/index.js";
+import { fetchGroupMembers, fetchListMembers } from "./antenna-members-cache.js";
 
 const blockingCache = new Cache<User["id"][]>(1000 * 60 * 5);
 
@@ -45,32 +42,28 @@ export async function checkHitAntenna(
 
 	if (!antenna.withReplies && note.replyId != null) return false;
 
-	if (antenna.src === "home") {
-		if (noteUserFollowers && !noteUserFollowers.includes(antenna.userId))
-			return false;
-		if (antennaUserFollowing && !antennaUserFollowing.includes(note.userId))
-			return false;
-	} else if (antenna.src === "list") {
-		const listUsers = (
-			await UserListJoinings.findBy({
-				userListId: antenna.userListId!,
-			})
-		).map((x) => x.userId);
+        if (antenna.src === "home") {
+                if (noteUserFollowers && !noteUserFollowers.includes(antenna.userId))
+                        return false;
+                if (antennaUserFollowing && !antennaUserFollowing.includes(note.userId))
+                        return false;
+        } else if (antenna.src === "list") {
+                const listUsers = await fetchListMembers(antenna.userListId!);
 
-		if (!listUsers.includes(note.userId)) return false;
-	} else if (antenna.src === "group") {
-		const joining = await UserGroupJoinings.findOneByOrFail({
-			id: antenna.userGroupJoiningId!,
-		});
+                const listUserSet = new Set(listUsers);
 
-		const groupUsers = (
-			await UserGroupJoinings.findBy({
-				userGroupId: joining.userGroupId,
-			})
-		).map((x) => x.userId);
+                if (!listUserSet.has(note.userId)) return false;
+        } else if (antenna.src === "group") {
+                const joining = await UserGroupJoinings.findOneByOrFail({
+                        id: antenna.userGroupJoiningId!,
+                });
 
-		if (!groupUsers.includes(note.userId)) return false;
-	} else if (antenna.src === "users") {
+                const groupUsers = await fetchGroupMembers(joining.userGroupId);
+
+                const groupUserSet = new Set(groupUsers);
+
+                if (!groupUserSet.has(note.userId)) return false;
+        } else if (antenna.src === "users") {
 		const accts = antenna.users.map((x) => {
 			const { username, host } = Acct.parse(x);
 			return getFullApAccount(username, host).toLowerCase();

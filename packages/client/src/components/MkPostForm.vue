@@ -98,383 +98,22 @@
 				>
 					<i class="ph-question ph-bold ph-lg"></i>
 				</button>
-				<button
-					v-if="
-						(($store.state.rememberNoteVisibility ||
-							!$store.state.firstPostButtonVisibilityForce) &&
-							!$store.state.secondPostButton) ||
-						(!$store.state.channelSecondPostButton && isChannel) ||
-						visibility === 'specified'
-					"
-					class="submit _buttonGradate"
-					:class="{
-						shortcutTarget: shortcutKeyValue === 1,
-						notShortcutTarget:
-							shortcutKeyValue !== 0 && shortcutKeyValue !== 1,
-					}"
-					:disabled="!canPost"
+								<button
+					v-for="button in submitButtonConfigs"
+					:key="button.key"
+					:class="[button.buttonClass, button.classObject ?? {}]"
+					:disabled="button.disabled"
 					data-cy-open-post-form-submit
-					@click="post"
+					@click="handleQuickPost(button)"
 				>
-					{{ submitText
-					}}<i
-						:class="
-							reply
-								? 'ph-arrow-u-up-left ph-bold ph-lg'
-								: renote
-								? 'ph-quotes ph-bold ph-lg'
-								: 'ph-paper-plane-tilt ph-bold ph-lg'
-						"
-					></i>
-				</button>
-				<button
-					v-if="
-						!$store.state.rememberNoteVisibility &&
-						$store.state.firstPostButtonVisibilityForce &&
-						!$store.state.secondPostButton &&
-						!isChannel &&
-						visibility !== 'specified'
-					"
-					class="submit _buttonGradate"
-					:class="{
-						shortcutTarget: shortcutKeyValue === 1,
-						notShortcutTarget:
-							shortcutKeyValue !== 0 && shortcutKeyValue !== 1,
-					}"
-					:disabled="!canPost"
-					data-cy-open-post-form-submit
-					@click="postFirst"
-				>
-					{{ submitText
-					}}<i
-						:class="
-							$store.state.defaultNoteVisibility === 'public'
-								? publicIcon
-								: $store.state.defaultNoteLocalAndFollower ===
-										true &&
-								  $store.state.defaultNoteVisibility ===
-										'public'
-								? localIcon
-								: $store.state.defaultNoteVisibility === 'home'
-								? homeIcon
-								: $store.state.defaultNoteLocalAndFollower ===
-										true &&
-								  $store.state.defaultNoteVisibility === 'home'
-								? localHomeIcon
-								: $store.state.defaultNoteVisibility ===
-								  'followers'
-								? followerIcon
-								: 'ph-envelope-simple-open ph-bold ph-lg'
-						"
-					></i>
+					{{ button.label }}
+					<i :class="button.iconClass"></i>
 					<i
-						v-if="reply || renote"
-						:class="
-							reply
-								? 'ph-arrow-u-up-left ph-bold ph-lg'
-								: renote
-								? 'ph-quotes ph-bold ph-lg'
-								: ''
-						"
+						v-if="button.extraIconClass"
+						:class="button.extraIconClass"
 					></i>
 				</button>
-				<button
-					v-if="
-						$store.state.secondPostButton &&
-						$store.state.thirdPostButton &&
-						$store.state.fourthPostButton &&
-						$store.state.fifthPostButton &&
-						!isChannel &&
-						visibility !== 'specified'
-					"
-					class="submit_h _buttonGradate"
-					:class="{
-						shortcutTarget: shortcutKeyValue === 5,
-						notShortcutTarget:
-							shortcutKeyValue !== 0 && shortcutKeyValue !== 5,
-					}"
-					:disabled="
-						!canPost &&
-						$store.state.fifthPostVisibility !== 'specified'
-					"
-					data-cy-open-post-form-submit
-					@click="postFifth"
-				>
-					&ZeroWidthSpace;
-					<i
-						:class="[
-							$store.state.fifthPostVisibility === 'public'
-								? publicIcon
-								: $store.state.fifthPostVisibility ===
-								  'l-public'
-								? localIcon
-								: $store.state.fifthPostVisibility === 'home'
-								? homeIcon
-								: $store.state.fifthPostVisibility === 'l-home'
-								? localHomeIcon
-								: $store.state.fifthPostVisibility ===
-								  'followers'
-								? followerIcon
-								: 'ph-envelope-simple-open ph-bold ph-lg',
-							$store.state.fifthPostWideButton
-								? 'widePostButton'
-								: '',
-						]"
-					></i>
-				</button>
-				<button
-					v-if="
-						$store.state.secondPostButton &&
-						$store.state.thirdPostButton &&
-						$store.state.fourthPostButton &&
-						!isChannel &&
-						visibility !== 'specified'
-					"
-					class="submit_h _buttonGradate"
-					:class="{
-						shortcutTarget: shortcutKeyValue === 4,
-						notShortcutTarget:
-							shortcutKeyValue !== 0 && shortcutKeyValue !== 4,
-					}"
-					:disabled="
-						!canPost &&
-						$store.state.fourthPostVisibility !== 'specified'
-					"
-					data-cy-open-post-form-submit
-					@click="postFourth"
-				>
-					&ZeroWidthSpace;
-					<i
-						:class="[
-							$store.state.fourthPostVisibility === 'public'
-								? publicIcon
-								: $store.state.fourthPostVisibility ===
-								  'l-public'
-								? localIcon
-								: $store.state.fourthPostVisibility === 'home'
-								? homeIcon
-								: $store.state.fourthPostVisibility === 'l-home'
-								? localHomeIcon
-								: $store.state.fourthPostVisibility ===
-								  'followers'
-								? followerIcon
-								: 'ph-envelope-simple-open ph-bold ph-lg',
-							$store.state.fourthPostWideButton
-								? 'widePostButton'
-								: '',
-						]"
-					></i>
-				</button>
-				<button
-					v-if="
-						$store.state.secondPostButton &&
-						$store.state.thirdPostButton &&
-						!isChannel &&
-						visibility !== 'specified'
-					"
-					class="submit_h _buttonGradate"
-					:class="{
-						shortcutTarget: shortcutKeyValue === 3,
-						notShortcutTarget:
-							shortcutKeyValue !== 0 && shortcutKeyValue !== 3,
-					}"
-					:disabled="
-						!canPost &&
-						$store.state.thirdPostVisibility !== 'specified'
-					"
-					data-cy-open-post-form-submit
-					@click="postThird"
-				>
-					&ZeroWidthSpace;
-					<i
-						:class="[
-							$store.state.thirdPostVisibility === 'public'
-								? publicIcon
-								: $store.state.thirdPostVisibility ===
-								  'l-public'
-								? localIcon
-								: $store.state.thirdPostVisibility === 'home'
-								? homeIcon
-								: $store.state.thirdPostVisibility === 'l-home'
-								? localHomeIcon
-								: $store.state.thirdPostVisibility ===
-								  'followers'
-								? followerIcon
-								: 'ph-envelope-simple-open ph-bold ph-lg',
-							$store.state.thirdPostWideButton
-								? 'widePostButton'
-								: '',
-						]"
-					></i>
-				</button>
-				<button
-					v-if="
-						$store.state.secondPostButton &&
-						!isChannel &&
-						visibility !== 'specified'
-					"
-					class="submit_h _buttonGradate"
-					:class="{
-						shortcutTarget: shortcutKeyValue === 2,
-						notShortcutTarget:
-							shortcutKeyValue !== 0 && shortcutKeyValue !== 2,
-					}"
-					:disabled="
-						!canPost &&
-						$store.state.secondPostVisibility !== 'specified'
-					"
-					data-cy-open-post-form-submit
-					@click="postSecond"
-				>
-					&ZeroWidthSpace;
-					<i
-						:class="[
-							$store.state.secondPostVisibility === 'public'
-								? publicIcon
-								: $store.state.secondPostVisibility ===
-								  'l-public'
-								? localIcon
-								: $store.state.secondPostVisibility === 'home'
-								? homeIcon
-								: $store.state.secondPostVisibility === 'l-home'
-								? localHomeIcon
-								: $store.state.secondPostVisibility ===
-								  'followers'
-								? followerIcon
-								: 'ph-envelope-simple-open ph-bold ph-lg',
-							$store.state.secondPostWideButton
-								? 'widePostButton'
-								: '',
-						]"
-					></i>
-				</button>
-				<button
-					v-if="
-						($store.state.rememberNoteVisibility ||
-							!$store.state.firstPostButtonVisibilityForce) &&
-						$store.state.secondPostButton &&
-						!isChannel &&
-						visibility !== 'specified'
-					"
-					class="submit_h _buttonGradate"
-					:class="{
-						shortcutTarget: shortcutKeyValue === 1,
-						notShortcutTarget:
-							shortcutKeyValue !== 0 && shortcutKeyValue !== 1,
-					}"
-					:disabled="!canPost"
-					data-cy-open-post-form-submit
-					@click="post"
-				>
-					&ZeroWidthSpace;
-					<i
-						:class="[
-							reply
-								? 'ph-arrow-u-up-left ph-bold ph-lg'
-								: renote
-								? 'ph-quotes ph-bold ph-lg'
-								: 'ph-paper-plane-tilt ph-bold ph-lg',
-							$store.state.firstPostWideButton
-								? 'widePostButton'
-								: '',
-						]"
-					></i>
-				</button>
-				<button
-					v-if="
-						!$store.state.rememberNoteVisibility &&
-						$store.state.firstPostButtonVisibilityForce &&
-						$store.state.secondPostButton &&
-						!isChannel &&
-						visibility !== 'specified'
-					"
-					class="submit_h _buttonGradate"
-					:class="{
-						shortcutTarget: shortcutKeyValue === 1,
-						notShortcutTarget:
-							shortcutKeyValue !== 0 && shortcutKeyValue !== 1,
-					}"
-					:disabled="
-						!canPost &&
-						$store.state.defaultNoteVisibility !== 'specified'
-					"
-					data-cy-open-post-form-submit
-					@click="postFirst"
-				>
-					&ZeroWidthSpace;
-					<i
-						:class="[
-							$store.state.defaultNoteVisibility === 'public'
-								? publicIcon
-								: $store.state.defaultNoteLocalAndFollower ===
-										true &&
-								  $store.state.defaultNoteVisibility ===
-										'public'
-								? localIcon
-								: $store.state.defaultNoteVisibility === 'home'
-								? homeIcon
-								: $store.state.defaultNoteLocalAndFollower ===
-										true &&
-								  $store.state.defaultNoteVisibility === 'home'
-								? localHomeIcon
-								: $store.state.defaultNoteVisibility ===
-								  'followers'
-								? followerIcon
-								: 'ph-envelope-simple-open ph-bold ph-lg',
-							$store.state.firstPostWideButton
-								? !(reply || renote)
-									? 'widePostButton'
-									: 'widePostButton_left'
-								: '',
-						]"
-					></i>
-					<i
-						v-if="reply || renote"
-						class="subPostIcon"
-						:class="[
-							reply
-								? 'ph-arrow-u-up-left ph-bold ph-lg'
-								: renote
-								? 'ph-quotes ph-bold ph-lg'
-								: '',
-							$store.state.firstPostWideButton
-								? 'widePostButton_right'
-								: '',
-						]"
-					></i>
-				</button>
-				<button
-					v-if="$store.state.channelSecondPostButton && isChannel"
-					class="submit_h _buttonGradate"
-					:disabled="!canPost"
-					data-cy-open-post-form-submit
-					@click="postSecondChannel"
-				>
-					&ZeroWidthSpace;
-					<i class="ph-hand-fist ph-bold ph-lg widePostButton"></i>
-				</button>
-				<button
-					v-if="
-						$store.state.channelSecondPostButton &&
-						isChannel &&
-						canNotLocal
-					"
-					class="submit_h _buttonGradate"
-					:disabled="!canPost"
-					data-cy-open-post-form-submit
-					@click="post"
-				>
-					&ZeroWidthSpace;
-					<i
-						:class="
-							reply
-								? 'ph-arrow-u-up-left ph-bold ph-lg widePostButton'
-								: renote
-								? 'ph-quotes ph-bold ph-lg widePostButton'
-								: 'ph-paper-plane-tilt ph-bold ph-lg widePostButton'
-						"
-					></i>
-				</button>
+
 			</div>
 		</header>
 		<div class="form" :class="{ fixed }">
@@ -1084,6 +723,386 @@ const submitText = $computed((): string => {
 	return props.renote ? i18n.ts.quote : reply ? i18n.ts.reply : i18n.ts.note;
 });
 
+const zeroWidthSpace = "\u200B";
+
+type QuickVisibilityType = string;
+
+type QuickPostBehavior =
+        | { type: "post" }
+        | { type: "quick"; quickType: QuickVisibilityType }
+        | { type: "custom"; handler: () => void };
+
+interface QuickPostButtonConfig {
+        key: string;
+        label: string;
+        buttonClass: string;
+        classObject?: Record<string, boolean>;
+        disabled: boolean;
+        iconClass: string;
+        extraIconClass?: string;
+        behavior: QuickPostBehavior;
+}
+
+interface QuickVisibilitySlot {
+        quickType: QuickVisibilityType;
+        order: number | null;
+        isEnabled: boolean;
+        visibilityValue: string;
+        isWide: boolean;
+}
+
+interface QuickVisibilityPreset {
+        quickType: QuickVisibilityType;
+        order: number | null;
+        isEnabled: boolean;
+        parsed: { visibility: (typeof misskey.noteVisibilities)[number]; localOnly: boolean };
+        isWide: boolean;
+}
+
+function joinClasses(...classes: (string | false | null | undefined)[]): string {
+        return classes.filter(Boolean).join(" ");
+}
+
+function parseVisibilitySetting(
+	value: string
+): { visibility: (typeof misskey.noteVisibilities)[number]; localOnly: boolean } {
+	if (value.startsWith("l-")) {
+		return {
+			visibility: value.slice(2) as (typeof misskey.noteVisibilities)[number],
+			localOnly: true,
+		};
+	}
+	return {
+		visibility: value as (typeof misskey.noteVisibilities)[number],
+		localOnly: false,
+	};
+}
+
+function getVisibilityIconClass(
+	targetVisibility: (typeof misskey.noteVisibilities)[number],
+	isLocal: boolean
+): string {
+	if (targetVisibility === "public") {
+		return isLocal ? localIcon : publicIcon;
+	}
+	if (targetVisibility === "home") {
+		return isLocal ? localHomeIcon : homeIcon;
+	}
+	if (targetVisibility === "followers") {
+		return followerIcon;
+	}
+	return "ph-envelope-simple-open ph-bold ph-lg";
+}
+
+function createShortcutClasses(target: number | null): Record<string, boolean> | undefined {
+        if (target == null) return undefined;
+        return {
+                shortcutTarget: shortcutKeyValue === target,
+                notShortcutTarget:
+                        shortcutKeyValue !== 0 && shortcutKeyValue !== target,
+        };
+}
+
+const ORDINAL_BASE: Record<string, number> = {
+        first: 1,
+        second: 2,
+        third: 3,
+        fourth: 4,
+        fifth: 5,
+        sixth: 6,
+        seventh: 7,
+        eighth: 8,
+        ninth: 9,
+};
+
+const ORDINAL_TEENS: Record<string, number> = {
+        tenth: 10,
+        eleventh: 11,
+        twelfth: 12,
+        thirteenth: 13,
+        fourteenth: 14,
+        fifteenth: 15,
+        sixteenth: 16,
+        seventeenth: 17,
+        eighteenth: 18,
+        nineteenth: 19,
+};
+
+const ORDINAL_TENS: Record<string, number> = {
+        twentieth: 20,
+        thirtieth: 30,
+        fortieth: 40,
+        fiftieth: 50,
+        sixtieth: 60,
+        seventieth: 70,
+        eightieth: 80,
+        ninetieth: 90,
+        hundredth: 100,
+};
+
+const ORDINAL_TENS_PREFIX: Record<string, number> = {
+        twenty: 20,
+        thirty: 30,
+        forty: 40,
+        fifty: 50,
+        sixty: 60,
+        seventy: 70,
+        eighty: 80,
+        ninety: 90,
+        hundred: 100,
+};
+
+function ordinalWordToNumber(word: string): number | null {
+        const normalized = word.toLowerCase();
+        const digitMatch = normalized.match(/^([0-9]+)(?:st|nd|rd|th)$/);
+        if (digitMatch) {
+                return Number(digitMatch[1]);
+        }
+        if (normalized in ORDINAL_BASE) return ORDINAL_BASE[normalized];
+        if (normalized in ORDINAL_TEENS) return ORDINAL_TEENS[normalized];
+        if (normalized in ORDINAL_TENS) return ORDINAL_TENS[normalized];
+
+        for (const [prefix, tensValue] of Object.entries(ORDINAL_TENS_PREFIX)) {
+                if (!normalized.startsWith(prefix)) continue;
+                const suffix = normalized.slice(prefix.length);
+                if (suffix.length === 0) continue;
+                if (suffix in ORDINAL_BASE) {
+                        return tensValue + ORDINAL_BASE[suffix];
+                }
+                if (suffix in ORDINAL_TEENS) {
+                        return tensValue + ORDINAL_TEENS[suffix];
+                }
+        }
+
+        return null;
+}
+
+function createSequentialQuickVisibilitySlots(
+        storeState: typeof defaultStore.state
+): QuickVisibilitySlot[] {
+        const rawState = storeState as Record<string, unknown>;
+        const slots: QuickVisibilitySlot[] = [];
+        const visibilityPattern = /^([a-zA-Z0-9]+)PostVisibility$/;
+
+        for (const key of Object.keys(rawState)) {
+                const match = key.match(visibilityPattern);
+                if (!match) continue;
+                const quickType = match[1];
+                if (quickType === "first") continue;
+
+                const buttonKey = `${quickType}PostButton`;
+                if (!(buttonKey in rawState)) continue;
+
+                const visibilityValue = (rawState[key] as string | undefined) ?? "public";
+                const isEnabled = Boolean(rawState[buttonKey]);
+                const wideKey = `${quickType}PostWideButton`;
+                const isWide = Boolean(rawState[wideKey]);
+
+                slots.push({
+                        quickType,
+                        order: ordinalWordToNumber(quickType),
+                        isEnabled,
+                        visibilityValue,
+                        isWide,
+                });
+        }
+
+        return slots.sort((a, b) => {
+                const orderA = a.order ?? Number.POSITIVE_INFINITY;
+                const orderB = b.order ?? Number.POSITIVE_INFINITY;
+                if (orderA !== orderB) {
+                        return orderA - orderB;
+                }
+                return a.quickType.localeCompare(b.quickType);
+        });
+}
+
+const quickVisibilityPresets = $computed<QuickVisibilityPreset[]>(() => {
+        return createSequentialQuickVisibilitySlots(defaultStore.state).map((slot) => ({
+                quickType: slot.quickType,
+                order: slot.order,
+                isEnabled: slot.isEnabled,
+                parsed: parseVisibilitySetting(slot.visibilityValue),
+                isWide: slot.isWide,
+        }));
+});
+
+const quickVisibilitySettingMap = $computed<Record<string, QuickVisibilityPreset["parsed"]>>(() => {
+        const map: Record<string, QuickVisibilityPreset["parsed"]> = {};
+        for (const preset of quickVisibilityPresets) {
+                map[preset.quickType] = preset.parsed;
+        }
+        return map;
+});
+
+const submitButtonConfigs = $computed<QuickPostButtonConfig[]>(() => {
+        const storeState = defaultStore.state;
+        const buttons: QuickPostButtonConfig[] = [];
+
+	const defaultIcon = reply
+		? "ph-arrow-u-up-left ph-bold ph-lg"
+		: renote
+		? "ph-quotes ph-bold ph-lg"
+		: "ph-paper-plane-tilt ph-bold ph-lg";
+
+	const firstSetting = {
+		visibility: storeState.defaultNoteVisibility as (typeof misskey.noteVisibilities)[number],
+		localOnly: storeState.defaultNoteLocalAndFollower === true,
+	};
+
+	const replyOrRenoteIcon = reply
+		? "ph-arrow-u-up-left ph-bold ph-lg"
+		: renote
+		? "ph-quotes ph-bold ph-lg"
+		: undefined;
+
+	const addButton = (
+		key: string,
+		condition: boolean,
+		config: Omit<QuickPostButtonConfig, "key">
+	) => {
+		if (condition) {
+			buttons.push({ key, ...config });
+		}
+	};
+
+	addButton(
+		"primary-text",
+		((storeState.rememberNoteVisibility || !storeState.firstPostButtonVisibilityForce) &&
+				!storeState.secondPostButton) ||
+			(!storeState.channelSecondPostButton && isChannel) ||
+			visibility === "specified",
+		{
+			label: submitText,
+			buttonClass: "submit _buttonGradate",
+			classObject: createShortcutClasses(1),
+			disabled: !canPost,
+			iconClass: defaultIcon,
+			behavior: { type: "post" },
+		}
+	);
+
+	addButton(
+		"primary-text-forced",
+		!storeState.rememberNoteVisibility &&
+			storeState.firstPostButtonVisibilityForce &&
+			!storeState.secondPostButton &&
+			!isChannel &&
+			visibility !== "specified",
+		{
+			label: submitText,
+			buttonClass: "submit _buttonGradate",
+			classObject: createShortcutClasses(1),
+			disabled: !canPost,
+			iconClass: getVisibilityIconClass(firstSetting.visibility, firstSetting.localOnly),
+			extraIconClass: replyOrRenoteIcon,
+			behavior: { type: "quick", quickType: "first" },
+		}
+	);
+
+        let sequentialChainBroken = false;
+        for (const preset of quickVisibilityPresets) {
+                if (!preset.isEnabled) {
+                        sequentialChainBroken = true;
+                        continue;
+                }
+                if (sequentialChainBroken) {
+                        continue;
+                }
+                addButton(
+                        `quick-${preset.quickType}`,
+                        !isChannel && visibility !== "specified",
+                        {
+                                label: zeroWidthSpace,
+                                buttonClass: "submit_h _buttonGradate",
+                                classObject: createShortcutClasses(preset.order ?? null),
+                                disabled: !canPost && preset.parsed.visibility !== "specified",
+                                iconClass: joinClasses(
+                                        getVisibilityIconClass(preset.parsed.visibility, preset.parsed.localOnly),
+                                        preset.isWide ? "widePostButton" : undefined
+                                ),
+                                behavior: { type: "quick", quickType: preset.quickType },
+                        }
+                );
+        }
+
+	addButton(
+		"quick-primary",
+		(storeState.rememberNoteVisibility || !storeState.firstPostButtonVisibilityForce) &&
+			storeState.secondPostButton &&
+			!isChannel &&
+			visibility !== "specified",
+		{
+			label: zeroWidthSpace,
+			buttonClass: "submit_h _buttonGradate",
+			classObject: createShortcutClasses(1),
+			disabled: !canPost,
+			iconClass: joinClasses(
+				defaultIcon,
+				storeState.firstPostWideButton ? "widePostButton" : undefined
+			),
+			behavior: { type: "post" },
+		}
+	);
+
+	addButton(
+		"quick-first",
+		!storeState.rememberNoteVisibility &&
+			storeState.firstPostButtonVisibilityForce &&
+			storeState.secondPostButton &&
+			!isChannel &&
+			visibility !== "specified",
+		{
+			label: zeroWidthSpace,
+			buttonClass: "submit_h _buttonGradate",
+			classObject: createShortcutClasses(1),
+			disabled: !canPost && storeState.defaultNoteVisibility !== "specified",
+			iconClass: joinClasses(
+				getVisibilityIconClass(firstSetting.visibility, firstSetting.localOnly),
+				storeState.firstPostWideButton
+					? replyOrRenoteIcon
+						? "widePostButton_left"
+						: "widePostButton"
+					: undefined
+			),
+			extraIconClass: replyOrRenoteIcon
+				? joinClasses(
+					"subPostIcon",
+					replyOrRenoteIcon,
+					storeState.firstPostWideButton ? "widePostButton_right" : undefined
+				)
+				: undefined,
+			behavior: { type: "quick", quickType: "first" },
+		}
+	);
+
+	addButton(
+		"channel-second",
+		storeState.channelSecondPostButton && isChannel,
+		{
+			label: zeroWidthSpace,
+			buttonClass: "submit_h _buttonGradate",
+			disabled: !canPost,
+			iconClass: "ph-hand-fist ph-bold ph-lg widePostButton",
+			behavior: { type: "custom", handler: postSecondChannel },
+		}
+	);
+
+	addButton(
+		"channel-primary",
+		storeState.channelSecondPostButton && isChannel && canNotLocal,
+		{
+			label: zeroWidthSpace,
+			buttonClass: "submit_h _buttonGradate",
+			disabled: !canPost,
+			iconClass: joinClasses(defaultIcon, "widePostButton"),
+			behavior: { type: "post" },
+		}
+	);
+
+	return buttons;
+});
+
 const textLength = $computed((): number => {
 	return length((preprocess(text) + imeText).trim());
 });
@@ -1680,7 +1699,7 @@ function onKeydown(ev: KeyboardEvent) {
 		!isChannel &&
 		visibility !== "specified"
 	)
-		postFifth();
+		performQuickPost("fifth");
 	else if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 4 &&
@@ -1689,7 +1708,7 @@ function onKeydown(ev: KeyboardEvent) {
 		!isChannel &&
 		visibility !== "specified"
 	)
-		postFourth();
+		performQuickPost("fourth");
 	else if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 3 &&
@@ -1698,7 +1717,7 @@ function onKeydown(ev: KeyboardEvent) {
 		!isChannel &&
 		visibility !== "specified"
 	)
-		postThird();
+		performQuickPost("third");
 	else if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 2 &&
@@ -1707,14 +1726,14 @@ function onKeydown(ev: KeyboardEvent) {
 		!isChannel &&
 		visibility !== "specified"
 	)
-		postSecond();
+		performQuickPost("second");
 	else if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 1 &&
 		canPost &&
 		visibility !== "specified"
 	)
-		postFirst();
+		performQuickPost("first");
 	else if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 1 &&
@@ -1941,75 +1960,42 @@ function specifiedCheck() {
 	}
 }
 
-async function postFirst() {
-	if (defaultStore.state.firstPostButtonVisibilityForce) {
-		visibility = defaultStore.state.defaultNoteVisibility;
-		localOnly = defaultStore.state.defaultNoteLocalAndFollower;
-	}
-	specifiedCheck();
-	if (canPost && visibility !== "specified") {
-		post();
+function performQuickPost(kind: QuickVisibilityType): void {
+        if (kind === "first") {
+                if (defaultStore.state.firstPostButtonVisibilityForce) {
+                        visibility = defaultStore.state.defaultNoteVisibility as (typeof misskey.noteVisibilities)[number];
+                        localOnly = defaultStore.state.defaultNoteLocalAndFollower === true;
+                }
+        } else {
+                const target = quickVisibilitySettingMap[kind];
+                if (target) {
+                        localOnly = target.localOnly;
+                        visibility = target.visibility;
+                }
+        }
+        specifiedCheck();
+        if (canPost && visibility !== "specified") {
+                post();
+        }
+}
+
+function handleQuickPost(button: QuickPostButtonConfig) {
+	switch (button.behavior.type) {
+		case "post":
+			post();
+			break;
+		case "quick":
+			performQuickPost(button.behavior.quickType);
+			break;
+		case "custom":
+			button.behavior.handler();
+			break;
 	}
 }
 
-async function postSecond() {
-	if (defaultStore.state.secondPostVisibility.startsWith("l-")) {
-		localOnly = true;
-		visibility = defaultStore.state.secondPostVisibility.replace("l-", "");
-	} else {
-		localOnly = false;
-		visibility = defaultStore.state.secondPostVisibility;
-	}
-	specifiedCheck();
-	if (canPost && visibility !== "specified") {
-		post();
-	}
-}
-
-async function postSecondChannel() {
+function postSecondChannel() {
 	localOnly = true;
 	post();
-}
-async function postThird() {
-	if (defaultStore.state.thirdPostVisibility.startsWith("l-")) {
-		localOnly = true;
-		visibility = defaultStore.state.thirdPostVisibility.replace("l-", "");
-	} else {
-		localOnly = false;
-		visibility = defaultStore.state.thirdPostVisibility;
-	}
-	specifiedCheck();
-	if (canPost && visibility !== "specified") {
-		post();
-	}
-}
-
-async function postFourth() {
-	if (defaultStore.state.fourthPostVisibility.startsWith("l-")) {
-		localOnly = true;
-		visibility = defaultStore.state.fourthPostVisibility.replace("l-", "");
-	} else {
-		localOnly = false;
-		visibility = defaultStore.state.fourthPostVisibility;
-	}
-	specifiedCheck();
-	if (canPost && visibility !== "specified") {
-		post();
-	}
-}
-
-async function postFifth() {
-	if (defaultStore.state.fifthPostVisibility.startsWith("l-")) {
-		localOnly = true;
-		visibility = defaultStore.state.fifthPostVisibility.replace("l-", "");
-	} else {
-		localOnly = false;
-		visibility = defaultStore.state.fifthPostVisibility;
-	}
-	specifiedCheck();
-	if (canPost && visibility !== "specified") {
-		post();
-	}
 }
 
 async function post() {

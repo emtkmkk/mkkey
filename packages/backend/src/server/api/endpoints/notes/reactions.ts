@@ -1,11 +1,8 @@
 import { Brackets } from "typeorm";
-import {
-	Blockings,
-	Followings,
-	Mutings,
-	NoteReactions,
-} from "@/models/index.js";
-import type { NoteReaction } from "@/models/entities/note-reaction.js";
+import { NoteReactions } from "@/models/index.js";
+import { Blocking } from "@/models/entities/blocking.js";
+import { Following } from "@/models/entities/following.js";
+import { Muting } from "@/models/entities/muting.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getNote } from "../../common/getters.js";
@@ -71,7 +68,7 @@ export default define(meta, paramDef, async (ps, user) => {
                         const followingExistsQuery = query
                                 .subQuery()
                                 .select("1")
-                                .from(Followings, "following")
+                                .from(Following, "following")
                                 .where("following.followerId = :viewerId", { viewerId: user.id })
                                 .andWhere("following.followeeId = reaction.userId")
                                 .getQuery();
@@ -87,7 +84,7 @@ export default define(meta, paramDef, async (ps, user) => {
                 const mutingExistsQuery = query
                         .subQuery()
                         .select("1")
-                        .from(Mutings, "muting")
+                        .from(Muting, "muting")
                         .where("muting.muterId = :viewerId", { viewerId: user.id })
                         .andWhere("muting.muteeId = reaction.userId")
                         .getQuery();
@@ -97,7 +94,7 @@ export default define(meta, paramDef, async (ps, user) => {
                 const blockingExistsQuery = query
                         .subQuery()
                         .select("1")
-                        .from(Blockings, "blocking")
+                        .from(Blocking, "blocking")
                         .where("blocking.blockerId = :viewerId", { viewerId: user.id })
                         .andWhere("blocking.blockeeId = reaction.userId")
                         .getQuery();
@@ -107,7 +104,7 @@ export default define(meta, paramDef, async (ps, user) => {
                 const blockedExistsQuery = query
                         .subQuery()
                         .select("1")
-                        .from(Blockings, "blocking")
+                        .from(Blocking, "blocking")
                         .where("blocking.blockeeId = :viewerId", { viewerId: user.id })
                         .andWhere("blocking.blockerId = reaction.userId")
                         .getQuery();

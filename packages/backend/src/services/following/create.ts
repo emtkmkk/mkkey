@@ -246,12 +246,14 @@ export default async function (
 			);
 	}
 
-	if (
-		(await Followings.countBy({
-			followerId: follower.id,
-			followeeId: followee.id,
-		})) > 0
-	) {
+        if (
+                await Followings.exist({
+                        where: {
+                                followerId: follower.id,
+                                followeeId: followee.id,
+                        },
+                })
+        ) {
 		// すでにフォロー関係が存在している場合
 		if (Users.isRemoteUser(follower) && Users.isLocalUser(followee)) {
 			// リモート → ローカル: acceptを送り返しておしまい

@@ -2071,17 +2071,15 @@ async function post() {
 
 	const processedCw = cw ? preprocess(cw) : "";
 
-	if (!canPublic && visibility === "public") visibility = "home";
-	if (!canHome && visibility === "home") visibility = "followers";
-	if (!canFollower && visibility === "followers") visibility = "specified";
-	if (
-		!canNotLocal &&
-		visibility !== "followers" &&
-		visibility !== "specified" &&
-		localOnly === false &&
-		!$i.blockPostNotLocalPublic
-	)
-		localOnly = true;
+	({ visibility, localOnly } = normalizeVisibility({
+		visibility,
+		localOnly,
+		canPublic,
+		canHome,
+		canFollower,
+		canNotLocal,
+		blockPostNotLocalPublic: $i.blockPostNotLocalPublic,
+	}));
 
 	if (!props.renote && !quoteId && referencesFlg && referenceIds?.length === 1) {
 		try {
@@ -2101,68 +2099,32 @@ async function post() {
 		}
 	}
 
-	let postData = {
-		text: processedText === "" ? undefined : processedText,
-		fileIds: files.length > 0 ? files.map((f) => f.id) : undefined,
-		replyId: reply ? reply.id : undefined,
-		renoteId: props.renote
-			? props.renote.id
-			: quoteId
-			? quoteId
-			: undefined,
-		channelId: props.channel ? props.channel.id : undefined,
-		poll: poll,
-		cw: useCw ? processedCw || "" : undefined,
-		localOnly: localOnly,
-		visibility: visibility,
-		visibleUserIds:
-			visibility === "specified"
-				? visibleUsers.map((u) => u.id)
-				: undefined,
-		ccUserIds:
-			visibility === "specified"
-				? visibleUsersCc.map((u) => u.id)
-				: undefined,
+	let postData = buildPostPayload({
+		processedText,
+		processedCw,
+		useCw,
+		files,
+		reply,
+		renote: props.renote,
+		quoteId,
+		channel: props.channel,
+		poll,
+		localOnly,
+		visibility,
+		visibleUsers,
+		visibleUsersCc,
 		inheritCc,
-		referenceIds: referenceIds?.length && referencesFlg ? referenceIds : undefined,
-	};
+		referenceIds,
+		referencesFlg,
+		withHashtags: Boolean(withHashtags),
+		hashtags: typeof hashtags === "string" ? hashtags : null,
+	});
 
-	if (withHashtags && hashtags && hashtags.trim() !== "") {
-		const textHashtags_ = mfm
-			.parse(postData.text)
-			.filter((x) => x.type === "hashtag")
-			.map((x) =>
-				x.props.hashtag.startsWith("#")
-					? x.props.hashtag
-					: `#${x.props.hashtag}`
-			);
-		const hashtags_ = hashtags
-			.trim()
-			.split(" ")
-			.map((x) => (x.startsWith("#") ? x : `#${x}`));
-		const hashtags__ = hashtags_
-			.filter((x) => !textHashtags_.includes(x))
-			.join(" ");
-		postData.text = postData.text
-			? `${postData.text} ${hashtags__}`
-			: hashtags__;
-	}
+	postData = await applyPostPlugins(postData, notePostInterruptors);
 
-	// plugin
-	if (notePostInterruptors.length > 0) {
-		for (const interruptor of notePostInterruptors) {
-			postData = await interruptor.handler(deepClone(postData));
-		}
-	}
+	const token = await resolvePostAccountToken(postAccount);
 
-	let token = undefined;
-
-	if (postAccount) {
-		const storedAccounts = await getAccounts();
-		token = storedAccounts.find((x) => x.id === postAccount.id)?.token;
-	}
-
-	if ($i.isMiniSilenced && visibility === "public") {
+	if ($i.isMiniSilenced && postData.visibility === "public") {
 		const { canceled } = await os.confirm({
 			type: "warning",
 			text: i18n.ts.miniSilenceWarn,
@@ -2172,32 +2134,213 @@ async function post() {
 		if (canceled) return;
 	}
 
-	backupData()
-	const backupDraftData = backupDraft();
-	clear();
-	nextTick(() => {
-		deleteDraft();
-		emit("posted");
-		if (postData.text && postData.text !== "") {
-			const hashtags_ = mfm
-				.parse(postData.text)
-				.filter((x) => x.type === "hashtag")
-				.map((x) => x.props.hashtag);
-			const history = JSON.parse(
-				localStorage.getItem("hashtags") || "[]"
-			) as string[];
-			localStorage.setItem(
-				"hashtags",
-				JSON.stringify(unique(hashtags_.concat(history)))
+	const backupDraftData = persistDraftOnSuccess(postData.text);
+
+	await submitPostRequest({
+		postData,
+		token,
+		backupDraftData,
+	});
+}
+type NoteVisibility = (typeof misskey.noteVisibilities)[number];
+
+type PollValue = {
+        choices: string[];
+        multiple: boolean;
+        expiresAt: string | null;
+        expiredAfter: string | null;
+} | null;
+
+interface NormalizeVisibilityOptions {
+        visibility: NoteVisibility;
+        localOnly: boolean;
+        canPublic: boolean;
+        canHome: boolean;
+        canFollower: boolean;
+        canNotLocal: boolean;
+        blockPostNotLocalPublic: boolean;
+}
+
+function normalizeVisibility(options: NormalizeVisibilityOptions): {
+ visibility: NoteVisibility;
+ localOnly: boolean;
+} {
+	let { visibility, localOnly } = options;
+
+	if (!options.canPublic && visibility === "public") visibility = "home";
+	if (!options.canHome && visibility === "home") visibility = "followers";
+	if (!options.canFollower && visibility === "followers") visibility = "specified";
+	if (
+		!options.canNotLocal &&
+		visibility !== "followers" &&
+		visibility !== "specified" &&
+		localOnly === false &&
+		!options.blockPostNotLocalPublic
+	) {
+		localOnly = true;
+	}
+
+	return { visibility, localOnly };
+}
+
+interface BuildPostPayloadOptions {
+        processedText: string;
+        processedCw: string;
+        useCw: boolean;
+        files: Array<{ id: string }>;
+        reply?: misskey.entities.Note | null;
+        renote?: misskey.entities.Note;
+        quoteId: string | null;
+        channel?: { id: string } | null;
+        poll: PollValue;
+        localOnly: boolean;
+        visibility: NoteVisibility;
+        visibleUsers: Array<{ id: string }>;
+        visibleUsersCc: Array<{ id: string }>;
+        inheritCc: boolean;
+        referenceIds?: string[] | null;
+        referencesFlg: boolean;
+        withHashtags: boolean;
+        hashtags: string | null;
+}
+
+interface PostPayload {
+        text?: string;
+        fileIds?: string[];
+        replyId?: string;
+        renoteId?: string;
+        channelId?: string;
+        poll?: PollValue;
+        cw?: string;
+        localOnly: boolean;
+        visibility: NoteVisibility;
+        visibleUserIds?: string[];
+        ccUserIds?: string[];
+        inheritCc?: boolean;
+        referenceIds?: string[];
+}
+
+function buildPostPayload(options: BuildPostPayloadOptions): PostPayload {
+ const payload: PostPayload = {
+  text: options.processedText === "" ? undefined : options.processedText,
+  fileIds: options.files.length > 0 ? options.files.map((f) => f.id) : undefined,
+  replyId: options.reply ? options.reply.id : undefined,
+  renoteId: options.renote
+   ? options.renote.id
+   : options.quoteId
+   ? options.quoteId
+   : undefined,
+  channelId: options.channel ? options.channel.id : undefined,
+  poll: options.poll,
+  cw: options.useCw ? options.processedCw || "" : undefined,
+  localOnly: options.localOnly,
+  visibility: options.visibility,
+  visibleUserIds:
+   options.visibility === "specified"
+    ? options.visibleUsers.map((u) => u.id)
+    : undefined,
+  ccUserIds:
+   options.visibility === "specified"
+    ? options.visibleUsersCc.map((u) => u.id)
+    : undefined,
+  inheritCc: options.inheritCc,
+  referenceIds:
+   options.referenceIds?.length && options.referencesFlg
+    ? options.referenceIds
+    : undefined,
+	};
+
+	if (options.withHashtags && options.hashtags && options.hashtags.trim() !== "") {
+		const textHashtags_ = mfm
+			.parse(payload.text ?? "")
+			.filter((x) => x.type === "hashtag")
+			.map((x) =>
+				x.props.hashtag.startsWith("#")
+					? x.props.hashtag
+					: `#${x.props.hashtag}`
 			);
+		const hashtags_ = options.hashtags
+			.trim()
+			.split(" ")
+			.map((x) => (x.startsWith("#") ? x : `#${x}`));
+		const hashtags__ = hashtags_
+			.filter((x) => !textHashtags_.includes(x))
+			.join(" ");
+		payload.text = payload.text
+			? `${payload.text} ${hashtags__}`
+			: hashtags__;
+	}
+
+	return payload;
+}
+
+async function applyPostPlugins(
+ payload: PostPayload,
+ interruptors: typeof notePostInterruptors,
+): Promise<PostPayload> {
+ if (interruptors.length === 0) {
+  return payload;
+	}
+
+	let result = payload;
+	for (const interruptor of interruptors) {
+		result = await interruptor.handler(deepClone(result));
+	}
+
+	return result;
+}
+
+function persistDraftOnSuccess(postText: string | undefined): DraftEntry | undefined {
+ backupData();
+ const backupDraftData = backupDraft();
+ clear();
+ nextTick(() => {
+  deleteDraft();
+  emit("posted");
+  if (postText && postText !== "") {
+   const hashtags_ = mfm
+    .parse(postText)
+    .filter((x) => x.type === "hashtag")
+    .map((x) => x.props.hashtag);
+   const history = JSON.parse(
+    localStorage.getItem("hashtags") || "[]"
+   ) as string[];
+   localStorage.setItem(
+    "hashtags",
+    JSON.stringify(unique(hashtags_.concat(history)))
+   );
 		}
 	});
+	return backupDraftData;
+}
+
+interface SubmitPostRequestOptions {
+        postData: PostPayload;
+        token?: string;
+        backupDraftData: DraftEntry | undefined;
+}
+
+
+async function submitPostRequest({
+	postData,
+	token,
+	backupDraftData,
+}: SubmitPostRequestOptions): Promise<void> {
 	posting = true;
 	try {
 		await waitForFileSelectingToBeFalse(backupDraftData);
-		postData.fileIds = (postData?.fileIds?.length ?? 0) + files.length > 0 ? [...(postData.fileIds?.length ? postData.fileIds : []), ...files.map((f) => f.id)] : undefined;
+		postData.fileIds =
+			((postData?.fileIds?.length ?? 0) + files.length > 0)
+				? [
+					...(postData.fileIds?.length ? postData.fileIds : []),
+					...files.map((f) => f.id),
+				]
+				: undefined;
 		clear();
-		await os.queueApi("notes/create", postData, token, true, "投稿データをサーバに送信中…", {key: draftKey, ...backupDraftData})
+		await os.queueApi("notes/create", postData, token, true, "投稿データをサーバに送信中…", {
+			key: draftKey,
+			...backupDraftData,
+		});
 		posting = false;
 		postAccount = null;
 	} catch (err) {
@@ -2208,6 +2351,15 @@ async function post() {
 		os.toast([err.message, errId].filter(Boolean).join(" : "));
 		loadDraft();
 	}
+}
+
+async function resolvePostAccountToken(
+	account: misskey.entities.UserDetailed | null,
+): Promise<string | undefined> {
+	if (!account) return undefined;
+
+	const storedAccounts = await getAccounts();
+	return storedAccounts.find((x) => x.id === account.id)?.token;
 }
 
 async function waitForFileSelectingToBeFalse(backupDraftData) {

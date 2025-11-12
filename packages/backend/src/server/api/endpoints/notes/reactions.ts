@@ -1,5 +1,4 @@
-import type { FindOptionsWhere } from "typeorm";
-import { DeepPartial, Like, Not, In } from "typeorm";
+import { Brackets } from "typeorm";
 import {
 	Blockings,
 	Followings,
@@ -68,56 +67,52 @@ export default define(meta, paramDef, async (ps, user) => {
 	);
 
 	if (user?.id) {
-		if (note.userId !== user.id) {
-			const followingUserIds = (
-				await Followings.createQueryBuilder("following")
-					.select("following.followeeId")
-					.where("following.followerId = :followerId", { followerId: user.id })
-					.getMany()
-			).map((x) => x.followeeId);
+                if (note.userId !== user.id) {
+                        const followingExistsQuery = query
+                                .subQuery()
+                                .select("1")
+                                .from(Followings, "following")
+                                .where("following.followerId = :viewerId", { viewerId: user.id })
+                                .andWhere("following.followeeId = reaction.userId")
+                                .getQuery();
 
-			if (followingUserIds.length > 0) {
-				query.andWhere(
-					"(reaction.userId IN (:...followingUserIds) OR user.isExplorable = true)",
-					{
-						followingUserIds,
-					},
-				);
-			} else {
-				query.andWhere("user.isExplorable = true");
-			}
-		}
+                        query.andWhere(
+                                new Brackets((qb2) => {
+                                        qb2.where(`EXISTS ${followingExistsQuery}`);
+                                        qb2.orWhere("user.isExplorable = true");
+                                }),
+                        );
+                }
 
-		const mutingUserIds = (
-			await Mutings.createQueryBuilder("muting")
-				.select("muting.muteeId")
-				.where("muting.muterId = :muterId", { muterId: user.id })
-				.getMany()
-		).map((x) => x.muteeId);
+                const mutingExistsQuery = query
+                        .subQuery()
+                        .select("1")
+                        .from(Mutings, "muting")
+                        .where("muting.muterId = :viewerId", { viewerId: user.id })
+                        .andWhere("muting.muteeId = reaction.userId")
+                        .getQuery();
 
-		const blockingUserIds = (
-			await Blockings.createQueryBuilder("blocking")
-				.select("blocking.blockeeId")
-				.where("blocking.blockerId = :blockerId", { blockerId: user.id })
-				.getMany()
-		).map((x) => x.blockeeId);
+                query.andWhere(`NOT EXISTS ${mutingExistsQuery}`);
 
-		const blockedUserIds = (
-			await Blockings.createQueryBuilder("blocking")
-				.select("blocking.blockerId")
-				.where("blocking.blockeeId = :blockeeId", { blockeeId: user.id })
-				.getMany()
-		).map((x) => x.blockerId);
+                const blockingExistsQuery = query
+                        .subQuery()
+                        .select("1")
+                        .from(Blockings, "blocking")
+                        .where("blocking.blockerId = :viewerId", { viewerId: user.id })
+                        .andWhere("blocking.blockeeId = reaction.userId")
+                        .getQuery();
 
-		if ([...mutingUserIds, ...blockingUserIds, ...blockedUserIds].length > 0) {
-			query.andWhere("reaction.userId NOT IN (:...mutingUserIds)", {
-				mutingUserIds: [
-					...mutingUserIds,
-					...blockingUserIds,
-					...blockedUserIds,
-				],
-			});
-		}
+                query.andWhere(`NOT EXISTS ${blockingExistsQuery}`);
+
+                const blockedExistsQuery = query
+                        .subQuery()
+                        .select("1")
+                        .from(Blockings, "blocking")
+                        .where("blocking.blockeeId = :viewerId", { viewerId: user.id })
+                        .andWhere("blocking.blockerId = reaction.userId")
+                        .getQuery();
+
+                query.andWhere(`NOT EXISTS ${blockedExistsQuery}`);
 	} else {
 		query.andWhere(
 			"user.isExplorable = true AND user.isRemoteExplorable = true",

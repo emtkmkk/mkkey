@@ -126,8 +126,10 @@ export function preprocess(text: string): string {
                                 node.children = undefined;
                         }
                         if (node.type === "fn" && node.props.name === "unique") {
+                                const soft = node.props.args?.soft != null;
+
                                 node.type = "text";
-                                node.props.text = uniqueText(mfm.toString(node.children));
+                                node.props.text = uniqueText(mfm.toString(node.children), soft);
                                 node.children = undefined;
                         }
                         if (
@@ -212,23 +214,37 @@ function sortByCharCode(text: string): string {
         return mfm.toString(nodes);
 }
 
-function uniqueText(text: string): string {
+function uniqueText(text: string, soft = false): string {
         const nodes = mfm.parse(text);
         const seen = new Set<string>();
+        let lastChar: string | null = null;
 
-        mfm.inspect(nodes, node => {
+        mfm.inspect(nodes, (node) => {
                 if (node.type === "text" && node.props.text) {
-                        node.props.text = [...node.props.text]
-                                .filter((ch) => {
-                                        if (/\s/.test(ch) || ch === "　") {
-                                                return true;
-                                        }
+                        const filtered: string[] = [];
 
-                                        if (seen.has(ch)) return false;
-                                        seen.add(ch);
-                                        return true;
-                                })
-                                .join("");
+                        for (const ch of [...node.props.text]) {
+                                if (/\s/.test(ch) || ch === "　") {
+                                        filtered.push(ch);
+                                        lastChar = ch;
+                                        continue;
+                                }
+
+                                if (soft) {
+                                        if (lastChar === ch) continue;
+
+                                        filtered.push(ch);
+                                        lastChar = ch;
+                                        continue;
+                                }
+
+                                if (seen.has(ch)) continue;
+                                seen.add(ch);
+                                filtered.push(ch);
+                                lastChar = ch;
+                        }
+
+                        node.props.text = filtered.join("");
                 }
         });
 

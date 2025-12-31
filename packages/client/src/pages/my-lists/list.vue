@@ -202,7 +202,6 @@ definePageMetadata(
 				}
 			}
 		}
-		}
 	}
 }
 </style>

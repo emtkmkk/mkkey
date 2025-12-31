@@ -177,19 +177,31 @@ definePageMetadata(
 
 					> .body {
 						flex: 1;
+						min-width: 0;
 						padding: 0.5rem;
 
 						> .name {
 							display: block;
 							font-weight: bold;
+							overflow: hidden;
+							text-overflow: ellipsis;
+							white-space: nowrap;
 						}
 
 						> .acct {
 							opacity: 0.5;
+							overflow: hidden;
+							text-overflow: ellipsis;
+							white-space: nowrap;
 						}
+					}
+
+					> .action {
+						flex: 0 0 auto;
 					}
 				}
 			}
+		}
 		}
 	}
 }

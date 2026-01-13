@@ -166,6 +166,7 @@ export type Note = {
 		expiresAt: DateString | null;
 		multiple: boolean;
 		hideResults?: boolean;
+		totalVotes?: number;
 		choices: {
 			isVoted: boolean;
 			text: string;

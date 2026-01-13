@@ -28,6 +28,9 @@
 		<MkSwitch v-model="multiple">{{
 			i18n.ts._poll.canMultipleVote
 		}}</MkSwitch>
+		<MkSwitch v-model="hideResults">{{
+			i18n.ts._poll.hideResults
+		}}</MkSwitch>
 		<section>
 			<div>
 				<MkSelect v-model="expiration" small>
@@ -86,6 +89,7 @@ const props = defineProps<{
 		expiredAfter: number;
 		choices: string[];
 		multiple: boolean;
+		hideResults: boolean;
 	};
 }>();
 const emit = defineEmits<{
@@ -96,12 +100,14 @@ const emit = defineEmits<{
 			expiredAfter: number;
 			choices: string[];
 			multiple: boolean;
+			hideResults: boolean;
 		}
 	): void;
 }>();
 
 const choices = ref(props.modelValue.choices);
 const multiple = ref(props.modelValue.multiple);
+const hideResults = ref(props.modelValue.hideResults ?? false);
 const expiration = ref("after");
 const atDate = ref(
 	formatDateTimeString(addTime(new Date(), new Date().getHours() >= 22 ? 2 : 1, "day"), "yyyy-MM-dd")
@@ -165,6 +171,7 @@ function get() {
 	return {
 		choices: choices.value,
 		multiple: multiple.value,
+		hideResults: hideResults.value,
 		...(expiration.value === "at"
 			? { expiresAt: calcAt() }
 			: expiration.value === "after"
@@ -174,7 +181,7 @@ function get() {
 }
 
 watch(
-	[choices, multiple, expiration, atDate, atTime, after, unit],
+	[choices, multiple, hideResults, expiration, atDate, atTime, after, unit],
 	() => emit("update:modelValue", get()),
 	{
 		deep: true,

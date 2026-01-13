@@ -31,9 +31,9 @@ import { IdentifiableError } from "@/misc/identifiable-error.js";
 
 export async function populatePoll(note: Note, meId: User["id"] | null) {
 	const poll = await Polls.findOneByOrFail({ noteId: note.id });
-	const choices = poll.choices.map((c) => ({
+	const choices = poll.choices.map((c, index) => ({
 		text: c,
-		votes: poll.votes[poll.choices.indexOf(c)],
+		votes: poll.votes[index],
 		isVoted: false,
 	}));
 
@@ -60,9 +60,22 @@ export async function populatePoll(note: Note, meId: User["id"] | null) {
 		}
 	}
 
+	const hasVoted = choices.some((choice) => choice.isVoted);
+	const isOwner = meId != null && meId === note.userId;
+	const isExpired = poll.expiresAt != null && poll.expiresAt.getTime() <= Date.now();
+	const canShowResults =
+		!poll.hideResults || isOwner || hasVoted || isExpired;
+
+	if (!canShowResults) {
+		for (const choice of choices) {
+			choice.votes = 0;
+		}
+	}
+
 	return {
 		multiple: poll.multiple,
 		expiresAt: poll.expiresAt,
+		hideResults: poll.hideResults,
 		choices,
 	};
 }

@@ -483,6 +483,7 @@ let poll = $ref<{
 	multiple: boolean;
 	expiresAt: string | null;
 	expiredAfter: string | null;
+	hideResults: boolean;
 } | null>(null);
 let useCw = $ref(false);
 let showPreview = $computed(defaultStore.makeGetterSetter("showPreview"));
@@ -1467,6 +1468,7 @@ function togglePoll() {
 			multiple: false,
 			expiresAt: null,
 			expiredAfter: null,
+			hideResults: false,
 		};
 	}
 }
@@ -2109,6 +2111,7 @@ type PollValue = {
         multiple: boolean;
         expiresAt: string | null;
         expiredAfter: string | null;
+		hideResults: boolean;
 } | null;
 
 interface NormalizeVisibilityOptions {
@@ -2501,7 +2504,10 @@ function loadDraft(key?) {
 				})
 			);
 			if (draft.data.poll) {
-				poll = draft.data.poll;
+				poll = {
+					...draft.data.poll,
+					hideResults: draft.data.poll.hideResults ?? false,
+				};
 			}
 			if (
 				draft.data.quoteId &&
@@ -2608,6 +2614,7 @@ onMounted(() => {
 					multiple: init.poll.multiple,
 					expiresAt: init.poll.expiresAt,
 					expiredAfter: init.poll.expiredAfter,
+					hideResults: init.poll.hideResults ?? false,
 				};
 			}
 			visibility = init.visibility;

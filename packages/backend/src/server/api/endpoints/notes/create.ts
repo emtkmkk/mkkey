@@ -162,6 +162,7 @@ export const paramDef = {
 					items: { type: "string", minLength: 1, maxLength: 50 },
 				},
 				multiple: { type: "boolean", default: false },
+				hideResults: { type: "boolean", default: false },
 				expiresAt: { type: "integer", nullable: true },
 				expiredAfter: { type: "integer", nullable: true, minimum: 1 },
 			},
@@ -431,6 +432,7 @@ export default define(meta, paramDef, async (ps, user) => {
 									choices: Array.from(choices),
 									multiple: ps.poll.multiple,
 									expiresAt: ps.poll.expiresAt ? new Date(ps.poll.expiresAt) : null,
+									hideResults: ps.poll.hideResults ?? false,
 							}
 							: undefined,
 					text: ps.text || undefined,

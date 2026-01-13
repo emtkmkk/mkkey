@@ -31,6 +31,7 @@ import { IdentifiableError } from "@/misc/identifiable-error.js";
 
 export async function populatePoll(note: Note, meId: User["id"] | null) {
 	const poll = await Polls.findOneByOrFail({ noteId: note.id });
+	const totalVotes = poll.votes.reduce((total, votes) => total + votes, 0);
 	const choices = poll.choices.map((c, index) => ({
 		text: c,
 		votes: poll.votes[index],
@@ -76,6 +77,7 @@ export async function populatePoll(note: Note, meId: User["id"] | null) {
 		multiple: poll.multiple,
 		expiresAt: poll.expiresAt,
 		hideResults: poll.hideResults,
+		totalVotes,
 		choices,
 	};
 }

@@ -76,7 +76,9 @@ const canShowResults = computed(() => {
 	if (!props.note.poll.hideResults) return true;
 	return isOwner.value || hasVoted.value || closed.value;
 });
-const total = computed(() => sum(props.note.poll.choices.map((x) => x.votes)));
+const total = computed(
+	() => props.note.poll.totalVotes ?? sum(props.note.poll.choices.map((x) => x.votes)),
+);
 const closed = computed(() => remaining.value === 0);
 const isLocal = computed(() => !props.note.uri);
 const isVoted = computed(() => !props.note.poll.multiple && hasVoted.value);

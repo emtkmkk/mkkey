@@ -33,7 +33,7 @@
 			</li>
 		</ul>
 		<p v-if="!readOnly">
-			<span v-if="canShowResults">{{ i18n.t("_poll.totalVotes", { n: total }) }}</span>
+			<span>{{ i18n.t("_poll.totalVotes", { n: total }) }}</span>
 			<span v-if="canShowResults && !closed && !isVoted">
 				<span> · </span>
 				<a @click.stop="showResult = !showResult">{{
@@ -76,11 +76,7 @@ const canShowResults = computed(() => {
 	if (!props.note.poll.hideResults) return true;
 	return isOwner.value || hasVoted.value || closed.value;
 });
-const total = computed(() =>
-	canShowResults.value
-		? sum(props.note.poll.choices.map((x) => x.votes))
-		: 0,
-);
+const total = computed(() => sum(props.note.poll.choices.map((x) => x.votes)));
 const closed = computed(() => remaining.value === 0);
 const isLocal = computed(() => !props.note.uri);
 const isVoted = computed(() => !props.note.poll.multiple && hasVoted.value);
@@ -102,16 +98,15 @@ const timer = computed(() =>
 	)
 );
 
-const showResult = ref(
-	props.note.poll.hideResults
-		? canShowResults.value
-		: props.readOnly || isVoted.value,
-);
+const showResult = ref(props.readOnly || isVoted.value);
 
 watch(canShowResults, (value) => {
 	if (!value) {
 		showResult.value = false;
-	} else if (props.note.poll.hideResults) {
+	} else if (
+		props.note.poll.hideResults &&
+		(hasVoted.value || closed.value)
+	) {
 		showResult.value = true;
 	}
 });

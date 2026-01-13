@@ -40,6 +40,11 @@ export class Poll {
 	})
 	public votes: number[];
 
+	@Column('boolean', {
+		default: false,
+	})
+	public hideResults: boolean;
+
 	//#region Denormalized fields
 	@Column('enum', {
 		enum: noteVisibilities,
@@ -76,4 +81,5 @@ export type IPoll = {
 	votes?: number[];
 	multiple: boolean;
 	expiresAt: Date | null;
+	hideResults?: boolean;
 };

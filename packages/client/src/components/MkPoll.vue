@@ -33,8 +33,8 @@
 			</li>
 		</ul>
 		<p v-if="!readOnly">
-			<span>{{ i18n.t("_poll.totalVotes", { n: total }) }}</span>
-			<span v-if="!closed && !isVoted">
+			<span v-if="canShowResults">{{ i18n.t("_poll.totalVotes", { n: total }) }}</span>
+			<span v-if="canShowResults && !closed && !isVoted">
 				<span> · </span>
 				<a @click.stop="showResult = !showResult">{{
 					showResult ? i18n.ts._poll.vote : i18n.ts._poll.showResult
@@ -52,13 +52,14 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onUnmounted, ref, toRef } from "vue";
+import { computed, ref, watch } from "vue";
 import * as misskey from "calckey-js";
 import { sum } from "@/scripts/array";
 import { pleaseLogin } from "@/scripts/please-login";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { useInterval } from "@/scripts/use-interval";
+import { $i } from "@/account";
 
 const props = defineProps<{
 	note: misskey.entities.Note;
@@ -67,14 +68,22 @@ const props = defineProps<{
 
 const remaining = ref(-1);
 
-const total = computed(() => sum(props.note.poll.choices.map((x) => x.votes)));
+const hasVoted = computed(() =>
+	props.note.poll.choices.some((choice) => choice.isVoted),
+);
+const isOwner = computed(() => $i?.id === props.note.userId);
+const canShowResults = computed(() => {
+	if (!props.note.poll.hideResults) return true;
+	return isOwner.value || hasVoted.value || closed.value;
+});
+const total = computed(() =>
+	canShowResults.value
+		? sum(props.note.poll.choices.map((x) => x.votes))
+		: 0,
+);
 const closed = computed(() => remaining.value === 0);
 const isLocal = computed(() => !props.note.uri);
-const isVoted = computed(
-	() =>
-		!props.note.poll.multiple &&
-		props.note.poll.choices.some((c) => c.isVoted)
-);
+const isVoted = computed(() => !props.note.poll.multiple && hasVoted.value);
 const timer = computed(() =>
 	i18n.t(
 		remaining.value >= 86400
@@ -93,7 +102,19 @@ const timer = computed(() =>
 	)
 );
 
-const showResult = ref(props.readOnly || isVoted.value);
+const showResult = ref(
+	props.note.poll.hideResults
+		? canShowResults.value
+		: props.readOnly || isVoted.value,
+);
+
+watch(canShowResults, (value) => {
+	if (!value) {
+		showResult.value = false;
+	} else if (props.note.poll.hideResults) {
+		showResult.value = true;
+	}
+});
 
 // 期限付きアンケート
 if (props.note.poll.expiresAt) {
@@ -116,7 +137,13 @@ if (props.note.poll.expiresAt) {
 }
 
 async function refresh() {
-	if (!props.note.uri) return;
+	if (!props.note.uri) {
+		const obj = await os.api("notes/show", { noteId: props.note.id });
+		if (obj.poll) {
+			props.note.poll = obj.poll;
+		}
+		return;
+	}
 	const obj = await os.apiWithDialog("ap/show", { uri: props.note.uri });
 	if (obj.type === "Note" && obj.object.poll) {
 		props.note.poll = obj.object.poll;
@@ -140,7 +167,12 @@ const vote = async (id) => {
 		noteId: props.note.id,
 		choice: id,
 	});
-	if (!showResult.value) showResult.value = !props.note.poll.multiple;
+	if (props.note.poll.hideResults) {
+		showResult.value = true;
+		await refresh();
+	} else if (!showResult.value) {
+		showResult.value = !props.note.poll.multiple;
+	}
 };
 </script>
 

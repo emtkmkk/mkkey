@@ -1401,6 +1401,7 @@ async function insertNote(
 					choices: data.poll!.choices,
 					expiresAt: data.poll!.expiresAt,
 					multiple: data.poll!.multiple,
+					hideResults: data.poll!.hideResults ?? false,
 					votes: new Array(data.poll!.choices.length).fill(0),
 					noteVisibility: insert.visibility,
 					userId: user.id,

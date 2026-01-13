@@ -1610,6 +1610,7 @@ _poll:
   choiceN: "Choice {n}"
   noMore: "You cannot add more choices"
   canMultipleVote: "Allow selecting multiple choices"
+  hideResults: "Hide results until you vote or the poll ends"
   expiration: "End poll"
   infinite: "Never"
   at: "End at..."

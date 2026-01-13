@@ -1850,6 +1850,7 @@ _poll:
   choiceN: "選択肢{n}"
   noMore: "これ以上追加できません"
   canMultipleVote: "複数回答可"
+  hideResults: "結果非公開（投票または終了まで）"
   expiration: "期限"
   infinite: "無期限"
   at: "日時指定"

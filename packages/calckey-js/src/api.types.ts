@@ -822,6 +822,7 @@ export type Endpoints = {
 			poll?: null | {
 				choices: string[];
 				multiple?: boolean;
+				hideResults?: boolean;
 				expiresAt?: null | number;
 				expiredAfter?: null | number;
 			};

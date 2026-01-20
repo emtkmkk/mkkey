@@ -4,6 +4,7 @@ import { Notes, Polls, PollVotes } from "@/models/index.js";
 import { queueLogger } from "../logger.js";
 import type { EndedPollNotificationJobData } from "@/queue/types.js";
 import { createNotification } from "@/services/create-notification.js";
+import { deliverQuestionUpdate } from "@/services/note/polls/update.js";
 
 const logger = queueLogger.createSubLogger("ended-poll-notification");
 
@@ -30,6 +31,11 @@ export async function endedPollNotification(
 		createNotification(userId, "pollEnded", {
 			noteId: note.id,
 		});
+	}
+
+	const poll = await Polls.findOneBy({ noteId: note.id });
+	if (poll?.hideResults) {
+		await deliverQuestionUpdate(note.id);
 	}
 
 	job.progress(100);

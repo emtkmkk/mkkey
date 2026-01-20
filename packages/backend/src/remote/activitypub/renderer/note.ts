@@ -17,6 +17,7 @@ export default async function renderNote(
 	note: Note,
 	dive = true,
 	isTalk = false,
+	options: { pollOverride?: Poll | null } = {},
 ): Promise<Record<string, unknown>> {
 	const getPromisedFiles = async (ids: string[]) => {
 		if (!ids || ids.length === 0) return [];
@@ -135,7 +136,11 @@ export default async function renderNote(
 	let poll: Poll | null = null;
 
 	if (note.hasPoll) {
-		poll = await Polls.findOneBy({ noteId: note.id });
+		if (options.pollOverride !== undefined) {
+			poll = options.pollOverride;
+		} else {
+			poll = await Polls.findOneBy({ noteId: note.id });
+		}
 	}
 
 	if (note.referenceIds?.length) {

@@ -884,6 +884,11 @@ export const UserRepository = db.getRepository(User).extend({
 						lastFetchedAt: user.lastFetchedAt
 							? user.lastFetchedAt.toISOString()
 							: null,
+						...(me
+							? {
+									isExplorable: user.isExplorable,
+							  }
+							: {}),
 						bannerUrl: user.banner
 							? DriveFiles.getPublicUrl(user.banner, false)
 							: null,
@@ -1001,7 +1006,6 @@ export const UserRepository = db.getRepository(User).extend({
 						autoAcceptFollowed: profile!.autoAcceptFollowed,
 						noCrawle: profile!.noCrawle,
 						preventAiLearning: profile!.preventAiLearning,
-						isExplorable: user.isExplorable,
 						isRemoteExplorable: user.isRemoteExplorable,
 						isDeleted: user.isDeleted,
 						hideOnlineStatus: user.hideOnlineStatus,

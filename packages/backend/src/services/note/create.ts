@@ -1182,11 +1182,11 @@ export default async (
 					const noteInboxes = await dm.collectInboxes();
 					await deliverToInboxes(user, noteActivity, noteInboxes);
 
-					if (data.renote) {
-						await resendLocalReactionsForRenote(
-							data.renote,
-							noteInboxes,
-						);
+					if (
+						data.renote &&
+						(await countSameRenotes(user.id, data.renote.id, note.id)) === 0
+					) {
+						await resendLocalReactionsForRenote(data.renote, noteInboxes);
 					}
 
 					//リレーに配送

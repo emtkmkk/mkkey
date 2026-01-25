@@ -1,13 +1,12 @@
 import { publishNoteStream } from "@/services/stream.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
-import DeliverManager from "@/remote/activitypub/deliver-manager.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import {
 	toDbReaction,
 	decodeReaction,
-	getFallbackReaction,
+	resolveApReaction,
 } from "@/misc/reaction-lib.js";
-import type { User, IRemoteUser, ILocalUser } from "@/models/entities/user.js";
+import type { User } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
 import {
 	NoteReactions,
@@ -33,6 +32,7 @@ import { MAX_REACTION_PER_ACCOUNT } from "@/const.js";
 import { Cache } from "@/misc/cache.js";
 import type { UserProfile } from "@/models/entities/user-profile.js";
 import { checkReactionMute } from "@/misc/check-word-mute.js";
+import { buildReactionDeliverManager } from "./deliver.js";
 
 export default async (
 	user: {
@@ -341,50 +341,10 @@ export default async (
 		) {
 			// ブラックリストに登録済みのホスト または リモート絵文字でライセンスにコピー拒否がある場合 は いいねに変更して外部に送信
 			// TODO : リアクション解除時も変換をかけた方が良いかも
-			if (
-				["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-					emoji?.host,
-				) ||
-				(emoji?.host && emoji?.license?.includes("コピー可否 : deny"))
-			)
-				record.reaction = await getFallbackReaction();
+			record.reaction = await resolveApReaction(record.reaction, emoji);
 
 			const content = renderActivity(await renderLike(record, note));
-			const dm = new DeliverManager(user, content);
-			if (note.userHost !== null) {
-				const reactee = await Users.findOneBy({ id: note.userId });
-				dm.addDirectRecipe(reactee as IRemoteUser);
-			}
-
-			if (
-				user.isExplorable &&
-				user.isRemoteExplorable &&
-				note.isPublicLikeList
-			) {
-				if (["public", "home", "followers"].includes(note.visibility)) {
-					if (note.userId !== user.id && note.userHost === null) {
-						const u = await Users.findOneBy({ id: note.userId });
-						dm.addFollowersRecipe(u as ILocalUser);
-					} else {
-						dm.addFollowersRecipe();
-					}
-				} else if (note.visibility === "specified") {
-					const visibleUsers = await Promise.all(
-						note.visibleUserIds.map((id) => Users.findOneBy({ id })),
-					);
-					for (const u of visibleUsers.filter(
-						(u) => u && Users.isRemoteUser(u),
-					)) {
-						dm.addDirectRecipe(u as IRemoteUser);
-					}
-					const ccUsers = await Promise.all(
-						note.ccUserIds.map((id) => Users.findOneBy({ id })),
-					);
-					for (const u of ccUsers.filter((u) => u && Users.isRemoteUser(u))) {
-						dm.addDirectRecipe(u as IRemoteUser);
-					}
-				}
-			}
+			const dm = await buildReactionDeliverManager(user, note, content);
 
 			dm.execute();
 		}

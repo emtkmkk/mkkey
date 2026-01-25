@@ -80,6 +80,17 @@ export default class DeliverManager {
 	public async execute() {
 		if (!Users.isLocalUser(this.actor)) return;
 
+		const inboxes = await this.collectInboxes();
+
+		await deliverToInboxes(this.actor, this.activity, inboxes);
+	}
+
+	/**
+	 * Collect inboxes from recipes
+	 */
+	public async collectInboxes() {
+		if (!Users.isLocalUser(this.actor)) return new Map<string, boolean>();
+
 		const inboxes = new Map<string, boolean>();
 
 		/*
@@ -176,32 +187,7 @@ export default class DeliverManager {
 			}`,
 		);
 
-		// Validate Inboxes first
-		const validInboxes = [];
-		for (const inbox of inboxes) {
-			try {
-				validInboxes.push({
-					inbox,
-					host: new URL(inbox[0]).host,
-				});
-			} catch (error) {
-				console.error(error);
-				console.error(`Invalid Inbox ${inbox}`);
-			}
-		}
-
-		const instancesToSkip = await skippedInstances(
-			// get (unique) list of hosts
-			Array.from(new Set(validInboxes.map((valid) => valid.host))),
-		);
-
-		// deliver
-		for (const valid of validInboxes) {
-			// skip instances as indicated
-			if (instancesToSkip.includes(valid.host)) continue;
-
-			deliver(this.actor, this.activity, valid.inbox[0], valid.inbox[1]);
-		}
+		return inboxes;
 	}
 }
 
@@ -233,5 +219,47 @@ export async function deliverToUser(
 	const manager = new DeliverManager(actor, activity);
 	manager.addDirectRecipe(to);
 	await manager.execute();
+}
+
+/**
+ * Deliver activity to inboxes
+ * @param activity Activity
+ * @param inboxes Map of inbox and shared inbox flag
+ */
+export async function deliverToInboxes(
+	actor: { id: ILocalUser["id"]; host: null },
+	activity: any,
+	inboxes: Map<string, boolean>,
+) {
+	if (!Users.isLocalUser(actor)) return;
+
+	if (inboxes.size === 0) return;
+
+	// Validate Inboxes first
+	const validInboxes = [];
+	for (const inbox of inboxes) {
+		try {
+			validInboxes.push({
+				inbox,
+				host: new URL(inbox[0]).host,
+			});
+		} catch (error) {
+			console.error(error);
+			console.error(`Invalid Inbox ${inbox}`);
+		}
+	}
+
+	const instancesToSkip = await skippedInstances(
+		// get (unique) list of hosts
+		Array.from(new Set(validInboxes.map((valid) => valid.host))),
+	);
+
+	// deliver
+	for (const valid of validInboxes) {
+		// skip instances as indicated
+		if (instancesToSkip.includes(valid.host)) continue;
+
+		deliver(actor, activity, valid.inbox[0], valid.inbox[1]);
+	}
 }
 //#endregion

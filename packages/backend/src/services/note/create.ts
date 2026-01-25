@@ -1169,7 +1169,12 @@ export default async (
 			if (Users.isLocalUser(user) && !dontFederateInitially) {
 				(async () => {
 					const noteActivity = await renderNoteOrRenoteActivity(data, note);
-					if (!noteActivity) return;
+					if (!noteActivity) {
+						console.log(
+							`[reaction-resend] skip: noteActivity is null (note=${note.id})`,
+						);
+						return;
+					}
 
 					const dm = new DeliverManager(user, noteActivity);
 					await addNoteActivityDeliveryRecipes(dm, {
@@ -1180,14 +1185,28 @@ export default async (
 					});
 
 					const noteInboxes = await dm.collectInboxes();
+					console.log(
+						`[reaction-resend] noteInboxes collected: ${noteInboxes.size} (note=${note.id})`,
+					);
 					await deliverToInboxes(user, noteActivity, noteInboxes);
 
-					if (
-						data.renote &&
-						(await countSameRenotes(user.id, data.renote.id, note.id)) === 0
-					) {
-						await delayReactionResend();
-						await resendLocalReactionsForRenote(data.renote, noteInboxes);
+					if (data.renote) {
+						const sameRenoteCount = await countSameRenotes(
+							user.id,
+							data.renote.id,
+							note.id,
+						);
+						console.log(
+							`[reaction-resend] renote detected: countSameRenotes=${sameRenoteCount} (note=${note.id}, renote=${data.renote.id})`,
+						);
+						if (sameRenoteCount === 0) {
+							await delayReactionResend();
+							await resendLocalReactionsForRenote(data.renote, noteInboxes);
+						} else {
+							console.log(
+								`[reaction-resend] skip: countSameRenotes is not zero (note=${note.id}, renote=${data.renote.id})`,
+							);
+						}
 					}
 
 					//リレーに配送
@@ -1347,7 +1366,12 @@ async function resendLocalReactionsForRenote(
 	renote: Note,
 	noteInboxes: Map<string, boolean>,
 ) {
-	if (noteInboxes.size === 0) return;
+	if (noteInboxes.size === 0) {
+		console.log(
+			`[reaction-resend] skip: noteInboxes is empty (renote=${renote.id})`,
+		);
+		return;
+	}
 
 	const reactions = await NoteReactions.createQueryBuilder("reaction")
 		.leftJoinAndSelect("reaction.user", "user")
@@ -1355,7 +1379,15 @@ async function resendLocalReactionsForRenote(
 		.andWhere("user.host IS NULL")
 		.getMany();
 
-	if (reactions.length === 0) return;
+	if (reactions.length === 0) {
+		console.log(
+			`[reaction-resend] skip: no local reactions (renote=${renote.id})`,
+		);
+		return;
+	}
+	console.log(
+		`[reaction-resend] local reactions: ${reactions.length} (renote=${renote.id})`,
+	);
 
 	const emojiMap = await getReactionEmojiMap(reactions);
 
@@ -1379,6 +1411,9 @@ async function resendLocalReactionsForRenote(
 		const reactionInboxes = await dm.collectInboxes();
 		const filteredInboxes = new Map(
 			Array.from(reactionInboxes).filter(([inbox]) => noteInboxes.has(inbox)),
+		);
+		console.log(
+			`[reaction-resend] deliver reaction: reactionInboxes=${reactionInboxes.size} filtered=${filteredInboxes.size} (renote=${renote.id}, reaction=${reaction.id})`,
 		);
 
 		await deliverToInboxes(reactionUser as ILocalUser, activity, filteredInboxes);

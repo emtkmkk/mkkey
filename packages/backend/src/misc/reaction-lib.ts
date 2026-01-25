@@ -27,6 +27,27 @@ export async function getFallbackReaction() {
 	return meta.defaultReaction;
 }
 
+const apFallbackReactionHosts = [
+	"voskey.icalo.net",
+	"9ineverse.com",
+	"mogeko.monster",
+];
+
+export async function resolveApReaction(
+	reaction: string,
+	emoji?: { host?: string | null; license?: string | null } | null,
+): Promise<string> {
+	if (
+		emoji?.host &&
+		(apFallbackReactionHosts.includes(emoji.host) ||
+			emoji.license?.includes("コピー可否 : deny"))
+	) {
+		return await getFallbackReaction();
+	}
+
+	return reaction;
+}
+
 export function convertLegacyReactions(reactions: Record<string, number>) {
 	const _reactions = new Map();
 	const decodedReactions = new Map();

@@ -432,58 +432,54 @@ let navFooterHeight = $ref(0);
 provide<Ref<number>>("CURRENT_STICKY_BOTTOM", $$(navFooterHeight));
 
 const applyNavFooterMetrics = (el: HTMLElement) => {
-        const style = window.getComputedStyle(el);
-        const paddingBottom = Number.parseFloat(style.paddingBottom) || 0;
-        const paddingTop = Number.parseFloat(style.paddingTop) || 0;
-        const safeAreaInsetBottom = Math.max(paddingBottom - paddingTop, 0);
-        const height = Math.max(el.offsetHeight - safeAreaInsetBottom, 0);
+	const height = el.offsetHeight;
 
-        navFooterHeight = height;
-        document.body.style.setProperty("--stickyBottom", `${height}px`);
-        document.body.style.setProperty(
-                "--minBottomSpacing",
-                "var(--minBottomSpacingMobile)"
-        );
+	navFooterHeight = height;
+	document.body.style.setProperty("--stickyBottom", `${height}px`);
+	document.body.style.setProperty(
+		"--minBottomSpacing",
+		"var(--minBottomSpacingMobile)"
+	);
 };
 
 const resetNavFooterMetrics = () => {
-        navFooterHeight = 0;
-        document.body.style.setProperty("--stickyBottom", "0px");
-        document.body.style.setProperty("--minBottomSpacing", "0px");
+	navFooterHeight = 0;
+	document.body.style.setProperty("--stickyBottom", "0px");
+	document.body.style.setProperty("--minBottomSpacing", "0px");
 };
 
 let navFooterObserver: ResizeObserver | null = null;
 
 const observeNavFooter = (el: HTMLElement) => {
-        const update = () => applyNavFooterMetrics(el);
-        update();
-        navFooterObserver = new ResizeObserver(() => {
-                update();
-        });
-        navFooterObserver.observe(el);
+	const update = () => applyNavFooterMetrics(el);
+	update();
+	navFooterObserver = new ResizeObserver(() => {
+		update();
+	});
+	navFooterObserver.observe(el);
 };
 
 watch(
-        $$(navFooter),
-        (el) => {
-                navFooterObserver?.disconnect();
-                navFooterObserver = null;
+	$$(navFooter),
+	(el) => {
+		navFooterObserver?.disconnect();
+		navFooterObserver = null;
 
-                if (el) {
-                        observeNavFooter(el);
-                } else {
-                        resetNavFooterMetrics();
-                }
-        },
-        {
-                immediate: true,
-        }
+		if (el) {
+			observeNavFooter(el);
+		} else {
+			resetNavFooterMetrics();
+		}
+	},
+	{
+		immediate: true,
+	}
 );
 
 onBeforeUnmount(() => {
-        navFooterObserver?.disconnect();
-        navFooterObserver = null;
-        resetNavFooterMetrics();
+	navFooterObserver?.disconnect();
+	navFooterObserver = null;
+	resetNavFooterMetrics();
 });
 
 const wallpaper =

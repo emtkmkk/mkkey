@@ -26,9 +26,7 @@ import {
 	Mutings,
 	Users,
 	NoteWatchings,
-	NoteReactions,
 	Notes,
-	Emojis,
 	Instances,
 	UserProfiles,
 	Antennas,
@@ -73,9 +71,6 @@ import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
 import renderDelete from "@/remote/activitypub/renderer/delete.js";
 import renderTombstone from "@/remote/activitypub/renderer/tombstone.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { decodeReaction, getFallbackReaction } from "@/misc/reaction-lib.js";
-import { renderLike } from "@/remote/activitypub/renderer/like.js";
-import type { NoteReaction } from "@/models/entities/note-reaction.js";
 
 const mutedWordsCache = new Cache<
 	{ userId: UserProfile["userId"]; mutedWords: UserProfile["mutedWords"] }[]
@@ -994,45 +989,33 @@ export default async (
 				nm.deliver();
 			});
 
-	//#region AP deliver
-	if (Users.isLocalUser(user) && !dontFederateInitially) {
-		(async () => {
-			const noteActivity = await renderNoteOrRenoteActivity(data, note);
-			const dm = new DeliverManager(user, noteActivity);
-			const renoteDirectRecipients: IRemoteUser[] = [];
+			//#region AP deliver
+			if (Users.isLocalUser(user) && !dontFederateInitially) {
+				(async () => {
+					const noteActivity = await renderNoteOrRenoteActivity(data, note);
+					const dm = new DeliverManager(user, noteActivity);
 
-			// メンションされたリモートユーザーに配送
-			for (const u of mentionedUsers.filter((u) => Users.isRemoteUser(u))) {
-				dm.addDirectRecipe(u as IRemoteUser);
-				renoteDirectRecipients.push(u as IRemoteUser);
-			}
+					// メンションされたリモートユーザーに配送
+					for (const u of mentionedUsers.filter((u) => Users.isRemoteUser(u))) {
+						dm.addDirectRecipe(u as IRemoteUser);
+					}
 
-			// 投稿がリプライかつ投稿者がローカルユーザーかつリプライ先の投稿の投稿者がリモートユーザーなら配送
-			if (data.reply && data.reply.userHost !== null) {
-				const u = await Users.findOneBy({ id: data.reply.userId });
-				if (u && Users.isRemoteUser(u)) {
-					dm.addDirectRecipe(u);
-					renoteDirectRecipients.push(u);
-				}
-			}
+					// 投稿がリプライかつ投稿者がローカルユーザーかつリプライ先の投稿の投稿者がリモートユーザーなら配送
+					if (data.reply && data.reply.userHost !== null) {
+						const u = await Users.findOneBy({ id: data.reply.userId });
+						if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+					}
 
-			// 投稿がRenoteかつ投稿者がローカルユーザーかつRenote元の投稿の投稿者がリモートユーザーなら配送
-			if (data.renote && data.renote.userHost !== null) {
-				const u = await Users.findOneBy({ id: data.renote.userId });
-				if (u && Users.isRemoteUser(u)) {
-					dm.addDirectRecipe(u);
-					renoteDirectRecipients.push(u);
-				}
-			}
+					// 投稿がRenoteかつ投稿者がローカルユーザーかつRenote元の投稿の投稿者がリモートユーザーなら配送
+					if (data.renote && data.renote.userHost !== null) {
+						const u = await Users.findOneBy({ id: data.renote.userId });
+						if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+					}
 
-			const allowReactionFollowers = ["public", "home", "followers"].includes(
-				note.visibility,
-			);
-
-			// フォロワーに配送
-			if (["public", "home", "followers"].includes(note.visibility)) {
-				if (
-					data.reply &&
+					// フォロワーに配送
+					if (["public", "home", "followers"].includes(note.visibility)) {
+						if (
+							data.reply &&
 							data.reply.userId === user.id &&
 							data.reply.replyId
 						) {
@@ -1069,19 +1052,9 @@ export default async (
 						deliverToRelays(user, noteActivity);
 					}
 
-			dm.execute();
-
-			if (
-				data.renote &&
-				!(data.renote.userId !== note.userId && data.renote.localOnly)
-			) {
-				await deliverRenoteReactions(data.renote, {
-					allowFollowers: allowReactionFollowers,
-					directRecipients: renoteDirectRecipients,
-				});
+					dm.execute();
+				})();
 			}
-		})();
-	}
 			//#endregion
 		}
 
@@ -1161,112 +1134,6 @@ async function renderNoteOrRenoteActivity(data: Option, note: Note) {
 			: renderCreate(await renderNote(note, false), note);
 
 	return renderActivity(content);
-}
-
-async function deliverRenoteReactions(
-	note: Note,
-	delivery: {
-		allowFollowers: boolean;
-		directRecipients: IRemoteUser[];
-	},
-) {
-	if (note.visibility === "hidden") return;
-	if (note.channelId && note.localOnly) return;
-
-	const reactions = await NoteReactions.createQueryBuilder("reaction")
-		.where("reaction.noteId = :noteId", { noteId: note.id })
-		.getMany();
-
-	if (reactions.length === 0) return;
-
-	const directRecipientIds = new Set(
-		delivery.directRecipients.map((user) => user.id),
-	);
-	const localUserIds = reactions.map((reaction) => reaction.userId);
-	const localUsers = await Users.findBy({
-		id: In(localUserIds),
-		host: IsNull(),
-	});
-	const localUserMap = new Map(localUsers.map((user) => [user.id, user]));
-
-	for (const reaction of reactions) {
-		const reactor = localUserMap.get(reaction.userId);
-		if (!reactor) continue;
-
-		let reactionValue = reaction.reaction;
-		if (reactionValue.startsWith(":")) {
-			const decodedReaction = decodeReaction(reactionValue);
-			const emoji = await Emojis.findOne({
-				where: {
-					name: decodedReaction.name,
-					host: decodedReaction.host ?? IsNull(),
-				},
-				select: ["host", "license"],
-			});
-			if (
-				["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-					emoji?.host,
-				) ||
-				(emoji?.host && emoji?.license?.includes("コピー可否 : deny"))
-			) {
-				reactionValue = await getFallbackReaction();
-			}
-		}
-
-		const reactionRecord: NoteReaction = {
-			...reaction,
-			reaction: reactionValue,
-		};
-
-		const content = renderActivity(await renderLike(reactionRecord, note));
-		const dm = new DeliverManager(reactor, content);
-		if (note.userHost !== null && directRecipientIds.has(note.userId)) {
-			const reactee = await Users.findOneBy({ id: note.userId });
-			if (reactee && Users.isRemoteUser(reactee)) {
-				dm.addDirectRecipe(reactee as IRemoteUser);
-			}
-		}
-
-		if (
-			reactor.isExplorable &&
-			reactor.isRemoteExplorable &&
-			note.isPublicLikeList
-		) {
-			if (["public", "home", "followers"].includes(note.visibility)) {
-				if (delivery.allowFollowers) {
-					if (note.userId !== reactor.id && note.userHost === null) {
-						const u = await Users.findOneBy({ id: note.userId });
-						if (u) dm.addFollowersRecipe(u as ILocalUser);
-					} else {
-						dm.addFollowersRecipe();
-					}
-				}
-			} else if (note.visibility === "specified") {
-				const visibleUsers = await Promise.all(
-					note.visibleUserIds.map((id) => Users.findOneBy({ id })),
-				);
-				for (const u of visibleUsers.filter(
-					(user) => user && Users.isRemoteUser(user),
-				)) {
-					if (directRecipientIds.has(u.id)) {
-						dm.addDirectRecipe(u as IRemoteUser);
-					}
-				}
-				const ccUsers = await Promise.all(
-					note.ccUserIds.map((id) => Users.findOneBy({ id })),
-				);
-				for (const u of ccUsers.filter(
-					(user) => user && Users.isRemoteUser(user),
-				)) {
-					if (directRecipientIds.has(u.id)) {
-						dm.addDirectRecipe(u as IRemoteUser);
-					}
-				}
-			}
-		}
-
-		dm.execute();
-	}
 }
 
 function incRenoteCount(renote: Note, userHost?: string) {

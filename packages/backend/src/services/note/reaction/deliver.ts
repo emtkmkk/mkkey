@@ -7,6 +7,9 @@ export async function buildReactionDeliverManager(
 	user: Pick<User, "id" | "host" | "isExplorable" | "isRemoteExplorable">,
 	note: Note,
 	activity: any,
+	options?: {
+		disableUnion?: boolean;
+	},
 ) {
 	const dm = new DeliverManager(user as ILocalUser, activity);
 
@@ -22,7 +25,11 @@ export async function buildReactionDeliverManager(
 			if (note.userId !== user.id && note.userHost === null) {
 				const u = await Users.findOneBy({ id: note.userId });
 				if (u && Users.isLocalUser(u)) {
-					dm.addFollowersRecipe(u);
+					if (options?.disableUnion) {
+						dm.addFollowersRecipe();
+					} else {
+						dm.addFollowersRecipe(u);
+					}
 				}
 			} else {
 				dm.addFollowersRecipe();

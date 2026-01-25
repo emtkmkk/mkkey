@@ -1186,6 +1186,7 @@ export default async (
 						data.renote &&
 						(await countSameRenotes(user.id, data.renote.id, note.id)) === 0
 					) {
+						await delayReactionResend();
 						await resendLocalReactionsForRenote(data.renote, noteInboxes);
 					}
 
@@ -1382,6 +1383,10 @@ async function resendLocalReactionsForRenote(
 
 		await deliverToInboxes(reactionUser as ILocalUser, activity, filteredInboxes);
 	}
+}
+
+async function delayReactionResend() {
+	await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
 async function renderNoteOrRenoteActivity(data: Option, note: Note) {

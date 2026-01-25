@@ -1377,6 +1377,8 @@ async function resendLocalReactionsForRenote(
 		.leftJoinAndSelect("reaction.user", "user")
 		.where("reaction.noteId = :noteId", { noteId: renote.id })
 		.andWhere("user.host IS NULL")
+		.orderBy("reaction.createdAt", "DESC")
+		.addOrderBy("reaction.id", "DESC")
 		.getMany();
 
 	if (reactions.length === 0) {
@@ -1385,13 +1387,21 @@ async function resendLocalReactionsForRenote(
 		);
 		return;
 	}
+	const latestReactionsByUser = new Map<string, NoteReaction>();
+	for (const reaction of reactions) {
+		if (!latestReactionsByUser.has(reaction.userId)) {
+			latestReactionsByUser.set(reaction.userId, reaction);
+		}
+	}
+
+	const latestReactions = Array.from(latestReactionsByUser.values());
 	console.log(
-		`[reaction-resend] local reactions: ${reactions.length} (renote=${renote.id})`,
+		`[reaction-resend] local reactions: ${latestReactions.length} (renote=${renote.id})`,
 	);
 
-	const emojiMap = await getReactionEmojiMap(reactions);
+	const emojiMap = await getReactionEmojiMap(latestReactions);
 
-	for (const reaction of reactions) {
+	for (const reaction of latestReactions) {
 		const reactionUser = reaction.user;
 		if (!reactionUser || reactionUser.host !== null) continue;
 
@@ -1407,16 +1417,22 @@ async function resendLocalReactionsForRenote(
 		} as NoteReaction;
 
 		const activity = renderActivity(await renderLike(deliverRecord, renote));
-		const dm = await buildReactionDeliverManager(reactionUser, renote, activity);
-		const reactionInboxes = await dm.collectInboxes();
-		const filteredInboxes = new Map(
-			Array.from(reactionInboxes).filter(([inbox]) => noteInboxes.has(inbox)),
+		const dm = await buildReactionDeliverManager(
+			reactionUser,
+			renote,
+			activity,
+			{ disableUnion: true },
 		);
+		const reactionInboxes = await dm.collectInboxes();
 		console.log(
-			`[reaction-resend] deliver reaction: reactionInboxes=${reactionInboxes.size} filtered=${filteredInboxes.size} (renote=${renote.id}, reaction=${reaction.id})`,
+			`[reaction-resend] deliver reaction: reactionInboxes=${reactionInboxes.size} (renote=${renote.id}, reaction=${reaction.id})`,
 		);
 
-		await deliverToInboxes(reactionUser as ILocalUser, activity, filteredInboxes);
+		await deliverToInboxes(
+			reactionUser as ILocalUser,
+			activity,
+			reactionInboxes,
+		);
 	}
 }
 

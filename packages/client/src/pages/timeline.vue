@@ -45,19 +45,7 @@
 						:modules="[Virtual]"
 						:space-between="20"
 						:virtual="true"
-						:allow-touch-move="
-							(!defaultStore.state.notTopToSwipeStop ||
-								(queue === 0 &&
-									!queueActive &&
-									!(
-										(tlComponent?.tlComponent
-											?.pagingComponent?.active ||
-											tlComponent?.tlComponent
-												?.pagingComponent?.backed) ??
-										false
-									))) &&
-							defaultStore.state.swipeOnDesktop
-						"
+						:allow-touch-move="allowTouchMove"
 						@swiper="setSwiperRef"
 						@slide-change="onSlideChange"
 					>
@@ -96,13 +84,13 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, ref, onMounted } from "vue";
+import { computed, watch, ref, onMounted, onBeforeUnmount } from "vue";
 import { Virtual } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import XTutorial from "@/components/MkTutorialDialog.vue";
 import XTimeline from "@/components/MkTimeline.vue";
 import XPostForm from "@/components/MkPostForm.vue";
-import { scroll, isTopVisible } from "@/scripts/scroll";
+import { scroll, isTopVisible, getScrollContainer } from "@/scripts/scroll";
 import * as os from "@/os";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
@@ -112,7 +100,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { deviceKind } from "@/scripts/device-kind";
 import "swiper/scss";
 import "swiper/scss/virtual";
-import { MenuAction, MenuButton, MenuItem, MenuLabel } from "@/types/menu";
+import type { MenuButton, MenuLabel } from "@/types/menu";
 
 defaultStore.loaded.then(() => {
 	if (defaultStore.reactiveState.tutorial.value !== -1) {
@@ -186,8 +174,27 @@ window.addEventListener("resize", () => {
 
 const tlComponent = ref<InstanceType<typeof XTimeline>>();
 const rootEl = $ref<HTMLElement>();
+const isTimelineAtTop = ref(true);
+let removeScrollListener: (() => void) | null = null;
 
 let queue = $ref(0);
+const allowTouchMove = computed(() => {
+	if (!defaultStore.state.swipeOnDesktop) {
+		return false;
+	}
+	if (!defaultStore.state.notTopToSwipeStop) {
+		return true;
+	}
+	const pagingComponent = tlComponent.value?.tlComponent?.pagingComponent;
+	const isPagingActive =
+		(pagingComponent?.active || pagingComponent?.backed) ?? false;
+	return (
+		isTimelineAtTop.value &&
+		queue === 0 &&
+		!queueActive &&
+		!isPagingActive
+	);
+});
 const src = $computed({
 	get: () => {
 		if (timelines.includes(defaultStore.reactiveState.tl.value.src)) {
@@ -203,6 +210,10 @@ const src = $computed({
 });
 
 watch($$(src), () => (queue = 0));
+
+function updateTopState(): void {
+	isTimelineAtTop.value = isTopVisible(rootEl);
+}
 
 function queueUpdated(q: number, a): void {
 	queue = q;
@@ -617,6 +628,17 @@ onMounted(() => {
 	syncSlide(
 		timelines.indexOf(defaultStore.state.tl?.src || swiperRef.activeIndex)
 	);
+	updateTopState();
+	const container = getScrollContainer(rootEl) ?? window;
+	const onScroll = () => updateTopState();
+	container.addEventListener("scroll", onScroll, { passive: true });
+	removeScrollListener = () => {
+		container.removeEventListener("scroll", onScroll);
+	};
+});
+
+onBeforeUnmount(() => {
+	removeScrollListener?.();
 });
 </script>
 

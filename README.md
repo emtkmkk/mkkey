@@ -3,36 +3,13 @@
 [![liberapay badge](https://img.shields.io/liberapay/receives/emtk?logo=liberapay)](https://liberapay.com/emtk)
 [![Codeberg badge](https://custom-icon-badges.demolab.com/badge/hosted%20on-codeberg-4793CC.svg?logo=codeberg&logoColor=white)](https://codeberg.org/emtkmkk/calckey/)
 
-**このリポジトリは[もこきー](https://mkkey.net)で使ってるCalckeyのフォークだよ！**<br>
-**変更内容 / リリースノートは [こちら](https://codeberg.org/emtkmkk/calckey/src/branch/beta/patchnote.md)**<br><br>
-**ここの変更は管理者が整理できない人間なのでコミットがグチャグチャになっているよ！**<br>
-**なにか不明な点などあれば [emtk@mkkey.net](https://mkkey.net/@emtk) に連絡してね**<br>
+<img src="./title_float.svg" alt="Calckey logo" style="border-radius:50%" width="400"/>
 
-<hr>
-
-**Hello! This repository is a fork of Calckey, which we use here at [mkkey.net](https://mkkey.net)!**<br>
-**The changes / release notes are [here](https://codeberg.org/emtkmkk/calckey/src/branch/beta/patchnote.md).**<br><br>
-
-**you are free to use the changes you make here, but the commits are messed up because the admin is not a good organizer!**<br>
-**If you want a feature but don't understand the commits, please contact me at [emtk@mkkey.net](https://mkkey.net/@emtk).**<br>
-
-<hr>
-
-**以下、フォーク元のReadmeです。 Here is the readme from the forked source.**<br><br>
-
-</div>
-
-<div align="center">
-<a href="https://calckey.org/">
-	<img src="./title_float.svg" alt="Calckey logo" style="border-radius:50%" width="400"/>
-</a>
-
-**🌎 **[Calckey](https://calckey.org/)** is an open source, decentralized social media platform that's free forever! 🚀**
+**🌎 **Calckey** は永続的に自由に使える、オープンソースの分散型SNSプラットフォームです！ 🚀**
 
 [![no github badge](https://nogithub.codeberg.page/badge.svg)](https://nogithub.codeberg.page/)
 [![status badge](https://ci.codeberg.org/api/badges/calckey/calckey/status.svg)](https://ci.codeberg.org/calckey/calckey)
-[![opencollective badge](https://opencollective.com/calckey/tiers/badge.svg)](https://opencollective.com/Calckey)
-[![liberapay badge](https://img.shields.io/liberapay/receives/ThatOneCalculator?logo=liberapay)](https://liberapay.com/ThatOneCalculator)
+[![liberapay badge](https://img.shields.io/liberapay/receives/emtk?logo=liberapay)](https://liberapay.com/emtk)
 [![translate-badge](https://hosted.weblate.org/widgets/calckey/-/svg-badge.svg)](https://hosted.weblate.org/engage/calckey/)
 [![docker badge](https://img.shields.io/docker/pulls/thatonecalculator/calckey?logo=docker)](https://hub.docker.com/r/thatonecalculator/calckey)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
@@ -44,185 +21,201 @@
 
 <img src="https://pool.jortage.com/voringme/misskey/e7cd2a17-8b23-4e1e-b5cf-709480c623e2.png" align="right" height="320px" alt="Calc (the Calckey mascot) smoking a fat dart"/>
 
-# ✨ About Calckey
+# ✨ Calckeyについて
 
-- Calckey is based off of Misskey, a powerful microblogging server on ActivityPub with features such as emoji reactions, a customizable web UI, rich chatting, and much more!
-- Calckey adds many quality of life changes and bug fixes for users and instance admins alike.
-- Read **[this document](./CALCKEY.md)** all for current and future differences.
-- Notable differences:
-  - Improved UI/UX (especially on mobile)
-  - Improved notifications
-  - Improved instance security
-  - Improved accessibility
-  - Improved threads
-  - Recommended Instances timeline
-  - OCR image captioning
-  - New and improved Groups
-  - Better intro tutorial
-  - Compatibility with Mastodon clients/apps
-  - Backfill user information
-  - Sonic search
-  - Many more user and admin settings
-  - [So much more!](./CALCKEY.md)
+Calckey は Misskey をベースにした分散型のマイクロブログサーバーです。mkkey は Calckey/Firefish 系の派生として運用しています。
+
+- **Calckey / Firefish はメンテナンスが終了しています。このため本リポジトリの利用は推奨しません。**
+- mkkey は [mkkey.net](https://mkkey.net) の運用向けフォークです。
+- 変更内容 / リリースノート: [patchnote.md](./patchnote.md)
+- フォーク元との差分メモ: [CALCKEY.md](./CALCKEY.md)
+- 運用向けの調整が中心で、コミットが散らかり気味です。必要があれば [emtk@mkkey.net](https://mkkey.net/@emtk) に連絡してください。
+
+- Calckey は ActivityPub に対応した高機能マイクロブログサーバーで、絵文字リアクション、カスタマイズ可能なWeb UI、豊富なチャット機能などを備えています。
+- Calckey はユーザーと管理者の双方に向けた改善やバグ修正を数多く取り込んでいます。
+- 現在・今後の差分については **[CALCKEY.md](./CALCKEY.md)** を参照してください。
+- 主な特徴:
+  - 改善された UI/UX（特にモバイル）
+  - 改善された通知
+  - インスタンスのセキュリティ強化
+  - アクセシビリティ向上
+  - スレッド表示の改善
+  - おすすめインスタンスタイムライン
+  - OCR による画像キャプション
+  - 新しいグループ機能
+  - 改善された導入チュートリアル
+  - Mastodon クライアント/アプリとの互換性
+  - ユーザー情報の補完
+  - Sonic 検索
+  - 多数のユーザー/管理者向け設定
+  - [さらに詳しく](./CALCKEY.md)
 
 </div>
 
 <div style="clear: both;"></div>
 
-# 🥂 Links
+# 🥂 リンク
 
-- 💸 OpenCollective: <https://opencollective.com/Calckey>
-- 💸 Liberapay: <https://liberapay.com/ThatOneCalculator>
-  - Donate publicly to get your name on the Patron list!
-- 🚢 Flagship instance: <https://calckey.social>
-- 📣 Official account: <https://i.calckey.cloud/@calckey>
-- 💁 Matrix support room: <https://matrix.to/#/#calckey:matrix.fedibird.com>
-- 📜 Instance list: <https://calckey.fediverse.observer/list>
+- 💸 Liberapay: <https://liberapay.com/emtk>
+- 💁 Matrix サポートルーム: <https://matrix.to/#/#calckey:matrix.fedibird.com>
+- 📜 インスタンス一覧: <https://calckey.fediverse.observer/list>
 - 📖 JoinFediverse Wiki: <https://joinfediverse.wiki/What_is_Calckey%3F>
 - 🐋 Docker Hub: <https://hub.docker.com/r/thatonecalculator/calckey>
-- ✍️ Weblate: <https://hosted.weblate.org/engage/calckey/>
+- ✍️ Weblate: <https://hosted.weblate.org/engage/firefish/>
 - 📦 Yunohost: <https://github.com/YunoHost-Apps/calckey_ynh>
 
-# 🌠 Getting started
+# 🌠 はじめに
 
-This guide will work for both **starting from scratch** and **migrating from Misskey**.
+この手順はフォーク元の案内を日本語化したものです。mkkey の運用環境に合わせて適宜読み替えてください。
 
-## 🔰 Easy installers
+このガイドは **新規構築** と **Misskey からの移行** の両方に対応しています。
 
-If you have access to a server that supports one of the sources below, I recommend you use it! Note that these methods *won't* allow you to migrate from Misskey without manual intervention.
+## 🔰 簡易インストーラー
+
+以下のインストーラーが使える環境であれば、利用を推奨します。これらの方法では、Misskey からの移行は手動対応が必要です。
 
 [![Install on Ubuntu](https://pool.jortage.com/voringme/misskey/3b62a443-1b44-45cf-8f9e-f1c588f803ed.png)](https://codeberg.org/calckey/ubuntu-bash-install)　　[![Install on the Arch User Repository](https://pool.jortage.com/voringme/misskey/ba2a5c07-f078-43f1-8483-2e01acca9c40.png)](https://aur.archlinux.org/packages/calckey)　　[![Install Calckey with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=calckey)
 
-## 🛳️ Containerization
+## 🛳️ コンテナ運用
 
-- [🐳 How to run Calckey with Docker](https://codeberg.org/calckey/calckey/src/branch/develop/docs/docker.md)
-- [🛞 How to run Calckey with Kubernetes/Helm](https://codeberg.org/calckey/calckey/src/branch/develop/docs/kubernetes.md)
+- [🐳 DockerでCalckeyを動かす](https://codeberg.org/calckey/calckey/src/branch/develop/docs/docker.md)
+- [🛞 Kubernetes/HelmでCalckeyを動かす](https://codeberg.org/calckey/calckey/src/branch/develop/docs/kubernetes.md)
 
-## 🧑‍💻 Dependencies
+## 🧑‍💻 依存関係
 
-- 🐢 At least [NodeJS](https://nodejs.org/en/) v18.12.1 (v19 recommended)
-  - Install with [nvm](https://github.com/nvm-sh/nvm)
-- 🐘 At least [PostgreSQL](https://www.postgresql.org/) v12
-- 🍱 At least [Redis](https://redis.io/) v6 (v7 recommend)
-- Web Proxy (one of the following)
-  - 🍀 Nginx (recommended)
+運用に必要な主要依存関係です。バージョンは上流の基準を踏襲しています。
+
+- 🐢 [NodeJS](https://nodejs.org/en/) v18.12.1 以上（v19 推奨）
+  - [nvm](https://github.com/nvm-sh/nvm) での導入を推奨
+- 🐘 [PostgreSQL](https://www.postgresql.org/) v12 以上
+- 🍱 [Redis](https://redis.io/) v6 以上（v7 推奨）
+- Web プロキシ（以下のいずれか）
+  - 🍀 Nginx（推奨）
   - 🪶 Apache
   - 🦦 Caddy
 
-### 😗 Optional dependencies
+### 😗 オプション依存
 
-- [FFmpeg](https://ffmpeg.org/) for video transcoding
-- Full text search (one of the following)
-  - 🦔 [Sonic](https://crates.io/crates/sonic-server) (recommended)
+- 動画トランスコード用の [FFmpeg](https://ffmpeg.org/)
+- 全文検索（以下のいずれか）
+  - 🦔 [Sonic](https://crates.io/crates/sonic-server)（推奨）
   - [ElasticSearch](https://www.elastic.co/elasticsearch/)
 
-### 🏗️ Build dependencies
+### 🏗️ ビルド依存
+
+ビルド時に必要な依存関係です。
 
 - 🦀 [Rust toolchain](https://www.rust-lang.org/)
-- 🦬 C/C++ compiler & build tools
-  - `build-essential` on Debian/Ubuntu Linux
-  - `base-devel` on Arch Linux
+- 🦬 C/C++ コンパイラ & ビルドツール
+  - Debian/Ubuntu: `build-essential`
+  - Arch Linux: `base-devel`
 - 🐍 [Python 3](https://www.python.org/)
 
-## 👀 Get folder ready
+## 👀 作業フォルダの準備
 
 ```sh
-git clone --depth 1 https://codeberg.org/calckey/calckey.git
-cd calckey/
+git clone --depth 1 https://github.com/emtkmkk/mkkey.git
+cd mkkey/
 ```
 
-By default, you're on the development branch. Run `git checkout beta` or `git checkout main` to switch to the Beta/Main branches.
+必要に応じてブランチを切り替えてください。
 
-## 📩 Install dependencies
+## 📩 依存関係のインストール
 
 ```sh
 # nvm install 19 && nvm use 19
 corepack enable
 corepack prepare pnpm@latest --activate
-# To build without TensorFlow, append --no-optional
+# TensorFlowなしでビルドする場合は --no-optional を付与
 pnpm i # --no-optional
 ```
 
 ### pm2
 
-To install pm2 run:
+pm2 を導入する場合は以下を実行します。
 
 ```
 npm i -g pm2
 pm2 install pm2-logrotate
 ```
 
-[`pm2-logrotate`](https://github.com/keymetrics/pm2-logrotate/blob/master/README.md) ensures that log files don't infinitely gather size, as Calckey produces a lot of logs.
+[`pm2-logrotate`](https://github.com/keymetrics/pm2-logrotate/blob/master/README.md) はログ肥大化を防ぐために有効です。
 
-## 🐘 Create database
+## 🐘 データベース作成
 
-Assuming you set up PostgreSQL correctly, all you have to run is:
+PostgreSQL のセットアップが済んでいる前提で、以下を実行します。
 
 ```sh
 psql postgres -c "create database calckey with encoding = 'UTF8';"
 ```
 
-In Calckey's directory, fill out the `db` section of `.config/default.yml` with the correct information, where the `db` key is `calckey`.
+`.config/default.yml` の `db` セクションに、作成したデータベース情報を設定してください。
 
-## 🦔 Set up search
+## 🦔 検索のセットアップ
 
-Follow sonic's [installation guide](https://github.com/valeriansaliou/sonic#installation)
+Sonic の [インストールガイド](https://github.com/valeriansaliou/sonic#installation) に従ってください。
 
-If you use IPv4: in Sonic's directory, edit the `config.cfg` file to change `inet` to `"0.0.0.0:1491"`.
+IPv4 を使う場合は、Sonic の `config.cfg` の `inet` を `"0.0.0.0:1491"` に変更します。
 
-In Calckey's directory, fill out the `sonic` section of `.config/default.yml` with the correct information.
+`.config/default.yml` の `sonic` セクションに設定を反映してください。
 
 
-## 💅 Customize
+## 💅 カスタマイズ
 
-- To add custom CSS for all users, edit `./custom/assets/instance.css`.
-- To add static assets (such as images for the splash screen), place them in the `./custom/assets/` directory. They'll then be available on `https://yourinstance.tld/static-assets/filename.ext`.
-- To add custom locales, place them in the `./custom/locales/` directory. If you name your custom locale the same as an existing locale, it will overwrite it. If you give it a unique name, it will be added to the list. Also make sure that the first part of the filename matches the locale you're basing it on. (Example: `en-FOO.yml`)
-- To add custom error images, place them in the `./custom/assets/badges` directory, replacing the files already there.
-- To add custom sounds, place only mp3 files in the `./custom/assets/sounds` directory.
-- To update custom assets without rebuilding, just run `pnpm run gulp`.
+mkkey の運用に合わせてカスタムする場合の入口です。
 
-## 🧑‍🔬 Configuring a new instance
+- 全ユーザー向けのカスタムCSSは `./custom/assets/instance.css` を編集します。
+- スプラッシュ画像などの静的アセットは `./custom/assets/` に置くと、`https://yourinstance.tld/static-assets/filename.ext` で配信されます。
+- カスタムロケールは `./custom/locales/` に配置します。既存ロケールと同名にすると上書きされ、ユニーク名の場合は追加されます。ファイル名の先頭はベースにするロケール名に合わせてください。（例: `en-FOO.yml`）
+- カスタムエラー画像は `./custom/assets/badges` に配置します（既存ファイルを置換）。
+- カスタムサウンドは `./custom/assets/sounds` に mp3 のみ配置します。
+- ビルドせずにカスタムアセットを更新する場合は `pnpm run gulp` を実行します。
 
-- Run `cp .config/example.yml .config/default.yml`
-- Edit `.config/default.yml`, making sure to fill out required fields.
-- Also copy and edit `.config/docker_example.env` to `.config/docker.env` if you're using Docker.
+## 🧑‍🔬 新規インスタンス設定
 
-## 🚚 Migrating from Misskey to Calckey
+新規インスタンス向けの基本設定です。
 
-For migrating from Misskey v13, Misskey v12, and Foundkey, read [this document](https://codeberg.org/calckey/calckey/src/branch/develop/docs/migrate.md).
+- `cp .config/example.yml .config/default.yml` を実行
+- `.config/default.yml` を編集し、必須項目を入力
+- Docker を使う場合は `.config/docker_example.env` を `.config/docker.env` にコピーして編集
 
-## 🌐 Web proxy
+## 🚚 Misskeyからの移行
 
-### 🍀 Nginx (recommended)
+Misskey v13/v12 や Foundkey からの移行については [移行ドキュメント](https://codeberg.org/calckey/calckey/src/branch/develop/docs/migrate.md) を参照してください。
 
-- Run `sudo cp ./calckey.nginx.conf /etc/nginx/sites-available/ && cd /etc/nginx/sites-available/`
-- Edit `calckey.nginx.conf` to reflect your instance properly
-- Run `sudo ln -s ./calckey.nginx.conf ../sites-enabled/calckey.nginx.conf`
-- Run `sudo nginx -t` to validate that the config is valid, then restart the NGINX service.
+## 🌐 Webプロキシ
+
+### 🍀 Nginx（推奨）
+
+- `sudo cp ./calckey.nginx.conf /etc/nginx/sites-available/ && cd /etc/nginx/sites-available/`
+- `calckey.nginx.conf` をインスタンスに合わせて編集
+- `sudo ln -s ./calckey.nginx.conf ../sites-enabled/calckey.nginx.conf`
+- `sudo nginx -t` で設定を検証し、NGINX を再起動
 
 ### 🪶 Apache
 
-- Run `sudo cp ./calckey.apache.conf /etc/apache2/sites-available/ && cd /etc/apache2/sites-available/`
-- Edit `calckey.apache.conf` to reflect your instance properly
-- Run `sudo a2ensite calckey.apache` to enable the site
-- Run `sudo service apache2 restart` to reload apache2 configuration
+- `sudo cp ./calckey.apache.conf /etc/apache2/sites-available/ && cd /etc/apache2/sites-available/`
+- `calckey.apache.conf` をインスタンスに合わせて編集
+- `sudo a2ensite calckey.apache` でサイトを有効化
+- `sudo service apache2 restart` で設定を反映
 
 ### 🦦 Caddy
 
-- Add the following block to your `Caddyfile`, replacing `example.tld` with your own domain:
+- `Caddyfile` に以下を追加し、`example.tld` を自分のドメインに置き換えてください:
 ```caddy
 example.tld {
     reverse_proxy http://127.0.0.1:3000
 }
 ```
-- Reload your caddy configuration
+- Caddy を再読み込み
 
-## 🚀 Build and launch!
+## 🚀 ビルドと起動
+
+ビルドと起動手順です。
 
 ### 🐢 NodeJS + pm2
 
-#### `git pull` and run these steps to update Calckey in the future!
+#### 今後の更新時は `git pull` してから以下を実行します
 
 ```sh
 # git pull
@@ -231,17 +224,17 @@ NODE_ENV=production pnpm run build && pnpm run migrate
 pm2 start "NODE_ENV=production pnpm run start" --name Calckey
 ```
 
-## 😉 Tips & Tricks
+## 😉 小ネタ
 
-- When editing the config file, please don't fill out the settings at the bottom. They're designed *only* for managed hosting, not self hosting. Those settings are much better off being set in Calckey's control panel.
-- Port 3000 (used in the default config) might be already used on your server for something else. To find an open port for Calckey, run `for p in {3000..4000}; do ss -tlnH | tr -s ' ' | cut -d" " -sf4 | grep -q "${p}$" || echo "${p}"; done | head -n 1`. Replace 3000 with the minimum port and 4000 with the maximum port if you need it.
-- I'd recommend you use a S3 Bucket/CDN for Object Storage, especially if you use Docker.
-- I'd ***strongly*** recommend against using CloudFlare, but if you do, make sure to turn code minification off.
-- For push notifications, run `npx web-push generate-vapid-keys`, then put the public and private keys into Control Panel > General > ServiceWorker.
-- For translations, make a [DeepL](https://deepl.com) account and generate an API key, then put it into Control Panel > General > DeepL Translation.
-- To add another admin account:
-  - Go to the user's page > 3 Dots > About > Moderation > turn on "Moderator"
-  - Go back to Overview > click the clipboard icon next to the ID
-  - Run `psql -d calckey` (or whatever the database name is)
-  - Run `UPDATE "user" SET "isAdmin" = true WHERE id='999999';` (replace `999999` with the copied ID)
-  - Have the new admin log out and log back in
+- 設定ファイル末尾の項目はマネージドホスティング向けのため、セルフホストでは未入力推奨です。これらはコントロールパネルで設定するのが適切です。
+- デフォルトの 3000 番ポートが他の用途で使われている場合があります。空いているポートを探すには `for p in {3000..4000}; do ss -tlnH | tr -s ' ' | cut -d" " -sf4 | grep -q "${p}$" || echo "${p}"; done | head -n 1` を実行してください。必要に応じて範囲を調整します。
+- 特に Docker 利用時は、オブジェクトストレージに S3 バケット/CDN を使うことを推奨します。
+- Cloudflare の利用は非推奨ですが、使う場合はコード最小化を無効にしてください。
+- Push 通知を使う場合は `npx web-push generate-vapid-keys` を実行し、公開鍵/秘密鍵を「コントロールパネル > 全般 > ServiceWorker」に設定します。
+- 翻訳機能を使う場合は [DeepL](https://deepl.com) アカウントで API キーを取得し、「コントロールパネル > 全般 > DeepL 翻訳」に設定します。
+- 管理者アカウントを追加する場合:
+  - ユーザーページ > 3点メニュー > About > Moderation で「Moderator」を有効化
+  - Overview に戻り、ID 横のクリップボードアイコンで ID をコピー
+  - `psql -d calckey`（DB名が異なる場合は置き換え）
+  - `UPDATE "user" SET "isAdmin" = true WHERE id='999999';`（`999999` をコピーした ID に置き換え）
+  - 対象ユーザーが一度ログアウト後に再ログイン

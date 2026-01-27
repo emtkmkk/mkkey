@@ -954,6 +954,7 @@ onUnmounted(() => {
 					background-size: cover;
 					background-position: center;
 					z-index: 100;
+					pointer-events: none;
 
 					> .fade {
 						position: absolute;
@@ -973,6 +974,7 @@ onUnmounted(() => {
 						right: 0.75rem;
 						padding: 0.5rem;
 						border-radius: 1.5rem;
+						pointer-events: auto;
 
 						> .menu {
 							vertical-align: bottom;

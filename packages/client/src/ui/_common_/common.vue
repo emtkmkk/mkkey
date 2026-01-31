@@ -11,7 +11,7 @@
 
 	<XStreamIndicator />
 
-	<pwa-install disable-screenshots="true" />
+	<pwa-install v-if="shouldShowPwaInstallPrompt" disable-screenshots="true" />
 
 	<!-- <div v-if="pendingApiRequestsCount > 0" id="wait"></div> -->
 
@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent } from "vue";
+import { defineAsyncComponent, ref } from "vue";
 import { swInject } from "./sw-inject";
 import { popup, popups, pendingApiRequestsCount } from "@/os";
 import { uploads } from "@/scripts/upload";
@@ -32,6 +32,7 @@ import { $i } from "@/account";
 import { stream } from "@/stream";
 import { i18n } from "@/i18n";
 import * as os from "@/os";
+import { getPwaInstallPromptVisibility } from "@/scripts/pwa-install-prompt";
 import "@khmyznikov/pwa-install";
 
 const XStreamIndicator = defineAsyncComponent(
@@ -40,6 +41,7 @@ const XStreamIndicator = defineAsyncComponent(
 const XUpload = defineAsyncComponent(() => import("./upload.vue"));
 
 const dev = _DEV_;
+const shouldShowPwaInstallPrompt = ref(getPwaInstallPromptVisibility());
 
 const onNotification = (notification) => {
 	if ($i.mutingNotificationTypes.includes(notification.type)) return;

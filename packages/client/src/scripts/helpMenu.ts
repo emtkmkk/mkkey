@@ -5,6 +5,7 @@ import * as os from "@/os";
 import XTutorial from "../components/MkTutorialDialog.vue";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
+import { resetPwaInstallPromptSuppression } from "@/scripts/pwa-install-prompt";
 import {
 	MenuButton,
 	MenuItem,
@@ -87,6 +88,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 			{
 				type: "button",
 				action: async () => {
+					resetPwaInstallPromptSuppression();
 					defaultStore.set("tutorial", 0);
 					defaultStore.set("showLocalPostsInfoPopup", false);
 					defaultStore.set("showInviteInfoPopupAccount", false);

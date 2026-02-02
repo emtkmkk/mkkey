@@ -4,6 +4,9 @@ import { SwSubscriptions } from "@/models/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import type { Packed } from "@/misc/schema.js";
 import { getNoteSummary } from "@/misc/get-note-summary.js";
+import Logger from "@/services/logger.js";
+
+const logger = new Logger("push-notification", "yellow");
 
 // Defined also packages/sw/types.ts#L14-L21
 type pushNotificationsTypes = {
@@ -51,8 +54,10 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 		!meta.enableServiceWorker ||
 		meta.swPublicKey == null ||
 		meta.swPrivateKey == null
-	)
+	) {
+		logger.warn("Service Worker の設定が無効なため、プッシュ通知をスキップします。");
 		return;
+	}
 
 	// アプリケーションの連絡先と、サーバーサイドの鍵ペアの情報を登録
 	push.setVapidDetails(config.url, meta.swPublicKey, meta.swPrivateKey);
@@ -62,7 +67,7 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 		userId: userId,
 	});
 
-	for (const subscription of subscriptions) {
+	const tasks = subscriptions.map(async (subscription) => {
 		if (
 			[
 				"readNotifications",
@@ -70,9 +75,9 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 				"readAllMessagingMessages",
 				"readAllMessagingMessagesOfARoom",
 			].includes(type) &&
-			!subscription.sendReadMessage
+				!subscription.sendReadMessage
 		)
-			continue;
+			return;
 
 		const pushSubscription = {
 			endpoint: subscription.endpoint,
@@ -82,8 +87,8 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 			},
 		};
 
-		push
-			.sendNotification(
+		try {
+			await push.sendNotification(
 				pushSubscription,
 				JSON.stringify({
 					type,
@@ -97,19 +102,28 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 				{
 					proxy: config.proxy,
 				},
-			)
-			.catch((err: any) => {
-				//swLogger.info(err.statusCode);
-				//swLogger.info(err.headers);
-				//swLogger.info(err.body);
-				if (err.statusCode === 410) {
-					SwSubscriptions.delete({
-						userId: userId,
-						endpoint: subscription.endpoint,
-						auth: subscription.auth,
-						publickey: subscription.publickey,
-					});
-				}
-			});
-	}
+			);
+		} catch (err: any) {
+			const statusCode = err?.statusCode;
+			if (statusCode === 404 || statusCode === 410) {
+				await SwSubscriptions.delete({
+					userId: userId,
+					endpoint: subscription.endpoint,
+					auth: subscription.auth,
+					publickey: subscription.publickey,
+				});
+				logger.warn(
+					`購読が無効でした (status=${statusCode})。削除しました: ${subscription.endpoint}`,
+				);
+				return;
+			}
+
+			logger.error(
+				`プッシュ通知送信に失敗しました (status=${statusCode ?? "unknown"})`,
+			);
+			logger.error(err);
+		}
+	});
+
+	await Promise.all(tasks);
 }

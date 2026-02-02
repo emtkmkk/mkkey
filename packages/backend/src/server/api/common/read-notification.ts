@@ -1,9 +1,10 @@
-import { In } from "typeorm";
+import { In, LessThanOrEqual } from "typeorm";
 import { publishMainStream } from "@/services/stream.js";
 import { pushNotification } from "@/services/push-notification.js";
 import type { User } from "@/models/entities/user.js";
 import type { Notification } from "@/models/entities/notification.js";
 import { Notifications, Users } from "@/models/index.js";
+import { redisClient } from "@/db/redis.js";
 
 export async function readNotification(
 	userId: User["id"],
@@ -28,6 +29,28 @@ export async function readNotification(
 	if (!(await Users.getHasUnreadNotification(userId)))
 		return postReadAllNotifications(userId);
 	else return postReadNotifications(userId, notificationIds);
+}
+
+export async function readAllNotifications(
+	userId: User["id"],
+	latestNotificationId: Notification["id"],
+) {
+	await redisClient.set(`latestReadNotification:${userId}`, latestNotificationId);
+
+	const result = await Notifications.update(
+		{
+			notifieeId: userId,
+			id: LessThanOrEqual(latestNotificationId),
+			isRead: false,
+		},
+		{
+			isRead: true,
+		},
+	);
+
+	if (result.affected === 0) return;
+
+	return postReadAllNotifications(userId);
 }
 
 export async function readNotificationByQuery(

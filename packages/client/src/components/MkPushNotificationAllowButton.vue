@@ -53,11 +53,12 @@
 </template>
 
 <script setup lang="ts">
-import { $i, getAccounts } from "@/account";
+import { $i } from "@/account";
 import MkButton from "@/components/MkButton.vue";
 import { instance } from "@/instance";
-import { api, apiWithDialog, promiseDialog } from "@/os";
+import { api, promiseDialog } from "@/os";
 import { i18n } from "@/i18n";
+import { apiUrl } from "@/config";
 
 defineProps<{
 	primary?: boolean;
@@ -139,22 +140,18 @@ async function unsubscribe() {
 	if (!pushSubscription) return;
 
 	const endpoint = pushSubscription.endpoint;
-	const accounts = await getAccounts();
 
 	pushRegistrationInServer = undefined;
 
-	if ($i && accounts.length >= 2) {
-		apiWithDialog("sw/unregister", {
-			i: $i.token,
+	await pushSubscription.unsubscribe();
+	pushSubscription = null;
+
+	await fetch(`${apiUrl}/sw/unregister`, {
+		method: "POST",
+		body: JSON.stringify({
 			endpoint,
-		});
-	} else {
-		pushSubscription.unsubscribe();
-		apiWithDialog("sw/unregister", {
-			endpoint,
-		});
-		pushSubscription = null;
-	}
+		}),
+	});
 }
 
 function encode(buffer: ArrayBuffer | null) {

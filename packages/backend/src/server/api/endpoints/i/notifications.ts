@@ -2,7 +2,7 @@ import { Brackets } from "typeorm";
 import { Notifications, Mutings, Users, UserProfiles } from "@/models/index.js";
 import { notificationTypes } from "@/types.js";
 import read from "@/services/note/read.js";
-import { readNotification } from "../../common/read-notification.js";
+import { readAllNotifications } from "../../common/read-notification.js";
 import define from "../../define.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
@@ -166,10 +166,12 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	// Mark all as read
 	if (notifications.length > 0 && ps.markAsRead) {
-		readNotification(
-			user.id,
-			notifications.map((x) => x.id),
+		const latestNotificationId = notifications.reduce(
+			(latest, notification) =>
+				notification.id > latest ? notification.id : latest,
+			notifications[0].id,
 		);
+		readAllNotifications(user.id, latestNotificationId);
 	}
 
 	const notes = notifications

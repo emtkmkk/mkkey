@@ -16,7 +16,7 @@ class SwNotificationReadManager {
 
 	public async construct() {
 		const accounts = await get("accounts");
-		if (!accounts) Error("Accounts are not recorded");
+		if (!accounts) throw new Error("Accounts are not recorded");
 
 		this.accounts = accounts.reduce((acc, e) => {
 			acc[e.id] = {
@@ -34,7 +34,7 @@ class SwNotificationReadManager {
 		data: pushNotificationDataMap[K],
 	) {
 		// 既読をサーバーに送信しない
-		if (data.type !== "notification" || !(data.userId in this.accounts) || true)
+		if (data.type !== "notification" || !(data.userId in this.accounts))
 			return;
 
 		const account = this.accounts[data.userId];

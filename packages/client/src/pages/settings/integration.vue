@@ -10,9 +10,7 @@
 					:href="`https://discord.com/users/${integrations.discord.id}`"
 					rel="nofollow noopener"
 					target="_blank"
-					>@{{ integrations.discord.username }}#{{
-						integrations.discord.discriminator
-					}}</a
+					>{{ discordHandle }}</a
 				>
 			</p>
 			<MkButton
@@ -67,6 +65,14 @@ const discordForm = ref<Window | null>(null);
 const githubForm = ref<Window | null>(null);
 
 const integrations = computed(() => $i!.integrations);
+const discordHandle = computed(() => {
+	const discord = integrations.value.discord;
+	if (!discord) return "";
+	if (discord.discriminator === "0" || discord.discriminator === "0000") {
+		return `@${discord.username}`;
+	}
+	return `@${discord.username}#${discord.discriminator}`;
+});
 
 function openWindow(service: string, type: string) {
 	return window.open(

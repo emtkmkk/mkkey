@@ -97,11 +97,19 @@ export function getNoteMenu(props: {
 				defaultStore.set("postFormReferenceIds",Array.from(new Set([...defaultStore.state.postFormReferenceIds, ...appearNote.referenceIds])));
 			}
 
+			const originalNote =
+				appearNote.originalText != null
+					? {
+							...appearNote,
+							text: appearNote.originalText,
+					  }
+					: appearNote;
+
 			os.post({
-				initialNote: appearNote,
-				renote: appearNote.renote,
-				reply: appearNote.reply,
-				channel: appearNote.channel,
+				initialNote: originalNote,
+				renote: originalNote.renote,
+				reply: originalNote.reply,
+				channel: originalNote.channel,
 			});
 		});
 	}

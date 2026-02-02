@@ -30,6 +30,8 @@ export function getNoteMenu(props: {
 		isRenote && !defaultStore.state.developerNoteMenu
 			? (props.note.renote as misskey.entities.Note)
 			: props.note;
+	const hasTranslatableText =
+		typeof appearNote.text === "string" && appearNote.text.trim().length > 0;
 
 	function del(): void {
 		os.confirm({
@@ -542,7 +544,9 @@ export function getNoteMenu(props: {
 								action: share,
 							}
 						: undefined,
-						instance.translatorAvailable && !appearNote.deletedAt
+						instance.translatorAvailable &&
+						hasTranslatableText &&
+						!appearNote.deletedAt
 							? {
 									icon: "ph-translate ph-bold ph-lg",
 									text: i18n.ts.translate,
@@ -813,7 +817,9 @@ export function getNoteMenu(props: {
 							action: share,
 						}
 					: undefined,
-				instance.translatorAvailable && !appearNote.deletedAt
+				instance.translatorAvailable &&
+				hasTranslatableText &&
+				!appearNote.deletedAt
 					? {
 							icon: "ph-translate ph-bold ph-lg",
 							text: i18n.ts.translate,

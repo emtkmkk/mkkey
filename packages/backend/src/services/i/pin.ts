@@ -10,7 +10,6 @@ import type { UserNotePining } from "@/models/entities/user-note-pining.js";
 import { genId } from "@/misc/gen-id.js";
 import { deliverToFollowers } from "@/remote/activitypub/deliver-manager.js";
 import { deliverToRelays } from "../relay.js";
-import { QueryFailedError } from "typeorm";
 
 /**
  * 指定した投稿をピン留めします
@@ -43,42 +42,36 @@ export async function addPinned(
 		);
 	}
 
-        const updateExisting = async () =>
-                UserNotePinings.update(
-                        {
-                                userId: user.id,
-                                noteId: note.id,
-                        },
-                        {
-                                id: genId(),
-                                createdAt: new Date(),
-                        } as UserNotePining,
-                );
+	const updateExisting = async () =>
+		UserNotePinings.update(
+			{
+				userId: user.id,
+				noteId: note.id,
+			},
+			{
+				id: genId(),
+				createdAt: new Date(),
+			} as UserNotePining,
+		);
 
-        if (pinings.some((pining) => pining.noteId === note.id)) {
-                // すでに登録済みの場合、上に持ってくるためにID・登録日を更新
-                await updateExisting();
-        } else {
-                try {
-                        await UserNotePinings.insert({
-                                id: genId(),
-                                createdAt: new Date(),
-                                userId: user.id,
-                                noteId: note.id,
-                        } as UserNotePining);
-                } catch (err) {
-                        const driverErrorCode =
-                                (err as QueryFailedError)?.driverError?.code ??
-                                (err as { code?: string }).code;
-
-                        if (driverErrorCode === "23505") {
-                                // 挿入競合時は既存レコードを更新
-                                await updateExisting();
-                        } else {
-                                throw err;
-                        }
-                }
-        }
+	if (pinings.some((pining) => pining.noteId === note.id)) {
+		// すでに登録済みの場合、上に持ってくるためにID・登録日を更新
+		await updateExisting();
+	} else {
+		// 同一ノートへの同時ピン留めで userId+noteId のユニーク制約が競合しても
+		// UPSERT で解決されるため、トランザクションが中断されないことを想定。
+		await UserNotePinings.upsert(
+			{
+				id: genId(),
+				createdAt: new Date(),
+				userId: user.id,
+				noteId: note.id,
+			} as UserNotePining,
+			{
+				conflictPaths: ["userId", "noteId"],
+			},
+		);
+	}
 
 	// Deliver to remote followers
 	if (

@@ -480,19 +480,19 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	updateUsertags(user, tags);
 	//#endregion
 
-        if (Object.keys(updates).length > 0) await Users.update(user.id, updates);
+	if (Object.keys(updates).length > 0) await Users.update(user.id, updates);
 
-        await UserProfiles.update(user.id, {
-                ...profileUpdates,
-                verifiedLinks: [],
-        });
+	await UserProfiles.update(user.id, {
+		...profileUpdates,
+		verifiedLinks: [],
+	});
 
-        const updatedProfile = await UserProfiles.findOneByOrFail({ userId: user.id });
+	const updatedProfile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-        const iObj = await Users.pack<true, true>(user.id, user, {
-                detail: true,
-                includeSecrets: isSecure,
-        });
+	const iObj = await Users.pack<true, true>(user.id, user, {
+		detail: true,
+		includeSecrets: isSecure,
+	});
 
 	// Publish meUpdated event
 	publishMainStream(user.id, "meUpdated", iObj);
@@ -514,109 +514,145 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	*/
 
 	// フォロワーにUpdateを配信
-        publishToFollowers(user.id);
+	publishToFollowers(user.id);
 
-        if (Users.isLocalUser(user)) {
-                updatedProfile.fields
-                        .filter((field) => field.value.startsWith("https://"))
-                        .forEach((field) => {
-                                void verifyLink(field.value, user);
-                        });
+	if (Users.isLocalUser(user)) {
+		updatedProfile.fields
+			.map((field) => getVerifiedLinkCandidate(field.value))
+			.filter((value): value is VerifiedLinkCandidate => value != null)
+			.forEach((value) => {
+				void verifyLink(value.url, value.original, user);
+			});
 
-                void verifyMutualMentions(updatedProfile.fields, user);
-        }
+		void verifyMutualMentions(updatedProfile.fields, user);
+	}
 
-        return iObj;
+	return iObj;
 });
 
-async function verifyLink(url: string, user: ILocalUser) {
-        if (!safeForSql(url)) return;
+async function verifyLink(url: string, original: string, user: ILocalUser) {
+	if (!safeForSql(url)) return;
 
-        try {
-                const html = await getHtml(url);
-                const { window } = new JSDOM(html);
-                const doc = window.document;
+	try {
+		const html = await getHtml(url);
+		const { window } = new JSDOM(html);
+		const doc = window.document;
 
-                const myLink = `${config.url}/@${user.username}`;
+		const myLink = `${config.url}/@${user.username}`;
 
-                const anchorElements = Array.from(doc.getElementsByTagName("a"));
-                const linkElements = Array.from(doc.getElementsByTagName("link"));
+		const anchorElements = Array.from(doc.getElementsByTagName("a"));
+		const linkElements = Array.from(doc.getElementsByTagName("link"));
 
-                const includesMyLink = anchorElements.some((a) => a.href === myLink);
-                const includesRelMeLinks = [...anchorElements, ...linkElements].some((link) => {
-                        if (link.href !== myLink) return false;
-                        if (typeof link.rel === "string" && link.rel !== "") {
-                                if (link.rel === "me") return true;
-                                return link.rel.split(/\s+/).includes("me");
-                        }
-                        return (link.relList as DOMTokenList | undefined)?.contains("me") ?? false;
-                });
+		const includesMyLink = anchorElements.some((a) => a.href === myLink);
+		const includesRelMeLinks = [...anchorElements, ...linkElements].some((link) => {
+			if (link.href !== myLink) return false;
+			if (typeof link.rel === "string" && link.rel !== "") {
+				if (link.rel === "me") return true;
+				return link.rel.split(/\s+/).includes("me");
+			}
+			return (link.relList as DOMTokenList | undefined)?.contains("me") ?? false;
+		});
 
-                if (includesMyLink || includesRelMeLinks) {
-                        await UserProfiles.createQueryBuilder("profile")
-                                .update()
-                                .where("userId = :userId", { userId: user.id })
-                                .andWhere("NOT :url = ANY(\"verifiedLinks\")", { url })
-                                .set({
-                                        verifiedLinks: () => 'array_append("verifiedLinks", :url)',
-                                })
-                                .setParameters({ url })
-                                .execute();
-                }
-        } catch (err) {
-                // ignore errors during link verification
-        }
+		if (includesMyLink || includesRelMeLinks) {
+			await UserProfiles.createQueryBuilder("profile")
+				.update()
+				.where("userId = :userId", { userId: user.id })
+				.andWhere("NOT :original = ANY(\"verifiedLinks\")", {
+					original,
+				})
+				.set({
+					verifiedLinks: () => 'array_append("verifiedLinks", :original)',
+				})
+				.setParameters({ original })
+				.execute();
+		}
+	} catch (err) {
+		// ignore errors during link verification
+	}
+}
+
+type VerifiedLinkCandidate = {
+	url: string;
+	original: string;
+};
+
+function getVerifiedLinkCandidate(value: string): VerifiedLinkCandidate | null {
+	const tokens = mfm.parse(value) ?? [];
+	const urls: string[] = [];
+
+	const walk = (node: mfm.MfmNode) => {
+		if (node.type === "url" || node.type === "link") {
+			const url = node.props?.url;
+			if (typeof url === "string") urls.push(url);
+		}
+		if (node.children) {
+			for (const child of node.children) {
+				walk(child);
+			}
+		}
+	};
+
+	for (const node of tokens) {
+		walk(node);
+	}
+
+	if (urls.length !== 1) return null;
+	if (!urls[0].startsWith("https://")) return null;
+	return {
+		url: urls[0],
+		original: value,
+	};
 }
 
 async function verifyMutualMentions(fields: UserProfile["fields"], user: ILocalUser) {
-        const selfAcct = `@${user.username}@${config.host}`.toLowerCase();
+	const selfAcct = `@${user.username}@${config.host}`.toLowerCase();
 
-        const mentions = fields.flatMap((field) => {
-                const tokens = mfm.parse(field.value) ?? [];
+	const mentions = fields.flatMap((field) => {
+		const tokens = mfm.parse(field.value) ?? [];
 
-                return extractMentions(tokens).map((mention) => ({
-                        mention,
-                        original: field.value,
-                }));
-        });
+		return extractMentions(tokens).map((mention) => ({
+			mention,
+			original: field.value,
+		}));
+	});
 
-        await Promise.all(
-                mentions.map(async ({ mention, original }) => {
-                        const host = mention.host ?? config.host;
+	await Promise.all(
+		mentions.map(async ({ mention, original }) => {
+			const host = mention.host ?? config.host;
 
-                        try {
-                                const target = await resolveUser(mention.username, host);
-                                const targetProfile = await UserProfiles.findOneBy({
-                                        userId: target.id,
-                                });
+			try {
+				const target = await resolveUser(mention.username, host);
+				const targetProfile = await UserProfiles.findOneBy({
+					userId: target.id,
+				});
 
-                                if (!targetProfile) return;
+				if (!targetProfile) return;
 
-                                const hasSelfMention = targetProfile.fields.some((field) => {
-                                        const tokens = mfm.parse(field.value) ?? [];
+				const hasSelfMention = targetProfile.fields.some((field) => {
+					const tokens = mfm.parse(field.value) ?? [];
 
-                                        return extractMentions(tokens).some((selfMention) => {
-                                                const selfHost = selfMention.host ?? config.host;
-                                                const acct = `@${selfMention.username}@${selfHost}`.toLowerCase();
+					return extractMentions(tokens).some((selfMention) => {
+						const selfHost = selfMention.host ?? config.host;
+						const acct = `@${selfMention.username}@${selfHost}`.toLowerCase();
 
-                                                return acct === selfAcct;
-                                        });
-                                });
+						return acct === selfAcct;
+					});
+				});
 
-                                if (!hasSelfMention) return;
+				if (!hasSelfMention) return;
 
-                                await UserProfiles.createQueryBuilder("profile")
-                                        .update()
-                                        .where("userId = :userId", { userId: user.id })
-                                        .andWhere("NOT :value = ANY(\"verifiedLinks\")", { value: original })
-                                        .set({
-                                                verifiedLinks: () => 'array_append("verifiedLinks", :value)',
-                                        })
-                                        .setParameters({ value: original })
-                                        .execute();
-                        } catch (err) {
-                                // 無視
-                        }
-                }),
-        );
+				await UserProfiles.createQueryBuilder("profile")
+					.update()
+					.where("userId = :userId", { userId: user.id })
+					.andWhere("NOT :value = ANY(\"verifiedLinks\")", { value: original })
+					.set({
+						verifiedLinks: () => 'array_append("verifiedLinks", :value)',
+					})
+					.setParameters({ value: original })
+					.execute();
+			} catch (err) {
+				// 無視
+			}
+		}),
+	);
 }

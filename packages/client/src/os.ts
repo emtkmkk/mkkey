@@ -968,7 +968,9 @@ async function errortoast(res, body, endpoint, parameter) {
 			: body.error.info?.message || body.error.message 
 		: body.error.message;
 
-	toast(`${[res.status, message].join(" ")}`);
+	if ($i) {
+		toast(`${[res.status, message].join(" ")}`);
+	}
 
 	const currentDate = new Date();
 	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;

@@ -41,7 +41,6 @@ export async function translateWithDeepl(
   const normalizedTarget = targetLang.toUpperCase();
 
   const params = new URLSearchParams();
-  params.append("auth_key", meta.deeplAuthKey ?? "");
   params.append("text", text);
   params.append("target_lang", normalizedTarget);
 
@@ -52,6 +51,7 @@ export async function translateWithDeepl(
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
+      Authorization: `DeepL-Auth-Key ${meta.deeplAuthKey}`,
       "Content-Type": "application/x-www-form-urlencoded",
       "User-Agent": config.userAgent,
       Accept: "application/json, */*",

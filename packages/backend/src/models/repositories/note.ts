@@ -492,6 +492,7 @@ export const NoteRepository = db.getRepository(Note).extend({
                 if (packed.user.isCat && packed.user.speakAsCat && packed.text) {
                         const me = meUser;
                         if (!me?.disableNyaise) {
+                                const originalText = packed.text;
                                 const tokens = packed.text ? mfm.parse(packed.text) : [];
                                 function nyaizeNode(node: mfm.MfmNode) {
                                         if (node.type === "quote") return;
@@ -504,11 +505,14 @@ export const NoteRepository = db.getRepository(Note).extend({
 					}
 				}
 
-				for (const node of tokens) nyaizeNode(node);
+                                for (const node of tokens) nyaizeNode(node);
 
-				packed.text = mfm.toString(tokens);
-			}
-		}
+                                packed.text = mfm.toString(tokens);
+                                if (meId === note.userId) {
+                                        packed.originalText = originalText;
+                                }
+                        }
+                }
 
 		if (packed.text?.includes("[[参照]]"))
 			packed.text = packed.text?.replaceAll("[[参照]]", "?[<参照>]");
@@ -521,7 +525,7 @@ export const NoteRepository = db.getRepository(Note).extend({
                 me?: { id: User["id"] } | null | undefined,
                 options?: {
                         detail?: boolean;
-		},
+                },
 	) {
 		if (notes.length === 0) return [];
 

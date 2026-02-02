@@ -890,7 +890,7 @@ export const defaultStore = markRaw(
 		},
 		swipeOnDesktop: {
 			where: "device",
-			default: true,
+			default: false,
 			page: "behavior",
 		},
 		notTopToSwipeStop: {

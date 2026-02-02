@@ -183,6 +183,7 @@ let challengeData = $ref(null);
 let queryingKey = $ref(false);
 let hCaptchaResponse = $ref(null);
 let reCaptchaResponse = $ref(null);
+let userFetching = $ref<Promise<void> | null>(null);
 
 const meta = $computed(() => instance);
 
@@ -208,22 +209,40 @@ const props = defineProps({
 	},
 });
 
+function fetchUser() {
+	if (!username) {
+		user = null;
+		return Promise.resolve();
+	}
+	if (userFetching) {
+		return userFetching;
+	}
+	const promise = os
+		.api(
+			"users/show",
+			{
+				username: username,
+			},
+			undefined,
+			true,
+		)
+		.then(
+			(userResponse) => {
+				user = userResponse;
+			},
+			() => {
+				user = null;
+			},
+		)
+		.finally(() => {
+			userFetching = null;
+		});
+	userFetching = promise;
+	return promise;
+}
+
 function onUsernameChange() {
-        os.api(
-                "users/show",
-                {
-                        username: username,
-                },
-                undefined,
-                true,
-        ).then(
-                (userResponse) => {
-                        user = userResponse;
-                },
-                () => {
-                        user = null;
-		}
-	);
+	fetchUser();
 }
 
 function onLogin(res) {
@@ -281,9 +300,11 @@ function queryKey() {
 		});
 }
 
-function onSubmit() {
+async function onSubmit() {
 	signing = true;
-	console.log("submit");
+	if (!user && username) {
+		await fetchUser();
+	}
 	if (!totpLogin && user && user.twoFactorEnabled) {
 		if (window.PublicKeyCredential && user.securityKeys) {
 			os.api("signin", {

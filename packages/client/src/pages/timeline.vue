@@ -176,12 +176,8 @@ const tlComponent = ref<InstanceType<typeof XTimeline>>();
 const rootEl = $ref<HTMLElement>();
 const isTimelineAtTop = ref(true);
 let removeScrollListener: (() => void) | null = null;
-const activeTimelineComponent = computed(() =>
-	Array.isArray(tlComponent.value) ? tlComponent.value[0] : tlComponent.value
-);
 
 let queue = $ref(0);
-const TOP_SWIPE_TOLERANCE = 0;
 const allowTouchMove = computed(() => {
 	if (!defaultStore.state.swipeOnDesktop) {
 		return false;
@@ -189,30 +185,14 @@ const allowTouchMove = computed(() => {
 	if (!defaultStore.state.notTopToSwipeStop) {
 		return true;
 	}
-	const pagingComponent =
-		activeTimelineComponent.value?.tlComponent?.pagingComponent?.value;
-	if (!pagingComponent) {
-		return false;
-	}
-	const isInitialLoad =
-		(pagingComponent?.items?.value?.length ?? 0) === 0 &&
-		(pagingComponent?.queue?.value?.length ?? 0) === 0;
-	if (isInitialLoad) {
-		return true;
-	}
-	const isPagingBacked =
-		typeof pagingComponent?.backed === "boolean"
-			? pagingComponent.backed
-			: (pagingComponent?.backed?.value ?? false);
+	const pagingComponent = tlComponent.value?.tlComponent?.pagingComponent;
 	const isPagingActive =
-		typeof pagingComponent?.active === "boolean"
-			? pagingComponent.active
-			: (pagingComponent?.active?.value ?? false);
+		(pagingComponent?.active || pagingComponent?.backed) ?? false;
 	return (
 		isTimelineAtTop.value &&
 		queue === 0 &&
 		!queueActive &&
-		!(isPagingActive || isPagingBacked)
+		!isPagingActive
 	);
 });
 
@@ -241,7 +221,7 @@ const src = $computed({
 watch($$(src), () => (queue = 0));
 
 function updateTopState(): void {
-	isTimelineAtTop.value = isTopVisible(rootEl, TOP_SWIPE_TOLERANCE);
+	isTimelineAtTop.value = isTopVisible(rootEl);
 }
 
 function queueUpdated(q: number, a): void {

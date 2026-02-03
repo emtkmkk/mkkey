@@ -5,6 +5,32 @@
                         <FormSwitch v-model="enterSendsMessage" class="_formBlock">{{
                                 i18n.ts.enterSendsMessage
                         }}</FormSwitch>
+                        <FormSwitch
+                                :disabled="!showCloseButton"
+                                v-model="CloseAllClearButton"
+                                class="_formBlock"
+                        >
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-eraser ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.CloseAllClearButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch
+                                :disabled="!showMentionButton"
+                                v-model="openMentionWindow"
+                                class="_formBlock"
+                        >
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-at ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.openMentionWindow }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
                         <FormSwitch v-model="keepPostCw" class="_formBlock"
                                 >{{ i18n.ts.keepPostCw
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -94,54 +120,138 @@
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="hiddenMentionButton" class="_formBlock"
-                                >{{ i18n.ts.hiddenMentionButton
-                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
-                                        i18n.ts.mkkey
-                                }}</span></FormSwitch
-                        >
-                        <FormSwitch
-                                :disabled="hiddenMentionButton"
-                                v-model="openMentionWindow"
-                                class="_formBlock"
-                                >{{ i18n.ts.openMentionWindow
-                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
-                                        i18n.ts.mkkey
-                                }}</span></FormSwitch
-                        >
-                        <FormSwitch v-model="hiddenCloseButton" class="_formBlock"
-                                >{{ i18n.ts.hiddenCloseButton
-                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
-                                        i18n.ts.mkkey
-                                }}</span></FormSwitch
-                        >
-                        <FormSwitch
-                                :disabled="hiddenCloseButton"
-                                v-model="CloseAllClearButton"
-                                class="_formBlock"
-                                >{{ i18n.ts.CloseAllClearButton
-                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
-                                        i18n.ts.mkkey
-                                }}</span></FormSwitch
-                        >
-                        <FormSwitch v-model="hiddenAccountButton" class="_formBlock"
-                                >{{ i18n.ts.hiddenAccountButton
-                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
-                                        i18n.ts.mkkey
-                                }}</span></FormSwitch
-                        >
-                        <FormSwitch v-model="hiddenMFMHelp" class="_formBlock"
-                                >{{ i18n.ts.hiddenMFMHelp
-                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
-                                        i18n.ts.mkkey
-                                }}</span></FormSwitch
-                        >
-                        <FormSwitch v-model="hiddenDraftButton" class="_formBlock"
-                                >{{ i18n.ts.hiddenDraftButton
-                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
-                                        i18n.ts.mkkey
-                                }}</span></FormSwitch
-                        >
+                        <div class="postFormGroupLabel _formBlock">
+                                {{ i18n.ts.postFormHeaderButtons }}
+                        </div>
+                        <FormSwitch v-model="showCloseButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-x ph-bold ph-lg"></i
+                                        ><span>{{ closeButtonLabel }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showAccountButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-user-circle ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenAccountButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showTextCount" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-text-t ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenTextCount }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showDraftButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-notepad ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenDraftButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showMFMHelp" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-question ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenMFMHelp }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showPostButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-paper-plane-tilt ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenPostButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <div class="postFormGroupLabel _formBlock">
+                                {{ i18n.ts.postFormFooterButtons }}
+                        </div>
+                        <FormSwitch v-model="showUploadButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-upload ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenUploadButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showPollButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-microphone-stage ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenPollButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showCwButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-eye-slash ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenCwButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showMentionButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-at ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenMentionButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showHashtagButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-hash ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenHashtagButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showEmojiButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-smiley ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenEmojiButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showMFMButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-magic-wand ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenMFMButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch v-model="showPreviewButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-binoculars ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenPreviewButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
             </FormSection>
 	</div>
 </template>
@@ -192,6 +302,12 @@ const notCloseEmojiPicker = computed(
 	defaultStore.makeGetterSetter("notCloseEmojiPicker")
 );
 const hiddenMFMHelp = computed(defaultStore.makeGetterSetter("hiddenMFMHelp"));
+const hiddenPostButton = computed(
+	defaultStore.makeGetterSetter("hiddenPostButton")
+);
+const hiddenTextCount = computed(
+	defaultStore.makeGetterSetter("hiddenTextCount")
+);
 const hiddenMentionButton = computed(
 	defaultStore.makeGetterSetter("hiddenMentionButton")
 );
@@ -207,6 +323,53 @@ const hiddenAccountButton = computed(
 const CloseAllClearButton = computed(
 	defaultStore.makeGetterSetter("CloseAllClearButton")
 );
+const hiddenUploadButton = computed(
+	defaultStore.makeGetterSetter("hiddenUploadButton")
+);
+const hiddenPollButton = computed(
+	defaultStore.makeGetterSetter("hiddenPollButton")
+);
+const hiddenCwButton = computed(
+	defaultStore.makeGetterSetter("hiddenCwButton")
+);
+const hiddenHashtagButton = computed(
+	defaultStore.makeGetterSetter("hiddenHashtagButton")
+);
+const hiddenEmojiButton = computed(
+	defaultStore.makeGetterSetter("hiddenEmojiButton")
+);
+const hiddenMFMButton = computed(
+	defaultStore.makeGetterSetter("hiddenMFMButton")
+);
+const hiddenPreviewButton = computed(
+	defaultStore.makeGetterSetter("hiddenPreviewButton")
+);
+const closeButtonLabel = computed(() =>
+        CloseAllClearButton.value
+                ? i18n.ts.postFormClearButtonLabel
+                : i18n.ts.hiddenCloseButton
+);
+const invertBool = (source: { value: boolean }) =>
+	computed({
+		get: () => !source.value,
+		set: (value: boolean) => {
+			source.value = !value;
+		},
+	});
+const showPostButton = invertBool(hiddenPostButton);
+const showCloseButton = invertBool(hiddenCloseButton);
+const showAccountButton = invertBool(hiddenAccountButton);
+const showTextCount = invertBool(hiddenTextCount);
+const showDraftButton = invertBool(hiddenDraftButton);
+const showMFMHelp = invertBool(hiddenMFMHelp);
+const showUploadButton = invertBool(hiddenUploadButton);
+const showPollButton = invertBool(hiddenPollButton);
+const showCwButton = invertBool(hiddenCwButton);
+const showMentionButton = invertBool(hiddenMentionButton);
+const showHashtagButton = invertBool(hiddenHashtagButton);
+const showEmojiButton = invertBool(hiddenEmojiButton);
+const showMFMButton = invertBool(hiddenMFMButton);
+const showPreviewButton = invertBool(hiddenPreviewButton);
 const openMentionWindow = computed(
 	defaultStore.makeGetterSetter("openMentionWindow")
 );
@@ -216,19 +379,19 @@ const smartMFMInputer = computed(
 const quickToggleSmartMFMInputer = computed(
 	defaultStore.makeGetterSetter("quickToggleSmartMFMInputer")
 );
-let keepCw = $computed(defaultStore.makeGetterSetter("keepCw"));
-let keepPostCw = $computed(defaultStore.makeGetterSetter("keepPostCw"));
-const plusInfoPostForm = $computed(
-	defaultStore.makeGetterSetter("plusInfoPostForm")
+const keepCw = computed(defaultStore.makeGetterSetter("keepCw"));
+const keepPostCw = computed(defaultStore.makeGetterSetter("keepPostCw"));
+const plusInfoPostForm = computed(
+        defaultStore.makeGetterSetter("plusInfoPostForm")
 );
-const showRemoteEmojiPostForm = $computed(
-	defaultStore.makeGetterSetter("showRemoteEmojiPostForm")
+const showRemoteEmojiPostForm = computed(
+        defaultStore.makeGetterSetter("showRemoteEmojiPostForm")
 );
-const usePickerSizePostForm = $computed(
-	defaultStore.makeGetterSetter("usePickerSizePostForm")
+const usePickerSizePostForm = computed(
+        defaultStore.makeGetterSetter("usePickerSizePostForm")
 );
-const enabledSpecifiedCc = $computed(
-	defaultStore.makeGetterSetter("enabledSpecifiedCc")
+const enabledSpecifiedCc = computed(
+        defaultStore.makeGetterSetter("enabledSpecifiedCc")
 );
 
 async function reloadAsk() {
@@ -245,12 +408,26 @@ watch([emojiPickerUseDrawerForMobile], async () => {
 	await reloadAsk();
 });
 
-const headerActions = $computed(() => []);
+const headerActions = computed(() => []);
 
-const headerTabs = $computed(() => []);
+const headerTabs = computed(() => []);
 
 definePageMetadata({
 	title: i18n.ts.postForm,
 	icon: "ph-note-pencil ph-bold ph-lg",
 });
 </script>
+
+<style lang="scss" scoped>
+.postFormSwitchLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.postFormGroupLabel {
+	font-weight: 700;
+	color: var(--fg);
+	margin-top: 0.5rem;
+}
+</style>

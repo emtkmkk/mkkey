@@ -31,6 +31,7 @@
 			</button>
 			<div class="right">
 				<span
+					v-if="!$store.state.hiddenTextCount"
 					class="text-count"
 					:class="{ over: textLength > maxTextLength }"
 					>{{
@@ -98,22 +99,23 @@
 				>
 					<i class="ph-question ph-bold ph-lg"></i>
 				</button>
-								<button
-					v-for="button in submitButtonConfigs"
-					:key="button.key"
-					:class="[button.buttonClass, button.classObject ?? {}]"
-					:disabled="button.disabled"
-					data-cy-open-post-form-submit
-					@click="handleQuickPost(button)"
-				>
-					{{ button.label }}
-					<i :class="button.iconClass"></i>
-					<i
-						v-if="button.extraIconClass"
-						:class="button.extraIconClass"
-					></i>
-				</button>
-
+				<template v-if="!$store.state.hiddenPostButton">
+					<button
+						v-for="button in submitButtonConfigs"
+						:key="button.key"
+						:class="[button.buttonClass, button.classObject ?? {}]"
+						:disabled="button.disabled"
+						data-cy-open-post-form-submit
+						@click="handleQuickPost(button)"
+					>
+						{{ button.label }}
+						<i :class="button.iconClass"></i>
+						<i
+							v-if="button.extraIconClass"
+							:class="button.extraIconClass"
+						></i>
+					</button>
+				</template>
 			</div>
 		</header>
 		<div class="form" :class="{ fixed }">
@@ -294,6 +296,7 @@
 			<XPollEditor v-if="poll" v-model="poll" @destroyed="poll = null" />
 			<footer>
 				<button
+					v-if="!$store.state.hiddenUploadButton"
 					v-tooltip="i18n.ts.attachFile"
 					class="_button"
 					@click="chooseFileFrom"
@@ -301,6 +304,7 @@
 					<i class="ph-upload ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="!$store.state.hiddenPollButton"
 					v-tooltip="i18n.ts.poll"
 					class="_button"
 					:class="{ active: poll }"
@@ -309,6 +313,7 @@
 					<i class="ph-microphone-stage ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="!$store.state.hiddenCwButton"
 					v-tooltip="i18n.ts.useCw"
 					class="_button"
 					:class="{ active: useCw }"
@@ -325,6 +330,7 @@
 					<i class="ph-at ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="!$store.state.hiddenHashtagButton"
 					v-tooltip="i18n.ts.hashtags"
 					class="_button"
 					:class="{ active: withHashtags }"
@@ -333,6 +339,7 @@
 					<i class="ph-hash ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="!$store.state.hiddenEmojiButton"
 					v-tooltip="i18n.ts.emoji"
 					class="_button"
 					@click="insertEmoji"
@@ -340,6 +347,7 @@
 					<i class="ph-smiley ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="!$store.state.hiddenMFMButton"
 					v-tooltip="i18n.ts.mfm"
 					class="_button"
 					:class="{
@@ -360,6 +368,7 @@
 					<i class="ph-plug ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="!$store.state.hiddenPreviewButton"
 					v-tooltip="i18n.ts.previewNoteText"
 					class="_button right"
 					:class="{ active: showPreview }"
@@ -369,7 +378,7 @@
 				</button>
 			</footer>
 			<XNotePreview
-				v-if="showPreview"
+				v-if="showPreview && !$store.state.hiddenPreviewButton"
 				class="preview"
 				:text="text + (withHashtags ? ' ' + hashtagsPreview : '')"
 				:cw="useCw ? cw ?? '' : null"

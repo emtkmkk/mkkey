@@ -178,6 +178,7 @@ const isTimelineAtTop = ref(true);
 let removeScrollListener: (() => void) | null = null;
 
 let queue = $ref(0);
+const TOP_SWIPE_TOLERANCE = 0;
 const allowTouchMove = computed(() => {
 	if (!defaultStore.state.swipeOnDesktop) {
 		return false;
@@ -227,7 +228,7 @@ const src = $computed({
 watch($$(src), () => (queue = 0));
 
 function updateTopState(): void {
-	isTimelineAtTop.value = isTopVisible(rootEl);
+	isTimelineAtTop.value = isTopVisible(rootEl, TOP_SWIPE_TOLERANCE);
 }
 
 function queueUpdated(q: number, a): void {

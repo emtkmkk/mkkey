@@ -197,6 +197,15 @@ const allowTouchMove = computed(() => {
 		!isPagingActive
 	);
 });
+
+const applyAllowTouchMove = (value: boolean) => {
+	if (!swiperRef) return;
+	swiperRef.allowTouchMove = value;
+};
+
+watch(allowTouchMove, (value) => {
+	applyAllowTouchMove(value);
+});
 const src = $computed({
 	get: () => {
 		if (timelines.includes(defaultStore.reactiveState.tl.value.src)) {
@@ -616,6 +625,7 @@ let swiperRef: any = null;
 function setSwiperRef(swiper) {
 	swiperRef = swiper;
 	syncSlide(timelines.indexOf(src));
+	applyAllowTouchMove(allowTouchMove.value);
 }
 
 function onSlideChange() {

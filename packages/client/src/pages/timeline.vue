@@ -186,20 +186,27 @@ const allowTouchMove = computed(() => {
 	if (!defaultStore.state.notTopToSwipeStop) {
 		return true;
 	}
-	const pagingComponent = tlComponent.value?.tlComponent?.pagingComponent;
+	const pagingComponent =
+		tlComponent.value?.tlComponent?.pagingComponent?.value;
 	const isInitialLoad =
 		(pagingComponent?.items?.value?.length ?? 0) === 0 &&
 		(pagingComponent?.queue?.value?.length ?? 0) === 0;
 	if (isInitialLoad) {
 		return true;
 	}
+	const isPagingBacked =
+		typeof pagingComponent?.backed === "boolean"
+			? pagingComponent.backed
+			: (pagingComponent?.backed?.value ?? false);
 	const isPagingActive =
-		(pagingComponent?.active || pagingComponent?.backed) ?? false;
+		typeof pagingComponent?.active === "boolean"
+			? pagingComponent.active
+			: (pagingComponent?.active?.value ?? false);
 	return (
 		isTimelineAtTop.value &&
 		queue === 0 &&
 		!queueActive &&
-		!isPagingActive
+		!(isPagingActive || isPagingBacked)
 	);
 });
 

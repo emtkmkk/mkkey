@@ -176,6 +176,9 @@ const tlComponent = ref<InstanceType<typeof XTimeline>>();
 const rootEl = $ref<HTMLElement>();
 const isTimelineAtTop = ref(true);
 let removeScrollListener: (() => void) | null = null;
+const activeTimelineComponent = computed(() =>
+	Array.isArray(tlComponent.value) ? tlComponent.value[0] : tlComponent.value
+);
 
 let queue = $ref(0);
 const TOP_SWIPE_TOLERANCE = 0;
@@ -187,7 +190,10 @@ const allowTouchMove = computed(() => {
 		return true;
 	}
 	const pagingComponent =
-		tlComponent.value?.tlComponent?.pagingComponent?.value;
+		activeTimelineComponent.value?.tlComponent?.pagingComponent?.value;
+	if (!pagingComponent) {
+		return false;
+	}
 	const isInitialLoad =
 		(pagingComponent?.items?.value?.length ?? 0) === 0 &&
 		(pagingComponent?.queue?.value?.length ?? 0) === 0;

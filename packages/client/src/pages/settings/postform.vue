@@ -9,28 +9,20 @@
                                 :disabled="!showCloseButton"
                                 v-model="CloseAllClearButton"
                                 class="_formBlock"
-                        >
-                                <span class="postFormSwitchLabel"
-                                        ><i class="ph-eraser ph-bold ph-lg"></i
-                                        ><span>{{ i18n.ts.CloseAllClearButton }}</span
-                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                        >{{ i18n.ts.CloseAllClearButton }}
+                                        <span v-if="showMkkeySettingTips" class="_beta">{{
                                                 i18n.ts.mkkey
-                                        }}</span></span
-                                >
-                        </FormSwitch>
+                                        }}</span></FormSwitch
+												>
                         <FormSwitch
                                 :disabled="!showMentionButton"
                                 v-model="openMentionWindow"
                                 class="_formBlock"
+                        >{{ i18n.ts.openMentionWindow
+                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
+                                        i18n.ts.mkkey
+                                }}</span></FormSwitch
                         >
-                                <span class="postFormSwitchLabel"
-                                        ><i class="ph-at ph-bold ph-lg"></i
-                                        ><span>{{ i18n.ts.openMentionWindow }}</span
-                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
-                                                i18n.ts.mkkey
-                                        }}</span></span
-                                >
-                        </FormSwitch>
                         <FormSwitch v-model="keepPostCw" class="_formBlock"
                                 >{{ i18n.ts.keepPostCw
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{

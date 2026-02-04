@@ -4,6 +4,7 @@ import {
 	createEmptyNotification,
 	createNotification,
 } from "@/scripts/create-notification";
+import { FETCH_TIMEOUT_MS } from "@/const";
 import { swLang } from "@/scripts/lang";
 import { swNotificationRead } from "@/scripts/notification-read";
 import { pushNotificationDataMap } from "@/types";
@@ -29,8 +30,41 @@ self.addEventListener("activate", (ev) => {
 	);
 });
 
+async function respondToNavigation(request: Request): Promise<Response> {
+	const controller = new AbortController();
+	const timeout = self.setTimeout(() => {
+		controller.abort("navigation-timeout");
+	}, FETCH_TIMEOUT_MS);
+
+	try {
+		const response = await fetch(request, { signal: controller.signal });
+
+		if (response?.status && response.status < 500) return response;
+		if (response?.type === "opaqueredirect") return response;
+	} catch (error) {
+		if (_DEV_) {
+			console.warn("navigation fetch failed; showing offline page", error);
+		}
+	} finally {
+		self.clearTimeout(timeout);
+	}
+
+	const html = await offlineContentHTML();
+	return new Response(html, {
+		status: 200,
+		headers: {
+			"content-type": "text/html",
+		},
+	});
+}
+
 async function offlineContentHTML() {
-	const i18n = await (swLang.i18n ?? swLang.fetchLocale());
+	let i18n;
+	try {
+		i18n = await (swLang.i18n ?? swLang.fetchLocale());
+	} catch {
+		i18n = {};
+	}
 	const messages = {
 		title:
 			i18n.ts?._offlineScreen?.title ?? "Offline - Could not connect to server",
@@ -52,17 +86,7 @@ self.addEventListener("fetch", (ev) => {
 	}
 
 	if (!isHTMLRequest) return;
-	ev.respondWith(
-		fetch(ev.request).catch(async () => {
-			const html = await offlineContentHTML();
-			return new Response(html, {
-				status: 200,
-				headers: {
-					"content-type": "text/html",
-				},
-			});
-		}),
-	);
+	ev.respondWith(respondToNavigation(ev.request));
 });
 
 self.addEventListener("push", (ev) => {

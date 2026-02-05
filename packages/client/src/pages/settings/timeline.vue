@@ -108,30 +108,61 @@
 			>
 				<template #label>{{ i18n.ts.fourthTimelineListId }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			</FormInput>-->
-			<FormSwitch v-model="showListButton" class="_formBlock"
-				>{{ i18n.ts.showListButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
+			<div class="timelineButtonGroupLabel _formBlock">
+				{{ i18n.ts.timeline }} {{ i18n.ts.button }}
+			</div>
+			<FormSwitch
+				v-model="showListButton"
+				class="_formBlock"
+				:disabled="!isTimelineHeaderButtonsAvailable"
 			>
-			<FormSwitch v-model="showAntennaButton" class="_formBlock"
-				>{{ i18n.ts.showAntennaButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
+				<span class="timelineButtonSwitchLabel"
+					><i class="ph-list-bullets ph-bold ph-lg"></i
+					><span>{{ i18n.ts.lists }}</span
+					><span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></span
+				>
+			</FormSwitch>
+			<FormSwitch
+				v-model="showAntennaButton"
+				class="_formBlock"
+				:disabled="!isTimelineHeaderButtonsAvailable"
 			>
-			<FormSwitch v-model="showTimeTravelButton" class="_formBlock"
-				>{{ i18n.ts.showTimeTravelButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
+				<span class="timelineButtonSwitchLabel"
+					><i class="ph-flying-saucer ph-bold ph-lg"></i
+					><span>{{ i18n.ts.antennas }}</span
+					><span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></span
+				>
+			</FormSwitch>
+			<FormSwitch
+				v-model="showTimeTravelButton"
+				class="_formBlock"
+				:disabled="!isTimelineHeaderButtonsAvailable"
 			>
-			<FormSwitch v-model="showTlReloadButton" class="_formBlock"
-				>{{ i18n.ts.showTlReloadButton
-				}}<span v-if="showMkkeySettingTips" class="_beta">{{
-					i18n.ts.mkkey
-				}}</span></FormSwitch
+				<span class="timelineButtonSwitchLabel"
+					><i class="ph-calendar-blank ph-bold ph-lg"></i
+					><span>{{ i18n.ts.showingPastTimeline }}</span
+					><span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></span
+				>
+			</FormSwitch>
+			<FormSwitch
+				v-model="showTlReloadButton"
+				class="_formBlock"
+				:disabled="!isTimelineHeaderButtonsAvailable"
 			>
+				<span class="timelineButtonSwitchLabel"
+					><i class="ph-arrows-clockwise ph-bold ph-lg"></i
+					><span>{{ i18n.ts.reload }}</span
+					><span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></span
+				>
+			</FormSwitch>
 			<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
 				i18n.ts.showFixedPostForm
 			}}</FormSwitch>
@@ -248,6 +279,7 @@ import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
 import { instance } from "@/instance";
 import { isSupportNavigatorConnection } from "@/scripts/datasaver";
+import { ui } from "@/config";
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;
@@ -269,6 +301,9 @@ const showLocalPostsInTimeline = computed(
 const developer = computed(defaultStore.makeGetterSetter("developer"));
 const showMkkeySettingTips = computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
+);
+const isTimelineHeaderButtonsAvailable = computed(
+	() => ui === null || ui === "default"
 );
 const showListButton = computed(
 	defaultStore.makeGetterSetter("showListButton")
@@ -358,3 +393,17 @@ definePageMetadata({
 	icon: "ph-list-dashes ph-bold ph-lg",
 });
 </script>
+
+<style lang="scss" scoped>
+.timelineButtonSwitchLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.timelineButtonGroupLabel {
+	font-weight: 700;
+	color: var(--fg);
+	margin-top: 0.5rem;
+}
+</style>

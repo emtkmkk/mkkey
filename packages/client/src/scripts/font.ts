@@ -218,7 +218,7 @@ export function applyFont(fontname: null | string) {
 	style.innerHTML = `
 		@import url('${font.importUrl}');
 		body {
-			font-family: '${font.fontFamily}', -apple-system, BlinkMacSystemFont, "BIZ UDGothic", Roboto, "Hiragino Sans", "Noto Sans CJK JP", HelveticaNeue, Arial, sans-serif, "Apple Color Emoji", "Noto Sans Emoji";
+			font-family: '${font.fontFamily}', -apple-system, BlinkMacSystemFont, "BIZ UDGothic", "HanaMinHentaigana", "HanaMinA", "HanaMinB", "Hanazono Mincho", Roboto, "Hiragino Sans", "Noto Sans CJK JP", HelveticaNeue, Arial, sans-serif, "Apple Color Emoji", "Noto Sans Emoji";
 		}
 	`;
 }

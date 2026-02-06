@@ -1,5 +1,17 @@
 @charset "utf-8";
 
+@font-face {
+	font-family: "HanaMinHentaigana";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: local("花園明朝A Regular"),
+		local("HanaMinA"),
+		url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.Kana-Supplement.woff2") format("woff2"),
+		url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.Kana-Extended-A.woff2") format("woff2");
+	unicode-range: U+1B000-1B16F;
+}
+
 :root {
 	--radius: 0.75rem;
 	--marginFull: 1rem;
@@ -55,7 +67,7 @@ html {
 	accent-color: var(--accent);
 	overflow: auto;
 	overflow-wrap: break-word;
-	font-family: -apple-system, BlinkMacSystemFont, "BIZ UDGothic", Roboto, "Hiragino Sans", "Noto Sans CJK JP", HelveticaNeue, Arial, sans-serif, "Apple Color Emoji", "Noto Sans Emoji";
+	font-family: -apple-system, BlinkMacSystemFont, "BIZ UDGothic", "HanaMinHentaigana", "HanaMinA", "HanaMinB", "Hanazono Mincho", Roboto, "Hiragino Sans", "Noto Sans CJK JP", HelveticaNeue, Arial, sans-serif, "Apple Color Emoji", "Noto Sans Emoji";
 	font-size: var(--fontSize);
 	line-height: 1.4;
 	text-size-adjust: 100%;

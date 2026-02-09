@@ -95,7 +95,7 @@
 				<footer ref="footerEl" class="footer" @click.stop tabindex="-1">
 					<XReactionsViewer
 						v-if="enableEmojiReactions"
-						v-show="showContent"
+						v-show="isReactionListVisible"
 						ref="reactionsViewer"
 						:note="appearNote"
 					/>
@@ -103,7 +103,7 @@
 						v-if="referenceIds && referenceIds.length"
 						v-tooltip.bottom="i18n.ts.referencesAttached"
 						class="button _button"
-						:class= "{reacted: referenceIds?.includes(appearNote.id)}"
+						:class="{ reacted: referenceIds?.includes(appearNote.id) }"
 						@click="toggleReference()"
 					>
 						<i class="ph-stack ph-bold ph-lg"></i>
@@ -139,13 +139,14 @@
 						:note="appearNote"
 						:count="appearNote.renoteCount"
 					/>
-                                        <XStarButtonNoEmoji
-                                                v-if="!enableEmojiReactions || !showContent"
-                                                class="button"
-                                                :note="appearNote"
-                                                :count="totalReactions"
-                                                :reacted="appearNote.myReaction != null"
-                                        />
+					<XStarButtonNoEmoji
+						v-if="showStarButtonNoEmoji"
+						class="button"
+						:note="appearNote"
+						:count="reactionCountToShow"
+						:reacted="appearNote.myReaction != null"
+						@contextmenu.prevent.stop="onReactionButtonContextmenu"
+					/>
 					<XStarButton
 						v-if="
 							enableEmojiReactions &&
@@ -157,9 +158,7 @@
 						:note="appearNote"
 					/>
 					<button
-						v-if="
-							enableEmojiReactions && !isMaxReacted && isCanAction
-						"
+						v-if="showReactionPickerButton"
 						:title="
 							multiReaction
 								? (appearNote.myReactions?.length ?? 0) +
@@ -185,24 +184,32 @@
 									?.maxReactionsPerAccount === 0,
 						}"
 						@click="react()"
+						@contextmenu.prevent.stop="onReactionButtonContextmenu"
 					>
 						<i
-							v-if="multiReaction"
+							v-if="isMaxReacted"
+							class="ph-prohibit ph-bold ph-lg"
+						></i>
+						<i
+							v-else-if="multiReaction"
 							class="ph-smiley-wink ph-bold ph-lg"
 						></i>
 						<i v-else class="ph-smiley ph-bold ph-lg"></i>
+						<template v-if="showReactionCount">
+                                                        <p class="count">{{ reactionCountToShow }}</p>
+                                                </template>
 					</button>
 					<button
-						v-if="
-							enableEmojiReactions &&
-							appearNote.myReaction != null &&
-							!multiReaction
-						"
+						v-if="showUndoReactionButton"
 						ref="reactButton"
 						class="button _button reacted"
 						@click="undoReact(appearNote)"
+						@contextmenu.prevent.stop="onReactionButtonContextmenu"
 					>
 						<i class="ph-minus ph-bold ph-lg"></i>
+						<template v-if="showReactionCount">
+                                                        <p class="count">{{ reactionCountToShow }}</p>
+                                                </template>
 					</button>
 					<XQuoteButton class="button" :note="appearNote" />
 					<button
@@ -281,6 +288,7 @@ import XStarButton from "@/components/MkStarButton.vue";
 import XStarButtonNoEmoji from "@/components/MkStarButtonNoEmoji.vue";
 import XRenoteButton from "@/components/MkRenoteButton.vue";
 import XQuoteButton from "@/components/MkQuoteButton.vue";
+import XUsersTooltip from "@/components/MkUsersTooltip.vue";
 import { pleaseLogin } from "@/scripts/please-login";
 import { getNoteMenu } from "@/scripts/get-note-menu";
 import { getWordSoftMute } from "@/scripts/check-word-mute";
@@ -291,6 +299,7 @@ import * as os from "@/os";
 import { reactionPicker } from "@/scripts/reaction-picker";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
+import { instance } from "@/instance";
 import { useNoteCapture } from "@/scripts/use-note-capture";
 import { defaultStore } from "@/store";
 import { deepClone } from "@/scripts/clone";
@@ -379,9 +388,121 @@ const replies: misskey.entities.Note[] =
 		)
 		.reverse() ?? [];
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
+/**
+ * 全リアクション数
+ */
 const totalReactions = $computed(() =>
         getVisibleReactionsTotal(appearNote as misskey.entities.Note)
 );
+
+/**
+ * デフォルトリアクション（Likeなど）の数
+ */
+const defaultReactionCount = $computed(() =>
+        appearNote.reactions[instance.defaultReaction] ?? 0
+);
+
+/**
+ * リアクション一覧が表示されているかどうか
+ */
+const isReactionListVisible = $computed(() =>
+        enableEmojiReactions && showContent.value
+);
+
+/**
+ * 表示すべきリアクション数（一覧表示中はデフォルトリアクション数、非表示中は全リアクション数）
+ */
+const reactionCountToShow = $computed(() =>
+        isReactionListVisible ? defaultReactionCount : totalReactions
+);
+
+/**
+ * 絵文字ピッカーを持たないスターボタン（Likeボタン）を表示するかどうか
+ */
+const showStarButtonNoEmoji = $computed(() => {
+        const canShow =
+                !isReactionListVisible &&
+                ((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
+                        favButtonReactionIsFavorite);
+        return canShow && defaultStore.state.favButtonReaction !== "hidden";
+});
+
+/**
+ * リアクションピッカーボタン（+）を表示するかどうか
+ */
+const showReactionPickerButton = $computed(
+        () =>
+                enableEmojiReactions &&
+                isCanAction
+);
+
+/**
+ * リアクション取り消しボタン（-）を表示するかどうか
+ */
+const showUndoReactionButton = $computed(
+        () =>
+                enableEmojiReactions &&
+                appearNote.myReaction != null &&
+                !multiReaction
+);
+
+/**
+ * ピッカー/取り消しボタンの横にカウントを表示するかどうか
+ */
+const showReactionCount = $computed(
+        () =>
+                reactionCountToShow > 0 &&
+                !showStarButtonNoEmoji &&
+                (showReactionPickerButton || showUndoReactionButton)
+);
+
+const favButtonReactionIsFavorite =
+        defaultStore.state.favButtonReaction === "favorite";
+
+const isfavButtonReacted = $computed(() => {
+	const favButtonReaction = multiReaction
+		? defaultStore.state.woozyMode === true
+			? "🥴"
+			: defaultStore.state.favButtonReaction === "custom"
+			? defaultStore.state.favButtonReactionCustom
+			: defaultStore.state.favButtonReaction === ""
+			? ":iine_fav:"
+			: defaultStore.state.favButtonReaction
+		: undefined;
+	return multiReaction
+		? appearNote.myReactions
+				?.map((x) => x.replace(/@[^:\s]?(:?)$/, "$1"))
+				.includes(favButtonReaction)
+		: false;
+});
+
+function onReactionButtonContextmenu(ev: MouseEvent): void {
+	ev.stopPropagation();
+	ev.preventDefault();
+
+	const target = ev.currentTarget as HTMLElement;
+
+	os.api("notes/reactions", {
+		noteId: appearNote.id,
+		type: isReactionListVisible ? instance.defaultReaction : null,
+		limit: 11,
+	}).then((reactions) => {
+		const users = reactions.map((x) => x.user);
+		if (users.length < 1) return;
+
+		os.popup(
+			XUsersTooltip,
+			{
+				showing: true,
+				users,
+				count: isReactionListVisible ? defaultReactionCount : totalReactions,
+				targetElement: target,
+			},
+			{},
+			"closed"
+		);
+	});
+}
 
 useNoteCapture({
 	rootEl: el,
@@ -416,6 +537,7 @@ function airReply(viaKeyboard = false): void {
 }
 
 function react(viaKeyboard = false): void {
+	if (isMaxReacted) return;
 	pleaseLogin();
 	blur();
 	reactionPicker.show(

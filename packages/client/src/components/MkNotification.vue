@@ -23,7 +23,7 @@
 				:src="notification.icon"
 				alt=""
 			/>
-			<div class="sub-icon" :class="notification.type">
+			<div class="sub-icon" :class="[notification.type, { defaultReaction: isDefaultReaction }]">
 				<i
 					v-if="notification.type === 'follow'"
 					class="ph-hand-waving ph-bold"
@@ -71,6 +71,17 @@
 					v-else-if="notification.type === 'pollEnded'"
 					class="ph-microphone-stage ph-bold"
 				></i>
+				<template v-else-if="isDefaultReaction">
+					<i
+						v-if="instance.defaultReaction === '👍'"
+						class="ph-thumbs-up ph-bold ph-fill"
+					></i>
+					<i
+						v-else-if="instance.defaultReaction === '❤️'"
+						class="ph-heart ph-bold ph-fill"
+					></i>
+					<i v-else class="ph-star ph-bold ph-fill"></i>
+				</template>
 				<!-- notification.reaction が null になることはまずないが、ここでoptional chaining使うと一部ブラウザで刺さるので念の為 -->
 				<XReactionIcon
 					v-else-if="
@@ -428,6 +439,12 @@ const defaultReaction = ["⭐", "👍", "❤️"].includes(instance.defaultReact
 	? instance.defaultReaction
 	: "⭐";
 
+const isDefaultReaction = $computed(() => {
+	if (props.notification.type !== "reaction") return false;
+	const reaction = props.notification.reaction;
+	return reaction === instance.defaultReaction;
+});
+
 let readObserver: IntersectionObserver | undefined;
 let connection;
 let firstRead = false;
@@ -638,6 +655,12 @@ useTooltip(reactionRef, (showing) => {
 			&.pollEnded {
 				padding: 0.1875rem;
 				background: #908caa;
+				pointer-events: none;
+			}
+
+			&.defaultReaction {
+				padding: 0.1875rem;
+				background: #31748f;
 				pointer-events: none;
 			}
 		}

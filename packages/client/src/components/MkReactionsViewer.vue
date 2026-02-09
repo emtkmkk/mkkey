@@ -15,6 +15,7 @@
 <script lang="ts" setup>
 import { computed, unref } from "vue";
 import * as misskey from "calckey-js";
+import { instance } from "@/instance";
 import { $i } from "@/account";
 import XReaction from "@/components/MkReactionsViewer.reaction.vue";
 import { getVisibleReactions } from "@/scripts/reaction-utils";
@@ -30,6 +31,9 @@ let lastSortedReactions = ["🅰️", "🅱️"];
 
 const sortedReactions = computed(() => {
 	const arrayReactions = Object.keys(reactions.value)
+		.filter((name) => {
+			return name !== instance.defaultReaction;
+		})
 		.map((x) => {
 			return { name: x, count: reactions.value[x] };
 		})

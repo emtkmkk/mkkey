@@ -244,8 +244,9 @@
                                                v-if="showStarButtonNoEmoji"
                                                class="button"
                                                :note="appearNote"
-                                               :count="totalReactions"
+                                               :count="reactionCountToShow"
                                                :reacted="appearNote.myReaction != null"
+                                               @contextmenu="onReactionButtonContextmenu($event)"
                                        />
 					<XStarButton
 						v-if="
@@ -287,14 +288,19 @@
 									?.maxReactionsPerAccount === 0,
 						}"
                                                @click="react()"
+                                               @contextmenu="onReactionButtonContextmenu($event)"
                                        >
                                                <i
-                                                       v-if="multiReaction"
+                                                       v-if="isMaxReacted"
+                                                       class="ph-prohibit ph-bold ph-lg"
+                                               ></i>
+                                               <i
+                                                       v-else-if="multiReaction"
                                                        class="ph-smiley-wink ph-bold ph-lg"
                                                ></i>
                                                <i v-else class="ph-smiley ph-bold ph-lg"></i>
-                                               <template v-if="showReactionCount && showReactionPickerButton">
-                                                       <p class="count">{{ totalReactions }}</p>
+                                               <template v-if="showReactionCount">
+                                                       <p class="count">{{ reactionCountToShow }}</p>
                                                </template>
                                        </button>
                                        <button
@@ -305,7 +311,7 @@
                                        >
                                                <i class="ph-minus ph-bold ph-lg" style="color: var(--accent);"></i>
                                                <template v-if="showReactionCount && showUndoReactionButton">
-                                                       <p class="count">{{ totalReactions }}</p>
+                                                       <p class="count">{{ reactionCountToShow }}</p>
                                                </template>
                                        </button>
 					<XQuoteButton
@@ -452,6 +458,7 @@ import XCwButton from "@/components/MkCwButton.vue";
 import XPoll from "@/components/MkPoll.vue";
 import XRenoteButton from "@/components/MkRenoteButton.vue";
 import XReactionsViewer from "@/components/MkReactionsViewer.vue";
+import XUsersTooltip from "@/components/MkUsersTooltip.vue";
 import XStarButton from "@/components/MkStarButton.vue";
 import XStarButtonNoEmoji from "@/components/MkStarButtonNoEmoji.vue";
 import XQuoteButton from "@/components/MkQuoteButton.vue";
@@ -464,11 +471,13 @@ import { useRouter } from "@/router";
 import { userPage } from "@/filters/user";
 import * as os from "@/os";
 import { defaultStore, noteViewInterruptors } from "@/store";
+import { instance } from "@/instance";
 import { reactionPicker } from "@/scripts/reaction-picker";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { getNoteMenu } from "@/scripts/get-note-menu";
 import { useNoteCapture } from "@/scripts/use-note-capture";
+import { useTooltip } from "@/scripts/use-tooltip";
 import { notePage } from "@/filters/note";
 import { deepClone } from "@/scripts/clone";
 import { getNoteSummary } from "@/scripts/get-note-summary";
@@ -557,32 +566,70 @@ const info = ref(null);
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
 const showEmojiButton = defaultStore.state.showEmojiButton;
 const isDetailedView = $computed(() => props.detailedView ?? false);
+/**
+ * デフォルトリアクション（Likeなど）の数
+ */
+const defaultReactionCount = $computed(() =>
+        appearNote.reactions[instance.defaultReaction] ?? 0
+);
+
+/**
+ * リアクション一覧が表示されているかどうか
+ */
+const isReactionListVisible = $computed(() =>
+        (enableEmojiReactions || isDetailedView) && showContent.value
+);
+
+/**
+ * 表示すべきリアクション数（一覧表示中はデフォルトリアクション数、非表示中は全リアクション数）
+ */
+const reactionCountToShow = $computed(() =>
+        isReactionListVisible ? defaultReactionCount : totalReactions
+);
+
+/**
+ * 全リアクション数
+ */
 const totalReactions = $computed(() =>
         getVisibleReactionsTotal(appearNote as misskey.entities.Note)
 );
+
+/**
+ * 絵文字ピッカーを持たないスターボタン（Likeボタン）を表示するかどうか
+ */
 const showStarButtonNoEmoji = $computed(() => {
         const canShow =
-                ((!enableEmojiReactions && !isDetailedView) || !showContent.value) &&
+                !isReactionListVisible &&
                 ((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
                         favButtonReactionIsFavorite);
         return canShow && defaultStore.state.favButtonReaction !== "hidden";
 });
+
+/**
+ * リアクションピッカーボタン（+）を表示するかどうか
+ */
 const showReactionPickerButton = $computed(
         () =>
                 (enableEmojiReactions || isDetailedView || showEmojiButton) &&
-                !isMaxReacted &&
                 isCanAction
 );
+
+/**
+ * リアクション取り消しボタン（-）を表示するかどうか
+ */
 const showUndoReactionButton = $computed(
         () =>
                 (enableEmojiReactions || isDetailedView || showEmojiButton) &&
                 appearNote.myReaction != null &&
                 !multiReaction
 );
+
+/**
+ * ピッカー/取り消しボタンの横にカウントを表示するかどうか
+ */
 const showReactionCount = $computed(
         () =>
-                totalReactions > 0 &&
-                ((!enableEmojiReactions && !isDetailedView) || !showContent.value) &&
+                reactionCountToShow > 0 &&
                 !showStarButtonNoEmoji &&
                 (showReactionPickerButton || showUndoReactionButton)
 );
@@ -737,6 +784,7 @@ function airReply(viaKeyboard = false): void {
 }
 
 function react(viaKeyboard = false): void {
+	if (isMaxReacted) return;
 	pleaseLogin();
 	if (
 		defaultStore.state.mastodonOnetapFavorite &&
@@ -780,6 +828,34 @@ async function undoReact(note): void {
 	os.api("notes/reactions/delete", {
 		noteId: note.id,
 		reaction: oldReaction,
+	});
+}
+
+function onReactionButtonContextmenu(ev: MouseEvent): void {
+	ev.stopPropagation();
+	ev.preventDefault();
+
+	const target = ev.currentTarget as HTMLElement;
+
+	os.api("notes/reactions", {
+		noteId: appearNote.id,
+		type: isReactionListVisible ? instance.defaultReaction : null,
+		limit: 11,
+	}).then((reactions) => {
+		const users = reactions.map((x) => x.user);
+		if (users.length < 1) return;
+
+		os.popup(
+			XUsersTooltip,
+			{
+				showing: true,
+				users,
+				count: isReactionListVisible ? defaultReactionCount : totalReactions,
+				targetElement: target,
+			},
+			{},
+			"closed"
+		);
 	});
 }
 

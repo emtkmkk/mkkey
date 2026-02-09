@@ -919,28 +919,24 @@ useTooltip(
 			return;
 		}
 
-		// ★ボタン有効なら、デフォルト以外のリアクション（後でフィルタリング）
+		// ★ボタン有効なら、デフォルト以外のリアクション（excludeTypeで除外）
 		// ★ボタン無効なら、一覧表示中はデフォルト、非表示中は全リアクション
 		const type = isStarButtonEnabled
-			? null // Fetch all, then filter
+			? null
 			: isReactionListVisible
 			? instance.defaultReaction
-			: null; // Fetch all
+			: null;
 
-		let reactions = await os.api("notes/reactions", {
+		const excludeType = isStarButtonEnabled
+			? instance.defaultReaction
+			: null;
+
+		const reactions = await os.api("notes/reactions", {
 			noteId: appearNote.id,
-			type: type === null ? null : type,
+			type: type,
+			excludeType: excludeType,
 			limit: 11,
 		});
-
-		if (isStarButtonEnabled) {
-			// ★ボタン有効時: デフォルト以外を表示
-			reactions = reactions.filter(
-				(x) =>
-					normalizeReactionName(x.reaction) !==
-					instance.defaultReaction
-			);
-		}
 
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
@@ -981,19 +977,16 @@ useTooltip(
 			? instance.defaultReaction
 			: null;
 
-		let reactions = await os.api("notes/reactions", {
+		const excludeType = isStarButtonEnabled
+			? instance.defaultReaction
+			: null;
+
+		const reactions = await os.api("notes/reactions", {
 			noteId: appearNote.id,
-			type: type === null ? null : type,
+			type: type,
+			excludeType: excludeType,
 			limit: 11,
 		});
-
-		if (isStarButtonEnabled) {
-			reactions = reactions.filter(
-				(x) =>
-					normalizeReactionName(x.reaction) !==
-					instance.defaultReaction
-			);
-		}
 
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;

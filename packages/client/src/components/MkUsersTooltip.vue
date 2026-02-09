@@ -42,6 +42,7 @@ const emit = defineEmits<{
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		max-width: 100%;
 
 		&:not(:last-child) {
 			margin-bottom: 0.1875rem;

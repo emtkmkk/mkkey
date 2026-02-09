@@ -42,6 +42,7 @@ export const paramDef = {
 	properties: {
 		noteId: { type: "string", format: "misskey:id" },
 		type: { type: "string", nullable: true },
+		excludeType: { type: "string", nullable: true },
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
 		offset: { type: "integer", default: 0 },
 		sinceId: { type: "string", format: "misskey:id" },
@@ -131,6 +132,22 @@ export default define(meta, paramDef, async (ps, user) => {
 			);
 		} else {
 			query.andWhere("reaction.reaction = :type", { type: ps.type });
+		}
+	}
+
+	// excludeType: 指定されたリアクションタイプを除外（誰でも使用可能）
+	if (ps.excludeType) {
+		const suffix = "@.:";
+		if (ps.excludeType.endsWith(suffix)) {
+			query.andWhere(
+				"NOT (reaction.reaction = :excludeType OR reaction.reaction LIKE :excludeTypelike)",
+				{
+					excludeType: `${ps.excludeType.slice(0, ps.excludeType.length - suffix.length)}:`,
+					excludeTypelike: `${ps.excludeType.slice(0, ps.excludeType.length - suffix.length)}@%:`,
+				},
+			);
+		} else {
+			query.andWhere("reaction.reaction != :excludeType", { excludeType: ps.excludeType });
 		}
 	}
 

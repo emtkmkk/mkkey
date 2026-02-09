@@ -109,7 +109,7 @@
 				<template #label>{{ i18n.ts.fourthTimelineListId }}<span v-if="showMkkeySettingTips" class="_beta">{{ i18n.ts.mkkey }}</span></template>
 			</FormInput>-->
 			<div class="timelineButtonGroupLabel _formBlock">
-				{{ i18n.ts.timeline }} {{ i18n.ts.button }}
+				{{ i18n.ts.timelineHeaderButtons }}
 			</div>
 			<FormSwitch
 				v-model="showListButton"
@@ -118,7 +118,7 @@
 			>
 				<span class="timelineButtonSwitchLabel"
 					><i class="ph-list-bullets ph-bold ph-lg"></i
-					><span>{{ i18n.ts.lists }}</span
+					><span>{{ i18n.ts.timelineListButton }}</span
 					><span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></span
@@ -131,7 +131,7 @@
 			>
 				<span class="timelineButtonSwitchLabel"
 					><i class="ph-flying-saucer ph-bold ph-lg"></i
-					><span>{{ i18n.ts.antennas }}</span
+					><span>{{ i18n.ts.timelineAntennaButton }}</span
 					><span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></span
@@ -144,7 +144,7 @@
 			>
 				<span class="timelineButtonSwitchLabel"
 					><i class="ph-calendar-blank ph-bold ph-lg"></i
-					><span>{{ i18n.ts.showingPastTimeline }}</span
+					><span>{{ i18n.ts.timelineTimeTravelButton }}</span
 					><span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></span
@@ -157,7 +157,7 @@
 			>
 				<span class="timelineButtonSwitchLabel"
 					><i class="ph-arrows-clockwise ph-bold ph-lg"></i
-					><span>{{ i18n.ts.reload }}</span
+					><span>{{ i18n.ts.timelineReloadButton }}</span
 					><span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></span

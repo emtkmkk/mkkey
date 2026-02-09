@@ -910,29 +910,56 @@ function showReactionTooltip(
 ) {
 	useTooltip(
 		el,
-		(showing) => {
-			os.api("notes/reactions", {
-				noteId: appearNote.id,
-				type: isReactionListVisible ? instance.defaultReaction : null,
-				limit: 11,
-			}).then((reactions) => {
-				const users = reactions.map((x) => x.user);
-				if (users.length < 1) return;
+		async (showing) => {
+			const isStar = target === starButtonNoEmojiRef.value;
+			// ★ボタンなら常にデフォルトリアクション
+			// ピッカーボタンかつ★ボタン表示中なら、デフォルト以外のリアクション（後でフィルタリング）
+			// ピッカーボタンかつ★ボタン非表示なら、一覧表示中はデフォルト、非表示中は全リアクション
+			const type = isStar
+				? instance.defaultReaction
+				: showStarButtonNoEmoji
+				? null // Fetch all, then filter
+				: isReactionListVisible
+				? instance.defaultReaction
+				: null; // Fetch all
 
-				os.popup(
-					XUsersTooltip,
-					{
-						showing,
-						users,
-						count: isReactionListVisible
-							? defaultReactionCount
-							: totalReactions,
-						targetElement: target,
-					},
-					{},
-					"closed"
-				);
+			let reactions = await os.api("notes/reactions", {
+				noteId: appearNote.id,
+				type: type === null ? null : type,
+				limit: 11,
 			});
+
+			if (showStarButtonNoEmoji && !isStar) {
+				// ★ボタン表示中のピッカーボタン: デフォルト以外を表示
+				reactions = reactions.filter(
+					(x) =>
+						normalizeReactionName(x.reaction) !==
+						instance.defaultReaction
+				);
+			}
+
+			const users = reactions.map((x) => x.user);
+			if (users.length < 1) return;
+
+			const count = isStar
+				? defaultReactionCount
+				: showStarButtonNoEmoji
+				? nonDefaultReactionCount
+				: isReactionListVisible
+				? defaultReactionCount
+				: totalReactions;
+
+			os.popup(
+				XUsersTooltip,
+				{
+					showing,
+					users,
+					count,
+					targetElement: target,
+				},
+				{},
+				"closed"
+			);
 		},
 		500 // delay for long-press on mobile / hover on desktop
 	);

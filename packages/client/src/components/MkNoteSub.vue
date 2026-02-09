@@ -553,81 +553,124 @@ const undoReactionButtonRef = ref<HTMLElement>();
 
 useTooltip(
 	starButtonNoEmojiRef,
-	(showing) => {
-		os.api("notes/reactions", {
+	async (showing) => {
+		const reactions = await os.api("notes/reactions", {
 			noteId: appearNote.id,
-			type: isReactionListVisible ? instance.defaultReaction : null,
+			type: instance.defaultReaction,
 			limit: 11,
-		}).then((reactions) => {
-			const users = reactions.map((x) => x.user);
-			if (users.length < 1) return;
-
-			os.popup(
-				XUsersTooltip,
-				{
-					showing,
-					users,
-					count: isReactionListVisible ? defaultReactionCount : totalReactions,
-					targetElement: starButtonNoEmojiRef.value,
-				},
-				{},
-				"closed"
-			);
 		});
+
+		const users = reactions.map((x) => x.user);
+		if (users.length < 1) return;
+
+		os.popup(
+			XUsersTooltip,
+			{
+				showing,
+				users,
+				count: defaultReactionCount,
+				targetElement: starButtonNoEmojiRef.value,
+			},
+			{},
+			"closed"
+		);
 	},
 	500
 );
 
 useTooltip(
 	reactionPickerButtonRef,
-	(showing) => {
-		os.api("notes/reactions", {
-			noteId: appearNote.id,
-			type: isReactionListVisible ? instance.defaultReaction : null,
-			limit: 11,
-		}).then((reactions) => {
-			const users = reactions.map((x) => x.user);
-			if (users.length < 1) return;
+	async (showing) => {
+		// ★ボタン表示中なら、デフォルト以外のリアクション（後でフィルタリング）
+		// ★ボタン非表示なら、一覧表示中はデフォルト、非表示中は全リアクション
+		const type = showStarButtonNoEmoji
+			? null // Fetch all, then filter
+			: isReactionListVisible
+			? instance.defaultReaction
+			: null; // Fetch all
 
-			os.popup(
-				XUsersTooltip,
-				{
-					showing,
-					users,
-					count: isReactionListVisible ? defaultReactionCount : totalReactions,
-					targetElement: reactionPickerButtonRef.value,
-				},
-				{},
-				"closed"
-			);
+		let reactions = await os.api("notes/reactions", {
+			noteId: appearNote.id,
+			type: type === null ? null : type,
+			limit: 11,
 		});
+
+		if (showStarButtonNoEmoji) {
+			// ★ボタン表示中のピッカーボタン: デフォルト以外を表示
+			reactions = reactions.filter(
+				(x) =>
+					normalizeReactionName(x.reaction) !==
+					instance.defaultReaction
+			);
+		}
+
+		const users = reactions.map((x) => x.user);
+		if (users.length < 1) return;
+
+		const count = showStarButtonNoEmoji
+			? nonDefaultReactionCount
+			: isReactionListVisible
+			? defaultReactionCount
+			: totalReactions;
+
+		os.popup(
+			XUsersTooltip,
+			{
+				showing,
+				users,
+				count,
+				targetElement: reactionPickerButtonRef.value,
+			},
+			{},
+			"closed"
+		);
 	},
 	500
 );
 
 useTooltip(
 	undoReactionButtonRef,
-	(showing) => {
-		os.api("notes/reactions", {
-			noteId: appearNote.id,
-			type: isReactionListVisible ? instance.defaultReaction : null,
-			limit: 11,
-		}).then((reactions) => {
-			const users = reactions.map((x) => x.user);
-			if (users.length < 1) return;
+	async (showing) => {
+		const type = showStarButtonNoEmoji
+			? null
+			: isReactionListVisible
+			? instance.defaultReaction
+			: null;
 
-			os.popup(
-				XUsersTooltip,
-				{
-					showing,
-					users,
-					count: isReactionListVisible ? defaultReactionCount : totalReactions,
-					targetElement: undoReactionButtonRef.value,
-				},
-				{},
-				"closed"
-			);
+		let reactions = await os.api("notes/reactions", {
+			noteId: appearNote.id,
+			type: type === null ? null : type,
+			limit: 11,
 		});
+
+		if (showStarButtonNoEmoji) {
+			reactions = reactions.filter(
+				(x) =>
+					normalizeReactionName(x.reaction) !==
+					instance.defaultReaction
+			);
+		}
+
+		const users = reactions.map((x) => x.user);
+		if (users.length < 1) return;
+
+		const count = showStarButtonNoEmoji
+			? nonDefaultReactionCount
+			: isReactionListVisible
+			? defaultReactionCount
+			: totalReactions;
+
+		os.popup(
+			XUsersTooltip,
+			{
+				showing,
+				users,
+				count,
+				targetElement: undoReactionButtonRef.value,
+			},
+			{},
+			"closed"
+		);
 	},
 	500
 );
@@ -776,6 +819,8 @@ function toggleReference() {
 		> .body {
 			flex: 1;
 			min-width: 0;
+			margin: 0;
+			padding: 0;
 			overflow: clip;
 			@media (pointer: coarse) {
 				cursor: default;
@@ -836,6 +881,8 @@ function toggleReference() {
 		}
 	}
 	&:first-child > .main > .body {
+		margin-top: 0;
+		padding-top: 0;
 	}
 	&.reply {
 		--avatarSize: 2.375rem;

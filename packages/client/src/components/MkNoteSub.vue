@@ -147,16 +147,11 @@
 						:note="appearNote"
 						:count="countForStarButton"
 						:reacted="isDefaultReactionReacted"
+						:hasPickerButton="showReactionPickerButton"
+						:isReactionListVisible="isReactionListVisible"
 					/>
 					<XStarButton
-						v-if="
-							enableEmojiReactions &&
-							((!isMaxReacted &&
-								!isfavButtonReacted &&
-								isCanAction) ||
-								favButtonReactionIsFavorite) &&
-							!detailedView
-						"
+						v-if="false"
 						ref="starButton"
 						class="button"
 						:note="appearNote"

@@ -248,6 +248,8 @@
                                                :note="appearNote"
                                                :count="countForStarButton"
                                                :reacted="isDefaultReactionReacted"
+                                               :hasPickerButton="showReactionPickerButton"
+                                               :isReactionListVisible="isReactionListVisible"
                                        />
 					<XStarButton
 						v-if="false"
@@ -908,26 +910,21 @@ const starButtonNoEmojiRef = ref<HTMLElement>();
 const reactionPickerButtonRef = ref<HTMLElement>();
 const undoReactionButtonRef = ref<HTMLElement>();
 
-function showReactionTooltip(
-	el: Ref<HTMLElement | undefined>,
-	target: HTMLElement
+
+function showReactionTooltipForPicker(
+	el: Ref<HTMLElement | undefined>
 ) {
 	useTooltip(
 		el,
 		async (showing) => {
-			const isStar = target === starButtonNoEmojiRef.value;
-
-			// ★ボタンが有効かつリアクション一覧表示中の場合、ピッカーボタンは何もしない
-			if (!isStar && isStarButtonEnabled && isReactionListVisible) {
+			// ★ボタンが有効かつリアクション一覧表示中の場合、何もしない
+			if (isStarButtonEnabled && isReactionListVisible) {
 				return;
 			}
 
-			// ★ボタンなら常にデフォルトリアクション
-			// ピッカーボタンかつ★ボタン有効なら、デフォルト以外のリアクション（後でフィルタリング）
-			// ピッカーボタンかつ★ボタン無効なら、一覧表示中はデフォルト、非表示中は全リアクション
-			const type = isStar
-				? instance.defaultReaction
-				: isStarButtonEnabled
+			// ★ボタン有効なら、デフォルト以外のリアクション（後でフィルタリング）
+			// ★ボタン無効なら、一覧表示中はデフォルト、非表示中は全リアクション
+			const type = isStarButtonEnabled
 				? null // Fetch all, then filter
 				: isReactionListVisible
 				? instance.defaultReaction
@@ -939,8 +936,8 @@ function showReactionTooltip(
 				limit: 11,
 			});
 
-			if (isStarButtonEnabled && !isStar) {
-				// ★ボタン有効時のピッカーボタン: デフォルト以外を表示
+			if (isStarButtonEnabled) {
+				// ★ボタン有効時: デフォルト以外を表示
 				reactions = reactions.filter(
 					(x) =>
 						normalizeReactionName(x.reaction) !==
@@ -951,9 +948,7 @@ function showReactionTooltip(
 			const users = reactions.map((x) => x.user);
 			if (users.length < 1) return;
 
-			const count = isStar
-				? defaultReactionCount
-				: isStarButtonEnabled
+			const count = isStarButtonEnabled
 				? nonDefaultReactionCount
 				: isReactionListVisible
 				? defaultReactionCount
@@ -965,7 +960,7 @@ function showReactionTooltip(
 					showing,
 					users,
 					count,
-					targetElement: target,
+					targetElement: el.value,
 				},
 				{},
 				"closed"
@@ -975,9 +970,9 @@ function showReactionTooltip(
 	);
 }
 
-showReactionTooltip(starButtonNoEmojiRef, starButtonNoEmojiRef);
-showReactionTooltip(reactionPickerButtonRef, reactionPickerButtonRef);
-showReactionTooltip(undoReactionButtonRef, undoReactionButtonRef);
+// ★ボタンの tooltip は XStarButtonNoEmoji コンポーネント内で処理
+showReactionTooltipForPicker(reactionPickerButtonRef);
+showReactionTooltipForPicker(undoReactionButtonRef);
 
 const currentClipPage = inject<Ref<misskey.entities.Clip> | null>(
 	"currentClipPage",

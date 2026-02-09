@@ -59,6 +59,8 @@ const props = defineProps<{
 	note: Note;
 	count: number;
 	reacted: boolean;
+	hasPickerButton?: boolean; // ピッカーボタンも表示されているか（1ボタン/2ボタン判定用）
+	isReactionListVisible?: boolean; // リアクション一覧が表示されているか
 }>();
 
 const buttonRef = ref<HTMLElement>();
@@ -127,8 +129,17 @@ function toggleStar(ev?: MouseEvent): void {
 }
 
 useTooltip(buttonRef, async (showing) => {
+	// 2ボタンの場合: 常にデフォルトリアクションのユーザーのみ
+	// 1ボタンの場合（ピッカーなし）: リストあり→デフォルト、リストなし→全ユーザー
+	const type = props.hasPickerButton
+		? instance.defaultReaction
+		: props.isReactionListVisible
+		? instance.defaultReaction
+		: null; // 全ユーザー
+
 	const reactions = await os.apiGet("notes/reactions", {
 		noteId: props.note.id,
+		type: type,
 		limit: 11,
 		_cacheKey_: props.count,
 	});

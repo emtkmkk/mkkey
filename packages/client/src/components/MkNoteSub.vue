@@ -459,7 +459,6 @@ const isDefaultReactionReacted = $computed(() => {
 const showStarButtonNoEmoji = $computed(() => {
 	// ★ボタンがデフォルトリアクションを扱う場合、リアクション済みでも表示し続ける（解除ボタンになるため）
 	const canShow =
-		!isReactionListVisible &&
 		((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
 			favButtonReactionIsFavorite ||
 			(isStarButtonHandlesDefault && isDefaultReactionReacted));
@@ -532,10 +531,9 @@ const countForPickerButton = $computed(() => {
  */
 const showReactionCount = $computed(
 	() =>
-		// ★ボタンが表示されているなら、リアクション一覧が表示されているときはカウント不要
-		// ★ボタンが表示されていないなら、リアクション一覧が表示されていても（他に表示場所がないので）カウント表示
-		((showStarButtonNoEmoji && !isReactionListVisible) ||
-			!showStarButtonNoEmoji) &&
+		// ★ボタンが有効なら、リアクション一覧が表示されているときはカウント不要（リストに表示されるため）
+		// ★ボタンが無効なら、リアクション一覧が表示されていても（他に表示場所がないので）カウント表示
+		!(isStarButtonEnabled && isReactionListVisible) &&
 		countForPickerButton > 0 &&
 		(showReactionPickerButton || showUndoReactionButton)
 );

@@ -13,7 +13,7 @@ export function useTooltip(
 	let shouldIgnoreMouseover = false;
 
 	let timeoutId: number;
-
+	let checkTimer: number | undefined;
 	let changeShowingState: (() => void) | null;
 
 	const open = () => {
@@ -28,9 +28,18 @@ export function useTooltip(
 		changeShowingState = () => {
 			showing.value = false;
 		};
+
+		window.clearInterval(checkTimer);
+		checkTimer = window.setInterval(() => {
+			if (!document.body.contains(el)) {
+				close();
+			}
+		}, 1000);
 	};
 
 	const close = () => {
+		window.clearInterval(checkTimer);
+		checkTimer = undefined;
 		if (changeShowingState != null) {
 			changeShowingState();
 			changeShowingState = null;

@@ -242,11 +242,11 @@
 					/>
                                        <XStarButtonNoEmoji
                                                v-if="showStarButtonNoEmoji"
+                                               ref="starButtonNoEmojiRef"
                                                class="button"
                                                :note="appearNote"
                                                :count="reactionCountToShow"
                                                :reacted="appearNote.myReaction != null"
-                                               @contextmenu="onReactionButtonContextmenu($event)"
                                        />
 					<XStarButton
 						v-if="
@@ -270,7 +270,7 @@
                                                                  maxReactions
 								: ''
 						"
-						ref="reactButton"
+						ref="reactionPickerButtonRef"
 						v-tooltip.bottom="
 							i18n.ts.reaction +
 							(multiReaction
@@ -288,7 +288,6 @@
 									?.maxReactionsPerAccount === 0,
 						}"
                                                @click="react()"
-                                               @contextmenu="onReactionButtonContextmenu($event)"
                                        >
                                                <i
                                                        v-if="isMaxReacted"
@@ -305,7 +304,7 @@
                                        </button>
                                        <button
                                                v-if="showUndoReactionButton"
-                                               ref="reactButton"
+                                               ref="undoReactionButtonRef"
                                                class="button _button"
                                                @click="undoReact(appearNote)"
                                        >
@@ -831,33 +830,47 @@ async function undoReact(note): void {
 	});
 }
 
-function onReactionButtonContextmenu(ev: MouseEvent): void {
-	ev.stopPropagation();
-	ev.preventDefault();
+const starButtonNoEmojiRef = ref<HTMLElement>();
+const reactionPickerButtonRef = ref<HTMLElement>();
+const undoReactionButtonRef = ref<HTMLElement>();
 
-	const target = ev.currentTarget as HTMLElement;
+function showReactionTooltip(
+	el: Ref<HTMLElement | undefined>,
+	target: HTMLElement
+) {
+	useTooltip(
+		el,
+		(showing) => {
+			os.api("notes/reactions", {
+				noteId: appearNote.id,
+				type: isReactionListVisible ? instance.defaultReaction : null,
+				limit: 11,
+			}).then((reactions) => {
+				const users = reactions.map((x) => x.user);
+				if (users.length < 1) return;
 
-	os.api("notes/reactions", {
-		noteId: appearNote.id,
-		type: isReactionListVisible ? instance.defaultReaction : null,
-		limit: 11,
-	}).then((reactions) => {
-		const users = reactions.map((x) => x.user);
-		if (users.length < 1) return;
-
-		os.popup(
-			XUsersTooltip,
-			{
-				showing: true,
-				users,
-				count: isReactionListVisible ? defaultReactionCount : totalReactions,
-				targetElement: target,
-			},
-			{},
-			"closed"
-		);
-	});
+				os.popup(
+					XUsersTooltip,
+					{
+						showing,
+						users,
+						count: isReactionListVisible
+							? defaultReactionCount
+							: totalReactions,
+						targetElement: target,
+					},
+					{},
+					"closed"
+				);
+			});
+		},
+		500 // delay for long-press on mobile / hover on desktop
+	);
 }
+
+showReactionTooltip(starButtonNoEmojiRef, starButtonNoEmojiRef);
+showReactionTooltip(reactionPickerButtonRef, reactionPickerButtonRef);
+showReactionTooltip(undoReactionButtonRef, undoReactionButtonRef);
 
 const currentClipPage = inject<Ref<misskey.entities.Clip> | null>(
 	"currentClipPage",

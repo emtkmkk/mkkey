@@ -141,11 +141,11 @@
 					/>
 					<XStarButtonNoEmoji
 						v-if="showStarButtonNoEmoji"
+						ref="starButtonNoEmojiRef"
 						class="button"
 						:note="appearNote"
 						:count="reactionCountToShow"
 						:reacted="appearNote.myReaction != null"
-						@contextmenu.prevent.stop="onReactionButtonContextmenu"
 					/>
 					<XStarButton
 						v-if="
@@ -166,7 +166,7 @@
 								  maxReactions
 								: ''
 						"
-						ref="reactButton"
+						ref="reactionPickerButtonRef"
 						v-tooltip.bottom="
 							i18n.ts.reaction +
 							(multiReaction
@@ -184,7 +184,6 @@
 									?.maxReactionsPerAccount === 0,
 						}"
 						@click="react()"
-						@contextmenu.prevent.stop="onReactionButtonContextmenu"
 					>
 						<i
 							v-if="isMaxReacted"
@@ -201,10 +200,9 @@
 					</button>
 					<button
 						v-if="showUndoReactionButton"
-						ref="reactButton"
+						ref="undoReactionButtonRef"
 						class="button _button reacted"
 						@click="undoReact(appearNote)"
-						@contextmenu.prevent.stop="onReactionButtonContextmenu"
 					>
 						<i class="ph-minus ph-bold ph-lg"></i>
 						<template v-if="showReactionCount">
@@ -476,33 +474,94 @@ const isfavButtonReacted = $computed(() => {
 		: false;
 });
 
-function onReactionButtonContextmenu(ev: MouseEvent): void {
-	ev.stopPropagation();
-	ev.preventDefault();
+const starButtonNoEmojiRef = ref<HTMLElement>();
+const reactionPickerButtonRef = ref<HTMLElement>();
+const undoReactionButtonRef = ref<HTMLElement>();
 
-	const target = ev.currentTarget as HTMLElement;
+useTooltip(
+	starButtonNoEmojiRef,
+	(showing) => {
+		os.api("notes/reactions", {
+			noteId: appearNote.id,
+			type: isReactionListVisible ? instance.defaultReaction : null,
+			limit: 11,
+		}).then((reactions) => {
+			const users = reactions.map((x) => x.user);
+			if (users.length < 1) return;
 
-	os.api("notes/reactions", {
-		noteId: appearNote.id,
-		type: isReactionListVisible ? instance.defaultReaction : null,
-		limit: 11,
-	}).then((reactions) => {
-		const users = reactions.map((x) => x.user);
-		if (users.length < 1) return;
+			os.popup(
+				XUsersTooltip,
+				{
+					showing,
+					users,
+					count: isReactionListVisible ? defaultReactionCount : totalReactions,
+					targetElement: starButtonNoEmojiRef.value,
+				},
+				{},
+				"closed"
+			);
+		});
+	},
+	500
+);
 
-		os.popup(
-			XUsersTooltip,
-			{
-				showing: true,
-				users,
-				count: isReactionListVisible ? defaultReactionCount : totalReactions,
-				targetElement: target,
-			},
-			{},
-			"closed"
-		);
-	});
-}
+useTooltip(
+	reactionPickerButtonRef,
+	(showing) => {
+		os.api("notes/reactions", {
+			noteId: appearNote.id,
+			type: isReactionListVisible ? instance.defaultReaction : null,
+			limit: 11,
+		}).then((reactions) => {
+			const users = reactions.map((x) => x.user);
+			if (users.length < 1) return;
+
+			os.popup(
+				XUsersTooltip,
+				{
+					showing,
+					users,
+					count: isReactionListVisible ? defaultReactionCount : totalReactions,
+					targetElement: reactionPickerButtonRef.value,
+				},
+				{},
+				"closed"
+			);
+		});
+	},
+	500
+);
+
+useTooltip(
+	undoReactionButtonRef,
+	(showing) => {
+		os.api("notes/reactions", {
+			noteId: appearNote.id,
+			type: isReactionListVisible ? instance.defaultReaction : null,
+			limit: 11,
+		}).then((reactions) => {
+			const users = reactions.map((x) => x.user);
+			if (users.length < 1) return;
+
+			os.popup(
+				XUsersTooltip,
+				{
+					showing,
+					users,
+					count: isReactionListVisible ? defaultReactionCount : totalReactions,
+					targetElement: undoReactionButtonRef.value,
+				},
+				{},
+				"closed"
+			);
+		});
+	},
+	500
+);
+
+defineExpose({
+	el,
+});
 
 useNoteCapture({
 	rootEl: el,

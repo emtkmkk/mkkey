@@ -128,12 +128,12 @@ export default async (
         muteInfo.reactionMutedWords,
     );
     console.log('isMutedReaction after checkReactionMute:', isMutedReaction);
-    
+
     if (typeof isMutedReaction === "boolean") {
         isMutedReaction = { muted: isMutedReaction };
     }
     console.log('isMutedReaction after type check:', isMutedReaction);
-    
+
     if (
         isMutedReaction.muted &&
         (isMutedReaction.reject ?? muteInfo.rejectMuteReaction)
@@ -303,6 +303,7 @@ export default async (
 		);
 
 		for (const webhook of webhooks) {
+			if (webhook.userId === user.id) continue;
 			webhookDeliver(webhook, "reaction", {
 				note: await Notes.pack(note, { id: note.userId }),
 				reaction: {

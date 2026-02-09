@@ -43,6 +43,8 @@ interface DiscordEmbeds {
 async function toDiscordEmbeds(
 	body: any,
 ): Promise<(DiscordEmbeds | undefined)[] | undefined> {
+	const meta = await fetchMeta();
+	const defaultReaction = meta.defaultReaction;
 	return [
 		body.note
 			? {
@@ -105,6 +107,8 @@ async function toDiscordEmbeds(
 							  !body.note.files[1].isSensitive &&
 							  body.note.files[1].type?.startsWith("image")
 							? body.note.files[1].thumbnailUrl
+								: body.reaction?.emojiName === defaultReaction || body.reaction?.emojiName.startsWith(`${defaultReaction} (+`) // デフォルトリアクション判定
+									? undefined
 							: body.note.user?.avatarUrl,
 					},
 					color: 16757683,
@@ -403,6 +407,8 @@ function getNoteContentSummary(
 }
 
 async function typeToBody(jobData: any): Promise<any> {
+	const meta = await fetchMeta();
+	const defaultReaction = meta.defaultReaction;
 	const body = jobData.content;
 	const contentLength =
 		jobData.secret?.replaceAll("Discord", "").replaceAll("Slack", "") ||
@@ -513,10 +519,12 @@ async function typeToBody(jobData: any): Promise<any> {
 			return {
 				username,
 				avatar_url,
-				content: `${username} から ${body.reaction?.emojiName.replaceAll(
-					/:(\w+):/g,
-					"：$1：",
-				)}${content}`,
+				content: body.reaction?.emojiName === defaultReaction || body.reaction?.emojiName.startsWith(`${defaultReaction} (+`)
+					? `${username} から ふぁぼ${content}`
+					: `${username} から ${body.reaction?.emojiName.replaceAll(
+						/:(\w+):/g,
+						"：$1：",
+					)}${content}`,
 			};
 		case "antenna":
 			return {

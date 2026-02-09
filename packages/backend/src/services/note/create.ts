@@ -847,7 +847,7 @@ export default async (
                                 ),
                         );
 		}
-	
+
 		if (
 			data.reply &&
 			user.id !== data.reply.userId &&
@@ -891,7 +891,7 @@ export default async (
 						),
 				  )
 				: undefined;
-	
+
 			if (user.isSilenced && (!relation?.every((x) => x) ?? true)) {
                                 return rej(
                                         new StatusError(
@@ -1112,6 +1112,7 @@ export default async (
 							(x) => x.userId === data.reply!.userId && x.on.includes("reply"),
 						);
 						for (const webhook of webhooks) {
+							if (webhook.userId === user.id) continue;
 							webhookDeliver(webhook, "reply", {
 								note: packedReply,
 							});
@@ -1154,6 +1155,7 @@ export default async (
 						(x) => x.userId === data.renote!.userId && x.on.includes("renote"),
 					);
 					for (const webhook of webhooks) {
+						if (webhook.userId === user.id) continue;
 						webhookDeliver(webhook, "renote", {
 							note: packedRenote,
 						});

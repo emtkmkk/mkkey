@@ -161,6 +161,7 @@ export async function insertFollowingDoc(
 				(x) => x.userId === follower.id && x.on.includes("follow"),
 			);
 			for (const webhook of webhooks) {
+				if (webhook.userId === follower.id) continue;
 				webhookDeliver(webhook, "follow", {
 					user: packed,
 				});

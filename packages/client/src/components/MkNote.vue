@@ -486,7 +486,8 @@ import {
 	getVisibleReactions,
 	getVisibleReactionsTotal,
 	normalizeReactionName,
-} from "@/scripts/reaction-utils";
+}
+ from "@/scripts/reaction-utils";
 
 const router = useRouter();
 

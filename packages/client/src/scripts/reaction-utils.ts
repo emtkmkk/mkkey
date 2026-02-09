@@ -119,5 +119,5 @@ export function getVisibleReactionsTotal(note: misskey.entities.Note): number {
 }
 
 export function normalizeReactionName(reaction: string): string {
-        return reaction.replace(/@\.:$/, "");
+        return reaction.replace(/@\.:$/, ":");
 }

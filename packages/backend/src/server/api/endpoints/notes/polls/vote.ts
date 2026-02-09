@@ -151,14 +151,14 @@ export default define(meta, paramDef, async (ps, user) => {
 		choice: ps.choice,
 	});
 
-	// Fetch watchers
+	// Fetch watchers (投稿者は投票者表示)
 	NoteWatchings.findBy({
 		noteId: note.id,
 		userId: Not(user.id),
 	}).then((watchers) => {
 		for (const watcher of watchers) {
 			createNotification(watcher.userId, "pollVote", {
-				notifierId: user.id,
+				notifierId: watcher.userId === note.userId ? user.id : note.userId,
 				noteId: note.id,
 				choice: ps.choice,
 			});

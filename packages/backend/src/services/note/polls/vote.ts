@@ -1,6 +1,5 @@
 import { publishNoteStream } from "@/services/stream.js";
 import type { CacheableUser } from "@/models/entities/user.js";
-import { User } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
 import type { Note } from "@/models/entities/note.js";
 import { PollVotes, NoteWatchings, Polls, Blockings } from "@/models/index.js";
@@ -77,14 +76,14 @@ export default async function (
 		choice: choice,
 	});
 
-	// Fetch watchers
+	// Fetch watchers (投稿者は投票者表示)
 	NoteWatchings.findBy({
 		noteId: note.id,
 		userId: Not(user.id),
 	}).then((watchers) => {
 		for (const watcher of watchers) {
 			createNotification(watcher.userId, "pollVote", {
-				notifierId: user.id,
+				notifierId: watcher.userId === note.userId ? user.id : note.userId,
 				noteId: note.id,
 				choice: choice,
 			});

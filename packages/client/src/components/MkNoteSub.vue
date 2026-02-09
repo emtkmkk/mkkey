@@ -303,7 +303,10 @@ import { defaultStore } from "@/store";
 import { deepClone } from "@/scripts/clone";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
 import * as sound from "@/scripts/sound.js";
-import { getVisibleReactionsTotal } from "@/scripts/reaction-utils";
+import {
+	getVisibleReactionsTotal,
+	normalizeReactionName,
+} from "@/scripts/reaction-utils";
 
 const router = useRouter();
 
@@ -396,9 +399,19 @@ const totalReactions = $computed(() =>
 /**
  * デフォルトリアクション（Likeなど）の数
  */
-const defaultReactionCount = $computed(() =>
-        appearNote.reactions[instance.defaultReaction] ?? 0
-);
+const defaultReactionCount = $computed(() => {
+	let count = 0;
+	if (appearNote.reactions) {
+		for (const reaction of Object.keys(appearNote.reactions)) {
+			if (
+				normalizeReactionName(reaction) === instance.defaultReaction
+			) {
+				count += appearNote.reactions[reaction];
+			}
+		}
+	}
+	return count;
+});
 
 /**
  * リアクション一覧が表示されているかどうか
@@ -411,7 +424,7 @@ const isReactionListVisible = $computed(() =>
  * 表示すべきリアクション数（一覧表示中はデフォルトリアクション数、非表示中は全リアクション数）
  */
 const reactionCountToShow = $computed(() =>
-        isReactionListVisible ? defaultReactionCount : totalReactions
+	isReactionListVisible ? defaultReactionCount : totalReactions
 );
 
 /**

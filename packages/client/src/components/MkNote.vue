@@ -246,8 +246,8 @@
                                                ref="starButtonNoEmojiRef"
                                                class="button"
                                                :note="appearNote"
-                                               :count="reactionCountToShow"
-                                               :reacted="appearNote.myReaction != null"
+                                               :count="countForStarButton"
+                                               :reacted="isDefaultReactionReacted"
                                        />
 					<XStarButton
 						v-if="
@@ -300,7 +300,7 @@
                                                ></i>
                                                <i v-else class="ph-smiley ph-bold ph-lg"></i>
                                                <template v-if="showReactionCount">
-                                                       <p class="count">{{ reactionCountToShow }}</p>
+                                                       <p class="count">{{ countForPickerButton }}</p>
                                                </template>
                                        </button>
                                        <button
@@ -311,7 +311,7 @@
                                        >
                                                <i class="ph-minus ph-bold ph-lg" style="color: var(--accent);"></i>
                                                <template v-if="showReactionCount && showUndoReactionButton">
-                                                       <p class="count">{{ reactionCountToShow }}</p>
+                                                       <p class="count">{{ countForPickerButton }}</p>
                                                </template>
                                        </button>
 					<XQuoteButton
@@ -662,13 +662,42 @@ const showUndoReactionButton = $computed(
 );
 
 /**
+ * デフォルトリアクション以外のリアクション数
+ */
+const nonDefaultReactionCount = $computed(() => {
+	return totalReactions - defaultReactionCount;
+});
+
+/**
+ * ★ボタンに表示するカウント
+ */
+const countForStarButton = $computed(() => {
+	if (showReactionPickerButton) {
+		return defaultReactionCount;
+	} else {
+		return reactionCountToShow;
+	}
+});
+
+/**
+ * 絵文字ピッカーボタン（+）に表示するカウント
+ */
+const countForPickerButton = $computed(() => {
+	if (showStarButtonNoEmoji) {
+		return nonDefaultReactionCount;
+	} else {
+		return reactionCountToShow;
+	}
+});
+
+/**
  * ピッカー/取り消しボタンの横にカウントを表示するかどうか
  */
 const showReactionCount = $computed(
-        () =>
-                reactionCountToShow > 0 &&
-                !showStarButtonNoEmoji &&
-                (showReactionPickerButton || showUndoReactionButton)
+	() =>
+		!isReactionListVisible && // リアクション一覧が表示されているときはカウント不要
+		countForPickerButton > 0 &&
+		(showReactionPickerButton || showUndoReactionButton)
 );
 const favButtonReactionIsFavorite =
         defaultStore.state.favButtonReaction === "favorite";

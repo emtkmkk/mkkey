@@ -643,6 +643,18 @@ const showStarButtonNoEmoji = $computed(() => {
 });
 
 /**
+ * ★ボタンが有効かどうか（表示状態に関わらず、存在しうるか）
+ */
+const isStarButtonEnabled = $computed(() => {
+	return (
+		defaultStore.state.favButtonReaction !== "hidden" &&
+		((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
+			favButtonReactionIsFavorite ||
+			(isStarButtonHandlesDefault && isDefaultReactionReacted))
+	);
+});
+
+/**
  * リアクションピッカーボタン（+）を表示するかどうか
  */
 const showReactionPickerButton = $computed(
@@ -683,7 +695,8 @@ const countForStarButton = $computed(() => {
  * 絵文字ピッカーボタン（+）に表示するカウント
  */
 const countForPickerButton = $computed(() => {
-	if (showStarButtonNoEmoji) {
+	// ★ボタンが有効な場合（リスト表示状態に関わらず）、ピッカーはデフォルト以外を表示
+	if (isStarButtonEnabled) {
 		return nonDefaultReactionCount;
 	} else {
 		return reactionCountToShow;
@@ -912,12 +925,18 @@ function showReactionTooltip(
 		el,
 		async (showing) => {
 			const isStar = target === starButtonNoEmojiRef.value;
+
+			// ★ボタンが有効かつリアクション一覧表示中の場合、ピッカーボタンは何もしない
+			if (!isStar && isStarButtonEnabled && isReactionListVisible) {
+				return;
+			}
+
 			// ★ボタンなら常にデフォルトリアクション
-			// ピッカーボタンかつ★ボタン表示中なら、デフォルト以外のリアクション（後でフィルタリング）
-			// ピッカーボタンかつ★ボタン非表示なら、一覧表示中はデフォルト、非表示中は全リアクション
+			// ピッカーボタンかつ★ボタン有効なら、デフォルト以外のリアクション（後でフィルタリング）
+			// ピッカーボタンかつ★ボタン無効なら、一覧表示中はデフォルト、非表示中は全リアクション
 			const type = isStar
 				? instance.defaultReaction
-				: showStarButtonNoEmoji
+				: isStarButtonEnabled
 				? null // Fetch all, then filter
 				: isReactionListVisible
 				? instance.defaultReaction
@@ -929,8 +948,8 @@ function showReactionTooltip(
 				limit: 11,
 			});
 
-			if (showStarButtonNoEmoji && !isStar) {
-				// ★ボタン表示中のピッカーボタン: デフォルト以外を表示
+			if (isStarButtonEnabled && !isStar) {
+				// ★ボタン有効時のピッカーボタン: デフォルト以外を表示
 				reactions = reactions.filter(
 					(x) =>
 						normalizeReactionName(x.reaction) !==
@@ -943,7 +962,7 @@ function showReactionTooltip(
 
 			const count = isStar
 				? defaultReactionCount
-				: showStarButtonNoEmoji
+				: isStarButtonEnabled
 				? nonDefaultReactionCount
 				: isReactionListVisible
 				? defaultReactionCount

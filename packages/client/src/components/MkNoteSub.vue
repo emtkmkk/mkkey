@@ -467,6 +467,18 @@ const showStarButtonNoEmoji = $computed(() => {
 });
 
 /**
+ * ★ボタンが有効かどうか（表示状態に関わらず、存在しうるか）
+ */
+const isStarButtonEnabled = $computed(() => {
+	return (
+		defaultStore.state.favButtonReaction !== "hidden" &&
+		((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
+			favButtonReactionIsFavorite ||
+			(isStarButtonHandlesDefault && isDefaultReactionReacted))
+	);
+});
+
+/**
  * リアクションピッカーボタン（+）を表示するかどうか
  */
 const showReactionPickerButton = $computed(
@@ -507,7 +519,8 @@ const countForStarButton = $computed(() => {
  * 絵文字ピッカーボタン（+）に表示するカウント
  */
 const countForPickerButton = $computed(() => {
-	if (showStarButtonNoEmoji) {
+	// ★ボタンが有効な場合（リスト表示状態に関わらず）、ピッカーはデフォルト以外を表示
+	if (isStarButtonEnabled) {
 		return nonDefaultReactionCount;
 	} else {
 		return reactionCountToShow;
@@ -581,9 +594,14 @@ useTooltip(
 useTooltip(
 	reactionPickerButtonRef,
 	async (showing) => {
-		// ★ボタン表示中なら、デフォルト以外のリアクション（後でフィルタリング）
-		// ★ボタン非表示なら、一覧表示中はデフォルト、非表示中は全リアクション
-		const type = showStarButtonNoEmoji
+		// ★ボタン有効かつリアクション一覧表示中の場合、何もしない
+		if (isStarButtonEnabled && isReactionListVisible) {
+			return;
+		}
+
+		// ★ボタン有効なら、デフォルト以外のリアクション（後でフィルタリング）
+		// ★ボタン無効なら、一覧表示中はデフォルト、非表示中は全リアクション
+		const type = isStarButtonEnabled
 			? null // Fetch all, then filter
 			: isReactionListVisible
 			? instance.defaultReaction
@@ -595,8 +613,8 @@ useTooltip(
 			limit: 11,
 		});
 
-		if (showStarButtonNoEmoji) {
-			// ★ボタン表示中のピッカーボタン: デフォルト以外を表示
+		if (isStarButtonEnabled) {
+			// ★ボタン有効時のピッカーボタン: デフォルト以外を表示
 			reactions = reactions.filter(
 				(x) =>
 					normalizeReactionName(x.reaction) !==
@@ -607,7 +625,7 @@ useTooltip(
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = showStarButtonNoEmoji
+		const count = isStarButtonEnabled
 			? nonDefaultReactionCount
 			: isReactionListVisible
 			? defaultReactionCount
@@ -631,7 +649,12 @@ useTooltip(
 useTooltip(
 	undoReactionButtonRef,
 	async (showing) => {
-		const type = showStarButtonNoEmoji
+		// ★ボタン有効かつリアクション一覧表示中の場合、何もしない
+		if (isStarButtonEnabled && isReactionListVisible) {
+			return;
+		}
+
+		const type = isStarButtonEnabled
 			? null
 			: isReactionListVisible
 			? instance.defaultReaction
@@ -643,7 +666,7 @@ useTooltip(
 			limit: 11,
 		});
 
-		if (showStarButtonNoEmoji) {
+		if (isStarButtonEnabled) {
 			reactions = reactions.filter(
 				(x) =>
 					normalizeReactionName(x.reaction) !==
@@ -654,7 +677,7 @@ useTooltip(
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = showStarButtonNoEmoji
+		const count = isStarButtonEnabled
 			? nonDefaultReactionCount
 			: isReactionListVisible
 			? defaultReactionCount

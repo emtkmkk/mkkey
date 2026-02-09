@@ -250,14 +250,7 @@
                                                :reacted="isDefaultReactionReacted"
                                        />
 					<XStarButton
-						v-if="
-							(enableEmojiReactions || detailedView) &&
-							((!isMaxReacted &&
-								!isfavButtonReacted &&
-								isCanAction) ||
-								favButtonReactionIsFavorite) &&
-							showContent
-						"
+						v-if="false"
 						ref="starButton"
 						class="button"
 						:note="appearNote"

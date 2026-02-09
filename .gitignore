@@ -63,3 +63,6 @@ yarn*
 # Nix Development shell items
 .devenv
 .direnv
+
+# temp
+.tmp_firefish

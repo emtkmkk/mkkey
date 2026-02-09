@@ -311,6 +311,7 @@ import {
 	getVisibleReactionsTotal,
 	normalizeReactionName,
 } from "@/scripts/reaction-utils";
+import { useTooltip } from "@/scripts/use-tooltip";
 
 const router = useRouter();
 
@@ -517,7 +518,10 @@ const countForPickerButton = $computed(() => {
  */
 const showReactionCount = $computed(
 	() =>
-		!isReactionListVisible && // リアクション一覧が表示されているときはカウント不要
+		// ★ボタンが表示されているなら、リアクション一覧が表示されているときはカウント不要
+		// ★ボタンが表示されていないなら、リアクション一覧が表示されていても（他に表示場所がないので）カウント表示
+		((showStarButtonNoEmoji && !isReactionListVisible) ||
+			!showStarButtonNoEmoji) &&
 		countForPickerButton > 0 &&
 		(showReactionPickerButton || showUndoReactionButton)
 );

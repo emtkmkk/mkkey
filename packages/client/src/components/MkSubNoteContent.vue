@@ -264,7 +264,7 @@ const isLong =
 		props.note.text.length > 500 ||
 		(!defaultStore.state.compactGrid &&
 			(props.note.files?.length > 4 || props.note.files?.length === 3)));
-const collapsed = $ref(!cwView && isLong);
+let collapsed = ref(!cwView && isLong);
 const urls = props.note.text
 	? extractUrlFromMfm(mfm.parse(props.note.text))
 			.filter(

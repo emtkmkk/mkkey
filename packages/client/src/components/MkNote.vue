@@ -910,69 +910,114 @@ const starButtonNoEmojiRef = ref<HTMLElement>();
 const reactionPickerButtonRef = ref<HTMLElement>();
 const undoReactionButtonRef = ref<HTMLElement>();
 
+// ピッカーボタン用のtooltip
+useTooltip(
+	reactionPickerButtonRef,
+	async (showing) => {
+		// ★ボタンが有効かつリアクション一覧表示中の場合、何もしない
+		if (isStarButtonEnabled && isReactionListVisible) {
+			return;
+		}
 
-function showReactionTooltipForPicker(
-	el: Ref<HTMLElement | undefined>
-) {
-	useTooltip(
-		el,
-		async (showing) => {
-			// ★ボタンが有効かつリアクション一覧表示中の場合、何もしない
-			if (isStarButtonEnabled && isReactionListVisible) {
-				return;
-			}
+		// ★ボタン有効なら、デフォルト以外のリアクション（後でフィルタリング）
+		// ★ボタン無効なら、一覧表示中はデフォルト、非表示中は全リアクション
+		const type = isStarButtonEnabled
+			? null // Fetch all, then filter
+			: isReactionListVisible
+			? instance.defaultReaction
+			: null; // Fetch all
 
-			// ★ボタン有効なら、デフォルト以外のリアクション（後でフィルタリング）
-			// ★ボタン無効なら、一覧表示中はデフォルト、非表示中は全リアクション
-			const type = isStarButtonEnabled
-				? null // Fetch all, then filter
-				: isReactionListVisible
-				? instance.defaultReaction
-				: null; // Fetch all
+		let reactions = await os.api("notes/reactions", {
+			noteId: appearNote.id,
+			type: type === null ? null : type,
+			limit: 11,
+		});
 
-			let reactions = await os.api("notes/reactions", {
-				noteId: appearNote.id,
-				type: type === null ? null : type,
-				limit: 11,
-			});
-
-			if (isStarButtonEnabled) {
-				// ★ボタン有効時: デフォルト以外を表示
-				reactions = reactions.filter(
-					(x) =>
-						normalizeReactionName(x.reaction) !==
-						instance.defaultReaction
-				);
-			}
-
-			const users = reactions.map((x) => x.user);
-			if (users.length < 1) return;
-
-			const count = isStarButtonEnabled
-				? nonDefaultReactionCount
-				: isReactionListVisible
-				? defaultReactionCount
-				: totalReactions;
-
-			os.popup(
-				XUsersTooltip,
-				{
-					showing,
-					users,
-					count,
-					targetElement: el.value,
-				},
-				{},
-				"closed"
+		if (isStarButtonEnabled) {
+			// ★ボタン有効時: デフォルト以外を表示
+			reactions = reactions.filter(
+				(x) =>
+					normalizeReactionName(x.reaction) !==
+					instance.defaultReaction
 			);
-		},
-		500 // delay for long-press on mobile / hover on desktop
-	);
-}
+		}
 
-// ★ボタンの tooltip は XStarButtonNoEmoji コンポーネント内で処理
-showReactionTooltipForPicker(reactionPickerButtonRef);
-showReactionTooltipForPicker(undoReactionButtonRef);
+		const users = reactions.map((x) => x.user);
+		if (users.length < 1) return;
+
+		const count = isStarButtonEnabled
+			? nonDefaultReactionCount
+			: isReactionListVisible
+			? defaultReactionCount
+			: totalReactions;
+
+		os.popup(
+			XUsersTooltip,
+			{
+				showing,
+				users,
+				count,
+				targetElement: reactionPickerButtonRef.value,
+			},
+			{},
+			"closed"
+		);
+	},
+	500
+);
+
+// 取り消しボタン用のtooltip
+useTooltip(
+	undoReactionButtonRef,
+	async (showing) => {
+		// ★ボタンが有効かつリアクション一覧表示中の場合、何もしない
+		if (isStarButtonEnabled && isReactionListVisible) {
+			return;
+		}
+
+		const type = isStarButtonEnabled
+			? null
+			: isReactionListVisible
+			? instance.defaultReaction
+			: null;
+
+		let reactions = await os.api("notes/reactions", {
+			noteId: appearNote.id,
+			type: type === null ? null : type,
+			limit: 11,
+		});
+
+		if (isStarButtonEnabled) {
+			reactions = reactions.filter(
+				(x) =>
+					normalizeReactionName(x.reaction) !==
+					instance.defaultReaction
+			);
+		}
+
+		const users = reactions.map((x) => x.user);
+		if (users.length < 1) return;
+
+		const count = isStarButtonEnabled
+			? nonDefaultReactionCount
+			: isReactionListVisible
+			? defaultReactionCount
+			: totalReactions;
+
+		os.popup(
+			XUsersTooltip,
+			{
+				showing,
+				users,
+				count,
+				targetElement: undoReactionButtonRef.value,
+			},
+			{},
+			"closed"
+		);
+	},
+	500
+);
 
 const currentClipPage = inject<Ref<misskey.entities.Clip> | null>(
 	"currentClipPage",

@@ -394,6 +394,7 @@ const replies: misskey.entities.Note[] =
 		)
 		.reverse() ?? [];
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
+const showEmojiButton = defaultStore.state.showEmojiButton;
 /**
  * 全リアクション数
  */
@@ -470,7 +471,7 @@ const showStarButtonNoEmoji = $computed(() => {
  */
 const showReactionPickerButton = $computed(
 	() =>
-		enableEmojiReactions &&
+		(enableEmojiReactions || showEmojiButton) &&
 		isCanAction
 );
 
@@ -479,7 +480,7 @@ const showReactionPickerButton = $computed(
  */
 const showUndoReactionButton = $computed(
 	() =>
-		enableEmojiReactions &&
+		(enableEmojiReactions || showEmojiButton) &&
 		appearNote.myReaction != null &&
 		!multiReaction
 );
@@ -775,8 +776,6 @@ function toggleReference() {
 		> .body {
 			flex: 1;
 			min-width: 0;
-			margin: 0 -12.5rem;
-			padding: 0 12.5rem;
 			overflow: clip;
 			@media (pointer: coarse) {
 				cursor: default;
@@ -837,8 +836,6 @@ function toggleReference() {
 		}
 	}
 	&:first-child > .main > .body {
-		margin-top: -12.5rem;
-		padding-top: 12.5rem;
 	}
 	&.reply {
 		--avatarSize: 2.375rem;

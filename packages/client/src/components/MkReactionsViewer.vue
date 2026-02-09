@@ -33,12 +33,35 @@ let lastSortedReactions = ["🅰️", "🅱️"];
 const sortedReactions = computed(() => {
 	const arrayReactions = Object.keys(reactions.value)
 		.filter((name) => {
+			if (
+				normalizeReactionName(name) === instance.defaultReaction &&
+				props.allowDefaultReaction
+			) {
+				const myReaction = props.note.myReaction
+					? normalizeReactionName(props.note.myReaction)
+					: null;
+				const myReactions = props.note.myReactions
+					? props.note.myReactions.map((x) =>
+							normalizeReactionName(x)
+					  )
+					: [];
+				const isReacted =
+					myReaction === instance.defaultReaction ||
+					myReactions.includes(instance.defaultReaction);
+				return isReacted;
+			}
 			return (
 				props.allowDefaultReaction ||
 				normalizeReactionName(name) !== instance.defaultReaction
 			);
 		})
 		.map((x) => {
+			if (
+				normalizeReactionName(x) === instance.defaultReaction &&
+				props.allowDefaultReaction
+			) {
+				return { name: x, count: 1 };
+			}
 			return { name: x, count: reactions.value[x] };
 		})
 		.sort((a, b) => {

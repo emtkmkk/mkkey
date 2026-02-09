@@ -199,6 +199,7 @@
 						ref="reactionsViewer"
 						:note="appearNote"
 						:multi="multiReaction"
+						:allow-default-reaction="!isStarButtonHandlesDefault"
 					/>
 					<button
 						v-if="referenceIds && referenceIds.length"
@@ -608,34 +609,56 @@ const totalReactions = $computed(() =>
         getVisibleReactionsTotal(appearNote as misskey.entities.Note)
 );
 
+const isStarButtonHandlesDefault = $computed(() => {
+	return defaultStore.state.favButtonReaction === "";
+});
+
+const isDefaultReactionReacted = $computed(() => {
+	if (appearNote.myReaction) {
+		return (
+			normalizeReactionName(appearNote.myReaction) ===
+			instance.defaultReaction
+		);
+	}
+	if (appearNote.myReactions) {
+		return appearNote.myReactions.some(
+			(r) =>
+				normalizeReactionName(r) === instance.defaultReaction
+		);
+	}
+	return false;
+});
+
 /**
  * 絵文字ピッカーを持たないスターボタン（Likeボタン）を表示するかどうか
  */
 const showStarButtonNoEmoji = $computed(() => {
-        const canShow =
-                !isReactionListVisible &&
-                ((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
-                        favButtonReactionIsFavorite);
-        return canShow && defaultStore.state.favButtonReaction !== "hidden";
+	// ★ボタンがデフォルトリアクションを扱う場合、リアクション済みでも表示し続ける（解除ボタンになるため）
+	const canShow =
+		!isReactionListVisible &&
+		((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
+			favButtonReactionIsFavorite ||
+			(isStarButtonHandlesDefault && isDefaultReactionReacted));
+	return canShow && defaultStore.state.favButtonReaction !== "hidden";
 });
 
 /**
  * リアクションピッカーボタン（+）を表示するかどうか
  */
 const showReactionPickerButton = $computed(
-        () =>
-                (enableEmojiReactions || isDetailedView || showEmojiButton) &&
-                isCanAction
+	() =>
+		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
+		isCanAction
 );
 
 /**
  * リアクション取り消しボタン（-）を表示するかどうか
  */
 const showUndoReactionButton = $computed(
-        () =>
-                (enableEmojiReactions || isDetailedView || showEmojiButton) &&
-                appearNote.myReaction != null &&
-                !multiReaction
+	() =>
+		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
+		appearNote.myReaction != null &&
+		!multiReaction
 );
 
 /**
@@ -813,7 +836,7 @@ function react(viaKeyboard = false): void {
 	} else {
 		blur();
 		reactionPicker.show(
-			reactButton.value,
+			reactionPickerButtonRef.value,
 			(reaction) => {
 				os.api("notes/reactions/create", {
 					noteId: appearNote.id,

@@ -23,6 +23,7 @@ import { getVisibleReactions, normalizeReactionName } from "@/scripts/reaction-u
 const props = defineProps<{
 	note: misskey.entities.Note;
 	multi?: boolean;
+	allowDefaultReaction?: boolean;
 }>();
 
 const reactions = computed(() => getVisibleReactions(props.note));
@@ -32,7 +33,10 @@ let lastSortedReactions = ["🅰️", "🅱️"];
 const sortedReactions = computed(() => {
 	const arrayReactions = Object.keys(reactions.value)
 		.filter((name) => {
-			return normalizeReactionName(name) !== instance.defaultReaction;
+			return (
+				props.allowDefaultReaction ||
+				normalizeReactionName(name) !== instance.defaultReaction
+			);
 		})
 		.map((x) => {
 			return { name: x, count: reactions.value[x] };

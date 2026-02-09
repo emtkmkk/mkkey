@@ -120,6 +120,7 @@ function toggleStar(ev?: MouseEvent): void {
 		} else {
 			os.api("notes/reactions/delete", {
 				noteId: props.note.id,
+				reaction: instance.defaultReaction,
 			});
 		}
 	}

@@ -98,6 +98,7 @@
 						v-show="isReactionListVisible"
 						ref="reactionsViewer"
 						:note="appearNote"
+						:allow-default-reaction="!isStarButtonHandlesDefault"
 					/>
 					<button
 						v-if="referenceIds && referenceIds.length"
@@ -145,7 +146,7 @@
 						class="button"
 						:note="appearNote"
 						:count="reactionCountToShow"
-						:reacted="appearNote.myReaction != null"
+						:reacted="isDefaultReactionReacted"
 					/>
 					<XStarButton
 						v-if="
@@ -427,44 +428,66 @@ const reactionCountToShow = $computed(() =>
 	isReactionListVisible ? defaultReactionCount : totalReactions
 );
 
+const isStarButtonHandlesDefault = $computed(() => {
+	return defaultStore.state.favButtonReaction === "";
+});
+
+const isDefaultReactionReacted = $computed(() => {
+	if (appearNote.myReaction) {
+		return (
+			normalizeReactionName(appearNote.myReaction) ===
+			instance.defaultReaction
+		);
+	}
+	if (appearNote.myReactions) {
+		return appearNote.myReactions.some(
+			(r) =>
+				normalizeReactionName(r) === instance.defaultReaction
+		);
+	}
+	return false;
+});
+
 /**
  * 絵文字ピッカーを持たないスターボタン（Likeボタン）を表示するかどうか
  */
 const showStarButtonNoEmoji = $computed(() => {
-        const canShow =
-                !isReactionListVisible &&
-                ((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
-                        favButtonReactionIsFavorite);
-        return canShow && defaultStore.state.favButtonReaction !== "hidden";
+	// ★ボタンがデフォルトリアクションを扱う場合、リアクション済みでも表示し続ける（解除ボタンになるため）
+	const canShow =
+		!isReactionListVisible &&
+		((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
+			favButtonReactionIsFavorite ||
+			(isStarButtonHandlesDefault && isDefaultReactionReacted));
+	return canShow && defaultStore.state.favButtonReaction !== "hidden";
 });
 
 /**
  * リアクションピッカーボタン（+）を表示するかどうか
  */
 const showReactionPickerButton = $computed(
-        () =>
-                enableEmojiReactions &&
-                isCanAction
+	() =>
+		enableEmojiReactions &&
+		isCanAction
 );
 
 /**
  * リアクション取り消しボタン（-）を表示するかどうか
  */
 const showUndoReactionButton = $computed(
-        () =>
-                enableEmojiReactions &&
-                appearNote.myReaction != null &&
-                !multiReaction
+	() =>
+		enableEmojiReactions &&
+		appearNote.myReaction != null &&
+		!multiReaction
 );
 
 /**
  * ピッカー/取り消しボタンの横にカウントを表示するかどうか
  */
 const showReactionCount = $computed(
-        () =>
-                reactionCountToShow > 0 &&
-                !showStarButtonNoEmoji &&
-                (showReactionPickerButton || showUndoReactionButton)
+	() =>
+		reactionCountToShow > 0 &&
+		!showStarButtonNoEmoji &&
+		(showReactionPickerButton || showUndoReactionButton)
 );
 
 const favButtonReactionIsFavorite =
@@ -613,7 +636,7 @@ function react(viaKeyboard = false): void {
 	pleaseLogin();
 	blur();
 	reactionPicker.show(
-		reactButton.value,
+		reactionPickerButtonRef.value,
 		(reaction) => {
 			os.api("notes/reactions/create", {
 				noteId: appearNote.id,

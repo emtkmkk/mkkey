@@ -66,7 +66,7 @@ export class Notification {
 	 * renote - A post that a user made (or was watching) has been renoted.
 	 * quote - A post that a user made (or was watching) has been quoted and renoted.
 	 * reaction - (自分または自分がWatchしている)投稿にリアクションされた
-	 * pollVote - (自分または自分がWatchしている)投稿のアンケートに投票された
+	 * pollVote - 自分が投票したアンケート、または自分/Watch中の投稿のアンケートに投票された(Watchは投票者を通知しない)
 	 * pollEnded - 自分のアンケートもしくは自分が投票したアンケートが終了した
 	 * receiveFollowRequest - フォローリクエストされた
 	 * followRequestAccepted - A follow request has been accepted.

@@ -436,7 +436,7 @@ import {
 	getAccounts,
 	openAccountMenu as openAccountMenu_,
 } from "@/account";
-import { uploadFile } from "@/scripts/upload";
+import { uploadFile, uploads } from "@/scripts/upload";
 import type { UploadFileOptions } from "@/scripts/upload";
 import { deepClone } from "@/scripts/clone";
 import XDraft from "@/components/MkDraftDialog.vue";
@@ -2335,28 +2335,50 @@ async function resolvePostAccountToken(
 }
 
 async function waitForFileSelectingToBeFalse(backupDraftData) {
-        if (filePromises.length === 0) return;
+	if (filePromises.length === 0) return;
 
-        const addData = os.addQueue({
-                endpoint: "notes/create",
-                data: {},
-                comment: "ファイルのアップロードを待機中…",
-                draftData: { key: draftKey, ...backupDraftData },
-        });
+	const staleUploadWaitMs = 1000;
+	let noActiveUploadsSince: number | null = null;
 
-        try {
-                await Promise.all([...filePromises]);
-        } catch (err) {
-                throw new Error("アップロードに失敗しました。");
-        } finally {
-                if (addData) {
-                        os.removeQueue(addData.id);
-                }
-        }
+	const addData = os.addQueue({
+		endpoint: "notes/create",
+		data: {},
+		comment: "ファイルのアップロードを待機中…",
+		draftData: { key: draftKey, ...backupDraftData },
+	});
 
-        if (fileError) {
-                throw new Error("アップロードに失敗しました。");
-        }
+	try {
+		while (filePromises.length > 0) {
+			await Promise.allSettled([...filePromises]);
+
+			if (filePromises.length === 0) break;
+
+			if (uploads.value.length > 0) {
+				noActiveUploadsSince = null;
+				continue;
+			}
+
+			if (noActiveUploadsSince === null) {
+				noActiveUploadsSince = Date.now();
+				continue;
+			}
+
+			if (Date.now() - noActiveUploadsSince >= staleUploadWaitMs) {
+				filePromises = [];
+				break;
+			}
+		}
+	} catch (err) {
+		throw new Error("アップロードに失敗しました。");
+	} finally {
+		if (addData) {
+			os.removeQueue(addData.id);
+		}
+	}
+
+	if (fileError) {
+		throw new Error("アップロードに失敗しました。");
+	}
 }
 
 function cancel() {

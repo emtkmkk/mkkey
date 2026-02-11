@@ -193,8 +193,8 @@
 							class="ph-smiley-wink ph-bold ph-lg"
 						></i>
 						<i v-else class="ph-smiley ph-bold ph-lg"></i>
-						<template v-if="showReactionCount">
-							<p class="count">{{ countForPickerButton }}</p>
+						<template v-if="showReactionPickerCount">
+							<p class="count">{{ countForReactionPickerButton }}</p>
 						</template>
 					</button>
 					<button
@@ -204,8 +204,8 @@
 						@click="undoReact(appearNote)"
 					>
 						<i class="ph-minus ph-bold ph-lg" style="color: var(--accent);"></i>
-						<template v-if="showReactionCount && showUndoReactionButton">
-							<p class="count">{{ countForPickerButton }}</p>
+						<template v-if="showUndoReactionCount && showUndoReactionButton">
+							<p class="count">{{ countForUndoReactionButton }}</p>
 						</template>
 					</button>
 					<XQuoteButton class="button" :note="appearNote" />
@@ -501,6 +501,17 @@ const showStarAndPickerButtons = $computed(
 );
 
 /**
+ * ★ボタンが非表示でも、★+ピッカーの2ボタンレイアウトとして扱うかどうか
+ */
+const useSplitReactionCounts = $computed(
+	() =>
+		showStarAndPickerButtons ||
+		(isStarButtonHandlesDefault &&
+			showReactionPickerButton &&
+			showUndoReactionButton)
+);
+
+/**
  * デフォルトリアクション以外のリアクション数
  */
 const nonDefaultReactionCount = $computed(() => {
@@ -511,7 +522,7 @@ const nonDefaultReactionCount = $computed(() => {
  * ★ボタンに表示するカウント
  */
 const countForStarButton = $computed(() => {
-	if (showStarAndPickerButtons) {
+	if (useSplitReactionCounts) {
 		return defaultReactionCount;
 	} else {
 		return reactionCountToShow;
@@ -523,7 +534,7 @@ const countForStarButton = $computed(() => {
  */
 const countForPickerButton = $computed(() => {
 	// ★ボタンと併用される場合、ピッカー側は常にデフォルト以外を表示
-	if (showStarAndPickerButtons) {
+	if (useSplitReactionCounts) {
 		return nonDefaultReactionCount;
 	} else {
 		return reactionCountToShow;
@@ -533,13 +544,48 @@ const countForPickerButton = $computed(() => {
 /**
  * ピッカー/取り消しボタンの横にカウントを表示するかどうか
  */
-const showReactionCount = $computed(
+const countForReactionPickerButton = $computed(() => {
+	if (!showStarButtonNoEmoji && useSplitReactionCounts) {
+		return defaultReactionCount;
+	}
+	return countForPickerButton;
+});
+
+/**
+ * 取り消しボタン（-）に表示するカウント
+ */
+const countForUndoReactionButton = $computed(() => {
+	if (!showStarButtonNoEmoji && useSplitReactionCounts) {
+		return nonDefaultReactionCount;
+	}
+	return countForPickerButton;
+});
+
+const canShowReactionCount = $computed(
 	() =>
 		// ★ボタンと併用時、リアクション一覧表示中はカウント不要（リストに表示されるため）
 		// ★ボタン単独時、リアクション一覧表示中でも（他に表示場所がないので）カウント表示
-		!(showStarAndPickerButtons && isReactionListVisible) &&
-		countForPickerButton > 0 &&
-		(showReactionPickerButton || showUndoReactionButton)
+		!(useSplitReactionCounts && isReactionListVisible)
+);
+
+/**
+ * ピッカーボタンの横にカウントを表示するかどうか
+ */
+const showReactionPickerCount = $computed(
+	() =>
+		canShowReactionCount &&
+		showReactionPickerButton &&
+		countForReactionPickerButton > 0
+);
+
+/**
+ * 取り消しボタンの横にカウントを表示するかどうか
+ */
+const showUndoReactionCount = $computed(
+	() =>
+		canShowReactionCount &&
+		showUndoReactionButton &&
+		countForUndoReactionButton > 0
 );
 
 const favButtonReactionIsFavorite =
@@ -597,19 +643,19 @@ useTooltip(
 	reactionPickerButtonRef,
 	async (showing) => {
 		// ★ボタン併用かつリアクション一覧表示中の場合、何もしない
-		if (showStarAndPickerButtons && isReactionListVisible) {
+		if (useSplitReactionCounts && isReactionListVisible) {
 			return;
 		}
 
 		// ★ボタン併用時は、デフォルト以外のリアクション（excludeTypeで除外）
 		// ★ボタン無効なら、一覧表示中はデフォルト、非表示中は全リアクション
-		const type = showStarAndPickerButtons
+		const type = useSplitReactionCounts
 			? null
 			: isReactionListVisible
 			? instance.defaultReaction
 			: null;
 
-		const excludeType = showStarAndPickerButtons
+		const excludeType = useSplitReactionCounts
 			? instance.defaultReaction
 			: null;
 
@@ -623,7 +669,7 @@ useTooltip(
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = showStarAndPickerButtons
+		const count = useSplitReactionCounts
 			? nonDefaultReactionCount
 			: isReactionListVisible
 			? defaultReactionCount
@@ -648,17 +694,17 @@ useTooltip(
 	undoReactionButtonRef,
 	async (showing) => {
 		// ★ボタン併用かつリアクション一覧表示中の場合、何もしない
-		if (showStarAndPickerButtons && isReactionListVisible) {
+		if (useSplitReactionCounts && isReactionListVisible) {
 			return;
 		}
 
-		const type = showStarAndPickerButtons
+		const type = useSplitReactionCounts
 			? null
 			: isReactionListVisible
 			? instance.defaultReaction
 			: null;
 
-		const excludeType = showStarAndPickerButtons
+		const excludeType = useSplitReactionCounts
 			? instance.defaultReaction
 			: null;
 
@@ -672,7 +718,7 @@ useTooltip(
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = showStarAndPickerButtons
+		const count = useSplitReactionCounts
 			? nonDefaultReactionCount
 			: isReactionListVisible
 			? defaultReactionCount

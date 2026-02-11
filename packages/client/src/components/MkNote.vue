@@ -246,7 +246,7 @@
                                                ref="starButtonNoEmojiRef"
                                                class="button"
                                                :note="appearNote"
-                                               :count="countForStarButton"
+                                               :count="reactionCountViewModel.countForStarButton"
                                                :reacted="isDefaultReactionReacted"
                                                :hasPickerButton="showReactionPickerButton"
                                                :isReactionListVisible="isReactionListVisible"
@@ -294,8 +294,8 @@
                                                        class="ph-smiley-wink ph-bold ph-lg"
                                                ></i>
                                                <i v-else class="ph-smiley ph-bold ph-lg"></i>
-						<template v-if="showReactionPickerCount">
-							<p class="count">{{ countForReactionPickerButton }}</p>
+						<template v-if="reactionCountViewModel.showReactionPickerCount">
+							<p class="count">{{ reactionCountViewModel.countForReactionPickerButton }}</p>
 						</template>
                                        </button>
                                        <button
@@ -305,8 +305,8 @@
                                                @click="undoReact(appearNote)"
                                        >
                                                <i class="ph-minus ph-bold ph-lg" style="color: var(--accent);"></i>
-						<template v-if="showUndoReactionCount && showUndoReactionButton">
-							<p class="count">{{ countForUndoReactionButton }}</p>
+						<template v-if="reactionCountViewModel.showUndoReactionCount && showUndoReactionButton">
+							<p class="count">{{ reactionCountViewModel.countForUndoReactionButton }}</p>
 						</template>
                                        </button>
 					<XQuoteButton
@@ -473,17 +473,13 @@ import { i18n } from "@/i18n";
 import { getNoteMenu } from "@/scripts/get-note-menu";
 import { useNoteCapture } from "@/scripts/use-note-capture";
 import { useTooltip } from "@/scripts/use-tooltip";
+import { useReactionCountViewModel } from "@/scripts/use-reaction-count-view-model";
 import { notePage } from "@/filters/note";
 import { deepClone } from "@/scripts/clone";
 import { getNoteSummary } from "@/scripts/get-note-summary";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
 import * as sound from "@/scripts/sound.js";
-import {
-	getVisibleReactions,
-	getVisibleReactionsTotal,
-	normalizeReactionName,
-}
- from "@/scripts/reaction-utils";
+import { normalizeReactionName } from "@/scripts/reaction-utils";
 
 const router = useRouter();
 
@@ -566,203 +562,13 @@ const info = ref(null);
 const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
 const showEmojiButton = defaultStore.state.showEmojiButton;
 const isDetailedView = $computed(() => props.detailedView ?? false);
-/**
- * デフォルトリアクション（Likeなど）の数
- */
-const defaultReactionCount = $computed(() => {
-	let count = 0;
-	if (appearNote.reactions) {
-		for (const reaction of Object.keys(appearNote.reactions)) {
-			if (
-				normalizeReactionName(reaction) === instance.defaultReaction
-			) {
-				count += appearNote.reactions[reaction];
-			}
-		}
-	}
-	return count;
-});
-
-/**
- * リアクション一覧が表示されているかどうか
- */
 const isReactionListVisible = $computed(() =>
-        (enableEmojiReactions || isDetailedView) && showContent.value
-);
-
-/**
- * 表示すべきリアクション数（一覧表示中はデフォルトリアクション数、非表示中は全リアクション数）
- */
-const reactionCountToShow = $computed(() =>
-	isReactionListVisible ? defaultReactionCount : totalReactions
-);
-
-/**
- * 全リアクション数
- */
-const totalReactions = $computed(() =>
-        getVisibleReactionsTotal(appearNote as misskey.entities.Note)
+	(enableEmojiReactions || isDetailedView) && showContent.value
 );
 
 const isStarButtonHandlesDefault = $computed(() => {
 	return defaultStore.state.favButtonReaction === "";
 });
-
-const isDefaultReactionReacted = $computed(() => {
-	if (appearNote.myReaction) {
-		return (
-			normalizeReactionName(appearNote.myReaction) ===
-			instance.defaultReaction
-		);
-	}
-	if (appearNote.myReactions) {
-		return appearNote.myReactions.some(
-			(r) =>
-				normalizeReactionName(r) === instance.defaultReaction
-		);
-	}
-	return false;
-});
-
-/**
- * 絵文字ピッカーを持たないスターボタン（Likeボタン）を表示するかどうか
- */
-const showStarButtonNoEmoji = $computed(() => {
-	// ★ボタンがデフォルトリアクションを扱う場合、リアクション済みでも表示し続ける（解除ボタンになるため）
-	const canShow =
-		((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
-			favButtonReactionIsFavorite ||
-			(isStarButtonHandlesDefault && isDefaultReactionReacted));
-	return canShow && defaultStore.state.favButtonReaction !== "hidden";
-});
-
-/**
- * ★ボタンが有効かどうか（表示状態に関わらず、存在しうるか）
- */
-const isStarButtonEnabled = $computed(() => {
-	return (
-		defaultStore.state.favButtonReaction !== "hidden" &&
-		((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
-			favButtonReactionIsFavorite ||
-			(isStarButtonHandlesDefault && isDefaultReactionReacted))
-	);
-});
-
-/**
- * リアクションピッカーボタン（+）を表示するかどうか
- */
-const showReactionPickerButton = $computed(
-	() =>
-		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
-		isCanAction
-);
-
-/**
- * リアクション取り消しボタン（-）を表示するかどうか
- */
-const showUndoReactionButton = $computed(
-	() =>
-		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
-		appearNote.myReaction != null &&
-		!multiReaction
-);
-
-/**
- * ★ボタンとピッカー系ボタンが同時に表示されるかどうか
- */
-const showStarAndPickerButtons = $computed(
-	() =>
-		showStarButtonNoEmoji &&
-		(showReactionPickerButton || showUndoReactionButton)
-);
-
-/**
- * ★ボタンが非表示でも、★+ピッカーの2ボタンレイアウトとして扱うかどうか
- */
-const useSplitReactionCounts = $computed(
-	() =>
-		showStarAndPickerButtons ||
-		(isStarButtonHandlesDefault &&
-			showReactionPickerButton &&
-			showUndoReactionButton)
-);
-
-/**
- * デフォルトリアクション以外のリアクション数
- */
-const nonDefaultReactionCount = $computed(() => {
-	return totalReactions - defaultReactionCount;
-});
-
-/**
- * ★ボタンに表示するカウント
- */
-const countForStarButton = $computed(() => {
-	if (useSplitReactionCounts) {
-		return defaultReactionCount;
-	} else {
-		return reactionCountToShow;
-	}
-});
-
-/**
- * 絵文字ピッカーボタン（+）に表示するカウント
- */
-const countForPickerButton = $computed(() => {
-	// ★ボタンと併用される場合、ピッカー側は常にデフォルト以外を表示
-	if (useSplitReactionCounts) {
-		return nonDefaultReactionCount;
-	} else {
-		return reactionCountToShow;
-	}
-});
-
-/**
- * リアクションピッカーボタン（+ / 禁止）に表示するカウント
- */
-const countForReactionPickerButton = $computed(() => {
-	if (!showStarButtonNoEmoji && useSplitReactionCounts) {
-		return defaultReactionCount;
-	}
-	return countForPickerButton;
-});
-
-/**
- * 取り消しボタン（-）に表示するカウント
- */
-const countForUndoReactionButton = $computed(() => {
-	if (!showStarButtonNoEmoji && useSplitReactionCounts) {
-		return nonDefaultReactionCount;
-	}
-	return countForPickerButton;
-});
-
-const canShowReactionCount = $computed(
-	() =>
-		// ★ボタンと併用時、リアクション一覧表示中はカウント不要（リストに表示されるため）
-		// ★ボタン単独時、リアクション一覧表示中でも（他に表示場所がないので）カウント表示
-		!(useSplitReactionCounts && isReactionListVisible)
-);
-
-/**
- * ピッカーボタンの横にカウントを表示するかどうか
- */
-const showReactionPickerCount = $computed(
-	() =>
-		canShowReactionCount &&
-		showReactionPickerButton &&
-		countForReactionPickerButton > 0
-);
-
-/**
- * 取り消しボタンの横にカウントを表示するかどうか
- */
-const showUndoReactionCount = $computed(
-	() =>
-		canShowReactionCount &&
-		showUndoReactionButton &&
-		countForUndoReactionButton > 0
-);
 const favButtonReactionIsFavorite =
         defaultStore.state.favButtonReaction === "favorite";
 const hiddenSoftMutes = defaultStore.state.hiddenSoftMutes;
@@ -804,6 +610,54 @@ const isfavButtonReacted = $computed(() => {
 				?.map((x) => x.replace(/@[^:\s]?(:?)$/, "$1"))
 				.includes(favButtonReaction)
 		: false;
+});
+
+
+const isDefaultReactionReacted = $computed(() => {
+	if (appearNote.myReaction) {
+		return (
+			normalizeReactionName(appearNote.myReaction) ===
+			instance.defaultReaction
+		);
+	}
+	if (appearNote.myReactions) {
+		return appearNote.myReactions.some(
+			(r) => normalizeReactionName(r) === instance.defaultReaction
+		);
+	}
+	return false;
+});
+
+const showStarButtonNoEmoji = $computed(() => {
+	const canShow =
+		((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
+			favButtonReactionIsFavorite ||
+			(isStarButtonHandlesDefault && isDefaultReactionReacted));
+	return canShow && defaultStore.state.favButtonReaction !== "hidden";
+});
+
+const showReactionPickerButton = $computed(
+	() =>
+		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
+		isCanAction
+);
+
+const showUndoReactionButton = $computed(
+	() =>
+		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
+		appearNote.myReaction != null &&
+		!multiReaction
+);
+
+const {
+	reactionCountViewModel,
+} = useReactionCountViewModel({
+	note: $$(appearNote),
+	isReactionListVisible: $$(isReactionListVisible),
+	showStarButtonNoEmoji: $$(showStarButtonNoEmoji),
+	showReactionPickerButton: $$(showReactionPickerButton),
+	showUndoReactionButton: $$(showUndoReactionButton),
+	isStarButtonHandlesDefault: $$(isStarButtonHandlesDefault),
 });
 
 const isReactedRenote = $computed(
@@ -969,38 +823,21 @@ const undoReactionButtonRef = ref<HTMLElement>();
 useTooltip(
 	reactionPickerButtonRef,
 	async (showing) => {
-		// ★ボタン併用かつリアクション一覧表示中の場合、何もしない
-		if (useSplitReactionCounts && isReactionListVisible) {
+		if (reactionCountViewModel.tooltipQuery.shouldSkip) {
 			return;
 		}
 
-		// ★ボタン併用時は、デフォルト以外のリアクション（excludeTypeで除外）
-		// ★ボタン無効なら、一覧表示中はデフォルト、非表示中は全リアクション
-		const type = useSplitReactionCounts
-			? null
-			: isReactionListVisible
-			? instance.defaultReaction
-			: null;
-
-		const excludeType = useSplitReactionCounts
-			? instance.defaultReaction
-			: null;
-
 		const reactions = await os.api("notes/reactions", {
 			noteId: appearNote.id,
-			type: type,
-			excludeType: excludeType,
+			type: reactionCountViewModel.tooltipQuery.type,
+			excludeType: reactionCountViewModel.tooltipQuery.excludeType,
 			limit: 11,
 		});
 
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = useSplitReactionCounts
-			? nonDefaultReactionCount
-			: isReactionListVisible
-			? defaultReactionCount
-			: totalReactions;
+		const count = reactionCountViewModel.tooltipQuery.count;
 
 		os.popup(
 			XUsersTooltip,
@@ -1021,36 +858,21 @@ useTooltip(
 useTooltip(
 	undoReactionButtonRef,
 	async (showing) => {
-		// ★ボタン併用かつリアクション一覧表示中の場合、何もしない
-		if (useSplitReactionCounts && isReactionListVisible) {
+		if (reactionCountViewModel.tooltipQuery.shouldSkip) {
 			return;
 		}
 
-		const type = useSplitReactionCounts
-			? null
-			: isReactionListVisible
-			? instance.defaultReaction
-			: null;
-
-		const excludeType = useSplitReactionCounts
-			? instance.defaultReaction
-			: null;
-
 		const reactions = await os.api("notes/reactions", {
 			noteId: appearNote.id,
-			type: type,
-			excludeType: excludeType,
+			type: reactionCountViewModel.tooltipQuery.type,
+			excludeType: reactionCountViewModel.tooltipQuery.excludeType,
 			limit: 11,
 		});
 
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = useSplitReactionCounts
-			? nonDefaultReactionCount
-			: isReactionListVisible
-			? defaultReactionCount
-			: totalReactions;
+		const count = reactionCountViewModel.tooltipQuery.count;
 
 		os.popup(
 			XUsersTooltip,

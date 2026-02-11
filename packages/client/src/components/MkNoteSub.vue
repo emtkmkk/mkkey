@@ -193,7 +193,7 @@
 							class="ph-smiley-wink ph-bold ph-lg"
 						></i>
 						<i v-else class="ph-smiley ph-bold ph-lg"></i>
-						<template v-if="showReactionCount">
+						<template v-if="showReactionPickerCount">
 							<p class="count">{{ countForReactionPickerButton }}</p>
 						</template>
 					</button>
@@ -204,7 +204,7 @@
 						@click="undoReact(appearNote)"
 					>
 						<i class="ph-minus ph-bold ph-lg" style="color: var(--accent);"></i>
-						<template v-if="showReactionCount && showUndoReactionButton">
+						<template v-if="showUndoReactionCount && showUndoReactionButton">
 							<p class="count">{{ countForUndoReactionButton }}</p>
 						</template>
 					</button>
@@ -561,16 +561,31 @@ const countForUndoReactionButton = $computed(() => {
 	return countForPickerButton;
 });
 
-/**
- * ピッカー/取り消しボタンの横にカウントを表示するかどうか
- */
-const showReactionCount = $computed(
+const canShowReactionCount = $computed(
 	() =>
 		// ★ボタンと併用時、リアクション一覧表示中はカウント不要（リストに表示されるため）
 		// ★ボタン単独時、リアクション一覧表示中でも（他に表示場所がないので）カウント表示
-		!(useSplitReactionCounts && isReactionListVisible) &&
-		(countForReactionPickerButton > 0 || countForUndoReactionButton > 0) &&
-		(showReactionPickerButton || showUndoReactionButton)
+		!(useSplitReactionCounts && isReactionListVisible)
+);
+
+/**
+ * ピッカーボタンの横にカウントを表示するかどうか
+ */
+const showReactionPickerCount = $computed(
+	() =>
+		canShowReactionCount &&
+		showReactionPickerButton &&
+		countForReactionPickerButton > 0
+);
+
+/**
+ * 取り消しボタンの横にカウントを表示するかどうか
+ */
+const showUndoReactionCount = $computed(
+	() =>
+		canShowReactionCount &&
+		showUndoReactionButton &&
+		countForUndoReactionButton > 0
 );
 
 const favButtonReactionIsFavorite =

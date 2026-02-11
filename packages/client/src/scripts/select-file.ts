@@ -36,35 +36,70 @@ function select(
 			const input = document.createElement("input");
 			input.type = "file";
 			input.multiple = multiple;
+			let handled = false;
+
+			const cleanupAndReject = (message: string) => {
+				if (handled) return;
+				handled = true;
+				rej(new Error(message));
+			};
+
+			const cleanupAndResolve = (files: DriveFile[]) => {
+				if (handled) return;
+				handled = true;
+				res(multiple ? files : files[0]);
+			};
+
 			input.onchange = () => {
-                                const promises = Array.from(input.files).map((file) =>
-                                        uploadFile(
-                                                file,
-                                                folderId,
-                                                undefined,
-                                                keepOriginal.value,
-                                                keepFileName.value,
-                                                requiredFilename,
-                                                options,
-                                        ),
-                                );
+				if (!input.files || input.files.length === 0) {
+					cleanupAndReject("No file was selected");
+					return;
+				}
+
+				const promises = Array.from(input.files).map((file) =>
+					uploadFile(
+						file,
+						folderId,
+						undefined,
+						keepOriginal.value,
+						keepFileName.value,
+						requiredFilename,
+						options,
+					),
+				);
 
 				Promise.all(promises)
 					.then((driveFiles) => {
-						res(multiple ? driveFiles : driveFiles[0]);
+						cleanupAndResolve(driveFiles);
 					})
 					.catch((err) => {
 						// エラー発生時にリジェクトする
-						rej(err);
+						cleanupAndReject(err?.message ?? "Failed to upload files");
 					});
 
 				// 一応廃棄
 				(window as any).__misskey_input_ref__ = null;
 			};
 
+			input.oncancel = () => {
+				cleanupAndReject("File selection was canceled");
+			};
+
 			// https://qiita.com/fukasawah/items/b9dc732d95d99551013d
 			// iOS Safari で正常に動かす為のおまじない
 			(window as any).__misskey_input_ref__ = input;
+
+			window.addEventListener(
+				"focus",
+				() => {
+					setTimeout(() => {
+						if (!handled && (!input.files || input.files.length === 0)) {
+							cleanupAndReject("File selection was canceled");
+						}
+					}, 0);
+				},
+				{ once: true },
+			);
 
 			input.click();
 		};

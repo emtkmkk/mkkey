@@ -1,4 +1,4 @@
-import { computed, toValue } from "vue";
+import { computed, unref } from "vue";
 import type { MaybeRefOrGetter } from "vue";
 import type * as misskey from "calckey-js";
 import { instance } from "@/instance";
@@ -16,16 +16,26 @@ export type ReactionCountViewModelOptions = {
 	isStarButtonHandlesDefault: MaybeRefOrGetter<boolean>;
 };
 
+const resolveMaybeRefOrGetter = <T>(
+	value: MaybeRefOrGetter<T>
+): T => {
+	if (typeof value === "function") {
+		return value();
+	}
+
+	return unref(value);
+};
+
 export const useReactionCountViewModel = (
 	options: ReactionCountViewModelOptions
 ) => {
 	const totalReactions = computed(() =>
-		getVisibleReactionsTotal(toValue(options.note))
+		getVisibleReactionsTotal(resolveMaybeRefOrGetter(options.note))
 	);
 
 	const defaultReactionCount = computed(() => {
 		let count = 0;
-		const note = toValue(options.note);
+		const note = resolveMaybeRefOrGetter(options.note);
 		if (note.reactions) {
 			for (const reaction of Object.keys(note.reactions)) {
 				if (normalizeReactionName(reaction) === instance.defaultReaction) {
@@ -37,7 +47,7 @@ export const useReactionCountViewModel = (
 	});
 
 	const reactionCountToShow = computed(() =>
-		toValue(options.isReactionListVisible)
+		resolveMaybeRefOrGetter(options.isReactionListVisible)
 			? defaultReactionCount.value
 			: totalReactions.value
 	);
@@ -48,17 +58,17 @@ export const useReactionCountViewModel = (
 
 	const showStarAndPickerButtons = computed(
 		() =>
-			toValue(options.showStarButtonNoEmoji) &&
-			(toValue(options.showReactionPickerButton) ||
-				toValue(options.showUndoReactionButton))
+			resolveMaybeRefOrGetter(options.showStarButtonNoEmoji) &&
+			(resolveMaybeRefOrGetter(options.showReactionPickerButton) ||
+				resolveMaybeRefOrGetter(options.showUndoReactionButton))
 	);
 
 	const useSplitReactionCounts = computed(
 		() =>
 			showStarAndPickerButtons.value ||
-			(toValue(options.isStarButtonHandlesDefault) &&
-				toValue(options.showReactionPickerButton) &&
-				toValue(options.showUndoReactionButton))
+			(resolveMaybeRefOrGetter(options.isStarButtonHandlesDefault) &&
+				resolveMaybeRefOrGetter(options.showReactionPickerButton) &&
+				resolveMaybeRefOrGetter(options.showUndoReactionButton))
 	);
 
 	const countForStarButton = computed(() =>
@@ -76,47 +86,52 @@ export const useReactionCountViewModel = (
 	);
 
 	const countForReactionPickerButton = computed(() =>
-		!toValue(options.showStarButtonNoEmoji) && useSplitReactionCounts.value
+		!resolveMaybeRefOrGetter(options.showStarButtonNoEmoji) &&
+		useSplitReactionCounts.value
 			? defaultReactionCount.value
 			: countForPickerButton.value
 	);
 
 	const countForUndoReactionButton = computed(() =>
-		!toValue(options.showStarButtonNoEmoji) && useSplitReactionCounts.value
+		!resolveMaybeRefOrGetter(options.showStarButtonNoEmoji) &&
+		useSplitReactionCounts.value
 			? nonDefaultReactionCount.value
 			: countForPickerButton.value
 	);
 
 	const canShowReactionCount = computed(
 		() =>
-			!(useSplitReactionCounts.value && toValue(options.isReactionListVisible))
+			!(
+				useSplitReactionCounts.value &&
+				resolveMaybeRefOrGetter(options.isReactionListVisible)
+			)
 	);
 
 	const showReactionPickerCount = computed(
 		() =>
 			canShowReactionCount.value &&
-			toValue(options.showReactionPickerButton) &&
+			resolveMaybeRefOrGetter(options.showReactionPickerButton) &&
 			countForReactionPickerButton.value > 0
 	);
 
 	const showUndoReactionCount = computed(
 		() =>
 			canShowReactionCount.value &&
-			toValue(options.showUndoReactionButton) &&
+			resolveMaybeRefOrGetter(options.showUndoReactionButton) &&
 			countForUndoReactionButton.value > 0
 	);
 
 	const tooltipQuery = computed(() => {
 		if (
 			useSplitReactionCounts.value &&
-			toValue(options.isReactionListVisible)
+			resolveMaybeRefOrGetter(options.isReactionListVisible)
 		) {
 			return { shouldSkip: true };
 		}
 
 		const type = useSplitReactionCounts.value
 			? null
-			: toValue(options.isReactionListVisible)
+			: resolveMaybeRefOrGetter(options.isReactionListVisible)
 			? instance.defaultReaction
 			: null;
 
@@ -126,7 +141,7 @@ export const useReactionCountViewModel = (
 
 		const count = useSplitReactionCounts.value
 			? nonDefaultReactionCount.value
-			: toValue(options.isReactionListVisible)
+			: resolveMaybeRefOrGetter(options.isReactionListVisible)
 			? defaultReactionCount.value
 			: totalReactions.value;
 

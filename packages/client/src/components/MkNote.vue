@@ -668,6 +668,15 @@ const showUndoReactionButton = $computed(
 );
 
 /**
+ * ★ボタンとピッカー系ボタンが同時に表示されるかどうか
+ */
+const showStarAndPickerButtons = $computed(
+	() =>
+		showStarButtonNoEmoji &&
+		(showReactionPickerButton || showUndoReactionButton)
+);
+
+/**
  * デフォルトリアクション以外のリアクション数
  */
 const nonDefaultReactionCount = $computed(() => {
@@ -678,7 +687,7 @@ const nonDefaultReactionCount = $computed(() => {
  * ★ボタンに表示するカウント
  */
 const countForStarButton = $computed(() => {
-	if (showReactionPickerButton) {
+	if (showStarAndPickerButtons) {
 		return defaultReactionCount;
 	} else {
 		return reactionCountToShow;
@@ -689,8 +698,8 @@ const countForStarButton = $computed(() => {
  * 絵文字ピッカーボタン（+）に表示するカウント
  */
 const countForPickerButton = $computed(() => {
-	// ★ボタンが有効な場合（リスト表示状態に関わらず）、ピッカーはデフォルト以外を表示
-	if (isStarButtonEnabled) {
+	// ★ボタンと併用される場合、ピッカー側は常にデフォルト以外を表示
+	if (showStarAndPickerButtons) {
 		return nonDefaultReactionCount;
 	} else {
 		return reactionCountToShow;
@@ -702,9 +711,9 @@ const countForPickerButton = $computed(() => {
  */
 const showReactionCount = $computed(
 	() =>
-		// ★ボタンが有効なら、リアクション一覧が表示されているときはカウント不要（リストに表示されるため）
-		// ★ボタンが無効なら、リアクション一覧が表示されていても（他に表示場所がないので）カウント表示
-		!(isStarButtonEnabled && isReactionListVisible) &&
+		// ★ボタンと併用時、リアクション一覧表示中はカウント不要（リストに表示されるため）
+		// ★ボタン単独時、リアクション一覧表示中でも（他に表示場所がないので）カウント表示
+		!(showStarAndPickerButtons && isReactionListVisible) &&
 		countForPickerButton > 0 &&
 		(showReactionPickerButton || showUndoReactionButton)
 );
@@ -914,20 +923,20 @@ const undoReactionButtonRef = ref<HTMLElement>();
 useTooltip(
 	reactionPickerButtonRef,
 	async (showing) => {
-		// ★ボタンが有効かつリアクション一覧表示中の場合、何もしない
-		if (isStarButtonEnabled && isReactionListVisible) {
+		// ★ボタン併用かつリアクション一覧表示中の場合、何もしない
+		if (showStarAndPickerButtons && isReactionListVisible) {
 			return;
 		}
 
-		// ★ボタン有効なら、デフォルト以外のリアクション（excludeTypeで除外）
+		// ★ボタン併用時は、デフォルト以外のリアクション（excludeTypeで除外）
 		// ★ボタン無効なら、一覧表示中はデフォルト、非表示中は全リアクション
-		const type = isStarButtonEnabled
+		const type = showStarAndPickerButtons
 			? null
 			: isReactionListVisible
 			? instance.defaultReaction
 			: null;
 
-		const excludeType = isStarButtonEnabled
+		const excludeType = showStarAndPickerButtons
 			? instance.defaultReaction
 			: null;
 
@@ -941,7 +950,7 @@ useTooltip(
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = isStarButtonEnabled
+		const count = showStarAndPickerButtons
 			? nonDefaultReactionCount
 			: isReactionListVisible
 			? defaultReactionCount
@@ -966,18 +975,18 @@ useTooltip(
 useTooltip(
 	undoReactionButtonRef,
 	async (showing) => {
-		// ★ボタンが有効かつリアクション一覧表示中の場合、何もしない
-		if (isStarButtonEnabled && isReactionListVisible) {
+		// ★ボタン併用かつリアクション一覧表示中の場合、何もしない
+		if (showStarAndPickerButtons && isReactionListVisible) {
 			return;
 		}
 
-		const type = isStarButtonEnabled
+		const type = showStarAndPickerButtons
 			? null
 			: isReactionListVisible
 			? instance.defaultReaction
 			: null;
 
-		const excludeType = isStarButtonEnabled
+		const excludeType = showStarAndPickerButtons
 			? instance.defaultReaction
 			: null;
 
@@ -991,7 +1000,7 @@ useTooltip(
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = isStarButtonEnabled
+		const count = showStarAndPickerButtons
 			? nonDefaultReactionCount
 			: isReactionListVisible
 			? defaultReactionCount

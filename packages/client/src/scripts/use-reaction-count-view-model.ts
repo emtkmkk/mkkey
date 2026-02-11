@@ -67,6 +67,8 @@ export const useReactionCountViewModel = (
 			: reactionCountToShow.value
 	);
 
+	const showStarCount = computed(() => countForStarButton.value > 0);
+
 	const countForPickerButton = computed(() =>
 		useSplitReactionCounts.value
 			? nonDefaultReactionCount.value
@@ -139,6 +141,7 @@ export const useReactionCountViewModel = (
 	const reactionCountViewModel = computed(() => ({
 		useSplitReactionCounts: useSplitReactionCounts.value,
 		canShowReactionCount: canShowReactionCount.value,
+		showStarCount: showStarCount.value,
 		countForStarButton: countForStarButton.value,
 		countForReactionPickerButton: countForReactionPickerButton.value,
 		countForUndoReactionButton: countForUndoReactionButton.value,

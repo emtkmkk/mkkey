@@ -246,7 +246,7 @@
                                                ref="starButtonNoEmojiRef"
                                                class="button"
                                                :note="appearNote"
-                                               :count="reactionCountViewModel.countForStarButton"
+                                               :count="reactionCountViewModel.showStarCount ? reactionCountViewModel.countForStarButton : 0"
                                                :reacted="isDefaultReactionReacted"
                                                :hasPickerButton="showReactionPickerButton"
                                                :isReactionListVisible="isReactionListVisible"

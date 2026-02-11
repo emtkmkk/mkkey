@@ -2,10 +2,10 @@
 
 `useReactionCountViewModel` の表示仕様を確認するためのケース表。
 
-| ケース | ★ボタン表示 (`showStarButtonNoEmoji`) | picker表示 (`showReactionPickerButton`) | undo表示 (`showUndoReactionButton`) | reaction list表示 (`isReactionListVisible`) | `useSplitReactionCounts` | ★カウント | picker/undoカウント | picker/undoカウント表示 |
+| ケース | ★ボタン表示 (`showStarButtonNoEmoji`) | picker表示 (`showReactionPickerButton`) | undo表示 (`showUndoReactionButton`) | reaction list表示 (`isReactionListVisible`) | `useSplitReactionCounts` | ★カウント (`showStarCount`) | picker/undoカウント | picker/undoカウント表示 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| A: ★のみ | ✅ | ❌ | ❌ | ❌ | ❌ | 全リアクション | - | - |
-| B: ★のみ + list表示 | ✅ | ❌ | ❌ | ✅ | ❌ | デフォルトリアクション | - | - |
+| A: ★のみ | ✅ | ❌ | ❌ | ❌ | ❌ | 全リアクション (1以上で表示) | - | - |
+| B: ★のみ + list表示 | ✅ | ❌ | ❌ | ✅ | ❌ | デフォルトリアクション (1以上で表示) | - | - |
 | C: ★+picker | ✅ | ✅ | ❌ | ❌ | ✅ | デフォルトリアクション | 非デフォルトリアクション | ✅ (0より大きい時) |
 | D: ★+picker + list表示 | ✅ | ✅ | ❌ | ✅ | ✅ | デフォルトリアクション | 非デフォルトリアクション | ❌ |
 | E: ★+undo | ✅ | ❌ | ✅ | ❌ | ✅ | デフォルトリアクション | 非デフォルトリアクション | ✅ (0より大きい時) |

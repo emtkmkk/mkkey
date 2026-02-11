@@ -442,6 +442,11 @@ import { deepClone } from "@/scripts/clone";
 import XDraft from "@/components/MkDraftDialog.vue";
 import XCheatSheet from "@/components/MkCheatSheetDialog.vue";
 import { preprocess } from "@/scripts/preprocess";
+import {
+	FILE_SELECT_IDLE_WAIT_MS,
+	evaluateUploadWaitState,
+	sleepMs,
+} from "@/components/MkPostForm/uploadWaitState";
 import { id } from "date-fns/locale";
 
 const modal = inject("modal");
@@ -2351,21 +2356,33 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 		while (filePromises.length > 0) {
 			await Promise.allSettled([...filePromises]);
 
-			if (filePromises.length === 0) break;
+			const waitState = evaluateUploadWaitState({
+				pendingPromiseCount: filePromises.length,
+				activeUploadCount: uploads.value.length,
+				now: Date.now(),
+				noActiveUploadsSince,
+				staleUploadWaitMs,
+			});
 
-			if (uploads.value.length > 0) {
-				noActiveUploadsSince = null;
-				continue;
-			}
+			noActiveUploadsSince = waitState.nextNoActiveUploadsSince;
 
-			if (noActiveUploadsSince === null) {
-				noActiveUploadsSince = Date.now();
-				continue;
-			}
-
-			if (Date.now() - noActiveUploadsSince >= staleUploadWaitMs) {
+			if (waitState.shouldForceResetPromises) {
+				// uploads には進行中タスクが存在しないのに filePromises が残り続けるケースを
+				// ハングとみなし、投稿処理を前に進めるために待機対象を明示的にクリアする。
+				console.debug(
+					"[MkPostForm] Reset stale upload wait promises to avoid infinite loop",
+					{
+						pendingPromiseCount: filePromises.length,
+						activeUploadCount: uploads.value.length,
+						staleUploadWaitMs,
+					},
+				);
 				filePromises = [];
 				break;
+			}
+
+			if (waitState.shouldWaitBeforeRetry) {
+				await sleepMs(FILE_SELECT_IDLE_WAIT_MS);
 			}
 		}
 	} catch (err) {

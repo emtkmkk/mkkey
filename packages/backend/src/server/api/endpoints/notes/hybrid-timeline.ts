@@ -13,6 +13,7 @@ import { generateChannelQuery } from "../../common/generate-channel-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
+import { applyOrWhereNoteHasContent } from "../../common/note-content-condition.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -121,11 +122,7 @@ export default define(meta, paramDef, async (ps, user) => {
 				qb.orWhere("note.renoteUserId != note.userId");
 				qb.orWhere("note.userId = :meId", { meId: user.id });
 				qb.orWhere("note.renoteId IS NULL");
-				qb.orWhere("note.text IS NOT NULL");
-                                qb.orWhere('CARDINALITY(note."fileIds") > 0');
-				qb.orWhere(
-					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
-				);
+				applyOrWhereNoteHasContent(qb, "note");
 			}),
 		);
 	}
@@ -135,11 +132,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			new Brackets((qb) => {
 				qb.orWhere("note.userId != :meId", { meId: user.id });
 				qb.orWhere("note.renoteId IS NULL");
-				qb.orWhere("note.text IS NOT NULL");
-                                qb.orWhere('CARDINALITY(note."fileIds") > 0');
-				qb.orWhere(
-					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
-				);
+				applyOrWhereNoteHasContent(qb, "note");
 			}),
 		);
 	}
@@ -149,11 +142,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			new Brackets((qb) => {
 				qb.orWhere("note.renoteUserId != :meId", { meId: user.id });
 				qb.orWhere("note.renoteId IS NULL");
-				qb.orWhere("note.text IS NOT NULL");
-                                qb.orWhere('CARDINALITY(note."fileIds") > 0');
-				qb.orWhere(
-					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
-				);
+				applyOrWhereNoteHasContent(qb, "note");
 			}),
 		);
 	}
@@ -163,11 +152,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			new Brackets((qb) => {
 				qb.orWhere("note.renoteUserHost IS NOT NULL");
 				qb.orWhere("note.renoteId IS NULL");
-				qb.orWhere("note.text IS NOT NULL");
-                                qb.orWhere('CARDINALITY(note."fileIds") > 0');
-				qb.orWhere(
-					'0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)',
-				);
+				applyOrWhereNoteHasContent(qb, "note");
 			}),
 		);
 	}

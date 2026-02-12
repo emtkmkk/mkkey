@@ -7,6 +7,7 @@ import type { IEndpoint } from "./endpoints.js";
 import authenticate, { AuthenticationError } from "./authenticate.js";
 import call from "./call.js";
 import { ApiError } from "./error.js";
+import { apiLogger } from "./logger.js";
 
 const userIpHistories = new Map<User["id"], Set<string>>();
 
@@ -16,6 +17,28 @@ setInterval(() => {
 
 export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 	new Promise<void>((res) => {
+		const requestContext = {
+			ep: endpoint.name,
+			ip: ctx.ip,
+			method: ctx.method,
+		};
+
+		const toErrorInfo = (e: unknown) => {
+			if (e instanceof Error) {
+				return {
+					message: e.message,
+					code: e.name,
+					stack: e.stack,
+				};
+			}
+
+			return {
+				message: "Unknown error",
+				code: "UnknownError",
+				raw: e,
+			};
+		};
+
 		const body = ctx.is("multipart/form-data")
 			? (ctx.request as any).body
 			: ctx.method === "GET"
@@ -66,14 +89,30 @@ export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 						}
 						reply(res);
 					})
-					.catch((e: ApiError) => {
+					.catch((e: unknown) => {
+						const errorInfo = toErrorInfo(e);
+						apiLogger.error("API request failed.", {
+							...requestContext,
+							error: errorInfo,
+						});
+
+						if (e instanceof ApiError) {
+							reply(
+								e.httpStatusCode
+									? e.httpStatusCode
+									: e.kind === "client"
+									? 400
+									: 500,
+								e,
+							);
+							return;
+						}
+
 						reply(
-							e.httpStatusCode
-								? e.httpStatusCode
-								: e.kind === "client"
-								? 400
-								: 500,
-							e,
+							500,
+							new ApiError(null, {
+								e: errorInfo,
+							}),
 						);
 					});
 
@@ -117,7 +156,12 @@ export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 					};
 					res();
 				} else {
-					reply(500, new ApiError());
+					const errorInfo = toErrorInfo(e);
+					apiLogger.error("Unexpected authentication flow error.", {
+						...requestContext,
+						error: errorInfo,
+					});
+					reply(500, new ApiError(null, { e: errorInfo }));
 				}
 			});
 	});

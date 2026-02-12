@@ -4,10 +4,7 @@ import { Users, AccessTokens, Apps } from "@/models/index.js";
 import type { AccessToken } from "@/models/entities/access-token.js";
 import { Cache } from "@/misc/cache.js";
 import type { App } from "@/models/entities/app.js";
-import {
-	fetchLocalUserByIdCache,
-	fetchLocalUserByNativeTokenCache,
-} from "@/services/user-cache.js";
+import { fetchAuthUserByTokenCache } from "@/services/user-cache.js";
 
 const appCache = new Cache<App>(Infinity);
 
@@ -17,6 +14,15 @@ export class AuthenticationError extends Error {
 		this.name = "AuthenticationError";
 	}
 }
+
+const AUTH_USER_SELECT = {
+	id: true,
+	host: true,
+	isSuspended: true,
+	isAdmin: true,
+	isModerator: true,
+	onlineStatus: true,
+} as const;
 
 export default async (
 	authorization: string | null | undefined,
@@ -46,10 +52,13 @@ export default async (
 	}
 
 	if (isNativeToken(token)) {
-		const user = await fetchLocalUserByNativeTokenCache(
-			token,
-			() => Users.findOneBy({ token }) as Promise<ILocalUser | null>,
-		);
+		const user = await fetchAuthUserByTokenCache(token, async () => {
+			const authUser = await Users.findOne({
+				where: { token },
+				select: AUTH_USER_SELECT,
+			});
+			return authUser as ILocalUser | null;
+		});
 
 		if (user == null) {
 			throw new AuthenticationError("unknown token");
@@ -76,13 +85,19 @@ export default async (
 			lastUsedAt: new Date(),
 		});
 
-		const user = await fetchLocalUserByIdCache(
-			accessToken.userId,
-			() =>
-				Users.findOneBy({
+		const user = await fetchAuthUserByTokenCache(token, async () => {
+			const authUser = await Users.findOne({
+				where: {
 					id: accessToken.userId,
-				}) as Promise<ILocalUser>,
-		);
+				},
+				select: AUTH_USER_SELECT,
+			});
+			return authUser as CacheableLocalUser | null;
+		});
+
+		if (user == null) {
+			throw new AuthenticationError("unknown token");
+		}
 
 		if (accessToken.appId) {
 			const app = await appCache.fetch(accessToken.appId, () =>

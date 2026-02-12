@@ -6,7 +6,7 @@ import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import config from "@/config/index.js";
 import { countSameRenotes } from "@/misc/count-same-renotes.js";
-import { deliverToRelays } from "./relay.js";
+import { deliverToRelays } from "../relay.js";
 import { decodeReaction, resolveApReaction } from "@/misc/reaction-lib.js";
 import { buildReactionDeliverManager } from "@/services/note/reaction/deliver.js";
 import { Emojis, NoteReactions, Notes, Users } from "@/models/index.js";

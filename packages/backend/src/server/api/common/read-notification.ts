@@ -35,7 +35,7 @@ export async function readAllNotifications(
 	userId: User["id"],
 	latestNotificationId: Notification["id"],
 ) {
-	await redisClient.set(`latestReadNotification:${userId}`, latestNotificationId);
+	await redisClient.set(`latestReadNotification:${userId}`, latestNotificationId, "EX", 86400);
 
 	const result = await Notifications.update(
 		{

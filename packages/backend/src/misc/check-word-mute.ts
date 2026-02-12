@@ -15,9 +15,10 @@ type UserLike = {
 
 function checkWordMute(
 	note: NoteLike,
-	mutedWords: Array<string | string[]>,
+	mutedWords: Array<string | string[]> | null | undefined,
 ): boolean {
 	if (note == null) return false;
+	if (!Array.isArray(mutedWords) || mutedWords.length === 0) return false;
 
 	const text = `${note.cw ?? ""} ${note.text ?? ""}`.trim();
 	if (text === "") return false;
@@ -60,14 +61,14 @@ function checkWordMute(
 export async function getWordHardMute(
 	note: NoteLike,
 	me: UserLike | null | undefined,
-	mutedWords: Array<string | string[]>,
+	mutedWords: Array<string | string[]> | null | undefined,
 ): Promise<boolean> {
 	// 自分自身
 	if (me && note.userId === me.id) {
 		return false;
 	}
 
-	if (mutedWords.length > 0) {
+	if (Array.isArray(mutedWords) && mutedWords.length > 0) {
 		return (
 			checkWordMute(note, mutedWords) ||
 			checkWordMute(note.reply, mutedWords) ||
@@ -82,9 +83,10 @@ export function checkReactionMute(
 	reaction: string,
 	note: Note,
 	user: User,
-	mutedWords: Array<string | string[]>,
+	mutedWords: Array<string | string[]> | null | undefined,
 ): boolean | { muted: boolean; reject?: boolean } {
 	if (!reaction) return false;
+	if (!Array.isArray(mutedWords) || mutedWords.length === 0) return false;
 
 	const text = reaction.trim();
 	if (text === "") return false;

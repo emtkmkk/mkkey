@@ -35,16 +35,14 @@ export async function buildReactionDeliverManager(
 				dm.addFollowersRecipe();
 			}
 		} else if (note.visibility === "specified") {
-			const visibleUserIds = note.visibleUserIds ?? [];
 			const visibleUsers = await Promise.all(
-				visibleUserIds.map((id) => Users.findOneBy({ id })),
+				note.visibleUserIds.map((id) => Users.findOneBy({ id })),
 			);
 			for (const u of visibleUsers.filter((u) => u && Users.isRemoteUser(u))) {
 				dm.addDirectRecipe(u as IRemoteUser);
 			}
-			const ccUserIds = note.ccUserIds ?? [];
 			const ccUsers = await Promise.all(
-				ccUserIds.map((id) => Users.findOneBy({ id })),
+				note.ccUserIds.map((id) => Users.findOneBy({ id })),
 			);
 			for (const u of ccUsers.filter((u) => u && Users.isRemoteUser(u))) {
 				dm.addDirectRecipe(u as IRemoteUser);

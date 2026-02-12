@@ -158,6 +158,7 @@ type MinimumUser = {
 
 type Option = {
 	createdAt?: Date | null;
+	endpointPreprocessMs?: number;
 	name?: string | null;
 	text?: string | null;
 	reply?: Note | null;
@@ -898,7 +899,9 @@ export default async (
 
 		data.isPublicLikeList = user.isPublicLikeList;
 
+		const insertNoteStartedAt = Date.now();
 		const note = await insertNote(user, data, tags, emojis, mentionedUsers);
+		const insertNoteMs = Date.now() - insertNoteStartedAt;
 
 		const usageTargetIds = (data.files ?? [])
 			.map((file) => file?.id)
@@ -912,7 +915,13 @@ export default async (
 		}
 
 		if (firstVisibility != note.visibility) console.log(`${note.id}:可視性変更 ${firstVisibility} -> ${note.visibility}`);
-		console.log(`[note-deliver-metric] api_response_ms=${Date.now() - apiStartedAt} note=${note.id}`);
+		const apiResponseMs = Date.now() - apiStartedAt;
+		if (apiResponseMs >= 1000) {
+			const endpointPreprocessMs = data.endpointPreprocessMs ?? 0;
+			console.log(
+				`[note-deliver-metric] api_response_ms=${apiResponseMs} endpoint_preprocess_ms=${endpointPreprocessMs} insert_note_ms=${insertNoteMs} note_id=${note.id} user_id=${user.id} user_host=${user.host ?? "local"} visibility=${note.visibility} is_reply=${Boolean(data.reply)} is_renote=${Boolean(data.renote)} file_count=${data.files?.length ?? 0}`,
+			);
+		}
 
 		res(note);
 

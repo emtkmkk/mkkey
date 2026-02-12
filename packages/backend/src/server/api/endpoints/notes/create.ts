@@ -239,6 +239,8 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
+	const endpointStartedAt = Date.now();
+
 	if (user.movedToUri != null) throw new ApiError(meta.errors.accountLocked);
 	if (!ps.web && user.isMiniSilenced && ps.visibility === "public") {
 			throw new ApiError(meta.errors.appBlockPublic);
@@ -421,7 +423,8 @@ export default define(meta, paramDef, async (ps, user) => {
 	
 	const fileUrls = await Promise.all(fileUrlsPromises);
 	files.push(...(fileUrls.filter((x) => x != null)));
-	
+	const endpointPreprocessMs = Date.now() - endpointStartedAt;
+
 	// Create a post
 	try {
 			const note = await create(user, {
@@ -449,6 +452,7 @@ export default define(meta, paramDef, async (ps, user) => {
 					apMentions: ps.noExtractMentions ? [] : undefined,
 					apHashtags: ps.noExtractHashtags ? [] : undefined,
 					apEmojis: ps.noExtractEmojis ? [] : undefined,
+					endpointPreprocessMs,
 			});
 			return {
 					createdNote: await Notes.pack(note, user),

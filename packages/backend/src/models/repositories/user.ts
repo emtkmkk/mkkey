@@ -57,6 +57,10 @@ import {
 } from "../index.js";
 import type { Instance } from "../entities/instance.js";
 import { resolveUser } from "@/remote/resolve-user.js";
+import { redisClient } from "@/db/redis.js";
+
+const ME_DETAILED_BASE_CACHE_TTL_SEC = 60 * 10;
+const ME_DETAILED_VOLATILE_CACHE_TTL_SEC = 30;
 
 const userInstanceCache = new Cache<Instance | null>(1000 * 60 * 60 * 3);
 
@@ -86,6 +90,17 @@ export type UserRelation = {
         isRenoteMuted: boolean;
         isFollowBlocking: boolean;
         isInviter: boolean;
+};
+
+export type MeDetailedVolatile = {
+	hasUnreadSpecifiedNotes: boolean;
+	hasUnreadMentions: boolean;
+	hasUnreadAnnouncement: boolean;
+	hasUnreadAntenna: boolean;
+	hasUnreadChannel: boolean;
+	hasUnreadMessagingMessage: boolean;
+	hasUnreadNotification: boolean;
+	hasPendingReceivedFollowRequest: boolean;
 };
 
 const ajv = new Ajv();
@@ -498,6 +513,71 @@ export const UserRepository = db.getRepository(User).extend({
 		return count > 0;
 	},
 
+	getMeDetailedBaseCacheKey(
+		userId: User["id"],
+		includeSecrets: boolean,
+	): string {
+		return `me:detailed:base:${userId}:${includeSecrets ? "secure" : "public"}`;
+	},
+
+	getMeDetailedVolatileCacheKey(userId: User["id"]): string {
+		return `me:detailed:volatile:${userId}`;
+	},
+
+	async invalidateMeDetailedBaseCache(userId: User["id"]): Promise<void> {
+		await redisClient.del(
+			this.getMeDetailedBaseCacheKey(userId, true),
+			this.getMeDetailedBaseCacheKey(userId, false),
+		);
+	},
+
+	getMeDetailedBaseCacheTtlSec(): number {
+		return ME_DETAILED_BASE_CACHE_TTL_SEC;
+	},
+
+	getMeDetailedVolatileCacheTtlSec(): number {
+		return ME_DETAILED_VOLATILE_CACHE_TTL_SEC;
+	},
+
+	async getMeDetailedVolatile(userId: User["id"]): Promise<MeDetailedVolatile> {
+		const [
+			hasUnreadSpecifiedNotes,
+			hasUnreadMentions,
+			hasUnreadAnnouncement,
+			hasUnreadAntenna,
+			hasUnreadChannel,
+			hasUnreadMessagingMessage,
+			hasUnreadNotification,
+			hasPendingReceivedFollowRequest,
+		] = await Promise.all([
+			NoteUnreads.count({
+				where: { userId, isSpecified: true },
+				take: 1,
+			}).then((count) => count > 0),
+			NoteUnreads.count({
+				where: { userId, isMentioned: true },
+				take: 1,
+			}).then((count) => count > 0),
+			this.getHasUnreadAnnouncement(userId),
+			this.getHasUnreadAntenna(userId),
+			this.getHasUnreadChannel(userId),
+			this.getHasUnreadMessagingMessage(userId),
+			this.getHasUnreadNotification(userId),
+			this.getHasPendingReceivedFollowRequest(userId),
+		]);
+
+		return {
+			hasUnreadSpecifiedNotes,
+			hasUnreadMentions,
+			hasUnreadAnnouncement,
+			hasUnreadAntenna,
+			hasUnreadChannel,
+			hasUnreadMessagingMessage,
+			hasUnreadNotification,
+			hasPendingReceivedFollowRequest,
+		};
+	},
+
         async getOnlineStatus(
                 user: User,
                 meId?: string | null,
@@ -643,12 +723,15 @@ export const UserRepository = db.getRepository(User).extend({
 		const meId = me ? me.id : null;
 		const isMe = meId === user.id;
 
-                const relationHintProvided = hints != null && "relation" in hints;
-                const relation = relationHintProvided
-                        ? hints?.relation ?? null
-                        : meId && !isMe && (opts.detail || opts.relation)
-                        ? await this.getRelation(meId, user.id, user)
-                        : null;
+		const relationHintProvided = hints != null && "relation" in hints;
+		const relation = relationHintProvided
+			? hints?.relation ?? null
+			: meId && !isMe && (opts.detail || opts.relation)
+			? await this.getRelation(meId, user.id, user)
+			: null;
+		const meDetailedVolatile = opts.detail && isMe
+			? await this.getMeDetailedVolatile(user.id)
+			: null;
 		const pins = opts.detail
 			? await UserNotePinings.createQueryBuilder("pin")
 					.where("pin.userId = :userId", { userId: user.id })
@@ -1009,23 +1092,16 @@ export const UserRepository = db.getRepository(User).extend({
 						isRemoteExplorable: user.isRemoteExplorable,
 						isDeleted: user.isDeleted,
 						hideOnlineStatus: user.hideOnlineStatus,
-						hasUnreadSpecifiedNotes: NoteUnreads.count({
-							where: { userId: user.id, isSpecified: true },
-							take: 1,
-						}).then((count) => count > 0),
-						hasUnreadMentions: NoteUnreads.count({
-							where: { userId: user.id, isMentioned: true },
-							take: 1,
-						}).then((count) => count > 0),
-						hasUnreadAnnouncement: this.getHasUnreadAnnouncement(user.id),
-						hasUnreadAntenna: this.getHasUnreadAntenna(user.id),
-						hasUnreadChannel: this.getHasUnreadChannel(user.id),
-						hasUnreadMessagingMessage: this.getHasUnreadMessagingMessage(
-							user.id,
-						),
-						hasUnreadNotification: this.getHasUnreadNotification(user.id),
+						hasUnreadSpecifiedNotes: meDetailedVolatile!.hasUnreadSpecifiedNotes,
+						hasUnreadMentions: meDetailedVolatile!.hasUnreadMentions,
+						hasUnreadAnnouncement: meDetailedVolatile!.hasUnreadAnnouncement,
+						hasUnreadAntenna: meDetailedVolatile!.hasUnreadAntenna,
+						hasUnreadChannel: meDetailedVolatile!.hasUnreadChannel,
+						hasUnreadMessagingMessage:
+							meDetailedVolatile!.hasUnreadMessagingMessage,
+						hasUnreadNotification: meDetailedVolatile!.hasUnreadNotification,
 						hasPendingReceivedFollowRequest:
-							this.getHasPendingReceivedFollowRequest(user.id),
+							meDetailedVolatile!.hasPendingReceivedFollowRequest,
 						integrations: profile!.integrations,
 						mutedWords: profile!.mutedWords,
 						rejectMuteReaction: profile!.rejectMuteReaction,

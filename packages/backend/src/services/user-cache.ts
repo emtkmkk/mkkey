@@ -3,17 +3,143 @@ import type {
 	CacheableUser,
 	ILocalUser,
 } from "@/models/entities/user.js";
-import { User } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
 import { Cache } from "@/misc/cache.js";
-import { subscriber } from "@/db/redis.js";
+import { redisClient, subscriber } from "@/db/redis.js";
 
-export const userByIdCache = new Cache<CacheableUser>(Infinity);
+const LOCAL_MAP_TTL_MS = 30 * 1000;
+const USER_CACHE_REDIS_TTL_SEC = 60;
+
+const USER_BY_ID_REDIS_KEY_PREFIX = "user-cache:user-by-id";
+const LOCAL_USER_BY_NATIVE_TOKEN_REDIS_KEY_PREFIX =
+	"user-cache:local-user-by-native-token";
+const LOCAL_USER_BY_ID_REDIS_KEY_PREFIX = "user-cache:local-user-by-id";
+const URI_PERSON_REDIS_KEY_PREFIX = "user-cache:uri-person";
+
+function createRedisKey(prefix: string, key: string | null): string {
+	return `${prefix}:${key ?? "__null__"}`;
+}
+
+async function cacheSetWithRedis<T>(
+	cache: Cache<T>,
+	redisKeyPrefix: string,
+	key: string | null,
+	value: T,
+): Promise<void> {
+	cache.set(key, value);
+	await redisClient.set(
+		createRedisKey(redisKeyPrefix, key),
+		JSON.stringify(value),
+		"EX",
+		USER_CACHE_REDIS_TTL_SEC,
+	);
+}
+
+async function cacheDeleteWithRedis(
+	cache: Cache<unknown>,
+	redisKeyPrefix: string,
+	key: string | null,
+): Promise<void> {
+	cache.delete(key);
+	await redisClient.del(createRedisKey(redisKeyPrefix, key));
+}
+
+async function fetchThroughRedis<T>(
+	cache: Cache<T>,
+	redisKeyPrefix: string,
+	key: string | null,
+	fetcher: () => Promise<T | undefined>,
+	validator?: (cachedValue: T) => boolean,
+): Promise<T | undefined> {
+	const localCached = cache.get(key);
+	if (localCached !== undefined && (validator == null || validator(localCached))) {
+		return localCached;
+	}
+
+	const redisKey = createRedisKey(redisKeyPrefix, key);
+	const redisCached = await redisClient.get(redisKey);
+	if (redisCached != null) {
+		const parsed = JSON.parse(redisCached) as T;
+		if (validator == null || validator(parsed)) {
+			cache.set(key, parsed);
+			return parsed;
+		}
+	}
+
+	const fetched = await fetcher();
+	if (fetched !== undefined) {
+		await cacheSetWithRedis(cache, redisKeyPrefix, key, fetched);
+	}
+
+	return fetched;
+}
+
+export const userByIdCache = new Cache<CacheableUser>(LOCAL_MAP_TTL_MS);
 export const localUserByNativeTokenCache = new Cache<CacheableLocalUser | null>(
-	Infinity,
+	LOCAL_MAP_TTL_MS,
 );
-export const localUserByIdCache = new Cache<CacheableLocalUser>(Infinity);
-export const uriPersonCache = new Cache<CacheableUser | null>(Infinity);
+export const localUserByIdCache = new Cache<CacheableLocalUser>(LOCAL_MAP_TTL_MS);
+export const uriPersonCache = new Cache<CacheableUser | null>(LOCAL_MAP_TTL_MS);
+
+export async function fetchUserByIdCacheMaybe(
+	id: string,
+	fetcher: () => Promise<CacheableUser | undefined>,
+): Promise<CacheableUser | undefined> {
+	return await fetchThroughRedis(
+		userByIdCache,
+		USER_BY_ID_REDIS_KEY_PREFIX,
+		id,
+		fetcher,
+	);
+}
+
+export async function fetchUserByIdCache(
+	id: string,
+	fetcher: () => Promise<CacheableUser>,
+): Promise<CacheableUser> {
+	return (await fetchThroughRedis(
+		userByIdCache,
+		USER_BY_ID_REDIS_KEY_PREFIX,
+		id,
+		fetcher,
+	)) as CacheableUser;
+}
+
+export async function fetchLocalUserByNativeTokenCache(
+	token: string,
+	fetcher: () => Promise<CacheableLocalUser | null>,
+): Promise<CacheableLocalUser | null> {
+	return (await fetchThroughRedis(
+		localUserByNativeTokenCache,
+		LOCAL_USER_BY_NATIVE_TOKEN_REDIS_KEY_PREFIX,
+		token,
+		fetcher,
+	)) as CacheableLocalUser | null;
+}
+
+export async function fetchLocalUserByIdCache(
+	id: string,
+	fetcher: () => Promise<CacheableLocalUser>,
+): Promise<CacheableLocalUser> {
+	return (await fetchThroughRedis(
+		localUserByIdCache,
+		LOCAL_USER_BY_ID_REDIS_KEY_PREFIX,
+		id,
+		fetcher,
+	)) as CacheableLocalUser;
+}
+
+export async function fetchUriPersonCache(
+	uri: string,
+	fetcher: () => Promise<CacheableUser | null>,
+): Promise<CacheableUser | null> {
+	return (await fetchThroughRedis(
+		uriPersonCache,
+		URI_PERSON_REDIS_KEY_PREFIX,
+		uri,
+		fetcher,
+	)) as CacheableUser | null;
+}
 
 subscriber.on("message", async (_, data) => {
 	const obj = JSON.parse(data);
@@ -22,13 +148,17 @@ subscriber.on("message", async (_, data) => {
 		const { type, body } = obj.message;
 		switch (type) {
 			case "localUserUpdated": {
-				userByIdCache.delete(body.id);
-				localUserByIdCache.delete(body.id);
-				localUserByNativeTokenCache.cache.forEach((v, k) => {
+				await cacheDeleteWithRedis(userByIdCache, USER_BY_ID_REDIS_KEY_PREFIX, body.id);
+				await cacheDeleteWithRedis(localUserByIdCache, LOCAL_USER_BY_ID_REDIS_KEY_PREFIX, body.id);
+				for (const [k, v] of localUserByNativeTokenCache.cache.entries()) {
 					if (v.value?.id === body.id) {
-						localUserByNativeTokenCache.delete(k);
+						await cacheDeleteWithRedis(
+							localUserByNativeTokenCache,
+							LOCAL_USER_BY_NATIVE_TOKEN_REDIS_KEY_PREFIX,
+							k,
+						);
 					}
-				});
+				}
 				break;
 			}
 			case "userChangeSuspendedState":
@@ -36,15 +166,25 @@ subscriber.on("message", async (_, data) => {
 			case "userChangeModeratorState":
 			case "remoteUserUpdated": {
 				const user = await Users.findOneByOrFail({ id: body.id });
-				userByIdCache.set(user.id, user);
+				await cacheSetWithRedis(userByIdCache, USER_BY_ID_REDIS_KEY_PREFIX, user.id, user);
 				for (const [k, v] of uriPersonCache.cache.entries()) {
 					if (v.value?.id === user.id) {
-						uriPersonCache.set(k, user);
+						await cacheSetWithRedis(uriPersonCache, URI_PERSON_REDIS_KEY_PREFIX, k, user);
 					}
 				}
 				if (Users.isLocalUser(user)) {
-					localUserByNativeTokenCache.set(user.token, user);
-					localUserByIdCache.set(user.id, user);
+					await cacheSetWithRedis(
+						localUserByNativeTokenCache,
+						LOCAL_USER_BY_NATIVE_TOKEN_REDIS_KEY_PREFIX,
+						user.token,
+						user,
+					);
+					await cacheSetWithRedis(
+						localUserByIdCache,
+						LOCAL_USER_BY_ID_REDIS_KEY_PREFIX,
+						user.id,
+						user,
+					);
 				}
 				break;
 			}
@@ -52,8 +192,17 @@ subscriber.on("message", async (_, data) => {
 				const user = (await Users.findOneByOrFail({
 					id: body.id,
 				})) as ILocalUser;
-				localUserByNativeTokenCache.delete(body.oldToken);
-				localUserByNativeTokenCache.set(body.newToken, user);
+				await cacheDeleteWithRedis(
+					localUserByNativeTokenCache,
+					LOCAL_USER_BY_NATIVE_TOKEN_REDIS_KEY_PREFIX,
+					body.oldToken,
+				);
+				await cacheSetWithRedis(
+					localUserByNativeTokenCache,
+					LOCAL_USER_BY_NATIVE_TOKEN_REDIS_KEY_PREFIX,
+					body.newToken,
+					user,
+				);
 				break;
 			}
 			default:

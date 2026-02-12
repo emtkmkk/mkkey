@@ -15,7 +15,11 @@ import {
 	MessagingMessages,
 } from "@/models/index.js";
 import { Cache } from "@/misc/cache.js";
-import { uriPersonCache, userByIdCache } from "@/services/user-cache.js";
+import {
+	fetchUriPersonCache,
+	fetchUserByIdCache,
+	fetchUserByIdCacheMaybe,
+} from "@/services/user-cache.js";
 import type { IObject } from "./type.js";
 import { getApId } from "./type.js";
 import { resolvePerson, updatePerson } from "./models/person.js";
@@ -109,14 +113,14 @@ export default class DbResolver {
 			if (parsed.type !== "users") return null;
 
 			return (
-				(await userByIdCache.fetchMaybe(parsed.id, () =>
+				(await fetchUserByIdCacheMaybe(parsed.id, () =>
 					Users.findOneBy({
 						id: parsed.id,
 					}).then((x) => x ?? undefined),
 				)) ?? null
 			);
 		} else {
-			return await uriPersonCache.fetch(parsed.uri, () =>
+			return await fetchUriPersonCache(parsed.uri, () =>
 				Users.findOneBy({
 					uri: parsed.uri,
 				}),
@@ -148,7 +152,7 @@ export default class DbResolver {
 		if (key == null) return null;
 
 		return {
-			user: (await userByIdCache.fetch(key.userId, () =>
+			user: (await fetchUserByIdCache(key.userId, () =>
 				Users.findOneByOrFail({ id: key.userId }),
 			)) as CacheableRemoteUser,
 			key,

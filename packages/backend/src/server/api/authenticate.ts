@@ -5,8 +5,8 @@ import type { AccessToken } from "@/models/entities/access-token.js";
 import { Cache } from "@/misc/cache.js";
 import type { App } from "@/models/entities/app.js";
 import {
-	localUserByIdCache,
-	localUserByNativeTokenCache,
+	fetchLocalUserByIdCache,
+	fetchLocalUserByNativeTokenCache,
 } from "@/services/user-cache.js";
 
 const appCache = new Cache<App>(Infinity);
@@ -46,7 +46,7 @@ export default async (
 	}
 
 	if (isNativeToken(token)) {
-		const user = await localUserByNativeTokenCache.fetch(
+		const user = await fetchLocalUserByNativeTokenCache(
 			token,
 			() => Users.findOneBy({ token }) as Promise<ILocalUser | null>,
 		);
@@ -76,7 +76,7 @@ export default async (
 			lastUsedAt: new Date(),
 		});
 
-		const user = await localUserByIdCache.fetch(
+		const user = await fetchLocalUserByIdCache(
 			accessToken.userId,
 			() =>
 				Users.findOneBy({

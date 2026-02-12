@@ -130,7 +130,6 @@ reservedUsernames: [
 # Job concurrency per worker
 # deliverJobConcurrency: 128
 # inboxJobConcurrency: 16
-# federationGlobalConcurrency: 2
 
 # Job rate limiter
 # deliverJobPerSec: 128

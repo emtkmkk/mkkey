@@ -15,6 +15,14 @@ export class AuthenticationError extends Error {
 	}
 }
 
+const AUTH_USER_SELECT = {
+	id: true,
+	host: true,
+	isSuspended: true,
+	isAdmin: true,
+	isModerator: true,
+} as const;
+
 export default async (
 	authorization: string | null | undefined,
 	bodyToken: string | null,
@@ -44,7 +52,10 @@ export default async (
 
 	if (isNativeToken(token)) {
 		const user = await fetchAuthUserByTokenCache(token, async () => {
-			const authUser = await Users.findOneBy({ token });
+			const authUser = await Users.findOne({
+				where: { token },
+				select: AUTH_USER_SELECT,
+			});
 			return authUser as ILocalUser | null;
 		});
 
@@ -74,8 +85,11 @@ export default async (
 		});
 
 		const user = await fetchAuthUserByTokenCache(token, async () => {
-			const authUser = await Users.findOneBy({
-				id: accessToken.userId,
+			const authUser = await Users.findOne({
+				where: {
+					id: accessToken.userId,
+				},
+				select: AUTH_USER_SELECT,
 			});
 			return authUser as CacheableLocalUser | null;
 		});

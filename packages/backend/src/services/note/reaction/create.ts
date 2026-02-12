@@ -42,6 +42,9 @@ const INSTANCE_MAX_REACTIONS_CACHE_TTL_MS = 30 * 1000;
 const instanceMaxReactionsPerAccountCache = new Cache<number>(
 	INSTANCE_MAX_REACTIONS_CACHE_TTL_MS,
 );
+const localUserDriveCapacityCache = new Cache<number | null>(
+	INSTANCE_MAX_REACTIONS_CACHE_TTL_MS,
+);
 
 export function normalizeReactionMuteResult(
 	muteResult: boolean | { muted: boolean; reject?: boolean | undefined },
@@ -92,6 +95,23 @@ async function getMaxReactionsPerAccountByHost(host: string): Promise<number> {
 	);
 }
 
+async function getLocalUserMaxReactionsPerAccount(userId: string): Promise<number> {
+	const driveCapacityOverrideMb = await localUserDriveCapacityCache.fetch(
+		userId,
+		async () => {
+			const localUser = await Users.findOne({
+				where: { id: userId },
+				select: ["id", "driveCapacityOverrideMb"],
+			});
+			return localUser?.driveCapacityOverrideMb ?? null;
+		},
+	);
+
+	return (driveCapacityOverrideMb ?? 5120) > 5120
+		? MAX_REACTION_PER_ACCOUNT
+		: 1;
+}
+
 export default async (
 	user: {
 		id: User["id"];
@@ -100,7 +120,6 @@ export default async (
 		name: User["name"];
 		avatarUrl: User["avatarUrl"];
 		isSilenced: User["isSilenced"];
-		driveCapacityOverrideMb: User["driveCapacityOverrideMb"];
 		isExplorable: User["isExplorable"];
 		isRemoteExplorable: User["isRemoteExplorable"];
 		isBot: User["isBot"];
@@ -239,10 +258,7 @@ export default async (
 		let maxReactionsPerAccount = 1;
 		let maxReactionsNote = 1;
 		if (!user.host) {
-			maxReactionsPerAccount =
-				(user.driveCapacityOverrideMb ?? 5120) > 5120
-					? MAX_REACTION_PER_ACCOUNT
-					: 1;
+			maxReactionsPerAccount = await getLocalUserMaxReactionsPerAccount(user.id);
 		} else {
 			maxReactionsPerAccount = await getMaxReactionsPerAccountByHost(user.host);
 		}

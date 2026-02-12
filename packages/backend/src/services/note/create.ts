@@ -113,39 +113,32 @@ class NotificationManager {
 		}
 	}
 
-        public async deliver() {
-                const targets = [...new Set(this.queue.map((x) => x.target))];
+	public async deliver() {
+		const targets = [...new Set(this.queue.map((x) => x.target))];
 
-                const mentioneeMutes =
-                        targets.length === 0
-                                ? []
-                                : await Mutings.findBy({
-                                          muterId: In(targets),
-                                  });
+		const mentioneeMutes =
+			targets.length === 0
+				? []
+				: await Mutings.findBy({
+					muterId: In(targets),
+					muteeId: this.notifier.id,
+				});
 
-                const mentioneeMutesMap = new Map<ILocalUser["id"], User["id"][]>();
+		const mentioneeMutedNotifierIds = new Set(
+			mentioneeMutes.map((mute) => mute.muterId),
+		);
 
-                for (const mute of mentioneeMutes) {
-                        if (!mentioneeMutesMap.has(mute.muterId)) {
-                                mentioneeMutesMap.set(mute.muterId, []);
-                        }
-
-                        mentioneeMutesMap.get(mute.muterId)!.push(mute.muteeId);
-                }
-
-                for (const x of this.queue) {
-                        const mentioneesMutedUserIds = mentioneeMutesMap.get(x.target) ?? [];
-
-                        // 通知される側のユーザーが通知する側のユーザーをミュートしていない限りは通知する
-                        if (!mentioneesMutedUserIds.includes(this.notifier.id)) {
-                                createNotification(x.target, x.reason, {
-                                        notifierId: this.notifier.id,
-                                        noteId: this.note.id,
-                                        note: this.note,
-                                });
-                        }
-                }
-        }
+		for (const x of this.queue) {
+			// 通知される側のユーザーが通知する側のユーザーをミュートしていない限りは通知する
+			if (!mentioneeMutedNotifierIds.has(x.target)) {
+				createNotification(x.target, x.reason, {
+					notifierId: this.notifier.id,
+					noteId: this.note.id,
+					note: this.note,
+				});
+			}
+		}
+	}
 }
 
 type MinimumUser = {

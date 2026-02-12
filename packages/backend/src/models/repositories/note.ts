@@ -11,6 +11,8 @@ import {
 	Polls,
 	Channels,
 	NoteFavorites,
+	UserMemos,
+	UserProfiles,
 } from "../index.js";
 import type { Packed } from "@/misc/schema.js";
 import { nyaize } from "@/misc/nyaize.js";
@@ -27,7 +29,7 @@ import {
 	prefetchEmojis,
 } from "@/misc/populate-emojis.js";
 import { db } from "@/db/postgre.js";
-import { subscriber } from "@/db/redis.js";
+import { redisClient, subscriber } from "@/db/redis.js";
 import { Cache } from "@/misc/cache.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 
@@ -97,14 +99,133 @@ type NotePackHint = {
 };
 
 const NOTE_PACK_CACHE_TTL_MS = 30 * 1000;
+const NOTE_PACK_USER_PROFILE_CACHE_TTL_SEC = 60;
+const NOTE_PACK_USER_PROFILE_CACHE_KEY_PREFIX = "note:pack:user";
 
 const meUserCache = new Cache<User>(NOTE_PACK_CACHE_TTL_MS);
 const followingsMapCache = new Cache<Map<User["id"], boolean>>(NOTE_PACK_CACHE_TTL_MS);
 const myReactionPointCache = new Cache<NoteReaction[]>(NOTE_PACK_CACHE_TTL_MS);
 const favoritePointCache = new Cache<boolean>(NOTE_PACK_CACHE_TTL_MS);
+const notePackUserProfileCache = new Cache<Packed<"User">>(NOTE_PACK_CACHE_TTL_MS);
 
 function getUserNoteCacheKey(userId: User["id"], noteId: Note["id"]): string {
 	return `${userId}:${noteId}`;
+}
+
+function getNotePackUserProfileCacheKey(userId: User["id"]): string {
+	return `${NOTE_PACK_USER_PROFILE_CACHE_KEY_PREFIX}:${userId}`;
+}
+
+function deleteNotePackUserProfileCache(userId: User["id"]): void {
+	notePackUserProfileCache.delete(userId);
+	void redisClient.del(getNotePackUserProfileCacheKey(userId));
+}
+
+function stripVolatileUserFields(user: Packed<"User">): Packed<"User"> {
+	const {
+		onlineStatus: _onlineStatus,
+		memo: _memo,
+		originalName: _originalName,
+		isFollowing: _isFollowing,
+		isFollowed: _isFollowed,
+		hasPendingFollowRequestFromYou: _hasPendingFollowRequestFromYou,
+		hasPendingFollowRequestToYou: _hasPendingFollowRequestToYou,
+		isBlocking: _isBlocking,
+		isBlocked: _isBlocked,
+		isMuted: _isMuted,
+		isRenoteMuted: _isRenoteMuted,
+		isFollowBlocking: _isFollowBlocking,
+		isInviter: _isInviter,
+		followedMessage: _followedMessage,
+		...fixed
+	} = user;
+
+	return fixed;
+}
+
+async function getFixedPackedUserForNote(
+	src: Note["user"] | User["id"],
+): Promise<Packed<"User">> {
+	const userId = typeof src === "object" ? src.id : src;
+	const localCached = notePackUserProfileCache.get(userId);
+	if (localCached !== undefined) {
+		return localCached;
+	}
+
+	const redisKey = getNotePackUserProfileCacheKey(userId);
+	const redisCached = await redisClient.get(redisKey);
+	if (redisCached != null) {
+		const parsed = JSON.parse(redisCached) as Packed<"User">;
+		notePackUserProfileCache.set(userId, parsed);
+		return parsed;
+	}
+
+	const packed = await Users.pack(src, null, {
+		detail: false,
+		relation: false,
+	});
+	const fixed = stripVolatileUserFields(packed);
+	notePackUserProfileCache.set(userId, fixed);
+	await redisClient.set(
+		redisKey,
+		JSON.stringify(fixed),
+		"EX",
+		NOTE_PACK_USER_PROFILE_CACHE_TTL_SEC,
+	);
+
+	return fixed;
+}
+
+async function packNoteUser(
+	src: Note["user"] | User["id"],
+	me?: { id: User["id"] } | null,
+): Promise<Packed<"User">> {
+	const fixed = await getFixedPackedUserForNote(src);
+	const meId = me?.id ?? null;
+	if (meId == null) {
+		return fixed;
+	}
+
+	const user = typeof src === "object" ? src : await Users.findOneByOrFail({ id: src });
+	const memo = await UserMemos.findOneBy({
+		userId: meId,
+		targetUserId: user.id,
+	});
+
+	const relation =
+		meId !== user.id ? await Users.getRelation(meId, user.id, user) : null;
+	const onlineStatus = await Users.getOnlineStatus(user, meId, relation ?? undefined);
+
+	const packed: Packed<"User"> = {
+		...fixed,
+		name: memo?.customName ? memo.customName : fixed.name,
+		onlineStatus,
+		memo: memo?.memo || undefined,
+		originalName: memo?.customName ? fixed.name : undefined,
+		isRenoteMuted: relation == null ? false : relation.isRenoteMuted,
+		...(relation
+			? {
+					isFollowing: relation.isFollowing,
+					isFollowed: relation.isFollowed,
+					hasPendingFollowRequestFromYou:
+						relation.hasPendingFollowRequestFromYou,
+					hasPendingFollowRequestToYou:
+						relation.hasPendingFollowRequestToYou,
+					isBlocking: relation.isBlocking,
+					isBlocked: relation.isBlocked,
+					isMuted: relation.isMuted,
+					isFollowBlocking: relation.isFollowBlocking,
+					isInviter: relation.isInviter ? true : undefined,
+			  }
+			: {}),
+	};
+
+	if (relation?.isFollowing) {
+		const profile = await UserProfiles.findOneBy({ userId: user.id });
+		packed.followedMessage = profile?.followedMessage || undefined;
+	}
+
+	return packed;
 }
 
 function invalidateNotePackViewerCache(viewerId: User["id"]): void {
@@ -128,6 +249,7 @@ subscriber.on("message", (_, data) => {
 				const userId = message.message.body?.id;
 				if (userId != null) {
 					invalidateNotePackViewerCache(userId);
+					deleteNotePackUserProfileCache(userId);
 				}
 				break;
 			}
@@ -454,10 +576,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			id: note.id,
 			createdAt: note.createdAt.toISOString(),
 			userId: note.userId,
-			user: Users.pack(note.user ?? note.userId, me, {
-				detail: false,
-				relation: true,
-			}),
+			user: packNoteUser(note.user ?? note.userId, me),
 			text: isVisible ? text : null,
 			cw: isVisible ? note.cw : undefined,
 			visibility: note.visibility,

@@ -189,13 +189,15 @@ export async function fetchAuthUserByTokenCache(
 
 	const fetched = await fetcher();
 	if (fetched !== undefined) {
-		authUserByTokenCache.set(tokenHash, fetched);
-		await redisClient.set(
-			redisKey,
-			JSON.stringify(fetched),
-			"EX",
-			USER_CACHE_REDIS_TTL_SEC,
-		);
+		if (isValidCacheableLocalUser(fetched)) {
+			authUserByTokenCache.set(tokenHash, fetched);
+			await redisClient.set(
+				redisKey,
+				JSON.stringify(fetched),
+				"EX",
+				USER_CACHE_REDIS_TTL_SEC,
+			);
+		}
 	}
 
 	return fetched;

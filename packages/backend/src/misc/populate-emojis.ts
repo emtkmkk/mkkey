@@ -111,31 +111,42 @@ export async function populateEmojis(
 }
 
 export function aggregateNoteEmojis(notes: Note[]) {
+	// Note/User は一部のクエリ経路で部分的なオブジェクトになることがあり、
+	// 絵文字配列やリアクションが欠落(undefined/null)するケースがある。
+	const parseEmojiList = (
+		emojis: string[] | null | undefined,
+		host: string | null,
+	): { name: string | null; host: string | null }[] => {
+		if (!Array.isArray(emojis) || emojis.length === 0) return [];
+		return emojis.map((e) => parseEmojiStr(e, host));
+	};
+
+	const parseReactionMap = (
+		reactions: Record<string, number> | null | undefined,
+	): { name: string; host: string | null }[] => {
+		if (reactions == null || typeof reactions !== "object") return [];
+		return Object.keys(reactions)
+			.map((x) => decodeReaction(x))
+			.filter((x) => x.name != null) as { name: string; host: string | null }[];
+	};
+
 	let emojis: { name: string | null; host: string | null }[] = [];
 	for (const note of notes) {
-		emojis = emojis.concat(
-			note.emojis.map((e) => parseEmojiStr(e, note.userHost)),
-		);
+		emojis = emojis.concat(parseEmojiList(note.emojis, note.userHost));
 		if (note.renote) {
 			emojis = emojis.concat(
-				note.renote.emojis.map((e) => parseEmojiStr(e, note.renote!.userHost)),
+				parseEmojiList(note.renote.emojis, note.renote.userHost),
 			);
 			if (note.renote.user) {
 				emojis = emojis.concat(
-					note.renote.user.emojis.map((e) =>
-						parseEmojiStr(e, note.renote!.userHost),
-					),
+					parseEmojiList(note.renote.user.emojis, note.renote.userHost),
 				);
 			}
 		}
-		const customReactions = Object.keys(note.reactions)
-			.map((x) => decodeReaction(x))
-			.filter((x) => x.name != null) as typeof emojis;
+		const customReactions = parseReactionMap(note.reactions);
 		emojis = emojis.concat(customReactions);
 		if (note.user) {
-			emojis = emojis.concat(
-				note.user.emojis.map((e) => parseEmojiStr(e, note.userHost)),
-			);
+			emojis = emojis.concat(parseEmojiList(note.user.emojis, note.userHost));
 		}
 	}
 	return emojis.filter((x) => x.name != null) as {

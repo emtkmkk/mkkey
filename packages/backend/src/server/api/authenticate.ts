@@ -21,7 +21,6 @@ const AUTH_USER_SELECT = {
 	isSuspended: true,
 	isAdmin: true,
 	isModerator: true,
-	onlineStatus: true,
 } as const;
 
 export default async (

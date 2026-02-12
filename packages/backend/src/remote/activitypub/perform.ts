@@ -12,9 +12,14 @@ export default async (
 
 	// Update the remote user information if it is out of date
 	if (actor.uri) {
+		const lastFetchedAtTime = actor.lastFetchedAt
+			? new Date(actor.lastFetchedAt).getTime()
+			: null;
+
 		if (
-			actor.lastFetchedAt == null ||
-			Date.now() - actor.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24
+			lastFetchedAtTime == null ||
+			Number.isNaN(lastFetchedAtTime) ||
+			Date.now() - lastFetchedAtTime > 1000 * 60 * 60 * 24
 		) {
 			setImmediate(() => {
 				updatePerson(actor.uri!);

@@ -30,20 +30,23 @@ export default class ActiveUsersChart extends Chart<typeof schema> {
 		host: null;
 		createdAt: User["createdAt"];
 	}): Promise<void> {
+		const createdAtTime = new Date(user.createdAt).getTime();
+		const userAge = Number.isNaN(createdAtTime) ? null : Date.now() - createdAtTime;
+
 		await this.commit({
 			read: [user.id],
 			registeredWithinWeek:
-				Date.now() - user.createdAt.getTime() < week ? [user.id] : [],
+				userAge != null && userAge < week ? [user.id] : [],
 			registeredWithinMonth:
-				Date.now() - user.createdAt.getTime() < month ? [user.id] : [],
+				userAge != null && userAge < month ? [user.id] : [],
 			registeredWithinYear:
-				Date.now() - user.createdAt.getTime() < year ? [user.id] : [],
+				userAge != null && userAge < year ? [user.id] : [],
 			registeredOutsideWeek:
-				Date.now() - user.createdAt.getTime() > week ? [user.id] : [],
+				userAge != null && userAge > week ? [user.id] : [],
 			registeredOutsideMonth:
-				Date.now() - user.createdAt.getTime() > month ? [user.id] : [],
+				userAge != null && userAge > month ? [user.id] : [],
 			registeredOutsideYear:
-				Date.now() - user.createdAt.getTime() > year ? [user.id] : [],
+				userAge != null && userAge > year ? [user.id] : [],
 		});
 	}
 

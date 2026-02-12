@@ -397,7 +397,7 @@ export default async (
 			webhookDeliver(webhook, "reaction", {
 				note: await Notes.pack(note, { id: note.userId }),
 				reaction: {
-					user: await Users.pack(user, { id: note.userId }),
+					user: await Users.pack(user.id, { id: note.userId }),
 					emojiName: decodedReaction.name
 						? `:${decodedReaction.name}:`
 						: reaction + (existCount > 0 ? ` (+${existCount})` : ""),

@@ -193,6 +193,9 @@ type MinimumUser = {
 	isBot: User["isBot"];
 };
 
+type ActiveWebhook = Awaited<ReturnType<typeof getActiveWebhooks>>[number];
+type WebhooksByUserMap = Map<MinimumUser["id"], ActiveWebhook[]>;
+
 type Option = {
 	createdAt?: Date | null;
 	endpointPreprocessMs?: number;
@@ -1077,6 +1080,21 @@ const createNoteInternal = async (
 		}
 
 		if (!silent) {
+			const activeWebhooks = await getActiveWebhooks();
+			const noteWebhooksByUser = createWebhooksByUserMap(activeWebhooks, "note");
+			const replyWebhooksByUser = createWebhooksByUserMap(
+				activeWebhooks,
+				"reply",
+			);
+			const renoteWebhooksByUser = createWebhooksByUserMap(
+				activeWebhooks,
+				"renote",
+			);
+			const mentionWebhooksByUser = createWebhooksByUserMap(
+				activeWebhooks,
+				"mention",
+			);
+
 			if (Users.isLocalUser(user)) activeUsersChart.write(user);
 
 			// 未読通知を作成
@@ -1114,9 +1132,7 @@ const createNoteInternal = async (
 				});
 			}
 
-			const webhooks = await getActiveWebhooks().then((webhooks) =>
-				webhooks.filter((x) => x.userId === user.id && x.on.includes("note")),
-			);
+			const webhooks = noteWebhooksByUser.get(user.id) ?? [];
 
 			for (const webhook of webhooks) {
 				webhookDeliver(webhook, "note", {
@@ -1153,9 +1169,7 @@ const createNoteInternal = async (
 						});
 						publishMainStream(data.reply.userId, "reply", packedReply);
 
-						const webhooks = (await getActiveWebhooks()).filter(
-							(x) => x.userId === data.reply!.userId && x.on.includes("reply"),
-						);
+						const webhooks = replyWebhooksByUser.get(data.reply.userId) ?? [];
 						for (const webhook of webhooks) {
 							if (webhook.userId === user.id) continue;
 							webhookDeliver(webhook, "reply", {
@@ -1196,9 +1210,7 @@ const createNoteInternal = async (
 					});
 					publishMainStream(data.renote.userId, "renote", packedRenote);
 
-					const webhooks = (await getActiveWebhooks()).filter(
-						(x) => x.userId === data.renote!.userId && x.on.includes("renote"),
-					);
+					const webhooks = renoteWebhooksByUser.get(data.renote.userId) ?? [];
 					for (const webhook of webhooks) {
 						if (webhook.userId === user.id) continue;
 						webhookDeliver(webhook, "renote", {
@@ -1208,7 +1220,11 @@ const createNoteInternal = async (
 				}
 			}
 
-			void createMentionedEventsInBackground(localMentionTargets, note);
+			void createMentionedEventsInBackground(
+				localMentionTargets,
+				note,
+				mentionWebhooksByUser,
+			);
 
 			Promise.all(nmRelatedPromises).then(() => {
 				nm.deliver();
@@ -1556,20 +1572,12 @@ async function enqueueMentionNotifications(
 function createMentionedEventsInBackground(
 	localMentionedUsers: MinimumUser[],
 	note: Note,
+	mentionWebhooksByUser: WebhooksByUserMap,
 ): void {
 	if (localMentionedUsers.length === 0) return;
 
 	void (async () => {
 		const errors: unknown[] = [];
-		const webhooks = await getActiveWebhooks();
-		const mentionWebhooksByUser = new Map<MinimumUser["id"], typeof webhooks>();
-
-		for (const webhook of webhooks) {
-			if (!webhook.on.includes("mention")) continue;
-			const list = mentionWebhooksByUser.get(webhook.userId) ?? [];
-			list.push(webhook);
-			mentionWebhooksByUser.set(webhook.userId, list);
-		}
 
 		for (const u of localMentionedUsers) {
 			try {
@@ -1606,6 +1614,23 @@ function createMentionedEventsInBackground(
 			err,
 		});
 	});
+}
+
+function createWebhooksByUserMap(
+	webhooks: ActiveWebhook[],
+	event: "note" | "reply" | "renote" | "mention",
+): WebhooksByUserMap {
+	const webhooksByUser = new Map<MinimumUser["id"], ActiveWebhook[]>();
+
+	for (const webhook of webhooks) {
+		if (!webhook.on.includes(event)) continue;
+
+		const userWebhooks = webhooksByUser.get(webhook.userId) ?? [];
+		userWebhooks.push(webhook);
+		webhooksByUser.set(webhook.userId, userWebhooks);
+	}
+
+	return webhooksByUser;
 }
 
 function isNotePackAccessDeniedError(err: unknown): boolean {

@@ -1080,7 +1080,11 @@ export default async (
 			const nm = new NotificationManager(user, note);
 			const nmRelatedPromises = [];
 
-			await createMentionedEvents(mentionedUsers, note, nm);
+			const localMentionTargets = await enqueueMentionNotifications(
+				mentionedUsers,
+				note,
+				nm,
+			);
 
 			// If has in reply to note
 			if (data.reply) {
@@ -1156,6 +1160,8 @@ export default async (
 					}
 				}
 			}
+
+			void createMentionedEventsInBackground(localMentionTargets, note);
 
 			Promise.all(nmRelatedPromises).then(() => {
 				nm.deliver();
@@ -1415,64 +1421,94 @@ async function notifyToWatchersOfReplyee(
 	}
 }
 
-async function createMentionedEvents(
-        mentionedUsers: MinimumUser[],
-        note: Note,
-        nm: NotificationManager,
-) {
-        const localMentionedUsers = mentionedUsers.filter((u) => Users.isLocalUser(u));
-        if (localMentionedUsers.length === 0) return;
+async function enqueueMentionNotifications(
+	mentionedUsers: MinimumUser[],
+	note: Note,
+	nm: NotificationManager,
+): Promise<MinimumUser[]> {
+	const localMentionedUsers = mentionedUsers.filter((u) => Users.isLocalUser(u));
+	if (localMentionedUsers.length === 0) return [];
 
-        const targetThreadId = note.threadId || note.id;
+	const targetThreadId = note.threadId || note.id;
+	const mutedThreadUserIds = new Set<MinimumUser["id"]>();
+	const threadMutings = await NoteThreadMutings.findBy({
+		userId: In(localMentionedUsers.map((u) => u.id)),
+		threadId: targetThreadId,
+	});
 
-        const mutedThreadUserIds = new Set<MinimumUser["id"]>();
-        const threadMutings = await NoteThreadMutings.findBy({
-                userId: In(localMentionedUsers.map((u) => u.id)),
-                threadId: targetThreadId,
-        });
+	for (const muting of threadMutings) {
+		mutedThreadUserIds.add(muting.userId);
+	}
 
-        for (const muting of threadMutings) {
-                mutedThreadUserIds.add(muting.userId);
-        }
+	const mentionTargets = localMentionedUsers.filter(
+		(u) => !mutedThreadUserIds.has(u.id),
+	);
 
-        const webhooks = await getActiveWebhooks();
-        const mentionWebhooksByUser = new Map<MinimumUser["id"], typeof webhooks>();
-        for (const webhook of webhooks) {
-                if (!webhook.on.includes("mention")) continue;
-                const list = mentionWebhooksByUser.get(webhook.userId) ?? [];
-                list.push(webhook);
-                mentionWebhooksByUser.set(webhook.userId, list);
-        }
+	for (const u of mentionTargets) {
+		nm.push(u.id, "mention");
+	}
 
-        for (const u of localMentionedUsers) {
-                if (mutedThreadUserIds.has(u.id)) {
-                        continue;
-                }
+	return mentionTargets;
+}
 
-                // note with "specified" visibility might not be visible to mentioned users
-                try {
-                        const detailPackedNote = await Notes.pack(note, u, {
-                                detail: true,
-                        });
+function createMentionedEventsInBackground(
+	localMentionedUsers: MinimumUser[],
+	note: Note,
+): void {
+	if (localMentionedUsers.length === 0) return;
 
-                        publishMainStream(u.id, "mention", detailPackedNote);
+	void (async () => {
+		const errors: unknown[] = [];
+		const webhooks = await getActiveWebhooks();
+		const mentionWebhooksByUser = new Map<MinimumUser["id"], typeof webhooks>();
 
-                        const mentionWebhooks = mentionWebhooksByUser.get(u.id);
-                        if (mentionWebhooks) {
-                                for (const webhook of mentionWebhooks) {
-                                        webhookDeliver(webhook, "mention", {
-                                                note: detailPackedNote,
-                                        });
-                                }
-                        }
-                } catch (err) {
-                        if (err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24") continue;
-                        throw err;
-                }
+		for (const webhook of webhooks) {
+			if (!webhook.on.includes("mention")) continue;
+			const list = mentionWebhooksByUser.get(webhook.userId) ?? [];
+			list.push(webhook);
+			mentionWebhooksByUser.set(webhook.userId, list);
+		}
 
-                // Create notification
-                nm.push(u.id, "mention");
-        }
+		for (const u of localMentionedUsers) {
+			try {
+				const detailPackedNote = await Notes.pack(note, u, {
+					detail: true,
+				});
+
+				publishMainStream(u.id, "mention", detailPackedNote);
+
+				const mentionWebhooks = mentionWebhooksByUser.get(u.id);
+				if (mentionWebhooks) {
+					for (const webhook of mentionWebhooks) {
+						webhookDeliver(webhook, "mention", {
+							note: detailPackedNote,
+						});
+					}
+				}
+			} catch (err) {
+				if (isNotePackAccessDeniedError(err)) continue;
+				errors.push({ userId: u.id, err });
+			}
+		}
+
+		if (errors.length > 0) {
+			console.error("[notes/create] mention event errors", {
+				noteId: note.id,
+				errorCount: errors.length,
+				errors,
+			});
+		}
+	})().catch((err) => {
+		console.error("[notes/create] mention event background job failed", {
+			noteId: note.id,
+			err,
+		});
+	});
+}
+
+function isNotePackAccessDeniedError(err: unknown): boolean {
+	if (typeof err !== "object" || err === null || !("id" in err)) return false;
+	return err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24";
 }
 
 function saveReply(reply: Note, note: Note) {

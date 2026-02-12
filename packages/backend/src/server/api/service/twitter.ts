@@ -32,6 +32,40 @@ function compareOrigin(ctx: Koa.BaseContext): boolean {
 // Init router
 const router = new Router();
 
+function getRedisValue(key: string): Promise<string | null> {
+	return new Promise((resolve, reject) => {
+		redisClient.get(key, (err, value) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve(value);
+		});
+	});
+}
+
+function deleteRedisKey(key: string): Promise<void> {
+	return new Promise((resolve, reject) => {
+		redisClient.del(key, (err) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve();
+		});
+	});
+}
+
+function parseJsonSafely<T>(value: string): T | null {
+	try {
+		return JSON.parse(value) as T;
+	} catch {
+		return null;
+	}
+}
+
 router.get("/disconnect/twitter", async (ctx) => {
 	if (!compareOrigin(ctx)) {
 		ctx.throw(400, "invalid origin");
@@ -102,7 +136,7 @@ router.get("/connect/twitter", async (ctx) => {
 
 	const twAuth = await getTwAuth();
 	const twCtx = await twAuth!.begin();
-	redisClient.set(userToken, JSON.stringify(twCtx));
+	redisClient.set(userToken, JSON.stringify(twCtx), "EX", 600);
 	ctx.redirect(twCtx.url);
 });
 
@@ -112,7 +146,7 @@ router.get("/signin/twitter", async (ctx) => {
 
 	const sessid = uuid();
 
-	redisClient.set(sessid, JSON.stringify(twCtx));
+	redisClient.set(sessid, JSON.stringify(twCtx), "EX", 600);
 
 	ctx.cookies.set("signin_with_twitter_sid", sessid, {
 		path: "/",
@@ -136,13 +170,12 @@ router.get("/tw/cb", async (ctx) => {
 			return;
 		}
 
-		const get = new Promise<any>((res, rej) => {
-			redisClient.get(sessid, async (_, twCtx) => {
-				res(twCtx);
-			});
-		});
+		const twCtx = await getRedisValue(sessid);
 
-		const twCtx = await get;
+		if (!twCtx) {
+			ctx.throw(400, "invalid session");
+			return;
+		}
 
 		const verifier = ctx.query.oauth_verifier;
 		if (!verifier || typeof verifier !== "string") {
@@ -150,7 +183,16 @@ router.get("/tw/cb", async (ctx) => {
 			return;
 		}
 
-		const result = await twAuth!.done(JSON.parse(twCtx), verifier);
+		await deleteRedisKey(sessid);
+
+		const parsedTwCtx = parseJsonSafely<Record<string, unknown>>(twCtx);
+
+		if (!parsedTwCtx) {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		const result = await twAuth!.done(parsedTwCtx, verifier);
 
 		const link = await UserProfiles.createQueryBuilder()
 			.where("\"integrations\"->'twitter'->>'userId' = :id", {
@@ -180,15 +222,23 @@ router.get("/tw/cb", async (ctx) => {
 			return;
 		}
 
-		const get = new Promise<any>((res, rej) => {
-			redisClient.get(userToken, async (_, twCtx) => {
-				res(twCtx);
-			});
-		});
+		const twCtx = await getRedisValue(userToken);
 
-		const twCtx = await get;
+		if (!twCtx) {
+			ctx.throw(400, "invalid session");
+			return;
+		}
 
-		const result = await twAuth!.done(JSON.parse(twCtx), verifier);
+		await deleteRedisKey(userToken);
+
+		const parsedTwCtx = parseJsonSafely<Record<string, unknown>>(twCtx);
+
+		if (!parsedTwCtx) {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		const result = await twAuth!.done(parsedTwCtx, verifier);
 
 		const user = await Users.findOneByOrFail({
 			host: IsNull(),

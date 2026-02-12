@@ -26,6 +26,40 @@ function compareOrigin(ctx: Koa.BaseContext): boolean {
 	return normalizeUrl(referer) === normalizeUrl(config.url);
 }
 
+function getRedisValue(key: string): Promise<string | null> {
+	return new Promise((resolve, reject) => {
+		redisClient.get(key, (err, value) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve(value);
+		});
+	});
+}
+
+function deleteRedisKey(key: string): Promise<void> {
+	return new Promise((resolve, reject) => {
+		redisClient.del(key, (err) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve();
+		});
+	});
+}
+
+function parseJsonSafely<T>(value: string): T | null {
+	try {
+		return JSON.parse(value) as T;
+	} catch {
+		return null;
+	}
+}
+
 // Init router
 const router = new Router();
 
@@ -105,7 +139,7 @@ router.get("/connect/github", async (ctx) => {
 		state: uuid(),
 	};
 
-	redisClient.set(userToken, JSON.stringify(params));
+	redisClient.set(userToken, JSON.stringify(params), "EX", 600);
 
 	const oauth2 = await getOath2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
@@ -126,7 +160,7 @@ router.get("/signin/github", async (ctx) => {
 		httpOnly: true,
 	});
 
-	redisClient.set(sessid, JSON.stringify(params));
+	redisClient.set(sessid, JSON.stringify(params), "EX", 600);
 
 	const oauth2 = await getOath2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
@@ -152,16 +186,31 @@ router.get("/gh/cb", async (ctx) => {
 			return;
 		}
 
-		const { redirect_uri, state } = await new Promise<any>((res, rej) => {
-			redisClient.get(sessid, async (_, state) => {
-				res(JSON.parse(state));
-			});
-		});
+		const savedState = await getRedisValue(sessid);
+
+		if (!savedState) {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		const savedStateObject = parseJsonSafely<{
+			redirect_uri: string;
+			state: string;
+		}>(savedState);
+
+		if (!savedStateObject) {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		const { redirect_uri, state } = savedStateObject;
 
 		if (ctx.query.state !== state) {
 			ctx.throw(400, "invalid session");
 			return;
 		}
+
+		await deleteRedisKey(sessid);
 
 		const { accessToken } = await new Promise<any>((res, rej) =>
 			oauth2!.getOAuthAccessToken(
@@ -220,16 +269,31 @@ router.get("/gh/cb", async (ctx) => {
 			return;
 		}
 
-		const { redirect_uri, state } = await new Promise<any>((res, rej) => {
-			redisClient.get(userToken, async (_, state) => {
-				res(JSON.parse(state));
-			});
-		});
+		const savedState = await getRedisValue(userToken);
+
+		if (!savedState) {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		const savedStateObject = parseJsonSafely<{
+			redirect_uri: string;
+			state: string;
+		}>(savedState);
+
+		if (!savedStateObject) {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		const { redirect_uri, state } = savedStateObject;
 
 		if (ctx.query.state !== state) {
 			ctx.throw(400, "invalid session");
 			return;
 		}
+
+		await deleteRedisKey(userToken);
 
 		const { accessToken } = await new Promise<any>((res, rej) =>
 			oauth2!.getOAuthAccessToken(

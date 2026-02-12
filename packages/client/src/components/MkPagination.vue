@@ -255,11 +255,23 @@ const BACKGROUND_PAUSE_WAIT_SEC = 10;
 // https://qiita.com/mkataigi/items/0154aefd2223ce23398e
 let scrollObserver = $ref<IntersectionObserver>();
 
+const getObserverThreshold = (): number => {
+	const root = unref(scrollableElement);
+	const rootHeight =
+		root && root !== document.body
+			? root.clientHeight
+			: window.innerHeight;
+
+	return Math.max(
+		Math.min(0.02 / (Math.max(rootHeight, 1) / window.innerHeight), 0.01),
+		0.001
+	);
+};
+
 watch(
 	[
 		() => props.pagination.reversed,
 		$$(scrollableElement),
-		$$(scrollableElement?.scrollHeight),
 	],
 	() => {
 		if (scrollObserver) scrollObserver.disconnect();
@@ -273,13 +285,7 @@ watch(
 				rootMargin: props.pagination.reversed
 					? "-100% 0px 100% 0px"
 					: "100% 0px -100% 0px",
-				threshold: Math.min(
-					0.02 /
-						((unref(scrollableElement)?.scrollHeight ??
-							window.innerHeight) /
-							window.innerHeight),
-					0.01
-				),
+				threshold: getObserverThreshold(),
 			}
 		);
 	},

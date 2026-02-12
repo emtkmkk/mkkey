@@ -26,6 +26,29 @@ function createTokenHash(token: string): string {
 	return createHash("sha256").update(token).digest("hex");
 }
 
+function reviveCachedUserDates<T>(value: T): T {
+	if (value == null || typeof value !== "object") return value;
+
+	const user = value as Record<string, unknown>;
+	for (const key of [
+		"createdAt",
+		"updatedAt",
+		"lastFetchedAt",
+		"lastActiveDate",
+		"birthday",
+	] as const) {
+		const dateValue = user[key];
+		if (dateValue == null || dateValue instanceof Date) continue;
+
+		const parsed = new Date(dateValue as string | number);
+		if (!Number.isNaN(parsed.getTime())) {
+			user[key] = parsed;
+		}
+	}
+
+	return value;
+}
+
 async function cacheSetWithRedis<T>(
 	cache: Cache<T>,
 	redisKeyPrefix: string,
@@ -65,7 +88,7 @@ async function fetchThroughRedis<T>(
 	const redisKey = createRedisKey(redisKeyPrefix, key);
 	const redisCached = await redisClient.get(redisKey);
 	if (redisCached != null) {
-		const parsed = JSON.parse(redisCached) as T;
+		const parsed = reviveCachedUserDates(JSON.parse(redisCached) as T);
 		if (validator == null || validator(parsed)) {
 			cache.set(key, parsed);
 			return parsed;
@@ -139,7 +162,9 @@ export async function fetchAuthUserByTokenCache(
 	const redisKey = createRedisKey(AUTH_USER_BY_TOKEN_REDIS_KEY_PREFIX, tokenHash);
 	const redisCached = await redisClient.get(redisKey);
 	if (redisCached != null) {
-		const parsed = JSON.parse(redisCached) as CacheableLocalUser | null;
+		const parsed = reviveCachedUserDates(
+			JSON.parse(redisCached) as CacheableLocalUser | null,
+		);
 		authUserByTokenCache.set(tokenHash, parsed);
 		return parsed;
 	}

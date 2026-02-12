@@ -65,6 +65,7 @@ export type Source = {
 
 	deliverJobConcurrency?: number;
 	inboxJobConcurrency?: number;
+	federationGlobalConcurrency?: number;
 	deliverJobPerSec?: number;
 	inboxJobPerSec?: number;
 	deliverJobMaxAttempts?: number;

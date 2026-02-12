@@ -108,6 +108,14 @@ export default async (
 	note: Note,
 	reaction?: string,
 ) => {
+	note.visibleUserIds ??= [];
+	note.ccUserIds ??= [];
+	note.mentions ??= [];
+	note.emojis ??= [];
+	note.tags ??= [];
+	note.fileIds ??= [];
+	note.referenceIds ??= [];
+
 	// Check blocking
 	const blockPromise = (async () => {
 		if (note.userId !== user.id) {

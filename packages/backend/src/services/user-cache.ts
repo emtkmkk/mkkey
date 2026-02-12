@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type {
 	CacheableLocalUser,
 	CacheableUser,
@@ -13,11 +14,16 @@ const USER_CACHE_REDIS_TTL_SEC = 60;
 const USER_BY_ID_REDIS_KEY_PREFIX = "user-cache:user-by-id";
 const LOCAL_USER_BY_NATIVE_TOKEN_REDIS_KEY_PREFIX =
 	"user-cache:local-user-by-native-token";
+const AUTH_USER_BY_TOKEN_REDIS_KEY_PREFIX = "auth:userByToken";
 const LOCAL_USER_BY_ID_REDIS_KEY_PREFIX = "user-cache:local-user-by-id";
 const URI_PERSON_REDIS_KEY_PREFIX = "user-cache:uri-person";
 
 function createRedisKey(prefix: string, key: string | null): string {
 	return `${prefix}:${key ?? "__null__"}`;
+}
+
+function createTokenHash(token: string): string {
+	return createHash("sha256").update(token).digest("hex");
 }
 
 async function cacheSetWithRedis<T>(
@@ -78,6 +84,9 @@ export const userByIdCache = new Cache<CacheableUser>(LOCAL_MAP_TTL_MS);
 export const localUserByNativeTokenCache = new Cache<CacheableLocalUser | null>(
 	LOCAL_MAP_TTL_MS,
 );
+export const authUserByTokenCache = new Cache<CacheableLocalUser | null>(
+	LOCAL_MAP_TTL_MS,
+);
 export const localUserByIdCache = new Cache<CacheableLocalUser>(LOCAL_MAP_TTL_MS);
 export const uriPersonCache = new Cache<CacheableUser | null>(LOCAL_MAP_TTL_MS);
 
@@ -117,6 +126,38 @@ export async function fetchLocalUserByNativeTokenCache(
 	)) as CacheableLocalUser | null;
 }
 
+export async function fetchAuthUserByTokenCache(
+	token: string,
+	fetcher: () => Promise<CacheableLocalUser | null>,
+): Promise<CacheableLocalUser | null> {
+	const tokenHash = createTokenHash(token);
+	const localCached = authUserByTokenCache.get(tokenHash);
+	if (localCached !== undefined) {
+		return localCached;
+	}
+
+	const redisKey = createRedisKey(AUTH_USER_BY_TOKEN_REDIS_KEY_PREFIX, tokenHash);
+	const redisCached = await redisClient.get(redisKey);
+	if (redisCached != null) {
+		const parsed = JSON.parse(redisCached) as CacheableLocalUser | null;
+		authUserByTokenCache.set(tokenHash, parsed);
+		return parsed;
+	}
+
+	const fetched = await fetcher();
+	if (fetched !== undefined) {
+		authUserByTokenCache.set(tokenHash, fetched);
+		await redisClient.set(
+			redisKey,
+			JSON.stringify(fetched),
+			"EX",
+			USER_CACHE_REDIS_TTL_SEC,
+		);
+	}
+
+	return fetched;
+}
+
 export async function fetchLocalUserByIdCache(
 	id: string,
 	fetcher: () => Promise<CacheableLocalUser>,
@@ -150,12 +191,28 @@ subscriber.on("message", async (_, data) => {
 			case "localUserUpdated": {
 				await cacheDeleteWithRedis(userByIdCache, USER_BY_ID_REDIS_KEY_PREFIX, body.id);
 				await cacheDeleteWithRedis(localUserByIdCache, LOCAL_USER_BY_ID_REDIS_KEY_PREFIX, body.id);
+				const localUser = (await Users.findOneBy({ id: body.id })) as ILocalUser | null;
+				if (localUser?.token) {
+					const tokenHash = createTokenHash(localUser.token);
+					authUserByTokenCache.delete(tokenHash);
+					await redisClient.del(
+						createRedisKey(AUTH_USER_BY_TOKEN_REDIS_KEY_PREFIX, tokenHash),
+					);
+				}
 				for (const [k, v] of localUserByNativeTokenCache.cache.entries()) {
 					if (v.value?.id === body.id) {
 						await cacheDeleteWithRedis(
 							localUserByNativeTokenCache,
 							LOCAL_USER_BY_NATIVE_TOKEN_REDIS_KEY_PREFIX,
 							k,
+						);
+					}
+				}
+				for (const [k, v] of authUserByTokenCache.cache.entries()) {
+					if (v.value?.id === body.id) {
+						authUserByTokenCache.delete(k);
+						await redisClient.del(
+							createRedisKey(AUTH_USER_BY_TOKEN_REDIS_KEY_PREFIX, k),
 						);
 					}
 				}
@@ -192,6 +249,16 @@ subscriber.on("message", async (_, data) => {
 				const user = (await Users.findOneByOrFail({
 					id: body.id,
 				})) as ILocalUser;
+				const oldTokenHash = createTokenHash(body.oldToken);
+				authUserByTokenCache.delete(oldTokenHash);
+				await redisClient.del(
+					createRedisKey(AUTH_USER_BY_TOKEN_REDIS_KEY_PREFIX, oldTokenHash),
+				);
+				const newTokenHash = createTokenHash(body.newToken);
+				authUserByTokenCache.delete(newTokenHash);
+				await redisClient.del(
+					createRedisKey(AUTH_USER_BY_TOKEN_REDIS_KEY_PREFIX, newTokenHash),
+				);
 				await cacheDeleteWithRedis(
 					localUserByNativeTokenCache,
 					LOCAL_USER_BY_NATIVE_TOKEN_REDIS_KEY_PREFIX,

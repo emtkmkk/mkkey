@@ -2,7 +2,11 @@ import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderFollow from "@/remote/activitypub/renderer/follow.js";
 import renderReject from "@/remote/activitypub/renderer/reject.js";
 import { deliver, webhookDeliver } from "@/queue/index.js";
-import { publishMainStream, publishUserEvent } from "@/services/stream.js";
+import {
+	publishInternalEvent,
+	publishMainStream,
+	publishUserEvent,
+} from "@/services/stream.js";
 import type { ILocalUser, IRemoteUser } from "@/models/entities/user.js";
 import { User } from "@/models/entities/user.js";
 import { Users, FollowRequests, Followings } from "@/models/index.js";
@@ -92,6 +96,12 @@ async function removeFollow(followee: Both, follower: Both) {
 
 	await Followings.delete(following.id);
 	decrementFollowing(follower, followee);
+
+	if (Users.isLocalUser(follower)) {
+		publishInternalEvent("notePackFollowingUpdated", {
+			userId: follower.id,
+		});
+	}
 }
 
 /**

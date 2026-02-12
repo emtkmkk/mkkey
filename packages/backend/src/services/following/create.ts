@@ -1,4 +1,8 @@
-import { publishMainStream, publishUserEvent } from "@/services/stream.js";
+import {
+	publishInternalEvent,
+	publishMainStream,
+	publishUserEvent,
+} from "@/services/stream.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderFollow from "@/remote/activitypub/renderer/follow.js";
 import renderAccept from "@/remote/activitypub/renderer/accept.js";
@@ -143,6 +147,9 @@ export async function insertFollowingDoc(
 
 	// Publish follow event
 	if (Users.isLocalUser(follower)) {
+		publishInternalEvent("notePackFollowingUpdated", {
+			userId: follower.id,
+		});
 		Users.pack(followee.id, follower, {
 			detail: true,
 		}).then(async (packed) => {

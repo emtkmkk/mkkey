@@ -1,4 +1,4 @@
-import { publishNoteStream } from "@/services/stream.js";
+import { publishInternalEvent, publishNoteStream } from "@/services/stream.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import {
@@ -336,6 +336,11 @@ export default async (
 			host: decodedReaction.host ?? IsNull(),
 		},
 		select: ["name", "host", "originalUrl", "publicUrl", "license"],
+	});
+
+	publishInternalEvent("notePackReactionUpdated", {
+		userId: user.id,
+		noteId: note.id,
 	});
 
 	publishNoteStream(note.id, "reacted", {

@@ -3,6 +3,7 @@ import { genId } from "@/misc/gen-id.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
 import { getNote } from "../../../common/getters.js";
+import { publishInternalEvent } from "@/services/stream.js";
 
 export const meta = {
 	tags: ["notes", "favorites"],
@@ -58,5 +59,10 @@ export default define(meta, paramDef, async (ps, user) => {
 		createdAt: new Date(),
 		noteId: note.id,
 		userId: user.id,
+	});
+
+	publishInternalEvent("notePackFavoriteUpdated", {
+		userId: user.id,
+		noteId: note.id,
 	});
 });

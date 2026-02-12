@@ -2,6 +2,7 @@ import createReaction from "@/services/note/reaction/create.js";
 import define from "../../../define.js";
 import { getNote } from "../../../common/getters.js";
 import { ApiError } from "../../../error.js";
+import { apiLogger } from "../../../logger.js";
 
 export const meta = {
 	tags: ["reactions", "notes"],
@@ -66,10 +67,34 @@ export default define(meta, paramDef, async (ps, user) => {
 			throw new ApiError(meta.errors.alreadyReacted);
 		if (e.id === "e70412a4-7197-4726-8e74-f3e0deb92aa7")
 			throw new ApiError(meta.errors.youHaveBeenBlocked);
+
+		apiLogger.error("notes/reactions/create failed", {
+			ep: "notes/reactions/create",
+			ps: {
+				noteId: ps.noteId,
+				reaction: ps.reaction,
+			},
+			userId: user.id,
+			noteId: note.id,
+			e: {
+				id: e?.id,
+				name: e?.name,
+				message: e?.message,
+				stack: e?.stack,
+			},
+		});
+
 		throw new ApiError({
 			message: e?.message ? e.message : e,
 			code: "ERROR",
 			id: "7c2bfc07-480f-fd9c-93d1-16c739306280",
+		}, {
+			e: {
+				id: e?.id,
+				name: e?.name,
+				message: e?.message,
+				stack: e?.stack,
+			},
 		});
 	});
 	return;

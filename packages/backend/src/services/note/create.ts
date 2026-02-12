@@ -1013,12 +1013,12 @@ export default async (
 			saveReply(data.reply, note);
 		}
 
+		const sameRenoteCount = data.renote
+			? await countSameRenotes(user.id, data.renote.id, note.id)
+			: null;
+
 		// この投稿を除く指定したユーザーによる指定したノートのリノートが存在しないとき
-		if (
-			data.renote &&
-			!user.isBot &&
-			(await countSameRenotes(user.id, data.renote.id, note.id)) === 0
-		) {
+		if (data.renote && !user.isBot && sameRenoteCount === 0) {
 			incRenoteCount(data.renote, user.host);
 		}
 
@@ -1192,12 +1192,7 @@ export default async (
 					);
 					await deliverToInboxes(user, noteActivity, noteInboxes);
 
-					if (data.renote) {
-						const sameRenoteCount = await countSameRenotes(
-							user.id,
-							data.renote.id,
-							note.id,
-						);
+					if (data.renote && sameRenoteCount !== null) {
 						console.log(
 							`[reaction-resend] renote detected: countSameRenotes=${sameRenoteCount} (note=${note.id}, renote=${data.renote.id})`,
 						);

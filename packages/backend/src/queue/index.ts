@@ -14,6 +14,7 @@ import processObjectStorage from "./processors/object-storage/index.js";
 import processSystemQueue from "./processors/system/index.js";
 import processWebhookDeliver from "./processors/webhook-deliver.js";
 import processBackground from "./processors/background/index.js";
+import processNoteApDeliver from "./processors/note-ap-deliver.js";
 import { endedPollNotification } from "./processors/ended-poll-notification.js";
 import { queueLogger } from "./logger.js";
 import { getJobInfo } from "./get-job-info.js";
@@ -26,8 +27,9 @@ import {
 	endedPollNotificationQueue,
 	webhookDeliverQueue,
 	backgroundQueue,
+	noteApDeliverQueue,
 } from "./queues.js";
-import type { ThinUser } from "./types.js";
+import type { NoteApDeliverJobData, ThinUser } from "./types.js";
 
 function renderError(e: Error): any {
 	return {
@@ -43,6 +45,7 @@ const webhookLogger = queueLogger.createSubLogger("webhook");
 const inboxLogger = queueLogger.createSubLogger("inbox");
 const dbLogger = queueLogger.createSubLogger("db");
 const objectStorageLogger = queueLogger.createSubLogger("objectStorage");
+const noteApDeliverLogger = queueLogger.createSubLogger("noteApDeliver");
 
 systemQueue
 	.on("waiting", (jobId) => systemLogger.debug(`waiting id=${jobId}`))
@@ -155,6 +158,24 @@ webhookDeliverQueue
 	)
 	.on("stalled", (job) =>
 		webhookLogger.warn(`stalled ${getJobInfo(job)} to=${job.data.to}`),
+	);
+
+noteApDeliverQueue
+	.on("waiting", (jobId) => noteApDeliverLogger.debug(`waiting id=${jobId}`))
+	.on("active", (job) =>
+		noteApDeliverLogger.debug(`active ${getJobInfo(job, true)}`),
+	)
+	.on("completed", (job, result) =>
+		noteApDeliverLogger.debug(`completed(${result}) ${getJobInfo(job, true)}`),
+	)
+	.on("failed", (job, err) =>
+		noteApDeliverLogger.warn(`failed(${err}) ${getJobInfo(job)}`),
+	)
+	.on("error", (job: any, err: Error) =>
+		noteApDeliverLogger.error(`error ${err}`, { job, e: renderError(err) }),
+	)
+	.on("stalled", (job) =>
+		noteApDeliverLogger.warn(`stalled ${getJobInfo(job)}`),
 	);
 
 export function deliver(
@@ -447,6 +468,18 @@ export function createIndexAllNotesJob(data = {}) {
 	});
 }
 
+export function createNoteApDeliverJob(data: NoteApDeliverJobData) {
+	return noteApDeliverQueue.add(data, {
+		attempts: config.deliverJobMaxAttempts || 12,
+		timeout: 1 * 60 * 1000,
+		backoff: {
+			type: "apBackoff",
+		},
+		removeOnComplete: true,
+		removeOnFail: true,
+	});
+}
+
 export function webhookDeliver(
 	webhook: Webhook,
 	type: typeof webhookEventTypes[number],
@@ -481,6 +514,7 @@ export default function () {
 	inboxQueue.process(config.inboxJobConcurrency || 16, processInbox);
 	endedPollNotificationQueue.process(endedPollNotification);
 	webhookDeliverQueue.process(64, processWebhookDeliver);
+	noteApDeliverQueue.process(config.deliverJobConcurrency || 128, processNoteApDeliver);
 	processDb(dbQueue);
 	processObjectStorage(objectStorageQueue);
 	processBackground(backgroundQueue);

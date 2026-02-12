@@ -1006,13 +1006,14 @@ export default async (
 			saveReply(data.reply, note);
 		}
 
+		let sameRenoteCount: number | null = null;
+
 		// この投稿を除く指定したユーザーによる指定したノートのリノートが存在しないとき
-		if (
-			data.renote &&
-			!user.isBot &&
-			(await countSameRenotes(user.id, data.renote.id, note.id)) === 0
-		) {
-			incRenoteCount(data.renote, user.host);
+		if (data.renote && !user.isBot) {
+			sameRenoteCount = await countSameRenotes(user.id, data.renote.id, note.id);
+			if (sameRenoteCount === 0) {
+				incRenoteCount(data.renote, user.host);
+			}
 		}
 
 		if (data.poll?.expiresAt) {
@@ -1162,7 +1163,11 @@ export default async (
 
 			//#region AP deliver
 			if (Users.isLocalUser(user) && !dontFederateInitially) {
-				createNoteApDeliverJob({ noteId: note.id, queuedAt: Date.now() });
+				createNoteApDeliverJob({
+					noteId: note.id,
+					queuedAt: Date.now(),
+					sameRenoteCount,
+				});
 			}
 			//#endregion
 		}

@@ -74,6 +74,7 @@ export type WebhookDeliverJobData = {
 export type NoteApDeliverJobData = {
 	noteId: Note["id"];
 	queuedAt: number;
+	sameRenoteCount?: number | null;
 };
 
 export type ThinUser = {

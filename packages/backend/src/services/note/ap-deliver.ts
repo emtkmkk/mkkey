@@ -44,11 +44,13 @@ export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 	await deliverToInboxes(note.user, noteActivity, noteInboxes);
 
 	if (note.renote) {
-		const sameRenoteCount = await countSameRenotes(
-			note.user.id,
-			note.renote.id,
-			note.id,
-		);
+		const sameRenoteCount =
+			data.sameRenoteCount ??
+			(await countSameRenotes(
+				note.user.id,
+				note.renote.id,
+				note.id,
+			));
 		console.log(
 			`[reaction-resend] renote detected: countSameRenotes=${sameRenoteCount} (note=${note.id}, renote=${note.renote.id})`,
 		);

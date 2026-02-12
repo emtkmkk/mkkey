@@ -26,6 +26,15 @@ function createTokenHash(token: string): string {
 	return createHash("sha256").update(token).digest("hex");
 }
 
+
+function isValidCacheableLocalUser(
+	value: CacheableLocalUser | null,
+): value is CacheableLocalUser | null {
+	if (value == null) return true;
+
+	return Array.isArray((value as Partial<CacheableLocalUser>).emojis);
+}
+
 function reviveCachedUserDates<T>(value: T): T {
 	if (value == null || typeof value !== "object") return value;
 
@@ -156,7 +165,11 @@ export async function fetchAuthUserByTokenCache(
 	const tokenHash = createTokenHash(token);
 	const localCached = authUserByTokenCache.get(tokenHash);
 	if (localCached !== undefined) {
-		return localCached;
+		if (isValidCacheableLocalUser(localCached)) {
+			return localCached;
+		}
+
+		authUserByTokenCache.delete(tokenHash);
 	}
 
 	const redisKey = createRedisKey(AUTH_USER_BY_TOKEN_REDIS_KEY_PREFIX, tokenHash);
@@ -165,8 +178,13 @@ export async function fetchAuthUserByTokenCache(
 		const parsed = reviveCachedUserDates(
 			JSON.parse(redisCached) as CacheableLocalUser | null,
 		);
-		authUserByTokenCache.set(tokenHash, parsed);
-		return parsed;
+
+		if (isValidCacheableLocalUser(parsed)) {
+			authUserByTokenCache.set(tokenHash, parsed);
+			return parsed;
+		}
+
+		await redisClient.del(redisKey);
 	}
 
 	const fetched = await fetcher();

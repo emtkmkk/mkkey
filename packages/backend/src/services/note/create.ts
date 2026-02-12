@@ -74,50 +74,6 @@ import renderTombstone from "@/remote/activitypub/renderer/tombstone.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { StatusError } from "@/misc/fetch.js";
 
-
-const DEFAULT_FEDERATION_GLOBAL_CONCURRENCY = 2;
-
-class FederationGlobalConcurrencyLimiter {
-	private active = 0;
-	private readonly queue: Array<() => void> = [];
-
-	public getQueueDepth() {
-		return this.queue.length;
-	}
-
-	public async acquire(limit: number): Promise<() => void> {
-		if (this.active < limit && this.queue.length === 0) {
-			this.active++;
-			return () => this.release(limit);
-		}
-
-		await new Promise<void>((resolve) => {
-			this.queue.push(resolve);
-		});
-
-		this.active++;
-		return () => this.release(limit);
-	}
-
-	private release(limit: number) {
-		this.active = Math.max(0, this.active - 1);
-		this.drain(limit);
-	}
-
-	private drain(limit: number) {
-		while (this.active < limit && this.queue.length > 0) {
-			const next = this.queue.shift();
-			if (next) next();
-		}
-	}
-}
-
-const federationNoteCreateLimiter = new FederationGlobalConcurrencyLimiter();
-
-function getFederationGlobalConcurrencyLimit() {
-	return Math.max(1, config.federationGlobalConcurrency ?? DEFAULT_FEDERATION_GLOBAL_CONCURRENCY);
-}
-
 const mutedWordsCache = new Cache<
 	{ userId: UserProfile["userId"]; mutedWords: UserProfile["mutedWords"] }[]
 >(1000 * 60 * 5);
@@ -223,7 +179,7 @@ type Option = {
 	isFirstNote?: boolean | null;
 };
 
-const createNoteInternal = async (
+export default async (
 	user: {
 		id: User["id"];
 		username: User["username"];
@@ -1307,61 +1263,6 @@ function incRenoteCount(renote: Note, userHost?: string) {
 		.where("id = :id", { id: renote.id })
 		.execute();
 }
-
-
-
-export default async (
-	user: {
-		id: User["id"];
-		username: User["username"];
-		name: User["name"];
-		host: User["host"];
-		isSilenced: User["isSilenced"];
-		createdAt: User["createdAt"];
-		emojis: User["emojis"];
-		isAdmin: User["isAdmin"];
-		isModerator: User["isModerator"];
-		isBot: User["isBot"];
-		avatarId: User["avatarId"];
-		canInvite: User["canInvite"];
-		notesCount: User["notesCount"];
-		onlineStatus: User["onlineStatus"];
-		maxRankPoint: User["maxRankPoint"];
-		isPublicLikeList: User["isPublicLikeList"];
-		blockPostPublic: User["blockPostPublic"];
-		blockPostHome: User["blockPostHome"];
-		blockPostNotLocal: User["blockPostNotLocal"];
-		blockPostNotLocalPublic: User["blockPostNotLocalPublic"];
-	},
-	data: Option,
-	silent = false,
-) => {
-	if (user.host == null) {
-		return await createNoteInternal(user, data, silent);
-	}
-
-	const concurrencyLimit = getFederationGlobalConcurrencyLimit();
-	const queuedAt = Date.now();
-	const queueDepthAtWaitStart = federationNoteCreateLimiter.getQueueDepth();
-	console.log(
-		`[note-deliver-metric] federation_note_create_wait_start wait_ms=0 concurrency_limit=${concurrencyLimit} queue_depth=${queueDepthAtWaitStart} user_id=${user.id} user_host=${user.host}`,
-	);
-
-	const release = await federationNoteCreateLimiter.acquire(concurrencyLimit);
-	const waitMs = Date.now() - queuedAt;
-	console.log(
-		`[note-deliver-metric] federation_note_create_wait_end wait_ms=${waitMs} concurrency_limit=${concurrencyLimit} queue_depth=${federationNoteCreateLimiter.getQueueDepth()} user_id=${user.id} user_host=${user.host}`,
-	);
-	console.log(
-		`[note-deliver-metric] federation_note_create_execute_start wait_ms=${waitMs} concurrency_limit=${concurrencyLimit} queue_depth=${federationNoteCreateLimiter.getQueueDepth()} user_id=${user.id} user_host=${user.host}`,
-	);
-
-	try {
-		return await createNoteInternal(user, data, silent);
-	} finally {
-		release();
-	}
-};
 
 async function insertNote(
 	user: { id: User["id"]; host: User["host"] },

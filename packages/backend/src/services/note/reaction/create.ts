@@ -29,7 +29,10 @@ import { IdentifiableError } from "@/misc/identifiable-error.js";
 import { webhookDeliver } from "@/queue/index.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { MAX_REACTION_PER_ACCOUNT } from "@/const.js";
-import { Cache } from "@/misc/cache.js";
+import {
+	getCachedNormalizedReaction,
+	setCachedNormalizedReaction,
+} from "@/misc/reaction-normalize-cache.js";
 import type { UserProfile } from "@/models/entities/user-profile.js";
 import { checkReactionMute } from "@/misc/check-word-mute.js";
 import { buildReactionDeliverManager } from "./deliver.js";
@@ -101,14 +104,30 @@ export default async (
 	// Await all initial checks concurrently
 	await Promise.all([blockPromise, visibilityPromise, relationPromise, noteDeletedCheckPromise]);
 
-	// TODO: cache
-	try {
-		reaction = await toDbReaction(reaction, user.host, note.userHost);
-	} catch (err) {
-		throw new IdentifiableError(
-			"770a3ede-67d2-fc9d-f2e2-6163ba0443af",
-			"指定された絵文字が存在しません。",
-		);
+	const rawReaction = reaction;
+	const cachedReaction = await getCachedNormalizedReaction(
+		user.host,
+		note.userHost,
+		rawReaction,
+	);
+
+	if (cachedReaction != null) {
+		reaction = cachedReaction;
+	} else {
+		try {
+			reaction = await toDbReaction(rawReaction, user.host, note.userHost);
+			await setCachedNormalizedReaction(
+				user.host,
+				note.userHost,
+				rawReaction,
+				reaction,
+			);
+		} catch (err) {
+			throw new IdentifiableError(
+				"770a3ede-67d2-fc9d-f2e2-6163ba0443af",
+				"指定された絵文字が存在しません。",
+			);
+		}
 	}
 
 	let isMutedReaction: boolean | { muted: boolean; reject?: boolean | undefined } = false;

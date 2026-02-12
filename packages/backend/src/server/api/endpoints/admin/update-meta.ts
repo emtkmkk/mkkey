@@ -3,6 +3,7 @@ import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { DB_MAX_NOTE_TEXT_LENGTH } from "@/misc/hard-limits.js";
 import { db } from "@/db/postgre.js";
 import define from "../../define.js";
+import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 
 export const meta = {
 	tags: ["admin"],
@@ -176,6 +177,7 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, me) => {
 	const set = {} as Partial<Meta>;
+	let shouldBumpReactionNormalizeCacheVersion = false;
 
 	if (typeof ps.disableRegistration === "boolean") {
 		set.disableRegistration = ps.disableRegistration;
@@ -195,6 +197,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (typeof ps.defaultReaction === "string") {
 		set.defaultReaction = ps.defaultReaction;
+		shouldBumpReactionNormalizeCacheVersion = true;
 	}
 
 	if (Array.isArray(ps.pinnedUsers)) {
@@ -574,4 +577,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	});
 
 	insertModerationLog(me, "updateMeta");
+	if (shouldBumpReactionNormalizeCacheVersion) {
+		await bumpReactionNormalizeCacheVersion();
+	}
 });

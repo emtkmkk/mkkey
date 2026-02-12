@@ -4,6 +4,7 @@ import { Emojis } from "@/models/index.js";
 import { ApiError } from "../../../error.js";
 import { publishBroadcastStream } from "@/services/stream.js";
 import { db } from "@/db/postgre.js";
+import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 
 export const meta = {
 	tags: ["admin"],
@@ -104,4 +105,5 @@ export default define(meta, paramDef, async (ps) => {
 	}
 
 	await db.queryResultCache!.remove(["meta_emojis"]);
+	await bumpReactionNormalizeCacheVersion();
 });

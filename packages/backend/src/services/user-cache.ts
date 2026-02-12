@@ -9,7 +9,7 @@ import { Cache } from "@/misc/cache.js";
 import { redisClient, subscriber } from "@/db/redis.js";
 
 const LOCAL_MAP_TTL_MS = 30 * 1000;
-const USER_CACHE_REDIS_TTL_SEC = 60;
+const USER_CACHE_REDIS_TTL_SEC = 120;
 
 const USER_BY_ID_REDIS_KEY_PREFIX = "user-cache:user-by-id";
 const LOCAL_USER_BY_NATIVE_TOKEN_REDIS_KEY_PREFIX =

@@ -102,7 +102,7 @@ router.get("/connect/discord", async (ctx) => {
 		response_type: "code",
 	};
 
-	redisClient.set(userToken, JSON.stringify(params));
+	redisClient.set(userToken, JSON.stringify(params), "EX", 600);
 
 	const oauth2 = await getOAuth2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
@@ -124,7 +124,7 @@ router.get("/signin/discord", async (ctx) => {
 		httpOnly: true,
 	});
 
-	redisClient.set(sessid, JSON.stringify(params));
+	redisClient.set(sessid, JSON.stringify(params), "EX", 600);
 
 	const oauth2 = await getOAuth2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));

@@ -7,6 +7,7 @@ import type {
 	ObjectStorageJobData,
 	EndedPollNotificationJobData,
 	WebhookDeliverJobData,
+	NoteApDeliverJobData,
 } from "./types.js";
 
 export const systemQueue = initializeQueue<Record<string, unknown>>("system");
@@ -28,6 +29,9 @@ export const webhookDeliverQueue = initializeQueue<WebhookDeliverJobData>(
 	32,
 );
 export const backgroundQueue = initializeQueue<Record<string, unknown>>("bg");
+export const noteApDeliverQueue = initializeQueue<NoteApDeliverJobData>(
+	"noteApDeliver",
+);
 
 export const queues = [
 	systemQueue,
@@ -38,4 +42,5 @@ export const queues = [
 	objectStorageQueue,
 	webhookDeliverQueue,
 	backgroundQueue,
+	noteApDeliverQueue,
 ];

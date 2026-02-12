@@ -7,13 +7,8 @@ import {
 	publishNoteStream,
 } from "@/services/stream.js";
 import DeliverManager, {
-	deliverToInboxes,
 	deliverToUser,
 } from "@/remote/activitypub/deliver-manager.js";
-import renderNote from "@/remote/activitypub/renderer/note.js";
-import renderCreate from "@/remote/activitypub/renderer/create.js";
-import renderAnnounce from "@/remote/activitypub/renderer/announce.js";
-import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import { resolveUser } from "@/remote/resolve-user.js";
 import config from "@/config/index.js";
@@ -32,7 +27,7 @@ import {
         Users,
         NoteWatchings,
 	Notes,
-	NoteReactions,
+
 	Instances,
 	UserProfiles,
 	Antennas,
@@ -42,7 +37,7 @@ import {
 	ChannelFollowings,
 	Blockings,
 	NoteThreadMutings,
-	Emojis,
+
 } from "@/models/index.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { App } from "@/models/entities/app.js";
@@ -62,14 +57,12 @@ import { isDuplicateKeyValueError } from "@/misc/is-duplicate-key-value-error.js
 import { checkHitAntenna } from "@/misc/check-hit-antenna.js";
 import { getWordHardMute } from "@/misc/check-word-mute.js";
 import { addNoteToAntenna } from "../add-note-to-antenna.js";
-import { countSameRenotes } from "@/misc/count-same-renotes.js";
-import { deliverToRelays } from "../relay.js";
 import { isIncludeNgWordIsNote } from "@/misc/is-include-ng-word.js";
 import type { Channel } from "@/models/entities/channel.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import { getAntennas } from "@/misc/antenna-cache.js";
 import { endedPollNotificationQueue } from "@/queue/queues.js";
-import { webhookDeliver } from "@/queue/index.js";
+import { createNoteApDeliverJob, webhookDeliver } from "@/queue/index.js";
 import { Cache } from "@/misc/cache.js";
 import type { UserProfile } from "@/models/entities/user-profile.js";
 import { db } from "@/db/postgre.js";
@@ -79,9 +72,6 @@ import renderDelete from "@/remote/activitypub/renderer/delete.js";
 import renderTombstone from "@/remote/activitypub/renderer/tombstone.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { StatusError } from "@/misc/fetch.js";
-import { decodeReaction, resolveApReaction } from "@/misc/reaction-lib.js";
-import { buildReactionDeliverManager } from "@/services/note/reaction/deliver.js";
-import type { NoteReaction } from "@/models/entities/note-reaction.js";
 
 const mutedWordsCache = new Cache<
 	{ userId: UserProfile["userId"]; mutedWords: UserProfile["mutedWords"] }[]
@@ -219,6 +209,8 @@ export default async (
 ) =>
 	// rome-ignore lint/suspicious/noAsyncPromiseExecutor: FIXME
 	new Promise<Note>(async (res, rej) => {
+		const apiStartedAt = Date.now();
+
 		// 最初に投稿時刻を確定させる
 		if (data.createdAt == null) data.createdAt = new Date();
 
@@ -919,6 +911,7 @@ export default async (
 		}
 
 		if (firstVisibility != note.visibility) console.log(`${note.id}:可視性変更 ${firstVisibility} -> ${note.visibility}`);
+		console.log(`[note-deliver-metric] api_response_ms=${Date.now() - apiStartedAt} note=${note.id}`);
 
 		res(note);
 
@@ -1013,13 +1006,14 @@ export default async (
 			saveReply(data.reply, note);
 		}
 
-		const sameRenoteCount = data.renote
-			? await countSameRenotes(user.id, data.renote.id, note.id)
-			: null;
+		let sameRenoteCount: number | null = null;
 
 		// この投稿を除く指定したユーザーによる指定したノートのリノートが存在しないとき
-		if (data.renote && !user.isBot && sameRenoteCount === 0) {
-			incRenoteCount(data.renote, user.host);
+		if (data.renote && !user.isBot) {
+			sameRenoteCount = await countSameRenotes(user.id, data.renote.id, note.id);
+			if (sameRenoteCount === 0) {
+				incRenoteCount(data.renote, user.host);
+			}
 		}
 
 		if (data.poll?.expiresAt) {
@@ -1175,48 +1169,11 @@ export default async (
 
 			//#region AP deliver
 			if (Users.isLocalUser(user) && !dontFederateInitially) {
-				(async () => {
-					const noteActivity = await renderNoteOrRenoteActivity(data, note);
-					if (!noteActivity) {
-						console.log(
-							`[reaction-resend] skip: noteActivity is null (note=${note.id})`,
-						);
-						return;
-					}
-
-					const dm = new DeliverManager(user, noteActivity);
-					await addNoteActivityDeliveryRecipes(dm, {
-						data,
-						note,
-						mentionedUsers,
-						user,
-					});
-
-					const noteInboxes = await dm.collectInboxes();
-					console.log(
-						`[reaction-resend] noteInboxes collected: ${noteInboxes.size} (note=${note.id})`,
-					);
-					await deliverToInboxes(user, noteActivity, noteInboxes);
-
-					if (data.renote && sameRenoteCount !== null) {
-						console.log(
-							`[reaction-resend] renote detected: countSameRenotes=${sameRenoteCount} (note=${note.id}, renote=${data.renote.id})`,
-						);
-						if (sameRenoteCount === 0) {
-							await delayReactionResend();
-							await resendLocalReactionsForRenote(data.renote, noteInboxes);
-						} else {
-							console.log(
-								`[reaction-resend] skip: countSameRenotes is not zero (note=${note.id}, renote=${data.renote.id})`,
-							);
-						}
-					}
-
-					//リレーに配送
-					if (["public"].includes(note.visibility)) {
-						deliverToRelays(user, noteActivity);
-					}
-				})();
+				createNoteApDeliverJob({
+					noteId: note.id,
+					queuedAt: Date.now(),
+					sameRenoteCount,
+				});
 			}
 			//#endregion
 		}
@@ -1275,194 +1232,6 @@ export async function appendNoteVisibleUser(
 	// ストリームに流す
 	const noteObj = await Notes.pack(note, null);
 	publishNotesStream(noteObj);
-}
-
-async function addNoteActivityDeliveryRecipes(
-	dm: DeliverManager,
-	params: {
-		data: Option;
-		note: Note;
-		mentionedUsers: MinimumUser[];
-		user: { id: User["id"]; host: User["host"] };
-	},
-) {
-	const { data, note, mentionedUsers, user } = params;
-
-	// メンションされたリモートユーザーに配送
-	for (const u of mentionedUsers.filter((u) => Users.isRemoteUser(u))) {
-		dm.addDirectRecipe(u as IRemoteUser);
-	}
-
-	// 投稿がリプライかつ投稿者がローカルユーザーかつリプライ先の投稿の投稿者がリモートユーザーなら配送
-	if (data.reply && data.reply.userHost !== null) {
-		const u = await Users.findOneBy({ id: data.reply.userId });
-		if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
-	}
-
-	// 投稿がRenoteかつ投稿者がローカルユーザーかつRenote元の投稿の投稿者がリモートユーザーなら配送
-	if (data.renote && data.renote.userHost !== null) {
-		const u = await Users.findOneBy({ id: data.renote.userId });
-		if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
-	}
-
-	// フォロワーに配送
-	if (["public", "home", "followers"].includes(note.visibility)) {
-		if (data.reply && data.reply.userId === user.id && data.reply.replyId) {
-			// 自己リプライでリプライのリプライがある場合
-			// リプライのリプライが自分ではない場合
-			if (data.reply.replyUserId !== user.id && data.reply.replyUserHost === null) {
-				console.log(`reReply deliver : ${data.reply.replyId}`);
-				const u = await Users.findOneBy({ id: data.reply.replyUserId });
-				dm.addFollowersRecipe(u as ILocalUser);
-			} else {
-				console.log(`reReply deliver : ${data.reply.replyId}`);
-				// リプライのリプライが自分の場合
-				dm.addFollowersRecipe();
-			}
-		} else if (
-			data.reply &&
-			data.reply.userId !== user.id &&
-			data.reply.userHost === null
-		) {
-			console.log(`reply deliver : ${data.reply.id}`);
-			// 他人宛のリプライがある場合
-			const u = await Users.findOneBy({ id: data.reply.userId });
-			dm.addFollowersRecipe(u as ILocalUser);
-		} else {
-			dm.addFollowersRecipe();
-		}
-	}
-}
-
-async function getReactionEmojiMap(reactions: NoteReaction[]) {
-	const emojiKeys = new Map<string, { name: string; host: string | null }>();
-
-	for (const reaction of reactions) {
-		const decoded = decodeReaction(reaction.reaction);
-		if (!decoded.name) continue;
-		const host = decoded.host ?? null;
-		const key = `${decoded.name}@${host ?? ""}`;
-		if (!emojiKeys.has(key)) {
-			emojiKeys.set(key, { name: decoded.name, host });
-		}
-	}
-
-	if (emojiKeys.size === 0) return new Map();
-
-	const emojis = await Emojis.find({
-		where: Array.from(emojiKeys.values()).map((entry) => ({
-			name: entry.name,
-			host: entry.host ?? IsNull(),
-		})),
-		select: ["name", "host", "license"],
-	});
-
-	return new Map(
-		emojis.map((emoji) => [
-			`${emoji.name}@${emoji.host ?? ""}`,
-			emoji,
-		]),
-	);
-}
-
-async function resendLocalReactionsForRenote(
-	renote: Note,
-	noteInboxes: Map<string, boolean>,
-) {
-	if (noteInboxes.size === 0) {
-		console.log(
-			`[reaction-resend] skip: noteInboxes is empty (renote=${renote.id})`,
-		);
-		return;
-	}
-
-	const reactions = await NoteReactions.createQueryBuilder("reaction")
-		.leftJoinAndSelect("reaction.user", "user")
-		.where("reaction.noteId = :noteId", { noteId: renote.id })
-		.andWhere("user.host IS NULL")
-		.orderBy("reaction.createdAt", "DESC")
-		.addOrderBy("reaction.id", "DESC")
-		.getMany();
-
-	if (reactions.length === 0) {
-		console.log(
-			`[reaction-resend] skip: no local reactions (renote=${renote.id})`,
-		);
-		return;
-	}
-	const latestReactionsByUser = new Map<string, NoteReaction>();
-	for (const reaction of reactions) {
-		if (!latestReactionsByUser.has(reaction.userId)) {
-			latestReactionsByUser.set(reaction.userId, reaction);
-		}
-	}
-
-	const latestReactions = Array.from(latestReactionsByUser.values());
-	console.log(
-		`[reaction-resend] local reactions: ${latestReactions.length} (renote=${renote.id})`,
-	);
-
-	const emojiMap = await getReactionEmojiMap(latestReactions);
-
-	for (const reaction of latestReactions) {
-		const reactionUser = reaction.user;
-		if (!reactionUser || reactionUser.host !== null) continue;
-
-		const decoded = decodeReaction(reaction.reaction);
-		const emojiKey = decoded.name
-			? `${decoded.name}@${decoded.host ?? ""}`
-			: null;
-		const emoji = emojiKey ? emojiMap.get(emojiKey) : null;
-		const deliverReaction = await resolveApReaction(reaction.reaction, emoji);
-		const deliverRecord = {
-			...reaction,
-			reaction: deliverReaction,
-		} as NoteReaction;
-
-		const activity = renderActivity(await renderLike(deliverRecord, renote));
-		const dm = await buildReactionDeliverManager(
-			reactionUser,
-			renote,
-			activity,
-			{ disableUnion: true },
-		);
-		const reactionInboxes = await dm.collectInboxes();
-		console.log(
-			`[reaction-resend] deliver reaction: reactionInboxes=${reactionInboxes.size} (renote=${renote.id}, reaction=${reaction.id})`,
-		);
-
-		await deliverToInboxes(
-			reactionUser as ILocalUser,
-			activity,
-			reactionInboxes,
-		);
-	}
-}
-
-async function delayReactionResend() {
-	await new Promise((resolve) => setTimeout(resolve, 1000));
-}
-
-async function renderNoteOrRenoteActivity(data: Option, note: Note) {
-	if (data.localOnly && data.channel) return null;
-	// リモートでRT出来ないはずの投稿がRTされている場合、連合しない
-	if (data.renote?.userId !== note.userId && data.renote?.localOnly)
-		return null;
-
-	const content =
-		data.renote &&
-		data.text == null &&
-		data.poll == null &&
-		(data.files == null || data.files.length === 0)
-			? renderAnnounce(
-					data.renote.uri
-						? data.renote.uri
-						: `${config.url}/notes/${data.renote.id}`,
-					note,
-			  )
-			: renderCreate(await renderNote(note, false), note);
-
-	return renderActivity(content);
 }
 
 function incRenoteCount(renote: Note, userHost?: string) {

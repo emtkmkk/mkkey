@@ -36,6 +36,61 @@ import {
 import type { UserProfile } from "@/models/entities/user-profile.js";
 import { checkReactionMute } from "@/misc/check-word-mute.js";
 import { buildReactionDeliverManager } from "./deliver.js";
+import { Cache } from "@/misc/cache.js";
+
+const INSTANCE_MAX_REACTIONS_CACHE_TTL_MS = 30 * 1000;
+const instanceMaxReactionsPerAccountCache = new Cache<number>(
+	INSTANCE_MAX_REACTIONS_CACHE_TTL_MS,
+);
+
+export function normalizeReactionMuteResult(
+	muteResult: boolean | { muted: boolean; reject?: boolean | undefined },
+	defaultReject: boolean,
+): { isMutedReaction: boolean; shouldReject: boolean } {
+	const normalized =
+		typeof muteResult === "boolean" ? { muted: muteResult } : muteResult;
+	const shouldReject =
+		normalized.muted && (normalized.reject ?? defaultReject);
+
+	return {
+		isMutedReaction: normalized.muted,
+		shouldReject,
+	};
+}
+
+export function evaluateReactionLimit(params: {
+	existCount: number;
+	maxReactions: number;
+	reaction: string;
+	existingReaction?: string;
+}): "allow" | "replace" | "duplicate_error" | "limit_error" {
+	if (params.existCount < params.maxReactions) {
+		return "allow";
+	}
+
+	if (params.maxReactions !== 1) {
+		return "limit_error";
+	}
+
+	if (params.existingReaction == null || params.existingReaction === params.reaction) {
+		return "duplicate_error";
+	}
+
+	return "replace";
+}
+
+async function getMaxReactionsPerAccountByHost(host: string): Promise<number> {
+	return await instanceMaxReactionsPerAccountCache.fetch(
+		host,
+		async () => {
+			const instance = await Instances.findOne({
+				where: { host },
+				select: ["maxReactionsPerAccount"],
+			});
+			return instance?.maxReactionsPerAccount ?? 1;
+		},
+	);
+}
 
 export default async (
 	user: {
@@ -140,30 +195,25 @@ export default async (
 		select: ["userId", "reactionMutedWords", "rejectMuteReaction"],
 	});
 	if (muteInfo) {
-    isMutedReaction = checkReactionMute(
-        reaction,
-        note,
-        user,
-        muteInfo.reactionMutedWords,
-    );
-    console.log('isMutedReaction after checkReactionMute:', isMutedReaction);
+		const muteResult = checkReactionMute(
+			reaction,
+			note,
+			user,
+			muteInfo.reactionMutedWords,
+		);
+		const normalizedMute = normalizeReactionMuteResult(
+			muteResult,
+			muteInfo.rejectMuteReaction,
+		);
 
-    if (typeof isMutedReaction === "boolean") {
-        isMutedReaction = { muted: isMutedReaction };
-    }
-    console.log('isMutedReaction after type check:', isMutedReaction);
+		if (normalizedMute.shouldReject) {
+			throw new IdentifiableError(
+				"119b8757-2ba5-385e-82cf-7fa4bc73c4d1",
+				"投稿者のリアクションミュート設定の為、リアクションが拒否されました。",
+			);
+		}
 
-    if (
-        isMutedReaction.muted &&
-        (isMutedReaction.reject ?? muteInfo.rejectMuteReaction)
-    ) {
-        throw new IdentifiableError(
-            "119b8757-2ba5-385e-82cf-7fa4bc73c4d1",
-            "投稿者のリアクションミュート設定の為、リアクションが拒否されました。",
-        );
-    }
-    isMutedReaction = isMutedReaction.muted;
-    console.log('Final isMutedReaction:', isMutedReaction);
+		isMutedReaction = normalizedMute.isMutedReaction;
 	}
 
 
@@ -175,12 +225,15 @@ export default async (
 		reaction,
 	};
 
-	const existCount = await NoteReactions.count({
+	const existingReactions = await NoteReactions.find({
 		where: {
 			noteId: note.id,
 			userId: user.id,
 		},
+		select: ["reaction"],
 	});
+	const existCount = existingReactions.length;
+	const existingReaction = existingReactions[0]?.reaction;
 
 	if (existCount !== 0) {
 		let maxReactionsPerAccount = 1;
@@ -191,18 +244,14 @@ export default async (
 					? MAX_REACTION_PER_ACCOUNT
 					: 1;
 		} else {
-			const instance = await Instances.findOneBy({ host: user.host });
-			maxReactionsPerAccount = instance?.maxReactionsPerAccount ?? 1;
+			maxReactionsPerAccount = await getMaxReactionsPerAccountByHost(user.host);
 		}
 
 		if (maxReactionsPerAccount >= 2) {
-			const noteUser = await Users.findOneBy({ id: note.userId });
-
-			if (!noteUser?.host) {
+			if (!note.userHost) {
 				maxReactionsNote = maxReactionsPerAccount;
 			} else {
-				const instance = await Instances.findOneBy({ host: noteUser.host });
-				maxReactionsNote = instance?.maxReactionsPerAccount ?? 1;
+				maxReactionsNote = await getMaxReactionsPerAccountByHost(note.userHost);
 				if (!user.host) maxReactionsPerAccount = maxReactionsNote;
 			}
 		}
@@ -212,24 +261,25 @@ export default async (
 			64,
 		);
 
-		if (existCount >= maxReactions) {
-			if (maxReactions === 1) {
-				const exists = await NoteReactions.findOneByOrFail({
-					noteId: note.id,
-					userId: user.id,
-				});
+		const limitResult = evaluateReactionLimit({
+			existCount,
+			maxReactions,
+			reaction,
+			existingReaction,
+		});
 
-				if (exists.reaction !== reaction) {
-					// 別のリアクションがすでにされていたら置き換える
-					await deleteReaction(user, note, exists.reaction);
-				} else {
-					// 同じリアクションがすでにされていたらエラー
-					throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
-				}
-			} else {
-				// 絵文字上限超過エラー
-				throw new IdentifiableError("058b5325-c56c-99d1-9677-6eaeedd9f3f4");
+		if (limitResult === "replace") {
+			// 別のリアクションがすでにされていたら置き換える
+			if (existingReaction == null) {
+				throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
 			}
+			await deleteReaction(user, note, existingReaction);
+		} else if (limitResult === "duplicate_error") {
+			// 同じリアクションがすでにされていたらエラー
+			throw new IdentifiableError("51c42bb4-931a-456b-bff7-e5a8a70dd298");
+		} else if (limitResult === "limit_error") {
+			// 絵文字上限超過エラー
+			throw new IdentifiableError("058b5325-c56c-99d1-9677-6eaeedd9f3f4");
 		}
 	}
 

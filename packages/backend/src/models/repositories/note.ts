@@ -27,6 +27,8 @@ import {
 	prefetchEmojis,
 } from "@/misc/populate-emojis.js";
 import { db } from "@/db/postgre.js";
+import { subscriber } from "@/db/redis.js";
+import { Cache } from "@/misc/cache.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 
 export async function populatePoll(note: Note, meId: User["id"] | null) {
@@ -93,6 +95,70 @@ type NotePackHint = {
         me?: User;
         followings?: Map<User["id"], boolean>;
 };
+
+const NOTE_PACK_CACHE_TTL_MS = 30 * 1000;
+
+const meUserCache = new Cache<User>(NOTE_PACK_CACHE_TTL_MS);
+const followingsMapCache = new Cache<Map<User["id"], boolean>>(NOTE_PACK_CACHE_TTL_MS);
+const myReactionPointCache = new Cache<NoteReaction[]>(NOTE_PACK_CACHE_TTL_MS);
+const favoritePointCache = new Cache<boolean>(NOTE_PACK_CACHE_TTL_MS);
+
+function getUserNoteCacheKey(userId: User["id"], noteId: Note["id"]): string {
+	return `${userId}:${noteId}`;
+}
+
+function invalidateNotePackViewerCache(viewerId: User["id"]): void {
+	meUserCache.delete(viewerId);
+	followingsMapCache.delete(viewerId);
+}
+
+subscriber.on("message", (_, data) => {
+	const message = JSON.parse(data) as {
+		channel: string;
+		message: { type: string; body: { id?: User["id"]; userId?: User["id"]; noteId?: Note["id"] } | null };
+	};
+
+	if (message.channel === "internal") {
+		switch (message.message.type) {
+			case "localUserUpdated":
+			case "remoteUserUpdated":
+			case "userChangeSuspendedState":
+			case "userChangeSilencedState":
+			case "userChangeModeratorState": {
+				const userId = message.message.body?.id;
+				if (userId != null) {
+					invalidateNotePackViewerCache(userId);
+				}
+				break;
+			}
+			case "notePackFollowingUpdated": {
+				const userId = message.message.body?.userId;
+				if (userId != null) {
+					invalidateNotePackViewerCache(userId);
+				}
+				break;
+			}
+			case "notePackReactionUpdated": {
+				const userId = message.message.body?.userId;
+				const noteId = message.message.body?.noteId;
+				if (userId != null && noteId != null) {
+					myReactionPointCache.delete(getUserNoteCacheKey(userId, noteId));
+				}
+				break;
+			}
+			case "notePackFavoriteUpdated": {
+				const userId = message.message.body?.userId;
+				const noteId = message.message.body?.noteId;
+				if (userId != null && noteId != null) {
+					favoritePointCache.delete(getUserNoteCacheKey(userId, noteId));
+				}
+				break;
+			}
+			default:
+				break;
+		}
+	}
+});
 
 async function populateMyReaction(
         note: Note,
@@ -540,29 +606,68 @@ export const NoteRepository = db.getRepository(Note).extend({
                         const targets = Array.from(
                                 new Set([...notes.map((n) => n.id), ...renoteIds]),
                         );
-                        const myReactions = await NoteReactions.findBy({
-                                userId: meId,
-                                noteId: In(targets),
-                        });
-
-                        const myReactionsByNoteId = new Map<Note["id"], NoteReaction[]>();
-                        for (const reaction of myReactions) {
-                                const reactions = myReactionsByNoteId.get(reaction.noteId) ?? [];
-                                reactions.push(reaction);
-                                myReactionsByNoteId.set(reaction.noteId, reactions);
-                        }
-
+                        const reactionMissTargets: Note["id"][] = [];
                         for (const target of targets) {
-                                myReactionsMap.set(target, myReactionsByNoteId.get(target) ?? []);
-                        }
+				const cached = myReactionPointCache.get(getUserNoteCacheKey(meId, target));
+				if (cached === undefined) {
+					reactionMissTargets.push(target);
+				} else {
+					myReactionsMap.set(target, cached);
+				}
+			}
 
-                        const favorites = await NoteFavorites.findBy({
-                                userId: meId,
-                                noteId: In(targets),
-                        });
-                        favoritedNoteIds = new Set(favorites.map((favorite) => favorite.noteId));
+			if (reactionMissTargets.length > 0) {
+				const myReactions = await NoteReactions.findBy({
+					userId: meId,
+					noteId: In(reactionMissTargets),
+				});
 
-                        meUser = await Users.findOneByOrFail({ id: meId });
+				const myReactionsByNoteId = new Map<Note["id"], NoteReaction[]>();
+				for (const reaction of myReactions) {
+					const reactions = myReactionsByNoteId.get(reaction.noteId) ?? [];
+					reactions.push(reaction);
+					myReactionsByNoteId.set(reaction.noteId, reactions);
+				}
+
+				for (const noteId of reactionMissTargets) {
+					const reactions = myReactionsByNoteId.get(noteId) ?? [];
+					myReactionPointCache.set(getUserNoteCacheKey(meId, noteId), reactions);
+					myReactionsMap.set(noteId, reactions);
+				}
+			}
+
+			favoritedNoteIds = new Set();
+			const favoriteMissTargets: Note["id"][] = [];
+			for (const target of targets) {
+				const cached = favoritePointCache.get(getUserNoteCacheKey(meId, target));
+				if (cached === undefined) {
+					favoriteMissTargets.push(target);
+					continue;
+				}
+				if (cached) {
+					favoritedNoteIds.add(target);
+				}
+			}
+
+			if (favoriteMissTargets.length > 0) {
+				const favorites = await NoteFavorites.findBy({
+					userId: meId,
+					noteId: In(favoriteMissTargets),
+				});
+				const favoriteSet = new Set(favorites.map((favorite) => favorite.noteId));
+
+				for (const noteId of favoriteMissTargets) {
+					const isFavorited = favoriteSet.has(noteId);
+					favoritePointCache.set(getUserNoteCacheKey(meId, noteId), isFavorited);
+					if (isFavorited) {
+						favoritedNoteIds.add(noteId);
+					}
+				}
+			}
+
+			meUser = await meUserCache.fetch(meId, async () => {
+				return await Users.findOneByOrFail({ id: meId });
+			});
                 }
 
                 await prefetchEmojis(aggregateNoteEmojis(notes));
@@ -579,22 +684,30 @@ export const NoteRepository = db.getRepository(Note).extend({
                         }
 
                         if (userIds.size > 0) {
-                                const followeeIds = Array.from(userIds);
-                                followingsMap = new Map(
-                                        followeeIds.map((id) => [id, false] as [User["id"], boolean]),
-                                );
+				const followeeIds = Array.from(userIds);
+				followingsMap = await followingsMapCache.fetch(
+					meId,
+					async () => {
+						const resolvedMap = new Map(
+							followeeIds.map((id) => [id, false] as [User["id"], boolean]),
+						);
 
-                                const followings = await Followings.findBy({
-                                        followerId: meId,
-                                        followeeId: In(followeeIds),
-                                });
+						const followings = await Followings.findBy({
+							followerId: meId,
+							followeeId: In(followeeIds),
+						});
 
-                                for (const following of followings) {
-                                        followingsMap.set(following.followeeId, true);
-                                }
-                        } else {
-                                followingsMap = new Map();
-                        }
+						for (const following of followings) {
+							resolvedMap.set(following.followeeId, true);
+						}
+
+						return resolvedMap;
+					},
+					(cachedMap) => followeeIds.every((id) => cachedMap.has(id)),
+				);
+			} else {
+				followingsMap = new Map();
+			}
                 }
 
                 const hint: NotePackHint = {

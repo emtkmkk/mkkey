@@ -41,6 +41,17 @@ export interface InternalStreamTypes {
 	remoteUserUpdated: {
 		id: User["id"];
 	};
+	notePackFollowingUpdated: {
+		userId: User["id"];
+	};
+	notePackReactionUpdated: {
+		userId: User["id"];
+		noteId: Note["id"];
+	};
+	notePackFavoriteUpdated: {
+		userId: User["id"];
+		noteId: Note["id"];
+	};
 	webhookCreated: Webhook;
 	webhookDeleted: Webhook;
 	webhookUpdated: Webhook;

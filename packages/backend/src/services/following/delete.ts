@@ -1,4 +1,8 @@
-import { publishMainStream, publishUserEvent } from "@/services/stream.js";
+import {
+	publishInternalEvent,
+	publishMainStream,
+	publishUserEvent,
+} from "@/services/stream.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderFollow from "@/remote/activitypub/renderer/follow.js";
 import renderUndo from "@/remote/activitypub/renderer/undo.js";
@@ -49,6 +53,12 @@ export default async function (
 	await Followings.delete(following.id);
 
 	decrementFollowing(follower, followee);
+
+	if (Users.isLocalUser(follower)) {
+		publishInternalEvent("notePackFollowingUpdated", {
+			userId: follower.id,
+		});
+	}
 
 	// Publish unfollow event
 	if (!silent && Users.isLocalUser(follower)) {

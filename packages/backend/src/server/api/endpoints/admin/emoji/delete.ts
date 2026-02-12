@@ -4,6 +4,7 @@ import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { ApiError } from "../../../error.js";
 import { publishBroadcastStream } from "@/services/stream.js";
 import { db } from "@/db/postgre.js";
+import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 
 export const meta = {
 	tags: ["admin"],
@@ -43,6 +44,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	await Emojis.delete(emoji.id);
 
 	await db.queryResultCache!.remove(["meta_emojis"]);
+	await bumpReactionNormalizeCacheVersion();
 
 	insertModerationLog(me, "deleteEmoji", {
 		emoji: emoji,

@@ -7,6 +7,7 @@ import { ApiError } from "../../../error.js";
 import rndstr from "rndstr";
 import { publishBroadcastStream } from "@/services/stream.js";
 import { db } from "@/db/postgre.js";
+import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 
 export const meta = {
 	tags: ["admin"],
@@ -113,6 +114,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	}).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
 
 	await db.queryResultCache!.remove(["meta_emojis"]);
+	await bumpReactionNormalizeCacheVersion();
 
 	publishBroadcastStream("emojiAdded", {
 		emoji: await Emojis.pack(emoji.id),

@@ -487,6 +487,8 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		verifiedLinks: [],
 	});
 
+	await Users.invalidateMeDetailedBaseCache(user.id);
+
 	const updatedProfile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
 	const iObj = await Users.pack<true, true>(user.id, user, {

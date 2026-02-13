@@ -52,10 +52,36 @@ const app = new Koa();
 
 //#region Bull Dashboard
 const bullBoardPath = "/queue";
+const bullBoardSafeMethods = new Set(["GET", "HEAD", "OPTIONS"]);
+
+function isBullBoardSameOrigin(ctx: Koa.Context): boolean {
+	const origin = ctx.get("origin");
+	if (origin) {
+		return origin === config.url;
+	}
+
+	const referer = ctx.get("referer");
+	if (referer) {
+		try {
+			return new URL(referer).origin === config.url;
+		} catch {
+			return false;
+		}
+	}
+
+	const fetchSite = ctx.get("sec-fetch-site");
+	return fetchSite === "same-origin";
+}
 
 // Authenticate
 app.use(async (ctx, next) => {
-	if (ctx.path === bullBoardPath || ctx.path.startsWith(`${bullBoardPath}/`)) {
+	const url = decodeURI(ctx.path);
+
+	if (url === bullBoardPath || url.startsWith(`${bullBoardPath}/`)) {
+		if (!url.startsWith(`${bullBoardPath}/static/`)) {
+			ctx.set("Cache-Control", "private, max-age=0, must-revalidate");
+		}
+
 		const token = ctx.cookies.get("token");
 		if (token == null) {
 			ctx.status = 401;
@@ -63,6 +89,11 @@ app.use(async (ctx, next) => {
 		}
 		const user = await Users.findOneBy({ token });
 		if (user == null || !(user.isAdmin || user.isModerator)) {
+			ctx.status = 403;
+			return;
+		}
+
+		if (!bullBoardSafeMethods.has(ctx.method) && !isBullBoardSameOrigin(ctx)) {
 			ctx.status = 403;
 			return;
 		}

@@ -74,6 +74,17 @@ const discordHandle = computed(() => {
 	return `@${discord.username}#${discord.discriminator}`;
 });
 
+function getCookieAttributes(maxAge?: number): string {
+	const attrs = ["path=/", "SameSite=Lax"];
+	if (maxAge !== undefined) {
+		attrs.push(`max-age=${maxAge}`);
+	}
+	if (document.location.protocol.startsWith("https")) {
+		attrs.push("Secure");
+	}
+	return attrs.join("; ");
+}
+
 function openWindow(service: string, type: string) {
 	return window.open(
 		`${apiUrl}/${type}/${service}`,
@@ -107,9 +118,7 @@ function disconnectGithub() {
 }
 
 onMounted(() => {
-	document.cookie = `igi=${$i!.token}; path=/; max-age=31536000;${
-		document.location.protocol.startsWith("https") ? " secure" : ""
-	}`;
+	document.cookie = `igi=${$i!.token}; ${getCookieAttributes(31536000)}`;
 
 	watch(integrations, () => {
 		if (integrations.value.twitter) {

@@ -21,6 +21,17 @@ export const $i = accountData
 export const iAmModerator = $i != null && ($i.isAdmin || $i.isModerator);
 export const iAmAdmin = $i?.isAdmin;
 
+function getCookieAttributes(maxAge?: number): string {
+	const attrs = ["path=/", "SameSite=Lax"];
+	if (maxAge !== undefined) {
+		attrs.push(`max-age=${maxAge}`);
+	}
+	if (document.location.protocol.startsWith("https")) {
+		attrs.push("Secure");
+	}
+	return attrs.join("; ");
+}
+
 export async function signout() {
 	waiting();
 	localStorage.removeItem("account");
@@ -55,8 +66,8 @@ export async function signout() {
 	} catch (err) {}
 	//#endregion
 
-	document.cookie = "igi=; path=/; max-age=0";
-	document.cookie = "token=; path=/; max-age=0";
+	document.cookie = `igi=; ${getCookieAttributes(0)}`;
+	document.cookie = `token=; ${getCookieAttributes(0)}`;
 
 	if (accounts.length > 0) login(accounts[0].token);
 	else unisonReload("/");
@@ -134,7 +145,7 @@ export async function login(token: Account["token"], redirect?: string) {
 	if (_DEV_) console.log("logging as token ", token);
 	const me = await fetchAccount(token);
 	localStorage.setItem("account", JSON.stringify(me));
-	document.cookie = `token=${token}; path=/; max-age=31536000`; // bull dashboardの認証とかで使う
+	document.cookie = `token=${token}; ${getCookieAttributes(31536000)}`; // bull dashboardの認証とかで使う
 	await addAccount(me.id, token);
 
 	if (redirect) {

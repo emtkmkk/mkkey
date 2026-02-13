@@ -1,4 +1,5 @@
 import { Instances, NoteReactions, Notes, Users } from "@/models/index.js";
+import { getLocalNotesCount } from "@/services/note/local-notes-count-cache.js";
 import define from "../define.js";
 import {} from "@/services/chart/index.js";
 import { IsNull, MoreThan } from "typeorm";
@@ -71,10 +72,7 @@ export default define(meta, paramDef, async () => {
 		instances,
 	] = await Promise.all([
 		Notes.count({ where: { deletedAt: IsNull() }, cache: 3600000 }), // 1 hour
-		Notes.count({
-			where: { userHost: IsNull(), deletedAt: IsNull() },
-			cache: 3600000,
-		}),
+		getLocalNotesCount(),
 		Users.count({ where: { isDeleted: false }, cache: 3600000 }),
 		Users.count({
 			where: { host: IsNull(), notesCount: MoreThan(50), isDeleted: false },

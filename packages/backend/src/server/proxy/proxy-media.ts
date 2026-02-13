@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
-import { promises as dns } from "node:dns";
+import net from "node:net";
+import { promises } from "node:dns";
 import type Koa from "koa";
 import sharp from "sharp";
 import { sharpBmp } from "@misskey-dev/sharp-read-bmp";
@@ -10,7 +11,7 @@ import {
 	webpDefault,
 } from "@/services/drive/image-processor.js";
 import { createTemp } from "@/misc/create-temp.js";
-import { downloadUrl, isPrivateIp, isSafeUrl } from "@/misc/download-url.js";
+import { downloadUrl } from "@/misc/download-url.js";
 import { detectType } from "@/misc/get-file-info.js";
 import { StatusError } from "@/misc/fetch.js";
 import { FILE_TYPE_BROWSERSAFE } from "@/const.js";
@@ -34,29 +35,33 @@ export async function proxyMedia(ctx: Koa.Context) {
 		"media.misskeyusercontent.jp",
 	);
 
-	if (!isSafeUrl(url)) {
-		ctx.status = 400;
-		ctx.body = { message: "Invalid URL" };
-		return;
-	}
-
-	let resolvedAddresses;
+	let resolvedIps;
 	try {
 		const { hostname } = new URL(url);
-		resolvedAddresses = await dns.lookup(
-			hostname.replaceAll(/(\[)|(\])/g, ""),
-			{
-				all: true,
-				verbatim: true,
-			},
-		);
+		resolvedIps = await promises.resolve(hostname);
 	} catch (error) {
 		ctx.status = 400;
 		ctx.body = { message: "Invalid URL" };
 		return;
 	}
 
-	const isSSRF = resolvedAddresses.some(({ address }) => isPrivateIp(address));
+	const isSSRF = resolvedIps.some((ip) => {
+		if (net.isIPv4(ip)) {
+			const parts = ip.split(".").map(Number);
+			return (
+				parts[0] === 10 ||
+				(parts[0] === 172 && parts[1] >= 16 && parts[1] < 32) ||
+				(parts[0] === 192 && parts[1] === 168) ||
+				parts[0] === 127 ||
+				parts[0] === 0
+			);
+		} else if (net.isIPv6(ip)) {
+			return (
+				ip.startsWith("::") || ip.startsWith("fc00:") || ip.startsWith("fe80:")
+			);
+		}
+		return false;
+	});
 
 	if (isSSRF) {
 		ctx.status = 400;

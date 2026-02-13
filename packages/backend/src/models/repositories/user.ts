@@ -61,6 +61,7 @@ import { redisClient } from "@/db/redis.js";
 
 const ME_DETAILED_BASE_CACHE_TTL_SEC = 60 * 10;
 const ME_DETAILED_VOLATILE_CACHE_TTL_SEC = 30;
+const ME_DETAILED_MERGED_CACHE_TTL_SEC = 45;
 
 const userInstanceCache = new Cache<Instance | null>(1000 * 60 * 60 * 3);
 
@@ -524,10 +525,19 @@ export const UserRepository = db.getRepository(User).extend({
 		return `me:detailed:volatile:${userId}`;
 	},
 
+	getMeDetailedMergedCacheKey(
+		userId: User["id"],
+		includeSecrets: boolean,
+	): string {
+		return `me:detailed:merged:${userId}:${includeSecrets ? "secure" : "public"}`;
+	},
+
 	async invalidateMeDetailedBaseCache(userId: User["id"]): Promise<void> {
 		await redisClient.del(
 			this.getMeDetailedBaseCacheKey(userId, true),
 			this.getMeDetailedBaseCacheKey(userId, false),
+			this.getMeDetailedMergedCacheKey(userId, true),
+			this.getMeDetailedMergedCacheKey(userId, false),
 		);
 	},
 
@@ -537,6 +547,10 @@ export const UserRepository = db.getRepository(User).extend({
 
 	getMeDetailedVolatileCacheTtlSec(): number {
 		return ME_DETAILED_VOLATILE_CACHE_TTL_SEC;
+	},
+
+	getMeDetailedMergedCacheTtlSec(): number {
+		return ME_DETAILED_MERGED_CACHE_TTL_SEC;
 	},
 
 	async getMeDetailedVolatile(userId: User["id"]): Promise<MeDetailedVolatile> {

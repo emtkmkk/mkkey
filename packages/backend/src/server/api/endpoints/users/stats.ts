@@ -399,7 +399,6 @@ export default define(meta, paramDef, async (ps, me) => {
 				.andWhere("note.createdAt >= :borderDate", {
 					borderDate: borderDate.toISOString(),
 				})
-				.cache(CACHE_TIME)
 				.getCount(),
 			repliesCount: Notes.createQueryBuilder("note")
 				.where("note.userId = :userId", { userId: user.id })

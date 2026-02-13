@@ -114,12 +114,11 @@ async function fetchAny(
 		if (local.type === "Note" && note?.uri && note.hasPoll) {
 			// Update questions if the stored (remote) note contains the poll
 			const key = `pollFetched:${note.uri}`;
-			if ((await redisClient.exists(key)) === 0) {
+			const acquired = await redisClient.set(key, "1", "EX", 60, "NX");
+			if (acquired !== null) {
 				if (await updateQuestion(note.uri)) {
 					local.object.poll = await populatePoll(note, me?.id ?? null);
 				}
-				// Allow fetching the poll again after 1 minute
-				await redisClient.set(key, 1, "EX", 60);
 			}
 		}
 		return local;

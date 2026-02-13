@@ -1,7 +1,8 @@
 import { Entity } from "@calckey/megalodon";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Users, Notes } from "@/models/index.js";
-import { IsNull, MoreThan } from "typeorm";
+import { Users } from "@/models/index.js";
+import { getLocalNotesCount } from "@/services/note/local-notes-count-cache.js";
+import { IsNull } from "typeorm";
 
 // TODO: add calckey features
 export async function getInstance(response: Entity.Instance) {
@@ -9,9 +10,7 @@ export async function getInstance(response: Entity.Instance) {
 	const totalUsers = Users.count({
 		where: { host: IsNull(), isDeleted: false },
 	});
-	const totalStatuses = Notes.count({
-		where: { userHost: IsNull(), deletedAt: IsNull() },
-	});
+	const totalStatuses = getLocalNotesCount();
 	return {
 		uri: response.uri,
 		title: response.title || "Calckey",

@@ -939,10 +939,7 @@ router.get("/_info_card_", async (ctx) => {
 			where: { host: IsNull(), isDeleted: false },
 			cache: 3600000,
 		}), //1h
-		originalNotesCount: await Notes.count({
-			where: { userHost: IsNull(), deletedAt: IsNull() },
-			cache: 3600000,
-		}), //1h
+		originalNotesCount: await getLocalNotesCount(),
 	});
 });
 
@@ -995,10 +992,7 @@ router.get("(.*)", async (ctx) => {
 		where: { host: IsNull(), notesCount: MoreThan(50), isDeleted: false },
 		cache: 21600000,
 	}); //6h
-	let notesCount = await Notes.count({
-		where: { userHost: IsNull(), deletedAt: IsNull() },
-		cache: 21600000,
-	}); //6h
+	let notesCount = await getLocalNotesCount();
 	let gUsersCount = await Users.count({
 		where: { host: Not(IsNull()), isDeleted: false },
 		cache: 21600000,

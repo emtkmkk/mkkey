@@ -18,6 +18,7 @@ import { KoaAdapter } from "@bull-board/koa";
 import { In, IsNull, Not, MoreThan } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import config from "@/config/index.js";
+import { getLocalNotesCount } from "@/services/note/local-notes-count-cache.js";
 import {
 	Users,
 	Notes,

@@ -73,7 +73,14 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
         serverLogger.debug(`resendDeleteAccount: requester host ${host}`);
 
         const key = `deleteResend:${toPuny(host)}:${deleted.id}`;
-        if ((await redisClient.exists(key)) > 0) {
+        const acquired = await redisClient.set(
+                key,
+                "1",
+                "EX",
+                DELETE_RESEND_COOLDOWN_SEC,
+                "NX",
+        );
+        if (acquired === null) {
                 serverLogger.debug(
                         `resendDeleteAccount: cooldown active for ${host}`,
                 );
@@ -101,7 +108,6 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
         );
 
         await deliverToUser(deleted as ILocalUser, activity, remote);
-        await redisClient.set(key, 1, "EX", DELETE_RESEND_COOLDOWN_SEC);
 }
 
 //#region Routing

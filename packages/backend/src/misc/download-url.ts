@@ -1,4 +1,5 @@
 import * as fs from "node:fs";
+import * as net from "node:net";
 import * as stream from "node:stream";
 import * as util from "node:util";
 import got, * as Got from "got";
@@ -10,8 +11,13 @@ import IPCIDR from "ip-cidr";
 import PrivateIp from "private-ip";
 
 const pipeline = util.promisify(stream.pipeline);
+const blockedHostnames = new Set(["localhost", "localhost.localdomain"]);
 
 export async function downloadUrl(url: string, path: string): Promise<void> {
+	if (!isSafeUrl(url)) {
+		throw new StatusError("Invalid URL", 400);
+	}
+
 	const logger = new Logger("download");
 
 	logger.info(`Downloading ${chalk.cyan(url)} ...`);
@@ -19,12 +25,13 @@ export async function downloadUrl(url: string, path: string): Promise<void> {
 	const timeout = 30 * 1000;
 	const operationTimeout = 60 * 1000;
 	const maxSize = config.maxFileSize || 262144000;
+	const parsedUrl = new URL(url);
 
 	const req = got
 		.stream(url, {
 			headers: {
 				"User-Agent": config.userAgent,
-				Host: new URL(url).hostname,
+				Host: parsedUrl.hostname,
 			},
 			timeout: {
 				lookup: timeout,
@@ -44,6 +51,12 @@ export async function downloadUrl(url: string, path: string): Promise<void> {
 				limit: 0,
 			},
 		})
+		.on("redirect", (_res: Got.Response, opts: Got.NormalizedOptions) => {
+			if (!isSafeUrl(opts.url.toString())) {
+				logger.warn(`Blocked redirect URL: ${opts.url}`);
+				req.destroy(new StatusError("Invalid URL", 400));
+			}
+		})
 		.on("response", (res: Got.Response) => {
 			if (
 				(process.env.NODE_ENV === "production" ||
@@ -53,7 +66,7 @@ export async function downloadUrl(url: string, path: string): Promise<void> {
 			) {
 				if (isPrivateIp(res.ip)) {
 					logger.warn(`Blocked address: ${res.ip}`);
-					req.destroy();
+					req.destroy(new StatusError("Invalid URL", 400));
 				}
 			}
 
@@ -78,12 +91,18 @@ export async function downloadUrl(url: string, path: string): Promise<void> {
 	try {
 		await pipeline(req, fs.createWriteStream(path));
 	} catch (e) {
+		if (e instanceof StatusError) {
+			throw e;
+		}
+
 		if (e instanceof Got.HTTPError) {
 			throw new StatusError(
 				`${e.response.statusCode} ${e.response.statusMessage}`,
 				e.response.statusCode,
 				e.response.statusMessage,
 			);
+		} else if (e instanceof Got.RequestError && e.cause instanceof StatusError) {
+			throw e.cause;
 		} else {
 			throw e;
 		}
@@ -101,4 +120,27 @@ export function isPrivateIp(ip: string): boolean {
 	}
 
 	return PrivateIp(ip);
+}
+
+export function isSafeUrl(url: string | URL): boolean {
+	let parsedUrl: URL;
+	try {
+		parsedUrl = typeof url === "string" ? new URL(url) : url;
+	} catch {
+		return false;
+	}
+
+	if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+		return false;
+	}
+
+	const hostname = parsedUrl.hostname.replaceAll(/(\[)|(\])/g, "").toLowerCase();
+	if (hostname.length === 0 || blockedHostnames.has(hostname)) {
+		return false;
+	}
+	if (hostname.endsWith(".localhost")) {
+		return false;
+	}
+
+	return !(net.isIP(hostname) && isPrivateIp(hostname));
 }

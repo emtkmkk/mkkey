@@ -13,6 +13,7 @@ import {
 	NoteFavorites,
 	UserMemos,
 	UserProfiles,
+	Blockings,
 } from "../index.js";
 import type { Packed } from "@/misc/schema.js";
 import { nyaize } from "@/misc/nyaize.js";
@@ -449,6 +450,17 @@ export const NoteRepository = db.getRepository(Note).extend({
 		// localOnly が true かつ 自分がログインしてなければ非表示
 		if (note.localOnly && meId == null) {
 			return false;
+		}
+
+		if (meId != null && meId !== note.userId) {
+			const isBlocked = await Blockings.existsBy({
+				blockeeId: meId,
+				blockerId: note.userId,
+			});
+
+			if (isBlocked) {
+				return false;
+			}
 		}
 
 		return true;

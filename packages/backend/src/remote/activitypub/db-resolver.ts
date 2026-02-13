@@ -1,11 +1,9 @@
-import escapeRegexp from "escape-regexp";
 import config from "@/config/index.js";
 import type { Note } from "@/models/entities/note.js";
 import type {
 	CacheableRemoteUser,
 	CacheableUser,
 } from "@/models/entities/user.js";
-import { User, IRemoteUser } from "@/models/entities/user.js";
 import type { UserPublickey } from "@/models/entities/user-publickey.js";
 import type { MessagingMessage } from "@/models/entities/messaging-message.js";
 import {
@@ -20,6 +18,7 @@ import {
 	fetchUserByIdCache,
 	fetchUserByIdCacheMaybe,
 } from "@/services/user-cache.js";
+import { toPuny } from "@/misc/convert-host.js";
 import type { IObject } from "./type.js";
 import { getApId } from "./type.js";
 import { resolvePerson, updatePerson } from "./models/person.js";
@@ -47,12 +46,19 @@ export type UriParseResult =
 	  };
 
 export function parseUri(value: string | IObject): UriParseResult {
+	const uri = getApId(value);
+	const parsed = new URL(uri);
+
+	if (toPuny(parsed.host) !== toPuny(config.host)) {
+		return { local: false, uri };
+	}
+
 	const separator = "/";
+	const [, type, id, ...rest] = parsed.pathname.split(separator);
+	if (type == null || id == null) {
+		throw new Error(`Failed to parse local URI: ${uri}`);
+	}
 
-	const uri = new URL(getApId(value));
-	if (uri.origin !== config.url) return { local: false, uri: uri.href };
-
-	const [, type, id, ...rest] = uri.pathname.split(separator);
 	return {
 		local: true,
 		type,

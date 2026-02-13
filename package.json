@@ -36,8 +36,9 @@
 		"chokidar": "^3.3.1"
 	},
 	"dependencies": {
-		"@bull-board/api": "^4.10.2",
-		"@bull-board/ui": "^4.10.2",
+		"@bull-board/api": "^4.6.4",
+		"@bull-board/ui": "^4.6.4",
+		"@misskey-dev/sharp-read-bmp": "1.1.1",
 		"@napi-rs/cli": "^2.15.0",
 		"@tensorflow/tfjs": "^3.21.0",
 		"focus-trap": "^7.2.0",

@@ -60,6 +60,13 @@ export default define(meta, paramDef, async (ps, user, token) => {
 	const isSecure = token == null;
 	const userId = user.id;
 
+	const mergedCacheKey = Users.getMeDetailedMergedCacheKey(userId, isSecure);
+	const mergedCache = await redisClient.get(mergedCacheKey);
+
+	if (mergedCache != null) {
+		return JSON.parse(mergedCache) as Record<string, unknown>;
+	}
+
 	const baseCacheKey = Users.getMeDetailedBaseCacheKey(userId, isSecure);
 	const volatileCacheKey = Users.getMeDetailedVolatileCacheKey(userId);
 
@@ -104,8 +111,17 @@ export default define(meta, paramDef, async (ps, user, token) => {
 		);
 	}
 
-	return {
+	const merged = {
 		...base,
 		...volatile,
 	};
+
+	await redisClient.set(
+		mergedCacheKey,
+		JSON.stringify(merged),
+		"EX",
+		Users.getMeDetailedMergedCacheTtlSec(),
+	);
+
+	return merged;
 });

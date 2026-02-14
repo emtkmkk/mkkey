@@ -13,6 +13,9 @@ type Profile = {
 	updatedAt: string | null;
 	misskeyVersion: string;
 	host: string;
+	kind?: "auto" | "manual";
+	uaClass?: "mobile" | "desktop";
+	clientId?: string;
 	settings: {
 		hot: Record<keyof typeof defaultStore.def, unknown>;
 		cold: Record<keyof typeof ColdDeviceStorage.default, unknown>;
@@ -24,35 +27,118 @@ type Profile = {
 	};
 };
 
-const scope = ["clientPreferencesProfiles"]
+const scope = ["clientPreferencesProfiles"];
+const autoSaveClientIdStorageKey = "autoSaveClientId";
+const autoSaveMaxPerUaClass = 5;
+
+function getDateValue(value: string | null | undefined): number {
+	if (!value) return Number.NEGATIVE_INFINITY;
+	const parsed = Date.parse(value);
+	if (Number.isNaN(parsed)) return Number.NEGATIVE_INFINITY;
+	return parsed;
+}
+
+export function getCurrentUaClass(): "mobile" | "desktop" {
+	return /mobile|iphone|android/.test(navigator.userAgent.toLowerCase())
+		? "mobile"
+		: "desktop";
+}
+
+function getAutoSaveClientId(): string {
+	const saved = localStorage.getItem(autoSaveClientIdStorageKey);
+	if (saved) return saved;
+
+	const created = uuid();
+	localStorage.setItem(autoSaveClientIdStorageKey, created);
+	return created;
+}
+
+export function getProfileUaClass(profile: Profile): "mobile" | "desktop" | null {
+	if (profile.uaClass === "mobile" || profile.uaClass === "desktop") {
+		return profile.uaClass;
+	}
+
+	if (profile.name === "AutoSave: mobile") {
+		return "mobile";
+	}
+
+	if (profile.name === "AutoSave: desktop") {
+		return "desktop";
+	}
+
+	return null;
+}
+
+export function isAutoProfile(profile: Profile): boolean {
+	if (profile.kind === "auto") return true;
+	return profile.name === "AutoSave: mobile" || profile.name === "AutoSave: desktop";
+}
+
+function sortByUpdatedAtDesc(
+	a: [string, Profile],
+	b: [string, Profile],
+): number {
+	const aTime = getDateValue(a[1].updatedAt ?? a[1].createdAt);
+	const bTime = getDateValue(b[1].updatedAt ?? b[1].createdAt);
+
+	if (aTime === bTime) {
+		return a[0].localeCompare(b[0]);
+	}
+
+	return bTime - aTime;
+}
+
+async function cleanupOldAutoSaves(
+	profiles: Record<string, Profile>,
+	uaClass: "mobile" | "desktop",
+): Promise<void> {
+	const autoProfiles = Object.entries(profiles)
+		.filter(([, value]) => isAutoProfile(value))
+		.filter(([, value]) => getProfileUaClass(value) === uaClass)
+		.sort(sortByUpdatedAtDesc);
+
+	const removeTargets = autoProfiles.slice(autoSaveMaxPerUaClass);
+	for (const [key] of removeTargets) {
+		await os.api("i/registry/remove", {
+			scope,
+			key,
+		});
+	}
+}
 
 export async function autoSave(blockUpdate = false): Promise<void> {
-	const profiles = (await os.api("i/registry/get-all", { scope })) || {}
+	const profiles = (await os.api("i/registry/get-all", { scope })) || {};
 
 	if (!profiles) return;
 
-	let id = uuid();
-	let name: Profile["name"] = `AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`
-	let createdAt: Profile["createdAt"] = new Date().toISOString();
-	let updatedAt: Profile["updatedAt"] = null;
+	const uaClass = getCurrentUaClass();
+	const name: Profile["name"] = `AutoSave: ${uaClass}`;
+	const clientId = getAutoSaveClientId();
+	const now = new Date().toISOString();
+	const existingSameClientEntry = Object.entries(profiles)
+		.filter(([, value]) =>
+			isAutoProfile(value) &&
+			getProfileUaClass(value) === uaClass &&
+			value.clientId === clientId,
+		)
+		.sort(sortByUpdatedAtDesc)[0];
 
-	if (Object.values(profiles).some((x) => x.name === name)) {
-		if (blockUpdate) return;
-		const entry = Object.entries(profiles).find(([key, value]) => value.name === name);
-		if (entry) {
-			const [key, value] = entry;
-			id = key;
-			name = value.name;
-			createdAt = value.createdAt;
-			updatedAt = new Date().toISOString()
-		}
-	}
+	if (blockUpdate && !existingSameClientEntry) return;
+
+	const id = existingSameClientEntry?.[0] ?? uuid();
+	const createdAt: Profile["createdAt"] =
+		existingSameClientEntry?.[1].createdAt ?? now;
+	const updatedAt: Profile["updatedAt"] = existingSameClientEntry ? now : null;
+
 	const profile: Profile = {
 		name,
 		createdAt,
 		updatedAt,
 		misskeyVersion: version,
 		host,
+		kind: "auto",
+		uaClass,
+		clientId,
 		settings: getSettings(true),
 	};
 	await os.api("i/registry/set", {
@@ -60,8 +146,9 @@ export async function autoSave(blockUpdate = false): Promise<void> {
 		key: id,
 		value: profile,
 	});
-}
 
+	await cleanupOldAutoSaves({ ...profiles, [id]: profile }, uaClass);
+}
 
 export function getSettings(deviceOnly): Profile["settings"] {
 	const hot = {} as Record<keyof typeof defaultStore.def, unknown>;

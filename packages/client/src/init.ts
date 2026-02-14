@@ -67,7 +67,7 @@ import {
 	initializeDetectNetworkChange,
 } from "@/scripts/datasaver";
 import { acct } from "./filters/user";
-import { applyProfile, autoSave } from "./scripts/backup";
+import { applyProfile, autoSave, getCurrentUaClass, getProfileUaClass, isAutoProfile } from "./scripts/backup";
 import { v4 as uuid } from "uuid";
 
 let waitMessages: string[] = [];
@@ -1082,33 +1082,39 @@ const autoSaveConfig = async () => {
 					(await api("i/registry/get-all", {
 						scope: ["clientPreferencesProfiles"],
 					})) || {};
-				if (
-					Object.values(profiles).some(
-						(x) =>
-							x.name ===
-							`AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`,
-					)
-				) {
-					const entry = Object.entries(profiles).find(
-						([key, value]) =>
-							value.name ===
-							`AutoSave: ${/mobile|iphone|android/.test(navigator.userAgent.toLowerCase()) ? "mobile" : "desktop"}`,
-					);
-					if (entry) {
-						const [key, value] = entry;
-						const { canceled } = await yesno({
-							type: "question",
-							text: "サーバ上に設定の自動保存が存在する様です。\n設定を復元しますか？",
-						});
-						if (!canceled) {
-							applyProfile(key);
-							await set("lastBackup", {
-								...lastBackupData,
-								[$i.id]: Date.now(),
-							});
-						} else {
-							defaultStore.set("autoSaveBackup", false);
+				const uaClass = getCurrentUaClass();
+				const latestAutoBackup = Object.entries(profiles)
+					.filter(([, value]) => isAutoProfile(value))
+					.filter(([, value]) => getProfileUaClass(value) === uaClass)
+					.sort((a, b) => {
+						const aTime = Date.parse(a[1].updatedAt ?? a[1].createdAt);
+						const bTime = Date.parse(b[1].updatedAt ?? b[1].createdAt);
+						const normalizedATime = Number.isNaN(aTime)
+							? Number.NEGATIVE_INFINITY
+							: aTime;
+						const normalizedBTime = Number.isNaN(bTime)
+							? Number.NEGATIVE_INFINITY
+							: bTime;
+						if (normalizedATime === normalizedBTime) {
+							return a[0].localeCompare(b[0]);
 						}
+						return normalizedBTime - normalizedATime;
+					})[0];
+
+				if (latestAutoBackup) {
+					const [key] = latestAutoBackup;
+					const { canceled } = await yesno({
+						type: "question",
+						text: "サーバ上に設定の自動保存が存在する様です。\n設定を復元しますか？",
+					});
+					if (!canceled) {
+						applyProfile(key);
+						await set("lastBackup", {
+							...lastBackupData,
+							[$i.id]: Date.now(),
+						});
+					} else {
+						defaultStore.set("autoSaveBackup", false);
 					}
 				} else {
 					if (

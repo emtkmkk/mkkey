@@ -31,6 +31,16 @@ const scope = ["clientPreferencesProfiles"];
 const autoSaveClientIdStorageKey = "autoSaveClientId";
 const autoSaveMaxPerUaClass = 5;
 
+function getAutoSaveDeviceName(): string | null {
+	const configured = defaultStore.state.autoSaveDeviceName;
+	if (typeof configured !== "string") return null;
+
+	const normalized = configured.trim();
+	if (!normalized) return null;
+
+	return normalized;
+}
+
 function getDateValue(value: string | null | undefined): number {
 	if (!value) return Number.NEGATIVE_INFINITY;
 	const parsed = Date.parse(value);
@@ -58,11 +68,11 @@ export function getProfileUaClass(profile: Profile): "mobile" | "desktop" | null
 		return profile.uaClass;
 	}
 
-	if (profile.name === "AutoSave: mobile") {
+	if (profile.name.startsWith("AutoSave: mobile")) {
 		return "mobile";
 	}
 
-	if (profile.name === "AutoSave: desktop") {
+	if (profile.name.startsWith("AutoSave: desktop")) {
 		return "desktop";
 	}
 
@@ -71,7 +81,7 @@ export function getProfileUaClass(profile: Profile): "mobile" | "desktop" | null
 
 export function isAutoProfile(profile: Profile): boolean {
 	if (profile.kind === "auto") return true;
-	return profile.name === "AutoSave: mobile" || profile.name === "AutoSave: desktop";
+	return profile.name.startsWith("AutoSave: mobile") || profile.name.startsWith("AutoSave: desktop");
 }
 
 function sortByUpdatedAtDesc(
@@ -112,8 +122,12 @@ export async function autoSave(blockUpdate = false): Promise<void> {
 	if (!profiles) return;
 
 	const uaClass = getCurrentUaClass();
-	const name: Profile["name"] = `AutoSave: ${uaClass}`;
+	const deviceName = getAutoSaveDeviceName();
 	const clientId = getAutoSaveClientId();
+	const clientIdShort = clientId.slice(0, 8);
+	const name: Profile["name"] = deviceName
+		? `AutoSave: ${deviceName}`
+		: `AutoSave: ${uaClass} (${clientIdShort})`;
 	const now = new Date().toISOString();
 	const existingSameClientEntry = Object.entries(profiles)
 		.filter(([, value]) =>

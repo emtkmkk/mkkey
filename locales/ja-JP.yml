@@ -1355,6 +1355,8 @@ miniSilence: "ミニサイレンス"
 addReferences: "参照に追加"
 removeReferences: "参照を解除"
 autoSaveBackup: "自動でバックアップを保存する"
+autoSaveDeviceName: "端末のニックネーム"
+autoSaveDeviceNameDescription: "入力すると、自動バックアップのファイル名に反映されます。"
 shortNoteMenu: "短い投稿のメニューを使用する"
 
 _sensitiveMediaDetection:

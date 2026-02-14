@@ -12,6 +12,10 @@
 			<FormSwitch v-model="autoSaveBackup" class="_formBlock">{{
 				i18n.ts.autoSaveBackup
 			}}</FormSwitch>
+			<FormInput v-model="autoSaveDeviceName" class="_formBlock">
+				<template #label>{{ i18n.ts.autoSaveDeviceName }}</template>
+				<template #caption>{{ i18n.ts.autoSaveDeviceNameDescription }}</template>
+			</FormInput>
 		</div>
 
 		<FormSection>
@@ -77,11 +81,15 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { applyProfile, getSettings } from "@/scripts/backup";
 const { t, ts } = i18n;
 import FormSwitch from "@/components/form/switch.vue";
+import FormInput from "@/components/form/input.vue";
 
 useCssModule();
 
 const autoSaveBackup = $computed(
 	defaultStore.makeGetterSetter("autoSaveBackup")
+);
+const autoSaveDeviceName = $computed(
+	defaultStore.makeGetterSetter("autoSaveDeviceName")
 );
 
 const defaultStoreSaveKeys: (keyof (typeof defaultStore)["state"])[] = [

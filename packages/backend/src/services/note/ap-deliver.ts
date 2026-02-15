@@ -10,7 +10,7 @@ import { deliverToRelays } from "../relay.js";
 import { decodeReaction, resolveApReaction } from "@/misc/reaction-lib.js";
 import { buildReactionDeliverManager } from "@/services/note/reaction/deliver.js";
 import { Emojis, NoteReactions, Notes, Users } from "@/models/index.js";
-import { IsNull } from "typeorm";
+import { In, IsNull } from "typeorm";
 import type { ILocalUser, User } from "@/models/entities/user.js";
 import type { NoteReaction } from "@/models/entities/note-reaction.js";
 import type { Note } from "@/models/entities/note.js";
@@ -95,14 +95,20 @@ async function renderNoteOrRenoteActivityFromNote(note: Note) {
 
 async function addNoteActivityDeliveryRecipes(dm: DeliverManager, note: Note) {
 	if (note.visibility === "specified") {
-		for (const u of await Users.findBy({ id: note.visibleUserIds as User["id"][] })) {
-			if (Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+		if (note.visibleUserIds.length > 0) {
+			for (const u of await Users.findBy({ id: In(note.visibleUserIds as User["id"][]) })) {
+				if (Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+			}
 		}
 	}
 
-	const mentionedUsers = await Users.findBy({ id: note.mentions as User["id"][] });
-	for (const u of mentionedUsers) {
-		if (Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+	if (note.mentions.length > 0) {
+		const mentionedUsers = await Users.findBy({
+			id: In(note.mentions as User["id"][]),
+		});
+		for (const u of mentionedUsers) {
+			if (Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+		}
 	}
 
 	if (note.reply && note.reply.userHost !== null) {

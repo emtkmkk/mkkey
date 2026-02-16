@@ -23,8 +23,26 @@ import type { CacheableRemoteUser } from "@/models/entities/user.js";
 import type { UserPublickey } from "@/models/entities/user-publickey.js";
 import { shouldBlockInstance } from "@/misc/should-block-instance.js";
 import { verifySignature } from "@/remote/activitypub/check-fetch.js";
+import { IdentifiableError } from "@/misc/identifiable-error.js";
 
 const logger = new Logger("inbox");
+
+const nonRetryableIdentifiableErrorIds = new Set([
+	"639cc3a5-fe68-b071-0c20-413c887054cd", // deleted note reaction
+	"119b8757-2ba5-385e-82cf-7fa4bc73c4d1", // muted reaction rejected
+]);
+
+
+function isNonRetryableInboxError(error: unknown): boolean {
+	if (error instanceof StatusError) return !error.isRetryable;
+
+	if (error instanceof IdentifiableError) {
+		if (nonRetryableIdentifiableErrorIds.has(error.id)) return true;
+		return !error.isRetryable;
+	}
+
+	return false;
+}
 
 // Processing when an activity arrives in the user's inbox
 export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
@@ -201,7 +219,18 @@ export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
 	job.progress(50);
 
 	// アクティビティを処理
-	await perform(authUser.user, activity, job.data.user?.id);
+	try {
+		await perform(authUser.user, activity, job.data.user?.id);
+	} catch (error) {
+		if (isNonRetryableInboxError(error)) {
+			if (error instanceof Error) {
+				return `skip: non retryable inbox error ${error.message}`;
+			}
+			return "skip: non retryable inbox error";
+		}
+		throw error;
+	}
+
 	job.progress(100);
 	return "ok";
 };

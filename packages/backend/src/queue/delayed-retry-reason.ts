@@ -55,6 +55,14 @@ const remoteErrorNames = new Set(["TimeoutError"]);
 const remoteErrorMessagePatterns = [
 	"Promise timed out",
 	"maximum redirect reached",
+	"Bad Gateway",
+	"Hostname/IP does not match certificate's altnames",
+	"alert handshake failure",
+	"EPROTO",
+];
+
+const localErrorMessagePatterns = [
+	"job stalled more than allowable limit",
 ];
 
 function classifyDelayedRetryReason(error: unknown): DelayedRetryReason {
@@ -110,6 +118,10 @@ function classifyDelayedRetryReasonByMessage(
 		)
 	) {
 		return "local";
+	}
+
+	for (const pattern of localErrorMessagePatterns) {
+		if (message.includes(pattern)) return "local";
 	}
 
 	if (message.length > 0) {

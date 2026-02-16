@@ -244,7 +244,12 @@ export class StatusError extends Error {
 	public isClientError: boolean;
 	public isRetryable: boolean;
 
-	constructor(message: string, statusCode: number, statusMessage?: string) {
+	constructor(
+		message: string,
+		statusCode: number,
+		statusMessage?: string,
+		isRetryable?: boolean,
+	) {
 		super(message);
 		this.name = "StatusError";
 		this.statusCode = statusCode;
@@ -253,7 +258,10 @@ export class StatusError extends Error {
 			typeof this.statusCode === "number" &&
 			this.statusCode >= 400 &&
 			this.statusCode < 500;
-		this.isRetryable = !this.isClientError || this.statusCode === 429;
+		this.isRetryable =
+			typeof isRetryable === "boolean"
+				? isRetryable
+				: !this.isClientError || this.statusCode === 429;
 	}
 }
 

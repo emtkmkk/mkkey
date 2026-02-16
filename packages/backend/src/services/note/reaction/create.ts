@@ -171,6 +171,7 @@ export default async (
 			throw new IdentifiableError(
 				"639cc3a5-fe68-b071-0c20-413c887054cd",
 				"削除された投稿に対してはリアクション出来ません。",
+				false,
 			);
 		}
 	})();
@@ -229,6 +230,7 @@ export default async (
 			throw new IdentifiableError(
 				"119b8757-2ba5-385e-82cf-7fa4bc73c4d1",
 				"投稿者のリアクションミュート設定の為、リアクションが拒否されました。",
+				false,
 			);
 		}
 

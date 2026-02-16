@@ -1602,6 +1602,7 @@ _widgets:
   onlineUsers: "Online users"
   jobQueue: "Job Queue"
   serverMetric: "Server metrics"
+  healthScore: "Health score"
   aiscript: "AiScript console"
   userList: "User list"
   tweets: "Tweets"

@@ -1854,6 +1854,7 @@ _widgets:
   onlineUsersDetails: "オンラインユーザー（詳細）"
   jobQueue: "ジョブキュー"
   serverMetric: "サーバーメトリクス"
+  healthScore: "ヘルススコア"
   aiscript: "AiScriptコンソール"
   userList: "ユーザーリスト"
   tweets: "ツイート"

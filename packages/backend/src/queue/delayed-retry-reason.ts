@@ -56,14 +56,20 @@ const remoteErrorMessagePatterns = [
 	"Promise timed out",
 	"maximum redirect reached",
 	"Bad Gateway",
+	"Gateway Time-out",
+	"Gateway Timeout",
 	"Hostname/IP does not match certificate's altnames",
 	"alert handshake failure",
 	"EPROTO",
+	"socket hang up",
 ];
 
 const localErrorMessagePatterns = [
 	"job stalled more than allowable limit",
+	"Acquire mutex",
 ];
+
+const remoteHttpStatusPattern = /\b5\d\d\b/;
 
 function classifyDelayedRetryReason(error: unknown): DelayedRetryReason {
 	if (error instanceof StatusError) {
@@ -110,6 +116,10 @@ function classifyDelayedRetryReasonByMessage(
 
 	for (const pattern of remoteErrorMessagePatterns) {
 		if (message.includes(pattern)) return "remote";
+	}
+
+	if (remoteHttpStatusPattern.test(message)) {
+		return "remote";
 	}
 
 	if (

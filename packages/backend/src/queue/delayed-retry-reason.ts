@@ -50,6 +50,21 @@ const remoteErrorCodes = new Set([
 	"ESOCKETTIMEDOUT",
 ]);
 
+const remoteErrorNames = new Set(["TimeoutError"]);
+
+const remoteErrorMessagePatterns = [
+	"Promise timed out",
+	"maximum redirect reached",
+	"Bad Gateway",
+	"Hostname/IP does not match certificate's altnames",
+	"alert handshake failure",
+	"EPROTO",
+];
+
+const localErrorMessagePatterns = [
+	"job stalled more than allowable limit",
+];
+
 function classifyDelayedRetryReason(error: unknown): DelayedRetryReason {
 	if (error instanceof StatusError) {
 		return error.isRetryable ? "remote" : "local";
@@ -60,6 +75,13 @@ function classifyDelayedRetryReason(error: unknown): DelayedRetryReason {
 		if (
 			typeof anyError.code === "string" &&
 			remoteErrorCodes.has(anyError.code)
+		) {
+			return "remote";
+		}
+
+		if (
+			typeof anyError.name === "string" &&
+			remoteErrorNames.has(anyError.name)
 		) {
 			return "remote";
 		}
@@ -86,12 +108,20 @@ function classifyDelayedRetryReasonByMessage(
 		if (message.includes(code)) return "remote";
 	}
 
+	for (const pattern of remoteErrorMessagePatterns) {
+		if (message.includes(pattern)) return "remote";
+	}
+
 	if (
 		["TypeError", "SyntaxError", "ReferenceError", "RangeError"].some((name) =>
 			message.includes(name),
 		)
 	) {
 		return "local";
+	}
+
+	for (const pattern of localErrorMessagePatterns) {
+		if (message.includes(pattern)) return "local";
 	}
 
 	if (message.length > 0) {

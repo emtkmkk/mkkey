@@ -15,8 +15,11 @@
 					{{ number(waiting) }}
 				</div>
 				<div class="_cell" style="text-align: center">
-					<div class="_label">Delayed</div>
+					<div class="_label">Retry Delayed</div>
 					{{ number(delayed) }}
+					<div class="reason">R {{ number(delayedRemote) }}</div>
+					<div class="reason">L {{ number(delayedLocal) }}</div>
+					<div class="reason">U {{ number(delayedUnknown) }}</div>
 				</div>
 			</div>
 		</div>
@@ -45,15 +48,16 @@
 import { markRaw, onMounted, onUnmounted, ref } from "vue";
 import XChart from "./overview.queue.chart.vue";
 import number from "@/filters/number";
-import * as os from "@/os";
 import { stream } from "@/stream";
-import { i18n } from "@/i18n";
 
 const connection = markRaw(stream.useChannel("queueStats"));
 
 const activeSincePrevTick = ref(0);
 const active = ref(0);
 const delayed = ref(0);
+const delayedRemote = ref(0);
+const delayedLocal = ref(0);
+const delayedUnknown = ref(0);
 const waiting = ref(0);
 let chartProcess = $shallowRef<InstanceType<typeof XChart>>();
 let chartActive = $shallowRef<InstanceType<typeof XChart>>();
@@ -64,10 +68,28 @@ const props = defineProps<{
 	domain: string;
 }>();
 
-const onStats = (stats) => {
+type QueueStats = Record<
+	string,
+	{
+		activeSincePrevTick: number;
+		active: number;
+		delayed: number;
+		waiting: number;
+		delayedByReason?: {
+			remote: number;
+			local: number;
+			unknown: number;
+		};
+	}
+>;
+
+const onStats = (stats: QueueStats) => {
 	activeSincePrevTick.value = stats[props.domain].activeSincePrevTick;
 	active.value = stats[props.domain].active;
 	delayed.value = stats[props.domain].delayed;
+	delayedRemote.value = stats[props.domain].delayedByReason?.remote ?? 0;
+	delayedLocal.value = stats[props.domain].delayedByReason?.local ?? 0;
+	delayedUnknown.value = stats[props.domain].delayedByReason?.unknown ?? 0;
 	waiting.value = stats[props.domain].waiting;
 
 	chartProcess.pushData(stats[props.domain].activeSincePrevTick);
@@ -76,7 +98,7 @@ const onStats = (stats) => {
 	chartWaiting.pushData(stats[props.domain].waiting);
 };
 
-const onStatsLog = (statsLog) => {
+const onStatsLog = (statsLog: QueueStats[]) => {
 	const dataProcess = [];
 	const dataActive = [];
 	const dataDelayed = [];
@@ -116,6 +138,11 @@ onUnmounted(() => {
 	&:global {
 		> .status {
 			padding: 0 0 1rem 0;
+		}
+
+		.reason {
+			font-size: 0.8em;
+			opacity: 0.8;
 		}
 
 		> .charts {

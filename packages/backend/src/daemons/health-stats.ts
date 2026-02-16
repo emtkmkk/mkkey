@@ -16,11 +16,21 @@ type QueueStats = {
 		activeSincePrevTick: number;
 		waiting: number;
 		delayed: number;
+		delayedByReason: {
+			remote: number;
+			local: number;
+			unknown: number;
+		};
 	};
 	inbox: {
 		activeSincePrevTick: number;
 		waiting: number;
 		delayed: number;
+		delayedByReason: {
+			remote: number;
+			local: number;
+			unknown: number;
+		};
 	};
 };
 
@@ -108,11 +118,16 @@ export default function () {
 				? latestServerStats.mem.active / latestServerStats.mem.total
 				: 0;
 
+		const localOrUnknownDelayed = latestQueueStats
+			? latestQueueStats.inbox.delayedByReason.local +
+				latestQueueStats.inbox.delayedByReason.unknown +
+				latestQueueStats.deliver.delayedByReason.local +
+				latestQueueStats.deliver.delayedByReason.unknown
+			: 0;
 		const queueWaiting = latestQueueStats
 			? latestQueueStats.inbox.waiting +
 				latestQueueStats.deliver.waiting +
-				latestQueueStats.inbox.delayed +
-				latestQueueStats.deliver.delayed
+				localOrUnknownDelayed
 			: 0;
 		const queueThroughputPerTick = latestQueueStats
 			? latestQueueStats.inbox.activeSincePrevTick +

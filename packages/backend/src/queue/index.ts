@@ -18,6 +18,7 @@ import processNoteApDeliver from "./processors/note-ap-deliver.js";
 import { endedPollNotification } from "./processors/ended-poll-notification.js";
 import { queueLogger } from "./logger.js";
 import { getJobInfo } from "./get-job-info.js";
+import { clearDelayedRetry, markDelayedRetry } from "./delayed-retry-reason.js";
 import {
 	systemQueue,
 	dbQueue,
@@ -66,17 +67,20 @@ systemQueue
 
 deliverQueue
 	.on("waiting", (jobId) => deliverLogger.debug(`waiting id=${jobId}`))
-	.on("active", (job) =>
-		deliverLogger.debug(`active ${getJobInfo(job, true)} to=${job.data.to}`),
-	)
-	.on("completed", (job, result) =>
+	.on("active", (job) => {
+		clearDelayedRetry("deliver", job.id);
+		deliverLogger.debug(`active ${getJobInfo(job, true)} to=${job.data.to}`);
+	})
+	.on("completed", (job, result) => {
+		clearDelayedRetry("deliver", job.id);
 		deliverLogger.debug(
 			`completed(${result}) ${getJobInfo(job, true)} to=${job.data.to}`,
-		),
-	)
-	.on("failed", (job, err) =>
-		deliverLogger.warn(`failed(${err}) ${getJobInfo(job)} to=${job.data.to}`),
-	)
+		);
+	})
+	.on("failed", (job, err) => {
+		markDelayedRetry("deliver", job, err);
+		deliverLogger.warn(`failed(${err}) ${getJobInfo(job)} to=${job.data.to}`);
+	})
 	.on("error", (job: any, err: Error) =>
 		deliverLogger.error(`error ${err}`, { job, e: renderError(err) }),
 	)
@@ -86,18 +90,23 @@ deliverQueue
 
 inboxQueue
 	.on("waiting", (jobId) => inboxLogger.debug(`waiting id=${jobId}`))
-	.on("active", (job) => inboxLogger.debug(`active ${getJobInfo(job, true)}`))
-	.on("completed", (job, result) =>
-		inboxLogger.debug(`completed(${result}) ${getJobInfo(job, true)}`),
-	)
-	.on("failed", (job, err) =>
+	.on("active", (job) => {
+		clearDelayedRetry("inbox", job.id);
+		inboxLogger.debug(`active ${getJobInfo(job, true)}`);
+	})
+	.on("completed", (job, result) => {
+		clearDelayedRetry("inbox", job.id);
+		inboxLogger.debug(`completed(${result}) ${getJobInfo(job, true)}`);
+	})
+	.on("failed", (job, err) => {
+		markDelayedRetry("inbox", job, err);
 		inboxLogger.warn(
 			`failed(${err}) ${getJobInfo(job)} activity=${
 				job.data.activity ? job.data.activity.id : "none"
 			}`,
 			{ job, e: renderError(err) },
-		),
-	)
+		);
+	})
 	.on("error", (job: any, err: Error) =>
 		inboxLogger.error(`error ${err}`, { job, e: renderError(err) }),
 	)

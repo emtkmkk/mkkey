@@ -276,6 +276,37 @@ describe("Note", () => {
 	}));
 
 	describe("notes/create", () => {
+		it("同じ idempotencyKey で短時間に再投稿すると重複として拒否される", async(async () => {
+			const postData = {
+				text: "idempotency test",
+				idempotencyKey: "note-idempotency-test-key",
+			};
+
+			const firstRes = await request("/notes/create", postData, alice);
+			assert.strictEqual(firstRes.status, 200);
+
+			const secondRes = await request("/notes/create", postData, alice);
+			assert.strictEqual(secondRes.status, 409);
+			assert.strictEqual(secondRes.body.error.code, "DUPLICATE_REQUEST");
+		}));
+
+		it("idempotencyKey の本文とヘッダーが不一致なら拒否される", async(async () => {
+			const res = await request(
+				"/notes/create",
+				{
+					text: "idempotency header mismatch",
+					idempotencyKey: "body-key",
+				},
+				alice,
+				{
+					"Idempotency-Key": "header-key",
+				},
+			);
+
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(res.body.error.code, "IDEMPOTENCY_KEY_CONFLICT");
+		}));
+
 		it("投票を添付できる", async(async () => {
 			const res = await request(
 				"/notes/create",

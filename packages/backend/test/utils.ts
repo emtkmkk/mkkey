@@ -73,6 +73,7 @@ export const request = async (
 	endpoint: string,
 	params: any,
 	me?: any,
+	extraHeaders?: Record<string, string>,
 ): Promise<{ body: any; status: number }> => {
 	const auth = me
 		? {
@@ -84,6 +85,7 @@ export const request = async (
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
+			...extraHeaders,
 		},
 		body: JSON.stringify(Object.assign(auth, params)),
 	});

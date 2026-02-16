@@ -42,6 +42,17 @@ export const api = ((
 	const authorization = authorizationToken
 		? `Bearer ${authorizationToken}`
 		: undefined;
+	const idempotencyKey =
+		endpoint === "notes/create" && typeof data.idempotencyKey === "string"
+			? data.idempotencyKey
+			: undefined;
+	const headers: Record<string, string> = {};
+	if (authorization) {
+		headers.authorization = authorization;
+	}
+	if (idempotencyKey) {
+		headers["Idempotency-Key"] = idempotencyKey;
+	}
 
 	const promise = new Promise((resolve, reject) => {
 		fetch(endpoint.indexOf("://") > -1 ? endpoint : `${apiUrl}/${endpoint}`, {
@@ -49,7 +60,7 @@ export const api = ((
 			body: JSON.stringify(data),
 			credentials: "omit",
 			cache: "no-cache",
-			headers: authorization ? { authorization } : {},
+			headers,
 		})
 			.then(async (res) => {
 				const body = res.status === 204 ? null : await res.json();

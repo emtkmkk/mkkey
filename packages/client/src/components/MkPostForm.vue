@@ -2195,6 +2195,31 @@ interface PostPayload {
         ccUserIds?: string[];
         inheritCc?: boolean;
         referenceIds?: string[];
+		idempotencyKey?: string;
+}
+
+const IDEMPOTENCY_KEY_REUSE_MS = 60 * 1000;
+let lastIdempotencyPayloadSignature: string | null = null;
+let lastIdempotencyKey: string | null = null;
+let lastIdempotencyGeneratedAt = 0;
+
+function resolveIdempotencyKey(postData: PostPayload): string {
+	const payloadSignature = JSON.stringify(postData);
+	const now = Date.now();
+	if (
+		lastIdempotencyKey != null &&
+		lastIdempotencyPayloadSignature === payloadSignature &&
+		now - lastIdempotencyGeneratedAt <= IDEMPOTENCY_KEY_REUSE_MS
+	) {
+		lastIdempotencyGeneratedAt = now;
+		return lastIdempotencyKey;
+	}
+
+	const newKey = uuid();
+	lastIdempotencyPayloadSignature = payloadSignature;
+	lastIdempotencyKey = newKey;
+	lastIdempotencyGeneratedAt = now;
+	return newKey;
 }
 
 function buildPostPayload(options: BuildPostPayloadOptions): PostPayload {
@@ -2305,6 +2330,7 @@ async function submitPostRequest({
 }: SubmitPostRequestOptions): Promise<void> {
 	posting = true;
 	try {
+		postData.idempotencyKey = resolveIdempotencyKey(postData);
 		await waitForFileSelectingToBeFalse(backupDraftData);
 		postData.fileIds =
 			((postData?.fileIds?.length ?? 0) + files.length > 0)

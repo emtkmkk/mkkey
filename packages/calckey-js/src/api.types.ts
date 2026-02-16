@@ -809,6 +809,7 @@ export type Endpoints = {
 	"notes/conversation": { req: TODO; res: TODO };
 	"notes/create": {
 		req: {
+			idempotencyKey?: string | null;
 			visibility?: "public" | "home" | "followers" | "specified";
 			visibleUserIds?: User["id"][];
 			text?: null | string;

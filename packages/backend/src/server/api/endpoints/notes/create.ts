@@ -20,6 +20,15 @@ import { HOUR } from "@/const.js";
 import { getNote } from "../../common/getters.js";
 import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
 import { publishMainStream } from "@/services/stream.js";
+import { redisClient } from "@/db/redis.js";
+
+const NOTES_CREATE_IDEMPOTENCY_TTL_SEC = 60;
+
+function normalizeIdempotencyKey(key: unknown): string | null {
+	if (typeof key !== "string") return null;
+	const normalized = key.trim();
+	return normalized.length > 0 ? normalized : null;
+}
 
 export const meta = {
 	tags: ["notes"],
@@ -48,6 +57,20 @@ export const meta = {
 	},
 
 	errors: {
+		duplicateRequest: {
+			message: "同じリクエストが短時間に送信されました。",
+			code: "DUPLICATE_REQUEST",
+			id: "8f1cbf7f-e932-47d5-a2bb-bddc877130af",
+			httpStatusCode: 409,
+		},
+
+		idempotencyKeyConflict: {
+			message: "Idempotency key がリクエスト本文とヘッダーで一致しません。",
+			code: "IDEMPOTENCY_KEY_CONFLICT",
+			id: "76090195-f1a3-44c0-95bc-e1db4f0a4d5f",
+			httpStatusCode: 400,
+		},
+
 		noSuchRenoteTarget: {
 			message: "その投稿は存在しません。",
 			code: "NO_SUCH_RENOTE_TARGET",
@@ -198,6 +221,7 @@ export const paramDef = {
 				],
 			},
 		},
+		idempotencyKey: { type: "string", maxLength: 128, nullable: true },
 	},
 	anyOf: [
 		{
@@ -238,8 +262,34 @@ export const paramDef = {
 	],
 } as const;
 
-export default define(meta, paramDef, async (ps, user) => {
+export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, _ip, headers) => {
 	const endpointStartedAt = Date.now();
+	const bodyIdempotencyKey = normalizeIdempotencyKey(ps.idempotencyKey);
+	const headerIdempotencyKey = normalizeIdempotencyKey(headers?.["idempotency-key"]);
+
+	if (
+		bodyIdempotencyKey != null &&
+		headerIdempotencyKey != null &&
+		bodyIdempotencyKey !== headerIdempotencyKey
+	) {
+		throw new ApiError(meta.errors.idempotencyKeyConflict);
+	}
+
+	const idempotencyKey = headerIdempotencyKey ?? bodyIdempotencyKey;
+	if (idempotencyKey != null) {
+		const redisKey = `notes:create:idempotency:${user.id}:${idempotencyKey}`;
+		const setResult = await redisClient.set(
+			redisKey,
+			"1",
+			"EX",
+			NOTES_CREATE_IDEMPOTENCY_TTL_SEC,
+			"NX",
+		);
+
+		if (setResult !== "OK") {
+			throw new ApiError(meta.errors.duplicateRequest);
+		}
+	}
 
 	if (user.movedToUri != null) throw new ApiError(meta.errors.accountLocked);
 	if (!ps.web && user.isMiniSilenced && ps.visibility === "public") {

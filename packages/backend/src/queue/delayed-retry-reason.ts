@@ -5,10 +5,13 @@ type QueueDomain = "deliver" | "inbox";
 
 type DelayedRetryReason = "remote" | "local" | "unknown";
 
+type DelayedRetryState = DelayedRetryReason | "pending";
+
 type DelayedRetryReasonCount = {
 	remote: number;
 	local: number;
 	unknown: number;
+	pending: number;
 };
 
 type DelayedRetryReasonStats = {
@@ -16,7 +19,7 @@ type DelayedRetryReasonStats = {
 	inbox: DelayedRetryReasonCount;
 };
 
-const domainState = new Map<QueueDomain, Map<string, DelayedRetryReason>>([
+const domainState = new Map<QueueDomain, Map<string, DelayedRetryState>>([
 	["deliver", new Map()],
 	["inbox", new Map()],
 ]);
@@ -26,11 +29,13 @@ const stats: DelayedRetryReasonStats = {
 		remote: 0,
 		local: 0,
 		unknown: 0,
+		pending: 0,
 	},
 	inbox: {
 		remote: 0,
 		local: 0,
 		unknown: 0,
+		pending: 0,
 	},
 };
 
@@ -72,6 +77,30 @@ function classifyDelayedRetryReason(error: unknown): DelayedRetryReason {
 	return "unknown";
 }
 
+function classifyDelayedRetryReasonByMessage(
+	message: string | null | undefined,
+): DelayedRetryReason | null {
+	if (!message) return null;
+
+	for (const code of remoteErrorCodes) {
+		if (message.includes(code)) return "remote";
+	}
+
+	if (
+		["TypeError", "SyntaxError", "ReferenceError", "RangeError"].some((name) =>
+			message.includes(name),
+		)
+	) {
+		return "local";
+	}
+
+	if (message.length > 0) {
+		return "unknown";
+	}
+
+	return null;
+}
+
 function getMaxAttempts(job: Bull.Job): number {
 	const attempts = job.opts?.attempts;
 	if (typeof attempts !== "number") return 1;
@@ -80,6 +109,34 @@ function getMaxAttempts(job: Bull.Job): number {
 
 function toJobId(jobId: Bull.JobId): string {
 	return String(jobId);
+}
+
+function setState(domain: QueueDomain, jobId: Bull.JobId, nextState: DelayedRetryState): void {
+	const state = domainState.get(domain);
+	if (!state) return;
+
+	const key = toJobId(jobId);
+	const prevState = state.get(key);
+	if (prevState === nextState) return;
+
+	if (prevState) {
+		stats[domain][prevState] = Math.max(0, stats[domain][prevState] - 1);
+	}
+
+	state.set(key, nextState);
+	stats[domain][nextState]++;
+}
+
+function tryClassifyByJob(job: Bull.Job): DelayedRetryReason | null {
+	const failedReason =
+		typeof job.failedReason === "string" ? job.failedReason : null;
+	const byReason = classifyDelayedRetryReasonByMessage(failedReason);
+	if (byReason) return byReason;
+
+	const stacktraceText = Array.isArray(job.stacktrace)
+		? job.stacktrace.join("\n")
+		: null;
+	return classifyDelayedRetryReasonByMessage(stacktraceText);
 }
 
 export function markDelayedRetry(
@@ -94,20 +151,7 @@ export function markDelayedRetry(
 		return;
 	}
 
-	const reason = classifyDelayedRetryReason(error);
-	const state = domainState.get(domain);
-	if (!state) return;
-
-	const key = toJobId(job.id);
-	const prevReason = state.get(key);
-	if (prevReason === reason) return;
-
-	if (prevReason) {
-		stats[domain][prevReason] = Math.max(0, stats[domain][prevReason] - 1);
-	}
-
-	state.set(key, reason);
-	stats[domain][reason]++;
+	setState(domain, job.id, classifyDelayedRetryReason(error));
 }
 
 export function clearDelayedRetry(domain: QueueDomain, jobId: Bull.JobId): void {
@@ -115,11 +159,36 @@ export function clearDelayedRetry(domain: QueueDomain, jobId: Bull.JobId): void 
 	if (!state) return;
 
 	const key = toJobId(jobId);
-	const reason = state.get(key);
-	if (!reason) return;
+	const currentState = state.get(key);
+	if (!currentState) return;
 
 	state.delete(key);
-	stats[domain][reason] = Math.max(0, stats[domain][reason] - 1);
+	stats[domain][currentState] = Math.max(0, stats[domain][currentState] - 1);
+}
+
+export function syncDelayedRetryStateFromJobs(
+	domain: QueueDomain,
+	delayedJobs: Bull.Job[],
+): void {
+	const state = domainState.get(domain);
+	if (!state) return;
+
+	const delayedJobIds = new Set<string>();
+	for (const job of delayedJobs) {
+		delayedJobIds.add(toJobId(job.id));
+		const classifiedReason = tryClassifyByJob(job);
+		if (classifiedReason) {
+			setState(domain, job.id, classifiedReason);
+		} else {
+			setState(domain, job.id, "pending");
+		}
+	}
+
+	for (const [jobId] of state) {
+		if (!delayedJobIds.has(jobId)) {
+			clearDelayedRetry(domain, jobId);
+		}
+	}
 }
 
 export function getDelayedRetryReasonStats(): DelayedRetryReasonStats {
@@ -128,11 +197,20 @@ export function getDelayedRetryReasonStats(): DelayedRetryReasonStats {
 			remote: stats.deliver.remote,
 			local: stats.deliver.local,
 			unknown: stats.deliver.unknown,
+			pending: stats.deliver.pending,
 		},
 		inbox: {
 			remote: stats.inbox.remote,
 			local: stats.inbox.local,
 			unknown: stats.inbox.unknown,
+			pending: stats.inbox.pending,
 		},
+	};
+}
+
+export function getDelayedRetryPendingCounts(): Record<QueueDomain, number> {
+	return {
+		deliver: stats.deliver.pending,
+		inbox: stats.inbox.pending,
 	};
 }

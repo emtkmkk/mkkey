@@ -97,6 +97,10 @@ export default function (app: App) {
 		"MkwTweets",
 		defineAsyncComponent(() => import("./tweets.vue")),
 	);
+	app.component(
+		"MkwHealthScore",
+		defineAsyncComponent(() => import("./health-score.vue")),
+	);
 }
 
 export const widgets = [
@@ -124,4 +128,5 @@ export const widgets = [
 	"button",
 	"aiscript",
 	"tweets",
+	"healthScore",
 ];

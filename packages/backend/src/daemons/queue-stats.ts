@@ -1,4 +1,5 @@
 import Xev from "xev";
+import { getDelayedRetryReasonStats } from "../queue/delayed-retry-reason.js";
 import { deliverQueue, inboxQueue } from "../queue/queues.js";
 
 const ev = new Xev();
@@ -30,18 +31,22 @@ export default function () {
 		const deliverJobCounts = await deliverQueue.getJobCounts();
 		const inboxJobCounts = await inboxQueue.getJobCounts();
 
+		const delayedRetryReasonStats = getDelayedRetryReasonStats();
+
 		const stats = {
 			deliver: {
 				activeSincePrevTick: activeDeliverJobs,
 				active: deliverJobCounts.active,
 				waiting: deliverJobCounts.waiting,
 				delayed: deliverJobCounts.delayed,
+				delayedByReason: delayedRetryReasonStats.deliver,
 			},
 			inbox: {
 				activeSincePrevTick: activeInboxJobs,
 				active: inboxJobCounts.active,
 				waiting: inboxJobCounts.waiting,
 				delayed: inboxJobCounts.delayed,
+				delayedByReason: delayedRetryReasonStats.inbox,
 			},
 		};
 

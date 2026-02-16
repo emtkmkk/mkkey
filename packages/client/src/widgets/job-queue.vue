@@ -38,7 +38,7 @@
 					</div>
 				</div>
 				<div>
-					<div>Delayed</div>
+					<div>Retry Delayed</div>
 					<div
 						:class="{
 							inc: current.inbox.delayed > prev.inbox.delayed,
@@ -46,6 +46,11 @@
 						}"
 					>
 						{{ number(current.inbox.delayed) }}
+						<div class="reasons">
+							R: {{ number(current.inbox.delayedByReason.remote) }} /
+							L: {{ number(current.inbox.delayedByReason.local) }} /
+							U: {{ number(current.inbox.delayedByReason.unknown) }}
+						</div>
 					</div>
 				</div>
 				<div>
@@ -96,7 +101,7 @@
 					</div>
 				</div>
 				<div>
-					<div>Delayed</div>
+					<div>Retry Delayed</div>
 					<div
 						:class="{
 							inc: current.deliver.delayed > prev.deliver.delayed,
@@ -104,6 +109,11 @@
 						}"
 					>
 						{{ number(current.deliver.delayed) }}
+						<div class="reasons">
+							R: {{ number(current.deliver.delayedByReason.remote) }} /
+							L: {{ number(current.deliver.delayedByReason.local) }} /
+							U: {{ number(current.deliver.delayedByReason.unknown) }}
+						</div>
 					</div>
 				</div>
 				<div>
@@ -123,19 +133,13 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, reactive, ref } from "vue";
-import {
-	useWidgetPropsManager,
-	Widget,
-	WidgetComponentEmits,
-	WidgetComponentExpose,
-	WidgetComponentProps,
-} from "./widget";
-import { GetFormResultType } from "@/scripts/form";
+import { onUnmounted, reactive } from "vue";
+import { useWidgetPropsManager } from "./widget";
+import type { Widget, WidgetComponentExpose } from "./widget";
+import type { GetFormResultType } from "@/scripts/form";
 import { stream } from "@/stream";
 import number from "@/filters/number";
 import * as sound from "@/scripts/sound";
-import * as os from "@/os";
 import { deepClone } from "@/scripts/clone";
 
 const name = "jobQueue";
@@ -152,6 +156,23 @@ const widgetPropsDef = {
 };
 
 type WidgetProps = GetFormResultType<typeof widgetPropsDef>;
+
+type QueueDomain = "inbox" | "deliver";
+
+type QueueStats = Record<
+	QueueDomain,
+	{
+		activeSincePrevTick: number;
+		active: number;
+		waiting: number;
+		delayed: number;
+		delayedByReason: {
+			remote: number;
+			local: number;
+			unknown: number;
+		};
+	}
+>;
 
 // 現時点ではvueの制限によりimportしたtypeをジェネリックに渡せない
 //const props = defineProps<WidgetComponentProps<WidgetProps>>();
@@ -173,12 +194,22 @@ const current = reactive({
 		active: 0,
 		waiting: 0,
 		delayed: 0,
+		delayedByReason: {
+			remote: 0,
+			local: 0,
+			unknown: 0,
+		},
 	},
 	deliver: {
 		activeSincePrevTick: 0,
 		active: 0,
 		waiting: 0,
 		delayed: 0,
+		delayedByReason: {
+			remote: 0,
+			local: 0,
+			unknown: 0,
+		},
 	},
 });
 const prev = reactive({} as typeof current);
@@ -189,17 +220,22 @@ sound
 	.loadAudio("syuilo/queue-jammed")
 	.then((buf) => (jammedAudioBuffer = buf ?? null));
 
-for (const domain of ["inbox", "deliver"]) {
+const queueDomains: QueueDomain[] = ["inbox", "deliver"];
+
+for (const domain of queueDomains) {
 	prev[domain] = deepClone(current[domain]);
 }
 
-const onStats = (stats) => {
-	for (const domain of ["inbox", "deliver"]) {
+const onStats = (stats: QueueStats) => {
+	for (const domain of queueDomains) {
 		prev[domain] = deepClone(current[domain]);
 		current[domain].activeSincePrevTick = stats[domain].activeSincePrevTick;
 		current[domain].active = stats[domain].active;
 		current[domain].waiting = stats[domain].waiting;
 		current[domain].delayed = stats[domain].delayed;
+		current[domain].delayedByReason.remote = stats[domain].delayedByReason.remote;
+		current[domain].delayedByReason.local = stats[domain].delayedByReason.local;
+		current[domain].delayedByReason.unknown = stats[domain].delayedByReason.unknown;
 
 		if (
 			current[domain].waiting > 0 &&
@@ -217,7 +253,7 @@ const onStats = (stats) => {
 	}
 };
 
-const onStatsLog = (statsLog) => {
+const onStatsLog = (statsLog: QueueStats[]) => {
 	for (const stats of [...statsLog].reverse()) {
 		onStats(stats);
 	}
@@ -291,6 +327,12 @@ defineExpose<WidgetComponentExpose>({
 
 					&.dec {
 						color: var(--success);
+					}
+
+					> .reasons {
+						font-size: 0.75em;
+						opacity: 0.8;
+						line-height: 1.3;
 					}
 				}
 			}

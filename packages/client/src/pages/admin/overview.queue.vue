@@ -135,30 +135,28 @@ onUnmounted(() => {
 
 <style lang="scss" module>
 .root {
-	&:global {
-		> .status {
-			padding: 0 0 1rem 0;
-		}
+	> :global(.status) {
+		padding: 0 0 1rem 0;
+	}
 
-		.reason {
-			font-size: 0.8em;
-			opacity: 0.8;
-		}
+	:global(.reason) {
+		font-size: 0.8em;
+		opacity: 0.8;
+	}
 
-		> .charts {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 0.75rem;
+	> :global(.charts) {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
 
-			> .chart {
-				min-width: 0;
-				padding: 1rem;
-				background: var(--panel);
-				border-radius: var(--radius);
+		> :global(.chart) {
+			min-width: 0;
+			padding: 1rem;
+			background: var(--panel);
+			border-radius: var(--radius);
 
-				> .title {
-					font-size: 0.85em;
-				}
+			> :global(.title) {
+				font-size: 0.85em;
 			}
 		}
 	}

@@ -30,6 +30,7 @@ const logger = new Logger("inbox");
 const nonRetryableIdentifiableErrorIds = new Set([
 	"639cc3a5-fe68-b071-0c20-413c887054cd", // deleted note reaction
 	"119b8757-2ba5-385e-82cf-7fa4bc73c4d1", // muted reaction rejected
+	"8884c2dd-5795-4ac9-b27e-6a01d38190f9", // duplicated Accept without follow request
 ]);
 
 

@@ -28,6 +28,7 @@ export default async function (
 		throw new IdentifiableError(
 			"8884c2dd-5795-4ac9-b27e-6a01d38190f9",
 			"No follow request.",
+			false,
 		);
 	}
 

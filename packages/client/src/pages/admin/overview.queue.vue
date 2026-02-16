@@ -15,11 +15,12 @@
 					{{ number(waiting) }}
 				</div>
 				<div class="_cell" style="text-align: center">
-					<div class="_label">Retry Delayed</div>
+					<div class="_label">Delayed</div>
 					{{ number(delayed) }}
-					<div class="reason">R {{ number(delayedRemote) }}</div>
-					<div class="reason">L {{ number(delayedLocal) }}</div>
-					<div class="reason">U {{ number(delayedUnknown) }}</div>
+					<div v-if="delayedRemote > 0" class="reason">R: {{ number(delayedRemote) }}</div>
+					<div v-if="delayedLocal > 0" class="reason">L: {{ number(delayedLocal) }}</div>
+					<div v-if="delayedUnknown > 0" class="reason">U: {{ number(delayedUnknown) }}</div>
+					<div v-if="delayedPending > 0" class="reason">?: {{ number(delayedPending) }}</div>
 				</div>
 			</div>
 		</div>
@@ -58,6 +59,7 @@ const delayed = ref(0);
 const delayedRemote = ref(0);
 const delayedLocal = ref(0);
 const delayedUnknown = ref(0);
+const delayedPending = ref(0);
 const waiting = ref(0);
 let chartProcess = $shallowRef<InstanceType<typeof XChart>>();
 let chartActive = $shallowRef<InstanceType<typeof XChart>>();
@@ -79,17 +81,24 @@ type QueueStats = Record<
 			remote: number;
 			local: number;
 			unknown: number;
+			pending: number;
 		};
 	}
 >;
 
 const onStats = (stats: QueueStats) => {
+	const delayedByReason = normalizeDelayedByReason(
+		stats[props.domain].delayed,
+		stats[props.domain].delayedByReason,
+	);
+
 	activeSincePrevTick.value = stats[props.domain].activeSincePrevTick;
 	active.value = stats[props.domain].active;
 	delayed.value = stats[props.domain].delayed;
-	delayedRemote.value = stats[props.domain].delayedByReason?.remote ?? 0;
-	delayedLocal.value = stats[props.domain].delayedByReason?.local ?? 0;
-	delayedUnknown.value = stats[props.domain].delayedByReason?.unknown ?? 0;
+	delayedRemote.value = delayedByReason.remote;
+	delayedLocal.value = delayedByReason.local;
+	delayedUnknown.value = delayedByReason.unknown;
+	delayedPending.value = delayedByReason.pending;
 	waiting.value = stats[props.domain].waiting;
 
 	chartProcess.pushData(stats[props.domain].activeSincePrevTick);
@@ -131,6 +140,52 @@ onUnmounted(() => {
 	connection.off("statsLog", onStatsLog);
 	connection.dispose();
 });
+
+function normalizeDelayedByReason(
+	delayed: number,
+	delayedByReason?: {
+		remote: number;
+		local: number;
+		unknown: number;
+		pending: number;
+	},
+): {
+	remote: number;
+	local: number;
+	unknown: number;
+	pending: number;
+} {
+	const remote = delayedByReason?.remote ?? 0;
+	const local = delayedByReason?.local ?? 0;
+	const unknown = delayedByReason?.unknown ?? 0;
+	const pending = delayedByReason?.pending ?? 0;
+	const total = remote + local + unknown + pending;
+
+	if (delayed > 0 && total === 0) {
+		return {
+			remote,
+			local,
+			unknown: delayed,
+			pending: 0,
+		};
+	}
+
+	if (total > delayed) {
+		return {
+			remote,
+			local,
+			unknown: Math.max(0, delayed - remote - local - pending),
+			pending,
+		};
+	}
+
+	return {
+		remote,
+		local,
+		unknown,
+		pending,
+	};
+}
 </script>
 
 <style lang="scss" module>

@@ -32,7 +32,12 @@
 					>
 						<div class="name">{{ item.label }}</div>
 						<div class="value">{{ item.valueText }}</div>
-						<div class="penalty">-{{ item.penalty.toFixed(1) }}</div>
+						<div
+							class="penalty"
+							:class="{ danger: item.penalty > 0 }"
+						>
+							{{ item.penalty > 0 ? `-${item.penalty.toFixed(1)}` : "OK" }}
+						</div>
 					</li>
 				</ul>
 			</details>
@@ -347,7 +352,10 @@ const metrics = computed(() => {
 				widgetProps.queueWarn,
 				widgetProps.queueCritical,
 			),
-			valueText: `${current.queuePressure.toFixed(2)}x (waiting=${current.queueWaiting})`,
+			valueText:
+				current.queueWaiting > 0
+					? `${current.queuePressure.toFixed(2)}x (waiting=${current.queueWaiting})`
+					: `${current.queuePressure.toFixed(2)}x`,
 			tooltip: `warn=${widgetProps.queueWarn} critical=${widgetProps.queueCritical}`,
 		},
 		{
@@ -576,9 +584,12 @@ function clampRange(value: number, min: number, max: number): number {
 				}
 
 				> .penalty {
-					color: var(--error);
 					min-width: 3.5rem;
 					text-align: right;
+
+					&.danger {
+						color: var(--error);
+					}
 				}
 			}
 		}

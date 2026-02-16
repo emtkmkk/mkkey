@@ -38,7 +38,7 @@
 					</div>
 				</div>
 				<div>
-					<div>Retry Delayed</div>
+					<div>Delayed</div>
 					<div
 						:class="{
 							inc: current.inbox.delayed > prev.inbox.delayed,
@@ -47,9 +47,18 @@
 					>
 						{{ number(current.inbox.delayed) }}
 						<div class="reasons">
-							R: {{ number(current.inbox.delayedByReason.remote) }} /
-							L: {{ number(current.inbox.delayedByReason.local) }} /
-							U: {{ number(current.inbox.delayedByReason.unknown) }}
+							<div v-if="current.inbox.delayedByReason.remote > 0">
+								R: {{ number(current.inbox.delayedByReason.remote) }}
+							</div>
+							<div v-if="current.inbox.delayedByReason.local > 0">
+								L: {{ number(current.inbox.delayedByReason.local) }}
+							</div>
+							<div v-if="current.inbox.delayedByReason.unknown > 0">
+								U: {{ number(current.inbox.delayedByReason.unknown) }}
+							</div>
+							<div v-if="current.inbox.delayedByReason.pending > 0">
+								?: {{ number(current.inbox.delayedByReason.pending) }}
+							</div>
 						</div>
 					</div>
 				</div>
@@ -101,7 +110,7 @@
 					</div>
 				</div>
 				<div>
-					<div>Retry Delayed</div>
+					<div>Delayed</div>
 					<div
 						:class="{
 							inc: current.deliver.delayed > prev.deliver.delayed,
@@ -110,9 +119,18 @@
 					>
 						{{ number(current.deliver.delayed) }}
 						<div class="reasons">
-							R: {{ number(current.deliver.delayedByReason.remote) }} /
-							L: {{ number(current.deliver.delayedByReason.local) }} /
-							U: {{ number(current.deliver.delayedByReason.unknown) }}
+							<div v-if="current.deliver.delayedByReason.remote > 0">
+								R: {{ number(current.deliver.delayedByReason.remote) }}
+							</div>
+							<div v-if="current.deliver.delayedByReason.local > 0">
+								L: {{ number(current.deliver.delayedByReason.local) }}
+							</div>
+							<div v-if="current.deliver.delayedByReason.unknown > 0">
+								U: {{ number(current.deliver.delayedByReason.unknown) }}
+							</div>
+							<div v-if="current.deliver.delayedByReason.pending > 0">
+								?: {{ number(current.deliver.delayedByReason.pending) }}
+							</div>
 						</div>
 					</div>
 				</div>
@@ -170,6 +188,7 @@ type QueueStats = Record<
 			remote: number;
 			local: number;
 			unknown: number;
+			pending: number;
 		};
 	}
 >;
@@ -198,6 +217,7 @@ const current = reactive({
 			remote: 0,
 			local: 0,
 			unknown: 0,
+			pending: 0,
 		},
 	},
 	deliver: {
@@ -209,6 +229,7 @@ const current = reactive({
 			remote: 0,
 			local: 0,
 			unknown: 0,
+			pending: 0,
 		},
 	},
 });
@@ -233,9 +254,14 @@ const onStats = (stats: QueueStats) => {
 		current[domain].active = stats[domain].active;
 		current[domain].waiting = stats[domain].waiting;
 		current[domain].delayed = stats[domain].delayed;
-		current[domain].delayedByReason.remote = stats[domain].delayedByReason.remote;
-		current[domain].delayedByReason.local = stats[domain].delayedByReason.local;
-		current[domain].delayedByReason.unknown = stats[domain].delayedByReason.unknown;
+		const delayedByReason = normalizeDelayedByReason(
+			stats[domain].delayed,
+			stats[domain].delayedByReason,
+		);
+		current[domain].delayedByReason.remote = delayedByReason.remote;
+		current[domain].delayedByReason.local = delayedByReason.local;
+		current[domain].delayedByReason.unknown = delayedByReason.unknown;
+		current[domain].delayedByReason.pending = delayedByReason.pending;
 
 		if (
 			current[domain].waiting > 0 &&
@@ -278,6 +304,42 @@ defineExpose<WidgetComponentExpose>({
 	configure,
 	id: props.widget ? props.widget.id : null,
 });
+
+function normalizeDelayedByReason(
+	delayed: number,
+	delayedByReason: QueueStats[QueueDomain]["delayedByReason"],
+): QueueStats[QueueDomain]["delayedByReason"] {
+	const remote = delayedByReason.remote;
+	const local = delayedByReason.local;
+	const unknown = delayedByReason.unknown;
+	const pending = delayedByReason.pending;
+	const total = remote + local + unknown + pending;
+
+	if (delayed > 0 && total === 0) {
+		return {
+			remote,
+			local,
+			unknown: delayed,
+			pending: 0,
+		};
+	}
+
+	if (total > delayed) {
+		return {
+			remote,
+			local,
+			unknown: Math.max(0, delayed - remote - local - pending),
+			pending,
+		};
+	}
+
+	return {
+		remote,
+		local,
+		unknown,
+		pending,
+	};
+}
 </script>
 
 <style lang="scss" scoped>

@@ -20,6 +20,7 @@ type QueueStats = {
 			remote: number;
 			local: number;
 			unknown: number;
+			pending: number;
 		};
 	};
 	inbox: {
@@ -30,6 +31,7 @@ type QueueStats = {
 			remote: number;
 			local: number;
 			unknown: number;
+			pending: number;
 		};
 	};
 };
@@ -121,8 +123,10 @@ export default function () {
 		const localOrUnknownDelayed = latestQueueStats
 			? latestQueueStats.inbox.delayedByReason.local +
 				latestQueueStats.inbox.delayedByReason.unknown +
+				latestQueueStats.inbox.delayedByReason.pending +
 				latestQueueStats.deliver.delayedByReason.local +
-				latestQueueStats.deliver.delayedByReason.unknown
+				latestQueueStats.deliver.delayedByReason.unknown +
+				latestQueueStats.deliver.delayedByReason.pending
 			: 0;
 		const queueWaiting = latestQueueStats
 			? latestQueueStats.inbox.waiting +

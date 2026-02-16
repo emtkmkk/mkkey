@@ -110,6 +110,7 @@ export async function masterMain() {
 	) {
 		import("../daemons/server-stats.js").then((x) => x.default());
 		import("../daemons/queue-stats.js").then((x) => x.default());
+		import("../daemons/delayed-retry-sync.js").then((x) => x.default());
 		import("../daemons/health-stats.js").then((x) => x.default());
 		import("../daemons/janitor.js").then((x) => x.default());
 	}

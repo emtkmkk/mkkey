@@ -78,6 +78,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	}
 
 	const authData = Buffer.from(attestation.authData);
+	const signCount = authData.readUInt32BE(33);
 	const credentialIdLength = authData.readUInt16BE(53);
 	const credentialId = authData.slice(55, 55 + credentialIdLength);
 	const publicKeyData = authData.slice(55 + credentialIdLength);
@@ -132,6 +133,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		lastUsed: new Date(),
 		name: ps.name,
 		publicKey: verificationData.publicKey.toString("hex"),
+		signCount,
 	});
 
 	// Publish meUpdated event

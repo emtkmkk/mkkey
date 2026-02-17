@@ -61,8 +61,15 @@
 					primary
 					:disabled="signing"
 					style="margin: 1rem auto"
-					>{{ signing ? i18n.ts.loggingIn : i18n.ts.login }}</MkButton
-				>
+					>{{ signing ? i18n.ts.loggingIn : i18n.ts.login }}</MkButton>
+				<MkButton
+					v-if="window.PublicKeyCredential"
+					class="_formBlock"
+					type="button"
+					:disabled="signing || queryingKey"
+					@click="signinWithPasskey"
+					style="margin: 0 auto"
+				>{{ i18n.ts.securityKey }}</MkButton>
 			</div>
 			<div
 				v-if="totpLogin"
@@ -178,7 +185,6 @@ let password = $ref("");
 let token = $ref("");
 let host = $ref(toUnicode(configHost));
 let totpLogin = $ref(false);
-let credential = $ref(null);
 let challengeData = $ref(null);
 let queryingKey = $ref(false);
 let hCaptchaResponse = $ref(null);
@@ -263,6 +269,7 @@ function queryKey() {
 					transports: ["usb", "nfc", "ble", "internal"],
 				})),
 				timeout: 60 * 1000,
+				userVerification: "preferred",
 			},
 		})
 		.catch(() => {
@@ -296,6 +303,48 @@ function queryKey() {
 				type: "error",
 				text: i18n.ts.signinFailed,
 			});
+			signing = false;
+		});
+}
+
+
+async function signinWithPasskey() {
+	if (!window.PublicKeyCredential || !navigator.credentials) return;
+	signing = true;
+	queryingKey = true;
+
+	os.api("signin/passkey-challenge", {}, undefined, true)
+		.then((res) => {
+			challengeData = res;
+			return navigator.credentials.get({
+				publicKey: {
+					challenge: byteify(res.challenge, "base64"),
+					timeout: 60 * 1000,
+					userVerification: "preferred",
+				},
+			});
+		})
+		.then((passkeyCredential) => {
+			const credential = passkeyCredential as PublicKeyCredential;
+			const response = credential.response as AuthenticatorAssertionResponse;
+			return os.api("signin", {
+				signature: hexify(response.signature),
+				authenticatorData: hexify(response.authenticatorData),
+				clientDataJSON: hexify(response.clientDataJSON),
+				credentialId: credential.id,
+				userHandle: response.userHandle ? hexify(response.userHandle) : null,
+				challengeId: challengeData.challengeId,
+				"hcaptcha-response": hCaptchaResponse,
+				"g-recaptcha-response": reCaptchaResponse,
+			});
+		})
+		.then((res) => {
+			emit("login", res);
+			return onLogin(res);
+		})
+		.catch(loginFailed)
+		.finally(() => {
+			queryingKey = false;
 			signing = false;
 		});
 }

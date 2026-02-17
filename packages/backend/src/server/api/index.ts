@@ -19,6 +19,7 @@ import compatibility from "./compatibility.js";
 import handler from "./api-handler.js";
 import signup from "./private/signup.js";
 import signin from "./private/signin.js";
+import signinPasskeyChallenge from "./private/signin-passkey-challenge.js";
 import signupPending from "./private/signup-pending.js";
 import verifyEmail from "./private/verify-email.js";
 import discord from "./service/discord.js";
@@ -207,6 +208,7 @@ for (const endpoint of [...endpoints, ...compatibility]) {
 
 router.post("/signup", signup);
 router.post("/signin", signin);
+router.post("/signin/passkey-challenge", signinPasskeyChallenge);
 router.post("/signup-pending", signupPending);
 router.post("/verify-email", verifyEmail);
 

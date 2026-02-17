@@ -71,6 +71,7 @@ import { Webhook } from "./entities/webhook.js";
 import { UserIp } from "./entities/user-ip.js";
 import { NoteEdit } from "./entities/note-edit.js";
 import { UserMemo } from "./entities/user-memo.js";
+import { PasskeyLoginChallenge } from "./entities/passkey-login-challenge.js";
 
 export const Announcements = db.getRepository(Announcement);
 export const AnnouncementReads = db.getRepository(AnnouncementRead);
@@ -89,6 +90,7 @@ export const UserProfiles = db.getRepository(UserProfile);
 export const UserKeypairs = db.getRepository(UserKeypair);
 export const UserPendings = db.getRepository(UserPending);
 export const AttestationChallenges = db.getRepository(AttestationChallenge);
+export const PasskeyLoginChallenges = db.getRepository(PasskeyLoginChallenge);
 export const UserSecurityKeys = db.getRepository(UserSecurityKey);
 export const UserPublickeys = db.getRepository(UserPublickey);
 export const UserLists = UserListRepository;

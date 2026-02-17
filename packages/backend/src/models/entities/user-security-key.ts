@@ -45,6 +45,12 @@ export class UserSecurityKey {
 	})
 	public name: string;
 
+	@Column("integer", {
+		default: 0,
+		comment: "Signature counter from authenticatorData for replay detection.",
+	})
+	public signCount: number;
+
 	constructor(data: Partial<UserSecurityKey>) {
 		if (data == null) return;
 

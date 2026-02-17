@@ -1,5 +1,5 @@
 import define from "../../../define.js";
-import { UserProfiles, AttestationChallenges } from "@/models/index.js";
+import { UserProfiles, AttestationChallenges, UserSecurityKeys } from "@/models/index.js";
 import { promisify } from "node:util";
 import * as crypto from "node:crypto";
 import { genId } from "@/misc/gen-id.js";
@@ -32,9 +32,9 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new Error("incorrect password");
 	}
 
-	// if (!profile.twoFactorEnabled) {
-	// 	throw new Error("2fa not enabled");
-	// }
+	if (!profile.twoFactorEnabled) {
+		throw new Error("2fa not enabled");
+	}
 
 	// 32 byte challenge
 	const entropy = await randomBytes(32);
@@ -54,8 +54,15 @@ export default define(meta, paramDef, async (ps, user) => {
 		registrationChallenge: true,
 	});
 
+	const securityKeys = await UserSecurityKeys.findBy({
+		userId: user.id,
+	});
+
 	return {
 		challengeId,
 		challenge,
+		excludeCredentials: securityKeys.map((key) => ({
+			id: key.id,
+		})),
 	};
 });

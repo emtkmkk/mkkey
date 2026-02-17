@@ -269,9 +269,20 @@ function addSecurityKey() {
 							name: $i!.username,
 							displayName: $i!.name,
 						},
-						pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+						pubKeyCredParams: [
+							{ alg: -7, type: "public-key" },
+							{ alg: -257, type: "public-key" },
+						],
+						authenticatorSelection: {
+							residentKey: "preferred",
+							userVerification: "preferred",
+						},
 						timeout: 60000,
-						attestation: "direct",
+						attestation: "none",
+						excludeCredentials: (reg!.excludeCredentials ?? []).map((key) => ({
+							id: byteify(key.id, "hex"),
+							type: "public-key",
+						})),
 					},
 					saving: true,
 				};

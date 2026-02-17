@@ -108,6 +108,7 @@ export function verifyLogin({
 	clientData,
 	signature,
 	challenge,
+	requireUserVerification = false,
 }: {
 	publicKey: Buffer;
 	authenticatorData: Buffer;
@@ -115,6 +116,7 @@ export function verifyLogin({
 	clientData: any;
 	signature: Buffer;
 	challenge: string;
+	requireUserVerification?: boolean;
 }) {
 	if (clientData.type !== "webauthn.get") {
 		throw new Error("type is not webauthn.get");
@@ -127,15 +129,44 @@ export function verifyLogin({
 		throw new Error("origin mismatch");
 	}
 
+	if (authenticatorData.length < 37) {
+		throw new Error("authenticatorData too short");
+	}
+
+	const rpIdHash = authenticatorData.slice(0, 32);
+	const rpIdHashReal = hash(Buffer.from(config.hostname, "utf-8"));
+
+	if (!rpIdHash.equals(rpIdHashReal)) {
+		throw new Error("rpIdHash mismatch");
+	}
+
+	const flags = authenticatorData[32];
+	const userPresent = !!(flags & 0x01);
+	const userVerified = !!(flags & 0x04);
+
+	if (!userPresent) {
+		throw new Error("user not present");
+	}
+
+	if (requireUserVerification && !userVerified) {
+		throw new Error("user not verified");
+	}
+
+	const signCount = authenticatorData.readUInt32BE(33);
 	const verificationData = Buffer.concat(
 		[authenticatorData, hash(clientDataJSON)],
 		32 + authenticatorData.length,
 	);
 
-	return crypto
+	const isValid = crypto
 		.createVerify("SHA256")
 		.update(verificationData)
 		.verify(PEMString(publicKey), signature);
+
+	return {
+		isValid,
+		signCount,
+	};
 }
 
 export const procedures = {

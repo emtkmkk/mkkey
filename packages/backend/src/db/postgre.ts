@@ -76,6 +76,7 @@ import { Webhook } from "@/models/entities/webhook.js";
 import { UserIp } from "@/models/entities/user-ip.js";
 import { NoteEdit } from "@/models/entities/note-edit.js";
 import { UserMemo } from "@/models/entities/user-memo.js";
+import { PasskeyLoginChallenge } from "@/models/entities/passkey-login-challenge.js";
 
 import { entities as charts } from "@/services/chart/entities.js";
 import { envOption } from "../env.js";
@@ -139,6 +140,7 @@ export const entities = [
 	UserMemo,
 	UsedUsername,
 	AttestationChallenge,
+	PasskeyLoginChallenge,
 	Following,
 	FollowRequest,
 	Muting,

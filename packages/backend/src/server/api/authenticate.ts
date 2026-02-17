@@ -17,6 +17,7 @@ export class AuthenticationError extends Error {
 
 const AUTH_USER_SELECT = {
 	id: true,
+	username: true,
 	host: true,
 	isSuspended: true,
 	isAdmin: true,

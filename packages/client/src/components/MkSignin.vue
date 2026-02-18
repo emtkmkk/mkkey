@@ -82,7 +82,11 @@
 				</div>
 				<div class="twofa-group totp-group">
 					<p style="margin-bottom: 0">
-						{{ i18n.ts.twoStepAuthentication }}
+						{{
+							user && user.twoFactorEnabled
+								? i18n.ts.twoStepAuthentication
+								: i18n.ts.password
+						}}
 					</p>
 					<MkInput
 						v-if="user && user.usePasswordLessLogin"
@@ -98,6 +102,7 @@
 						></template>
 					</MkInput>
 					<MkInput
+						v-if="user && user.twoFactorEnabled"
 						v-model="token"
 						class="_formBlock"
 						type="text"
@@ -282,6 +287,7 @@ function queryKey() {
 		})
 		.catch(() => {
 			queryingKey = false;
+			signing = false;
 			return Promise.reject(null);
 		})
 		.then((credential) => {
@@ -362,7 +368,7 @@ async function onSubmit() {
 	if (!user && username) {
 		await fetchUser();
 	}
-	if (!totpLogin && user && user.twoFactorEnabled) {
+	if (!totpLogin && user && (user.twoFactorEnabled || user.usePasswordLessLogin)) {
 		if (window.PublicKeyCredential && user.securityKeys) {
 			os.api("signin", {
 				username,

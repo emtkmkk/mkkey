@@ -32,7 +32,7 @@ import MkButton from "@/components/MkButton.vue";
 import { useRouter } from "@/router";
 
 /** 誘導先ごとの表示名・説明。path は先頭の / なしで指定。 */
-export const EXTERNAL_APP_CONFIG: Record<
+const EXTERNAL_APP_CONFIG: Record<
 	string,
 	{ title: string; description: string; moveLabel?: string; icon: string }
 > = {

@@ -127,8 +127,7 @@
 				class="_borderButton _gap"
 				:href="`${apiUrl}/signin/twitter`"
 				><i
-					class="ph-twitter-logo ph-bold ph-lg"
-					style="margin-right: 0.25rem"
+					class="social-icon ph-twitter-logo ph-bold ph-lg"
 				></i
 				>{{ i18n.t("signinWith", { x: "Twitter" }) }}</a
 			>
@@ -137,8 +136,7 @@
 				class="_borderButton _gap"
 				:href="`${apiUrl}/signin/github`"
 				><i
-					class="ph-github-logo ph-bold ph-lg"
-					style="margin-right: 0.25rem"
+					class="social-icon ph-github-logo ph-bold ph-lg"
 				></i
 				>{{ i18n.t("signinWith", { x: "GitHub" }) }}</a
 			>
@@ -149,7 +147,7 @@
 				:disabled="signing || queryingKey"
 				@click="signinWithPasskey"
 			>
-				<i class="ph-key ph-bold ph-lg" style="margin-right: 0.25rem"></i>
+				<i class="social-icon ph-key ph-bold ph-lg"></i>
 				{{ i18n.t("signinWith", { x: i18n.ts.securityKey }) }}
 			</button>
 			<a
@@ -157,8 +155,7 @@
 				class="_borderButton _gap"
 				:href="`${apiUrl}/signin/discord`"
 				><i
-					class="ph-discord-logo ph-bold ph-lg"
-					style="margin-right: 0.25rem"
+					class="social-icon ph-discord-logo ph-bold ph-lg"
 				></i
 				>{{ i18n.t("signinWith", { x: "Discord" }) }}</a
 			>
@@ -478,6 +475,16 @@ function resetPassword() {
 			background-size: cover;
 			border-radius: 100%;
 		}
+
+		.2fa-signin {
+			.totp-group > button[type="submit"] {
+				margin: 1rem auto 0;
+			}
+		}
+	}
+
+	.social-icon {
+		margin-right: 0.5rem;
 	}
 }
 </style>

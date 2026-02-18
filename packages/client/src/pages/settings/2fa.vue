@@ -15,15 +15,23 @@
 
 			<h2 class="heading">{{ i18n.ts.securityKey }}</h2>
 			<p>{{ i18n.ts._2fa.securityKeyInfo }}</p>
-			<div class="key-list">
-				<div v-for="key in $i.securityKeysList" class="key">
-					<h3>{{ key.name }}</h3>
-					<div class="last-used">
-						{{ i18n.ts.lastUsed }}<MkTime :time="key.lastUsed" />
+			<div v-if="$i.securityKeysList.length > 0" class="key-list">
+				<div
+					v-for="key in $i.securityKeysList"
+					:key="key.id"
+					v-panel
+					class="key"
+				>
+					<div class="key-header">
+						<h3>{{ key.name }}</h3>
+						<MkButton danger @click="unregisterKey(key)">{{
+							i18n.ts.unregister
+						}}</MkButton>
 					</div>
-					<MkButton @click="unregisterKey(key)">{{
-						i18n.ts.unregister
-					}}</MkButton>
+					<div class="_keyValue">
+						<div>{{ i18n.ts.lastUsed }}:</div>
+						<div><MkTime :time="key.lastUsed" /></div>
+					</div>
 				</div>
 			</div>
 
@@ -312,3 +320,30 @@ async function updatePasswordLessLogin() {
 	});
 }
 </script>
+
+<style lang="scss" scoped>
+.key-list {
+	display: grid;
+	gap: 0.75rem;
+	margin: 1rem 0;
+}
+
+.key {
+	padding: 1rem;
+
+	> .key-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 0.75rem;
+
+		> h3 {
+			margin: 0;
+			font-size: 1rem;
+			line-height: 1.4;
+			word-break: break-word;
+		}
+	}
+}
+</style>

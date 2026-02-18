@@ -1,36 +1,40 @@
 <template>
 	<div class="_formRoot">
-		<FormSection>
+		<FormSection class="_formBlock">
 			<template #label>{{ i18n.ts.password }}</template>
-			<FormButton primary @click="change()">{{
-				i18n.ts.changePassword
-			}}</FormButton>
+			<FormSlot>
+				<FormButton primary @click="change()">{{
+					i18n.ts.changePassword
+				}}</FormButton>
+			</FormSlot>
 		</FormSection>
 
-		<FormSection>
+		<FormSection class="_formBlock">
 			<template #label>{{ i18n.ts.twoStepAuthentication }}</template>
 			<X2fa />
 		</FormSection>
 
-		<FormSection>
+		<FormSection class="_formBlock">
 			<template #label>{{ i18n.ts.signinHistory }}</template>
 			<MkPagination :pagination="pagination" disable-auto-load>
+				<template #empty>
+					<FormInfo>{{ i18n.ts.noHistory }}</FormInfo>
+				</template>
 				<template #default="{ items }">
-					<div>
+					<div v-panel class="signin-history">
 						<div
 							v-for="item in items"
 							:key="item.id"
-							v-panel
-							class="timnmucd"
+							class="signin-history-item"
 						>
 							<header>
 								<i
 									v-if="item.success"
-									class="ph-check ph-bold ph-lg icon succ"
+									class="ph-check-circle ph-bold ph-lg icon succ"
 								></i>
 								<i
 									v-else
-									class="ph-circle-wavy-warning ph-bold ph-lg icon fail"
+									class="ph-x-circle ph-bold ph-lg icon fail"
 								></i>
 								<code class="ip _monospace">{{ item.ip }}</code>
 								<MkTime :time="item.createdAt" class="time" />
@@ -41,7 +45,7 @@
 			</MkPagination>
 		</FormSection>
 
-		<FormSection>
+		<FormSection class="_formBlock">
 			<FormSlot>
 				<FormButton danger @click="regenerateToken"
 					><i class="ph-arrows-clockwise ph-bold ph-lg"></i>
@@ -60,6 +64,7 @@ import X2fa from "./2fa.vue";
 import FormSection from "@/components/form/section.vue";
 import FormSlot from "@/components/form/slot.vue";
 import FormButton from "@/components/MkButton.vue";
+import FormInfo from "@/components/MkInfo.vue";
 import MkPagination from "@/components/MkPagination.vue";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
@@ -111,7 +116,7 @@ function regenerateToken(): void {
 		type: "password",
 	}).then(({ canceled, result: password }) => {
 		if (canceled) return;
-		os.api("i/regenerate_token", {
+		os.api("i/regenerate-token", {
 			password: password,
 		});
 	});
@@ -128,7 +133,12 @@ definePageMetadata({
 </script>
 
 <style lang="scss" scoped>
-.timnmucd {
+.signin-history {
+	border-radius: 0.5rem;
+	overflow: hidden;
+}
+
+.signin-history-item {
 	padding: 1rem;
 
 	&:first-child {

@@ -150,7 +150,7 @@
 				@click="signinWithPasskey"
 			>
 				<i class="ph-key ph-bold ph-lg" style="margin-right: 0.25rem"></i>
-				{{ i18n.ts.securityKey }}
+				{{ i18n.t("signinWith", { x: i18n.ts.securityKey }) }}
 			</button>
 			<a
 				v-if="meta && meta.enableDiscordIntegration"
@@ -372,6 +372,12 @@ async function onSubmit() {
 				"g-recaptcha-response": reCaptchaResponse,
 			})
 				.then((res) => {
+					if (!res || !res.challenge || !res.securityKeys) {
+						emit("login", res);
+						onLogin(res);
+						return;
+					}
+
 					totpLogin = true;
 					signing = false;
 					challengeData = res;
@@ -391,8 +397,15 @@ async function onSubmit() {
 			token: user && user.twoFactorEnabled ? token : undefined,
 		})
 			.then((res) => {
-				emit("login", res);
-				onLogin(res);
+				if (!res || !res.challenge || !res.securityKeys) {
+					emit("login", res);
+					onLogin(res);
+					return;
+				}
+
+				challengeData = res;
+				signing = false;
+				return queryKey();
 			})
 			.catch(loginFailed);
 	}

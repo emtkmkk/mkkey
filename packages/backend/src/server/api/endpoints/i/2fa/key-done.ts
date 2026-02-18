@@ -49,10 +49,6 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new Error("incorrect password");
 	}
 
-	if (!profile.twoFactorEnabled) {
-		throw new Error("2fa not enabled");
-	}
-
 	const clientData = JSON.parse(ps.clientDataJSON);
 
 	if (clientData.type !== "webauthn.create") {

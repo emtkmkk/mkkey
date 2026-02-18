@@ -1,0 +1,91 @@
+doctype html
+html(lang="ja")
+	head
+		meta(charset="utf-8")
+		meta(name="viewport" content="width=device-width, initial-scale=1.0")
+		meta(name="application-name" content="mkkey")
+		title Light Client - mkkey
+		link(rel="stylesheet" href=`/light/light.css?v=${version}`)
+	body
+		div#app
+			header#header
+				h1#title Light Client
+				div#header-actions
+					button#search-btn 検索
+					button#settings-btn 設定
+					div#account-area
+						select#account-select(style="display:none")
+						button#login-btn(style="display:none") ログイン
+						span#account-name
+						button#logout-btn(style="display:none") ログアウト
+			div#settings-panel(style="display:none")
+				div.settings-section
+					label アイコン表示
+					input#setting-show-icons(type="checkbox" checked)
+				div.settings-section
+					label TLストリーミング
+					input#setting-streaming(type="checkbox")
+				div.settings-section
+					label 通知
+					input#setting-notifications(type="checkbox")
+				div.settings-section
+					label 前回の公開範囲を記録する（TL毎）
+					input#setting-remember-visibility(type="checkbox" checked)
+				div.settings-section#default-visibility-section(style="display:none")
+					label デフォルト公開範囲
+					select#setting-default-visibility
+						option(value="public") 公開
+						option(value="home") ホーム
+						option(value="followers") フォロワーのみ
+				div.settings-section#default-local-section(style="display:none")
+					label デフォルト ローカル＆フォロワー
+					input#setting-default-local-only(type="checkbox")
+				div.settings-section
+					label ワードミュート（改行区切り）
+					textarea#setting-word-mute(rows="3" placeholder="キーワード1\nキーワード2")
+				div.settings-section
+					label よく使う絵文字
+					button#setting-fetch-emojis 再取得
+				button#settings-close 閉じる
+			div#tabs
+				button.tab-btn(data-tl="home") Home
+				button.tab-btn(data-tl="local") Local
+				button.tab-btn(data-tl="global") Global
+				button.tab-btn(data-tl="social") Social
+				button.tab-btn(data-tl="recommended") Rec
+				button.tab-btn(data-tl="antenna") Antenna
+				button.tab-btn(data-tl="list") List
+				button.tab-btn(data-tl="channel") Channel
+				button.tab-btn#tab-notifications(data-tl="notifications" style="display:none") 通知
+			div#tl-selector(style="display:none")
+				label#tl-selector-label
+				select#tl-selector-select
+			div#post-form
+				div#post-attributes
+				div#post-form-main
+					textarea#post-text(placeholder="何を考えていますか？")
+					button#post-cw-toggle(type="button") CW
+					div#post-cw-area(style="display:none")
+						label CW
+						input#post-cw(placeholder="Content Warning")
+					div#post-options
+						select#post-visibility
+							option(value="public") 公開
+							option(value="home") ホーム
+							option(value="followers") フォロワーのみ
+						label
+							input#post-local-only(type="checkbox")
+							| ローカル＆フォロワー
+						button#post-emoji-btn 絵文字
+					div#post-emoji-picker(style="display:none")
+					button#post-submit 投稿
+			div#error-banner(style="display:none")
+				span#error-message
+				button#error-retry リトライ
+			button#load-more(style="display:none") もっと読む
+			div#notes
+			div#modal-overlay(style="display:none")
+				div#modal-content
+					button#modal-close 閉じる
+					div#modal-body
+		script(src=`/light/light.js?v=${version}`)

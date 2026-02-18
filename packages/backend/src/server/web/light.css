@@ -1,0 +1,512 @@
+/* Light Client - 通信制限向け簡易クライアント */
+
+:root {
+	--lc-bg: #1e1e2e;
+	--lc-fg: #cdd6f4;
+	--lc-muted: #a6adc8;
+	--lc-accent: #89b4fa;
+	--lc-surface: #313244;
+	--lc-border: #45475a;
+	--lc-error: #f38ba8;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: "BIZ UDGothic", Roboto, "Helvetica Neue", Arial, sans-serif;
+	background: var(--lc-bg);
+	color: var(--lc-fg);
+	margin: 0;
+	padding: 0;
+	line-height: 1.5;
+}
+
+#app {
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 0.5rem;
+}
+
+/* Header */
+#header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--lc-border);
+}
+
+#title {
+	margin: 0;
+	font-size: 1.25rem;
+}
+
+#header-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+#cli-link {
+	color: var(--lc-accent);
+	text-decoration: none;
+}
+
+#cli-link:hover {
+	text-decoration: underline;
+}
+
+#settings-btn,
+#login-btn,
+#logout-btn {
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	padding: 0.25rem 0.75rem;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.875rem;
+}
+
+#search-btn {
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	padding: 0.25rem 0.75rem;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.875rem;
+}
+
+#search-btn:hover {
+	background: var(--lc-border);
+}
+
+#settings-btn:hover,
+#login-btn:hover,
+#logout-btn:hover {
+	background: var(--lc-border);
+}
+
+#tl-selector {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--lc-border);
+}
+
+.note-emoji-placeholder {
+	cursor: pointer;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+}
+
+#tl-selector select {
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	min-width: 12rem;
+}
+
+/* Settings panel */
+#settings-panel {
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	border-radius: 8px;
+	padding: 1rem;
+	margin: 0.5rem 0;
+}
+
+.settings-section {
+	margin-bottom: 0.75rem;
+}
+
+.settings-section label {
+	display: block;
+	margin-bottom: 0.25rem;
+	font-size: 0.875rem;
+}
+
+#setting-word-mute {
+	width: 100%;
+	background: var(--lc-bg);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	border-radius: 4px;
+	padding: 0.5rem;
+	resize: vertical;
+}
+
+#settings-close {
+	margin-top: 0.5rem;
+	padding: 0.25rem 1rem;
+	cursor: pointer;
+}
+
+/* Tabs */
+#tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--lc-border);
+}
+
+.tab-btn {
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.75rem;
+}
+
+.tab-btn:hover {
+	background: var(--lc-border);
+}
+
+.tab-btn.active {
+	background: var(--lc-accent);
+	color: var(--lc-bg);
+	border-color: var(--lc-accent);
+}
+
+/* Post form */
+#post-form {
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	border-radius: 8px;
+	padding: 1rem;
+	margin: 0.5rem 0;
+}
+
+#post-attributes {
+	margin-bottom: 0.5rem;
+	font-size: 0.8rem;
+	color: var(--lc-muted);
+}
+
+#post-attributes .attr-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	margin-right: 0.5rem;
+	margin-bottom: 0.25rem;
+}
+
+#post-attributes .attr-remove {
+	cursor: pointer;
+	color: var(--lc-error);
+}
+
+#post-text {
+	width: 100%;
+	min-height: 4rem;
+	background: var(--lc-bg);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	border-radius: 4px;
+	padding: 0.5rem;
+	resize: vertical;
+	font-size: 1rem;
+}
+
+#post-cw-area {
+	margin-top: 0.5rem;
+}
+
+#post-cw-area label {
+	display: block;
+	font-size: 0.875rem;
+	margin-bottom: 0.25rem;
+}
+
+#post-cw {
+	width: 100%;
+	background: var(--lc-bg);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	padding: 0.5rem;
+	border-radius: 4px;
+}
+
+#post-options {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
+	margin: 0.5rem 0;
+}
+
+#post-options label {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	font-size: 0.875rem;
+	cursor: pointer;
+}
+
+#post-emoji-picker {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	padding: 0.5rem;
+	background: var(--lc-bg);
+	border-radius: 4px;
+	margin: 0.5rem 0;
+}
+
+#post-emoji-picker button {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0.25rem;
+	font-size: 1.25rem;
+}
+
+#post-emoji-picker button:hover {
+	background: var(--lc-surface);
+	border-radius: 4px;
+}
+
+#post-submit {
+	background: var(--lc-accent);
+	color: var(--lc-bg);
+	border: none;
+	padding: 0.5rem 1.5rem;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: bold;
+}
+
+#post-submit:hover {
+	opacity: 0.9;
+}
+
+#post-submit:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* Error banner */
+#error-banner {
+	background: var(--lc-error);
+	color: var(--lc-bg);
+	padding: 0.5rem 1rem;
+	border-radius: 4px;
+	margin: 0.5rem 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+
+#error-retry {
+	background: rgba(255, 255, 255, 0.3);
+	border: none;
+	padding: 0.25rem 0.75rem;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: bold;
+}
+
+#load-more {
+	width: 100%;
+	padding: 0.5rem;
+	margin: 0.5rem 0;
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+#load-more:hover {
+	background: var(--lc-border);
+}
+
+/* Notes list */
+#notes {
+	margin-top: 1rem;
+}
+
+.note {
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	border-radius: 8px;
+	padding: 0.75rem;
+	margin-bottom: 0.5rem;
+}
+
+.note-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.note-avatar {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.note-user {
+	font-weight: bold;
+	cursor: pointer;
+	color: var(--lc-accent);
+}
+
+.note-user:hover {
+	text-decoration: underline;
+}
+
+.note-meta {
+	font-size: 0.8rem;
+	color: var(--lc-muted);
+}
+
+.note-cw {
+	background: var(--lc-bg);
+	padding: 0.5rem;
+	border-radius: 4px;
+	margin-bottom: 0.5rem;
+	cursor: pointer;
+}
+
+.note-text {
+	white-space: pre-wrap;
+	word-break: break-word;
+	margin-bottom: 0.5rem;
+}
+
+.note-files {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	margin-bottom: 0.5rem;
+}
+
+.note-file-btn {
+	background: var(--lc-bg);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-accent);
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.8rem;
+}
+
+.note-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.note-actions button {
+	background: none;
+	border: none;
+	color: var(--lc-muted);
+	cursor: pointer;
+	font-size: 0.8rem;
+	padding: 0.25rem;
+}
+
+.note-actions button:hover {
+	color: var(--lc-accent);
+}
+
+/* Modal */
+#modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.6);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 1rem;
+}
+
+#modal-content {
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	border-radius: 8px;
+	max-width: 90vw;
+	max-height: 90vh;
+	overflow: auto;
+	padding: 1rem;
+	position: relative;
+}
+
+#modal-close {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	background: none;
+	border: none;
+	color: var(--lc-muted);
+	cursor: pointer;
+	font-size: 1.25rem;
+}
+
+#modal-close:hover {
+	color: var(--lc-fg);
+}
+
+/* Login form */
+.login-form input {
+	display: block;
+	width: 100%;
+	margin-bottom: 0.5rem;
+	padding: 0.5rem;
+	background: var(--lc-bg);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	border-radius: 4px;
+}
+
+.login-form button {
+	margin-top: 0.5rem;
+	padding: 0.5rem 1rem;
+	cursor: pointer;
+}
+
+/* Profile actions list */
+.profile-actions-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.profile-actions-list li {
+	padding: 0.5rem;
+	border-bottom: 1px solid var(--lc-border);
+	cursor: pointer;
+}
+
+.profile-actions-list li:hover {
+	background: var(--lc-bg);
+}
+
+/* Re Strengthen for images loaded dynamically */
+.note-files img,
+.note-files video {
+	max-width: 100%;
+	height: auto;
+	border-radius: 4px;
+}

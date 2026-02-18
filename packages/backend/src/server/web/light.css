@@ -10,6 +10,27 @@
 	--lc-error: #f38ba8;
 }
 
+/* セカンダリボタン（統一デザイン）※プライマリボタン・元ミニマルは除く */
+#settings-btn, #login-btn, #logout-btn, #search-btn,
+.settings-btn, #setting-fetch-emojis.settings-btn, #settings-reload.settings-btn, #settings-close.settings-btn,
+.emoji-picker-use, #post-emoji-picker #post-emoji-fetch-btn,
+#load-more {
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	border-radius: 4px;
+	padding: 0.5rem 1rem;
+	font-size: 0.875rem;
+	cursor: pointer;
+}
+
+#settings-btn:hover, #login-btn:hover, #logout-btn:hover, #search-btn:hover,
+.settings-btn:hover, #setting-fetch-emojis.settings-btn:hover, #settings-reload.settings-btn:hover, #settings-close.settings-btn:hover,
+.emoji-picker-use:hover, #post-emoji-picker #post-emoji-fetch-btn:hover,
+#load-more:hover {
+	background: var(--lc-border);
+}
+
 * {
 	box-sizing: border-box;
 }
@@ -145,38 +166,6 @@ body {
 	text-decoration: underline;
 }
 
-#settings-btn,
-#login-btn,
-#logout-btn {
-	background: var(--lc-surface);
-	border: 1px solid var(--lc-border);
-	color: var(--lc-fg);
-	padding: 0.25rem 0.75rem;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 0.875rem;
-}
-
-#search-btn {
-	background: var(--lc-surface);
-	border: 1px solid var(--lc-border);
-	color: var(--lc-fg);
-	padding: 0.25rem 0.75rem;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 0.875rem;
-}
-
-#search-btn:hover {
-	background: var(--lc-border);
-}
-
-#settings-btn:hover,
-#login-btn:hover,
-#logout-btn:hover {
-	background: var(--lc-border);
-}
-
 #tl-selector {
 	display: flex;
 	align-items: center;
@@ -236,25 +225,6 @@ body {
 	margin-top: 0.5rem;
 }
 
-.settings-btn,
-#setting-fetch-emojis.settings-btn,
-#settings-reload.settings-btn,
-#settings-close.settings-btn {
-	background: var(--lc-surface);
-	border: 1px solid var(--lc-border);
-	color: var(--lc-fg);
-	border-radius: 4px;
-	padding: 0.5rem 1rem;
-	cursor: pointer;
-}
-
-.settings-btn:hover,
-#setting-fetch-emojis.settings-btn:hover,
-#settings-reload.settings-btn:hover,
-#settings-close.settings-btn:hover {
-	background: var(--lc-border);
-}
-
 /* Tabs */
 #tabs {
 	display: flex;
@@ -310,9 +280,17 @@ body {
 	margin-bottom: 0.25rem;
 }
 
-#post-attributes .attr-remove {
+.attr-remove {
+	background: none;
+	border: none;
 	cursor: pointer;
 	color: var(--lc-error);
+	padding: 0.25rem 0.5rem;
+	font-size: 0.875rem;
+}
+
+.attr-remove:hover {
+	opacity: 0.8;
 }
 
 #post-text {
@@ -360,6 +338,21 @@ body {
 	flex-shrink: 0;
 }
 
+#post-cw-toggle,
+#post-emoji-btn {
+	background: none;
+	border: none;
+	color: var(--lc-fg);
+	cursor: pointer;
+	padding: 0.25rem;
+	font-size: 0.875rem;
+}
+
+#post-cw-toggle:hover,
+#post-emoji-btn:hover {
+	opacity: 0.8;
+}
+
 #post-options label.post-options-mkkey {
 	display: flex;
 	align-items: center;
@@ -397,7 +390,7 @@ body {
 	flex-shrink: 0;
 	margin-left: auto;
 	min-width: 3rem;
-	padding: 0.2rem 0.5rem;
+	padding: 0.25rem 0.5rem;
 	font-size: 0.8rem;
 }
 
@@ -416,23 +409,6 @@ body {
 	flex-wrap: nowrap;
 	overflow-y: auto;
 	max-height: 12rem;
-}
-
-#post-emoji-picker .emoji-picker-use {
-	font-size: 0.8rem;
-}
-
-#post-emoji-picker button {
-	background: none;
-	border: none;
-	cursor: pointer;
-	padding: 0.25rem;
-	font-size: 1.25rem;
-}
-
-#post-emoji-picker button:hover {
-	background: var(--lc-surface);
-	border-radius: 4px;
 }
 
 #post-submit-row {
@@ -473,6 +449,11 @@ body {
 	gap: 0.5rem;
 }
 
+#load-more {
+	width: 100%;
+	margin: 0.5rem 0;
+}
+
 #error-retry {
 	background: rgba(255, 255, 255, 0.3);
 	border: none;
@@ -482,19 +463,19 @@ body {
 	font-weight: bold;
 }
 
-#load-more {
-	width: 100%;
-	padding: 0.5rem;
-	margin: 0.5rem 0;
-	background: var(--lc-surface);
-	border: 1px solid var(--lc-border);
+#search-notes-btn,
+#search-users-btn {
+	background: none;
+	border: none;
 	color: var(--lc-fg);
-	border-radius: 4px;
 	cursor: pointer;
+	padding: 0.25rem 0.5rem;
+	font-size: 0.875rem;
 }
 
-#load-more:hover {
-	background: var(--lc-border);
+#search-notes-btn:hover,
+#search-users-btn:hover {
+	opacity: 0.8;
 }
 
 /* Notes list */
@@ -630,16 +611,6 @@ body {
 	margin-bottom: 0.5rem;
 }
 
-.note-file-btn {
-	background: var(--lc-bg);
-	border: 1px solid var(--lc-border);
-	color: var(--lc-accent);
-	padding: 0.25rem 0.5rem;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 0.8rem;
-}
-
 .note-actions {
 	display: flex;
 	flex-wrap: wrap;
@@ -659,6 +630,31 @@ body {
 	color: var(--lc-accent);
 }
 
+.note-file-btn {
+	background: var(--lc-bg);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-accent);
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.8rem;
+}
+
+#emoji-fetch-btn,
+#reaction-manual-submit {
+	background: none;
+	border: none;
+	color: var(--lc-fg);
+	cursor: pointer;
+	padding: 0.25rem 0.5rem;
+	font-size: 0.875rem;
+}
+
+#emoji-fetch-btn:hover,
+#reaction-manual-submit:hover {
+	opacity: 0.8;
+}
+
 /* 常時ストリーミング通知（画面下部） */
 #streaming-notifications {
 	position: fixed;
@@ -675,11 +671,31 @@ body {
 	z-index: 100;
 }
 
+/* 通知: 1行表示＋オーバーフロー省略、日時は別行 */
+.notification-main-row {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .streaming-notif-item {
 	font-size: 0.8rem;
 	padding: 0.25rem 0.5rem;
 	cursor: pointer;
 	border-radius: 4px;
+	min-width: 0;
+}
+
+.streaming-notif-main {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.streaming-notif-time {
+	font-size: 0.7rem;
+	color: var(--lc-muted);
+	margin-top: 0.125rem;
 }
 
 .streaming-notif-item:hover {
@@ -716,21 +732,6 @@ body {
 	margin-top: 0.5rem;
 }
 
-#modal-close {
-	position: absolute;
-	top: 0.5rem;
-	right: 0.5rem;
-	background: none;
-	border: none;
-	color: var(--lc-muted);
-	cursor: pointer;
-	font-size: 1.25rem;
-}
-
-#modal-close:hover {
-	color: var(--lc-fg);
-}
-
 /* Login form */
 .login-form input {
 	display: block;
@@ -758,7 +759,14 @@ body {
 .login-form button {
 	margin-top: 0.5rem;
 	padding: 0.5rem 1rem;
+	background: none;
+	border: none;
+	color: var(--lc-fg);
 	cursor: pointer;
+}
+
+.login-form button:hover {
+	opacity: 0.8;
 }
 
 /* Profile actions list */

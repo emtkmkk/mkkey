@@ -741,32 +741,36 @@
 				const whoPart = n.user
 					? `<span class="note-user" data-user-id="${escapeHtml(n.user.id)}">${escapeHtml(who)}</span>`
 					: "";
-				const whoRow = whoPart ? `${whoPart} が` : "";
 				const actionRow = `${escapeHtml(label)}${reactionPart}`;
-				const timeRow = createdAt ? escapeHtml(createdAt) : "";
-				const headerLine = [whoRow, actionRow, timeRow].filter(Boolean).join(" ");
-				const summaryHtml = summary ? `<div class="note-text notification-summary" style="font-size:0.9rem;color:var(--lc-muted);margin:0.25rem 0 0.5rem 0">${escapeHtml(summary)}</div>` : "";
+				const summaryShort = summary ? (summary.length > 50 ? summary.slice(0, 50) + "…" : summary) : "";
+				const summaryText = summaryShort ? escapeHtml(summaryShort) : "";
+				const bodyParts = [actionRow, summaryText, whoPart ? `（${whoPart}）` : ""].filter(Boolean);
+				const headerLine = bodyParts.join(" ");
+				const timeRow = createdAt ? `<div class="notification-time" style="font-size:0.75rem;color:var(--lc-muted);margin-top:0.25rem">${escapeHtml(createdAt)}</div>` : "";
 				const detailBtn = `<button class="note-detail" data-note-id="${n.note.id}">詳細</button>`;
 				return `<div class="note notification-item" data-notification-id="${n.id}" style="margin-bottom:1rem">
 					<div class="note-header" style="align-items:flex-start">
 						${showIcons && n.user?.avatarUrl ? `<img class="note-avatar" src="${escapeHtml(n.user.avatarUrl)}" alt="">` : ""}
-						<div style="flex:1;min-width:0">
-							<div class="note-meta" style="margin-bottom:0.25rem">${headerLine}</div>
-							${summaryHtml}
+						<div class="notification-body" style="flex:1;min-width:0">
+							<div class="note-meta notification-main-row">${headerLine}</div>
+							${timeRow}
 							<div class="note-actions" style="margin-top:0.25rem">${detailBtn}</div>
 						</div>
 					</div>
 				</div>`;
 			}
-			const userPart = n.user
-				? `<span class="note-user" data-user-id="${escapeHtml(n.user.id)}">${escapeHtml(who)}</span>`
+			const actionFirst = escapeHtml(label);
+			const whoPart = n.user
+				? `（<span class="note-user" data-user-id="${escapeHtml(n.user.id)}">${escapeHtml(who)}</span>）`
 				: "";
-			const headerLine = [userPart ? userPart + " が " : "", escapeHtml(label), createdAt ? " " + escapeHtml(createdAt) : ""].filter(Boolean).join("");
+			const headerLine = [actionFirst, whoPart].filter(Boolean).join(" ");
+			const timeRow = createdAt ? `<div class="notification-time" style="font-size:0.75rem;color:var(--lc-muted);margin-top:0.25rem">${escapeHtml(createdAt)}</div>` : "";
 			return `<div class="note notification-item" data-notification-id="${n.id}">
 				<div class="note-header">
 					${showIcons && n.user?.avatarUrl ? `<img class="note-avatar" src="${escapeHtml(n.user.avatarUrl)}" alt="">` : ""}
-					<div style="flex:1;min-width:0">
-						<span class="note-meta">${headerLine}</span>
+					<div class="notification-body" style="flex:1;min-width:0">
+						<div class="note-meta notification-main-row">${headerLine}</div>
+						${timeRow}
 					</div>
 				</div>
 			</div>`;
@@ -796,11 +800,16 @@
 			const who = n.user ? getUserLabel(n.user) : "";
 			const noteId = n.note?.id || "";
 			const summary = n.note ? getNoteSummary(n.note) : "";
-			const textParts = [label, who ? who : ""].filter(Boolean).join(" ");
 			const reactionHtml = n.type === "reaction" && n.reaction ? " " + renderReactionEmojiHtml(n.reaction) : "";
-			const summaryText = summary ? summary.slice(0, 40) + (summary.length > 40 ? "..." : "") : "";
-			const content = escapeHtml(textParts) + reactionHtml + (summaryText ? " " + escapeHtml(summaryText) : "");
-			return `<div class="streaming-notif-item" data-note-id="${noteId}" data-user-id="${n.user?.id || ""}">${content}</div>`;
+			const summaryShort = summary ? (summary.length > 40 ? summary.slice(0, 40) + "…" : summary) : "";
+			const bodyParts = [escapeHtml(label), reactionHtml, summaryShort ? escapeHtml(summaryShort) : "", who ? `（${escapeHtml(who)}）` : ""].filter(Boolean);
+			const mainLine = bodyParts.join(" ");
+			const createdAt = n.createdAt ? (() => {
+				const d = new Date(n.createdAt);
+				return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+			})() : "";
+			const timeHtml = createdAt ? `<div class="streaming-notif-time">${escapeHtml(createdAt)}</div>` : "";
+			return `<div class="streaming-notif-item" data-note-id="${noteId}" data-user-id="${n.user?.id || ""}"><div class="streaming-notif-main">${mainLine}</div>${timeHtml}</div>`;
 		}).join("");
 		el.style.display = "block";
 		bindNoteEvents(el);
@@ -2100,7 +2109,9 @@
 		document.getElementById("setting-remember-visibility")?.addEventListener("change", updateDefaultVisibilitySectionVisibility);
 		document.getElementById("setting-fetch-emojis")?.addEventListener("click", fetchEmojis);
 		document.getElementById("login-btn")?.addEventListener("click", showLoginForm);
-		document.getElementById("modal-close")?.addEventListener("click", hideModal);
+		document.getElementById("modal-overlay")?.addEventListener("click", (e) => {
+			if (e.target.id === "modal-overlay") hideModal();
+		});
 		document.getElementById("error-retry")?.addEventListener("click", () => { hideError(); loadCurrentTl(); });
 		document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
 		document.querySelector(`.tab-btn[data-tl="${currentTl}"]`)?.classList.add("active");

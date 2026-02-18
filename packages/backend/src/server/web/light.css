@@ -61,6 +61,8 @@ body {
 	white-space: nowrap;
 }
 
+#header-streaming-btn,
+#header-reload-btn,
 #header-menu-btn {
 	background: var(--lc-surface);
 	border: 1px solid var(--lc-border);
@@ -74,8 +76,16 @@ body {
 	padding: 0;
 }
 
+#header-streaming-btn:hover,
+#header-reload-btn:hover,
 #header-menu-btn:hover {
 	background: var(--lc-border);
+}
+
+#header-streaming-btn.header-btn-active {
+	background: var(--lc-accent);
+	color: var(--lc-bg);
+	border-color: var(--lc-accent);
 }
 
 #header-menu {
@@ -350,6 +360,7 @@ body {
 .emoji-picker-row {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: 0.5rem;
 	padding: 0.25rem 0;
 }
@@ -362,6 +373,8 @@ body {
 
 .emoji-picker-use {
 	flex-shrink: 0;
+	margin-left: auto;
+	min-width: 3rem;
 	padding: 0.2rem 0.5rem;
 	font-size: 0.8rem;
 }
@@ -374,6 +387,17 @@ body {
 	background: var(--lc-bg);
 	border-radius: 4px;
 	margin: 0.5rem 0;
+}
+
+#post-emoji-picker.emoji-picker-vertical {
+	flex-direction: column;
+	flex-wrap: nowrap;
+	overflow-y: auto;
+	max-height: 12rem;
+}
+
+#post-emoji-picker .emoji-picker-use {
+	font-size: 0.8rem;
 }
 
 #post-emoji-picker button {
@@ -475,7 +499,7 @@ body {
 .note-avatar {
 	width: 40px;
 	height: 40px;
-	border-radius: 50%;
+	border-radius: 4px;
 	object-fit: cover;
 }
 
@@ -552,6 +576,23 @@ body {
 	white-space: pre-wrap;
 	word-break: break-word;
 	margin-bottom: 0.5rem;
+}
+
+.note-reactions {
+	font-size: 0.85rem;
+	color: var(--lc-muted);
+	margin-bottom: 0.5rem;
+}
+
+.note-reactions .note-emoji-placeholder {
+	cursor: pointer;
+}
+
+.note-emoji-img {
+	height: 1.25em;
+	width: auto;
+	vertical-align: middle;
+	cursor: pointer;
 }
 
 .note-created-at {

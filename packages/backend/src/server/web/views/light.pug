@@ -12,6 +12,8 @@ html(lang="ja")
 				h1#title Light Client
 				div#header-main
 					span#account-name
+					button#header-streaming-btn(style="display:none" title="ストリーミング") ⚡
+					button#header-reload-btn(style="display:none" title="再読込") ↻
 					button#header-menu-btn(style="display:none" title="メニュー") ⋮
 					button#login-btn(style="display:none") ログイン
 					div#header-menu(style="display:none")
@@ -24,9 +26,6 @@ html(lang="ja")
 				div.settings-section
 					label アイコン表示
 					input#setting-show-icons(type="checkbox" checked)
-				div.settings-section
-					label TLストリーミング
-					input#setting-streaming(type="checkbox")
 				div.settings-section
 					label 通知を常時ストリーミング
 					input#setting-notifications(type="checkbox")
@@ -48,6 +47,7 @@ html(lang="ja")
 				div.settings-section
 					label よく使う絵文字
 					button#setting-fetch-emojis 再取得
+				button#settings-reload リロード
 				button#settings-close 閉じる
 			div#tabs
 				button.tab-btn#tab-notifications(data-tl="notifications") 通知

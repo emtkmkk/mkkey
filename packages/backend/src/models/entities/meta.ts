@@ -380,6 +380,23 @@ export class Meta {
 	})
 	public discordClientSecret: string | null;
 
+	@Column('boolean', {
+		default: false,
+	})
+	public enableGoogleIntegration: boolean;
+
+	@Column('varchar', {
+		length: 128,
+		nullable: true,
+	})
+	public googleClientId: string | null;
+
+	@Column('varchar', {
+		length: 128,
+		nullable: true,
+	})
+	public googleClientSecret: string | null;
+
 	@Column('varchar', {
 		length: 128,
 		nullable: true,

@@ -184,6 +184,11 @@ export const meta = {
 				optional: false,
 				nullable: false,
 			},
+			enableGoogleIntegration: {
+				type: "boolean",
+				optional: false,
+				nullable: false,
+			},
 			enableServiceWorker: {
 				type: "boolean",
 				optional: false,
@@ -355,6 +360,16 @@ export const meta = {
 				optional: true,
 				nullable: true,
 			},
+			googleClientId: {
+				type: "string",
+				optional: true,
+				nullable: true,
+			},
+			googleClientSecret: {
+				type: "string",
+				optional: true,
+				nullable: true,
+			},
 			summaryProxy: {
 				type: "string",
 				optional: true,
@@ -521,6 +536,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		enableTwitterIntegration: instance.enableTwitterIntegration,
 		enableGithubIntegration: instance.enableGithubIntegration,
 		enableDiscordIntegration: instance.enableDiscordIntegration,
+		enableGoogleIntegration: instance.enableGoogleIntegration,
 		enableServiceWorker: instance.enableServiceWorker,
 		translatorAvailable:
 			instance.deeplAuthKey != null || instance.libreTranslateApiUrl != null,
@@ -553,6 +569,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		githubClientSecret: instance.githubClientSecret,
 		discordClientId: instance.discordClientId,
 		discordClientSecret: instance.discordClientSecret,
+		googleClientId: instance.googleClientId,
+		googleClientSecret: instance.googleClientSecret,
 		summalyProxy: instance.summalyProxy,
 		email: instance.email,
 		smtpSecure: instance.smtpSecure,

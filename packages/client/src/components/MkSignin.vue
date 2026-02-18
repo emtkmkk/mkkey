@@ -161,6 +161,13 @@
 				{{ i18n.t("signinWith", { x: i18n.ts.securityKey }) }}
 			</button>
 			<a
+				v-if="meta && meta.enableGoogleIntegration"
+				class="_borderButton _gap"
+				:href="`${apiUrl}/signin/google`"
+				><i class="social-icon ph-google-logo ph-bold ph-lg"></i
+				>{{ i18n.t("signinWith", { x: "Google" }) }}</a
+			>
+			<a
 				v-if="meta && meta.enableDiscordIntegration"
 				class="_borderButton _gap"
 				:href="`${apiUrl}/signin/discord`"

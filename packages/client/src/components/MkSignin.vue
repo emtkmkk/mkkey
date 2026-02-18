@@ -87,6 +87,7 @@
 					<MkInput
 						v-if="user && user.usePasswordLessLogin"
 						v-model="password"
+						class="_formBlock"
 						type="password"
 						:with-password-toggle="true"
 						required
@@ -98,6 +99,7 @@
 					</MkInput>
 					<MkInput
 						v-model="token"
+						class="_formBlock"
 						type="text"
 						pattern="^[0-9]{6}$"
 						autocomplete="off"
@@ -110,10 +112,10 @@
 						></template>
 					</MkInput>
 					<MkButton
+						class="_formBlock"
 						type="submit"
 						:disabled="signing"
 						primary
-						style="margin: 0 auto"
 						>{{
 							signing ? i18n.ts.loggingIn : i18n.ts.login
 						}}</MkButton
@@ -484,7 +486,17 @@ function resetPassword() {
 	}
 
 	.social-icon {
-		margin-right: 0.5rem;
+		margin-right: 0;
 	}
+
+	.social {
+		> ._borderButton {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.5rem;
+		}
+	}
+
 }
 </style>

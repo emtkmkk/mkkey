@@ -62,14 +62,6 @@
 					:disabled="signing"
 					style="margin: 1rem auto"
 					>{{ signing ? i18n.ts.loggingIn : i18n.ts.login }}</MkButton>
-				<MkButton
-					v-if="isPasskeySupported"
-					class="_formBlock"
-					type="button"
-					:disabled="signing || queryingKey"
-					@click="signinWithPasskey"
-					style="margin: 0 auto"
-				>{{ i18n.ts.securityKey }}</MkButton>
 			</div>
 			<div
 				v-if="totpLogin"
@@ -150,6 +142,16 @@
 				></i
 				>{{ i18n.t("signinWith", { x: "GitHub" }) }}</a
 			>
+			<button
+				v-if="isPasskeySupported"
+				class="_borderButton _gap"
+				type="button"
+				:disabled="signing || queryingKey"
+				@click="signinWithPasskey"
+			>
+				<i class="ph-key ph-bold ph-lg" style="margin-right: 0.25rem"></i>
+				{{ i18n.ts.securityKey }}
+			</button>
 			<a
 				v-if="meta && meta.enableDiscordIntegration"
 				class="_borderButton _gap"

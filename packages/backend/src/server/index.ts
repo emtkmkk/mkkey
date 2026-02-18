@@ -31,6 +31,7 @@ import webServer from "./web/index.js";
 import { initializeStreamingServer } from "./api/streaming.js";
 import { koaBody } from "koa-body";
 import removeTrailingSlash from "koa-remove-trailing-slashes";
+import compress from "koa-compress";
 import { v4 as uuid } from "uuid";
 
 export const serverLogger = new Logger("server", "gray", false);
@@ -40,6 +41,16 @@ const app = new Koa();
 app.proxy = true;
 
 app.use(removeTrailingSlash());
+
+// Light Client のみ gzip 圧縮（他ルートには影響しない）
+app.use(async (ctx, next) => {
+	ctx.compress =
+		ctx.path === "/light" ||
+		ctx.path === "/light/light.css" ||
+		ctx.path === "/light/light.js";
+	await next();
+});
+app.use(compress());
 
 if (!["production", "test"].includes(process.env.NODE_ENV || "")) {
 	// Logger

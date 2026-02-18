@@ -55,8 +55,24 @@ gulp.task('build:backend:style', () => {
 		.pipe(gulp.dest('./packages/backend/built/server/web/'));
 });
 
+/**
+ * Light Client 用の light.css / light.js を minify して built に出力する。
+ * ソースは整形のまま維持し、minify はビルド出力のみ。
+ */
+gulp.task('build:backend:light', () => {
+	const lightTasks = [
+		gulp.src('./packages/backend/src/server/web/light.css')
+			.pipe(cssnano({ zindex: false }))
+			.pipe(gulp.dest('./packages/backend/built/server/web/')),
+		gulp.src('./packages/backend/src/server/web/light.js')
+			.pipe(terser({ toplevel: true }))
+			.pipe(gulp.dest('./packages/backend/built/server/web/')),
+	];
+	return Promise.all(lightTasks);
+});
+
 gulp.task('build', gulp.parallel(
-	'copy:client:locales', 'copy:backend:views', 'copy:backend:custom', 'build:backend:script', 'build:backend:style', 'copy:client:fonts'
+	'copy:client:locales', 'copy:backend:views', 'copy:backend:custom', 'build:backend:script', 'build:backend:style', 'build:backend:light', 'copy:client:fonts'
 ));
 
 gulp.task('default', gulp.task('build'));

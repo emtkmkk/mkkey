@@ -564,7 +564,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 				["public", "home"].includes(note.visibility) && !note.localOnly
 					? await Notes.pack(note)
 					: { id: note.id, user: user, fileIds: [], files: [], referenceIds: [] };
-					
+
 			const profile = await UserProfiles.findOneByOrFail({
 				userId: note.userId,
 			});
@@ -606,7 +606,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 					});
 
 					ctx.set("Cache-Control", "public, max-age=15");
-	
+
 					return;
 				}
 				const refNote = await Notes.pack(referenceNote)
@@ -956,6 +956,29 @@ router.get("/cli", async (ctx) => {
 	});
 });
 
+/** Light Client 用の CSS/JS を外部ファイルで配信。長期キャッシュで再訪問時の転送量を削減。 */
+router.get("/light/light.css", async (ctx) => {
+	await send(ctx as any, "light.css", {
+		root: _dirname,
+		maxage: 86400, // 1日（秒）
+	});
+});
+router.get("/light/light.js", async (ctx) => {
+	await send(ctx as any, "light.js", {
+		root: _dirname,
+		maxage: 86400, // 1日（秒）
+	});
+});
+router.get("/light", async (ctx) => {
+	// NOTE: 第3引数 { pretty: false } で Light Client の HTML のみ minify
+	// koa-views の型定義は2引数のみだが、Pug では第3引数の pretty を解釈する
+	await (ctx.render as (a: string, b?: object, c?: object) => void)(
+		"light",
+		{ version: config.version },
+		{ pretty: false },
+	);
+});
+
 router.get("/sc", async (ctx) => {
 	await ctx.render("sc", {
 		version: config.version,
@@ -1161,7 +1184,7 @@ router.get("(.*)", async (ctx) => {
 			motd.push("Halloweeeeeeen");
 		}
 	} else if (now.getMonth() == 10) {
-		motd.push("秋か冬かよく分からない時期ですね"); 
+		motd.push("秋か冬かよく分からない時期ですね");
 		if (now.getDate() >= 19 && now.getDate() < 26) {
 			motd.push(`11/26は${meta.name} ${now.getFullYear() - 2022} 周年の日みたいです`);
 		} else if (now.getDate() == 26) {

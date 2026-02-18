@@ -63,7 +63,7 @@
 					style="margin: 1rem auto"
 					>{{ signing ? i18n.ts.loggingIn : i18n.ts.login }}</MkButton>
 				<MkButton
-					v-if="window.PublicKeyCredential"
+					v-if="isPasskeySupported"
 					class="_formBlock"
 					type="button"
 					:disabled="signing || queryingKey"
@@ -192,6 +192,13 @@ let reCaptchaResponse = $ref(null);
 let userFetching = $ref<Promise<void> | null>(null);
 
 const meta = $computed(() => instance);
+const isPasskeySupported = $computed(
+	() =>
+		typeof window !== "undefined" &&
+		typeof navigator !== "undefined" &&
+		!!window.PublicKeyCredential &&
+		!!navigator.credentials,
+);
 
 const emit = defineEmits<{
 	(ev: "login", v: any): void;

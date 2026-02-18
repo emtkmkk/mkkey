@@ -1051,11 +1051,9 @@ export const UserRepository = db.getRepository(User).extend({
 						twoFactorEnabled: profile!.twoFactorEnabled,
 						usePasswordLessLogin: profile!.usePasswordLessLogin,
 						showDonateBadges: profile!.showDonateBadges,
-						securityKeys: profile!.twoFactorEnabled
-							? UserSecurityKeys.countBy({
-									userId: user.id,
-							  }).then((result) => result >= 1)
-							: false,
+					securityKeys: UserSecurityKeys.countBy({
+						userId: user.id,
+					}).then((result) => result >= 1),
 						badges: badges?.length !== 0 ? badges : undefined,
 						roles,
 						achievements: [],
@@ -1144,18 +1142,16 @@ export const UserRepository = db.getRepository(User).extend({
 				? {
 						email: profile!.email,
 						emailVerified: profile!.emailVerified,
-						securityKeysList: profile!.twoFactorEnabled
-							? UserSecurityKeys.find({
-									where: {
-										userId: user.id,
-									},
-									select: {
-										id: true,
-										name: true,
-										lastUsed: true,
-									},
-							  })
-							: [],
+					securityKeysList: UserSecurityKeys.find({
+						where: {
+							userId: user.id,
+						},
+						select: {
+							id: true,
+							name: true,
+							lastUsed: true,
+						},
+					}),
 						inviteUserId: user.inviteUserId,
 						isSilentLocked: user.isSilentLocked || falsy,
 						canInvite: user.canInvite || falsy,

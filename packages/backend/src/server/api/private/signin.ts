@@ -241,13 +241,15 @@ export default async (ctx: Koa.Context) => {
 			return;
 		}
 
-		await fail(user.id, 403, {
-			id: "932c904e-9460-45b7-9ce6-7ed33be7eb2c",
-		});
-		return;
+		if (!profile.usePasswordLessLogin) {
+			await fail(user.id, 403, {
+				id: "932c904e-9460-45b7-9ce6-7ed33be7eb2c",
+			});
+			return;
+		}
 	}
 
-	if (token) {
+	if (profile.twoFactorEnabled && token) {
 		if (!same) {
 			await fail(user.id, 403, {
 				id: "932c904e-9460-45b7-9ce6-7ed33be7eb2c",

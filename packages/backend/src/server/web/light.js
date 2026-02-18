@@ -2086,7 +2086,11 @@
 			document.getElementById("header-menu").style.display = "none";
 			if (action === "search") openSearch();
 			else if (action === "settings") document.getElementById("settings-panel").style.display = "block";
-			else if (action === "logout") doLogout();
+			else if (action === "back-to-normal") {
+				if (confirm("通常版もこきーに戻りますか？")) {
+					window.location.href = window.location.origin + "/";
+				}
+			} else if (action === "logout") doLogout();
 			else if (action === "switch-account") showAccountSwitch();
 		});
 		document.addEventListener("click", (e) => {

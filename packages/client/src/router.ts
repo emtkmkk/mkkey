@@ -745,6 +745,18 @@ export const routes = [
 		),
 	},
 	{
+		path: "/light",
+		component: page(() => import("./pages/external-app-redirect.vue")),
+	},
+	{
+		path: "/cli",
+		component: page(() => import("./pages/external-app-redirect.vue")),
+	},
+	{
+		path: "/sc",
+		component: page(() => import("./pages/external-app-redirect.vue")),
+	},
+	{
 		name: "index",
 		path: "/",
 		component: $i

@@ -629,6 +629,7 @@
 		isLoading = true;
 		hideError();
 		try {
+			if (["local", "global"].includes(currentTl)) await fetchEmojiUrlCache();
 			const ep = getTimelineEndpoint();
 			const params = { limit: 20 };
 			if (untilId) params.untilId = untilId;
@@ -1046,7 +1047,7 @@
 			else {
 				const key = p.host ? `${p.name}@${p.host}` : p.name;
 				const emojiKey = `:${key}:`;
-				const url = emojiMap[key] || emojiMap[p.name];
+				const url = emojiMap[key] || emojiMap[p.name] || getEmojiUrl(emojiKey);
 				if (url) {
 					if (emojiDisplayedAsImageCache.has(emojiKey) || emojiDisplayedAsImageCache.has(key)) {
 						safeText += `<img class="note-emoji-img" src="${escapeHtml(url)}" alt=":${escapeHtml(key)}:" style="height:1.25em;width:auto;vertical-align:middle;cursor:pointer" data-emoji-url="${escapeHtml(url)}" data-emoji-text=":${escapeHtml(key)}:">`;
@@ -1917,13 +1918,13 @@
 		initPostForm();
 		updateTlSelectorVisibility();
 		if (token) {
+			// NOTE: 絵文字選択UI・ノート描画でキャッシュが必要。TL読み込みより先に取得
+			await fetchEmojiUrlCache();
 			showPostForm();
 			updateNotificationTabVisibility();
 			if (["antenna", "list", "channel"].includes(currentTl)) {
 				await populateTlSelector();
 			}
-			// NOTE: ノート描画時、ローカル絵文字のリアクション表示に必要
-			await fetchEmojiUrlCache();
 			loadCurrentTl();
 		} else {
 			hidePostForm();

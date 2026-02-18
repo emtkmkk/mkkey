@@ -65,7 +65,7 @@
 			</div>
 			<div
 				v-if="totpLogin"
-				class="2fa-signin"
+				class="totp-signin"
 				:class="{ securityKeys: user && user.securityKeys }"
 			>
 				<div
@@ -476,7 +476,7 @@ function resetPassword() {
 			border-radius: 100%;
 		}
 
-		.2fa-signin {
+		.totp-signin {
 			.totp-group > button[type="submit"] {
 				margin: 1rem auto 0;
 			}

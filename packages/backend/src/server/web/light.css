@@ -63,7 +63,8 @@ body {
 
 #header-streaming-btn,
 #header-reload-btn,
-#header-menu-btn {
+#header-menu-btn,
+#header-guest-reload-btn {
 	background: var(--lc-surface);
 	border: 1px solid var(--lc-border);
 	color: var(--lc-fg);
@@ -78,7 +79,8 @@ body {
 
 #header-streaming-btn:hover,
 #header-reload-btn:hover,
-#header-menu-btn:hover {
+#header-menu-btn:hover,
+#header-guest-reload-btn:hover {
 	background: var(--lc-border);
 }
 
@@ -227,10 +229,30 @@ body {
 	resize: vertical;
 }
 
-#settings-close {
+.settings-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
 	margin-top: 0.5rem;
-	padding: 0.25rem 1rem;
+}
+
+.settings-btn,
+#setting-fetch-emojis.settings-btn,
+#settings-reload.settings-btn,
+#settings-close.settings-btn {
+	background: var(--lc-surface);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	border-radius: 4px;
+	padding: 0.5rem 1rem;
 	cursor: pointer;
+}
+
+.settings-btn:hover,
+#setting-fetch-emojis.settings-btn:hover,
+#settings-reload.settings-btn:hover,
+#settings-close.settings-btn:hover {
+	background: var(--lc-border);
 }
 
 /* Tabs */
@@ -690,6 +712,10 @@ body {
 	position: relative;
 }
 
+#modal-body > * + * {
+	margin-top: 0.5rem;
+}
+
 #modal-close {
 	position: absolute;
 	top: 0.5rem;
@@ -714,7 +740,19 @@ body {
 	background: var(--lc-bg);
 	border: 1px solid var(--lc-border);
 	color: var(--lc-fg);
+	-webkit-text-fill-color: var(--lc-fg);
 	border-radius: 4px;
+}
+
+.login-form input::placeholder {
+	color: var(--lc-muted);
+}
+
+.login-form input:-webkit-autofill,
+.login-form input:-webkit-autofill:hover,
+.login-form input:-webkit-autofill:focus {
+	-webkit-text-fill-color: var(--lc-fg);
+	box-shadow: 0 0 0 1000px var(--lc-bg) inset;
 }
 
 .login-form button {
@@ -737,6 +775,14 @@ body {
 }
 
 .profile-actions-list li:hover {
+	background: var(--lc-bg);
+}
+
+.profile-dangerous-toggle {
+	cursor: pointer;
+}
+
+.profile-dangerous-toggle:hover {
 	background: var(--lc-bg);
 }
 

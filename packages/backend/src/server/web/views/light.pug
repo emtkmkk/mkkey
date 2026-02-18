@@ -16,6 +16,7 @@ html(lang="ja")
 					button#header-reload-btn(style="display:none" title="再読込") ↻
 					button#header-menu-btn(style="display:none" title="メニュー") ⋮
 					button#login-btn(style="display:none") ログイン
+					button#header-guest-reload-btn(style="display:none" title="TL再読込") ↻
 					div#header-menu(style="display:none")
 						button.header-menu-item(data-action="search") 検索
 						button.header-menu-item(data-action="settings") 設定
@@ -46,9 +47,10 @@ html(lang="ja")
 					textarea#setting-word-mute(rows="3" placeholder="キーワード1\nキーワード2")
 				div.settings-section
 					label よく使う絵文字
-					button#setting-fetch-emojis 再取得
-				button#settings-reload リロード
-				button#settings-close 閉じる
+					div.settings-buttons
+						button#setting-fetch-emojis.settings-btn 再取得
+						button#settings-reload.settings-btn リロード
+						button#settings-close.settings-btn 閉じる
 			div#tabs
 				button.tab-btn#tab-notifications(data-tl="notifications") 通知
 				button.tab-btn(data-tl="home") ホーム

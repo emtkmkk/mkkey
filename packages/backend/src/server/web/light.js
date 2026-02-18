@@ -440,6 +440,7 @@
 
 	// ヘッダー（acct 表示 + ストリーミング・リロード・メニューボタン）
 	function renderHeader() {
+		updateTlTabVisibility();
 		const loginBtn = document.getElementById("login-btn");
 		const menuBtn = document.getElementById("header-menu-btn");
 		const streamingBtn = document.getElementById("header-streaming-btn");
@@ -447,6 +448,8 @@
 		const accountName = document.getElementById("account-name");
 		if (token && currentAccount) {
 			if (loginBtn) loginBtn.style.display = "none";
+			const guestReloadBtn = document.getElementById("header-guest-reload-btn");
+			if (guestReloadBtn) guestReloadBtn.style.display = "none";
 			if (menuBtn) menuBtn.style.display = "inline-block";
 			if (streamingBtn) {
 				streamingBtn.style.display = "inline-block";
@@ -462,6 +465,8 @@
 			if (menuBtn) menuBtn.style.display = "none";
 			if (streamingBtn) streamingBtn.style.display = "none";
 			if (reloadBtn) reloadBtn.style.display = "none";
+			const guestReloadBtn = document.getElementById("header-guest-reload-btn");
+			if (guestReloadBtn) guestReloadBtn.style.display = "inline-block";
 			if (accountName) accountName.textContent = "";
 		}
 	}
@@ -572,6 +577,19 @@
 		else if (currentTl === "channel") label.textContent = "チャンネル: ";
 	}
 
+	/** 未ログイン時はローカル・グローバルのみタブ表示。ログイン時は全タブ表示 */
+	function updateTlTabVisibility() {
+		const guestTls = ["local", "global"];
+		document.querySelectorAll(".tab-btn[data-tl]").forEach((btn) => {
+			const tl = btn.dataset.tl;
+			if (!token && !guestTls.includes(tl)) {
+				btn.style.display = "none";
+			} else {
+				btn.style.display = "";
+			}
+		});
+	}
+
 	async function populateTlSelector() {
 		const select = document.getElementById("tl-selector-select");
 		if (!select) return;
@@ -680,6 +698,20 @@
 		return s.trim();
 	}
 
+	/** リアクション絵文字1つのHTML（ノートのリアクション表示と同様の placeholder/img） */
+	function renderReactionEmojiHtml(r) {
+		if (!r || typeof r !== "string") return "";
+		const m = /^:([a-zA-Z0-9_]+)(?:@([a-zA-Z0-9.-]+))?:$/.exec(r);
+		if (!m) return escapeHtml(r);
+		const key = m[2] ? `${m[1]}@${m[2]}` : m[1];
+		const url = getEmojiUrl(r);
+		if (!url) return escapeHtml(r);
+		if (emojiDisplayedAsImageCache.has(r) || emojiDisplayedAsImageCache.has(key)) {
+			return `<img class="note-emoji-img" src="${escapeHtml(url)}" alt="${escapeHtml(r)}" style="height:1.25em;width:auto;vertical-align:middle;cursor:pointer" data-emoji-url="${escapeHtml(url)}" data-emoji-text="${escapeHtml(r)}">`;
+		}
+		return `<span class="note-emoji-placeholder" data-emoji-url="${escapeHtml(url)}" title="${escapeHtml(r)}">${escapeHtml(r)}</span>`;
+	}
+
 	function renderNotifications() {
 		const container = document.getElementById("notes");
 		if (!container) return;
@@ -703,24 +735,39 @@
 				const d = new Date(n.createdAt);
 				return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 			})() : "";
-			const headerRow = `${escapeHtml(label)}${who ? ": " + escapeHtml(who) : ""}${createdAt ? " " + escapeHtml(createdAt) : ""}`;
 			if (n.note && ["reply", "quote", "mention", "reaction", "renote", "unreadAntenna"].includes(n.type)) {
 				const summary = getNoteSummary(n.note);
-				const reactionPart = n.type === "reaction" && n.reaction ? ` ${escapeHtml(n.reaction)}` : "";
-				return `<div class="notification-item" data-notification-id="${n.id}" style="margin-bottom:1rem">
-					<div class="note-header" style="margin-bottom:0.25rem">
-						<span class="note-meta">${headerRow}${reactionPart}</span>
+				const reactionPart = n.type === "reaction" && n.reaction ? " " + renderReactionEmojiHtml(n.reaction) : "";
+				const whoPart = n.user
+					? `<span class="note-user" data-user-id="${escapeHtml(n.user.id)}">${escapeHtml(who)}</span>`
+					: "";
+				const whoRow = whoPart ? `${whoPart} が` : "";
+				const actionRow = `${escapeHtml(label)}${reactionPart}`;
+				const timeRow = createdAt ? escapeHtml(createdAt) : "";
+				const headerLine = [whoRow, actionRow, timeRow].filter(Boolean).join(" ");
+				const summaryHtml = summary ? `<div class="note-text notification-summary" style="font-size:0.9rem;color:var(--lc-muted);margin:0.25rem 0 0.5rem 0">${escapeHtml(summary)}</div>` : "";
+				const detailBtn = `<button class="note-detail" data-note-id="${n.note.id}">詳細</button>`;
+				return `<div class="note notification-item" data-notification-id="${n.id}" style="margin-bottom:1rem">
+					<div class="note-header" style="align-items:flex-start">
+						${showIcons && n.user?.avatarUrl ? `<img class="note-avatar" src="${escapeHtml(n.user.avatarUrl)}" alt="">` : ""}
+						<div style="flex:1;min-width:0">
+							<div class="note-meta" style="margin-bottom:0.25rem">${headerLine}</div>
+							${summaryHtml}
+							<div class="note-actions" style="margin-top:0.25rem">${detailBtn}</div>
+						</div>
 					</div>
-					${summary ? `<div class="note-text" style="font-size:0.9rem;color:var(--lc-muted);margin-bottom:0.5rem">${escapeHtml(summary)}</div>` : ""}
-					${renderNote(n.note, showIcons)}
 				</div>`;
 			}
 			const userPart = n.user
 				? `<span class="note-user" data-user-id="${escapeHtml(n.user.id)}">${escapeHtml(who)}</span>`
 				: "";
+			const headerLine = [userPart ? userPart + " が " : "", escapeHtml(label), createdAt ? " " + escapeHtml(createdAt) : ""].filter(Boolean).join("");
 			return `<div class="note notification-item" data-notification-id="${n.id}">
 				<div class="note-header">
-					<span class="note-meta">${headerRow}</span>${userPart}
+					${showIcons && n.user?.avatarUrl ? `<img class="note-avatar" src="${escapeHtml(n.user.avatarUrl)}" alt="">` : ""}
+					<div style="flex:1;min-width:0">
+						<span class="note-meta">${headerLine}</span>
+					</div>
 				</div>
 			</div>`;
 		}).join("");
@@ -749,11 +796,14 @@
 			const who = n.user ? getUserLabel(n.user) : "";
 			const noteId = n.note?.id || "";
 			const summary = n.note ? getNoteSummary(n.note) : "";
-			const reactionPart = n.type === "reaction" && n.reaction ? ` ${escapeHtml(n.reaction)}` : "";
-			const text = [label, who, reactionPart, summary ? summary.slice(0, 40) + (summary.length > 40 ? "..." : "") : ""].filter(Boolean).join(" ");
-			return `<div class="streaming-notif-item" data-note-id="${noteId}" data-user-id="${n.user?.id || ""}">${escapeHtml(text)}</div>`;
+			const textParts = [label, who ? who : ""].filter(Boolean).join(" ");
+			const reactionHtml = n.type === "reaction" && n.reaction ? " " + renderReactionEmojiHtml(n.reaction) : "";
+			const summaryText = summary ? summary.slice(0, 40) + (summary.length > 40 ? "..." : "") : "";
+			const content = escapeHtml(textParts) + reactionHtml + (summaryText ? " " + escapeHtml(summaryText) : "");
+			return `<div class="streaming-notif-item" data-note-id="${noteId}" data-user-id="${n.user?.id || ""}">${content}</div>`;
 		}).join("");
 		el.style.display = "block";
+		bindNoteEvents(el);
 		el.querySelectorAll(".streaming-notif-item").forEach((item) => {
 			item.addEventListener("click", () => {
 				if (item.dataset.noteId) openNoteDetail(item.dataset.noteId);
@@ -906,7 +956,7 @@
 	}
 
 	function getUserLabel(user) {
-		const name = (user.name || "").replace(/:\w+:/g, "").trim() || `@${user.username}`;
+		const name = (user.name || "").trim() || `@${user.username}`;
 		return `${name}@${user.username}${user.host ? `@${user.host}` : ""}`;
 	}
 
@@ -933,6 +983,40 @@
 			return `${window.location.origin}/avatar-alt/@${encodeURIComponent(acct)}`;
 		}
 		return user.avatarUrl || null;
+	}
+
+	/** テキスト内の:emoji:をクリック可能なplaceholder/imgに変換したHTMLを返す */
+	function buildTextWithEmojiHtml(text, emojiMap) {
+		if (!text || typeof text !== "string") return "";
+		const re = /:([a-zA-Z0-9_]+)(?:@([a-zA-Z0-9.-]+))?:/g;
+		const parts = [];
+		let lastIdx = 0;
+		let m;
+		while ((m = re.exec(text))) {
+			parts.push({ t: "text", s: text.slice(lastIdx, m.index) });
+			parts.push({ t: "emoji", name: m[1], host: m[2] || "" });
+			lastIdx = m.index + m[0].length;
+		}
+		parts.push({ t: "text", s: text.slice(lastIdx) });
+		let safeText = "";
+		parts.forEach((p) => {
+			if (p.t === "text") safeText += escapeHtml(p.s);
+			else {
+				const key = p.host ? `${p.name}@${p.host}` : p.name;
+				const emojiKey = `:${key}:`;
+				const url = emojiMap[key] || emojiMap[p.name] || getEmojiUrl(emojiKey);
+				if (url) {
+					if (emojiDisplayedAsImageCache.has(emojiKey) || emojiDisplayedAsImageCache.has(key)) {
+						safeText += `<img class="note-emoji-img" src="${escapeHtml(url)}" alt=":${escapeHtml(key)}:" style="height:1.25em;width:auto;vertical-align:middle;cursor:pointer" data-emoji-url="${escapeHtml(url)}" data-emoji-text=":${escapeHtml(key)}:">`;
+					} else {
+						safeText += `<span class="note-emoji-placeholder" data-emoji-url="${escapeHtml(url)}" title=":${escapeHtml(key)}:">:${escapeHtml(key)}:</span>`;
+					}
+				} else {
+					safeText += escapeHtml(emojiKey);
+				}
+			}
+		});
+		return safeText;
 	}
 
 	function buildNoteContent(app, noteId, emojiMap) {
@@ -1028,7 +1112,7 @@
 			return prefix + (v === "home" ? "🏠" : v === "followers" ? "🔒" : v === "specified" ? "✉" : v === "public" ? "🌐" : v === "private" ? "🔐" : "");
 		};
 		const visLabel = note.visibility ? visEmoji(note.visibility, !!note.localOnly) : "";
-		const userName = (headerUser?.name || "").replace(/:\w+:/g, "").trim() || (headerUser?.username ? `@${headerUser.username}` : "");
+		const userName = (headerUser?.name || "").trim() || (headerUser?.username ? `@${headerUser.username}` : "");
 		const userAcct = headerUser ? getAcct(headerUser) : "";
 		let html = `<div class="note" data-note-id="${note.id}"><div class="note-header">${avatar}<div class="note-user-info note-user" data-user-id="${headerUser?.id}"><span class="note-user-name">${escapeHtml(userName)}</span><span class="note-user-acct">${escapeHtml(userAcct)}</span></div><span class="note-meta">${visLabel ? `<span class="note-visibility">${escapeHtml(visLabel)}</span> ` : ""}</span></div>`;
 
@@ -1098,7 +1182,8 @@
 				const m = /^:([a-zA-Z0-9_]+)(?:@([a-zA-Z0-9.-]+))?:$/.exec(r);
 				if (m) {
 					const key = m[2] ? `${m[1]}@${m[2]}` : m[1];
-					const url = emojiMap[key] || emojiMap[m[1]];
+					// NOTE: ローカル絵文字はnote.emojisに含まれないため、getEmojiUrlでemojiUrlCacheから補完する
+					const url = emojiMap[key] || emojiMap[m[1]] || getEmojiUrl(r);
 					if (url) {
 						if (emojiDisplayedAsImageCache.has(r) || emojiDisplayedAsImageCache.has(key)) {
 							return `<img class="note-emoji-img" src="${escapeHtml(url)}" alt="${escapeHtml(r)}" style="height:1.25em;width:auto;vertical-align:middle;cursor:pointer" data-emoji-url="${escapeHtml(url)}" data-emoji-text="${escapeHtml(r)}">×${c}`;
@@ -1120,12 +1205,15 @@
 		if (createdAt) html += `<div class="note-created-at">${escapeHtml(createdAt)}</div>`;
 
 		const actionNoteId = (isRenote && !isQuote) ? note.renote.id : note.id;
-		let actionsHtml = `<div class="note-actions">
-			<button class="note-reply" data-note-id="${actionNoteId}">返信</button>
+		const loggedIn = !!token;
+		let actionsHtml = `<div class="note-actions">`;
+		if (loggedIn) {
+			actionsHtml += `<button class="note-reply" data-note-id="${actionNoteId}">返信</button>
 			<button class="note-reaction" data-note-id="${actionNoteId}">リアクション</button>
 			<button class="note-rt" data-note-id="${actionNoteId}">RT/引用</button>
-			${note.userId === currentAccount?.id ? `<button class="note-delete" data-note-id="${note.id}">削除</button>` : ""}
-			<button class="note-detail" data-note-id="${actionNoteId}">詳細</button>`;
+			${note.userId === currentAccount?.id ? `<button class="note-delete" data-note-id="${note.id}">削除</button>` : ""}`;
+		}
+		actionsHtml += `<button class="note-detail" data-note-id="${actionNoteId}">詳細</button>`;
 		if (isReply && note.reply) {
 			actionsHtml += ` <button class="note-detail-target" data-note-id="${note.reply.id}">詳細(返信先)</button>`;
 		} else if (isQuote && note.renote) {
@@ -1154,7 +1242,8 @@
 			});
 		});
 		const bindEmojiPlaceholder = (span) => {
-			span.addEventListener("click", () => {
+			span.addEventListener("click", (e) => {
+				e.stopPropagation();
 				const url = span.dataset.emojiUrl;
 				if (!url) return;
 				const text = span.textContent || span.title || "";
@@ -1544,7 +1633,8 @@
 	function openProfile(userId) {
 		api("users/show", { userId })
 			.then((user) => {
-				const rel = user.relation || {};
+				const rel = user.relation;
+				const hasRelation = rel != null && typeof rel === "object";
 				const overlay = document.getElementById("modal-overlay");
 				const body = document.getElementById("modal-body");
 				const desc = (user.description || "").replace(/<[^>]+>/g, "").trim() || "";
@@ -1552,21 +1642,27 @@
 				const isIconHidden = hiddenIds.includes(userId);
 
 				const normalActions = [];
-				if (rel.hasPendingFollowRequestFromYou) {
+				if (hasRelation && rel.hasPendingFollowRequestFromYou) {
 					normalActions.push({ label: "フォローリクエスト中", disabled: true });
-				} else if (!rel.isFollowing) {
+				} else if (hasRelation && !rel.isFollowing) {
 					normalActions.push({ label: "フォロー", action: () => api("following/create", { userId }) });
 				}
-				if (rel.hasPendingFollowRequestToYou) {
+				if (hasRelation && rel.hasPendingFollowRequestToYou) {
 					normalActions.push({ label: "フォローリクエスト承認", action: () => api("following/requests/accept", { userId }) });
 					normalActions.push({ label: "フォローリクエスト却下", action: () => api("following/requests/reject", { userId }) });
 				}
-				normalActions.push({ label: "DM", action: () => { setDmMode([userId], user); hideModal(); } });
-				normalActions.push({ label: rel.isMuted ? "ミュート解除" : "ミュート", action: () => rel.isMuted ? api("mute/delete", { userId }) : api("mute/create", { userId }) });
-				normalActions.push({ label: "ニックネーム編集", action: async () => {
-					const name = prompt("ニックネーム", user.name || "");
-					if (name != null) await api("users/update-memo", { userId, customName: name });
-				} });
+				if (token) {
+					normalActions.push({ label: "DM", action: () => { setDmMode([userId], user); hideModal(); } });
+				}
+				if (hasRelation) {
+					normalActions.push({ label: rel.isMuted ? "ミュート解除" : "ミュート", action: () => rel.isMuted ? api("mute/delete", { userId }) : api("mute/create", { userId }) });
+				}
+				if (token) {
+					normalActions.push({ label: "ニックネーム編集", action: async () => {
+						const name = prompt("ニックネーム", user.name || "");
+						if (name != null) await api("users/update-memo", { userId, customName: name });
+					} });
+				}
 				normalActions.push({ label: isIconHidden ? "アイコン非表示を解除" : "アイコンを非表示", action: () => {
 					if (isIconHidden) {
 						setHiddenIconUserIds(hiddenIds.filter((id) => id !== userId));
@@ -1576,28 +1672,62 @@
 					hideModal();
 					loadCurrentTl();
 				} });
-				normalActions.push({ label: rel.isRenoteMuted ? "RTミュート解除" : "RTだけミュート", action: () => rel.isRenoteMuted ? api("renote-mute/delete", { userId }) : api("renote-mute/create", { userId }) });
+				if (hasRelation) {
+					normalActions.push({ label: rel.isRenoteMuted ? "RTミュート解除" : "RTだけミュート", action: () => rel.isRenoteMuted ? api("renote-mute/delete", { userId }) : api("renote-mute/create", { userId }) });
+				}
 
 				const dangerousActions = [];
-				if (rel.isFollowing) dangerousActions.push({ label: "フォロー解除", action: () => { if (confirm("フォローを解除しますか？")) return api("following/delete", { userId }); } });
-				dangerousActions.push({ label: rel.isBlocking ? "ブロック解除" : "ブロック", action: () => { if (confirm(rel.isBlocking ? "ブロックを解除しますか？" : "ブロックしますか？")) return rel.isBlocking ? api("blocking/delete", { userId }) : api("blocking/create", { userId }); } });
-				if (rel.isFollowed) dangerousActions.push({ label: "フォロワー解除", action: () => { if (confirm("フォロワーから削除しますか？")) return api("following/invalidate", { userId }); } });
+				if (hasRelation) {
+					if (rel.isFollowing) dangerousActions.push({ label: "フォロー解除", action: () => { if (confirm("フォローを解除しますか？")) return api("following/delete", { userId }); } });
+					dangerousActions.push({ label: rel.isBlocking ? "ブロック解除" : "ブロック", action: () => { if (confirm(rel.isBlocking ? "ブロックを解除しますか？" : "ブロックしますか？")) return rel.isBlocking ? api("blocking/delete", { userId }) : api("blocking/create", { userId }); } });
+					if (rel.isFollowed) dangerousActions.push({ label: "フォロワー解除", action: () => { if (confirm("フォロワーから削除しますか？")) return api("following/invalidate", { userId }); } });
+				}
 
-				let html = `<h3>${escapeHtml(getUserLabel(user))}</h3>`;
-				if (desc) html += `<div class="profile-description" style="white-space:pre-wrap;margin:0.5rem 0;font-size:0.9rem">${escapeHtml(desc)}</div>`;
+				const emojiMap = {};
+				(user.emojis || []).forEach((e) => {
+					if (e.name && e.url) {
+						emojiMap[e.name] = e.url;
+						if (e.name.includes("@")) emojiMap[e.name] = e.url;
+					}
+				});
+				const showIcons = getSetting("showIcons", true);
+				const avatar = getAvatarUrl(user, showIcons)
+					? `<img class="note-avatar" src="${escapeHtml(getAvatarUrl(user, showIcons))}" alt="" width="40" height="40">`
+					: "";
+				const userName = (user.name || "").trim() || (user.username ? `@${user.username}` : "");
+				const userAcct = getAcct(user);
+				let html = `<div class="note-header" style="margin-bottom:0.75rem">${avatar}<div class="note-user-info note-user" data-user-id="${user.id}"><span class="note-user-name">${buildTextWithEmojiHtml(userName, emojiMap)}</span><span class="note-user-acct">${escapeHtml(userAcct)}</span></div></div>`;
+				if (desc) html += `<div class="profile-description" style="white-space:pre-wrap;margin:0.5rem 0;font-size:0.9rem">${buildTextWithEmojiHtml(desc, emojiMap)}</div>`;
+				const fields = user.fields || [];
+				if (fields.length > 0) {
+					html += `<div class="profile-fields" style="margin:0.5rem 0;font-size:0.9rem">`;
+					fields.forEach((f) => {
+						const label = (f.name || "").trim() || "";
+						const raw = (f.value || "").replace(/<[^>]+>/g, "").trim() || "";
+						if (!raw) return;
+						const labelPart = label ? `<span class="profile-field-name" style="font-weight:bold;color:var(--lc-muted)">${escapeHtml(label)}</span>: ` : "";
+						html += `<div class="profile-field" style="margin:0.25rem 0">${labelPart}<span class="profile-field-value">${buildTextWithEmojiHtml(raw, emojiMap)}</span></div>`;
+					});
+					html += `</div>`;
+				}
 				html += `<ul class="profile-actions-list">`;
 				normalActions.forEach((a) => {
 					html += `<li data-action${a.disabled ? ' style="opacity:0.7;cursor:default"' : ""}>${escapeHtml(a.label)}</li>`;
 				});
+				if (dangerousActions.length > 0) {
+					html += `<li data-dangerous-toggle class="profile-dangerous-toggle" style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--lc-border);font-size:0.85rem;color:var(--lc-muted)">危険な操作</li>`;
+					html += `</ul><ul class="profile-actions-list profile-dangerous-list" data-dangerous-sublist style="display:none;margin-top:0.25rem;padding-left:1rem">`;
+					dangerousActions.forEach((a) => {
+						html += `<li data-dangerous>${escapeHtml(a.label)}</li>`;
+					});
+				}
 				html += `</ul>`;
-				html += `<div class="profile-dangerous-section" style="margin-top:1rem;padding-top:0.5rem;border-top:1px solid var(--lc-border)"><div style="font-size:0.85rem;color:var(--lc-muted);margin-bottom:0.25rem">危険な操作</div><ul class="profile-dangerous-list">`;
-				dangerousActions.forEach((a) => {
-					html += `<li data-dangerous>${escapeHtml(a.label)}</li>`;
-				});
-				html += `</ul></div>`;
 
 				body.innerHTML = html;
-				const normalItems = Array.from(body.querySelectorAll(".profile-actions-list li[data-action]"));
+				bindNoteEvents(body);
+				const normalItems = Array.from(body.querySelectorAll(".profile-actions-list:not(.profile-dangerous-list) li[data-action]"));
+				const toggleBtn = body.querySelector("[data-dangerous-toggle]");
+				const dangerousSublist = body.querySelector("[data-dangerous-sublist]");
 				const dangerousItems = Array.from(body.querySelectorAll(".profile-dangerous-list li[data-dangerous]"));
 				normalItems.forEach((li, i) => {
 					const a = normalActions[i];
@@ -1605,6 +1735,12 @@
 						li.addEventListener("click", () => a.action().then(() => { hideModal(); loadCurrentTl(); }).catch(() => {}));
 					}
 				});
+				if (toggleBtn && dangerousSublist) {
+					toggleBtn.addEventListener("click", () => {
+						const visible = dangerousSublist.style.display !== "none";
+						dangerousSublist.style.display = visible ? "none" : "block";
+					});
+				}
 				dangerousItems.forEach((li, i) => {
 					const a = dangerousActions[i];
 					if (a) li.addEventListener("click", () => a.action().then(() => { hideModal(); loadCurrentTl(); }).catch(() => {}));
@@ -1739,7 +1875,12 @@
 			arr.forEach((e) => {
 				if (e?.name && e?.url) {
 					emojiUrlCache[e.name] = e.url;
-					if (e.name.includes("@")) emojiUrlCache[e.name] = e.url;
+					if (e.name.includes("@")) {
+						emojiUrlCache[e.name] = e.url;
+					} else {
+						// ローカル絵文字: リアクションは ":name@.:" 形式なので、このキーでも引けるようにする
+						emojiUrlCache[e.name + "@."] = e.url;
+					}
 				}
 			});
 		} catch (_) {}
@@ -1754,8 +1895,15 @@
 
 	// 初期化
 	async function init() {
-		await loadAccounts();
-		renderHeader();
+		try {
+			await loadAccounts();
+			// 未ログイン時、初期TLがログイン必須の場合はlocalに切り替え
+			if (!token && !["local", "global"].includes(currentTl)) {
+				currentTl = "local";
+				try { localStorage.setItem("light:lastTl", currentTl); } catch (_) {}
+			}
+			renderHeader();
+			updateTlTabVisibility();
 		initSettings();
 		initPostForm();
 		updateTlSelectorVisibility();
@@ -1765,6 +1913,8 @@
 			if (["antenna", "list", "channel"].includes(currentTl)) {
 				await populateTlSelector();
 			}
+			// NOTE: ノート描画時、ローカル絵文字のリアクション表示に必要
+			await fetchEmojiUrlCache();
 			loadCurrentTl();
 		} else {
 			hidePostForm();
@@ -1791,6 +1941,9 @@
 			updateStreamConnection();
 		});
 		document.getElementById("header-reload-btn")?.addEventListener("click", () => {
+			loadCurrentTl();
+		});
+		document.getElementById("header-guest-reload-btn")?.addEventListener("click", () => {
 			loadCurrentTl();
 		});
 		document.getElementById("post-submit")?.addEventListener("click", () => submitPost());
@@ -1952,6 +2105,12 @@
 		document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
 		document.querySelector(`.tab-btn[data-tl="${currentTl}"]`)?.classList.add("active");
 		updateStreamConnection();
+		} catch (e) {
+			console.error("Light Client init error:", e);
+			showError("初期化に失敗しました。ページを再読み込みしてください。");
+			renderHeader();
+			if (!token) showLoginForm();
+		}
 	}
 
 	if (document.readyState === "loading") {

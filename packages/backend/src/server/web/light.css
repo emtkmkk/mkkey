@@ -13,6 +13,7 @@
 /* セカンダリボタン（統一デザイン）※プライマリボタン・元ミニマルは除く */
 #settings-btn, #login-btn, #logout-btn, #search-btn,
 .settings-btn, #setting-fetch-emojis.settings-btn, #settings-reload.settings-btn, #settings-close.settings-btn,
+#post-cw-toggle, #post-emoji-btn,
 .emoji-picker-use, #post-emoji-picker #post-emoji-fetch-btn,
 #load-more {
 	background: var(--lc-surface);
@@ -26,6 +27,7 @@
 
 #settings-btn:hover, #login-btn:hover, #logout-btn:hover, #search-btn:hover,
 .settings-btn:hover, #setting-fetch-emojis.settings-btn:hover, #settings-reload.settings-btn:hover, #settings-close.settings-btn:hover,
+#post-cw-toggle:hover, #post-emoji-btn:hover,
 .emoji-picker-use:hover, #post-emoji-picker #post-emoji-fetch-btn:hover,
 #load-more:hover {
 	background: var(--lc-border);
@@ -340,17 +342,8 @@ body {
 
 #post-cw-toggle,
 #post-emoji-btn {
-	background: none;
-	border: none;
-	color: var(--lc-fg);
-	cursor: pointer;
-	padding: 0.25rem;
+	padding: 0.25rem 0.5rem;
 	font-size: 0.875rem;
-}
-
-#post-cw-toggle:hover,
-#post-emoji-btn:hover {
-	opacity: 0.8;
 }
 
 #post-options label.post-options-mkkey {

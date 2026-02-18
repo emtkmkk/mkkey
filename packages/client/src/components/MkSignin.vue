@@ -24,7 +24,7 @@
 					type="text"
 					pattern="^[a-zA-Z0-9_]+$"
 					:spellcheck="false"
-					autofocus
+					:autofocus="!hasAlternativeSignInMethod"
 					required
 					data-cy-signin-username
 					@update:modelValue="onUsernameChange"
@@ -215,6 +215,19 @@ const isPasskeySupported = $computed(
 		typeof navigator !== "undefined" &&
 		!!window.PublicKeyCredential &&
 		!!navigator.credentials,
+);
+const hasExternalServiceSignIn = $computed(
+	() =>
+		!!meta &&
+		(
+			meta.enableTwitterIntegration ||
+			meta.enableGithubIntegration ||
+			meta.enableGoogleIntegration ||
+			meta.enableDiscordIntegration
+		),
+);
+const hasAlternativeSignInMethod = $computed(
+	() => isPasskeySupported || hasExternalServiceSignIn,
 );
 
 const emit = defineEmits<{

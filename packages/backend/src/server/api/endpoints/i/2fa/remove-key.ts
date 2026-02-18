@@ -34,6 +34,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		id: ps.credentialId,
 	});
 
+	await Users.invalidateMeDetailedBaseCache(user.id);
+
 	// Publish meUpdated event
 	publishMainStream(
 		user.id,

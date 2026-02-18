@@ -24,6 +24,25 @@
 			}}</MkButton>
 		</FormSection>
 
+		<FormSection v-if="instance.enableGoogleIntegration">
+			<template #label
+				><i class="ph-google-logo ph-bold ph-lg"></i> Google</template
+			>
+			<p v-if="integrations.google">
+				{{ i18n.ts.connectedTo }}:
+				<span>{{ integrations.google.email ?? integrations.google.name ?? integrations.google.id }}</span>
+			</p>
+			<MkButton
+				v-if="integrations.google"
+				danger
+				@click="disconnectGoogle"
+				>{{ i18n.ts.disconnectService }}</MkButton
+			>
+			<MkButton v-else primary @click="connectGoogle">{{
+				i18n.ts.connectService
+			}}</MkButton>
+		</FormSection>
+
 		<FormSection v-if="instance.enableGithubIntegration">
 			<template #label
 				><i class="ph-github-logo ph-bold ph-lg"></i> GitHub</template
@@ -63,6 +82,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 const twitterForm = ref<Window | null>(null);
 const discordForm = ref<Window | null>(null);
 const githubForm = ref<Window | null>(null);
+const googleForm = ref<Window | null>(null);
 
 const integrations = computed(() => $i!.integrations);
 const discordHandle = computed(() => {
@@ -117,6 +137,14 @@ function disconnectGithub() {
 	openWindow("github", "disconnect");
 }
 
+function connectGoogle() {
+	googleForm.value = openWindow("google", "connect");
+}
+
+function disconnectGoogle() {
+	openWindow("google", "disconnect");
+}
+
 onMounted(() => {
 	document.cookie = `igi=${$i!.token}; ${getCookieAttributes(31536000)}`;
 
@@ -129,6 +157,9 @@ onMounted(() => {
 		}
 		if (integrations.value.github) {
 			if (githubForm.value) githubForm.value.close();
+		}
+		if (integrations.value.google) {
+			if (googleForm.value) googleForm.value.close();
 		}
 	});
 });

@@ -24,6 +24,7 @@ import signupPending from "./private/signup-pending.js";
 import verifyEmail from "./private/verify-email.js";
 import discord from "./service/discord.js";
 import github from "./service/github.js";
+import google from "./service/google.js";
 import twitter from "./service/twitter.js";
 import { koaBody } from "koa-body";
 import {
@@ -214,6 +215,7 @@ router.post("/verify-email", verifyEmail);
 
 router.use(discord.routes());
 router.use(github.routes());
+router.use(google.routes());
 router.use(twitter.routes());
 
 router.get("/v1/instance/peers", async (ctx) => {

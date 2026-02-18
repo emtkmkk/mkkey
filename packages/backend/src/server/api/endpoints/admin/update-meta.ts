@@ -143,6 +143,9 @@ export const paramDef = {
 		enableDiscordIntegration: { type: "boolean" },
 		discordClientId: { type: "string", nullable: true },
 		discordClientSecret: { type: "string", nullable: true },
+		enableGoogleIntegration: { type: "boolean" },
+		googleClientId: { type: "string", nullable: true },
+		googleClientSecret: { type: "string", nullable: true },
 		enableEmail: { type: "boolean" },
 		email: { type: "string", nullable: true },
 		smtpSecure: { type: "boolean" },
@@ -414,6 +417,18 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (ps.discordClientSecret !== undefined) {
 		set.discordClientSecret = ps.discordClientSecret;
+	}
+
+	if (ps.enableGoogleIntegration !== undefined) {
+		set.enableGoogleIntegration = ps.enableGoogleIntegration;
+	}
+
+	if (ps.googleClientId !== undefined) {
+		set.googleClientId = ps.googleClientId;
+	}
+
+	if (ps.googleClientSecret !== undefined) {
+		set.googleClientSecret = ps.googleClientSecret;
 	}
 
 	if (ps.enableEmail !== undefined) {

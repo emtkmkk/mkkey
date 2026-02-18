@@ -22,6 +22,16 @@
 				</FormFolder>
 				<FormFolder class="_formBlock">
 					<template #icon
+						><i class="ph-google-logo ph-bold ph-lg"></i
+					></template>
+					<template #label>Google</template>
+					<template #suffix>{{
+						enableGoogleIntegration ? i18n.ts.enabled : i18n.ts.disabled
+					}}</template>
+					<XGoogle />
+				</FormFolder>
+				<FormFolder class="_formBlock">
+					<template #icon
 						><i class="ph-discord-logo ph-bold ph-lg"></i
 					></template>
 					<template #label>Discord</template>
@@ -41,6 +51,7 @@
 import {} from "vue";
 import XGithub from "./integrations.github.vue";
 import XDiscord from "./integrations.discord.vue";
+import XGoogle from "./integrations.google.vue";
 import FormSuspense from "@/components/form/suspense.vue";
 import FormFolder from "@/components/form/folder.vue";
 import * as os from "@/os";
@@ -50,12 +61,14 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 let enableTwitterIntegration: boolean = $ref(false);
 let enableGithubIntegration: boolean = $ref(false);
 let enableDiscordIntegration: boolean = $ref(false);
+let enableGoogleIntegration: boolean = $ref(false);
 
 async function init() {
 	const meta = await os.api("admin/meta");
 	enableTwitterIntegration = meta.enableTwitterIntegration;
 	enableGithubIntegration = meta.enableGithubIntegration;
 	enableDiscordIntegration = meta.enableDiscordIntegration;
+	enableGoogleIntegration = meta.enableGoogleIntegration;
 }
 
 const headerActions = $computed(() => []);

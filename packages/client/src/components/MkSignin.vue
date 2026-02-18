@@ -33,7 +33,7 @@
 					<template #suffix>@{{ host }}</template>
 				</MkInput>
 				<MkInput
-					v-if="!user || (user && !user.usePasswordLessLogin)"
+					v-if="!user || (user && (!user.usePasswordLessLogin || password))"
 					v-model="password"
 					class="_formBlock"
 					:placeholder="i18n.ts.password"
@@ -73,6 +73,9 @@
 					class="twofa-group tap-group"
 				>
 					<p>{{ i18n.ts.tapSecurityKey }}</p>
+					<p v-if="totpErrorMessage" class="totp-error">
+						{{ totpErrorMessage }}
+					</p>
 					<MkButton v-if="!queryingKey" @click="queryKey">
 						{{ i18n.ts.retry }}
 					</MkButton>
@@ -196,6 +199,7 @@ let queryingKey = $ref(false);
 let hCaptchaResponse = $ref(null);
 let reCaptchaResponse = $ref(null);
 let userFetching = $ref<Promise<void> | null>(null);
+let totpErrorMessage = $ref("");
 
 const meta = $computed(() => instance);
 const isPasskeySupported = $computed(
@@ -261,6 +265,7 @@ function fetchUser() {
 }
 
 function onUsernameChange() {
+	totpErrorMessage = "";
 	fetchUser();
 }
 
@@ -271,6 +276,7 @@ function onLogin(res) {
 }
 
 function queryKey() {
+	totpErrorMessage = "";
 	queryingKey = true;
 	return navigator.credentials
 		.get({
@@ -288,14 +294,13 @@ function queryKey() {
 		.catch(() => {
 			queryingKey = false;
 			signing = false;
+			totpErrorMessage = i18n.ts.loginFailed;
 			return Promise.reject(null);
 		})
 		.then((credential) => {
 			queryingKey = false;
 			signing = true;
 			return os.api("signin", {
-				username,
-				password,
 				signature: hexify(credential.response.signature),
 				authenticatorData: hexify(
 					credential.response.authenticatorData
@@ -313,10 +318,7 @@ function queryKey() {
 		})
 		.catch((err) => {
 			if (err === null) return;
-			os.alert({
-				type: "error",
-				text: i18n.ts.signinFailed,
-			});
+			showSigninError(err, { inlinePasskeyError: true, keepTotpState: true });
 			signing = false;
 		});
 }
@@ -365,6 +367,7 @@ async function signinWithPasskey() {
 
 async function onSubmit() {
 	signing = true;
+	totpErrorMessage = "";
 	if (!user && username) {
 		await fetchUser();
 	}
@@ -417,48 +420,75 @@ async function onSubmit() {
 }
 
 function loginFailed(err) {
-	switch (err.id) {
-		case "6cc579cc-885d-43d8-95c2-b8c7fc963280": {
-			os.alert({
-				type: "error",
-				title: i18n.ts.loginFailed,
-				text: i18n.ts.noSuchUser,
-			});
-			break;
-		}
-		case "932c904e-9460-45b7-9ce6-7ed33be7eb2c": {
-			os.alert({
-				type: "error",
-				title: i18n.ts.loginFailed,
-				text: i18n.ts.incorrectPassword,
-			});
-			break;
-		}
-		case "e03a5f46-d309-4865-9b69-56282d94e1eb": {
-			showSuspendedDialog();
-			break;
-		}
-		case "22d05606-fbcf-421a-a2db-b32610dcfd1b": {
-			os.alert({
-				type: "error",
-				title: i18n.ts.loginFailed,
-				text: i18n.ts.rateLimitExceeded,
-			});
-			break;
-		}
-		default: {
-			console.log(err);
-			os.alert({
-				type: "error",
-				title: i18n.ts.loginFailed,
-				text: JSON.stringify(err),
-			});
-		}
+	if (err == null) {
+		totpErrorMessage = i18n.ts.loginFailed;
+		signing = false;
+		return;
 	}
 
-	challengeData = null;
-	totpLogin = false;
+	const keepTotpState = totpLogin;
+	showSigninError(err, { inlinePasskeyError: keepTotpState, keepTotpState });
+
+	if (!keepTotpState) {
+		challengeData = null;
+		totpLogin = false;
+	}
 	signing = false;
+}
+
+function isPasskeySigninError(err): boolean {
+	if (!err || typeof err !== "object") return false;
+	const passkeyErrorIds = [
+		"66269679-aeaf-4474-862b-eb761197e046",
+		"2715a88a-2125-4013-932f-aa6fe72792da",
+		"93b86c4b-72f9-40eb-9815-798928603d1e",
+	];
+	return typeof err.id === "string" && passkeyErrorIds.includes(err.id);
+}
+
+function getSigninErrorText(err): string {
+	if (!err || typeof err !== "object") return i18n.ts.signinFailed;
+
+	switch (err.id) {
+		case "6cc579cc-885d-43d8-95c2-b8c7fc963280":
+			return i18n.ts.noSuchUser;
+		case "932c904e-9460-45b7-9ce6-7ed33be7eb2c":
+			return i18n.ts.incorrectPassword;
+		case "22d05606-fbcf-421a-a2db-b32610dcfd1b":
+			return i18n.ts.rateLimitExceeded;
+		case "cdf1235b-ac71-46d4-a3a6-84ccce48df6f":
+			return i18n.ts.signinFailed;
+		default:
+			return typeof err.message === "string" ? err.message : i18n.ts.signinFailed;
+	}
+}
+
+function showSigninError(
+	err,
+	options: { inlinePasskeyError: boolean; keepTotpState: boolean },
+) {
+	if (err?.id === "e03a5f46-d309-4865-9b69-56282d94e1eb") {
+		showSuspendedDialog();
+		return;
+	}
+
+	const text = getSigninErrorText(err);
+	const showInline = options.inlinePasskeyError && isPasskeySigninError(err);
+
+	if (showInline) {
+		totpErrorMessage = text;
+		return;
+	}
+
+	os.alert({
+		type: "error",
+		title: i18n.ts.loginFailed,
+		text,
+	});
+
+	if (!options.keepTotpState) {
+		totpErrorMessage = "";
+	}
 }
 
 function resetPassword() {
@@ -487,6 +517,11 @@ function resetPassword() {
 		.totp-signin {
 			.totp-group > button[type="submit"] {
 				margin: 1rem auto 0;
+			}
+
+			.totp-error {
+				margin: 0.5rem 0 0;
+				color: var(--error);
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 import * as speakeasy from "speakeasy";
 import define from "../../../define.js";
-import { UserProfiles } from "@/models/index.js";
+import { UserProfiles, Users } from "@/models/index.js";
 
 export const meta = {
 	requireCredential: true,
@@ -39,4 +39,6 @@ export default define(meta, paramDef, async (ps, user) => {
 		twoFactorSecret: profile.twoFactorTempSecret,
 		twoFactorEnabled: true,
 	});
+
+	await Users.invalidateMeDetailedBaseCache(user.id);
 });

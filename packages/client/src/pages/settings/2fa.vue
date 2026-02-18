@@ -153,6 +153,7 @@ const registration = ref<any>(null);
 const keyName = ref("");
 const token = ref(null);
 
+
 function register() {
 	os.inputText({
 		title: i18n.ts.password,
@@ -219,6 +220,7 @@ function registerKey() {
 	}).then((key) => {
 		registration.value = null;
 		key!.lastUsed = new Date();
+		$i!.securityKeysList.push(key);
 		os.success();
 	});
 }
@@ -235,6 +237,7 @@ function unregisterKey(key) {
 				credentialId: key.id,
 			})
 			.then(() => {
+				$i!.securityKeysList = $i!.securityKeysList.filter((x) => x.id !== key.id);
 				usePasswordLessLogin.value = false;
 				updatePasswordLessLogin();
 			})

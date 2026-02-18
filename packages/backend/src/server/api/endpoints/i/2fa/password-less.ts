@@ -1,5 +1,5 @@
 import define from "../../../define.js";
-import { UserProfiles } from "@/models/index.js";
+import { UserProfiles, Users } from "@/models/index.js";
 
 export const meta = {
 	requireCredential: true,
@@ -19,4 +19,6 @@ export default define(meta, paramDef, async (ps, user) => {
 	await UserProfiles.update(user.id, {
 		usePasswordLessLogin: ps.value,
 	});
+
+	await Users.invalidateMeDetailedBaseCache(user.id);
 });

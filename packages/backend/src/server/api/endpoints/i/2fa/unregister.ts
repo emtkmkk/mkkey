@@ -1,5 +1,5 @@
 import define from "../../../define.js";
-import { UserProfiles } from "@/models/index.js";
+import { UserProfiles, Users } from "@/models/index.js";
 import { comparePassword } from "@/misc/password.js";
 
 export const meta = {
@@ -30,4 +30,6 @@ export default define(meta, paramDef, async (ps, user) => {
 		twoFactorSecret: null,
 		twoFactorEnabled: false,
 	});
+
+	await Users.invalidateMeDetailedBaseCache(user.id);
 });

@@ -1,5 +1,24 @@
 <template>
 	<div class="_formRoot">
+		<FormSection v-if="instance.enableGoogleIntegration">
+			<template #label
+				><i class="ph-google-logo ph-bold ph-lg"></i> Google</template
+			>
+			<p v-if="integrations.google">
+				{{ i18n.ts.connectedTo }}:
+				<span>{{ integrations.google.email ?? integrations.google.name ?? integrations.google.id }}</span>
+			</p>
+			<MkButton
+				v-if="integrations.google"
+				danger
+				@click="disconnectGoogle"
+				>{{ i18n.ts.disconnectService }}</MkButton
+			>
+			<MkButton v-else primary @click="connectGoogle">{{
+				i18n.ts.connectService
+			}}</MkButton>
+		</FormSection>
+
 		<FormSection v-if="instance.enableDiscordIntegration">
 			<template #label
 				><i class="ph-discord-logo ph-bold ph-lg"></i> Discord</template
@@ -20,25 +39,6 @@
 				>{{ i18n.ts.disconnectService }}</MkButton
 			>
 			<MkButton v-else primary @click="connectDiscord">{{
-				i18n.ts.connectService
-			}}</MkButton>
-		</FormSection>
-
-		<FormSection v-if="instance.enableGoogleIntegration">
-			<template #label
-				><i class="ph-google-logo ph-bold ph-lg"></i> Google</template
-			>
-			<p v-if="integrations.google">
-				{{ i18n.ts.connectedTo }}:
-				<span>{{ integrations.google.email ?? integrations.google.name ?? integrations.google.id }}</span>
-			</p>
-			<MkButton
-				v-if="integrations.google"
-				danger
-				@click="disconnectGoogle"
-				>{{ i18n.ts.disconnectService }}</MkButton
-			>
-			<MkButton v-else primary @click="connectGoogle">{{
 				i18n.ts.connectService
 			}}</MkButton>
 		</FormSection>

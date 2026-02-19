@@ -159,6 +159,11 @@ router.get("/connect/discord", async (ctx) => {
 	};
 
 	await setRedisValue(userToken, JSON.stringify(params), 600);
+	await setRedisValue(
+		`discord:connect:state:${params.state}`,
+		JSON.stringify(params),
+		600,
+	);
 
 	const oauth2 = await getOAuth2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
@@ -331,13 +336,23 @@ router.get("/dc/cb", async (ctx) => {
 		}
 	} else {
 		const code = ctx.query.code;
+		const callbackState = ctx.query.state;
 
 		if (!code || typeof code !== "string") {
 			ctx.throw(400, "invalid session - 5");
 			return;
 		}
 
-		const savedState = await getRedisValue(userToken);
+		if (!callbackState || typeof callbackState !== "string") {
+			ctx.throw(400, "invalid session - 6");
+			return;
+		}
+
+		const savedStateByUserToken = await getRedisValue(userToken);
+		const savedStateByState = await getRedisValue(
+			`discord:connect:state:${callbackState}`,
+		);
+		const savedState = savedStateByUserToken ?? savedStateByState;
 		if (!savedState) {
 			ctx.throw(400, "invalid session - 6");
 			return;
@@ -351,7 +366,7 @@ router.get("/dc/cb", async (ctx) => {
 
 		const { redirect_uri, state } = savedStateObject;
 
-		if (ctx.query.state !== state) {
+		if (callbackState !== state) {
 			ctx.throw(400, "invalid session - 6");
 			return;
 		}
@@ -432,6 +447,7 @@ router.get("/dc/cb", async (ctx) => {
 			);
 		} finally {
 			await deleteRedisKey(userToken);
+			await deleteRedisKey(`discord:connect:state:${callbackState}`);
 		}
 	}
 });

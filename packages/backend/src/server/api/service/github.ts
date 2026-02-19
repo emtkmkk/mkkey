@@ -162,6 +162,7 @@ router.get("/connect/github", async (ctx) => {
 	};
 
 	await setRedisValue(userToken, JSON.stringify(params), 600);
+	await setRedisValue(`github:connect:state:${params.state}`, JSON.stringify(params), 600);
 
 	const oauth2 = await getOath2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
@@ -312,13 +313,21 @@ router.get("/gh/cb", async (ctx) => {
 		}
 	} else {
 		const code = ctx.query.code;
+		const callbackState = ctx.query.state;
 
 		if (!code || typeof code !== "string") {
 			ctx.throw(400, "invalid session");
 			return;
 		}
 
-		const savedState = await getRedisValue(userToken);
+		if (!callbackState || typeof callbackState !== "string") {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		const savedStateByUserToken = await getRedisValue(userToken);
+		const savedStateByState = await getRedisValue(`github:connect:state:${callbackState}`);
+		const savedState = savedStateByUserToken ?? savedStateByState;
 
 		if (!savedState) {
 			ctx.throw(400, "invalid session");
@@ -337,7 +346,7 @@ router.get("/gh/cb", async (ctx) => {
 
 		const { redirect_uri, state } = savedStateObject;
 
-		if (ctx.query.state !== state) {
+		if (callbackState !== state) {
 			ctx.throw(400, "invalid session");
 			return;
 		}
@@ -404,6 +413,7 @@ router.get("/gh/cb", async (ctx) => {
 			);
 		} finally {
 			await deleteRedisKey(userToken);
+			await deleteRedisKey(`github:connect:state:${callbackState}`);
 		}
 	}
 });

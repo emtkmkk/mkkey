@@ -167,6 +167,22 @@ router.get("/connect/twitter", async (ctx) => {
 });
 
 router.get("/signin/twitter", async (ctx) => {
+	const previousSessid = ctx.cookies.get("signin_with_twitter_sid");
+	if (previousSessid) {
+		const previousTwCtxRaw = await getRedisValue(previousSessid);
+		await deleteRedisKey(previousSessid);
+
+		const previousTwCtx = previousTwCtxRaw
+			? parseJsonSafely<{ url?: string }>(previousTwCtxRaw)
+			: null;
+		const previousOAuthToken = previousTwCtx?.url
+			? getOAuthTokenFromUrl(previousTwCtx.url)
+			: null;
+		if (previousOAuthToken) {
+			await deleteRedisKey(`twitter:signin:oauth-token:${previousOAuthToken}`);
+		}
+	}
+
 	const twAuth = await getTwAuth();
 	const twCtx = await twAuth!.begin();
 
@@ -213,44 +229,50 @@ router.get("/tw/cb", async (ctx) => {
 			(await getRedisValue(`twitter:signin:oauth-token:${oauthToken}`));
 
 		if (!twCtx) {
+			if (sessid) {
+				await deleteRedisKey(sessid);
+			}
+			await deleteRedisKey(`twitter:signin:oauth-token:${oauthToken}`);
 			ctx.throw(400, "invalid session");
 			return;
 		}
 
-		if (sessid) {
-			await deleteRedisKey(sessid);
-		}
-		await deleteRedisKey(`twitter:signin:oauth-token:${oauthToken}`);
+		try {
+			const parsedTwCtx = parseJsonSafely<Record<string, unknown>>(twCtx);
 
-		const parsedTwCtx = parseJsonSafely<Record<string, unknown>>(twCtx);
+			if (!parsedTwCtx) {
+				ctx.throw(400, "invalid session");
+				return;
+			}
 
-		if (!parsedTwCtx) {
-			ctx.throw(400, "invalid session");
-			return;
-		}
+			const result = await twAuth!.done(parsedTwCtx, verifier);
 
-		const result = await twAuth!.done(parsedTwCtx, verifier);
+			const link = await UserProfiles.createQueryBuilder()
+				.where("\"integrations\"->'twitter'->>'userId' = :id", {
+					id: result.userId,
+				})
+				.andWhere('"userHost" IS NULL')
+				.getOne();
 
-		const link = await UserProfiles.createQueryBuilder()
-			.where("\"integrations\"->'twitter'->>'userId' = :id", {
-				id: result.userId,
-			})
-			.andWhere('"userHost" IS NULL')
-			.getOne();
+			if (link == null) {
+				ctx.throw(
+					404,
+					`@${result.screenName}と連携しているMisskeyアカウントはありませんでした...`,
+				);
+				return;
+			}
 
-		if (link == null) {
-			ctx.throw(
-				404,
-				`@${result.screenName}と連携しているMisskeyアカウントはありませんでした...`,
+			signin(
+				ctx,
+				(await Users.findOneBy({ id: link.userId })) as ILocalUser,
+				true,
 			);
-			return;
+		} finally {
+			if (sessid) {
+				await deleteRedisKey(sessid);
+			}
+			await deleteRedisKey(`twitter:signin:oauth-token:${oauthToken}`);
 		}
-
-		signin(
-			ctx,
-			(await Users.findOneBy({ id: link.userId })) as ILocalUser,
-			true,
-		);
 	} else {
 		const verifier = ctx.query.oauth_verifier;
 
@@ -266,47 +288,49 @@ router.get("/tw/cb", async (ctx) => {
 			return;
 		}
 
-		await deleteRedisKey(userToken);
+		try {
+			const parsedTwCtx = parseJsonSafely<Record<string, unknown>>(twCtx);
 
-		const parsedTwCtx = parseJsonSafely<Record<string, unknown>>(twCtx);
+			if (!parsedTwCtx) {
+				ctx.throw(400, "invalid session");
+				return;
+			}
 
-		if (!parsedTwCtx) {
-			ctx.throw(400, "invalid session");
-			return;
-		}
+			const result = await twAuth!.done(parsedTwCtx, verifier);
 
-		const result = await twAuth!.done(parsedTwCtx, verifier);
+			const user = await Users.findOneByOrFail({
+				host: IsNull(),
+				token: userToken,
+			});
 
-		const user = await Users.findOneByOrFail({
-			host: IsNull(),
-			token: userToken,
-		});
+			const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-		const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
-
-		await UserProfiles.update(user.id, {
-			integrations: {
-				...profile.integrations,
-				twitter: {
-					accessToken: result.accessToken,
-					accessTokenSecret: result.accessTokenSecret,
-					userId: result.userId,
-					screenName: result.screenName,
+			await UserProfiles.update(user.id, {
+				integrations: {
+					...profile.integrations,
+					twitter: {
+						accessToken: result.accessToken,
+						accessTokenSecret: result.accessTokenSecret,
+						userId: result.userId,
+						screenName: result.screenName,
+					},
 				},
-			},
-		});
+			});
 
-		ctx.body = `Twitter: @${result.screenName} を、Misskey: @${user.username} に接続しました！`;
+			ctx.body = `Twitter: @${result.screenName} を、Misskey: @${user.username} に接続しました！`;
 
-		// Publish i updated event
-		publishMainStream(
-			user.id,
-			"meUpdated",
-			await Users.pack(user, user, {
-				detail: true,
-				includeSecrets: true,
-			}),
-		);
+			// Publish i updated event
+			publishMainStream(
+				user.id,
+				"meUpdated",
+				await Users.pack(user, user, {
+					detail: true,
+					includeSecrets: true,
+				}),
+			);
+		} finally {
+			await deleteRedisKey(userToken);
+		}
 	}
 });
 

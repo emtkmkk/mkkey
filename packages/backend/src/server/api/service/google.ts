@@ -223,6 +223,19 @@ router.get("/connect/google", async (ctx) => {
 });
 
 router.get("/signin/google", async (ctx) => {
+	const previousSessid = ctx.cookies.get("signin_with_google_sid");
+	if (previousSessid) {
+		const previousStateRaw = await getRedisValue(previousSessid);
+		await deleteRedisKey(previousSessid);
+
+		const previousState = previousStateRaw
+			? parseJsonSafely<{ state: string }>(previousStateRaw)
+			: null;
+		if (previousState) {
+			await deleteRedisKey(`google:signin:state:${previousState.state}`);
+		}
+	}
+
 	const sessid = uuid();
 	const state = uuid();
 
@@ -279,10 +292,87 @@ router.get("/go/cb", async (ctx) => {
 			savedStateByCookie ??
 			(await getRedisValue(`google:signin:state:${callbackState}`));
 		if (!savedState) {
+			if (sessid) {
+				await deleteRedisKey(sessid);
+			}
+			await deleteRedisKey(`google:signin:state:${callbackState}`);
 			ctx.throw(400, "invalid session");
 			return;
 		}
 
+		try {
+			const savedStateObject = parseJsonSafely<{ redirect_uri: string; state: string }>(savedState);
+			if (!savedStateObject) {
+				ctx.throw(400, "invalid session");
+				return;
+			}
+
+			const { redirect_uri, state } = savedStateObject;
+			if (callbackState !== state) {
+				ctx.throw(400, "invalid session");
+				return;
+			}
+
+			const accessToken = await getGoogleAccessToken(oauthConfig, code, redirect_uri);
+
+			const { sub, name, email } = (await getJson(
+				"https://www.googleapis.com/oauth2/v3/userinfo",
+				"application/json",
+				10 * 1000,
+				{ Authorization: `Bearer ${accessToken}` },
+			)) as Record<string, unknown>;
+
+			if (typeof sub !== "string") {
+				ctx.throw(400, "invalid session");
+				return;
+			}
+
+			const profile = await UserProfiles.createQueryBuilder()
+				.where("\"integrations\"->'google'->>'id' = :id", { id: sub })
+				.andWhere('"userHost" IS NULL')
+				.getOne();
+
+			if (!profile) {
+				ctx.throw(
+					404,
+					`${typeof email === "string" ? email : sub}と連携しているMisskeyアカウントはありませんでした...`,
+				);
+				return;
+			}
+
+			await UserProfiles.update(profile.userId, {
+				integrations: {
+					...profile.integrations,
+					google: {
+						id: sub,
+						accessToken,
+						name: typeof name === "string" ? name : null,
+						email: typeof email === "string" ? email : null,
+					},
+				},
+			});
+
+			signin(
+				ctx,
+				(await Users.findOneBy({ id: profile.userId })) as ILocalUser,
+				true,
+			);
+		} finally {
+			if (sessid) {
+				await deleteRedisKey(sessid);
+			}
+			await deleteRedisKey(`google:signin:state:${callbackState}`);
+		}
+		return;
+	}
+
+	const savedState = await getRedisValue(userToken);
+	if (!savedState) {
+		ctx.throw(400, "invalid session");
+		return;
+	}
+
+	try {
 		const savedStateObject = parseJsonSafely<{ redirect_uri: string; state: string }>(savedState);
 		if (!savedStateObject) {
 			ctx.throw(400, "invalid session");
@@ -290,15 +380,10 @@ router.get("/go/cb", async (ctx) => {
 		}
 
 		const { redirect_uri, state } = savedStateObject;
-		if (callbackState !== state) {
+		if (ctx.query.state !== state) {
 			ctx.throw(400, "invalid session");
 			return;
 		}
-
-		if (sessid) {
-			await deleteRedisKey(sessid);
-		}
-		await deleteRedisKey(`google:signin:state:${state}`);
 
 		const accessToken = await getGoogleAccessToken(oauthConfig, code, redirect_uri);
 
@@ -314,20 +399,13 @@ router.get("/go/cb", async (ctx) => {
 			return;
 		}
 
-		const profile = await UserProfiles.createQueryBuilder()
-			.where("\"integrations\"->'google'->>'id' = :id", { id: sub })
-			.andWhere('"userHost" IS NULL')
-			.getOne();
+		const user = await Users.findOneByOrFail({
+			host: IsNull(),
+			token: userToken,
+		});
+		const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-		if (!profile) {
-			ctx.throw(
-				404,
-				`${typeof email === "string" ? email : sub}と連携しているMisskeyアカウントはありませんでした...`,
-			);
-			return;
-		}
-
-		await UserProfiles.update(profile.userId, {
+		await UserProfiles.update(user.id, {
 			integrations: {
 				...profile.integrations,
 				google: {
@@ -339,76 +417,19 @@ router.get("/go/cb", async (ctx) => {
 			},
 		});
 
-		signin(
-			ctx,
-			(await Users.findOneBy({ id: profile.userId })) as ILocalUser,
-			true,
+		ctx.body = `Google: ${typeof email === "string" ? email : sub} を、Misskey: @${user.username} に接続しました！`;
+
+		publishMainStream(
+			user.id,
+			"meUpdated",
+			await Users.pack(user, user, {
+				detail: true,
+				includeSecrets: true,
+			}),
 		);
-		return;
+	} finally {
+		await deleteRedisKey(userToken);
 	}
-
-	const savedState = await getRedisValue(userToken);
-	if (!savedState) {
-		ctx.throw(400, "invalid session");
-		return;
-	}
-
-	const savedStateObject = parseJsonSafely<{ redirect_uri: string; state: string }>(savedState);
-	if (!savedStateObject) {
-		ctx.throw(400, "invalid session");
-		return;
-	}
-
-	const { redirect_uri, state } = savedStateObject;
-	if (ctx.query.state !== state) {
-		ctx.throw(400, "invalid session");
-		return;
-	}
-
-	await deleteRedisKey(userToken);
-
-	const accessToken = await getGoogleAccessToken(oauthConfig, code, redirect_uri);
-
-	const { sub, name, email } = (await getJson(
-		"https://www.googleapis.com/oauth2/v3/userinfo",
-		"application/json",
-		10 * 1000,
-		{ Authorization: `Bearer ${accessToken}` },
-	)) as Record<string, unknown>;
-
-	if (typeof sub !== "string") {
-		ctx.throw(400, "invalid session");
-		return;
-	}
-
-	const user = await Users.findOneByOrFail({
-		host: IsNull(),
-		token: userToken,
-	});
-	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
-
-	await UserProfiles.update(user.id, {
-		integrations: {
-			...profile.integrations,
-			google: {
-				id: sub,
-				accessToken,
-				name: typeof name === "string" ? name : null,
-				email: typeof email === "string" ? email : null,
-			},
-		},
-	});
-
-	ctx.body = `Google: ${typeof email === "string" ? email : sub} を、Misskey: @${user.username} に接続しました！`;
-
-	publishMainStream(
-		user.id,
-		"meUpdated",
-		await Users.pack(user, user, {
-			detail: true,
-			includeSecrets: true,
-		}),
-	);
 });
 
 export default router;

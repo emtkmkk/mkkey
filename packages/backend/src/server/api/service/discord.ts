@@ -165,6 +165,19 @@ router.get("/connect/discord", async (ctx) => {
 });
 
 router.get("/signin/discord", async (ctx) => {
+	const previousSessid = ctx.cookies.get("signin_with_discord_sid");
+	if (previousSessid) {
+		const previousStateRaw = await getRedisValue(previousSessid);
+		await deleteRedisKey(previousSessid);
+
+		const previousState = previousStateRaw
+			? parseJsonSafely<{ state: string }>(previousStateRaw)
+			: null;
+		if (previousState) {
+			await deleteRedisKey(`discord:signin:state:${previousState.state}`);
+		}
+	}
+
 	const sessid = uuid();
 	const state = uuid();
 
@@ -214,6 +227,10 @@ router.get("/dc/cb", async (ctx) => {
 			(await getRedisValue(`discord:signin:state:${callbackState}`));
 
 		if (!savedState) {
+			if (sessid) {
+				await deleteRedisKey(sessid);
+			}
+			await deleteRedisKey(`discord:signin:state:${callbackState}`);
 			ctx.throw(400, "invalid session - 3");
 			return;
 		}
@@ -231,85 +248,87 @@ router.get("/dc/cb", async (ctx) => {
 			return;
 		}
 
-		if (sessid) {
-			await deleteRedisKey(sessid);
-		}
-		await deleteRedisKey(`discord:signin:state:${state}`);
-
-		const { accessToken, refreshToken, expiresDate } = await new Promise<any>(
-			(res, rej) =>
-				oauth2!.getOAuthAccessToken(
-					code,
-					{
-						grant_type: "authorization_code",
-						redirect_uri,
-					},
-					(err, accessToken, refreshToken, result) => {
-						if (err) {
-							rej(err);
-						} else if (result.error) {
-							rej(result.error);
-						} else {
-							res({
-								accessToken,
-								refreshToken,
-								expiresDate: Date.now() + Number(result.expires_in) * 1000,
-							});
-						}
-					},
-				),
-		);
-
-		const { id, username, discriminator } = (await getJson(
-			"https://discord.com/api/users/@me",
-			"*/*",
-			10 * 1000,
-			{
-				Authorization: `Bearer ${accessToken}`,
-			},
-		)) as Record<string, unknown>;
-
-		if (
-			typeof id !== "string" ||
-			typeof username !== "string" ||
-			typeof discriminator !== "string"
-		) {
-			ctx.throw(400, "invalid session - 4");
-			return;
-		}
-
-		const profile = await UserProfiles.createQueryBuilder()
-			.where("\"integrations\"->'discord'->>'id' = :id", { id: id })
-			.andWhere('"userHost" IS NULL')
-			.getOne();
-
-		if (profile == null) {
-			ctx.throw(
-				404,
-				`@${username}#${discriminator}と連携しているMisskeyアカウントはありませんでした...`,
+		try {
+			const { accessToken, refreshToken, expiresDate } = await new Promise<any>(
+				(res, rej) =>
+					oauth2!.getOAuthAccessToken(
+						code,
+						{
+							grant_type: "authorization_code",
+							redirect_uri,
+						},
+						(err, accessToken, refreshToken, result) => {
+							if (err) {
+								rej(err);
+							} else if (result.error) {
+								rej(result.error);
+							} else {
+								res({
+									accessToken,
+									refreshToken,
+									expiresDate: Date.now() + Number(result.expires_in) * 1000,
+								});
+							}
+						},
+					),
 			);
-			return;
-		}
 
-		await UserProfiles.update(profile.userId, {
-			integrations: {
-				...profile.integrations,
-				discord: {
-					id: id,
-					accessToken: accessToken,
-					refreshToken: refreshToken,
-					expiresDate: expiresDate,
-					username: username,
-					discriminator: discriminator,
+			const { id, username, discriminator } = (await getJson(
+				"https://discord.com/api/users/@me",
+				"*/*",
+				10 * 1000,
+				{
+					Authorization: `Bearer ${accessToken}`,
 				},
-			},
-		});
+			)) as Record<string, unknown>;
 
-		signin(
-			ctx,
-			(await Users.findOneBy({ id: profile.userId })) as ILocalUser,
-			true,
-		);
+			if (
+				typeof id !== "string" ||
+				typeof username !== "string" ||
+				typeof discriminator !== "string"
+			) {
+				ctx.throw(400, "invalid session - 4");
+				return;
+			}
+
+			const profile = await UserProfiles.createQueryBuilder()
+				.where("\"integrations\"->'discord'->>'id' = :id", { id: id })
+				.andWhere('"userHost" IS NULL')
+				.getOne();
+
+			if (profile == null) {
+				ctx.throw(
+					404,
+					`@${username}#${discriminator}と連携しているMisskeyアカウントはありませんでした...`,
+				);
+				return;
+			}
+
+			await UserProfiles.update(profile.userId, {
+				integrations: {
+					...profile.integrations,
+					discord: {
+						id: id,
+						accessToken: accessToken,
+						refreshToken: refreshToken,
+						expiresDate: expiresDate,
+						username: username,
+						discriminator: discriminator,
+					},
+				},
+			});
+
+			signin(
+				ctx,
+				(await Users.findOneBy({ id: profile.userId })) as ILocalUser,
+				true,
+			);
+		} finally {
+			if (sessid) {
+				await deleteRedisKey(sessid);
+			}
+			await deleteRedisKey(`discord:signin:state:${callbackState}`);
+		}
 	} else {
 		const code = ctx.query.code;
 
@@ -337,81 +356,83 @@ router.get("/dc/cb", async (ctx) => {
 			return;
 		}
 
-		await deleteRedisKey(userToken);
+		try {
+			const { accessToken, refreshToken, expiresDate } = await new Promise<any>(
+				(res, rej) =>
+					oauth2!.getOAuthAccessToken(
+						code,
+						{
+							grant_type: "authorization_code",
+							redirect_uri,
+						},
+						(err, accessToken, refreshToken, result) => {
+							if (err) {
+								rej(err);
+							} else if (result.error) {
+								rej(result.error);
+							} else {
+								res({
+									accessToken,
+									refreshToken,
+									expiresDate: Date.now() + Number(result.expires_in) * 1000,
+								});
+							}
+						},
+					),
+			);
 
-		const { accessToken, refreshToken, expiresDate } = await new Promise<any>(
-			(res, rej) =>
-				oauth2!.getOAuthAccessToken(
-					code,
-					{
-						grant_type: "authorization_code",
-						redirect_uri,
-					},
-					(err, accessToken, refreshToken, result) => {
-						if (err) {
-							rej(err);
-						} else if (result.error) {
-							rej(result.error);
-						} else {
-							res({
-								accessToken,
-								refreshToken,
-								expiresDate: Date.now() + Number(result.expires_in) * 1000,
-							});
-						}
-					},
-				),
-		);
-
-		const { id, username, discriminator } = (await getJson(
-			"https://discord.com/api/users/@me",
-			"*/*",
-			10 * 1000,
-			{
-				Authorization: `Bearer ${accessToken}`,
-			},
-		)) as Record<string, unknown>;
-		if (
-			typeof id !== "string" ||
-			typeof username !== "string" ||
-			typeof discriminator !== "string"
-		) {
-			ctx.throw(400, "invalid session - 7");
-			return;
-		}
-
-		const user = await Users.findOneByOrFail({
-			host: IsNull(),
-			token: userToken,
-		});
-
-		const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
-
-		await UserProfiles.update(user.id, {
-			integrations: {
-				...profile.integrations,
-				discord: {
-					accessToken: accessToken,
-					refreshToken: refreshToken,
-					expiresDate: expiresDate,
-					id: id,
-					username: username,
-					discriminator: discriminator,
+			const { id, username, discriminator } = (await getJson(
+				"https://discord.com/api/users/@me",
+				"*/*",
+				10 * 1000,
+				{
+					Authorization: `Bearer ${accessToken}`,
 				},
-			},
-		});
+			)) as Record<string, unknown>;
+			if (
+				typeof id !== "string" ||
+				typeof username !== "string" ||
+				typeof discriminator !== "string"
+			) {
+				ctx.throw(400, "invalid session - 7");
+				return;
+			}
 
-		ctx.body = `Discord: @${username}#${discriminator} を、Misskey: @${user.username} に接続しました！`;
+			const user = await Users.findOneByOrFail({
+				host: IsNull(),
+				token: userToken,
+			});
 
-		// Publish i updated event
-		publishMainStream(
-			user.id,
-			"meUpdated",
-			await Users.pack(user, user, {
-				detail: true,
-				includeSecrets: true,
-			}),
-		);
+			const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
+
+			await UserProfiles.update(user.id, {
+				integrations: {
+					...profile.integrations,
+					discord: {
+						accessToken: accessToken,
+						refreshToken: refreshToken,
+						expiresDate: expiresDate,
+						id: id,
+						username: username,
+						discriminator: discriminator,
+					},
+				},
+			});
+
+			ctx.body = `Discord: @${username}#${discriminator} を、Misskey: @${user.username} に接続しました！`;
+
+			// Publish i updated event
+			publishMainStream(
+				user.id,
+				"meUpdated",
+				await Users.pack(user, user, {
+					detail: true,
+					includeSecrets: true,
+				}),
+			);
+		} finally {
+			await deleteRedisKey(userToken);
+		}
 	}
 });
 

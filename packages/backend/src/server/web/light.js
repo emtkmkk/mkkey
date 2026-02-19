@@ -11,7 +11,7 @@
 	const SETTINGS_PREFIX = STORAGE_PREFIX + "settings:";
 	const REACTIONS_KEY = STORAGE_PREFIX + "reactions";
 	const HIDDEN_ICON_KEY = STORAGE_PREFIX + "hiddenIconUserIds";
-	/** @type {Record<string,string>} 絵文字名→URL（api("meta") から取得） */
+	/** @type {Record<string,string>} 絵文字名→URL（/emoji/<name>.webp を組み立てて生成） */
 	let emojiUrlCache = {};
 	/** @type {Set<string>} 一度画像表示した絵文字キー（次回も画像で表示） */
 	let emojiDisplayedAsImageCache = new Set();
@@ -629,7 +629,6 @@
 		isLoading = true;
 		hideError();
 		try {
-			if (["local", "global"].includes(currentTl)) await fetchEmojiUrlCache();
 			const ep = getTimelineEndpoint();
 			const params = { limit: 20 };
 			if (untilId) params.untilId = untilId;
@@ -1535,7 +1534,6 @@
 
 	// リアクション・削除
 	async function openReactionPicker(noteId) {
-		await fetchEmojiUrlCache();
 		const overlay = document.getElementById("modal-overlay");
 		const body = document.getElementById("modal-body");
 		let note = getNoteById(noteId);
@@ -1875,32 +1873,23 @@
 		}
 	}
 
-	async function fetchEmojiUrlCache() {
-		if (Object.keys(emojiUrlCache).length > 0) return;
-		try {
-			const meta = await api("meta", { detail: false });
-			const list = meta?.emojis || [];
-			const arr = Array.isArray(list) ? list : (list.default || []).concat(...Object.values(list).filter(Array.isArray).flat());
-			emojiUrlCache = {};
-			arr.forEach((e) => {
-				if (e?.name && e?.url) {
-					emojiUrlCache[e.name] = e.url;
-					if (e.name.includes("@")) {
-						emojiUrlCache[e.name] = e.url;
-					} else {
-						// ローカル絵文字: リアクションは ":name@.:" 形式なので、このキーでも引けるようにする
-						emojiUrlCache[e.name + "@."] = e.url;
-					}
-				}
-			});
-		} catch (_) {}
+	function makeEmojiUrl(name, host) {
+		const key = host ? `${name}@${host}` : name;
+		return `/emoji/${encodeURIComponent(key)}.webp`;
 	}
 
 	function getEmojiUrl(emojiStr) {
 		const m = /^:([a-zA-Z0-9_]+)(?:@([a-zA-Z0-9.-]+))?:$/.exec(emojiStr);
 		if (!m) return null;
 		const key = m[2] ? `${m[1]}@${m[2]}` : m[1];
-		return emojiUrlCache[key] || emojiUrlCache[m[1]] || null;
+		if (emojiUrlCache[key]) return emojiUrlCache[key];
+		const url = makeEmojiUrl(m[1], m[2] || "");
+		emojiUrlCache[key] = url;
+		if (!m[2]) {
+			// ローカル絵文字: リアクションは ":name@.:" 形式でも参照される。
+			emojiUrlCache[`${m[1]}@.`] = url;
+		}
+		return url;
 	}
 
 	// 初期化
@@ -1918,8 +1907,6 @@
 		initPostForm();
 		updateTlSelectorVisibility();
 		if (token) {
-			// NOTE: 絵文字選択UI・ノート描画でキャッシュが必要。TL読み込みより先に取得
-			await fetchEmojiUrlCache();
 			showPostForm();
 			updateNotificationTabVisibility();
 			if (["antenna", "list", "channel"].includes(currentTl)) {
@@ -1966,7 +1953,6 @@
 			const show = picker.style.display !== "none";
 			picker.style.display = show ? "none" : "flex";
 			if (!show) {
-				await fetchEmojiUrlCache();
 				const emojiDisplayAttrs = (str) => {
 					const norm = str && !str.startsWith(":") ? `:${str}:` : str;
 					const url = getEmojiUrl(norm || str);
@@ -2020,7 +2006,6 @@
 					picker.querySelector("#post-emoji-fetch-btn")?.addEventListener("click", async () => {
 						try {
 							await fetchEmojis();
-							await fetchEmojiUrlCache();
 							const emojiDisplayAttrs2 = (str) => {
 								const norm = str && !str.startsWith(":") ? `:${str}:` : str;
 								const url = getEmojiUrl(norm || str);

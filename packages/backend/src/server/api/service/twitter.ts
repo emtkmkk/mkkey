@@ -12,7 +12,7 @@ import signin from "../common/signin.js";
 import { redisClient } from "../../../db/redis.js";
 
 function getUserToken(ctx: Koa.BaseContext): string | null {
-	return ((ctx.headers["cookie"] || "").match(/igi=(\w+)/) || [null, null])[1];
+	return ((ctx.headers["cookie"] || "").match(/(?:^|;\s*)igi=([^;]+)/) || [null, null])[1];
 }
 
 function compareOrigin(ctx: Koa.BaseContext): boolean {

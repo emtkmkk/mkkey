@@ -11,6 +11,11 @@ type ServerStats = {
 	};
 };
 
+type ApiLatencySample = {
+	at: number;
+	responseMs: number;
+};
+
 type QueueStats = {
 	deliver: {
 		activeSincePrevTick: number;
@@ -42,8 +47,16 @@ const interval = 5000;
 const dbProbeInterval = 30000;
 const redisProbeInterval = 30000;
 const queueStatsIntervalSec = 10;
+const apiLatencyWindowMs = 5 * 60 * 1000;
+const minApiSampleCount = 5;
 
 const round = (num: number) => Math.round(num * 100) / 100;
+
+const percentile = (sorted: number[], p: number): number => {
+	if (sorted.length === 0) return 0;
+	const index = Math.ceil((p / 100) * sorted.length) - 1;
+	return sorted[Math.max(0, Math.min(index, sorted.length - 1))];
+};
 
 /**
  * Report health score source stats regularly
@@ -61,6 +74,7 @@ export default function () {
 	let redisLatencyMeasuredAt: number | null = null;
 	let isDbProbeRunning = false;
 	let isRedisProbeRunning = false;
+	let apiLatencySamples: ApiLatencySample[] = [];
 
 	ev.on("serverStats", (stats: ServerStats) => {
 		latestServerStats = stats;
@@ -68,6 +82,12 @@ export default function () {
 
 	ev.on("queueStats", (stats: QueueStats) => {
 		latestQueueStats = stats;
+	});
+
+	ev.on("apiLatency", (sample: ApiLatencySample) => {
+		apiLatencySamples.push(sample);
+		const cutoff = Date.now() - apiLatencyWindowMs;
+		apiLatencySamples = apiLatencySamples.filter((x) => x.at >= cutoff);
 	});
 
 	ev.on("requestHealthStatsLog", (x) => {
@@ -140,6 +160,20 @@ export default function () {
 		const queueThroughputPerSec = queueThroughputPerTick / queueStatsIntervalSec;
 		const queuePressure = queueWaiting / Math.max(queueThroughputPerTick, 1);
 
+		const apiLatencyCount = apiLatencySamples.length;
+		const apiLatencyAverageMs =
+			apiLatencyCount > 0
+				? apiLatencySamples.reduce((sum, sample) => sum + sample.responseMs, 0) /
+					apiLatencyCount
+				: 0;
+		const sortedApiLatencies = [...apiLatencySamples]
+			.map((sample) => sample.responseMs)
+			.sort((a, b) => a - b);
+		const apiLatencyP95Ms =
+			apiLatencyCount >= minApiSampleCount
+				? percentile(sortedApiLatencies, 95)
+				: 0;
+
 		const stats = {
 			cpuUsage: round(cpuUsage * 100),
 			memoryUsage: round(memoryUsage * 100),
@@ -149,6 +183,9 @@ export default function () {
 			eventLoopLagMs: round(eventLoopDelay.mean / 1e6),
 			dbLatencyMs,
 			redisLatencyMs,
+			apiLatencyAvgMs: round(apiLatencyAverageMs),
+			apiLatencyP95Ms: round(apiLatencyP95Ms),
+			apiLatencySampleCount: apiLatencyCount,
 		};
 
 		ev.emit("healthStats", stats);

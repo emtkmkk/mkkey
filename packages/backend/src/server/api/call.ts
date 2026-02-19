@@ -1,4 +1,5 @@
 import { performance } from "perf_hooks";
+import Xev from "xev";
 import type Koa from "koa";
 import type { CacheableLocalUser } from "@/models/entities/user.js";
 import { User } from "@/models/entities/user.js";
@@ -10,8 +11,9 @@ import endpoints from "./endpoints.js";
 import compatibility from "./compatibility.js";
 import { ApiError } from "./error.js";
 import { apiLogger } from "./logger.js";
-import type { AccessToken } from "@/models/entities/access-token.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
+
+const ev = new Xev();
 
 const accessDenied = {
 	message: "アクセスが拒否されました。",
@@ -196,6 +198,10 @@ export default async (
 		.finally(() => {
 			const after = performance.now();
 			const time = after - before;
+			ev.emit("apiLatency", {
+				at: Date.now(),
+				responseMs: time,
+			});
 			if (time > 10000) {
 				apiLogger.warn(
 					`SLOW API CALL DETECTED: ${ep.name} (${time.toFixed(0)}ms)`,

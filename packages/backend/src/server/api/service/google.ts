@@ -212,6 +212,7 @@ router.get("/connect/google", async (ctx) => {
 	};
 
 	await setRedisValue(userToken, JSON.stringify(params), 600);
+	await setRedisValue(`google:connect:state:${params.state}`, JSON.stringify(params), 600);
 
 	const oauthConfig = await getGoogleOAuthConfig();
 	if (!oauthConfig) {
@@ -366,7 +367,15 @@ router.get("/go/cb", async (ctx) => {
 		return;
 	}
 
-	const savedState = await getRedisValue(userToken);
+	const callbackState = ctx.query.state;
+	if (!callbackState || typeof callbackState !== "string") {
+		ctx.throw(400, "invalid session");
+		return;
+	}
+
+	const savedStateByUserToken = await getRedisValue(userToken);
+	const savedStateByState = await getRedisValue(`google:connect:state:${callbackState}`);
+	const savedState = savedStateByUserToken ?? savedStateByState;
 	if (!savedState) {
 		ctx.throw(400, "invalid session");
 		return;
@@ -380,7 +389,7 @@ router.get("/go/cb", async (ctx) => {
 		}
 
 		const { redirect_uri, state } = savedStateObject;
-		if (ctx.query.state !== state) {
+		if (callbackState !== state) {
 			ctx.throw(400, "invalid session");
 			return;
 		}
@@ -429,6 +438,7 @@ router.get("/go/cb", async (ctx) => {
 		);
 	} finally {
 		await deleteRedisKey(userToken);
+		await deleteRedisKey(`google:connect:state:${callbackState}`);
 	}
 });
 

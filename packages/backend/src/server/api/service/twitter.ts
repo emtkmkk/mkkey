@@ -162,7 +162,13 @@ router.get("/connect/twitter", async (ctx) => {
 
 	const twAuth = await getTwAuth();
 	const twCtx = await twAuth!.begin();
+	const oauthToken = getOAuthTokenFromUrl(twCtx.url);
+
 	await setRedisValue(userToken, JSON.stringify(twCtx), 600);
+	if (oauthToken) {
+		await setRedisValue(`twitter:connect:oauth-token:${oauthToken}`, JSON.stringify(twCtx), 600);
+	}
+
 	ctx.redirect(twCtx.url);
 });
 
@@ -281,7 +287,15 @@ router.get("/tw/cb", async (ctx) => {
 			return;
 		}
 
-		const twCtx = await getRedisValue(userToken);
+		const oauthToken = ctx.query.oauth_token;
+		if (!oauthToken || typeof oauthToken !== "string") {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		const twCtxByUserToken = await getRedisValue(userToken);
+		const twCtxByOAuthToken = await getRedisValue(`twitter:connect:oauth-token:${oauthToken}`);
+		const twCtx = twCtxByUserToken ?? twCtxByOAuthToken;
 
 		if (!twCtx) {
 			ctx.throw(400, "invalid session");
@@ -330,6 +344,7 @@ router.get("/tw/cb", async (ctx) => {
 			);
 		} finally {
 			await deleteRedisKey(userToken);
+			await deleteRedisKey(`twitter:connect:oauth-token:${oauthToken}`);
 		}
 	}
 });

@@ -1,6 +1,5 @@
 import type Koa from "koa";
 import Router from "@koa/router";
-import { OAuth2 } from "oauth";
 import { v4 as uuid } from "uuid";
 import { IsNull } from "typeorm";
 import { getJson } from "@/misc/fetch.js";
@@ -72,6 +71,10 @@ function parseJsonSafely<T>(value: string): T | null {
 const router = new Router();
 const GOOGLE_SCOPE = "openid profile email";
 
+function getGoogleCallbackUrl(): string {
+	return `${config.url.replace(/\/+$/, "")}/api/go/cb`;
+}
+
 router.get("/disconnect/google", async (ctx) => {
 	if (!compareOrigin(ctx)) {
 		ctx.throw(400, "invalid origin");
@@ -108,7 +111,12 @@ router.get("/disconnect/google", async (ctx) => {
 	);
 });
 
-async function getOAuth2() {
+type GoogleOAuthConfig = {
+	clientId: string;
+	clientSecret: string;
+};
+
+async function getGoogleOAuthConfig(): Promise<GoogleOAuthConfig | null> {
 	const meta = await fetchMeta(true);
 
 	if (
@@ -116,16 +124,59 @@ async function getOAuth2() {
 		meta.googleClientId &&
 		meta.googleClientSecret
 	) {
-		return new OAuth2(
-			meta.googleClientId,
-			meta.googleClientSecret,
-			"https://accounts.google.com/",
-			"o/oauth2/v2/auth",
-			"token",
-		);
+		return {
+			clientId: meta.googleClientId,
+			clientSecret: meta.googleClientSecret,
+		};
 	}
 
 	return null;
+}
+
+function getGoogleAuthorizeUrl(
+	config: GoogleOAuthConfig,
+	params: Record<string, string>,
+): string {
+	const searchParams = new URLSearchParams({
+		...params,
+		client_id: config.clientId,
+	});
+
+	return `https://accounts.google.com/o/oauth2/v2/auth?${searchParams.toString()}`;
+}
+
+async function getGoogleAccessToken(
+	config: GoogleOAuthConfig,
+	code: string,
+	redirectUri: string,
+): Promise<string> {
+	const response = await fetch("https://oauth2.googleapis.com/token", {
+		method: "POST",
+		headers: {
+			"content-type": "application/x-www-form-urlencoded",
+		},
+		body: new URLSearchParams({
+			code,
+			client_id: config.clientId,
+			client_secret: config.clientSecret,
+			redirect_uri: redirectUri,
+			grant_type: "authorization_code",
+		}),
+	});
+
+	if (!response.ok) {
+		throw new Error(`google token endpoint returned ${response.status}`);
+	}
+
+	const tokenResponse = (await response.json()) as {
+		access_token?: unknown;
+	};
+
+	if (typeof tokenResponse.access_token !== "string") {
+		throw new Error("google token endpoint returned invalid response");
+	}
+
+	return tokenResponse.access_token;
 }
 
 router.get("/connect/google", async (ctx) => {
@@ -141,7 +192,7 @@ router.get("/connect/google", async (ctx) => {
 	}
 
 	const params = {
-		redirect_uri: `${config.url}/api/go/cb`,
+		redirect_uri: getGoogleCallbackUrl(),
 		scope: GOOGLE_SCOPE,
 		state: uuid(),
 		response_type: "code",
@@ -149,15 +200,20 @@ router.get("/connect/google", async (ctx) => {
 
 	redisClient.set(userToken, JSON.stringify(params), "EX", 600);
 
-	const oauth2 = await getOAuth2();
-	ctx.redirect(oauth2!.getAuthorizeUrl(params));
+	const oauthConfig = await getGoogleOAuthConfig();
+	if (!oauthConfig) {
+		ctx.throw(503, "google integration unavailable");
+		return;
+	}
+
+	ctx.redirect(getGoogleAuthorizeUrl(oauthConfig, params));
 });
 
 router.get("/signin/google", async (ctx) => {
 	const sessid = uuid();
 
 	const params = {
-		redirect_uri: `${config.url}/api/go/cb`,
+		redirect_uri: getGoogleCallbackUrl(),
 		scope: GOOGLE_SCOPE,
 		state: uuid(),
 		response_type: "code",
@@ -171,15 +227,20 @@ router.get("/signin/google", async (ctx) => {
 
 	redisClient.set(sessid, JSON.stringify(params), "EX", 600);
 
-	const oauth2 = await getOAuth2();
-	ctx.redirect(oauth2!.getAuthorizeUrl(params));
+	const oauthConfig = await getGoogleOAuthConfig();
+	if (!oauthConfig) {
+		ctx.throw(503, "google integration unavailable");
+		return;
+	}
+
+	ctx.redirect(getGoogleAuthorizeUrl(oauthConfig, params));
 });
 
 router.get("/go/cb", async (ctx) => {
 	const userToken = getUserToken(ctx);
-	const oauth2 = await getOAuth2();
+	const oauthConfig = await getGoogleOAuthConfig();
 
-	if (!oauth2) {
+	if (!oauthConfig) {
 		ctx.throw(503, "google integration unavailable");
 		return;
 	}
@@ -217,21 +278,7 @@ router.get("/go/cb", async (ctx) => {
 
 		await deleteRedisKey(sessid);
 
-		const { accessToken } = await new Promise<any>((res, rej) =>
-			oauth2.getOAuthAccessToken(
-				code,
-				{ redirect_uri },
-				(err, accessToken, refresh, result) => {
-					if (err) {
-						rej(err);
-					} else if (result.error) {
-						rej(result.error);
-					} else {
-						res({ accessToken });
-					}
-				},
-			),
-		);
+		const accessToken = await getGoogleAccessToken(oauthConfig, code, redirect_uri);
 
 		const { sub, name, email } = (await getJson(
 			"https://www.googleapis.com/oauth2/v3/userinfo",
@@ -298,21 +345,7 @@ router.get("/go/cb", async (ctx) => {
 
 	await deleteRedisKey(userToken);
 
-	const { accessToken } = await new Promise<any>((res, rej) =>
-		oauth2.getOAuthAccessToken(
-			code,
-			{ redirect_uri },
-			(err, accessToken, refresh, result) => {
-				if (err) {
-					rej(err);
-				} else if (result.error) {
-					rej(result.error);
-				} else {
-					res({ accessToken });
-				}
-			},
-		),
-	);
+	const accessToken = await getGoogleAccessToken(oauthConfig, code, redirect_uri);
 
 	const { sub, name, email } = (await getJson(
 		"https://www.googleapis.com/oauth2/v3/userinfo",

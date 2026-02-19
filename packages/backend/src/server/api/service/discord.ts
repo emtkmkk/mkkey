@@ -15,6 +15,18 @@ import signin from "../common/signin.js";
 
 const logger = new Logger("discord-oauth");
 
+function appendLogContext(message: string, context: Record<string, unknown>): string {
+	return `${message} ${JSON.stringify(context)}`;
+}
+
+function logInfo(message: string, context: Record<string, unknown>): void {
+	logger.info(appendLogContext(message, context));
+}
+
+function logWarn(message: string, context: Record<string, unknown>): void {
+	logger.warn(appendLogContext(message, context));
+}
+
 function maskToken(token: string | null | undefined): string {
 	if (!token) return "none";
 	if (token.length <= 8) return `${token[0]}***`;
@@ -61,6 +73,19 @@ function compareOrigin(ctx: Koa.BaseContext): boolean {
 function getRedisValue(key: string): Promise<string | null> {
 	return new Promise((resolve, reject) => {
 		redisClient.get(key, (err, value) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve(value);
+		});
+	});
+}
+
+function getRedisTtl(key: string): Promise<number> {
+	return new Promise((resolve, reject) => {
+		redisClient.ttl(key, (err, value) => {
 			if (err) {
 				reject(err);
 				return;
@@ -188,6 +213,23 @@ router.get("/connect/discord", async (ctx) => {
 		600,
 	);
 
+	const stateKey = `discord:connect:state:${params.state}`;
+	const [savedByUserToken, savedByState, userTokenTtl, stateTtl] = await Promise.all([
+		getRedisValue(userToken),
+		getRedisValue(stateKey),
+		getRedisTtl(userToken),
+		getRedisTtl(stateKey),
+	]);
+	logInfo("Discord connect state stored", {
+		maskedUserToken: maskToken(userToken),
+		state: params.state,
+		hasSavedByUserToken: Boolean(savedByUserToken),
+		hasSavedByState: Boolean(savedByState),
+		userTokenTtl,
+		stateTtl,
+		requestOrigin: getRequestOriginForLog(ctx),
+	});
+
 	const oauth2 = await getOAuth2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
 });
@@ -236,7 +278,7 @@ router.get("/dc/cb", async (ctx) => {
 
 	const oauth2 = await getOAuth2();
 
-	logger.info("Discord OAuth callback requested", {
+	logInfo("Discord OAuth callback requested", {
 		path: ctx.path,
 		hasUserToken: Boolean(userToken),
 		maskedUserToken: maskToken(userToken),
@@ -248,7 +290,7 @@ router.get("/dc/cb", async (ctx) => {
 
 	if (!userToken) {
 		if (!code || typeof code !== "string") {
-			logger.warn("Discord sign-in callback rejected: code missing", {
+			logWarn("Discord sign-in callback rejected: code missing", {
 				reason: "invalid session - 2",
 				hasState: typeof callbackState === "string",
 			});
@@ -257,7 +299,7 @@ router.get("/dc/cb", async (ctx) => {
 		}
 
 		if (!callbackState || typeof callbackState !== "string") {
-			logger.warn("Discord sign-in callback rejected: state missing", {
+			logWarn("Discord sign-in callback rejected: state missing", {
 				reason: "invalid session - 1",
 			});
 			ctx.throw(400, "invalid session - 1");
@@ -271,7 +313,7 @@ router.get("/dc/cb", async (ctx) => {
 			(await getRedisValue(`discord:signin:state:${callbackState}`));
 
 		if (!savedState) {
-			logger.warn("Discord sign-in callback rejected: state not found", {
+			logWarn("Discord sign-in callback rejected: state not found", {
 				reason: "invalid session - 3",
 				hasSessid: Boolean(sessid),
 				maskedSessid: maskToken(sessid),
@@ -287,7 +329,7 @@ router.get("/dc/cb", async (ctx) => {
 
 		const savedStateObject = parseJsonSafely<{ redirect_uri: string; state: string }>(savedState);
 		if (!savedStateObject) {
-			logger.warn("Discord sign-in callback rejected: saved state parse failed", {
+			logWarn("Discord sign-in callback rejected: saved state parse failed", {
 				reason: "invalid session - 3",
 				callbackState,
 			});
@@ -298,7 +340,7 @@ router.get("/dc/cb", async (ctx) => {
 		const { redirect_uri, state } = savedStateObject;
 
 		if (callbackState !== state) {
-			logger.warn("Discord sign-in callback rejected: state mismatch", {
+			logWarn("Discord sign-in callback rejected: state mismatch", {
 				reason: "invalid session - 3",
 				callbackState,
 				savedState: state,
@@ -390,7 +432,7 @@ router.get("/dc/cb", async (ctx) => {
 		}
 	} else {
 		if (!code || typeof code !== "string") {
-			logger.warn("Discord connect callback rejected: code missing", {
+			logWarn("Discord connect callback rejected: code missing", {
 				reason: "invalid session - 5",
 				hasState: typeof callbackState === "string",
 				maskedUserToken: maskToken(userToken),
@@ -400,7 +442,7 @@ router.get("/dc/cb", async (ctx) => {
 		}
 
 		if (!callbackState || typeof callbackState !== "string") {
-			logger.warn("Discord connect callback rejected: state missing", {
+			logWarn("Discord connect callback rejected: state missing", {
 				reason: "invalid session - 6",
 				maskedUserToken: maskToken(userToken),
 			});
@@ -414,7 +456,7 @@ router.get("/dc/cb", async (ctx) => {
 		);
 		const savedState = savedStateByUserToken ?? savedStateByState;
 		if (!savedState) {
-			logger.warn("Discord connect callback rejected: no saved state", {
+			logWarn("Discord connect callback rejected: no saved state", {
 				reason: "invalid session - 6",
 				maskedUserToken: maskToken(userToken),
 				callbackState,
@@ -427,7 +469,7 @@ router.get("/dc/cb", async (ctx) => {
 
 		const savedStateObject = parseJsonSafely<{ redirect_uri: string; state: string }>(savedState);
 		if (!savedStateObject) {
-			logger.warn("Discord connect callback rejected: saved state parse failed", {
+			logWarn("Discord connect callback rejected: saved state parse failed", {
 				reason: "invalid session - 6",
 				maskedUserToken: maskToken(userToken),
 				callbackState,
@@ -439,7 +481,7 @@ router.get("/dc/cb", async (ctx) => {
 		const { redirect_uri, state } = savedStateObject;
 
 		if (callbackState !== state) {
-			logger.warn("Discord connect callback rejected: state mismatch", {
+			logWarn("Discord connect callback rejected: state mismatch", {
 				reason: "invalid session - 6",
 				maskedUserToken: maskToken(userToken),
 				callbackState,

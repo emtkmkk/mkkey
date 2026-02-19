@@ -76,6 +76,16 @@ let waitMessages: string[] = [];
 const wait = async (ms: number) =>
 	new Promise((resolve) => setTimeout(resolve, ms));
 
+const withTimeout = async <T>(promise: Promise<T>, ms: number, message: string) =>
+	await Promise.race([
+		promise,
+		new Promise<T>((_, reject) => {
+			setTimeout(() => {
+				reject(new Error(message));
+			}, ms);
+		}),
+	]);
+
 // ヘックスカラーコードをRGBAに変換する関数
 const hexToRgb = (hex: string) => {
 	if (/^#[0-9A-Fa-f]{6}$/i.test(hex) || /^#[0-9A-Fa-f]{8}$/i.test(hex)) {
@@ -96,34 +106,45 @@ const hexToRgb = (hex: string) => {
 const initializeErrorLogging = async () => {
 	const waitMsg = "エラーログ出力機能を初期化中...";
 	waitMessages.push(waitMsg);
-	const currentDate = new Date();
-	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
-	await set("errorLog", [`${formattedDate} - Calckey v${version}`]);
+	try {
+		const currentDate = new Date();
+		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
-	const logError = async (message: string) => {
-		const logtext = `${formattedDate} - ${message}`;
-		let currentLogs = (await get("errorLog")) || [];
-		currentLogs.push(logtext);
-		if (currentLogs.length > 50) {
-			currentLogs = currentLogs.slice(-50);
-		}
-		await set("errorLog", currentLogs);
-	};
-
-	window.addEventListener("error", async (event) => {
-		await logError(
-			`${event.message} at ${event.filename}:${event.lineno}:${event.colno}`,
+		await withTimeout(
+			set("errorLog", [`${formattedDate} - Calckey v${version}`]),
+			3000,
+			"errorLog initialization timed out",
 		);
-	});
 
-	window.addEventListener("unhandledrejection", async (event) => {
-		const reason =
-			typeof event.reason === "object"
-				? JSON.stringify(event.reason)
-				: event.reason;
-		await logError(`Unhandled promise rejection: ${reason}`);
-	});
+		const logError = async (message: string) => {
+			const logtext = `${formattedDate} - ${message}`;
+			let currentLogs =
+				(await withTimeout(get("errorLog"), 2000, "errorLog read timed out")) ||
+				[];
+			currentLogs.push(logtext);
+			if (currentLogs.length > 50) {
+				currentLogs = currentLogs.slice(-50);
+			}
+			await withTimeout(set("errorLog", currentLogs), 2000, "errorLog write timed out");
+		};
+
+		window.addEventListener("error", async (event) => {
+			await logError(
+				`${event.message} at ${event.filename}:${event.lineno}:${event.colno}`,
+			);
+		});
+
+		window.addEventListener("unhandledrejection", async (event) => {
+			const reason =
+				typeof event.reason === "object"
+					? JSON.stringify(event.reason)
+					: event.reason;
+			await logError(`Unhandled promise rejection: ${reason}`);
+		});
+	} catch (error) {
+		console.error("Failed to initialize error logging", error);
+	}
 
 	if (_DEV_) {
 		console.warn("Development mode!!!");

@@ -168,6 +168,19 @@ router.get("/connect/github", async (ctx) => {
 });
 
 router.get("/signin/github", async (ctx) => {
+	const previousSessid = ctx.cookies.get("signin_with_github_sid");
+	if (previousSessid) {
+		const previousStateRaw = await getRedisValue(previousSessid);
+		await deleteRedisKey(previousSessid);
+
+		const previousState = previousStateRaw
+			? parseJsonSafely<{ state: string }>(previousStateRaw)
+			: null;
+		if (previousState) {
+			await deleteRedisKey(`github:signin:state:${previousState.state}`);
+		}
+	}
+
 	const sessid = uuid();
 	const state = uuid();
 
@@ -216,6 +229,10 @@ router.get("/gh/cb", async (ctx) => {
 			(await getRedisValue(`github:signin:state:${callbackState}`));
 
 		if (!savedState) {
+			if (sessid) {
+				await deleteRedisKey(sessid);
+			}
+			await deleteRedisKey(`github:signin:state:${callbackState}`);
 			ctx.throw(400, "invalid session");
 			return;
 		}
@@ -237,60 +254,62 @@ router.get("/gh/cb", async (ctx) => {
 			return;
 		}
 
-		if (sessid) {
-			await deleteRedisKey(sessid);
-		}
-		await deleteRedisKey(`github:signin:state:${state}`);
-
-		const { accessToken } = await new Promise<any>((res, rej) =>
-			oauth2!.getOAuthAccessToken(
-				code,
-				{
-					redirect_uri,
-				},
-				(err, accessToken, refresh, result) => {
-					if (err) {
-						rej(err);
-					} else if (result.error) {
-						rej(result.error);
-					} else {
-						res({ accessToken });
-					}
-				},
-			),
-		);
-
-		const { login, id } = (await getJson(
-			"https://api.github.com/user",
-			"application/vnd.github.v3+json",
-			10 * 1000,
-			{
-				Authorization: `bearer ${accessToken}`,
-			},
-		)) as Record<string, unknown>;
-		if (typeof login !== "string" || typeof id !== "string") {
-			ctx.throw(400, "invalid session");
-			return;
-		}
-
-		const link = await UserProfiles.createQueryBuilder()
-			.where("\"integrations\"->'github'->>'id' = :id", { id: id })
-			.andWhere('"userHost" IS NULL')
-			.getOne();
-
-		if (link == null) {
-			ctx.throw(
-				404,
-				`@${login}と連携しているMisskeyアカウントはありませんでした...`,
+		try {
+			const { accessToken } = await new Promise<any>((res, rej) =>
+				oauth2!.getOAuthAccessToken(
+					code,
+					{
+						redirect_uri,
+					},
+					(err, accessToken, refresh, result) => {
+						if (err) {
+							rej(err);
+						} else if (result.error) {
+							rej(result.error);
+						} else {
+							res({ accessToken });
+						}
+					},
+				),
 			);
-			return;
-		}
 
-		signin(
-			ctx,
-			(await Users.findOneBy({ id: link.userId })) as ILocalUser,
-			true,
-		);
+			const { login, id } = (await getJson(
+				"https://api.github.com/user",
+				"application/vnd.github.v3+json",
+				10 * 1000,
+				{
+					Authorization: `bearer ${accessToken}`,
+				},
+			)) as Record<string, unknown>;
+			if (typeof login !== "string" || typeof id !== "string") {
+				ctx.throw(400, "invalid session");
+				return;
+			}
+
+			const link = await UserProfiles.createQueryBuilder()
+				.where("\"integrations\"->'github'->>'id' = :id", { id: id })
+				.andWhere('"userHost" IS NULL')
+				.getOne();
+
+			if (link == null) {
+				ctx.throw(
+					404,
+					`@${login}と連携しているMisskeyアカウントはありませんでした...`,
+				);
+				return;
+			}
+
+			signin(
+				ctx,
+				(await Users.findOneBy({ id: link.userId })) as ILocalUser,
+				true,
+			);
+		} finally {
+			if (sessid) {
+				await deleteRedisKey(sessid);
+			}
+			await deleteRedisKey(`github:signin:state:${callbackState}`);
+		}
 	} else {
 		const code = ctx.query.code;
 
@@ -323,67 +342,69 @@ router.get("/gh/cb", async (ctx) => {
 			return;
 		}
 
-		await deleteRedisKey(userToken);
+		try {
+			const { accessToken } = await new Promise<any>((res, rej) =>
+				oauth2!.getOAuthAccessToken(
+					code,
+					{ redirect_uri },
+					(err, accessToken, refresh, result) => {
+						if (err) {
+							rej(err);
+						} else if (result.error) {
+							rej(result.error);
+						} else {
+							res({ accessToken });
+						}
+					},
+				),
+			);
 
-		const { accessToken } = await new Promise<any>((res, rej) =>
-			oauth2!.getOAuthAccessToken(
-				code,
-				{ redirect_uri },
-				(err, accessToken, refresh, result) => {
-					if (err) {
-						rej(err);
-					} else if (result.error) {
-						rej(result.error);
-					} else {
-						res({ accessToken });
-					}
+			const { login, id } = (await getJson(
+				"https://api.github.com/user",
+				"application/vnd.github.v3+json",
+				10 * 1000,
+				{
+					Authorization: `bearer ${accessToken}`,
 				},
-			),
-		);
+			)) as Record<string, unknown>;
 
-		const { login, id } = (await getJson(
-			"https://api.github.com/user",
-			"application/vnd.github.v3+json",
-			10 * 1000,
-			{
-				Authorization: `bearer ${accessToken}`,
-			},
-		)) as Record<string, unknown>;
+			if (typeof login !== "string" || typeof id !== "string") {
+				ctx.throw(400, "invalid session");
+				return;
+			}
 
-		if (typeof login !== "string" || typeof id !== "string") {
-			ctx.throw(400, "invalid session");
-			return;
+			const user = await Users.findOneByOrFail({
+				host: IsNull(),
+				token: userToken,
+			});
+
+			const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
+
+			await UserProfiles.update(user.id, {
+				integrations: {
+					...profile.integrations,
+					github: {
+						accessToken: accessToken,
+						id: id,
+						login: login,
+					},
+				},
+			});
+
+			ctx.body = `GitHub: @${login} を、Misskey: @${user.username} に接続しました！`;
+
+			// Publish i updated event
+			publishMainStream(
+				user.id,
+				"meUpdated",
+				await Users.pack(user, user, {
+					detail: true,
+					includeSecrets: true,
+				}),
+			);
+		} finally {
+			await deleteRedisKey(userToken);
 		}
-
-		const user = await Users.findOneByOrFail({
-			host: IsNull(),
-			token: userToken,
-		});
-
-		const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
-
-		await UserProfiles.update(user.id, {
-			integrations: {
-				...profile.integrations,
-				github: {
-					accessToken: accessToken,
-					id: id,
-					login: login,
-				},
-			},
-		});
-
-		ctx.body = `GitHub: @${login} を、Misskey: @${user.username} に接続しました！`;
-
-		// Publish i updated event
-		publishMainStream(
-			user.id,
-			"meUpdated",
-			await Users.pack(user, user, {
-				detail: true,
-				includeSecrets: true,
-			}),
-		);
 	}
 });
 

@@ -238,19 +238,31 @@ const initializeViewport = () => {
 const initializeLoginId = async () => {
 	const params = new URLSearchParams(location.search);
 	const loginId = params.get("loginId");
+	const oauthError = params.get("oauth_error");
+	const hasOauthError = !!oauthError;
 
-	if (loginId) {
-		const waitMsg = "ログインIDを初期化中...";
-		waitMessages.push(waitMsg);
-		const target = getUrlWithoutLoginId(location.href);
-		if (!$i || $i.id !== loginId) {
-			const account = await getAccountFromId(loginId);
-			if (account) {
-				await login(account.token, target);
-			}
+	if (!loginId && !hasOauthError) return;
+
+	const waitMsg = "ログインIDを初期化中...";
+	waitMessages.push(waitMsg);
+	const target = getUrlWithoutLoginId(location.href);
+	if (loginId && (!$i || $i.id !== loginId)) {
+		const account = await getAccountFromId(loginId);
+		if (account) {
+			await login(account.token, target);
 		}
-		history.replaceState({ misskey: "loginId" }, "", target);
-		waitMessages = waitMessages.filter((x) => x !== waitMsg);
+	}
+	history.replaceState({ misskey: "loginId" }, "", target);
+	waitMessages = waitMessages.filter((x) => x !== waitMsg);
+
+	if (hasOauthError) {
+		alert({
+			type: "error",
+			text:
+				oauthError === "invalid_client_id"
+					? i18n.ts.somethingHappened
+					: `${i18n.ts.somethingHappened} (${oauthError})`,
+		});
 	}
 };
 

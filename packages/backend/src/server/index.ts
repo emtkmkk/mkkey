@@ -164,14 +164,31 @@ router.get("/missing", async (ctx) => {
 
 mastoRouter.get("/oauth/authorize", async (ctx) => {
 	const { client_id, state, redirect_uri } = ctx.request.query;
-	console.log(ctx.request.req);
+	const redirectToClientWithError = (error: string) => {
+		ctx.redirect(`/?oauth_error=${encodeURIComponent(error)}`);
+	};
+
+	if (!client_id) {
+		redirectToClientWithError("invalid_client_id");
+		return;
+	}
+
+	let decodedClientId: string;
+	try {
+		decodedClientId = Buffer.from(client_id.toString(), "base64").toString();
+		const clientUrl = new URL(decodedClientId);
+		if (!["http:", "https:"].includes(clientUrl.protocol)) {
+			throw new Error("invalid protocol");
+		}
+	} catch (error) {
+		redirectToClientWithError("invalid_client_id");
+		return;
+	}
+
 	let param = "mastodon=true";
 	if (state) param += `&state=${state}`;
 	if (redirect_uri) param += `&redirect_uri=${redirect_uri}`;
-	const client = client_id ? client_id : "";
-	ctx.redirect(
-		`${Buffer.from(client.toString(), "base64").toString()}?${param}`,
-	);
+	ctx.redirect(`${decodedClientId}?${param}`);
 });
 
 mastoRouter.post("/oauth/token", async (ctx) => {

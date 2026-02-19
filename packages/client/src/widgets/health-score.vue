@@ -101,6 +101,12 @@ const widgetPropsDef = {
 		min: 0,
 		max: 100,
 	},
+	apiLatencyWeight: {
+		type: "number" as const,
+		default: 10,
+		min: 0,
+		max: 100,
+	},
 	cpuWarn: {
 		type: "number" as const,
 		default: 70,
@@ -173,6 +179,30 @@ const widgetPropsDef = {
 		min: 0,
 		max: 30000,
 	},
+	apiLatencyWarn: {
+		type: "number" as const,
+		default: 300,
+		min: 0,
+		max: 30000,
+	},
+	apiLatencyCritical: {
+		type: "number" as const,
+		default: 1000,
+		min: 0,
+		max: 30000,
+	},
+	apiLatencyP95Warn: {
+		type: "number" as const,
+		default: 600,
+		min: 0,
+		max: 30000,
+	},
+	apiLatencyP95Critical: {
+		type: "number" as const,
+		default: 2000,
+		min: 0,
+		max: 30000,
+	},
 	queueThroughputWarn: {
 		type: "number" as const,
 		default: 0.5,
@@ -236,6 +266,9 @@ type HealthStats = {
 	eventLoopLagMs: number;
 	dbLatencyMs: number;
 	redisLatencyMs: number;
+	apiLatencyAvgMs: number;
+	apiLatencyP95Ms: number;
+	apiLatencySampleCount: number;
 };
 
 const props = defineProps<{ widget?: Widget<WidgetProps> }>();
@@ -257,6 +290,9 @@ const stats = ref<HealthStats>({
 	eventLoopLagMs: 0,
 	dbLatencyMs: 0,
 	redisLatencyMs: 0,
+	apiLatencyAvgMs: 0,
+	apiLatencyP95Ms: 0,
+	apiLatencySampleCount: 0,
 });
 const lastUpdatedAt = ref<Date | null>(null);
 
@@ -311,6 +347,7 @@ const totalWeight = computed(() => {
 		widgetProps.eventLoopLagWeight +
 		widgetProps.dbLatencyWeight +
 		widgetProps.redisLatencyWeight +
+		widgetProps.apiLatencyWeight +
 		widgetProps.throughputPenaltyWeight +
 		widgetProps.stalePenaltyWeight;
 	return Math.max(1, sum);
@@ -321,7 +358,7 @@ const metrics = computed(() => {
 	return [
 		{
 			key: "cpu",
-			label: "CPU",
+			label: i18n.ts._widgets._healthScore.cpu,
 			weight: widgetProps.cpuWeight,
 			risk: metricRiskHigh(
 				current.cpuUsage,
@@ -333,7 +370,7 @@ const metrics = computed(() => {
 		},
 		{
 			key: "memory",
-			label: "MEM",
+			label: i18n.ts._widgets._healthScore.memory,
 			weight: widgetProps.memoryWeight,
 			risk: metricRiskHigh(
 				current.memoryUsage,
@@ -344,8 +381,20 @@ const metrics = computed(() => {
 			tooltip: `warn=${widgetProps.memoryWarn}% critical=${widgetProps.memoryCritical}%`,
 		},
 		{
+			key: "queueThroughput",
+			label: i18n.ts._widgets._healthScore.queueThroughput,
+			weight: widgetProps.throughputPenaltyWeight,
+			risk: metricRiskLow(
+				current.queueThroughputPerSec,
+				widgetProps.queueThroughputWarn,
+				widgetProps.queueThroughputCritical,
+			),
+			valueText: `${current.queueThroughputPerSec.toFixed(2)} job/s`,
+			tooltip: `warn>=${widgetProps.queueThroughputWarn} critical<=${widgetProps.queueThroughputCritical}`,
+		},
+		{
 			key: "queue",
-			label: "QUEUE",
+			label: i18n.ts._widgets._healthScore.queue,
 			weight: widgetProps.queueWeight,
 			risk: metricRiskHigh(
 				current.queuePressure,
@@ -360,7 +409,7 @@ const metrics = computed(() => {
 		},
 		{
 			key: "eventLoopLag",
-			label: "EVENT LOOP",
+			label: i18n.ts._widgets._healthScore.eventLoop,
 			weight: widgetProps.eventLoopLagWeight,
 			risk: metricRiskHigh(
 				current.eventLoopLagMs,
@@ -372,7 +421,7 @@ const metrics = computed(() => {
 		},
 		{
 			key: "dbLatency",
-			label: "DB LATENCY",
+			label: i18n.ts._widgets._healthScore.dbLatency,
 			weight: widgetProps.dbLatencyWeight,
 			risk: metricRiskHigh(
 				current.dbLatencyMs,
@@ -384,7 +433,7 @@ const metrics = computed(() => {
 		},
 		{
 			key: "redisLatency",
-			label: "REDIS LATENCY",
+			label: i18n.ts._widgets._healthScore.redisLatency,
 			weight: widgetProps.redisLatencyWeight,
 			risk: metricRiskHigh(
 				current.redisLatencyMs,
@@ -395,20 +444,30 @@ const metrics = computed(() => {
 			tooltip: `warn=${widgetProps.redisLatencyWarn}ms critical=${widgetProps.redisLatencyCritical}ms`,
 		},
 		{
-			key: "queueThroughput",
-			label: "QUEUE THROUGHPUT",
-			weight: widgetProps.throughputPenaltyWeight,
-			risk: metricRiskLow(
-				current.queueThroughputPerSec,
-				widgetProps.queueThroughputWarn,
-				widgetProps.queueThroughputCritical,
-			),
-			valueText: `${current.queueThroughputPerSec.toFixed(2)} job/s`,
-			tooltip: `warn>=${widgetProps.queueThroughputWarn} critical<=${widgetProps.queueThroughputCritical}`,
+			key: "apiLatency",
+			label: i18n.ts._widgets._healthScore.apiLatency,
+			weight: widgetProps.apiLatencyWeight,
+			risk:
+				current.apiLatencySampleCount >= 5
+					? metricRiskHigh(
+						current.apiLatencyP95Ms,
+						widgetProps.apiLatencyP95Warn,
+						widgetProps.apiLatencyP95Critical,
+					)
+					: metricRiskHigh(
+						current.apiLatencyAvgMs,
+						widgetProps.apiLatencyWarn,
+						widgetProps.apiLatencyCritical,
+					),
+			valueText:
+				current.apiLatencySampleCount > 0
+					? `${current.apiLatencyAvgMs.toFixed(1)}ms avg / ${current.apiLatencyP95Ms.toFixed(1)}ms p95 (n=${current.apiLatencySampleCount})`
+					: "no samples",
+			tooltip: `avg(warn=${widgetProps.apiLatencyWarn}ms critical=${widgetProps.apiLatencyCritical}ms) p95(warn=${widgetProps.apiLatencyP95Warn}ms critical=${widgetProps.apiLatencyP95Critical}ms)`,
 		},
 		{
 			key: "stale",
-			label: "STREAM STALE",
+			label: i18n.ts._widgets._healthScore.streamStale,
 			weight: widgetProps.stalePenaltyWeight,
 			risk: metricRiskHigh(
 				staleSeconds.value,
@@ -425,11 +484,11 @@ const metrics = computed(() => {
 });
 
 const penalty = computed(() => {
-	return metrics.value.reduce(
-		(total, metric) =>
-			total + (metric.weight / totalWeight.value) * metric.risk * 100,
-		0,
-	);
+	const health = metrics.value.reduce((total, metric) => {
+		const normalizedWeight = metric.weight / totalWeight.value;
+		return total * Math.pow(1 - metric.risk, normalizedWeight);
+	}, 1);
+	return clampRange((1 - health) * 100, 0, 100);
 });
 
 const score = computed(() => {
@@ -451,7 +510,8 @@ const statusClass = computed(() => {
 const breakdownItems = computed(() => {
 	return metrics.value.map((metric) => ({
 		...metric,
-		penalty: (metric.weight / totalWeight.value) * metric.risk * 100,
+		penalty:
+			(1 - Math.pow(1 - metric.risk, metric.weight / totalWeight.value)) * 100,
 	}));
 });
 

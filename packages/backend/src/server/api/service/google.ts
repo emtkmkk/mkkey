@@ -61,6 +61,7 @@ function parseJsonSafely<T>(value: string): T | null {
 }
 
 const router = new Router();
+const GOOGLE_SCOPE = "openid profile email";
 
 router.get("/disconnect/google", async (ctx) => {
 	if (!compareOrigin(ctx)) {
@@ -132,7 +133,7 @@ router.get("/connect/google", async (ctx) => {
 
 	const params = {
 		redirect_uri: `${config.url}/api/go/cb`,
-		scope: ["openid", "profile", "email"],
+		scope: GOOGLE_SCOPE,
 		state: uuid(),
 		response_type: "code",
 	};
@@ -148,7 +149,7 @@ router.get("/signin/google", async (ctx) => {
 
 	const params = {
 		redirect_uri: `${config.url}/api/go/cb`,
-		scope: ["openid", "profile", "email"],
+		scope: GOOGLE_SCOPE,
 		state: uuid(),
 		response_type: "code",
 	};

@@ -17,13 +17,22 @@ function getUserToken(ctx: Koa.BaseContext): string | null {
 }
 
 function compareOrigin(ctx: Koa.BaseContext): boolean {
-	function normalizeUrl(url?: string): string {
-		return url ? (url.endsWith("/") ? url.substr(0, url.length - 1) : url) : "";
+	function getOrigin(url: string | string[] | undefined): string | null {
+		if (typeof url !== "string") {
+			return null;
+		}
+
+		try {
+			return new URL(url).origin;
+		} catch {
+			return null;
+		}
 	}
 
-	const referer = ctx.headers["referer"];
+	const requestOrigin = getOrigin(ctx.headers["origin"]) ?? getOrigin(ctx.headers["referer"]);
+	const configuredOrigin = getOrigin(config.url);
 
-	return normalizeUrl(referer) === normalizeUrl(config.url);
+	return requestOrigin != null && configuredOrigin != null && requestOrigin === configuredOrigin;
 }
 
 function getRedisValue(key: string): Promise<string | null> {

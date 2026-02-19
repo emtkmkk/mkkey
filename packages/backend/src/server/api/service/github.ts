@@ -61,6 +61,19 @@ function deleteRedisKey(key: string): Promise<void> {
 	});
 }
 
+function setRedisValue(key: string, value: string, expiresInSeconds: number): Promise<void> {
+	return new Promise((resolve, reject) => {
+		redisClient.set(key, value, "EX", expiresInSeconds, (err) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve();
+		});
+	});
+}
+
 function parseJsonSafely<T>(value: string): T | null {
 	try {
 		return JSON.parse(value) as T;
@@ -148,7 +161,7 @@ router.get("/connect/github", async (ctx) => {
 		state: uuid(),
 	};
 
-	redisClient.set(userToken, JSON.stringify(params), "EX", 600);
+	await setRedisValue(userToken, JSON.stringify(params), 600);
 
 	const oauth2 = await getOath2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
@@ -156,11 +169,12 @@ router.get("/connect/github", async (ctx) => {
 
 router.get("/signin/github", async (ctx) => {
 	const sessid = uuid();
+	const state = uuid();
 
 	const params = {
 		redirect_uri: `${config.url}/api/gh/cb`,
 		scope: ["read:user"],
-		state: uuid(),
+		state,
 	};
 
 	ctx.cookies.set("signin_with_github_sid", sessid, {
@@ -169,7 +183,8 @@ router.get("/signin/github", async (ctx) => {
 		httpOnly: true,
 	});
 
-	redisClient.set(sessid, JSON.stringify(params), "EX", 600);
+	await setRedisValue(sessid, JSON.stringify(params), 600);
+	await setRedisValue(`github:signin:state:${state}`, JSON.stringify(params), 600);
 
 	const oauth2 = await getOath2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
@@ -181,13 +196,6 @@ router.get("/gh/cb", async (ctx) => {
 	const oauth2 = await getOath2();
 
 	if (!userToken) {
-		const sessid = ctx.cookies.get("signin_with_github_sid");
-
-		if (!sessid) {
-			ctx.throw(400, "invalid session");
-			return;
-		}
-
 		const code = ctx.query.code;
 
 		if (!code || typeof code !== "string") {
@@ -195,7 +203,17 @@ router.get("/gh/cb", async (ctx) => {
 			return;
 		}
 
-		const savedState = await getRedisValue(sessid);
+		const callbackState = ctx.query.state;
+		if (!callbackState || typeof callbackState !== "string") {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		const sessid = ctx.cookies.get("signin_with_github_sid");
+		const savedStateByCookie = sessid ? await getRedisValue(sessid) : null;
+		const savedState =
+			savedStateByCookie ??
+			(await getRedisValue(`github:signin:state:${callbackState}`));
 
 		if (!savedState) {
 			ctx.throw(400, "invalid session");
@@ -214,12 +232,15 @@ router.get("/gh/cb", async (ctx) => {
 
 		const { redirect_uri, state } = savedStateObject;
 
-		if (ctx.query.state !== state) {
+		if (callbackState !== state) {
 			ctx.throw(400, "invalid session");
 			return;
 		}
 
-		await deleteRedisKey(sessid);
+		if (sessid) {
+			await deleteRedisKey(sessid);
+		}
+		await deleteRedisKey(`github:signin:state:${state}`);
 
 		const { accessToken } = await new Promise<any>((res, rej) =>
 			oauth2!.getOAuthAccessToken(

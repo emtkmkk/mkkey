@@ -60,6 +60,19 @@ function deleteRedisKey(key: string): Promise<void> {
 	});
 }
 
+function setRedisValue(key: string, value: string, expiresInSeconds: number): Promise<void> {
+	return new Promise((resolve, reject) => {
+		redisClient.set(key, value, "EX", expiresInSeconds, (err) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve();
+		});
+	});
+}
+
 function parseJsonSafely<T>(value: string): T | null {
 	try {
 		return JSON.parse(value) as T;
@@ -198,7 +211,7 @@ router.get("/connect/google", async (ctx) => {
 		response_type: "code",
 	};
 
-	redisClient.set(userToken, JSON.stringify(params), "EX", 600);
+	await setRedisValue(userToken, JSON.stringify(params), 600);
 
 	const oauthConfig = await getGoogleOAuthConfig();
 	if (!oauthConfig) {
@@ -211,11 +224,12 @@ router.get("/connect/google", async (ctx) => {
 
 router.get("/signin/google", async (ctx) => {
 	const sessid = uuid();
+	const state = uuid();
 
 	const params = {
 		redirect_uri: getGoogleCallbackUrl(),
 		scope: GOOGLE_SCOPE,
-		state: uuid(),
+		state,
 		response_type: "code",
 	};
 
@@ -225,7 +239,8 @@ router.get("/signin/google", async (ctx) => {
 		httpOnly: true,
 	});
 
-	redisClient.set(sessid, JSON.stringify(params), "EX", 600);
+	await setRedisValue(sessid, JSON.stringify(params), 600);
+	await setRedisValue(`google:signin:state:${state}`, JSON.stringify(params), 600);
 
 	const oauthConfig = await getGoogleOAuthConfig();
 	if (!oauthConfig) {
@@ -252,13 +267,17 @@ router.get("/go/cb", async (ctx) => {
 	}
 
 	if (!userToken) {
-		const sessid = ctx.cookies.get("signin_with_google_sid");
-		if (!sessid) {
+		const callbackState = ctx.query.state;
+		if (!callbackState || typeof callbackState !== "string") {
 			ctx.throw(400, "invalid session");
 			return;
 		}
 
-		const savedState = await getRedisValue(sessid);
+		const sessid = ctx.cookies.get("signin_with_google_sid");
+		const savedStateByCookie = sessid ? await getRedisValue(sessid) : null;
+		const savedState =
+			savedStateByCookie ??
+			(await getRedisValue(`google:signin:state:${callbackState}`));
 		if (!savedState) {
 			ctx.throw(400, "invalid session");
 			return;
@@ -271,12 +290,15 @@ router.get("/go/cb", async (ctx) => {
 		}
 
 		const { redirect_uri, state } = savedStateObject;
-		if (ctx.query.state !== state) {
+		if (callbackState !== state) {
 			ctx.throw(400, "invalid session");
 			return;
 		}
 
-		await deleteRedisKey(sessid);
+		if (sessid) {
+			await deleteRedisKey(sessid);
+		}
+		await deleteRedisKey(`google:signin:state:${state}`);
 
 		const accessToken = await getGoogleAccessToken(oauthConfig, code, redirect_uri);
 

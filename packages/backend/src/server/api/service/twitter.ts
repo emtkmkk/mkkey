@@ -63,9 +63,30 @@ function deleteRedisKey(key: string): Promise<void> {
 	});
 }
 
+function setRedisValue(key: string, value: string, expiresInSeconds: number): Promise<void> {
+	return new Promise((resolve, reject) => {
+		redisClient.set(key, value, "EX", expiresInSeconds, (err) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve();
+		});
+	});
+}
+
 function parseJsonSafely<T>(value: string): T | null {
 	try {
 		return JSON.parse(value) as T;
+	} catch {
+		return null;
+	}
+}
+
+function getOAuthTokenFromUrl(url: string): string | null {
+	try {
+		return new URL(url).searchParams.get("oauth_token");
 	} catch {
 		return null;
 	}
@@ -141,7 +162,7 @@ router.get("/connect/twitter", async (ctx) => {
 
 	const twAuth = await getTwAuth();
 	const twCtx = await twAuth!.begin();
-	redisClient.set(userToken, JSON.stringify(twCtx), "EX", 600);
+	await setRedisValue(userToken, JSON.stringify(twCtx), 600);
 	ctx.redirect(twCtx.url);
 });
 
@@ -151,7 +172,12 @@ router.get("/signin/twitter", async (ctx) => {
 
 	const sessid = uuid();
 
-	redisClient.set(sessid, JSON.stringify(twCtx), "EX", 600);
+	const oauthToken = getOAuthTokenFromUrl(twCtx.url);
+
+	await setRedisValue(sessid, JSON.stringify(twCtx), 600);
+	if (oauthToken) {
+		await setRedisValue(`twitter:signin:oauth-token:${oauthToken}`, JSON.stringify(twCtx), 600);
+	}
 
 	ctx.cookies.set("signin_with_twitter_sid", sessid, {
 		path: "/",
@@ -168,27 +194,33 @@ router.get("/tw/cb", async (ctx) => {
 	const twAuth = await getTwAuth();
 
 	if (userToken == null) {
-		const sessid = ctx.cookies.get("signin_with_twitter_sid");
-
-		if (sessid == null) {
-			ctx.throw(400, "invalid session");
-			return;
-		}
-
-		const twCtx = await getRedisValue(sessid);
-
-		if (!twCtx) {
-			ctx.throw(400, "invalid session");
-			return;
-		}
-
 		const verifier = ctx.query.oauth_verifier;
 		if (!verifier || typeof verifier !== "string") {
 			ctx.throw(400, "invalid session");
 			return;
 		}
 
-		await deleteRedisKey(sessid);
+		const oauthToken = ctx.query.oauth_token;
+		if (!oauthToken || typeof oauthToken !== "string") {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		const sessid = ctx.cookies.get("signin_with_twitter_sid");
+		const twCtxByCookie = sessid ? await getRedisValue(sessid) : null;
+		const twCtx =
+			twCtxByCookie ??
+			(await getRedisValue(`twitter:signin:oauth-token:${oauthToken}`));
+
+		if (!twCtx) {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
+		if (sessid) {
+			await deleteRedisKey(sessid);
+		}
+		await deleteRedisKey(`twitter:signin:oauth-token:${oauthToken}`);
 
 		const parsedTwCtx = parseJsonSafely<Record<string, unknown>>(twCtx);
 

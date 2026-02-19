@@ -35,6 +35,53 @@ function compareOrigin(ctx: Koa.BaseContext): boolean {
 	return requestOrigin != null && configuredOrigin != null && requestOrigin === configuredOrigin;
 }
 
+function getRedisValue(key: string): Promise<string | null> {
+	return new Promise((resolve, reject) => {
+		redisClient.get(key, (err, value) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve(value);
+		});
+	});
+}
+
+function setRedisValue(key: string, value: string, expiresInSeconds: number): Promise<void> {
+	return new Promise((resolve, reject) => {
+		redisClient.set(key, value, "EX", expiresInSeconds, (err) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve();
+		});
+	});
+}
+
+function deleteRedisKey(key: string): Promise<void> {
+	return new Promise((resolve, reject) => {
+		redisClient.del(key, (err) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve();
+		});
+	});
+}
+
+function parseJsonSafely<T>(value: string): T | null {
+	try {
+		return JSON.parse(value) as T;
+	} catch {
+		return null;
+	}
+}
+
 // Init router
 const router = new Router();
 
@@ -111,7 +158,7 @@ router.get("/connect/discord", async (ctx) => {
 		response_type: "code",
 	};
 
-	redisClient.set(userToken, JSON.stringify(params), "EX", 600);
+	await setRedisValue(userToken, JSON.stringify(params), 600);
 
 	const oauth2 = await getOAuth2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
@@ -119,11 +166,12 @@ router.get("/connect/discord", async (ctx) => {
 
 router.get("/signin/discord", async (ctx) => {
 	const sessid = uuid();
+	const state = uuid();
 
 	const params = {
 		redirect_uri: `${config.url}/api/dc/cb`,
 		scope: ["identify"],
-		state: uuid(),
+		state,
 		response_type: "code",
 	};
 
@@ -133,7 +181,8 @@ router.get("/signin/discord", async (ctx) => {
 		httpOnly: true,
 	});
 
-	redisClient.set(sessid, JSON.stringify(params), "EX", 600);
+	await setRedisValue(sessid, JSON.stringify(params), 600);
+	await setRedisValue(`discord:signin:state:${state}`, JSON.stringify(params), 600);
 
 	const oauth2 = await getOAuth2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
@@ -145,13 +194,6 @@ router.get("/dc/cb", async (ctx) => {
 	const oauth2 = await getOAuth2();
 
 	if (!userToken) {
-		const sessid = ctx.cookies.get("signin_with_discord_sid");
-
-		if (!sessid) {
-			ctx.throw(400, "invalid session - 1");
-			return;
-		}
-
 		const code = ctx.query.code;
 
 		if (!code || typeof code !== "string") {
@@ -159,16 +201,40 @@ router.get("/dc/cb", async (ctx) => {
 			return;
 		}
 
-		const { redirect_uri, state } = await new Promise<any>((res, rej) => {
-			redisClient.get(sessid, async (_, state) => {
-				res(JSON.parse(state));
-			});
-		});
+		const callbackState = ctx.query.state;
+		if (!callbackState || typeof callbackState !== "string") {
+			ctx.throw(400, "invalid session - 1");
+			return;
+		}
 
-		if (ctx.query.state !== state) {
+		const sessid = ctx.cookies.get("signin_with_discord_sid");
+		const savedStateByCookie = sessid ? await getRedisValue(sessid) : null;
+		const savedState =
+			savedStateByCookie ??
+			(await getRedisValue(`discord:signin:state:${callbackState}`));
+
+		if (!savedState) {
 			ctx.throw(400, "invalid session - 3");
 			return;
 		}
+
+		const savedStateObject = parseJsonSafely<{ redirect_uri: string; state: string }>(savedState);
+		if (!savedStateObject) {
+			ctx.throw(400, "invalid session - 3");
+			return;
+		}
+
+		const { redirect_uri, state } = savedStateObject;
+
+		if (callbackState !== state) {
+			ctx.throw(400, "invalid session - 3");
+			return;
+		}
+
+		if (sessid) {
+			await deleteRedisKey(sessid);
+		}
+		await deleteRedisKey(`discord:signin:state:${state}`);
 
 		const { accessToken, refreshToken, expiresDate } = await new Promise<any>(
 			(res, rej) =>
@@ -252,16 +318,26 @@ router.get("/dc/cb", async (ctx) => {
 			return;
 		}
 
-		const { redirect_uri, state } = await new Promise<any>((res, rej) => {
-			redisClient.get(userToken, async (_, state) => {
-				res(JSON.parse(state));
-			});
-		});
+		const savedState = await getRedisValue(userToken);
+		if (!savedState) {
+			ctx.throw(400, "invalid session - 6");
+			return;
+		}
+
+		const savedStateObject = parseJsonSafely<{ redirect_uri: string; state: string }>(savedState);
+		if (!savedStateObject) {
+			ctx.throw(400, "invalid session - 6");
+			return;
+		}
+
+		const { redirect_uri, state } = savedStateObject;
 
 		if (ctx.query.state !== state) {
 			ctx.throw(400, "invalid session - 6");
 			return;
 		}
+
+		await deleteRedisKey(userToken);
 
 		const { accessToken, refreshToken, expiresDate } = await new Promise<any>(
 			(res, rej) =>

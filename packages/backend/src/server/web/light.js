@@ -637,11 +637,13 @@
 			if (currentTl === "channel") params.channelId = getSetting("channelId", "");
 			const data = await api(ep, params);
 			if (untilId) {
-				notes = [...notes, ...(data || [])];
+				const additionalNotes = data || [];
+				notes = [...notes, ...additionalNotes];
+				renderNotes(additionalNotes);
 			} else {
 				notes = data || [];
+				renderNotes();
 			}
-			renderNotes();
 			const loadMore = document.getElementById("load-more");
 			if (loadMore) {
 				loadMore.style.display = (data || []).length >= 20 ? "block" : "none";
@@ -1086,18 +1088,31 @@
 		return html;
 	}
 
-	function renderNotes() {
+	function renderNotes(additionalNotes) {
 		const container = document.getElementById("notes");
 		if (!container) return;
 		const showIcons = getSetting("showIcons", true);
-		const keywords = getWordMuteKeywords();
-		container.innerHTML = notes
+		const sourceNotes = Array.isArray(additionalNotes) ? additionalNotes : notes;
+		const renderedHtml = sourceNotes
 			.filter((n) => {
 				const text = (n.renote || n).text || (n.renote || n).cw || "";
 				return !isWordMuted(text);
 			})
 			.map((note) => renderNote(note, showIcons))
 			.join("");
+
+		if (Array.isArray(additionalNotes)) {
+			if (!renderedHtml) return;
+			const fragment = document.createElement("div");
+			fragment.innerHTML = renderedHtml;
+			[...fragment.children].forEach((node) => {
+				container.appendChild(node);
+				bindNoteEvents(node);
+			});
+			return;
+		}
+
+		container.innerHTML = renderedHtml;
 		bindNoteEvents(container);
 	}
 

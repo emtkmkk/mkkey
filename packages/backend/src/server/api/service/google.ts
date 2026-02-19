@@ -81,6 +81,13 @@ function parseJsonSafely<T>(value: string): T | null {
 	}
 }
 
+function detectOAuthFlowFromState(state: unknown): "signin" | "connect" | "unknown" {
+	if (typeof state !== "string") return "unknown";
+	if (state.startsWith("signin:")) return "signin";
+	if (state.startsWith("connect:")) return "connect";
+	return "unknown";
+}
+
 const router = new Router();
 const GOOGLE_SCOPE = "openid profile email";
 
@@ -207,7 +214,7 @@ router.get("/connect/google", async (ctx) => {
 	const params = {
 		redirect_uri: getGoogleCallbackUrl(),
 		scope: GOOGLE_SCOPE,
-		state: uuid(),
+		state: `connect:${uuid()}`,
 		response_type: "code",
 	};
 
@@ -238,7 +245,7 @@ router.get("/signin/google", async (ctx) => {
 	}
 
 	const sessid = uuid();
-	const state = uuid();
+	const state = `signin:${uuid()}`;
 
 	const params = {
 		redirect_uri: getGoogleCallbackUrl(),
@@ -267,6 +274,10 @@ router.get("/signin/google", async (ctx) => {
 
 router.get("/go/cb", async (ctx) => {
 	const userToken = getUserToken(ctx);
+	const callbackState = ctx.query.state;
+	const stateFlow = detectOAuthFlowFromState(callbackState);
+	const shouldUseSignInFlow =
+		stateFlow === "signin" || (stateFlow === "unknown" && !userToken);
 	const oauthConfig = await getGoogleOAuthConfig();
 
 	if (!oauthConfig) {
@@ -280,8 +291,7 @@ router.get("/go/cb", async (ctx) => {
 		return;
 	}
 
-	if (!userToken) {
-		const callbackState = ctx.query.state;
+	if (shouldUseSignInFlow) {
 		if (!callbackState || typeof callbackState !== "string") {
 			ctx.throw(400, "invalid session");
 			return;
@@ -367,7 +377,11 @@ router.get("/go/cb", async (ctx) => {
 		return;
 	}
 
-	const callbackState = ctx.query.state;
+	if (!userToken) {
+		ctx.throw(400, "invalid session");
+		return;
+	}
+
 	if (!callbackState || typeof callbackState !== "string") {
 		ctx.throw(400, "invalid session");
 		return;

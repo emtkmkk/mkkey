@@ -82,6 +82,13 @@ function parseJsonSafely<T>(value: string): T | null {
 	}
 }
 
+function detectOAuthFlowFromState(state: unknown): "signin" | "connect" | "unknown" {
+	if (typeof state !== "string") return "unknown";
+	if (state.startsWith("signin:")) return "signin";
+	if (state.startsWith("connect:")) return "connect";
+	return "unknown";
+}
+
 // Init router
 const router = new Router();
 
@@ -158,7 +165,7 @@ router.get("/connect/github", async (ctx) => {
 	const params = {
 		redirect_uri: `${config.url}/api/gh/cb`,
 		scope: ["read:user"],
-		state: uuid(),
+		state: `connect:${uuid()}`,
 	};
 
 	await setRedisValue(userToken, JSON.stringify(params), 600);
@@ -183,7 +190,7 @@ router.get("/signin/github", async (ctx) => {
 	}
 
 	const sessid = uuid();
-	const state = uuid();
+	const state = `signin:${uuid()}`;
 
 	const params = {
 		redirect_uri: `${config.url}/api/gh/cb`,
@@ -206,10 +213,14 @@ router.get("/signin/github", async (ctx) => {
 
 router.get("/gh/cb", async (ctx) => {
 	const userToken = getUserToken(ctx);
+	const callbackState = ctx.query.state;
+	const stateFlow = detectOAuthFlowFromState(callbackState);
+	const shouldUseSignInFlow =
+		stateFlow === "signin" || (stateFlow === "unknown" && !userToken);
 
 	const oauth2 = await getOath2();
 
-	if (!userToken) {
+	if (shouldUseSignInFlow) {
 		const code = ctx.query.code;
 
 		if (!code || typeof code !== "string") {
@@ -217,7 +228,6 @@ router.get("/gh/cb", async (ctx) => {
 			return;
 		}
 
-		const callbackState = ctx.query.state;
 		if (!callbackState || typeof callbackState !== "string") {
 			ctx.throw(400, "invalid session");
 			return;
@@ -312,8 +322,12 @@ router.get("/gh/cb", async (ctx) => {
 			await deleteRedisKey(`github:signin:state:${callbackState}`);
 		}
 	} else {
+		if (!userToken) {
+			ctx.throw(400, "invalid session");
+			return;
+		}
+
 		const code = ctx.query.code;
-		const callbackState = ctx.query.state;
 
 		if (!code || typeof code !== "string") {
 			ctx.throw(400, "invalid session");

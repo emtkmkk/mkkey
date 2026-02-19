@@ -76,6 +76,11 @@ async function offlineContentHTML() {
 }
 
 self.addEventListener("fetch", (ev) => {
+	const requestUrl = new URL(ev.request.url);
+	if (requestUrl.pathname.startsWith("/api/")) {
+		return;
+	}
+
 	let isHTMLRequest = false;
 	if (ev.request.headers.get("sec-fetch-dest") === "document") {
 		isHTMLRequest = true;

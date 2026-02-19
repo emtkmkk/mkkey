@@ -130,6 +130,13 @@ function parseJsonSafely<T>(value: string): T | null {
 	}
 }
 
+function detectOAuthFlowFromState(state: unknown): "signin" | "connect" | "unknown" {
+	if (typeof state !== "string") return "unknown";
+	if (state.startsWith("signin:")) return "signin";
+	if (state.startsWith("connect:")) return "connect";
+	return "unknown";
+}
+
 // Init router
 const router = new Router();
 
@@ -202,7 +209,7 @@ router.get("/connect/discord", async (ctx) => {
 	const params = {
 		redirect_uri: `${config.url}/api/dc/cb`,
 		scope: ["identify"],
-		state: uuid(),
+		state: `connect:${uuid()}`,
 		response_type: "code",
 	};
 
@@ -249,7 +256,7 @@ router.get("/signin/discord", async (ctx) => {
 	}
 
 	const sessid = uuid();
-	const state = uuid();
+	const state = `signin:${uuid()}`;
 
 	const params = {
 		redirect_uri: `${config.url}/api/dc/cb`,
@@ -275,6 +282,18 @@ router.get("/dc/cb", async (ctx) => {
 	const userToken = getUserToken(ctx);
 	const callbackState = ctx.query.state;
 	const code = ctx.query.code;
+	const stateFlow = detectOAuthFlowFromState(callbackState);
+	const shouldUseSignInFlow =
+		stateFlow === "signin" || (stateFlow === "unknown" && !userToken);
+	const shouldUseConnectFlow = stateFlow === "connect" || !shouldUseSignInFlow;
+	const stateFlowHint =
+		stateFlow === "signin"
+			? "state-prefix-signin"
+			: stateFlow === "connect"
+				? "state-prefix-connect"
+				: userToken
+					? "legacy-fallback-user-token"
+					: "legacy-fallback-no-user-token";
 
 	const oauth2 = await getOAuth2();
 
@@ -285,10 +304,11 @@ router.get("/dc/cb", async (ctx) => {
 		hasCode: typeof code === "string" && code.length > 0,
 		hasState: typeof callbackState === "string" && callbackState.length > 0,
 		stateLength: typeof callbackState === "string" ? callbackState.length : null,
+		stateFlowHint,
 		requestOrigin: getRequestOriginForLog(ctx),
 	});
 
-	if (!userToken) {
+	if (shouldUseSignInFlow) {
 		if (!code || typeof code !== "string") {
 			logWarn("Discord sign-in callback rejected: code missing", {
 				reason: "invalid session - 2",
@@ -430,7 +450,12 @@ router.get("/dc/cb", async (ctx) => {
 			}
 			await deleteRedisKey(`discord:signin:state:${callbackState}`);
 		}
-	} else {
+	} else if (shouldUseConnectFlow) {
+		if (!userToken) {
+			ctx.throw(400, "invalid session - 6");
+			return;
+		}
+
 		if (!code || typeof code !== "string") {
 			logWarn("Discord connect callback rejected: code missing", {
 				reason: "invalid session - 5",

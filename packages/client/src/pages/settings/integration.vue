@@ -118,7 +118,7 @@ function connectTwitter() {
 }
 
 function disconnectTwitter() {
-	openWindow("twitter", "disconnect");
+	twitterForm.value = openWindow("twitter", "disconnect");
 }
 
 function connectDiscord() {
@@ -126,7 +126,7 @@ function connectDiscord() {
 }
 
 function disconnectDiscord() {
-	openWindow("discord", "disconnect");
+	discordForm.value = openWindow("discord", "disconnect");
 }
 
 function connectGithub() {
@@ -134,7 +134,7 @@ function connectGithub() {
 }
 
 function disconnectGithub() {
-	openWindow("github", "disconnect");
+	githubForm.value = openWindow("github", "disconnect");
 }
 
 function connectGoogle() {
@@ -142,26 +142,48 @@ function connectGoogle() {
 }
 
 function disconnectGoogle() {
-	openWindow("google", "disconnect");
+	googleForm.value = openWindow("google", "disconnect");
+}
+
+function closeIntegrationWindow(win: Window | null) {
+	if (win) win.close();
 }
 
 onMounted(() => {
 	document.cookie = `igi=${$i!.token}; ${getCookieAttributes(31536000)}`;
 
-	watch(integrations, () => {
-		if (integrations.value.twitter) {
-			if (twitterForm.value) twitterForm.value.close();
-		}
-		if (integrations.value.discord) {
-			if (discordForm.value) discordForm.value.close();
-		}
-		if (integrations.value.github) {
-			if (githubForm.value) githubForm.value.close();
-		}
-		if (integrations.value.google) {
-			if (googleForm.value) googleForm.value.close();
-		}
-	});
+	watch(
+		() => [
+			integrations.value.twitter,
+			integrations.value.discord,
+			integrations.value.github,
+			integrations.value.google,
+		],
+		([
+			twitterIntegration,
+			discordIntegration,
+			githubIntegration,
+			googleIntegration,
+		], [
+			previousTwitterIntegration,
+			previousDiscordIntegration,
+			previousGithubIntegration,
+			previousGoogleIntegration,
+		]) => {
+			if (twitterIntegration !== previousTwitterIntegration) {
+				closeIntegrationWindow(twitterForm.value);
+			}
+			if (discordIntegration !== previousDiscordIntegration) {
+				closeIntegrationWindow(discordForm.value);
+			}
+			if (githubIntegration !== previousGithubIntegration) {
+				closeIntegrationWindow(githubForm.value);
+			}
+			if (googleIntegration !== previousGoogleIntegration) {
+				closeIntegrationWindow(googleForm.value);
+			}
+		},
+	);
 });
 
 const headerActions = $computed(() => []);

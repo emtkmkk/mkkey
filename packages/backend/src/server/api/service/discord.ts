@@ -3,6 +3,7 @@ import Router from "@koa/router";
 import { OAuth2 } from "oauth";
 import { v4 as uuid } from "uuid";
 import { IsNull } from "typeorm";
+import Logger from "@/services/logger.js";
 import { getJson } from "@/misc/fetch.js";
 import config from "@/config/index.js";
 import { publishMainStream } from "@/services/stream.js";
@@ -11,6 +12,40 @@ import { Users, UserProfiles } from "@/models/index.js";
 import type { ILocalUser } from "@/models/entities/user.js";
 import { redisClient } from "../../../db/redis.js";
 import signin from "../common/signin.js";
+
+const logger = new Logger("discord-oauth");
+
+function appendLogContext(message: string, context: Record<string, unknown>): string {
+	return `${message} ${JSON.stringify(context)}`;
+}
+
+function logInfo(message: string, context: Record<string, unknown>): void {
+	logger.info(appendLogContext(message, context));
+}
+
+function logWarn(message: string, context: Record<string, unknown>): void {
+	logger.warn(appendLogContext(message, context));
+}
+
+function maskToken(token: string | null | undefined): string {
+	if (!token) return "none";
+	if (token.length <= 8) return `${token[0]}***`;
+	return `${token.slice(0, 4)}...${token.slice(-4)}`;
+}
+
+function getRequestOriginForLog(ctx: Koa.BaseContext): string {
+	const origin = ctx.headers["origin"];
+	if (typeof origin === "string") return origin;
+	const referer = ctx.headers["referer"];
+	if (typeof referer === "string") {
+		try {
+			return new URL(referer).origin;
+		} catch {
+			return "invalid referer";
+		}
+	}
+	return "none";
+}
 
 function getUserToken(ctx: Koa.BaseContext): string | null {
 	return ((ctx.headers["cookie"] || "").match(/(?:^|;\s*)igi=([^;]+)/) || [null, null])[1];
@@ -38,6 +73,19 @@ function compareOrigin(ctx: Koa.BaseContext): boolean {
 function getRedisValue(key: string): Promise<string | null> {
 	return new Promise((resolve, reject) => {
 		redisClient.get(key, (err, value) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			resolve(value);
+		});
+	});
+}
+
+function getRedisTtl(key: string): Promise<number> {
+	return new Promise((resolve, reject) => {
+		redisClient.ttl(key, (err, value) => {
 			if (err) {
 				reject(err);
 				return;
@@ -165,6 +213,23 @@ router.get("/connect/discord", async (ctx) => {
 		600,
 	);
 
+	const stateKey = `discord:connect:state:${params.state}`;
+	const [savedByUserToken, savedByState, userTokenTtl, stateTtl] = await Promise.all([
+		getRedisValue(userToken),
+		getRedisValue(stateKey),
+		getRedisTtl(userToken),
+		getRedisTtl(stateKey),
+	]);
+	logInfo("Discord connect state stored", {
+		maskedUserToken: maskToken(userToken),
+		state: params.state,
+		hasSavedByUserToken: Boolean(savedByUserToken),
+		hasSavedByState: Boolean(savedByState),
+		userTokenTtl,
+		stateTtl,
+		requestOrigin: getRequestOriginForLog(ctx),
+	});
+
 	const oauth2 = await getOAuth2();
 	ctx.redirect(oauth2!.getAuthorizeUrl(params));
 });
@@ -208,19 +273,35 @@ router.get("/signin/discord", async (ctx) => {
 
 router.get("/dc/cb", async (ctx) => {
 	const userToken = getUserToken(ctx);
+	const callbackState = ctx.query.state;
+	const code = ctx.query.code;
 
 	const oauth2 = await getOAuth2();
 
-	if (!userToken) {
-		const code = ctx.query.code;
+	logInfo("Discord OAuth callback requested", {
+		path: ctx.path,
+		hasUserToken: Boolean(userToken),
+		maskedUserToken: maskToken(userToken),
+		hasCode: typeof code === "string" && code.length > 0,
+		hasState: typeof callbackState === "string" && callbackState.length > 0,
+		stateLength: typeof callbackState === "string" ? callbackState.length : null,
+		requestOrigin: getRequestOriginForLog(ctx),
+	});
 
+	if (!userToken) {
 		if (!code || typeof code !== "string") {
+			logWarn("Discord sign-in callback rejected: code missing", {
+				reason: "invalid session - 2",
+				hasState: typeof callbackState === "string",
+			});
 			ctx.throw(400, "invalid session - 2");
 			return;
 		}
 
-		const callbackState = ctx.query.state;
 		if (!callbackState || typeof callbackState !== "string") {
+			logWarn("Discord sign-in callback rejected: state missing", {
+				reason: "invalid session - 1",
+			});
 			ctx.throw(400, "invalid session - 1");
 			return;
 		}
@@ -232,6 +313,12 @@ router.get("/dc/cb", async (ctx) => {
 			(await getRedisValue(`discord:signin:state:${callbackState}`));
 
 		if (!savedState) {
+			logWarn("Discord sign-in callback rejected: state not found", {
+				reason: "invalid session - 3",
+				hasSessid: Boolean(sessid),
+				maskedSessid: maskToken(sessid),
+				callbackState,
+			});
 			if (sessid) {
 				await deleteRedisKey(sessid);
 			}
@@ -242,6 +329,10 @@ router.get("/dc/cb", async (ctx) => {
 
 		const savedStateObject = parseJsonSafely<{ redirect_uri: string; state: string }>(savedState);
 		if (!savedStateObject) {
+			logWarn("Discord sign-in callback rejected: saved state parse failed", {
+				reason: "invalid session - 3",
+				callbackState,
+			});
 			ctx.throw(400, "invalid session - 3");
 			return;
 		}
@@ -249,6 +340,11 @@ router.get("/dc/cb", async (ctx) => {
 		const { redirect_uri, state } = savedStateObject;
 
 		if (callbackState !== state) {
+			logWarn("Discord sign-in callback rejected: state mismatch", {
+				reason: "invalid session - 3",
+				callbackState,
+				savedState: state,
+			});
 			ctx.throw(400, "invalid session - 3");
 			return;
 		}
@@ -335,15 +431,21 @@ router.get("/dc/cb", async (ctx) => {
 			await deleteRedisKey(`discord:signin:state:${callbackState}`);
 		}
 	} else {
-		const code = ctx.query.code;
-		const callbackState = ctx.query.state;
-
 		if (!code || typeof code !== "string") {
+			logWarn("Discord connect callback rejected: code missing", {
+				reason: "invalid session - 5",
+				hasState: typeof callbackState === "string",
+				maskedUserToken: maskToken(userToken),
+			});
 			ctx.throw(400, "invalid session - 5");
 			return;
 		}
 
 		if (!callbackState || typeof callbackState !== "string") {
+			logWarn("Discord connect callback rejected: state missing", {
+				reason: "invalid session - 6",
+				maskedUserToken: maskToken(userToken),
+			});
 			ctx.throw(400, "invalid session - 6");
 			return;
 		}
@@ -354,12 +456,24 @@ router.get("/dc/cb", async (ctx) => {
 		);
 		const savedState = savedStateByUserToken ?? savedStateByState;
 		if (!savedState) {
+			logWarn("Discord connect callback rejected: no saved state", {
+				reason: "invalid session - 6",
+				maskedUserToken: maskToken(userToken),
+				callbackState,
+				hasSavedStateByUserToken: Boolean(savedStateByUserToken),
+				hasSavedStateByState: Boolean(savedStateByState),
+			});
 			ctx.throw(400, "invalid session - 6");
 			return;
 		}
 
 		const savedStateObject = parseJsonSafely<{ redirect_uri: string; state: string }>(savedState);
 		if (!savedStateObject) {
+			logWarn("Discord connect callback rejected: saved state parse failed", {
+				reason: "invalid session - 6",
+				maskedUserToken: maskToken(userToken),
+				callbackState,
+			});
 			ctx.throw(400, "invalid session - 6");
 			return;
 		}
@@ -367,6 +481,12 @@ router.get("/dc/cb", async (ctx) => {
 		const { redirect_uri, state } = savedStateObject;
 
 		if (callbackState !== state) {
+			logWarn("Discord connect callback rejected: state mismatch", {
+				reason: "invalid session - 6",
+				maskedUserToken: maskToken(userToken),
+				callbackState,
+				savedState: state,
+			});
 			ctx.throw(400, "invalid session - 6");
 			return;
 		}

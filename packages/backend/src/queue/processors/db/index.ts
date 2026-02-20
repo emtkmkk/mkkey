@@ -15,6 +15,11 @@ import { importPosts } from "./import-posts.js";
 import { importBlocking } from "./import-blocking.js";
 import { importCustomEmojis } from "./import-custom-emojis.js";
 
+type QueueProcessorWrapper = <T>(
+	queueName: string,
+	processor: Bull.ProcessPromiseFunction<T>,
+) => Bull.ProcessPromiseFunction<T>;
+
 const jobs = {
 	deleteDriveFiles,
 	exportCustomEmojis,
@@ -36,8 +41,12 @@ const jobs = {
 	| Bull.ProcessPromiseFunction<DbJobData>
 >;
 
-export default function (dbQueue: Bull.Queue<DbJobData>) {
+export default function (
+	dbQueue: Bull.Queue<DbJobData>,
+	wrapProcessor?: QueueProcessorWrapper,
+) {
 	for (const [k, v] of Object.entries(jobs)) {
-		dbQueue.process(k, v);
+		const processor = wrapProcessor ? wrapProcessor("db", v as Bull.ProcessPromiseFunction<DbJobData>) : v;
+		dbQueue.process(k, processor);
 	}
 }

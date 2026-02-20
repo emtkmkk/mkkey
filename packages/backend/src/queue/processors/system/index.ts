@@ -9,6 +9,11 @@ import { cleanReactions } from "./clean-reactions.js";
 import { cleanAntennaNotes } from "./clean-antennaNote.js";
 import { checkSuspendedInstances } from "./check-suspended-instances.js";
 
+type QueueProcessorWrapper = <T>(
+	queueName: string,
+	processor: Bull.ProcessPromiseFunction<T>,
+) => Bull.ProcessPromiseFunction<T>;
+
 const jobs = {
 	tickCharts,
 	resyncCharts,
@@ -16,17 +21,21 @@ const jobs = {
 	checkExpiredMutings,
 	clean,
 	cleanEmojis,
-        cleanReactions,
-        cleanAntennaNotes,
-        checkSuspendedInstances,
+	cleanReactions,
+	cleanAntennaNotes,
+	checkSuspendedInstances,
 } as Record<
 	string,
 	| Bull.ProcessCallbackFunction<Record<string, unknown>>
 	| Bull.ProcessPromiseFunction<Record<string, unknown>>
 >;
 
-export default function (dbQueue: Bull.Queue<Record<string, unknown>>) {
+export default function (
+	dbQueue: Bull.Queue<Record<string, unknown>>,
+	wrapProcessor?: QueueProcessorWrapper,
+) {
 	for (const [k, v] of Object.entries(jobs)) {
-		dbQueue.process(k, v);
+		const processor = wrapProcessor ? wrapProcessor("system", v as Bull.ProcessPromiseFunction<Record<string, unknown>>) : v;
+		dbQueue.process(k, processor);
 	}
 }

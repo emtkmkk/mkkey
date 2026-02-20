@@ -19,6 +19,7 @@ import { endedPollNotification } from "./processors/ended-poll-notification.js";
 import { queueLogger } from "./logger.js";
 import { getJobInfo } from "./get-job-info.js";
 import { clearDelayedRetry, markDelayedRetry } from "./delayed-retry-reason.js";
+import { adaptiveQueueWrap } from "./adaptive-queue-throttle.js";
 import {
 	systemQueue,
 	dbQueue,
@@ -519,14 +520,26 @@ export function webhookDeliver(
 export default function () {
 	if (envOption.onlyServer) return;
 
-	deliverQueue.process(config.deliverJobConcurrency || 128, processDeliver);
-	inboxQueue.process(config.inboxJobConcurrency || 16, processInbox);
+	deliverQueue.process(
+		config.deliverJobConcurrency || 128,
+		adaptiveQueueWrap("deliver", processDeliver),
+	);
+	inboxQueue.process(
+		config.inboxJobConcurrency || 16,
+		adaptiveQueueWrap("inbox", processInbox),
+	);
 	endedPollNotificationQueue.process(endedPollNotification);
-	webhookDeliverQueue.process(64, processWebhookDeliver);
-	noteApDeliverQueue.process(config.deliverJobConcurrency || 128, processNoteApDeliver);
-	processDb(dbQueue);
-	processObjectStorage(objectStorageQueue);
-	processBackground(backgroundQueue);
+	webhookDeliverQueue.process(
+		64,
+		adaptiveQueueWrap("webhookDeliver", processWebhookDeliver),
+	);
+	noteApDeliverQueue.process(
+		config.deliverJobConcurrency || 128,
+		adaptiveQueueWrap("noteApDeliver", processNoteApDeliver),
+	);
+	processDb(dbQueue, adaptiveQueueWrap);
+	processObjectStorage(objectStorageQueue, adaptiveQueueWrap);
+	processBackground(backgroundQueue, adaptiveQueueWrap);
 
 	systemQueue.add(
 		"tickCharts",
@@ -592,25 +605,25 @@ export default function () {
 		},
 	);
 
-        systemQueue.add(
-                "cleanAntennaNotes",
-                {},
-                {
-                        repeat: { cron: "0 15 * * *" },
-                        jobId: "clean-antennanotes",
-                },
-        );
+	systemQueue.add(
+		"cleanAntennaNotes",
+		{},
+		{
+			repeat: { cron: "0 15 * * *" },
+			jobId: "clean-antennanotes",
+		},
+	);
 
-        systemQueue.add(
-                "checkSuspendedInstances",
-                {},
-                {
-                        repeat: { cron: "0 4 * * *" },
-                        jobId: "check-suspended-instances",
-                },
-        );
+	systemQueue.add(
+		"checkSuspendedInstances",
+		{},
+		{
+			repeat: { cron: "0 4 * * *" },
+			jobId: "check-suspended-instances",
+		},
+	);
 
-        processSystemQueue(systemQueue);
+	processSystemQueue(systemQueue, adaptiveQueueWrap);
 }
 
 export function destroy() {

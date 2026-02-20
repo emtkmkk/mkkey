@@ -82,6 +82,7 @@ import { entities as charts } from "@/services/chart/entities.js";
 import { envOption } from "../env.js";
 import { dbLogger } from "./logger.js";
 import { redisClient } from "./redis.js";
+import { notifyDbSlowQuery } from "@/queue/adaptive-queue-throttle.js";
 
 const sqlLogger = dbLogger.createSubLogger("sql", "gray", false);
 
@@ -102,6 +103,7 @@ class MyCustomLogger implements Logger {
 	}
 
 	public logQuerySlow(time: number, query: string, parameters?: any[]) {
+		notifyDbSlowQuery(time);
 		sqlLogger.warn(this.highlight(query));
 	}
 

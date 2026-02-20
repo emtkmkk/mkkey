@@ -69,6 +69,14 @@ export type Source = {
 	inboxJobPerSec?: number;
 	deliverJobMaxAttempts?: number;
 	inboxJobMaxAttempts?: number;
+	queueAdaptiveThrottle?: {
+		enabled?: boolean;
+		latencyThresholdMs?: number;
+		baseDelayMs?: number;
+		maxDelayMs?: number;
+		dbSlowQueryThresholdMs?: number;
+		dbPollIntervalMs?: number;
+	};
 
 	syslog: {
 		host: string;

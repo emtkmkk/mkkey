@@ -102,7 +102,7 @@ async function getOAuth2() {
 		meta.swarmClientId,
 		meta.swarmClientSecret,
 		"https://foursquare.com/",
-		"oauth2/authenticate",
+		"oauth2/authorize",
 		"oauth2/access_token",
 	);
 }

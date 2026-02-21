@@ -287,6 +287,11 @@ export const meta = {
 				optional: false,
 				nullable: false,
 			},
+			enableSwarmIntegration: {
+				type: "boolean",
+				optional: false,
+				nullable: false,
+			},
 			enableServiceWorker: {
 				type: "boolean",
 				optional: false,
@@ -518,6 +523,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		enableGithubIntegration: instance.enableGithubIntegration,
 		enableDiscordIntegration: instance.enableDiscordIntegration,
 		enableGoogleIntegration: instance.enableGoogleIntegration,
+		enableSwarmIntegration: instance.enableSwarmIntegration,
 
 		enableServiceWorker: instance.enableServiceWorker,
 
@@ -564,6 +570,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			github: instance.enableGithubIntegration,
 			discord: instance.enableDiscordIntegration,
 			google: instance.enableGoogleIntegration,
+			swarm: instance.enableSwarmIntegration,
 			serviceWorker: instance.enableServiceWorker,
 			miauth: true,
 		};

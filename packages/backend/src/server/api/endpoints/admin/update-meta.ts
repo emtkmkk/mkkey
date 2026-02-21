@@ -146,6 +146,9 @@ export const paramDef = {
 		enableGoogleIntegration: { type: "boolean" },
 		googleClientId: { type: "string", nullable: true },
 		googleClientSecret: { type: "string", nullable: true },
+		enableSwarmIntegration: { type: "boolean" },
+		swarmClientId: { type: "string", nullable: true },
+		swarmClientSecret: { type: "string", nullable: true },
 		enableEmail: { type: "boolean" },
 		email: { type: "string", nullable: true },
 		smtpSecure: { type: "boolean" },
@@ -429,6 +432,18 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (ps.googleClientSecret !== undefined) {
 		set.googleClientSecret = ps.googleClientSecret;
+	}
+
+	if (ps.enableSwarmIntegration !== undefined) {
+		set.enableSwarmIntegration = ps.enableSwarmIntegration;
+	}
+
+	if (ps.swarmClientId !== undefined) {
+		set.swarmClientId = ps.swarmClientId;
+	}
+
+	if (ps.swarmClientSecret !== undefined) {
+		set.swarmClientSecret = ps.swarmClientSecret;
 	}
 
 	if (ps.enableEmail !== undefined) {

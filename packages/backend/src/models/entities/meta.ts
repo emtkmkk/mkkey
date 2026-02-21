@@ -397,6 +397,23 @@ export class Meta {
 	})
 	public googleClientSecret: string | null;
 
+	@Column('boolean', {
+		default: false,
+	})
+	public enableSwarmIntegration: boolean;
+
+	@Column('varchar', {
+		length: 128,
+		nullable: true,
+	})
+	public swarmClientId: string | null;
+
+	@Column('varchar', {
+		length: 128,
+		nullable: true,
+	})
+	public swarmClientSecret: string | null;
+
 	@Column('varchar', {
 		length: 128,
 		nullable: true,

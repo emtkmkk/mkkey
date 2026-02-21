@@ -317,6 +317,7 @@ export type LiteInstanceMetadata = {
 	enableGithubIntegration: boolean;
 	enableDiscordIntegration: boolean;
 	enableGoogleIntegration: boolean;
+	enableSwarmIntegration: boolean;
 	enableServiceWorker: boolean;
 	emojiUpdatedAt: DateString | null;
 	emojis: CustomEmoji[];

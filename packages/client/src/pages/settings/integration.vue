@@ -68,7 +68,7 @@
 			}}</MkButton>
 		</FormSection>
 
-		<FormSection>
+		<FormSection v-if="instance.enableSwarmIntegration">
 			<template #label><i class="ph-map-pin-line ph-bold ph-lg"></i> Swarm</template>
 			<p v-if="integrations.swarm?.accessToken">{{ i18n.ts.connectedTo }}: Swarm</p>
 			<p v-else>{{ i18n.ts.notConnected }}</p>

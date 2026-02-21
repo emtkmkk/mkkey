@@ -541,13 +541,13 @@ watch(
 	{ immediate: true }
 );
 
-const canShowNowPlayingButton = $computed(
+const canShowNowPlayingButton = $computed(() =>
 	isNowPlayingSupported &&
 		!defaultStore.state.hiddenNowPlayingButton &&
 		(nowPlayingMediaInfo != null || hasShownNowPlayingButton)
 );
 
-const isNowPlayingButtonDisabled = $computed(nowPlayingMediaInfo == null);
+const isNowPlayingButtonDisabled = $computed(() => nowPlayingMediaInfo == null);
 
 let posting = $ref(false);
 let text = $ref(props.initialText ?? "");
@@ -612,7 +612,7 @@ let canPublic = $ref(
 		(!props.renote || props.renote.visibility === "public") &&
 		(!props.airReply || props.initialVisibility === "public") &&
 		!$i.blockPostPublic &&
-		!$i.isSilenced && 
+		!$i.isSilenced &&
 		!instance.disableLocalTimeline &&
 		!props.forceSpecified
 
@@ -1977,9 +1977,9 @@ function saveDraft(key?, name?) {
 			}
 			return;
 		}
-	
+
 		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
-	
+
 		draftData[key ? key : draftKey] = {
 			updatedAt: new Date(),
 			name: name ? name : undefined,
@@ -1998,9 +1998,9 @@ function saveDraft(key?, name?) {
 				referencesFlg: referencesFlg,
 			},
 		};
-	
+
 		localStorage.setItem("drafts", JSON.stringify(draftData));
-	
+
 		if (key) {
 			clear();
 			deleteDraft();
@@ -2045,9 +2045,9 @@ function restoreDraft(key?) {
 function deleteDraft(key?) {
 	try {
 		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
-				
+
 		delete draftData[key ? key : draftKey];
-				
+
 		localStorage.setItem("drafts", JSON.stringify(draftData));
 	} catch (e) {
 		console.log(e)
@@ -3097,7 +3097,7 @@ onUnmounted(() => {
 			&.refOn{
 				color: var(--accent);
 			}
-			
+
 			> button {
 				display: flex;
 				padding: 0;

@@ -267,10 +267,13 @@ export function getNoteMenu(props: {
 	}
 
 	function togglePin(pin: boolean): void {
+		const pinTargetNoteId =
+			props.note.userId === $i?.id ? props.note.id : appearNote.id;
+
 		os.apiWithDialog(
 			pin ? "i/pin" : "i/unpin",
 			{
-				noteId: appearNote.id,
+				noteId: pinTargetNoteId,
 			},
 			undefined,
 		).catch((res) => {
@@ -281,6 +284,18 @@ export function getNoteMenu(props: {
 				});
 			}
 		});
+	}
+
+	function isPinnedByMe(): boolean {
+		const pinnedNoteIds = $i?.pinnedNoteIds || [];
+		return (
+			pinnedNoteIds.includes(props.note.id) ||
+			pinnedNoteIds.includes(appearNote.id)
+		);
+	}
+
+	function canPinByMe(): boolean {
+		return props.note.userId === $i?.id || appearNote.userId === $i?.id;
 	}
 
 	async function clip(): Promise<void> {
@@ -612,8 +627,8 @@ export function getNoteMenu(props: {
 								action: () => toggleThreadMute(true),
 							},
 				) : undefined,
-				...(appearNote.userId === $i.id
-					? ($i.pinnedNoteIds || []).includes(appearNote.id)
+				...(canPinByMe()
+					? isPinnedByMe()
 						? [
 								{
 									icon: "ph-caret-double-up ph-bold ph-lg",
@@ -882,8 +897,8 @@ export function getNoteMenu(props: {
 								action: () => toggleThreadMute(true),
 							},
 				),
-				...(appearNote.userId === $i.id
-					? ($i.pinnedNoteIds || []).includes(appearNote.id)
+				...(canPinByMe()
+					? isPinnedByMe()
 						? [
 								{
 									icon: "ph-caret-double-up ph-bold ph-lg",

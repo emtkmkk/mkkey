@@ -353,11 +353,16 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 		const currentDate = new Date();
 		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
+		const error = err instanceof Error ? err : null;
+		const vmName = vm?.$options?.name || vm?.$options?.__name || "unknown";
+
 		// エラーログのテキストを生成
 		const logtext = `${formattedDate} - VueError: ${[
 			err?.toString(),
 			info,
-		].join(" - ")}`;
+			`component:${vmName}`,
+			error?.stack ? `stack:${error.stack}` : null,
+		].filter(Boolean).join(" - ")}`;
 
 		let currentLogs = (await get("errorLog")) || [];
 		currentLogs.push(logtext);
@@ -367,6 +372,9 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 		}
 
 		await set("errorLog", currentLogs);
+		if (_DEV_) {
+			console.error("[VueError]", { err, info, component: vmName });
+		}
 		waitMessages = waitMessages.filter((x) => x !== waitMsg);
 	};
 

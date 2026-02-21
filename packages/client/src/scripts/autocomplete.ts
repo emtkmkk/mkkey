@@ -49,6 +49,11 @@ export class Autocomplete {
 	 * このインスタンスにあるテキストエリアの入力のキャプチャを開始します。
 	 */
 	public attach() {
+		if (!this.textarea) {
+			console.error("[Autocomplete] textarea is undefined on attach");
+			return;
+		}
+
 		this.textarea.addEventListener("input", this.onInput);
 	}
 
@@ -56,7 +61,9 @@ export class Autocomplete {
 	 * このインスタンスにあるテキストエリアの入力のキャプチャを解除します。
 	 */
 	public detach() {
-		this.textarea.removeEventListener("input", this.onInput);
+		if (this.textarea) {
+			this.textarea.removeEventListener("input", this.onInput);
+		}
 		this.close();
 	}
 

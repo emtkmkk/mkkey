@@ -9,12 +9,17 @@ const mountings = new Map<
 	}
 >();
 
+function isResizeHandler(value: unknown): value is (w: number, h: number) => void {
+	return typeof value === "function";
+}
+
 function calc(src: Element) {
 	const info = mountings.get(src);
 	const height = src.clientHeight;
 	const width = src.clientWidth;
 
 	if (!info) return;
+	if (!isResizeHandler(info.fn)) return;
 
 	// アクティベート前などでsrcが描画されていない場合
 	if (!height) {
@@ -37,6 +42,8 @@ function calc(src: Element) {
 
 export default {
 	mounted(src, binding, vn) {
+		if (!isResizeHandler(binding.value)) return;
+
 		const resize = new ResizeObserver((entries, observer) => {
 			calc(src);
 		});
@@ -46,8 +53,19 @@ export default {
 		calc(src);
 	},
 
+	updated(src, binding, vn) {
+		const info = mountings.get(src);
+		if (!info) return;
+		if (!isResizeHandler(binding.value)) return;
+
+		mountings.set(src, { ...info, fn: binding.value });
+		calc(src);
+	},
+
 	unmounted(src, binding, vn) {
-		binding.value(0, 0);
+		if (isResizeHandler(binding.value)) {
+			binding.value(0, 0);
+		}
 		const info = mountings.get(src);
 		if (!info) return;
 		info.resize.disconnect();

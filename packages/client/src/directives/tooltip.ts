@@ -29,6 +29,8 @@ function isElementHidden(el: HTMLElement): boolean {
 
 export default {
 	mounted(el: HTMLElement, binding, vn) {
+		if (!(el instanceof HTMLElement)) return;
+
 		const delay = binding.modifiers.noDelay ? 0 : 100;
 
 		const self = ((el as any)._tooltipDirective_ = {} as any);
@@ -146,12 +148,18 @@ export default {
 	},
 
 	updated(el, binding) {
+		if (!(el instanceof HTMLElement)) return;
+
 		const self = el._tooltipDirective_;
+		if (!self) return;
 		self.text = binding.value as string;
 	},
 
 	unmounted(el, binding, vn) {
+		if (!(el instanceof HTMLElement)) return;
+
 		const self = el._tooltipDirective_;
+		if (!self) return;
 		window.clearInterval(self.checkTimer);
 		if (self.close) {
 			// Check if self.close is defined

@@ -100,7 +100,6 @@
 import {
 	markRaw,
 	ref,
-	unref,
 	onUpdated,
 	onMounted,
 	onBeforeUnmount,
@@ -195,7 +194,7 @@ export default {
 const props = defineProps<{
 	type: string;
 	q: string | null;
-	textarea: HTMLTextAreaElement;
+	textarea?: HTMLInputElement | HTMLTextAreaElement | null;
 	close: () => void;
 	x: number;
 	y: number;
@@ -230,33 +229,26 @@ function complete(type: string, value: any) {
 }
 
 function setPosition() {
-		if (!(rootEl.value || rootEl)) {
-        console.error("rootEl is null or undefined.");
-        return;
-    }
-    const element = unref(rootEl.value || rootEl);
-    if (!element) {
-        console.error("rootEl is null or undefined.");
-        return;
-    }
-    if (typeof element.offsetWidth === 'undefined' || typeof element.offsetHeight === 'undefined') {
-        console.error("rootEl does not have offsetWidth or offsetHeight.");
-        return;
-    }
-    if (props.x + element.offsetWidth > window.innerWidth) {
-        element.style.left = `${window.innerWidth - element.offsetWidth}px`;
-    } else {
-        element.style.left = `${props.x}px`;
-    }
-    if (props.y + element.offsetHeight > window.innerHeight) {
-        element.style.top = `${props.y - element.offsetHeight}px`;
-        element.style.marginTop = "0";
-    } else {
-        element.style.top = `${props.y}px`;
-        element.style.marginTop = "calc(1em + 0.5rem)";
-    }
-}
+	const element = rootEl.value;
+	if (!element) {
+		console.error("[MkAutocomplete] rootEl is not mounted.");
+		return;
+	}
 
+	if (props.x + element.offsetWidth > window.innerWidth) {
+		element.style.left = `${window.innerWidth - element.offsetWidth}px`;
+	} else {
+		element.style.left = `${props.x}px`;
+	}
+
+	if (props.y + element.offsetHeight > window.innerHeight) {
+		element.style.top = `${props.y - element.offsetHeight}px`;
+		element.style.marginTop = "0";
+	} else {
+		element.style.top = `${props.y}px`;
+		element.style.marginTop = "calc(1em + 0.5rem)";
+	}
+}
 function exec() {
 	select.value = -1;
 	if (suggests.value) {
@@ -299,8 +291,8 @@ function exec() {
 			const cacheKey = `autocomplete:hashtag:${props.q}`;
 			const cache = sessionStorage.getItem(cacheKey);
 			if (cache) {
-				const hashtags = JSON.parse(cache);
-				hashtags.value = hashtags;
+				const parsedHashtags = JSON.parse(cache);
+				hashtags.value = parsedHashtags;
 				fetching.value = false;
 			} else {
 				os.api("hashtags/search", {
@@ -453,7 +445,7 @@ function onKeydown(event: KeyboardEvent) {
 
 		default:
 			event.stopPropagation();
-			props.textarea.focus();
+			props.textarea?.focus();
 	}
 }
 
@@ -495,7 +487,16 @@ onUpdated(() => {
 onMounted(() => {
 	setPosition();
 
-	props.textarea.addEventListener("keydown", onKeydown);
+	const textarea = props.textarea;
+	if (!textarea) {
+		console.error("[MkAutocomplete] textarea is undefined on mounted.", {
+			type: props.type,
+			q: props.q,
+		});
+		return;
+	}
+
+	textarea.addEventListener("keydown", onKeydown);
 
 	for (const el of Array.from(document.querySelectorAll("body *"))) {
 		el.addEventListener("mousedown", onMousedown);
@@ -516,7 +517,10 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-	props.textarea.removeEventListener("keydown", onKeydown);
+	const textarea = props.textarea;
+	if (textarea) {
+		textarea.removeEventListener("keydown", onKeydown);
+	}
 
 	for (const el of Array.from(document.querySelectorAll("body *"))) {
 		el.removeEventListener("mousedown", onMousedown);

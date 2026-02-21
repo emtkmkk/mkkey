@@ -48,6 +48,8 @@ import * as os from "@/os";
 import { mainRouter } from "@/router";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
+import { get, del } from "@/scripts/idb-proxy";
+import { uploadFile } from "@/scripts/upload";
 
 const urlParams = new URLSearchParams(window.location.search);
 const localOnlyQuery = urlParams.get("localOnly");
@@ -256,6 +258,37 @@ async function init() {
 					)
 				)
 			);
+		}
+
+		//#endregion
+
+		//#region Shared files
+		const sharedFilesKey = urlParams.get("sharedFilesKey");
+		if (sharedFilesKey) {
+			try {
+				const sharedPayload = (await get(sharedFilesKey)) as
+					| { files?: File[] }
+					| undefined;
+				const sharedFiles = sharedPayload?.files ?? [];
+				for (const sharedFile of sharedFiles) {
+					try {
+						const uploadedFile = await uploadFile(
+							sharedFile,
+							undefined,
+							sharedFile.name,
+							true,
+							true,
+							false,
+							{ force: true }
+						);
+						files.push(uploadedFile);
+					} catch (error) {
+						console.error("Failed to upload a shared file", error);
+					}
+				}
+			} finally {
+				await del(sharedFilesKey);
+			}
 		}
 		//#endregion
 	} catch (err) {

@@ -244,6 +244,19 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
+                        <FormSwitch
+                                v-model="showNowPlayingButton"
+                                class="_formBlock"
+                                :disabled="!isNowPlayingSupported"
+                        >
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-music-notes ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenNowPlayingButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
             </FormSection>
 	</div>
 </template>
@@ -262,6 +275,8 @@ import { deviceKind } from "@/scripts/device-kind";
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;
+const isNowPlayingSupported =
+	typeof navigator !== "undefined" && "mediaSession" in navigator;
 
 // デスクトップでウィンドウを狭くしたときモバイルUIが表示されて欲しいことはあるので deviceKind === 'desktop' の判定は行わない
 const isDesktop = ref(window.innerWidth >= DESKTOP_THRESHOLD);
@@ -336,6 +351,9 @@ const hiddenMFMButton = computed(
 const hiddenPreviewButton = computed(
 	defaultStore.makeGetterSetter("hiddenPreviewButton")
 );
+const hiddenNowPlayingButton = computed(
+	defaultStore.makeGetterSetter("hiddenNowPlayingButton")
+);
 const closeButtonLabel = computed(() =>
         CloseAllClearButton.value
                 ? i18n.ts.postFormClearButtonLabel
@@ -362,6 +380,7 @@ const showHashtagButton = invertBool(hiddenHashtagButton);
 const showEmojiButton = invertBool(hiddenEmojiButton);
 const showMFMButton = invertBool(hiddenMFMButton);
 const showPreviewButton = invertBool(hiddenPreviewButton);
+const showNowPlayingButton = invertBool(hiddenNowPlayingButton);
 const openMentionWindow = computed(
 	defaultStore.makeGetterSetter("openMentionWindow")
 );

@@ -368,6 +368,15 @@
 					<i class="ph-plug ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="canShowNowPlayingButton"
+					v-tooltip="i18n.ts.insertNowPlayingInfo"
+					class="_button"
+					:disabled="isNowPlayingButtonDisabled"
+					@click="insertNowPlayingInfo"
+				>
+					<i class="ph-music-notes ph-bold ph-lg"></i>
+				</button>
+				<button
 					v-if="!$store.state.hiddenPreviewButton"
 					v-tooltip="i18n.ts.previewNoteText"
 					class="_button right"
@@ -488,6 +497,44 @@ const textareaEl = $ref<HTMLTextAreaElement | null>(null);
 const cwInputEl = $ref<HTMLTextAreaElement | null>(null);
 const hashtagsInputEl = $ref<HTMLInputElement | null>(null);
 const visibilityButton = $ref<HTMLElement | null>(null);
+
+const isNowPlayingSupported =
+	typeof navigator !== "undefined" && "mediaSession" in navigator;
+
+const nowPlayingMediaInfo = $computed(() => {
+	if (!isNowPlayingSupported) return null;
+
+	const metadata = navigator.mediaSession.metadata;
+	if (!metadata) return null;
+
+	const mediaInfo = [metadata.title, metadata.artist, metadata.album]
+		.filter((value): value is string =>
+			typeof value === "string" && value.trim().length > 0
+		)
+		.join(" / ");
+
+	return mediaInfo.length > 0 ? mediaInfo : null;
+});
+
+let hasShownNowPlayingButton = $ref(false);
+
+watch(
+	() => nowPlayingMediaInfo,
+	(value) => {
+		if (value != null) {
+			hasShownNowPlayingButton = true;
+		}
+	},
+	{ immediate: true }
+);
+
+const canShowNowPlayingButton = $computed(
+	isNowPlayingSupported &&
+		!defaultStore.state.hiddenNowPlayingButton &&
+		(nowPlayingMediaInfo != null || hasShownNowPlayingButton)
+);
+
+const isNowPlayingButtonDisabled = $computed(nowPlayingMediaInfo == null);
 
 let posting = $ref(false);
 let text = $ref(props.initialText ?? "");
@@ -2517,6 +2564,17 @@ function insertMfm() {
 	} else {
 		insertTextAtCursor(textareaEl, "$");
 	}
+}
+
+function insertNowPlayingInfo() {
+	if (!isNowPlayingSupported) return;
+
+	if (!nowPlayingMediaInfo) {
+		os.toast(i18n.ts.noNowPlayingMediaInfo);
+		return;
+	}
+
+	insertTextAtCursor(textareaEl, `🎵 ${nowPlayingMediaInfo} #NowPlaying`);
 }
 
 async function openCheatSheet(ev: MouseEvent) {

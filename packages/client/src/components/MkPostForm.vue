@@ -362,7 +362,7 @@
 				</button>
 				<button
 					v-if="showSwarmButton"
-					v-tooltip=""Swarm""
+					v-tooltip="'Swarm'"
 					class="_button"
 					@click="openSwarmCheckins"
 				>

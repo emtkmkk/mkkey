@@ -253,6 +253,7 @@ function onContextmenu(ev: MouseEvent): void {
 				menuButton,
 				isDeleted,
 				info,
+				pinned: props.pinned,
 			}),
 			ev
 		).then(focus);
@@ -268,6 +269,7 @@ function menu(viaKeyboard = false): void {
 			menuButton,
 			isDeleted,
 			info,
+			pinned: props.pinned,
 		}),
 		menuButton.value,
 		{

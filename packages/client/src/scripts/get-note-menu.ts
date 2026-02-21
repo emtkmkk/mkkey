@@ -19,6 +19,7 @@ export function getNoteMenu(props: {
 	isDeleted: Ref<boolean>;
 	currentClipPage?: Ref<misskey.entities.Clip>;
 	info?: Ref<any>;
+	pinned?: boolean;
 }) {
 	const isRenote =
 		props.note.renote != null &&
@@ -32,6 +33,8 @@ export function getNoteMenu(props: {
 			: props.note;
 	const hasTranslatableText =
 		typeof appearNote.text === "string" && appearNote.text.trim().length > 0;
+	const isPinnedNote =
+		($i.pinnedNoteIds || []).includes(appearNote.id) || props.pinned === true;
 
 	function del(): void {
 		os.confirm({
@@ -613,7 +616,7 @@ export function getNoteMenu(props: {
 							},
 				) : undefined,
 				...(appearNote.userId === $i.id
-					? ($i.pinnedNoteIds || []).includes(appearNote.id)
+					? isPinnedNote
 						? [
 								{
 									icon: "ph-caret-double-up ph-bold ph-lg",
@@ -883,7 +886,7 @@ export function getNoteMenu(props: {
 							},
 				),
 				...(appearNote.userId === $i.id
-					? ($i.pinnedNoteIds || []).includes(appearNote.id)
+					? isPinnedNote
 						? [
 								{
 									icon: "ph-caret-double-up ph-bold ph-lg",

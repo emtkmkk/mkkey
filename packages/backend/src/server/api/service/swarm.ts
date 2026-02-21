@@ -4,6 +4,7 @@ import { OAuth2 } from "oauth";
 import { v4 as uuid } from "uuid";
 import { IsNull } from "typeorm";
 import config from "@/config/index.js";
+import { fetchMeta } from "@/misc/fetch-meta.js";
 import { publishMainStream } from "@/services/stream.js";
 import { Users, UserProfiles } from "@/models/index.js";
 import { redisClient } from "../../../db/redis.js";
@@ -87,13 +88,19 @@ function detectOAuthFlowFromState(state: unknown): "signin" | "connect" | "unkno
 
 const router = new Router();
 
-function getOAuth2() {
-	const clientId = process.env.SWARM_CLIENT_ID;
-	const clientSecret = process.env.SWARM_CLIENT_SECRET;
-	if (!clientId || !clientSecret) return null;
+async function getOAuth2() {
+	const meta = await fetchMeta(true);
+	if (
+		!meta.enableSwarmIntegration ||
+		!meta.swarmClientId ||
+		!meta.swarmClientSecret
+	) {
+		return null;
+	}
+
 	return new OAuth2(
-		clientId,
-		clientSecret,
+		meta.swarmClientId,
+		meta.swarmClientSecret,
 		"https://foursquare.com/",
 		"oauth2/authenticate",
 		"oauth2/access_token",
@@ -128,7 +135,7 @@ router.get("/connect/swarm", async (ctx) => {
 		return;
 	}
 
-	const oauth2 = getOAuth2();
+	const oauth2 = await getOAuth2();
 	if (!oauth2) {
 		ctx.throw(503, "swarm oauth is not configured");
 		return;
@@ -171,7 +178,7 @@ router.get("/swarm/cb", async (ctx) => {
 		return;
 	}
 
-	const oauth2 = getOAuth2();
+	const oauth2 = await getOAuth2();
 	if (!oauth2) {
 		ctx.throw(503, "swarm oauth is not configured");
 		return;

@@ -42,6 +42,16 @@
 					}}</template>
 					<XDiscord />
 				</FormFolder>
+				<FormFolder class="_formBlock">
+					<template #icon
+						><i class="ph-map-pin-line ph-bold ph-lg"></i
+					></template>
+					<template #label>Swarm</template>
+					<template #suffix>{{
+						enableSwarmIntegration ? i18n.ts.enabled : i18n.ts.disabled
+					}}</template>
+					<XSwarm />
+				</FormFolder>
 			</FormSuspense>
 		</MkSpacer>
 	</MkStickyContainer>
@@ -52,6 +62,7 @@ import {} from "vue";
 import XGithub from "./integrations.github.vue";
 import XDiscord from "./integrations.discord.vue";
 import XGoogle from "./integrations.google.vue";
+import XSwarm from "./integrations.swarm.vue";
 import FormSuspense from "@/components/form/suspense.vue";
 import FormFolder from "@/components/form/folder.vue";
 import * as os from "@/os";
@@ -62,6 +73,7 @@ let enableTwitterIntegration: boolean = $ref(false);
 let enableGithubIntegration: boolean = $ref(false);
 let enableDiscordIntegration: boolean = $ref(false);
 let enableGoogleIntegration: boolean = $ref(false);
+let enableSwarmIntegration: boolean = $ref(false);
 
 async function init() {
 	const meta = await os.api("admin/meta");
@@ -69,6 +81,7 @@ async function init() {
 	enableGithubIntegration = meta.enableGithubIntegration;
 	enableDiscordIntegration = meta.enableDiscordIntegration;
 	enableGoogleIntegration = meta.enableGoogleIntegration;
+	enableSwarmIntegration = meta.enableSwarmIntegration;
 }
 
 const headerActions = $computed(() => []);

@@ -189,6 +189,11 @@ export const meta = {
 				optional: false,
 				nullable: false,
 			},
+			enableSwarmIntegration: {
+				type: "boolean",
+				optional: false,
+				nullable: false,
+			},
 			enableServiceWorker: {
 				type: "boolean",
 				optional: false,
@@ -370,6 +375,16 @@ export const meta = {
 				optional: true,
 				nullable: true,
 			},
+			swarmClientId: {
+				type: "string",
+				optional: true,
+				nullable: true,
+			},
+			swarmClientSecret: {
+				type: "string",
+				optional: true,
+				nullable: true,
+			},
 			summaryProxy: {
 				type: "string",
 				optional: true,
@@ -537,6 +552,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		enableGithubIntegration: instance.enableGithubIntegration,
 		enableDiscordIntegration: instance.enableDiscordIntegration,
 		enableGoogleIntegration: instance.enableGoogleIntegration,
+		enableSwarmIntegration: instance.enableSwarmIntegration,
 		enableServiceWorker: instance.enableServiceWorker,
 		translatorAvailable:
 			instance.deeplAuthKey != null || instance.libreTranslateApiUrl != null,
@@ -571,6 +587,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		discordClientSecret: instance.discordClientSecret,
 		googleClientId: instance.googleClientId,
 		googleClientSecret: instance.googleClientSecret,
+		swarmClientId: instance.swarmClientId,
+		swarmClientSecret: instance.swarmClientSecret,
 		summalyProxy: instance.summalyProxy,
 		email: instance.email,
 		smtpSecure: instance.smtpSecure,

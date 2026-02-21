@@ -34,7 +34,8 @@
 					v-if="!$store.state.hiddenTextCount"
 					class="text-count"
 					:class="{ over: textLength > maxTextLength }"
-					>{{
+					>
+					{{
 						maxTextLength - textLength > 999
 							? textLength
 							: i18n.t("remainingLength", {

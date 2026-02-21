@@ -34,7 +34,8 @@
 					v-if="!$store.state.hiddenTextCount"
 					class="text-count"
 					:class="{ over: textLength > maxTextLength }"
-					>{{
+					>
+					{{
 						maxTextLength - textLength > 999
 							? textLength
 							: i18n.t("remainingLength", {
@@ -361,7 +362,7 @@
 				</button>
 				<button
 					v-if="showSwarmButton"
-					v-tooltip=""Swarm""
+					v-tooltip="'Swarm'"
 					class="_button"
 					@click="openSwarmCheckins"
 				>

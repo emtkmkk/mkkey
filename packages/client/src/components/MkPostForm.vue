@@ -41,8 +41,8 @@
 							: i18n.t("remainingLength", {
 									n: maxTextLength - textLength,
 							  })
-					}}</span
-				>
+					}}
+				</span>
 				<span v-if="localOnly && isChannel" class="local-only"
 					><i class="ph-hand-fist ph-bold ph-lg"></i
 				></span>

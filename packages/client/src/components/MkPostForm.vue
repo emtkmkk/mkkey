@@ -415,14 +415,14 @@
 
 <script lang="ts" setup>
 import {
-        unref,
-        inject,
-        watch,
-        nextTick,
-        onMounted,
-        onUnmounted,
-        defineAsyncComponent,
-        computed,
+	unref,
+	inject,
+	watch,
+	nextTick,
+	onMounted,
+	onUnmounted,
+	defineAsyncComponent,
+	computed,
 } from "vue";
 import * as mfm from "mfm-js";
 import * as misskey from "calckey-js";
@@ -465,7 +465,6 @@ import {
 	evaluateUploadWaitState,
 	sleepMs,
 } from "@/components/MkPostForm/uploadWaitState";
-import { id } from "date-fns/locale";
 
 const modal = inject("modal");
 
@@ -512,8 +511,10 @@ const isNowPlayingSupported =
 
 const nowPlayingMediaInfo = $computed(() => {
 	if (!isNowPlayingSupported) return null;
+	const mediaSession = navigator.mediaSession;
+	if (!mediaSession) return null;
 
-	const metadata = navigator.mediaSession.metadata;
+	const metadata = mediaSession.metadata;
 	if (!metadata) return null;
 
 	const mediaInfo = [metadata.title, metadata.artist, metadata.album]

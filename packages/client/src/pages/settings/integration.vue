@@ -1,5 +1,6 @@
 <template>
 	<div class="_formRoot">
+
 		<FormSection v-if="instance.enableGoogleIntegration">
 			<template #label
 				><i class="ph-google-logo ph-bold ph-lg"></i> Google</template
@@ -66,6 +67,25 @@
 				i18n.ts.connectService
 			}}</MkButton>
 		</FormSection>
+
+		<FormSection>
+			<template #label><i class="ph-map-pin-line ph-bold ph-lg"></i> Swarm</template>
+			<p v-if="integrations.swarm?.accessToken">{{ i18n.ts.connectedTo }}: Swarm</p>
+			<p v-else>{{ i18n.ts.notConnected }}</p>
+			<MkButton v-if="integrations.swarm?.accessToken" danger @click="disconnectSwarm">
+				{{ i18n.ts.disconnectService }}
+			</MkButton>
+			<MkButton v-else primary @click="connectSwarm">{{ i18n.ts.connectService }}</MkButton>
+			<FormSwitch
+				:modelValue="showSwarmPostFormButton"
+				:disabled="!integrations.swarm?.accessToken"
+				class="_formBlock"
+				@update:modelValue="updateSwarmPostFormButton"
+			>
+				{{ i18n.ts.showSwarmButtonInPostForm }}
+			</FormSwitch>
+		</FormSection>
+
 	</div>
 </template>
 
@@ -73,18 +93,25 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { apiUrl } from "@/config";
 import FormSection from "@/components/form/section.vue";
+import FormSwitch from "@/components/form/switch.vue";
 import MkButton from "@/components/MkButton.vue";
 import { $i } from "@/account";
 import { instance } from "@/instance";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import * as os from "@/os";
 
 const twitterForm = ref<Window | null>(null);
 const discordForm = ref<Window | null>(null);
 const githubForm = ref<Window | null>(null);
 const googleForm = ref<Window | null>(null);
+const swarmForm = ref<Window | null>(null);
 
-const integrations = computed(() => $i!.integrations);
+const integrations = computed(() => $i!.integrations as Record<string, any>);
+const showSwarmPostFormButton = computed(
+	() => integrations.value.swarm?.showPostFormButton ?? false,
+);
+
 const discordHandle = computed(() => {
 	const discord = integrations.value.discord;
 	if (!discord) return "";
@@ -145,6 +172,20 @@ function disconnectGoogle() {
 	googleForm.value = openWindow("google", "disconnect");
 }
 
+function connectSwarm() {
+	swarmForm.value = openWindow("swarm", "connect");
+}
+
+function disconnectSwarm() {
+	swarmForm.value = openWindow("swarm", "disconnect");
+}
+
+async function updateSwarmPostFormButton(value: boolean) {
+	await os.api("i/swarm/update-settings", {
+		showPostFormButton: value,
+	});
+}
+
 function closeIntegrationWindow(win: Window | null) {
 	if (win) win.close();
 }
@@ -158,17 +199,20 @@ onMounted(() => {
 			integrations.value.discord,
 			integrations.value.github,
 			integrations.value.google,
+			integrations.value.swarm,
 		],
 		([
 			twitterIntegration,
 			discordIntegration,
 			githubIntegration,
 			googleIntegration,
+			swarmIntegration,
 		], [
 			previousTwitterIntegration,
 			previousDiscordIntegration,
 			previousGithubIntegration,
 			previousGoogleIntegration,
+			previousSwarmIntegration,
 		]) => {
 			if (twitterIntegration !== previousTwitterIntegration) {
 				closeIntegrationWindow(twitterForm.value);
@@ -181,6 +225,9 @@ onMounted(() => {
 			}
 			if (googleIntegration !== previousGoogleIntegration) {
 				closeIntegrationWindow(googleForm.value);
+			}
+			if (swarmIntegration !== previousSwarmIntegration) {
+				closeIntegrationWindow(swarmForm.value);
 			}
 		},
 	);

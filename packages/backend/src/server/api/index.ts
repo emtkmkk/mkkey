@@ -26,6 +26,7 @@ import discord from "./service/discord.js";
 import github from "./service/github.js";
 import google from "./service/google.js";
 import twitter from "./service/twitter.js";
+import swarm from "./service/swarm.js";
 import { koaBody } from "koa-body";
 import {
 	convertId,
@@ -217,6 +218,7 @@ router.use(discord.routes());
 router.use(github.routes());
 router.use(google.routes());
 router.use(twitter.routes());
+router.use(swarm.routes());
 
 router.get("/v1/instance/peers", async (ctx) => {
 	const instances = await Instances.find({

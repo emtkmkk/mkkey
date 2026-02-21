@@ -917,6 +917,7 @@ function onContextmenu(ev: MouseEvent): void {
 				isDeleted,
 				currentClipPage,
 				info,
+				pinned: props.pinned,
 			}),
 			ev
 		).then(focus);
@@ -933,6 +934,7 @@ function menu(viaKeyboard = false): void {
 			isDeleted,
 			currentClipPage,
 			info,
+			pinned: props.pinned,
 		}),
 		menuButton.value,
 		{

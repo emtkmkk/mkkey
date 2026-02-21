@@ -963,13 +963,38 @@ export function post(props: Record<string, any> = {}) {
 				resolve();
 				dispose();
 			},
-		}).then((res) => {
-			dispose = res.dispose;
-		});
+		})
+			.then((res) => {
+				dispose = res.dispose;
+			})
+			.catch(async (error) => {
+				const postFormError = error instanceof Error ? error : new Error(String(error));
+				await appendErrorLog(
+					`PostFormDisplayError: ${JSON.stringify({
+						message: postFormError.message,
+						stack: postFormError.stack,
+						props,
+					})}`,
+				);
+				reject(error);
+			});
 	});
 }
 
 export const deckGlobalEvents = new EventEmitter();
+
+async function appendErrorLog(message: string) {
+	const currentDate = new Date();
+	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
+	let currentLogs = (await get("errorLog")) || [];
+	currentLogs.push(`${formattedDate} - ${message}`);
+
+	if (currentLogs.length > 50) {
+		currentLogs = currentLogs.slice(-50);
+	}
+
+	await set("errorLog", currentLogs);
+}
 
 async function errortoast(res, body, endpoint, parameter) {
 	const message = 
@@ -983,11 +1008,8 @@ async function errortoast(res, body, endpoint, parameter) {
 		toast(`${[res.status, message].join(" ")}`);
 	}
 
-	const currentDate = new Date();
-	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
-
 	// エラーログのテキストを生成
-	const logtext = `${formattedDate} - ApiError: ${
+	const logtext = `ApiError: ${
 		res.status
 	} - ${JSON.stringify({
 		...body,
@@ -995,14 +1017,7 @@ async function errortoast(res, body, endpoint, parameter) {
 		parameter: Object.keys(parameter).length ? parameter : undefined,
 	})}`;
 
-	let currentLogs = (await get("errorLog")) || [];
-	currentLogs.push(logtext);
-
-	if (currentLogs.length > 50) {
-		currentLogs = currentLogs.slice(-50);
-	}
-
-	await set("errorLog", currentLogs);
+	await appendErrorLog(logtext);
 }
 
 /*

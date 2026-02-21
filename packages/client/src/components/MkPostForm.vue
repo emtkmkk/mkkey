@@ -511,19 +511,23 @@ const isNowPlayingSupported =
 
 const nowPlayingMediaInfo = $computed(() => {
 	if (!isNowPlayingSupported) return null;
-	const mediaSession = navigator.mediaSession;
-	if (!mediaSession) return null;
+	try {
+		const mediaSession = navigator.mediaSession;
+		if (!mediaSession) return null;
 
-	const metadata = mediaSession.metadata;
-	if (!metadata) return null;
+		const metadata = mediaSession.metadata;
+		if (!metadata) return null;
 
-	const mediaInfo = [metadata.title, metadata.artist, metadata.album]
-		.filter((value): value is string =>
-			typeof value === "string" && value.trim().length > 0
-		)
-		.join(" / ");
+		const mediaInfo = [metadata.title, metadata.artist, metadata.album]
+			.filter((value): value is string =>
+				typeof value === "string" && value.trim().length > 0
+			)
+			.join(" / ");
 
-	return mediaInfo.length > 0 ? mediaInfo : null;
+		return mediaInfo.length > 0 ? mediaInfo : null;
+	} catch {
+		return null;
+	}
 });
 
 let hasShownNowPlayingButton = $ref(false);
@@ -2505,21 +2509,42 @@ async function uploadSwarmPhoto(photoUrl: string | null): Promise<void> {
 	if (!photoUrl) return;
 	const marker = Math.random().toString();
 	const connection = stream.useChannel("main");
-	const uploadPromise = new Promise<void>((resolve) => {
+	const uploadPromise = new Promise<void>((resolve, reject) => {
+		let settled = false;
+		const timeoutId = setTimeout(() => {
+			if (settled) return;
+			settled = true;
+			connection.dispose();
+			reject(new Error("Swarmの写真アップロードがタイムアウトしました。"));
+		}, 30_000);
+
 		connection.on("urlUploadFinished", (urlResponse) => {
-			if (urlResponse.marker === marker) {
-				files.push(urlResponse.file);
+			if (urlResponse.marker !== marker || settled) return;
+
+			clearTimeout(timeoutId);
+			settled = true;
+
+			if (!urlResponse.file) {
 				connection.dispose();
-				resolve();
+				reject(new Error("アップロード結果が不正です。"));
+				return;
 			}
+
+			files.push(urlResponse.file);
+			connection.dispose();
+			resolve();
 		});
 	});
-	await os.api("drive/files/upload-from-url", { url: photoUrl, marker });
-	await uploadPromise;
+	try {
+		await os.api("drive/files/upload-from-url", { url: photoUrl, marker });
+		await uploadPromise;
+	} catch {
+		os.toast(i18n.ts.somethingHappened);
+	}
 }
 
 async function openSwarmCheckins(offset = 0): Promise<void> {
-	const result = (await os.api("i/swarm/recent-checkins", { limit: 10, offset })) as {
+	let result: {
 		items: Array<{
 			id: string;
 			comment: string;
@@ -2530,6 +2555,31 @@ async function openSwarmCheckins(offset = 0): Promise<void> {
 		}>;
 		hasMore: boolean;
 	};
+
+	try {
+		result = (await os.api("i/swarm/recent-checkins", {
+			limit: 10,
+			offset,
+		})) as {
+			items: Array<{
+				id: string;
+				comment: string;
+				venueName: string;
+				location: string;
+				url: string;
+				photoUrl: string | null;
+			}>;
+			hasMore: boolean;
+		};
+	} catch {
+		os.toast(i18n.ts.somethingHappened);
+		return;
+	}
+
+	if (!Array.isArray(result.items)) {
+		os.toast(i18n.ts.somethingHappened);
+		return;
+	}
 
 	const menuItems = result.items.map((item) => ({
 		text: `${item.venueName}${item.location ? ` (${item.location})` : ""}`,
@@ -2654,13 +2704,13 @@ function insertMfm() {
 
 function insertNowPlayingInfo() {
 	if (!isNowPlayingSupported) return;
-
-	if (!nowPlayingMediaInfo) {
+	const mediaInfo = nowPlayingMediaInfo;
+	if (!mediaInfo) {
 		os.toast(i18n.ts.noNowPlayingMediaInfo);
 		return;
 	}
 
-	insertTextAtCursor(textareaEl, `🎵 ${nowPlayingMediaInfo} #NowPlaying`);
+	insertTextAtCursor(textareaEl, `🎵 ${mediaInfo} #NowPlaying`);
 }
 
 async function openCheatSheet(ev: MouseEvent) {

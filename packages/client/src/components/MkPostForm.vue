@@ -360,6 +360,14 @@
 					<i class="ph-magic-wand ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="showSwarmButton"
+					v-tooltip=""Swarm""
+					class="_button"
+					@click="openSwarmCheckins"
+				>
+					<i class="ph-map-pin-line ph-bold ph-lg"></i>
+				</button>
+				<button
 					v-if="postFormActions.length > 0"
 					v-tooltip="i18n.ts.plugin"
 					class="_button"
@@ -2422,6 +2430,82 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 	if (fileError) {
 		throw new Error("アップロードに失敗しました。");
 	}
+}
+
+
+const showSwarmButton = $computed((): boolean => {
+	const integrations = ($i as any)?.integrations;
+	return Boolean(integrations?.swarm?.accessToken && integrations?.swarm?.showPostFormButton);
+});
+
+function buildSwarmText(checkin: {
+	comment: string;
+	venueName: string;
+	location: string;
+	url: string;
+}): string {
+	const place = [checkin.venueName, checkin.location].filter(Boolean).join(" in ");
+	const urlText = checkin.url ? `\n\n${checkin.url}` : "";
+	if (checkin.comment) {
+		return `${checkin.comment}（@ ${place}）${urlText}`;
+	}
+	return `I'm at ${place}${urlText}`;
+}
+
+async function uploadSwarmPhoto(photoUrl: string | null): Promise<void> {
+	if (!photoUrl) return;
+	const marker = Math.random().toString();
+	const connection = stream.useChannel("main");
+	const uploadPromise = new Promise<void>((resolve) => {
+		connection.on("urlUploadFinished", (urlResponse) => {
+			if (urlResponse.marker === marker) {
+				files.push(urlResponse.file);
+				connection.dispose();
+				resolve();
+			}
+		});
+	});
+	await os.api("drive/files/upload-from-url", { url: photoUrl, marker });
+	await uploadPromise;
+}
+
+async function openSwarmCheckins(offset = 0): Promise<void> {
+	const result = (await os.api("i/swarm/recent-checkins", { limit: 10, offset })) as {
+		items: Array<{
+			id: string;
+			comment: string;
+			venueName: string;
+			location: string;
+			url: string;
+			photoUrl: string | null;
+		}>;
+		hasMore: boolean;
+	};
+
+	const menuItems = result.items.map((item) => ({
+		text: `${item.venueName}${item.location ? ` (${item.location})` : ""}`,
+		action: async () => {
+			const insertText = buildSwarmText(item);
+			text = text.trim().length === 0 ? insertText : `${text}\n\n${insertText}`;
+			await uploadSwarmPhoto(item.photoUrl);
+		},
+	}));
+
+	if (result.hasMore) {
+		menuItems.push({
+			text: i18n.ts.loadMore,
+			action: () => {
+				void openSwarmCheckins(offset + 10);
+			},
+		});
+	}
+
+	if (menuItems.length === 0) {
+		os.alert({ type: "info", text: i18n.ts.nothing });
+		return;
+	}
+
+	os.popupMenu(menuItems, (textareaEl ?? document.body) as HTMLElement);
 }
 
 function cancel() {

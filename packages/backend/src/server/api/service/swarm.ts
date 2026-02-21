@@ -149,6 +149,7 @@ router.get("/connect/swarm", async (ctx) => {
 
 	const params = {
 		redirect_uri: `${config.url}/api/swarm/cb`,
+		response_type: "code",
 		state: `connect:${uuid()}`,
 	};
 

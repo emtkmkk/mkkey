@@ -84,6 +84,14 @@
 			>
 				{{ i18n.ts.showSwarmButtonInPostForm }}
 			</FormSwitch>
+			<FormSwitch
+				:modelValue="swarmInsertShareUrl"
+				:disabled="!integrations.swarm?.accessToken"
+				class="_formBlock"
+				@update:modelValue="updateSwarmInsertShareUrl"
+			>
+				{{ i18n.ts.insertSwarmShareUrl }}
+			</FormSwitch>
 		</FormSection>
 
 	</div>
@@ -110,6 +118,9 @@ const swarmForm = ref<Window | null>(null);
 const integrations = computed(() => $i!.integrations as Record<string, any>);
 const showSwarmPostFormButton = computed(
 	() => integrations.value.swarm?.showPostFormButton ?? false,
+);
+const swarmInsertShareUrl = computed(
+	() => integrations.value.swarm?.insertShareUrl ?? true,
 );
 
 const discordHandle = computed(() => {
@@ -183,6 +194,14 @@ function disconnectSwarm() {
 async function updateSwarmPostFormButton(value: boolean) {
 	await os.api("i/swarm/update-settings", {
 		showPostFormButton: value,
+		insertShareUrl: swarmInsertShareUrl.value,
+	});
+}
+
+async function updateSwarmInsertShareUrl(value: boolean) {
+	await os.api("i/swarm/update-settings", {
+		showPostFormButton: showSwarmPostFormButton.value,
+		insertShareUrl: value,
 	});
 }
 

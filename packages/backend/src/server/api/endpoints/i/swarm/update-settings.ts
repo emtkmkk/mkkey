@@ -11,9 +11,10 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		showPostFormButton: { type: "boolean" },
+		showPostFormButton: { type: "boolean", nullable: true },
+		insertShareUrl: { type: "boolean", nullable: true },
 	},
-	required: ["showPostFormButton"],
+	required: [],
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
@@ -24,6 +25,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (!swarm.accessToken) {
 		return {
 			showPostFormButton: false,
+			insertShareUrl: true,
 		};
 	}
 
@@ -32,7 +34,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			...integrations,
 			swarm: {
 				...swarm,
-				showPostFormButton: ps.showPostFormButton,
+				showPostFormButton: ps.showPostFormButton ?? swarm.showPostFormButton ?? false,
+				insertShareUrl: ps.insertShareUrl ?? swarm.insertShareUrl ?? true,
 			},
 		},
 	});
@@ -40,6 +43,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	const packed = await Users.pack(me, me, { detail: true, includeSecrets: true });
 	publishMainStream(me.id, "meUpdated", packed);
 	return {
-		showPostFormButton: ps.showPostFormButton,
+		showPostFormButton: ps.showPostFormButton ?? swarm.showPostFormButton ?? false,
+		insertShareUrl: ps.insertShareUrl ?? swarm.insertShareUrl ?? true,
 	};
 });

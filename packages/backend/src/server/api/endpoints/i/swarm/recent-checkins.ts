@@ -71,7 +71,10 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	const response = await getJson(
-		`https://api.foursquare.com/v2/users/self/checkins?oauth_token=${encodeURIComponent(token)}&v=20240101&limit=${ps.limit}&offset=${ps.offset}`,
+		`https://api.foursquare.com/v2/users/self/checkins?v=20240101&limit=${ps.limit}&offset=${ps.offset}`,
+		"application/json, */*",
+		10000,
+		{ Authorization: `Bearer ${token}` },
 	) as SwarmCheckinResponse;
 
 	const items = response.response?.checkins?.items ?? [];

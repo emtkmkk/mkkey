@@ -102,7 +102,7 @@ async function getOAuth2() {
 		meta.swarmClientId,
 		meta.swarmClientSecret,
 		"https://foursquare.com/",
-		"oauth2/authorize",
+		"oauth2/authenticate",
 		"oauth2/access_token",
 	);
 }
@@ -148,6 +148,7 @@ router.get("/connect/swarm", async (ctx) => {
 	}
 
 	const params = {
+		response_type: "code",
 		redirect_uri: `${config.url}/api/swarm/cb`,
 		state: `connect:${uuid()}`,
 	};

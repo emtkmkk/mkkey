@@ -363,7 +363,7 @@
 					v-if="showSwarmButton"
 					v-tooltip="i18n.ts.swarm"
 					class="_button"
-					@click="openSwarmCheckins"
+					@click="() => void openSwarmCheckins()"
 				>
 					<i class="ph-map-pin-line ph-bold ph-lg"></i>
 				</button>
@@ -2543,6 +2543,7 @@ async function uploadSwarmPhoto(photoUrl: string | null): Promise<void> {
 }
 
 async function openSwarmCheckins(offset = 0): Promise<void> {
+	const safeOffset = Number.isInteger(offset) && offset >= 0 ? offset : 0;
 	let result: {
 		items: Array<{
 			id: string;
@@ -2558,7 +2559,7 @@ async function openSwarmCheckins(offset = 0): Promise<void> {
 	try {
 		result = (await os.api("i/swarm/recent-checkins", {
 			limit: 10,
-			offset,
+			offset: safeOffset,
 		})) as {
 			items: Array<{
 				id: string;
@@ -2593,7 +2594,7 @@ async function openSwarmCheckins(offset = 0): Promise<void> {
 		menuItems.push({
 			text: i18n.ts.loadMore,
 			action: () => {
-				void openSwarmCheckins(offset + 10);
+				void openSwarmCheckins(safeOffset + 10);
 			},
 		});
 	}

@@ -18,11 +18,18 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, me) => {
 	const profile = await UserProfiles.findOneByOrFail({ userId: me.id });
-	const swarm = profile.integrations.swarm ?? {};
+	const integrations = profile.integrations ?? {};
+	const swarm = integrations.swarm ?? {};
+
+	if (!swarm.accessToken) {
+		return {
+			showPostFormButton: false,
+		};
+	}
 
 	await UserProfiles.update(me.id, {
 		integrations: {
-			...profile.integrations,
+			...integrations,
 			swarm: {
 				...swarm,
 				showPostFormButton: ps.showPostFormButton,

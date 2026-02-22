@@ -10,21 +10,26 @@ type SwarmCheckinResponse = {
 				id: string;
 				createdAt?: number;
 				shout?: string;
+				url?: string;
 				canonicalUrl?: string;
 				checkinShortUrl?: string;
+				checkinUrl?: string;
+				photos?: {
+					items?: Array<{
+						prefix?: string;
+						suffix?: string;
+					}>;
+				};
 				venue?: {
 					name?: string;
+					localizedName?: string;
+					nameJa?: string;
+					name_ja?: string;
+					url?: string;
+					canonicalUrl?: string;
 					location?: {
 						city?: string;
 						state?: string;
-					};
-					photos?: {
-						groups?: Array<{
-							items?: Array<{
-								prefix?: string;
-								suffix?: string;
-							}>;
-						}>;
 					};
 				};
 			}>;
@@ -54,10 +59,28 @@ function compactLocation(city?: string, state?: string): string {
 type CheckinItem = NonNullable<NonNullable<NonNullable<SwarmCheckinResponse["response"]>["checkins"]>["items"]>[number];
 
 function getVenuePhotoUrl(checkin: CheckinItem): string | null {
-	const firstGroup = checkin.venue?.photos?.groups?.find((group) => (group.items?.length ?? 0) > 0);
-	const firstPhoto = firstGroup?.items?.[0];
-	if (!firstPhoto?.prefix || !firstPhoto?.suffix) return null;
-	return `${firstPhoto.prefix}original${firstPhoto.suffix}`;
+	const firstCheckinPhoto = checkin.photos?.items?.[0];
+	if (!firstCheckinPhoto?.prefix || !firstCheckinPhoto?.suffix) return null;
+	return `${firstCheckinPhoto.prefix}original${firstCheckinPhoto.suffix}`;
+}
+
+function getPreferredVenueName(checkin: CheckinItem): string {
+	const venue = checkin.venue;
+	if (!venue) return "";
+
+	return venue.name_ja ?? venue.nameJa ?? venue.localizedName ?? venue.name ?? "";
+}
+
+function getCheckinUrl(checkin: CheckinItem): string {
+	return (
+		checkin.checkinShortUrl ??
+		checkin.checkinUrl ??
+		checkin.url ??
+		checkin.canonicalUrl ??
+		checkin.venue?.url ??
+		checkin.venue?.canonicalUrl ??
+		""
+	);
 }
 
 export default define(meta, paramDef, async (ps, me) => {
@@ -71,7 +94,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	const response = await getJson(
-		`https://api.foursquare.com/v2/users/self/checkins?v=20240101&limit=${ps.limit}&offset=${ps.offset}`,
+		`https://api.foursquare.com/v2/users/self/checkins?v=20240101&locale=ja&limit=${ps.limit}&offset=${ps.offset}`,
 		"application/json, */*",
 		10000,
 		{ Authorization: `Bearer ${token}` },
@@ -85,9 +108,9 @@ export default define(meta, paramDef, async (ps, me) => {
 			id: item.id,
 			createdAt: item.createdAt ?? null,
 			comment: item.shout ?? "",
-			venueName: item.venue?.name ?? "",
+			venueName: getPreferredVenueName(item),
 			location: compactLocation(item.venue?.location?.city, item.venue?.location?.state),
-			url: item.checkinShortUrl ?? item.canonicalUrl ?? "",
+			url: getCheckinUrl(item),
 			photoUrl: getVenuePhotoUrl(item),
 		})),
 		hasMore: ps.offset + items.length < count,

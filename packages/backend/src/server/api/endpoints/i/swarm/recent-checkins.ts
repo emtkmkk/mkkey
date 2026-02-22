@@ -25,14 +25,24 @@ type SwarmCheckinResponse = {
 					localizedName?: string;
 					nameJa?: string;
 					name_ja?: string;
-					url?: string;
-					canonicalUrl?: string;
 					location?: {
 						city?: string;
 						state?: string;
+						formattedAddress?: string[];
 					};
 				};
 			}>;
+		};
+	};
+};
+
+type SwarmCheckinDetailResponse = {
+	response?: {
+		checkin?: {
+			checkinShortUrl?: string;
+			checkinUrl?: string;
+			url?: string;
+			canonicalUrl?: string;
 		};
 	};
 };
@@ -56,6 +66,25 @@ function compactLocation(city?: string, state?: string): string {
 	return [city, state].filter(Boolean).join(" ");
 }
 
+function isZipCode(value: string): boolean {
+	return /^\d{3}-\d{4}$/.test(value);
+}
+
+function getVenueAddress(formattedAddress?: string[], city?: string, state?: string): string {
+	if (!formattedAddress || formattedAddress.length === 0) {
+		return compactLocation(city, state);
+	}
+
+	const copiedAddress = [...formattedAddress];
+	let venueAddress = copiedAddress.pop() ?? "";
+
+	if (isZipCode(venueAddress)) {
+		venueAddress = copiedAddress.pop() ?? venueAddress;
+	}
+
+	return venueAddress;
+}
+
 type CheckinItem = NonNullable<NonNullable<NonNullable<SwarmCheckinResponse["response"]>["checkins"]>["items"]>[number];
 
 function getVenuePhotoUrl(checkin: CheckinItem): string | null {
@@ -71,16 +100,28 @@ function getPreferredVenueName(checkin: CheckinItem): string {
 	return venue.name_ja ?? venue.nameJa ?? venue.localizedName ?? venue.name ?? "";
 }
 
-function getCheckinUrl(checkin: CheckinItem): string {
-	return (
-		checkin.checkinShortUrl ??
-		checkin.checkinUrl ??
-		checkin.url ??
-		checkin.canonicalUrl ??
-		checkin.venue?.url ??
-		checkin.venue?.canonicalUrl ??
-		""
-	);
+function getCheckinUrlFromItem(checkin: CheckinItem): string {
+	return checkin.checkinShortUrl ?? checkin.checkinUrl ?? checkin.url ?? checkin.canonicalUrl ?? "";
+}
+
+function getCheckinUrlFromDetail(response: SwarmCheckinDetailResponse): string {
+	const detail = response.response?.checkin;
+	if (!detail) return "";
+	return detail.checkinShortUrl ?? detail.checkinUrl ?? detail.url ?? detail.canonicalUrl ?? "";
+}
+
+async function resolveCheckinShareUrl(token: string, checkin: CheckinItem): Promise<string> {
+	const fromTimeline = getCheckinUrlFromItem(checkin);
+	if (fromTimeline) return fromTimeline;
+
+	const detailResponse = await getJson(
+		`https://api.foursquare.com/v2/checkins/${encodeURIComponent(checkin.id)}?v=20240101&locale=ja`,
+		"application/json, */*",
+		10000,
+		{ Authorization: `Bearer ${token}` },
+	) as SwarmCheckinDetailResponse;
+
+	return getCheckinUrlFromDetail(detailResponse);
 }
 
 export default define(meta, paramDef, async (ps, me) => {
@@ -103,16 +144,24 @@ export default define(meta, paramDef, async (ps, me) => {
 	const items = response.response?.checkins?.items ?? [];
 	const count = response.response?.checkins?.count ?? items.length;
 
-	return {
-		items: items.map((item) => ({
+	const normalizedItems = await Promise.all(
+		items.map(async (item) => ({
 			id: item.id,
 			createdAt: item.createdAt ?? null,
 			comment: item.shout ?? "",
 			venueName: getPreferredVenueName(item),
-			location: compactLocation(item.venue?.location?.city, item.venue?.location?.state),
-			url: getCheckinUrl(item),
+			location: getVenueAddress(
+				item.venue?.location?.formattedAddress,
+				item.venue?.location?.city,
+				item.venue?.location?.state,
+			),
+			url: await resolveCheckinShareUrl(token, item),
 			photoUrl: getVenuePhotoUrl(item),
 		})),
+	);
+
+	return {
+		items: normalizedItems,
 		hasMore: ps.offset + items.length < count,
 	};
 });

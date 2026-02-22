@@ -2497,12 +2497,15 @@ function buildSwarmText(checkin: {
 	url: string;
 }): string {
 	const place = [checkin.venueName, checkin.location].filter(Boolean).join(" in ");
-	const urlText = checkin.url ? `\n\n${checkin.url}` : "";
+	const integrations = ($i as any)?.integrations;
+	const insertShareUrl = integrations?.swarm?.insertShareUrl ?? true;
+	const urlText = insertShareUrl && checkin.url ? `\n\n${checkin.url}` : "";
 	if (checkin.comment) {
 		return `${checkin.comment}（@ ${place}）${urlText}`;
 	}
 	return `I'm at ${place}${urlText}`;
 }
+
 
 async function uploadSwarmPhoto(photoUrl: string | null): Promise<void> {
 	if (!photoUrl) return;

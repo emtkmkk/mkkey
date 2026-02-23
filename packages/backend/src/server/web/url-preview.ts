@@ -41,6 +41,7 @@ async function translateDescriptionToJapaneseIfNeeded(
 }
 
 const logger = new Logger("url-preview");
+const AMAZON_SHORTENER_HOSTNAME_PATTERN = /^(?:www\.)?amzn\.asia$/i;
 
 export const urlPreviewHandler = async (ctx: Koa.Context) => {
   const url = ctx.query.url;
@@ -823,7 +824,7 @@ function isLikelyShortenerUrl(url: URL): boolean {
 
 function isKnownShortenerHostname(hostname: string): boolean {
   return [
-    /^amzn\.asia$/i,
+    AMAZON_SHORTENER_HOSTNAME_PATTERN,
     /^maps\.app\.goo\.gl$/i,
     /^t\.co$/i,
     /^bit\.ly$/i,
@@ -840,7 +841,7 @@ function isKnownShortenerHostname(hostname: string): boolean {
 }
 
 function isAmazonShortenerHostname(hostname: string): boolean {
-  return /^amzn\.asia$/i.test(hostname);
+  return AMAZON_SHORTENER_HOSTNAME_PATTERN.test(hostname);
 }
 
 type FetchResponse = ReturnType<typeof getResponse> extends Promise<infer T>

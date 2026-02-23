@@ -41,6 +41,7 @@ async function translateDescriptionToJapaneseIfNeeded(
 }
 
 const logger = new Logger("url-preview");
+const AMAZON_SHORTENER_HOSTNAME_PATTERN = /^(?:www\.)?amzn\.asia$/i;
 
 export const urlPreviewHandler = async (ctx: Koa.Context) => {
   const url = ctx.query.url;
@@ -63,16 +64,20 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       : `Getting preview of ${url}@${lang} ...`
   );
 
+  const redirectedUrl = await resolveShortUrlIfNeeded(url);
+  const effectiveUrl = redirectedUrl ?? url;
+
   // SteamのApp IDを取得
-  const steamAppId = isSteamUrl(url);
-  const steamPackageId = isSteamPackageUrl(url);
-	const steamBundleId = isSteamBundleUrl(url);
-  const VRCWorldId = isVRCUrl(url);
-  let amazonFetchUrl = url;
-  let amazonProduct = isAmazonProductUrl(url);
+  const steamAppId = isSteamUrl(effectiveUrl);
+  const steamPackageId = isSteamPackageUrl(effectiveUrl);
+	const steamBundleId = isSteamBundleUrl(effectiveUrl);
+  const VRCWorldId = isVRCUrl(effectiveUrl);
+  let amazonFetchUrl = effectiveUrl;
+  let amazonProduct = isAmazonProductUrl(effectiveUrl);
+  const summaryFetchUrl = effectiveUrl;
 
   if (!amazonProduct) {
-    const resolvedAmazonUrl = await resolveAmazonShortUrl(url);
+    const resolvedAmazonUrl = await resolveAmazonShortUrl(effectiveUrl);
     if (resolvedAmazonUrl) {
       amazonFetchUrl = resolvedAmazonUrl;
       amazonProduct = isAmazonProductUrl(amazonFetchUrl);
@@ -509,11 +514,11 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     const summary = meta.summalyProxy
       ? await getJson(
           `${meta.summalyProxy}?${query({
-            url: url,
+            url: summaryFetchUrl,
             lang: lang ?? "en-US",
           })}`
         )
-      : await summaly.default(url, {
+      : await summaly.default(summaryFetchUrl, {
           followRedirects: false,
           lang: lang ?? "en-US",
         });
@@ -728,8 +733,115 @@ async function resolveAmazonShortUrl(originalUrl: string): Promise<string | null
   return null;
 }
 
+async function resolveShortUrlIfNeeded(originalUrl: string): Promise<string | null> {
+  let parsed: URL;
+  try {
+    parsed = new URL(originalUrl);
+  } catch (error) {
+    logger.warn("Invalid URL:", error);
+    return null;
+  }
+
+  if (!isLikelyShortenerUrl(parsed)) {
+    return null;
+  }
+
+  try {
+    const headResponse = await getResponse({
+      url: originalUrl,
+      method: "HEAD",
+      headers: {
+        "User-Agent": config.userAgent,
+        Accept: "*/*",
+      },
+      timeout: 5000,
+    });
+
+    const finalUrl = extractFinalUrl(originalUrl, headResponse);
+    if (finalUrl && finalUrl !== originalUrl) {
+      return finalUrl;
+    }
+  } catch (error) {
+    logger.debug(`HEAD request failed for ${originalUrl}: ${error}`);
+  }
+
+  try {
+    const getResponseResult = await getResponse({
+      url: originalUrl,
+      method: "GET",
+      headers: {
+        "User-Agent": config.userAgent,
+        Accept: "text/html, */*",
+      },
+      timeout: 10000,
+    });
+
+    const finalUrl = extractFinalUrl(originalUrl, getResponseResult);
+    cancelResponseBody(getResponseResult);
+
+    if (finalUrl && finalUrl !== originalUrl) {
+      return finalUrl;
+    }
+  } catch (error) {
+    logger.warn(`Failed to resolve short URL ${originalUrl}: ${error}`);
+  }
+
+  return null;
+}
+
+function isLikelyShortenerUrl(url: URL): boolean {
+  if (isKnownShortenerHostname(url.hostname)) {
+    return true;
+  }
+
+  const path = url.pathname.replace(/\/+$/, "");
+  if (!path || path === "/") {
+    return false;
+  }
+
+  const segments = path.split("/").filter(Boolean);
+  if (segments.length > 2) {
+    return false;
+  }
+
+  const token = segments[segments.length - 1] ?? "";
+  if (token.length < 4 || token.length > 40) {
+    return false;
+  }
+
+  const loweredHost = url.hostname.toLowerCase();
+  if (
+    loweredHost.includes("amazon.") ||
+    loweredHost.includes("google.") ||
+    loweredHost.endsWith(".google.com") ||
+    loweredHost === "google.com"
+  ) {
+    return false;
+  }
+
+  return /^[a-z0-9_-]+$/i.test(token);
+}
+
+function isKnownShortenerHostname(hostname: string): boolean {
+  return [
+    AMAZON_SHORTENER_HOSTNAME_PATTERN,
+    /^maps\.app\.goo\.gl$/i,
+    /^t\.co$/i,
+    /^bit\.ly$/i,
+    /^tinyurl\.com$/i,
+    /^goo\.gl$/i,
+    /^is\.gd$/i,
+    /^ow\.ly$/i,
+    /^buff\.ly$/i,
+    /^ift\.tt$/i,
+    /^j\.mp$/i,
+    /^reut\.rs$/i,
+    /^trib\.al$/i,
+  ].some((pattern) => pattern.test(hostname));
+}
+
 function isAmazonShortenerHostname(hostname: string): boolean {
-  return /^amzn\.asia$/i.test(hostname);
+  return AMAZON_SHORTENER_HOSTNAME_PATTERN.test(hostname);
 }
 
 type FetchResponse = ReturnType<typeof getResponse> extends Promise<infer T>

@@ -2585,7 +2585,7 @@ async function openSwarmCheckins(offset = 0): Promise<void> {
 	}
 
 	const menuItems = result.items.map((item) => ({
-		text: `${item.venueName}${item.location ? ` (${item.location})` : ""}`,
+		text: item.venueName,
 		action: async () => {
 			const insertText = buildSwarmText(item);
 			text = text.trim().length === 0 ? insertText : `${text}\n\n${insertText}`;

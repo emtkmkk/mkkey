@@ -563,9 +563,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       }
     }
 
-    const googleMapsPlaceTitle = extractGoogleMapsPlaceTitle(effectiveUrl);
-    if (googleMapsPlaceTitle && isGenericGoogleMapsTitle(summary.title)) {
-      summary.title = googleMapsPlaceTitle;
+    if (isGoogleMapsUrl(effectiveUrl)) {
+      await enrichGoogleMapsSummaryWithoutApiKey(effectiveUrl, summary, lang);
     }
 
     summary.icon = wrap(summary.icon);
@@ -593,29 +592,387 @@ function isGenericGoogleMapsTitle(title: unknown): boolean {
   return normalizedTitle === "google maps" || normalizedTitle === "google マップ";
 }
 
+type GoogleMapsMapType = "place" | "search" | "dir" | "map";
+
+type GoogleMapsHtmlMeta = {
+  ogTitle: string | null;
+  ogDescription: string | null;
+  ogImage: string | null;
+  twitterTitle: string | null;
+  twitterDescription: string | null;
+  twitterImage: string | null;
+  metaDescription: string | null;
+  documentTitle: string | null;
+};
+
+type GoogleMapsJsonLdMeta = {
+  name: string | null;
+  address: string | null;
+  image: string | null;
+  category: string | null;
+};
+
+type GoogleMapsUrlMeta = {
+  placeCandidate: string | null;
+  addressCandidate: string | null;
+  latLng: string | null;
+  zoom: string | null;
+  mapType: GoogleMapsMapType;
+};
+
+async function enrichGoogleMapsSummaryWithoutApiKey(
+  effectiveUrl: string,
+  summary: {
+    title?: string | null;
+    description?: string | null;
+    thumbnail?: string | null;
+    icon?: string | null;
+  },
+  lang?: string | null,
+): Promise<void> {
+  const adoptedSources = new Set<string>();
+  try {
+    const sourceA = extractGoogleMapsUrlMetadata(effectiveUrl);
+    if (sourceA.placeCandidate || sourceA.addressCandidate || sourceA.latLng) {
+      adoptedSources.add("A");
+    }
+
+    let sourceB: GoogleMapsHtmlMeta | null = null;
+    let sourceC: GoogleMapsJsonLdMeta | null = null;
+
+    try {
+      const html = await getHtml(
+        effectiveUrl,
+        "text/html, */*",
+        5000,
+        lang ? { "accept-language": normalizeLang(lang) } : undefined,
+      );
+      sourceB = extractGoogleMapsHtmlMeta(html);
+      sourceC = extractGoogleMapsJsonLdMeta(html);
+      if (
+        sourceB.ogTitle ||
+        sourceB.ogDescription ||
+        sourceB.ogImage ||
+        sourceB.twitterTitle ||
+        sourceB.twitterDescription ||
+        sourceB.twitterImage ||
+        sourceB.metaDescription ||
+        sourceB.documentTitle
+      ) {
+        adoptedSources.add("B");
+      }
+      if (sourceC.name || sourceC.address || sourceC.image || sourceC.category) {
+        adoptedSources.add("C");
+      }
+    } catch (error) {
+      logger.warn(`Google Maps HTML fetch failed: ${error}`);
+    }
+
+    if (sourceA.addressCandidate || sourceA.latLng || sourceA.mapType || sourceA.zoom) {
+      adoptedSources.add("D");
+    }
+
+    const existingTitle = typeof summary.title === "string" ? summary.title : null;
+    const existingTitleIsSpecific = !!existingTitle && !isGenericGoogleMapsTitle(existingTitle);
+
+    const preferredTitle =
+      sourceC?.name ??
+      sourceB?.ogTitle ??
+      sourceB?.twitterTitle ??
+      sourceB?.documentTitle ??
+      sourceA.placeCandidate ??
+      existingTitle ??
+      null;
+
+    if (!existingTitleIsSpecific && preferredTitle) {
+      summary.title = preferredTitle;
+    }
+
+    const addressCandidate =
+      sourceC?.address ??
+      extractAddressLikeText(sourceB?.ogDescription) ??
+      extractAddressLikeText(sourceB?.twitterDescription) ??
+      extractAddressLikeText(sourceB?.metaDescription) ??
+      sourceA.addressCandidate ??
+      null;
+    const categoryCandidate = sourceC?.category ?? null;
+
+    const builtDescription = buildGoogleMapsDescription({
+      address: addressCandidate,
+      category: categoryCandidate,
+      latLng: sourceA.latLng,
+      mapType: sourceA.mapType,
+      zoom: sourceA.zoom,
+      fallback: typeof summary.description === "string" ? summary.description : null,
+    });
+
+    if (builtDescription) {
+      summary.description = builtDescription;
+    }
+
+    const thumbnailCandidate = pickFirstValidHttpUrl([
+      sourceC?.image,
+      sourceB?.ogImage,
+      sourceB?.twitterImage,
+      summary.thumbnail,
+      summary.icon,
+    ]);
+    if (thumbnailCandidate) {
+      summary.thumbnail = thumbnailCandidate;
+    }
+
+    if (adoptedSources.size > 0) {
+      logger.debug(`Google Maps enrichment sources: ${Array.from(adoptedSources).sort().join("/")}`);
+    }
+  } catch (error) {
+    logger.warn(`Google Maps enrichment failed: ${error}`);
+  }
+}
+
 function extractGoogleMapsPlaceTitle(url: string): string | null {
+  return extractGoogleMapsUrlMetadata(url).placeCandidate;
+}
+
+function extractGoogleMapsUrlMetadata(url: string): GoogleMapsUrlMeta {
+  const empty: GoogleMapsUrlMeta = {
+    placeCandidate: null,
+    addressCandidate: null,
+    latLng: null,
+    zoom: null,
+    mapType: "map",
+  };
+
   let parsedUrl: URL;
   try {
     parsedUrl = new URL(url);
   } catch {
-    return null;
+    return empty;
   }
 
   if (!isGoogleMapsHostname(parsedUrl.hostname)) {
-    return null;
+    return empty;
   }
 
+  const mapType = detectGoogleMapsMapType(parsedUrl.pathname);
   const placeFromPath = extractGoogleMapsPlaceFromPath(parsedUrl.pathname);
-  if (placeFromPath) {
-    return placeFromPath;
-  }
-
   const queryCandidates = ["q", "query", "destination", "daddr"];
+  let queryPlace: string | null = null;
   for (const key of queryCandidates) {
     const value = parsedUrl.searchParams.get(key);
     const sanitized = sanitizeGoogleMapsPlaceCandidate(value);
     if (sanitized) {
-      return sanitized;
+      queryPlace = sanitized;
+      break;
+    }
+  }
+
+  const addressCandidate =
+    queryPlace ??
+    sanitizeGoogleMapsPlaceCandidate(parsedUrl.searchParams.get("saddr")) ??
+    placeFromPath;
+
+  const zoom = sanitizeGoogleMapsZoomCandidate(
+    parsedUrl.searchParams.get("z") ?? parsedUrl.searchParams.get("zoom"),
+  );
+
+  const latLng =
+    extractGoogleMapsLatLngFromPath(parsedUrl.pathname) ??
+    sanitizeGoogleMapsLatLng(parsedUrl.searchParams.get("ll")) ??
+    sanitizeGoogleMapsLatLng(parsedUrl.searchParams.get("center"));
+
+  return {
+    placeCandidate: placeFromPath ?? queryPlace,
+    addressCandidate,
+    latLng,
+    zoom,
+    mapType,
+  };
+}
+
+function detectGoogleMapsMapType(pathname: string): GoogleMapsMapType {
+  const lowered = pathname.toLowerCase();
+  if (lowered.includes("/maps/place")) return "place";
+  if (lowered.includes("/maps/search")) return "search";
+  if (lowered.includes("/maps/dir")) return "dir";
+  return "map";
+}
+
+function sanitizeGoogleMapsLatLng(candidate: string | null | undefined): string | null {
+  if (!candidate) return null;
+  const matched = candidate.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+  if (!matched) return null;
+  return `${matched[1]},${matched[2]}`;
+}
+
+function sanitizeGoogleMapsZoomCandidate(candidate: string | null | undefined): string | null {
+  if (!candidate) return null;
+  const matched = candidate.match(/\d+(?:\.\d+)?/);
+  return matched?.[0] ?? null;
+}
+
+function extractGoogleMapsLatLngFromPath(pathname: string): string | null {
+  const matched = pathname.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),/);
+  if (!matched) return null;
+  return `${matched[1]},${matched[2]}`;
+}
+
+function extractGoogleMapsHtmlMeta(html: string): GoogleMapsHtmlMeta {
+  const $ = cheerio.load(html);
+  return {
+    ogTitle: sanitizeHtmlMetaValue($('meta[property="og:title"]').attr("content")),
+    ogDescription: sanitizeHtmlMetaValue($('meta[property="og:description"]').attr("content")),
+    ogImage: sanitizeHtmlMetaValue($('meta[property="og:image"]').attr("content")),
+    twitterTitle: sanitizeHtmlMetaValue($('meta[name="twitter:title"]').attr("content")),
+    twitterDescription: sanitizeHtmlMetaValue($('meta[name="twitter:description"]').attr("content")),
+    twitterImage: sanitizeHtmlMetaValue($('meta[name="twitter:image"]').attr("content")),
+    metaDescription: sanitizeHtmlMetaValue($('meta[name="description"]').attr("content")),
+    documentTitle: sanitizeHtmlMetaValue($("title").first().text()),
+  };
+}
+
+function extractGoogleMapsJsonLdMeta(html: string): GoogleMapsJsonLdMeta {
+  const $ = cheerio.load(html);
+  const scripts = $('script[type="application/ld+json"]')
+    .map((_index, element) => $(element).text())
+    .get();
+
+  const jsonLdObjects: Record<string, unknown>[] = [];
+  for (const scriptContent of scripts) {
+    try {
+      const parsed = JSON.parse(scriptContent) as unknown;
+      if (Array.isArray(parsed)) {
+        for (const entry of parsed) {
+          if (entry && typeof entry === "object") {
+            jsonLdObjects.push(entry as Record<string, unknown>);
+          }
+        }
+      } else if (parsed && typeof parsed === "object") {
+        jsonLdObjects.push(parsed as Record<string, unknown>);
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  const merged = jsonLdObjects.reduce<GoogleMapsJsonLdMeta>(
+    (acc, obj) => {
+      const name = sanitizeGoogleMapsPlaceCandidate(stringFromUnknown(obj.name));
+      if (!acc.name && name) acc.name = name;
+
+      const image = extractImageFromJsonLd(obj.image);
+      if (!acc.image && image) acc.image = image;
+
+      const category = sanitizeHtmlMetaValue(stringFromUnknown(obj.category));
+      if (!acc.category && category) acc.category = category;
+
+      const address = extractAddressFromJsonLd(obj.address);
+      if (!acc.address && address) acc.address = address;
+
+      return acc;
+    },
+    {
+      name: null,
+      address: null,
+      image: null,
+      category: null,
+    },
+  );
+
+  return merged;
+}
+
+function extractAddressFromJsonLd(value: unknown): string | null {
+  if (typeof value === "string") return sanitizeHtmlMetaValue(value);
+  if (!value || typeof value !== "object") return null;
+  const obj = value as Record<string, unknown>;
+  const parts = [
+    stringFromUnknown(obj.streetAddress),
+    stringFromUnknown(obj.addressLocality),
+    stringFromUnknown(obj.addressRegion),
+    stringFromUnknown(obj.postalCode),
+    stringFromUnknown(obj.addressCountry),
+  ].map(sanitizeHtmlMetaValue).filter((v): v is string => !!v);
+
+  if (parts.length === 0) {
+    return sanitizeHtmlMetaValue(stringFromUnknown(obj.name));
+  }
+
+  return parts.join(" ");
+}
+
+function extractImageFromJsonLd(value: unknown): string | null {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) {
+    return pickFirstValidHttpUrl(value.map((item) => stringFromUnknown(item)));
+  }
+  if (!value || typeof value !== "object") return null;
+  const obj = value as Record<string, unknown>;
+  return stringFromUnknown(obj.url) ?? stringFromUnknown(obj.contentUrl) ?? null;
+}
+
+function sanitizeHtmlMetaValue(value: string | null | undefined): string | null {
+  const sanitized = value?.replace(/\s+/g, " ").trim();
+  return sanitized ? sanitized : null;
+}
+
+function stringFromUnknown(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function extractAddressLikeText(value: string | null | undefined): string | null {
+  const sanitized = sanitizeHtmlMetaValue(value);
+  if (!sanitized) return null;
+  const splitCandidates = sanitized
+    .split(/[|｜•·]/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const candidate = splitCandidates.find((part) => /\d|丁目|番地|県|市|区|町|村/.test(part));
+  return candidate ?? sanitized;
+}
+
+function buildGoogleMapsDescription(args: {
+  address: string | null;
+  category: string | null;
+  latLng: string | null;
+  mapType: GoogleMapsMapType;
+  zoom: string | null;
+  fallback: string | null;
+}): string | null {
+  const segments: string[] = [];
+
+  if (args.address) {
+    segments.push(`住所: ${args.address}`);
+  }
+  if (args.category) {
+    segments.push(`カテゴリ: ${args.category}`);
+  }
+  if (args.latLng) {
+    segments.push(`座標: ${args.latLng}`);
+  }
+  if (args.mapType !== "map") {
+    segments.push(`リンク種別: ${args.mapType}`);
+  }
+  if (args.zoom) {
+    segments.push(`ズーム: ${args.zoom}`);
+  }
+
+  if (segments.length > 0) {
+    return segments.join(" / ");
+  }
+
+  return args.fallback;
+}
+
+function pickFirstValidHttpUrl(candidates: Array<string | null | undefined>): string | null {
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try {
+      const parsed = new URL(candidate);
+      if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+        return candidate;
+      }
+    } catch {
+      continue;
     }
   }
 
@@ -630,6 +987,14 @@ function isGoogleMapsHostname(hostname: string): boolean {
     loweredHostname === "www.google.com" ||
     loweredHostname === "google.com"
   );
+}
+
+function isGoogleMapsUrl(url: string): boolean {
+  try {
+    return isGoogleMapsHostname(new URL(url).hostname);
+  } catch {
+    return false;
+  }
 }
 
 function extractGoogleMapsPlaceFromPath(pathname: string): string | null {

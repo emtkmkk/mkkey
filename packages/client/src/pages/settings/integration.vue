@@ -1,7 +1,7 @@
 <template>
 	<div class="_formRoot">
 
-		<FormSection v-if="instance.enableGoogleIntegration">
+		<FormSection v-if="instance.enableGoogleIntegration" class="_formBlock _panel">
 			<template #label
 				><i class="ph-google-logo ph-bold ph-lg"></i> Google</template
 			>
@@ -20,7 +20,7 @@
 			}}</MkButton>
 		</FormSection>
 
-		<FormSection v-if="instance.enableDiscordIntegration">
+		<FormSection v-if="instance.enableDiscordIntegration" class="_formBlock _panel">
 			<template #label
 				><i class="ph-discord-logo ph-bold ph-lg"></i> Discord</template
 			>
@@ -44,7 +44,7 @@
 			}}</MkButton>
 		</FormSection>
 
-		<FormSection v-if="instance.enableGithubIntegration">
+		<FormSection v-if="instance.enableGithubIntegration" class="_formBlock _panel">
 			<template #label
 				><i class="ph-github-logo ph-bold ph-lg"></i> GitHub</template
 			>
@@ -68,7 +68,7 @@
 			}}</MkButton>
 		</FormSection>
 
-		<FormSection v-if="instance.enableSwarmIntegration">
+		<FormSection v-if="instance.enableSwarmIntegration" class="_formBlock _panel">
 			<template #label><i class="ph-map-pin-line ph-bold ph-lg"></i> Swarm</template>
 			<p v-if="integrations.swarm?.accessToken">{{ i18n.ts.connectedTo }}: Swarm</p>
 			<p v-else>{{ i18n.ts.notConnected }}</p>

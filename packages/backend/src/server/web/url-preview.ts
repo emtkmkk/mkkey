@@ -563,6 +563,11 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       }
     }
 
+    const googleMapsPlaceTitle = extractGoogleMapsPlaceTitle(effectiveUrl);
+    if (googleMapsPlaceTitle && isGenericGoogleMapsTitle(summary.title)) {
+      summary.title = googleMapsPlaceTitle;
+    }
+
     summary.icon = wrap(summary.icon);
     summary.thumbnail = wrap(summary.thumbnail);
     // Cache 7days
@@ -580,6 +585,104 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 function normalizeLang(lang?: string | null): string {
   if (!lang) return "en-US";
   return lang.replace("ja-KS", "ja-JP").replace("ja-KK", "ja-JP");
+}
+
+function isGenericGoogleMapsTitle(title: unknown): boolean {
+  if (typeof title !== "string") return false;
+  const normalizedTitle = title.trim().toLowerCase();
+  return normalizedTitle === "google maps" || normalizedTitle === "google マップ";
+}
+
+function extractGoogleMapsPlaceTitle(url: string): string | null {
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url);
+  } catch {
+    return null;
+  }
+
+  if (!isGoogleMapsHostname(parsedUrl.hostname)) {
+    return null;
+  }
+
+  const placeFromPath = extractGoogleMapsPlaceFromPath(parsedUrl.pathname);
+  if (placeFromPath) {
+    return placeFromPath;
+  }
+
+  const queryCandidates = ["q", "query", "destination", "daddr"];
+  for (const key of queryCandidates) {
+    const value = parsedUrl.searchParams.get(key);
+    const sanitized = sanitizeGoogleMapsPlaceCandidate(value);
+    if (sanitized) {
+      return sanitized;
+    }
+  }
+
+  return null;
+}
+
+function isGoogleMapsHostname(hostname: string): boolean {
+  const loweredHostname = hostname.toLowerCase();
+  return (
+    loweredHostname === "maps.google.com" ||
+    loweredHostname.endsWith(".google.com") ||
+    loweredHostname === "www.google.com" ||
+    loweredHostname === "google.com"
+  );
+}
+
+function extractGoogleMapsPlaceFromPath(pathname: string): string | null {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length === 0) return null;
+
+  const placeIndex = segments.findIndex((segment) => segment.toLowerCase() === "place");
+  if (placeIndex !== -1 && segments.length > placeIndex + 1) {
+    const candidate = segments[placeIndex + 1];
+    return sanitizeGoogleMapsPlaceCandidate(candidate);
+  }
+
+  if (segments[0]?.toLowerCase() === "maps" && segments.length > 1) {
+    return sanitizeGoogleMapsPlaceCandidate(segments[1]);
+  }
+
+  return null;
+}
+
+function sanitizeGoogleMapsPlaceCandidate(candidate: string | null | undefined): string | null {
+  if (!candidate) return null;
+
+  const decoded = decodeURIComponentSafe(candidate)
+    .replace(/\+/g, " ")
+    .replace(/,/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!decoded) return null;
+
+  if (/^@[-\d.]+,[-\d.]+,/.test(decoded)) {
+    return null;
+  }
+
+  const loweredDecoded = decoded.toLowerCase();
+  if (
+    loweredDecoded === "maps" ||
+    loweredDecoded === "search" ||
+    loweredDecoded === "dir" ||
+    loweredDecoded === "place"
+  ) {
+    return null;
+  }
+
+  return decoded;
+}
+
+function decodeURIComponentSafe(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 // SteamのURLを判定し、App IDを取得する関数

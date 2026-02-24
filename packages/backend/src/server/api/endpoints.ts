@@ -38,6 +38,7 @@ import * as ep___admin_federation_updateInstance from "./endpoints/admin/federat
 import * as ep___admin_getIndexStats from "./endpoints/admin/get-index-stats.js";
 import * as ep___admin_getTableStats from "./endpoints/admin/get-table-stats.js";
 import * as ep___admin_performanceIncidents from "./endpoints/admin/performance-incidents.js";
+import * as ep___admin_analyzePerformanceIncident from "./endpoints/admin/analyze-performance-incident.js";
 import * as ep___admin_getUserIps from "./endpoints/admin/get-user-ips.js";
 import * as ep___admin_invite from "./endpoints/admin/invite.js";
 import * as ep___admin_moderators_add from "./endpoints/admin/moderators/add.js";
@@ -431,6 +432,7 @@ const eps = [
 	["admin/send-mod-mail", ep___admin_sendModMail],
 	["admin/server-info", ep___admin_serverInfo],
 	["admin/performance-incidents", ep___admin_performanceIncidents],
+	["admin/analyze-performance-incident", ep___admin_analyzePerformanceIncident],
 	["admin/show-moderation-logs", ep___admin_showModerationLogs],
 	["admin/show-user", ep___admin_showUser],
 	["admin/show-users", ep___admin_showUsers],

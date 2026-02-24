@@ -14,6 +14,8 @@ type ServerStats = {
 type ApiLatencySample = {
 	at: number;
 	responseMs: number;
+	/** エンドポイント名（例: notes/timeline） */
+	endpoint: string;
 };
 
 type QueueStats = {
@@ -61,6 +63,9 @@ const minApiSampleCount = 5;
 const incidentCooldownMs = 5 * 60 * 1000;
 const longRunningQueryThresholdMs = 5000;
 const longRunningQueryLimit = 5;
+const slowCallThresholdMs = 1000;
+const recentSlowCallsLimit = 10;
+const slowestEndpointsTopN = 5;
 
 const round = (num: number) => Math.round(num * 100) / 100;
 
@@ -72,6 +77,151 @@ const percentile = (sorted: number[], p: number): number => {
 
 const normalizeQuery = (query: string): string =>
 	query.replace(/\s+/g, " ").trim().slice(0, 500);
+
+type DiagnosisItem = {
+	severity: "critical" | "warn" | "info";
+	message: string;
+	suggestion: string;
+};
+
+type StatsForDiagnosis = {
+	cpuUsage: number;
+	queuePressure: number;
+	queueWaiting: number;
+	eventLoopLagMs: number;
+	dbLatencyMs: number;
+	dbPoolStats: { total: number; active: number; idle: number; idleInTransaction: number };
+	apiLatencyP95Ms: number;
+	apiLatencyP50Ms: number;
+	activeApiRequests: number;
+	slowestEndpoints?: Array< { endpoint: string; avgMs: number; p95Ms: number; count: number } >;
+	heapStats?: { heapUsagePercent: number };
+	federationStats?: {
+		notRespondingCount: number;
+		deliverDelayed: { remote: number; local: number; unknown: number; pending: number };
+		inboxDelayed: { remote: number; local: number; unknown: number; pending: number };
+	};
+	longRunningQueryCount: number;
+	longRunningQueries: SlowQuerySample[];
+};
+
+function generateDiagnosis(s: StatsForDiagnosis): DiagnosisItem[] {
+	const out: DiagnosisItem[] = [];
+
+	if (s.apiLatencyP95Ms >= 800) {
+		const top = s.slowestEndpoints?.[0];
+		if (top) {
+			out.push({
+				severity: s.apiLatencyP95Ms >= 2000 ? "critical" : "warn",
+				message: `APIの応答が遅くなっています。特に ${top.endpoint} の処理に時間がかかっています（P95: ${top.p95Ms}ms）。`,
+				suggestion: "該当エンドポイントのクエリやN+1問題を確認してください。",
+			});
+		}
+		if (s.apiLatencyP50Ms > 0 && s.apiLatencyP95Ms / s.apiLatencyP50Ms > 3) {
+			out.push({
+				severity: "info",
+				message: `大半のリクエストは正常ですが、一部のリクエストが極端に遅くなっています（P50: ${s.apiLatencyP50Ms}ms / P95: ${s.apiLatencyP95Ms}ms）。`,
+				suggestion: "遅いエンドポイントやパラメータの偏りを確認してください。",
+			});
+		}
+		if (s.activeApiRequests >= 20) {
+			out.push({
+				severity: "info",
+				message: `同時に ${s.activeApiRequests} 件のAPIリクエストが処理中です。リクエストの集中により応答が遅くなっている可能性があります。`,
+				suggestion: "負荷の原因となっているクライアントやエンドポイントを確認してください。",
+			});
+		}
+		if (s.dbPoolStats.total > 0 && s.dbPoolStats.active / s.dbPoolStats.total >= 0.8) {
+			out.push({
+				severity: "warn",
+				message: `DBコネクションプールが逼迫しています（使用中: ${s.dbPoolStats.active}/${s.dbPoolStats.total}）。接続待ちが発生している可能性があります。`,
+				suggestion: "config.db.extra でプールサイズの見直しや、長時間トランザクションの削減を検討してください。",
+			});
+		}
+		if (s.heapStats && s.heapStats.heapUsagePercent >= 80) {
+			out.push({
+				severity: "warn",
+				message: `Node.jsのヒープメモリ使用量が高くなっています（${s.heapStats.heapUsagePercent}%）。GCによる一時停止が発生している可能性があります。`,
+				suggestion: "メモリリークや大きなオブジェクトの保持がないか確認してください。",
+			});
+		}
+	}
+
+	if (s.queuePressure >= 4) {
+		const remote = s.federationStats?.deliverDelayed?.remote ?? 0;
+		if (remote > 0) {
+			out.push({
+				severity: s.queuePressure >= 8 ? "critical" : "warn",
+				message: `キューが詰まっています。リモートサーバーへの配送失敗が ${remote} 件あり、再試行待ちになっています。`,
+				suggestion: "管理画面の「連合」から応答のないインスタンスを確認し、必要に応じて配送停止を検討してください。",
+			});
+		}
+		const notResp = s.federationStats?.notRespondingCount ?? 0;
+		if (notResp > 0) {
+			out.push({
+				severity: "info",
+				message: `応答のないリモートサーバーが ${notResp} 件あります。これらへの配送の再試行がキューを圧迫している可能性があります。`,
+				suggestion: "管理画面の「連合」から応答のないインスタンスを確認し、必要に応じて配送停止を検討してください。",
+			});
+		}
+	}
+
+	if (s.cpuUsage >= 75) {
+		out.push({
+			severity: s.cpuUsage >= 90 ? "critical" : "warn",
+			message: `CPU使用率が ${s.cpuUsage}% に達しています。`,
+			suggestion: "負荷の高い処理が実行されていないか確認してください。",
+		});
+	}
+
+	if (s.eventLoopLagMs >= 120) {
+		if (s.heapStats && s.heapStats.heapUsagePercent >= 70) {
+			out.push({
+				severity: s.eventLoopLagMs >= 250 ? "critical" : "warn",
+				message: `イベントループの遅延が ${s.eventLoopLagMs}ms に達しています。ヒープ使用量が高いため、GCが原因の可能性があります。`,
+				suggestion: "同期的な重い処理やメモリ使用量の削減を検討してください。",
+			});
+		} else if (s.cpuUsage >= 70) {
+			out.push({
+				severity: s.eventLoopLagMs >= 250 ? "critical" : "warn",
+				message: "CPUの負荷が高いことがイベントループの遅延に影響しています。",
+				suggestion: "同期的な重い処理がないか確認してください。",
+			});
+		} else {
+			out.push({
+				severity: s.eventLoopLagMs >= 250 ? "critical" : "warn",
+				message: `イベントループの遅延が ${s.eventLoopLagMs}ms に達しています。`,
+				suggestion: "同期的な重い処理がないか確認してください。",
+			});
+		}
+	}
+
+	if (s.dbLatencyMs >= 200) {
+		if (s.longRunningQueryCount > 0) {
+			out.push({
+				severity: s.dbLatencyMs >= 500 ? "critical" : "warn",
+				message: `DBの応答が遅くなっています（${s.dbLatencyMs}ms）。${s.longRunningQueryCount} 件の長時間実行クエリが検出されています。`,
+				suggestion: "長時間実行クエリの内容を確認し、インデックスの追加やクエリの最適化を検討してください。",
+			});
+		} else {
+			out.push({
+				severity: s.dbLatencyMs >= 500 ? "critical" : "warn",
+				message: `DBの応答が遅くなっています（${s.dbLatencyMs}ms）。`,
+				suggestion: "ネットワークやディスクI/O、PostgreSQLの負荷を確認してください。",
+			});
+		}
+	}
+
+	if (s.longRunningQueryCount >= 1) {
+		out.push({
+			severity: s.longRunningQueryCount >= 3 ? "critical" : "warn",
+			message: `${s.longRunningQueryCount} 件のクエリが ${longRunningQueryThresholdMs}ms 以上実行中です。`,
+			suggestion: "クエリの内容を確認し、必要に応じて手動でキャンセル（pg_cancel_backend）することを検討してください。",
+		});
+	}
+
+	return out;
+}
 
 /**
  * Report health score source stats regularly
@@ -89,9 +239,26 @@ export default function () {
 	let redisLatencyMeasuredAt: number | null = null;
 	let isDbProbeRunning = false;
 	let isRedisProbeRunning = false;
+	type RecentSlowCall = { endpoint: string; responseMs: number; at: number };
 	let apiLatencySamples: ApiLatencySample[] = [];
+	let recentSlowCalls: RecentSlowCall[] = [];
 	let slowQueries: SlowQuerySample[] = [];
+	let activeApiRequests = 0;
+	let dbPoolStats: { total: number; active: number; idle: number; idleInTransaction: number } = {
+		total: 0,
+		active: 0,
+		idle: 0,
+		idleInTransaction: 0,
+	};
+	let federationNotRespondingCount = 0;
 	const lastIncidentAtByMetric = new Map<string, number>();
+
+	ev.on("apiRequestStart", () => {
+		activeApiRequests += 1;
+	});
+	ev.on("apiRequestEnd", () => {
+		activeApiRequests = Math.max(0, activeApiRequests - 1);
+	});
 
 	ev.on("serverStats", (stats: ServerStats) => {
 		latestServerStats = stats;
@@ -105,6 +272,16 @@ export default function () {
 		apiLatencySamples.push(sample);
 		const cutoff = Date.now() - apiLatencyWindowMs;
 		apiLatencySamples = apiLatencySamples.filter((x) => x.at >= cutoff);
+		if (sample.responseMs >= slowCallThresholdMs) {
+			recentSlowCalls.unshift({
+				endpoint: sample.endpoint ?? "unknown",
+				responseMs: sample.responseMs,
+				at: sample.at,
+			});
+			if (recentSlowCalls.length > recentSlowCallsLimit) {
+				recentSlowCalls.pop();
+			}
+		}
 	});
 
 	ev.on("requestHealthStatsLog", (x) => {
@@ -176,6 +353,41 @@ export default function () {
 		}));
 	};
 
+	const maybeCollectDbPoolStats = async () => {
+		const rows = await db
+			.query(
+				`SELECT
+					count(*)::int AS total,
+					count(*) FILTER (WHERE state = 'active')::int AS active,
+					count(*) FILTER (WHERE state = 'idle')::int AS idle,
+					count(*) FILTER (WHERE state = 'idle in transaction')::int AS "idleInTransaction"
+				 FROM pg_stat_activity
+				 WHERE datname = current_database()
+					AND pid <> pg_backend_pid()`,
+			)
+			.catch(() => [{ total: 0, active: 0, idle: 0, idleInTransaction: 0 }]);
+		const row = rows[0];
+		if (row) {
+			dbPoolStats = {
+				total: Number(row.total),
+				active: Number(row.active),
+				idle: Number(row.idle),
+				idleInTransaction: Number(row.idleInTransaction),
+			};
+		}
+	};
+
+	const maybeCollectFederationStats = async () => {
+		const rows = await db
+			.query(
+				`SELECT count(*)::int AS "notRespondingCount"
+				 FROM "instance"
+				 WHERE "isNotResponding" = true`,
+			)
+			.catch(() => [{ notRespondingCount: 0 }]);
+		federationNotRespondingCount = Number(rows[0]?.notRespondingCount ?? 0);
+	};
+
 	const shouldRecordIncident = (metric: string, value: number, threshold: number) => {
 		if (value < threshold) return false;
 		const now = Date.now();
@@ -193,7 +405,13 @@ export default function () {
 	};
 
 	async function tick() {
-		await Promise.all([maybeProbeDb(), maybeProbeRedis(), maybeCollectLongRunningQueries()]);
+		await Promise.all([
+			maybeProbeDb(),
+			maybeProbeRedis(),
+			maybeCollectLongRunningQueries(),
+			maybeCollectDbPoolStats(),
+			maybeCollectFederationStats(),
+		]);
 
 		const cpuUsage = latestServerStats ? latestServerStats.cpu : 0;
 		const memoryUsage =
@@ -234,6 +452,63 @@ export default function () {
 			apiLatencyCount >= minApiSampleCount
 				? percentile(sortedApiLatencies, 95)
 				: 0;
+		const apiLatencyP50Ms =
+			apiLatencyCount >= minApiSampleCount
+				? percentile(sortedApiLatencies, 50)
+				: 0;
+
+		const byEndpoint = new Map<
+			string,
+			{ responseMs: number[] }
+		>();
+		for (const sample of apiLatencySamples) {
+			const ep = sample.endpoint ?? "unknown";
+			if (!byEndpoint.has(ep)) byEndpoint.set(ep, { responseMs: [] });
+			byEndpoint.get(ep)!.responseMs.push(sample.responseMs);
+		}
+		const slowestEndpoints = [...byEndpoint.entries()]
+			.map(([endpoint, { responseMs }]) => {
+				const sorted = [...responseMs].sort((a, b) => a - b);
+				return {
+					endpoint,
+					avgMs: round(
+						responseMs.reduce((s, v) => s + v, 0) / responseMs.length,
+					),
+					p95Ms: round(percentile(sorted, 95)),
+					count: responseMs.length,
+				};
+			})
+			.sort((a, b) => b.p95Ms - a.p95Ms)
+			.slice(0, slowestEndpointsTopN);
+
+		const mem = process.memoryUsage();
+		const heapUsedMb = mem.heapUsed / 1e6;
+		const heapTotalMb = mem.heapTotal / 1e6;
+		const heapStats = {
+			heapUsedMb: round(heapUsedMb),
+			heapTotalMb: round(heapTotalMb),
+			rssMb: round(mem.rss / 1e6),
+			externalMb: round((mem.external ?? 0) / 1e6),
+			heapUsagePercent: round(
+				heapTotalMb > 0 ? (heapUsedMb / heapTotalMb) * 100 : 0,
+			),
+		};
+
+		const federationStats = {
+			notRespondingCount: federationNotRespondingCount,
+			deliverDelayed: latestQueueStats?.deliver.delayedByReason ?? {
+				remote: 0,
+				local: 0,
+				unknown: 0,
+				pending: 0,
+			},
+			inboxDelayed: latestQueueStats?.inbox.delayedByReason ?? {
+				remote: 0,
+				local: 0,
+				unknown: 0,
+				pending: 0,
+			},
+		};
 
 		const stats = {
 			cpuUsage: round(cpuUsage * 100),
@@ -244,12 +519,23 @@ export default function () {
 			eventLoopLagMs: round(eventLoopDelay.mean / 1e6),
 			dbLatencyMs,
 			redisLatencyMs,
+			activeApiRequests,
 			apiLatencyAvgMs: round(apiLatencyAverageMs),
+			apiLatencyP50Ms,
 			apiLatencyP95Ms: round(apiLatencyP95Ms),
 			apiLatencySampleCount: apiLatencyCount,
+			slowestEndpoints,
+			recentSlowCalls: [...recentSlowCalls],
+			heapStats,
+			dbPoolStats,
+			federationStats,
 			longRunningQueryCount: slowQueries.length,
 			longRunningQueries: slowQueries,
 		};
+
+		(stats as Record<string, unknown>).diagnosis = generateDiagnosis(
+			stats as unknown as StatsForDiagnosis,
+		);
 
 		if (shouldRecordIncident("cpuUsage", stats.cpuUsage, 90)) {
 			await recordIncident("critical", "cpuUsage", stats.cpuUsage, stats);

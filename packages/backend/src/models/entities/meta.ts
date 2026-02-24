@@ -437,6 +437,27 @@ export class Meta {
 	})
 	public libreTranslateApiKey: string | null;
 
+	/** OpenAI APIキー（パフォーマンスインシデントのAI分析用） */
+	@Column('varchar', {
+		length: 256,
+		nullable: true,
+	})
+	public openaiApiKey: string | null;
+
+	/** OpenAI モデル名（例: gpt-4o-mini） */
+	@Column('varchar', {
+		length: 64,
+		nullable: true,
+	})
+	public openaiModel: string | null;
+
+	/** OpenAI 互換APIのベースURL（Azure / ローカルLLM用） */
+	@Column('varchar', {
+		length: 512,
+		nullable: true,
+	})
+	public openaiBaseUrl: string | null;
+
 	@Column('varchar', {
 		length: 512,
 		nullable: true,

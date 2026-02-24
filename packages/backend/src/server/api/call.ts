@@ -161,7 +161,8 @@ export default async (
 		}
 	}
 
-	// API invoking
+	// API invoking（同時実行数の計測用）
+	ev.emit("apiRequestStart");
 	const before = performance.now();
 	return await ep
 		.exec(data, user, token, ctx?.file, ctx?.ip, ctx?.headers)
@@ -196,11 +197,13 @@ export default async (
 			});
 		})
 		.finally(() => {
+			ev.emit("apiRequestEnd");
 			const after = performance.now();
 			const time = after - before;
 			ev.emit("apiLatency", {
 				at: Date.now(),
 				responseMs: time,
+				endpoint: ep.name,
 			});
 			if (time > 10000) {
 				apiLogger.warn(

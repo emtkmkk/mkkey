@@ -399,6 +399,42 @@
 								>
 							</FormInput>
 						</FormSection>
+
+						<FormSection>
+							<template #label>{{ i18n.ts._openaiSettings.label }}</template>
+							<template #caption>{{ i18n.ts._openaiSettings.apiKeyDescription }}</template>
+
+							<FormInput
+								v-model="openaiApiKey"
+								type="password"
+								class="_formBlock"
+								:placeholder="openaiApiKeyIsSet ? '設定済み（変更する場合のみ入力）' : ''"
+							>
+								<template #prefix
+									><i class="ph-key ph-bold ph-lg"></i
+								></template>
+								<template #label>{{ i18n.ts._openaiSettings.apiKey }}</template>
+							</FormInput>
+
+							<FormInput
+								v-model="openaiModel"
+								class="_formBlock"
+								:placeholder="i18n.ts._openaiSettings.modelPlaceholder"
+							>
+								<template #label>{{ i18n.ts._openaiSettings.model }}</template>
+							</FormInput>
+
+							<FormInput
+								v-model="openaiBaseUrl"
+								class="_formBlock"
+							>
+								<template #prefix
+									><i class="ph-link ph-bold ph-lg"></i
+								></template>
+								<template #label>{{ i18n.ts._openaiSettings.baseUrl }}</template>
+								<template #caption>{{ i18n.ts._openaiSettings.baseUrlDescription }}</template>
+							</FormInput>
+						</FormSection>
 					</div>
 				</FormSuspense>
 			</MkSpacer>
@@ -452,6 +488,10 @@ let deeplAuthKey: string = $ref("");
 let deeplIsPro: boolean = $ref(false);
 let libreTranslateApiUrl: string = $ref("");
 let libreTranslateApiKey: string = $ref("");
+let openaiApiKey: string = $ref("");
+let openaiApiKeyIsSet: boolean = $ref(false);
+let openaiModel: string = $ref("");
+let openaiBaseUrl: string = $ref("");
 let defaultReaction: string = $ref("");
 let defaultReactionCustom: string = $ref("");
 
@@ -488,6 +528,10 @@ async function init() {
 	deeplIsPro = meta.deeplIsPro;
 	libreTranslateApiUrl = meta.libreTranslateApiUrl;
 	libreTranslateApiKey = meta.libreTranslateApiKey;
+	openaiApiKeyIsSet = meta.openaiApiKey === "***" || (meta.openaiApiKey != null && meta.openaiApiKey !== "");
+	openaiApiKey = meta.openaiApiKey === "***" ? "" : (meta.openaiApiKey ?? "");
+	openaiModel = meta.openaiModel ?? "";
+	openaiBaseUrl = meta.openaiBaseUrl ?? "";
 	defaultReaction = ["⭐", "👍", "❤️"].includes(meta.defaultReaction)
 		? meta.defaultReaction
 		: "custom";
@@ -532,6 +576,9 @@ function save() {
 		deeplIsPro,
 		libreTranslateApiUrl,
 		libreTranslateApiKey,
+		...(openaiApiKey !== "" && { openaiApiKey }),
+		openaiModel: openaiModel || null,
+		openaiBaseUrl: openaiBaseUrl || null,
 		defaultReaction,
 	}).then(() => {
 		fetchInstance();

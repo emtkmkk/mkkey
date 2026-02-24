@@ -614,6 +614,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		deeplIsPro: instance.deeplIsPro,
 		libreTranslateApiUrl: instance.libreTranslateApiUrl,
 		libreTranslateApiKey: instance.libreTranslateApiKey,
+		openaiApiKey: instance.openaiApiKey != null ? "***" : null,
+		openaiModel: instance.openaiModel,
+		openaiBaseUrl: instance.openaiBaseUrl,
 		enableIpLogging: instance.enableIpLogging,
 		enableActiveEmailValidation: instance.enableActiveEmailValidation,
 	};

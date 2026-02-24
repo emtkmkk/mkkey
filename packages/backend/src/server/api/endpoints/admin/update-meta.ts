@@ -134,6 +134,9 @@ export const paramDef = {
 		deeplIsPro: { type: "boolean" },
 		libreTranslateApiUrl: { type: "string", nullable: true },
 		libreTranslateApiKey: { type: "string", nullable: true },
+		openaiApiKey: { type: "string", nullable: true },
+		openaiModel: { type: "string", nullable: true },
+		openaiBaseUrl: { type: "string", nullable: true },
 		enableTwitterIntegration: { type: "boolean" },
 		twitterConsumerKey: { type: "string", nullable: true },
 		twitterConsumerSecret: { type: "string", nullable: true },
@@ -579,6 +582,30 @@ export default define(meta, paramDef, async (ps, me) => {
 			set.libreTranslateApiKey = null;
 		} else {
 			set.libreTranslateApiKey = ps.libreTranslateApiKey;
+		}
+	}
+
+	if (ps.openaiApiKey !== undefined) {
+		if (ps.openaiApiKey === "") {
+			set.openaiApiKey = null;
+		} else {
+			set.openaiApiKey = ps.openaiApiKey;
+		}
+	}
+
+	if (ps.openaiModel !== undefined) {
+		if (ps.openaiModel === "") {
+			set.openaiModel = null;
+		} else {
+			set.openaiModel = ps.openaiModel;
+		}
+	}
+
+	if (ps.openaiBaseUrl !== undefined) {
+		if (ps.openaiBaseUrl === "") {
+			set.openaiBaseUrl = null;
+		} else {
+			set.openaiBaseUrl = ps.openaiBaseUrl;
 		}
 	}
 

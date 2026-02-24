@@ -48,6 +48,11 @@ export const meta = {
 					optional: false,
 					nullable: false,
 				},
+				aiAnalysis: {
+					type: "string",
+					optional: false,
+					nullable: true,
+				},
 			},
 		},
 	},
@@ -74,7 +79,7 @@ export default define(meta, paramDef, async (ps) => {
 			: [ps.limit, ps.severity];
 
 	return await db.query(
-		`SELECT "id", "createdAt", "severity", "metric", "value", "stats"
+		`SELECT "id", "createdAt", "severity", "metric", "value", "stats", "aiAnalysis"
 		 FROM "performance_incident"
 		 ${where}
 		 ORDER BY "createdAt" DESC

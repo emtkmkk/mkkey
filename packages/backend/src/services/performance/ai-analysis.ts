@@ -101,29 +101,65 @@ ${statsJson}
 （「即座に対応が必要」「早めに対応が望ましい」「次回メンテナンス時に対応」のいずれかを選択し、理由を1行で述べること）`;
 }
 
+/**
+ * 指定したインシデント内容でAI分析に使うプロンプト（システム・ユーザー）を返す。
+ * 管理画面で「プロンプトをコピー」するときに利用する。
+ *
+ * @param severity - インシデントの重大度
+ * @param metric - 閾値を超えたメトリック名
+ * @param value - 計測値
+ * @param stats - 記録時の stats スナップショット
+ * @returns systemPrompt と userPrompt の2つ
+ */
+export function getPerformanceIncidentPrompt(
+	severity: string,
+	metric: string,
+	value: number,
+	stats: Record<string, unknown>,
+): { systemPrompt: string; userPrompt: string } {
+	return {
+		systemPrompt: SYSTEM_PROMPT,
+		userPrompt: buildUserPrompt(severity, metric, value, stats),
+	};
+}
+
 const OPENAI_TIMEOUT_MS = 30000;
+
+/** AI分析の失敗理由（API レスポンスや内部エラーに応じた区分） */
+export type AiAnalysisFailureCode =
+	| "NO_API_KEY"
+	| "RATE_LIMIT"
+	| "AUTH_ERROR"
+	| "NOT_FOUND"
+	| "BAD_REQUEST"
+	| "INVALID_RESPONSE"
+	| "NETWORK_ERROR"
+	| "API_ERROR";
 
 /**
  * パフォーマンスインシデントの内容を OpenAI 互換 API に送り、分析結果（Markdown テキスト）を返す。
- * APIキーが未設定またはリクエスト失敗時は null を返す。
+ * APIキーが未設定またはリクエスト失敗時は { ok: false, code } を返す。
  *
  * @param severity - インシデントの重大度（warn / critical）
  * @param metric - 閾値を超えたメトリック名
  * @param value - 計測値
  * @param stats - 記録時の stats スナップショット（JSON化してプロンプトに含める）
- * @returns 分析結果の Markdown 文字列。失敗時は null
+ * @returns 成功時は { ok: true, analysis }。失敗時は { ok: false, code }
  */
 export async function analyzePerformanceIncident(
 	severity: string,
 	metric: string,
 	value: number,
 	stats: Record<string, unknown>,
-): Promise<string | null> {
+): Promise<
+	| { ok: true; analysis: string }
+	| { ok: false; code: AiAnalysisFailureCode }
+> {
 	const meta = await fetchMeta();
 
 	if (!meta.openaiApiKey || meta.openaiApiKey === "") {
 		logger.warn("AI分析をスキップ: OpenAI APIキーが未設定です");
-		return null;
+		return { ok: false, code: "NO_API_KEY" };
 	}
 
 	const baseUrl = (meta.openaiBaseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "");
@@ -162,13 +198,17 @@ export async function analyzePerformanceIncident(
 
 		if (!res.ok) {
 			logger.warn(`AI分析失敗: OpenAI API が ${res.status} を返しました`);
-			return null;
+			if (res.status === 429) return { ok: false, code: "RATE_LIMIT" };
+			if (res.status === 401 || res.status === 403) return { ok: false, code: "AUTH_ERROR" };
+			if (res.status === 404) return { ok: false, code: "NOT_FOUND" };
+			if (res.status === 400) return { ok: false, code: "BAD_REQUEST" };
+			return { ok: false, code: "API_ERROR" };
 		}
 
 		const contentType = res.headers.get("content-type") ?? "";
 		if (!contentType.includes("application/json")) {
 			logger.warn("AI分析失敗: レスポンスが application/json ではありません");
-			return null;
+			return { ok: false, code: "INVALID_RESPONSE" };
 		}
 
 		const text = await res.text();
@@ -178,17 +218,17 @@ export async function analyzePerformanceIncident(
 			json = JSON.parse(text) as OpenAiResponse;
 		} catch {
 			logger.warn("AI分析失敗: レスポンスのJSONパースに失敗しました");
-			return null;
+			return { ok: false, code: "INVALID_RESPONSE" };
 		}
 		const content = json.choices?.[0]?.message?.content;
 		if (typeof content !== "string") {
 			logger.warn("AI分析失敗: レスポンスに choices[0].message.content がありません");
-			return null;
+			return { ok: false, code: "INVALID_RESPONSE" };
 		}
-		return content;
+		return { ok: true, analysis: content };
 	} catch (e) {
 		clearTimeout(timeoutId);
 		logger.warn(`AI分析失敗: ${e instanceof Error ? e.message : String(e)}`);
-		return null;
+		return { ok: false, code: "NETWORK_ERROR" };
 	}
 }

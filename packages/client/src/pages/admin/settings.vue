@@ -422,6 +422,7 @@
 								:placeholder="i18n.ts._openaiSettings.modelPlaceholder"
 							>
 								<template #label>{{ i18n.ts._openaiSettings.model }}</template>
+								<template #caption>{{ i18n.ts._openaiSettings.modelDescription }}</template>
 							</FormInput>
 
 							<FormInput

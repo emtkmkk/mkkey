@@ -60,21 +60,30 @@
 							<div class="sectionTitle">{{ i18n.ts._performanceIncidents.aiAnalysis }}</div>
 							<div v-if="item.aiAnalysis" class="aiAnalysisContent">
 								<pre class="aiAnalysisText">{{ item.aiAnalysis }}</pre>
-								<MkButton
-									v-if="openaiApiKeySet"
-									:disabled="analyzingId === item.id"
-									@click="runAnalysis(item.id)"
-								>
-									{{ analyzingId === item.id ? i18n.ts._performanceIncidents.analyzing : i18n.ts._performanceIncidents.reanalyzeWithAi }}
-								</MkButton>
+								<div v-if="openaiApiKeySet" class="aiButtons">
+									<MkButton
+										:disabled="analyzingId === item.id"
+										@click="runAnalysis(item.id)"
+									>
+										{{ analyzingId === item.id ? i18n.ts._performanceIncidents.analyzing : i18n.ts._performanceIncidents.reanalyzeWithAi }}
+									</MkButton>
+									<MkButton class="copyPromptBtn" @click="copyPrompt(item.id)">
+										{{ i18n.ts._performanceIncidents.copyPrompt }}
+									</MkButton>
+								</div>
 							</div>
 							<div v-else-if="analyzingId === item.id" class="aiAnalyzing">
 								<MkLoading /> {{ i18n.ts._performanceIncidents.analyzing }}
 							</div>
 							<div v-else-if="openaiApiKeySet" class="aiAnalyzePrompt">
-								<MkButton :disabled="analyzingId != null" @click="runAnalysis(item.id)">
-									{{ i18n.ts._performanceIncidents.analyzeWithAi }}
-								</MkButton>
+								<div class="aiButtons">
+									<MkButton :disabled="analyzingId != null" @click="runAnalysis(item.id)">
+										{{ i18n.ts._performanceIncidents.analyzeWithAi }}
+									</MkButton>
+									<MkButton class="copyPromptBtn" @click="copyPrompt(item.id)">
+										{{ i18n.ts._performanceIncidents.copyPrompt }}
+									</MkButton>
+								</div>
 							</div>
 							<div v-else class="aiKeyHint">
 								{{ i18n.ts._performanceIncidents.openaiApiKeyNotSet }}
@@ -194,6 +203,7 @@ import MkSelect from "@/components/form/select.vue";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import copyToClipboard from "@/scripts/copy-to-clipboard";
 
 type Incident = {
 	id: string;
@@ -275,6 +285,19 @@ const runAnalysis = async (incidentId: string) => {
 		});
 	} finally {
 		analyzingId.value = null;
+	}
+};
+
+const copyPrompt = async (incidentId: string) => {
+	try {
+		const res = await os.api("admin/get-performance-incident-prompt", { incidentId });
+		copyToClipboard(res.prompt);
+		os.success();
+	} catch (e: any) {
+		os.alert({
+			type: "error",
+			text: e?.message ?? "プロンプトの取得に失敗しました。",
+		});
 	}
 };
 
@@ -389,6 +412,12 @@ definePageMetadata({
 }
 
 .aiSection {
+	.aiButtons {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		align-items: center;
+	}
 	.aiAnalysisContent {
 		.aiAnalysisText {
 			white-space: pre-wrap;

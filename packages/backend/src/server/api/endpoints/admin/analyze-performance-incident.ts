@@ -35,7 +35,8 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		incidentId: { type: "string", format: "id" },
+		/** UUID（performance_incident の id） */
+		incidentId: { type: "string" },
 	},
 	required: ["incidentId"],
 } as const;

@@ -2,6 +2,7 @@ export class createPerformanceIncident1738000000000 {
 	name = "createPerformanceIncident1738000000000";
 
 	async up(queryRunner) {
+		await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
 		await queryRunner.query(
 			`CREATE TABLE "performance_incident" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "severity" character varying(16) NOT NULL, "metric" character varying(64) NOT NULL, "value" double precision NOT NULL, "stats" jsonb NOT NULL DEFAULT '{}'::jsonb, CONSTRAINT "PK_performance_incident_id" PRIMARY KEY ("id"))`,
 		);

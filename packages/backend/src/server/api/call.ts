@@ -161,8 +161,11 @@ export default async (
 		}
 	}
 
-	// API invoking（同時実行数の計測用）
-	ev.emit("apiRequestStart");
+	// API invoking（同時実行数・応答時間の集計用。admin 系は集計対象外）
+	const isAdminEndpoint = ep.name.startsWith("admin/");
+	if (!isAdminEndpoint) {
+		ev.emit("apiRequestStart");
+	}
 	const before = performance.now();
 	return await ep
 		.exec(data, user, token, ctx?.file, ctx?.ip, ctx?.headers)
@@ -197,14 +200,18 @@ export default async (
 			});
 		})
 		.finally(() => {
-			ev.emit("apiRequestEnd");
+			if (!isAdminEndpoint) {
+				ev.emit("apiRequestEnd");
+			}
 			const after = performance.now();
 			const time = after - before;
-			ev.emit("apiLatency", {
-				at: Date.now(),
-				responseMs: time,
-				endpoint: ep.name,
-			});
+			if (!isAdminEndpoint) {
+				ev.emit("apiLatency", {
+					at: Date.now(),
+					responseMs: time,
+					endpoint: ep.name,
+				});
+			}
 			if (time > 10000) {
 				apiLogger.warn(
 					`SLOW API CALL DETECTED: ${ep.name} (${time.toFixed(0)}ms)`,

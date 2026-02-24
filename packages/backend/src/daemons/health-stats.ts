@@ -41,6 +41,15 @@ type QueueStats = {
 	};
 };
 
+
+
+type SlowQuerySample = {
+	pid: number;
+	durationMs: number;
+	state: string;
+	waitEventType: string | null;
+	query: string;
+};
 const ev = new Xev();
 
 const interval = 5000;
@@ -49,6 +58,9 @@ const redisProbeInterval = 30000;
 const queueStatsIntervalSec = 10;
 const apiLatencyWindowMs = 5 * 60 * 1000;
 const minApiSampleCount = 5;
+const incidentCooldownMs = 5 * 60 * 1000;
+const longRunningQueryThresholdMs = 5000;
+const longRunningQueryLimit = 5;
 
 const round = (num: number) => Math.round(num * 100) / 100;
 
@@ -57,6 +69,9 @@ const percentile = (sorted: number[], p: number): number => {
 	const index = Math.ceil((p / 100) * sorted.length) - 1;
 	return sorted[Math.max(0, Math.min(index, sorted.length - 1))];
 };
+
+const normalizeQuery = (query: string): string =>
+	query.replace(/\s+/g, " ").trim().slice(0, 500);
 
 /**
  * Report health score source stats regularly
@@ -75,6 +90,8 @@ export default function () {
 	let isDbProbeRunning = false;
 	let isRedisProbeRunning = false;
 	let apiLatencySamples: ApiLatencySample[] = [];
+	let slowQueries: SlowQuerySample[] = [];
+	const lastIncidentAtByMetric = new Map<string, number>();
 
 	ev.on("serverStats", (stats: ServerStats) => {
 		latestServerStats = stats;
@@ -131,8 +148,52 @@ export default function () {
 		}
 	};
 
+	const maybeCollectLongRunningQueries = async () => {
+		const rows = await db
+			.query(
+				`SELECT pid,
+						(EXTRACT(EPOCH FROM (clock_timestamp() - query_start)) * 1000)::double precision AS "durationMs",
+						state,
+						"wait_event_type" AS "waitEventType",
+						query
+				 FROM pg_stat_activity
+				 WHERE state = 'active'
+					AND query_start IS NOT NULL
+					AND clock_timestamp() - query_start >= ($1::int * INTERVAL '1 millisecond')
+					AND query NOT ILIKE '%pg_stat_activity%'
+				 ORDER BY "durationMs" DESC
+				 LIMIT $2`,
+				[longRunningQueryThresholdMs, longRunningQueryLimit],
+			)
+			.catch(() => []);
+
+		slowQueries = rows.map((row) => ({
+			pid: row.pid,
+			durationMs: round(Number(row.durationMs)),
+			state: row.state,
+			waitEventType: row.waitEventType,
+			query: normalizeQuery(row.query),
+		}));
+	};
+
+	const shouldRecordIncident = (metric: string, value: number, threshold: number) => {
+		if (value < threshold) return false;
+		const now = Date.now();
+		const lastRecordedAt = lastIncidentAtByMetric.get(metric) ?? 0;
+		if (now - lastRecordedAt < incidentCooldownMs) return false;
+		lastIncidentAtByMetric.set(metric, now);
+		return true;
+	};
+
+	const recordIncident = async (severity: "warn" | "critical", metric: string, value: number, stats: Record<string, unknown>) => {
+		await db.query(
+			`INSERT INTO "performance_incident" ("severity", "metric", "value", "stats") VALUES ($1, $2, $3, $4::jsonb)`,
+			[severity, metric, value, JSON.stringify(stats)],
+		).catch(() => null);
+	};
+
 	async function tick() {
-		await Promise.all([maybeProbeDb(), maybeProbeRedis()]);
+		await Promise.all([maybeProbeDb(), maybeProbeRedis(), maybeCollectLongRunningQueries()]);
 
 		const cpuUsage = latestServerStats ? latestServerStats.cpu : 0;
 		const memoryUsage =
@@ -186,7 +247,55 @@ export default function () {
 			apiLatencyAvgMs: round(apiLatencyAverageMs),
 			apiLatencyP95Ms: round(apiLatencyP95Ms),
 			apiLatencySampleCount: apiLatencyCount,
+			longRunningQueryCount: slowQueries.length,
+			longRunningQueries: slowQueries,
 		};
+
+		if (shouldRecordIncident("cpuUsage", stats.cpuUsage, 90)) {
+			await recordIncident("critical", "cpuUsage", stats.cpuUsage, stats);
+		} else if (shouldRecordIncident("cpuUsageWarn", stats.cpuUsage, 75)) {
+			await recordIncident("warn", "cpuUsage", stats.cpuUsage, stats);
+		}
+
+		if (shouldRecordIncident("queuePressure", stats.queuePressure, 8)) {
+			await recordIncident("critical", "queuePressure", stats.queuePressure, stats);
+		} else if (shouldRecordIncident("queuePressureWarn", stats.queuePressure, 4)) {
+			await recordIncident("warn", "queuePressure", stats.queuePressure, stats);
+		}
+
+		if (shouldRecordIncident("eventLoopLagMs", stats.eventLoopLagMs, 250)) {
+			await recordIncident("critical", "eventLoopLagMs", stats.eventLoopLagMs, stats);
+		} else if (shouldRecordIncident("eventLoopLagMsWarn", stats.eventLoopLagMs, 120)) {
+			await recordIncident("warn", "eventLoopLagMs", stats.eventLoopLagMs, stats);
+		}
+
+		if (shouldRecordIncident("dbLatencyMs", stats.dbLatencyMs, 500)) {
+			await recordIncident("critical", "dbLatencyMs", stats.dbLatencyMs, stats);
+		} else if (shouldRecordIncident("dbLatencyMsWarn", stats.dbLatencyMs, 200)) {
+			await recordIncident("warn", "dbLatencyMs", stats.dbLatencyMs, stats);
+		}
+
+		if (shouldRecordIncident("dbLongRunningQueryCount", stats.longRunningQueryCount, 3)) {
+			await recordIncident(
+				"critical",
+				"dbLongRunningQueryCount",
+				stats.longRunningQueryCount,
+				stats,
+			);
+		} else if (shouldRecordIncident("dbLongRunningQueryCountWarn", stats.longRunningQueryCount, 1)) {
+			await recordIncident(
+				"warn",
+				"dbLongRunningQueryCount",
+				stats.longRunningQueryCount,
+				stats,
+			);
+		}
+
+		if (shouldRecordIncident("apiLatencyP95Ms", stats.apiLatencyP95Ms, 2000)) {
+			await recordIncident("critical", "apiLatencyP95Ms", stats.apiLatencyP95Ms, stats);
+		} else if (shouldRecordIncident("apiLatencyP95MsWarn", stats.apiLatencyP95Ms, 800)) {
+			await recordIncident("warn", "apiLatencyP95Ms", stats.apiLatencyP95Ms, stats);
+		}
 
 		ev.emit("healthStats", stats);
 		log.unshift(stats);

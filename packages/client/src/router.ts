@@ -579,6 +579,11 @@ export const routes = [
 				component: page(() => import("./pages/admin/database.vue")),
 			},
 			{
+				path: "/performance",
+				name: "performance",
+				component: page(() => import("./pages/admin/performance.vue")),
+			},
+			{
 				path: "/abuses",
 				name: "abuses",
 				component: page(() => import("./pages/admin/abuses.vue")),

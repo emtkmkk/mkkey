@@ -207,6 +207,12 @@ const menuDef = $computed(() => [
 				active: currentPage?.route.name === "queue",
 			},
 			{
+				icon: "ph-activity ph-bold ph-lg",
+				text: i18n.ts.performanceIncidents,
+				to: "/admin/performance",
+				active: currentPage?.route.name === "performance",
+			},
+			{
 				icon: "ph-cloud ph-bold ph-lg",
 				text: i18n.ts.files,
 				to: "/admin/files",

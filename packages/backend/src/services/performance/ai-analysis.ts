@@ -11,6 +11,9 @@ import fetch from "node-fetch";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { getAgentByUrl } from "@/misc/fetch.js";
 import config from "@/config/index.js";
+import Logger from "@/services/logger.js";
+
+const logger = new Logger("ai-analysis");
 
 const SYSTEM_PROMPT = `あなたはMisskey（分散型SNS/ActivityPub）サーバーの運用に精通したインフラエンジニアです。
 パフォーマンスインシデントのデータを受け取り、原因の分析と具体的な対策を日本語で回答してください。
@@ -119,6 +122,7 @@ export async function analyzePerformanceIncident(
 	const meta = await fetchMeta();
 
 	if (!meta.openaiApiKey || meta.openaiApiKey === "") {
+		logger.warn("AI分析をスキップ: OpenAI APIキーが未設定です");
 		return null;
 	}
 
@@ -157,16 +161,34 @@ export async function analyzePerformanceIncident(
 		clearTimeout(timeoutId);
 
 		if (!res.ok) {
+			logger.warn(`AI分析失敗: OpenAI API が ${res.status} を返しました`);
 			return null;
 		}
 
-		const json = (await res.json()) as {
-			choices?: Array<{ message?: { content?: string } }>;
-		};
+		const contentType = res.headers.get("content-type") ?? "";
+		if (!contentType.includes("application/json")) {
+			logger.warn("AI分析失敗: レスポンスが application/json ではありません");
+			return null;
+		}
+
+		const text = await res.text();
+		type OpenAiResponse = { choices?: Array<{ message?: { content?: string } }> };
+		let json: OpenAiResponse;
+		try {
+			json = JSON.parse(text) as OpenAiResponse;
+		} catch {
+			logger.warn("AI分析失敗: レスポンスのJSONパースに失敗しました");
+			return null;
+		}
 		const content = json.choices?.[0]?.message?.content;
-		return typeof content === "string" ? content : null;
-	} catch {
+		if (typeof content !== "string") {
+			logger.warn("AI分析失敗: レスポンスに choices[0].message.content がありません");
+			return null;
+		}
+		return content;
+	} catch (e) {
 		clearTimeout(timeoutId);
+		logger.warn(`AI分析失敗: ${e instanceof Error ? e.message : String(e)}`);
 		return null;
 	}
 }

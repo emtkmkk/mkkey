@@ -26,7 +26,18 @@ export const meta = {
 			aiAnalysis: {
 				type: "string",
 				optional: false,
+				nullable: true,
+			},
+			error: {
+				type: "object",
+				optional: true,
 				nullable: false,
+				properties: {
+					message: { type: "string" },
+					code: { type: "string" },
+					id: { type: "string" },
+					kind: { type: "string" },
+				},
 			},
 		},
 	},
@@ -72,13 +83,16 @@ export default define(meta, paramDef, async (ps) => {
 	);
 
 	if (analysis == null) {
-		throw new ApiError({
-			message:
-				"AI分析に失敗しました。設定でOpenAI APIキーが登録されているか、APIの利用可否を確認してください。",
-			code: "AI_ANALYSIS_FAILED",
-			id: "b2c3d4e5-f6a7-8901-bcde-f23456789012",
-			httpStatusCode: 502,
-		});
+		return {
+			aiAnalysis: null,
+			error: {
+				message:
+					"AI分析に失敗しました。設定でOpenAI APIキーが登録されているか、APIの利用可否を確認してください。",
+				code: "AI_ANALYSIS_FAILED",
+				id: "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+				kind: "server",
+			},
+		};
 	}
 
 	await db.query(

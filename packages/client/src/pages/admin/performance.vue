@@ -257,6 +257,13 @@ const runAnalysis = async (incidentId: string) => {
 	analyzingId.value = incidentId;
 	try {
 		const res = await os.api("admin/analyze-performance-incident", { incidentId });
+		if (res.error) {
+			os.alert({
+				type: "error",
+				text: res.error.message,
+			});
+			return;
+		}
 		const item = incidents.value.find((i) => i.id === incidentId);
 		if (item && res.aiAnalysis) {
 			item.aiAnalysis = res.aiAnalysis;

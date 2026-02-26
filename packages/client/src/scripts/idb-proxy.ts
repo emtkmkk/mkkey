@@ -33,10 +33,33 @@ export async function get(key: string) {
 
 export async function set(key: string, val: any) {
 	await initialization;
-	if (idbAvailable) return iset(key, val);
-	// valが1.5MBを超える場合、フォールバックしない
-	if (JSON.stringify(val).length > 3 * 512 * 1024) return;
-	return window.localStorage.setItem(fallbackName(key), JSON.stringify(val));
+
+	const doSet = async (): Promise<void> => {
+		if (idbAvailable) {
+			await iset(key, val);
+		} else {
+			// valが1.5MBを超える場合、フォールバックしない
+			if (JSON.stringify(val).length > 3 * 512 * 1024) return;
+			window.localStorage.setItem(fallbackName(key), JSON.stringify(val));
+		}
+	};
+
+	try {
+		await doSet();
+	} catch (err: unknown) {
+		const isQuotaExceeded =
+			err instanceof DOMException && err.name === "QuotaExceededError";
+		if (
+			isQuotaExceeded &&
+			(key === "emojiData" || key === "remoteEmojiData")
+		) {
+			await del("emojiData");
+			await del("remoteEmojiData");
+			await doSet();
+		} else {
+			throw err;
+		}
+	}
 }
 
 export async function del(key: string) {

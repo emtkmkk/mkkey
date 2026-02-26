@@ -5,7 +5,7 @@
  * emojiCategories は usageVisibility === 'public' の絵文字のみで構成（API で既にフィルタ済み。後方互換で usageVisibility 未設定は public 扱い）。
  */
 import { computed, reactive } from "vue";
-import { api, queueApi } from "./os";
+import { api, queueApi, toast } from "./os";
 import { stream } from "@/stream";
 import type * as Misskey from "calckey-js";
 import { get, set } from "./scripts/idb-proxy";
@@ -179,7 +179,11 @@ export async function fetchEmoji() {
         const emojiFetchDate = new Date().toISOString();
         const storedMeta = { ...meta, emojiFetchDate };
 
-        await set("emojiData", storedMeta);
+        try {
+                await set("emojiData", storedMeta);
+        } catch {
+                toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
+        }
 
         for (const [k, v] of Object.entries(storedMeta)) {
                 instance[k] = v;
@@ -224,7 +228,11 @@ export async function fetchPlusEmoji(options?: EmojiFetchOptions) {
                 emojiUpdatedAt: meta.emojiUpdatedAt,
         };
 
-        await set("remoteEmojiData", remoteEmojiData);
+        try {
+                await set("remoteEmojiData", remoteEmojiData);
+        } catch {
+                toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
+        }
 
         const localEmojiSnapshot = {
                 emojis: meta.emojis,
@@ -232,7 +240,11 @@ export async function fetchPlusEmoji(options?: EmojiFetchOptions) {
                 emojiFetchDate: meta.emojiFetchDate ?? new Date().toISOString(),
         };
 
-        await set("emojiData", localEmojiSnapshot);
+        try {
+                await set("emojiData", localEmojiSnapshot);
+        } catch {
+                toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
+        }
 
         for (const [k, v] of Object.entries(meta)) {
                 instance[k] = v;
@@ -255,7 +267,11 @@ export async function fetchAllEmoji(options?: EmojiFetchOptions) {
                 emojiUpdatedAt: meta.emojiUpdatedAt,
         };
 
-        await set("remoteEmojiData", remoteEmojiData);
+        try {
+                await set("remoteEmojiData", remoteEmojiData);
+        } catch {
+                toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
+        }
 
         const localEmojiSnapshot = {
                 emojis: meta.emojis,
@@ -263,7 +279,11 @@ export async function fetchAllEmoji(options?: EmojiFetchOptions) {
                 emojiFetchDate: meta.emojiFetchDate ?? new Date().toISOString(),
         };
 
-        await set("emojiData", localEmojiSnapshot);
+        try {
+                await set("emojiData", localEmojiSnapshot);
+        } catch {
+                toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
+        }
 
         for (const [k, v] of Object.entries(meta)) {
                 instance[k] = v;
@@ -284,7 +304,11 @@ export async function fetchAllEmojiNoCache(options?: EmojiFetchOptions) {
                 emojiFetchDate: meta.emojiFetchDate ?? new Date().toISOString(),
         };
 
-        await set("emojiData", localEmojiSnapshot);
+        try {
+                await set("emojiData", localEmojiSnapshot);
+        } catch {
+                toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
+        }
 
         for (const [k, v] of Object.entries(meta)) {
                 instance[k] = v;

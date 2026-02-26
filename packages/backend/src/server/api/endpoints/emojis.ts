@@ -288,6 +288,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			delete x.category;
 			delete x.aliases;
 			delete x.license;
+			delete x.usageInfo;
+			delete x.description;
+			delete x.creator;
+			delete x.isBasedOnUrl;
+			delete x.licenseName;
 		});
 		if (!ps.includeUrl) {
 			remoteEmojis?.forEach((x) => {
@@ -330,6 +335,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			delete x.category;
 			delete x.aliases;
 			delete x.license;
+			delete x.usageInfo;
+			delete x.description;
+			delete x.creator;
+			delete x.isBasedOnUrl;
+			delete x.licenseName;
 		});
 		if (!ps.includeUrl) {
 			remoteEmojis?.forEach((x) => {

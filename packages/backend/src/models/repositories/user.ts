@@ -600,7 +600,7 @@ export const UserRepository = db.getRepository(User).extend({
   (SELECT EXISTS(SELECT 1 FROM note_unread nu WHERE nu."userId" = $1 AND nu."noteChannelId" IS NOT NULL AND nu."noteChannelId" IN (SELECT cf."followeeId" FROM channel_following cf WHERE cf."followerId" = $1) LIMIT 1)) AS "hasUnreadChannel",
   (SELECT EXISTS(SELECT 1 FROM notification n WHERE n."notifieeId" = $1 AND n."isRead" = false AND NOT EXISTS (SELECT 1 FROM muting m WHERE m."muterId" = $1 AND m."muteeId" = n."notifierId") LIMIT 1)) AS "hasUnreadNotification",
   (SELECT EXISTS(SELECT 1 FROM follow_request fr WHERE fr."followeeId" = $1 AND NOT EXISTS (SELECT 1 FROM follow_blocking fb WHERE fb."blockerId" = $1 AND fb."blockeeId" = fr."followerId") LIMIT 1)) AS "hasPendingReceivedFollowRequest"`,
-			[userId, userId, userId, userId, userId, userId],
+			[userId],
 		);
 		const r = rows[0] as Record<string, unknown>;
 		return {

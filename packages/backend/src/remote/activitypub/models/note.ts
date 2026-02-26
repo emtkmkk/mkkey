@@ -66,6 +66,7 @@ import { In } from "typeorm";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 import { truncate } from "@/misc/truncate.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { shouldSkipIngestForDormantFollowersOnly } from "../dormant-follower-check.js";
 
 const logger = apLogger;
 
@@ -116,12 +117,15 @@ export async function fetchNote(
 
 /**
  * Create a Note.
+ *
+ * @param fromInbox - 受動的配信（inbox 経由）のとき true。このときのみ休眠フォロワー判定でスキップする。
  */
 export async function createNote(
 	value: string | IObject,
 	resolver?: Resolver,
 	silent = false,
 	additionalTo?: ILocalUser["id"],
+	fromInbox = false,
 ): Promise<Note | null> {
 	if (resolver == null) resolver = new Resolver();
 
@@ -285,6 +289,21 @@ export async function createNote(
 				throw e;
 			})
 		: null;
+
+	// 受動的配信かつローカルフォロワーが全員休眠のリモートの公開・ホーム向け投稿は取り込まない。
+	// スキップ時も throw せず null を返す。呼び出し元が "ok" を返すことで連合先に配送受理と伝え、再配送を防ぐ（迷惑防止）。
+	if (
+		fromInbox &&
+		actor.host != null &&
+		!additionalTo &&
+		(visibility === "public" || visibility === "followers") &&
+		visibleUsers.length === 0 &&
+		(reply == null || reply.userHost != null)
+	) {
+		if (await shouldSkipIngestForDormantFollowersOnly(actor.id)) {
+			return null;
+		}
+	}
 
 	// Quote
 	let quote: Note | undefined | null;

@@ -33,6 +33,7 @@ import type { Packed } from "@/misc/schema.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { webhookDeliver } from "@/queue/index.js";
 import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
+import { invalidateDormantFollowerSkipCache } from "@/remote/activitypub/dormant-follower-check.js";
 
 const logger = new Logger("following/create");
 
@@ -128,6 +129,11 @@ export async function insertFollowingDoc(
 			: Users.increment({ id: followee.id }, "followersCount", 1),
 	]);
 	//#endregion
+
+	// ローカルがリモートを新規フォローした場合、そのリモートの休眠スキップキャッシュを無効化
+	if (Users.isLocalUser(follower) && Users.isRemoteUser(followee)) {
+		await invalidateDormantFollowerSkipCache(followee.id);
+	}
 
 	//#region Update instance stats
 	if (Users.isRemoteUser(follower) && Users.isLocalUser(followee)) {

@@ -7,6 +7,7 @@ import { subscriber as redisClient } from "@/db/redis.js";
 import { Users } from "@/models/index.js";
 import MainStreamConnection from "./stream/index.js";
 import authenticate from "./authenticate.js";
+import { maybeInvalidateDormantFollowerCacheOnActivity } from "@/remote/activitypub/dormant-follower-check.js";
 
 export const initializeStreamingServer = (server: http.Server) => {
 	// Init websocket server
@@ -72,6 +73,15 @@ export const initializeStreamingServer = (server: http.Server) => {
 			  }, 1000 * 60 * 2.5)
 			: null;
 		if (user) {
+			const prev = await Users.findOneBy(
+				{ id: user.id },
+				{ select: ["lastActiveDate", "host"] },
+			);
+			await maybeInvalidateDormantFollowerCacheOnActivity(
+				user.id,
+				prev?.host ?? user.host ?? null,
+				prev?.lastActiveDate ?? null,
+			);
 			Users.update(user.id, {
 				lastActiveDate: new Date(),
 			});

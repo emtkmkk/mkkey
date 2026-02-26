@@ -51,7 +51,8 @@ export default async function (
 			return "skip: note exists";
 		}
 
-		await createNote(note, resolver, silent, additionalTo);
+		// createNote が null を返した場合（休眠スキップ等）も "ok" を返す。連合先に再配送させないため。
+		await createNote(note, resolver, silent, additionalTo, true);
 		return "ok";
 	} catch (e) {
 		if (e instanceof StatusError && !e.isRetryable) {

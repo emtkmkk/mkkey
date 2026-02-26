@@ -5,6 +5,7 @@ import type { AccessToken } from "@/models/entities/access-token.js";
 import { Cache } from "@/misc/cache.js";
 import type { App } from "@/models/entities/app.js";
 import { fetchAuthUserByTokenCache } from "@/services/user-cache.js";
+import { maybeInvalidateDormantFollowerCacheOnActivity } from "@/remote/activitypub/dormant-follower-check.js";
 
 const appCache = new Cache<App>(Infinity);
 
@@ -24,6 +25,27 @@ const AUTH_USER_SELECT = {
 	isModerator: true,
 	emojis: true,
 } as const;
+
+/**
+ * ログイン成功時に lastActiveDate を更新し、休眠だった場合のみ休眠スキップキャッシュを無効化する。
+ */
+async function updateLastActiveDateOnLogin(user: {
+	id: CacheableLocalUser["id"];
+	host: CacheableLocalUser["host"];
+}): Promise<void> {
+	const prev = await Users.findOneBy(
+		{ id: user.id },
+		{ select: ["lastActiveDate", "host"] },
+	);
+	await maybeInvalidateDormantFollowerCacheOnActivity(
+		user.id,
+		prev?.host ?? user.host ?? null,
+		prev?.lastActiveDate ?? null,
+	);
+	Users.update(user.id, {
+		lastActiveDate: new Date(),
+	});
+}
 
 export default async (
 	authorization: string | null | undefined,
@@ -65,6 +87,7 @@ export default async (
 			throw new AuthenticationError("unknown token");
 		}
 
+		await updateLastActiveDateOnLogin(user);
 		return [user, null];
 	} else {
 		const accessToken = await AccessTokens.findOne({
@@ -99,6 +122,8 @@ export default async (
 		if (user == null) {
 			throw new AuthenticationError("unknown token");
 		}
+
+		await updateLastActiveDateOnLogin(user);
 
 		if (accessToken.appId) {
 			const app = await appCache.fetch(accessToken.appId, () =>

@@ -88,16 +88,16 @@ export class EmojiLicenseColumns1740000000000 {
 			`ALTER TABLE "emoji" ADD "copyPermission" character varying(1)`,
 		);
 		await queryRunner.query(
-			`ALTER TABLE "emoji" ADD "licenseName" character varying(128)`,
+			`ALTER TABLE "emoji" ADD "licenseName" text`,
 		);
 		await queryRunner.query(
-			`ALTER TABLE "emoji" ADD "usageInfo" character varying(512)`,
+			`ALTER TABLE "emoji" ADD "usageInfo" text`,
 		);
 		await queryRunner.query(
 			`ALTER TABLE "emoji" ADD "creator" character varying(256)`,
 		);
 		await queryRunner.query(
-			`ALTER TABLE "emoji" ADD "description" character varying(512)`,
+			`ALTER TABLE "emoji" ADD "description" text`,
 		);
 		await queryRunner.query(
 			`ALTER TABLE "emoji" ADD "isBasedOnUrl" character varying(512)`,

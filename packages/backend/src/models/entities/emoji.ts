@@ -78,9 +78,9 @@ export class Emoji {
 	})
 	public copyPermission: string | null;
 
-	/** ライセンス名（「ライセンス : 」の値）。典型は 50 文字未満 */
-	@Column('varchar', {
-		length: 128, nullable: true,
+	/** ライセンス名（「ライセンス : 」の値）。長い名称も許容するため text */
+	@Column('text', {
+		nullable: true,
 	})
 	public licenseName: string | null;
 
@@ -96,8 +96,9 @@ export class Emoji {
 	})
 	public creator: string | null;
 
-	@Column('varchar', {
-		length: 512, nullable: true,
+	/** 説明。長文を許容するため text */
+	@Column('text', {
+		nullable: true,
 	})
 	public description: string | null;
 

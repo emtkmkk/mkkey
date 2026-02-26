@@ -3,6 +3,7 @@
  *
  * @remarks
  * 返却リストは usageVisibility とモチーフでフィルタする。キャッシュは従来どおり 1 キーで取得し、フィルタはメモリ側で実施。
+ * ライセンス・モチーフ等の追加パラメータは falsy ならフィールドごと返さない。リモート絵文字では値があってもそれらのフィールドは返さない。
  */
 import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
 import { IsNull, MoreThan, Not } from "typeorm";
@@ -12,6 +13,42 @@ import { Ads, Emojis, Followings, Users, RegistryItems } from "@/models/index.js
 import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
 import type { Emoji } from "@/models/entities/emoji.js";
 import define from "../define.js";
+
+/** ライセンス・モチーフなど今日追加したパラメータ。falsy ならキーを返さず、リモートでは値があっても返さない。 */
+const NEW_EMOJI_FIELDS = [
+	"license",
+	"licenseName",
+	"usageInfo",
+	"creator",
+	"description",
+	"isBasedOnUrl",
+	"usageVisibility",
+	"allowedUserIds",
+	"motifUserId",
+	"motifUserMode",
+] as const;
+
+/** 追加パラメータが falsy のときフィールドごと返さない */
+function stripFalsyNewEmojiFields(obj: Record<string, unknown>): Record<string, unknown> {
+	const out = { ...obj };
+	for (const key of NEW_EMOJI_FIELDS) {
+		if (!(key in out)) continue;
+		const v = out[key];
+		if (v == null || v === "" || (Array.isArray(v) && v.length === 0)) {
+			delete out[key];
+		}
+	}
+	return out;
+}
+
+/** リモート絵文字用: 追加パラメータを値の有無にかかわらずフィールドごと削除 */
+function stripRemoteEmojiFields(obj: Record<string, unknown>): Record<string, unknown> {
+	const out = { ...obj };
+	for (const key of NEW_EMOJI_FIELDS) {
+		delete out[key];
+	}
+	return out;
+}
 
 /** 一覧に含めるか（usageVisibility とモチーフ）。ローカル絵文字用。 */
 function includeEmojiInList(
@@ -351,15 +388,27 @@ export default define(meta, paramDef, async (ps, me) => {
 		remoteEmojiMode = "all";
 	}
 
+	const packedLocal = await Emojis.packMany(emojis);
+	const packedRemote =
+		remoteEmojiMode && remoteEmojis && me
+			? (await Emojis.packMany(remoteEmojis)).map((o) =>
+					stripRemoteEmojiFields(
+						stripFalsyNewEmojiFields(o as Record<string, unknown>),
+					),
+			  )
+			: undefined;
+
         return {
                 emojiUpdatedAt: await emojiUpdatedAtPromise,
-                emojis: await Emojis.packMany(emojis),
-                ...(remoteEmojiMode && remoteEmojis && me
+                emojis: packedLocal.map((o) =>
+			stripFalsyNewEmojiFields(o as Record<string, unknown>),
+		),
+                ...(packedRemote
 			? {
 					emojiFetchDate: new Date(),
 					remoteEmojiMode: remoteEmojiMode,
-					remoteEmojiCount: remoteEmojis?.length ?? 0,
-					allEmojis: await Emojis.packMany(remoteEmojis),
+					remoteEmojiCount: packedRemote.length,
+					allEmojis: packedRemote,
 			  }
 			: {}),
 	};

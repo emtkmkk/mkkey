@@ -99,7 +99,7 @@ export default define(meta, paramDef, async (ps, me) => {
 					} else {
 						otherQuery.setParameter("meId", me.id);
 					}
-					.andWhere("user.isSuspended = FALSE")
+					otherQuery.andWhere("user.isSuspended = FALSE");
 					if (ps.localOnly) {
 						otherQuery.andWhere("user.host IS NULL");
 					}

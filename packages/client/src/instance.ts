@@ -85,7 +85,7 @@ export async function fetchCustomCategory() {
                                 categoryId: Array.from(new Set(defaultStore.state.followCategories))
                         });
                         let emojiStr = $computed(() =>
-                                instance.emojis.map((x) => `:${x.name}:`)
+                                (instance.emojis ?? []).map((x) => `:${x.name}:`)
                         );
                         followCategories = followCategories.map((x) => {
                                 if (!x.contents) return x;
@@ -317,7 +317,8 @@ export const emojiTags = computed(() => {
 	if (instance.emojis == null) return [];
 	const tags = new Set();
 	for (const emoji of instance.emojis) {
-		for (const tag of emoji.aliases) {
+		// 後方互換: キャッシュや古いAPIレスポンスで aliases が無い場合のガード
+		for (const tag of emoji.aliases ?? []) {
 			tags.add(tag);
 		}
 	}

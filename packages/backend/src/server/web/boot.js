@@ -157,6 +157,62 @@
 		document.head.appendChild(css);
 	}
 
+	/** HTML をエスケープして詳細表示時の XSS を防ぐ */
+	function escapeHtml(str) {
+		if (str == null) return "";
+		const s = String(str);
+		return s
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;");
+	}
+
+	/**
+	 * ErrorEvent / PromiseRejectionEvent / Error から表示用の詳細オブジェクトを組み立てる。
+	 * JSON.stringify では Error の message/stack が取れないため、ここで明示的に抽出する。
+	 */
+	function getErrorDetailObject(code, details) {
+		const out = { errorCode: code };
+		if (details == null) {
+			out.note = "詳細なし";
+			return out;
+		}
+		if (details instanceof Error) {
+			out.message = details.message;
+			out.name = details.name;
+			if (details.stack) out.stack = details.stack;
+			return out;
+		}
+		// ErrorEvent (window.onerror)
+		if (typeof details.message === "string" && "filename" in details) {
+			out.message = details.message;
+			out.filename = details.filename;
+			out.lineno = details.lineno;
+			out.colno = details.colno;
+			if (details.error instanceof Error) {
+				out.causeMessage = details.error.message;
+				out.causeName = details.error.name;
+				if (details.error.stack) out.causeStack = details.error.stack;
+			}
+			return out;
+		}
+		// PromiseRejectionEvent (window.onunhandledrejection)
+		if ("reason" in details) {
+			const r = details.reason;
+			if (r instanceof Error) {
+				out.message = r.message;
+				out.name = r.name;
+				if (r.stack) out.stack = r.stack;
+			} else {
+				out.reason = typeof r === "object" ? r : String(r);
+			}
+			return out;
+		}
+		out.raw = details;
+		return out;
+	}
+
 	function renderError(code, details) {
 		let errorsElement = document.getElementById("errors");
 
@@ -196,13 +252,15 @@
 			`;
 			errorsElement = document.getElementById("errors");
 		}
+		const detailObj = getErrorDetailObject(code, details);
+		const detailJson = JSON.stringify(detailObj, null, 2);
 		const detailsElement = document.createElement("details");
-		detailsElement.innerHTML = `
-		<br>
-		<summary>
-			<code>ERROR CODE: ${code}</code>
-		</summary>
-		<code>${JSON.stringify(details)}</code>`;
+		detailsElement.innerHTML =
+			"<br>\n<summary><code>ERROR CODE: " +
+			escapeHtml(code) +
+			"</code></summary>\n<pre class=\"error-detail\">" +
+			escapeHtml(detailJson) +
+			"</pre>";
 		errorsElement.appendChild(detailsElement);
 		addStyle(`
 		* {
@@ -292,6 +350,14 @@
 			font-family: Fira, FiraCode, monospace;
 		}
 
+		pre.error-detail {
+			white-space: pre-wrap;
+			word-break: break-word;
+			text-align: left;
+			max-width: 100%;
+			margin: 0.5rem 0 0;
+		}
+
 		details {
 			background: #1f1d2e;
 			margin-bottom: 2rem;
@@ -314,7 +380,7 @@
 			details {
 				width: 50%;
 			}
-		`);
+		}`);
 	}
 
 	function renderSleep(code, details, count) {

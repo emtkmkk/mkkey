@@ -317,7 +317,8 @@ function ok() {
 }
 
 async function update() {
-	const licenseNameValue = effectiveLicenseName.value ?? effectiveLicenseName;
+	// API には常に string | null を渡す（Ref が渡らないよう文字列に正規化）
+	const licenseNameValue = effectiveLicenseName.value ?? "";
 	await os.apiWithDialog("admin/emoji/update", {
 		id: props.emoji.id,
 		name,

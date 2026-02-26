@@ -114,7 +114,7 @@
 												}}
 											</div>
 											<div class="info">
-												{{ emoji.category }}
+												{{ emoji.category ?? "" }}
 											</div>
 										</div>
 									</button>
@@ -175,17 +175,17 @@
 											</div>
 											<div class="info">
 												<i
-													v-if="emoji.copyPermission === 'conditional'"
+													v-if="(emoji.copyPermission ?? 'none') === 'conditional'"
 													class="ph-bold ph-warning ph-lg"
 													style="color: var(--warn)"
 												/>
 												<i
-													v-else-if="emoji.copyPermission === 'deny'"
+													v-else-if="(emoji.copyPermission ?? 'none') === 'deny'"
 													class="ph-bold ph-prohibit ph-lg"
 													style="color: var(--error)"
 												/>
 												<i
-													v-else-if="emoji.copyPermission === 'allow' || (emoji.isTextOnly ?? false)"
+													v-else-if="(emoji.copyPermission ?? 'none') === 'allow' || (emoji.isTextOnly ?? false)"
 													class="ph-bold ph-check ph-lg"
 													style="
 														color: var(--success);

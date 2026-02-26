@@ -50,12 +50,14 @@ function stripRemoteEmojiFields(obj: Record<string, unknown>): Record<string, un
 	return out;
 }
 
-/** isTextOnly / sensitive / usageVisibility / motifUserMode がデフォルト値のときはキーを返さない（キーが無い場合はクライアントでデフォルト扱い） */
+/** ローカル絵文字でデフォルト値のときはキーを返さない（キーが無い場合はクライアントでデフォルト扱い） */
 const DEFAULT_EMOJI_FIELD_VALUES: Record<string, unknown> = {
 	isTextOnly: false,
 	sensitive: false,
 	usageVisibility: "public",
 	motifUserMode: "any",
+	category: null,
+	copyPermission: "none",
 };
 
 function stripDefaultEmojiFields(obj: Record<string, unknown>): Record<string, unknown> {

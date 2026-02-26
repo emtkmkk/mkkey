@@ -76,7 +76,7 @@
 					<div v-if="searchResultCustomStart.length > 0" class="body">
 						<template v-for="emoji in searchResultCustomStart">
 							<button
-								:key="emoji.id"
+								:key="emoji.id ?? `${emoji.name}@${emoji.host ?? ''}`"
 								v-if="
 									!errorEmojis.has(
 										`:${emoji.name}${
@@ -117,8 +117,8 @@
 									class="emoji"
 									:src="
 										disableShowingAnimatedImages
-											? getStaticImageUrl(emoji.url)
-											: emoji.url
+											? getStaticImageUrl(getEmojiDisplayUrl(emoji))
+											: getEmojiDisplayUrl(emoji)
 									"
 								/>-->
 							</button>
@@ -143,7 +143,7 @@
 					<div v-if="searchResultCustom.length > 0" class="body">
 						<template v-for="emoji in searchResultCustom">
 							<button
-								:key="emoji.id"
+								:key="emoji.id ?? `${emoji.name}@${emoji.host ?? ''}`"
 								v-if="
 									!errorEmojis.has(
 										`:${emoji.name}${
@@ -184,8 +184,8 @@
 									class="emoji"
 									:src="
 										disableShowingAnimatedImages
-											? getStaticImageUrl(emoji.url)
-											: emoji.url
+											? getStaticImageUrl(getEmojiDisplayUrl(emoji))
+											: getEmojiDisplayUrl(emoji)
 									"
 								/>-->
 							</button>
@@ -503,7 +503,7 @@
 						:emojis="
 							customEmojis
 								.filter((e) =>
-									(!e.usageVisibility || e.usageVisibility === 'public' || e.usageVisibility === 'user') &&
+									((e.usageVisibility ?? 'public') === 'public' || e.usageVisibility === 'user') &&
 									(e.createdAt
 										? new Date().valueOf() -
 												new Date(
@@ -1207,6 +1207,20 @@ const props = withDefaults(
 const emit = defineEmits<{
 	(ev: "chosen", v: string): void;
 }>();
+
+/** リモート絵文字は url を配信しないため、表示用にプロキシ URL を返す */
+function getEmojiDisplayUrl(emoji: {
+	url?: string | null;
+	name?: string;
+	host?: string | null;
+}): string | undefined {
+	return (
+		emoji.url ??
+		(emoji.host && emoji.name
+			? `/emoji/${emoji.name}@${emoji.host}.webp`
+			: emoji.url ?? undefined)
+	);
+}
 
 const search = ref<HTMLInputElement>();
 const emojis = ref<HTMLDivElement>();

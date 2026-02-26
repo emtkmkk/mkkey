@@ -185,7 +185,7 @@
 													style="color: var(--error)"
 												/>
 												<i
-													v-else-if="emoji.copyPermission === 'allow' || emoji.isTextOnly"
+													v-else-if="emoji.copyPermission === 'allow' || (emoji.isTextOnly ?? false)"
 													class="ph-bold ph-check ph-lg"
 													style="
 														color: var(--success);

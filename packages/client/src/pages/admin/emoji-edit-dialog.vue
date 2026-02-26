@@ -213,16 +213,16 @@ let aliases: string = $ref(
 	Array.isArray(props.emoji.aliases) ? props.emoji.aliases.join(" ") : ""
 );
 let categories: string[] = $ref(emojiCategories);
-let isTextOnly: boolean = $ref(props.emoji.isTextOnly === true);
-let sensitive: boolean = $ref(props.emoji.sensitive === true);
+let isTextOnly: boolean = $ref(props.emoji.isTextOnly ?? false);
+let sensitive: boolean = $ref(props.emoji.sensitive ?? false);
 let copyPermission: string = $ref(
-	props.emoji.isTextOnly ? "allow" : (props.emoji.copyPermission ?? "none")
+	(props.emoji.isTextOnly ?? false) ? "allow" : (props.emoji.copyPermission ?? "none")
 );
 let licenseName: string = $ref(
-	props.emoji.isTextOnly ? "CC0 1.0 Universal" : (props.emoji.licenseName ?? "")
+	(props.emoji.isTextOnly ?? false) ? "CC0 1.0 Universal" : (props.emoji.licenseName ?? "")
 );
 let creator: string = $ref(
-	props.emoji.isTextOnly
+	(props.emoji.isTextOnly ?? false)
 		? (instance?.host ?? "")
 		: (props.emoji.creator ?? "")
 );
@@ -231,16 +231,16 @@ let description: string = $ref(props.emoji.description ?? "");
 let isBasedOnUrl: string = $ref(props.emoji.isBasedOnUrl ?? "");
 let license: string = $ref(props.emoji.license ?? "");
 const usageVisibility: string = $ref(
-	props.emoji.usageVisibility ?? (props.emoji.category?.startsWith("!") ? "private" : "public")
+	props.emoji.usageVisibility ?? (props.emoji.category?.startsWith("!") ? "private" : "public") // キー無しはデフォルト public
 );
 const allowedUserIdsStr: string = $ref(
 	Array.isArray(props.emoji.allowedUserIds) ? props.emoji.allowedUserIds.join(" ") : ""
 );
 let motifUserId: string | null = $ref(props.emoji.motifUserId ?? null);
-let motifUserMode: string = $ref(props.emoji.motifUserMode ?? "any");
+let motifUserMode: string = $ref(props.emoji.motifUserMode ?? "any"); // キー無しはデフォルト any
 const motifUser = ref<any>(null);
 let licenseSelectValue: string = $ref(
-	resolveLicenseSelectValue(props.emoji.isTextOnly ? "CC0 1.0 Universal" : props.emoji.licenseName)
+	resolveLicenseSelectValue((props.emoji.isTextOnly ?? false) ? "CC0 1.0 Universal" : props.emoji.licenseName)
 );
 let licenseNameOther: string = $ref(
 	resolveLicenseSelectValue(props.emoji.licenseName) === "__other__" ? (props.emoji.licenseName ?? "") : ""

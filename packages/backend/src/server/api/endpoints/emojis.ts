@@ -50,6 +50,24 @@ function stripRemoteEmojiFields(obj: Record<string, unknown>): Record<string, un
 	return out;
 }
 
+/** isTextOnly / sensitive / usageVisibility / motifUserMode がデフォルト値のときはキーを返さない（キーが無い場合はクライアントでデフォルト扱い） */
+const DEFAULT_EMOJI_FIELD_VALUES: Record<string, unknown> = {
+	isTextOnly: false,
+	sensitive: false,
+	usageVisibility: "public",
+	motifUserMode: "any",
+};
+
+function stripDefaultEmojiFields(obj: Record<string, unknown>): Record<string, unknown> {
+	const out = { ...obj };
+	for (const [key, defaultValue] of Object.entries(DEFAULT_EMOJI_FIELD_VALUES)) {
+		if (key in out && out[key] === defaultValue) {
+			delete out[key];
+		}
+	}
+	return out;
+}
+
 /** 一覧に含めるか（usageVisibility とモチーフ）。ローカル絵文字用。 */
 function includeEmojiInList(
 	emoji: Emoji,
@@ -318,26 +336,6 @@ export default define(meta, paramDef, async (ps, me) => {
 				(x.isTextOnly || fromStoredCopyPermission(x.copyPermission) === "allow"),
 		);
 
-		// データ削減の為、不要情報を削除
-		remoteEmojis?.forEach((x) => {
-			delete x.createdAt;
-			delete x.updatedAt;
-			delete x.category;
-			delete x.aliases;
-			delete x.license;
-			delete x.usageInfo;
-			delete x.description;
-			delete x.creator;
-			delete x.isBasedOnUrl;
-			delete x.licenseName;
-		});
-		if (!ps.includeUrl) {
-			remoteEmojis?.forEach((x) => {
-				delete x.publicUrl;
-				delete x.originalUrl;
-			});
-		}
-
 		remoteEmojiMode = "plus";
 	} else if (ps.remoteEmojis === "all" || ps.allEmojis) {
 		remoteEmojis = (
@@ -365,43 +363,26 @@ export default define(meta, paramDef, async (ps, me) => {
 				fromStoredCopyPermission(x.copyPermission) !== "deny",
 		);
 
-		// データ削減の為、不要情報を削除
-		remoteEmojis?.forEach((x) => {
-			delete x.createdAt;
-			delete x.updatedAt;
-			delete x.category;
-			delete x.aliases;
-			delete x.license;
-			delete x.usageInfo;
-			delete x.description;
-			delete x.creator;
-			delete x.isBasedOnUrl;
-			delete x.licenseName;
-		});
-		if (!ps.includeUrl) {
-			remoteEmojis?.forEach((x) => {
-				delete x.publicUrl;
-				delete x.originalUrl;
-			});
-		}
-
 		remoteEmojiMode = "all";
 	}
 
 	const packedLocal = await Emojis.packMany(emojis);
+	/** リモート絵文字は n(name), h(host), s(sensitive, true のときのみ) の最小形で返す */
 	const packedRemote =
 		remoteEmojiMode && remoteEmojis && me
-			? (await Emojis.packMany(remoteEmojis)).map((o) =>
-					stripRemoteEmojiFields(
-						stripFalsyNewEmojiFields(o as Record<string, unknown>),
-					),
-			  )
+			? remoteEmojis.map((e) => ({
+					n: e.name,
+					h: e.host ?? null,
+					...(e.sensitive ? { s: true as const } : {}),
+			  }))
 			: undefined;
 
         return {
                 emojiUpdatedAt: await emojiUpdatedAtPromise,
                 emojis: packedLocal.map((o) =>
-			stripFalsyNewEmojiFields(o as Record<string, unknown>),
+			stripDefaultEmojiFields(
+				stripFalsyNewEmojiFields(o as Record<string, unknown>),
+			),
 		),
                 ...(packedRemote
 			? {

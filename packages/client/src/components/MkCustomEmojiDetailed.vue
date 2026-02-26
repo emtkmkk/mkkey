@@ -230,7 +230,7 @@ const load = async (emoji) => {
 
 	if (!_emoji) return;
 
-	const isTextOnly = _emoji.isTextOnly === true;
+	const isTextOnly = _emoji.isTextOnly ?? false;
 	licenseDetail = {
 		copyPermission: isTextOnly ? "allow" : (_emoji.copyPermission ?? "none"),
 		license: isTextOnly ? "CC0 1.0 Universal" : (_emoji.licenseName ?? null),

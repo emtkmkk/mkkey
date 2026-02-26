@@ -48,6 +48,25 @@ stream.on("emojiDeleted", (emojiData) => {
 	);
 });
 
+/**
+ * リモート絵文字の短縮形 { n, h, s? } を { name, host, sensitive? } に展開する。
+ * キー 'n' が存在する場合は短縮形とみなし、それ以外は従来形式としてそのまま返す（後方互換）。
+ *
+ * @internal
+ */
+function normalizeRemoteEmoji(
+	item: { n?: string; h?: string | null; name?: string } & Record<string, unknown>,
+): Record<string, unknown> {
+	if ("n" in item) {
+		return {
+			name: item.n,
+			host: item.h ?? null,
+			...(item.s === true ? { sensitive: true } : {}),
+		};
+	}
+	return item as Record<string, unknown>;
+}
+
 export async function emojiLoad() {
         const cachedEmojiData = await get("emojiData");
 
@@ -73,6 +92,11 @@ export async function emojiLoad() {
 		if (remoteEmoji) {
 			for (const [k, v] of Object.entries(remoteEmoji)) {
 				instance[k] = v;
+			}
+			if (remoteEmoji.allEmojis) {
+				instance.allEmojis = (remoteEmoji.allEmojis as unknown[]).map(
+					(e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
+				);
 			}
 		}
 	}
@@ -249,6 +273,11 @@ export async function fetchPlusEmoji(options?: EmojiFetchOptions) {
         for (const [k, v] of Object.entries(meta)) {
                 instance[k] = v;
         }
+        if (meta.allEmojis) {
+                instance.allEmojis = (meta.allEmojis as unknown[]).map(
+                        (e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
+                );
+        }
 }
 
 export async function fetchAllEmoji(options?: EmojiFetchOptions) {
@@ -288,6 +317,11 @@ export async function fetchAllEmoji(options?: EmojiFetchOptions) {
         for (const [k, v] of Object.entries(meta)) {
                 instance[k] = v;
         }
+        if (meta.allEmojis) {
+                instance.allEmojis = (meta.allEmojis as unknown[]).map(
+                        (e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
+                );
+        }
 }
 
 export async function fetchAllEmojiNoCache(options?: EmojiFetchOptions) {
@@ -313,6 +347,11 @@ export async function fetchAllEmojiNoCache(options?: EmojiFetchOptions) {
         for (const [k, v] of Object.entries(meta)) {
                 instance[k] = v;
         }
+        if (meta.allEmojis) {
+                instance.allEmojis = (meta.allEmojis as unknown[]).map(
+                        (e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
+                );
+        }
 }
 
 export async function fetchEmojiStats(limit) {
@@ -330,8 +369,8 @@ export const emojiCategories = computed(() => {
 	const categories = new Set();
 	for (const emoji of instance.emojis) {
 		if (!emoji.category) continue;
-		// カテゴリ・ピッカーに出すのは public のみ（後方互換で未設定は public）
-		if (emoji.usageVisibility != null && emoji.usageVisibility !== "public") continue;
+		// カテゴリ・ピッカーに出すのは public のみ（キー無しはデフォルトで public）
+		if ((emoji.usageVisibility ?? "public") !== "public") continue;
 		categories.add(emoji.category);
 	}
 	return Array.from(categories);

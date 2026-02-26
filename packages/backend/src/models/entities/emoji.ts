@@ -84,8 +84,9 @@ export class Emoji {
 	})
 	public licenseName: string | null;
 
-	@Column('varchar', {
-		length: 512, nullable: true,
+	/** 使用情報（ライセンス全文等）。長文を許容するため text */
+	@Column('text', {
+		nullable: true,
 	})
 	public usageInfo: string | null;
 

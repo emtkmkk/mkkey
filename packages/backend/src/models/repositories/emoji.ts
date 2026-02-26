@@ -3,12 +3,61 @@
  *
  * @remarks
  * pack では isTextOnly のとき copyPermission / licenseName / creator を固定値で返す。DB の copyPermission（a/d/c/n）は API 用に完全形に変換して返す。
+ * 返却前に新規項目の falsy 削除とデフォルト値キー削除を適用する（キーが無い場合はクライアントでデフォルト扱い）。
  */
 import config from "@/config/index.js";
 import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
 import { db } from "@/db/postgre.js";
 import { Emoji } from "@/models/entities/emoji.js";
 import type { Packed } from "@/misc/schema.js";
+
+/** ライセンス・モチーフなど追加パラメータ。falsy ならキーを返さない（emojis.ts の stripRemoteEmojiFields からも利用） */
+export const NEW_EMOJI_FIELDS = [
+	"license",
+	"licenseName",
+	"usageInfo",
+	"creator",
+	"description",
+	"isBasedOnUrl",
+	"usageVisibility",
+	"allowedUserIds",
+	"motifUserId",
+	"motifUserMode",
+] as const;
+
+/** デフォルト値のときはキーを返さない */
+const DEFAULT_EMOJI_FIELD_VALUES: Record<string, unknown> = {
+	isTextOnly: false,
+	sensitive: false,
+	usageVisibility: "public",
+	motifUserMode: "any",
+	category: null,
+	copyPermission: "none",
+};
+
+function stripFalsyNewEmojiFields(obj: Record<string, unknown>): Record<string, unknown> {
+	const out = { ...obj };
+	for (const key of NEW_EMOJI_FIELDS) {
+		if (!(key in out)) continue;
+		const v = out[key];
+		const isEmptyString =
+			typeof v === "string" && v.trim().length === 0;
+		if (v == null || isEmptyString || (Array.isArray(v) && v.length === 0)) {
+			delete out[key];
+		}
+	}
+	return out;
+}
+
+function stripDefaultEmojiFields(obj: Record<string, unknown>): Record<string, unknown> {
+	const out = { ...obj };
+	for (const [key, defaultValue] of Object.entries(DEFAULT_EMOJI_FIELD_VALUES)) {
+		if (key in out && out[key] === defaultValue) {
+			delete out[key];
+		}
+	}
+	return out;
+}
 
 /**
  * エンティティから実効的な usageVisibility を返す。
@@ -47,7 +96,7 @@ export const EmojiRepository = db.getRepository(Emoji).extend({
 					? "private"
 					: "public";
 
-		return {
+		const raw: Record<string, unknown> = {
 			id: emoji.id,
 			aliases: emoji.aliases,
 			name: emoji.name,
@@ -72,6 +121,9 @@ export const EmojiRepository = db.getRepository(Emoji).extend({
 			motifUserMode: emoji.motifUserMode ?? "any",
 			...(emoji.oldEmoji ? { oldEmoji: true } : {}),
 		};
+		return stripDefaultEmojiFields(
+			stripFalsyNewEmojiFields(raw),
+		) as Packed<"Emoji">;
 	},
 
 	packMany(emojis: any[]) {

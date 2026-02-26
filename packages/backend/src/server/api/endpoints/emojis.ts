@@ -10,62 +10,18 @@ import { IsNull, MoreThan, Not } from "typeorm";
 import config from "@/config/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Ads, Emojis, Followings, Users, RegistryItems } from "@/models/index.js";
-import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
+import {
+	getEffectiveUsageVisibility,
+	NEW_EMOJI_FIELDS,
+} from "@/models/repositories/emoji.js";
 import type { Emoji } from "@/models/entities/emoji.js";
 import define from "../define.js";
-
-/** ライセンス・モチーフなど今日追加したパラメータ。falsy ならキーを返さず、リモートでは値があっても返さない。 */
-const NEW_EMOJI_FIELDS = [
-	"license",
-	"licenseName",
-	"usageInfo",
-	"creator",
-	"description",
-	"isBasedOnUrl",
-	"usageVisibility",
-	"allowedUserIds",
-	"motifUserId",
-	"motifUserMode",
-] as const;
-
-/** 追加パラメータが falsy のときフィールドごと返さない */
-function stripFalsyNewEmojiFields(obj: Record<string, unknown>): Record<string, unknown> {
-	const out = { ...obj };
-	for (const key of NEW_EMOJI_FIELDS) {
-		if (!(key in out)) continue;
-		const v = out[key];
-		if (v == null || v === "" || (Array.isArray(v) && v.length === 0)) {
-			delete out[key];
-		}
-	}
-	return out;
-}
 
 /** リモート絵文字用: 追加パラメータを値の有無にかかわらずフィールドごと削除 */
 function stripRemoteEmojiFields(obj: Record<string, unknown>): Record<string, unknown> {
 	const out = { ...obj };
 	for (const key of NEW_EMOJI_FIELDS) {
 		delete out[key];
-	}
-	return out;
-}
-
-/** ローカル絵文字でデフォルト値のときはキーを返さない（キーが無い場合はクライアントでデフォルト扱い） */
-const DEFAULT_EMOJI_FIELD_VALUES: Record<string, unknown> = {
-	isTextOnly: false,
-	sensitive: false,
-	usageVisibility: "public",
-	motifUserMode: "any",
-	category: null,
-	copyPermission: "none",
-};
-
-function stripDefaultEmojiFields(obj: Record<string, unknown>): Record<string, unknown> {
-	const out = { ...obj };
-	for (const [key, defaultValue] of Object.entries(DEFAULT_EMOJI_FIELD_VALUES)) {
-		if (key in out && out[key] === defaultValue) {
-			delete out[key];
-		}
 	}
 	return out;
 }
@@ -381,11 +337,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
         return {
                 emojiUpdatedAt: await emojiUpdatedAtPromise,
-                emojis: packedLocal.map((o) =>
-			stripDefaultEmojiFields(
-				stripFalsyNewEmojiFields(o as Record<string, unknown>),
-			),
-		),
+                emojis: packedLocal,
                 ...(packedRemote
 			? {
 					emojiFetchDate: new Date(),

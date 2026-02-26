@@ -317,13 +317,14 @@ function ok() {
 }
 
 async function update() {
+	const licenseNameValue = effectiveLicenseName.value ?? effectiveLicenseName;
 	await os.apiWithDialog("admin/emoji/update", {
 		id: props.emoji.id,
 		name,
 		category: category || null,
 		aliases: aliases.split(" ").filter(Boolean),
 		copyPermission: copyPermission || null,
-		licenseName: effectiveLicenseName || null,
+		licenseName: licenseNameValue || null,
 		creator: creator || null,
 		usageInfo: usageInfo || null,
 		description: description || null,
@@ -347,7 +348,7 @@ async function update() {
 			category,
 			aliases: aliases.split(" ").filter(Boolean),
 			copyPermission,
-			licenseName: effectiveLicenseName || null,
+			licenseName: licenseNameValue || null,
 			creator,
 			usageInfo,
 			description,

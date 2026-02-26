@@ -1,3 +1,9 @@
+/**
+ * 管理用絵文字一覧 API
+ *
+ * @remarks
+ * 検索は license（補足）で部分一致。copyPermission 等での絞り込みは後で一括変更予定。
+ */
 import define from "../../../define.js";
 import { Emojis } from "@/models/index.js";
 import { makePaginationQuery } from "../../../common/make-pagination-query.js";

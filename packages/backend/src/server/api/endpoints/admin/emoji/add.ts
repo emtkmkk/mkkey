@@ -1,6 +1,15 @@
+/**
+ * 絵文字追加 API
+ *
+ * @remarks
+ * ライセンスは個別パラメータ（copyPermission, licenseName 等）で指定。isTextOnly 時は 3 項目を固定値で保存。
+ * 新規追加時は usageVisibility 未指定なら private。private のときは emojiAdded を送信しない。
+ */
 import { IsNull } from "typeorm";
 import define from "../../../define.js";
 import { Emojis, DriveFiles } from "@/models/index.js";
+import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
+import { toStoredCopyPermission } from "@/misc/copy-permission.js";
 import { genId } from "@/misc/gen-id.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { ApiError } from "../../../error.js";
@@ -8,6 +17,8 @@ import rndstr from "rndstr";
 import { publishBroadcastStream } from "@/services/stream.js";
 import { db } from "@/db/postgre.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
+
+const COPY_PERMISSION_VALUES = ["allow", "deny", "conditional", "none"] as const;
 
 export const meta = {
 	tags: ["admin"],
@@ -25,6 +36,11 @@ export const meta = {
 			message: "絵文字名が重複しています。",
 			code: "DUPLICATE_EMOJI_NAME",
 			id: "a7f2bc3d-b1c2-4678-b023-9f8c5d4e2abc",
+		},
+		invalidCopyPermission: {
+			message: "copyPermission は allow / deny / conditional / none のいずれかを指定してください。",
+			code: "INVALID_COPY_PERMISSION",
+			id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
 		},
 	},
 } as const;
@@ -45,9 +61,46 @@ export const paramDef = {
 			},
 			nullable: true,
 		},
+		copyPermission: {
+			type: "string",
+			nullable: true,
+			enum: COPY_PERMISSION_VALUES,
+		},
+		licenseName: { type: "string", nullable: true },
+		usageInfo: { type: "string", nullable: true },
+		creator: { type: "string", nullable: true },
+		description: { type: "string", nullable: true },
+		isBasedOnUrl: { type: "string", nullable: true },
 		license: {
 			type: "string",
 			nullable: true,
+			description: "ライセンス補足情報",
+		},
+		isTextOnly: { type: "boolean", nullable: true },
+		sensitive: { type: "boolean", nullable: true },
+		usageVisibility: {
+			type: "string",
+			nullable: true,
+			enum: ["public", "limited", "user", "private"],
+			description: "使用可能状態。未指定時は private",
+		},
+		allowedUserIds: {
+			type: "array",
+			items: { type: "string", format: "misskey:id" },
+			nullable: true,
+			description: "usageVisibility が user のときの許可ユーザ ID 配列",
+		},
+		motifUserId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			description: "モチーフユーザー（紐づけユーザー）ID",
+		},
+		motifUserMode: {
+			type: "string",
+			nullable: true,
+			enum: ["any", "follow", "owner"],
+			description: "モチーフの利用範囲。未指定時は any",
 		},
 	},
 	required: ["fileId"],
@@ -58,6 +111,13 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (file == null) throw new ApiError(meta.errors.noSuchFile);
 
+	if (
+		ps.copyPermission != null &&
+		!COPY_PERMISSION_VALUES.includes(ps.copyPermission as typeof COPY_PERMISSION_VALUES[number])
+	) {
+		throw new ApiError(meta.errors.invalidCopyPermission);
+	}
+
 	let name =
 		ps.name ||
 		file.name
@@ -65,9 +125,6 @@ export default define(meta, paramDef, async (ps, me) => {
 			?.replaceAll(/[^A-Za-z0-9_]+/g, "")
 			.toLowerCase() ||
 		`_${rndstr("a-z0-9", 8)}_`;
-	/*file.name.split(".")[0].match(/^[A-Za-z0-9_]+$/)
-		? file.name.split(".")[0]
-		: `_${rndstr("a-z0-9", 8)}_`;*/
 
 	const emojiSearchName = await Emojis.findOneBy({
 		name: name,
@@ -82,43 +139,51 @@ export default define(meta, paramDef, async (ps, me) => {
 		name = `${name}_${rndstr("a-z0-9", 8)}`;
 	}
 
-	let license = ps.license;
-	if (ps.license?.includes("!")) {
-		license = license
-			.replace(/^!m$/, "文字だけ")
-			.replace(/!ca(,|$)/, "コピー可否 : allow")
-			.replace(/!cd(,|$)/, "コピー可否 : deny")
-			.replace(/!cc(,|$)/, "コピー可否 : conditional")
-			.replace(/!l : ([^,]+)(,|$)/, "ライセンス : $1$2")
-			.replace(/!u : ([^,]+)(,|$)/, "使用情報 : $1$2")
-			.replace(/!a : ([^,]+)(,|$)/, "作者 : $1$2")
-			.replace(/!d : ([^,]+)(,|$)/, "説明 : $1$2")
-			.replace(/!b : ([^,]+)(,|$)/, "コピー元 : $1$2")
-			.replace(/!i : ([^,]+)(,|$)/, "コピー元 : $1$2")
-			.replace("!c0", "CC0 1.0 Universal")
-			.replace("!cb", "CC BY 4.0");
-	}
-
-	const emoji = await Emojis.insert({
+	const isTextOnly = ps.isTextOnly ?? false;
+	const insertRow = {
 		id: genId(),
 		createdAt: new Date(),
 		updatedAt: new Date(),
 		name: name,
-		category: ps.category || null,
+		category: ps.category ?? null,
 		host: null,
-		aliases: ps.aliases || [],
+		aliases: ps.aliases ?? [],
 		originalUrl: file.url,
 		publicUrl: file.webpublicUrl ?? file.url,
 		type: file.webpublicType ?? file.type,
-		license: license || null,
-	}).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
+		usageInfo: ps.usageInfo ?? null,
+		description: ps.description ?? null,
+		isBasedOnUrl: ps.isBasedOnUrl ?? null,
+		license: ps.license ?? null,
+		isTextOnly,
+		sensitive: ps.sensitive ?? false,
+		usageVisibility: ps.usageVisibility ?? "private",
+		allowedUserIds: ps.allowedUserIds ?? [],
+		motifUserId: ps.motifUserId ?? null,
+		motifUserMode: ps.motifUserMode ?? "any",
+	} as Record<string, unknown>;
+	if (isTextOnly) {
+		insertRow.copyPermission = toStoredCopyPermission("allow");
+		insertRow.licenseName = "CC0 1.0 Universal";
+		insertRow.creator = null;
+	} else {
+		insertRow.copyPermission = toStoredCopyPermission(ps.copyPermission ?? null);
+		insertRow.licenseName = ps.licenseName ?? null;
+		insertRow.creator = ps.creator ?? null;
+	}
+
+	const emoji = await Emojis.insert(insertRow as Parameters<typeof Emojis.insert>[0]).then(
+		(x) => Emojis.findOneByOrFail(x.identifiers[0]),
+	);
 
 	await db.queryResultCache!.remove(["meta_emojis"]);
 	await bumpReactionNormalizeCacheVersion();
 
-	publishBroadcastStream("emojiAdded", {
-		emoji: await Emojis.pack(emoji.id),
-	});
+	if (getEffectiveUsageVisibility(emoji) !== "private") {
+		publishBroadcastStream("emojiAdded", {
+			emoji: await Emojis.pack(emoji.id),
+		});
+	}
 
 	insertModerationLog(me, "addEmoji", {
 		emojiId: emoji.id,

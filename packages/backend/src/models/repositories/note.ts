@@ -1,4 +1,10 @@
-import { In } from "typeorm";
+/**
+ * ノートリポジトリ（pack 含む）
+ *
+ * @remarks
+ * pack 内で note.emojis / reactionEmojis の各要素に、表示者とモチーフユーザーのブロック関係に基づき hiddenForViewer を付与する。ブロック関係は hint で 1 リクエスト中 1 回だけ取得して使い回す。
+ */
+import { In, IsNull } from "typeorm";
 import * as mfm from "mfm-js";
 import { Note } from "@/models/entities/note.js";
 import type { User } from "@/models/entities/user.js";
@@ -13,6 +19,8 @@ import {
 	NoteFavorites,
 	UserMemos,
 	UserProfiles,
+	Blockings,
+	Emojis,
 } from "../index.js";
 import type { Packed } from "@/misc/schema.js";
 import { nyaize } from "@/misc/nyaize.js";
@@ -23,6 +31,7 @@ import {
 	decodeReaction,
 } from "@/misc/reaction-lib.js";
 import type { NoteReaction } from "@/models/entities/note-reaction.js";
+import type { PopulatedEmoji } from "@/misc/populate-emojis.js";
 import {
 	aggregateNoteEmojis,
 	populateEmojis,
@@ -96,6 +105,8 @@ type NotePackHint = {
         favorites?: Set<Note["id"]>;
         me?: User;
         followings?: Map<User["id"], boolean>;
+	/** 表示者とブロック関係にあるユーザ ID（モチーフ絵文字の hiddenForViewer 用）。1 リクエスト 1 回取得して使い回す */
+	blockedUserIdsForEmoji?: Set<User["id"]>;
 };
 
 const NOTE_PACK_CACHE_TTL_MS = 30 * 1000;
@@ -572,6 +583,50 @@ export const NoteRepository = db.getRepository(Note).extend({
 
 		const reactionEmoji = await populateEmojis(reactionEmojiNames, host);
 
+		// モチーフ絵文字の hiddenForViewer: 表示者とモチーフユーザーがブロック関係のとき true。ブロック関係は hint で 1 回だけ取得
+		const hasLocalEmoji = noteEmoji.some((e) => e.host == null) || reactionEmoji.some((e) => e.host == null);
+		let blockedUserIds = hint.blockedUserIdsForEmoji;
+		if (meId && hasLocalEmoji && blockedUserIds === undefined) {
+			const [blockingMe, blockedByMe] = await Promise.all([
+				Blockings.findBy({ blockerId: meId }).then((r) => r.map((b) => b.blockeeId)),
+				Blockings.findBy({ blockeeId: meId }).then((r) => r.map((b) => b.blockerId)),
+			]);
+			blockedUserIds = new Set([...blockingMe, ...blockedByMe]);
+			hint.blockedUserIdsForEmoji = blockedUserIds;
+		}
+		const emojiShortName = (emojiName: string): string =>
+			emojiName.match(/^(\w+)/)?.[1] ?? emojiName;
+		const localEmojiShortNames = [
+			...new Set(
+				[...noteEmoji, ...reactionEmoji]
+					.filter((e) => e.host == null)
+					.map((e) => emojiShortName(e.name)),
+			),
+		];
+		const localEmojiMap =
+			localEmojiShortNames.length > 0 && blockedUserIds && blockedUserIds.size > 0
+				? new Map(
+						(
+							await Emojis.find({
+								where: { name: In(localEmojiShortNames), host: IsNull() },
+								select: ["name", "motifUserId"],
+							})
+						).map((e) => [e.name, e] as const),
+				  )
+				: new Map<string, { motifUserId: string | null }>();
+		const addHiddenForViewer = (list: PopulatedEmoji[]): (PopulatedEmoji & { hiddenForViewer?: boolean })[] =>
+			list.map((e) => {
+				if (e.host != null || !blockedUserIds?.size) {
+					return e;
+				}
+				const local = localEmojiMap.get(emojiShortName(e.name));
+				const hidden =
+					local?.motifUserId != null && blockedUserIds!.has(local.motifUserId);
+				return { ...e, ...(hidden ? { hiddenForViewer: true } : {}) };
+			});
+		const noteEmojiWithHidden = addHiddenForViewer(noteEmoji);
+		const reactionEmojiWithHidden = addHiddenForViewer(reactionEmoji);
+
 		const packed: Packed<"Note"> = await awaitAll({
 			id: note.id,
 			createdAt: note.createdAt.toISOString(),
@@ -590,8 +645,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 			repliesCount: note.repliesCount,
 			score: note.score,
 			reactions: convertLegacyReactions(reactions),
-			reactionEmojis: reactionEmoji,
-			emojis: isVisible ? noteEmoji : [],
+			reactionEmojis: reactionEmojiWithHidden,
+			emojis: isVisible ? noteEmojiWithHidden : [],
 			tags: note.tags.length > 0 && isVisible ? note.tags : undefined,
 			fileIds: isVisible ? note.fileIds : [],
 			files: isVisible ? DriveFiles.packMany(note.fileIds) : [],

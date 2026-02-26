@@ -1,45 +1,45 @@
+/**
+ * ActivityPub 用 Emoji オブジェクトのレンダラ
+ *
+ * @remarks
+ * isTextOnly のときは copyPermission / license / creator を固定値で返す。DB の copyPermission（a/d/c/n）は完全形に変換して返す。
+ * ActivityPub 仕様に合わせて出力キーは "creator"。
+ * 連合にはモチーフ情報を配信しない（motifUserId / motifUserMode は出力に含めない）。
+ */
 import config from "@/config/index.js";
+import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
 import type { Emoji } from "@/models/entities/emoji.js";
 
-export default (emoji: Emoji) => ({
-	id: emoji.uri || `${config.url}/emojis/${emoji.name}`,
-	type: "Emoji",
-	name: `:${emoji.name}:`,
-	host: `${emoji.host ?? config.host}`,
-	updated:
-		!emoji.host && emoji.updatedAt != null
-			? emoji.updatedAt.toISOString()
-			: new Date().toISOString,
-	icon: {
-		type: "Image",
-		mediaType: emoji.type || "image/png",
-		url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
-	},
-	keywords: emoji.aliases,
-	...(!emoji.host && emoji.license === "文字だけ"
-		? {
-				copyPermission: "allow",
-				license: "CC0 1.0 Universal",
-				author: config.host,
-		  }
-		: {
-				copyPermission: emoji.license?.includes("コピー可否 : ")
-					? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none"
-					: "none",
-				license: emoji.license?.includes("ライセンス : ")
-					? /ライセンス : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? null
-					: null,
-				usageInfo: emoji.license?.includes("使用情報 : ")
-					? /使用情報 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
-					: undefined,
-				author: emoji.license?.includes("作者 : ")
-					? /作者 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
-					: undefined,
-				description: emoji.license?.includes("説明 : ")
-					? /説明 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
-					: undefined,
-				isBasedOnUrl: emoji.license?.includes("コピー元 : ")
-					? /コピー元 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
-					: undefined,
-		  }),
-});
+export default (emoji: Emoji) => {
+	const copyPermission = emoji.isTextOnly
+		? "allow"
+		: fromStoredCopyPermission(emoji.copyPermission);
+	const license = emoji.isTextOnly
+		? "CC0 1.0 Universal"
+		: (emoji.licenseName ?? null);
+	const creator = emoji.isTextOnly ? config.host : (emoji.creator ?? undefined);
+
+	return {
+		id: emoji.uri || `${config.url}/emojis/${emoji.name}`,
+		type: "Emoji",
+		name: `:${emoji.name}:`,
+		host: `${emoji.host ?? config.host}`,
+		updated:
+			!emoji.host && emoji.updatedAt != null
+				? emoji.updatedAt.toISOString()
+				: new Date().toISOString(),
+		icon: {
+			type: "Image",
+			mediaType: emoji.type || "image/png",
+			url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
+		},
+		keywords: emoji.aliases,
+		copyPermission,
+		license,
+		usageInfo: emoji.usageInfo ?? undefined,
+		creator,
+		description: emoji.description ?? undefined,
+		isBasedOnUrl: emoji.isBasedOnUrl ?? undefined,
+		sensitive: emoji.sensitive ? "as:sensitive" : undefined,
+	};
+};

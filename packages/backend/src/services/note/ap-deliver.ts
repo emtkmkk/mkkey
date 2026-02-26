@@ -1,3 +1,6 @@
+/**
+ * ノート AP 配信ジョブ
+ */
 import DeliverManager, { deliverToInboxes } from "@/remote/activitypub/deliver-manager.js";
 import renderNote from "@/remote/activitypub/renderer/note.js";
 import renderCreate from "@/remote/activitypub/renderer/create.js";
@@ -168,7 +171,7 @@ async function getReactionEmojiMap(reactions: NoteReaction[]) {
 			name: entry.name,
 			host: entry.host ?? IsNull(),
 		})),
-		select: ["name", "host", "license"],
+		select: ["name", "host", "license", "copyPermission"],
 	});
 
 	return new Map(emojis.map((emoji) => [`${emoji.name}@${emoji.host ?? ""}`, emoji]));

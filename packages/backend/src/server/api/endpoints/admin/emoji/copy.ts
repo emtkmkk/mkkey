@@ -1,3 +1,10 @@
+/**
+ * 絵文字コピー API
+ *
+ * @remarks
+ * コピー元は isBasedOnUrl に URI。補足情報（license）には「Copy to 〇〇」を格納。
+ * モチーフ情報は引き継がず、usageVisibility は常に private で新規作成する（emojiAdded は送信しない）。
+ */
 import { IsNull } from "typeorm";
 import define from "../../../define.js";
 import { Emojis } from "@/models/index.js";
@@ -5,7 +12,6 @@ import { genId } from "@/misc/gen-id.js";
 import { ApiError } from "../../../error.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
-import { publishBroadcastStream } from "@/services/stream.js";
 import { db } from "@/db/postgre.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 
@@ -92,6 +98,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.alreadyRegistered);
 	}
 
+	const sourceHost = emoji.host ?? "unknown";
 	const copied = await Emojis.insert({
 		id: genId(),
 		createdAt: new Date(),
@@ -104,19 +111,25 @@ export default define(meta, paramDef, async (ps, me) => {
 		originalUrl: driveFile.url,
 		publicUrl: driveFile.webpublicUrl ?? driveFile.url,
 		type: driveFile.webpublicType ?? driveFile.type,
-		license: `Copy to ${emoji.host ?? "unknown"}${
-			emoji.license
-				? `, ${emoji.license.replace(/コピー元 : ([^,]+)(,|$)/, "")}`
-				: ""
-		}${emoji.uri ? `, コピー元 : ${emoji.uri}` : ""}`,
+		copyPermission: emoji.copyPermission ?? null,
+		licenseName: emoji.licenseName ?? null,
+		usageInfo: emoji.usageInfo ?? null,
+		creator: emoji.creator ?? null,
+		description: emoji.description ?? null,
+		isBasedOnUrl: emoji.uri ?? null,
+		license: `Copy to ${sourceHost}`,
+		isTextOnly: false,
+		sensitive: emoji.sensitive ?? false,
+		usageVisibility: "private",
+		allowedUserIds: [],
+		motifUserId: null,
+		motifUserMode: "any",
 	}).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
 
 	await db.queryResultCache!.remove(["meta_emojis"]);
 	await bumpReactionNormalizeCacheVersion();
 
-	publishBroadcastStream("emojiAdded", {
-		emoji: await Emojis.pack(copied.id),
-	});
+	// コピーは常に private のため emojiAdded は送信しない
 
 	return {
 		id: copied.id,

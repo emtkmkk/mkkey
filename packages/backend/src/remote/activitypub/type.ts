@@ -260,11 +260,16 @@ export interface IApEmoji extends IObject {
 	aliases?: Array<string>;
 	keywords?: Array<string>;
 	license?: string;
+	/** ActivityPub 仕様の製作者。後方互換のため author も読む */
+	creator?: string;
+	/** @deprecated 後方互換用。creator を優先する */
 	author?: string;
 	copyPermission?: string;
 	usageInfo?: string;
 	description?: string;
 	isBasedOnUrl?: string;
+	/** センシティブフラグ。タグに含まれる場合もある */
+	sensitive?: boolean;
 }
 
 export const isEmoji = (object: IObject): object is IApEmoji =>

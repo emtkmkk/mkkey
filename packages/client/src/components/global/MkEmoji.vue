@@ -1,6 +1,6 @@
 <template>
 	<img
-		v-if="isCustom && !isMuted && urlRaw.length > errorCnt"
+		v-if="isCustom && !hideEmojiImage && urlRaw.length > errorCnt"
 		class="mk-emoji"
 		:class="{
 			normal,
@@ -58,7 +58,7 @@
 	<img
 		v-else-if="
 			isCustom &&
-			!isMuted &&
+			!hideEmojiImage &&
 			urlRaw.length <= errorCnt &&
 			!isPicker &&
 			emojiHost &&
@@ -107,6 +107,14 @@
 	}}</span>
 </template>
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * カスタム絵文字表示コンポーネント。isMuted 時は画像にせず :name: のまま表示。
+ *
+ * @remarks
+ * note の emojis / reactionEmojis に hiddenForViewer が true のときは画像にせず :name: のまま表示（isMuted と同様）。
+ */
 import { computed, ref, watch } from "vue";
 import { CustomEmoji } from "calckey-js/built/entities";
 import { getStaticImageUrl } from "@/scripts/get-static-image-url";
@@ -208,7 +216,7 @@ const isMuted = computed(() => {
 		return false;
 	});
 });
-	
+
 const ce = computed(() => instance.emojis ?? []);
 const customEmoji = computed(() => {
 	if (!isCustom.value) return null;
@@ -263,6 +271,20 @@ const emojiFullName = computed(() => {
 	const hostSuffix = emojiHost.value ? `@${emojiHost.value}` : "";
 	return `${customEmojiName.value}${hostSuffix}`;
 });
+
+/** ノートの emojis / reactionEmojis で hiddenForViewer が true の絵文字は画像にせず :name: のまま表示（ブロック関係等） */
+const isHiddenForViewer = computed(() => {
+	if (!props.note?.emojis?.length && !props.note?.reactionEmojis?.length) return false;
+	const name = customEmojiName.value;
+	if (!name) return false;
+	const list = [...(props.note.emojis ?? []), ...(props.note.reactionEmojis ?? [])];
+	const entry = list.find((e: { name: string; hiddenForViewer?: boolean }) => {
+		const en = e.name.replace(/@.*$/, "");
+		return en === name || e.name === name || e.name === `${name}@.`;
+	});
+	return entry?.hiddenForViewer === true;
+});
+const hideEmojiImage = computed(() => isMuted.value || isHiddenForViewer.value);
 
 const originalEmojiFullName = $computed(() => {
 	if (!props.emoji.startsWith(":")) return props.emoji;

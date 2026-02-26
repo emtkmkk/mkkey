@@ -1,4 +1,11 @@
+/**
+ * ActivityPub Note モデル・取り込み
+ *
+ * @remarks
+ * extractEmojis では licenseData を個別カラム（copyPermission, licenseName 等）に保存。補足情報は license に格納。
+ */
 import { IsNull } from "typeorm";
+import { toStoredCopyPermission } from "@/misc/copy-permission.js";
 import promiseLimit from "promise-limit";
 import * as mfm from "mfm-js";
 import config from "@/config/index.js";
@@ -676,7 +683,8 @@ export async function extractEmojis(
 
 			let licenseData = {
 				license: tag.license,
-				author: tag.author,
+				// ActivityPub 仕様は creator。後方互換のため author も受け取る
+				author: tag.creator ?? tag.author,
 				copyPermission: tag.copyPermission,
 				usageInfo: tag.usageInfo,
 				description: tag.description,
@@ -805,7 +813,18 @@ export async function extractEmojis(
 
 			if (roleOnly) aliases.push("ロール限定");
 
-			if (emojiInfo?.isSensitive) aliases.push("センシティブ");
+			/** タグの sensitive / emojiInfo.isSensitive / エイリアス「センシティブ」をフラグに変換 */
+			const sensitive =
+				tag.sensitive === true ||
+				emojiInfo?.isSensitive === true ||
+				(aliases as string[]).some(
+					(a) => String(a).trim() === "センシティブ" || String(a).trim() === "sensitive",
+				);
+			/** フラグに一本化するため、エイリアスからは除外して保存 */
+			aliases = (aliases as string[]).filter(
+				(a) =>
+					String(a).trim() !== "センシティブ" && String(a).trim() !== "sensitive",
+			);
 
 			const licenseText = JSON.stringify({
 				...licenseData,
@@ -848,27 +867,14 @@ export async function extractEmojis(
 					});
 			});
 
-			aliases = _aliases;
+			aliases = _aliases.filter(
+				(y) => y !== "センシティブ" && y !== "sensitive",
+			);
 
-			const license =
-				[
-					licenseData.license ? `ライセンス : ${licenseData.license}` : "",
-					licenseData.author ? `作者 : ${licenseData.author}` : "",
-					licenseData.copyPermission && licenseData.copyPermission !== "none"
-						? `コピー可否 : ${licenseData.copyPermission}`
-						: "",
-					licenseData.usageInfo ? `使用情報 : ${licenseData.usageInfo}` : "",
-					licenseData.description ? `説明 : ${licenseData.description}` : "",
-					licenseData.isBasedOnUrl
-						? `コピー元 : ${licenseData.isBasedOnUrl}`
-						: "",
-					licenseData.text,
-				]
-					.filter(Boolean)
-					.map((x) => x.replaceAll(",", "，"))
-					.join(", \n")
-					.trim() ||
-				emojiInfo?.license ||
+			/** ライセンス補足情報（自由文）。リモートの emojiInfo?.license や licenseData.text を格納 */
+			const licenseSupplement =
+				(licenseData.text && licenseData.text.trim()) ||
+				(typeof emojiInfo?.license === "string" ? emojiInfo.license : null) ||
 				null;
 
 			if (exists) {
@@ -881,7 +887,15 @@ export async function extractEmojis(
 					tag.icon!.url !== exists.originalUrl ||
 					(emojiInfoFlg && category !== exists.category) ||
 					(emojiInfoFlg && aliases.join(", ") !== exists.aliases.join(", ")) ||
-					(emojiInfoFlg && license !== exists.license)
+					(emojiInfoFlg &&
+						(licenseData.copyPermission !== exists.copyPermission ||
+							licenseData.license !== exists.licenseName ||
+							licenseData.usageInfo !== exists.usageInfo ||
+							licenseData.author !== exists.creator ||
+							licenseData.description !== exists.description ||
+							licenseData.isBasedOnUrl !== exists.isBasedOnUrl ||
+							licenseSupplement !== exists.license)) ||
+					sensitive !== exists.sensitive
 				) {
 					let beforeD15Date = new Date();
 					beforeD15Date.setDate(beforeD15Date.getDate() - 15);
@@ -931,7 +945,14 @@ export async function extractEmojis(
 								publicUrl: tag.icon!.url,
 								category,
 								aliases,
-								license,
+								copyPermission: toStoredCopyPermission(licenseData.copyPermission ?? null),
+								licenseName: licenseData.license ?? null,
+								usageInfo: licenseData.usageInfo ?? null,
+								creator: licenseData.author ?? null,
+								description: licenseData.description ?? null,
+								isBasedOnUrl: licenseData.isBasedOnUrl ?? null,
+								license: licenseSupplement,
+								sensitive,
 								updatedAt: new Date(),
 							},
 						);
@@ -945,6 +966,7 @@ export async function extractEmojis(
 								uri: tag.id,
 								originalUrl: tag.icon!.url,
 								publicUrl: tag.icon!.url,
+								sensitive,
 								updatedAt: new Date(),
 							},
 						);
@@ -972,7 +994,14 @@ export async function extractEmojis(
 				updatedAt: new Date(),
 				category,
 				aliases,
-				license,
+				copyPermission: toStoredCopyPermission(licenseData.copyPermission ?? null),
+				licenseName: licenseData.license ?? null,
+				usageInfo: licenseData.usageInfo ?? null,
+				creator: licenseData.author ?? null,
+				description: licenseData.description ?? null,
+				isBasedOnUrl: licenseData.isBasedOnUrl ?? null,
+				license: licenseSupplement,
+				sensitive,
 			} as Partial<Emoji>).then((x) =>
 				Emojis.findOneByOrFail(x.identifiers[0]),
 			);

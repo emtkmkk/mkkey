@@ -30,6 +30,7 @@ import * as ep___admin_emoji_removeAliasesBulk from "./endpoints/admin/emoji/rem
 import * as ep___admin_emoji_setAliasesBulk from "./endpoints/admin/emoji/set-aliases-bulk.js";
 import * as ep___admin_emoji_setCategoryBulk from "./endpoints/admin/emoji/set-category-bulk.js";
 import * as ep___admin_emoji_setLicenseBulk from "./endpoints/admin/emoji/set-license-bulk.js";
+import * as ep___admin_emoji_reparseLicense from "./endpoints/admin/emoji/reparse-license.js";
 import * as ep___admin_emoji_update from "./endpoints/admin/emoji/update.js";
 import * as ep___admin_federation_deleteAllFiles from "./endpoints/admin/federation/delete-all-files.js";
 import * as ep___admin_federation_refreshRemoteInstanceMetadata from "./endpoints/admin/federation/refresh-remote-instance-metadata.js";
@@ -401,6 +402,7 @@ const eps = [
 	["admin/emoji/set-aliases-bulk", ep___admin_emoji_setAliasesBulk],
 	["admin/emoji/set-category-bulk", ep___admin_emoji_setCategoryBulk],
 	["admin/emoji/set-license-bulk", ep___admin_emoji_setLicenseBulk],
+	["admin/emoji/reparse-license", ep___admin_emoji_reparseLicense],
 	["admin/emoji/update", ep___admin_emoji_update],
 	["admin/federation/delete-all-files", ep___admin_federation_deleteAllFiles],
 	[

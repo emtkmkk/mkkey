@@ -1,5 +1,8 @@
 /**
  * Web Client Server
+ *
+ * @remarks
+ * /emoji/:path の 404 は usageVisibility===private と既存 ngEmoji（ホストブロック・copyPermission deny）のみ。owner/follow/ブロックでは 404 にしない。
  */
 
 import { dirname } from "node:path";
@@ -17,6 +20,7 @@ import { KoaAdapter } from "@bull-board/koa";
 
 import { In, IsNull, Not, MoreThan } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
 import config from "@/config/index.js";
 import { getLocalNotesCount } from "@/services/note/local-notes-count-cache.js";
 import {
@@ -30,6 +34,7 @@ import {
 	GalleryPosts,
 	EmojiCustomCategories,
 } from "@/models/index.js";
+import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
 import * as Acct from "@/misc/acct.js";
 import { getNoteSummary } from "@/misc/get-note-summary.js";
 import { queues } from "@/queue/queues.js";
@@ -403,8 +408,8 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 
 	const ngEmoji =
 		["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(emoji.host ?? config.host) ||
-		emoji.license?.includes("コピー可否 : deny") ||
-		emoji.category?.startsWith("!");
+		fromStoredCopyPermission(emoji.copyPermission) === "deny" ||
+		getEffectiveUsageVisibility(emoji) === "private";
 
 	if (ngEmoji) {
 		if ("fallback" in ctx.query) {
@@ -457,34 +462,21 @@ router.get("/emoji_license/:path([^.]*).json", async (ctx) => {
 	if (emoji) {
 		ctx.set("Content-Type", "application/json; charset=utf-8");
 		ctx.set("Cache-Control", "public, max-age=15");
-		if (!emoji.host && emoji.license === "文字だけ") {
-			ctx.body = JSON.stringify({
-				copyPermission: "allow",
-				license: "CC0 1.0 Universal",
-				author: config.host,
-			});
-		} else {
-			ctx.body = JSON.stringify({
-				copyPermission: emoji.license?.includes("コピー可否 : ")
-					? /コピー可否 : (\w+)(,|$)/.exec(emoji.license)?.[1] ?? "none"
-					: "none",
-				license: emoji.license?.includes("ライセンス : ")
-					? /ライセンス : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? null
-					: null,
-				usageInfo: emoji.license?.includes("使用情報 : ")
-					? /使用情報 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
-					: undefined,
-				author: emoji.license?.includes("作者 : ")
-					? /作者 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
-					: undefined,
-				description: emoji.license?.includes("説明 : ")
-					? /説明 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
-					: undefined,
-				isBasedOnUrl: emoji.license?.includes("コピー元 : ")
-					? /コピー元 : ([^,]+)(,|$)/.exec(emoji.license)?.[1] ?? undefined
-					: undefined,
-			});
-		}
+		const copyPermission = emoji.isTextOnly
+			? "allow"
+			: fromStoredCopyPermission(emoji.copyPermission);
+		const license = emoji.isTextOnly
+			? "CC0 1.0 Universal"
+			: (emoji.licenseName ?? null);
+		const creator = emoji.isTextOnly ? config.host : (emoji.creator ?? undefined);
+		ctx.body = JSON.stringify({
+			copyPermission,
+			license,
+			usageInfo: emoji.usageInfo ?? undefined,
+			creator,
+			description: emoji.description ?? undefined,
+			isBasedOnUrl: emoji.isBasedOnUrl ?? undefined,
+		});
 	} else {
 		ctx.status = 404;
 	}

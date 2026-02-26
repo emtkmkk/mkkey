@@ -503,13 +503,14 @@
 						:emojis="
 							customEmojis
 								.filter((e) =>
-									e.createdAt
+									(!e.usageVisibility || e.usageVisibility === 'public' || e.usageVisibility === 'user') &&
+									(e.createdAt
 										? new Date().valueOf() -
 												new Date(
 													e.createdAt
 												).valueOf() <
 										  365 * 24 * 60 * 60 * 1000
-										: false
+										: false)
 								)
 								.sort(
 									(a, b) =>
@@ -573,7 +574,7 @@
 							@chosen="chosen"
 							>{{ category || i18n.ts.other }}</XSection
 						>
-						
+
 						<template v-if="!$store.state.nullCategoryHidden">
 							<template v-once v-if="$store.state.japanCategory">
                                                                 <XSection
@@ -1149,6 +1150,14 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 絵文字ピッカー。カテゴリ・検索・最近追加・タグタブを提供。
+ *
+ * @remarks
+ * 「最近追加された」は usageVisibility が public または user（許可ユーザ）の絵文字のみ表示。
+ */
 import { ref, unref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import * as Misskey from "calckey-js";
 import XSection from "@/components/MkEmojiPicker.section.vue";
@@ -1891,7 +1900,7 @@ function reorderSections() {
        for (const el of current) {
                el.remove();
        }
-  
+
        for (const key of order) {
                for (const k in map) {
                        if (k === key || k.startsWith(key + "-")) {

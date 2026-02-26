@@ -175,36 +175,24 @@
 											</div>
 											<div class="info">
 												<i
-													v-if="
-														emoji.license?.includes(
-															'コピー可否 : conditional'
-														)
-													"
+													v-if="emoji.copyPermission === 'conditional'"
 													class="ph-bold ph-warning ph-lg"
 													style="color: var(--warn)"
 												/>
 												<i
-													v-else-if="
-														emoji.license?.includes(
-															'コピー可否 : deny'
-														)
-													"
+													v-else-if="emoji.copyPermission === 'deny'"
 													class="ph-bold ph-prohibit ph-lg"
 													style="color: var(--error)"
 												/>
 												<i
-													v-else-if="
-														emoji.license?.includes(
-															'コピー可否 : allow'
-														)
-													"
+													v-else-if="emoji.copyPermission === 'allow' || emoji.isTextOnly"
 													class="ph-bold ph-check ph-lg"
 													style="
 														color: var(--success);
 													"
 												/>
 												<i
-													v-else-if="emoji.license"
+													v-else-if="emoji.license || emoji.licenseName"
 													class="ph-bold ph-info ph-lg"
 												/>
 												{{ emoji.host }}
@@ -222,6 +210,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 管理画面・絵文字一覧ページ。一覧のコピー可否表示は emoji.copyPermission を参照。
+ */
 import {
 	computed,
 	defineAsyncComponent,

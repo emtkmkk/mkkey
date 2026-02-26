@@ -64,10 +64,10 @@
 					<Mfm :text="licenseDetail.description"
 				/></template>
 			</MkKeyValue>
-			<MkKeyValue v-if="licenseDetail.author">
+			<MkKeyValue v-if="licenseDetail.creator">
 				<template #key>{{ i18n.ts.emojiAuthor }}</template>
 				<template #value>
-					<Mfm :text="licenseDetail.author"
+					<Mfm :text="licenseDetail.creator"
 				/></template>
 			</MkKeyValue>
 			<MkKeyValue
@@ -172,6 +172,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * カスタム絵文字詳細表示コンポーネント。ライセンス情報は API の個別フィールドから表示する。
+ */
 import * as Misskey from "calckey-js";
 import { defineAsyncComponent, defineProps, onMounted } from "vue";
 import { i18n } from "@/i18n.js";
@@ -205,49 +210,17 @@ const load = async (emoji) => {
 
 	if (!_emoji) return;
 
-	licenseDetail =
-		!_emoji.host && _emoji.license === "文字だけ"
-			? {
-					copyPermission: "allow",
-					license: "CC0 1.0 Universal",
-					author: config.host,
-			  }
-			: {
-					copyPermission: _emoji.license?.includes("コピー可否 : ")
-						? /コピー可否 : (\w+)(,|$)/.exec(_emoji.license)?.[1] ??
-						  "none"
-						: "none",
-					license: _emoji.license?.includes("ライセンス : ")
-						? /ライセンス : ([^,]+)(,|$)/.exec(
-								_emoji.license
-						  )?.[1] ?? null
-						: null,
-					usageInfo: _emoji.license?.includes("使用情報 : ")
-						? /使用情報 : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ??
-						  undefined
-						: undefined,
-					author: _emoji.license?.includes("作者 : ")
-						? /作者 : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ??
-						  undefined
-						: undefined,
-					description: _emoji.license?.includes("説明 : ")
-						? /説明 : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ??
-						  undefined
-						: undefined,
-					isBasedOnUrl: _emoji.license?.includes("コピー元 : ")
-						? /コピー元 : ([^,]+)(,|$)/.exec(_emoji.license)?.[1] ??
-						  undefined
-						: undefined,
-			  };
+	const isTextOnly = _emoji.isTextOnly === true;
+	licenseDetail = {
+		copyPermission: isTextOnly ? "allow" : (_emoji.copyPermission ?? "none"),
+		license: isTextOnly ? "CC0 1.0 Universal" : (_emoji.licenseName ?? null),
+		usageInfo: _emoji.usageInfo ?? undefined,
+		creator: isTextOnly ? config.host : (_emoji.creator ?? undefined),
+		description: _emoji.description ?? undefined,
+		isBasedOnUrl: _emoji.isBasedOnUrl ?? undefined,
+	};
 
-	licenseText = _emoji.license
-		?.replaceAll(
-			/(コピー可否|ライセンス|使用情報|作者|説明|コピー元) : ([^,]+)(,|$)/g,
-			""
-		)
-		.trim()
-		.replace(/,$/, "")
-		.replace(/^文字だけ$/, "");
+	licenseText = _emoji.license ?? "";
 };
 
 const edit = () => {

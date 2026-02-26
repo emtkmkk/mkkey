@@ -1,7 +1,14 @@
+/**
+ * インスタンス meta API（絵文字一覧含む）
+ *
+ * @remarks
+ * 絵文字一覧は usageVisibility とモチーフでフィルタする。未認証は public/limited のみ。認証時はフォロー1クエリ＋メモリフィルタでモチーフ条件を適用。
+ */
 import { IsNull, MoreThan, Not } from "typeorm";
 import config from "@/config/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Ads, Emojis, RegistryItems, Users } from "@/models/index.js";
+import { Ads, Emojis, Followings, RegistryItems, Users } from "@/models/index.js";
+import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
 import { MAX_NOTE_TEXT_LENGTH, MAX_CAPTION_TEXT_LENGTH } from "@/const.js";
 import define from "../define.js";
 
@@ -450,6 +457,39 @@ export default define(meta, paramDef, async (ps, me) => {
 				},
 		  });
 
+	// usageVisibility とモチーフでフィルタ（キャッシュ取得後のメモリ側）。認証時はフォロー1クエリでモチーフ判定
+	let followeeIds: Set<string> = new Set();
+	if (me && emojis.length > 0) {
+		const needsFollowCheck = emojis.some(
+			(x) => x.motifUserId != null && (x.motifUserMode ?? "any") === "follow",
+		);
+		if (needsFollowCheck) {
+			const followings = await Followings.findBy({ followerId: me.id });
+			followeeIds = new Set(followings.map((f) => f.followeeId));
+		}
+	}
+	emojis = emojis.filter((x) => {
+		const visibility = getEffectiveUsageVisibility(x);
+		if (visibility === "private") return false;
+		if (!me) {
+			// 未認証: public / limited のみ
+			if (visibility !== "public" && visibility !== "limited") return false;
+		} else {
+			// 認証済み: user の場合は許可ユーザのみ
+			if (visibility === "user") {
+				const allowed = x.allowedUserIds ?? [];
+				if (!allowed.includes(me.id)) return false;
+			}
+		}
+		// モチーフ: motifUserId 未設定 or motifUserMode === 'any' はそのまま
+		const mode = x.motifUserMode ?? "any";
+		if (x.motifUserId == null || mode === "any") return true;
+		if (!me) return false; // follow/owner は認証必須
+		if (mode === "follow") return followeeIds.has(x.motifUserId!);
+		if (mode === "owner") return x.motifUserId === me.id;
+		return true;
+	});
+
 	const ads = await Ads.find({
 		where: {
 			expiresAt: MoreThan(new Date()),
@@ -499,11 +539,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		maxNoteTextLength: MAX_NOTE_TEXT_LENGTH, // 後方互換性のため
 		maxCaptionTextLength: MAX_CAPTION_TEXT_LENGTH,
 		emojis:
-			instance.privateMode && !me
-				? []
-				: await Emojis.packMany(
-						emojis.filter((x) => !x.category?.startsWith("!")),
-				  ),
+			instance.privateMode && !me ? [] : await Emojis.packMany(emojis),
 		defaultLightTheme: instance.defaultLightTheme,
 		defaultDarkTheme: instance.defaultDarkTheme,
 		ads:

@@ -1,3 +1,9 @@
+/**
+ * インスタンスメタデータ・絵文字カテゴリ等
+ *
+ * @remarks
+ * emojiCategories は usageVisibility === 'public' の絵文字のみで構成（API で既にフィルタ済み。後方互換で usageVisibility 未設定は public 扱い）。
+ */
 import { computed, reactive } from "vue";
 import { api, queueApi } from "./os";
 import { stream } from "@/stream";
@@ -300,7 +306,8 @@ export const emojiCategories = computed(() => {
 	const categories = new Set();
 	for (const emoji of instance.emojis) {
 		if (!emoji.category) continue;
-		if (emoji.category.startsWith("!")) continue;
+		// カテゴリ・ピッカーに出すのは public のみ（後方互換で未設定は public）
+		if (emoji.usageVisibility != null && emoji.usageVisibility !== "public") continue;
 		categories.add(emoji.category);
 	}
 	return Array.from(categories);
@@ -320,13 +327,13 @@ export const emojiTags = computed(() => {
 export const emojiMap = computed((): Map<string, any> => {
   const emojisArray = instance.emojis ?? [];
   const emojisMap = new Map();
-  
+
   emojisArray.forEach(emoji => {
     if (emoji.name) {
       emojisMap.set(emoji.name.toLowerCase(), emoji);
     }
   });
-  
+
   return emojisMap;
 });
 

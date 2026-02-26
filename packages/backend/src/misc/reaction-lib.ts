@@ -1,3 +1,7 @@
+/**
+ * リアクション解決・変換ユーティリティ
+ */
+import { fromStoredCopyPermission } from "./copy-permission.js";
 import {
         emojiRegex,
         unicodeEmojiRegexAtStartToEnd,
@@ -35,12 +39,16 @@ const apFallbackReactionHosts = [
 
 export async function resolveApReaction(
 	reaction: string,
-	emoji?: { host?: string | null; license?: string | null } | null,
+	emoji?: {
+		host?: string | null;
+		license?: string | null;
+		copyPermission?: string | null;
+	} | null,
 ): Promise<string> {
 	if (
 		emoji?.host &&
 		(apFallbackReactionHosts.includes(emoji.host) ||
-			emoji.license?.includes("コピー可否 : deny"))
+			fromStoredCopyPermission(emoji.copyPermission) === "deny")
 	) {
 		return await getFallbackReaction();
 	}

@@ -1,8 +1,41 @@
+/**
+ * メタ絵文字一覧・リモート絵文字取得 API
+ *
+ * @remarks
+ * 返却リストは usageVisibility とモチーフでフィルタする。キャッシュは従来どおり 1 キーで取得し、フィルタはメモリ側で実施。
+ */
+import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
 import { IsNull, MoreThan, Not } from "typeorm";
 import config from "@/config/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Ads, Emojis, Users, RegistryItems } from "@/models/index.js";
+import { Ads, Emojis, Followings, Users, RegistryItems } from "@/models/index.js";
+import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
+import type { Emoji } from "@/models/entities/emoji.js";
 import define from "../define.js";
+
+/** 一覧に含めるか（usageVisibility とモチーフ）。ローカル絵文字用。 */
+function includeEmojiInList(
+	emoji: Emoji,
+	me: { id: string } | null,
+	followeeIds: Set<string>,
+): boolean {
+	const visibility = getEffectiveUsageVisibility(emoji);
+	if (visibility === "private") return false;
+	if (!me) {
+		if (visibility !== "public" && visibility !== "limited") return false;
+	} else {
+		if (visibility === "user") {
+			const allowed = emoji.allowedUserIds ?? [];
+			if (!allowed.includes(me.id)) return false;
+		}
+	}
+	const mode = emoji.motifUserMode ?? "any";
+	if (emoji.motifUserId == null || mode === "any") return true;
+	if (!me) return false;
+	if (mode === "follow") return followeeIds.has(emoji.motifUserId);
+	if (mode === "owner") return emoji.motifUserId === me.id;
+	return true;
+}
 
 async function getEmojiUpdatedAt() {
         const latestEmoji = await Emojis.createQueryBuilder("emoji")
@@ -99,30 +132,49 @@ export default define(meta, paramDef, async (ps, me) => {
 			.getOne();
 
 		if (item?.value) {
-			let emojis = (
-				await Emojis.find({
-					where: {
-						oldEmoji: false,
-					},
-					order: {
-						name: "ASC",
-					},
-					cache: {
-						id: "meta_all_emojis2",
-						milliseconds: 3600000, // 1 hour
-					},
-				})
-			)
+			let allEmojis = await Emojis.find({
+				where: { oldEmoji: false },
+				order: { name: "ASC" },
+				cache: {
+					id: "meta_all_emojis2",
+					milliseconds: 3600000,
+				},
+			});
+			const needsFollowCheck = allEmojis.some(
+				(x) =>
+					x.host == null &&
+					x.motifUserId != null &&
+					(x.motifUserMode ?? "any") === "follow",
+			);
+			let followeeIds = new Set<string>();
+			if (needsFollowCheck) {
+				const followings = await Followings.findBy({ followerId: me.id });
+				followeeIds = new Set(followings.map((f) => f.followeeId));
+			}
+			let emojis = allEmojis
 				.map((emoji) => {
-					if (
-						["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-							emoji.host,
-						) ||
-						emoji.license?.includes("コピー可否 : deny") ||
-						emoji.category?.startsWith("!")
-					) {
-						return null;
+					if (emoji.host == null) {
+						if (!includeEmojiInList(emoji, me, followeeIds)) return null;
+					} else {
+						if (
+							["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
+								emoji.host,
+							) ||
+							fromStoredCopyPermission(emoji.copyPermission) === "deny" ||
+							emoji.category?.startsWith("!")
+						) {
+							return null;
+						}
 					}
+					const effectiveCopyPermission = emoji.isTextOnly
+						? "allow"
+						: fromStoredCopyPermission(emoji.copyPermission);
+					const effectiveLicenseName = emoji.isTextOnly
+						? "CC0 1.0 Universal"
+						: emoji.licenseName;
+					const effectiveCreator = emoji.isTextOnly
+						? config.host
+						: emoji.creator;
 					return {
 						id: emoji.id,
 						aliases: emoji.aliases.filter(Boolean),
@@ -140,6 +192,13 @@ export default define(meta, paramDef, async (ps, me) => {
 							  }.webp`
 							: emoji.publicUrl || emoji.originalUrl,
 						license: emoji.license,
+						copyPermission: effectiveCopyPermission,
+						licenseName: effectiveLicenseName,
+						usageInfo: emoji.usageInfo,
+						creator: effectiveCreator,
+						description: emoji.description,
+						isBasedOnUrl: emoji.isBasedOnUrl,
+						isTextOnly: emoji.isTextOnly,
 						createdAt: emoji.createdAt,
 						updatedAt: emoji.updatedAt,
 					};
@@ -170,6 +229,19 @@ export default define(meta, paramDef, async (ps, me) => {
 			milliseconds: 3600000, // 1 hour
 		},
 	});
+
+	let followeeIds = new Set<string>();
+	if (me && emojis.length > 0) {
+		const needsFollowCheck = emojis.some(
+			(x) =>
+				x.motifUserId != null && (x.motifUserMode ?? "any") === "follow",
+		);
+		if (needsFollowCheck) {
+			const followings = await Followings.findBy({ followerId: me.id });
+			followeeIds = new Set(followings.map((f) => f.followeeId));
+		}
+	}
+	emojis = emojis.filter((x) => includeEmojiInList(x, me, followeeIds));
 
 	if (false && !ps.includeUrl) {
 		emojis?.forEach((x) => {
@@ -206,7 +278,7 @@ export default define(meta, paramDef, async (ps, me) => {
 					x.host,
 				) &&
 				(x.host?.length ?? 0) < 50 &&
-				x.license?.includes("コピー可否 : allow"),
+				(x.isTextOnly || fromStoredCopyPermission(x.copyPermission) === "allow"),
 		);
 
 		// データ削減の為、不要情報を削除
@@ -248,7 +320,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				) &&
 				(x.name?.length ?? 0) < 100 &&
 				(x.host?.length ?? 0) < 50 &&
-				!x.license?.includes("コピー可否 : deny"),
+				fromStoredCopyPermission(x.copyPermission) !== "deny",
 		);
 
 		// データ削減の為、不要情報を削除
@@ -271,9 +343,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
         return {
                 emojiUpdatedAt: await emojiUpdatedAtPromise,
-                emojis: await Emojis.packMany(
-                        emojis.filter((x) => !x.category?.startsWith("!")),
-                ),
+                emojis: await Emojis.packMany(emojis),
                 ...(remoteEmojiMode && remoteEmojis && me
 			? {
 					emojiFetchDate: new Date(),

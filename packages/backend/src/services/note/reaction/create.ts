@@ -1,3 +1,6 @@
+/**
+ * リアクション作成サービス
+ */
 import { publishInternalEvent, publishNoteStream } from "@/services/stream.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
@@ -353,7 +356,7 @@ export default async (
 			name: decodedReaction.name,
 			host: decodedReaction.host ?? IsNull(),
 		},
-		select: ["name", "host", "originalUrl", "publicUrl", "license"],
+		select: ["name", "host", "originalUrl", "publicUrl", "license", "copyPermission"],
 	});
 
 	publishInternalEvent("notePackReactionUpdated", {

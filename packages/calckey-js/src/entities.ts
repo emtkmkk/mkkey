@@ -290,6 +290,8 @@ export type CustomEmoji = {
 	url: string;
 	category: string;
 	aliases: string[];
+	/** センシティブフラグ（ActivityPub では as:sensitive） */
+	sensitive?: boolean;
 };
 
 export type LiteInstanceMetadata = {

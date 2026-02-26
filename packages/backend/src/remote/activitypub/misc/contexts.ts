@@ -552,7 +552,8 @@ export const WellKnownContext = {
 			// Fedibird
 			fedibird: "http://fedibird.com/ns#",
 			host: "schema:host",
-			author: "schema:author",
+			creator: "schema:author",
+			author: "schema:author", // 後方互換
 			description: "schema:description",
 			copyPermission: "fedibird:copyPermission",
 			license: "schema:license",

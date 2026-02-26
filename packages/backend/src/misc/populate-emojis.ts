@@ -11,11 +11,12 @@ import { query } from "@/prelude/url.js";
 const cache = new Cache<Emoji | null>(1000 * 60 * 60 * 4);
 
 /**
- * 添付用絵文字情報
+ * 添付用絵文字情報。host は hiddenForViewer 判定（ローカル＝モチーフ）に利用する。
  */
-type PopulatedEmoji = {
+export type PopulatedEmoji = {
 	name: string;
 	url: string;
+	host?: string | null;
 };
 
 function normalizeHost(
@@ -79,11 +80,6 @@ export async function populateEmoji(
 	if (emoji == null) return null;
 
 	const isLocal = emoji.host == null;
-
-	// ノートにローカル絵文字情報を付けない
-	// TODO : 試験的
-	if (isLocal) return null;
-
 	const emojiUrl = emoji.publicUrl || emoji.originalUrl; // || emoji.originalUrl してるのは後方互換性のため
 	const url = isLocal
 		? emojiUrl
@@ -94,6 +90,7 @@ export async function populateEmoji(
 	return {
 		name: emojiName,
 		url,
+		host: emoji.host ?? null,
 	};
 }
 

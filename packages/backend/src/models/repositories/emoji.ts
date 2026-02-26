@@ -23,6 +23,8 @@ export const NEW_EMOJI_FIELDS = [
 	"allowedUserIds",
 	"motifUserId",
 	"motifUserMode",
+	"category",
+	"host",
 ] as const;
 
 /** デフォルト値のときはキーを返さない */

@@ -287,15 +287,29 @@ const initializeLoginId = async () => {
 	}
 };
 
+/** アカウント情報取得の待ち時間（ミリ秒）。これを超えた場合はキャッシュで起動を進める。 */
+const ACCOUNT_FETCH_TIMEOUT_MS = 4000;
+
 // ユーザーアカウントの取得とリフレッシュ
+// NOTE: ログイン済みの場合は最大 ACCOUNT_FETCH_TIMEOUT_MS だけ待ち、それ以内に取得できればその結果を使用。超えた場合はキャッシュで起動し、取得はバックグラウンドで完了する
 const fetchUserAccount = async () => {
 	await initializeLoginId();
 	if ($i?.token) {
 		const waitMsg = "アカウント情報を取得中...";
 		waitMessages.push(waitMsg);
-		if (_DEV_) console.log("account cache found. refreshing...");
-		await refreshAccount();
+		const refreshPromise = refreshAccount();
+		const result = await Promise.race([
+			refreshPromise.then(() => "fresh" as const),
+			wait(ACCOUNT_FETCH_TIMEOUT_MS).then(() => "timeout" as const),
+		]);
 		waitMessages = waitMessages.filter((x) => x !== waitMsg);
+		if (result === "timeout") {
+			if (_DEV_) console.log("account fetch exceeded timeout, proceeding with cache");
+			// 取得はバックグラウンドで継続し、完了時に $i が更新される
+			refreshPromise.catch((err) => {
+				if (_DEV_) console.warn("Background account refresh failed", err);
+			});
+		}
 	} else {
 		const waitMsg = "ログイン中...";
 		waitMessages.push(waitMsg);

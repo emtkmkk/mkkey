@@ -59,7 +59,8 @@ import type { Instance } from "../entities/instance.js";
 import { resolveUser } from "@/remote/resolve-user.js";
 import { redisClient } from "@/db/redis.js";
 
-const ME_DETAILED_BASE_CACHE_TTL_SEC = 60 * 10;
+/** /i の base キャッシュ TTL（秒）。キャッシュヒット率向上のため 20 分に設定。 */
+const ME_DETAILED_BASE_CACHE_TTL_SEC = 60 * 20;
 const ME_DETAILED_VOLATILE_CACHE_TTL_SEC = 30;
 const ME_DETAILED_MERGED_CACHE_TTL_SEC = 45;
 
@@ -553,42 +554,64 @@ export const UserRepository = db.getRepository(User).extend({
 		return ME_DETAILED_MERGED_CACHE_TTL_SEC;
 	},
 
+	/**
+	 * 未読・未処理系の volatile 情報を一括取得する。
+	 * 6項目を1本の raw クエリで取得し、antenna と messaging は別途並列で取得して DB 往復を削減する。
+	 */
 	async getMeDetailedVolatile(userId: User["id"]): Promise<MeDetailedVolatile> {
-		const [
-			hasUnreadSpecifiedNotes,
-			hasUnreadMentions,
-			hasUnreadAnnouncement,
-			hasUnreadAntenna,
-			hasUnreadChannel,
-			hasUnreadMessagingMessage,
-			hasUnreadNotification,
-			hasPendingReceivedFollowRequest,
-		] = await Promise.all([
-			NoteUnreads.count({
-				where: { userId, isSpecified: true },
-				take: 1,
-			}).then((count) => count > 0),
-			NoteUnreads.count({
-				where: { userId, isMentioned: true },
-				take: 1,
-			}).then((count) => count > 0),
-			this.getHasUnreadAnnouncement(userId),
-			this.getHasUnreadAntenna(userId),
-			this.getHasUnreadChannel(userId),
-			this.getHasUnreadMessagingMessage(userId),
-			this.getHasUnreadNotification(userId),
-			this.getHasPendingReceivedFollowRequest(userId),
-		]);
+		const [batchRow, hasUnreadAntenna, hasUnreadMessagingMessage] =
+			await Promise.all([
+				this.getMeDetailedVolatileBatch(userId),
+				this.getHasUnreadAntenna(userId),
+				this.getHasUnreadMessagingMessage(userId),
+			]);
 
 		return {
-			hasUnreadSpecifiedNotes,
-			hasUnreadMentions,
-			hasUnreadAnnouncement,
+			hasUnreadSpecifiedNotes: batchRow.hasUnreadSpecifiedNotes,
+			hasUnreadMentions: batchRow.hasUnreadMentions,
+			hasUnreadAnnouncement: batchRow.hasUnreadAnnouncement,
 			hasUnreadAntenna,
-			hasUnreadChannel,
+			hasUnreadChannel: batchRow.hasUnreadChannel,
 			hasUnreadMessagingMessage,
-			hasUnreadNotification,
-			hasPendingReceivedFollowRequest,
+			hasUnreadNotification: batchRow.hasUnreadNotification,
+			hasPendingReceivedFollowRequest: batchRow.hasPendingReceivedFollowRequest,
+		};
+	},
+
+	/**
+	 * getMeDetailedVolatile のうち、1本の SQL で取得できる6項目を一括取得する。
+	 * @internal
+	 */
+	async getMeDetailedVolatileBatch(
+		userId: User["id"],
+	): Promise<{
+		hasUnreadSpecifiedNotes: boolean;
+		hasUnreadMentions: boolean;
+		hasUnreadAnnouncement: boolean;
+		hasUnreadChannel: boolean;
+		hasUnreadNotification: boolean;
+		hasPendingReceivedFollowRequest: boolean;
+	}> {
+		const rows = await db.query(
+			`SELECT
+  (SELECT EXISTS(SELECT 1 FROM note_unread n WHERE n."userId" = $1 AND n."isSpecified" = true LIMIT 1)) AS "hasUnreadSpecifiedNotes",
+  (SELECT EXISTS(SELECT 1 FROM note_unread n WHERE n."userId" = $1 AND n."isMentioned" = true LIMIT 1)) AS "hasUnreadMentions",
+  (SELECT (COUNT(*) > 0) FROM announcement a WHERE NOT EXISTS (SELECT 1 FROM announcement_read ar WHERE ar."userId" = $1 AND ar."announcementId" = a.id)) AS "hasUnreadAnnouncement",
+  (SELECT EXISTS(SELECT 1 FROM note_unread nu WHERE nu."userId" = $1 AND nu."noteChannelId" IS NOT NULL AND nu."noteChannelId" IN (SELECT cf."followeeId" FROM channel_following cf WHERE cf."followerId" = $1) LIMIT 1)) AS "hasUnreadChannel",
+  (SELECT EXISTS(SELECT 1 FROM notification n WHERE n."notifieeId" = $1 AND n."isRead" = false AND NOT EXISTS (SELECT 1 FROM muting m WHERE m."muterId" = $1 AND m."muteeId" = n."notifierId") LIMIT 1)) AS "hasUnreadNotification",
+  (SELECT EXISTS(SELECT 1 FROM follow_request fr WHERE fr."followeeId" = $1 AND NOT EXISTS (SELECT 1 FROM follow_blocking fb WHERE fb."blockerId" = $1 AND fb."blockeeId" = fr."followerId") LIMIT 1)) AS "hasPendingReceivedFollowRequest"`,
+			[userId, userId, userId, userId, userId, userId],
+		);
+		const r = rows[0] as Record<string, unknown>;
+		return {
+			hasUnreadSpecifiedNotes: Boolean(r?.hasUnreadSpecifiedNotes),
+			hasUnreadMentions: Boolean(r?.hasUnreadMentions),
+			hasUnreadAnnouncement: Boolean(r?.hasUnreadAnnouncement),
+			hasUnreadChannel: Boolean(r?.hasUnreadChannel),
+			hasUnreadNotification: Boolean(r?.hasUnreadNotification),
+			hasPendingReceivedFollowRequest: Boolean(
+				r?.hasPendingReceivedFollowRequest,
+			),
 		};
 	},
 
@@ -1176,7 +1199,7 @@ export const UserRepository = db.getRepository(User).extend({
 				  }
 				: {}),
 			...(
-				meId && !relation && (opts.detail || opts.relation) 
+				meId && !relation && (opts.detail || opts.relation)
 				? {
 					isRenoteMuted: RenoteMutings.count({
 				where: {

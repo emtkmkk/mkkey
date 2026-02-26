@@ -5,6 +5,7 @@ import type { ILocalUser } from "@/models/entities/user.js";
 import { Signins } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { publishMainStream } from "@/services/stream.js";
+import { warmMeDetailedCache } from "@/services/me-detailed-cache.js";
 
 export default function (ctx: Koa.Context, user: ILocalUser, redirect = false) {
 	if (redirect) {
@@ -41,5 +42,8 @@ export default function (ctx: Koa.Context, user: ILocalUser, redirect = false) {
 
 		// Publish signin event
 		publishMainStream(user.id, "signin", await Signins.pack(record));
+
+		// /i の Redis キャッシュをウォームアップ（続くクライアントの /i でヒットしやすくする）
+		warmMeDetailedCache(user, true).catch(() => {});
 	})();
 }

@@ -34,6 +34,8 @@ export const paramDef = {
 		host: { type: "string", nullable: true },
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
 		detail: { type: "boolean", default: true },
+		localOnly: { type: "boolean", default: false },
+		includeSelf: { type: "boolean", default: false },
 	},
 	anyOf: [{ required: ["username"] }, { required: ["host"] }],
 } as const;
@@ -51,8 +53,15 @@ export default define(meta, paramDef, async (ps, me) => {
 
                         const query = Users.createQueryBuilder("user");
                                 query.where(followingCondition.clause("user.id"))
-                                query.andWhere("user.id != :meId", { meId: me.id })
+				if (!ps.includeSelf) {
+					query.andWhere("user.id != :meId", { meId: me.id });
+				} else {
+					query.setParameter("meId", me.id);
+				}
                                 query.andWhere("user.isSuspended = FALSE")
+				if (ps.localOnly) {
+					query.andWhere("user.host IS NULL");
+				}
 				if (ps.host) {
 					query.andWhere("coalesce(user.host, :url) LIKE :host", {
 						url: config.host,
@@ -85,8 +94,15 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (users.length < ps.limit) {
                                 const otherQuery = Users.createQueryBuilder("user")
                                         .where(`NOT ${followingCondition.clause("user.id")}`)
-					.andWhere("user.id != :meId", { meId: me.id })
+					if (!ps.includeSelf) {
+						otherQuery.andWhere("user.id != :meId", { meId: me.id });
+					} else {
+						otherQuery.setParameter("meId", me.id);
+					}
 					.andWhere("user.isSuspended = FALSE")
+					if (ps.localOnly) {
+						otherQuery.andWhere("user.host IS NULL");
+					}
 					if (ps.host) {
 						otherQuery.andWhere("coalesce(user.host, :url) LIKE :host", {
 							url: config.host,
@@ -111,6 +127,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		} else {
 			const query = Users.createQueryBuilder("user")
 				.where("user.isSuspended = FALSE")
+				if (ps.localOnly) {
+					query.andWhere("user.host IS NULL");
+				}
 				if (ps.host) {
 					query.andWhere("coalesce(user.host, :url) LIKE :host", {
 						url: config.host,

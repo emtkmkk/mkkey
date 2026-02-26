@@ -153,6 +153,25 @@
 					}}</MkLink>
 				</template>
 			</MkKeyValue>
+			<div
+				v-if="
+					$i &&
+					_emoji.motifUserId === $i.id &&
+					!($i.isAdmin || $i.isModerator) &&
+					!_emoji.host
+				"
+				:class="$style.motifModeBlock"
+			>
+				<span :class="$style.motifModeLabel">利用可能範囲を設定</span>
+				<MkSelect
+					:model-value="_emoji.motifUserMode ?? 'any'"
+					@update:model-value="onMotifModeChange"
+				>
+					<option value="any">誰でも使える</option>
+					<option value="follow">フォロー限定</option>
+					<option value="owner">自分限定</option>
+				</MkSelect>
+			</div>
 			<MkLink
 				v-if="$i && !($i.isAdmin || $i.isModerator) && !_emoji.host"
 				:url="`https://docs.google.com/forms/d/e/1FAIpQLSepnPHEIhGUBdOQzP0Dzfs7xO75-y010W9WbdHHax-rnHuHgA/viewform?usp=pp_url&entry.1857072831=${_emoji.name}`"
@@ -183,6 +202,7 @@ import { i18n } from "@/i18n.js";
 import MkKeyValue from "@/components/MkKeyValue.vue";
 import MkLink from "@/components/MkLink.vue";
 import MkButton from "@/components/MkButton.vue";
+import MkSelect from "@/components/form/select.vue";
 import * as config from "@/config";
 import * as os from "@/os";
 import { $i } from "@/account";
@@ -221,6 +241,23 @@ const load = async (emoji) => {
 	};
 
 	licenseText = _emoji.license ?? "";
+};
+
+const onMotifModeChange = async (value: string) => {
+	if (!_emoji?.id) return;
+	try {
+		await os.api("emoji/set-motif-mode", {
+			id: _emoji.id,
+			motifUserMode: value,
+		});
+		const updated = await os.apiGet("emoji", {
+			name: _emoji.name,
+			...(_emoji.host ? { host: _emoji.host } : {}),
+		});
+		await load(updated);
+	} catch (err: any) {
+		os.toast(err.message ?? "変更に失敗しました");
+	}
 };
 
 const edit = () => {
@@ -291,5 +328,16 @@ onMounted(async () => {
 }
 .link {
 	color: var(--link);
+}
+
+.motifModeBlock {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.motifModeLabel {
+	font-weight: 500;
 }
 </style>

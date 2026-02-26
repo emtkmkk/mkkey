@@ -188,7 +188,7 @@ export const queueApi = (
 ): Promise<any> => {
   if (endpoint === "notes/create") {
 		try {
-			const isDuplicate = queueDatas.value.some(item => 
+			const isDuplicate = queueDatas.value.some(item =>
 				item.endpoint === "notes/create" &&
 				JSON.stringify(item.data) === JSON.stringify(data)
 			);
@@ -206,7 +206,7 @@ export const queueApi = (
   const onFinally = () => {
     removeQueue(addData.id);
   };
-  
+
   return api(endpoint, data, token, suppressToast).finally(onFinally);
 };
 
@@ -702,11 +702,17 @@ export function form(title, form) {
 	});
 }
 
-export async function selectUser() {
+export async function selectUser(options?: {
+	localOnly?: boolean;
+	includeSelf?: boolean;
+}) {
 	return new Promise((resolve, reject) => {
 		popup(
 			defineAsyncComponent(() => import("@/components/MkUserSelectDialog.vue")),
-			{},
+			{
+				localOnly: options?.localOnly ?? false,
+				includeSelf: options?.includeSelf ?? false,
+			},
 			{
 				ok: (user) => {
 					resolve(user);
@@ -997,11 +1003,11 @@ async function appendErrorLog(message: string) {
 }
 
 async function errortoast(res, body, endpoint, parameter) {
-	const message = 
-		body.error.code === "INTERNAL_ERROR" 
+	const message =
+		body.error.code === "INTERNAL_ERROR"
 		? body.error.info?.code === "QueryFailedError" && body.error.info?.message.includes("timeout")
-			? "DBから応答が返ってきませんでした。サーバー負荷が高い状態の可能性があります。" 
-			: body.error.info?.message || body.error.message 
+			? "DBから応答が返ってきませんでした。サーバー負荷が高い状態の可能性があります。"
+			: body.error.info?.message || body.error.message
 		: body.error.message;
 
 	if ($i) {

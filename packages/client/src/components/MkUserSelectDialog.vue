@@ -103,6 +103,11 @@ const emit = defineEmits<{
 	(ev: "closed"): void;
 }>();
 
+const props = defineProps<{
+	localOnly?: boolean;
+	includeSelf?: boolean;
+}>();
+
 let username = $ref("");
 let host = $ref("");
 let users: misskey.entities.UserDetailed[] = $ref([]);
@@ -120,6 +125,8 @@ const search = () => {
 		host: host,
 		limit: 10,
 		detail: false,
+		localOnly: props.localOnly ?? false,
+		includeSelf: props.includeSelf ?? false,
 	}).then((_users) => {
 		users = _users;
 	});
@@ -146,7 +153,9 @@ onMounted(() => {
 	os.api("users/show", {
 		userIds: defaultStore.state.recentlyUsedUsers,
 	}).then((users) => {
-		recentUsers = users;
+		recentUsers = (props.localOnly ?? false)
+			? users.filter((u) => !u.host)
+			: users;
 	});
 });
 </script>

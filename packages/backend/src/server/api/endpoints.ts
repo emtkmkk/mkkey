@@ -143,6 +143,7 @@ import * as ep___drive_folders_update from "./endpoints/drive/folders/update.js"
 import * as ep___drive_stream from "./endpoints/drive/stream.js";
 import * as ep___emailAddress_available from "./endpoints/email-address/available.js";
 import * as ep___emoji from "./endpoints/emoji.js";
+import * as ep___emoji_setMotifMode from "./endpoints/emoji/set-motif-mode.js";
 import * as ep___emojis from "./endpoints/emojis.js";
 import * as ep___emojis_latest from "./endpoints/emojis/latest.js";
 import * as ep___emoji_stats from "./endpoints/emoji-stats.js";
@@ -521,6 +522,7 @@ const eps = [
 	["drive/stream", ep___drive_stream],
 	["email-address/available", ep___emailAddress_available],
         ["emoji", ep___emoji],
+        ["emoji/set-motif-mode", ep___emoji_setMotifMode],
         ["emojis", ep___emojis],
         ["emojis/latest", ep___emojis_latest],
         ["emoji-stats", ep___emoji_stats],

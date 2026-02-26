@@ -3,6 +3,7 @@
  *
  * @remarks
  * ライセンスは個別パラメータ（copyPermission, licenseName 等）で指定。isTextOnly 時は 3 項目を固定値で保存。
+ * 従来形式の license（「コピー可否 : 」「ライセンス : 」等のキー・値形式）が渡された場合はパースして個別カラムに展開する。
  * 新規追加時は usageVisibility 未指定なら private。private のときは emojiAdded を送信しない。
  */
 import { IsNull } from "typeorm";
@@ -11,6 +12,7 @@ import { Emojis, DriveFiles } from "@/models/index.js";
 import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
 import { toStoredCopyPermission } from "@/misc/copy-permission.js";
 import { genId } from "@/misc/gen-id.js";
+import { parseLicenseString } from "@/misc/parse-license.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { ApiError } from "../../../error.js";
 import rndstr from "rndstr";
@@ -162,14 +164,49 @@ export default define(meta, paramDef, async (ps, me) => {
 		motifUserId: ps.motifUserId ?? null,
 		motifUserMode: ps.motifUserMode ?? "any",
 	} as Record<string, unknown>;
-	if (isTextOnly) {
-		insertRow.copyPermission = toStoredCopyPermission("allow");
-		insertRow.licenseName = "CC0 1.0 Universal";
-		insertRow.creator = null;
+
+	const noIndividualLicenseFields =
+		ps.copyPermission == null &&
+		ps.licenseName == null &&
+		ps.usageInfo == null &&
+		ps.creator == null &&
+		ps.description == null &&
+		ps.isBasedOnUrl == null;
+	const hasLegacyLicense =
+		ps.license != null && typeof ps.license === "string" && ps.license.trim() !== "";
+
+	if (noIndividualLicenseFields && hasLegacyLicense) {
+		const parsed = parseLicenseString(ps.license);
+		if (parsed !== null) {
+			insertRow.license = parsed.remainder;
+			insertRow.isTextOnly = parsed.isTextOnly;
+			if (parsed.isTextOnly) {
+				insertRow.copyPermission = toStoredCopyPermission("allow");
+				insertRow.licenseName = "CC0 1.0 Universal";
+				insertRow.creator = null;
+			} else {
+				insertRow.copyPermission = parsed.copyPermission;
+				insertRow.licenseName = parsed.licenseName;
+				insertRow.usageInfo = parsed.usageInfo;
+				insertRow.creator = parsed.creator;
+				insertRow.description = parsed.description;
+				insertRow.isBasedOnUrl = parsed.isBasedOnUrl;
+			}
+		} else {
+			insertRow.copyPermission = toStoredCopyPermission(null);
+			insertRow.licenseName = null;
+			insertRow.creator = null;
+		}
 	} else {
-		insertRow.copyPermission = toStoredCopyPermission(ps.copyPermission ?? null);
-		insertRow.licenseName = ps.licenseName ?? null;
-		insertRow.creator = ps.creator ?? null;
+		if (isTextOnly) {
+			insertRow.copyPermission = toStoredCopyPermission("allow");
+			insertRow.licenseName = "CC0 1.0 Universal";
+			insertRow.creator = null;
+		} else {
+			insertRow.copyPermission = toStoredCopyPermission(ps.copyPermission ?? null);
+			insertRow.licenseName = ps.licenseName ?? null;
+			insertRow.creator = ps.creator ?? null;
+		}
 	}
 
 	const emoji = await Emojis.insert(insertRow as Parameters<typeof Emojis.insert>[0]).then(

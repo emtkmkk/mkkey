@@ -192,6 +192,21 @@ describe("Note", () => {
 		assert.strictEqual(res.body.createdNote.renote.text, bobPost.text);
 	}));
 
+
+	it("ローカル投稿ではTwitter/Xのクエリが正規化される", async(async () => {
+		const post = {
+			text: "https://twitter.com/user/status/12345?ref_src=twsrc%5Etfw https://x.com/user/status/67890?s=20",
+		};
+
+		const res = await request("/notes/create", post, alice);
+
+		assert.strictEqual(res.status, 200);
+		assert.strictEqual(
+			res.body.createdNote.text,
+			"https://twitter.com/user/status/12345 https://x.com/user/status/67890",
+		);
+	}));
+
 	it("文字数ぎりぎりで怒られない", async(async () => {
 		const post = {
 			text: "!".repeat(3000),

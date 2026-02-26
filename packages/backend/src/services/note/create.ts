@@ -305,25 +305,27 @@ export default async (
 			data.text += ` #${data.channel!.name}`;
 		}
 
-		// Twitterのstatusリンクの場合、?以降を取り除く
-		if (
-			data.text?.includes("https://twitter.com") ||
-			data.text?.includes("http://twitter.com")
-		) {
-			data.text = data.text.replaceAll(
-				/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?[^\s\)]*)/gi,
-				"$1",
-			);
-		}
+		// ローカル投稿のTwitter/X statusリンクのみ、?以降を取り除く
+		if (user.host == null) {
+			if (
+				data.text?.includes("https://twitter.com") ||
+				data.text?.includes("http://twitter.com")
+			) {
+				data.text = data.text.replaceAll(
+					/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?[^\s\)]*)/gi,
+					"$1",
+				);
+			}
 
-		if (
-			data.text?.includes("https://x.com") ||
-			data.text?.includes("http://x.com")
-		) {
-			data.text = data.text.replaceAll(
-				/(https?:\/\/x.com\/\S*\/status\/\S*)(\?[^\s\)]*)/gi,
-				"$1",
-			);
+			if (
+				data.text?.includes("https://x.com") ||
+				data.text?.includes("http://x.com")
+			) {
+				data.text = data.text.replaceAll(
+					/(https?:\/\/x.com\/\S*\/status\/\S*)(\?[^\s\)]*)/gi,
+					"$1",
+				);
+			}
 		}
 
 		//ローカルユーザーでこの投稿が1投稿目の場合

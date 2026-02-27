@@ -66,6 +66,29 @@ describe("ActivityPub", () => {
 			assert.deepStrictEqual(note.visibility, "public");
 			assert.deepStrictEqual(note.text, post.content);
 		});
+
+		it("リモート投稿ではTwitter/Xのクエリを保持する", async () => {
+			const { MockResolver } = await import("./misc/mock-resolver.js");
+			const { createNote } = await import(
+				"../src/remote/activitypub/models/note.js"
+			);
+
+			const postWithQuery = {
+				...post,
+				id: `${host}/users/${rndstr("0-9a-z", 8)}`,
+				content:
+					"https://twitter.com/user/status/12345?ref_src=twsrc%5Etfw https://x.com/user/status/67890?s=20",
+			};
+
+			const resolver = new MockResolver();
+			resolver._register(actor.id, actor);
+			resolver._register(postWithQuery.id, postWithQuery);
+
+			const note = await createNote(postWithQuery.id, resolver, true);
+
+			assert.deepStrictEqual(note?.text, postWithQuery.content);
+		});
+
 	});
 
 	describe("Truncate long name", () => {

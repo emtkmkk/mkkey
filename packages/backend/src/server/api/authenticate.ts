@@ -23,6 +23,7 @@ const AUTH_USER_SELECT = {
 	isSuspended: true,
 	isAdmin: true,
 	isModerator: true,
+	driveCapacityOverrideMb: true,
 	emojis: true,
 } as const;
 

@@ -501,7 +501,7 @@
                                                 data-section="recentlyAddEmojis"
                                                 :initial-shown="false"
 						:emojis="
-							customEmojis
+							emojisForGeneralListing
 								.filter((e) =>
 									((e.usageVisibility ?? 'public') === 'public' || e.usageVisibility === 'user') &&
 									(e.createdAt
@@ -525,16 +525,16 @@
 					>
                                         <XSection
                                                 v-if="
-                                                        recentlyPopularReactions &&
-                                                        recentlyPopularReactions.length
+                                                        recentlyPopularReactionsFiltered &&
+                                                        recentlyPopularReactionsFiltered.length
                                                 "
                                                 key="custom:recentlyPopularReactions"
                                                 data-section="recentlyPopularReactions"
                                                 :initial-shown="false"
 						:emojis="
-							recentlyPopularReactions
-								.filter((e) => e.name !== ':iine_fav:' && !e.name.includes('mk'))
-								.map((e) => e.name)
+							recentlyPopularReactionsFiltered
+								.filter((e) => (typeof e === 'string' ? e : e.name) !== ':iine_fav:' && !(typeof e === 'string' ? e : e.name || '').includes('mk'))
+								.map((e) => typeof e === 'string' ? e : e.name)
 								.slice(0, 99)
 						"
 						@chosen="chosen"
@@ -567,7 +567,7 @@
                                                         data-section="customCategories"
                                                         :initial-shown="false"
 							:emojis="
-								customEmojis
+								emojisForGeneralListing
 									.filter((e) => e.category === category)
 									.map((e) => ':' + e.name + ':')
 							"
@@ -582,7 +582,7 @@
                                                                         data-section="uncategorized"
                                                                         :initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -612,7 +612,7 @@
 									key="custom:null/KG" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -655,7 +655,7 @@
 									key="custom:null/SZ" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -698,7 +698,7 @@
 									key="custom:null/TD" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -741,7 +741,7 @@
 									key="custom:null/N" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -771,7 +771,7 @@
 									key="custom:null/HBP" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -814,7 +814,7 @@
 									key="custom:null/M" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -844,7 +844,7 @@
 									key="custom:null/Y" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -874,7 +874,7 @@
 									key="custom:null/R" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -904,7 +904,7 @@
 									key="custom:null/W" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -934,7 +934,7 @@
 									key="custom:null/jpetc" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -953,7 +953,7 @@
 									key="custom:null/A-D" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -968,7 +968,7 @@
 									key="custom:null/E-G" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -983,7 +983,7 @@
 									key="custom:null/H-K" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -998,7 +998,7 @@
 									key="custom:null/L-N" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -1013,7 +1013,7 @@
 									key="custom:null/O-Q" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -1028,7 +1028,7 @@
 									key="custom:null/R-T" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -1043,7 +1043,7 @@
 									key="custom:null/U-W" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -1058,7 +1058,7 @@
 									key="custom:null/X-Z" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -1073,7 +1073,7 @@
 									key="custom:null/etc" data-section="uncategorized"
 									:initial-shown="false"
 									:emojis="
-										customEmojis
+										emojisForGeneralListing
 											.filter(
 												(e) =>
 													!e.category &&
@@ -1275,7 +1275,50 @@ const dynamicStyles = computed(() => ({
   '--pickerHeight': `calc(var(--vh, 1vh) * ${height.value})`
 }));
 const customEmojis = computed(() => instance.emojis);
-const customEmojiCategories = computed(() => emojiCategories.value.filter((c) => customEmojis.value.filter((e) => e.category === c).length > 9));
+
+/** モチーフ判定用: 自分がフォローしているユーザー ID の集合。未取得の場合は空で「フォローしていない」とみなす。 */
+const followeeIds = ref(new Set<string>());
+onMounted(() => {
+	if ($i) {
+		os.api("users/following", { userId: $i.id, limit: 100 })
+			.then((list: { followeeId?: string; id?: string }[]) => {
+				followeeIds.value = new Set(
+					list.map((x) => x.followeeId ?? x.id).filter(Boolean) as string[],
+				);
+			})
+			.catch(() => {});
+	}
+});
+
+/**
+ * 検索・ランダム・人気・インスタンスカテゴリでは完全一致時のみ表示する絵文字かどうか。
+ * ローカル絵文字のみ判定（リモート絵文字はパラメータを持たない）。リモートユーザには判定しない。
+ */
+function isSearchExactOnly(emoji: { host?: string | null; usageVisibility?: string; motifUserId?: string | null; motifUserMode?: string | null; char?: string }): boolean {
+	if (emoji && "char" in emoji && emoji.char) return false;
+	if ($i && ($i as { host?: string | null }).host != null) return false;
+	if (emoji && (emoji as { host?: string | null }).host != null) return false;
+	const vis = (emoji as { usageVisibility?: string }).usageVisibility ?? "public";
+	if (vis === "limited" || vis === "user") return true;
+	const motifUserId = (emoji as { motifUserId?: string | null }).motifUserId;
+	const mode = (emoji as { motifUserMode?: string | null }).motifUserMode ?? "any";
+	if (motifUserId != null && mode === "any") {
+		if (!$i) return true;
+		return !followeeIds.value.has(motifUserId);
+	}
+	return false;
+}
+
+/** 一般一覧用（ランダム・人気・インスタンスカテゴリで使用）。searchExactOnly の絵文字を除外。 */
+const emojisForGeneralListing = computed(() =>
+	(customEmojis.value ?? []).filter((e) => !isSearchExactOnly(e)),
+);
+
+const customEmojiCategories = computed(() =>
+	emojiCategories.value.filter(
+		(c) => emojisForGeneralListing.value.filter((e) => e.category === c).length > 9,
+	),
+);
 let allCustomEmojis = computed(() =>
 	props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm
 		? instance.allEmojis
@@ -1291,8 +1334,19 @@ const emojiStr = computed(() =>
 const recentlyPopularReactions = computed(
 	() => instance.recentlyPopularReactions
 );
+/** 人気リアクションのうち、searchExactOnly でないものだけ（一般一覧に出す）。 */
+const recentlyPopularReactionsFiltered = computed(() => {
+	const list = recentlyPopularReactions.value ?? [];
+	return list.filter((e: { name?: string }) => {
+		const name = typeof e === "string" ? e : e?.name;
+		if (!name) return true;
+		const key = name.replace(/^:|:$/g, "").toLowerCase();
+		const emoji = emojiMap.value.get(key) ?? (customEmojis.value ?? []).find((x) => `:${x.name}:` === name || x.name?.toLowerCase() === key);
+		return !emoji || !isSearchExactOnly(emoji);
+	});
+});
 const randomSubset = computed(() => {
-	let copy = [...unref(customEmojis)];
+	let copy = [...unref(emojisForGeneralListing)];
 	let result = [];
 	for (let i = 0; i < 99; ++i) {
 		const randomIndex = Math.floor(Math.random() * copy.length);
@@ -1430,6 +1484,25 @@ function emojiSearch(nQ, oQ) {
 		return searchHost && !emoji.host.includes(searchHost);
 	};
 
+	/** 検索クエリと名前 or エイリアスが完全一致するか（searchExactOnly 用）。 */
+	const isExactNameOrAliasMatch = (
+		emoji: { name?: string; aliases?: string[]; keywords?: string[] },
+		q: string,
+	) => {
+		const qq = (q ?? "").toLowerCase();
+		if (emoji.name && emoji.name.toLowerCase() === qq) return true;
+		return (emoji.aliases || emoji.keywords || []).some(
+			(a) => String(a).toLowerCase() === qq,
+		);
+	};
+	/** 部分一致・前方一致で searchExactOnly の絵文字を出す場合は完全一致時のみ。 */
+	const shouldAddCustomPartial = (emoji: unknown) =>
+		!isSearchExactOnly(emoji as Parameters<typeof isSearchExactOnly>[0]) ||
+		isExactNameOrAliasMatch(emoji as { name?: string; aliases?: string[]; keywords?: string[] }, roomajiQ);
+	/** AND検索では searchExactOnly は出さない。 */
+	const shouldAddCustomAnd = (emoji: unknown) =>
+		!isSearchExactOnly(emoji as Parameters<typeof isSearchExactOnly>[0]);
+
 	const charSearch = (
 		emojis: UnicodeEmojiDef[],
 		keyword: string,
@@ -1442,7 +1515,8 @@ function emojiSearch(nQ, oQ) {
 		keywords: string | string[],
 		matches: Set<Misskey.entities.CustomEmoji>,
 		max?,
-		startsWith?
+		startsWith?,
+		shouldAdd?: (emoji: Misskey.entities.CustomEmoji | UnicodeEmojiDef) => boolean,
 	) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];
 		for (const emoji of emojis) {
@@ -1455,6 +1529,7 @@ function emojiSearch(nQ, oQ) {
 						  formatRoomaji(emoji.name).includes(keyword)
 				)
 			) {
+				if (shouldAdd && !shouldAdd(emoji)) continue;
 				matches.add(
 					!startsWith
 						? emoji
@@ -1479,7 +1554,8 @@ function emojiSearch(nQ, oQ) {
 			  }
 		>,
 		max?,
-		startsWith?
+		startsWith?,
+		shouldAdd?: (emoji: Misskey.entities.CustomEmoji | UnicodeEmojiDef) => boolean,
 	) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];
 		for (const emoji of emojis) {
@@ -1497,6 +1573,7 @@ function emojiSearch(nQ, oQ) {
 					)
 				)
 			) {
+				if (shouldAdd && !shouldAdd(emoji)) continue;
 				matches.add(
 					!startsWith
 						? emoji
@@ -1513,7 +1590,8 @@ function emojiSearch(nQ, oQ) {
 		emojis: Misskey.entities.CustomEmoji | UnicodeEmojiDef,
 		keywords: string | string[],
 		matches: Set<Misskey.entities.CustomEmoji>,
-		max?
+		max?,
+		shouldAdd?: (emoji: Misskey.entities.CustomEmoji | UnicodeEmojiDef) => boolean,
 	) => {
 		keywords = Array.isArray(keywords) ? keywords : [keywords];
 		for (const emoji of emojis) {
@@ -1527,6 +1605,7 @@ function emojiSearch(nQ, oQ) {
 						)
 				)
 			) {
+				if (shouldAdd && !shouldAdd(emoji)) continue;
 				matches.add(emoji);
 				if (matches.size >= (max ?? 99)) break;
 			}
@@ -1544,22 +1623,20 @@ function emojiSearch(nQ, oQ) {
 
 		if (newQ.includes(" ")) {
 			// AND検索
-
-			// 名前またはエイリアスにキーワードが含まれている
 			if (isAllSearch) {
 				nameSearch(allEmojis, roomajiQ.split(" "), matches, max);
 			} else {
-				andSearch(emojis, roomajiQ.split(" "), matches, max);
+				andSearch(emojis, roomajiQ.split(" "), matches, max, shouldAddCustomAnd);
 				if (matches.size >= max) return matches;
-				andSearch(emojis, newQ.split(" "), matches, max);
+				andSearch(emojis, newQ.split(" "), matches, max, shouldAddCustomAnd);
 			}
 		} else {
 			if (isAllSearch) {
 				nameSearch(allEmojis, roomajiQ, matches, max);
 			} else {
-				nameSearch(emojis, roomajiQ, matches, max);
+				nameSearch(emojis, roomajiQ, matches, max, undefined, shouldAddCustomPartial);
 				if (matches.size >= max) return matches;
-				aliasSearch(emojis, newQ, matches, max);
+				aliasSearch(emojis, newQ, matches, max, undefined, shouldAddCustomPartial);
 			}
 		}
 		return matches;
@@ -1589,8 +1666,8 @@ function emojiSearch(nQ, oQ) {
 						emoji: exactMatch,
 						key: formatRoomaji(exactMatch.name),
 					});
-				nameSearch(emojis, roomajiQ, beforeSort, max, true);
-				aliasSearch(emojis, newQ, beforeSort, max, true);
+				nameSearch(emojis, roomajiQ, beforeSort, max, true, shouldAddCustomPartial);
+				aliasSearch(emojis, newQ, beforeSort, max, true, shouldAddCustomPartial);
 			}
 
 		return new Set(

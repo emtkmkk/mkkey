@@ -22,12 +22,12 @@ import { extractHashtags } from "@/misc/extract-hashtags.js";
 import type { IMentionedRemoteUsers } from "@/models/entities/note.js";
 import { Note } from "@/models/entities/note.js";
 import {
-        DriveFiles,
-        Mutings,
-        Users,
-        NoteWatchings,
+	DriveFiles,
+	Mutings,
+	Users,
+	NoteWatchings,
 	Notes,
-
+	Emojis,
 	Instances,
 	UserProfiles,
 	Antennas,
@@ -37,8 +37,8 @@ import {
 	ChannelFollowings,
 	Blockings,
 	NoteThreadMutings,
-
 } from "@/models/index.js";
+import { canUseEmoji } from "@/models/repositories/emoji.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { App } from "@/models/entities/app.js";
 import { Not, In, IsNull } from "typeorm";
@@ -907,6 +907,43 @@ export default async (
 		}
 
 		data.isPublicLikeList = user.isPublicLikeList;
+
+		// 投稿に含まれるカスタム絵文字の使用権限（usageVisibility・モチーフ）をチェック（ローカルユーザ＋ローカル絵文字のみ。リモートは対象外）
+		if (emojis && emojis.length > 0 && !user.host) {
+			let followeeIds = new Set<string>();
+			if (!user.host) {
+				const followings = await Followings.findBy({ followerId: user.id });
+				followeeIds = new Set(followings.map((f) => f.followeeId));
+			}
+			for (const emojiName of emojis) {
+				const at = emojiName.indexOf("@");
+				const name = at < 0 ? emojiName : emojiName.slice(0, at);
+				const host = at < 0 ? null : emojiName.slice(at + 1) || null;
+				const emoji = await Emojis.findOne({
+					where: {
+						name,
+						host: host === null || host === "" ? IsNull() : host,
+					},
+					select: [
+						"host",
+						"usageVisibility",
+						"allowedUserIds",
+						"motifUserId",
+						"motifUserMode",
+						"category",
+					],
+				});
+				if (emoji && emoji.host == null && !canUseEmoji(emoji, user, followeeIds)) {
+					return rej(
+						new StatusError(
+							"使用権限のない絵文字が含まれています。",
+							403,
+							"使用権限のない絵文字が含まれています。",
+						),
+					);
+				}
+			}
+		}
 
 		const insertNoteStartedAt = Date.now();
 		const note = await insertNote(user, data, tags, emojis, mentionedUsers);

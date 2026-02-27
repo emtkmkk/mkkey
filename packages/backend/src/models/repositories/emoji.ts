@@ -77,6 +77,42 @@ export function getEffectiveUsageVisibility(emoji: Emoji): string {
 			: "public";
 }
 
+/**
+ * 指定ユーザがその絵文字を使用できるか（usageVisibility とモチーフで判定）。
+ * リアクション・ノート投稿時の権限チェックに利用する。
+ *
+ * @param emoji - 絵文字エンティティ（usageVisibility, allowedUserIds, motifUserId, motifUserMode を含むこと）
+ * @param me - 利用者（未認証の場合は null）
+ * @param followeeIds - 利用者がフォローしているユーザ ID の集合（モチーフ follow 判定用）
+ * @returns 使用可能なら true
+ * @internal
+ */
+export function canUseEmoji(
+	emoji: Pick<
+		Emoji,
+		"usageVisibility" | "allowedUserIds" | "motifUserId" | "motifUserMode" | "category"
+	>,
+	me: { id: string } | null,
+	followeeIds: Set<string>,
+): boolean {
+	const visibility = getEffectiveUsageVisibility(emoji as Emoji);
+	if (visibility === "private") return false;
+	if (!me) {
+		if (visibility !== "public" && visibility !== "limited") return false;
+	} else {
+		if (visibility === "user") {
+			const allowed = emoji.allowedUserIds ?? [];
+			if (!allowed.includes(me.id)) return false;
+		}
+	}
+	const mode = emoji.motifUserMode ?? "any";
+	if (emoji.motifUserId == null || mode === "any") return true;
+	if (!me) return false;
+	if (mode === "follow") return followeeIds.has(emoji.motifUserId);
+	if (mode === "owner") return emoji.motifUserId === me.id;
+	return true;
+}
+
 export const EmojiRepository = db.getRepository(Emoji).extend({
 	async pack(src: Emoji["id"] | Emoji): Promise<Packed<"Emoji">> {
 		const emoji =

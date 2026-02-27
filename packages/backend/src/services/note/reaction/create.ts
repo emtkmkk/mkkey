@@ -9,6 +9,7 @@ import {
 	decodeReaction,
 	resolveApReaction,
 } from "@/misc/reaction-lib.js";
+import { canUseEmoji } from "@/models/repositories/emoji.js";
 import type { User } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
 import {
@@ -17,6 +18,7 @@ import {
 	NoteWatchings,
 	Notes,
 	Emojis,
+	Followings,
 	Blockings,
 	Instances,
 	UserProfiles,
@@ -205,6 +207,43 @@ export default async (
 				"770a3ede-67d2-fc9d-f2e2-6163ba0443af",
 				"指定された絵文字が存在しません。",
 			);
+		}
+	}
+
+	// カスタム絵文字の使用権限（usageVisibility・モチーフ）をチェック（ローカルユーザ＋ローカル絵文字のみ。リモートは対象外）
+	const customMatch = reaction.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/);
+	if (customMatch && !user.host) {
+		const decoded = decodeReaction(reaction);
+		const emojiHost = decoded.host == null || decoded.host === "." ? IsNull() : decoded.host;
+		const emoji = await Emojis.findOne({
+			where: { name: decoded.name, host: emojiHost },
+			select: [
+				"host",
+				"usageVisibility",
+				"allowedUserIds",
+				"motifUserId",
+				"motifUserMode",
+				"category",
+			],
+		});
+		if (emoji && emoji.host == null) {
+			let followeeIds = new Set<string>();
+			if (
+				!user.host &&
+				emoji.motifUserId != null &&
+				(emoji.motifUserMode ?? "any") === "follow"
+			) {
+				const followings = await Followings.findBy({
+					followerId: user.id,
+				});
+				followeeIds = new Set(followings.map((f) => f.followeeId));
+			}
+			if (!canUseEmoji(emoji, user, followeeIds)) {
+				throw new IdentifiableError(
+					"770a3ede-67d2-fc9d-f2e2-6163ba0443af",
+					"指定された絵文字が存在しません。",
+				);
+			}
 		}
 	}
 

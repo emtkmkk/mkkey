@@ -4,6 +4,7 @@
  * リモートユーザーのローカルフォロワーが全員休眠（1ヶ月以上未活動）かどうかを判定し、
  * 受動的配信（inbox）での取り込みスキップ可否に利用する。
  * 休眠の閾値は onlineStatus の super-sleeping と同じ USER_SUPERSLEEP_THRESHOLD（30日）を使用。
+ * proxy アカウントは休眠でも休眠とみなさない（常にアクティブ扱い）。
  *
  * @packageDocumentation
  * @internal
@@ -14,6 +15,7 @@ import { redisClient } from "@/db/redis.js";
 import { Followings } from "@/models/index.js";
 import { User } from "@/models/entities/user.js";
 import { USER_SUPERSLEEP_THRESHOLD } from "@/const.js";
+import { fetchMeta } from "@/misc/fetch-meta.js";
 
 // onlineStatus の super-sleeping 判定と同じ閾値（UserRepository.getOnlineStatus 参照）
 const DORMANT_THRESHOLD = USER_SUPERSLEEP_THRESHOLD;
@@ -32,6 +34,9 @@ export async function maybeInvalidateDormantFollowerCacheOnActivity(
 	lastActiveDateBeforeUpdate: Date | null,
 ): Promise<void> {
 	if (host != null) return;
+	// proxy アカウントは休眠でも休眠とみなさない（キャッシュ無効化しない）
+	const meta = await fetchMeta();
+	if (meta.proxyAccountId != null && userId === meta.proxyAccountId) return;
 	const thresholdDate = new Date(Date.now() - DORMANT_THRESHOLD);
 	if (
 		lastActiveDateBeforeUpdate != null &&
@@ -47,6 +52,7 @@ const CACHE_TTL_SEC = 24 * 60 * 60; // 24時間
 
 /**
  * リモート actor について「ローカルフォロワーに 1 人でも 30 日以内に活動した人がいるか」を DB で判定する。
+ * proxy アカウントは休眠でも常にアクティブとみなす。
  *
  * @param remoteActorId - リモートユーザー（followee）の ID
  * @returns 1 人でもいれば true、全員休眠またはローカルフォロワー 0 なら false
@@ -56,14 +62,24 @@ async function hasActiveLocalFollowerFromDb(
 	remoteActorId: string,
 ): Promise<boolean> {
 	const threshold = new Date(Date.now() - DORMANT_THRESHOLD);
+	const meta = await fetchMeta();
+	const proxyAccountId = meta.proxyAccountId ?? undefined;
 
-	const count = await Followings.createQueryBuilder("f")
+	const qb = Followings.createQueryBuilder("f")
 		.innerJoin(User, "u", "u.id = f.followerId")
 		.where("f.followeeId = :remoteActorId", { remoteActorId })
-		.andWhere("f.followerHost IS NULL")
-		.andWhere("u.lastActiveDate > :threshold", { threshold })
-		.getCount();
+		.andWhere("f.followerHost IS NULL");
 
+	if (proxyAccountId != null) {
+		qb.andWhere(
+			"(u.lastActiveDate > :threshold OR u.id = :proxyAccountId)",
+			{ threshold, proxyAccountId },
+		);
+	} else {
+		qb.andWhere("u.lastActiveDate > :threshold", { threshold });
+	}
+
+	const count = await qb.getCount();
 	return count > 0;
 }
 

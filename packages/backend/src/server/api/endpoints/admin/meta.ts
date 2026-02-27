@@ -485,6 +485,11 @@ export const meta = {
 				optional: true,
 				nullable: false,
 			},
+			enablePerformanceIncidentCollection: {
+				type: "boolean",
+				optional: true,
+				nullable: false,
+			},
 			enableIpLogging: {
 				type: "boolean",
 				optional: true,
@@ -617,6 +622,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		openaiApiKey: instance.openaiApiKey != null ? "***" : null,
 		openaiModel: instance.openaiModel,
 		openaiBaseUrl: instance.openaiBaseUrl,
+		enablePerformanceIncidentCollection: instance.enablePerformanceIncidentCollection,
 		enableIpLogging: instance.enableIpLogging,
 		enableActiveEmailValidation: instance.enableActiveEmailValidation,
 	};

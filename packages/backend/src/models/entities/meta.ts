@@ -437,6 +437,11 @@ export class Meta {
 	})
 	public libreTranslateApiKey: string | null;
 
+	@Column('boolean', {
+		default: true,
+	})
+	public enablePerformanceIncidentCollection: boolean;
+
 	/** OpenAI APIキー（パフォーマンスインシデントのAI分析用） */
 	@Column('varchar', {
 		length: 256,

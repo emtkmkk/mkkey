@@ -8,6 +8,9 @@
 		/></template>
 		<MkSpacer :content-max="900" :margin-min="16" :margin-max="32">
 			<div class="controls">
+				<MkSwitch :model-value="enableCollection" @update:model-value="onToggleCollection">
+					{{ i18n.ts._performanceIncidents.collect }}
+				</MkSwitch>
 				<MkSelect v-model="severity">
 					<template #label>{{ i18n.ts._performanceIncidents.severity }}</template>
 					<option value="all">{{ i18n.ts.all }}</option>
@@ -27,7 +30,7 @@
 						<div class="head">
 							<span class="badge" :class="item.severity">{{ item.severity }}</span>
 							<strong>{{ metricLabel(item.metric) }}</strong>
-							<span>{{ item.value.toFixed(2) }}</span>
+							<span>{{ formatMetricValue(item.metric, item.value) }}</span>
 							<span class="date">{{ new Date(item.createdAt).toLocaleString() }}</span>
 						</div>
 
@@ -111,8 +114,8 @@
 										:key="`${item.id}-ep-${ei}`"
 									>
 										<td>{{ ep.endpoint }}</td>
-										<td>{{ ep.avgMs }}ms</td>
-										<td>{{ ep.p95Ms }}ms</td>
+										<td>{{ formatMs(ep.avgMs) }}ms</td>
+										<td>{{ formatMs(ep.p95Ms) }}ms</td>
 										<td>{{ ep.count }}</td>
 									</tr>
 								</tbody>
@@ -130,7 +133,7 @@
 								:key="`${item.id}-slow-${ci}`"
 								class="slowCallItem"
 							>
-								{{ c.endpoint }} {{ c.responseMs }}ms {{ formatAt(c.at) }}
+								{{ c.endpoint }} {{ formatMs(c.responseMs) }}ms {{ formatAt(c.at) }}
 							</div>
 						</div>
 
@@ -178,7 +181,7 @@
 								class="queryItem"
 							>
 								<div class="queryMeta">
-									PID {{ query.pid }} / {{ query.durationMs }}ms / {{ query.state }}
+									PID {{ query.pid }} / {{ formatMs(query.durationMs) }}ms / {{ query.state }}
 									<span v-if="query.waitEventType"> ({{ query.waitEventType }})</span>
 								</div>
 								<pre>{{ query.query }}</pre>
@@ -197,9 +200,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted, computed } from "vue";
+import { ref, watch, onMounted } from "vue";
 import MkButton from "@/components/MkButton.vue";
 import MkSelect from "@/components/form/select.vue";
+import MkSwitch from "@/components/form/switch.vue";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
@@ -220,6 +224,7 @@ const severity = ref<"all" | "warn" | "critical">("all");
 const loading = ref(false);
 const analyzingId = ref<string | null>(null);
 const openaiApiKeySet = ref(false);
+const enableCollection = ref(true);
 
 const metricLabels: Record<string, string> = {
 	cpuUsage: "CPU使用率",
@@ -240,6 +245,20 @@ function formatAt(at: number): string {
 	return d.toLocaleTimeString();
 }
 
+function formatMetricValue(metric: string, value: unknown): string {
+	if (typeof value !== "number" || Number.isNaN(value)) return "-";
+	if (metric.toLowerCase().includes("ms")) return formatMs(value);
+	return value.toFixed(2);
+}
+
+function formatMs(value: unknown): string {
+	if (typeof value !== "number" || Number.isNaN(value)) return "-";
+	const abs = Math.abs(value);
+	if (abs < 10) return value.toFixed(2);
+	if (abs < 100) return value.toFixed(1);
+	return value.toFixed(0);
+}
+
 function deliverDelayedTotal(fs: { deliverDelayed?: { remote?: number; local?: number; unknown?: number } }): number {
 	const d = fs.deliverDelayed;
 	if (!d) return 0;
@@ -249,10 +268,17 @@ function deliverDelayedTotal(fs: { deliverDelayed?: { remote?: number; local?: n
 const fetchIncidents = async () => {
 	loading.value = true;
 	try {
-		incidents.value = await os.api("admin/performance-incidents", {
+		const response = await os.api("admin/performance-incidents", {
 			limit: 100,
 			severity: severity.value,
 		});
+
+		incidents.value = Array.isArray(response)
+			? response.map((item) => ({
+				...item,
+				stats: item?.stats ?? {},
+			}))
+			: [];
 	} finally {
 		loading.value = false;
 	}
@@ -261,6 +287,7 @@ const fetchIncidents = async () => {
 async function fetchMetaForOpenAi() {
 	const meta = await os.api("admin/meta");
 	openaiApiKeySet.value = meta.openaiApiKey != null && meta.openaiApiKey !== "";
+	enableCollection.value = meta.enablePerformanceIncidentCollection !== false;
 }
 
 const runAnalysis = async (incidentId: string) => {
@@ -299,6 +326,29 @@ const copyPrompt = async (incidentId: string) => {
 			text: e?.message ?? "プロンプトの取得に失敗しました。",
 		});
 	}
+};
+
+
+const onToggleCollection = async (nextValue: boolean) => {
+	if (nextValue === enableCollection.value) return;
+
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.ts._performanceIncidents.changeCollectionStateConfirm,
+	});
+
+	if (canceled) return;
+
+	await os.apiWithDialog("admin/update-meta", {
+		enablePerformanceIncidentCollection: nextValue,
+	});
+
+	if (!nextValue) {
+		await os.apiWithDialog("admin/clear-performance-incidents");
+	}
+
+	enableCollection.value = nextValue;
+	await fetchIncidents();
 };
 
 watch(severity, fetchIncidents);

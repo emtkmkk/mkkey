@@ -714,6 +714,8 @@ database: "Database"
 performanceIncidents: "Performance Incidents"
 _performanceIncidents:
   severity: "Severity"
+  collect: "Collect"
+  changeCollectionStateConfirm: "Do you want to switch the state?"
   rawStatsSnapshot: "Raw stats snapshot"
   diagnosis: "Diagnosis"
   noProblemsDetected: "No problems detected"

@@ -846,6 +846,8 @@ database: "データベース"
 performanceIncidents: "パフォーマンス障害ログ"
 _performanceIncidents:
   severity: "重大度"
+  collect: "収集する"
+  changeCollectionStateConfirm: "状態を切り替えますか？"
   rawStatsSnapshot: "Raw stats snapshot"
   diagnosis: "診断"
   noProblemsDetected: "問題は検出されていません"

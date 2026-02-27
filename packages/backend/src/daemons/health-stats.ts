@@ -2,6 +2,7 @@ import { monitorEventLoopDelay } from "perf_hooks";
 import Xev from "xev";
 import { db } from "@/db/postgre.js";
 import { redisClient } from "@/db/redis.js";
+import { fetchMeta } from "@/misc/fetch-meta.js";
 
 type ServerStats = {
 	cpu: number;
@@ -537,50 +538,60 @@ export default function () {
 			stats as unknown as StatsForDiagnosis,
 		);
 
-		if (shouldRecordIncident("cpuUsage", stats.cpuUsage, 90)) {
-			await recordIncident("critical", "cpuUsage", stats.cpuUsage, stats);
-		} else if (shouldRecordIncident("cpuUsageWarn", stats.cpuUsage, 75)) {
-			await recordIncident("warn", "cpuUsage", stats.cpuUsage, stats);
+		let enablePerformanceIncidentCollection = true;
+		try {
+			const instanceMeta = await fetchMeta();
+			enablePerformanceIncidentCollection = instanceMeta.enablePerformanceIncidentCollection;
+		} catch {
+			// ヘルススコア配信は継続し、DB記録判定のみデフォルト値を使う
 		}
 
-		if (shouldRecordIncident("queuePressure", stats.queuePressure, 8)) {
-			await recordIncident("critical", "queuePressure", stats.queuePressure, stats);
-		} else if (shouldRecordIncident("queuePressureWarn", stats.queuePressure, 4)) {
-			await recordIncident("warn", "queuePressure", stats.queuePressure, stats);
-		}
+		if (enablePerformanceIncidentCollection) {
+			if (shouldRecordIncident("cpuUsage", stats.cpuUsage, 90)) {
+				await recordIncident("critical", "cpuUsage", stats.cpuUsage, stats);
+			} else if (shouldRecordIncident("cpuUsageWarn", stats.cpuUsage, 75)) {
+				await recordIncident("warn", "cpuUsage", stats.cpuUsage, stats);
+			}
 
-		if (shouldRecordIncident("eventLoopLagMs", stats.eventLoopLagMs, 250)) {
-			await recordIncident("critical", "eventLoopLagMs", stats.eventLoopLagMs, stats);
-		} else if (shouldRecordIncident("eventLoopLagMsWarn", stats.eventLoopLagMs, 120)) {
-			await recordIncident("warn", "eventLoopLagMs", stats.eventLoopLagMs, stats);
-		}
+			if (shouldRecordIncident("queuePressure", stats.queuePressure, 8)) {
+				await recordIncident("critical", "queuePressure", stats.queuePressure, stats);
+			} else if (shouldRecordIncident("queuePressureWarn", stats.queuePressure, 4)) {
+				await recordIncident("warn", "queuePressure", stats.queuePressure, stats);
+			}
 
-		if (shouldRecordIncident("dbLatencyMs", stats.dbLatencyMs, 500)) {
-			await recordIncident("critical", "dbLatencyMs", stats.dbLatencyMs, stats);
-		} else if (shouldRecordIncident("dbLatencyMsWarn", stats.dbLatencyMs, 200)) {
-			await recordIncident("warn", "dbLatencyMs", stats.dbLatencyMs, stats);
-		}
+			if (shouldRecordIncident("eventLoopLagMs", stats.eventLoopLagMs, 250)) {
+				await recordIncident("critical", "eventLoopLagMs", stats.eventLoopLagMs, stats);
+			} else if (shouldRecordIncident("eventLoopLagMsWarn", stats.eventLoopLagMs, 120)) {
+				await recordIncident("warn", "eventLoopLagMs", stats.eventLoopLagMs, stats);
+			}
 
-		if (shouldRecordIncident("dbLongRunningQueryCount", stats.longRunningQueryCount, 3)) {
-			await recordIncident(
-				"critical",
-				"dbLongRunningQueryCount",
-				stats.longRunningQueryCount,
-				stats,
-			);
-		} else if (shouldRecordIncident("dbLongRunningQueryCountWarn", stats.longRunningQueryCount, 1)) {
-			await recordIncident(
-				"warn",
-				"dbLongRunningQueryCount",
-				stats.longRunningQueryCount,
-				stats,
-			);
-		}
+			if (shouldRecordIncident("dbLatencyMs", stats.dbLatencyMs, 500)) {
+				await recordIncident("critical", "dbLatencyMs", stats.dbLatencyMs, stats);
+			} else if (shouldRecordIncident("dbLatencyMsWarn", stats.dbLatencyMs, 200)) {
+				await recordIncident("warn", "dbLatencyMs", stats.dbLatencyMs, stats);
+			}
 
-		if (shouldRecordIncident("apiLatencyP95Ms", stats.apiLatencyP95Ms, 2000)) {
-			await recordIncident("critical", "apiLatencyP95Ms", stats.apiLatencyP95Ms, stats);
-		} else if (shouldRecordIncident("apiLatencyP95MsWarn", stats.apiLatencyP95Ms, 800)) {
-			await recordIncident("warn", "apiLatencyP95Ms", stats.apiLatencyP95Ms, stats);
+			if (shouldRecordIncident("dbLongRunningQueryCount", stats.longRunningQueryCount, 3)) {
+				await recordIncident(
+					"critical",
+					"dbLongRunningQueryCount",
+					stats.longRunningQueryCount,
+					stats,
+				);
+			} else if (shouldRecordIncident("dbLongRunningQueryCountWarn", stats.longRunningQueryCount, 1)) {
+				await recordIncident(
+					"warn",
+					"dbLongRunningQueryCount",
+					stats.longRunningQueryCount,
+					stats,
+				);
+			}
+
+			if (shouldRecordIncident("apiLatencyP95Ms", stats.apiLatencyP95Ms, 2000)) {
+				await recordIncident("critical", "apiLatencyP95Ms", stats.apiLatencyP95Ms, stats);
+			} else if (shouldRecordIncident("apiLatencyP95MsWarn", stats.apiLatencyP95Ms, 800)) {
+				await recordIncident("warn", "apiLatencyP95Ms", stats.apiLatencyP95Ms, stats);
+			}
 		}
 
 		ev.emit("healthStats", stats);

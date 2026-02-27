@@ -137,6 +137,7 @@ export const paramDef = {
 		openaiApiKey: { type: "string", nullable: true },
 		openaiModel: { type: "string", nullable: true },
 		openaiBaseUrl: { type: "string", nullable: true },
+		enablePerformanceIncidentCollection: { type: "boolean", nullable: true },
 		enableTwitterIntegration: { type: "boolean" },
 		twitterConsumerKey: { type: "string", nullable: true },
 		twitterConsumerSecret: { type: "string", nullable: true },
@@ -607,6 +608,10 @@ export default define(meta, paramDef, async (ps, me) => {
 		} else {
 			set.openaiBaseUrl = ps.openaiBaseUrl;
 		}
+	}
+
+	if (ps.enablePerformanceIncidentCollection !== undefined) {
+		set.enablePerformanceIncidentCollection = ps.enablePerformanceIncidentCollection;
 	}
 
 	if (ps.enableIpLogging !== undefined) {

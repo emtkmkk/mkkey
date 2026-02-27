@@ -179,6 +179,123 @@ type Option = {
 	isFirstNote?: boolean | null;
 };
 
+type LocalRuleUser = {
+	id: User["id"];
+	host: null;
+	notesCount: User["notesCount"];
+	blockPostPublic: User["blockPostPublic"];
+	blockPostHome: User["blockPostHome"];
+	blockPostNotLocal: User["blockPostNotLocal"];
+	blockPostNotLocalPublic: User["blockPostNotLocalPublic"];
+};
+
+function includesYoruho(text: Option["text"]): boolean {
+	return (
+		text?.includes("よるほ") === true ||
+		text?.includes("ヨルホ") === true ||
+		text?.includes("yoruho") === true
+	);
+}
+
+async function applyLocalNoteRules(user: LocalRuleUser, data: Option): Promise<void> {
+	if (!data.visibilityForce && data.visibility !== "specified") {
+		//チャンネル投稿でリプライ、リノートでないならpublic
+		if (data.channel != null && !data.reply && !data.renote) data.visibility = "public";
+		//publicをブロックする設定でpublic設定ならhomeに設定
+		if (user.blockPostPublic && data.visibility === "public") data.visibility = "home";
+		//homeをブロックする設定でhome設定ならfollowersに設定
+		if (user.blockPostHome && data.visibility === "home") data.visibility = "followers";
+		//非localOnlyをブロックする設定で非localOnly設定ならlocalOnlyに設定
+		if (
+			user.blockPostNotLocal &&
+			data.localOnly === false &&
+			(!user.blockPostNotLocalPublic || data.visibility === "public")
+		) {
+			data.localOnly = true;
+		}
+
+		//LTLが無効ならホームに
+		if (data.channel == null && data.visibility === "public") {
+			const m = await fetchMeta();
+			if (m.disableLocalTimeline) {
+				data.visibility = "home";
+			}
+		}
+	}
+
+	if (
+		data.channel != null &&
+		data.localOnly === false &&
+		!data.reply &&
+		data.text?.trim() &&
+		!data.text.includes(`#${data.channel.name}`)
+	) {
+		//ローカル投稿でチャンネルで連合有りで返信でなくテキストがあり、
+		//すでにタグが含まれていない場合はハッシュタグを自動で付ける
+		data.text += ` #${data.channel.name}`;
+	}
+
+	// ローカル投稿のTwitter/X statusリンクのみ、?以降を取り除く
+	if (data.text?.includes("https://twitter.com") || data.text?.includes("http://twitter.com")) {
+		data.text = data.text.replaceAll(
+			/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?[^\s\)]*)/gi,
+			"$1",
+		);
+	}
+
+	if (data.text?.includes("https://x.com") || data.text?.includes("http://x.com")) {
+		data.text = data.text.replaceAll(
+			/(https?:\/\/x.com\/\S*\/status\/\S*)(\?[^\s\)]*)/gi,
+			"$1",
+		);
+	}
+
+	//ローカルユーザーでこの投稿が1投稿目の場合
+	if (user.notesCount < 1) {
+		//キャッシュで0に見えてる可能性があるためここで最新データを取得
+		const _user = await Users.findOneByOrFail({ id: user.id });
+		if (_user.notesCount === 0) {
+			data.isFirstNote = true;
+		}
+	}
+
+	//23:59の間によるほを含む投稿をした場合
+	if (
+		data.createdAt?.getHours() === 23 &&
+		data.createdAt?.getMinutes() === 59 &&
+		includesYoruho(data.text)
+	) {
+		if (data.createdAt?.getSeconds() === 59 && data.createdAt?.getMilliseconds() !== 0) {
+			//誤差がミリ秒単位の場合
+			data.text = `${data.text} [❌ -.${(1000 - data.createdAt.getMilliseconds())
+				.toString()
+				.padStart(3, "0")}]`;
+		} else {
+			data.text = `${data.text} [❌ -${(60 - data.createdAt?.getSeconds()).toString()}s]`;
+		}
+	}
+
+	//0:00の間によるほを含む投稿をした場合
+	if (
+		data.createdAt?.getHours() === 0 &&
+		data.createdAt?.getMinutes() === 0 &&
+		includesYoruho(data.text)
+	) {
+		if (data.createdAt?.getMilliseconds() === 0) {
+			//ジャストの場合
+			data.text = `${data.text} [\$[tada 🦉 .000]]`;
+		} else if (data.createdAt?.getSeconds() === 0) {
+			//誤差がミリ秒単位の場合
+			data.text = `${data.text} [🦉 .${data.createdAt
+				.getMilliseconds()
+				.toString()
+				.padStart(3, "0")}]`;
+		} else {
+			data.text = `${data.text} [❌ +${data.createdAt?.getSeconds().toString()}s]`;
+		}
+	}
+}
+
 export default async (
 	user: {
 		id: User["id"];
@@ -212,10 +329,11 @@ export default async (
 		// 最初に投稿時刻を確定させる
 		if (data.createdAt == null) data.createdAt = new Date();
 
+		const isRemote = Users.isRemoteUser(user);
 		const firstVisibility = data.visibility ?? "public";
 
 		// リモートのノートはチャンネル扱いにしない
-		if (!Users.isLocalUser(user)) {
+		if (isRemote) {
 			data.channel = null;
 		}
 
@@ -261,30 +379,14 @@ export default async (
 		//指定がなければpublicでlocalOnlyOFF
 		if (data.visibility == null) data.visibility = "public";
 		if (data.localOnly == null) data.localOnly = false;
-               if (!data.visibilityForce && data.visibility !== "specified") {
-			//チャンネル投稿でリプライ、リノートでないならpublic
-			if (data.channel != null && !data.reply && !data.renote)
-				data.visibility = "public";
-			//publicをブロックする設定でpublic設定ならhomeに設定
-			if (user.blockPostPublic && data.visibility === "public")
-				data.visibility = "home";
-			//homeをブロックする設定でhome設定ならfollowersに設定
-			if (user.blockPostHome && data.visibility === "home")
-				data.visibility = "followers";
-			//非localOnlyをブロックする設定で非localOnly設定ならlocalOnlyに設定
-			if (
-				user.blockPostNotLocal &&
-				data.localOnly === false &&
-				(!user.blockPostNotLocalPublic || data.visibility === "public")
-			)
-				data.localOnly = true;
-			if (data.visibility === "hidden") data.visibility = "public";
-			//LTLが無効ならホームに
-			if (!user.host && data.channel == null && data.visibility === "public") {
-				const m = await fetchMeta();
-				if (m.disableLocalTimeline) {
-					data.visibility = "home";
-				}
+		if (isRemote) {
+			if (!data.visibilityForce && data.visibility !== "specified") {
+				if (data.visibility === "hidden") data.visibility = "public";
+			}
+		} else {
+			await applyLocalNoteRules(user, data);
+			if (!data.visibilityForce && data.visibility !== "specified") {
+				if (data.visibility === "hidden") data.visibility = "public";
 			}
 		}
 		//ただしspecifiedならlocalOnlyOFF
@@ -296,101 +398,6 @@ export default async (
 			data.localOnly === false
 		)
 			data.localOnly = true;
-		if (
-			!user.host &&
-			data.channel != null &&
-			data.localOnly === false &&
-			!data.reply &&
-			data.text?.trim() &&
-			!data.text?.includes(`#${data.channel!.name}`)
-		) {
-			//ローカル投稿でチャンネルで連合有りで返信でなくテキストがあり、
-			//すでにタグが含まれていない場合はハッシュタグを自動で付ける
-			data.text += ` #${data.channel!.name}`;
-		}
-
-		// ローカル投稿のTwitter/X statusリンクのみ、?以降を取り除く
-		if (user.host == null) {
-			if (
-				data.text?.includes("https://twitter.com") ||
-				data.text?.includes("http://twitter.com")
-			) {
-				data.text = data.text.replaceAll(
-					/(https?:\/\/twitter.com\/\S*\/status\/\S*)(\?[^\s\)]*)/gi,
-					"$1",
-				);
-			}
-
-			if (
-				data.text?.includes("https://x.com") ||
-				data.text?.includes("http://x.com")
-			) {
-				data.text = data.text.replaceAll(
-					/(https?:\/\/x.com\/\S*\/status\/\S*)(\?[^\s\)]*)/gi,
-					"$1",
-				);
-			}
-		}
-
-		//ローカルユーザーでこの投稿が1投稿目の場合
-		if (!user.host && user.notesCount < 1) {
-			//キャッシュで0に見えてる可能性があるためここで最新データを取得
-			const _user = await Users.findOneByOrFail({ id: user.id });
-			if (_user.notesCount === 0) {
-				data.isFirstNote = true;
-			}
-		}
-
-		//23:59の間によるほを含む投稿をした場合
-		if (
-			data.createdAt?.getHours() === 23 &&
-			data.createdAt?.getMinutes() === 59 &&
-			!user.host &&
-			(data.text?.includes("よるほ") ||
-				data.text?.includes("ヨルホ") ||
-				data.text?.includes("yoruho"))
-		) {
-			if (
-				data.createdAt?.getSeconds() === 59 &&
-				data.createdAt?.getMilliseconds() !== 0
-			) {
-				//誤差がミリ秒単位の場合
-				data.text = `${data.text} [❌ -.${(
-					1000 - data.createdAt.getMilliseconds()
-				)
-					.toString()
-					.padStart(3, "0")}]`;
-			} else {
-				data.text = `${data.text} [❌ -${(
-					60 - data.createdAt?.getSeconds()
-				).toString()}s]`;
-			}
-		}
-
-		//0:00の間によるほを含む投稿をした場合
-		if (
-			data.createdAt?.getHours() === 0 &&
-			data.createdAt?.getMinutes() === 0 &&
-			!user.host &&
-			(data.text?.includes("よるほ") ||
-				data.text?.includes("ヨルホ") ||
-				data.text?.includes("yoruho"))
-		) {
-			if (data.createdAt?.getMilliseconds() === 0) {
-				//ジャストの場合
-				data.text = `${data.text} [\$[tada 🦉 .000]]`;
-			} else if (data.createdAt?.getSeconds() === 0) {
-				//誤差がミリ秒単位の場合
-				data.text = `${data.text} [🦉 .${data.createdAt
-					.getMilliseconds()
-					.toString()
-					.padStart(3, "0")}]`;
-			} else {
-				data.text = `${data.text} [❌ +${data.createdAt
-					?.getSeconds()
-					.toString()}s]`;
-			}
-		}
 
 		// サイレンスされている場合はフォロワー限定に
 		if (user.isSilenced && data.visibility !== "specified") {
@@ -401,7 +408,7 @@ export default async (
 		// Enforce home visibility if the user is in a silenced instance.
 		if (
 			data.visibility === "public" &&
-			Users.isRemoteUser(user) &&
+			isRemote &&
 			(await shouldSilenceInstance(user.host))
 		) {
 			data.visibility = "home";
@@ -934,7 +941,7 @@ export default async (
 		}
 
 		// Register host
-		if (Users.isRemoteUser(user)) {
+		if (isRemote) {
 			registerOrFetchInstanceDoc(user.host).then((i) => {
 				Instances.increment({ id: i.id }, "notesCount", 1);
 				instanceChart.updateNote(i.host, note, true);
@@ -955,7 +962,7 @@ export default async (
 		if (
 			(user.onlineStatus === "online" ||
 				user.onlineStatus === "half-online" ||
-				Users.isRemoteUser(user) ||
+				isRemote ||
 				user.isBot) &&
 			new Date().valueOf() - data.createdAt.valueOf() < 2 * 60 * 60 * 1000
 		) {

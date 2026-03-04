@@ -46,9 +46,13 @@ useTooltip(buttonRef, async (showing) => {
 	const renotes = await os.api("notes/renotes", {
 		noteId: props.note.id,
 		limit: 11,
+		withUserRenoteCount: true,
 	});
 
 	const users = renotes.map((x) => x.user);
+	const userRenoteCounts = Object.fromEntries(
+		renotes.map((x) => [x.user.id, (x as Record<string, any>).userRenoteCount ?? 1])
+	);
 
 	if (users.length < 1) return;
 
@@ -58,6 +62,8 @@ useTooltip(buttonRef, async (showing) => {
 			showing,
 			users,
 			count: props.count,
+			showCount: true,
+			userRenoteCounts,
 			targetElement: buttonRef.value,
 		},
 		{},

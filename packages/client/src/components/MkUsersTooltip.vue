@@ -43,18 +43,33 @@ const displayedUsers = computed(() => {
 		return props.users.map((user) => ({ user, count: 1 }));
 	}
 
-	const usersById = new Map<string, { user: any; count: number }>();
+	const usersById = new Map<string, { user: any; count: number; order: number }>();
 
-	for (const user of props.users) {
+	for (const [order, user] of props.users.entries()) {
 		if (usersById.has(user.id)) continue;
 
 		usersById.set(user.id, {
 			user,
 			count: props.userRenoteCounts?.[user.id] ?? 1,
+			order,
 		});
 	}
 
-	return Array.from(usersById.values());
+	const dedupedUsers = Array.from(usersById.values());
+	const hasOmittedUsers = props.count > 10 &&
+		dedupedUsers.reduce((sum, user) => sum + user.count, 0) < props.count;
+
+	if (!hasOmittedUsers) {
+		return dedupedUsers;
+	}
+
+	return [...dedupedUsers].sort((a, b) => {
+		if (a.count !== b.count) {
+			return b.count - a.count;
+		}
+
+		return a.order - b.order;
+	});
 });
 
 const shownCount = computed(() =>

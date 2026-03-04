@@ -26,6 +26,17 @@
 						>
 					</div>
 				</div>
+
+				<div v-if="$i?.isAdmin || $i?.isModerator" class="_formBlock">
+					<MkInput :model-value="managerLabel" readonly>
+						<template #label>{{ i18n.ts._channel.manager }}</template>
+					</MkInput>
+					<div style="display: flex; gap: 0.5rem; margin-top: 0.5rem">
+						<MkButton @click="selectManager()">{{ i18n.ts.selectUser }}</MkButton>
+						<MkButton @click="clearManager()">{{ i18n.ts.none }}</MkButton>
+					</div>
+				</div>
+
 				<div class="_formBlock">
 					<MkButton primary @click="save()"
 						><i class="ph-floppy-disk-back ph-bold ph-lg"></i>
@@ -40,7 +51,8 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, watch } from "vue";
+import { computed, watch } from "vue";
+import type * as misskey from "calckey-js";
 import MkTextarea from "@/components/form/textarea.vue";
 import MkButton from "@/components/MkButton.vue";
 import MkInput from "@/components/form/input.vue";
@@ -49,6 +61,7 @@ import * as os from "@/os";
 import { useRouter } from "@/router";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
+import { $i } from "@/account";
 
 const router = useRouter();
 
@@ -61,6 +74,8 @@ let name = $ref(null);
 let description = $ref(null);
 let bannerUrl = $ref<string | null>(null);
 let bannerId = $ref<string | null>(null);
+let managerUserId = $ref<string | null>(null);
+let managerLabel = $ref(i18n.ts.none);
 
 watch(
 	() => bannerId,
@@ -77,6 +92,23 @@ watch(
 	}
 );
 
+function toUserLabel(user: misskey.entities.UserDetailed) {
+	return `@${user.username}${user.host ? `@${user.host}` : ""}`;
+}
+
+async function fetchManagerLabel() {
+	if (managerUserId == null) {
+		managerLabel = i18n.ts.none;
+		return;
+	}
+
+	const manager = await os.api("users/show", {
+		userId: managerUserId,
+	});
+
+	managerLabel = toUserLabel(manager);
+}
+
 async function fetchChannel() {
 	if (props.channelId == null) return;
 
@@ -88,6 +120,8 @@ async function fetchChannel() {
 	description = channel.description;
 	bannerId = channel.bannerId;
 	bannerUrl = channel.bannerUrl;
+	managerUserId = channel.userId;
+	await fetchManagerLabel();
 }
 
 fetchChannel();
@@ -101,6 +135,9 @@ function save() {
 
 	if (props.channelId) {
 		params.channelId = props.channelId;
+		if ($i?.isAdmin || $i?.isModerator) {
+			params.userId = managerUserId;
+		}
 		os.api("channels/update", params).then(() => {
 			os.success();
 		});
@@ -120,6 +157,17 @@ function setBannerImage(evt) {
 
 function removeBannerImage() {
 	bannerId = null;
+}
+
+async function selectManager() {
+	const user = await os.selectUser({ includeSelf: true });
+	managerUserId = user.id;
+	managerLabel = toUserLabel(user);
+}
+
+function clearManager() {
+	managerUserId = null;
+	managerLabel = i18n.ts.none;
 }
 
 const headerActions = $computed(() => []);

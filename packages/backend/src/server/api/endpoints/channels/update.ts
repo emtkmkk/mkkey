@@ -1,6 +1,6 @@
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
-import { Channels, DriveFiles } from "@/models/index.js";
+import { Channels, DriveFiles, Users } from "@/models/index.js";
 
 export const meta = {
 	tags: ["channels"],
@@ -34,6 +34,12 @@ export const meta = {
 			code: "NO_SUCH_FILE",
 			id: "e86c14a4-0da2-4032-8df3-e737a04c7f3b",
 		},
+
+		noSuchUser: {
+			message: "そのユーザーは存在しません。",
+			code: "NO_SUCH_USER",
+			id: "958bc0ea-f4e0-4de4-aa02-d7ec2633f4e4",
+		},
 	},
 } as const;
 
@@ -49,6 +55,7 @@ export const paramDef = {
 			maxLength: 2048,
 		},
 		bannerId: { type: "string", format: "misskey:id", nullable: true },
+		userId: { type: "string", format: "misskey:id", nullable: true },
 	},
 	required: ["channelId"],
 } as const;
@@ -62,7 +69,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noSuchChannel);
 	}
 
-	if (channel.userId !== me.id) {
+	const canEditAsModerator = me.isAdmin || me.isModerator;
+
+	if (channel.userId !== me.id && !canEditAsModerator) {
 		throw new ApiError(meta.errors.accessDenied);
 	}
 
@@ -80,9 +89,20 @@ export default define(meta, paramDef, async (ps, me) => {
 		banner = null;
 	}
 
+	if (ps.userId !== undefined && ps.userId !== null) {
+		const user = await Users.findOneBy({
+			id: ps.userId,
+		});
+
+		if (user == null) {
+			throw new ApiError(meta.errors.noSuchUser);
+		}
+	}
+
 	await Channels.update(channel.id, {
 		...(ps.name !== undefined ? { name: ps.name } : {}),
 		...(ps.description !== undefined ? { description: ps.description } : {}),
+		...(ps.userId !== undefined ? { userId: ps.userId } : {}),
 		...(banner ? { bannerId: banner.id } : {}),
 	});
 

@@ -155,7 +155,7 @@ const headerActions = $computed(() => [
 				},
 		  ]
 		: []),
-	...(channel && channel?.userId === $i?.id
+	...(channel && (channel?.userId === $i?.id || $i?.isAdmin || $i?.isModerator)
 		? [
 				{
 					icon: "ph-gear-six ph-bold ph-lg",

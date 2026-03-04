@@ -1377,6 +1377,7 @@ _channel:
   edit: "Edit channel"
   setBanner: "Set banner"
   removeBanner: "Remove banner"
+  manager: "Channel admin"
   featured: "Trending"
   owned: "Owned"
   following: "Followed"

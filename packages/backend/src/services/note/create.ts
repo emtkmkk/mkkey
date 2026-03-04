@@ -223,16 +223,24 @@ async function applyLocalNoteRules(user: LocalRuleUser, data: Option): Promise<v
 		}
 	}
 
+	const isEmptyText = !data.text?.trim();
+	const isRenoteToSameChannel =
+		data.channel != null &&
+		data.renote != null &&
+		data.renote.channelId === data.channel.id;
+
 	if (
 		data.channel != null &&
 		data.localOnly === false &&
 		!data.reply &&
-		data.text?.trim() &&
-		!data.text.includes(`#${data.channel.name}`)
+		!(isEmptyText && isRenoteToSameChannel) &&
+		!(data.text ?? "").includes(`#${data.channel.name}`)
 	) {
-		//ローカル投稿でチャンネルで連合有りで返信でなくテキストがあり、
+		//ローカル投稿でチャンネルで連合有りで返信でなく、
 		//すでにタグが含まれていない場合はハッシュタグを自動で付ける
-		data.text += ` #${data.channel.name}`;
+		data.text = data.text?.trim()
+			? `${data.text} #${data.channel.name}`
+			: `#${data.channel.name}`;
 	}
 
 	// ローカル投稿のTwitter/X statusリンクのみ、?以降を取り除く

@@ -41,6 +41,7 @@ export const paramDef = {
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: "string", format: "misskey:id" },
 		untilId: { type: "string", format: "misskey:id" },
+		withUserRenoteCount: { type: "boolean", default: false },
 	},
 	required: ["noteId"],
 } as const;
@@ -88,6 +89,41 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	if (found.length > ps.limit) {
 		found.length = ps.limit;
+	}
+
+	if (!ps.withUserRenoteCount || found.length === 0) {
+		return found;
+	}
+
+	const userIds = [...new Set(found.map((packedNote) => packedNote.userId))];
+
+	if (userIds.length === 0) {
+		return found;
+	}
+
+	const countQuery = Notes.createQueryBuilder("note")
+		.select("note.userId", "userId")
+		.addSelect("COUNT(note.id)", "count")
+		.where("note.renoteId = :renoteId", { renoteId: note.id })
+		.andWhere("note.userId IN (:...userIds)", { userIds })
+		.groupBy("note.userId");
+
+	generateVisibilityQuery(countQuery, user);
+	if (user) generateMutedUserQuery(countQuery, user);
+	if (user) generateBlockedUserQuery(countQuery, user);
+
+	const renoteCountRows = await countQuery.getRawMany<{
+		userId: string;
+		count: string;
+	}>();
+
+	const renoteCountsByUserId = new Map<string, number>(
+		renoteCountRows.map((row) => [row.userId, Number(row.count)])
+	);
+
+	for (const packedNote of found) {
+		(packedNote as Record<string, any>).userRenoteCount =
+			renoteCountsByUserId.get(packedNote.userId) ?? 1;
 	}
 
 	return found;

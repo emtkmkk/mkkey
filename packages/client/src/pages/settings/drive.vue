@@ -75,6 +75,18 @@
 				></template>
 			</FormButton>
 			<FormButton
+				@click="chooseUploadFolderWallpaper()"
+				style="margin-top: 0.375rem"
+			>
+				{{ i18n.ts.uploadFolderWallpaper }}
+				<template #suffix>{{
+					uploadFolderWallpaper ? uploadFolderWallpaper.name : "-"
+				}}</template>
+				<template #suffixIcon
+					><i class="ph-folder-notch-open ph-bold ph-lg"></i
+				></template>
+			</FormButton>
+			<FormButton
 				v-if="$i.isModerator || $i.isAdmin"
 				@click="chooseUploadFolderEmoji()"
 				style="margin-top: 0.375rem"
@@ -151,6 +163,7 @@ const uploadFolder = ref<any>(null);
 const uploadFolderAvatar = ref<any>(null);
 const uploadFolderBanner = ref<any>(null);
 const uploadFolderEmoji = ref<any>(null);
+const uploadFolderWallpaper = ref<any>(null);
 const DEFAULT_CAPACITY = 5 * 1024 * 1024 * 1024;
 const MAX_CAPACITY = 100 * 1024 * 1024 * 1024;
 let alwaysMarkNsfw = $ref($i.alwaysMarkNsfw);
@@ -214,6 +227,13 @@ if (defaultStore.state.uploadFolderEmoji) {
 		uploadFolderEmoji.value = response;
 	});
 }
+if (defaultStore.state.uploadFolderWallpaper) {
+	os.api("drive/folders/show", {
+		folderId: defaultStore.state.uploadFolderWallpaper,
+	}).then((response) => {
+		uploadFolderWallpaper.value = response;
+	});
+}
 
 function chooseUploadFolder() {
 	os.selectDriveFolder(false).then(async (folder) => {
@@ -264,6 +284,19 @@ function chooseUploadFolderEmoji() {
 			});
 		} else {
 			uploadFolderEmoji.value = null;
+		}
+	});
+}
+function chooseUploadFolderWallpaper() {
+	os.selectDriveFolder(false).then(async (folder) => {
+		defaultStore.set("uploadFolderWallpaper", folder ? folder.id : null);
+		os.success();
+		if (defaultStore.state.uploadFolderWallpaper) {
+			uploadFolderWallpaper.value = await os.api("drive/folders/show", {
+				folderId: defaultStore.state.uploadFolderWallpaper,
+			});
+		} else {
+			uploadFolderWallpaper.value = null;
 		}
 	});
 }

@@ -194,7 +194,7 @@ import FormLink from "@/components/form/link.vue";
 import FormButton from "@/components/MkButton.vue";
 import MkLink from "@/components/MkLink.vue";
 import { getBuiltinThemesRef } from "@/scripts/theme";
-import { selectFile } from "@/scripts/select-file";
+import { selectFiles } from "@/scripts/select-file";
 import { isDeviceDarkmode } from "@/scripts/is-device-darkmode";
 import { ColdDeviceStorage, defaultStore } from "@/store";
 import { i18n } from "@/i18n";
@@ -308,8 +308,14 @@ function reloadWindow() {
 }
 
 function setWallpaper(event) {
-	selectFile(event.currentTarget ?? event.target, null).then((file) => {
-		wallpapers.value = [...wallpapers.value, file.url];
+	selectFiles(
+		event.currentTarget ?? event.target,
+		null,
+		false,
+		undefined,
+		"wallpaper",
+	).then((files) => {
+		wallpapers.value = [...wallpapers.value, ...files.map((file) => file.url)];
 	});
 }
 

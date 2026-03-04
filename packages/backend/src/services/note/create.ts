@@ -223,10 +223,17 @@ async function applyLocalNoteRules(user: LocalRuleUser, data: Option): Promise<v
 		}
 	}
 
+	const isEmptyText = !data.text?.trim();
+	const isRenoteToSameChannel =
+		data.channel != null &&
+		data.renote != null &&
+		data.renote.channelId === data.channel.id;
+
 	if (
 		data.channel != null &&
 		data.localOnly === false &&
 		!data.reply &&
+		!(isEmptyText && isRenoteToSameChannel) &&
 		!(data.text ?? "").includes(`#${data.channel.name}`)
 	) {
 		//ローカル投稿でチャンネルで連合有りで返信でなく、

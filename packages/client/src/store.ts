@@ -87,6 +87,12 @@ export const defaultStore = markRaw(
 			default: null as string | null,
 			createdAt: "2023/12/28",
 		},
+		uploadFolderWallpaper: {
+			where: "account",
+			default: null as string | null,
+			createdAt: "2026/03/04",
+			page: "drive",
+		},
 		pastedFileName: {
 			where: "account",
 			default: "yyyy-MM-dd HH-mm-ss [{{number}}]",

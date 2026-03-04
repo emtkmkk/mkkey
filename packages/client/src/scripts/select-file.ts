@@ -29,6 +29,8 @@ function select(
 				? defaultStore.state.uploadFolderBanner
 				: defaultStore.state.uploadFolderEmoji && to === "emoji"
 				? defaultStore.state.uploadFolderEmoji
+				: defaultStore.state.uploadFolderWallpaper && to === "wallpaper"
+				? defaultStore.state.uploadFolderWallpaper
 				: defaultStore.state.uploadFolder;
 
 		const chooseFileFromPc = () => {

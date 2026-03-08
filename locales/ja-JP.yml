@@ -225,6 +225,7 @@ emojiImportRequestConfirm: "「:name:」をインポート申請します。よ�
 emojiImportDenied: "この絵文字名は申請が否認されています"
 selectEmojiSource: "申請する絵文字を選択"
 selectEmojiSourceDescription: "同名の絵文字が複数あります。申請するホストを選んでください。"
+emojiImportRequestNoLicense: "ライセンス情報なし"
 rejectReason: "否認理由"
 rejectReasonOptional: "理由（任意）"
 noPendingEmojiRequests: "申請はありません"

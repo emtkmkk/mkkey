@@ -32,6 +32,30 @@
 					</div>
 				</div>
 
+				<div v-else-if="tab === 'approved'" class="tab-content">
+					<div v-if="approved.length === 0" class="empty">
+						{{ i18n.ts.noApprovedEmojiRequests ?? "承認された申請はありません" }}
+					</div>
+					<div v-else class="list">
+						<div
+							v-for="r in approved"
+							:key="r.id"
+							class="item approved _button"
+							@click="(ev: MouseEvent) => openEmojiMenu(`:${r.emojiName}:`, ev)"
+						>
+							<MkEmoji
+								:emoji="`:${r.emojiName}:`"
+								:normal="true"
+								class="emoji"
+							/>
+							<div class="body">
+								<span class="name">:{{ r.emojiName }}:</span>
+								<span class="date">{{ formatDate(r.processedAt ?? r.createdAt) }}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
 				<div v-else-if="tab === 'rejected'" class="tab-content">
 					<div v-if="rejected.length === 0" class="empty">
 						{{ i18n.ts.noRejectedEmojiRequests ?? "否認された申請はありません" }}
@@ -55,42 +79,6 @@
 						</div>
 					</div>
 				</div>
-
-				<div v-else-if="tab === 'approved'" class="tab-content">
-					<div v-if="approved.length === 0" class="empty">
-						{{ i18n.ts.noApprovedEmojiRequests ?? "承認された申請はありません" }}
-					</div>
-					<div v-else class="list">
-						<div
-							v-for="r in approved"
-							:key="r.id"
-							class="item approved"
-						>
-							<MkEmoji
-								:emoji="`:${r.emojiName}:`"
-								:normal="true"
-								class="emoji"
-							/>
-							<div class="body">
-								<span class="name">:{{ r.emojiName }}:</span>
-								<span class="date">{{ formatDate(r.processedAt ?? r.createdAt) }}</span>
-								<div class="actions">
-									<MkA :to="`/emoji_dialog/${r.emojiName}`" class="link">{{ i18n.ts.info ?? "詳細" }}</MkA>
-									<span class="add-to-deck">
-										<button
-											v-for="(label, idx) in deckLabels"
-											:key="idx"
-											class="_button link"
-											@click="addToDeck(r.emojiName, idx)"
-										>
-											{{ label }}に追加
-										</button>
-									</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
 			</div>
 		</MkSpacer>
 	</MkStickyContainer>
@@ -100,22 +88,22 @@
 /**
  * @packageDocumentation
  *
- * 申請中の絵文字一覧ページ。pending / rejected / approved を表示し、
- * 承認済みはデッキ追加・詳細リンクを提供する。
+ * 申請中の絵文字一覧ページ。申請中 / 承認済み / 否認済みタブで表示する。
+ * 承認済みの行はタップで既存の絵文字メニュー（コピー・詳細・デッキ追加等）を開く。
  */
 import { ref, onMounted, computed } from "vue";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
-import { defaultStore } from "@/store";
 import MkEmoji from "@/components/global/MkEmoji.vue";
+import { openReactionMenu_ } from "@/scripts/reaction-menu";
 
 let tab = ref<"pending" | "rejected" | "approved">("pending");
 
 const headerTabs = computed(() => [
 	{ key: "pending", title: i18n.ts.pendingEmojiRequests ?? "申請中", icon: "ph-clock ph-bold ph-lg" },
-	{ key: "rejected", title: i18n.ts.rejectedEmojiRequests ?? "否認済み", icon: "ph-x-circle ph-bold ph-lg" },
 	{ key: "approved", title: i18n.ts.approvedEmojiRequests ?? "承認済み", icon: "ph-check-circle ph-bold ph-lg" },
+	{ key: "rejected", title: i18n.ts.rejectedEmojiRequests ?? "否認済み", icon: "ph-x-circle ph-bold ph-lg" },
 ]);
 
 let pending = ref<Array<{
@@ -144,36 +132,26 @@ let approved = ref<Array<{
 	createdAt: string;
 }>>([]);
 
-const deckLabels = computed(() => [
-	defaultStore.state.reactionsFolderName || "1ページ目",
-	defaultStore.state.reactionsFolderName2 || "2ページ目",
-	defaultStore.state.reactionsFolderName3 || "3ページ目",
-	defaultStore.state.reactionsFolderName4 || "4ページ目",
-	defaultStore.state.reactionsFolderName5 || "5ページ目",
-]);
-
 async function fetchList() {
 	const res = await os.api("emoji-import-request/my-list", {});
 	pending.value = res.pending ?? [];
 	rejected.value = res.rejected ?? [];
 	approved.value = res.approved ?? [];
+	// 申請中が無い場合は承認済みをデフォルト表示
+	if (pending.value.length === 0 && tab.value === "pending") {
+		tab.value = "approved";
+	}
+}
+
+function openEmojiMenu(reaction: string, ev: MouseEvent) {
+	const el = (ev.currentTarget ?? ev.target) as HTMLElement | null | undefined;
+	openReactionMenu_(reaction, null, false, false, el ?? undefined);
 }
 
 function formatDate(s: string | null): string {
 	if (!s) return "";
 	const d = new Date(s);
 	return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
-function addToDeck(emojiName: string, pageIndex: number) {
-	const key = pageIndex === 0 ? "reactions" : `reactions${pageIndex + 1}` as "reactions2" | "reactions3" | "reactions4" | "reactions5";
-	const current = defaultStore.state[key] as string[];
-	if (current.includes(`:${emojiName}:`)) {
-		os.toast(i18n.ts.alreadyAdded ?? "既に追加されています");
-		return;
-	}
-	defaultStore.set(key, [...current, `:${emojiName}:`]);
-	os.success();
 }
 
 onMounted(() => {
@@ -228,20 +206,10 @@ definePageMetadata({
 				font-size: 0.85em;
 				color: var(--fgTransparentWeak);
 			}
-			.actions {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 8px;
-				margin-top: 4px;
-				.add-to-deck {
-					display: flex;
-					gap: 4px;
-				}
-				.link {
-					font-size: 0.9em;
-				}
-			}
 		}
+	}
+	.item.approved {
+		cursor: pointer;
 	}
 }
 </style>

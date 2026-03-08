@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from "vue";
 import { defaultStore } from "@/store";
 import { host } from "@/config";
 import * as os from "@/os";
@@ -184,23 +185,43 @@ export async function openReactionMenu_(
 					});
 					let targetHost = emojiHost;
 					if (emojis.length > 1) {
-						const sel = await os.select({
-							title: i18n.ts.selectEmojiSource ?? "絵文字の出典を選択",
-							text:
-								i18n.ts.selectEmojiSourceDescription ??
-								"同じ名前の絵文字が複数あります。どれを申請しますか？",
-							items: emojis.map((e: { host: string; licenseName?: string; license?: string; aliasCount?: number }) => {
-								const licensePart = (e.licenseName ?? e.license ?? "").trim() || "(ライセンス情報なし)";
-								const aliasCount = e.aliasCount ?? 0;
-								const middlePart =
-									aliasCount >= 1
-										? ` ${i18n.ts.emojiImportRequestTagCount ?? "タグ数"}: ${aliasCount} - `
-										: " - ";
-								return {
-									value: e.host,
-									text: `${e.host}${middlePart}${licensePart}`,
-								};
-							}),
+						const sel = await new Promise<
+							| { canceled: true; result: undefined }
+							| { canceled: false; result: string }
+						>((resolve) => {
+							let resolved = false;
+							let disposeFn: (() => void) | null = null;
+							os.popup(
+								defineAsyncComponent(
+									() =>
+										import(
+											"@/components/MkEmojiImportSourcePicker.vue"
+										),
+								),
+								{
+									emojiName,
+									emojis,
+									currentHost: emojiHost,
+								},
+								{
+									done: (host: string) => {
+										if (!resolved) {
+											resolved = true;
+											disposeFn?.();
+											resolve({ canceled: false, result: host });
+										}
+									},
+									closed: () => {
+										if (!resolved) {
+											resolved = true;
+											resolve({ canceled: true, result: undefined });
+										}
+										disposeFn?.();
+									},
+								},
+							).then((r) => {
+								disposeFn = r.dispose;
+							});
 						});
 						if (sel.canceled || sel.result == null) return;
 						targetHost = sel.result;

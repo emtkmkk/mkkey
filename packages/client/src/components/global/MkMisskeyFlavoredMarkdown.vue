@@ -14,6 +14,7 @@
                 :is-cw="isCw"
                 :user-page="userPage"
                 :rel-me="relMe"
+                :allow-remote-emoji="allowRemoteEmoji"
         />
 </template>
 
@@ -35,6 +36,7 @@ const props = withDefaults(
                 isCw?: boolean;
                 userPage?: boolean;
                 relMe?: boolean;
+                allowRemoteEmoji?: boolean;
         }>(),
         {
                 plain: false,
@@ -47,6 +49,7 @@ const props = withDefaults(
                 isCw: false,
                 userPage: false,
                 relMe: false,
+                allowRemoteEmoji: true,
         }
 );
 </script>

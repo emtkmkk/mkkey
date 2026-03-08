@@ -255,6 +255,15 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormSwitch
+				:model-value="showRemoteEmojiTimeline"
+				class="_formBlock"
+				@update:modelValue="onUpdateShowRemoteEmojiTimeline"
+				>{{ i18n.ts.showRemoteEmojiTimeline
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 		</FormSection>
 	</div>
 </template>
@@ -332,6 +341,9 @@ const delayPostHidden = computed(
 	defaultStore.makeGetterSetter("delayPostHidden")
 );
 const noteAllCw = $computed(defaultStore.makeGetterSetter("noteAllCw"));
+const showRemoteEmojiTimeline = $computed(
+	defaultStore.makeGetterSetter("showRemoteEmojiTimeline")
+);
 const thirdTimelineType = $computed(
 	defaultStore.makeGetterSetter("thirdTimelineType")
 );
@@ -365,6 +377,21 @@ function save() {
 		showTimelineReplies: !!showTimelineReplies,
 		blockPostPublic: !!blockPostPublic,
 	});
+}
+
+async function onUpdateShowRemoteEmojiTimeline(value: boolean) {
+	if (!value) {
+		showRemoteEmojiTimeline = false;
+		return;
+	}
+
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.ts.showRemoteEmojiTimelineConfirm,
+	});
+
+	if (canceled) return;
+	showRemoteEmojiTimeline = true;
 }
 
 async function reloadAsk() {

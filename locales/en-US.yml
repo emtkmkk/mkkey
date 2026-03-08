@@ -2159,3 +2159,6 @@ _adminEmoji:
   motifUserId: "Motif user ID"
   motifUserMode: "Motif scope"
   selectFirst: "Please select one or more emojis."
+
+showRemoteEmojiTimeline: "Show remote-server emojis included in notes on timeline"
+showRemoteEmojiTimelineConfirm: "If you turn this on, emojis from other servers that have not been reviewed on MokoKey will be displayed in the MokoKey timeline without restrictions. In some cases, potentially unpleasant emojis may appear without any warning cushion.\n\nDo you understand and accept this risk, and agree that MokoKey is not responsible even if this causes discomfort?"

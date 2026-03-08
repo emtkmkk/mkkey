@@ -39,6 +39,7 @@
 			:author="note.user"
 			:i="$i"
 			:custom-emojis="note.emojis"
+			:allow-remote-emoji="defaultStore.state.showRemoteEmojiTimeline"
 			:reaction-menu-enabled="true"
 			:note="note"
 			is-cw
@@ -50,6 +51,7 @@
 			:author="note.user"
 			:i="$i"
 			:custom-emojis="note.emojis"
+			:allow-remote-emoji="defaultStore.state.showRemoteEmojiTimeline"
 			:reaction-menu-enabled="true"
 			:note="note"
 			is-cw
@@ -132,6 +134,7 @@
 					:author="note.user"
 					:i="$i"
 					:custom-emojis="note.emojis"
+					:allow-remote-emoji="defaultStore.state.showRemoteEmojiTimeline"
 					:reaction-menu-enabled="true"
 					:note="note"
 				/>
@@ -141,6 +144,7 @@
 					:author="note.user"
 					:i="$i"
 					:custom-emojis="note.emojis"
+					:allow-remote-emoji="defaultStore.state.showRemoteEmojiTimeline"
 					:reaction-menu-enabled="true"
 					:note="note"
 				/>

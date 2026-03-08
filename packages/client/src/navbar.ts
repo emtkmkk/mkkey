@@ -93,6 +93,12 @@ export const navbarItemDef = reactive({
 		show: computed(() => $i != null),
 		to: "/my/antennas",
 	},
+	emojiImportRequests: {
+		title: "emojiImportRequests",
+		icon: "ph-hand-heart ph-bold ph-lg",
+		show: computed(() => $i != null),
+		to: "/my/emoji-import-requests",
+	},
 	favorites: {
 		title: "favorites",
 		icon: "ph-bookmark-simple ph-bold ph-lg",

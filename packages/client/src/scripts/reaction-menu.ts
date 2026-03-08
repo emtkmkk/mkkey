@@ -154,6 +154,77 @@ export async function openReactionMenu_(
 		}
 	}
 
+	// 一般ユーザー向け: リモート絵文字のインポート申請
+	if (
+		$i != null &&
+		!$i.isAdmin &&
+		!$i.isModerator &&
+		emojiName &&
+		emojiHost
+	) {
+		menu.push({
+			text: i18n.ts.requestEmojiImport ?? "インポート申請",
+			icon: "ph-hand-heart ph-bold ph-lg",
+			action: async (): Promise<void> => {
+				try {
+					const sameNameRes = await os.api(
+						"emoji-import-request/same-name-emojis",
+						{ emojiName },
+					);
+					const emojis = sameNameRes.emojis ?? [];
+					if (emojis.length === 0) {
+						os.toast(i18n.ts.emojiImportDenied ?? "その絵文字は申請できません。");
+						return;
+					}
+					let targetHost = emojiHost;
+					if (emojis.length > 1) {
+						const sel = await os.select({
+							title: i18n.ts.selectEmojiSource ?? "絵文字の出典を選択",
+							text:
+								i18n.ts.selectEmojiSourceDescription ??
+								"同じ名前の絵文字が複数あります。どれを申請しますか？",
+							items: emojis.map((e: { host: string; licenseName?: string; license?: string }) => ({
+								value: e.host,
+								text: `${e.host} - ${(e.licenseName ?? e.license ?? "").trim() || "(ライセンス情報なし)"}`,
+							})),
+						});
+						if (sel.canceled || sel.result == null) return;
+						targetHost = sel.result;
+					} else {
+						targetHost = emojis[0].host;
+					}
+					const { remaining } = await os.api(
+						"emoji-import-request/remaining-count",
+						{},
+					);
+					const confirmText =
+						(i18n.ts.emojiImportRequestConfirm ?? '":name" をインポート申請します。よろしいですか？（今日残り:n:回）')
+							.replace(":name:", `:${emojiName}:`)
+							.replace(":n:", String(remaining));
+					const { canceled } = await os.confirm({
+						type: "question",
+						title: i18n.ts.requestEmojiImport ?? "インポート申請",
+						text: confirmText,
+						okText: i18n.ts.yes ?? "はい",
+						cancelText: i18n.ts.no ?? "いいえ",
+					});
+					if (canceled) return;
+					await os.api("emoji-import-request/create", {
+						emojiName,
+						emojiHost: targetHost,
+					});
+					os.success();
+				} catch (err: any) {
+					const msg =
+						err?.message ||
+						err?.code ||
+						(i18n.ts.error ?? "エラーが発生しました");
+					os.toast(msg);
+				}
+			},
+		});
+	}
+
 	if ($i != null && !defaultStore.state.hiddenReactionDeckAndRecent) {
 		if (
 			(defaultStore.state.reactions2?.length ?? 0) +

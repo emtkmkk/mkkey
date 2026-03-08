@@ -72,6 +72,8 @@ import { UserIp } from "./entities/user-ip.js";
 import { NoteEdit } from "./entities/note-edit.js";
 import { UserMemo } from "./entities/user-memo.js";
 import { PasskeyLoginChallenge } from "./entities/passkey-login-challenge.js";
+import { EmojiImportRequest } from "./entities/emoji-import-request.js";
+import { EmojiImportDenied } from "./entities/emoji-import-denied.js";
 
 export const Announcements = db.getRepository(Announcement);
 export const AnnouncementReads = db.getRepository(AnnouncementRead);
@@ -106,6 +108,8 @@ export const FollowRequests = FollowRequestRepository;
 export const Instances = InstanceRepository;
 export const Emojis = EmojiRepository;
 export const EmojiCustomCategories = EmojiCustomCategoryRepository;
+export const EmojiImportRequests = db.getRepository(EmojiImportRequest);
+export const EmojiImportDenieds = db.getRepository(EmojiImportDenied);
 export const DriveFiles = DriveFileRepository;
 export const DriveFolders = DriveFolderRepository;
 export const Notifications = NotificationRepository;

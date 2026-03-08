@@ -549,6 +549,11 @@ export const routes = [
 				component: page(() => import("./pages/admin/emojis.vue")),
 			},
 			{
+				path: "/emoji-import-requests",
+				name: "emoji-import-requests",
+				component: page(() => import("./pages/admin/emoji-import-requests.vue")),
+			},
+			{
 				path: "/federation",
 				name: "federation",
 				component: page(() => import("./pages/admin/federation.vue")),
@@ -723,6 +728,11 @@ export const routes = [
 	{
 		path: "/my/antennas",
 		component: page(() => import("./pages/my-antennas/index.vue")),
+		loginRequired: true,
+	},
+	{
+		path: "/my/emoji-import-requests",
+		component: page(() => import("./pages/emoji-import-requests.vue")),
 		loginRequired: true,
 	},
 	{

@@ -77,6 +77,8 @@ import { UserIp } from "@/models/entities/user-ip.js";
 import { NoteEdit } from "@/models/entities/note-edit.js";
 import { UserMemo } from "@/models/entities/user-memo.js";
 import { PasskeyLoginChallenge } from "@/models/entities/passkey-login-challenge.js";
+import { EmojiImportRequest } from "@/models/entities/emoji-import-request.js";
+import { EmojiImportDenied } from "@/models/entities/emoji-import-denied.js";
 
 import { entities as charts } from "@/services/chart/entities.js";
 import { envOption } from "../env.js";
@@ -167,6 +169,8 @@ export const entities = [
 	Notification,
 	Emoji,
 	EmojiCustomCategory,
+	EmojiImportRequest,
+	EmojiImportDenied,
 	Hashtag,
 	SwSubscription,
 	AbuseUserReport,

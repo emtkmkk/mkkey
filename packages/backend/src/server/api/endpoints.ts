@@ -145,6 +145,13 @@ import * as ep___drive_stream from "./endpoints/drive/stream.js";
 import * as ep___emailAddress_available from "./endpoints/email-address/available.js";
 import * as ep___emoji from "./endpoints/emoji.js";
 import * as ep___emoji_setMotifMode from "./endpoints/emoji/set-motif-mode.js";
+import * as ep___emoji_import_request_create from "./endpoints/emoji-import-request/create.js";
+import * as ep___emoji_import_request_myList from "./endpoints/emoji-import-request/my-list.js";
+import * as ep___emoji_import_request_remainingCount from "./endpoints/emoji-import-request/remaining-count.js";
+import * as ep___emoji_import_request_sameNameEmojis from "./endpoints/emoji-import-request/same-name-emojis.js";
+import * as ep___emoji_import_request_list from "./endpoints/emoji-import-request/list.js";
+import * as ep___emoji_import_request_approve from "./endpoints/emoji-import-request/approve.js";
+import * as ep___emoji_import_request_reject from "./endpoints/emoji-import-request/reject.js";
 import * as ep___emojis from "./endpoints/emojis.js";
 import * as ep___emojis_latest from "./endpoints/emojis/latest.js";
 import * as ep___emoji_stats from "./endpoints/emoji-stats.js";
@@ -524,7 +531,14 @@ const eps = [
 	["drive/stream", ep___drive_stream],
 	["email-address/available", ep___emailAddress_available],
         ["emoji", ep___emoji],
-        ["emoji/set-motif-mode", ep___emoji_setMotifMode],
+	["emoji/set-motif-mode", ep___emoji_setMotifMode],
+	["emoji-import-request/create", ep___emoji_import_request_create],
+	["emoji-import-request/my-list", ep___emoji_import_request_myList],
+	["emoji-import-request/remaining-count", ep___emoji_import_request_remainingCount],
+	["emoji-import-request/same-name-emojis", ep___emoji_import_request_sameNameEmojis],
+	["emoji-import-request/list", ep___emoji_import_request_list],
+	["emoji-import-request/approve", ep___emoji_import_request_approve],
+	["emoji-import-request/reject", ep___emoji_import_request_reject],
         ["emojis", ep___emojis],
         ["emojis/latest", ep___emojis_latest],
         ["emoji-stats", ep___emoji_stats],

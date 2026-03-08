@@ -234,7 +234,7 @@ export async function openReactionMenu_(
 					);
 					const confirmText =
 						(i18n.ts.emojiImportRequestConfirm ?? '":name" をインポート申請します。よろしいですか？（今日残り:n:回）')
-							.replace(":name:", `:${emojiName}:`)
+							.replace(":name:", `:${emojiName}@${targetHost}:`)
 							.replace(":n:", String(remaining));
 					const { canceled } = await os.confirm({
 						type: "question",

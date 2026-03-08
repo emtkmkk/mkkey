@@ -663,12 +663,30 @@ function urlUpload() {
                 placeholder: i18n.ts.uploadFromUrlDescription,
         }).then(({ canceled, result: url }) => {
                 if (canceled || !url) return;
+                const marker = Math.random().toString(); // TODO: UUIDとか使う
+                const queueData = os.addQueue({
+                        endpoint: "drive/files/upload-from-url",
+                        comment: i18n.ts.uploadFromUrl,
+                });
+
+                const mainConnection = stream.useChannel("main");
+                mainConnection.on("urlUploadFinished", (urlResponse) => {
+                        if (urlResponse.marker === marker) {
+                                os.removeQueue(queueData.id);
+                                mainConnection.dispose();
+                        }
+                });
+
                 os.api("drive/files/upload-from-url", {
                         url: url,
                         folderId:
                                 !isVirtualDriveFolder(folder.value) && folder.value
                                         ? folder.value.id
                                         : undefined,
+                        marker,
+                }).catch(() => {
+                        os.removeQueue(queueData.id);
+                        mainConnection.dispose();
                 });
 
                 os.alert({

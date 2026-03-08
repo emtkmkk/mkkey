@@ -8,7 +8,7 @@
 	>
 		<template #header>{{ i18n.ts.selectEmojiSource ?? "絵文字の出典を選択" }}</template>
 		<p class="description">
-			{{ i18n.ts.selectEmojiSourceDescription ?? "同じ名前の絵文字が複数あります。申請するホストの絵文字を選んでください。" }}
+			{{ i18n.ts.selectEmojiSourceDescription ?? "同名の絵文字が複数あります。\n情報を確認し、申請するホストを選んでください。" }}
 		</p>
 		<div class="emojis">
 			<button
@@ -96,6 +96,7 @@ function openItemMenu(host: string, ev: MouseEvent) {
 	margin: 0 0 1rem;
 	color: var(--fgTransparentWeak);
 	font-size: 0.9em;
+	white-space: pre-line;
 }
 .emojis {
 	display: grid;

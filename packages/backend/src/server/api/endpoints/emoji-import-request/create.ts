@@ -1,15 +1,17 @@
 /**
  * 絵文字インポート申請を作成する（ユーザー向け）。
  * 1日10回制限（UTC 0:00リセット）。否認リスト・同一名で pending があれば拒否。
+ * 申請作成時に管理者（isAdmin）にのみ通知する（モデレーターには送らない）。
  *
  * @public
  */
 import { IsNull, MoreThanOrEqual } from "typeorm";
 import define from "../../define.js";
-import { EmojiImportRequests, EmojiImportDenieds, Emojis } from "@/models/index.js";
+import { EmojiImportRequests, EmojiImportDenieds, Emojis, Users } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { ApiError } from "../../error.js";
 import { toPuny } from "@/misc/convert-host.js";
+import { createNotification } from "@/services/create-notification.js";
 
 const DAILY_LIMIT = 10;
 
@@ -123,6 +125,20 @@ export default define(meta, paramDef, async (ps, me) => {
 	}).then((x) =>
 		EmojiImportRequests.findOneByOrFail(x.identifiers[0]),
 	);
+
+	// 管理者のみに通知（モデレーターには送らない）
+	setImmediate(async () => {
+		const admins = await Users.find({
+			where: { isAdmin: true, host: IsNull() },
+			select: ["id"],
+		});
+		for (const admin of admins) {
+			createNotification(admin.id, "app", {
+				customHeader: "絵文字インポート申請がありました",
+				customBody: `:${emojiName}: のインポート申請が届きました。`,
+			});
+		}
+	});
 
 	return { id: request.id };
 });

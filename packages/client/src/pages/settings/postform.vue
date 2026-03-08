@@ -83,7 +83,10 @@
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="showRemoteEmojiPostForm" class="_formBlock"
+                        <FormSwitch
+                                v-model="showRemoteEmojiPostForm"
+                                :disabled="showRemoteEmojiPostFormDisabled"
+                                class="_formBlock"
                                 >{{ i18n.ts.showRemoteEmojiPostForm
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
@@ -397,6 +400,12 @@ const plusInfoPostForm = computed(
 );
 const showRemoteEmojiPostForm = computed(
         defaultStore.makeGetterSetter("showRemoteEmojiPostForm")
+);
+const showRemoteEmojiTimeline = computed(
+	defaultStore.makeGetterSetter("showRemoteEmojiTimeline")
+);
+const showRemoteEmojiPostFormDisabled = computed(
+	() => !showRemoteEmojiTimeline.value && !showRemoteEmojiPostForm.value
 );
 const usePickerSizePostForm = computed(
         defaultStore.makeGetterSetter("usePickerSizePostForm")

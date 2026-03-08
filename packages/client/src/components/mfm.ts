@@ -66,10 +66,14 @@ export default defineComponent({
                         type: Boolean,
                         default: false,
                 },
-                relMe: {
-                        type: Boolean,
-                        default: false,
-                },
+		relMe: {
+			type: Boolean,
+			default: false,
+		},
+		allowRemoteEmoji: {
+			type: Boolean,
+			default: true,
+		},
         },
 
 	render() {
@@ -684,6 +688,10 @@ export default defineComponent({
 						}
 
 						case "emojiCode": {
+							if (!this.allowRemoteEmoji && token.props.name.includes("@")) {
+								return [`:${token.props.name}:`];
+							}
+
 							if (
 								isNote &&
 								!this.isCw &&

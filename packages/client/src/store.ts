@@ -1366,6 +1366,12 @@ export const defaultStore = markRaw(
 			createdAt: "2023/8/21",
 			page: "postform",
 		},
+		showRemoteEmojiTimeline: {
+			where: "account",
+			default: false,
+			createdAt: "2026/3/8",
+			page: "timeline",
+		},
 		copyPostRemoteEmojiCode: {
 			where: "account",
 			default: false,

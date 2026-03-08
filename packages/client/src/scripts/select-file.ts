@@ -90,10 +90,15 @@ function select(
 				if (canceled) return;
 
 				const marker = Math.random().toString(); // TODO: UUIDとか使う
+				const queueData = os.addQueue({
+					endpoint: "drive/files/upload-from-url",
+					comment: i18n.ts.uploadFromUrl,
+				});
 
 				const connection = stream.useChannel("main");
 				connection.on("urlUploadFinished", (urlResponse) => {
 					if (urlResponse.marker === marker) {
+						os.removeQueue(queueData.id);
 						res(multiple ? [urlResponse.file] : urlResponse.file);
 						connection.dispose();
 					}
@@ -104,6 +109,8 @@ function select(
 					folderId,
 					marker,
 				}).catch((err) => {
+					os.removeQueue(queueData.id);
+					connection.dispose();
 					rej(err); // エラー発生時にリジェクト
 				});
 

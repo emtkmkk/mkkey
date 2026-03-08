@@ -12,6 +12,8 @@ import { genId } from "@/misc/gen-id.js";
 import { ApiError } from "../../error.js";
 import { toPuny } from "@/misc/convert-host.js";
 import { createNotification } from "@/services/create-notification.js";
+import { fetchMeta } from "@/misc/fetch-meta.js";
+import config from "@/config/index.js";
 
 const DAILY_LIMIT = 10;
 
@@ -132,10 +134,18 @@ export default define(meta, paramDef, async (ps, me) => {
 			where: { isAdmin: true, host: IsNull() },
 			select: ["id"],
 		});
+		const meta = await fetchMeta();
+		const iconUrl =
+			meta?.iconUrl != null
+				? meta.iconUrl.startsWith("http")
+					? meta.iconUrl
+					: `${config.url}${meta.iconUrl.startsWith("/") ? "" : "/"}${meta.iconUrl}`
+				: undefined;
 		for (const admin of admins) {
 			createNotification(admin.id, "app", {
 				customHeader: "絵文字インポート申請がありました",
-				customBody: `:${emojiName}: のインポート申請が届きました。`,
+				customBody: `:${emojiName}@${emojiHost}: のインポート申請が届きました。`,
+				customIcon: iconUrl,
 			});
 		}
 	});

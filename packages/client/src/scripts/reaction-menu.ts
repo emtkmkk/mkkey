@@ -171,11 +171,17 @@ export async function openReactionMenu_(
 						"emoji-import-request/same-name-emojis",
 						{ emojiName },
 					);
-					const emojis = sameNameRes.emojis ?? [];
+					let emojis = sameNameRes.emojis ?? [];
 					if (emojis.length === 0) {
 						os.toast(i18n.ts.emojiImportDenied ?? "その絵文字は申請できません。");
 						return;
 					}
+					// 選択中（クリックした）絵文字のホストを一番上に
+					emojis = [...emojis].sort((a, b) => {
+						if (a.host === emojiHost) return -1;
+						if (b.host === emojiHost) return 1;
+						return 0;
+					});
 					let targetHost = emojiHost;
 					if (emojis.length > 1) {
 						const sel = await os.select({
@@ -183,10 +189,18 @@ export async function openReactionMenu_(
 							text:
 								i18n.ts.selectEmojiSourceDescription ??
 								"同じ名前の絵文字が複数あります。どれを申請しますか？",
-							items: emojis.map((e: { host: string; licenseName?: string; license?: string }) => ({
-								value: e.host,
-								text: `${e.host} - ${(e.licenseName ?? e.license ?? "").trim() || "(ライセンス情報なし)"}`,
-							})),
+							items: emojis.map((e: { host: string; licenseName?: string; license?: string; aliasCount?: number }) => {
+								const licensePart = (e.licenseName ?? e.license ?? "").trim() || "(ライセンス情報なし)";
+								const aliasCount = e.aliasCount ?? 0;
+								const middlePart =
+									aliasCount >= 1
+										? ` ${i18n.ts.emojiImportRequestTagCount ?? "タグ数"}: ${aliasCount} - `
+										: " - ";
+								return {
+									value: e.host,
+									text: `${e.host}${middlePart}${licensePart}`,
+								};
+							}),
 						});
 						if (sel.canceled || sel.result == null) return;
 						targetHost = sel.result;

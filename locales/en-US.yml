@@ -176,6 +176,7 @@ emojiImportRequestNewNameHint: "If a local emoji with the same name already exis
 emojiImportRequestNewNameRequired: "A local emoji with this name exists. Enter a new name and approve again."
 emojiImportRequestNewNameConflict: "The specified emoji name is already in use. Enter a different name."
 emojiImportRequestApproveAgain: "Approve again"
+emojiImportRequestTagCount: "Tag count"
 approve: "Approve"
 addEmoji: "Add"
 settingGuide: "Recommended settings"

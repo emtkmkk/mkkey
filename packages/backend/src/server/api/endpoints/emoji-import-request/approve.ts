@@ -18,6 +18,8 @@ import { db } from "@/db/postgre.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 import { createNotification } from "@/services/create-notification.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
+import { fetchMeta } from "@/misc/fetch-meta.js";
+import config from "@/config/index.js";
 
 export const meta = {
 	tags: ["emoji-import-request", "admin"],
@@ -105,6 +107,17 @@ export default define(meta, paramDef, async (ps, me) => {
 		}
 	}
 
+	// 名前が指定されている場合は重複がなくてもその名前で登録する
+	if (newName && !localSameName) {
+		const conflict = await Emojis.findOneBy({
+			name: newName,
+			host: IsNull(),
+		});
+		if (conflict) {
+			throw new ApiError(meta.errors.newEmojiNameConflict);
+		}
+	}
+
 	let driveFile: DriveFile;
 	try {
 		driveFile = await uploadFromUrl({
@@ -118,12 +131,13 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	const emojiSearchName =
 		!localSameName &&
+		!newName &&
 		(await Emojis.findOneBy({
 			name: emoji.name,
 			host: IsNull(),
 		}));
-	const finalName = localSameName
-		? newName!
+	const finalName = newName
+		? newName
 		: emojiSearchName
 		? `${emoji.name}_${emoji.host.replaceAll(/[^\w]/gi, "_")}`
 		: emoji.name;
@@ -178,9 +192,17 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	await EmojiImportDenieds.delete({ name: request.emojiName }).catch(() => {});
 
+	const meta = await fetchMeta();
+	const iconUrl =
+		meta?.iconUrl != null
+			? meta.iconUrl.startsWith("http")
+				? meta.iconUrl
+				: `${config.url}${meta.iconUrl.startsWith("/") ? "" : "/"}${meta.iconUrl}`
+			: undefined;
 	createNotification(request.requesterId, "app", {
 		customHeader: "絵文字インポート申請が承認されました",
-		customBody: `:${finalName}: がサーバーに追加されました。`,
+		customBody: `申請していた :${request.emojiName}@${request.emojiHost}: がサーバーに追加されました。`,
+		customIcon: iconUrl,
 	});
 
 	insertModerationLog(me, "emojiImportRequestApprove", {

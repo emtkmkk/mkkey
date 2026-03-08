@@ -235,6 +235,7 @@ emojiImportRequestNewNameHint: "同名の絵文字がローカルに既にある
 emojiImportRequestNewNameRequired: "同名の絵文字がローカルに存在します。新絵文字名を入力して再度承認してください。"
 emojiImportRequestNewNameConflict: "指定した絵文字名は既に使用されています。別の名前を入力してください。"
 emojiImportRequestApproveAgain: "再承認"
+emojiImportRequestTagCount: "タグ数"
 approve: "承認"
 addEmoji: "絵文字を追加"
 settingGuide: "おすすめ設定"

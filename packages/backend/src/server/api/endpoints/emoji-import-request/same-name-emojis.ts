@@ -29,6 +29,7 @@ export const meta = {
 						license: { type: "string", nullable: true },
 						copyPermission: { type: "string", nullable: true },
 						licenseName: { type: "string", nullable: true },
+						aliasCount: { type: "integer" },
 					},
 				},
 			},
@@ -62,6 +63,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		license: e.license,
 		copyPermission: e.copyPermission,
 		licenseName: e.licenseName,
+		aliasCount: (e.aliases ?? []).length,
 	}));
 
 	return { emojis: items };

@@ -2,86 +2,91 @@
 	<MkStickyContainer>
 		<template #header>
 			<MkPageHeader
+				v-model:tab="tab"
+				:tabs="headerTabs"
 				:display-back-button="true"
 			/>
 		</template>
 		<MkSpacer :content-max="700">
 			<div class="emojirequests">
-				<h2 class="title">{{ i18n.ts.pendingEmojiRequests ?? "申請中" }}</h2>
-				<div v-if="pending.length === 0" class="empty">
-					{{ i18n.ts.noPendingEmojiRequests ?? "申請中の絵文字はありません" }}
-				</div>
-				<div v-else class="list">
-					<div
-						v-for="r in pending"
-						:key="r.id"
-						class="item pending"
-					>
-						<MkEmoji
-							:emoji="`:${r.emojiName}@${r.emojiHost}:`"
-							:normal="true"
-							class="emoji"
-						/>
-						<div class="body">
-							<span class="name">:{{ r.emojiName }}@{{ r.emojiHost }}:</span>
-							<span class="date">{{ formatDate(r.createdAt) }}</span>
+				<div v-if="tab === 'pending'" class="tab-content">
+					<div v-if="pending.length === 0" class="empty">
+						{{ i18n.ts.noPendingEmojiRequests ?? "申請中の絵文字はありません" }}
+					</div>
+					<div v-else class="list">
+						<div
+							v-for="r in pending"
+							:key="r.id"
+							class="item pending"
+						>
+							<MkEmoji
+								:emoji="`:${r.emojiName}@${r.emojiHost}:`"
+								:normal="true"
+								class="emoji"
+							/>
+							<div class="body">
+								<span class="name">:{{ r.emojiName }}@{{ r.emojiHost }}:</span>
+								<span class="date">{{ formatDate(r.createdAt) }}</span>
+							</div>
 						</div>
 					</div>
 				</div>
 
-				<h2 class="title">{{ i18n.ts.rejectedEmojiRequests ?? "否認された申請" }}</h2>
-				<div v-if="rejected.length === 0" class="empty">
-					{{ i18n.ts.noRejectedEmojiRequests ?? "否認された申請はありません" }}
-				</div>
-				<div v-else class="list">
-					<div
-						v-for="r in rejected"
-						:key="r.id"
-						class="item rejected"
-					>
-						<MkEmoji
-							:emoji="`:${r.emojiName}@${r.emojiHost}:`"
-							:normal="true"
-							class="emoji"
-						/>
-						<div class="body">
-							<span class="name">:{{ r.emojiName }}@{{ r.emojiHost }}:</span>
-							<span class="reason" v-if="r.reason">{{ i18n.ts.rejectReason ?? "理由" }}: {{ r.reason }}</span>
-							<span class="date">{{ formatDate(r.processedAt ?? r.createdAt) }}</span>
+				<div v-else-if="tab === 'rejected'" class="tab-content">
+					<div v-if="rejected.length === 0" class="empty">
+						{{ i18n.ts.noRejectedEmojiRequests ?? "否認された申請はありません" }}
+					</div>
+					<div v-else class="list">
+						<div
+							v-for="r in rejected"
+							:key="r.id"
+							class="item rejected"
+						>
+							<MkEmoji
+								:emoji="`:${r.emojiName}@${r.emojiHost}:`"
+								:normal="true"
+								class="emoji"
+							/>
+							<div class="body">
+								<span class="name">:{{ r.emojiName }}@{{ r.emojiHost }}:</span>
+								<span class="reason" v-if="r.reason">{{ i18n.ts.rejectReason ?? "理由" }}: {{ r.reason }}</span>
+								<span class="date">{{ formatDate(r.processedAt ?? r.createdAt) }}</span>
+							</div>
 						</div>
 					</div>
 				</div>
 
-				<h2 class="title">{{ i18n.ts.approvedEmojiRequests ?? "承認された申請" }}</h2>
-				<div v-if="approved.length === 0" class="empty">
-					{{ i18n.ts.noApprovedEmojiRequests ?? "承認された申請はありません" }}
-				</div>
-				<div v-else class="list">
-					<div
-						v-for="r in approved"
-						:key="r.id"
-						class="item approved"
-					>
-						<MkEmoji
-							:emoji="`:${r.emojiName}:`"
-							:normal="true"
-							class="emoji"
-						/>
-						<div class="body">
-							<span class="name">:{{ r.emojiName }}:</span>
-							<span class="date">{{ formatDate(r.processedAt ?? r.createdAt) }}</span>
-							<div class="actions">
-								<MkA :to="`/emoji_dialog/${r.emojiName}`" class="link">{{ i18n.ts.info ?? "詳細" }}</MkA>
-								<span class="add-to-deck">
-									<button
-										v-for="(label, idx) in deckLabels"
-										:key="idx"
-										class="_button link"
-										@click="addToDeck(r.emojiName, idx)"
-									>
-										{{ label }}に追加
-									</button>
-								</span>
+				<div v-else-if="tab === 'approved'" class="tab-content">
+					<div v-if="approved.length === 0" class="empty">
+						{{ i18n.ts.noApprovedEmojiRequests ?? "承認された申請はありません" }}
+					</div>
+					<div v-else class="list">
+						<div
+							v-for="r in approved"
+							:key="r.id"
+							class="item approved"
+						>
+							<MkEmoji
+								:emoji="`:${r.emojiName}:`"
+								:normal="true"
+								class="emoji"
+							/>
+							<div class="body">
+								<span class="name">:{{ r.emojiName }}:</span>
+								<span class="date">{{ formatDate(r.processedAt ?? r.createdAt) }}</span>
+								<div class="actions">
+									<MkA :to="`/emoji_dialog/${r.emojiName}`" class="link">{{ i18n.ts.info ?? "詳細" }}</MkA>
+									<span class="add-to-deck">
+										<button
+											v-for="(label, idx) in deckLabels"
+											:key="idx"
+											class="_button link"
+											@click="addToDeck(r.emojiName, idx)"
+										>
+											{{ label }}に追加
+										</button>
+									</span>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -104,6 +109,14 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 import MkEmoji from "@/components/global/MkEmoji.vue";
+
+let tab = ref<"pending" | "rejected" | "approved">("pending");
+
+const headerTabs = computed(() => [
+	{ key: "pending", title: i18n.ts.pendingEmojiRequests ?? "申請中", icon: "ph-clock ph-bold ph-lg" },
+	{ key: "rejected", title: i18n.ts.rejectedEmojiRequests ?? "否認済み", icon: "ph-x-circle ph-bold ph-lg" },
+	{ key: "approved", title: i18n.ts.approvedEmojiRequests ?? "承認済み", icon: "ph-check-circle ph-bold ph-lg" },
+]);
 
 let pending = ref<Array<{
 	id: string;
@@ -175,12 +188,8 @@ definePageMetadata({
 
 <style lang="scss" scoped>
 .emojirequests {
-	.title {
-		font-size: 1.1em;
-		margin: 1em 0 0.5em;
-		&:first-child {
-			margin-top: 0;
-		}
+	.tab-content {
+		padding-top: 0.5em;
 	}
 	.empty {
 		color: var(--fgTransparentWeak);

@@ -8,6 +8,8 @@ import { EmojiImportRequests, EmojiImportDenieds } from "@/models/index.js";
 import { ApiError } from "../../error.js";
 import { createNotification } from "@/services/create-notification.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
+import { fetchMeta } from "@/misc/fetch-meta.js";
+import config from "@/config/index.js";
 
 export const meta = {
 	tags: ["emoji-import-request", "admin"],
@@ -66,11 +68,19 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	const body =
-		`:${request.emojiName}: の申請は見送られました。` +
-		(reason ? ` 理由: ${reason}` : "");
+		`:${request.emojiName}@${request.emojiHost}: の申請は見送られました。` +
+		(reason ? `\n\n理由: ${reason}` : "");
+	const meta = await fetchMeta();
+	const iconUrl =
+		meta?.iconUrl != null
+			? meta.iconUrl.startsWith("http")
+				? meta.iconUrl
+				: `${config.url}${meta.iconUrl.startsWith("/") ? "" : "/"}${meta.iconUrl}`
+			: undefined;
 	createNotification(request.requesterId, "app", {
 		customHeader: "絵文字インポート申請が見送られました",
 		customBody: body,
+		customIcon: iconUrl,
 	});
 
 	insertModerationLog(me, "emojiImportRequestReject", {

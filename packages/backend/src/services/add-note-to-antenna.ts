@@ -118,11 +118,12 @@ export async function addNoteToAntenna(
 						id: antenna.userId,
 					});
 					const packedNote = await Notes.pack(__note, antennaUser);
-					const packedNoteUser = await Users.pack(
-						hydratedNote.user ?? noteUser.id,
-						antennaUser,
-						{ detail: false, relation: false },
-					);
+					// NOTE: user id で pack することで、常に DB から取得した完全な packed を渡す。
+					// エンティティを渡すと setTimeout や取得元によっては name/username が欠けた薄いオブジェクトになる場合がある。
+					const packedNoteUser = await Users.pack(noteUser.id, antennaUser, {
+						detail: false,
+						relation: false,
+					});
 					const webhookPromises = webhooks.map((webhook) =>
 						webhookDeliver(webhook, "antenna", {
 							note: packedNote,

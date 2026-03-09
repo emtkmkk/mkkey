@@ -397,7 +397,7 @@ export const UserRepository = db.getRepository(User).extend({
 			// グループ未読を 1 クエリで判定（加入グループごとの条件を JOIN で再現）
 			MessagingMessages.createQueryBuilder("message")
 				.innerJoin(
-					UserGroupJoinings,
+					UserGroupJoinings.metadata.targetName,
 					"j",
 					"j.userGroupId = message.groupId AND j.userId = :userId",
 					{ userId },

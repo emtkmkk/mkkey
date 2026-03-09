@@ -501,6 +501,8 @@ async function typeToBody(jobData: any): Promise<any> {
 			};
 		case "note":
 			return {
+				username,
+				avatar_url,
 				content: `投稿に成功しました${content}`,
 			};
 		case "reply":

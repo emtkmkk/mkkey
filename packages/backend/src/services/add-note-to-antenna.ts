@@ -118,13 +118,18 @@ export async function addNoteToAntenna(
 						id: antenna.userId,
 					});
 					const packedNote = await Notes.pack(__note, antennaUser);
+					const packedNoteUser = await Users.pack(
+						hydratedNote.user ?? noteUser.id,
+						antennaUser,
+						{ detail: false, relation: false },
+					);
 					const webhookPromises = webhooks.map((webhook) =>
 						webhookDeliver(webhook, "antenna", {
 							note: packedNote,
 							antenna: {
 								id: antenna.id,
 								name: antenna.name,
-								noteUser: hydratedNote.user,
+								noteUser: packedNoteUser,
 							},
 						}),
 					);

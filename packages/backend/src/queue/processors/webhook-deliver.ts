@@ -45,15 +45,18 @@ async function toDiscordEmbeds(
 ): Promise<(DiscordEmbeds | undefined)[] | undefined> {
 	const meta = await fetchMeta();
 	const defaultReaction = meta.defaultReaction;
+	const normalizedNoteUser = await resolveUserForWebhook(body.note?.user);
+	const normalizedMessageUser = await resolveUserForWebhook(body.message?.user);
 	return [
 		body.note
 			? {
 					author: {
-						name: getUsername(body.note.user) ?? "",
-						url: `${config.url}/@${body.note.user?.username}${
-							body.note.user?.host ? `@${body.note.user?.host}` : ""
+						name: getUsername(normalizedNoteUser) ?? "",
+						url: `${config.url}/@${normalizedNoteUser?.username}${
+							normalizedNoteUser?.host ? `@${normalizedNoteUser?.host}` : ""
 						}`,
-						icon_url: body.note.user?.avatarUrl,
+						icon_url:
+							normalizedNoteUser?.avatarUrl ?? body.note.user?.avatarUrl,
 					},
 					title: `投稿${
 						body.note.visibility === "home"
@@ -109,7 +112,7 @@ async function toDiscordEmbeds(
 							? body.note.files[1].thumbnailUrl
 								: body.reaction?.emojiName === defaultReaction || body.reaction?.emojiName.startsWith(`${defaultReaction} (+`) // デフォルトリアクション判定
 									? undefined
-							: body.note.user?.avatarUrl,
+							: normalizedNoteUser?.avatarUrl ?? body.note.user?.avatarUrl,
 					},
 					color: 16757683,
 			  }
@@ -161,11 +164,14 @@ async function toDiscordEmbeds(
 		body.message
 			? {
 					author: {
-						name: getUsername(body.message.user) ?? "",
-						url: `${config.url}/@${body.message.user?.username}${
-							body.message.user?.host ? `@${body.message.user?.host}` : ""
+						name: getUsername(normalizedMessageUser) ?? "",
+						url: `${config.url}/@${normalizedMessageUser?.username}${
+							normalizedMessageUser?.host
+								? `@${normalizedMessageUser?.host}`
+								: ""
 						}`,
-						icon_url: body.message.user?.avatarUrl,
+						icon_url:
+							normalizedMessageUser?.avatarUrl ?? body.message.user?.avatarUrl,
 					},
 					title: `${
 						body.message.group ? `${body.message.group.name} の` : "個人宛の"
@@ -173,8 +179,10 @@ async function toDiscordEmbeds(
 					url: body.message.groupId
 						? `${config.url}/my/messaging/group/${body.message.groupId}`
 						: `${config.url}/my/messaging/${
-								body.message.user?.username +
-								(body.message.user?.host ? `@${body.message.user?.host}` : "")
+								normalizedMessageUser?.username +
+								(normalizedMessageUser?.host
+									? `@${normalizedMessageUser?.host}`
+									: "")
 						  }`,
 					description:
 						((excludeNotPlain(body.message.text)?.length ?? 0) > 100
@@ -210,7 +218,7 @@ async function toDiscordEmbeds(
 							  !body.message.file.isSensitive &&
 							  body.message.file.type?.toLowerCase().startsWith("video")
 							? body.message.file.thumbnailUrl
-							: body.message.user?.avatarUrl,
+							: normalizedMessageUser?.avatarUrl ?? body.message.user?.avatarUrl,
 					},
 					color: 16757683,
 			  }
@@ -222,14 +230,17 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 	const meta = await fetchMeta();
 	const content = await typeToBody(data);
 	const body = data.content;
+	const normalizedNoteUser = await resolveUserForWebhook(body.note?.user);
+	const normalizedMessageUser = await resolveUserForWebhook(body.message?.user);
 	return [
 		body.note
 			? {
-					author_name: getUsername(body.note.user),
-					author_link: `${config.url}/@${body.note.user?.username}${
-						body.note.user?.host ? `@${body.note.user?.host}` : ""
+					author_name: getUsername(normalizedNoteUser),
+					author_link: `${config.url}/@${normalizedNoteUser?.username}${
+						normalizedNoteUser?.host ? `@${normalizedNoteUser?.host}` : ""
 					}`,
-					author_icon: body.note.user?.avatarUrl,
+					author_icon:
+						normalizedNoteUser?.avatarUrl ?? body.note.user?.avatarUrl,
 					icon_url: content.avatar_url,
 					username: content.username,
 					fallback: emojiEscape(content.content),
@@ -271,7 +282,7 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 						  !body.note.files[1].isSensitive &&
 						  body.note.files[1].type?.startsWith("image")
 						? body.note.files[1].thumbnailUrl
-						: body.note.user?.avatarUrl,
+						: normalizedNoteUser?.avatarUrl ?? body.note.user?.avatarUrl,
 					footer: meta.name || "Calckey",
 					footer_icon: meta.iconUrl || undefined,
 			  }
@@ -320,11 +331,14 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			: undefined,
 		body.message
 			? {
-					author_name: getUsername(body.message.user),
-					author_link: `${config.url}/@${body.message.user?.username}${
-						body.message.user?.host ? `@${body.message.user?.host}` : ""
+					author_name: getUsername(normalizedMessageUser),
+					author_link: `${config.url}/@${normalizedMessageUser?.username}${
+						normalizedMessageUser?.host
+							? `@${normalizedMessageUser?.host}`
+							: ""
 					}`,
-					author_icon: body.message.user?.avatarUrl,
+					author_icon:
+						normalizedMessageUser?.avatarUrl ?? body.message.user?.avatarUrl,
 					icon_url: content.avatar_url,
 					username: content.username,
 					fallback: emojiEscape(content.content),
@@ -335,8 +349,10 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 					title_link: body.message.groupId
 						? `${config.url}/my/messaging/group/${body.message.groupId}`
 						: `${config.url}/my/messaging/${
-								body.message.user?.username +
-								(body.message.user?.host ? `@${body.message.user?.host}` : "")
+								normalizedMessageUser?.username +
+								(normalizedMessageUser?.host
+									? `@${normalizedMessageUser?.host}`
+									: "")
 						  }`,
 					text: emojiEscape(
 						((excludeNotPlain(body.message.text)?.length ?? 0) > 100
@@ -357,7 +373,7 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 						  !body.message.file.isSensitive &&
 						  body.message.file.type?.toLowerCase().startsWith("video")
 						? body.message.file.thumbnailUrl
-						: body.message.user?.avatarUrl,
+						: normalizedMessageUser?.avatarUrl ?? body.message.user?.avatarUrl,
 					color: meta.themeColor || "#f8bcba",
 					footer: meta.name || "Calckey",
 					footer_icon: meta.iconUrl || undefined,

@@ -20,6 +20,7 @@ import { createNotification } from "@/services/create-notification.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import config from "@/config/index.js";
+import { publishBroadcastStream } from "@/services/stream.js";
 
 export const meta = {
 	tags: ["emoji-import-request", "admin"],
@@ -189,6 +190,9 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	await db.queryResultCache!.remove(["meta_emojis"]);
 	await bumpReactionNormalizeCacheVersion();
+	publishBroadcastStream("emojiAdded", {
+		emoji: await Emojis.pack(copied.id),
+	});
 
 	await EmojiImportRequests.update(request.id, {
 		status: "approved",

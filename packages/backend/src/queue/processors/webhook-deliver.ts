@@ -390,6 +390,34 @@ function getUsername(user?: any): string | undefined {
 		: undefined;
 }
 
+async function resolveUserForWebhook(user?: any): Promise<any | undefined> {
+	if (!user) {
+		return undefined;
+	}
+
+	if (typeof user === "object" && typeof user.username === "string") {
+		return user;
+	}
+
+	const userId = typeof user === "string" ? user : user.id;
+	if (typeof userId !== "string") {
+		return user;
+	}
+
+	const resolved = await Users.findOneBy({ id: userId });
+	if (!resolved) {
+		return user;
+	}
+
+	return {
+		id: resolved.id,
+		name: resolved.name,
+		username: resolved.username,
+		host: resolved.host,
+		avatarUrl: Users.getAvatarUrlSync(resolved),
+	};
+}
+
 function getNoteContentSummary(
 	note: any,
 	userId: string,
@@ -425,14 +453,16 @@ async function typeToBody(jobData: any): Promise<any> {
 		: body.message
 		? body.message.user
 		: undefined;
-	const username = user ? getUsername(user) : undefined;
-	const fullUsername = user
-		? user.name
-			? `${user.name} (${user.username}@${user.host ?? config.host})`
-			: `${user.username}@${user.host ?? config.host}`
+	const normalizedUser = await resolveUserForWebhook(user);
+	const normalizedNoteUser = await resolveUserForWebhook(body.note?.user);
+	const username = normalizedUser ? getUsername(normalizedUser) : undefined;
+	const fullUsername = normalizedUser
+		? normalizedUser.name
+			? `${normalizedUser.name} (${normalizedUser.username}@${normalizedUser.host ?? config.host})`
+			: `${normalizedUser.username}@${normalizedUser.host ?? config.host}`
 		: undefined;
-	const avatar_url = user
-		? user.avatarUrl ?? (await Users.getAvatarUrl(user))
+	const avatar_url = normalizedUser
+		? normalizedUser.avatarUrl ?? (await Users.getAvatarUrl(normalizedUser))
 		: undefined;
 
 	const content =
@@ -533,8 +563,8 @@ async function typeToBody(jobData: any): Promise<any> {
 				username,
 				avatar_url,
 				content: `${body.antenna?.name}📡新着 : ${username}${
-					user.id !== body.note?.user?.id
-						? ` : RT ${getUsername(body.note?.user)}`
+					normalizedUser?.id !== normalizedNoteUser?.id
+						? ` : RT ${getUsername(normalizedNoteUser)}`
 						: ""
 				}${content}`,
 			};

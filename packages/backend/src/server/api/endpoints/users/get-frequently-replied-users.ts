@@ -109,16 +109,23 @@ export default define(meta, paramDef, async (ps, me) => {
 		(a, b) => repliedUsers[b] - repliedUsers[a],
 	);
 
-	// Extract top replied users
-	const topRepliedUsers = repliedUsersSorted.slice(0, ps.limit);
+	// Extract top replied users（userId の配列）
+	const topRepliedUserIds = repliedUsersSorted.slice(0, ps.limit);
 
-	// Make replies object (includes weights)
-	const repliesObj = await Promise.all(
-		topRepliedUsers.map(async (user) => ({
-			user: await Users.pack(user, me, { detail: true }),
-			weight: repliedUsers[user] / peak,
-		})),
-	);
+	if (topRepliedUserIds.length === 0) {
+		return [];
+	}
 
-	return repliesObj;
+	// 一括取得して packMany で N+1 を避ける
+	const users = await Users.find({
+		where: { id: In(topRepliedUserIds) },
+	});
+	const orderIndex = new Map(topRepliedUserIds.map((id, i) => [id, i]));
+	users.sort((a, b) => (orderIndex.get(a.id) ?? 0) - (orderIndex.get(b.id) ?? 0));
+	const packed = await Users.packMany(users, me, { detail: true });
+
+	return users.map((u, i) => ({
+		user: packed[i],
+		weight: repliedUsers[u.id] / peak,
+	}));
 });

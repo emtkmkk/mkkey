@@ -14,7 +14,10 @@ import { resolveUser } from "@/remote/resolve-user.js";
 import config from "@/config/index.js";
 import { updateHashtags } from "../update-hashtag.js";
 import { concat } from "@/prelude/array.js";
-import { insertNoteUnread } from "@/services/note/unread.js";
+import {
+	insertNoteUnreadBatch,
+	type NoteUnreadCandidate,
+} from "@/services/note/unread.js";
 import { registerOrFetchInstanceDoc } from "../register-or-fetch-instance-doc.js";
 import { extractMentions } from "@/misc/extract-mentions.js";
 import { extractCustomEmojisFromMfm } from "@/misc/extract-custom-emojis-from-mfm.js";
@@ -83,14 +86,16 @@ type NotificationType = "reply" | "renote" | "quote" | "mention";
 class NotificationManager {
 	private notifier: { id: User["id"] };
 	private note: Note;
+	private notifierUser: User | undefined;
 	private queue: {
 		target: ILocalUser["id"];
 		reason: NotificationType;
 	}[];
 
-	constructor(notifier: { id: User["id"] }, note: Note) {
+	constructor(notifier: { id: User["id"] }, note: Note, notifierUser?: User) {
 		this.notifier = notifier;
 		this.note = note;
+		this.notifierUser = notifierUser;
 		this.queue = [];
 	}
 
@@ -131,11 +136,16 @@ class NotificationManager {
 		for (const x of this.queue) {
 			// 通知される側のユーザーが通知する側のユーザーをミュートしていない限りは通知する
 			if (!mentioneeMutedNotifierIds.has(x.target)) {
-				createNotification(x.target, x.reason, {
-					notifierId: this.notifier.id,
-					noteId: this.note.id,
-					note: this.note,
-				});
+				createNotification(
+					x.target,
+					x.reason,
+					{
+						notifierId: this.notifier.id,
+						noteId: this.note.id,
+						note: this.note,
+					},
+					{ notifier: this.notifierUser },
+				);
 			}
 		}
 	}
@@ -349,6 +359,16 @@ export default async (
 			(data.localOnly && data.channel) || data.visibility === "hidden";
 
 		if (Users.isLocalUser(user)) {
+			// 参照される channelId を集めて 1 回で取得
+			const channelIds = new Set<string>();
+			if (data.reply?.channelId) channelIds.add(data.reply.channelId);
+			if (data.renote?.channelId) channelIds.add(data.renote.channelId);
+			const channelMap = new Map<string, Channel>();
+			if (channelIds.size > 0) {
+				const channels = await Channels.findBy({ id: In([...channelIds]) });
+				for (const ch of channels) channelMap.set(ch.id, ch);
+			}
+
 			// If you reply outside the channel, match the scope of the target.
 			// TODO (I think it's a process that could be done on the client side, but it's server side for now.)
 			if (
@@ -356,31 +376,27 @@ export default async (
 				data.channel &&
 				data.reply.channelId !== data.channel.id
 			) {
-				if (data.reply.channelId) {
-					data.channel = await Channels.findOneBy({ id: data.reply.channelId });
-				} else {
-					data.channel = null;
-				}
+				data.channel = data.reply.channelId
+					? channelMap.get(data.reply.channelId) ?? null
+					: null;
 			}
 			if (
 				data.renote &&
 				data.channel &&
 				data.renote.channelId !== data.channel.id
 			) {
-				if (data.renote.channelId) {
-					data.channel = await Channels.findOneBy({ id: data.renote.channelId });
-				} else {
-					data.channel = null;
-				}
+				data.channel = data.renote.channelId
+					? channelMap.get(data.renote.channelId) ?? null
+					: null;
 			}
 
 			// When you reply in a channel, match the scope of the target
 			// TODO (I think it's a process that could be done on the client side, but it's server side for now.)
 			if (data.reply && data.channel == null && data.reply.channelId) {
-				data.channel = await Channels.findOneBy({ id: data.reply.channelId });
+				data.channel = channelMap.get(data.reply.channelId) ?? null;
 			}
 			if (data.renote && data.channel == null && data.renote.channelId) {
-				data.channel = await Channels.findOneBy({ id: data.renote.channelId });
+				data.channel = channelMap.get(data.renote.channelId) ?? null;
 			}
 		}
 
@@ -823,20 +839,20 @@ export default async (
 				2 * 24 * 60 * 60 * 1000 &&
 			(!user.name || user.name === user.username) &&
 			!user.emojis?.length &&
-			(!user.avatarId || user.avatarUrl?.includes("identicon"))
-		) {
-			const localRelation = await mentionedUsers
-				.filter((x) => !x.host || x.host === config.host)
-				.every(
-                                    async (x) =>
-                                            !(
-                                                    await Users.getRelation(
-                                                            user.id,
-                                                            x.id,
-                                                            x,
-                                                    )
-                                            ).isFollowed,
-				);
+			// NOTE: avatarUrl は User 型に無いが、ランタイムでは relation 等で設定されていることがある
+			(!user.avatarId || (user as unknown as { avatarUrl?: string }).avatarUrl?.includes("identicon"))
+	) {
+			const localMentioned = mentionedUsers.filter(
+				(x) => !x.host || x.host === config.host,
+			);
+			const localMentionIds = localMentioned.map((x) => x.id);
+			const localRelationsMap =
+				localMentionIds.length > 0
+					? await Users.getRelationsBulk(user.id, localMentionIds, undefined)
+					: new Map<string, { isFollowed: boolean }>();
+			const localRelation = localMentioned.every(
+				(x) => !localRelationsMap.get(x.id)?.isFollowed,
+			);
 			console.log(`localRelation: ${!localRelation}`);
                         if (localRelation)
                                 return rej(
@@ -887,21 +903,25 @@ export default async (
 				);
 			}
 
-			const relation = user.isSilenced
-				? await Promise.all(
-						data.visibleUsers.map(
-                                                    async (x) =>
-                                                            (
-                                                                    await Users.getRelation(
-                                                                            user.id,
-                                                                            x.id,
-                                                                            x,
-                                                                    )
-                                                            ).isFollowed ||
-                                                            (await Users.findOneByOrFail({ id: x.id })).isAdmin,
-						),
-				  )
-				: undefined;
+			let relation: boolean[] | undefined;
+			if (user.isSilenced && data.visibleUsers.length > 0) {
+				const visibleUserIds = data.visibleUsers.map((x) => x.id);
+				const [visibleRelationsMap, visibleUsersForAdmin] = await Promise.all([
+					Users.getRelationsBulk(user.id, visibleUserIds, undefined),
+					Users.find({
+						where: { id: In(visibleUserIds) },
+						select: ["id", "isAdmin"],
+					}),
+				]);
+				const adminByUserId = new Map(
+					visibleUsersForAdmin.map((u) => [u.id, u.isAdmin]),
+				);
+				relation = data.visibleUsers.map(
+					(x) =>
+						(visibleRelationsMap.get(x.id)?.isFollowed ?? false) ||
+						(adminByUserId.get(x.id) ?? false),
+				);
+			}
 
 			if (user.isSilenced && (!relation?.every((x) => x) ?? true)) {
                                 return rej(
@@ -918,21 +938,27 @@ export default async (
 
 		// 投稿に含まれるカスタム絵文字の使用権限（usageVisibility・モチーフ）をチェック（ローカルユーザ＋ローカル絵文字のみ。リモートは対象外）
 		if (emojis && emojis.length > 0 && !user.host) {
-			let followeeIds = new Set<string>();
-			if (!user.host) {
-				const followings = await Followings.findBy({ followerId: user.id });
-				followeeIds = new Set(followings.map((f) => f.followeeId));
-			}
+			const followings = await Followings.findBy({ followerId: user.id });
+			const followeeIds = new Set(followings.map((f) => f.followeeId));
+
+			// 使用 (name, host) を一意に列挙して 1 回で一括取得
+			const emojiKeySet = new Map<string, { name: string; host: string | null }>();
 			for (const emojiName of emojis) {
 				const at = emojiName.indexOf("@");
 				const name = at < 0 ? emojiName : emojiName.slice(0, at);
 				const host = at < 0 ? null : emojiName.slice(at + 1) || null;
-				const emoji = await Emojis.findOne({
-					where: {
-						name,
-						host: host === null || host === "" ? IsNull() : host,
-					},
+				const key = `${name}\t${host ?? ""}`;
+				if (!emojiKeySet.has(key)) emojiKeySet.set(key, { name, host });
+			}
+			if (emojiKeySet.size > 0) {
+				const conditions = [...emojiKeySet.values()].map(({ name, host }) => ({
+					name,
+					host: host === null || host === "" ? IsNull() : host,
+				}));
+				const foundEmojis = await Emojis.find({
+					where: conditions,
 					select: [
+						"name",
 						"host",
 						"usageVisibility",
 						"allowedUserIds",
@@ -941,14 +967,25 @@ export default async (
 						"category",
 					],
 				});
-				if (emoji && emoji.host == null && !canUseEmoji(emoji, user, followeeIds)) {
-					return rej(
-						new StatusError(
-							"使用権限のない絵文字が含まれています。",
-							403,
-							"使用権限のない絵文字が含まれています。",
-						),
-					);
+				const emojiMap = new Map<string, (typeof foundEmojis)[number]>();
+				for (const e of foundEmojis) {
+					emojiMap.set(`${e.name}\t${e.host ?? ""}`, e);
+				}
+				for (const emojiName of emojis) {
+					const at = emojiName.indexOf("@");
+					const name = at < 0 ? emojiName : emojiName.slice(0, at);
+					const host = at < 0 ? null : emojiName.slice(at + 1) || null;
+					const key = `${name}\t${host ?? ""}`;
+					const emoji = emojiMap.get(key);
+					if (emoji && emoji.host == null && !canUseEmoji(emoji, user, followeeIds)) {
+						return rej(
+							new StatusError(
+								"使用権限のない絵文字が含まれています。",
+								403,
+								"使用権限のない絵文字が含まれています。",
+							),
+						);
+					}
 				}
 			}
 		}
@@ -1043,27 +1080,19 @@ export default async (
 				}
 			});
 
-		// Antenna
-		for (const antenna of await getAntennas()) {
-			checkHitAntenna(antenna, note, user).then((hit) => {
-				if (hit) {
-					addNoteToAntenna(antenna, note, user);
-				}
-			});
-		}
-
-		// Channel
-		if (note.channelId) {
-			ChannelFollowings.findBy({ followeeId: note.channelId }).then(
-				(followings) => {
-					for (const following of followings) {
-						insertNoteUnread(following.followerId, note, {
-							isSpecified: false,
-							isMentioned: false,
+		// Antenna（指定投稿は checkHitAntenna が常に false のためループをスキップ）
+		if (note.visibility !== "specified") {
+			for (const antenna of await getAntennas()) {
+				checkHitAntenna(antenna, note, user).then((hit) => {
+					if (hit) {
+						addNoteToAntenna(antenna, note, user, {
+							reply: data.reply ?? null,
+							renote: data.renote ?? null,
+							user,
 						});
 					}
-				},
-			);
+				});
+			}
 		}
 
 		if (data.reply) {
@@ -1111,30 +1140,41 @@ export default async (
 
 			if (Users.isLocalUser(user)) activeUsersChart.write(user);
 
-			// 未読通知を作成
+			// 未読通知を一括作成（channel フォロワー・指定・メンションの候補を集めて 1 回で挿入）
+			const unreadCandidates: NoteUnreadCandidate[] = [];
+			if (note.channelId) {
+				const channelFollowings = await ChannelFollowings.findBy({
+					followeeId: note.channelId,
+				});
+				unreadCandidates.push(
+					...channelFollowings.map((f) => ({
+						userId: f.followerId,
+						isSpecified: false as const,
+						isMentioned: false as const,
+					})),
+				);
+			}
 			if (data.visibility === "specified") {
 				if (data.visibleUsers == null) throw new Error("invalid param");
-
 				for (const u of data.visibleUsers) {
-					// ローカルユーザーのみ
 					if (!Users.isLocalUser(u)) continue;
-
-					insertNoteUnread(u.id, note, {
+					unreadCandidates.push({
+						userId: u.id,
 						isSpecified: true,
 						isMentioned: false,
 					});
 				}
 			} else {
 				for (const u of mentionedUsers) {
-					// ローカルユーザーのみ
 					if (!Users.isLocalUser(u)) continue;
-
-					insertNoteUnread(u.id, note, {
+					unreadCandidates.push({
+						userId: u.id,
 						isSpecified: false,
 						isMentioned: true,
 					});
 				}
 			}
+			await insertNoteUnreadBatch(note, unreadCandidates);
 
 			if (data.visibility !== "hidden") {
 				publishNotesStream(note);
@@ -1147,14 +1187,15 @@ export default async (
 			}
 
 			const webhooks = noteWebhooksByUser.get(user.id) ?? [];
-
+			const packedNoteForWebhook =
+				webhooks.length > 0 ? await Notes.pack(note, user) : null;
 			for (const webhook of webhooks) {
 				webhookDeliver(webhook, "note", {
-					note: await Notes.pack(note, user),
+					note: packedNoteForWebhook!,
 				});
 			}
 
-			const nm = new NotificationManager(user, note);
+			const nm = new NotificationManager(user, note, user);
 			const nmRelatedPromises = [];
 
 			const localMentionTargets = await enqueueMentionNotifications(
@@ -1538,12 +1579,16 @@ function createMentionedEventsInBackground(
 	void (async () => {
 		const errors: unknown[] = [];
 
-		for (const u of localMentionedUsers) {
-			try {
-				const detailPackedNote = await Notes.pack(note, u, {
-					detail: true,
-				});
+		// 同一 note をメンション先ごとの me で pack するため一括取得してから配列で pack
+		const packedNotes = await Notes.packForViewers(note, localMentionedUsers, {
+			detail: true,
+		});
 
+		for (let i = 0; i < localMentionedUsers.length; i++) {
+			const u = localMentionedUsers[i];
+			const detailPackedNote = packedNotes[i];
+			if (detailPackedNote == null) continue;
+			try {
 				publishMainStream(u.id, "mention", detailPackedNote);
 
 				const mentionWebhooks = mentionWebhooksByUser.get(u.id);

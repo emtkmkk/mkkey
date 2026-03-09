@@ -4,6 +4,7 @@ import type { User } from "@/models/entities/user.js";
 import {
 	NoteUnreads,
 	AntennaNotes,
+	Antennas,
 	Users,
 	Followings,
 	ChannelFollowings,
@@ -11,7 +12,6 @@ import {
 import { In } from "typeorm";
 import type { Channel } from "@/models/entities/channel.js";
 import { checkHitAntenna } from "@/misc/check-hit-antenna.js";
-import { getAntennas } from "@/misc/antenna-cache.js";
 import { readNotificationByQuery } from "@/server/api/common/read-notification.js";
 import type { Packed } from "@/misc/schema.js";
 
@@ -132,7 +132,8 @@ export default async function (
 				).map((x) => x.followeeId),
 		  );
 
-	const myAntennas = (await getAntennas()).filter((a) => a.userId === userId);
+	// 当該ユーザのアンテナのみ取得（getAntennas 全件読みを避ける）
+	const myAntennas = await Antennas.findBy({ userId });
 	const readMentions: (Note | Packed<"Note">)[] = [];
 	const readSpecifiedNotes: (Note | Packed<"Note">)[] = [];
 	const readChannelNotes: (Note | Packed<"Note">)[] = [];

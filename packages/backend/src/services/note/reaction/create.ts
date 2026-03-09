@@ -233,10 +233,13 @@ export default async (
 				emoji.motifUserId != null &&
 				(emoji.motifUserMode ?? "any") === "follow"
 			) {
-				const followings = await Followings.findBy({
-					followerId: user.id,
+				const isFollowed = await Followings.exist({
+					where: {
+						followerId: user.id,
+						followeeId: emoji.motifUserId,
+					},
 				});
-				followeeIds = new Set(followings.map((f) => f.followeeId));
+				if (isFollowed) followeeIds.add(emoji.motifUserId);
 			}
 			if (!canUseEmoji(emoji, user, followeeIds)) {
 				throw new IdentifiableError(
@@ -429,19 +432,28 @@ export default async (
 			note: note,
 			noteId: note.id,
 			reaction: reaction,
-		});
+		}, { notifier: user });
 		const webhooks = await getActiveWebhooks().then((webhooks) =>
 			webhooks.filter(
 				(x) => x.userId === note.userId && x.on.includes("reaction"),
 			),
 		);
 
+		const targets = webhooks.filter((w) => w.userId !== user.id);
+		const packedNote =
+			targets.length > 0
+				? await Notes.pack(note, { id: note.userId })
+				: null;
+		const packedUser =
+			targets.length > 0
+				? await Users.pack(user.id, { id: note.userId })
+				: null;
 		for (const webhook of webhooks) {
 			if (webhook.userId === user.id) continue;
 			webhookDeliver(webhook, "reaction", {
-				note: await Notes.pack(note, { id: note.userId }),
+				note: packedNote!,
 				reaction: {
-					user: await Users.pack(user.id, { id: note.userId }),
+					user: packedUser!,
 					emojiName: decodedReaction.name
 						? `:${decodedReaction.name}:`
 						: reaction + (existCount > 0 ? ` (+${existCount})` : ""),
@@ -465,7 +477,7 @@ export default async (
 				note: note,
 				noteId: note.id,
 				reaction: reaction,
-			});
+			}, { notifier: user });
 		}
 
 		//#region deliver

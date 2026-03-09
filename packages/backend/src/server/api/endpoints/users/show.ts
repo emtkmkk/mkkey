@@ -116,13 +116,9 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (user) _users.push(user);
 		}
 
-		return await Promise.all(
-			_users.map((u) =>
-				Users.pack(u, me, {
-					detail: true,
-				}),
-			),
-		);
+		return await Users.packMany(_users, me, {
+			detail: true,
+		});
 	}
 		// Lookup user
 		if (typeof ps.host === "string" && typeof ps.username === "string") {

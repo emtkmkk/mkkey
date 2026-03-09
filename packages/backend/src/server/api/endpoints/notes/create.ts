@@ -295,16 +295,16 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 	if (!ps.web && user.isMiniSilenced && ps.visibility === "public") {
 			throw new ApiError(meta.errors.appBlockPublic);
 	}
-	
+
 	// Initial parallel promises for fetching visible users, cc users, files, renote, and channel
 	const visibleUsersPromise = ps.visibleUserIds ? Users.findBy({ id: In(ps.visibleUserIds) }) : Promise.resolve([]);
-	
+
 	const ccUsersPromise = ps.ccUserIds && (ps.ccUserIds.length <= 1 || user.canInvite)
 			? Users.findBy({ id: In(ps.ccUserIds), host: IsNull() })
 			: Promise.resolve([]);
-	
+
 	const fileIds = ps.fileIds != null ? ps.fileIds : ps.mediaIds != null ? ps.mediaIds : null;
-	
+
 	const filesPromise = fileIds != null
 			? DriveFiles.createQueryBuilder("file")
 					.where("file.userId = :userId AND file.id IN (:...fileIds)", {
@@ -315,7 +315,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 					.setParameters({ fileIds })
 					.getMany()
 			: Promise.resolve([]);
-	
+
 	const channelPromise = ps.channelId != null
 			? Channels.findOneBy({ id: ps.channelId }).then((channel) => {
 					if (channel == null) {
@@ -324,7 +324,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 					return channel;
 			})
 			: Promise.resolve(null);
-	
+
 	const renotePromise = (async () => {
 			let renote: Note | null = null;
 			if (ps.renoteId != null) {
@@ -333,13 +333,13 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 									throw new ApiError(meta.errors.noSuchRenoteTarget);
 							throw e;
 					});
-	
+
 					if (!renote) throw new ApiError(meta.errors.noSuchRenoteTarget);
-	
+
 					if (renote.renoteId && !renote.text && !renote.fileIds && !renote.hasPoll) {
 							throw new ApiError(meta.errors.cannotReRenote);
 					}
-	
+
 					if (renote.userId !== user.id) {
 							const block = await Blockings.findOneBy({
 									blockerId: renote.userId,
@@ -352,7 +352,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 			}
 			return renote;
 	})();
-	
+
 	const referencePromises = ps.referenceIds?.length
 			? ps.referenceIds.map(noteId => getNote(noteId, user).catch((e) => {
 					return null;
@@ -363,9 +363,10 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 					return reference;
 			}))
 			: [];
-	
-	const replyPromise = (async () => {
+
+	const replyPromise = (async (): Promise<{ reply: Note | null; additionalCcUsers: User[] }> => {
 			let reply: Note | null = null;
+			let additionalCcUsers: User[] = [];
 			if (ps.replyId != null) {
 					// Fetch reply
 					reply = await getNote(ps.replyId, user).catch((e) => {
@@ -373,23 +374,27 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 									throw new ApiError(meta.errors.noSuchReplyTarget);
 							throw e;
 					});
-	
+
 					if (!reply) throw new ApiError(meta.errors.noSuchReplyTarget);
-	
+
 					if (reply.renoteId && !reply.text && !reply.fileIds && !reply.hasPoll) {
 							throw new ApiError(meta.errors.cannotReplyToPureRenote);
 					}
-	
+
 					if (reply.ccUserIds.length && ps.inheritCc) {
-							let replyCc = [...reply.ccUserIds];
+							const replyCc = [...reply.ccUserIds];
 							if (!reply.ccUserIds.includes(reply.userId)) replyCc.push(reply.userId);
-							const additionalCcUsers = await Users.findBy({
-									id: In(replyCc.filter(x => !ps.ccUserIds || !ps.ccUserIds.includes(x))),
-									host: IsNull(),
-							});
-							ccUsers = [...ccUsers, ...additionalCcUsers];
+							const idsToFetch = replyCc.filter(
+								(x) => !ps.ccUserIds || !ps.ccUserIds.includes(x),
+							);
+							if (idsToFetch.length > 0) {
+									additionalCcUsers = await Users.findBy({
+											id: In(idsToFetch),
+											host: IsNull(),
+									});
+							}
 					}
-	
+
 					// Check blocking
 					if (reply.userId !== user.id) {
 							const block = await Blockings.findOneBy({
@@ -401,10 +406,10 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 							}
 					}
 			}
-			return reply;
+			return { reply, additionalCcUsers };
 	})();
-	
-	let [visibleUsers, ccUsers, files, channel, renote, reply] = await Promise.all([
+
+	let [visibleUsers, ccUsers, files, channel, renote, replyResult] = await Promise.all([
 			visibleUsersPromise,
 			ccUsersPromise,
 			filesPromise,
@@ -413,7 +418,12 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 			replyPromise,
 			//Promise.all(referencePromises),
 	]);
-	
+
+	const reply = replyResult.reply;
+	if (replyResult.additionalCcUsers.length > 0) {
+		ccUsers = [...ccUsers, ...replyResult.additionalCcUsers];
+	}
+
 	const choices = new Set()
 	if (ps.poll) {
 			if (ps.poll.choices?.length) {
@@ -435,7 +445,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 					ps.poll.expiresAt = Date.now() + ps.poll.expiredAfter;
 			}
 	}
-	
+
 	const fileUrlsPromises = (files.length < 16 && ps.fileUrls?.length)
 			? ps.fileUrls.map(async (url) => {
 					try {
@@ -470,7 +480,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 					return null;
 			}).filter(promise => promise !== null)
 			: [];
-	
+
 	const fileUrls = await Promise.all(fileUrlsPromises);
 	files.push(...(fileUrls.filter((x) => x != null)));
 	const endpointPreprocessMs = Date.now() - endpointStartedAt;

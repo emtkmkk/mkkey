@@ -85,7 +85,7 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 			].includes(file.type);
 
 		const url = original
-			? file.webpublicUrl && file.url ? file.url : null 
+			? file.webpublicUrl && file.url ? file.url : null
 			: thumbnail
 				? file.thumbnailUrl || (isImage ? file.webpublicUrl || file.url : null)
 				: file.webpublicUrl || file.url;
@@ -230,6 +230,8 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
                 files: (DriveFile["id"] | DriveFile)[],
                 options?: PackOptions,
         ): Promise<Packed<"DriveFile">[]> {
+                if (files.length === 0) return [];
+
                 const idsToFetch = new Set<DriveFile["id"]>();
                 const providedFiles = new Map<DriveFile["id"], DriveFile>();
 

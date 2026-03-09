@@ -219,7 +219,11 @@ async function deleteActivity(
 	}
 }
 
-async function findCascadingNotes(note: Note) {
+/**
+ * カスケード削除対象のノートを取得する（replyId / renoteId+text の再帰、ローカルユーザーのみ）。
+ * @internal
+ */
+async function findCascadingNotes(note: Note): Promise<Note[]> {
 	const cascadingNotes: Note[] = [];
 
 	const recursive = async (noteId: string) => {
@@ -241,7 +245,7 @@ async function findCascadingNotes(note: Note) {
 	};
 	await recursive(note.id);
 
-	return cascadingNotes.filter((note) => note.userHost === null); // filter out non-local users
+	return cascadingNotes.filter((n) => n.userHost === null);
 }
 
 async function getMentionedRemoteUsers(note: Note) {

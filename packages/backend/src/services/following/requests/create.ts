@@ -87,7 +87,7 @@ export default async function (
 			createNotification(followee.id, "receiveFollowRequest", {
 				notifierId: follower.id,
 				followRequestId: followRequest.id,
-			});
+			}, { notifier: follower });
 		}
 	}
 

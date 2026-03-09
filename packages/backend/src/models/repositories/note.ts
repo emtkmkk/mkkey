@@ -8,6 +8,7 @@ import { In, IsNull } from "typeorm";
 import * as mfm from "mfm-js";
 import { Note } from "@/models/entities/note.js";
 import type { User } from "@/models/entities/user.js";
+import type { Channel } from "@/models/entities/channel.js";
 import {
 	Users,
 	PollVotes,
@@ -107,6 +108,12 @@ type NotePackHint = {
         followings?: Map<User["id"], boolean>;
 	/** 表示者とブロック関係にあるユーザ ID（モチーフ絵文字の hiddenForViewer 用）。1 リクエスト 1 回取得して使い回す */
 	blockedUserIdsForEmoji?: Set<User["id"]>;
+	/** packMany 用: ノート投稿者を一括取得した Map。あるときは pack 内の Users.findOneBy をスキップ */
+	userMap?: Map<User["id"], User>;
+	/** packMany 用: チャンネルを一括取得した Map */
+	channelMap?: Map<string, Channel>;
+	/** packMany 用: reply/renote 用ノートを一括取得した Map */
+	noteMap?: Map<Note["id"], Note>;
 };
 
 const NOTE_PACK_CACHE_TTL_MS = 30 * 1000;
@@ -501,11 +508,16 @@ export const NoteRepository = db.getRepository(Note).extend({
 			);
 		}
 
+		const noteUser =
+			note.user ??
+			hint.userMap?.get(note.userId) ??
+			await Users.findOneByOrFail({ id: note.userId });
+
 		if (opts.blockCheck && meId) {
                         const relation = await Users.getRelation(
                                 meId,
                                 note.userId,
-                                note.user ?? undefined,
+                                noteUser,
                         );
 			if (relation.isMuted || relation.isBlocked) {
 				throw new IdentifiableError(
@@ -524,9 +536,9 @@ export const NoteRepository = db.getRepository(Note).extend({
 		}
 
                 const channel = note.channelId
-                        ? note.channel
-                                ? note.channel
-                                : await Channels.findOneBy({ id: note.channelId })
+                        ? note.channel ??
+                                hint.channelMap?.get(note.channelId) ??
+                                (await Channels.findOneBy({ id: note.channelId }))
                         : null;
 
                 let isFavorited: true | undefined;
@@ -631,7 +643,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			id: note.id,
 			createdAt: note.createdAt.toISOString(),
 			userId: note.userId,
-			user: packNoteUser(note.user ?? note.userId, me),
+			user: packNoteUser(noteUser, me),
 			text: isVisible ? text : null,
 			cw: isVisible ? note.cw : undefined,
 			visibility: note.visibility,
@@ -649,7 +661,10 @@ export const NoteRepository = db.getRepository(Note).extend({
 			emojis: isVisible ? noteEmojiWithHidden : [],
 			tags: note.tags.length > 0 && isVisible ? note.tags : undefined,
 			fileIds: isVisible ? note.fileIds : [],
-			files: isVisible ? DriveFiles.packMany(note.fileIds) : [],
+			files:
+				isVisible && note.fileIds.length > 0
+					? DriveFiles.packMany(note.fileIds)
+					: [],
 			replyId: note.replyId,
 			renoteId: note.renoteId,
 			referenceIds: note.referenceIds,
@@ -671,19 +686,31 @@ export const NoteRepository = db.getRepository(Note).extend({
 			...(opts.detail
 				? {
                                                 reply: note.replyId
-                                                        ? this.pack(note.reply || note.replyId, me, {
+                                                        ? this.pack(
+                                                                note.reply ??
+                                                                        hint.noteMap?.get(note.replyId) ??
+                                                                        note.replyId,
+                                                                me,
+                                                                {
                                                                         detail: false,
                                                                         _hint_: opts._hint_,
                                                                         showInvisible: true,
-                                                          })
+                                                                },
+                                                          )
                                                         : undefined,
 
                                                 renote: note.renoteId
-                                                        ? this.pack(note.renote || note.renoteId, me, {
+                                                        ? this.pack(
+                                                                note.renote ??
+                                                                        hint.noteMap?.get(note.renoteId) ??
+                                                                        note.renoteId,
+                                                                me,
+                                                                {
                                                                         detail: true,
                                                                         _hint_: opts._hint_,
                                                                         showInvisible: true,
-                                                          })
+                                                                },
+                                                          )
                                                         : undefined,
 
                                                 references: note.referenceIds.filter(
@@ -884,11 +911,42 @@ export const NoteRepository = db.getRepository(Note).extend({
 			}
                 }
 
+                const userIds = new Set(notes.map((n) => n.userId));
+                const channelIds = new Set(
+                        notes.map((n) => n.channelId).filter((id): id is string => id != null),
+                );
+                const replyIds = notes.map((n) => n.replyId).filter((id): id is string => id != null);
+                const renoteIds = notes.map((n) => n.renoteId).filter((id): id is string => id != null);
+                const noteIdsToFetch = [...new Set([...replyIds, ...renoteIds])];
+
+                const [usersForNotes, channelsForNotes, notesForReplyRenote] =
+                        await Promise.all([
+                                userIds.size > 0
+                                        ? Users.find({ where: { id: In([...userIds]) } })
+                                        : [],
+                                channelIds.size > 0
+                                        ? Channels.find({ where: { id: In([...channelIds]) } })
+                                        : [],
+                                noteIdsToFetch.length > 0
+                                        ? this.find({
+                                                where: { id: In(noteIdsToFetch) },
+                                                relations: ["user"],
+                                          })
+                                        : [],
+                        ]);
+
+                const userMap = new Map(usersForNotes.map((u) => [u.id, u]));
+                const channelMap = new Map(channelsForNotes.map((c) => [c.id, c]));
+                const noteMap = new Map(notesForReplyRenote.map((n) => [n.id, n]));
+
                 const hint: NotePackHint = {
                         myReactions: myReactionsMap,
                         favorites: favoritedNoteIds,
                         me: meUser,
                         followings: followingsMap,
+                        userMap,
+                        channelMap,
+                        noteMap,
                 };
 
                 const promises = await Promise.allSettled(
@@ -904,5 +962,74 @@ export const NoteRepository = db.getRepository(Note).extend({
 		return promises.flatMap((result) =>
 			result.status === "fulfilled" ? [result.value] : [],
 		);
+	},
+
+	/**
+	 * 同一ノートを複数閲覧者（me）向けに pack する。
+	 * メンション通知など、同じ note を異なる me で pack するときに、reactions/favorites/users を一括取得して N+1 を避ける。
+	 *
+	 * @param note - 対象ノート
+	 * @param viewers - 閲覧者（id 必須。順序は戻り値の順序に反映される）
+	 * @param options - detail など
+	 * @returns 各 viewer に対応する Packed<"Note"> | null の配列（pack で例外になった viewer は null）
+	 * @internal
+	 */
+	async packForViewers(
+		note: Note,
+		viewers: { id: User["id"] }[],
+		options?: { detail?: boolean },
+	): Promise<(Packed<"Note"> | null)[]> {
+		if (viewers.length === 0) return [];
+		const viewerIds = viewers.map((v) => v.id);
+
+		const [reactionRows, favoriteRows, users] = await Promise.all([
+			NoteReactions.find({
+				where: { noteId: note.id, userId: In(viewerIds) },
+			}),
+			NoteFavorites.find({
+				where: { noteId: note.id, userId: In(viewerIds) },
+			}),
+			Users.find({ where: { id: In(viewerIds) } }),
+		]);
+
+		const reactionsByUserId = new Map<User["id"], NoteReaction[]>();
+		for (const r of reactionRows) {
+			const arr = reactionsByUserId.get(r.userId) ?? [];
+			arr.push(r);
+			reactionsByUserId.set(r.userId, arr);
+		}
+		const favoritedUserIds = new Set(favoriteRows.map((f) => f.userId));
+		const userMap = new Map(users.map((u) => [u.id, u]));
+
+		const opts = { detail: true, ...options };
+		const results = await Promise.allSettled(
+			viewers.map((viewer) => {
+				const meUser = userMap.get(viewer.id);
+				if (!meUser) {
+					return this.pack(note, viewer, opts);
+				}
+				const myReactions = new Map<
+					Note["id"],
+					NoteReaction | NoteReaction[] | null
+				>();
+				const reactions = reactionsByUserId.get(viewer.id);
+				if (reactions != null) {
+					myReactions.set(note.id, reactions.length === 1 ? reactions[0] : reactions);
+				}
+				const favorites = favoritedUserIds.has(viewer.id)
+					? new Set<Note["id"]>([note.id])
+					: new Set<Note["id"]>();
+				const hint: NotePackHint = {
+					myReactions,
+					favorites,
+					me: meUser,
+				};
+				return this.pack(note, meUser, { ...opts, _hint_: hint });
+			}),
+		);
+		// viewers と同じ順序で返す（rejected は null）
+		return results.map((r) =>
+			r.status === "fulfilled" ? r.value : null,
+		) as (Packed<"Note"> | null)[];
 	},
 });

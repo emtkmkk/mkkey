@@ -74,7 +74,7 @@ export default async function (
 		notifierId: user.id,
 		noteId: note.id,
 		choice: choice,
-	});
+	}, { notifier: user });
 
 	// Fetch watchers (投稿者は投票者表示)
 	NoteWatchings.findBy({
@@ -82,11 +82,12 @@ export default async function (
 		userId: Not(user.id),
 	}).then((watchers) => {
 		for (const watcher of watchers) {
+			const notifierId = watcher.userId === note.userId ? user.id : note.userId;
 			createNotification(watcher.userId, "pollVote", {
-				notifierId: watcher.userId === note.userId ? user.id : note.userId,
+				notifierId,
 				noteId: note.id,
 				choice: choice,
-			});
+			}, notifierId === user.id ? { notifier: user } : undefined);
 		}
 	});
 }

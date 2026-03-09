@@ -15,6 +15,7 @@ import { AccessToken } from "./access-token.js";
 import { notificationTypes } from "@/types.js";
 
 @Entity()
+@Index(["notifieeId", "isRead"])
 export class Notification {
 	@PrimaryColumn(id())
 	public id: string;

@@ -8,7 +8,6 @@ import type { Packed } from "@/misc/schema.js";
 import type { Promiseable } from "@/prelude/await-all.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import { populateEmojis } from "@/misc/populate-emojis.js";
-import { getAntennas } from "@/misc/antenna-cache.js";
 import {
 	MB,
 	DEFAULT_DRIVE_SIZE,
@@ -31,6 +30,7 @@ import { createPerson } from "@/remote/activitypub/models/person.js";
 import {
 	AnnouncementReads,
 	Announcements,
+	Antennas,
 	AntennaNotes,
 	Blockings,
 	ChannelFollowings,
@@ -56,6 +56,9 @@ import {
 	EmojiCustomCategories,
 } from "../index.js";
 import type { Instance } from "../entities/instance.js";
+import type { UserProfile } from "../entities/user-profile.js";
+import type { Note } from "../entities/note.js";
+import type { UserNotePining } from "../entities/user-note-pining.js";
 import { resolveUser } from "@/remote/resolve-user.js";
 import { redisClient } from "@/db/redis.js";
 
@@ -378,25 +381,7 @@ export const UserRepository = db.getRepository(User).extend({
         },
 
 	async getHasUnreadMessagingMessage(userId: User["id"]): Promise<boolean> {
-		const mute = await Mutings.findBy({
-			muterId: userId,
-		});
-
-		const joinings = await UserGroupJoinings.findBy({ userId: userId });
-
-		const groupQs = Promise.all(
-			joinings.map((j) =>
-				MessagingMessages.createQueryBuilder("message")
-					.where("message.groupId = :groupId", { groupId: j.userGroupId })
-					.andWhere("message.userId != :userId", { userId: userId })
-					.andWhere("NOT (:userIdList <@ (message.reads))", {
-						userIdList: [userId],
-					})
-					.andWhere("message.createdAt > :joinedAt", { joinedAt: j.createdAt }) // 自分が加入する前の会話については、未読扱いしない
-					.getOne()
-					.then((x) => x != null),
-			),
-		);
+		const mute = await Mutings.findBy({ muterId: userId });
 
 		const [withUser, withGroups] = await Promise.all([
 			MessagingMessages.count({
@@ -409,10 +394,25 @@ export const UserRepository = db.getRepository(User).extend({
 				},
 				take: 1,
 			}).then((count) => count > 0),
-			groupQs,
+			// グループ未読を 1 クエリで判定（加入グループごとの条件を JOIN で再現）
+			MessagingMessages.createQueryBuilder("message")
+				.innerJoin(
+					UserGroupJoinings,
+					"j",
+					"j.userGroupId = message.groupId AND j.userId = :userId",
+					{ userId },
+				)
+				.where("message.userId != :userId", { userId })
+				.andWhere("NOT (:userIdList <@ message.reads)", {
+					userIdList: [userId],
+				})
+				.andWhere("message.createdAt > j.createdAt")
+				.limit(1)
+				.getRawOne()
+				.then((row) => row != null),
 		]);
 
-		return withUser || withGroups.some((x) => x);
+		return withUser || withGroups;
 	},
 
 	async getHasUnreadAnnouncement(userId: User["id"]): Promise<boolean> {
@@ -453,16 +453,15 @@ export const UserRepository = db.getRepository(User).extend({
 	},
 
 	async getHasUnreadAntenna(userId: User["id"]): Promise<boolean> {
-		const myAntennas = (await getAntennas()).filter((a) => a.userId === userId);
-
-		const unread =
-			myAntennas.length > 0
-				? await AntennaNotes.findOneBy({
-						antennaId: In(myAntennas.map((x) => x.id)),
-						read: false,
-				  })
-				: null;
-
+		const myAntennas = await Antennas.find({
+			where: { userId },
+			select: ["id"],
+		});
+		if (myAntennas.length === 0) return false;
+		const unread = await AntennaNotes.findOneBy({
+			antennaId: In(myAntennas.map((x) => x.id)),
+			read: false,
+		});
 		return unread != null;
 	},
 
@@ -713,6 +712,21 @@ export const UserRepository = db.getRepository(User).extend({
                 hints?: {
                         relation?: UserRelation | null;
                         memo?: Awaited<ReturnType<typeof UserMemos.findOneBy>> | null;
+                        /** packMany 用: 一括取得した User。渡されていれば findOneOrFail をスキップ */
+                        user?: User | null;
+                        /** packMany 用: 一括取得したプロファイル。渡されていれば UserProfiles.findOneByOrFail をスキップ */
+                        profile?: UserProfile | null;
+                        /** packMany 用: 一括取得したピン（note  join 済み）。渡されていれば UserNotePinings の QueryBuilder をスキップ */
+                        pins?: (UserNotePining & { note: Note })[] | null;
+                        /** packMany 用: 一括取得した has* の結果。渡されていれば各 count をスキップ */
+                        hasClips?: boolean;
+                        hasPages?: boolean;
+                        hasGallerys?: boolean;
+                        hasCategories?: boolean;
+                        /** packMany 用: 一括 pack したピン付きノート。渡されていれば Notes.packMany(pins) をスキップ */
+                        pinnedNotesPacked?: Packed<"Note">[];
+                        /** packMany 用: 一括 pack した pinnedPage。渡されていれば Pages.pack をスキップ */
+                        pinnedPagePacked?: Packed<"Page"> | null;
                 },
         ): Promise<IsMeAndIsUserDetailed<ExpectsMe, D>> {
                 const opts = Object.assign(
@@ -732,6 +746,8 @@ export const UserRepository = db.getRepository(User).extend({
 				src.avatar = (await DriveFiles.findOneBy({ id: src.avatarId })) ?? null;
 			if (src.banner === undefined && src.bannerId)
 				src.banner = (await DriveFiles.findOneBy({ id: src.bannerId })) ?? null;
+		} else if (hints?.user != null) {
+			user = hints.user;
 		} else {
 			user = await this.findOneOrFail({
 				where: { id: src },
@@ -769,18 +785,23 @@ export const UserRepository = db.getRepository(User).extend({
 		const meDetailedVolatile = opts.detail && isMe
 			? await this.getMeDetailedVolatile(user.id)
 			: null;
-		const pins = opts.detail
-			? await UserNotePinings.createQueryBuilder("pin")
-					.where("pin.userId = :userId", { userId: user.id })
-					.innerJoinAndSelect("pin.note", "note")
-					.orderBy("pin.createdAt", "DESC")
-					.addOrderBy("pin.id", "DESC")
-					.getMany()
-			: [];
+		const pins =
+			opts.detail && "pins" in (hints ?? {})
+				? (hints!.pins ?? [])
+				: opts.detail
+					? await UserNotePinings.createQueryBuilder("pin")
+							.where("pin.userId = :userId", { userId: user.id })
+							.innerJoinAndSelect("pin.note", "note")
+							.orderBy("pin.createdAt", "DESC")
+							.addOrderBy("pin.id", "DESC")
+							.getMany()
+					: [];
 		const profile =
-			!user.host || opts.detail
-				? await UserProfiles.findOneByOrFail({ userId: user.id })
-				: null;
+			"profile" in (hints ?? {})
+				? (hints!.profile ?? null)
+				: !user.host || opts.detail
+					? await UserProfiles.findOneByOrFail({ userId: user.id })
+					: null;
 
 		const followingCount =
 			profile == null
@@ -1027,44 +1048,62 @@ export const UserRepository = db.getRepository(User).extend({
                                                 verifiedLinks: isDeleted ? [] : profile!.verifiedLinks,
                                                 followersCount: followersCount ?? "N/A",
 						followingCount: followingCount ?? "N/A",
-						hasClips: !user.host
-							? Clips.count({
-									where: { userId: user.id, isPublic: true },
-									take: 1,
-							  }).then((count) => count > 0)
-							: false,
-						hasPages: !user.host
-							? profile!.pinnedPageId
-								? true
-								: Pages.count({
-										where: { userId: user.id, isPublic: true },
-										take: 1,
-								  }).then((count) => count > 0)
-							: false,
-						hasGallerys: !user.host
-							? GalleryPosts.count({
-									where: { userId: user.id },
-									take: 1,
-							  }).then((count) => count > 0)
-							: false,
-						hasCategories: !user.host
-							? EmojiCustomCategories.count({
-									where: { userId: user.id },
-									take: 1,
-								}).then((count) => count > 0)
-							: false,
+						hasClips:
+							"hasClips" in (hints ?? {})
+								? hints!.hasClips!
+								: !user.host
+									? Clips.count({
+											where: { userId: user.id, isPublic: true },
+											take: 1,
+									  }).then((count) => count > 0)
+									: false,
+						hasPages:
+							"hasPages" in (hints ?? {})
+								? hints!.hasPages!
+								: !user.host
+									? profile!.pinnedPageId
+										? true
+										: Pages.count({
+												where: { userId: user.id, isPublic: true },
+												take: 1,
+										  }).then((count) => count > 0)
+									: false,
+						hasGallerys:
+							"hasGallerys" in (hints ?? {})
+								? hints!.hasGallerys!
+								: !user.host
+									? GalleryPosts.count({
+											where: { userId: user.id },
+											take: 1,
+									  }).then((count) => count > 0)
+									: false,
+						hasCategories:
+							"hasCategories" in (hints ?? {})
+								? hints!.hasCategories!
+								: !user.host
+									? EmojiCustomCategories.count({
+											where: { userId: user.id },
+											take: 1,
+										}).then((count) => count > 0)
+									: false,
 						pinnedNoteIds: pins.map((pin) => pin.noteId),
-						pinnedNotes: Notes.packMany(
-							pins.map((pin) => pin.note!),
-							me,
-							{
-								detail: true,
-							},
-						),
+						pinnedNotes:
+							"pinnedNotesPacked" in (hints ?? {})
+								? hints!.pinnedNotesPacked ?? []
+								: Notes.packMany(
+										pins.map((pin) => pin.note!),
+										me,
+										{
+											detail: true,
+										},
+									),
 						pinnedPageId: profile!.pinnedPageId,
-						pinnedPage: profile!.pinnedPageId
-							? Pages.pack(profile!.pinnedPageId, me)
-							: null,
+						pinnedPage:
+							"pinnedPagePacked" in (hints ?? {})
+								? (hints!.pinnedPagePacked ?? null)
+								: profile!.pinnedPageId
+									? Pages.pack(profile!.pinnedPageId, me)
+									: null,
 						publicReactions: profile!.publicReactions,
 						ffVisibility: profile!.ffVisibility,
 						isRemoteLocked:
@@ -1265,6 +1304,120 @@ export const UserRepository = db.getRepository(User).extend({
                                   )
                                 : null;
 
+                // 一括取得: User, UserProfile, pins, has*, pinnedNotes, pinnedPage
+                let userMap: Map<User["id"], User> | null = null;
+                let profileMap: Map<User["id"], UserProfile> | null = null;
+                let pinsByUserId: Map<User["id"], (UserNotePining & { note: Note })[]> | null = null;
+                let hasClipsSet: Set<User["id"]> | null = null;
+                let hasPagesSet: Set<User["id"]> | null = null;
+                let hasGallerysSet: Set<User["id"]> | null = null;
+                let hasCategoriesSet: Set<User["id"]> | null = null;
+                let pinnedNotesPackedMap: Map<User["id"], Packed<"Note">[]> | null = null;
+                let pinnedPagePackedMap: Map<User["id"], Packed<"Page">> | null = null;
+
+                if (uniqueIds.length > 0) {
+                        const [usersBatch, profilesBatch] = await Promise.all([
+                                this.find({
+                                        where: { id: In(uniqueIds) },
+                                        relations: { avatar: true, banner: true },
+                                }).then((list) => new Map(list.map((u) => [u.id, u]))),
+                                UserProfiles.findBy({ userId: In(uniqueIds) }).then((list) =>
+                                        new Map(list.map((p) => [p.userId, p])),
+                                ),
+                        ]);
+                        userMap = usersBatch;
+                        profileMap = profilesBatch;
+
+                        if (opts.detail) {
+                                const allPins = await UserNotePinings
+                                        .createQueryBuilder("pin")
+                                        .innerJoinAndSelect("pin.note", "note")
+                                        .where("pin.userId IN (:...ids)", { ids: uniqueIds })
+                                        .orderBy("pin.createdAt", "DESC")
+                                        .addOrderBy("pin.id", "DESC")
+                                        .getMany();
+
+                                pinsByUserId = new Map();
+                                for (const pin of allPins as (UserNotePining & { note: Note })[]) {
+                                        const arr = pinsByUserId.get(pin.userId) ?? [];
+                                        arr.push(pin);
+                                        pinsByUserId.set(pin.userId, arr);
+                                }
+
+                                const [clipsRows, pagesRows, galleryRows, categoriesRows] =
+                                        await Promise.all([
+                                                Clips.find({
+                                                        where: { userId: In(uniqueIds), isPublic: true },
+                                                        select: ["userId"],
+                                                }),
+                                                Pages.find({
+                                                        where: { userId: In(uniqueIds), isPublic: true },
+                                                        select: ["userId"],
+                                                }),
+                                                GalleryPosts.find({
+                                                        where: { userId: In(uniqueIds) },
+                                                        select: ["userId"],
+                                                }),
+                                                EmojiCustomCategories.find({
+                                                        where: { userId: In(uniqueIds) },
+                                                        select: ["userId"],
+                                                }),
+                                        ]);
+                                hasClipsSet = new Set(clipsRows.map((r) => r.userId));
+                                hasPagesSet = new Set(pagesRows.map((r) => r.userId));
+                                hasGallerysSet = new Set(galleryRows.map((r) => r.userId));
+                                hasCategoriesSet = new Set(categoriesRows.map((r) => r.userId));
+
+                                const allPinNotes = allPins
+                                        .map((pin) => (pin as UserNotePining & { note: Note }).note)
+                                        .filter((n): n is Note => n != null);
+                                const uniquePinNotes = Array.from(
+                                        new Map(allPinNotes.map((n) => [n.id, n])).values(),
+                                );
+                                const pinnedNotesPacked =
+                                        uniquePinNotes.length > 0
+                                                ? await Notes.packMany(uniquePinNotes, me, {
+                                                        detail: true,
+                                                  })
+                                                : [];
+                                const noteIdToPacked = new Map(
+                                        pinnedNotesPacked.map((p) => [p.id, p]),
+                                );
+                                pinnedNotesPackedMap = new Map();
+                                for (const [uid, pins] of pinsByUserId) {
+                                        const packed = pins
+                                                .map((pin) => noteIdToPacked.get(pin.noteId))
+                                                .filter((p): p is Packed<"Note"> => p != null);
+                                        pinnedNotesPackedMap.set(uid, packed);
+                                }
+
+                                const pinnedPageIds = [...profileMap.values()]
+                                        .map((p) => p.pinnedPageId)
+                                        .filter((id): id is NonNullable<typeof id> => id != null);
+                                const uniquePinnedPageIds = [...new Set(pinnedPageIds)];
+                                if (uniquePinnedPageIds.length > 0) {
+                                        const pages = await Pages.find({
+                                                where: { id: In(uniquePinnedPageIds) },
+                                        });
+                                        const packedPages = await Promise.all(
+                                                pages.map((p) => Pages.pack(p, me)),
+                                        );
+                                        const pageIdToPacked = new Map(
+                                                pages.map((p, i) => [p.id, packedPages[i]]),
+                                        );
+                                        pinnedPagePackedMap = new Map();
+                                        for (const [uid, profile] of profileMap) {
+                                                if (profile.pinnedPageId) {
+                                                        const packed = pageIdToPacked.get(
+                                                                profile.pinnedPageId,
+                                                        );
+                                                        if (packed) pinnedPagePackedMap.set(uid, packed);
+                                                }
+                                        }
+                                }
+                        }
+                }
+
                 return Promise.all(
                         users.map((u) => {
                                 const id = typeof u === "object" ? u.id : u;
@@ -1272,24 +1425,56 @@ export const UserRepository = db.getRepository(User).extend({
                                 let hints: {
                                         relation?: UserRelation | null;
                                         memo?: Awaited<ReturnType<typeof UserMemos.findOneBy>> | null;
+                                        user?: User | null;
+                                        profile?: UserProfile | null;
+                                        pins?: (UserNotePining & { note: Note })[] | null;
+                                        hasClips?: boolean;
+                                        hasPages?: boolean;
+                                        hasGallerys?: boolean;
+                                        hasCategories?: boolean;
+                                        pinnedNotesPacked?: Packed<"Note">[];
+                                        pinnedPagePacked?: Packed<"Page"> | null;
                                 } | undefined;
 
-                                if (relationsMap || memoMap) {
+                                const needHints =
+                                        relationsMap ||
+                                        memoMap ||
+                                        userMap ||
+                                        profileMap ||
+                                        pinsByUserId != null ||
+                                        hasClipsSet != null ||
+                                        pinnedNotesPackedMap != null ||
+                                        pinnedPagePackedMap != null;
+
+                                if (needHints) {
                                         hints = {};
-
-                                        if (relationsMap) {
-                                                hints.relation = relationsMap.get(id) ?? null;
-                                        }
-
-                                        if (memoMap) {
+                                        if (relationsMap) hints.relation = relationsMap.get(id) ?? null;
+                                        if (memoMap)
                                                 hints.memo = memoMap.has(id)
                                                         ? memoMap.get(id) ?? null
                                                         : null;
-                                        }
-
-                                        if (!Object.keys(hints).length) {
-                                                hints = undefined;
-                                        }
+                                        if (userMap?.has(id)) hints.user = userMap.get(id)!;
+                                        if (profileMap?.has(id)) hints.profile = profileMap.get(id)!;
+                                        // リモートユーザーはプロファイル行が無いことがあるため、pack 内で findOneByOrFail を避ける
+                                        else if (userMap?.get(id)?.host) hints.profile = null;
+                                        if (pinsByUserId != null)
+                                                hints.pins = pinsByUserId.get(id) ?? [];
+                                        if (hasClipsSet != null)
+                                                hints.hasClips = hasClipsSet.has(id);
+                                        if (hasPagesSet != null)
+                                                hints.hasPages =
+                                                        profileMap?.get(id)?.pinnedPageId != null ||
+                                                        hasPagesSet.has(id);
+                                        if (hasGallerysSet != null)
+                                                hints.hasGallerys = hasGallerysSet.has(id);
+                                        if (hasCategoriesSet != null)
+                                                hints.hasCategories = hasCategoriesSet.has(id);
+                                        if (pinnedNotesPackedMap?.has(id))
+                                                hints.pinnedNotesPacked =
+                                                        pinnedNotesPackedMap.get(id) ?? [];
+                                        if (pinnedPagePackedMap?.has(id))
+                                                hints.pinnedPagePacked =
+                                                        pinnedPagePackedMap.get(id) ?? null;
                                 }
 
                                 return this.pack(u, me, options, hints);

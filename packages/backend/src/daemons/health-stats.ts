@@ -254,6 +254,13 @@ export default function () {
 	let federationNotRespondingCount = 0;
 	const lastIncidentAtByMetric = new Map<string, number>();
 
+	/** プロセス起動以降のヒープ等の最大値（障害ログ用） */
+	let maxHeapUsedMb = 0;
+	let maxHeapTotalMb = 0;
+	let maxHeapUsagePercent = 0;
+	let maxRssMb = 0;
+	let maxExternalMb = 0;
+
 	ev.on("apiRequestStart", () => {
 		activeApiRequests += 1;
 	});
@@ -485,14 +492,29 @@ export default function () {
 		const mem = process.memoryUsage();
 		const heapUsedMb = mem.heapUsed / 1e6;
 		const heapTotalMb = mem.heapTotal / 1e6;
+		const rssMb = mem.rss / 1e6;
+		const externalMb = (mem.external ?? 0) / 1e6;
+		const arrayBuffersMb = (mem.arrayBuffers ?? 0) / 1e6;
+		const heapUsagePercent = heapTotalMb > 0 ? (heapUsedMb / heapTotalMb) * 100 : 0;
+
+		maxHeapUsedMb = Math.max(maxHeapUsedMb, heapUsedMb);
+		maxHeapTotalMb = Math.max(maxHeapTotalMb, heapTotalMb);
+		maxHeapUsagePercent = Math.max(maxHeapUsagePercent, heapUsagePercent);
+		maxRssMb = Math.max(maxRssMb, rssMb);
+		maxExternalMb = Math.max(maxExternalMb, externalMb);
+
 		const heapStats = {
 			heapUsedMb: round(heapUsedMb),
 			heapTotalMb: round(heapTotalMb),
-			rssMb: round(mem.rss / 1e6),
-			externalMb: round((mem.external ?? 0) / 1e6),
-			heapUsagePercent: round(
-				heapTotalMb > 0 ? (heapUsedMb / heapTotalMb) * 100 : 0,
-			),
+			rssMb: round(rssMb),
+			externalMb: round(externalMb),
+			arrayBuffersMb: round(arrayBuffersMb),
+			heapUsagePercent: round(heapUsagePercent),
+			heapUsedMbMax: round(maxHeapUsedMb),
+			heapTotalMbMax: round(maxHeapTotalMb),
+			rssMbMax: round(maxRssMb),
+			externalMbMax: round(maxExternalMb),
+			heapUsagePercentMax: round(maxHeapUsagePercent),
 		};
 
 		const federationStats = {

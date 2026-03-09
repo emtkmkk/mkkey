@@ -97,33 +97,57 @@ async function renderNoteOrRenoteActivityFromNote(note: Note) {
 }
 
 async function addNoteActivityDeliveryRecipes(dm: DeliverManager, note: Note) {
-	if (note.visibility === "specified") {
-		if (note.visibleUserIds.length > 0) {
-			for (const u of await Users.findBy({ id: In(note.visibleUserIds as User["id"][]) })) {
-				if (Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+	const userIdsToFetch = new Set<User["id"]>();
+	if (note.visibility === "specified" && note.visibleUserIds?.length) {
+		for (const id of note.visibleUserIds as User["id"][]) userIdsToFetch.add(id);
+	}
+	if (note.mentions?.length) {
+		for (const id of note.mentions as User["id"][]) userIdsToFetch.add(id);
+	}
+	if (note.reply && note.reply.userHost !== null) userIdsToFetch.add(note.reply.userId);
+	if (note.renote && note.renote.userHost !== null) userIdsToFetch.add(note.renote.userId);
+	if (["public", "home", "followers"].includes(note.visibility)) {
+		if (note.reply && note.reply.userId === note.userId && note.reply.replyId) {
+			if (
+				note.reply.replyUserId !== note.userId &&
+				note.reply.replyUserHost === null
+			) {
+				userIdsToFetch.add(note.reply.replyUserId);
 			}
+		} else if (
+			note.reply &&
+			note.reply.userId !== note.userId &&
+			note.reply.userHost === null
+		) {
+			userIdsToFetch.add(note.reply.userId);
 		}
 	}
-
-	if (note.mentions.length > 0) {
-		const mentionedUsers = await Users.findBy({
-			id: In(note.mentions as User["id"][]),
-		});
-		for (const u of mentionedUsers) {
-			if (Users.isRemoteUser(u)) dm.addDirectRecipe(u);
-		}
+	const userMap = new Map<User["id"], User>();
+	if (userIdsToFetch.size > 0) {
+		const users = await Users.findBy({ id: In([...userIdsToFetch]) });
+		for (const u of users) userMap.set(u.id, u);
 	}
 
+	if (note.visibility === "specified" && note.visibleUserIds?.length) {
+		for (const id of note.visibleUserIds as User["id"][]) {
+			const u = userMap.get(id);
+			if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+		}
+	}
+	if (note.mentions?.length) {
+		for (const id of note.mentions as User["id"][]) {
+			const u = userMap.get(id);
+			if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
+		}
+	}
 	if (note.reply && note.reply.userHost !== null) {
-		const u = await Users.findOneBy({ id: note.reply.userId });
+		const u = userMap.get(note.reply.userId);
 		if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
 	}
-
 	if (note.renote && note.renote.userHost !== null) {
-		const u = await Users.findOneBy({ id: note.renote.userId });
+		const u = userMap.get(note.renote.userId);
 		if (u && Users.isRemoteUser(u)) dm.addDirectRecipe(u);
 	}
-
 	if (["public", "home", "followers"].includes(note.visibility)) {
 		if (note.reply && note.reply.userId === note.userId && note.reply.replyId) {
 			if (
@@ -131,8 +155,8 @@ async function addNoteActivityDeliveryRecipes(dm: DeliverManager, note: Note) {
 				note.reply.replyUserHost === null
 			) {
 				console.log(`reReply deliver : ${note.reply.replyId}`);
-				const u = await Users.findOneBy({ id: note.reply.replyUserId });
-				dm.addFollowersRecipe(u as ILocalUser);
+				const u = userMap.get(note.reply.replyUserId);
+				if (u) dm.addFollowersRecipe(u as ILocalUser);
 			} else {
 				console.log(`reReply deliver : ${note.reply.replyId}`);
 				dm.addFollowersRecipe();
@@ -143,8 +167,8 @@ async function addNoteActivityDeliveryRecipes(dm: DeliverManager, note: Note) {
 			note.reply.userHost === null
 		) {
 			console.log(`reply deliver : ${note.reply.id}`);
-			const u = await Users.findOneBy({ id: note.reply.userId });
-			dm.addFollowersRecipe(u as ILocalUser);
+			const u = userMap.get(note.reply.userId);
+			if (u) dm.addFollowersRecipe(u as ILocalUser);
 		} else {
 			dm.addFollowersRecipe();
 		}
@@ -216,6 +240,12 @@ async function resendLocalReactionsForRenote(
 
 	const emojiMap = await getReactionEmojiMap(latestReactions);
 
+	// リノート作者がリモートのとき、1回だけ取得して全リアクションで使い回す
+	const reactee =
+		renote.userHost !== null
+			? await Users.findOneBy({ id: renote.userId }).then((u) => u ?? null)
+			: null;
+
 	for (const reaction of latestReactions) {
 		const reactionUser = reaction.user;
 		if (!reactionUser || reactionUser.host !== null) continue;
@@ -236,7 +266,7 @@ async function resendLocalReactionsForRenote(
 			reactionUser,
 			renote,
 			activity,
-			{ disableUnion: true },
+			{ disableUnion: true, reactee },
 		);
 		const reactionInboxes = await dm.collectInboxes();
 		console.log(

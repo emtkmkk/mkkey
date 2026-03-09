@@ -104,5 +104,5 @@ export default define(meta, paramDef, async (ps, me) => {
 	createNotification(user.id, "groupInvited", {
 		notifierId: me.id,
 		userGroupInvitationId: invitation.id,
-	});
+	}, { notifier: me });
 });

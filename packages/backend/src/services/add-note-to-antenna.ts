@@ -10,10 +10,25 @@ import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import type { User } from "@/models/entities/user.js";
 import { In } from "typeorm";
 
+/**
+ * アンテナにノートを追加する。
+ * reply / renote / user を渡すと内部で再取得せずに再利用する（呼び出し元で既に取得済みのとき用）。
+ *
+ * @param antenna - アンテナ
+ * @param note - 追加するノート
+ * @param noteUser - ノート投稿者（id 必須）
+ * @param options - 省略時は内部で reply / renote / user を取得。渡すとスキップして再利用
+ * @internal
+ */
 export async function addNoteToAntenna(
 	antenna: Antenna,
 	note: Note,
 	noteUser: { id: User["id"] },
+	options?: {
+		reply?: Note | null;
+		renote?: Note | null;
+		user?: User | null;
+	},
 ) {
 	// 通知しない設定になっているか、自分自身の投稿なら既読にする
 	const read = !antenna.notify || antenna.userId === noteUser.id;
@@ -31,15 +46,19 @@ export async function addNoteToAntenna(
 		const hydratedNote = await (async () => {
 			const expanded: Note = { ...note };
 
-			const [reply, renote] = await Promise.all([
-				note.replyId ? Notes.findOneBy({ id: note.replyId }) : null,
-				note.renoteId ? Notes.findOneBy({ id: note.renoteId }) : null,
-			]);
-
-			expanded.reply = reply;
-			expanded.renote = renote;
-
-			if (noteUser.id != null) {
+			if (options?.reply !== undefined) {
+				expanded.reply = options.reply ?? null;
+			} else if (note.replyId) {
+				expanded.reply = await Notes.findOneBy({ id: note.replyId });
+			}
+			if (options?.renote !== undefined) {
+				expanded.renote = options.renote ?? null;
+			} else if (note.renoteId) {
+				expanded.renote = await Notes.findOneBy({ id: note.renoteId });
+			}
+			if (options?.user !== undefined) {
+				expanded.user = options.user ?? null;
+			} else if (noteUser.id != null) {
 				expanded.user = await Users.findOneBy({ id: noteUser.id });
 			}
 
@@ -83,7 +102,7 @@ export async function addNoteToAntenna(
 					note: __note,
 					noteId: __note.id,
 					reaction: antenna.name,
-				});
+				}, { notifier: hydratedNote.user ?? undefined });
 
 				const webhooks = await getActiveWebhooks().then((webhooks) =>
 					webhooks.filter(
@@ -94,21 +113,23 @@ export async function addNoteToAntenna(
 					),
 				);
 
-				const webhookPromises = webhooks.map(async (webhook) => {
+				if (webhooks.length > 0) {
 					const antennaUser = await Users.findOneByOrFail({
 						id: antenna.userId,
 					});
-					await webhookDeliver(webhook, "antenna", {
-						note: await Notes.pack(__note, antennaUser),
-						antenna: {
-							id: antenna.id,
-							name: antenna.name,
-							noteUser: hydratedNote.user,
-						},
-					});
-				});
-
-				await Promise.all(webhookPromises);
+					const packedNote = await Notes.pack(__note, antennaUser);
+					const webhookPromises = webhooks.map((webhook) =>
+						webhookDeliver(webhook, "antenna", {
+							note: packedNote,
+							antenna: {
+								id: antenna.id,
+								name: antenna.name,
+								noteUser: hydratedNote.user,
+							},
+						}),
+					);
+					await Promise.all(webhookPromises);
+				}
 			}
 		}, 3000);
 	}

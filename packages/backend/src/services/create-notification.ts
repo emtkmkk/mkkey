@@ -14,15 +14,26 @@ import type { Notification } from "@/models/entities/notification.js";
 import { sendEmailNotification } from "./send-email-notification.js";
 import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
 
+/**
+ * 通知を作成する。
+ * notifier を渡すと、notifierId での Users.findOneBy をスキップして再利用する（呼び出し元で既に取得済みのとき用）。
+ *
+ * @param notifieeId - 通知先ユーザ ID
+ * @param type - 通知種別
+ * @param data - 通知データ（notifierId など）
+ * @param options - notifier を渡すと DB 取得をスキップ
+ * @internal
+ */
 export async function createNotification(
 	notifieeId: User["id"],
 	type: Notification["type"],
 	data: Partial<Notification>,
+	options?: { notifier?: User | null },
 ) {
 	if (data.notifierId && notifieeId === data.notifierId) {
 		return null;
 	}
-	
+
 	if (
 		data.notifierId &&
 		[
@@ -34,36 +45,39 @@ export async function createNotification(
 			"unreadAntenna",
 		].includes(type)
 	) {
-		const notifier = await Users.findOneBy({ id: data.notifierId });
+		const notifier =
+			options?.notifier != null && options.notifier.id === data.notifierId
+				? options.notifier
+				: await Users.findOneBy({ id: data.notifierId });
 		// suppress if the notifier does not exist or is silenced.
 		if (!notifier) return null;
-	
+
 		// suppress if the notifier is silenced or in a silenced instance, and not followed by the notifiee.
 		const [shouldSilence, isFollowed] = await Promise.all([
 			Users.isRemoteUser(notifier) && shouldSilenceInstance(notifier.host),
 			Followings.exist({ where: { followerId: notifieeId, followeeId: data.notifierId } }),
 		]);
-	
+
 		if ((notifier.isSilenced || shouldSilence) && !isFollowed) {
 			return null;
 		}
 	}
-	
+
 	const profilePromise = UserProfiles.findOneBy({ userId: notifieeId });
-	
+
 	const threadMutePromise = data.note != null ? NoteThreadMutings.findOneBy({
 		userId: notifieeId,
 		threadId: data.note.threadId || data.note.id,
 	}) : Promise.resolve(null);
-	
+
 	const [profile, threadMute] = await Promise.all([profilePromise, threadMutePromise]);
-	
+
 	const isMuted = profile?.mutingNotificationTypes.includes(type);
-	
+
 	if (threadMute) {
 		return null;
 	}
-	
+
 	// Create notification
 	const notification = await Notifications.insert({
 		id: genId(),
@@ -76,12 +90,12 @@ export async function createNotification(
 	} as Partial<Notification>).then((x) =>
 		Notifications.findOneByOrFail(x.identifiers[0]),
 	);
-	
+
 	const packed = await Notifications.pack(notification, {});
-	
+
 	// Publish notification event
 	publishMainStream(notifieeId, "notification", packed);
-	
+
 	// 3秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
 	setTimeout(async () => {
 		const fresh = await Notifications.findOneBy({ id: notification.id });
@@ -90,7 +104,7 @@ export async function createNotification(
 		// when it is best to show push notifications
 		pushNotification(notifieeId, "notification", packed);
 		if (fresh.isRead) return;
-	
+
 		//#region ただしミュートしているユーザーからの通知なら無視
 		const isNotifierMuted =
 			data.notifierId != null
@@ -105,9 +119,9 @@ export async function createNotification(
 			return;
 		}
 		//#endregion
-	
+
 		publishMainStream(notifieeId, "unreadNotification", packed);
-	
+
 		if (type === "follow")
 			sendEmailNotification.follow(
 				notifieeId,
@@ -119,6 +133,6 @@ export async function createNotification(
 				await Users.findOneByOrFail({ id: data.notifierId! }),
 			);
 	}, 3000);
-	
-	return notification;	
+
+	return notification;
 }

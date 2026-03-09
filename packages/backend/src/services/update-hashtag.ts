@@ -1,5 +1,6 @@
 import type { User } from "@/models/entities/user.js";
 import { Hashtags, Users } from "@/models/index.js";
+import { In } from "typeorm";
 //import { hashtagChart } from "@/services/chart/index.js";
 import { genId } from "@/misc/gen-id.js";
 import type { Hashtag } from "@/models/entities/hashtag.js";
@@ -10,22 +11,43 @@ export async function updateHashtags(
         tags: string[],
 ) {
         const uniqueTags = uniqueNormalizedTags(tags);
-
-        await Promise.all(uniqueTags.map((tag) => updateHashtag(user, tag)));
+        if (uniqueTags.length === 0) return;
+        const existing = await Hashtags.findBy({
+                name: In(uniqueTags),
+        });
+        const tagMap = new Map<string, Hashtag>(
+                existing.map((h) => [h.name, h]),
+        );
+        await Promise.all(
+                uniqueTags.map((tag) =>
+                        updateHashtag(user, tag, false, true, tagMap.get(tag) ?? null),
+                ),
+        );
 }
 
 export async function updateUsertags(user: User, tags: string[]) {
         const uniqueTags = uniqueNormalizedTags(tags);
-
-        await Promise.all(uniqueTags.map((tag) => updateHashtag(user, tag, true, true)));
-
         const newTagSet = new Set(uniqueTags);
         const currentTags = uniqueNormalizedTags(user.tags || []);
         const detachedTags = currentTags.filter((tag) => !newTagSet.has(tag));
-
+        const allTags = [...uniqueTags, ...detachedTags];
+        if (allTags.length === 0) return;
+        const existing = await Hashtags.findBy({
+                name: In(allTags),
+        });
+        const tagMap = new Map<string, Hashtag>(
+                existing.map((h) => [h.name, h]),
+        );
+        await Promise.all(
+                uniqueTags.map((tag) =>
+                        updateHashtag(user, tag, true, true, tagMap.get(tag) ?? null),
+                ),
+        );
         if (detachedTags.length > 0) {
                 await Promise.all(
-                        detachedTags.map((tag) => updateHashtag(user, tag, true, false)),
+                        detachedTags.map((tag) =>
+                                updateHashtag(user, tag, true, false, tagMap.get(tag) ?? null),
+                        ),
                 );
         }
 }
@@ -35,10 +57,14 @@ export async function updateHashtag(
         tag: string,
 	isUserAttached = false,
 	inc = true,
+	existingIndex?: Hashtag | null,
 ) {
 	tag = normalizeForSearch(tag);
 
-	const index = await Hashtags.findOneBy({ name: tag });
+	const index =
+		existingIndex !== undefined
+			? existingIndex
+			: await Hashtags.findOneBy({ name: tag });
 
 	if (index == null && !inc) return;
 

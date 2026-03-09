@@ -109,7 +109,7 @@ export async function insertFollowingDoc(
 	createNotification(follower.id, "followRequestAccepted", {
 		notifierId: followee.id,
 		customBody: followeeProfile.followedMessage,
-	});
+	}, { notifier: followee });
 
 	//#region Increment counts
 	await Promise.all([
@@ -202,7 +202,7 @@ export async function insertFollowingDoc(
 		// 通知を作成
 		createNotification(followee.id, "follow", {
 			notifierId: follower.id,
-		});
+		}, { notifier: follower });
 	}
 }
 

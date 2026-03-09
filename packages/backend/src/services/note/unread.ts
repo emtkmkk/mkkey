@@ -1,8 +1,86 @@
+/**
+ * 未読ノート挿入サービス
+ *
+ * @packageDocumentation
+ * @remarks
+ * insertNoteUnread: 単一ユーザ向け。ミュート・スレッドミュートを確認してから 1 件挿入。
+ * insertNoteUnreadBatch: 複数ユーザを一括。Mutings/NoteThreadMutings を 1 回ずつ取得してから一括挿入。
+ */
 import type { Note } from "@/models/entities/note.js";
 import { publishMainStream } from "@/services/stream.js";
 import type { User } from "@/models/entities/user.js";
 import { Mutings, NoteThreadMutings, NoteUnreads } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { In } from "typeorm";
+
+export type NoteUnreadCandidate = {
+	userId: User["id"];
+	isSpecified: boolean;
+	isMentioned: boolean;
+};
+
+/**
+ * 複数ユーザに対して未読を一括挿入する。
+ * 挿入候補を渡し、Mutings / NoteThreadMutings を一括取得してスキップした上で一括 insert する。
+ *
+ * @param note - 対象ノート
+ * @param candidates - 挿入候補（channel フォロワー・指定ユーザ・メンション先など）
+ * @internal
+ */
+export async function insertNoteUnreadBatch(
+	note: Note,
+	candidates: NoteUnreadCandidate[],
+): Promise<void> {
+	if (candidates.length === 0) return;
+
+	const userIds = [...new Set(candidates.map((c) => c.userId))];
+	const [mutingRows, threadMuteRows] = await Promise.all([
+		Mutings.find({
+			where: { muterId: In(userIds), muteeId: note.userId },
+			select: ["muterId"],
+		}),
+		NoteThreadMutings.find({
+			where: {
+				userId: In(userIds),
+				threadId: note.threadId || note.id,
+			},
+			select: ["userId"],
+		}),
+	]);
+	const mutedSet = new Set(mutingRows.map((r) => r.muterId));
+	const threadMutedSet = new Set(threadMuteRows.map((r) => r.userId));
+	const toInsert = candidates.filter(
+		(c) => !mutedSet.has(c.userId) && !threadMutedSet.has(c.userId),
+	);
+	if (toInsert.length === 0) return;
+
+	const unreadRecords = toInsert.map((c) => ({
+		id: genId(),
+		noteId: note.id,
+		userId: c.userId,
+		isSpecified: c.isSpecified,
+		isMentioned: c.isMentioned,
+		noteChannelId: note.channelId,
+		noteUserId: note.userId,
+	}));
+	await NoteUnreads.insert(unreadRecords);
+
+	for (const rec of unreadRecords) {
+		setTimeout(async () => {
+			const exist = await NoteUnreads.findOneBy({ id: rec.id });
+			if (exist == null) return;
+			if (rec.isMentioned) {
+				publishMainStream(rec.userId, "unreadMention", note.id);
+			}
+			if (rec.isSpecified) {
+				publishMainStream(rec.userId, "unreadSpecifiedNote", note.id);
+			}
+			if (note.channelId) {
+				publishMainStream(rec.userId, "unreadChannel", note.id);
+			}
+		}, 2000);
+	}
+}
 
 export async function insertNoteUnread(
 	userId: User["id"],

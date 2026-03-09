@@ -154,7 +154,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		});
 	}
 
+	// license = 「Copy to {host}」＋元の license（「コピー元 : …」は除去）。コピー元は isBasedOnUrl に格納するためここには含めない。
 	const sourceHost = emoji.host ?? "unknown";
+	const license =
+		`Copy to ${sourceHost}` +
+		(emoji.license
+			? `, ${emoji.license.replace(/コピー元 : ([^,]+)(,|$)/, "")}`
+			: "");
+
 	const copied = await Emojis.insert({
 		id: genId(),
 		createdAt: new Date(),
@@ -171,7 +178,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		creator: emoji.creator ?? null,
 		description: emoji.description ?? null,
 		isBasedOnUrl: emoji.uri ?? null,
-		license: `Copy to ${sourceHost}`,
+		license,
 		isTextOnly: false,
 		sensitive: emoji.sensitive ?? false,
 		usageVisibility: "public",

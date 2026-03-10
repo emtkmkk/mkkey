@@ -5,6 +5,7 @@ introMisskey: "Welcome! Calckey is an open source, decentralized social media pl
   \ that's free forever! \U0001F680"
 monthAndDay: "{month}/{day}"
 search: "Search"
+searchLookupConfirm: "This query can be looked up. Do you want to look it up?"
 notifications: "Notifications"
 username: "Username"
 password: "Password"

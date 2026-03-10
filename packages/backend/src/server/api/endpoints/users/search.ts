@@ -6,7 +6,7 @@ import define from "../../define.js";
 export const meta = {
 	tags: ["users"],
 
-	requireCredential: false,
+	requireCredential: true,
 	requireCredentialPrivateMode: true,
 
 	description: "Search for users.",

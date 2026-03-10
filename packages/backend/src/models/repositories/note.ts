@@ -7,6 +7,7 @@
 import { In, IsNull } from "typeorm";
 import * as mfm from "mfm-js";
 import { Note } from "@/models/entities/note.js";
+import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { User } from "@/models/entities/user.js";
 import type { Channel } from "@/models/entities/channel.js";
 import {
@@ -114,6 +115,8 @@ type NotePackHint = {
 	channelMap?: Map<string, Channel>;
 	/** packMany 用: reply/renote 用ノートを一括取得した Map */
 	noteMap?: Map<Note["id"], Note>;
+	/** packMany 用: ノート添付ファイルを一括 pack した Map */
+	packedFileMap?: Map<DriveFile["id"], Packed<"DriveFile">>;
 };
 
 const NOTE_PACK_CACHE_TTL_MS = 30 * 1000;
@@ -663,7 +666,11 @@ export const NoteRepository = db.getRepository(Note).extend({
 			fileIds: isVisible ? note.fileIds : [],
 			files:
 				isVisible && note.fileIds.length > 0
-					? DriveFiles.packMany(note.fileIds)
+					? hint.packedFileMap
+						? note.fileIds
+								.map((fileId) => hint.packedFileMap?.get(fileId))
+								.filter((file): file is Packed<"DriveFile"> => file != null)
+						: DriveFiles.packMany(note.fileIds)
 					: [],
 			replyId: note.replyId,
 			renoteId: note.renoteId,
@@ -935,6 +942,52 @@ export const NoteRepository = db.getRepository(Note).extend({
                                         : [],
                         ]);
 
+		const noteFilesToPackIds = new Set<DriveFile["id"]>();
+		for (const note of notes) {
+			for (const fileId of note.fileIds) {
+				noteFilesToPackIds.add(fileId);
+			}
+		}
+		for (const note of notesForReplyRenote) {
+			for (const fileId of note.fileIds) {
+				noteFilesToPackIds.add(fileId);
+			}
+		}
+
+		const allUsersForImageResolve = [
+			...usersForNotes,
+			...notesForReplyRenote
+				.map((note) => note.user)
+				.filter((user): user is User => user != null),
+		];
+		const userImageIds = new Set<DriveFile["id"]>();
+		for (const user of allUsersForImageResolve) {
+			if (user.avatarId != null) userImageIds.add(user.avatarId);
+			if (user.bannerId != null) userImageIds.add(user.bannerId);
+		}
+
+		const allDriveFileIds = [...new Set([...noteFilesToPackIds, ...userImageIds])];
+		const driveFiles =
+			allDriveFileIds.length > 0
+				? await DriveFiles.findBy({ id: In(allDriveFileIds) })
+				: [];
+		const driveFileMap = new Map(driveFiles.map((file) => [file.id, file]));
+
+		for (const user of allUsersForImageResolve) {
+			if (user.avatar === undefined && user.avatarId) {
+				user.avatar = driveFileMap.get(user.avatarId) ?? null;
+			}
+			if (user.banner === undefined && user.bannerId) {
+				user.banner = driveFileMap.get(user.bannerId) ?? null;
+			}
+		}
+
+		const noteFilesToPack = [...noteFilesToPackIds]
+			.map((fileId) => driveFileMap.get(fileId))
+			.filter((file): file is NonNullable<typeof file> => file != null);
+		const packedFiles = await DriveFiles.packMany(noteFilesToPack);
+		const packedFileMap = new Map(packedFiles.map((file) => [file.id, file]));
+
                 const userMap = new Map(usersForNotes.map((u) => [u.id, u]));
                 const channelMap = new Map(channelsForNotes.map((c) => [c.id, c]));
                 const noteMap = new Map(notesForReplyRenote.map((n) => [n.id, n]));
@@ -947,6 +1000,7 @@ export const NoteRepository = db.getRepository(Note).extend({
                         userMap,
                         channelMap,
                         noteMap,
+			packedFileMap,
                 };
 
                 const promises = await Promise.allSettled(

@@ -15,7 +15,7 @@ import {
 	getEffectiveUsageVisibility,
 	NEW_EMOJI_FIELDS,
 } from "@/models/repositories/emoji.js";
-import type { Emoji } from "@/models/entities/emoji.js";
+import { Emoji } from "@/models/entities/emoji.js";
 import { Cache } from "@/misc/cache.js";
 import define from "../define.js";
 

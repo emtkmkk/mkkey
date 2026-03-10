@@ -320,11 +320,9 @@ export async function initDb(force = false) {
 		await db.initialize();
 		dbLogger.info("Main DB connection established.");
 		if (dbStats) {
-			dbLogger.info("Initializing stats pool...", {
-				statsUser: config.db.statsUser,
-				statsPassDefined: config.db.statsPass != null,
-				statsPassLength: config.db.statsPass?.length ?? 0,
-			});
+			dbLogger.info(
+				`Initializing stats pool... statsUser=${config.db.statsUser ?? "(none)"} statsPassDefined=${config.db.statsPass != null} statsPassLength=${config.db.statsPass?.length ?? 0}`,
+			);
 			await dbStats.initialize();
 			dbLogger.info("Stats pool connection established.");
 		}
@@ -339,11 +337,9 @@ export async function initDb(force = false) {
 		dbLogger.info("Main DB connection established.");
 	}
 	if (dbStats != null && !dbStats.isInitialized) {
-		dbLogger.info("Initializing stats pool...", {
-			statsUser: config.db.statsUser,
-			statsPassDefined: config.db.statsPass != null,
-			statsPassLength: config.db.statsPass?.length ?? 0,
-		});
+		dbLogger.info(
+			`Initializing stats pool... statsUser=${config.db.statsUser ?? "(none)"} statsPassDefined=${config.db.statsPass != null} statsPassLength=${config.db.statsPass?.length ?? 0}`,
+		);
 		await dbStats.initialize();
 		dbLogger.info("Stats pool connection established.");
 	}

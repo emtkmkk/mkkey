@@ -21,7 +21,7 @@ export const paramDef = {
 		offset: { type: "integer", nullable: true, default: null },
 		userId: { type: "string", format: "misskey:id" },
 		/** 同一ユーザー名の他インスタンス分のチャートを add で付与する。件数は MAX_ADDINFO_USERS で制限。 */
-		addInfo: { type: "boolean", optional: true, default: false },
+		addInfo: { type: "boolean", default: false },
 	},
 	required: ["span", "userId"],
 } as const;

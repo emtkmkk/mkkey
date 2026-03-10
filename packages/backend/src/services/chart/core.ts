@@ -16,7 +16,7 @@ import {
 	addTime,
 } from "@/prelude/time.js";
 import { getChartInsertLock } from "@/misc/app-lock.js";
-import { db } from "@/db/postgre.js";
+import { db, getStatsDataSource } from "@/db/postgre.js";
 import promiseLimit from "promise-limit";
 
 const logger = new Logger("chart", "white", process.env.NODE_ENV !== "test");
@@ -162,6 +162,9 @@ export default abstract class Chart<T extends Schema> {
 		group?: string | null;
 		date: number;
 	}>;
+	/** getChartRaw / getLatestLog の読み取り用。stats プール有効時はそちらを使う。 */
+	private hourEntity: ReturnType<typeof Chart.schemaToEntity>["hour"];
+	private dayEntity: ReturnType<typeof Chart.schemaToEntity>["day"];
 
 	/**
 	 * 1日に一回程度実行されれば良いような計算処理を入れる(主にCASCADE削除などアプリケーション側で感知できない変動によるズレの修正用)
@@ -298,6 +301,8 @@ export default abstract class Chart<T extends Schema> {
 		this.schema = schema;
 
 		const { hour, day } = Chart.schemaToEntity(name, schema, grouped);
+		this.hourEntity = hour;
+		this.dayEntity = day;
 		this.repositoryForHour = db.getRepository<{
 			id: number;
 			group?: string | null;
@@ -343,11 +348,8 @@ export default abstract class Chart<T extends Schema> {
 	): Promise<RawRecord<T> | null> {
 		const repository =
 			span === "hour"
-				? this.repositoryForHour
-				: span === "day"
-				? this.repositoryForDay
-				: (new Error("not happen") as never);
-
+				? getStatsDataSource().getRepository(this.hourEntity)
+				: getStatsDataSource().getRepository(this.dayEntity);
 		return repository
 			.findOne({
 				where: group
@@ -802,10 +804,8 @@ export default abstract class Chart<T extends Schema> {
 
 		const repository =
 			span === "hour"
-				? this.repositoryForHour
-				: span === "day"
-				? this.repositoryForDay
-				: (new Error("not happen") as never);
+				? getStatsDataSource().getRepository(this.hourEntity)
+				: getStatsDataSource().getRepository(this.dayEntity);
 
 		// ログ取得
 		let logs = (await repository.find({

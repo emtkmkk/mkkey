@@ -4,18 +4,26 @@
  * @remarks
  * 返却リストは usageVisibility とモチーフでフィルタする。キャッシュは従来どおり 1 キーで取得し、フィルタはメモリ側で実施。
  * ライセンス・モチーフ等の追加パラメータは falsy ならフィールドごと返さない。リモート絵文字では値があってもそれらのフィールドは返さない。
+ * 応答は in-memory で 5 分間キャッシュし、絵文字の DB 読み取りは getStatsDataSource で行う（集計用プールが有効な場合）。
  */
 import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
-import { IsNull, MoreThan, Not } from "typeorm";
+import { IsNull, Not } from "typeorm";
 import config from "@/config/index.js";
-import { fetchMeta } from "@/misc/fetch-meta.js";
+import { getStatsDataSource } from "@/db/postgre.js";
 import { Ads, Emojis, Followings, Users, RegistryItems } from "@/models/index.js";
 import {
 	getEffectiveUsageVisibility,
 	NEW_EMOJI_FIELDS,
 } from "@/models/repositories/emoji.js";
 import type { Emoji } from "@/models/entities/emoji.js";
+import { Cache } from "@/misc/cache.js";
 import define from "../define.js";
+
+/** 応答全体のキャッシュ（TTL 5 分）。キーは me・ps に依存。 */
+const EMOJI_RESPONSE_CACHE_TTL_MS = 5 * 60 * 1000;
+const emojiResponseCache = new Cache<Record<string, unknown>>(
+	EMOJI_RESPONSE_CACHE_TTL_MS,
+);
 
 /** リモート絵文字用: 追加パラメータを値の有無にかかわらずフィールドごと削除 */
 function stripRemoteEmojiFields(obj: Record<string, unknown>): Record<string, unknown> {
@@ -50,8 +58,9 @@ function includeEmojiInList(
 	return true;
 }
 
-async function getEmojiUpdatedAt() {
-        const latestEmoji = await Emojis.createQueryBuilder("emoji")
+async function getEmojiUpdatedAt(emojiRepo: { createQueryBuilder: typeof Emojis.createQueryBuilder }) {
+        const latestEmoji = await emojiRepo
+		.createQueryBuilder("emoji")
                 .select("MAX(COALESCE(emoji.updatedAt, emoji.createdAt))", "updatedAt")
                 .where("emoji.oldEmoji = :oldEmoji", { oldEmoji: false })
                 .andWhere("emoji.host IS NULL")
@@ -134,18 +143,28 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-        const emojiUpdatedAtPromise = getEmojiUpdatedAt();
+	const item = me
+		? await RegistryItems.createQueryBuilder("item")
+				.where("item.domain IS NULL")
+				.andWhere("item.userId = :userId", { userId: me.id })
+				.andWhere("item.key = 'externalOutputAllEmojis'")
+				.andWhere("item.scope = :scope", { scope: ["client", "base"] })
+				.getOne()
+		: null;
+	const allEmojisPath =
+		Boolean(me) &&
+		Object.keys(ps ?? {}).filter((x) => x !== "i").length === 0 &&
+		Boolean((item as { value?: unknown } | null)?.value);
+	const cacheKey = allEmojisPath
+		? `emojis:all:${me!.id}`
+		: `emojis:${me?.id ?? "anon"}:${(ps as { createdAtDesc?: boolean })?.createdAtDesc ?? false}:${(ps as { remoteEmojis?: string })?.remoteEmojis ?? ""}:${(ps as { plusEmojis?: boolean })?.plusEmojis ?? false}:${(ps as { allEmojis?: boolean })?.allEmojis ?? false}`;
 
-        if (Object.keys(ps ?? {})?.filter((x) => x !== "i").length === 0 && me) {
-                const item = RegistryItems.createQueryBuilder("item")
-                        .where("item.domain IS NULL")
-			.andWhere("item.userId = :userId", { userId: me.id })
-			.andWhere("item.key = 'externalOutputAllEmojis'")
-			.andWhere("item.scope = :scope", { scope: ["client", "base"] })
-			.getOne();
+	return emojiResponseCache.fetch(cacheKey, async () => {
+		const EmojiRepo = getStatsDataSource().getRepository(Emoji);
+		const emojiUpdatedAtPromise = getEmojiUpdatedAt(EmojiRepo);
 
-		if (item?.value) {
-			let allEmojis = await Emojis.find({
+		if (Object.keys(ps ?? {})?.filter((x) => x !== "i").length === 0 && me && (item as { value?: unknown } | null)?.value) {
+			let allEmojis = await EmojiRepo.find({
 				where: { oldEmoji: false },
 				order: { name: "ASC" },
 				cache: {
@@ -216,135 +235,135 @@ export default define(meta, paramDef, async (ps, me) => {
 						updatedAt: emoji.updatedAt,
 					};
 				})
-                                .filter(Boolean);
-                        return {
-                                emojis,
-                                emojiUpdatedAt: await emojiUpdatedAtPromise,
-                        };
-                }
-        }
-
-	let emojis = await Emojis.find({
-		where: {
-			host: IsNull(),
-			oldEmoji: false,
-		},
-		order: ps.createdAtDesc
-			? {
-					createdAt: "DESC",
-			  }
-			: {
-					category: "ASC",
-					name: "ASC",
-			  },
-		cache: {
-			id: ps.createdAtDesc ? "meta_emojis2" : "meta_emojis",
-			milliseconds: 3600000, // 1 hour
-		},
-	});
-
-	let followeeIds = new Set<string>();
-	if (me && emojis.length > 0) {
-		const needsFollowCheck = emojis.some(
-			(x) =>
-				x.motifUserId != null && (x.motifUserMode ?? "any") === "follow",
-		);
-		if (needsFollowCheck) {
-			const followings = await Followings.findBy({ followerId: me.id });
-			followeeIds = new Set(followings.map((f) => f.followeeId));
+				.filter(Boolean);
+			return {
+				emojis,
+				emojiUpdatedAt: await emojiUpdatedAtPromise,
+			};
 		}
-	}
-	emojis = emojis.filter((x) => includeEmojiInList(x, me, followeeIds));
 
-	if (false && !ps.includeUrl) {
-		emojis?.forEach((x) => {
-			delete x.publicUrl;
-			delete x.originalUrl;
+		let emojis = await EmojiRepo.find({
+			where: {
+				host: IsNull(),
+				oldEmoji: false,
+			},
+			order: (ps as { createdAtDesc?: boolean }).createdAtDesc
+				? {
+						createdAt: "DESC",
+				  }
+				: {
+						category: "ASC",
+						name: "ASC",
+				  },
+			cache: {
+				id: (ps as { createdAtDesc?: boolean }).createdAtDesc ? "meta_emojis2" : "meta_emojis",
+				milliseconds: 3600000, // 1 hour
+			},
 		});
-	}
 
-	const emojiNames = emojis.map((x) => x.name);
+		let followeeIds = new Set<string>();
+		if (me && emojis.length > 0) {
+			const needsFollowCheck = emojis.some(
+				(x) =>
+					x.motifUserId != null && (x.motifUserMode ?? "any") === "follow",
+			);
+			if (needsFollowCheck) {
+				const followings = await Followings.findBy({ followerId: me.id });
+				followeeIds = new Set(followings.map((f) => f.followeeId));
+			}
+		}
+		emojis = emojis.filter((x) => includeEmojiInList(x, me, followeeIds));
 
-	let remoteEmojis = undefined;
+		if (false && !(ps as { includeUrl?: boolean }).includeUrl) {
+			emojis?.forEach((x) => {
+				delete (x as Record<string, unknown>).publicUrl;
+				delete (x as Record<string, unknown>).originalUrl;
+			});
+		}
 
-	let remoteEmojiMode = undefined;
+		const emojiNames = emojis.map((x) => x.name);
 
-	if (ps.remoteEmojis === "mini" || ps.plusEmojis) {
-		remoteEmojis = (
-			await Emojis.find({
-				where: {
-					host: Not(IsNull()),
-					oldEmoji: false,
-				},
-				order: {
-					name: "ASC",
-				},
-				cache: {
-					id: "meta_all_emojis",
-					milliseconds: 3600000, // 1 hour
-				},
-			})
-		).filter(
-			(x) =>
-				!emojiNames.includes(x.name) &&
-				!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-					x.host,
-				) &&
-				(x.host?.length ?? 0) < 50 &&
-				(x.isTextOnly || fromStoredCopyPermission(x.copyPermission) === "allow"),
-		);
+		let remoteEmojis: Emoji[] | undefined;
 
-		remoteEmojiMode = "plus";
-	} else if (ps.remoteEmojis === "all" || ps.allEmojis) {
-		remoteEmojis = (
-			await Emojis.find({
-				where: {
-					host: Not(IsNull()),
-					oldEmoji: false,
-				},
-				order: {
-					name: "ASC",
-				},
-				cache: {
-					id: "meta_all_emojis",
-					milliseconds: 3600000, // 1 hour
-				},
-			})
-		).filter(
-			(x) =>
-				!emojiNames.includes(x.name) &&
-				!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-					x.host,
-				) &&
-				(x.name?.length ?? 0) < 100 &&
-				(x.host?.length ?? 0) < 50 &&
-				fromStoredCopyPermission(x.copyPermission) !== "deny",
-		);
+		let remoteEmojiMode: string | undefined;
 
-		remoteEmojiMode = "all";
-	}
+		if ((ps as { remoteEmojis?: string }).remoteEmojis === "mini" || (ps as { plusEmojis?: boolean }).plusEmojis) {
+			remoteEmojis = (
+				await EmojiRepo.find({
+					where: {
+						host: Not(IsNull()),
+						oldEmoji: false,
+					},
+					order: {
+						name: "ASC",
+					},
+					cache: {
+						id: "meta_all_emojis",
+						milliseconds: 3600000, // 1 hour
+					},
+				})
+			).filter(
+				(x) =>
+					!emojiNames.includes(x.name) &&
+					!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
+						x.host ?? "",
+					) &&
+					(x.host?.length ?? 0) < 50 &&
+					(x.isTextOnly || fromStoredCopyPermission(x.copyPermission) === "allow"),
+			);
 
-	const packedLocal = await Emojis.packMany(emojis);
-	/** リモート絵文字は n(name), h(host), s(sensitive, true のときのみ) の最小形で返す */
-	const packedRemote =
-		remoteEmojiMode && remoteEmojis && me
-			? remoteEmojis.map((e) => ({
-					n: e.name,
-					h: e.host ?? null,
-					...(e.sensitive ? { s: true as const } : {}),
-			  }))
-			: undefined;
+			remoteEmojiMode = "plus";
+		} else if ((ps as { remoteEmojis?: string }).remoteEmojis === "all" || (ps as { allEmojis?: boolean }).allEmojis) {
+			remoteEmojis = (
+				await EmojiRepo.find({
+					where: {
+						host: Not(IsNull()),
+						oldEmoji: false,
+					},
+					order: {
+						name: "ASC",
+					},
+					cache: {
+						id: "meta_all_emojis",
+						milliseconds: 3600000, // 1 hour
+					},
+				})
+			).filter(
+				(x) =>
+					!emojiNames.includes(x.name) &&
+					!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
+						x.host ?? "",
+					) &&
+					(x.name?.length ?? 0) < 100 &&
+					(x.host?.length ?? 0) < 50 &&
+					fromStoredCopyPermission(x.copyPermission) !== "deny",
+			);
 
-        return {
-                emojiUpdatedAt: await emojiUpdatedAtPromise,
-                emojis: packedLocal,
-                ...(packedRemote
-			? {
-					emojiFetchDate: new Date(),
-					remoteEmojiMode: remoteEmojiMode,
-					remoteEmojiCount: packedRemote.length,
-					allEmojis: packedRemote,
-			  }
-			: {}),
-	};
+			remoteEmojiMode = "all";
+		}
+
+		const packedLocal = await Emojis.packMany(emojis);
+		/** リモート絵文字は n(name), h(host), s(sensitive, true のときのみ) の最小形で返す */
+		const packedRemote =
+			remoteEmojiMode && remoteEmojis && me
+				? remoteEmojis.map((e) => ({
+						n: e.name,
+						h: e.host ?? null,
+						...(e.sensitive ? { s: true as const } : {}),
+				  }))
+				: undefined;
+
+		return {
+			emojiUpdatedAt: await emojiUpdatedAtPromise,
+			emojis: packedLocal,
+			...(packedRemote
+				? {
+						emojiFetchDate: new Date(),
+						remoteEmojiMode: remoteEmojiMode,
+						remoteEmojiCount: packedRemote.length,
+						allEmojis: packedRemote,
+				  }
+				: {}),
+		};
+	});
 });

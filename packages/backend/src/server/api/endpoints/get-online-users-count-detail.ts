@@ -7,7 +7,8 @@ import {
 	SEC,
 	DAY,
 } from "@/const.js";
-import { Users } from "@/models/index.js";
+import { getStatsDataSource } from "@/db/postgre.js";
+import { User } from "@/models/entities/user.js";
 import define from "../define.js";
 
 export const meta = {
@@ -24,21 +25,22 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async () => {
-	const onlineCount = await Users.countBy({
+	const UsersRepo = getStatsDataSource().getRepository(User);
+	const onlineCount = await UsersRepo.countBy({
 		host: IsNull(),
 		lastActiveDate: MoreThan(new Date(Date.now() - USER_HALFONLINE_THRESHOLD)),
 		isBot: false,
 		isDeleted: false,
 	});
 	const activeCount =
-		(await Users.countBy({
+		(await UsersRepo.countBy({
 			host: IsNull(),
 			lastActiveDate: MoreThan(new Date(Date.now() - USER_ACTIVE2_THRESHOLD)),
 			isBot: false,
 			isDeleted: false,
 		})) - onlineCount;
 	const offlineCount =
-		(await Users.countBy({
+		(await UsersRepo.countBy({
 			host: IsNull(),
 			lastActiveDate: MoreThan(new Date(Date.now() - USER_HALFSLEEP_THRESHOLD)),
 			isBot: false,
@@ -46,7 +48,7 @@ export default define(meta, paramDef, async () => {
 		})) -
 		onlineCount -
 		activeCount;
-	const sleepCount = await Users.countBy({
+	const sleepCount = await UsersRepo.countBy({
 		host: IsNull(),
 		lastActiveDate: LessThan(new Date(Date.now() - USER_HALFSLEEP_THRESHOLD)),
 		isBot: false,

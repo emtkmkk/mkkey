@@ -16,6 +16,20 @@ export type Source = {
 		pass: string;
 		disableCache?: boolean;
 		extra?: { [x: string]: string };
+		/** 集計系API専用ロールのユーザ名。指定時は専用接続プールを使用し、通常APIへの影響を軽減する。 */
+		statsUser?: string;
+		/** 集計系API専用ロールのパスワード（statsUser 指定時必須）。 */
+		statsPass?: string;
+		/** 集計用接続プールの最大接続数（デフォルト: 5）。 */
+		statsPoolSize?: number;
+		/** 集計用接続の statement_timeout（ミリ秒）。未指定時は 120000（2分）。 */
+		statsStatementTimeoutMs?: number;
+		/** 集計用接続の work_mem（例: '1MB'）。未指定時はサーバー既定値。 */
+		statsWorkMem?: string;
+		/** 集計用接続の temp_file_limit（例: '100MB'）。未指定時はサーバー既定値。 */
+		statsTempFileLimit?: string;
+		/** 集計用接続の max_parallel_workers_per_gather（0 で並列無効）。未指定時はサーバー既定値。 */
+		statsMaxParallelWorkersPerGather?: number;
 	};
 	redis: {
 		host: string;

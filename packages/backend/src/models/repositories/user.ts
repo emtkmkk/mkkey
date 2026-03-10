@@ -59,6 +59,7 @@ import type { Instance } from "../entities/instance.js";
 import type { UserProfile } from "../entities/user-profile.js";
 import type { Note } from "../entities/note.js";
 import type { UserNotePining } from "../entities/user-note-pining.js";
+import type { DriveFile } from "../entities/drive-file.js";
 import { resolveUser } from "@/remote/resolve-user.js";
 import { redisClient } from "@/db/redis.js";
 
@@ -727,6 +728,8 @@ export const UserRepository = db.getRepository(User).extend({
                         pinnedNotesPacked?: Packed<"Note">[];
                         /** packMany 用: 一括 pack した pinnedPage。渡されていれば Pages.pack をスキップ */
                         pinnedPagePacked?: Packed<"Page"> | null;
+                        /** まとめ読み用: avatar/banner の DriveFile を id → 実体で渡す。渡されていれば DriveFiles.findOneBy をスキップ */
+                        driveFileMap?: Map<DriveFile["id"], DriveFile>;
                 },
         ): Promise<IsMeAndIsUserDetailed<ExpectsMe, D>> {
                 const opts = Object.assign(
@@ -743,10 +746,19 @@ export const UserRepository = db.getRepository(User).extend({
 		if (typeof src === "object") {
 			user = src;
 			if (src.avatar === undefined && src.avatarId)
-				src.avatar = (await DriveFiles.findOneBy({ id: src.avatarId })) ?? null;
+				src.avatar =
+					hints?.driveFileMap?.get(src.avatarId) ??
+					(await DriveFiles.findOneBy({ id: src.avatarId })) ??
+					null;
 			if (src.banner === undefined && src.bannerId)
-				src.banner = (await DriveFiles.findOneBy({ id: src.bannerId })) ?? null;
-		} else if (hints?.user != null) {
+				src.banner =
+					hints?.driveFileMap?.get(src.bannerId) ??
+					(await DriveFiles.findOneBy({ id: src.bannerId })) ??
+					null;
+		} else if (
+			hints?.user != null &&
+			(typeof src !== "string" || hints.user.id === src)
+		) {
 			user = hints.user;
 		} else {
 			user = await this.findOneOrFail({

@@ -202,11 +202,33 @@ const getContact = async (
 			: [],
 	};
 
-	const [profile] = await Promise.all([
+	const fileIds = [user.avatarId, user.bannerId].filter(
+		(id): id is string => id != null,
+	);
+	const [profile, driveFiles] = await Promise.all([
 		UserProfiles.findOne({ where: { userId: user.id } }),
-		loadDriveFiles(contact, "avatar", user.avatarId),
-		loadDriveFiles(contact, "header", user.bannerId),
+		fileIds.length > 0
+			? DriveFiles.findBy({ id: In(fileIds) })
+			: Promise.resolve([]),
 	]);
+
+	const driveFileMap = new Map(
+		(driveFiles ?? []).map((f) => [f.id, f] as const),
+	);
+	if (user.avatarId) {
+		const file = driveFileMap.get(user.avatarId);
+		if (file) {
+			contact.avatar = file.webpublicUrl ?? file.url;
+			contact.avatar_static = contact.avatar;
+		}
+	}
+	if (user.bannerId) {
+		const file = driveFileMap.get(user.bannerId);
+		if (file) {
+			contact.header = file.webpublicUrl ?? file.url;
+			contact.header_static = contact.header;
+		}
+	}
 
 	if (!profile) {
 		return contact;
@@ -224,20 +246,6 @@ const getContact = async (
 	};
 
 	return contact;
-};
-
-const loadDriveFiles = async (
-	contact: any,
-	key: string,
-	fileId: string | null,
-) => {
-	if (fileId) {
-		const file = await DriveFiles.findOneBy({ id: fileId });
-		if (file) {
-			contact[key] = file.webpublicUrl ?? file.url;
-			contact[`${key}_static`] = contact[key];
-		}
-	}
 };
 
 const markup = (text: string): string => toHtml(mfm.parse(text)) ?? "";

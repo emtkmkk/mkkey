@@ -51,6 +51,17 @@ db:
   #extra:
   #  ssl: true
 
+  # 集計系API専用DBロール＋専用接続プール（users/stats 等の負荷を通常APIから分離）
+  # 指定時は集計用の別ロールで接続し、プールサイズ・statement_timeout を制限する。
+  #statsUser: calckey_stats
+  #statsPass: stats-role-password
+  #statsPoolSize: 5
+  #statsStatementTimeoutMs: 120000
+  # 接続時のセッション変数（集計用ロールのリソース制限）
+  #statsWorkMem: 1MB
+  #statsTempFileLimit: 100MB
+  #statsMaxParallelWorkersPerGather: 0
+
 #   ┌─────────────────────┐
 #───┘ Redis configuration └─────────────────────────────────────
 

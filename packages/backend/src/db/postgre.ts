@@ -200,6 +200,81 @@ export const entities = [
 
 const log = process.env.NODE_ENV !== "production";
 
+/** 集計系API用の接続プールが有効かどうか（config.db.statsUser が設定されているか）。 */
+export const isStatsPoolEnabled = Boolean(
+	config.db.statsUser != null && config.db.statsUser !== "",
+);
+
+const statsPoolSize = Math.max(1, config.db.statsPoolSize ?? 5);
+const statsStatementTimeoutMs = config.db.statsStatementTimeoutMs ?? 120000;
+
+/** 集計用接続に渡す PostgreSQL の -c オプション（work_mem, temp_file_limit, max_parallel_workers_per_gather）。 */
+function buildStatsConnectionOptions(): string | undefined {
+	const parts: string[] = [];
+	if (
+		config.db.statsWorkMem != null &&
+		String(config.db.statsWorkMem).trim() !== ""
+	) {
+		parts.push(`-c work_mem=${String(config.db.statsWorkMem).trim()}`);
+	}
+	if (
+		config.db.statsTempFileLimit != null &&
+		String(config.db.statsTempFileLimit).trim() !== ""
+	) {
+		parts.push(
+			`-c temp_file_limit=${String(config.db.statsTempFileLimit).trim()}`,
+		);
+	}
+	if (config.db.statsMaxParallelWorkersPerGather != null) {
+		parts.push(
+			`-c max_parallel_workers_per_gather=${Number(config.db.statsMaxParallelWorkersPerGather)}`,
+		);
+	}
+	return parts.length > 0 ? parts.join(" ") : undefined;
+}
+
+const statsConnectionOptions = buildStatsConnectionOptions();
+
+/**
+ * 集計系API用 DataSource。
+ * config.db.statsUser が設定されている場合のみ生成され、initDb で初期化される。
+ * 未設定の場合は null。利用側は getStatsDataSource() を使うこと。
+ */
+export const dbStats: DataSource | null = isStatsPoolEnabled
+	? new DataSource({
+			type: "postgres",
+			host: config.db.host,
+			port: config.db.port,
+			username: config.db.statsUser,
+			password: config.db.statsPass ?? "",
+			database: config.db.db,
+			extra: {
+				statement_timeout: statsStatementTimeoutMs,
+				max: statsPoolSize,
+				...(statsConnectionOptions != null
+					? { options: statsConnectionOptions }
+					: {}),
+				...config.db.extra,
+			},
+			synchronize: false,
+			dropSchema: false,
+			cache: false,
+			logging: log,
+			logger: log ? new MyCustomLogger() : undefined,
+			maxQueryExecutionTime: Math.min(25000, statsStatementTimeoutMs),
+			entities: entities,
+			migrations: [],
+		})
+	: null;
+
+/**
+ * 集計系API用の DataSource を返す。
+ * 専用プールが有効な場合は dbStats、そうでない場合はメインの db を返す。
+ */
+export function getStatsDataSource(): DataSource {
+	return dbStats ?? db;
+}
+
 export const db = new DataSource({
 	type: "postgres",
 	host: config.db.host,
@@ -235,10 +310,16 @@ export const db = new DataSource({
 
 export async function initDb(force = false) {
 	if (force) {
+		if (dbStats?.isInitialized) {
+			await dbStats.destroy();
+		}
 		if (db.isInitialized) {
 			await db.destroy();
 		}
 		await db.initialize();
+		if (dbStats) {
+			await dbStats.initialize();
+		}
 		return;
 	}
 
@@ -246,6 +327,9 @@ export async function initDb(force = false) {
 		// nop
 	} else {
 		await db.initialize();
+	}
+	if (dbStats != null && !dbStats.isInitialized) {
+		await dbStats.initialize();
 	}
 }
 

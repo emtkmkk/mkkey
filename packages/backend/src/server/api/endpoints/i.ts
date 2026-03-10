@@ -78,10 +78,15 @@ export default define(meta, paramDef, async (ps, user, token) => {
 	}
 
 	if (base == null) {
+		// まとめ読み: Me を avatar/banner 付きで 1 回取得し hint で渡して drive_file の個別参照を避ける
+		const meWithRelations = await Users.findOne({
+			where: { id: userId },
+			relations: { avatar: true, banner: true },
+		});
 		const me = (await Users.pack<true, true>(userId, user, {
 			detail: true,
 			includeSecrets: isSecure,
-		})) as unknown as Record<string, unknown>;
+		}, meWithRelations != null ? { user: meWithRelations } : undefined)) as unknown as Record<string, unknown>;
 		base = createMeDetailedBase(me);
 
 		await redisClient.set(

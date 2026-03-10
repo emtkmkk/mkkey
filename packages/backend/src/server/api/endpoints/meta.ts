@@ -3,6 +3,7 @@
  *
  * @remarks
  * 絵文字一覧は usageVisibility とモチーフでフィルタする。未認証は public/limited のみ。認証時はフォロー1クエリ＋メモリフィルタでモチーフ条件を適用。
+ * クライアント起動時に呼ばれるため、応答遅延を避けるようメインの DB 接続（通常ロール）を使用する。
  */
 import { IsNull, MoreThan, Not } from "typeorm";
 import config from "@/config/index.js";
@@ -428,7 +429,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	let noEmoji = false;
 
 	if (Object.keys(ps ?? {})?.filter((x) => x !== "i").length === 0 && me) {
-		const item = RegistryItems.createQueryBuilder("item")
+		const item = await RegistryItems.createQueryBuilder("item")
 			.where("item.domain IS NULL")
 			.andWhere("item.userId = :userId", { userId: me.id })
 			.andWhere("item.key = 'externalOutputAllEmojis'")
@@ -585,9 +586,20 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (ps.detail) {
 		if (!instance.privateMode || me) {
-			const proxyAccount = instance.proxyAccountId
-				? await Users.pack(instance.proxyAccountId).catch(() => null)
-				: null;
+			// まとめ読み: proxy ユーザーを avatar/banner 付きで 1 回取得し hint で渡して drive_file の個別参照を避ける
+			const proxyUser =
+				instance.proxyAccountId != null
+					? await Users.findOne({
+							where: { id: instance.proxyAccountId },
+							relations: { avatar: true, banner: true },
+						})
+					: null;
+			const proxyAccount =
+				proxyUser != null
+					? await Users.pack(instance.proxyAccountId!, null, {}, {
+							user: proxyUser,
+						}).catch(() => null)
+					: null;
 			response.proxyAccountName = proxyAccount ? proxyAccount.username : null;
 		}
 

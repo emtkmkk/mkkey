@@ -1,8 +1,8 @@
 import { Brackets } from "typeorm";
 import define from "../../define.js";
+import { getStatsDataSource } from "@/db/postgre.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Notes } from "@/models/index.js";
-import type { Note } from "@/models/entities/note.js";
+import { Note } from "@/models/entities/note.js";
 import { safeForSql } from "@/misc/safe-for-sql.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 
@@ -73,7 +73,8 @@ export default define(meta, paramDef, async () => {
 	const now = new Date(); // 5分単位で丸めた現在日時
 	now.setMinutes(Math.round(now.getMinutes() / 5) * 5, 0, 0);
 
-	const tagNotes = await Notes.createQueryBuilder("note")
+	const NotesRepo = getStatsDataSource().getRepository(Note);
+	const tagNotes = await NotesRepo.createQueryBuilder("note")
 		.where("note.createdAt > :date", { date: new Date(now.getTime() - rangeA) })
 		.andWhere(
 			new Brackets((qb) => {
@@ -132,7 +133,7 @@ export default define(meta, paramDef, async () => {
 		countPromises.push(
 			Promise.all(
 				hots.map((tag) =>
-					Notes.createQueryBuilder("note")
+					NotesRepo.createQueryBuilder("note")
 						.select("count(distinct note.userId)")
 						.where(
 							`'{"${safeForSql(tag) ? tag : "aichan_kawaii"}"}' <@ note.tags`,
@@ -156,7 +157,7 @@ export default define(meta, paramDef, async () => {
 
 	const totalCounts = await Promise.all(
 		hots.map((tag) =>
-			Notes.createQueryBuilder("note")
+			NotesRepo.createQueryBuilder("note")
 				.select("count(distinct note.userId)")
 				.where(`'{"${safeForSql(tag) ? tag : "aichan_kawaii"}"}' <@ note.tags`)
 				.andWhere("note.createdAt > :gt", {

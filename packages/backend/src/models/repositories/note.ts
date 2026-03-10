@@ -512,8 +512,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 		}
 
 		const noteUser =
-			note.user ??
 			hint.userMap?.get(note.userId) ??
+			note.user ??
 			await Users.findOneByOrFail({ id: note.userId });
 
 		if (opts.blockCheck && meId) {

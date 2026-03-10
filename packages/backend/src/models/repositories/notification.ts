@@ -26,6 +26,8 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 				myReactions: Map<Note["id"], NoteReaction | null>;
 			};
 			_followBlockingMap_?: Map<User["id"], Set<User["id"]>>;
+			/** まとめ読み用: notifier の User（avatar/banner 付き）を id → 実体で渡す。渡すと drive_file の個別参照を避ける */
+			_notifierUserMap_?: Map<User["id"], User>;
 		} = {},
 	): Promise<Packed<"Notification">> {
 		const notification =
@@ -66,9 +68,12 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			userId: notification.notifierId,
 			customBody: notification.customBody || undefined,
 			user: notification.notifierId
-				? Users.pack(notification.notifier || notification.notifierId, {
-						id: notification.notifieeId,
-				  })
+				? Users.pack(
+						options._notifierUserMap_?.get(notification.notifierId) ??
+								notification.notifier ??
+								notification.notifierId,
+						{ id: notification.notifieeId },
+				  )
 				: null,
 			...(notification.type === "mention"
 				? {
@@ -189,6 +194,25 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 	async packMany(notifications: Notification[], meId: User["id"]) {
 		if (notifications.length === 0) return [];
 
+		const notifierIds = [
+			...new Set(
+				notifications
+					.map((x) => x.notifierId)
+					.filter((id): id is User["id"] => id != null),
+			),
+		];
+		const notifierUserMap =
+			notifierIds.length > 0
+				? new Map(
+						(
+								await Users.find({
+										where: { id: In(notifierIds) },
+										relations: { avatar: true, banner: true },
+								})
+						).map((u) => [u.id, u] as const),
+				  )
+				: undefined;
+
 		const notes = notifications
 			.filter((x) => x.note != null)
 			.map((x) => x.note!);
@@ -265,6 +289,7 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 						followBlockingMap.size > 0
 							? followBlockingMap
 							: undefined,
+					_notifierUserMap_: notifierUserMap,
 				}).catch((e) => null),
 			),
 		);

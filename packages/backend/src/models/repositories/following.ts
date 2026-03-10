@@ -59,10 +59,14 @@ export const FollowingRepository = db.getRepository(Following).extend({
                         followee?: {
                                 relation?: UserRelation | null;
                                 memo?: Awaited<ReturnType<typeof UserMemos.findOneBy>> | null;
+                                /** まとめ読み用: 一括取得した User（avatar/banner 付き）。渡すと DriveFiles.findOneBy をスキップ */
+                                user?: User | null;
                         };
                         follower?: {
                                 relation?: UserRelation | null;
                                 memo?: Awaited<ReturnType<typeof UserMemos.findOneBy>> | null;
+                                /** まとめ読み用: 一括取得した User（avatar/banner 付き）。渡すと DriveFiles.findOneBy をスキップ */
+                                user?: User | null;
                         };
                 },
         ): Promise<Packed<"Following">> {
@@ -77,14 +81,24 @@ export const FollowingRepository = db.getRepository(Following).extend({
                         followeeId: following.followeeId,
                         followerId: following.followerId,
                         followee: opts.populateFollowee
-                                ? Users.pack(following.followee || following.followeeId, me, {
-                                                detail: true,
-                                  }, hints?.followee)
+                                ? Users.pack(
+                                          hints?.followee?.user ??
+                                                  following.followee ??
+                                                  following.followeeId,
+                                          me,
+                                          { detail: true },
+                                          hints?.followee,
+                                  )
                                 : undefined,
                         follower: opts.populateFollower
-                                ? Users.pack(following.follower || following.followerId, me, {
-                                                detail: true,
-                                  }, hints?.follower)
+                                ? Users.pack(
+                                          hints?.follower?.user ??
+                                                  following.follower ??
+                                                  following.followerId,
+                                          me,
+                                          { detail: true },
+                                          hints?.follower,
+                                  )
                                 : undefined,
                 });
         },
@@ -148,20 +162,30 @@ export const FollowingRepository = db.getRepository(Following).extend({
                                   Awaited<ReturnType<typeof UserMemos.findOneBy>>
                           >
                         | null = null;
+                let userMap: Map<User["id"], User> | null = null;
 
-                if (meId && ids.size > 0) {
+                if (ids.size > 0) {
                         const targetIds = Array.from(ids);
 
-                        relationsMap = await Users.getRelationsBulk(meId, targetIds);
+                        if (meId) {
+                                relationsMap = await Users.getRelationsBulk(meId, targetIds);
 
-                        memoMap = new Map(
-                                (
-                                        await UserMemos.findBy({
-                                                userId: meId,
-                                                targetUserId: In(targetIds),
-                                        })
-                                ).map((row) => [row.targetUserId, row]),
-                        );
+                                memoMap = new Map(
+                                        (
+                                                await UserMemos.findBy({
+                                                        userId: meId,
+                                                        targetUserId: In(targetIds),
+                                                })
+                                        ).map((row) => [row.targetUserId, row]),
+                                );
+                        }
+
+                        // まとめ読み: 全ユーザーを avatar/banner 付きで 1 回取得し hint で渡して drive_file の個別参照を避ける
+                        const users = await Users.find({
+                                where: { id: In(targetIds) },
+                                relations: { avatar: true, banner: true },
+                        });
+                        userMap = new Map(users.map((u) => [u.id, u]));
                 }
 
                 const createUserHints = (
@@ -170,6 +194,7 @@ export const FollowingRepository = db.getRepository(Following).extend({
                         | {
                                   relation?: UserRelation | null;
                                   memo?: Awaited<ReturnType<typeof UserMemos.findOneBy>> | null;
+                                  user?: User | null;
                           }
                         | undefined => {
                         if (!id) return undefined;
@@ -178,6 +203,7 @@ export const FollowingRepository = db.getRepository(Following).extend({
                                 | {
                                           relation?: UserRelation | null;
                                           memo?: Awaited<ReturnType<typeof UserMemos.findOneBy>> | null;
+                                          user?: User | null;
                                   }
                                 | undefined;
 
@@ -191,6 +217,11 @@ export const FollowingRepository = db.getRepository(Following).extend({
                                 hints.memo = memoMap.has(id)
                                         ? memoMap.get(id) ?? null
                                         : null;
+                        }
+
+                        if (userMap?.has(id)) {
+                                hints = hints ?? {};
+                                hints.user = userMap.get(id) ?? null;
                         }
 
                         return hints;

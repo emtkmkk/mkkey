@@ -1,4 +1,6 @@
+import { getStatsDataSource } from "@/db/postgre.js";
 import { NoteReactions, Users } from "@/models/index.js";
+import { NoteReaction } from "@/models/entities/note-reaction.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -165,8 +167,10 @@ export default define(meta, paramDef, async (ps, me) => {
 	borderDate.setSeconds(0);
 	borderDate.setMilliseconds(0);
 
+	const NoteReactionsRepo = getStatsDataSource().getRepository(NoteReaction);
+
 	const result = await awaitAll({
-		sentReactions: NoteReactions.createQueryBuilder("reaction")
+		sentReactions: NoteReactionsRepo.createQueryBuilder("reaction")
 			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
 			.where(`(reaction.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
 				userId: user.id,
@@ -180,7 +184,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.cache(CACHE_TIME)
 			.getRawMany(),
 		sentReactionsCount: (
-			await NoteReactions.createQueryBuilder("reaction")
+			await NoteReactionsRepo.createQueryBuilder("reaction")
 				.select("reaction.reaction")
 				.where(`(reaction.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
 					userId: user.id,
@@ -190,7 +194,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				.cache(CACHE_TIME)
 				.getRawMany()
 		).length,
-		receivedReactions: NoteReactions.createQueryBuilder("reaction")
+		receivedReactions: NoteReactionsRepo.createQueryBuilder("reaction")
 			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
 			.innerJoin("reaction.note", "note")
 			.where(`(note.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
@@ -205,7 +209,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.cache(CACHE_TIME)
 			.getRawMany(),
 		receivedReactionsCount: (
-			await NoteReactions.createQueryBuilder("reaction")
+			await NoteReactionsRepo.createQueryBuilder("reaction")
 				.select("reaction.reaction")
 				.innerJoin("reaction.note", "note")
 				.where(`(note.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
@@ -216,7 +220,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				.cache(CACHE_TIME)
 				.getRawMany()
 		).length,
-		recentlySentReactions: NoteReactions.createQueryBuilder("reaction")
+		recentlySentReactions: NoteReactionsRepo.createQueryBuilder("reaction")
 			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
 			.where(`(reaction.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {
 				userId: user.id,
@@ -232,7 +236,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			.orderBy("count", "DESC")
 			.cache(CACHE_TIME)
 			.getRawMany(),
-		recentlyReceivedReactions: NoteReactions.createQueryBuilder("reaction")
+		recentlyReceivedReactions: NoteReactionsRepo.createQueryBuilder("reaction")
 			.select(["reaction.reaction AS name", "COUNT(*) AS count"])
 			.innerJoin("reaction.note", "note")
 			.where(`(note.userId = :userId${!user.id ? " OR TRUE)" : ")"}`, {

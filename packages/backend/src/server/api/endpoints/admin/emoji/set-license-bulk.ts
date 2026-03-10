@@ -134,7 +134,7 @@ export default define(meta, paramDef, async (ps) => {
 			update.creator = null;
 		} else {
 			update.copyPermission = toStoredCopyPermission(ps.copyPermission ?? emoji.copyPermission);
-			update.licenseName = ps.licenseName ?? emoji.licenseName;
+			update.licenseName = ps.licenseName !== undefined ? ps.licenseName : emoji.licenseName;
 			update.creator = ps.creator ?? emoji.creator;
 		}
 		if (ps.usageVisibility !== undefined) update.usageVisibility = ps.usageVisibility;

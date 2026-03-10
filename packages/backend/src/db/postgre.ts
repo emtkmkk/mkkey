@@ -240,6 +240,16 @@ const statsConnectionOptions = buildStatsConnectionOptions();
  * config.db.statsUser が設定されている場合のみ生成され、initDb で初期化される。
  * 未設定の場合は null。利用側は getStatsDataSource() を使うこと。
  */
+/** extra から user/password を除いたもの。stats 接続でメインDBの認証情報が上書きされないようにする。 */
+const statsExtraFromConfig = (() => {
+	const extra = config.db.extra ?? {};
+	const { user: _u, password: _p, ...rest } = extra as Record<
+		string,
+		unknown
+	> & { user?: string; password?: string };
+	return rest;
+})();
+
 export const dbStats: DataSource | null = isStatsPoolEnabled
 	? new DataSource({
 			type: "postgres",
@@ -254,7 +264,7 @@ export const dbStats: DataSource | null = isStatsPoolEnabled
 				...(statsConnectionOptions != null
 					? { options: statsConnectionOptions }
 					: {}),
-				...config.db.extra,
+				...statsExtraFromConfig,
 			},
 			synchronize: false,
 			dropSchema: false,

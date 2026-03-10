@@ -33,12 +33,11 @@
 <script lang="ts" setup>
 import { defineAsyncComponent, computed, watch } from "vue";
 import calcAge from "s-age";
-import * as Acct from "calckey-js/built/acct";
 import type * as misskey from "calckey-js";
 import { getScrollPosition } from "@/scripts/scroll";
 import number from "@/filters/number";
 import { userPage, acct as getAcct } from "@/filters/user";
-import * as os from "@/os";
+import { resolveUserFromAcct } from "@/scripts/resolve-user-from-acct";
 import { useRouter } from "@/router";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
@@ -76,7 +75,7 @@ function userSearch() {
 function fetchUser(): void {
 	if (props.acct == null) return;
 	user = null;
-	os.api("users/show", Acct.parse(props.acct))
+	resolveUserFromAcct(props.acct)
 		.then((u) => {
 			user = u;
 		})

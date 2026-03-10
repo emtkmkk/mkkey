@@ -24,10 +24,9 @@ import {
 	onUnmounted,
 	watch,
 } from "vue";
-import * as Acct from "calckey-js/built/acct";
 import * as misskey from "calckey-js";
 import XFollowList from "./follow-list.vue";
-import * as os from "@/os";
+import { resolveUserFromAcct } from "@/scripts/resolve-user-from-acct";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
 
@@ -44,7 +43,7 @@ let error = $ref(null);
 function fetchUser(): void {
 	if (props.acct == null) return;
 	user = null;
-	os.api("users/show", Acct.parse(props.acct))
+	resolveUserFromAcct(props.acct)
 		.then((u) => {
 			user = u;
 		})

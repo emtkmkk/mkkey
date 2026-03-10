@@ -120,20 +120,28 @@ export default define(meta, paramDef, async (ps, me) => {
 			detail: true,
 		});
 	}
-		// Lookup user
-		if (typeof ps.host === "string" && typeof ps.username === "string") {
-			user = await resolveUser(ps.username, ps.host).catch((e) => {
-				apiLogger.warn(`failed to resolve remote user: ${e}`);
-				throw new ApiError(meta.errors.failedToResolveRemoteUser);
-			});
-		} else {
-			const q: FindOptionsWhere<User> =
-				ps.userId != null
-					? { id: ps.userId }
-					: { usernameLower: ps.username?.toLowerCase(), host: IsNull() };
+	// Lookup user
+	if (typeof ps.username === "string") {
+		if (typeof ps.host === "string") {
+			const usernameLower = ps.username.toLowerCase();
+			user = await Users.findOneBy({ usernameLower, host: ps.host });
 
-			user = await Users.findOneBy(q);
+			if (user == null) {
+				user = await resolveUser(ps.username, ps.host).catch((e) => {
+					apiLogger.warn(`failed to resolve remote user: ${e}`);
+					throw new ApiError(meta.errors.failedToResolveRemoteUser);
+				});
+			}
+		} else {
+			user = await Users.findOneBy({
+				usernameLower: ps.username.toLowerCase(),
+				host: IsNull(),
+			});
 		}
+	} else {
+		const q: FindOptionsWhere<User> = { id: ps.userId };
+		user = await Users.findOneBy(q);
+	}
 
 		if (
 			user == null ||

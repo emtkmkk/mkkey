@@ -15,7 +15,7 @@ import { createFollowingExistsCondition } from "../../common/following-exists-co
 export const meta = {
 	tags: ["notes"],
 
-	requireCredential: false,
+	requireCredential: true,
 	requireCredentialPrivateMode: true,
 
 	res: {

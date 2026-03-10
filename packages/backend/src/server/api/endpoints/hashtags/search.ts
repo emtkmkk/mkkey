@@ -4,7 +4,7 @@ import { Hashtags } from "@/models/index.js";
 export const meta = {
 	tags: ["hashtags"],
 
-	requireCredential: false,
+	requireCredential: true,
 	requireCredentialPrivateMode: true,
 
 	res: {

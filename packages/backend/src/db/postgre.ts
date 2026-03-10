@@ -316,9 +316,17 @@ export async function initDb(force = false) {
 		if (db.isInitialized) {
 			await db.destroy();
 		}
+		dbLogger.info("Initializing main DB connection...");
 		await db.initialize();
+		dbLogger.info("Main DB connection established.");
 		if (dbStats) {
+			dbLogger.info("Initializing stats pool...", {
+				statsUser: config.db.statsUser,
+				statsPassDefined: config.db.statsPass != null,
+				statsPassLength: config.db.statsPass?.length ?? 0,
+			});
 			await dbStats.initialize();
+			dbLogger.info("Stats pool connection established.");
 		}
 		return;
 	}
@@ -326,10 +334,18 @@ export async function initDb(force = false) {
 	if (db.isInitialized) {
 		// nop
 	} else {
+		dbLogger.info("Initializing main DB connection...");
 		await db.initialize();
+		dbLogger.info("Main DB connection established.");
 	}
 	if (dbStats != null && !dbStats.isInitialized) {
+		dbLogger.info("Initializing stats pool...", {
+			statsUser: config.db.statsUser,
+			statsPassDefined: config.db.statsPass != null,
+			statsPassLength: config.db.statsPass?.length ?? 0,
+		});
 		await dbStats.initialize();
+		dbLogger.info("Stats pool connection established.");
 	}
 }
 

@@ -29,7 +29,7 @@ const themeColor = chalk.hex("#31748f");
 
 function greet() {
 	if (!envOption.quiet) {
-		//#region Calckey logo
+		//#region Cluckey logo
 		const v = `v${meta.version}`;
 		/*
 		console.log(themeColor("   ___      _      _              "));
@@ -41,18 +41,7 @@ function greet() {
 		*/
 		//#endregion
 
-		console.log(
-			" Calckey is an open-source decentralized microblogging platform.",
-		);
-		console.log(
-			chalk.rgb(
-				255,
-				136,
-				0,
-			)(
-				" If you like Calckey, please consider starring or contributing to the repo. https://codeberg.org/calckey/calckey",
-			),
-		);
+		console.log(" Cluckeyは、オープンソース分散型マイクロブログプラットフォームです。");
 
 		console.log("");
 		console.log(
@@ -60,9 +49,9 @@ function greet() {
 		);
 	}
 
-	bootLogger.info("Welcome to Calckey!");
+	bootLogger.info("Welcome to Cluckey!");
 	bootLogger.info(
-		`Calckey v${meta.version}+${process.env.COMMIT_HASH}`,
+		`Cluckey v${meta.version}+${process.env.COMMIT_HASH}`,
 		null,
 		true,
 	);

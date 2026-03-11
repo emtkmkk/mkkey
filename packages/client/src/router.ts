@@ -367,6 +367,10 @@ export const routes = [
 		component: page(() => import("./pages/about-calckey.vue")),
 	},
 	{
+		path: "/about-cluckey",
+		component: page(() => import("./pages/about-calckey.vue")),
+	},
+	{
 		path: "/theme-editor",
 		component: page(() => import("./pages/theme-editor.vue")),
 		loginRequired: true,

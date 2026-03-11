@@ -176,7 +176,6 @@ const defaultStoreSaveKeys: (keyof (typeof defaultStore)["state"])[] = [
 	"openEmojiPicker",
 	"notCloseEmojiPicker",
 	"smartMFMInputer",
-	"showUpdates",
 	"swipeOnDesktop",
 	"showAdminUpdates",
 	"enableCustomKaTeXMacro",

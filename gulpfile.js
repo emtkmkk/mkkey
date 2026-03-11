@@ -3,14 +3,34 @@
  */
 
 const fs = require('fs');
+const { execSync } = require('child_process');
 const gulp = require('gulp');
 const replace = require('gulp-replace');
 const terser = require('gulp-terser');
 const cssnano = require('gulp-cssnano');
 
 const locales = require('./locales');
-const meta = require('./package.json');
-const version = `${meta.version}+${process.env.COMMIT_HASH}`
+
+const buildVersion = () => {
+	let date;
+	try {
+		const out = execSync(
+			"git log -1 --format=%cd --date=format:'%Y.%m.%d'",
+			{ encoding: "utf8" },
+		).trim();
+		date = out || "";
+	} catch {
+		const now = new Date();
+		const y = now.getFullYear();
+		const m = now.getMonth() + 1;
+		const d = now.getDate();
+		date = `${y}.${m}.${d}`;
+	}
+	const hash = (process.env.COMMIT_HASH || 'dev').slice(0, 6);
+	return `${date}+${hash}`;
+};
+
+const version = buildVersion();
 
 gulp.task('copy:backend:views', () =>
 	gulp.src('./packages/backend/src/server/web/views/**/*').pipe(gulp.dest('./packages/backend/built/server/web/views'))

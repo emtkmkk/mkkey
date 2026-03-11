@@ -944,11 +944,6 @@ export const defaultStore = markRaw(
 			createdAt: "2023/8/24",
 			page: "postform",
 		},
-		showUpdates: {
-			where: "device",
-			default: true,
-			page: "general",
-		},
 		showMiniUpdates: {
 			where: "device",
 			default: false,

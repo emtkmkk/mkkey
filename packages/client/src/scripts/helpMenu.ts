@@ -46,7 +46,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 				type: "link",
 				text: i18n.ts.aboutMisskey,
 				icon: "ph-lightbulb ph-bold ph-lg",
-				to: "/about-calckey",
+				to: "/about-cluckey",
 			} as MenuLink,
 			$i && !$i.isSilenced && $i.canInvite && $i.canInvite
 				? ({

@@ -1,9 +1,28 @@
 const webpack = require("webpack");
 const path = require("path");
+const { execSync } = require("child_process");
 const locales = require("../../locales");
-const meta = require("../../package.json");
 
 const isProduction = process.env.NODE_ENV === "production";
+
+const buildVersion = () => {
+	let date;
+	try {
+		const out = execSync(
+			"git log -1 --format=%cd --date=format:'%Y.%m.%d'",
+			{ encoding: "utf8" },
+		).trim();
+		date = out || "";
+	} catch {
+		const now = new Date();
+		const y = now.getFullYear();
+		const m = now.getMonth() + 1;
+		const d = now.getDate();
+		date = `${y}.${m}.${d}`;
+	}
+	const hash = (process.env.COMMIT_HASH || "dev").slice(0, 6);
+	return `${date}+${hash}`;
+};
 
 module.exports = {
 	mode: isProduction ? "production" : "development",
@@ -38,7 +57,7 @@ module.exports = {
 	},
 	plugins: [
 		new webpack.DefinePlugin({
-			_VERSION_: JSON.stringify(`${meta.version}+${process.env.COMMIT_HASH}`),
+			_VERSION_: JSON.stringify(buildVersion()),
 			_LANGS_: JSON.stringify(
 				Object.entries(locales).map(([k, v]) => [k, v._lang_]),
 			),

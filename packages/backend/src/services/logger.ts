@@ -30,7 +30,7 @@ export default class Logger {
 
 		if (config.syslog) {
 			this.syslogClient = new SyslogPro.RFC5424({
-				applacationName: "Calckey",
+				applacationName: "Cluckey",
 				timestamp: true,
 				encludeStructuredData: true,
 				color: true,

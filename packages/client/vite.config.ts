@@ -1,9 +1,9 @@
 import * as fs from "fs";
+import { execSync } from "node:child_process";
 import pluginVue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 
 import locales from "../../locales";
-import meta from "../../package.json";
 import pluginJson5 from "./vite.json5";
 import viteCompression from "vite-plugin-compression";
 
@@ -22,11 +22,33 @@ const extensions = [
 	".vue",
 ];
 
+const buildVersion = () => {
+	let date: string;
+	try {
+		// 最終コミット日を yyyy.m.d 形式で取得
+		const out = execSync(
+			"git log -1 --format=%cd --date=format:'%Y.%m.%d'",
+			{ encoding: "utf8" },
+		).trim();
+		date = out || "";
+	} catch {
+		// git が使えない環境ではビルド日でフォールバック
+		const now = new Date();
+		const y = now.getFullYear();
+		const m = now.getMonth() + 1;
+		const d = now.getDate();
+		date = `${y}.${m}.${d}`;
+	}
+	const hash = (process.env.COMMIT_HASH || "dev").slice(0, 6);
+	return `${date}+${hash}`;
+};
+
 export default defineConfig(({ command, mode }) => {
+	const version = buildVersion();
 	fs.mkdirSync(__dirname + "/../../built", { recursive: true });
 	fs.writeFileSync(
 		__dirname + "/../../built/meta.json",
-		JSON.stringify({ version: `${meta.version}+${process.env.COMMIT_HASH}` }),
+		JSON.stringify({ version }),
 		"utf-8",
 	);
 
@@ -53,9 +75,7 @@ export default defineConfig(({ command, mode }) => {
 		},
 
 		define: {
-			_VERSION_: process.env.COMMIT_HASH
-				? JSON.stringify(`${meta.version}+${process.env.COMMIT_HASH}`)
-				: JSON.stringify(meta.version),
+			_VERSION_: JSON.stringify(version),
 			_LANGS_: JSON.stringify(
 				Object.entries(locales).map(([k, v]) => [k, v._lang_]),
 			),

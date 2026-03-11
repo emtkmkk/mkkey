@@ -13,14 +13,14 @@ export async function getInstance(response: Entity.Instance) {
 	const totalStatuses = getLocalNotesCount();
 	return {
 		uri: response.uri,
-		title: response.title || "Calckey",
+		title: response.title || "Cluckey",
 		short_description:
 			response.description.substring(0, 50) || "See real server website",
 		description:
 			response.description ||
-			"This is a vanilla Calckey Instance. It doesnt seem to have a description. BTW you are using the Mastodon api to access this server :)",
+			"これは Cluckeyの標準的なインスタンスです。説明文はまだ設定されていません。なお、このサーバーには Mastodon API を通じてアクセスしています。",
 		email: response.email || "",
-		version: "3.0.0 compatible (3.5+ Calckey)", //I hope this version string is correct, we will need to test it.
+		version: "3.0.0 compatible (3.5+ Cluckey)", //I hope this version string is correct, we will need to test it.
 		urls: response.urls,
 		stats: {
 			user_count: await totalUsers,

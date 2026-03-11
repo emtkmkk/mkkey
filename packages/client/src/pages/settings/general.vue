@@ -11,10 +11,6 @@
 			i18n.ts.showAds
 		}}</FormSwitch>
 
-		<FormSwitch v-model="showUpdates" class="_formBlock">{{
-			i18n.ts.showUpdates
-		}}</FormSwitch>
-
 		<FormSwitch
 			v-if="developer"
 			v-model="showMiniUpdates"
@@ -99,8 +95,6 @@ const lang = ref(localStorage.getItem("lang"));
 
 const showAds = computed(defaultStore.makeGetterSetter("showAds"));
 
-const showUpdates = computed(defaultStore.makeGetterSetter("showUpdates"));
-
 const showAdminUpdates = computed(
 	defaultStore.makeGetterSetter("showAdminUpdates")
 );
@@ -130,7 +124,7 @@ watch(lang, () => {
 });
 
 watch(
-	[lang, showAds, showUpdates, showMiniUpdates, showAdminUpdates],
+	[lang, showAds, showMiniUpdates, showAdminUpdates],
 	async () => {
 		await reloadAsk();
 	}

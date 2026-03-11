@@ -70,7 +70,7 @@
 								{{ i18n.ts._aboutMisskey.mkkeysource }}
 								<template #suffix></template>
 							</FormLink>
-							<FormLink to="/about-calckey">{{
+							<FormLink to="/about-cluckey">{{
 								i18n.ts.aboutMisskey
 							}}</FormLink>
 						</FormSection>

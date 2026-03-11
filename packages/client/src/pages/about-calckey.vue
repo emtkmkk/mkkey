@@ -21,7 +21,7 @@
 							@load="iconLoaded"
 							@click="gravity"
 						/>
-						<div class="misskey">Calckey</div>
+						<div class="misskey">Cluckey</div>
 						<div class="version">v{{ version }}</div>
 						<span
 							v-for="emoji in easterEggEmojis"
@@ -64,6 +64,11 @@
 					<div class="_formBlock" style="text-align: center">
 						<MkButton primary rounded inline @click="iLoveMisskey('Mkkey')">
 							I <Mfm text="$[jelly ❤]" /> #Mkkey
+						</MkButton>
+					</div>
+					<div class="_formBlock" style="text-align: center">
+						<MkButton primary rounded inline @click="iLoveMisskey('Cluckey')">
+							I <Mfm text="$[jelly ❤]" /> #Cluckey
 						</MkButton>
 					</div>
 					<div class="_formBlock" style="text-align: center">

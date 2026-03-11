@@ -49,7 +49,7 @@ export const meta = {
 				optional: false,
 				nullable: false,
 				format: "url",
-				example: "https://calckey.example.com",
+				example: "https://cluckey.example.com",
 			},
 			description: {
 				type: "string",
@@ -75,13 +75,13 @@ export const meta = {
 				type: "string",
 				optional: false,
 				nullable: false,
-				default: "https://codeberg.org/calckey/calckey",
+				default: "https://github.com/emtkmkk/mkkey",
 			},
 			feedbackUrl: {
 				type: "string",
 				optional: false,
 				nullable: false,
-				default: "https://codeberg.org/calckey/calckey/issues",
+				default: "https://github.com/emtkmkk/mkkey/issues",
 			},
 			defaultDarkTheme: {
 				type: "string",

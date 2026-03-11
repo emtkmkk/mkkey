@@ -495,13 +495,7 @@ const versionCheck = () => {
 		const skipVersion = ["14.0.0-dev10-mkk35."];
 
 		try {
-			// 変なバージョン文字列来るとcompareVersionsでエラーになるため
-			if (
-				lastVersion != null &&
-				(defaultStore.state.showMiniUpdates ||
-					compareVersions(version, lastVersion) === 1) &&
-				defaultStore.state.showUpdates
-			) {
+			if (lastVersion != null && defaultStore.state.showMiniUpdates) {
 				// ログインしてる場合だけ
 				if ($i) {
 					popup(

@@ -1,6 +1,6 @@
 {
-	"short_name": "Calckey",
-	"name": "Calckey",
+	"short_name": "Cluckey",
+	"name": "Cluckey",
 	"description": "もこきーの基本的な動作はインストール後のアプリ(PWA)状態でテストしている為、ブラウザからではなく、インストールして使用する事をお勧めします。",
 	"start_url": "/",
 	"scope": "/",

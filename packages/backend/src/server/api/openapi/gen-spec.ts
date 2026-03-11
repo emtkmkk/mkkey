@@ -9,7 +9,7 @@ export function genOpenapiSpec() {
 
 		info: {
 			version: "v1",
-			title: "Calckey API",
+			title: "Cluckey API",
 			"x-logo": { url: "/static-assets/api-doc.png" },
 		},
 

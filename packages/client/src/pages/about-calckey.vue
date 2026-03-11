@@ -43,10 +43,6 @@
 					</div>
 					<div class="_formBlock" style="text-align: center">
 						{{ i18n.ts._aboutMisskey.about }}
-						<br />
-						<a href="https://firefish.dev/" target="_blank" class="_link">
-							{{ i18n.ts.learnMore }}
-						</a>
 					</div>
 					<div v-if="patronsResp.commitCount && patronsResp.yearlyCommits && patronsResp.lastCommitDate" class="_formBlock" style="text-align: center">
 						{{ i18n.ts._aboutMisskey.mkkey }}
@@ -88,7 +84,7 @@
 					</div>
 					<FormSection>
 						<div class="_formLinks">
-							<FormLink to="https://firefish.dev/firefish/firefish" external>
+							<FormLink to="https://github.com/emtkmkk/mkkey" external>
 								<template #icon>
 									<i class="ph-code ph-bold ph-lg"></i>
 								</template>

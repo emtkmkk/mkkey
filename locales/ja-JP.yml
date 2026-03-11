@@ -1510,8 +1510,7 @@ _registry:
   domain: "ドメイン"
   createKey: "キーを作成"
 _aboutMisskey:
-  about: "Calckey(Firefish)は、2022年に生まれたThatOneCalculatorによるMisskeyのforkです。"
-  mkkey: "もこきーは、Calckeyのforkです。"
+  about: "Cluckeyは、2022年に生まれたemtkmkkによるMisskey/Calckey/Firefishのforkです。"
   contributors: "Misskey の主なコントリビューター"
   allContributors: "全てのコントリビューター"
   source: "ソースコード"

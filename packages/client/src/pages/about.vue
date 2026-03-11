@@ -57,7 +57,7 @@
 
 						<FormSection>
 							<MkKeyValue class="_formBlock" :copy="version">
-								<template #key>Firefish</template>
+								<template #key>Cluckey</template>
 								<template #value>{{ version }}</template>
 							</MkKeyValue>
 							<FormLink

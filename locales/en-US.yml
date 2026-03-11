@@ -1292,8 +1292,7 @@ _registry:
   domain: "Domain"
   createKey: "Create key"
 _aboutMisskey:
-  about: "Calckey is a fork of Misskey made by ThatOneCalculator, which has been in\
-    \ development since 2022."
+  about: "Cluckey is a fork of Misskey, Calckey, and Firefish created by emtkmkk in 2022."
   contributors: "Main contributors"
   allContributors: "All contributors"
   source: "Source code"

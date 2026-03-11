@@ -56,8 +56,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	const sortedScope = [...ps.scope].sort();
-	const cacheKey = getCacheKey(user.id, sortedScope);
+	const cacheKey = getCacheKey(user.id, ps.scope);
 	const cached = await redisClient.get(cacheKey);
 	if (cached != null) {
 		return JSON.parse(cached) as Record<string, any>;
@@ -66,7 +65,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	const query = RegistryItems.createQueryBuilder("item")
 		.where("item.domain IS NULL")
 		.andWhere("item.userId = :userId", { userId: user.id })
-		.andWhere("item.scope = :scope", { scope: sortedScope });
+		.andWhere("item.scope = :scope", { scope: ps.scope });
 
 	const items = await query.getMany();
 

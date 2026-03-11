@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * クライアントビルド用のVite設定と、ビルド時に埋め込むバージョン文字列の生成を行うモジュール。
+ *
+ * @remarks
+ * NOTE: バージョン文字列は `yyyy.m.d+<hash>` 形式で生成されます（ゼロ埋め無し）。
+ * NOTE: git が利用できない環境ではビルド日時から同形式のバージョンを生成します。
+ *
+ * @public
+ */
 import * as fs from "fs";
 import { execSync } from "node:child_process";
 import pluginVue from "@vitejs/plugin-vue";
@@ -22,15 +33,34 @@ const extensions = [
 	".vue",
 ];
 
+/**
+ * 最終コミット日時またはビルド日時からバージョン文字列を生成する。
+ *
+ * @remarks
+ * - 形式は `yyyy.m.d+<hash>`（月と日はゼロ埋めしない）となります。
+ * - git から取得する日付はゼロ埋めされた `yyyy.mm.dd` 形式のため、数値変換してから整形し直しています。
+ *
+ * @returns `yyyy.m.d+<hash>` 形式のバージョン文字列
+ *
+ * @public
+ */
 const buildVersion = () => {
 	let date: string;
 	try {
-		// 最終コミット日を yyyy.m.d 形式で取得
+		// 最終コミット日を yyyy.mm.dd 形式で取得（後でゼロ埋めを外す）
 		const out = execSync(
 			"git log -1 --format=%cd --date=format:'%Y.%m.%d'",
 			{ encoding: "utf8" },
 		).trim();
-		date = out || "";
+		if (out) {
+			const [yRaw, mRaw, dRaw] = out.split(".");
+			const y = Number(yRaw);
+			const m = Number(mRaw);
+			const d = Number(dRaw);
+			date = `${y}.${m}.${d}`;
+		} else {
+			date = "";
+		}
 	} catch {
 		// git が使えない環境ではビルド日でフォールバック
 		const now = new Date();

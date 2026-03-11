@@ -37,9 +37,12 @@ export default define(meta, paramDef, async (ps, me) => {
 		meta.pinnedUsers
 			.map((acct) => Acct.parse(acct))
 			.map((acct) =>
-				Users.findOneBy({
-					usernameLower: acct.username.toLowerCase(),
-					host: acct.host ?? IsNull(),
+				Users.findOne({
+					where: {
+						usernameLower: acct.username.toLowerCase(),
+						host: acct.host ?? IsNull(),
+					},
+					relations: { avatar: true, banner: true },
 				}),
 			),
 	);

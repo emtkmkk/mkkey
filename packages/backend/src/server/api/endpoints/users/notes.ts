@@ -1,6 +1,7 @@
 import { Brackets } from "typeorm";
 import { Notes } from "@/models/index.js";
 import define from "../../define.js";
+import { buildNotePackHintFromTimeline } from "../../common/build-note-pack-hint.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
@@ -108,8 +109,9 @@ export default define(meta, paramDef, async (ps, me) => {
 
 		if (ps.excludeNsfw) {
 			query.andWhere("note.cw IS NULL");
+			// 1 件でも isSensitive なファイルがあれば除外。EXISTS で最初の 1 行で打ち切り、COUNT より軽い
 			query.andWhere(
-				'0 = (SELECT COUNT(*) FROM drive_file df WHERE df.id = ANY(note."fileIds") AND df."isSensitive" = TRUE)',
+				`NOT EXISTS (SELECT 1 FROM drive_file df WHERE df.id = ANY(note."fileIds") AND df."isSensitive" = TRUE LIMIT 1)`,
 			);
 		}
 	}
@@ -152,5 +154,8 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	const timeline = await query.take(ps.limit).getMany();
 
-	return await Notes.packMany(timeline, me);
+	const { userMap, noteMap } = await buildNotePackHintFromTimeline(timeline);
+	return await Notes.packMany(timeline, me, {
+		_hint_: { userMap, noteMap },
+	});
 });

@@ -1,5 +1,6 @@
 import { IsNull } from "typeorm";
 import { Users, Followings, UserProfiles } from "@/models/index.js";
+import type { User } from "@/models/entities/user.js";
 import { toPunyNullable } from "@/misc/convert-host.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -110,9 +111,19 @@ export default define(meta, paramDef, async (ps, me) => {
 		ps.untilId,
 	)
 		.andWhere("following.followeeId = :userId", { userId: user.id })
-		.innerJoinAndSelect("following.follower", "follower");
+		.innerJoinAndSelect("following.follower", "follower")
+		.leftJoinAndSelect("follower.avatar", "followerAvatar")
+		.leftJoinAndSelect("follower.banner", "followerBanner");
 
 	const followings = await query.take(ps.limit).getMany();
 
-	return await Followings.packMany(followings, me, { populateFollower: true });
+	const userMap = new Map<User["id"], User>();
+	for (const f of followings) {
+		if (f.follower) userMap.set(f.follower.id, f.follower);
+	}
+
+	return await Followings.packMany(followings, me, {
+		populateFollower: true,
+		_hint_: { userMap },
+	});
 });

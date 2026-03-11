@@ -1,6 +1,7 @@
 import define from "../../../define.js";
 import { RegistryItems } from "@/models/index.js";
 import { ApiError } from "../../../error.js";
+import { invalidateRegistryGetAllCacheForUser } from "./get-all.js";
 
 export const meta = {
 	requireCredential: true,
@@ -46,4 +47,5 @@ export default define(meta, paramDef, async (ps, user) => {
 	}
 
 	await RegistryItems.remove(item);
+	await invalidateRegistryGetAllCacheForUser(user.id);
 });

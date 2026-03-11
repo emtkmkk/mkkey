@@ -1,5 +1,6 @@
 import { Notes } from "@/models/index.js";
 import define from "../../define.js";
+import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 
@@ -83,5 +84,8 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	notes = notes.slice(ps.offset, ps.offset + ps.limit);
 
-	return await Notes.packMany(notes, user);
+	const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(notes);
+	return await Notes.packMany(notes, user, {
+		_hint_: { userMap, noteMap },
+	});
 });

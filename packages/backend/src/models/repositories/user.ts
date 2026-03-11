@@ -9,6 +9,7 @@ import type { Promiseable } from "@/prelude/await-all.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import { populateEmojis } from "@/misc/populate-emojis.js";
 import {
+	ADMIN_USER_ID,
 	MB,
 	DEFAULT_DRIVE_SIZE,
 	MAX_DRIVE_SIZE,
@@ -540,6 +541,32 @@ export const UserRepository = db.getRepository(User).extend({
 			this.getMeDetailedMergedCacheKey(userId, true),
 			this.getMeDetailedMergedCacheKey(userId, false),
 		);
+	}
+
+	/** 他ユーザの users/show (UserDetailed) キャッシュの Redis キー。閲覧者ごとに別キー（relation 等が異なるため）。 */
+	getUserShowDetailedCacheKey(
+		userId: User["id"],
+		viewerId: User["id"] | null,
+	): string {
+		return `users:show:detailed:${userId}:${viewerId ?? "anon"}`;
+	}
+
+	getUserShowDetailedCacheTtlSec(): number {
+		return 45;
+	}
+
+	/** 他ユーザの users/show キャッシュを無効化する。ユーザ更新時に呼ぶ。 */
+	async invalidateUserShowDetailedCache(userId: User["id"]): Promise<void> {
+		const viewersKey = `users:show:detailed:${userId}:viewers`;
+		const viewerIds = await redisClient.sMembers(viewersKey);
+		if (viewerIds.length > 0) {
+			await redisClient.del(
+				...viewerIds.map((vid) =>
+					this.getUserShowDetailedCacheKey(userId, vid),
+				),
+			);
+			await redisClient.del(viewersKey);
+		}
 	},
 
 	getMeDetailedBaseCacheTtlSec(): number {
@@ -634,7 +661,7 @@ export const UserRepository = db.getRepository(User).extend({
         > {
                 if (!meId) return "unknown";
 
-                if (meId !== user.id && meId !== "9d5ts6in38" && !user.host) {
+                if (meId !== user.id && meId !== ADMIN_USER_ID && !user.host) {
                         let isFollowed = relationHint?.isFollowed;
 
                         if (isFollowed == null) {

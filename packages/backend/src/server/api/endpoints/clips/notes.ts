@@ -1,5 +1,6 @@
 import define from "../../define.js";
 import { ClipNotes, Clips, Notes } from "@/models/index.js";
+import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
@@ -90,5 +91,8 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const notes = await query.take(ps.limit).getMany();
 
-	return await Notes.packMany(notes, user);
+	const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(notes);
+	return await Notes.packMany(notes, user, {
+		_hint_: { userMap, noteMap },
+	});
 });

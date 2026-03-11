@@ -1,6 +1,7 @@
 import type { Note } from "@/models/entities/note.js";
 import { Notes } from "@/models/index.js";
 import define from "../../define.js";
+import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
 import { ApiError } from "../../error.js";
 import { getNote } from "../../common/getters.js";
 
@@ -77,5 +78,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		await get(note.replyId);
 	}
 
-	return await Notes.packMany(conversation, user);
+	const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(conversation);
+	return await Notes.packMany(conversation, user, {
+		_hint_: { userMap, noteMap },
+	});
 });

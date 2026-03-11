@@ -89,6 +89,7 @@ import * as ep___auth_accept from "./endpoints/auth/accept.js";
 import * as ep___auth_session_generate from "./endpoints/auth/session/generate.js";
 import * as ep___auth_session_show from "./endpoints/auth/session/show.js";
 import * as ep___auth_session_userkey from "./endpoints/auth/session/userkey.js";
+import * as ep___auth_validate from "./endpoints/auth/validate.js";
 import * as ep___blocking_create from "./endpoints/blocking/create.js";
 import * as ep___blocking_delete from "./endpoints/blocking/delete.js";
 import * as ep___blocking_list from "./endpoints/blocking/list.js";
@@ -476,6 +477,7 @@ const eps = [
 	["auth/session/generate", ep___auth_session_generate],
 	["auth/session/show", ep___auth_session_show],
 	["auth/session/userkey", ep___auth_session_userkey],
+	["auth/validate", ep___auth_validate],
 	["blocking/create", ep___blocking_create],
 	["blocking/delete", ep___blocking_delete],
 	["blocking/list", ep___blocking_list],

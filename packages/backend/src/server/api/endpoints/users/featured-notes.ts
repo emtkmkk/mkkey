@@ -1,5 +1,7 @@
 import { Brackets } from "typeorm";
 import { Notes } from "@/models/index.js";
+import type { User } from "@/models/entities/user.js";
+import type { Note } from "@/models/entities/note.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
@@ -130,5 +132,21 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	const timeline = await query.take(ps.limit).getMany();
 
-	return await Notes.packMany(timeline, me);
+	const userMap = new Map<User["id"], User>();
+	const noteMap = new Map<Note["id"], Note>();
+	for (const note of timeline) {
+		if (note.user) userMap.set(note.user.id, note.user);
+		if (note.reply) {
+			noteMap.set(note.reply.id, note.reply);
+			if (note.reply.user) userMap.set(note.reply.user.id, note.reply.user);
+		}
+		if (note.renote) {
+			noteMap.set(note.renote.id, note.renote);
+			if (note.renote.user) userMap.set(note.renote.user.id, note.renote.user);
+		}
+	}
+
+	return await Notes.packMany(timeline, me, {
+		_hint_: { userMap, noteMap },
+	});
 });

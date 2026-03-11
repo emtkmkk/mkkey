@@ -794,15 +794,25 @@ export const NoteRepository = db.getRepository(Note).extend({
 		return packed;
 	},
 
+	/**
+	 * 複数ノートを pack する。hint で userMap / noteMap 等を渡すと N+1 を削減できる。
+	 *
+	 * @remarks
+	 * 各ノートの pack は Promise.allSettled で並列実行し、fulfilled の結果のみを返す。
+	 * いずれかのノートで pack が失敗（rejected）した場合、そのノートは戻り値に含まれず、件数が減った配列になる。
+	 */
         async packMany(
                 notes: Note[],
                 me?: { id: User["id"] } | null | undefined,
                 options?: {
                         detail?: boolean;
+                        /** 呼び出し元から渡す初期 hint。userMap/noteMap があると該当分の DB 取得をスキップする */
+                        _hint_?: Partial<NotePackHint>;
                 },
 	) {
 		if (notes.length === 0) return [];
 
+                const initialHint = options?._hint_;
                 const meId = me ? me.id : null;
                 const myReactionsMap: NoteReactionHint = new Map();
                 let favoritedNoteIds: Set<Note["id"]> | undefined;
@@ -919,6 +929,12 @@ export const NoteRepository = db.getRepository(Note).extend({
                 }
 
                 const userIds = new Set(notes.map((n) => n.userId));
+                for (const n of notes) {
+                        if (n.renoteUserId) userIds.add(n.renoteUserId);
+                        if (n.renote?.userId) userIds.add(n.renote.userId);
+                        if (n.replyUserId) userIds.add(n.replyUserId);
+                        if (n.reply?.userId) userIds.add(n.reply.userId);
+                }
                 const channelIds = new Set(
                         notes.map((n) => n.channelId).filter((id): id is string => id != null),
                 );
@@ -926,21 +942,39 @@ export const NoteRepository = db.getRepository(Note).extend({
                 const renoteIds = notes.map((n) => n.renoteId).filter((id): id is string => id != null);
                 const noteIdsToFetch = [...new Set([...replyIds, ...renoteIds])];
 
-                const [usersForNotes, channelsForNotes, notesForReplyRenote] =
+                const missingUserIds =
+                        initialHint?.userMap != null
+                                ? [...userIds].filter((id) => !initialHint.userMap!.has(id))
+                                : [...userIds];
+                const missingNoteIds =
+                        initialHint?.noteMap != null
+                                ? noteIdsToFetch.filter((id) => !initialHint.noteMap!.has(id))
+                                : noteIdsToFetch;
+
+                const [usersFetched, channelsForNotes, notesForReplyRenoteFetched] =
                         await Promise.all([
-                                userIds.size > 0
-                                        ? Users.find({ where: { id: In([...userIds]) } })
+                                missingUserIds.length > 0
+                                        ? Users.find({ where: { id: In(missingUserIds) } })
                                         : [],
                                 channelIds.size > 0
                                         ? Channels.find({ where: { id: In([...channelIds]) } })
                                         : [],
-                                noteIdsToFetch.length > 0
+                                missingNoteIds.length > 0
                                         ? this.find({
-                                                where: { id: In(noteIdsToFetch) },
+                                                where: { id: In(missingNoteIds) },
                                                 relations: ["user"],
                                           })
                                         : [],
                         ]);
+
+                const userMap = new Map<User["id"], User>(initialHint?.userMap ?? []);
+                for (const u of usersFetched) {
+                        userMap.set(u.id, u);
+                }
+                const noteMap = new Map<Note["id"], Note>(initialHint?.noteMap ?? []);
+                for (const n of notesForReplyRenoteFetched) {
+                        noteMap.set(n.id, n);
+                }
 
 		const noteFilesToPackIds = new Set<DriveFile["id"]>();
 		for (const note of notes) {
@@ -948,18 +982,17 @@ export const NoteRepository = db.getRepository(Note).extend({
 				noteFilesToPackIds.add(fileId);
 			}
 		}
-		for (const note of notesForReplyRenote) {
+		for (const note of noteMap.values()) {
 			for (const fileId of note.fileIds) {
 				noteFilesToPackIds.add(fileId);
 			}
 		}
 
-		const allUsersForImageResolve = [
-			...usersForNotes,
-			...notesForReplyRenote
-				.map((note) => note.user)
-				.filter((user): user is User => user != null),
-		];
+		const allUsersForImageResolve: User[] = [];
+		for (const uid of userIds) {
+			const u = userMap.get(uid);
+			if (u) allUsersForImageResolve.push(u);
+		}
 		const userImageIds = new Set<DriveFile["id"]>();
 		for (const user of allUsersForImageResolve) {
 			if (user.avatarId != null) userImageIds.add(user.avatarId);
@@ -988,9 +1021,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 		const packedFiles = await DriveFiles.packMany(noteFilesToPack);
 		const packedFileMap = new Map(packedFiles.map((file) => [file.id, file]));
 
-                const userMap = new Map(usersForNotes.map((u) => [u.id, u]));
                 const channelMap = new Map(channelsForNotes.map((c) => [c.id, c]));
-                const noteMap = new Map(notesForReplyRenote.map((n) => [n.id, n]));
 
                 const hint: NotePackHint = {
                         myReactions: myReactionsMap,

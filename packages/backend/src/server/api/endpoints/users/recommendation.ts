@@ -42,6 +42,8 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, me) => {
 	const query = Users.createQueryBuilder("user")
+		.leftJoinAndSelect("user.avatar", "avatar")
+		.leftJoinAndSelect("user.banner", "banner")
 		.where("user.isLocked = FALSE")
 		.andWhere("user.isExplorable = TRUE")
 		.andWhere("user.host IS NULL")

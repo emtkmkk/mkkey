@@ -4,6 +4,7 @@ import { Notes, Users, Followings } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
+import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
@@ -307,7 +308,11 @@ export default define(meta, paramDef, async (ps, user) => {
                         const notes = await query.take(take).skip(skip).getMany();
                         if (notes.length === 0) break;
 
-                        const packedNotes = await Notes.packMany(notes, user);
+                        const { userMap, noteMap } =
+                                buildUserAndNoteMapsFromNotes(notes);
+                        const packedNotes = await Notes.packMany(notes, user, {
+                                _hint_: { userMap, noteMap },
+                        });
                         rawNotes.push(...packedNotes);
 
                         const filtered = filterRenoteOnlyForLocalTimeline(rawNotes, user?.id);

@@ -34,7 +34,9 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, me) => {
 	const query = makePaginationQuery(
-		Users.createQueryBuilder("user"),
+		Users.createQueryBuilder("user")
+			.leftJoinAndSelect("user.avatar", "avatar")
+			.leftJoinAndSelect("user.banner", "banner"),
 		ps.sinceId,
 		ps.untilId,
 	).andWhere("user.host = :host", { host: ps.host });

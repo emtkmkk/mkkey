@@ -3,6 +3,7 @@ import { In, IsNull } from "typeorm";
 import { resolveUser } from "@/remote/resolve-user.js";
 import { Users } from "@/models/index.js";
 import type { User } from "@/models/entities/user.js";
+import { redisClient } from "@/db/redis.js";
 import define from "../../define.js";
 import { apiLogger } from "../../logger.js";
 import { ApiError } from "../../error.js";
@@ -91,13 +92,12 @@ export default define(meta, paramDef, async (ps, me) => {
 	const isAdminOrModerator = me && (me.isAdmin || me.isModerator);
 
 	if (ps.userIds) {
-		if (!isAdminOrModerator) ps.userIds = ps.userIds.filter((x) => x !== "9hlr56vkeu");
 		if (ps.userIds.length === 0) {
 			return [];
 		}
 
-		const users = await Users.findBy(
-			isAdminOrModerator
+		const users = await Users.find({
+			where: isAdminOrModerator
 				? {
 						id: In(ps.userIds),
 						isDeleted: false,
@@ -107,7 +107,8 @@ export default define(meta, paramDef, async (ps, me) => {
 						isSuspended: false,
 						isDeleted: false,
 				  },
-		);
+			relations: { avatar: true, banner: true },
+		});
 
 		// リクエストされた通りに並べ替え
 		const _users: User[] = [];
@@ -116,31 +117,72 @@ export default define(meta, paramDef, async (ps, me) => {
 			if (user) _users.push(user);
 		}
 
-		return await Users.packMany(_users, me, {
+		const viewerId = me?.id ?? "anon";
+		const cacheKeys = _users.map((u) =>
+			Users.getUserShowDetailedCacheKey(u.id, me?.id ?? null),
+		);
+		const cachedList = await redisClient.mget(...cacheKeys);
+		if (cachedList.every((c) => c != null)) {
+			return cachedList.map((c) =>
+				JSON.parse(c!) as Awaited<ReturnType<typeof Users.pack>>,
+			);
+		}
+		const packedList = await Users.packMany(_users, me, {
 			detail: true,
 		});
+		const ttl = Users.getUserShowDetailedCacheTtlSec();
+		await Promise.all([
+			...packedList.map((_, i) =>
+				redisClient.set(
+					cacheKeys[i],
+					JSON.stringify(packedList[i]),
+					"EX",
+					ttl,
+				),
+			),
+			..._users.map((u) =>
+				redisClient.sadd(
+					`users:show:detailed:${u.id}:viewers`,
+					viewerId,
+				),
+			),
+		]);
+		return packedList;
 	}
-	// Lookup user
+	// Lookup user（avatar/banner を事前ロードして pack 内の DriveFiles 取得を削減）
 	if (typeof ps.username === "string") {
 		if (typeof ps.host === "string") {
 			const usernameLower = ps.username.toLowerCase();
-			user = await Users.findOneBy({ usernameLower, host: ps.host });
+			user = await Users.findOne({
+				where: { usernameLower, host: ps.host },
+				relations: { avatar: true, banner: true },
+			});
 
 			if (user == null) {
 				user = await resolveUser(ps.username, ps.host).catch((e) => {
 					apiLogger.warn(`failed to resolve remote user: ${e}`);
 					throw new ApiError(meta.errors.failedToResolveRemoteUser);
 				});
+				// resolveUser 戻り値は relation 未ロードのため、avatar/banner 付きで再取得
+				user = await Users.findOneOrFail({
+					where: { id: user.id },
+					relations: { avatar: true, banner: true },
+				});
 			}
 		} else {
-			user = await Users.findOneBy({
-				usernameLower: ps.username.toLowerCase(),
-				host: IsNull(),
+			user = await Users.findOne({
+				where: {
+					usernameLower: ps.username.toLowerCase(),
+					host: IsNull(),
+				},
+				relations: { avatar: true, banner: true },
 			});
 		}
 	} else {
-		const q: FindOptionsWhere<User> = { id: ps.userId };
-		user = await Users.findOneBy(q);
+		user = await Users.findOne({
+			where: { id: ps.userId } as FindOptionsWhere<User>,
+			relations: { avatar: true, banner: true },
+		});
 	}
 
 		if (
@@ -150,7 +192,17 @@ export default define(meta, paramDef, async (ps, me) => {
 			throw new ApiError(meta.errors.noSuchUser);
 		}
 
-		return await Users.pack(user, me, {
+		const cacheKey = Users.getUserShowDetailedCacheKey(user.id, me?.id ?? null);
+		const cached = await redisClient.get(cacheKey);
+		if (cached != null) {
+			return JSON.parse(cached) as Awaited<ReturnType<typeof Users.pack>>;
+		}
+		const packed = await Users.pack(user, me, {
 			detail: true,
 		});
+		const ttl = Users.getUserShowDetailedCacheTtlSec();
+		await redisClient.set(cacheKey, JSON.stringify(packed), "EX", ttl);
+		const viewersKey = `users:show:detailed:${user.id}:viewers`;
+		await redisClient.sadd(viewersKey, me?.id ?? "anon");
+		return packed;
 });

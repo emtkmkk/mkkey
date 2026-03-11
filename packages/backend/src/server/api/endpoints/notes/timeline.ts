@@ -2,6 +2,7 @@ import { Brackets } from "typeorm";
 import { Notes, Followings } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
+import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
@@ -165,7 +166,12 @@ export default define(meta, paramDef, async (ps, user) => {
 	try {
 		while (found.length < ps.limit) {
 			const notes = await query.take(take).skip(skip).getMany();
-			found.push(...(await Notes.packMany(notes, user)));
+			const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(notes);
+			found.push(
+				...(await Notes.packMany(notes, user, {
+					_hint_: { userMap, noteMap },
+				})),
+			);
 			skip += take;
 			if (notes.length < take) break;
 		}

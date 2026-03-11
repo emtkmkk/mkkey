@@ -1,6 +1,7 @@
 import { Brackets } from "typeorm";
 import { Notes } from "@/models/index.js";
 import define from "../../define.js";
+import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
@@ -58,5 +59,9 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const notes = await query.getMany();
 
-	return await Notes.packMany(notes, user, { detail: false });
+	const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(notes);
+	return await Notes.packMany(notes, user, {
+		detail: false,
+		_hint_: { userMap, noteMap },
+	});
 });

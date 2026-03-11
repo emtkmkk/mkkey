@@ -67,7 +67,9 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const query = Users.createQueryBuilder("user");
+	const query = Users.createQueryBuilder("user")
+		.leftJoinAndSelect("user.avatar", "avatar")
+		.leftJoinAndSelect("user.banner", "banner");
 
 	switch (ps.state) {
 		case "available":

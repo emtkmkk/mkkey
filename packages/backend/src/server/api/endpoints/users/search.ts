@@ -68,6 +68,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		}
 
 		const query = Users.createQueryBuilder("user")
+			.leftJoinAndSelect("user.avatar", "avatar")
+			.leftJoinAndSelect("user.banner", "banner")
 			.where(`user.id IN (${profQuery.getQuery()})`)
 			.andWhere(
 				new Brackets((qb) => {
@@ -89,6 +91,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		);
 	} else if (isUsername) {
 		const usernameQuery = Users.createQueryBuilder("user")
+			.leftJoinAndSelect("user.avatar", "avatar")
+			.leftJoinAndSelect("user.banner", "banner")
 			.where("user.usernameLower LIKE :username", {
 				username: `${querys?.[0].replace("@", "").toLowerCase()}%`,
 			})
@@ -115,6 +119,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			.getMany();
 	} else {
 		const nameQuery = Users.createQueryBuilder("user")
+			.leftJoinAndSelect("user.avatar", "avatar")
+			.leftJoinAndSelect("user.banner", "banner")
 			.where(
 				new Brackets((qb) => {
 					qb.where("user.name ILIKE :query", { query: `%${querys?.[0]}%` });
@@ -176,6 +182,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			}
 
 			const query = Users.createQueryBuilder("user")
+				.leftJoinAndSelect("user.avatar", "avatar")
+				.leftJoinAndSelect("user.banner", "banner")
 				.where(`user.id IN (${profQuery.getQuery()})`)
 				.andWhere(
 					new Brackets((qb) => {

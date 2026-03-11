@@ -119,6 +119,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	// 一括取得して packMany で N+1 を避ける
 	const users = await Users.find({
 		where: { id: In(topRepliedUserIds) },
+		relations: { avatar: true, banner: true },
 	});
 	const orderIndex = new Map(topRepliedUserIds.map((id, i) => [id, i]));
 	users.sort((a, b) => (orderIndex.get(a.id) ?? 0) - (orderIndex.get(b.id) ?? 0));

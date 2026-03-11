@@ -104,17 +104,20 @@ export const FollowingRepository = db.getRepository(Following).extend({
         },
 
         async packMany(
-                followings: any[],
+                followings: (Following["id"] | Following)[],
                 me?: { id: User["id"] } | null | undefined,
                 opts?: {
                         populateFollowee?: boolean;
                         populateFollower?: boolean;
+                        /** 呼び出し元から渡す初期 userMap。ある id は Users.find をスキップする */
+                        _hint_?: { userMap?: Map<User["id"], User> };
                 },
         ) {
                 if (opts == null) opts = {};
 
                 const populateFollowee = Boolean(opts.populateFollowee);
                 const populateFollower = Boolean(opts.populateFollower);
+                const initialUserMap = opts._hint_?.userMap;
 
                 const extractUserId = (
                         user: User | null | undefined,
@@ -166,6 +169,10 @@ export const FollowingRepository = db.getRepository(Following).extend({
 
                 if (ids.size > 0) {
                         const targetIds = Array.from(ids);
+                        const missingIds =
+                                initialUserMap != null
+                                        ? targetIds.filter((id) => !initialUserMap.has(id))
+                                        : targetIds;
 
                         if (meId) {
                                 relationsMap = await Users.getRelationsBulk(meId, targetIds);
@@ -180,12 +187,17 @@ export const FollowingRepository = db.getRepository(Following).extend({
                                 );
                         }
 
-                        // まとめ読み: 全ユーザーを avatar/banner 付きで 1 回取得し hint で渡して drive_file の個別参照を避ける
-                        const users = await Users.find({
-                                where: { id: In(targetIds) },
-                                relations: { avatar: true, banner: true },
-                        });
-                        userMap = new Map(users.map((u) => [u.id, u]));
+                        // まとめ読み: 不足分のみ avatar/banner 付きで取得し、初期 userMap とマージする
+                        userMap = new Map<User["id"], User>(initialUserMap ?? []);
+                        if (missingIds.length > 0) {
+                                const users = await Users.find({
+                                        where: { id: In(missingIds) },
+                                        relations: { avatar: true, banner: true },
+                                });
+                                for (const u of users) {
+                                        userMap.set(u.id, u);
+                                }
+                        }
                 }
 
                 const createUserHints = (

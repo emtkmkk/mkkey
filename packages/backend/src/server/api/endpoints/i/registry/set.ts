@@ -2,6 +2,7 @@ import { publishMainStream } from "@/services/stream.js";
 import define from "../../../define.js";
 import { RegistryItems } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { invalidateRegistryGetAllCacheForUser } from "./get-all.js";
 
 export const meta = {
 	requireCredential: true,
@@ -52,6 +53,8 @@ export default define(meta, paramDef, async (ps, user) => {
 			value: ps.value,
 		});
 	}
+
+	await invalidateRegistryGetAllCacheForUser(user.id);
 
 	// TODO: サードパーティアプリが傍受出来てしまうのでどうにかする
 	publishMainStream(user.id, "registryUpdated", {

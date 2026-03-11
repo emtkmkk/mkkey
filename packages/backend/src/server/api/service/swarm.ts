@@ -125,6 +125,7 @@ router.get("/disconnect/swarm", async (ctx) => {
 	profile.integrations.swarm = undefined;
 	await UserProfiles.update(user.id, { integrations: profile.integrations });
 	await Users.invalidateMeDetailedBaseCache(user.id);
+	await Users.invalidateUserShowDetailedCache(user.id);
 
 	ctx.body = "Swarmの連携を解除しました :v:";
 	publishMainStream(user.id, "meUpdated", await Users.pack(user, user, { detail: true, includeSecrets: true }));
@@ -233,6 +234,7 @@ router.get("/swarm/cb", async (ctx) => {
 		},
 	});
 	await Users.invalidateMeDetailedBaseCache(user.id);
+	await Users.invalidateUserShowDetailedCache(user.id);
 
 	publishMainStream(user.id, "meUpdated", await Users.pack(user, user, { detail: true, includeSecrets: true }));
 	ctx.redirect(`${config.url}/settings/integration`);

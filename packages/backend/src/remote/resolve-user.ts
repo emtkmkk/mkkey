@@ -11,6 +11,10 @@ import { remoteLogger } from "./logger.js";
 
 const logger = remoteLogger.createSubLogger("resolve-user");
 
+/**
+ * リモートユーザを username@host から解決する。必要な処理のため現状維持。
+ * HTTP は webFinger / createPerson・updatePerson 経由で行い、person 側で timeout 等を設定している。
+ */
 export async function resolveUser(
 	username: string,
 	host: string | null,

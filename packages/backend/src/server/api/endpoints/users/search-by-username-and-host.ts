@@ -51,7 +51,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		if (me) {
                         const followingCondition = createFollowingExistsCondition(me.id);
 
-                        const query = Users.createQueryBuilder("user");
+                        const query = Users.createQueryBuilder("user")
+				.leftJoinAndSelect("user.avatar", "avatar")
+				.leftJoinAndSelect("user.banner", "banner");
                                 query.where(followingCondition.clause("user.id"))
 				if (!ps.includeSelf) {
 					query.andWhere("user.id != :meId", { meId: me.id });
@@ -93,6 +95,8 @@ export default define(meta, paramDef, async (ps, me) => {
 
 			if (users.length < ps.limit) {
                                 const otherQuery = Users.createQueryBuilder("user")
+					.leftJoinAndSelect("user.avatar", "avatar")
+					.leftJoinAndSelect("user.banner", "banner")
                                         .where(`NOT ${followingCondition.clause("user.id")}`)
 					if (!ps.includeSelf) {
 						otherQuery.andWhere("user.id != :meId", { meId: me.id });
@@ -126,6 +130,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			}
 		} else {
 			const query = Users.createQueryBuilder("user")
+				.leftJoinAndSelect("user.avatar", "avatar")
+				.leftJoinAndSelect("user.banner", "banner")
 				.where("user.isSuspended = FALSE")
 				if (ps.localOnly) {
 					query.andWhere("user.host IS NULL");

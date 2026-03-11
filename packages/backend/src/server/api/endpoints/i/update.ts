@@ -471,7 +471,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	if (newFollowedMessage != null) {
 		emojis = emojis.concat(extractCustomEmojisFromMfm(mfm.parseSimple(newFollowedMessage)));
 	}
-	
+
 
 	updates.emojis = emojis;
 	updates.tags = tags;
@@ -488,6 +488,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	});
 
 	await Users.invalidateMeDetailedBaseCache(user.id);
+	await Users.invalidateUserShowDetailedCache(user.id);
 
 	const updatedProfile = await UserProfiles.findOneByOrFail({ userId: user.id });
 

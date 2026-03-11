@@ -236,6 +236,12 @@
 				</button>
 			</a>
 			<br>
+			<a href="/light">
+				<button class="button-small">
+					<span class="button-label-small">軽量クライアントに接続</span>
+				</button>
+			</a>
+			<br>
 			<a href="/flush">
 				<button class="button-small">
 					<span class="button-label-small">⚠環境設定とキャッシュをクリア</span>

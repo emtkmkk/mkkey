@@ -33,8 +33,10 @@
 		"types": [
 			"node"
 		],
+		// モノレポでルートの @types を参照するため ../../node_modules/@types を追加
 		"typeRoots": [
 			"./node_modules/@types",
+			"../../node_modules/@types",
 			"./src/@types"
 		],
 		"lib": [

@@ -41,7 +41,7 @@ import { i18n } from "@/i18n";
 import { confirm, alert, post, popup, toast, yesno, api } from "@/os";
 import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
-import { $i, refreshAccount, login, updateAccount, signout } from "@/account";
+import { $i, fetchAccount, login, updateAccount, signout } from "@/account";
 import { defaultStore, ColdDeviceStorage, userActions } from "@/store";
 import {
 	emojiLoad,
@@ -287,29 +287,54 @@ const initializeLoginId = async () => {
 	}
 };
 
-/** アカウント情報取得の待ち時間（ミリ秒）。これを超えた場合はキャッシュで起動を進める。 */
-const ACCOUNT_FETCH_TIMEOUT_MS = 4000;
-
 // ユーザーアカウントの取得とリフレッシュ
-// NOTE: ログイン済みの場合は最大 ACCOUNT_FETCH_TIMEOUT_MS だけ待ち、それ以内に取得できればその結果を使用。超えた場合はキャッシュで起動し、取得はバックグラウンドで完了する
+// NOTE: キャッシュ（$i?.token）がある場合は auth/validate の応答が返るまでスプラッシュで待機。応答が返るまでキャッシュでも進行しない。有効ならキャッシュで進行しバックグラウンドで /i を呼ぶ。signout はトークンが明確に無効な場合（403 または 200 で valid !== true）のみ。ネットワークエラー時はリトライして応答を待つ。
 const fetchUserAccount = async () => {
 	await initializeLoginId();
 	if ($i?.token) {
-		const waitMsg = "アカウント情報を取得中...";
-		waitMessages.push(waitMsg);
-		const refreshPromise = refreshAccount();
-		const result = await Promise.race([
-			refreshPromise.then(() => "fresh" as const),
-			wait(ACCOUNT_FETCH_TIMEOUT_MS).then(() => "timeout" as const),
-		]);
-		waitMessages = waitMessages.filter((x) => x !== waitMsg);
-		if (result === "timeout") {
-			if (_DEV_) console.log("account fetch exceeded timeout, proceeding with cache");
-			// 取得はバックグラウンドで継続し、完了時に $i が更新される
-			refreshPromise.catch((err) => {
+		// キャッシュあり: /validate の応答が返るまで待機（応答が返るまで進行しない）。ネットワークエラー時はリトライ
+		const token = $i.token;
+		const RETRY_DELAY_MS = 3000;
+		for (;;) {
+			try {
+				const res = await api("auth/validate", {}, token, true) as {
+					valid?: boolean;
+				};
+				if (res?.valid !== true) {
+					// トークン無効: signout が他アカウントあればそのアカウントでログイン試行、なければ未ログインでページ表示する
+					await signout();
+					return;
+				}
+				break;
+			} catch (err) {
+				const isAuthError =
+					err &&
+					typeof err === "object" &&
+					"code" in err &&
+					(err as { code: string }).code === "AUTHENTICATION_FAILED";
+				if (isAuthError) {
+					// 認証失敗: signout が他アカウントあればそのアカウントでログイン試行、なければ未ログインでページ表示する
+					await signout();
+					return;
+				}
+				// ネットワークエラーなど: リトライまで待って再試行（応答が返るまで進行しない）
+				await wait(RETRY_DELAY_MS);
+			}
+		}
+		// 有効と判定済み。バックグラウンドで /i を呼び updateAccount + isDeleted アラート
+		fetchAccount(token)
+			.then((account) => {
+				updateAccount(account);
+				if (account.isDeleted) {
+					alert({
+						type: "warning",
+						text: i18n.ts.accountDeletionInProgress,
+					});
+				}
+			})
+			.catch((err) => {
 				if (_DEV_) console.warn("Background account refresh failed", err);
 			});
-		}
 	} else {
 		const waitMsg = "ログイン中...";
 		waitMessages.push(waitMsg);
@@ -1344,8 +1369,10 @@ const initializeStream = () => {
 (async () => {
 	console.info(`Calckey v${version}`);
 
-	// 最低ロード時間の開始
-	const minimumLoadPromise = wait(2200);
+	// 最低ロード時間の開始（longLoading がオンのときだけ 2.2 秒待つ）
+	const minimumLoadPromise = defaultStore.ready.then(() =>
+		defaultStore.state.longLoading ? wait(2200) : Promise.resolve(),
+	);
 
 	// タイムアウト用のタイマーをセット
 	let intervalId: string | number | NodeJS.Timeout | undefined;

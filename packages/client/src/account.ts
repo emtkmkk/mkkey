@@ -97,7 +97,7 @@ export async function removeAccount(id: Account["id"]) {
 	else await del("accounts");
 }
 
-function fetchAccount(token: string): Promise<Account> {
+export function fetchAccount(token: string): Promise<Account> {
 	return new Promise((done, fail) => {
 		// Fetch user
 		fetch(`${apiUrl}/i`, {
@@ -136,6 +136,10 @@ export function updateAccount(accountData) {
 	localStorage.setItem("account", JSON.stringify($i));
 }
 
+/**
+ * 現在のトークンで /i を再取得し、$i と localStorage を更新する。
+ * init では auth/validate 通過後に fetchAccount をバックグラウンドで呼び、updateAccount で反映している。
+ */
 export async function refreshAccount() {
 	return updateAccount(await fetchAccount($i?.token));
 }

@@ -1,4 +1,6 @@
 import { Notes } from "@/models/index.js";
+import type { User } from "@/models/entities/user.js";
+import type { Note } from "@/models/entities/note.js";
 import define from "../../define.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
@@ -65,7 +67,22 @@ export default define(meta, paramDef, async (ps, user) => {
 	let skip = 0;
 	while (found.length < ps.limit) {
 		const notes = await query.take(take).skip(skip).getMany();
-		found.push(...(await Notes.packMany(notes, user)));
+		const userMap = new Map<User["id"], User>();
+		const noteMap = new Map<Note["id"], Note>();
+		for (const note of notes) {
+			if (note.user) userMap.set(note.user.id, note.user);
+			if (note.reply) {
+				noteMap.set(note.reply.id, note.reply);
+				if (note.reply.user) userMap.set(note.reply.user.id, note.reply.user);
+			}
+			if (note.renote) {
+				noteMap.set(note.renote.id, note.renote);
+				if (note.renote.user) userMap.set(note.renote.user.id, note.renote.user);
+			}
+		}
+		found.push(
+			...(await Notes.packMany(notes, user, { _hint_: { userMap, noteMap } })),
+		);
 		skip += take;
 		if (notes.length < take) break;
 	}

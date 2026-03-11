@@ -30,6 +30,9 @@ export const USER_SUPERSLEEP_THRESHOLD = 30 * DAY;
 
 export const MAX_REACTION_PER_ACCOUNT = 3;
 
+/** 管理者として扱うユーザーID（オンラインステータス表示・ミュート除外などで参照） */
+export const ADMIN_USER_ID = "9d5ts6in38";
+
 // List of file types allowed to be viewed directly in the browser
 // Anything not included here will be responded as application/octet-stream
 // SVG is not allowed because it generates XSS <- we need to fix this and later allow it to be viewed directly

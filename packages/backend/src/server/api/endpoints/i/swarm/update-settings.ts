@@ -48,6 +48,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	});
 
 	await Users.invalidateMeDetailedBaseCache(me.id);
+	await Users.invalidateUserShowDetailedCache(me.id);
 	const packed = await Users.pack(me.id, me, { detail: true, includeSecrets: true });
 	publishMainStream(me.id, "meUpdated", packed);
 	return {

@@ -41,4 +41,5 @@ export default define(meta, paramDef, async (ps, user) => {
 	});
 
 	await Users.invalidateMeDetailedBaseCache(user.id);
+	await Users.invalidateUserShowDetailedCache(user.id);
 });

@@ -541,7 +541,7 @@ export const UserRepository = db.getRepository(User).extend({
 			this.getMeDetailedMergedCacheKey(userId, true),
 			this.getMeDetailedMergedCacheKey(userId, false),
 		);
-	}
+	},
 
 	/** 他ユーザの users/show (UserDetailed) キャッシュの Redis キー。閲覧者ごとに別キー（relation 等が異なるため）。 */
 	getUserShowDetailedCacheKey(
@@ -549,11 +549,11 @@ export const UserRepository = db.getRepository(User).extend({
 		viewerId: User["id"] | null,
 	): string {
 		return `users:show:detailed:${userId}:${viewerId ?? "anon"}`;
-	}
+	},
 
 	getUserShowDetailedCacheTtlSec(): number {
 		return 45;
-	}
+	},
 
 	/** 他ユーザの users/show キャッシュを無効化する。ユーザ更新時に呼ぶ。 */
 	async invalidateUserShowDetailedCache(userId: User["id"]): Promise<void> {

@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { execSync } from "node:child_process";
 import pluginVue from "@vitejs/plugin-vue";
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
 
 import locales from "../../locales";
 import pluginJson5 from "./vite.json5";
@@ -43,16 +43,15 @@ const buildVersion = () => {
 	return `${date}+${hash}`;
 };
 
-export default defineConfig(({ command, mode }) => {
-	const version = buildVersion();
-	fs.mkdirSync(__dirname + "/../../built", { recursive: true });
-	fs.writeFileSync(
-		__dirname + "/../../built/meta.json",
-		JSON.stringify({ version }),
-		"utf-8",
-	);
+const version = buildVersion();
+fs.mkdirSync(__dirname + "/../../built", { recursive: true });
+fs.writeFileSync(
+	__dirname + "/../../built/meta.json",
+	JSON.stringify({ version }),
+	"utf-8",
+);
 
-	return {
+export default defineConfig({
 		base: "/assets/",
 
 		plugins: [
@@ -63,7 +62,7 @@ export default defineConfig(({ command, mode }) => {
 			viteCompression({
 				algorithm: "brotliCompress",
 			}),
-		],
+		] as PluginOption[],
 
 		resolve: {
 			extensions,
@@ -113,8 +112,4 @@ export default defineConfig(({ command, mode }) => {
 				include: [/calckey-js/, /node_modules/],
 			},
 		},
-		optimizeDeps: {
-			auto: true,
-		},
-	};
-});
+	});

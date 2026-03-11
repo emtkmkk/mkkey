@@ -34,6 +34,24 @@ function stripRemoteEmojiFields(obj: Record<string, unknown>): Record<string, un
 	return out;
 }
 
+/** meta_all_emojis 用 MV からリモート絵文字を取得。MV が無い／失敗時は null を返す。 */
+type RemoteEmojiRow = { name: string; host: string | null; sensitive: boolean; copyPermission: string | null };
+
+/** リモート絵文字の pack 用に必要な最小プロパティ（MV または Emoji のどちらからも取得可能） */
+type RemoteEmojiForPack = { name: string; host: string | null; sensitive?: boolean };
+
+async function fetchRemoteEmojisFromMv(): Promise<RemoteEmojiRow[] | null> {
+	try {
+		const ds = getStatsDataSource();
+		const rows = await ds.query(
+			'SELECT name, host, sensitive, "copyPermission" FROM mv_emoji_remote_snapshot ORDER BY name ASC',
+		) as RemoteEmojiRow[];
+		return Array.isArray(rows) ? rows : null;
+	} catch {
+		return null;
+	}
+}
+
 /** 一覧に含めるか（usageVisibility とモチーフ）。ローカル絵文字用。 */
 function includeEmojiInList(
 	emoji: Emoji,
@@ -276,68 +294,98 @@ export default define(meta, paramDef, async (ps, me) => {
 
 		if (false && !(ps as { includeUrl?: boolean }).includeUrl) {
 			emojis?.forEach((x) => {
-				delete (x as Record<string, unknown>).publicUrl;
-				delete (x as Record<string, unknown>).originalUrl;
+				const o = x as unknown as Record<string, unknown>;
+				delete o.publicUrl;
+				delete o.originalUrl;
 			});
 		}
 
 		const emojiNames = emojis.map((x) => x.name);
 
-		let remoteEmojis: Emoji[] | undefined;
+		let remoteEmojis: RemoteEmojiForPack[] | undefined;
 
 		let remoteEmojiMode: string | undefined;
 
 		if ((ps as { remoteEmojis?: string }).remoteEmojis === "mini" || (ps as { plusEmojis?: boolean }).plusEmojis) {
-			remoteEmojis = (
-				await EmojiRepo.find({
-					where: {
-						host: Not(IsNull()),
-						oldEmoji: false,
-					},
-					order: {
-						name: "ASC",
-					},
-					cache: {
-						id: "meta_all_emojis",
-						milliseconds: 3600000, // 1 hour
-					},
-				})
-			).filter(
-				(x) =>
-					!emojiNames.includes(x.name) &&
-					!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-						x.host ?? "",
-					) &&
-					(x.host?.length ?? 0) < 50 &&
-					(x.isTextOnly || fromStoredCopyPermission(x.copyPermission) === "allow"),
-			);
+			const mvRows = await fetchRemoteEmojisFromMv();
+			if (mvRows) {
+				remoteEmojis = mvRows
+					.filter(
+						(x) =>
+							!emojiNames.includes(x.name) &&
+							!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
+								x.host ?? "",
+							) &&
+							(x.host?.length ?? 0) < 50 &&
+							fromStoredCopyPermission(x.copyPermission) === "allow",
+					);
+			} else {
+				remoteEmojis = (
+					await EmojiRepo.find({
+						where: {
+							host: Not(IsNull()),
+							oldEmoji: false,
+						},
+						order: {
+							name: "ASC",
+						},
+						cache: {
+							id: "meta_all_emojis",
+							milliseconds: 3600000, // 1 hour
+						},
+					})
+				).filter(
+					(x) =>
+						!emojiNames.includes(x.name) &&
+						!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
+							x.host ?? "",
+						) &&
+						(x.host?.length ?? 0) < 50 &&
+						fromStoredCopyPermission(x.copyPermission) === "allow",
+				);
+			}
 
 			remoteEmojiMode = "plus";
 		} else if ((ps as { remoteEmojis?: string }).remoteEmojis === "all" || (ps as { allEmojis?: boolean }).allEmojis) {
-			remoteEmojis = (
-				await EmojiRepo.find({
-					where: {
-						host: Not(IsNull()),
-						oldEmoji: false,
-					},
-					order: {
-						name: "ASC",
-					},
-					cache: {
-						id: "meta_all_emojis",
-						milliseconds: 3600000, // 1 hour
-					},
-				})
-			).filter(
-				(x) =>
-					!emojiNames.includes(x.name) &&
-					!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-						x.host ?? "",
-					) &&
-					(x.name?.length ?? 0) < 100 &&
-					(x.host?.length ?? 0) < 50 &&
-					fromStoredCopyPermission(x.copyPermission) !== "deny",
-			);
+			const mvRows = await fetchRemoteEmojisFromMv();
+			if (mvRows) {
+				remoteEmojis = mvRows
+					.filter(
+						(x) =>
+							!emojiNames.includes(x.name) &&
+							!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
+								x.host ?? "",
+							) &&
+							(x.name?.length ?? 0) < 100 &&
+							(x.host?.length ?? 0) < 50 &&
+							fromStoredCopyPermission(x.copyPermission) !== "deny",
+					);
+			} else {
+				remoteEmojis = (
+					await EmojiRepo.find({
+						where: {
+							host: Not(IsNull()),
+							oldEmoji: false,
+						},
+						order: {
+							name: "ASC",
+						},
+						cache: {
+							id: "meta_all_emojis",
+							milliseconds: 3600000, // 1 hour
+						},
+					})
+				).filter(
+					(x) =>
+						!emojiNames.includes(x.name) &&
+						!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
+							x.host ?? "",
+						) &&
+						(x.name?.length ?? 0) < 100 &&
+						(x.host?.length ?? 0) < 50 &&
+						fromStoredCopyPermission(x.copyPermission) !== "deny",
+				);
+			}
 
 			remoteEmojiMode = "all";
 		}

@@ -623,6 +623,24 @@ export default function () {
 		},
 	);
 
+	systemQueue.add(
+		"refreshStatsMvEmoji",
+		{},
+		{
+			repeat: { cron: "17 * * * *" },
+			removeOnComplete: true,
+		},
+	);
+
+	systemQueue.add(
+		"refreshStatsMvFederationAndEmojiStats",
+		{},
+		{
+			repeat: { cron: "47 * * * *" },
+			removeOnComplete: true,
+		},
+	);
+
 	processSystemQueue(systemQueue, adaptiveQueueWrap);
 }
 

@@ -1,7 +1,36 @@
 import { IsNull, MoreThan, Not } from "typeorm";
+import { getStatsDataSource } from "@/db/postgre.js";
+import type { Instance } from "@/models/entities/instance.js";
 import { Followings, Instances } from "@/models/index.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import define from "../../define.js";
+
+/** federation/stats 用 MV からトップ一覧を取得。MV が無い／失敗時は null。 */
+async function fetchTopSubFromMv(limit: number): Promise<Instance[] | null> {
+	try {
+		const ds = getStatsDataSource();
+		const rows = await ds.query(
+			'SELECT * FROM mv_federation_top_by_followers ORDER BY "followersCount" DESC LIMIT $1',
+			[limit],
+		) as Instance[];
+		return Array.isArray(rows) ? rows : null;
+	} catch {
+		return null;
+	}
+}
+
+async function fetchTopPubFromMv(limit: number): Promise<Instance[] | null> {
+	try {
+		const ds = getStatsDataSource();
+		const rows = await ds.query(
+			'SELECT * FROM mv_federation_top_by_following ORDER BY "followingCount" DESC LIMIT $1',
+			[limit],
+		) as Instance[];
+		return Array.isArray(rows) ? rows : null;
+	} catch {
+		return null;
+	}
+}
 
 export const meta = {
 	tags: ["federation"],
@@ -21,26 +50,10 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps) => {
-	const [topSubInstances, topPubInstances, allSubCount, allPubCount] =
+	const [topSubInstancesRaw, topPubInstancesRaw, allSubCount, allPubCount] =
 		await Promise.all([
-			Instances.find({
-				where: {
-					followersCount: MoreThan(0),
-				},
-				order: {
-					followersCount: "DESC",
-				},
-				take: ps.limit,
-			}),
-			Instances.find({
-				where: {
-					followingCount: MoreThan(0),
-				},
-				order: {
-					followingCount: "DESC",
-				},
-				take: ps.limit,
-			}),
+			fetchTopSubFromMv(ps.limit),
+			fetchTopPubFromMv(ps.limit),
 			Followings.count({
 				where: {
 					followeeHost: Not(IsNull()),
@@ -52,6 +65,21 @@ export default define(meta, paramDef, async (ps) => {
 				},
 			}),
 		]);
+
+	const topSubInstances =
+		topSubInstancesRaw ??
+		(await Instances.find({
+			where: { followersCount: MoreThan(0) },
+			order: { followersCount: "DESC" },
+			take: ps.limit,
+		}));
+	const topPubInstances =
+		topPubInstancesRaw ??
+		(await Instances.find({
+			where: { followingCount: MoreThan(0) },
+			order: { followingCount: "DESC" },
+			take: ps.limit,
+		}));
 
 	const gotSubCount = topSubInstances
 		.map((x) => x.followersCount)

@@ -8,6 +8,10 @@ import { cleanEmojis } from "./clean-emojis.js";
 import { cleanReactions } from "./clean-reactions.js";
 import { cleanAntennaNotes } from "./clean-antennaNote.js";
 import { checkSuspendedInstances } from "./check-suspended-instances.js";
+import {
+	refreshStatsMvEmoji,
+	refreshStatsMvFederationAndEmojiStats,
+} from "./refresh-stats-mv.js";
 
 type QueueProcessorWrapper = <T>(
 	queueName: string,
@@ -24,6 +28,8 @@ const jobs = {
 	cleanReactions,
 	cleanAntennaNotes,
 	checkSuspendedInstances,
+	refreshStatsMvEmoji,
+	refreshStatsMvFederationAndEmojiStats,
 } as Record<
 	string,
 	| Bull.ProcessCallbackFunction<Record<string, unknown>>

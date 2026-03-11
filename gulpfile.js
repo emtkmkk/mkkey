@@ -1,5 +1,9 @@
 /**
  * Gulp tasks
+ *
+ * @remarks
+ * NOTE: バージョン文字列は `yyyy.m.d+<hash>` 形式で生成されます（ゼロ埋め無し）。
+ * NOTE: git が利用できない環境ではビルド日時から同形式のバージョンを生成します。
  */
 
 const fs = require('fs');
@@ -11,14 +15,32 @@ const cssnano = require('gulp-cssnano');
 
 const locales = require('./locales');
 
+/**
+ * 最終コミット日時またはビルド日時からバージョン文字列を生成する。
+ *
+ * @remarks
+ * - 形式は `yyyy.m.d+<hash>`（月と日はゼロ埋めしない）となります。
+ * - git から取得する日付はゼロ埋めされた `yyyy.mm.dd` 形式のため、数値変換してから整形し直しています。
+ *
+ * @returns {string} `yyyy.m.d+<hash>` 形式のバージョン文字列
+ */
 const buildVersion = () => {
 	let date;
 	try {
+		// 最終コミット日を yyyy.mm.dd 形式で取得（後でゼロ埋めを外す）
 		const out = execSync(
 			"git log -1 --format=%cd --date=format:'%Y.%m.%d'",
 			{ encoding: "utf8" },
 		).trim();
-		date = out || "";
+		if (out) {
+			const [yRaw, mRaw, dRaw] = out.split('.');
+			const y = Number(yRaw);
+			const m = Number(mRaw);
+			const d = Number(dRaw);
+			date = `${y}.${m}.${d}`;
+		} else {
+			date = '';
+		}
 	} catch {
 		const now = new Date();
 		const y = now.getFullYear();

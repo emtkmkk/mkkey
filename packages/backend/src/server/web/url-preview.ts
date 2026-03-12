@@ -115,7 +115,7 @@ function isSensitiveFromHeadersAndHtml(
 
 /**
  * HTMLから「大きくサムネイルを表示してよさそう」かどうかを判定する。
- * twitter:card summary_large_image または robots に max-image-preview:large があれば true。
+ * twitter:card summary_large_image/player または robots に max-image-preview:large があれば true。
  * @internal
  */
 function preferLargeThumbnailFromHtml(html: string | null): boolean {
@@ -124,7 +124,7 @@ function preferLargeThumbnailFromHtml(html: string | null): boolean {
 	const twitterCard =
 		$('meta[name="twitter:card"]').attr("content")?.trim() ??
 		$('meta[property="twitter:card"]').attr("content")?.trim();
-	if (twitterCard === "summary_large_image") return true;
+	if (twitterCard === "summary_large_image" || twitterCard === "player") return true;
 	const robots = $('meta[name="robots"]').attr("content") ?? "";
 	if (/max-image-preview:\s*large/i.test(robots)) return true;
 	return false;
@@ -752,6 +752,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     }
     // Google Maps 専用処理でサムネイルを付与した場合のみ大きい表示を希望
     if (googleMapsThumbnailAssigned) {
+      summaryPreferLargeThumbnail = true;
+    }
+    // player 情報がある場合も大きい表示を希望
+    if (summary.player?.url) {
       summaryPreferLargeThumbnail = true;
     }
 

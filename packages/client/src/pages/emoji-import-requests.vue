@@ -160,7 +160,7 @@ onMounted(() => {
 
 definePageMetadata({
 	title: i18n.ts.emojiImportRequests ?? "申請中の絵文字",
-	icon: "ph-hand-heart ph-bold ph-lg",
+	icon: "ph-smiley-sticker ph-bold ph-lg",
 });
 </script>
 

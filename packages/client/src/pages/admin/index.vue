@@ -195,7 +195,7 @@ const menuDef = $computed(() => [
 				active: currentPage?.route.name === "emojis",
 			},
 			{
-				icon: "ph-hand-heart ph-bold ph-lg",
+				icon: "ph-smiley-sticker ph-bold ph-lg",
 				text: i18n.ts.emojiImportRequests ?? "絵文字インポート申請",
 				to: "/admin/emoji-import-requests",
 				active: currentPage?.route.name === "emoji-import-requests",

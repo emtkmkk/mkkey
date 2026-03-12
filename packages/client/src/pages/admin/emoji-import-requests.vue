@@ -166,7 +166,7 @@ function openDetail(r: { emojiName: string; emojiHost: string }) {
 
 definePageMetadata({
 	title: i18n.ts.emojiImportRequests ?? "絵文字インポート申請",
-	icon: "ph-hand-heart ph-bold ph-lg",
+	icon: "ph-smiley-sticker ph-bold ph-lg",
 });
 </script>
 

@@ -184,6 +184,12 @@
 				@click="edit"
 				>{{ "この絵文字を編集" }}</MkButton
 			>
+			<MkButton
+				v-if="$i && !($i.isAdmin || $i.isModerator) && _emoji.host"
+				primary
+				@click="requestImport"
+				>{{ i18n.ts.requestEmojiImport ?? "インポート申請" }}</MkButton
+			>
 		</div>
 		<MkError v-else-if="_emoji?.error" />
 		<MkLoading v-else />
@@ -206,6 +212,8 @@ import MkSelect from "@/components/form/select.vue";
 import * as config from "@/config";
 import * as os from "@/os";
 import { $i } from "@/account";
+import { requestEmojiImportFlow } from "@/scripts/request-emoji-import";
+
 const props = defineProps<{
 	emoji: any;
 }>();
@@ -279,6 +287,14 @@ const edit = () => {
 		},
 		"closed"
 	);
+};
+
+/**
+ * リモート絵文字のインポート申請を行う（共通フローを利用）。
+ */
+const requestImport = async (): Promise<void> => {
+	if (!_emoji?.name || !_emoji?.host) return;
+	await requestEmojiImportFlow(_emoji.name, _emoji.host);
 };
 
 onMounted(async () => {

@@ -1220,6 +1220,8 @@ developerTicker: "【dev】アナザーサーバー情報"
 reactionAutoFocusSearchBar: "検索欄に自動でフォーカスする"
 recentlyAddEmojis: "最近追加された絵文字"
 recentlyPopularReactions: "最近人気の絵文字"
+deckRemoteEmojiList: "絵文字デッキのリモート絵文字一覧"
+deckRemoteEmojiEmpty: "絵文字デッキにリモート絵文字はありません。"
 emojiPickerOrder: "絵文字カテゴリ並び順（試験的）"
 enableEmojiPickerOrder: "カテゴリ並び替えを有効化"
 _emojiPickerSections:

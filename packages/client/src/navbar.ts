@@ -95,7 +95,7 @@ export const navbarItemDef = reactive({
 	},
 	emojiImportRequests: {
 		title: "emojiImportRequests",
-		icon: "ph-hand-heart ph-bold ph-lg",
+		icon: "ph-smiley-sticker ph-bold ph-lg",
 		show: computed(() => $i != null),
 		to: "/my/emoji-import-requests",
 	},

@@ -1219,6 +1219,8 @@ developerTicker: "[dev] Other server info"
 reactionAutoFocusSearchBar: "Auto-focus search bar"
 recentlyAddEmojis: "Recently added emojis"
 recentlyPopularReactions: "Recently popular reactions"
+deckRemoteEmojiList: "Remote emojis in emoji deck"
+deckRemoteEmojiEmpty: "No remote emojis in the emoji deck."
 emojiPickerOrder: "Emoji picker order"
 enableEmojiPickerOrder: "Enable custom order for emoji picker"
 _emojiPickerSections:

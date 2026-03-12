@@ -780,6 +780,13 @@
 					>
 				</div>
 			</FormSection>
+			<FormLink
+				v-if="hasDeckRemoteEmojis"
+				to="/settings/deck-remote-emojis"
+				class="_formBlock"
+				><template #icon><i class="ph-planet ph-bold ph-lg"></i></template
+				>{{ i18n.ts.deckRemoteEmojiList }}</FormLink
+			>
 			<FormLink to="/settings/emoji-picker-order" class="_formBlock"
 				><template #icon><i class="ph-list-bullets ph-bold ph-lg"></i></template
 				>{{ i18n.ts.emojiPickerOrder }}</FormLink
@@ -810,6 +817,7 @@ import { deviceKind } from "@/scripts/device-kind";
 import { instance } from "@/instance";
 import { $i } from "@/account";
 import FormLink from "@/components/form/link.vue";
+import * as config from "@/config";
 
 const MOBILE_THRESHOLD = 500;
 
@@ -826,6 +834,30 @@ const tab = $ref("reactions");
 const showMkkeySettingTips = $computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")
 );
+
+/** 絵文字デッキにリモート絵文字が1件以上あるか */
+const hasDeckRemoteEmojis = $computed(() => {
+	const decks = [
+		defaultStore.state.reactions,
+		defaultStore.state.reactions2,
+		defaultStore.state.reactions3,
+		defaultStore.state.reactions4,
+		defaultStore.state.reactions5,
+	];
+	for (const deck of decks) {
+		if (!Array.isArray(deck)) continue;
+		for (const entry of deck) {
+			if (typeof entry !== "string") continue;
+			if (!entry.startsWith(":") || !entry.endsWith(":")) continue;
+			const inner = entry.slice(1, -1);
+			const at = inner.indexOf("@");
+			if (at === -1) continue;
+			const host = inner.slice(at + 1);
+			if (host && host !== config.host) return true;
+		}
+	}
+	return false;
+});
 
 async function reloadAsk() {
 	const { canceled } = await os.confirm({

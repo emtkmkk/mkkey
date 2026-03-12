@@ -200,6 +200,11 @@ export const routes = [
                                 component: page(() => import("./pages/settings/navbar.vue")),
                         },
                         {
+                                path: "/deck-remote-emojis",
+                                name: "deck-remote-emojis",
+                                component: page(() => import("./pages/settings/deck-remote-emojis.vue")),
+                        },
+                        {
                                 path: "/emoji-picker-order",
                                 name: "emoji-picker-order",
                                 component: page(() => import("./pages/settings/emoji-picker-order.vue")),

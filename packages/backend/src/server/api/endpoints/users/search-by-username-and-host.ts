@@ -53,7 +53,8 @@ export default define(meta, paramDef, async (ps, me) => {
 
                         const query = Users.createQueryBuilder("user")
 				.leftJoinAndSelect("user.avatar", "avatar")
-				.leftJoinAndSelect("user.banner", "banner");
+				.leftJoinAndSelect("user.banner", "banner")
+				.addSelect("user.usernameLower");
                                 query.where(followingCondition.clause("user.id"))
 				if (!ps.includeSelf) {
 					query.andWhere("user.id != :meId", { meId: me.id });
@@ -97,6 +98,7 @@ export default define(meta, paramDef, async (ps, me) => {
                                 const otherQuery = Users.createQueryBuilder("user")
 					.leftJoinAndSelect("user.avatar", "avatar")
 					.leftJoinAndSelect("user.banner", "banner")
+					.addSelect("user.usernameLower")
                                         .where(`NOT ${followingCondition.clause("user.id")}`)
 					if (!ps.includeSelf) {
 						otherQuery.andWhere("user.id != :meId", { meId: me.id });
@@ -132,6 +134,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			const query = Users.createQueryBuilder("user")
 				.leftJoinAndSelect("user.avatar", "avatar")
 				.leftJoinAndSelect("user.banner", "banner")
+				.addSelect("user.usernameLower")
 				.where("user.isSuspended = FALSE")
 				if (ps.localOnly) {
 					query.andWhere("user.host IS NULL");

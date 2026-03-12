@@ -11,7 +11,11 @@
 
 		<div class="_monolithic_">
 			<div class="yigymqpb _section">
-				<img :src="emoji.url" class="img" />
+				<img :src="displayEmojiUrl" class="img" />
+				<MkButton class="_formBlock" inline @click="replaceEmojiImage($event)">
+					<i class="ph-image-square ph-bold ph-lg"></i>
+					{{ i18n.ts.replaceImage ?? "画像を差し替え" }}
+				</MkButton>
 				<MkSelect v-model="usageVisibility" class="_formBlock">
 					<template #label>使用可能状態</template>
 					<option value="public">全公開</option>
@@ -165,6 +169,7 @@ import { i18n } from "@/i18n";
 import { emojiCategories } from "@/instance";
 import { instance } from "@/instance";
 import { api } from "@/os";
+import { selectFile } from "@/scripts/select-file";
 
 const props = defineProps<{
 	emoji: any;
@@ -239,6 +244,8 @@ const allowedUserIdsStr: string = $ref(
 let motifUserId: string | null = $ref(props.emoji.motifUserId ?? null);
 let motifUserMode: string = $ref(props.emoji.motifUserMode ?? "any"); // キー無しはデフォルト any
 const motifUser = ref<any>(null);
+/** 差し替え後に表示する画像 URL（差し替え成功時のみ更新） */
+const replacedEmojiUrl = ref<string | null>(null);
 let licenseSelectValue: string = $ref(
 	resolveLicenseSelectValue((props.emoji.isTextOnly ?? false) ? "CC0 1.0 Universal" : props.emoji.licenseName)
 );
@@ -282,6 +289,68 @@ async function selectMotifUser() {
 	}
 }
 
+/**
+ * 絵文字画像を差し替える。ファイル選択後に admin/emoji/update に fileId を渡して画像のみ更新する。
+ */
+async function replaceEmojiImage(ev: MouseEvent) {
+	const file = await selectFile(
+		ev.currentTarget ?? (ev.target as HTMLElement),
+		null,
+		undefined,
+		undefined,
+		"emoji",
+	);
+	const licenseNameValue = effectiveLicenseName.value ?? "";
+	await os.apiWithDialog("admin/emoji/update", {
+		id: props.emoji.id,
+		name,
+		category: category || null,
+		aliases: aliases.split(" ").filter(Boolean),
+		copyPermission: copyPermission || null,
+		licenseName: licenseNameValue || null,
+		creator: creator || null,
+		usageInfo: usageInfo || null,
+		description: description || null,
+		isBasedOnUrl: isBasedOnUrl || null,
+		license: license === "" ? null : license,
+		isTextOnly,
+		sensitive,
+		usageVisibility,
+		allowedUserIds:
+			usageVisibility === "user"
+				? allowedUserIdsStr.split(/[\s,]+/).filter(Boolean)
+				: undefined,
+		motifUserId: motifUserId || undefined,
+		motifUserMode,
+		fileId: file.id,
+	});
+	replacedEmojiUrl.value = file.url ?? null;
+	emit("done", {
+		updated: {
+			id: props.emoji.id,
+			name,
+			category,
+			aliases: aliases.split(" ").filter(Boolean),
+			copyPermission,
+			licenseName: licenseNameValue || null,
+			creator,
+			usageInfo,
+			description,
+			isBasedOnUrl,
+			license,
+			isTextOnly,
+			sensitive,
+			usageVisibility,
+			allowedUserIds:
+				usageVisibility === "user"
+					? allowedUserIdsStr.split(/[\s,]+/).filter(Boolean)
+					: [],
+			motifUserId,
+			motifUserMode,
+		},
+	});
+}
+
 const displayCopyPermission = computed({
 	get: () => (isTextOnly ? "allow" : copyPermission),
 	set: (v: string) => {
@@ -306,6 +375,9 @@ const displayCreator = computed({
 		if (!isTextOnly) creator = v;
 	},
 });
+
+/** ダイアログ内で表示する絵文字画像 URL（差し替え後は新しい URL） */
+const displayEmojiUrl = computed(() => replacedEmojiUrl.value ?? props.emoji.url);
 
 const emit = defineEmits<{
 	(ev: "done", v: { deleted?: boolean; updated?: any }): void;

@@ -4,10 +4,11 @@
  * @remarks
  * isTextOnly が true のときは copyPermission / licenseName / creator は固定値で上書き（リクエストの値は無視）。
  * 更新後: private なら emojiDeleted、非公開→公開なら emojiAdded、それ以外の公開なら emojiUpdated をストリーム送信。
+ * fileId を指定した場合、その Drive ファイルから originalUrl / publicUrl / type を更新し、画像のみ差し替える。
  */
 import { IsNull } from "typeorm";
 import define from "../../../define.js";
-import { Emojis } from "@/models/index.js";
+import { Emojis, DriveFiles } from "@/models/index.js";
 import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
 import { toStoredCopyPermission } from "@/misc/copy-permission.js";
 import { ApiError } from "../../../error.js";
@@ -28,6 +29,11 @@ export const meta = {
 			message: "その絵文字は存在しません。",
 			code: "NO_SUCH_EMOJI",
 			id: "684dec9d-a8c2-4364-9aa8-456c49cb1dc8",
+		},
+		noSuchFile: {
+			message: "そのファイルは存在しません。",
+			code: "NO_SUCH_FILE",
+			id: "fc46b5a4-6b92-4c33-ac66-b806659bb5cf",
 		},
 		duplicateEmojiName: {
 			message: "絵文字名が重複しています。",
@@ -95,6 +101,12 @@ export const paramDef = {
 			nullable: true,
 			enum: ["any", "follow", "owner"],
 		},
+		fileId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			description: "画像差し替え用。指定時は Drive ファイルから originalUrl/publicUrl/type を更新する。",
+		},
 	},
 	required: ["id", "name", "aliases"],
 } as const;
@@ -140,6 +152,14 @@ export default define(meta, paramDef, async (ps) => {
 	if (ps.allowedUserIds !== undefined) update.allowedUserIds = ps.allowedUserIds;
 	if (ps.motifUserId !== undefined) update.motifUserId = ps.motifUserId;
 	if (ps.motifUserMode !== undefined) update.motifUserMode = ps.motifUserMode;
+	if (ps.fileId != null) {
+		const file = await DriveFiles.findOneBy({ id: ps.fileId });
+		if (file == null) throw new ApiError(meta.errors.noSuchFile);
+		update.originalUrl = file.url;
+		update.publicUrl = file.webpublicUrl ?? file.url;
+		update.type = file.webpublicType ?? file.type;
+	}
+
 	if (isTextOnly) {
 		update.copyPermission = toStoredCopyPermission("allow");
 		update.licenseName = "CC0 1.0 Universal";

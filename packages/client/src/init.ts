@@ -104,7 +104,7 @@ const hexToRgb = (hex: string) => {
 
 // エラーログの初期化
 const initializeErrorLogging = async () => {
-	const waitMsg = i18n.ts._init.initializingErrorLog;
+	const waitMsg = i18n.ts._init?.initializingErrorLog ?? "Initializing error log...";
 	waitMessages.push(waitMsg);
 
 	try {
@@ -181,7 +181,7 @@ const initializeErrorLogging = async () => {
 
 // ビューポートの初期化
 const initializeViewport = () => {
-	const waitMsg = i18n.ts._init.initializingViewport;
+	const waitMsg = i18n.ts._init?.initializingViewport ?? "Initializing viewport...";
 	waitMessages.push(waitMsg);
 
 	// タッチデバイスでCSSの:hoverを機能させる
@@ -264,7 +264,7 @@ const initializeLoginId = async () => {
 
 	if (!loginId && !hasOauthError) return;
 
-	const waitMsg = i18n.ts._init.initializingLoginId;
+	const waitMsg = i18n.ts._init?.initializingLoginId ?? "Initializing login ID...";
 	waitMessages.push(waitMsg);
 	const target = getUrlWithoutLoginId(location.href);
 	if (loginId && (!$i || $i.id !== loginId)) {
@@ -336,7 +336,7 @@ const fetchUserAccount = async () => {
 				if (_DEV_) console.warn("Background account refresh failed", err);
 			});
 	} else {
-		const waitMsg = i18n.ts._init.signingIn;
+		const waitMsg = i18n.ts._init?.signingIn ?? "Signing in...";
 		waitMessages.push(waitMsg);
 		if (_DEV_) console.log("no account cache found");
 		const i = (document.cookie.match(/igi=(\w+)/) || [null, null])[1];
@@ -356,12 +356,12 @@ const fetchUserAccount = async () => {
 
 // サービスワーカーとインスタンスメタ情報の取得の初期化
 const initializeServiceWorkerAndFetchInstanceMeta = async () => {
-	const waitInstanceMsg = i18n.ts._init.fetchingInstance;
+	const waitInstanceMsg = i18n.ts._init?.fetchingInstance ?? "Fetching instance info...";
 	waitMessages.push(waitInstanceMsg);
 	const fetchInstanceMetaPromise = fetchInstance();
 	fetchInstanceMetaPromise.then(() => {
 		waitMessages = waitMessages.filter((x) => x !== waitInstanceMsg);
-		const waitMsg = i18n.ts._init.initializingServiceWorker;
+		const waitMsg = i18n.ts._init?.initializingServiceWorker ?? "Initializing service worker...";
 		waitMessages.push(waitMsg);
 		localStorage.setItem("v", instance.version);
 		initializeSw();
@@ -372,7 +372,7 @@ const initializeServiceWorkerAndFetchInstanceMeta = async () => {
 
 // アプリの初期化
 const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
-	const waitMsg = i18n.ts._init.initializingApp;
+	const waitMsg = i18n.ts._init?.initializingApp ?? "Initializing app...";
 	waitMessages.push(waitMsg);
 	const app = createApp(
 		window.location.search === "?zen"
@@ -387,7 +387,7 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 	);
 
 	app.config.errorHandler = async (err, vm, info) => {
-		const waitMsg = i18n.ts._init.initializingErrorLog2;
+		const waitMsg = i18n.ts._init?.initializingErrorLog2 ?? "Initializing error log (2)...";
 		waitMessages.push(waitMsg);
 		const currentDate = new Date();
 		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
@@ -463,7 +463,7 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 
 // スプラッシュスクリーンの初期化
 const initializeSplashScreen = async (minimumLoadPromise: Promise<unknown>) => {
-	const waitMsg = i18n.ts._init.removingSplash;
+	const waitMsg = i18n.ts._init?.removingSplash ?? "Removing splash screen...";
 	waitMessages.push(waitMsg);
 
 	const splashText = document.getElementById("splashText");

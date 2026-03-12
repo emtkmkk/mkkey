@@ -1002,7 +1002,8 @@ loadRawImages: "添付画像のサムネイルをオリジナル画質にする"
 loadOriginalImages: "画像拡大表示時、オリジナル画質にする"
 thumbnailCover: "サムネイルを拡大表示にする"
 compactGrid: "画像サムネイルをコンパクト表示"
-compactGridUrl: "リンクサムネイルをコンパクト表示"
+linkPreviewThumbnailSize: "リンクサムネイルのサイズ"
+showSensitiveLinkPreviewThumbnail: "センシティブなリンクサムネイルを表示"
 showRelationMark: "投稿にフォロー関係をアイコン表示"
 hiddenHeaderIcon: "UI上の自身のアイコンをサーバアイコンに置換"
 alwaysXExpand: "𝕏(Twitter)の投稿を常に展開する"
@@ -1674,6 +1675,13 @@ _instanceTicker:
   none: "表示しない"
   remote: "リモートのみ表示"
   always: "常に表示"
+_linkPreviewThumbnailSize:
+  auto: "コンテンツによって変更"
+  large: "常に拡大表示"
+  compact: "常にコンパクト表示"
+  none: "常に表示しない"
+_urlPreview:
+  sensitive: "センシティブ"
 _serverDisconnectedBehavior:
   reload: "自動でリロード"
   dialog: "ダイアログで警告"

@@ -32,11 +32,11 @@
         <div
           v-else-if="isSteam"
           class="mk-url-preview steam"
-	  :class="{ legacyStyle: $store.state.compactGridUrl }"
+	  :class="{ legacyStyle: useLegacyStyle }"
 	  @click.stop
 	>
 	  <MkButton
-		v-if="thumbnail && $store.state.enableDataSaverMode && !showThumbnail"
+		v-if="showThumbnailButtonVisible"
 		class="showThumbnail"
 		:small="true"
 		@click="showThumbnail = true"
@@ -48,14 +48,14 @@
 		  :is="self ? 'MkA' : 'a'"
 		  v-if="!fetching"
 		  class="link"
-		  :class="{ compact }"
+		  :class="{ compact: compact || useLegacyStyle }"
 		  :[attr]="self ? url.substr(local.length) : url"
 		  rel="nofollow noopener"
 		  :target="target"
 		  :title="url"
 		>
 		  <div
-			v-if="thumbnail && (showThumbnail || !$store.state.enableDataSaverMode)"
+			v-if="showThumbnailArea && thumbnailImageVisible"
 			class="thumbnail"
 			:style="`background-image: url('${thumbnail}')`"
 		  >
@@ -67,6 +67,12 @@
 			>
 			  <i class="ph-play-circle ph-bold ph-7x"></i>
 			</button>
+		  </div>
+		  <div
+			v-else-if="showThumbnailArea && thumbnailPlaceholderVisible"
+			class="thumbnail thumbnail-placeholder"
+		  >
+			{{ i18n.ts._urlPreview.sensitive }}
 		  </div>
 		  <article>
 			<header>
@@ -107,11 +113,11 @@
         <div
           v-else-if="isAmazon"
           class="mk-url-preview amazon"
-          :class="{ legacyStyle: $store.state.compactGridUrl }"
+          :class="{ legacyStyle: useLegacyStyle }"
           @click.stop
         >
           <MkButton
-                v-if="thumbnail && $store.state.enableDataSaverMode && !showThumbnail"
+                v-if="showThumbnailButtonVisible"
                 class="showThumbnail"
                 :small="true"
                 @click="showThumbnail = true"
@@ -123,14 +129,14 @@
                   :is="self ? 'MkA' : 'a'"
                   v-if="!fetching"
                   class="link"
-                  :class="{ compact }"
+                  :class="{ compact: compact || useLegacyStyle }"
                   :[attr]="self ? url.substr(local.length) : url"
                   rel="nofollow noopener"
                   :target="target"
                   :title="url"
                 >
                   <div
-                        v-if="thumbnail && (showThumbnail || !$store.state.enableDataSaverMode)"
+                        v-if="showThumbnailArea && thumbnailImageVisible"
                         class="thumbnail"
                         :style="`background-image: url('${thumbnail}')`"
                   >
@@ -142,6 +148,12 @@
                         >
                           <i class="ph-play-circle ph-bold ph-7x"></i>
                         </button>
+                  </div>
+                  <div
+                        v-else-if="showThumbnailArea && thumbnailPlaceholderVisible"
+                        class="thumbnail thumbnail-placeholder"
+                  >
+                        {{ i18n.ts._urlPreview.sensitive }}
                   </div>
                   <article>
                         <header>
@@ -210,7 +222,7 @@
 	  v-else
 	  v-size="{ max: [400, 350] }"
 	  class="mk-url-preview"
-	  :class="{ legacyStyle: $store.state.compactGridUrl }"
+	  :class="{ legacyStyle: useLegacyStyle }"
 	  @click.stop
 	>
 	  <MkButton
@@ -222,7 +234,7 @@
 		{{ i18n.ts.expandTweet }}
 	  </MkButton>
 	  <MkButton
-		v-if="thumbnail && $store.state.enableDataSaverMode && !showThumbnail"
+		v-if="showThumbnailButtonVisible"
 		class="showThumbnail"
 		:small="true"
 		@click="showThumbnail = true"
@@ -234,14 +246,14 @@
 		  :is="self ? 'MkA' : 'a'"
 		  v-if="!fetching"
 		  class="link"
-		  :class="{ compact }"
+		  :class="{ compact: compact || useLegacyStyle }"
 		  :[attr]="self ? url.substr(local.length) : url"
 		  rel="nofollow noopener"
 		  :target="target"
 		  :title="url"
 		>
 		  <div
-			v-if="thumbnail && (showThumbnail || !$store.state.enableDataSaverMode)"
+			v-if="showThumbnailArea && thumbnailImageVisible"
 			class="thumbnail"
 			:style="`background-image: url('${thumbnail}')`"
 		  >
@@ -253,6 +265,12 @@
 			>
 			  <i class="ph-play-circle ph-bold ph-7x"></i>
 			</button>
+		  </div>
+		  <div
+			v-else-if="showThumbnailArea && thumbnailPlaceholderVisible"
+			class="thumbnail thumbnail-placeholder"
+		  >
+			{{ i18n.ts._urlPreview.sensitive }}
 		  </div>
 		  <article>
 			<header>
@@ -280,7 +298,7 @@
 	</div>
   </template>  
   <script lang="ts" setup>
-  import { onMounted, onUnmounted, watch } from "vue";
+  import { computed, onMounted, onUnmounted, watch } from "vue";
   import { url as local, lang } from "@/config";
   import { i18n } from "@/i18n";
   import { defaultStore } from "@/store";
@@ -363,7 +381,42 @@ const formatCurrencyValue = (value: number | null, currency: string | null) => {
   let tweetExpanded = $ref(defaultStore.state.alwaysXExpand || props.detail);
   const embedId = `embed${Math.random().toString().replace(/\D/, "")}`;
   let tweetHeight = $ref(150);
-  
+  let isSensitive = $ref(false);
+  let preferLargeThumbnail = $ref(false);
+
+  const showThumbnailArea = computed(
+    () => defaultStore.state.linkPreviewThumbnailSize !== "none",
+  );
+  const useLegacyStyle = computed(() => {
+    const s = defaultStore.state.linkPreviewThumbnailSize;
+    return (
+      s === "compact" ||
+      (s === "auto" && !preferLargeThumbnail) ||
+      s === "none"
+    );
+  });
+  const thumbnailImageVisible = computed(
+    () =>
+      showThumbnailArea.value &&
+      !!thumbnail &&
+      (!isSensitive || defaultStore.state.showSensitiveLinkPreviewThumbnail) &&
+      (showThumbnail || !defaultStore.state.enableDataSaverMode),
+  );
+  const thumbnailPlaceholderVisible = computed(
+    () =>
+      showThumbnailArea.value &&
+      isSensitive &&
+      !defaultStore.state.showSensitiveLinkPreviewThumbnail,
+  );
+  const showThumbnailButtonVisible = computed(
+    () =>
+      !!thumbnail &&
+      defaultStore.state.enableDataSaverMode &&
+      !showThumbnail &&
+      showThumbnailArea.value &&
+      (!isSensitive || defaultStore.state.showSensitiveLinkPreviewThumbnail),
+  );
+
 // Steam専用のリアクティブ変数
 let isSteam = $ref(false);
 let steamAgeLimit = $ref<string | null>(null);
@@ -424,6 +477,8 @@ const fetchUrlData = async () => {
   tweetExpanded = defaultStore.state.alwaysXExpand || props.detail;
   playerEnabled = false;
   showThumbnail = false;
+  isSensitive = false;
+  preferLargeThumbnail = false;
 
   try {
     const response = await fetch(
@@ -435,6 +490,8 @@ const fetchUrlData = async () => {
 	  // Steamの場合の処理
         if (info.steam) {
           isSteam = true;
+          isSensitive = info.isSensitive ?? false;
+          preferLargeThumbnail = info.preferLargeThumbnail ?? false;
           steamGameName = info.title;
           description = info.description;
           icon = info.icon;
@@ -452,6 +509,8 @@ const fetchUrlData = async () => {
           steamReleaseDate = info.steam.releaseDate.date;
         } else if (info.amazon) {
           isAmazon = true;
+          isSensitive = info.isSensitive ?? false;
+          preferLargeThumbnail = info.preferLargeThumbnail ?? false;
           title = info.title;
           description = info.description;
           thumbnail = info.thumbnail;
@@ -474,6 +533,8 @@ const fetchUrlData = async () => {
           amazonBrand = info.amazon.brand ?? null;
         } else {
           // 既存の処理
+          isSensitive = info.isSensitive ?? false;
+          preferLargeThumbnail = info.preferLargeThumbnail ?? false;
           title = info.title;
           description = info.description;
           thumbnail = info.thumbnail;
@@ -512,6 +573,8 @@ const fetchUrlData = async () => {
                 ).then((res) => {
                   res.json().then((info) => {
                         if (info.url == null) return;
+			isSensitive = info.isSensitive ?? false;
+			preferLargeThumbnail = info.preferLargeThumbnail ?? false;
 			title = info.title;
 			description = info.description;
 			thumbnail = info.thumbnail;
@@ -719,7 +782,14 @@ const fetchUrlData = async () => {
 		justify-content: center;
 		align-items: center;
 		pointer-events: none;
-  
+
+		&.thumbnail-placeholder {
+		  background: var(--panel);
+		  color: var(--fg);
+		  font-size: 0.9em;
+		  opacity: 0.8;
+		}
+
 		> button {
 		  font-size: 6em;
 		  opacity: 0.9;

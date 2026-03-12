@@ -19,14 +19,17 @@ block og
 		meta(property='og:description' content= post.description)
 		meta(property='og:url'         content= url)
 		meta(property='og:image'       content= post.files[0].thumbnailUrl)
+		meta(property='twitter:card'  content='summary_large_image')
+		meta(property='note:card'      content='summary_large_image')
 
 block meta
 	unless privateMode
-		if user.host || profile.noCrawle
-			meta(name='robots' content='noindex')
-		if profile.preventAiLearning
-			meta(name='robots' content='noai')
-			meta(name='robots' content='noimageai')
+		-
+			const robotsParts = [];
+			if (user.host || profile.noCrawle) robotsParts.push('noindex');
+			if (profile.preventAiLearning) { robotsParts.push('noai'); robotsParts.push('noimageai'); }
+			robotsParts.push('max-image-preview:large');
+		meta(name='robots' content=robotsParts.join(', '))
 
 		meta(name='misskey:user-username' content=user.username)
 		meta(name='misskey:user-id' content=user.id)

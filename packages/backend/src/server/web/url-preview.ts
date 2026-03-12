@@ -43,6 +43,51 @@ async function translateDescriptionToJapaneseIfNeeded(
 const logger = new Logger("url-preview");
 const AMAZON_SHORTENER_HOSTNAME_PATTERN = /^(?:www\.)?amzn\.asia$/i;
 
+const SENSITIVE_PREVIEW_FETCH_TIMEOUT_MS = 5000;
+const SENSITIVE_PREVIEW_FETCH_SIZE = 65536; // 64KB
+
+/**
+ * HTTPヘッダとHTMLからセンシティブコンテンツかどうかを判定する。
+ * mixi:content-rating '1'、Rating ヘッダ adult/RTA、meta rating adult/RTA のいずれかで true。
+ * @internal
+ */
+function isSensitiveFromHeadersAndHtml(
+	headers: { get?(name: string): string | null },
+	html: string | null,
+): boolean {
+	const ratingHeader = headers.get?.("rating")?.trim();
+	if (ratingHeader) {
+		const r = ratingHeader.toLowerCase();
+		if (r === "adult") return true;
+		if (r === "rta-5042-1996-1400-1577-rta") return true;
+	}
+	if (!html) return false;
+	const $ = cheerio.load(html);
+	const mixi = $('meta[property="mixi:content-rating"]').attr("content");
+	if (mixi === "1") return true;
+	const metaRating = $('meta[name="rating"]').attr("content")?.trim();
+	if (metaRating === "adult") return true;
+	if (metaRating?.toUpperCase() === "RTA-5042-1996-1400-1577-RTA") return true;
+	return false;
+}
+
+/**
+ * HTMLから「大きくサムネイルを表示してよさそう」かどうかを判定する。
+ * twitter:card summary_large_image または robots に max-image-preview:large があれば true。
+ * @internal
+ */
+function preferLargeThumbnailFromHtml(html: string | null): boolean {
+	if (!html) return false;
+	const $ = cheerio.load(html);
+	const twitterCard =
+		$('meta[name="twitter:card"]').attr("content")?.trim() ??
+		$('meta[property="twitter:card"]').attr("content")?.trim();
+	if (twitterCard === "summary_large_image") return true;
+	const robots = $('meta[name="robots"]').attr("content") ?? "";
+	if (/max-image-preview:\s*large/i.test(robots)) return true;
+	return false;
+}
+
 export const urlPreviewHandler = async (ctx: Koa.Context) => {
   const url = ctx.query.url;
   if (typeof url !== "string") {
@@ -105,8 +150,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       const appData = data[steamAppId]?.data;
 
       if (appData && data[steamAppId].success) {
-		
-	  
+
+
       const _summary = meta.summalyProxy
       ? await getJson(
         `${meta.summalyProxy}?${query({
@@ -124,7 +169,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         lang: lang ?? "en-US",
         });
 
-		
+
         // summaryオブジェクトを構築
         const summary = {
           url: url,
@@ -169,6 +214,15 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           meta,
         );
 
+        // サムネイルとアイコンをラップ
+        summary.icon = wrap(_summary.icon) ?? "";
+        summary.thumbnail = wrap(_summary.thumbnail) ?? "";
+        // Steam: 17歳以上制限ならセンシティブ。ページ固有サムネイルがあれば大きい表示を希望
+        summary.isSensitive =
+          appData.required_age != null &&
+          parseInt(String(appData.required_age), 10) >= 17;
+        summary.preferLargeThumbnail = !!summary.thumbnail;
+
                 /*
         // 動画情報をplayerにセット
         if (appData.movies && Array.isArray(appData.movies)) {
@@ -189,9 +243,6 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           }
         }
 		*/
-        // サムネイルとアイコンをラップ
-        summary.icon = wrap(_summary.icon) ?? "";
-        summary.thumbnail = wrap(_summary.thumbnail) ?? "";
 
         // Cache 7days
         ctx.set("Cache-Control", "max-age=604800, immutable");
@@ -210,7 +261,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     }
   }
 
-	
+
   if (steamPackageId) {
     // SteamPackageの場合の処理
     try {
@@ -232,8 +283,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       const subData = data[steamPackageId]?.data;
 
       if (subData && data[steamPackageId].success) {
-		
-	  
+
+
       const _summary = meta.summalyProxy
       ? await getJson(
         `${meta.summalyProxy}?${query({
@@ -251,7 +302,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         lang: lang ?? "en-US",
         });
 
-		
+
         // summaryオブジェクトを構築
         const summary = {
           url: url,
@@ -295,10 +346,14 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           meta,
         );
 
-
         // サムネイルとアイコンをラップ
         summary.icon = wrap(_summary.icon) ?? "";
         summary.thumbnail = wrap(_summary.thumbnail) ?? "";
+        // Steam: 17歳以上制限ならセンシティブ。ページ固有サムネイルがあれば大きい表示を希望
+        summary.isSensitive =
+          subData.required_age != null &&
+          parseInt(String(subData.required_age), 10) >= 17;
+        summary.preferLargeThumbnail = !!summary.thumbnail;
 
         // Cache 7days
         ctx.set("Cache-Control", "max-age=604800, immutable");
@@ -316,7 +371,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       return;
     }
   }
-	
+
   if (steamBundleId) {
     // SteamBundleの場合の処理
     try {
@@ -338,7 +393,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 			const bundleData = data && Array.isArray(data) && data.length > 0 ? data[0] : undefined;
 
       if (bundleData) {
-				
+
       const _summary = meta.summalyProxy
       ? await getJson(
         `${meta.summalyProxy}?${query({
@@ -356,7 +411,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         lang: lang ?? "en-US",
         });
 
-		
+
         // summaryオブジェクトを構築
         const summary = {
           url: url,
@@ -382,10 +437,13 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 						}
           },
         };
-				
+
         // サムネイルとアイコンをラップ
         summary.icon = wrap(_summary.icon) ?? "";
         summary.thumbnail = wrap(_summary.thumbnail) ?? "";
+        // バンドルは年齢制限なしとして扱う。ページ固有サムネイルがあれば大きい表示を希望
+        summary.isSensitive = false;
+        summary.preferLargeThumbnail = !!summary.thumbnail;
 
         // Cache 7days
         ctx.set("Cache-Control", "max-age=604800, immutable");
@@ -408,9 +466,16 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     try {
       const localeInfo = getAmazonLocaleInfo(amazonProduct.hostname);
       const normalizedLang = normalizeLang(lang ?? localeInfo.locale);
-      const html = await getHtml(amazonFetchUrl, "text/html, */*", 10000, {
-        "accept-language": normalizedLang,
+      const res = await getResponse({
+        url: amazonFetchUrl,
+        method: "GET",
+        headers: {
+          Accept: "text/html, */*",
+          "accept-language": normalizedLang,
+        },
+        timeout: 10000,
       });
+      const html = await res.text();
 
       const productData = extractAmazonProductData(html);
       const fallbackData = extractAmazonFallbackData(html);
@@ -474,6 +539,11 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       const iconHost = amazonProduct.hostname.replace(/^smile\./, "");
       const favicon = `https://${iconHost}/favicon.ico`;
 
+      const wrappedThumbnail = wrap(image) ?? "";
+      const isSensitive = isSensitiveFromHeadersAndHtml(res.headers, html);
+      // ページ固有のサムネイルがあれば大きい表示を希望
+      const preferLargeThumbnail = !!wrappedThumbnail;
+
       const summary = {
         url,
         title:
@@ -482,7 +552,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           fallbackData?.title ??
           "Amazon",
         description,
-        thumbnail: wrap(image) ?? "",
+        thumbnail: wrappedThumbnail,
         icon: wrap(favicon) ?? favicon,
         sitename: formatAmazonSitename(iconHost),
         player: player ?? (null as any),
@@ -498,6 +568,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           brand,
           prime: primeEligible,
         },
+        isSensitive,
+        preferLargeThumbnail,
       };
 
       ctx.set("Cache-Control", "max-age=604800, immutable");
@@ -544,11 +616,11 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     ) {
       throw new Error("unsupported schema included");
     }
-    
+
     if (VRCWorldId) {
       // VRCの場合の処理
       const VRCApiUrl = `https://api.vrchat.cloud/api/1/worlds/${VRCWorldId}`;
-  
+
       // getJsonを使用してSteamデータを取得
       const data = await getJson(
         VRCApiUrl,
@@ -563,9 +635,51 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       }
     }
 
+    let googleMapsThumbnailAssigned = false;
     if (isGoogleMapsUrl(effectiveUrl)) {
-      await enrichGoogleMapsSummaryWithoutApiKey(effectiveUrl, summary, lang);
+      const googleMapsResult = await enrichGoogleMapsSummaryWithoutApiKey(
+        effectiveUrl,
+        summary,
+        lang,
+      );
+      googleMapsThumbnailAssigned = googleMapsResult.thumbnailAssignedByGoogleMaps;
     }
+
+    let summaryIsSensitive = false;
+    let summaryPreferLargeThumbnail = false;
+    try {
+      const sensitiveRes = await getResponse({
+        url: summaryFetchUrl,
+        method: "GET",
+        headers: {
+          Accept: "text/html, */*",
+          "User-Agent": config.userAgent,
+        },
+        timeout: SENSITIVE_PREVIEW_FETCH_TIMEOUT_MS,
+        size: SENSITIVE_PREVIEW_FETCH_SIZE,
+      });
+      const sensitiveHtml = await sensitiveRes.text();
+      summaryIsSensitive = isSensitiveFromHeadersAndHtml(
+        sensitiveRes.headers,
+        sensitiveHtml,
+      );
+      summaryPreferLargeThumbnail =
+        preferLargeThumbnailFromHtml(sensitiveHtml) && !!summary.thumbnail;
+    } catch (err) {
+      logger.debug(`Sensitive/preferLarge check fetch failed for ${url}: ${err}`);
+    }
+
+    // VRC 専用処理でサムネイルを付与した場合は大きい表示を希望
+    if (VRCWorldId && !!summary.thumbnail) {
+      summaryPreferLargeThumbnail = true;
+    }
+    // Google Maps 専用処理でサムネイルを付与した場合のみ大きい表示を希望
+    if (googleMapsThumbnailAssigned) {
+      summaryPreferLargeThumbnail = true;
+    }
+
+    summary.isSensitive = summaryIsSensitive;
+    summary.preferLargeThumbnail = summaryPreferLargeThumbnail;
 
     summary.icon = wrap(summary.icon);
     summary.thumbnail = wrap(summary.thumbnail);
@@ -620,6 +734,10 @@ type GoogleMapsUrlMeta = {
   mapType: GoogleMapsMapType;
 };
 
+/**
+ * Google Maps 用のサマリー enrichment。
+ * @returns サムネイルを Google Maps 由来（HTML/JSON-LD の og:image 等）で付与した場合に true
+ */
 async function enrichGoogleMapsSummaryWithoutApiKey(
   effectiveUrl: string,
   summary: {
@@ -629,7 +747,7 @@ async function enrichGoogleMapsSummaryWithoutApiKey(
     icon?: string | null;
   },
   lang?: string | null,
-): Promise<void> {
+): Promise<{ thumbnailAssignedByGoogleMaps: boolean }> {
   const adoptedSources = new Set<string>();
   try {
     const sourceA = extractGoogleMapsUrlMetadata(effectiveUrl);
@@ -717,6 +835,12 @@ async function enrichGoogleMapsSummaryWithoutApiKey(
       summary.thumbnail,
       summary.icon,
     ]);
+    const googleMapsThumbnailSources = [sourceC?.image, sourceB?.ogImage, sourceB?.twitterImage];
+    const thumbnailAssignedByGoogleMaps =
+      !!thumbnailCandidate &&
+      googleMapsThumbnailSources.some(
+        (u) => !!u && thumbnailCandidate === u,
+      );
     if (thumbnailCandidate) {
       summary.thumbnail = thumbnailCandidate;
     }
@@ -724,8 +848,10 @@ async function enrichGoogleMapsSummaryWithoutApiKey(
     if (adoptedSources.size > 0) {
       logger.debug(`Google Maps enrichment sources: ${Array.from(adoptedSources).sort().join("/")}`);
     }
+    return { thumbnailAssignedByGoogleMaps };
   } catch (error) {
     logger.warn(`Google Maps enrichment failed: ${error}`);
+    return { thumbnailAssignedByGoogleMaps: false };
   }
 }
 

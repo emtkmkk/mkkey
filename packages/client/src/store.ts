@@ -1379,10 +1379,14 @@ export const defaultStore = markRaw(
 			createdAt: "2023/8/23",
 			page: "appearance",
 		},
-		compactGridUrl: {
+		linkPreviewThumbnailSize: {
+			where: "device",
+			default: "auto" as "auto" | "large" | "compact" | "none",
+			page: "appearance",
+		},
+		showSensitiveLinkPreviewThumbnail: {
 			where: "device",
 			default: false,
-			createdAt: "2023/12/13",
 			page: "appearance",
 		},
 		doContextMenu: {

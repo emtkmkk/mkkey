@@ -48,12 +48,32 @@
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="compactGridUrl" class="_formBlock"
-                                >{{ i18n.ts.compactGridUrl
-                                }}<span v-if="showMkkeySettingTips" class="_beta">{{
-                                        i18n.ts.mkkey
-                                }}</span></FormSwitch
+                        <FormSelect
+                                v-model="linkPreviewThumbnailSize"
+                                class="_formBlock"
                         >
+                                <template #label>{{
+                                        i18n.ts.linkPreviewThumbnailSize
+                                }}</template>
+                                <option value="auto">{{
+                                        i18n.ts._linkPreviewThumbnailSize.auto
+                                }}</option>
+                                <option value="large">{{
+                                        i18n.ts._linkPreviewThumbnailSize.large
+                                }}</option>
+                                <option value="compact">{{
+                                        i18n.ts._linkPreviewThumbnailSize.compact
+                                }}</option>
+                                <option value="none">{{
+                                        i18n.ts._linkPreviewThumbnailSize.none
+                                }}</option>
+                        </FormSelect>
+                        <FormSwitch
+                                v-model="showSensitiveLinkPreviewThumbnail"
+                                class="_formBlock"
+                        >
+                                {{ i18n.ts.showSensitiveLinkPreviewThumbnail }}
+                        </FormSwitch>
                         <FormSwitch
                                 v-model="disableShowingAnimatedImages"
                                 class="_formBlock"
@@ -408,8 +428,11 @@ const hiddenHeaderIcon = $computed(
 );
 const alwaysXExpand = $computed(defaultStore.makeGetterSetter("alwaysXExpand"));
 const compactGrid = $computed(defaultStore.makeGetterSetter("compactGrid"));
-const compactGridUrl = $computed(
-	defaultStore.makeGetterSetter("compactGridUrl")
+const linkPreviewThumbnailSize = $computed(
+	defaultStore.makeGetterSetter("linkPreviewThumbnailSize"),
+);
+const showSensitiveLinkPreviewThumbnail = $computed(
+	defaultStore.makeGetterSetter("showSensitiveLinkPreviewThumbnail"),
 );
 
 watch(fontSize, () => {

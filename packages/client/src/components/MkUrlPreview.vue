@@ -296,14 +296,14 @@
 		</component>
 	  </transition>
 	</div>
-  </template>  
+  </template>
   <script lang="ts" setup>
   import { computed, onMounted, onUnmounted, watch } from "vue";
   import { url as local, lang } from "@/config";
   import { i18n } from "@/i18n";
   import { defaultStore } from "@/store";
   import MkButton from "@/components/MkButton.vue";
-  
+
   const props = withDefaults(
 	defineProps<{
 	  url: string;
@@ -315,7 +315,7 @@
 	  compact: false,
 	}
   );
-  
+
 const self = props.url.startsWith(local);
 const attr = self ? "to" : "href";
 const target = self ? null : "_blank";
@@ -387,13 +387,10 @@ const formatCurrencyValue = (value: number | null, currency: string | null) => {
   const showThumbnailArea = computed(
     () => defaultStore.state.linkPreviewThumbnailSize !== "none",
   );
+  // 「常に表示しない」のときはサムネイルなしと同じ表示にするため、legacyStyle（コンパクト用余白）は使わない
   const useLegacyStyle = computed(() => {
     const s = defaultStore.state.linkPreviewThumbnailSize;
-    return (
-      s === "compact" ||
-      (s === "auto" && !preferLargeThumbnail) ||
-      s === "none"
-    );
+    return s === "compact" || (s === "auto" && !preferLargeThumbnail);
   });
   const thumbnailImageVisible = computed(
     () =>
@@ -486,7 +483,7 @@ const fetchUrlData = async () => {
 	  );
 	  const info = await response.json();
 	  if (info.url == null) return;
-  
+
 	  // Steamの場合の処理
         if (info.steam) {
           isSteam = true;
@@ -541,14 +538,14 @@ const fetchUrlData = async () => {
 		icon = info.icon;
 		sitename = info.sitename;
 		player = info.player;
-  
+
 		// ツイートIDの取得
 		const requestUrl = new URL(props.url);
 		if (!["http:", "https:"].includes(requestUrl.protocol))
 		  throw new Error("invalid url");
-  
+
 		let tweet = "";
-  
+
 		if (
 		  requestUrl.hostname === "twitter.com" ||
 		  requestUrl.hostname === "mobile.twitter.com" ||
@@ -558,14 +555,14 @@ const fetchUrlData = async () => {
 		  const m = requestUrl.pathname.match(/^\/.+\/status(?:es)?\/(\d+)/);
 		  if (m) tweet = m[1];
 		}
-  
+
 		if (
 		  requestUrl.hostname === "music.youtube.com" &&
 		  requestUrl.pathname.match("^/(?:watch|channel)")
 		) {
 		  requestUrl.hostname = "www.youtube.com";
 		}
-  
+
                 requestUrl.hash = "";
 
                 fetch(
@@ -594,10 +591,10 @@ const fetchUrlData = async () => {
 	  fetching = false;
 	}
   };
-  
+
   // 初期化時にデータを取得
   fetchUrlData();
-  
+
   function adjustTweetHeight(message: any) {
 	if (message.origin !== "https://platform.twitter.com") return;
 	const embed = message.data?.["twttr.embed"];
@@ -606,9 +603,9 @@ const fetchUrlData = async () => {
 	const height = embed?.params[0]?.height;
 	if (height) tweetHeight = height;
   }
-  
+
   (window as any).addEventListener("message", adjustTweetHeight);
-  
+
   onMounted(() => {
 	const checkIframeContent = () => {
 	  const tweetIframe = document.querySelector(
@@ -638,12 +635,12 @@ const fetchUrlData = async () => {
 		};
 	  }
 	};
-  
+
 	// 初期化時にも checkIframeContent を実行
 	if (tweetExpanded) {
 	  checkIframeContent();
 	}
-  
+
 	// tweetExpanded の変化を監視
 	watch(
 	  () => tweetExpanded,
@@ -654,17 +651,17 @@ const fetchUrlData = async () => {
 	  }
 	);
   });
-  
+
   onUnmounted(() => {
 	(window as any).removeEventListener("message", adjustTweetHeight);
   });
   </script>
-  
+
   <style lang="scss" scoped>
   .player {
 	position: relative;
 	width: 100%;
-  
+
 	> button {
 	  position: absolute;
 	  top: -1.5em;
@@ -677,12 +674,12 @@ const fetchUrlData = async () => {
 	  color: var(--fg);
 	  background: rgba(128, 128, 128, 0.2);
 	  opacity: 0.7;
-  
+
 	  &:hover {
 		opacity: 0.9;
 	  }
 	}
-  
+
 	> iframe {
 	  height: 100%;
 	  left: 0;
@@ -691,51 +688,51 @@ const fetchUrlData = async () => {
 	  width: 100%;
 	}
   }
-  
+
   .mk-url-preview {
 	&.max-width_400px {
 	  > .link {
 		font-size: 0.75rem;
-  
+
 		> .thumbnail {
 		  /* height: 5rem; */
 		}
-  
+
 		> article {
 		  padding: 0.75rem;
 		}
 	  }
 	}
-  
+
 	&.max-width_350px {
 	  > .link {
 		font-size: 0.625rem;
-  
+
 		> article {
 		  padding: 0.5rem;
-  
+
 		  > header {
 			margin-bottom: 0.25rem;
 		  }
-  
+
 		  > footer {
 			margin-top: 0.25rem;
-  
+
 			> img {
 			  width: 0.75rem;
 			  height: 0.75rem;
 			}
 		  }
 		}
-  
+
 		&.compact {
 		  > article {
 			padding: 0.25rem;
-  
+
 			> header {
 			  margin-bottom: 0.125rem;
 			}
-  
+
 			> footer {
 			  margin-top: 0.125rem;
 			}
@@ -743,15 +740,15 @@ const fetchUrlData = async () => {
 		}
 	  }
 	}
-  
+
 	> .expandTweet {
 	  margin-top: 0.1875rem;
 	}
-  
+
 	> .showThumbnail {
 	  margin-top: 0.1875rem;
 	}
-  
+
 	> .link {
 	  position: relative;
 	  display: block;
@@ -770,7 +767,7 @@ const fetchUrlData = async () => {
 		  text-decoration: underline;
 		}
 	  }
-  
+
 	  > .thumbnail {
 		position: relative;
 		width: 100%;
@@ -794,43 +791,43 @@ const fetchUrlData = async () => {
 		  font-size: 6em;
 		  opacity: 0.9;
 		  pointer-events: auto;
-  
+
 		  &:hover {
 			font-size: 6em;
 			opacity: 1;
 		  }
 		}
-  
+
 		& + article {
 		  left: 0;
 		  width: 100%;
 		}
 	  }
-  
+
 	  > article {
 		position: relative;
 		box-sizing: border-box;
 		padding: 1rem;
 		pointer-events: auto;
-  
+
 		> header {
 		  margin-bottom: 0.5rem;
-  
+
 		  > h1 {
 			margin: 0;
 			font-size: 1em;
 		  }
 		}
-  
+
 		> p {
 		  margin: 0;
 		  font-size: 0.8em;
 		}
-  
+
 		> footer {
 		  margin-top: 0.5rem;
 		  height: 1rem;
-  
+
 		  > img {
 			display: inline-block;
 			width: 1rem;
@@ -838,7 +835,7 @@ const fetchUrlData = async () => {
 			margin-right: 0.25rem;
 			vertical-align: top;
 		  }
-  
+
 		  > p {
 			display: inline-block;
 			margin: 0;
@@ -849,7 +846,7 @@ const fetchUrlData = async () => {
 		  }
 		}
 	  }
-  
+
 	  &.compact {
 		> article {
 		  > header h1,
@@ -862,20 +859,20 @@ const fetchUrlData = async () => {
 		}
 	  }
 	}
-  
+
 	&.legacyStyle {
 	  &.max-width_400px > .link {
 		> .thumbnail {
 		  height: 5rem;
 		}
 	  }
-  
+
 	  &.max-width_350px {
 		> .link {
 		  > .thumbnail {
 			height: 4.375rem;
 		  }
-		  &.compact {
+		  &.compact:has(> .thumbnail) {
 			> .thumbnail {
 			  position: absolute;
 			  width: 3.5rem;
@@ -888,15 +885,15 @@ const fetchUrlData = async () => {
 		  }
 		}
 	  }
-  
+
 	  > .expandTweet {
 		margin-top: 0;
 	  }
-  
+
 	  > .showThumbnail {
 		margin-top: 0;
 	  }
-  
+
 	  > .link {
 		margin-top: 0;
 		pointer-events: auto;
@@ -906,17 +903,17 @@ const fetchUrlData = async () => {
 		  height: 100%;
 		  background-size: cover;
 		  pointer-events: auto;
-  
+
 		  > button {
 			font-size: 3.5em;
 			opacity: 0.7;
-  
+
 			&:hover {
 			  font-size: 4em;
 			  opacity: 0.9;
 			}
 		  }
-  
+
 		  & + article {
 			left: 6.25rem;
 			width: calc(100% - 6.25rem);
@@ -929,21 +926,21 @@ const fetchUrlData = async () => {
                 pointer-events: none;
                 display: flex;
                 flex-direction: column;
-  
+
 		.thumbnail {
 		  order: 1;
 		  pointer-events: none;
 		}
-  
+
 		article {
 		  order: 2;
 		  pointer-events: auto;
-  
+
 		  header {
 			display: flex;
 			flex-direction: column;
 			align-items: flex-start;
-  
+
 			h1 {
 			  display: flex;
 			  align-items: center;
@@ -953,14 +950,14 @@ const fetchUrlData = async () => {
 			  white-space: normal;
 			  word-break: normal;
 			  word-break: auto-phrase;
-  
+
 			  .favicon {
 				width: 24px;
 				height: 24px;
 				margin-right: 0.5rem;
 			  }
 			}
-  
+
 			.developer-release {
 			  font-size: 0.9em;
 			  color: var(--fg);
@@ -983,7 +980,7 @@ const fetchUrlData = async () => {
 			word-break: normal;
 			word-break: auto-phrase;
 		  }
-  
+
 		  .steam-row.steam-pricing {
 			display: flex;
 			align-items: center;
@@ -991,7 +988,7 @@ const fetchUrlData = async () => {
 			overflow: hidden;
 			white-space: nowrap;
 			text-overflow: ellipsis;
-  
+
 			.steam-discount {
 			  background-color: green;
 			  color: white;
@@ -1000,13 +997,13 @@ const fetchUrlData = async () => {
 			  margin-right: 0.5rem;
 			  font-weight: bold;
 			}
-  
+
 			.steam-original-price {
 			  text-decoration: line-through;
 			  opacity: 0.6;
 			  margin-right: 0.5rem;
 			}
-  
+
 			.steam-current-price {
 			  font-weight: bold;
 			}
@@ -1125,4 +1122,3 @@ const fetchUrlData = async () => {
         }
   }
   </style>
-

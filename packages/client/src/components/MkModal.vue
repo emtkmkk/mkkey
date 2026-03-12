@@ -18,8 +18,12 @@
 		@enter="emit('opening')"
 		@after-enter="onOpened"
 	>
-		<FocusTrap v-model:active="isActive">
+		<FocusTrap
+			v-model:active="isActive"
+			:fallback-focus="() => trapContainerRef ?? undefined"
+		>
 			<div
+				ref="trapContainerRef"
 				v-show="manualShowing != null ? manualShowing : showing"
 				v-hotkey.global="keymap"
 				:class="[
@@ -130,6 +134,12 @@ let fixed = $ref(false);
 let transformOrigin = $ref("center");
 let showing = $ref(true);
 let content = $shallowRef<HTMLElement>();
+/**
+ * フォーカストラップのコンテナ。
+ * スロット内に tabbable が無い（未描画・テキストのみなど）場合の fallbackFocus 用。
+ * @internal
+ */
+let trapContainerRef = $shallowRef<HTMLElement>();
 const zIndex = os.claimZIndex(props.zPriority);
 let useSendAnime = $ref(false);
 const type = $computed<ModalTypes>(() => {

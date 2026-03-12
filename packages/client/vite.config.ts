@@ -77,7 +77,7 @@ const version = buildVersion();
 fs.mkdirSync(__dirname + "/../../built", { recursive: true });
 fs.writeFileSync(
 	__dirname + "/../../built/meta.json",
-	JSON.stringify({ version }),
+	JSON.stringify({ version, langs: Object.keys(locales) }),
 	"utf-8",
 );
 

@@ -6,7 +6,13 @@ const cache = new Map<string, AudioBuffer>();
 let canPlay = true;
 
 export async function loadAudio(sound, useCache = true) {
-	if (sound.type === null || (sound.type === "_driveFile_" && !sound.fileUrl)) {
+	// 未設定・無効なサウンドは再生しない（type が null/undefined/空 や driveFile で URL なし）
+	if (
+		!sound ||
+		sound.type == null ||
+		sound.type === "" ||
+		(sound.type === "_driveFile_" && !sound.fileUrl)
+	) {
 		return;
 	}
 	if (ctx == null) {
@@ -49,14 +55,17 @@ export async function loadAudio(sound, useCache = true) {
 			}
 		}
 	} else {
+		// 組み込みサウンドは type が文字列である前提（undefined は上で return 済み）
+		const type = String(sound.type);
 		try {
-			response = await fetch(`/client-assets/sounds/${sound.type}.mp3`);
+			response = await fetch(`/client-assets/sounds/${type}.mp3`);
 		} catch (err) {
 			return;
 		}
 	}
 
 	const arrayBuffer = await response.arrayBuffer();
+	if (!response.ok) return;
 	const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
 	if (useCache) {
@@ -81,7 +90,7 @@ export function setVolume(
 
 export function play(type: string) {
 	const sound = ColdDeviceStorage.get(`sound_${type}` as any);
-	if (sound.type == null || !canPlay) return;
+	if (!sound || sound.type == null || !canPlay) return;
 	canPlay = false;
 	playFile(sound).then(() => {
 		// ごく短時間に音が重複しないように

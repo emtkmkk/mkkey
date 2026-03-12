@@ -43,6 +43,7 @@ export default function load() {
 	config.port = config.port || parseInt(process.env.PORT || "", 10);
 
 	mixin.version = meta.version;
+	mixin.langs = Array.isArray(meta.langs) ? meta.langs : ["ja-JP"];
 	mixin.host = url.host;
 	mixin.hostname = url.hostname;
 	mixin.scheme = url.protocol.replace(/:$/, "");

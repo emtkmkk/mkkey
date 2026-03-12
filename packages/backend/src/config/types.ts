@@ -156,6 +156,8 @@ export type Source = {
  */
 export type Mixin = {
 	version: string;
+	/** 対応言語コードの一覧（boot.js の言語検出で使用） */
+	langs: string[];
 	host: string;
 	hostname: string;
 	scheme: string;

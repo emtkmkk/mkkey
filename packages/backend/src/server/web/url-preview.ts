@@ -47,6 +47,48 @@ const SENSITIVE_PREVIEW_FETCH_TIMEOUT_MS = 5000;
 const SENSITIVE_PREVIEW_FETCH_SIZE = 65536; // 64KB
 
 /**
+ * Response の body を最大 maxBytes バイトまで読み、文字列で返す。
+ * node-fetch の size オプションは body 超過時に res.text() で例外になるため、
+ * ストリームを先頭 maxBytes だけ読んで判定に使う。
+ * @internal
+ */
+async function readBodyUpTo(
+	res: {
+		body?: NodeJS.ReadableStream | null;
+		text?: () => Promise<string>;
+	},
+	maxBytes: number,
+): Promise<string> {
+	const body = res.body as NodeJS.ReadableStream | undefined | null;
+	if (!body) {
+		const text = await res.text?.();
+		return text ? text.slice(0, maxBytes) : "";
+	}
+	const stream = body as AsyncIterable<Buffer | Uint8Array> & {
+		resume?: () => void;
+		destroy?: () => void;
+	};
+	const chunks: Buffer[] = [];
+	let total = 0;
+	try {
+		for await (const chunk of stream) {
+			chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+			total += chunks[chunks.length - 1].length;
+			if (total >= maxBytes) {
+				stream.resume?.();
+				break;
+			}
+		}
+	} finally {
+		stream.resume?.();
+	}
+	const buf = Buffer.concat(chunks);
+	const truncated =
+		buf.length > maxBytes ? buf.subarray(0, maxBytes) : buf;
+	return truncated.toString("utf-8");
+}
+
+/**
  * HTTPヘッダとHTMLからセンシティブコンテンツかどうかを判定する。
  * mixi:content-rating '1'、Rating ヘッダ adult/RTA、meta rating adult/RTA のいずれかで true。
  * @internal
@@ -86,6 +128,33 @@ function preferLargeThumbnailFromHtml(html: string | null): boolean {
 	const robots = $('meta[name="robots"]').attr("content") ?? "";
 	if (/max-image-preview:\s*large/i.test(robots)) return true;
 	return false;
+}
+
+/**
+ * HTML から og:image / twitter:image を用いてサムネイルを補完する。
+ * すでに summary.thumbnail が存在する場合は何もしない。
+ */
+function ensureThumbnailFromHtml(
+	summary: { thumbnail?: string | null },
+	html: string | null,
+): void {
+	if (summary.thumbnail) return;
+	if (!html) return;
+	const $ = cheerio.load(html);
+	const ogImage =
+		$('meta[property="og:image"]').attr("content")?.trim() ??
+		$('meta[name="og:image"]').attr("content")?.trim();
+	const twitterImage =
+		$('meta[name="twitter:image"]').attr("content")?.trim() ??
+		$('meta[property="twitter:image"]').attr("content")?.trim();
+	const candidate = twitterImage || ogImage;
+	if (
+		candidate &&
+		(candidate.startsWith("http://") || candidate.startsWith("https://"))
+	) {
+		// NOTE: ここでは wrap は呼ばず、生の URL を設定し、後段で wrap される前提とする
+		summary.thumbnail = candidate;
+	}
 }
 
 export const urlPreviewHandler = async (ctx: Koa.Context) => {
@@ -656,9 +725,17 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           "User-Agent": config.userAgent,
         },
         timeout: SENSITIVE_PREVIEW_FETCH_TIMEOUT_MS,
-        size: SENSITIVE_PREVIEW_FETCH_SIZE,
+        // size を渡すと body が 64KB 超のときに res.text() が例外になるため渡さず、readBodyUpTo で先頭のみ利用する
       });
-      const sensitiveHtml = await sensitiveRes.text();
+      // 先頭 64KB のみ使用（meta は通常ここに含まれる。Booth 等 64KB 超のページでも判定可能にする）
+      const sensitiveHtml = await readBodyUpTo(
+        sensitiveRes,
+        SENSITIVE_PREVIEW_FETCH_SIZE,
+      );
+
+      // HTML からサムネイルが取得できる場合は補完してからフラグ判定を行う
+      ensureThumbnailFromHtml(summary, sensitiveHtml);
+
       summaryIsSensitive = isSensitiveFromHeadersAndHtml(
         sensitiveRes.headers,
         sensitiveHtml,

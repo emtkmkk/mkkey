@@ -1,7 +1,7 @@
 /**
  * BOOT LOADER
  * サーバーからレスポンスされるHTMLに埋め込まれるスクリプトで、以下の役割を持ちます。
- * - 翻訳ファイルをフェッチする。
+ * - 言語（lang）を検出して localStorage に保存する（翻訳の取得はクライアント init で行う）。
  * - バージョンに基づいて適切なメインスクリプトを読み込む。
  * - キャッシュされたコンパイル済みテーマを適用する。
  * - クライアントの設定値に基づいて対応するHTMLクラス等を設定する。
@@ -42,9 +42,7 @@
 		})}
 	//#endregion
 
-	//#region Detect language & fetch translations
-	const v = localStorage.getItem("v") || VERSION;
-
+	//#region Detect language（翻訳の取得はクライアント init の ensureLocaleAndApply で行う）
 	const supportedLangs = LANGS;
 	let lang = localStorage.getItem("lang");
 	if (lang == null || !supportedLangs.includes(lang)) {
@@ -57,17 +55,7 @@
 			if (lang == null) lang = "ja-JP";
 		}
 	}
-
-	const res = await fetch(`/assets/locales/${lang}.${v}.json`);
-	if (res.status === 200) {
-		localStorage.setItem("lang", lang);
-		localStorage.setItem("locale", await res.text());
-		localStorage.setItem("localeVersion", v);
-	} else {
-		await checkUpdate();
-		renderError("LOCALE_FETCH");
-		return;
-	}
+	localStorage.setItem("lang", lang);
 	//#endregion
 
 	//#region Script

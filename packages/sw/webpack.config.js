@@ -12,7 +12,15 @@ const buildVersion = () => {
 			"git log -1 --format=%cd --date=format:'%Y.%m.%d'",
 			{ encoding: "utf8" },
 		).trim();
-		date = out || "";
+		if (out) {
+			const [yRaw, mRaw, dRaw] = out.split(".");
+			const y = Number(yRaw);
+			const m = Number(mRaw);
+			const d = Number(dRaw);
+			date = `${y}.${m}.${d}`;
+		} else {
+			date = "";
+		}
 	} catch {
 		const now = new Date();
 		const y = now.getFullYear();

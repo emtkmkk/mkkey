@@ -359,11 +359,29 @@ const initializeServiceWorkerAndFetchInstanceMeta = async () => {
 	const waitInstanceMsg = i18n.ts._init?.fetchingInstance ?? "Fetching instance info...";
 	waitMessages.push(waitInstanceMsg);
 	const fetchInstanceMetaPromise = fetchInstance();
-	fetchInstanceMetaPromise.then(() => {
+	fetchInstanceMetaPromise.then(async () => {
 		waitMessages = waitMessages.filter((x) => x !== waitInstanceMsg);
 		const waitMsg = i18n.ts._init?.initializingServiceWorker ?? "Initializing service worker...";
 		waitMessages.push(waitMsg);
 		localStorage.setItem("v", instance.version);
+
+		const localeVersion = localStorage.getItem("localeVersion");
+		const currentLocale = localStorage.getItem("locale");
+		if (localeVersion !== instance.version || !currentLocale) {
+			const langKey = localStorage.getItem("lang") || "ja-JP";
+			try {
+				const res = await fetch(`/assets/locales/${langKey}.${instance.version}.json`);
+				if (res.ok) {
+					const text = await res.text();
+					localStorage.setItem("locale", text);
+					localStorage.setItem("localeVersion", instance.version);
+					i18n.ts = JSON.parse(text) as typeof i18n.ts;
+				}
+			} catch {
+				// 取得失敗時は既存キャッシュのまま（ensureLocaleAndApply で既に反映済み）
+			}
+		}
+
 		initializeSw();
 		waitMessages = waitMessages.filter((x) => x !== waitMsg);
 	});
@@ -1359,9 +1377,47 @@ const initializeStream = () => {
 	});
 };
 
+/**
+ * 翻訳（locale）をキャッシュまたは fetch で確保し、i18n に反映する。
+ * キャッシュが有効（localeVersion === v かつ locale が存在）なら fetch しない。
+ *
+ * @internal
+ */
+const ensureLocaleAndApply = async (): Promise<void> => {
+	const v = localStorage.getItem("v") || version;
+	const langKey = localStorage.getItem("lang") || "ja-JP";
+	const cachedVersion = localStorage.getItem("localeVersion");
+	const cachedLocale = localStorage.getItem("locale");
+
+	let localeObj: Record<string, unknown>;
+
+	if (cachedVersion === v && cachedLocale) {
+		localeObj = JSON.parse(cachedLocale) as Record<string, unknown>;
+	} else {
+		try {
+			const res = await fetch(`/assets/locales/${langKey}.${v}.json`);
+			if (!res.ok) throw new Error(`locale fetch failed: ${res.status}`);
+			const text = await res.text();
+			localStorage.setItem("locale", text);
+			localStorage.setItem("localeVersion", v);
+			localeObj = JSON.parse(text) as Record<string, unknown>;
+		} catch (e) {
+			if (cachedLocale) {
+				localeObj = JSON.parse(cachedLocale) as Record<string, unknown>;
+			} else {
+				throw e;
+			}
+		}
+	}
+
+	i18n.ts = localeObj as typeof i18n.ts;
+};
+
 // ＊＊＊ ここからメイン処理 ＊＊＊
 (async () => {
 	console.info(`Calckey v${version}`);
+
+	await ensureLocaleAndApply();
 
 	// 最低ロード時間の開始（longLoading がオンのときだけ 2.2 秒待つ）
 	const minimumLoadPromise = defaultStore.ready.then(() =>

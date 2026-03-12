@@ -51,6 +51,7 @@ import MkButton from "@/components/MkButton.vue";
 import MkInput from "@/components/form/input.vue";
 import MkTextarea from "@/components/form/textarea.vue";
 import MkSwitch from "@/components/form/switch.vue";
+import { i18n } from "@/i18n";
 import * as os from "@/os";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
@@ -114,7 +115,7 @@ const headerActions = $computed(() => []);
 const headerTabs = $computed(() => []);
 
 definePageMetadata({
-	title: "API console",
+	title: i18n.ts.apiConsole,
 	icon: "ph-terminal-window ph-bold ph-lg",
 });
 </script>

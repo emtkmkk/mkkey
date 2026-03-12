@@ -1,16 +1,25 @@
-# Reporting Security Issues
+# セキュリティ報告
 
-## Minor Security Issues
+`mkkey`（Cluckey）でセキュリティ問題を見つけた場合は、公開 issue に書く前に保守者へ連絡してください。
 
-If you discover a minor security issue in Calckey, please report it by sending an
-email to [kainoa@t1c.dev](mailto:kainoa@t1c.dev).
+## 報告のお願い
 
-## High Security Issues
+- 再現手順
+- 影響範囲
+- 想定される悪用方法
+- 回避策（分かる場合）
 
-If you discover a security issue, which is so high risk, that too much is affected by it, please dont send it over unencrypted communication. You can share your PGP keys with us using kainoa@t1c.dev and after we established a secure communication, send it over E-Mail, or message us using matrix' encrypted private messages at @t1c:matrix.fedibird.com or @cleo:tchncs.de
+を可能な範囲で添えてください。
 
+## 公開タイミング
 
-This will allow us to assess the risk, and make a fix available before we add a
-bug report to the Codeberg repository.
+修正が利用者に届く前に詳細が公開されると危険なため、修正公開まで内容の公開を控えてください。
 
-Thanks for helping make Calckey safe for everyone.
+## 重大な問題について
+
+影響が大きい問題は、公開チャネルではなく暗号化できる経路で報告してください。Discord で emtk に連絡してください。
+
+## 連絡先
+
+- リポジトリ: [https://github.com/emtkmkk/mkkey](https://github.com/emtkmkk/mkkey)
+- Fediverse: [https://mkkey.net/@emtk](https://mkkey.net/@emtk)

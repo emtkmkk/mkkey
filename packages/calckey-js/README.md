@@ -1,7 +1,15 @@
-# Calckey.js
+# calckey-js パッケージ
 
-Fork of Misskey.js for Calckey
+このディレクトリは、`mkkey` で使っている `calckey-js` 関連コードです。Misskey.js をベースにしたフォークです。
 
-https://www.npmjs.com/package/calckey-js
+## 位置づけ
 
-![Parody of the Javascript logo with "CK" instead of "JS"](https://codeberg.org/repo-avatars/80771-4d86135f67b9a460cdd1be9e91648e5f)
+- 互換性維持のためパッケージ名は `calckey-js` のままです。
+- Cluckey 側で必要な API クライアント用途に使います。
+- npm: [calckey-js](https://www.npmjs.com/package/calckey-js)
+
+## 補足
+
+- 名前に `calckey` が残るのは既存互換のためです。
+- 参照先や運用情報はリポジトリを確認してください。  
+  [https://github.com/emtkmkk/mkkey](https://github.com/emtkmkk/mkkey)

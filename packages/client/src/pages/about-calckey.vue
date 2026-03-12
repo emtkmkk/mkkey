@@ -47,15 +47,15 @@
 					<div v-if="patronsResp.commitCount && patronsResp.yearlyCommits && patronsResp.lastCommitDate" class="_formBlock" style="text-align: center">
 						{{ i18n.ts._aboutMisskey.mkkey }}
 						<br />
-						{{ "直近4週間で " + patronsResp.monthlyCommits.toLocaleString() + " コミットされています。" }}
+						{{ i18n.t("_aboutMkkeyCommits.last4Weeks", { count: patronsResp.monthlyCommits.toLocaleString() }) }}
 						<br />
-						{{ "直近1年間で " + patronsResp.yearlyCommits.toLocaleString() + " コミットされています。" }}
+						{{ i18n.t("_aboutMkkeyCommits.lastYear", { count: patronsResp.yearlyCommits.toLocaleString() }) }}
 						<br />
-						{{ "これまでに " + patronsResp.commitCount.toLocaleString() + " コミットされています。" }}
+						{{ i18n.t("_aboutMkkeyCommits.total", { count: patronsResp.commitCount.toLocaleString() }) }}
 						<br />
-						{{ "最終コミット時刻は " }}
+						{{ i18n.ts._aboutMkkeyCommits.lastCommitPrefix }}
 						<MkTime :time="patronsResp.lastCommitDate" mode="relative" />
-						{{ " です。" }}
+						{{ i18n.ts._aboutMkkeyCommits.lastCommitSuffix }}
 					</div>
 					<div class="_formBlock" style="text-align: center">
 						<MkButton primary rounded inline @click="iLoveMisskey('Mkkey')">

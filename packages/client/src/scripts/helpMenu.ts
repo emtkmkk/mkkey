@@ -56,7 +56,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 								.then((x) => {
 									os.alert({
 										type: "info",
-										text: `${x.code}\n\n※有効期限 : 24時間\n期限内なら何回でも使用できます。`,
+										text: `${x.code}\n\n${i18n.ts.inviteCodeExpiryNote}`,
 									});
 								})
 								.catch((err) => {
@@ -72,9 +72,9 @@ export function openHelpMenu_(ev: MouseEvent) {
 				: $i && !$i.isSilenced && $i.canInvite && $i.notesCount >= 20
 				? ({
 						type: "label",
-						text: `招待可能まで後${
-							Math.ceil((inviteBorder - eTime) / (6 * 60 * 1000)) / 10
-						}時間`,
+						text: i18n.t("inviteAvailableInHours", {
+							hours: String(Math.ceil((inviteBorder - eTime) / (6 * 60 * 1000)) / 10),
+						}),
 				  } as MenuLabel)
 				: undefined,
 			{
@@ -109,7 +109,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 					{
 						type: "link",
 						to: "/api-console",
-						text: "API Console",
+						text: i18n.ts.apiConsole,
 						icon: "ph-terminal-window ph-bold ph-lg",
 					} as MenuLink,
 					{
@@ -122,7 +122,7 @@ export function openHelpMenu_(ev: MouseEvent) {
 					{
 						type: "link",
 						to: "/scratchpad",
-						text: "AiScript Scratchpad",
+						text: i18n.ts.aiScriptScratchpad,
 						icon: "ph-scribble-loop ph-bold ph-lg",
 					} as MenuLink,
 				],

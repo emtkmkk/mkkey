@@ -1,6 +1,14 @@
-# **DO NOT edit locale files** except `ja-JP.yml`.
+# locale ファイルの扱い
 
-When you add text to the ja-JP file (of misskey-dev/misskey), it will automatically be applied to other language files.
-Translations added in ja-JP file should contain the original Japanese strings.
+`locales/` の翻訳ファイルは、原則として `ja-JP.yml` を基準に更新します。
 
-Please see [Contribution guide](../CONTRIBUTING.md) for more information.
+## ルール
+
+- 基本は `ja-JP.yml` のみ編集する
+- 新しい文言は日本語で追加する。追加する値には、元の日本語の文字列をそのまま含める（他言語翻訳の基準になる）
+- 他言語は別フローで反映する
+
+## 補足
+
+- 誤訳修正やキー整理を行う場合は、影響範囲を PR に明記してください。
+- 翻訳・貢献の全体ルールは [CONTRIBUTING.md](../CONTRIBUTING.md) を参照してください。

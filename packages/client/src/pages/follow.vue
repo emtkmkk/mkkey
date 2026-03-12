@@ -44,7 +44,7 @@ if (acct.startsWith("https://")) {
 		} else {
 			os.alert({
 				type: "error",
-				text: "Not a user",
+				text: i18n.ts.notAUser,
 			}).then(() => {
 				window.close();
 			});

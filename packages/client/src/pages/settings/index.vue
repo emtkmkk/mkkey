@@ -257,13 +257,13 @@ const menuDef = computed(() => [
 			},
 			{
 				icon: "ph-key ph-bold ph-lg",
-				text: "API",
+				text: i18n.ts.api,
 				to: "/settings/api",
 				active: currentPage?.route.name === "api",
 			},
 			{
 				icon: "ph-lightning ph-bold ph-lg",
-				text: "Webhook",
+				text: i18n.ts.webhook,
 				to: "/settings/webhook",
 				active: currentPage?.route.name === "webhook",
 			},

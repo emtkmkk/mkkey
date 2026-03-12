@@ -390,7 +390,7 @@ function remove(reaction, ev: MouseEvent) {
 				)
 			)
 				? {
-						text: "代替絵文字に変換",
+						text: i18n.ts.convertToAlternateEmoji,
 						action: () => {
 								contents[contents.indexOf(reaction)] = `:${
 									customEmojis.find((x) =>
@@ -409,7 +409,7 @@ function remove(reaction, ev: MouseEvent) {
 			!remoteEmojiStr?.includes(reaction) &&
 			emojiStr?.includes(reaction.replace(/@(\S+)$/, ":"))
 				? {
-						text: "ローカル絵文字に変換",
+						text: i18n.ts.convertToLocalEmoji,
 						action: () => {
 							contents[contents.indexOf(reaction)] = reaction.replace(/@(\S+)$/, ":");
 						},
@@ -425,7 +425,7 @@ function remove(reaction, ev: MouseEvent) {
 		ev.currentTarget ?? ev.target
 	);
 }
-	
+
 function chooseEmoji(ev: MouseEvent) {
 	os.popup(
 			defineAsyncComponent(

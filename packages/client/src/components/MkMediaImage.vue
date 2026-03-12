@@ -93,10 +93,10 @@ const url =
 		: defaultStore.state.disableShowingAnimatedImages
 		? getStaticImageUrl(props.image.thumbnailUrl)
 		: props.image.thumbnailUrl;
-	
+
 async function show() {
 	if (props.image.isSensitive && defaultStore.state.openPopupNsfwToCarrior && isMobileData()) {
-		const ret = await os.yesno({type: "warning", text: "センシティブメディアを表示しようとしています。\n本当に開きますか？"})
+		const ret = await os.yesno({type: "warning", text: i18n.ts.showSensitiveConfirm})
 		if (ret.canceled) {
 			return;
 		}

@@ -166,7 +166,7 @@ function onContextmenu(widget: Widget, ev: MouseEvent) {
 			},
 			{
 				icon: "ph-gear-six ph-bold ph-lg",
-				text: "全体設定",
+				text: i18n.ts.widgetSettings,
 				action: () => {
 					props.edit = true;
 				},

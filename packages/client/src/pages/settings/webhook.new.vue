@@ -260,7 +260,7 @@ const headerActions = $computed(() => []);
 const headerTabs = $computed(() => []);
 
 definePageMetadata({
-	title: "Create new webhook",
+	title: i18n.ts.createNewWebhook,
 	icon: "ph-lightning ph-bold ph-lg",
 });
 </script>

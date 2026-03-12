@@ -370,7 +370,7 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		meId !== user.id && user.isFollowed && user.followedMessage
 			? {
 				icon: "ph-chat-dots ph-bold ph-lg",
-				text: "フォロー時のメッセージ",
+				text: i18n.ts.followMessageMenu,
 				action: showFollowedMessage,
 			} : undefined,
 		meId !== user.id && !defaultStore.state.hiddenIconUserIds?.includes(user.id)

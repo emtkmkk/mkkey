@@ -104,7 +104,7 @@ const hexToRgb = (hex: string) => {
 
 // エラーログの初期化
 const initializeErrorLogging = async () => {
-	const waitMsg = "エラーログ出力機能を初期化中...";
+	const waitMsg = i18n.ts._init.initializingErrorLog;
 	waitMessages.push(waitMsg);
 
 	try {
@@ -181,7 +181,7 @@ const initializeErrorLogging = async () => {
 
 // ビューポートの初期化
 const initializeViewport = () => {
-	const waitMsg = "ビューポートの初期化中...";
+	const waitMsg = i18n.ts._init.initializingViewport;
 	waitMessages.push(waitMsg);
 
 	// タッチデバイスでCSSの:hoverを機能させる
@@ -264,7 +264,7 @@ const initializeLoginId = async () => {
 
 	if (!loginId && !hasOauthError) return;
 
-	const waitMsg = "ログインIDを初期化中...";
+	const waitMsg = i18n.ts._init.initializingLoginId;
 	waitMessages.push(waitMsg);
 	const target = getUrlWithoutLoginId(location.href);
 	if (loginId && (!$i || $i.id !== loginId)) {
@@ -336,7 +336,7 @@ const fetchUserAccount = async () => {
 				if (_DEV_) console.warn("Background account refresh failed", err);
 			});
 	} else {
-		const waitMsg = "ログイン中...";
+		const waitMsg = i18n.ts._init.signingIn;
 		waitMessages.push(waitMsg);
 		if (_DEV_) console.log("no account cache found");
 		const i = (document.cookie.match(/igi=(\w+)/) || [null, null])[1];
@@ -356,12 +356,12 @@ const fetchUserAccount = async () => {
 
 // サービスワーカーとインスタンスメタ情報の取得の初期化
 const initializeServiceWorkerAndFetchInstanceMeta = async () => {
-	const waitInstanceMsg = "インスタンス情報の取得中...";
+	const waitInstanceMsg = i18n.ts._init.fetchingInstance;
 	waitMessages.push(waitInstanceMsg);
 	const fetchInstanceMetaPromise = fetchInstance();
 	fetchInstanceMetaPromise.then(() => {
 		waitMessages = waitMessages.filter((x) => x !== waitInstanceMsg);
-		const waitMsg = "サービスワーカーの初期化中...";
+		const waitMsg = i18n.ts._init.initializingServiceWorker;
 		waitMessages.push(waitMsg);
 		localStorage.setItem("v", instance.version);
 		initializeSw();
@@ -372,7 +372,7 @@ const initializeServiceWorkerAndFetchInstanceMeta = async () => {
 
 // アプリの初期化
 const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
-	const waitMsg = "アプリの初期化中...";
+	const waitMsg = i18n.ts._init.initializingApp;
 	waitMessages.push(waitMsg);
 	const app = createApp(
 		window.location.search === "?zen"
@@ -387,7 +387,7 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 	);
 
 	app.config.errorHandler = async (err, vm, info) => {
-		const waitMsg = "エラーログ出力機能を初期化中(2)...";
+		const waitMsg = i18n.ts._init.initializingErrorLog2;
 		waitMessages.push(waitMsg);
 		const currentDate = new Date();
 		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
@@ -463,7 +463,7 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 
 // スプラッシュスクリーンの初期化
 const initializeSplashScreen = async (minimumLoadPromise: Promise<unknown>) => {
-	const waitMsg = "スプラッシュスクリーンの解除中...";
+	const waitMsg = i18n.ts._init.removingSplash;
 	waitMessages.push(waitMsg);
 
 	const splashText = document.getElementById("splashText");
@@ -853,7 +853,7 @@ const showLocalPostsTutorial = async () => {
 		if (defaultStore.isDefault("showLocalPostsInTimeline")) {
 			const { canceled } = await yesno({
 				type: "question",
-				text: "ホームTLの内容を自身がフォローしている人の投稿のみに変更する事が可能です。\n※ここで変更しない場合でも設定ページ>色々にて後から変更する事が可能です。\n今すぐホームTLをフォロー者の投稿のみの表示に変更しますか？",
+				text: i18n.ts.homeTlFollowOnlyConfirm,
 			});
 			if (!canceled) {
 				defaultStore.set("showLocalPostsInTimeline", "social");
@@ -899,7 +899,7 @@ const showInviteTutorial = async () => {
 		if (defaultStore.state.tutorial === -1 && canInvite) {
 			await alert({
 				type: "info",
-				text: "もこきーの招待コードを発行する事が出来るようになりました！\n\n左メニューのℹ️ボタンから招待コードを発行することが出来ます。",
+				text: i18n.ts.inviteCodeUnlocked,
 			});
 			defaultStore.set("showInviteInfoPopupAccount", true);
 			defaultStore.set("showInviteInfoPopupDevice", true);
@@ -923,7 +923,7 @@ const showMultiReactionTutorial = async () => {
 		if (defaultStore.state.tutorial === -1 && canMultiReaction) {
 			await alert({
 				type: "info",
-				text: "支援または自作絵の絵文字登録、ありがとうございます！\n複数リアクション機能が解禁されました！\n\nもこきーや他の対応サーバのユーザには、1つの投稿に対して基本3種類までのリアクションを付ける事が出来ます！\n（未対応のサーバのユーザに対しては、通常と同じで1つまでしか付けられません。複数リアクション可能な投稿かどうかはリアクションボタンがウインクしているかどうかで判別可能です。）",
+				text: i18n.ts.multiReactionUnlocked,
 			});
 			defaultStore.set("showMultiReactionInfoPopup", true);
 		}
@@ -1047,7 +1047,7 @@ const postSleepModeCancel = () => {
 		localStorage.getItem("sleepCancel") === "y"
 	) {
 		api("notes/create", {
-			text: "#睡眠モード を解除しました",
+			text: i18n.ts.sleepModeOff,
 			visibility: defaultStore.state.rememberNoteVisibility
 				? defaultStore.state.visibility
 				: defaultStore.state.defaultNoteVisibility,
@@ -1179,7 +1179,7 @@ const autoSaveConfig = async () => {
 					const [key] = latestAutoBackup;
 					const { canceled } = await yesno({
 						type: "question",
-						text: "サーバ上に設定の自動保存が存在する様です。\n設定を復元しますか？",
+						text: i18n.ts.restoreSettingsConfirm,
 					});
 					if (!canceled) {
 						applyProfile(key);

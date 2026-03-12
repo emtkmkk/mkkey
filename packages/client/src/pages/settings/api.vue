@@ -10,7 +10,7 @@
 			to="/api-console"
 			:behavior="isDesktop ? 'window' : null"
 			class="_formBlock"
-			>API console</FormLink
+			>{{ i18n.ts.apiConsole }}</FormLink
 		>
 	</div>
 </template>

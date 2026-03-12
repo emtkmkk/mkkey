@@ -66,8 +66,8 @@ function submit() {
 				if (res != null && res === true) {
 					os.alert({
 						type: "success",
-						title: "Thank you!",
-						text: "Your hosting provider has set your settings for you. Enjoy your new instance!",
+						title: i18n.ts.thankYouHostingSet,
+						text: i18n.ts.enjoyNewInstance,
 					});
 				}
 			});

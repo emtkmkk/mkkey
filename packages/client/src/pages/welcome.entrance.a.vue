@@ -71,7 +71,7 @@
 							rounded
 							style="margin-left: 0.75rem; margin-top: 0.75rem"
 							onclick="window.location.href='/explore'"
-							>覗いてみる</MkButton
+							>{{ i18n.ts.takeALook }}</MkButton
 						>
 					</div>
 				</div>

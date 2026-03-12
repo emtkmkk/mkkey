@@ -33,7 +33,7 @@ const headerActions = $computed(() => []);
 const headerTabs = $computed(() => []);
 
 definePageMetadata({
-	title: "Verify email",
+	title: i18n.ts.verifyEmail,
 	icon: "ph-user ph-bold ph-lg",
 });
 </script>

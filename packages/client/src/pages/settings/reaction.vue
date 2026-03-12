@@ -1052,7 +1052,7 @@ function remove(reaction, ev: MouseEvent) {
 				)
 			)
 				? {
-						text: "代替絵文字に変換",
+						text: i18n.ts.convertToAlternateEmoji,
 						action: () => {
 							if (tab === "reactions")
 								reactions[reactions.indexOf(reaction)] = `:${
@@ -1116,7 +1116,7 @@ function remove(reaction, ev: MouseEvent) {
 			!unref(remoteEmojiStr)?.includes(reaction) &&
 			unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/, ":"))
 				? {
-						text: "ローカル絵文字に変換",
+						text: i18n.ts.convertToLocalEmoji,
 						action: () => {
 							if (tab === "reactions")
 								reactions[reactions.indexOf(reaction)] =
@@ -1225,7 +1225,7 @@ async function autoSetEmojis(ev: MouseEvent) {
 	if (!instance?.emojiStats?.recentlySentReactions) return;
 	const { canceled } = await os.confirm({
 		type: "info",
-		text: "このページに、他のページに登録されていない\n最近頻繁に使用している絵文字を追加します。\n(最大35個)",
+		text: i18n.ts.addRecentEmojisToPageConfirm,
 	});
 	if (canceled) return;
 
@@ -1254,7 +1254,7 @@ async function autoSetEmojis(ev: MouseEvent) {
 async function setDefault() {
 	const { canceled } = await os.confirm({
 		type: "warning",
-		text: `${i18n.ts.resetAreYouSure}\n※1ページ目のみデフォルトに戻します`,
+		text: `${i18n.ts.resetAreYouSure}\n${i18n.ts.resetPage1OnlyNote}`,
 	});
 	if (canceled) return;
 

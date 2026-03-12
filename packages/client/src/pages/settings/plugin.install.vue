@@ -66,7 +66,7 @@ async function install() {
 	if (scriptVersion == null) {
 		os.alert({
 			type: "error",
-			text: "No language version annotation found :(",
+			text: i18n.ts.pluginInstallNoLangVersion,
 		});
 		return;
 	}
@@ -104,7 +104,7 @@ async function install() {
 	if (meta == null) {
 		os.alert({
 			type: "error",
-			text: "No metadata found :(",
+			text: i18n.ts.pluginInstallNoMetadata,
 		});
 		return;
 	}
@@ -113,7 +113,7 @@ async function install() {
 	if (metadata == null) {
 		os.alert({
 			type: "error",
-			text: "No metadata found :(",
+			text: i18n.ts.pluginInstallNoMetadata,
 		});
 		return;
 	}
@@ -123,7 +123,7 @@ async function install() {
 	if (name == null || version == null || author == null) {
 		os.alert({
 			type: "error",
-			text: "Required property (name, version, author) not found :(",
+			text: i18n.ts.pluginInstallRequiredProperty,
 		});
 		return;
 	}

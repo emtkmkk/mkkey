@@ -345,7 +345,7 @@ async function saveNew(): Promise<void> {
 
 	const { canceled: cancel2 } = await os.yesno({
 		type: "question",
-		text: "アカウント依存設定を保存しますか？",
+		text: i18n.ts.saveAccountSettingsConfirm,
 	});
 
 	if (Object.values(profiles).some((x) => x.name === name)) {
@@ -447,7 +447,7 @@ async function save(id: string): Promise<void> {
 
 	const { canceled: cancel2 } = await os.yesno({
 		type: "question",
-		text: "アカウント依存設定を保存しますか？",
+		text: i18n.ts.saveAccountSettingsConfirm,
 	});
 
 	const profile: Profile = {

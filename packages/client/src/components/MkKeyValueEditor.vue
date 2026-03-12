@@ -81,7 +81,7 @@ const props = defineProps<{ data: Record<string, any>, isRoot?: boolean }>()
 const emit = defineEmits<{ (e: 'update', value: Record<string, any>): void }>()
 
 const localData = reactive({ ...props.data })
-	
+
 const updateProperty = (key: string, value: any) => {
 	localData[key] = value
 	emitUpdate()
@@ -92,7 +92,7 @@ const emitUpdate = () => {
 
 const addProperty = async () => {
 	const { canceled, result: title } = await os.inputText({
-		title: "キーを入力",
+		title: i18n.ts.enterKey,
 	});
 	if (canceled || !title || Object.keys(localData)?.includes(title)) return;
 	const newKey = title;

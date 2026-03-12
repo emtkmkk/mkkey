@@ -213,7 +213,7 @@ export async function applyProfile(id: string): Promise<void> {
 		if (!accountQuestion && settings.hot[key] && defaultStore.def?.[key]?.where === "account") {
 			const { canceled: cancel3 } = await os.yesno({
 				type: "question",
-				text: "アカウント依存設定を読み込みますか？",
+				text: ts.loadAccountSettingsConfirm,
 			});
 			accountLoad = !cancel3;
 			accountQuestion = true;

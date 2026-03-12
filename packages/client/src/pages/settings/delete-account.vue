@@ -51,7 +51,7 @@ async function deleteAccount() {
 		} else {
 			os.alert({
 				type: "error",
-				text: "入力内容が異なります。",
+				text: i18n.ts.inputMismatch,
 			});
 		}
 	}

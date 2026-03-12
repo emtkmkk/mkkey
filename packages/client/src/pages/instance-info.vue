@@ -465,7 +465,7 @@ function refreshMetadata() {
 		host: instance.host,
 	});
 	os.alert({
-		text: "Refresh requested",
+		text: i18n.ts.refreshRequested,
 	});
 }
 

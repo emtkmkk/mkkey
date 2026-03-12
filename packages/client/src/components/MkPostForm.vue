@@ -2123,7 +2123,7 @@ async function post() {
 			if (note.userId === $i.id) {
 				const { canceled } = await os.yesno({
 					type: "info",
-					text: "自身の投稿1件を参照している様です。\nこの投稿を引用に変更しますか？",
+					text: i18n.ts.changeToQuoteConfirm,
 				});
 				if (!canceled) {
 					quoteId = referenceIds[0];

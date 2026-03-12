@@ -257,7 +257,7 @@ async function doRenote(data, ev?: MouseEvent) {
 	if (renoteCompleted.value) {
 		const { canceled } = await os.yesno({
 			type: "question",
-			text: "この投稿は先程RTした様です。再度RTしますか？",
+			text: i18n.ts.renoteAgainConfirm,
 		});
 		if (canceled) {
 			return;

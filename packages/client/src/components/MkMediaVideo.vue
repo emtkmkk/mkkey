@@ -98,7 +98,7 @@ const hide = ref(
 
 async function show() {
 	if (props.video.isSensitive && defaultStore.state.openPopupNsfwToCarrior && isMobileData()) {
-		const ret = await os.yesno({type: "warning", text: "センシティブメディアを表示しようとしています。\n本当に開きますか？"})
+		const ret = await os.yesno({type: "warning", text: i18n.ts.showSensitiveConfirm})
 		if (ret.canceled) {
 			return;
 		}

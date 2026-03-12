@@ -67,14 +67,17 @@
 		});
 	}
 
-	// タイミングによっては、この時点でDOMの構築が済んでいる場合とそうでない場合とがある
-	if (document.readyState !== "loading") {
-		importAppScript();
-	} else {
-		window.addEventListener("DOMContentLoaded", () => {
-			importAppScript();
-		});
+	// head 内の link(stylesheet) がブラウザに処理されてからクライアントを読み込む。
+	// 即時 import すると Vite の CSS プリロードと競合し "Unable to preload CSS" が出ることがあるため、
+	// DOMContentLoaded を待つか、既に完了している場合は 1 tick 遅延してから読み込む。
+	function scheduleImportAppScript() {
+		if (document.readyState === "loading") {
+			window.addEventListener("DOMContentLoaded", () => importAppScript());
+		} else {
+			Promise.resolve().then(() => importAppScript());
+		}
 	}
+	scheduleImportAppScript();
 	//#endregion
 
 	//#region Theme

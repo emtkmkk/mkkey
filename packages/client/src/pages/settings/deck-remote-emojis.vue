@@ -15,6 +15,7 @@
 					:emoji="`:${e.name}@${e.host}:`"
 					:normal="true"
 					class="emoji"
+					@loaderror="onEmojiLoadError(`:${e.name}@${e.host}:`)"
 				/>
 				<div class="body">
 					<div class="label">
@@ -36,9 +37,9 @@
  * @packageDocumentation
  *
  * 絵文字デッキ（reactions / reactions2〜5）に含まれるリモート絵文字を一覧表示する設定ページ。
- * 行タップで「ローカル絵文字に変換」「インポート申請」メニューを表示する。
+ * 行タップで「ローカル絵文字に変換」「インポート申請」メニューを表示する。画像ロード失敗時は「デッキから削除」を表示し、その場合はインポート申請は出さない。
  */
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import MkEmoji from "@/components/global/MkEmoji.vue";
 import * as os from "@/os";
 import { defaultStore } from "@/store";
@@ -69,7 +70,18 @@ function parseDeckEntry(entry: string): { name: string; host: string } | null {
 	return { name, host };
 }
 
+/** ローカル絵文字に変換した後にリスト再計算をかけるためのトリガー */
+const listRefreshTrigger = ref(0);
+
+/** 画像ロード失敗した絵文字キー（:name@host:）。デッキから削除を表示する条件に利用 */
+const loadErrorEmojiKeys = ref(new Set<string>());
+
+function onEmojiLoadError(emojiKey: string): void {
+	loadErrorEmojiKeys.value.add(emojiKey);
+}
+
 const remoteEmojis = computed(() => {
+	listRefreshTrigger.value;
 	const set = new Map<string, { name: string; host: string }>();
 	for (const key of DECK_KEYS) {
 		const deck = defaultStore.state[key] as string[] | undefined;
@@ -107,10 +119,25 @@ function convertToLocal(item: { name: string; host: string }): void {
 	}
 }
 
+function removeFromDeck(item: { name: string; host: string }): void {
+	const remoteKey = `:${item.name}@${item.host}:`;
+	for (const key of DECK_KEYS) {
+		const deck = defaultStore.state[key] as string[];
+		const next = deck.filter((entry) => entry !== remoteKey);
+		if (next.length !== deck.length) {
+			defaultStore.set(key, next);
+		}
+	}
+	loadErrorEmojiKeys.value.delete(remoteKey);
+	listRefreshTrigger.value++;
+}
+
 function openItemMenu(
 	item: { name: string; host: string },
 	ev: MouseEvent,
 ): void {
+	const emojiKey = `:${item.name}@${item.host}:`;
+	const hasLoadError = loadErrorEmojiKeys.value.has(emojiKey);
 	const canConvert = hasLocalSameName(item.name);
 	const menu: MenuItem[] = [];
 	if (canConvert) {
@@ -119,16 +146,31 @@ function openItemMenu(
 			icon: "ph-hand-withdraw ph-bold ph-lg",
 			action: () => {
 				convertToLocal(item);
+				listRefreshTrigger.value++;
 				os.success();
 			},
 		});
 	}
-	menu.push({
-		text: i18n.ts.requestEmojiImport ?? "インポート申請",
-		icon: "ph-smiley-sticker ph-bold ph-lg",
-		action: () => requestEmojiImportFlow(item.name, item.host),
-	});
-	os.popupMenu(menu, ev.currentTarget ?? (ev.target as HTMLElement));
+	if (hasLoadError) {
+		menu.push({
+			text: i18n.ts.removeFromDeck ?? "デッキから削除",
+			icon: "ph-trash ph-bold ph-lg",
+			action: () => {
+				removeFromDeck(item);
+				os.success();
+			},
+		});
+	} else {
+		menu.push({
+			text: i18n.ts.requestEmojiImport ?? "インポート申請",
+			icon: "ph-smiley-sticker ph-bold ph-lg",
+			action: () => requestEmojiImportFlow(item.name, item.host),
+		});
+	}
+	os.popupMenu(
+		menu,
+		(ev.currentTarget ?? ev.target) as HTMLElement,
+	);
 }
 
 definePageMetadata({

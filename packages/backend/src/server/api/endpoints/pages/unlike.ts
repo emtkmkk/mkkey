@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ページのいいねを解除する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `pages/unlike`（POST `/api/pages/unlike` で呼び出し）
+ * - 認証必須。pageId で指定したページのいいねを外す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Pages, PageLikes } from "@/models/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -47,7 +59,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.notLiked);
 	}
 
-	// Delete like
+	// いいねを削除する
 	await PageLikes.delete(exist.id);
 
 	Pages.decrement({ id: page.id }, "likedCount", 1);

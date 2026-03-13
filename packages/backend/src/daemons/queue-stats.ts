@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * キュー統計を定期的に報告するデーモン。
+ *
+ * @remarks
+ * - **役割**: 定期的に deliver/inbox キュー等の統計を取得し、Xev で queueStats イベントを発火する。
+ *
+ * @internal
+ */
 import Xev from "xev";
 import { getDelayedRetryReasonStats } from "../queue/delayed-retry-reason.js";
 import { deliverQueue, inboxQueue } from "../queue/queues.js";
@@ -7,7 +17,7 @@ const ev = new Xev();
 const interval = 10000;
 
 /**
- * Report queue stats regularly
+ * キュー統計を定期的に報告する
  */
 export default function () {
 	const log = [] as any[];

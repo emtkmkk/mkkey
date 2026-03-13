@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 2FA パスキー（WebAuthn）の登録を完了する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/2fa/key-done`（POST `/api/i/2fa/key-done` で呼び出し）
+ * - 認証必須。クライアントから渡された attestation を検証し、セキュリティキーを登録する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { promisify } from "node:util";
 import * as cbor from "cbor";
 import define from "../../../define.js";
@@ -42,7 +54,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-	// Compare password
+	// パスワードを照合する
 	const same = await comparePassword(ps.password, profile.password!);
 
 	if (!same) {
@@ -135,7 +147,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	await Users.invalidateMeDetailedBaseCache(user.id);
 	await Users.invalidateUserShowDetailedCache(user.id);
 
-	// Publish meUpdated event
+	// meUpdated イベントを発行する
 	publishMainStream(
 		user.id,
 		"meUpdated",

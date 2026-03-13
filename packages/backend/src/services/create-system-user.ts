@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * システム用ユーザー（インスタンスアクター等）を作成するサービス。
+ *
+ * @remarks
+ * - **役割**: リレー等で利用するシステムアカウント（relay.actor 等）を DB に作成する。Users/UserKeypair/UserProfile を登録する。
+ *
+ * @see {@link relay} リレー
+ * @internal
+ */
 import { v4 as uuid } from "uuid";
 import generateNativeUserToken from "../server/api/common/generate-native-user-token.js";
 import { genRsaKeyPair } from "@/misc/gen-key-pair.js";
@@ -13,17 +24,17 @@ import { hashPassword } from "@/misc/password.js";
 export async function createSystemUser(username: string) {
 	const password = uuid();
 
-	// Generate hash of password
+	// パスワードのハッシュを生成
 	const hash = await hashPassword(password);
 
-	// Generate secret
+	// シークレットを生成
 	const secret = generateNativeUserToken();
 
 	const keyPair = await genRsaKeyPair(4096);
 
 	let account!: User;
 
-	// Start transaction
+	// トランザクション開始
 	await db.transaction(async (transactionalEntityManager) => {
 		const exist = await transactionalEntityManager.findOneBy(User, {
 			usernameLower: username.toLowerCase(),

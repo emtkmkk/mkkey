@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザー詳細を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/show`（GET `/api/users/show` で呼び出し）
+ * - 認証は不要（userId または username で指定）。ユーザー情報を 1 件返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import type { FindOptionsWhere } from "typeorm";
 import { In, IsNull } from "typeorm";
 import { resolveUser } from "@/remote/resolve-user.js";
@@ -149,7 +161,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		]);
 		return packedList;
 	}
-	// Lookup user（avatar/banner を事前ロードして pack 内の DriveFiles 取得を削減）
+	// ユーザーを検索する（avatar/banner を事前ロードして pack 内の DriveFiles 取得を削減）
 	if (typeof ps.username === "string") {
 		if (typeof ps.host === "string") {
 			const usernameLower = ps.username.toLowerCase();

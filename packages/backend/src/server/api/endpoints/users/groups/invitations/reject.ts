@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーグループへの招待を拒否する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/groups/invitations/reject`（POST `/api/users/groups/invitations/reject` で呼び出し）
+ * - 認証必須。invitationId で指定した招待を拒否する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { UserGroupInvitations } from "@/models/index.js";
 import define from "../../../../define.js";
 import { ApiError } from "../../../../error.js";
@@ -30,7 +42,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Fetch the invitation
+	// 招待を取得する
 	const invitation = await UserGroupInvitations.findOneBy({
 		id: ps.invitationId,
 	});

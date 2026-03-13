@@ -1,10 +1,21 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub 配信先の管理。Followers / Direct レシピを追加し、スキップ判定後にキューへ投入する。
+ *
+ * @remarks
+ * - **役割**: ノート・リアクション等の配信時にフォロワー・Direct 先を解決し、deliver キューへ投入する。
+ *
+ * @see {@link queue/processors/deliver} 配信ジョブ
+ * @internal
+ */
 import { IsNull, Not, In } from "typeorm";
 import { Users, Followings } from "@/models/index.js";
 import type { ILocalUser, IRemoteUser, User } from "@/models/entities/user.js";
 import { deliver } from "@/queue/index.js";
 import { skippedInstances } from "@/misc/skipped-instances.js";
 
-//#region types
+//#region 型定義
 interface IRecipe {
 	type: string;
 }
@@ -24,7 +35,7 @@ const isFollowers = (recipe: any): recipe is IFollowersRecipe =>
 
 const isDirect = (recipe: any): recipe is IDirectRecipe =>
 	recipe.type === "Direct";
-//#endregion
+//#endregion 型定義
 
 export default class DeliverManager {
 	private actor: { id: User["id"]; host: null };
@@ -32,18 +43,15 @@ export default class DeliverManager {
 	private recipes: IRecipe[] = [];
 
 	/**
-	 * Constructor
-	 * @param actor Actor
-	 * @param activity Activity to deliver
+	 * @param actor - 配送元 Actor
+	 * @param activity - 配送する Activity
 	 */
 	constructor(actor: { id: User["id"]; host: null }, activity: any) {
 		this.actor = actor;
 		this.activity = activity;
 	}
 
-	/**
-	 * Add recipe for followers deliver
-	 */
+	/** フォロワー配送用レシピを追加する */
 	public addFollowersRecipe(union?: ILocalUser) {
 		const deliver = {
 			type: "Followers",
@@ -54,8 +62,8 @@ export default class DeliverManager {
 	}
 
 	/**
-	 * Add recipe for direct deliver
-	 * @param to To
+	 * ダイレクト配送用レシピを追加する
+	 * @param to - 配送先リモートユーザー
 	 */
 	public addDirectRecipe(to: IRemoteUser) {
 		const recipe = {
@@ -67,15 +75,16 @@ export default class DeliverManager {
 	}
 
 	/**
-	 * Add recipe
-	 * @param recipe Recipe
+	 * レシピを追加する
+	 * @param recipe - 追加するレシピ
 	 */
 	public addRecipe(recipe: IRecipe) {
 		this.recipes.push(recipe);
 	}
 
 	/**
-	 * Execute delivers
+	 * 配信を実行する。
+	 * @remarks レシピから inbox を収集し、スキップ判定後にキューへ投入する。完了は待たない。
 	 */
 	public async execute() {
 		if (!Users.isLocalUser(this.actor)) return;
@@ -86,7 +95,8 @@ export default class DeliverManager {
 	}
 
 	/**
-	 * Collect inboxes from recipes
+	 * レシピから inbox 一覧を収集する。
+	 * @returns inbox URL と shared inbox フラグの Map。ローカルユーザーでない場合は空の Map。
 	 */
 	public async collectInboxes() {
 		if (!Users.isLocalUser(this.actor)) return new Map<string, boolean>();
@@ -191,11 +201,12 @@ export default class DeliverManager {
 	}
 }
 
-//#region Utilities
+//#region 配信ユーティリティ
 /**
- * Deliver activity to followers
- * @param activity Activity
- * @param from Followee
+ * フォロワーに Activity を配信する。
+ * @param actor - 配送元ローカルユーザー
+ * @param activity - 配送する Activity
+ * @internal
  */
 export async function deliverToFollowers(
 	actor: { id: ILocalUser["id"]; host: null },
@@ -207,9 +218,11 @@ export async function deliverToFollowers(
 }
 
 /**
- * Deliver activity to user
- * @param activity Activity
- * @param to Target user
+ * 指定ユーザーに Activity を配信する。
+ * @param actor - 配送元ローカルユーザー
+ * @param activity - 配送する Activity
+ * @param to - 配送先リモートユーザー
+ * @internal
  */
 export async function deliverToUser(
 	actor: { id: ILocalUser["id"]; host: null },
@@ -222,9 +235,12 @@ export async function deliverToUser(
 }
 
 /**
- * Deliver activity to inboxes
- * @param activity Activity
- * @param inboxes Map of inbox and shared inbox flag
+ * 複数の inbox に Activity を配信する。
+ * @param actor - 配送元ローカルユーザー
+ * @param activity - 配送する Activity
+ * @param inboxes - inbox URL と shared inbox フラグの Map
+ * @remarks スキップ対象インスタンスは配信しない。
+ * @internal
  */
 export async function deliverToInboxes(
 	actor: { id: ILocalUser["id"]; host: null },
@@ -235,7 +251,7 @@ export async function deliverToInboxes(
 
 	if (inboxes.size === 0) return;
 
-	// Validate Inboxes first
+	// 先に inbox の有効性を検証する
 	const validInboxes = [];
 	for (const inbox of inboxes) {
 		try {
@@ -262,4 +278,4 @@ export async function deliverToInboxes(
 		deliver(actor, activity, valid.inbox[0], valid.inbox[1]);
 	}
 }
-//#endregion
+//#endregion 配信ユーティリティ

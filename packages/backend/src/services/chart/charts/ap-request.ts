@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * AP リクエストチャートの集計・取得。
+ *
+ * @remarks
+ * - **役割**: インスタンスの AP リクエスト数等をチャートに記録し、管理画面等で参照する。
+ *
+ * @see {@link services/chart/core} チャートエンジン
+ * @internal
+ */
+
 import type { KVs } from "../core.js";
 import Chart from "../core.js";
 import { name, schema } from "./entities/ap-request.js";

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * .well-known ルート。WebFinger（webfinger・jrd）・nodeinfo リンク等を提供する。
+ *
+ * @remarks
+ * - **役割**: `/.well-known/webfinger` で WebFinger（acct リソース）、`/.well-known/nodeinfo` で nodeinfo リンク（links）を返す。ActivityPub 連合で利用される。
+ *
+ * @see {@link nodeinfo} nodeinfo リンク先
+ * @see {@link server/index} マウント元
+ * @internal
+ */
 import Router from "@koa/router";
 
 import config from "@/config/index.js";
@@ -9,7 +21,7 @@ import type { User } from "@/models/entities/user.js";
 import type { FindOptionsWhere } from "typeorm";
 import { IsNull } from "typeorm";
 
-// Init router
+// ルーター初期化
 const router = new Router();
 
 const XRD = (

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 登録済み Service Worker のプッシュ購読情報を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `sw/show-registration`（GET `/api/sw/show-registration` で呼び出し）
+ * - 認証必須。現在のユーザーに紐づくプッシュ購読情報を返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { SwSubscriptions } from "@/models/index.js";
 import define from "../../define.js";
 

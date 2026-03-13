@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * API リクエストの認証・実行・エラーレスポンスを担当するハンドラ。
+ *
+ * @remarks
+ * - **役割**: Koa から渡されたエンドポイントと ctx を受け、認証 → call（実行）→ レスポンス返却を行う。
+ * - ルーティングは `endpoints.ts` と連携し、パスに応じてこのハンドラが呼ばれる。
+ *
+ * @see {@link call} エンドポイント実行
+ * @see {@link authenticate} 認証
+ * @internal
+ */
 import type Koa from "koa";
 
 import type { User } from "@/models/entities/user.js";
@@ -33,7 +46,7 @@ export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 			}
 
 			return {
-				message: "Unknown error",
+				message: "不明なエラー",
 				code: "UnknownError",
 				raw: e,
 			};
@@ -66,14 +79,13 @@ export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 			res();
 		};
 
-		// Authentication
-		// for GET requests, do not even pass on the body parameter as it is considered unsafe
+		// 認証（GET の場合は body を渡さない。安全でないため）
 		authenticate(
 			ctx.headers.authorization,
 			ctx.method === "GET" ? null : body["i"],
 		)
 			.then(([user, app]) => {
-				// API invoking
+				// API 実行
 				call(endpoint.name, user, app, body, ctx)
 					.then((res: any) => {
 						if (
@@ -91,7 +103,7 @@ export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 					})
 					.catch((e: unknown) => {
 						const errorInfo = toErrorInfo(e);
-						apiLogger.error("API request failed.", {
+						apiLogger.error("API リクエストに失敗しました。", {
 							...requestContext,
 							error: errorInfo,
 						});
@@ -116,7 +128,7 @@ export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 						);
 					});
 
-				// Log IP
+				// IP を記録
 				if (user) {
 					fetchMeta().then((meta) => {
 						if (!meta.enableIpLogging) return;
@@ -157,7 +169,7 @@ export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 					res();
 				} else {
 					const errorInfo = toErrorInfo(e);
-					apiLogger.error("Unexpected authentication flow error.", {
+					apiLogger.error("認証フローで予期しないエラーが発生しました。", {
 						...requestContext,
 						error: errorInfo,
 					});

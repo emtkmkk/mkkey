@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * カスタム絵文字エクスポートジョブ。ローカル絵文字を ZIP でドライブに保存する。
+ *
+ * @remarks
+ * - **役割**: エクスポートキューで実行し、カスタム絵文字を ZIP にまとめてドライブに追加する。
+ *
+ * @see {@link queue/processors/db/import-custom-emojis} 絵文字インポート
+ * @internal
+ */
 import type Bull from "bull";
 import * as fs from "node:fs";
 

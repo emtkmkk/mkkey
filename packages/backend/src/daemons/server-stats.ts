@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * サーバー統計（CPU・メモリ・ネットワーク等）を定期的に報告するデーモン。
+ *
+ * @remarks
+ * - **役割**: 定期的に CPU・メモリ・ネットワーク等の統計を取得し、Xev で serverStats イベントを発火する。
+ *
+ * @internal
+ */
 import si from "systeminformation";
 import Xev from "xev";
 import * as osUtils from "os-utils";
@@ -10,7 +20,7 @@ const roundCpu = (num: number) => Math.round(num * 1000) / 1000;
 const round = (num: number) => Math.round(num * 10) / 10;
 
 /**
- * Report server stats regularly
+ * サーバー統計を定期的に報告する
  */
 export default function () {
 	const log = [] as any[];

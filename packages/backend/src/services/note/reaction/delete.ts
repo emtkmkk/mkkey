@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * リアクション削除処理を行うサービス。
+ *
+ * @remarks
+ * - **役割**: ノートへのリアクション削除時に呼ばれ、Undo Like を配信し DB とストリームを更新する。
+ *
+ * @see {@link note/reaction/create} リアクション追加
+ * @internal
+ */
 import { publishInternalEvent, publishNoteStream } from "@/services/stream.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import renderUndo from "@/remote/activitypub/renderer/undo.js";
@@ -35,7 +46,7 @@ export default async (
 			return null;
 		}
 	})();
-	
+
 	const muteInfoPromise = UserProfiles.findOne({
 		where: {
 			userId: note.userId,
@@ -43,41 +54,41 @@ export default async (
 		},
 		select: ["userId", "reactionMutedWords", "rejectMuteReaction"],
 	});
-	
-	// Await initial checks and processing
+
+	// 初期チェックと処理を待機
 	const [existCount, processedEmoji, muteInfo] = await Promise.all([existCountPromise, emojiPromise, muteInfoPromise]);
-	
+
 	if (emoji == null && existCount > 1) {
 		throw new IdentifiableError(
 			"60527ec9-b4cb-4a88-a6bd-32d3ad26817d",
 			"Unable to process due to multiple targets",
 		);
 	}
-	
-	// if already unreacted
+
+	// 既にリアクション解除済みの場合
 	const exist = await NoteReactions.findOneBy({
 		noteId: note.id,
 		userId: user.id,
 		...(processedEmoji ? { reaction: processedEmoji } : {}),
 	});
-	
+
 	if (exist == null) {
 		throw new IdentifiableError(
 			"60527ec9-b4cb-4a88-a6bd-32d3ad26817d",
 			"not reacted",
 		);
 	}
-	
-	// Delete reaction
+
+	// リアクションを削除
 	const result = await NoteReactions.delete(exist.id);
-	
+
 	if (result.affected !== 1) {
 		throw new IdentifiableError(
 			"60527ec9-b4cb-4a88-a6bd-32d3ad26817d",
 			"not reacted",
 		);
 	}
-	
+
 	let isMutedReaction: boolean | { muted: boolean; reject?: boolean | undefined } = false;
 	if (muteInfo) {
 		isMutedReaction = checkReactionMute(
@@ -90,11 +101,11 @@ export default async (
 			isMutedReaction = isMutedReaction.muted;
 		}
 	}
-	
+
 	if (!isMutedReaction) {
-		// Decrement reactions count
+		// リアクション数をデクリメント
 		const sql = `jsonb_set("reactions", '{${exist.reaction}}', (COALESCE("reactions"->>'${exist.reaction}', '0')::int - 1)::text::jsonb)`;
-	
+
 		await Notes.createQueryBuilder()
 			.update()
 			.set({
@@ -102,12 +113,12 @@ export default async (
 			})
 			.where("id = :id", { id: note.id })
 			.execute();
-	
+
 		if (existCount === 1) {
 			Notes.decrement({ id: note.id }, "score", user.host ? "1" : "3");
 		}
 	}
-	
+
 	publishInternalEvent("notePackReactionUpdated", {
 		userId: user.id,
 		noteId: note.id,
@@ -122,7 +133,7 @@ export default async (
 				: [user.id]
 			: [user.id, note.userId],
 	});
-	
+
 	if (!isMutedReaction) {
 		//#region 配信
 		if (Users.isLocalUser(user) && !(note.channelId && note.localOnly)) {

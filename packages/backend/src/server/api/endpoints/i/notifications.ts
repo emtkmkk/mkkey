@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーの通知一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/notifications`（GET `/api/i/notifications` で呼び出し）
+ * - 認証必須。未読含む通知をページネーションで返す。type や sinceId で絞り込み可能。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import { Notifications, Mutings, Users, UserProfiles } from "@/models/index.js";
 import { notificationTypes } from "@/types.js";
@@ -104,7 +116,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
 
-	// muted users
+	// ミュートユーザー
 	query.andWhere(
 		new Brackets((qb) => {
 			qb.where(
@@ -114,7 +126,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	);
 	query.setParameters(mutingQuery.getParameters());
 
-	// muted instances
+	// ミュートインスタンス
 	query.andWhere(
 		new Brackets((qb) => {
 			qb.andWhere("notifier.host IS NULL").orWhere(
@@ -124,7 +136,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	);
 	query.setParameters(mutingInstanceQuery.getParameters());
 
-	// suspended users
+	// サスペンドユーザー
 	query.andWhere(
 		new Brackets((qb) => {
 			qb.where(
@@ -164,7 +176,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const notifications = await query.take(ps.limit).getMany();
 
-	// Mark all as read
+	// すべて既読にする
 	if (notifications.length > 0 && ps.markAsRead) {
 		const latestNotificationId = notifications.reduce(
 			(latest, notification) =>

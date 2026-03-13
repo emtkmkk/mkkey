@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーの「known as」（リモートで知られている名前）を取得・更新する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/known-as`（GET/POST `/api/i/known-as` で呼び出し）
+ * - 認証必須。リモートインスタンスで表示される名前の一覧取得・追加・削除を行う。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import type { User, UserDetailedNotMeOnly } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
 import { resolveUser } from "@/remote/resolve-user.js";
@@ -88,7 +100,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		includeSecrets: true,
 	});
 
-	// Publish meUpdated event
+	// meUpdated イベントを発行する
 	publishMainStream(user.id, "meUpdated", iObj);
 	/*
 	if (user.isLocked === false) {

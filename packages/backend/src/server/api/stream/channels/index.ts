@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * ストリーム用チャンネル一覧。main / homeTimeline / drive 等を export する。
+ *
+ * @remarks
+ * - **役割**: 各チャンネル実装を集約し、stream/index が購読時に参照する。
+ * - チャンネル名（chName）とクラスの対応はここで管理される。
+ *
+ * @see {@link stream/index} メイン接続
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import main from "./main.js";
 import homeTimeline from "./home-timeline.js";
 import localTimeline from "./local-timeline.js";

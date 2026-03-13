@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * アンテナにノートを追加するサービス。
+ *
+ * @remarks
+ * - **役割**: ノート作成時等で、条件に合うアンテナにノートを登録し、ストリーム・通知・Webhook を発火する。
+ *
+ * @see {@link note/create} ノート作成
+ * @internal
+ */
 import type { Antenna } from "@/models/entities/antenna.js";
 import type { Note } from "@/models/entities/note.js";
 import { AntennaNotes, Mutings, Notes, Users } from "@/models/index.js";

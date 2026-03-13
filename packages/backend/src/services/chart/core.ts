@@ -1,7 +1,13 @@
 /**
- * チャートエンジン
+ * @packageDocumentation
  *
- * Tests located in test/chart
+ * チャートエンジン。集計データの記録・取得を行う。テストは test/chart にあり。
+ *
+ * @remarks
+ * - **役割**: 各種チャート（ユーザー数・ノート数・AP リクエスト等）の集計・永続化・取得を提供する。
+ *
+ * @see {@link services/chart/charts/ap-request} AP リクエストチャート
+ * @internal
  */
 
 import * as nestedProperty from "nested-property";
@@ -475,7 +481,7 @@ export default abstract class Chart<T extends Schema> {
 	protected commit(diff: Commit<T>, group: string | null = null): void {
 		for (const [k, v] of Object.entries(diff)) {
 			if (v == null || v === 0 || (Array.isArray(v) && v.length === 0))
-				// rome-ignore lint/performance/noDelete: needs to be deleted not just set to undefined
+				// rome-ignore lint/performance/noDelete: undefined ではなく削除する必要がある
 				delete diff[k];
 		}
 		this.buffer.push({
@@ -556,7 +562,7 @@ export default abstract class Chart<T extends Schema> {
 				}
 			}
 
-			// bake unique count
+			// ユニーク件数を集計
 			for (const [k, v] of Object.entries(finalDiffs)) {
 				if (
 					this.schema[k].uniqueIncrement &&
@@ -578,7 +584,7 @@ export default abstract class Chart<T extends Schema> {
 				}
 			}
 
-			// compute intersection
+			// 積集合を計算
 			// TODO: intersectionに指定されたカラムがintersectionだった場合の対応
 			for (const [k, v] of Object.entries(this.schema)) {
 				const intersection = v.intersection;
@@ -659,9 +665,8 @@ export default abstract class Chart<T extends Schema> {
 		const groups = removeDuplicates(this.buffer.map((log) => log.group));
 		const groupCount = groups.length;
 
-		// Limit the number of concurrent chart update queries executed on the database
-		// to 1000 at a time, so as avoid excessive IO spinlocks like when 8k queries are
-		// sent out at once.
+		// DB で同時実行するチャート更新クエリ数を一度に 1000 件に制限し、
+		// 8k クエリを一括送信したときのような過剰な IO スピンロックを避ける
 		const limit = promiseLimit(1000);
 
 		const startTime = Date.now();

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Person（Actor）の取得・作成・更新・解決
+ *
+ * @remarks
+ * - **役割**: リモートユーザーを AP Person から DB に作成・更新し、inbox や resolve で利用する。
+ *
+ * @see {@link remote/resolve-user} リモートユーザー解決
+ * @internal
+ */
 import { URL } from "node:url";
 import promiseLimit from "promise-limit";
 
@@ -55,9 +66,9 @@ const nameLength = 128;
 const summaryLength = 8192;
 
 /**
- * Validate and convert to actor object
- * @param x Fetched object
- * @param uri Fetch target URI
+ * 取得したオブジェクトを検証し Actor に変換する
+ * @param x 取得したオブジェクト
+ * @param uri 取得対象 URI
  */
 function validateActor(x: IObject, uri: string): IActor {
 	const expectHost = toPuny(new URL(uri).hostname);
@@ -89,9 +100,7 @@ function validateActor(x: IObject, uri: string): IActor {
 		throw new Error("invalid Actor: wrong username");
 	}
 
-	// These fields are only informational, and some AP software allows these
-	// fields to be very long. If they are too long, we cut them off. This way
-	// we can at least see these users and their activities.
+	// これらのフィールドは情報用で、AP 実装によっては非常に長い値を許容する。長すぎる場合は切り詰める
 	if (x.name) {
 		if (!(typeof x.name === "string" && x.name.length > 0)) {
 			throw new Error("invalid Actor: wrong name");
@@ -125,9 +134,9 @@ function validateActor(x: IObject, uri: string): IActor {
 }
 
 /**
- * Fetch a Person.
+ * Person を取得する。
  *
- * If the target Person is registered in Calckey, it will be returned.
+ * 対象の Person が Calckey に登録されていればそれを返す。
  */
 export async function fetchPerson(
 	uri: string,
@@ -138,7 +147,7 @@ export async function fetchPerson(
 	const cached = uriPersonCache.get(uri);
 	if (cached) return cached;
 
-	// Fetch from the database if the URI points to this server
+	// URI が当サーバーを指す場合は DB から取得
 	if (uri.startsWith(`${config.url}/`)) {
 		const id = uri.split("/").pop();
 		const u = await Users.findOneBy({ id });
@@ -146,7 +155,7 @@ export async function fetchPerson(
 		return u;
 	}
 
-	//#region Returns if already registered with this server
+	//#region 既に当サーバーに登録されていれば返す
 	const exist = await Users.findOneBy({ uri });
 
 	if (exist) {
@@ -159,7 +168,7 @@ export async function fetchPerson(
 }
 
 /**
- * Create Person.
+ * Person を作成する。
  */
 export async function createPerson(
 	uri: string,
@@ -381,10 +390,10 @@ export async function createPerson(
 		);
 	}
 
-	// Create user
+	// ユーザー作成
 	let user: IRemoteUser;
 	try {
-		// Start transaction
+		// トランザクション開始
 		await db.transaction(async (transactionalEntityManager) => {
 			user = (await transactionalEntityManager.save(
 				new User({
@@ -465,9 +474,9 @@ export async function createPerson(
 			}
 		});
 	} catch (e) {
-		// duplicate key error
+		// 重複キーエラー
 		if (isDuplicateKeyValueError(e)) {
-			// /users/@a => /users/:id Corresponds to an error that may occur when the input is an alias like
+			// /users/@a => /users/:id のようなエイリアス入力で発生しうるエラーに対応
 			const u = await Users.findOneBy({
 				uri: person.id,
 			});
@@ -483,7 +492,7 @@ export async function createPerson(
 		}
 	}
 
-	// Register host
+	// ホスト登録
 	registerOrFetchInstanceDoc(host).then((i) => {
 		Instances.increment({ id: i.id }, "usersCount", 1);
 		instanceChart.newUser(i.host);
@@ -492,10 +501,10 @@ export async function createPerson(
 
 	usersChart.update(user!, true);
 
-	// Hashtag update
+	// ハッシュタグ更新
 	updateUsertags(user!, tags);
 
-	//#region Fetch avatar and header image
+	//#region アバター・ヘッダー画像の取得
 	const [avatar, banner] = await Promise.all(
 		[person.icon, person.image].map((img) =>
 			img == null
@@ -516,7 +525,7 @@ export async function createPerson(
 	user!.bannerId = bannerId;
 	//#endregion
 
-	//#region Get custom emoji
+	//#region カスタム絵文字取得
 	const emojis = await extractEmojis(person.tag || [], host).catch((e) => {
 		logger.info(`extractEmojis: ${e}`);
 		return [] as Emoji[];
@@ -535,11 +544,11 @@ export async function createPerson(
 }
 
 /**
- * Update Person data from remote.
- * If the target Person is not registered in Calckey, it is ignored.
- * @param uri URI of Person
+ * リモートから Person データを更新する。
+ * 対象の Person が Calckey に登録されていなければ何もしない。
+ * @param uri Person の URI
  * @param resolver Resolver
- * @param hint Hint of Person object (If this value is a valid Person, it is used for updating without Remote resolve)
+ * @param hint Person オブジェクトのヒント（有効な Person ならリモート解決なしで更新に使用）
  */
 export async function updatePerson(
 	uri: string,
@@ -548,12 +557,12 @@ export async function updatePerson(
 ): Promise<void> {
 	if (typeof uri !== "string") throw new Error("uri is not string");
 
-	// Skip if the URI points to this server
+	// URI が当サーバーを指す場合はスキップ
 	if (uri.startsWith(`${config.url}/`)) {
 		return;
 	}
 
-	//#region Already registered on this server?
+	//#region 既に当サーバーに登録済みか
 	const exist = (await Users.findOneBy({ uri })) as IRemoteUser;
 
 	if (exist == null) {
@@ -569,7 +578,7 @@ export async function updatePerson(
 
 	logger.info(`Updating the Person: ${person.id}`);
 
-	// Fetch avatar and header image
+	// アバター・ヘッダー画像を取得
 	const [avatar, banner] = await Promise.all(
 		[person.icon, person.image].map((img) =>
 			img == null
@@ -578,7 +587,7 @@ export async function updatePerson(
 		),
 	);
 
-	// Custom pictogram acquisition
+	// カスタム絵文字取得
 	const emojis = await extractEmojis(person.tag || [], exist.host).catch(
 		(e) => {
 			logger.info(`extractEmojis: ${e}`);
@@ -837,7 +846,7 @@ export async function updatePerson(
 		updates.bannerId = banner.id;
 	}
 
-	// Update user
+	// ユーザー更新
 	await Users.update(exist.id, updates);
 
 	if (person.publicKey) {
@@ -864,10 +873,10 @@ export async function updatePerson(
 
 	publishInternalEvent("remoteUserUpdated", { id: exist.id });
 
-	// Hashtag Update
+	// ハッシュタグ更新
 	updateUsertags(exist, tags);
 
-	// If the user in question is a follower, followers will also be updated.
+	// 対象ユーザーがフォロワーである場合、フォロワー情報も更新する
 	await Followings.update(
 		{
 			followerId: exist.id,
@@ -883,10 +892,10 @@ export async function updatePerson(
 }
 
 /**
- * Resolve Person.
+ * Person を解決する。
  *
- * If the target person is registered in Calckey, it returns it;
- * otherwise, it fetches it from the remote server, registers it in Calckey, and returns it.
+ * 対象が Calckey に登録されていればそれを返し、
+ * そうでなければリモートから取得して Calckey に登録して返す。
  */
 export async function resolvePerson(
 	uri: string,
@@ -894,7 +903,7 @@ export async function resolvePerson(
 ): Promise<CacheableUser> {
 	if (typeof uri !== "string") throw new Error("uri is not string");
 
-	//#region If already registered on this server, return it.
+	//#region 既に当サーバーに登録されていれば返す
 	const exist = await fetchPerson(uri);
 
 	if (exist) {
@@ -902,7 +911,7 @@ export async function resolvePerson(
 	}
 	//#endregion
 
-	// Fetched from remote server and registered
+	// リモートから取得して登録
 	if (resolver == null) resolver = new Resolver();
 	return await createPerson(uri, resolver);
 }
@@ -974,12 +983,12 @@ export async function updateFeatured(userId: User["id"], resolver?: Resolver) {
 
 	if (resolver == null) resolver = new Resolver();
 
-	// Resolve to (Ordered)Collection Object
+	// (Ordered)Collection オブジェクトに解決
 	const collection = await resolver.resolveCollection(user.featured);
 	if (!isCollectionOrOrderedCollection(collection))
 		throw new Error("Object is not Collection or OrderedCollection");
 
-	// Resolve to Object(may be Note) arrays
+	// オブジェクト（Note 等）の配列に解決
 	const unresolvedItems = isCollection(collection)
 		? collection.items
 		: collection.orderedItems;
@@ -987,11 +996,11 @@ export async function updateFeatured(userId: User["id"], resolver?: Resolver) {
 		toArray(unresolvedItems).map((x) => resolver?.resolve(x)),
 	);
 
-	// Resolve and regist Notes
+	// Note を解決して登録
 	const limit = promiseLimit<Note | null>(2);
 	const featuredNotes = await Promise.all(
 		items
-			.filter((item) => getApType(item) === "Note") // TODO: Maybe it doesn't have to be a Note.
+			.filter((item) => getApType(item) === "Note") // TODO: Note でなくてもよい可能性あり
 			.slice(0, 50)
 			.map((item) => limit(() => resolveNote(item, resolver))),
 	);
@@ -1001,7 +1010,7 @@ export async function updateFeatured(userId: User["id"], resolver?: Resolver) {
                         userId: user.id,
                 });
 
-                // For now, generate the id at a different time and maintain the order.
+                // 現状は別時刻で ID を生成して順序を維持する
                 let td = 0;
                 const insertedNoteIds = new Set<string>();
                 for (const note of featuredNotes.filter((note) => note != null)) {

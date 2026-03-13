@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーリストにユーザーを追加する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/lists/push`（POST `/api/users/lists/push` で呼び出し）
+ * - 認証必須。listId と userId で指定したユーザーをリストに追加する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { pushUserToUserList } from "@/services/user-list/push.js";
 import { UserLists, UserListJoinings, Blockings } from "@/models/index.js";
 import define from "../../../define.js";
@@ -51,7 +63,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Fetch the list
+	// リストを取得する
 	const userList = await UserLists.findOneBy({
 		id: ps.listId,
 		userId: me.id,
@@ -61,14 +73,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noSuchList);
 	}
 
-	// Fetch the user
+	// ユーザーを取得する
 	const user = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Check blocking
+	// ブロック関係を確認する
 	if (user.id !== me.id) {
 		const block = await Blockings.findOneBy({
 			blockerId: user.id,
@@ -88,6 +100,6 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.alreadyAdded);
 	}
 
-	// Push the user
+	// ユーザーを追加する
 	await pushUserToUserList(user, userList);
 });

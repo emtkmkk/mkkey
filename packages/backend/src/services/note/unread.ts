@@ -1,10 +1,12 @@
 /**
- * 未読ノート挿入サービス
- *
  * @packageDocumentation
+ *
+ * 未読ノート挿入サービス。
+ *
  * @remarks
- * insertNoteUnread: 単一ユーザ向け。ミュート・スレッドミュートを確認してから 1 件挿入。
- * insertNoteUnreadBatch: 複数ユーザを一括。Mutings/NoteThreadMutings を 1 回ずつ取得してから一括挿入。
+ * - **役割**: ノート配送時に未読レコードを挿入する。insertNoteUnread は単一ユーザ向け、insertNoteUnreadBatch は複数ユーザを一括で挿入する。
+ *
+ * @internal
  */
 import type { Note } from "@/models/entities/note.js";
 import { publishMainStream } from "@/services/stream.js";

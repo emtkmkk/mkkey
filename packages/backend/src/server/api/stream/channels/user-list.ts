@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーリストストリーム。指定リストに含まれるユーザーのノートをリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `userList`。認証不要（リストは非公開の場合は要認証）。
+ * - listId でリストを指定し、そのリストのユーザーによるノートを配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Channel from "../channel.js";
 import { UserListJoinings, UserLists } from "@/models/index.js";
 import type { User } from "@/models/entities/user.js";
@@ -21,14 +33,14 @@ export default class extends Channel {
 	public async init(params: any) {
 		this.listId = params.listId as string;
 
-		// Check existence and owner
+		// リストの存在と所有者を確認
 		const list = await UserLists.findOneBy({
 			id: this.listId,
 			userId: this.user!.id,
 		});
 		if (!list) return;
 
-		// Subscribe stream
+		// ストリーム購読
 		this.subscriber.on(`userListStream:${this.listId}`, this.send);
 
 		this.subscriber.on("notesStream", this.onNote);
@@ -64,7 +76,7 @@ export default class extends Channel {
 	}
 
 	public dispose() {
-		// Unsubscribe events
+		// イベント購読解除
 		this.subscriber.off(`userListStream:${this.listId}`, this.send);
 		this.subscriber.off("notesStream", this.onNote);
 

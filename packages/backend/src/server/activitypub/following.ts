@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の following コレクション（GET /users/:user/following）を返す。フォロー中一覧の OrderedCollection を提供する。
+ *
+ * @remarks
+ * - **役割**: activitypub ルーターから GET /users/:id/following で呼ばれる。フォロー中ユーザーの OrderedCollection を返す。
+ *
+ * @see {@link activitypub} ルート登録
+ * @internal
+ */
 import { LessThan, IsNull } from "typeorm";
 import config from "@/config/index.js";
 import * as url from "@/prelude/url.js";
@@ -40,7 +51,7 @@ export default async (ctx: Router.RouterContext) => {
 		return;
 	}
 
-	//#region Check ff visibility
+	//#region FF 公開範囲チェック
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 	/*
 	if (profile.ffVisibility === "private") {
@@ -63,12 +74,12 @@ export default async (ctx: Router.RouterContext) => {
 			followerId: user.id,
 		} as FindOptionsWhere<Following>;
 
-		// If a cursor is specified
+		// カーソルが指定されている場合
 		if (cursor) {
 			query.id = LessThan(cursor);
 		}
 
-		// Get followings
+		// フォロー中を取得
 		const followings =
 			profile.ffVisibility !== "private" && profile.ffVisibility !== "followers"
 				? await Followings.find({
@@ -78,7 +89,7 @@ export default async (ctx: Router.RouterContext) => {
 				  })
 				: [];
 
-		// Whether there is a "next page" or not
+		// 「次のページ」があるかどうか
 		const inStock = followings.length === limit + 1;
 		if (inStock) followings.pop();
 
@@ -105,7 +116,7 @@ export default async (ctx: Router.RouterContext) => {
 		ctx.body = renderActivity(rendered);
 		setResponseType(ctx);
 	} else {
-		// index page
+		// インデックスページ
 		const rendered = renderOrderedCollection(
 			partOf,
 			user.followingCount,

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーのレジストリ（キー値ストア）を一括取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/registry/get-all`（GET `/api/i/registry/get-all` で呼び出し）
+ * - 認証必須。スコープで絞ったレジストリキー・値をまとめて返す。キャッシュ 5 分。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { redisClient } from "@/db/redis.js";
 import define from "../../../define.js";
 import { RegistryItems } from "@/models/index.js";

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーが許可したアプリ（アクセストークン）一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/authorized-apps`（GET `/api/i/authorized-apps` で呼び出し）
+ * - 認証必須。自分が発行したアクセストークンと紐づくアプリの一覧を返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { AccessTokens, Apps } from "@/models/index.js";
 
@@ -18,7 +30,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Get tokens
+	// トークンを取得する
 	const tokens = await AccessTokens.find({
 		where: {
 			userId: user.id,

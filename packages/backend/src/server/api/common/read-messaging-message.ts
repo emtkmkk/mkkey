@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * メッセージの既読処理。DM・グループの既読更新と ActivityPub Read の配送を行う。
+ *
+ * @remarks
+ * - **役割**: メッセージ既読 API やストリームから呼ばれ、DB 更新・ストリーム配信・リモートへ Read アクティビティを送る。
+ *
+ * @see {@link messaging/messages/read} 既読 API
+ * @internal
+ */
 import {
 	publishMainStream,
 	publishGroupMessagingStream,
@@ -18,7 +29,7 @@ import { deliver } from "@/queue/index.js";
 import orderedCollection from "@/remote/activitypub/renderer/ordered-collection.js";
 
 /**
- * Mark messages as read
+ * メッセージを既読にする
  */
 export async function readUserMessagingMessage(
 	userId: User["id"],

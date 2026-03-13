@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 画像処理（リサイズ・WebP 変換等）を行うサービス。
+ *
+ * @remarks
+ * - **役割**: ドライブ追加時やサムネイル生成時に画像をリサイズ・WebP 変換する。
+ *
+ * @see {@link services/drive/add-file} ドライブ追加
+ * @internal
+ */
+
 import sharp from "sharp";
 
 export type IImage = {

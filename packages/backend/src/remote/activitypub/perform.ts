@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub Activity の実行。performActivity のラッパー。リモートユーザー情報の更新も行う。
+ *
+ * @remarks
+ * - **役割**: inbox ジョブから呼ばれ、Activity 種別に応じて kernel のハンドラを実行する。
+ *
+ * @see {@link queue/processors/inbox} Inbox ジョブ
+ * @internal
+ */
 import type { IObject } from "./type.js";
 import type { CacheableRemoteUser } from "@/models/entities/user.js";
 import { performActivity } from "./kernel/index.js";
@@ -10,7 +21,7 @@ export default async (
 ): Promise<void> => {
 	await performActivity(actor, activity, userId);
 
-	// Update the remote user information if it is out of date
+	// リモートユーザー情報が古い場合は更新する
 	if (actor.uri) {
 		const lastFetchedAtTime = actor.lastFetchedAt
 			? new Date(actor.lastFetchedAt).getTime()

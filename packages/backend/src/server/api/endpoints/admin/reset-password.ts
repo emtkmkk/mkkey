@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 管理者が指定ユーザーのパスワードをリセットする API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `admin/reset-password`（POST `/api/admin/reset-password` で呼び出し）
+ * - 認証必須・モデレーター権限必須。userId で指定したユーザーのパスワードを新ランダム値に変更し、レスポンスで返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 // import bcrypt from "bcryptjs";
 import rndstr from "rndstr";
@@ -47,7 +59,7 @@ export default define(meta, paramDef, async (ps) => {
 
 	const passwd = rndstr("a-zA-Z0-9", 8);
 
-	// Generate hash of password
+	// パスワードのハッシュを生成する
 	// const hash = bcrypt.hashSync(passwd);
 	const hash = await hashPassword(passwd);
 

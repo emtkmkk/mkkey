@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ドライブフォルダを削除する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `drive/folders/delete`（POST `/api/drive/folders/delete` で呼び出し）
+ * - 認証必須。folderId で指定したフォルダを削除する。配下のファイルは親フォルダへ移動される。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../../define.js";
 import { publishDriveStream } from "@/services/stream.js";
 import { ApiError } from "../../../error.js";
@@ -34,7 +46,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Get folder
+	// フォルダを取得する
 	const folder = await DriveFolders.findOneBy({
 		id: ps.folderId,
 		userId: user.id,
@@ -55,6 +67,6 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	await DriveFolders.delete(folder.id);
 
-	// Publish folderCreated event
+	// folderDeleted イベントを発行する
 	publishDriveStream(user.id, "folderDeleted", folder.id);
 });

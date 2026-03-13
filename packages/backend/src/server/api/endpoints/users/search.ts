@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーを検索する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/search`（GET `/api/users/search` で呼び出し）
+ * - 認証は不要（クエリで検索）。query・limit 等でユーザーを検索する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import { UserProfiles, Users } from "@/models/index.js";
 import type { User } from "@/models/entities/user.js";
@@ -125,7 +137,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				new Brackets((qb) => {
 					qb.where("user.name ILIKE :query", { query: `%${querys?.[0]}%` });
 
-					// Also search username if it qualifies as username
+					// ユーザー名として妥当な場合はユーザー名も検索する
 					if (Users.validateLocalUsername(querys?.[0])) {
 						qb.orWhere("user.usernameLower LIKE :username", {
 							username: `%${querys?.[0].toLowerCase()}%`,

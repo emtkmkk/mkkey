@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーのプロフィール・設定を更新する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/update`（POST `/api/i/update` で呼び出し）
+ * - 認証必須。名前・説明・アバター・その他プロフィール項目を更新する。パラメータは任意。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import RE2 from "re2";
 import * as mfm from "mfm-js";
 import { JSDOM } from "jsdom";
@@ -247,7 +259,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	if (ps.avatarId !== undefined) updates.avatarId = ps.avatarId;
 	if (ps.bannerId !== undefined) updates.bannerId = ps.bannerId;
 	if (ps.mutedWords !== undefined) {
-		// validate regular expression syntax
+		// 正規表現の構文を検証する
 		ps.mutedWords
 			.filter((x) => !Array.isArray(x))
 			.forEach((x) => {
@@ -266,7 +278,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		profileUpdates.reactionMutedWords = ps.reactionMutedWords;
 	}
 	if (ps.reactionMutedWords !== undefined) {
-		// validate regular expression syntax
+		// 正規表現の構文を検証する
 		ps.reactionMutedWords
 			.filter((x) => !Array.isArray(x))
 			.forEach((x) => {
@@ -391,7 +403,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
                         .filter((x) => x.name !== "" && x.value !== "");
         }
 
-	//#region emojis/tags
+	//#region 絵文字・タグ
 
 	let emojis = [] as string[];
 	let tags = [] as string[];
@@ -497,7 +509,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		includeSecrets: isSecure,
 	});
 
-	// Publish meUpdated event
+	// meUpdated イベントを発行する
 	publishMainStream(user.id, "meUpdated", iObj);
 	publishUserEvent(
 		user.id,
@@ -505,7 +517,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		await UserProfiles.findOneBy({ userId: user.id }),
 	);
 
-	// Publish meUpdated event
+	// meUpdated イベントを発行する
 	publishInternalEvent("localUserUpdated", { id: user.id });
 
 	// 鍵垢を解除したとき、溜まっていたフォローリクエストがあるならすべて承認
@@ -570,7 +582,7 @@ async function verifyLink(url: string, original: string, user: ILocalUser) {
 				.execute();
 		}
 	} catch (err) {
-		// ignore errors during link verification
+		// リンク検証中のエラーは無視する
 	}
 }
 

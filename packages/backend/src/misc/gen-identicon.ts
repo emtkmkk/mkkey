@@ -1,14 +1,20 @@
 /**
- * Identicon generator
- * https://en.wikipedia.org/wiki/Identicon
+ * @packageDocumentation
+ *
+ * 識別用アイコン（Identicon）の生成。
+ *
+ * @remarks
+ * - **役割**: ユーザーアイコン未設定時に、ID から一意のアイコン画像を生成して表示に利用する。
+ * - 参考: https://en.wikipedia.org/wiki/Identicon
+ *
+ * @internal
  */
-
 import type { WriteStream } from "node:fs";
 import * as p from "pureimage";
 import gen from "random-seed";
 
-const size = 128; // px
-const n = 5; // resolution
+const size = 128; // ピクセル
+const n = 5; // 解像度（グリッド数）
 const margin = size / 4;
 const colors = [
 	["#eb6f92", "#b4637a"],
@@ -53,7 +59,10 @@ const cellSize = actualSize / n;
 const sideN = Math.floor(n / 2);
 
 /**
- * Generate buffer of an identicon by seed
+ * シードから Identicon を生成しストリームに PNG で書き出す。
+ * @param seed - 乱数シード
+ * @param stream - 出力先ストリーム
+ * @internal
  */
 export function genIdenticon(seed: string, stream: WriteStream): Promise<void> {
 	const rand = gen.create(seed);
@@ -72,13 +81,13 @@ export function genIdenticon(seed: string, stream: WriteStream): Promise<void> {
 
 	ctx.fillStyle = "#ffffff";
 
-	// side bitmap (filled by false)
+	// 片面のビットマップ（未描画は false）
 	const side: boolean[][] = new Array(sideN);
 	for (let i = 0; i < side.length; i++) {
 		side[i] = new Array(n).fill(false);
 	}
 
-	// 1*n (filled by false)
+	// 中央列（未描画は false）
 	const center: boolean[] = new Array(n).fill(false);
 
 	for (let x = 0; x < side.length; x++) {
@@ -91,7 +100,7 @@ export function genIdenticon(seed: string, stream: WriteStream): Promise<void> {
 		center[i] = rand(3) === 0;
 	}
 
-	// Draw
+	// 描画
 	for (let x = 0; x < n; x++) {
 		for (let y = 0; y < n; y++) {
 			const isXCenter = x === (n - 1) / 2;

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーグループを更新する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/groups/update`（POST `/api/users/groups/update` で呼び出し）
+ * - 認証必須。groupId で指定したグループの名前などを更新する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { UserGroups } from "@/models/index.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
@@ -37,7 +49,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Fetch the group
+	// グループを取得する
 	const userGroup = await UserGroups.findOneBy({
 		id: ps.groupId,
 		userId: me.id,

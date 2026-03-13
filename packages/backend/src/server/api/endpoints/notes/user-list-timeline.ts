@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーリストに紐づくタイムラインを取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/user-list-timeline`（GET `/api/notes/user-list-timeline` で呼び出し）
+ * - 認証必須。listId で指定したユーザーリストに含まれるユーザーのノートを取得する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import {
 	UserLists,
@@ -81,7 +93,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.noSuchList);
 	}
 
-	//#region Construct query
+	//#region クエリ構築
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
 		ps.sinceId,
@@ -174,8 +186,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	});
 
-	// We fetch more than requested because some may be filtered out, and if there's less than
-	// requested, the pagination stops.
+	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
 	const found = [];
 	const take = Math.floor(ps.limit * 1.5);
 	let skip = 0;

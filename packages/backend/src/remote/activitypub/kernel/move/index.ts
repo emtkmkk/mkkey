@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Move アクティビティを処理する。アカウント移転に伴いフォローを新アカウントへ引き継ぐ。
+ *
+ * @remarks
+ * - **役割**: inbox で Move を受信した際に、フォロー関係を新アカウントへ移行する。
+ *
+ * @see {@link services/following/create} フォロー作成
+ * @internal
+ */
 import type { CacheableRemoteUser } from "@/models/entities/user.js";
 import { Followings, Users } from "@/models/index.js";
 import {
@@ -14,24 +25,24 @@ export default async (
 	actor: CacheableRemoteUser,
 	activity: IMove,
 ): Promise<string> => {
-	// ※ There is a block target in activity.object, which should be a local user that exists.
+	// ※ activity.object にはブロック対象があり、存在するローカルユーザーである必要がある
 
-	// fetch the new and old accounts
+	// 新アカウントと旧アカウントを取得
 	const targetUri = getApHrefNullable(activity.target);
 	if (!targetUri) return "move: target uri is null";
 	let new_acc = await resolvePerson(targetUri);
 	if (!actor.uri) return "move: actor uri is null";
 	let old_acc = await resolvePerson(actor.uri);
 
-	// update them if they're remote
+	// リモートの場合は更新する
 	if (new_acc.uri) await updatePerson(new_acc.uri);
 	if (old_acc.uri) await updatePerson(old_acc.uri);
 
-	// retrieve updated users
+	// 更新後のユーザーを再取得
 	new_acc = await resolvePerson(targetUri);
 	old_acc = await resolvePerson(actor.uri);
 
-	// check if alsoKnownAs of the new account is valid
+	// 新アカウントの alsoKnownAs が妥当か確認
 	let isValidMove = true;
 	if (old_acc.uri) {
 		if (!new_acc.alsoKnownAs?.includes(old_acc.uri)) {
@@ -44,15 +55,15 @@ export default async (
 		return "skip: accounts invalid";
 	}
 
-	// add target uri to movedToUri in order to indicate that the user has moved
+	// ユーザーが移転したことを示すため movedToUri にターゲット URI を設定
 	await Users.update(old_acc.id, { movedToUri: targetUri });
 
-	// follow the new account and unfollow the old one
+	// 新アカウントをフォローし、旧アカウントのフォローを解除
 	const followings = await Followings.findBy({
 		followeeId: old_acc.id,
 	});
 	followings.forEach(async (following) => {
-		// If follower is local
+		// フォロワーがローカルの場合
 		if (!following.followerHost) {
 			try {
 				const follower = await Users.findOneBy({ id: following.followerId });

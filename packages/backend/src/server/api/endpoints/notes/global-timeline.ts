@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * グローバルタイムライン（連合全体のノート）を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/global-timeline`（GET `/api/notes/global-timeline` で呼び出し）
+ * - 認証不要。連合のパブリックノートを時系列で取得。withRenotes・withReplies 等で絞り込み可能。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Notes } from "@/models/index.js";
@@ -73,7 +85,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-	//#region Construct query
+	//#region クエリ構築
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
 		ps.sinceId,
@@ -156,8 +168,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	});
 
-	// We fetch more than requested because some may be filtered out, and if there's less than
-	// requested, the pagination stops.
+	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
 	const found = [];
 	const take = Math.floor(ps.limit * 1.5);
 	let skip = 0;

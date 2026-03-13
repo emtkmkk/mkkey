@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * BIOS - 認証済み API 呼び出し用の軽量ラッパー。ログイン画面等で利用。
+ *
+ * @remarks
+ * - **役割**: クライアント用の軽量スクリプト。localStorage の account.token で `/api/${endpoint}` に POST し、ログイン画面等で API を呼ぶ。
+ * - ブラウザで読み込まれる静的アセットとして配信される。
+ *
+ * @internal
+ */
 "use strict";
 
 window.onload = async () => {
@@ -6,10 +17,10 @@ window.onload = async () => {
 
 	const api = (endpoint, data = {}) => {
 		const promise = new Promise((resolve, reject) => {
-			// Append a credential
+			// 認証情報を付与
 			if (i) data.i = i;
 
-			// Send request
+			// リクエスト送信
 			fetch(endpoint.indexOf("://") > -1 ? endpoint : `/api/${endpoint}`, {
 				method: "POST",
 				body: JSON.stringify(data),

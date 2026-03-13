@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ドライブファイルの配信。accessKey からファイルを解決し、サムネイル・WebP 変換・Range 対応を行う。
+ *
+ * @remarks
+ * - **役割**: ファイルサーバの `GET /:key` で呼ばれる。accessKey / thumbnailAccessKey / webpublicAccessKey でファイルを検索し、Content-Disposition・WebP 変換・Range リクエストに対応する。
+ *
+ * @see {@link file/index} ファイルサーバ
+ * @internal
+ */
 import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
@@ -31,7 +42,7 @@ const commonReadableHandlerGenerator =
 export default async function (ctx: Koa.Context) {
 	const key = ctx.params.key;
 
-	// Fetch drive file
+	// ドライブファイルを取得
 	const file = await DriveFiles.createQueryBuilder("file")
 		.where("file.accessKey = :accessKey", { accessKey: key })
 		.orWhere("file.thumbnailAccessKey = :thumbnailAccessKey", {

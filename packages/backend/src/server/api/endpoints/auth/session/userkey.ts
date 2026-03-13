@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証セッション用の userkey を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `auth/session/userkey`（GET `/api/auth/session/userkey` で呼び出し）
+ * - 認証不要。token でセッションを特定し、アクセストークンとユーザー情報を返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
 import { Apps, AuthSessions, AccessTokens, Users } from "@/models/index.js";
@@ -58,7 +70,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps) => {
-	// Lookup app
+	// アプリを検索する
 	const app = await Apps.findOneBy({
 		secret: ps.appSecret,
 	});
@@ -67,7 +79,7 @@ export default define(meta, paramDef, async (ps) => {
 		throw new ApiError(meta.errors.noSuchApp);
 	}
 
-	// Fetch token
+	// トークンを取得する
 	const session = await AuthSessions.findOneBy({
 		token: ps.token,
 		appId: app.id,
@@ -81,13 +93,13 @@ export default define(meta, paramDef, async (ps) => {
 		throw new ApiError(meta.errors.pendingSession);
 	}
 
-	// Lookup access token
+	// アクセストークンを検索する
 	const accessToken = await AccessTokens.findOneByOrFail({
 		appId: app.id,
 		userId: session.userId,
 	});
 
-	// Delete session
+	// セッションを削除する
 	AuthSessions.delete(session.id);
 
 	return {

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ページ（ユーザーが作成する固定ページ）エンティティ。
+ *
+ * @remarks
+ * - **役割**: ユーザー作成の固定ページを DB に保持し、API のページ取得・更新で利用する。
+ *
+ * @see {@link models/repositories/page} ページリポジトリ
+ * @internal
+ */
 import {
 	Entity,
 	Index,
@@ -18,13 +29,13 @@ export class Page {
 
 	@Index()
 	@Column('timestamp with time zone', {
-		comment: 'The created date of the Page.',
+		comment: 'ページの作成日時',
 	})
 	public createdAt: Date;
 
 	@Index()
 	@Column('timestamp with time zone', {
-		comment: 'The updated date of the Page.',
+		comment: 'ページの更新日時',
 	})
 	public updatedAt: Date;
 

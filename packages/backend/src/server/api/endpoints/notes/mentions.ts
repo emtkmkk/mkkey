@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーへのメンション付きノート一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/mentions`（GET `/api/notes/mentions` で呼び出し）
+ * - 認証必須。自分宛てのメンションを含むノートをページネーションで取得する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import read from "@/services/note/read.js";
 import { Notes } from "@/models/index.js";
@@ -96,8 +108,7 @@ export default define(meta, paramDef, async (ps, user) => {
                 query.setParameters(followingCondition.parameters);
         }
 
-	// We fetch more than requested because some may be filtered out, and if there's less than
-	// requested, the pagination stops.
+	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
 	const found = [];
 	const take = Math.floor(ps.limit * 1.5);
 	let skip = 0;

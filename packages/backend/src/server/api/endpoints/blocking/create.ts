@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーをブロックする API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `blocking/create`（POST `/api/blocking/create` で呼び出し）
+ * - 認証必須。対象ユーザー（userId）をブロックし、ブロック関係を作成する。
+ * - レート制限: 1 時間あたり 100 回（meta.limit）。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import create from "@/services/blocking/create.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -61,7 +74,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.blockeeIsYourself);
 	}
 
-	// Get blockee
+	// ブロック対象を取得する
 	const blockee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
@@ -73,7 +86,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError();
 	}
 
-	// Check if already blocking
+	// 既にブロック中か確認する
 	const exist = await Blockings.findOneBy({
 		blockerId: blocker.id,
 		blockeeId: blockee.id,

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Undo(Like) アクティビティを処理する。リモートからのリアクション取り消しを受け付ける。
+ *
+ * @remarks
+ * - **役割**: inbox で Undo(Like) を受信した際に、該当リアクションを削除する。
+ *
+ * @see {@link services/note/reaction/delete} リアクション削除
+ * @internal
+ */
 import type { CacheableRemoteUser } from "@/models/entities/user.js";
 import type { ILike } from "../../type.js";
 import { getApId } from "../../type.js";
@@ -6,7 +17,7 @@ import { fetchNote, extractEmojis } from "../../models/note.js";
 import config from "@/config/index.js";
 
 /**
- * Process Undo.Like activity
+ * Undo.Like アクティビティを処理する
  */
 export default async (actor: CacheableRemoteUser, activity: ILike) => {
 	const targetUri = getApId(activity.object);

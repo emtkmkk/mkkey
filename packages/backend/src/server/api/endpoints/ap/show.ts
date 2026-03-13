@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub オブジェクト（Actor/Note 等）の詳細を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `ap/show`（GET `/api/ap/show` で呼び出し）
+ * - 認証不要。uri で指定した ActivityPub のオブジェクトを解決し、ローカル用の表現で返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { createPerson } from "@/remote/activitypub/models/person.js";
 import { createNote } from "@/remote/activitypub/models/note.js";
@@ -100,7 +112,7 @@ async function fetchAny(
 	uri: string,
 	me: CacheableLocalUser | null | undefined,
 ): Promise<SchemaType<typeof meta["res"]> | null> {
-	// Wait if blocked.
+	// ブロック中なら待機する。
 	if (await shouldBlockInstance(extractDbHost(uri))) return null;
 
 	const dbResolver = new DbResolver();
@@ -112,7 +124,7 @@ async function fetchAny(
 	let local = await mergePack(me, user, note);
 	if (local) {
 		if (local.type === "Note" && note?.uri && note.hasPoll) {
-			// Update questions if the stored (remote) note contains the poll
+			// 保存済み（リモート）ノートにアンケートが含まれる場合は questions を更新する
 			const key = `pollFetched:${note.uri}`;
 			const acquired = await redisClient.set(key, "1", "EX", 60, "NX");
 			if (acquired !== null) {
@@ -124,13 +136,13 @@ async function fetchAny(
 		return local;
 	}
 
-	// fetching Object once from remote
+	// リモートから Object を1回取得する
 	const resolver = new Resolver();
 	resolver.setUser(me);
 	const object = await resolver.resolve(uri);
 
 	// /@user If a URI other than the id is specified,
-	// the URI is determined here
+	// ここで URI が決まる
 	if (uri !== object.id) {
 		local = await mergePack(
 			me,

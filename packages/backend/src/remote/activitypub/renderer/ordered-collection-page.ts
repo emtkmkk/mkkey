@@ -1,11 +1,23 @@
 /**
- * Render OrderedCollectionPage
- * @param id URL of self
- * @param totalItems Number of total items
- * @param orderedItems Items
- * @param partOf URL of base
- * @param prev URL of prev page (optional)
- * @param next URL of next page (optional)
+ * @packageDocumentation
+ *
+ * OrderedCollectionPage のレンダリング
+ *
+ * @remarks
+ * - **役割**: フォロワー・フォロー・outbox 等のページネーション付きコレクションを AP 形式で返す。
+ *
+ * @see {@link server/activitypub/followers} フォロワー
+ * @internal
+ */
+
+/**
+ * OrderedCollectionPage をレンダリングする
+ * @param id 自身の URL
+ * @param totalItems 総アイテム数
+ * @param orderedItems アイテム配列
+ * @param partOf 親コレクションの URL
+ * @param prev 前ページの URL（任意）
+ * @param next 次ページの URL（任意）
  */
 export default function (
 	id: string,

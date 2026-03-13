@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * チャンネル（タグ）に基づくノートの可視条件をクエリに付与する。
+ *
+ * @remarks
+ * - **役割**: ノート一覧系エンドポイントで、チャンネル所属に応じた WHERE 条件を QueryBuilder に付与する。
+ *
+ * @see {@link generate-visibility-query} 可視性条件
+ * @internal
+ */
 import type { User } from "@/models/entities/user.js";
 import { ChannelFollowings } from "@/models/index.js";
 import type { SelectQueryBuilder } from "typeorm";

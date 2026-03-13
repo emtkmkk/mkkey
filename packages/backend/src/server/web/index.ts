@@ -1,10 +1,16 @@
 /**
- * Web Client Server
+ * @packageDocumentation
+ *
+ * Web クライアント用サーバ。SSR・静的ファイル・OGP・絵文字・管理画面等のルートを提供する。
  *
  * @remarks
- * /emoji/:path の 404 は usageVisibility===private と既存 ngEmoji（ホストブロック・copyPermission deny）のみ。owner/follow/ブロックでは 404 にしない。
+ * - **役割**: `/`（SSR）・静的ファイル・`/emoji/:path`・管理画面・OpenAPI・url-preview・manifest 等のルートを登録。メインサーバから mount される。
+ * - /emoji/:path の 404 は usageVisibility===private と既存 ngEmoji（ホストブロック・copyPermission deny）のみ。owner/follow/ブロックでは 404 にしない。
+ *
+ * @see {@link url-preview} URL プレビュー
+ * @see {@link manifest} PWA Manifest
+ * @internal
  */
-
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
@@ -56,7 +62,7 @@ const swAssets = `${_dirname}/../../../../../built/_sw_dist_/`;
 // Init app
 const app = new Koa();
 
-//#region Bull Dashboard
+//#region Bull ダッシュボード
 const bullBoardPath = "/queue";
 const bullBoardSafeMethods = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -151,7 +157,7 @@ app.use(async (ctx, next) => {
 // Init router
 const router = new Router();
 
-//#region static assets
+//#region 静的アセット
 
 router.get("/static-assets/(.*)", async (ctx) => {
 	await send(ctx as any, ctx.path.replace("/static-assets/", ""), {
@@ -482,7 +488,7 @@ router.get("/emoji_license/:path([^.]*).json", async (ctx) => {
 	}
 });
 
-//#region SSR (for crawlers)
+//#region SSR（クローラー用）
 // User
 const userPage: Router.Middleware = async (ctx, next) => {
 	const userParam = ctx.params.user;

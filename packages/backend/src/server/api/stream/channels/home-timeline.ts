@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ホームタイムラインストリーム。フォロー先のノートをリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `homeTimeline`。認証必須。
+ * - notesStream を購読し、ホームタイムラインに流れるノートを配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Channel from "../channel.js";
 import { getWordHardMute } from "@/misc/check-word-mute.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
@@ -15,7 +27,7 @@ export default class extends Channel {
 	}
 
 	public async init(params: any) {
-		// Subscribe events
+		// イベント購読
 		this.subscriber.on("notesStream", this.onNote);
 	}
 
@@ -35,7 +47,7 @@ export default class extends Channel {
 				return;
 		}
 
-		// Ignore notes from instances the user has muted
+		// ユーザーがミュートしたインスタンスのノートは無視
 		if (
 			isInstanceMuted(
 				note,
@@ -99,7 +111,7 @@ export default class extends Channel {
 	}
 
 	public dispose() {
-		// Unsubscribe events
+		// イベント購読解除
 		this.subscriber.off("notesStream", this.onNote);
 	}
 }

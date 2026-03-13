@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォローを解除する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `following/delete`（POST `/api/following/delete` で呼び出し）
+ * - 認証必須。userId で指定したユーザーのフォローを解除する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import deleteFollowing from "@/services/following/delete.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -56,19 +68,19 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const follower = user;
 
-	// Check if the followee is yourself
+	// フォロー先が自分でないか確認する
 	if (user.id === ps.userId) {
 		throw new ApiError(meta.errors.followeeIsYourself);
 	}
 
-	// Get followee
+	// フォロー先を取得する
 	const followee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Check not following
+	// フォローしていないか確認する
 	const exist = await Followings.findOneBy({
 		followerId: follower.id,
 		followeeId: followee.id,

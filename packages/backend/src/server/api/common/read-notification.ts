@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * 通知の既読処理。DB 更新・Redis キャッシュ・ストリーム通知を行う。
+ *
+ * @remarks
+ * - **役割**: 通知既読 API や一括既読から呼ばれ、未読を既読に更新し Redis とストリームで通知する。
+ *
+ * @see {@link notifications/mark-all-as-read} 一括既読
+ * @internal
+ */
 import { In, LessThanOrEqual } from "typeorm";
 import { publishMainStream } from "@/services/stream.js";
 import { pushNotification } from "@/services/push-notification.js";
@@ -17,7 +28,7 @@ export async function readNotification(
 ) {
 	if (notificationIds.length === 0) return;
 
-	// Update documents
+	// ドキュメントを更新
 	const result = await Notifications.update(
 		{
 			notifieeId: userId,

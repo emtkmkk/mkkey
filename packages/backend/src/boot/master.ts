@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * マスタープロセスの起動。設定読み込み・DB 接続・ワーカー起動・環境表示を行う。
+ *
+ * @remarks
+ * - **役割**: クラスタの master で実行。loadConfig・initDb 後に worker を fork。起動時メタ情報を表示。
+ *
+ * @see {@link boot/index} ブートエントリ
+ * @see {@link worker} ワーカー
+ * @internal
+ */
 import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
@@ -29,17 +41,7 @@ const themeColor = chalk.hex("#31748f");
 
 function greet() {
 	if (!envOption.quiet) {
-		//#region Cluckey logo
-		const v = `v${meta.version}`;
-		/*
-		console.log(themeColor("   ___      _      _              "));
-		console.log(themeColor("  / __\\__ _| | ___| | _____ _   _ "));
-		console.log(themeColor(" / /  / _` | |/ __| |/ / _  | | |"));
-		console.log(themeColor("/ /__| (_| | | (__|   <  __/ |_| |"));
-		console.log(themeColor("\\____/\\__,_|_|\\___|_|\\_\\___|\\__, |"));
-		console.log(themeColor("                            (___/ "));
-		*/
-		//#endregion
+
 
 		console.log(" Cluckeyは、オープンソース分散型マイクロブログプラットフォームです。");
 
@@ -58,12 +60,13 @@ function greet() {
 }
 
 /**
- * Init master process
+ * マスタープロセスを初期化する。設定読み込み・DB 接続・ワーカー起動まで行う。
+ * @internal
  */
 export async function masterMain() {
 	let config!: Config;
 
-	// initialize app
+	// アプリ初期化
 	try {
 		greet();
 		showEnvironment();

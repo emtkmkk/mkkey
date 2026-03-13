@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * MiAuth 用のトークンを発行する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `miauth/gen-token`（POST `/api/miauth/gen-token` で呼び出し）
+ * - 認証不要。name・permission・callback などを指定し、MiAuth 認証フロー用のセッション ID を返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { AccessTokens } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
@@ -43,7 +55,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Generate access token
+	// アクセストークンを生成する
 	const accessToken = secureRndstr(32, true);
 
 	const now = new Date();

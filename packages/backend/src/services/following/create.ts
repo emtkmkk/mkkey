@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォロー作成（承諾含む）処理を行うサービス。
+ *
+ * @remarks
+ * - **役割**: フォロー API や Accept(Follow) から呼ばれ、フォロー関係を保存し AP 配信する。
+ *
+ * @see {@link server/api/endpoints/following/create} フォロー API
+ * @internal
+ */
+
 import {
 	publishInternalEvent,
 	publishMainStream,
@@ -105,13 +117,13 @@ export async function insertFollowingDoc(
 		userId: followee.id,
 	});
 
-	// Create notification that request was accepted.
+	// リクエスト承諾の通知を作成
 	createNotification(follower.id, "followRequestAccepted", {
 		notifierId: followee.id,
 		customBody: followeeProfile.followedMessage,
 	}, { notifier: followee });
 
-	//#region Increment counts
+	//#region カウント増加
 	await Promise.all([
 		follower.host == null
 			? Users.update(follower.id, {
@@ -135,7 +147,7 @@ export async function insertFollowingDoc(
 		await invalidateDormantFollowerSkipCache(followee.id);
 	}
 
-	//#region Update instance stats
+	//#region インスタンス統計更新
 	if (Users.isRemoteUser(follower) && Users.isLocalUser(followee)) {
 		registerOrFetchInstanceDoc(follower.host).then((i) => {
 			Instances.increment({ id: i.id }, "followingCount", 1);
@@ -151,7 +163,7 @@ export async function insertFollowingDoc(
 
 	perUserFollowingChart.update(follower, followee, true);
 
-	// Publish follow event
+	// フォローイベントを発行
 	if (Users.isLocalUser(follower)) {
 		publishInternalEvent("notePackFollowingUpdated", {
 			userId: follower.id,
@@ -182,7 +194,7 @@ export async function insertFollowingDoc(
 		});
 	}
 
-	// Publish followed event
+	// followed イベントを発行
 	if (Users.isLocalUser(followee)) {
 		Users.pack(follower.id, followee, {
 			detail: true,
@@ -216,7 +228,7 @@ export default async function (
 		Users.findOneByOrFail({ id: _followee.id }),
 	]);
 
-	// check blocking
+	// ブロック関係を確認
 	const [blocking, blocked, followBlocking] = await Promise.all([
 		Blockings.findOneBy({
 			blockerId: follower.id,
@@ -307,11 +319,11 @@ export default async function (
 			: false;
 
 	// フォロー対象が鍵アカウントである or
-	// The follower is silenced, or
+	// フォロワーがサイレンスされている or
 	// フォロー対象がリモート配信を制限しており、フォロワーがリモートユーザー or
 	// フォロワーがBotであり、フォロー対象がBotからのフォローに慎重である or
 	// フォロワーがローカルユーザーであり、フォロー対象がリモートユーザーである or
-	// The follower is remote, the followee is local, and the follower is in a silenced instance. or
+	// フォロワーがリモート・フォロー先がローカル・フォロワーがサイレンスインスタンスに所属 or
 	// 対象がフォロー拒否に設定されている
 	// 上記のいずれかに当てはまる場合はすぐフォローせずにフォローリクエストを発行しておく
 	if (

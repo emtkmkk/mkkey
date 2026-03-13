@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * URL プレビュー（OGP 取得・サムネイル・説明文）を生成する Web ルート。
+ *
+ * @remarks
+ * - **役割**: Web サーバの url-preview ルートで呼ばれる。Summaly や HTML パース・DeepL 翻訳（任意）でメタデータを取得し、センシティブ判定・サイズ制限・キャッシュを行う。
+ *
+ * @see {@link web/index} Web サーバ
+ * @internal
+ */
 import type Koa from "koa";
 import summaly from "summaly";
 import cheerio from "cheerio";

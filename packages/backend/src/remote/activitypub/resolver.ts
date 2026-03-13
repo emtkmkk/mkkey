@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub オブジェクトの解決。URI または IObject からコレクション・ノート・ユーザー等を解決する。
+ *
+ * @remarks
+ * - **役割**: リモート AP オブジェクトを fetch して解決し、inbox や create 処理で利用する。
+ *
+ * @see {@link remote/activitypub/request} apGet
+ * @internal
+ */
 import config from "@/config/index.js";
 import type { ILocalUser } from "@/models/entities/user.js";
 import { getInstanceActor } from "@/services/instance-actor.js";

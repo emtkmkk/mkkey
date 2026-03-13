@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * OpenAPI 仕様に載せる API エラー定義（HTTP ステータス別・コード別）。
+ *
+ * @remarks
+ * - **役割**: エンドポイントの `errors` や共通エラーを OpenAPI の responses 用に定義する。
+ * - 400 INVALID_PARAM、401 CREDENTIAL_REQUIRED、403 AUTHENTICATION_FAILED、429 RATE_LIMIT_EXCEEDED、500 INTERNAL_ERROR 等。
+ *
+ * @see {@link gen-spec} 仕様生成で参照
+ * @internal
+ */
 export const errors = {
 	"400": {
 		INVALID_PARAM: {

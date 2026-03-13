@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * アンケート（投票）の投票処理を行うサービス。
+ *
+ * @remarks
+ * - **役割**: ノートのアンケートに投票する。notes/polls/vote エンドポイントから呼ばれ、PollVotes に保存し通知・ストリームを発火する。
+ *
+ * @see {@link endpoints/notes/polls/vote} 投票 API
+ * @internal
+ */
 import { publishNoteStream } from "@/services/stream.js";
 import type { CacheableUser } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
@@ -16,10 +27,10 @@ export default async function (
 
 	if (poll == null) throw new Error("poll not found");
 
-	// Check whether is valid choice
+	// 有効な選択肢かどうかを確認
 	if (poll.choices[choice] == null) throw new Error("invalid choice param");
 
-	// Check blocking
+	// ブロック関係を確認
 	if (note.userId !== user.id) {
 		const block = await Blockings.findOneBy({
 			blockerId: note.userId,
@@ -30,7 +41,7 @@ export default async function (
 		}
 	}
 
-	// if already voted
+	// 既に投票済みの場合
 	const exist = await PollVotes.findBy({
 		noteId: note.id,
 		userId: user.id,
@@ -44,7 +55,7 @@ export default async function (
 		throw new Error("already voted");
 	}
 
-	// Create vote
+	// 投票を作成
 	await PollVotes.insert({
 		id: genId(),
 		createdAt: new Date(),
@@ -53,8 +64,8 @@ export default async function (
 		choice: choice,
 	});
 
-	// Increment votes count
-	const index = choice + 1; // In SQL, array index is 1 based
+	// 投票数をインクリメント
+	const index = choice + 1; // SQLでは配列インデックスは1始まり
 	await Polls.query(
 		`UPDATE poll SET votes[${index}] = votes[${index}] + 1 WHERE "noteId" = '${poll.noteId}'`,
 	);
@@ -69,14 +80,14 @@ export default async function (
 		lastActiveDate: new Date(),
 	});
 
-	// Notify
+	// 通知
 	createNotification(note.userId, "pollVote", {
 		notifierId: user.id,
 		noteId: note.id,
 		choice: choice,
 	}, { notifier: user });
 
-	// Fetch watchers (投稿者は投票者表示)
+	// ウォッチャーを取得（投稿者には投票者を表示）
 	NoteWatchings.findBy({
 		noteId: note.id,
 		userId: Not(user.id),

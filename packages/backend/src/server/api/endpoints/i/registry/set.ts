@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーのレジストリにキー・値を設定する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/registry/set`（POST `/api/i/registry/set` で呼び出し）
+ * - 認証必須。key と value でレジストリに 1 件設定する。scope でスコープ指定可能。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { publishMainStream } from "@/services/stream.js";
 import define from "../../../define.js";
 import { RegistryItems } from "@/models/index.js";

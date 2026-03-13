@@ -1,7 +1,17 @@
 /**
- * Core Server
+ * @packageDocumentation
+ *
+ * コアサーバ。HTTP/API/ファイル/プロキシ/Web/ストリーミングをマウントし、ActivityPub 等を初期化する。
+ *
+ * @remarks
+ * - **役割**: HTTP サーバを立て、Koa で api・file・proxy・web を mount。ストリーミング WebSocket・activitypub・nodeinfo・well-known のルートを登録する。起動時のエントリの一つ。
+ *
+ * @see {@link api/index} API サーバ
+ * @see {@link activitypub} ActivityPub ルート
+ * @see {@link nodeinfo} Nodeinfo
+ * @see {@link well-known} .well-known
+ * @internal
  */
-
 import cluster from "node:cluster";
 import * as fs from "node:fs";
 import * as http from "node:http";
@@ -36,7 +46,7 @@ import { v4 as uuid } from "uuid";
 
 export const serverLogger = new Logger("server", "gray", false);
 
-// Init app
+// アプリ初期化
 const app = new Koa();
 app.proxy = true;
 

@@ -1,9 +1,26 @@
+/**
+ * @packageDocumentation
+ *
+ * MFM ノードを HTML に変換する。メンション・ハッシュタグ・絵文字などを DOM に展開する。
+ *
+ * @remarks
+ * - **役割**: ノート本文の MFM を HTML にレンダリングし、API や Web の表示に利用する。
+ *
+ * @see {@link misc/populate-emojis} 絵文字解決
+ * @internal
+ */
 import { JSDOM } from "jsdom";
 import type * as mfm from "mfm-js";
 import config from "@/config/index.js";
 import { intersperse } from "@/prelude/array.js";
 import type { IMentionedRemoteUsers } from "@/models/entities/note.js";
 
+/**
+ * MFM ノード配列を HTML 文字列に変換する。
+ * @param nodes - MFM ノード配列（null の場合は null を返す）
+ * @param mentionedRemoteUsers - メンション先リモートユーザー
+ * @internal
+ */
 export function toHtml(
 	nodes: mfm.MfmNode[] | null,
 	mentionedRemoteUsers: IMentionedRemoteUsers = [],

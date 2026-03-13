@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * タイムラインにピックアップ（おすすめ）ノートを挿入する。
+ *
+ * @remarks
+ * - **役割**: ノートタイムライン系エンドポイントから呼ばれ、ユーザー設定に応じておすすめノートをタイムラインに 1 件挿入する。
+ *
+ * @see {@link inject-promo} プロモ挿入
+ * @internal
+ */
 import rndstr from "rndstr";
 import type { Note } from "@/models/entities/note.js";
 import type { User } from "@/models/entities/user.js";

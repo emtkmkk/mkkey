@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証セッションを承認しアクセストークンを発行する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `auth/accept`（POST `/api/auth/accept` で呼び出し）
+ * - 認証必須・secure。appId と token でセッションを特定し、承認するとアクセストークンを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import * as crypto from "node:crypto";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -30,34 +42,34 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Fetch token
+	// トークンを取得する
 	const session = await AuthSessions.findOneBy({ token: ps.token });
 
 	if (session == null) {
 		throw new ApiError(meta.errors.noSuchSession);
 	}
 
-	// Generate access token
+	// アクセストークンを生成する
 	const accessToken = secureRndstr(32, true);
 
-	// Fetch exist access token
+	// 既存のアクセストークンを取得する
 	const exist = await AccessTokens.findOneBy({
 		appId: session.appId,
 		userId: user.id,
 	});
 
 	if (exist == null) {
-		// Lookup app
+		// アプリを検索する
 		const app = await Apps.findOneByOrFail({ id: session.appId });
 
-		// Generate Hash
+		// ハッシュを生成する
 		const sha256 = crypto.createHash("sha256");
 		sha256.update(accessToken + app.secret);
 		const hash = sha256.digest("hex");
 
 		const now = new Date();
 
-		// Insert access token doc
+		// アクセストークン文書を挿入する
 		await AccessTokens.insert({
 			id: genId(),
 			createdAt: now,
@@ -69,7 +81,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		});
 	}
 
-	// Update session
+	// セッションを更新する
 	await AuthSessions.update(session.id, {
 		userId: user.id,
 	});

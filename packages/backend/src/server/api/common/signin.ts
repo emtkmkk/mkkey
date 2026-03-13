@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * サインイン成功時のレスポンス処理。Cookie 設定・リダイレクト・サインイン履歴の記録を行う。
+ *
+ * @remarks
+ * - **役割**: サインイン・サインアップ完了後に呼ばれ、Cookie 設定・mainStream 通知・サインイン履歴保存を行う。
+ *
+ * @see {@link signup} サインアップ
+ * @see {@link private/signin} サインインルート
+ * @internal
+ */
 import type Koa from "koa";
 
 import config from "@/config/index.js";
@@ -9,11 +21,11 @@ import { warmMeDetailedCache } from "@/services/me-detailed-cache.js";
 
 export default function (ctx: Koa.Context, user: ILocalUser, redirect = false) {
 	if (redirect) {
-		//#region Cookie
+		//#region クッキー
 		ctx.cookies.set("igi", user.token!, {
 			path: "/",
 			// SEE: https://github.com/koajs/koa/issues/974
-			// When using a SSL proxy it should be configured to add the "X-Forwarded-Proto: https" header
+			// SSL プロキシ利用時は "X-Forwarded-Proto: https" ヘッダを付与するよう設定すること
 			secure: config.url.startsWith("https"),
 			httpOnly: false,
 			sameSite: "lax",
@@ -30,7 +42,7 @@ export default function (ctx: Koa.Context, user: ILocalUser, redirect = false) {
 	}
 
 	(async () => {
-		// Append signin history
+		// サインイン履歴を追加
 		const record = await Signins.insert({
 			id: genId(),
 			createdAt: new Date(),

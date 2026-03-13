@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub リクエスト。署名付き POST/GET とオブジェクト取得（apGet）を行う。
+ *
+ * @remarks
+ * - **役割**: 配信・inbox 等でリモートへ Activity を送る、または AP オブジェクトを取得する。
+ *
+ * @see {@link queue/processors/deliver} 配信ジョブ
+ * @internal
+ */
 import config from "@/config/index.js";
 import { getUserKeypair } from "@/misc/keypair-store.js";
 import type { User, ILocalUser } from "@/models/entities/user.js";
@@ -32,9 +43,11 @@ export default async (user: { id: User["id"] }, url: string, object: any) => {
 };
 
 /**
- * Get ActivityPub object
- * @param user http-signature user
- * @param url URL to fetch
+ * ActivityPub オブジェクトを取得する
+ * @param url - 取得先 URL
+ * @param user - 署名用ユーザー（省略時は未認証 GET）
+ * @returns 取得した IObject
+ * @internal
  */
 export async function apGet(url: string, user?: ILocalUser): Promise<IObject> {
 	let res: Response;

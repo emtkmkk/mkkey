@@ -1,5 +1,7 @@
 /**
- * 絵文字リポジトリ（pack 含む）
+ * @packageDocumentation
+ *
+ * 絵文字リポジトリ（pack 含む）。
  *
  * @remarks
  * pack では isTextOnly のとき copyPermission / licenseName / creator を固定値で返す。DB の copyPermission（a/d/c/n）は API 用に完全形に変換して返す。

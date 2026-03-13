@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ブロックを解除する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `blocking/delete`（POST `/api/blocking/delete` で呼び出し）
+ * - 認証必須。userId で指定したユーザーへのブロックを解除する。レート制限: 1 時間あたり 100 回。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import deleteBlocking from "@/services/blocking/delete.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -56,19 +68,19 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const blocker = await Users.findOneByOrFail({ id: user.id });
 
-	// Check if the blockee is yourself
+	// ブロック対象が自分でないか確認する
 	if (user.id === ps.userId) {
 		throw new ApiError(meta.errors.blockeeIsYourself);
 	}
 
-	// Get blockee
+	// ブロック対象を取得する
 	const blockee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Check not blocking
+	// ブロックしていないか確認する
 	const exist = await Blockings.findOneBy({
 		blockerId: blocker.id,
 		blockeeId: blockee.id,
@@ -78,7 +90,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.notBlocking);
 	}
 
-	// Delete blocking
+	// ブロックを削除する
 	await deleteBlocking(blocker, blockee);
 
 	return await Users.pack(blockee.id, blocker, {

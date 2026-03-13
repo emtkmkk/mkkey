@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ブロック解除処理を行うサービス。
+ *
+ * @remarks
+ * - **役割**: ブロック解除 API から呼ばれ、ブロック関係を削除し Undo(Block) を配信する。
+ *
+ * @see {@link server/api/endpoints/blocking/delete} ブロック解除 API
+ * @internal
+ */
+
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import { renderBlock } from "@/remote/activitypub/renderer/block.js";
 import renderUndo from "@/remote/activitypub/renderer/undo.js";
@@ -22,14 +34,13 @@ export default async function (blocker: CacheableUser, blockee: CacheableUser) {
 		return;
 	}
 
-	// Since we already have the blocker and blockee, we do not need to fetch
-	// them in the query above and can just manually insert them here.
+	// ブロック側・被ブロック側は既に持っているため上記クエリで再取得せず、ここで手動でセットする
 	blocking.blocker = blocker;
 	blocking.blockee = blockee;
 
 	Blockings.delete(blocking.id);
 
-	// deliver if remote bloking
+	// リモートブロックの場合は配信
 	if (Users.isLocalUser(blocker) && Users.isRemoteUser(blockee)) {
 		const content = renderActivity(renderUndo(renderBlock(blocking), blocker));
 		deliver(blocker, content, blockee.inbox);

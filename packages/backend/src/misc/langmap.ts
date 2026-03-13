@@ -1,4 +1,13 @@
-// TODO: sharedに置いてフロントエンドのと統合したい
+/**
+ * @packageDocumentation
+ *
+ * 言語コードとネイティブ名のマッピング。
+ *
+ * @remarks
+ * TODO: shared に置いてフロントエンドのものと統合したい
+ *
+ * @internal
+ */
 export const langmap = {
 	ach: {
 		nativeName: "Lwo",

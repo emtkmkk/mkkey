@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * アンテナを更新する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `antennas/update`（POST `/api/antennas/update` で呼び出し）
+ * - 認証必須。antennaId で指定したアンテナの名前・キーワード・ユーザーリスト等を更新する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { Antennas, UserLists, UserGroupJoinings } from "@/models/index.js";
@@ -100,7 +112,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Fetch the antenna
+	// アンテナを取得する
 	const antenna = await Antennas.findOneBy({
 		id: ps.antennaId,
 		userId: user.id,

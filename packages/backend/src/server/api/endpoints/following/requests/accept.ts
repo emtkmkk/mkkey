@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォローリクエストを承認する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `following/requests/accept`（POST `/api/following/requests/accept` で呼び出し）
+ * - 認証必須。userId で指定したユーザーからのフォローリクエストを承認する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import acceptFollowRequest from "@/services/following/requests/accept.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
@@ -33,7 +45,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Fetch follower
+	// フォロワーを取得する
 	const follower = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);

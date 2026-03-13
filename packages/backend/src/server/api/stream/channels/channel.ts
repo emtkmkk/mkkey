@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * チャンネルストリーム（ノート・タイピング）。チャンネル投稿用のリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `channel`。認証不要（パブリックチャンネル）。
+ * - チャンネル ID ごとにノート・タイピングイベントを配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Channel from "../channel.js";
 import { Users } from "@/models/index.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
@@ -26,7 +38,7 @@ export default class extends Channel {
 		this.channelId = params.channelId as string;
 		this.channelName = params.channelName as string;
 
-		// Subscribe stream
+		// ストリーム購読
 		this.subscriber.on("notesStream", this.onNote);
 		this.subscriber.on(`channelStream:${this.channelId}`, this.onEvent);
 		this.emitTypersIntervalId = setInterval(this.emitTypers, 5000);
@@ -68,7 +80,7 @@ export default class extends Channel {
 	private async emitTypers() {
 		const now = new Date();
 
-		// Remove not typing users
+		// タイピング終了ユーザーを除外
 		for (const [userId, date] of Object.entries(this.typers)) {
 			if (now.getTime() - date.getTime() > 5000) this.typers.delete(userId);
 		}
@@ -85,7 +97,7 @@ export default class extends Channel {
 	}
 
 	public dispose() {
-		// Unsubscribe events
+		// イベント購読解除
 		this.subscriber.off("notesStream", this.onNote);
 		this.subscriber.off(`channelStream:${this.channelId}`, this.onEvent);
 

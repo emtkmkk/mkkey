@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * リモートユーザを username@host から解決する。WebFinger / createPerson・updatePerson 経由で HTTP を行う。
+ *
+ * @remarks
+ * - **役割**: フォロー・メンション等で username@host からリモートユーザーを取得・登録する。
+ *
+ * @see {@link remote/activitypub/models/person} Person 作成・更新
+ * @internal
+ */
 import { URL } from "node:url";
 import chalk from "chalk";
 import { IsNull } from "typeorm";
@@ -63,12 +74,12 @@ export async function resolveUser(
 		return await createPerson(self.href);
 	}
 
-	// If user information is out of date, return it by starting over from WebFilger
+	// ユーザー情報が古い場合は WebFinger からやり直して返す
 	if (
 		user.lastFetchedAt == null ||
 		Date.now() - user.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24
 	) {
-		// Prevent multiple attempts to connect to unconnected instances, update before each attempt to prevent subsequent similar attempts
+		// 接続できないインスタンスへの多重試行を防ぐため、試行前に lastFetchedAt を更新する
 		await Users.update(user.id, {
 			lastFetchedAt: new Date(),
 		});
@@ -77,13 +88,13 @@ export async function resolveUser(
 		const self = await resolveSelf(acctLower);
 
 		if (user.uri !== self.href) {
-			// if uri mismatch, Fix (user@host <=> AP's Person id(IRemoteUser.uri)) mapping.
+			// URI 不一致時: user@host と AP の Person id (IRemoteUser.uri) の対応を修正する
 			logger.info(`uri missmatch: ${acctLower}`);
 			logger.info(
 				`recovery missmatch uri for (username=${username}, host=${host}) from ${user.uri} to ${self.href}`,
 			);
 
-			// validate uri
+			// URI の妥当性を検証
 			const uri = new URL(self.href);
 			if (uri.hostname !== host) {
 				throw new Error("Invalid uri");
@@ -99,7 +110,7 @@ export async function resolveUser(
 				},
 			);
 		} else {
-			logger.info(`uri is fine: ${acctLower}`);
+			logger.info(`uri は問題なし: ${acctLower}`);
 		}
 
 		await updatePerson(self.href);

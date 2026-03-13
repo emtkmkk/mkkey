@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub 配信ジョブ。inbox へ Activity を送信し、統計を更新する。
+ *
+ * @remarks
+ * - **役割**: 配信キューで実行し、リモート inbox へ署名付き POST で Activity を送る。
+ *
+ * @see {@link remote/activitypub/request} AP リクエスト
+ * @internal
+ */
 import { URL } from "node:url";
 import request from "@/remote/activitypub/request.js";
 import { registerOrFetchInstanceDoc } from "@/services/register-or-fetch-instance-doc.js";
@@ -34,7 +45,7 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 		await request(job.data.user, job.data.to, job.data.content);
 		job.progress(50);
 
-		// Update stats
+		// 統計を更新
 		registerOrFetchInstanceDoc(host).then((i) => {
 			Instances.update(i.id, {
 				latestRequestSentAt: new Date(),
@@ -53,7 +64,7 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 		job.progress(100);
 		return "Success";
 	} catch (res) {
-		// Update stats
+		// 統計を更新
 		registerOrFetchInstanceDoc(host).then((i) => {
 			Instances.update(i.id, {
 				latestRequestSentAt: new Date(),

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートをお気に入りに登録する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/favorites/create`（POST `/api/notes/favorites/create` で呼び出し）
+ * - 認証必須。noteId で指定したノートをお気に入りに追加する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { NoteFavorites } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import define from "../../../define.js";
@@ -36,14 +48,14 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Get favoritee
+	// お気に入り対象を取得する
 	const note = await getNote(ps.noteId, user).catch((err) => {
 		if (err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
 			throw new ApiError(meta.errors.noSuchNote);
 		throw err;
 	});
 
-	// if already favorited
+	// 既にお気に入り済みの場合
 	const exist = await NoteFavorites.findOneBy({
 		noteId: note.id,
 		userId: user.id,
@@ -53,7 +65,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.alreadyFavorited);
 	}
 
-	// Create favorite
+	// お気に入りを作成する
 	await NoteFavorites.insert({
 		id: genId(),
 		createdAt: new Date(),

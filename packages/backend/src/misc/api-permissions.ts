@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * API のパーミッション種別（read:account, write:notes 等）の一覧。
+ *
+ * @remarks
+ * 種別を追加した場合は、翻訳（_permissions 以下）も必ず追加すること。
+ *
+ * @internal
+ */
 export const kinds = [
 	"read:account",
 	"write:account",
@@ -32,4 +42,3 @@ export const kinds = [
 	"read:gallery-likes",
 	"write:gallery-likes",
 ];
-// IF YOU ADD KINDS(PERMISSIONS), YOU MUST ADD TRANSLATIONS (under _permissions).

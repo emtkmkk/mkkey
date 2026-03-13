@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ミュートを解除する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `mute/delete`（POST `/api/mute/delete` で呼び出し）
+ * - 認証必須。userId で指定したユーザーのミュートを解除する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
@@ -43,19 +55,19 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const muter = user;
 
-	// Check if the mutee is yourself
+	// ミュート対象が自分でないか確認する
 	if (user.id === ps.userId) {
 		throw new ApiError(meta.errors.muteeIsYourself);
 	}
 
-	// Get mutee
+	// ミュート対象を取得する
 	const mutee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Check not muting
+	// ミュートしていないか確認する
 	const exist = await Mutings.findOneBy({
 		muterId: muter.id,
 		muteeId: mutee.id,
@@ -65,7 +77,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.notMuting);
 	}
 
-	// Delete mute
+	// ミュートを削除する
 	await Mutings.delete({
 		id: exist.id,
 	});

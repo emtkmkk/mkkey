@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ハッシュタグストリーム。指定タグ付きノートをリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `hashtag`。認証不要。
+ * - クエリでタグを指定し、そのタグが付いたノートを配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Channel from "../channel.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
@@ -19,7 +31,7 @@ export default class extends Channel {
 
 		if (this.q == null) return;
 
-		// Subscribe stream
+		// ストリーム購読
 		this.subscriber.on("notesStream", this.onNote);
 	}
 
@@ -47,7 +59,7 @@ export default class extends Channel {
 	}
 
 	public dispose() {
-		// Unsubscribe events
+		// イベント購読解除
 		this.subscriber.off("notesStream", this.onNote);
 	}
 }

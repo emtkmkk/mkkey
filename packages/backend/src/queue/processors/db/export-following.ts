@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * フォロー一覧エクスポートジョブ。ユーザーのフォローリストを CSV でドライブに保存する。
+ *
+ * @remarks
+ * - **役割**: エクスポートキューで実行し、フォロー一覧を CSV にしてドライブに追加する。
+ *
+ * @see {@link queue/processors/db/import-following} フォローインポート
+ * @internal
+ */
 import type Bull from "bull";
 import * as fs from "node:fs";
 
@@ -26,7 +37,7 @@ export async function exportFollowing(
 		return;
 	}
 
-	// Create temp file
+	// 一時ファイルを作成
 	const [path, cleanup] = await createTemp();
 
 	logger.info(`Temp file is ${path}`);

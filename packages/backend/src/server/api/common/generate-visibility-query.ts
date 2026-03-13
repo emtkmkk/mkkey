@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートの可視性（public/home/フォロワー等）に基づくクエリ条件を付与する。
+ *
+ * @remarks
+ * - **役割**: ノート一覧系エンドポイントで、認証ユーザーと visibility に応じた WHERE 条件を QueryBuilder に付与する。
+ *
+ * @see {@link getters} getNote 等で利用
+ * @internal
+ */
 import type { User } from "@/models/entities/user.js";
 import type { SelectQueryBuilder } from "typeorm";
 import { Brackets } from "typeorm";
@@ -7,7 +18,7 @@ export function generateVisibilityQuery(
 	q: SelectQueryBuilder<any>,
 	me?: { id: User["id"] } | null,
 ) {
-	// This code must always be synchronized with the checks in Notes.isVisibleForMe.
+	// このロジックは Notes.isVisibleForMe の判定と常に同期している必要がある。
 	if (me == null) {
 		q.andWhere(
 			new Brackets((qb) => {

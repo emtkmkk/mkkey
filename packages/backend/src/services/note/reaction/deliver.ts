@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * リアクションの ActivityPub 配信を組み立てるサービス。
+ *
+ * @remarks
+ * - **役割**: リアクション作成時に、Like アクティビティをリモートフォロワーへ配信する。
+ *
+ * @see {@link services/note/reaction/create} リアクション作成
+ * @internal
+ */
+
 import DeliverManager from "@/remote/activitypub/deliver-manager.js";
 import { Users } from "@/models/index.js";
 import { In } from "typeorm";

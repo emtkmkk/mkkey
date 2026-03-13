@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * Webhook 配信ジョブ。イベントを Webhook URL に POST し、Discord 等の埋め込み形式を生成する。
+ *
+ * @remarks
+ * - **役割**: Webhook キューで実行し、ノート作成等のイベントを登録 URL に POST する。
+ *
+ * @see {@link server/api/endpoints/i/update} Webhook 設定
+ * @internal
+ */
 import { URL } from "node:url";
 import type Bull from "bull";
 import Logger from "@/services/logger.js";

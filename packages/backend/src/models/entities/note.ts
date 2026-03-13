@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ノート（投稿）エンティティ。リプライ・リノート・公開範囲・ファイル・リアクション等を保持する。
+ *
+ * @remarks
+ * - **役割**: 投稿データを DB に保持し、API・TL・AP 配信で参照される中核エンティティ。
+ *
+ * @see {@link models/repositories/note} ノートリポジトリ
+ * @internal
+ */
 import {
 	Entity,
 	Index,
@@ -23,7 +34,7 @@ export class Note {
 
 	@Index()
 	@Column('timestamp with time zone', {
-		comment: 'The created date of the Note.',
+		comment: 'ノートの作成日時',
 	})
 	public createdAt: Date;
 
@@ -31,7 +42,7 @@ export class Note {
 	@Column({
 		...id(),
 		nullable: true,
-		comment: 'The ID of reply target.',
+		comment: 'リプライ先ノートの ID',
 	})
 	public replyId: Note["id"] | null;
 
@@ -45,7 +56,7 @@ export class Note {
 	@Column({
 		...id(),
 		nullable: true,
-		comment: 'The ID of renote target.',
+		comment: 'リノート元ノートの ID',
 	})
 	public renoteId: Note["id"] | null;
 
@@ -79,7 +90,7 @@ export class Note {
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The ID of author.',
+		comment: '投稿者ユーザー ID',
 	})
 	public userId: User["id"];
 
@@ -111,8 +122,8 @@ export class Note {
 
 	/**
 	 * public ... 公開
-	 * home ... ホームタイムライン(ユーザーページのタイムライン含む)のみに流す
-	 * hidden ... only visible on profile (doesnt federate, like local only, but can be fetched via AP like home) <- for now only used for post imports
+	 * home ... ホームタイムライン（ユーザーページのタイムライン含む）のみに流す
+	 * hidden ... プロフィール上のみ表示（配信しない。ローカルのみに近いが AP では home と同様取得可）。現状は投稿インポート用
 	 * followers ... フォロワーのみ
 	 * specified ... visibleUserIds で指定したユーザーのみ
 	 */
@@ -122,13 +133,13 @@ export class Note {
 	@Index({ unique: true })
 	@Column('varchar', {
 		length: 512, nullable: true,
-		comment: 'The URI of a note. it will be null when the note is local.',
+		comment: 'ノートの URI。ローカルノートの場合は null',
 	})
 	public uri: string | null;
 
 	@Column('varchar', {
 		length: 512, nullable: true,
-		comment: 'The human readable url of a note. it will be null when the note is local.',
+		comment: 'ノートの人間可読な URL。ローカルノートの場合は null',
 	})
 	public url: string | null;
 
@@ -200,7 +211,7 @@ export class Note {
 	@Column({
 		...id(),
 		nullable: true,
-		comment: 'The ID of source channel.',
+		comment: '投稿元チャンネル ID',
 	})
 	public channelId: Channel["id"] | null;
 
@@ -210,7 +221,7 @@ export class Note {
 	@JoinColumn()
 	public channel: Channel | null;
 
-	//#region Denormalized fields
+	//#region 非正規化フィールド
 	@Index()
 	@Column('varchar', {
 		length: 128, nullable: true,
@@ -277,7 +288,7 @@ export class Note {
 		default: false,
 	})
 	public isFirstNote: boolean;
-	//#endregion
+	//#endregion 非正規化フィールド
 
 	constructor(data: Partial<Note>) {
 		if (data == null) return;

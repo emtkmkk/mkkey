@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フェデレーション統計（インスタンス一覧・フォロワー数等）を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `federation/stats`（GET `/api/federation/stats` で呼び出し）
+ * - 認証不要。フォロワー数上位のリモートインスタンス一覧等を返す。MV から取得する場合あり。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { IsNull, MoreThan, Not } from "typeorm";
 import { getStatsDataSource } from "@/db/postgre.js";
 import type { Instance } from "@/models/entities/instance.js";

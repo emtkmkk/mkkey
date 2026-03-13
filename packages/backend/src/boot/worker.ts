@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ワーカープロセスの起動。DB 初期化・サーバ/キュー起動・親プロセスへの ready 通知を行う。
+ *
+ * @remarks
+ * - **役割**: クラスタの worker で実行。initDb 後に mode に応じて server または queue を起動。boot/index から呼ばれる。
+ *
+ * @see {@link boot/index} ブートエントリ
+ * @see {@link boot/master} マスター起動
+ * @internal
+ */
 import cluster from "node:cluster";
 import { initDb } from "@/db/postgre.js";
 import os from "node:os";

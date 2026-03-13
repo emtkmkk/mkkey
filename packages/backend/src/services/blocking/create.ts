@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ブロック作成処理を行うサービス。
+ *
+ * @remarks
+ * - **役割**: ブロック API から呼ばれ、ブロック関係を DB に保存し AP 配信を行う。
+ *
+ * @see {@link server/api/endpoints/blocking/create} ブロック API
+ * @internal
+ */
+
 import {
 	publishInternalEvent,
 	publishMainStream,
@@ -136,7 +148,7 @@ async function unFollow(follower: User, followee: User) {
 		});
 	}
 
-	// Publish unfollow event
+	// アンフォローイベントを発行
 	if (Users.isLocalUser(follower)) {
 		Users.pack(followee, follower, {
 			detail: true,

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ヘルス統計ストリーム。ヘルスチェック・稼働状況をリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `healthStats`。認証不要。
+ * - healthStats イベントを購読し、ヘルス統計を配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Xev from "xev";
 import Channel from "../channel.js";
 

@@ -31,7 +31,7 @@ export default (emoji: Emoji) => {
 		icon: {
 			type: "Image",
 			mediaType: emoji.type || "image/png",
-			url: emoji.publicUrl || emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
+			url: emoji.publicUrl || emoji.originalUrl, // 後方互換のため || emoji.originalUrl を使用
 		},
 		keywords: emoji.aliases,
 		copyPermission,

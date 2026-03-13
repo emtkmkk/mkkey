@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の followers コレクション（GET /users/:user/followers）を返す。フォロワー一覧の OrderedCollection を提供する。
+ *
+ * @remarks
+ * - **役割**: activitypub ルーターから GET /users/:id/followers で呼ばれる。フォロワーの OrderedCollection を返す。
+ *
+ * @see {@link activitypub} ルート登録
+ * @internal
+ */
 import { IsNull, LessThan } from "typeorm";
 import config from "@/config/index.js";
 import * as url from "@/prelude/url.js";
@@ -40,7 +51,7 @@ export default async (ctx: Router.RouterContext) => {
 		return;
 	}
 
-	//#region Check ff visibility
+	//#region FF 公開範囲チェック
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 	/*
 	if (profile.ffVisibility === "private") {
@@ -68,7 +79,7 @@ export default async (ctx: Router.RouterContext) => {
 			query.id = LessThan(cursor);
 		}
 
-		// Get followers
+		// フォロワーを取得
 		const followings =
 			profile.ffVisibility !== "private" && profile.ffVisibility !== "followers"
 				? await Followings.find({
@@ -105,7 +116,7 @@ export default async (ctx: Router.RouterContext) => {
 		ctx.body = renderActivity(rendered);
 		setResponseType(ctx);
 	} else {
-		// index page
+		// インデックスページ
 		const rendered = renderOrderedCollection(
 			partOf,
 			user.followersCount,

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * フォロー一覧インポートジョブ。CSV/JSON からフォローリストを読み込みフォローを追加する。
+ *
+ * @remarks
+ * - **役割**: インポートキューで実行し、CSV/JSON からフォロー先を解決してフォローを追加する。
+ *
+ * @see {@link queue/processors/db/export-following} フォローエクスポート
+ * @internal
+ */
 import { IsNull } from "typeorm";
 import follow from "@/services/following/create.js";
 

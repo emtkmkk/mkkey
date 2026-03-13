@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * アンテナの詳細を 1 件取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `antennas/show`（GET `/api/antennas/show` で呼び出し）
+ * - 認証必須。antennaId で指定したアンテナを返す。存在しない場合は noSuchAntenna エラー。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { Antennas } from "@/models/index.js";
@@ -34,7 +46,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Fetch the antenna
+	// アンテナを取得する
 	const antenna = await Antennas.findOneBy({
 		id: ps.antennaId,
 		userId: me.id,

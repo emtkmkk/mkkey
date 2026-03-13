@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * ストリーミング（WebSocket）サーバの初期化。接続受付・認証・MainStreamConnection の生成を行う。
+ *
+ * @remarks
+ * - **役割**: HTTP サーバに WebSocket を張り、`/streaming` 等で接続を受付。認証後に MainStreamConnection を生成する。
+ * - クライアントは WebSocket で接続し、チャンネル購読でリアルタイム通知を受信する。
+ *
+ * @see {@link stream/index} MainStreamConnection
+ * @see {@link authenticate} トークン認証
+ * @internal
+ */
 import type * as http from "node:http";
 import { EventEmitter } from "events";
 import type { ParsedUrlQuery } from "querystring";
@@ -10,7 +23,7 @@ import authenticate from "./authenticate.js";
 import { maybeInvalidateDormantFollowerCacheOnActivity } from "@/remote/activitypub/dormant-follower-check.js";
 
 export const initializeStreamingServer = (server: http.Server) => {
-	// Init websocket server
+	// WebSocket サーバ初期化
 	const ws = new websocket.server({
 		httpServer: server,
 	});

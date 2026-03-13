@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ドライブファイルを削除する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `drive/files/delete`（POST `/api/drive/files/delete` で呼び出し）
+ * - 認証必須。fileId で指定したドライブファイルを削除する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { deleteFile } from "@/services/drive/delete-file.js";
 import { publishDriveStream } from "@/services/stream.js";
 import define from "../../../define.js";
@@ -47,9 +59,9 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.accessDenied);
 	}
 
-	// Delete
+	// 削除する
 	await deleteFile(file);
 
-	// Publish fileDeleted event
+	// fileDeleted イベントを発行する
 	publishDriveStream(user.id, "fileDeleted", file.id);
 });

@@ -1,7 +1,16 @@
 /**
- * API Server
+ * @packageDocumentation
+ *
+ * API サーバ。ルーティング・認証・Mastodon 互換・サインアップ/サインイン等を組み立てる。
+ *
+ * @remarks
+ * - **役割**: Koa アプリを組み立て、`/api/*` のルーティング・endpoints/compatibility のハンドラ・private の signup/signin/verify-email 等を登録する。
+ * - メインサーバ（server/index）から mount されて利用される。
+ *
+ * @see {@link endpoints} エンドポイント一覧
+ * @see {@link api-handler} リクエスト処理
+ * @internal
  */
-
 import Koa from "koa";
 import Router from "@koa/router";
 import multer from "@koa/multer";
@@ -38,7 +47,7 @@ import { v4 as uuid } from "uuid";
 // re-export native rust id conversion (function and enum)
 export { IdType, convertId };
 
-// Init app
+// アプリ初期化
 const app = new Koa();
 
 app.use(
@@ -47,19 +56,19 @@ app.use(
 	}),
 );
 
-// No caching
+// キャッシュなし
 app.use(async (ctx, next) => {
 	ctx.set("Cache-Control", "private, max-age=0, must-revalidate");
 	await next();
 });
 
-// Init router
+// ルーター初期化
 const router = new Router();
 const mastoRouter = new Router();
 const mastoFileRouter = new Router();
 const errorRouter = new Router();
 
-// Init multer instance
+// multer インスタンス初期化
 const upload = multer({
 	storage: multer.diskStorage({}),
 	limits: {
@@ -167,7 +176,7 @@ const uploadFile = async (ctx, next) => {
 }
 
 /**
- * Register endpoint handlers
+ * エンドポイントハンドラを登録
  */
 for (const endpoint of [...endpoints, ...compatibility]) {
 	if (endpoint.meta.requireFile) {
@@ -253,12 +262,12 @@ router.post("/miauth/:session/check", async (ctx) => {
 	}
 });
 
-// Return 404 for unknown API
+// 未知の API には 404 を返す
 errorRouter.all("(.*)", async (ctx) => {
 	ctx.status = 404;
 });
 
-// Register router
+// ルーター登録
 app.use(mastoFileRouter.routes());
 app.use(mastoRouter.routes());
 app.use(mastoRouter.allowedMethods());

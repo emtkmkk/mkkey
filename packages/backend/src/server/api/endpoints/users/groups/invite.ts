@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーグループにメンバーを招待する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/groups/invite`（POST `/api/users/groups/invite` で呼び出し）
+ * - 認証必須。groupId と userId で指定したユーザーをグループに招待する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import {
 	UserGroups,
 	UserGroupJoinings,
@@ -56,7 +68,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Fetch the group
+	// グループを取得する
 	const userGroup = await UserGroups.findOneBy({
 		id: ps.groupId,
 		userId: me.id,
@@ -66,7 +78,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noSuchGroup);
 	}
 
-	// Fetch the user
+	// ユーザーを取得する
 	const user = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);

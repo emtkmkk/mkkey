@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * URL からドライブへファイルをアップロードするサービス。
+ *
+ * @remarks
+ * - **役割**: 指定 URL からファイルを取得し、addFile でドライブに保存する。drive/files/upload-from-url 等から呼ばれる。
+ *
+ * @see {@link drive/add-file} ファイル追加
+ * @internal
+ */
 import { URL } from "node:url";
 import type { User } from "@/models/entities/user.js";
 import { createTemp } from "@/misc/create-temp.js";
@@ -48,17 +59,16 @@ export async function uploadFromUrl({
 		name = null;
 	}
 
-	// If the comment is same as the name, skip comment
-	// (image.name is passed in when receiving attachment)
+	// コメントが名前と同じ場合はコメントを省略（添付受信時に image.name が渡される場合）
 	if (comment !== null && name === comment) {
 		comment = null;
 	}
 
-	// Create temp file
+	// 一時ファイルを作成
 	const [path, cleanup] = await createTemp();
 
 	try {
-		// write content at URL to temp file
+		// URL の内容を一時ファイルに書き出す
 		await downloadUrl(url, path);
 
 		const driveFile = await addFile({

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ストリームのチャンネル基底クラス。各チャンネルは購読・メッセージ配送の単位。
+ *
+ * @remarks
+ * - **役割**: main / homeTimeline / drive 等の各チャンネルが継承する抽象クラス。chName・init・購読処理を定義する。
+ * - サブクラスは stream/channels にあり、index で一覧 export される。
+ *
+ * @see {@link stream/channels/index} チャンネル一覧
+ * @internal
+ */
 import type Connection from ".";
 import type { Note } from "@/models/entities/note.js";
 import { Notes } from "@/models/index.js";
@@ -5,7 +17,7 @@ import type { Packed } from "@/misc/schema.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 
 /**
- * Stream channel
+ * ストリームチャンネル
  */
 export default abstract class Channel {
 	protected connection: Connection;
@@ -67,9 +79,8 @@ export default abstract class Channel {
 	): (Note) => void {
 		return async (note: Note) => {
 			try {
-				// because `note` was previously JSON.stringify'ed, the fields that
-				// were objects before are now strings and have to be restored or
-				// removed from the object
+				// 以前 JSON.stringify されたため、オブジェクトだったフィールドは
+				// 文字列になっているので復元するかオブジェクトから除去する
 				note.createdAt = new Date(note.createdAt);
 				note.reply = undefined;
 				note.renote = undefined;
@@ -78,7 +89,7 @@ export default abstract class Channel {
 
 				const packed = await Notes.pack(note, this.user, { detail: true });
 
-				// skip: note not visible to user
+				// スキップ: ユーザーに非表示のノート
 				if (packed.invisible) return;
 
 				callback(packed);
@@ -87,7 +98,7 @@ export default abstract class Channel {
 					err instanceof IdentifiableError &&
 					err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24"
 				) {
-					// skip: note not visible to user
+					// スキップ: ユーザーに非表示のノート
 					return;
 				} else {
 					throw err;

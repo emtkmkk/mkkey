@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * 遅延ジョブから遅延リトライ理由の状態を定期的に同期するデーモン。
+ *
+ * @remarks
+ * - **役割**: deliver/inbox キューの遅延ジョブからリトライ理由を取得し、delayed-retry-reason の状態を同期する。
+ *
+ * @internal
+ */
 import { deliverQueue, inboxQueue } from "@/queue/queues.js";
 import {
 	getDelayedRetryPendingCounts,
@@ -7,7 +17,7 @@ import {
 const interval = 120000;
 
 /**
- * Sync delayed retry reason state from delayed jobs periodically
+ * 遅延ジョブから遅延リトライ理由の状態を定期的に同期する
  */
 export default function () {
 	let previousDelayed = {

@@ -1,5 +1,13 @@
 /**
- * リアクション作成サービス
+ * @packageDocumentation
+ *
+ * リアクション作成サービス。
+ *
+ * @remarks
+ * - **役割**: API や AP の Like 受信時にリアクションを DB に保存し、通知・配信を行う。
+ *
+ * @see {@link server/api/endpoints/notes/reactions} リアクション API
+ * @internal
  */
 import { publishInternalEvent, publishNoteStream } from "@/services/stream.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
@@ -132,7 +140,7 @@ export default async (
 	note: Note,
 	reaction?: string,
 ) => {
-	// Check blocking
+	// ブロック関係を確認
 	const blockPromise = (async () => {
 		if (note.userId !== user.id) {
 			const block = await Blockings.findOneBy({
@@ -145,7 +153,7 @@ export default async (
 		}
 	})();
 
-	// check visibility
+	// 公開範囲を確認
 	const visibilityPromise = (async () => {
 		if (!(await Notes.isVisibleForMe(note, user.id))) {
 			throw new IdentifiableError(
@@ -181,7 +189,7 @@ export default async (
 		}
 	})();
 
-	// Await all initial checks concurrently
+	// 初期チェックをすべて並列で待機
 	await Promise.all([blockPromise, visibilityPromise, relationPromise, noteDeletedCheckPromise]);
 
 	const rawReaction = reaction;
@@ -251,7 +259,7 @@ export default async (
 	}
 
 	let isMutedReaction: boolean | { muted: boolean; reject?: boolean | undefined } = false;
-	// Word mute
+	// ワードミュート
 	const muteInfo = await UserProfiles.findOne({
 		where: {
 			userId: note.userId,
@@ -346,7 +354,7 @@ export default async (
 		}
 	}
 
-	// Create reaction
+	// リアクションを作成
 	try {
 		await NoteReactions.insert(record);
 	} catch (e) {
@@ -369,7 +377,7 @@ export default async (
 	}
 
 	if (!isMutedReaction) {
-		// Increment reactions count
+		// リアクション数をインクリメント
 		const sql = `jsonb_set("reactions", '{${reaction}}', (COALESCE("reactions"->>'${reaction}', '0')::int + 1)::text::jsonb)`;
 		await Notes.createQueryBuilder()
 			.update()
@@ -425,7 +433,7 @@ export default async (
 			: [user.id, note.userId],
 	});
 
-	// Create notification if the reaction target is a local user.
+	// リアクション先がローカルユーザーの場合は通知を作成
 	if (note.userHost === null && !isMutedReaction) {
 		createNotification(note.userId, "reaction", {
 			notifierId: user.id,
@@ -465,7 +473,7 @@ export default async (
 	}
 
 	if (!isMutedReaction) {
-		// Fetch watchers
+		// ウォッチャーを取得
 		const watchers = await NoteWatchings.findBy({
 			noteId: note.id,
 			userId: Not(user.id),
@@ -480,7 +488,7 @@ export default async (
 			}, { notifier: user });
 		}
 
-		//#region deliver
+		//#region 配信
 		if (
 			Users.isLocalUser(user) &&
 			!(note.channelId && note.localOnly) &&

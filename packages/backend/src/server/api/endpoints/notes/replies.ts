@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 指定ノートへの返信一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/replies`（GET `/api/notes/replies` で呼び出し）
+ * - 認証は不要（プライベート時は必須）。noteId で指定したノートへの返信をページネーションで返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Notes } from "@/models/index.js";
 import type { User } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
@@ -60,8 +72,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user) generateMutedUserQuery(query, user);
 	if (user) generateBlockedUserQuery(query, user);
 
-	// We fetch more than requested because some may be filtered out, and if there's less than
-	// requested, the pagination stops.
+	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
 	const found = [];
 	const take = Math.floor(ps.limit * 1.5);
 	let skip = 0;

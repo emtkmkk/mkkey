@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * クリップを更新する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `clips/update`（POST `/api/clips/update` で呼び出し）
+ * - 認証必須。clipId で指定したクリップの名前・説明・公開範囲等を更新する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { Clips } from "@/models/index.js";
@@ -42,7 +54,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Fetch the clip
+	// クリップを取得する
 	const clip = await Clips.findOneBy({
 		id: ps.clipId,
 		userId: user.id,

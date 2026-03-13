@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォローリクエストをキャンセルする API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `following/requests/cancel`（POST `/api/following/requests/cancel` で呼び出し）
+ * - 認証必須。userId で指定したユーザーへ送ったフォローリクエストを取り下げる。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import cancelFollowRequest from "@/services/following/requests/cancel.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
@@ -43,7 +55,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Fetch followee
+	// フォロー先を取得する
 	const followee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);

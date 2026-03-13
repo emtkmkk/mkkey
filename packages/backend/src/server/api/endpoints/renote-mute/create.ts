@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * リノートミュートを追加する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `renote-mute/create`（POST `/api/renote-mute/create` で呼び出し）
+ * - 認証必須。userId で指定したユーザーのリノートをタイムラインで非表示にする。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { genId } from "@/misc/gen-id.js";
 import { RenoteMutings } from "@/models/index.js";
 import { RenoteMuting } from "@/models/entities/renote-muting.js";
@@ -39,14 +51,14 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const muter = user;
 
-	// Get mutee
+	// ミュート対象を取得する
 	const mutee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Check if already muting
+	// 既にミュート中か確認する
 	const exist = await RenoteMutings.findOneBy({
 		muterId: muter.id,
 		muteeId: mutee.id,
@@ -56,7 +68,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.alreadyMuting);
 	}
 
-	// Create mute
+	// ミュートを作成する
 	await RenoteMutings.insert({
 		id: genId(),
 		createdAt: new Date(),

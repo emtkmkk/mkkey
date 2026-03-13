@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * API エンドポイントの define（メタ・パラメータスキーマ・ハンドラ登録）とバリデーション。
+ *
+ * @remarks
+ * - **役割**: 各エンドポイントで `define({ meta, params, res, execute })` を呼び、メタ情報・params スキーマ・レスポンス型・実行関数を登録する。
+ * - バリデーションは Ajv で params を検証し、execute の戻り値を res スキーマに沿って返す。
+ *
+ * @see {@link endpoints} 登録されたエンドポイント一覧
+ * @internal
+ */
 import * as fs from "node:fs";
 import Ajv from "ajv";
 import type { CacheableLocalUser } from "@/models/entities/user.js";

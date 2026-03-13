@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 指定ユーザーのノート一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/notes`（GET `/api/users/notes` で呼び出し）
+ * - 認証は不要（プライベート時は必須）。userId で指定したユーザーの投稿をページネーションで返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import { Notes } from "@/models/index.js";
 import define from "../../define.js";
@@ -62,14 +74,14 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Lookup user
+	// ユーザーを検索する
 	const user = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	//#region Construct query
+	//#region クエリ構築
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
 		ps.sinceId,

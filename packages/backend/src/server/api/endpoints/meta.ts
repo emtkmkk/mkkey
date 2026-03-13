@@ -1,9 +1,16 @@
 /**
- * インスタンス meta API（絵文字一覧含む）
+ * @packageDocumentation
+ *
+ * インスタンスのメタ情報（絵文字一覧含む）を取得する API エンドポイント。
  *
  * @remarks
- * 絵文字一覧は usageVisibility とモチーフでフィルタする。未認証は public/limited のみ。認証時はフォロー1クエリ＋メモリフィルタでモチーフ条件を適用。
- * クライアント起動時に呼ばれるため、応答遅延を避けるようメインの DB 接続（通常ロール）を使用する。
+ * - **API パス**: `meta`（GET `/api/meta` で呼び出し）
+ * - 認証不要。インスタンス名・説明・絵文字一覧などを返す。
+ * - 絵文字一覧は usageVisibility とモチーフでフィルタする。未認証は public/limited のみ。認証時はフォロー1クエリ＋メモリフィルタでモチーフ条件を適用。
+ * - クライアント起動時に呼ばれるため、応答遅延を避けるようメインの DB 接続（通常ロール）を使用する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
  */
 import { IsNull, MoreThan, Not } from "typeorm";
 import config from "@/config/index.js";
@@ -224,7 +231,7 @@ export const meta = {
 							type: "string",
 							optional: false,
 							nullable: true,
-							description: "The local host is represented with `null`.",
+							description: "ローカルホストは `null` で表す。",
 						},
 						url: {
 							type: "string",

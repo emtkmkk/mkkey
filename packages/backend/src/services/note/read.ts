@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートの既読処理を行うサービス。
+ *
+ * @remarks
+ * - **役割**: タイムライン既読やアンテナ既読で、未読カウントの更新と通知既読を行う。
+ *
+ * @see {@link server/api/endpoints/notes/timeline} タイムライン
+ * @internal
+ */
+
 import { publishMainStream } from "@/services/stream.js";
 import type { Note } from "@/models/entities/note.js";
 import type { User } from "@/models/entities/user.js";
@@ -178,7 +190,7 @@ export default async function (
 		readSpecifiedNotes.length > 0 ||
 		readChannelNotes.length > 0
 	) {
-		// Remove the record
+		// レコードを削除
 		await NoteUnreads.delete({
 			userId: userId,
 			noteId: In([

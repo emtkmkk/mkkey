@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の outbox（GET /users/:user/outbox）を返す。ユーザーの公開・ホーム向け投稿の OrderedCollection を提供する。
+ *
+ * @remarks
+ * - **役割**: activitypub ルーターから GET /users/:id/outbox で呼ばれる。ページネーションで Create/Announce を返す。
+ *
+ * @see {@link activitypub} ルート登録
+ * @internal
+ */
 import { Brackets, IsNull } from "typeorm";
 import config from "@/config/index.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
@@ -106,7 +117,7 @@ export default async (ctx: Router.RouterContext) => {
 		ctx.body = renderActivity(rendered);
 		setResponseType(ctx);
 	} else {
-		// index page
+		// インデックスページ
 		const rendered = renderOrderedCollection(
 			partOf,
 			user.notesCount,
@@ -126,8 +137,8 @@ export default async (ctx: Router.RouterContext) => {
 };
 
 /**
- * Pack Create<Note> or Announce Activity
- * @param note Note
+ * Create<Note> または Announce アクティビティをパックする
+ * @param note ノート
  */
 export async function packActivity(note: Note): Promise<any> {
 	if (

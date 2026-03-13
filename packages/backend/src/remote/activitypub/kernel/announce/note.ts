@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Announce（リノート）アクティビティを処理する。
+ *
+ * @remarks
+ * - **役割**: inbox で Announce を受信した際に、元ノートを解決してリノートとしてローカルに作成する。
+ *
+ * @see {@link services/note/create} ノート作成
+ * @internal
+ */
 import type Resolver from "../../resolver.js";
 import post from "@/services/note/create.js";
 import type { CacheableRemoteUser } from "@/models/entities/user.js";
@@ -15,7 +26,7 @@ import { shouldBlockInstance } from "@/misc/should-block-instance.js";
 const logger = apLogger;
 
 /**
- * Handle announcement activities
+ * アナウンス（リノート）アクティビティを処理する
  */
 export default async function (
 	resolver: Resolver,
@@ -29,24 +40,24 @@ export default async function (
 		return;
 	}
 
-	// Interrupt if you block the announcement destination
+	// アナウンス先をブロックしている場合は中断
 	if (await shouldBlockInstance(extractDbHost(uri))) return;
 
 	const lock = await getApLock(uri);
 
 	try {
-		// Check if something with the same URI is already registered
+		// 同一 URI のものが既に登録されていないか確認
 		const exist = await fetchNote(uri);
 		if (exist) {
 			return;
 		}
 
-		// Resolve Announce target
+		// Announce の対象を解決
 		let renote;
 		try {
 			renote = await resolveNote(targetUri);
 		} catch (e) {
-			// Skip if target is 4xx
+			// 対象が 4xx の場合はスキップ
 			if (e instanceof StatusError) {
 				if (!e.isRetryable) {
 					logger.warn(`Ignored announce target ${targetUri} - ${e.statusCode}`);
@@ -64,7 +75,7 @@ export default async function (
 			console.log("skip: invalid actor for this activity");
 			return;
 		}
-		logger.info(`Creating the (Re)Note: ${uri}`);
+		logger.info(`(Re)Note を作成中: ${uri}`);
 
 		const activityAudience = await parseAudience(
 			actor,

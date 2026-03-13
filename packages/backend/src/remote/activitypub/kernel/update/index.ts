@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Update アクティビティを処理する。Person または Note 等の更新を受け付ける。
+ *
+ * @remarks
+ * - **役割**: inbox で Update を受信した際に、Person/Note 等の既存オブジェクトを更新する。
+ *
+ * @see {@link remote/activitypub/models/person} Person 更新
+ * @internal
+ */
 import type {
 	CacheableRemoteUser,
 	ILocalUser,
@@ -10,9 +21,10 @@ import Resolver from "../../resolver.js";
 import { updatePerson } from "../../models/person.js";
 import { getApLock } from "@/misc/app-lock.js";
 import { Notes } from "@/models/index.js";
+import { StatusError } from "@/misc/fetch.js";
 
 /**
- * Handler for the Update activity
+ * Update アクティビティを処理する
  */
 export default async (
 	actor: CacheableRemoteUser,

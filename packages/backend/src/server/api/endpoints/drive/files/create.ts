@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ドライブにファイルをアップロードする API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `drive/files/create`（POST `/api/drive/files/create` で呼び出し）
+ * - 認証必須。ファイルをアップロードして DriveFile を作成する。requireFile: true。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { addFile } from "@/services/drive/add-file.js";
 import { DriveFiles } from "@/models/index.js";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
@@ -80,7 +92,7 @@ export default define(
 	meta,
 	paramDef,
 	async (ps, user, _, file, cleanup, ip, headers) => {
-		// Get 'name' parameter
+		// 'name' パラメータを取得する
 		let name = ps.name || file.originalname;
 		if (name !== undefined && name !== null) {
 			name = name.trim();
@@ -98,7 +110,7 @@ export default define(
 		const meta = await fetchMeta();
 
 		try {
-			// Create file
+			// ファイルを作成する
 			const driveFile = await addFile({
 				user,
 				path: file.path,

@@ -1,9 +1,15 @@
 /**
- * 絵文字コピー API
+ * @packageDocumentation
+ *
+ * 管理者がリモート絵文字をコピーして自インスタンスに追加する API エンドポイント。
  *
  * @remarks
- * コピー元は isBasedOnUrl に URI。補足情報（license）には「Copy to 〇〇」を格納。
- * モチーフ情報は引き継がず、usageVisibility は常に private で新規作成する（emojiAdded は送信しない）。
+ * - **API パス**: `admin/emoji/copy`（POST `/api/admin/emoji/copy` で呼び出し）
+ * - 認証必須・モデレーター権限必須。コピー元は isBasedOnUrl に URI を指定。
+ * - 補足情報（license）には「Copy to 〇〇」を格納。モチーフ情報は引き継がず、usageVisibility は常に private で新規作成（emojiAdded は送信しない）。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
  */
 import { IsNull } from "typeorm";
 import define from "../../../define.js";
@@ -74,7 +80,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	let driveFile: DriveFile;
 
 	try {
-		// Create file
+		// ファイルを作成する
 		driveFile = await uploadFromUrl({
 			url: emoji.originalUrl,
 			user: null,

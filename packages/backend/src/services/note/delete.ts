@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ノート（投稿）の削除処理を行うサービス。
+ *
+ * @remarks
+ * - **役割**: API や AP の Delete でノート削除時に、DB 削除・配信・ストリーム通知を行う。
+ *
+ * @see {@link server/api/endpoints/notes/delete} ノート削除 API
+ * @internal
+ */
+
 import { Brackets, In } from "typeorm";
 import { publishNoteStream } from "@/services/stream.js";
 import renderDelete from "@/remote/activitypub/renderer/delete.js";
@@ -99,7 +111,7 @@ export default async function (
 		await deleteActivity(user, note);
 
 		if (isPhysical) {
-			// also deliever delete activity to cascaded notes
+			// カスケードされたノートにも delete アクティビティを配信
 			const cascadingNotes = (await findCascadingNotes(note)).filter(
 				(note) => !note.localOnly,
 			); // filter out local-only notes
@@ -191,7 +203,7 @@ async function deleteActivity(
 	if (Users.isLocalUser(user) && !(note.localOnly && note.channelId)) {
 		let renote: Note | null = null;
 
-		// if deletd note is renote
+		// 削除対象ノートがリノートの場合
 		if (
 			note.renoteId &&
 			note.text == null &&
@@ -251,7 +263,7 @@ async function findCascadingNotes(note: Note): Promise<Note[]> {
 async function getMentionedRemoteUsers(note: Note) {
 	const where = [] as any[];
 
-	// mention / reply / dm
+	// メンション / 返信 / DM
 	const uris = (
 		JSON.parse(note.mentionedRemoteUsers) as IMentionedRemoteUsers
 	).map((x) => x.uri);
@@ -259,7 +271,7 @@ async function getMentionedRemoteUsers(note: Note) {
 		where.push({ uri: In(uris) });
 	}
 
-	// renote / quote
+	// リノート / 引用
 	if (note.renoteUserId) {
 		where.push({
 			id: note.renoteUserId,

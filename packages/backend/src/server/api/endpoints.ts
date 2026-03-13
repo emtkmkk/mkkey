@@ -1,3 +1,17 @@
+/**
+ * @packageDocumentation
+ *
+ * API エンドポイントの一覧とメタ定義。各エンドポイントモジュールを import し、
+ * パスとハンドラの対応表（eps）を組み立て、IEndpoint の配列として export する。
+ *
+ * @remarks
+ * - **役割**: 全エンドポイントを import し、パス（例: `notes/create`）と define の戻り値を対応付けた一覧を提供する。
+ * - ルーティング・OpenAPI 生成・api-handler がこの一覧を参照する。
+ *
+ * @see {@link define} 各エンドポイントの定義
+ * @see {@link api-handler} リクエスト処理
+ * @internal
+ */
 import type { Schema } from "@/misc/schema.js";
 
 import * as ep___admin_meta from "./endpoints/admin/meta.js";
@@ -377,7 +391,7 @@ import * as ep___users_emoji_stats from "./endpoints/users/emoji-stats.js";
 import * as ep___fetchRss from "./endpoints/fetch-rss.js";
 import * as ep___admin_driveCapOverride from "./endpoints/admin/drive-capacity-override.js";
 
-//Calckey Move
+// アカウント移行・known-as 用
 import * as ep___i_move from "./endpoints/i/move.js";
 import * as ep___i_known_as from "./endpoints/i/known-as.js";
 
@@ -867,7 +881,7 @@ export interface IEndpointMeta {
 
 export interface IEndpoint {
 	name: string;
-	exec: any; // TODO: may be obosolete @ThatOneCalculator
+	exec: any; // TODO: 廃止の可能性あり（@ThatOneCalculator 由来）
 	meta: IEndpointMeta;
 	params: Schema;
 }

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ファイル情報の取得。サイズ・MD5・MIME・画像寸法・Blurhash・センシティブ判定を行う。
+ *
+ * @remarks
+ * - **役割**: ドライブアップロード・リモート添付取得時にメタデータを算出し、DB 保存や表示に利用する。
+ *
+ * @see {@link services/drive/add-file} ドライブ追加
+ * @internal
+ */
 import * as fs from "node:fs";
 import * as crypto from "node:crypto";
 import { join } from "node:path";
@@ -44,7 +55,11 @@ const TYPE_SVG = {
 };
 
 /**
- * Get file information
+ * ファイルパスからサイズ・MD5・MIME・画像寸法・Blurhash・センシティブ判定を取得する。
+ * @param path - ファイルパス
+ * @param opts - オプション（センシティブ検出のスキップ・閾値など）
+ * @returns ファイル情報
+ * @internal
  */
 export async function getFileInfo(
 	path: string,
@@ -62,7 +77,7 @@ export async function getFileInfo(
 
 	let type = await detectType(path);
 
-	// image dimensions
+	// 画像の寸法
 	let width: number | undefined;
 	let height: number | undefined;
 	let orientation: number | undefined;
@@ -337,13 +352,16 @@ function exists(path: string): Promise<boolean> {
 }
 
 /**
- * Detect MIME Type and extension
+ * ファイルの MIME タイプと拡張子を検出する。
+ * @param path - ファイルパス
+ * @returns MIME と ext
+ * @internal
  */
 export async function detectType(path: string): Promise<{
 	mime: string;
 	ext: string | null;
 }> {
-	// Check 0 byte
+	// 0 バイトの場合は octet-stream
 	const fileSize = await getFileSize(path);
 	if (fileSize === 0) {
 		return TYPE_OCTET_STREAM;
@@ -373,7 +391,9 @@ export async function detectType(path: string): Promise<{
 }
 
 /**
- * Check the file is SVG or not
+ * ファイルが SVG かどうかを判定する。
+ * @param path - ファイルパス
+ * @internal
  */
 export async function checkSvg(path: string) {
 	try {
@@ -386,7 +406,9 @@ export async function checkSvg(path: string) {
 }
 
 /**
- * Get file size
+ * ファイルサイズを取得する。
+ * @param path - ファイルパス
+ * @internal
  */
 export async function getFileSize(path: string): Promise<number> {
 	const getStat = util.promisify(fs.stat);
@@ -394,7 +416,8 @@ export async function getFileSize(path: string): Promise<number> {
 }
 
 /**
- * Calculate MD5 hash
+ * ファイルの MD5 ハッシュを計算する。
+ * @internal
  */
 async function calcHash(path: string): Promise<string> {
 	const hash = crypto.createHash("md5").setEncoding("hex");
@@ -403,7 +426,8 @@ async function calcHash(path: string): Promise<string> {
 }
 
 /**
- * Detect dimensions of image
+ * 画像の寸法を検出する。
+ * @internal
  */
 async function detectImageSize(path: string): Promise<{
 	width: number;
@@ -419,7 +443,8 @@ async function detectImageSize(path: string): Promise<{
 }
 
 /**
- * Calculate average color of image
+ * 画像の Blurhash を計算する。
+ * @internal
  */
 function getBlurhash(path: string, mime?: string): Promise<string> {
 	return new Promise(async (resolve, reject) => {

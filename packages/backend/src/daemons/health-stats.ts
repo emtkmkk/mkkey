@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * サーバーの健全性・キュー・APIレイテンシなどの統計を収集し報告するデーモン。
+ *
+ * @remarks
+ * - **役割**: 定期的にイベントループ遅延・DB/Redis・API レイテンシ等を取得し、Xev で配信する。
+ *
+ * @internal
+ */
 import { monitorEventLoopDelay } from "perf_hooks";
 import Xev from "xev";
 import { db } from "@/db/postgre.js";

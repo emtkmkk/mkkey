@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Image オブジェクトの作成・解決
+ *
+ * @remarks
+ * - **役割**: リモートノートの添付画像をドライブに取り込み、Image オブジェクトを解決する。
+ *
+ * @see {@link services/drive/upload-from-url} URL からアップロード
+ * @internal
+ */
 import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
 import type { CacheableRemoteUser } from "@/models/entities/user.js";
 import { IRemoteUser } from "@/models/entities/user.js";
@@ -13,13 +24,13 @@ import { isDocument, type IObject } from '../type.js';
 const logger = apLogger;
 
 /**
- * create an Image.
+ * Image を作成する。
  */
 export async function createImage(
 	actor: CacheableRemoteUser,
 	value: any,
 ): Promise<DriveFile> {
-	// Skip if author is frozen.
+	// 作者が凍結されている場合はスキップ
 	if (actor.isSuspended) {
 		throw new Error("actor has been suspended");
 	}
@@ -50,8 +61,7 @@ export async function createImage(
 	});
 
 	if (file.isLink) {
-		// If the URL is different, it means that the same image was previously
-		// registered with a different URL, so update the URL
+		// URL が異なる場合は、同一画像が別 URL で登録されていたため URL を更新する
 		if (file.url !== image.url) {
 			await DriveFiles.update(
 				{ id: file.id },
@@ -69,10 +79,10 @@ export async function createImage(
 }
 
 /**
- * Resolve Image.
+ * Image を解決する。
  *
- * If the target Image is registered in Calckey, return it, otherwise
- * Fetch from remote server, register with Calckey and return it.
+ * 対象の Image が Calckey に登録されていればそれを返し、
+ * そうでなければリモートから取得して Calckey に登録して返す。
  */
 export async function resolveImage(
 	actor: CacheableRemoteUser,
@@ -80,6 +90,6 @@ export async function resolveImage(
 ): Promise<DriveFile> {
 	// TODO
 
-	// Fetch from remote server and register
+	// リモートから取得して登録
 	return await createImage(actor, value);
 }

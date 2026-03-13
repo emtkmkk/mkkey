@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * HTML を MFM 風テキストに変換する。AP サーバー由来の br タグ・ゼロ幅・ハッシュタグなどを扱う。
+ *
+ * @remarks
+ * - **役割**: リモートノートの HTML 本文を MFM に近い形に変換し、取り込み・表示に利用する。
+ *
+ * @see {@link remote/activitypub/models/note} AP ノート
+ * @internal
+ */
 import { URL } from "node:url";
 import * as parse5 from "parse5";
 import * as TreeAdapter from "../../node_modules/parse5/dist/tree-adapters/default.js";

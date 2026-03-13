@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートの詳細を 1 件取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/show`（GET `/api/notes/show` で呼び出し）
+ * - 認証は不要（プライベートモード時は必須）。noteId で指定したノートを返す。
+ * - 返却は Note オブジェクト 1 件。存在しない場合は noSuchNote エラー。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Notes } from "@/models/index.js";
 import define from "../../define.js";
 import { getNote } from "../../common/getters.js";
@@ -41,7 +54,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	});
 
 	return await Notes.pack(note, user, {
-		// FIXME: packing with detail may throw an error if the reply or renote is not visible (#8774)
+		// FIXME: 返信またはリノートが非表示の場合、詳細付き pack でエラーになる可能性あり (#8774)
 		detail: true,
 		showInvisible: true,
 	}).catch((err) => {

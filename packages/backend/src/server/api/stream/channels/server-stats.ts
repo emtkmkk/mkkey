@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * サーバ統計ストリーム。サーバ全体の統計情報をリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `serverStats`。認証不要。
+ * - serverStats イベントを購読し、サーバ統計を配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Xev from "xev";
 import Channel from "../channel.js";
 

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 指定ユーザーをフォローする API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `following/create`（POST `/api/following/create` で呼び出し）
+ * - 認証必須。userId で指定したユーザーをフォローする。レート制限あり。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import create from "@/services/following/create.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -74,14 +86,14 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.followeeIsYourself);
 	}
 
-	// Get followee
+	// フォロー先を取得する
 	const followee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Check if already following
+	// 既にフォロー中か確認する
 	const exist = await Followings.findOneBy({
 		followerId: follower.id,
 		followeeId: followee.id,

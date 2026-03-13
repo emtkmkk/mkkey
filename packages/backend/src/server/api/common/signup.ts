@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * サインアップ（新規アカウント作成）。ユーザー・キーペア・プロフィール作成と invite 対応を行う。
+ *
+ * @remarks
+ * - **役割**: サインアップ API から呼ばれ、Users/UserProfile/UserKeypair 作成・招待コード消費・チャート記録を行う。
+ *
+ * @see {@link signin} サインイン処理
+ * @see {@link private/signup} サインアップルート
+ * @internal
+ */
 import { generateKeyPair } from "node:crypto";
 import generateUserToken from "./generate-native-user-token.js";
 import { User } from "@/models/entities/user.js";

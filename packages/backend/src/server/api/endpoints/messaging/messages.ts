@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * メッセージ（DM）の一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `messaging/messages`（GET `/api/messaging/messages` で呼び出し）
+ * - 認証必須。userId または groupId で相手を指定し、メッセージをページネーションで取得する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
@@ -81,7 +93,7 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps, user) => {
 	if (ps.userId != null) {
-		// Fetch recipient (user)
+		// 宛先（ユーザー）を取得する
 		const recipient = await getUser(ps.userId).catch((e) => {
 			if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 				throw new ApiError(meta.errors.noSuchUser);
@@ -115,7 +127,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 		const messages = await query.take(ps.limit).getMany();
 
-		// Mark all as read
+		// すべて既読にする
 		if (ps.markAsRead) {
 			readUserMessagingMessage(
 				user.id,
@@ -137,14 +149,14 @@ export default define(meta, paramDef, async (ps, user) => {
 			),
 		);
 	} else if (ps.groupId != null) {
-		// Fetch recipient (group)
+		// 宛先（グループ）を取得する
 		const recipientGroup = await UserGroups.findOneBy({ id: ps.groupId });
 
 		if (recipientGroup == null) {
 			throw new ApiError(meta.errors.noSuchGroup);
 		}
 
-		// check joined
+		// 参加済みか確認する
 		const joining = await UserGroupJoinings.findOneBy({
 			userId: user.id,
 			userGroupId: recipientGroup.id,
@@ -162,7 +174,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 		const messages = await query.take(ps.limit).getMany();
 
-		// Mark all as read
+		// すべて既読にする
 		if (ps.markAsRead) {
 			readGroupMessagingMessage(
 				user.id,

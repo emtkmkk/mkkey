@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub Inbox ジョブ。署名検証・ブロック判定・Activity 種別に応じた処理を行う。
+ *
+ * @remarks
+ * - **役割**: inbox キューで実行。受信した Activity の署名検証・ブロック判定のうえ、perform で種別ごとに処理する。
+ *
+ * @see {@link perform} Activity 処理
+ * @see {@link activitypub} inbox 投入元
+ * @internal
+ */
 import { URL } from "node:url";
 import type Bull from "bull";
 import httpSignature from "@peertube/http-signature";
@@ -45,12 +57,12 @@ function isNonRetryableInboxError(error: unknown): boolean {
 	return false;
 }
 
-// Processing when an activity arrives in the user's inbox
+// ユーザーの inbox に Activity が届いたときの処理
 export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
-	const signature = job.data.signature; // HTTP-signature
+	const signature = job.data.signature; // HTTP 署名
 	let activity = job.data.activity;
 
-	//#region Log
+	//#region ログ
 	const info = Object.assign({}, activity) as any;
 	info["@context"] = undefined;
 	logger.debug(JSON.stringify(info, null, 2));
@@ -64,13 +76,13 @@ export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
 	//#endregion
 	const host = toPuny(new URL(signature.keyId).hostname);
 
-	// interrupt if blocked
+	// ブロック済みならここで終了
 	const meta = await fetchMeta();
 	if (await shouldBlockInstance(host, meta)) {
 		return `Blocked request: ${host}`;
 	}
 
-	// only whitelisted instances in private mode
+	// プライベートモードでは許可リストのインスタンスのみ
 	if (meta.privateMode && !meta.allowedHosts.includes(host)) {
 		return `Blocked request: ${host}`;
 	}

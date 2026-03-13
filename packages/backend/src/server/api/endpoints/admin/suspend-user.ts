@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 管理者が指定ユーザーをサスペンド（凍結）する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `admin/suspend-user`（POST `/api/admin/suspend-user` で呼び出し）
+ * - 認証必須・モデレーター権限必須。userId で指定したユーザーをサスペンドし、Delete アクティビティ送信後に削除ジョブを投入する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import deleteFollowing from "@/services/following/delete.js";
 import { Users, Followings, Notifications } from "@/models/index.js";
@@ -45,7 +57,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		targetId: user.id,
 	});
 
-	// Terminate streaming
+	// ストリーミングを終了する
 	if (Users.isLocalUser(user)) {
 		publishUserEvent(user.id, "terminate", {});
 	}

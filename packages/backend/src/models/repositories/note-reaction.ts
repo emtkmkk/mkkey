@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートリアクションリポジトリ（pack / packMany）
+ *
+ * @remarks
+ * - **役割**: ノートリアクションの pack/packMany を提供し、API のリアクション一覧等で利用する。
+ *
+ * @see {@link models/entities/note-reaction} ノートリアクションエンティティ
+ * @internal
+ */
 import { db } from "@/db/postgre.js";
 import { NoteReaction } from "@/models/entities/note-reaction.js";
 import { Notes, Users } from "../index.js";
@@ -30,7 +41,7 @@ export const NoteReactionRepository = db.getRepository(NoteReaction).extend({
 			type: convertLegacyReaction(reaction.reaction),
 			...(opts.withNote
 				? {
-						// may throw error
+						// エラーを投げる可能性あり
 						note: await Notes.pack(reaction.note ?? reaction.noteId, me),
 				  }
 				: {}),
@@ -48,7 +59,7 @@ export const NoteReactionRepository = db.getRepository(NoteReaction).extend({
 			src.map((reaction) => this.pack(reaction, me, options)),
 		);
 
-		// filter out rejected promises, only keep fulfilled values
+		// 拒否された Promise を除き、履行された値のみ返す
 		return reactions.flatMap((result) =>
 			result.status === "fulfilled" ? [result.value] : [],
 		);

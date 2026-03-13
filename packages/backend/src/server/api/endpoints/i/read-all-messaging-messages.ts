@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーのメッセージをすべて既読にする API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/read-all-messaging-messages`（POST `/api/i/read-all-messaging-messages` で呼び出し）
+ * - 認証必須。group または groupId で指定したメッセージグループ内のメッセージを一括既読にする。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { publishMainStream } from "@/services/stream.js";
 import define from "../../define.js";
 import { MessagingMessages, UserGroupJoinings } from "@/models/index.js";
@@ -17,7 +29,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Update documents
+	// ドキュメントを更新する
 	await MessagingMessages.update(
 		{
 			recipientId: user.id,

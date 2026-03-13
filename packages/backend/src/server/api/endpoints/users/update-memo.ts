@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーのメモ（管理者・モデレーター用）を更新する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/update-memo`（POST `/api/users/update-memo` で呼び出し）
+ * - 認証必須（管理者またはモデレーター）。userId で指定したユーザーにメモを保存する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Users, UserMemos } from "@/models/index.js";
 import { ApiError } from "../../error.js";
 import define from "../../define.js";
@@ -38,7 +50,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Get target
+	// 対象を取得する
 	const target = await Users.findOneBy({ id: ps.userId });
 	if (target == null || !user.id) {
 		throw new ApiError(meta.errors.noSuchUser);

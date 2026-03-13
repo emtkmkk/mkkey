@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ドライブフォルダの詳細を 1 件取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `drive/folders/show`（GET `/api/drive/folders/show` で呼び出し）
+ * - 認証必須。folderId で指定したフォルダを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
 import { DriveFolders } from "@/models/index.js";
@@ -34,7 +46,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Get folder
+	// フォルダを取得する
 	const folder = await DriveFolders.findOneBy({
 		id: ps.folderId,
 		userId: user.id,

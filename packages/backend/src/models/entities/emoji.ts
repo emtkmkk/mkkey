@@ -1,5 +1,7 @@
 /**
- * カスタム絵文字エンティティ
+ * @packageDocumentation
+ *
+ * カスタム絵文字エンティティ。license は補足情報、構造化項目は copyPermission / licenseName 等。
  *
  * @remarks
  * license はライセンス補足情報として利用。構造化項目は copyPermission, licenseName, usageInfo, creator, description, isBasedOnUrl。isTextOnly 時は copyPermission / licenseName / creator を固定値として扱う。
@@ -56,7 +58,7 @@ export class Emoji {
 	})
 	public uri: string | null;
 
-	// publicUrlの方のtypeが入る
+	/** publicUrl 側の MIME タイプ */
 	@Column('varchar', {
 		length: 64, nullable: true,
 	})

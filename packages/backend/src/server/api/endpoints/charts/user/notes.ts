@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーごとのノート数チャートを取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `charts/user/notes`（GET `/api/charts/user/notes` で呼び出し）
+ * - プライベートモード時は認証必須。userId で指定したユーザーのノート数推移を返す。キャッシュ 1 時間。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { getJsonSchema } from "@/services/chart/core.js";
 import { perUserNotesChart } from "@/services/chart/index.js";
 import define from "../../../define.js";

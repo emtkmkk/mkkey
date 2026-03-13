@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーグループのオーナーを譲渡する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/groups/transfer`（POST `/api/users/groups/transfer` で呼び出し）
+ * - 認証必須。groupId と userId で新しいオーナーを指定し、グループのオーナー権限を譲渡する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { UserGroups, UserGroupJoinings } from "@/models/index.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
@@ -51,7 +63,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Fetch the group
+	// グループを取得する
 	const userGroup = await UserGroups.findOneBy({
 		id: ps.groupId,
 		userId: me.id,
@@ -61,7 +73,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noSuchGroup);
 	}
 
-	// Fetch the user
+	// ユーザーを取得する
 	const user = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);

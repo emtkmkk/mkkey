@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * アプリの詳細を 1 件取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `app/show`（GET `/api/app/show` で呼び出し）
+ * - 認証不要。appId で指定したアプリを返す。存在しない場合は noSuchApp エラー。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { Apps } from "@/models/index.js";
@@ -32,7 +44,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user, token) => {
 	const isSecure = user != null && token == null;
 
-	// Lookup app
+	// アプリを検索する
 	const ap = await Apps.findOneBy({ id: ps.appId });
 
 	if (ap == null) {

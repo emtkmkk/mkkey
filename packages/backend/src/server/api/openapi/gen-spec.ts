@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * OpenAPI 3.0 仕様（API ドキュメント用）をエンドポイント定義から生成する。
+ *
+ * @remarks
+ * - **役割**: `endpoints.ts` のエンドポイント一覧を走査し、OpenAPI 3.0 の JSON 仕様を組み立てる。
+ * - 生成仕様は API ドキュメント表示（例: Swagger UI）やクライアント生成に利用される。
+ *
+ * @see {@link endpoints} エンドポイント一覧
+ * @see {@link schemas} スキーマ変換
+ * @internal
+ */
 import endpoints from "../endpoints.js";
 import config from "@/config/index.js";
 import { errors as basicErrors } from "./errors.js";
@@ -35,7 +48,7 @@ export function genOpenapiSpec() {
 					in: "body",
 					name: "i",
 				},
-				// TODO: change this to oauth2 when the remaining oauth stuff is set up
+				// TODO: 残りの OAuth 対応ができたら oauth2 に変更する
 				Bearer: {
 					type: "http",
 					scheme: "bearer",
@@ -64,7 +77,7 @@ export function genOpenapiSpec() {
 		let desc = `${
 			endpoint.meta.description
 				? endpoint.meta.description
-				: "No description provided."
+				: "説明なし。"
 		}\n\n`;
 		desc += `**Credential required**: *${
 			endpoint.meta.requireCredential ? "Yes" : "No"
@@ -83,7 +96,7 @@ export function genOpenapiSpec() {
 			schema.properties.file = {
 				type: "string",
 				format: "binary",
-				description: "The file contents.",
+				description: "ファイル内容。",
 			};
 			schema.required.push("file");
 		}
@@ -97,7 +110,7 @@ export function genOpenapiSpec() {
 			},
 		];
 		if (!endpoint.meta.requireCredential) {
-			// add this to make authentication optional
+			// 認証を任意にするため追加
 			security.push({});
 		}
 
@@ -123,7 +136,7 @@ export function genOpenapiSpec() {
 				...(endpoint.meta.res
 					? {
 							"200": {
-								description: "OK (with results)",
+								description: "OK（結果あり）",
 								content: {
 									"application/json": {
 										schema: resSchema,
@@ -133,11 +146,11 @@ export function genOpenapiSpec() {
 					  }
 					: {
 							"204": {
-								description: "OK (without any results)",
+								description: "OK（結果なし）",
 							},
 					  }),
 				"400": {
-					description: "Client error",
+					description: "クライアントエラー",
 					content: {
 						"application/json": {
 							schema: {
@@ -148,7 +161,7 @@ export function genOpenapiSpec() {
 					},
 				},
 				"401": {
-					description: "Authentication error",
+					description: "認証エラー",
 					content: {
 						"application/json": {
 							schema: {
@@ -159,7 +172,7 @@ export function genOpenapiSpec() {
 					},
 				},
 				"403": {
-					description: "Forbidden error",
+					description: "禁止エラー",
 					content: {
 						"application/json": {
 							schema: {
@@ -182,8 +195,8 @@ export function genOpenapiSpec() {
 				},
 				...(endpoint.meta.limit
 					? {
-							"429": {
-								description: "To many requests",
+								"429": {
+								description: "リクエスト過多",
 								content: {
 									"application/json": {
 										schema: {
@@ -196,7 +209,7 @@ export function genOpenapiSpec() {
 					  }
 					: {}),
 				"500": {
-					description: "Internal server error",
+					description: "サーバー内部エラー",
 					content: {
 						"application/json": {
 							schema: {
@@ -214,7 +227,7 @@ export function genOpenapiSpec() {
 		};
 		if (endpoint.meta.allowGet) {
 			path.get = { ...info };
-			// API Key authentication is not permitted for GET requests
+			// GET リクエストでは API Key 認証は許可しない
 			path.get.security = path.get.security.filter(
 				(elem) => !Object.prototype.hasOwnProperty.call(elem, "ApiKeyAuth"),
 			);

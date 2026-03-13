@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * メディアプロキシ処理。URL からメディアを取得し、画像の場合は WebP 変換・BMP 対応等を行う。
+ *
+ * @remarks
+ * - **役割**: プロキシサーバの `GET /:url*` で呼ばれる。url でリソースを取得し、画像は WebP 変換・BMP 読み取り等を行いレスポンスを返す。
+ *
+ * @see {@link proxy/index} プロキシサーバ
+ * @internal
+ */
 import * as fs from "node:fs";
 import net from "node:net";
 import { promises } from "node:dns";

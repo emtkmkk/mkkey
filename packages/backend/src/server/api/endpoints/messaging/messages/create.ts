@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * メッセージ（DM）を送信する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `messaging/messages/create`（POST `/api/messaging/messages/create` で呼び出し）
+ * - 認証必須。userId または groupId で宛先を指定し、text でメッセージ本文を送る。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
 import { getUser } from "../../../common/getters.js";
@@ -99,19 +111,19 @@ export default define(meta, paramDef, async (ps, user) => {
 	let recipientGroup: UserGroup | null;
 
 	if (ps.userId != null) {
-		// Myself
+		// 自分自身
 		if (ps.userId === user.id) {
 			throw new ApiError(meta.errors.recipientIsYourself);
 		}
 
-		// Fetch recipient (user)
+		// 宛先（ユーザー）を取得する
 		recipientUser = await getUser(ps.userId).catch((e) => {
 			if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 				throw new ApiError(meta.errors.noSuchUser);
 			throw e;
 		});
 
-		// Check blocking
+		// ブロック関係を確認する
 		const block = await Blockings.findOneBy({
 			blockerId: recipientUser.id,
 			blockeeId: user.id,
@@ -120,14 +132,14 @@ export default define(meta, paramDef, async (ps, user) => {
 			throw new ApiError(meta.errors.youHaveBeenBlocked);
 		}
 	} else if (ps.groupId != null) {
-		// Fetch recipient (group)
+		// 宛先（グループ）を取得する
 		recipientGroup = await UserGroups.findOneBy({ id: ps.groupId! });
 
 		if (recipientGroup == null) {
 			throw new ApiError(meta.errors.noSuchGroup);
 		}
 
-		// check joined
+		// 参加済みか確認する
 		const joining = await UserGroupJoinings.findOneBy({
 			userId: user.id,
 			userGroupId: recipientGroup.id,

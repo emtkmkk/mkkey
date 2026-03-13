@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォロー関係のキャッシュを無効化する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `following/invalidate`（POST `/api/following/invalidate` で呼び出し）
+ * - 認証必須。userId で指定したユーザーとのフォロー状態を再取得してキャッシュを更新する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import deleteFollowing from "@/services/following/delete.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -56,19 +68,19 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const followee = user;
 
-	// Check if the follower is yourself
+	// フォロワーが自分でないか確認する
 	if (user.id === ps.userId) {
 		throw new ApiError(meta.errors.followerIsYourself);
 	}
 
-	// Get follower
+	// フォロワーを取得する
 	const follower = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Check not following
+	// フォローしていないか確認する
 	const exist = await Followings.findOneBy({
 		followerId: follower.id,
 		followeeId: followee.id,

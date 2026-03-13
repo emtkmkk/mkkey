@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * Nodeinfo 2.0/2.1 のエンドポイント。インスタンス情報・統計を返す。
+ *
+ * @remarks
+ * - **役割**: `/nodeinfo/2.0` と `/nodeinfo/2.1` を提供。ユーザー数・投稿数・ソフトウェア情報等を返す。well-known からリンクされる。
+ *
+ * @see {@link well-known} nodeinfo リンク
+ * @see {@link server/index} マウント元
+ * @internal
+ */
 import Router from "@koa/router";
 import config from "@/config/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
@@ -16,7 +28,7 @@ const router = new Router();
 const nodeinfo2_1path = "/nodeinfo/2.1";
 const nodeinfo2_0path = "/nodeinfo/2.0";
 
-// to cleo: leave this http or bonks
+// cleo 向け: ここは http のままにすること。変更すると不具合になる。
 export const links = [
 	{
 		rel: "http://nodeinfo.diaspora.software/ns/schema/2.1",

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ドライブフォルダを更新する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `drive/folders/update`（POST `/api/drive/folders/update` で呼び出し）
+ * - 認証必須。folderId で指定したフォルダの名前・親フォルダを更新する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { publishDriveStream } from "@/services/stream.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
@@ -49,7 +61,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Fetch folder
+	// フォルダを取得する
 	const folder = await DriveFolders.findOneBy({
 		id: ps.folderId,
 		userId: user.id,
@@ -67,7 +79,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		} else if (ps.parentId === null) {
 			folder.parentId = null;
 		} else {
-			// Get parent folder
+			// 親フォルダを取得する
 			const parent = await DriveFolders.findOneBy({
 				id: ps.parentId,
 				userId: user.id,
@@ -77,9 +89,9 @@ export default define(meta, paramDef, async (ps, user) => {
 				throw new ApiError(meta.errors.noSuchParentFolder);
 			}
 
-			// Check if the circular reference will occur
+			// 循環参照が発生しないか確認する
 			async function checkCircle(folderId: string): Promise<boolean> {
-				// Fetch folder
+				// フォルダを取得する
 				const folder2 = await DriveFolders.findOneBy({
 					id: folderId,
 				});
@@ -103,7 +115,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-	// Update
+	// 更新する
 	DriveFolders.update(folder.id, {
 		name: folder.name,
 		parentId: folder.parentId,
@@ -111,7 +123,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const folderObj = await DriveFolders.pack(folder);
 
-	// Publish folderUpdated event
+	// folderUpdated イベントを発行する
 	publishDriveStream(user.id, "folderUpdated", folderObj);
 
 	return folderObj;

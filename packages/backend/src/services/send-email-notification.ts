@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * メール通知（フォロー等）の送信を行うサービス。
+ *
+ * @remarks
+ * - **役割**: フォロー等のイベント時にユーザー設定に応じてメールを送る。sendEmail と I18n を利用する。
+ *
+ * @see {@link send-email} メール送信
+ * @internal
+ */
 import { UserProfiles } from "@/models/index.js";
 import type { User } from "@/models/entities/user.js";
 import { sendEmail } from "./send-email.js";

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * PWA 用 Web App Manifest のハンドラ。インスタンス名・テーマ色を埋め込んで返す。
+ *
+ * @remarks
+ * - **役割**: Web サーバから manifest ルートで呼ばれ、manifest.json をベースに fetchMeta でインスタンス名・themeColor を埋めて返す。
+ *
+ * @see {@link web/index} Web サーバ
+ * @internal
+ */
 import type Koa from "koa";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import manifest from "./manifest.json" assert { type: "json" };

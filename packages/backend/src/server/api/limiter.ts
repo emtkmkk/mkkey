@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * API のレート制限（短期・長期）。Redis ベースの Limiter を利用する。
+ *
+ * @remarks
+ * - **役割**: call から呼ばれ、エンドポイントごとの minInterval / limit に基づきレート制限をかける。超過時は 429 を返す。
+ *
+ * @see {@link call} エンドポイント実行
+ * @see {@link endpoints} メタの limit 定義
+ * @internal
+ */
 import Limiter from "ratelimiter";
 import { CacheableLocalUser, User } from "@/models/entities/user.js";
 import Logger from "@/services/logger.js";
@@ -27,7 +39,7 @@ export const limiter = (
 			ok();
 		}
 
-		// Short-term limit
+		// 短期制限
 		function min(): void {
 			const minIntervalLimiter = new Limiter({
 				id: `${actor}:${limitation.key}:min`,
@@ -57,7 +69,7 @@ export const limiter = (
 			});
 		}
 
-		// Long term limit
+		// 長期制限
 		function max(): void {
 			const limiter = new Limiter({
 				id: `${actor}:${limitation.key}`,

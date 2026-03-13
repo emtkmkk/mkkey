@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ギャラリー投稿のいいねを解除する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `gallery/posts/unlike`（POST `/api/gallery/posts/unlike` で呼び出し）
+ * - 認証必須。postId で指定したギャラリー投稿のいいねを外す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
 import { GalleryPosts, GalleryLikes } from "@/models/index.js";
@@ -47,7 +59,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.notLiked);
 	}
 
-	// Delete like
+	// いいねを削除する
 	await GalleryLikes.delete(exist.id);
 
 	GalleryPosts.decrement({ id: post.id }, "likedCount", 1);

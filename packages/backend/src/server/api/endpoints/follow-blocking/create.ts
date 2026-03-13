@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォロー・ブロック（ユーザーをフォローもブロックもできないようにする）を作成する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `follow-blocking/create`（POST `/api/follow-blocking/create` で呼び出し）
+ * - 認証必須。userId で指定したユーザーをフォロー・ブロックリストに追加する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { genId } from "@/misc/gen-id.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -39,14 +51,14 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const blocker = user;
 
-	// Get blockee
+	// ブロック対象を取得する
 	const blockee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Check if already muting
+	// 既にミュート中か確認する
 	const exist = await FollowBlockings.findOneBy({
 		blockerId: blocker.id,
 		blockeeId: blockee.id,
@@ -56,7 +68,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.alreadyBlocking);
 	}
 
-	// Create mute
+	// ミュートを作成する
 	await FollowBlockings.insert({
 		id: genId(),
 		createdAt: new Date(),

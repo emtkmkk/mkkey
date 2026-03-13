@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーグループの詳細を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/groups/show`（GET `/api/users/groups/show` で呼び出し）
+ * - 認証必須。groupId で指定したグループの情報とメンバーを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { UserGroups, UserGroupJoinings } from "@/models/index.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
@@ -36,7 +48,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Fetch the group
+	// グループを取得する
 	const userGroup = await UserGroups.findOneBy({
 		id: ps.groupId,
 	});

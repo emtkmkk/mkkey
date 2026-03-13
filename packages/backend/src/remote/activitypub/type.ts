@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub 型定義。IObject / IActivity / コレクション型と getApId 等のヘルパー。
+ *
+ * @remarks
+ * - **役割**: AP オブジェクト・アクティビティの型と getApId/getApIds 等を提供し、remote 配下で共通利用する。
+ *
+ * @see {@link remote/activitypub/perform} Activity 実行
+ * @internal
+ */
 export type obj = { [x: string]: any };
 export type ApObject = IObject | string | (IObject | string)[];
 
@@ -26,35 +37,27 @@ export interface IObject {
 	sensitive?: boolean;
 }
 
-/**
- * Get array of ActivityStreams Objects id
- */
+/** ActivityStreams オブジェクトの id の配列を返す */
 export function getApIds(value: ApObject | undefined): string[] {
 	if (value == null) return [];
 	const array = Array.isArray(value) ? value : [value];
 	return array.map((x) => getApId(x));
 }
 
-/**
- * Get first ActivityStreams Object id
- */
+/** 先頭の ActivityStreams オブジェクトの id を返す */
 export function getOneApId(value: ApObject): string {
 	const firstOne = Array.isArray(value) ? value[0] : value;
 	return getApId(firstOne);
 }
 
-/**
- * Get ActivityStreams Object id
- */
+/** ActivityStreams オブジェクトの id を返す */
 export function getApId(value: string | IObject): string {
 	if (typeof value === "string") return value;
 	if (typeof value.id === "string") return value.id;
 	throw new Error("cannot detemine id");
 }
 
-/**
- * Get ActivityStreams Object type
- */
+/** ActivityStreams オブジェクトの type を返す */
 export function getApType(value: IObject): string {
 	if (typeof value.type === "string") return value.type;
 	if (Array.isArray(value.type) && typeof value.type[0] === "string")

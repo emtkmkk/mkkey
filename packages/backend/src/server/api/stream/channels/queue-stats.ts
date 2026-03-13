@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * キュー統計ストリーム。ジョブキューの統計情報をリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `queueStats`。認証不要。
+ * - queueStats イベントを購読し、キュー統計を配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Xev from "xev";
 import Channel from "../channel.js";
 

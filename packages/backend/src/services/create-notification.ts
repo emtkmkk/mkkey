@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 通知の作成と配信を行うサービス。
+ *
+ * @remarks
+ * - **役割**: リアクション・フォロー・メンション等の通知を DB に保存し、ストリーム・プッシュ・メールで配信する。
+ *
+ * @see {@link services/note/reaction/create} リアクション作成
+ * @internal
+ */
+
 import { publishMainStream } from "@/services/stream.js";
 import { pushNotification } from "@/services/push-notification.js";
 import {
@@ -49,10 +61,10 @@ export async function createNotification(
 			options?.notifier != null && options.notifier.id === data.notifierId
 				? options.notifier
 				: await Users.findOneBy({ id: data.notifierId });
-		// suppress if the notifier does not exist or is silenced.
+		// 通知元が存在しないかサイレンスされている場合は通知を抑制
 		if (!notifier) return null;
 
-		// suppress if the notifier is silenced or in a silenced instance, and not followed by the notifiee.
+		// 通知元がサイレンス中、またはサイレンスインスタンスに所属し、かつ通知先にフォローされていない場合は抑制
 		const [shouldSilence, isFollowed] = await Promise.all([
 			Users.isRemoteUser(notifier) && shouldSilenceInstance(notifier.host),
 			Followings.exist({ where: { followerId: notifieeId, followeeId: data.notifierId } }),
@@ -78,7 +90,7 @@ export async function createNotification(
 		return null;
 	}
 
-	// Create notification
+	// 通知を作成
 	const notification = await Notifications.insert({
 		id: genId(),
 		createdAt: new Date(),
@@ -93,15 +105,14 @@ export async function createNotification(
 
 	const packed = await Notifications.pack(notification, {});
 
-	// Publish notification event
+	// 通知イベントを発行
 	publishMainStream(notifieeId, "notification", packed);
 
 	// 3秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
 	setTimeout(async () => {
 		const fresh = await Notifications.findOneBy({ id: notification.id });
 		if (fresh == null) return; // 既に削除されているかもしれない
-		// We execute this before, because the server side "read" check doesnt work well with push notifications, the app and service worker will decide themself
-		// when it is best to show push notifications
+		// サーバー側の「既読」チェックはプッシュ通知と相性が悪いため、先に実行する。表示タイミングはアプリとサービスワーカーが判断する
 		pushNotification(notifieeId, "notification", packed);
 		if (fresh.isRead) return;
 

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * 絵文字名から添付用絵文字情報を解決する。キャッシュ・ホスト正規化・リアクション展開を扱う。
+ *
+ * @remarks
+ * - **役割**: ノート本文・リアクションの :name: を解決し、表示用の URL 等を返す。MFM や API で利用。
+ *
+ * @see {@link mfm/to-html} MFM から HTML
+ * @internal
+ */
 import { In, IsNull } from "typeorm";
 import { Emojis } from "@/models/index.js";
 import type { Emoji } from "@/models/entities/emoji.js";

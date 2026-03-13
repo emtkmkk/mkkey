@@ -1,9 +1,17 @@
 /**
- * users/stats エンドポイント
+ * @packageDocumentation
  *
- * ユーザーごとの投稿数・リアクション数・ランクなどの統計を返す。
- * 応答は in-memory キャッシュで 10 分間保持し、同一キーへの再リクエストでは DB を叩かずに返す。
- * config.db.statsUser が設定されている場合は集計専用接続プールを使用する。
+ * ユーザーごとの統計（投稿数・リアクション数・ランク等）を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/stats`（GET `/api/users/stats` で呼び出し）
+ * - 認証は不要（userId 指定で対象ユーザーの統計を返す）。
+ * - ユーザーごとの投稿数・リアクション数・ランクなどの統計を返す。
+ * - 応答は in-memory キャッシュで 10 分間保持し、同一キーへの再リクエストでは DB を叩かずに返す。
+ * - config.db.statsUser が設定されている場合は集計専用接続プールを使用する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
  */
 import { getStatsDataSource } from "@/db/postgre.js";
 import {

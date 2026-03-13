@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォローリクエスト一括承諾処理を行うサービス。
+ *
+ * @remarks
+ * - **役割**: フォローリクエスト一括承諾 API から呼ばれ、未承諾のリクエストを一括で承諾する。
+ *
+ * @see {@link server/api/endpoints/following/requests/accept} フォロー承諾
+ * @internal
+ */
+
 import accept from "./accept.js";
 import type { User } from "@/models/entities/user.js";
 import { FollowRequests, Users } from "@/models/index.js";

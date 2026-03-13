@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーグループへの招待を承諾する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/groups/invitations/accept`（POST `/api/users/groups/invitations/accept` で呼び出し）
+ * - 認証必須。invitationId で指定した招待を承諾し、グループに参加する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { UserGroupJoinings, UserGroupInvitations } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { invalidateGroupMembersCache } from "@/misc/antenna-members-cache.js";
@@ -32,7 +44,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Fetch the invitation
+	// 招待を取得する
 	const invitation = await UserGroupInvitations.findOneBy({
 		id: ps.invitationId,
 	});
@@ -45,7 +57,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.noSuchInvitation);
 	}
 
-	// Push the user
+	// ユーザーを追加する
         await UserGroupJoinings.insert({
                 id: genId(),
                 createdAt: new Date(),

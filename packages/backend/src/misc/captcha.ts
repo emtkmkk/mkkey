@@ -1,8 +1,26 @@
+/**
+ * @packageDocumentation
+ *
+ * reCAPTCHA / hCaptcha の検証。サイト検証 API を呼び出して結果を判定する。
+ *
+ * @remarks
+ * - **役割**: サインアップ・ログイン等で CAPTCHA 応答を検証し、ボット対策を提供する。
+ *
+ * @see {@link api/common/signup} サインアップ
+ * @internal
+ */
 import fetch from "node-fetch";
 import { URLSearchParams } from "node:url";
 import { getAgentByUrl } from "./fetch.js";
 import config from "@/config/index.js";
 
+/**
+ * reCAPTCHA の検証を行う。
+ * @param secret - シークレットキー
+ * @param response - クライアントから送られた response
+ * @throws 検証リクエスト失敗時または検証失敗時
+ * @internal
+ */
 export async function verifyRecaptcha(secret: string, response: string) {
 	const result = await getCaptchaResponse(
 		"https://www.recaptcha.net/recaptcha/api/siteverify",
@@ -20,6 +38,13 @@ export async function verifyRecaptcha(secret: string, response: string) {
 	}
 }
 
+/**
+ * hCaptcha の検証を行う。
+ * @param secret - シークレットキー
+ * @param response - クライアントから送られた response
+ * @throws 検証リクエスト失敗時または検証失敗時
+ * @internal
+ */
 export async function verifyHcaptcha(secret: string, response: string) {
 	const result = await getCaptchaResponse(
 		"https://hcaptcha.com/siteverify",
@@ -58,8 +83,8 @@ async function getCaptchaResponse(
 		headers: {
 			"User-Agent": config.userAgent,
 		},
-		// TODO
-		//timeout: 10 * 1000,
+		// TODO: タイムアウト指定の実装
+		// timeout: 10 * 1000,
 		agent: getAgentByUrl,
 	}).catch((e) => {
 		throw new Error(`${e.message || e}`);

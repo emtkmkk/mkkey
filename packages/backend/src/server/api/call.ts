@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * API エンドポイントの呼び出し。エンドポイント解決・レートリミット・認証・実行を行う。
+ *
+ * @remarks
+ * - **役割**: api-handler から呼ばれ、エンドポイント名で解決・レート制限チェック・認証済みユーザーで execute を実行する。
+ * - レスポンスは define の res スキーマに沿って返却される。
+ *
+ * @see {@link define} エンドポイント定義
+ * @see {@link endpoints} エンドポイント一覧
+ * @internal
+ */
 import { performance } from "perf_hooks";
 import Xev from "xev";
 import type Koa from "koa";
@@ -49,7 +62,7 @@ export default async (
 	}
 
 	if (ep.meta.limit) {
-		// koa will automatically load the `X-Forwarded-For` header if `proxy: true` is configured in the app.
+		// レートリミットの主体: 認証ユーザは user.id、未認証は IP ハッシュ（proxy: true 時は Koa が X-Forwarded-For を参照）
 		let limitActor: string;
 		if (user) {
 			limitActor = user.id;
@@ -63,7 +76,7 @@ export default async (
 			limit.key = ep.name;
 		}
 
-		// Rate limit
+		// レートリミット適用
 		await limiter(
 			limit as IEndpointMeta["limit"] & { key: NonNullable<string> },
 			limitActor,
@@ -119,7 +132,7 @@ export default async (
 		});
 	}
 
-	// private mode
+	// プライベートモード時
 	const meta = await fetchMeta();
 	if (
 		meta.privateMode &&
@@ -134,7 +147,7 @@ export default async (
 		});
 	}
 
-	// Cast non JSON input
+	// 非 JSON 入力をキャスト
 	if ((ep.meta.requireFile || ctx?.method === "GET") && ep.params.properties) {
 		for (const k of Object.keys(ep.params.properties)) {
 			const param = ep.params.properties![k];

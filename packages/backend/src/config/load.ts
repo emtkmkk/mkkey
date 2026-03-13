@@ -1,5 +1,13 @@
 /**
- * Config loader
+ * @packageDocumentation
+ *
+ * 設定ファイル（YAML）とビルドメタ情報を読み込み、Config を組み立てる。
+ *
+ * @remarks
+ * - **役割**: 起動時に .config/default.yml（または test.yml）を読み、環境変数やビルドメタをマージして Config を返す。
+ *
+ * @see {@link env} 環境変数
+ * @internal
  */
 
 import * as fs from "node:fs";
@@ -11,17 +19,18 @@ import type { Source, Mixin } from "./types.js";
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
 
-/**
- * Path of configuration directory
- */
+/** 設定ディレクトリのパス */
 const dir = `${_dirname}/../../../../.config`;
 
-/**
- * Path of configuration file
- */
+/** 読み込む設定ファイルのパス（NODE_ENV=test のときは test.yml、それ以外は default.yml） */
 const path =
 	process.env.NODE_ENV === "test" ? `${dir}/test.yml` : `${dir}/default.yml`;
 
+/**
+ * 設定ファイルとビルドメタを読み込み、Config を返す。
+ * @returns マージ済みの設定オブジェクト
+ * @internal
+ */
 export default function load() {
 	const meta = JSON.parse(
 		fs.readFileSync(`${_dirname}/../../../../built/meta.json`, "utf-8"),
@@ -83,6 +92,13 @@ export default function load() {
 	return Object.assign(config, mixin);
 }
 
+/**
+ * 文字列を URL にパースする。無効な場合はエラーを投げる。
+ * @param url - パースする URL 文字列
+ * @returns パース済み URL オブジェクト
+ * @throws 無効な URL の場合
+ * @internal
+ */
 function tryCreateUrl(url: string) {
 	try {
 		return new URL(url);

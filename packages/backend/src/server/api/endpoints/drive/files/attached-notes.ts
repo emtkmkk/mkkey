@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 指定ドライブファイルが添付されているノート一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `drive/files/attached-notes`（GET `/api/drive/files/attached-notes` で呼び出し）
+ * - 認証必須。fileId で指定したファイルを添付しているノートの一覧を返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
 import { DriveFiles, Notes } from "@/models/index.js";
@@ -41,7 +53,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Fetch file
+	// ファイルを取得する
 	const file = await DriveFiles.findOneBy({
 		id: ps.fileId,
 		userId: user.id,

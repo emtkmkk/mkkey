@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーリポジトリ（pack / packMany / 関係取得 / キャッシュ等）
+ *
+ * @remarks
+ * - **役割**: ユーザーの pack・検索・関係取得を提供し、API やサービス層で広く利用する。
+ *
+ * @see {@link models/entities/user} ユーザーエンティティ
+ * @internal
+ */
 import { URL } from "url";
 import { In, Not } from "typeorm";
 import Ajv from "ajv";
@@ -139,10 +150,10 @@ function isLocalUser<T extends { host: User["host"] }>(
 	user: T,
 ): user is T & { host: null };
 /**
- * Returns true if the user is local.
+ * ユーザーがローカルかどうかを返す。
  *
- * @param user The user to check.
- * @returns True if the user is local.
+ * @param user 判定するユーザー
+ * @returns ローカルユーザーなら true
  */
 function isLocalUser(user: User | { host: User["host"] }): boolean {
 	return user.host == null;
@@ -153,10 +164,10 @@ function isRemoteUser<T extends { host: User["host"] }>(
 	user: T,
 ): user is T & { host: string };
 /**
- * Returns true if the user is remote.
+ * ユーザーがリモートかどうかを返す。
  *
- * @param user The user to check.
- * @returns True if the user is remote.
+ * @param user 判定するユーザー
+ * @returns リモートユーザーなら true
  */
 function isRemoteUser(user: User | { host: User["host"] }): boolean {
 	return !isLocalUser(user);
@@ -171,7 +182,7 @@ export const UserRepository = db.getRepository(User).extend({
 	birthdaySchema,
 	followedMessageSchema,
 
-	//#region Validators
+	//#region バリデーター
 	validateLocalUsername: ajv.compile(localUsernameSchema),
 	validatePassword: ajv.compile(passwordSchema),
 	validateName: ajv.compile(nameSchema),
@@ -440,7 +451,7 @@ export const UserRepository = db.getRepository(User).extend({
 			return local;
 		}
 
-		// fetching Object once from remote
+		// リモートから一度オブジェクトを取得
 		const resolver = new Resolver();
 		const object = (await resolver.resolve(uri)) as any;
 

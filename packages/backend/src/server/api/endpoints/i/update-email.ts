@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーのメールアドレスを変更する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/update-email`（POST `/api/i/update-email` で呼び出し）
+ * - 認証必須。新しいメールアドレスへ確認メールを送り、認証後に更新する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { publishMainStream } from "@/services/stream.js";
 import define from "../../define.js";
 import rndstr from "rndstr";
@@ -46,7 +58,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-	// Compare password
+	// パスワードを照合する
 	const same = await comparePassword(ps.password, profile.password!);
 
 	if (!same) {
@@ -71,7 +83,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		includeSecrets: true,
 	});
 
-	// Publish meUpdated event
+	// meUpdated イベントを発行する
 	publishMainStream(user.id, "meUpdated", iObj);
 
 	if (ps.email != null) {

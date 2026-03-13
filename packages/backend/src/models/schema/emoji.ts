@@ -1,8 +1,13 @@
 /**
+ * @packageDocumentation
+ *
  * Packed Emoji スキーマ定義
  *
  * @remarks
- * license はライセンス補足情報。copyPermission, licenseName, usageInfo, creator, description, isBasedOnUrl, isTextOnly を個別に返す。
+ * - **役割**: API の絵文字レスポンス型と OpenAPI スキーマで利用する Packed Emoji の定義。
+ * - license はライセンス補足情報。copyPermission, licenseName, usageInfo, creator, description, isBasedOnUrl, isTextOnly を個別に返す。
+ *
+ * @internal
  */
 export const packedEmojiSchema = {
 	type: "object",
@@ -39,7 +44,7 @@ export const packedEmojiSchema = {
 			type: "string",
 			optional: false,
 			nullable: true,
-			description: "The local host is represented with `null`.",
+			description: "ローカルホストは `null` で表す。",
 		},
 		url: {
 			type: "string",

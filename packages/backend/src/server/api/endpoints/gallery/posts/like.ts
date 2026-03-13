@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ギャラリー投稿にいいねする API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `gallery/posts/like`（POST `/api/gallery/posts/like` で呼び出し）
+ * - 認証必須。postId で指定したギャラリー投稿にいいねを付ける。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
 import { GalleryPosts, GalleryLikes } from "@/models/index.js";
@@ -39,7 +51,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.noSuchPost);
 	}
 
-	// if already liked
+	// 既にいいね済みの場合
 	const exist = await GalleryLikes.findOneBy({
 		postId: post.id,
 		userId: user.id,
@@ -49,7 +61,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.alreadyLiked);
 	}
 
-	// Create like
+	// いいねを作成する
 	await GalleryLikes.insert({
 		id: genId(),
 		createdAt: new Date(),

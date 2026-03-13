@@ -1,7 +1,16 @@
 /**
- * File Server
+ * @packageDocumentation
+ *
+ * ファイルサーバ。ドライブファイル配信・ダミー画像等のルートを提供する。
+ *
+ * @remarks
+ * - **役割**: Koa アプリで `/app-default.jpg` と `/:key`（ドライブファイル）を提供。メインサーバから mount される。
+ * - `/:key` は send-drive-file で accessKey からファイルを解決して配信する。
+ *
+ * @see {@link send-drive-file} ドライブファイル配信
+ * @see {@link server/index} マウント元
+ * @internal
  */
-
 import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
@@ -13,7 +22,7 @@ import sendDriveFile from "./send-drive-file.js";
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
 
-// Init app
+// アプリ初期化
 const app = new Koa();
 app.use(cors());
 app.use(async (ctx, next) => {
@@ -24,7 +33,7 @@ app.use(async (ctx, next) => {
 	await next();
 });
 
-// Init router
+// ルーター初期化
 const router = new Router();
 
 router.get("/app-default.jpg", (ctx) => {
@@ -37,7 +46,7 @@ router.get("/app-default.jpg", (ctx) => {
 router.get("/:key", sendDriveFile);
 router.get("/:key/(.*)", sendDriveFile);
 
-// Register router
+// ルーター登録
 app.use(router.routes());
 
 export default app;

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ドライブにフォルダを作成する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `drive/folders/create`（POST `/api/drive/folders/create` で呼び出し）
+ * - 認証必須。name と親 folderId（任意）で新規フォルダを作成する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { publishDriveStream } from "@/services/stream.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
@@ -37,10 +49,10 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// If the parent folder is specified
+	// 親フォルダが指定されている場合
 	let parent = null;
 	if (ps.parentId) {
-		// Fetch parent folder
+		// 親フォルダを取得する
 		parent = await DriveFolders.findOneBy({
 			id: ps.parentId,
 			userId: user.id,
@@ -51,7 +63,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-	// Create folder
+	// フォルダを作成する
 	const folder = await DriveFolders.insert({
 		id: genId(),
 		createdAt: new Date(),
@@ -62,7 +74,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const folderObj = await DriveFolders.pack(folder);
 
-	// Publish folderCreated event
+	// folderCreated イベントを発行する
 	publishDriveStream(user.id, "folderCreated", folderObj);
 
 	return folderObj;

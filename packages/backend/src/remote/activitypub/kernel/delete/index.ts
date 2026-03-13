@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Delete アクティビティを処理する。オブジェクト種別に応じてノートまたはアクターの削除を行う。
+ *
+ * @remarks
+ * - **役割**: inbox で Delete を受信した際に、ノート削除またはアクター削除を実行する。
+ *
+ * @see {@link services/note/delete} ノート削除
+ * @internal
+ */
 import type { CacheableRemoteUser } from "@/models/entities/user.js";
 import { toSingle } from "@/prelude/array.js";
 import { getApId, isTombstone, validPost, validActor } from "../../type.js";
@@ -6,7 +17,7 @@ import { deleteActor } from "./actor.js";
 import type { IDelete, IObject } from "../../type.js";
 
 /**
- * Handle delete activity
+ * Delete アクティビティを処理する
  */
 export default async (
 	actor: CacheableRemoteUser,
@@ -16,12 +27,11 @@ export default async (
 		throw new Error("invalid actor");
 	}
 
-	// Type of object to be deleted
+	// 削除対象オブジェクトの型
 	let formerType: string | undefined;
 
 	if (typeof activity.object === "string") {
-		// The type is unknown, but it has disappeared
-		// anyway, so it does not remote resolve
+		// 型は不明だが既に消えているためリモート解決は行わない
 		formerType = undefined;
 	} else {
 		const object = activity.object as IObject;
@@ -34,13 +44,12 @@ export default async (
 
 	const uri = getApId(activity.object);
 
-	// Even if type is unknown, if actor and object are the same,
-	// it must be `Person`.
+	// 型が不明でも actor と object が同一なら `Person` とする
 	if (!formerType && actor.uri === uri) {
 		formerType = "Person";
 	}
 
-	// If not, fallback to `Note`.
+	// それ以外は `Note` にフォールバック
 	if (!formerType) {
 		formerType = "Note";
 	}

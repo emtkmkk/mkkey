@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Create(Note) アクティビティを処理し、リモート投稿をローカルに取り込む。
+ *
+ * @remarks
+ * - **役割**: inbox で Create(Note) を受信した際に、リモートノートを解決してローカルに作成する。
+ *
+ * @see {@link services/note/create} ノート作成
+ * @internal
+ */
 import type Resolver from "../../resolver.js";
 import type {
 	CacheableRemoteUser,
@@ -12,7 +23,7 @@ import { StatusError } from "@/misc/fetch.js";
 import { Notes } from "@/models/index.js";
 
 /**
- * Handle post creation activity
+ * 投稿作成アクティビティを処理する
  */
 export default async function (
 	resolver: Resolver,

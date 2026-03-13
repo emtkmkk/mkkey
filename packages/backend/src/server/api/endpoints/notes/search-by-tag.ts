@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 指定タグでノートを検索する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/search-by-tag`（GET `/api/notes/search-by-tag` で呼び出し）
+ * - 認証は不要（プライベートモード時は必須）。tag で指定したハッシュタグ付きノートを取得する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import { Notes } from "@/models/index.js";
 import { safeForSql } from "@/misc/safe-for-sql.js";
@@ -153,8 +165,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		}
 	}
 
-	// We fetch more than requested because some may be filtered out, and if there's less than
-	// requested, the pagination stops.
+	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
 	const found = [];
 	const take = Math.floor(ps.limit * 1.5);
 	let skip = 0;

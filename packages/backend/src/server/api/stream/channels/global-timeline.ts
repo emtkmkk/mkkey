@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * グローバルタイムラインストリーム。連合全体のパブリックノートをリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `globalTimeline`。認証不要。
+ * - notesStream を購読し、グローバルタイムラインに流れるノートを配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Channel from "../channel.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { getWordHardMute } from "@/misc/check-word-mute.js";
@@ -25,7 +37,7 @@ export default class extends Channel {
 
 		this.showReplyMode = params?.showReplyMode || "all";
 
-		// Subscribe events
+		// イベント購読
 		this.subscriber.on("notesStream", this.onNote);
 	}
 
@@ -52,7 +64,7 @@ export default class extends Channel {
 				reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "personalOnly" || !replyFollowing)
 			) return;
 		}
-		// Ignore notes from instances the user has muted
+		// ユーザーがミュートしたインスタンスのノートは無視
 		if (
 			isInstanceMuted(
 				note,
@@ -100,7 +112,7 @@ export default class extends Channel {
 	}
 
 	public dispose() {
-		// Unsubscribe events
+		// イベント購読解除
 		this.subscriber.off("notesStream", this.onNote);
 	}
 }

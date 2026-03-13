@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ブロック一覧インポートジョブ。CSV からブロックリストを読み込みブロックを追加する。
+ *
+ * @remarks
+ * - **役割**: インポートキューで実行し、CSV からブロック対象を解決してブロックを追加する。
+ *
+ * @see {@link queue/processors/db/export-blocking} ブロックエクスポート
+ * @internal
+ */
 import type Bull from "bull";
 
 import { queueLogger } from "../../logger.js";

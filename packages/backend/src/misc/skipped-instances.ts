@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * 配信をスキップすべきインスタンスの判定。ブロック・サスペンド・無応答（dead）を考慮する。
+ *
+ * @remarks
+ * - **役割**: 配信キューで対象ホストを絞り込み、ブロック・dead インスタンスへの送信を避ける。
+ *
+ * @see {@link queue/processors/deliver} 配信キュー
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Instances } from "@/models/index.js";
@@ -5,27 +16,26 @@ import type { Instance } from "@/models/entities/instance.js";
 import { DAY } from "@/const.js";
 import { shouldBlockInstance } from "./should-block-instance.js";
 
-// Threshold from last contact after which an instance will be considered
-// "dead" and should no longer get activities delivered to it.
+/** 最終接触からこの日数経過でインスタンスを「無応答」とみなし、配信対象から外す */
 const deadThreshold = 7 * DAY;
 
 /**
- * Returns the subset of hosts which should be skipped.
- *
- * @param hosts array of punycoded instance hosts
- * @returns array of punycoed instance hosts that should be skipped (subset of hosts parameter)
+ * 配信をスキップすべきホストの一覧を返す。
+ * @param hosts - punycode 済みインスタンスホストの配列
+ * @returns スキップすべきホストの配列（hosts の部分集合）
+ * @internal
  */
 export async function skippedInstances(
 	hosts: Instance["host"][],
 ): Promise<Instance["host"][]> {
-	// first check for blocked instances since that info may already be in memory
+	// ブロック済みはメモリにあるので先に判定
 	const meta = await fetchMeta();
 	const shouldSkip = await Promise.all(
 		hosts.map((host) => shouldBlockInstance(host, meta)),
 	);
 	const skipped = hosts.filter((_, i) => shouldSkip[i]);
 
-	// if possible return early and skip accessing the database
+	// 全てスキップなら DB アクセスせずに返す
 	if (skipped.length === hosts.length) return hosts;
 
 	const deadTime = new Date(Date.now() - deadThreshold);
@@ -33,8 +43,7 @@ export async function skippedInstances(
 	return skipped.concat(
 		await Instances.createQueryBuilder("instance")
 			.where("instance.host in (:...hosts)", {
-				// don't check hosts again that we already know are suspended
-				// also avoids adding duplicates to the list
+				// 既にスキップ済みのホストは再チェックしない（重複も防ぐ）
 				hosts: hosts.filter((host) => !skipped.includes(host)),
 			})
 			.andWhere(
@@ -48,12 +57,11 @@ export async function skippedInstances(
 }
 
 /**
- * Returns whether a specific host (punycoded) should be skipped.
- * Convenience wrapper around skippedInstances which should only be used if there is a single host to check.
- * If you have multiple hosts, consider using skippedInstances instead to do a bulk check.
- *
- * @param host punycoded instance host
- * @returns whether the given host should be skipped
+ * 指定ホスト（punycode 済み）をスキップすべきかどうかを返す。単一ホスト用のラッパー。
+ * 複数ホストをまとめて判定する場合は skippedInstances を使う。
+ * @param host - インスタンスホスト（punycode）
+ * @returns スキップすべき場合 true
+ * @internal
  */
 export async function shouldSkipInstance(
 	host: Instance["host"],

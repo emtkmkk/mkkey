@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 2FA（二要素認証）の検証。WebAuthn / Passkey・Android SafetyNet などの証明書検証を行う。
+ *
+ * @remarks
+ * - **役割**: エンドポイント（i/2fa/register-key 等）から呼ばれ、attestation や assertion の署名・証明書チェーンを検証する。
+ * - WebAuthn・Passkey・Android SafetyNet（GSR2 ルート証明書）に対応。
+ *
+ * @see {@link endpoints} i/2fa 系エンドポイント
+ * @internal
+ */
 import * as crypto from "node:crypto";
 import * as jsrsasign from "jsrsasign";
 import config from "@/config/index.js";
@@ -9,7 +21,7 @@ const PEM_PRELUDE = Buffer.from(
 	"hex",
 );
 
-// Android Safetynet attestations are signed with this cert:
+// Android Safetynet の attestation はこの証明書で署名されている
 const GSR2 = `-----BEGIN CERTIFICATE-----
 MIIDujCCAqKgAwIBAgILBAAAAAABD4Ym5g0wDQYJKoZIhvcNAQEFBQAwTDEgMB4G
 A1UECxMXR2xvYmFsU2lnbiBSb290IENBIC0gUjIxEzARBgNVBAoTCkdsb2JhbFNp
@@ -67,11 +79,11 @@ function verifyCertificateChain(certificates: string[]) {
 		const algorithm = certificate.getSignatureAlgorithmField();
 		const signatureHex = certificate.getSignatureValueHex();
 
-		// Verify against CA
+		// CA に対して検証
 		const Signature = new jsrsasign.KJUR.crypto.Signature({ alg: algorithm });
 		Signature.init(CACert);
 		Signature.updateHex(certStruct);
-		valid = valid && !!Signature.verify(signatureHex); // true if CA signed the certificate
+		valid = valid && !!Signature.verify(signatureHex); // CA が証明書に署名していれば true
 	}
 
 	return valid;
@@ -244,7 +256,7 @@ export const procedures = {
 				.update(verificationData)
 				.verify(PEMString(attCert), attStmt.sig);
 
-			// TODO: Check 'attestationChallenge' field in extension of cert matches hash(clientDataJSON)
+			// TODO: 証明書拡張の 'attestationChallenge' が hash(clientDataJSON) と一致することを確認する
 
 			return {
 				valid: isValid,
@@ -252,7 +264,7 @@ export const procedures = {
 			};
 		},
 	},
-	// what a stupid attestation
+	// 仕様上どうしようもない attestation
 	"android-safetynet": {
 		verify({
 			attStmt,
@@ -409,7 +421,7 @@ export const procedures = {
 
 			const attCert = x5c[0];
 
-			// TODO: make sure attCert is an Elliptic Curve (EC) public key over the P-256 curve
+			// TODO: attCert が P-256 曲線の EC 公開鍵であることを確認する
 
 			const negTwo: Buffer = publicKey.get(-2);
 

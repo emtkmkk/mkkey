@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートのお気に入りを解除する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/favorites/delete`（POST `/api/notes/favorites/delete` で呼び出し）
+ * - 認証必須。noteId で指定したノートをお気に入りから削除する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { NoteFavorites } from "@/models/index.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
@@ -35,7 +47,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// if already favorited
+	// 既にお気に入り済みの場合
 	const exist = await NoteFavorites.findOneBy({
 		noteId: ps.noteId,
 		userId: user.id,
@@ -45,7 +57,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.notFavorited);
 	}
 
-	// Delete favorite
+	// お気に入りを削除する
 	await NoteFavorites.delete(exist.id);
 
 	publishInternalEvent("notePackFavoriteUpdated", {

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーのピン留めノート一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/featured-notes`（GET `/api/users/featured-notes` で呼び出し）
+ * - 認証は不要。userId で指定したユーザーがピン留めしたノートを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import { Notes } from "@/models/index.js";
 import type { User } from "@/models/entities/user.js";
@@ -55,7 +67,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Lookup user
+	// ユーザーを検索する
 	const user = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
@@ -96,7 +108,7 @@ export default define(meta, paramDef, async (ps, me) => {
 						.getRawOne()
 			  ).score;
 
-	//#region Construct query
+	//#region クエリ構築
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
 		ps.sinceId,

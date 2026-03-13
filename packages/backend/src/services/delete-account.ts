@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * アカウント削除（ソフト削除・ジョブ登録）を行うサービス。
+ *
+ * @remarks
+ * - **役割**: アカウント削除 API から呼ばれ、ソフト削除と削除ジョブ登録を行う。
+ *
+ * @see {@link queue/processors/db/delete-account} アカウント削除キュー
+ * @internal
+ */
+
 import { Users } from "@/models/index.js";
 import { createDeleteAccountJob } from "@/queue/index.js";
 import { publishUserEvent } from "./stream.js";
@@ -18,6 +30,6 @@ export async function deleteAccount(user: {
 		isDeleted: true,
 	});
 
-	// Terminate streaming
+	// ストリーミングを終了
 	publishUserEvent(user.id, "terminate", {});
 }

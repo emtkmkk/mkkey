@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートのアンケートに投票する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/polls/vote`（POST `/api/notes/polls/vote` で呼び出し）
+ * - 認証必須。noteId と choice で指定した選択肢に投票する。重複投票は不可。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Not } from "typeorm";
 import { publishNoteStream } from "@/services/stream.js";
 import { createNotification } from "@/services/create-notification.js";
@@ -76,7 +88,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const createdAt = new Date();
 
-	// Get votee
+	// 投票先を取得する
 	const note = await getNote(ps.noteId, user).catch((err) => {
 		if (err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
 			throw new ApiError(meta.errors.noSuchNote);
@@ -87,7 +99,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.noPoll);
 	}
 
-	// Check blocking
+	// ブロック関係を確認する
 	if (note.userId !== user.id) {
 		const block = await Blockings.findOneBy({
 			blockerId: note.userId,
@@ -108,7 +120,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.invalidChoice);
 	}
 
-	// if already voted
+	// 既に投票済みの場合
 	const exist = await PollVotes.findBy({
 		noteId: note.id,
 		userId: user.id,
@@ -124,7 +136,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-	// Create vote
+	// 投票を作成する
 	const vote = await PollVotes.insert({
 		id: genId(),
 		createdAt,
@@ -133,7 +145,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		choice: ps.choice,
 	}).then((x) => PollVotes.findOneByOrFail(x.identifiers[0]));
 
-	// Increment votes count
+	// 投票数をインクリメントする
 	const index = ps.choice + 1; // In SQL, array index is 1 based
 	await Polls.query(
 		`UPDATE poll SET votes[${index}] = votes[${index}] + 1 WHERE "noteId" = '${poll.noteId}'`,
@@ -144,14 +156,14 @@ export default define(meta, paramDef, async (ps, user) => {
 		userId: user.id,
 	});
 
-	// Notify
+	// 通知する
 	createNotification(note.userId, "pollVote", {
 		notifierId: user.id,
 		noteId: note.id,
 		choice: ps.choice,
 	}, { notifier: user });
 
-	// Fetch watchers (投稿者は投票者表示)
+	// ウォッチャーを取得する（投稿者は投票者表示）
 	NoteWatchings.findBy({
 		noteId: note.id,
 		userId: Not(user.id),

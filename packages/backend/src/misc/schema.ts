@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * API レスポンス用の Packed 型と refs。各モデルの schema を集約し SchemaType で型を取り出す。
+ *
+ * @remarks
+ * - **役割**: エンドポイントの戻り値型や OpenAPI スキーマ生成で Packed 型を参照する。
+ *
+ * @see {@link server/api/define} API 定義
+ * @internal
+ */
 import {
 	packedUserLiteSchema,
 	packedUserDetailedNotMeOnlySchema,

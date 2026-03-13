@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Flag アクティビティを処理する。通報として AbuseUserReports に記録する。
+ *
+ * @remarks
+ * - **役割**: inbox で Flag を受信した際に、通報内容を AbuseUserReports に保存する。
+ *
+ * @see {@link models/entities/abuse-user-report} 通報エンティティ
+ * @internal
+ */
 import type { CacheableRemoteUser } from "@/models/entities/user.js";
 import config from "@/config/index.js";
 import type { IFlag } from "../../type.js";
@@ -10,9 +21,8 @@ export default async (
 	actor: CacheableRemoteUser,
 	activity: IFlag,
 ): Promise<string> => {
-	// The object is `(User | Note) | (User | Note) []`, but it cannot be
-	// matched with all patterns of the DB schema, so the target user is the first
-	// user and it is stored as a comment.
+	// オブジェクトは `(User | Note) | (User | Note) []` だが DB スキーマの全パターンと一致させられないため、
+	// 対象ユーザーは先頭のユーザーとし、それ以外はコメントとして保存する
 	const uris = getApIds(activity.object);
 
 	const userIds = uris

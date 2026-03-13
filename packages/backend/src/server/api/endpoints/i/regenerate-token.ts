@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーのアクセストークンを再生成する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/regenerate-token`（POST `/api/i/regenerate-token` で呼び出し）
+ * - 認証必須。パスワード確認後、新しいアクセストークンを発行し、旧トークンを無効化する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import {
 	publishInternalEvent,
 	publishMainStream,
@@ -28,7 +40,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-	// Compare password
+	// パスワードを照合する
 	const same = await comparePassword(ps.password, profile.password!);
 
 	if (!same) {
@@ -41,7 +53,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		token: newToken,
 	});
 
-	// Publish event
+	// イベントを発行する
 	publishInternalEvent("userTokenRegenerated", {
 		id: user.id,
 		oldToken,
@@ -49,7 +61,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	});
 	publishMainStream(user.id, "myTokenRegenerated");
 
-	// Terminate streaming
+	// ストリーミングを終了する
 	setTimeout(() => {
 		publishUserEvent(user.id, "terminate", {});
 	}, 5000);

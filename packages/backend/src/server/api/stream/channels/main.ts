@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * メインストリーム（通知・メンション等）。認証ユーザー向けの共通イベント。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `main`。認証必須。
+ * - 通知・メンション・その他 mainStream で配送されるイベントを受信する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Channel from "../channel.js";
 import {
 	isInstanceMuted,
@@ -10,11 +22,11 @@ export default class extends Channel {
 	public static requireCredential = true;
 
 	public async init(params: any) {
-		// Subscribe main stream channel
+		// メインストリームチャンネルを購読
 		this.subscriber.on(`mainStream:${this.user!.id}`, async (data) => {
 			switch (data.type) {
 				case "notification": {
-					// Ignore notifications from instances the user has muted
+					// ユーザーがミュートしたインスタンスからの通知は無視
 					if (
 						isUserFromMutedInstance(
 							data.body,

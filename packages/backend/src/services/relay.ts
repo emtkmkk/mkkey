@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * リレー（フォロー・配信）を扱うサービス。
+ *
+ * @remarks
+ * - **役割**: リレー用のフォロー・Undo の配信や、リレー一覧の取得を行う。Relays と deliver キューを利用する。
+ *
+ * @see {@link deliver} 配信キュー
+ * @internal
+ */
 import { IsNull } from "typeorm";
 import { renderFollowRelay } from "@/remote/activitypub/renderer/follow-relay.js";
 import {

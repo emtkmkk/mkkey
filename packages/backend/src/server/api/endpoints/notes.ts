@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ノート一覧を取得する API エンドポイント（複数 ID 指定）。
+ *
+ * @remarks
+ * - **API パス**: `notes`（POST `/api/notes` で呼び出し）
+ * - 認証は不要（プライベートモード時は必須）。noteIds で指定したノートをまとめて返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Notes } from "@/models/index.js";
 import define from "../define.js";
 import { makePaginationQuery } from "../common/make-pagination-query.js";

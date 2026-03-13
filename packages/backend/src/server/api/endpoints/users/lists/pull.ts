@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーリストからユーザーを除外する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/lists/pull`（POST `/api/users/lists/pull` で呼び出し）
+ * - 認証必須。listId と userId で指定したユーザーをリストから外す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { publishUserListStream } from "@/services/stream.js";
 import { UserLists, UserListJoinings, Users } from "@/models/index.js";
 import { invalidateListMembersCache } from "@/misc/antenna-members-cache.js";
@@ -39,7 +51,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Fetch the list
+	// リストを取得する
 	const userList = await UserLists.findOneBy({
 		id: ps.listId,
 		userId: me.id,
@@ -49,14 +61,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noSuchList);
 	}
 
-	// Fetch the user
+	// ユーザーを取得する
 	const user = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Pull the user
+	// ユーザーをリストから外す
         await UserListJoinings.delete({ userListId: userList.id, userId: user.id });
 
         invalidateListMembersCache(userList.id);

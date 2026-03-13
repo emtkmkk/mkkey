@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * リノートミュート一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `renote-mute/list`（GET `/api/renote-mute/list` で呼び出し）
+ * - 認証必須。自分がリノートミュートしているユーザーをページネーションで返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { RenoteMutings } from "@/models/index.js";
 import define from "../../define.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";

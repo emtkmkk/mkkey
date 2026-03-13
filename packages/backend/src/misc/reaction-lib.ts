@@ -1,5 +1,13 @@
 /**
- * リアクション解決・変換ユーティリティ
+ * @packageDocumentation
+ *
+ * リアクション解決・変換ユーティリティ。レガシー絵文字・Unicode・カスタム絵文字の解決を行う。
+ *
+ * @remarks
+ * - **役割**: リアクションの decode/encode と絵文字解決を提供し、ノート・通知・AP で利用する。
+ *
+ * @see {@link models/entities/note-reaction} ノートリアクション
+ * @internal
  */
 import { fromStoredCopyPermission } from "./copy-permission.js";
 import {
@@ -103,11 +111,11 @@ export async function toDbReaction(
 	reaction = reaction?.replaceAll("::", ":");
 	if (reaction.startsWith(":") && !reaction.endsWith(":")) reaction = reaction + ":";
 
-	// Convert string-type reactions to unicode
+	// レガシー絵文字の場合
 	const emoji = legacies.get(reaction) || (reaction === "♥️" ? "❤️" : null);
 	if (emoji) return emoji;
 
-	// Allow unicode reactions
+	// Unicode Emoji の場合
         const match = emojiRegex.exec(reaction);
         if (match) {
                 const unicode = match[0];

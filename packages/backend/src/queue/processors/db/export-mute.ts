@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ミュート一覧エクスポートジョブ。ユーザーのミュートリストを CSV でドライブに保存する。
+ *
+ * @remarks
+ * - **役割**: エクスポートキューで実行し、ミュート一覧を CSV にしてドライブに追加する。
+ *
+ * @see {@link queue/processors/db/export-blocking} ブロックエクスポート
+ * @internal
+ */
 import type Bull from "bull";
 import * as fs from "node:fs";
 
@@ -25,7 +36,7 @@ export async function exportMute(
 		return;
 	}
 
-	// Create temp file
+	// 一時ファイルを作成
 	const [path, cleanup] = await createTemp();
 
 	logger.info(`Temp file is ${path}`);

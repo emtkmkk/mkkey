@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ワードミュート・リアクションミュートの判定。キーワード配列・正規表現によるマッチを行う。
+ *
+ * @remarks
+ * - **役割**: ノート投稿・TL 表示時にミュート条件に合致するか判定し、フィルタに利用する。
+ *
+ * @see {@link services/note/create} ノート作成
+ * @internal
+ */
 import RE2 from "re2";
 import type { Note } from "@/models/entities/note.js";
 import type { User } from "@/models/entities/user.js";
@@ -25,7 +36,7 @@ function checkWordMute(
 
 	for (const mutePattern of mutedWords) {
 		if (Array.isArray(mutePattern)) {
-			// Clean up
+			// 空キーワードを除いて整える
 			const keywords = mutePattern.filter((keyword) => keyword !== "");
 
 			if (keywords.length == 1 && note.id == keywords[0]) {
@@ -38,10 +49,10 @@ function checkWordMute(
 			)
 				return true;
 		} else {
-			// represents RegExp
+			// 正規表現パターン
 			const regexp = mutePattern.match(/^\/(.+)\/(.*)$/);
 
-			// This should never happen due to input sanitisation.
+			// 入力サニタイズにより通常は発生しない
 			if (!regexp) {
 				console.warn(`Found invalid regex in word mutes: ${mutePattern}`);
 				continue;
@@ -50,7 +61,7 @@ function checkWordMute(
 			try {
 				if (new RE2(regexp[1], regexp[2]).test(text)) return true;
 			} catch (err) {
-				// This should never happen due to input sanitisation.
+				// 入力サニタイズにより通常は発生しない
 			}
 		}
 	}
@@ -58,12 +69,16 @@ function checkWordMute(
 	return false;
 }
 
+/**
+ * ノートがワードミュートに該当するか判定する（自分自身は除外）。
+ * @internal
+ */
 export async function getWordHardMute(
 	note: NoteLike,
 	me: UserLike | null | undefined,
 	mutedWords: Array<string | string[]> | null | undefined,
 ): Promise<boolean> {
-	// 自分自身
+	// 自分自身はミュート対象外
 	if (me && note.userId === me.id) {
 		return false;
 	}
@@ -79,6 +94,10 @@ export async function getWordHardMute(
 	return false;
 }
 
+/**
+ * リアクションがミュート条件に該当するか判定する。
+ * @internal
+ */
 export function checkReactionMute(
 	reaction: string,
 	note: Note,
@@ -103,7 +122,7 @@ export function checkReactionMute(
 					  )
 					: undefined;
 
-			// Clean up
+			// 空キーワードと reject: を除いて整える
 			const keywords = mutePattern.filter(
 				(keyword) => keyword !== "" && !keyword.startsWith("reject:"),
 			);
@@ -187,10 +206,10 @@ export function checkReactionMute(
 				})
 			) return reject === undefined ? true : { muted: true, reject: reject };
 		} else {
-			// represents RegExp
+			// 正規表現パターン
 			const regexp = mutePattern.match(/^\/(.+)\/(.*)$/);
 
-			// This should never happen due to input sanitisation.
+			// 入力サニタイズにより通常は発生しない
 			if (!regexp) {
 				console.warn(`Found invalid regex in word mutes: ${mutePattern}`);
 				continue;
@@ -204,7 +223,7 @@ export function checkReactionMute(
 				if (new RE2(regexp[1], regexp[2]?.replaceAll("r", "")).test(text))
 					return reject ? { muted: true, reject: true } : true;
 			} catch (err) {
-				// This should never happen due to input sanitisation.
+				// 入力サニタイズにより通常は発生しない
 			}
 		}
 	}

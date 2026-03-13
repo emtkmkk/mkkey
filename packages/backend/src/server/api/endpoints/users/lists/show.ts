@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーリストの詳細を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/lists/show`（GET `/api/users/lists/show` で呼び出し）
+ * - 認証必須。listId で指定したリストの情報とメンバーを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { UserLists, Users } from "@/models/index.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
@@ -37,7 +49,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Fetch the list
+	// リストを取得する
 	let userList: UserList | string | null = await UserLists.findOneBy({
 		id: ps.listId,
 		userId: me.id,

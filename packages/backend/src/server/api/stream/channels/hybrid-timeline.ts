@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ハイブリッドタイムラインストリーム。ホームとグローバルを混在したノートをリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `hybridTimeline`。認証必須。
+ * - notesStream を購読し、ハイブリッドタイムラインに流れるノートを配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Channel from "../channel.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { getWordHardMute } from "@/misc/check-word-mute.js";
@@ -24,7 +36,7 @@ export default class extends Channel {
 		)
 			return;
 
-		// Subscribe events
+		// イベント購読
 		this.subscriber.on("notesStream", this.onNote);
 	}
 
@@ -49,7 +61,7 @@ export default class extends Channel {
 		)
 			return;
 
-		// Ignore notes from instances the user has muted
+		// ユーザーがミュートしたインスタンスのノートは無視
 		if (
 			isInstanceMuted(
 				note,
@@ -112,7 +124,7 @@ export default class extends Channel {
 	}
 
 	public dispose() {
-		// Unsubscribe events
+		// イベント購読解除
 		this.subscriber.off("notesStream", this.onNote);
 	}
 }

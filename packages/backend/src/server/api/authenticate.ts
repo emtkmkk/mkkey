@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * API およびストリーミング用の認証。トークンからユーザー・アプリを解決する。
+ *
+ * @remarks
+ * - **役割**: Authorization ヘッダーまたはクエリのトークンから AccessToken を解決し、ユーザーとアプリを返す。
+ * - API の api-handler とストリーミング接続の両方で利用される。
+ *
+ * @see {@link api-handler} API 認証
+ * @see {@link streaming} ストリーム接続認証
+ * @internal
+ */
 import isNativeToken from "./common/is-native-token.js";
 import type { CacheableLocalUser, ILocalUser } from "@/models/entities/user.js";
 import { Users, AccessTokens, Apps } from "@/models/index.js";

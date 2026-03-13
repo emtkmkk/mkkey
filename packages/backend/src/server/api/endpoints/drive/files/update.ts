@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ドライブファイルのプロパティを更新する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `drive/files/update`（POST `/api/drive/files/update` で呼び出し）
+ * - 認証必須。fileId で指定したファイルの名前・コメント・フォルダ等を更新する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { publishDriveStream } from "@/services/stream.js";
 import { DriveFiles, DriveFolders, Users } from "@/models/index.js";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
@@ -109,7 +121,7 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const fileObj = await DriveFiles.pack(file, { self: true });
 
-	// Publish fileUpdated event
+	// fileUpdated イベントを発行する
 	publishDriveStream(user.id, "fileUpdated", fileObj);
 
 	return fileObj;

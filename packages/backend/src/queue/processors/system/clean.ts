@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * 定期クリーンアップジョブ。UserIps・ノート・ドライブ・フォロー等の古いデータを削除する。
+ *
+ * @remarks
+ * - **役割**: システムキューで定期実行し、保持期間を過ぎたデータを削除する。
+ *
+ * @internal
+ */
 import type Bull from "bull";
 import { Brackets, LessThan } from "typeorm";
 import { DriveFiles, Notes, UserIps, Users } from "@/models/index.js";
@@ -41,7 +51,7 @@ export async function clean(
 	{
 		let deleteCount = 0;
 		let failedCount = 0;
-		// Delete notes
+		// ノートを削除
 		const maxDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 60)
 		const minDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)
 		let cursor: Note["id"] | null = genId(minDate);
@@ -317,7 +327,7 @@ export async function clean(
 
 	logger.succ(`VACUUM ANALYZE`);
 	job.log(`succ - VACUUM ANALYZE`),
-	
+
 	job.progress(100);
 	done();
 }

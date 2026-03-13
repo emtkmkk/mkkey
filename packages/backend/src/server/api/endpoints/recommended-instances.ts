@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * おすすめインスタンス一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `recommended-instances`（GET `/api/recommended-instances` で呼び出し）
+ * - 認証不要。連合でおすすめとして登録されているインスタンス一覧を返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 // import { IsNull } from 'typeorm';
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import define from "../define.js";

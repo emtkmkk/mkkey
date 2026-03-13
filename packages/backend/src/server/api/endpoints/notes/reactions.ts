@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートのリアクション一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/reactions`（GET `/api/notes/reactions` で呼び出し）
+ * - 認証は不要（プライベートノートは要認証）。noteId で指定したノートへのリアクションを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import { NoteReactions } from "@/models/index.js";
 import { Blocking } from "@/models/entities/blocking.js";
@@ -52,7 +64,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// check note visibility
+	// ノートの公開範囲を確認する
 	const note = await getNote(ps.noteId, user).catch((err) => {
 		if (err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
 			throw new ApiError(meta.errors.noSuchNote);

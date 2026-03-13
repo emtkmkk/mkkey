@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーを通報する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/report-abuse`（POST `/api/users/report-abuse` で呼び出し）
+ * - 認証必須。userId と comment 等で対象ユーザーを通報する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import * as sanitizeHtml from "sanitize-html";
 import { publishAdminStream } from "@/services/stream.js";
 import { AbuseUserReports, Users } from "@/models/index.js";
@@ -46,7 +58,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Lookup user
+	// ユーザーを検索する
 	const user = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
@@ -71,7 +83,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		comment: ps.comment,
 	}).then((x) => AbuseUserReports.findOneByOrFail(x.identifiers[0]));
 
-	// Publish event to moderators
+	// モデレーターにイベントを発行する
 	setImmediate(async () => {
 		const moderators = await Users.find({
 			where: [

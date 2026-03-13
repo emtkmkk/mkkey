@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * メッセージストリーム（DM・グループ）。メッセージの送受信・既読をリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `messaging`。認証必須。
+ * - ユーザーまたはグループごとのメッセージ・タイピング等を配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import {
 	readUserMessagingMessage,
 	readGroupMessagingMessage,
@@ -37,7 +49,7 @@ export default class extends Channel {
 			: null;
 		this.groupId = params.group;
 
-		// Check joining
+		// グループ参加確認
 		if (this.groupId) {
 			const joining = await UserGroupJoinings.findOneBy({
 				userId: this.user!.id,
@@ -55,7 +67,7 @@ export default class extends Channel {
 			? `messagingStream:${this.user!.id}-${this.otherpartyId}`
 			: `messagingStream:${this.groupId}`;
 
-		// Subscribe messaging stream
+		// メッセージストリームを購読
 		this.subscriber.on(this.subCh, this.onEvent);
 	}
 
@@ -106,7 +118,7 @@ export default class extends Channel {
 	private async emitTypers() {
 		const now = new Date();
 
-		// Remove not typing users
+		// タイピング終了ユーザーを除外
 		for (const [userId, date] of this.typers.entries()) {
 			if (now.getTime() - date.getTime() > 5000) this.typers.delete(userId);
 		}

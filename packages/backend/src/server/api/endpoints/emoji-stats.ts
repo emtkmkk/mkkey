@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 絵文字の使用統計を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `emoji-stats`（GET `/api/emoji-stats` で呼び出し）
+ * - 認証不要。絵文字ごとのリアクション数等の統計を返す。条件により MV から取得。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { getStatsDataSource } from "@/db/postgre.js";
 import { NoteReactions } from "@/models/index.js";
 import { awaitAll } from "@/prelude/await-all.js";

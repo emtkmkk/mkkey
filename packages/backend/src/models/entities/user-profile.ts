@@ -11,8 +11,17 @@ import { id } from "../id.js";
 import { User } from "./user.js";
 import { Page } from "./page.js";
 
-// TODO: このテーブルで管理している情報すべてレジストリで管理するようにしても良いかも
-//       ただ、「emailVerified が true なユーザーを find する」のようなクエリは書けなくなるからウーン
+/**
+ * @packageDocumentation
+ *
+ * ユーザープロフィールエンティティ。自己紹介・場所・誕生日・カスタムフィールド等を保持する。
+ *
+ * @remarks
+ * TODO: このテーブルで管理している情報をすべてレジストリで管理する案もあるが、
+ * 「emailVerified が true のユーザーを find する」ようなクエリが書けなくなる。
+ *
+ * @internal
+ */
 @Entity()
 export class UserProfile {
 	@PrimaryColumn(id())
@@ -26,19 +35,19 @@ export class UserProfile {
 
 	@Column('varchar', {
 		length: 128, nullable: true,
-		comment: 'The location of the User.',
+		comment: 'ユーザーの場所',
 	})
 	public location: string | null;
 
 	@Column('char', {
 		length: 10, nullable: true,
-		comment: 'The birthday (YYYY-MM-DD) of the User.',
+		comment: 'ユーザーの誕生日 (YYYY-MM-DD)',
 	})
 	public birthday: string | null;
 
 	@Column('varchar', {
 		length: 2048, nullable: true,
-		comment: 'The description (bio) of the User.',
+		comment: 'ユーザーの自己紹介（bio）',
 	})
 	public description: string | null;
 
@@ -63,13 +72,13 @@ export class UserProfile {
 
 	@Column('varchar', {
 		length: 512, nullable: true,
-		comment: 'Remote URL of the user.',
+		comment: 'ユーザーのリモート URL',
 	})
 	public url: string | null;
 
 	@Column('varchar', {
 		length: 128, nullable: true,
-		comment: 'The email address of the User.',
+		comment: 'ユーザーのメールアドレス',
 	})
 	public email: string | null;
 
@@ -252,21 +261,21 @@ export class UserProfile {
 		default: [],
 	})
 	public mutingNotificationTypes: typeof notificationTypes[number][];
-	
+
 	// フォローされた際のメッセージ
 	@Column('varchar', {
 		length: 256, nullable: true,
 	})
 	public followedMessage: string | null;
 
-	//#region Denormalized fields
+	//#region 非正規化フィールド
 	@Index()
 	@Column('varchar', {
 		length: 128, nullable: true,
 		comment: '[Denormalized]',
 	})
 	public userHost: string | null;
-	//#endregion
+	//#endregion 非正規化フィールド
 
 	constructor(data: Partial<UserProfile>) {
 		if (data == null) return;

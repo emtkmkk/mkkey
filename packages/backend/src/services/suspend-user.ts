@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザー凍結（Delete 配信等）を行うサービス。
+ *
+ * @remarks
+ * - **役割**: 管理者による凍結処理で呼ばれ、ローカルユーザーは Delete を配信し、内部イベントで状態を通知する。
+ *
+ * @see {@link endpoints/admin/suspend-user} 凍結 API
+ * @internal
+ */
 import renderDelete from "@/remote/activitypub/renderer/delete.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import { deliver } from "@/queue/index.js";
@@ -17,7 +28,7 @@ export async function doPostSuspend(user: {
 	});
 
 	if (Users.isLocalUser(user)) {
-		// Send Delete to all known SharedInboxes
+		// 既知のすべての SharedInbox に Delete を送信
 		const content = renderActivity(
 			renderDelete(`${config.url}/users/${user.id}`, user),
 		);

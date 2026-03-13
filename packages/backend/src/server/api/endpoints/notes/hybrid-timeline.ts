@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ハイブリッドタイムライン（ホーム＋グローバル混在）を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/hybrid-timeline`（GET `/api/notes/hybrid-timeline` で呼び出し）
+ * - 認証必須。フォロー先とグローバルを混在させたタイムラインを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Followings, Notes } from "@/models/index.js";
@@ -72,7 +84,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.stlDisabled);
 	}
 
-	//#region Construct query
+	//#region クエリ構築
         const followingCondition = createFollowingExistsCondition(user.id);
 
         const query = makePaginationQuery(
@@ -169,8 +181,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		activeUsersChart.read(user);
 	});
 
-	// We fetch more than requested because some may be filtered out, and if there's less than
-	// requested, the pagination stops.
+	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
 	const found = [];
 	const take = Math.floor(ps.limit * 1.5);
 	let skip = 0;

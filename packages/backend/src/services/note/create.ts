@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ノート（投稿）の作成処理を行うサービス。
+ *
+ * @remarks
+ * - **役割**: API や AP の Create(Note) から呼ばれ、ノートを DB に保存し配信・ストリーム・検索に反映する。
+ *
+ * @see {@link server/api/endpoints/notes/create} ノート作成 API
+ * @internal
+ */
+
 import * as mfm from "mfm-js";
 import es from "../../db/elasticsearch.js";
 import sonic from "../../db/sonic.js";
@@ -369,8 +381,8 @@ export default async (
 				for (const ch of channels) channelMap.set(ch.id, ch);
 			}
 
-			// If you reply outside the channel, match the scope of the target.
-			// TODO (I think it's a process that could be done on the client side, but it's server side for now.)
+			// チャンネル外から返信する場合、対象の公開範囲に合わせる
+			// TODO (クライアント側で行う処理にできると思うが、現状はサーバー側で実施)
 			if (
 				data.reply &&
 				data.channel &&
@@ -390,8 +402,8 @@ export default async (
 					: null;
 			}
 
-			// When you reply in a channel, match the scope of the target
-			// TODO (I think it's a process that could be done on the client side, but it's server side for now.)
+			// チャンネル内で返信する場合、対象の公開範囲に合わせる
+			// TODO (クライアント側で行う処理にできると思うが、現状はサーバー側で実施)
 			if (data.reply && data.channel == null && data.reply.channelId) {
 				data.channel = channelMap.get(data.reply.channelId) ?? null;
 			}
@@ -429,7 +441,7 @@ export default async (
 			data.localOnly = true;
 		}
 
-		// Enforce home visibility if the user is in a silenced instance.
+		// ユーザーがサイレンスインスタンスにいる場合はホーム公開に制限
 		if (
 			data.visibility === "public" &&
 			isRemote &&
@@ -521,7 +533,7 @@ export default async (
 			}
 		}
 
-		// Reject if the target of the renote is a public range other than "Home or Entire".
+		// リノート先が「ホームまたは全体」以外の公開範囲の場合は拒否
 		if (
 			data.renote &&
 			data.renote.visibility !== "public" &&
@@ -538,7 +550,7 @@ export default async (
 		}
 
                if (!data.visibilityForce && data.visibility !== "specified") {
-                        // If the target of the renote is not public, make it home.
+                        // リノート先が公開でない場合はホームに合わせる
                         if (
                                 data.renote &&
                                 data.renote.visibility !== "public" &&
@@ -547,12 +559,12 @@ export default async (
                                 data.visibility = "home";
                         }
 
-                        // If the target of Renote is followers, make it followers.
+                        // リノート先がフォロワーの場合はフォロワーに合わせる
                         if (data.renote && data.renote.visibility === "followers") {
                                 data.visibility = "followers";
                         }
 
-		// If the reply target is not public, make it home.
+		// 返信先が公開でない場合はホームに合わせる
 		if (
 			data.reply &&
 			data.reply.visibility !== "public" &&
@@ -561,7 +573,7 @@ export default async (
 			data.visibility = "home";
 		}
 
-		// If the reply target is followers, make it followers.
+		// 返信先がフォロワーの場合はフォロワーに合わせる
 		if (
 			data.reply &&
 			data.reply.visibility === "followers" &&
@@ -570,7 +582,7 @@ export default async (
 			data.visibility = "followers";
 		}
 
-		// If the reply target is specified, make it specified.
+		// 返信先が指定の場合は指定に合わせる
 		if (
 			data.reply &&
 			data.reply.visibility === "specified" &&
@@ -579,12 +591,12 @@ export default async (
 			data.visibility = "specified";
 		}
 
-		// Renote local only if you Renote local only.
+		// リノート先がローカルのみの場合はローカルのみに合わせる
 		if (data.renote?.localOnly) {
 			data.localOnly = true;
 		}
 
-		// If you reply to local only, make it local only.
+		// 返信先がローカルのみの場合はローカルのみに合わせる
 		if (data.reply?.localOnly) {
 			data.localOnly = true;
 		}
@@ -698,7 +710,7 @@ export default async (
 		let emojis = data.apEmojis;
 		let mentionedUsers = data.apMentions;
 
-		// Parse MFM if needed
+		// 必要に応じて MFM をパース
 		if (!(tags && emojis && mentionedUsers)) {
 			const tokens = data.text ? mfm.parse(data.text)! : [];
 			const cwTokens = data.cw ? mfm.parse(data.cw)! : [];
@@ -1022,7 +1034,7 @@ export default async (
 			perUserNotesChart.update(user, note, true, user.isBot);
 		}
 
-		// Register host
+		// ホストを登録
 		if (isRemote) {
 			registerOrFetchInstanceDoc(user.host).then((i) => {
 				Instances.increment({ id: i.id }, "notesCount", 1);
@@ -1035,7 +1047,7 @@ export default async (
 			updateHashtags(user, tags);
 		}
 
-		// Increment notes count (user)
+		// ノート数（ユーザー）をインクリメント
 		if (data.visibility !== "specified") incNotesCountOfUser(user);
 
 		// リモートユーザまたはbotの投稿時、ユーザの最終更新時刻を更新
@@ -1053,7 +1065,7 @@ export default async (
 			});
 		}
 
-		// Word mute
+		// ワードミュート
 		mutedWordsCache
 			.fetch(null, () =>
 				UserProfiles.find({
@@ -1180,7 +1192,7 @@ export default async (
 				publishNotesStream(note);
 			}
 			if (note.replyId != null) {
-				// Only provide the reply note id here as the recipient may not be authorized to see the note.
+				// 受信者がノートを見る権限がない場合があるため、ここでは返信ノートの id のみ渡す
 				publishNoteStream(note.replyId, "replied", {
 					id: note.id,
 				});
@@ -1204,9 +1216,9 @@ export default async (
 				nm,
 			);
 
-			// If has in reply to note
+			// 返信先ノートがある場合
 			if (data.reply) {
-				// Fetch watchers
+				// ウォッチャーを取得
 				nmRelatedPromises.push(notifyToWatchersOfReplyee(data.reply, user, nm));
 
 				// 通知
@@ -1235,13 +1247,13 @@ export default async (
 				}
 			}
 
-			// If it is renote
+			// リノートの場合
 			if (data.renote) {
 				const isRenote = !(data.text || data.files?.length || data.poll);
 
 				const type = !isRenote ? "quote" : "renote";
 
-				// Notify
+				// 通知
 				if (data.renote.userHost === null) {
 					const threadMuted = await NoteThreadMutings.findOneBy({
 						userId: data.renote.userId,
@@ -1253,12 +1265,12 @@ export default async (
 					}
 				}
 
-				// Fetch watchers
+				// ウォッチャーを取得
 				nmRelatedPromises.push(
 					notifyToWatchersOfRenotee(data.renote, user, nm, type),
 				);
 
-				// Publish event
+				// イベントを発行
 				if (user.id !== data.renote.userId && data.renote.userHost === null) {
 					const packedRenote = await Notes.pack(note, {
 						id: data.renote.userId,
@@ -1285,7 +1297,7 @@ export default async (
 				nm.deliver();
 			});
 
-			//#region AP deliver
+			//#region AP 配信
 			if (Users.isLocalUser(user) && !dontFederateInitially) {
 				createNoteApDeliverJob({
 					noteId: note.id,
@@ -1314,7 +1326,7 @@ export default async (
 			});
 		}
 
-		// Register to search database
+		// 検索DBに登録
 		await index(note);
 	});
 
@@ -1418,7 +1430,7 @@ async function insertNote(
 	if (data.uri != null) insert.uri = data.uri;
 	if (data.url != null) insert.url = data.url;
 
-	// Append mentions data
+	// メンションデータを付加
 	if (mentionedUsers.length > 0) {
 		insert.mentions = mentionedUsers.map((u) => u.id);
 		const profiles = await UserProfiles.findBy({ userId: In(insert.mentions) });
@@ -1441,7 +1453,7 @@ async function insertNote(
 	// 投稿を作成
 	try {
 		if (insert.hasPoll) {
-			// Start transaction
+			// トランザクション開始
 			await db.transaction(async (transactionalEntityManager) => {
 				await transactionalEntityManager.insert(Note, insert);
 
@@ -1465,7 +1477,7 @@ async function insertNote(
 
 		return insert;
 	} catch (e) {
-		// duplicate key error
+		// 重複キーエラー
 		if (isDuplicateKeyValueError(e)) {
 			const err = new Error("Duplicated note");
 			err.name = "duplicated";
@@ -1673,7 +1685,7 @@ export async function extractMentionedUsers(
 		)
 	).filter((x) => x != null) as User[];
 
-	// Drop duplicate users
+	// 重複ユーザーを除外
 	mentionedUsers = mentionedUsers.filter(
 		(u, i, self) => i === self.findIndex((u2) => u.id === u2.id),
 	);

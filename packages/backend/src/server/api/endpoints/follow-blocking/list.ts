@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォロー・ブロック一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `follow-blocking/list`（GET `/api/follow-blocking/list` で呼び出し）
+ * - 認証必須。ログインユーザーがフォロー・ブロックしているユーザー一覧をページネーションで返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { FollowBlockings } from "@/models/index.js";
 import define from "../../define.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";

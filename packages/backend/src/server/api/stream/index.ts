@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * メインストリーム接続。WebSocket 接続・チャンネル購読・ブロードキャスト受信を管理する。
+ *
+ * @remarks
+ * - **役割**: 1 本の WebSocket 接続ごとに 1 インスタンス。チャンネル（main, homeTimeline 等）の購読・メッセージ配送を行う。
+ * - 接続パスは streaming サーバで受付（例: `/streaming`）。認証必須。
+ *
+ * @see {@link stream/channels} チャンネル一覧
+ * @see {@link streaming} サーバ初期化
+ * @internal
+ */
 import type { EventEmitter } from "events";
 import type * as websocket from "websocket";
 import readNote from "@/services/note/read.js";
@@ -30,7 +43,7 @@ import { getClient } from "../mastodon/ApiMastodonCompatibleService.js";
 import { toTextWithReaction } from "../mastodon/endpoints/timeline.js";
 
 /**
- * Main stream connection
+ * メインストリーム接続
  */
 export default class Connection {
 	public user?: User;
@@ -38,7 +51,7 @@ export default class Connection {
 	public following: Set<User["id"]> = new Set();
 	public muting: Set<User["id"]> = new Set();
 	public renoteMuting: Set<User["id"]> = new Set();
-	public blocking: Set<User["id"]> = new Set(); // "被"blocking
+	public blocking: Set<User["id"]> = new Set(); // 被ブロック
 	public followingChannels: Set<ChannelModel["id"]> = new Set();
 	public token?: AccessToken;
 	private wsConnection: websocket.connection;

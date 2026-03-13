@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Question（アンケート）の抽出・投票更新
+ *
+ * @remarks
+ * - **役割**: リモートの Question オブジェクトからアンケート情報を抽出し、投票更新に利用する。
+ *
+ * @see {@link services/note/polls/vote} 投票
+ * @internal
+ */
 import config from "@/config/index.js";
 import Resolver from "../resolver.js";
 import type { IObject, IQuestion } from "../type.js";
@@ -46,9 +57,9 @@ export async function extractPollFromQuestion(
 }
 
 /**
- * Update votes of Question
- * @param value URI of AP Question object or object itself
- * @returns true if updated
+ * Question の投票数を更新する
+ * @param value AP Question オブジェクトの URI またはオブジェクト自体
+ * @returns 更新された場合 true
  */
 export async function updateQuestion(
 	value: string | IQuestion,
@@ -56,10 +67,10 @@ export async function updateQuestion(
 ): Promise<boolean> {
 	const uri = typeof value === "string" ? value : getApId(value);
 
-	// Skip if URI points to this server
+	// URI が当サーバーを指す場合はスキップ
 	if (uri.startsWith(`${config.url}/`)) throw new Error("uri points local");
 
-	//#region Already registered with this server?
+	//#region 既に当サーバーに登録済みか
 	const note = await Notes.findOneBy({ uri });
 	if (note == null) throw new Error("Question is not registed");
 
@@ -67,7 +78,7 @@ export async function updateQuestion(
 	if (poll == null) throw new Error("Question is not registed");
 	//#endregion
 
-	// resolve new Question object
+	// 新しい Question オブジェクトを解決
 	const _resolver = resolver ?? new Resolver();
 	const question = (await _resolver.resolve(value)) as IQuestion;
 	apLogger.debug(`fetched question: ${JSON.stringify(question, null, 2)}`);

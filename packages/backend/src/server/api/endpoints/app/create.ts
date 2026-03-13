@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * アプリ（OAuth クライアント）を作成する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `app/create`（POST `/api/app/create` で呼び出し）
+ * - 認証不要。name と callbackUrl 等を指定して新規アプリを登録し、App オブジェクトを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { Apps } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
@@ -40,7 +52,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			detail: true,
 			includeSecret: true,
 		});
-	// Generate secret
+	// シークレットを生成する
 	const secret = secureRndstr(32, true);
 
 	// for backward compatibility
@@ -48,7 +60,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.permission.map((v) => v.replace(/^(.+)(\/|-)(read|write)$/, "$3:$1")),
 	);
 
-	// Create account
+	// アカウントを作成する
 	const app = await Apps.insert({
 		id: genId(),
 		createdAt: new Date(),

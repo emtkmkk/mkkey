@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * アカウント削除キュー。フォロー・ノート・ドライブ・プロフィール等を削除する。
+ *
+ * @remarks
+ * - **役割**: アカウント削除キューで実行し、ユーザーに紐づくデータを順次削除する。
+ *
+ * @see {@link server/api/endpoints/i/delete-account} アカウント削除 API
+ * @internal
+ */
 import type Bull from "bull";
 import { queueLogger } from "../../logger.js";
 import deleteNote from "@/services/note/delete.js";
@@ -33,7 +44,7 @@ export async function deleteAccount(
 			user.host ? `@${user.host}` : ""
 		} ...`,
 	);
-	job.log("info - " + 
+	job.log("info - " +
 		`Deleting account of ${job.data.user.id} @${user.username}${
 			user.host ? `@${user.host}` : ""
 		} ...`,
@@ -131,7 +142,7 @@ export async function deleteAccount(
 					failedCount ? ` / ${failedCount}` : ""
 				})`,
 			);
-			job.log("succ - " + 
+			job.log("succ - " +
 				`All of notes deleted (${deleteCount}${
 					failedCount ? ` / ${failedCount}` : ""
 				})`,
@@ -208,7 +219,7 @@ export async function deleteAccount(
 		}
 		if (deleteCount) logger.succ(`All of followees deleted (${deleteCount})`);
 	} catch {}
-	
+
 	job.progress(99.9)
 
 	{
@@ -238,7 +249,7 @@ export async function deleteAccount(
 			user.host ? `@${user.host}` : ""
 		}`,
 	);
-	job.log("succ - " + 
+	job.log("succ - " +
 		`Finish deleting job ${job.data.user.id} @${user.username}${
 			user.host ? `@${user.host}` : ""
 		}`,

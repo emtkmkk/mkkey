@@ -9,26 +9,35 @@ import {
 import { User } from "./user.js";
 import { id } from "../id.js";
 
-// TODO: 同じdomain、同じscope、同じkeyのレコードは二つ以上存在しないように制約付けたい
+/**
+ * @packageDocumentation
+ *
+ * レジストリ項目エンティティ。ユーザーごとの key/value をスコープ・ドメインで保持する。
+ *
+ * @remarks
+ * TODO: 同じ domain・同じ scope・同じ key のレコードが複数存在しないよう制約を付けたい
+ *
+ * @internal
+ */
 @Entity()
 export class RegistryItem {
 	@PrimaryColumn(id())
 	public id: string;
 
 	@Column('timestamp with time zone', {
-		comment: 'The created date of the RegistryItem.',
+		comment: 'レジストリ項目の作成日時',
 	})
 	public createdAt: Date;
 
 	@Column('timestamp with time zone', {
-		comment: 'The updated date of the RegistryItem.',
+		comment: 'レジストリ項目の更新日時',
 	})
 	public updatedAt: Date;
 
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The owner ID.',
+		comment: '所有者ユーザー ID',
 	})
 	public userId: User["id"];
 
@@ -40,13 +49,13 @@ export class RegistryItem {
 
 	@Column('varchar', {
 		length: 1024,
-		comment: 'The key of the RegistryItem.',
+		comment: 'レジストリのキー',
 	})
 	public key: string;
 
 	@Column('jsonb', {
 		default: {}, nullable: true,
-		comment: 'The value of the RegistryItem.',
+		comment: 'レジストリの値',
 	})
 	public value: any | null;
 

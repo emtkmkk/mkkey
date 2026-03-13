@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * お知らせを既読にする API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/read-announcement`（POST `/api/i/read-announcement` で呼び出し）
+ * - 認証必須。announcementId で指定したお知らせを既読として記録する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { genId } from "@/misc/gen-id.js";
@@ -29,14 +41,14 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Check if announcement exists
+	// お知らせの存在を確認する
 	const announcement = await Announcements.findOneBy({ id: ps.announcementId });
 
 	if (announcement == null) {
 		throw new ApiError(meta.errors.noSuchAnnouncement);
 	}
 
-	// Check if already read
+	// 既読か確認する
 	const read = await AnnouncementReads.findOneBy({
 		announcementId: ps.announcementId,
 		userId: user.id,
@@ -46,7 +58,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		return;
 	}
 
-	// Create read
+	// 既読を作成する
 	await AnnouncementReads.insert({
 		id: genId(),
 		createdAt: new Date(),

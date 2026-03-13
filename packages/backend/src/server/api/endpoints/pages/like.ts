@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ページにいいねする API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `pages/like`（POST `/api/pages/like` で呼び出し）
+ * - 認証必須。pageId で指定したページにいいねを付ける。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Pages, PageLikes } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import define from "../../define.js";
@@ -39,7 +51,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.noSuchPage);
 	}
 
-	// if already liked
+	// 既にいいね済みの場合
 	const exist = await PageLikes.findOneBy({
 		pageId: page.id,
 		userId: user.id,
@@ -49,7 +61,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.alreadyLiked);
 	}
 
-	// Create like
+	// いいねを作成する
 	await PageLikes.insert({
 		id: genId(),
 		createdAt: new Date(),

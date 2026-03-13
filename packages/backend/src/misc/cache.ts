@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * メモリキャッシュ。キー・有効期間・fetch による取得を提供する。
+ *
+ * @remarks
+ * - **役割**: インメモリの TTL 付きキャッシュ。get で未ヒット時は fetch を呼び、set で保存する。stats 等で利用。
+ *
+ * @internal
+ */
 export class Cache<T> {
 	public cache: Map<string | null, { date: number; value: T }>;
 	private lifetime: number;
@@ -41,16 +51,16 @@ export class Cache<T> {
 		if (cachedValue !== undefined) {
 			if (validator) {
 				if (validator(cachedValue)) {
-					// Cache HIT
+					// キャッシュヒット
 					return cachedValue;
 				}
 			} else {
-				// Cache HIT
+				// キャッシュヒット
 				return cachedValue;
 			}
 		}
 
-		// Cache MISS
+		// キャッシュミス
 		const value = await fetcher();
 		this.set(key, value);
 		return value;
@@ -69,16 +79,16 @@ export class Cache<T> {
 		if (cachedValue !== undefined) {
 			if (validator) {
 				if (validator(cachedValue)) {
-					// Cache HIT
+					// キャッシュヒット
 					return cachedValue;
 				}
 			} else {
-				// Cache HIT
+				// キャッシュヒット
 				return cachedValue;
 			}
 		}
 
-		// Cache MISS
+		// キャッシュミス
 		const value = await fetcher();
 		if (value !== undefined) {
 			this.set(key, value);

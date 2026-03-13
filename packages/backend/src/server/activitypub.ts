@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の受信・送信ルート（inbox / outbox / キー・ノート・ユーザー等の GET）。
+ *
+ * @remarks
+ * - **役割**: メインサーバにルートを登録。inbox（POST）・outbox/followers/following・キー・ノート・ユーザー等の GET を提供。署名検証・inbox キュー投入・Delete 再送のクールダウン等を扱う。
+ *
+ * @see {@link server/index} マウント元
+ * @see {@link queue} inbox 処理
+ * @internal
+ */
 import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
 import httpSignature from "@peertube/http-signature";
@@ -41,7 +53,7 @@ import Koa from "koa";
 
 const DELETE_RESEND_COOLDOWN_SEC = 60 * 15;
 
-// Init router
+// ルーター初期化
 const router = new Router();
 
 async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
@@ -63,7 +75,7 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
                 const sig = httpSignature.parseRequest(ctx.req, { headers: [] });
                 host = new URL(sig.keyId).hostname;
         } catch {
-                // No valid signature to identify requester
+                // リクエスト元を特定できる有効な署名がない
                 serverLogger.debug("resendDeleteAccount: no valid signature");
                 return;
         }
@@ -110,7 +122,7 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
         await deliverToUser(deleted as ILocalUser, activity, remote);
 }
 
-//#region Routing
+//#region ルーティング
 
 async function inbox(ctx: Router.RouterContext) {
 	if (ctx.req.headers.host !== config.host) {
@@ -634,8 +646,7 @@ router.get(
 			ctx.status = verify;
 			return;
 		}
-		// This may be used before the follow is completed, so we do not
-		// check if the following exists.
+		// フォロー完了前に参照される可能性があるため、フォロー関係の存在はチェックしない
 
 		const [follower, followee] = await Promise.all([
 			Users.findOneBy({

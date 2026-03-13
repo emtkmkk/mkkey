@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォロー解除処理を行うサービス。
+ *
+ * @remarks
+ * - **役割**: フォロー解除 API から呼ばれ、フォロー関係を削除し Undo(Follow) を配信する。
+ *
+ * @see {@link server/api/endpoints/following/delete} フォロー解除 API
+ * @internal
+ */
+
 import {
 	publishInternalEvent,
 	publishMainStream,
@@ -60,7 +72,7 @@ export default async function (
 		});
 	}
 
-	// Publish unfollow event
+	// アンフォローイベントを発行
 	if (!silent && Users.isLocalUser(follower)) {
 		Users.pack(followee.id, follower, {
 			detail: true,
@@ -103,7 +115,7 @@ export default async function (
         }
 
 	if (Users.isLocalUser(followee) && Users.isRemoteUser(follower)) {
-		// local user has null host
+		// ローカルユーザーの host は null
 		const content = renderActivity(
 			renderReject(renderFollow(follower, followee), followee),
 		);
@@ -115,14 +127,14 @@ export async function decrementFollowing(
 	follower: { id: User["id"]; host: User["host"] },
 	followee: { id: User["id"]; host: User["host"] },
 ) {
-	//#region Decrement following / followers counts
+	//#region フォロー・フォロワー数減算
 	await Promise.all([
 		Users.decrement({ id: follower.id }, "followingCount", 1),
 		Users.decrement({ id: followee.id }, "followersCount", 1),
 	]);
 	//#endregion
 
-	//#region Update instance stats
+	//#region インスタンス統計更新
 	if (Users.isRemoteUser(follower) && Users.isLocalUser(followee)) {
 		registerOrFetchInstanceDoc(follower.host).then((i) => {
 			Instances.decrement({ id: i.id }, "followingCount", 1);

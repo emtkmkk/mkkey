@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * カスタム MOTD（今日のメッセージ）を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `custom-motd`（GET `/api/custom-motd` で呼び出し）
+ * - 認証不要。インスタンス設定のカスタム MOTD 配列を返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 // import { IsNull } from 'typeorm';
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import define from "../define.js";

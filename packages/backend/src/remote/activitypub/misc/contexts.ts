@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub / JSON-LD 用のコンテキスト定義。id_v1, security_v1, activitystreams および WellKnownContext を提供する。
+ *
+ * @remarks
+ * - **役割**: LD 署名や AP オブジェクトの @context に利用し、JSON-LD の正規化・検証で参照される。
+ *
+ * @see {@link remote/activitypub/misc/ld-signature} LD 署名
+ * @internal
+ */
 const id_v1 = {
 	"@context": {
 		id: "@id",
@@ -523,7 +534,7 @@ export const WellKnownContext = {
 		"https://www.w3.org/ns/activitystreams",
 		"https://w3id.org/security/v1",
 		{
-			// as non-standards
+			// 非標準 (as 拡張)
 			manuallyApprovesFollowers: "as:manuallyApprovesFollowers",
 			movedToUri: "as:movedTo",
 			sensitive: "as:sensitive",
@@ -535,7 +546,7 @@ export const WellKnownContext = {
 			Emoji: "toot:Emoji",
 			featured: "toot:featured",
 			discoverable: "toot:discoverable",
-			// schema
+			// schema.org
 			schema: "http://schema.org#",
 			PropertyValue: "schema:PropertyValue",
 			value: "schema:value",

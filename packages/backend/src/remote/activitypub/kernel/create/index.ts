@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Create アクティビティの振り分け。オブジェクト種別に応じてノート作成等を実行する。
+ *
+ * @remarks
+ * - **役割**: perform から呼ばれ、Create の object 種別に応じて createNote 等のハンドラに振り分ける。
+ *
+ * @see {@link remote/activitypub/kernel/create/note} Create(Note)
+ * @internal
+ */
 import Resolver from "../../resolver.js";
 import type {
 	CacheableRemoteUser,
@@ -20,7 +31,7 @@ export default async (
 
 	logger.info(`Create: ${uri}`);
 
-	// copy audiences between activity <=> object.
+	// activity と object の間でオーディエンスをコピーする
 	if (typeof activity.object === "object") {
 		const to = unique(
 			concat([toArray(activity.to), toArray(activity.object.to)]),
@@ -35,7 +46,7 @@ export default async (
 		activity.object.cc = cc;
 	}
 
-	// If there is no attributedTo, use Activity actor.
+	// attributedTo が無い場合は Activity の actor を用いる
 	if (typeof activity.object === "object" && !activity.object.attributedTo) {
 		activity.object.attributedTo = activity.actor;
 	}

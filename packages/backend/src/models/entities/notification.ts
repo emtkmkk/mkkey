@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * 通知エンティティ。受信者・送信者・種別・関連 ID を保持する。
+ *
+ * @remarks
+ * - **役割**: リアクション・フォロー・メンション等の通知を DB に保持し、API で一覧・既読管理に利用する。
+ *
+ * @see {@link models/repositories/notification} 通知リポジトリ
+ * @internal
+ */
 import {
 	Entity,
 	Index,
@@ -22,17 +33,15 @@ export class Notification {
 
 	@Index()
 	@Column('timestamp with time zone', {
-		comment: 'The created date of the Notification.',
+		comment: '通知の作成日時',
 	})
 	public createdAt: Date;
 
-	/**
-	 * Notification Recipient ID
-	 */
+	/** 通知の受信者ユーザー ID */
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The ID of recipient user of the Notification.',
+		comment: '通知の受信者ユーザー ID',
 	})
 	public notifieeId: User["id"];
 
@@ -42,14 +51,12 @@ export class Notification {
 	@JoinColumn()
 	public notifiee: User | null;
 
-	/**
-	 * Notification sender (initiator)
-	 */
+	/** 通知の送信者（発端者）ユーザー ID */
 	@Index()
 	@Column({
 		...id(),
 		nullable: true,
-		comment: 'The ID of sender user of the Notification.',
+		comment: '通知の送信者ユーザー ID',
 	})
 	public notifierId: User["id"] | null;
 
@@ -60,34 +67,32 @@ export class Notification {
 	public notifier: User | null;
 
 	/**
-	 * Notification types:
-	 * follow - Follow request
-	 * mention - User was referenced in a post.
-	 * reply - A post that a user made (or was watching) has been replied to.
-	 * renote - A post that a user made (or was watching) has been renoted.
-	 * quote - A post that a user made (or was watching) has been quoted and renoted.
-	 * reaction - (自分または自分がWatchしている)投稿にリアクションされた
-	 * pollVote - 自分が投票したアンケート、または自分/Watch中の投稿のアンケートに投票された(Watchは投票者を通知しない)
-	 * pollEnded - 自分のアンケートもしくは自分が投票したアンケートが終了した
+	 * 通知種別:
+	 * follow - フォロー
+	 * mention - 投稿でメンションされた
+	 * reply - 自分（または Watch 中）の投稿にリプライされた
+	 * renote - 自分（または Watch 中）の投稿がリノートされた
+	 * quote - 自分（または Watch 中）の投稿が引用リノートされた
+	 * reaction - 自分または Watch 中の投稿にリアクションされた
+	 * pollVote - 自分が投票したアンケート、または自分/Watch 中の投稿のアンケートに投票された（Watch は投票者を通知しない）
+	 * pollEnded - 自分のアンケートまたは自分が投票したアンケートが終了した
 	 * receiveFollowRequest - フォローリクエストされた
-	 * followRequestAccepted - A follow request has been accepted.
+	 * followRequestAccepted - フォローリクエストが承認された
 	 * groupInvited - グループに招待された
-	 * app - App notifications.
+	 * app - アプリ通知
 	 */
 	@Index()
 	@Column('enum', {
 		enum: notificationTypes,
-		comment: 'The type of the Notification.',
+		comment: '通知の種別',
 	})
 	public type: typeof notificationTypes[number];
 
-	/**
-	 * Whether the notification was read.
-	 */
+	/** 通知を既読にしたか */
 	@Index()
 	@Column('boolean', {
 		default: false,
-		comment: 'Whether the notification was read.',
+		comment: '通知を既読にしたか',
 	})
 	public isRead: boolean;
 
@@ -137,35 +142,25 @@ export class Notification {
 	})
 	public choice: number | null;
 
-	/**
-	 * App notification body
-	 */
+	/** アプリ通知の本文 */
 	@Column('varchar', {
 		length: 2048, nullable: true,
 	})
 	public customBody: string | null;
 
-	/**
-	 * App notification header
-	 * (If omitted, it is expected to be displayed with the app name)
-	 */
+	/** アプリ通知のヘッダー（省略時はアプリ名で表示される想定） */
 	@Column('varchar', {
 		length: 256, nullable: true,
 	})
 	public customHeader: string | null;
 
-	/**
-	 * App notification icon (URL)
-	 * (If omitted, it is expected to be displayed as an app icon)
-	 */
+	/** アプリ通知のアイコン URL（省略時はアプリアイコンで表示される想定） */
 	@Column('varchar', {
 		length: 1024, nullable: true,
 	})
 	public customIcon: string | null;
 
-	/**
-	 * App notification app (token for)
-	 */
+	/** アプリ通知の対象アプリ（トークン） */
 	@Index()
 	@Column({
 		...id(),

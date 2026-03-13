@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ブロック一覧エクスポートジョブ。ユーザーのブロックリストを CSV でドライブに保存する。
+ *
+ * @remarks
+ * - **役割**: エクスポートキューで実行し、ブロック一覧を CSV にしてドライブに追加する。
+ *
+ * @see {@link queue/processors/db/export-mute} ミュートエクスポート
+ * @internal
+ */
 import type Bull from "bull";
 import * as fs from "node:fs";
 
@@ -25,7 +36,7 @@ export async function exportBlocking(
 		return;
 	}
 
-	// Create temp file
+	// 一時ファイルを作成
 	const [path, cleanup] = await createTemp();
 
 	logger.info(`Temp file is ${path}`);

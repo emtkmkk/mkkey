@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザー名の空きを確認する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `username/available`（GET `/api/username/available` で呼び出し）
+ * - 認証不要。username で指定したユーザー名が登録可能かどうかを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { IsNull } from "typeorm";
 import { Users, UsedUsernames } from "@/models/index.js";
 import config from "@/config/index.js";
@@ -31,7 +43,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps) => {
-	// Get exist
+	// 存在確認する
 	const exist = await Users.countBy({
 		host: IsNull(),
 		usernameLower: ps.username.toLowerCase(),

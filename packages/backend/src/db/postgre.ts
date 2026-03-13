@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * PostgreSQL（TypeORM DataSource）の初期化。メイン接続と集計用接続プールを扱う。
+ *
+ * @remarks
+ * - **役割**: 起動時に DataSource を初期化。メイン DB と statsUser 用の接続を提供。getStatsDataSource で集計用を取得。
+ * - https://github.com/typeorm/typeorm/issues/2400 の workaround で bigint を Number にパースしている。
+ *
+ * @see {@link config} DB 設定
+ * @internal
+ */
 // https://github.com/typeorm/typeorm/issues/2400
 import pg from "pg";
 pg.types.setTypeParser(20, Number);
@@ -340,7 +352,7 @@ export async function initDb(force = false) {
 	}
 
 	if (db.isInitialized) {
-		// nop
+		// 既に初期化済みの場合は何もしない
 	} else {
 		dbLogger.info("Initializing main DB connection...");
 		await db.initialize();

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * API エラー用のクラスと型。HTTP ステータス・コード・メッセージを保持する。
+ *
+ * @remarks
+ * - **役割**: エンドポイント内で throw する ApiError を定義。message / code / id / httpStatusCode でクライアントに返す。
+ * - 4xx/5xx のレスポンスはこの形式で統一される。
+ *
+ * @see {@link api-handler} エラーレスポンス返却
+ * @internal
+ */
 type E = {
 	message: string;
 	code: string;

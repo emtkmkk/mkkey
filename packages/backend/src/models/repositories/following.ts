@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * フォロー関係リポジトリ（pack / packMany）
+ *
+ * @remarks
+ * - **役割**: フォロー一覧の pack/packMany を提供し、API のフォロー・フォロワー一覧で利用する。
+ *
+ * @see {@link models/entities/following} フォローエンティティ
+ * @internal
+ */
 import { In } from "typeorm";
 import { db } from "@/db/postgre.js";
 import { UserMemos, Users } from "../index.js";

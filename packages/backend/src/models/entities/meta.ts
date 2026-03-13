@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * インスタンスメタ情報エンティティ。名前・説明・メンテナ・各種フラグ・デフォルト設定を保持する。
+ *
+ * @remarks
+ * - **役割**: インスタンス設定を 1 行で保持し、fetchMeta 経由で API・Web・AP で参照される。
+ *
+ * @see {@link misc/fetch-meta} メタ取得
+ * @internal
+ */
 import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from "typeorm";
 import { id } from "../id.js";
 import { User } from "./user.js";

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートお気に入りリポジトリ（pack / packMany）
+ *
+ * @remarks
+ * - **役割**: お気に入り一覧の pack を提供し、API のお気に入り取得で利用する。
+ *
+ * @see {@link models/entities/note-favorite} ノートお気に入りエンティティ
+ * @internal
+ */
 import { db } from "@/db/postgre.js";
 import { NoteFavorite } from "@/models/entities/note-favorite.js";
 import { Notes } from "../index.js";
@@ -15,7 +26,7 @@ export const NoteFavoriteRepository = db.getRepository(NoteFavorite).extend({
 			id: favorite.id,
 			createdAt: favorite.createdAt.toISOString(),
 			noteId: favorite.noteId,
-			// may throw error
+			// エラーを投げる可能性あり
 			note: await Notes.pack(favorite.note || favorite.noteId, me),
 		};
 	},

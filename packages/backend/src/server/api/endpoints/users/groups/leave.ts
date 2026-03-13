@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーグループから脱退する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/groups/leave`（POST `/api/users/groups/leave` で呼び出し）
+ * - 認証必須。groupId で指定したグループから自分を脱退させる。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { UserGroups, UserGroupJoinings } from "@/models/index.js";
 import { invalidateGroupMembersCache } from "@/misc/antenna-members-cache.js";
 import define from "../../../define.js";
@@ -37,7 +49,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Fetch the group
+	// グループを取得する
 	const userGroup = await UserGroups.findOneBy({
 		id: ps.groupId,
 	});

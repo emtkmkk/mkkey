@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * Service Worker のプッシュ購読を登録する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `sw/register`（POST `/api/sw/register` で呼び出し）
+ * - 認証必須。endpoint・auth・publicKey などでプッシュ購読情報を登録する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { genId } from "@/misc/gen-id.js";
 import { SwSubscriptions } from "@/models/index.js";
@@ -57,7 +69,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// if already subscribed
+	// 既に登録済みの場合
 	const exist = await SwSubscriptions.findOneBy({
 		userId: me.id,
 		endpoint: ps.endpoint,

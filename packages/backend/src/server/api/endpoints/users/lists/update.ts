@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーリストを更新する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/lists/update`（POST `/api/users/lists/update` で呼び出し）
+ * - 認証必須。listId で指定したリストの名前などを更新する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { UserLists } from "@/models/index.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
@@ -37,7 +49,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// Fetch the list
+	// リストを取得する
 	const userList = await UserLists.findOneBy({
 		id: ps.listId,
 		userId: user.id,

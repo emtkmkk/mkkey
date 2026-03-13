@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * 通知リポジトリ（pack / packMany）
+ *
+ * @remarks
+ * - **役割**: 通知の pack/packMany と一覧取得を提供し、API の通知一覧・既読で利用する。
+ *
+ * @see {@link models/entities/notification} 通知エンティティ
+ * @internal
+ */
 import { In } from "typeorm";
 import { Notification } from "@/models/entities/notification.js";
 import { awaitAll } from "@/prelude/await-all.js";

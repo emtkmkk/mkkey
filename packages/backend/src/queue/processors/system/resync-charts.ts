@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * チャート再同期ジョブ。ドライブ・ノート・ユーザー等のチャートを再計算する。
+ *
+ * @remarks
+ * - **役割**: システムキューで実行し、チャート集計を再計算して整合性を保つ。
+ *
+ * @see {@link services/chart/core} チャートエンジン
+ * @internal
+ */
 import type Bull from "bull";
 
 import { queueLogger } from "../../logger.js";

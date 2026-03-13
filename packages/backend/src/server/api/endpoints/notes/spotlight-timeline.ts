@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * スポットライト（ピン留め・おすすめ）タイムラインを取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/spotlight-timeline`（GET `/api/notes/spotlight-timeline` で呼び出し）
+ * - 認証不要。インスタンスのスポットライトに表示するノートを取得する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Notes, Users, Followings } from "@/models/index.js";
@@ -116,7 +128,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	ps.untilDate = ps.untilDate || Date.now();
 	ps.sinceDate = ps.untilDate - 1000 * 60 * 60 * 24 * 7;
 
-	//#region Construct query
+	//#region クエリ構築
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
 		ps.sinceId,
@@ -246,8 +258,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	});
 
-	// We fetch more than requested because some may be filtered out, and if there's less than
-	// requested, the pagination stops.
+	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
 	const found = [];
 	const foundAppearNoteId = [];
 	const take = Math.floor(ps.limit * 1.5);

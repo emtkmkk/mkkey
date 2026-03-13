@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ドライブにファイルを追加するサービス。
+ *
+ * @remarks
+ * - **役割**: アップロード・URL 取得・AP 添付からドライブファイルを登録し、メタデータを保存する。
+ *
+ * @see {@link misc/get-file-info} ファイル情報取得
+ * @internal
+ */
+
 import * as fs from "node:fs";
 
 import { v4 as uuid } from "uuid";
@@ -40,8 +52,7 @@ const logger = driveLogger.createSubLogger("register", "yellow");
 
 type PathPartLike = string | null;
 
-// Joins an array of elements into a URL pathname, possibly with a base URL object to append to.
-// Null or 0-length parts will be left out.
+// URL パス名に要素の配列を結合する。ベース URL オブジェクトに追記することも可能。null または長さ 0 の要素は省く。
 function urlPathJoin(
 	baseOrParts: URL | PathPartLike[],
 	pathParts?: PathPartLike[],
@@ -86,7 +97,7 @@ async function save(
 	const meta = await fetchMeta();
 
 	if (meta.useObjectStorage) {
-		//#region ObjectStorage params
+		//#region ObjectStorage パラメータ
 		let [ext] = name.match(/\.([a-zA-Z0-9_-]+)$/) || [""];
 
 		if (ext === "") {
@@ -99,8 +110,8 @@ async function save(
 			if (type === "image/vnd.mozilla.apng") ext = ".apng";
 		}
 
-		// Some cloud providers (notably upcloud) will infer the content-type based
-		// on extension, so we remove extensions from non-browser-safe types.
+		// 一部のクラウドプロバイダ（upcloud など）は拡張子から Content-Type を推測するため、
+		// ブラウザセーフでないタイプでは拡張子を外す
 		if (!FILE_TYPE_BROWSERSAFE.includes(type)) {
 			ext = "";
 		}
@@ -112,18 +123,18 @@ async function save(
 			}${meta.objectStoragePort ? `:${meta.objectStoragePort}` : ""}`,
 		);
 
-		// for original
+		// オリジナル用
 		const key = urlPathJoin([meta.objectStoragePrefix, `${uuid()}${ext}`]);
 		const url = urlPathJoin(baseUrl, [key]);
 
-		// for alts
+		// 代替（サムネ等）用
 		let webpublicKey: string | null = null;
 		let webpublicUrl: string | null = null;
 		let thumbnailKey: string | null = null;
 		let thumbnailUrl: string | null = null;
 		//#endregion
 
-		//#region Uploads
+		//#region アップロード
 		logger.info(`uploading original: ${key}`);
 		const uploads = [upload(key, fs.createReadStream(path), type, name)];
 
@@ -182,7 +193,7 @@ async function save(
 			DriveFiles.findOneByOrFail(x.identifiers[0]),
 		);
 	} else {
-		// use internal storage
+		// 内部ストレージを使用
 		const accessKey = uuid();
 		const thumbnailAccessKey = `thumbnail-${uuid()}`;
 		const webpublicAccessKey = `webpublic-${uuid()}`;
@@ -280,7 +291,7 @@ export async function generateAlts(
                 const metadata = await sharpResult.metadata();
 		const isAnimated = metadata.pages && metadata.pages > 1;
 
-		// skip animated
+		// アニメーションはスキップ
 		if (isAnimated) {
 			return {
 				webpublic: null,
@@ -311,7 +322,7 @@ export async function generateAlts(
 		};
 	}
 
-	// #region webpublic
+	//#region Web 公開用
         let webpublic: IImage | null = null;
         let thumbnail: IImage | null = null;
 
@@ -411,7 +422,7 @@ export async function generateAlts(
 	}
 	// #endregion webpublic
 
-	// #region thumbnail
+	//#region サムネイル
         if (!(needWebpublic && needThumbnail)) {
                 try {
                         if (needThumbnail) {
@@ -506,30 +517,30 @@ async function expireOldFile(user: IRemoteUser, driveCapacity: number) {
 }
 
 type AddFileArgs = {
-	/** User who wish to add file */
+	/** ファイルを追加するユーザー */
 	user: {
 		id: User["id"];
 		username: User["username"];
 		host: User["host"];
 		driveCapacityOverrideMb: User["driveCapacityOverrideMb"];
 	} | null;
-	/** File path */
+	/** ファイルパス */
 	path: string;
-	/** Name */
+	/** 名前 */
 	name?: string | null;
-	/** Comment */
+	/** コメント */
 	comment?: string | null;
-	/** Folder ID */
+	/** フォルダ ID */
 	folderId?: any;
-	/** If set to true, forcibly upload the file even if there is a file with the same hash. */
+	/** true の場合、同一ハッシュのファイルがあっても強制的にアップロードする */
 	force?: boolean;
-	/** Do not save file to local */
+	/** ローカルに保存しない（リンクのみ） */
 	isLink?: boolean;
 	/** URL of source (URLからアップロードされた場合(ローカル/リモート)の元URL) */
 	url?: string | null;
 	/** URL of source (リモートインスタンスのURLからアップロードされた場合の元URL) */
 	uri?: string | null;
-	/** Mark file as sensitive */
+	/** ファイルをセンシティブとしてマークする */
 	sensitive?: boolean | null;
 
 	requestIp?: string | null;
@@ -594,7 +605,7 @@ export async function addFile({
 	//	throw new IdentifiableError('282f77bf-5816-4f72-9264-aa14d8261a21', 'Detected as porn.');
 	//}
 
-	// detect name
+	// 名前を検出
 	const detectedName =
 		name ||
 		(info.type.ext
@@ -604,7 +615,7 @@ export async function addFile({
 			: "untitled");
 
 	if (user && !force) {
-		// Check if there is a file with the same hash
+		// 同一ハッシュのファイルが存在するか確認
 		const much = await DriveFiles.findOneBy({
 			md5: info.md5,
 			userId: user.id,
@@ -616,7 +627,7 @@ export async function addFile({
 		}
 	}
 
-	//#region Check drive usage
+	//#region ドライブ使用量チェック
 	if (user && !isLink) {
 		const usage = await DriveFiles.calcDriveUsageOf(user);
 		const u = await Users.findOneBy({ id: user.id });
@@ -641,7 +652,7 @@ export async function addFile({
 
 		logger.debug(`drive usage is ${usage} (max: ${driveCapacity})`);
 
-		// If usage limit exceeded
+		// 容量超過時
 		if (usage + info.size > driveCapacity) {
 			if (Users.isLocalUser(user)) {
 				throw new IdentifiableError(
@@ -748,7 +759,7 @@ export async function addFile({
 				DriveFiles.findOneByOrFail(x.identifiers[0]),
 			);
 		} catch (err) {
-			// duplicate key error (when already registered)
+			// 重複キーエラー（既に登録済みの場合）
 			if (isDuplicateKeyValueError(err)) {
 				logger.info(`already registered ${file.uri}`);
 
@@ -776,7 +787,7 @@ export async function addFile({
 
 	if (user) {
 		DriveFiles.pack(file, { self: true }).then((packedFile) => {
-			// Publish driveFileCreated event
+			// driveFileCreated イベントを発行
 			publishMainStream(user.id, "driveFileCreated", packedFile);
 			publishDriveStream(user.id, "fileCreated", packedFile);
 		});

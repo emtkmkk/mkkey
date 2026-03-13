@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートのピン留め・解除を行うサービス。
+ *
+ * @remarks
+ * - **役割**: ユーザープロフィールに表示するピン留めノートの追加・削除。Add/Remove アクティビティを配信する。
+ *
+ * @see {@link endpoints/i/pin} ピン API
+ * @internal
+ */
 import config from "@/config/index.js";
 import renderAdd from "@/remote/activitypub/renderer/add.js";
 import renderRemove from "@/remote/activitypub/renderer/remove.js";
@@ -20,7 +31,7 @@ export async function addPinned(
 	user: { id: User["id"]; host: User["host"] },
 	noteId: Note["id"],
 ) {
-	// Fetch pinee
+	// ピン留め対象ノートを取得
 	const note = await Notes.findOneBy({
 		id: noteId,
 		userId: user.id,
@@ -93,7 +104,7 @@ export async function removePinned(
 	user: { id: User["id"]; host: User["host"] },
 	noteId: Note["id"],
 ) {
-	// Fetch unpinee
+	// ピン留め解除対象ノートを取得
 	const note = await Notes.findOneBy({
 		id: noteId,
 		userId: user.id,
@@ -111,7 +122,7 @@ export async function removePinned(
 		noteId: note.id,
 	});
 
-	// Deliver to remote followers
+	// リモートのフォロワーに配信
 	if (
 		Users.isLocalUser(user) &&
 		!note.localOnly &&

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * HTTP/HTTPS 取得ユーティリティ。プロキシ・Cookie・Bearer・429 リトライを扱う。
+ *
+ * @remarks
+ * - **役割**: リモート取得・AP 解決・ファイル取得等で共通の fetch と getJson を提供する。
+ *
+ * @see {@link remote/activitypub/resolver} AP オブジェクト解決
+ * @internal
+ */
 import * as http from "node:http";
 import * as https from "node:https";
 import type { URL } from "node:url";
@@ -6,6 +17,15 @@ import fetch from "node-fetch";
 import { HttpProxyAgent, HttpsProxyAgent } from "hpagent";
 import config from "@/config/index.js";
 
+/**
+ * URL から JSON を取得する。
+ * @param url - 取得先 URL
+ * @param accept - Accept ヘッダー（既定: application/json 等）
+ * @param timeout - タイムアウト（ミリ秒）
+ * @param headers - 追加ヘッダー
+ * @returns パース済みの JSON（型は呼び出し側で保証すること）
+ * @internal
+ */
 export async function getJson(
 	url: string,
 	accept = "application/json, */*",
@@ -28,6 +48,15 @@ export async function getJson(
 	return await res.json();
 }
 
+/**
+ * URL から HTML テキストを取得する。
+ * @param url - 取得先 URL
+ * @param accept - Accept ヘッダー（既定: text/html 等）
+ * @param timeout - タイムアウト（ミリ秒）
+ * @param headers - 追加ヘッダー
+ * @returns レスポンス本文の文字列
+ * @internal
+ */
 export async function getHtml(
 	url: string,
 	accept = "text/html, */*",
@@ -50,6 +79,13 @@ export async function getHtml(
 	return await res.text();
 }
 
+/**
+ * 生の Response を取得する（リトライ・Cookie 対応）。
+ * @param args - url, method, body, headers, timeout, size
+ * @returns 成功時の node-fetch Response。429 かつ Retry-After が 0 以下の場合は Set-Cookie を適用して 1 回だけリトライする。
+ * @throws StatusError レスポンスが ok でない場合
+ * @internal
+ */
 export async function getResponse(args: {
 	url: string;
 	method: string;
@@ -138,7 +174,7 @@ export async function getResponse(args: {
 					body.destroy();
 				}
 			} catch {
-				// ignore cleanup errors
+				// クリーンアップ失敗は無視
 			}
 
 			continue;
@@ -153,14 +189,12 @@ export async function getResponse(args: {
 }
 
 const cache = new CacheableLookup({
-	maxTtl: 3600, // 1hours
-	errorTtl: 30, // 30secs
-	lookup: false, // nativeのdns.lookupにfallbackしない
+	maxTtl: 3600, // 1 時間
+	errorTtl: 30, // 30 秒
+	lookup: false, // ネイティブの dns.lookup にフォールバックしない
 });
 
-/**
- * Get http non-proxy agent
- */
+/** HTTP 用のプロキシなしエージェント */
 const _http = new http.Agent({
 	keepAlive: true,
 	keepAliveMsecs: 30 * 1000,
@@ -168,9 +202,7 @@ const _http = new http.Agent({
 	localAddress: config.outgoingAddress,
 } as http.AgentOptions);
 
-/**
- * Get https non-proxy agent
- */
+/** HTTPS 用のプロキシなしエージェント */
 const _https = new https.Agent({
 	keepAlive: true,
 	keepAliveMsecs: 30 * 1000,
@@ -180,9 +212,7 @@ const _https = new https.Agent({
 
 const maxSockets = Math.max(256, config.deliverJobConcurrency || 128);
 
-/**
- * Get http proxy or non-proxy agent
- */
+/** HTTP 用のプロキシまたはプロキシなしエージェント */
 export const httpAgent = config.proxy
 	? new HttpProxyAgent({
 			keepAlive: true,
@@ -195,9 +225,7 @@ export const httpAgent = config.proxy
 	  })
 	: _http;
 
-/**
- * Get https proxy or non-proxy agent
- */
+/** HTTPS 用のプロキシまたはプロキシなしエージェント */
 export const httpsAgent = config.proxy
 	? new HttpsProxyAgent({
 			keepAlive: true,
@@ -211,9 +239,11 @@ export const httpsAgent = config.proxy
 	: _https;
 
 /**
- * Get agent by URL
- * @param url URL
- * @param bypassProxy Allways bypass proxy
+ * URL に応じた HTTP/HTTPS エージェントを返す。
+ * @param url - 対象 URL
+ * @param bypassProxy - true のとき常にプロキシを通さない
+ * @returns プロトコルと設定に応じた Agent（http または https）
+ * @internal
  */
 export function getAgentByUrl(url: URL, bypassProxy = false) {
 	if (bypassProxy || (config.proxyBypassHosts || []).includes(url.hostname)) {
@@ -223,9 +253,11 @@ export function getAgentByUrl(url: URL, bypassProxy = false) {
 	}
 }
 
-// Bearcaps https://docs.joinmastodon.org/spec/bearcaps/
-// bear:?t=<token>&u=https://example.com/foo'
-// -> GET https://example.com/foo Authorization: Bearer <token>
+/**
+ * Bearcaps URL をパースする（仕様: https://docs.joinmastodon.org/spec/bearcaps/）。
+ * bear:?t=&lt;token&gt;&u=&lt;url&gt; 形式を GET &lt;url&gt; + Authorization: Bearer &lt;token&gt; に変換する。
+ * @internal
+ */
 function parseBearcaps(
 	url: string,
 ): { url: string; token: string | undefined } | undefined {

@@ -1,3 +1,17 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートを作成する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `notes/create`（クライアントからは POST `/api/notes/create` で呼び出し）
+ * - 認証必須。テキスト・投票・ファイル添付・リノート・返信・チャンネル投稿に対応。
+ * - 公開範囲（visibility）、CW、ローカルのみ、Idempotency キーなどオプションあり。
+ * - レート制限: 1 時間あたり 300 回（meta.limit）。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { In, IsNull } from "typeorm";
 import create from "@/services/note/create.js";
 import type { User } from "@/models/entities/user.js";
@@ -225,7 +239,7 @@ export const paramDef = {
 	},
 	anyOf: [
 		{
-			// (re)note with text, files and poll are optional
+			// (リ)ノート：テキスト・ファイル・アンケートは任意
 			properties: {
 				text: {
 					type: "string",
@@ -237,26 +251,26 @@ export const paramDef = {
 			required: ["text"],
 		},
 		{
-			// (re)note with files, text and poll are optional
+			// (リ)ノート：ファイル指定時、テキスト・アンケートは任意
 			required: ["fileIds"],
 		},
 		{
-			// (re)note with files, text and poll are optional
+			// (リ)ノート：mediaIds 指定時、テキスト・アンケートは任意
 			required: ["mediaIds"],
 		},
 		{
-			// (re)note with poll, text and files are optional
+			// (リ)ノート：アンケート指定時、テキスト・ファイルは任意
 			properties: {
 				poll: { type: "object", nullable: false },
 			},
 			required: ["poll"],
 		},
 		{
-			// pure renote
+			// 純粋リノート
 			required: ["renoteId"],
 		},
 		{
-			// reference
+			// 参照
 			required: ["referenceIds"],
 		},
 	],
@@ -296,7 +310,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 			throw new ApiError(meta.errors.appBlockPublic);
 	}
 
-	// Initial parallel promises for fetching visible users, cc users, files, renote, and channel
+	// 公開先ユーザー・CCユーザー・ファイル・リノート・チャンネル取得の初期並列 Promise
 	const visibleUsersPromise = ps.visibleUserIds ? Users.findBy({ id: In(ps.visibleUserIds) }) : Promise.resolve([]);
 
 	const ccUsersPromise = ps.ccUserIds && (ps.ccUserIds.length <= 1 || user.canInvite)
@@ -368,7 +382,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 			let reply: Note | null = null;
 			let additionalCcUsers: User[] = [];
 			if (ps.replyId != null) {
-					// Fetch reply
+					// 返信を取得する
 					reply = await getNote(ps.replyId, user).catch((e) => {
 							if (e.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
 									throw new ApiError(meta.errors.noSuchReplyTarget);
@@ -395,7 +409,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 							}
 					}
 
-					// Check blocking
+					// ブロック関係を確認する
 					if (reply.userId !== user.id) {
 							const block = await Blockings.findOneBy({
 									blockerId: reply.userId,
@@ -485,7 +499,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 	files.push(...(fileUrls.filter((x) => x != null)));
 	const endpointPreprocessMs = Date.now() - endpointStartedAt;
 
-	// Create a post
+	// 投稿を作成する
 	try {
 			const note = await create(user, {
 					createdAt: new Date(),

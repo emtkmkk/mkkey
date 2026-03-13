@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub リクエストの署名検証。secure/private モード時の必須署名・ブロック判定を行う。
+ *
+ * @remarks
+ * - **役割**: inbox 受信時に署名の有無・妥当性を判定し、ブロックインスタンスを拒否する。
+ *
+ * @see {@link queue/processors/inbox} Inbox ジョブ
+ * @internal
+ */
 import { URL } from "url";
 import httpSignature, { IParsedSignature } from "@peertube/http-signature";
 import config from "@/config/index.js";
@@ -13,6 +24,10 @@ import { verify } from "node:crypto";
 import { toSingle } from "@/prelude/array.js";
 import { createHash } from "node:crypto";
 
+/**
+ * リクエストに署名が含まれるかを判定し、missing / optional / invalid / supplied / unneeded を返す。
+ * @internal
+ */
 export async function hasSignature(req: IncomingMessage): Promise<string> {
 	const meta = await fetchMeta();
 	const required = meta.secureMode || meta.privateMode;

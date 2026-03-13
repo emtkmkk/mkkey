@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * プッシュ通知の送信を行うサービス。
+ *
+ * @remarks
+ * - **役割**: web-push でクライアントへプッシュ通知を送る。SwSubscriptions を参照し、通知・メッセージ既読等のイベントを配送する。
+ *
+ * @see {@link services/stream} ストリーム連携
+ * @internal
+ */
 import push from "web-push";
 import config from "@/config/index.js";
 import { SwSubscriptions } from "@/models/index.js";
@@ -8,7 +19,7 @@ import Logger from "@/services/logger.js";
 
 const logger = new Logger("push-notification", "yellow");
 
-// Defined also packages/sw/types.ts#L14-L21
+// packages/sw/types.ts#L14-L21 にも定義あり
 type pushNotificationsTypes = {
 	notification: Packed<"Notification">;
 	unreadMessagingMessage: Packed<"MessagingMessage">;
@@ -62,7 +73,7 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 	// アプリケーションの連絡先と、サーバーサイドの鍵ペアの情報を登録
 	push.setVapidDetails(config.url, meta.swPublicKey, meta.swPrivateKey);
 
-	// Fetch
+	// 購読一覧を取得
 	const subscriptions = await SwSubscriptions.findBy({
 		userId: userId,
 	});

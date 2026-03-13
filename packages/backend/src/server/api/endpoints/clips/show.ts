@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * クリップの詳細を 1 件取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `clips/show`（GET `/api/clips/show` で呼び出し）
+ * - 認証不要（プライベートモード時は必須）。clipId で指定したクリップを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { Clips } from "@/models/index.js";
@@ -35,7 +47,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Fetch the clip
+	// クリップを取得する
 	const clip = await Clips.findOneBy({
 		id: ps.clipId,
 	});

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーがよく返信するユーザー一覧を取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/get-frequently-replied-users`（GET `/api/users/get-frequently-replied-users` で呼び出し）
+ * - 認証必須。自分がよく返信しているユーザーを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { Not, In, IsNull } from "typeorm";
 import { maximum } from "@/prelude/array.js";
 import { Notes, Users } from "@/models/index.js";
@@ -57,14 +69,14 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// Lookup user
+	// ユーザーを検索する
 	const user = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Fetch recent notes
+	// 最近のノートを取得する
 	const recentNotes = await Notes.find({
 		where: {
 			userId: user.id,
@@ -92,7 +104,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	const repliedUsers: any = {};
 
-	// Extract replies from recent notes
+	// 最近のノートから返信を抽出する
 	for (const userId of replyTargetNotes.map((x) => x.userId.toString())) {
 		if (repliedUsers[userId]) {
 			repliedUsers[userId]++;
@@ -101,10 +113,10 @@ export default define(meta, paramDef, async (ps, me) => {
 		}
 	}
 
-	// Calc peak
+	// ピークを計算する
 	const peak = maximum(Object.values(repliedUsers));
 
-	// Sort replies by frequency
+	// 返信を頻度でソートする
 	const repliedUsersSorted = Object.keys(repliedUsers).sort(
 		(a, b) => repliedUsers[b] - repliedUsers[a],
 	);

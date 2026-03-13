@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ノート（投稿）エクスポートジョブ。ユーザーのノートをドライブに保存する。
+ *
+ * @remarks
+ * - **役割**: エクスポートキューで実行し、ノート一覧をドライブに保存する。
+ *
+ * @see {@link queue/processors/db/import-posts} 投稿インポート
+ * @internal
+ */
 import type Bull from "bull";
 import * as fs from "node:fs";
 
@@ -26,7 +37,7 @@ export async function exportNotes(
 		return;
 	}
 
-	// Create temp file
+	// 一時ファイルを作成
 	const [path, cleanup] = await createTemp();
 
 	logger.info(`Temp file is ${path}`);

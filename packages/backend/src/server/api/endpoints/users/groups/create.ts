@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーグループを作成する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `users/groups/create`（POST `/api/users/groups/create` で呼び出し）
+ * - 認証必須。name でグループ名を指定して新規グループを作成する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { UserGroups, UserGroupJoinings } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { invalidateGroupMembersCache } from "@/misc/antenna-members-cache.js";
@@ -38,7 +50,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		name: ps.name,
 	} as UserGroup).then((x) => UserGroups.findOneByOrFail(x.identifiers[0]));
 
-	// Push the owner
+	// オーナーを追加する
         await UserGroupJoinings.insert({
                 id: genId(),
                 createdAt: new Date(),

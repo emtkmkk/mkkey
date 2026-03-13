@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーリストエクスポートジョブ。ユーザーのリスト一覧をドライブに保存する。
+ *
+ * @remarks
+ * - **役割**: エクスポートキューで実行し、ユーザーリスト一覧をドライブに保存する。
+ *
+ * @internal
+ */
 import type Bull from "bull";
 import * as fs from "node:fs";
 
@@ -29,7 +39,7 @@ export async function exportUserLists(
 		userId: user.id,
 	});
 
-	// Create temp file
+	// 一時ファイルを作成
 	const [path, cleanup] = await createTemp();
 
 	logger.info(`Temp file is ${path}`);

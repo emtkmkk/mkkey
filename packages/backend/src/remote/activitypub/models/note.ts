@@ -104,9 +104,9 @@ export function validateNote(object: any, uri: string) {
 }
 
 /**
- * Fetch Notes.
+ * Note を取得する。
  *
- * If the target Note is registered in Calckey, it will be returned.
+ * 対象の Note が Calckey に登録されていればそれを返す。
  */
 export async function fetchNote(
 	object: string | IObject,
@@ -116,7 +116,7 @@ export async function fetchNote(
 }
 
 /**
- * Create a Note.
+ * Note を作成する。
  *
  * @param fromInbox - 受動的配信（inbox 経由）のとき true。このときのみ休眠フォロワー判定でスキップする。
  */
@@ -159,12 +159,11 @@ export async function createNote(
 	logger.debug(`Note fetched: ${JSON.stringify(note, null, 2)}`);
 	logger.info(`Creating the Note: ${note.id}`);
 
-	// Skip if note is made before 2007 (1yr before Fedi was created)
-	// OR skip if note is made 3 days in advance
+	// 2007年より前の Note、または 3 日以上未来の Note はスキップ（Fedi 誕生より前／設定ミス対策）
 	if (note.published) {
 		const DateChecker = new Date(note.published);
 		const FutureCheck = new Date();
-		FutureCheck.setDate(FutureCheck.getDate() + 3); // Allow some wiggle room for misconfigured hosts
+		FutureCheck.setDate(FutureCheck.getDate() + 3); // 設定ミスしたホスト用の余裕
 		if (DateChecker.getFullYear() < 2007) {
 			logger.warn(
 				"Note somehow made before Activitypub was created; discarding",
@@ -177,13 +176,13 @@ export async function createNote(
 		}
 	}
 
-	// Fetch author
+	// 作者を取得
 	const actor = (await resolvePerson(
 		getOneApId(note.attributedTo),
 		resolver,
 	)) as CacheableRemoteUser;
 
-	// Skip if author is suspended.
+	// 作者が凍結されている場合はスキップ
 	if (actor.isSuspended) {
 		logger.debug(
 			`User ${actor.usernameLower}@${actor.host} suspended; discarding.`,
@@ -218,15 +217,14 @@ export async function createNote(
 		}
 	}
 
-	// If Audience (to, cc) was not specified
+	// オーディエンス（to, cc）が指定されていない場合
 	if (
 		visibility === "specified" &&
 		visibleUsers.length === 0 &&
 		ccUsers.length === 0
 	) {
 		if (typeof value === "string") {
-			// If the input is a string, GET occurs in resolver
-			// Public if you can GET anonymously from here
+			// 入力が文字列の場合は resolver で GET が行われる。匿名 GET できれば公開扱い
 			visibility = "public";
 		}
 	}
@@ -236,10 +234,10 @@ export async function createNote(
 	const apMentions = await extractApMentions(note.tag);
 	const apHashtags = await extractApHashtags(note.tag);
 
-	// Attachments
+	// 添付
 	// TODO: attachmentは必ずしもImageではない
 	// TODO: attachmentは必ずしも配列ではない
-	// Noteがsensitiveなら添付もsensitiveにする
+	// Note が sensitive なら添付も sensitive にする
 	const limit = promiseLimit(2);
 
 	note.attachment = Array.isArray(note.attachment)
@@ -260,7 +258,7 @@ export async function createNote(
 		).filter((image) => image != null)
 		: [];
 
-	// Reply
+	// 返信
 	const reply: Note | null = note.inReplyTo
 		? await resolveNote(note.inReplyTo, resolver)
 			.then((x) => {
@@ -305,7 +303,7 @@ export async function createNote(
 		}
 	}
 
-	// Quote
+	// 引用
 	let quote: Note | undefined | null;
 
 	if (note._misskey_quote || note.quoteUrl || note.quoteUri) {
@@ -366,10 +364,10 @@ export async function createNote(
 		}
 	}
 
-	// References
+	// 参照
 	let references = new Set<Note["id"]>();
 	if (note.references) {
-		// Resolve to Collection Object
+		// Collection オブジェクトに解決
 		const collection = await resolver.resolveCollection(note.references);
 		if (isCollectionOrOrderedCollection(collection)) {
 			if (collection.first?.items) {
@@ -407,11 +405,11 @@ export async function createNote(
 					next = json_data.next;
 				}
 
-				// Resolve and regist Notes
+				// Note を解決して登録
 				const limit = promiseLimit<Note | null>(2);
 				const referencedNotes = await Promise.all(
 					items
-						.filter((item) => getApType(item) === "Note") // TODO: Maybe it doesn't have to be a Note.
+						.filter((item) => getApType(item) === "Note") // TODO: Note でなくてもよい可能性あり
 						.slice(0, 100)
 						.map((item) => limit(() => resolveNote(item, resolver))),
 				);
@@ -424,7 +422,7 @@ export async function createNote(
 
 	const cw = note.summary === "" ? null : note.summary;
 
-	// Text parsing
+	// テキスト解析
 	let text: string | null = null;
 	if (
 		note.source?.mediaType === "text/x.misskeymarkdown" &&
@@ -508,7 +506,7 @@ export async function createNote(
 */
 	}
 
-	// vote
+	// 投票
 	if (reply?.hasPoll) {
 		const poll = await Polls.findOneByOrFail({ noteId: reply.id });
 
@@ -603,10 +601,10 @@ export async function createNote(
 }
 
 /**
- * Resolve Note.
+ * Note を解決する。
  *
- * If the target Note is registered in Calckey, return it, otherwise
- * Fetch from remote server, register with Calckey and return it.
+ * 対象の Note が Calckey に登録されていればそれを返し、
+ * そうでなければリモートから取得して Calckey に登録して返す。
  */
 export async function resolveNote(
 	value: string | IObject,
@@ -615,7 +613,7 @@ export async function resolveNote(
 	const uri = typeof value === "string" ? value : value.id;
 	if (uri == null) throw new Error("missing uri");
 
-	// Abort if origin host is blocked
+	// 発信元ホストがブロックされていれば中止
 	if (await shouldBlockInstance(extractDbHost(uri)))
 		throw new StatusError(
 			"host blocked",
@@ -626,7 +624,7 @@ export async function resolveNote(
 	const lock = await getApLock(uri);
 
 	try {
-		//#region Returns if already registered with this server
+		//#region 既に当サーバーに登録されていれば返す
 		const exist = await fetchNote(uri);
 
 		if (exist) {
@@ -642,9 +640,9 @@ export async function resolveNote(
 			);
 		}
 
-		// Fetch from remote server and register
-		// If the attached `Note` Object is specified here instead of the uri, the note will be generated without going through the server fetch.
-		// Since the attached Note Object may be disguised, always specify the uri and fetch it from the server.
+		// リモートから取得して登録
+		// uri の代わりに付随する Note オブジェクトを渡すとサーバー取得を経ずに生成できるが、
+		// 付随オブジェクトは偽装の可能性があるため、常に uri を指定してサーバーから取得する。
 		return await createNote(uri, resolver, true);
 	} finally {
 		await lock.release();
@@ -1041,13 +1039,13 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 	const uri = typeof value === "string" ? value : value.id;
 	if (!uri) throw new Error("Missing note uri");
 
-	// Skip if URI points to this server
+	// URI が当サーバーを指す場合はスキップ
 	if (uri.startsWith(`${config.url}/`)) throw new Error("uri points local");
 
-	// A new resolver is created if not specified
+	// 未指定なら新規に Resolver を作成
 	if (resolver == null) resolver = new Resolver();
 
-	// Resolve the updated Note object
+	// 更新された Note オブジェクトを解決
 	const post = (await resolver.resolve(value)) as IPost;
 
 	const actor = (await resolvePerson(
@@ -1055,16 +1053,16 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 		resolver,
 	)) as CacheableRemoteUser;
 
-	// Already registered with this server?
+	// 既に当サーバーに登録済みか
 	const note = await Notes.findOneBy({ uri });
 	if (note == null) {
 		return await createNote(post, resolver);
 	}
 
-	// Whether to tell clients the note has been updated and requires refresh.
+	// クライアントに更新・再取得が必要であることを通知するかどうか
 	let publishing = false;
 
-	// Text parsing
+	// テキスト解析
 	let text: string | null = null;
 	if (
 		post.source?.mediaType === "text/x.misskeymarkdown" &&
@@ -1079,7 +1077,7 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 
 	const cw = post.sensitive && post.summary;
 
-	// File parsing
+	// ファイル解析
 	const fileList = post.attachment
 		? Array.isArray(post.attachment)
 			? post.attachment
@@ -1087,7 +1085,7 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 		: [];
 	const files = fileList.map((f) => (f.sensitive = post.sensitive));
 
-	// Fetch files
+	// ファイル取得
 	const limit = promiseLimit(2);
 
 	const driveFiles = (
@@ -1103,8 +1101,7 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 							update.comment = altText;
 						}
 
-						// Don't unmark previously marked sensitive files,
-						// but if edited post contains sensitive marker, update it.
+						// 既に sensitive のファイルは解除しないが、編集後の投稿に sensitive があれば更新する
 						if (post.sensitive && !file.isSensitive) {
 							update.isSensitive = post.sensitive;
 						}
@@ -1234,14 +1231,14 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 		}
 	}
 
-	// Update Note
+	// Note 更新
 	if (notEmpty(update)) {
 		update.updatedAt = new Date();
 
-		// Save updated note to the database
+		// 更新したノートを DB に保存
 		await Notes.update({ uri }, update);
 
-		// Save an edit history for the previous note
+		// 編集前のノートの編集履歴を保存
 		await NoteEdits.insert({
 			id: genId(),
 			noteId: note.id,
@@ -1255,7 +1252,7 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 	}
 
 	if (publishing) {
-		// Publish update event for the updated note details
+		// 更新されたノート詳細の更新イベントを配信
 		publishNoteStream(note.id, "updated", {
 			updatedAt: update.updatedAt,
 		});

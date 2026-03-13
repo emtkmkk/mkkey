@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub の Accept(Follow) アクティビティを処理する。自インスタンスから送ったフォローリクエストの承諾を受け付ける。
+ *
+ * @remarks
+ * - **役割**: inbox で Accept(Follow) を受信した際に、フォローリクエストを承諾してフォロー関係を作成する。
+ *
+ * @see {@link services/following/requests/accept} フォロー承諾
+ * @internal
+ */
 import type { CacheableRemoteUser } from "@/models/entities/user.js";
 import accept from "@/services/following/requests/accept.js";
 import type { IFollow } from "../../type.js";
@@ -21,7 +32,7 @@ export default async (
 		return "skip: follower is not a local user";
 	}
 
-	// relay
+	// リレー
 	const match = activity.id?.match(/follow-relay\/(\w+)/);
 	if (match) {
 		return await relayAccepted(match[1]);

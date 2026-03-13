@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートへのリアクションエンティティ。ユーザー・ノート・リアクション文字列を保持する。
+ *
+ * @remarks
+ * - **役割**: ノートへのリアクションを DB に保持し、API のリアクション一覧・配信で利用する。
+ *
+ * @see {@link models/repositories/note-reaction} ノートリアクションリポジトリ
+ * @internal
+ */
 import {
 	PrimaryColumn,
 	Entity,
@@ -18,7 +29,7 @@ export class NoteReaction {
 
 	@Index()
 	@Column('timestamp with time zone', {
-		comment: 'The created date of the NoteReaction.',
+		comment: 'リアクションの作成日時',
 	})
 	public createdAt: Date;
 

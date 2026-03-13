@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * リモートインスタンスのメタデータ（Nodeinfo 等）を取得するサービス。
+ *
+ * @remarks
+ * - **役割**: フォロー・inbox 等でリモートインスタンス情報を取得し、アイコン・名前等を更新する。
+ *
+ * @see {@link remote/activitypub/db-resolver} AP DB 解決
+ * @internal
+ */
+
 import { URL } from "node:url";
 import { JSDOM } from "jsdom";
 import fetch from "node-fetch";

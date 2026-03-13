@@ -16,7 +16,20 @@ import type { Page } from "@/models/entities/page.js";
 import type { Packed } from "@/misc/schema.js";
 import type { Webhook } from "@/models/entities/webhook";
 
-//#region Stream type-body definitions
+/**
+ * @packageDocumentation
+ *
+ * ストリームで配送するメッセージの型定義（チャンネル名・ペイロード型）。
+ *
+ * @remarks
+ * - **役割**: 各チャンネルから send されるメッセージの型（StreamMessages）を定義。チャンネル別の payload 型を持つ。
+ * - クライアントの型生成やチャンネル実装の型付けに利用される。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
+
+//#region ストリーム型ボディ定義
 export interface InternalStreamTypes {
 	userChangeSuspendedState: {
 		id: User["id"];
@@ -305,5 +318,5 @@ export type StreamEventEmitter = UnionToIntersection<
 >;
 // { [y in name]: (e: spec) => void }をまとめてその交差型をEmitterにかけるとts(2590)にひっかかる
 
-// provide stream channels union
+// ストリームチャンネルの union 型を提供
 export type StreamChannels = StreamMessages[keyof StreamMessages]["name"];

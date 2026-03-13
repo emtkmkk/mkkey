@@ -402,7 +402,7 @@ export const NoteRepository = db.getRepository(Note).extend({
                 meId: User["id"] | null,
                 _hint_?: Pick<NotePackHint, "me" | "followings">,
         ): Promise<boolean> {
-                // This code must always be synchronized with the checks in generateVisibilityQuery.
+                // この判定は generateVisibilityQuery のチェックと常に同期している必要がある
                 if (!note?.visibility) return false;
                 // visibility が specified かつ自分が指定されていなかったら非表示
                 if (note.visibility === "specified") {
@@ -456,13 +456,10 @@ export const NoteRepository = db.getRepository(Note).extend({
                                         user = resolvedUser;
                                 }
 
-                                /* If we know the following, everything is fine.
-
-                                But if we do not know the following, it might be that both the
-                                author of the note and the author of the like are remote users,
-                                in which case we can never know the following. Instead we have
-				to assume that the users are following each other.
-				*/
+                                /* フォロー関係が分かっていればそれでよい。
+                                分かっていない場合、ノート作者もリアクション作者もリモートユーザーで
+                                フォロー関係を取得できないことがある。その場合は互いにフォローしているとみなす。
+                                */
                                 return following || (note?.userHost != null && user.host != null);
                         }
                 }
@@ -1043,7 +1040,7 @@ export const NoteRepository = db.getRepository(Note).extend({
                         ),
                 );
 
-		// filter out rejected promises, only keep fulfilled values
+		// 拒否された Promise を除き、履行された値のみ返す
 		return promises.flatMap((result) =>
 			result.status === "fulfilled" ? [result.value] : [],
 		);

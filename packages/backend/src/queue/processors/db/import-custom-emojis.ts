@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * カスタム絵文字インポートジョブ。ZIP から絵文字を読み込み登録する。
+ *
+ * @remarks
+ * - **役割**: インポートキューで実行し、ZIP 内の画像をカスタム絵文字として登録する。
+ *
+ * @see {@link queue/processors/db/export-custom-emojis} 絵文字エクスポート
+ * @internal
+ */
 import type Bull from "bull";
 import * as fs from "node:fs";
 import AdmZip from "adm-zip";

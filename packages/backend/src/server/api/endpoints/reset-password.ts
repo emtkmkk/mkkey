@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * パスワードリセットを要求する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `reset-password`（POST `/api/reset-password` で呼び出し）
+ * - 認証不要。メールアドレスを送るとリセット用トークン付きメールを送信する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { publishMainStream } from "@/services/stream.js";
 import { Users, UserProfiles, PasswordResetRequests } from "@/models/index.js";
 import define from "../define.js";
@@ -33,7 +45,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new Error(); // TODO
 	}
 
-	// Generate hash of password
+	// パスワードのハッシュを生成する
 	const hash = await hashPassword(ps.password);
 
 	await UserProfiles.update(req.userId, {

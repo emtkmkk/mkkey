@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * リノートミュートを解除する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `renote-mute/delete`（POST `/api/renote-mute/delete` で呼び出し）
+ * - 認証必須。userId で指定したユーザーのリノートミュートを解除する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { RenoteMutings } from "@/models/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -37,14 +49,14 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const muter = user;
 
-	// Get mutee
+	// ミュート対象を取得する
 	const mutee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Check not muting
+	// ミュートしていないか確認する
 	const exist = await RenoteMutings.findOneBy({
 		muterId: muter.id,
 		muteeId: mutee.id,
@@ -54,7 +66,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.notMuting);
 	}
 
-	// Delete mute
+	// ミュートを削除する
 	await RenoteMutings.delete({
 		id: exist.id,
 	});

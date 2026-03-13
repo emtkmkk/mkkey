@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * アンテナストリーム。アンテナ条件にマッチするノートをリアルタイム配送。
+ *
+ * @remarks
+ * - **ストリーム チャンネル名**: `antenna`。認証不要（アンテナはユーザーごと）。
+ * - antennaId でアンテナを指定し、そのアンテナにヒットするノートを配送する。
+ *
+ * @see {@link stream/channel} チャンネル基底
+ * @internal
+ */
 import Channel from "../channel.js";
 import { Notes } from "@/models/index.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
@@ -18,7 +30,7 @@ export default class extends Channel {
 	public async init(params: any) {
 		this.antennaId = params.antennaId as string;
 
-		// Subscribe stream
+		// ストリーム購読
 		this.subscriber.on(`antennaStream:${this.antennaId}`, this.onEvent);
 	}
 
@@ -45,7 +57,7 @@ export default class extends Channel {
 					e instanceof IdentifiableError &&
 					e.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24"
 				) {
-					// skip: note not visible to user
+					// スキップ: ユーザーにノートが非表示
 					return;
 				} else {
 					throw e;
@@ -57,7 +69,7 @@ export default class extends Channel {
 	}
 
 	public dispose() {
-		// Unsubscribe events
+		// イベント購読解除
 		this.subscriber.off(`antennaStream:${this.antennaId}`, this.onEvent);
 	}
 }

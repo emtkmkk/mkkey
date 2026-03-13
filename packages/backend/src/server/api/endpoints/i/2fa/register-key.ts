@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 2FA パスキー（WebAuthn）の登録チャレンジを取得する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/2fa/register-key`（POST `/api/i/2fa/register-key` で呼び出し）
+ * - 認証必須。パスワード確認後、WebAuthn の attestation 用オプションを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../../define.js";
 import { UserProfiles, AttestationChallenges, UserSecurityKeys } from "@/models/index.js";
 import { promisify } from "node:util";
@@ -25,7 +37,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-	// Compare password
+	// パスワードを照合する
 	const same = await comparePassword(ps.password, profile.password!);
 
 	if (!same) {

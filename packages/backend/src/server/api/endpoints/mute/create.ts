@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザーをミュートする API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `mute/create`（POST `/api/mute/create` で呼び出し）
+ * - 認証必須。userId で指定したユーザーをミュートリストに追加する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
@@ -56,7 +68,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.muteeIsYourself);
 	}
 
-	// Get mutee
+	// ミュート対象を取得する
 	const mutee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
@@ -68,7 +80,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError();
 	}
 
-	// Check if already muting
+	// 既にミュート中か確認する
 	const exist = await Mutings.findOneBy({
 		muterId: muter.id,
 		muteeId: mutee.id,
@@ -82,7 +94,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		return;
 	}
 
-	// Create mute
+	// ミュートを作成する
 	await Mutings.insert({
 		id: genId(),
 		createdAt: new Date(),

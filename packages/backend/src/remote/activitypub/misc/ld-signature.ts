@@ -1,10 +1,21 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub 用の Linked Data 署名（RsaSignature2017）。署名・検証および JSON-LD 正規化を提供する。
+ *
+ * @remarks
+ * - **役割**: AP 配信時の署名付与と inbox 受信時の署名検証に利用する。
+ *
+ * @see {@link remote/activitypub/request} AP リクエスト
+ * @internal
+ */
 import * as crypto from "node:crypto";
 import jsonld from "jsonld";
 import { CONTEXTS, WellKnownContext } from "./contexts.js";
 import fetch from "node-fetch";
 import { httpAgent, httpsAgent } from "@/misc/fetch.js";
 
-// RsaSignature2017 based from https://github.com/transmute-industries/RsaSignature2017
+// RsaSignature2017 は https://github.com/transmute-industries/RsaSignature2017 をベースにしている
 
 export class LdSignature {
 	public debug = false;
@@ -125,12 +136,12 @@ export class LdSignature {
 
 	private async fetchDocument(url: string) {
 		const json = await fetch(url, {
-			headers: {
-				Accept: "application/ld+json, application/json",
-			},
-			// TODO
-			//timeout: this.loderTimeout,
-			agent: (u) => (u.protocol === "http:" ? httpAgent : httpsAgent),
+		headers: {
+			Accept: "application/ld+json, application/json",
+		},
+		// TODO: タイムアウトの設定
+		//timeout: this.loderTimeout,
+		agent: (u) => (u.protocol === "http:" ? httpAgent : httpsAgent),
 		}).then((res) => {
 			if (!res.ok) {
 				throw new Error(`${res.status} ${res.statusText}`);

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * 投稿インポートジョブ。JSON/CSV から投稿を読み込みノートを作成する。
+ *
+ * @remarks
+ * - **役割**: インポートキューで実行し、JSON/CSV の投稿をノートとして作成する。
+ *
+ * @see {@link services/note/create} ノート作成
+ * @internal
+ */
 import { IsNull } from "typeorm";
 import follow from "@/services/following/create.js";
 

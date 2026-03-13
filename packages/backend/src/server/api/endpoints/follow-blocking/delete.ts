@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォロー・ブロックを解除する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `follow-blocking/delete`（POST `/api/follow-blocking/delete` で呼び出し）
+ * - 認証必須。userId で指定したユーザーをフォロー・ブロックリストから削除する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import { FollowBlockings } from "@/models/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -37,14 +49,14 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, user) => {
 	const blocker = user;
 
-	// Get blockee
+	// ブロック対象を取得する
 	const blockee = await getUser(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;
 	});
 
-	// Check not muting
+	// ミュートしていないか確認する
 	const exist = await FollowBlockings.findOneBy({
 		blockerId: blocker.id,
 		blockeeId: blockee.id,
@@ -54,7 +66,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.notMuting);
 	}
 
-	// Delete mute
+	// ミュートを削除する
 	await FollowBlockings.delete({
 		id: exist.id,
 	});

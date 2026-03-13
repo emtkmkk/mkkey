@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザーが Move アクティビティ（アカウント移転）を実行する API エンドポイント。
+ *
+ * @remarks
+ * - **API パス**: `i/move`（POST `/api/i/move` で呼び出し）
+ * - 認証必須。moveToAccount で指定したアカウントへフォロワー等を移す Move を配信する。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import type { User } from "@/models/entities/user.js";
 import { resolveUser } from "@/remote/resolve-user.js";
 import { DAY } from "@/const.js";
@@ -146,7 +158,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	dm.addFollowersRecipe();
 	dm.execute();
 
-	// Publish meUpdated event
+	// meUpdated イベントを発行する
 	publishMainStream(user.id, "meUpdated", iObj);
 
 	const followings = await Followings.findBy({

@@ -290,7 +290,7 @@
 				:src="icon"
 				@error="icon = ''"
 			  />
-			  <p v-if="!isSteam" :title="sitename">{{ sitename }}</p>
+			  <p v-if="!isSteam" :title="(sitename || '').trim()">{{ (sitename || '').trim() }}</p>
 			</footer>
 		  </article>
 		</component>
@@ -861,12 +861,6 @@ const fetchUrlData = async () => {
 	}
 
 	&.legacyStyle {
-	  &.max-width_400px > .link {
-		> .thumbnail {
-		  height: 5rem;
-		}
-	  }
-
 	  &.max-width_350px {
 		> .link {
 		  > .thumbnail {

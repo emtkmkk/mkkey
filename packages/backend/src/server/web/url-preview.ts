@@ -764,6 +764,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 
     summary.icon = wrap(summary.icon);
     summary.thumbnail = wrap(summary.thumbnail);
+    if (typeof summary.sitename === "string") {
+      const normalized = summary.sitename.replace(/\s+/g, " ").trim();
+      summary.sitename = normalized.length > 0 ? normalized : "";
+    }
     // Cache 7days
     ctx.set("Cache-Control", "max-age=604800, immutable");
 

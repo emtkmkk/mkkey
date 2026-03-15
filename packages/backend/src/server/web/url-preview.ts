@@ -141,6 +141,56 @@ function preferLargeThumbnailFromHtml(html: string | null): boolean {
 	return false;
 }
 
+function isXLikeHostname(hostname: string): boolean {
+	const normalized = hostname.toLowerCase();
+	return [
+		"x.com",
+		"www.x.com",
+		"mobile.x.com",
+		"twitter.com",
+		"www.twitter.com",
+		"mobile.twitter.com",
+	].includes(normalized);
+}
+
+/**
+ * X(Twitter) のサムネイルURLがメディア由来かどうかを判定する。
+ * アイコン・汎用画像と見なせるものは false を返す。
+ */
+function hasXMediaThumbnail(thumbnail: string | null | undefined): boolean {
+	if (!thumbnail) return false;
+
+	try {
+		const thumbnailUrl = new URL(thumbnail);
+		const host = thumbnailUrl.hostname.toLowerCase();
+		const path = thumbnailUrl.pathname.toLowerCase();
+
+		if (host === "pbs.twimg.com") {
+			return (
+				path.startsWith("/media/") ||
+				path.startsWith("/ext_tw_video_thumb/") ||
+				path.startsWith("/amplify_video_thumb/") ||
+				path.startsWith("/tweet_video_thumb/")
+			);
+		}
+
+		if (host.endsWith("twimg.com")) {
+			return false;
+		}
+
+		if (
+			isXLikeHostname(host) &&
+			(path === "/favicon.ico" || path.startsWith("/icons/"))
+		) {
+			return false;
+		}
+	} catch {
+		return false;
+	}
+
+	return false;
+}
+
 /**
  * HTML から og:image / twitter:image を用いてサムネイルを補完する。
  * すでに summary.thumbnail が存在する場合は何もしない。
@@ -191,6 +241,13 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 
   const redirectedUrl = await resolveShortUrlIfNeeded(url);
   const effectiveUrl = redirectedUrl ?? url;
+  const isXPreviewUrl = (() => {
+		try {
+			return isXLikeHostname(new URL(effectiveUrl).hostname);
+		} catch {
+			return false;
+		}
+	})();
 
   // SteamのApp IDを取得
   const steamAppId = isSteamUrl(effectiveUrl);
@@ -769,6 +826,11 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     if (summary.player?.url) {
       summaryPreferLargeThumbnail = true;
     }
+
+		if (isXPreviewUrl) {
+			summaryPreferLargeThumbnail =
+				!!summary.player?.url || hasXMediaThumbnail(summary.thumbnail);
+		}
 
     summary.isSensitive = summaryIsSensitive;
     summary.preferLargeThumbnail = summaryPreferLargeThumbnail;

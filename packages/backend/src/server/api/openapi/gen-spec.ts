@@ -16,20 +16,79 @@ import config from "@/config/index.js";
 import { errors as basicErrors } from "./errors.js";
 import { schemas, convertSchemaToOpenApiSchema } from "./schemas.js";
 
+/** タグ名 → 日本語説明（Scalar 等の API ドキュメント表示用） */
+const TAG_DESCRIPTIONS: Record<string, string> = {
+	account: "アカウント設定・ブロック・ミュート・フォロー blocking 等",
+	admin: "管理者向け操作",
+	antennas: "アンテナ",
+	app: "アプリケーション登録・管理",
+	auth: "認証・セッション・MiAuth",
+	categories: "カテゴリ（ページ用）",
+	channels: "チャンネル",
+	charts: "チャート・統計",
+	clips: "クリップ",
+	drive: "ドライブ（ファイル・フォルダ）",
+	emoji: "絵文字（モチーフ等）",
+	"emoji-import-request": "絵文字インポート申請",
+	endpoints: "エンドポイント一覧",
+	favorites: "お気に入り（ノート）",
+	federation: "Federation（リモートインスタンス）",
+	following: "フォロー・フォローリクエスト",
+	gallery: "ギャラリー投稿",
+	groups: "ユーザーグループ",
+	hashtags: "ハッシュタグ",
+	lists: "ユーザーリスト",
+	messaging: "メッセージ（DM）",
+	meta: "インスタンス情報・お知らせ・絵文字一覧等",
+	"non-productive": "非本番用（開発・テスト）",
+	notes: "ノート（投稿）の取得・作成・削除・タイムライン等",
+	notifications: "通知",
+	pages: "ページ",
+	reactions: "リアクション",
+	"reset password": "パスワードリセット",
+	webhooks: "ウェブフック",
+	users: "ユーザー情報・検索・フォロー等",
+};
+
 export function genOpenapiSpec() {
+	const tagNames = new Set<string>();
+	for (const ep of endpoints) {
+		if (ep.meta.tags) {
+			for (const t of ep.meta.tags) {
+				tagNames.add(t);
+			}
+		}
+	}
+
 	const spec = {
 		openapi: "3.0.0",
 
 		info: {
 			version: "v1",
 			title: "Cluckey API",
+			description: [
+				"**Cluckey API** は、このインスタンス用の REST API です。",
+				"",
+				"### 認証",
+				"- 多くのエンドポイントでは **認証が不要** です（メタ情報の取得、ノートの閲覧など）。",
+				"- 認証が必要な操作では、リクエストボディに **API キー `i`** を渡すか、**Bearer トークン**（Authorization ヘッダー）を使用してください。",
+				"",
+				"### 利用上の注意",
+				"- ベース URL はこのインスタンスの API URL です。",
+				"- 一部のエンドポイントではレートリミットが適用されます。",
+			].join("\n"),
 			"x-logo": { url: "/static-assets/api-doc.png" },
 		},
 
 		externalDocs: {
-			description: "Repository",
-			url: "https://code.naskya.net/emtkmkk/mkkey",
+			description: "リポジトリ",
+			url: "https://github.com/emtkmkk/mkkey",
 		},
+
+		tags: [...tagNames].sort().map((name) => ({
+			name,
+			description: TAG_DESCRIPTIONS[name] ?? name,
+		})),
 
 		servers: [
 			{
@@ -119,8 +178,8 @@ export function genOpenapiSpec() {
 			summary: endpoint.name,
 			description: desc,
 			externalDocs: {
-				description: "Source code",
-				url: `https://code.naskya.net/emtkmkk/mkkey/src/branch/beta/packages/backend/src/server/api/endpoints/${endpoint.name}.ts`,
+				description: "ソースコード",
+				url: `https://github.com/emtkmkk/mkkey/blob/develop/packages/backend/src/server/api/endpoints/${endpoint.name}.ts`,
 			},
 			tags: endpoint.meta.tags || undefined,
 			security,
@@ -132,83 +191,83 @@ export function genOpenapiSpec() {
 					},
 				},
 			},
-			responses: {
-				...(endpoint.meta.res
-					? {
-							"200": {
-								description: "OK（結果あり）",
-								content: {
-									"application/json": {
-										schema: resSchema,
-									},
-								},
-							},
-					  }
-					: {
-							"204": {
-								description: "OK（結果なし）",
-							},
-					  }),
-				"400": {
-					description: "クライアントエラー",
-					content: {
-						"application/json": {
-							schema: {
-								$ref: "#/components/schemas/Error",
-							},
-							examples: { ...errors, ...basicErrors["400"] },
-						},
-					},
-				},
-				"401": {
-					description: "認証エラー",
-					content: {
-						"application/json": {
-							schema: {
-								$ref: "#/components/schemas/Error",
-							},
-							examples: basicErrors["401"],
-						},
-					},
-				},
-				"403": {
-					description: "禁止エラー",
-					content: {
-						"application/json": {
-							schema: {
-								$ref: "#/components/schemas/Error",
-							},
-							examples: basicErrors["403"],
-						},
-					},
-				},
-				"418": {
-					description: "I'm Calc",
-					content: {
-						"application/json": {
-							schema: {
-								$ref: "#/components/schemas/Error",
-							},
-							examples: basicErrors["418"],
-						},
-					},
-				},
-				...(endpoint.meta.limit
-					? {
-								"429": {
-								description: "リクエスト過多",
-								content: {
-									"application/json": {
-										schema: {
-											$ref: "#/components/schemas/Error",
+			responses: (() => {
+				const res: Record<string, any> = {
+					...(endpoint.meta.res
+						? {
+								"200": {
+									description: "OK（結果あり）",
+									content: {
+										"application/json": {
+											schema: resSchema,
 										},
-										examples: basicErrors["429"],
 									},
 								},
+						  }
+						: {
+								"204": {
+									description: "OK（結果なし）",
+								},
+						  }),
+					"400": {
+						description: "クライアントエラー",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/Error",
+								},
+								examples: { ...errors, ...basicErrors["400"] },
 							},
-					  }
-					: {}),
-				"500": {
+						},
+					},
+				};
+				// 認証必須エンドポイントのみ 401 を返しうる（call.ts: requireCredential && user == null）
+				if (endpoint.meta.requireCredential) {
+					res["401"] = {
+						description: "認証エラー",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/Error",
+								},
+								examples: basicErrors["401"],
+							},
+						},
+					};
+				}
+				// 認証・権限系エンドポイントのみ 403 を返しうる（凍結・管理者・モデレータ・secure）
+				if (
+					endpoint.meta.requireCredential ||
+					endpoint.meta.requireAdmin ||
+					endpoint.meta.requireModerator ||
+					endpoint.meta.secure
+				) {
+					res["403"] = {
+						description: "禁止エラー",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/Error",
+								},
+								examples: basicErrors["403"],
+							},
+						},
+					};
+				}
+				if (endpoint.meta.limit) {
+					res["429"] = {
+						description: "リクエスト過多",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/Error",
+								},
+								examples: basicErrors["429"],
+							},
+						},
+					};
+				}
+				res["500"] = {
 					description: "サーバー内部エラー",
 					content: {
 						"application/json": {
@@ -218,8 +277,9 @@ export function genOpenapiSpec() {
 							examples: basicErrors["500"],
 						},
 					},
-				},
-			},
+				};
+				return res;
+			})(),
 		};
 
 		const path = {

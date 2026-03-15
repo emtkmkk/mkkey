@@ -258,8 +258,8 @@ importers:
         specifier: 7.0.2
         version: 7.0.2(@types/koa@2.13.5)(ejs@3.1.8)(pug@3.0.2)
       mfm-js:
-        specifier: git+https://code.naskya.net/emtkmkk/mfm.js.git#main
-        version: code.naskya.net/emtkmkk/mfm.js/429e10275ccb8ef88aba3abd2bd3d9d2004a0962
+        specifier: git+https://github.com/emtkmkk/mfm.js.git#main
+        version: github.com/emtkmkk/mfm.js/429e10275ccb8ef88aba3abd2bd3d9d2004a0962
       mime-types:
         specifier: 2.1.35
         version: 2.1.35
@@ -663,8 +663,8 @@ importers:
         specifier: github:emtkmkk/activate-power-mode
         version: github.com/emtkmkk/activate-power-mode/97ed4f326a637e7bc5829c83ccc99c5f3f07440c
       mfm-js:
-        specifier: git+https://code.naskya.net/emtkmkk/mfm.js.git#develop
-        version: code.naskya.net/emtkmkk/mfm.js/ad7a0cce1330ee0a47cef1a6b5b49da4a5c43b05
+        specifier: git+https://github.com/emtkmkk/mfm.js.git#develop
+        version: github.com/emtkmkk/mfm.js/ad7a0cce1330ee0a47cef1a6b5b49da4a5c43b05
       sharp-read-bmp:
         specifier: github:misskey-dev/sharp-read-bmp
         version: github.com/misskey-dev/sharp-read-bmp/02d9dc189fa7df0c4bea09330be26741772dac01
@@ -15467,16 +15467,16 @@ packages:
     resolution: {integrity: sha512-+MLeeUcLTlnzVo5xDn9+LVN9oX4esvgZ7qfZczBN+YVUvZBafIrPPVyG2WdjMWU2Qkb2ZAh2M8lpqf1wIoGqJQ==}
     dev: false
 
-  code.naskya.net/emtkmkk/mfm.js/429e10275ccb8ef88aba3abd2bd3d9d2004a0962:
-    resolution: {commit: 429e10275ccb8ef88aba3abd2bd3d9d2004a0962, repo: https://code.naskya.net/emtkmkk/mfm.js.git, type: git}
+  github.com/emtkmkk/mfm.js/429e10275ccb8ef88aba3abd2bd3d9d2004a0962:
+    resolution: {commit: 429e10275ccb8ef88aba3abd2bd3d9d2004a0962, repo: https://github.com/emtkmkk/mfm.js.git, type: git}
     name: mfm-js
     version: 0.23.2
     dependencies:
       twemoji-parser: 14.0.0
     dev: false
 
-  code.naskya.net/emtkmkk/mfm.js/ad7a0cce1330ee0a47cef1a6b5b49da4a5c43b05:
-    resolution: {commit: ad7a0cce1330ee0a47cef1a6b5b49da4a5c43b05, repo: https://code.naskya.net/emtkmkk/mfm.js.git, type: git}
+  github.com/emtkmkk/mfm.js/ad7a0cce1330ee0a47cef1a6b5b49da4a5c43b05:
+    resolution: {commit: ad7a0cce1330ee0a47cef1a6b5b49da4a5c43b05, repo: https://github.com/emtkmkk/mfm.js.git, type: git}
     name: mfm-js
     version: 0.23.3
     dependencies:

@@ -15,7 +15,17 @@
 		<div id="app"></div>
 		<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.28.5"></script>
 		<script>
-			Scalar.createApiReference("#app", { url: "/api.json" });
+			Scalar.createApiReference("#app", {
+				url: "/api.json",
+				theme: "default",
+				metaData: {
+					title: "Cluckey API",
+					description:
+						"Cluckey インスタンス用 REST API。認証（API キー i または Bearer）、ノート・ユーザー・ドライブ等の操作が可能です。",
+				},
+				expandAllResponses: true,
+				agent: { disabled: true },
+			});
 		</script>
 	</body>
 </html>

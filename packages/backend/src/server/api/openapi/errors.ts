@@ -50,7 +50,7 @@ export const errors = {
 			value: {
 				error: {
 					message:
-						"You sent a request to Calc, Calckey's resident stoner furry, instead of the server.",
+						"Calc（Calckey のキャラクター）宛にリクエストが送信されました。サーバー宛に送信してください。",
 					code: "I_AM_CALC",
 					id: "60c46cd1-f23a-46b1-bebe-5d2b73951a84",
 				},

@@ -47,20 +47,20 @@ export const schemas = {
 		properties: {
 			error: {
 				type: "object",
-				description: "An error object.",
+				description: "エラーオブジェクト。",
 				properties: {
 					code: {
 						type: "string",
-						description: "An error code. Unique within the endpoint.",
+						description: "エラーコード。エンドポイント内で一意。",
 					},
 					message: {
 						type: "string",
-						description: "An error message.",
+						description: "エラーメッセージ。",
 					},
 					id: {
 						type: "string",
 						format: "uuid",
-						description: "An error ID. This ID is static.",
+						description: "エラー ID。この ID は固定。",
 					},
 				},
 				required: ["code", "id", "message"],

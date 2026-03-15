@@ -566,10 +566,17 @@ export const UserRepository = db.getRepository(User).extend({
 		return 45;
 	},
 
-	/** 他ユーザの users/show キャッシュを無効化する。ユーザ更新時に呼ぶ。 */
+	/**
+	 * 他ユーザの users/show キャッシュを無効化する。ユーザ更新時に呼ぶ。
+	 *
+	 * @remarks
+	 * Redis クライアントは ioredis のため、集合コマンドは smembers（小文字）を使用する。
+	 *
+	 * @internal
+	 */
 	async invalidateUserShowDetailedCache(userId: User["id"]): Promise<void> {
 		const viewersKey = `users:show:detailed:${userId}:viewers`;
-		const viewerIds = await redisClient.sMembers(viewersKey);
+		const viewerIds = await redisClient.smembers(viewersKey);
 		if (viewerIds.length > 0) {
 			await redisClient.del(
 				...viewerIds.map((vid) =>

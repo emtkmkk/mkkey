@@ -26,9 +26,23 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
-		sinceId: { type: "string", format: "misskey:id" },
-		untilId: { type: "string", format: "misskey:id" },
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得する件数。",
+		},
+		sinceId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より新しいものだけ取得する場合に指定。",
+		},
+		untilId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より古いものだけ取得する場合に指定。",
+		},
 		folderId: {
 			type: "string",
 			format: "misskey:id",

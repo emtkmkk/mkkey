@@ -11,6 +11,9 @@ export const meta = {
 
 	kind: "write:channels",
 
+	description:
+		"新規チャンネルを作成する。チャンネルはテーマ別の投稿の場。名前・説明・バナー画像を指定できる。投稿は notes/create で channelId を指定する。",
+
 	res: {
 		type: "object",
 		optional: false,
@@ -30,14 +33,25 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		name: { type: "string", minLength: 1, maxLength: 128 },
+		name: {
+			type: "string",
+			minLength: 1,
+			maxLength: 128,
+			description: "チャンネル名。一覧やタイムラインで表示される。",
+		},
 		description: {
 			type: "string",
 			nullable: true,
 			minLength: 1,
 			maxLength: 2048,
+			description: "チャンネルの説明文。",
 		},
-		bannerId: { type: "string", format: "misskey:id", nullable: true },
+		bannerId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			description: "バナー画像として表示するドライブファイルの ID。",
+		},
 	},
 	required: ["name"],
 } as const;

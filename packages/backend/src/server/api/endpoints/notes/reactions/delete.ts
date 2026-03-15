@@ -35,7 +35,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "リアクションを外す投稿の ID。",
+		},
 		reaction: { type: "string" },
 	},
 	required: ["noteId"],

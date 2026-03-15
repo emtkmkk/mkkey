@@ -21,7 +21,7 @@ export const meta = {
 
 	kind: "read:user-groups",
 
-	description: "Show the properties of a group.",
+	description: "指定したユーザーグループの詳細を取得します。",
 
 	res: {
 		type: "object",

@@ -11,7 +11,7 @@ export const meta = {
 	requireCredential: true,
 	requireModerator: true,
 
-	description: "Send a moderation notice.",
+	description: "モデレーション通知（モデメール）を送信します。",
 
 	errors: {
 		noSuchUser: {

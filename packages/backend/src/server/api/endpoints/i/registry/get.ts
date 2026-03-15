@@ -7,6 +7,9 @@ export const meta = {
 
 	secure: true,
 
+	description:
+		"レジストリから指定キー 1 件の値を取得する。key と scope で一意に決まる。存在しないキーはエラー。",
+
 	errors: {
 		noSuchKey: {
 			message: "そのkeyは存在しません。",
@@ -19,7 +22,10 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		key: { type: "string" },
+		key: {
+			type: "string",
+			description: "取得するキー名。",
+		},
 		scope: {
 			type: "array",
 			default: [],
@@ -27,6 +33,8 @@ export const paramDef = {
 				type: "string",
 				pattern: /^[a-zA-Z0-9_]+$/.toString().slice(1, -1),
 			},
+			description:
+				"スコープの配列。set 時に指定したものと同じにする。",
 		},
 	},
 	required: ["key"],

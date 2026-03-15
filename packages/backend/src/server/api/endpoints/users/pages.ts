@@ -6,7 +6,7 @@ export const meta = {
 	tags: ["users", "pages"],
 	requireCredentialPrivateMode: true,
 
-	description: "Show all pages this user created.",
+	description: "指定ユーザーが作成したページ一覧を取得します。",
 
 	res: {
 		type: "array",

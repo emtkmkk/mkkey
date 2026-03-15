@@ -34,7 +34,8 @@ export const meta = {
 
 	kind: "write:drive",
 
-	description: "Upload a new drive file.",
+	description:
+		"ドライブに新規ファイルをアップロードする。multipart でファイル本体を送る。フォルダ・コメント・閲覧注意フラグを指定できる。投稿に添付するときは返却された ID を notes/create の fileIds に渡す。",
 
 	res: {
 		type: "object",
@@ -74,6 +75,7 @@ export const paramDef = {
 			format: "misskey:id",
 			nullable: true,
 			default: null,
+			description: "保存先フォルダの ID。省略時はルートに保存される。",
 		},
 		name: { type: "string", nullable: true, default: null },
 		comment: {

@@ -21,6 +21,9 @@ export const meta = {
 
 	kind: "read:drive",
 
+	description:
+		"自分のドライブの概要を取得する。容量（capacity）と現在の使用量（usage）を返す。ファイル一覧は drive/files、フォルダ一覧は drive/folders。",
+
 	res: {
 		type: "object",
 		optional: false,

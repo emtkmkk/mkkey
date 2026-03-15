@@ -23,7 +23,7 @@ export const meta = {
 
 	kind: "write:account",
 
-	description: "Add a user to an existing list.",
+	description: "指定ユーザーをユーザーリストに追加します。",
 
 	errors: {
 		noSuchList: {

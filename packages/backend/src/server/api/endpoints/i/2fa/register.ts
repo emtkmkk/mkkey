@@ -26,7 +26,10 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		password: { type: "string" },
+		password: {
+			type: "string",
+			description: "本人確認用の現在のパスワード。",
+		},
 	},
 	required: ["password"],
 } as const;

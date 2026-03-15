@@ -18,7 +18,7 @@ export const meta = {
 
 	requireCredential: true,
 
-	description: "Check push notification registration exists.",
+	description: "プッシュ通知の登録有無を確認します。",
 
 	res: {
 		type: "object",

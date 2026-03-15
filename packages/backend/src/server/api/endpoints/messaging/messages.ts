@@ -34,6 +34,9 @@ export const meta = {
 
 	kind: "read:messaging",
 
+	description:
+		"DM（ダイレクトメッセージ）の一覧を取得する。userId で 1 対 1、groupId でグループのメッセージを指定。sinceId/untilId/limit でページネーション可能。取得と同時に既読にすることもできる。",
+
 	res: {
 		type: "array",
 		optional: false,
@@ -70,10 +73,38 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
-		sinceId: { type: "string", format: "misskey:id" },
-		untilId: { type: "string", format: "misskey:id" },
-		markAsRead: { type: "boolean", default: true },
+		userId: {
+			type: "string",
+			format: "misskey:id",
+			description: "DM の相手ユーザー ID。userId と groupId のどちらか必須。",
+		},
+		groupId: {
+			type: "string",
+			format: "misskey:id",
+			description: "グループの ID。グループのメッセージを取得するとき。userId と groupId のどちらか必須。",
+		},
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得するメッセージ数。",
+		},
+		sinceId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より新しいメッセージを取得（前方のページネーション）。",
+		},
+		untilId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より古いメッセージを取得（後方のページネーション）。",
+		},
+		markAsRead: {
+			type: "boolean",
+			default: true,
+			description: "取得と同時に既読にするか。",
+		},
 	},
 	anyOf: [
 		{

@@ -9,6 +9,9 @@ export const meta = {
 
 	kind: "read:account",
 
+	description:
+		"自分が作成したアンテナ一覧を取得する。アンテナはキーワード等で投稿を絞り込む仕組み。",
+
 	res: {
 		type: "array",
 		optional: false,

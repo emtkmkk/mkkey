@@ -52,13 +52,35 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "リアクション一覧を取得する投稿の ID。",
+		},
 		type: { type: "string", nullable: true },
 		excludeType: { type: "string", nullable: true },
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
-		offset: { type: "integer", default: 0 },
-		sinceId: { type: "string", format: "misskey:id" },
-		untilId: { type: "string", format: "misskey:id" },
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得する件数。",
+		},
+		offset: {
+			type: "integer",
+			default: 0,
+			description: "先頭からスキップする件数。",
+		},
+		sinceId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より新しいものだけ取得する場合に指定。",
+		},
+		untilId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より古いものだけ取得する場合に指定。",
+		},
 	},
 	required: ["noteId"],
 } as const;

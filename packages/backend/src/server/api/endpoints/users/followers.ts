@@ -12,7 +12,7 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
-	description: "Show everyone that follows this user.",
+	description: "指定ユーザーをフォローしているユーザー一覧を取得します。",
 
 	res: {
 		type: "array",
@@ -44,14 +44,32 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		sinceId: { type: "string", format: "misskey:id" },
-		untilId: { type: "string", format: "misskey:id" },
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		sinceId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より新しいものだけ取得する場合に指定。",
+		},
+		untilId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より古いものだけ取得する場合に指定。",
+		},
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得する件数。",
+		},
 	},
 	anyOf: [
 		{
 			properties: {
-				userId: { type: "string", format: "misskey:id" },
+				userId: {
+					type: "string",
+					format: "misskey:id",
+					description: "フォロワー一覧を取得するユーザーの ID。",
+				},
 			},
 			required: ["userId"],
 		},
@@ -61,7 +79,7 @@ export const paramDef = {
 				host: {
 					type: "string",
 					nullable: true,
-					description: "The local host is represented with `null`.",
+					description: "ローカルホストは `null` で表します。",
 				},
 			},
 			required: ["username", "host"],

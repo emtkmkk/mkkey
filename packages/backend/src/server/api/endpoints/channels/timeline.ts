@@ -22,6 +22,9 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
+	description:
+		"指定したチャンネルの投稿タイムラインを取得する。sinceId/untilId/limit でページネーション可能。",
+
 	res: {
 		type: "array",
 		optional: false,

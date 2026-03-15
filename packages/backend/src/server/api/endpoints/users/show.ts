@@ -26,7 +26,8 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
-	description: "Show the properties of a user.",
+	description:
+		"指定したユーザーのプロフィール情報を取得する。userId または username（＋host）で指定。詳細フラグで絵文字・ピン留めページなどを含められる。",
 
 	res: {
 		optional: false,
@@ -67,7 +68,11 @@ export const paramDef = {
 	anyOf: [
 		{
 			properties: {
-				userId: { type: "string", format: "misskey:id" },
+				userId: {
+					type: "string",
+					format: "misskey:id",
+					description: "取得するユーザーの ID。",
+				},
 			},
 			required: ["userId"],
 		},
@@ -80,17 +85,21 @@ export const paramDef = {
 						type: "string",
 						format: "misskey:id",
 					},
+					description: "取得するユーザー ID の配列。",
 				},
 			},
 			required: ["userIds"],
 		},
 		{
 			properties: {
-				username: { type: "string" },
+				username: {
+					type: "string",
+					description: "取得するユーザーのユーザー名。リモートの場合は host も指定。",
+				},
 				host: {
 					type: "string",
 					nullable: true,
-					description: "The local host is represented with `null`.",
+					description: "リモートの場合のホスト。ローカルは null。",
 				},
 			},
 			required: ["username"],

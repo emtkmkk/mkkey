@@ -21,7 +21,7 @@ export const meta = {
 
 	requireCredential: false,
 
-	description: "Complete the password reset that was previously requested.",
+	description: "依頼済みのパスワードリセットをトークンで完了します。",
 
 	errors: {},
 } as const;

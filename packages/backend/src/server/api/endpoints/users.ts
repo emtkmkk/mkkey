@@ -53,7 +53,7 @@ export const paramDef = {
 			type: "string",
 			nullable: true,
 			default: null,
-			description: "The local host is represented with `null`.",
+			description: "ローカルホストは `null` で表します。",
 		},
 	},
 	required: [],

@@ -24,10 +24,27 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		host: { type: "string" },
-		sinceId: { type: "string", format: "misskey:id" },
-		untilId: { type: "string", format: "misskey:id" },
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		host: {
+			type: "string",
+			description: "取得対象のリモートインスタンスのホスト名。",
+		},
+		sinceId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より新しいユーザーから取得。",
+		},
+		untilId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より古いユーザーから取得。",
+		},
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得件数。",
+		},
 	},
 	required: ["host"],
 } as const;

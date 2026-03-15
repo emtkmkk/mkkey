@@ -35,9 +35,23 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
-		offset: { type: "integer", default: 0 },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "会話スレッドを取得する投稿の ID。",
+		},
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得する件数。",
+		},
+		offset: {
+			type: "integer",
+			default: 0,
+			description: "先頭からスキップする件数。",
+		},
 	},
 	required: ["noteId"],
 } as const;

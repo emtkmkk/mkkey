@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 
 export const meta = {
   tags: ["meta"],
-  description: "Get repository statistics",
+  description: "リポジトリの統計情報を取得します。",
   requireCredential: false,
   requireCredentialPrivateMode: false,
 } as const;

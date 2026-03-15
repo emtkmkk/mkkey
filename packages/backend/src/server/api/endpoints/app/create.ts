@@ -21,6 +21,9 @@ export const meta = {
 
 	requireCredential: false,
 
+	description:
+		"OAuth 用のアプリ（クライアント）を登録する。名前・説明・必要な権限（permission）・コールバック URL を指定する。返却された appSecret で auth/session/generate を呼び認証フローを開始する。",
+
 	res: {
 		type: "object",
 		optional: false,

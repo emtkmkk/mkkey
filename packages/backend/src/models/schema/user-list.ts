@@ -7,17 +7,20 @@ export const packedUserListSchema = {
 			nullable: false,
 			format: "id",
 			example: "xxxxxxxxxx",
+			description: "ユーザーリストの ID。",
 		},
 		createdAt: {
 			type: "string",
 			optional: false,
 			nullable: false,
 			format: "date-time",
+			description: "作成日時。",
 		},
 		name: {
 			type: "string",
 			optional: false,
 			nullable: false,
+			description: "リストの名前。",
 		},
 		userIds: {
 			type: "array",
@@ -29,6 +32,7 @@ export const packedUserListSchema = {
 				optional: false,
 				format: "id",
 			},
+			description: "リストに含まれるユーザー ID の配列。",
 		},
 	},
 } as const;

@@ -22,6 +22,9 @@ export const meta = {
 
 	kind: "write:account",
 
+	description:
+		"既存のアンテナを更新する。名前・取得元・キーワード・除外キーワード・通知の有無などを変更できる。",
+
 	errors: {
 		noSuchAntenna: {
 			message: "そのantennaは存在しません。",
@@ -53,14 +56,35 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		antennaId: { type: "string", format: "misskey:id" },
-		name: { type: "string", minLength: 1, maxLength: 100 },
+		antennaId: {
+			type: "string",
+			format: "misskey:id",
+			description: "更新するアンテナの ID。",
+		},
+		name: {
+			type: "string",
+			minLength: 1,
+			maxLength: 100,
+			description: "アンテナの名前。一覧で表示される。",
+		},
 		src: {
 			type: "string",
 			enum: ["home", "all", "users", "list", "group", "instances"],
+			description:
+				"取得元。home=ホームTL、all=全投稿、users=指定ユーザー、list=ユーザーリスト、group=グループ、instances=指定インスタンス。",
 		},
-		userListId: { type: "string", format: "misskey:id", nullable: true },
-		userGroupId: { type: "string", format: "misskey:id", nullable: true },
+		userListId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			description: "src が list のとき、対象のユーザーリスト ID。",
+		},
+		userGroupId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			description: "src が group のとき、対象のユーザーグループ ID。",
+		},
 		keywords: {
 			type: "array",
 			items: {
@@ -69,6 +93,8 @@ export const paramDef = {
 					type: "string",
 				},
 			},
+			description:
+				"含めたいキーワード。各要素は AND、要素内は OR。例: [['A','B'],['C']] は (A または B) かつ C。",
 		},
 		excludeKeywords: {
 			type: "array",
@@ -78,23 +104,39 @@ export const paramDef = {
 					type: "string",
 				},
 			},
+			description:
+				"除外するキーワード。含む投稿は表示しない。構造は keywords と同じ。",
 		},
 		users: {
 			type: "array",
 			items: {
 				type: "string",
 			},
+			description: "src が users のとき、対象ユーザー ID の配列。",
 		},
 		instances: {
 			type: "array",
 			items: {
 				type: "string",
 			},
+			description: "src が instances のとき、対象ホスト名の配列。",
 		},
-		caseSensitive: { type: "boolean" },
-		withReplies: { type: "boolean" },
-		withFile: { type: "boolean" },
-		notify: { type: "boolean" },
+		caseSensitive: {
+			type: "boolean",
+			description: "キーワードを大文字小文字区別するか。",
+		},
+		withReplies: {
+			type: "boolean",
+			description: "返信を含めるか。",
+		},
+		withFile: {
+			type: "boolean",
+			description: "ファイル付き投稿に絞るか。",
+		},
+		notify: {
+			type: "boolean",
+			description: "マッチした投稿で通知するか。",
+		},
 	},
 	required: [
 		"antennaId",

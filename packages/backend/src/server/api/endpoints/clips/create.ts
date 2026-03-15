@@ -9,6 +9,9 @@ export const meta = {
 
 	kind: "write:account",
 
+	description:
+		"新規クリップを作成する。クリップは投稿をまとめておくフォルダのようなもの。名前・公開可否・説明を指定できる。投稿の追加は clips/add-note。",
+
 	res: {
 		type: "object",
 		optional: false,

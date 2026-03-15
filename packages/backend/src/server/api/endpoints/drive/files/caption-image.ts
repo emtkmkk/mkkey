@@ -8,7 +8,7 @@ export const meta = {
 
 	kind: "read:drive",
 
-	description: "Return caption of image",
+	description: "画像にキャプション（alt テキスト）を設定します。",
 
 	res: {
 		type: "string",

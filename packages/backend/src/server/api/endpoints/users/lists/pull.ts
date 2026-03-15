@@ -24,7 +24,7 @@ export const meta = {
 
 	kind: "write:account",
 
-	description: "Remove a user from a list.",
+	description: "指定ユーザーをユーザーリストから削除します。",
 
 	errors: {
 		noSuchList: {

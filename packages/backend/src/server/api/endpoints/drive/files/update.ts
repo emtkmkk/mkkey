@@ -23,7 +23,7 @@ export const meta = {
 
 	kind: "write:drive",
 
-	description: "Update the properties of a drive file.",
+	description: "ドライブファイルの名前・フォルダ等を更新します。",
 
 	errors: {
 		invalidFileName: {

@@ -24,7 +24,7 @@ export const meta = {
 
 	kind: "write:user-groups",
 
-	description: "Join a group the authenticated user has been invited to.",
+	description: "自分が招待されたユーザーグループに参加します。",
 
 	errors: {
 		noSuchInvitation: {

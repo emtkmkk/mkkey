@@ -50,7 +50,7 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
-	description: "Show statistics about a user.",
+	description: "指定ユーザーのフォロワー数・ノート数等の統計を取得します。",
 
 	errors: {
 		noSuchUser: {
@@ -164,31 +164,31 @@ export const meta = {
 				type: "integer",
 				optional: false,
 				nullable: false,
-				description: "Drive usage in bytes",
+				description: "ドライブ使用量（バイト単位）",
 			},
 			notesPostDays: {
 				type: "integer",
 				optional: false,
 				nullable: false,
-				description: "Number of days you have posted one or more notes",
+				description: "1 件以上ノートを投稿した日数",
 			},
 			power: {
 				type: "integer",
 				optional: false,
 				nullable: false,
-				description: "powerrrrrrrrrrrrrr",
+				description: "パワー値（内部指標）",
 			},
 			powerRank: {
 				type: "string",
 				optional: false,
 				nullable: false,
-				description: "powerrrrrrrrrrrrrr",
+				description: "パワーランク（内部指標）",
 			},
 			nextRank: {
 				type: "string",
 				optional: false,
 				nullable: false,
-				description: "powerrrrrrrrrrrrrr",
+				description: "次ランク（内部指標）",
 			},
 		},
 	},

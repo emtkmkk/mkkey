@@ -24,6 +24,9 @@ export const meta = {
 
 	kind: "write:favorites",
 
+	description:
+		"指定した投稿をお気に入りに追加する。お気に入り一覧の取得は i/favorites。解除は notes/favorites/delete。",
+
 	errors: {
 		noSuchNote: {
 			message: "その投稿は存在しません。",
@@ -42,7 +45,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "お気に入りに追加する投稿の ID。",
+		},
 	},
 	required: ["noteId"],
 } as const;

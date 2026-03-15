@@ -10,6 +10,9 @@ export const meta = {
 
 	kind: "write:account",
 
+	description:
+		"既存のウェブフックを更新する。名前・URL・secret・送信イベント（on）・有効/無効（active）を変更できる。",
+
 	errors: {
 		noSuchWebhook: {
 			message: "そのwebhookは存在しません。",
@@ -22,17 +25,42 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		webhookId: { type: "string", format: "misskey:id" },
-		name: { type: "string", minLength: 1, maxLength: 100 },
-		url: { type: "string", minLength: 1, maxLength: 1024 },
-		secret: { type: "string", minLength: 1, maxLength: 1024 },
+		webhookId: {
+			type: "string",
+			format: "misskey:id",
+			description: "更新するウェブフックの ID。",
+		},
+		name: {
+			type: "string",
+			minLength: 1,
+			maxLength: 100,
+			description: "ウェブフックの表示名。管理用。",
+		},
+		url: {
+			type: "string",
+			minLength: 1,
+			maxLength: 1024,
+			description: "イベント送信先の URL。POST で JSON が送られる。",
+		},
+		secret: {
+			type: "string",
+			minLength: 1,
+			maxLength: 1024,
+			description:
+				"署名検証用の秘密文字列。送信時に X-Misskey-Signature 等で検証できる。",
+		},
 		on: {
 			type: "array",
 			items: {
 				type: "string",
 			},
+			description:
+				"送信するイベント名の配列。例: ['note', 'follow']。空だと何も送らない。",
 		},
-		active: { type: "boolean" },
+		active: {
+			type: "boolean",
+			description: "true ならイベントを送信する。false なら一時停止。",
+		},
 	},
 	required: ["webhookId", "name", "url", "secret", "on", "active"],
 } as const;

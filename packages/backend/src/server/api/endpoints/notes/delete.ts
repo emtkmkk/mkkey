@@ -36,7 +36,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "削除する投稿の ID。",
+		},
 	},
 	required: ["noteId"],
 } as const;

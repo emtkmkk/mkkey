@@ -11,7 +11,7 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
-	description: "Show statistics about a user.",
+	description: "指定ユーザーの絵文字利用統計を取得します。",
 
 	errors: {
 		noSuchUser: {

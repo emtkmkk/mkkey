@@ -9,7 +9,7 @@ export const meta = {
 
 	kind: "write:account",
 
-	description: "Delete all lists of users.",
+	description: "指定したユーザーリストのメンバーを全削除します。",
 
 	errors: {
 		noSuchList: {

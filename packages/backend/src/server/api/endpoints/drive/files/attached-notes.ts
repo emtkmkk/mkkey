@@ -21,7 +21,7 @@ export const meta = {
 
 	kind: "read:drive",
 
-	description: "Find the notes to which the given file is attached.",
+	description: "指定したドライブファイルを添付しているノート一覧を取得します。",
 
 	res: {
 		type: "array",

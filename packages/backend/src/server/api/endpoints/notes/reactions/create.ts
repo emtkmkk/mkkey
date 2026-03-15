@@ -11,6 +11,9 @@ export const meta = {
 
 	kind: "write:reactions",
 
+	description:
+		"指定した投稿にリアクション（絵文字）を付ける。reaction に絵文字コード（:like: や Unicode）を指定。同じ絵文字で既にリアクション済みの場合はエラー。解除は notes/reactions/delete。",
+
 	errors: {
 		noSuchNote: {
 			message: "その投稿は存在しません。",
@@ -47,7 +50,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "リアクションを付ける投稿の ID。",
+		},
 		reaction: { type: "string" },
 	},
 	required: ["noteId", "reaction"],

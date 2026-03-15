@@ -14,6 +14,9 @@ export const meta = {
 
 	kind: "read:messaging",
 
+	description:
+		"DM の会話一覧（ユーザーまたはグループごとの直近メッセージ）を取得する。group で 1 対 1 とグループを切り替え。messaging/messages で個別の会話のメッセージを取得する。",
+
 	res: {
 		type: "array",
 		optional: false,

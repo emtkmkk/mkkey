@@ -25,7 +25,7 @@ export const meta = {
 
 	requireCredential: true,
 
-	description: "File a report.",
+	description: "指定ユーザーを通報します。",
 
 	errors: {
 		noSuchUser: {

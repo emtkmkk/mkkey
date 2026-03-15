@@ -29,7 +29,7 @@ export const meta = {
 
 	kind: "write:user-groups",
 
-	description: "Invite a user to an existing group.",
+	description: "指定ユーザーをユーザーグループに招待します。",
 
 	errors: {
 		noSuchGroup: {

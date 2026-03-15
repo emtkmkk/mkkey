@@ -8,7 +8,7 @@ export const meta = {
 
 	kind: "read:drive",
 
-	description: "Check if a given file exists.",
+	description: "指定した MD5 のファイルがドライブに存在するか確認します。",
 
 	res: {
 		type: "boolean",

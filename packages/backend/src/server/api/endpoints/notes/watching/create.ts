@@ -22,7 +22,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "ウォッチする投稿の ID。",
+		},
 	},
 	required: ["noteId"],
 } as const;

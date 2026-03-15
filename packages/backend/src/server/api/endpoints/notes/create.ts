@@ -49,6 +49,9 @@ export const meta = {
 
 	requireCredential: true,
 
+	description:
+		"新規投稿を作成する。テキスト・投票・ファイル添付・リノート・返信・チャンネル投稿・参照投稿に対応。公開範囲・CW・ローカルのみ・visibleUserIds などで公開先を指定できる。冪等キーで重複送信を防げる。",
+
 	limit: {
 		duration: HOUR,
 		max: 300,
@@ -66,6 +69,7 @@ export const meta = {
 				optional: false,
 				nullable: false,
 				ref: "Note",
+				description: "作成された投稿。",
 			},
 		},
 	},
@@ -151,8 +155,18 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		visibility: { type: "string", enum: noteVisibilities, default: "public" },
-		visibilityForce: { type: "boolean", default: false },
+		visibility: {
+			type: "string",
+			enum: noteVisibilities,
+			default: "public",
+			description: "公開範囲（public / home / followers / specified のいずれか）。",
+		},
+		visibilityForce: {
+			type: "boolean",
+			default: false,
+			description:
+				"true のとき、公開範囲の自動変更を行わず指定した visibility をそのまま使う。チャンネル投稿の public 強制、ユーザー設定による変更、リノート・返信先への公開範囲の合わせは適用されない。",
+		},
 		visibleUserIds: {
 			type: "array",
 			uniqueItems: true,
@@ -160,48 +174,119 @@ export const paramDef = {
 				type: "string",
 				format: "misskey:id",
 			},
+			description:
+				"公開範囲が specified のとき、見せるユーザー ID の配列。",
 		},
-		text: { type: "string", maxLength: MAX_NOTE_TEXT_LENGTH, nullable: true },
-		cw: { type: "string", nullable: true, maxLength: 100 },
-		localOnly: { type: "boolean", default: false },
-		noExtractMentions: { type: "boolean", default: false },
-		noExtractHashtags: { type: "boolean", default: false },
-		noExtractEmojis: { type: "boolean", default: false },
+		text: {
+			type: "string",
+			maxLength: MAX_NOTE_TEXT_LENGTH,
+			nullable: true,
+			description: "投稿本文。リノートのみの場合は省略可。",
+		},
+		cw: {
+			type: "string",
+			nullable: true,
+			maxLength: 100,
+			description: "内容警告（ネタバレ隠し）の文言。指定すると本文が折りたたまれる。",
+		},
+		localOnly: {
+			type: "boolean",
+			default: false,
+			description: "true にすると連合に送信せず、ローカルのみに表示する。",
+		},
+		noExtractMentions: {
+			type: "boolean",
+			default: false,
+			description: "true にすると本文から @メンションを自動抽出しない。",
+		},
+		noExtractHashtags: {
+			type: "boolean",
+			default: false,
+			description: "true にすると本文から #ハッシュタグ を自動抽出しない。",
+		},
+		noExtractEmojis: {
+			type: "boolean",
+			default: false,
+			description: "true にすると本文から :絵文字: を自動抽出しない。",
+		},
 		fileIds: {
 			type: "array",
 			uniqueItems: true,
 			minItems: 1,
 			maxItems: 16,
 			items: { type: "string", format: "misskey:id" },
+			description: "添付するドライブファイルの ID 配列。並び順はこの配列の順。",
 		},
 		mediaIds: {
 			deprecated: true,
 			description:
-				"Use `fileIds` instead. If both are specified, this property is discarded.",
+				"`fileIds` の代替。両方指定した場合はこの値は無視されます。",
 			type: "array",
 			uniqueItems: true,
 			minItems: 1,
 			maxItems: 16,
 			items: { type: "string", format: "misskey:id" },
 		},
-		replyId: { type: "string", format: "misskey:id", nullable: true },
-		renoteId: { type: "string", format: "misskey:id", nullable: true },
-		referenceIds: { type: "array", uniqueItems: true, minItems: 1, maxItems: 1000, items: { type: "string", format: "misskey:id" }, },
-		channelId: { type: "string", format: "misskey:id", nullable: true },
+		replyId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			description: "返信先投稿の ID。指定するとその投稿へのリプライになる。",
+		},
+		renoteId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			description: "リノート元の投稿の ID。",
+		},
+		referenceIds: {
+			type: "array",
+			uniqueItems: true,
+			minItems: 1,
+			maxItems: 1000,
+			items: { type: "string", format: "misskey:id" },
+			description:
+				"参照投稿の ID 配列。この配列だけ指定すると、それらを参照する投稿（引用なしの参照）になる。",
+		},
+		channelId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			description: "投稿先チャンネルの ID。",
+		},
 		poll: {
 			type: "object",
 			nullable: true,
+			description: "アンケートを付ける場合の設定。choices 必須。",
 			properties: {
 				choices: {
 					type: "array",
 					minItems: 1,
 					maxItems: 20,
 					items: { type: "string", minLength: 1, maxLength: 50 },
+					description: "選択肢の文字列の配列。",
 				},
-				multiple: { type: "boolean", default: false },
-				hideResults: { type: "boolean", default: false },
-				expiresAt: { type: "integer", nullable: true },
-				expiredAfter: { type: "integer", nullable: true, minimum: 1 },
+				multiple: {
+					type: "boolean",
+					default: false,
+					description: "複数選択を許可するか。",
+				},
+				hideResults: {
+					type: "boolean",
+					default: false,
+					description: "終了まで結果を非表示にするか。",
+				},
+				expiresAt: {
+					type: "integer",
+					nullable: true,
+					description: "締切日時（Unix ミリ秒）。",
+				},
+				expiredAfter: {
+					type: "integer",
+					nullable: true,
+					minimum: 1,
+					description: "投稿から何ミリ秒後に締め切るか。expiresAt と併用不可。",
+				},
 			},
 			required: ["choices"],
 		},
@@ -211,6 +296,8 @@ export const paramDef = {
 			uniqueItems: true,
 			minItems: 1,
 			maxItems: 16,
+			description:
+				"URL からドライブに取り込んで添付。要素は URL 文字列、または { url, folderId?, isSensitive?, comment?, marker?, force? }。",
 			items: {
 				anyOf: [
 					{
@@ -219,23 +306,41 @@ export const paramDef = {
 					{
 						type: "object",
 						properties: {
-							url: { type: "string" },
+							url: { type: "string", description: "取り込むファイルの URL。" },
 							folderId: {
 								type: "string",
 								format: "misskey:id",
 								nullable: true,
+								description: "保存先フォルダ ID。",
 							},
-							isSensitive: { type: "boolean" },
-							comment: { type: "string", nullable: true, maxLength: 512 },
+							isSensitive: {
+								type: "boolean",
+								description: "閲覧注意にするか。",
+							},
+							comment: {
+								type: "string",
+								nullable: true,
+								maxLength: 512,
+								description: "ファイルのコメント。",
+							},
 							marker: { type: "string", nullable: true },
-							force: { type: "boolean" },
+							force: {
+								type: "boolean",
+								description: "既存ファイルを上書きして取り込むか。",
+							},
 						},
 						required: ["url"],
 					},
 				],
 			},
 		},
-		idempotencyKey: { type: "string", maxLength: 128, nullable: true },
+		idempotencyKey: {
+			type: "string",
+			maxLength: 128,
+			nullable: true,
+			description:
+				"冪等キー。同じキーで短時間に再送すると重複扱いで 409。ヘッダー idempotency-key でも指定可。",
+		},
 	},
 	anyOf: [
 		{

@@ -2,7 +2,7 @@ import define from "../define.js";
 
 export const meta = {
 	tags: ["meta"],
-	description: "Get release notes from Codeberg",
+	description: "Codeberg からリリースノートを取得します。",
 
 	requireCredential: false,
 	requireCredentialPrivateMode: false,

@@ -32,6 +32,9 @@ export const meta = {
 	tags: ["notes"],
 	requireCredentialPrivateMode: true,
 
+	description:
+		"ハイブリッドタイムラインを取得する。フォロー先の投稿とグローバルの投稿を混在させた時系列で返す。sinceId/untilId/limit でページネーション可能。",
+
 	res: {
 		type: "array",
 		optional: false,
@@ -72,7 +75,7 @@ export const paramDef = {
 		withFiles: {
 			type: "boolean",
 			default: false,
-			description: "Only show notes that have attached files.",
+			description: "true のとき、ファイルが添付されたノートのみ返します。",
 		},
 	},
 	required: [],

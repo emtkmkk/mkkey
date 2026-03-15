@@ -11,6 +11,9 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
+	description:
+		"ページ 1 件の内容を取得する。pageId または name と username（@username のページ）で指定。公開ページは未認証でも取得可能。",
+
 	res: {
 		type: "object",
 		optional: false,

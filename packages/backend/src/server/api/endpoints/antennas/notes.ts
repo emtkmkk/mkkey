@@ -15,6 +15,9 @@ export const meta = {
 
 	kind: "read:account",
 
+	description:
+		"指定したアンテナにマッチする投稿一覧を取得する。sinceId/untilId/limit でページネーション可能。",
+
 	errors: {
 		noSuchAntenna: {
 			message: "そのantennaは存在しません。",

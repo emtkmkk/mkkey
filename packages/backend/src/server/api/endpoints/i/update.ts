@@ -44,9 +44,12 @@ export const meta = {
 
 	requireCredential: true,
 
-        kind: "write:account",
+	kind: "write:account",
 
-        limit: {
+	description:
+		"自分のプロフィール・アカウント設定を更新する。名前・説明・アバター・バナー・ピン留めページ・通知設定など、変更したい項目だけ指定する。",
+
+	limit: {
                 duration: HOUR,
                 max: 10,
         },

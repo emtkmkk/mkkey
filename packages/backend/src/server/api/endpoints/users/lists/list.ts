@@ -9,7 +9,7 @@ export const meta = {
 
 	kind: "read:account",
 
-	description: "Show all lists that the authenticated user has created.",
+	description: "認証ユーザーが作成したユーザーリスト一覧を取得します。",
 
 	res: {
 		type: "array",

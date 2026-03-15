@@ -20,7 +20,7 @@ export const meta = {
 
 	requireCredential: true,
 
-	description: "Register to receive push notifications.",
+	description: "プッシュ通知を受け取るために登録します。",
 
 	res: {
 		type: "object",

@@ -8,7 +8,7 @@ export const meta = {
 
 	kind: "read:user-groups",
 
-	description: "List the groups that the authenticated user is the owner of.",
+	description: "認証ユーザーがオーナーのユーザーグループ一覧を取得します。",
 
 	res: {
 		type: "array",

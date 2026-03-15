@@ -25,6 +25,9 @@ export const meta = {
 
 	requireCredential: false,
 
+	description:
+		"インスタンスの公開情報を取得する。名前・説明・バージョン・URI・利用規約 URL・絵文字一覧・投稿文字数上限など。クライアントの起動時に呼ぶ想定。",
+
 	res: {
 		type: "object",
 		optional: false,
@@ -425,7 +428,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		detail: { type: "boolean", default: true },
+		detail: {
+			type: "boolean",
+			default: true,
+			description: "詳細情報（絵文字・ピン留めページ等）を含めるか。true のとき詳細を返します。",
+		},
 	},
 	required: [],
 } as const;

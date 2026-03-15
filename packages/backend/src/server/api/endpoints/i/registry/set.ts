@@ -20,13 +20,22 @@ export const meta = {
 	requireCredential: true,
 
 	secure: true,
+
+	description:
+		"ユーザー用のキー値ストア（レジストリ）に 1 件を保存する。key と value を指定し、scope で名前空間を分けられる。取得は i/registry/get または i/registry/get-all。",
 } as const;
 
 export const paramDef = {
 	type: "object",
 	properties: {
-		key: { type: "string", minLength: 1 },
-		value: {},
+		key: {
+			type: "string",
+			minLength: 1,
+			description: "保存するキー名。同じ scope 内で一意。",
+		},
+		value: {
+			description: "保存する値。文字列・数値・真偽値・配列・オブジェクトなど。",
+		},
 		scope: {
 			type: "array",
 			default: [],
@@ -34,6 +43,8 @@ export const paramDef = {
 				type: "string",
 				pattern: /^[a-zA-Z0-9_]+$/.toString().slice(1, -1),
 			},
+			description:
+				"スコープの配列。キーはこのスコープ配列と組み合わせて一意になる。空ならクライアント用の共通領域。",
 		},
 	},
 	required: ["key", "value"],

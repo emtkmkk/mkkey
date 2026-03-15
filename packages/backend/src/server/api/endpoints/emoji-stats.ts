@@ -40,7 +40,7 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
-	description: "Show statistics.",
+	description: "絵文字の利用統計を取得します。",
 
 	res: {
 		type: "object",

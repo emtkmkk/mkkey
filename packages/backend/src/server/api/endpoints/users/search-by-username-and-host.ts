@@ -12,7 +12,7 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
-	description: "Search for a user by username and/or host.",
+	description: "ユーザー名およびホストでユーザーを検索します。",
 
 	res: {
 		type: "array",

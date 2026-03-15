@@ -50,6 +50,9 @@ export const meta = {
 	requireCredential: true,
 
 	secure: true,
+
+	description:
+		"レジストリの指定スコープ内のキー・値をまとめて取得する。scope を空にするとクライアント用の共通領域全体。結果はキャッシュされる。",
 } as const;
 
 export const paramDef = {
@@ -62,6 +65,8 @@ export const paramDef = {
 				type: "string",
 				pattern: /^[a-zA-Z0-9_]+$/.toString().slice(1, -1),
 			},
+			description:
+				"スコープの配列。指定したスコープに一致するキー・値だけを返す。空ならクライアント用の共通領域全体。",
 		},
 	},
 	required: [],

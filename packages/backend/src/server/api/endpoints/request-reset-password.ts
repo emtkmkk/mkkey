@@ -14,7 +14,7 @@ export const meta = {
 
 	requireCredential: false,
 
-	description: "Request a users password to be reset.",
+	description: "パスワードリセット用のメール送信を依頼します。",
 
 	limit: {
 		duration: HOUR,

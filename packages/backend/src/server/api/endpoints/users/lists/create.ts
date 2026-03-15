@@ -10,7 +10,7 @@ export const meta = {
 
 	kind: "write:account",
 
-	description: "Create a new list of users.",
+	description: "新規ユーザーリストを作成します。",
 
 	res: {
 		type: "object",

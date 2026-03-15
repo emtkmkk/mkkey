@@ -32,6 +32,9 @@ export const meta = {
 
 	requireCredential: true,
 
+	description:
+		"ホームタイムラインを取得する。フォローしているユーザーの投稿を時系列で返す。sinceId/untilId/limit でページネーション可能。含める・除外する投稿の条件（返信、ファイル付きなど）を指定できる。",
+
 	res: {
 		type: "array",
 		optional: false,
@@ -56,18 +59,50 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
-		sinceId: { type: "string", format: "misskey:id" },
-		untilId: { type: "string", format: "misskey:id" },
-		sinceDate: { type: "integer" },
-		untilDate: { type: "integer" },
-		includeMyRenotes: { type: "boolean", default: true },
-		includeRenotedMyNotes: { type: "boolean", default: true },
-		includeLocalRenotes: { type: "boolean", default: true },
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得する件数。",
+		},
+		sinceId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より新しいものだけ取得する場合に指定。",
+		},
+		untilId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より古いものだけ取得する場合に指定。",
+		},
+		sinceDate: {
+			type: "integer",
+			description: "この日時（Unix ミリ秒）より新しいものだけ取得する場合に指定。",
+		},
+		untilDate: {
+			type: "integer",
+			description: "この日時（Unix ミリ秒）より古いものだけ取得する場合に指定。",
+		},
+		includeMyRenotes: {
+			type: "boolean",
+			default: true,
+			description: "自分のリノートを含めるか。",
+		},
+		includeRenotedMyNotes: {
+			type: "boolean",
+			default: true,
+			description: "自分の投稿のリノートを含めるか。",
+		},
+		includeLocalRenotes: {
+			type: "boolean",
+			default: true,
+			description: "ローカルユーザーのリノートを含めるか。",
+		},
 		withFiles: {
 			type: "boolean",
 			default: false,
-			description: "Only show notes that have attached files.",
+			description: "true のとき、ファイルが添付された投稿のみ返します。",
 		},
 	},
 	required: [],

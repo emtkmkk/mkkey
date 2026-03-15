@@ -36,7 +36,11 @@ export const paramDef = {
 	type: "object",
 	properties: {
 		clipId: { type: "string", format: "misskey:id" },
-		noteId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "クリップに追加する投稿の ID。",
+		},
 	},
 	required: ["clipId", "noteId"],
 } as const;

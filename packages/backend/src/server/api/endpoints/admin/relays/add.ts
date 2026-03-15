@@ -29,7 +29,7 @@ export const meta = {
 				format: "id",
 			},
 			inbox: {
-				description: "URL of the inbox, must be a https scheme URL",
+				description: "inbox の URL。https である必要があります。",
 				type: "string",
 				optional: false,
 				nullable: false,

@@ -32,6 +32,9 @@ export const meta = {
 	tags: ["notes"],
 	requireCredentialPrivateMode: true,
 
+	description:
+		"ローカルタイムラインを取得する。自インスタンスのパブリック投稿を時系列で返す。sinceId/untilId/limit でページネーション可能。返信・ファイル付きなどの絞り込みができる。",
+
 	res: {
 		type: "array",
 		optional: false,
@@ -64,7 +67,7 @@ export const paramDef = {
                 withFiles: {
 			type: "boolean",
 			default: false,
-			description: "Only show notes that have attached files.",
+			description: "true のとき、ファイルが添付されたノートのみ返します。",
 		},
 		fileType: {
 			type: "array",

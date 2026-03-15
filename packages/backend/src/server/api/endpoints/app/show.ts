@@ -17,6 +17,9 @@ import { Apps } from "@/models/index.js";
 export const meta = {
 	tags: ["app"],
 
+	description:
+		"指定した ID のアプリ（OAuth クライアント）の詳細を取得する。名前・説明・権限・コールバック URL などを返す。",
+
 	errors: {
 		noSuchApp: {
 			message: "そのappは存在しません。",

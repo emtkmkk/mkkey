@@ -12,6 +12,9 @@ export const meta = {
 
 	kind: "write:pages",
 
+	description:
+		"新規ページを作成する。タイトル・URL用名前・ブロック配列（content）・変数（variables）・スクリプト（script）で構成。アイキャッチ画像・フォント・公開可否なども指定できる。",
+
 	limit: {
 		duration: HOUR,
 		max: 300,
@@ -41,15 +44,28 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		title: { type: "string" },
-		name: { type: "string", minLength: 1 },
-		summary: { type: "string", nullable: true },
+		title: {
+			type: "string",
+			description: "ページのタイトル。表示用。",
+		},
+		name: {
+			type: "string",
+			minLength: 1,
+			description: "URL 用の一意な名前。例: my-page → /@user/my-page。",
+		},
+		summary: {
+			type: "string",
+			nullable: true,
+			description: "ページの要約。一覧やプレビューに使われる。",
+		},
 		content: {
 			type: "array",
 			items: {
 				type: "object",
 				additionalProperties: true,
 			},
+			description:
+				"ブロック配列。各ブロックは type とそのブロック用のプロパティを持つ。",
 		},
 		variables: {
 			type: "array",
@@ -57,21 +73,40 @@ export const paramDef = {
 				type: "object",
 				additionalProperties: true,
 			},
+			description:
+				"ページ内で使う変数定義の配列。script や content から参照する。",
 		},
-		script: { type: "string" },
+		script: {
+			type: "string",
+			description: "ページの挙動を制御する JavaScript コード。",
+		},
 		eyeCatchingImageId: {
 			type: "string",
 			format: "misskey:id",
 			nullable: true,
+			description: "アイキャッチ画像として表示するドライブファイルの ID。",
 		},
 		font: {
 			type: "string",
 			enum: ["serif", "sans-serif"],
 			default: "sans-serif",
+			description: "本文のフォント。serif または sans-serif。",
 		},
-		alignCenter: { type: "boolean", default: false },
-		isPublic: { type: "boolean", default: true },
-		hideTitleWhenPinned: { type: "boolean", default: false },
+		alignCenter: {
+			type: "boolean",
+			default: false,
+			description: "本文を中央揃えにするか。",
+		},
+		isPublic: {
+			type: "boolean",
+			default: true,
+			description: "true なら未認証でも閲覧可能。",
+		},
+		hideTitleWhenPinned: {
+			type: "boolean",
+			default: false,
+			description: "プロフィールにピン留めしたときにタイトルを隠すか。",
+		},
 	},
 	required: ["title", "name", "content", "variables", "script"],
 } as const;

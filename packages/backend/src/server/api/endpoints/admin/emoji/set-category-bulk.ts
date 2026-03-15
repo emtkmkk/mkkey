@@ -26,7 +26,7 @@ export const paramDef = {
 		category: {
 			type: "string",
 			nullable: true,
-			description: "Use `null` to reset the category.",
+			description: "カテゴリをクリアする場合は `null` を指定します。",
 		},
 	},
 	required: ["ids"],

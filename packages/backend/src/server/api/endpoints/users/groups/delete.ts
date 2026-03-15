@@ -9,7 +9,7 @@ export const meta = {
 
 	kind: "write:user-groups",
 
-	description: "Delete an existing group.",
+	description: "指定したユーザーグループを削除します。",
 
 	errors: {
 		noSuchGroup: {

@@ -29,6 +29,9 @@ export const meta = {
 
 	kind: "write:blocks",
 
+	description:
+		"指定したユーザーへのブロックを解除する。ブロック一覧は blocking/list。",
+
 	errors: {
 		noSuchUser: {
 			message: "そのユーザは存在しません。",
@@ -60,7 +63,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		userId: { type: "string", format: "misskey:id" },
+		userId: {
+			type: "string",
+			format: "misskey:id",
+			description: "ブロックを解除するユーザーの ID。",
+		},
 	},
 	required: ["userId"],
 } as const;

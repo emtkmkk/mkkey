@@ -30,7 +30,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "翻訳する投稿の ID。",
+		},
 		targetLang: { type: "string" },
 	},
 	required: ["noteId", "targetLang"],

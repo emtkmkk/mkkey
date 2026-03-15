@@ -6,7 +6,7 @@ export const meta = {
 
 	requireCredential: false,
 
-	description: "Unregister from receiving push notifications.",
+	description: "プッシュ通知の登録を解除します。",
 } as const;
 
 export const paramDef = {

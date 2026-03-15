@@ -9,7 +9,7 @@ export const meta = {
 
 	kind: "read:drive",
 
-	description: "Search for a drive file by the given parameters.",
+	description: "指定した条件でドライブ内のファイルを検索します。",
 
 	res: {
 		type: "array",
@@ -27,12 +27,16 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		name: { type: "string" },
+		name: {
+			type: "string",
+			description: "ファイル名で検索。完全一致。",
+		},
 		folderId: {
 			type: "string",
 			format: "misskey:id",
 			nullable: true,
 			default: null,
+			description: "このフォルダ直下に絞る。null ならルート直下。",
 		},
 	},
 	required: ["name"],

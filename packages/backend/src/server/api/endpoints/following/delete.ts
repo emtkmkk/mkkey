@@ -29,6 +29,9 @@ export const meta = {
 
 	kind: "write:following",
 
+	description:
+		"指定したユーザーのフォローを解除する。フォロー一覧の取得は users/following。",
+
 	errors: {
 		noSuchUser: {
 			message: "そのユーザは存在しません。",
@@ -60,7 +63,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		userId: { type: "string", format: "misskey:id" },
+		userId: {
+			type: "string",
+			format: "misskey:id",
+			description: "フォローを解除するユーザーの ID。",
+		},
 	},
 	required: ["userId"],
 } as const;

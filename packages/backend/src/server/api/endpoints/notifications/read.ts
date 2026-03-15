@@ -8,7 +8,7 @@ export const meta = {
 
 	kind: "write:notifications",
 
-	description: "Mark a notification as read.",
+	description: "指定した通知を既読にします。",
 
 	errors: {
 		noSuchNotification: {

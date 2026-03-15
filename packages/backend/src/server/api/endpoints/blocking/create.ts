@@ -30,6 +30,9 @@ export const meta = {
 
 	kind: "write:blocks",
 
+	description:
+		"指定したユーザーをブロックする。ブロックすると相手の投稿がTLに表示されず、DM も不可。ブロック解除は blocking/delete。",
+
 	errors: {
 		noSuchUser: {
 			message: "そのユーザは存在しません。",
@@ -61,7 +64,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		userId: { type: "string", format: "misskey:id" },
+		userId: {
+			type: "string",
+			format: "misskey:id",
+			description: "ブロックするユーザーの ID。",
+		},
 	},
 	required: ["userId"],
 } as const;

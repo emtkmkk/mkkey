@@ -1,3 +1,11 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザー（UserLite / UserDetailed 等）の API 用パック済みスキーマ定義。
+ *
+ * @internal
+ */
+/** ユーザー簡易（UserLite）の API 用パック済みスキーマ。 */
 export const packedUserLiteSchema = {
 	type: "object",
 	properties: {
@@ -7,69 +15,80 @@ export const packedUserLiteSchema = {
 			optional: false,
 			format: "id",
 			example: "xxxxxxxxxx",
+			description: "ユーザーの ID。",
 		},
 		name: {
 			type: "string",
 			nullable: true,
 			optional: false,
 			example: "藍",
+			description: "表示名。",
 		},
 		username: {
 			type: "string",
 			nullable: false,
 			optional: false,
 			example: "calc",
+			description: "ユーザー名。",
 		},
 		host: {
 			type: "string",
 			nullable: true,
 			optional: false,
 			example: "misskey.example.com",
-			description: "The local host is represented with `null`.",
+			description: "ローカルユーザーは null。",
 		},
 		avatarUrl: {
 			type: "string",
 			format: "url",
 			nullable: true,
 			optional: false,
+			description: "アバター画像の URL。",
 		},
 		avatarBlurhash: {
 			type: "any",
 			nullable: true,
 			optional: false,
+			description: "アバターのブラーハッシュ。",
 		},
 		avatarColor: {
 			type: "any",
 			nullable: true,
 			optional: false,
 			default: null,
+			description: "アバターの代表色。",
 		},
 		isAdmin: {
 			type: "boolean",
 			nullable: false,
 			optional: true,
 			default: false,
+			description: "管理者か。",
 		},
 		isModerator: {
 			type: "boolean",
 			nullable: false,
 			optional: true,
 			default: false,
+			description: "モデレーターか。",
 		},
 		isBot: {
 			type: "boolean",
 			nullable: false,
 			optional: true,
+			description: "Bot アカウントか。",
 		},
 		isCat: {
 			type: "boolean",
 			nullable: false,
 			optional: true,
+			description: "猫耳モードか。",
 		},
 		speakAsCat: {
 			type: "boolean",
 			nullable: false,
 			optional: true,
+			description: "にゃー語で投稿するか。",
 		},
 		emojis: {
 			type: "array",
@@ -93,12 +112,14 @@ export const packedUserLiteSchema = {
 					},
 				},
 			},
+			description: "カスタム絵文字の配列。",
 		},
 		onlineStatus: {
 			type: "string",
 			format: "url",
 			nullable: true,
 			optional: false,
+			description: "オンライン状態。",
 			enum: [
 				"unknown",
 				"online",

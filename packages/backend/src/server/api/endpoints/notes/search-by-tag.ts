@@ -46,7 +46,7 @@ export const paramDef = {
 		withFiles: {
 			type: "boolean",
 			default: false,
-			description: "Only show notes that have attached files.",
+			description: "true のとき、ファイルが添付されたノートのみ返します。",
 		},
 		poll: { type: "boolean", nullable: true, default: null },
 		sinceId: { type: "string", format: "misskey:id" },

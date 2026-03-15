@@ -45,7 +45,7 @@ export const meta = {
 				type: "string",
 				optional: false,
 				nullable: true,
-				description: "The local host is represented with `null`.",
+				description: "ローカルホストは `null` で表します。",
 			},
 			md5: {
 				type: "string",

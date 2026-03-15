@@ -10,6 +10,9 @@ export const meta = {
 
 	kind: "write:account",
 
+	description:
+		"指定したアンテナを削除する。アンテナに紐づく投稿は削除されない。",
+
 	errors: {
 		noSuchAntenna: {
 			message: "そのantennaは存在しません。",

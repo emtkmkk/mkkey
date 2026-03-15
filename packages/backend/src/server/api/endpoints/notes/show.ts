@@ -22,6 +22,9 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
+	description:
+		"指定した ID の投稿 1 件の詳細を取得する。返信・リノート元などの関連情報も含めて返す。閲覧可能な投稿のみ取得できる。",
+
 	res: {
 		type: "object",
 		optional: false,
@@ -41,7 +44,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "取得する投稿の ID。",
+		},
 	},
 	required: ["noteId"],
 } as const;

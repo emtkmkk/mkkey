@@ -10,7 +10,7 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
-	description: "Show all reactions this user made.",
+	description: "指定ユーザーが付けたリアクション一覧を取得します。",
 
 	res: {
 		type: "array",

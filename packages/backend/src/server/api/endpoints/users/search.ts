@@ -21,7 +21,8 @@ export const meta = {
 	requireCredential: true,
 	requireCredentialPrivateMode: true,
 
-	description: "Search for users.",
+	description:
+		"クエリに基づいてユーザーを検索する。ユーザー名・表示名・@username などで検索可能。offset/limit でページネーション、origin でローカル/リモートを絞れる。",
 
 	res: {
 		type: "array",
@@ -39,15 +40,33 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		query: { type: "string" },
-		offset: { type: "integer", default: 0 },
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		query: {
+			type: "string",
+			description: "検索する文字列。ユーザー名や @username など。",
+		},
+		offset: {
+			type: "integer",
+			default: 0,
+			description: "先頭からスキップする件数。",
+		},
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得する件数。",
+		},
 		origin: {
 			type: "string",
 			enum: ["local", "remote", "combined"],
 			default: "combined",
+			description: "検索対象。local はローカルのみ、remote はリモートのみ、combined は両方。",
 		},
-		detail: { type: "boolean", default: true },
+		detail: {
+			type: "boolean",
+			default: true,
+			description: "true のとき詳細情報を含めて返す。",
+		},
 	},
 	required: ["query"],
 } as const;

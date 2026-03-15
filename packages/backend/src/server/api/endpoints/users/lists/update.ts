@@ -21,7 +21,7 @@ export const meta = {
 
 	kind: "write:account",
 
-	description: "Update the properties of a list.",
+	description: "ユーザーリストの名前等を更新します。",
 
 	res: {
 		type: "object",

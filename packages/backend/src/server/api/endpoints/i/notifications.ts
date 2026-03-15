@@ -31,6 +31,9 @@ export const meta = {
 
 	kind: "read:notifications",
 
+	description:
+		"自分の通知一覧を取得する。フォロー・メンション・いいね・リノートなど。sinceId/untilId/limit でページネーション、includeTypes で種類を絞れる。未読のみ・取得時に既読にするかも指定可能。",
+
 	res: {
 		type: "array",
 		optional: false,

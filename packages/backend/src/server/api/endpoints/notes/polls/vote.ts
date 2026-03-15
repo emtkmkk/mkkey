@@ -79,7 +79,11 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "投票する投稿の ID。",
+		},
 		choice: { type: "integer" },
 	},
 	required: ["noteId", "choice"],

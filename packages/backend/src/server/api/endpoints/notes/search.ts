@@ -19,6 +19,9 @@ export const meta = {
 	requireCredential: true,
 	requireCredentialPrivateMode: true,
 
+	description:
+		"投稿を全文検索する。クエリ・ユーザー・チャンネル・公開範囲・ホストなどで絞り込める。sinceId/untilId/limit/offset でページネーション可能。",
+
 	res: {
 		type: "array",
 		optional: false,
@@ -35,56 +38,83 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-        type: "object",
-        properties: {
-                query: { type: "string" },
-                sinceId: { type: "string", format: "misskey:id" },
-                untilId: { type: "string", format: "misskey:id" },
-                limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
-                offset: { type: "integer", default: 0 },
-                host: {
-                        type: "string",
-                        nullable: true,
-                        description: "The local host is represented with `null`.",
-                },
-                userId: {
-                        type: "string",
-                        format: "misskey:id",
-                        nullable: true,
-                        default: null,
-                },
-                channelId: {
-                        type: "string",
-                        format: "misskey:id",
-                        nullable: true,
-                        default: null,
-                },
-                visibility: {
-                        type: "string",
-                        nullable: true,
-                        default: null,
-                },
-                local: {
-                        type: "boolean",
-                        nullable: true,
-                        default: null,
-                },
-                minScore: {
-                        type: "integer",
-                        nullable: true,
-                        default: null,
-                },
-                excludeUserIds: {
-                        type: "array",
-                        items: {
-                                type: "string",
-                                format: "misskey:id",
-                        },
-                        nullable: true,
-                        default: [],
-                },
-        },
-        required: ["query"],
+	type: "object",
+	properties: {
+		query: {
+			type: "string",
+			description: "検索クエリ。スペースや + で区切った複数トークンは AND 検索。",
+		},
+		sinceId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より新しい投稿から取得。",
+		},
+		untilId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より古い投稿から取得。",
+		},
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得件数。",
+		},
+		offset: {
+			type: "integer",
+			default: 0,
+			description: "先頭からスキップする件数。",
+		},
+		host: {
+			type: "string",
+			nullable: true,
+			description: "投稿者のホストで絞る。ローカルは null。",
+		},
+		userId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			default: null,
+			description: "投稿者のユーザー ID で絞る。",
+		},
+		channelId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			default: null,
+			description: "チャンネル ID で絞る。",
+		},
+		visibility: {
+			type: "string",
+			nullable: true,
+			default: null,
+			description: "公開範囲で絞る。",
+		},
+		local: {
+			type: "boolean",
+			nullable: true,
+			default: null,
+			description: "true ならローカル投稿のみ。",
+		},
+		minScore: {
+			type: "integer",
+			nullable: true,
+			default: null,
+			description: "検索スコアの下限。これ未満の投稿は返さない。",
+		},
+		excludeUserIds: {
+			type: "array",
+			items: {
+				type: "string",
+				format: "misskey:id",
+			},
+			nullable: true,
+			default: [],
+			description: "除外する投稿者のユーザー ID 配列。",
+		},
+	},
+	required: ["query"],
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {

@@ -9,7 +9,7 @@ export const meta = {
 
 	kind: "read:user-groups",
 
-	description: "List the groups that the authenticated user is a member of.",
+	description: "認証ユーザーが参加しているユーザーグループ一覧を取得します。",
 
 	res: {
 		type: "array",

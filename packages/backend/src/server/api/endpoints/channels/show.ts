@@ -8,6 +8,9 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
+	description:
+		"指定した ID のチャンネル 1 件の詳細を取得する。チャンネルの投稿一覧は channels/timeline。",
+
 	res: {
 		type: "object",
 		optional: false,

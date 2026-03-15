@@ -21,6 +21,9 @@ export const meta = {
 
 	kind: "read:account",
 
+	description:
+		"指定した ID のアンテナ 1 件の詳細を取得する。アンテナの投稿一覧は antennas/notes。",
+
 	errors: {
 		noSuchAntenna: {
 			message: "そのantennaは存在しません。",

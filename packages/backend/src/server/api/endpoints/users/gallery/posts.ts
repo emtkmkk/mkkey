@@ -6,7 +6,7 @@ export const meta = {
 	tags: ["users", "gallery"],
 	requireCredentialPrivateMode: true,
 
-	description: "Show all gallery posts by the given user.",
+	description: "指定ユーザーが投稿したギャラリー投稿一覧を取得します。",
 
 	res: {
 		type: "array",

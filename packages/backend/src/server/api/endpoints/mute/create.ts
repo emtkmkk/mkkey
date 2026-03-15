@@ -25,6 +25,9 @@ export const meta = {
 
 	kind: "write:mutes",
 
+	description:
+		"指定したユーザーをミュートする。ミュートすると相手の投稿がTLに表示されない（ブロックより穏やか）。有効期限の指定が可能。解除は mute/delete。",
+
 	errors: {
 		noSuchUser: {
 			message: "そのユーザは存在しません。",
@@ -49,12 +52,16 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		userId: { type: "string", format: "misskey:id" },
+		userId: {
+			type: "string",
+			format: "misskey:id",
+			description: "ミュートするユーザーの ID。",
+		},
 		expiresAt: {
 			type: "integer",
 			nullable: true,
 			description:
-				"A Unix Epoch timestamp that must lie in the future. `null` means an indefinite mute.",
+				"ミュート解除日時（Unix ミリ秒）。null のとき無期限。",
 		},
 	},
 	required: ["userId"],

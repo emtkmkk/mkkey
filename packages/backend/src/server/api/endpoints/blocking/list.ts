@@ -9,6 +9,9 @@ export const meta = {
 
 	kind: "read:blocks",
 
+	description:
+		"ブロックしているユーザー一覧を取得する。sinceId/untilId/limit でページネーション可能。",
+
 	res: {
 		type: "array",
 		optional: false,

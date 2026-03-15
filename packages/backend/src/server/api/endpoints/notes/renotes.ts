@@ -26,6 +26,9 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: true,
 
+	description:
+		"指定した投稿をリノートした投稿一覧を取得する。sinceId/untilId/limit でページネーション可能。リノートしたユーザー情報も含まれる。",
+
 	res: {
 		type: "array",
 		optional: false,
@@ -50,10 +53,28 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		noteId: { type: "string", format: "misskey:id" },
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
-		sinceId: { type: "string", format: "misskey:id" },
-		untilId: { type: "string", format: "misskey:id" },
+		noteId: {
+			type: "string",
+			format: "misskey:id",
+			description: "リノート一覧を取得する投稿の ID。",
+		},
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得する件数。",
+		},
+		sinceId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より新しいものだけ取得する場合に指定。",
+		},
+		untilId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より古いものだけ取得する場合に指定。",
+		},
 		withUserRenoteCount: { type: "boolean", default: false },
 	},
 	required: ["noteId"],

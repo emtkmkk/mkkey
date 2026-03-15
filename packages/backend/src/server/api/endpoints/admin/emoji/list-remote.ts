@@ -57,7 +57,7 @@ export const paramDef = {
 			type: "string",
 			nullable: true,
 			default: null,
-			description: "Use `null` to represent the local host.",
+			description: "ローカルホストは `null` で表します。",
 		},
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
 		offset: { type: "integer", minimum: 0, default: 0 },

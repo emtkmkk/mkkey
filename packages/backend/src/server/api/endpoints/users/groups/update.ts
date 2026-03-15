@@ -21,7 +21,7 @@ export const meta = {
 
 	kind: "write:user-groups",
 
-	description: "Update the properties of a group.",
+	description: "ユーザーグループの名前等を更新します。",
 
 	res: {
 		type: "object",

@@ -8,7 +8,7 @@ export const meta = {
 
 	kind: "read:drive",
 
-	description: "Search for a drive file by a hash of the contents.",
+	description: "内容の MD5 ハッシュでドライブ内のファイルを検索します。",
 
 	res: {
 		type: "array",

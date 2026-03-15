@@ -24,7 +24,7 @@ export const meta = {
 
 	kind: "write:user-groups",
 
-	description: "Create a new group.",
+	description: "新規ユーザーグループを作成します。",
 
 	res: {
 		type: "object",

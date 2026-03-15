@@ -10,6 +10,9 @@ export const meta = {
 
 	requireCredential: false,
 
+	description:
+		"OAuth 認証セッションを開始する。appSecret を渡すと認証用 URL と token が返る。ユーザーがその URL でログインし auth/accept で承認すると、token でアクセストークンを得られる。",
+
 	res: {
 		type: "object",
 		optional: false,

@@ -28,7 +28,7 @@ export const paramDef = {
 		host: {
 			type: "string",
 			nullable: true,
-			description: "Omit or use `null` to not filter by host.",
+			description: "省略するか `null` にするとホストで絞り込みません。",
 		},
 		blocked: { type: "boolean", nullable: true },
 		notResponding: { type: "boolean", nullable: true },

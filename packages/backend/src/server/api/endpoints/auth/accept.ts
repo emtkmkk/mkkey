@@ -24,6 +24,9 @@ export const meta = {
 
 	secure: true,
 
+	description:
+		"OAuth 認証セッションを承認し、アクセストークンを発行する。auth/session/generate で得た token を渡し、ユーザーがログイン済みの状態で呼ぶ。返却された accessToken で API にアクセスする。",
+
 	errors: {
 		noSuchSession: {
 			message: "そのsessionは存在しません。",

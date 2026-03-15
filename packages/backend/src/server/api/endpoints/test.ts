@@ -3,7 +3,7 @@ import define from "../define.js";
 export const meta = {
 	tags: ["non-productive"],
 
-	description: "Endpoint for testing input validation.",
+	description: "入力バリデーションのテスト用エンドポイントです。",
 
 	requireCredential: false,
 } as const;

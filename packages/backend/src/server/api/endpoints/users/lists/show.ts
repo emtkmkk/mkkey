@@ -22,7 +22,7 @@ export const meta = {
 
 	kind: "read:account",
 
-	description: "Show the properties of a list.",
+	description: "指定したユーザーリストの詳細を取得します。",
 
 	res: {
 		type: "object",

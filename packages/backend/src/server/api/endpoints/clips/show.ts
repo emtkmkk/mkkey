@@ -22,6 +22,9 @@ export const meta = {
 
 	kind: "read:account",
 
+	description:
+		"指定した ID のクリップ 1 件の詳細を取得する。クリップに含まれる投稿一覧は clips/notes。",
+
 	errors: {
 		noSuchClip: {
 			message: "そのclipは存在しません。",

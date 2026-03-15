@@ -28,7 +28,7 @@ export const meta = {
 	requireCredentialPrivateMode: true,
 	allowGet: true,
 	cacheSec: 3600,
-	description: "Show all notes that this user created.",
+	description: "指定ユーザーがピン留めしたノート一覧を取得します。",
 
 	res: {
 		type: "array",
@@ -54,10 +54,28 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		userId: { type: "string", format: "misskey:id" },
-		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
-		sinceId: { type: "string", format: "misskey:id" },
-		untilId: { type: "string", format: "misskey:id" },
+		userId: {
+			type: "string",
+			format: "misskey:id",
+			description: "ピン留め投稿一覧を取得するユーザーの ID。",
+		},
+		limit: {
+			type: "integer",
+			minimum: 1,
+			maximum: 100,
+			default: 10,
+			description: "取得する件数。",
+		},
+		sinceId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より新しいものだけ取得する場合に指定。",
+		},
+		untilId: {
+			type: "string",
+			format: "misskey:id",
+			description: "この ID より古いものだけ取得する場合に指定。",
+		},
 		sinceDate: { type: "integer" },
 		untilDate: { type: "integer" },
 		borderScore: { type: "string", format: "misskey:id" },

@@ -67,23 +67,27 @@ const ENDPOINT_DESCRIPTIONS_JA: Record<
 	},
 	"notes/show": {
 		summary: "ノートを1件取得",
-		description: "指定した ID のノートの詳細を取得します。",
+		description: "指定したノートの詳細を取得します。存在しない場合はエラーになります。",
 	},
 	"notes/delete": {
 		summary: "ノートを削除",
-		description: "自分が投稿したノートを削除します。",
+		description:
+			"自分が投稿したノートを削除します。削除後は取り消せません。",
 	},
 	"notes/timeline": {
 		summary: "ホームタイムラインを取得",
-		description: "認証ユーザーのホームタイムライン（フォロー先のノート）を取得します。",
+		description:
+			"認証ユーザーのホームタイムライン（フォロー先のノート）を取得します。",
 	},
 	"notes/global-timeline": {
 		summary: "グローバルタイムラインを取得",
-		description: "インスタンス全体の公開ノートのタイムラインを取得します。",
+		description:
+			"インスタンス全体の公開ノートのタイムラインを取得します。認証不要で利用できます。",
 	},
 	"notes/local-timeline": {
 		summary: "ローカルタイムラインを取得",
-		description: "ローカルユーザーの公開ノートのタイムラインを取得します。",
+		description:
+			"ローカルユーザー（このインスタンスのユーザー）の公開ノートのタイムラインを取得します。",
 	},
 	"users/show": {
 		summary: "ユーザー情報を取得",
@@ -99,15 +103,18 @@ const ENDPOINT_DESCRIPTIONS_JA: Record<
 	},
 	"drive/files/show": {
 		summary: "ドライブファイルの情報を取得",
-		description: "指定したドライブファイルの詳細を取得します。",
+		description:
+			"指定したドライブファイルの詳細（URL・サイズ・作成日時など）を取得します。",
 	},
 	"drive/files/delete": {
 		summary: "ドライブファイルを削除",
-		description: "自分のドライブからファイルを削除します。",
+		description:
+			"自分のドライブからファイルを削除します。削除後は取り消せません。他ノートで添付中でも削除可能です。",
 	},
 	"i": {
 		summary: "自分のアカウント情報を取得",
-		description: "認証中のユーザー自身の詳細情報（プロフィール・設定）を取得します。",
+		description:
+			"認証中のユーザー自身の詳細情報（プロフィール・未読数・設定など）を取得します。クライアント起動時の初期化でよく使われます。",
 	},
 
 	// #region メタ・お知らせ・認証不要
@@ -177,7 +184,8 @@ const ENDPOINT_DESCRIPTIONS_JA: Record<
 	},
 	"auth/validate": {
 		summary: "認証を検証",
-		description: "トークンの有効性を検証します。",
+		description:
+			"トークンの有効性を検証します。有効な場合は valid: true を返します。キャッシュ済みトークンの確認に利用できます。",
 	},
 	"blocking/create": {
 		summary: "ブロックを追加",

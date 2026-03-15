@@ -23,7 +23,7 @@ export const meta = {
 
 	kind: "write:drive",
 
-	description: "Delete an existing drive file.",
+	description: "指定したドライブファイルを削除します。",
 
 	errors: {
 		noSuchFile: {

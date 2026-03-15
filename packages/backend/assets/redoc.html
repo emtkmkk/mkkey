@@ -1,14 +1,9 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Calckey API</title>
-		<!-- needed for adaptive design -->
-		<meta charset="utf-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-
-		<!--
-		ReDoc doesn't change outer page styles
-		-->
+		<title>Cluckey API</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<style>
 			body {
 				margin: 0;
@@ -17,7 +12,10 @@
 		</style>
 	</head>
 	<body>
-		<redoc spec-url="/api.json" expand-responses="200" expand-single-schema-field="true"></redoc>
-		<script src="https://cdn.jsdelivr.net/npm/redoc@2.0.0-rc.50/bundles/redoc.standalone.js" integrity="sha256-WJbngBWN9vp6vkEuzeoSj5tE5saW9Hfj6/SinkzhL2s=" crossorigin="anonymous"></script>
+		<div id="app"></div>
+		<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.28.5"></script>
+		<script>
+			Scalar.createApiReference("#app", { url: "/api.json" });
+		</script>
 	</body>
 </html>

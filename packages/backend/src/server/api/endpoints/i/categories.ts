@@ -3,11 +3,11 @@ import define from "../../define.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 
 export const meta = {
-	tags: ["account", "categoies"],
+	tags: ["account", "categories"],
 
 	requireCredential: true,
 
-	kind: "read:categoies",
+	kind: "read:categories",
 
 	res: {
 		type: "array",

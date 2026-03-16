@@ -290,6 +290,7 @@
 				:files="files"
 				@updated="updateFiles"
 				@detach="detachFile"
+				@replaceFile="replaceFile"
 				@changeSensitive="updateFileSensitive"
 				@changeName="updateFileName"
 			/>
@@ -1594,6 +1595,13 @@ function detachFile(id) {
 	files = files.filter((x) => x.id !== id);
 }
 
+/** 添付をクロップ済み画像で差し替える（同じ並び順を維持）。 */
+function replaceFile(payload: { oldId: string; newFile: misskey.entities.DriveFile }) {
+	files = files.map((f) =>
+		f.id === payload.oldId ? payload.newFile : f,
+	);
+}
+
 function updateFiles(_files) {
 	files = _files;
 }
@@ -2429,6 +2437,8 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 	if (filePromises.length === 0) return;
 
 	const staleUploadWaitMs = 1000;
+	const overallTimeoutMs = 60 * 1000;
+	const startedAt = Date.now();
 	let noActiveUploadsSince: number | null = null;
 
 	const addData = os.addQueue({
@@ -2440,7 +2450,16 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 
 	try {
 		while (filePromises.length > 0) {
+			// NOTE: filePromises にぶら下がっている全てのアップロード処理が settle するまで待機する。
+			// どれか 1 つでも resolve/reject されない場合は、ここでブロックされ続けるため、
+			// 呼び出し元での overallTimeoutMs によるガードと組み合わせてハングを防ぐ。
 			await Promise.allSettled([...filePromises]);
+
+			if (Date.now() - startedAt >= overallTimeoutMs) {
+				// NOTE: アップロード待機が一定時間を超えた場合は「安全側」に倒して投稿自体を中止する。
+				// ここで明示的にエラーを投げることで、添付が完了していない状態で投稿されてしまうことを防ぐ。
+				throw new Error("ファイルのアップロード待機がタイムアウトしました。");
+			}
 
 			const waitState = evaluateUploadWaitState({
 				pendingPromiseCount: filePromises.length,
@@ -2454,9 +2473,9 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 
 			if (waitState.shouldForceResetPromises) {
 				// uploads には進行中タスクが存在しないのに filePromises が残り続けるケースを
-				// ハングとみなし、投稿処理を前に進めるために待機対象を明示的にクリアする。
+				// 異常状態とみなし、「安全側」に倒して投稿を中止する。
 				console.debug(
-					"[MkPostForm] Reset stale upload wait promises to avoid infinite loop",
+					"[MkPostForm] Detected stale upload wait promises; aborting post to avoid inconsistent attachment state",
 					{
 						pendingPromiseCount: filePromises.length,
 						activeUploadCount: uploads.value.length,
@@ -2464,7 +2483,7 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 					},
 				);
 				filePromises = [];
-				break;
+				throw new Error("ファイルのアップロード状態が不明なため、投稿を中止しました。");
 			}
 
 			if (waitState.shouldWaitBeforeRetry) {
@@ -2508,39 +2527,54 @@ function buildSwarmText(checkin: {
 
 
 async function uploadSwarmPhoto(photoUrl: string | null): Promise<void> {
-	if (!photoUrl) return;
-	const marker = Math.random().toString();
-	const connection = stream.useChannel("main");
-	const uploadPromise = new Promise<void>((resolve, reject) => {
-		let settled = false;
-		const timeoutId = setTimeout(() => {
-			if (settled) return;
-			settled = true;
-			connection.dispose();
-			reject(new Error("Swarmの写真アップロードがタイムアウトしました。"));
-		}, 30_000);
-
-		connection.on("urlUploadFinished", (urlResponse) => {
-			if (urlResponse.marker !== marker || settled) return;
-
-			clearTimeout(timeoutId);
-			settled = true;
-
-			if (!urlResponse.file) {
-				connection.dispose();
-				reject(new Error("アップロード結果が不正です。"));
-				return;
+	try {
+		await enqueueUpload(() => {
+			if (!photoUrl) {
+				// NOTE: Swarm 側に写真が存在しないチェックインの場合は、そのまま何も添付せず完了とみなす。
+				return Promise.resolve([]);
 			}
 
-			files.push(urlResponse.file);
-			connection.dispose();
-			resolve();
+			const marker = Math.random().toString();
+			const connection = stream.useChannel("main");
+
+			const uploadPromise = new Promise<misskey.entities.DriveFile>((resolve, reject) => {
+				let settled = false;
+				const timeoutId = setTimeout(() => {
+					if (settled) return;
+					settled = true;
+					connection.dispose();
+					reject(new Error("Swarmの写真アップロードがタイムアウトしました。"));
+				}, 30_000);
+
+				connection.on("urlUploadFinished", (urlResponse) => {
+					if (urlResponse.marker !== marker || settled) return;
+
+					clearTimeout(timeoutId);
+					settled = true;
+
+					if (!urlResponse.file) {
+						connection.dispose();
+						reject(new Error("アップロード結果が不正です。"));
+						return;
+					}
+
+					connection.dispose();
+					resolve(urlResponse.file);
+				});
+
+				os.api("drive/files/upload-from-url", { url: photoUrl, marker }).catch((err) => {
+					if (settled) return;
+					settled = true;
+					clearTimeout(timeoutId);
+					connection.dispose();
+					reject(err);
+				});
+			});
+
+			return uploadPromise;
 		});
-	});
-	try {
-		await os.api("drive/files/upload-from-url", { url: photoUrl, marker });
-		await uploadPromise;
 	} catch {
+		// NOTE: Swarm 写真アップロードに失敗した場合は投稿フォーム自体は継続しつつ、ユーザにはトーストで通知する。
 		os.toast(i18n.ts.somethingHappened);
 	}
 }

@@ -686,6 +686,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			updatedAt: note.updatedAt?.toISOString() || undefined,
 			deletedAt: note.deletedAt?.toISOString() || undefined,
 			isFirstNote: note.isFirstNote ? true : undefined,
+			...(note.isBotMention ? { isBotMention: true as const } : {}),
 			invisible: !isVisible ? true : undefined,
 			...(opts.detail
 				? {

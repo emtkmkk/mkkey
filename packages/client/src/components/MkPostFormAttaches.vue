@@ -55,7 +55,7 @@ export default defineComponent({
 		},
 	},
 
-	emits: ["updated", "detach", "changeSensitive", "changeName"],
+	emits: ["updated", "detach", "changeSensitive", "changeName", "replaceFile"],
 
 	data() {
 		return {
@@ -107,6 +107,15 @@ export default defineComponent({
 			});
 		},
 
+		/** 添付画像をクロップし、元を外してクロップ済み画像で差し替える。元画像と同じ Drive フォルダに保存する。 */
+		async cropFile(file) {
+			const cropped = await os.cropImage(file, {
+				aspectRatio: 0,
+				uploadFolder: file.folderId ?? undefined,
+			});
+			this.$emit("replaceFile", { oldId: file.id, newFile: cropped });
+		},
+
 		async describe(file) {
 			os.popup(
 				defineAsyncComponent(
@@ -149,6 +158,17 @@ export default defineComponent({
 								this.describe(file);
 							},
 						},
+						...(file.type?.startsWith("image/")
+							? [
+									{
+										text: i18n.ts.cropImage,
+										icon: "ph-crop ph-bold ph-lg",
+										action: () => {
+											this.cropFile(file);
+										},
+									},
+								]
+							: []),
 						{
 							text: file.isSensitive
 								? i18n.ts.unmarkAsSensitive

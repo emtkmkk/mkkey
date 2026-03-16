@@ -1382,6 +1382,15 @@ async function insertNote(
 	emojis: string[],
 	mentionedUsers: MinimumUser[],
 ) {
+	// isBotMention 判定用に CW+本文のみパース（追加 I/O なし、既存 mentionedUsers を参照）
+	const tokensForFlag = data.text ? mfm.parse(data.text)! : [];
+	const cwTokensForFlag = data.cw ? mfm.parse(data.cw)! : [];
+	const isBotMention = determineIsBotMentionAtHead(
+		cwTokensForFlag,
+		tokensForFlag,
+		mentionedUsers,
+	);
+
 	const insert = new Note({
 		id: genId(data.createdAt!),
 		createdAt: data.createdAt!,
@@ -1419,6 +1428,7 @@ async function insertNote(
 		referenceIds: data.references || [],
 		isPublicLikeList: data.isPublicLikeList ?? undefined,
 		isFirstNote: !!data.isFirstNote,
+		isBotMention,
 		// 以下非正規化データ
 		replyUserId: data.reply ? data.reply.userId : null,
 		replyUserHost: data.reply ? data.reply.userHost : null,
@@ -1667,6 +1677,67 @@ function incNotesCountOfUser(user: { id: User["id"] }) {
 		})
 		.where("id = :id", { id: user.id })
 		.execute();
+}
+
+/**
+ * ノード配列の先頭（空白のみのノードをスキップ後）がメンションノードかどうかを返す。
+ * @param nodes - MFM ノード配列（CW または本文）
+ * @returns 先頭の実質的な最初のノードが mention なら true
+ * @internal
+ */
+function firstNonWhitespaceNodeIsMention(nodes: mfm.MfmNode[]): boolean {
+	if (nodes.length === 0) return false;
+	for (const node of nodes) {
+		if (node.type === "text") {
+			const text = (node as { props?: { text?: string } }).props?.text;
+			if (text != null && text.trim() === "") continue; // 空白のみはスキップ
+			return false; // 非空白テキストが先頭 => メンションではない
+		}
+		if (node.type === "mention") return true;
+		return false; // その他のノードが先頭 => メンションではない
+	}
+	return false;
+}
+
+/**
+ * 文頭（CW または本文の先頭、空白無視）で Bot 1件のみメンションしているかどうかを判定する。
+ * 追加の DB/AP 解決は行わず、既存の mentionedUsers のみを参照する。
+ *
+ * @param cwTokens - CW の MFM ノード配列（ない場合は []）
+ * @param tokens - 本文の MFM ノード配列
+ * @param mentionedUsers - 既に解決済みのメンション先ユーザ一覧（combined でよい）
+ * @returns 文頭にメンションがあり、CW+本文でメンション対象が1人かつそのユーザが Bot のとき true
+ * @remarks
+ * - CW あり: CW 先頭または本文先頭のどちらかがメンションなら「文頭にメンションあり」。
+ * - CW+本文のみでメンション数を数え、アンケート選択肢は含めない。
+ * - 一致するユーザが mentionedUsers にいない（解決失敗等）場合は false。
+ * @internal
+ */
+function determineIsBotMentionAtHead(
+	cwTokens: mfm.MfmNode[],
+	tokens: mfm.MfmNode[],
+	mentionedUsers: User[],
+): boolean {
+	const headOk =
+		firstNonWhitespaceNodeIsMention(tokens) ||
+		(cwTokens.length > 0 && firstNonWhitespaceNodeIsMention(cwTokens));
+	if (!headOk) return false;
+
+	const mentionProps = extractMentions(tokens.concat(cwTokens));
+	const uniq = new Map<string, { username: string; host: string | null }>();
+	for (const m of mentionProps) {
+		const key = `${m.username}\t${m.host ?? ""}`;
+		if (!uniq.has(key)) uniq.set(key, { username: m.username, host: m.host ?? null });
+	}
+	if (uniq.size !== 1) return false;
+
+	const [only] = uniq.values();
+	const user = mentionedUsers.find(
+		(u) =>
+			u.username === only.username &&
+			(u.host ?? null) === only.host,
+	);
+	return user != null && user.isBot === true;
 }
 
 export async function extractMentionedUsers(

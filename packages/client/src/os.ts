@@ -804,11 +804,18 @@ export async function pickEmoji(src: HTMLElement | null, opts) {
 	});
 }
 
+/**
+ * 画像をクロップするダイアログを開き、OK でクロップ済み DriveFile を返す。
+ * @param image - クロップ対象の Drive ファイル
+ * @param options.aspectRatio - 0 で自由比、正の数で固定比
+ * @param options.uploadFolder - クロップ画像の保存先フォルダ ID（省略時は MkCropperDialog の既定）
+ */
 export async function cropImage(
 	image: Misskey.entities.DriveFile,
 	options: {
 		aspectRatio: number;
 		to?: string;
+		uploadFolder?: string | null;
 	},
 ): Promise<Misskey.entities.DriveFile> {
 	return new Promise((resolve, reject) => {
@@ -818,6 +825,7 @@ export async function cropImage(
 				file: image,
 				aspectRatio: options.aspectRatio,
 				to: options.to,
+				uploadFolder: options.uploadFolder ?? undefined,
 			},
 			{
 				ok: (x) => {

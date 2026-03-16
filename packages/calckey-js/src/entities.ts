@@ -180,6 +180,8 @@ export type Note = {
 	uri?: string;
 	url?: string;
 	isHidden?: boolean;
+	/** 文頭でBot1件のみメンションしている投稿か。true のときのみ API レスポンスに含まれる。TLフィルタで Bot が関わる返信として扱う。 */
+	isBotMention?: boolean;
 };
 
 export type NoteReaction = {

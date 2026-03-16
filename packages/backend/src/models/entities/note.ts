@@ -207,6 +207,19 @@ export class Note {
 	})
 	public hasPoll: boolean;
 
+	/**
+	 * 文頭（CWがある場合はCW先頭または本文先頭のいずれか）で、Bot アカウント1件だけにメンションしている投稿かどうか。
+	 *
+	 * @remarks
+	 * - true の場合のみ API レスポンスに含める。TL フィルタでは「Botが関わる返信」として扱う。
+	 * - CW+本文のメンション対象が1人かつそのユーザが isBot のときのみ true。追加の DB/AP 解決は行わない。
+	 */
+	@Column('boolean', {
+		default: false,
+		comment: '文頭でBot1件のみメンションしているか（TLフィルタ・API用）',
+	})
+	public isBotMention: boolean;
+
 	@Index()
 	@Column({
 		...id(),

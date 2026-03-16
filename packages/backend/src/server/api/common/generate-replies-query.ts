@@ -3,6 +3,13 @@ import type { SelectQueryBuilder } from "typeorm";
 import { Brackets } from "typeorm";
 import type { FollowingExistsCondition } from "./following-exists-condition.js";
 
+/**
+ * TL用の「返信として扱う/扱わない」条件をクエリに追加する。
+ *
+ * @remarks
+ * - note.isBotMention が true の投稿は、replyId がなくても「Botが関わる返信」として扱い、
+ *   「返信ではない」条件では通さない（notBotOnly 時も同様に除外）。
+ */
 export function generateRepliesQuery(
         q: SelectQueryBuilder<any>,
         me?: Pick<User, "id" | "showTimelineReplies"> | null,
@@ -12,7 +19,10 @@ export function generateRepliesQuery(
 	if (me == null) {
 		q.andWhere(
 			new Brackets((qb) => {
-				qb.where("note.replyId IS NULL") // 返信ではない
+				// 返信ではない（isBotMention は Bot が関わる返信として扱うため、true のときはここに含めない）
+				qb.where(
+					"(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))",
+				)
 					.orWhere(
 						new Brackets((qb) => {
 							qb.where(
@@ -31,7 +41,10 @@ export function generateRepliesQuery(
                 if (following != null) {
                         q.andWhere(
                                 new Brackets((qb) => {
-                                        qb.where("note.replyId IS NULL") // 返信ではない
+                                        // 返信ではない（isBotMention は Bot が関わる返信として扱う）
+                                        qb.where(
+                                                "(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))",
+                                        )
                                                 .orWhere("note.replyUserId = :meId", { meId: me.id }) // 返信だけど自分のノートへの返信
                                                 .orWhere(
 							new Brackets((qb) => {
@@ -86,6 +99,7 @@ export function generateRepliesQuery(
                                                                                 if (mode === "notBotOnly") {
                                                                                         qb.andWhere("replyUser.isBot = false")
                                                                                         qb.andWhere("user.isBot = false")
+                                                                                        qb.andWhere("note.isBotMention IS NOT TRUE")
                                                                                 }
 								}),
 							);
@@ -95,7 +109,10 @@ export function generateRepliesQuery(
 		} else {
 			q.andWhere(
 				new Brackets((qb) => {
-					qb.where("note.replyId IS NULL") // 返信ではない
+					// 返信ではない（isBotMention は Bot が関わる返信として扱う）
+					qb.where(
+						"(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))",
+					)
 						.orWhere("note.replyUserId = :meId", { meId: me.id }) // 返信だけど自分のノートへの返信
 						.orWhere(
 							new Brackets((qb) => {

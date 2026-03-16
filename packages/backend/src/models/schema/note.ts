@@ -236,5 +236,13 @@ export const packedNoteSchema = {
 			format: "date-time",
 			description: "削除日時。",
 		},
+		/** true のときのみ API レスポンスに含まれる。文頭で Bot 1件のみメンションしている投稿かどうか。 */
+		isBotMention: {
+			type: "boolean",
+			optional: true,
+			nullable: false,
+			description:
+				"文頭でBot1件のみメンションしている投稿か。true のときのみキーが含まれる。TLフィルタで Bot が関わる返信として扱う。",
+		},
 	},
 } as const;

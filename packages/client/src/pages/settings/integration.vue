@@ -1,103 +1,141 @@
 <template>
 	<div class="_formRoot">
-
-		<FormSection v-if="instance.enableGoogleIntegration" class="_formBlock _panel">
+		<!-- 他設定画面と同様、FormSection は見出しのみ。パネルは中身のブロックに付与 -->
+		<FormSection v-if="instance.enableGoogleIntegration">
 			<template #label
 				><i class="ph-google-logo ph-bold ph-lg"></i> Google</template
 			>
-			<p v-if="integrations.google">
-				{{ i18n.ts.connectedTo }}:
-				<span>{{ integrations.google.email ?? integrations.google.name ?? integrations.google.id }}</span>
-			</p>
-			<MkButton
-				v-if="integrations.google"
-				danger
-				@click="disconnectGoogle"
-				>{{ i18n.ts.disconnectService }}</MkButton
-			>
-			<MkButton v-else primary @click="connectGoogle">{{
-				i18n.ts.connectService
-			}}</MkButton>
+			<div class="_formBlock _panel" style="padding: 1.25rem">
+				<p v-if="integrations.google" class="_formBlock">
+					{{ i18n.ts.connectedTo }}:
+					<span>{{ integrations.google.email ?? integrations.google.name ?? integrations.google.id }}</span>
+				</p>
+				<MkButton
+					v-if="integrations.google"
+					danger
+					class="_formBlock"
+					@click="disconnectGoogle"
+					>{{ i18n.ts.disconnectService }}</MkButton
+				>
+				<MkButton
+					v-else
+					primary
+					class="_formBlock"
+					@click="connectGoogle"
+					>{{ i18n.ts.connectService }}</MkButton
+				>
+			</div>
 		</FormSection>
 
-		<FormSection v-if="instance.enableDiscordIntegration" class="_formBlock _panel">
+		<FormSection v-if="instance.enableDiscordIntegration">
 			<template #label
 				><i class="ph-discord-logo ph-bold ph-lg"></i> Discord</template
 			>
-			<p v-if="integrations.discord">
-				{{ i18n.ts.connectedTo }}:
-				<a
-					:href="`https://discord.com/users/${integrations.discord.id}`"
-					rel="nofollow noopener"
-					target="_blank"
-					>{{ discordHandle }}</a
+			<div class="_formBlock _panel" style="padding: 1.25rem">
+				<p v-if="integrations.discord" class="_formBlock">
+					{{ i18n.ts.connectedTo }}:
+					<a
+						:href="`https://discord.com/users/${integrations.discord.id}`"
+						rel="nofollow noopener"
+						target="_blank"
+						>{{ discordHandle }}</a
+					>
+				</p>
+				<MkButton
+					v-if="integrations.discord"
+					danger
+					class="_formBlock"
+					@click="disconnectDiscord"
+					>{{ i18n.ts.disconnectService }}</MkButton
 				>
-			</p>
-			<MkButton
-				v-if="integrations.discord"
-				danger
-				@click="disconnectDiscord"
-				>{{ i18n.ts.disconnectService }}</MkButton
-			>
-			<MkButton v-else primary @click="connectDiscord">{{
-				i18n.ts.connectService
-			}}</MkButton>
+				<MkButton
+					v-else
+					primary
+					class="_formBlock"
+					@click="connectDiscord"
+					>{{ i18n.ts.connectService }}</MkButton
+				>
+			</div>
 		</FormSection>
 
-		<FormSection v-if="instance.enableGithubIntegration" class="_formBlock _panel">
+		<FormSection v-if="instance.enableGithubIntegration">
 			<template #label
 				><i class="ph-github-logo ph-bold ph-lg"></i> GitHub</template
 			>
-			<p v-if="integrations.github">
-				{{ i18n.ts.connectedTo }}:
-				<a
-					:href="`https://github.com/${integrations.github.login}`"
-					rel="nofollow noopener"
-					target="_blank"
-					>@{{ integrations.github.login }}</a
+			<div class="_formBlock _panel" style="padding: 1.25rem">
+				<p v-if="integrations.github" class="_formBlock">
+					{{ i18n.ts.connectedTo }}:
+					<a
+						:href="`https://github.com/${integrations.github.login}`"
+						rel="nofollow noopener"
+						target="_blank"
+						>@{{ integrations.github.login }}</a
+					>
+				</p>
+				<MkButton
+					v-if="integrations.github"
+					danger
+					class="_formBlock"
+					@click="disconnectGithub"
+					>{{ i18n.ts.disconnectService }}</MkButton
 				>
-			</p>
-			<MkButton
-				v-if="integrations.github"
-				danger
-				@click="disconnectGithub"
-				>{{ i18n.ts.disconnectService }}</MkButton
-			>
-			<MkButton v-else primary @click="connectGithub">{{
-				i18n.ts.connectService
-			}}</MkButton>
+				<MkButton
+					v-else
+					primary
+					class="_formBlock"
+					@click="connectGithub"
+					>{{ i18n.ts.connectService }}</MkButton
+				>
+			</div>
 		</FormSection>
 
-		<FormSection v-if="instance.enableSwarmIntegration" class="_formBlock _panel">
-			<template #label><i class="ph-map-pin-line ph-bold ph-lg"></i> Swarm</template>
-			<p v-if="integrations.swarm?.accessToken">{{ i18n.ts.connectedTo }}: Swarm</p>
-			<p v-else>{{ i18n.ts.notConnected }}</p>
-			<MkButton v-if="integrations.swarm?.accessToken" danger @click="disconnectSwarm">
-				{{ i18n.ts.disconnectService }}
-			</MkButton>
-			<MkButton v-else primary @click="connectSwarm">{{ i18n.ts.connectService }}</MkButton>
-			<FormSwitch
-				:modelValue="showSwarmPostFormButton"
-				:disabled="!integrations.swarm?.accessToken"
-				class="_formBlock"
-				@update:modelValue="updateSwarmPostFormButton"
-			>
-				{{ i18n.ts.showSwarmButtonInPostForm }}
-			</FormSwitch>
-			<FormSwitch
-				:modelValue="swarmInsertShareUrl"
-				:disabled="!integrations.swarm?.accessToken"
-				class="_formBlock"
-				@update:modelValue="updateSwarmInsertShareUrl"
-			>
-				{{ i18n.ts.insertSwarmShareUrl }}
-			</FormSwitch>
+		<FormSection v-if="instance.enableSwarmIntegration">
+			<template #label><span class="swarm-icon" role="img" aria-hidden="true"></span> Swarm</template>
+			<div class="_formBlock _panel" style="padding: 1.25rem">
+				<p v-if="integrations.swarm?.accessToken" class="_formBlock">{{ i18n.ts.connectedTo }}: Swarm</p>
+				<p v-else class="_formBlock">{{ i18n.ts.notConnected }}</p>
+				<MkButton
+					v-if="integrations.swarm?.accessToken"
+					danger
+					class="_formBlock"
+					@click="disconnectSwarm"
+					>{{ i18n.ts.disconnectService }}</MkButton
+				>
+				<MkButton
+					v-else
+					primary
+					class="_formBlock"
+					@click="connectSwarm"
+					>{{ i18n.ts.connectService }}</MkButton
+				>
+				<FormSwitch
+					:modelValue="showSwarmPostFormButton"
+					:disabled="!integrations.swarm?.accessToken"
+					class="_formBlock"
+					@update:modelValue="updateSwarmPostFormButton"
+				>
+					{{ i18n.ts.showSwarmButtonInPostForm }}
+				</FormSwitch>
+				<FormSwitch
+					:modelValue="swarmInsertShareUrl"
+					:disabled="!integrations.swarm?.accessToken"
+					class="_formBlock"
+					@update:modelValue="updateSwarmInsertShareUrl"
+				>
+					{{ i18n.ts.insertSwarmShareUrl }}
+				</FormSwitch>
+			</div>
 		</FormSection>
-
 	</div>
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ * 連携設定ページ。Google / Discord / GitHub / Swarm の OAuth 連携と、
+ * Swarm の投稿フォームボタン・共有URL挿入の設定を行う。
+ * @internal
+ */
 import { computed, onMounted, ref, watch } from "vue";
 import { apiUrl } from "@/config";
 import FormSection from "@/components/form/section.vue";

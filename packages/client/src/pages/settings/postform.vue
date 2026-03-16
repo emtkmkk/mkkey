@@ -260,6 +260,33 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
+                        <!-- 表示条件を満たすときのみ、Swarm/プラグインボタンの表示切替を表示 -->
+                        <FormSwitch
+                                v-if="showSwarmButtonInSettings"
+                                v-model="showSwarmButton"
+                                class="_formBlock"
+                        >
+                                <span class="postFormSwitchLabel"
+                                        ><span class="swarm-icon" role="img" aria-hidden="true"></span>
+                                        <span>{{ i18n.ts.hiddenSwarmButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
+                        <FormSwitch
+                                v-if="showPluginButtonInSettings"
+                                v-model="showPluginButton"
+                                class="_formBlock"
+                        >
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-plug ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenPluginButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
             </FormSection>
 	</div>
 </template>
@@ -272,7 +299,8 @@ import * as os from "@/os";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
-import { defaultStore } from "@/store";
+import { defaultStore, postFormActions } from "@/store";
+import { instance } from "@/instance";
 import { unisonReload } from "@/scripts/unison-reload";
 import { deviceKind } from "@/scripts/device-kind";
 
@@ -357,6 +385,12 @@ const hiddenPreviewButton = computed(
 const hiddenNowPlayingButton = computed(
 	defaultStore.makeGetterSetter("hiddenNowPlayingButton")
 );
+const hiddenSwarmButton = computed(
+	defaultStore.makeGetterSetter("hiddenSwarmButton")
+);
+const hiddenPluginButton = computed(
+	defaultStore.makeGetterSetter("hiddenPluginButton")
+);
 const closeButtonLabel = computed(() =>
         CloseAllClearButton.value
                 ? i18n.ts.postFormClearButtonLabel
@@ -384,6 +418,21 @@ const showEmojiButton = invertBool(hiddenEmojiButton);
 const showMFMButton = invertBool(hiddenMFMButton);
 const showPreviewButton = invertBool(hiddenPreviewButton);
 const showNowPlayingButton = invertBool(hiddenNowPlayingButton);
+const showSwarmButton = invertBool(hiddenSwarmButton);
+const showPluginButton = invertBool(hiddenPluginButton);
+/** 投稿フォームに Swarm ボタンが表示される条件（設定画面でスイッチを出すかどうか） */
+const showSwarmButtonInSettings = computed(
+	() =>
+		Boolean(
+			instance.enableSwarmIntegration &&
+				$i?.integrations?.swarm?.accessToken &&
+				$i?.integrations?.swarm?.showPostFormButton,
+		),
+);
+/** 投稿フォームにプラグインボタンが表示される条件（設定画面でスイッチを出すかどうか） */
+const showPluginButtonInSettings = computed(
+	() => postFormActions.length > 0,
+);
 const openMentionWindow = computed(
 	defaultStore.makeGetterSetter("openMentionWindow")
 );

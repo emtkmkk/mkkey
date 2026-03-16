@@ -585,6 +585,18 @@ export const defaultStore = markRaw(
 			createdAt: "2026/2/21",
 			page: "postform",
 		},
+		hiddenSwarmButton: {
+			where: "deviceAccount",
+			default: false,
+			createdAt: "2026/3/16",
+			page: "postform",
+		},
+		hiddenPluginButton: {
+			where: "deviceAccount",
+			default: false,
+			createdAt: "2026/3/16",
+			page: "postform",
+		},
 		hiddenCloseButton: {
 			where: "deviceAccount",
 			default: false,

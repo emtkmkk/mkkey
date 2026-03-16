@@ -44,8 +44,8 @@
 				</FormFolder>
 				<FormFolder class="_formBlock">
 					<template #icon
-						><i class="ph-map-pin-line ph-bold ph-lg"></i
-					></template>
+						><span class="swarm-icon" role="img" aria-hidden="true"></span>
+					</template>
 					<template #label>Swarm</template>
 					<template #suffix>{{
 						enableSwarmIntegration ? i18n.ts.enabled : i18n.ts.disabled

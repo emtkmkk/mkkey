@@ -360,15 +360,15 @@
 					<i class="ph-magic-wand ph-bold ph-lg"></i>
 				</button>
 				<button
-					v-if="showSwarmButton"
+					v-if="showSwarmButton && !$store.state.hiddenSwarmButton"
 					v-tooltip="i18n.ts.swarm"
 					class="_button"
 					@click="() => void openSwarmCheckins()"
 				>
-					<i class="ph-map-pin-line ph-bold ph-lg"></i>
+					<span class="swarm-icon" role="img" aria-hidden="true"></span>
 				</button>
 				<button
-					v-if="postFormActions.length > 0"
+					v-if="postFormActions.length > 0 && !$store.state.hiddenPluginButton"
 					v-tooltip="i18n.ts.plugin"
 					class="_button"
 					@click="showActions"

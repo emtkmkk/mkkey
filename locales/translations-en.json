@@ -274,6 +274,8 @@
   "hiddenMFMButton": "MFM button",
   "hiddenPreviewButton": "Preview button",
   "hiddenNowPlayingButton": "Now playing button",
+  "hiddenSwarmButton": "Swarm button",
+  "hiddenPluginButton": "Plugin button",
   "hiddenMentionButton": "Mention button",
   "openMentionWindow": "Open picker with mention (@) button",
   "openEmojiPicker": "Open picker with emoji button",

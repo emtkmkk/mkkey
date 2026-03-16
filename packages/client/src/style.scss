@@ -113,19 +113,19 @@ html {
 			}
 		}
 	}
-	
+
 	&.f--5 {
 		font-size: calc(var(--fontSize) - 0.3125rem);
 	}
-	
+
 	&.f--3 {
 		font-size: calc(var(--fontSize) - 0.1875rem);
 	}
-	
+
 	&.f--2 {
 		font-size: calc(var(--fontSize) - 0.125rem);
 	}
-	
+
 	&.f--1 {
 		font-size: calc(var(--fontSize) - 0.0625rem);
 	}
@@ -141,7 +141,7 @@ html {
 	&.f-3 {
 		font-size: calc(var(--fontSize) + 0.1875rem);
 	}
-	
+
 	&.f-5 {
 		font-size: calc(var(--fontSize) + 0.3125rem);
 	}
@@ -149,40 +149,40 @@ html {
 	&.av-2 {
 		--avatarEm: 4 !important;
 	}
-	
+
 	&.av-1 {
 		--avatarEm: 3.5 !important;
 	}
-	
+
 	&.av--1 {
 		--avatarEm: 2.5 !important;
 	}
-	
+
 	&.av--2 {
 		--avatarEm: 2 !important;
 	}
-	
+
 	&.av--3 {
 		--avatarEm: 1 !important;
 	}
-	
+
 	&.av--4 {
 		--avatarSize: 0 !important;
 		--avatarEm: 0 !important;
-	}	
-	
+	}
+
 	&.av-f-1 {
 		--avatarSize: 38px !important;
-	}	
-	
+	}
+
 	&.av-f {
 		--avatarSize: 46px !important;
-	}	
-	
+	}
+
 	&.av-f1 {
 		--avatarSize: 54px !important;
 	}
-	
+
 	&.useSystemFont {
 		font-family: sans-serif;
 	}
@@ -881,6 +881,19 @@ rt {
   text-align: center;
   width: calc(var(--phIconSize) * 1.25);
 	display: inline-flex;
+}
+
+/** Swarm（Simple Icons）ロゴを他アイコンと同サイズで表示。currentColor でテーマに追従 */
+.swarm-icon {
+	width: calc(var(--phIconSize) * 1.3333);
+	height: calc(var(--phIconSize) * 1.3333);
+	vertical-align: calc(var(--phIconSize) * -0.0667);
+	display: inline-block;
+	background-color: currentColor;
+	mask: url("/client-assets/swarm.svg") no-repeat center;
+	mask-size: contain;
+	-webkit-mask: url("/client-assets/swarm.svg") no-repeat center;
+	-webkit-mask-size: contain;
 }
 
 ._blur_text {

@@ -121,7 +121,7 @@ export default define(meta, paramDef, async (ps, user) => {
         if (user) {
                 const followingCondition = createFollowingExistsCondition(user.id);
                 query.setParameters(followingCondition.parameters);
-                generateRepliesQuery(query, user, followingCondition, ps.showReplyMode ?? "all");
+                generateRepliesQuery(query, user, followingCondition, ps.showReplyMode ?? "all", ps.showReplyMode === "notBotOnly");
         } else {
                 generateRepliesQuery(query, user);
         }

@@ -7,23 +7,26 @@ import type { FollowingExistsCondition } from "./following-exists-condition.js";
  * TL用の「返信として扱う/扱わない」条件をクエリに追加する。
  *
  * @remarks
- * - note.isBotMention が true の投稿は、replyId がなくても「Botが関わる返信」として扱い、
- *   「返信ではない」条件では通さない（notBotOnly 時も同様に除外）。
- * - ただし自分の投稿（note.userId = me.id）は isBotMention の有無にかかわらず表示する。
+ * - applyIsBotMentionFilter が true のときのみ、note.isBotMention を「Botが関わる返信」として扱う。
+ *   呼び出し元では showReplyMode === "notBotOnly"（Botが関わる返信を表示しない）のときだけ true を渡す。
+ * - その場合、自分の投稿（note.userId = me.id）は isBotMention の有無にかかわらず表示する。
  */
 export function generateRepliesQuery(
         q: SelectQueryBuilder<any>,
         me?: Pick<User, "id" | "showTimelineReplies"> | null,
         following?: FollowingExistsCondition | null,
-        mode?: "all" | "notBotOnly" | "personalOnly"
+        mode?: "all" | "notBotOnly" | "personalOnly",
+        applyIsBotMentionFilter?: boolean
 ) {
+	const useBotMention = applyIsBotMentionFilter === true;
+	const notReplyCond = useBotMention
+		? "(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))"
+		: "note.replyId IS NULL";
+
 	if (me == null) {
 		q.andWhere(
 			new Brackets((qb) => {
-				// 返信ではない（isBotMention は Bot が関わる返信として扱うため、true のときはここに含めない）
-				qb.where(
-					"(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))",
-				)
+				qb.where(notReplyCond)
 					.orWhere(
 						new Brackets((qb) => {
 							qb.where(
@@ -42,10 +45,10 @@ export function generateRepliesQuery(
                 if (following != null) {
                         q.andWhere(
                                 new Brackets((qb) => {
-                                        qb.orWhere("note.userId = :meId", { meId: me.id }) // 自分の投稿は isBotMention でも表示
-                                                .orWhere(
-                                                        "(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))",
-                                                ) // 返信ではない（isBotMention は Bot が関わる返信として扱う）
+                                        if (useBotMention) {
+                                                qb.orWhere("note.userId = :meId", { meId: me.id }); // 自分の投稿は isBotMention でも表示
+                                        }
+                                        qb.orWhere(notReplyCond)
                                                 .orWhere("note.replyUserId = :meId", { meId: me.id }) // 返信だけど自分のノートへの返信
                                                 .orWhere(
 							new Brackets((qb) => {
@@ -100,7 +103,9 @@ export function generateRepliesQuery(
                                                                                 if (mode === "notBotOnly") {
                                                                                         qb.andWhere("replyUser.isBot = false")
                                                                                         qb.andWhere("user.isBot = false")
-                                                                                        qb.andWhere("note.isBotMention IS NOT TRUE")
+                                                                                        if (useBotMention) {
+                                                                                                qb.andWhere("note.isBotMention IS NOT TRUE");
+                                                                                        }
                                                                                 }
 								}),
 							);
@@ -110,10 +115,10 @@ export function generateRepliesQuery(
 		} else {
 			q.andWhere(
 				new Brackets((qb) => {
-					qb.orWhere("note.userId = :meId", { meId: me.id }) // 自分の投稿は isBotMention でも表示
-						.orWhere(
-							"(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))",
-						) // 返信ではない（isBotMention は Bot が関わる返信として扱う）
+					if (useBotMention) {
+						qb.orWhere("note.userId = :meId", { meId: me.id }); // 自分の投稿は isBotMention でも表示
+					}
+					qb.orWhere(notReplyCond)
 						.orWhere("note.replyUserId = :meId", { meId: me.id }) // 返信だけど自分のノートへの返信
 						.orWhere(
 							new Brackets((qb) => {

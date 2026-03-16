@@ -90,11 +90,11 @@ export default class extends Channel {
 			return;
 		if (note.replyId != null && !(note.reply?.user.host == null || meta.recommendedInstances.includes(note.reply?.user.host))) return;
 
-		// 関係ない返信は除外（isBotMention も Bot が関わる返信として同様に除外、自分の投稿は除く）
-		if (!this.user && (note.reply || note.isBotMention)) {
+		// 関係ない返信は除外（showReplyMode が notBotOnly のときのみ isBotMention も同様に除外、自分の投稿は除く）
+		if (!this.user && note.reply) {
 			return;
 		}
-		if (this.user && note.isBotMention && note.userId !== this.user.id) {
+		if (this.user && this.showReplyMode === "notBotOnly" && note.isBotMention && note.userId !== this.user.id) {
 			return;
 		}
 		if (note.reply && !this.user!.showTimelineReplies) {

@@ -797,19 +797,69 @@ onBeforeUnmount(() => {
 		height: 100%;
 
 		> ::v-deep(cropper-canvas) {
-			width: 100%;
-			height: 100%;
+			width: calc(100% - 32px);
+			height: calc(100% - 32px);
+			margin: auto;
+			overflow: visible !important;
 
 			> cropper-selection > cropper-handle[action="move"] {
 				background: transparent;
 			}
 
-			/* リサイズ用ノブ: 当たり判定と見た目を 32px に統一 */
-			> cropper-selection > cropper-handle[action$="-resize"] {
-				width: 32px !important;
-				height: 32px !important;
+			/* 上下辺: 幅100%・高さ32px、辺の中央に配置（辺を掴んでリサイズ可能） */
+			> cropper-selection > cropper-handle[action="n-resize"] {
+				height: 32px;
+				min-height: 32px;
+				top: -16px;
+			}
+			> cropper-selection > cropper-handle[action="s-resize"] {
+				height: 32px;
+				min-height: 32px;
+				bottom: -16px;
+			}
+			/* 左右辺: 高さ100%・幅32px、辺の中央に配置 */
+			> cropper-selection > cropper-handle[action="e-resize"] {
+				width: 32px;
+				min-width: 32px;
+				right: -16px;
+			}
+			> cropper-selection > cropper-handle[action="w-resize"] {
+				width: 32px;
+				min-width: 32px;
+				left: -16px;
+			}
+			/* 四隅: 32px×32px、辺の中央に配置 */
+			> cropper-selection > cropper-handle[action="ne-resize"] {
+				width: 32px;
+				height: 32px;
 				min-width: 32px;
 				min-height: 32px;
+				top: -16px;
+				right: -16px;
+			}
+			> cropper-selection > cropper-handle[action="nw-resize"] {
+				width: 32px;
+				height: 32px;
+				min-width: 32px;
+				min-height: 32px;
+				top: -16px;
+				left: -16px;
+			}
+			> cropper-selection > cropper-handle[action="se-resize"] {
+				width: 32px;
+				height: 32px;
+				min-width: 32px;
+				min-height: 32px;
+				bottom: -16px;
+				right: -16px;
+			}
+			> cropper-selection > cropper-handle[action="sw-resize"] {
+				width: 32px;
+				height: 32px;
+				min-width: 32px;
+				min-height: 32px;
+				bottom: -16px;
+				left: -16px;
 			}
 		}
 	}

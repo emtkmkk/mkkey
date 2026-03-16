@@ -2526,6 +2526,13 @@ function buildSwarmText(checkin: {
 }
 
 
+/**
+ * Swarm チェックインに紐づく写真を URL からドライブにアップロードする。
+ * デフォルトのアップロード先（設定の「アップロード先」）に保存する。
+ *
+ * @param photoUrl - アップロードする画像の URL。無い場合は何も添付しない
+ * @internal
+ */
 async function uploadSwarmPhoto(photoUrl: string | null): Promise<void> {
 	try {
 		await enqueueUpload(() => {
@@ -2562,7 +2569,12 @@ async function uploadSwarmPhoto(photoUrl: string | null): Promise<void> {
 					resolve(urlResponse.file);
 				});
 
-				os.api("drive/files/upload-from-url", { url: photoUrl, marker }).catch((err) => {
+				// デフォルトのアップロード先フォルダを指定（未設定の場合はルート）
+				os.api("drive/files/upload-from-url", {
+					url: photoUrl,
+					folderId: defaultStore.state.uploadFolder ?? undefined,
+					marker,
+				}).catch((err) => {
 					if (settled) return;
 					settled = true;
 					clearTimeout(timeoutId);

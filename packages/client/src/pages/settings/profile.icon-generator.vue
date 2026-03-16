@@ -614,12 +614,39 @@ function setHandleAction(element: Element | null | undefined, action: string) {
         handle.setAttribute("action", action);
 }
 
-/** リサイズ用ハンドルの当たり判定とノブを 32px に揃える（Shadow DOM にスタイル注入）。@internal */
-const CROPPER_HANDLE_SIZE_PX = 32;
+/** ノブの最大・最小サイズと辺ノブを非表示にする閾値。@internal */
+const HANDLE_MAX = 32;
+const HANDLE_MIN = 15;
+const EDGE_HIDE_THRESHOLD = 64;
 
+/**
+ * 選択領域のサイズに応じてノブのサイズと辺ノブの表示を更新する。
+ * CSS 変数 --handle-size, --handle-offset, --edge-display を cropperSelection に設定し、
+ * ハンドルのスタイルが自動で追従する。
+ *
+ * @param selectionWidth - 選択領域の幅（px）
+ * @param selectionHeight - 選択領域の高さ（px）
+ * @internal
+ */
+function updateHandleSizes(selectionWidth: number, selectionHeight: number): void {
+        if (!cropperSelection) return;
+        const minDim = Math.min(selectionWidth, selectionHeight);
+        const size = Math.max(HANDLE_MIN, Math.min(HANDLE_MAX, Math.floor(minDim / 3)));
+        const offset = Math.round(size / 2);
+        const hideEdges = minDim < EDGE_HIDE_THRESHOLD;
+
+        cropperSelection.style.setProperty("--handle-size", `${size}px`);
+        cropperSelection.style.setProperty("--handle-offset", `-${offset}px`);
+        cropperSelection.style.setProperty("--edge-display", hideEdges ? "none" : "block");
+}
+
+/**
+ * リサイズ用ハンドルの Shadow DOM に ::after のサイズを CSS 変数参照で注入する。
+ * @internal
+ */
 function injectCropperHandleStyles(container: Element): void {
         const handles = container.querySelectorAll<HTMLElement>('cropper-handle[action$="-resize"]');
-        const styleContent = `:host::after{width:${CROPPER_HANDLE_SIZE_PX}px!important;height:${CROPPER_HANDLE_SIZE_PX}px!important;left:50%;top:50%;transform:translate(-50%,-50%)}@media(pointer:coarse){:host::after{width:${CROPPER_HANDLE_SIZE_PX}px!important;height:${CROPPER_HANDLE_SIZE_PX}px!important}}`;
+        const styleContent = `:host::after{width:var(--handle-size,${HANDLE_MAX}px)!important;height:var(--handle-size,${HANDLE_MAX}px)!important;left:50%;top:50%;transform:translate(-50%,-50%)}@media(pointer:coarse){:host::after{width:var(--handle-size,${HANDLE_MAX}px)!important;height:var(--handle-size,${HANDLE_MAX}px)!important}}`;
         handles.forEach((el) => {
                 if (el.shadowRoot) {
                         const style = document.createElement("style");
@@ -720,6 +747,7 @@ function handleSelectionChange(
         const rawSnapshot = getSelectionSnapshot(source);
         if (!rawSnapshot) return;
         const clamped = clampSelectionSnapshot(rawSnapshot);
+        updateHandleSizes(clamped.width, clamped.height);
         if (cropperSelection && !isSameSelection(rawSnapshot, clamped)) {
                 cropperSelection.$change(
                         clamped.x,
@@ -1101,6 +1129,8 @@ function setupCropper() {
                                 );
                         }
                         selection.$center();
+                        // 初期状態のノブサイズを設定
+                        updateHandleSizes(selection.width, selection.height);
                         handleSelectionChange(true, {
                                 x: selection.x,
                                 y: selection.y,
@@ -1400,6 +1430,7 @@ definePageMetadata({
         min-width: 0;
         width: 100%;
         height: 100%;
+        display: flex; /* margin: auto の縦方向を有効にする */
 
         > ::v-deep(cropper-canvas) {
                 width: calc(100% - 32px) !important;
@@ -1407,60 +1438,64 @@ definePageMetadata({
                 margin: auto;
                 overflow: visible !important;
 
-                /* 上下辺: 幅100%・高さ32px、辺の中央に配置（辺を掴んでリサイズ可能） */
+                /* 上下辺: 幅100%（辺全体を掴んでリサイズ可能）、高さは CSS 変数で動的 */
                 > cropper-selection > cropper-handle[action="n-resize"] {
-                        height: 32px;
-                        min-height: 32px;
-                        top: -16px;
+                        height: var(--handle-size, 32px);
+                        min-height: var(--handle-size, 32px);
+                        top: var(--handle-offset, -16px);
+                        display: var(--edge-display, block);
                 }
                 > cropper-selection > cropper-handle[action="s-resize"] {
-                        height: 32px;
-                        min-height: 32px;
-                        bottom: -16px;
+                        height: var(--handle-size, 32px);
+                        min-height: var(--handle-size, 32px);
+                        bottom: var(--handle-offset, -16px);
+                        display: var(--edge-display, block);
                 }
-                /* 左右辺: 高さ100%・幅32px、辺の中央に配置 */
+                /* 左右辺: 高さ100%（辺全体を掴んでリサイズ可能）、幅は CSS 変数で動的 */
                 > cropper-selection > cropper-handle[action="e-resize"] {
-                        width: 32px;
-                        min-width: 32px;
-                        right: -16px;
+                        width: var(--handle-size, 32px);
+                        min-width: var(--handle-size, 32px);
+                        right: var(--handle-offset, -16px);
+                        display: var(--edge-display, block);
                 }
                 > cropper-selection > cropper-handle[action="w-resize"] {
-                        width: 32px;
-                        min-width: 32px;
-                        left: -16px;
+                        width: var(--handle-size, 32px);
+                        min-width: var(--handle-size, 32px);
+                        left: var(--handle-offset, -16px);
+                        display: var(--edge-display, block);
                 }
-                /* 四隅: 32px×32px、辺の中央に配置 */
+                /* 四隅: CSS 変数で動的サイズ、常に表示 */
                 > cropper-selection > cropper-handle[action="ne-resize"] {
-                        width: 32px;
-                        height: 32px;
-                        min-width: 32px;
-                        min-height: 32px;
-                        top: -16px;
-                        right: -16px;
+                        width: var(--handle-size, 32px);
+                        height: var(--handle-size, 32px);
+                        min-width: var(--handle-size, 32px);
+                        min-height: var(--handle-size, 32px);
+                        top: var(--handle-offset, -16px);
+                        right: var(--handle-offset, -16px);
                 }
                 > cropper-selection > cropper-handle[action="nw-resize"] {
-                        width: 32px;
-                        height: 32px;
-                        min-width: 32px;
-                        min-height: 32px;
-                        top: -16px;
-                        left: -16px;
+                        width: var(--handle-size, 32px);
+                        height: var(--handle-size, 32px);
+                        min-width: var(--handle-size, 32px);
+                        min-height: var(--handle-size, 32px);
+                        top: var(--handle-offset, -16px);
+                        left: var(--handle-offset, -16px);
                 }
                 > cropper-selection > cropper-handle[action="se-resize"] {
-                        width: 32px;
-                        height: 32px;
-                        min-width: 32px;
-                        min-height: 32px;
-                        bottom: -16px;
-                        right: -16px;
+                        width: var(--handle-size, 32px);
+                        height: var(--handle-size, 32px);
+                        min-width: var(--handle-size, 32px);
+                        min-height: var(--handle-size, 32px);
+                        bottom: var(--handle-offset, -16px);
+                        right: var(--handle-offset, -16px);
                 }
                 > cropper-selection > cropper-handle[action="sw-resize"] {
-                        width: 32px;
-                        height: 32px;
-                        min-width: 32px;
-                        min-height: 32px;
-                        bottom: -16px;
-                        left: -16px;
+                        width: var(--handle-size, 32px);
+                        height: var(--handle-size, 32px);
+                        min-width: var(--handle-size, 32px);
+                        min-height: var(--handle-size, 32px);
+                        bottom: var(--handle-offset, -16px);
+                        left: var(--handle-offset, -16px);
                 }
         }
 

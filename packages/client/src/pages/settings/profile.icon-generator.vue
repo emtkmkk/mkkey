@@ -614,6 +614,21 @@ function setHandleAction(element: Element | null | undefined, action: string) {
         handle.setAttribute("action", action);
 }
 
+/** リサイズ用ハンドルの当たり判定とノブを 32px に揃える（Shadow DOM にスタイル注入）。@internal */
+const CROPPER_HANDLE_SIZE_PX = 32;
+
+function injectCropperHandleStyles(container: Element): void {
+        const handles = container.querySelectorAll<HTMLElement>('cropper-handle[action$="-resize"]');
+        const styleContent = `:host::after{width:${CROPPER_HANDLE_SIZE_PX}px!important;height:${CROPPER_HANDLE_SIZE_PX}px!important;left:50%;top:50%;transform:translate(-50%,-50%)}@media(pointer:coarse){:host::after{width:${CROPPER_HANDLE_SIZE_PX}px!important;height:${CROPPER_HANDLE_SIZE_PX}px!important}}`;
+        handles.forEach((el) => {
+                if (el.shadowRoot) {
+                        const style = document.createElement("style");
+                        style.textContent = styleContent;
+                        el.shadowRoot.appendChild(style);
+                }
+        });
+}
+
 function toSelectionSnapshot(source: CropperSelectionData | SelectionSnapshot): SelectionSnapshot | null {
         if (!source) return null;
         const { x, y, width, height } = source;
@@ -1057,6 +1072,8 @@ function setupCropper() {
                         "none",
                 );
 
+                injectCropperHandleStyles(canvas);
+
                 const initializeSelection = () => {
                         if (!cropperSelection || cropperSelection !== selection) {
                                 return;
@@ -1387,6 +1404,14 @@ definePageMetadata({
         > ::v-deep(cropper-canvas) {
                 width: 100% !important;
                 height: 100% !important;
+
+                /* リサイズ用ノブ: 当たり判定と見た目を 32px に統一 */
+                > cropper-selection > cropper-handle[action$="-resize"] {
+                        width: 32px !important;
+                        height: 32px !important;
+                        min-width: 32px;
+                        min-height: 32px;
+                }
         }
 
         > ::v-deep(.cropper-wrap-box),

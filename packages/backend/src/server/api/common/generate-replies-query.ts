@@ -9,6 +9,7 @@ import type { FollowingExistsCondition } from "./following-exists-condition.js";
  * @remarks
  * - note.isBotMention が true の投稿は、replyId がなくても「Botが関わる返信」として扱い、
  *   「返信ではない」条件では通さない（notBotOnly 時も同様に除外）。
+ * - ただし自分の投稿（note.userId = me.id）は isBotMention の有無にかかわらず表示する。
  */
 export function generateRepliesQuery(
         q: SelectQueryBuilder<any>,
@@ -41,10 +42,10 @@ export function generateRepliesQuery(
                 if (following != null) {
                         q.andWhere(
                                 new Brackets((qb) => {
-                                        // 返信ではない（isBotMention は Bot が関わる返信として扱う）
-                                        qb.where(
-                                                "(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))",
-                                        )
+                                        qb.orWhere("note.userId = :meId", { meId: me.id }) // 自分の投稿は isBotMention でも表示
+                                                .orWhere(
+                                                        "(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))",
+                                                ) // 返信ではない（isBotMention は Bot が関わる返信として扱う）
                                                 .orWhere("note.replyUserId = :meId", { meId: me.id }) // 返信だけど自分のノートへの返信
                                                 .orWhere(
 							new Brackets((qb) => {
@@ -109,10 +110,10 @@ export function generateRepliesQuery(
 		} else {
 			q.andWhere(
 				new Brackets((qb) => {
-					// 返信ではない（isBotMention は Bot が関わる返信として扱う）
-					qb.where(
-						"(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))",
-					)
+					qb.orWhere("note.userId = :meId", { meId: me.id }) // 自分の投稿は isBotMention でも表示
+						.orWhere(
+							"(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))",
+						) // 返信ではない（isBotMention は Bot が関わる返信として扱う）
 						.orWhere("note.replyUserId = :meId", { meId: me.id }) // 返信だけど自分のノートへの返信
 						.orWhere(
 							new Brackets((qb) => {

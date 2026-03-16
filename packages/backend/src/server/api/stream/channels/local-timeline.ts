@@ -90,8 +90,11 @@ export default class extends Channel {
 			return;
 		if (note.replyId != null && !(note.reply?.user.host == null || meta.recommendedInstances.includes(note.reply?.user.host))) return;
 
-		// 関係ない返信は除外
-		if (!this.user && note.reply) {
+		// 関係ない返信は除外（isBotMention も Bot が関わる返信として同様に除外、自分の投稿は除く）
+		if (!this.user && (note.reply || note.isBotMention)) {
+			return;
+		}
+		if (this.user && note.isBotMention && note.userId !== this.user.id) {
 			return;
 		}
 		if (note.reply && !this.user!.showTimelineReplies) {
@@ -106,7 +109,7 @@ export default class extends Channel {
 					(this.following.has(reply.reply.userId) &&
 						this.following.has(note.userId));
 			}
-			if (reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "notBotOnly" && (reply.user.isBot || note.user.isBot))) return;
+			if (reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "notBotOnly" && (reply.user.isBot || note.user.isBot || note.isBotMention))) return;
 			if (
 				reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "personalOnly" || !replyFollowing)
 			) return;

@@ -44,10 +44,14 @@ export default class extends Channel {
 	private async onNote(note: Packed<"Note">) {
 		if (note.visibility !== "public") return;
 
-		// 関係ない返信は除外
-		if (!this.user && note.reply) {
+		// 関係ない返信は除外（isBotMention も Bot が関わる返信として同様に除外、自分の投稿は除く）
+		if (!this.user && (note.reply || note.isBotMention)) {
 			return;
-		} if (note.reply && !this.user!.showTimelineReplies) {
+		}
+		if (this.user && note.isBotMention && note.userId !== this.user.id) {
+			return;
+		}
+		if (note.reply && !this.user!.showTimelineReplies) {
 			const reply = note.reply;
 			// 「フォロー中同士の会話」でもなければ、「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信（ただし一つ上の投稿へ遡る）」でもない場合
 			let replyFollowing =
@@ -59,7 +63,7 @@ export default class extends Channel {
 					(this.following.has(reply.reply.userId) &&
 						this.following.has(note.userId));
 			}
-			if (reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "notBotOnly" && (reply.user.isBot || note.user.isBot))) return;
+			if (reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "notBotOnly" && (reply.user.isBot || note.user.isBot || note.isBotMention))) return;
 			if (
 				reply.userId !== this.user!.id && note.userId !== this.user!.id && (this.showReplyMode === "personalOnly" || !replyFollowing)
 			) return;

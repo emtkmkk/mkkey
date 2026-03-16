@@ -48,9 +48,10 @@
  *
  * @public
  */
-import { onMounted } from "vue";
+import { onBeforeUnmount, onMounted } from "vue";
 import * as misskey from "calckey-js";
 import Cropper from "cropperjs";
+import type { CropperCanvas, CropperImage, CropperSelection } from "cropperjs";
 import tinycolor from "tinycolor2";
 import XModalWindow from "@/components/MkModalWindow.vue";
 import * as os from "@/os";
@@ -67,6 +68,22 @@ type SelectionBounds = {
 	width: number;
 	height: number;
 };
+
+/** 選択範囲のスナップショット（x, y, width, height） */
+type SelectionSnapshot = {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+};
+
+/** 選択変更イベントの detail の型 */
+type CropperSelectionData = Partial<SelectionSnapshot> | null | undefined;
+
+/** 画像 transform イベントの detail（contain 判定用） */
+type CropperImageTransformDetail = { matrix?: number[] };
+
+const MIN_SELECTION_SIZE = 0.001;
 
 const emit = defineEmits<{
 	(ev: "ok", cropped: misskey.entities.DriveFile): void;
@@ -87,7 +104,25 @@ const imgUrl = `${url}/proxy/image.webp?${query({
 let dialogEl = $ref<InstanceType<typeof XModalWindow>>();
 let imgEl = $ref<HTMLImageElement>();
 let cropper: Cropper | null = null;
+let cropperCanvas: CropperCanvas | null = null;
+let cropperImage: CropperImage | null = null;
+let cropperSelection: CropperSelection | null = null;
 let loading = $ref(true);
+
+/** contain 強制の requestAnimationFrame ID。@internal */
+let containEnforcementFrame: number | null = null;
+/** contain 強制を一時的に止めるフラグ（初期選択設定時など）。@internal */
+let suppressContainEnforcement = false;
+let selectionChangeListener: ((event: Event) => void) | null = null;
+let imageTransformListener: ((event: Event) => void) | null = null;
+let canvasActionEndListener: (() => void) | null = null;
+
+/** 数値の clamp。@internal */
+function clamp(value: number, min: number, max: number): number {
+	if (value < min) return min;
+	if (value > max) return max;
+	return value;
+}
 
 // #region 表示領域（bounds）取得と初期選択の計算
 
@@ -163,9 +198,227 @@ function computeInitialSelection(
 	return { x, y, width, height };
 }
 
+// #endregion
+
+// #region contain 強制・選択のクランプ・イベント処理（アイコンジェネレーターと同様）
+
+/**
+ * 画像を常に contain で収めるため、requestAnimationFrame で $center("contain") を継続する。
+ * @internal
+ */
+function ensureContainEnforcement(): void {
+	if (containEnforcementFrame != null) return;
+	const step = () => {
+		if (!cropperImage) {
+			containEnforcementFrame = null;
+			return;
+		}
+		if (!suppressContainEnforcement) {
+			try {
+				cropperImage.$center("contain");
+			} catch {
+				// noop - 予期しないランタイムエラーを防ぐ
+			}
+		}
+		containEnforcementFrame = window.requestAnimationFrame(step);
+	};
+	containEnforcementFrame = window.requestAnimationFrame(step);
+}
+
+/** contain 強制のループを停止する。@internal */
+function cancelContainEnforcement(): void {
+	if (containEnforcementFrame != null) {
+		window.cancelAnimationFrame(containEnforcementFrame);
+		containEnforcementFrame = null;
+	}
+}
+
+/**
+ * contain 強制を一時的に止めて callback を実行し、終了後に再開する。
+ * 初期選択の $change などでレイアウトがぶれないようにする。
+ * @internal
+ */
+function runWithContainSuppressed(callback: () => void): void {
+	const previous = suppressContainEnforcement;
+	suppressContainEnforcement = true;
+	try {
+		callback();
+	} finally {
+		suppressContainEnforcement = previous;
+		if (!previous) ensureContainEnforcement();
+	}
+}
+
+/**
+ * 指定 transform を適用した場合に画像がキャンバスからはみ出すか判定する。
+ * はみ出す場合は true を返し、呼び出し側で event.preventDefault() する想定。
+ * @internal
+ */
+function shouldPreventContainTransform(matrix: number[]): boolean {
+	if (!cropperCanvas || !cropperImage) return false;
+	const canvasRect = cropperCanvas.getBoundingClientRect();
+	if (!canvasRect.width || !canvasRect.height) return false;
+	const clone = cropperImage.cloneNode() as CropperImage;
+	clone.style.transform = `matrix(${matrix.join(", ")})`;
+	clone.style.opacity = "0";
+	cropperCanvas.appendChild(clone);
+	const imageRect = clone.getBoundingClientRect();
+	cropperCanvas.removeChild(clone);
+	if (!imageRect.width || !imageRect.height) return false;
+	return (
+		(imageRect.top > canvasRect.top && imageRect.right < canvasRect.right) ||
+		(imageRect.right < canvasRect.right && imageRect.bottom < canvasRect.bottom) ||
+		(imageRect.bottom < canvasRect.bottom && imageRect.left > canvasRect.left) ||
+		(imageRect.left > canvasRect.left && imageRect.top > canvasRect.top)
+	);
+}
+
+/**
+ * 選択範囲を表示領域（bounds）内にクランプする。
+ * aspectRatio 0 は自由比、正の数は幅/高さの比を維持する。
+ * @internal
+ */
+function clampSelectionSnapshot(snapshot: SelectionSnapshot): SelectionSnapshot {
+	const bounds = cropper ? getSelectionBounds(cropper) : null;
+	if (!bounds) return { ...snapshot };
+	const ratio = props.aspectRatio;
+
+	if (ratio <= 0) {
+		const minW = MIN_SELECTION_SIZE;
+		const minH = MIN_SELECTION_SIZE;
+		const width = clamp(
+			Number.isFinite(snapshot.width) ? snapshot.width : bounds.width,
+			minW,
+			bounds.width,
+		);
+		const height = clamp(
+			Number.isFinite(snapshot.height) ? snapshot.height : bounds.height,
+			minH,
+			bounds.height,
+		);
+		const maxX = bounds.offsetX + Math.max(0, bounds.width - width);
+		const maxY = bounds.offsetY + Math.max(0, bounds.height - height);
+		const x = clamp(
+			Number.isFinite(snapshot.x) ? snapshot.x : bounds.offsetX,
+			bounds.offsetX,
+			maxX,
+		);
+		const y = clamp(
+			Number.isFinite(snapshot.y) ? snapshot.y : bounds.offsetY,
+			bounds.offsetY,
+			maxY,
+		);
+		return { x, y, width, height };
+	}
+
+	const maxWidth = Math.min(bounds.width, bounds.height * ratio);
+	const maxHeight = Math.min(bounds.height, bounds.width / ratio);
+	let width = clamp(
+		Number.isFinite(snapshot.width) ? snapshot.width : maxWidth,
+		MIN_SELECTION_SIZE,
+		maxWidth,
+	);
+	let height = width / ratio;
+	if (height > bounds.height) {
+		height = bounds.height;
+		width = height * ratio;
+	}
+	const maxX = bounds.offsetX + Math.max(0, bounds.width - width);
+	const maxY = bounds.offsetY + Math.max(0, bounds.height - height);
+	const x = clamp(
+		Number.isFinite(snapshot.x) ? snapshot.x : bounds.offsetX,
+		bounds.offsetX,
+		maxX,
+	);
+	const y = clamp(
+		Number.isFinite(snapshot.y) ? snapshot.y : bounds.offsetY,
+		bounds.offsetY,
+		maxY,
+	);
+	return { x, y, width, height };
+}
+
+function isNearlyEqual(a: number, b: number, epsilon = 0.001): boolean {
+	return Math.abs(a - b) <= epsilon;
+}
+
+function isSameSelection(a: SelectionSnapshot, b: SelectionSnapshot): boolean {
+	return (
+		isNearlyEqual(a.x, b.x) &&
+		isNearlyEqual(a.y, b.y) &&
+		isNearlyEqual(a.width, b.width) &&
+		isNearlyEqual(a.height, b.height)
+	);
+}
+
+function toSelectionSnapshot(source: CropperSelectionData | SelectionSnapshot): SelectionSnapshot | null {
+	if (!source) return null;
+	const { x, y, width, height } = source;
+	if (x == null || y == null || width == null || height == null) return null;
+	const widthValue = Number(width);
+	const heightValue = Number(height);
+	const sizeSource = Math.max(
+		Number.isFinite(widthValue) ? widthValue : 0,
+		Number.isFinite(heightValue) ? heightValue : 0,
+	);
+	const size = Math.max(MIN_SELECTION_SIZE, sizeSource);
+	const w = Number.isFinite(widthValue) && widthValue > 0 ? widthValue : size;
+	const h = Number.isFinite(heightValue) && heightValue > 0 ? heightValue : size;
+	return {
+		x: Number(x) || 0,
+		y: Number(y) || 0,
+		width: w,
+		height: h,
+	};
+}
+
+/**
+ * 選択変更時に bounds 内にクランプし、必要なら selection.$change で反映する。
+ * アイコンジェネレーターの handleSelectionChange と同様の役割（履歴なし）。
+ * @internal
+ */
+function handleSelectionChange(recordEnd: boolean, source?: CropperSelectionData | SelectionSnapshot): void {
+	const rawSnapshot = toSelectionSnapshot(
+		source ??
+			(cropperSelection
+				? {
+						x: cropperSelection.x,
+						y: cropperSelection.y,
+						width: cropperSelection.width,
+						height: cropperSelection.height,
+					}
+				: undefined),
+	);
+	if (!rawSnapshot || !cropperSelection) return;
+	const clamped = clampSelectionSnapshot(rawSnapshot);
+	if (!isSameSelection(rawSnapshot, clamped)) {
+		cropperSelection.$change(
+			clamped.x,
+			clamped.y,
+			clamped.width,
+			clamped.height,
+			props.aspectRatio > 0 ? props.aspectRatio : undefined,
+		);
+	}
+}
+
+type CropperHandleElement = HTMLElement & { action?: string };
+
+function setHandleAction(element: Element | null | undefined, action: string): void {
+	const handle = element as CropperHandleElement | null;
+	if (!handle) return;
+	if (typeof handle.action !== "undefined") handle.action = action;
+	handle.setAttribute("action", action);
+}
+
+// #endregion
+
+// #region 初期選択の適用
+
 /**
  * 画像を contain で中央に配置し、初期選択を表示領域いっぱい（または指定比で最大）に設定する。
  * モーダル表示直後とアニメーション後の両方で呼ぶ想定。
+ * アイコンジェネレーターと同様に runWithContainSuppressed 内で画像配置し、クランプしてから $change する。
  *
  * @internal
  */
@@ -175,17 +428,28 @@ function initializeSelectionAndImage(): void {
 	const selection = cropper.getCropperSelection();
 	if (!image || !selection) return;
 
-	image.$center("contain");
+	runWithContainSuppressed(() => {
+		image.$center("contain");
+	});
 	const bounds = getSelectionBounds(cropper);
 	if (bounds && bounds.width > 0 && bounds.height > 0) {
-		const { x, y, width, height } = computeInitialSelection(
-			bounds,
-			props.aspectRatio,
+		const raw = computeInitialSelection(bounds, props.aspectRatio);
+		const initial = clampSelectionSnapshot(raw);
+		selection.$change(
+			initial.x,
+			initial.y,
+			initial.width,
+			initial.height,
+			props.aspectRatio > 0 ? 1 : undefined,
 		);
-		selection.$change(x, y, width, height, 1);
-	} else {
-		selection.$center();
 	}
+	selection.$center();
+	handleSelectionChange(true, {
+		x: selection.x,
+		y: selection.y,
+		width: selection.width,
+		height: selection.height,
+	});
 }
 
 // #endregion
@@ -334,25 +598,145 @@ const onImageLoad = () => {
 
 // #endregion
 
-// #region マウントと選択の初期化
+// #region マウントと選択の初期化・破棄
 
 onMounted(() => {
 	cropper = new Cropper(imgEl, {});
 
 	const computedStyle = getComputedStyle(document.documentElement);
-	const selection = cropper.getCropperSelection()!;
-	selection.themeColor = tinycolor(
-		computedStyle.getPropertyValue("--accent")
-	).toHexString();
-	selection.aspectRatio = props.aspectRatio;
-	selection.initialAspectRatio = props.aspectRatio;
-	selection.outlined = true;
 
-	// レイアウト確定後に初期選択を表示領域いっぱい（または指定比で最大）に設定
-	window.setTimeout(initializeSelectionAndImage, 100);
+	const initializeElements = (attempt = 0) => {
+		if (!cropper) return;
+		const canvas = cropper.getCropperCanvas();
+		const image = cropper.getCropperImage();
+		const selection = cropper.getCropperSelection();
 
-	// モーダルオープンアニメーションが終わったあとで再度調整
-	window.setTimeout(initializeSelectionAndImage, 500);
+		if (!canvas || !image || !selection) {
+			if (attempt < 60) {
+				window.setTimeout(() => initializeElements(attempt + 1), 50);
+			}
+			return;
+		}
+
+		cropperCanvas = canvas;
+		cropperCanvas.background = false;
+		cropperImage = image;
+		cropperImage.translatable = true;
+		cropperImage.rotatable = false;
+		cropperImage.scalable = true;
+		ensureContainEnforcement();
+		cropperSelection = selection;
+
+		if (selectionChangeListener) {
+			selection.removeEventListener("change", selectionChangeListener as EventListener);
+		}
+		selectionChangeListener = (event: Event) => {
+			const detail = (event as CustomEvent<CropperSelectionData>).detail ?? {
+				x: selection.x,
+				y: selection.y,
+				width: selection.width,
+				height: selection.height,
+			};
+			handleSelectionChange(false, detail);
+		};
+		selection.addEventListener("change", selectionChangeListener as EventListener);
+
+		if (imageTransformListener) {
+			image.removeEventListener("transform", imageTransformListener as EventListener);
+		}
+		imageTransformListener = (event: Event) => {
+			const detail = (event as CustomEvent<CropperImageTransformDetail>).detail;
+			const matrix = detail?.matrix;
+			if (matrix && shouldPreventContainTransform(matrix)) {
+				event.preventDefault();
+				return;
+			}
+			if (!cropperSelection) return;
+			handleSelectionChange(false, {
+				x: cropperSelection.x,
+				y: cropperSelection.y,
+				width: cropperSelection.width,
+				height: cropperSelection.height,
+			});
+		};
+		image.addEventListener("transform", imageTransformListener as EventListener);
+
+		if (canvasActionEndListener) {
+			canvas.removeEventListener("actionend", canvasActionEndListener as EventListener);
+		}
+		canvasActionEndListener = () => {
+			if (!cropperSelection) return;
+			handleSelectionChange(true, {
+				x: cropperSelection.x,
+				y: cropperSelection.y,
+				width: cropperSelection.width,
+				height: cropperSelection.height,
+			});
+		};
+		canvas.addEventListener("actionend", canvasActionEndListener as EventListener);
+
+		selection.themeColor = tinycolor(
+			computedStyle.getPropertyValue("--accent"),
+		).toHexString();
+		selection.aspectRatio = props.aspectRatio;
+		selection.initialAspectRatio = props.aspectRatio;
+		if (props.aspectRatio > 0) {
+			(selection as { initialCoverage?: number }).initialCoverage = 1;
+		}
+		selection.movable = true;
+		selection.resizable = true;
+		selection.keyboard = true;
+		selection.outlined = true;
+		selection.precise = true;
+
+		setHandleAction(
+			canvas.querySelector('cropper-handle[action="select"]'),
+			"none",
+		);
+
+		const doInitializeSelection = () => {
+			if (!cropperSelection || cropperSelection !== selection) return;
+			initializeSelectionAndImage();
+		};
+		window.setTimeout(doInitializeSelection, 50);
+		window.setTimeout(doInitializeSelection, 100);
+		window.setTimeout(doInitializeSelection, 500);
+	};
+
+	initializeElements();
+});
+
+onBeforeUnmount(() => {
+	cancelContainEnforcement();
+	suppressContainEnforcement = false;
+	if (cropperSelection && selectionChangeListener) {
+		cropperSelection.removeEventListener("change", selectionChangeListener as EventListener);
+	}
+	if (cropperImage && imageTransformListener) {
+		cropperImage.removeEventListener("transform", imageTransformListener as EventListener);
+	}
+	if (cropperCanvas && canvasActionEndListener) {
+		cropperCanvas.removeEventListener("actionend", canvasActionEndListener as EventListener);
+	}
+	selectionChangeListener = null;
+	canvasActionEndListener = null;
+	imageTransformListener = null;
+	cropperCanvas = null;
+	cropperImage = null;
+	cropperSelection = null;
+
+	if (cropper && imgEl) {
+		const container = cropper.container;
+		if (container) {
+			let next = imgEl.nextElementSibling;
+			while (next && (next as Element).tagName?.startsWith("CROPPER-")) {
+				const current = next;
+				next = next.nextElementSibling;
+				(current as Element).remove();
+			}
+		}
+	}
+	cropper = null;
 });
 
 // #endregion

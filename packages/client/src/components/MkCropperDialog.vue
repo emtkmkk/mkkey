@@ -89,7 +89,7 @@ let imgEl = $ref<HTMLImageElement>();
 let cropper: Cropper | null = null;
 let loading = $ref(true);
 
-#region 表示領域（bounds）取得と初期選択の計算
+// #region 表示領域（bounds）取得と初期選択の計算
 
 /**
  * キャンバス上での画像の表示領域を取得する。
@@ -188,9 +188,9 @@ function initializeSelectionAndImage(): void {
 	}
 }
 
-#endregion
+// #endregion
 
-#region クロップ実行とダイアログ操作
+// #region クロップ実行とダイアログ操作
 
 /**
  * 現在の選択範囲でクロップし、Drive にアップロードしてからダイアログを閉じて結果を返す。
@@ -332,9 +332,9 @@ const onImageLoad = () => {
 	initializeSelectionAndImage();
 };
 
-#endregion
+// #endregion
 
-#region マウントと選択の初期化
+// #region マウントと選択の初期化
 
 onMounted(() => {
 	cropper = new Cropper(imgEl, {});
@@ -355,7 +355,7 @@ onMounted(() => {
 	window.setTimeout(initializeSelectionAndImage, 500);
 });
 
-#endregion
+// #endregion
 </script>
 
 <style lang="scss" scoped>

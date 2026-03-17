@@ -321,7 +321,8 @@ const isRemoteNote = $computed(
 		props.note.user?.host != null && props.note.user.host !== config.host,
 );
 const isLocalAfterCompatDate = $computed(() => {
-	if (isRemoteNote.value) return false;
+	// $computed は自動アンラップされるため .value は不要
+	if (isRemoteNote) return false;
 	try {
 		const created = new Date(props.note.createdAt);
 		if (Number.isNaN(created.getTime())) return false;
@@ -334,8 +335,8 @@ const isLocalAfterCompatDate = $computed(() => {
 });
 const mfmCompat = $computed(
 	() =>
-		hasPositionForCompat.value &&
-		(isRemoteNote.value || isLocalAfterCompatDate.value),
+		hasPositionForCompat &&
+		(isRemoteNote || isLocalAfterCompatDate),
 );
 
 let disableMfm = $ref(hasMfm && defaultStore.state.animatedMfm);

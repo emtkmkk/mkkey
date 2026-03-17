@@ -9,6 +9,7 @@
                 :note-host="noteHost"
                 class="havbbuyv"
                 :class="{ nowrap, 'mfm-compat': mfmCompat }"
+                :mfm-compat="mfmCompat"
                 :reaction-menu-enabled="reactionMenuEnabled"
                 :note="note"
                 :is-cw="isCw"

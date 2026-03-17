@@ -322,10 +322,15 @@ const isRemoteNote = $computed(
 );
 const isLocalAfterCompatDate = $computed(() => {
 	if (isRemoteNote.value) return false;
-	const created = new Date(props.note.createdAt);
-	// タイムゾーンに依存しないよう、UTC 日付文字列で比較する
-	const createdUtcDate = created.toISOString().slice(0, 10);
-	return createdUtcDate >= MFM_COMPAT_IMPLEMENTED_UTC_DATE;
+	try {
+		const created = new Date(props.note.createdAt);
+		if (Number.isNaN(created.getTime())) return false;
+		// タイムゾーンに依存しないよう、UTC 日付文字列で比較する
+		const createdUtcDate = created.toISOString().slice(0, 10);
+		return createdUtcDate >= MFM_COMPAT_IMPLEMENTED_UTC_DATE;
+	} catch {
+		return false;
+	}
 });
 const mfmCompat = $computed(
 	() =>

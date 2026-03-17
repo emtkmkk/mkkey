@@ -342,9 +342,14 @@ const props = withDefaults(
 	height: 2em;
 	vertical-align: middle;
 	min-height: unset;
+	/* Misskey と同様に横幅制限を解除し、position の見た目をプレビューと実投稿で一致させる */
+	max-width: unset;
+	object-fit: unset;
 }
 .havbbuyv.mfm-compat .mk-emoji.bigCustom {
 	height: 2em;
+	max-width: unset;
+	object-fit: unset;
 }
 </style>
 

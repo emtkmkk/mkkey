@@ -18,12 +18,14 @@
 						"
 						:author="$i"
 						:i="$i"
+						:mfm-compat="mfmCompat"
 						reaction-menu-enabled
 					/>
 					<Mfm
 						:text="preprocess(text).trim()"
 						:author="$i"
 						:i="$i"
+						:mfm-compat="mfmCompat"
 						reaction-menu-enabled
 					/>
 					<MkFolder
@@ -47,6 +49,7 @@
 <script lang="ts" setup>
 import { ref, watch } from "vue";
 import { preprocess } from "@/scripts/preprocess";
+import { shouldEnableMfmCompat } from "@/scripts/mfm-compat";
 import { i18n } from "@/i18n";
 import XNoteSimple from "@/components/MkNoteSimple.vue";
 import MkFolder from "@/components/MkFolder.vue";
@@ -60,6 +63,13 @@ const props = defineProps<{
 }>();
 
 let refExpand = $ref(false);
+
+/** プレビューは新規投稿扱いのため、$[position] があれば常に Misskey 互換モードを有効にする */
+const mfmCompat = $computed(
+	() =>
+		shouldEnableMfmCompat(preprocess(props.text).trim()) ||
+		(props.cw != null && shouldEnableMfmCompat(preprocess(props.cw).trim())),
+);
 
 const notes = ref<Record<string, Note | null>>({});
 
@@ -148,7 +158,7 @@ watch(
 					margin: 0;
 					padding: 0;
 				}
-				
+
 				> .references {
 					padding-top: 0.5rem;
 					.reference {

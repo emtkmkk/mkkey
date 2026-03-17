@@ -8,7 +8,7 @@
                 :is-note="isNote"
                 :note-host="noteHost"
                 class="havbbuyv"
-                :class="{ nowrap }"
+                :class="{ nowrap, 'mfm-compat': mfmCompat }"
                 :reaction-menu-enabled="reactionMenuEnabled"
                 :note="note"
                 :is-cw="isCw"
@@ -28,29 +28,32 @@ const props = withDefaults(
 		plain?: boolean;
 		nowrap?: boolean;
 		author?: any;
-                customEmojis?: any;
-                isNote?: boolean;
-                noteHost?: string | null;
-                reactionMenuEnabled?: boolean;
-                note?: any;
-                isCw?: boolean;
-                userPage?: boolean;
-                relMe?: boolean;
-                allowRemoteEmoji?: boolean;
-        }>(),
-        {
-                plain: false,
-                nowrap: false,
-                author: null,
-                isNote: true,
-                noteHost: null,
-                reactionMenuEnabled: false,
-                note: null,
-                isCw: false,
-                userPage: false,
-                relMe: false,
-                allowRemoteEmoji: true,
-        }
+		customEmojis?: any;
+		isNote?: boolean;
+		noteHost?: string | null;
+		reactionMenuEnabled?: boolean;
+		note?: any;
+		isCw?: boolean;
+		userPage?: boolean;
+		relMe?: boolean;
+		allowRemoteEmoji?: boolean;
+		/** Misskey 互換 MFM 表示モード（絵文字・line-height を Misskey に合わせる） */
+		mfmCompat?: boolean;
+	}>(),
+	{
+		plain: false,
+		nowrap: false,
+		author: null,
+		isNote: true,
+		noteHost: null,
+		reactionMenuEnabled: false,
+		note: null,
+		isCw: false,
+		userPage: false,
+		relMe: false,
+		allowRemoteEmoji: true,
+		mfmCompat: false,
+	}
 );
 </script>
 
@@ -328,6 +331,19 @@ const props = withDefaults(
 	100% {
 		opacity: 1;
 	}
+}
+
+/* Misskey 互換 MFM モード: 投稿全体の line-height と絵文字スタイルを Misskey に合わせる */
+.havbbuyv.mfm-compat {
+	line-height: 1.35;
+}
+.havbbuyv.mfm-compat .mk-emoji.custom {
+	height: 2em;
+	vertical-align: middle;
+	min-height: unset;
+}
+.havbbuyv.mfm-compat .mk-emoji.bigCustom {
+	height: 2em;
 }
 </style>
 

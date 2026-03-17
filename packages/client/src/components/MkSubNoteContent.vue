@@ -42,6 +42,7 @@
 			:allow-remote-emoji="defaultStore.state.showRemoteEmojiTimeline"
 			:reaction-menu-enabled="true"
 			:note="note"
+			:mfm-compat="mfmCompat"
 			is-cw
 		/>
 		<Mfm
@@ -54,6 +55,7 @@
 			:allow-remote-emoji="defaultStore.state.showRemoteEmojiTimeline"
 			:reaction-menu-enabled="true"
 			:note="note"
+			:mfm-compat="mfmCompat"
 			is-cw
 		/>
 	</p>
@@ -137,6 +139,7 @@
 					:allow-remote-emoji="defaultStore.state.showRemoteEmojiTimeline"
 					:reaction-menu-enabled="true"
 					:note="note"
+					:mfm-compat="mfmCompat"
 				/>
 				<Mfm
 					v-else-if="note.text && !note.deletedAt && !note.invisible"
@@ -147,6 +150,7 @@
 					:allow-remote-emoji="defaultStore.state.showRemoteEmojiTimeline"
 					:reaction-menu-enabled="true"
 					:note="note"
+					:mfm-compat="mfmCompat"
 				/>
 				<MkA
 					v-if="!detailed && note.renoteId"
@@ -235,6 +239,7 @@ import MkButton from "@/components/MkButton.vue";
 import MkFolder from "@/components/MkFolder.vue";
 import { extractUrlFromMfm } from "@/scripts/extract-url-from-mfm";
 import { extractMfmWithAnimation } from "@/scripts/extract-mfm";
+import { shouldEnableMfmCompat } from "@/scripts/mfm-compat";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
 import { $i } from "@/account";
@@ -301,6 +306,26 @@ const mfms = props.note.text
 	: null;
 
 const hasMfm = $ref(mfms && mfms.length > 0);
+
+/** 互換モード実装日（この日付以降のローカル投稿に互換モードを適用する） */
+const MFM_COMPAT_IMPLEMENTED_AT = new Date("2026-03-17T00:00:00Z");
+const hasPositionForCompat = $computed(() =>
+	shouldEnableMfmCompat(props.note.text),
+);
+const isRemoteNote = $computed(
+	() =>
+		props.note.user?.host != null && props.note.user.host !== config.host,
+);
+const isLocalAfterCompatDate = $computed(
+	() =>
+		!isRemoteNote.value &&
+		new Date(props.note.createdAt) >= MFM_COMPAT_IMPLEMENTED_AT,
+);
+const mfmCompat = $computed(
+	() =>
+		hasPositionForCompat.value &&
+		(isRemoteNote.value || isLocalAfterCompatDate.value),
+);
 
 let disableMfm = $ref(hasMfm && defaultStore.state.animatedMfm);
 

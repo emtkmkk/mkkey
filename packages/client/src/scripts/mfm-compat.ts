@@ -18,17 +18,18 @@ import * as mfm from "mfm-js";
  * MFM AST を再帰的に走査し、互換モードを有効にすべきかどうかを判定する。
  *
  * @param nodes - mfm.parse() で得たルートノード配列
- * @returns いずれかのノードが type === 'fn' かつ name === 'position' かつ args.nocompat が無い場合に true
+ * @returns いずれかのノードが type === 'fn' かつ name が 'position'（大文字小文字無視）かつ args.nocompat が無い場合に true
  *
  * @remarks
  * - fn ノードの args は mfm-js のパース結果に依存する。nocompat は省略可能なオプション。
  * - 子孫ノード（入れ子の fn など）も再帰的に走査する。
+ * - パーサやクライアント差で name の大文字小文字が異なる場合に備え、name は大文字小文字を区別しない。
  *
  * @internal
  */
 function hasPositionWithoutNocompat(nodes: mfm.MfmNode[]): boolean {
 	for (const node of nodes) {
-		if (node.type === "fn" && node.props.name === "position") {
+		if (node.type === "fn" && node.props.name?.toLowerCase() === "position") {
 			const args = node.props.args ?? {};
 			const nocompat = args.nocompat;
 			// nocompat が未指定または偽なら、この position は互換モードを有効にする

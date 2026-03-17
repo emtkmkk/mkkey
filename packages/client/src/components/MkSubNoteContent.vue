@@ -307,8 +307,12 @@ const mfms = props.note.text
 
 const hasMfm = $ref(mfms && mfms.length > 0);
 
-/** 互換モード実装日（この日付以降のローカル投稿に互換モードを適用する） */
-const MFM_COMPAT_IMPLEMENTED_AT = new Date("2026-03-17T00:00:00Z");
+/**
+ * 互換モード実装日（この UTC 日付以降に作成されたローカル投稿に互換モードを適用する）。
+ * 文字列で比較するためタイムゾーン解釈の差による境界値ミスを防ぐ。
+ * @internal
+ */
+const MFM_COMPAT_IMPLEMENTED_UTC_DATE = "2026-03-17";
 const hasPositionForCompat = $computed(() =>
 	shouldEnableMfmCompat(props.note.text),
 );
@@ -316,11 +320,13 @@ const isRemoteNote = $computed(
 	() =>
 		props.note.user?.host != null && props.note.user.host !== config.host,
 );
-const isLocalAfterCompatDate = $computed(
-	() =>
-		!isRemoteNote.value &&
-		new Date(props.note.createdAt) >= MFM_COMPAT_IMPLEMENTED_AT,
-);
+const isLocalAfterCompatDate = $computed(() => {
+	if (isRemoteNote.value) return false;
+	const created = new Date(props.note.createdAt);
+	// タイムゾーンに依存しないよう、UTC 日付文字列で比較する
+	const createdUtcDate = created.toISOString().slice(0, 10);
+	return createdUtcDate >= MFM_COMPAT_IMPLEMENTED_UTC_DATE;
+});
 const mfmCompat = $computed(
 	() =>
 		hasPositionForCompat.value &&

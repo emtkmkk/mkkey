@@ -307,8 +307,9 @@ const pinnedAgeEnabled = $computed({
 	set: (v: boolean) => {
 		if (v === pinnedAgeFlag) return;
 		if (!v) {
-			// OFF: 値は残しつつ、送信時に null を送るためのフラグだけ落とす
+			// OFF: 値は残しつつ、フラグを落としてから即 save() で null を送信する
 			pinnedAgeFlag = false;
+			save();
 			return;
 		}
 		// ON: 既に値がある場合はそのまま（再判定しない）

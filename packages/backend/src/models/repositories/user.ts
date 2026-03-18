@@ -1100,6 +1100,7 @@ export const UserRepository = db.getRepository(User).extend({
 						description: isDeleted ? "" : profile!.description,
 						location: isDeleted ? "" : profile!.location,
                                                 birthday: isDeleted ? "" : profile!.birthday,
+                                                pinnedAge: isDeleted ? null : profile!.pinnedAge,
                                                 lang: isDeleted ? "" : profile!.lang,
                                                 fields: isDeleted ? "" : profile!.fields,
                                                 verifiedLinks: isDeleted ? [] : profile!.verifiedLinks,

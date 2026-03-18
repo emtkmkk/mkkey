@@ -611,9 +611,41 @@ const visiblePinnedNotes = $computed(() => {
 		: props.user.pinnedNotes.slice(0, 2);
 });
 
+/** 表示用の誕生日。ローカルでは pinnedAge を優先。リモートでは名前・自己紹介から年齢を判定する既存ロジックを使用。 */
 const birthday = $computed(() => {
+	// リモートユーザー: 既存のプロフィール（名前・説明）から年齢を判定して表示
 	if (props.user.host) {
-		return props.user.birthday;
+		const canceltest =
+			/(\d{1,2})(yo|歳|sai)([以未])/.test(props.user.name ?? "") ||
+			/(\d{1,2})(yo|歳|sai)([以未])/.test(props.user.description ?? "");
+		const regtest =
+			/(\d{1,2})(yo|歳|sai)([^以未]|$)/.test(props.user.name ?? "") ||
+			/(\d{1,2})(yo|歳|sai)([^以未]|$)/.test(props.user.description ?? "");
+		if (!regtest || canceltest) return props.user.birthday;
+		const dyear =
+			/(\d{1,2})(yo|歳|sai)([^以未]|$)/.exec(props.user.name ?? "")?.[1] ??
+			/(\d{1,2})(yo|歳|sai)([^以未]|$)/.exec(
+				props.user.description ?? "",
+			)?.[1];
+		if (dyear == null) return props.user.birthday;
+		const dyearint = parseInt(dyear, 10);
+		if (Number.isNaN(dyearint) || dyearint < 6 || dyearint > 122)
+			return props.user.birthday;
+		const today = new Date();
+		let _birthday: Date;
+		if (!props.user.birthday) {
+			_birthday = new Date();
+			_birthday.setMonth(_birthday.getMonth() - 6);
+		} else {
+			_birthday = new Date(props.user.birthday);
+		}
+		_birthday.setFullYear(today.getFullYear() - dyearint);
+		_birthday.setHours(0, 0, 0, 0);
+		const y8date = new Date();
+		y8date.setFullYear(today.getFullYear() - dyearint);
+		y8date.setHours(0, 0, 0, 0);
+		if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
+		return `${String(_birthday.getFullYear()).padStart(4, "0")}-${String(_birthday.getMonth() + 1).padStart(2, "0")}-${String(_birthday.getDate()).padStart(2, "0")}`;
 	}
 
 	if (
@@ -632,22 +664,13 @@ const birthday = $computed(() => {
 		).slice(-2)}-${("00" + _birthday.getDate()).slice(-2)}`;
 	}
 
-	const canceltest =
-		/(\d{1,2})(yo|歳|sai)([以未])/.test(props.user.name ?? "") ||
-		/(\d{1,2})(yo|歳|sai)([以未])/.test(props.user.description ?? "");
-
-	const regtest =
-		/(\d{1,2})(yo|歳|sai)([^以未]|$)/.test(props.user.name ?? "") ||
-		/(\d{1,2})(yo|歳|sai)([^以未]|$)/.test(props.user.description ?? "");
-
-	if (!regtest || canceltest) {
+	const pinnedAge = props.user.pinnedAge;
+	if (pinnedAge == null || pinnedAge < 6 || pinnedAge > 122) {
 		return props.user.birthday;
 	}
 
-	let _birthday;
-
 	const today = new Date();
-
+	let _birthday: Date;
 	if (!props.user.birthday) {
 		_birthday = new Date();
 		_birthday.setMonth(_birthday.getMonth() - 6);
@@ -655,26 +678,14 @@ const birthday = $computed(() => {
 		_birthday = new Date(props.user.birthday);
 	}
 
-	const dyear =
-		/(\d{1,2})(yo|歳|sai)([^以未]|$)/.exec(props.user.name ?? "")?.[1] ??
-		/(\d{1,2})(yo|歳|sai)([^以未]|$)/.exec(
-			props.user.description ?? ""
-		)?.[1];
-
-	if (dyear == null) return props.user.birthday;
-
-	const dyearint = parseInt(dyear, 10);
-
-	if (isNaN(dyearint)) return props.user.birthday;
-
-	_birthday.setFullYear(today.getFullYear() - dyearint);
+	_birthday.setFullYear(today.getFullYear() - pinnedAge);
 	_birthday.setHours(0);
 	_birthday.setMinutes(0);
 	_birthday.setSeconds(0);
 	_birthday.setMilliseconds(0);
 
 	const y8date = new Date();
-	y8date.setFullYear(today.getFullYear() - dyearint);
+	y8date.setFullYear(today.getFullYear() - pinnedAge);
 	y8date.setHours(0);
 	y8date.setMinutes(0);
 	y8date.setSeconds(0);

@@ -97,7 +97,30 @@ export async function renderPerson(user: ILocalUser) {
 	}
 
 	if (profile.birthday) {
-		person["vcard:bday"] = profile.birthday;
+		// 固定年齢が有効かつ誕生日に月日がある場合、年を逆算してリモートに配送する
+		const pinnedAge = profile.pinnedAge;
+		if (
+			pinnedAge != null &&
+			pinnedAge >= 6 &&
+			pinnedAge <= 122 &&
+			profile.birthday.length >= 10
+		) {
+			const today = new Date();
+			const month = profile.birthday.slice(5, 7);
+			const day = profile.birthday.slice(8, 10);
+			let year = today.getFullYear() - pinnedAge;
+			const thisYearBirthday = new Date(
+				today.getFullYear(),
+				parseInt(month, 10) - 1,
+				parseInt(day, 10),
+			);
+			if (thisYearBirthday > today) {
+				year -= 1;
+			}
+			person["vcard:bday"] = `${String(year).padStart(4, "0")}-${month}-${day}`;
+		} else {
+			person["vcard:bday"] = profile.birthday;
+		}
 	}
 
 	if (profile.location) {

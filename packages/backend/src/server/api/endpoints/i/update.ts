@@ -120,6 +120,12 @@ export const paramDef = {
 		followedMessage: { ...Users.followedMessageSchema, nullable: true },
 		location: { ...Users.locationSchema, nullable: true },
 		birthday: { ...Users.birthdaySchema, nullable: true },
+		pinnedAge: {
+			type: "integer",
+			minimum: 6,
+			maximum: 122,
+			nullable: true,
+		},
 		lang: {
 			type: "string",
 			enum: [null, ...Object.keys(langmap)],
@@ -256,6 +262,12 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	if (ps.lang !== undefined) profileUpdates.lang = ps.lang;
 	if (ps.location !== undefined) profileUpdates.location = ps.location;
 	if (ps.birthday !== undefined) profileUpdates.birthday = ps.birthday;
+	if (ps.pinnedAge !== undefined) {
+		profileUpdates.pinnedAge =
+			ps.pinnedAge != null && ps.pinnedAge >= 6 && ps.pinnedAge <= 122
+				? ps.pinnedAge
+				: null;
+	}
 	if (ps.ffVisibility !== undefined)
 		profileUpdates.ffVisibility = ps.ffVisibility;
 	if (ps.followedMessage !== undefined) profileUpdates.followedMessage = ps.followedMessage;

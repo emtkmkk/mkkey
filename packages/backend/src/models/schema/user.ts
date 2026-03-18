@@ -231,6 +231,12 @@ export const packedUserDetailedNotMeOnlySchema = {
 			optional: false,
 			example: "2018-03-12",
 		},
+		pinnedAge: {
+			type: "number",
+			nullable: true,
+			optional: false,
+			description: "ユーザーが固定した年齢（6-122）。未設定はnull",
+		},
 		lang: {
 			type: "string",
 			nullable: true,

@@ -45,6 +45,12 @@ export class UserProfile {
 	})
 	public birthday: string | null;
 
+	@Column('smallint', {
+		nullable: true,
+		comment: 'ユーザーが固定した年齢（6-122の範囲外や未設定はnull）',
+	})
+	public pinnedAge: number | null;
+
 	@Column('varchar', {
 		length: 2048, nullable: true,
 		comment: 'ユーザーの自己紹介（bio）',

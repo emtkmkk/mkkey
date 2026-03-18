@@ -692,6 +692,7 @@ export type Endpoints = {
 			lang?: string | null;
 			location?: string | null;
 			birthday?: string | null;
+			pinnedAge?: number | null;
 			avatarId?: DriveFile["id"] | null;
 			bannerId?: DriveFile["id"] | null;
 			fields?: {

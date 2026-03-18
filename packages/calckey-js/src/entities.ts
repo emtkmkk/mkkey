@@ -45,6 +45,7 @@ export type UserDetailed = UserLite & {
 	bannerColor: string | null;
 	bannerUrl: string | null;
 	birthday: string | null;
+	pinnedAge: number | null;
 	createdAt: DateString;
 	description: string | null;
         ffVisibility: "public" | "followers" | "private";

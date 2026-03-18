@@ -106,6 +106,24 @@
 			}}</span></MkButton
 		>
 
+		<FormSwitch v-model="pinnedAgeEnabled" class="_formBlock">
+			{{ i18n.ts.pinnedAge }}
+			<template #caption>{{ i18n.ts.pinnedAgeDescription }}</template>
+		</FormSwitch>
+		<FormInput
+			v-if="pinnedAgeEnabled"
+			v-model="profile.pinnedAge"
+			type="number"
+			:min="6"
+			:max="122"
+			manual-save
+			class="_formBlock"
+		>
+			<template #label>{{ i18n.ts.pinnedAgeLabel }}</template>
+			<template #prefix><i class="ph-number-circle-one ph-bold ph-lg"></i></template>
+			<template #caption>{{ i18n.ts.pinnedAgeDescription }}</template>
+		</FormInput>
+
 		<FormSelect v-model="profile.lang" class="_formBlock">
 			<template #label>{{ i18n.ts.language }}</template>
 			<option v-for="x in Object.keys(langmap)" :key="x" :value="x">
@@ -263,11 +281,20 @@ const profile = reactive({
 	followedMessage: $i?.followedMessage,
 	location: $i?.location,
 	birthday: $i?.birthday,
+	pinnedAge: $i?.pinnedAge ?? null as number | null,
 	lang: $i?.lang,
 	isBot: $i?.isBot,
 	isCat: $i?.isCat,
 	speakAsCat: $i?.speakAsCat,
 	showDonateBadges: $i?.showDonateBadges,
+});
+
+/** 年齢固定トグルがオンのとき true。オフにすると pinnedAge を null に、オンにすると未設定なら 20 をセットする。 */
+const pinnedAgeEnabled = $computed({
+	get: () => profile.pinnedAge != null,
+	set: (v: boolean) => {
+		profile.pinnedAge = v ? (profile.pinnedAge ?? 20) : null;
+	},
 });
 
 const props = withDefaults(
@@ -334,6 +361,12 @@ function saveFields() {
 }
 
 function save() {
+	const pinnedAge =
+		profile.pinnedAge != null &&
+		profile.pinnedAge >= 6 &&
+		profile.pinnedAge <= 122
+			? profile.pinnedAge
+			: null;
 	os.apiWithDialog("i/update", {
 		name: profile.name || null,
 		fixedName: profile.fixedName || null,
@@ -341,6 +374,7 @@ function save() {
 		followedMessage: profile.followedMessage || null,
 		location: profile.location || null,
 		birthday: profile.birthday || null,
+		pinnedAge,
 		lang: profile.lang || null,
 		isBot: !!profile.isBot,
 		hideOnlineStatus: !!profile.isBot,

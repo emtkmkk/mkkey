@@ -76,6 +76,43 @@ let waitMessages: string[] = [];
 const wait = async (ms: number) =>
 	new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * 非同期処理を、失敗時は指定ミリ秒待ってから再試行する。
+ * 4回失敗するごとに待機時間を2倍にし、最大32秒まで増加させる。
+ * 画面を開いている間は成功するまで繰り返す（ページがアンロードされるまで再試行し続ける）。
+ *
+ * @param fn - 実行する非同期関数（API取得など）
+ * @param delayMs - 初回の失敗後の待機ミリ秒（既定: 1000）
+ * @returns 成功時の戻り値
+ * @internal
+ */
+const runWithRetryWhileOpen = async <T>(
+	fn: () => Promise<T>,
+	delayMs = 1000,
+): Promise<T> => {
+	const MAX_DELAY_MS = 32000;
+	let currentDelay = delayMs;
+	let failureCount = 0;
+
+	for (;;) {
+		try {
+			return await fn();
+		} catch (err) {
+			failureCount++;
+			if (failureCount % 4 === 0 && currentDelay < MAX_DELAY_MS) {
+				currentDelay = Math.min(currentDelay * 2, MAX_DELAY_MS);
+			}
+			if (_DEV_) {
+				console.warn(
+					"Init retry: request failed, retrying after delay",
+					{ err, currentDelay, failureCount },
+				);
+			}
+			await wait(currentDelay);
+		}
+	}
+};
+
 const withTimeout = async <T>(promise: Promise<T>, ms: number, message: string) =>
 	await Promise.race([
 		promise,
@@ -294,7 +331,7 @@ const fetchUserAccount = async () => {
 	if ($i?.token) {
 		// キャッシュあり: /validate の応答が返るまで待機（応答が返るまで進行しない）。ネットワークエラー時はリトライ
 		const token = $i.token;
-		const RETRY_DELAY_MS = 3000;
+		const RETRY_DELAY_MS = 1000;
 		for (;;) {
 			try {
 				const res = await api("auth/validate", {}, token, true) as {
@@ -1417,7 +1454,7 @@ const ensureLocaleAndApply = async (): Promise<void> => {
 (async () => {
 	console.info(`Calckey v${version}`);
 
-	await ensureLocaleAndApply();
+	await runWithRetryWhileOpen(() => ensureLocaleAndApply(), 1000);
 
 	// 最低ロード時間の開始（longLoading がオンのときだけ 2.2 秒待つ）
 	const minimumLoadPromise = defaultStore.ready.then(() =>
@@ -1451,11 +1488,11 @@ const ensureLocaleAndApply = async (): Promise<void> => {
 	html.setAttribute("lang", lang || "ja-JP");
 	//#endregion
 
-	// 設定の取得が完了するまでストップ
+	// 設定の取得が完了するまでストップ（API/取得失敗時は1秒待って再試行し、画面を開いている間は成功するまで繰り返す）
 	await Promise.all([
-		initializeErrorLogging(),
-		fetchUserAccount(),
-		initializeServiceWorkerAndFetchInstanceMeta(),
+		runWithRetryWhileOpen(() => initializeErrorLogging(), 1000),
+		runWithRetryWhileOpen(() => fetchUserAccount(), 1000),
+		runWithRetryWhileOpen(() => initializeServiceWorkerAndFetchInstanceMeta(), 1000),
 		defaultStore.loaded,
 	]);
 

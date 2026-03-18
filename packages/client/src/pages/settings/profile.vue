@@ -239,7 +239,7 @@
 		<div v-if="saveButton == true">
 			<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 		</div>
-		
+
                 <div class="profileActions">
                         <MkButton
                                 class="avatarGenerator"
@@ -281,7 +281,7 @@ const profile = reactive({
 	followedMessage: $i?.followedMessage,
 	location: $i?.location,
 	birthday: $i?.birthday,
-	pinnedAge: $i?.pinnedAge ?? null as number | null,
+	pinnedAge: ($i?.pinnedAge ?? null) as number | null,
 	lang: $i?.lang,
 	isBot: $i?.isBot,
 	isCat: $i?.isCat,
@@ -289,11 +289,57 @@ const profile = reactive({
 	showDonateBadges: $i?.showDonateBadges,
 });
 
-/** 年齢固定トグルがオンのとき true。オフにすると pinnedAge を null に、オンにすると未設定なら 20 をセットする。 */
+/** 年齢固定トグルの内部フラグ。true/false は送信ロジックにのみ使い、入力値は profile.pinnedAge に保持する。 */
+let pinnedAgeFlag = $ref($i?.pinnedAge != null);
+
+/**
+ * 年齢固定トグル。
+ *
+ * - OFF:
+ *   - pinnedAgeFlag だけ false にし、profile.pinnedAge 自体は消さない（入力欄の値は残る）
+ * - ON:
+ *   - すでに profile.pinnedAge に値があれば何もしない（2回目以降の ON も含む）
+ *   - profile.pinnedAge が null のときだけ、名前・自己紹介から既存ロジックで年齢候補を推定して
+ *     デフォルト値としてセット（推定できなければ null のまま）
+ *   - この時点では API 送信は行わない
+ */
 const pinnedAgeEnabled = $computed({
-	get: () => profile.pinnedAge != null,
+	get: () => pinnedAgeFlag,
 	set: (v: boolean) => {
-		profile.pinnedAge = v ? (profile.pinnedAge ?? 20) : null;
+		if (v === pinnedAgeFlag) return;
+		if (!v) {
+			// OFF: 値は残しつつ、送信時に null を送るためのフラグだけ落とす
+			pinnedAgeFlag = false;
+			return;
+		}
+		// ON: 既に値がある場合はそのまま（再判定しない）
+		if (profile.pinnedAge != null) {
+			pinnedAgeFlag = true;
+			return;
+		}
+		// 初回 ON かつ pinnedAge が null のときだけ、名前・自己紹介から年齢を推定
+		const name = profile.name ?? "";
+		const description = profile.description ?? "";
+		const cancelRe = /(\d{1,2})(yo|歳|sai)([以未])/;
+		const extractRe = /(\d{1,2})(yo|歳|sai)([^以未]|$)/;
+		if (cancelRe.test(name) || cancelRe.test(description)) {
+			pinnedAgeFlag = true;
+			return;
+		}
+		if (!extractRe.test(name) && !extractRe.test(description)) {
+			pinnedAgeFlag = true;
+			return;
+		}
+		const fromName = extractRe.exec(name)?.[1];
+		const fromDesc = extractRe.exec(description)?.[1];
+		const dyear = fromName ?? fromDesc;
+		if (dyear != null) {
+			const age = parseInt(dyear, 10);
+			if (!Number.isNaN(age) && age >= 6 && age <= 122) {
+				profile.pinnedAge = age;
+			}
+		}
+		pinnedAgeFlag = true;
 	},
 });
 
@@ -361,27 +407,53 @@ function saveFields() {
 }
 
 function save() {
-	const pinnedAge =
-		profile.pinnedAge != null &&
-		profile.pinnedAge >= 6 &&
-		profile.pinnedAge <= 122
-			? profile.pinnedAge
-			: null;
-	os.apiWithDialog("i/update", {
+	// pinnedAge の送信ルール:
+	// - トグル OFF (pinnedAgeEnabled === false): 常に null を送信（固定解除）
+	// - トグル ON かつ 6〜122 の数値が入っている: その値を送信
+	// - トグル ON だが未入力/範囲外: 送信しない（サーバ側の値を維持）
+	const isEnabled = pinnedAgeEnabled;
+	let pinnedAgeToSend: number | null | undefined;
+
+	if (!isEnabled) {
+		pinnedAgeToSend = null;
+	} else {
+		const raw = profile.pinnedAge as unknown;
+
+		// 空欄（null / 空文字）は null として送信
+		if (raw == null || raw === "") {
+			pinnedAgeToSend = null;
+		} else {
+			const n = typeof raw === "number" ? raw : Number(raw);
+			if (!Number.isNaN(n)) {
+				// 数値として解釈できるものはそのまま送信（範囲チェックはバックエンド側）
+				pinnedAgeToSend = n;
+			} else {
+				// 数値にできない場合はサーバの値を変更しない
+				pinnedAgeToSend = undefined;
+			}
+		}
+	}
+
+	const payload: Record<string, unknown> = {
 		name: profile.name || null,
 		fixedName: profile.fixedName || null,
 		description: profile.description || null,
 		followedMessage: profile.followedMessage || null,
 		location: profile.location || null,
 		birthday: profile.birthday || null,
-		pinnedAge,
 		lang: profile.lang || null,
 		isBot: !!profile.isBot,
 		hideOnlineStatus: !!profile.isBot,
 		isCat: !!profile.isCat,
 		speakAsCat: !!profile.speakAsCat,
 		showDonateBadges: !!profile.showDonateBadges,
-	});
+	};
+
+	if (pinnedAgeToSend !== undefined) {
+		(payload as any).pinnedAge = pinnedAgeToSend;
+	}
+
+	os.apiWithDialog("i/update", payload);
 }
 
 function changeAvatar(ev) {

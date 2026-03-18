@@ -34,12 +34,11 @@ export class AddPinnedAge1741100000000 {
 			if (dyear == null) continue;
 			const age = parseInt(dyear, 10);
 			if (Number.isNaN(age) || age < 6 || age > 122) continue;
-			await queryRunner.connection
-				.createQueryBuilder()
-				.update("user_profile")
-				.set({ pinnedAge: age })
-				.where('"userId" = :id', { id: row.userId })
-				.execute();
+			// 同一トランザクション内で raw UPDATE にし、createQueryBuilder によるブロックを避ける
+			await queryRunner.query(
+				`UPDATE "user_profile" SET "pinnedAge" = $1 WHERE "userId" = $2`,
+				[age, row.userId],
+			);
 		}
 	}
 

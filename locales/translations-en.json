@@ -315,7 +315,7 @@
   "hiddenYearSwitch": "Hide birthday year",
   "pinnedAge": "Pin age",
   "pinnedAgeLabel": "Age",
-  "pinnedAgeDescription": "When enabled, you can set a fixed age to display on your profile.",
+  "pinnedAgeDescription": "Enter an integer between 6 and 122.",
   "showMiniUpdates": "[dev] Show popup on Mkkey updates",
   "allowSwipeDescription": "When disabled, swipe to switch is disabled on all devices.",
   "allowSwipeLabel": "Touch swipe",

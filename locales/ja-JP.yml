@@ -1310,7 +1310,7 @@ hiddenYear: "年に0000/4000/9999を指定すると、年が非表示になり�
 hiddenYearSwitch: "誕生日の年を非表示にする"
 pinnedAge: "年齢を固定する"
 pinnedAgeLabel: "年齢"
-pinnedAgeDescription: "オンにすると、プロフィールに表示される年齢を固定できます。"
+pinnedAgeDescription: "6〜122の範囲の整数を入力してください。"
 failedToFetchAccountInformation: "アカウント情報の取得に失敗しました"
 rateLimitExceeded: "レート制限を超えました"
 cropImage: "画像のトリミング"

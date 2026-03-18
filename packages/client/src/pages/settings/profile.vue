@@ -108,7 +108,6 @@
 
 		<FormSwitch v-model="pinnedAgeEnabled" class="_formBlock">
 			{{ i18n.ts.pinnedAge }}
-			<template #caption>{{ i18n.ts.pinnedAgeDescription }}</template>
 		</FormSwitch>
 		<FormInput
 			v-if="pinnedAgeEnabled"

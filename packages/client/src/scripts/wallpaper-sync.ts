@@ -26,6 +26,7 @@ const connection = $i ? stream.useChannel("main") : null;
 const wallpaperEntriesStorageKey = "wallpaperEntries";
 const deletedWallpaperUrlsKey = "wallpaperDeletedUrls";
 const legacySingleWallpaperStorageKey = "wallpaper";
+const registryCacheStorageKey = "wallpaperSyncRegistryCache";
 export type WallpaperSyncUaClass = "mobile" | "desktop";
 
 /**
@@ -40,6 +41,11 @@ export type WallpaperSyncUaClass = "mobile" | "desktop";
 export type WallpaperEntry = {
 	url: string;
 	synced: boolean;
+};
+
+type CachedRegistryState = {
+	hasFetched: boolean;
+	wallpapers: string[];
 };
 // #endregion
 
@@ -121,6 +127,49 @@ function writeLocalWallpapers(wallpapers: string[]): void {
 	if (legacyWallpaper != null && !wallpapers.includes(legacyWallpaper)) {
 		localStorage.removeItem(legacySingleWallpaperStorageKey);
 	}
+}
+
+function readCachedRegistryStates(): Partial<Record<WallpaperSyncUaClass, CachedRegistryState>> {
+	const raw = localStorage.getItem(registryCacheStorageKey);
+	if (raw == null) return {};
+
+	try {
+		const parsed = JSON.parse(raw) as Partial<Record<WallpaperSyncUaClass, CachedRegistryState>>;
+		if (parsed == null || typeof parsed !== "object") return {};
+		return parsed;
+	} catch {
+		return {};
+	}
+}
+
+function readCachedRegistryState(
+	uaClass: WallpaperSyncUaClass,
+): CachedRegistryState | null {
+	const cached = readCachedRegistryStates()[uaClass];
+	if (cached == null || typeof cached !== "object") return null;
+	const wallpapers = Array.isArray(cached.wallpapers)
+		? normalizeEntries(cached.wallpapers.map((url) => ({ url, synced: true }))).map(
+			(entry) => entry.url,
+		)
+		: [];
+	return {
+		hasFetched: cached.hasFetched === true,
+		wallpapers,
+	};
+}
+
+function writeCachedRegistryState(
+	uaClass: WallpaperSyncUaClass,
+	state: CachedRegistryState,
+): void {
+	const cachedStates = readCachedRegistryStates();
+	cachedStates[uaClass] = {
+		hasFetched: state.hasFetched,
+		wallpapers: normalizeEntries(
+			state.wallpapers.map((url) => ({ url, synced: true })),
+		).map((entry) => entry.url),
+	};
+	localStorage.setItem(registryCacheStorageKey, JSON.stringify(cachedStates));
 }
 // #endregion
 
@@ -281,7 +330,35 @@ function removeWallpaperFromLocalStorage(
 type SyncedWallpapersFetchResult = {
 	exists: boolean;
 	wallpapers: string[];
+	hasFetched: boolean;
 };
+
+function getEffectiveRegistryWallpapers(
+	fetched: SyncedWallpapersFetchResult,
+	cachedState: CachedRegistryState | null,
+): {
+	hasKnownRegistryState: boolean;
+	registryWallpapers: string[];
+} {
+	if (fetched.exists) {
+		return {
+			hasKnownRegistryState: true,
+			registryWallpapers: fetched.wallpapers,
+		};
+	}
+
+	if (cachedState?.hasFetched === true) {
+		return {
+			hasKnownRegistryState: true,
+			registryWallpapers: [],
+		};
+	}
+
+	return {
+		hasKnownRegistryState: false,
+		registryWallpapers: [],
+	};
+}
 
 async function fetchSyncedWallpapers(
 	uaClass: WallpaperSyncUaClass = getWallpaperSyncUaClass(),
@@ -290,6 +367,7 @@ async function fetchSyncedWallpapers(
 		return {
 			exists: false,
 			wallpapers: [],
+			hasFetched: false,
 		};
 	}
 
@@ -303,6 +381,7 @@ async function fetchSyncedWallpapers(
 	return {
 		exists: Object.prototype.hasOwnProperty.call(values, registryKey),
 		wallpapers: Array.isArray(registryValue) ? (registryValue as string[]) : [],
+		hasFetched: true,
 	};
 }
 
@@ -387,6 +466,11 @@ async function persistSyncedWallpapers(
 		key,
 		value: syncedWallpapers,
 	});
+
+	writeCachedRegistryState(uaClass, {
+		hasFetched: true,
+		wallpapers: syncedWallpapers,
+	});
 }
 
 /**
@@ -406,7 +490,12 @@ async function removeWallpaperFromRegistry(
 ): Promise<void> {
 	if ($i == null) return;
 
-	const { wallpapers: syncedWallpapers } = await fetchSyncedWallpapers(uaClass);
+	const fetchedRegistryState = await fetchSyncedWallpapers(uaClass);
+	const cachedRegistryState = readCachedRegistryState(uaClass);
+	const { registryWallpapers: syncedWallpapers } = getEffectiveRegistryWallpapers(
+		fetchedRegistryState,
+		cachedRegistryState,
+	);
 	const nextSyncedWallpapers = syncedWallpapers.filter(
 		(entryUrl) => entryUrl !== url,
 	);
@@ -442,11 +531,31 @@ export async function loadWallpaperEntries(
 		return localEntries;
 	}
 
-	const { exists: registryKeyExists, wallpapers: registryWallpapers } =
-		await fetchSyncedWallpapers(uaClass);
-	const mergedEntries = registryKeyExists
+	const {
+		exists: registryKeyExists,
+		wallpapers: fetchedRegistryWallpapers,
+		hasFetched,
+	} = await fetchSyncedWallpapers(uaClass);
+	const cachedRegistryState = readCachedRegistryState(uaClass);
+	const { hasKnownRegistryState, registryWallpapers } =
+		getEffectiveRegistryWallpapers(
+			{
+				exists: registryKeyExists,
+				wallpapers: fetchedRegistryWallpapers,
+				hasFetched,
+			},
+			cachedRegistryState,
+		);
+	const mergedEntries = hasKnownRegistryState
 		? mergeWithRegistry(localEntries, registryWallpapers)
 		: localEntries;
+
+	if (hasFetched) {
+		writeCachedRegistryState(uaClass, {
+			hasFetched: true,
+			wallpapers: registryWallpapers,
+		});
+	}
 	// マージ結果をローカルに書き戻し、他端末の変更を反映する
 	writeLocalWallpaperEntries(mergedEntries);
 	updateWallpapersDisplayCache(mergedEntries);
@@ -629,6 +738,10 @@ export async function initializeWallpaperSync(): Promise<void> {
 		// 他端末からのレジストリ更新を受け取り、ローカルとマージ
 		const localEntries = readLocalWallpaperEntries();
 		const registryWallpapers = Array.isArray(value) ? (value as string[]) : [];
+		writeCachedRegistryState(uaClass, {
+			hasFetched: true,
+			wallpapers: registryWallpapers,
+		});
 		const mergedEntries = mergeWithRegistry(localEntries, registryWallpapers);
 		writeLocalWallpaperEntries(mergedEntries);
 		updateWallpapersDisplayCache(mergedEntries);

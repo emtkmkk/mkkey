@@ -115,9 +115,19 @@ async function persistSyncedWallpapers(
 ): Promise<void> {
 	if ($i == null) return;
 
+	const key = getRegistryKey(uaClass);
+
+	if (syncedWallpapers.length === 0) {
+		await api("i/registry/remove", {
+			scope,
+			key,
+		});
+		return;
+	}
+
 	await api("i/registry/set", {
 		scope,
-		key: getRegistryKey(uaClass),
+		key,
 		value: syncedWallpapers,
 	});
 }
@@ -194,14 +204,16 @@ export async function initializeWallpaperSync(): Promise<void> {
 			updatedScope.length !== 2 ||
 			updatedScope[0] !== scope[0] ||
 			updatedScope[1] !== scope[1] ||
-			key !== getRegistryKey(uaClass) ||
-			!Array.isArray(value)
+			key !== getRegistryKey(uaClass)
 		) {
 			return;
 		}
 
 		writeLocalWallpaperEntries(
-			mergeWallpaperEntries(readLocalWallpaperEntries(), value as string[]),
+			mergeWallpaperEntries(
+				readLocalWallpaperEntries(),
+				Array.isArray(value) ? (value as string[]) : [],
+			),
 		);
 	});
 }

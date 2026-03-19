@@ -278,19 +278,32 @@ function removeWallpaperFromLocalStorage(
  * @returns レジストリに保存されている壁紙URL一覧
  * @internal
  */
+type SyncedWallpapersFetchResult = {
+	exists: boolean;
+	wallpapers: string[];
+};
+
 async function fetchSyncedWallpapers(
 	uaClass: WallpaperSyncUaClass = getWallpaperSyncUaClass(),
-): Promise<string[]> {
-	if ($i == null) return [];
+): Promise<SyncedWallpapersFetchResult> {
+	if ($i == null) {
+		return {
+			exists: false,
+			wallpapers: [],
+		};
+	}
 
 	const values = ((await api("i/registry/get-all", { scope })) || {}) as Record<
 		string,
 		unknown
 	>;
 	const registryKey = getRegistryKey(uaClass);
-	return Array.isArray(values[registryKey])
-		? (values[registryKey] as string[])
-		: [];
+	const registryValue = values[registryKey];
+
+	return {
+		exists: Object.prototype.hasOwnProperty.call(values, registryKey),
+		wallpapers: Array.isArray(registryValue) ? (registryValue as string[]) : [],
+	};
 }
 
 /**
@@ -393,7 +406,7 @@ async function removeWallpaperFromRegistry(
 ): Promise<void> {
 	if ($i == null) return;
 
-	const syncedWallpapers = await fetchSyncedWallpapers(uaClass);
+	const { wallpapers: syncedWallpapers } = await fetchSyncedWallpapers(uaClass);
 	const nextSyncedWallpapers = syncedWallpapers.filter(
 		(entryUrl) => entryUrl !== url,
 	);
@@ -429,8 +442,11 @@ export async function loadWallpaperEntries(
 		return localEntries;
 	}
 
-	const registryWallpapers = await fetchSyncedWallpapers(uaClass);
-	const mergedEntries = mergeWithRegistry(localEntries, registryWallpapers);
+	const { exists: registryKeyExists, wallpapers: registryWallpapers } =
+		await fetchSyncedWallpapers(uaClass);
+	const mergedEntries = registryKeyExists
+		? mergeWithRegistry(localEntries, registryWallpapers)
+		: localEntries;
 	// マージ結果をローカルに書き戻し、他端末の変更を反映する
 	writeLocalWallpaperEntries(mergedEntries);
 	updateWallpapersDisplayCache(mergedEntries);

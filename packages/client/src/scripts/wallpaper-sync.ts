@@ -4,9 +4,10 @@
  * 壁紙のローカル保存とレジストリ同期を管理するモジュール。
  *
  * @remarks
- * - localStorage の `wallpaperEntries` には非同期対象（synced=false）の壁紙のみを保存する。
- * - レジストリには同期対象（synced=true）の壁紙のみを保存する。
- * - 表示用キャッシュとして `wallpapers` には両者をマージした一覧を書き込む。
+ * - localStorage の `wallpaperEntries` を唯一の信頼源（Single Source of Truth）とし、
+ *   全エントリ（synced=true / synced=false）を保持する。
+ * - レジストリには synced=true のエントリのコピーを保存し、他端末との同期に使用する。
+ * - 表示用キャッシュ `wallpapers` には全エントリの URL を書き込む（boot.js 用）。
  *
  * NOTE: `wallpapers` は boot.js のランダム表示で使われるため、読み込み時に必ず更新する。
  *
@@ -28,7 +29,8 @@ export type WallpaperSyncUaClass = "mobile" | "desktop";
  * 壁紙エントリを表す型。
  *
  * @remarks
- * `synced=true` はレジストリ管理、`synced=false` はローカル管理を示す。
+ * `synced=true` はレジストリにも同期される壁紙、`synced=false` はローカル専用の壁紙を示す。
+ * いずれも localStorage に保存される。
  *
  * @public
  */
@@ -39,6 +41,13 @@ export type WallpaperEntry = {
 // #endregion
 
 // #region 基本ヘルパー
+/**
+ * レジストリキーを取得する。
+ *
+ * @param uaClass UAクラス
+ * @returns レジストリキー文字列
+ * @internal
+ */
 function getRegistryKey(uaClass: WallpaperSyncUaClass): string {
 	return `${uaClass}Wallpapers`;
 }
@@ -56,6 +65,16 @@ export function getWallpaperSyncUaClass(): WallpaperSyncUaClass {
 	return getCurrentUaClass();
 }
 
+/**
+ * 壁紙エントリ配列を正規化する（URLで重複排除）。
+ *
+ * @remarks
+ * 同じURLが複数ある場合、後のエントリが優先される（Mapの上書き）。
+ *
+ * @param entries 正規化対象のエントリ配列
+ * @returns 重複排除された壁紙エントリ配列
+ * @internal
+ */
 function normalizeEntries(entries: WallpaperEntry[]): WallpaperEntry[] {
 	const map = new Map<string, WallpaperEntry>();
 
@@ -80,6 +99,12 @@ export function readLocalWallpapers(): string[] {
 	return JSON.parse(localStorage.getItem("wallpapers") ?? "[]") || [];
 }
 
+/**
+ * 表示キャッシュ `wallpapers` に壁紙URL一覧を書き込む。
+ *
+ * @param wallpapers 書き込む壁紙URL一覧
+ * @internal
+ */
 function writeLocalWallpapers(wallpapers: string[]): void {
 	if (wallpapers.length === 0) {
 		localStorage.removeItem("wallpapers");
@@ -92,14 +117,14 @@ function writeLocalWallpapers(wallpapers: string[]): void {
 
 // #region ローカル保存
 /**
- * ローカル管理対象（synced=false）の壁紙エントリ一覧を取得する。
+ * localStorage から全壁紙エントリ（synced=true / false 両方）を取得する。
  *
  * @remarks
  * - `wallpaperEntries` が null の場合のみ、旧形式 `wallpapers` から一度限りの移行を行う。
- *   移行後は `wallpaperEntries` に `"[]"` 以上が書き込まれるため再移行は起きない。
- * - `synced=true` が混在していても除外し、ローカルには非同期対象のみを残す。
+ *   移行後は `wallpaperEntries` に必ず値が書き込まれるため再移行は起きない。
+ * - localStorage が唯一の信頼源であり、synced フラグもここに保存される。
  *
- * @returns ローカル保存される壁紙エントリ一覧
+ * @returns 全壁紙エントリ一覧
  * @public
  */
 export function readLocalWallpaperEntries(): WallpaperEntry[] {
@@ -115,47 +140,51 @@ export function readLocalWallpaperEntries(): WallpaperEntry[] {
 		return writeLocalWallpaperEntries(migrated);
 	}
 
-	// NOTE: ローカルには非同期対象のみを残す。旧実装の残骸（synced=true）は除外する。
-	const normalized = normalizeEntries(JSON.parse(savedEntries) as WallpaperEntry[]);
-	const localOnly = normalized
-		.filter((entry) => !entry.synced)
-		.map((entry) => ({
-			url: entry.url,
-			synced: false,
-		}));
-	return localOnly;
+	// 全エントリ（synced=true / false 両方）をそのまま返す
+	return normalizeEntries(JSON.parse(savedEntries) as WallpaperEntry[]);
 }
 
 /**
- * ローカル管理の壁紙エントリを localStorage に書き込む。
+ * 全壁紙エントリを localStorage に書き込む。
  *
  * @remarks
+ * synced フラグを含む全エントリをそのまま保存する。
  * 空配列でも必ず `"[]"` を書き込み、キーを削除しない。
  * これにより `readLocalWallpaperEntries` の旧形式移行が一度しか走らないことを保証する。
  *
- * @param entries 書き込む壁紙エントリ（synced=true は自動除外される）
- * @returns 実際に書き込まれたローカル専用エントリ
+ * @param entries 書き込む壁紙エントリ
+ * @returns 実際に書き込まれた正規化済みエントリ
  * @internal
  */
 function writeLocalWallpaperEntries(entries: WallpaperEntry[]): WallpaperEntry[] {
-	const localOnly = normalizeEntries(entries)
-		.filter((entry) => !entry.synced)
-		.map((entry) => ({
-			url: entry.url,
-			synced: false,
-		}));
+	const normalized = normalizeEntries(entries);
 	// NOTE: 空でも必ず書き込む。キーが null にならないことで旧形式移行の再実行を防止する。
-	localStorage.setItem(wallpaperEntriesStorageKey, JSON.stringify(localOnly));
-	return localOnly;
+	localStorage.setItem(wallpaperEntriesStorageKey, JSON.stringify(normalized));
+	return normalized;
 }
 
+/**
+ * 表示用キャッシュ `wallpapers` を更新する。
+ *
+ * @remarks
+ * boot.js と各 UI は `wallpapers` を参照するため、エントリ変更時に都度呼び出す。
+ *
+ * @param entries 表示対象の壁紙エントリ
+ * @internal
+ */
 function updateWallpapersDisplayCache(entries: WallpaperEntry[]): void {
-	// NOTE: boot.js と各 UI は `wallpapers` を参照するため、表示用一覧を都度更新する。
 	writeLocalWallpapers(normalizeEntries(entries).map((entry) => entry.url));
 }
 // #endregion
 
 // #region レジストリ同期
+/**
+ * レジストリから同期壁紙URL一覧を取得する。
+ *
+ * @param uaClass レジストリキーの振り分けに使うUAクラス
+ * @returns レジストリに保存されている壁紙URL一覧
+ * @internal
+ */
 async function fetchSyncedWallpapers(
 	uaClass: WallpaperSyncUaClass = getWallpaperSyncUaClass(),
 ): Promise<string[]> {
@@ -171,19 +200,54 @@ async function fetchSyncedWallpapers(
 		: [];
 }
 
-function mergeWallpaperEntries(
+/**
+ * ローカルエントリとレジストリの内容をマージする。
+ *
+ * @remarks
+ * マージルール:
+ * - ローカル synced=true かつレジストリにある → synced=true のまま残す
+ * - ローカル synced=true かつレジストリに無い → 他端末で削除/OFF された → 除去する
+ * - ローカル synced=false → ローカル専用なので無条件に残す
+ * - レジストリにあるがローカルに無い → 他端末が追加した → synced=true で追加する
+ *
+ * @param localEntries ローカルの全エントリ
+ * @param registryWallpapers レジストリの壁紙URL一覧
+ * @returns マージ済みの壁紙エントリ一覧
+ * @internal
+ */
+function mergeWithRegistry(
 	localEntries: WallpaperEntry[],
-	syncedWallpapers: string[],
+	registryWallpapers: string[],
 ): WallpaperEntry[] {
-	const unsyncedEntries = localEntries.map((entry) => ({
-		url: entry.url,
-		synced: false,
-	}));
-	const syncedEntries = syncedWallpapers.map((url) => ({
-		url,
-		synced: true,
-	}));
-	return normalizeEntries([...unsyncedEntries, ...syncedEntries]);
+	const localMap = new Map<string, WallpaperEntry>();
+	for (const entry of localEntries) {
+		if (entry?.url) localMap.set(entry.url, entry);
+	}
+	const registrySet = new Set(registryWallpapers);
+
+	const result: WallpaperEntry[] = [];
+
+	for (const entry of localMap.values()) {
+		if (entry.synced) {
+			// synced=true はレジストリにも存在する場合のみ残す。
+			// レジストリに無い場合は他端末が同期 OFF / 削除したとみなし除去する。
+			if (registrySet.has(entry.url)) {
+				result.push(entry);
+			}
+		} else {
+			// synced=false はローカル専用なので常に残す
+			result.push(entry);
+		}
+	}
+
+	// レジストリにあるがローカルに無いものは他端末が追加した壁紙
+	for (const url of registryWallpapers) {
+		if (!localMap.has(url)) {
+			result.push({ url, synced: true });
+		}
+	}
+
+	return normalizeEntries(result);
 }
 
 /**
@@ -217,8 +281,8 @@ async function persistSyncedWallpapers(
  * 壁紙一覧を読み込む。
  *
  * @remarks
- * ローカル（非同期）とレジストリ（同期）をマージし、
- * `wallpapers` キャッシュを更新したうえで一覧を返す。
+ * ローカルを主体とし、レジストリの内容とマージして他端末の変更を取り込む。
+ * マージ結果は localStorage に書き戻し、表示キャッシュも更新する。
  *
  * @param uaClass レジストリ参照に使うUAクラス
  * @returns マージ済みの壁紙一覧
@@ -233,8 +297,10 @@ export async function loadWallpaperEntries(
 		return localEntries;
 	}
 
-	const syncedWallpapers = await fetchSyncedWallpapers(uaClass);
-	const mergedEntries = mergeWallpaperEntries(localEntries, syncedWallpapers);
+	const registryWallpapers = await fetchSyncedWallpapers(uaClass);
+	const mergedEntries = mergeWithRegistry(localEntries, registryWallpapers);
+	// マージ結果をローカルに書き戻し、他端末の変更を反映する
+	writeLocalWallpaperEntries(mergedEntries);
 	updateWallpapersDisplayCache(mergedEntries);
 	return mergedEntries;
 }
@@ -243,42 +309,36 @@ export async function loadWallpaperEntries(
  * 新しい壁紙URLを追加する。
  *
  * @remarks
- * 追加時点では非同期（ローカル）として保存する。
+ * 追加時点では synced=false（ローカル専用）として保存する。
+ * localStorage が信頼源のため、レジストリの取得は不要。
  *
  * @param urls 追加する壁紙URL一覧
- * @returns マージ済みの壁紙一覧
+ * @returns 追加後の壁紙一覧
  * @public
  */
 export async function addWallpaperEntries(
 	urls: string[],
 ): Promise<WallpaperEntry[]> {
-	const localEntries = readLocalWallpaperEntries();
-	const nextLocalEntries = writeLocalWallpaperEntries([
-		...localEntries,
+	const currentEntries = readLocalWallpaperEntries();
+	const nextEntries = writeLocalWallpaperEntries([
+		...currentEntries,
 		...urls.map((url) => ({ url, synced: false })),
 	]);
-	if ($i == null) {
-		updateWallpapersDisplayCache(nextLocalEntries);
-		return nextLocalEntries;
-	}
-
-	const syncedWallpapers = await fetchSyncedWallpapers();
-	const mergedEntries = mergeWallpaperEntries(nextLocalEntries, syncedWallpapers);
-	updateWallpapersDisplayCache(mergedEntries);
-	return mergedEntries;
+	updateWallpapersDisplayCache(nextEntries);
+	return nextEntries;
 }
 
 /**
  * 壁紙の同期状態を切り替える。
  *
  * @remarks
- * - ON: レジストリへ保存し、ローカル保存からは外す。
- * - OFF: ローカルへ保存し、レジストリ保存からは外す。
+ * - synced フラグを localStorage 内で直接更新する。
+ * - レジストリへの永続化はベストエフォートで行い、失敗時はロールバックする。
  *
  * @param url 対象壁紙URL
  * @param synced 切り替え後の同期状態
  * @param uaClass レジストリ参照に使うUAクラス
- * @returns 切り替え後のマージ済み壁紙一覧
+ * @returns 切り替え後の壁紙一覧
  * @public
  */
 export async function setWallpaperEntrySyncState(
@@ -286,38 +346,33 @@ export async function setWallpaperEntrySyncState(
 	synced: boolean,
 	uaClass: WallpaperSyncUaClass = getWallpaperSyncUaClass(),
 ): Promise<WallpaperEntry[]> {
-	const localEntries = readLocalWallpaperEntries();
-	const syncedWallpapers = await fetchSyncedWallpapers(uaClass);
-	const currentEntries = mergeWallpaperEntries(localEntries, syncedWallpapers);
+	const currentEntries = readLocalWallpaperEntries();
 	const hasTargetEntry = currentEntries.some((entry) => entry.url === url);
+
+	// 対象エントリの synced フラグを更新
 	const nextEntries = normalizeEntries([
 		...currentEntries.map((entry) =>
 			entry.url === url ? { ...entry, synced } : entry,
 		),
+		// 対象が存在しない場合は新規追加
 		...(hasTargetEntry ? [] : [{ url, synced }]),
 	]);
+
+	// ローカルに全エントリを保存（synced フラグ含む）
+	writeLocalWallpaperEntries(nextEntries);
+	updateWallpapersDisplayCache(nextEntries);
+
+	// レジストリに synced=true の壁紙のみベストエフォートで同期
 	const nextSyncedWallpapers = nextEntries
 		.filter((entry) => entry.synced)
 		.map((entry) => entry.url);
-	const nextLocalEntries = nextEntries
-		.filter((entry) => !entry.synced)
-		.map((entry) => ({
-			url: entry.url,
-			synced: false,
-		}));
 
-	// NOTE: ローカルを先に更新し、レジストリ失敗時はロールバックする。
-	// これにより registryUpdated が先着しても最新ローカル状態を参照でき、
-	// かつ永続化失敗時にデータが消失しない。
-	writeLocalWallpaperEntries(nextLocalEntries);
-	updateWallpapersDisplayCache(nextEntries);
 	try {
 		await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
 	} catch (err) {
 		// レジストリ永続化に失敗した場合、変更前の状態にロールバックする
-		writeLocalWallpaperEntries(localEntries);
-		const rolledBack = mergeWallpaperEntries(localEntries, syncedWallpapers);
-		updateWallpapersDisplayCache(rolledBack);
+		writeLocalWallpaperEntries(currentEntries);
+		updateWallpapersDisplayCache(currentEntries);
 		throw err;
 	}
 	return nextEntries;
@@ -327,41 +382,41 @@ export async function setWallpaperEntrySyncState(
  * 壁紙エントリを削除する。
  *
  * @remarks
- * 対象が同期壁紙ならレジストリから、非同期壁紙ならローカルから削除する。
+ * ローカルから削除し、対象が synced=true だった場合はレジストリからも削除する。
+ * レジストリ永続化はベストエフォートで行い、失敗時はロールバックする。
  *
  * @param url 削除対象の壁紙URL
  * @param uaClass レジストリ参照に使うUAクラス
- * @returns 削除後のマージ済み壁紙一覧
+ * @returns 削除後の壁紙一覧
  * @public
  */
 export async function removeWallpaperEntry(
 	url: string,
 	uaClass: WallpaperSyncUaClass = getWallpaperSyncUaClass(),
 ): Promise<WallpaperEntry[]> {
-	const localEntries = readLocalWallpaperEntries();
-	const syncedWallpapers = await fetchSyncedWallpapers(uaClass);
-	const currentEntries = mergeWallpaperEntries(localEntries, syncedWallpapers);
-	const nextEntries = normalizeEntries(currentEntries.filter((entry) => entry.url !== url));
-	const nextSyncedWallpapers = nextEntries
-		.filter((entry) => entry.synced)
-		.map((entry) => entry.url);
-	const nextLocalEntries = nextEntries
-		.filter((entry) => !entry.synced)
-		.map((entry) => ({
-			url: entry.url,
-			synced: false,
-		}));
+	const currentEntries = readLocalWallpaperEntries();
+	const removedEntry = currentEntries.find((entry) => entry.url === url);
+	const nextEntries = normalizeEntries(
+		currentEntries.filter((entry) => entry.url !== url),
+	);
 
-	// NOTE: ローカルを先に更新し、レジストリ失敗時はロールバック（setWallpaperEntrySyncState と同じ方針）
-	writeLocalWallpaperEntries(nextLocalEntries);
+	// ローカルから削除
+	writeLocalWallpaperEntries(nextEntries);
 	updateWallpapersDisplayCache(nextEntries);
-	try {
-		await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
-	} catch (err) {
-		writeLocalWallpaperEntries(localEntries);
-		const rolledBack = mergeWallpaperEntries(localEntries, syncedWallpapers);
-		updateWallpapersDisplayCache(rolledBack);
-		throw err;
+
+	// 削除対象が synced=true だった場合のみレジストリを更新
+	if (removedEntry?.synced) {
+		const nextSyncedWallpapers = nextEntries
+			.filter((entry) => entry.synced)
+			.map((entry) => entry.url);
+		try {
+			await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
+		} catch (err) {
+			// ロールバック
+			writeLocalWallpaperEntries(currentEntries);
+			updateWallpapersDisplayCache(currentEntries);
+			throw err;
+		}
 	}
 	return nextEntries;
 }
@@ -370,8 +425,8 @@ export async function removeWallpaperEntry(
  * 壁紙同期機能を初期化する。
  *
  * @remarks
- * 初回読み込み後、`registryUpdated` で他デバイス更新を取り込み、
- * ローカル保存と表示キャッシュを更新する。
+ * 初回読み込みで他端末の変更をマージし、
+ * 以降は `registryUpdated` イベントでリアルタイムに取り込む。
  *
  * @returns 初期化完了を表す Promise
  * @public
@@ -392,10 +447,10 @@ export async function initializeWallpaperSync(): Promise<void> {
 			return;
 		}
 
-		const mergedEntries = mergeWallpaperEntries(
-			readLocalWallpaperEntries(),
-			Array.isArray(value) ? (value as string[]) : [],
-		);
+		// 他端末からのレジストリ更新を受け取り、ローカルとマージ
+		const localEntries = readLocalWallpaperEntries();
+		const registryWallpapers = Array.isArray(value) ? (value as string[]) : [];
+		const mergedEntries = mergeWithRegistry(localEntries, registryWallpapers);
 		writeLocalWallpaperEntries(mergedEntries);
 		updateWallpapersDisplayCache(mergedEntries);
 	});

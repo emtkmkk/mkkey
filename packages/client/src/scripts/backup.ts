@@ -24,6 +24,7 @@ type Profile = {
 		useSystemFont: "t" | null;
 		wallpaper: string | null;
 		wallpapers: string | null;
+		wallpaperEntries: string | null;
 	};
 };
 
@@ -184,6 +185,7 @@ export function getSettings(deviceOnly): Profile["settings"] {
 		useSystemFont: localStorage.getItem("useSystemFont") as "t" | null,
 		wallpaper: localStorage.getItem("wallpaper"),
 		wallpapers: localStorage.getItem("wallpapers"),
+		wallpaperEntries: localStorage.getItem("wallpaperEntries"),
 	};
 }
 
@@ -266,6 +268,13 @@ export async function applyProfile(id: string): Promise<void> {
 		localStorage.setItem("wallpapers", settings.wallpapers);
 	} else {
 		localStorage.removeItem("wallpapers");
+	}
+
+	// wallpaper entries
+	if (settings.wallpaperEntries != null) {
+		localStorage.setItem("wallpaperEntries", settings.wallpaperEntries);
+	} else {
+		localStorage.removeItem("wallpaperEntries");
 	}
 
 	const { canceled: cancel2 } = await os.confirm({

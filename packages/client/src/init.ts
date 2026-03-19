@@ -68,6 +68,7 @@ import {
 } from "@/scripts/datasaver";
 import { acct } from "./filters/user";
 import { applyProfile, autoSave, getCurrentUaClass, getProfileUaClass, isAutoProfile } from "./scripts/backup";
+import { initializeWallpaperSync } from "@/scripts/wallpaper-sync";
 import { v4 as uuid } from "uuid";
 
 let waitMessages: string[] = [];
@@ -392,6 +393,13 @@ const fetchUserAccount = async () => {
 };
 
 // サービスワーカーとインスタンスメタ情報の取得の初期化
+
+const initializeUserWallpaperSync = async () => {
+	if ($i) {
+		await initializeWallpaperSync();
+	}
+};
+
 const initializeServiceWorkerAndFetchInstanceMeta = async () => {
 	const waitInstanceMsg = i18n.ts._init?.fetchingInstance ?? "Fetching instance info...";
 	waitMessages.push(waitInstanceMsg);
@@ -1457,6 +1465,8 @@ const ensureLocaleAndApply = async (): Promise<void> => {
 	await runWithRetryWhileOpen(() => ensureLocaleAndApply(), 1000);
 
 	// 最低ロード時間の開始（longLoading がオンのときだけ 2.2 秒待つ）
+	await initializeUserWallpaperSync();
+
 	const minimumLoadPromise = defaultStore.ready.then(() =>
 		defaultStore.state.longLoading ? wait(2200) : Promise.resolve(),
 	);

@@ -293,6 +293,7 @@ type Profile = {
 		useSystemFont: "t" | null;
 		wallpaper: string | null;
 		wallpapers: string | null;
+		wallpaperEntries: string | null;
 	};
 };
 

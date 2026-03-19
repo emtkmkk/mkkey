@@ -139,38 +139,44 @@
 			</div>
 		</FormSection>
 
-                <FormButton inline class="_formBlock" @click="setWallpaper">{{
-                        i18n.ts.setWallpaper
-                }}</FormButton>
-                <FormSection v-if="wallpapers.length" class="wallpaperGallerySection">
-                        <template #label>{{ i18n.ts.wallpaper }}</template>
-                        <div class="wallpaperGallery">
-                                <div
-                                        v-for="(wallpaper, index) in wallpapers"
-                                        :key="wallpaper + index"
-                                        class="wallpaperCard"
-                                >
-                                        <div
-                                                class="wallpaperPreview"
-                                                :style="{ backgroundImage: `url('${wallpaper}')` }"
-                                        >
-                                                <span class="wallpaperBadge">#{{ index + 1 }}</span>
-                                        </div>
-                                        <div class="wallpaperActions">
-                                                <MkLink
-                                                        :url="wallpaper"
-                                                        target="_blank"
-                                                        class="wallpaperLink"
-                                                >{{ i18n.ts.openInNewTab }}</MkLink>
-                                                <FormButton
-                                                        inline
-                                                        class="removeButton"
-                                                        @click="removeWallpaper(index)"
-                                                >{{ i18n.ts.removeWallpaper }}</FormButton>
-                                        </div>
-                                </div>
-                        </div>
-                </FormSection>
+		<FormButton inline class="_formBlock" @click="setWallpaper">{{
+			i18n.ts.setWallpaper
+		}}</FormButton>
+		<FormSection v-if="wallpapers.length" class="wallpaperGallerySection">
+			<template #label>{{ i18n.ts.wallpaper }}</template>
+			<div class="wallpaperGallery">
+				<div
+					v-for="(wallpaper, index) in wallpapers"
+					:key="wallpaper.url + index"
+					class="wallpaperCard"
+				>
+					<button
+						type="button"
+						class="wallpaperPreview"
+						:style="{ backgroundImage: `url('${wallpaper.url}')` }"
+						@click="previewWallpaper(wallpaper.url)"
+					>
+						<span class="wallpaperBadge">#{{ index + 1 }}</span>
+					</button>
+					<div class="wallpaperActions">
+						<FormSwitch
+							:modelValue="wallpaper.synced"
+							class="wallpaperSyncToggle"
+							@update:modelValue="
+								toggleWallpaperSync(wallpaper.url, $event)
+							"
+						>
+							{{ i18n.ts.syncWallpaper }}
+						</FormSwitch>
+						<FormButton
+							inline
+							class="removeButton"
+							@click="removeWallpaper(wallpaper.url)"
+						>{{ i18n.ts.removeWallpaper }}</FormButton>
+					</div>
+				</div>
+			</div>
+		</FormSection>
                 <FormButton
                         v-if="reloadFlg"
                         primary
@@ -192,7 +198,7 @@ import FormSelect from "@/components/form/select.vue";
 import FormSection from "@/components/form/section.vue";
 import FormLink from "@/components/form/link.vue";
 import FormButton from "@/components/MkButton.vue";
-import MkLink from "@/components/MkLink.vue";
+import type { WallpaperEntry } from "@/scripts/wallpaper-sync";
 import { getBuiltinThemesRef } from "@/scripts/theme";
 import { selectFiles } from "@/scripts/select-file";
 import { isDeviceDarkmode } from "@/scripts/is-device-darkmode";
@@ -202,6 +208,13 @@ import { instance } from "@/instance";
 import { uniqueBy } from "@/scripts/array";
 import { fetchThemes, getThemes } from "@/theme-store";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { openImageViewer } from "@/scripts/open-image-viewer";
+import {
+	addWallpaperEntries,
+	loadWallpaperEntries,
+	removeWallpaperEntry,
+	setWallpaperEntrySyncState,
+} from "@/scripts/wallpaper-sync";
 
 const installedThemes = ref(getThemes());
 const builtinThemes = getBuiltinThemesRef();
@@ -271,9 +284,7 @@ const syncDeviceDarkMode = computed(
 const enableHotkeyDarkMode = computed(
 	defaultStore.makeGetterSetter("enableHotkeyDarkMode")
 );
-const wallpapers = ref(
-	JSON.parse(localStorage.getItem("wallpapers") ?? "[]") || []
-);
+const wallpapers = ref<WallpaperEntry[]>([]);
 const themesCount = installedThemes.value.length;
 
 const reloadFlg = ref(false);
@@ -284,27 +295,39 @@ watch(syncDeviceDarkMode, () => {
 	}
 });
 
-watch(wallpapers, () => {
-	if (!wallpapers || !wallpapers.value.length) {
-		localStorage.removeItem("wallpapers");
-	} else {
-		localStorage.setItem("wallpapers", JSON.stringify(wallpapers.value));
-	}
-	reloadFlg.value = true;
-});
-
 onActivated(() => {
 	fetchThemes().then(() => {
 		installedThemes.value = getThemes();
 	});
+	void loadWallpapers();
 });
 
 fetchThemes().then(() => {
 	installedThemes.value = getThemes();
 });
 
+void loadWallpapers();
+
 function reloadWindow() {
 	location.reload();
+}
+
+async function loadWallpapers() {
+	wallpapers.value = await loadWallpaperEntries();
+}
+
+async function toggleWallpaperSync(url: string, value: boolean) {
+	wallpapers.value = await setWallpaperEntrySyncState(url, value);
+	reloadFlg.value = true;
+}
+
+async function previewWallpaper(wallpaper: string) {
+	if (defaultStore.state.imageNewTab) {
+		window.open(wallpaper);
+		return;
+	}
+
+	await openImageViewer(wallpaper);
 }
 
 function setWallpaper(event) {
@@ -314,13 +337,15 @@ function setWallpaper(event) {
 		false,
 		undefined,
 		"wallpaper",
-	).then((files) => {
-		wallpapers.value = [...wallpapers.value, ...files.map((file) => file.url)];
+	).then(async (files) => {
+		wallpapers.value = await addWallpaperEntries(files.map((file) => file.url));
+		reloadFlg.value = true;
 	});
 }
 
-function removeWallpaper(index) {
-	wallpapers.value = wallpapers.value.filter((x, i) => i !== index);
+async function removeWallpaper(url: string) {
+	wallpapers.value = await removeWallpaperEntry(url);
+	reloadFlg.value = true;
 }
 
 const headerActions = $computed(() => []);
@@ -608,13 +633,15 @@ definePageMetadata({
 }
 
 .wallpaperPreview {
-        position: relative;
-        width: 100%;
-        padding-top: 56.25%;
-        border-radius: 0.625rem;
-        background-size: cover;
-        background-position: center;
-        overflow: hidden;
+	position: relative;
+	width: 100%;
+	padding-top: 56.25%;
+	border-radius: 0.625rem;
+	background-size: cover;
+	background-position: center;
+	overflow: hidden;
+	border: none;
+	cursor: pointer;
 }
 
 .wallpaperBadge {
@@ -636,11 +663,8 @@ definePageMetadata({
         gap: 0.75rem;
 }
 
-.wallpaperLink {
+.wallpaperSyncToggle {
         flex: 1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
 }
 
 .removeButton {

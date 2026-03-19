@@ -85,6 +85,7 @@ import { extractAvgColorFromBlurhash } from "@/scripts/extract-avg-color-from-bl
 import { acct, userPage } from "@/filters/user";
 import MkUserOnlineIndicator from "@/components/MkUserOnlineIndicator.vue";
 import { defaultStore } from "@/store";
+import { openImageViewer } from "@/scripts/open-image-viewer";
 import * as config from "@/config";
 
 const props = withDefaults(
@@ -129,42 +130,15 @@ let displayUrl = $ref<string | null>(null);
 let triedProxy = $ref(false);
 
 async function openAvatarImage() {
-        const targetUrl = displayUrl ?? url;
-        if (defaultStore.state.imageNewTab) {
-                if (targetUrl) window.open(targetUrl);
-                return;
-        }
+	const targetUrl = displayUrl ?? url;
+	if (!targetUrl) return;
 
-        await import("photoswipe/style.css");
-        const [pswp, pswpLightbox] = await Promise.all([
-                import("photoswipe"),
-                import("photoswipe/lightbox"),
-        ]);
+	if (defaultStore.state.imageNewTab) {
+		window.open(targetUrl);
+		return;
+	}
 
-        const img = new Image();
-        img.onload = () => {
-                const lightbox = new pswpLightbox.default({
-                        dataSource: [
-                                {
-                                        src: targetUrl,
-                                        w: img.naturalWidth,
-                                        h: img.naturalHeight,
-                                },
-                        ],
-                        pswpModule: pswp.default,
-                        loop: false,
-                        padding:
-                                window.innerWidth > 500
-                                        ? { top: 32, bottom: 32, left: 32, right: 32 }
-                                        : { top: 0, bottom: 0, left: 0, right: 0 },
-                });
-                lightbox.on("close", () => lightbox.destroy());
-                lightbox.init();
-                lightbox.loadAndOpen(0);
-        };
-        if (targetUrl) {
-                img.src = targetUrl;
-        }
+	await openImageViewer(targetUrl);
 }
 
 function onClick(ev: MouseEvent) {

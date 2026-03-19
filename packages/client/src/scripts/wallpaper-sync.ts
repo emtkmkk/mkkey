@@ -8,6 +8,8 @@
  *   全エントリ（synced=true / synced=false）を保持する。
  * - レジストリには synced=true のエントリのコピーを保存し、他端末との同期に使用する。
  * - 表示用キャッシュ `wallpapers` には全エントリの URL を書き込む（boot.js 用）。
+ * - 削除した壁紙URL は `wallpaperDeletedUrls` にブラックリストとして記録し、
+ *   レジストリの古いデータによるリロード時の復活を防止する。
  *
  * NOTE: `wallpapers` は boot.js のランダム表示で使われるため、読み込み時に必ず更新する。
  *
@@ -22,6 +24,7 @@ import { getCurrentUaClass } from "@/scripts/backup";
 const scope = ["client", "wallpaperSync"];
 const connection = $i ? stream.useChannel("main") : null;
 const wallpaperEntriesStorageKey = "wallpaperEntries";
+const deletedWallpaperUrlsKey = "wallpaperDeletedUrls";
 
 export type WallpaperSyncUaClass = "mobile" | "desktop";
 
@@ -112,6 +115,69 @@ function writeLocalWallpapers(wallpapers: string[]): void {
 	}
 
 	localStorage.setItem("wallpapers", JSON.stringify(wallpapers));
+}
+// #endregion
+
+// #region 削除ブラックリスト
+/**
+ * 削除済み壁紙URLのブラックリストを読み取る。
+ *
+ * @remarks
+ * 壁紙を削除した後、レジストリに古いデータが残っている場合でも
+ * `mergeWithRegistry` で再追加されないよう防止するための仕組み。
+ * レジストリへの永続化が成功した時点でブラックリストから解除される。
+ *
+ * @returns 削除済みURLの Set
+ * @internal
+ */
+function readDeletedWallpaperUrls(): Set<string> {
+	const raw = localStorage.getItem(deletedWallpaperUrlsKey);
+	if (raw == null) return new Set();
+	try {
+		const arr = JSON.parse(raw);
+		return Array.isArray(arr) ? new Set(arr as string[]) : new Set();
+	} catch {
+		return new Set();
+	}
+}
+
+/**
+ * 削除済み壁紙URLのブラックリストを書き込む。
+ *
+ * @param urls ブラックリスト対象のURL Set
+ * @internal
+ */
+function writeDeletedWallpaperUrls(urls: Set<string>): void {
+	if (urls.size === 0) {
+		localStorage.removeItem(deletedWallpaperUrlsKey);
+	} else {
+		localStorage.setItem(deletedWallpaperUrlsKey, JSON.stringify([...urls]));
+	}
+}
+
+/**
+ * 壁紙URLを削除ブラックリストに追加する。
+ *
+ * @param url ブラックリストに追加するURL
+ * @internal
+ */
+function markWallpaperAsDeleted(url: string): void {
+	const deleted = readDeletedWallpaperUrls();
+	deleted.add(url);
+	writeDeletedWallpaperUrls(deleted);
+}
+
+/**
+ * 壁紙URLを削除ブラックリストから解除する。
+ *
+ * @param url ブラックリストから解除するURL
+ * @internal
+ */
+function unmarkWallpaperAsDeleted(url: string): void {
+	const deleted = readDeletedWallpaperUrls();
+	if (!deleted.has(url)) return;
+	deleted.delete(url);
+	writeDeletedWallpaperUrls(deleted);
 }
 // #endregion
 
@@ -208,7 +274,9 @@ async function fetchSyncedWallpapers(
  * - ローカル synced=true かつレジストリにある → synced=true のまま残す
  * - ローカル synced=true かつレジストリに無い → 他端末で削除/OFF された → 除去する
  * - ローカル synced=false → ローカル専用なので無条件に残す
- * - レジストリにあるがローカルに無い → 他端末が追加した → synced=true で追加する
+ * - レジストリにあるがローカルに無い → 削除ブラックリストを確認し、
+ *   ブラックリストに無ければ他端末が追加した壁紙として synced=true で追加する。
+ *   ブラックリストにあればこのデバイスで削除済みなのでスキップする。
  *
  * @param localEntries ローカルの全エントリ
  * @param registryWallpapers レジストリの壁紙URL一覧
@@ -224,6 +292,8 @@ function mergeWithRegistry(
 		if (entry?.url) localMap.set(entry.url, entry);
 	}
 	const registrySet = new Set(registryWallpapers);
+	// このデバイスで削除済みの URL を取得し、レジストリからの復活を防ぐ
+	const deletedUrls = readDeletedWallpaperUrls();
 
 	const result: WallpaperEntry[] = [];
 
@@ -240,11 +310,15 @@ function mergeWithRegistry(
 		}
 	}
 
-	// レジストリにあるがローカルに無いものは他端末が追加した壁紙
+	// レジストリにあるがローカルに無いものを処理
 	for (const url of registryWallpapers) {
-		if (!localMap.has(url)) {
-			result.push({ url, synced: true });
+		if (localMap.has(url)) continue;
+		if (deletedUrls.has(url)) {
+			// このデバイスで削除済み → 復活させない
+			continue;
 		}
+		// 他端末が追加した壁紙 → synced=true で追加
+		result.push({ url, synced: true });
 	}
 
 	return normalizeEntries(result);
@@ -283,6 +357,7 @@ async function persistSyncedWallpapers(
  * @remarks
  * ローカルを主体とし、レジストリの内容とマージして他端末の変更を取り込む。
  * マージ結果は localStorage に書き戻し、表示キャッシュも更新する。
+ * レジストリに古いデータが残っている場合は、ベストエフォートでクリーンアップする。
  *
  * @param uaClass レジストリ参照に使うUAクラス
  * @returns マージ済みの壁紙一覧
@@ -302,6 +377,38 @@ export async function loadWallpaperEntries(
 	// マージ結果をローカルに書き戻し、他端末の変更を反映する
 	writeLocalWallpaperEntries(mergedEntries);
 	updateWallpapersDisplayCache(mergedEntries);
+
+	// マージ後の synced リストとレジストリに差分があればクリーンアップする
+	const mergedSyncedUrls = mergedEntries
+		.filter((entry) => entry.synced)
+		.map((entry) => entry.url);
+	const sortedRegistry = [...registryWallpapers].sort();
+	const sortedMerged = [...mergedSyncedUrls].sort();
+	const registryNeedsUpdate =
+		sortedRegistry.length !== sortedMerged.length ||
+		sortedRegistry.some((url, i) => url !== sortedMerged[i]);
+
+	if (registryNeedsUpdate) {
+		try {
+			await persistSyncedWallpapers(mergedSyncedUrls, uaClass);
+			// レジストリ更新成功 → 削除ブラックリストをクリーンアップ
+			// レジストリから古いデータが消えたため、ブラックリストの保護は不要になる
+			const deletedUrls = readDeletedWallpaperUrls();
+			if (deletedUrls.size > 0) {
+				const mergedSyncedSet = new Set(mergedSyncedUrls);
+				for (const url of deletedUrls) {
+					// レジストリに残っていない URL はブラックリストから解除
+					if (!mergedSyncedSet.has(url)) {
+						deletedUrls.delete(url);
+					}
+				}
+				writeDeletedWallpaperUrls(deletedUrls);
+			}
+		} catch {
+			// クリーンアップ失敗は表示に影響しないため無視
+		}
+	}
+
 	return mergedEntries;
 }
 
@@ -310,7 +417,7 @@ export async function loadWallpaperEntries(
  *
  * @remarks
  * 追加時点では synced=false（ローカル専用）として保存する。
- * localStorage が信頼源のため、レジストリの取得は不要。
+ * 以前削除した URL を再追加する場合、削除ブラックリストから解除する。
  *
  * @param urls 追加する壁紙URL一覧
  * @returns 追加後の壁紙一覧
@@ -324,6 +431,10 @@ export async function addWallpaperEntries(
 		...currentEntries,
 		...urls.map((url) => ({ url, synced: false })),
 	]);
+	// 再追加された URL はブラックリストから解除
+	for (const url of urls) {
+		unmarkWallpaperAsDeleted(url);
+	}
 	updateWallpapersDisplayCache(nextEntries);
 	return nextEntries;
 }
@@ -382,8 +493,10 @@ export async function setWallpaperEntrySyncState(
  * 壁紙エントリを削除する。
  *
  * @remarks
- * ローカルから削除し、対象が synced=true だった場合はレジストリからも削除する。
- * レジストリ永続化はベストエフォートで行い、失敗時はロールバックする。
+ * ローカルから削除し、削除ブラックリストに記録してリロード時の復活を防止する。
+ * レジストリの同期リストも常に更新し、古いデータをクリーンアップする。
+ * レジストリ更新成功時はブラックリストから解除する（レジストリに残骸がないため）。
+ * レジストリ更新失敗時はブラックリストを維持して次回ロード時の復活を防ぐ。
  *
  * @param url 削除対象の壁紙URL
  * @param uaClass レジストリ参照に使うUAクラス
@@ -395,7 +508,6 @@ export async function removeWallpaperEntry(
 	uaClass: WallpaperSyncUaClass = getWallpaperSyncUaClass(),
 ): Promise<WallpaperEntry[]> {
 	const currentEntries = readLocalWallpaperEntries();
-	const removedEntry = currentEntries.find((entry) => entry.url === url);
 	const nextEntries = normalizeEntries(
 		currentEntries.filter((entry) => entry.url !== url),
 	);
@@ -403,20 +515,22 @@ export async function removeWallpaperEntry(
 	// ローカルから削除
 	writeLocalWallpaperEntries(nextEntries);
 	updateWallpapersDisplayCache(nextEntries);
+	// ブラックリストに記録してリロード時のレジストリからの復活を防ぐ
+	markWallpaperAsDeleted(url);
 
-	// 削除対象が synced=true だった場合のみレジストリを更新
-	if (removedEntry?.synced) {
-		const nextSyncedWallpapers = nextEntries
-			.filter((entry) => entry.synced)
-			.map((entry) => entry.url);
-		try {
-			await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
-		} catch (err) {
-			// ロールバック
-			writeLocalWallpaperEntries(currentEntries);
-			updateWallpapersDisplayCache(currentEntries);
-			throw err;
-		}
+	// 常にレジストリの同期リストを更新する。
+	// synced=false のエントリでも、以前 synced=true だった時のデータが
+	// レジストリに残っている可能性があるため、最新のリストで上書きする。
+	const nextSyncedWallpapers = nextEntries
+		.filter((entry) => entry.synced)
+		.map((entry) => entry.url);
+
+	try {
+		await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
+		// レジストリ更新成功 → ブラックリストから解除（レジストリに残骸がないため不要）
+		unmarkWallpaperAsDeleted(url);
+	} catch {
+		// レジストリ更新失敗 → ブラックリストは維持して次回ロード時の復活を防ぐ
 	}
 	return nextEntries;
 }

@@ -95,8 +95,9 @@ function writeLocalWallpapers(wallpapers: string[]): void {
  * ローカル管理対象（synced=false）の壁紙エントリ一覧を取得する。
  *
  * @remarks
- * - `wallpaperEntries` が無い場合は旧形式 `wallpapers` から移行する。
- * - 旧実装の残骸として `synced=true` が混在していても除外する。
+ * - `wallpaperEntries` が null の場合のみ、旧形式 `wallpapers` から一度限りの移行を行う。
+ *   移行後は `wallpaperEntries` に `"[]"` 以上が書き込まれるため再移行は起きない。
+ * - `synced=true` が混在していても除外し、ローカルには非同期対象のみを残す。
  *
  * @returns ローカル保存される壁紙エントリ一覧
  * @public
@@ -104,7 +105,9 @@ function writeLocalWallpapers(wallpapers: string[]): void {
 export function readLocalWallpaperEntries(): WallpaperEntry[] {
 	const savedEntries = localStorage.getItem(wallpaperEntriesStorageKey);
 	if (savedEntries == null) {
-		// NOTE: 旧形式（wallpapers のみ）からの移行。既存データは非同期対象として扱う。
+		// NOTE: 旧形式（wallpapers のみ）からの一度限りの移行。
+		// writeLocalWallpaperEntries が必ず wallpaperEntries を書き込むため、
+		// 次回以降は null にならず移行は再実行されない。
 		const migrated = readLocalWallpapers().map((url) => ({
 			url,
 			synced: false,
@@ -120,9 +123,20 @@ export function readLocalWallpaperEntries(): WallpaperEntry[] {
 			url: entry.url,
 			synced: false,
 		}));
-	return writeLocalWallpaperEntries(localOnly);
+	return localOnly;
 }
 
+/**
+ * ローカル管理の壁紙エントリを localStorage に書き込む。
+ *
+ * @remarks
+ * 空配列でも必ず `"[]"` を書き込み、キーを削除しない。
+ * これにより `readLocalWallpaperEntries` の旧形式移行が一度しか走らないことを保証する。
+ *
+ * @param entries 書き込む壁紙エントリ（synced=true は自動除外される）
+ * @returns 実際に書き込まれたローカル専用エントリ
+ * @internal
+ */
 function writeLocalWallpaperEntries(entries: WallpaperEntry[]): WallpaperEntry[] {
 	const localOnly = normalizeEntries(entries)
 		.filter((entry) => !entry.synced)
@@ -130,12 +144,8 @@ function writeLocalWallpaperEntries(entries: WallpaperEntry[]): WallpaperEntry[]
 			url: entry.url,
 			synced: false,
 		}));
-	if (localOnly.length === 0) {
-		localStorage.removeItem(wallpaperEntriesStorageKey);
-	} else {
-		localStorage.setItem(wallpaperEntriesStorageKey, JSON.stringify(localOnly));
-	}
-
+	// NOTE: 空でも必ず書き込む。キーが null にならないことで旧形式移行の再実行を防止する。
+	localStorage.setItem(wallpaperEntriesStorageKey, JSON.stringify(localOnly));
 	return localOnly;
 }
 
@@ -294,9 +304,12 @@ export async function setWallpaperEntrySyncState(
 			synced: false,
 		}));
 
-	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
+	// NOTE: ローカル状態を先に確定させてからレジストリへ永続化する。
+	// persistSyncedWallpapers が registryUpdated イベントを発火させるため、
+	// そのハンドラが最新のローカル状態を参照できるようにする。
 	writeLocalWallpaperEntries(nextLocalEntries);
 	updateWallpapersDisplayCache(nextEntries);
+	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
 	return nextEntries;
 }
 
@@ -329,9 +342,10 @@ export async function removeWallpaperEntry(
 			synced: false,
 		}));
 
-	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
+	// NOTE: ローカル状態を先に確定（setWallpaperEntrySyncState と同じ理由）
 	writeLocalWallpaperEntries(nextLocalEntries);
 	updateWallpapersDisplayCache(nextEntries);
+	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
 	return nextEntries;
 }
 

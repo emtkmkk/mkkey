@@ -26,8 +26,6 @@ const connection = $i ? stream.useChannel("main") : null;
 const wallpaperEntriesStorageKey = "wallpaperEntries";
 const deletedWallpaperUrlsKey = "wallpaperDeletedUrls";
 const legacySingleWallpaperStorageKey = "wallpaper";
-const wallpaperSyncUaClasses: WallpaperSyncUaClass[] = ["mobile", "desktop"];
-
 export type WallpaperSyncUaClass = "mobile" | "desktop";
 
 /**
@@ -379,33 +377,33 @@ async function persistSyncedWallpapers(
 }
 
 /**
- * 指定URLを全UAクラスのレジストリ同期リストから削除する。
+ * 指定URLを現在のUAクラスのレジストリ同期リストから削除する。
  *
  * @remarks
- * 同期OFFの壁紙でも過去に別端末・別UAで同期済みだった可能性があるため、
- * mobile / desktop の両方を明示的にクリーンアップする。
+ * 削除対象は現在のUAクラスに対応するレジストリのみとし、
+ * 別UAクラスの同期設定は変更しない。
  *
  * @param url 削除対象の壁紙URL
+ * @param uaClass レジストリキーの振り分けに使うUAクラス
  * @internal
  */
-async function removeWallpaperFromRegistry(url: string): Promise<void> {
+async function removeWallpaperFromRegistry(
+	url: string,
+	uaClass: WallpaperSyncUaClass = getWallpaperSyncUaClass(),
+): Promise<void> {
 	if ($i == null) return;
 
-	await Promise.all(
-		wallpaperSyncUaClasses.map(async (uaClass) => {
-			const syncedWallpapers = await fetchSyncedWallpapers(uaClass);
-			const nextSyncedWallpapers = syncedWallpapers.filter(
-				(entryUrl) => entryUrl !== url,
-			);
-
-			const needsUpdate =
-				nextSyncedWallpapers.length !== syncedWallpapers.length;
-
-			if (!needsUpdate) return;
-
-			await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
-		}),
+	const syncedWallpapers = await fetchSyncedWallpapers(uaClass);
+	const nextSyncedWallpapers = syncedWallpapers.filter(
+		(entryUrl) => entryUrl !== url,
 	);
+
+	const needsUpdate =
+		nextSyncedWallpapers.length !== syncedWallpapers.length;
+
+	if (!needsUpdate) return;
+
+	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
 }
 // #endregion
 
@@ -566,7 +564,6 @@ export async function removeWallpaperEntry(
 	url: string,
 	uaClass: WallpaperSyncUaClass = getWallpaperSyncUaClass(),
 ): Promise<WallpaperEntry[]> {
-	void uaClass;
 	const currentEntries = readLocalWallpaperEntries();
 	const nextEntries = normalizeEntries(
 		currentEntries.filter((entry) => entry.url !== url),
@@ -578,7 +575,7 @@ export async function removeWallpaperEntry(
 	markWallpaperAsDeleted(url);
 
 	try {
-		await removeWallpaperFromRegistry(url);
+		await removeWallpaperFromRegistry(url, uaClass);
 		// レジストリ更新成功 → ブラックリストから解除（レジストリに残骸がないため不要）
 		unmarkWallpaperAsDeleted(url);
 	} catch {

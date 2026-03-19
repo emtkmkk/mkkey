@@ -50,12 +50,18 @@ function writeLocalWallpapers(wallpapers: string[]): void {
 }
 
 export function readLocalWallpaperEntries(): WallpaperEntry[] {
+	const wallpapers = readLocalWallpapers();
 	const savedEntries = localStorage.getItem(wallpaperEntriesStorageKey);
 	if (savedEntries != null) {
-		return normalizeEntries(JSON.parse(savedEntries) as WallpaperEntry[]);
+		return normalizeEntries([
+			...(JSON.parse(savedEntries) as WallpaperEntry[]),
+			...wallpapers.map((url) => ({
+				url,
+				synced: false,
+			})),
+		]);
 	}
 
-	const wallpapers = readLocalWallpapers();
 	const migrated = wallpapers.map((url) => ({
 		url,
 		synced: false,
@@ -146,11 +152,13 @@ export async function setWallpaperEntrySyncState(
 	uaClass: WallpaperSyncUaClass = getWallpaperSyncUaClass(),
 ): Promise<WallpaperEntry[]> {
 	const localEntries = readLocalWallpaperEntries();
-	const nextEntries = normalizeEntries(
-		localEntries.map((entry) =>
+	const hasTargetEntry = localEntries.some((entry) => entry.url === url);
+	const nextEntries = normalizeEntries([
+		...localEntries.map((entry) =>
 			entry.url === url ? { ...entry, synced } : entry,
 		),
-	);
+		...(hasTargetEntry ? [] : [{ url, synced }]),
+	]);
 	const syncedWallpapers = nextEntries
 		.filter((entry) => entry.synced)
 		.map((entry) => entry.url);

@@ -186,6 +186,17 @@ function mergeWallpaperEntries(
 	return normalizeEntries([...unsyncedEntries, ...syncedEntries]);
 }
 
+/**
+ * 同期対象の壁紙URL一覧をレジストリに保存する。
+ *
+ * @remarks
+ * 空配列でも `i/registry/set` で書き込む。
+ * `i/registry/remove` はキーが存在しない場合にエラーとなるため使用しない。
+ *
+ * @param syncedWallpapers 保存する同期壁紙URL一覧（空配列可）
+ * @param uaClass レジストリキーの振り分けに使うUAクラス
+ * @internal
+ */
 async function persistSyncedWallpapers(
 	syncedWallpapers: string[],
 	uaClass: WallpaperSyncUaClass = getWallpaperSyncUaClass(),
@@ -193,15 +204,6 @@ async function persistSyncedWallpapers(
 	if ($i == null) return;
 
 	const key = getRegistryKey(uaClass);
-
-	if (syncedWallpapers.length === 0) {
-		await api("i/registry/remove", {
-			scope,
-			key,
-		});
-		return;
-	}
-
 	await api("i/registry/set", {
 		scope,
 		key,
@@ -304,14 +306,20 @@ export async function setWallpaperEntrySyncState(
 			synced: false,
 		}));
 
-	// NOTE: レジストリへの永続化を先に行い、成功してからローカルを更新する。
-	// 先にローカルを更新すると、persistSyncedWallpapers が失敗した場合に
-	// 壁紙がローカルからもレジストリからも消失するデータロスが発生する。
-	// registryUpdated イベントが先に到着しても、マージ関数が synced 優先で
-	// 正しく解決するため、順序による不整合は起きない。
-	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
+	// NOTE: ローカルを先に更新し、レジストリ失敗時はロールバックする。
+	// これにより registryUpdated が先着しても最新ローカル状態を参照でき、
+	// かつ永続化失敗時にデータが消失しない。
 	writeLocalWallpaperEntries(nextLocalEntries);
 	updateWallpapersDisplayCache(nextEntries);
+	try {
+		await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
+	} catch (err) {
+		// レジストリ永続化に失敗した場合、変更前の状態にロールバックする
+		writeLocalWallpaperEntries(localEntries);
+		const rolledBack = mergeWallpaperEntries(localEntries, syncedWallpapers);
+		updateWallpapersDisplayCache(rolledBack);
+		throw err;
+	}
 	return nextEntries;
 }
 
@@ -344,10 +352,17 @@ export async function removeWallpaperEntry(
 			synced: false,
 		}));
 
-	// NOTE: レジストリを先に更新（setWallpaperEntrySyncState と同じ理由）
-	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
+	// NOTE: ローカルを先に更新し、レジストリ失敗時はロールバック（setWallpaperEntrySyncState と同じ方針）
 	writeLocalWallpaperEntries(nextLocalEntries);
 	updateWallpapersDisplayCache(nextEntries);
+	try {
+		await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
+	} catch (err) {
+		writeLocalWallpaperEntries(localEntries);
+		const rolledBack = mergeWallpaperEntries(localEntries, syncedWallpapers);
+		updateWallpapersDisplayCache(rolledBack);
+		throw err;
+	}
 	return nextEntries;
 }
 

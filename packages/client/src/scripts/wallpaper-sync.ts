@@ -304,12 +304,14 @@ export async function setWallpaperEntrySyncState(
 			synced: false,
 		}));
 
-	// NOTE: ローカル状態を先に確定させてからレジストリへ永続化する。
-	// persistSyncedWallpapers が registryUpdated イベントを発火させるため、
-	// そのハンドラが最新のローカル状態を参照できるようにする。
+	// NOTE: レジストリへの永続化を先に行い、成功してからローカルを更新する。
+	// 先にローカルを更新すると、persistSyncedWallpapers が失敗した場合に
+	// 壁紙がローカルからもレジストリからも消失するデータロスが発生する。
+	// registryUpdated イベントが先に到着しても、マージ関数が synced 優先で
+	// 正しく解決するため、順序による不整合は起きない。
+	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
 	writeLocalWallpaperEntries(nextLocalEntries);
 	updateWallpapersDisplayCache(nextEntries);
-	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
 	return nextEntries;
 }
 
@@ -342,10 +344,10 @@ export async function removeWallpaperEntry(
 			synced: false,
 		}));
 
-	// NOTE: ローカル状態を先に確定（setWallpaperEntrySyncState と同じ理由）
+	// NOTE: レジストリを先に更新（setWallpaperEntrySyncState と同じ理由）
+	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
 	writeLocalWallpaperEntries(nextLocalEntries);
 	updateWallpapersDisplayCache(nextEntries);
-	await persistSyncedWallpapers(nextSyncedWallpapers, uaClass);
 	return nextEntries;
 }
 

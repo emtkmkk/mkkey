@@ -20,7 +20,7 @@ export function generateRepliesQuery(
 ) {
 	const useBotMention = applyIsBotMentionFilter === true;
 	const notReplyCond = useBotMention
-		? "(note.replyId IS NULL AND (note.isBotMention IS NOT TRUE))"
+		? "(note.replyId IS NULL AND (note.renoteId IS NOT NULL OR note.isBotMention IS NOT TRUE))"
 		: "note.replyId IS NULL";
 
 	if (me == null) {

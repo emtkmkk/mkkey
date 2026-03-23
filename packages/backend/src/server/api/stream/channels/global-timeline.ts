@@ -48,7 +48,7 @@ export default class extends Channel {
 		if (!this.user && note.reply) {
 			return;
 		}
-		if (this.user && this.showReplyMode === "notBotOnly" && note.isBotMention && note.userId !== this.user.id) {
+		if (this.user && this.showReplyMode === "notBotOnly" && note.renoteId == null && note.isBotMention && note.userId !== this.user.id) {
 			return;
 		}
 		if (note.reply && !this.user!.showTimelineReplies) {

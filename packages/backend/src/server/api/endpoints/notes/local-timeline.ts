@@ -120,53 +120,57 @@ function isRenoteOnly(note: Packed<"Note">): boolean {
 
 function filterRenoteOnlyForLocalTimeline(
         notes: Packed<"Note">[],
+        limit: number,
         meId?: string,
 ): Packed<"Note">[] {
         if (notes.length === 0) return notes;
 
-        const noteMap = new Map<string, Packed<"Note">>();
-        const renoteOnlyMap = new Map<string, Packed<"Note">[]>();
+        const visibleNotes: Array<Packed<"Note"> | null> = [];
+        const visibleNoteIds = new Set<string>();
+        const visibleRenoteIndexes = new Map<string, number>();
+        let visibleCount = 0;
 
         for (const note of notes) {
-                noteMap.set(note.id, note);
+                if (!isRenoteOnly(note) || (meId && note.userId === meId)) {
+                        const renoteIndex = visibleRenoteIndexes.get(note.id);
+                        if (renoteIndex !== undefined) {
+                                visibleNotes[renoteIndex] = null;
+                                visibleRenoteIndexes.delete(note.id);
+                        }
 
-                if (!isRenoteOnly(note)) continue;
+                        visibleNoteIds.add(note.id);
+                        visibleNotes.push(note);
+                        visibleCount += 1;
+                } else {
+                        const targetId = note.renote?.id;
+                        if (!targetId) {
+                                visibleNotes.push(note);
+                                visibleCount += 1;
+                        } else {
+                                if (visibleNoteIds.has(targetId)) {
+                                        continue;
+                                }
 
-                const targetId = note.renote?.id;
-                if (!targetId) continue;
+                                const visibleRenoteIndex = visibleRenoteIndexes.get(targetId);
+                                if (visibleRenoteIndex !== undefined) {
+                                        visibleNotes[visibleRenoteIndex] = null;
+                                        visibleRenoteIndexes.set(targetId, visibleNotes.length);
+                                        visibleNotes.push(note);
+                                        continue;
+                                }
 
-                if (!renoteOnlyMap.has(targetId)) {
-                        renoteOnlyMap.set(targetId, []);
-                }
-
-                renoteOnlyMap.get(targetId)!.push(note);
-        }
-
-        return notes.filter((note) => {
-                if (!isRenoteOnly(note)) return true;
-                if (meId && note.userId === meId) return true;
-
-                const targetId = note.renote?.id;
-                if (!targetId) return true;
-
-                if (noteMap.has(targetId)) {
-                        return false;
-                }
-
-                const candidates = renoteOnlyMap.get(targetId);
-                if (!candidates || candidates.length === 0) {
-                        return true;
-                }
-
-                let oldest = candidates[0];
-                for (const candidate of candidates) {
-                        if (candidate.id < oldest.id) {
-                                oldest = candidate;
+                                visibleRenoteIndexes.set(targetId, visibleNotes.length);
+                                visibleNotes.push(note);
+                                visibleCount += 1;
                         }
                 }
 
-                return note.id === oldest.id;
-        });
+                if (visibleCount >= limit) {
+                        break;
+                }
+        }
+
+        return visibleNotes.filter((note): note is Packed<"Note"> => note !== null);
 }
 
 export default define(meta, paramDef, async (ps, user) => {
@@ -329,7 +333,7 @@ export default define(meta, paramDef, async (ps, user) => {
                         });
                         rawNotes.push(...packedNotes);
 
-                        const filtered = filterRenoteOnlyForLocalTimeline(rawNotes, user?.id);
+                        const filtered = filterRenoteOnlyForLocalTimeline(rawNotes, ps.limit, user?.id);
                         if (filtered.length >= ps.limit) {
                                 return filtered.slice(0, ps.limit);
                         }
@@ -344,5 +348,5 @@ export default define(meta, paramDef, async (ps, user) => {
                 throw new ApiError(meta.errors.queryError);
         }
 
-        return filterRenoteOnlyForLocalTimeline(rawNotes, user?.id).slice(0, ps.limit);
+        return filterRenoteOnlyForLocalTimeline(rawNotes, ps.limit, user?.id);
 });

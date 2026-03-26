@@ -44,13 +44,29 @@ function isRenoteOnly(note: Packed<"Note">): boolean {
         return !hasRenoteOnlyContent(note);
 }
 
+function rememberRecentId(targets: Set<string>, id: string): void {
+        if (targets.has(id)) {
+                targets.delete(id);
+        }
+
+        targets.add(id);
+
+        if (targets.size > RECENT_RENOTE_TARGET_LIMIT) {
+                const oldestId = targets.values().next().value;
+                if (oldestId !== undefined) {
+                        targets.delete(oldestId);
+                }
+        }
+}
+
 export default class extends Channel {
         public readonly chName = "localTimeline";
         public static shouldShare = true;
         public static requireCredential = false;
         private withBelowPublic: boolean;
         private showReplyMode: "all" | "notBotOnly" | "personalOnly";
-        private recentRenoteTargets: Map<string, string> = new Map();
+        private receivedRenoteTargetIds: Set<string> = new Set();
+        private displayedNoteIds: Set<string> = new Set();
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
@@ -145,11 +161,10 @@ export default class extends Channel {
 			return;
 
                 this.connection.cacheNote(note);
+                this.rememberDisplayedNote(note);
 
                 if (isRenoteOnly(note)) {
                         this.rememberRenoteOnly(note);
-                } else if (this.recentRenoteTargets.has(note.id)) {
-                        this.recentRenoteTargets.delete(note.id);
                 }
 
                 this.send("note", note);
@@ -166,34 +181,21 @@ export default class extends Channel {
                 const targetId = note.renote?.id;
                 if (!targetId) return false;
 
-                if (this.connection.hasCachedNote(targetId)) {
-                        return true;
-                }
+                return (
+                        this.displayedNoteIds.has(targetId) ||
+                        this.receivedRenoteTargetIds.has(targetId)
+                );
+        }
 
-                const existing = this.recentRenoteTargets.get(targetId);
-                if (!existing) {
-                        return false;
-                }
 
-                if (existing <= note.id) {
-                        return true;
-                }
-
-                this.recentRenoteTargets.set(targetId, note.id);
-                return false;
+        private rememberDisplayedNote(note: Packed<"Note">) {
+                rememberRecentId(this.displayedNoteIds, note.id);
         }
 
         private rememberRenoteOnly(note: Packed<"Note">) {
                 const targetId = note.renote?.id;
                 if (!targetId) return;
 
-                this.recentRenoteTargets.set(targetId, note.id);
-
-                if (this.recentRenoteTargets.size > RECENT_RENOTE_TARGET_LIMIT) {
-                        const oldestKey = this.recentRenoteTargets.keys().next().value;
-                        if (oldestKey !== undefined) {
-                                this.recentRenoteTargets.delete(oldestKey);
-                        }
-                }
+                rememberRecentId(this.receivedRenoteTargetIds, targetId);
         }
 }

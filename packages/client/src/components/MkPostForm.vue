@@ -2374,7 +2374,9 @@ async function submitPostRequest({
 }: SubmitPostRequestOptions): Promise<void> {
 	posting = true;
 	try {
-		postData = os.ensureNotesCreateIdempotencyKey(postData) as PostPayload;
+		// NOTE: 投稿ボタン押下ごとに intentKey を新規発行し、その押下に紐づく再送では同じキーを使い続ける。
+		const postIntentKey = uuid();
+		postData = os.ensureNotesCreateIdempotencyKey(postData, postIntentKey) as PostPayload;
 		await waitForFileSelectingToBeFalse(backupDraftData);
 		postData.fileIds =
 			((postData?.fileIds?.length ?? 0) + files.length > 0)

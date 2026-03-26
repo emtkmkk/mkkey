@@ -19,62 +19,41 @@ import { defaultStore } from "./store";
 export const pendingApiRequestsCount = ref(0);
 
 /**
- * `notes/create` の冪等キー付与を統一するための設定値。
- *
- * @remarks
- * - サーバ側 TTL と揃えて 1 時間は同一ペイロードで同一キーを再利用する。
- * - `idempotencyKey` 自体は署名計算から除外し、キーが既に存在する場合は優先して使用する。
- * @internal
- */
-const NOTES_CREATE_IDEMPOTENCY_REUSE_MS = 60 * 60 * 1000;
-let lastNotesCreatePayloadSignature: string | null = null;
-let lastNotesCreateIdempotencyKey: string | null = null;
-let lastNotesCreateIdempotencyAt = 0;
-
-function createNotesCreateSignature(data: Record<string, any>): string {
-	const payload = { ...data };
-	delete payload.idempotencyKey;
-	return JSON.stringify(payload);
-}
-
-/**
  * `notes/create` の payload に冪等キーを必ず設定する。
  *
  * @remarks
  * NOTE: 既存の呼び出し側が明示的に `idempotencyKey` を設定している場合は、その値を尊重する。
+ * NOTE: `intentKey` を指定した場合は、同一意図の再送で同じキーを使い続けるためにその値を優先する。
  * @param data - `notes/create` に渡すリクエスト payload
+ * @param intentKey - ユーザーの 1 回の投稿意思に紐づく固定キー
  * @returns 冪等キーが設定された payload
  * @public
  */
 export function ensureNotesCreateIdempotencyKey(
 	data: Record<string, any>,
+	intentKey?: string,
 ): Record<string, any> {
 	if (typeof data.idempotencyKey === "string" && data.idempotencyKey.trim().length > 0) {
 		return data;
 	}
 
-	const signature = createNotesCreateSignature(data);
-	const now = Date.now();
-	if (
-		lastNotesCreateIdempotencyKey != null &&
-		lastNotesCreatePayloadSignature === signature &&
-		now - lastNotesCreateIdempotencyAt <= NOTES_CREATE_IDEMPOTENCY_REUSE_MS
-	) {
-		lastNotesCreateIdempotencyAt = now;
+	if (typeof intentKey === "string" && intentKey.trim().length > 0) {
 		return {
 			...data,
-			idempotencyKey: lastNotesCreateIdempotencyKey,
+			idempotencyKey: intentKey,
 		};
 	}
 
-	const newKey = uuid();
-	lastNotesCreatePayloadSignature = signature;
-	lastNotesCreateIdempotencyKey = newKey;
-	lastNotesCreateIdempotencyAt = now;
 	return {
 		...data,
-		idempotencyKey: newKey,
+		idempotencyKey: uuid(),
 	};
+}
+
+function buildNotesCreateQueueSignature(data: Record<string, any>): string {
+	const payload = { ...data };
+	delete payload.idempotencyKey;
+	return JSON.stringify(payload);
 }
 
 const apiClient = new Misskey.api.APIClient({
@@ -255,9 +234,10 @@ export const queueApi = (
 
   if (endpoint === "notes/create") {
 		try {
+			const currentSignature = buildNotesCreateQueueSignature(data);
 			const isDuplicate = queueDatas.value.some(item =>
 				item.endpoint === "notes/create" &&
-				JSON.stringify(item.data) === JSON.stringify(data)
+				buildNotesCreateQueueSignature(item.data ?? {}) === currentSignature
 			);
 			if (isDuplicate) {
 				toast("重複した投稿が検出されました。リクエストはキャンセルされました。");

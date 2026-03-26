@@ -2266,30 +2266,6 @@ interface PostPayload {
 		idempotencyKey?: string;
 }
 
-const IDEMPOTENCY_KEY_REUSE_MS = 60 * 1000;
-let lastIdempotencyPayloadSignature: string | null = null;
-let lastIdempotencyKey: string | null = null;
-let lastIdempotencyGeneratedAt = 0;
-
-function resolveIdempotencyKey(postData: PostPayload): string {
-	const payloadSignature = JSON.stringify(postData);
-	const now = Date.now();
-	if (
-		lastIdempotencyKey != null &&
-		lastIdempotencyPayloadSignature === payloadSignature &&
-		now - lastIdempotencyGeneratedAt <= IDEMPOTENCY_KEY_REUSE_MS
-	) {
-		lastIdempotencyGeneratedAt = now;
-		return lastIdempotencyKey;
-	}
-
-	const newKey = uuid();
-	lastIdempotencyPayloadSignature = payloadSignature;
-	lastIdempotencyKey = newKey;
-	lastIdempotencyGeneratedAt = now;
-	return newKey;
-}
-
 function buildPostPayload(options: BuildPostPayloadOptions): PostPayload {
  const payload: PostPayload = {
   text: options.processedText === "" ? undefined : options.processedText,
@@ -2398,7 +2374,7 @@ async function submitPostRequest({
 }: SubmitPostRequestOptions): Promise<void> {
 	posting = true;
 	try {
-		postData.idempotencyKey = resolveIdempotencyKey(postData);
+		postData = os.ensureNotesCreateIdempotencyKey(postData) as PostPayload;
 		await waitForFileSelectingToBeFalse(backupDraftData);
 		postData.fileIds =
 			((postData?.fileIds?.length ?? 0) + files.length > 0)
@@ -2415,6 +2391,13 @@ async function submitPostRequest({
 		posting = false;
 		postAccount = null;
 	} catch (err) {
+		if ((err as any)?.code === "DUPLICATE_REQUEST") {
+			// NOTE: 同一投稿の再送がサーバ側で吸収されたケースは成功扱いに寄せる。
+			posting = false;
+			postAccount = null;
+			os.toast("同じ投稿の再送信は自動的に抑止されました。");
+			return;
+		}
 		posting = false;
 		restoreData();
 		restoreDraft();

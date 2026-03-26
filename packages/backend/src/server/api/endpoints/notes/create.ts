@@ -36,7 +36,8 @@ import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
 import { publishMainStream } from "@/services/stream.js";
 import { redisClient } from "@/db/redis.js";
 
-const NOTES_CREATE_IDEMPOTENCY_TTL_SEC = 60;
+const NOTES_CREATE_IDEMPOTENCY_TTL_SEC = 60 * 60;
+const NOTES_CREATE_IDEMPOTENCY_PENDING = "__pending__";
 
 function normalizeIdempotencyKey(key: unknown): string | null {
 	if (typeof key !== "string") return null;
@@ -385,6 +386,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 	const endpointStartedAt = Date.now();
 	const bodyIdempotencyKey = normalizeIdempotencyKey(ps.idempotencyKey);
 	const headerIdempotencyKey = normalizeIdempotencyKey(headers?.["idempotency-key"]);
+	let idempotencyRedisKey: string | null = null;
 
 	if (
 		bodyIdempotencyKey != null &&
@@ -397,15 +399,25 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 	const idempotencyKey = headerIdempotencyKey ?? bodyIdempotencyKey;
 	if (idempotencyKey != null) {
 		const redisKey = `notes:create:idempotency:${user.id}:${idempotencyKey}`;
+		idempotencyRedisKey = redisKey;
 		const setResult = await redisClient.set(
 			redisKey,
-			"1",
+			NOTES_CREATE_IDEMPOTENCY_PENDING,
 			"EX",
 			NOTES_CREATE_IDEMPOTENCY_TTL_SEC,
 			"NX",
 		);
 
 		if (setResult !== "OK") {
+			const existingNoteId = await redisClient.get(redisKey);
+			if (existingNoteId != null && existingNoteId !== NOTES_CREATE_IDEMPOTENCY_PENDING) {
+				const existingNote = await Notes.findOneBy({ id: existingNoteId, userId: user.id });
+				if (existingNote != null) {
+					return {
+						createdNote: await Notes.pack(existingNote, user),
+					};
+				}
+			}
 			throw new ApiError(meta.errors.duplicateRequest);
 		}
 	}
@@ -633,10 +645,21 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 					apEmojis: ps.noExtractEmojis ? [] : undefined,
 					endpointPreprocessMs,
 			});
+			if (idempotencyRedisKey != null) {
+				await redisClient.set(
+					idempotencyRedisKey,
+					note.id,
+					"EX",
+					NOTES_CREATE_IDEMPOTENCY_TTL_SEC,
+				);
+			}
 			return {
 					createdNote: await Notes.pack(note, user),
 			};
         } catch (e) {
+                        if (idempotencyRedisKey != null) {
+                                await redisClient.del(idempotencyRedisKey);
+                        }
                         if (e instanceof ApiError) throw e;
 
                         const statusError = e instanceof StatusError ? e : null;

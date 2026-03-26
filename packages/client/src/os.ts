@@ -18,6 +18,65 @@ import { defaultStore } from "./store";
 
 export const pendingApiRequestsCount = ref(0);
 
+/**
+ * `notes/create` の冪等キー付与を統一するための設定値。
+ *
+ * @remarks
+ * - サーバ側 TTL と揃えて 1 時間は同一ペイロードで同一キーを再利用する。
+ * - `idempotencyKey` 自体は署名計算から除外し、キーが既に存在する場合は優先して使用する。
+ * @internal
+ */
+const NOTES_CREATE_IDEMPOTENCY_REUSE_MS = 60 * 60 * 1000;
+let lastNotesCreatePayloadSignature: string | null = null;
+let lastNotesCreateIdempotencyKey: string | null = null;
+let lastNotesCreateIdempotencyAt = 0;
+
+function createNotesCreateSignature(data: Record<string, any>): string {
+	const payload = { ...data };
+	delete payload.idempotencyKey;
+	return JSON.stringify(payload);
+}
+
+/**
+ * `notes/create` の payload に冪等キーを必ず設定する。
+ *
+ * @remarks
+ * NOTE: 既存の呼び出し側が明示的に `idempotencyKey` を設定している場合は、その値を尊重する。
+ * @param data - `notes/create` に渡すリクエスト payload
+ * @returns 冪等キーが設定された payload
+ * @public
+ */
+export function ensureNotesCreateIdempotencyKey(
+	data: Record<string, any>,
+): Record<string, any> {
+	if (typeof data.idempotencyKey === "string" && data.idempotencyKey.trim().length > 0) {
+		return data;
+	}
+
+	const signature = createNotesCreateSignature(data);
+	const now = Date.now();
+	if (
+		lastNotesCreateIdempotencyKey != null &&
+		lastNotesCreatePayloadSignature === signature &&
+		now - lastNotesCreateIdempotencyAt <= NOTES_CREATE_IDEMPOTENCY_REUSE_MS
+	) {
+		lastNotesCreateIdempotencyAt = now;
+		return {
+			...data,
+			idempotencyKey: lastNotesCreateIdempotencyKey,
+		};
+	}
+
+	const newKey = uuid();
+	lastNotesCreatePayloadSignature = signature;
+	lastNotesCreateIdempotencyKey = newKey;
+	lastNotesCreateIdempotencyAt = now;
+	return {
+		...data,
+		idempotencyKey: newKey,
+	};
+}
+
 const apiClient = new Misskey.api.APIClient({
 	origin: url,
 });
@@ -28,6 +87,10 @@ export const api = ((
 	token?: string | null | undefined,
 	suppressToast = false,
 ) => {
+	if (endpoint === "notes/create") {
+		data = ensureNotesCreateIdempotencyKey(data);
+	}
+
 	if ($i?.isMiniSilenced && endpoint === "notes/create") {
 		data.web = true;
 	}
@@ -186,6 +249,10 @@ export const queueApi = (
 	comment?: string | undefined,
 	draftData?: any,
 ): Promise<any> => {
+  if (endpoint === "notes/create") {
+		data = ensureNotesCreateIdempotencyKey(data);
+	}
+
   if (endpoint === "notes/create") {
 		try {
 			const isDuplicate = queueDatas.value.some(item =>

@@ -4,13 +4,13 @@
  * リアクション用の絵文字ピッカーを管理するモジュール。
  *
  * @remarks
- * 低速回線時の初回ロード失敗から復帰しやすくするため、表示時に都度 popup を生成する。
- * 起動時はアイドル時間にチャンクを軽く先読みするのみで、失敗しても致命扱いにはしない。
+ * TLスクロール位置への副作用を抑えるため、ピッカーは常駐させて `manualShowing` で開閉する。
+ * 低速回線時でも復帰しやすいよう、非同期コンポーネントに再試行ロジックを持たせる。
  *
  * @public
  */
 
-import { defineAsyncComponent } from "vue";
+import { defineAsyncComponent, ref, type Component } from "vue";
 import { popup } from "@/os";
 
 type PopupHandle = Awaited<ReturnType<typeof popup>>;
@@ -19,17 +19,20 @@ type PopupHandle = Awaited<ReturnType<typeof popup>>;
  * リアクション絵文字ピッカーの表示ライフサイクル管理クラス。
  *
  * @remarks
- * 初期化時はチャンクを先読みするだけに留め、実際の表示は `show()` 呼び出しごとに popup を新規生成する。
- * これにより、低速回線で先読みが失敗した場合でも次回表示時に再試行できる。
+ * 初期化時に popup を1度だけ作成し、表示時はアンカー更新と `manualShowing` 切り替えで開く。
+ * ロード失敗時は再試行付きローダーと再初期化で復帰できるようにする。
  *
  * @public
  */
 class ReactionPicker {
 	//#region フィールド
+	private src = ref<HTMLElement | null>(null);
+	private manualShowing = ref(false);
 	private onChosen?: (reaction: string) => void;
 	private onClosed?: () => void;
-	private openingPicker: PopupHandle | null = null;
-	private isOpening = false;
+	private popupHandle: PopupHandle | null = null;
+	private isInitializing = false;
+	private hasLoadError = false;
 	//#endregion
 
 	//#region 公開メソッド
@@ -48,18 +51,35 @@ class ReactionPicker {
 	 * @public
 	 */
 	public async init() {
-		// NOTE: 起動直後のネットワーク輻輳を避けるため、先読みはアイドル時に遅延実行する。
-		const preload = () => {
-			void import("@/components/MkEmojiPickerDialog.vue").catch(() => {
-				// NOTE: 先読み失敗は許容する。表示時に都度再試行できる設計にしている。
-			});
-		};
-		if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-			(window as Window & {
-				requestIdleCallback: (callback: IdleRequestCallback) => number;
-			}).requestIdleCallback(() => preload());
-		} else {
-			globalThis.setTimeout(preload, 500);
+		if (this.popupHandle || this.isInitializing) return;
+		this.isInitializing = true;
+
+		// NOTE: 先に軽い先読みだけ仕掛けておき、起動直後の輻輳を避ける。
+		this.schedulePreload();
+
+		try {
+			this.popupHandle = await popup(
+				this.createPickerComponent(),
+				{
+					src: this.src,
+					asReactionPicker: true,
+					manualShowing: this.manualShowing,
+				},
+				{
+					done: (reaction) => {
+						this.onChosen?.(reaction);
+					},
+					close: () => {
+						this.manualShowing.value = false;
+					},
+					closed: () => {
+						this.src.value = null;
+						this.onClosed?.();
+					},
+				},
+			);
+		} finally {
+			this.isInitializing = false;
 		}
 	}
 
@@ -82,40 +102,87 @@ class ReactionPicker {
 		onChosen: ReactionPicker["onChosen"],
 		onClosed: ReactionPicker["onClosed"],
 	) {
-		// NOTE: 二重オープンを防ぐ。既に開いている場合は新規表示しない。
-		if (this.openingPicker || this.isOpening) return;
-
 		this.onChosen = onChosen;
 		this.onClosed = onClosed;
-		this.isOpening = true;
+		void this.showInternal(src);
+	}
+	//#endregion
 
-		void popup(
-			defineAsyncComponent(() => import("@/components/MkEmojiPickerDialog.vue")),
-			{
-				src,
-				asReactionPicker: true,
-			},
-			{
-				done: (reaction) => {
-					this.onChosen?.(reaction);
-				},
-				closed: () => {
-					this.openingPicker?.dispose();
-					this.openingPicker = null;
-					this.isOpening = false;
-					this.onClosed?.();
-				},
-			},
-		)
-			.then((picker) => {
-				this.openingPicker = picker;
-				this.isOpening = false;
-			})
-			.catch(() => {
-				this.openingPicker = null;
-				this.isOpening = false;
-				this.onClosed?.();
+	//#region 非公開ヘルパー
+	/**
+	 * ピッカー表示の内部処理。
+	 *
+	 * @param src - ピッカーのアンカー要素
+	 * @returns 完了まで待機する Promise
+	 * @internal
+	 */
+	private async showInternal(src: HTMLElement): Promise<void> {
+		// NOTE: 既に表示中なら多重起動しない。
+		if (this.manualShowing.value) return;
+
+		if (!src?.isConnected) return;
+
+		// NOTE: ロード失敗状態を検出した場合は popup 自体を作り直して復帰を試みる。
+		if (this.hasLoadError && this.popupHandle) {
+			this.popupHandle.dispose();
+			this.popupHandle = null;
+			this.hasLoadError = false;
+		}
+
+		if (!this.popupHandle) {
+			await this.init();
+		}
+		if (!this.popupHandle || !src.isConnected) return;
+
+		this.src.value = src;
+		this.manualShowing.value = true;
+	}
+
+	/**
+	 * リアクションピッカーの遅延先読みを行う。
+	 *
+	 * @remarks
+	 * NOTE: 先読みは任意処理なので失敗しても握りつぶす。
+	 *
+	 * @returns なし
+	 * @internal
+	 */
+	private schedulePreload(): void {
+		const preload = () => {
+			void import("@/components/MkEmojiPickerDialog.vue").catch(() => {
+				// NOTE: 失敗時は表示タイミングでの再試行に任せる。
 			});
+		};
+		if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+			(window as Window & {
+				requestIdleCallback: (callback: IdleRequestCallback) => number;
+			}).requestIdleCallback(() => preload());
+			return;
+		}
+		globalThis.setTimeout(preload, 500);
+	}
+
+	/**
+	 * 再試行付きの非同期コンポーネントを生成する。
+	 *
+	 * @returns `MkEmojiPickerDialog` の非同期コンポーネント
+	 * @internal
+	 */
+	private createPickerComponent(): Component {
+		return defineAsyncComponent({
+			loader: () => import("@/components/MkEmojiPickerDialog.vue"),
+			delay: 0,
+			timeout: 20_000,
+			onError: (error, retry, fail, attempts) => {
+				// NOTE: 低速回線向けに指数バックオフで再試行する。
+				if (attempts <= 3) {
+					globalThis.setTimeout(() => retry(), 300 * (2 ** (attempts - 1)));
+					return;
+				}
+				this.hasLoadError = true;
+				fail();
+			},
+		});
 	}
 	//#endregion
 }

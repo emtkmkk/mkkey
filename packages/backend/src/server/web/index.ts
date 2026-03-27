@@ -69,6 +69,31 @@ const resolveClientEntry = () =>
 				),
 		  )["src/init.ts"];
 
+/**
+ * クライアントエントリの script URL を返す。
+ *
+ * @remarks
+ * - manifest の値が object の場合は `file` を使う。
+ * - 文字列の場合はその値をそのまま使う。
+ * - 先頭が `/` でない場合は `/assets/` を補って配信ルートに合わせる。
+ *
+ * @returns `<script type="module">` で読み込める URL
+ * @internal
+ */
+const resolveClientEntryScriptPath = (): string => {
+	const clientEntry = resolveClientEntry() as string | { file?: string };
+	const rawPath =
+		typeof clientEntry === "string" ? clientEntry : (clientEntry.file ?? "");
+	if (!rawPath) {
+		// NOTE: manifest 破損時でも空文字を返して entry_load で検知できるようにする。
+		return "";
+	}
+	if (rawPath.startsWith("/")) {
+		return rawPath;
+	}
+	return `/assets/${rawPath}`;
+};
+
 // Init app
 const app = new Koa();
 
@@ -1002,7 +1027,7 @@ router.get("/flush", async (ctx) => {
 router.get("/_health/frontend-login", async (ctx) => {
 	ctx.set("Cache-Control", "no-store, max-age=0, must-revalidate");
 	ctx.set("Content-Type", "text/html; charset=utf-8");
-	const clientEntry = resolveClientEntry();
+	const clientEntryScriptPath = resolveClientEntryScriptPath();
 	ctx.body = `<!doctype html>
 <html lang="ja">
 <head>
@@ -1050,7 +1075,7 @@ router.get("/_health/frontend-login", async (ctx) => {
 				window.__MK_HEALTH_FRONTEND_LOGIN__ = true;
 				const script = document.createElement("script");
 				script.type = "module";
-				script.src = ${JSON.stringify(clientEntry)};
+				script.src = ${JSON.stringify(clientEntryScriptPath)};
 				script.onerror = () => {
 					writeResult(false, "entry_load", "failed to load client entry");
 				};

@@ -59,6 +59,16 @@ const clientAssets = `${_dirname}/../../../../client/assets/`;
 const assets = `${_dirname}/../../../../../built/_client_dist_/`;
 const swAssets = `${_dirname}/../../../../../built/_sw_dist_/`;
 
+const resolveClientEntry = () =>
+	process.env.NODE_ENV === "production"
+		? config.clientEntry
+		: JSON.parse(
+				readFileSync(
+					`${_dirname}/../../../../../built/_client_dist_/manifest.json`,
+					"utf-8",
+				),
+		  )["src/init.ts"];
+
 // Init app
 const app = new Koa();
 
@@ -130,15 +140,7 @@ app.use(
 		extension: "pug",
 		options: {
 			version: config.version,
-			getClientEntry: () =>
-				process.env.NODE_ENV === "production"
-					? config.clientEntry
-					: JSON.parse(
-						readFileSync(
-							`${_dirname}/../../../../../built/_client_dist_/manifest.json`,
-							"utf-8",
-						),
-					)["src/init.ts"],
+			getClientEntry: () => resolveClientEntry(),
 			config,
 		},
 	}),
@@ -995,6 +997,88 @@ const override = (source: string, target: string, depth = 0) =>
 
 router.get("/flush", async (ctx) => {
 	await ctx.render("flush");
+});
+
+router.get("/_health/frontend-login", async (ctx) => {
+	ctx.set("Cache-Control", "no-store, max-age=0, must-revalidate");
+	ctx.set("Content-Type", "text/html; charset=utf-8");
+	const clientEntry = resolveClientEntry();
+	ctx.body = `<!doctype html>
+<html lang="ja">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>frontend-login-health</title>
+</head>
+<body>
+	<pre id="result">FRONTEND_LOGIN_CHECKING</pre>
+	<script>
+	(() => {
+		const resultEl = document.getElementById("result");
+		let finished = false;
+		const timeoutMs = 75000;
+		const writeResult = (ok, step, message) => {
+			if (finished) return;
+			finished = true;
+			const status = ok ? "FRONTEND_LOGIN_OK" : "FRONTEND_LOGIN_NG";
+			const lines = [
+				status,
+				"ERROR_STEP: " + (step || "none"),
+				"ERROR_CODE: " + (ok ? "none" : "runtime_error"),
+				"ERROR_MESSAGE: " + (message || "none"),
+			];
+			resultEl.textContent = lines.join("\\n");
+		};
+
+		window.addEventListener("error", (event) => {
+			writeResult(false, "window.onerror", event.message || "unknown error");
+		});
+
+		window.addEventListener("unhandledrejection", (event) => {
+			const reason = event.reason && event.reason.message
+				? event.reason.message
+				: String(event.reason || "unknown rejection");
+			writeResult(false, "unhandledrejection", reason);
+		});
+
+		(async () => {
+			const timeoutId = setTimeout(() => {
+				writeResult(false, "timeout", "init did not complete in time");
+			}, timeoutMs);
+			try {
+				// NOTE: init.ts 相当を実行して、実行時エラーや初期化失敗を検知する。
+				window.__MK_HEALTH_FRONTEND_LOGIN__ = true;
+				const script = document.createElement("script");
+				script.type = "module";
+				script.src = ${JSON.stringify(clientEntry)};
+				script.onerror = () => {
+					writeResult(false, "entry_load", "failed to load client entry");
+				};
+				document.head.appendChild(script);
+
+				const observer = new MutationObserver(() => {
+					if (document.getElementById("calckey_app")) {
+						clearTimeout(timeoutId);
+						observer.disconnect();
+						writeResult(true, "init_complete", "mounted");
+					}
+				});
+				observer.observe(document.body, { childList: true, subtree: true });
+
+				if (document.getElementById("calckey_app")) {
+					clearTimeout(timeoutId);
+					observer.disconnect();
+					writeResult(true, "init_complete", "mounted");
+				}
+			} catch (error) {
+				const message = error && error.message ? error.message : String(error);
+				writeResult(false, "runtime_check", message);
+			}
+		})();
+	})();
+	</script>
+</body>
+</html>`;
 });
 
 // If a non-WebSocket request comes in to streaming and base html is returned with cache, the path will be cached by Proxy, etc. and it will be wrong.

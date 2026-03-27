@@ -71,6 +71,12 @@ import { applyProfile, autoSave, getCurrentUaClass, getProfileUaClass, isAutoPro
 import { initializeWallpaperSync } from "@/scripts/wallpaper-sync";
 import { v4 as uuid } from "uuid";
 
+declare global {
+	interface Window {
+		__MK_HEALTH_FRONTEND_LOGIN__?: boolean;
+	}
+}
+
 let waitMessages: string[] = [];
 
 // 指定したミリ秒だけ待つ非同期関数
@@ -1458,6 +1464,40 @@ const ensureLocaleAndApply = async (): Promise<void> => {
 	i18n.ts = localeObj as typeof i18n.ts;
 };
 
+const isFrontendLoginHealthMode = (): boolean =>
+	window.__MK_HEALTH_FRONTEND_LOGIN__ === true;
+
+/**
+ * フロント監視モードで `instance` が空の場合に、参照されやすい最小値を補完する。
+ *
+ * @remarks
+ * NOTE: 通常起動時は `fetchInstance()` で実値が入るため、この補完は実行しない。
+ * NOTE: 監視ページでは `meta` を呼ばない方針のため、未設定参照による不要な例外を防ぐ目的で使う。
+ *
+ * @internal
+ */
+const ensureHealthModeInstanceFallback = () => {
+	if (!isFrontendLoginHealthMode()) return;
+	if (Object.keys(instance ?? {}).length > 0) return;
+
+	// NOTE: 監視専用。通常画面では API の meta 応答で上書きされる前提。
+	const fallbackInstance = {
+		version,
+		name: "Calckey",
+		privateMode: false,
+		disableRegistration: false,
+		disableLocalTimeline: false,
+		disableRecommendedTimeline: false,
+		disableGlobalTimeline: false,
+		enableServiceWorker: false,
+		emojis: [],
+	};
+
+	for (const [key, value] of Object.entries(fallbackInstance)) {
+		(instance as Record<string, unknown>)[key] = value;
+	}
+};
+
 // ＊＊＊ ここからメイン処理 ＊＊＊
 (async () => {
 	console.info(`Calckey v${version}`);
@@ -1498,13 +1538,23 @@ const ensureLocaleAndApply = async (): Promise<void> => {
 	html.setAttribute("lang", lang || "ja-JP");
 	//#endregion
 
-	// 設定の取得が完了するまでストップ（API/取得失敗時は1秒待って再試行し、画面を開いている間は成功するまで繰り返す）
-	await Promise.all([
-		runWithRetryWhileOpen(() => initializeErrorLogging(), 1000),
-		runWithRetryWhileOpen(() => fetchUserAccount(), 1000),
-		runWithRetryWhileOpen(() => initializeServiceWorkerAndFetchInstanceMeta(), 1000),
-		defaultStore.loaded,
-	]);
+	// NOTE: フロント監視ページでは未ログイン向けの API 呼び出しを抑止し、
+	// init.ts の実行時エラー検知に集中する。
+	if (isFrontendLoginHealthMode()) {
+		await Promise.all([
+			runWithRetryWhileOpen(() => initializeErrorLogging(), 1000),
+			defaultStore.loaded,
+		]);
+		ensureHealthModeInstanceFallback();
+	} else {
+		// 設定の取得が完了するまでストップ（API/取得失敗時は1秒待って再試行し、画面を開いている間は成功するまで繰り返す）
+		await Promise.all([
+			runWithRetryWhileOpen(() => initializeErrorLogging(), 1000),
+			runWithRetryWhileOpen(() => fetchUserAccount(), 1000),
+			runWithRetryWhileOpen(() => initializeServiceWorkerAndFetchInstanceMeta(), 1000),
+			defaultStore.loaded,
+		]);
+	}
 
 	await initializeApp(minimumLoadPromise);
 

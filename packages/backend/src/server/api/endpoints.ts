@@ -266,6 +266,11 @@ import * as ep___messaging_messages_create from "./endpoints/messaging/messages/
 import * as ep___messaging_messages_delete from "./endpoints/messaging/messages/delete.js";
 import * as ep___messaging_messages_read from "./endpoints/messaging/messages/read.js";
 import * as ep___meta from "./endpoints/meta.js";
+import * as ep___health_live from "./endpoints/health/live.js";
+import * as ep___health_db from "./endpoints/health/db.js";
+import * as ep___health_redis from "./endpoints/health/redis.js";
+import * as ep___health_storage from "./endpoints/health/storage.js";
+import * as ep___health_backend from "./endpoints/health/backend.js";
 import * as ep___sounds from "./endpoints/get-sounds.js";
 import * as ep___miauth_genToken from "./endpoints/miauth/gen-token.js";
 import * as ep___mute_create from "./endpoints/mute/create.js";
@@ -778,6 +783,11 @@ const eps = [
 	["users/update-memo", ep___users_updateMemo],
 	["users/emoji-stats", ep___users_emoji_stats],
 	["admin/drive-capacity-override", ep___admin_driveCapOverride],
+	["health/live", ep___health_live],
+	["health/db", ep___health_db],
+	["health/redis", ep___health_redis],
+	["health/storage", ep___health_storage],
+	["health/backend", ep___health_backend],
 	["fetch-rss", ep___fetchRss],
 	["get-sounds", ep___sounds],
 	["invite", ep___admin_invite],

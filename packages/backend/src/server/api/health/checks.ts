@@ -5,7 +5,7 @@
  *
  * @remarks
  * - `live` はキャッシュせず即時判定する。
- * - `db` / `redis` / `backend` は 1 分キャッシュする。
+ * - `db` / `redis` / `backend` / `frontend` は 1 分キャッシュする。
  * - `storage` は 10 分キャッシュする。
  * - DB はインスタンス情報読込の可否を 60 秒タイムアウト付きで判定する。
  * - ストレージは object storage 利用時に PUT/GET/DELETE、ローカル時に write/read/delete を実施する。
@@ -16,9 +16,13 @@ import { randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { readFileSync } from "node:fs";
 import { redisClient } from "@/db/redis.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { getS3 } from "@/services/drive/s3.js";
+import config from "@/config/index.js";
 
 // #region 定数
 const ONE_MINUTE_MS = 60 * 1000;
@@ -26,10 +30,14 @@ const TEN_MINUTES_MS = 10 * 60 * 1000;
 const DB_TIMEOUT_MS = 60 * 1000;
 const COMMON_TIMEOUT_MS = 60 * 1000;
 const STORAGE_PAYLOAD = "mkkey-health-storage-check";
+const _filename = fileURLToPath(import.meta.url);
+const _dirname = dirname(_filename);
+const clientDistRoot = join(_dirname, "../../../../../../built/_client_dist_");
+const clientManifestPath = join(clientDistRoot, "manifest.json");
 // #endregion
 
 // #region 型定義
-export type HealthCheckName = "db" | "redis" | "storage" | "backend";
+export type HealthCheckName = "db" | "redis" | "storage" | "backend" | "frontend";
 
 /**
  * ヘルスチェック結果。
@@ -274,6 +282,44 @@ async function runStorageCheckCore(): Promise<HealthCheckResult> {
 	}
 }
 
+async function runFrontendCheckCore(): Promise<HealthCheckResult> {
+	const started = nowMs();
+	const checkedAt = new Date().toISOString();
+	try {
+		const clientManifest = JSON.parse(readFileSync(clientManifestPath, "utf-8")) as Record<
+			string,
+			{ file?: string } | string
+		>;
+		const clientEntry = process.env.NODE_ENV === "production"
+			? (config.clientEntry as { file?: string } | string)
+			: clientManifest["src/init.ts"];
+		const entryFile = typeof clientEntry === "string" ? clientEntry : clientEntry?.file;
+		if (!entryFile) {
+			throw new Error("frontend client entry is not configured");
+		}
+		// NOTE: entry の表現ゆれ（/assets/* or assets/*）を吸収して実ファイル有無を判定する。
+		const normalizedEntry = entryFile.replace(/^\//, "");
+		const candidatePaths = [
+			join(clientDistRoot, normalizedEntry),
+			join(clientDistRoot, normalizedEntry.replace(/^assets\//, "")),
+		];
+		const exists = await Promise.any(
+			candidatePaths.map(async (p) => {
+				await fs.access(p);
+				return true;
+			}),
+		).catch(() => false);
+		if (!exists) {
+			throw new Error("frontend client entry asset not found");
+		}
+		return makeOk(checkedAt, nowMs() - started);
+	} catch (error) {
+		const message =
+			error instanceof Error ? error.message : "frontend static entry check failed";
+		return makeNg(checkedAt, nowMs() - started, message);
+	}
+}
+
 async function runBackendCheckCore(): Promise<HealthCheckResult> {
 	const started = nowMs();
 	const checkedAt = new Date().toISOString();
@@ -316,6 +362,10 @@ export async function runStorageCheck(): Promise<HealthCheckResult> {
 
 export async function runBackendCheck(): Promise<HealthCheckResult> {
 	return await runWithCache("backend", runBackendCheckCore);
+}
+
+export async function runFrontendCheck(): Promise<HealthCheckResult> {
+	return await runWithCache("frontend", runFrontendCheckCore);
 }
 
 export function runLiveCheck(): HealthCheckResult {

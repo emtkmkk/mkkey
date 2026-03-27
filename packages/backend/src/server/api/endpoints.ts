@@ -271,6 +271,7 @@ import * as ep___health_db from "./endpoints/health/db.js";
 import * as ep___health_redis from "./endpoints/health/redis.js";
 import * as ep___health_storage from "./endpoints/health/storage.js";
 import * as ep___health_backend from "./endpoints/health/backend.js";
+import * as ep___health_frontend from "./endpoints/health/frontend.js";
 import * as ep___sounds from "./endpoints/get-sounds.js";
 import * as ep___miauth_genToken from "./endpoints/miauth/gen-token.js";
 import * as ep___mute_create from "./endpoints/mute/create.js";
@@ -788,6 +789,7 @@ const eps = [
 	["health/redis", ep___health_redis],
 	["health/storage", ep___health_storage],
 	["health/backend", ep___health_backend],
+	["health/frontend", ep___health_frontend],
 	["fetch-rss", ep___fetchRss],
 	["get-sounds", ep___sounds],
 	["invite", ep___admin_invite],

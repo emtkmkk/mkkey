@@ -124,6 +124,7 @@
                         <FormSwitch v-model="postFormFooterButtonsTabindexMinusOne" class="_formBlock">
                                 {{ i18n.ts.postFormFooterButtonsTabindexMinusOne }}
                         </FormSwitch>
+                        <div class="postFormSectionDivider _formBlock" aria-hidden="true"></div>
                         <div class="postFormGroupLabel _formBlock">
                                 {{ i18n.ts.postFormHeaderButtons }}
                         </div>
@@ -181,6 +182,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
+                        <div class="postFormSectionDivider _formBlock" aria-hidden="true"></div>
                         <div class="postFormGroupLabel _formBlock">
                                 {{ i18n.ts.postFormFooterButtons }}
                         </div>
@@ -513,5 +515,11 @@ definePageMetadata({
 	font-weight: 700;
 	color: var(--fg);
 	margin-top: 0.5rem;
+}
+
+.postFormSectionDivider {
+	height: 0;
+	margin: 0.75rem 0;
+	border-top: solid 0.03125rem var(--divider);
 }
 </style>

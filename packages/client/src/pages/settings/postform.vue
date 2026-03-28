@@ -116,6 +116,15 @@
                                 }}</span></FormSwitch
                         >
                         <div class="postFormGroupLabel _formBlock">
+                                {{ i18n.ts.postFormDisableTabNavigation }}
+                        </div>
+                        <FormSwitch v-model="postFormHeaderButtonsTabindexMinusOne" class="_formBlock">
+                                {{ i18n.ts.postFormHeaderButtonsTabindexMinusOne }}
+                        </FormSwitch>
+                        <FormSwitch v-model="postFormFooterButtonsTabindexMinusOne" class="_formBlock">
+                                {{ i18n.ts.postFormFooterButtonsTabindexMinusOne }}
+                        </FormSwitch>
+                        <div class="postFormGroupLabel _formBlock">
                                 {{ i18n.ts.postFormHeaderButtons }}
                         </div>
                         <FormSwitch v-model="showCloseButton" class="_formBlock">
@@ -390,6 +399,12 @@ const hiddenSwarmButton = computed(
 );
 const hiddenPluginButton = computed(
 	defaultStore.makeGetterSetter("hiddenPluginButton")
+);
+const postFormHeaderButtonsTabindexMinusOne = computed(
+	defaultStore.makeGetterSetter("postFormHeaderButtonsTabindexMinusOne")
+);
+const postFormFooterButtonsTabindexMinusOne = computed(
+	defaultStore.makeGetterSetter("postFormFooterButtonsTabindexMinusOne")
 );
 const closeButtonLabel = computed(() =>
         CloseAllClearButton.value

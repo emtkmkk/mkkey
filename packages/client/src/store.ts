@@ -597,6 +597,18 @@ export const defaultStore = markRaw(
 			createdAt: "2026/3/16",
 			page: "postform",
 		},
+		postFormHeaderButtonsTabindexMinusOne: {
+			where: "deviceAccount",
+			default: false,
+			createdAt: "2026/3/28",
+			page: "postform",
+		},
+		postFormFooterButtonsTabindexMinusOne: {
+			where: "deviceAccount",
+			default: false,
+			createdAt: "2026/3/28",
+			page: "postform",
+		},
 		hiddenCloseButton: {
 			where: "deviceAccount",
 			default: false,

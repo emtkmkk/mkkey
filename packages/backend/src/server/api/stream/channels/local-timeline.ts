@@ -44,6 +44,10 @@ function isRenoteOnly(note: Packed<"Note">): boolean {
         return !hasRenoteOnlyContent(note);
 }
 
+function isRemoteRenoteTarget(note: Packed<"Note">): boolean {
+        return note.renote?.user?.host != null;
+}
+
 function rememberRecentId(targets: Set<string>, id: string): void {
         if (targets.has(id)) {
                 targets.delete(id);
@@ -182,7 +186,8 @@ export default class extends Channel {
                 if (!targetId) return false;
 
                 return (
-                        this.displayedNoteIds.has(targetId) ||
+                        (!isRemoteRenoteTarget(note) &&
+                                this.displayedNoteIds.has(targetId)) ||
                         this.receivedRenoteTargetIds.has(targetId)
                 );
         }

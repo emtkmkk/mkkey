@@ -16,6 +16,7 @@
 					!$store.state.hiddenCloseButton
 				"
 				class="cancel _button"
+				:tabindex="headerButtonsTabindex"
 				@click="cancel"
 			>
 				<i class="ph-x ph-bold ph-lg"></i>
@@ -25,6 +26,7 @@
 				v-click-anime
 				v-tooltip="i18n.ts.switchAccount"
 				class="account _button"
+				:tabindex="headerButtonsTabindex"
 				@click="openAccountMenu"
 			>
 				<MkAvatar :user="postAccount ?? $i" class="avatar" />
@@ -68,6 +70,7 @@
 					class="_button visibility"
 					:class="{ addblank: $store.state.hiddenMFMHelp && false }"
 					:disabled="!canFollower"
+					:tabindex="headerButtonsTabindex"
 					@click="setVisibility"
 				>
 					<span v-if="visibility === 'public'"
@@ -87,6 +90,7 @@
 					v-if="!$store.state.hiddenDraftButton"
 					class="_button visibility"
 					:class="{ addblank: $store.state.hiddenMFMHelp }"
+					:tabindex="headerButtonsTabindex"
 					@click="openDraft"
 				>
 					<i class="ph-notepad ph-bold ph-lg"></i>
@@ -95,6 +99,7 @@
 					v-if="!$store.state.hiddenMFMHelp"
 					v-tooltip="i18n.ts._mfm.cheatSheet"
 					class="_button preview"
+					:tabindex="headerButtonsTabindex"
 					@click="openCheatSheet"
 				>
 					<i class="ph-question ph-bold ph-lg"></i>
@@ -105,6 +110,7 @@
 						:key="button.key"
 						:class="[button.buttonClass, button.classObject ?? {}]"
 						:disabled="button.disabled"
+						:tabindex="headerButtonsTabindex"
 						data-cy-open-post-form-submit
 						@click="handleQuickPost(button)"
 					>
@@ -300,6 +306,7 @@
 					v-if="!$store.state.hiddenUploadButton"
 					v-tooltip="i18n.ts.attachFile"
 					class="_button"
+					:tabindex="footerButtonsTabindex"
 					@click="chooseFileFrom"
 				>
 					<i class="ph-upload ph-bold ph-lg"></i>
@@ -309,6 +316,7 @@
 					v-tooltip="i18n.ts.poll"
 					class="_button"
 					:class="{ active: poll }"
+					:tabindex="footerButtonsTabindex"
 					@click="togglePoll"
 				>
 					<i class="ph-microphone-stage ph-bold ph-lg"></i>
@@ -318,6 +326,7 @@
 					v-tooltip="i18n.ts.useCw"
 					class="_button"
 					:class="{ active: useCw }"
+					:tabindex="footerButtonsTabindex"
 					@click="toggleUseCw"
 				>
 					<i class="ph-eye-slash ph-bold ph-lg"></i>
@@ -326,6 +335,7 @@
 					v-if="!$store.state.hiddenMentionButton"
 					v-tooltip="i18n.ts.mention"
 					class="_button"
+					:tabindex="footerButtonsTabindex"
 					@click="insertMention"
 				>
 					<i class="ph-at ph-bold ph-lg"></i>
@@ -335,6 +345,7 @@
 					v-tooltip="i18n.ts.hashtags"
 					class="_button"
 					:class="{ active: withHashtags }"
+					:tabindex="footerButtonsTabindex"
 					@click="withHashtags = !withHashtags"
 				>
 					<i class="ph-hash ph-bold ph-lg"></i>
@@ -343,6 +354,7 @@
 					v-if="!$store.state.hiddenEmojiButton"
 					v-tooltip="i18n.ts.emoji"
 					class="_button"
+					:tabindex="footerButtonsTabindex"
 					@click="insertEmoji"
 				>
 					<i class="ph-smiley ph-bold ph-lg"></i>
@@ -356,6 +368,7 @@
 							defaultStore.state.quickToggleSmartMFMInputer &&
 							smartMFMInputer,
 					}"
+					:tabindex="footerButtonsTabindex"
 					@click="insertMfm"
 				>
 					<i class="ph-magic-wand ph-bold ph-lg"></i>
@@ -364,6 +377,7 @@
 					v-if="showSwarmButton && !$store.state.hiddenSwarmButton"
 					v-tooltip="i18n.ts.swarm"
 					class="_button"
+					:tabindex="footerButtonsTabindex"
 					@click="() => void openSwarmCheckins()"
 				>
 					<span class="swarm-icon" role="img" aria-hidden="true"></span>
@@ -372,6 +386,7 @@
 					v-if="postFormActions.length > 0 && !$store.state.hiddenPluginButton"
 					v-tooltip="i18n.ts.plugin"
 					class="_button"
+					:tabindex="footerButtonsTabindex"
 					@click="showActions"
 				>
 					<i class="ph-plug ph-bold ph-lg"></i>
@@ -381,6 +396,7 @@
 					v-tooltip="i18n.ts.insertNowPlayingInfo"
 					class="_button"
 					:disabled="isNowPlayingButtonDisabled"
+					:tabindex="footerButtonsTabindex"
 					@click="insertNowPlayingInfo"
 				>
 					<i class="ph-music-notes ph-bold ph-lg"></i>
@@ -390,6 +406,7 @@
 					v-tooltip="i18n.ts.previewNoteText"
 					class="_button right"
 					:class="{ active: showPreview }"
+					:tabindex="footerButtonsTabindex"
 					@click="showPreview = !showPreview"
 				>
 					<i class="ph-binoculars ph-bold ph-lg"></i>
@@ -2493,6 +2510,12 @@ const showSwarmButton = $computed((): boolean => {
 	const integrations = ($i as any)?.integrations;
 	return Boolean(integrations?.swarm?.accessToken && integrations?.swarm?.showPostFormButton);
 });
+const headerButtonsTabindex = $computed(() =>
+	defaultStore.state.postFormHeaderButtonsTabindexMinusOne ? -1 : null,
+);
+const footerButtonsTabindex = $computed(() =>
+	defaultStore.state.postFormFooterButtonsTabindexMinusOne ? -1 : null,
+);
 
 function buildSwarmText(checkin: {
 	comment: string;

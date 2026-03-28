@@ -118,6 +118,10 @@ function isRenoteOnly(note: Packed<"Note">): boolean {
         return !hasRenoteOnlyContent(note);
 }
 
+function isRemoteRenoteTarget(note: Packed<"Note">): boolean {
+        return note.renote?.user?.host != null;
+}
+
 function filterRenoteOnlyForLocalTimeline(
         notes: Packed<"Note">[],
         limit: number,
@@ -147,7 +151,7 @@ function filterRenoteOnlyForLocalTimeline(
                                 visibleNotes.push(note);
                                 visibleCount += 1;
                         } else {
-                                if (visibleNoteIds.has(targetId)) {
+                                if (!isRemoteRenoteTarget(note) && visibleNoteIds.has(targetId)) {
                                         continue;
                                 }
 

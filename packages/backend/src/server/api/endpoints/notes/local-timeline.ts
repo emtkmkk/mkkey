@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `notes/local-timeline`（GET `/api/notes/local-timeline` で呼び出し）
  * - 認証不要。ローカルのパブリックノートを時系列で取得。
+ * - 純リノートのリモート先判定は {@link isRemoteRenoteTarget}（`renote.user.host` または `renote.uri` の有無）に依存する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -26,6 +27,7 @@ import { generateChannelQuery } from "../../common/generate-channel-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
+import { isRemoteRenoteTarget } from "../../common/is-remote-renote-target.js";
 import type { Packed } from "@/misc/schema.js";
 
 export const meta = {
@@ -116,10 +118,6 @@ function isRenoteOnly(note: Packed<"Note">): boolean {
         if (!note.renote) return false;
 
         return !hasRenoteOnlyContent(note);
-}
-
-function isRemoteRenoteTarget(note: Packed<"Note">): boolean {
-        return note.renote?.user?.host != null;
 }
 
 function filterRenoteOnlyForLocalTimeline(

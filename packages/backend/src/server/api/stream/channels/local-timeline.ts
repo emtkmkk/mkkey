@@ -6,6 +6,7 @@
  * @remarks
  * - **ストリーム チャンネル名**: `localTimeline`。認証不要。
  * - notesStream を購読し、ローカルタイムラインに流れるノートを配送する。
+ * - 純リノートのスキップ判定は {@link isRemoteRenoteTarget} でリモート先を識別する（`renote.user` 欠落時は `renote.uri` の有無で補う）。
  *
  * @see {@link stream/channel} チャンネル基底
  * @internal
@@ -14,6 +15,7 @@ import Channel from "../channel.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { getWordHardMute } from "@/misc/check-word-mute.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
+import { isRemoteRenoteTarget } from "../../common/is-remote-renote-target.js";
 import type { Packed } from "@/misc/schema.js";
 
 const RECENT_RENOTE_TARGET_LIMIT = 128;
@@ -42,10 +44,6 @@ function isRenoteOnly(note: Packed<"Note">): boolean {
         if (!note.renote) return false;
 
         return !hasRenoteOnlyContent(note);
-}
-
-function isRemoteRenoteTarget(note: Packed<"Note">): boolean {
-        return note.renote?.user?.host != null;
 }
 
 function rememberRecentId(targets: Set<string>, id: string): void {
@@ -185,10 +183,12 @@ export default class extends Channel {
                 const targetId = note.renote?.id;
                 if (!targetId) return false;
 
+                // リモート先への純RTは「同一先の複数RT」を許可する（API の filterRenoteOnly と整合）
                 return (
                         (!isRemoteRenoteTarget(note) &&
                                 this.displayedNoteIds.has(targetId)) ||
-                        this.receivedRenoteTargetIds.has(targetId)
+                        (!isRemoteRenoteTarget(note) &&
+                                this.receivedRenoteTargetIds.has(targetId))
                 );
         }
 

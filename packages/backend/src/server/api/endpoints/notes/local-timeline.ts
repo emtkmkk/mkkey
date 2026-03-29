@@ -7,6 +7,7 @@
  * - **API パス**: `notes/local-timeline`（GET `/api/notes/local-timeline` で呼び出し）
  * - 認証不要。ローカルのパブリックノートを時系列で取得。
  * - 純リノートのリモート先判定は {@link isRemoteRenoteTarget}（`renoteUserHost` を最優先し、無ければネスト `renote`）に依存する。
+ * - **性能**: 純 RT 用の事後フィルタで件数が足りないとき、同一リクエスト内で複数回 DB に取りに行く。このとき **OFFSET の積み上げ**と **累積配列の毎回フルスキャン**が重いため、内側は **id カーソル（キーセット）** と **フィルタ状態の 1 パス更新**にしている。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -120,59 +121,128 @@ function isRenoteOnly(note: Packed<"Note">): boolean {
         return !hasRenoteOnlyContent(note);
 }
 
-function filterRenoteOnlyForLocalTimeline(
+/**
+ * 純リノートの LTL 用デデュープ状態（バッチをまたいで 1 パスで進める）。
+ *
+ * @remarks
+ * 以前は各 DB ラウンドごとに「累積 rawNotes を毎回先頭から再フィルタ」しており、
+ * ラウンド数に対して計算量が二乗に近づくうえ、OFFSET も積み上がって遡りが極端に遅くなっていた。
+ *
+ * @internal
+ */
+interface LocalTimelineRenoteFilterState {
+        visibleNotes: Array<Packed<"Note"> | null>;
+        visibleNoteIds: Set<string>;
+        visibleRenoteIndexes: Map<string, number>;
+        visibleCount: number;
+}
+
+function createLocalTimelineRenoteFilterState(): LocalTimelineRenoteFilterState {
+        return {
+                visibleNotes: [],
+                visibleNoteIds: new Set(),
+                visibleRenoteIndexes: new Map(),
+                visibleCount: 0,
+        };
+}
+
+/**
+ * 1 バッチ分のパック済みノートを LTL 用純リノートフィルタに合流する。
+ *
+ * @param state - 累積状態（呼び出しごとに更新される）
+ * @param notes - 今回の DB バッチを pack した配列（時系列は {@link makePaginationQuery} の並びと一致）
+ * @param limit - 目標件数（バッチ処理後に `visibleCount >= limit` なら DB 追い取りを打ち切る）
+ * @param meId - ログイン中ユーザ ID（自分の純 RT は常に通す）
+ * @returns もう DB から取る必要がないとき true（`state.visibleCount >= limit`）
+ *
+ * @remarks
+ * バッチ途中で打ち切らず **バッチ全件** を処理する。同一バッチ内の古い方の純 RT が新しい方を差し替えるため、
+ * 途中打ち切りは表示がずれる可能性がある。
+ *
+ * @internal
+ */
+function appendPackedNotesToLocalTimelineRenoteFilter(
+        state: LocalTimelineRenoteFilterState,
         notes: Packed<"Note">[],
         limit: number,
         meId?: string,
-): Packed<"Note">[] {
-        if (notes.length === 0) return notes;
-
-        const visibleNotes: Array<Packed<"Note"> | null> = [];
-        const visibleNoteIds = new Set<string>();
-        const visibleRenoteIndexes = new Map<string, number>();
-        let visibleCount = 0;
-
+): boolean {
         for (const note of notes) {
                 if (!isRenoteOnly(note) || (meId && note.userId === meId)) {
-                        const renoteIndex = visibleRenoteIndexes.get(note.id);
+                        const renoteIndex = state.visibleRenoteIndexes.get(note.id);
                         if (renoteIndex !== undefined) {
-                                visibleNotes[renoteIndex] = null;
-                                visibleRenoteIndexes.delete(note.id);
+                                state.visibleNotes[renoteIndex] = null;
+                                state.visibleRenoteIndexes.delete(note.id);
                         }
 
-                        visibleNoteIds.add(note.id);
-                        visibleNotes.push(note);
-                        visibleCount += 1;
+                        state.visibleNoteIds.add(note.id);
+                        state.visibleNotes.push(note);
+                        state.visibleCount += 1;
                 } else {
                         const targetId = note.renote?.id;
                         if (!targetId) {
-                                visibleNotes.push(note);
-                                visibleCount += 1;
+                                state.visibleNotes.push(note);
+                                state.visibleCount += 1;
                         } else {
-                                if (!isRemoteRenoteTarget(note) && visibleNoteIds.has(targetId)) {
+                                if (
+                                        !isRemoteRenoteTarget(note) &&
+                                        state.visibleNoteIds.has(targetId)
+                                ) {
                                         continue;
                                 }
 
-                                const visibleRenoteIndex = visibleRenoteIndexes.get(targetId);
+                                const visibleRenoteIndex =
+                                        state.visibleRenoteIndexes.get(targetId);
                                 if (visibleRenoteIndex !== undefined) {
-                                        visibleNotes[visibleRenoteIndex] = null;
-                                        visibleRenoteIndexes.set(targetId, visibleNotes.length);
-                                        visibleNotes.push(note);
+                                        state.visibleNotes[visibleRenoteIndex] = null;
+                                        state.visibleRenoteIndexes.set(
+                                                targetId,
+                                                state.visibleNotes.length,
+                                        );
+                                        state.visibleNotes.push(note);
                                         continue;
                                 }
 
-                                visibleRenoteIndexes.set(targetId, visibleNotes.length);
-                                visibleNotes.push(note);
-                                visibleCount += 1;
+                                state.visibleRenoteIndexes.set(
+                                        targetId,
+                                        state.visibleNotes.length,
+                                );
+                                state.visibleNotes.push(note);
+                                state.visibleCount += 1;
                         }
-                }
-
-                if (visibleCount >= limit) {
-                        break;
                 }
         }
 
-        return visibleNotes.filter((note): note is Packed<"Note"> => note !== null);
+        return state.visibleCount >= limit;
+}
+
+/** @internal */
+function finalizeLocalTimelineRenoteFilter(
+        state: LocalTimelineRenoteFilterState,
+): Packed<"Note">[] {
+        return state.visibleNotes.filter(
+                (note): note is Packed<"Note"> => note !== null,
+        );
+}
+
+/**
+ * {@link makePaginationQuery} の ORDER BY と一致する「次バッチは id のどちら側か」。
+ *
+ * @internal
+ */
+function isLocalTimelinePaginationAsc(ps: {
+        sinceId?: string;
+        untilId?: string;
+        sinceDate?: number;
+        untilDate?: number;
+}): boolean {
+        if (ps.sinceId && ps.untilId) return false;
+        if (ps.sinceId) return true;
+        if (ps.untilId) return false;
+        if (ps.sinceDate != null && ps.untilDate != null) return false;
+        if (ps.sinceDate != null) return true;
+        if (ps.untilDate != null) return false;
+        return false;
 }
 
 export default define(meta, paramDef, async (ps, user) => {
@@ -321,12 +391,27 @@ export default define(meta, paramDef, async (ps, user) => {
 	});
 
 	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
-        const rawNotes: Packed<"Note">[] = [];
+        const filterState = createLocalTimelineRenoteFilterState();
         const take = Math.floor(ps.limit * 1.5);
-        let skip = 0;
+        /** 内側の追い取り用。OFFSET は深い位置で極端に遅いため id カーソルに切り替える。 */
+        let fetchCursor: string | undefined;
+        const paginationAsc = isLocalTimelinePaginationAsc(ps);
         try {
                 while (true) {
-                        const notes = await query.take(take).skip(skip).getMany();
+                        const qb = query.clone();
+                        if (fetchCursor !== undefined) {
+                                if (paginationAsc) {
+                                        qb.andWhere("note.id > :ltlMoreCursor", {
+                                                ltlMoreCursor: fetchCursor,
+                                        });
+                                } else {
+                                        qb.andWhere("note.id < :ltlMoreCursor", {
+                                                ltlMoreCursor: fetchCursor,
+                                        });
+                                }
+                        }
+
+                        const notes = await qb.take(take).getMany();
                         if (notes.length === 0) break;
 
                         const { userMap, noteMap } =
@@ -334,22 +419,30 @@ export default define(meta, paramDef, async (ps, user) => {
                         const packedNotes = await Notes.packMany(notes, user, {
                                 _hint_: { userMap, noteMap },
                         });
-                        rawNotes.push(...packedNotes);
 
-                        const filtered = filterRenoteOnlyForLocalTimeline(rawNotes, ps.limit, user?.id);
-                        if (filtered.length >= ps.limit) {
-                                return filtered.slice(0, ps.limit);
+                        fetchCursor = notes[notes.length - 1]!.id;
+
+                        const done = appendPackedNotesToLocalTimelineRenoteFilter(
+                                filterState,
+                                packedNotes,
+                                ps.limit,
+                                user?.id,
+                        );
+                        if (done) {
+                                return finalizeLocalTimelineRenoteFilter(
+                                        filterState,
+                                ).slice(0, ps.limit);
                         }
 
                         if (notes.length < take) {
-                                return filtered;
+                                return finalizeLocalTimelineRenoteFilter(
+                                        filterState,
+                                ).slice(0, ps.limit);
                         }
-
-                        skip += take;
                 }
         } catch (error) {
                 throw new ApiError(meta.errors.queryError);
         }
 
-        return filterRenoteOnlyForLocalTimeline(rawNotes, ps.limit, user?.id);
+        return finalizeLocalTimelineRenoteFilter(filterState).slice(0, ps.limit);
 });

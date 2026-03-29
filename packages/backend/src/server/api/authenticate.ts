@@ -8,6 +8,9 @@
  * - API の api-handler とストリーミング接続の両方で利用される。
  * - `AUTH_USER_SELECT` はストリーム TL 等でも参照する。列を抜くと `undefined` になり、`!user.flag`（既定 true のフラグ）で誤って制限が掛かる。
  * - 既定 **false** のフラグは `!undefined` が制限側に寄るため事故は起きにくいが、明示比較（`=== false` / `!== true`）の方が安全。
+ * - **投稿・設定系**では `movedToUri` / `isMiniSilenced` / `canInvite` / `isLocked` 等も参照する。欠けると移行済みアカウントのブロックや公開制限が効かない。
+ * - **custom-motd**（任意認証）では `createdAt` / `notesCount` / `name` / `isCat` / `speakAsCat` を参照する。`birthday` は {@link UserProfile} 側のため User には無い。
+ * - **notes/create** は `services/note/create` の投稿処理へ認証ユーザを渡し、`blockPost*` / `isSilenced` / `maxRankPoint` / `isBot` / `isPublicLikeList` / `avatarId` 等で可視性・スパム系の分岐を行う。
  *
  * @see {@link api-handler} API 認証
  * @see {@link streaming} ストリーム接続認証
@@ -34,12 +37,35 @@ export class AuthenticationError extends Error {
 const AUTH_USER_SELECT = {
 	id: true,
 	username: true,
+	name: true,
 	host: true,
+	createdAt: true,
 	isSuspended: true,
 	isAdmin: true,
 	isModerator: true,
 	driveCapacityOverrideMb: true,
 	emojis: true,
+	// 移行先 URI ありなら投稿等を拒否（notes/create, reactions/create, antennas/create, i/move 等）
+	movedToUri: true,
+	// ミニサイレンス時の公開投稿制限（notes/create）
+	isMiniSilenced: true,
+	// CC 複数宛の可否（notes/create）
+	canInvite: true,
+	// 鍵解除の可否判定（i/update, i/known-as）
+	isLocked: true,
+	notesCount: true,
+	// 投稿サービス: サイレンス・公開範囲・初投稿・スパム系ヒューリスティック（services/note/create）
+	isSilenced: true,
+	maxRankPoint: true,
+	isBot: true,
+	isPublicLikeList: true,
+	avatarId: true,
+	blockPostPublic: true,
+	blockPostHome: true,
+	blockPostNotLocal: true,
+	blockPostNotLocalPublic: true,
+	isCat: true,
+	speakAsCat: true,
 	// ストリーム TL が参照するが、未選択だと undefined になり !flag で誤ってノートを落とす
 	localShowRenote: true,
 	remoteShowRenote: true,

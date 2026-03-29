@@ -671,6 +671,12 @@ export const NoteRepository = db.getRepository(Note).extend({
 					: [],
 			replyId: note.replyId,
 			renoteId: note.renoteId,
+			// ラッパー行の非正規化値。ネスト renote が欠けるストリーム／pack でも LTL のリモート純RT判定に使う。
+			...(note.renoteId != null &&
+			note.renoteUserHost != null &&
+			note.renoteUserHost.length > 0
+				? { renoteUserHost: note.renoteUserHost }
+				: {}),
 			referenceIds: note.referenceIds,
 			channelId: note.channelId || undefined,
 			channel: channel

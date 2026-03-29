@@ -6,7 +6,7 @@
  * @remarks
  * - **API パス**: `notes/local-timeline`（GET `/api/notes/local-timeline` で呼び出し）
  * - 認証不要。ローカルのパブリックノートを時系列で取得。
- * - 純リノートのリモート先判定は {@link isRemoteRenoteTarget}（`renote.user.host` または `renote.uri` の有無）に依存する。
+ * - 純リノートのリモート先判定は {@link isRemoteRenoteTarget}（`renoteUserHost` を最優先し、無ければネスト `renote`）に依存する。
  *
  * @see {@link define} エンドポイント登録
  * @internal

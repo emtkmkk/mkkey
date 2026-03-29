@@ -65,6 +65,13 @@ export const packedNoteSchema = {
 			example: "xxxxxxxxxx",
 			description: "リノート元の投稿 ID。",
 		},
+		renoteUserHost: {
+			type: "string",
+			optional: true,
+			nullable: true,
+			description:
+				"リノート元の投稿者インスタンス（非正規化）。ネスト renote に user/uri が無い pack でもリモート先判定に使う。",
+		},
 		reply: {
 			type: "object",
 			optional: true,

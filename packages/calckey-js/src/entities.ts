@@ -153,6 +153,8 @@ export type Note = {
 	replyId: Note["id"];
 	renote?: Note;
 	renoteId: Note["id"];
+	/** リノート先投稿者のインスタンス（API が返す場合）。 */
+	renoteUserHost?: string | null;
 	files: DriveFile[];
 	fileIds: DriveFile["id"][];
 	visibility: "public" | "home" | "followers" | "specified";

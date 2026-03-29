@@ -6,7 +6,7 @@
  * @remarks
  * - **ストリーム チャンネル名**: `localTimeline`。認証不要。
  * - notesStream を購読し、ローカルタイムラインに流れるノートを配送する。
- * - 純リノートのスキップ判定は {@link isRemoteRenoteTarget} でリモート先を識別する（`renote.user` 欠落時は `renote.uri` の有無で補う）。
+ * - 純リノートのスキップ判定は {@link isRemoteRenoteTarget} でリモート先を識別する（ラッパーの `renoteUserHost` を最優先）。
  *
  * @see {@link stream/channel} チャンネル基底
  * @internal

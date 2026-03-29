@@ -1,26 +1,31 @@
 /**
  * @packageDocumentation
  *
- * パック済みノートの「リノート先が連合由来（リモート側）か」のざっくり判定。
+ * パック済みノートの「リノート先が連合（リモート）か」の判定。
  *
  * @remarks
- * - **用途**: LTL 等の純リノート重複排除で、ローカル先とそれ以外を区別する。
- * - **前提**: `renote.user` が無い pack でも、連合で取り込んだノートは `uri` を持つことが多いのでそれで補う。
- * - **注意**: 自インスタンスの投稿でも `uri` が常に付く運用だと、常にリモート扱いになり重複排除が弱まる。差分を抑えるため意図的に簡略化している。
+ * - **用途**: LTL の純リノート重複排除でローカル先のみデデュープする。
+ * - **優先順**: ラッパーの `renoteUserHost`（DB 非正規化・常に信頼できる）→ `renote.user.host` → `renote.uri`。
+ * - **背景**: ネスト `renote` の pack が `user` や `uri` を欠く経路があり、それだけだとリモートをローカル扱いして誤スキップしていた。
  *
  * @internal
  */
 import type { Packed } from "@/misc/schema.js";
 
 /**
- * リノート先を「リモート（連合）先」として扱うか。
+ * リノート先をリモート（自インスタンス外の投稿者）として扱うか。
  *
- * @param note - パック済みノート
- * @returns `renote.user.host` がある、または `renote.uri` が非空なら true
+ * @param note - パック済みノート（ラッパー）
+ * @returns リモート先なら true
  *
  * @internal
  */
 export function isRemoteRenoteTarget(note: Packed<"Note">): boolean {
+	const denorm = note.renoteUserHost;
+	if (typeof denorm === "string" && denorm.length > 0) {
+		return true;
+	}
+
 	const r = note.renote;
 	if (r == null || typeof r !== "object") {
 		return false;

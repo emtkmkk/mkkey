@@ -69,7 +69,11 @@ export default class extends Channel {
 			return;
 
 		// 関係ない返信は除外
-		if (note.reply && !this.user!.showTimelineReplies) {
+		if (
+			note.reply &&
+			this.user != null &&
+			this.user.showTimelineReplies !== true
+		) {
 			const reply = note.reply;
 			// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
 			if (
@@ -89,14 +93,16 @@ export default class extends Channel {
 			note.renote &&
 			!note.text &&
 			!note.user.host &&
-			!this.user!.localShowRenote
+			this.user != null &&
+			this.user.localShowRenote === false
 		)
 			return;
 		if (
 			note.renote &&
 			!note.text &&
 			note.user.host &&
-			!this.user!.remoteShowRenote
+			this.user != null &&
+			this.user.remoteShowRenote === false
 		)
 			return;
 

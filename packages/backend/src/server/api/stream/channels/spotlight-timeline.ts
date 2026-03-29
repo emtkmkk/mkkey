@@ -44,11 +44,13 @@ export default class extends Channel {
 		let dynamicScore2 = 120; // ローカルユーザが出現するScore閾値
 		let dynamicScore3 = 160; // リモートユーザが出現するScore閾値
 
-		if (this.user!.followingCount < 50) {
+		// 未ログインは 0 扱い。authenticate の user に followingCount が無いと undefined で比較が壊れる
+		const followingCount = this.user?.followingCount ?? 0;
+		if (followingCount < 50) {
 			dynamicScore1 = 20;
 			dynamicScore2 = 36;
 			dynamicScore3 = 80;
-		} else if (this.user!.followingCount < 500) {
+		} else if (followingCount < 500) {
 			dynamicScore1 = 30;
 			dynamicScore2 = 60;
 			dynamicScore3 = 120;
@@ -82,7 +84,11 @@ export default class extends Channel {
 		if (!this.user && note.reply) {
 			return;
 		}
-		if (note.reply && !this.user!.showTimelineReplies) {
+		if (
+			note.reply &&
+			this.user != null &&
+			this.user.showTimelineReplies !== true
+		) {
 			const reply = note.reply;
 			// 「フォロー中同士の会話」でもなければ、「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信（ただし一つ上の投稿へ遡る）」でもない場合
 			let replyFollowing =
@@ -113,7 +119,8 @@ export default class extends Channel {
 		if (
 			note.renote &&
 			!note.text &&
-			(!this.user || !this.user!.localShowRenote)
+			this.user != null &&
+			this.user.localShowRenote === false
 		)
 			return;
 

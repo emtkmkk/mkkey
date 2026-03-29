@@ -6,6 +6,8 @@
  * @remarks
  * - **役割**: Authorization ヘッダーまたはクエリのトークンから AccessToken を解決し、ユーザーとアプリを返す。
  * - API の api-handler とストリーミング接続の両方で利用される。
+ * - `AUTH_USER_SELECT` はストリーム TL 等でも参照する。列を抜くと `undefined` になり、`!user.flag`（既定 true のフラグ）で誤って制限が掛かる。
+ * - 既定 **false** のフラグは `!undefined` が制限側に寄るため事故は起きにくいが、明示比較（`=== false` / `!== true`）の方が安全。
  *
  * @see {@link api-handler} API 認証
  * @see {@link streaming} ストリーム接続認証
@@ -38,6 +40,13 @@ const AUTH_USER_SELECT = {
 	isModerator: true,
 	driveCapacityOverrideMb: true,
 	emojis: true,
+	// ストリーム TL が参照するが、未選択だと undefined になり !flag で誤ってノートを落とす
+	localShowRenote: true,
+	remoteShowRenote: true,
+	showTimelineReplies: true,
+	showSelfRenoteToHome: true,
+	// spotlight ストリームの閾値用（未選択だと undefined になり比較が壊れる）
+	followingCount: true,
 } as const;
 
 /**

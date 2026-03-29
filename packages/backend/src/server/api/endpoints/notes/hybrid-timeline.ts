@@ -132,7 +132,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	generateBlockedUserQuery(query, user);
 	generateMutedUserRenotesQueryForNotes(query, user);
 
-	if (user && !user.showSelfRenoteToHome) {
+	if (user && user.showSelfRenoteToHome === false) {
 		query.andWhere(
 			new Brackets((qb) => {
 				qb.orWhere("note.renoteUserId != note.userId");

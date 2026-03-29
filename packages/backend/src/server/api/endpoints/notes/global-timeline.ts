@@ -127,7 +127,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		query.andWhere("note.localOnly = false");
 	}
 
-	if (user && !user.localShowRenote) {
+	if (user && user.localShowRenote === false) {
 		query.andWhere(
 			new Brackets((qb) => {
 				qb.where("note.renoteId IS NULL");
@@ -141,7 +141,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		);
 	}
 
-	if (user && !user.remoteShowRenote) {
+	if (user && user.remoteShowRenote === false) {
 		query.andWhere(
 			new Brackets((qb) => {
 				qb.where("note.renoteId IS NULL");

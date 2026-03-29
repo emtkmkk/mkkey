@@ -115,7 +115,11 @@ export default class extends Channel {
 		if (this.user && this.showReplyMode === "notBotOnly" && note.isBotMention && note.userId !== this.user.id) {
 			return;
 		}
-		if (note.reply && !this.user!.showTimelineReplies) {
+		if (
+			note.reply &&
+			this.user != null &&
+			this.user.showTimelineReplies !== true
+		) {
 			const reply = note.reply;
 			// 「フォロー中同士の会話」でもなければ、「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信（ただし一つ上の投稿へ遡る）」でもない場合
 			let replyFollowing =
@@ -140,10 +144,12 @@ export default class extends Channel {
 
 		if (note.renote && !note.text && isUserRelated(note, this.renoteMuting))
 			return;
+                // NOTE: 認証ユーザの select に localShowRenote が無いと undefined になり、!undefined で常に弾かれていた
                 if (
                         note.renote &&
                         !note.text &&
-                        (!this.user || !this.user!.localShowRenote)
+                        this.user != null &&
+                        this.user.localShowRenote === false
                 )
                         return;
 

@@ -10,6 +10,7 @@ import type { FollowingExistsCondition } from "./following-exists-condition.js";
  * - applyIsBotMentionFilter が true のときのみ、note.isBotMention を「Botが関わる返信」として扱う。
  *   呼び出し元では showReplyMode === "notBotOnly"（Botが関わる返信を表示しない）のときだけ true を渡す。
  * - その場合、自分の投稿（note.userId = me.id）は isBotMention の有無にかかわらず表示する。
+ * - `me.showTimelineReplies` は認証ユーザに必ず載せること。未設定の undefined は「TL に返信を載せない」既定（false）に合わせ `!== true` で扱う。
  */
 export function generateRepliesQuery(
         q: SelectQueryBuilder<any>,
@@ -41,7 +42,7 @@ export function generateRepliesQuery(
 					);
 			}),
 		);
-        } else if (!me.showTimelineReplies) {
+        } else if (me.showTimelineReplies !== true) {
                 if (following != null) {
                         q.andWhere(
                                 new Brackets((qb) => {

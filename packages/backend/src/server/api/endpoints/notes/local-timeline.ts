@@ -252,7 +252,8 @@ export default define(meta, paramDef, async (ps, user) => {
 	} else {
 		query.andWhere("(note.visibility = 'public')");
 	}
-        if (user && !user.localShowRenote) {
+        // authenticate の user にフラグが無いと undefined になり !flag で常に制限が掛かるため === false にする
+        if (user && user.localShowRenote === false) {
                 query.andWhere(
                         new Brackets((qb) => {
                                 qb.where("note.renoteId IS NULL");
@@ -267,7 +268,7 @@ export default define(meta, paramDef, async (ps, user) => {
                 );
         }
 
-	if (user && !user.remoteShowRenote) {
+	if (user && user.remoteShowRenote === false) {
 		query.andWhere(
 			new Brackets((qb) => {
 				qb.where("note.renoteId IS NULL");

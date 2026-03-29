@@ -71,7 +71,11 @@ export default class extends Channel {
 			return;
 
 		// 関係ない返信は除外
-		if (note.reply && !this.user!.showTimelineReplies) {
+		if (
+			note.reply &&
+			this.user != null &&
+			this.user.showTimelineReplies !== true
+		) {
 			const reply = note.reply;
 			// 「フォロー中同士の会話」でもなければ、「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信（ただし一つ上の投稿へ遡る）」でもない場合
 			let replyFollowing =
@@ -93,9 +97,10 @@ export default class extends Channel {
 
 		if (
 			note.renote &&
-			!this.user!.showSelfRenoteToHome &&
+			this.user != null &&
+			this.user.showSelfRenoteToHome === false &&
 			!note.text &&
-			this.user!.id !== note.userId &&
+			this.user.id !== note.userId &&
 			note.renote.userId === note.userId
 		)
 			return;

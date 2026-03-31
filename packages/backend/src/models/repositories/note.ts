@@ -164,24 +164,61 @@ function stripVolatileUserFields(user: Packed<"User">): Packed<"User"> {
 	return fixed;
 }
 
+/**
+ * ノート用ユーザープロフィールキャッシュが webhook/stream 表示に必要な最小項目を満たすかを判定する。
+ *
+ * @param user - キャッシュ済みの Packed User
+ * @returns username と avatarUrl が文字列で保持されていれば true
+ * @remarks
+ * NOTE: 既存キャッシュに欠損データが残っている場合、ここで検知して再生成する。
+ * @internal
+ */
+function isUsableNotePackedUserProfile(user: Packed<"User">): boolean {
+	return (
+		typeof user.username === "string" &&
+		user.username.length > 0 &&
+		typeof user.avatarUrl === "string" &&
+		user.avatarUrl.length > 0
+	);
+}
+
+/**
+ * ノート表示向けの固定ユーザープロフィールを取得する。
+ *
+ * @param src - ノート上の user（User もしくは userId）
+ * @returns relation などの可変情報を除いた Packed User
+ * @remarks
+ * NOTE: キャッシュに不整合を検出した場合のみ削除して再生成し、正しい値を同じキーへ再キャッシュする。
+ * NOTE: 再生成時は必ず userId で `Users.pack` し、部分オブジェクト由来の欠損を避ける。
+ * @internal
+ */
 async function getFixedPackedUserForNote(
 	src: Note["user"] | User["id"],
 ): Promise<Packed<"User">> {
 	const userId = typeof src === "object" ? src.id : src;
 	const localCached = notePackUserProfileCache.get(userId);
 	if (localCached !== undefined) {
-		return localCached;
+		if (isUsableNotePackedUserProfile(localCached)) {
+			return localCached;
+		}
+		// 欠損した古いキャッシュを使い回さないように削除する。
+		deleteNotePackUserProfileCache(userId);
 	}
 
 	const redisKey = getNotePackUserProfileCacheKey(userId);
 	const redisCached = await redisClient.get(redisKey);
 	if (redisCached != null) {
 		const parsed = JSON.parse(redisCached) as Packed<"User">;
-		notePackUserProfileCache.set(userId, parsed);
-		return parsed;
+		if (isUsableNotePackedUserProfile(parsed)) {
+			notePackUserProfileCache.set(userId, parsed);
+			return parsed;
+		}
+		// 欠損した Redis キャッシュは即削除し、下で再生成する。
+		await redisClient.del(redisKey);
 	}
 
-	const packed = await Users.pack(src, null, {
+	// NOTE: src が部分 User オブジェクトでも、ID から再取得して安定した avatar/name を作る。
+	const packed = await Users.pack(userId, null, {
 		detail: false,
 		relation: false,
 	});

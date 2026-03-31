@@ -390,6 +390,7 @@ import * as ep___users_relation from "./endpoints/users/relation.js";
 import * as ep___users_reportAbuse from "./endpoints/users/report-abuse.js";
 import * as ep___users_searchByUsernameAndHost from "./endpoints/users/search-by-username-and-host.js";
 import * as ep___users_search from "./endpoints/users/search.js";
+import * as ep___users_byDiscordIds from "./endpoints/users/by-discord-ids.js";
 import * as ep___users_show from "./endpoints/users/show.js";
 import * as ep___users_stats from "./endpoints/users/stats.js";
 import * as ep___users_updateMemo from "./endpoints/users/update-memo.js";
@@ -779,6 +780,7 @@ const eps = [
 	["users/report-abuse", ep___users_reportAbuse],
 	["users/search-by-username-and-host", ep___users_searchByUsernameAndHost],
 	["users/search", ep___users_search],
+	["users/by-discord-ids", ep___users_byDiscordIds],
 	["users/show", ep___users_show],
 	["users/stats", ep___users_stats],
 	["users/update-memo", ep___users_updateMemo],

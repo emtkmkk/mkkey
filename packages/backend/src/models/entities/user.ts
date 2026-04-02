@@ -138,12 +138,6 @@ export class User {
 	})
 	public isModerationWarning: boolean;
 
-	/** 警告ポップアップを最後に確認した時刻（UTC日付で1日1回判定） */
-	@Column('timestamp with time zone', {
-		nullable: true,
-	})
-	public moderationWarningPopupAt: Date | null;
-
 	/** 一時利用停止（凍結と別。サインイン・API利用ロックのみ、連合Deleteは出さない） */
 	@Column('boolean', {
 		default: false,
@@ -381,6 +375,12 @@ export class User {
 
 export interface ILocalUser extends User {
 	host: null;
+
+	/**
+	 * 認証キャッシュで `moderation_warning_popup_ack` から注入する最終ACK時刻。
+	 * `user` テーブル列ではない。Redis 経由の JSON 復元では文字列になり得る。
+	 */
+	moderationWarningPopupAt?: Date | string | null;
 }
 
 export interface IRemoteUser extends User {

@@ -6,12 +6,14 @@
  * @remarks
  * `needsModerationWarningPopup` は UTC 日付で変わるため **merged キャッシュには含めず**、応答直前に毎回付与する。
  * 当日 true の間は認証 API ルータで他エンドポイントが 403 となり、ユーザーは本レスポンスと `i/ack-moderation-warning`（および起動用 `auth/validate`）のみ利用可能。
+ * 付与判定では認証済み `user.isModerationWarning` を使い、通常ユーザ向けに `user` 行の再読みを避ける（鮮度は認証キャッシュと同じ。管理側の付け外しは `localUserUpdated` でキャッシュ無効化）。
  *
  * @internal
  */
 import { redisClient } from "@/db/redis.js";
 import { isModerationWarningAckPending } from "@/misc/moderation-warning-ack.js";
-import { Users } from "@/models/index.js";
+import { ModerationWarningPopupAcks, Users } from "@/models/index.js";
+import type { ILocalUser } from "@/models/entities/user.js";
 import type { MeDetailedVolatile } from "@/models/repositories/user.js";
 import define from "../define.js";
 
@@ -71,17 +73,26 @@ function createMeDetailedBase(src: Record<string, unknown>): Record<string, unkn
 /**
  * 当日分の警告ポップアップが必要なら `needsModerationWarningPopup: true` を付与する。
  * キャッシュ済み merged に古いキーが残っていても削除する。
+ *
+ * @remarks
+ * 警告フラグは認証済み `user` を信頼し `Users.findOne` しない（通常ユーザの `/i` で PK 読みを省く）。
+ * 警告ユーザのみ `moderation_warning_popup_ack` を1回読む。
  */
 async function attachModerationWarningPopup(
 	merged: Record<string, unknown>,
-	userId: string,
+	user: ILocalUser,
 ): Promise<void> {
 	delete merged.needsModerationWarningPopup;
-	const u = await Users.findOne({
-		where: { id: userId },
-		select: { isModerationWarning: true, moderationWarningPopupAt: true },
-	});
-	if (u == null || !isModerationWarningAckPending(u)) {
+	if (user.isModerationWarning !== true) {
+		return;
+	}
+	const ack = await ModerationWarningPopupAcks.findOneBy({ userId: user.id });
+	if (
+		!isModerationWarningAckPending({
+			isModerationWarning: true,
+			moderationWarningPopupAt: ack?.acknowledgedAt,
+		})
+	) {
 		return;
 	}
 	merged.needsModerationWarningPopup = true;
@@ -96,7 +107,7 @@ export default define(meta, paramDef, async (ps, user, token) => {
 
 	if (mergedCache != null) {
 		const merged = JSON.parse(mergedCache) as Record<string, unknown>;
-		await attachModerationWarningPopup(merged, userId);
+		await attachModerationWarningPopup(merged, user);
 		return merged;
 	}
 
@@ -166,7 +177,7 @@ export default define(meta, paramDef, async (ps, user, token) => {
 		Users.getMeDetailedMergedCacheTtlSec(),
 	);
 
-	await attachModerationWarningPopup(merged, userId);
+	await attachModerationWarningPopup(merged, user);
 
 	return merged;
 });

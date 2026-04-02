@@ -20,6 +20,7 @@ import * as highlight from "cli-highlight";
 import config from "@/config/index.js";
 
 import { User } from "@/models/entities/user.js";
+import { ModerationWarningPopupAck } from "@/models/entities/moderation-warning-popup-ack.js";
 import { DriveFile } from "@/models/entities/drive-file.js";
 import { DriveFolder } from "@/models/entities/drive-folder.js";
 import { AccessToken } from "@/models/entities/access-token.js";
@@ -143,6 +144,7 @@ export const entities = [
 	AuthSession,
 	AccessToken,
 	User,
+	ModerationWarningPopupAck,
 	UserProfile,
 	UserKeypair,
 	UserPublickey,

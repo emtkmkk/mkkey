@@ -9,7 +9,7 @@
  * @internal
  */
 import define from "../../define.js";
-import { Users } from "@/models/index.js";
+import { ModerationWarningPopupAcks, Users } from "@/models/index.js";
 import { publishInternalEvent } from "@/services/stream.js";
 
 export const meta = {
@@ -27,11 +27,15 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (_ps, me) => {
-	await Users.update(me.id, {
-		moderationWarningPopupAt: new Date(),
-	});
+	await ModerationWarningPopupAcks.upsert(
+		{
+			userId: me.id,
+			acknowledgedAt: new Date(),
+		},
+		{ conflictPaths: ["userId"] },
+	);
 	await Users.invalidateMeDetailedBaseCache(me.id);
-	// 認証キャッシュの `moderationWarningPopupAt` を即時反映し、API / ストリームゲートを解除する
+	// 認証キャッシュの `moderationWarningPopupAt`（別表由来）を即時反映し、API / ストリームゲートを解除する
 	publishInternalEvent("localUserUpdated", { id: me.id });
 	return {};
 });

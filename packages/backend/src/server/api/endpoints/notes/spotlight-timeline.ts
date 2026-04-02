@@ -51,7 +51,8 @@ export const meta = {
 			id: "45a6eb02-7695-4393-b023-dd3be9aaaefd",
 		},
 		queryError: {
-			message: "フォロー数を増やしてください。",
+			message:
+				"タイムラインの取得に失敗しました。時間をおいて再度お試しください。",
 			code: "QUERY_ERROR",
 			id: "620763f4-f621-4533-ab33-0577a1a3c343",
 		},

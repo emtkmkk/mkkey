@@ -23,7 +23,7 @@ import { generateMutedNoteQuery } from "../../common/generate-muted-note-query.j
 import { generateChannelQuery } from "../../common/generate-channel-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
-import { ApiError } from "../../error.js";
+import { rethrowTimelineQueryAsApiError } from "../../common/rethrow-timeline-query-error.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 import { applyOrWhereNoteHasContent } from "../../common/note-content-condition.js";
 
@@ -49,7 +49,8 @@ export const meta = {
 
 	errors: {
 		queryError: {
-			message: "フォロー数を増やしてください。",
+			message:
+				"タイムラインの取得に失敗しました。時間をおいて再度お試しください。",
 			code: "QUERY_ERROR",
 			id: "620763f4-f621-4533-ab33-0577a1a3c343",
 		},
@@ -223,7 +224,11 @@ export default define(meta, paramDef, async (ps, user) => {
 			if (notes.length < take) break;
 		}
 	} catch (error) {
-		throw new ApiError(meta.errors.queryError);
+		rethrowTimelineQueryAsApiError(
+			"notes/timeline",
+			meta.errors.queryError,
+			error,
+		);
 	}
 
 	if (found.length > ps.limit) {

@@ -191,8 +191,9 @@ export default async (
 
 	/** 警告ユーザが、未フォローかつ投稿者が受容していないノートにリアクションできない */
 	const warnedViewerReactionPromise = (async () => {
-		const reactor = await Users.findOneBy({
-			id: user.id,
+		// findOneBy は where のみ。列絞り込みは findOne + select（select を渡すと User のプロパティ扱いで EntityPropertyNotFoundError になる）
+		const reactor = await Users.findOne({
+			where: { id: user.id },
 			select: { id: true, isModerationWarning: true },
 		});
 		if (reactor?.isModerationWarning !== true) return;

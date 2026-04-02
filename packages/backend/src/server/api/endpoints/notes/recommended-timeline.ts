@@ -16,6 +16,7 @@ import { Followings, Notes } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
+import { rethrowTimelineQueryAsApiError } from "../../common/rethrow-timeline-query-error.js";
 import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
@@ -49,7 +50,8 @@ export const meta = {
 			id: "45a6eb02-7695-4393-b023-dd3be9aaaefe",
 		},
 		queryError: {
-			message: "フォロー数を増やしてください。",
+			message:
+				"タイムラインの取得に失敗しました。時間をおいて再度お試しください。",
 			code: "QUERY_ERROR",
 			id: "620763f4-f621-4533-ab33-0577a1a3c343",
 		},
@@ -201,7 +203,11 @@ export default define(meta, paramDef, async (ps, user) => {
 			if (notes.length < take) break;
 		}
 	} catch (error) {
-		throw new ApiError(meta.errors.queryError);
+		rethrowTimelineQueryAsApiError(
+			"notes/recommended-timeline",
+			meta.errors.queryError,
+			error,
+		);
 	}
 
 	if (found.length > ps.limit) {

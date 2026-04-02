@@ -38,9 +38,10 @@ export async function applyPublicTimelineWarnedUserFilter<
 		return;
 	}
 
+	// 警告投稿の除外: 閲覧設定 OFF かつ（通常ユーザの投稿のみ OR 閲覧者がフォロー中の投稿者）
 	query.andWhere(
 		new Brackets((qb) => {
-			qb.where('user."isModerationWarning" = false');
+			qb.where('"user"."isModerationWarning" = false');
 			if (options.socialFollowingException && me) {
 				qb.orWhere(
 					`EXISTS (SELECT 1 FROM "following" f WHERE f."followerId" = :warnTimelineMeId AND f."followeeId" = note."userId")`,

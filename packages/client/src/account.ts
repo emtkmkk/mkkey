@@ -1,6 +1,7 @@
 import { defineAsyncComponent, reactive } from "vue";
 import * as misskey from "calckey-js";
 import { showSuspendedDialog } from "./scripts/show-suspended-dialog";
+import { showUsagePausedDialog } from "./scripts/show-usage-paused-dialog";
 import { i18n } from "./i18n";
 import { del, get, set } from "@/scripts/idb-proxy";
 import { apiUrl } from "@/config";
@@ -111,6 +112,12 @@ export function fetchAccount(token: string): Promise<Account> {
 				if (res.error) {
 					if (res.error.id === "a8c724b3-6e9c-4b46-b1a8-bc3ed6258370") {
 						showSuspendedDialog().then(() => {
+							signout();
+						});
+					} else if (
+						res.error.id === "c9a4e2b1-7f3d-4a2e-9e1c-0d5b8a4e6f2a"
+					) {
+						showUsagePausedDialog().then(() => {
 							signout();
 						});
 					} else {

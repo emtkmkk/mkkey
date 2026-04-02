@@ -44,6 +44,7 @@ function reviveCachedUserDates<T>(value: T): T {
 		"updatedAt",
 		"lastFetchedAt",
 		"lastActiveDate",
+		"moderationWarningPopupAt",
 		"birthday",
 	] as const) {
 		const dateValue = user[key];

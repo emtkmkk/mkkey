@@ -255,6 +255,28 @@ export class UserProfile {
 	})
 	public rejectMuteReaction: boolean;
 
+	/**
+	 * 閲覧者として、公開TL系で警告ユーザのノートを含めるか（既定 false）。
+	 *
+	 * @remarks
+	 * 未ログインTLでは常に除外扱い。ソーシャルTLでは閲覧者が投稿者をフォロー済みなら除外しない。
+	 */
+	@Column('boolean', {
+		default: false,
+	})
+	public showWarnedUsersInPublicTimeline: boolean;
+
+	/**
+	 * 投稿者として、フォローしていない警告ユーザからのリアクションを受け入れるか（既定 false）。
+	 *
+	 * @remarks
+	 * ローカル投稿者のプロフィールのみ。リモート投稿者は常に OFF 相当。
+	 */
+	@Column('boolean', {
+		default: false,
+	})
+	public receiveReactionsFromNonFollowedWarnedUsers: boolean;
+
 	@Column('jsonb', {
 		default: [],
 		comment: 'List of instances muted by the user.',

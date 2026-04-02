@@ -89,6 +89,18 @@
 										><i class="ph-speaker-x ph-bold ph-lg"></i
 									></span>
 									<span
+										v-if="user.isModerationWarning"
+										:title="i18n.ts.userBadgeModerationWarning"
+										style="color: var(--warn)"
+										><i class="ph-warning ph-bold ph-lg"></i
+									></span>
+									<span
+										v-if="user.isUsagePaused"
+										:title="i18n.ts.userBadgeUsagePaused"
+										style="color: var(--accent)"
+										><i class="ph-pause ph-bold ph-lg"></i
+									></span>
+									<span
 										v-if="user.isLocked"
 										:title="i18n.ts.isLocked"
 										><i class="ph-lock ph-bold ph-lg"></i
@@ -164,6 +176,18 @@
 										:title="i18n.ts.isSilenced"
 										style="color: var(--warn)"
 										><i class="ph-speaker-x ph-bold ph-lg"></i
+									></span>
+								<span
+										v-if="user.isModerationWarning"
+										:title="i18n.ts.userBadgeModerationWarning"
+										style="color: var(--warn)"
+										><i class="ph-warning ph-bold ph-lg"></i
+									></span>
+								<span
+										v-if="user.isUsagePaused"
+										:title="i18n.ts.userBadgeUsagePaused"
+										style="color: var(--accent)"
+										><i class="ph-pause ph-bold ph-lg"></i
 									></span>
 								<span
 									v-if="user.isLocked"

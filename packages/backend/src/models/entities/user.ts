@@ -132,6 +132,24 @@ export class User {
 	})
 	public isSuspended: boolean;
 
+	/** モデレーション警告（ローカル・リモート行に付与可。表示・TL除外等に使用） */
+	@Column('boolean', {
+		default: false,
+	})
+	public isModerationWarning: boolean;
+
+	/** 警告ポップアップを最後に確認した時刻（UTC日付で1日1回判定） */
+	@Column('timestamp with time zone', {
+		nullable: true,
+	})
+	public moderationWarningPopupAt: Date | null;
+
+	/** 一時利用停止（凍結と別。サインイン・API利用ロックのみ、連合Deleteは出さない） */
+	@Column('boolean', {
+		default: false,
+	})
+	public isUsagePaused: boolean;
+
 	@Column('boolean', {
 		default: false,
 		comment: 'Whether the User is silenced.',

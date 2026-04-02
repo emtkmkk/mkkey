@@ -1020,6 +1020,9 @@ export const UserRepository = db.getRepository(User).extend({
 			isBot: user.isBot || falsy,
 			isCat: user.isCat || falsy,
 			speakAsCat: user.speakAsCat || falsy,
+			// API 省略規則の例外: 常に boolean で送る
+			isModerationWarning: user.isModerationWarning === true,
+			isUsagePaused: user.isUsagePaused === true,
 			notesCount: user.notesCount,
 			instance: user.host
 				? userInstanceCache
@@ -1210,6 +1213,15 @@ export const UserRepository = db.getRepository(User).extend({
 
 			...(opts.detail && isMe
 				? {
+						...(profile!.showWarnedUsersInPublicTimeline
+							? {
+									showWarnedUsersInPublicTimeline: true,
+									showWarnedUsersInPublicTimelineEffective: true,
+							  }
+							: {}),
+						...(profile!.receiveReactionsFromNonFollowedWarnedUsers
+							? { receiveReactionsFromNonFollowedWarnedUsers: true }
+							: {}),
 						avatarId: user.avatarId,
 						bannerId: user.bannerId,
 						followedMessage: profile!.followedMessage,

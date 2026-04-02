@@ -5,6 +5,7 @@
  *
  * @remarks
  * - **役割**: api-handler から呼ばれ、エンドポイント名で解決・レート制限チェック・認証済みユーザーで execute を実行する。
+ * - モデレーション警告の当日 ACK 前は `isModerationWarningAckPending` が true のユーザーを、ホワイトリスト以外の API で拒否する。
  * - レスポンスは define の res スキーマに沿って返却される。
  *
  * @see {@link define} エンドポイント定義
@@ -25,6 +26,7 @@ import compatibility from "./compatibility.js";
 import { ApiError } from "./error.js";
 import { apiLogger } from "./logger.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { isModerationWarningAckPending } from "@/misc/moderation-warning-ack.js";
 
 const ev = new Xev();
 
@@ -33,6 +35,16 @@ const accessDenied = {
 	code: "ACCESS_DENIED",
 	id: "56f35758-7dd5-468b-8439-5d6fb8ec9b8e",
 };
+
+/**
+ * 警告フラグがあり、当日分の `i/ack-moderation-warning` 前にだけ通すエンドポイント。
+ * それ以外の認証付き API は 403 とし、アプリ操作をブロックする。
+ */
+const MODERATION_WARNING_ACK_ENDPOINT_ALLOWLIST = new Set([
+	"i",
+	"i/ack-moderation-warning",
+	"auth/validate",
+]);
 
 export default async (
 	endpoint: string,
@@ -105,6 +117,29 @@ export default async (
 			message: "アカウントが凍結されています。",
 			code: "YOUR_ACCOUNT_SUSPENDED",
 			id: "a8c724b3-6e9c-4b46-b1a8-bc3ed6258370",
+			httpStatusCode: 403,
+		});
+	}
+
+	if (ep.meta.requireCredential && user!.isUsagePaused) {
+		throw new ApiError({
+			message: "アカウントの利用が一時停止されています。",
+			code: "YOUR_ACCOUNT_USAGE_PAUSED",
+			id: "c9a4e2b1-7f3d-4a2e-9e1c-0d5b8a4e6f2a",
+			httpStatusCode: 403,
+		});
+	}
+
+	if (
+		user &&
+		!MODERATION_WARNING_ACK_ENDPOINT_ALLOWLIST.has(ep.name) &&
+		isModerationWarningAckPending(user)
+	) {
+		throw new ApiError({
+			message:
+				"警告を確認するまで、この操作はできません。Webにて表示されたダイアログで了解してください。",
+			code: "MODERATION_WARNING_ACK_REQUIRED",
+			id: "f3a9c2d1-8e4b-4f2a-9c1d-0a7b6e5d4c3b",
 			httpStatusCode: 403,
 		});
 	}

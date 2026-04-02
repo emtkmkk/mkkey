@@ -676,6 +676,34 @@ export const NoteRepository = db.getRepository(Note).extend({
 		const noteEmojiWithHidden = addHiddenForViewer(noteEmoji);
 		const reactionEmojiWithHidden = addHiddenForViewer(reactionEmoji);
 
+		// 警告ユーザ向け: リアクションが許可されるときだけ canWarnedViewerReact: true を付与（省略＝当該文脈では不可）
+		let canWarnedViewerReact: true | undefined;
+		if (
+			meId &&
+			meUser?.isModerationWarning === true &&
+			note.userId !== meId
+		) {
+			const authorFollowsViewer = await Followings.exist({
+				where: { followerId: note.userId, followeeId: meId },
+			});
+			if (authorFollowsViewer) {
+				canWarnedViewerReact = true;
+			} else {
+				const remoteAuthor = noteUser.host != null;
+				let acceptFromWarned = false;
+				if (!remoteAuthor) {
+					const ap = await UserProfiles.findOneBy({
+						userId: note.userId,
+					});
+					acceptFromWarned =
+						ap?.receiveReactionsFromNonFollowedWarnedUsers === true;
+				}
+				if (!remoteAuthor && acceptFromWarned) {
+					canWarnedViewerReact = true;
+				}
+			}
+		}
+
 		const packed: Packed<"Note"> = await awaitAll({
 			id: note.id,
 			createdAt: note.createdAt.toISOString(),
@@ -731,6 +759,9 @@ export const NoteRepository = db.getRepository(Note).extend({
 			isFirstNote: note.isFirstNote ? true : undefined,
 			...(note.isBotMention ? { isBotMention: true as const } : {}),
 			invisible: !isVisible ? true : undefined,
+			...(canWarnedViewerReact
+				? { canWarnedViewerReact: true as const }
+				: {}),
 			...(opts.detail
 				? {
                                                 reply: note.replyId

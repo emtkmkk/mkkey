@@ -58,9 +58,13 @@ const buttonRef = ref<HTMLElement>();
 
 const countChanged = ref(null);
 
-const canToggle = computed(
-	() => $i && (!$i.isSilenced || props.note.user.isFollowed)
-);
+const canToggle = computed(() => {
+	if (!$i) return false;
+	if ($i.isSilenced && !props.note.user.isFollowed) return false;
+	if (!$i.isModerationWarning) return true;
+	if (props.note.userId === $i.id) return true;
+	return props.note.canWarnedViewerReact === true;
+});
 
 const reacted = computed(() => {
 	return props.multi

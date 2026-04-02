@@ -3,7 +3,8 @@
 		ref="modal"
 		:prefer-type="'dialog'"
 		:z-priority="'high'"
-		@click="done(true)"
+		:suppress-overlay-close="isForcedAcknowledge"
+		@click="onModalClick"
 		@closed="emit('closed')"
 	>
 		<div :class="$style.root">
@@ -171,7 +172,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
 import MkModal from "@/components/MkModal.vue";
 import MkButton from "@/components/MkButton.vue";
 import MkInput from "@/components/form/input.vue";
@@ -248,6 +249,24 @@ const emit = defineEmits<{
 
 const modal = shallowRef<InstanceType<typeof MkModal>>();
 
+/**
+ * wait あり・キャンセルなし・入力なし → 背景・Esc で閉じず OK のみ（モデレーション警告など）。
+ */
+const isForcedAcknowledge = computed(
+	() =>
+		(props.wait ?? 0) > 0 &&
+		!props.showCancelButton &&
+		!props.input &&
+		!props.select &&
+		!props.actions &&
+		!props.showThirdButton,
+);
+
+function onModalClick() {
+	if (isForcedAcknowledge.value) return;
+	done(true);
+}
+
 const inputValue = ref(props.input?.default || null);
 const selectedValue = ref(props.select?.default || null);
 const canOk = ref(!props.wait);
@@ -289,7 +308,7 @@ function onBgClick() {
 }
 */
 function onKeydown(evt: KeyboardEvent) {
-	if (evt.key === "Escape") cancel();
+	if (evt.key === "Escape" && !isForcedAcknowledge.value) cancel();
 }
 
 function onInputKeydown(evt: KeyboardEvent) {

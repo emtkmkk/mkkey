@@ -20,6 +20,29 @@ async function follow(user): Promise<void> {
 		return;
 	}
 
+	if (user.isSilenced) {
+		const r = await os.confirm({
+			type: "warning",
+			text: i18n.t("silencedUserFollowConfirm"),
+		});
+		if (r.canceled) {
+			window.close();
+			return;
+		}
+	}
+
+	if (user.isModerationWarning) {
+		const r = await os.confirm({
+			type: "warning",
+			text: i18n.t("warnedUserFollowConfirm"),
+			wait: 7,
+		});
+		if (r.canceled) {
+			window.close();
+			return;
+		}
+	}
+
 	os.apiWithDialog("following/create", {
 		userId: user.id,
 	});

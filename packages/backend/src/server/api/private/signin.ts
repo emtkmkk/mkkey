@@ -111,6 +111,13 @@ export default async (ctx: Koa.Context) => {
 			return;
 		}
 
+		if (user.isUsagePaused) {
+			await fail(securityKey.userId, 403, {
+				id: "c9a4e2b1-7f3d-4a2e-9e1c-0d5b8a4e6f2a",
+			});
+			return;
+		}
+
 		if (body.userHandle != null) {
 			if (typeof body.userHandle !== "string") {
 				await fail(user.id, 400, {
@@ -223,6 +230,13 @@ export default async (ctx: Koa.Context) => {
 	if (user.isSuspended) {
 		error(403, {
 			id: "e03a5f46-d309-4865-9b69-56282d94e1eb",
+		});
+		return;
+	}
+
+	if (user.isUsagePaused) {
+		error(403, {
+			id: "c9a4e2b1-7f3d-4a2e-9e1c-0d5b8a4e6f2a",
 		});
 		return;
 	}

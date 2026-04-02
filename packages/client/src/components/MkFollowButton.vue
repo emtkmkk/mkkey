@@ -171,6 +171,16 @@ async function onClick() {
 						if (canceled) return;
 					}
 
+					if (props.user.isModerationWarning) {
+						const { canceled } = await os.confirm({
+							type: "warning",
+							text: i18n.t("warnedUserFollowConfirm"),
+							wait: 7,
+						});
+
+						if (canceled) return;
+					}
+
 					await os.api("following/create", {
 						userId: props.user.id,
 					});

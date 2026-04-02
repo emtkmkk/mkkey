@@ -27,6 +27,7 @@ import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 import { applyOrWhereNoteHasContent } from "../../common/note-content-condition.js";
+import { applyPublicTimelineWarnedUserFilter } from "../../common/generate-public-timeline-warned-user-filter.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -131,6 +132,10 @@ export default define(meta, paramDef, async (ps, user) => {
 	generateMutedNoteQuery(query, user);
 	generateBlockedUserQuery(query, user);
 	generateMutedUserRenotesQueryForNotes(query, user);
+
+	await applyPublicTimelineWarnedUserFilter(query, user, {
+		socialFollowingException: true,
+	});
 
 	if (user && user.showSelfRenoteToHome === false) {
 		query.andWhere(

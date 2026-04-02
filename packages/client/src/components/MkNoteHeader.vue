@@ -25,7 +25,12 @@
 						></span>
 					</MkUserName>
 				</MkA>
-				<div class="username"><MkAcct :user="note.user" /></div>
+				<div
+					class="username"
+					:class="{ warnAcct: note.user.isModerationWarning }"
+				>
+					<MkAcct :user="note.user" />
+				</div>
 			</div>
 			<div>
 				<div class="info">
@@ -200,6 +205,10 @@ const showTicker =
 			text-overflow: ellipsis;
 			align-self: flex-start;
 			font-size: 0.9em;
+
+			&.warnAcct {
+				color: var(--warn);
+			}
 		}
 
 		.info {

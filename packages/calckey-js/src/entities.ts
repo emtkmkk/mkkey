@@ -38,6 +38,8 @@ export type UserLite = {
 		faviconUrl: Instance["faviconUrl"];
 		themeColor: Instance["themeColor"];
 	};
+	isModerationWarning: boolean;
+	isUsagePaused: boolean;
 };
 
 export type UserDetailed = UserLite & {
@@ -119,6 +121,12 @@ export type MeDetailed = UserDetailed & {
 	preventAiLearning: boolean;
 	receiveAnnouncementEmail: boolean;
 	usePasswordLessLogin: boolean;
+	/** 当日の警告ポップアップが必要なときのみ */
+	needsModerationWarningPopup?: boolean;
+	/** ON のときのみ */
+	showWarnedUsersInPublicTimeline?: boolean;
+	showWarnedUsersInPublicTimelineEffective?: boolean;
+	receiveReactionsFromNonFollowedWarnedUsers?: boolean;
 	[other: string]: any;
 };
 
@@ -185,6 +193,8 @@ export type Note = {
 	isHidden?: boolean;
 	/** 文頭でBot1件のみメンションしている投稿か。true のときのみ API レスポンスに含まれる。TLフィルタで Bot が関わる返信として扱う。 */
 	isBotMention?: boolean;
+	/** 警告ユーザがリアクション可能なときのみ true（省略＝当該文脈では不可／本人はノート投稿者 ID で別判定） */
+	canWarnedViewerReact?: boolean;
 };
 
 export type NoteReaction = {

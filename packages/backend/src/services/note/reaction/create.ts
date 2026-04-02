@@ -189,8 +189,47 @@ export default async (
 		}
 	})();
 
+	/** 警告ユーザが、未フォローかつ投稿者が受容していないノートにリアクションできない */
+	const warnedViewerReactionPromise = (async () => {
+		const reactor = await Users.findOneBy({
+			id: user.id,
+			select: { id: true, isModerationWarning: true },
+		});
+		if (reactor?.isModerationWarning !== true) return;
+		if (note.userId === user.id) return;
+		const authorFollowsViewer = await Followings.exist({
+			where: { followerId: note.userId, followeeId: user.id },
+		});
+		if (authorFollowsViewer) return;
+		const noteAuthor =
+			note.user ?? (await Users.findOneBy({ id: note.userId }));
+		if (noteAuthor?.host != null) {
+			throw new IdentifiableError(
+				"a1f2e3d4-c5b6-4789-a012-3456789abcde",
+				"この投稿では警告ユーザからのリアクションは受け付けていません。",
+				false,
+			);
+		}
+		const authorProfile = await UserProfiles.findOneBy({
+			userId: note.userId,
+		});
+		if (authorProfile?.receiveReactionsFromNonFollowedWarnedUsers !== true) {
+			throw new IdentifiableError(
+				"a1f2e3d4-c5b6-4789-a012-3456789abcde",
+				"この投稿では警告ユーザからのリアクションは受け付けていません。",
+				false,
+			);
+		}
+	})();
+
 	// 初期チェックをすべて並列で待機
-	await Promise.all([blockPromise, visibilityPromise, relationPromise, noteDeletedCheckPromise]);
+	await Promise.all([
+		blockPromise,
+		visibilityPromise,
+		relationPromise,
+		noteDeletedCheckPromise,
+		warnedViewerReactionPromise,
+	]);
 
 	const rawReaction = reaction;
 	const cachedReaction = await getCachedNormalizedReaction(

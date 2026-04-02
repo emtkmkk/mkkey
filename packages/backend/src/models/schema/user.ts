@@ -90,6 +90,18 @@ export const packedUserLiteSchema = {
 			optional: true,
 			description: "にゃー語で投稿するか。",
 		},
+		isModerationWarning: {
+			type: "boolean",
+			nullable: false,
+			optional: false,
+			description: "モデレーション警告フラグ（false も常に送る）。",
+		},
+		isUsagePaused: {
+			type: "boolean",
+			nullable: false,
+			optional: false,
+			description: "一時利用停止（false も常に送る）。",
+		},
 		emojis: {
 			type: "array",
 			nullable: false,
@@ -552,6 +564,30 @@ export const packedMeDetailedOnlySchema = {
 				nullable: false,
 				optional: false,
 			},
+		},
+		needsModerationWarningPopup: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+			description: "警告ポップアップを表示すべきときのみ true（/i で付与）。",
+		},
+		showWarnedUsersInPublicTimeline: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+			description: "公開TLで警告投稿を見る設定が ON のときのみ。",
+		},
+		showWarnedUsersInPublicTimelineEffective: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+			description: "実効が true のときのみ（ログイン時は生設定と同値）。",
+		},
+		receiveReactionsFromNonFollowedWarnedUsers: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+			description: "警告ユーザからのリアクション受容が ON のときのみ。",
 		},
 		//#region secrets
 		email: {

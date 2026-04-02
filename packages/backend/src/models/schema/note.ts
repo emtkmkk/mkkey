@@ -72,6 +72,14 @@ export const packedNoteSchema = {
 			description:
 				"リノート元の投稿者インスタンス（非正規化）。ネスト renote に user/uri が無い pack でもリモート先判定に使う。",
 		},
+		/** 警告ユーザ向け: リアクションが許可されるときのみ true（省略時は当該条件下では不可／非警告ユーザには無関係） */
+		canWarnedViewerReact: {
+			type: "boolean",
+			optional: true,
+			nullable: false,
+			description:
+				"警告ユーザがこのノートにリアクションできるとき true。キーが無いときは当該条件下では不可とみなす。",
+		},
 		reply: {
 			type: "object",
 			optional: true,

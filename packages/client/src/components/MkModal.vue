@@ -14,7 +14,7 @@
 		:duration="transitionDuration"
 		appear
 		@after-leave="emit('closed')"
-		@keyup.esc="emit('click')"
+		@keyup.esc="onRootEsc"
 		@enter="emit('opening')"
 		@after-enter="onOpened"
 	>
@@ -106,6 +106,10 @@ const props = withDefaults(
 		zPriority?: "low" | "middle" | "high";
 		noOverlap?: boolean;
 		transparentBg?: boolean;
+		/**
+		 * true のとき背景クリック・Esc で `click` を出さない（強制確認ダイアログ用）。
+		 */
+		suppressOverlayClose?: boolean;
 	}>(),
 	{
 		manualShowing: null,
@@ -115,6 +119,7 @@ const props = withDefaults(
 		zPriority: "low",
 		noOverlap: true,
 		transparentBg: false,
+		suppressOverlayClose: false,
 	}
 );
 
@@ -198,7 +203,13 @@ function close(opts: { useSendAnimation?: boolean } = {}) {
 	focusedElement.focus();
 }
 
+function onRootEsc() {
+	if (props.suppressOverlayClose) return;
+	emit("click");
+}
+
 function onBgClick() {
+	if (props.suppressOverlayClose) return;
 	if (contentClicking) return;
 	focusedElement.focus();
 	emit("click");
@@ -209,7 +220,10 @@ if (type === "drawer") {
 }
 
 const keymap = {
-	esc: () => emit("esc"),
+	esc: () => {
+		if (props.suppressOverlayClose) return;
+		emit("esc");
+	},
 };
 
 const MARGIN = 16;

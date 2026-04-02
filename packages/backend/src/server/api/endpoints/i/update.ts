@@ -199,6 +199,10 @@ export const paramDef = {
 				type: "string",
 			},
 		},
+		/** 公開TLで警告ユーザ投稿を表示（閲覧者設定） */
+		showWarnedUsersInPublicTimeline: { type: "boolean" },
+		/** 未フォローの警告ユーザからのリアクションを受け入れる（投稿者設定・ローカルのみ有効） */
+		receiveReactionsFromNonFollowedWarnedUsers: { type: "boolean" },
 	},
 } as const;
 
@@ -378,6 +382,14 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		profileUpdates.showDonateBadges = ps.showDonateBadges;
 	if (ps.emailNotificationTypes !== undefined)
 		profileUpdates.emailNotificationTypes = ps.emailNotificationTypes;
+	if (typeof ps.showWarnedUsersInPublicTimeline === "boolean") {
+		profileUpdates.showWarnedUsersInPublicTimeline =
+			ps.showWarnedUsersInPublicTimeline;
+	}
+	if (typeof ps.receiveReactionsFromNonFollowedWarnedUsers === "boolean") {
+		profileUpdates.receiveReactionsFromNonFollowedWarnedUsers =
+			ps.receiveReactionsFromNonFollowedWarnedUsers;
+	}
 
 	if (ps.avatarId) {
 		const avatar = await DriveFiles.findOneBy({ id: ps.avatarId });

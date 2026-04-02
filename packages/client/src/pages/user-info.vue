@@ -220,6 +220,19 @@
 						@update:modelValue="toggleSuspend"
 						>{{ i18n.ts.suspend }}</FormSwitch
 					>
+					<FormSwitch
+						v-model="moderationWarning"
+						class="_formBlock"
+						@update:modelValue="toggleModerationWarning"
+						>{{ i18n.ts.moderationWarning }}</FormSwitch
+					>
+					<FormSwitch
+						v-if="user.host == null"
+						v-model="usagePaused"
+						class="_formBlock"
+						@update:modelValue="toggleUsagePause"
+						>{{ i18n.ts.usagePause }}</FormSwitch
+					>
 					{{ i18n.ts.reflectMayTakeTime }}
 					<div class="_formBlock">
 						<FormButton
@@ -403,6 +416,8 @@ let canInvite = $ref(false);
 let miniSilenced = $ref(false);
 let silenced = $ref(false);
 let suspended = $ref(false);
+let moderationWarning = $ref(false);
+let usagePaused = $ref(false);
 let driveCapacityOverrideMb: number | null = $ref(0);
 let moderationNote = $ref("");
 const filesPagination = {
@@ -444,6 +459,8 @@ function createFetcher() {
 				miniSilenced = info.isMiniSilenced;
 				silenced = info.isSilenced;
 				suspended = info.isSuspended;
+				moderationWarning = info.isModerationWarning;
+				usagePaused = info.isUsagePaused;
 				driveCapacityOverrideMb = user.driveCapacityOverrideMb;
 				moderationNote = info.moderationNote;
 
@@ -543,6 +560,43 @@ async function toggleSuspend(v) {
 		suspended = !v;
 	} else {
 		await os.api(v ? "admin/suspend-user" : "admin/unsuspend-user", {
+			userId: user.id,
+		});
+		await refreshUser();
+	}
+}
+
+async function toggleModerationWarning(v) {
+	const confirm = await os.confirm({
+		type: "warning",
+		text: v
+			? i18n.ts.moderationWarningOnConfirm
+			: i18n.ts.moderationWarningOffConfirm,
+	});
+	if (confirm.canceled) {
+		moderationWarning = !v;
+	} else {
+		await os.api(
+			v
+				? "admin/moderation-warning-user"
+				: "admin/unmoderation-warning-user",
+			{
+				userId: user.id,
+			},
+		);
+		await refreshUser();
+	}
+}
+
+async function toggleUsagePause(v) {
+	const confirm = await os.confirm({
+		type: "warning",
+		text: v ? i18n.ts.usagePauseOnConfirm : i18n.ts.usagePauseOffConfirm,
+	});
+	if (confirm.canceled) {
+		usagePaused = !v;
+	} else {
+		await os.api(v ? "admin/pause-usage-user" : "admin/unpause-usage-user", {
 			userId: user.id,
 		});
 		await refreshUser();

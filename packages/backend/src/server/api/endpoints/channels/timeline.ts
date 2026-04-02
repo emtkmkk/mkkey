@@ -15,6 +15,7 @@ import { generateMutedNoteQuery } from "../../common/generate-muted-note-query.j
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
+import { applyPublicTimelineWarnedUserFilter } from "../../common/generate-public-timeline-warned-user-filter.js";
 
 export const meta = {
 	tags: ["notes", "channels"],
@@ -104,6 +105,10 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user) generateMutedNoteQuery(query, user);
 	if (user) generateBlockedUserQuery(query, user);
 	if (user) generateMutedUserRenotesQueryForNotes(query, user);
+
+	await applyPublicTimelineWarnedUserFilter(query, user, {
+		socialFollowingException: false,
+	});
 
 	query.andWhere(
 		new Brackets((qb) => {

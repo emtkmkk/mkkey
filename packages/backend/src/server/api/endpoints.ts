@@ -77,6 +77,10 @@ import * as ep___admin_serverInfo from "./endpoints/admin/server-info.js";
 import * as ep___admin_showModerationLogs from "./endpoints/admin/show-moderation-logs.js";
 import * as ep___admin_showUser from "./endpoints/admin/show-user.js";
 import * as ep___admin_showUsers from "./endpoints/admin/show-users.js";
+import * as ep___admin_moderationWarningUser from "./endpoints/admin/moderation-warning-user.js";
+import * as ep___admin_unmoderationWarningUser from "./endpoints/admin/unmoderation-warning-user.js";
+import * as ep___admin_pauseUsageUser from "./endpoints/admin/pause-usage-user.js";
+import * as ep___admin_unpauseUsageUser from "./endpoints/admin/unpause-usage-user.js";
 import * as ep___admin_silenceUser from "./endpoints/admin/silence-user.js";
 import * as ep___admin_suspendUser from "./endpoints/admin/suspend-user.js";
 import * as ep___admin_canInviteUser from "./endpoints/admin/canInvite-user.js";
@@ -211,6 +215,7 @@ import * as ep___i_2fa_registerKey from "./endpoints/i/2fa/register-key.js";
 import * as ep___i_2fa_register from "./endpoints/i/2fa/register.js";
 import * as ep___i_2fa_removeKey from "./endpoints/i/2fa/remove-key.js";
 import * as ep___i_2fa_unregister from "./endpoints/i/2fa/unregister.js";
+import * as ep___i_ackModerationWarning from "./endpoints/i/ack-moderation-warning.js";
 import * as ep___i_apps from "./endpoints/i/apps.js";
 import * as ep___i_authorizedApps from "./endpoints/i/authorized-apps.js";
 import * as ep___i_changePassword from "./endpoints/i/change-password.js";
@@ -472,6 +477,10 @@ const eps = [
 	["admin/show-moderation-logs", ep___admin_showModerationLogs],
 	["admin/show-user", ep___admin_showUser],
 	["admin/show-users", ep___admin_showUsers],
+	["admin/moderation-warning-user", ep___admin_moderationWarningUser],
+	["admin/unmoderation-warning-user", ep___admin_unmoderationWarningUser],
+	["admin/pause-usage-user", ep___admin_pauseUsageUser],
+	["admin/unpause-usage-user", ep___admin_unpauseUsageUser],
 	["admin/silence-user", ep___admin_silenceUser],
 	["admin/suspend-user", ep___admin_suspendUser],
 	["admin/canInvite-user", ep___admin_canInviteUser],
@@ -608,6 +617,7 @@ const eps = [
 	["i/2fa/register", ep___i_2fa_register],
 	["i/2fa/remove-key", ep___i_2fa_removeKey],
 	["i/2fa/unregister", ep___i_2fa_unregister],
+	["i/ack-moderation-warning", ep___i_ackModerationWarning],
 	["i/apps", ep___i_apps],
 	["i/authorized-apps", ep___i_authorizedApps],
 	["i/change-password", ep___i_changePassword],

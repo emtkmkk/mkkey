@@ -29,6 +29,7 @@ import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 import { isRemoteRenoteTarget } from "../../common/is-remote-renote-target.js";
+import { applyPublicTimelineWarnedUserFilter } from "../../common/generate-public-timeline-warned-user-filter.js";
 import type { Packed } from "@/misc/schema.js";
 
 export const meta = {
@@ -303,6 +304,10 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user) generateMutedNoteQuery(query, user);
 	if (user) generateBlockedUserQuery(query, user);
 	if (user) generateMutedUserRenotesQueryForNotes(query, user);
+
+	await applyPublicTimelineWarnedUserFilter(query, user, {
+		socialFollowingException: false,
+	});
 
 	if (user && ps.withBelowPublic) {
 		const followees = await Followings.createQueryBuilder("following")

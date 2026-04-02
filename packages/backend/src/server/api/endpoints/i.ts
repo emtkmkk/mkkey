@@ -1,4 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * 認証ユーザー本人（MeDetailed）を返す API。Redis で base / volatile / merged を分割キャッシュする。
+ *
+ * @remarks
+ * `needsModerationWarningPopup` は UTC 日付で変わるため **merged キャッシュには含めず**、応答直前に毎回付与する。
+ * 当日 true の間は認証 API ルータで他エンドポイントが 403 となり、ユーザーは本レスポンスと `i/ack-moderation-warning`（および起動用 `auth/validate`）のみ利用可能。
+ *
+ * @internal
+ */
 import { redisClient } from "@/db/redis.js";
+import { isModerationWarningAckPending } from "@/misc/moderation-warning-ack.js";
 import { Users } from "@/models/index.js";
 import type { MeDetailedVolatile } from "@/models/repositories/user.js";
 import define from "../define.js";
@@ -56,6 +68,25 @@ function createMeDetailedBase(src: Record<string, unknown>): Record<string, unkn
 	return base;
 }
 
+/**
+ * 当日分の警告ポップアップが必要なら `needsModerationWarningPopup: true` を付与する。
+ * キャッシュ済み merged に古いキーが残っていても削除する。
+ */
+async function attachModerationWarningPopup(
+	merged: Record<string, unknown>,
+	userId: string,
+): Promise<void> {
+	delete merged.needsModerationWarningPopup;
+	const u = await Users.findOne({
+		where: { id: userId },
+		select: { isModerationWarning: true, moderationWarningPopupAt: true },
+	});
+	if (u == null || !isModerationWarningAckPending(u)) {
+		return;
+	}
+	merged.needsModerationWarningPopup = true;
+}
+
 export default define(meta, paramDef, async (ps, user, token) => {
 	const isSecure = token == null;
 	const userId = user.id;
@@ -64,7 +95,9 @@ export default define(meta, paramDef, async (ps, user, token) => {
 	const mergedCache = await redisClient.get(mergedCacheKey);
 
 	if (mergedCache != null) {
-		return JSON.parse(mergedCache) as Record<string, unknown>;
+		const merged = JSON.parse(mergedCache) as Record<string, unknown>;
+		await attachModerationWarningPopup(merged, userId);
+		return merged;
 	}
 
 	const baseCacheKey = Users.getMeDetailedBaseCacheKey(userId, isSecure);
@@ -78,15 +111,20 @@ export default define(meta, paramDef, async (ps, user, token) => {
 	}
 
 	if (base == null) {
-		// まとめ読み: Me を avatar/banner 付きで 1 回取得し hint で渡して drive_file の個別参照を避ける
+		// まとめ読み: Me を avatar/banner 付きで 1 回取得し hint で渡して drive_file の個別参照を削減
 		const meWithRelations = await Users.findOne({
 			where: { id: userId },
 			relations: { avatar: true, banner: true },
 		});
-		const me = (await Users.pack<true, true>(userId, user, {
-			detail: true,
-			includeSecrets: isSecure,
-		}, meWithRelations != null ? { user: meWithRelations } : undefined)) as unknown as Record<string, unknown>;
+		const me = (await Users.pack<true, true>(
+			userId,
+			user,
+			{
+				detail: true,
+				includeSecrets: isSecure,
+			},
+			meWithRelations != null ? { user: meWithRelations } : undefined,
+		)) as unknown as Record<string, unknown>;
 		base = createMeDetailedBase(me);
 
 		await redisClient.set(
@@ -127,6 +165,8 @@ export default define(meta, paramDef, async (ps, user, token) => {
 		"EX",
 		Users.getMeDetailedMergedCacheTtlSec(),
 	);
+
+	await attachModerationWarningPopup(merged, userId);
 
 	return merged;
 });

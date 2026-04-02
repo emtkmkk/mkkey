@@ -44,6 +44,12 @@ export const meta = {
 			code: "ACCOUNT_LOCKED",
 			id: "d390d7e1-8a5e-46ed-b625-06271cafd3d3",
 		},
+		warnedViewerReactionBlocked: {
+			message:
+				"この投稿では警告ユーザからのリアクションは受け付けていません。",
+			code: "WARNED_VIEWER_REACTION_BLOCKED",
+			id: "a1f2e3d4-c5b6-4789-a012-3456789abcde",
+		},
 	},
 } as const;
 
@@ -74,6 +80,8 @@ export default define(meta, paramDef, async (ps, user) => {
 			throw new ApiError(meta.errors.alreadyReacted);
 		if (e.id === "e70412a4-7197-4726-8e74-f3e0deb92aa7")
 			throw new ApiError(meta.errors.youHaveBeenBlocked);
+		if (e.id === "a1f2e3d4-c5b6-4789-a012-3456789abcde")
+			throw new ApiError(meta.errors.warnedViewerReactionBlocked);
 
 		apiLogger.error("notes/reactions/create failed", {
 			ep: "notes/reactions/create",

@@ -229,6 +229,18 @@
 					>{{ i18n.ts.flagShowTimelineRepliesDescription }}
 					{{ i18n.ts.reflectMayTakeTime }}</template
 				></FormSwitch>
+			<FormSwitch
+				v-model="showWarnedUsersInPublicTimeline"
+				class="_formBlock"
+				@update:modelValue="saveModerationTimelinePrefs()"
+				>{{ i18n.ts.showWarnedUsersInPublicTimeline
+				}}</FormSwitch>
+			<FormSwitch
+				v-model="receiveReactionsFromNonFollowedWarnedUsers"
+				class="_formBlock"
+				@update:modelValue="saveModerationTimelinePrefs()"
+				>{{ i18n.ts.receiveReactionsFromNonFollowedWarnedUsers
+				}}</FormSwitch>
 				<FormSelect v-model="showPublicTimelineReplyMode" class="_formBlock">
 					<template #label>{{ i18n.ts.showPublicTimelineReplyMode }}</template>
 					<option value="all">{{ i18n.ts._replyMode.all }}</option>
@@ -280,7 +292,7 @@ import FormRadios from "@/components/form/radios.vue";
 import FormRange from "@/components/form/range.vue";
 import MkLink from "@/components/MkLink.vue";
 import * as os from "@/os";
-import { $i } from "@/account";
+import { $i, refreshAccount } from "@/account";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
@@ -369,6 +381,15 @@ let remoteShowRenote = $ref($i.remoteShowRenote);
 let showSelfRenoteToHome = $ref($i.showSelfRenoteToHome);
 let showTimelineReplies = $ref($i.showTimelineReplies);
 let blockPostPublic = $ref($i.blockPostPublic);
+/** 公開TLで警告ユーザのノートを閲覧者として含める（サーバ既定 false・省略時は false） */
+let showWarnedUsersInPublicTimeline = $ref(
+	$i.showWarnedUsersInPublicTimeline === true,
+);
+/** 自分のノートで、フォローしていない警告ユーザからのリアクションを受け入れる */
+let receiveReactionsFromNonFollowedWarnedUsers = $ref(
+	$i.receiveReactionsFromNonFollowedWarnedUsers === true,
+);
+
 function save() {
 	os.api("i/update", {
 		localShowRenote: !!localShowRenote,
@@ -377,6 +398,15 @@ function save() {
 		showTimelineReplies: !!showTimelineReplies,
 		blockPostPublic: !!blockPostPublic,
 	});
+}
+
+async function saveModerationTimelinePrefs() {
+	await os.api("i/update", {
+		showWarnedUsersInPublicTimeline: !!showWarnedUsersInPublicTimeline,
+		receiveReactionsFromNonFollowedWarnedUsers:
+			!!receiveReactionsFromNonFollowedWarnedUsers,
+	});
+	await refreshAccount();
 }
 
 async function onUpdateShowRemoteEmojiTimeline(value: boolean) {

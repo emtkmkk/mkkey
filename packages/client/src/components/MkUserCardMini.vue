@@ -2,7 +2,13 @@
 	<div
 		:class="[
 			$style.root,
-			{ yellow: user.isSilenced, red: user.isSuspended, gray: false },
+			{
+				yellow: user.isSilenced,
+				red: user.isSuspended,
+				orange: user.isModerationWarning,
+				slate: user.isUsagePaused,
+				gray: false,
+			},
 		]"
 	>
 		<MkAvatar
@@ -116,6 +122,36 @@ os.apiGet("charts/user/notes", {
 
 	&:global(.red) {
 		--c: rgb(255 0 0 / 15%);
+		background-image: linear-gradient(
+			45deg,
+			var(--c) 16.67%,
+			transparent 16.67%,
+			transparent 50%,
+			var(--c) 50%,
+			var(--c) 66.67%,
+			transparent 66.67%,
+			transparent 100%
+		);
+		background-size: 1rem 1rem;
+	}
+
+	&:global(.orange) {
+		--c: rgb(255 140 0 / 18%);
+		background-image: linear-gradient(
+			45deg,
+			var(--c) 16.67%,
+			transparent 16.67%,
+			transparent 50%,
+			var(--c) 50%,
+			var(--c) 66.67%,
+			transparent 66.67%,
+			transparent 100%
+		);
+		background-size: 1rem 1rem;
+	}
+
+	&:global(.slate) {
+		--c: rgb(100 149 237 / 18%);
 		background-image: linear-gradient(
 			45deg,
 			var(--c) 16.67%,

@@ -42,6 +42,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			isModerator: user.isModerator,
 			isSilenced: user.isSilenced,
 			isSuspended: user.isSuspended,
+			isModerationWarning: user.isModerationWarning,
+			isUsagePaused: user.isUsagePaused,
 			canInvite: user.canInvite,
 			isMiniSilenced: user.isMiniSilenced,
 		};
@@ -75,6 +77,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		isModerator: user.isModerator,
 		isSilenced: user.isSilenced,
 		isSuspended: user.isSuspended,
+		isModerationWarning: user.isModerationWarning,
+		isUsagePaused: user.isUsagePaused,
 		lastActiveDate: user.lastActiveDate,
 		moderationNote: profile.moderationNote,
 		inviteUserId: user.inviteUserId,

@@ -21,6 +21,7 @@ import { Users } from "@/models/index.js";
 import MainStreamConnection from "./stream/index.js";
 import authenticate from "./authenticate.js";
 import { maybeInvalidateDormantFollowerCacheOnActivity } from "@/remote/activitypub/dormant-follower-check.js";
+import { isModerationWarningAckPending } from "@/misc/moderation-warning-ack.js";
 
 export const initializeStreamingServer = (server: http.Server) => {
 	// WebSocket サーバ初期化
@@ -45,8 +46,13 @@ export const initializeStreamingServer = (server: http.Server) => {
 			return;
 		}
 
-		if (user?.isSuspended) {
+		if (user?.isSuspended || user?.isUsagePaused) {
 			request.reject(400);
+			return;
+		}
+
+		if (user != null && isModerationWarningAckPending(user)) {
+			request.reject(403);
 			return;
 		}
 

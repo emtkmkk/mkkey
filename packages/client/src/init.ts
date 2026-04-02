@@ -42,6 +42,7 @@ import { confirm, alert, post, popup, toast, yesno, api } from "@/os";
 import { stream } from "@/stream";
 import * as sound from "@/scripts/sound";
 import { $i, fetchAccount, login, updateAccount, signout } from "@/account";
+import { showModerationWarningDialogIfNeeded } from "@/scripts/show-moderation-warning-dialog";
 import { defaultStore, ColdDeviceStorage, userActions } from "@/store";
 import {
 	emojiLoad,
@@ -367,7 +368,7 @@ const fetchUserAccount = async () => {
 		}
 		// 有効と判定済み。バックグラウンドで /i を呼び updateAccount + isDeleted アラート
 		fetchAccount(token)
-			.then((account) => {
+			.then(async (account) => {
 				updateAccount(account);
 				if (account.isDeleted) {
 					alert({
@@ -375,6 +376,7 @@ const fetchUserAccount = async () => {
 						text: i18n.ts.accountDeletionInProgress,
 					});
 				}
+				await showModerationWarningDialogIfNeeded(account, token);
 			})
 			.catch((err) => {
 				if (_DEV_) console.warn("Background account refresh failed", err);

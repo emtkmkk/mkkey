@@ -579,6 +579,13 @@ const isExcludeReplyQuote =
 	(unref(muted)?.what === "reply" || unref(muted)?.what === "renote");
 const isExcludeNotification = muteExcludeNotification && props.notification;
 const isCanAction = $i && (!$i.isSilenced || appearNote.user.isFollowed);
+/** 警告ユーザは canWarnedViewerReact が明示 true のときのみリアクション可（自分のノートは常に可） */
+const isCanReact = $computed(() => {
+	if (!isCanAction) return false;
+	if (!$i?.isModerationWarning) return true;
+	if (appearNote.userId === $i.id) return true;
+	return appearNote.canWarnedViewerReact === true;
+});
 const excludeMute = isExcludeReplyQuote || isExcludeNotification;
 const developerRenote = defaultStore.state.developerRenote;
 const developerQuote = defaultStore.state.developerQuote;
@@ -630,7 +637,7 @@ const isDefaultReactionReacted = $computed(() => {
 
 const showStarButtonNoEmoji = $computed(() => {
 	const canShow =
-		((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
+		((!isMaxReacted && !isfavButtonReacted && isCanReact) ||
 			favButtonReactionIsFavorite ||
 			(isStarButtonHandlesDefault && isDefaultReactionReacted));
 	return canShow && defaultStore.state.favButtonReaction !== "hidden";
@@ -639,14 +646,15 @@ const showStarButtonNoEmoji = $computed(() => {
 const showReactionPickerButton = $computed(
 	() =>
 		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
-		isCanAction
+		isCanReact
 );
 
 const showUndoReactionButton = $computed(
 	() =>
 		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
 		appearNote.myReaction != null &&
-		!multiReaction
+		!multiReaction &&
+		isCanReact
 );
 
 const {

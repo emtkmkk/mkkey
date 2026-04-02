@@ -39,11 +39,33 @@ const accessDenied = {
 /**
  * 警告フラグがあり、当日分の `i/ack-moderation-warning` 前にだけ通すエンドポイント。
  * それ以外の認証付き API は 403 とし、アプリ操作をブロックする。
+ *
+ * @remarks
+ * - `auth/validate` 完了後も、クライアントは `fetchAccount` と警告ダイアログを `.then` で遅延実行する一方、
+ *   `meta`・絵文字・レジストリ読取などが並列で走るため、**起動・表示に必要な読み取り系**だけをここに含める。
+ * - ノート投稿・`i/registry/set` など副作用の大きい API は意図的に含めない（ACK 後に利用させる）。
  */
 const MODERATION_WARNING_ACK_ENDPOINT_ALLOWLIST = new Set([
 	"i",
 	"i/ack-moderation-warning",
 	"auth/validate",
+	// インスタンス情報（`fetchInstance` と並列 init）
+	"meta",
+	// 絵文字・カテゴリ（`initializeEmoji` / `emojiLoad`）
+	"emojis",
+	"emojis/latest",
+	"emoji-stats",
+	"categories/show",
+	// 設定同期の読み取り（壁紙同期・プロファイル一覧など）
+	"i/registry/get-all",
+	"i/registry/get",
+	"i/registry/get-detail",
+	"i/registry/get-unsecure",
+	"i/registry/keys",
+	"i/registry/keys-with-type",
+	"i/registry/scopes",
+	// UI 用ユーザー解決（アイコン非表示リストの補完）
+	"users/show",
 ]);
 
 export default async (

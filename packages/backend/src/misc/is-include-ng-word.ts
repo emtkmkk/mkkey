@@ -52,7 +52,6 @@ export function isIncludeNgWord(txt: string): string {
 		"孕",
 	];
 	const ngword3 = ["地震", "津波", "震災", "震度", "震源"];
-	const ngword4 = ["るぽ"];
 
 	const text = txt
 		.toLowerCase()
@@ -90,14 +89,6 @@ export function isIncludeNgWord(txt: string): string {
 	})) {
 		return "暗いニュース";
 	};
-	if (
-		ngword4.some((x) => {
-			return text.includes(x);
-		}) ||
-		/^([^\s:]{4,})\1+$/.test(text)
-	) {
-		return "NG";
-	}
  */
 	return "";
 }

@@ -153,6 +153,25 @@ function isXLikeHostname(hostname: string): boolean {
 	].includes(normalized);
 }
 
+function normalizeUrlForPreview(rawUrl: string): string {
+	try {
+		const parsed = new URL(rawUrl);
+		if (
+			parsed.hostname.toLowerCase() === "music.youtube.com" &&
+			(parsed.pathname === "/watch" ||
+				parsed.pathname.startsWith("/channel/") ||
+				parsed.pathname.startsWith("/playlist") ||
+				parsed.pathname.startsWith("/@"))
+		) {
+			parsed.hostname = "www.youtube.com";
+			return parsed.toString();
+		}
+		return rawUrl;
+	} catch {
+		return rawUrl;
+	}
+}
+
 /**
  * X(Twitter) のサムネイルURLがメディア由来かどうかを判定する。
  * アイコン・汎用画像と見なせるものは false を返す。
@@ -239,8 +258,9 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       : `Getting preview of ${url}@${lang} ...`
   );
 
-  const redirectedUrl = await resolveShortUrlIfNeeded(url);
-  const effectiveUrl = redirectedUrl ?? url;
+  const normalizedUrl = normalizeUrlForPreview(url);
+  const redirectedUrl = await resolveShortUrlIfNeeded(normalizedUrl);
+  const effectiveUrl = redirectedUrl ?? normalizedUrl;
   const isXPreviewUrl = (() => {
 		try {
 			return isXLikeHostname(new URL(effectiveUrl).hostname);

@@ -21,6 +21,7 @@ import {
 	buildUrlPreviewCacheKey,
 	buildUrlPreviewSpecialInflightKey,
 	fetchShortUrlResolveCached,
+	resolveNegativeCacheTtlSec,
 	storeNegativeRedis,
 	storePositiveCaches,
 	storePositiveMemoryOnly,
@@ -31,7 +32,17 @@ import {
 	withUrlPreviewOutboundLimits,
 	withUrlPreviewSpecialInflight,
 } from "@/misc/url-preview-outbound.js";
-import { getHtml, getJson, getResponse } from "@/misc/fetch.js";
+import {
+	getHtml,
+	getJson,
+	getResponse,
+	isUrlPreviewAbortStatusError,
+} from "@/misc/fetch.js";
+import {
+	extractRetryAfterRawFromError,
+	extractRetryAfterSecFromError,
+	extractStatusCodeFromError,
+} from "@/misc/url-preview-negative-ttl.js";
 import {
   translateWithDeepl,
   formatDeeplTranslationPrefix,
@@ -270,6 +281,95 @@ function ensureThumbnailFromHtml(
 	}
 }
 
+type UrlPreviewFailureStage =
+	| "short-url-head"
+	| "short-url-get"
+	| "amazon-short-head"
+	| "amazon-short-get"
+	| "steam"
+	| "steam-package"
+	| "steam-bundle"
+	| "amazon"
+	| "summaly";
+
+type UrlPreviewFailureDiagnostic = {
+	status: number | null;
+	message: string;
+	retryAfterRaw: string | null;
+	retryAfterSec: number | null;
+	negativeCacheTtlSec: number | null;
+	stage: UrlPreviewFailureStage;
+	failedUrlHost: string | null;
+	requestId: string;
+	timestamp: string;
+	code: "URL_PREVIEW_RATE_LIMIT" | "URL_PREVIEW_FORBIDDEN" | "URL_PREVIEW_FETCH_FAILED";
+};
+
+function buildRequestId(): string {
+	return `url-preview-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function safeHostFromUrl(rawUrl: string): string | null {
+	try {
+		return new URL(rawUrl).hostname || null;
+	} catch {
+		return null;
+	}
+}
+
+function buildFailureDiagnostic(
+	err: unknown,
+	stage: UrlPreviewFailureStage,
+	requestId: string,
+	failedUrl: string,
+): UrlPreviewFailureDiagnostic {
+	const status = extractStatusCodeFromError(err);
+	const retryAfterRaw = extractRetryAfterRawFromError(err);
+	const retryAfterSec = extractRetryAfterSecFromError(err);
+	const negativeCacheTtlSec = resolveNegativeCacheTtlSec(err);
+	const baseMessage =
+		err instanceof Error && typeof err.message === "string"
+			? err.message
+			: "failed to fetch url preview";
+	const message = baseMessage.length > 200 ? `${baseMessage.slice(0, 200)}...` : baseMessage;
+	const code =
+		status === 429
+			? "URL_PREVIEW_RATE_LIMIT"
+			: status === 403
+				? "URL_PREVIEW_FORBIDDEN"
+				: "URL_PREVIEW_FETCH_FAILED";
+
+	return {
+		status,
+		message,
+		retryAfterRaw,
+		retryAfterSec,
+		negativeCacheTtlSec,
+		stage,
+		failedUrlHost: safeHostFromUrl(failedUrl),
+		requestId,
+		timestamp: new Date().toISOString(),
+		code,
+	};
+}
+
+async function replyWithPreviewFailure(
+	ctx: Koa.Context,
+	cacheKeyHash: string,
+	err: unknown,
+	stage: UrlPreviewFailureStage,
+	requestId: string,
+	failedUrl: string,
+): Promise<void> {
+	await storeNegativeRedis(cacheKeyHash, err);
+	const diagnostic = buildFailureDiagnostic(err, stage, requestId, failedUrl);
+	ctx.status = 200;
+	ctx.set("Cache-Control", "max-age=86400, immutable");
+	ctx.body = {
+		error: diagnostic,
+	};
+}
+
 export const urlPreviewHandler = async (ctx: Koa.Context) => {
   const url = ctx.query.url;
   if (typeof url !== "string") {
@@ -284,6 +384,14 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   }
 
   const meta = await fetchMeta();
+  const requestId = buildRequestId();
+  const langKey = lang ?? "en-US";
+  const baseSummaryFetchUrl = normalizeUrlForPreviewFetch(url);
+  const basePreviewCacheHash = buildUrlPreviewCacheKey(
+    baseSummaryFetchUrl,
+    langKey,
+    meta.summalyProxy ?? null,
+  );
 
   logger.debug(
     meta.summalyProxy
@@ -291,9 +399,26 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       : `Getting preview of ${url}@${lang} ...`
   );
 
-  const redirectedUrl = await fetchShortUrlResolveCached(url, () =>
+  let redirectedUrl: string | null = null;
+  try {
+    redirectedUrl = await fetchShortUrlResolveCached(url, () =>
 		resolveShortUrlIfNeeded(url),
 	);
+  } catch (err) {
+    if (isUrlPreviewAbortStatusError(err)) {
+      logger.warn(`Stop url-preview request by short URL abort status: ${err}`);
+      await replyWithPreviewFailure(
+        ctx,
+        basePreviewCacheHash,
+        err,
+        "short-url-head",
+        requestId,
+        url,
+      );
+      return;
+    }
+    logger.warn(`Short URL resolution failed unexpectedly for ${url}: ${err}`);
+  }
   const effectiveUrl = redirectedUrl ?? url;
   const isXPreviewUrl = (() => {
 		try {
@@ -314,13 +439,29 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   const summaryFetchUrl = normalizeUrlForPreviewFetch(effectiveUrl);
 
   if (!amazonProduct) {
-    const resolvedAmazonUrl = await withUrlPreviewSpecialInflight(
-      buildUrlPreviewSpecialInflightKey(["amazon-short-resolve", effectiveUrl]),
-      () => resolveAmazonShortUrl(effectiveUrl),
-    );
-    if (resolvedAmazonUrl) {
-      amazonFetchUrl = resolvedAmazonUrl;
-      amazonProduct = isAmazonProductUrl(amazonFetchUrl);
+    try {
+      const resolvedAmazonUrl = await withUrlPreviewSpecialInflight(
+        buildUrlPreviewSpecialInflightKey(["amazon-short-resolve", effectiveUrl]),
+        () => resolveAmazonShortUrl(effectiveUrl),
+      );
+      if (resolvedAmazonUrl) {
+        amazonFetchUrl = resolvedAmazonUrl;
+        amazonProduct = isAmazonProductUrl(amazonFetchUrl);
+      }
+    } catch (err) {
+      if (isUrlPreviewAbortStatusError(err)) {
+        logger.warn(`Stop url-preview request by amazon short URL abort status: ${err}`);
+        await replyWithPreviewFailure(
+          ctx,
+          basePreviewCacheHash,
+          err,
+          "amazon-short-head",
+          requestId,
+          effectiveUrl,
+        );
+        return;
+      }
+      logger.warn(`Amazon short URL resolution failed unexpectedly for ${effectiveUrl}: ${err}`);
     }
   }
 
@@ -433,9 +574,14 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       return;
     } catch (err) {
       logger.warn(`Failed to get Steam data for ${url}: ${err}`);
-      ctx.status = 200;
-      ctx.set("Cache-Control", "max-age=86400, immutable");
-      ctx.body = "{}";
+      await replyWithPreviewFailure(
+        ctx,
+        basePreviewCacheHash,
+        err,
+        "steam",
+        requestId,
+        effectiveUrl,
+      );
       return;
     }
   }
@@ -549,9 +695,14 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       return;
     } catch (err) {
       logger.warn(`Failed to get Steam data for ${url}: ${err}`);
-      ctx.status = 200;
-      ctx.set("Cache-Control", "max-age=86400, immutable");
-      ctx.body = "{}";
+      await replyWithPreviewFailure(
+        ctx,
+        basePreviewCacheHash,
+        err,
+        "steam-package",
+        requestId,
+        effectiveUrl,
+      );
       return;
     }
   }
@@ -648,9 +799,14 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       return;
     } catch (err) {
       logger.warn(`Failed to get Steam data for ${url}: ${err}`);
-      ctx.status = 200;
-      ctx.set("Cache-Control", "max-age=86400, immutable");
-      ctx.body = "{}";
+      await replyWithPreviewFailure(
+        ctx,
+        basePreviewCacheHash,
+        err,
+        "steam-bundle",
+        requestId,
+        effectiveUrl,
+      );
       return;
     }
   }
@@ -785,7 +941,6 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   }
 
   // 既存の処理（Summaly + センシティブ判定）。共有キャッシュ・インフライト・ホスト単位セマフォで外向きを抑える。
-  const langKey = lang ?? "en-US";
   const previewCacheHash = buildUrlPreviewCacheKey(
     summaryFetchUrl,
     langKey,
@@ -797,7 +952,20 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     if (await tryGetNegativeRedis(previewCacheHash)) {
       ctx.status = 200;
       ctx.set("Cache-Control", "max-age=120, immutable");
-      ctx.body = "{}";
+      ctx.body = {
+        error: {
+          status: null,
+          message: "negative cache hit",
+          retryAfterRaw: null,
+          retryAfterSec: null,
+          negativeCacheTtlSec: null,
+          stage: "summaly",
+          failedUrlHost: safeHostFromUrl(summaryFetchUrl),
+          requestId,
+          timestamp: new Date().toISOString(),
+          code: "URL_PREVIEW_FETCH_FAILED",
+        },
+      };
       return;
     }
     const memHit = tryGetPositiveMemory(previewCacheHash);
@@ -958,13 +1126,15 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       await storePositiveCaches(previewCacheHash, JSON.stringify(summary));
     }
   } catch (err) {
-    if (urlPreviewCacheOn) {
-      await storeNegativeRedis(previewCacheHash, err);
-    }
     logger.warn(`Failed to get preview of ${url}: ${err}`);
-    ctx.status = 200;
-    ctx.set("Cache-Control", "max-age=86400, immutable");
-    ctx.body = "{}";
+    await replyWithPreviewFailure(
+      ctx,
+      previewCacheHash,
+      err,
+      "summaly",
+      requestId,
+      summaryFetchUrl,
+    );
   }
 };
 
@@ -1575,6 +1745,10 @@ async function resolveAmazonShortUrl(originalUrl: string): Promise<string | null
       return finalUrl;
     }
   } catch (error) {
+    if (isUrlPreviewAbortStatusError(error)) {
+      // NOTE: 429/403 は同一リクエスト内で再試行しても改善しにくいため、GET フォールバックを行わず打ち切る。
+      throw error;
+    }
     logger.debug(`HEAD request failed for ${originalUrl}: ${error}`);
   }
 
@@ -1594,6 +1768,9 @@ async function resolveAmazonShortUrl(originalUrl: string): Promise<string | null
 
     return finalUrl;
   } catch (error) {
+    if (isUrlPreviewAbortStatusError(error)) {
+      throw error;
+    }
     logger.warn(`Failed to resolve Amazon short URL ${originalUrl}: ${error}`);
   }
 
@@ -1629,6 +1806,10 @@ async function resolveShortUrlIfNeeded(originalUrl: string): Promise<string | nu
       return finalUrl;
     }
   } catch (error) {
+    if (isUrlPreviewAbortStatusError(error)) {
+      // NOTE: 429/403 は同一リクエスト内で再試行しても改善しにくいため、GET フォールバックを行わず打ち切る。
+      throw error;
+    }
     logger.debug(`HEAD request failed for ${originalUrl}: ${error}`);
   }
 
@@ -1650,6 +1831,9 @@ async function resolveShortUrlIfNeeded(originalUrl: string): Promise<string | nu
       return finalUrl;
     }
   } catch (error) {
+    if (isUrlPreviewAbortStatusError(error)) {
+      throw error;
+    }
     logger.warn(`Failed to resolve short URL ${originalUrl}: ${error}`);
   }
 

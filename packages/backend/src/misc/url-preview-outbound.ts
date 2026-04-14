@@ -22,7 +22,12 @@ import {
 	runDistributedSingleflight,
 } from "@/misc/distributed-singleflight.js";
 import { createRedisDistributedSingleflightAdapter } from "@/misc/distributed-singleflight-redis.js";
-import { resolveNegativeCacheTtlSecFromOpts } from "@/misc/url-preview-negative-ttl.js";
+import {
+	extractRetryAfterRawFromError,
+	extractRetryAfterSecFromError,
+	extractStatusCodeFromError,
+	resolveNegativeCacheTtlSecFromOpts,
+} from "@/misc/url-preview-negative-ttl.js";
 import Logger from "@/services/logger.js";
 
 export { parseRetryAfterSeconds } from "@/misc/url-preview-negative-ttl.js";
@@ -208,7 +213,15 @@ export async function storeNegativeRedis(
 ): Promise<void> {
 	const o = getUrlPreviewOpts();
 	if (!o.cacheEnabled) return;
+	const statusCode = extractStatusCodeFromError(err);
+	const retryAfterRaw = extractRetryAfterRawFromError(err);
+	const retryAfterSec = extractRetryAfterSecFromError(err);
 	const ttl = resolveNegativeCacheTtlSec(err);
+	if (statusCode === 429) {
+		logger.info(
+			`Store negative cache(429): cacheKey=${cacheKeyHash.slice(0, 12)} ttl=${ttl}s retryAfterRaw=${retryAfterRaw ?? "none"} retryAfterSec=${retryAfterSec ?? "none"}`,
+		);
+	}
 	await redisSetex(`${REDIS_NEG_PREFIX}${cacheKeyHash}`, ttl, "1");
 }
 

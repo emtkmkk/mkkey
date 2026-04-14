@@ -50,9 +50,20 @@ export function parseRetryAfterSeconds(headerValue: string | null | undefined): 
 	return null;
 }
 
-function extractRetryAfterFromError(err: unknown): number | null {
+/**
+ * エラーから Retry-After ヘッダーの生値を取り出す。
+ *
+ * @param err - 解析対象エラー
+ * @returns 生の Retry-After 値（未取得時は null）
+ *
+ * @internal
+ */
+export function extractRetryAfterRawFromError(err: unknown): string | null {
 	if (typeof err !== "object" || err === null) return null;
 	const e = err as Record<string, unknown>;
+	if (typeof e.retryAfter === "string" && e.retryAfter.trim() !== "") {
+		return e.retryAfter;
+	}
 	const res = e.response as Record<string, unknown> | undefined;
 	if (!res) return null;
 	const headers = res.headers as
@@ -63,10 +74,30 @@ function extractRetryAfterFromError(err: unknown): number | null {
 		typeof headers.get === "function"
 			? headers.get("retry-after") ?? headers.get("Retry-After")
 			: (headers["retry-after"] as string | undefined);
-	return parseRetryAfterSeconds(v ?? null);
+	return v ?? null;
 }
 
-function extractStatusCode(err: unknown): number | null {
+/**
+ * エラーから Retry-After 秒数を取り出す。
+ *
+ * @param err - 解析対象エラー
+ * @returns 解釈できた秒数。未取得または不正なら null
+ *
+ * @internal
+ */
+export function extractRetryAfterSecFromError(err: unknown): number | null {
+	return parseRetryAfterSeconds(extractRetryAfterRawFromError(err));
+}
+
+/**
+ * エラーから HTTP ステータスコードを取り出す。
+ *
+ * @param err - 解析対象エラー
+ * @returns HTTP ステータスコード。未取得時は null
+ *
+ * @internal
+ */
+export function extractStatusCodeFromError(err: unknown): number | null {
 	if (typeof err !== "object" || err === null) return null;
 	const e = err as Record<string, unknown>;
 	// NOTE: `StatusError` は `@/misc/fetch` にあるが import すると config 初期化が走るため、名前で識別する。
@@ -96,14 +127,18 @@ export function resolveNegativeCacheTtlSecFromOpts(
 	const maxS = opts.negativeMaxSec;
 	const clamp = (n: number) => Math.min(maxS, Math.max(minS, n));
 
-	const status = extractStatusCode(err);
+	const status = extractStatusCodeFromError(err);
 	if (status === 429) {
-		const ra = extractRetryAfterFromError(err);
+		const ra = extractRetryAfterSecFromError(err);
 		if (ra != null) return clamp(ra);
 		return clamp(opts.negativeDefaultSec);
 	}
+	if (status === 403) {
+		// NOTE: 403 は再試行改善が見込みにくいため、既定TTLで短期再アクセスを抑制する。
+		return clamp(opts.negativeDefaultSec);
+	}
 	if (status != null && status >= 500 && status <= 599) {
-		const ra = extractRetryAfterFromError(err);
+		const ra = extractRetryAfterSecFromError(err);
 		if (ra != null) return clamp(ra);
 		return clamp(opts.negative5xxSec);
 	}

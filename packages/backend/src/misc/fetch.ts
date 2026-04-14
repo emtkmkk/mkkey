@@ -184,6 +184,8 @@ export async function getResponse(args: {
 			`${res.status} ${res.statusText}`,
 			res.status,
 			res.statusText,
+			undefined,
+			retryAfterHeader ?? undefined,
 		);
 	}
 }
@@ -275,17 +277,20 @@ export class StatusError extends Error {
 	public statusMessage?: string;
 	public isClientError: boolean;
 	public isRetryable: boolean;
+	public retryAfter?: string;
 
 	constructor(
 		message: string,
 		statusCode: number,
 		statusMessage?: string,
 		isRetryable?: boolean,
+		retryAfter?: string,
 	) {
 		super(message);
 		this.name = "StatusError";
 		this.statusCode = statusCode;
 		this.statusMessage = statusMessage;
+		this.retryAfter = retryAfter;
 		this.isClientError =
 			typeof this.statusCode === "number" &&
 			this.statusCode >= 400 &&
@@ -295,6 +300,24 @@ export class StatusError extends Error {
 				? isRetryable
 				: !this.isClientError || this.statusCode === 429;
 	}
+}
+
+/**
+ * URL プレビュー処理で「後続アクセスを打ち切るべき」HTTP ステータスか判定する。
+ *
+ * @remarks
+ * NOTE: 429（レート制限）と 403（アクセス拒否）は、同一処理内で再試行しても改善しにくいため打ち切り対象とする。
+ *
+ * @param err - 判定対象のエラー
+ * @returns 打ち切り対象ステータスなら true
+ *
+ * @internal
+ */
+export function isUrlPreviewAbortStatusError(err: unknown): boolean {
+	if (typeof err !== "object" || err === null) return false;
+	const maybeStatusCode = (err as { statusCode?: unknown }).statusCode;
+	if (typeof maybeStatusCode !== "number") return false;
+	return maybeStatusCode === 429 || maybeStatusCode === 403;
 }
 
 function parseCookieHeaderValue(header: string | undefined): Map<string, string> {

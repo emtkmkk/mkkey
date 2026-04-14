@@ -47,10 +47,33 @@ import type { Meta } from "@/models/entities/meta.js";
  *
  * @internal
  */
-type UrlPreviewSummalyPayload = Awaited<ReturnType<typeof summaly>> & {
+type SummalyFunction = typeof summaly;
+
+const runtimeSummaly = (
+  (summaly as unknown as { default?: SummalyFunction }).default ??
+  summaly
+) as SummalyFunction;
+
+type UrlPreviewSummalyPayload = Awaited<ReturnType<SummalyFunction>> & {
   isSensitive?: boolean;
   preferLargeThumbnail?: boolean;
 };
+
+/**
+ * Summaly 呼び出しを 1 箇所に集約する。
+ *
+ * @remarks
+ * NOTE: 現在の実行環境では `summaly` は `{ default: function }` の形で読み込まれる。
+ * NOTE: 直呼びすると `TypeError: summaly is not a function` になるため、必ず `default` を呼ぶ。
+ *
+ * @internal
+ */
+function callSummaly(url: string, lang: string): Promise<Awaited<ReturnType<SummalyFunction>>> {
+  return runtimeSummaly(url, {
+    followRedirects: false,
+    lang,
+  });
+}
 
 const JAPANESE_CHAR_REGEX = /[\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9faf\uf900-\ufa6d\uff66-\uff9f]/u;
 
@@ -346,10 +369,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
                 cookie: "steamCountry=JP",
               },
             )
-          : await summaly(url, {
-              followRedirects: false,
-              lang: lang ?? "en-US",
-            })) as UrlPreviewSummalyPayload;
+          : await callSummaly(
+              url,
+              lang ?? "en-US",
+            )) as UrlPreviewSummalyPayload;
 
         const summary = {
           url: url,
@@ -463,10 +486,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
                 cookie: "steamCountry=JP",
               },
             )
-          : await summaly(url, {
-              followRedirects: false,
-              lang: lang ?? "en-US",
-            })) as UrlPreviewSummalyPayload;
+          : await callSummaly(
+              url,
+              lang ?? "en-US",
+            )) as UrlPreviewSummalyPayload;
 
         const summary = {
           url: url,
@@ -579,10 +602,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
                 cookie: "steamCountry=JP",
               },
             )
-          : await summaly(url, {
-              followRedirects: false,
-              lang: lang ?? "en-US",
-            })) as UrlPreviewSummalyPayload;
+          : await callSummaly(
+              url,
+              lang ?? "en-US",
+            )) as UrlPreviewSummalyPayload;
 
         const summary = {
           url: url,
@@ -811,10 +834,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
                 lang: langKey,
               })}`,
             )
-          : await summaly(summaryFetchUrl, {
-              followRedirects: false,
-              lang: langKey,
-            })) as UrlPreviewSummalyPayload;
+          : await callSummaly(
+              summaryFetchUrl,
+              langKey,
+            )) as UrlPreviewSummalyPayload;
 
         logger.debug(`Got preview of ${url}: ${sm.title}`);
 

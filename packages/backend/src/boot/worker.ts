@@ -5,6 +5,7 @@
  *
  * @remarks
  * - **役割**: クラスタの worker で実行。initDb 後に mode に応じて server または queue を起動。boot/index から呼ばれる。
+ * - **優先度**: ブートの `index.ts` でワーカー全体に一度 `setPriority` したあと、queue 専用（`process.env.mode === "queue"`）ではここで `PRIORITY_LOW` に寄せ、キュー負荷が極端にマスターを飢餓させないようにしている。
  *
  * @see {@link boot/index} ブートエントリ
  * @see {@link boot/master} マスター起動

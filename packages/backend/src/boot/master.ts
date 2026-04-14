@@ -22,7 +22,6 @@ import semver from "semver";
 import Logger from "@/services/logger.js";
 import loadConfig from "@/config/load.js";
 import type { Config } from "@/config/types.js";
-import { lessThan } from "@/prelude/array.js";
 import { envOption } from "../env.js";
 import { showMachineInfo } from "@/misc/show-machine-info.js";
 import { db, initDb } from "../db/postgre.js";
@@ -86,7 +85,12 @@ export async function masterMain() {
 	bootLogger.succ("Calckey initialized");
 
 	if (!envOption.disableClustering) {
-		await spawnWorkers(config.clusterLimits);
+		const cl = config.clusterLimits;
+		if (cl?.web == null || cl?.queue == null) {
+			bootLogger.error("clusterLimits.web and clusterLimits.queue are required", null, true);
+			process.exit(1);
+		}
+		await spawnWorkers({ web: cl.web, queue: cl.queue, proxy: cl.proxy });
 	}
 
 	bootLogger.succ(
@@ -141,12 +145,13 @@ function loadConfigBoot(): Config {
 
 	try {
 		config = loadConfig();
-	} catch (exception) {
-		if (exception.code === "ENOENT") {
+	} catch (exception: unknown) {
+		const err = exception as NodeJS.ErrnoException;
+		if (err && err.code === "ENOENT") {
 			configLogger.error("Configuration file not found", null, true);
 			process.exit(1);
-		} else if (e instanceof Error) {
-			configLogger.error(e.message);
+		} else if (exception instanceof Error) {
+			configLogger.error(exception.message);
 			process.exit(1);
 		}
 		throw exception;
@@ -168,17 +173,18 @@ async function connectDb(): Promise<void> {
 			.query("SHOW server_version")
 			.then((x) => x[0].server_version);
 		dbLogger.succ(`Connected: v${v}`);
-	} catch (e) {
+	} catch (e: unknown) {
 		dbLogger.error("Cannot connect", null, true);
-		dbLogger.error(e);
+		dbLogger.error(e instanceof Error ? e : String(e));
 		process.exit(1);
 	}
 }
 
-async function spawnWorkers(
-	clusterLimits: Required<Config["clusterLimits"]>,
-): Promise<void> {
-	const modes = ["web", "queue"];
+/** load 済みの clusterLimits（web/queue は必須） */
+type ResolvedClusterLimits = { web: number; queue: number; proxy?: number };
+
+async function spawnWorkers(clusterLimits: ResolvedClusterLimits): Promise<void> {
+	const modes = ["web", "queue"] as const;
 	const cpus = os.cpus().length;
 	for (const mode of modes.filter((mode) => clusterLimits[mode] > cpus)) {
 		bootLogger.warn(
@@ -187,15 +193,15 @@ async function spawnWorkers(
 	}
 
 	const total = modes.reduce((acc, mode) => acc + clusterLimits[mode], 0);
-	const workers = new Array(total);
-	const proxyClusterLimit = clusterLimits?.proxy ?? 1
+	const workers = new Array<"web" | "queue" | "proxyweb">(total);
+	const proxyClusterLimit = clusterLimits.proxy ?? 1;
 
 	workers.fill("proxyweb", 0, proxyClusterLimit);
-	workers.fill("web", proxyClusterLimit, clusterLimits?.web);
-	workers.fill("queue", clusterLimits?.web);
+	workers.fill("web", proxyClusterLimit, clusterLimits.web);
+	workers.fill("queue", clusterLimits.web);
 
 	bootLogger.info(
-		`Starting ${clusterLimits?.web} web workers and ${clusterLimits?.queue} queue workers (total ${total})...`,
+		`Starting ${clusterLimits.web} web workers and ${clusterLimits.queue} queue workers (total ${total})...`,
 	);
 	await Promise.all(
 		workers.map((mode, index) => spawnWorker(mode, `${index}`)),

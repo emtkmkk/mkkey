@@ -84,8 +84,18 @@ export default function load() {
 			...config.clusterLimits,
 		};
 
-		if (config.clusterLimits.web! < 1 || config.clusterLimits.queue! < 1) {
+		const cl = config.clusterLimits;
+		const web = cl.web!;
+		const queue = cl.queue!;
+		if (web < 1 || queue < 1) {
 			throw new Error("Invalid cluster limits");
+		}
+		// spawnWorkers と同じ既定: proxy 未指定時は 1。0〜web の範囲外は配列 fill が破綻する
+		const effectiveProxy = cl.proxy ?? 1;
+		if (effectiveProxy < 0 || effectiveProxy > web) {
+			throw new Error(
+				`Invalid cluster limits: proxy (effective ${effectiveProxy}) must be between 0 and web (${web}) inclusive`,
+			);
 		}
 	}
 

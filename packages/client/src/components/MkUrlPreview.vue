@@ -298,11 +298,22 @@
 	</div>
   </template>
   <script lang="ts" setup>
+  /**
+   * @packageDocumentation
+   *
+   * 外部 URL のカードプレビュー（OGP・Steam・Amazon・埋め込みプレイヤー等）。
+   *
+   * @remarks
+   * NOTE: `/url` には `normalizeUrlForPreviewFetch` 済みの URL を渡す（music.youtube.com の初回失敗を防ぐ）。
+   *
+   * @public
+   */
   import { computed, onMounted, onUnmounted, watch } from "vue";
   import { url as local, lang } from "@/config";
   import { i18n } from "@/i18n";
   import { defaultStore } from "@/store";
   import MkButton from "@/components/MkButton.vue";
+  import { normalizeUrlForPreviewFetch } from "@/scripts/normalize-url-for-preview-fetch";
 
   const props = withDefaults(
 	defineProps<{
@@ -478,8 +489,10 @@ const fetchUrlData = async () => {
   preferLargeThumbnail = false;
 
   try {
+    // サーバと同じ正規化（music.youtube.com 等）。初回が {} だと以降の補正に届かないため fetch 前に行う。
+    const previewFetchUrl = normalizeUrlForPreviewFetch(props.url);
     const response = await fetch(
-		`/url?url=${encodeURIComponent(props.url)}&lang=${requestLang}`
+		`/url?url=${encodeURIComponent(previewFetchUrl)}&lang=${requestLang}`
 	  );
 	  const info = await response.json();
 	  if (info.url == null) return;
@@ -529,7 +542,7 @@ const fetchUrlData = async () => {
           amazonRatingCount = info.amazon.rating?.count ?? null;
           amazonBrand = info.amazon.brand ?? null;
         } else {
-          // 既存の処理
+          // 既存の処理（取得 URL は previewFetchUrl で正規化済みのため 2 重 fetch はしない）
           isSensitive = info.isSensitive ?? false;
           preferLargeThumbnail = info.preferLargeThumbnail ?? false;
           title = info.title;
@@ -539,7 +552,7 @@ const fetchUrlData = async () => {
 		sitename = info.sitename;
 		player = info.player;
 
-		// ツイートIDの取得
+		// X 投稿 ID（リンク先は props.url のまま）
 		const requestUrl = new URL(props.url);
 		if (!["http:", "https:"].includes(requestUrl.protocol))
 		  throw new Error("invalid url");
@@ -556,34 +569,9 @@ const fetchUrlData = async () => {
 		  if (m) tweet = m[1];
 		}
 
-		if (
-		  requestUrl.hostname === "music.youtube.com" &&
-		  requestUrl.pathname.match("^/(?:watch|channel)")
-		) {
-		  requestUrl.hostname = "www.youtube.com";
+		if (title !== "X") {
+		  tweetId = tweet.length > 0 ? tweet : null;
 		}
-
-                requestUrl.hash = "";
-
-                fetch(
-                  `/url?url=${encodeURIComponent(requestUrl.href)}&lang=${normalizedLang}`
-                ).then((res) => {
-                  res.json().then((info) => {
-                        if (info.url == null) return;
-			isSensitive = info.isSensitive ?? false;
-			preferLargeThumbnail = info.preferLargeThumbnail ?? false;
-			title = info.title;
-			description = info.description;
-			thumbnail = info.thumbnail;
-			icon = info.icon;
-			sitename = info.sitename;
-			fetching = false;
-			player = info.player;
-			if (title !== "X") {
-			  tweetId = tweet;
-			}
-		  });
-		});
 	  }
 	  fetching = false;
 	} catch (error) {

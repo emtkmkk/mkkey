@@ -16,6 +16,7 @@ import { fetchMeta } from "@/misc/fetch-meta.js";
 import Logger from "@/services/logger.js";
 import config from "@/config/index.js";
 import { query } from "@/prelude/url.js";
+import { normalizeUrlForPreviewFetch } from "@/misc/normalize-url-for-preview-fetch.js";
 import { getHtml, getJson, getResponse } from "@/misc/fetch.js";
 import {
   translateWithDeepl,
@@ -256,7 +257,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   const VRCWorldId = isVRCUrl(effectiveUrl);
   let amazonFetchUrl = effectiveUrl;
   let amazonProduct = isAmazonProductUrl(effectiveUrl);
-  const summaryFetchUrl = effectiveUrl;
+  // Summaly が扱いやすい URL（例: music.youtube.com → www.youtube.com、ハッシュ除去）
+  const summaryFetchUrl = normalizeUrlForPreviewFetch(effectiveUrl);
 
   if (!amazonProduct) {
     const resolvedAmazonUrl = await resolveAmazonShortUrl(effectiveUrl);

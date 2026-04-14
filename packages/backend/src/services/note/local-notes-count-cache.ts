@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ローカル（本インスタンス上）のノート件数を短 TTL でキャッシュする。
+ *
+ * @remarks
+ * - **役割**: タイムライン等で参照される件数。`Cache.fetch` で同一キー並列ミス時の DB 往復を 1 本にまとめる。
+ * - **strict**: true のときはキャッシュを使わず毎回 `Notes.count` を実行する（鮮度が必要な経路用）。
+ *
+ * @internal
+ */
 import { Cache } from "@/misc/cache.js";
 import { Notes } from "@/models/index.js";
 import { IsNull } from "typeorm";
@@ -16,32 +27,43 @@ const localNotesCountCacheMetrics = {
 export async function getLocalNotesCount(options?: {
 	strict?: boolean;
 }): Promise<number> {
-	if (!options?.strict) {
-		const cached = localNotesCountCache.get(null);
-		if (cached !== undefined) {
-			localNotesCountCacheMetrics.cacheHits += 1;
-			return cached;
-		}
-
-		localNotesCountCacheMetrics.cacheMisses += 1;
+	if (options?.strict) {
+		const before = performance.now();
+		const count = await Notes.count({
+			where: { userHost: IsNull(), deletedAt: IsNull() },
+		});
+		const after = performance.now();
+		localNotesCountCacheMetrics.dbExecutions += 1;
+		localNotesCountCacheMetrics.totalDbLatencyMs += after - before;
+		return count;
 	}
 
-	const before = performance.now();
-	const count = await Notes.count({
-		where: { userHost: IsNull(), deletedAt: IsNull() },
+	const cached = localNotesCountCache.get(null);
+	if (cached !== undefined) {
+		localNotesCountCacheMetrics.cacheHits += 1;
+		return cached;
+	}
+
+	// ミス時は Cache.fetch で並列を 1 本の count に結合
+	localNotesCountCacheMetrics.cacheMisses += 1;
+	const count = await localNotesCountCache.fetch(null, async () => {
+		const b = performance.now();
+		const c = await Notes.count({
+			where: { userHost: IsNull(), deletedAt: IsNull() },
+		});
+		localNotesCountCacheMetrics.dbExecutions += 1;
+		localNotesCountCacheMetrics.totalDbLatencyMs += performance.now() - b;
+		return c;
 	});
-	const after = performance.now();
-
-	localNotesCountCacheMetrics.dbExecutions += 1;
-	localNotesCountCacheMetrics.totalDbLatencyMs += after - before;
-
-	if (!options?.strict) {
-		localNotesCountCache.set(null, count);
-	}
-
 	return count;
 }
 
+/**
+ * ローカルノート件数キャッシュの簡易メトリクスを返す。
+ *
+ * @returns TTL・ヒット率など
+ * @internal
+ */
 export function getLocalNotesCountCacheMetrics() {
 	const totalRequests =
 		localNotesCountCacheMetrics.cacheHits +
@@ -61,4 +83,3 @@ export function getLocalNotesCountCacheMetrics() {
 				: 0,
 	};
 }
-

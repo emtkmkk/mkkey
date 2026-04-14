@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * 管理用: テーブルごとの概算行数とサイズを返す API。
+ *
+ * @remarks
+ * - **役割**: `pg_class` ベースの統計を都度 DB から取得する。
+ *
+ * @internal
+ */
 import { db } from "@/db/postgre.js";
 import define from "../../define.js";
 
@@ -27,7 +37,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async () => {
-	const sizes = await db
+	return await db
 		.query(`
 			SELECT relname AS "table", reltuples as "count", pg_total_relation_size(C.oid) AS "size"
 			FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
@@ -44,6 +54,4 @@ export default define(meta, paramDef, async () => {
 			}
 			return res;
 		});
-
-	return sizes;
 });

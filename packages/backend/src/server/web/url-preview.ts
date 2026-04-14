@@ -19,6 +19,7 @@ import { query } from "@/prelude/url.js";
 import { normalizeUrlForPreviewFetch } from "@/misc/normalize-url-for-preview-fetch.js";
 import {
 	buildUrlPreviewCacheKey,
+	buildUrlPreviewSpecialInflightKey,
 	fetchShortUrlResolveCached,
 	storeNegativeRedis,
 	storePositiveCaches,
@@ -28,6 +29,7 @@ import {
 	tryGetPositiveRedis,
 	withUrlPreviewInflight,
 	withUrlPreviewOutboundLimits,
+	withUrlPreviewSpecialInflight,
 } from "@/misc/url-preview-outbound.js";
 import { getHtml, getJson, getResponse } from "@/misc/fetch.js";
 import {
@@ -35,6 +37,20 @@ import {
   formatDeeplTranslationPrefix,
 } from "@/services/translation/deepl.js";
 import type { Meta } from "@/models/entities/meta.js";
+
+/**
+ * Summaly 本流、または Summaly 互換 JSON を返すプロキシ経由 `getJson` の結果として扱う形。
+ *
+ * @remarks
+ * NOTE: 三項演算子で `getJson`（`unknown`）と `summaly` を併用すると型が潰れるため、結合後にこの型へ寄せる。
+ * NOTE: `isSensitive` / `preferLargeThumbnail` はこのハンドラ内で付与する（Summaly の `Summary` 型には無い）。
+ *
+ * @internal
+ */
+type UrlPreviewSummalyPayload = Awaited<ReturnType<typeof summaly>> & {
+  isSensitive?: boolean;
+  preferLargeThumbnail?: boolean;
+};
 
 const JAPANESE_CHAR_REGEX = /[\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9faf\uf900-\ufa6d\uff66-\uff9f]/u;
 
@@ -275,7 +291,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   const summaryFetchUrl = normalizeUrlForPreviewFetch(effectiveUrl);
 
   if (!amazonProduct) {
-    const resolvedAmazonUrl = await resolveAmazonShortUrl(effectiveUrl);
+    const resolvedAmazonUrl = await withUrlPreviewSpecialInflight(
+      buildUrlPreviewSpecialInflightKey(["amazon-short-resolve", effectiveUrl]),
+      () => resolveAmazonShortUrl(effectiveUrl),
+    );
     if (resolvedAmazonUrl) {
       amazonFetchUrl = resolvedAmazonUrl;
       amazonProduct = isAmazonProductUrl(amazonFetchUrl);
@@ -285,45 +304,53 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   if (steamAppId) {
     // Steamの場合の処理
     try {
-      const steamApiUrl = `https://store.steampowered.com/api/appdetails?appids=${steamAppId}&cc=jp&l=${
-        lang ?? "ja"
-      }`;
+      const steamSpecialKey = buildUrlPreviewSpecialInflightKey([
+        "steam",
+        "app",
+        String(steamAppId),
+        lang ?? "ja",
+        meta.summalyProxy ?? "",
+        url,
+        effectiveUrl,
+      ]);
+      const summary = await withUrlPreviewSpecialInflight(steamSpecialKey, async () => {
+        const steamApiUrl = `https://store.steampowered.com/api/appdetails?appids=${steamAppId}&cc=jp&l=${
+          lang ?? "ja"
+        }`;
 
-      // getJsonを使用してSteamデータを取得
-      const data = await getJson(
-        steamApiUrl,
-        "application/json, */*",
-        5000,
-        {
-          cookie: "steamCountry=JP",
-					"accept-language": "ja-jp",
-        },
-      );
+        const data = (await getJson(
+          steamApiUrl,
+          "application/json, */*",
+          5000,
+          {
+            cookie: "steamCountry=JP",
+            "accept-language": "ja-jp",
+          },
+        )) as Record<string, { success?: boolean; data?: any }>;
 
-      const appData = data[steamAppId]?.data;
+        const appData = data[steamAppId]?.data;
 
-      if (appData && data[steamAppId].success) {
+        if (!appData || !data[steamAppId]?.success) {
+          throw new Error("Failed to get Steam app data");
+        }
 
+        const _summary = (meta.summalyProxy
+          ? await getJson(
+              `${meta.summalyProxy}?${query({
+                url: url,
+                lang: lang ?? "en-US",
+              })}`,
+              "application/json, */*",
+              5000,
+              {
+                cookie: "steamCountry=JP",
+              },
+            )
+          : await summaly(url, {
+              followRedirects: false,
+              lang: lang ?? "en-US",
+            })) as UrlPreviewSummalyPayload;
 
-      const _summary = meta.summalyProxy
-      ? await getJson(
-        `${meta.summalyProxy}?${query({
-          url: url,
-          lang: lang ?? "en-US",
-        })}`,
-        "application/json, */*",
-        5000,
-        {
-          cookie: "steamCountry=JP"
-        },
-        )
-      : await summaly.default(url, {
-        followRedirects: false,
-        lang: lang ?? "en-US",
-        });
-
-
-        // summaryオブジェクトを構築
         const summary = {
           url: url,
           title: appData.name,
@@ -331,8 +358,9 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           thumbnail: "",
           icon: "https://store.steampowered.com/favicon.ico",
           sitename: "Steam",
-          player: null as any, // 動画情報を追加
-          // 追加のSteam専用データ
+          player: null as any,
+          isSensitive: false,
+          preferLargeThumbnail: false,
           steam: {
             ageLimit:
               appData.required_age && appData.required_age !== "0"
@@ -353,12 +381,12 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
               : null,
             isFree: appData.is_free,
             genres: appData.genres
-              ? appData.genres.map((genre) => genre.description).join(", ")
+              ? appData.genres.map((genre: { description: string }) => genre.description).join(", ")
               : "",
             releaseDate: {
-				comingSoon: appData.release_date ? appData.release_date.coming_soon : false,
-				date: appData.release_date ? appData.release_date.date : "",
-			}
+              comingSoon: appData.release_date ? appData.release_date.coming_soon : false,
+              date: appData.release_date ? appData.release_date.date : "",
+            },
           },
         };
 
@@ -367,44 +395,19 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           meta,
         );
 
-        // サムネイルとアイコンをラップ
         summary.icon = wrap(_summary.icon) ?? "";
         summary.thumbnail = wrap(_summary.thumbnail) ?? "";
-        // Steam: 17歳以上制限ならセンシティブ。ページ固有サムネイルがあれば大きい表示を希望
         summary.isSensitive =
           appData.required_age != null &&
           parseInt(String(appData.required_age), 10) >= 17;
         summary.preferLargeThumbnail = !!summary.thumbnail;
 
-                /*
-        // 動画情報をplayerにセット
-        if (appData.movies && Array.isArray(appData.movies)) {
-          const highlightedMovies = appData.movies.filter(
-            (movie) => movie.highlight
-          );
-          if (highlightedMovies.length > 0) {
-            // IDでソートして最も古い動画を取得
-            highlightedMovies.sort((a, b) => a.id - b.id);
-            const oldestMovie = highlightedMovies[0];
-            if (oldestMovie.webm && oldestMovie.webm["480"]) {
-              summary.player = {
-                url: oldestMovie.webm["480"],
-                width: oldestMovie.width,
-                height: oldestMovie.height,
-              };
-            }
-          }
-        }
-		*/
+        return summary;
+      });
 
-        // Cache 7days
-        ctx.set("Cache-Control", "max-age=604800, immutable");
-
-        ctx.body = summary;
-        return;
-      } else {
-        throw new Error("Failed to get Steam app data");
-      }
+      ctx.set("Cache-Control", "max-age=604800, immutable");
+      ctx.body = summary;
+      return;
     } catch (err) {
       logger.warn(`Failed to get Steam data for ${url}: ${err}`);
       ctx.status = 200;
@@ -418,45 +421,53 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   if (steamPackageId) {
     // SteamPackageの場合の処理
     try {
-      const steamApiUrl = `https://store.steampowered.com/api/packagedetails?packageids=${steamPackageId}&cc=jp&l=${
-        lang ?? "ja"
-      }`;
+      const steamPackageSpecialKey = buildUrlPreviewSpecialInflightKey([
+        "steam",
+        "package",
+        String(steamPackageId),
+        lang ?? "ja",
+        meta.summalyProxy ?? "",
+        url,
+        effectiveUrl,
+      ]);
+      const summary = await withUrlPreviewSpecialInflight(steamPackageSpecialKey, async () => {
+        const steamApiUrl = `https://store.steampowered.com/api/packagedetails?packageids=${steamPackageId}&cc=jp&l=${
+          lang ?? "ja"
+        }`;
 
-      // getJsonを使用してSteamデータを取得
-      const data = await getJson(
-        steamApiUrl,
-        "application/json, */*",
-        5000,
-        {
-          cookie: "steamCountry=JP",
-					"accept-language": "ja-jp",
-        },
-      );
+        const data = (await getJson(
+          steamApiUrl,
+          "application/json, */*",
+          5000,
+          {
+            cookie: "steamCountry=JP",
+            "accept-language": "ja-jp",
+          },
+        )) as Record<string, { success?: boolean; data?: any }>;
 
-      const subData = data[steamPackageId]?.data;
+        const subData = data[steamPackageId]?.data;
 
-      if (subData && data[steamPackageId].success) {
+        if (!subData || !data[steamPackageId]?.success) {
+          throw new Error("Failed to get Steam app data");
+        }
 
+        const _summary = (meta.summalyProxy
+          ? await getJson(
+              `${meta.summalyProxy}?${query({
+                url: url,
+                lang: lang ?? "en-US",
+              })}`,
+              "application/json, */*",
+              5000,
+              {
+                cookie: "steamCountry=JP",
+              },
+            )
+          : await summaly(url, {
+              followRedirects: false,
+              lang: lang ?? "en-US",
+            })) as UrlPreviewSummalyPayload;
 
-      const _summary = meta.summalyProxy
-      ? await getJson(
-        `${meta.summalyProxy}?${query({
-          url: url,
-          lang: lang ?? "en-US",
-        })}`,
-        "application/json, */*",
-        5000,
-        {
-          cookie: "steamCountry=JP"
-        },
-        )
-      : await summaly.default(url, {
-        followRedirects: false,
-        lang: lang ?? "en-US",
-        });
-
-
-        // summaryオブジェクトを構築
         const summary = {
           url: url,
           title: subData.name,
@@ -464,8 +475,9 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           thumbnail: "",
           icon: "https://store.steampowered.com/favicon.ico",
           sitename: "Steam",
-          player: null as any, // 動画情報を追加
-          // 追加のSteam専用データ
+          player: null as any,
+          isSensitive: false,
+          preferLargeThumbnail: false,
           steam: {
             ageLimit:
               subData.required_age && subData.required_age !== "0"
@@ -486,12 +498,12 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
               : null,
             isFree: subData.is_free,
             genres: subData.genres
-              ? subData.genres.map((genre) => genre.description).join(", ")
+              ? subData.genres.map((genre: { description: string }) => genre.description).join(", ")
               : "",
             releaseDate: {
-				comingSoon: subData.release_date ? subData.release_date.coming_soon : false,
-				date: subData.release_date ? subData.release_date.date : "",
-			}
+              comingSoon: subData.release_date ? subData.release_date.coming_soon : false,
+              date: subData.release_date ? subData.release_date.date : "",
+            },
           },
         };
         summary.description = await translateDescriptionToJapaneseIfNeeded(
@@ -499,23 +511,19 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           meta,
         );
 
-        // サムネイルとアイコンをラップ
         summary.icon = wrap(_summary.icon) ?? "";
         summary.thumbnail = wrap(_summary.thumbnail) ?? "";
-        // Steam: 17歳以上制限ならセンシティブ。ページ固有サムネイルがあれば大きい表示を希望
         summary.isSensitive =
           subData.required_age != null &&
           parseInt(String(subData.required_age), 10) >= 17;
         summary.preferLargeThumbnail = !!summary.thumbnail;
 
-        // Cache 7days
-        ctx.set("Cache-Control", "max-age=604800, immutable");
+        return summary;
+      });
 
-        ctx.body = summary;
-        return;
-      } else {
-        throw new Error("Failed to get Steam app data");
-      }
+      ctx.set("Cache-Control", "max-age=604800, immutable");
+      ctx.body = summary;
+      return;
     } catch (err) {
       logger.warn(`Failed to get Steam data for ${url}: ${err}`);
       ctx.status = 200;
@@ -528,53 +536,66 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   if (steamBundleId) {
     // SteamBundleの場合の処理
     try {
-      const steamApiUrl = `https://store.steampowered.com/actions/ajaxresolvebundles?bundleids=${steamBundleId}&cc=jp&l=${
-        lang ?? "ja"
-      }`;
+      const steamBundleSpecialKey = buildUrlPreviewSpecialInflightKey([
+        "steam",
+        "bundle",
+        String(steamBundleId),
+        lang ?? "ja",
+        meta.summalyProxy ?? "",
+        url,
+        effectiveUrl,
+      ]);
+      const summary = await withUrlPreviewSpecialInflight(steamBundleSpecialKey, async () => {
+        const steamApiUrl = `https://store.steampowered.com/actions/ajaxresolvebundles?bundleids=${steamBundleId}&cc=jp&l=${
+          lang ?? "ja"
+        }`;
 
-      // getJsonを使用してSteamデータを取得
-      const data = await getJson(
-        steamApiUrl,
-        "application/json, */*",
-        5000,
-        {
-          cookie: "steamCountry=JP",
-					"accept-language": "ja-jp",
-        },
-      );
+        const data = (await getJson(
+          steamApiUrl,
+          "application/json, */*",
+          5000,
+          {
+            cookie: "steamCountry=JP",
+            "accept-language": "ja-jp",
+          },
+        )) as unknown[];
 
-			const bundleData = data && Array.isArray(data) && data.length > 0 ? data[0] : undefined;
+        const bundleData =
+          data && Array.isArray(data) && data.length > 0 ? (data[0] as any) : undefined;
 
-      if (bundleData) {
+        if (!bundleData) {
+          throw new Error("Failed to get Steam app data");
+        }
 
-      const _summary = meta.summalyProxy
-      ? await getJson(
-        `${meta.summalyProxy}?${query({
-          url: url,
-          lang: lang ?? "en-US",
-        })}`,
-        "application/json, */*",
-        5000,
-        {
-          cookie: "steamCountry=JP"
-        },
-        )
-      : await summaly.default(url, {
-        followRedirects: false,
-        lang: lang ?? "en-US",
-        });
+        const _summary = (meta.summalyProxy
+          ? await getJson(
+              `${meta.summalyProxy}?${query({
+                url: url,
+                lang: lang ?? "en-US",
+              })}`,
+              "application/json, */*",
+              5000,
+              {
+                cookie: "steamCountry=JP",
+              },
+            )
+          : await summaly(url, {
+              followRedirects: false,
+              lang: lang ?? "en-US",
+            })) as UrlPreviewSummalyPayload;
 
-
-        // summaryオブジェクトを構築
         const summary = {
           url: url,
           title: bundleData.name,
-          description: bundleData.appids?.length ? `バンドル - ${bundleData.appids?.length} 個のコンテンツ` : "",
+          description: bundleData.appids?.length
+            ? `バンドル - ${bundleData.appids?.length} 個のコンテンツ`
+            : "",
           thumbnail: "",
           icon: "https://store.steampowered.com/favicon.ico",
           sitename: "Steam",
-          player: null as any, // 動画情報を追加
-          // 追加のSteam専用データ
+          player: null as any,
+          isSensitive: false,
+          preferLargeThumbnail: false,
           steam: {
             ageLimit: null,
             developer: "",
@@ -585,27 +606,23 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
             isFree: false,
             genres: "",
             releaseDate: {
-							comingSoon: bundleData.coming_soon,
-							date: "",
-						}
+              comingSoon: bundleData.coming_soon,
+              date: "",
+            },
           },
         };
 
-        // サムネイルとアイコンをラップ
         summary.icon = wrap(_summary.icon) ?? "";
         summary.thumbnail = wrap(_summary.thumbnail) ?? "";
-        // バンドルは年齢制限なしとして扱う。ページ固有サムネイルがあれば大きい表示を希望
         summary.isSensitive = false;
         summary.preferLargeThumbnail = !!summary.thumbnail;
 
-        // Cache 7days
-        ctx.set("Cache-Control", "max-age=604800, immutable");
+        return summary;
+      });
 
-        ctx.body = summary;
-        return;
-      } else {
-        throw new Error("Failed to get Steam app data");
-      }
+      ctx.set("Cache-Control", "max-age=604800, immutable");
+      ctx.body = summary;
+      return;
     } catch (err) {
       logger.warn(`Failed to get Steam data for ${url}: ${err}`);
       ctx.status = 200;
@@ -619,111 +636,121 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     try {
       const localeInfo = getAmazonLocaleInfo(amazonProduct.hostname);
       const normalizedLang = normalizeLang(lang ?? localeInfo.locale);
-      const res = await getResponse({
-        url: amazonFetchUrl,
-        method: "GET",
-        headers: {
-          Accept: "text/html, */*",
-          "accept-language": normalizedLang,
-        },
-        timeout: 10000,
-      });
-      const html = await res.text();
+      const amazonProductSpecialKey = buildUrlPreviewSpecialInflightKey([
+        "amazon",
+        "product",
+        amazonProduct.hostname,
+        amazonProduct.asin ?? "",
+        amazonFetchUrl,
+        normalizedLang ?? "",
+        effectiveUrl,
+      ]);
+      const summary = await withUrlPreviewSpecialInflight(amazonProductSpecialKey, async () => {
+        const res = await getResponse({
+          url: amazonFetchUrl,
+          method: "GET",
+          headers: {
+            Accept: "text/html, */*",
+            "accept-language": normalizedLang ?? "en-US",
+          },
+          timeout: 10000,
+        });
+        const html = await res.text();
 
-      const productData = extractAmazonProductData(html);
-      const fallbackData = extractAmazonFallbackData(html);
+        const productData = extractAmazonProductData(html);
+        const fallbackData = extractAmazonFallbackData(html);
 
-      if (!productData && !fallbackData) throw new Error("product data not found");
+        if (!productData && !fallbackData) throw new Error("product data not found");
 
-      const description = sanitizeAmazonDescription(
-        productData?.description ?? fallbackData?.description ?? null,
-      );
-      const image = selectAmazonImage(productData) ?? fallbackData?.thumbnail ?? null;
-      const offer = selectAmazonOffer(productData?.offers);
-      const fallbackOffer =
-        fallbackData?.priceText || fallbackData?.priceCurrency
+        const description = sanitizeAmazonDescription(
+          productData?.description ?? fallbackData?.description ?? null,
+        );
+        const image = selectAmazonImage(productData) ?? fallbackData?.thumbnail ?? null;
+        const offer = selectAmazonOffer(productData?.offers);
+        const fallbackOffer =
+          fallbackData?.priceText || fallbackData?.priceCurrency
+            ? {
+                price: fallbackData?.priceText ?? null,
+                priceCurrency: fallbackData?.priceCurrency ?? null,
+              }
+            : null;
+        const priceValue =
+          extractPriceValue(offer) ??
+          (fallbackOffer ? extractPriceValue(fallbackOffer) : null);
+        const priceCurrency =
+          extractPriceCurrency(offer) ??
+          extractPriceCurrency(fallbackOffer) ??
+          fallbackData?.priceCurrency ??
+          localeInfo.currency;
+        const priceDisplay =
+          formatAmazonPrice(priceValue, priceCurrency, normalizedLang) ??
+          offer?.price ??
+          fallbackData?.priceText ??
+          null;
+        const availability =
+          typeof offer?.availability === "string"
+            ? humanizeAvailability(offer.availability, normalizedLang)
+            : fallbackData?.availability ?? null;
+        let rating = normalizeAmazonRating(productData?.aggregateRating);
+        if (fallbackData) {
+          rating = {
+            value: rating.value ?? fallbackData.ratingValue ?? null,
+            best:
+              rating.best ??
+              fallbackData.ratingBest ??
+              (rating.value ?? fallbackData.ratingValue ? 5 : null),
+            count: rating.count ?? fallbackData.ratingCount ?? null,
+          };
+        }
+        const brand = extractBrand(productData?.brand) ?? fallbackData?.brand ?? null;
+        const primeEligible =
+          productData?.isPrimeEligible ?? fallbackData?.prime ?? false;
+        const player = fallbackData?.playerUrl
           ? {
-              price: fallbackData?.priceText ?? null,
-              priceCurrency: fallbackData?.priceCurrency ?? null,
+              url: fallbackData.playerUrl,
+              width: fallbackData.playerWidth ?? null,
+              height: fallbackData.playerHeight ?? null,
+              allow:
+                fallbackData.playerAllow ??
+                (fallbackData.playerUrl ? ["fullscreen", "encrypted-media"] : []),
             }
           : null;
-      const priceValue =
-        extractPriceValue(offer) ??
-        (fallbackOffer ? extractPriceValue(fallbackOffer) : null);
-      const priceCurrency =
-        extractPriceCurrency(offer) ??
-        extractPriceCurrency(fallbackOffer) ??
-        fallbackData?.priceCurrency ??
-        localeInfo.currency;
-      const priceDisplay =
-        formatAmazonPrice(priceValue, priceCurrency, normalizedLang) ??
-        offer?.price ??
-        fallbackData?.priceText ??
-        null;
-      const availability =
-        typeof offer?.availability === "string"
-          ? humanizeAvailability(offer.availability, normalizedLang)
-          : fallbackData?.availability ?? null;
-      let rating = normalizeAmazonRating(productData?.aggregateRating);
-      if (fallbackData) {
-        rating = {
-          value: rating.value ?? fallbackData.ratingValue ?? null,
-          best:
-            rating.best ??
-            fallbackData.ratingBest ??
-            (rating.value ?? fallbackData.ratingValue ? 5 : null),
-          count: rating.count ?? fallbackData.ratingCount ?? null,
-        };
-      }
-      const brand = extractBrand(productData?.brand) ?? fallbackData?.brand ?? null;
-      const primeEligible =
-        productData?.isPrimeEligible ?? fallbackData?.prime ?? false;
-      const player = fallbackData?.playerUrl
-        ? {
-            url: fallbackData.playerUrl,
-            width: fallbackData.playerWidth ?? null,
-            height: fallbackData.playerHeight ?? null,
-            allow:
-              fallbackData.playerAllow ??
-              (fallbackData.playerUrl ? ["fullscreen", "encrypted-media"] : []),
-          }
-        : null;
 
-      const iconHost = amazonProduct.hostname.replace(/^smile\./, "");
-      const favicon = `https://${iconHost}/favicon.ico`;
+        const iconHost = amazonProduct.hostname.replace(/^smile\./, "");
+        const favicon = `https://${iconHost}/favicon.ico`;
 
-      const wrappedThumbnail = wrap(image) ?? "";
-      const isSensitive = isSensitiveFromHeadersAndHtml(res.headers, html);
-      // ページ固有のサムネイルがあれば大きい表示を希望
-      const preferLargeThumbnail = !!wrappedThumbnail;
+        const wrappedThumbnail = wrap(image ?? undefined) ?? "";
+        const isSensitive = isSensitiveFromHeadersAndHtml(res.headers, html);
+        const preferLargeThumbnail = !!wrappedThumbnail;
 
-      const summary = {
-        url,
-        title:
-          productData?.name ??
-          productData?.headline ??
-          fallbackData?.title ??
-          "Amazon",
-        description,
-        thumbnail: wrappedThumbnail,
-        icon: wrap(favicon) ?? favicon,
-        sitename: formatAmazonSitename(iconHost),
-        player: player ?? (null as any),
-        amazon: {
-          asin: amazonProduct.asin,
-          price: {
-            value: priceValue,
-            currency: priceCurrency,
-            display: priceDisplay,
+        return {
+          url,
+          title:
+            productData?.name ??
+            productData?.headline ??
+            fallbackData?.title ??
+            "Amazon",
+          description,
+          thumbnail: wrappedThumbnail,
+          icon: wrap(favicon) ?? favicon,
+          sitename: formatAmazonSitename(iconHost),
+          player: player ?? (null as any),
+          amazon: {
+            asin: amazonProduct.asin,
+            price: {
+              value: priceValue,
+              currency: priceCurrency,
+              display: priceDisplay,
+            },
+            availability,
+            rating,
+            brand,
+            prime: primeEligible,
           },
-          availability,
-          rating,
-          brand,
-          prime: primeEligible,
-        },
-        isSensitive,
-        preferLargeThumbnail,
-      };
+          isSensitive,
+          preferLargeThumbnail,
+        };
+      });
 
       ctx.set("Cache-Control", "max-age=604800, immutable");
       ctx.body = summary;
@@ -777,17 +804,17 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     // NOTE: インフライトを外側にし、同一キー待ちがセマフォ枠を占有しないようにする。
     const summary = await withUrlPreviewInflight(previewCacheHash, () =>
       withUrlPreviewOutboundLimits(summaryFetchUrl, async () => {
-        const sm = meta.summalyProxy
+        const sm = (meta.summalyProxy
           ? await getJson(
               `${meta.summalyProxy}?${query({
                 url: summaryFetchUrl,
                 lang: langKey,
               })}`,
             )
-          : await summaly.default(summaryFetchUrl, {
+          : await summaly(summaryFetchUrl, {
               followRedirects: false,
               lang: langKey,
-            });
+            })) as UrlPreviewSummalyPayload;
 
         logger.debug(`Got preview of ${url}: ${sm.title}`);
 
@@ -814,11 +841,17 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         if (VRCWorldId) {
           const VRCApiUrl = `https://api.vrchat.cloud/api/1/worlds/${VRCWorldId}`;
 
-          const data = await getJson(
+          const data = (await getJson(
             VRCApiUrl,
             "application/json, */*",
             5000,
-          );
+          )) as {
+            name?: string;
+            authorName?: string;
+            description?: string;
+            imageUrl?: string;
+            thumbnailImageUrl?: string;
+          };
 
           if (data.name) {
             sm.title = [data.name, data.authorName, "VRChat"].filter(Boolean).join(" - ");
@@ -885,8 +918,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
         sm.isSensitive = summaryIsSensitive;
         sm.preferLargeThumbnail = summaryPreferLargeThumbnail;
 
-        sm.icon = wrap(sm.icon);
-        sm.thumbnail = wrap(sm.thumbnail);
+        sm.icon = wrap(sm.icon) ?? "";
+        sm.thumbnail = wrap(sm.thumbnail) ?? "";
         if (typeof sm.sitename === "string") {
           const normalized = sm.sitename.replace(/\s+/g, " ").trim();
           sm.sitename = normalized.length > 0 ? normalized : "";

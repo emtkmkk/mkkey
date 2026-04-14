@@ -174,6 +174,53 @@ export type Source = {
 		maxGlobalConcurrent?: number;
 		/** 短縮 URL 解決結果のキャッシュ TTL（秒）。 */
 		shortUrlResolveTtlSec?: number;
+		/**
+		 * ワーカー横断インフライト結合（Redis lock/result/notify）。
+		 *
+		 * @remarks
+		 * - `enabled` が false のときは従来どおりプロセス内インフライトのみ使用する。
+		 * - 既定値は `url-preview-outbound.ts` 側で補完する。
+		 */
+		inflightDistributed?: {
+			/** true のとき分散インフライトを有効化する。 */
+			enabled?: boolean;
+			/** lock の TTL（秒）。 */
+			lockTtlSec?: number;
+			/** 共有 result の TTL（秒）。 */
+			resultTtlSec?: number;
+			/** follower の待機上限（ミリ秒）。 */
+			waitTimeoutMs?: number;
+			/** Pub/Sub 通知の待機時間（ミリ秒）。 */
+			pubsubTimeoutMs?: number;
+			/** ポーリング間隔（ミリ秒）。 */
+			pollIntervalMs?: number;
+			/** ポーリング間隔のジッター率（0.2 = ±20%）。 */
+			pollJitterRatio?: number;
+			/** lock 延長の実行間隔（ミリ秒）。 */
+			lockExtendIntervalMs?: number;
+			/** lock 延長回数の上限。 */
+			maxLockExtendCount?: number;
+		};
+	};
+	/**
+	 * 汎用 `Cache` のワーカー横断インフライト設定。
+	 *
+	 * @remarks
+	 * - false 指定時以外は有効（既定: true）。
+	 * - Redis エラー時は `Cache` 側でフェイルオープンする。
+	 */
+	cache?: {
+		distributedInflight?: {
+			enabled?: boolean;
+			lockTtlSec?: number;
+			resultTtlSec?: number;
+			waitTimeoutMs?: number;
+			pubsubTimeoutMs?: number;
+			pollIntervalMs?: number;
+			pollJitterRatio?: number;
+			lockExtendIntervalMs?: number;
+			maxLockExtendCount?: number;
+		};
 	};
 	userAgent2?: string;
 	specialServerHosts?: string[];

@@ -19,7 +19,14 @@ import {
 	MAX_REACTION_PER_ACCOUNT,
 } from "@/const.js";
 import define from "../../define.js";
-import { isNull } from "util";
+import { Cache } from "@/misc/cache.js";
+
+/** Mastodon 互換 instance 情報の短 TTL キャッシュ（秒）。 */
+const INSTANCE_INFO_CACHE_TTL_MS = 120_000;
+
+const instanceInfoResponseCache = new Cache<Record<string, unknown>>(
+	INSTANCE_INFO_CACHE_TTL_MS,
+);
 
 export const meta = {
 	requireCredential: false,
@@ -35,8 +42,10 @@ export const paramDef = {
 	required: [],
 } as const;
 
-export default define(meta, paramDef, async () => {
-	const now = Date.now();
+/**
+ * Mastodon 互換の `/api/v1/instance` 相当ペイロードを組み立てる。
+ */
+async function buildInstanceInfoPayload(): Promise<Record<string, unknown>> {
 	const [meta, total, localPosts, instanceCount, firstAdmin, emojis] =
 		await Promise.all([
 			fetchMeta(true),
@@ -120,6 +129,10 @@ export default define(meta, paramDef, async () => {
 		contact_account: await getContact(firstAdmin, emojis),
 		rules: [],
 	};
+}
+
+export default define(meta, paramDef, async () => {
+	return await instanceInfoResponseCache.fetch(null, buildInstanceInfoPayload);
 });
 
 const splitN = (s: string | null, split: string, n: number): string[] => {

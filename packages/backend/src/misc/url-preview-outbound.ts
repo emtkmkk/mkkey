@@ -5,6 +5,7 @@
  *
  * @remarks
  * - **役割**: `urlPreviewHandler` から利用。Redis が無い／失敗時はメモリキャッシュのみにフォールバック。
+ * - **特殊分岐**: Steam/Amazon 等、本流の `previewCacheHash` より前に return する経路用に `withUrlPreviewSpecialInflight` を提供（キーは `buildUrlPreviewSpecialInflightKey` で本流と衝突しない）。
  * - **計画外**: Summaly とセンシティブ用 GET の HTML 1 本化は行わない。
  * - **関連**: TTL の純粋計算は `url-preview-negative-ttl.ts` に分離（テストで config を読まないため）。
  *
@@ -17,6 +18,10 @@ import pLimit from "p-limit";
 import config from "@/config/index.js";
 import { redisClient } from "@/db/redis.js";
 import { Cache } from "@/misc/cache.js";
+import {
+	runDistributedSingleflight,
+} from "@/misc/distributed-singleflight.js";
+import { createRedisDistributedSingleflightAdapter } from "@/misc/distributed-singleflight-redis.js";
 import { resolveNegativeCacheTtlSecFromOpts } from "@/misc/url-preview-negative-ttl.js";
 import Logger from "@/services/logger.js";
 
@@ -30,6 +35,9 @@ const REDIS_NEG_PREFIX = "urlPreviewNeg:v1:";
 
 /** インフライト結合（同一プロセス内） */
 const inflight = new Map<string, Promise<unknown>>();
+
+/** Steam/Amazon 等の特殊分岐用インフライト（`inflight` と Map を分離） */
+const specialInflight = new Map<string, Promise<unknown>>();
 
 /** ホスト名 → p-limit インスタンス（上限なしのときは未登録） */
 const hostLimiters = new Map<string, ReturnType<typeof pLimit>>();
@@ -48,6 +56,15 @@ type UrlPreviewOutboundOpts = {
 	maxConcurrentPerHost: number;
 	maxGlobalConcurrent: number;
 	shortUrlResolveTtlSec: number;
+	distributedInflightEnabled: boolean;
+	distributedLockTtlSec: number;
+	distributedResultTtlSec: number;
+	distributedWaitTimeoutMs: number;
+	distributedPubsubTimeoutMs: number;
+	distributedPollIntervalMs: number;
+	distributedPollJitterRatio: number;
+	distributedLockExtendIntervalMs: number;
+	distributedMaxLockExtendCount: number;
 };
 
 function getUrlPreviewOpts(): UrlPreviewOutboundOpts {
@@ -63,8 +80,20 @@ function getUrlPreviewOpts(): UrlPreviewOutboundOpts {
 		maxConcurrentPerHost: o?.maxConcurrentPerHost ?? 4,
 		maxGlobalConcurrent: o?.maxGlobalConcurrent ?? 32,
 		shortUrlResolveTtlSec: o?.shortUrlResolveTtlSec ?? 300,
+		distributedInflightEnabled: o?.inflightDistributed?.enabled === true,
+		distributedLockTtlSec: o?.inflightDistributed?.lockTtlSec ?? 15,
+		distributedResultTtlSec: o?.inflightDistributed?.resultTtlSec ?? 20,
+		distributedWaitTimeoutMs: o?.inflightDistributed?.waitTimeoutMs ?? 8000,
+		distributedPubsubTimeoutMs: o?.inflightDistributed?.pubsubTimeoutMs ?? 1200,
+		distributedPollIntervalMs: o?.inflightDistributed?.pollIntervalMs ?? 150,
+		distributedPollJitterRatio: o?.inflightDistributed?.pollJitterRatio ?? 0.2,
+		distributedLockExtendIntervalMs: o?.inflightDistributed?.lockExtendIntervalMs ?? 5000,
+		distributedMaxLockExtendCount: o?.inflightDistributed?.maxLockExtendCount ?? 2,
 	};
 }
+
+const REDIS_DIST_SCOPE = "urlPreviewInflight:v1";
+const distributedAdapter = createRedisDistributedSingleflightAdapter(REDIS_DIST_SCOPE);
 
 let memoryOkCache: Cache<string> | null = null;
 
@@ -192,10 +221,100 @@ export function withUrlPreviewInflight<T>(
 ): Promise<T> {
 	const existing = inflight.get(cacheKeyHash) as Promise<T> | undefined;
 	if (existing) return existing;
-	const p = factory().finally(() => {
+	const p = (async () => {
+		const o = getUrlPreviewOpts();
+		if (!o.distributedInflightEnabled) {
+			return await factory();
+		}
+		try {
+			return await runDistributedSingleflight<T>({
+				scope: `${REDIS_DIST_SCOPE}:main`,
+				key: cacheKeyHash,
+				adapter: distributedAdapter,
+				factory,
+				serialize: (value) => JSON.stringify(value),
+				deserialize: (raw) => JSON.parse(raw) as T,
+				lockTtlSec: o.distributedLockTtlSec,
+				resultTtlSec: o.distributedResultTtlSec,
+				waitTimeoutMs: o.distributedWaitTimeoutMs,
+				pubsubTimeoutMs: o.distributedPubsubTimeoutMs,
+				pollIntervalMs: o.distributedPollIntervalMs,
+				pollJitterRatio: o.distributedPollJitterRatio,
+				lockExtendIntervalMs: o.distributedLockExtendIntervalMs,
+				maxLockExtendCount: o.distributedMaxLockExtendCount,
+				onDebug: (message) => {
+					logger.debug(message);
+				},
+			});
+		} catch (e) {
+			logger.debug(`distributed inflight failed for main:${cacheKeyHash}: ${e}`);
+			return await factory();
+		}
+	})().finally(() => {
 		inflight.delete(cacheKeyHash);
 	}) as Promise<T>;
 	inflight.set(cacheKeyHash, p);
+	return p;
+}
+
+/**
+ * 特殊分岐用のインフライトキー（本流の SHA256 キーと衝突しない `sp:` 接頭辞付きハッシュ）。
+ *
+ * @param parts - キー材料（順序が結果に影響する）
+ * @returns `specialInflight` 用の一意キー
+ * @internal
+ */
+export function buildUrlPreviewSpecialInflightKey(parts: string[]): string {
+	const raw = parts.join("\n");
+	return `sp:${crypto.createHash("sha256").update(raw, "utf8").digest("hex")}`;
+}
+
+/**
+ * Steam/Amazon など、Summaly 本流キャッシュ外の重い処理を同一キーで 1 本にまとめる。
+ *
+ * @param key - `buildUrlPreviewSpecialInflightKey` の戻り値など一意な文字列
+ * @param factory - 結合対象の非同期処理
+ * @returns `factory` の結果を共有する Promise
+ */
+export function withUrlPreviewSpecialInflight<T>(
+	key: string,
+	factory: () => Promise<T>,
+): Promise<T> {
+	const existing = specialInflight.get(key) as Promise<T> | undefined;
+	if (existing) return existing;
+	const p = (async () => {
+		const o = getUrlPreviewOpts();
+		if (!o.distributedInflightEnabled) {
+			return await factory();
+		}
+		try {
+			return await runDistributedSingleflight<T>({
+				scope: `${REDIS_DIST_SCOPE}:special`,
+				key,
+				adapter: distributedAdapter,
+				factory,
+				serialize: (value) => JSON.stringify(value),
+				deserialize: (raw) => JSON.parse(raw) as T,
+				lockTtlSec: o.distributedLockTtlSec,
+				resultTtlSec: o.distributedResultTtlSec,
+				waitTimeoutMs: o.distributedWaitTimeoutMs,
+				pubsubTimeoutMs: o.distributedPubsubTimeoutMs,
+				pollIntervalMs: o.distributedPollIntervalMs,
+				pollJitterRatio: o.distributedPollJitterRatio,
+				lockExtendIntervalMs: o.distributedLockExtendIntervalMs,
+				maxLockExtendCount: o.distributedMaxLockExtendCount,
+				onDebug: (message) => {
+					logger.debug(message);
+				},
+			});
+		} catch (e) {
+			logger.debug(`distributed inflight failed for special:${key}: ${e}`);
+			return await factory();
+		}
+	})().finally(() => {
+		specialInflight.delete(key);
+	}) as Promise<T>;
+	specialInflight.set(key, p);
 	return p;
 }
 

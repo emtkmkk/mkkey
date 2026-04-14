@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * インスタンス用のローカル Actor ユーザー（`instance.actor`）を取得または作成する。
+ *
+ * @remarks
+ * - **役割**: AP 等で参照。`Cache.fetch` でコールド時の並列作成を 1 本にまとめる。
+ *
+ * @internal
+ */
 import { createSystemUser } from "./create-system-user.js";
 import type { ILocalUser } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
@@ -9,20 +19,15 @@ const ACTOR_USERNAME = "instance.actor" as const;
 const cache = new Cache<ILocalUser>(Infinity);
 
 export async function getInstanceActor(): Promise<ILocalUser> {
-	const cached = cache.get(null);
-	if (cached) return cached;
+	return await cache.fetch(null, async () => {
+		const user = (await Users.findOneBy({
+			host: IsNull(),
+			username: ACTOR_USERNAME,
+		})) as ILocalUser | undefined;
 
-	const user = (await Users.findOneBy({
-		host: IsNull(),
-		username: ACTOR_USERNAME,
-	})) as ILocalUser | undefined;
-
-	if (user) {
-		cache.set(null, user);
-		return user;
-	} else {
-		const created = (await createSystemUser(ACTOR_USERNAME)) as ILocalUser;
-		cache.set(null, created);
-		return created;
-	}
+		if (user) {
+			return user;
+		}
+		return (await createSystemUser(ACTOR_USERNAME)) as ILocalUser;
+	});
 }

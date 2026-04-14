@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * 連合先インスタンスの DB 行を登録または取得する。
+ *
+ * @remarks
+ * - **役割**: `host` ごとに `Instances` を返す。無ければ insert。`Cache.fetch` で同一ホストのコールド並列を 1 本にまとめる。
+ *
+ * @internal
+ */
 import type { Instance } from "@/models/entities/instance.js";
 import { Instances } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
@@ -11,23 +21,17 @@ export async function registerOrFetchInstanceDoc(
 ): Promise<Instance> {
 	host = toPuny(host);
 
-	const cached = cache.get(host);
-	if (cached) return cached;
+	return await cache.fetch(host, async () => {
+		const index = await Instances.findOneBy({ host });
 
-	const index = await Instances.findOneBy({ host });
-
-	if (index == null) {
-		const i = await Instances.insert({
-			id: genId(),
-			host,
-			caughtAt: new Date(),
-			lastCommunicatedAt: new Date(),
-		}).then((x) => Instances.findOneByOrFail(x.identifiers[0]));
-
-		cache.set(host, i);
-		return i;
-	} else {
-		cache.set(host, index);
+		if (index == null) {
+			return await Instances.insert({
+				id: genId(),
+				host,
+				caughtAt: new Date(),
+				lastCommunicatedAt: new Date(),
+			}).then((x) => Instances.findOneByOrFail(x.identifiers[0]));
+		}
 		return index;
-	}
+	});
 }

@@ -508,7 +508,7 @@ import { instance } from "@/instance";
 
 let preview_mention = $ref("@example");
 let preview_hashtag = $ref("#test");
-let preview_link = $ref(`[${i18n.ts._mfm.dummy}](https://calckey.org)`);
+let preview_link = $ref(`[${i18n.ts._mfm.dummy}](https://github.com/emtkmkk/mkkey)`);
 let preview_emoji = $ref(
 	instance.recentlyPopularReactions.length > 1
 		? `${

@@ -264,6 +264,7 @@
 			font-family: BIZ UDGothic, Roboto, HelveticaNeue, Arial, sans-serif;
 		}
 
+		#cluckey_app,
 		#calckey_app,
 		#splash {
 			display: none !important;
@@ -419,6 +420,7 @@
 			font-family: BIZ UDGothic, Roboto, HelveticaNeue, Arial, sans-serif;
 		}
 
+		#cluckey_app,
 		#calckey_app,
 		#splash {
 			display: none !important;

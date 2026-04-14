@@ -1,7 +1,7 @@
 _lang_: "Català"
 headlineMisskey: "Una xarxa social de codi obert, descentralitzada i gratuïta per\
   \ a sempre! \U0001F680"
-introMisskey: "Benvinguts! Calckey és una plataforma social de codi obert, descentralitzada\
+introMisskey: "Benvinguts! Cluckey és una plataforma social de codi obert, descentralitzada\
   \ i gratuïta per a sempre! \U0001F680"
 monthAndDay: "{day}/{month}"
 search: "Cerca"
@@ -146,7 +146,7 @@ _mfm:
   mention: "Menció"
   quote: "Citar"
   search: "Cercar"
-  dummy: Calckey amplia el món del Fediverse
+  dummy: Cluckey amplia el món del Fediverse
   hashtag: Etiqueta
   intro: MFM és un llenguatge de marques utilitzat a Misskey, Calckey, Akkoma i més
     que es pot utilitzar en molts llocs. Aquí podeu veure una llista de tota la sintaxi
@@ -755,7 +755,7 @@ flagAsBot: Marca aquest compte com a bot
 flagAsBotDescription: Activa aquesta opció si aquest compte és controlat per un programa.
   Si s'activa, això actuarà com una bandera per a altres desenvolupadors i ajuda a
   prevenir cadenes de interaccions infinites amb altres bots a més d'ajustar els sistemes
-  interns de Calckey per tractar aquest compte com un bot.
+  interns de Cluckey per tractar aquest compte com un bot.
 flagAsCat: Ets un gat? 🐱
 flagShowTimelineReplies: Mostra respostes a la línia de temps
 flagAsCatDescription: Guanyaràs unes orelles de gat i parlares com un gat!
@@ -807,7 +807,7 @@ mutedUsers: Usuaris silenciats
 done: Fet
 preview: Vista prèvia
 default: Per defecte
-intro: La instal·lació de Calckey ha acabat! Crea un compte d'usuari d'administració.
+intro: La instal·lació de Cluckey ha acabat! Crea un compte d'usuari d'administració.
 processing: S'està processant…
 noCustomEmojis: No hi ha cap emoji
 noJobs: No hi ha cap feina
@@ -1188,7 +1188,7 @@ connectedTo: Aquest(s) compte(s) estan connectats
 silenceConfirm: Segur que vols posa en silenci aquest usuari?
 unsilence: Desfés posar en silenci
 unsilenceConfirm: Segur que vols treure el silenci a aquest usuari?
-aboutMisskey: Sobre Calckey
+aboutMisskey: Sobre Cluckey
 twoStepAuthentication: Autentificació de dos factors
 moderator: Moderador
 moderation: Moderació
@@ -1341,7 +1341,7 @@ adminCustomCssWarn: Aquesta configuració només s'ha d'utilitzar si sabeu què 
   introducció de valors inadequats pot fer que els clients de TOTS deixin de funcionar
   amb normalitat. Assegureu-vos que el vostre CSS funcioni correctament provant-lo
   a la configuració de l'usuari.
-showUpdates: Mostra una finestra emergent quan Calckey s'actualitzi
+showUpdates: Mostra una finestra emergent quan Cluckey s'actualitzi
 recommendedInstances: Instàncies recomanades
 recommendedInstancesDescription: Instàncies recomanades separades per salts de línia
   per aparèixer a la línia de temps recomanada. NO afegiu `https://`, NOMÉS el domini.
@@ -1350,7 +1350,7 @@ splash: Pantalla de Benvinguda
 swipeOnDesktop: Permet lliscar a l'estil del mòbil a l'escriptori
 updateAvailable: Pot ser que hi hagi una actualització disponible!
 logoImageUrl: URL de la imatge del logotip
-showAdminUpdates: Indica que hi ha disponible una versió nova de Calckey (només per
+showAdminUpdates: Indica que hi ha disponible una versió nova de Cluckey (només per
   a administradors)
 replayTutorial: Repetició del tutorial
 migration: Migració
@@ -1451,7 +1451,7 @@ _registry:
 silenced: Silenciat
 objectStorageUseSSL: Fes servir SSL
 yourAccountSuspendedTitle: Aquest compte està suspès
-i18nInfo: Calckey està sent traduït a diversos idiomes per voluntaris. Pots ajudar
+i18nInfo: Cluckey està sent traduït a diversos idiomes per voluntaris. Pots ajudar
   {link}.
 manageAccessTokens: Administrar tokens d'accés
 accountInfo: Informació del compte
@@ -1512,7 +1512,7 @@ searchResult: Resultats de la cerca
 hashtags: Etiquetes
 troubleshooting: Resolució de problemes
 learnMore: Més informació
-misskeyUpdated: Calckey s'ha actualitzat!
+misskeyUpdated: Cluckey s'ha actualitzat!
 translate: Tradueix
 translatedFrom: Traduït per {x}
 aiChanMode: Ai-chan a la interfície d'usuari clàssica
@@ -1555,14 +1555,14 @@ customKaTeXMacro: Macros KaTeX personalitzats
 _aboutMisskey:
   contributors: Col·laboradors principals
   allContributors: Tots els col·laboradors
-  donate: Fes una donació a Calckey
+  donate: Fes una donació a Cluckey
   source: Codi font
-  translation: Tradueix Calckey
-  about: Calckey és una bifurcació de Misskey feta per ThatOneCalculator, que està
+  translation: Tradueix Cluckey
+  about: Cluckey és una bifurcació de Misskey feta per ThatOneCalculator, que està
     en desenvolupament des del 2022.
   morePatrons: També agraïm el suport de molts altres ajudants que no figuren aquí.
     Gràcies! 🥰
-  patrons: Mecenes de Calckey
+  patrons: Mecenes de Cluckey
 unknown: Desconegut
 pageLikesCount: Nombre de pàgines amb M'agrada
 youAreRunningUpToDateClient: Estás fent servir la versió del client més nova.
@@ -1659,7 +1659,7 @@ ascendingOrder: Ascendent
 descendingOrder: Descendent
 scratchpad: Bloc de notes
 scratchpadDescription: El bloc de notes proporciona un entorn per experiments amb
-  AiScript. Pots escriure, executar i comprovar els resultats interactuant amb Calckey.
+  AiScript. Pots escriure, executar i comprovar els resultats interactuant amb Cluckey.
 output: Sortida
 script: Script
 disablePagesScript: Desactivar AiScript a les pàgines
@@ -1671,9 +1671,9 @@ accentColor: Color principal
 textColor: Color del text
 value: Valor
 sendErrorReportsDescription: "Quant està activat quant aparegui un error, es compartirà\
-  \ amb els desenvolupadors de Calckey, que ajudarà a millorar la qualitat.\nAixò\
+  \ amb els desenvolupadors de Cluckey, que ajudarà a millorar la qualitat.\nAixò\
   \ inclourà informació com la versió del teu sistema operatiu, el navegador que estiguis\
-  \ fent servir, la teva activitat a Calckey, etc."
+  \ fent servir, la teva activitat a Cluckey, etc."
 myTheme: El meu tema
 backgroundColor: Color de fons
 saveAs: Desa com...
@@ -1854,14 +1854,14 @@ _tutorial:
   step6_1: Aleshores, què és aquest lloc?
   step6_4: Ara ves, explora i diverteix-te!
   step1_2: Anem a fer la configuració. Estaràs en funcionament en un tres i no res!
-  title: Com utilitzar Calckey
+  title: Com utilitzar Cluckey
   step1_1: Benvingut!
   step2_1: En primer lloc, empleneu el vostre perfil.
   step4_1: Anem a treure't allà fora.
   step5_5: La línea de temps Social {icon} és on només pots veure notes dels comptes
     que segueixes.
   step6_3: Cada servidor funciona de diferents maneres, i no tots els servidors executen
-    Calckey. Aquest sí que sí! És una mica complicat, però ho aconseguiràs en poc
+    Cluckey. Aquest sí que sí! És una mica complicat, però ho aconseguiràs en poc
     temps.
   step2_2: Proporcionar informació sobre qui sou facilitarà que altres puguin saber
     si volen veure les vostres notes o seguir-vos.
@@ -1872,7 +1872,7 @@ _tutorial:
   step4_2: A algunes persones els agrada fer una publicació de {introduction} o un
     senzill "Hola món!"
   step5_1: Línies de temps, línies de temps a tot arreu!
-  step6_2: Bé, no només t'has unit a Calckey. T'has unit a un portal al Fediverse,
+  step6_2: Bé, no només t'has unit a Cluckey. T'has unit a un portal al Fediverse,
     una xarxa interconnectada de milers de servidors, anomenats "instàncies".
 _permissions:
   "read:account": Consulta la informació del teu compte

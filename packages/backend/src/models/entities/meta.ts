@@ -482,14 +482,14 @@ export class Meta {
 
 	@Column('varchar', {
 		length: 512,
-		default: 'https://codeberg.org/calckey/calckey',
+		default: 'https://github.com/emtkmkk/mkkey',
 		nullable: false,
 	})
 	public repositoryUrl: string;
 
 	@Column('varchar', {
 		length: 512,
-		default: 'https://codeberg.org/calckey/calckey/issues/new',
+		default: 'https://github.com/emtkmkk/mkkey/issues/new',
 		nullable: true,
 	})
 	public feedbackUrl: string | null;

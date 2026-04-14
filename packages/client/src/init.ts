@@ -157,7 +157,7 @@ const initializeErrorLogging = async () => {
 		const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
 		await withTimeout(
-			set("errorLog", [`${formattedDate} - Calckey v${version}`]),
+			set("errorLog", [`${formattedDate} - Cluckey v${version}`]),
 			3000,
 			"errorLog initialization timed out",
 		);
@@ -510,9 +510,12 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 	// https://github.com/misskey-dev/misskey/pull/8575#issuecomment-1114239210
 	// なぜかinit.tsの内容が2回実行されることがあるため、mountするdivを1つに制限する
 	const rootEl = (() => {
-		const MISSKEY_MOUNT_DIV_ID = "calckey_app";
-
-		const currentEl = document.getElementById(MISSKEY_MOUNT_DIV_ID);
+		const PRIMARY_MOUNT_DIV_ID = "cluckey_app";
+		const LEGACY_MOUNT_DIV_ID = "calckey_app";
+		// NOTE: 旧 ID でマウント済みの環境を壊さないため、既存要素があればそのまま再利用する。
+		const currentEl =
+			document.getElementById(PRIMARY_MOUNT_DIV_ID) ??
+			document.getElementById(LEGACY_MOUNT_DIV_ID);
 
 		if (currentEl) {
 			console.warn("multiple import detected");
@@ -520,7 +523,7 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 		}
 
 		const rootEl = document.createElement("div");
-		rootEl.id = MISSKEY_MOUNT_DIV_ID;
+		rootEl.id = PRIMARY_MOUNT_DIV_ID;
 		document.body.appendChild(rootEl);
 		return rootEl;
 	})();
@@ -1485,7 +1488,7 @@ const ensureHealthModeInstanceFallback = () => {
 	// NOTE: 監視専用。通常画面では API の meta 応答で上書きされる前提。
 	const fallbackInstance = {
 		version,
-		name: "Calckey",
+		name: "Cluckey",
 		privateMode: false,
 		disableRegistration: false,
 		disableLocalTimeline: false,
@@ -1502,7 +1505,7 @@ const ensureHealthModeInstanceFallback = () => {
 
 // ＊＊＊ ここからメイン処理 ＊＊＊
 (async () => {
-	console.info(`Calckey v${version}`);
+	console.info(`Cluckey v${version}`);
 
 	await runWithRetryWhileOpen(() => ensureLocaleAndApply(), 1000);
 

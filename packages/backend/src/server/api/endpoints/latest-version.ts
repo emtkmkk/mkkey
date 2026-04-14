@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * 最新バージョン情報を返す API エンドポイント。
+ *
+ * @remarks
+ * NOTE: 以前は外部リリース API を参照していたが、外部依存を減らすため現在は実行中バージョンを固定で返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
+import config from "@/config/index.js";
 import define from "../define.js";
 
 export const meta = {
@@ -14,16 +26,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async () => {
-	let tag_name;
-	await fetch(
-		"https://codeberg.org/api/v1/repos/calckey/calckey/releases?draft=false&pre-release=false&page=1&limit=1",
-	)
-		.then((response) => response.json())
-		.then((data) => {
-			tag_name = data[0].tag_name;
-		});
-
 	return {
-		tag_name,
+		tag_name: config.version,
 	};
 });

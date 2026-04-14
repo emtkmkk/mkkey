@@ -163,7 +163,7 @@ const instance = props.instance ?? {
 			'meta[name="theme-color-orig"]'
 		) as HTMLMetaElement
 	)?.content,
-	softwareName: Instance.softwareName ?? "Calckey",
+	softwareName: Instance.softwareName ?? "Cluckey",
 	softwareVersion: Instance.version,
 };
 

@@ -547,7 +547,7 @@ const userPage: Router.Middleware = async (ctx, next) => {
 		me,
 		avatarUrl: await Users.getAvatarUrl(user),
 		sub: subParam,
-		instanceName: meta.name || "Calckey",
+		instanceName: meta.name || "Cluckey",
 		icon: meta.iconUrl,
 		themeColor: meta.themeColor,
 		privateMode: meta.privateMode,
@@ -624,7 +624,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 						title: `投稿の参照 (${_note.referenceIds?.length}件) by ${userName} (@${Acct.toString(user)})`,
 						summary: "",
 						userName,
-						instanceName: meta.name || "Calckey",
+						instanceName: meta.name || "Cluckey",
 						icon: meta.iconUrl,
 						privateMode: meta.privateMode,
 						themeColor: meta.themeColor,
@@ -658,7 +658,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 					title: `投稿の参照 (${_note.referenceIds?.length}件) by ${userName} (@${Acct.toString(user)})`,
 					summary,
 					userName: refUserName || userName,
-					instanceName: meta.name || "Calckey",
+					instanceName: meta.name || "Cluckey",
 					icon: meta.iconUrl,
 					privateMode: meta.privateMode,
 					themeColor: meta.themeColor,
@@ -716,7 +716,7 @@ router.get("/notes/:note", async (ctx, next) => {
 				// TODO: Let locale changeable by instance setting
 				summary,
 				userName,
-				instanceName: meta.name || "Calckey",
+				instanceName: meta.name || "Cluckey",
 				icon: meta.iconUrl,
 				privateMode: meta.privateMode,
 				themeColor: meta.themeColor,
@@ -770,7 +770,7 @@ router.get("/posts/:note", async (ctx, next) => {
 			// TODO: Let locale changeable by instance setting
 			summary,
 			userName,
-			instanceName: meta.name || "Calckey",
+			instanceName: meta.name || "Cluckey",
 			icon: meta.iconUrl,
 			privateMode: meta.privateMode,
 			themeColor: meta.themeColor,
@@ -809,7 +809,7 @@ router.get("/@:user/pages/:page", async (ctx, next) => {
 			avatarUrl: await Users.getAvatarUrl(
 				await Users.findOneByOrFail({ id: page.userId }),
 			),
-			instanceName: meta.name || "Calckey",
+			instanceName: meta.name || "Cluckey",
 			icon: meta.iconUrl,
 			themeColor: meta.themeColor,
 			privateMode: meta.privateMode,
@@ -844,7 +844,7 @@ router.get("/clips/:clip", async (ctx, next) => {
 			avatarUrl: await Users.getAvatarUrl(
 				await Users.findOneByOrFail({ id: clip.userId }),
 			),
-			instanceName: meta.name || "Calckey",
+			instanceName: meta.name || "Cluckey",
 			privateMode: meta.privateMode,
 			icon: meta.iconUrl,
 			themeColor: meta.themeColor,
@@ -872,7 +872,7 @@ router.get("/gallery/:post", async (ctx, next) => {
 			avatarUrl: await Users.getAvatarUrl(
 				await Users.findOneByOrFail({ id: post.userId }),
 			),
-			instanceName: meta.name || "Calckey",
+			instanceName: meta.name || "Cluckey",
 			icon: meta.iconUrl,
 			themeColor: meta.themeColor,
 			privateMode: meta.privateMode,
@@ -908,7 +908,7 @@ router.get("/@:user/categories/:post", async (ctx, next) => {
 			profile,
 			summary: [(_category.contents ?? []).length ? `${_category.contents.length}個の絵文字` : "", _category.summary].filter(Boolean).join(" / "),
 			avatarUrl: await Users.getAvatarUrl(user),
-			instanceName: meta.name || "Calckey",
+			instanceName: meta.name || "Cluckey",
 			icon: meta.iconUrl,
 			themeColor: meta.themeColor,
 			privateMode: meta.privateMode,
@@ -933,7 +933,7 @@ router.get("/channels/:channel", async (ctx, next) => {
 		const meta = await fetchMeta();
 		await ctx.render("channel", {
 			channel: _channel,
-			instanceName: meta.name || "Calckey",
+			instanceName: meta.name || "Cluckey",
 			icon: meta.iconUrl,
 			themeColor: meta.themeColor,
 			privateMode: meta.privateMode,
@@ -1081,8 +1081,12 @@ router.get("/_health/frontend-login", async (ctx) => {
 				};
 				document.head.appendChild(script);
 
+				const hasMountedApp = () =>
+					document.getElementById("cluckey_app") ||
+					document.getElementById("calckey_app");
+
 				const observer = new MutationObserver(() => {
-					if (document.getElementById("calckey_app")) {
+					if (hasMountedApp()) {
 						clearTimeout(timeoutId);
 						observer.disconnect();
 						writeResult(true, "init_complete", "mounted");
@@ -1090,7 +1094,7 @@ router.get("/_health/frontend-login", async (ctx) => {
 				});
 				observer.observe(document.body, { childList: true, subtree: true });
 
-				if (document.getElementById("calckey_app")) {
+				if (hasMountedApp()) {
 					clearTimeout(timeoutId);
 					observer.disconnect();
 					writeResult(true, "init_complete", "mounted");
@@ -1352,8 +1356,8 @@ router.get("(.*)", async (ctx) => {
 	}
 	await ctx.render("base", {
 		img: meta.iconUrl,
-		title: meta.name || "Calckey",
-		instanceName: meta.name || "Calckey",
+		title: meta.name || "Cluckey",
+		instanceName: meta.name || "Cluckey",
 		desc: `FediverseのSNSサーバーの${meta.name}です\n\n${nowDate}時点の\nユーザ数 : ${usersCount.toLocaleString("ja-JP")}\n合計投稿数 : ${notesCount.toLocaleString("ja-JP")}\n絵文字数 : ${emojisCount.toLocaleString("ja-JP")}\n連合ユーザ数 : ${gUsersCount.toLocaleString("ja-JP")}\n連合投稿数 : ${gNotesCount.toLocaleString("ja-JP")}\n連合絵文字数 : ${gEmojisCount.toLocaleString("ja-JP")}`,
 		icon: meta.iconUrl,
 		splashIcon: splashIconUrl,

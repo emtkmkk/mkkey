@@ -706,7 +706,7 @@ unclip: "Batalkan klip"
 confirmToUnclipAlreadyClippedNote: "Catatan ini sudah disertakan di klip \"{name}\"\
   . Yakin ingin membatalkan catatan dari klip ini?"
 public: "Publik"
-i18nInfo: "Calckey diterjemahkan ke dalam banyak bahasa oleh sukarelawan. Kamu dapat\
+i18nInfo: "Cluckey diterjemahkan ke dalam banyak bahasa oleh sukarelawan. Kamu dapat\
   \ ikut membantu di {link}."
 manageAccessTokens: "Kelola access token"
 accountInfo: "Informasi akun"

@@ -26,6 +26,7 @@ img {
 	text-align: center;
 }
 
+#cluckey_app,
 #calckey_app {
 	display: none !important;
 }

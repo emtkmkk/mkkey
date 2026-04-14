@@ -1,7 +1,7 @@
 _lang_: "Polski"
 headlineMisskey: "Otwartoźródłowa, zdecentralizowana sieć społecznościowa, która zawsze\
   \ będzie darmowa! \U0001F680"
-introMisskey: "Hej! Calckey to otwartoźródłowa oraz zdecentralizowana sieć społecznościowa,\
+introMisskey: "Hej! Cluckey to otwartoźródłowa oraz zdecentralizowana sieć społecznościowa,\
   \ która zawsze będzie darmowa! \U0001F680"
 monthAndDay: "{month}-{day}"
 search: "Szukaj"
@@ -150,7 +150,7 @@ flagAsBot: "To konto jest botem"
 flagAsBotDescription: "Jeżeli ten kanał jest kontrolowany przez jakiś program, ustaw\
   \ tę opcję. Jeżeli włączona, będzie działać jako flaga informująca innych programistów,\
   \ aby zapobiegać nieskończonej interakcji z różnymi botami i dostosowywać wewnętrzne\
-  \ systemy Calckey, traktując konto jako bota."
+  \ systemy Cluckey, traktując konto jako bota."
 flagAsCat: "Czy jesteś kotem? \U0001F63A"
 flagAsCatDescription: "Dostaniesz kocie uszka, oraz będziesz mówić jak kot!"
 flagShowTimelineReplies: "Pokazuj odpowiedzi na osi czasu"
@@ -212,7 +212,7 @@ noUsers: "Brak użytkowników"
 editProfile: "Edytuj profil"
 noteDeleteConfirm: "Czy na pewno chcesz usunąć ten wpis?"
 pinLimitExceeded: "Nie możesz przypiąć więcej wpisów"
-intro: "Zakończono instalację Calckey! Utwórz konto administratora."
+intro: "Zakończono instalację Cluckey! Utwórz konto administratora."
 done: "Gotowe"
 processing: "Przetwarzanie..."
 preview: "Podgląd"
@@ -397,7 +397,7 @@ exploreFediverse: "Eksploruj Fediwersum"
 popularTags: "Tagi na czasie"
 userList: "Listy"
 about: "Informacje"
-aboutMisskey: "O Calckey"
+aboutMisskey: "O Cluckey"
 administrator: "Admin"
 token: "Token"
 twoStepAuthentication: "Uwierzytelnianie dwuskładnikowe"
@@ -548,7 +548,7 @@ ascendingOrder: "Rosnąco"
 descendingOrder: "Malejąco"
 scratchpad: "Brudnopis"
 scratchpadDescription: "Brudnopis to środowisko dla eksperymentów z AiScript. Możesz\
-  \ pisać, wykonywać i sprawdzać wyniki interakcji skryptu z Calckey."
+  \ pisać, wykonywać i sprawdzać wyniki interakcji skryptu z Cluckey."
 output: "Wyjście"
 script: "Skrypt"
 disablePagesScript: "Wyłącz AiScript na Stronach"
@@ -675,7 +675,7 @@ unclip: "Odczep"
 confirmToUnclipAlreadyClippedNote: "Ten wpis jest już częścią klipu \"{name}\". Czy\
   \ chcesz ją usunąć z tego klipu?"
 public: "Publiczny"
-i18nInfo: "Calckey jest tłumaczone na wiele języków przez wolontariuszy. Możesz pomóc\
+i18nInfo: "Cluckey jest tłumaczone na wiele języków przez wolontariuszy. Możesz pomóc\
   \ na {link}."
 manageAccessTokens: "Zarządzaj tokenami dostępu"
 accountInfo: "Informacje o koncie"
@@ -827,7 +827,7 @@ hashtags: "Hashtag"
 troubleshooting: "Rozwiązywanie problemów"
 useBlurEffect: "Użyj efektów rozmycia w UI"
 learnMore: "Dowiedz się więcej"
-misskeyUpdated: "Calckey zostało zaktualizowane!"
+misskeyUpdated: "Cluckey zostało zaktualizowane!"
 whatIsNew: "Pokaż zmiany"
 translate: "Przetłumacz"
 translatedFrom: "Przetłumaczone z {x}"
@@ -990,13 +990,13 @@ _registry:
   domain: "Domena"
   createKey: "Utwórz klucz"
 _aboutMisskey:
-  about: "Calckey jest forkiem Misskey utworzonym przez ThatOneCalculator, rozwijanym\
+  about: "Cluckey jest forkiem Misskey utworzonym przez ThatOneCalculator, rozwijanym\
     \ od 2022."
   contributors: "Główni twórcy"
   allContributors: "Wszyscy twórcy"
   source: "Kod źródłowy"
-  translation: "Tłumacz Calckey"
-  donate: "Przekaż darowiznę na Calckey"
+  translation: "Tłumacz Cluckey"
+  donate: "Przekaż darowiznę na Cluckey"
   morePatrons: "Naprawdę doceniam wsparcie ze strony wielu niewymienionych tu osób.\
     \ Dziękuję! \U0001F970"
   patrons: "Wspierający"
@@ -1007,9 +1007,9 @@ _nsfw:
 _mfm:
   cheatSheet: "Ściąga MFM"
   intro: "MFM jest językiem składniowym używanym przez m.in. Misskey, forki *key (w\
-    \ tym Calckey), oraz Akkomę, który może być użyty w wielu miejscach. Tu znajdziesz\
+    \ tym Cluckey), oraz Akkomę, który może być użyty w wielu miejscach. Tu znajdziesz\
     \ listę wszystkich możliwych elementów składni MFM."
-  dummy: "Calckey rozszerza świat Fediwersum"
+  dummy: "Cluckey rozszerza świat Fediwersum"
   mention: "Wspomnij"
   mentionDescription: "Używając znaku @ i nazwy użytkownika, możesz określić danego\
     \ użytkownika."
@@ -1226,7 +1226,7 @@ _time:
   hour: "godz."
   day: "dzień"
 _tutorial:
-  title: "Jak korzystać z Calckey"
+  title: "Jak korzystać z Cluckey"
   step1_1: "Witamy!"
   step1_2: "Pozwól, że Cię skonfigurujemy. Będziesz działać w mgnieniu oka!"
   step2_1: "Najpierw, proszę wypełnij swój profil."
@@ -1254,9 +1254,9 @@ _tutorial:
   step5_7: "Globalna {icon} oś czasu to miejsce, gdzie możesz zobaczyć posty z każdej\
     \ innej połączonej instancji."
   step6_1: "Więc, czym to jest to miejsce?"
-  step6_2: "Cóż, nie dołączył*ś po prostu do Calckey. Dołączył*ś do portalu do Fediverse,\
+  step6_2: "Cóż, nie dołączył*ś po prostu do Cluckey. Dołączył*ś do portalu do Fediverse,\
     \ połączonej sieci tysięcy serwerów, zwanych instancjami."
-  step6_3: "Każdy serwer działa w inny sposób, i nie wszystkie serwery używają Calckey.\
+  step6_3: "Każdy serwer działa w inny sposób, i nie wszystkie serwery używają Cluckey.\
     \ Ten jednak używa! Jest to trochę skomplikowane, ale w krótkim czasie załapiesz\
     \ o co chodzi."
   step6_4: "A teraz idź, odkrywaj i baw się dobrze!"
@@ -1850,7 +1850,7 @@ moveAccountDescription: Ten proces jest nieodwracalny. Upewnij się, że utworzy
   w formacie @person@instance.com
 moveFrom: Przejdź ze starego konta na obecne
 moveFromLabel: 'Konto które przenosisz:'
-showUpdates: Pokaż pop-up po aktualizacji Calckey
+showUpdates: Pokaż pop-up po aktualizacji Cluckey
 swipeOnDesktop: Zezwól na przeciąganie w stylu mobilnym na desktopie
 moveFromDescription: To utworzy alias twojego starego konta, w celu umożliwienia migracji
   z tamtego konta na to. Zrób to ZANIM rozpoczniesz przenoszenie się z tamtego konta.
@@ -1917,9 +1917,9 @@ objectStorageBaseUrlDesc: "URL stosowany jako odniesienie. Podaj URL twojego CDN
   \ a dla GCS i jego odpowiedników użyj 'https://storage.googleapis.com/<bucket>',\
   \ itd."
 sendErrorReportsDescription: "Gdy ta opcja jest włączona, szczegółowe informacje o\
-  \ błędach będą udostępnianie z Calckey gdy wystąpi problem, pomagając w ulepszaniu\
-  \ Calckey.\nZawrze to informacje takie jak wersja twojego systemu operacyjnego,\
-  \ przeglądarki, Twoja aktywność na Calckey itd."
+  \ błędach będą udostępnianie z Cluckey gdy wystąpi problem, pomagając w ulepszaniu\
+  \ Cluckey.\nZawrze to informacje takie jak wersja twojego systemu operacyjnego,\
+  \ przeglądarki, Twoja aktywność na Cluckey itd."
 privateModeInfo: Jeśli włączone, tylko dopuszczone instancje będą mogły federować
   z Twoją instancją. Wszystkie posty będą jedynie widoczne na Twojej instancji.
 oneHour: Godzina
@@ -1970,7 +1970,7 @@ caption: Auto opis
 splash: Splash screen
 updateAvailable: Może być dostępna aktualizacja!
 logoImageUrl: URL grafiki loga
-showAdminUpdates: Wskaż, że jest dostępna nowa wersja Calckey (tylko dla adminów)
+showAdminUpdates: Wskaż, że jest dostępna nowa wersja Cluckey (tylko dla adminów)
 hiddenTags: Ukryte hashtagi
 userSaysSomethingReason: '{name} powiedział* {reason}'
 customKaTeXMacroDescription: 'Skonfiguruj makra, aby łatwo pisać wyrażenia matematyczne!

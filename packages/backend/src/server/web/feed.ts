@@ -29,7 +29,7 @@ export default async function (user: User) {
 		id: author.link,
 		title: `${author.name} (@${user.username}@${config.host})`,
 		updated: notes[0].createdAt,
-		generator: "Calckey",
+		generator: "Cluckey",
 		description: `${user.notesCount} 投稿, ${user.followingCount} フォロー, ${
 			user.followersCount
 		} フォロワー${profile.description ? ` · ${profile.description}` : ""}`,

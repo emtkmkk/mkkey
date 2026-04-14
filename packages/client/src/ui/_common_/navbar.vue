@@ -246,6 +246,7 @@ function more(ev: MouseEvent) {
 		box-sizing: border-box;
 		overflow: auto;
 		overflow-x: clip;
+		#cluckey_app > :not(.wallpaper) &,
 		#calckey_app > :not(.wallpaper) & {
 			background: var(--navBg);
 		}

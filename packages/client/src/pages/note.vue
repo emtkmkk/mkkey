@@ -320,6 +320,7 @@ definePageMetadata(
 }
 
 .fcuexfpr {
+	#cluckey_app > :not(.wallpaper) &,
 	#calckey_app > :not(.wallpaper) & {
 		background: var(--bg);
 	}

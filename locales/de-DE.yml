@@ -1,7 +1,7 @@
 _lang_: "Deutsch"
 headlineMisskey: "Eine dezentralisierte Open-Source Social Media Plattform, die für\
   \ immer gratis bleibt! \U0001F680"
-introMisskey: "Willkommen! Calckey ist eine dezentralisierte Open-Source Social Media\
+introMisskey: "Willkommen! Cluckey ist eine dezentralisierte Open-Source Social Media\
   \ Plattform, die für immer gratis bleibt!\U0001F680"
 monthAndDay: "{day}.{month}."
 search: "Suchen"
@@ -155,7 +155,7 @@ cacheRemoteFilesDescription: "Ist diese Einstellung deaktiviert, so werden Datei
 flagAsBot: "Nutzerkonto als Bot kennzeichnen"
 flagAsBotDescription: "Aktiviere diese Option, falls dieses Nutzerkonto durch ein\
   \ Programm gesteuert wird. Falls aktiviert, agiert es als Flag für andere Entwickler\
-  \ zur Verhinderung von endlosen Kettenreaktionen mit anderen Bots und lässt Calckeys\
+  \ zur Verhinderung von endlosen Kettenreaktionen mit anderen Bots und lässt Cluckeys\
   \ interne Systeme dieses Nutzerkonto als Bot behandeln."
 flagAsCat: "Bist du eine Katze? \U0001F63A"
 flagAsCatDescription: "Du bekommst Katzenohren und sprichst wie eine Katze!"
@@ -227,7 +227,7 @@ noUsers: "Keine Nutzer gefunden"
 editProfile: "Profil bearbeiten"
 noteDeleteConfirm: "Möchtest du diesen Beitrag wirklich löschen?"
 pinLimitExceeded: "Du kannst keine weiteren Beiträge mehr anheften"
-intro: "Calckey ist installiert! Lass uns nun ein Administratorkonto einrichten."
+intro: "Cluckey ist installiert! Lass uns nun ein Administratorkonto einrichten."
 done: "Fertig"
 processing: "In Bearbeitung …"
 preview: "Vorschau"
@@ -418,7 +418,7 @@ exploreFediverse: "Das Fediverse erkunden"
 popularTags: "Beliebte Schlagwörter"
 userList: "Liste"
 about: "Über"
-aboutMisskey: "Über Calckey"
+aboutMisskey: "Über Cluckey"
 administrator: "Administrator"
 token: "Token"
 twoStepAuthentication: "Zwei-Faktor-Authentifizierung"
@@ -574,7 +574,7 @@ ascendingOrder: "Aufsteigende Reihenfolge"
 descendingOrder: "Absteigende Reihenfolge"
 scratchpad: "Testumgebung"
 scratchpadDescription: "Die Testumgebung bietet einen Bereich für AiScript-Experimente.\
-  \ Dort kannst du AiScript schreiben, ausführen sowie dessen Auswirkungen auf Calckey\
+  \ Dort kannst du AiScript schreiben, ausführen sowie dessen Auswirkungen auf Cluckey\
   \ überprüfen."
 output: "Ausgabe"
 script: "Skript"
@@ -716,7 +716,7 @@ unclip: "Aus Clip entfernen"
 confirmToUnclipAlreadyClippedNote: "Dieser Beitrag ist bereits im \"{name}\" Clip\
   \ enthalten. Möchtest du ihn aus diesem Clip entfernen?"
 public: "Öffentlich"
-i18nInfo: "Calckey wird durch freiwillige Helfer in viele verschiedene Sprachen übersetzt.\
+i18nInfo: "Cluckey wird durch freiwillige Helfer in viele verschiedene Sprachen übersetzt.\
   \ Auf {link} kannst du mithelfen."
 manageAccessTokens: "Zugriffstokens verwalten"
 accountInfo: "Nutzerkonto-Informationen"
@@ -776,10 +776,10 @@ nUsers: "{n} Nutzer"
 nNotes: "{n} Beiträge"
 sendErrorReports: "Fehlerberichte senden"
 sendErrorReportsDescription: "Ist diese Option aktiviert, so werden beim Auftreten\
-  \ von Fehlern detaillierte Fehlerinformationen an Calckey weitergegeben, was zur\
-  \ Verbesserung der Qualität von Calckey beiträgt.\nEnthalten in diesen Informationen\
+  \ von Fehlern detaillierte Fehlerinformationen an Cluckey weitergegeben, was zur\
+  \ Verbesserung der Qualität von Cluckey beiträgt.\nEnthalten in diesen Informationen\
   \ sind u.a. die Version deines Betriebssystems, welchen Browser du verwendest und\
-  \ ein Verlauf deiner Aktivitäten innerhalb Calckey."
+  \ ein Verlauf deiner Aktivitäten innerhalb Cluckey."
 myTheme: "Mein Farbschema"
 backgroundColor: "Hintergrundfarbe"
 accentColor: "Akzentfarbe"
@@ -874,7 +874,7 @@ hashtags: "Hashtags"
 troubleshooting: "Problembehandlung"
 useBlurEffect: "Weichzeichnungseffekt in der Benutzeroberfläche verwenden"
 learnMore: "Mehr erfahren"
-misskeyUpdated: "Calckey wurde aktualisiert!"
+misskeyUpdated: "Cluckey wurde aktualisiert!"
 whatIsNew: "Änderungen anzeigen"
 translate: "Übersetzen"
 translatedFrom: "Aus {x} übersetzt"
@@ -1085,13 +1085,13 @@ _registry:
   domain: "Domain"
   createKey: "Schlüssel erstellen"
 _aboutMisskey:
-  about: "Calckey ist ein Fork von Misskey, der seit 2022 von ThatOneCalculator entwickelt\
+  about: "Cluckey ist ein Fork von Misskey, der seit 2022 von ThatOneCalculator entwickelt\
     \ wird."
   contributors: "Hauptmitwirkende"
   allContributors: "Alle Mitwirkenden"
   source: "Quellcode"
-  translation: "Calckey übersetzen"
-  donate: "An Calckey spenden"
+  translation: "Cluckey übersetzen"
+  donate: "An Cluckey spenden"
   morePatrons: "Wir schätzen ebenso die Unterstützung vieler anderer hier nicht gelisteter\
     \ Personen sehr. Danke! \U0001F970"
   patrons: "UnterstützerInnen"
@@ -1104,7 +1104,7 @@ _mfm:
   intro: "MFM ist eine Misskey-exklusive Markup-Sprache, die in Misskey an vielen\
     \ Stellen verwendet werden kann. Hier kannst du eine Liste von verfügbarer MFM-Syntax\
     \ einsehen."
-  dummy: "Calckey erweitert die Welt des Fediverse"
+  dummy: "Cluckey erweitert die Welt des Fediverse"
   mention: "Erwähnung"
   mentionDescription: "Mit At-Zeichen und Nutzername kann ein individueller Nutzer\
     \ angegeben werden."
@@ -1321,7 +1321,7 @@ _time:
   hour: "Stunde(n)"
   day: "Tag(en)"
 _tutorial:
-  title: "Wie man Calckey benutzt"
+  title: "Wie man Cluckey benutzt"
   step1_1: "Willkommen!"
   step1_2: "Wir werden Sie einrichten. Sie werden im Handumdrehen einsatzbereit sein!"
   step2_1: "Bitte füllen Sie zuerst Ihr Profil aus."
@@ -1350,11 +1350,11 @@ _tutorial:
   step5_7: "In der {icon} Global-Timeline können Sie Beiträge von jedem anderen verbundenen\
     \ Server im fediverse sehen."
   step6_1: "Also, was ist das hier?"
-  step6_2: "Schön, mit Deiner Anmeldung zu Calckey bist Du gleichzeitig einem Portal\
+  step6_2: "Schön, mit Deiner Anmeldung zu Cluckey bist Du gleichzeitig einem Portal\
     \ zum Fediverse beigetreten, einem Netzwerk mit Tausenden von verbundenen Servern\
     \ (häufig noch als \"Instanzen\" bezeichnet)."
   step6_3: "Jeder der Server funktioniert auf unterschiedliche Weise, und nicht alle\
-    \ Server führen Calckey aus. Dieser jedoch schon! Es ist zu Beginn vielleicht\
+    \ Server führen Cluckey aus. Dieser jedoch schon! Es ist zu Beginn vielleicht\
     \ ein wenig kompliziert, aber Sie werden in kürzester Zeit den Dreh raus haben."
   step6_4: "Jetzt bist Du startbereit, entdecke die Möglichkeiten und hab Spaß dabei!"
 _2fa:
@@ -1982,7 +1982,7 @@ signupsDisabled: Anmeldungen auf diesem Server sind momentan nicht möglich, sie
 swipeOnDesktop: Am Desktop PC das Wischen wie bei mobilen Geräten zulassen
 enterSendsMessage: Drücken sie zum Senden des Beitrages die Eingabetaste (Strg-Taste
   ausgeschaltet)
-showUpdates: Zeigt ein Popup an, wenn Calckey aktualisiert wird.
+showUpdates: Zeigt ein Popup an, wenn Cluckey aktualisiert wird.
 socialTimeline: Social-Timeline
 moveFrom: Bisheriges Nutzerkonto zu diesem Nutzerkonto umziehen
 _messaging:
@@ -2013,7 +2013,7 @@ allowedInstancesDescription: Hosts von Instanzen, die für den Verbund auf die W
   Modus).
 migration: Migration
 updateAvailable: Es könnte eine Aktualisierung verfügbar sein!
-showAdminUpdates: Anzeigen, dass eine neue Calckey-Version verfügbar ist (nur Administrator)
+showAdminUpdates: Anzeigen, dass eine neue Cluckey-Version verfügbar ist (nur Administrator)
 customMOTDDescription: Benutzerdefinierte Meldungen für die Meldung des Tages (Begrüßungsbildschirm),
   die durch Zeilenumbrüche getrennt sind und nach dem Zufallsprinzip jedes Mal angezeigt
   werden, wenn ein Benutzer die Seite (neu) lädt.

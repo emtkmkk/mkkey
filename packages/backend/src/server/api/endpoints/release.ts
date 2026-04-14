@@ -1,8 +1,19 @@
+/**
+ * @packageDocumentation
+ *
+ * リリース情報を返す API エンドポイント。
+ *
+ * @remarks
+ * NOTE: 以前は外部 URL から取得していたが、外部依存を減らすため現在は固定で空オブジェクトを返す。
+ *
+ * @see {@link define} エンドポイント登録
+ * @internal
+ */
 import define from "../define.js";
 
 export const meta = {
 	tags: ["meta"],
-	description: "Codeberg からリリースノートを取得します。",
+	description: "固定の空リリース情報を返します。",
 
 	requireCredential: false,
 	requireCredentialPrivateMode: false,
@@ -15,14 +26,5 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async () => {
-	let release;
-
-	await fetch(
-		"https://git.joinfirefish.org/firefish/firefish/-/raw/develop/release.json",
-	)
-		.then((response) => response.json())
-		.then((data) => {
-			release = data;
-		});
-	return release;
+	return {};
 });

@@ -19,7 +19,7 @@
 					<!--<small
 						>Powered by
 						<a href="https://calckey.org/" target="_blank"
-							>Calckey</a
+							>Cluckey</a
 						></small
 					>-->
 				</div>

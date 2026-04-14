@@ -45,6 +45,7 @@ main {
 * {
 	font-family: BIZ UDGothic, Roboto, HelveticaNeue, Arial, sans-serif;
 }
+#cluckey_app,
 #calckey_app {
 	display: none !important;
 }

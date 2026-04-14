@@ -708,7 +708,7 @@ createNew: "Créer nouveau"
 optional: "Facultatif"
 createNewClip: "Créer un nouveau clip"
 public: "Public"
-i18nInfo: "Calckey est traduit dans différentes langues par des bénévoles. Vous pouvez\
+i18nInfo: "Cluckey est traduit dans différentes langues par des bénévoles. Vous pouvez\
   \ contribuer à {link}."
 manageAccessTokens: "Gérer les jetons d'accès"
 accountInfo: " Informations du compte "
@@ -1224,7 +1224,7 @@ _time:
   hour: "h"
   day: "j"
 _tutorial:
-  title: "Comment utiliser Calckey"
+  title: "Comment utiliser Cluckey"
   step1_1: "Bienvenue!"
   step1_2: "On va vous installer. Vous serez opérationnel en un rien de temps"
   step2_1: "Tout d'abord, remplissez votre profil"
@@ -1250,11 +1250,11 @@ _tutorial:
   step5_7: "La timeline globale {icon} est l'endroit où vous pouvez voir les messages\
     \ de toutes les autres instances connectées."
   step6_1: "Alors quel est cet endroit ?"
-  step6_2: "Eh bien, vous ne venez pas de rejoindre Calckey. Vous avez rejoint un\
+  step6_2: "Eh bien, vous ne venez pas de rejoindre Cluckey. Vous avez rejoint un\
     \ portail vers le Fediverse, un réseau interconnecté de milliers de serveurs,\
     \ appelés \"instances\"."
   step6_3: "Chaque serveur fonctionne différemment, et tous les serveurs n'utilisent\
-    \ pas Calckey. Cependant, celui-ci le fait ! C'est un peu délicat, mais vous aurez\
+    \ pas Cluckey. Cependant, celui-ci le fait ! C'est un peu délicat, mais vous aurez\
     \ le coup de main en un rien de temps."
   step6_4: "Maintenant, allez-y, explorez et amusez-vous !"
 _2fa:
@@ -1819,11 +1819,11 @@ logoutConfirm: Confirmer la déconnexion ?
 lastActiveDate: Dernière utilisation le
 cannotUploadBecauseNoFreeSpace: Mise en ligne échouée faute de place sur le Drive.
 remoteOnly: Distant seulement
-showUpdates: Afficher une fenêtre en sur-impression quand Calckey se met à jour
+showUpdates: Afficher une fenêtre en sur-impression quand Cluckey se met à jour
 recommendedInstances: Instances recommandées
 caption: Description automatique
 migration: Migration
-showAdminUpdates: Indiquer qu'une nouvelle version de Calckey est disponible (admin
+showAdminUpdates: Indiquer qu'une nouvelle version de Cluckey est disponible (admin
   seulement)
 replayTutorial: Relancer le tutoriel
 moveTo: Migrer le compte courant vers un nouveau compte

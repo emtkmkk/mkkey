@@ -305,11 +305,12 @@
    *
    * @remarks
    * NOTE: `/url` には `normalizeUrlForPreviewFetch` 済みの URL を渡す（music.youtube.com の初回失敗を防ぐ）。
+   * NOTE: クエリにクライアント `version` を付与し、デプロイでバージョンが変わったときブラウザの `/url` 応答キャッシュを別 URL として切り替える。
    *
    * @public
    */
   import { computed, onMounted, onUnmounted, watch } from "vue";
-  import { url as local, lang } from "@/config";
+  import { url as local, lang, version } from "@/config";
   import { i18n } from "@/i18n";
   import { defaultStore } from "@/store";
   import MkButton from "@/components/MkButton.vue";
@@ -491,8 +492,9 @@ const fetchUrlData = async () => {
   try {
     // サーバと同じ正規化（music.youtube.com 等）。初回が {} だと以降の補正に届かないため fetch 前に行う。
     const previewFetchUrl = normalizeUrlForPreviewFetch(props.url);
+    // `v` はサーバ未使用。Cache-Control 付き応答のブラウザキャッシュをビルド単位で分離する。
     const response = await fetch(
-		`/url?url=${encodeURIComponent(previewFetchUrl)}&lang=${requestLang}`
+		`/url?url=${encodeURIComponent(previewFetchUrl)}&lang=${encodeURIComponent(requestLang)}&v=${encodeURIComponent(version)}`,
 	  );
 	  const info = await response.json();
 	  if (info.url == null) return;

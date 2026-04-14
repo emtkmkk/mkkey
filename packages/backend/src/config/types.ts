@@ -147,6 +147,34 @@ export type Source = {
 		s3ForcePathStyle?: boolean;
 	};
 	summalyProxyUrl?: string;
+	/**
+	 * `/url` 外向き削減（サーバ側キャッシュ・セマフォ等）。未指定時は url-preview-outbound 内の既定値を使う。
+	 *
+	 * @remarks
+	 * - `maxConcurrentPerHost` / `maxGlobalConcurrent` に **0 以下**を指定すると、その軸の制限を無効化する。
+	 */
+	urlPreview?: {
+		/** false のとき成功・ネガティブ・短縮 URL キャッシュを使わない（既定: true 相当）。 */
+		cacheEnabled?: boolean;
+		/** Redis 成功キャッシュ TTL（秒）。 */
+		redisOkTtlSec?: number;
+		/** プロセス内成功キャッシュ TTL（ミリ秒）。 */
+		memoryOkTtlMs?: number;
+		/** 429 等で Retry-After が無いときのネガティブ TTL（秒）。 */
+		negativeDefaultSec?: number;
+		/** ネガティブ TTL の下限（秒）。 */
+		negativeMinSec?: number;
+		/** ネガティブ TTL の上限（秒）。Retry-After の異常値対策。 */
+		negativeMaxSec?: number;
+		/** 5xx で Retry-After が無いときのネガティブ TTL（秒）。 */
+		negative5xxSec?: number;
+		/** 同一ホストへの同時プレビュー取得上限（0 以下で無制限）。 */
+		maxConcurrentPerHost?: number;
+		/** インスタンス全体の同時プレビュー取得上限（0 以下で無制限）。 */
+		maxGlobalConcurrent?: number;
+		/** 短縮 URL 解決結果のキャッシュ TTL（秒）。 */
+		shortUrlResolveTtlSec?: number;
+	};
 	userAgent2?: string;
 	specialServerHosts?: string[];
 };

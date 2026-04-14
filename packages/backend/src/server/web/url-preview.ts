@@ -17,6 +17,18 @@ import Logger from "@/services/logger.js";
 import config from "@/config/index.js";
 import { query } from "@/prelude/url.js";
 import { normalizeUrlForPreviewFetch } from "@/misc/normalize-url-for-preview-fetch.js";
+import {
+	buildUrlPreviewCacheKey,
+	fetchShortUrlResolveCached,
+	storeNegativeRedis,
+	storePositiveCaches,
+	storePositiveMemoryOnly,
+	tryGetNegativeRedis,
+	tryGetPositiveMemory,
+	tryGetPositiveRedis,
+	withUrlPreviewInflight,
+	withUrlPreviewOutboundLimits,
+} from "@/misc/url-preview-outbound.js";
 import { getHtml, getJson, getResponse } from "@/misc/fetch.js";
 import {
   translateWithDeepl,
@@ -234,13 +246,15 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 
   const meta = await fetchMeta();
 
-  logger.info(
+  logger.debug(
     meta.summalyProxy
       ? `(Proxy) Getting preview of ${url}@${lang} ...`
       : `Getting preview of ${url}@${lang} ...`
   );
 
-  const redirectedUrl = await resolveShortUrlIfNeeded(url);
+  const redirectedUrl = await fetchShortUrlResolveCached(url, () =>
+		resolveShortUrlIfNeeded(url),
+	);
   const effectiveUrl = redirectedUrl ?? url;
   const isXPreviewUrl = (() => {
 		try {
@@ -720,134 +734,177 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     }
   }
 
-  // 既存の処理
-  try {
-    const summary = meta.summalyProxy
-      ? await getJson(
-          `${meta.summalyProxy}?${query({
-            url: summaryFetchUrl,
-            lang: lang ?? "en-US",
-          })}`
-        )
-      : await summaly.default(summaryFetchUrl, {
-          followRedirects: false,
-          lang: lang ?? "en-US",
-        });
+  // 既存の処理（Summaly + センシティブ判定）。共有キャッシュ・インフライト・ホスト単位セマフォで外向きを抑える。
+  const langKey = lang ?? "en-US";
+  const previewCacheHash = buildUrlPreviewCacheKey(
+    summaryFetchUrl,
+    langKey,
+    meta.summalyProxy ?? null,
+  );
+  const urlPreviewCacheOn = config.urlPreview?.cacheEnabled !== false;
 
-    logger.succ(`Got preview of ${url}: ${summary.title}`);
-
-    if (
-      summary.url &&
-      !(
-        summary.url.startsWith("http://") ||
-        summary.url.startsWith("https://")
-      )
-    ) {
-      throw new Error("unsupported schema included");
+  if (urlPreviewCacheOn) {
+    if (await tryGetNegativeRedis(previewCacheHash)) {
+      ctx.status = 200;
+      ctx.set("Cache-Control", "max-age=120, immutable");
+      ctx.body = "{}";
+      return;
     }
-
-    if (
-      summary.player?.url &&
-      !(
-        summary.player.url.startsWith("http://") ||
-        summary.player.url.startsWith("https://")
-      )
-    ) {
-      throw new Error("unsupported schema included");
-    }
-
-    if (VRCWorldId) {
-      // VRCの場合の処理
-      const VRCApiUrl = `https://api.vrchat.cloud/api/1/worlds/${VRCWorldId}`;
-
-      // getJsonを使用してSteamデータを取得
-      const data = await getJson(
-        VRCApiUrl,
-        "application/json, */*",
-        5000,
-      );
-
-      if (data.name) {
-        summary.title = [data.name, data.authorName, "VRChat"].filter(Boolean).join(" - ");
-        summary.description = data.description || summary.description;
-        summary.thumbnail = data.imageUrl || data.thumbnailImageUrl || summary.thumbnail;
+    const memHit = tryGetPositiveMemory(previewCacheHash);
+    if (memHit) {
+      try {
+        ctx.body = JSON.parse(memHit);
+        ctx.set("Cache-Control", "max-age=604800, immutable");
+        return;
+      } catch {
+        // JSON 破損時は再取得
       }
     }
-
-    let googleMapsThumbnailAssigned = false;
-    if (isGoogleMapsUrl(effectiveUrl)) {
-      const googleMapsResult = await enrichGoogleMapsSummaryWithoutApiKey(
-        effectiveUrl,
-        summary,
-        lang,
-      );
-      googleMapsThumbnailAssigned = googleMapsResult.thumbnailAssignedByGoogleMaps;
+    const redisHit = await tryGetPositiveRedis(previewCacheHash);
+    if (redisHit) {
+      try {
+        ctx.body = JSON.parse(redisHit);
+        ctx.set("Cache-Control", "max-age=604800, immutable");
+        storePositiveMemoryOnly(previewCacheHash, redisHit);
+        return;
+      } catch {
+        // 同上
+      }
     }
+  }
 
-    let summaryIsSensitive = false;
-    let summaryPreferLargeThumbnail = false;
-    try {
-      const sensitiveRes = await getResponse({
-        url: summaryFetchUrl,
-        method: "GET",
-        headers: {
-          Accept: "text/html, */*",
-          "User-Agent": config.userAgent,
-        },
-        timeout: SENSITIVE_PREVIEW_FETCH_TIMEOUT_MS,
-        // size を渡すと body が 64KB 超のときに res.text() が例外になるため渡さず、readBodyUpTo で先頭のみ利用する
-      });
-      // 先頭 64KB のみ使用（meta は通常ここに含まれる。Booth 等 64KB 超のページでも判定可能にする）
-      const sensitiveHtml = await readBodyUpTo(
-        sensitiveRes,
-        SENSITIVE_PREVIEW_FETCH_SIZE,
-      );
+  try {
+    // NOTE: インフライトを外側にし、同一キー待ちがセマフォ枠を占有しないようにする。
+    const summary = await withUrlPreviewInflight(previewCacheHash, () =>
+      withUrlPreviewOutboundLimits(summaryFetchUrl, async () => {
+        const sm = meta.summalyProxy
+          ? await getJson(
+              `${meta.summalyProxy}?${query({
+                url: summaryFetchUrl,
+                lang: langKey,
+              })}`,
+            )
+          : await summaly.default(summaryFetchUrl, {
+              followRedirects: false,
+              lang: langKey,
+            });
 
-      // HTML からサムネイルが取得できる場合は補完してからフラグ判定を行う
-      ensureThumbnailFromHtml(summary, sensitiveHtml);
+        logger.debug(`Got preview of ${url}: ${sm.title}`);
 
-      summaryIsSensitive = isSensitiveFromHeadersAndHtml(
-        sensitiveRes.headers,
-        sensitiveHtml,
-      );
-      summaryPreferLargeThumbnail =
-        preferLargeThumbnailFromHtml(sensitiveHtml) && !!summary.thumbnail;
-    } catch (err) {
-      logger.debug(`Sensitive/preferLarge check fetch failed for ${url}: ${err}`);
-    }
+        if (
+          sm.url &&
+          !(
+            sm.url.startsWith("http://") ||
+            sm.url.startsWith("https://")
+          )
+        ) {
+          throw new Error("unsupported schema included");
+        }
 
-    // VRC 専用処理でサムネイルを付与した場合は大きい表示を希望
-    if (VRCWorldId && !!summary.thumbnail) {
-      summaryPreferLargeThumbnail = true;
-    }
-    // Google Maps 専用処理でサムネイルを付与した場合のみ大きい表示を希望
-    if (googleMapsThumbnailAssigned) {
-      summaryPreferLargeThumbnail = true;
-    }
-    // player 情報がある場合も大きい表示を希望
-    if (summary.player?.url) {
-      summaryPreferLargeThumbnail = true;
-    }
+        if (
+          sm.player?.url &&
+          !(
+            sm.player.url.startsWith("http://") ||
+            sm.player.url.startsWith("https://")
+          )
+        ) {
+          throw new Error("unsupported schema included");
+        }
 
-		if (isXPreviewUrl) {
-			summaryPreferLargeThumbnail =
-				!!summary.player?.url || hasXMediaThumbnail(summary.thumbnail);
-		}
+        if (VRCWorldId) {
+          const VRCApiUrl = `https://api.vrchat.cloud/api/1/worlds/${VRCWorldId}`;
 
-    summary.isSensitive = summaryIsSensitive;
-    summary.preferLargeThumbnail = summaryPreferLargeThumbnail;
+          const data = await getJson(
+            VRCApiUrl,
+            "application/json, */*",
+            5000,
+          );
 
-    summary.icon = wrap(summary.icon);
-    summary.thumbnail = wrap(summary.thumbnail);
-    if (typeof summary.sitename === "string") {
-      const normalized = summary.sitename.replace(/\s+/g, " ").trim();
-      summary.sitename = normalized.length > 0 ? normalized : "";
-    }
-    // Cache 7days
+          if (data.name) {
+            sm.title = [data.name, data.authorName, "VRChat"].filter(Boolean).join(" - ");
+            sm.description = data.description || sm.description;
+            sm.thumbnail = data.imageUrl || data.thumbnailImageUrl || sm.thumbnail;
+          }
+        }
+
+        let googleMapsThumbnailAssigned = false;
+        if (isGoogleMapsUrl(effectiveUrl)) {
+          const googleMapsResult = await enrichGoogleMapsSummaryWithoutApiKey(
+            effectiveUrl,
+            sm,
+            lang,
+          );
+          googleMapsThumbnailAssigned =
+            googleMapsResult.thumbnailAssignedByGoogleMaps;
+        }
+
+        let summaryIsSensitive = false;
+        let summaryPreferLargeThumbnail = false;
+        try {
+          const sensitiveRes = await getResponse({
+            url: summaryFetchUrl,
+            method: "GET",
+            headers: {
+              Accept: "text/html, */*",
+              "User-Agent": config.userAgent,
+            },
+            timeout: SENSITIVE_PREVIEW_FETCH_TIMEOUT_MS,
+          });
+          const sensitiveHtml = await readBodyUpTo(
+            sensitiveRes,
+            SENSITIVE_PREVIEW_FETCH_SIZE,
+          );
+
+          ensureThumbnailFromHtml(sm, sensitiveHtml);
+
+          summaryIsSensitive = isSensitiveFromHeadersAndHtml(
+            sensitiveRes.headers,
+            sensitiveHtml,
+          );
+          summaryPreferLargeThumbnail =
+            preferLargeThumbnailFromHtml(sensitiveHtml) && !!sm.thumbnail;
+        } catch (err) {
+          logger.debug(`Sensitive/preferLarge check fetch failed for ${url}: ${err}`);
+        }
+
+        if (VRCWorldId && !!sm.thumbnail) {
+          summaryPreferLargeThumbnail = true;
+        }
+        if (googleMapsThumbnailAssigned) {
+          summaryPreferLargeThumbnail = true;
+        }
+        if (sm.player?.url) {
+          summaryPreferLargeThumbnail = true;
+        }
+
+        if (isXPreviewUrl) {
+          summaryPreferLargeThumbnail =
+            !!sm.player?.url || hasXMediaThumbnail(sm.thumbnail);
+        }
+
+        sm.isSensitive = summaryIsSensitive;
+        sm.preferLargeThumbnail = summaryPreferLargeThumbnail;
+
+        sm.icon = wrap(sm.icon);
+        sm.thumbnail = wrap(sm.thumbnail);
+        if (typeof sm.sitename === "string") {
+          const normalized = sm.sitename.replace(/\s+/g, " ").trim();
+          sm.sitename = normalized.length > 0 ? normalized : "";
+        }
+
+        return sm;
+      }),
+    );
+
     ctx.set("Cache-Control", "max-age=604800, immutable");
-
     ctx.body = summary;
+    if (urlPreviewCacheOn) {
+      await storePositiveCaches(previewCacheHash, JSON.stringify(summary));
+    }
   } catch (err) {
+    if (urlPreviewCacheOn) {
+      await storeNegativeRedis(previewCacheHash, err);
+    }
     logger.warn(`Failed to get preview of ${url}: ${err}`);
     ctx.status = 200;
     ctx.set("Cache-Control", "max-age=86400, immutable");

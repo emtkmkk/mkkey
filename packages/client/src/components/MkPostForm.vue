@@ -431,6 +431,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 投稿フォームの入力、下書き、投稿送信を扱うコンポーネント。
+ *
+ * @remarks
+ * NOTE: 同一内容の連続投稿を抑止するため、CW/本文と投稿文脈を使った一時的な署名管理を行う。
+ * NOTE: ストリーミングで自身投稿を受信した場合、対象が通常投稿系キーなら下書きを同期削除する。
+ *
+ * @internal
+ */
 import {
 	unref,
 	inject,
@@ -675,6 +686,159 @@ let shortcutKeyValue = $ref(0);
 let filePromises = $ref<Promise<void>[]>([]);
 let fileError = $ref(false);
 let referencesFlg = $ref(true);
+
+//#region 投稿重複抑止
+/**
+ * 投稿重複抑止用の署名キーに対応する pending 情報。
+ *
+ * @remarks
+ * NOTE: 送信中の同一内容投稿を抑止するために使う短命な状態。
+ * @internal
+ */
+type PendingPostEntry = {
+	draftKey: string;
+	createdAt: number;
+};
+
+/**
+ * ストリーミング購読の参照を保持する。
+ *
+ * @remarks
+ * NOTE: コンポーネント破棄時に確実に dispose するために保持する。
+ * @internal
+ */
+let mainStreamConnection: ReturnType<typeof stream.useChannel> | null = null;
+
+/**
+ * 送信待ち投稿の署名一覧。
+ *
+ * @remarks
+ * NOTE: キーは CW/本文と投稿文脈から生成した署名文字列。
+ * @internal
+ */
+const pendingPostBySignature = new Map<string, PendingPostEntry>();
+
+/**
+ * 署名比較用の文字列に正規化する。
+ *
+ * @param value - 正規化対象の値
+ * @returns null/undefined を空文字へ揃えた比較用文字列
+ * @internal
+ */
+function normalizeSignatureValue(value: string | null | undefined): string {
+	return typeof value === "string" ? value : "";
+}
+
+/**
+ * 投稿 payload から重複抑止署名を構築する。
+ *
+ * @remarks
+ * NOTE: `visibility` と `localOnly` は仕様により一致条件へ含めない。
+ * @param payload - 投稿 API に送る payload
+ * @param postingAccountId - 実際に投稿するアカウント ID
+ * @returns 比較に使う署名文字列
+ * @internal
+ */
+function buildPostDeduplicationSignature(
+	payload: PostPayload,
+	postingAccountId: string,
+): string {
+	return JSON.stringify({
+		cw: normalizeSignatureValue(payload.cw),
+		text: normalizeSignatureValue(payload.text),
+		postingAccountId,
+		replyId: normalizeSignatureValue(payload.replyId),
+		renoteId: normalizeSignatureValue(payload.renoteId),
+		channelId: normalizeSignatureValue(payload.channelId),
+	});
+}
+
+/**
+ * ストリーミング受信ノートから重複抑止署名を構築する。
+ *
+ * @param note - ストリーミングで受信したノート
+ * @returns 受信ノートに対応する署名文字列
+ * @internal
+ */
+function buildPostDeduplicationSignatureFromStreamNote(
+	note: misskey.entities.Note,
+): string {
+	return JSON.stringify({
+		cw: normalizeSignatureValue(note.cw),
+		text: normalizeSignatureValue(note.text),
+		postingAccountId: normalizeSignatureValue(note.userId),
+		replyId: normalizeSignatureValue(note.replyId),
+		renoteId: normalizeSignatureValue(
+			(note as any).renoteId ?? (note as any).renote?.id,
+		),
+		channelId: normalizeSignatureValue((note as any).channelId),
+	});
+}
+
+/**
+ * ストリーミング一致時に削除してよい下書きキーかを判定する。
+ *
+ * @param key - 判定対象の下書きキー
+ * @returns 通常投稿系キーのみ true
+ * @internal
+ */
+function isStreamSyncDeletableDraftKey(key: string): boolean {
+	return (
+		key === "note" ||
+		key.startsWith("note:") ||
+		key.startsWith("reply:") ||
+		key.startsWith("renote:") ||
+		key.startsWith("air:") ||
+		key.startsWith("channel:")
+	);
+}
+
+/**
+ * 送信待ち署名を登録する。
+ *
+ * @param signature - 投稿内容を識別する署名
+ * @param currentDraftKey - 登録時点の下書きキー
+ * @internal
+ */
+function registerPendingPostSignature(signature: string, currentDraftKey: string): void {
+	pendingPostBySignature.set(signature, {
+		draftKey: currentDraftKey,
+		createdAt: Date.now(),
+	});
+}
+
+/**
+ * 送信待ち署名を解除する。
+ *
+ * @param signature - 解除対象の署名
+ * @returns 解除した pending 情報
+ * @internal
+ */
+function clearPendingPostSignature(signature: string): PendingPostEntry | undefined {
+	const entry = pendingPostBySignature.get(signature);
+	if (!entry) return undefined;
+	pendingPostBySignature.delete(signature);
+	return entry;
+}
+
+/**
+ * ストリーミング受信内容と pending を照合して、必要なら解除と下書き同期を行う。
+ *
+ * @param note - ストリーミングで受信したノート
+ * @internal
+ */
+function syncPendingPostByStream(note: misskey.entities.Note): void {
+	if (note.userId !== $i.id) return;
+
+	const signature = buildPostDeduplicationSignatureFromStreamNote(note);
+	const matched = clearPendingPostSignature(signature);
+	if (!matched) return;
+
+	if (isStreamSyncDeletableDraftKey(matched.draftKey)) {
+		deleteDraft(matched.draftKey);
+	}
+}
+//#endregion
 
 function enqueueUpload(
         promiseFactory: () => Promise<misskey.entities.DriveFile[] | misskey.entities.DriveFile>,
@@ -2184,6 +2348,13 @@ async function post() {
 	postData = await applyPostPlugins(postData, notePostInterruptors);
 
 	const token = await resolvePostAccountToken(postAccount);
+	const postingAccountId = postAccount?.id ?? $i.id;
+	const postSignature = buildPostDeduplicationSignature(postData, postingAccountId);
+
+	if (pendingPostBySignature.has(postSignature)) {
+		os.toast("同じ内容の投稿は、前回の投稿処理が完了するまで送信できません。");
+		return;
+	}
 
 	if ($i.isMiniSilenced && postData.visibility === "public") {
 		const { canceled } = await os.confirm({
@@ -2195,12 +2366,15 @@ async function post() {
 		if (canceled) return;
 	}
 
+	registerPendingPostSignature(postSignature, draftKey);
+
 	const backupDraftData = persistDraftOnSuccess(postData.text);
 
 	await submitPostRequest({
 		postData,
 		token,
 		backupDraftData,
+		postSignature,
 	});
 }
 type NoteVisibility = (typeof misskey.noteVisibilities)[number];
@@ -2381,6 +2555,7 @@ interface SubmitPostRequestOptions {
         postData: PostPayload;
         token?: string;
         backupDraftData: DraftEntry | undefined;
+		postSignature: string;
 }
 
 
@@ -2388,6 +2563,7 @@ async function submitPostRequest({
 	postData,
 	token,
 	backupDraftData,
+	postSignature,
 }: SubmitPostRequestOptions): Promise<void> {
 	posting = true;
 	try {
@@ -2407,16 +2583,19 @@ async function submitPostRequest({
 			key: draftKey,
 			...backupDraftData,
 		});
+		clearPendingPostSignature(postSignature);
 		posting = false;
 		postAccount = null;
 	} catch (err) {
 		if ((err as any)?.code === "DUPLICATE_REQUEST") {
 			// NOTE: 同一投稿の再送がサーバ側で吸収されたケースは成功扱いに寄せる。
+			clearPendingPostSignature(postSignature);
 			posting = false;
 			postAccount = null;
 			os.toast("同じ投稿の再送信は自動的に抑止されました。");
 			return;
 		}
+		clearPendingPostSignature(postSignature);
 		posting = false;
 		restoreData();
 		restoreDraft();
@@ -2900,6 +3079,9 @@ function openAccountMenu(ev: MouseEvent) {
 const autocompleteInstances: Autocomplete[] = [];
 
 onMounted(() => {
+	mainStreamConnection = stream.useChannel("main");
+	mainStreamConnection.on("note", syncPendingPostByStream);
+
         if (props.autofocus) {
                 focus();
 
@@ -2958,6 +3140,11 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+	if (mainStreamConnection) {
+		mainStreamConnection.dispose();
+		mainStreamConnection = null;
+	}
+
         for (const instance of autocompleteInstances) {
                 instance.detach();
         }

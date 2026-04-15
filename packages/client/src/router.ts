@@ -446,6 +446,7 @@ export const routes = [
 	{
 		path: "/tags/:tag",
 		component: page(() => import("./pages/tag.vue")),
+		loginRequired: true,
 		query: {
 			user: "user",
 		},

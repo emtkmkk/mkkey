@@ -105,6 +105,11 @@ export default define(meta, paramDef, async (ps, me) => {
 		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
 
+	// NOTE: 未認証リクエストではハッシュタグ検索結果をローカル投稿に限定する。
+	if (me == null) {
+		query.andWhere("note.userHost IS NULL");
+	}
+
 	generateVisibilityQuery(query, me);
 	if (me) generateMutedUserQuery(query, me);
 	if (me) generateBlockedUserQuery(query, me);

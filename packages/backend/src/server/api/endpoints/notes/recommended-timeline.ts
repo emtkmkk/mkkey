@@ -87,16 +87,6 @@ export const paramDef = {
 	required: [],
 } as const;
 
-/**
- * 投票終了間近とみなす時間窓（3時間）
- *
- * @remarks
- * NOTE: おすすめTLへ「終了間近の公開投票」を加算するための固定値。
- *
- * @internal
- */
-const POLL_ENDING_SOON_WINDOW_MS = 3 * 60 * 60 * 1000;
-
 export default define(meta, paramDef, async (ps, user) => {
 	const m = await fetchMeta();
 	if (m.disableRecommendedTimeline) {
@@ -105,8 +95,6 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
-	const now = new Date();
-	const pollWindowEnd = new Date(now.getTime() + POLL_ENDING_SOON_WINDOW_MS);
 	const followingCondition =
 		user != null
 			? createFollowingExistsCondition(user.id, {
@@ -123,122 +111,137 @@ export default define(meta, paramDef, async (ps, user) => {
 					.getQuery()})`
 			: null;
 
-	//#region クエリ構築
-	const query = makePaginationQuery(
-		Notes.createQueryBuilder("note"),
-		ps.sinceId,
-		ps.untilId,
-		ps.sinceDate,
-		ps.untilDate,
-	)
-		.leftJoin("note.poll", "poll")
-		.andWhere(
-			new Brackets((qb) => {
-				// NOTE: 既存おすすめ条件（画像付き投稿 or 画像付き純リノート）
-				qb.where(
-					'(CARDINALITY(note."fileIds") > 0 OR (note.renoteId IS NOT NULL AND note.text IS NULL AND CARDINALITY(renote."fileIds") > 0))',
-				);
-				// NOTE: 加算条件（フォロー中かつ非botの公開投票で、終了まで3時間以内）
-				if (followingCondition && unvotedPollCondition) {
-					qb.orWhere(
-						new Brackets((pollQb) => {
-							pollQb
-								.where("note.hasPoll = TRUE")
-								.andWhere("user.isBot = FALSE")
-								.andWhere(followingCondition.clause("note.userId"))
-								.andWhere(unvotedPollCondition)
-								.andWhere("poll.expiresAt IS NOT NULL")
-								.andWhere("poll.expiresAt > :pollWindowStart")
-								.andWhere("poll.expiresAt <= :pollWindowEnd");
-						}),
-					);
-				}
-			}),
-		)
-		.andWhere("(note.visibility = 'public')")
-		.innerJoinAndSelect("note.user", "user")
-		.leftJoinAndSelect("user.avatar", "avatar")
-		.leftJoinAndSelect("user.banner", "banner")
-		.leftJoinAndSelect("note.reply", "reply")
-		.leftJoinAndSelect("note.renote", "renote")
-		.leftJoinAndSelect("reply.user", "replyUser")
-		.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
-		.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
-		.leftJoinAndSelect("renote.user", "renoteUser")
-		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
-		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+	//#region クエリ共通部
+	const applyCommonTimelineFilters = (query: ReturnType<typeof Notes.createQueryBuilder>) => {
+		generateChannelQuery(query, user);
+		if (followingCondition) {
+			query.setParameters(followingCondition.parameters);
+		}
+		query.setParameters({
+			recommendedTimelineVoteUserId: user?.id,
+		});
+		if (user && followingCondition) {
+			generateRepliesQuery(
+				query,
+				user,
+				followingCondition,
+				ps.showReplyMode ?? "all",
+				ps.showReplyMode === "notBotOnly",
+			);
+		} else {
+			generateRepliesQuery(query, user);
+		}
+		generateVisibilityQuery(query, user);
 
-	generateChannelQuery(query, user);
-	if (followingCondition) {
-		query.setParameters(followingCondition.parameters);
-	}
-	query.setParameters({
-		pollWindowStart: now,
-		pollWindowEnd,
-		recommendedTimelineVoteUserId: user?.id,
-	});
-	if (user && followingCondition) {
-		generateRepliesQuery(
-			query,
-			user,
-			followingCondition,
-			ps.showReplyMode ?? "all",
-			ps.showReplyMode === "notBotOnly",
-		);
-	} else {
-		generateRepliesQuery(query, user);
-	}
-	generateVisibilityQuery(query, user);
+		if (user) generateMutedUserQuery(query, user);
+		if (user) generateMutedNoteQuery(query, user);
+		if (user) generateBlockedUserQuery(query, user);
 
-	if (user) generateMutedUserQuery(query, user);
-	if (user) generateMutedNoteQuery(query, user);
-	if (user) generateBlockedUserQuery(query, user);
-
-	if (user && user.localShowRenote === false) {
-		query.andWhere(
-			new Brackets((qb) => {
-				qb.where("note.renoteId IS NULL");
-				qb.orWhere("note.text IS NOT NULL");
-				qb.orWhere("note.userHost IS NOT NULL");
-			}),
-		);
-	}
-
-	if (user && user.remoteShowRenote === false) {
-		query.andWhere(
-			new Brackets((qb) => {
-				qb.where("note.renoteId IS NULL");
-				qb.orWhere("note.text IS NOT NULL");
-				qb.orWhere("note.userHost IS NULL");
-			}),
-		);
-	}
-
-	if (ps.withFiles) {
-		query.andWhere('CARDINALITY(note."fileIds") > 0');
-	}
-
-	if (ps.fileType != null) {
-		query.andWhere('CARDINALITY(note."fileIds") > 0');
-		query.andWhere(
-			new Brackets((qb) => {
-				for (const type of ps.fileType!) {
-					const i = ps.fileType!.indexOf(type);
-					qb.orWhere(`:type${i} = ANY(note.attachedFileTypes)`, {
-						[`type${i}`]: type,
-					});
-				}
-			}),
-		);
-
-		if (ps.excludeNsfw) {
-			query.andWhere("note.cw IS NULL");
+		if (user && user.localShowRenote === false) {
 			query.andWhere(
-				'0 = (SELECT COUNT(*) FROM drive_file df WHERE df.id = ANY(note."fileIds") AND df."isSensitive" = TRUE)',
+				new Brackets((qb) => {
+					qb.where("note.renoteId IS NULL");
+					qb.orWhere("note.text IS NOT NULL");
+					qb.orWhere("note.userHost IS NOT NULL");
+				}),
 			);
 		}
-	}
-	query.andWhere("note.visibility != 'hidden'");
+
+		if (user && user.remoteShowRenote === false) {
+			query.andWhere(
+				new Brackets((qb) => {
+					qb.where("note.renoteId IS NULL");
+					qb.orWhere("note.text IS NOT NULL");
+					qb.orWhere("note.userHost IS NULL");
+				}),
+			);
+		}
+
+		if (ps.withFiles) {
+			query.andWhere('CARDINALITY(note."fileIds") > 0');
+		}
+
+		if (ps.fileType != null) {
+			query.andWhere('CARDINALITY(note."fileIds") > 0');
+			query.andWhere(
+				new Brackets((qb) => {
+					for (const type of ps.fileType!) {
+						const i = ps.fileType!.indexOf(type);
+						qb.orWhere(`:type${i} = ANY(note.attachedFileTypes)`, {
+							[`type${i}`]: type,
+						});
+					}
+				}),
+			);
+
+			if (ps.excludeNsfw) {
+				query.andWhere("note.cw IS NULL");
+				query.andWhere(
+					'0 = (SELECT COUNT(*) FROM drive_file df WHERE df.id = ANY(note."fileIds") AND df."isSensitive" = TRUE)',
+				);
+			}
+		}
+		query.andWhere("note.visibility != 'hidden'");
+	};
+	//#endregion
+
+	//#region クエリ生成ヘルパー
+	const createBaseQuery = () => {
+		const query = makePaginationQuery(
+			Notes.createQueryBuilder("note"),
+			ps.sinceId,
+			ps.untilId,
+			ps.sinceDate,
+			ps.untilDate,
+		)
+			.andWhere(
+				'(CARDINALITY(note."fileIds") > 0 OR (note.renoteId IS NOT NULL AND note.text IS NULL AND CARDINALITY(renote."fileIds") > 0))',
+			)
+			.andWhere("(note.visibility = 'public')")
+			.innerJoinAndSelect("note.user", "user")
+			.leftJoinAndSelect("user.avatar", "avatar")
+			.leftJoinAndSelect("user.banner", "banner")
+			.leftJoinAndSelect("note.reply", "reply")
+			.leftJoinAndSelect("note.renote", "renote")
+			.leftJoinAndSelect("reply.user", "replyUser")
+			.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
+			.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
+			.leftJoinAndSelect("renote.user", "renoteUser")
+			.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
+			.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+		applyCommonTimelineFilters(query);
+		return query;
+	};
+
+	const createPollQuery = () => {
+		if (!(followingCondition && unvotedPollCondition)) return null;
+		const query = makePaginationQuery(
+			Notes.createQueryBuilder("note"),
+			ps.sinceId,
+			ps.untilId,
+			ps.sinceDate,
+			ps.untilDate,
+		)
+			.leftJoin("note.poll", "poll")
+			.andWhere("(note.visibility = 'public')")
+			.andWhere("note.hasPoll = TRUE")
+			.andWhere("user.isBot = FALSE")
+			.andWhere(followingCondition.clause("note.userId"))
+			.andWhere(unvotedPollCondition)
+			.innerJoinAndSelect("note.user", "user")
+			.leftJoinAndSelect("user.avatar", "avatar")
+			.leftJoinAndSelect("user.banner", "banner")
+			.leftJoinAndSelect("note.reply", "reply")
+			.leftJoinAndSelect("note.renote", "renote")
+			.leftJoinAndSelect("reply.user", "replyUser")
+			.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
+			.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
+			.leftJoinAndSelect("renote.user", "renoteUser")
+			.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
+			.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+		applyCommonTimelineFilters(query);
+		return query;
+	};
 	//#endregion
 
 	process.nextTick(() => {
@@ -247,22 +250,69 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	});
 
-	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
-	const found = [];
-	const take = Math.floor(ps.limit * 1.5);
-	let skip = 0;
+	//#region 取得フロー（従来枠先行 → 範囲内投票 → 不足時のみ範囲外投票）
+	const baseTake = Math.floor(ps.limit * 1.5);
 	try {
-		while (found.length < ps.limit) {
-			const notes = await query.take(take).skip(skip).getMany();
-			const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(notes);
-			found.push(
-				...(await Notes.packMany(notes, user, {
-					_hint_: { userMap, noteMap },
-				})),
-			);
-			skip += take;
-			if (notes.length < take) break;
+		const baseNotes = await createBaseQuery().take(baseTake).skip(0).getMany();
+		const mergedById = new Map(baseNotes.map((note) => [note.id, note]));
+		const pollQuery = createPollQuery();
+
+		if (pollQuery && baseNotes.length > 0) {
+			const minBaseId = baseNotes.reduce((min, note) =>
+				note.id.localeCompare(min) < 0 ? note.id : min,
+			baseNotes[0].id);
+			const maxBaseId = baseNotes.reduce((max, note) =>
+				note.id.localeCompare(max) > 0 ? note.id : max,
+			baseNotes[0].id);
+
+			// NOTE: 第1段階は従来枠の時間帯（最新〜最古）に含まれる投票のみ追加する。
+			const pollInRangeNotes = await pollQuery
+				.clone()
+				.andWhere("note.id <= :pollRangeMaxId", { pollRangeMaxId: maxBaseId })
+				.andWhere("note.id >= :pollRangeMinId", { pollRangeMinId: minBaseId })
+				.take(ps.limit)
+				.skip(0)
+				.getMany();
+			for (const note of pollInRangeNotes) {
+				mergedById.set(note.id, note);
+			}
+
+			// NOTE: 範囲内で不足した場合のみ、範囲外の投票を補完する。
+			if (mergedById.size < ps.limit) {
+				const excludedIds = Array.from(mergedById.keys());
+				const pollOutOfRangeQuery = pollQuery
+					.clone()
+					.andWhere(
+						new Brackets((qb) => {
+							qb.where("note.id > :pollRangeMaxId", {
+								pollRangeMaxId: maxBaseId,
+							}).orWhere("note.id < :pollRangeMinId", {
+								pollRangeMinId: minBaseId,
+							});
+						}),
+					);
+				if (excludedIds.length > 0) {
+					pollOutOfRangeQuery.andWhere("note.id NOT IN (:...excludedIds)", {
+						excludedIds,
+					});
+				}
+				const pollOutOfRangeNotes = await pollOutOfRangeQuery
+					.take(ps.limit - mergedById.size)
+					.skip(0)
+					.getMany();
+				for (const note of pollOutOfRangeNotes) {
+					mergedById.set(note.id, note);
+				}
+			}
 		}
+
+		const mergedNotes = Array.from(mergedById.values())
+			.sort((a, b) => b.id.localeCompare(a.id))
+			.slice(0, ps.limit);
+		const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(mergedNotes);
+		return await Notes.packMany(mergedNotes, user, {
+			_hint_: { userMap, noteMap },
+		});
 	} catch (error) {
 		rethrowTimelineQueryAsApiError(
 			"notes/recommended-timeline",
@@ -271,9 +321,6 @@ export default define(meta, paramDef, async (ps, user) => {
 		);
 	}
 
-	if (found.length > ps.limit) {
-		found.length = ps.limit;
-	}
-
-	return found;
+	return [];
+	//#endregion
 });

@@ -17,6 +17,7 @@ import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { genId } from "@/misc/gen-id.js";
+import { rethrowTimelineQueryAsApiError } from "../../common/rethrow-timeline-query-error.js";
 import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
@@ -375,6 +376,10 @@ export default define(meta, paramDef, async (ps, user) => {
 			_hint_: { userMap, noteMap },
 		});
 	} catch (error) {
-		throw new ApiError(meta.errors.queryError);
+		rethrowTimelineQueryAsApiError(
+			"notes/spotlight-timeline",
+			meta.errors.queryError,
+			error,
+		);
 	}
 });

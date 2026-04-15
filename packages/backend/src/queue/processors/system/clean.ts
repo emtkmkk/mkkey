@@ -5,6 +5,7 @@
  *
  * @remarks
  * - **役割**: システムキューで定期実行し、保持期間を過ぎたデータを削除する。
+ * - **リモート DriveFile**: ノート添付に加え、どのユーザの `avatarId` / `bannerId` からも参照されていないものだけを削除対象とする（プロフィール画像は `note.fileIds` に現れないため）。
  *
  * @internal
  */
@@ -145,6 +146,10 @@ export async function clean(
                         .andWhere("file.userHost IS NOT NULL")
                         .andWhere(
                                 `NOT EXISTS (SELECT 1 FROM note WHERE note."fileIds" && ARRAY[file."id"]::varchar[])`,
+                        )
+                        // アイコン・バナー用の DriveFile は note の添付配列に含まれないため、user 側の参照がある場合は削除しない
+                        .andWhere(
+                                `NOT EXISTS (SELECT 1 FROM "user" u WHERE u."avatarId" = file.id OR u."bannerId" = file.id)`,
                         )
                         .andWhere(driveFileCursor ? "file.id > :cursor" : "1=1", { cursor: driveFileCursor })
                         .orderBy("file.id", "ASC")

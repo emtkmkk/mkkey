@@ -2,6 +2,7 @@
 
 import { EventEmitter } from "eventemitter3";
 import { Ref, Component, ref, shallowRef, ShallowRef } from "vue";
+import { $i } from "@/account";
 import { pleaseLogin } from "@/scripts/please-login";
 import { safeURIDecode } from "@/scripts/safe-uri-decode";
 
@@ -231,7 +232,7 @@ export class Router extends EventEmitter<{
 
 		const acct = res.props.get("acct") ?? null;
 		const isRemoteUserRoute = isRemoteAcct(acct);
-		const requiresLogin = res.route.loginRequired || isRemoteUserRoute;
+		const requiresLogin = !$i && (res.route.loginRequired || isRemoteUserRoute);
 		if (requiresLogin) {
 			// NOTE: 認証必須ページはログイン要求のみ表示し、遷移自体は中止する。
 			pleaseLogin("/");

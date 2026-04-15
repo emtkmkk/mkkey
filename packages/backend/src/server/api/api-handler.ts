@@ -23,19 +23,131 @@ import { ApiError } from "./error.js";
 import { apiLogger } from "./logger.js";
 
 const userIpHistories = new Map<User["id"], Set<string>>();
+const MASKED_HEADER_NAMES = new Set([
+	"authorization",
+	"cookie",
+	"set-cookie",
+	"proxy-authorization",
+]);
+const ERROR_WINDOW_MS = {
+	oneMinute: 60 * 1000,
+	fiveMinutes: 5 * 60 * 1000,
+	oneHour: 60 * 60 * 1000,
+} as const;
+const errorWindowBuckets = new Map<string, number[]>();
+const errorSampleCounters = new Map<string, number>();
 
 setInterval(() => {
 	userIpHistories.clear();
 }, 1000 * 60 * 60);
 
+/**
+ * API リクエストヘッダーを調査用途向けに整形して返す。
+ *
+ * @remarks
+ * NOTE: 機密ヘッダーはマスクしつつ、必要に応じて全ヘッダーを出力できるようにする。
+ * @param headers - Koa が受け取ったリクエストヘッダー
+ * @returns マスク済みの全ヘッダー情報
+ * @internal
+ */
+function sanitizeHeaders(headers: Koa.Context["headers"]): Record<string, string | string[]> {
+	// NOTE: ブロック条件の検討材料にするため、全ヘッダーをキーごとに保持する。
+	const sanitized: Record<string, string | string[]> = {};
+	for (const [headerName, headerValue] of Object.entries(headers)) {
+		const normalizedHeaderName = headerName.toLowerCase();
+		if (MASKED_HEADER_NAMES.has(normalizedHeaderName)) {
+			sanitized[normalizedHeaderName] = "***masked***";
+			continue;
+		}
+
+		if (headerValue == null) {
+			continue;
+		}
+
+		sanitized[normalizedHeaderName] = headerValue;
+	}
+	return sanitized;
+}
+
+/**
+ * 調査で頻用するヘッダーだけを抜き出して返す。
+ *
+ * @remarks
+ * NOTE: ダッシュボードやログ閲覧でまず見る項目を固定化することで、追跡時間を短縮する。
+ * @param headers - Koa が受け取ったリクエストヘッダー
+ * @returns 主要ヘッダーの要約
+ * @internal
+ */
+function extractRoutingHintHeaders(headers: Record<string, string | string[]>) {
+	return {
+		origin: headers["origin"] ?? null,
+		referer: headers["referer"] ?? null,
+		userAgent: headers["user-agent"] ?? null,
+		cfIpCountry: headers["cf-ipcountry"] ?? null,
+		secFetchSite: headers["sec-fetch-site"] ?? null,
+		secFetchMode: headers["sec-fetch-mode"] ?? null,
+		secFetchDest: headers["sec-fetch-dest"] ?? null,
+		xForwardedFor: headers["x-forwarded-for"] ?? null,
+	};
+}
+
+/**
+ * 指定キーのエラー件数を時間窓ごとに集計する。
+ *
+ * @remarks
+ * NOTE: サンプリングで一部ログを間引いても、期間内の発生総数を追えるようにする。
+ * @param key - 集計キー（IP + endpoint + method + errorCode）
+ * @returns 1分/5分/1時間の件数
+ * @internal
+ */
+function updateErrorWindowCounts(key: string) {
+	const now = Date.now();
+	const oneHourAgo = now - ERROR_WINDOW_MS.oneHour;
+	const currentBucket = errorWindowBuckets.get(key) ?? [];
+	const compactedBucket = currentBucket.filter((timestamp) => timestamp >= oneHourAgo);
+	compactedBucket.push(now);
+	errorWindowBuckets.set(key, compactedBucket);
+
+	return {
+		last1m: compactedBucket.filter(
+			(timestamp) => timestamp >= now - ERROR_WINDOW_MS.oneMinute,
+		).length,
+		last5m: compactedBucket.filter(
+			(timestamp) => timestamp >= now - ERROR_WINDOW_MS.fiveMinutes,
+		).length,
+		last1h: compactedBucket.length,
+	};
+}
+
+/**
+ * エラーログを出力するか（サンプリング）を判定する。
+ *
+ * @remarks
+ * NOTE: 初動調査しやすいよう先頭数件は必ず出し、その後は一定間隔で出力する。
+ * @param key - 集計キー（IP + endpoint + method + errorCode）
+ * @returns true のときログ出力
+ * @internal
+ */
+function shouldEmitErrorLog(key: string) {
+	const sampledCount = (errorSampleCounters.get(key) ?? 0) + 1;
+	errorSampleCounters.set(key, sampledCount);
+	// NOTE: 初回〜3回目は必ず出力し、その後は20件ごとに再出力する。
+	return sampledCount <= 3 || sampledCount % 20 === 0;
+}
+
 export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 	new Promise<void>((res) => {
+		// #region リクエスト情報の初期化
 		const requestContext = {
 			ep: endpoint.name,
 			ip: ctx.ip,
 			method: ctx.method,
 		};
+		const sanitizedHeaders = sanitizeHeaders(ctx.headers);
+		const routingHintHeaders = extractRoutingHintHeaders(sanitizedHeaders);
+		// #endregion
 
+		// #region エラー情報の整形ヘルパー
 		const toErrorInfo = (e: unknown) => {
 			if (e instanceof Error) {
 				return {
@@ -51,6 +163,7 @@ export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 				raw: e,
 			};
 		};
+		// #endregion
 
 		const body = ctx.is("multipart/form-data")
 			? (ctx.request as any).body
@@ -103,10 +216,24 @@ export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 					})
 					.catch((e: unknown) => {
 						const errorInfo = toErrorInfo(e);
-						apiLogger.error("API リクエストに失敗しました。", {
-							...requestContext,
-							error: errorInfo,
-						});
+						const errorKey =
+							`${requestContext.ip}:${requestContext.ep}:${requestContext.method}:${errorInfo.code}`;
+						const errorCounts = updateErrorWindowCounts(errorKey);
+						const shouldLog = shouldEmitErrorLog(errorKey);
+						if (shouldLog) {
+							apiLogger.error("API リクエストに失敗しました。", {
+								...requestContext,
+								error: errorInfo,
+								headers: sanitizedHeaders,
+								headerHints: routingHintHeaders,
+								sampling: {
+									emitted: true,
+									key: errorKey,
+									totalSeenForKey: errorSampleCounters.get(errorKey),
+								},
+								errorCounts,
+							});
+						}
 
 						if (e instanceof ApiError) {
 							reply(
@@ -172,6 +299,8 @@ export default (endpoint: IEndpoint, ctx: Koa.Context) =>
 					apiLogger.error("認証フローで予期しないエラーが発生しました。", {
 						...requestContext,
 						error: errorInfo,
+						headers: sanitizedHeaders,
+						headerHints: routingHintHeaders,
 					});
 					reply(500, new ApiError(null, { e: errorInfo }));
 				}

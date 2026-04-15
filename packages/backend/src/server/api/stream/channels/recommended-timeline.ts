@@ -17,6 +17,50 @@ import { isUserRelated } from "@/misc/is-user-related.js";
 import { isInstanceMuted } from "@/misc/is-instance-muted.js";
 import type { Packed } from "@/misc/schema.js";
 
+/**
+ * ストリーム配信で投票終了間近とみなす時間窓（3時間）
+ *
+ * @remarks
+ * NOTE: API の `notes/recommended-timeline` と同じ「終了3時間以内」条件を維持する。
+ *
+ * @internal
+ */
+const POLL_ENDING_SOON_WINDOW_MS = 3 * 60 * 60 * 1000;
+
+/**
+ * 公開投票が終了3時間以内か判定する。
+ *
+ * @param note 判定対象のノート
+ * @returns 公開投票で終了まで3時間以内かつ未終了なら true
+ * @remarks
+ * NOTE: ストリームでは DB クエリを使わないため、pack 済みノートの poll 情報から判定する。
+ * @internal
+ */
+function isExpiringSoonPublicPoll(note: Packed<"Note">): boolean {
+	if (note.visibility !== "public" || !note.poll?.expiresAt) return false;
+
+	const pollExpiresAt = new Date(note.poll.expiresAt);
+	if (Number.isNaN(pollExpiresAt.getTime())) return false;
+
+	const now = new Date();
+	const pollWindowEnd = new Date(now.getTime() + POLL_ENDING_SOON_WINDOW_MS);
+	return pollExpiresAt > now && pollExpiresAt <= pollWindowEnd;
+}
+
+/**
+ * 接続ユーザーが投票済みかを判定する。
+ *
+ * @param note 判定対象のノート
+ * @returns いずれかの選択肢に isVoted=true があれば true
+ * @remarks
+ * NOTE: pack 済み poll は選択肢ごとに `isVoted` を持つため、追加クエリなしで判定できる。
+ * @internal
+ */
+function hasCurrentUserVoted(note: Packed<"Note">): boolean {
+	if (!note.poll?.choices?.length) return false;
+	return note.poll.choices.some((choice) => choice.isVoted === true);
+}
+
 export default class extends Channel {
 	public readonly chName = "recommendedTimeline";
 	public static shouldShare = true;
@@ -45,19 +89,28 @@ export default class extends Channel {
 
 	private async onNote(note: Packed<"Note">) {
 		if (note.visibility === "hidden") return;
-		// ファイル添付なしで公開投稿のみ
+		//#region おすすめ候補条件
 		const meta = await fetchMeta();
+		const hasRecommendedFileContent =
+			(note.fileIds && note.fileIds.length !== 0) ||
+			(note.renote &&
+				!note.text &&
+				note.renote.fileIds &&
+				note.renote.fileIds.length !== 0);
+		// NOTE: フォロー中・非bot・公開・終了3時間以内の投票を、おすすめ候補として加算する。
+		const hasFollowedNonBotExpiringPoll =
+			this.following.has(note.userId) &&
+			note.user.isBot !== true &&
+			isExpiringSoonPublicPoll(note) &&
+			!hasCurrentUserVoted(note);
 		if (
 			!(
-				((note.fileIds && note.fileIds.length !== 0) ||
-					(note.renote &&
-						!note.text &&
-						note.renote.fileIds &&
-						note.renote.fileIds.length !== 0)) &&
+				(hasRecommendedFileContent || hasFollowedNonBotExpiringPoll) &&
 				note.visibility === "public"
 			)
 		)
 			return;
+		//#endregion
 
 		// ユーザーがミュートしたインスタンスのノートは無視
 		if (

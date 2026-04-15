@@ -12,7 +12,7 @@
  */
 import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Followings, Notes } from "@/models/index.js";
+import { Notes, PollVotes } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -87,6 +87,16 @@ export const paramDef = {
 	required: [],
 } as const;
 
+/**
+ * 投票終了間近とみなす時間窓（3時間）
+ *
+ * @remarks
+ * NOTE: おすすめTLへ「終了間近の公開投票」を加算するための固定値。
+ *
+ * @internal
+ */
+const POLL_ENDING_SOON_WINDOW_MS = 3 * 60 * 60 * 1000;
+
 export default define(meta, paramDef, async (ps, user) => {
 	const m = await fetchMeta();
 	if (m.disableRecommendedTimeline) {
@@ -95,6 +105,24 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
+	const now = new Date();
+	const pollWindowEnd = new Date(now.getTime() + POLL_ENDING_SOON_WINDOW_MS);
+	const followingCondition =
+		user != null
+			? createFollowingExistsCondition(user.id, {
+					parameterName: "recommendedTimelineFollowerId",
+					alias: "recommendedTimelineFollowing",
+			  })
+			: null;
+	const unvotedPollCondition =
+		user != null
+			? `NOT EXISTS (${PollVotes.createQueryBuilder("vote")
+					.select("1")
+					.where("vote.userId = :recommendedTimelineVoteUserId")
+					.andWhere('vote."noteId" = note.id')
+					.getQuery()})`
+			: null;
+
 	//#region クエリ構築
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),
@@ -102,10 +130,31 @@ export default define(meta, paramDef, async (ps, user) => {
 		ps.untilId,
 		ps.sinceDate,
 		ps.untilDate,
-        )
-                .andWhere(
-                        '(CARDINALITY(note."fileIds") > 0 OR (note.renoteId IS NOT NULL AND note.text IS NULL AND CARDINALITY(renote."fileIds") > 0))',
-                )
+	)
+		.leftJoin("note.poll", "poll")
+		.andWhere(
+			new Brackets((qb) => {
+				// NOTE: 既存おすすめ条件（画像付き投稿 or 画像付き純リノート）
+				qb.where(
+					'(CARDINALITY(note."fileIds") > 0 OR (note.renoteId IS NOT NULL AND note.text IS NULL AND CARDINALITY(renote."fileIds") > 0))',
+				);
+				// NOTE: 加算条件（フォロー中かつ非botの公開投票で、終了まで3時間以内）
+				if (followingCondition && unvotedPollCondition) {
+					qb.orWhere(
+						new Brackets((pollQb) => {
+							pollQb
+								.where("note.hasPoll = TRUE")
+								.andWhere("user.isBot = FALSE")
+								.andWhere(followingCondition.clause("note.userId"))
+								.andWhere(unvotedPollCondition)
+								.andWhere("poll.expiresAt IS NOT NULL")
+								.andWhere("poll.expiresAt > :pollWindowStart")
+								.andWhere("poll.expiresAt <= :pollWindowEnd");
+						}),
+					);
+				}
+			}),
+		)
 		.andWhere("(note.visibility = 'public')")
 		.innerJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
@@ -120,13 +169,25 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
 
 	generateChannelQuery(query, user);
-        if (user) {
-                const followingCondition = createFollowingExistsCondition(user.id);
-                query.setParameters(followingCondition.parameters);
-                generateRepliesQuery(query, user, followingCondition, ps.showReplyMode ?? "all", ps.showReplyMode === "notBotOnly");
-        } else {
-                generateRepliesQuery(query, user);
-        }
+	if (followingCondition) {
+		query.setParameters(followingCondition.parameters);
+	}
+	query.setParameters({
+		pollWindowStart: now,
+		pollWindowEnd,
+		recommendedTimelineVoteUserId: user?.id,
+	});
+	if (user && followingCondition) {
+		generateRepliesQuery(
+			query,
+			user,
+			followingCondition,
+			ps.showReplyMode ?? "all",
+			ps.showReplyMode === "notBotOnly",
+		);
+	} else {
+		generateRepliesQuery(query, user);
+	}
 	generateVisibilityQuery(query, user);
 
 	if (user) generateMutedUserQuery(query, user);
@@ -153,12 +214,12 @@ export default define(meta, paramDef, async (ps, user) => {
 		);
 	}
 
-        if (ps.withFiles) {
-                query.andWhere('CARDINALITY(note."fileIds") > 0');
-        }
+	if (ps.withFiles) {
+		query.andWhere('CARDINALITY(note."fileIds") > 0');
+	}
 
-        if (ps.fileType != null) {
-                query.andWhere('CARDINALITY(note."fileIds") > 0');
+	if (ps.fileType != null) {
+		query.andWhere('CARDINALITY(note."fileIds") > 0');
 		query.andWhere(
 			new Brackets((qb) => {
 				for (const type of ps.fileType!) {

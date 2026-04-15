@@ -41,6 +41,130 @@ type DistributedMaybeEnvelope<T> =
 	| { hasValue: false }
 	| { hasValue: true; value: T };
 
+type CacheValueCodec<T> = {
+	/**
+	 * 分散 singleflight の結果保存用に値を文字列へ変換する。
+	 *
+	 * @param value - 変換対象の値
+	 * @returns 保存可能な文字列
+	 */
+	serialize: (value: T) => string;
+	/**
+	 * 分散 singleflight で受け取った文字列から値を復元する。
+	 *
+	 * @param raw - 保存されていた文字列
+	 * @returns 復元した値
+	 */
+	deserialize: (raw: string) => T;
+};
+
+type EncodedCacheValue =
+	| null
+	| boolean
+	| number
+	| string
+	| EncodedCacheValue[]
+	| { [key: string]: EncodedCacheValue }
+	| { __cacheType: "Map"; entries: [EncodedCacheValue, EncodedCacheValue][] }
+	| { __cacheType: "Set"; values: EncodedCacheValue[] };
+
+type EncodedMapValue = { __cacheType: "Map"; entries: [EncodedCacheValue, EncodedCacheValue][] };
+type EncodedSetValue = { __cacheType: "Set"; values: EncodedCacheValue[] };
+
+function isEncodedMapValue(value: EncodedCacheValue): value is EncodedMapValue {
+	return typeof value === "object" && value !== null && "__cacheType" in value && value.__cacheType === "Map";
+}
+
+function isEncodedSetValue(value: EncodedCacheValue): value is EncodedSetValue {
+	return typeof value === "object" && value !== null && "__cacheType" in value && value.__cacheType === "Set";
+}
+
+/**
+ * 分散 singleflight 向けに `Map` / `Set` を壊さず JSON へ変換する。
+ *
+ * @remarks
+ * NOTE: 既定の `JSON.stringify` では `Map` / `Set` が空オブジェクト相当へ落ちるため、
+ * キャッシュ値の構造が崩れて `.has` などで例外になることがある。
+ *
+ * @param value - 変換対象
+ * @returns JSON 互換の中間表現
+ * @internal
+ */
+function encodeCacheValue(value: unknown): EncodedCacheValue {
+	if (
+		value === null ||
+		typeof value === "boolean" ||
+		typeof value === "number" ||
+		typeof value === "string"
+	) {
+		return value;
+	}
+	if (Array.isArray(value)) {
+		return value.map((item) => encodeCacheValue(item));
+	}
+	if (value instanceof Map) {
+		return {
+			__cacheType: "Map",
+			entries: Array.from(value.entries()).map(([key, mapValue]) => [
+				encodeCacheValue(key),
+				encodeCacheValue(mapValue),
+			]),
+		};
+	}
+	if (value instanceof Set) {
+		return {
+			__cacheType: "Set",
+			values: Array.from(value.values()).map((item) => encodeCacheValue(item)),
+		};
+	}
+	if (value && typeof value === "object") {
+		const source = value as Record<string, unknown>;
+		const encodedObject: Record<string, EncodedCacheValue> = {};
+		for (const [key, objectValue] of Object.entries(source)) {
+			encodedObject[key] = encodeCacheValue(objectValue);
+		}
+		return encodedObject;
+	}
+	return null;
+}
+
+/**
+ * `encodeCacheValue` で作成した中間表現を元の構造へ戻す。
+ *
+ * @param value - 復元対象
+ * @returns 復元後の値
+ * @internal
+ */
+function decodeCacheValue(value: EncodedCacheValue): unknown {
+	if (
+		value === null ||
+		typeof value === "boolean" ||
+		typeof value === "number" ||
+		typeof value === "string"
+	) {
+		return value;
+	}
+	if (Array.isArray(value)) {
+		return value.map((item) => decodeCacheValue(item));
+	}
+	if (isEncodedMapValue(value)) {
+		return new Map(
+			value.entries.map(([encodedKey, encodedValue]) => [
+				decodeCacheValue(encodedKey),
+				decodeCacheValue(encodedValue),
+			]),
+		);
+	}
+	if (isEncodedSetValue(value)) {
+		return new Set(value.values.map((item) => decodeCacheValue(item)));
+	}
+	const decodedObject: Record<string, unknown> = {};
+	for (const [key, objectValue] of Object.entries(value)) {
+		decodedObject[key] = decodeCacheValue(objectValue as EncodedCacheValue);
+	}
+	return decodedObject;
+}
+
 function getCacheDistributedOpts(): CacheDistributedOpts {
 	const distributedConfig = config.cache?.distributedInflight;
 	const lockTtlSecRaw = Number(distributedConfig?.lockTtlSec ?? "");
@@ -106,6 +230,7 @@ export class Cache<T> {
 	public cache: Map<string | null, { date: number; value: T }>;
 	private lifetime: number;
 	private scopeName: string;
+	private codec: CacheValueCodec<T>;
 
 	/**
 	 * 同一キーで進行中の `fetch` / `fetchMaybe` を区別してまとめる。
@@ -115,11 +240,18 @@ export class Cache<T> {
 	 */
 	private inflightByOp = new Map<string, Promise<unknown>>();
 
-	constructor(lifetime: Cache<never>["lifetime"]) {
+	constructor(
+		lifetime: Cache<never>["lifetime"],
+		codec?: CacheValueCodec<T>,
+	) {
 		this.cache = new Map();
 		this.lifetime = lifetime;
 		const callsite = new Error().stack?.split("\n")[2]?.trim() ?? "unknown";
 		this.scopeName = crypto.createHash("sha256").update(callsite, "utf8").digest("hex").slice(0, 16);
+		this.codec = codec ?? {
+			serialize: (value) => JSON.stringify(encodeCacheValue(value)),
+			deserialize: (raw) => decodeCacheValue(JSON.parse(raw) as EncodedCacheValue) as T,
+		};
 	}
 
 	/**
@@ -161,6 +293,12 @@ export class Cache<T> {
 	private serializeDistributedMaybe(value: T | undefined): string {
 		const envelope: DistributedMaybeEnvelope<T> =
 			value === undefined ? { hasValue: false } : { hasValue: true, value };
+		if (envelope.hasValue) {
+			return JSON.stringify({
+				hasValue: true as const,
+				value: this.codec.serialize(envelope.value),
+			});
+		}
 		return JSON.stringify(envelope);
 	}
 
@@ -172,8 +310,13 @@ export class Cache<T> {
 	 * @internal
 	 */
 	private deserializeDistributedMaybe(raw: string): T | undefined {
-		const parsed = JSON.parse(raw) as Partial<DistributedMaybeEnvelope<T>>;
+		const parsed = JSON.parse(raw) as
+			| Partial<DistributedMaybeEnvelope<T>>
+			| { hasValue: true; value: string };
 		if (parsed.hasValue === true) {
+			if (typeof parsed.value === "string") {
+				return this.codec.deserialize(parsed.value);
+			}
 			return parsed.value as T;
 		}
 		return undefined;
@@ -309,8 +452,8 @@ export class Cache<T> {
 					"fetch",
 					key,
 					fetcher,
-					(v) => JSON.stringify(v),
-					(raw) => JSON.parse(raw) as T,
+					(v) => this.codec.serialize(v),
+					(raw) => this.codec.deserialize(raw),
 				);
 				this.set(key, value);
 				resolve(value);

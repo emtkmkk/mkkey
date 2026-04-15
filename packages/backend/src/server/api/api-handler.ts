@@ -90,6 +90,7 @@ function firstHeaderValue(
  * @remarks
  * NOTE: ダッシュボードやログ閲覧でまず見る項目を固定化することで、追跡時間を短縮する。
  * NOTE: `mkkeyClient` は Web クライアントのビルド版識別子（偽装可能・認証ではない）。
+ * NOTE: `mkkeyPage` は Web クライアントが送る API 呼び出し元ページ（偽装可能・認証ではない）。
  * @param headers - Koa が受け取ったリクエストヘッダー
  * @returns 主要ヘッダーの要約
  * @internal
@@ -105,6 +106,7 @@ function extractRoutingHintHeaders(headers: Record<string, string | string[]>) {
 		secFetchDest: headers["sec-fetch-dest"] ?? null,
 		xForwardedFor: headers["x-forwarded-for"] ?? null,
 		mkkeyClient: firstHeaderValue(headers["x-mkkey-client"]),
+		mkkeyPage: firstHeaderValue(headers["x-mkkey-page"]),
 	};
 }
 

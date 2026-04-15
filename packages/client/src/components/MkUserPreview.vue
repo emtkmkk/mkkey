@@ -169,6 +169,12 @@ onMounted(() => {
 			? Acct.parse(props.q.substr(1))
 			: { userId: props.q };
 
+		// NOTE: 未ログイン時はリモートユーザーのプレビュー取得を行わない。
+		if (!$i && "host" in query && query.host != null) {
+			emit("closed");
+			return;
+		}
+
 		os.api("users/show", query).then((res) => {
 			if (!props.showing) return;
 			user = res;

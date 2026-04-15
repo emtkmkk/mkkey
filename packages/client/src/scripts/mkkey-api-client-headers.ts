@@ -14,6 +14,21 @@ import { version } from "@/config";
 
 /** クライアント識別用の HTTP ヘッダー名（ログ・WAF 向け）。 */
 export const MKKEY_CLIENT_HEADER_NAME = "X-Mkkey-Client";
+/** API 呼び出し元ページの HTTP ヘッダー名（ログ追跡向け）。 */
+export const MKKEY_PAGE_HEADER_NAME = "X-Mkkey-Page";
+
+/**
+ * API 呼び出し元ページ（pathname）を取得する。
+ *
+ * @remarks
+ * NOTE: SSR や非ブラウザ環境では `location` がないため空文字を返す。
+ * @returns 現在の `location.pathname`。取得不可時は空文字。
+ * @internal
+ */
+function getCurrentPagePathname(): string {
+	if (typeof location === "undefined" || !location.pathname) return "";
+	return location.pathname;
+}
 
 /**
  * `X-Mkkey-Client` のみを含むヘッダー辞書を返す。
@@ -22,7 +37,10 @@ export const MKKEY_CLIENT_HEADER_NAME = "X-Mkkey-Client";
  * @public
  */
 export function getMkkeyClientHeaders(): Record<string, string> {
-	return { [MKKEY_CLIENT_HEADER_NAME]: version };
+	return {
+		[MKKEY_CLIENT_HEADER_NAME]: version,
+		[MKKEY_PAGE_HEADER_NAME]: getCurrentPagePathname(),
+	};
 }
 
 /**
@@ -48,4 +66,5 @@ export function mergeMkkeyApiClientHeaders(
  */
 export function applyMkkeyClientHeadersToXhr(xhr: XMLHttpRequest): void {
 	xhr.setRequestHeader(MKKEY_CLIENT_HEADER_NAME, version);
+	xhr.setRequestHeader(MKKEY_PAGE_HEADER_NAME, getCurrentPagePathname());
 }

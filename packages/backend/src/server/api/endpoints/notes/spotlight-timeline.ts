@@ -10,7 +10,7 @@
  * @see {@link define} エンドポイント登録
  * @internal
  */
-import { Brackets } from "typeorm";
+import { Brackets, In } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Notes, Followings, PollVotes } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
@@ -272,7 +272,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		return query;
 	};
 
-	const createPollQuery = () => {
+	const createPollIdQuery = () => {
 		const query = makePaginationQuery(
 			Notes.createQueryBuilder("note"),
 			ps.sinceId,
@@ -280,24 +280,19 @@ export default define(meta, paramDef, async (ps, user) => {
 			ps.sinceDate,
 			ps.untilDate,
 		)
+			.select("note.id", "id")
 			.andWhere("(note.visibility = 'public')")
 			.andWhere(`(note."channelId" IS NULL)`)
 			.andWhere(`(note."deletedAt" IS NULL)`)
 			.andWhere("note.hasPoll = TRUE")
+			.innerJoin("note.user", "user")
+			.leftJoin("note.reply", "reply")
+			.leftJoin("note.renote", "renote")
+			.leftJoin("reply.user", "replyUser")
+			.leftJoin("renote.user", "renoteUser")
 			.andWhere("user.isBot = FALSE")
 			.andWhere(followingCondition.clause("note.userId"))
-			.andWhere(unvotedPollCondition)
-			.innerJoinAndSelect("note.user", "user")
-			.leftJoinAndSelect("user.avatar", "avatar")
-			.leftJoinAndSelect("user.banner", "banner")
-			.leftJoinAndSelect("note.reply", "reply")
-			.leftJoinAndSelect("note.renote", "renote")
-			.leftJoinAndSelect("reply.user", "replyUser")
-			.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
-			.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
-			.leftJoinAndSelect("renote.user", "renoteUser")
-			.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
-			.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+			.andWhere(unvotedPollCondition);
 		applyCommonTimelineFilters(query);
 		return query;
 	};
@@ -309,8 +304,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	});
 
-	// NOTE: 従来枠を先に取得し、範囲内投票を優先追加。不足時のみ範囲外投票を補完する。
-	const baseTake = Math.floor(ps.limit * 1.5);
+	// NOTE: 除外分を見越した取得バッファは 1.1 倍に抑える。
+	const baseTake = Math.max(1, Math.ceil(ps.limit * 1.1));
 	try {
 		const baseQuery = await createBaseQuery();
 		const fetchedBaseNotes = await baseQuery.take(baseTake).skip(0).getMany();
@@ -322,6 +317,18 @@ export default define(meta, paramDef, async (ps, user) => {
 			return true;
 		});
 		const mergedById = new Map(baseNotes.map((note) => [note.id, note]));
+		const mergePollIds = async (candidateIds: string[]) => {
+			const missingIds = candidateIds.filter((id) => !mergedById.has(id));
+			if (missingIds.length === 0) return;
+			const pollNotes = await Notes.find({
+				where: {
+					id: In(missingIds),
+				},
+			});
+			for (const note of pollNotes) {
+				mergedById.set(note.id, note);
+			}
+		};
 
 		if (baseNotes.length > 0) {
 			const minBaseId = baseNotes.reduce(
@@ -332,22 +339,21 @@ export default define(meta, paramDef, async (ps, user) => {
 				(max, note) => (note.id.localeCompare(max) > 0 ? note.id : max),
 				baseNotes[0].id,
 			);
-			const pollQuery = createPollQuery();
+			const pollIdQuery = createPollIdQuery();
 
-			const pollInRangeNotes = await pollQuery
+			const pollInRangeRows = await pollIdQuery
 				.clone()
 				.andWhere("note.id <= :pollRangeMaxId", { pollRangeMaxId: maxBaseId })
 				.andWhere("note.id >= :pollRangeMinId", { pollRangeMinId: minBaseId })
 				.take(ps.limit)
 				.skip(0)
-				.getMany();
-			for (const note of pollInRangeNotes) {
-				mergedById.set(note.id, note);
-			}
+				.getRawMany<{ id: string }>();
+			const pollInRangeIds = pollInRangeRows.map((row) => row.id);
+			await mergePollIds(pollInRangeIds);
 
-			if (pollInRangeNotes.length < ps.limit) {
+			if (pollInRangeIds.length < ps.limit) {
 				const excludedIds = Array.from(mergedById.keys());
-				const pollOutOfRangeQuery = pollQuery.clone().andWhere(
+				const pollOutOfRangeQuery = pollIdQuery.clone().andWhere(
 					new Brackets((qb) => {
 						qb.where("note.id > :pollRangeMaxId", {
 							pollRangeMaxId: maxBaseId,
@@ -361,13 +367,12 @@ export default define(meta, paramDef, async (ps, user) => {
 						excludedIds,
 					});
 				}
-				const pollOutOfRangeNotes = await pollOutOfRangeQuery
-					.take(ps.limit - pollInRangeNotes.length)
+				const pollOutOfRangeRows = await pollOutOfRangeQuery
+					.take(ps.limit - pollInRangeIds.length)
 					.skip(0)
-					.getMany();
-				for (const note of pollOutOfRangeNotes) {
-					mergedById.set(note.id, note);
-				}
+					.getRawMany<{ id: string }>();
+				const pollOutOfRangeIds = pollOutOfRangeRows.map((row) => row.id);
+				await mergePollIds(pollOutOfRangeIds);
 			}
 		}
 

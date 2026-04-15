@@ -85,6 +85,10 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
+	if (user == null) {
+		throw new ApiError(meta.errors.queryError);
+	}
+
 	/*
 		const m = await fetchMeta();
 		if (m.disableLocalTimeline) {
@@ -276,7 +280,6 @@ export default define(meta, paramDef, async (ps, user) => {
 			ps.sinceDate,
 			ps.untilDate,
 		)
-			.leftJoin("note.poll", "poll")
 			.andWhere("(note.visibility = 'public')")
 			.andWhere(`(note."channelId" IS NULL)`)
 			.andWhere(`(note."deletedAt" IS NULL)`)

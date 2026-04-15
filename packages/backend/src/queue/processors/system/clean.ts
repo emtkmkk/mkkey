@@ -81,7 +81,8 @@ export async function clean(
                                 .andWhere(cursor ? "note.id > :cursor" : "1=1", { cursor })
                                 .andWhere(new Brackets(qb => {
                                         qb.where("note.visibility = :public", { public: 'public' })
-                                                .orWhere("note.visibility = :home", { home: 'home' });
+                                                .orWhere("note.visibility = :home", { home: 'home' })
+                                                .orWhere("note.deletedAt IS NOT NULL");
                                 }))
                                 .andWhere("note.userHost IS NOT NULL")
                                 .andWhere("note.repliesCount = :repliesCount", { repliesCount: 0 })

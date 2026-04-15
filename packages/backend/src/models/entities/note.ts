@@ -159,7 +159,12 @@ export class Note {
         })
         public fileIds: DriveFile["id"][];
 
-	@Index()
+	/**
+	 * 添付ファイルの MIME 種別（拡張子ではない）。TL の fileType 絞り込み等で参照する。
+	 *
+	 * @remarks
+	 * btree 単独索引（`IDX_25dfc71b0369b003a4cd434d0b`）は `= ANY(attachedFileTypes)` と相性が悪く容量のみ肥大化するため削除済み。必要なら GIN 等を別途検討。
+	 */
 	@Column('varchar', {
 		length: 256, array: true, default: '{}',
 	})
@@ -172,7 +177,12 @@ export class Note {
 	})
 	public visibleUserIds: User["id"][];
 
-	@Index()
+	/**
+	 * CC（閲覧者）として指定されたローカルユーザー ID。可視性判定に使う。
+	 *
+	 * @remarks
+	 * btree 単独索引（`IDX_NOTE_CCUSERIDS`）は `<@` 中心の条件と相性が悪く削除済み。`visibleUserIds` / `mentions` は GIN を維持。
+	 */
 	@Column({
 		...id(),
 		array: true, default: '{}',

@@ -6,12 +6,13 @@
  * @remarks
  * - **API パス**: `notes/spotlight-timeline`（GET `/api/notes/spotlight-timeline` で呼び出し）
  * - 認証不要。インスタンスのスポットライトに表示するノートを取得する。
+ * - NOTE: フォロー人数が多いとき、`note.userId IN (:…数百)` は PostgreSQL が **Nested Loop × インデックス探索**を選びやすく遅くなる。
+ *   `SET enable_nestloop = off` で速くなる事象と同種のため、フォロー集合は **`EXISTS(following)` と本人一致**で表現する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
  */
 import { Brackets, In } from "typeorm";
-import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Notes, Followings, PollVotes } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
@@ -28,6 +29,25 @@ import { generateChannelQuery } from "../../common/generate-channel-query.js";
 import { generateBlockedUserQuery } from "../../common/generate-block-query.js";
 import { generateMutedUserRenotesQueryForNotes } from "../../common/generated-muted-renote-query.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
+
+/**
+ * ノート投稿者が「閲覧者本人」または「閲覧者がフォローしているユーザ」かどうか（`{me} ∪ followees` の `IN` と同値）。
+ *
+ * @param noteAlias - 外側クエリのノートエイリアス（例: `note`）
+ * @param followerIdParamToken - 閲覧者 ID のプレースホルダ（例: `:meId`）。先頭の `:` を含む。
+ * @returns AND 句にそのまま渡せる SQL 断片（括弧付き）
+ *
+ * @remarks
+ * 巨大な `IN` リストはプランナが **Nested Loop** を選びやすい。`following` への **EXISTS** はセミ結合として扱われ、**Hash Join** 等になりやすい。
+ *
+ * @internal
+ */
+function sqlNoteUserIdIsMeOrFollowed(
+	noteAlias: string,
+	followerIdParamToken: string,
+): string {
+	return `(${noteAlias}."userId" = ${followerIdParamToken} OR EXISTS (SELECT 1 FROM "following" spotlight_tl_flw WHERE spotlight_tl_flw."followerId" = ${followerIdParamToken} AND spotlight_tl_flw."followeeId" = ${noteAlias}."userId"))`;
+}
 
 export const meta = {
 	tags: ["notes"],
@@ -111,25 +131,24 @@ export default define(meta, paramDef, async (ps, user) => {
 	let localScore = 40;
 	let globalScore = 60;
 
-	if (followees.length >= 50) {
-		followeeScore = 28;
-		localScore = 48;
-		globalScore = 60;
-	} else if (followees.length >= 150) {
-		followeeScore = 40;
-		localScore = 60;
-		globalScore = 90;
+	// 人数が多いほど閾値を上げる。**大きい条件から**評価しないと >=50 が先に当たり以降が死ぬ
+	if (followees.length >= 500) {
+		followeeScore = 80;
+		localScore = 120;
+		globalScore = 180;
 	} else if (followees.length >= 300) {
 		followeeScore = 60;
 		localScore = 80;
 		globalScore = 135;
-	} else if (followees.length >= 500) {
-		followeeScore = 80;
-		localScore = 120;
-		globalScore = 180;
+	} else if (followees.length >= 150) {
+		followeeScore = 40;
+		localScore = 60;
+		globalScore = 90;
+	} else if (followees.length >= 50) {
+		followeeScore = 28;
+		localScore = 48;
+		globalScore = 60;
 	}
-
-	const meOrFolloweeIds = [user.id, ...followees.map((f) => f.followeeId)];
 
 	ps.untilDate = ps.untilDate || Date.now();
 	ps.sinceDate = ps.untilDate - 1000 * 60 * 60 * 24 * 7;
@@ -213,15 +232,16 @@ export default define(meta, paramDef, async (ps, user) => {
 		applyCommonTimelineFilters(query);
 
 		if (followees.length > 0) {
-			const followingNetworksQuery = await Notes.createQueryBuilder("note")
+			const followingNetworksQuery = Notes.createQueryBuilder("note")
 				.select("note.renoteUserId")
 				.distinct(true)
 				.andWhere("note.id > :minId", { minId: scoreWindowMinId })
 				.andWhere("note.id < :maxId", { maxId: scoreWindowMaxId })
 				.andWhere("note.renoteId IS NOT NULL")
 				.andWhere("note.text IS NULL")
-				.andWhere("note.userId IN (:...meOrFolloweeIds)", {
-					meOrFolloweeIds,
+				// 本人 ∪ フォロー先を IN 列挙すると Nested Loop が支配的になりやすいため EXISTS で表す
+				.andWhere(sqlNoteUserIdIsMeOrFollowed("note", ":spotlightFnMe"), {
+					spotlightFnMe: user.id,
 				})
 				.andWhere("(note.score > :localScore)", { localScore })
 				.andWhere(
@@ -235,17 +255,25 @@ export default define(meta, paramDef, async (ps, user) => {
 			generateMutedUserRenotesQueryForNotes(followingNetworksQuery, user);
 			const followingNetworks = await followingNetworksQuery.getMany();
 
-			const meOrfollowingNetworks = [
-				user.id,
-				...followingNetworks.map((f) => f.renoteUserId),
-				...followees.map((f) => f.followeeId),
+			// me ∪ followees は generateVisibilityQuery 済みの :meId と EXISTS で表す（上記と同じ理由）
+			const renoteAuthorIdsForIn = [
+				...new Set(
+					followingNetworks
+						.map((f) => f.renoteUserId)
+						.filter((id): id is string => id != null),
+				),
 			];
-
-			query
-				.andWhere("note.userId IN (:...meOrfollowingNetworks)", {
-					meOrfollowingNetworks,
-				})
-				.andWhere(
+			query.andWhere(
+				new Brackets((qb) => {
+					qb.where(sqlNoteUserIdIsMeOrFollowed("note", ":meId"));
+					if (renoteAuthorIdsForIn.length > 0) {
+						qb.orWhere("note.userId IN (:...spotlightRenoteAuthorIds)", {
+							spotlightRenoteAuthorIds: renoteAuthorIdsForIn,
+						});
+					}
+				}),
+			);
+			query.andWhere(
 					new Brackets((qb) => {
 						qb.where(
 							"(note.score > :globalScore) AND (user.isExplorable = TRUE)",
@@ -256,11 +284,13 @@ export default define(meta, paramDef, async (ps, user) => {
 								{ localScore },
 							)
 							.orWhere(
-								"(note.score > :followeeScore) AND (note.userId IN (:...meOrFolloweeIds))",
-								{
-									meOrFolloweeIds,
-									followeeScore,
-								},
+								new Brackets((qbScore) => {
+									qbScore
+										.where("(note.score > :followeeScore)", {
+											followeeScore,
+										})
+										.andWhere(sqlNoteUserIdIsMeOrFollowed("note", ":meId"));
+								}),
 							);
 					}),
 				);

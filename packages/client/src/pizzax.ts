@@ -44,9 +44,6 @@ export class Storage<T extends StateDef> {
 	public readonly deviceAccountStateKeyName:
 		| `pizzax::${this["key"]}::${string}`
 		| "";
-	public readonly registryCacheKeyName:
-		| `pizzax::${this["key"]}::cache::${string}`
-		| "";
 
 	public readonly def: T;
 
@@ -72,7 +69,6 @@ export class Storage<T extends StateDef> {
 		this.key = key;
 		this.deviceStateKeyName = `pizzax::${key}`;
 		this.deviceAccountStateKeyName = $i ? `pizzax::${key}::${$i.id}` : "";
-		this.registryCacheKeyName = $i ? `pizzax::${key}::cache::${$i.id}` : "";
 		this.def = def;
 
 		this.pizzaxChannel = new BroadcastChannel(`pizzax::${key}`);
@@ -101,9 +97,6 @@ export class Storage<T extends StateDef> {
 		const deviceAccountState = $i
 			? (await get(this.deviceAccountStateKeyName)) || {}
 			: {};
-		const registryCache = $i
-			? (await get(this.registryCacheKeyName)) || {}
-			: {};
 
 		for (const [k, v] of Object.entries(this.def) as [
 			keyof T,
@@ -114,13 +107,6 @@ export class Storage<T extends StateDef> {
 				Object.prototype.hasOwnProperty.call(deviceState, k)
 			) {
 				this.reactiveState[k].value = this.state[k] = deviceState[k];
-				this.isDefaultState[k] = false;
-			} else if (
-				v.where === "account" &&
-				$i &&
-				Object.prototype.hasOwnProperty.call(registryCache, k)
-			) {
-				this.reactiveState[k].value = this.state[k] = registryCache[k];
 				this.isDefaultState[k] = false;
 			} else if (
 				v.where === "deviceAccount" &&
@@ -168,14 +154,6 @@ export class Storage<T extends StateDef> {
 						return;
 
 					this.reactiveState[key].value = this.state[key] = value;
-
-					this.addIdbSetJob(async () => {
-						const cache = await get(this.registryCacheKeyName);
-						if (cache[key] !== value) {
-							cache[key] = value;
-							await set(this.registryCacheKeyName, cache);
-						}
-					});
 				},
 			);
 		}
@@ -190,7 +168,6 @@ export class Storage<T extends StateDef> {
 
 					api("i/registry/get-all", { scope: ["client", this.key] })
 						.then((kvs) => {
-							const cache: Partial<T> = {};
 							for (const [k, v] of Object.entries(this.def) as [
 								keyof T,
 								T[keyof T]["default"],
@@ -200,14 +177,11 @@ export class Storage<T extends StateDef> {
 										this.reactiveState[k].value = this.state[k] = (
 											kvs as Partial<T>
 										)[k];
-										cache[k] = (kvs as Partial<T>)[k];
 									} else {
 										this.reactiveState[k].value = this.state[k] = v.default;
 									}
 								}
 							}
-
-							return set(this.registryCacheKeyName, cache);
 						})
 						.then(() => resolve());
 				}, 1);
@@ -256,9 +230,6 @@ export class Storage<T extends StateDef> {
 				}
 				case "account": {
 					if ($i == null) break;
-					const cache = (await get(this.registryCacheKeyName)) || {};
-					cache[key] = rawValue;
-					await set(this.registryCacheKeyName, cache);
 					await api("i/registry/set", {
 						scope: ["client", this.key],
 						key: key.toString(),
@@ -336,12 +307,6 @@ export class Storage<T extends StateDef> {
 		if ($i && deviceAccountState) {
 			await set(this.deviceAccountStateKeyName, JSON.parse(deviceAccountState));
 			localStorage.removeItem(this.deviceAccountStateKeyName);
-		}
-
-		const registryCache = $i && localStorage.getItem(this.registryCacheKeyName);
-		if ($i && registryCache) {
-			await set(this.registryCacheKeyName, JSON.parse(registryCache));
-			localStorage.removeItem(this.registryCacheKeyName);
 		}
 	}
 }

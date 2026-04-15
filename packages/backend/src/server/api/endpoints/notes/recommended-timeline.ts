@@ -258,18 +258,21 @@ export default define(meta, paramDef, async (ps, user) => {
 		const pollQuery = createPollQuery();
 
 		if (pollQuery && baseNotes.length > 0) {
-			const minBaseId = baseNotes.reduce((min, note) =>
-				note.id.localeCompare(min) < 0 ? note.id : min,
-			baseNotes[0].id);
-			const maxBaseId = baseNotes.reduce((max, note) =>
-				note.id.localeCompare(max) > 0 ? note.id : max,
-			baseNotes[0].id);
+			const minBaseId = baseNotes.reduce(
+				(min, note) => (note.id.localeCompare(min) < 0 ? note.id : min),
+				baseNotes[0].id,
+			);
+			const maxBaseId = baseNotes.reduce(
+				(max, note) => (note.id.localeCompare(max) > 0 ? note.id : max),
+				baseNotes[0].id,
+			);
 
 			// NOTE: 第1段階は従来枠の時間帯（最新〜最古）に含まれる投票のみ追加する。
-			const pollInRangeNotes = await pollQuery
+			const pollInRangeQuery = pollQuery
 				.clone()
 				.andWhere("note.id <= :pollRangeMaxId", { pollRangeMaxId: maxBaseId })
-				.andWhere("note.id >= :pollRangeMinId", { pollRangeMinId: minBaseId })
+				.andWhere("note.id >= :pollRangeMinId", { pollRangeMinId: minBaseId });
+			const pollInRangeNotes = await pollInRangeQuery
 				.take(ps.limit)
 				.skip(0)
 				.getMany();
@@ -277,32 +280,36 @@ export default define(meta, paramDef, async (ps, user) => {
 				mergedById.set(note.id, note);
 			}
 
-			// NOTE: 範囲内で不足した場合のみ、範囲外の投票を補完する。
-			if (mergedById.size < ps.limit) {
+			// NOTE: 範囲内投票が不足した場合のみ、範囲外の投票を補完する。
+			if (pollInRangeNotes.length < ps.limit) {
 				const excludedIds = Array.from(mergedById.keys());
-				const pollOutOfRangeQuery = pollQuery
-					.clone()
-					.andWhere(
-						new Brackets((qb) => {
-							qb.where("note.id > :pollRangeMaxId", {
-								pollRangeMaxId: maxBaseId,
-							}).orWhere("note.id < :pollRangeMinId", {
-								pollRangeMinId: minBaseId,
-							});
-						}),
-					);
+				const pollOutOfRangeQuery = pollQuery.clone().andWhere(
+					new Brackets((qb) => {
+						qb.where("note.id > :pollRangeMaxId", {
+							pollRangeMaxId: maxBaseId,
+						}).orWhere("note.id < :pollRangeMinId", {
+							pollRangeMinId: minBaseId,
+						});
+					}),
+				);
 				if (excludedIds.length > 0) {
 					pollOutOfRangeQuery.andWhere("note.id NOT IN (:...excludedIds)", {
 						excludedIds,
 					});
 				}
 				const pollOutOfRangeNotes = await pollOutOfRangeQuery
-					.take(ps.limit - mergedById.size)
+					.take(ps.limit - pollInRangeNotes.length)
 					.skip(0)
 					.getMany();
 				for (const note of pollOutOfRangeNotes) {
 					mergedById.set(note.id, note);
 				}
+			}
+		} else if (pollQuery) {
+			// NOTE: 従来枠が空でも投票枠が機能するよう、公開投票候補を取得する。
+			const pollNotes = await pollQuery.take(ps.limit).skip(0).getMany();
+			for (const note of pollNotes) {
+				mergedById.set(note.id, note);
 			}
 		}
 

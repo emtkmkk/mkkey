@@ -13,6 +13,47 @@ import { apiLogger } from "../logger.js";
 import { ApiError } from "../error.js";
 
 /**
+ * 捕捉した例外をログ出力向けのプレーンオブジェクトへ変換する。
+ *
+ * @param caught - try/catch で捕捉した値
+ * @returns logger に渡しても内容が欠落しにくいシリアライズ結果
+ *
+ * @remarks
+ * - `Error` は `message` / `stack` が非列挙のため、そのまま構造化ログへ渡すと `{}` になりやすい。
+ * - TypeORM の `QueryFailedError` などで使う `query` / `parameters` / `driverError` も拾って原因特定を容易にする。
+ *
+ * @internal
+ */
+function serializeTimelineCaughtError(caught: unknown) {
+	if (caught instanceof Error) {
+		const errorWithMetadata = caught as Error & {
+			query?: unknown;
+			parameters?: unknown;
+			driverError?: unknown;
+			cause?: unknown;
+		};
+		const ownProperties = Object.fromEntries(
+			Object.getOwnPropertyNames(caught).map((key) => [
+				key,
+				(caught as Record<string, unknown>)[key],
+			]),
+		);
+		return {
+			name: caught.name,
+			message: caught.message,
+			stack: caught.stack,
+			cause: errorWithMetadata.cause,
+			query: errorWithMetadata.query,
+			parameters: errorWithMetadata.parameters,
+			driverError: errorWithMetadata.driverError,
+			...ownProperties,
+		};
+	}
+
+	return { raw: caught };
+}
+
+/**
  * タイムライン内側の try/catch で捕捉した例外をログし、定義済み queryError で ApiError に変換する。
  *
  * @param endpoint - ログ用の API 名（例: `notes/hybrid-timeline`）
@@ -28,7 +69,7 @@ export function rethrowTimelineQueryAsApiError(
 	caught: unknown,
 ): never {
 	apiLogger.error(`${endpoint}: timeline query or pack failed`, {
-		error: caught,
+		error: serializeTimelineCaughtError(caught),
 	});
 	throw new ApiError(queryError);
 }

@@ -4,6 +4,7 @@ import * as os from "@/os";
 import { readAndCompressImage } from "@misskey-dev/browser-image-resizer";
 import { defaultStore } from "@/store";
 import { apiUrl } from "@/config";
+import { applyMkkeyClientHeadersToXhr } from "@/scripts/mkkey-api-client-headers";
 import { $i } from "@/account";
 import { alert } from "@/os";
 import { i18n } from "@/i18n";
@@ -150,6 +151,7 @@ export function uploadFile(
 				const xhr = new XMLHttpRequest();
 				xhr.open("POST", `${apiUrl}/drive/files/create`, true);
 				xhr.setRequestHeader("Authorization", `Bearer ${$i.token}`);
+				applyMkkeyClientHeadersToXhr(xhr);
 				xhr.onload = (ev) => {
 					if (
 						xhr.status !== 200 ||

@@ -58,6 +58,7 @@ import * as os from "@/os";
 import { $i } from "@/account";
 import { defaultStore } from "@/store";
 import { apiUrl, url } from "@/config";
+import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 import { query } from "@/scripts/url";
 import { i18n } from "@/i18n";
 
@@ -598,9 +599,9 @@ const ok = async () => {
                 fetch(`${apiUrl}/drive/files/create`, {
                         method: "POST",
                         body: formData,
-                        headers: {
+                        headers: mergeMkkeyApiClientHeaders({
                                 authorization: `Bearer ${$i.token}`,
-                        },
+                        }),
                 })
                         .then((response) => response.json())
                         .then((f) => {

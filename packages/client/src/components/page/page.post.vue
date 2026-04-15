@@ -61,6 +61,7 @@ import FormInput from "@/components/form/input.vue";
 import MkTextarea from "../form/textarea.vue";
 import MkButton from "../MkButton.vue";
 import { apiUrl } from "@/config";
+import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 import * as os from "@/os";
 import { $i } from "@/account";
 import { PostBlock } from "@/scripts/hpml/block";
@@ -161,9 +162,9 @@ export default defineComponent({
 					fetch(`${apiUrl}/drive/files/create`, {
 						method: "POST",
 						body: formData,
-						headers: {
+						headers: mergeMkkeyApiClientHeaders({
 							authorization: `Bearer ${this.$i.token}`,
-						},
+						}),
 					})
 						.then((response) => response.json())
 						.then((f) => {

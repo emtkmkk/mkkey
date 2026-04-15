@@ -5,6 +5,7 @@ import { showUsagePausedDialog } from "./scripts/show-usage-paused-dialog";
 import { i18n } from "./i18n";
 import { del, get, set } from "@/scripts/idb-proxy";
 import { apiUrl } from "@/config";
+import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 import { waiting, api, popup, popupMenu, success, alert } from "@/os";
 import { unisonReload, reloadChannel } from "@/scripts/unison-reload";
 
@@ -49,6 +50,7 @@ export async function signout() {
 			if (push) {
 				await fetch(`${apiUrl}/sw/unregister`, {
 					method: "POST",
+					headers: mergeMkkeyApiClientHeaders(),
 					body: JSON.stringify({
 						i: $i.token,
 						endpoint: push.endpoint,
@@ -103,6 +105,7 @@ export function fetchAccount(token: string): Promise<Account> {
 		// Fetch user
 		fetch(`${apiUrl}/i`, {
 			method: "POST",
+			headers: mergeMkkeyApiClientHeaders(),
 			body: JSON.stringify({
 				i: token,
 			}),

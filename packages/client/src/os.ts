@@ -11,6 +11,7 @@ import MkToast from "@/components/MkToast.vue";
 import MkDialog from "@/components/MkDialog.vue";
 import { MenuItem } from "@/types/menu";
 import { $i } from "@/account";
+import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 import { get, set } from "@/scripts/idb-proxy";
 import { v4 as uuid } from "uuid";
 import { resolve } from "chart.js/dist/helpers/helpers.options";
@@ -88,13 +89,14 @@ export const api = ((
 		endpoint === "notes/create" && typeof data.idempotencyKey === "string"
 			? data.idempotencyKey
 			: undefined;
-	const headers: Record<string, string> = {};
+	const baseHeaders: Record<string, string> = {};
 	if (authorization) {
-		headers.authorization = authorization;
+		baseHeaders.authorization = authorization;
 	}
 	if (idempotencyKey) {
-		headers["Idempotency-Key"] = idempotencyKey;
+		baseHeaders["Idempotency-Key"] = idempotencyKey;
 	}
+	const headers = mergeMkkeyApiClientHeaders(baseHeaders);
 
 	const promise = new Promise((resolve, reject) => {
 		fetch(endpoint.indexOf("://") > -1 ? endpoint : `${apiUrl}/${endpoint}`, {
@@ -151,7 +153,9 @@ export const apiGet = ((
 			method: "GET",
 			credentials: "omit",
 			cache: "default",
-			headers: authorization ? { authorization } : {},
+			headers: mergeMkkeyApiClientHeaders(
+				authorization ? { authorization } : {},
+			),
 		})
 			.then(async (res) => {
 				const body = res.status === 204 ? null : await res.json();

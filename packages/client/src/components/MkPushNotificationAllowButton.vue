@@ -59,6 +59,7 @@ import { instance } from "@/instance";
 import { api, promiseDialog } from "@/os";
 import { i18n } from "@/i18n";
 import { apiUrl } from "@/config";
+import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 
 defineProps<{
 	primary?: boolean;
@@ -148,6 +149,7 @@ async function unsubscribe() {
 
 	await fetch(`${apiUrl}/sw/unregister`, {
 		method: "POST",
+		headers: mergeMkkeyApiClientHeaders(),
 		body: JSON.stringify({
 			endpoint,
 		}),

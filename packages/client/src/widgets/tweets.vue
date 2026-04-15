@@ -50,6 +50,7 @@ import { GetFormResultType } from "@/scripts/form";
 import * as os from "@/os";
 import MkContainer from "@/components/MkContainer.vue";
 import { useInterval } from "@/scripts/use-interval";
+import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 import { defaultStore } from "@/store";
 
 const name = "tweets";
@@ -116,7 +117,7 @@ const tick = async () => {
 			`/api/fetch-rss?url=https://${widgetProps.nitterUrl}/${
 				widgetProps.accounts
 			}/${widgetProps.withReplies ? "with_replies/" : ""}rss`,
-			{}
+			{ headers: mergeMkkeyApiClientHeaders() },
 		).then((res) => {
 			res.json().then((feed) => {
 				tweets.value = feed.items.map((e) => e.link.match(regex));

@@ -36,6 +36,7 @@ import { GetFormResultType } from "@/scripts/form";
 import * as os from "@/os";
 import MkContainer from "@/components/MkContainer.vue";
 import { useInterval } from "@/scripts/use-interval";
+import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 
 const name = "rss";
 
@@ -69,7 +70,9 @@ const items = ref([]);
 const fetching = ref(true);
 
 const tick = () => {
-	fetch(`/api/fetch-rss?url=${widgetProps.url}`, {}).then((res) => {
+	fetch(`/api/fetch-rss?url=${widgetProps.url}`, {
+		headers: mergeMkkeyApiClientHeaders(),
+	}).then((res) => {
 		res.json().then((feed) => {
 			items.value = feed.items;
 			fetching.value = false;

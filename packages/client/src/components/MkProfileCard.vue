@@ -11,7 +11,7 @@
 		<template #header>
 			<i class="ph-identification-card ph-bold ph-lg"></i> {{ i18n.ts._profileCardGen.title }}
 		</template>
-	
+
 		<div :class="$style.ProfileCardGenRoot">
 			<Transition
 				mode="out-in"
@@ -116,6 +116,7 @@ import * as os from '@/os';
 import { $i } from "@/account";
 import { shareAvailable } from "@/scripts/share-available";
 import { getProxiedImageUrlNullable } from "@/scripts/media-proxy";
+import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 
 import MkSelect from "@/components/form/select.vue";
 import MkButton from "@/components/MkButton.vue";
@@ -321,7 +322,7 @@ async function initCanvas() {
 
   function loadBg() {
     return new Promise<void>((resolve) => {
-      bg.addEventListener('load', () => {                                 
+      bg.addEventListener('load', () => {
         canvas!.width = backgroundImage.size.width;
         canvas!.height = backgroundImage.size.height;
         ctx!.drawImage(bg, 0, 0, backgroundImage.size.width, backgroundImage.size.height);
@@ -472,6 +473,7 @@ async function note() {
 
     const res = await window.fetch(`${apiUrl}/drive/files/create`, {
       method: 'POST',
+      headers: mergeMkkeyApiClientHeaders(),
       body: formData,
     });
 

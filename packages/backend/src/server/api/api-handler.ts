@@ -6,6 +6,7 @@
  * @remarks
  * - **役割**: Koa から渡されたエンドポイントと ctx を受け、認証 → call（実行）→ レスポンス返却を行う。
  * - ルーティングは `endpoints.ts` と連携し、パスに応じてこのハンドラが呼ばれる。
+ * - NOTE: 公式 Web クライアントは任意で `x-mkkey-client` を送ることがある（ログ用。サーバ側では検証しない）。
  *
  * @see {@link call} エンドポイント実行
  * @see {@link authenticate} 認証
@@ -70,10 +71,25 @@ function sanitizeHeaders(headers: Koa.Context["headers"]): Record<string, string
 }
 
 /**
+ * 複数値や配列形式のヘッダーを 1 文字列に正規化する（ログ要約用）。
+ *
+ * @param value - サニタイズ済みヘッダー値
+ * @returns 先頭の値、無ければ null
+ * @internal
+ */
+function firstHeaderValue(
+	value: string | string[] | undefined,
+): string | null {
+	if (value == null) return null;
+	return Array.isArray(value) ? value[0] ?? null : value;
+}
+
+/**
  * 調査で頻用するヘッダーだけを抜き出して返す。
  *
  * @remarks
  * NOTE: ダッシュボードやログ閲覧でまず見る項目を固定化することで、追跡時間を短縮する。
+ * NOTE: `mkkeyClient` は Web クライアントのビルド版識別子（偽装可能・認証ではない）。
  * @param headers - Koa が受け取ったリクエストヘッダー
  * @returns 主要ヘッダーの要約
  * @internal
@@ -88,6 +104,7 @@ function extractRoutingHintHeaders(headers: Record<string, string | string[]>) {
 		secFetchMode: headers["sec-fetch-mode"] ?? null,
 		secFetchDest: headers["sec-fetch-dest"] ?? null,
 		xForwardedFor: headers["x-forwarded-for"] ?? null,
+		mkkeyClient: firstHeaderValue(headers["x-mkkey-client"]),
 	};
 }
 

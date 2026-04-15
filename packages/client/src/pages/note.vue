@@ -24,7 +24,10 @@
 						</div>
 
 						<div class="main _gap">
-							<div v-if="!showNext" class="load next">
+							<div
+								v-if="!showNext && canLoadUserContext"
+								class="load next"
+							>
 								<MkButton
 									v-if="
 										!note.channelId &&
@@ -47,15 +50,9 @@
 										note.channelId || $i || !note.user.host
 									"
 									class="load loadbutton"
-									@click="showNext = 'user'"
+									@click="openUserContext('next')"
 									><i class="ph-user ph-bold ph-lg"></i>
 									<i class="ph-caret-up ph-bold ph-lg"></i
-								></MkButton>
-								<MkButton
-									v-else
-									class="load loadbutton"
-									@click="showNext = 'user'"
-									><i class="ph-caret-up ph-bold ph-lg"></i
 								></MkButton>
 							</div>
 							<div class="note _gap">
@@ -101,7 +98,10 @@
 									</div>
 								</MkA>
 							</div>
-							<div v-if="!showPrev" class="load prev">
+							<div
+								v-if="!showPrev && canLoadUserContext"
+								class="load prev"
+							>
 								<MkButton
 									v-if="
 										!note.channelId &&
@@ -124,15 +124,9 @@
 										note.channelId || $i || !note.user.host
 									"
 									class="load loadbutton"
-									@click="showPrev = 'user'"
+									@click="openUserContext('prev')"
 									><i class="ph-user ph-bold ph-lg"></i>
 									<i class="ph-caret-down ph-bold ph-lg"></i
-								></MkButton>
-								<MkButton
-									v-else
-									class="load loadbutton"
-									@click="showPrev = 'user'"
-									><i class="ph-caret-down ph-bold ph-lg"></i
 								></MkButton>
 							</div>
 						</div>
@@ -167,6 +161,7 @@ import * as os from "@/os";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
 import { $i } from "@/account";
+import { pleaseLogin } from "@/scripts/please-login";
 import { defaultStore } from "@/store";
 
 const props = defineProps<{
@@ -179,6 +174,20 @@ let clips = $ref();
 let showPrev = $ref<"user" | "local" | "channel" | true | false>(false);
 let showNext = $ref<"user" | "local" | "channel" | true | false>(false);
 let error = $ref();
+
+const canLoadUserContext = $computed(() => !!note && (!!$i || !note.user.host));
+
+function openUserContext(direction: "prev" | "next"): void {
+	if (!canLoadUserContext) {
+		pleaseLogin(window.location.href);
+		return;
+	}
+	if (direction === "prev") {
+		showPrev = "user";
+		return;
+	}
+	showNext = "user";
+}
 
 const prevPagination = {
 	endpoint: computed(() => {

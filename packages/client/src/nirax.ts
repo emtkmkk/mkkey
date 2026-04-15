@@ -32,6 +32,11 @@ export type Resolved = {
 	child?: Resolved;
 };
 
+function isRemoteAcct(acct: string | null): boolean {
+	if (acct == null) return false;
+	return acct.includes("@");
+}
+
 function parsePath(path: string): ParsedPath {
 	const res = [] as ParsedPath;
 
@@ -214,7 +219,7 @@ export class Router extends EventEmitter<{
 		path: string,
 		key: string | null | undefined,
 		emitChange = true,
-	) {
+	): Resolved | null {
 		const beforePath = this.currentPath;
 		this.currentPath = path;
 
@@ -224,8 +229,14 @@ export class Router extends EventEmitter<{
 			throw new Error(`no route found for: ${path}`);
 		}
 
-		if (res.route.loginRequired) {
+		const acct = res.props.get("acct") ?? null;
+		const isRemoteUserRoute = isRemoteAcct(acct);
+		const requiresLogin = res.route.loginRequired || isRemoteUserRoute;
+		if (requiresLogin) {
+			// NOTE: 認証必須ページはログイン要求のみ表示し、遷移自体は中止する。
 			pleaseLogin("/");
+			this.currentPath = beforePath;
+			return null;
 		}
 
 		const isSamePath = beforePath === path;
@@ -266,6 +277,7 @@ export class Router extends EventEmitter<{
 			if (cancel) return;
 		}
 		const res = this.navigate(path, null);
+		if (res == null) return;
 		this.emit("push", {
 			beforePath,
 			path,
@@ -276,7 +288,8 @@ export class Router extends EventEmitter<{
 	}
 
 	public replace(path: string, key?: string | null, emitEvent = true) {
-		this.navigate(path, key);
+		const res = this.navigate(path, key);
+		if (res == null) return;
 		if (emitEvent) {
 			this.emit("replace", {
 				path,

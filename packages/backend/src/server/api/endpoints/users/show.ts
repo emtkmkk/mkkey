@@ -180,6 +180,10 @@ export default define(meta, paramDef, async (ps, me) => {
 			});
 
 			if (user == null) {
+				// NOTE: 未認証ユーザーのリモート解決を禁止し、収集導線を抑止する。
+				if (me == null) {
+					throw new ApiError(meta.errors.noSuchUser);
+				}
 				user = await resolveUser(ps.username, ps.host).catch((e) => {
 					apiLogger.warn(`failed to resolve remote user: ${e}`);
 					throw new ApiError(meta.errors.failedToResolveRemoteUser);
@@ -206,24 +210,29 @@ export default define(meta, paramDef, async (ps, me) => {
 		});
 	}
 
-		if (
-			user == null ||
-			(!isAdminOrModerator && (user.isSuspended || user.isDeleted))
-		) {
-			throw new ApiError(meta.errors.noSuchUser);
-		}
+	if (
+		user == null ||
+		(!isAdminOrModerator && (user.isSuspended || user.isDeleted))
+	) {
+		throw new ApiError(meta.errors.noSuchUser);
+	}
 
-		const cacheKey = Users.getUserShowDetailedCacheKey(user.id, me?.id ?? null);
-		const cached = await redisClient.get(cacheKey);
-		if (cached != null) {
-			return JSON.parse(cached) as Awaited<ReturnType<typeof Users.pack>>;
-		}
-		const packed = await Users.pack(user, me, {
-			detail: true,
-		});
-		const ttl = Users.getUserShowDetailedCacheTtlSec();
-		await redisClient.set(cacheKey, JSON.stringify(packed), "EX", ttl);
-		const viewersKey = `users:show:detailed:${user.id}:viewers`;
-		await redisClient.sadd(viewersKey, me?.id ?? "anon");
-		return packed;
+	// NOTE: 未認証時はリモートユーザー詳細の取得を拒否する。
+	if (me == null && user.host != null) {
+		throw new ApiError(meta.errors.noSuchUser);
+	}
+
+	const cacheKey = Users.getUserShowDetailedCacheKey(user.id, me?.id ?? null);
+	const cached = await redisClient.get(cacheKey);
+	if (cached != null) {
+		return JSON.parse(cached) as Awaited<ReturnType<typeof Users.pack>>;
+	}
+	const packed = await Users.pack(user, me, {
+		detail: true,
+	});
+	const ttl = Users.getUserShowDetailedCacheTtlSec();
+	await redisClient.set(cacheKey, JSON.stringify(packed), "EX", ttl);
+	const viewersKey = `users:show:detailed:${user.id}:viewers`;
+	await redisClient.sadd(viewersKey, me?.id ?? "anon");
+	return packed;
 });

@@ -99,6 +99,11 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw e;
 	});
 
+	// NOTE: 未認証時はリモートユーザーの投稿一覧取得を拒否する。
+	if (me == null && user.host != null) {
+		throw new ApiError(meta.errors.noSuchUser);
+	}
+
 	//#region クエリ構築
 	const query = makePaginationQuery(
 		Notes.createQueryBuilder("note"),

@@ -12,7 +12,7 @@
  */
 import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Notes, Users, Followings } from "@/models/index.js";
+import { Notes, Followings, PollVotes } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -128,129 +128,175 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	ps.untilDate = ps.untilDate || Date.now();
 	ps.sinceDate = ps.untilDate - 1000 * 60 * 60 * 24 * 7;
+	const scoreWindowMinId = genId(new Date(ps.sinceDate));
+	const scoreWindowMaxId = genId(new Date(ps.untilDate));
+	const followingCondition = createFollowingExistsCondition(user.id, {
+		parameterName: "spotlightTimelineFollowerId",
+		alias: "spotlightTimelineFollowing",
+	});
+	const unvotedPollCondition = `NOT EXISTS (${PollVotes.createQueryBuilder("vote")
+		.select("1")
+		.where("vote.userId = :spotlightTimelineVoteUserId")
+		.andWhere('vote."noteId" = note.id')
+		.getQuery()})`;
 
-	//#region クエリ構築
-	const query = makePaginationQuery(
-		Notes.createQueryBuilder("note"),
-		ps.sinceId,
-		ps.untilId,
-		ps.sinceDate,
-		ps.untilDate,
-	)
-		.andWhere("(note.visibility = 'public')")
-		.andWhere(`(note."channelId" IS NULL)`)
-		.andWhere(`(note."deletedAt" IS NULL)`)
-		.innerJoinAndSelect("note.user", "user")
-		.leftJoinAndSelect("user.avatar", "avatar")
-		.leftJoinAndSelect("user.banner", "banner")
-		.leftJoinAndSelect("note.reply", "reply")
-		.leftJoinAndSelect("note.renote", "renote")
-		.leftJoinAndSelect("reply.user", "replyUser")
-		.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
-		.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
-		.leftJoinAndSelect("renote.user", "renoteUser")
-		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
-		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+	//#region クエリヘルパー
+	const applyCommonTimelineFilters = (
+		query: ReturnType<typeof Notes.createQueryBuilder>,
+	): void => {
+		generateChannelQuery(query, user);
+		query.setParameters(followingCondition.parameters);
+		query.setParameters({
+			spotlightTimelineVoteUserId: user.id,
+		});
+		generateRepliesQuery(query, user, followingCondition);
+		generateVisibilityQuery(query, user);
+		generateMutedUserQuery(query, user);
+		generateMutedNoteQuery(query, user);
+		generateBlockedUserQuery(query, user);
+		generateMutedUserRenotesQueryForNotes(query, user);
 
-        generateChannelQuery(query, user);
-        if (user) {
-                const followingCondition = createFollowingExistsCondition(user.id);
-                query.setParameters(followingCondition.parameters);
-                generateRepliesQuery(query, user, followingCondition);
-        } else {
-                generateRepliesQuery(query, user);
-        }
-	generateVisibilityQuery(query, user);
-	if (user) generateMutedUserQuery(query, user);
-	if (user) generateMutedNoteQuery(query, user);
-	if (user) generateBlockedUserQuery(query, user);
-	if (user) generateMutedUserRenotesQueryForNotes(query, user);
+		if (ps.withFiles) {
+			query.andWhere('CARDINALITY(note."fileIds") > 0');
+		}
 
-	if (followees.length > 0) {
-		const meOrFolloweeIds = [user.id, ...followees.map((f) => f.followeeId)];
-
-		const followingNetworksQuery = await Notes.createQueryBuilder("note")
-			.select("note.renoteUserId")
-			.distinct(true)
-			.andWhere("note.id > :minId", { minId: genId(new Date(ps.sinceDate)) })
-			.andWhere("note.id < :maxId", { maxId: genId(new Date(ps.untilDate)) })
-			.andWhere("note.renoteId IS NOT NULL")
-			.andWhere("note.text IS NULL")
-			.andWhere("note.userId IN (:...meOrFolloweeIds)", {
-				meOrFolloweeIds: meOrFolloweeIds,
-			})
-			.andWhere(`(note.score > :localScore)`, { localScore: localScore })
-			.andWhere(
-				new Brackets((qb) => {
-					qb.where(`(note.userHost = note.renoteUserHost)`).orWhere(
-						`(note.userHost IS NULL)`,
-					);
-				}),
-			);
-
-		generateMutedUserRenotesQueryForNotes(followingNetworksQuery, user);
-		const followingNetworks = await followingNetworksQuery.getMany();
-
-		const meOrfollowingNetworks = [
-			user.id,
-			...followingNetworks.map((f) => f.renoteUserId),
-			...followees.map((f) => f.followeeId),
-		];
-
-		query
-			.andWhere("note.userId IN (:...meOrfollowingNetworks)", {
-				meOrfollowingNetworks: meOrfollowingNetworks,
-			})
-			.andWhere(
-				new Brackets((qb) => {
-					qb.where(
-						`(note.score > :globalScore) AND (user.isExplorable = TRUE)`,
-						{ globalScore: globalScore },
-					)
-						.orWhere(
-							`(note.userHost IS NULL) AND (note.score > :localScore) AND (user.isExplorable = TRUE)`,
-							{ localScore: localScore },
-						)
-						.orWhere(
-							`(note.score > :followeeScore) AND (note.userId IN (:...meOrFolloweeIds))`,
-							{
-								meOrFolloweeIds: meOrFolloweeIds,
-								followeeScore: followeeScore,
-							},
-						);
-				}),
-			);
-	} else {
-		query.andWhere(
-			`(note.userHost IS NULL) AND (note.score > 90) AND (user.isExplorable = TRUE)`,
-		);
-	}
-
-        if (ps.withFiles) {
-                query.andWhere('CARDINALITY(note."fileIds") > 0');
-        }
-
-        if (ps.fileType != null) {
-                query.andWhere('CARDINALITY(note."fileIds") > 0');
-		query.andWhere(
-			new Brackets((qb) => {
-				for (const type of ps.fileType!) {
-					const i = ps.fileType!.indexOf(type);
-					qb.orWhere(`:type${i} = ANY(note.attachedFileTypes)`, {
-						[`type${i}`]: type,
-					});
-				}
-			}),
-		);
-
-		if (ps.excludeNsfw) {
-			query.andWhere("note.cw IS NULL");
+		if (ps.fileType != null) {
+			query.andWhere('CARDINALITY(note."fileIds") > 0');
 			query.andWhere(
-				'0 = (SELECT COUNT(*) FROM drive_file df WHERE df.id = ANY(note."fileIds") AND df."isSensitive" = TRUE)',
+				new Brackets((qb) => {
+					for (const type of ps.fileType!) {
+						const i = ps.fileType!.indexOf(type);
+						qb.orWhere(`:type${i} = ANY(note.attachedFileTypes)`, {
+							[`type${i}`]: type,
+						});
+					}
+				}),
+			);
+
+			if (ps.excludeNsfw) {
+				query.andWhere("note.cw IS NULL");
+				query.andWhere(
+					'0 = (SELECT COUNT(*) FROM drive_file df WHERE df.id = ANY(note."fileIds") AND df."isSensitive" = TRUE)',
+				);
+			}
+		}
+		query.andWhere("note.visibility != 'hidden'");
+	};
+
+	const createBaseQuery = async () => {
+		const query = makePaginationQuery(
+			Notes.createQueryBuilder("note"),
+			ps.sinceId,
+			ps.untilId,
+			ps.sinceDate,
+			ps.untilDate,
+		)
+			.andWhere("(note.visibility = 'public')")
+			.andWhere(`(note."channelId" IS NULL)`)
+			.andWhere(`(note."deletedAt" IS NULL)`)
+			.innerJoinAndSelect("note.user", "user")
+			.leftJoinAndSelect("user.avatar", "avatar")
+			.leftJoinAndSelect("user.banner", "banner")
+			.leftJoinAndSelect("note.reply", "reply")
+			.leftJoinAndSelect("note.renote", "renote")
+			.leftJoinAndSelect("reply.user", "replyUser")
+			.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
+			.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
+			.leftJoinAndSelect("renote.user", "renoteUser")
+			.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
+			.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+		applyCommonTimelineFilters(query);
+
+		if (followees.length > 0) {
+			const followingNetworksQuery = await Notes.createQueryBuilder("note")
+				.select("note.renoteUserId")
+				.distinct(true)
+				.andWhere("note.id > :minId", { minId: scoreWindowMinId })
+				.andWhere("note.id < :maxId", { maxId: scoreWindowMaxId })
+				.andWhere("note.renoteId IS NOT NULL")
+				.andWhere("note.text IS NULL")
+				.andWhere("note.userId IN (:...meOrFolloweeIds)", {
+					meOrFolloweeIds,
+				})
+				.andWhere("(note.score > :localScore)", { localScore })
+				.andWhere(
+					new Brackets((qb) => {
+						qb.where("(note.userHost = note.renoteUserHost)").orWhere(
+							"(note.userHost IS NULL)",
+						);
+					}),
+				);
+
+			generateMutedUserRenotesQueryForNotes(followingNetworksQuery, user);
+			const followingNetworks = await followingNetworksQuery.getMany();
+
+			const meOrfollowingNetworks = [
+				user.id,
+				...followingNetworks.map((f) => f.renoteUserId),
+				...followees.map((f) => f.followeeId),
+			];
+
+			query
+				.andWhere("note.userId IN (:...meOrfollowingNetworks)", {
+					meOrfollowingNetworks,
+				})
+				.andWhere(
+					new Brackets((qb) => {
+						qb.where(
+							"(note.score > :globalScore) AND (user.isExplorable = TRUE)",
+							{ globalScore },
+						)
+							.orWhere(
+								"(note.userHost IS NULL) AND (note.score > :localScore) AND (user.isExplorable = TRUE)",
+								{ localScore },
+							)
+							.orWhere(
+								"(note.score > :followeeScore) AND (note.userId IN (:...meOrFolloweeIds))",
+								{
+									meOrFolloweeIds,
+									followeeScore,
+								},
+							);
+					}),
+				);
+		} else {
+			query.andWhere(
+				"(note.userHost IS NULL) AND (note.score > 90) AND (user.isExplorable = TRUE)",
 			);
 		}
-	}
-	query.andWhere("note.visibility != 'hidden'");
+		return query;
+	};
+
+	const createPollQuery = () => {
+		const query = makePaginationQuery(
+			Notes.createQueryBuilder("note"),
+			ps.sinceId,
+			ps.untilId,
+			ps.sinceDate,
+			ps.untilDate,
+		)
+			.leftJoin("note.poll", "poll")
+			.andWhere("(note.visibility = 'public')")
+			.andWhere(`(note."channelId" IS NULL)`)
+			.andWhere(`(note."deletedAt" IS NULL)`)
+			.andWhere("note.hasPoll = TRUE")
+			.andWhere("user.isBot = FALSE")
+			.andWhere(followingCondition.clause("note.userId"))
+			.andWhere(unvotedPollCondition)
+			.innerJoinAndSelect("note.user", "user")
+			.leftJoinAndSelect("user.avatar", "avatar")
+			.leftJoinAndSelect("user.banner", "banner")
+			.leftJoinAndSelect("note.reply", "reply")
+			.leftJoinAndSelect("note.renote", "renote")
+			.leftJoinAndSelect("reply.user", "replyUser")
+			.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
+			.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
+			.leftJoinAndSelect("renote.user", "renoteUser")
+			.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
+			.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+		applyCommonTimelineFilters(query);
+		return query;
+	};
 	//#endregion
 
 	process.nextTick(() => {
@@ -259,38 +305,76 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	});
 
-	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
-	const found = [];
-	const foundAppearNoteId = [];
-	const take = Math.floor(ps.limit * 1.5);
-	let skip = 0;
-	//try {
-	while (found.length < ps.limit) {
-		let notes = await query.take(take).skip(skip).getMany();
-		// 同じappearNoteの場合は除外
-		notes = notes
-			.map((x) => {
-				if (foundAppearNoteId.includes(x.renoteId || x.id)) return undefined;
-				foundAppearNoteId.push(x.renoteId || x.id);
-				return x;
-			})
-			.filter((x): x is NonNullable<typeof x> => x !== undefined);
-		const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(notes);
-		found.push(
-			...(await Notes.packMany(notes, user, {
-				_hint_: { userMap, noteMap },
-			})),
-		);
-		skip += take;
-		if (notes.length < take) break;
-	}
-	//} catch (error) {
-	//throw new ApiError(meta.errors.queryError);
-	//}
+	// NOTE: 従来枠を先に取得し、範囲内投票を優先追加。不足時のみ範囲外投票を補完する。
+	const baseTake = Math.floor(ps.limit * 1.5);
+	try {
+		const baseQuery = await createBaseQuery();
+		const fetchedBaseNotes = await baseQuery.take(baseTake).skip(0).getMany();
+		const appearNoteIds = new Set<string>();
+		const baseNotes = fetchedBaseNotes.filter((note) => {
+			const appearId = note.renoteId ?? note.id;
+			if (appearNoteIds.has(appearId)) return false;
+			appearNoteIds.add(appearId);
+			return true;
+		});
+		const mergedById = new Map(baseNotes.map((note) => [note.id, note]));
 
-	if (found.length > ps.limit) {
-		found.length = ps.limit;
-	}
+		if (baseNotes.length > 0) {
+			const minBaseId = baseNotes.reduce(
+				(min, note) => (note.id.localeCompare(min) < 0 ? note.id : min),
+				baseNotes[0].id,
+			);
+			const maxBaseId = baseNotes.reduce(
+				(max, note) => (note.id.localeCompare(max) > 0 ? note.id : max),
+				baseNotes[0].id,
+			);
+			const pollQuery = createPollQuery();
 
-	return found;
+			const pollInRangeNotes = await pollQuery
+				.clone()
+				.andWhere("note.id <= :pollRangeMaxId", { pollRangeMaxId: maxBaseId })
+				.andWhere("note.id >= :pollRangeMinId", { pollRangeMinId: minBaseId })
+				.take(ps.limit)
+				.skip(0)
+				.getMany();
+			for (const note of pollInRangeNotes) {
+				mergedById.set(note.id, note);
+			}
+
+			if (pollInRangeNotes.length < ps.limit) {
+				const excludedIds = Array.from(mergedById.keys());
+				const pollOutOfRangeQuery = pollQuery.clone().andWhere(
+					new Brackets((qb) => {
+						qb.where("note.id > :pollRangeMaxId", {
+							pollRangeMaxId: maxBaseId,
+						}).orWhere("note.id < :pollRangeMinId", {
+							pollRangeMinId: minBaseId,
+						});
+					}),
+				);
+				if (excludedIds.length > 0) {
+					pollOutOfRangeQuery.andWhere("note.id NOT IN (:...excludedIds)", {
+						excludedIds,
+					});
+				}
+				const pollOutOfRangeNotes = await pollOutOfRangeQuery
+					.take(ps.limit - pollInRangeNotes.length)
+					.skip(0)
+					.getMany();
+				for (const note of pollOutOfRangeNotes) {
+					mergedById.set(note.id, note);
+				}
+			}
+		}
+
+		const mergedNotes = Array.from(mergedById.values())
+			.sort((a, b) => b.id.localeCompare(a.id))
+			.slice(0, ps.limit);
+		const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(mergedNotes);
+		return await Notes.packMany(mergedNotes, user, {
+			_hint_: { userMap, noteMap },
+		});
+	} catch (error) {
+		throw new ApiError(meta.errors.queryError);
+	}
 });

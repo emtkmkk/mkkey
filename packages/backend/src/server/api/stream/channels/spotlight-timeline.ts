@@ -16,6 +16,20 @@ import { getWordHardMute } from "@/misc/check-word-mute.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
 import type { Packed } from "@/misc/schema.js";
 
+/**
+ * 接続ユーザーが投票済みかを判定する。
+ *
+ * @param note 判定対象ノート
+ * @returns いずれかの選択肢に isVoted が含まれる場合は true
+ * @remarks
+ * NOTE: ストリームは近似条件でよいため、pack済みデータだけで判定する。
+ * @internal
+ */
+function hasCurrentUserVoted(note: Packed<"Note">): boolean {
+	if (!note.poll?.choices?.length) return false;
+	return note.poll.choices.some((choice) => choice.isVoted === true);
+}
+
 export default class extends Channel {
 	public readonly chName = "spotlightTimeline";
 	public static shouldShare = true;
@@ -26,7 +40,7 @@ export default class extends Channel {
 		this.onNote = this.withPackedNote(this.onNote.bind(this));
 	}
 
-	public async init(params: any) {
+	public async init(_params: unknown) {
 		const meta = await fetchMeta();
 		if (meta.disableLocalTimeline) {
 			if (this.user == null || !(this.user.isAdmin || this.user.isModerator))
@@ -61,21 +75,27 @@ export default class extends Channel {
 		dynamicScore2 = Math.floor(dynamicScore2 / 3);
 		dynamicScore3 = Math.floor(dynamicScore3 / 3);
 
-		if (!note.renoteId) return;
-
-		if (
-			!(
-				(note.channelId == null &&
-					this.following.has(note.renote!.userId) &&
-					Math.floor(note.renote!.score / 3) === dynamicScore1) ||
-				(note.channelId == null &&
-					!note.renote!.user.host &&
-					Math.floor(note.renote!.score / 3) === dynamicScore2) ||
-				(note.channelId == null &&
-					note.renote!.user.host &&
-					Math.floor(note.renote!.score / 3) === dynamicScore3)
-			)
-		)
+		const scoreCandidate =
+			(note.channelId == null &&
+				note.renoteId != null &&
+				this.following.has(note.renote!.userId) &&
+				Math.floor(note.renote!.score / 3) === dynamicScore1) ||
+			(note.channelId == null &&
+				note.renoteId != null &&
+				!note.renote!.user.host &&
+				Math.floor(note.renote!.score / 3) === dynamicScore2) ||
+			(note.channelId == null &&
+				note.renoteId != null &&
+				note.renote!.user.host &&
+				Math.floor(note.renote!.score / 3) === dynamicScore3);
+		const pollCandidate =
+			note.channelId == null &&
+			note.visibility === "public" &&
+			note.poll != null &&
+			this.following.has(note.userId) &&
+			note.user.isBot !== true &&
+			!hasCurrentUserVoted(note);
+		if (!(scoreCandidate || pollCandidate))
 			return;
 
 		if (note.visibility !== "public") return;

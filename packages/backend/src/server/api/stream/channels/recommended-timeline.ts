@@ -17,33 +17,6 @@ import { isUserRelated } from "@/misc/is-user-related.js";
 import { isInstanceMuted } from "@/misc/is-instance-muted.js";
 import type { Packed } from "@/misc/schema.js";
 
-/**
- * 公開投票かを判定する。
- *
- * @param note 判定対象のノート
- * @returns 公開投票なら true
- * @remarks
- * NOTE: API 側で終了時刻制限を外したため、ストリームも公開投票かどうかのみを近似条件として扱う。
- * @internal
- */
-function hasPublicPoll(note: Packed<"Note">): boolean {
-	return note.visibility === "public" && note.poll != null;
-}
-
-/**
- * 接続ユーザーが投票済みかを判定する。
- *
- * @param note 判定対象のノート
- * @returns いずれかの選択肢に isVoted=true があれば true
- * @remarks
- * NOTE: pack 済み poll は選択肢ごとに `isVoted` を持つため、追加クエリなしで判定できる。
- * @internal
- */
-function hasCurrentUserVoted(note: Packed<"Note">): boolean {
-	if (!note.poll?.choices?.length) return false;
-	return note.poll.choices.some((choice) => choice.isVoted === true);
-}
-
 export default class extends Channel {
 	public readonly chName = "recommendedTimeline";
 	public static shouldShare = true;
@@ -72,28 +45,19 @@ export default class extends Channel {
 
 	private async onNote(note: Packed<"Note">) {
 		if (note.visibility === "hidden") return;
-		//#region おすすめ候補条件
+		// ファイル添付なしで公開投稿のみ
 		const meta = await fetchMeta();
-		const hasRecommendedFileContent =
-			(note.fileIds && note.fileIds.length !== 0) ||
-			(note.renote &&
-				!note.text &&
-				note.renote.fileIds &&
-				note.renote.fileIds.length !== 0);
-		// NOTE: フォロー中・非bot・未回答の公開投票を、おすすめ候補として加算する（近似条件）。
-		const hasFollowedNonBotPoll =
-			this.following.has(note.userId) &&
-			note.user.isBot !== true &&
-			hasPublicPoll(note) &&
-			!hasCurrentUserVoted(note);
 		if (
 			!(
-				(hasRecommendedFileContent || hasFollowedNonBotPoll) &&
+				((note.fileIds && note.fileIds.length !== 0) ||
+					(note.renote &&
+						!note.text &&
+						note.renote.fileIds &&
+						note.renote.fileIds.length !== 0)) &&
 				note.visibility === "public"
 			)
 		)
 			return;
-		//#endregion
 
 		// ユーザーがミュートしたインスタンスのノートは無視
 		if (

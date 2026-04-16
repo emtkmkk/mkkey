@@ -127,7 +127,7 @@ type ExpirationMode = "infinite" | "at" | "after";
 /** 経過指定の単位（MkSelect の value と一致） */
 type AfterUnit = "second" | "minute" | "hour" | "day";
 
-const expiration = ref<ExpirationMode>("after");
+const expiration = ref<ExpirationMode>("at");
 const atDate = ref(
 	formatDateTimeString(
 		addTime(new Date(), new Date().getHours() >= 22 ? 2 : 1, "day"),
@@ -186,7 +186,7 @@ if (expiresAtMs != null) {
 	// 期限フィールドなし＝新規投票: アカウントに保存した UI 既定を復元
 	const mode = defaultStore.state.postFormPollExpiration;
 	expiration.value =
-		mode === "infinite" || mode === "at" || mode === "after" ? mode : "after";
+		mode === "infinite" || mode === "at" || mode === "after" ? mode : "at";
 	hideResults.value =
 		props.modelValue.hideResults ??
 		defaultStore.state.postFormPollHideResults;

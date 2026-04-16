@@ -51,7 +51,7 @@ export const defaultStore = markRaw(
 		/** 投票の期限モード（無期限 / 日時指定 / 経過指定）の前回値 */
 		postFormPollExpiration: {
 			where: "account",
-			default: "after" as "infinite" | "at" | "after",
+			default: "at" as "infinite" | "at" | "after",
 			createdAt: "2026/4/16",
 			page: "postform",
 		},

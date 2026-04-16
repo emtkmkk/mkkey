@@ -34,12 +34,13 @@
 		</ul>
 		<div v-if="showMultipleSubmitRow" class="pollSubmitRow">
 			<MkButton
+				class="pollSubmitButton _buttonGradate"
 				primary
-				small
 				:disabled="multipleSubmitDisabled"
 				@click.stop="submitMultiplePoll"
 			>
 				{{ i18n.t("_poll.voteWithCount", { n: multipleSelectedCount }) }}
+				<i class="ph-paper-plane-tilt ph-bold ph-lg submitIcon"></i>
 			</MkButton>
 		</div>
 		<p v-if="!readOnly">
@@ -411,6 +412,39 @@ async function afterVoteSuccess() {
 
 	.pollSubmitRow {
 		margin-top: 0.375rem;
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.pollSubmitButton {
+		display: inline-flex;
+		align-items: center;
+		margin-right: 0;
+		margin-left: 0;
+		padding: 0 0.75rem;
+		line-height: 2.125rem;
+		font-weight: bold;
+		border-radius: 0.25rem;
+		font-size: 0.9em;
+
+		:deep(.content) {
+			display: inline-flex;
+			align-items: center;
+		}
+	}
+
+	.pollSubmitButton .submitIcon {
+		margin-left: 0.375rem;
+	}
+
+	.pollSubmitButton:disabled {
+		opacity: 0.7;
+	}
+
+	> .pollSubmitRow {
+		.submitIcon {
+			color: currentColor;
+		}
 	}
 
 	> p {

@@ -183,7 +183,14 @@ const multipleSubmitDisabled = computed(
 
 //#region 集計・権限
 const isOwner = computed(() => $i?.id === props.note.userId);
-const closed = computed(() => remaining.value === 0);
+const closed = computed(() => {
+	// NOTE: 期限到達済みで画面に来た初期表示でも結果を出せるよう、remaining だけでなく expiresAt も見る
+	const expiredByRemaining = remaining.value === 0;
+	const expiredByDate =
+		props.note.poll.expiresAt != null &&
+		new Date(props.note.poll.expiresAt).getTime() <= Date.now();
+	return expiredByRemaining || expiredByDate;
+});
 const canShowResults = computed(() => {
 	if (!props.note.poll.hideResults) return true;
 	return isOwner.value || hasVoted.value || closed.value;
@@ -196,7 +203,7 @@ const total = computed(() => {
 const isLocal = computed(() => !props.note.uri);
 //#endregion
 
-const showResult = ref(props.readOnly || isVoted.value);
+const showResult = ref(props.readOnly || isVoted.value || closed.value);
 
 watch(canShowResults, (value) => {
 	if (!value) {

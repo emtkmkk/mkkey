@@ -425,7 +425,8 @@ async function afterVoteSuccess() {
 		line-height: 2.125rem;
 		font-weight: bold;
 		border-radius: 0.25rem;
-		font-size: 0.9em;
+		// NOTE: MkNote 側で font-size が縮むため、em ではなく rem で投稿フォーム相当の見た目を維持する
+		font-size: 0.9rem;
 
 		:deep(.content) {
 			display: inline-flex;

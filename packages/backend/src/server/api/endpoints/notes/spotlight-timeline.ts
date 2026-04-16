@@ -357,11 +357,11 @@ export default define(meta, paramDef, async (ps, user) => {
 			.andWhere("note.hasPoll = TRUE")
 			.innerJoin("note.user", "user")
 			// 投票枠は未終了の投票のみ（expiresAt 未設定は期限なし。期限ありは vote API と同様に `expiresAt < 現在` が終了 ⇔ 掲載は `IS NULL OR expiresAt >= 現在`）
-			.innerJoin(Poll, "spotlightPoll", 'spotlightPoll."noteId" = note.id')
+			.innerJoin(Poll, "spotlightPoll", '"spotlightPoll"."noteId" = note.id')
 			.andWhere(
 				new Brackets((qb) => {
-					qb.where("spotlightPoll.expiresAt IS NULL").orWhere(
-						"spotlightPoll.expiresAt >= :spotlightPollNotExpiredAfter",
+					qb.where('"spotlightPoll"."expiresAt" IS NULL').orWhere(
+						'"spotlightPoll"."expiresAt" >= :spotlightPollNotExpiredAfter',
 						{ spotlightPollNotExpiredAfter: new Date() },
 					);
 				}),

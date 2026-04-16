@@ -10,11 +10,13 @@
  *   `SET enable_nestloop = off` で速くなる事象と同種のため、フォロー集合は **`EXISTS(following)` と本人一致**で表現する。
  * - NOTE: **`untilId` のみ**のページングでは {@link makePaginationQuery} が `id < untilId` だけとなり **id 下限が無い**。
  *   厳しいフィルタでは逆方向スキャンがタイムアウト級になりうるため、`scoreWindowMinId`（7日窓の下限）で **`note.id` の下限**を付ける。
+ * - 投票枠（`createPollIdQuery`）は **`poll.expiresAt` が過ぎた投票**を含めない（`expiresAt` 未設定は期限なし。期限ありは `expiresAt >= サーバ現在` を未終了とし、投票 API の期限判定に揃える）。
  *
  * @see {@link define} エンドポイント登録
  * @internal
  */
 import { Brackets, In } from "typeorm";
+import { Poll } from "@/models/entities/poll.js";
 import { Notes, Followings, PollVotes } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
@@ -354,6 +356,16 @@ export default define(meta, paramDef, async (ps, user) => {
 			.andWhere(`(note."deletedAt" IS NULL)`)
 			.andWhere("note.hasPoll = TRUE")
 			.innerJoin("note.user", "user")
+			// 投票枠は未終了の投票のみ（expiresAt 未設定は期限なし。期限ありは vote API と同様に `expiresAt < 現在` が終了 ⇔ 掲載は `IS NULL OR expiresAt >= 現在`）
+			.innerJoin(Poll, "spotlightPoll", 'spotlightPoll."noteId" = note.id')
+			.andWhere(
+				new Brackets((qb) => {
+					qb.where("spotlightPoll.expiresAt IS NULL").orWhere(
+						"spotlightPoll.expiresAt >= :spotlightPollNotExpiredAfter",
+						{ spotlightPollNotExpiredAfter: new Date() },
+					);
+				}),
+			)
 			.leftJoin("note.reply", "reply")
 			.leftJoin("note.renote", "renote")
 			.leftJoin("reply.user", "replyUser")

@@ -342,6 +342,39 @@ describe("Note", () => {
 			assert.strictEqual(res.body.createdNote.poll != null, true);
 		}));
 
+		it("投票の選択肢が200文字ちょうどの場合、作成できる", async(async () => {
+			const long200 = "x".repeat(200);
+			const res = await request(
+				"/notes/create",
+				{
+					text: "test",
+					poll: {
+						choices: [long200, "y"],
+					},
+				},
+				alice,
+			);
+
+			assert.strictEqual(res.status, 200);
+			assert.strictEqual(res.body.createdNote.poll.choices[0].text, long200);
+		}));
+
+		it("投票の選択肢が201文字の場合、400になる", async(async () => {
+			const res = await request(
+				"/notes/create",
+				{
+					text: "test",
+					poll: {
+						choices: ["z".repeat(201), "y"],
+					},
+				},
+				alice,
+			);
+
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(res.body.error.code, "INVALID_PARAM");
+		}));
+
 		it("投票の選択肢が無くて怒られる", async(async () => {
 			const res = await request(
 				"/notes/create",
@@ -477,6 +510,81 @@ describe("Note", () => {
 			);
 
 			assert.strictEqual(res.status, 204);
+		}));
+
+		it("単一投票で choices が1件なら投票できる", async(async () => {
+			const { body } = await request(
+				"/notes/create",
+				{
+					text: "test",
+					poll: {
+						choices: ["sakura", "izumi", "ako"],
+					},
+				},
+				alice,
+			);
+
+			const res = await request(
+				"/notes/polls/vote",
+				{
+					noteId: body.createdNote.id,
+					choices: [2],
+				},
+				alice,
+			);
+
+			assert.strictEqual(res.status, 204);
+		}));
+
+		it("複数回答可で choices 一括投票できる", async(async () => {
+			const { body } = await request(
+				"/notes/create",
+				{
+					text: "test",
+					poll: {
+						choices: ["sakura", "izumi", "ako"],
+						multiple: true,
+					},
+				},
+				alice,
+			);
+
+			const res = await request(
+				"/notes/polls/vote",
+				{
+					noteId: body.createdNote.id,
+					choices: [0, 2],
+				},
+				alice,
+			);
+
+			assert.strictEqual(res.status, 204);
+		}));
+
+		it("choice と choices を同時指定すると 400", async(async () => {
+			const { body } = await request(
+				"/notes/create",
+				{
+					text: "test",
+					poll: {
+						choices: ["a", "b"],
+						multiple: true,
+					},
+				},
+				alice,
+			);
+
+			const res = await request(
+				"/notes/polls/vote",
+				{
+					noteId: body.createdNote.id,
+					choice: 0,
+					choices: [1],
+				},
+				alice,
+			);
+
+			assert.strictEqual(res.status, 400);
 		}));
 
 		it("締め切られている場合は投票できない", async(async () => {

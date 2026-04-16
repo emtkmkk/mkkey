@@ -43,3 +43,13 @@ https://github.com/sindresorhus/file-type/blob/main/supported.js
 https://github.com/sindresorhus/file-type/blob/main/core.js
 https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers
 */
+
+/**
+ * 投票（アンケート）の各選択肢の最大文字数（`notes/create` の JSON Schema `maxLength` と揃える。UTF-16 コード単位でクリップする）。
+ *
+ * @remarks
+ * DB 物理上限（256）や連合の注意はバックエンド `misc/hard-limits.ts` を参照。
+ *
+ * @public
+ */
+export const MAX_POLL_CHOICE_INPUT_LENGTH = 200;

@@ -4,9 +4,10 @@
  * アンケート（投票）の投票処理を行うサービス。
  *
  * @remarks
- * - **役割**: ノートのアンケートに投票する。notes/polls/vote エンドポイントから呼ばれ、PollVotes に保存し通知・ストリームを発火する。
+ * - **役割**: ActivityPub 経由の投票取り込みなどで呼ばれ、PollVotes に保存し通知・ストリームを発火する。
+ * - **通知**: REST の `notes/polls/vote` と同様、`poll.multiple` のときは同一 user+note で **初回の 1 票だけ** `pollVote` 通知を送る（2 票目以降は `createNotification` しない）。
  *
- * @see {@link endpoints/notes/polls/vote} 投票 API
+ * @see {@link endpoints/notes/polls/vote} 投票 API（クライアント向け）
  * @internal
  */
 import { publishNoteStream } from "@/services/stream.js";
@@ -80,25 +81,28 @@ export default async function (
 		lastActiveDate: new Date(),
 	});
 
-	// 通知
-	createNotification(note.userId, "pollVote", {
-		notifierId: user.id,
-		noteId: note.id,
-		choice: choice,
-	}, { notifier: user });
+	// 複数回答可では初回の 1 票のみ in-app 通知（REST と揃える）
+	const shouldNotifyPollVote = !poll.multiple || exist.length === 0;
+	if (shouldNotifyPollVote) {
+		createNotification(note.userId, "pollVote", {
+			notifierId: user.id,
+			noteId: note.id,
+			choice: choice,
+		}, { notifier: user });
 
-	// ウォッチャーを取得（投稿者には投票者を表示）
-	NoteWatchings.findBy({
-		noteId: note.id,
-		userId: Not(user.id),
-	}).then((watchers) => {
-		for (const watcher of watchers) {
-			const notifierId = watcher.userId === note.userId ? user.id : note.userId;
-			createNotification(watcher.userId, "pollVote", {
-				notifierId,
-				noteId: note.id,
-				choice: choice,
-			}, notifierId === user.id ? { notifier: user } : undefined);
-		}
-	});
+		// ウォッチャーを取得（投稿者には投票者を表示）
+		NoteWatchings.findBy({
+			noteId: note.id,
+			userId: Not(user.id),
+		}).then((watchers) => {
+			for (const watcher of watchers) {
+				const notifierId = watcher.userId === note.userId ? user.id : note.userId;
+				createNotification(watcher.userId, "pollVote", {
+					notifierId,
+					noteId: note.id,
+					choice: choice,
+				}, notifierId === user.id ? { notifier: user } : undefined);
+			}
+		});
+	}
 }

@@ -917,7 +917,8 @@ const ENDPOINT_DESCRIPTIONS_JA: Record<
 	},
 	"notes/polls/vote": {
 		summary: "投票する",
-		description: "指定ノートの投票に投票します。",
+		description:
+			"指定ノートの投票に投票します。`choice` または `choices` のどちらか一方。単一回答では `choices` は 1 要素のみ。複数回答可では複数要素で一括投票可能。",
 	},
 	"notes/reactions": {
 		summary: "ノートのリアクション一覧を取得",

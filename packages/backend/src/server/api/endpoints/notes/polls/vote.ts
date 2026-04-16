@@ -5,7 +5,11 @@
  *
  * @remarks
  * - **API パス**: `notes/polls/vote`（POST `/api/notes/polls/vote` で呼び出し）
- * - 認証必須。noteId と choice で指定した選択肢に投票する。重複投票は不可。
+ * - 認証必須。`choice` または `choices` のどちらか一方で指定する。`choices` は複数肢を 1 リクエストで投票する場合に使う。
+ * - **単一回答**（`multiple === false`）: `choice` 1 件、または `choices` が要素 1 つだけ（`choice` 相当）。
+ * - **複数回答可**（`multiple === true`）: `choice` 1 件、または `choices` が 1 件以上（重複なし・有効な添字のみ）。同一リクエスト内は DB トランザクションでまとめる。
+ * - **通知**: `poll.multiple` のとき `pollVote` の in-app 通知は、同一ユーザー・同一ノートで **初回に票が入ったときだけ 1 回**（先頭の選択肢 index を付与）。2 票目以降のリクエストや同一バッチの 2 本目以降では `createNotification` しない。
+ * - `choice` と `choices` の同時指定は拒否する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -25,10 +29,12 @@ import {
 	Blockings,
 } from "@/models/index.js";
 import type { IRemoteUser } from "@/models/entities/user.js";
+import { PollVote } from "@/models/entities/poll-vote.js";
 import { genId } from "@/misc/gen-id.js";
 import { getNote } from "../../../common/getters.js";
 import { ApiError } from "../../../error.js";
 import define from "../../../define.js";
+import { db } from "@/db/postgre.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -54,6 +60,13 @@ export const meta = {
 			message: "選択が正しくありません。",
 			code: "INVALID_CHOICE",
 			id: "e0cc9a04-f2e8-41e4-a5f1-4127293260cc",
+		},
+
+		invalidPollVoteParams: {
+			message:
+				"投票パラメータが正しくありません。`choice` または `choices` のどちらか一方を指定してください。",
+			code: "INVALID_POLL_VOTE_PARAMS",
+			id: "7f2e9a1b-4c3d-4e5f-8a9b-0c1d2e3f4a5b",
 		},
 
 		alreadyVoted: {
@@ -84,13 +97,56 @@ export const paramDef = {
 			format: "misskey:id",
 			description: "投票する投稿の ID。",
 		},
-		choice: { type: "integer" },
+		choice: { type: "integer", description: "単一の選択肢 index。" },
+		choices: {
+			type: "array",
+			items: { type: "integer" },
+			description: "複数の選択肢 index。`choice` と同時に指定しない。",
+		},
 	},
-	required: ["noteId", "choice"],
+	required: ["noteId"],
 } as const;
+
+/**
+ * `choice` / `choices` から正規化した選択肢 index 配列を返す。
+ *
+ * @param ps リクエスト body
+ * @throws {ApiError} 両方指定・両方未指定・`choices` が空・重複
+ * @returns 重複除去後の index 列（順序は入力の初出順を維持）
+ * @internal
+ */
+function resolveChoiceIndices(ps: {
+	choice?: number;
+	choices?: number[];
+}): number[] {
+	const hasChoice = typeof ps.choice === "number";
+	const hasChoices = Array.isArray(ps.choices) && ps.choices.length > 0;
+
+	if (hasChoice && hasChoices) {
+		throw new ApiError(meta.errors.invalidPollVoteParams);
+	}
+	if (!hasChoice && !hasChoices) {
+		throw new ApiError(meta.errors.invalidPollVoteParams);
+	}
+	if (hasChoices) {
+		const seen = new Set<number>();
+		const out: number[] = [];
+		for (const c of ps.choices!) {
+			if (seen.has(c)) {
+				throw new ApiError(meta.errors.invalidChoice);
+			}
+			seen.add(c);
+			out.push(c);
+		}
+		return out;
+	}
+	return [ps.choice!];
+}
 
 export default define(meta, paramDef, async (ps, user) => {
 	const createdAt = new Date();
+
+	const choiceIndices = resolveChoiceIndices(ps);
 
 	// 投票先を取得する
 	const note = await getNote(ps.noteId, user).catch((err) => {
@@ -98,6 +154,10 @@ export default define(meta, paramDef, async (ps, user) => {
 			throw new ApiError(meta.errors.noSuchNote);
 		throw err;
 	});
+
+	if (note == null) {
+		throw new ApiError(meta.errors.noSuchNote);
+	}
 
 	if (!note.hasPoll) {
 		throw new ApiError(meta.errors.noPoll);
@@ -120,81 +180,123 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.alreadyExpired);
 	}
 
-	if (poll.choices[ps.choice] == null) {
+	if (!poll.multiple && choiceIndices.length !== 1) {
 		throw new ApiError(meta.errors.invalidChoice);
 	}
 
-	// 既に投票済みの場合
+	for (const c of choiceIndices) {
+		if (poll.choices[c] == null) {
+			throw new ApiError(meta.errors.invalidChoice);
+		}
+	}
+
 	const exist = await PollVotes.findBy({
 		noteId: note.id,
 		userId: user.id,
 	});
+	const existBeforeCount = exist.length;
 
-	if (exist.length) {
-		if (poll.multiple) {
-			if (exist.some((x) => x.choice === ps.choice)) {
-				throw new ApiError(meta.errors.alreadyVoted);
-			}
-		} else {
+	// 既存票との整合（単一は 1 票まで、複数は同一肢の重複禁止）
+	if (!poll.multiple) {
+		if (exist.length !== 0) {
 			throw new ApiError(meta.errors.alreadyVoted);
 		}
+	} else {
+		for (const c of choiceIndices) {
+			if (exist.some((x) => x.choice === c)) {
+				throw new ApiError(meta.errors.alreadyVoted);
+			}
+		}
 	}
 
-	// 投票を作成する
-	const vote = await PollVotes.insert({
-		id: genId(),
-		createdAt,
-		noteId: note.id,
-		userId: user.id,
-		choice: ps.choice,
-	}).then((x) => PollVotes.findOneByOrFail(x.identifiers[0]));
+	/** `poll.multiple` のとき pollVote 通知に載せる choice（初回のみ。null なら通知しない） */
+	const pollVoteNotifyChoice: number | null = !poll.multiple
+		? choiceIndices[0]
+		: existBeforeCount === 0
+			? choiceIndices[0]
+			: null;
 
-	// 投票数をインクリメントする
-	const index = ps.choice + 1; // In SQL, array index is 1 based
-	await Polls.query(
-		`UPDATE poll SET votes[${index}] = votes[${index}] + 1 WHERE "noteId" = '${poll.noteId}'`,
-	);
+	const insertedVoteIds: string[] = [];
 
-	publishNoteStream(note.id, "pollVoted", {
-		choice: ps.choice,
-		userId: user.id,
-	});
-
-	// 通知する
-	createNotification(note.userId, "pollVote", {
-		notifierId: user.id,
-		noteId: note.id,
-		choice: ps.choice,
-	}, { notifier: user });
-
-	// ウォッチャーを取得する（投稿者は投票者表示）
-	NoteWatchings.findBy({
-		noteId: note.id,
-		userId: Not(user.id),
-	}).then((watchers) => {
-		for (const watcher of watchers) {
-			const notifierId = watcher.userId === note.userId ? user.id : note.userId;
-			createNotification(watcher.userId, "pollVote", {
-				notifierId,
+	await db.transaction(async (manager) => {
+		for (const c of choiceIndices) {
+			const id = genId();
+			await manager.insert(PollVote, {
+				id,
+				createdAt,
 				noteId: note.id,
-				choice: ps.choice,
-			}, notifierId === user.id ? { notifier: user } : undefined);
+				userId: user.id,
+				choice: c,
+			});
+			insertedVoteIds.push(id);
+			const index = c + 1;
+			await manager.query(
+				`UPDATE poll SET votes[${index}] = votes[${index}] + 1 WHERE "noteId" = $1`,
+				[poll.noteId],
+			);
 		}
 	});
 
-	// リモート投票の場合リプライ送信
-	if (note.userHost != null) {
-		const pollOwner = (await Users.findOneByOrFail({
-			id: note.userId,
-		})) as IRemoteUser;
+	Users.update(user.id, {
+		lastActiveDate: new Date(),
+	});
 
-		deliver(
-			user,
-			renderActivity(await renderVote(user, vote, note, poll, pollOwner)),
-			pollOwner.inbox,
-		);
+	let i = 0;
+	for (const c of choiceIndices) {
+		const voteId = insertedVoteIds[i++]!;
+		publishNoteStream(note.id, "pollVoted", {
+			choice: c,
+			userId: user.id,
+		});
+
+		if (pollVoteNotifyChoice !== null && c === pollVoteNotifyChoice) {
+			createNotification(
+				note.userId,
+				"pollVote",
+				{
+					notifierId: user.id,
+					noteId: note.id,
+					choice: c,
+				},
+				{ notifier: user },
+			);
+
+			NoteWatchings.findBy({
+				noteId: note.id,
+				userId: Not(user.id),
+			}).then((watchers) => {
+				for (const watcher of watchers) {
+					const notifierId =
+						watcher.userId === note.userId ? user.id : note.userId;
+					createNotification(
+						watcher.userId,
+						"pollVote",
+						{
+							notifierId,
+							noteId: note.id,
+							choice: c,
+						},
+						notifierId === user.id
+							? { notifier: user }
+							: undefined,
+					);
+				}
+			});
+		}
+
+		if (note.userHost != null) {
+			const vote = await PollVotes.findOneByOrFail({ id: voteId });
+			const pollOwner = (await Users.findOneByOrFail({
+				id: note.userId,
+			})) as IRemoteUser;
+
+			deliver(
+				user,
+				renderActivity(await renderVote(user, vote, note, poll, pollOwner)),
+				pollOwner.inbox,
+			);
+		}
 	}
 
-	// リモートフォロワーにUpdate配信
 	deliverQuestionUpdate(note.id);
 });

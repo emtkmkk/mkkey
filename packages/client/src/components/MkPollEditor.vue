@@ -83,6 +83,7 @@
  * @remarks
  * CHANGED: `expiresAt` から `<input type="time">` へ渡す文字列は 24 時間表記（`HH:mm`）。以前の `hh:mm` は 12 時間表記のため下書き復元などで時刻がずれた。
  * NOTE: 期限モード・経過指定・結果非公開の既定は `defaultStore`（アカウント単位）に保存し、次回の新規投票で再利用する。
+ * NOTE: 各選択肢は `MAX_POLL_CHOICE_INPUT_LENGTH`（200）文字まで（API `maxLength` と一致。サロゲートペアは 2 コード単位）。
  *
  * @public
  */
@@ -95,6 +96,7 @@ import { formatDateTimeString } from "@/scripts/format-time-string";
 import { addTime } from "@/scripts/time";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
+import { MAX_POLL_CHOICE_INPUT_LENGTH } from "@/const";
 
 /** 親の `poll` オブジェクトに近い形（期限は下書き等で型がゆるい場合がある） */
 type PollEditorModelValue = {
@@ -206,7 +208,12 @@ if (expiresAtMs != null) {
  * @internal
  */
 function onInput(i: number, value: string) {
-	choices.value[i] = value;
+	// API の maxLength（UTF-16 コード単位）に合わせて超過分を切り捨てる
+	const v =
+		value.length > MAX_POLL_CHOICE_INPUT_LENGTH
+			? value.slice(0, MAX_POLL_CHOICE_INPUT_LENGTH)
+			: value;
+	choices.value[i] = v;
 }
 
 /** 選択肢を末尾に追加する */

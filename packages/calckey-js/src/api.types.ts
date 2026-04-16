@@ -886,7 +886,7 @@ export type Endpoints = {
 	};
 	"notes/polls/recommendation": { req: TODO; res: TODO };
 	"notes/polls/vote": {
-		req: { noteId: Note["id"]; choice: number };
+		req: { noteId: Note["id"]; choice?: number; choices?: number[] };
 		res: null;
 	};
 	"notes/reactions": {

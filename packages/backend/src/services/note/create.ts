@@ -5,6 +5,7 @@
  *
  * @remarks
  * - **役割**: API や AP の Create(Note) から呼ばれ、ノートを DB に保存し配信・ストリーム・検索に反映する。
+ * - **投票**: 選択肢は {@link DB_MAX_POLL_CHOICE_LENGTH} を超えないことを検証する（REST 以外の経路で DB 制約エラーを防ぐ）。
  *
  * @see {@link server/api/endpoints/notes/create} ノート作成 API
  * @internal
@@ -88,6 +89,7 @@ import renderDelete from "@/remote/activitypub/renderer/delete.js";
 import renderTombstone from "@/remote/activitypub/renderer/tombstone.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { StatusError } from "@/misc/fetch.js";
+import { DB_MAX_POLL_CHOICE_LENGTH } from "@/misc/hard-limits.js";
 
 const mutedWordsCache = new Cache<
 	{ userId: UserProfile["userId"]; mutedWords: UserProfile["mutedWords"] }[]
@@ -358,6 +360,16 @@ export default async (
 
 		// 最初に投稿時刻を確定させる
 		if (data.createdAt == null) data.createdAt = new Date();
+
+		// 投票の選択肢長（DB varchar と整合。API より長い連合流入もここで明示的に拒否）
+		if (data.poll?.choices?.length) {
+			for (const choice of data.poll.choices) {
+				if (Array.from(choice).length > DB_MAX_POLL_CHOICE_LENGTH) {
+					const pollChoiceTooLong = `投票の選択肢が長すぎます（1 肢あたり最大 ${DB_MAX_POLL_CHOICE_LENGTH} 文字相当）。`;
+					return rej(new StatusError(pollChoiceTooLong, 400, pollChoiceTooLong));
+				}
+			}
+		}
 
 		const isRemote = Users.isRemoteUser(user);
 		const firstVisibility = data.visibility ?? "public";

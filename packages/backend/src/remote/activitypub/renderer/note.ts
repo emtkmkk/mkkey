@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub 向けにローカルノートを AS2 オブジェクトへレンダリングする。
+ *
+ * @remarks
+ * 投票付きノートは `Question` 相当の形で `oneOf` / `anyOf` に各選択肢全文を載せる。選択肢が長いとペイロードが肥大し、他実装が拒否する可能性がある（API 側の短い上限とは別問題）。
+ *
+ * @internal
+ */
 import { In, IsNull } from "typeorm";
 import config from "@/config/index.js";
 import * as url from "@/prelude/url.js";
@@ -72,7 +82,7 @@ export default async function renderNote(
 	} catch(e) {
 		console.log(e);
 	}
-	
+
 	let to: string[] = [];
 	let cc: string[] = [];
 

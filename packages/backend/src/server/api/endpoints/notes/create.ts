@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `notes/create`（クライアントからは POST `/api/notes/create` で呼び出し）
  * - 認証必須。テキスト・投票・ファイル添付・リノート・返信・チャンネル投稿に対応。
+ * - **投票**: 各選択肢は `APP_MAX_POLL_CHOICE_LENGTH`（200）文字まで（`paramDef` の `maxLength`）。DB 物理上限は `misc/hard-limits` の `DB_MAX_POLL_CHOICE_LENGTH`。
  * - 公開範囲（visibility）、CW、ローカルのみ、Idempotency キーなどオプションあり。
  * - レート制限: 1 時間あたり 300 回（meta.limit）。
  *
@@ -26,6 +27,7 @@ import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { Note } from "@/models/entities/note.js";
 import type { Channel } from "@/models/entities/channel.js";
 import { MAX_NOTE_TEXT_LENGTH } from "@/const.js";
+import { APP_MAX_POLL_CHOICE_LENGTH } from "@/misc/hard-limits.js";
 import { noteVisibilities } from "../../../../types.js";
 import { ApiError } from "../../error.js";
 import { StatusError } from "@/misc/fetch.js";
@@ -264,8 +266,12 @@ export const paramDef = {
 					type: "array",
 					minItems: 1,
 					maxItems: 20,
-					items: { type: "string", minLength: 1, maxLength: 50 },
-					description: "選択肢の文字列の配列。",
+					items: {
+						type: "string",
+						minLength: 1,
+						maxLength: APP_MAX_POLL_CHOICE_LENGTH,
+					},
+					description: `選択肢の文字列の配列。各要素は最大 ${APP_MAX_POLL_CHOICE_LENGTH} 文字（JSON Schema maxLength 準拠）。`,
 				},
 				multiple: {
 					type: "boolean",

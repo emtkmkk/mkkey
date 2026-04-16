@@ -122,24 +122,6 @@ const timer = computed(() =>
 	),
 );
 
-if (props.note.poll.expiresAt) {
-	const tick = () => {
-		remaining.value = Math.floor(
-			Math.max(
-				new Date(props.note.poll.expiresAt).getTime() - Date.now(),
-				0,
-			) / 1000,
-		);
-		if (remaining.value === 0) {
-			showResult.value = true;
-		}
-	};
-
-	useInterval(tick, 3000, {
-		immediate: true,
-		afterMounted: false,
-	});
-}
 //#endregion
 
 //#region 投票状態（サーバー・複数用ローカル選択）
@@ -183,14 +165,7 @@ const multipleSubmitDisabled = computed(
 
 //#region 集計・権限
 const isOwner = computed(() => $i?.id === props.note.userId);
-const closed = computed(() => {
-	// NOTE: 期限到達済みで画面に来た初期表示でも結果を出せるよう、remaining だけでなく expiresAt も見る
-	const expiredByRemaining = remaining.value === 0;
-	const expiredByDate =
-		props.note.poll.expiresAt != null &&
-		new Date(props.note.poll.expiresAt).getTime() <= Date.now();
-	return expiredByRemaining || expiredByDate;
-});
+const closed = computed(() => remaining.value === 0);
 const canShowResults = computed(() => {
 	if (!props.note.poll.hideResults) return true;
 	return isOwner.value || hasVoted.value || closed.value;
@@ -203,7 +178,13 @@ const total = computed(() => {
 const isLocal = computed(() => !props.note.uri);
 //#endregion
 
-const showResult = ref(props.readOnly || isVoted.value || closed.value);
+/** 初回描画時点で既に締切済みなら、即時に結果表示を開く */
+const initiallyClosed = computed(
+	() =>
+		props.note.poll.expiresAt != null &&
+		new Date(props.note.poll.expiresAt).getTime() <= Date.now(),
+);
+const showResult = ref(props.readOnly || isVoted.value || initiallyClosed.value);
 
 watch(canShowResults, (value) => {
 	if (!value) {
@@ -215,6 +196,25 @@ watch(canShowResults, (value) => {
 		showResult.value = true;
 	}
 });
+
+if (props.note.poll.expiresAt) {
+	const tick = () => {
+		remaining.value = Math.floor(
+			Math.max(
+				new Date(props.note.poll.expiresAt).getTime() - Date.now(),
+				0,
+			) / 1000,
+		);
+		if (remaining.value === 0) {
+			showResult.value = true;
+		}
+	};
+
+	useInterval(tick, 3000, {
+		immediate: true,
+		afterMounted: false,
+	});
+}
 
 /**
  * 行に付けるクラス（複数回答の未投票時は `selected` で枠を付ける）。

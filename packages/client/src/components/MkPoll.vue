@@ -370,10 +370,10 @@ async function afterVoteSuccess() {
 			border-radius: 0.25rem;
 			overflow: hidden;
 			cursor: pointer;
-			border: solid 0.125rem transparent;
 
 			&.selected {
-				border-color: var(--accent);
+				// NOTE: border ではなく inset shadow で選択枠を描画し、レイアウトシフトを防ぐ
+				box-shadow: inset 0 0 0 0.125rem var(--accent);
 			}
 
 			> .backdrop {

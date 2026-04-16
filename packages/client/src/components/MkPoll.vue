@@ -16,9 +16,14 @@
 					}"
 				></div>
 				<span>
-					<template v-if="showChoiceCheck(i, choice)">
-						<i class="ph-check ph-bold ph-lg"></i>
-					</template>
+					<i
+						class="ph-bold ph-lg checkIcon"
+						:class="
+							showChoiceCheck(i, choice)
+								? ['ph-check-square', 'checked']
+								: 'ph-square'
+						"
+					></i>
 					<Mfm
 						:text="choice.text"
 						:plain="true"
@@ -394,11 +399,18 @@ async function afterVoteSuccess() {
 				position: relative;
 				display: inline-block;
 				padding: 0.1875rem 0.3125rem;
+				line-height: 1.4;
 				background: var(--tlPanel);
 				border-radius: 0.1875rem;
 
-				> i {
+				> .checkIcon {
+					display: inline-block;
+					width: 1.25rem;
 					margin-right: 0.25rem;
+					color: var(--fg);
+				}
+
+				> .checkIcon.checked {
 					color: var(--accent);
 				}
 

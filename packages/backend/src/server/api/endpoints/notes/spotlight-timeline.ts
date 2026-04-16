@@ -8,6 +8,8 @@
  * - 認証不要。インスタンスのスポットライトに表示するノートを取得する。
  * - NOTE: フォロー人数が多いとき、`note.userId IN (:…数百)` は PostgreSQL が **Nested Loop × インデックス探索**を選びやすく遅くなる。
  *   `SET enable_nestloop = off` で速くなる事象と同種のため、フォロー集合は **`EXISTS(following)` と本人一致**で表現する。
+ * - NOTE: **`untilId` のみ**のページングでは {@link makePaginationQuery} が `id < untilId` だけとなり **id 下限が無い**。
+ *   厳しいフィルタでは逆方向スキャンがタイムアウト級になりうるため、`scoreWindowMinId`（7日窓の下限）で **`note.id` の下限**を付ける。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -47,6 +49,36 @@ function sqlNoteUserIdIsMeOrFollowed(
 	followerIdParamToken: string,
 ): string {
 	return `(${noteAlias}."userId" = ${followerIdParamToken} OR EXISTS (SELECT 1 FROM "following" spotlight_tl_flw WHERE spotlight_tl_flw."followerId" = ${followerIdParamToken} AND spotlight_tl_flw."followeeId" = ${noteAlias}."userId"))`;
+}
+
+/**
+ * `untilId` のみ指定のページングに **id の下限**（スコア用 7 日窓の最小 id）を付与する。
+ *
+ * @param query - `note` エイリアスの `SelectQueryBuilder`
+ * @param untilId - ページング用 untilId（未指定なら何もしない）
+ * @param sinceId - 指定時は {@link makePaginationQuery} が既に `id` 下限（または両端）を付けるため何もしない
+ * @param scoreWindowMinId - `ps.sinceDate` から算出した窓の下限 id（`genId(new Date(ps.sinceDate))`）
+ * @returns void（`query` に条件を追加する）
+ *
+ * @remarks
+ * {@link makePaginationQuery} の `untilId` 分岐は `id < untilId` のみで、**古い id 方向に無制限**に候補を拾いに行く。
+ * スポットライトは共通フィルタが重いため、**帯域を 7 日窓に揃えて**プランを安定させる。
+ * `untilId` が窓より古い側へだけ進むページングでは `id > scoreWindowMinId AND id < untilId` が空になり **0 件**になり得る。
+ *
+ * @internal
+ */
+function applySpotlightLowerBoundWhenUntilIdOnly(
+	query: ReturnType<typeof Notes.createQueryBuilder>,
+	untilId: string | undefined,
+	sinceId: string | undefined,
+	scoreWindowMinId: string,
+): void {
+	// untilId のみ → makePaginationQuery は上限だけ。下限はスコア窓に合わせる
+	if (untilId != null && sinceId == null) {
+		query.andWhere('note.id > :spotlightPaginationMinId', {
+			spotlightPaginationMinId: scoreWindowMinId,
+		});
+	}
 }
 
 export const meta = {
@@ -229,6 +261,12 @@ export default define(meta, paramDef, async (ps, user) => {
 			.leftJoinAndSelect("renote.user", "renoteUser")
 			.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
 			.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+		applySpotlightLowerBoundWhenUntilIdOnly(
+			query,
+			ps.untilId,
+			ps.sinceId,
+			scoreWindowMinId,
+		);
 		applyCommonTimelineFilters(query);
 
 		if (followees.length > 0) {
@@ -323,6 +361,12 @@ export default define(meta, paramDef, async (ps, user) => {
 			.andWhere("user.isBot = FALSE")
 			.andWhere(followingCondition.clause("note.userId"))
 			.andWhere(unvotedPollCondition);
+		applySpotlightLowerBoundWhenUntilIdOnly(
+			query,
+			ps.untilId,
+			ps.sinceId,
+			scoreWindowMinId,
+		);
 		applyCommonTimelineFilters(query);
 		return query;
 	};

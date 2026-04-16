@@ -285,6 +285,7 @@
 						}"
                                                @click="react()"
                                        >
+                                               <!-- multiReaction のときだけ上限到達アイコンを表示する -->
                                                <i
                                                        v-if="isMaxReacted"
                                                        class="ph-prohibit ph-bold ph-lg"
@@ -432,6 +433,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ノート本体の表示とフッター操作を管理するコンポーネント。
+ *
+ * @remarks
+ * - ★ボタン、リアクション追加ボタン、取り消しボタンの表示条件をここで統合する。
+ * - multi / 非 multi の違いにより、同じ isMaxReacted でも UI の意味が変わるため条件を分けて扱う。
+ *
+ * @internal
+ */
 import {
 	unref,
 	computed,
@@ -635,6 +647,15 @@ const isDefaultReactionReacted = $computed(() => {
 	return false;
 });
 
+/**
+ * ★ボタン（絵文字なし）の表示可否を返す。
+ *
+ * @remarks
+ * - 通常はリアクション未到達かつ操作可能な場合に表示する。
+ * - デフォルトリアクションを★ボタンで扱う設定時は、既に既定リアクション済みでも表示を維持する。
+ *
+ * @internal
+ */
 const showStarButtonNoEmoji = $computed(() => {
 	const canShow =
 		((!isMaxReacted && !isfavButtonReacted && isCanReact) ||
@@ -643,12 +664,30 @@ const showStarButtonNoEmoji = $computed(() => {
 	return canShow && defaultStore.state.favButtonReaction !== "hidden";
 });
 
+/**
+ * リアクションピッカーボタンの表示可否を返す。
+ *
+ * @remarks
+ * - 非 multi の場合、既にリアクション済みなら取り消しボタンを優先するため非表示にする。
+ * - multi の場合は上限到達時でもボタンを表示し、上限状態のアイコン表示に任せる。
+ *
+ * @internal
+ */
 const showReactionPickerButton = $computed(
 	() =>
 		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
-		isCanReact
+		isCanReact &&
+		(multiReaction || !isMaxReacted)
 );
 
+/**
+ * リアクション取り消しボタンの表示可否を返す。
+ *
+ * @remarks
+ * 非 multi ユーザで既存リアクションがある場合のみ表示する。
+ *
+ * @internal
+ */
 const showUndoReactionButton = $computed(
 	() =>
 		(enableEmojiReactions || isDetailedView || showEmojiButton) &&

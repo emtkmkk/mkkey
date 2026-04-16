@@ -184,6 +184,7 @@
 						}"
 						@click="react()"
 					>
+						<!-- multiReaction のときだけ上限到達アイコンを表示する -->
 						<i
 							v-if="isMaxReacted"
 							class="ph-prohibit ph-bold ph-lg"
@@ -275,6 +276,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 会話ツリー内のサブノート表示とフッター操作を管理するコンポーネント。
+ *
+ * @remarks
+ * - メインノート (`MkNote.vue`) と同等のリアクション表示条件を維持する。
+ * - ★ボタン周辺のツールチップは子コンポーネント側に委譲し、重複登録を避ける。
+ *
+ * @internal
+ */
 import { inject, ref } from "vue";
 import type { Ref } from "vue";
 import * as misskey from "calckey-js";
@@ -333,9 +345,25 @@ const multiReaction =
 	(!props.note.user.host ||
 		props.note.user.instance?.maxReactionsPerAccount > 1);
 const maxReactions = multiReaction
-	? Math.min(props.note.user.instance?.maxReactionsPerAccount ?? 3, 64)
+	? Math.min(props.note.user.instance?.maxReactionsPerAccount ?? 3, 3)
 	: 1;
 const isCanAction = $i && (!$i.isSilenced || props.note.user.isFollowed);
+/** 警告ユーザは canWarnedViewerReact が明示 true のときのみリアクション可（自分のノートは常に可） */
+const isCanReact = $computed(() => {
+	if (!isCanAction) return false;
+	if (!$i?.isModerationWarning) return true;
+	if (appearNote.userId === $i.id) return true;
+	return appearNote.canWarnedViewerReact === true;
+});
+
+/**
+ * リアクション上限到達状態かどうかを返す。
+ *
+ * @remarks
+ * 非 multi では「既に1件リアクション済み」の意味で true になる。
+ *
+ * @internal
+ */
 const isMaxReacted = $computed(() =>
 	multiReaction
 		? props.note.myReactions?.length >= maxReactions
@@ -431,27 +459,55 @@ const isDefaultReactionReacted = $computed(() => {
 	return false;
 });
 
+/**
+ * ★ボタン（絵文字なし）の表示可否を返す。
+ *
+ * @remarks
+ * デフォルトリアクションを★ボタンで扱う設定時は、既に既定リアクション済みでも表示を維持する。
+ *
+ * @internal
+ */
 const showStarButtonNoEmoji = $computed(() => {
 	const canShow =
-		((!isMaxReacted && !isfavButtonReacted && isCanAction) ||
+		((!isMaxReacted && !isfavButtonReacted && isCanReact) ||
 			favButtonReactionIsFavorite ||
 			(isStarButtonHandlesDefault && isDefaultReactionReacted));
 	return canShow && defaultStore.state.favButtonReaction !== "hidden";
 });
 
+/**
+ * リアクションピッカーボタンの表示可否を返す。
+ *
+ * @remarks
+ * - 非 multi の場合、既にリアクション済みなら取り消しボタンを優先するため非表示にする。
+ * - multi の場合は上限到達時でもボタンを表示し、上限状態のアイコン表示に任せる。
+ *
+ * @internal
+ */
 const showReactionPickerButton = $computed(
-	() => (enableEmojiReactions || showEmojiButton) && isCanAction
+	() =>
+		(enableEmojiReactions || showEmojiButton) &&
+		isCanReact &&
+		(multiReaction || !isMaxReacted)
 );
 
+/**
+ * リアクション取り消しボタンの表示可否を返す。
+ *
+ * @remarks
+ * 非 multi ユーザで既存リアクションがある場合のみ表示する。
+ *
+ * @internal
+ */
 const showUndoReactionButton = $computed(
 	() =>
 		(enableEmojiReactions || showEmojiButton) &&
 		appearNote.myReaction != null &&
-		!multiReaction
+		!multiReaction &&
+		isCanReact
 );
 
 const {
-	defaultReactionCount,
 	reactionCountViewModel,
 } = useReactionCountViewModel({
 	note: $$(appearNote),
@@ -465,33 +521,6 @@ const {
 const starButtonNoEmojiRef = ref<HTMLElement>();
 const reactionPickerButtonRef = ref<HTMLElement>();
 const undoReactionButtonRef = ref<HTMLElement>();
-
-useTooltip(
-	starButtonNoEmojiRef,
-	async (showing) => {
-		const reactions = await os.api("notes/reactions", {
-			noteId: appearNote.id,
-			type: instance.defaultReaction,
-			limit: 11,
-		});
-
-		const users = reactions.map((x) => x.user);
-		if (users.length < 1) return;
-
-		os.popup(
-			XUsersTooltip,
-			{
-				showing,
-				users,
-				count: defaultReactionCount,
-				targetElement: starButtonNoEmojiRef.value,
-			},
-			{},
-			"closed"
-		);
-	},
-	500
-);
 
 useTooltip(
 	reactionPickerButtonRef,

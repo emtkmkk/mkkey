@@ -11,7 +11,7 @@
 					small
 					:model-value="choice"
 					:placeholder="i18n.t('_poll.choiceN', { n: i + 1 })"
-					@update:modelValue="onInput(i, $event)"
+					@update:modelValue="onInput(i, String($event ?? ''))"
 				>
 				</MkInput>
 				<button class="_button" @click="remove(i)">
@@ -74,6 +74,18 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 投稿フォーム用の投票（アンケート）編集ブロック。
+ * 選択肢・複数投票・結果非表示・期限モードを扱い、親へ v-model でまとめて渡す。
+ *
+ * @remarks
+ * CHANGED: `expiresAt` から `<input type="time">` へ渡す文字列は 24 時間表記（`HH:mm`）。以前の `hh:mm` は 12 時間表記のため下書き復元などで時刻がずれた。
+ * NOTE: 期限モード・経過指定・結果非公開の既定は `defaultStore`（アカウント単位）に保存し、次回の新規投票で再利用する。
+ *
+ * @public
+ */
 import { ref, watch } from "vue";
 import MkInput from "./form/input.vue";
 import MkSelect from "./form/select.vue";
@@ -82,111 +94,210 @@ import MkButton from "./MkButton.vue";
 import { formatDateTimeString } from "@/scripts/format-time-string";
 import { addTime } from "@/scripts/time";
 import { i18n } from "@/i18n";
+import { defaultStore } from "@/store";
+
+/** 親の `poll` オブジェクトに近い形（期限は下書き等で型がゆるい場合がある） */
+type PollEditorModelValue = {
+	choices: string[];
+	multiple: boolean;
+	hideResults?: boolean;
+	expiresAt?: number | string | null;
+	expiredAfter?: number | string | null;
+};
 
 const props = defineProps<{
-	modelValue: {
-		expiresAt: string;
-		expiredAfter: number;
-		choices: string[];
-		multiple: boolean;
-		hideResults: boolean;
-	};
-}>();
-const emit = defineEmits<{
-	(
-		ev: "update:modelValue",
-		v: {
-			expiresAt: string;
-			expiredAfter: number;
-			choices: string[];
-			multiple: boolean;
-			hideResults: boolean;
-		}
-	): void;
+	modelValue: PollEditorModelValue;
 }>();
 
+const emit = defineEmits<{
+	(ev: "update:modelValue", v: PollEditorModelValue): void;
+}>();
+
+//#region 初期状態（選択肢・スイッチ）
 const choices = ref(props.modelValue.choices);
 const multiple = ref(props.modelValue.multiple);
 const hideResults = ref(props.modelValue.hideResults ?? false);
-const expiration = ref("after");
+//#endregion
+
+//#region 期限 UI（モード・日時・経過）
+type ExpirationMode = "infinite" | "at" | "after";
+
+/** 経過指定の単位（MkSelect の value と一致） */
+type AfterUnit = "second" | "minute" | "hour" | "day";
+
+const expiration = ref<ExpirationMode>("after");
 const atDate = ref(
-	formatDateTimeString(addTime(new Date(), new Date().getHours() >= 22 ? 2 : 1, "day"), "yyyy-MM-dd")
+	formatDateTimeString(
+		addTime(new Date(), new Date().getHours() >= 22 ? 2 : 1, "day"),
+		"yyyy-MM-dd",
+	),
 );
 const atTime = ref("00:00");
-const after = ref(1);
-const unit = ref("hour");
+const after = ref<number | string>(1);
+const unit = ref<AfterUnit>("hour");
+//#endregion
 
-if (props.modelValue.expiresAt) {
-	expiration.value = "at";
-	atDate.value = formatDateTimeString(new Date(props.modelValue.expiresAt), "yyyy-MM-dd")
-	atTime.value = formatDateTimeString(new Date(props.modelValue.expiresAt), "hh:mm");
-} else if (typeof props.modelValue.expiredAfter === "number") {
-	expiration.value = "after";
-	after.value = props.modelValue.expiredAfter / 1000;
-	unit.value = "second"
-} else {
-	expiration.value = "at";
+//#region modelValue からの初期化（下書き・新規・引用など）
+/**
+ * `expiresAt` を数値ミリ秒へ正規化する（無効なら null）
+ *
+ * @param v 親から渡る締切（数値・文字列・null など）
+ * @internal
+ */
+function coerceExpiresAtMs(v: unknown): number | null {
+	if (v == null || v === "") return null;
+	const n = typeof v === "string" ? Number(v) : typeof v === "number" ? v : NaN;
+	if (!Number.isFinite(n) || n <= 0) return null;
+	return n;
 }
 
-function onInput(i, value) {
+/**
+ * `expiredAfter` を数値ミリ秒へ正規化する（無効なら null）
+ *
+ * @param v 親から渡る経過ミリ秒
+ * @internal
+ */
+function coerceExpiredAfterMs(v: unknown): number | null {
+	if (v == null || v === "") return null;
+	const n =
+		typeof v === "string" ? Number(v) : typeof v === "number" ? v : NaN;
+	if (!Number.isFinite(n) || n <= 0) return null;
+	return n;
+}
+
+const expiresAtMs = coerceExpiresAtMs(props.modelValue.expiresAt);
+const expiredAfterMs = coerceExpiredAfterMs(props.modelValue.expiredAfter);
+
+if (expiresAtMs != null) {
+	// 絶対日時が指定されているときは日時モード（下書き復元・編集）
+	expiration.value = "at";
+	const d = new Date(expiresAtMs);
+	atDate.value = formatDateTimeString(d, "yyyy-MM-dd");
+	// NOTE: `type="time"` は 24 時間表記が前提。`hh` は 12 時間表記のため使わない。
+	atTime.value = formatDateTimeString(d, "HH:mm");
+} else if (expiredAfterMs != null) {
+	// 経過指定が数値で載っているときは秒単位表示に正規化（下書きのミリ秒をそのまま反映）
+	expiration.value = "after";
+	after.value = expiredAfterMs / 1000;
+	unit.value = "second";
+} else {
+	// 期限フィールドなし＝新規投票: アカウントに保存した UI 既定を復元
+	const mode = defaultStore.state.postFormPollExpiration;
+	expiration.value =
+		mode === "infinite" || mode === "at" || mode === "after" ? mode : "after";
+	hideResults.value =
+		props.modelValue.hideResults ??
+		defaultStore.state.postFormPollHideResults;
+	const v = defaultStore.state.postFormPollAfterValue;
+	const u = defaultStore.state.postFormPollAfterUnit;
+	after.value = typeof v === "number" && Number.isFinite(v) && v >= 1 ? v : 1;
+	unit.value =
+		u === "second" || u === "minute" || u === "hour" || u === "day"
+			? u
+			: "hour";
+}
+//#endregion
+
+/**
+ * 選択肢テキストの更新
+ *
+ * @param i インデックス
+ * @param value 新しい文字列
+ * @internal
+ */
+function onInput(i: number, value: string) {
 	choices.value[i] = value;
 }
 
+/** 選択肢を末尾に追加する */
 function add() {
 	choices.value.push("");
-	// TODO
-	// nextTick(() => {
-	//   (this.$refs.choices as any).childNodes[this.choices.length - 1].childNodes[0].focus();
-	// });
 }
 
-function remove(i) {
+/** 指定インデックスの選択肢を削除する */
+function remove(i: number) {
 	choices.value = choices.value.filter((_, _i) => _i !== i);
 }
 
-function get() {
-	const calcAt = () => {
+//#region 親へ渡すオブジェクトの組み立て
+/**
+ * 現在の UI 状態を親の `poll` 形へまとめる。
+ *
+ * @remarks
+ * NOTE: 無期限時は `expiresAt` / `expiredAfter` を明示的に null にし、以前のモードの値が残らないようにする。
+ *
+ * @returns v-model 用オブジェクト
+ * @internal
+ */
+function get(): PollEditorModelValue {
+	const calcAt = (): number => {
 		return new Date(`${atDate.value} ${atTime.value}`).getTime();
 	};
 
-	const calcAfter = () => {
-		let base = parseInt(after.value);
-		switch (unit.value) {
-			case "day":
-				base *= 24;
-			// fallthrough
-			case "hour":
-				base *= 60;
-			// fallthrough
-			case "minute":
-				base *= 60;
-			// fallthrough
-			case "second":
-				return (base *= 1000);
-			default:
-				return null;
-		}
+	const calcAfter = (): number | null => {
+		const raw = Number.parseInt(String(after.value), 10);
+		const base = Number.isFinite(raw) && raw > 0 ? raw : 1;
+		const multMs =
+			unit.value === "second"
+				? 1000
+				: unit.value === "minute"
+					? 60_000
+					: unit.value === "hour"
+						? 3_600_000
+						: unit.value === "day"
+							? 86_400_000
+							: null;
+		return multMs != null ? base * multMs : null;
 	};
 
-	return {
+	const out: PollEditorModelValue = {
 		choices: choices.value,
 		multiple: multiple.value,
 		hideResults: hideResults.value,
-		...(expiration.value === "at"
-			? { expiresAt: calcAt() }
-			: expiration.value === "after"
-			? { expiredAfter: calcAfter() }
-			: {}),
+		expiresAt: null,
+		expiredAfter: null,
 	};
+
+	if (expiration.value === "at") {
+		out.expiresAt = calcAt();
+	} else if (expiration.value === "after") {
+		const ms = calcAfter();
+		if (ms != null) out.expiredAfter = ms;
+	}
+	return out;
 }
+//#endregion
 
 watch(
 	[choices, multiple, hideResults, expiration, atDate, atTime, after, unit],
 	() => emit("update:modelValue", get()),
-	{
-		deep: true,
-	}
+	{ deep: true, immediate: true },
 );
+
+//#region アカウント既定（投稿フォームの次回用）への保存
+watch(
+	[hideResults, expiration, after, unit],
+	() => {
+		void defaultStore.set("postFormPollHideResults", hideResults.value);
+		if (
+			expiration.value === "infinite" ||
+			expiration.value === "at" ||
+			expiration.value === "after"
+		) {
+			void defaultStore.set("postFormPollExpiration", expiration.value);
+		}
+		const raw = Number.parseInt(String(after.value), 10);
+		if (Number.isFinite(raw) && raw >= 1) {
+			void defaultStore.set("postFormPollAfterValue", raw);
+		}
+		const u = unit.value;
+		if (u === "second" || u === "minute" || u === "hour" || u === "day") {
+			void defaultStore.set("postFormPollAfterUnit", u);
+		}
+	},
+	{ deep: true, immediate: true },
+);
+//#endregion
 </script>
 
 <style lang="scss" scoped>
@@ -235,7 +346,7 @@ watch(
 		margin: 1rem 0 0 0;
 
 		> div {
-			margin: 0 0.5rem;
+			margin: 0 0 0.5rem;
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;

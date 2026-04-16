@@ -1719,12 +1719,13 @@ function togglePoll() {
 	if (poll) {
 		poll = null;
 	} else {
+		// 新規投票は期限なしで渡し、MkPollEditor 側で defaultStore の前回モードを復元する
 		poll = {
 			choices: ["", ""],
 			multiple: false,
 			expiresAt: null,
 			expiredAfter: null,
-			hideResults: false,
+			hideResults: defaultStore.state.postFormPollHideResults,
 		};
 	}
 }

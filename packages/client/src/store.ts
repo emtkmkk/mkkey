@@ -41,6 +41,34 @@ export const defaultStore = markRaw(
 			createdAt: "2023/5/23",
 			page: "postform",
 		},
+		/** 投稿フォームの投票で「終了まで結果を隠す」の前回値 */
+		postFormPollHideResults: {
+			where: "account",
+			default: false,
+			createdAt: "2026/4/16",
+			page: "postform",
+		},
+		/** 投票の期限モード（無期限 / 日時指定 / 経過指定）の前回値 */
+		postFormPollExpiration: {
+			where: "account",
+			default: "after" as "infinite" | "at" | "after",
+			createdAt: "2026/4/16",
+			page: "postform",
+		},
+		/** 経過指定モードの数値の前回値（単位は postFormPollAfterUnit） */
+		postFormPollAfterValue: {
+			where: "account",
+			default: 1,
+			createdAt: "2026/4/16",
+			page: "postform",
+		},
+		/** 経過指定モードの単位の前回値 */
+		postFormPollAfterUnit: {
+			where: "account",
+			default: "hour" as "second" | "minute" | "hour" | "day",
+			createdAt: "2026/4/16",
+			page: "postform",
+		},
 		showFullAcct: {
 			where: "account",
 			default: false,

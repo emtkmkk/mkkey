@@ -496,7 +496,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     }
     logger.warn(`Short URL resolution failed unexpectedly for ${url}: ${err}`);
   }
-  const effectiveUrl = redirectedUrl ?? url;
+  // NOTE: Amazon 専用短縮 URL 解決などで解決後 URL が判明したら上書きするため、let で宣言する。
+  let effectiveUrl = redirectedUrl ?? url;
   const isXPreviewUrl = (() => {
 		try {
 			return isXLikeHostname(new URL(effectiveUrl).hostname);
@@ -512,8 +513,6 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
   const VRCWorldId = isVRCUrl(effectiveUrl);
   let amazonFetchUrl = effectiveUrl;
   let amazonProduct = isAmazonProductUrl(effectiveUrl);
-  // Summaly が扱いやすい URL（例: music.youtube.com → www.youtube.com、ハッシュ除去）
-  const summaryFetchUrl = normalizeUrlForPreviewFetch(effectiveUrl);
 
   if (!amazonProduct) {
     try {
@@ -524,6 +523,11 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       if (resolvedAmazonUrl) {
         amazonFetchUrl = resolvedAmazonUrl;
         amazonProduct = isAmazonProductUrl(amazonFetchUrl);
+        // NOTE: Amazon 専用カードが失敗して Summaly フォールバックに回ったときに、
+        //       短縮 URL のまま Summaly へ流すと Amazon 本体のリダイレクトを通った先での
+        //       Content-Type / anti-bot 応答により `CancelError: Promise was canceled` を
+        //       引き起こしやすい。解決済み URL を以降の処理（Summaly 呼び出し含む）でも使えるように反映する。
+        effectiveUrl = resolvedAmazonUrl;
       }
     } catch (err) {
       if (isUrlPreviewAbortStatusError(err)) {
@@ -541,6 +545,10 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       logger.warn(`Amazon short URL resolution failed unexpectedly for ${effectiveUrl}: ${err}`);
     }
   }
+
+  // Summaly が扱いやすい URL（例: music.youtube.com → www.youtube.com、ハッシュ除去）
+  // NOTE: Amazon 短縮 URL の解決後 URL を拾うため、Amazon 専用解決ブロックの後で確定させる。
+  const summaryFetchUrl = normalizeUrlForPreviewFetch(effectiveUrl);
 
   if (steamAppId) {
     // Steamの場合の処理
@@ -907,8 +915,9 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           method: "GET",
           headers: {
             Accept: "text/html, */*",
-            // NOTE: Amazon は既定 UA のアクセスを簡易ページへ誘導する場合があるため、サーバ設定の UA を明示する。
-            "User-Agent": config.userAgent,
+            // NOTE: Amazon は Bot ライクな UA（既定の Cluckey UA 等）を anti-bot で簡易ページに誘導するため、
+            //       まず `userAgent2`（ブラウザ寄りに設定されている想定）を優先し、未設定時のみ既定 UA にフォールバックする。
+            "User-Agent": config.userAgent2 ?? config.userAgent,
             "accept-language": normalizedLang ?? "en-US",
           },
           timeout: 10000,
@@ -1277,28 +1286,6 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     }
   } catch (err) {
     logger.warn(`Failed to get preview of ${url}: ${err}`);
-    const amazonFallback = isAmazonProductUrl(effectiveUrl);
-    if (amazonFallback) {
-      const iconHost = amazonFallback.hostname.replace(/^smile\./, "");
-      const sitename = formatAmazonSitename(iconHost);
-      const favicon = `https://${iconHost}/favicon.ico`;
-      // NOTE: Amazon 専用取得と Summaly の両方が失敗した場合でも、
-      // URL プレビュー全体を 500 にせず最小情報（サイト名＋アイコン）で返す。
-      ctx.status = 200;
-      ctx.set("Cache-Control", "max-age=120, immutable");
-      ctx.body = {
-        url,
-        title: sitename,
-        description: null,
-        thumbnail: "",
-        icon: wrap(favicon) ?? favicon,
-        sitename,
-        player: null,
-        isSensitive: false,
-        preferLargeThumbnail: false,
-      };
-      return;
-    }
     await replyWithPreviewFailure(
       ctx,
       previewCacheHash,

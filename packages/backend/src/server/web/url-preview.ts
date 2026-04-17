@@ -16,6 +16,10 @@ import { fetchMeta } from "@/misc/fetch-meta.js";
 import Logger from "@/services/logger.js";
 import config from "@/config/index.js";
 import { query } from "@/prelude/url.js";
+import { composeYouTubeDescription } from "@/misc/compose-youtube-description.js";
+import {
+	isYouTubeOembedTargetUrl,
+} from "@/misc/is-youtube-oembed-target-url.js";
 import { normalizeUrlForPreviewFetch } from "@/misc/normalize-url-for-preview-fetch.js";
 import {
 	buildUrlPreviewCacheKey,
@@ -70,6 +74,18 @@ type UrlPreviewSummalyPayload = Awaited<ReturnType<SummalyFunction>> & {
   preferLargeThumbnail?: boolean;
 };
 
+type YouTubeOembedPayload = {
+	title?: string;
+	author_name?: string;
+	author_url?: string;
+	type?: string;
+	height?: number;
+	width?: number;
+	thumbnail_url?: string;
+	html?: string;
+	provider_name?: string;
+};
+
 /**
  * Summaly 呼び出しを 1 箇所に集約する。
  *
@@ -112,6 +128,67 @@ async function translateDescriptionToJapaneseIfNeeded(
 
   const prefix = formatDeeplTranslationPrefix(translated.sourceLang);
   return `${prefix} ${translated.text}`;
+}
+
+/**
+ * YouTube oEmbed API から埋め込み情報を取得する。
+ *
+ * @remarks
+ * NOTE: レスポンス不足・HTTP エラー時は throw して呼び出し元で Summaly へフォールバックする。
+ *
+ * @internal
+ */
+async function fetchYouTubeOembed(
+	oembedTargetUrl: string,
+	lang: string,
+): Promise<YouTubeOembedPayload> {
+	const oembedUrl = `https://www.youtube.com/oembed?${query({
+		url: oembedTargetUrl,
+		format: "json",
+	})}`;
+	return (await getJson(
+		oembedUrl,
+		"application/json, */*",
+		5000,
+		{
+			"accept-language": normalizeLang(lang),
+			"User-Agent": config.userAgent2 ?? config.userAgent,
+		},
+	)) as YouTubeOembedPayload;
+}
+
+/**
+ * oEmbed の iframe HTML から src URL を抽出する。
+ *
+ * @param html - oEmbed の `html` フィールド
+ * @returns src URL。抽出できない場合は null
+ *
+ * @internal
+ */
+function extractIframeSrcFromOembedHtml(html: string | null | undefined): string | null {
+	if (!html) return null;
+	const matched = html.match(/\bsrc=["']([^"']+)["']/i);
+	if (!matched?.[1]) return null;
+	return matched[1];
+}
+
+/**
+ * YouTube プレビュー用の player URL を決める。
+ *
+ * @param oembedHtml - oEmbed の iframe HTML
+ * @param videoId - URL から抽出した動画 ID
+ * @returns player URL。どちらも無ければ null
+ *
+ * @internal
+ */
+function resolveYouTubePlayerUrl(
+	oembedHtml: string | null | undefined,
+	videoId: string | null,
+): string | null {
+	const iframeSrc = extractIframeSrcFromOembedHtml(oembedHtml);
+	if (iframeSrc) return iframeSrc;
+	if (!videoId) return null;
+	return `https://www.youtube-nocookie.com/embed/${videoId}?feature=oembed`;
 }
 
 const logger = new Logger("url-preview");
@@ -939,6 +1016,58 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       // フォールバックとして通常のサマリーを取得する
     }
   }
+
+	//#region YouTube oEmbed 取得
+	const youTubeTarget = isYouTubeOembedTargetUrl(effectiveUrl);
+	if (youTubeTarget) {
+		try {
+			const youTubeSpecialKey = buildUrlPreviewSpecialInflightKey([
+				"youtube",
+				youTubeTarget.kind,
+				youTubeTarget.oembedUrl,
+				langKey,
+				meta.summalyProxy ?? "",
+			]);
+			const summary = await withUrlPreviewSpecialInflight(youTubeSpecialKey, async () => {
+				const oembed = await fetchYouTubeOembed(youTubeTarget.oembedUrl, langKey);
+				const playerUrl = resolveYouTubePlayerUrl(
+					oembed.html,
+					youTubeTarget.videoId,
+				);
+				const description = composeYouTubeDescription(
+					oembed.author_name,
+					oembed.type,
+					youTubeTarget.kind,
+				);
+
+				return {
+					url,
+					title: oembed.title ?? "",
+					description,
+					thumbnail: wrap(oembed.thumbnail_url) ?? "",
+					icon: wrap("https://www.youtube.com/favicon.ico") ?? "",
+					sitename: youTubeTarget.sitename,
+					player: playerUrl
+						? {
+							url: playerUrl,
+							width: typeof oembed.width === "number" ? oembed.width : 560,
+							height: typeof oembed.height === "number" ? oembed.height : 315,
+							allow: ["fullscreen", "encrypted-media", "picture-in-picture"],
+						}
+						: null,
+					isSensitive: false,
+					preferLargeThumbnail: true,
+				};
+			});
+			ctx.set("Cache-Control", "max-age=604800, immutable");
+			ctx.body = summary;
+			return;
+		} catch (err) {
+			// NOTE: YouTube oEmbed が失敗した場合のみ Summaly 本流へフォールバックする。
+			logger.warn(`Failed to get YouTube oEmbed for ${url}: ${err}`);
+		}
+	}
+	//#endregion
 
   // 既存の処理（Summaly + センシティブ判定）。共有キャッシュ・インフライト・ホスト単位セマフォで外向きを抑える。
   const previewCacheHash = buildUrlPreviewCacheKey(

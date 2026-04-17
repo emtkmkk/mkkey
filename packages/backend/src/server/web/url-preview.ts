@@ -2295,9 +2295,9 @@ function normalizeAmazonBrand(value: string | null | undefined): string | null {
     .replace(/^販売元[:：]?\s*/i, "")
     .replace(/^Brand[:：]?\s*/i, "")
     .replace(/^Visit the\s+/i, "")
-    .replace(/\s*のストアを表示する?$/i, "")
+    .replace(/\s*のストアを表示(?:する)?$/i, "")
     .replace(/\s*のストア$/i, "")
-    .replace(/\s*のページを表示する?$/i, "")
+    .replace(/\s*のページを表示(?:する)?$/i, "")
     .replace(/\s*Store$/i, "")
     .replace(/\s+/g, " ")
     .trim();

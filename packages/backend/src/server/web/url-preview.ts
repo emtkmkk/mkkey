@@ -2270,6 +2270,21 @@ function parseAmazonInteger(value: string | null | undefined): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+/**
+ * Amazon のブランド表記をノイズ除去して正規化する。
+ *
+ * @remarks
+ * NOTE: Amazon の表示では `PHILIPS のストアを表示` のように半角空白を挟むことが多いが、
+ *       HTML 構造によっては改行・空白が剥がれ `PHILIPSのストアを表示` のようにブランド名へ直結する場合がある。
+ *       いずれのパターンでも末尾ノイズを落とせるよう、区切りの空白は必須にせず `\s*` にしている。
+ * NOTE: `Visit the ... Store` 形式は `Visit the` を落とした時点で末尾が ` Store` になるため、
+ *       末尾の Store 掃除は空白有無の両対応で残している。
+ *
+ * @param value - ブランド欄から抽出した生テキスト
+ * @returns 整形後のブランド文字列。空や null の場合は null
+ *
+ * @internal
+ */
 function normalizeAmazonBrand(value: string | null | undefined): string | null {
   const text = cleanAmazonText(value);
   if (!text) return null;
@@ -2280,10 +2295,10 @@ function normalizeAmazonBrand(value: string | null | undefined): string | null {
     .replace(/^販売元[:：]?\s*/i, "")
     .replace(/^Brand[:：]?\s*/i, "")
     .replace(/^Visit the\s+/i, "")
-    .replace(/\s+のストアを表示する?$/i, "")
-    .replace(/\s+のストア$/i, "")
-    .replace(/\s+のページを表示する?$/i, "")
-    .replace(/\s+Store$/i, "")
+    .replace(/\s*のストアを表示する?$/i, "")
+    .replace(/\s*のストア$/i, "")
+    .replace(/\s*のページを表示する?$/i, "")
+    .replace(/\s*Store$/i, "")
     .replace(/\s+/g, " ")
     .trim();
   return normalized.length > 0 ? normalized : null;

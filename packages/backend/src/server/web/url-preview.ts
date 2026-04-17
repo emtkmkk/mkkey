@@ -1292,8 +1292,6 @@ function isGenericGoogleMapsTitle(title: unknown): boolean {
   return normalizedTitle === "google maps" || normalizedTitle === "google マップ";
 }
 
-type GoogleMapsMapType = "place" | "search" | "dir" | "map";
-
 type GoogleMapsHtmlMeta = {
   ogTitle: string | null;
   ogDescription: string | null;
@@ -1312,13 +1310,22 @@ type GoogleMapsJsonLdMeta = {
   category: string | null;
 };
 
-type GoogleMapsUrlMeta = {
-  placeCandidate: string | null;
-  addressCandidate: string | null;
-  latLng: string | null;
-  zoom: string | null;
-  mapType: GoogleMapsMapType;
-};
+function filterGenericGoogleMapsTitle(value: string | null | undefined): string | null {
+  if (!value) return null;
+  return isGenericGoogleMapsTitle(value) ? null : value;
+}
+
+const GENERIC_GOOGLE_MAPS_DESCRIPTION_PATTERNS: RegExp[] = [
+  /find local businesses,\s*view maps and get driving directions in google maps\.?/i,
+  /ローカルのビジネス情報.*地図.*経路.*google\s*マップ/u,
+];
+
+function isGenericGoogleMapsDescription(value: string | null | undefined): boolean {
+  if (!value) return false;
+  const normalizedValue = value.replace(/\s+/g, " ").trim();
+  if (!normalizedValue) return false;
+  return GENERIC_GOOGLE_MAPS_DESCRIPTION_PATTERNS.some((pattern) => pattern.test(normalizedValue));
+}
 
 /**
  * Google Maps 用のサマリー enrichment。
@@ -1336,11 +1343,6 @@ async function enrichGoogleMapsSummaryWithoutApiKey(
 ): Promise<{ thumbnailAssignedByGoogleMaps: boolean }> {
   const adoptedSources = new Set<string>();
   try {
-    const sourceA = extractGoogleMapsUrlMetadata(effectiveUrl);
-    if (sourceA.placeCandidate || sourceA.addressCandidate || sourceA.latLng) {
-      adoptedSources.add("A");
-    }
-
     let sourceB: GoogleMapsHtmlMeta | null = null;
     let sourceC: GoogleMapsJsonLdMeta | null = null;
 
@@ -1372,19 +1374,14 @@ async function enrichGoogleMapsSummaryWithoutApiKey(
       logger.warn(`Google Maps HTML fetch failed: ${error}`);
     }
 
-    if (sourceA.addressCandidate || sourceA.latLng || sourceA.mapType || sourceA.zoom) {
-      adoptedSources.add("D");
-    }
-
     const existingTitle = typeof summary.title === "string" ? summary.title : null;
     const existingTitleIsSpecific = !!existingTitle && !isGenericGoogleMapsTitle(existingTitle);
 
     const preferredTitle =
       sourceC?.name ??
-      sourceB?.ogTitle ??
-      sourceB?.twitterTitle ??
-      sourceB?.documentTitle ??
-      sourceA.placeCandidate ??
+      filterGenericGoogleMapsTitle(sourceB?.ogTitle) ??
+      filterGenericGoogleMapsTitle(sourceB?.twitterTitle) ??
+      filterGenericGoogleMapsTitle(sourceB?.documentTitle) ??
       existingTitle ??
       null;
 
@@ -1392,21 +1389,27 @@ async function enrichGoogleMapsSummaryWithoutApiKey(
       summary.title = preferredTitle;
     }
 
+    const ogDescriptionCandidate = isGenericGoogleMapsDescription(sourceB?.ogDescription)
+      ? null
+      : sourceB?.ogDescription;
+    const twitterDescriptionCandidate = isGenericGoogleMapsDescription(sourceB?.twitterDescription)
+      ? null
+      : sourceB?.twitterDescription;
+    const metaDescriptionCandidate = isGenericGoogleMapsDescription(sourceB?.metaDescription)
+      ? null
+      : sourceB?.metaDescription;
+
     const addressCandidate =
       sourceC?.address ??
-      extractAddressLikeText(sourceB?.ogDescription) ??
-      extractAddressLikeText(sourceB?.twitterDescription) ??
-      extractAddressLikeText(sourceB?.metaDescription) ??
-      sourceA.addressCandidate ??
+      extractAddressLikeText(ogDescriptionCandidate) ??
+      extractAddressLikeText(twitterDescriptionCandidate) ??
+      extractAddressLikeText(metaDescriptionCandidate) ??
       null;
     const categoryCandidate = sourceC?.category ?? null;
 
     const builtDescription = buildGoogleMapsDescription({
       address: addressCandidate,
       category: categoryCandidate,
-      latLng: sourceA.latLng,
-      mapType: sourceA.mapType,
-      zoom: sourceA.zoom,
       fallback: typeof summary.description === "string" ? summary.description : null,
     });
 
@@ -1439,93 +1442,6 @@ async function enrichGoogleMapsSummaryWithoutApiKey(
     logger.warn(`Google Maps enrichment failed: ${error}`);
     return { thumbnailAssignedByGoogleMaps: false };
   }
-}
-
-function extractGoogleMapsPlaceTitle(url: string): string | null {
-  return extractGoogleMapsUrlMetadata(url).placeCandidate;
-}
-
-function extractGoogleMapsUrlMetadata(url: string): GoogleMapsUrlMeta {
-  const empty: GoogleMapsUrlMeta = {
-    placeCandidate: null,
-    addressCandidate: null,
-    latLng: null,
-    zoom: null,
-    mapType: "map",
-  };
-
-  let parsedUrl: URL;
-  try {
-    parsedUrl = new URL(url);
-  } catch {
-    return empty;
-  }
-
-  if (!isGoogleMapsHostname(parsedUrl.hostname)) {
-    return empty;
-  }
-
-  const mapType = detectGoogleMapsMapType(parsedUrl.pathname);
-  const placeFromPath = extractGoogleMapsPlaceFromPath(parsedUrl.pathname);
-  const queryCandidates = ["q", "query", "destination", "daddr"];
-  let queryPlace: string | null = null;
-  for (const key of queryCandidates) {
-    const value = parsedUrl.searchParams.get(key);
-    const sanitized = sanitizeGoogleMapsPlaceCandidate(value);
-    if (sanitized) {
-      queryPlace = sanitized;
-      break;
-    }
-  }
-
-  const addressCandidate =
-    queryPlace ??
-    sanitizeGoogleMapsPlaceCandidate(parsedUrl.searchParams.get("saddr")) ??
-    placeFromPath;
-
-  const zoom = sanitizeGoogleMapsZoomCandidate(
-    parsedUrl.searchParams.get("z") ?? parsedUrl.searchParams.get("zoom"),
-  );
-
-  const latLng =
-    extractGoogleMapsLatLngFromPath(parsedUrl.pathname) ??
-    sanitizeGoogleMapsLatLng(parsedUrl.searchParams.get("ll")) ??
-    sanitizeGoogleMapsLatLng(parsedUrl.searchParams.get("center"));
-
-  return {
-    placeCandidate: placeFromPath ?? queryPlace,
-    addressCandidate,
-    latLng,
-    zoom,
-    mapType,
-  };
-}
-
-function detectGoogleMapsMapType(pathname: string): GoogleMapsMapType {
-  const lowered = pathname.toLowerCase();
-  if (lowered.includes("/maps/place")) return "place";
-  if (lowered.includes("/maps/search")) return "search";
-  if (lowered.includes("/maps/dir")) return "dir";
-  return "map";
-}
-
-function sanitizeGoogleMapsLatLng(candidate: string | null | undefined): string | null {
-  if (!candidate) return null;
-  const matched = candidate.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
-  if (!matched) return null;
-  return `${matched[1]},${matched[2]}`;
-}
-
-function sanitizeGoogleMapsZoomCandidate(candidate: string | null | undefined): string | null {
-  if (!candidate) return null;
-  const matched = candidate.match(/\d+(?:\.\d+)?/);
-  return matched?.[0] ?? null;
-}
-
-function extractGoogleMapsLatLngFromPath(pathname: string): string | null {
-  const matched = pathname.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),/);
-  if (!matched) return null;
-  return `${matched[1]},${matched[2]}`;
 }
 
 function extractGoogleMapsHtmlMeta(html: string): GoogleMapsHtmlMeta {
@@ -1568,7 +1484,7 @@ function extractGoogleMapsJsonLdMeta(html: string): GoogleMapsJsonLdMeta {
 
   const merged = jsonLdObjects.reduce<GoogleMapsJsonLdMeta>(
     (acc, obj) => {
-      const name = sanitizeGoogleMapsPlaceCandidate(stringFromUnknown(obj.name));
+      const name = sanitizeHtmlMetaValue(stringFromUnknown(obj.name));
       if (!acc.name && name) acc.name = name;
 
       const image = extractImageFromJsonLd(obj.image);
@@ -1639,15 +1555,12 @@ function extractAddressLikeText(value: string | null | undefined): string | null
     .map((part) => part.trim())
     .filter(Boolean);
   const candidate = splitCandidates.find((part) => /\d|丁目|番地|県|市|区|町|村/.test(part));
-  return candidate ?? sanitized;
+  return candidate ?? null;
 }
 
 function buildGoogleMapsDescription(args: {
   address: string | null;
   category: string | null;
-  latLng: string | null;
-  mapType: GoogleMapsMapType;
-  zoom: string | null;
   fallback: string | null;
 }): string | null {
   const segments: string[] = [];
@@ -1658,18 +1571,13 @@ function buildGoogleMapsDescription(args: {
   if (args.category) {
     segments.push(`カテゴリ: ${args.category}`);
   }
-  if (args.latLng) {
-    segments.push(`座標: ${args.latLng}`);
-  }
-  if (args.mapType !== "map") {
-    segments.push(`リンク種別: ${args.mapType}`);
-  }
-  if (args.zoom) {
-    segments.push(`ズーム: ${args.zoom}`);
-  }
 
   if (segments.length > 0) {
     return segments.join(" / ");
+  }
+
+  if (isGenericGoogleMapsDescription(args.fallback)) {
+    return null;
   }
 
   return args.fallback;
@@ -1706,59 +1614,6 @@ function isGoogleMapsUrl(url: string): boolean {
     return isGoogleMapsHostname(new URL(url).hostname);
   } catch {
     return false;
-  }
-}
-
-function extractGoogleMapsPlaceFromPath(pathname: string): string | null {
-  const segments = pathname.split("/").filter(Boolean);
-  if (segments.length === 0) return null;
-
-  const placeIndex = segments.findIndex((segment) => segment.toLowerCase() === "place");
-  if (placeIndex !== -1 && segments.length > placeIndex + 1) {
-    const candidate = segments[placeIndex + 1];
-    return sanitizeGoogleMapsPlaceCandidate(candidate);
-  }
-
-  if (segments[0]?.toLowerCase() === "maps" && segments.length > 1) {
-    return sanitizeGoogleMapsPlaceCandidate(segments[1]);
-  }
-
-  return null;
-}
-
-function sanitizeGoogleMapsPlaceCandidate(candidate: string | null | undefined): string | null {
-  if (!candidate) return null;
-
-  const decoded = decodeURIComponentSafe(candidate)
-    .replace(/\+/g, " ")
-    .replace(/,/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!decoded) return null;
-
-  if (/^@[-\d.]+,[-\d.]+,/.test(decoded)) {
-    return null;
-  }
-
-  const loweredDecoded = decoded.toLowerCase();
-  if (
-    loweredDecoded === "maps" ||
-    loweredDecoded === "search" ||
-    loweredDecoded === "dir" ||
-    loweredDecoded === "place"
-  ) {
-    return null;
-  }
-
-  return decoded;
-}
-
-function decodeURIComponentSafe(value: string): string {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return value;
   }
 }
 

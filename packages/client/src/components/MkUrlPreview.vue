@@ -158,8 +158,7 @@
                   <article>
                         <header>
                           <h1 :title="title">
-                                <img v-if="icon" :src="icon" alt="Favicon" class="favicon" />
-                                {{ title }}
+                                {{ amazonDisplayTitle }}
                           </h1>
                           <div class="amazon-brand" v-if="amazonBrand">{{ amazonBrand }}</div>
                         </header>
@@ -173,7 +172,7 @@
                         <footer class="amazon-footer">
                           <div class="amazon-price-row" v-if="amazonPriceText || amazonPrime">
                                 <span class="amazon-price" v-if="amazonPriceText">
-                                  {{ amazonPriceText }}
+                                  {{ amazonDisplayPrice }}
                                 </span>
                                 <span class="amazon-prime-badge" v-if="amazonPrime">Prime</span>
                           </div>
@@ -191,6 +190,15 @@
                           </div>
                           <div class="amazon-availability" v-if="amazonAvailability">
                                 {{ amazonAvailability }}
+                          </div>
+                          <div class="amazon-site-info">
+                                <img
+                                  v-if="icon"
+                                  class="icon"
+                                  :src="icon"
+                                  @error="icon = ''"
+                                />
+                                <p :title="(sitename || '').trim()">{{ (sitename || '').trim() }}</p>
                           </div>
                         </footer>
                   </article>
@@ -466,6 +474,15 @@ function normalizeUrlPreviewPlayer(rawPlayer: unknown): UrlPreviewPlayerState {
       showThumbnailArea.value &&
       (!isSensitive || defaultStore.state.showSensitiveLinkPreviewThumbnail),
   );
+  const amazonDisplayTitle = computed(() => {
+    if (!title) return "";
+    return title.length > 60 ? `${title.slice(0, 60)}…` : title;
+  });
+  const amazonDisplayPrice = computed(() => {
+    if (!amazonPriceText) return "";
+    // NOTE: 価格は「半角¥ + 半角スペース」に統一表示する。
+    return amazonPriceText.replace(/^￥\s*/, "¥ ");
+  });
 
 // Steam専用のリアクティブ変数
 let isSteam = $ref(false);
@@ -1058,20 +1075,12 @@ const fetchUrlData = async () => {
                         align-items: flex-start;
 
                         h1 {
-                          display: flex;
-                          align-items: center;
                           margin: 0;
                           font-size: 1em;
                           overflow: visible;
                           white-space: normal;
                           word-break: normal;
                           word-break: auto-phrase;
-
-                          .favicon {
-                                width: 24px;
-                                height: 24px;
-                                margin-right: 0.5rem;
-                          }
                         }
 
                         .amazon-brand {
@@ -1141,6 +1150,27 @@ const fetchUrlData = async () => {
                         .amazon-availability {
                           color: var(--fg);
                           opacity: 0.85;
+                        }
+                        .amazon-site-info {
+                          margin-top: 0.15rem;
+                          height: 1rem;
+
+                          > img {
+                                display: inline-block;
+                                width: 1rem;
+                                height: 1rem;
+                                margin-right: 0.25rem;
+                                vertical-align: top;
+                          }
+
+                          > p {
+                                display: inline-block;
+                                margin: 0;
+                                color: var(--urlPreviewInfo);
+                                font-size: 0.8em;
+                                line-height: 1rem;
+                                vertical-align: top;
+                          }
                         }
                   }
                 }

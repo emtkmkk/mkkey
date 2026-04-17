@@ -2179,11 +2179,42 @@ function cleanAmazonText(value: string | null | undefined): string | null {
   return text.length > 0 ? text : null;
 }
 
+/**
+ * Amazon 在庫テキストから、補助リンク由来のノイズを除去する。
+ *
+ * @remarks
+ * NOTE: Amazon は在庫ラベルと「在庫状況について」リンク文言を同じ領域へ混在させることがあり、
+ * そのまま `.text()` すると「在庫あり。について 残り1点 ...」のような不自然な文になる。
+ * NOTE: 「在庫あり」と「残り◯点」が同居した場合は、具体性の高い後者を優先する。
+ *
+ * @param value - 在庫表示候補の生テキスト
+ * @returns ノイズ除去後の在庫表示。空なら null
+ *
+ * @internal
+ */
 function sanitizeAmazonAvailabilityText(value: string | null): string | null {
   if (!value) return null;
-  const sanitized = value
-    .replace(/\s*(在庫状況について|Learn more about availability)\s*$/i, "")
+  const collapsed = value.replace(/\s+/g, " ").trim();
+  const withoutHelpText = collapsed
+    .replace(/在庫状況について/g, "")
+    .replace(/Learn more about availability/gi, "")
+    .replace(/。?\s*について\s*/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
+
+  const lowStockMatch = withoutHelpText.match(
+    /(残り\s*\d+\s*点(?:\s*ご注文はお早めに)?)/,
+  );
+  if (lowStockMatch) {
+    const lowStockText = cleanAmazonText(lowStockMatch[1]);
+    if (lowStockText) return lowStockText;
+  }
+
+  const deduplicatedInStock = withoutHelpText.replace(
+    /(在庫あり。?)(?:\s*\1)+/g,
+    "$1",
+  );
+  const sanitized = deduplicatedInStock.replace(/\s+/g, " ").trim();
   return sanitized.length > 0 ? sanitized : null;
 }
 
@@ -2193,13 +2224,31 @@ function cleanAmazonAttr(value: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+/**
+ * Amazon の評価値テキストから、表示用レーティング値を抽出する。
+ *
+ * @remarks
+ * NOTE: 「5つ星のうち4.2」のような日本語表現では、先頭数値（5）ではなく「うち」の後ろを採用する必要がある。
+ * NOTE: 英語表現「4.2 out of 5 stars」にも対応し、最後に汎用抽出でフォールバックする。
+ *
+ * @param value - 評価値候補テキスト
+ * @returns 0〜5 の評価値。抽出失敗または範囲外は null
+ *
+ * @internal
+ */
 function parseAmazonRatingValue(value: string | null | undefined): number | null {
   if (!value) return null;
-  const match = value.match(/([0-9]+[.,]?[0-9]*)/);
-  if (!match) return null;
-  const normalized = match[1].replace(/,/g, ".");
+
+  const japaneseMatch = value.match(/うち\s*([0-9]+[.,]?[0-9]*)/i);
+  const englishMatch = value.match(/([0-9]+[.,]?[0-9]*)\s*out\s+of\s+[0-9]+[.,]?[0-9]*/i);
+  const fallbackMatch = value.match(/([0-9]+[.,]?[0-9]*)/);
+  const candidate = japaneseMatch?.[1] ?? englishMatch?.[1] ?? fallbackMatch?.[1];
+  if (!candidate) return null;
+
+  const normalized = candidate.replace(/,/g, ".");
   const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : null;
+  if (!Number.isFinite(parsed)) return null;
+  return parsed >= 0 && parsed <= 5 ? parsed : null;
 }
 
 function parseAmazonInteger(value: string | null | undefined): number | null {
@@ -2390,10 +2439,14 @@ function normalizeAmazonRating(rating: any): {
   const best = rating.bestRating ?? rating.best ?? null;
   const count = rating.ratingCount ?? rating.reviewCount ?? null;
 
+  const parsedValue = value != null ? Number(value) : null;
+  const parsedBest = best != null ? Number(best) : null;
+  const parsedCount = count != null ? Number(count) : null;
+
   return {
-    value: value != null ? Number(value) : null,
-    best: best != null ? Number(best) : null,
-    count: count != null ? Number(count) : null,
+    value: parsedValue != null && Number.isFinite(parsedValue) ? parsedValue : null,
+    best: parsedBest != null && Number.isFinite(parsedBest) ? parsedBest : null,
+    count: parsedCount != null && Number.isFinite(parsedCount) ? parsedCount : null,
   };
 }
 
@@ -2409,7 +2462,8 @@ function extractBrand(brand: any): string | null {
 
 function sanitizeAmazonDescription(description: unknown): string | null {
   if (typeof description !== "string") {
-    return description == null ? null : cleanAmazonText(String(description));
+    // NOTE: 非文字列を機械的に String 化すると "[object Object]" が説明として混入するため捨てる。
+    return null;
   }
 
   const sanitized = description

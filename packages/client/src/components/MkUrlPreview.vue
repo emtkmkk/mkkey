@@ -16,8 +16,8 @@
 	  </button>
 	  <iframe
 		:src="
-		  player.url +
-		  (player.url.match(/\?/)
+		  (player.url ?? '') +
+		  ((player.url ?? '').match(/\?/)
 			? '&autoplay=1&auto_play=1'
 			: '?autoplay=1&auto_play=1')
 		"
@@ -376,13 +376,54 @@ const formatCurrencyValue = (value: number | null, currency: string | null) => {
     }
   }
 };
+
+type UrlPreviewPlayerState = {
+  url: string | null;
+  width: number | null;
+  height: number | null;
+};
+
+/**
+ * URLプレビューの player を常に同じ形へ正規化する。
+ *
+ * @remarks
+ * NOTE: API 応答の `player` は null を取りうるため、そのまま代入すると `player.url` 参照でクラッシュする。
+ * NOTE: この関数で null/不正値を吸収し、テンプレート側の参照を安全に保つ。
+ *
+ * @param rawPlayer - API応答の player
+ * @returns url/width/height を持つ正規化済みオブジェクト
+ *
+ * @internal
+ */
+function normalizeUrlPreviewPlayer(rawPlayer: unknown): UrlPreviewPlayerState {
+  if (!rawPlayer || typeof rawPlayer !== "object") {
+    return {
+      url: null,
+      width: null,
+      height: null,
+    };
+  }
+
+  const candidate = rawPlayer as {
+    url?: unknown;
+    width?: unknown;
+    height?: unknown;
+  };
+
+  return {
+    url: typeof candidate.url === "string" ? candidate.url : null,
+    width: typeof candidate.width === "number" ? candidate.width : null,
+    height: typeof candidate.height === "number" ? candidate.height : null,
+  };
+}
+
   let fetching = $ref(true);
   let title = $ref<string | null>(null);
   let description = $ref<string | null>(null);
   let thumbnail = $ref<string | null>(null);
   let icon = $ref<string | null>(null);
   let sitename = $ref<string | null>(null);
-  let player = $ref({
+  let player = $ref<UrlPreviewPlayerState>({
 	url: null,
 	width: null,
 	height: null,
@@ -485,6 +526,7 @@ const fetchUrlData = async () => {
   tweetId = null;
   tweetExpanded = defaultStore.state.alwaysXExpand || props.detail;
   playerEnabled = false;
+  player = normalizeUrlPreviewPlayer(null);
   showThumbnail = false;
   isSensitive = false;
   preferLargeThumbnail = false;
@@ -528,7 +570,7 @@ const fetchUrlData = async () => {
           thumbnail = info.thumbnail;
           icon = info.icon;
           sitename = info.sitename;
-          player = info.player;
+          player = normalizeUrlPreviewPlayer(info.player);
           amazonAsin = info.amazon.asin ?? null;
           amazonPriceValue = info.amazon.price?.value ?? null;
           amazonPriceCurrency = info.amazon.price?.currency ?? null;
@@ -552,7 +594,7 @@ const fetchUrlData = async () => {
           thumbnail = info.thumbnail;
 		icon = info.icon;
 		sitename = info.sitename;
-		player = info.player;
+		player = normalizeUrlPreviewPlayer(info.player);
 
 		// X 投稿 ID（リンク先は props.url のまま）
 		const requestUrl = new URL(props.url);

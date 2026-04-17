@@ -1277,6 +1277,28 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
     }
   } catch (err) {
     logger.warn(`Failed to get preview of ${url}: ${err}`);
+    const amazonFallback = isAmazonProductUrl(effectiveUrl);
+    if (amazonFallback) {
+      const iconHost = amazonFallback.hostname.replace(/^smile\./, "");
+      const sitename = formatAmazonSitename(iconHost);
+      const favicon = `https://${iconHost}/favicon.ico`;
+      // NOTE: Amazon 専用取得と Summaly の両方が失敗した場合でも、
+      // URL プレビュー全体を 500 にせず最小情報（サイト名＋アイコン）で返す。
+      ctx.status = 200;
+      ctx.set("Cache-Control", "max-age=120, immutable");
+      ctx.body = {
+        url,
+        title: sitename,
+        description: null,
+        thumbnail: "",
+        icon: wrap(favicon) ?? favicon,
+        sitename,
+        player: null,
+        isSensitive: false,
+        preferLargeThumbnail: false,
+      };
+      return;
+    }
     await replyWithPreviewFailure(
       ctx,
       previewCacheHash,

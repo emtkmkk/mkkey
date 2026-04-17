@@ -933,9 +933,20 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           throw new Error("amazon anti-bot empty page");
         }
 
+        const rawTitle =
+          productData?.name ??
+          productData?.headline ??
+          fallbackData?.title ??
+          "Amazon";
+        const normalizedTitle = stripAmazonChrome(cleanAmazonText(rawTitle) ?? "Amazon") ?? "Amazon";
         const description = sanitizeAmazonDescription(
           productData?.description ?? fallbackData?.description ?? null,
         );
+        const normalizedDescription = stripAmazonChrome(description);
+        const dedupedDescription =
+          normalizeComparableText(normalizedTitle) === normalizeComparableText(normalizedDescription)
+            ? null
+            : normalizedDescription;
         const image = selectAmazonImage(productData) ?? fallbackData?.thumbnail ?? null;
         const offer = selectAmazonOffer(productData?.offers);
         const fallbackOffer =
@@ -995,12 +1006,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 
         return {
           url,
-          title:
-            productData?.name ??
-            productData?.headline ??
-            fallbackData?.title ??
-            "Amazon",
-          description,
+          title: normalizedTitle,
+          description: dedupedDescription,
           thumbnail: wrappedThumbnail,
           icon: wrap(favicon) ?? favicon,
           sitename,
@@ -1026,7 +1033,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       ctx.body = summary;
       return;
     } catch (err) {
-      logger.warn(`Failed to get Amazon data for ${url}: ${err}`);
+      logger.info(`Failed to get Amazon data for ${url}: ${err}`);
       // フォールバックとして通常のサマリーを取得する
     }
   }
@@ -2002,11 +2009,9 @@ function extractAmazonFallbackData(html: string): AmazonFallbackData | null {
       $("title").first().text(),
   );
 
-  const description = cleanAmazonText(
-    $("#productDescription").text() ||
-      $('meta[name="description"]').attr("content") ||
-      $('meta[property="og:description"]').attr("content"),
-  );
+  // NOTE: meta[name=description]/og:description は SEO 文で、商品の概要と一致しない場合がある。
+  // NOTE: 商品説明が存在しない商品では description を空にしたいので #productDescription のみ採用する。
+  const description = cleanAmazonText($("#productDescription").text());
 
   const thumbnail = cleanAmazonAttr(
     $("#landingImage").attr("src") ||
@@ -2026,10 +2031,12 @@ function extractAmazonFallbackData(html: string): AmazonFallbackData | null {
         $('meta[name="priceCurrency"]').attr("content"),
     ) ?? null;
 
-  const availability = cleanAmazonText(
-    $("#availability span").text() ||
-      $("div#availability span").text() ||
-      $("span[data-availability]").attr("data-availability"),
+  const availabilityRoot = $("#availability").clone();
+  availabilityRoot.find("a, .a-declarative, .a-popover-trigger, script, style").remove();
+  const availability = sanitizeAmazonAvailabilityText(
+    cleanAmazonText(
+      availabilityRoot.text() || $("span[data-availability]").attr("data-availability"),
+    ),
   );
 
   const prime =
@@ -2172,6 +2179,14 @@ function cleanAmazonText(value: string | null | undefined): string | null {
   return text.length > 0 ? text : null;
 }
 
+function sanitizeAmazonAvailabilityText(value: string | null): string | null {
+  if (!value) return null;
+  const sanitized = value
+    .replace(/\s*(在庫状況について|Learn more about availability)\s*$/i, "")
+    .trim();
+  return sanitized.length > 0 ? sanitized : null;
+}
+
 function cleanAmazonAttr(value: string | null | undefined): string | null {
   if (!value) return null;
   const trimmed = value.trim();
@@ -2189,7 +2204,9 @@ function parseAmazonRatingValue(value: string | null | undefined): number | null
 
 function parseAmazonInteger(value: string | null | undefined): number | null {
   if (!value) return null;
-  const normalized = value.replace(/[^0-9]/g, "");
+  const matchedNumber = value.match(/\d[\d,]*/);
+  if (!matchedNumber) return null;
+  const normalized = matchedNumber[0].replace(/,/g, "");
   if (!normalized) return null;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
@@ -2200,12 +2217,30 @@ function normalizeAmazonBrand(value: string | null | undefined): string | null {
   if (!text) return null;
   const normalized = text
     .replace(/^ブランド[:：]?\s*/i, "")
+    .replace(/^出版社[:：]?\s*/i, "")
+    .replace(/^メーカー[:：]?\s*/i, "")
+    .replace(/^販売元[:：]?\s*/i, "")
     .replace(/^Brand[:：]?\s*/i, "")
     .replace(/^Visit the\s+/i, "")
+    .replace(/\s+のストアを表示する?$/i, "")
+    .replace(/\s+のストア$/i, "")
+    .replace(/\s+のページを表示する?$/i, "")
     .replace(/\s+Store$/i, "")
+    .replace(/\s+/g, " ")
     .trim();
   return normalized.length > 0 ? normalized : null;
 }
+
+const PRODUCT_LIKE_JSONLD_TYPES = new Set([
+  "product",
+  "book",
+  "movie",
+  "musicalbum",
+  "videogame",
+  "softwareapplication",
+  "individualproduct",
+  "productmodel",
+]);
 
 function findProductNode(node: any): any | null {
   if (!node) return null;
@@ -2220,7 +2255,11 @@ function findProductNode(node: any): any | null {
   if (typeof node === "object") {
     const type = node["@type"];
     const types = Array.isArray(type) ? type : type ? [type] : [];
-    if (types.some((t) => typeof t === "string" && t.toLowerCase() === "product")) {
+    if (
+      types.some(
+        (t) => typeof t === "string" && PRODUCT_LIKE_JSONLD_TYPES.has(t.toLowerCase()),
+      )
+    ) {
       return node;
     }
 
@@ -2373,8 +2412,27 @@ function sanitizeAmazonDescription(description: unknown): string | null {
     return description == null ? null : cleanAmazonText(String(description));
   }
 
-  const sanitized = description.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const sanitized = description
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^(商品の説明|この商品について)\s*/i, "")
+    .trim();
   return sanitized.length > 0 ? sanitized : null;
+}
+
+function stripAmazonChrome(value: string | null): string | null {
+  if (!value) return null;
+  const cleaned = value
+    .replace(/^\s*Amazon(?:\.[\w.]+)?\s*[|:：\-‐]\s*/i, "")
+    .replace(/\s*[|:：\-‐]\s*Amazon(?:\.[\w.]+)?\s*$/i, "")
+    .replace(/\s*[|:：\-‐]\s*(?:公式サイト|Official\s+Site)\s*$/i, "")
+    .trim();
+  return cleaned.length > 0 ? cleaned : null;
+}
+
+function normalizeComparableText(value: string | null): string {
+  if (!value) return "";
+  return value.normalize("NFKC").replace(/\s+/g, " ").trim().toLocaleLowerCase();
 }
 
 function getAmazonLocaleInfo(hostname: string): { locale: string; currency: string } {

@@ -1726,6 +1726,7 @@ _linkPreviewThumbnailSize:
   none: "常に表示しない"
 _urlPreview:
   sensitive: "センシティブ"
+  amazonReviewCount: "({n} 件)"
 _serverDisconnectedBehavior:
   reload: "自動でリロード"
   dialog: "ダイアログで警告"

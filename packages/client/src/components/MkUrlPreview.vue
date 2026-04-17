@@ -157,7 +157,7 @@
                   </div>
                   <article>
                         <header>
-                          <h1 :title="title">
+                          <h1 :title="amazonDisplayTitleTooltip">
                                 {{ amazonDisplayTitle }}
                           </h1>
                           <div class="amazon-brand" v-if="amazonBrand">{{ amazonBrand }}</div>
@@ -170,8 +170,8 @@
                           }}
                         </p>
                         <footer class="amazon-footer">
-                          <div class="amazon-price-row" v-if="amazonPriceText || amazonPrime">
-                                <span class="amazon-price" v-if="amazonPriceText">
+                          <div class="amazon-price-row" v-if="amazonPriceDisplay || amazonPrime">
+                                <span class="amazon-price" v-if="amazonPriceDisplay">
                                   {{ amazonDisplayPrice }}
                                 </span>
                                 <span class="amazon-prime-badge" v-if="amazonPrime">Prime</span>
@@ -181,11 +181,8 @@
                                 <span class="amazon-rating-value">
                                   {{ formatRatingValue(amazonRatingValue) }}
                                 </span>
-                                <span class="amazon-rating-best" v-if="amazonRatingBest">
-                                  / {{ amazonRatingBest }}
-                                </span>
                                 <span class="amazon-rating-count" v-if="amazonRatingCount !== null">
-                                  ({{ formatCountValue(amazonRatingCount) }})
+                                  {{ formatAmazonReviewCount(amazonRatingCount) }}
                                 </span>
                           </div>
                           <div class="amazon-availability" v-if="amazonAvailability">
@@ -201,9 +198,9 @@
                                 <p
                                   v-if="sitename"
                                   class="amazon-site-name"
-                                  :title="(sitename || '').trim()"
+                                  :title="displaySitename"
                                 >
-                                  {{ (sitename || '').trim() }}
+                                  {{ displaySitename }}
                                 </p>
                           </div>
                         </footer>
@@ -304,7 +301,7 @@
 				:src="icon"
 				@error="icon = ''"
 			  />
-			  <p v-if="!isSteam" :title="(sitename || '').trim()">{{ (sitename || '').trim() }}</p>
+			  <p v-if="!isSteam" :title="displaySitename">{{ displaySitename }}</p>
 			</footer>
 		  </article>
 		</component>
@@ -368,9 +365,15 @@ const ratingFormatter = createNumberFormatter(normalizedLang, {
 });
 
 const formatRatingValue = (value: number | null) =>
-  value == null ? "" : ratingFormatter.format(value).replace(/\.0$/, "");
+  value == null ? "" : ratingFormatter.format(value);
 const formatCountValue = (value: number | null) =>
   value == null ? "" : countFormatter.format(value);
+const formatAmazonReviewCount = (value: number | null) => {
+  if (value == null) return "";
+  return i18n.t("_urlPreview.amazonReviewCount", {
+    n: formatCountValue(value),
+  });
+};
 const formatCurrencyValue = (value: number | null, currency: string | null) => {
   if (value == null || !currency) return null;
   try {
@@ -431,6 +434,47 @@ function normalizeUrlPreviewPlayer(rawPlayer: unknown): UrlPreviewPlayerState {
   };
 }
 
+const graphemeSegmenter =
+  typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+    ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+    : null;
+
+/**
+ * 文字列を見た目の1文字単位（grapheme）で切り詰める。
+ *
+ * @remarks
+ * NOTE: `slice` の UTF-16 単位切り詰めだと絵文字や結合文字が壊れる可能性があるため、
+ * Intl.Segmenter が使える環境では grapheme 単位で切り詰める。
+ *
+ * @param value - 対象文字列
+ * @param maxLength - 最大文字数
+ * @returns 切り詰め後文字列と切り詰め有無
+ *
+ * @internal
+ */
+function truncateByGrapheme(
+  value: string,
+  maxLength: number,
+): { text: string; truncated: boolean } {
+  if (!graphemeSegmenter) {
+    const truncated = value.length > maxLength;
+    return {
+      text: truncated ? `${value.slice(0, maxLength)}…` : value,
+      truncated,
+    };
+  }
+
+  const segments = Array.from(graphemeSegmenter.segment(value), ({ segment }) => segment);
+  if (segments.length <= maxLength) {
+    return { text: value, truncated: false };
+  }
+
+  return {
+    text: `${segments.slice(0, maxLength).join("")}…`,
+    truncated: true,
+  };
+}
+
   let fetching = $ref(true);
   let title = $ref<string | null>(null);
   let description = $ref<string | null>(null);
@@ -482,12 +526,17 @@ function normalizeUrlPreviewPlayer(rawPlayer: unknown): UrlPreviewPlayerState {
   );
   const amazonDisplayTitle = computed(() => {
     if (!title) return "";
-    return title.length > 60 ? `${title.slice(0, 60)}…` : title;
+    return truncateByGrapheme(title, 60).text;
   });
+  const amazonDisplayTitleTooltip = computed(() => {
+    if (!title) return undefined;
+    return truncateByGrapheme(title, 60).truncated ? title : undefined;
+  });
+  const displaySitename = computed(() => (sitename || "").trim());
   const amazonDisplayPrice = computed(() => {
-    if (!amazonPriceText) return "";
+    if (!amazonPriceDisplay) return "";
     // NOTE: 価格は「半角¥ + 半角スペース」に統一表示する。
-    return amazonPriceText.replace(/^￥\s*/, "¥ ");
+    return amazonPriceDisplay.replace(/^￥\s*/, "¥ ");
   });
 
 // Steam専用のリアクティブ変数
@@ -505,19 +554,14 @@ let steamReleaseDate = $ref<string>("");
 
 // Amazon専用のリアクティブ変数
 let isAmazon = $ref(false);
-let amazonAsin = $ref<string | null>(null);
-let amazonPriceText = $ref<string | null>(null);
+let amazonPriceDisplay = $ref<string | null>(null);
 let amazonPriceValue = $ref<number | null>(null);
 let amazonPriceCurrency = $ref<string | null>(null);
 let amazonAvailability = $ref<string | null>(null);
 let amazonPrime = $ref(false);
 let amazonRatingValue = $ref<number | null>(null);
-let amazonRatingBest = $ref<number | null>(null);
 let amazonRatingCount = $ref<number | null>(null);
 let amazonBrand = $ref<string | null>(null);
-
-// SteamファビコンのデフォルトURL（通常のfaviconを使用）
-const defaultIcon = "https://store.steampowered.com/favicon.ico";
 
 // URL情報の取得
 const fetchUrlData = async () => {
@@ -536,14 +580,12 @@ const fetchUrlData = async () => {
   steamGenres = "";
   steamComingSoon = false;
   steamReleaseDate = "";
-  amazonAsin = null;
-  amazonPriceText = null;
+  amazonPriceDisplay = null;
   amazonPriceValue = null;
   amazonPriceCurrency = null;
   amazonAvailability = null;
   amazonPrime = false;
   amazonRatingValue = null;
-  amazonRatingBest = null;
   amazonRatingCount = null;
   amazonBrand = null;
   tweetId = null;
@@ -594,10 +636,9 @@ const fetchUrlData = async () => {
           icon = info.icon;
           sitename = info.sitename;
           player = normalizeUrlPreviewPlayer(info.player);
-          amazonAsin = info.amazon.asin ?? null;
           amazonPriceValue = info.amazon.price?.value ?? null;
           amazonPriceCurrency = info.amazon.price?.currency ?? null;
-          amazonPriceText =
+          amazonPriceDisplay =
             info.amazon.price?.display ??
             (amazonPriceValue != null && amazonPriceCurrency
               ? formatCurrencyValue(amazonPriceValue, amazonPriceCurrency)
@@ -605,7 +646,6 @@ const fetchUrlData = async () => {
           amazonAvailability = info.amazon.availability ?? null;
           amazonPrime = !!info.amazon.prime;
           amazonRatingValue = info.amazon.rating?.value ?? null;
-          amazonRatingBest = info.amazon.rating?.best ?? null;
           amazonRatingCount = info.amazon.rating?.count ?? null;
           amazonBrand = info.amazon.brand ?? null;
         } else {
@@ -1116,12 +1156,15 @@ const fetchUrlData = async () => {
                         .amazon-price-row {
                           display: flex;
                           align-items: center;
+                          font-size: 0.9em;
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
                           gap: 0.5rem;
 
                           .amazon-price {
-                                font-size: 1.15em;
-                                font-weight: 700;
-                                color: #c45500;
+                                // NOTE: テーマによって可読性が落ちないよう、固定色を使わず本文色に追従する。
+                                font-weight: bold;
                           }
 
                           .amazon-prime-badge {

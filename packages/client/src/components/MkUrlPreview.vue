@@ -1156,7 +1156,6 @@ const fetchUrlData = async () => {
                         .amazon-price-row {
                           display: flex;
                           align-items: center;
-                          font-size: 0.9em;
                           overflow: hidden;
                           white-space: nowrap;
                           text-overflow: ellipsis;

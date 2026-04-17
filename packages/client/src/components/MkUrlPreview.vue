@@ -191,14 +191,20 @@
                           <div class="amazon-availability" v-if="amazonAvailability">
                                 {{ amazonAvailability }}
                           </div>
-                          <div class="amazon-site-info">
+                          <div class="amazon-site-info" v-if="icon || sitename">
                                 <img
                                   v-if="icon"
-                                  class="icon"
+                                  class="amazon-site-icon"
                                   :src="icon"
                                   @error="icon = ''"
                                 />
-                                <p :title="(sitename || '').trim()">{{ (sitename || '').trim() }}</p>
+                                <p
+                                  v-if="sitename"
+                                  class="amazon-site-name"
+                                  :title="(sitename || '').trim()"
+                                >
+                                  {{ (sitename || '').trim() }}
+                                </p>
                           </div>
                         </footer>
                   </article>
@@ -1103,6 +1109,9 @@ const fetchUrlData = async () => {
                         flex-direction: column;
                         gap: 0.35rem;
                         font-size: 0.9em;
+                        // NOTE: 共通 footer ルールが height:1rem を当てているため、
+                        //       Amazon 用の複数行構成では auto に戻して全行が見えるようにする。
+                        height: auto;
 
                         .amazon-price-row {
                           display: flex;
@@ -1152,10 +1161,13 @@ const fetchUrlData = async () => {
                           opacity: 0.85;
                         }
                         .amazon-site-info {
+                          // NOTE: 通常 URL プレビューの footer と同じく
+                          //       「ロゴ + サイト名」を末尾 1 行で表示する。
                           margin-top: 0.15rem;
                           height: 1rem;
+                          display: block;
 
-                          > img {
+                          .amazon-site-icon {
                                 display: inline-block;
                                 width: 1rem;
                                 height: 1rem;
@@ -1163,7 +1175,7 @@ const fetchUrlData = async () => {
                                 vertical-align: top;
                           }
 
-                          > p {
+                          .amazon-site-name {
                                 display: inline-block;
                                 margin: 0;
                                 color: var(--urlPreviewInfo);

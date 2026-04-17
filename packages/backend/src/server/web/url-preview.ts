@@ -907,6 +907,8 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           method: "GET",
           headers: {
             Accept: "text/html, */*",
+            // NOTE: Amazon は既定 UA のアクセスを簡易ページへ誘導する場合があるため、サーバ設定の UA を明示する。
+            "User-Agent": config.userAgent,
             "accept-language": normalizedLang ?? "en-US",
           },
           timeout: 10000,
@@ -915,8 +917,21 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 
         const productData = extractAmazonProductData(html);
         const fallbackData = extractAmazonFallbackData(html);
+        const iconHost = amazonProduct.hostname.replace(/^smile\./, "");
+        const sitename = formatAmazonSitename(iconHost);
 
         if (!productData && !fallbackData) throw new Error("product data not found");
+        // NOTE: ボット対策等で title だけが "Amazon.xx" になる簡易 HTML を掴んだ場合は、
+        // Amazon 専用カードを組み立てず Summaly 本流にフォールバックする。
+        if (
+          isAmazonLikelyAntiBotEmptyPage({
+            productData,
+            fallbackData,
+            sitename,
+          })
+        ) {
+          throw new Error("amazon anti-bot empty page");
+        }
 
         const description = sanitizeAmazonDescription(
           productData?.description ?? fallbackData?.description ?? null,
@@ -972,7 +987,6 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
             }
           : null;
 
-        const iconHost = amazonProduct.hostname.replace(/^smile\./, "");
         const favicon = `https://${iconHost}/favicon.ico`;
 
         const wrappedThumbnail = wrap(image ?? undefined) ?? "";
@@ -989,7 +1003,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
           description,
           thumbnail: wrappedThumbnail,
           icon: wrap(favicon) ?? favicon,
-          sitename: formatAmazonSitename(iconHost),
+          sitename,
           player: player ?? (null as any),
           amazon: {
             asin: amazonProduct.asin,
@@ -2111,6 +2125,18 @@ type AmazonFallbackData = {
   playerAllow: string[] | null;
 };
 
+/**
+ * Amazon 商品ページの HTML から、JSON-LD 不足時のフォールバック情報を抽出する。
+ *
+ * @remarks
+ * NOTE: Amazon のボット対策ページでは `<title>` しか取得できない場合がある。
+ * その場合は呼び出し側で `isAmazonLikelyAntiBotEmptyPage` 判定を行い、Summaly 本流へフォールバックする。
+ *
+ * @param html - Amazon 商品ページとして取得した HTML 文字列
+ * @returns 価格・評価・説明などを含むフォールバック情報。実質空の場合は null
+ *
+ * @internal
+ */
 function extractAmazonFallbackData(html: string): AmazonFallbackData | null {
   const $ = cheerio.load(html);
 
@@ -2215,6 +2241,45 @@ function extractAmazonFallbackData(html: string): AmazonFallbackData | null {
     playerHeight,
     playerAllow,
   };
+}
+
+/**
+ * Amazon の簡易ページ（アンチボット等）を誤って商品ページとして扱わないための判定。
+ *
+ * @remarks
+ * NOTE: `productData` が取れず、`fallbackData` が「サイト名 title のみ」で実質空なら true を返す。
+ *
+ * @param args - Amazon 解析の中間データ
+ * @returns Summaly 本流にフォールバックすべき場合は true
+ *
+ * @internal
+ */
+function isAmazonLikelyAntiBotEmptyPage(args: {
+  productData: any | null;
+  fallbackData: AmazonFallbackData | null;
+  sitename: string;
+}): boolean {
+  if (args.productData != null) return false;
+  if (!args.fallbackData) return false;
+
+  const normalizedTitle = cleanAmazonText(args.fallbackData.title);
+  if (!normalizedTitle || normalizedTitle !== args.sitename) {
+    return false;
+  }
+
+  const hasMeaningfulDetails =
+    args.fallbackData.description != null ||
+    args.fallbackData.thumbnail != null ||
+    args.fallbackData.priceText != null ||
+    args.fallbackData.priceCurrency != null ||
+    args.fallbackData.availability != null ||
+    args.fallbackData.ratingValue != null ||
+    args.fallbackData.ratingCount != null ||
+    args.fallbackData.brand != null ||
+    args.fallbackData.playerUrl != null ||
+    args.fallbackData.prime;
+
+  return !hasMeaningfulDetails;
 }
 
 function extractJsonLdScripts(html: string): string[] {

@@ -38,6 +38,7 @@ import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { invalidateListMembersCache } from "@/misc/antenna-members-cache.js";
 import { webhookDeliver } from "@/queue/index.js";
 import { ensureProxyFollowsListedUser } from "../user-list/ensure-proxy-follow.js";
+import { setModerationWarningByAdminBlock } from "../moderation-warning-by-admin-block.js";
 
 export default async function (blocker: User, blockee: User) {
         await Promise.all([
@@ -62,6 +63,7 @@ export default async function (blocker: User, blockee: User) {
 	} as Blocking;
 
 	await Blockings.insert(blocking);
+	await setModerationWarningByAdminBlock(blocker, blockee);
 
 	if (Users.isLocalUser(blocker) && Users.isRemoteUser(blockee)) {
 		const content = renderActivity(renderBlock(blocking));

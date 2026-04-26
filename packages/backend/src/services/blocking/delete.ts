@@ -16,8 +16,8 @@ import renderUndo from "@/remote/activitypub/renderer/undo.js";
 import { deliver } from "@/queue/index.js";
 import Logger from "../logger.js";
 import type { CacheableUser } from "@/models/entities/user.js";
-import { User } from "@/models/entities/user.js";
 import { Blockings, Users } from "@/models/index.js";
+import { unsetModerationWarningByAdminUnblock } from "../moderation-warning-by-admin-block.js";
 
 const logger = new Logger("blocking/delete");
 
@@ -38,7 +38,8 @@ export default async function (blocker: CacheableUser, blockee: CacheableUser) {
 	blocking.blocker = blocker;
 	blocking.blockee = blockee;
 
-	Blockings.delete(blocking.id);
+	await Blockings.delete(blocking.id);
+	await unsetModerationWarningByAdminUnblock(blocker, blockee);
 
 	// リモートブロックの場合は配信
 	if (Users.isLocalUser(blocker) && Users.isRemoteUser(blockee)) {

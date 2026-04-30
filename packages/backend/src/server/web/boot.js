@@ -64,14 +64,16 @@
 		typeof VERSION === "string" && VERSION.length > 0
 			? VERSION
 			: localStorage.getItem("v") || "";
+	const importTarget = `/assets/${CLIENT_ENTRY}`;
+	const forcedRefreshMarkerKey = "__mk_boot_forced_refresh__";
 
 	function importAppScript() {
-		import(`/assets/${CLIENT_ENTRY}`).catch(async (e) => {
+		import(importTarget).catch(async (e) => {
 			const didRefresh = await checkUpdate(e);
 			if (didRefresh) return;
 			console.error(e);
 			renderError("APP_IMPORT", {
-				importTarget: `/assets/${CLIENT_ENTRY}`,
+				importTarget,
 				currentVersion,
 				cause: e,
 			});
@@ -553,6 +555,12 @@
 	 */
 	async function checkUpdate(importError) {
 		try {
+			// import 失敗時点でアセット実体が無い（404/410）なら、version が同一でも更新不整合とみなして再読込する。
+			const assetExists = await doesClientEntryExist();
+			if (!assetExists) {
+				return forceRefreshOnce("entry-missing");
+			}
+
 			const res = await fetch("/api/meta", {
 				method: "POST",
 				cache: "no-cache",
@@ -576,13 +584,55 @@
 		} catch (e) {
 			console.error(e);
 			renderError("UPDATE_CHECK", {
-				importTarget: `/assets/${CLIENT_ENTRY}`,
+				importTarget,
 				currentVersion,
 				cause: e,
 				importError,
 			});
 		}
 		return false;
+	}
+
+	/**
+	 * 現在の CLIENT_ENTRY が配信可能かを確認する。
+	 *
+	 * @remarks
+	 * iOS WebKit では古い HTML が残って import 先だけ 404 になる事象があるため、
+	 * version 差分とは別にアセット実在を確認する。
+	 */
+	async function doesClientEntryExist() {
+		try {
+			const checkRes = await fetch(importTarget, {
+				method: "GET",
+				cache: "no-cache",
+			});
+			return checkRes.ok;
+		} catch (e) {
+			// NOTE: ネットワーク瞬断時はここで false にすると無限 reload しやすいので、存在不明扱いで true を返す。
+			console.warn("APP_IMPORT: failed to probe client entry", e);
+			return true;
+		}
+	}
+
+	/**
+	 * 同一セッション内で 1 回だけ強制再読込する。
+	 *
+	 * @remarks
+	 * APP_IMPORT 発生時の保険として使い、無限ループを防ぐ。
+	 */
+	function forceRefreshOnce(reason) {
+		try {
+			const marker = sessionStorage.getItem(forcedRefreshMarkerKey);
+			if (marker === importTarget) return false;
+			sessionStorage.setItem(forcedRefreshMarkerKey, importTarget);
+			console.warn("APP_IMPORT: force refresh once", { reason, importTarget, currentVersion });
+			refresh();
+			return true;
+		} catch (e) {
+			console.warn("APP_IMPORT: force refresh marker unavailable", e);
+			refresh();
+			return true;
+		}
 	}
 
 	/**

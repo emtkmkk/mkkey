@@ -66,16 +66,24 @@
 			: localStorage.getItem("v") || "";
 	const importTarget = `/assets/${CLIENT_ENTRY}`;
 	const forcedRefreshMarkerKey = "__mk_boot_forced_refresh__";
+	const bootRetryQueryKey = "bootRetry";
+	const currentUrl = new URL(location.href);
+	const bootRetryToken = currentUrl.searchParams.get(bootRetryQueryKey);
+	let lastEntryProbe = null;
 
 	function importAppScript() {
-		import(importTarget).catch(async (e) => {
-			const didRefresh = await checkUpdate(e);
-			if (didRefresh) return;
+		import(importTarget).then(() => {
+			cleanupBootRetryQuery();
+		}).catch(async (e) => {
+			let didRecover = await checkUpdate(e);
+			if (!didRecover) {
+				didRecover = await primeImportTargetAndRetry(e);
+			}
+			if (didRecover) return;
 			console.error(e);
 			renderError("APP_IMPORT", {
-				importTarget,
-				currentVersion,
 				cause: e,
+				...buildAppImportContext(),
 			});
 		});
 	}
@@ -558,7 +566,7 @@
 			// import 失敗時点でアセット実体が無い（404/410）なら、version が同一でも更新不整合とみなして再読込する。
 			const assetExists = await doesClientEntryExist();
 			if (!assetExists) {
-				return forceRefreshOnce("entry-missing");
+				return forceRefreshOnce("entry-missing", false);
 			}
 
 			const res = await fetch("/api/meta", {
@@ -584,10 +592,9 @@
 		} catch (e) {
 			console.error(e);
 			renderError("UPDATE_CHECK", {
-				importTarget,
-				currentVersion,
 				cause: e,
 				importError,
+				...buildAppImportContext(),
 			});
 		}
 		return false;
@@ -606,12 +613,101 @@
 				method: "GET",
 				cache: "no-cache",
 			});
+			lastEntryProbe = toEntryProbeInfo(checkRes, "exist-check");
 			return checkRes.ok;
 		} catch (e) {
 			// NOTE: ネットワーク瞬断時はここで false にすると無限 reload しやすいので、存在不明扱いで true を返す。
 			console.warn("APP_IMPORT: failed to probe client entry", e);
+			lastEntryProbe = {
+				stage: "exist-check",
+				ok: null,
+				status: null,
+				contentType: null,
+				cacheControl: null,
+				error: String(e),
+			};
 			return true;
 		}
+	}
+
+	/**
+	 * Safari 系の import 失敗を想定し、対象アセットを no-store で取得してから 1 回だけ cache-bust 再読込する。
+	 *
+	 * @remarks
+	 * - アセット実体が存在しても import が失敗するケースを救済する。
+	 * - 既に retry クエリ付きで起動中の場合は再試行を打ち切る。
+	 */
+	async function primeImportTargetAndRetry(importError) {
+		if (bootRetryToken) return false;
+		try {
+			const res = await fetch(importTarget, {
+				method: "GET",
+				cache: "no-store",
+			});
+			lastEntryProbe = toEntryProbeInfo(res, "prime-fetch");
+			if (!res.ok) return false;
+			return forceRefreshOnce("import-prime-retry", true);
+		} catch (e) {
+			lastEntryProbe = {
+				stage: "prime-fetch",
+				ok: null,
+				status: null,
+				contentType: null,
+				cacheControl: null,
+				error: String(e),
+			};
+			console.warn("APP_IMPORT: failed to prime import target", {
+				importError,
+				primeError: e,
+			});
+			return false;
+		}
+	}
+
+	function toEntryProbeInfo(response, stage) {
+		return {
+			stage,
+			ok: response.ok,
+			status: response.status,
+			contentType: response.headers.get("content-type"),
+			cacheControl: response.headers.get("cache-control"),
+		};
+	}
+
+	function getPerformanceEntrySummary() {
+		try {
+			return performance
+				.getEntriesByName(importTarget)
+				.map((entry) => ({
+					entryType: entry.entryType,
+					name: entry.name,
+					startTime: Math.round(entry.startTime),
+					duration: Math.round(entry.duration),
+					initiatorType: entry.initiatorType || null,
+				}));
+		} catch (e) {
+			return [{ entryType: "unavailable", reason: String(e) }];
+		}
+	}
+
+	function buildAppImportContext() {
+		return {
+			importTarget,
+			currentVersion,
+			bootRetryToken,
+			isBootRetry: Boolean(bootRetryToken),
+			visibilityState: document.visibilityState,
+			userAgent: navigator.userAgent,
+			performanceEntries: getPerformanceEntrySummary(),
+			entryProbe: lastEntryProbe,
+		};
+	}
+
+	function cleanupBootRetryQuery() {
+		if (!bootRetryToken) return;
+		const cleanedUrl = new URL(location.href);
+		cleanedUrl.searchParams.delete(bootRetryQueryKey);
+		history.replaceState(history.state, "", cleanedUrl.toString());
 	}
 
 	/**
@@ -620,17 +716,21 @@
 	 * @remarks
 	 * APP_IMPORT 発生時の保険として使い、無限ループを防ぐ。
 	 */
-	function forceRefreshOnce(reason) {
+	function forceRefreshOnce(reason, withCacheBust) {
 		try {
 			const marker = sessionStorage.getItem(forcedRefreshMarkerKey);
 			if (marker === importTarget) return false;
 			sessionStorage.setItem(forcedRefreshMarkerKey, importTarget);
-			console.warn("APP_IMPORT: force refresh once", { reason, importTarget, currentVersion });
-			refresh();
+			console.warn("APP_IMPORT: force refresh once", {
+				reason,
+				withCacheBust,
+				...buildAppImportContext(),
+			});
+			refresh(withCacheBust);
 			return true;
 		} catch (e) {
 			console.warn("APP_IMPORT: force refresh marker unavailable", e);
-			refresh();
+			refresh(withCacheBust);
 			return true;
 		}
 	}
@@ -641,7 +741,7 @@
 	 * @remarks
 	 * キャッシュ不整合が疑われる起動失敗時に、SW登録解除と reload を連続実行する。
 	 */
-	function refresh() {
+	function refresh(withCacheBust) {
 		// Clear cache (service worker)
 		try {
 			navigator.serviceWorker.controller.postMessage("clear");
@@ -652,6 +752,12 @@
 			console.error(e);
 		}
 
+		if (withCacheBust) {
+			const refreshedUrl = new URL(location.href);
+			refreshedUrl.searchParams.set(bootRetryQueryKey, String(Date.now()));
+			location.replace(refreshedUrl.toString());
+			return;
+		}
 		location.reload();
 	}
 	//#endregion

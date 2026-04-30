@@ -59,11 +59,22 @@
 	//#endregion
 
 	//#region Script
+	// NOTE: base.pug から注入される VERSION を基準に比較し、未定義参照を避ける。
+	const currentVersion =
+		typeof VERSION === "string" && VERSION.length > 0
+			? VERSION
+			: localStorage.getItem("v") || "";
+
 	function importAppScript() {
 		import(`/assets/${CLIENT_ENTRY}`).catch(async (e) => {
-			await checkUpdate();
+			const didRefresh = await checkUpdate(e);
+			if (didRefresh) return;
 			console.error(e);
-			renderError("APP_IMPORT", e);
+			renderError("APP_IMPORT", {
+				importTarget: `/assets/${CLIENT_ENTRY}`,
+				currentVersion,
+				cause: e,
+			});
 		});
 	}
 
@@ -529,26 +540,57 @@
 		`);
 	}
 
-	async function checkUpdate() {
+	//#region 更新確認と再読み込み
+	/**
+	 * import 失敗時にサーバー版メタ情報を照合し、必要なら再読み込みする。
+	 *
+	 * @remarks
+	 * - iOS WebKit を含む一部環境では、起動直後に古いキャッシュと新しいエントリが不整合になり得る。
+	 * - ここでは例外を再 throw せず、エラー画面の重複表示を抑える。
+	 *
+	 * @param importError - アセット import 失敗時の元例外
+	 * @returns 再読み込みを実施した場合は true
+	 */
+	async function checkUpdate(importError) {
 		try {
 			const res = await fetch("/api/meta", {
 				method: "POST",
 				cache: "no-cache",
 			});
+			if (!res.ok) {
+				throw new Error(`Meta request failed: ${res.status}`);
+			}
 
 			const meta = await res.json();
+			const latestVersion = meta && typeof meta.version === "string" ? meta.version : null;
+			if (!latestVersion) {
+				console.warn("UPDATE_CHECK: invalid meta response", meta);
+				return false;
+			}
 
-			if (meta.version != v) {
-				localStorage.setItem("v", meta.version);
+			if (!currentVersion || latestVersion !== currentVersion) {
+				localStorage.setItem("v", latestVersion);
 				refresh();
+				return true;
 			}
 		} catch (e) {
 			console.error(e);
-			renderError("UPDATE_CHECK", e);
-			throw e;
+			renderError("UPDATE_CHECK", {
+				importTarget: `/assets/${CLIENT_ENTRY}`,
+				currentVersion,
+				cause: e,
+				importError,
+			});
 		}
+		return false;
 	}
 
+	/**
+	 * Service Worker とページを再初期化して最新アセットへ揃える。
+	 *
+	 * @remarks
+	 * キャッシュ不整合が疑われる起動失敗時に、SW登録解除と reload を連続実行する。
+	 */
 	function refresh() {
 		// Clear cache (service worker)
 		try {
@@ -562,4 +604,5 @@
 
 		location.reload();
 	}
+	//#endregion
 })();

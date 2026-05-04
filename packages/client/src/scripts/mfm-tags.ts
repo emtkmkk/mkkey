@@ -19,6 +19,7 @@ export const MFM_TAGS = [
 	"rainbow",
 	"sparkle",
 	"rotate",
+	"saize",
 ];
 export const MFM_TAGS_JP = [
 	{ name: "x2", ja: "サイズ2倍", exportLeft: "$[x2 ", exportRight: "]" },
@@ -183,6 +184,13 @@ export const MFM_TAGS_JP = [
 		exportLeft: "$[bounce ",
 		exportRight: "]",
 		defaultOption: "$[bounce.speed=0.75s ",
+	},
+	{
+		name: "saize",
+		ja: "サイゼ",
+		exportLeft: "$[saize ",
+		exportRight: "]",
+		defaultOption: "$[saize ",
 	},
 	{
 		name: "fade",

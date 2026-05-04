@@ -89,6 +89,20 @@ export function toHtml(
 					}
 				}
 
+				case "saize": {
+					/* サーバ側ではマップを持たず、プレーンテキストに落とす */
+					if (
+						node.children.length === 1 &&
+						node.children[0].type === "text"
+					) {
+						const code = node.children[0].props.text.trim();
+						const el = doc.createElement("span");
+						el.textContent = code;
+						return el;
+					}
+					return fnDefault(node);
+				}
+
 				case "ruby": {
 					if (node.children.length === 1) {
 						const child = node.children[0];

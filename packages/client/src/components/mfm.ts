@@ -11,6 +11,7 @@ import MkFormula from "@/components/MkFormula.vue";
 import MkCode from "@/components/MkCode.vue";
 import MkGoogle from "@/components/MkGoogle.vue";
 import MkSparkle from "@/components/MkSparkle.vue";
+import MkSaizeMenuBadge from "@/components/MkSaizeMenuBadge.vue";
 import MkA from "@/components/global/MkA.vue";
 import { host } from "@/config";
 import { reducedMotion } from "@/scripts/reduced-motion";
@@ -308,6 +309,17 @@ export default defineComponent({
 										return genEl(token.children);
 									}
 									return h(MkSparkle, {}, genEl(token.children));
+								}
+								case "saize": {
+									if (
+										token.children.length === 1 &&
+										token.children[0].type === "text"
+									) {
+										return h(MkSaizeMenuBadge, {
+											menuCode: token.children[0].props.text,
+										});
+									}
+									return genEl(token.children);
 								}
 								case "fade": {
 									const direction = token.props.args.out

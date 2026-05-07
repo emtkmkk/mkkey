@@ -43,6 +43,7 @@ import {
 import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
 import * as Acct from "@/misc/acct.js";
 import { getNoteSummary } from "@/misc/get-note-summary.js";
+import { getSleepsUntilNextNewYearsDay } from "@/misc/motd-oshogatsu-sleeps.js";
 import { queues } from "@/queue/queues.js";
 import { genOpenapiSpec } from "../api/openapi/gen-spec.js";
 import { urlPreviewHandler } from "./url-preview.js";
@@ -1206,9 +1207,12 @@ router.get("(.*)", async (ctx) => {
 	motdt.push(`${meta.name}の連合投稿数は ${gNotesCount.toLocaleString("ja-JP")} です`);
 	motdt.push(`${meta.name}の絵文字数は ${emojisCount.toLocaleString("ja-JP")} です`);
 	//季節メッセージ
+	/** 季節だけで motd を差し替えて日付・統計プールを外したとき（カウントダウン MOTD は付けない） */
+	let seasonalMotdForcedExclusive = false;
 	if (now.getMonth() === 0) {
 		motd.push("冬ですね");
 		if (now.getDate() == 1) {
+			seasonalMotdForcedExclusive = true;
 			motd = [
 				`HAPPY NEW YEAR ${now.getFullYear()} 🎉`,
 				"あけましておめでとうございます！",
@@ -1257,6 +1261,7 @@ router.get("(.*)", async (ctx) => {
 		} else if (now.getDate() >= 20 && now.getDate() < 27) {
 			motd.push(`5/27は${meta.name} ${now.getFullYear() - 2023}.5 周年の日みたいです`);
 		} else if (now.getDate() == 27) {
+			seasonalMotdForcedExclusive = true;
 			motd = [
 				`今日は${meta.name} ${now.getFullYear() - 2023}.5 周年の日です！🎉`,
 			];
@@ -1299,6 +1304,7 @@ router.get("(.*)", async (ctx) => {
 		if (now.getDate() >= 19 && now.getDate() < 26) {
 			motd.push(`11/26は${meta.name} ${now.getFullYear() - 2022} 周年の日みたいです`);
 		} else if (now.getDate() == 26) {
+			seasonalMotdForcedExclusive = true;
 			motd = [
 				`今日は${meta.name} ${now.getFullYear() - 2022} 周年の日です！🎉`,
 			];
@@ -1308,6 +1314,7 @@ router.get("(.*)", async (ctx) => {
 	} else if (now.getMonth() == 11) {
 		motd.push("冬が始まりますね");
 		if (now.getDate() == 31 && now.getHours() >= 18) {
+			seasonalMotdForcedExclusive = true;
 			motd = [`${now.getFullYear()}年もお疲れ様でした。来年も頑張りましょう`];
 			motdd = [];
 			motdt = [];
@@ -1322,6 +1329,12 @@ router.get("(.*)", async (ctx) => {
 		}
 		if (now.getDate() == 31) {
 			motd.push("年越しそば、食べましたか？");
+		}
+	}
+	if (!seasonalMotdForcedExclusive) {
+		const sleeps = getSleepsUntilNextNewYearsDay(now);
+		if (sleeps >= 1 && sleeps <= 99) {
+			motd.push(`もう ${sleeps} つ寝るとお正月`);
 		}
 	}
 	//季節メッセージ 終わり

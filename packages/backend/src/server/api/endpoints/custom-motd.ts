@@ -6,12 +6,14 @@
  * @remarks
  * - **API パス**: `custom-motd`（GET `/api/custom-motd` で呼び出し）
  * - 認証不要。インスタンス設定のカスタム MOTD 配列を返す。
+ * - 季節・周年・大晦日夕方・誕生日など **単独 return の強制 MOTD** のときは「お正月まで n 夜」を付けない。
  *
  * @see {@link define} エンドポイント登録
  * @internal
  */
 // import { IsNull } from 'typeorm';
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { getSleepsUntilNextNewYearsDay } from "@/misc/motd-oshogatsu-sleeps.js";
 import define from "../define.js";
 
 export const meta = {
@@ -147,6 +149,19 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	}
 
+	// お正月までの睡眠回数（季節の先行 return を通過した通常経路のみ。誕生日は単独 return を優先して付けない）
+	const userBirthdayToday = !!(
+		user &&
+		new Date(user.birthday).getMonth() === now.getMonth() &&
+		new Date(user.birthday).getDate() === now.getDate()
+	);
+	if (!userBirthdayToday) {
+		const sleeps = getSleepsUntilNextNewYearsDay(now);
+		if (sleeps >= 1 && sleeps <= 99) {
+			motd.push(`もう ${sleeps} つ寝るとお正月`);
+		}
+	}
+
 	if (user) {
 		const eDay = Math.ceil(
 			(now.valueOf() - new Date(user.createdAt).valueOf()) /
@@ -155,10 +170,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		const avePost = Math.round((user.notesCount / eDay) * 10) / 10;
 		const uName = user.name || user.username;
 
-		if (
-			new Date(user.birthday).getMonth() === now.getMonth() &&
-			new Date(user.birthday).getDate() === now.getDate()
-		) {
+		if (userBirthdayToday) {
 			return ["誕生日おめでとうございます！🎉"];
 		}
 

@@ -528,6 +528,16 @@
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
+			<FormSwitch
+				v-model="enableEmojiPickerAddedOrderCategory"
+				class="_formBlock"
+				:disabled="nullCategoryHidden || categoryHidden"
+			>
+				{{ i18n.ts.enableEmojiPickerAddedOrderCategory
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span>
+			</FormSwitch>
 			<FormSwitch v-model="nullCategoryHidden" class="_formBlock" :disabled="categoryHidden">
 				{{ i18n.ts.nullCategoryHidden
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -948,6 +958,9 @@ const reactionAutoFocusSearchBar = $computed(
 	defaultStore.makeGetterSetter("reactionAutoFocusSearchBar")
 );
 const japanCategory = $computed(defaultStore.makeGetterSetter("japanCategory"));
+const enableEmojiPickerAddedOrderCategory = $computed(
+	defaultStore.makeGetterSetter("enableEmojiPickerAddedOrderCategory")
+);
 const nullCategoryHidden = $computed(defaultStore.makeGetterSetter("nullCategoryHidden"));
 const categoryHidden = $computed(defaultStore.makeGetterSetter("categoryHidden"));
 const remoteEmojisFetch = $computed(

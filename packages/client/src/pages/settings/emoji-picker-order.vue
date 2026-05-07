@@ -1,7 +1,6 @@
 <template>
   <div class="_formRoot">
     <FormSwitch v-model="enabled" class="_formBlock">{{ i18n.ts.enableEmojiPickerOrder }}</FormSwitch>
-    <FormSwitch v-model="enableAddedOrderCategory" class="_formBlock">{{ i18n.ts.enableEmojiPickerAddedOrderCategory }}</FormSwitch>
     <FormSlot>
       <template #label>{{ i18n.ts.emojiPickerOrder }}</template>
       <MkContainer :showHeader="false">
@@ -64,8 +63,18 @@ const orderItemDef = {
   unicode: {},
 };
 
-const enabled = computed(defaultStore.makeGetterSetter('enableEmojiPickerOrder'));
-const enableAddedOrderCategory = computed(defaultStore.makeGetterSetter('enableEmojiPickerAddedOrderCategory'));
+const enabled = computed<boolean>({
+  get: () => defaultStore.state.enableEmojiPickerOrder,
+  set: (value) => {
+    void defaultStore.set('enableEmojiPickerOrder', value);
+  },
+});
+const enableAddedOrderCategory = computed<boolean>({
+  get: () => defaultStore.state.enableEmojiPickerAddedOrderCategory,
+  set: (value) => {
+    void defaultStore.set('enableEmojiPickerAddedOrderCategory', value);
+  },
+});
 
 function getSectionLabel(type: string): string {
   if (type === 'uncategorized' && enableAddedOrderCategory.value) {

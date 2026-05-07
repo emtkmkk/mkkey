@@ -1245,6 +1245,8 @@ deckRemoteEmojiList: "Remote emojis in emoji deck"
 deckRemoteEmojiEmpty: "No remote emojis in the emoji deck."
 emojiPickerOrder: "Emoji picker order"
 enableEmojiPickerOrder: "Enable custom order for emoji picker"
+enableEmojiPickerAddedOrderCategory: "Enable added-order categories"
+addedOrderCategory: "Added-order category"
 _emojiPickerSections:
   pinned1: "Pinned emojis 1"
   pinned2: "Pinned emojis 2"

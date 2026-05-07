@@ -1247,6 +1247,8 @@ deckRemoteEmojiList: "絵文字デッキのリモート絵文字一覧"
 deckRemoteEmojiEmpty: "絵文字デッキにリモート絵文字はありません。"
 emojiPickerOrder: "絵文字カテゴリ並び順（試験的）"
 enableEmojiPickerOrder: "カテゴリ並び替えを有効化"
+enableEmojiPickerAddedOrderCategory: "追加順カテゴリ表示を有効化"
+addedOrderCategory: "追加順カテゴリ"
 _emojiPickerSections:
   pinned1: "ピン留め絵文字1"
   pinned2: "ピン留め絵文字2"

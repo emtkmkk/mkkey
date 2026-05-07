@@ -1242,6 +1242,12 @@ export const defaultStore = markRaw(
                         createdAt: "2024/7/12",
                         page: "reaction",
                 },
+                enableEmojiPickerAddedOrderCategory: {
+                        where: "account",
+                        default: false,
+                        createdAt: "2026/5/7",
+                        page: "reaction",
+                },
                 emojiPickerOrder: {
                         where: "account",
                         default: [

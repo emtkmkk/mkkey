@@ -1,6 +1,7 @@
 <template>
   <div class="_formRoot">
     <FormSwitch v-model="enabled" class="_formBlock">{{ i18n.ts.enableEmojiPickerOrder }}</FormSwitch>
+    <FormSwitch v-model="enableAddedOrderCategory" class="_formBlock">{{ i18n.ts.enableEmojiPickerAddedOrderCategory }}</FormSwitch>
     <FormSlot>
       <template #label>{{ i18n.ts.emojiPickerOrder }}</template>
       <MkContainer :showHeader="false">
@@ -18,7 +19,7 @@
               <button class="_button" :class="$style.itemHandle">
                 <i class="ph-bold ph-list ph-lg"></i>
               </button>
-              <span :class="$style.itemText">{{ i18n.ts._emojiPickerSections[element.type] }}</span>
+              <span :class="$style.itemText">{{ getSectionLabel(element.type) }}</span>
               <button class="_button" :class="$style.itemRemove" @click="removeItem(index)">
                 <i class="ph-bold ph-lg ph-x"></i>
               </button>
@@ -64,6 +65,14 @@ const orderItemDef = {
 };
 
 const enabled = computed(defaultStore.makeGetterSetter('enableEmojiPickerOrder'));
+const enableAddedOrderCategory = computed(defaultStore.makeGetterSetter('enableEmojiPickerAddedOrderCategory'));
+
+function getSectionLabel(type: string): string {
+  if (type === 'uncategorized' && enableAddedOrderCategory.value) {
+    return i18n.ts.addedOrderCategory;
+  }
+  return i18n.ts._emojiPickerSections[type];
+}
 
 const items = ref(
   defaultStore.state.emojiPickerOrder

@@ -499,6 +499,7 @@
                                         <XSection
                                                 key="custom:recentlyAddEmojis"
                                                 data-section="recentlyAddEmojis"
+                                                v-if="!addedOrderCategoryEnabled"
                                                 :initial-shown="false"
 						:emojis="
 							emojisForGeneralListing
@@ -576,7 +577,18 @@
 						>
 
 						<template v-if="!$store.state.nullCategoryHidden">
-							<template v-once v-if="$store.state.japanCategory">
+							<template v-if="addedOrderCategoryEnabled">
+								<XSection
+									v-for="(section, index) in addedOrderEmojiSections"
+									:key="'custom:addedOrder:' + index"
+									data-section="uncategorized"
+									:initial-shown="false"
+									:emojis="section.emojis"
+									@chosen="chosen"
+								>{{ section.title }}</XSection>
+							</template>
+							<template v-else>
+								<template v-once v-if="$store.state.japanCategory">
                                                                 <XSection
                                                                         key="custom:null/A"
                                                                         data-section="uncategorized"
@@ -948,7 +960,7 @@
 									>{{ "未設定 / その他" }}</XSection
 								>
 							</template>
-							<template v-once v-else>
+								<template v-once v-else>
 								<XSection
 									key="custom:null/A-D" data-section="uncategorized"
 									:initial-shown="false"
@@ -1084,6 +1096,7 @@
 									@chosen="chosen"
 									>{{ "未設定 / その他" }}</XSection
 								>
+								</template>
 							</template>
 						</template>
 					</template>
@@ -1313,6 +1326,81 @@ function isSearchExactOnly(emoji: { host?: string | null; usageVisibility?: stri
 const emojisForGeneralListing = computed(() =>
 	(customEmojis.value ?? []).filter((e) => !isSearchExactOnly(e)),
 );
+const addedOrderCategoryEnabled = computed(
+	() => defaultStore.state.enableEmojiPickerAddedOrderCategory,
+);
+
+interface AddedOrderEmojiSection {
+	title: string;
+	emojis: string[];
+}
+
+/**
+ * 追加順カテゴリの見出し文字列を作る。
+ *
+ * @remarks
+ * NOTE: 同一月の場合は期間表示にせず、単月表記にする。
+ */
+function buildAddedOrderRangeLabel(startDate: Date, endDate: Date): string {
+	const startMonth = `${startDate.getFullYear()}年${startDate.getMonth() + 1}月`;
+	const endMonth = `${endDate.getFullYear()}年${endDate.getMonth() + 1}月`;
+	return startMonth === endMonth ? startMonth : `${startMonth}～${endMonth}`;
+}
+
+/**
+ * 重複見出しに `(1)`, `(2)` の連番を付与する。
+ *
+ * @remarks
+ * NOTE: 表示順の上から連番を振るため、同じ見出しが3件なら `(1)`, `(2)`, `(3)` になる。
+ */
+function withAddedOrderDuplicateIndex(labels: string[]): string[] {
+	const totals = new Map<string, number>();
+	const used = new Map<string, number>();
+	for (const label of labels) {
+		totals.set(label, (totals.get(label) ?? 0) + 1);
+	}
+	return labels.map((label) => {
+		const total = totals.get(label) ?? 0;
+		if (total <= 1) return label;
+		const current = (used.get(label) ?? 0) + 1;
+		used.set(label, current);
+		return `${label} (${current})`;
+	});
+}
+
+/** 追加順カテゴリ表示で使う、カスタム絵文字の100件区切りセクション。 */
+const addedOrderEmojiSections = computed<AddedOrderEmojiSection[]>(() => {
+	const visibleCustomEmojis = emojisForGeneralListing.value.filter(
+		(e) =>
+			(e.usageVisibility ?? "public") === "public" ||
+			e.usageVisibility === "user",
+	);
+	const sorted = visibleCustomEmojis
+		.slice()
+		.sort(
+			(a, b) =>
+				new Date(b.createdAt ?? 0).valueOf() -
+				new Date(a.createdAt ?? 0).valueOf(),
+		);
+	const groups: { label: string; emojis: string[] }[] = [];
+	for (let i = 0; i < sorted.length; i += 100) {
+		const chunk = sorted.slice(i, i + 100);
+		if (!chunk.length) continue;
+		const newest = new Date(chunk[0].createdAt ?? 0);
+		const oldest = new Date(chunk[chunk.length - 1].createdAt ?? 0);
+		groups.push({
+			label: buildAddedOrderRangeLabel(newest, oldest),
+			emojis: chunk.map((emoji) => `:${emoji.name}:`),
+		});
+	}
+	const indexedLabels = withAddedOrderDuplicateIndex(
+		groups.map((group) => group.label),
+	);
+	return groups.map((group, index) => ({
+		title: indexedLabels[index],
+		emojis: group.emojis,
+	}));
+});
 
 const customEmojiCategories = computed(() =>
 	emojiCategories.value.filter(

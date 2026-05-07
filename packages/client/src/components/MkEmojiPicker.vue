@@ -499,7 +499,6 @@
                                         <XSection
                                                 key="custom:recentlyAddEmojis"
                                                 data-section="recentlyAddEmojis"
-                                                v-if="!addedOrderCategoryEnabled"
                                                 :initial-shown="false"
 						:emojis="
 							emojisForGeneralListing

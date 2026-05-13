@@ -82,7 +82,8 @@ export function getNoteMenu(props: {
 		os.post({
 			airReply: appearNote,
 			initialVisibility: v,
-			initialLocalOnly: appearNote.user.host == null,
+			// 空リプのローカル限定は、元ノートがローカル限定のときだけ ON（ローカル相手の公開ノートでは既定に合わせる）
+			initialLocalOnly: appearNote.localOnly === true,
 			key: appearNote.id,
 		});
 	}
@@ -455,7 +456,7 @@ export function getNoteMenu(props: {
 							action: airReply,
 						}
 					: undefined,
-	
+
 				defaultStore.state.firstPostButtonVisibilityForce &&
 				![
 					defaultStore.state.defaultNoteVisibility,
@@ -485,7 +486,7 @@ export function getNoteMenu(props: {
 				},
 				{
 					type: "parent" as const,
-					text: i18n.ts.infoAndShare,	
+					text: i18n.ts.infoAndShare,
 					icon: "ph-share-network ph-bold ph-lg",
 					children: [
 						...(/[\*<>$`\[\]_~:\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]|\\\(|\\\)/.test(
@@ -733,7 +734,7 @@ export function getNoteMenu(props: {
 							action: airReply,
 						}
 					: undefined,
-	
+
 				defaultStore.state.firstPostButtonVisibilityForce &&
 				![
 					defaultStore.state.defaultNoteVisibility,

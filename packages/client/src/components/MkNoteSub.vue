@@ -618,7 +618,8 @@ function airReply(viaKeyboard = false): void {
 	os.post({
 		airReply: appearNote,
 		initialVisibility: v,
-		initialLocalOnly: appearNote.user.host == null,
+		// 空リプのローカル限定は、元ノートがローカル限定のときだけ ON（ローカル相手の公開ノートでは既定に合わせる）
+		initialLocalOnly: appearNote.localOnly === true,
 		key: appearNote.id,
 		animation: !viaKeyboard,
 	}).then(() => {

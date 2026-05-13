@@ -116,6 +116,14 @@
 						@click="airReply()"
 					>
 						<i class="ph-paper-plane-tilt ph-bold ph-lg"></i>
+						<template
+							v-if="
+								hideToolbarNormalReply(appearNote) &&
+								appearNote.repliesCount > 0
+							"
+						>
+							<p class="count">{{ appearNote.repliesCount }}</p>
+						</template>
 					</button>
 					<button
 						v-if="!hideToolbarNormalReply(appearNote)"
@@ -278,7 +286,7 @@
  * @remarks
  * - メインノート (`MkNote.vue`) と同等のリアクション表示条件を維持する。
  * - ★ボタン周辺のツールチップは子コンポーネント側に委譲し、重複登録を避ける。
- * - `hideToolbarNormalReply` で返信ボタンを隠す（誤爆防止対象、または常にメニュー返信）。引用別ボタンは `effectiveSeparateRenoteQuoteForNote` で実効オフにしうる。
+ * - `hideToolbarNormalReply` で返信ボタンを隠す（誤爆防止対象、または常にメニュー返信）。空リプをツールバーに出しているときは返信数を空リプボタン直後へ出し、返信ボタン非表示でも件数が見えるようにする。引用別ボタンは `effectiveSeparateRenoteQuoteForNote` で実効オフにしうる。
  *
  * @internal
  */

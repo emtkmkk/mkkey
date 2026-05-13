@@ -43,13 +43,13 @@ export function toolbarAirReplyAppliesToNote(
 }
 
 /**
- * 非フォロワー向け誤爆防止の対象ノートか（返信非表示・引用の別ボタン実効オフの共通条件）。
+ * 非フォロワー向け誤爆防止の対象ノートか（返信非表示・ツールバー空リプ表示・引用の別ボタン実効オフの共通条件）。
  *
  * @param note - 対象ノート（通常は `appearNote`）
  * @returns 誤爆防止レイアウトを適用するなら true
  *
  * @remarks
- * 返信を隠すか／引用を RT に戻すかは同じ判定に揃え、条件の食い違いを防ぐ。
+ * `toolbarAirReply` とは無関係。返信を隠すか／空リプを出すか／引用を RT に戻すかは同じ判定に揃える。
  *
  * @public
  */
@@ -57,7 +57,6 @@ export function strangerMisclickGuardActiveForNote(
 	note: misskey.entities.Note,
 ): boolean {
 	if (!defaultStore.state.strangerReplyMisclickGuard) return false;
-	if (!defaultStore.state.toolbarAirReply) return false;
 	if (!$i || $i.id === note.userId) return false;
 	if (!toolbarAirReplyAppliesToNote(note)) return false;
 	if (note.user?.isFollowed !== false) return false;
@@ -107,10 +106,15 @@ export function effectiveSeparateRenoteQuoteForNote(
  * @param note - 対象ノート
  * @returns 表示するなら true
  *
+ * @remarks
+ * - `toolbarAirReply` がオンのとき常時表示。
+ * - 誤爆防止が対象のノートでは `toolbarAirReply` なしでも表示し、返信非表示時の位置ズレを防ぐ。
+ *
  * @public
  */
 export function showToolbarAirReplyForNote(note: misskey.entities.Note): boolean {
-	if (!$i || !defaultStore.state.toolbarAirReply) return false;
-	if ($i.id === note.userId) return false;
-	return toolbarAirReplyAppliesToNote(note);
+	if (!$i || $i.id === note.userId) return false;
+	if (!toolbarAirReplyAppliesToNote(note)) return false;
+	if (defaultStore.state.toolbarAirReply) return true;
+	return strangerMisclickGuardActiveForNote(note);
 }

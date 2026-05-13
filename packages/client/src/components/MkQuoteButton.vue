@@ -22,14 +22,15 @@
  * @public
  */
 import { computed } from "vue";
-import type { Note } from "calckey-js/built/entities";
+import type * as misskey from "calckey-js";
 import { pleaseLogin } from "@/scripts/please-login";
 import * as os from "@/os";
 import { $i } from "@/account";
+import { i18n } from "@/i18n";
 import { effectiveSeparateRenoteQuoteForNote } from "@/scripts/stranger-air-reply-toolbar";
 
 const props = defineProps<{
-	note: Note;
+	note: misskey.entities.Note;
 }>();
 
 const canRenote = computed(

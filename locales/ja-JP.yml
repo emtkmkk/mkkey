@@ -409,6 +409,7 @@ dataSaverDisabledBanner: "データセーバー時バナーを読み込まない
 enabledAirReply: "投稿のメニューに「空リプ」を追加する"
 toolbarAirReply: "返信ボタンの左に空リプボタンを追加する"
 strangerReplyMisclickGuard: "非フォロワー向け誤爆防止"
+alwaysReplyInNoteMenu: "常に返信を投稿メニューから行う"
 recentRenoteHidden: "1時間以内に表示したRTを畳む"
 reactedRenoteHidden: "リアクション済のRTを畳む"
 showLocalTimelineBelowPublic: "LTLに公開投稿以外の投稿も表示する"

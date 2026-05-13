@@ -1484,6 +1484,12 @@ export const defaultStore = markRaw(
 			createdAt: "2026/5/13",
 			page: "behavior",
 		},
+		alwaysReplyInNoteMenu: {
+			where: "account",
+			default: false,
+			createdAt: "2026/5/13",
+			page: "behavior",
+		},
 		hiddenReactionNumber: {
 			where: "device",
 			default: false,

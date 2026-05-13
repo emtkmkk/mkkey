@@ -73,6 +73,14 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormSwitch
+				v-model="alwaysReplyInNoteMenu"
+				class="_formBlock"
+				>{{ i18n.ts.alwaysReplyInNoteMenu
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="enabledAirReply" class="_formBlock"
 				>{{ i18n.ts.enabledAirReply
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -312,6 +320,7 @@
  *
  * @remarks
  * 非フォロワー誤爆防止は既定オフ。オンにすると空リプツールバー利用時、自分未フォローの相手では返信を隠し、引用の別ボタンを実効オフにして RT メニューへ戻す。
+ * 「常に返信をメニュー」はオン時、ログイン中は全ノートでツールバー返信を隠す。
  *
  * @public
  */
@@ -429,6 +438,9 @@ const toolbarAirReply = computed(
 );
 const strangerReplyMisclickGuard = computed(
 	defaultStore.makeGetterSetter("strangerReplyMisclickGuard")
+);
+const alwaysReplyInNoteMenu = computed(
+	defaultStore.makeGetterSetter("alwaysReplyInNoteMenu")
 );
 const noteReactionMenu = $computed(
 	defaultStore.makeGetterSetter("noteReactionMenu")

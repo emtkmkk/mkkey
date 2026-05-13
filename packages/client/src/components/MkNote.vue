@@ -435,7 +435,7 @@
  * @remarks
  * - ★ボタン、リアクション追加ボタン、取り消しボタンの表示条件をここで統合する。
  * - multi / 非 multi の違いにより、同じ isMaxReacted でも UI の意味が変わるため条件を分けて扱う。
- * - 非フォロワー誤爆防止時は `hideToolbarNormalReply` で返信を隠し、引用別ボタンは `effectiveSeparateRenoteQuoteForNote` で実効オフにしうる。
+ * - `hideToolbarNormalReply` で返信を隠す（誤爆防止対象、または常にメニュー返信）。引用別ボタンは `effectiveSeparateRenoteQuoteForNote` で実効オフにしうる。
  *
  * @internal
  */

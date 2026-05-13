@@ -9,6 +9,7 @@
  * - `toolbarAirReply` と誤爆防止が両方オンのときだけ「空リプ優先で通常返信を隠す」。
  * - `user.isFollowed === false` のときのみ適用。`null` / `undefined` は未確定として扱わない。
  * - 上記が成り立つノートでは、外観の「引用を別ボタン」がオンでも実効的にオフにし、引用は RT メニューへ戻す。
+ * - `alwaysReplyInNoteMenu` がオンのときは、ログイン中すべてのノートでツールバー返信を隠す（メニューから返信）。
  *
  * @public
  */
@@ -64,17 +65,20 @@ export function strangerMisclickGuardActiveForNote(
 }
 
 /**
- * 誤爆防止のため、ツールバーから通常の返信ボタンを隠すか。
+ * ツールバーから通常の返信ボタンを隠すか。
  *
  * @param note - 対象ノート（`appearNote`）
  * @returns 隠すなら true
  *
  * @remarks
- * NOTE: メニューに返信を出す条件やキーボードショートカット抑止にも使う。
+ * - 非フォロワー誤爆防止が対象のノート、または `alwaysReplyInNoteMenu` がオンのとき真。
+ * - NOTE: メニューに返信を出す条件やキーボードショートカット抑止にも使う。
  *
  * @public
  */
 export function hideToolbarNormalReply(note: misskey.entities.Note): boolean {
+	if (!$i) return false;
+	if (defaultStore.state.alwaysReplyInNoteMenu) return true;
 	return strangerMisclickGuardActiveForNote(note);
 }
 

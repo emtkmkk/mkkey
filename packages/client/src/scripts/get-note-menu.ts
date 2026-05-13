@@ -4,7 +4,7 @@
  * ノートのコンテキストメニュー（クリップ解除・削除・翻訳など）を組み立てるモジュール。
  *
  * @remarks
- * `strangerReplyMisclickGuard` がオンでツールバー返信が隠れているときは `normalReply` をメニューに載せる。誤爆防止対象では引用は RT メニューから開く。
+ * `hideToolbarNormalReply` が真のとき（誤爆防止対象、または常にメニュー返信）に `normalReply` をメニューに載せる。誤爆防止対象では引用は RT メニューから開く。
  *
  * @public
  */

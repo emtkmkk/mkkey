@@ -92,6 +92,7 @@
   "enabledAirReply": "Add \"Empty reply\" to post menu",
   "toolbarAirReply": "Add empty reply button to the left of reply button",
   "strangerReplyMisclickGuard": "Non-follower mis-click guard",
+  "alwaysReplyInNoteMenu": "Always open reply from the post menu (no reply button on toolbar)",
   "recentRenoteHidden": "Collapse boosts shown within the last hour",
   "reactedRenoteHidden": "Collapse reacted boosts",
   "showLocalTimelineBelowPublic": "Show non-public posts on LTL",

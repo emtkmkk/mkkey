@@ -278,7 +278,7 @@
  * @remarks
  * - メインノート (`MkNote.vue`) と同等のリアクション表示条件を維持する。
  * - ★ボタン周辺のツールチップは子コンポーネント側に委譲し、重複登録を避ける。
- * - 非フォロワー誤爆防止時は `hideToolbarNormalReply` で返信ボタンを隠し、引用別ボタンは `effectiveSeparateRenoteQuoteForNote` で実効オフにしうる。
+ * - `hideToolbarNormalReply` で返信ボタンを隠す（誤爆防止対象、または常にメニュー返信）。引用別ボタンは `effectiveSeparateRenoteQuoteForNote` で実効オフにしうる。
  *
  * @internal
  */

@@ -6,9 +6,11 @@
  *
  * @remarks
  * - `strangerReplyMisclickGuard` がオフのときは誤爆防止を一切適用しない（既定）。
- * - `toolbarAirReply` と誤爆防止が両方オンのときだけ「空リプ優先で通常返信を隠す」。
- * - `user.isFollowed === false` のときのみ適用。`null` / `undefined` は未確定として扱わない。
- * - 上記が成り立つノートでは、外観の「引用を別ボタン」がオンでも実効的にオフにし、引用は RT メニューへ戻す。
+ * - 返信・空リプは `strangerMisclickGuardActiveForNote`（公開範囲は `toolbarAirReplyAppliesToNote` に従う）。
+ * - RT／引用の分離は `strangerMisclickSuppressesSeparateRenoteQuoteForNote` でのみ抑制し、
+ *   投稿者が閲覧者をフォローしていない（`user.isFollowed === false`）他人ノートに限定する（公開範囲ゲートは使わない）。
+ * - 公開範囲が `specified`（UI 上のダイレクト）のノートは誤爆防止の対象外とする。
+ * - `user.isFollowed === false` の解釈は返信側も同じ。`null` / `undefined` は厳密等価で誤爆対象にしない。
  * - `alwaysReplyInNoteMenu` がオンのときは、ログイン中すべてのノートでツールバー返信を隠す（メニューから返信）。
  *
  * @public
@@ -43,13 +45,15 @@ export function toolbarAirReplyAppliesToNote(
 }
 
 /**
- * 非フォロワー向け誤爆防止の対象ノートか（返信非表示・ツールバー空リプ表示・引用の別ボタン実効オフの共通条件）。
+ * 非フォロワー向け誤爆防止の対象ノートか（返信非表示・ツールバー空リプ表示の共通条件）。
  *
  * @param note - 対象ノート（通常は `appearNote`）
  * @returns 誤爆防止レイアウトを適用するなら true
  *
  * @remarks
- * `toolbarAirReply` とは無関係。返信を隠すか／空リプを出すか／引用を RT に戻すかは同じ判定に揃える。
+ * - `toolbarAirReply` とは無関係。返信を隠すか／空リプを出すかはこの判定に揃える。
+ * - 引用の RT／分離は {@link strangerMisclickSuppressesSeparateRenoteQuoteForNote} を使う（公開範囲ゲートを掛けない）。
+ * - `visibility === 'specified'`（ダイレクト相当）は対象外。
  *
  * @public
  */
@@ -57,10 +61,37 @@ export function strangerMisclickGuardActiveForNote(
 	note: misskey.entities.Note,
 ): boolean {
 	if (!defaultStore.state.strangerReplyMisclickGuard) return false;
+	// ダイレクト（specified）では誤爆防止を掛けない（DM 的な文脈での操作をそのままにする）。
+	if (note.visibility === "specified") return false;
 	if (!$i || $i.id === note.userId) return false;
 	if (!toolbarAirReplyAppliesToNote(note)) return false;
 	if (note.user?.isFollowed !== false) return false;
 	return true;
+}
+
+/**
+ * 非フォロワー誤爆防止により「引用を別ボタン」を実効オフにするか。
+ *
+ * @param note - 対象ノート（通常は `appearNote`）
+ * @returns 分離を抑止し引用を RT メニューへ寄せるなら true
+ *
+ * @remarks
+ * - 投稿者が閲覧者をフォローしていない（`user.isFollowed === false`）ときのみ真。未確定（undefined 等）は偽。
+ * - 本人のノートは対象外。`note.user` が無いときは偽（分離を維持）。
+ * - `visibility === 'specified'`（ダイレクト相当）は対象外。
+ * - `toolbarAirReplyAppliesToNote` は使わない（返信用の公開範囲ゲートと引用 UI を切り離す）。
+ *
+ * @public
+ */
+export function strangerMisclickSuppressesSeparateRenoteQuoteForNote(
+	note: misskey.entities.Note,
+): boolean {
+	if (!defaultStore.state.strangerReplyMisclickGuard) return false;
+	// ダイレクト（specified）では引用分離の抑制もしない。
+	if (note.visibility === "specified") return false;
+	if (!$i || note.userId === $i.id) return false;
+	if (!note.user) return false;
+	return note.user.isFollowed === false;
 }
 
 /**
@@ -88,7 +119,7 @@ export function hideToolbarNormalReply(note: misskey.entities.Note): boolean {
  * @returns 別ボタンを出すなら true（RT メニューから引用を除く）
  *
  * @remarks
- * 外観で `seperateRenoteQuote` がオンのとき、誤爆防止対象ノートでは一時的に false を返し引用を RT メニューへ戻す。
+ * 外観で `seperateRenoteQuote` がオンのとき、{@link strangerMisclickSuppressesSeparateRenoteQuoteForNote} が真なら一時的に false を返し引用を RT メニューへ戻す。
  *
  * @public
  */
@@ -96,7 +127,7 @@ export function effectiveSeparateRenoteQuoteForNote(
 	note: misskey.entities.Note,
 ): boolean {
 	if (!defaultStore.state.seperateRenoteQuote) return false;
-	if (strangerMisclickGuardActiveForNote(note)) return false;
+	if (strangerMisclickSuppressesSeparateRenoteQuoteForNote(note)) return false;
 	return true;
 }
 

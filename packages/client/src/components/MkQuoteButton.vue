@@ -16,8 +16,8 @@
  * リノートとは別に「引用」専用ボタンを出すコンポーネント。
  *
  * @remarks
- * 外観の `seperateRenoteQuote` がオンのとき表示するが、非フォロワー誤爆防止対象ノートでは
- * `effectiveSeparateRenoteQuoteForNote` により非表示にし、引用は RT メニューから開く。
+ * 外観の `seperateRenoteQuote` がオンのとき表示するが、非フォロワー誤爆防止がオンかつ
+ * 投稿者が閲覧者をフォローしていない他人ノートでは `effectiveSeparateRenoteQuoteForNote` により非表示にし、引用は RT メニューから開く。
  *
  * @public
  */

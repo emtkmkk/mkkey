@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * ノート等のリアクション（絵文字）を右クリックしたときのポップアップメニューを組み立てる。
+ * コピー・ピン留め・カスタム絵文字詳細、およびソフト絵文字ミュート（canonical 行の追加／完全一致削除）を扱う。
+ *
+ * @remarks
+ * NOTE: ソフトミュートの解除は {@link getMenuReactionMuteLine} が返す文字列と `===` 一致する行だけを削除する（手動の別行は触らない）。
+ * NOTE: 「絵文字ミュート解除」はその canonical が `reactionMutedWords` に存在するときのみ表示する。
+ *
+ * @public
+ */
+
 import { defaultStore } from "@/store";
 import { host } from "@/config";
 import * as os from "@/os";
@@ -9,6 +22,34 @@ import { $i } from "@/account";
 import MkCustomEmojiDetailedDialog from "@/components/MkCustomEmojiDetailedDialog.vue";
 import * as sound from "@/scripts/sound.js";
 import { requestEmojiImportFlow } from "@/scripts/request-emoji-import";
+
+/**
+ * リアクションメニューからソフト絵文字ミュートに追加／削除するときの 1 行（`reactionMutedWords` の要素）。
+ * ミュート登録と解除で同一の戻り値を使い、解除時はこの文字列と完全一致する行のみを削除する。
+ *
+ * @param reaction API 上のリアクションキー（Unicode または `:name@host:`）
+ * @param emojiName 先頭のコロン・ホストを除いた名前部分（Unicode では実質リアクション文字列）
+ * @param isCustom カスタム絵文字（`:…:` 形式）なら true
+ * @returns 設定の「絵文字ミュート（ソフト）」にそのまま載せる 1 行
+ *
+ * @remarks
+ * NOTE: カスタムで名前が `\\w+` のときは `:name:`（設定画面の完全一致寄りの説明に合わせる）。それ以外のカスタム名は部分一致用に名前のみ。Unicode は `reaction` をそのまま使う。
+ *
+ * @internal
+ */
+function getMenuReactionMuteLine(
+	reaction: string,
+	emojiName: string,
+	isCustom: boolean,
+): string {
+	if (isCustom) {
+		if (/^\w+$/.test(emojiName)) {
+			return `:${emojiName}:`;
+		}
+		return emojiName;
+	}
+	return reaction;
+}
 
 const createReaction = ({
 	noteId,
@@ -32,6 +73,17 @@ const rippleEffect = (el: HTMLElement | null | undefined): void => {
 	os.popup(MkRippleEffect, { x, y }, {}, "end");
 };
 
+/**
+ * リアクション（絵文字）のコンテキストメニューを開く。
+ *
+ * @param reaction 対象のリアクションキー
+ * @param note 添付ノート（無い場合はリアクション操作のみ省略）
+ * @param canToggle リアクションの付け外しを許可するか
+ * @param multi 複数リアクション対応ノートか
+ * @param reactButton メニューのアンカーとなるボタン要素
+ *
+ * @public
+ */
 export async function openReactionMenu_(
 	reaction,
 	note,
@@ -371,6 +423,63 @@ export async function openReactionMenu_(
 			},
 		});
 	}
+
+	// #region リアクションメニュー末尾のソフト絵文字ミュート
+	// アカウント設定 reactionMutedWords に、canonical 1 行を追加するか、完全一致でその行だけを削除する。
+	if ($i != null && emojiName) {
+		const canonical = getMenuReactionMuteLine(reaction, emojiName, isCustom);
+		const hasCanonical = defaultStore.state.reactionMutedWords.some(
+			(w) => w === canonical,
+		);
+
+		menu.push(null);
+
+		if (hasCanonical) {
+			menu.push({
+				text: i18n.ts.unmuteEmojiReaction,
+				icon: "ph-speaker-high ph-bold ph-lg",
+				action: (): void => {
+					void (async () => {
+						const { canceled } = await os.confirm({
+							type: "question",
+							text: i18n.t("unmuteEmojiReactionConfirm", {
+								name: emojiName,
+							}),
+						});
+						if (canceled) return;
+
+						const cur = defaultStore.state.reactionMutedWords;
+						const next = cur.filter((w) => w !== canonical);
+						defaultStore.set("reactionMutedWords", next);
+						os.success();
+					})();
+				},
+			});
+		} else {
+			menu.push({
+				text: i18n.ts.muteEmojiReaction,
+				icon: "ph-speaker-slash ph-bold ph-lg",
+				action: (): void => {
+					void (async () => {
+						const { canceled } = await os.confirm({
+							type: "question",
+							text: i18n.t("muteEmojiReactionConfirm", {
+								name: emojiName,
+							}),
+						});
+						if (canceled) return;
+
+						const prev = defaultStore.state.reactionMutedWords;
+						if (prev.some((w) => w === canonical)) return;
+
+						defaultStore.set("reactionMutedWords", [...prev, canonical]);
+						os.success();
+					})();
+				},
+			});
+		}
+	}
+	// #endregion
 
 	os.popupMenu(menu, reactButton);
 }

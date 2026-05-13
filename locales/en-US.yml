@@ -141,6 +141,10 @@ pinnedNote: "Pinned post"
 pinned: "Pin to profile"
 doReact: "React"
 doUnreact: "Remove reaction"
+muteEmojiReaction: "Mute emoji"
+unmuteEmojiReaction: "Unmute emoji"
+muteEmojiReactionConfirm: 'Add "{name}" to soft emoji mutes?'
+unmuteEmojiReactionConfirm: 'Remove "{name}" from soft emoji mutes?'
 plusPinnedEmoji: "Add to deck"
 you: "You"
 clickToShow: "Click to show"

@@ -1478,6 +1478,12 @@ export const defaultStore = markRaw(
 			createdAt: "2024/2/13",
 			page: "behavior",
 		},
+		strangerReplyMisclickGuard: {
+			where: "account",
+			default: false,
+			createdAt: "2026/5/13",
+			page: "behavior",
+		},
 		hiddenReactionNumber: {
 			where: "device",
 			default: false,

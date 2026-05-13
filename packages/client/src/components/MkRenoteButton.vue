@@ -16,6 +16,16 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * リノート操作のボタンと、公開範囲別のリノート／引用メニューを提供する。
+ *
+ * @remarks
+ * `effectiveSeparateRenoteQuoteForNote` がオンのときはメニューから引用を除き、別ボタン側に任せる。
+ *
+ * @public
+ */
 import { computed, ref } from "vue";
 import type * as misskey from "calckey-js";
 import Ripple from "@/components/MkRipple.vue";
@@ -26,6 +36,7 @@ import { $i } from "@/account";
 import { useTooltip } from "@/scripts/use-tooltip";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
+import { effectiveSeparateRenoteQuoteForNote } from "@/scripts/stranger-air-reply-toolbar";
 
 const props = defineProps<{
 	note: misskey.entities.Note;
@@ -225,7 +236,7 @@ const renote = async (viaKeyboard = false, ev?: MouseEvent) => {
 		});
 	}
 
-	if (!defaultStore.state.seperateRenoteQuote) {
+	if (!effectiveSeparateRenoteQuoteForNote(props.note)) {
 		buttonActions.push({
 			text: i18n.ts.quote,
 			icon: "ph-quotes ph-bold ph-lg",

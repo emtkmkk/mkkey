@@ -110,14 +110,7 @@
 						<i class="ph-stack ph-bold ph-lg"></i>
 					</button>
 					<button
-						v-if="
-							$i &&
-							defaultStore.state.toolbarAirReply &&
-							$i.id !== appearNote.userId &&
-							(appearNote.visibility !== 'specified' ||
-								(!appearNote?.user.host &&
-									appearNote?.ccUserIdsCount))
-						"
+						v-if="showToolbarAirReplyForNote(appearNote)"
 						v-tooltip.bottom="i18n.ts.airReply"
 						class="button _button"
 						@click="airReply()"
@@ -125,6 +118,7 @@
 						<i class="ph-paper-plane-tilt ph-bold ph-lg"></i>
 					</button>
 					<button
+						v-if="!hideToolbarNormalReply(appearNote)"
 						v-tooltip.noDelay.bottom="i18n.ts.reply"
 						class="button _button"
 						@click="reply()"
@@ -284,6 +278,7 @@
  * @remarks
  * - メインノート (`MkNote.vue`) と同等のリアクション表示条件を維持する。
  * - ★ボタン周辺のツールチップは子コンポーネント側に委譲し、重複登録を避ける。
+ * - 非フォロワー誤爆防止時は `hideToolbarNormalReply` で返信ボタンを隠し、引用別ボタンは `effectiveSeparateRenoteQuoteForNote` で実効オフにしうる。
  *
  * @internal
  */
@@ -317,6 +312,10 @@ import * as sound from "@/scripts/sound.js";
 import { normalizeReactionName } from "@/scripts/reaction-utils";
 import { useTooltip } from "@/scripts/use-tooltip";
 import { useReactionCountViewModel } from "@/scripts/use-reaction-count-view-model";
+import {
+	hideToolbarNormalReply,
+	showToolbarAirReplyForNote,
+} from "@/scripts/stranger-air-reply-toolbar";
 
 const router = useRouter();
 

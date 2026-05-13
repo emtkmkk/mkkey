@@ -211,14 +211,7 @@
 						<i class="ph-stack ph-bold ph-lg"></i>
                                         </button>
                                         <button
-						v-if="
-							$i &&
-							defaultStore.state.toolbarAirReply &&
-							$i.id !== appearNote.userId &&
-							(appearNote.visibility !== 'specified' ||
-								(!appearNote?.user.host &&
-									appearNote?.ccUserIdsCount))
-						"
+						v-if="showToolbarAirReplyForNote(appearNote)"
 						v-tooltip.bottom="i18n.ts.airReply"
 						class="button _button"
 						@click="airReply()"
@@ -226,6 +219,7 @@
 						<i class="ph-paper-plane-tilt ph-bold ph-lg"></i>
 					</button>
 					<button
+						v-if="!hideToolbarNormalReply(appearNote)"
 						v-tooltip.bottom="i18n.ts.reply"
 						class="button _button"
 						@click="reply()"
@@ -441,6 +435,7 @@
  * @remarks
  * - ★ボタン、リアクション追加ボタン、取り消しボタンの表示条件をここで統合する。
  * - multi / 非 multi の違いにより、同じ isMaxReacted でも UI の意味が変わるため条件を分けて扱う。
+ * - 非フォロワー誤爆防止時は `hideToolbarNormalReply` で返信を隠し、引用別ボタンは `effectiveSeparateRenoteQuoteForNote` で実効オフにしうる。
  *
  * @internal
  */
@@ -492,6 +487,10 @@ import { getNoteSummary } from "@/scripts/get-note-summary";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
 import * as sound from "@/scripts/sound.js";
 import { normalizeReactionName } from "@/scripts/reaction-utils";
+import {
+	hideToolbarNormalReply,
+	showToolbarAirReplyForNote,
+} from "@/scripts/stranger-air-reply-toolbar";
 
 const router = useRouter();
 
@@ -772,7 +771,11 @@ const isRecentRenote = $computed(() => {
 const summaryRenote = ref(isReactedRenote || isRecentRenote);
 
 const keymap = {
-	r: () => reply(true),
+	r: () => {
+		// 誤爆防止で返信ボタンを隠している間は R キーでも返信を開かない（メニューから意図的に操作する）
+		if (hideToolbarNormalReply(appearNote)) return;
+		reply(true);
+	},
 	"e|a|plus": () => react(true),
 	q: () => renoteButton.value.renote(true),
 	"up|k": focusBefore,

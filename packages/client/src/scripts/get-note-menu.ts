@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * ノートのコンテキストメニュー（クリップ解除・削除・翻訳など）を組み立てるモジュール。
+ *
+ * @remarks
+ * `strangerReplyMisclickGuard` がオンでツールバー返信が隠れているときは `normalReply` をメニューに載せる。誤爆防止対象では引用は RT メニューから開く。
+ *
+ * @public
+ */
 import { defineAsyncComponent, Ref, inject } from "vue";
 import * as misskey from "calckey-js";
 import { pleaseLogin } from "./please-login";
@@ -10,6 +20,7 @@ import { url } from "@/config";
 import { noteActions } from "@/store";
 import { shareAvailable } from "@/scripts/share-available";
 import { defaultStore } from "@/store";
+import { hideToolbarNormalReply } from "@/scripts/stranger-air-reply-toolbar";
 
 export function getNoteMenu(props: {
 	note: misskey.entities.Note;
@@ -85,6 +96,14 @@ export function getNoteMenu(props: {
 			// 空リプのローカル限定は、元ノートがローカル限定のときだけ ON（ローカル相手の公開ノートでは既定に合わせる）
 			initialLocalOnly: appearNote.localOnly === true,
 			key: appearNote.id,
+		});
+	}
+
+	/** ツールバーから返信が隠れているとき用の通常返信（誤爆防止の逃げ道） */
+	function normalReply(): void {
+		pleaseLogin();
+		os.post({
+			reply: appearNote,
 		});
 	}
 
@@ -447,6 +466,15 @@ export function getNoteMenu(props: {
 							null,
 						]
 					: []),
+				...(hideToolbarNormalReply(appearNote)
+					? [
+							{
+								icon: "ph-arrow-u-up-left ph-bold ph-lg",
+								text: i18n.ts.reply,
+								action: normalReply,
+							},
+						]
+					: []),
 				defaultStore.state.enabledAirReply &&
 				(appearNote.visibility !== "specified" ||
 					(!appearNote?.user.host && appearNote?.ccUserIdsCount))
@@ -723,6 +751,15 @@ export function getNoteMenu(props: {
 								action: unclip,
 							},
 							null,
+						]
+					: []),
+				...(hideToolbarNormalReply(appearNote)
+					? [
+							{
+								icon: "ph-arrow-u-up-left ph-bold ph-lg",
+								text: i18n.ts.reply,
+								action: normalReply,
+							},
 						]
 					: []),
 				defaultStore.state.enabledAirReply &&

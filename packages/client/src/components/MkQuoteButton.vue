@@ -1,6 +1,6 @@
 <template>
 	<button
-		v-if="canRenote && $store.state.seperateRenoteQuote"
+		v-if="canRenote && showSeparateQuoteButton"
 		v-tooltip.bottom="i18n.ts.quote"
 		class="eddddedb _button"
 		@click="quote()"
@@ -10,12 +10,23 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * リノートとは別に「引用」専用ボタンを出すコンポーネント。
+ *
+ * @remarks
+ * 外観の `seperateRenoteQuote` がオンのとき表示するが、非フォロワー誤爆防止対象ノートでは
+ * `effectiveSeparateRenoteQuoteForNote` により非表示にし、引用は RT メニューから開く。
+ *
+ * @public
+ */
 import { computed } from "vue";
 import type { Note } from "calckey-js/built/entities";
 import { pleaseLogin } from "@/scripts/please-login";
 import * as os from "@/os";
 import { $i } from "@/account";
-import { i18n } from "@/i18n";
+import { effectiveSeparateRenoteQuoteForNote } from "@/scripts/stranger-air-reply-toolbar";
 
 const props = defineProps<{
 	note: Note;
@@ -24,7 +35,12 @@ const props = defineProps<{
 const canRenote = computed(
 	() =>
 		["public", "home"].includes(props.note.visibility) ||
-		props.note.userId === $i?.id
+		props.note.userId === $i?.id,
+);
+
+/** 外観設定＋非フォロワー誤爆防止による実効の「引用を別ボタン」 */
+const showSeparateQuoteButton = computed(() =>
+	effectiveSeparateRenoteQuoteForNote(props.note),
 );
 
 function quote(): void {

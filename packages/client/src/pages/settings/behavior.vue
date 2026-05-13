@@ -85,6 +85,14 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormSwitch
+				v-model="strangerReplyMisclickGuard"
+				class="_formBlock"
+				>{{ i18n.ts.strangerReplyMisclickGuard
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="hiddenActivityChart" class="_formBlock"
 				>{{ i18n.ts.hiddenActivityChart
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -297,6 +305,16 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 挙動・入力・タイムライン操作などの設定ページ。
+ *
+ * @remarks
+ * 非フォロワー誤爆防止は既定オフ。オンにすると空リプツールバー利用時、自分未フォローの相手では返信を隠し、引用の別ボタンを実効オフにして RT メニューへ戻す。
+ *
+ * @public
+ */
 import { ref, computed, watch } from "vue";
 import FormButton from "@/components/MkButton.vue";
 import FormLink from "@/components/form/link.vue";
@@ -408,6 +426,9 @@ const enabledAirReply = computed(
 );
 const toolbarAirReply = computed(
 	defaultStore.makeGetterSetter("toolbarAirReply")
+);
+const strangerReplyMisclickGuard = computed(
+	defaultStore.makeGetterSetter("strangerReplyMisclickGuard")
 );
 const noteReactionMenu = $computed(
 	defaultStore.makeGetterSetter("noteReactionMenu")

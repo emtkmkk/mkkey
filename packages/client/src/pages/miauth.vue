@@ -55,7 +55,6 @@
 </template>
 
 <script lang="ts" setup>
-import {} from "vue";
 import MkSignin from "@/components/MkSignin.vue";
 import MkButton from "@/components/MkButton.vue";
 import FormInput from "@/components/form/input.vue";
@@ -67,12 +66,17 @@ import { i18n } from "@/i18n";
 const props = defineProps<{
 	session: string;
 	callback?: string;
-	name: string;
-	icon: string;
-	permission: string; // コンマ区切り
+	name?: string;
+	icon?: string;
+	permission?: string; // コンマ区切り
 }>();
 
-const _permissions = props.permission.split(",");
+const _permissions = (props.permission ?? "")
+	.split(",")
+	.map((permission) => permission.trim())
+	.filter((permission) => permission.length > 0);
+
+const appName = props.name?.trim() || "MiAuth";
 
 let state = $ref<string | null>(null);
 let comment = $ref("");
@@ -81,7 +85,7 @@ async function accept(): Promise<void> {
 	state = "waiting";
 	await os.api("miauth/gen-token", {
 		session: props.session,
-		name: `${props.name}${comment ? ` (${comment.slice(0, 20)})` : ""}`,
+		name: `${appName}${comment ? ` (${comment.slice(0, 20)})` : ""}`,
 		iconUrl: props.icon,
 		permission: _permissions,
 	});

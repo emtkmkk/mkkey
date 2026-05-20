@@ -3,7 +3,7 @@
 		v-if="instance.disableRegistration && invitationState !== 'entered'"
 		style="white-space: pre-line; margin-bottom: 1rem; font-size: 0.8em"
 	>
-		<p>{{ i18n.ts.signupsDisabled }}</p>
+		<Mfm :text="i18n.ts.signupsDisabled" :is-note="false" />
 	</div>
 	<form
 		class="qlvuhzng _formRoot"

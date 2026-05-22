@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * ActivityPub キューの遅延リトライ理由を remote / local / unknown / pending に分類して集計する。
+ *
+ * @remarks
+ * - **役割**: deliver / inbox キューで遅延中のジョブを、障害の発生元が相手先かローカルか分かるように分類する。
+ * - NOTE: ここで remote に分類する証明書エラーは、相手サーバーの TLS 設定不備として扱う。
+ *
+ * @see {@link markDelayedRetry} ジョブ失敗時の分類登録
+ * @see {@link syncDelayedRetryStateFromJobs} 起動後や定期同期時の分類復元
+ * @internal
+ */
 import type Bull from "bull";
 import { StatusError } from "@/misc/fetch.js";
 
@@ -52,6 +65,14 @@ const remoteErrorCodes = new Set([
 
 const remoteErrorNames = new Set(["TimeoutError"]);
 
+/**
+ * 相手先サーバーまたは経路の問題として扱うエラーメッセージ片。
+ *
+ * @remarks
+ * NOTE: FetchError は code が表に出ないことがあるため、ログに残る message でも分類する。
+ *
+ * @internal
+ */
 const remoteErrorMessagePatterns = [
 	"Promise timed out",
 	"maximum redirect reached",
@@ -59,6 +80,7 @@ const remoteErrorMessagePatterns = [
 	"Gateway Time-out",
 	"Gateway Timeout",
 	"Hostname/IP does not match certificate's altnames",
+	"self-signed certificate in certificate chain",
 	"alert handshake failure",
 	"EPROTO",
 	"socket hang up",

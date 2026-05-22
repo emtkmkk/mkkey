@@ -6,13 +6,9 @@
 	>
 		<!--#region legacy: 横並び（既定） -->
 		<template v-if="isLegacyLayout">
-			<MkAvatar
-				class="avatar _button"
-				:user="user"
-				@click.stop="togglePreviewLayout"
-			/>
+			<MkAvatar class="avatar" :user="user" />
 			<div class="main">
-				<div class="header">
+				<div class="header user-ident" @click.stop="onUserIdentClick">
 					<MkUserName :user="user" class="mkusername" />
 				</div>
 				<div class="body">
@@ -68,12 +64,8 @@
 		<template v-else>
 			<div class="main">
 				<div class="header-container">
-					<MkAvatar
-						class="avatar _button"
-						:user="user"
-						@click.stop="togglePreviewLayout"
-					/>
-					<div class="header">
+					<MkAvatar class="avatar" :user="user" />
+					<div class="header user-ident" @click.stop="onUserIdentClick">
 						<div class="user-names">
 							<div class="name">
 								<MkUserName :user="user" class="mkusername" />
@@ -143,7 +135,8 @@
  *
  * @remarks
  * NOTE: 表示ユーザーは {@link MkPostForm} から渡す投稿予定アカウント（アカウント切替時は切替先）。
- * NOTE: 既定は legacy（横並び）。プレビュー内アバタークリックで modern（実投稿寄せ）と切替可能。
+ * NOTE: 既定は legacy（横並び）。`.header`（表示名・acct）を 3 秒以内に二重タップで modern と切替（UI 案内なし）。
+ * NOTE: アバターは {@link MkAvatar} 既定どおりプロフィールプレビュー・リンクを利用する。
  *
  * @internal
  */
@@ -176,13 +169,28 @@ let previewLayout = $computed(
 /** legacy が既定。modern 以外は legacy 扱い */
 const isLegacyLayout = $computed(() => previewLayout !== "modern");
 
+/** `.header` の二重タップ判定ウィンドウ（ミリ秒） */
+const USER_IDENT_DOUBLE_TAP_MS = 3000;
+
+/** 直前の `.header` タップ時刻。0 は未タップ */
+let lastUserIdentTapAt = 0;
+
 /**
- * アバタークリックで legacy / modern を切替。
+ * `.header`（表示名・acct）のタップ。3 秒以内の二重タップで legacy / modern を切替。
  *
  * @internal
  */
-function togglePreviewLayout(): void {
-	previewLayout = previewLayout !== "modern" ? "modern" : "legacy";
+function onUserIdentClick(): void {
+	const now = Date.now();
+	if (
+		lastUserIdentTapAt > 0 &&
+		now - lastUserIdentTapAt <= USER_IDENT_DOUBLE_TAP_MS
+	) {
+		lastUserIdentTapAt = 0;
+		previewLayout = previewLayout !== "modern" ? "modern" : "legacy";
+		return;
+	}
+	lastUserIdentTapAt = now;
 }
 
 /** プレビューは新規投稿扱いのため、$[position] があれば常に Misskey 互換モードを有効にする */
@@ -241,7 +249,10 @@ watch(
 		width: 2.5rem;
 		height: 2.5rem;
 		border-radius: 0.5rem;
-		cursor: pointer;
+	}
+
+	.user-ident {
+		cursor: default;
 	}
 
 	.content {
@@ -301,7 +312,6 @@ watch(
 					width: 2.5rem;
 					height: 2.5rem;
 					border-radius: 0.5rem;
-					cursor: pointer;
 				}
 
 				> .header {

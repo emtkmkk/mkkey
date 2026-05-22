@@ -41,10 +41,18 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @packageDocumentation
+ *
+ * 設定画面の親レイアウト。左ナビと子ページの {@link RouterView} を表示する。
+ *
+ * @remarks
+ * NOTE: 設定検索（mkkey-settings）から `?setting=` で遷移したとき、該当項目へ自動スクロールする。
+ *
+ * @public
+ */
 import {
 	computed,
-	defineAsyncComponent,
-	inject,
 	nextTick,
 	onActivated,
 	onMounted,
@@ -56,7 +64,6 @@ import {
 import { i18n } from "@/i18n";
 import MkInfo from "@/components/MkInfo.vue";
 import MkSuperMenu from "@/components/MkSuperMenu.vue";
-import { scroll } from "@/scripts/scroll";
 import { signout, $i } from "@/account";
 import { unisonReload } from "@/scripts/unison-reload";
 import { instance } from "@/instance";
@@ -335,6 +342,11 @@ onActivated(() => {
 
 onUnmounted(() => {
 	ro.disconnect();
+	scrollToSettingRetryToken++;
+	if (settingHighlightTimer != null) {
+		clearTimeout(settingHighlightTimer);
+		settingHighlightTimer = null;
+	}
 });
 
 watch(router.currentRef, (to) => {
@@ -366,32 +378,163 @@ const headerTabs = $computed(() => []);
 
 definePageMetadata(INFO);
 
-function scrollToSettingFromQuery() {
-        const currentPath = router.getCurrentPath();
-        if (typeof window === "undefined") return;
+//#region 設定検索スクロール
 
-        let key: string | null = null;
-        try {
-                key = new URL(currentPath, window.location.origin).searchParams.get("setting");
-        } catch (error) {
-                return;
-        }
+/** ルータのスクロール復元（100ms）より後に再試行する遅延（ms） */
+const SETTING_SCROLL_RETRY_MS = [0, 120, 280, 520] as const;
 
-        if (!key) return;
+/** 到達した設定項目に付与する強調表示用 class */
+const SETTING_HIGHLIGHT_CLASS = "_settingSearchHighlight";
 
-        nextTick(() => {
-                const rootEl = el.value;
-                const blocks = rootEl?.querySelectorAll("._formBlock");
-                const text = i18n.ts[key] as unknown as string | undefined;
-                if (!blocks || !text) return;
-                for (const block of blocks) {
-                        if (block.textContent && block.textContent.includes(text)) {
-                                scroll(block as HTMLElement, { behavior: "smooth" });
-                                break;
-                        }
-                }
-        });
+/** 強調表示を外すまでの時間（ms） */
+const SETTING_HIGHLIGHT_DURATION_MS = 2500;
+
+/** 進行中のスクロール試行を無効化するための世代番号 */
+let scrollToSettingRetryToken = 0;
+
+/** 強調表示を外すタイマー */
+let settingHighlightTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * mkkey-settings の検索結果リンク（FormLink）かどうか
+ *
+ * @remarks
+ * 検索一覧と実際の設定項目が同じラベル文言を持つため、リンク行はスクロール対象から除外する。
+ *
+ * @internal
+ */
+function isSettingSearchLinkBlock(block: HTMLElement): boolean {
+	return (
+		block.classList.contains("ffcbddfc") ||
+		block.querySelector(":scope > a.main._button, :scope > .main._button") !=
+			null
+	);
 }
+
+/**
+ * スクロール対象として表示されているか
+ *
+ * @internal
+ */
+function isElementVisibleForScroll(element: HTMLElement): boolean {
+	if (element.offsetParent === null) {
+		const position = getComputedStyle(element).position;
+		if (position !== "fixed" && position !== "sticky") {
+			return false;
+		}
+	}
+	const rect = element.getBoundingClientRect();
+	return rect.width > 0 && rect.height > 0;
+}
+
+/**
+ * 表示中の設定ページ内で、ラベル文言に一致する `_formBlock` を探す
+ *
+ * @param mainEl - `.main .bkzroven` 要素
+ * @param labelText - `i18n.ts[settingKey]` の表示文言
+ * @returns 見つかった要素。無ければ `null`
+ * @internal
+ */
+function findSettingBlockInMain(
+	mainEl: HTMLElement,
+	labelText: string,
+): HTMLElement | null {
+	const blocks = mainEl.querySelectorAll("._formBlock");
+	for (const block of blocks) {
+		if (!(block instanceof HTMLElement)) continue;
+		if (isSettingSearchLinkBlock(block)) continue;
+		if (!isElementVisibleForScroll(block)) continue;
+		if (block.textContent?.includes(labelText)) {
+			return block;
+		}
+	}
+	return null;
+}
+
+/**
+ * 到達した設定項目を短時間強調表示する
+ *
+ * @param block - 強調する `_formBlock` 要素
+ * @internal
+ */
+function highlightSettingBlock(block: HTMLElement): void {
+	if (settingHighlightTimer != null) {
+		clearTimeout(settingHighlightTimer);
+	}
+	for (const highlighted of document.querySelectorAll(
+		`.${SETTING_HIGHLIGHT_CLASS}`,
+	)) {
+		highlighted.classList.remove(SETTING_HIGHLIGHT_CLASS);
+	}
+	block.classList.add(SETTING_HIGHLIGHT_CLASS);
+	settingHighlightTimer = setTimeout(() => {
+		block.classList.remove(SETTING_HIGHLIGHT_CLASS);
+		settingHighlightTimer = null;
+	}, SETTING_HIGHLIGHT_DURATION_MS);
+}
+
+/**
+ * 設定項目へスクロールし、強調表示する
+ *
+ * @param block - スクロール先の `_formBlock` 要素
+ * @internal
+ */
+function scrollToSettingBlock(block: HTMLElement): void {
+	block.scrollIntoView({ behavior: "smooth", block: "center" });
+	highlightSettingBlock(block);
+}
+
+/**
+ * URL の `?setting=` クエリに応じて、該当設定項目へスクロールする
+ *
+ * @remarks
+ * - 検索対象は表示中の子ページ（`.main .bkzroven`）のみ
+ * - 非同期描画・ルータのスクロール復元に備え、短い遅延で複数回試行する
+ * - 各項目に `data-setting` は無く、表示文言で `_formBlock` を特定する（将来 `data-setting` 化の余地あり）
+ *
+ * @internal
+ */
+function scrollToSettingFromQuery(): void {
+	const currentPath = router.getCurrentPath();
+	if (typeof window === "undefined") return;
+
+	let key: string | null = null;
+	try {
+		key = new URL(currentPath, window.location.origin).searchParams.get(
+			"setting",
+		);
+	} catch {
+		return;
+	}
+
+	if (!key) return;
+
+	const labelText = i18n.ts[key] as unknown as string | undefined;
+	if (!labelText) return;
+
+	const retryToken = ++scrollToSettingRetryToken;
+
+	const attemptScroll = () => {
+		if (retryToken !== scrollToSettingRetryToken) return;
+
+		const rootEl = el.value;
+		const mainEl = rootEl?.querySelector<HTMLElement>(".main .bkzroven");
+		if (!mainEl) return;
+
+		const block = findSettingBlockInMain(mainEl, labelText);
+		if (block) {
+			scrollToSettingBlock(block);
+		}
+	};
+
+	void nextTick(() => {
+		for (const delayMs of SETTING_SCROLL_RETRY_MS) {
+			window.setTimeout(attemptScroll, delayMs);
+		}
+	});
+}
+
+//#endregion
 // w 890
 // h 700
 </script>
@@ -423,6 +566,13 @@ function scrollToSettingFromQuery() {
 			.bkzroven {
 			}
 		}
+	}
+
+	:deep(._settingSearchHighlight) {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+		border-radius: 0.375rem;
+		transition: outline-color 0.3s ease;
 	}
 
 	&.wide {

@@ -258,6 +258,15 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
+                        <FormSwitch v-model="showPostLockButton" class="_formBlock">
+                                <span class="postFormSwitchLabel"
+                                        ><i class="ph-lock ph-bold ph-lg"></i
+                                        ><span>{{ i18n.ts.hiddenPostLockButton }}</span
+                                        ><span v-if="showMkkeySettingTips" class="_beta">{{
+                                                i18n.ts.mkkey
+                                        }}</span></span
+                                >
+                        </FormSwitch>
                         <FormSwitch
                                 v-model="showNowPlayingButton"
                                 class="_formBlock"
@@ -393,6 +402,9 @@ const hiddenMFMButton = computed(
 const hiddenPreviewButton = computed(
 	defaultStore.makeGetterSetter("hiddenPreviewButton")
 );
+const hiddenPostLockButton = computed(
+	defaultStore.makeGetterSetter("hiddenPostLockButton")
+);
 const hiddenNowPlayingButton = computed(
 	defaultStore.makeGetterSetter("hiddenNowPlayingButton")
 );
@@ -434,6 +446,7 @@ const showHashtagButton = invertBool(hiddenHashtagButton);
 const showEmojiButton = invertBool(hiddenEmojiButton);
 const showMFMButton = invertBool(hiddenMFMButton);
 const showPreviewButton = invertBool(hiddenPreviewButton);
+const showPostLockButton = invertBool(hiddenPostLockButton);
 const showNowPlayingButton = invertBool(hiddenNowPlayingButton);
 const showSwarmButton = invertBool(hiddenSwarmButton);
 const showPluginButton = invertBool(hiddenPluginButton);

@@ -104,7 +104,7 @@
 				>
 					<i class="ph-question ph-bold ph-lg"></i>
 				</button>
-				<template v-if="!$store.state.hiddenPostButton">
+				<template v-if="!$store.state.hiddenPostButton && !postLocked">
 					<button
 						v-for="button in submitButtonConfigs"
 						:key="button.key"
@@ -402,10 +402,30 @@
 					<i class="ph-music-notes ph-bold ph-lg"></i>
 				</button>
 				<button
+					v-if="!$store.state.hiddenPostLockButton"
+					v-tooltip="postLocked ? i18n.ts.postLockedTooltip : i18n.ts.postLockTooltip"
+					class="_button right"
+					:class="{ active: postLocked }"
+					:tabindex="footerButtonsTabindex"
+					data-cy-post-lock-toggle
+					@click="postLocked = !postLocked"
+				>
+					<i
+						:class="
+							postLocked
+								? 'ph-lock ph-bold ph-lg'
+								: 'ph-lock-open ph-bold ph-lg'
+						"
+					></i>
+				</button>
+				<button
 					v-if="!$store.state.hiddenPreviewButton"
 					v-tooltip="i18n.ts.previewNoteText"
-					class="_button right"
-					:class="{ active: showPreview }"
+					class="_button"
+					:class="{
+						right: $store.state.hiddenPostLockButton,
+						active: showPreview,
+					}"
 					:tabindex="footerButtonsTabindex"
 					@click="showPreview = !showPreview"
 				>
@@ -440,6 +460,12 @@
  * @remarks
  * NOTE: 同一内容の連続投稿を抑止するため、CW/本文と投稿文脈を使った一時的な署名管理を行う。
  * NOTE: ストリーミングで自身投稿を受信した場合、対象が通常投稿系キーなら下書きを同期削除する。
+ * NOTE: 投稿ロック機能 (`postLocked`) — フッターのロックボタン ON 中は投稿ボタンを非表示にし、
+ *       投稿ショートカット (Ctrl/Alt+Enter 系) と `post()` / `performQuickPost()` /
+ *       `handleQuickPost()` の各エントリポイントで早期 return する。ロック状態は下書きに保存され、
+ *       ロック ON の下書きは時間経過によるアーカイブ (`note:xxx` 化) の対象外となる。
+ *       ただし `defaultStore.state.hiddenPostLockButton === true`（ボタン非表示設定）の場合は、
+ *       復元時に強制的に OFF として扱う（ロック解除手段がなくなることを防ぐため）。
  *
  * @internal
  */
@@ -591,6 +617,20 @@ let poll = $ref<{
 } | null>(null);
 let useCw = $ref(false);
 let showPreview = $computed(defaultStore.makeGetterSetter("showPreview"));
+
+// #region 投稿ロック
+/**
+ * 投稿ロック状態。
+ *
+ * @remarks
+ * `true` の間は投稿ボタンの非表示・投稿ショートカット無効化・`post()` 系関数の早期 return を行う。
+ * 状態は下書きへ保存（`saveDraft` 経由）し、復元時には `defaultStore.state.hiddenPostLockButton`
+ * が `true`（=ボタン非表示設定）の場合は強制的に `false` として扱う。
+ * NB: ボタンが見えない状態でロックが復元されると、投稿操作を行う手段がなくなるため。
+ */
+let postLocked = $ref(false);
+// #endregion 投稿ロック
+
 let cw = $computed(defaultStore.makeGetterSetter("postFormCw"));
 let backupText = text;
 let backupCw = cw;
@@ -1640,6 +1680,7 @@ function watchForDraft() {
         watch($$(visibility), debouncedSaveDraft);
         watch($$(localOnly), debouncedSaveDraft);
         watch($$(referencesFlg), debouncedSaveDraft);
+        watch($$(postLocked), debouncedSaveDraft);
 }
 
 function checkIncludesOtherServerEmoji() {
@@ -1983,6 +2024,16 @@ function onKeydown(ev: KeyboardEvent) {
 	if (postValue !== unref(shortcutKeyValue) && !isChannel) {
 		shortcutKeyValue = postValue;
 	}
+	// NB: 投稿ロック中はあらゆる Ctrl/Alt + Enter 系の投稿ショートカットを無効化する
+	//     （Esc によるモーダル閉じや IME 入力ハンドリングは引き続き有効）
+	if (
+		postLocked &&
+		(ev.which === 10 || ev.which === 13) &&
+		postValue >= 1
+	) {
+		typing();
+		return;
+	}
 	if (
 		(ev.which === 10 || ev.which === 13) &&
 		postValue >= 5 &&
@@ -2162,7 +2213,18 @@ function onDrop(ev): void {
 
 function saveDraft(key?, name?) {
 	try {
-		if (!(text || (useCw && cw) || files?.length || poll || referencesFlg !== true)) {
+		// NB: ロック状態は内容そのものなので、空でもロック ON の場合は下書きを残す。
+		//     これにより「空のままロックを掛けた下書き」も維持できる。
+		if (
+			!(
+				text ||
+				(useCw && cw) ||
+				files?.length ||
+				poll ||
+				referencesFlg !== true ||
+				postLocked
+			)
+		) {
 			if (!key) {
 				deleteDraft(key);
 			}
@@ -2187,6 +2249,7 @@ function saveDraft(key?, name?) {
 				replyId: reply?.id ? reply.id : null,
 				quoteId: quoteId ? quoteId : props.renote ? props.renote.id : null,
 				referencesFlg: referencesFlg,
+				postLocked: postLocked,
 			},
 		};
 
@@ -2252,7 +2315,14 @@ function specifiedCheck() {
 	}
 }
 
+/**
+ * クイック投稿（複数投稿ボタンの 1st〜5th）を実行する。
+ *
+ * @remarks
+ * NB: 投稿ロック中は何もせず早期 return する（UI/ショートカット側ガードの取りこぼし対策のフェイルセーフ）。
+ */
 function performQuickPost(kind: QuickVisibilityType): void {
+        if (postLocked) return;
         if (kind === "first") {
                 if (defaultStore.state.firstPostButtonVisibilityForce) {
                         visibility = defaultStore.state.defaultNoteVisibility as (typeof misskey.noteVisibilities)[number];
@@ -2271,7 +2341,11 @@ function performQuickPost(kind: QuickVisibilityType): void {
         }
 }
 
+/**
+ * ヘッダー右側の投稿ボタン群クリックを各投稿関数にディスパッチする。
+ */
 function handleQuickPost(button: QuickPostButtonConfig) {
+	if (postLocked) return;
 	switch (button.behavior.type) {
 		case "post":
 			post();
@@ -2286,11 +2360,21 @@ function handleQuickPost(button: QuickPostButtonConfig) {
 }
 
 function postSecondChannel() {
+	// NB: post() 側でもロック判定するが、副作用（localOnly 上書き）を避けるため早期 return
+	if (postLocked) return;
 	localOnly = true;
 	post();
 }
 
+/**
+ * 投稿処理本体。`post()` を直接呼ぶ経路（チャネル切替や Enter ショートカット直結）も含めて
+ * フェイルセーフを掛けるため、冒頭でロック判定を行う。
+ *
+ * @remarks
+ * NB: 投稿ロック中は早期 return（UI/ショートカット側ガードの取りこぼし対策の最終防衛）。
+ */
 async function post() {
+	if (postLocked) return;
 	const processedText = text ? preprocess(text) : "";
 
 	if (useCw && !cw?.trim()) cw = "CW";
@@ -2991,12 +3075,15 @@ function loadDraft(key?) {
 		key ? key : draftKey
 	];
 	if (draft) {
+		// NB: 内容が空でも `postLocked` が true なら復元対象とする
+		//     （空のままロック ON で保存したケース）
 		if (
 			draft.data.text ||
 			(draft.data.useCw && draft.data.cw) ||
 			draft.data.files?.length ||
 			draft.data.poll ||
-			draft.data.referencesFlg !== true
+			draft.data.referencesFlg !== true ||
+			draft.data.postLocked
 		) {
 			text = draft.data.text;
 			useCw = draft.data.useCw;
@@ -3023,10 +3110,14 @@ function loadDraft(key?) {
 				quoteId = draft.data.quoteId;
 			}
 			referencesFlg = draft.data.referencesFlg ?? true
+			postLocked = defaultStore.state.hiddenPostLockButton
+				? false
+				: !!draft.data.postLocked;
 			if (
 				!key &&
 				draftKey === "note" &&
-				Date.now() > Date.parse(draft.updatedAt) + 300 * 1000
+				Date.now() > Date.parse(draft.updatedAt) + 300 * 1000 &&
+				!postLocked
 			) {
 				saveDraft(`note:${uuid()?.slice(0, 8)}`);
 				return;

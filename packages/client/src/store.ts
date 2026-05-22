@@ -613,6 +613,12 @@ export const defaultStore = markRaw(
 			createdAt: "2026/2/3",
 			page: "postform",
 		},
+		hiddenPostLockButton: {
+			where: "deviceAccount",
+			default: true,
+			createdAt: "2026/5/22",
+			page: "postform",
+		},
 		hiddenNowPlayingButton: {
 			where: "deviceAccount",
 			default: false,

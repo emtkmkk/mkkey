@@ -415,6 +415,7 @@
 			<XNotePreview
 				v-if="showPreview && !$store.state.hiddenPreviewButton"
 				class="preview"
+				:user="postAccount ?? $i"
 				:text="text + (withHashtags ? ' ' + hashtagsPreview : '')"
 				:cw="useCw ? cw ?? '' : null"
 				:referenceIds="referencesFlg ? referenceIds : []"

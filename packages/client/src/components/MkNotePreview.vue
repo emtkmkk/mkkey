@@ -3,9 +3,16 @@
 		<div class="main">
 			<!-- ヘッダー行: アイコンと表示名（実投稿の header-container と同じ並び） -->
 			<div class="header-container">
-				<MkAvatar class="avatar" :user="$i" disableLink />
+				<MkAvatar class="avatar" :user="user" disableLink />
 				<div class="header">
-					<MkUserName :user="$i" />
+					<div class="user-names">
+						<div class="name">
+							<MkUserName :user="user" class="mkusername" />
+						</div>
+						<div class="username">
+							<MkAcct :user="user" />
+						</div>
+					</div>
 				</div>
 			</div>
 			<!-- 本文は main 全幅＝アイコン左端と揃えて、その下から開始 -->
@@ -20,14 +27,14 @@
 							i18n.ts._cw.show +
 							']\n'
 						"
-						:author="$i"
+						:author="user"
 						:i="$i"
 						:mfm-compat="mfmCompat"
 						reaction-menu-enabled
 					/>
 					<Mfm
 						:text="preprocess(text).trim()"
-						:author="$i"
+						:author="user"
 						:i="$i"
 						:mfm-compat="mfmCompat"
 						reaction-menu-enabled
@@ -60,7 +67,8 @@
  * 投稿フォーム内のノート本文プレビュー。
  *
  * @remarks
- * NOTE: 実投稿（{@link MkNote}）と同様、ヘッダーはアイコン横、本文はアイコン直下から始める。
+ * NOTE: 実投稿（{@link MkNote}）と同様、ヘッダーはアイコン横に名前・acct の2行、本文はアイコン直下から始める。
+ * NOTE: 表示ユーザーは {@link MkPostForm} から渡す投稿予定アカウント（アカウント切替時は切替先）。
  *
  * @internal
  */
@@ -70,10 +78,14 @@ import { shouldEnableMfmCompat } from "@/scripts/mfm-compat";
 import { i18n } from "@/i18n";
 import XNoteSimple from "@/components/MkNoteSimple.vue";
 import MkFolder from "@/components/MkFolder.vue";
+import { $i } from "@/account";
 import * as os from "@/os";
+import type * as misskey from "calckey-js";
 import type { Note } from "calckey-js/built/entities";
 
 const props = defineProps<{
+	/** 投稿しようとしているアカウント（フォームのアカウント切替と同期） */
+	user: misskey.entities.User;
 	text: string;
 	cw?: string;
 	referenceIds?: string[];
@@ -135,7 +147,7 @@ watch(
 
 		> .header-container {
 			display: flex;
-			align-items: center;
+			align-items: flex-start;
 
 			> .avatar {
 				flex-shrink: 0;
@@ -150,8 +162,29 @@ watch(
 			> .header {
 				flex: 1;
 				min-width: 0;
-				margin-bottom: 0.125rem;
-				font-weight: bold;
+				line-height: 1.5;
+
+				> .user-names {
+					display: flex;
+					flex-direction: column;
+					align-items: flex-start;
+					gap: 0.1em 0;
+					overflow: hidden;
+
+					> .name {
+						max-width: 100%;
+						overflow: hidden;
+						font-weight: bold;
+						text-overflow: ellipsis;
+					}
+
+					> .username {
+						max-width: 100%;
+						overflow: hidden;
+						font-size: 0.9em;
+						text-overflow: ellipsis;
+					}
+				}
 			}
 		}
 

@@ -87,6 +87,14 @@
                                                 }}</template
                                         >
                                 </FormTextarea>
+				<FormSwitch
+					v-model="showQuickEmojiMuteInReactionMenu"
+					class="_formBlock"
+					>{{ i18n.ts.showQuickEmojiMuteInReactionMenu
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></FormSwitch
+				>
 				<FormSwitch v-model="remoteReactionMute" class="_formBlock"
 					>{{ i18n.ts.remoteReactionMute
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -176,6 +184,9 @@ const reactionHardMutedWords = ref(render($i!.reactionMutedWords));
 const rejectMuteReaction = ref($i!.rejectMuteReaction);
 const remoteReactionMute = computed(
 	defaultStore.makeGetterSetter("remoteReactionMute")
+);
+const showQuickEmojiMuteInReactionMenu = computed(
+	defaultStore.makeGetterSetter("showQuickEmojiMuteInReactionMenu")
 );
 const hardWordMutedNotesCount = ref(null);
 const hiddenSoftMutes = computed(

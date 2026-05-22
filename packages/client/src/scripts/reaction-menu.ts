@@ -7,6 +7,7 @@
  * @remarks
  * NOTE: ソフトミュートの解除は {@link getMenuReactionMuteLine} が返す文字列と `===` 一致する行だけを削除する（手動の別行は触らない）。
  * NOTE: 「絵文字ミュート解除」はその canonical が `reactionMutedWords` に存在するときのみ表示する。
+ * NOTE: 末尾の区切り線とミュート項目は `showQuickEmojiMuteInReactionMenu` が ON のときのみ表示する（既定 OFF）。
  *
  * @public
  */
@@ -425,8 +426,12 @@ export async function openReactionMenu_(
 	}
 
 	// #region リアクションメニュー末尾のソフト絵文字ミュート
-	// アカウント設定 reactionMutedWords に、canonical 1 行を追加するか、完全一致でその行だけを削除する。
-	if ($i != null && emojiName) {
+	// 設定 ON 時のみ区切り線と「絵文字ミュート / 解除」を表示する。
+	if (
+		$i != null &&
+		emojiName &&
+		defaultStore.state.showQuickEmojiMuteInReactionMenu
+	) {
 		const canonical = getMenuReactionMuteLine(reaction, emojiName, isCustom);
 		const hasCanonical = defaultStore.state.reactionMutedWords.some(
 			(w) => w === canonical,

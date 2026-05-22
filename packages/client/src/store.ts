@@ -373,6 +373,12 @@ export const defaultStore = markRaw(
 			createdAt: "2024/3/14",
 			page: "word-mute",
 		},
+		showQuickEmojiMuteInReactionMenu: {
+			where: "account",
+			default: false,
+			createdAt: "2026/5/22",
+			page: "word-mute",
+		},
 		mutedAds: {
 			where: "account",
 			default: [] as string[],

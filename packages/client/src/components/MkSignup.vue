@@ -454,16 +454,25 @@ function onSubmit(): void {
 	if (submitting) return;
 	submitting = true;
 
-	os.api("signup", {
-		username,
-		password,
-		emailAddress: email,
-		invitationCode,
-		"hcaptcha-response": hCaptchaResponse,
-		"g-recaptcha-response": reCaptchaResponse,
-	})
-		.then(() => {
-			if (instance.emailRequiredForSignup) {
+	os.api(
+		"signup",
+		{
+			username,
+			password,
+			emailAddress: email,
+			invitationCode,
+			"hcaptcha-response": hCaptchaResponse,
+			"g-recaptcha-response": reCaptchaResponse,
+		},
+		undefined,
+		true,
+	)
+		.then((res) => {
+			// 204: メール確認待ち / 200+id: 即時登録完了（メール指定招待など）
+			const completedImmediately =
+				res != null && typeof res === "object" && "id" in res;
+
+			if (instance.emailRequiredForSignup && !completedImmediately) {
 				os.alert({
 					type: "success",
 					title: i18n.ts._signup.almostThere,
@@ -474,23 +483,28 @@ function onSubmit(): void {
 				os.api("signin", {
 					username,
 					password,
-				}).then((res) => {
-					emit("signup", res);
+				}).then((signinRes) => {
+					emit("signup", signinRes);
 
 					if (props.autoSet) {
-						login(res.i);
+						login(signinRes.i);
 					}
 				});
 			}
 		})
-		.catch(() => {
+		.catch((err: { code?: string; message?: string }) => {
 			submitting = false;
 			hcaptcha.reset?.();
 			recaptcha.reset?.();
 
+			const text =
+				err?.code === "INVITATION_EMAIL_MISMATCH"
+					? i18n.ts._signup.invitationEmailMismatch
+					: err?.message ?? i18n.ts.somethingHappened;
+
 			os.alert({
 				type: "error",
-				text: i18n.ts.somethingHappened,
+				text,
 			});
 		});
 }

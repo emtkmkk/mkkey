@@ -1490,6 +1490,7 @@ _signup:
   almostThere: "Almost there"
   emailAddressInfo: "Please enter your email address. It will not be made public."
   emailSent: "A confirmation email has been sent to your email address ({email}). Please click the included link to complete account creation."
+  invitationEmailMismatch: "This invitation code can only be used with the email address it was issued for. Please check that your entered email matches the invitee address."
 _accountDelete:
   accountDelete: "Delete account"
   mayTakeTime: "As account deletion is a resource-heavy process, it may take some time to complete depending on how much content you have created and how many files you have uploaded."
@@ -1572,6 +1573,9 @@ compressImageConfirm: "Compress the uploaded image?\n\nFor jpg/webp, quality wil
 movFormatWarning: "This file is in MOV format and may not play correctly on non-iOS devices. Consider converting to MP4 (e.g. with VideoConvert or by uploading via LINE and saving again). Continue uploading?"
 showSensitiveConfirm: "You are about to view sensitive media. Open anyway?"
 inviteCodeExpiryNote: "Valid for 24 hours. Can be used multiple times within that period."
+inviteEmailBound: "Issue email-bound invite code"
+inviteEmailBoundPrompt: "Invitee email address"
+inviteEmailBoundExpiryNote: "No expiration.\nCan be used only once, and only with the specified email address.\nNo confirmation email is sent; signup completes immediately."
 inviteAvailableInHours: "You can invite in {hours} hours"
 takeALook: "Take a look"
 addRecentEmojisToPageConfirm: "Add recently used emojis that are not on other pages to this page?\n(Max 35)"

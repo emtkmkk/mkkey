@@ -1454,6 +1454,11 @@ const ENDPOINT_DESCRIPTIONS_JA: Record<
 		summary: "招待コードを発行",
 		description: "管理者が招待コードを発行します。",
 	},
+	"admin/invite-email": {
+		summary: "メール指定の招待コードを発行",
+		description:
+			"管理者/モデレーターが、特定メールアドレス専用・1回限りの招待コードを発行します。招待制かつメール必須登録がONのときのみ有効。利用時は確認メールなしで即時登録（有効期限なし）。",
+	},
 	"admin/moderators/add": {
 		summary: "モデレーターを追加",
 		description: "管理者がモデレーターを追加します。",

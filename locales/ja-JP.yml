@@ -1493,6 +1493,7 @@ _signup:
   almostThere: "もうすぐ完了です"
   emailAddressInfo: "あなたが使っているメールアドレスを入力してください。メールアドレスが公開されることはありません。"
   emailSent: "入力されたメールアドレス({email})宛に確認のメールが送信されました。メールに記載されたリンクにアクセスすると、アカウントの作成が完了します。"
+  invitationEmailMismatch: "この招待コードは、発行時に指定されたメールアドレスでのみ登録できます。入力したメールアドレスが招待先と一致しているか確認してください。"
 _accountDelete:
   accountDelete: "アカウントの削除"
   mayTakeTime: "アカウントの削除は負荷のかかる処理であるため、ユーザが少ない時間に実行されます。作成したコンテンツの数やアップロードしたファイルの数が多いと完了までに時間がかかることがあります。"
@@ -1577,6 +1578,9 @@ compressImageConfirm: "アップロードした画像を圧縮しますか？\n\
 movFormatWarning: "このファイルはmov形式の為、iOS端末以外で正しく再生されない可能性があります。\nアプリ「VideoConvert」を使用するか、LINEでアップロード後に再度保存するなどでmp4形式に変換する事をオススメします。\nアップロードを続けますか？"
 showSensitiveConfirm: "センシティブメディアを表示しようとしています。\n本当に開きますか？"
 inviteCodeExpiryNote: "※有効期限 : 24時間\n期限内なら何回でも使用できます。"
+inviteEmailBound: "メール指定招待コードを発行"
+inviteEmailBoundPrompt: "招待先のメールアドレス"
+inviteEmailBoundExpiryNote: "※有効期限はありません\n※指定したメールアドレスでのみ、1回だけ利用できます\n※確認メールは送られず、その場で登録が完了します"
 inviteAvailableInHours: "招待可能まで後{hours}時間"
 takeALook: "覗いてみる"
 addRecentEmojisToPageConfirm: "このページに、他のページに登録されていない\n最近頻繁に使用している絵文字を追加します。\n(最大35個)"

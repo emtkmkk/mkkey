@@ -58,6 +58,7 @@ import * as ep___admin_analyzePerformanceIncident from "./endpoints/admin/analyz
 import * as ep___admin_getPerformanceIncidentPrompt from "./endpoints/admin/get-performance-incident-prompt.js";
 import * as ep___admin_getUserIps from "./endpoints/admin/get-user-ips.js";
 import * as ep___admin_invite from "./endpoints/admin/invite.js";
+import * as ep___admin_inviteEmail from "./endpoints/admin/invite-email.js";
 import * as ep___admin_moderators_add from "./endpoints/admin/moderators/add.js";
 import * as ep___admin_moderators_remove from "./endpoints/admin/moderators/remove.js";
 import * as ep___admin_promo_create from "./endpoints/admin/promo/create.js";
@@ -454,6 +455,7 @@ const eps = [
 	["admin/get-table-stats", ep___admin_getTableStats],
 	["admin/get-user-ips", ep___admin_getUserIps],
 	["admin/invite", ep___admin_invite],
+	["admin/invite-email", ep___admin_inviteEmail],
 	["admin/moderators/add", ep___admin_moderators_add],
 	["admin/moderators/remove", ep___admin_moderators_remove],
 	["admin/promo/create", ep___admin_promo_create],

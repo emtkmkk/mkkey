@@ -161,6 +161,18 @@ const menuDef = $computed(() => [
 						},
 				  ]
 				: []),
+			...(instance.disableRegistration &&
+			instance.emailRequiredForSignup &&
+			($i?.isAdmin || $i?.isModerator)
+				? [
+						{
+							type: "button",
+							icon: "ph-envelope-simple ph-bold ph-lg",
+							text: i18n.ts.inviteEmailBound,
+							action: inviteEmailBound,
+						},
+				  ]
+				: []),
 			...($i.isAdmin
 				? [
 						{
@@ -365,6 +377,33 @@ const invite = () => {
 			os.alert({
 				type: "info",
 				text: x.code,
+			});
+		})
+		.catch((err) => {
+			os.alert({
+				type: "error",
+				text: err,
+			});
+		});
+};
+
+/** メール指定・1回限りの招待コードを発行する（管理者/モデレーター専用） */
+const inviteEmailBound = async () => {
+	const { canceled, result: emailAddress } = await os.inputText({
+		type: "email",
+		title: i18n.ts.inviteEmailBoundPrompt,
+	});
+	if (canceled || emailAddress == null || emailAddress.trim() === "") {
+		return;
+	}
+
+	os.api("admin/invite-email", {
+		emailAddress: emailAddress.trim(),
+	})
+		.then((x) => {
+			os.alert({
+				type: "info",
+				text: `${x.code}\n\n${x.allowedEmail}\n\n${i18n.ts.inviteEmailBoundExpiryNote}`,
 			});
 		})
 		.catch((err) => {

@@ -1,62 +1,137 @@
 <template>
-	<div v-size="{ min: [350, 500] }" class="fefdfafb">
-		<div class="main">
-			<!-- ヘッダー行: アイコンと表示名（実投稿の header-container と同じ並び） -->
-			<div class="header-container">
-				<MkAvatar class="avatar" :user="user" disableLink />
+	<div
+		v-size="{ min: [350, 500] }"
+		class="fefdfafb"
+		:class="{ legacy: isLegacyLayout, modern: !isLegacyLayout }"
+	>
+		<!--#region legacy: 横並び（既定） -->
+		<template v-if="isLegacyLayout">
+			<MkAvatar
+				class="avatar _button"
+				:user="user"
+				@click.stop="togglePreviewLayout"
+			/>
+			<div class="main">
 				<div class="header">
-					<div class="user-names">
-						<div class="name">
-							<MkUserName :user="user" class="mkusername" />
-						</div>
-						<div class="username">
-							<MkAcct :user="user" />
-						</div>
+					<MkUserName :user="user" class="mkusername" />
+				</div>
+				<div class="body">
+					<div class="content">
+						<Mfm
+							v-if="cw != null"
+							class="text"
+							:text="
+								(cw ? preprocess(cw).trim() + ' ' : '') +
+								'[' +
+								i18n.ts._cw.show +
+								']\n'
+							"
+							:author="user"
+							:i="$i"
+							:mfm-compat="mfmCompat"
+							reaction-menu-enabled
+						/>
+						<Mfm
+							:text="preprocess(text).trim()"
+							:author="user"
+							:i="$i"
+							:mfm-compat="mfmCompat"
+							reaction-menu-enabled
+						/>
+						<MkFolder
+							v-if="referenceIds?.length"
+							class="references"
+							:expanded="refExpand"
+							no-style
+						>
+							<template #header>{{
+								referenceIds?.length + " 件の参照"
+							}}</template>
+							<div
+								v-for="reference in referenceIds"
+								:key="reference"
+								class="reference"
+							>
+								<XNoteSimple
+									v-if="notes[reference]"
+									:note="notes[reference]"
+								/>
+							</div>
+						</MkFolder>
 					</div>
 				</div>
 			</div>
-			<!-- 本文は main 全幅＝アイコン左端と揃えて、その下から開始 -->
-			<div class="body">
-				<div class="content">
-					<Mfm
-						v-if="cw != null"
-						class="text"
-						:text="
-							(cw ? preprocess(cw).trim() + ' ' : '') +
-							'[' +
-							i18n.ts._cw.show +
-							']\n'
-						"
-						:author="user"
-						:i="$i"
-						:mfm-compat="mfmCompat"
-						reaction-menu-enabled
+		</template>
+		<!--#endregion-->
+
+		<!--#region modern: 実投稿に近い配置 -->
+		<template v-else>
+			<div class="main">
+				<div class="header-container">
+					<MkAvatar
+						class="avatar _button"
+						:user="user"
+						@click.stop="togglePreviewLayout"
 					/>
-					<Mfm
-						:text="preprocess(text).trim()"
-						:author="user"
-						:i="$i"
-						:mfm-compat="mfmCompat"
-						reaction-menu-enabled
-					/>
-					<MkFolder
-						v-if="referenceIds?.length"
-						class="references"
-						:expanded="refExpand"
-						no-style
-					>
-						<template #header>{{ referenceIds?.length + " 件の参照" }}</template>
-						<div
-							v-for="reference in referenceIds"
-							:key="reference"
-							class="reference"
-						>
-							<XNoteSimple v-if="notes[reference]" :note="notes[reference]" />
+					<div class="header">
+						<div class="user-names">
+							<div class="name">
+								<MkUserName :user="user" class="mkusername" />
+							</div>
+							<div class="username">
+								<MkAcct :user="user" />
+							</div>
 						</div>
-					</MkFolder>
+					</div>
+				</div>
+				<div class="body">
+					<div class="content">
+						<Mfm
+							v-if="cw != null"
+							class="text"
+							:text="
+								(cw ? preprocess(cw).trim() + ' ' : '') +
+								'[' +
+								i18n.ts._cw.show +
+								']\n'
+							"
+							:author="user"
+							:i="$i"
+							:mfm-compat="mfmCompat"
+							reaction-menu-enabled
+						/>
+						<Mfm
+							:text="preprocess(text).trim()"
+							:author="user"
+							:i="$i"
+							:mfm-compat="mfmCompat"
+							reaction-menu-enabled
+						/>
+						<MkFolder
+							v-if="referenceIds?.length"
+							class="references"
+							:expanded="refExpand"
+							no-style
+						>
+							<template #header>{{
+								referenceIds?.length + " 件の参照"
+							}}</template>
+							<div
+								v-for="reference in referenceIds"
+								:key="reference"
+								class="reference"
+							>
+								<XNoteSimple
+									v-if="notes[reference]"
+									:note="notes[reference]"
+								/>
+							</div>
+						</MkFolder>
+					</div>
 				</div>
 			</div>
-		</div>
+		</template>
+		<!--#endregion-->
 	</div>
 </template>
 
@@ -67,8 +142,8 @@
  * 投稿フォーム内のノート本文プレビュー。
  *
  * @remarks
- * NOTE: 実投稿（{@link MkNote}）と同様、ヘッダーはアイコン横に名前・acct の2行、本文はアイコン直下から始める。
  * NOTE: 表示ユーザーは {@link MkPostForm} から渡す投稿予定アカウント（アカウント切替時は切替先）。
+ * NOTE: 既定は legacy（横並び）。プレビュー内アバタークリックで modern（実投稿寄せ）と切替可能。
  *
  * @internal
  */
@@ -79,6 +154,7 @@ import { i18n } from "@/i18n";
 import XNoteSimple from "@/components/MkNoteSimple.vue";
 import MkFolder from "@/components/MkFolder.vue";
 import { $i } from "@/account";
+import { defaultStore } from "@/store";
 import * as os from "@/os";
 import type * as misskey from "calckey-js";
 import type { Note } from "calckey-js/built/entities";
@@ -92,6 +168,22 @@ const props = defineProps<{
 }>();
 
 let refExpand = $ref(false);
+
+let previewLayout = $computed(
+	defaultStore.makeGetterSetter("postFormPreviewLayout"),
+);
+
+/** legacy が既定。modern 以外は legacy 扱い */
+const isLegacyLayout = $computed(() => previewLayout !== "modern");
+
+/**
+ * アバタークリックで legacy / modern を切替。
+ *
+ * @internal
+ */
+function togglePreviewLayout(): void {
+	previewLayout = previewLayout !== "modern" ? "modern" : "legacy";
+}
 
 /** プレビューは新規投稿扱いのため、$[position] があれば常に Misskey 互換モードを有効にする */
 const mfmCompat = $computed(
@@ -142,85 +234,115 @@ watch(
 	overflow: clip;
 	font-size: 0.95em;
 
-	> .main {
-		min-width: 0;
+	> .avatar {
+		flex-shrink: 0;
+		display: block;
+		margin: 0 0.625rem 0 0;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 0.5rem;
+		cursor: pointer;
+	}
 
-		> .header-container {
-			display: flex;
-			align-items: flex-start;
-
-			> .avatar {
-				flex-shrink: 0;
-				display: block;
-				margin: 0 0.625rem 0 0;
-				width: 2.5rem;
-				height: 2.5rem;
-				border-radius: 0.5rem;
-				pointer-events: none;
-			}
-
-			> .header {
-				flex: 1;
-				min-width: 0;
-				line-height: 1.5;
-
-				> .user-names {
-					display: flex;
-					flex-direction: column;
-					align-items: flex-start;
-					gap: 0.1em 0;
-					overflow: hidden;
-
-					> .name {
-						max-width: 100%;
-						overflow: hidden;
-						font-weight: bold;
-						text-overflow: ellipsis;
-					}
-
-					> .username {
-						max-width: 100%;
-						overflow: hidden;
-						font-size: 0.9em;
-						text-overflow: ellipsis;
-					}
-				}
-			}
+	.content {
+		> .text {
+			cursor: default;
+			margin: 0;
+			padding: 0;
 		}
 
-		> .body {
-			// 実投稿の .article > .main > .body と同じく、ヘッダー行の下から本文を開始
-			margin-top: 0.7em;
-
-			> .content {
-				> .text {
-					cursor: default;
-					margin: 0;
-					padding: 0;
-				}
-
-				> .references {
-					padding-top: 0.5rem;
-					.reference {
-						padding-top: 0.5rem;
-						> * {
-							padding: 1rem;
-							border: solid 0.0625rem var(--accent);
-							border-radius: 0.5rem;
-							transition: background 0.2s;
-							&:hover,
-							&:focus-within {
-								background: var(--tlPanelHighlight);
-							}
-						}
+		> .references {
+			padding-top: 0.5rem;
+			.reference {
+				padding-top: 0.5rem;
+				> * {
+					padding: 1rem;
+					border: solid 0.0625rem var(--accent);
+					border-radius: 0.5rem;
+					transition: background 0.2s;
+					&:hover,
+					&:focus-within {
+						background: var(--tlPanelHighlight);
 					}
 				}
 			}
 		}
 	}
 
+	//#region legacy
+	&.legacy {
+		display: flex;
+
+		> .main {
+			flex: 1;
+			min-width: 0;
+
+			> .header {
+				margin-bottom: 0.125rem;
+				font-weight: bold;
+			}
+		}
+	}
+	//#endregion
+
+	//#region modern
+	&.modern {
+		> .main {
+			min-width: 0;
+
+			> .header-container {
+				display: flex;
+				align-items: flex-start;
+
+				> .avatar {
+					flex-shrink: 0;
+					display: block;
+					margin: 0 0.625rem 0 0;
+					width: 2.5rem;
+					height: 2.5rem;
+					border-radius: 0.5rem;
+					cursor: pointer;
+				}
+
+				> .header {
+					flex: 1;
+					min-width: 0;
+					line-height: 1.5;
+
+					> .user-names {
+						display: flex;
+						flex-direction: column;
+						align-items: flex-start;
+						gap: 0.1em 0;
+						overflow: hidden;
+
+						> .name {
+							max-width: 100%;
+							overflow: hidden;
+							font-weight: bold;
+							text-overflow: ellipsis;
+						}
+
+						> .username {
+							max-width: 100%;
+							overflow: hidden;
+							font-size: 0.9em;
+							text-overflow: ellipsis;
+						}
+					}
+				}
+			}
+
+			> .body {
+				margin-top: 0.7em;
+			}
+		}
+	}
+	//#endregion
+
 	&.min-width_350px {
-		> .main > .header-container > .avatar {
+		> .avatar,
+		&.modern > .main > .header-container > .avatar {
 			margin: 0 0.625rem 0 0;
 			width: 2.75rem;
 			height: 2.75rem;
@@ -228,7 +350,8 @@ watch(
 	}
 
 	&.min-width_500px {
-		> .main > .header-container > .avatar {
+		> .avatar,
+		&.modern > .main > .header-container > .avatar {
 			margin: 0 0.75rem 0 0;
 			width: 3rem;
 			height: 3rem;

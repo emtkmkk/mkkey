@@ -1466,6 +1466,11 @@ export const defaultStore = markRaw(
 			default: true,
 			createdAt: "2023/8/24",
 		},
+		postFormPreviewLayout: {
+			where: "device",
+			default: "legacy" as "legacy" | "modern",
+			createdAt: "2026/5/22",
+		},
 		alwaysInputFilename: {
 			where: "device",
 			default: false,

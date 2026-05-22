@@ -242,7 +242,9 @@ watch(
 	overflow: clip;
 	font-size: 0.95em;
 
-	> .avatar {
+	// レイアウト共通のアバター見た目（legacy / modern の DOM 構造差を吸収するため、
+	// 子孫セレクタ `.avatar` を一箇所だけで定義する）
+	.avatar {
 		flex-shrink: 0;
 		display: block;
 		margin: 0 0.625rem 0 0;
@@ -305,14 +307,7 @@ watch(
 				display: flex;
 				align-items: flex-start;
 
-				> .avatar {
-					flex-shrink: 0;
-					display: block;
-					margin: 0 0.625rem 0 0;
-					width: 2.5rem;
-					height: 2.5rem;
-					border-radius: 0.5rem;
-				}
+				// アバターサイズはレイアウト共通の `.avatar` 定義に任せる
 
 				> .header {
 					flex: 1;
@@ -350,22 +345,17 @@ watch(
 	}
 	//#endregion
 
-	&.min-width_350px {
-		> .avatar,
-		&.modern > .main > .header-container > .avatar {
-			margin: 0 0.625rem 0 0;
-			width: 2.75rem;
-			height: 2.75rem;
-		}
+	// `v-size` のしきい値クラスは、legacy / modern どちらでも同じ `.avatar` に当てる
+	&.min-width_350px .avatar {
+		margin: 0 0.625rem 0 0;
+		width: 2.75rem;
+		height: 2.75rem;
 	}
 
-	&.min-width_500px {
-		> .avatar,
-		&.modern > .main > .header-container > .avatar {
-			margin: 0 0.75rem 0 0;
-			width: 3rem;
-			height: 3rem;
-		}
+	&.min-width_500px .avatar {
+		margin: 0 0.75rem 0 0;
+		width: 3rem;
+		height: 3rem;
 	}
 }
 </style>

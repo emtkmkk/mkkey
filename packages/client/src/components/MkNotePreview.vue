@@ -1,10 +1,14 @@
 <template>
 	<div v-size="{ min: [350, 500] }" class="fefdfafb">
-		<MkAvatar class="avatar" :user="$i" disableLink />
 		<div class="main">
-			<div class="header">
-				<MkUserName :user="$i" />
+			<!-- ヘッダー行: アイコンと表示名（実投稿の header-container と同じ並び） -->
+			<div class="header-container">
+				<MkAvatar class="avatar" :user="$i" disableLink />
+				<div class="header">
+					<MkUserName :user="$i" />
+				</div>
 			</div>
+			<!-- 本文は main 全幅＝アイコン左端と揃えて、その下から開始 -->
 			<div class="body">
 				<div class="content">
 					<Mfm
@@ -35,18 +39,31 @@
 						no-style
 					>
 						<template #header>{{ referenceIds?.length + " 件の参照" }}</template>
-						<div v-for="reference in referenceIds" :key="reference" class="reference">
+						<div
+							v-for="reference in referenceIds"
+							:key="reference"
+							class="reference"
+						>
 							<XNoteSimple v-if="notes[reference]" :note="notes[reference]" />
 						</div>
 					</MkFolder>
 				</div>
-
 			</div>
 		</div>
 	</div>
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 投稿フォーム内のノート本文プレビュー。
+ *
+ * @remarks
+ * NOTE: 実投稿（{@link MkNote}）と同様、ヘッダーはアイコン横、本文はアイコン直下から始める。
+ *
+ * @internal
+ */
 import { ref, watch } from "vue";
 import { preprocess } from "@/scripts/preprocess";
 import { shouldEnableMfmCompat } from "@/scripts/mfm-compat";
@@ -73,84 +90,74 @@ const mfmCompat = $computed(
 
 const notes = ref<Record<string, Note | null>>({});
 
+/**
+ * 参照ノートを API から取得する。
+ *
+ * @param noteId - 参照先ノート ID
+ * @returns ノート实体
+ * @internal
+ */
 const getNote = async (noteId: string): Promise<Note> => {
-  return (await os.api("notes/show", { noteId })) as Note;
+	return (await os.api("notes/show", { noteId })) as Note;
 };
 
 watch(
-  () => props.referenceIds,
-  async (newReferenceIds) => {
-    if (newReferenceIds) {
-      for (const referenceId of newReferenceIds) {
-        if (!notes.value[referenceId]) {
-          try {
-            notes.value[referenceId] = await getNote(referenceId);
-          } catch (error) {
-            console.error(`Failed to get note for referenceId ${referenceId}:`, error);
-          }
-        }
-      }
-    }
-  },
-  { immediate: true }
+	() => props.referenceIds,
+	async (newReferenceIds) => {
+		if (newReferenceIds) {
+			for (const referenceId of newReferenceIds) {
+				if (!notes.value[referenceId]) {
+					try {
+						notes.value[referenceId] = await getNote(referenceId);
+					} catch (error) {
+						console.error(
+							`Failed to get note for referenceId ${referenceId}:`,
+							error,
+						);
+					}
+				}
+			}
+		}
+	},
+	{ immediate: true },
 );
 </script>
 
 <style lang="scss" scoped>
 .fefdfafb {
-	display: flex;
 	margin: 0;
 	padding: 0;
 	overflow: clip;
 	font-size: 0.95em;
 
-	&.min-width_350px {
-		> .avatar {
-			margin: 0 0.625rem 0 0;
-			width: 2.75rem;
-			height: 2.75rem;
-		}
-	}
-
-	&.min-width_500px {
-		> .avatar {
-			margin: 0 0.75rem 0 0;
-			width: 3rem;
-			height: 3rem;
-		}
-	}
-
-	> .avatar {
-		flex-shrink: 0;
-		display: block;
-		margin: 0 0.625rem 0 0;
-		width: 2.5rem;
-		height: 2.5rem;
-		border-radius: 0.5rem;
-		pointer-events: none;
-	}
-
 	> .main {
-		flex: 1;
 		min-width: 0;
 
-		> .header {
-			margin-bottom: 0.125rem;
-			font-weight: bold;
+		> .header-container {
+			display: flex;
+			align-items: center;
+
+			> .avatar {
+				flex-shrink: 0;
+				display: block;
+				margin: 0 0.625rem 0 0;
+				width: 2.5rem;
+				height: 2.5rem;
+				border-radius: 0.5rem;
+				pointer-events: none;
+			}
+
+			> .header {
+				flex: 1;
+				min-width: 0;
+				margin-bottom: 0.125rem;
+				font-weight: bold;
+			}
 		}
 
 		> .body {
-			> .cw {
-				cursor: default;
-				display: block;
-				margin: 0;
-				padding: 0;
-				overflow-wrap: break-word;
-
-				> .text {
-					margin-right: 0.5rem;
-				}
-			}
+			// 実投稿の .article > .main > .body と同じく、ヘッダー行の下から本文を開始
+			margin-top: 0.7em;
 
 			> .content {
 				> .text {
@@ -176,6 +183,22 @@ watch(
 					}
 				}
 			}
+		}
+	}
+
+	&.min-width_350px {
+		> .main > .header-container > .avatar {
+			margin: 0 0.625rem 0 0;
+			width: 2.75rem;
+			height: 2.75rem;
+		}
+	}
+
+	&.min-width_500px {
+		> .main > .header-container > .avatar {
+			margin: 0 0.75rem 0 0;
+			width: 3rem;
+			height: 3rem;
 		}
 	}
 }

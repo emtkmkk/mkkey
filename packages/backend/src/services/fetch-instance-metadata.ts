@@ -109,6 +109,7 @@ export async function fetchInstanceMetadata(
 							updates.maintainerEmail = mastodonInfo.email || null;
 
 						// max_reactions_per_account の指定があればその値にする
+						// reactions.max_reactions の指定があればその値にする
 						// 指定が無い場合は以下の通り
 						// configurationにemoji_reactionsの設定が何かあれば 1
 						// fedibird_capabilitiesにemoji_reactionがあれば 1
@@ -116,6 +117,7 @@ export async function fetchInstanceMetadata(
 						updates.maxReactionsPerAccount =
 							mastodonInfo.configuration?.emoji_reactions
 								?.max_reactions_per_account ??
+							mastodonInfo.configuration?.reactions?.max_reactions ??
 							(mastodonInfo.configuration?.emoji_reactions ||
 							mastodonInfo.fedibird_capabilities?.includes("emoji_reaction")
 								? 1

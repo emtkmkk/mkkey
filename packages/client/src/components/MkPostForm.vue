@@ -515,6 +515,7 @@ import { deepClone } from "@/scripts/clone";
 import XDraft from "@/components/MkDraftDialog.vue";
 import XCheatSheet from "@/components/MkCheatSheetDialog.vue";
 import { preprocess } from "@/scripts/preprocess";
+import { triggerPizzaIfNeeded } from "@/scripts/pizza-command";
 import {
 	FILE_SELECT_IDLE_WAIT_MS,
 	evaluateUploadWaitState,
@@ -2372,9 +2373,15 @@ function postSecondChannel() {
  *
  * @remarks
  * NB: 投稿ロック中は早期 return（UI/ショートカット側ガードの取りこぼし対策の最終防衛）。
+ * NOTE: 本文に `@ピザ` / `＠ピザ` を含む場合、ここでネタ機能としてピザ関連ページを
+ *       新規タブで開く。サーバー側・他ユーザーには影響しない。
  */
 async function post() {
 	if (postLocked) return;
+	// 「@ピザ / ＠ピザ」を含む場合はランダムでピザ関連ページを新規タブで開く（ネタ機能）。
+	// NB: ポップアップブロック対策のため `await` より前の同期区間で呼ぶ。
+	// NB: 判定対象は生のユーザー入力本文のみ。投稿成否は待たない。
+	triggerPizzaIfNeeded(text);
 	const processedText = text ? preprocess(text) : "";
 
 	if (useCw && !cw?.trim()) cw = "CW";

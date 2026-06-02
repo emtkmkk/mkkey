@@ -31,6 +31,21 @@ export const fontList = {
 		importUrl:
 			"https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap",
 	},
+	"ibm-plex-sans-jp": {
+		name: "IBM Plex Sans JP",
+		fontFamily: "IBM Plex Sans JP",
+		importUrl:
+			"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap",
+	},
+	// NOTE: LINE Seed JP は LY Corporation 公開の SIL OFL 1.1 フォント。
+	//       Google Fonts では配信されていないため、公式 zip 同梱の Web/WOFF2 を
+	//       packages/backend/assets/fonts/LINESeedJP.woff2 として同梱している。
+	//       同梱ウェイトは Regular(400) のみ。
+	"line-seed-jp": {
+		name: "LINE Seed JP",
+		fontFamily: "LINE Seed JP",
+		importUrl: "https://mkkey.net/static-assets/fonts/lineseedjp.css",
+	},
 	"sawarabi Gothic": {
 		name: "さわらびゴシック",
 		fontFamily: "Sawarabi Gothic",
@@ -42,6 +57,12 @@ export const fontList = {
 		fontFamily: "Sawarabi Mincho",
 		importUrl:
 			"https://fonts.googleapis.com/css2?family=Sawarabi+Mincho&display=swap",
+	},
+	"shippori-mincho": {
+		name: "しっぽり明朝",
+		fontFamily: "Shippori Mincho",
+		importUrl:
+			"https://fonts.googleapis.com/css2?family=Shippori+Mincho&display=swap",
 	},
 	"m-plus": {
 		name: "M PLUS 1p",
@@ -59,6 +80,14 @@ export const fontList = {
 		name: "M PLUS 2",
 		fontFamily: "M PLUS 2",
 		importUrl: "https://fonts.googleapis.com/css2?family=M+PLUS+2&display=swap",
+	},
+	// NOTE: Murecho は M+ + Murekuto をベースにした Google Fonts 公式の可変フォント
+	//       (SIL OFL 1.1)。仮名のリズムが整っており、本文・UI 用途で評価が高い。
+	//       M+ ファミリーの読みやすさ強化版として、ねこスプーンの直前に配置している。
+	"murecho": {
+		name: "Murecho",
+		fontFamily: "Murecho",
+		importUrl: "https://fonts.googleapis.com/css2?family=Murecho&display=swap",
 	},
 	// NOTE: ねこスプーンは M+ -> ロゴたいぷゴシック派生のフリーフォント(SIL OFL 1.1)。
 	//       M+ ファミリーの末尾に並べることで派生関係を反映している。
@@ -172,17 +201,35 @@ export const fontList = {
 		importUrl:
 			"https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New&display=swap",
 	},
+	"zen-kaku-gothic-antique": {
+		name: "ZEN角ゴシックアンチック",
+		fontFamily: "Zen Kaku Gothic Antique",
+		importUrl:
+			"https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+Antique&display=swap",
+	},
 	"zen-maru-gothic": {
 		name: "ZEN丸ゴシック",
 		fontFamily: "Zen Maru Gothic",
 		importUrl:
 			"https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&display=swap",
 	},
+	"zen-old-mincho": {
+		name: "ZEN旧明朝",
+		fontFamily: "Zen Old Mincho",
+		importUrl:
+			"https://fonts.googleapis.com/css2?family=Zen+Old+Mincho&display=swap",
+	},
 	"kaisei-decol": {
 		name: "解星デコール",
 		fontFamily: "Kaisei Decol",
 		importUrl:
 			"https://fonts.googleapis.com/css2?family=Kaisei+Decol&display=swap",
+	},
+	"shippori-antique": {
+		name: "しっぽりアンチック",
+		fontFamily: "Shippori Antique",
+		importUrl:
+			"https://fonts.googleapis.com/css2?family=Shippori+Antique&display=swap",
 	},
 	"rocknroll-one": {
 		name: "ロックンロールワン",

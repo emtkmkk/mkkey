@@ -1,3 +1,23 @@
+/**
+ * @packageDocumentation
+ *
+ * クライアントのカスタムフォント定義モジュール。
+ *
+ * @remarks
+ * - {@link fontList} はユーザーが設定 UI から選択できる日本語フォントの一覧。
+ *   オブジェクトの定義順 = 設定画面の表示順となる({@link https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/entries | Object.entries} 仕様)。
+ * - 各エントリのキーは `store.customFont` に保存される識別子。kebab-case を慣例とする。
+ * - `importUrl` には Google Fonts の CSS URL もしくは自前ホストの `@font-face` を含む CSS URL を指定する。
+ *   自前ホスト系の CSS とバイナリは `packages/backend/assets/fonts/` に同梱されており、
+ *   `https://mkkey.net/static-assets/fonts/` 経由で配信される(例: `HuiFontP109.woff` / `NekoSpoon.woff2`)。
+ * - フォント名(`name`)はそのまま UI に表示されるため、i18n は不要。
+ *
+ * NOTE: `applyFont()` は `fontList` にないキーが渡された場合、Google Fonts URL を自動生成する
+ *       フォールバックを持っている。これにより、リストに無いフォント名でも CSS 経由で読み込める。
+ *
+ * @public
+ */
+
 export const fontList = {
 	"noto-sans": {
 		name: "Noto Sans JP",
@@ -39,6 +59,14 @@ export const fontList = {
 		name: "M PLUS 2",
 		fontFamily: "M PLUS 2",
 		importUrl: "https://fonts.googleapis.com/css2?family=M+PLUS+2&display=swap",
+	},
+	// NOTE: ねこスプーンは M+ -> ロゴたいぷゴシック派生のフリーフォント(SIL OFL 1.1)。
+	//       M+ ファミリーの末尾に並べることで派生関係を反映している。
+	//       バイナリと OFL ライセンス本文は packages/backend/assets/fonts/ に同梱。
+	"neko-spoon": {
+		name: "ねこスプーン",
+		fontFamily: "ねこスプーン",
+		importUrl: "https://mkkey.net/static-assets/fonts/nekospoon.css",
 	},
 	kosugi: {
 		name: "小杉",
@@ -191,6 +219,23 @@ export const fontList = {
 	},
 };
 
+/**
+ * 指定されたフォント名を、`<style id="custom-font">` を `document.head` に注入することで body 全体に適用する。
+ *
+ * @remarks
+ * - `fontname` に `null` / 空文字を渡した場合は注入済みの `<style>` を取り除き、デフォルト設定に戻す。
+ * - `fontList` に存在しないキーが渡された場合は、その文字列を Google Fonts のファミリー名とみなして
+ *   `https://fonts.googleapis.com/css2?family=<name>` URL を自動生成する(フォールバック)。
+ * - フォールバックスタックには、絵文字・変体仮名・第二水準漢字を含むようにシステムフォントを並べている。
+ *   `NekoSpoon` 等のグリフ欠損(例: 證/鈿/鉞)はこのスタックでカバーされる想定。
+ *
+ * NOTE: 同じ `id` の `<style>` を再利用することで、フォント切り替え時に古い `@import` が
+ *       重複して残らないようにしている。
+ *
+ * @param fontname - 適用するフォントのキー(または Google Fonts ファミリー名)。`null` の場合はリセット。
+ *
+ * @public
+ */
 export function applyFont(fontname: null | string) {
 	let style = document.getElementById("custom-font");
 

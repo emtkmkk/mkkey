@@ -7,6 +7,7 @@ import { IdentifiableError } from "@/misc/identifiable-error.js";
 import type { User } from "@/models/entities/user.js";
 import { ILocalUser } from "@/models/entities/user.js";
 import { Users, FollowRequests } from "@/models/index.js";
+import { invalidateUserShowRelationCache } from "../../invalidate-user-show-relation-cache.js";
 
 export default async function (
 	followee: {
@@ -44,6 +45,8 @@ export default async function (
 		followeeId: followee.id,
 		followerId: follower.id,
 	});
+
+	await invalidateUserShowRelationCache(followee.id, follower.id);
 
 	Users.pack(followee.id, followee, {
 		detail: true,

@@ -5,6 +5,7 @@
  *
  * @remarks
  * - **役割**: フォロー API や Accept(Follow) から呼ばれ、フォロー関係を保存し AP 配信する。
+ * - follower 向け followRequestAccepted は Followings 新規成立時のみ（リクエスト送信のみでは送らない）。
  *
  * @see {@link server/api/endpoints/following/create} フォロー API
  * @internal
@@ -46,6 +47,7 @@ import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { webhookDeliver } from "@/queue/index.js";
 import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
 import { invalidateDormantFollowerSkipCache } from "@/remote/activitypub/dormant-follower-check.js";
+import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
 
 const logger = new Logger("following/create");
 
@@ -117,11 +119,13 @@ export async function insertFollowingDoc(
 		userId: followee.id,
 	});
 
-	// リクエスト承諾の通知を作成
+	// フォロー関係が新規成立したときのみ follower へ通知（リクエスト送信のみでは送らない）
 	createNotification(follower.id, "followRequestAccepted", {
 		notifierId: followee.id,
 		customBody: followeeProfile.followedMessage,
 	}, { notifier: followee });
+
+	await invalidateUserShowRelationCache(followee.id, follower.id);
 
 	//#region カウント増加
 	await Promise.all([

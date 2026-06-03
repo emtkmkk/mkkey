@@ -207,7 +207,6 @@
 										($i != null && $i.id != user.id)
 									"
 									:user="user"
-									@refresh="emit('refresh')"
 									:inline="true"
 									:transparent="false"
 									:full="!narrow"
@@ -604,7 +603,6 @@ import { useRemoteImageWithProxy } from "@/scripts/use-remote-image-with-proxy";
 const XPhotos = defineAsyncComponent(() => import("./index.photos.vue"));
 const XActivity = defineAsyncComponent(() => import("./index.activity.vue"));
 
-const emit = defineEmits(["refresh"]);
 const props = withDefaults(
 	defineProps<{
 		user: misskey.entities.UserDetailed;

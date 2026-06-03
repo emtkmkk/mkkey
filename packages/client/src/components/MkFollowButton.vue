@@ -46,7 +46,18 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onBeforeUnmount, onMounted } from "vue";
+/**
+ * @packageDocumentation
+ *
+ * ユーザーのフォロー／フォローリクエスト／ブロック解除ボタン。
+ *
+ * @remarks
+ * API 応答と WebSocket（follow / unfollow）の双方で relation を同期する。
+ * 親の user オブジェクトも更新し、プロフィール全体の表示と揃える。
+ *
+ * @public
+ */
+import { computed, onBeforeUnmount, onMounted, watch } from "vue";
 import type * as Misskey from "calckey-js";
 import * as os from "@/os";
 import { stream } from "@/stream";
@@ -54,7 +65,17 @@ import { i18n } from "@/i18n";
 import { $i } from "@/account";
 import * as config from "@/config";
 
-const emit = defineEmits(["refresh"]);
+/** users/show 等から受け取る relation 更新用フィールド */
+type UserRelationPatch = Pick<
+	Misskey.entities.UserDetailed,
+	| "id"
+	| "isFollowing"
+	| "isFollowed"
+	| "hasPendingFollowRequestFromYou"
+	| "isBlocking"
+	| "isMuted"
+>;
+
 const props = withDefaults(
 	defineProps<{
 		user: Misskey.entities.UserDetailed;
@@ -66,29 +87,73 @@ const props = withDefaults(
 		full: false,
 		large: false,
 		isFollowingHidden: false,
-	}
+	},
 );
 
-const isBlocking = computed(() => $i != null && props.user.isBlocking);
+const isBlocking = computed(() => $i != null && props.user.isBlocking === true);
 
-let isFollowing = $ref($i != null && props.user.isFollowing);
+let isFollowing = $ref($i != null && props.user.isFollowing === true);
 let hasPendingFollowRequestFromYou = $ref(
-	$i != null && props.user.hasPendingFollowRequestFromYou
+	$i != null && props.user.hasPendingFollowRequestFromYou === true,
 );
 let wait = $ref(false);
 const connection = stream.useChannel("main");
 
+/**
+ * props.user の relation をローカル state に反映する。
+ */
+function syncLocalFromProps(): void {
+	if ($i == null) return;
+	isFollowing = props.user.isFollowing === true;
+	hasPendingFollowRequestFromYou =
+		props.user.hasPendingFollowRequestFromYou === true;
+}
+
+/**
+ * API / ストリーム由来の relation を props.user とローカル state に書き戻す。
+ *
+ * @param packed 対象ユーザー（followee）の pack 結果
+ */
+function applyRelationFromPacked(packed: UserRelationPatch): void {
+	if (packed.id !== props.user.id) return;
+
+	if (packed.isFollowing != null) {
+		props.user.isFollowing = packed.isFollowing;
+		isFollowing = packed.isFollowing;
+	}
+	if (packed.hasPendingFollowRequestFromYou != null) {
+		props.user.hasPendingFollowRequestFromYou =
+			packed.hasPendingFollowRequestFromYou;
+		hasPendingFollowRequestFromYou = packed.hasPendingFollowRequestFromYou;
+	}
+	if (packed.isFollowed != null) {
+		props.user.isFollowed = packed.isFollowed;
+	}
+	if (packed.isBlocking != null) {
+		props.user.isBlocking = packed.isBlocking;
+	}
+	if (packed.isMuted != null) {
+		props.user.isMuted = packed.isMuted;
+	}
+}
+
 if ($i != null && props.user.isFollowing == null) {
 	os.api("users/show", {
 		userId: props.user.id,
-	}).then(onFollowChange);
+	}).then(applyRelationFromPacked);
 }
 
-function onFollowChange(user: Misskey.entities.UserDetailed) {
-	if (user.id === props.user.id) {
-		isFollowing = user.isFollowing;
-		hasPendingFollowRequestFromYou = user.hasPendingFollowRequestFromYou;
-	}
+watch(
+	() => [
+		props.user.isFollowing,
+		props.user.hasPendingFollowRequestFromYou,
+		props.user.isBlocking,
+	],
+	syncLocalFromProps,
+);
+
+function onFollowChange(user: Misskey.entities.UserDetailed): void {
+	applyRelationFromPacked(user);
 }
 
 async function onClick() {
@@ -112,86 +177,86 @@ async function onClick() {
 		if (input.trim() === hostname) {
 			window.open(
 				`https://${input.trim()}/@${props.user.username}`,
-				"_blank"
+				"_blank",
 			);
 		} else {
 			window.open(
 				`https://${input.trim()}/@${props.user.username}@${hostname}`,
-				"_blank"
+				"_blank",
 			);
 		}
 
 		return;
 	}
-		wait = true;
+	wait = true;
 
-		try {
-			if (isBlocking.value) {
-				const { canceled } = await os.confirm({
-					type: "warning",
-					text: i18n.t("unblockConfirm"),
-				});
-				if (canceled) return;
+	try {
+		if (isBlocking.value) {
+			const { canceled } = await os.confirm({
+				type: "warning",
+				text: i18n.t("unblockConfirm"),
+			});
+			if (canceled) return;
 
-				await os.api("blocking/delete", {
+			const packed = await os.api("blocking/delete", {
+				userId: props.user.id,
+			});
+			applyRelationFromPacked(packed);
+			if (props.user.isMuted) {
+				await os.api("mute/delete", {
 					userId: props.user.id,
 				});
-				if (props.user.isMuted) {
-					await os.api("mute/delete", {
-						userId: props.user.id,
-					});
-				}
-				emit("refresh");
-			} else if (isFollowing) {
-				const { canceled } = await os.confirm({
-					type: "warning",
-					text: i18n.t("unfollowConfirm", {
-						name: props.user.name || props.user.username,
-					}),
-				});
-
-				if (canceled) return;
-
-				await os.api("following/delete", {
-					userId: props.user.id,
-				});
-			} else {
-				if (hasPendingFollowRequestFromYou) {
-					await os.api("following/requests/cancel", {
-						userId: props.user.id,
-					});
-					hasPendingFollowRequestFromYou = false;
-				} else {
-					if (props.user.isSilenced) {
-						const { canceled } = await os.confirm({
-							type: "warning",
-							text: i18n.t("silencedUserFollowConfirm"),
-						});
-
-						if (canceled) return;
-					}
-
-					if (props.user.isModerationWarning) {
-						const { canceled } = await os.confirm({
-							type: "warning",
-							text: i18n.t("warnedUserFollowConfirm"),
-							wait: 7,
-						});
-
-						if (canceled) return;
-					}
-
-					await os.api("following/create", {
-						userId: props.user.id,
-					});
-					hasPendingFollowRequestFromYou = true;
-				}
+				props.user.isMuted = false;
 			}
-		} catch (err) {
-			console.error(err);
-		} finally {
-			wait = false;
+		} else if (isFollowing) {
+			const { canceled } = await os.confirm({
+				type: "warning",
+				text: i18n.t("unfollowConfirm", {
+					name: props.user.name || props.user.username,
+				}),
+			});
+
+			if (canceled) return;
+
+			const packed = await os.api("following/delete", {
+				userId: props.user.id,
+			});
+			applyRelationFromPacked(packed);
+		} else if (hasPendingFollowRequestFromYou) {
+			const packed = await os.api("following/requests/cancel", {
+				userId: props.user.id,
+			});
+			applyRelationFromPacked(packed);
+		} else {
+			if (props.user.isSilenced) {
+				const { canceled } = await os.confirm({
+					type: "warning",
+					text: i18n.t("silencedUserFollowConfirm"),
+				});
+
+				if (canceled) return;
+			}
+
+			if (props.user.isModerationWarning) {
+				const { canceled } = await os.confirm({
+					type: "warning",
+					text: i18n.t("warnedUserFollowConfirm"),
+					wait: 7,
+				});
+
+				if (canceled) return;
+			}
+
+			const packed = await os.api("following/create", {
+				userId: props.user.id,
+			});
+			applyRelationFromPacked(packed);
 		}
+	} catch (err) {
+		console.error(err);
+	} finally {
+		wait = false;
+	}
 }
 
 onMounted(() => {

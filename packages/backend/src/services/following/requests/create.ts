@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * フォローリクエスト（承認待ち）作成処理。
+ *
+ * @remarks
+ * フォロー関係はまだ成立していない。followRequestAccepted（フォローに成功しました）は送らない。
+ *
+ * @internal
+ */
+
 import { publishMainStream } from "@/services/stream.js";
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderFollow from "@/remote/activitypub/renderer/follow.js";
@@ -12,6 +23,7 @@ import {
 import { genId } from "@/misc/gen-id.js";
 import { createNotification } from "../../create-notification.js";
 import config from "@/config/index.js";
+import { invalidateUserShowRelationCache } from "../../invalidate-user-show-relation-cache.js";
 
 export default async function (
 	follower: {
@@ -66,6 +78,9 @@ export default async function (
 			? followee.sharedInbox
 			: undefined,
 	}).then((x) => FollowRequests.findOneByOrFail(x.identifiers[0]));
+
+	// NOTE: フォロー未成立のため followRequestAccepted（フォローに成功しました）は送らない
+	await invalidateUserShowRelationCache(followee.id, follower.id);
 
 	// Publish receiveRequest event
 	if (Users.isLocalUser(followee)) {

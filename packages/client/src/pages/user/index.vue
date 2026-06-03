@@ -14,7 +14,6 @@
 					<XHome
 						v-if="tab === 'home'"
 						:user="user"
-						@refresh="fetchUser()"
 					/>
 					<XImages v-else-if="tab === 'images'" :user="user" />
 					<XReactions v-else-if="tab === 'reactions'" :user="user" />

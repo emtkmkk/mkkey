@@ -20,6 +20,7 @@ import type { CacheableUser } from "@/models/entities/user.js";
 import { Blockings, UserProfiles, Users } from "@/models/index.js";
 import { unsetModerationWarningByAdminUnblock } from "../moderation-warning-by-admin-block.js";
 import { createNotification } from "@/services/create-notification.js";
+import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
 
 const logger = new Logger("blocking/delete");
 
@@ -42,6 +43,7 @@ export default async function (blocker: CacheableUser, blockee: CacheableUser) {
 
 	await Blockings.delete(blocking.id);
 	await unsetModerationWarningByAdminUnblock(blocker, blockee);
+	await invalidateUserShowRelationCache(blocker.id, blockee.id);
 
 	if (Users.isLocalUser(blockee)) {
 		const profile = await UserProfiles.findOneBy({ userId: blockee.id });

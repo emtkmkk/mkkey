@@ -41,6 +41,7 @@ import { webhookDeliver } from "@/queue/index.js";
 import { ensureProxyFollowsListedUser } from "../user-list/ensure-proxy-follow.js";
 import { setModerationWarningByAdminBlock } from "../moderation-warning-by-admin-block.js";
 import { createNotification } from "@/services/create-notification.js";
+import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
 
 export default async function (blocker: User, blockee: User) {
         const [, , blockerUnfollowedBlockee, blockeeUnfollowedBlocker] =
@@ -105,6 +106,8 @@ export default async function (blocker: User, blockee: User) {
 		const content = renderActivity(renderBlock(blocking));
 		deliver(blocker, content, blockee.inbox);
 	}
+
+	await invalidateUserShowRelationCache(blocker.id, blockee.id);
 }
 
 async function cancelRequest(follower: User, followee: User) {

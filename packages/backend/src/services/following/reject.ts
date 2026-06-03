@@ -21,6 +21,7 @@ import { Users, FollowRequests, Followings } from "@/models/index.js";
 import { decrementFollowing } from "./delete.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { notifyWasForciblyUnfollowed } from "./notify-forcibly-unfollowed.js";
+import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
 
 type Local =
 	| ILocalUser
@@ -96,6 +97,7 @@ async function removeFollowRequest(followee: Both, follower: Both) {
 	if (!request) return;
 
 	await FollowRequests.delete(request.id);
+	await invalidateUserShowRelationCache(followee.id, follower.id);
 }
 
 /**
@@ -113,6 +115,7 @@ async function removeFollow(followee: Both, follower: Both): Promise<boolean> {
 
 	await Followings.delete(following.id);
 	await decrementFollowing(follower, followee);
+	await invalidateUserShowRelationCache(followee.id, follower.id);
 
 	if (Users.isLocalUser(follower)) {
 		publishInternalEvent("notePackFollowingUpdated", {

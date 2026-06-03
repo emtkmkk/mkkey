@@ -33,6 +33,7 @@ import {
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { createNotification } from "@/services/create-notification.js";
 import { notifyWasForciblyUnfollowed } from "./notify-forcibly-unfollowed.js";
+import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
 
 const logger = new Logger("following/delete");
 
@@ -77,6 +78,7 @@ export default async function (
 	await Followings.delete(following.id);
 
 	await decrementFollowing(follower, followee);
+	await invalidateUserShowRelationCache(followee.id, follower.id);
 
 	if (Users.isLocalUser(follower)) {
 		publishInternalEvent("notePackFollowingUpdated", {

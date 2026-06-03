@@ -150,7 +150,7 @@ function subscribe() {
 	);
 }
 
-async function unregister() {
+async function unsubscribe() {
 	if (!pushSubscription) return;
 
 	const endpoint = pushSubscription.endpoint;

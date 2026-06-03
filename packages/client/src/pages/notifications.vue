@@ -117,7 +117,7 @@ const filterableNotificationTypes = $computed(() =>
 /** dev OFF 後に実験的種別だけ選んでいるフィルタを外す */
 function sanitizeIncludeTypes(): void {
 	if (includeTypes == null) return;
-	const visible = new Set(filterableNotificationTypes.value);
+	const visible = new Set(filterableNotificationTypes);
 	if (includeTypes.every((t) => visible.has(t))) return;
 	includeTypes = null;
 	reload();
@@ -154,7 +154,7 @@ const directNotesPagination = {
 };
 
 function setFilter(ev) {
-	const typeItems = filterableNotificationTypes.value.map((t) => ({
+	const typeItems = filterableNotificationTypes.map((t) => ({
 		text: i18n.t(`_notification._types.${t}`),
 		active: includeTypes != null && includeTypes.includes(t),
 		action: () => {

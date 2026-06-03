@@ -184,17 +184,16 @@ async function sendToSubscription(
 	const endpointHash = hashPushEndpoint(subscription.endpoint);
 
 	try {
-		const sendOptions = {
+		// web-push 3.x は top-level `urgency` 非対応。RFC 8030 の Urgency ヘッダで指定する。
+		const isHighPriority =
+			type === "notification" || type === "unreadMessagingMessage";
+		const sendOptions: Parameters<typeof push.sendNotification>[2] = {
 			proxy: config.proxy,
-			urgency:
-				type === "notification" || type === "unreadMessagingMessage"
-					? "high"
-					: "normal",
-			TTL:
-				type === "notification" || type === "unreadMessagingMessage"
-					? 86400
-					: 300,
-		} as Parameters<typeof push.sendNotification>[2];
+			TTL: isHighPriority ? 86400 : 300,
+			headers: {
+				Urgency: isHighPriority ? "high" : "normal",
+			},
+		};
 
 		await Promise.race([
 			push.sendNotification(pushSubscription, payload, sendOptions),

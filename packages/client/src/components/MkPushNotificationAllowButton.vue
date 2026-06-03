@@ -63,7 +63,8 @@
  * プッシュ通知の購読・解除ボタン。
  *
  * @remarks
- * NOTE: サーバー未登録のブラウザ購読は自動で再 register する。
+ * - サーバー登録はユーザが「購読」を押したときのみ行う（自動再 register しない）。
+ * - 解除時は {@link setPushServerOptOut} でオフ意図を端末に保存し、リロードやアカウント切替後の誤登録を防ぐ。
  *
  * @public
  */
@@ -73,6 +74,10 @@ import { instance } from "@/instance";
 import { api, promiseDialog } from "@/os";
 import { i18n } from "@/i18n";
 import { getAccounts } from "@/account";
+import {
+	isPushServerOptOut,
+	setPushServerOptOut,
+} from "@/scripts/push-opt-out";
 import {
 	encodePushKey,
 	registerPushSubscription,
@@ -108,9 +113,8 @@ let pushRegistrationInServer = $ref<
 	| undefined
 >();
 
-
 function subscribe() {
-	if (!registration || !supported || !instance.swPublickey) return;
+	if (!registration || !supported || !instance.swPublickey || !$i) return;
 
 	return promiseDialog(
 		(async () => {
@@ -125,6 +129,11 @@ function subscribe() {
 				}
 			}
 
+			const existing = await registration!.pushManager.getSubscription();
+			if (existing) {
+				return existing;
+			}
+
 			return registration!.pushManager.subscribe({
 				userVisibleOnly: true,
 				applicationServerKey: urlBase64ToUint8Array(instance.swPublickey!),
@@ -133,7 +142,11 @@ function subscribe() {
 			.then(async (subscription) => {
 				if (!subscription) return;
 				pushSubscription = subscription;
-				pushRegistrationInServer = await registerPushSubscription(subscription);
+				const reg = await registerPushSubscription(subscription);
+				if (reg) {
+					setPushServerOptOut($i.id, false);
+					pushRegistrationInServer = reg;
+				}
 			})
 			.catch((err) => {
 				if (err?.name === "NotAllowedError") {
@@ -151,7 +164,7 @@ function subscribe() {
 }
 
 async function unsubscribe() {
-	if (!pushSubscription) return;
+	if (!pushSubscription || !$i) return;
 
 	const endpoint = pushSubscription.endpoint;
 	const accounts = await getAccounts();
@@ -165,10 +178,19 @@ async function unsubscribe() {
 	}
 
 	await api("sw/unregister", { endpoint, cause: "api-call" });
+	setPushServerOptOut($i.id, true);
 }
 
+/**
+ * サーバー登録状態を照会する（自動 register はしない）。
+ */
 async function syncSubscriptionWithServer() {
 	if (!registration || !pushSubscription || !$i?.token) return;
+
+	if (isPushServerOptOut($i.id)) {
+		pushRegistrationInServer = undefined;
+		return;
+	}
 
 	const res = await api("sw/show-registration", {
 		endpoint: pushSubscription.endpoint,
@@ -176,17 +198,7 @@ async function syncSubscriptionWithServer() {
 		publickey: encodePushKey(pushSubscription.getKey("p256dh")),
 	});
 
-	if (res) {
-		pushRegistrationInServer = res;
-		return;
-	}
-
-	// 宙ぶらり: ブラウザに購読あり・サーバーに無し → 再登録
-	try {
-		pushRegistrationInServer = await registerPushSubscription(pushSubscription);
-	} catch (err) {
-		console.error("Failed to re-register push subscription:", err);
-	}
+	pushRegistrationInServer = res ?? undefined;
 }
 
 if (navigator.serviceWorker == null) {

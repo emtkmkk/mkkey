@@ -5,6 +5,8 @@
  *
  * @remarks
  * - **役割**: リアクション・フォロー・メンション等の通知を DB に保存し、ストリーム・プッシュ・メールで配信する。
+ * - CHANGED: 種別ミュート（`isRead: true`）の通知はプッシュも送らない（設定 UI と整合）。
+ * - NOTE: 実験的通知種別のプッシュ検証時は、設定で該当種別を ON（ミュート解除）してから試すこと。
  *
  * @see {@link services/note/reaction/create} リアクション作成
  * @internal
@@ -112,9 +114,10 @@ export async function createNotification(
 	setTimeout(async () => {
 		const fresh = await Notifications.findOneBy({ id: notification.id });
 		if (fresh == null) return; // 既に削除されているかもしれない
-		// サーバー側の「既読」チェックはプッシュ通知と相性が悪いため、先に実行する。表示タイミングはアプリとサービスワーカーが判断する
-		pushNotification(notifieeId, "notification", packed);
+		// 種別ミュート・手動既読は isRead=true。プッシュもアプリ内表示と同様に抑止する
 		if (fresh.isRead) return;
+
+		await pushNotification(notifieeId, "notification", packed);
 
 		//#region ただしミュートしているユーザーからの通知なら無視
 		const isNotifierMuted =

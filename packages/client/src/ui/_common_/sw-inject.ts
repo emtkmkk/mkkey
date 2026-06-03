@@ -5,6 +5,42 @@ import { getAccountFromId } from "@/scripts/get-account-from-id";
 import { mainRouter } from "@/router";
 import * as os from "@/os";
 import { reregisterPushSubscriptionAfterChange } from "@/scripts/push-subscription-register";
+import { i18n } from "@/i18n";
+
+/**
+ * フォアグラウンド転送時の in-app トースト文言を組み立てる。
+ *
+ * @param body - push ペイロードの notification body
+ * @returns トースト用テキスト。未対応なら null
+ * @internal
+ */
+function formatInAppNotificationToast(body: {
+	type?: string;
+	user?: { name?: string | null; username?: string };
+	note?: { text?: string };
+}): string | null {
+	if (body.type == null) return null;
+
+	const name = body.user?.name || body.user?.username || "";
+	const withName = (text: string) => (name ? `${name}: ${text}` : text);
+
+	switch (body.type) {
+		case "userWasUnfollowed":
+			return withName(i18n.ts._notification.youWereUnfollowed);
+		case "wasForciblyUnfollowed":
+			return withName(i18n.ts._notification.youWereForciblyUnfollowed);
+		case "wasBlocked":
+			return withName(i18n.ts._notification.youWereBlocked);
+		case "wasUnblocked":
+			return withName(i18n.ts._notification.youWereUnblocked);
+		case "followedAccountWasDeleted":
+			return name
+				? i18n.t("_notification.followedAccountWasDeleted", { name })
+				: i18n.ts._notification.followedAccountWasDeleted;
+		default:
+			return null;
+	}
+}
 
 /**
  * Service Worker からのメッセージを処理する。
@@ -35,9 +71,11 @@ export function swInject() {
 				os.toast("プッシュ通知テスト: 届きました");
 				return;
 			}
-			if (data?.type === "notification") {
+			if (data?.type === "notification" && data.body != null) {
+				const typedToast = formatInAppNotificationToast(data.body);
 				os.toast(
-					data.body?.note?.text?.slice(0, 80) ??
+					typedToast ??
+						data.body.note?.text?.slice(0, 80) ??
 						"新しい通知があります",
 				);
 				return;
@@ -49,6 +87,7 @@ export function swInject() {
 			return;
 		}
 
+		// 鍵ローテーション時の再登録（明示オフ時は reregister 内で抑止）
 		if (ev.data?.type === "pushsubscriptionchange") {
 			window.dispatchEvent(new CustomEvent("mkkey-pushsubscriptionchange"));
 			return;

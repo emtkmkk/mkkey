@@ -104,6 +104,62 @@ function truncateNotification(notification: Packed<"Notification">): any {
 	return notification;
 }
 
+/**
+ * SW の compose 用に notifier ユーザーを最小フィールドに縮小する。
+ *
+ * @param user - pack 済みユーザ
+ * @returns 最小ユーザオブジェクト、または undefined
+ * @internal
+ */
+function minimalPushUser(
+	user: unknown,
+): { id: string; username: string; name: string | null; avatarUrl: string | null } | undefined {
+	if (user == null || typeof user !== "object") return undefined;
+	const u = user as Record<string, unknown>;
+	if (typeof u.id !== "string" || typeof u.username !== "string") {
+		return undefined;
+	}
+	return {
+		id: u.id,
+		username: u.username,
+		name: typeof u.name === "string" ? u.name : u.name == null ? null : String(u.name),
+		avatarUrl:
+			typeof u.avatarUrl === "string"
+				? u.avatarUrl
+				: u.avatarUrl == null
+					? null
+					: String(u.avatarUrl),
+	};
+}
+
+/**
+ * 4KB 超過時の通知ペイロード最小形（SW 表示に user を残す）。
+ *
+ * @param minimal - truncate 後の通知オブジェクト
+ * @returns プッシュ用の最小通知
+ * @internal
+ */
+export function buildMinimalNotificationPayloadForPush(
+	minimal: Record<string, unknown>,
+): Record<string, unknown> {
+	const userId =
+		typeof minimal.userId === "string"
+			? minimal.userId
+			: typeof minimal.notifierId === "string"
+				? minimal.notifierId
+				: undefined;
+	const user = minimalPushUser(minimal.user);
+
+	return {
+		id: minimal.id,
+		type: minimal.type,
+		header: minimal.header,
+		body: minimal.body,
+		...(userId != null ? { userId } : {}),
+		...(user != null ? { user } : {}),
+	};
+}
+
 function buildPayload<T extends keyof pushNotificationsTypes>(
 	userId: string,
 	type: T,
@@ -150,12 +206,9 @@ function buildPayload<T extends keyof pushNotificationsTypes>(
 			typeof truncatedBody === "object"
 		) {
 			const minimal = truncatedBody as Record<string, unknown>;
-			truncatedBody = {
-				id: minimal.id,
-				type: minimal.type,
-				header: minimal.header,
-				body: minimal.body,
-			} as pushNotificationsTypes[T];
+			truncatedBody = buildMinimalNotificationPayloadForPush(
+				minimal,
+			) as pushNotificationsTypes[T];
 			payload = buildJson();
 		}
 	}

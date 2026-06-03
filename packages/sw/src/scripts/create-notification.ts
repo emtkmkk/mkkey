@@ -30,6 +30,31 @@ const closeNotificationsByTags = async (tags: string[]) => {
 const iconUrl = (name: string) =>
 	`/static-assets/notification-badges/${name}.png`;
 
+/**
+ * notifier が欠落したペイロードでも compose が落ちないよう表示名を返す。
+ *
+ * @param user - pack 済みユーザ（省略可）
+ * @returns 表示名（空文字のときあり）
+ * @internal
+ */
+function safeUserName(
+	user:
+		| {
+				name?: string | null;
+				username?: string;
+		  }
+		| null
+		| undefined,
+): string {
+	if (user == null || typeof user.username !== "string") {
+		return "";
+	}
+	return getUserName({
+		name: user.name,
+		username: user.username,
+	});
+}
+
 export async function createNotification<
 	K extends keyof pushNotificationDataMap,
 >(data: pushNotificationDataMap[K]) {
@@ -78,97 +103,127 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						}),
 					];
 
-				case "userWasUnfollowed":
+				case "userWasUnfollowed": {
+					const name = safeUserName(data.body.user);
 					return [
 						t("_notification.youWereUnfollowed"),
 						buildNotificationOptions(data, {
-							body: getUserName(data.body.user),
-							icon: data.body.user.avatarUrl,
+							body: name || undefined,
+							icon: data.body.user?.avatarUrl,
 							badge: iconUrl("user-plus"),
 							tag: `unfollowed:${data.body.userId}`,
 							data,
-							actions: [
-								{
-									action: "showUser",
-									title: getUserName(data.body.user),
-								},
-							],
+							...(name
+								? {
+										actions: [
+											{
+												action: "showUser",
+												title: name,
+											},
+										],
+									}
+								: {}),
 						}),
 					];
+				}
 
-				case "wasForciblyUnfollowed":
+				case "wasForciblyUnfollowed": {
+					const name = safeUserName(data.body.user);
 					return [
 						t("_notification.youWereForciblyUnfollowed"),
 						buildNotificationOptions(data, {
-							body: getUserName(data.body.user),
-							icon: data.body.user.avatarUrl,
+							body: name || undefined,
+							icon: data.body.user?.avatarUrl,
 							badge: iconUrl("clock"),
 							tag: `forcibly-unfollowed:${data.body.userId}`,
 							data,
-							actions: [
-								{
-									action: "showUser",
-									title: getUserName(data.body.user),
-								},
-							],
+							...(name
+								? {
+										actions: [
+											{
+												action: "showUser",
+												title: name,
+											},
+										],
+									}
+								: {}),
 						}),
 					];
+				}
 
-				case "wasBlocked":
+				case "wasBlocked": {
+					const name = safeUserName(data.body.user);
 					return [
 						t("_notification.youWereBlocked"),
 						buildNotificationOptions(data, {
-							body: getUserName(data.body.user),
-							icon: data.body.user.avatarUrl,
+							body: name || undefined,
+							icon: data.body.user?.avatarUrl,
 							badge: iconUrl("null"),
 							tag: `blocked:${data.body.userId}`,
 							data,
-							actions: [
-								{
-									action: "showUser",
-									title: getUserName(data.body.user),
-								},
-							],
+							...(name
+								? {
+										actions: [
+											{
+												action: "showUser",
+												title: name,
+											},
+										],
+									}
+								: {}),
 						}),
 					];
+				}
 
-				case "wasUnblocked":
+				case "wasUnblocked": {
+					const name = safeUserName(data.body.user);
 					return [
 						t("_notification.youWereUnblocked"),
 						buildNotificationOptions(data, {
-							body: getUserName(data.body.user),
-							icon: data.body.user.avatarUrl,
+							body: name || undefined,
+							icon: data.body.user?.avatarUrl,
 							badge: iconUrl("check"),
 							tag: `unblocked:${data.body.userId}`,
 							data,
-							actions: [
-								{
-									action: "showUser",
-									title: getUserName(data.body.user),
-								},
-							],
+							...(name
+								? {
+										actions: [
+											{
+												action: "showUser",
+												title: name,
+											},
+										],
+									}
+								: {}),
 						}),
 					];
+				}
 
-				case "followedAccountWasDeleted":
+				case "followedAccountWasDeleted": {
+					const name = safeUserName(data.body.user);
 					return [
 						t("_notification.followedAccountWasDeleted", {
-							name: getUserName(data.body.user),
+							name: name || data.body.type,
 						}),
 						buildNotificationOptions(data, {
-							body: getUserName(data.body.user),
-							icon: data.body.user.avatarUrl,
+							body: name || undefined,
+							icon: data.body.user?.avatarUrl,
 							badge: iconUrl("null"),
 							tag: `followed-deleted:${data.body.userId}`,
 							data,
-							actions: [
-								{
-									action: "showUser",
-									title: getUserName(data.body.user),
-								},
-							],
+							...(name
+								? {
+										actions: [
+											{
+												action: "showUser",
+												title: name,
+											},
+										],
+									}
+								: {}),
 						}),
 					];
+				}
 
 				case "mention":
 					return [
@@ -459,8 +514,25 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						}),
 					];
 
-				default:
-					return null;
+				default: {
+					// 未対応種別・古い SW でも汎用通知を出す（compose 失敗を防ぐ）
+					const name = safeUserName(data.body.user);
+					const notifType =
+						typeof data.body.type === "string" ? data.body.type : "";
+					return [
+						t("_notification.emptyPushNotificationMessage"),
+						buildNotificationOptions(data, {
+							body: name || notifType || undefined,
+							icon: data.body.user?.avatarUrl,
+							tag: data.body.id
+								? `notification:${data.body.id}`
+								: notifType
+									? `notification-type:${notifType}`
+									: undefined,
+							data,
+						}),
+					];
+				}
 			}
 		case "unreadMessagingMessage":
 			if (data.body.groupId === null) {

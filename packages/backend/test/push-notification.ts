@@ -3,6 +3,7 @@ process.env.NODE_ENV = "test";
 import * as assert from "assert";
 import * as childProcess from "child_process";
 import { async, signup, startServer, shutdownServer } from "./utils.js";
+import { buildMinimalNotificationPayloadForPush } from "../src/services/push-notification.js";
 
 describe("push-notification", () => {
 	let p: childProcess.ChildProcess;
@@ -30,6 +31,32 @@ describe("push-notification", () => {
 		assert.strictEqual(body.ok, false);
 		assert.strictEqual(body.subscriptionCount, 0);
 	}));
+
+	it("境界値: minimal ペイロードに userId と user が残る", () => {
+		const result = buildMinimalNotificationPayloadForPush({
+			id: "notif1",
+			type: "wasBlocked",
+			userId: "user1",
+			user: {
+				id: "user1",
+				username: "alice",
+				name: "Alice",
+				avatarUrl: "https://example.com/avatar.png",
+			},
+			note: { text: "x".repeat(5000) },
+		});
+
+		assert.strictEqual(result.id, "notif1");
+		assert.strictEqual(result.type, "wasBlocked");
+		assert.strictEqual(result.userId, "user1");
+		assert.deepStrictEqual(result.user, {
+			id: "user1",
+			username: "alice",
+			name: "Alice",
+			avatarUrl: "https://example.com/avatar.png",
+		});
+		assert.strictEqual((result as { note?: unknown }).note, undefined);
+	});
 
 	it("正常系: dev モードでない場合 push-log は空配列", async(async () => {
 		const res = await fetch("http://localhost:61812/api/i/push-log", {

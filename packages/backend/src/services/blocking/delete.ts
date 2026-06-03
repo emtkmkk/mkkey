@@ -5,7 +5,7 @@
  *
  * @remarks
  * - **役割**: ブロック解除 API から呼ばれ、ブロック関係を削除し Undo(Block) を配信する。
- * - ローカル blockee かつ wasUnblocked がミュートでないとき wasUnblocked を送る。
+ * - ローカル blockee へ wasUnblocked を送る（ミュート判定は createNotification に委譲）。
  *
  * @see {@link server/api/endpoints/blocking/delete} ブロック解除 API
  * @internal
@@ -17,7 +17,7 @@ import renderUndo from "@/remote/activitypub/renderer/undo.js";
 import { deliver } from "@/queue/index.js";
 import Logger from "../logger.js";
 import type { CacheableUser } from "@/models/entities/user.js";
-import { Blockings, UserProfiles, Users } from "@/models/index.js";
+import { Blockings, Users } from "@/models/index.js";
 import { unsetModerationWarningByAdminUnblock } from "../moderation-warning-by-admin-block.js";
 import { createNotification } from "@/services/create-notification.js";
 import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
@@ -46,23 +46,16 @@ export default async function (blocker: CacheableUser, blockee: CacheableUser) {
 	await invalidateUserShowRelationCache(blocker.id, blockee.id);
 
 	if (Users.isLocalUser(blockee)) {
-		const profile = await UserProfiles.findOneBy({ userId: blockee.id });
-		const unblockNotMuted =
-			profile != null &&
-			!profile.mutingNotificationTypes.includes("wasUnblocked");
-
-		if (unblockNotMuted) {
-			const notifier = await Users.findOneBy({ id: blocker.id });
-			if (notifier != null) {
-				await createNotification(
-					blockee.id,
-					"wasUnblocked",
-					{
-						notifierId: blocker.id,
-					},
-					{ notifier },
-				);
-			}
+		const notifier = await Users.findOneBy({ id: blocker.id });
+		if (notifier != null) {
+			await createNotification(
+				blockee.id,
+				"wasUnblocked",
+				{
+					notifierId: blocker.id,
+				},
+				{ notifier },
+			);
 		}
 	}
 

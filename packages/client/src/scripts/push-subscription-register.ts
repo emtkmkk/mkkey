@@ -4,13 +4,14 @@
  * ブラウザの PushSubscription をサーバーへ登録する共通ヘルパー。
  *
  * @remarks
- * NOTE: pushsubscriptionchange 時はグローバルハンドラからも呼ぶ。
+ * - pushsubscriptionchange 時はグローバルハンドラから再登録する（ユーザが明示オフしていない場合のみ）。
  *
  * @internal
  */
 import { $i } from "@/account";
 import { instance } from "@/instance";
 import { api } from "@/os";
+import { isPushServerOptOut } from "@/scripts/push-opt-out";
 
 /**
  * ArrayBuffer を base64 文字列にエンコードする。
@@ -69,10 +70,14 @@ export async function registerPushSubscription(
 /**
  * pushsubscriptionchange 後に購読を再登録する（グローバル用）。
  *
+ * @remarks
+ * NOTE: {@link isPushServerOptOut} が true のときは再登録しない。
+ *
  * @internal
  */
 export async function reregisterPushSubscriptionAfterChange(): Promise<void> {
 	if (!$i?.token || !instance.swPublickey) return;
+	if (isPushServerOptOut($i.id)) return;
 	if (!("serviceWorker" in navigator)) return;
 
 	try {

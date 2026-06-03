@@ -88,7 +88,6 @@
 import { computed, ref, watch } from "vue";
 import { Virtual } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/vue";
-import { notificationTypes } from "calckey-js";
 import XNotifications from "@/components/MkNotifications.vue";
 import XNotes from "@/components/MkNotes.vue";
 import * as os from "@/os";
@@ -96,6 +95,7 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deviceKind } from "@/scripts/device-kind";
 import { defaultStore } from "@/store";
+import { getConfigurableNotificationTypes } from "@/scripts/experimental-notification-types";
 import "swiper/scss";
 import "swiper/scss/virtual";
 
@@ -108,6 +108,25 @@ watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 let includeTypes = $ref<string[] | null>(null);
 let typeUnreadAntenna = $ref(["unreadAntenna"]);
 let unreadOnly = $computed(() => tab === "unread");
+
+/** フィルタメニューに出す種別（dev 時のみ実験的種別を含む） */
+const filterableNotificationTypes = $computed(() =>
+	getConfigurableNotificationTypes(defaultStore.state.developer),
+);
+
+/** dev OFF 後に実験的種別だけ選んでいるフィルタを外す */
+function sanitizeIncludeTypes(): void {
+	if (includeTypes == null) return;
+	const visible = new Set(filterableNotificationTypes.value);
+	if (includeTypes.every((t) => visible.has(t))) return;
+	includeTypes = null;
+	reload();
+}
+
+watch(
+	() => defaultStore.state.developer,
+	() => sanitizeIncludeTypes(),
+);
 os.api("notifications/mark-all-as-read");
 
 const notificationsComponent: InstanceType<typeof XNotifications | typeof XNotes> = $ref();
@@ -135,9 +154,9 @@ const directNotesPagination = {
 };
 
 function setFilter(ev) {
-	const typeItems = notificationTypes.map((t) => ({
+	const typeItems = filterableNotificationTypes.value.map((t) => ({
 		text: i18n.t(`_notification._types.${t}`),
-		active: includeTypes && includeTypes.includes(t),
+		active: includeTypes != null && includeTypes.includes(t),
 		action: () => {
 			includeTypes = [t];
 		},

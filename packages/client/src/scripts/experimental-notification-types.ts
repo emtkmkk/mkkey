@@ -15,7 +15,7 @@ export const EXPERIMENTAL_NOTIFICATION_TYPES = [
 ] as const satisfies readonly (typeof notificationTypes)[number][];
 
 /**
- * developer フラグに応じて設定画面に表示する通知種別一覧を返す。
+ * developer フラグに応じて設定画面・通知一覧フィルタに表示する種別一覧を返す。
  *
  * @param developer - registry developer フラグ
  * @internal

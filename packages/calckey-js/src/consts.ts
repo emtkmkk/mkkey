@@ -15,6 +15,7 @@ export const notificationTypes = [
 	"userWasUnfollowed",
 	"wasForciblyUnfollowed",
 	"wasBlocked",
+	"wasUnblocked",
 	"followedAccountWasDeleted",
 ] as const;
 
@@ -23,6 +24,7 @@ export const experimentalNotificationTypes = [
 	"userWasUnfollowed",
 	"wasForciblyUnfollowed",
 	"wasBlocked",
+	"wasUnblocked",
 ] as const;
 
 export const noteVisibilities = [

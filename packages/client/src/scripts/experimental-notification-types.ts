@@ -3,6 +3,10 @@
  *
  * dev モード時のみ設定に表示する実験的通知種別。
  *
+ * @remarks
+ * - ブロック（wasBlocked）とブロック解除（wasUnblocked）は設定 UI 上も別トグルで個別に制御する。
+ * - フォロー強制解除（wasForciblyUnfollowed）も独立したトグル。
+ *
  * @internal
  */
 import { notificationTypes } from "calckey-js";
@@ -12,6 +16,7 @@ export const EXPERIMENTAL_NOTIFICATION_TYPES = [
 	"userWasUnfollowed",
 	"wasForciblyUnfollowed",
 	"wasBlocked",
+	"wasUnblocked",
 ] as const satisfies readonly (typeof notificationTypes)[number][];
 
 /**

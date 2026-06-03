@@ -2581,6 +2581,7 @@ _notification:
   youWereUnfollowed: "リムーブされました"
   youWereForciblyUnfollowed: "フォローが強制解除されました"
   youWereBlocked: "ブロックされました"
+  youWereUnblocked: "ブロックが解除されました"
   followedAccountWasDeleted: "{name}がアカウントを削除しました"
   youReceivedFollowRequest: "フォローリクエストが来ました"
   yourFollowRequestAccepted: "フォローに成功しました"
@@ -2605,6 +2606,7 @@ _notification:
     userWasUnfollowed: "【dev】リムーブ"
     wasForciblyUnfollowed: "【dev】フォロー強制解除"
     wasBlocked: "【dev】ブロック"
+    wasUnblocked: "【dev】ブロック解除"
     followedAccountWasDeleted: "アカウント削除"
   _actions:
     followBack: "フォローを返す"

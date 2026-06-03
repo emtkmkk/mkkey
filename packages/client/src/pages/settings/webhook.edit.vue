@@ -117,6 +117,16 @@
 				></FormSwitch
 			>
 			<FormSwitch
+				v-if="$store.state.developer"
+				v-model="event_deletefollow"
+				class="_formBlock"
+				>【dev】フォローを解除させられた時<span
+					v-if="showMkkeySettingTips"
+					class="_beta"
+					>{{ i18n.ts.mkkey }}</span
+				></FormSwitch
+			>
+			<FormSwitch
 				:disabled="antennas.length <= 0"
 				v-model="event_antenna"
 				class="_formBlock"
@@ -226,6 +236,7 @@ let event_userMessage = $ref(webhook.on.includes("userMessage"));
 let event_groupMessage = $ref(webhook.on.includes("groupMessage"));
 let event_groupMentionOnly = $ref(webhook.on.includes("groupMentionOnly"));
 let event_unfollow = $ref(webhook.on.includes("unfollow"));
+let event_deletefollow = $ref(webhook.on.includes("deletefollow"));
 
 let event_excludeAntennas = $ref(
 	antennas.map((x) => !webhook.on.includes(`exclude-${x.id}`) ?? true)
@@ -244,6 +255,7 @@ async function save(): Promise<void> {
 	if (event_groupMessage) events.push("groupMessage");
 	if (event_groupMentionOnly) events.push("groupMentionOnly");
 	if (event_unfollow) events.push("unfollow");
+	if (event_deletefollow) events.push("deletefollow");
 	if (event_antenna) {
 		events.push("antenna");
 		event_excludeAntennas.forEach((x, index) => {

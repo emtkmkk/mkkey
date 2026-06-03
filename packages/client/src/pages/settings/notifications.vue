@@ -56,7 +56,7 @@
 			</div>
 		</FormSection>
 		<FormSection v-if="developer">
-			<template #label>プッシュ通知ログ（dev）</template>
+			<template #label>【dev】プッシュ通知ログ</template>
 			<div class="_gaps_s">
 				<FormButton class="_formBlock" :disabled="loadingLog" @click="loadPushLog">
 					ログを更新

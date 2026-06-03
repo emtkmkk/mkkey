@@ -2515,6 +2515,7 @@ _notification:
   youWereUnfollowed: "unfollowed you"
   youWereForciblyUnfollowed: "your follow was removed"
   youWereBlocked: "blocked you"
+  youWereUnblocked: "unblocked you"
   followedAccountWasDeleted: "{name} deleted their account"
   youReceivedFollowRequest: "You've received a follow request"
   yourFollowRequestAccepted: "Your follow request was accepted"
@@ -2536,8 +2537,9 @@ _notification:
     groupInvited: "Group invitations"
     app: "Notifications from linked apps"
     userWasUnfollowed: "Unfollowed you (dev)"
-    wasForciblyUnfollowed: "Follow removed by block (dev)"
+    wasForciblyUnfollowed: "Follow removed (dev)"
     wasBlocked: "Blocked you (dev)"
+    wasUnblocked: "Unblocked you (dev)"
     followedAccountWasDeleted: "Followed account was deleted"
   _actions:
     followBack: "followed you back"

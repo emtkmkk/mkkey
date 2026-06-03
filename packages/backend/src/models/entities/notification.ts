@@ -81,8 +81,9 @@ export class Notification {
 	 * groupInvited - グループに招待された
 	 * app - アプリ通知
 	 * userWasUnfollowed - フォロワーにフォローを外された
-	 * wasForciblyUnfollowed - ブロックにより自分のフォローが解除された
+	 * wasForciblyUnfollowed - 相手の操作により自分のフォローが解除された
 	 * wasBlocked - ブロックされた
+	 * wasUnblocked - ブロック解除された
 	 * followedAccountWasDeleted - フォローしていたユーザーがアカウントを削除した
 	 */
 	@Index()

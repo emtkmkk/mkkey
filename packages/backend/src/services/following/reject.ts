@@ -1,3 +1,11 @@
+/**
+ * @packageDocumentation
+ *
+ * フォローリクエスト拒否・Reject(Follow) 配信・AP 受信 Reject の処理。
+ *
+ * @internal
+ */
+
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderFollow from "@/remote/activitypub/renderer/follow.js";
 import renderReject from "@/remote/activitypub/renderer/reject.js";
@@ -12,6 +20,7 @@ import { User } from "@/models/entities/user.js";
 import { Users, FollowRequests, Followings } from "@/models/index.js";
 import { decrementFollowing } from "./delete.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
+import { notifyWasForciblyUnfollowed } from "./notify-forcibly-unfollowed.js";
 
 type Local =
 	| ILocalUser
@@ -53,19 +62,25 @@ export async function rejectFollow(user: Local, follower: Both) {
 		deliverReject(user, follower);
 	}
 
-	await removeFollow(user, follower);
+	const removed = await removeFollow(user, follower);
 
 	if (Users.isLocalUser(follower)) {
+		if (removed) {
+			await notifyWasForciblyUnfollowed(follower, user);
+		}
 		publishUnfollow(user, follower);
 	}
 }
 
 /**
- * AP Reject/Follow
+ * AP Reject/Follow（リモートがローカルのフォロー／申請を拒否）
  */
 export async function remoteReject(actor: Remote, follower: Local) {
 	await removeFollowRequest(actor, follower);
-	await removeFollow(actor, follower);
+	const removed = await removeFollow(actor, follower);
+	if (removed) {
+		await notifyWasForciblyUnfollowed(follower, actor);
+	}
 	publishUnfollow(actor, follower);
 }
 
@@ -85,23 +100,27 @@ async function removeFollowRequest(followee: Both, follower: Both) {
 
 /**
  * Remove follow record
+ *
+ * @returns Followings 行を削除したか
  */
-async function removeFollow(followee: Both, follower: Both) {
+async function removeFollow(followee: Both, follower: Both): Promise<boolean> {
 	const following = await Followings.findOneBy({
 		followeeId: followee.id,
 		followerId: follower.id,
 	});
 
-	if (!following) return;
+	if (!following) return false;
 
 	await Followings.delete(following.id);
-	decrementFollowing(follower, followee);
+	await decrementFollowing(follower, followee);
 
 	if (Users.isLocalUser(follower)) {
 		publishInternalEvent("notePackFollowingUpdated", {
 			userId: follower.id,
 		});
 	}
+
+	return true;
 }
 
 /**

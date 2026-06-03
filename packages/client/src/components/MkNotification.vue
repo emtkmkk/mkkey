@@ -41,6 +41,10 @@
 					class="ph-prohibit ph-bold"
 				></i>
 				<i
+					v-else-if="notification.type === 'wasUnblocked'"
+					class="ph-prohibit ph-bold"
+				></i>
+				<i
 					v-else-if="notification.type === 'followedAccountWasDeleted'"
 					class="ph-trash ph-bold"
 				></i>
@@ -312,6 +316,12 @@
 				class="text"
 				style="opacity: 0.6"
 				>{{ i18n.ts._notification.youWereBlocked }}</span
+			>
+			<span
+				v-if="notification.type === 'wasUnblocked'"
+				class="text"
+				style="opacity: 0.6"
+				>{{ i18n.ts._notification.youWereUnblocked }}</span
 			>
 			<span
 				v-if="notification.type === 'follow'"
@@ -715,7 +725,8 @@ useTooltip(reactionRef, (showing) => {
 
 			&.userWasUnfollowed,
 			&.wasForciblyUnfollowed,
-			&.wasBlocked {
+			&.wasBlocked,
+			&.wasUnblocked {
 				padding: 0.1875rem;
 				background: #8f3131;
 				pointer-events: none;

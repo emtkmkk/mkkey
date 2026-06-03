@@ -5,9 +5,7 @@
  *
  * @remarks
  * - **役割**: ブロック API から呼ばれ、ブロック関係を DB に保存し AP 配信を行う。
- * - ブロック時はフォロー解除が最大 2 件走る。種別ごとにミュートできるよう、
- *   `userWasUnfollowed` / `wasForciblyUnfollowed` / `wasBlocked` をそれぞれ独立して発火する
- *   （ブロック通知だけ OFF でも、フォロー外れ系だけ ON なら解除は届く）。
+ * - ブロック時はフォロー解除が最大 2 件走る。`userWasUnfollowed` / `wasForciblyUnfollowed` / `wasBlocked` をそれぞれ独立して発火する。
  *
  * @see {@link server/api/endpoints/blocking/create} ブロック API
  * @internal
@@ -73,19 +71,34 @@ export default async function (blocker: User, blockee: User) {
 	if (Users.isLocalUser(blockee)) {
 		// ブロック側が相手のフォローを外した → 手動アンフォローと同種の通知
 		if (blockerUnfollowedBlockee) {
-			void createNotification(blockee.id, "userWasUnfollowed", {
-				notifierId: blocker.id,
-			}, { notifier: blocker });
+			await createNotification(
+				blockee.id,
+				"userWasUnfollowed",
+				{
+					notifierId: blocker.id,
+				},
+				{ notifier: blocker },
+			);
 		}
 		// ブロックされた側が相手へのフォローを外された → 強制解除
 		if (blockeeUnfollowedBlocker) {
-			void createNotification(blockee.id, "wasForciblyUnfollowed", {
-				notifierId: blocker.id,
-			}, { notifier: blocker });
+			await createNotification(
+				blockee.id,
+				"wasForciblyUnfollowed",
+				{
+					notifierId: blocker.id,
+				},
+				{ notifier: blocker },
+			);
 		}
-		void createNotification(blockee.id, "wasBlocked", {
-			notifierId: blocker.id,
-		}, { notifier: blocker });
+		await createNotification(
+			blockee.id,
+			"wasBlocked",
+			{
+				notifierId: blocker.id,
+			},
+			{ notifier: blocker },
+		);
 	}
 
 	if (Users.isLocalUser(blocker) && Users.isRemoteUser(blockee)) {

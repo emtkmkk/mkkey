@@ -132,6 +132,24 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						}),
 					];
 
+				case "wasUnblocked":
+					return [
+						t("_notification.youWereUnblocked"),
+						buildNotificationOptions(data, {
+							body: getUserName(data.body.user),
+							icon: data.body.user.avatarUrl,
+							badge: iconUrl("check"),
+							tag: `unblocked:${data.body.userId}`,
+							data,
+							actions: [
+								{
+									action: "showUser",
+									title: getUserName(data.body.user),
+								},
+							],
+						}),
+					];
+
 				case "followedAccountWasDeleted":
 					return [
 						t("_notification.followedAccountWasDeleted", {

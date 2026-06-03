@@ -4,7 +4,8 @@
  * フォロー解除処理を行うサービス。
  *
  * @remarks
- * - **役割**: フォロー解除 API から呼ばれ、フォロー関係を削除し Undo(Follow) を配信する。
+ * - **役割**: フォロー解除 API から呼ばれ、フォロー関係を削除し Undo(Follow) / Reject(Follow) を配信する。
+ * - `kickFollower`（{@link server/api/endpoints/following/invalidate} 専用）ではフォロワーへ wasForciblyUnfollowed を送り、followee 向け userWasUnfollowed は送らない。
  *
  * @see {@link server/api/endpoints/following/delete} フォロー解除 API
  * @internal
@@ -31,8 +32,15 @@ import {
 } from "@/services/chart/index.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { createNotification } from "@/services/create-notification.js";
+import { notifyWasForciblyUnfollowed } from "./notify-forcibly-unfollowed.js";
 
 const logger = new Logger("following/delete");
+
+/** following/invalidate など、フォロワー側の強制解除時に渡すオプション */
+export type DeleteFollowingOptions = {
+	/** フォロー先がフォロワーを外した（invalidate）。フォロワーに wasForciblyUnfollowed */
+	kickFollower?: boolean;
+};
 
 export default async function (
 	follower: {
@@ -50,7 +58,10 @@ export default async function (
 		sharedInbox: User["sharedInbox"];
 	},
 	silent = false,
+	options?: DeleteFollowingOptions,
 ) {
+	const kickFollower = options?.kickFollower ?? false;
+
 	const following = await Followings.findOneBy({
 		followerId: follower.id,
 		followeeId: followee.id,
@@ -65,7 +76,7 @@ export default async function (
 
 	await Followings.delete(following.id);
 
-	decrementFollowing(follower, followee);
+	await decrementFollowing(follower, followee);
 
 	if (Users.isLocalUser(follower)) {
 		publishInternalEvent("notePackFollowingUpdated", {
@@ -73,56 +84,59 @@ export default async function (
 		});
 	}
 
-	// アンフォローイベントを発行
-	if (!silent && Users.isLocalUser(follower)) {
-		Users.pack(followee.id, follower, {
+	// 自発アンフォロー時のみフォロワー側ストリーム（kickFollower 時は publishUnfollow 相当は reject 経路側）
+	if (!silent && Users.isLocalUser(follower) && !kickFollower) {
+		const packed = await Users.pack(followee.id, follower, {
 			detail: true,
-		}).then(async (packed) => {
-			publishUserEvent(follower.id, "unfollow", packed);
-			publishMainStream(follower.id, "unfollow", packed);
-
-			/* const webhooks = (await getActiveWebhooks()).filter(
-				(x) => x.userId === followee.id && x.on.includes("unfollow"),
-			);
-			for (const webhook of webhooks) {
-				webhookDeliver(webhook, silent ? "silentUnfollow" : "unfollow", {
-					user: packed,
-				});
-			}*/
 		});
+		publishUserEvent(follower.id, "unfollow", packed);
+		publishMainStream(follower.id, "unfollow", packed);
 	}
 
-	if (Users.isLocalUser(followee)) {
-		Users.pack(follower.id, followee, {
+	// フォロー先がローカル: 通常は userWasUnfollowed。フォロワー解除時は送らない
+	if (Users.isLocalUser(followee) && !kickFollower) {
+		const packed = await Users.pack(follower.id, followee, {
 			detail: true,
-		}).then(async (packed) => {
-			if (!silent) {
-				void createNotification(followee.id, "userWasUnfollowed", {
-					notifierId: follower.id,
-				});
-			}
-
-			const webhooks = (await getActiveWebhooks()).filter(
-				(x) => x.userId === followee.id && x.on.includes("unfollow"),
-			);
-			for (const webhook of webhooks) {
-				webhookDeliver(webhook, silent ? "silentUnfollow" : "unfollow", {
-					user: packed,
-				});
-			}
 		});
+		if (!silent) {
+			const notifier = await Users.findOneBy({ id: follower.id });
+			if (notifier != null) {
+				await createNotification(
+					followee.id,
+					"userWasUnfollowed",
+					{
+						notifierId: follower.id,
+					},
+					{ notifier },
+				);
+			}
+		}
+
+		const webhooks = (await getActiveWebhooks()).filter(
+			(x) => x.userId === followee.id && x.on.includes("unfollow"),
+		);
+		for (const webhook of webhooks) {
+			webhookDeliver(webhook, silent ? "silentUnfollow" : "unfollow", {
+				user: packed,
+			});
+		}
 	}
 
-        if (Users.isLocalUser(follower) && Users.isRemoteUser(followee)) {
-                const content = renderActivity(
-                        renderUndo(renderFollow(follower, followee), follower),
-                );
-                deliver(follower, content, followee.inbox);
-                await ensureProxyFollowsListedUser(followee.id);
-        }
+	// invalidate: ローカルフォロワーへ強制解除通知
+	if (kickFollower && !silent) {
+		await notifyWasForciblyUnfollowed(follower, followee);
+	}
 
+	if (Users.isLocalUser(follower) && Users.isRemoteUser(followee)) {
+		const content = renderActivity(
+			renderUndo(renderFollow(follower, followee), follower),
+		);
+		deliver(follower, content, followee.inbox);
+		await ensureProxyFollowsListedUser(followee.id);
+	}
+
+	// リモートフォロワーを外すとき連合へ Reject（invalidate 含む）
 	if (Users.isLocalUser(followee) && Users.isRemoteUser(follower)) {
-		// ローカルユーザーの host は null
 		const content = renderActivity(
 			renderReject(renderFollow(follower, followee), followee),
 		);

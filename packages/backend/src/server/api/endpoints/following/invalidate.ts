@@ -90,7 +90,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.notFollowing);
 	}
 
-	await deleteFollowing(follower, followee);
+	await deleteFollowing(follower, followee, false, { kickFollower: true });
 
 	return await Users.pack(followee.id, user);
 });

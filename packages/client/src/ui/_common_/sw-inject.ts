@@ -63,6 +63,10 @@ export function swInject() {
 
 		if (ev.data?.type === "in-app-notification") {
 			const data = ev.data.data;
+			// 他アカウント向けプッシュは表示しない（マルチアカウント）
+			if (data?.userId != null && data.userId !== $i?.id) {
+				return;
+			}
 			if (
 				data?.type === "notification" &&
 				data.body?.type === "app" &&

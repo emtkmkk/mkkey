@@ -12,12 +12,16 @@ import type { pushNotificationDataMap } from "@/types";
 import * as swos from "@/scripts/operations";
 import { acct as getAcct } from "@/filters/user";
 import { set } from "idb-keyval";
+import {
+	loadSuppressPushWhenForeground,
+	saveSuppressPushWhenForeground,
+} from "@/scripts/push-foreground-prefs";
 
 /** クライアントから同期される dev モード（registry developer） */
 let swDeveloperMode = false;
 
-/** フォアグラウンド時に OS 通知を抑制するか */
-let swSuppressPushWhenForeground = true;
+/** IDB 未同期時のフォアグラウンド抑制フォールバック（既定 ON） */
+let swSuppressPushWhenForegroundFallback = true;
 
 self.addEventListener("install", (ev) => {
 	ev.waitUntil(self.skipWaiting());
@@ -202,9 +206,13 @@ self.addEventListener("push", (ev) => {
 						return;
 					}
 
-					// フォアグラウンドでは OS 通知を出さずクライアントへ転送
+					// フォアグラウンドでは OS 通知を出さずクライアントへ転送（アカウント別設定）
+					const suppressForeground = await loadSuppressPushWhenForeground(
+						data.userId,
+						swSuppressPushWhenForegroundFallback,
+					);
 					if (
-						swSuppressPushWhenForeground &&
+						suppressForeground &&
 						(await hasFocusedVisibleClient())
 					) {
 						const clients = await self.clients.matchAll({
@@ -408,7 +416,14 @@ self.addEventListener(
 					}
 
 					if (ev.data.type === "set-suppress-push-when-foreground") {
-						swSuppressPushWhenForeground = !!ev.data.value;
+						const suppress = !!ev.data.value;
+						swSuppressPushWhenForegroundFallback = suppress;
+						if (typeof ev.data.userId === "string" && ev.data.userId !== "") {
+							await saveSuppressPushWhenForeground(
+								ev.data.userId,
+								suppress,
+							);
+						}
 						return;
 					}
 
@@ -428,8 +443,17 @@ self.addEventListener(
 							swDeveloperMode = !!ev.data.developer;
 						}
 						if (ev.data.suppressPushWhenForeground != null) {
-							swSuppressPushWhenForeground =
-								!!ev.data.suppressPushWhenForeground;
+							const suppress = !!ev.data.suppressPushWhenForeground;
+							swSuppressPushWhenForegroundFallback = suppress;
+							if (
+								typeof ev.data.userId === "string" &&
+								ev.data.userId !== ""
+							) {
+								await saveSuppressPushWhenForeground(
+									ev.data.userId,
+									suppress,
+								);
+							}
 						}
 					}
 				}

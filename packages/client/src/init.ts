@@ -1468,8 +1468,13 @@ const initializeStream = () => {
 			{ immediate: true },
 		);
 		watch(
-			() => defaultStore.state.suppressPushWhenForeground,
-			(v) => postSuppressPushWhenForegroundToSw(v),
+			() =>
+				[$i?.id, defaultStore.state.suppressPushWhenForeground] as const,
+			([userId, suppress]) => {
+				if (userId != null) {
+					postSuppressPushWhenForegroundToSw(suppress, userId);
+				}
+			},
 			{ immediate: true },
 		);
 		updateAppBadgeFromAccount();

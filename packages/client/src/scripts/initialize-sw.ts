@@ -1,4 +1,5 @@
 import { lang } from "@/config";
+import { $i } from "@/account";
 import { instance } from "@/instance";
 import { defaultStore } from "@/store";
 import {
@@ -26,10 +27,14 @@ export async function initializeSw() {
 			developer: defaultStore.state.developer,
 			suppressPushWhenForeground:
 				defaultStore.state.suppressPushWhenForeground,
+			userId: $i?.id,
 		});
 		postDeveloperModeToSw(defaultStore.state.developer);
-		postSuppressPushWhenForegroundToSw(
-			defaultStore.state.suppressPushWhenForeground,
-		);
+		if ($i?.id != null) {
+			postSuppressPushWhenForegroundToSw(
+				defaultStore.state.suppressPushWhenForeground,
+				$i.id,
+			);
+		}
 	});
 }

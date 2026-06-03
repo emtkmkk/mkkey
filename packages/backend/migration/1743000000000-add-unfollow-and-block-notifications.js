@@ -1,8 +1,15 @@
 /**
  * フォロー解除・ブロック関連の通知種別を enum に追加し、既存ユーザーをデフォルトミュートにする。
+ *
+ * @remarks
+ * - PostgreSQL は `ALTER TYPE ... ADD VALUE` 直後、同一トランザクション内で新値を使えない（55P04）。
+ * - enum 追加と UPDATE を別コミットにするため `transaction = false` とする。
  */
 export class addUnfollowAndBlockNotifications1743000000000 {
-	name = "addUnfollowAndBlockNotifications1743000000000";
+	constructor() {
+		this.name = "addUnfollowAndBlockNotifications1743000000000";
+		this.transaction = false;
+	}
 
 	async up(queryRunner) {
 		const newTypes = [

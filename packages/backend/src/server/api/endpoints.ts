@@ -89,6 +89,7 @@ import * as ep___admin_unsilenceUser from "./endpoints/admin/unsilence-user.js";
 import * as ep___admin_unsuspendUser from "./endpoints/admin/unsuspend-user.js";
 import * as ep___admin_cantInviteUser from "./endpoints/admin/cantInvite-user.js";
 import * as ep___admin_updateMeta from "./endpoints/admin/update-meta.js";
+import * as ep___admin_generateVapidKeys from "./endpoints/admin/generate-vapid-keys.js";
 import * as ep___admin_vacuum from "./endpoints/admin/vacuum.js";
 import * as ep___admin_deleteAccount from "./endpoints/admin/delete-account.js";
 import * as ep___admin_updateUserNote from "./endpoints/admin/update-user-note.js";
@@ -236,6 +237,8 @@ import * as ep___i_importFollowing from "./endpoints/i/import-following.js";
 import * as ep___i_importMuting from "./endpoints/i/import-muting.js";
 import * as ep___i_importUserLists from "./endpoints/i/import-user-lists.js";
 import * as ep___i_notifications from "./endpoints/i/notifications.js";
+import * as ep___i_pushLog from "./endpoints/i/push-log.js";
+import * as ep___i_testPushNotification from "./endpoints/i/test-push-notification.js";
 import * as ep___i_pageLikes from "./endpoints/i/page-likes.js";
 import * as ep___i_pages from "./endpoints/i/pages.js";
 import * as ep___i_categories from "./endpoints/i/categories.js";
@@ -490,6 +493,7 @@ const eps = [
 	["admin/unsuspend-user", ep___admin_unsuspendUser],
 	["admin/cantInvite-user", ep___admin_cantInviteUser],
 	["admin/update-meta", ep___admin_updateMeta],
+	["admin/generate-vapid-keys", ep___admin_generateVapidKeys],
 	["admin/vacuum", ep___admin_vacuum],
 	["admin/delete-account", ep___admin_deleteAccount],
 	["admin/update-user-note", ep___admin_updateUserNote],
@@ -639,6 +643,8 @@ const eps = [
 	["i/import-muting", ep___i_importMuting],
 	["i/import-user-lists", ep___i_importUserLists],
 	["i/notifications", ep___i_notifications],
+	["i/push-log", ep___i_pushLog],
+	["i/test-push-notification", ep___i_testPushNotification],
 	["i/page-likes", ep___i_pageLikes],
 	["i/pages", ep___i_pages],
 	["i/categories", ep___i_categories],

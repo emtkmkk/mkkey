@@ -30,6 +30,7 @@ import {
 	perUserFollowingChart,
 } from "@/services/chart/index.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
+import { createNotification } from "@/services/create-notification.js";
 
 const logger = new Logger("following/delete");
 
@@ -95,6 +96,12 @@ export default async function (
 		Users.pack(follower.id, followee, {
 			detail: true,
 		}).then(async (packed) => {
+			if (!silent) {
+				void createNotification(followee.id, "userWasUnfollowed", {
+					notifierId: follower.id,
+				});
+			}
+
 			const webhooks = (await getActiveWebhooks()).filter(
 				(x) => x.userId === followee.id && x.on.includes("unfollow"),
 			);

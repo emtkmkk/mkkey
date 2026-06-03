@@ -71,6 +71,8 @@ export interface InternalStreamTypes {
 	antennaCreated: Antenna;
 	antennaDeleted: Antenna;
 	antennaUpdated: Antenna;
+	/** メタキャッシュ無効化（全 worker で fetch-meta を再読込する） */
+	metaCacheInvalidated: undefined;
 }
 
 export interface BroadcastTypes {
@@ -118,6 +120,7 @@ export interface MainStreamTypes {
 	unreadSpecifiedNote: Note["id"];
 	readAllUnreadSpecifiedNotes: undefined;
 	readAllMessagingMessages: undefined;
+	readAllMessagingMessagesOfARoom: { userId: string } | { groupId: string };
 	messagingMessage: Packed<"MessagingMessage">;
 	unreadMessagingMessage: Packed<"MessagingMessage">;
 	readAllAntennas: undefined;

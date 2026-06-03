@@ -58,6 +58,12 @@ import { makeHotkey } from "@/scripts/hotkey";
 import { search } from "@/scripts/search";
 import { deviceKind } from "@/scripts/device-kind";
 import { initializeSw } from "@/scripts/initialize-sw";
+import {
+	postCloseNotificationsToSw,
+	postDeveloperModeToSw,
+	postSuppressPushWhenForegroundToSw,
+} from "@/scripts/push-notification-sync";
+import { updateAppBadgeFromAccount } from "@/scripts/app-badge";
 import { reloadChannel } from "@/scripts/unison-reload";
 import { reactionPicker } from "@/scripts/reaction-picker";
 import { getUrlWithoutLoginId } from "@/scripts/login-id";
@@ -1373,10 +1379,20 @@ const initializeStream = () => {
 
 	main.on("readAllNotifications", () => {
 		updateAccount({ hasUnreadNotification: false });
+		postCloseNotificationsToSw({ kind: "readAllNotifications" });
+		updateAppBadgeFromAccount();
+	});
+
+	main.on("readNotifications", (notificationIds: string[]) => {
+		postCloseNotificationsToSw({
+			kind: "readNotifications",
+			notificationIds,
+		});
 	});
 
 	main.on("unreadNotification", () => {
 		updateAccount({ hasUnreadNotification: true });
+		updateAppBadgeFromAccount();
 	});
 
 	main.on("unreadMention", () => {
@@ -1397,11 +1413,24 @@ const initializeStream = () => {
 
 	main.on("readAllMessagingMessages", () => {
 		updateAccount({ hasUnreadMessagingMessage: false });
+		postCloseNotificationsToSw({ kind: "readAllMessagingMessages" });
+		updateAppBadgeFromAccount();
 	});
+
+	main.on(
+		"readAllMessagingMessagesOfARoom",
+		(room: { userId?: string; groupId?: string }) => {
+			postCloseNotificationsToSw({
+				kind: "readAllMessagingMessagesOfARoom",
+				room,
+			});
+		},
+	);
 
 	main.on("unreadMessagingMessage", () => {
 		updateAccount({ hasUnreadMessagingMessage: true });
 		sound.play("chatBg");
+		updateAppBadgeFromAccount();
 	});
 
 	main.on("readAllAntennas", () => {
@@ -1431,6 +1460,28 @@ const initializeStream = () => {
 	main.on("myTokenRegenerated", () => {
 		signout();
 	});
+
+	defaultStore.ready.then(() => {
+		watch(
+			() => defaultStore.state.developer,
+			(v) => postDeveloperModeToSw(v),
+			{ immediate: true },
+		);
+		watch(
+			() => defaultStore.state.suppressPushWhenForeground,
+			(v) => postSuppressPushWhenForegroundToSw(v),
+			{ immediate: true },
+		);
+		updateAppBadgeFromAccount();
+	});
+
+	// 起動時: 未読通知が無ければ OS 通知センターを整合
+	if ($i && !$i.hasUnreadNotification) {
+		postCloseNotificationsToSw({ kind: "readAllNotifications" });
+	}
+	if ($i && !$i.hasUnreadMessagingMessage) {
+		postCloseNotificationsToSw({ kind: "readAllMessagingMessages" });
+	}
 };
 
 /**

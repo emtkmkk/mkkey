@@ -1,16 +1,23 @@
 declare var self: ServiceWorkerGlobalScope;
 
+import { createNotification } from "@/scripts/create-notification";
 import {
-	createEmptyNotification,
-	createNotification,
-} from "@/scripts/create-notification";
+	closePushNotifications,
+	hasFocusedVisibleClient,
+} from "@/scripts/close-push-notifications";
 import { FETCH_TIMEOUT_MS } from "@/const";
 import { swLang } from "@/scripts/lang";
 import { swNotificationRead } from "@/scripts/notification-read";
-import { pushNotificationDataMap } from "@/types";
+import type { pushNotificationDataMap } from "@/types";
 import * as swos from "@/scripts/operations";
 import { acct as getAcct } from "@/filters/user";
 import { set } from "idb-keyval";
+
+/** クライアントから同期される dev モード（registry developer） */
+let swDeveloperMode = false;
+
+/** フォアグラウンド時に OS 通知を抑制するか */
+let swSuppressPushWhenForeground = true;
 
 self.addEventListener("install", (ev) => {
 	ev.waitUntil(self.skipWaiting());
@@ -164,67 +171,87 @@ self.addEventListener("fetch", (ev) => {
 });
 
 self.addEventListener("push", (ev) => {
-	// クライアント取得
 	ev.waitUntil(
-		self.clients
-			.matchAll({
-				includeUncontrolled: true,
-				type: "window",
-			})
-			.then(
-				async <K extends keyof pushNotificationDataMap>(
-					clients: readonly WindowClient[],
-				) => {
-					const data: pushNotificationDataMap[K] = ev.data?.json();
+		(async () => {
+			let data: pushNotificationDataMap[keyof pushNotificationDataMap] | null =
+				null;
+			try {
+				data = ev.data?.json() ?? null;
+			} catch (err) {
+				if (_DEV_ || swDeveloperMode) {
+					console.warn("[mkkey-push] invalid push payload", err);
+				}
+				return;
+			}
 
-					switch (data.type) {
-						// case 'driveFileCreated':
-						case "notification":
-						case "unreadMessagingMessage":
-							// 1日以上経過している場合は無視
-							if (new Date().getTime() - data.dateTime > 1000 * 60 * 60 * 24)
-								break;
+			if (data == null || typeof data.type !== "string") {
+				if (_DEV_ || swDeveloperMode) {
+					console.warn("[mkkey-push] missing data.type");
+				}
+				return;
+			}
 
-							// クライアントがあったらストリームに接続しているということなので通知しない
-							// クライアント接続中も通知する
-							// if (clients.length !== 0) break;
+			if (_DEV_ || swDeveloperMode) {
+				console.info("[mkkey-push] received", data.type, data);
+			}
 
-							return createNotification(data);
-						case "readAllNotifications":
-							for (const n of await self.registration.getNotifications()) {
-								if (n?.data?.type === "notification") n.close();
-							}
-							break;
-						case "readAllMessagingMessages":
-							for (const n of await self.registration.getNotifications()) {
-								if (n?.data?.type === "unreadMessagingMessage") n.close();
-							}
-							break;
-						case "readNotifications":
-							for (const n of await self.registration.getNotifications()) {
-								if (data.body?.notificationIds?.includes(n.data.body.id)) {
-									n.close();
-								}
-							}
-							break;
-						case "readAllMessagingMessagesOfARoom":
-							for (const n of await self.registration.getNotifications()) {
-								if (
-									n.data.type === "unreadMessagingMessage" &&
-									("userId" in data.body
-										? data.body.userId === n.data.body.userId
-										: data.body.groupId === n.data.body.groupId)
-								) {
-									n.close();
-								}
-							}
-							break;
+			switch (data.type) {
+				case "notification":
+				case "unreadMessagingMessage": {
+					if (Date.now() - data.dateTime > 1000 * 60 * 60 * 24) {
+						return;
 					}
 
-					await createEmptyNotification(`NotNfType : ${data.type}`);
+					// フォアグラウンドでは OS 通知を出さずクライアントへ転送
+					if (
+						swSuppressPushWhenForeground &&
+						(await hasFocusedVisibleClient())
+					) {
+						const clients = await self.clients.matchAll({
+							type: "window",
+							includeUncontrolled: true,
+						});
+						for (const client of clients) {
+							if (
+								client.visibilityState === "visible" &&
+								"focused" in client &&
+								client.focused
+							) {
+								client.postMessage({
+									type: "in-app-notification",
+									data,
+								});
+							}
+						}
+						return;
+					}
+
+					return createNotification(data);
+				}
+				default:
+					if (_DEV_ || swDeveloperMode) {
+						console.info("[mkkey-push] ignored type", data.type);
+					}
 					return;
-				},
-			),
+			}
+		})(),
+	);
+});
+
+self.addEventListener("pushsubscriptionchange", (ev) => {
+	ev.waitUntil(
+		(async () => {
+			if (_DEV_ || swDeveloperMode) {
+				console.info("[mkkey-push] pushsubscriptionchange");
+			}
+			const clients = await self.clients.matchAll({
+				type: "window",
+				includeUncontrolled: true,
+			});
+			for (const client of clients) {
+				client.postMessage({ type: "pushsubscriptionchange" });
+			}
+		})(),
 	);
 });
 
@@ -374,16 +401,35 @@ self.addEventListener(
 						return; // TODO
 				}
 
-				if (typeof ev.data === "object") {
-					// E.g. '[object Array]' → 'array'
+				if (typeof ev.data === "object" && ev.data != null) {
+					if (ev.data.type === "set-developer") {
+						swDeveloperMode = !!ev.data.value;
+						return;
+					}
+
+					if (ev.data.type === "set-suppress-push-when-foreground") {
+						swSuppressPushWhenForeground = !!ev.data.value;
+						return;
+					}
+
+					if (ev.data.type === "close-notifications") {
+						await closePushNotifications(ev.data.order);
+						return;
+					}
+
 					const otype = Object.prototype.toString
 						.call(ev.data)
 						.slice(8, -1)
 						.toLowerCase();
 
-					if (otype === "object") {
-						if (ev.data.msg === "initialize") {
-							swLang.setLang(ev.data.lang);
+					if (otype === "object" && ev.data.msg === "initialize") {
+						swLang.setLang(ev.data.lang);
+						if (ev.data.developer != null) {
+							swDeveloperMode = !!ev.data.developer;
+						}
+						if (ev.data.suppressPushWhenForeground != null) {
+							swSuppressPushWhenForeground =
+								!!ev.data.suppressPushWhenForeground;
 						}
 					}
 				}

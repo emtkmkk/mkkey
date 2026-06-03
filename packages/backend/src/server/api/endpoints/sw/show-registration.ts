@@ -47,17 +47,27 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		endpoint: { type: "string" },
+		endpoint: { type: "string", minLength: 1 },
+		auth: { type: "string" },
+		publickey: { type: "string" },
 	},
 	required: ["endpoint"],
 } as const;
 
 // eslint-disable-next-line import/no-default-export
 export default define(meta, paramDef, async (ps, me) => {
-	const exist = await SwSubscriptions.findOneBy({
+	const where: Record<string, string> = {
 		userId: me.id,
 		endpoint: ps.endpoint,
-	});
+	};
+	if (ps.auth != null && ps.auth !== "") {
+		where.auth = ps.auth;
+	}
+	if (ps.publickey != null && ps.publickey !== "") {
+		where.publickey = ps.publickey;
+	}
+
+	const exist = await SwSubscriptions.findOneBy(where);
 
 	if (exist != null) {
 		return {

@@ -4,6 +4,8 @@ import { DB_MAX_NOTE_TEXT_LENGTH } from "@/misc/hard-limits.js";
 import { db } from "@/db/postgre.js";
 import define from "../../define.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
+import { invalidateMetaCache } from "@/misc/fetch-meta.js";
+import { resetPushVapidDetails } from "@/services/push-notification.js";
 
 export const meta = {
 	tags: ["admin"],
@@ -641,5 +643,14 @@ export default define(meta, paramDef, async (ps, me) => {
 	insertModerationLog(me, "updateMeta");
 	if (shouldBumpReactionNormalizeCacheVersion) {
 		await bumpReactionNormalizeCacheVersion();
+	}
+
+	if (
+		ps.enableServiceWorker !== undefined ||
+		ps.swPublicKey !== undefined ||
+		ps.swPrivateKey !== undefined
+	) {
+		invalidateMetaCache();
+		resetPushVapidDetails();
 	}
 });

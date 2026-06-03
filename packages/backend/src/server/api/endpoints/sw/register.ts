@@ -5,14 +5,20 @@
  *
  * @remarks
  * - **API パス**: `sw/register`（POST `/api/sw/register` で呼び出し）
- * - 認証必須。endpoint・auth・publicKey などでプッシュ購読情報を登録する。
+ * - 認証必須。endpoint 単位で upsert し、同一 endpoint の古い鍵行は削除する。
+ * - sendReadMessage は互換のため受理するが push 既読同期には未使用。
  *
  * @see {@link define} エンドポイント登録
  * @internal
  */
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { genId } from "@/misc/gen-id.js";
+import { invalidateSwSubscriptionsCache } from "@/misc/sw-subscriptions-cache.js";
 import { SwSubscriptions } from "@/models/index.js";
+import {
+	hashPushEndpoint,
+	logPushSubscriptionChange,
+} from "@/services/push-audit-log.js";
 import define from "../../define.js";
 
 export const meta = {
@@ -60,24 +66,45 @@ export const meta = {
 export const paramDef = {
 	type: "object",
 	properties: {
-		endpoint: { type: "string" },
-		auth: { type: "string" },
-		publickey: { type: "string" },
+		endpoint: { type: "string", minLength: 1 },
+		auth: { type: "string", minLength: 1 },
+		publickey: { type: "string", minLength: 1 },
 		sendReadMessage: { type: "boolean", default: false },
+		/** 購読変更の理由（dev ログ用・任意） */
+		cause: {
+			type: "string",
+			enum: ["api-call", "pushsubscriptionchange", "unknown"],
+			default: "api-call",
+		},
 	},
 	required: ["endpoint", "auth", "publickey"],
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	// 既に登録済みの場合
+	const instance = await fetchMeta(true);
+	const endpointHash = hashPushEndpoint(ps.endpoint);
+
+	// 同一 endpoint で鍵が変わった古い行を削除（endpoint 単位 upsert）
+	const staleDelete = await SwSubscriptions.createQueryBuilder()
+		.delete()
+		.where("userId = :userId", { userId: me.id })
+		.andWhere("endpoint = :endpoint", { endpoint: ps.endpoint })
+		.andWhere("(auth != :auth OR publickey != :publickey)", {
+			auth: ps.auth,
+			publickey: ps.publickey,
+		})
+		.execute();
+
+	if (staleDelete.affected && staleDelete.affected > 0) {
+		await invalidateSwSubscriptionsCache(me.id);
+	}
+
 	const exist = await SwSubscriptions.findOneBy({
 		userId: me.id,
 		endpoint: ps.endpoint,
 		auth: ps.auth,
 		publickey: ps.publickey,
 	});
-
-	const instance = await fetchMeta(true);
 
 	if (exist != null) {
 		return {
@@ -97,6 +124,17 @@ export default define(meta, paramDef, async (ps, me) => {
 		auth: ps.auth,
 		publickey: ps.publickey,
 		sendReadMessage: ps.sendReadMessage,
+	});
+
+	const cause =
+		ps.cause === "pushsubscriptionchange" ? "pushsubscriptionchange" : "api-call";
+
+	await invalidateSwSubscriptionsCache(me.id);
+
+	void logPushSubscriptionChange(me.id, {
+		event: "register",
+		cause,
+		endpointHash,
 	});
 
 	return {

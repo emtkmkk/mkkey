@@ -1164,6 +1164,12 @@ export const defaultStore = markRaw(
 			default: false,
 			createdAt: "2023/5/26",
 		},
+		suppressPushWhenForeground: {
+			where: "account",
+			default: true,
+			createdAt: "2026/6/3",
+			page: "notifications",
+		},
 		developerRenote: {
 			where: "account",
 			default: false,

@@ -10,7 +10,7 @@ export type SwMessage = {
 	[x: string]: any;
 };
 
-// Defined also @/services/push-notification.ts#L7-L14
+/** @see {@link ../../../backend/src/misc/push-notification-types.ts} backend 側と同期すること */
 type pushNotificationDataSourceMap = {
 	notification: Misskey.entities.Notification;
 	unreadMessagingMessage: Misskey.entities.MessagingMessage;

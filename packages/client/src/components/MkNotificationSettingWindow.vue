@@ -28,7 +28,7 @@
 					i18n.ts.enableAll
 				}}</MkButton>
 				<MkSwitch
-					v-for="ntype in notificationTypes"
+					v-for="ntype in configurableTypes"
 					:key="ntype"
 					v-model="typesMap[ntype]"
 					>{{ i18n.t(`_notification._types.${ntype}`) }}</MkSwitch
@@ -55,25 +55,33 @@ const emit = defineEmits<{
 const props = withDefaults(
 	defineProps<{
 		includingTypes?: (typeof notificationTypes)[number][] | null;
+		/** 表示・編集対象の通知種別（未指定時は notificationTypes 全体） */
+		configurableTypes?: (typeof notificationTypes)[number][] | null;
 		showGlobalToggle?: boolean;
 	}>(),
 	{
 		includingTypes: () => [],
+		configurableTypes: null,
 		showGlobalToggle: true,
 	}
 );
 
 let includingTypes = $computed(() => props.includingTypes || []);
+let configurableTypes = $computed(
+	() => props.configurableTypes ?? [...notificationTypes],
+);
 
 const dialog = $ref<InstanceType<typeof XModalWindow>>();
 
-let typesMap = $ref<Record<(typeof notificationTypes)[number], boolean>>({});
+let typesMap = $ref<Partial<Record<(typeof notificationTypes)[number], boolean>>>(
+	{},
+);
 let useGlobalSetting = $ref(
 	(includingTypes === null || includingTypes.length === 0) &&
 		props.showGlobalToggle
 );
 
-for (const ntype of notificationTypes) {
+for (const ntype of configurableTypes) {
 	typesMap[ntype] = includingTypes.includes(ntype);
 }
 
@@ -82,9 +90,7 @@ function ok() {
 		emit("done", { includingTypes: null });
 	} else {
 		emit("done", {
-			includingTypes: (
-				Object.keys(typesMap) as (typeof notificationTypes)[number][]
-			).filter((type) => typesMap[type]),
+			includingTypes: configurableTypes.filter((type) => typesMap[type]),
 		});
 	}
 
@@ -92,14 +98,14 @@ function ok() {
 }
 
 function disableAll() {
-	for (const type in typesMap) {
-		typesMap[type as (typeof notificationTypes)[number]] = false;
+	for (const type of configurableTypes) {
+		typesMap[type] = false;
 	}
 }
 
 function enableAll() {
-	for (const type in typesMap) {
-		typesMap[type as (typeof notificationTypes)[number]] = true;
+	for (const type of configurableTypes) {
+		typesMap[type] = true;
 	}
 }
 </script>

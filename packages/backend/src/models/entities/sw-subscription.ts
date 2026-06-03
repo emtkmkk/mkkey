@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * Web Push 購読（Service Worker）エンティティ。
+ *
+ * @internal
+ */
 import {
 	PrimaryColumn,
 	Entity,
@@ -42,7 +49,11 @@ export class SwSubscription {
 	})
 	public publickey: string;
 
-	@Column('boolean', {
+	/**
+	 * @remarks
+	 * TEMP: 互換のため残存。push 既読同期は廃止済み。列削除は docs/TODO-push-sendreadmessage-column.md 参照。
+	 */
+	@Column("boolean", {
 		default: false,
 	})
 	public sendReadMessage: boolean;

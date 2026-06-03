@@ -12,6 +12,10 @@ export const notificationTypes = [
 	"followRequestAccepted",
 	"groupInvited",
 	"app",
+	"userWasUnfollowed",
+	"wasForciblyUnfollowed",
+	"wasBlocked",
+	"followedAccountWasDeleted",
 ] as const;
 
 export const noteVisibilities = [

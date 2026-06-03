@@ -38,27 +38,40 @@
 
 			<div class="_gaps_m">
 				<MkPushNotificationAllowButton ref="allowButton" />
-				<FormSwitch
-					:disabled="!pushRegistrationInServer"
-					:modelValue="sendReadMessage"
-					@update:modelValue="onChangeSendReadMessage"
-				>
-					<template #label>{{
-						i18n.ts.sendPushNotificationReadMessage
-					}}</template>
-					<template #caption>
-						<I18n
-							:src="
-								i18n.ts.sendPushNotificationReadMessageCaption
-							"
-						>
-							<template #emptyPushNotificationMessage>{{
-								i18n.ts._notification
-									.emptyPushNotificationMessage
-							}}</template>
-						</I18n>
-					</template>
+				<FormSwitch v-model="suppressPushWhenForeground">
+					<template #label
+						>画面を開いている間はこの端末で通知を表示しない</template
+					>
+					<template #caption
+						>オンにすると、タブを表示中は OS の通知の代わりにアプリ内トーストで知らせます。</template
+					>
 				</FormSwitch>
+				<FormButton
+					class="_formBlock"
+					:disabled="!pushRegistrationInServer"
+					@click="sendTestPush"
+				>
+					テスト通知を送る
+				</FormButton>
+			</div>
+		</FormSection>
+		<FormSection v-if="developer">
+			<template #label>プッシュ通知ログ（dev）</template>
+			<div class="_gaps_s">
+				<FormButton class="_formBlock" :disabled="loadingLog" @click="loadPushLog">
+					ログを更新
+				</FormButton>
+				<div v-if="pushLogs.length === 0" class="_caption">
+					ログはありません
+				</div>
+				<div
+					v-for="(entry, i) in pushLogs"
+					:key="i"
+					class="_monospace"
+					style="font-size: 0.85em; word-break: break-all"
+				>
+					{{ formatLogEntry(entry) }}
+				</div>
 			</div>
 		</FormSection>
 		<FormSection>
@@ -76,7 +89,14 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent } from "vue";
+/**
+ * @packageDocumentation
+ *
+ * 通知設定ページ。
+ *
+ * @public
+ */
+import { defineAsyncComponent, watch } from "vue";
 import { notificationTypes } from "calckey-js";
 import FormButton from "@/components/MkButton.vue";
 import FormLink from "@/components/form/link.vue";
@@ -88,27 +108,45 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 import MkPushNotificationAllowButton from "@/components/MkPushNotificationAllowButton.vue";
+import {
+	buildMutingNotificationTypes,
+	getConfigurableNotificationTypes,
+} from "@/scripts/experimental-notification-types";
 
 let allowButton =
 	$shallowRef<InstanceType<typeof MkPushNotificationAllowButton>>();
-let pushRegistrationInServer = $computed(
-	() => allowButton?.pushRegistrationInServer
-);
-let sendReadMessage = $computed(
-	() => pushRegistrationInServer?.sendReadMessage || false
+const pushRegistrationInServer = $computed(
+	() => allowButton?.pushRegistrationInServer,
 );
 
+const developer = $computed(defaultStore.makeGetterSetter("developer"));
 const enableAntennaTab = $computed(
-	defaultStore.makeGetterSetter("enableAntennaTab")
+	defaultStore.makeGetterSetter("enableAntennaTab"),
 );
-
 const disableRequestNotification = $computed(
-	defaultStore.makeGetterSetter("disableRequestNotification")
+	defaultStore.makeGetterSetter("disableRequestNotification"),
+);
+const showMkkeySettingTips = $computed(
+	defaultStore.makeGetterSetter("showMkkeySettingTips"),
+);
+const suppressPushWhenForeground = $computed(
+	defaultStore.makeGetterSetter("suppressPushWhenForeground"),
 );
 
-const showMkkeySettingTips = $computed(
-	defaultStore.makeGetterSetter("showMkkeySettingTips")
-);
+let pushLogs = $ref<
+	Array<{
+		at: number;
+		kind: string;
+		type?: string;
+		event?: string;
+		cause?: string;
+		endpointHash?: string;
+		ok?: boolean;
+		statusCode?: number;
+		errorMsg?: string;
+	}>
+>([]);
+let loadingLog = $ref(false);
 
 async function readAllUnreadNotes() {
 	await os.api("i/read-all-unread-notes");
@@ -122,16 +160,50 @@ async function readAllNotifications() {
 	await os.api("notifications/mark-all-as-read");
 }
 
+async function sendTestPush() {
+	const res = await os.apiWithDialog("i/test-push-notification", {});
+	if (res.ok) {
+		os.toast("テスト通知を送信しました");
+		if (developer) await loadPushLog();
+	} else {
+		os.alert({
+			type: "warning",
+			text: "プッシュ通知の購読が登録されていません",
+		});
+	}
+}
+
+async function loadPushLog() {
+	loadingLog = true;
+	try {
+		pushLogs = await os.api("i/push-log", { limit: 50 });
+	} catch {
+		pushLogs = [];
+	} finally {
+		loadingLog = false;
+	}
+}
+
+function formatLogEntry(entry: (typeof pushLogs)[number]): string {
+	const time = new Date(entry.at).toLocaleString();
+	if (entry.kind === "subscription") {
+		return `${time} [購読] ${entry.event} (${entry.cause}) ${entry.endpointHash ?? ""}`;
+	}
+	return `${time} [送信] ${entry.type} ok=${entry.ok} status=${entry.statusCode ?? "-"} ${entry.endpointHash ?? ""} ${entry.errorMsg ?? ""}`;
+}
+
 function configure() {
-	const includingTypes = notificationTypes.filter(
-		(x) => !$i!.mutingNotificationTypes.includes(x)
+	const visibleTypes = getConfigurableNotificationTypes(developer);
+	const includingTypes = visibleTypes.filter(
+		(x) => !$i!.mutingNotificationTypes.includes(x),
 	);
 	os.popup(
 		defineAsyncComponent(
-			() => import("@/components/MkNotificationSettingWindow.vue")
+			() => import("@/components/MkNotificationSettingWindow.vue"),
 		),
 		{
 			includingTypes,
+			configurableTypes: visibleTypes,
 			showGlobalToggle: false,
 		},
 		{
@@ -139,8 +211,10 @@ function configure() {
 				const { includingTypes: value } = res;
 				await os
 					.apiWithDialog("i/update", {
-						mutingNotificationTypes: notificationTypes.filter(
-							(x) => !value.includes(x)
+						mutingNotificationTypes: buildMutingNotificationTypes(
+							developer,
+							value ?? [],
+							$i!.mutingNotificationTypes,
 						),
 					})
 					.then((i) => {
@@ -148,25 +222,17 @@ function configure() {
 					});
 			},
 		},
-		"closed"
+		"closed",
 	);
 }
 
-function onChangeSendReadMessage(v: boolean) {
-	if (!pushRegistrationInServer) return;
-
-	os.apiWithDialog("sw/update-registration", {
-		endpoint: pushRegistrationInServer.endpoint,
-		sendReadMessage: v,
-	}).then((res) => {
-		if (!allowButton) return;
-		allowButton.pushRegistrationInServer = res;
-	});
-}
-
-const headerActions = $computed(() => []);
-
-const headerTabs = $computed(() => []);
+watch(
+	() => developer,
+	(v) => {
+		if (v) void loadPushLog();
+	},
+	{ immediate: true },
+);
 
 definePageMetadata({
 	title: i18n.ts.notifications,

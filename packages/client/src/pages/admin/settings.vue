@@ -333,6 +333,12 @@
 							</FormSwitch>
 
 							<template v-if="enableServiceWorker">
+								<FormButton
+									class="_formBlock"
+									@click="generateVapidKeys"
+								>
+									VAPID 鍵を自動生成
+								</FormButton>
 								<FormInput
 									v-model="swPublicKey"
 									class="_formBlock"
@@ -539,6 +545,20 @@ async function init() {
 	defaultReactionCustom = ["⭐", "👍", "❤️"].includes(meta.defaultReaction)
 		? ""
 		: meta.defaultReaction;
+}
+
+async function generateVapidKeys() {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		title: "VAPID 鍵を生成",
+		text: "新しい鍵を保存すると、既存のプッシュ通知購読はすべて無効になります。続行しますか？",
+	});
+	if (canceled) return;
+
+	const keys = await os.api("admin/generate-vapid-keys", {});
+	swPublicKey = keys.publicKey;
+	swPrivateKey = keys.privateKey;
+	os.toast("VAPID 鍵を生成しました。保存ボタンで反映してください。");
 }
 
 function save() {

@@ -4,13 +4,18 @@
 declare var self: ServiceWorkerGlobalScope;
 
 import { swLang } from "@/scripts/lang";
-import { cli } from "@/scripts/operations";
 import { pushNotificationDataMap } from "@/types";
 import getUserName from "@/scripts/get-user-name";
 import { I18n } from "@/scripts/i18n";
-import { getAccountFromId } from "@/scripts/get-account-from-id";
 import { char2fileName } from "@/scripts/twemoji-base";
 import * as url from "@/scripts/url";
+import {
+	buildNotificationOptions,
+	getNoteNotificationImage,
+} from "@/scripts/notification-options";
+
+/** バッジ URL の存在確認キャッシュ（同一 URL の再 fetch を避ける） */
+const badgeUrlCache = new Map<string, boolean>();
 
 const closeNotificationsByTags = async (tags: string[]) => {
 	for (const n of (
@@ -34,7 +39,7 @@ export async function createNotification<
 		return self.registration.showNotification(...n);
 	} else {
 		console.error("Could not compose notification", data);
-		return createEmptyNotification(`Could not compose notification${data}`);
+		return null;
 	}
 }
 
@@ -56,98 +61,31 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 		case "notification":
 			switch (data.body.type) {
 				case "follow":
-					// users/showの型定義をswos.apiへ当てはめるのが困難なのでapiFetch.requestを直接使用
-					const account = await getAccountFromId(data.userId);
-					if (!account) return null;
-					const userDetail = await cli.request(
-						"users/show",
-						{ userId: data.body.userId },
-						account.token,
-					);
 					return [
 						t("_notification.youWereFollowed"),
-						{
+						buildNotificationOptions(data, {
 							body: getUserName(data.body.user),
 							icon: data.body.user.avatarUrl,
 							badge: iconUrl("user-plus"),
-							data,
-							actions: userDetail.isFollowing
-								? []
-								: [
-										{
-											action: "follow",
-											title: t("_notification._actions.followBack"),
-										},
-								  ],
-						},
-					];
-
-				case "mention":
-					return [
-						t("_notification.youGotMention", {
-							name: getUserName(data.body.user),
-						}),
-						{
-							body: data.body.note.text || "",
-							icon: data.body.user.avatarUrl,
-							badge: iconUrl("at"),
+							tag: `follow:${data.body.userId}`,
 							data,
 							actions: [
 								{
-									action: "reply",
-									title: t("_notification._actions.reply"),
+									action: "follow",
+									title: t("_notification._actions.followBack"),
 								},
 							],
-						},
+						}),
 					];
 
-				case "reply":
+				case "userWasUnfollowed":
 					return [
-						t("_notification.youGotReply", {
-							name: getUserName(data.body.user),
-						}),
-						{
-							body: data.body.note.text || "",
+						t("_notification.youWereUnfollowed"),
+						buildNotificationOptions(data, {
+							body: getUserName(data.body.user),
 							icon: data.body.user.avatarUrl,
-							badge: iconUrl("reply"),
-							data,
-							actions: [
-								{
-									action: "reply",
-									title: t("_notification._actions.reply"),
-								},
-							],
-						},
-					];
-
-				case "unreadAntenna":
-					const bodyText =
-						data.body.user.id !== data.body.note.userId
-							? `RT ${getUserName(data.body.note.user)} : ${
-									data.body.note.text
-							  }`
-							: data.body.note.text;
-					return [
-						t("_notification.youUnreadAntenna", {
-							name: data.body.reaction,
-						}),
-						{
-							body: `${getUserName(data.body.user)} : ${bodyText}` || "",
-							icon: data.body.user.avatarUrl,
-							badge: iconUrl("comments"),
-							tag: `antenna:${data.body.antenna.id}`,
-							data,
-						},
-					];
-				case "renote":
-					return [
-						t("_notification.youRenoted", {
-							name: getUserName(data.body.user),
-						}),
-						{
-							body: data.body.note.text || "",
-							icon: data.body.user.avatarUrl,
-							badge: iconUrl("retweet"),
+							badge: iconUrl("user-plus"),
+							tag: `unfollowed:${data.body.userId}`,
 							data,
 							actions: [
 								{
@@ -155,7 +93,157 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 									title: getUserName(data.body.user),
 								},
 							],
-						},
+						}),
+					];
+
+				case "wasForciblyUnfollowed":
+					return [
+						t("_notification.youWereForciblyUnfollowed"),
+						buildNotificationOptions(data, {
+							body: getUserName(data.body.user),
+							icon: data.body.user.avatarUrl,
+							badge: iconUrl("clock"),
+							tag: `forcibly-unfollowed:${data.body.userId}`,
+							data,
+							actions: [
+								{
+									action: "showUser",
+									title: getUserName(data.body.user),
+								},
+							],
+						}),
+					];
+
+				case "wasBlocked":
+					return [
+						t("_notification.youWereBlocked"),
+						buildNotificationOptions(data, {
+							body: getUserName(data.body.user),
+							icon: data.body.user.avatarUrl,
+							badge: iconUrl("null"),
+							tag: `blocked:${data.body.userId}`,
+							data,
+							actions: [
+								{
+									action: "showUser",
+									title: getUserName(data.body.user),
+								},
+							],
+						}),
+					];
+
+				case "followedAccountWasDeleted":
+					return [
+						t("_notification.followedAccountWasDeleted", {
+							name: getUserName(data.body.user),
+						}),
+						buildNotificationOptions(data, {
+							body: getUserName(data.body.user),
+							icon: data.body.user.avatarUrl,
+							badge: iconUrl("null"),
+							tag: `followed-deleted:${data.body.userId}`,
+							data,
+							actions: [
+								{
+									action: "showUser",
+									title: getUserName(data.body.user),
+								},
+							],
+						}),
+					];
+
+				case "mention":
+					return [
+						t("_notification.youGotMention", {
+							name: getUserName(data.body.user),
+						}),
+						buildNotificationOptions(data, {
+							body: data.body.note.text || "",
+							icon: data.body.user.avatarUrl,
+							badge: iconUrl("at"),
+							image: getNoteNotificationImage(data.body.note),
+							tag: data.body.note?.id
+								? `note:${data.body.note.id}`
+								: undefined,
+							requireInteraction: true,
+							data,
+							actions: [
+								{
+									action: "reply",
+									title: t("_notification._actions.reply"),
+								},
+							],
+						}),
+					];
+
+				case "reply":
+					return [
+						t("_notification.youGotReply", {
+							name: getUserName(data.body.user),
+						}),
+						buildNotificationOptions(data, {
+							body: data.body.note.text || "",
+							icon: data.body.user.avatarUrl,
+							badge: iconUrl("reply"),
+							image: getNoteNotificationImage(data.body.note),
+							tag: data.body.note?.id
+								? `note:${data.body.note.id}`
+								: undefined,
+							requireInteraction: true,
+							data,
+							actions: [
+								{
+									action: "reply",
+									title: t("_notification._actions.reply"),
+								},
+							],
+						}),
+					];
+
+				case "unreadAntenna": {
+					const bodyText =
+						data.body.user.id !== data.body.note.userId
+							? `RT ${getUserName(data.body.note.user)} : ${
+									data.body.note.text
+							  }`
+							: data.body.note.text;
+					const antennaName =
+						(data.body as { antenna?: { name?: string } }).antenna?.name ??
+						data.body.reaction;
+					return [
+						t("_notification.youUnreadAntenna", {
+							name: antennaName,
+						}),
+						buildNotificationOptions(data, {
+							body: `${getUserName(data.body.user)} : ${bodyText}` || "",
+							icon: data.body.user.avatarUrl,
+							badge: iconUrl("comments"),
+							tag: `antenna:${data.body.antenna.id}`,
+							data,
+						}),
+					];
+				}
+				case "renote":
+					return [
+						t("_notification.youRenoted", {
+							name: getUserName(data.body.user),
+						}),
+						buildNotificationOptions(data, {
+							body: data.body.note.text || "",
+							icon: data.body.user.avatarUrl,
+							badge: iconUrl("retweet"),
+							image: getNoteNotificationImage(data.body.note),
+							tag: data.body.note?.id
+								? `note:${data.body.note.id}`
+								: undefined,
+							data,
+							actions: [
+								{
+									action: "showUser",
+									title: getUserName(data.body.user),
+								},
+							],
+						}),
 					];
 
 				case "quote":
@@ -163,10 +251,14 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						t("_notification.youGotQuote", {
 							name: getUserName(data.body.user),
 						}),
-						{
+						buildNotificationOptions(data, {
 							body: data.body.note.text || "",
 							icon: data.body.user.avatarUrl,
 							badge: iconUrl("quote-right"),
+							image: getNoteNotificationImage(data.body.note),
+							tag: data.body.note?.id
+								? `note:${data.body.note.id}`
+								: undefined,
 							data,
 							actions: [
 								{
@@ -183,7 +275,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 									  ]
 									: []),
 							],
-						},
+						}),
 					];
 
 				case "reaction":
@@ -218,23 +310,27 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						badge = `/twemoji-badge/${char2fileName(reaction)}.png`;
 					}
 
-					if (
-						badge
-							? await fetch(badge)
-									.then((res) => res.status !== 200)
-									.catch(() => true)
-							: true
-					) {
-						badge = iconUrl("plus");
+					if (badge) {
+						let ok = badgeUrlCache.get(badge);
+						if (ok === undefined) {
+							ok = await fetch(badge)
+								.then((res) => res.status === 200)
+								.catch(() => false);
+							badgeUrlCache.set(badge, ok);
+						}
+						if (!ok) {
+							badge = iconUrl("plus");
+						}
 					}
 
 					return [
 						`${reaction} ${getUserName(data.body.user)}`,
-						{
+						buildNotificationOptions(data, {
 							body: data.body.note.text || "",
 							icon: data.body.user.avatarUrl,
 							tag: `reaction:${data.body.note.id}`,
 							badge,
+							image: getNoteNotificationImage(data.body.note),
 							data,
 							actions: [
 								{
@@ -242,7 +338,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 									title: getUserName(data.body.user),
 								},
 							],
-						},
+						}),
 					];
 
 				case "pollVote":
@@ -250,32 +346,37 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						t("_notification.youGotPoll", {
 							name: getUserName(data.body.user),
 						}),
-						{
+						buildNotificationOptions(data, {
 							body: data.body.note.text || "",
 							icon: data.body.user.avatarUrl,
 							badge: iconUrl("poll-h"),
+							tag: data.body.note?.id
+								? `note:${data.body.note.id}`
+								: undefined,
 							data,
-						},
+						}),
 					];
 
 				case "pollEnded":
 					return [
 						t("_notification.pollEnded"),
-						{
+						buildNotificationOptions(data, {
 							body: data.body.note.text || "",
 							badge: iconUrl("clipboard-check-solid"),
 							tag: `poll:${data.body.note.id}`,
 							data,
-						},
+						}),
 					];
 
 				case "receiveFollowRequest":
 					return [
 						t("_notification.youReceivedFollowRequest"),
-						{
+						buildNotificationOptions(data, {
 							body: getUserName(data.body.user),
 							icon: data.body.user.avatarUrl,
 							badge: iconUrl("clock"),
+							tag: `follow-request:${data.body.userId}`,
+							requireInteraction: true,
 							data,
 							actions: [
 								{
@@ -287,18 +388,19 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 									title: t("reject"),
 								},
 							],
-						},
+						}),
 					];
 
 				case "followRequestAccepted":
 					return [
 						t("_notification.yourFollowRequestAccepted"),
-						{
+						buildNotificationOptions(data, {
 							body: getUserName(data.body.user),
 							icon: data.body.user.avatarUrl,
 							badge: iconUrl("check"),
+							tag: `follow-accepted:${data.body.userId}`,
 							data,
-						},
+						}),
 					];
 
 				case "groupInvited":
@@ -306,9 +408,11 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						t("_notification.youWereInvitedToGroup", {
 							userName: getUserName(data.body.user),
 						}),
-						{
+						buildNotificationOptions(data, {
 							body: data.body.invitation.group.name,
 							badge: iconUrl("id-card-alt"),
+							tag: `group-invite:${data.body.invitation.id}`,
+							requireInteraction: true,
 							data,
 							actions: [
 								{
@@ -320,17 +424,21 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 									title: t("reject"),
 								},
 							],
-						},
+						}),
 					];
 
 				case "app":
 					return [
 						data.body.header || data.body.body,
-						{
+						buildNotificationOptions(data, {
 							body: data.body.header && data.body.body,
 							icon: data.body.icon,
+							tag:
+								data.body.header === "プッシュ通知テスト"
+									? "push-test"
+									: undefined,
 							data,
-						},
+						}),
 					];
 
 				default:
@@ -342,28 +450,30 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					t("_notification.youGotMessagingMessageFromUser", {
 						name: getUserName(data.body.user),
 					}),
-					{
+					buildNotificationOptions(data, {
 						body: data.body.text || "",
 						icon: data.body.user.avatarUrl,
 						badge: iconUrl("comments"),
 						tag: `messaging:user:${data.body.userId}`,
+						requireInteraction: true,
 						data,
 						renotify: true,
-					},
+					}),
 				];
 			}
 			return [
 				t("_notification.youGotMessagingMessageFromGroup", {
 					name: data.body.group.name,
 				}),
-				{
+				buildNotificationOptions(data, {
 					body: `${getUserName(data.body.user)} : ${data.body.text}` || "",
 					icon: data.body.user.avatarUrl,
 					badge: iconUrl("comments"),
 					tag: `messaging:group:${data.body.groupId}`,
+					requireInteraction: true,
 					data,
 					renotify: true,
-				},
+				}),
 			];
 		default:
 			return null;

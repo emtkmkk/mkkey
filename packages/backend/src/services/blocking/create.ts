@@ -5,6 +5,9 @@
  *
  * @remarks
  * - **役割**: ブロック API から呼ばれ、ブロック関係を DB に保存し AP 配信を行う。
+ * - ブロック時はフォロー解除が最大 2 件走る。種別ごとにミュートできるよう、
+ *   `userWasUnfollowed` / `wasForciblyUnfollowed` / `wasBlocked` をそれぞれ独立して発火する
+ *   （ブロック通知だけ OFF でも、フォロー外れ系だけ ON なら解除は届く）。
  *
  * @see {@link server/api/endpoints/blocking/create} ブロック API
  * @internal
@@ -39,15 +42,17 @@ import { invalidateListMembersCache } from "@/misc/antenna-members-cache.js";
 import { webhookDeliver } from "@/queue/index.js";
 import { ensureProxyFollowsListedUser } from "../user-list/ensure-proxy-follow.js";
 import { setModerationWarningByAdminBlock } from "../moderation-warning-by-admin-block.js";
+import { createNotification } from "@/services/create-notification.js";
 
 export default async function (blocker: User, blockee: User) {
-        await Promise.all([
-                cancelRequest(blocker, blockee),
-                cancelRequest(blockee, blocker),
-                unFollow(blocker, blockee),
-                unFollow(blockee, blocker),
-                removeFromList(blockee, blocker),
-        ]);
+        const [, , blockerUnfollowedBlockee, blockeeUnfollowedBlocker] =
+                await Promise.all([
+                        cancelRequest(blocker, blockee),
+                        cancelRequest(blockee, blocker),
+                        unFollow(blocker, blockee),
+                        unFollow(blockee, blocker),
+                        removeFromList(blockee, blocker),
+                ]);
 
         if (Users.isLocalUser(blocker) && Users.isRemoteUser(blockee)) {
                 await ensureProxyFollowsListedUser(blockee);
@@ -64,6 +69,24 @@ export default async function (blocker: User, blockee: User) {
 
 	await Blockings.insert(blocking);
 	await setModerationWarningByAdminBlock(blocker, blockee);
+
+	if (Users.isLocalUser(blockee)) {
+		// ブロック側が相手のフォローを外した → 手動アンフォローと同種の通知
+		if (blockerUnfollowedBlockee) {
+			void createNotification(blockee.id, "userWasUnfollowed", {
+				notifierId: blocker.id,
+			}, { notifier: blocker });
+		}
+		// ブロックされた側が相手へのフォローを外された → 強制解除
+		if (blockeeUnfollowedBlocker) {
+			void createNotification(blockee.id, "wasForciblyUnfollowed", {
+				notifierId: blocker.id,
+			}, { notifier: blocker });
+		}
+		void createNotification(blockee.id, "wasBlocked", {
+			notifierId: blocker.id,
+		}, { notifier: blocker });
+	}
 
 	if (Users.isLocalUser(blocker) && Users.isRemoteUser(blockee)) {
 		const content = renderActivity(renderBlock(blocking));
@@ -127,14 +150,14 @@ async function cancelRequest(follower: User, followee: User) {
 	}
 }
 
-async function unFollow(follower: User, followee: User) {
+async function unFollow(follower: User, followee: User): Promise<boolean> {
 	const following = await Followings.findOneBy({
 		followerId: follower.id,
 		followeeId: followee.id,
 	});
 
 	if (following == null) {
-		return;
+		return false;
 	}
 
 	await Promise.all([
@@ -182,6 +205,8 @@ async function unFollow(follower: User, followee: User) {
 		);
 		deliver(follower, content, followee.inbox);
 	}
+
+	return true;
 }
 
 async function removeFromList(listOwner: User, user: User) {

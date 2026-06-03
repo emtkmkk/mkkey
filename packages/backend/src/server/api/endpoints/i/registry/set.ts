@@ -14,6 +14,7 @@ import { publishMainStream } from "@/services/stream.js";
 import define from "../../../define.js";
 import { RegistryItems } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { invalidateDeveloperUserCache } from "@/misc/is-developer-user.js";
 
 export const meta = {
 	requireCredential: true,
@@ -74,6 +75,16 @@ export default define(meta, paramDef, async (ps, user) => {
 			key: ps.key,
 			value: ps.value,
 		});
+	}
+
+	if (
+		ps.key === "developer" &&
+		Array.isArray(ps.scope) &&
+		ps.scope.length === 2 &&
+		ps.scope[0] === "client" &&
+		ps.scope[1] === "base"
+	) {
+		await invalidateDeveloperUserCache(user.id);
 	}
 
 	// TODO: サードパーティアプリが傍受出来てしまうのでどうにかする

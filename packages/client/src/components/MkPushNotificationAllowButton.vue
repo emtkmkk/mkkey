@@ -48,18 +48,36 @@
 		:wait="wait"
 		:full="full"
 	>
-		{{ i18n.ts.pushNotificationNotSupported }}
+		{{
+			permissionDenied
+				? "ブラウザの設定で通知が拒否されています"
+				: i18n.ts.pushNotificationNotSupported
+		}}
 	</MkButton>
 </template>
 
 <script setup lang="ts">
+/**
+ * @packageDocumentation
+ *
+ * プッシュ通知の購読・解除ボタン。
+ *
+ * @remarks
+ * NOTE: サーバー未登録のブラウザ購読は自動で再 register する。
+ *
+ * @public
+ */
 import { $i } from "@/account";
 import MkButton from "@/components/MkButton.vue";
 import { instance } from "@/instance";
 import { api, promiseDialog } from "@/os";
 import { i18n } from "@/i18n";
-import { apiUrl } from "@/config";
-import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
+import { getAccounts } from "@/account";
+import {
+	encodePushKey,
+	registerPushSubscription,
+	urlBase64ToUint8Array,
+} from "@/scripts/push-subscription-register";
 
 defineProps<{
 	primary?: boolean;
@@ -75,11 +93,9 @@ defineProps<{
 	showOnlyToRegister?: boolean;
 }>();
 
-// ServiceWorker registration
 let registration = $ref<ServiceWorkerRegistration | undefined>();
-// If this browser supports push notification
 let supported = $ref(false);
-// If this browser has already subscribed to push notification
+let permissionDenied = $ref(false);
 let pushSubscription = $ref<PushSubscription | null>(null);
 let pushRegistrationInServer = $ref<
 	| {
@@ -92,112 +108,100 @@ let pushRegistrationInServer = $ref<
 	| undefined
 >();
 
+
 function subscribe() {
 	if (!registration || !supported || !instance.swPublickey) return;
 
-	// SEE: https://developer.mozilla.org/en-US/docs/Web/API/PushManager/subscribe#Parameters
 	return promiseDialog(
-		registration.pushManager
-			.subscribe({
-				userVisibleOnly: true,
-				applicationServerKey: urlBase64ToUint8Array(
-					instance.swPublickey
-				),
-			})
-			.then(
-				async (subscription) => {
-					pushSubscription = subscription;
-
-					// Register
-					pushRegistrationInServer = await api("sw/register", {
-						endpoint: subscription.endpoint,
-						auth: encode(subscription.getKey("auth")),
-						publickey: encode(subscription.getKey("p256dh")),
-					});
-				},
-				async (err) => {
-					// When subscribe failed
-					// 通知が許可されていなかったとき
-					if (err?.name === "NotAllowedError") {
-						console.info(
-							"User denied the notification permission request."
-						);
-						return;
-					}
-
-					// 違うapplicationServerKey (または gcm_sender_id)のサブスクリプションが
-					// 既に存在していることが原因でエラーになった可能性があるので、
-					// そのサブスクリプションを解除しておく
-					// （これは実行されなさそうだけど、おまじない的に古い実装から残してある）
-					await unsubscribe();
+		(async () => {
+			if (
+				"Notification" in window &&
+				Notification.permission === "default"
+			) {
+				const perm = await Notification.requestPermission();
+				if (perm === "denied") {
+					permissionDenied = true;
+					return;
 				}
-			),
+			}
+
+			return registration!.pushManager.subscribe({
+				userVisibleOnly: true,
+				applicationServerKey: urlBase64ToUint8Array(instance.swPublickey!),
+			});
+		})()
+			.then(async (subscription) => {
+				if (!subscription) return;
+				pushSubscription = subscription;
+				pushRegistrationInServer = await registerPushSubscription(subscription);
+			})
+			.catch((err) => {
+				if (err?.name === "NotAllowedError") {
+					permissionDenied = true;
+					console.info(
+						"User denied the notification permission request.",
+					);
+					return;
+				}
+				console.error("Push subscribe failed:", err);
+			}),
 		null,
-		null
+		null,
 	);
 }
 
-async function unsubscribe() {
+async function unregister() {
 	if (!pushSubscription) return;
 
 	const endpoint = pushSubscription.endpoint;
+	const accounts = await getAccounts();
 
 	pushRegistrationInServer = undefined;
 
-	await pushSubscription.unsubscribe();
-	pushSubscription = null;
-
-	await fetch(`${apiUrl}/sw/unregister`, {
-		method: "POST",
-		headers: mergeMkkeyApiClientHeaders(),
-		body: JSON.stringify({
-			endpoint,
-		}),
-	});
-}
-
-function encode(buffer: ArrayBuffer | null) {
-	return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
-}
-
-/**
- * Convert the URL safe base64 string to a Uint8Array
- * @param base64String base64 string
- */
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-	const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-	const base64 = (base64String + padding)
-		.replace(/-/g, "+")
-		.replace(/_/g, "/");
-
-	const rawData = window.atob(base64);
-	const outputArray = new Uint8Array(rawData.length);
-
-	for (let i = 0; i < rawData.length; ++i) {
-		outputArray[i] = rawData.charCodeAt(i);
+	// 複数アカウント時はブラウザ購読を維持しサーバー登録のみ削除
+	if (accounts.length < 2) {
+		await pushSubscription.unsubscribe();
+		pushSubscription = null;
 	}
-	return outputArray;
+
+	await api("sw/unregister", { endpoint, cause: "api-call" });
+}
+
+async function syncSubscriptionWithServer() {
+	if (!registration || !pushSubscription || !$i?.token) return;
+
+	const res = await api("sw/show-registration", {
+		endpoint: pushSubscription.endpoint,
+		auth: encodePushKey(pushSubscription.getKey("auth")),
+		publickey: encodePushKey(pushSubscription.getKey("p256dh")),
+	});
+
+	if (res) {
+		pushRegistrationInServer = res;
+		return;
+	}
+
+	// 宙ぶらり: ブラウザに購読あり・サーバーに無し → 再登録
+	try {
+		pushRegistrationInServer = await registerPushSubscription(pushSubscription);
+	} catch (err) {
+		console.error("Failed to re-register push subscription:", err);
+	}
 }
 
 if (navigator.serviceWorker == null) {
-	// TODO: よしなに？
+	supported = false;
 } else {
 	navigator.serviceWorker.ready.then(async (swr) => {
 		registration = swr;
-
 		pushSubscription = await registration.pushManager.getSubscription();
 
-		if (instance.swPublickey && "PushManager" in window && $i && $i.token) {
+		if (instance.swPublickey && "PushManager" in window && $i?.token) {
 			supported = true;
+			permissionDenied = Notification.permission === "denied";
 
 			if (pushSubscription) {
-				const res = await api("sw/show-registration", {
-					endpoint: pushSubscription.endpoint,
-				});
-
-				if (res) {
-					pushRegistrationInServer = res;
-				}
+				await syncSubscriptionWithServer();
 			}
 		}
 	});

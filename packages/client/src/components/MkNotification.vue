@@ -29,6 +29,22 @@
 					class="ph-hand-waving ph-bold"
 				></i>
 				<i
+					v-else-if="notification.type === 'userWasUnfollowed'"
+					class="ph-user-minus ph-bold"
+				></i>
+				<i
+					v-else-if="notification.type === 'wasForciblyUnfollowed'"
+					class="ph-user-switch ph-bold"
+				></i>
+				<i
+					v-else-if="notification.type === 'wasBlocked'"
+					class="ph-prohibit ph-bold"
+				></i>
+				<i
+					v-else-if="notification.type === 'followedAccountWasDeleted'"
+					class="ph-trash ph-bold"
+				></i>
+				<i
 					v-else-if="notification.type === 'receiveFollowRequest'"
 					class="ph-clock ph-bold"
 				></i>
@@ -117,6 +133,20 @@
 				<span v-if="notification.type === 'pollEnded'">{{
 					i18n.ts._notification.pollEnded
 				}}</span>
+				<MkA
+					v-else-if="
+						notification.user &&
+						notification.type === 'followedAccountWasDeleted'
+					"
+					v-user-preview="notification.user.id"
+					class="name"
+					:to="userPage(notification.user)"
+					>{{
+						i18n.t("_notification.followedAccountWasDeleted", {
+							name: notificationUserName(notification.user),
+						})
+					}}</MkA
+				>
 				<MkA
 					v-else-if="notification.user"
 					v-user-preview="notification.user.id"
@@ -266,6 +296,24 @@
 				<i class="ph-quotes ph-fill ph-lg"></i>
 			</MkA>
 			<span
+				v-if="notification.type === 'userWasUnfollowed'"
+				class="text"
+				style="opacity: 0.6"
+				>{{ i18n.ts._notification.youWereUnfollowed }}</span
+			>
+			<span
+				v-if="notification.type === 'wasForciblyUnfollowed'"
+				class="text"
+				style="opacity: 0.6"
+				>{{ i18n.ts._notification.youWereForciblyUnfollowed }}</span
+			>
+			<span
+				v-if="notification.type === 'wasBlocked'"
+				class="text"
+				style="opacity: 0.6"
+				>{{ i18n.ts._notification.youWereBlocked }}</span
+			>
+			<span
 				v-if="notification.type === 'follow'"
 				class="text"
 				style="opacity: 0.6"
@@ -378,6 +426,13 @@ const props = withDefaults(
 		full: false,
 	}
 );
+
+/** 通知の表示名（{@link i18n.t} の `{name}` 用） */
+function notificationUserName(
+	user: NonNullable<misskey.entities.Notification["user"]>,
+): string {
+	return user.name || user.username;
+}
 
 const elRef = ref<HTMLElement>(null);
 const reactionRef = ref(null);
@@ -655,6 +710,20 @@ useTooltip(reactionRef, (showing) => {
 			&.pollEnded {
 				padding: 0.1875rem;
 				background: #908caa;
+				pointer-events: none;
+			}
+
+			&.userWasUnfollowed,
+			&.wasForciblyUnfollowed,
+			&.wasBlocked {
+				padding: 0.1875rem;
+				background: #8f3131;
+				pointer-events: none;
+			}
+
+			&.followedAccountWasDeleted {
+				padding: 0.1875rem;
+				background: #6b6b6b;
 				pointer-events: none;
 			}
 

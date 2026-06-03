@@ -11,7 +11,6 @@
  */
 import { In, LessThanOrEqual } from "typeorm";
 import { publishMainStream } from "@/services/stream.js";
-import { pushNotification } from "@/services/push-notification.js";
 import Logger from "@/services/logger.js";
 import type { User } from "@/models/entities/user.js";
 import type { Notification } from "@/models/entities/notification.js";
@@ -121,7 +120,6 @@ export async function readNotificationByQuery(
 
 function postReadAllNotifications(userId: User["id"]) {
 	publishMainStream(userId, "readAllNotifications");
-	return pushNotification(userId, "readAllNotifications", undefined);
 }
 
 function postReadNotifications(
@@ -129,7 +127,6 @@ function postReadNotifications(
 	notificationIds: Notification["id"][],
 ) {
 	publishMainStream(userId, "readNotifications", notificationIds);
-	return pushNotification(userId, "readNotifications", { notificationIds });
 }
 
 function getLatestReadNotificationCacheKey(userId: User["id"]) {

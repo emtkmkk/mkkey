@@ -8,6 +8,8 @@ export { Endpoints, Stream, Connection as ChannelConnection, Channels, Acct };
 
 export const permissions = consts.permissions;
 export const notificationTypes = consts.notificationTypes;
+export const experimentalNotificationTypes =
+	consts.experimentalNotificationTypes;
 export const noteVisibilities = consts.noteVisibilities;
 export const mutedNoteReasons = consts.mutedNoteReasons;
 export const ffVisibility = consts.ffVisibility;

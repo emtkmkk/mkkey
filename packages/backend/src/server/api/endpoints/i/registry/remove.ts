@@ -1,6 +1,7 @@
 import define from "../../../define.js";
 import { RegistryItems } from "@/models/index.js";
 import { ApiError } from "../../../error.js";
+import { invalidateDeveloperUserCache } from "@/misc/is-developer-user.js";
 
 export const meta = {
 	requireCredential: true,
@@ -46,4 +47,14 @@ export default define(meta, paramDef, async (ps, user) => {
 	}
 
 	await RegistryItems.remove(item);
+
+	if (
+		ps.key === "developer" &&
+		Array.isArray(ps.scope) &&
+		ps.scope.length === 2 &&
+		ps.scope[0] === "client" &&
+		ps.scope[1] === "base"
+	) {
+		await invalidateDeveloperUserCache(user.id);
+	}
 });

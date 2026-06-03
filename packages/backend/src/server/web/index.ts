@@ -292,7 +292,8 @@ router.get("/twemoji-badge/(.*)", async (ctx) => {
 router.get("/sw.js", async (ctx) => {
 	await send(ctx as any, "/sw.js", {
 		root: swAssets,
-		maxage: 10 * MINUTE,
+		// NOTE: SW 更新を早く反映するため短め（旧: 10分）
+		maxage: 1 * MINUTE,
 	});
 });
 

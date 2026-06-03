@@ -5,6 +5,10 @@
  *
  * @remarks
  * - **役割**: アカウント削除キューで実行し、ユーザーに紐づくデータを順次削除する。
+ * - フォロー解除は原則 `silent`。削除ユーザーがフォローしていた相手のうち、
+ *   **フォロー返しがない**ローカルユーザーには `userWasUnfollowed` を送る。
+ * - 削除ユーザーをフォローしていたローカルユーザーには `followedAccountWasDeleted` のみ
+ *   （相互フォローでもフォロー先削除通知だけとし、フォロー解除通知は重ねない）。
  *
  * @see {@link server/api/endpoints/i/delete-account} アカウント削除 API
  * @internal
@@ -26,8 +30,8 @@ import { IsNull, MoreThan } from "typeorm";
 import { deleteFileSync } from "@/services/drive/delete-file.js";
 import { sendEmail } from "@/services/send-email.js";
 import deleteFollowing from "@/services/following/delete.js";
+import { createNotification } from "@/services/create-notification.js";
 import { getUser } from "@/server/api/common/getters.js";
-import { isNull } from "node:util";
 
 const logger = queueLogger.createSubLogger("delete-account");
 
@@ -50,6 +54,9 @@ export async function deleteAccount(
 		} ...`,
 	);
 
+	// ループ1で followedAccountWasDeleted を送ったローカルユーザー（相互フォロー判定用）
+	const followedDeletedNotified = new Set<string>();
+
 	try {
 		let tryCount = 0;
 		let deleteCount = 0;
@@ -68,14 +75,25 @@ export async function deleteAccount(
 				break;
 			}
 
-			relations.forEach(async (x) => {
+			for (const x of relations) {
 				try {
 					const follower = await getUser(x.followerId);
-					deleteCount += 1;
-					if (follower) await deleteFollowing(follower, user);
+					if (follower) {
+						if (Users.isLocalUser(follower)) {
+							followedDeletedNotified.add(follower.id);
+							void createNotification(
+								follower.id,
+								"followedAccountWasDeleted",
+								{ notifierId: user.id },
+								{ notifier: user },
+							);
+						}
+						await deleteFollowing(follower, user, true);
+						deleteCount += 1;
+					}
 					tryCount = 0;
 				} catch {}
-			});
+			}
 			tryCount += 1;
 			job.progress(25 + (+(deleteCount / total * 25).toFixed(1)))
 		}
@@ -206,14 +224,28 @@ export async function deleteAccount(
 				break;
 			}
 
-			relations.forEach(async (x) => {
+			for (const x of relations) {
 				try {
 					const followee = await getUser(x.followeeId);
-					deleteCount += 1;
-					if (followee) await deleteFollowing(user, followee);
+					if (followee) {
+						// ループ1でフォロー先削除通知済みならフォロー解除通知は出さない
+						if (
+							Users.isLocalUser(followee) &&
+							!followedDeletedNotified.has(followee.id)
+						) {
+							void createNotification(
+								followee.id,
+								"userWasUnfollowed",
+								{ notifierId: user.id },
+								{ notifier: user },
+							);
+						}
+						await deleteFollowing(user, followee, true);
+						deleteCount += 1;
+					}
 					tryCount = 0;
 				} catch {}
-			});
+			}
 			tryCount += 1;
 			job.progress(+(deleteCount / total * 25).toFixed(1))
 		}

@@ -15,7 +15,6 @@ import {
 } from "@/services/stream.js";
 import { publishMessagingStream } from "@/services/stream.js";
 import { publishMessagingIndexStream } from "@/services/stream.js";
-import { pushNotification } from "@/services/push-notification.js";
 import type { User, IRemoteUser } from "@/models/entities/user.js";
 import type { MessagingMessage } from "@/models/entities/messaging-message.js";
 import { MessagingMessages, UserGroupJoinings, Users } from "@/models/index.js";
@@ -69,11 +68,8 @@ export async function readUserMessagingMessage(
 	publishMessagingIndexStream(userId, "read", messageIds);
 
 	if (!(await Users.getHasUnreadMessagingMessage(userId))) {
-		// 全ての(いままで未読だった)自分宛てのメッセージを(これで)読みましたよというイベントを発行
 		publishMainStream(userId, "readAllMessagingMessages");
-		pushNotification(userId, "readAllMessagingMessages", undefined);
 	} else {
-		// そのユーザーとのメッセージで未読がなければイベント発行
 		const count = await MessagingMessages.count({
 			where: {
 				userId: otherpartyId,
@@ -84,7 +80,7 @@ export async function readUserMessagingMessage(
 		});
 
 		if (!count) {
-			pushNotification(userId, "readAllMessagingMessagesOfARoom", {
+			publishMainStream(userId, "readAllMessagingMessagesOfARoom", {
 				userId: otherpartyId,
 			});
 		}
@@ -144,23 +140,20 @@ export async function readGroupMessagingMessage(
 	publishMessagingIndexStream(userId, "read", reads);
 
 	if (!(await Users.getHasUnreadMessagingMessage(userId))) {
-		// 全ての(いままで未読だった)自分宛てのメッセージを(これで)読みましたよというイベントを発行
 		publishMainStream(userId, "readAllMessagingMessages");
-		pushNotification(userId, "readAllMessagingMessages", undefined);
 	} else {
-		// そのグループにおいて未読がなければイベント発行
 		const unreadExist = await MessagingMessages.createQueryBuilder("message")
 			.where("message.groupId = :groupId", { groupId: groupId })
 			.andWhere("message.userId != :userId", { userId: userId })
 			.andWhere("NOT (:userIdList <@ message.reads)", { userIdList: [userId] })
 			.andWhere("message.createdAt > :joinedAt", {
 				joinedAt: joining.createdAt,
-			}) // 自分が加入する前の会話については、未読扱いしない
+			})
 			.getOne()
 			.then((x) => x != null);
 
 		if (!unreadExist) {
-			pushNotification(userId, "readAllMessagingMessagesOfARoom", { groupId });
+			publishMainStream(userId, "readAllMessagingMessagesOfARoom", { groupId });
 		}
 	}
 }

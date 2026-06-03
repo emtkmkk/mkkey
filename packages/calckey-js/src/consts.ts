@@ -12,6 +12,17 @@ export const notificationTypes = [
 	"followRequestAccepted",
 	"groupInvited",
 	"app",
+	"userWasUnfollowed",
+	"wasForciblyUnfollowed",
+	"wasBlocked",
+	"followedAccountWasDeleted",
+] as const;
+
+/** dev モード時のみ設定画面に表示する通知種別（デフォルトはミュート） */
+export const experimentalNotificationTypes = [
+	"userWasUnfollowed",
+	"wasForciblyUnfollowed",
+	"wasBlocked",
 ] as const;
 
 export const noteVisibilities = [

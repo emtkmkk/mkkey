@@ -80,6 +80,10 @@ export class Notification {
 	 * followRequestAccepted - フォローリクエストが承認された
 	 * groupInvited - グループに招待された
 	 * app - アプリ通知
+	 * userWasUnfollowed - フォロワーにフォローを外された
+	 * wasForciblyUnfollowed - ブロックにより自分のフォローが解除された
+	 * wasBlocked - ブロックされた
+	 * followedAccountWasDeleted - フォローしていたユーザーがアカウントを削除した
 	 */
 	@Index()
 	@Column('enum', {

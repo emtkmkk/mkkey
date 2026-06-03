@@ -36,37 +36,72 @@ function getCookieAttributes(maxAge?: number): string {
 
 export async function signout() {
 	waiting();
+	const signingOutToken = $i?.token;
+	const signingOutUserId = $i?.id;
+
+	if (signingOutUserId == null) {
+		localStorage.removeItem("account");
+		document.cookie = `igi=; ${getCookieAttributes(0)}`;
+		document.cookie = `token=; ${getCookieAttributes(0)}`;
+		unisonReload("/");
+		return;
+	}
+
 	localStorage.removeItem("account");
 
-	await removeAccount($i.id);
+	await removeAccount(signingOutUserId);
 
 	const accounts = await getAccounts();
 
-	//#region Remove service worker registration
-	try {
-		if (navigator.serviceWorker.controller) {
+	//#region Remove service worker push registration
+	if (navigator.serviceWorker.controller && signingOutToken) {
+		try {
 			const registration = await navigator.serviceWorker.ready;
 			const push = await registration.pushManager.getSubscription();
 			if (push) {
-				await fetch(`${apiUrl}/sw/unregister`, {
+				const res = await fetch(`${apiUrl}/sw/unregister`, {
 					method: "POST",
-					headers: mergeMkkeyApiClientHeaders(),
+					headers: mergeMkkeyApiClientHeaders({
+						authorization: `Bearer ${signingOutToken}`,
+					}),
 					body: JSON.stringify({
-						i: $i.token,
 						endpoint: push.endpoint,
+						cause: "logout",
 					}),
 				});
+				if (!res.ok) {
+					console.warn(
+						`[mkkey-push] ログアウト時の sw/unregister に失敗しました: status=${res.status}`,
+					);
+				}
+				// 最後の1アカウントのみブラウザ購読も解除
+				if (accounts.length === 0) {
+					try {
+						await push.unsubscribe();
+					} catch (err) {
+						console.warn(
+							"[mkkey-push] ログアウト時の push.unsubscribe に失敗しました",
+							err,
+						);
+					}
+				}
 			}
+		} catch (err) {
+			console.warn("[mkkey-push] ログアウト時のプッシュ購読解除に失敗しました", err);
 		}
+	}
 
-		if (accounts.length === 0) {
+	if (accounts.length === 0) {
+		try {
 			await navigator.serviceWorker.getRegistrations().then((registrations) => {
 				return Promise.all(
 					registrations.map((registration) => registration.unregister()),
 				);
 			});
+		} catch (err) {
+			console.warn("[mkkey-push] Service Worker の unregister に失敗しました", err);
 		}
-	} catch (err) {}
+	}
 	//#endregion
 
 	document.cookie = `igi=; ${getCookieAttributes(0)}`;
@@ -90,11 +125,13 @@ export async function addAccount(id: Account["id"], token: Account["token"]) {
 }
 
 export async function removeAccount(id: Account["id"]) {
+	if (id == null) return;
+
 	const accounts = await getAccounts();
-	accounts.splice(
-		accounts.findIndex((x) => x.id === id),
-		1,
-	);
+	const index = accounts.findIndex((x) => x.id === id);
+	if (index < 0) return;
+
+	accounts.splice(index, 1);
 
 	if (accounts.length > 0) await set("accounts", accounts);
 	else await del("accounts");

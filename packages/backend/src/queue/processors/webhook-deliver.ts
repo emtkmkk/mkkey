@@ -18,6 +18,20 @@ import { Users, Webhooks } from "@/models/index.js";
 import { getNoteSummary } from "@/misc/get-note-summary.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import config from "@/config/index.js";
+import {
+	resolveMessagingEmbedImageUrl,
+	resolveMessagingThumbnailUrl,
+	resolveNoteDiscordEmbedImage,
+	resolveNoteDiscordEmbedVideo,
+	resolveNoteEmbedImageUrl,
+	resolveNoteThumbnailUrl,
+} from "@/misc/notification-display-media.js";
+import {
+	excludeNotPlain,
+	getDisplayFullUsername,
+	getDisplayUsername,
+	resolveWebhookTypeToBodyContent,
+} from "@/misc/notification-display-text.js";
 
 const logger = new Logger("webhook");
 
@@ -62,7 +76,7 @@ async function toDiscordEmbeds(
 		body.note
 			? {
 					author: {
-						name: getUsername(normalizedNoteUser) ?? "",
+						name: getDisplayUsername(normalizedNoteUser) ?? "",
 						url: `${config.url}/@${normalizedNoteUser?.username}${
 							normalizedNoteUser?.host ? `@${normalizedNoteUser?.host}` : ""
 						}`,
@@ -90,40 +104,18 @@ async function toDiscordEmbeds(
 							  }`
 							: excludeNotPlain(getNoteSummary(body.note)),
 					timestamp: new Date(body.note.createdAt),
-					image:
-						body.note.files?.length > 0 &&
-						!body.note.cw &&
-						!body.note.files[0].isSensitive &&
-						body.note.files[0].type?.toLowerCase().startsWith("image")
-							? {
-									url: body.note.files[0].url,
-									height: body.note.files[0].properties?.height,
-									width: body.note.files[0].properties?.width,
-							  }
-							: undefined,
-					video:
-						body.note.files?.length > 0 &&
-						!body.note.cw &&
-						!body.note.files[0].isSensitive &&
-						(body.note.files[0].type?.toLowerCase().startsWith("video") ||
-							body.note.files[0].type?.toLowerCase().startsWith("audio"))
-							? {
-									url: body.note.files[0].url,
-									height: body.note.files[0].properties?.height,
-									width: body.note.files[0].properties?.width,
-							  }
-							: undefined,
+					image: resolveNoteDiscordEmbedImage(body.note),
+					video: resolveNoteDiscordEmbedVideo(body.note),
 					thumbnail: {
-						url: body.reaction?.customEmoji
-							? body.reaction?.customEmoji.publicUrl
-							: body.note.files?.length > 1 &&
-							  !body.note.cw &&
-							  !body.note.files[1].isSensitive &&
-							  body.note.files[1].type?.startsWith("image")
-							? body.note.files[1].thumbnailUrl
-								: body.reaction?.emojiName === defaultReaction || body.reaction?.emojiName.startsWith(`${defaultReaction} (+`) // デフォルトリアクション判定
-									? undefined
-							: normalizedNoteUser?.avatarUrl ?? body.note.user?.avatarUrl,
+						url: resolveNoteThumbnailUrl(
+							body.note,
+							{
+								reaction: body.reaction?.emojiName,
+								customEmoji: body.reaction?.customEmoji,
+								defaultReaction,
+							},
+							normalizedNoteUser?.avatarUrl ?? body.note.user?.avatarUrl,
+						),
 					},
 					color: 16757683,
 			  }
@@ -175,7 +167,7 @@ async function toDiscordEmbeds(
 		body.message
 			? {
 					author: {
-						name: getUsername(normalizedMessageUser) ?? "",
+						name: getDisplayUsername(normalizedMessageUser) ?? "",
 						url: `${config.url}/@${normalizedMessageUser?.username}${
 							normalizedMessageUser?.host
 								? `@${normalizedMessageUser?.host}`
@@ -200,16 +192,17 @@ async function toDiscordEmbeds(
 							? `${excludeNotPlain(body.message.text)?.slice(0, 100)}… `
 							: excludeNotPlain(body.message.text) ?? "") +
 						(body.message.file ? "(📎)" : ""),
-					image:
-						body.message.file &&
-						!body.message.file.isSensitive &&
-						body.message.file.type?.toLowerCase().startsWith("image")
+					image: (() => {
+						const url = resolveMessagingEmbedImageUrl(body.message);
+						const file = body.message.file;
+						return url != null && file != null
 							? {
-									url: body.message.file.url,
-									height: body.message.file.properties?.height,
-									width: body.message.file.properties?.width,
+									url,
+									height: file.properties?.height,
+									width: file.properties?.width,
 							  }
-							: undefined,
+							: undefined;
+					})(),
 					video:
 						body.message.file &&
 						!body.message.file.isSensitive &&
@@ -223,13 +216,12 @@ async function toDiscordEmbeds(
 							: undefined,
 					timestamp: new Date(body.message.createdAt),
 					thumbnail: {
-						url: body.emoji
-							? body.emoji.publicUrl
-							: body.message.file &&
-							  !body.message.file.isSensitive &&
-							  body.message.file.type?.toLowerCase().startsWith("video")
-							? body.message.file.thumbnailUrl
-							: normalizedMessageUser?.avatarUrl ?? body.message.user?.avatarUrl,
+						url: resolveMessagingThumbnailUrl(
+							body.message,
+							body.emoji?.publicUrl,
+							normalizedMessageUser?.avatarUrl ??
+								body.message.user?.avatarUrl,
+						),
 					},
 					color: 16757683,
 			  }
@@ -246,7 +238,7 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 	return [
 		body.note
 			? {
-					author_name: getUsername(normalizedNoteUser),
+					author_name: getDisplayUsername(normalizedNoteUser),
 					author_link: `${config.url}/@${normalizedNoteUser?.username}${
 						normalizedNoteUser?.host ? `@${normalizedNoteUser?.host}` : ""
 					}`,
@@ -279,21 +271,16 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 					title_link: `${config.url}/notes/${body.note.id}`,
 					color: "#f8bcba",
 					ts: new Date(body.note.createdAt).valueOf() / 1000,
-					image_url:
-						body.note.files?.length > 0 &&
-						!body.note.cw &&
-						!body.note.files[0].isSensitive &&
-						body.note.files[0].type?.toLowerCase().startsWith("image")
-							? body.note.files[0].url
-							: undefined,
-					thumb_url: body.reaction?.customEmoji
-						? body.reaction?.customEmoji.publicUrl
-						: body.note.files?.length > 1 &&
-						  !body.note.cw &&
-						  !body.note.files[1].isSensitive &&
-						  body.note.files[1].type?.startsWith("image")
-						? body.note.files[1].thumbnailUrl
-						: normalizedNoteUser?.avatarUrl ?? body.note.user?.avatarUrl,
+					image_url: resolveNoteEmbedImageUrl(body.note),
+					thumb_url: resolveNoteThumbnailUrl(
+						body.note,
+						{
+							reaction: body.reaction?.emojiName,
+							customEmoji: body.reaction?.customEmoji,
+							defaultReaction: meta.defaultReaction,
+						},
+						normalizedNoteUser?.avatarUrl ?? body.note.user?.avatarUrl,
+					),
 					footer: meta.name || "Calckey",
 					footer_icon: meta.iconUrl || undefined,
 			  }
@@ -342,7 +329,7 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 			: undefined,
 		body.message
 			? {
-					author_name: getUsername(normalizedMessageUser),
+					author_name: getDisplayUsername(normalizedMessageUser),
 					author_link: `${config.url}/@${normalizedMessageUser?.username}${
 						normalizedMessageUser?.host
 							? `@${normalizedMessageUser?.host}`
@@ -371,20 +358,14 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 							: excludeNotPlain(body.message.text) ?? "") +
 							(body.message.file ? "(📎)" : ""),
 					),
-					image_url:
-						body.message.file &&
-						!body.message.file.isSensitive &&
-						body.message.file.type?.toLowerCase().startsWith("image")
-							? body.message.file.url
-							: undefined,
+					image_url: resolveMessagingEmbedImageUrl(body.message),
 					ts: new Date(body.message.createdAt).valueOf() / 1000,
-					thumb_url: body.emoji
-						? body.emoji.publicUrl
-						: body.message.file &&
-						  !body.message.file.isSensitive &&
-						  body.message.file.type?.toLowerCase().startsWith("video")
-						? body.message.file.thumbnailUrl
-						: normalizedMessageUser?.avatarUrl ?? body.message.user?.avatarUrl,
+					thumb_url: resolveMessagingThumbnailUrl(
+						body.message,
+						body.emoji?.publicUrl,
+						normalizedMessageUser?.avatarUrl ??
+							body.message.user?.avatarUrl,
+					),
 					color: meta.themeColor || "#f8bcba",
 					footer: meta.name || "Calckey",
 					footer_icon: meta.iconUrl || undefined,
@@ -393,28 +374,9 @@ async function toSlackEmbeds(data: any): Promise<any[]> {
 	].filter((x) => x !== undefined);
 }
 
-function excludeNotPlain(text?: string): string | undefined {
-	// <xxx>を消す、中身が空のMFMを消す（4階層まで）
-	return text
-		? text
-				.replaceAll(/<\/?\w*?>/g, "")
-				.replaceAll(
-					/(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*(\$\[([^\s]*?)\s*\])?\s*\])?\s*\])?\s*\])/g,
-					"",
-				)
-		: undefined;
-}
-
 function emojiEscape(text?: string): string | undefined {
 	// 絵文字をエスケープする
 	return text ? text.replaceAll(/:(\w+):/g, "：$1：") : undefined;
-}
-
-function getUsername(user?: any): string | undefined {
-	return user
-		? (user.name?.replaceAll(/\s?:\w+?:/g, "").trim() || user.username) +
-				(user.host ? `@${user.host}` : "")
-		: undefined;
 }
 
 async function resolveUserForWebhook(user?: any): Promise<any | undefined> {
@@ -482,12 +444,8 @@ async function typeToBody(jobData: any): Promise<any> {
 		: undefined;
 	const normalizedUser = await resolveUserForWebhook(user);
 	const normalizedNoteUser = await resolveUserForWebhook(body.note?.user);
-	const username = normalizedUser ? getUsername(normalizedUser) : undefined;
-	const fullUsername = normalizedUser
-		? normalizedUser.name
-			? `${normalizedUser.name} (${normalizedUser.username}@${normalizedUser.host ?? config.host})`
-			: `${normalizedUser.username}@${normalizedUser.host ?? config.host}`
-		: undefined;
+	const username = getDisplayUsername(normalizedUser);
+	const fullUsername = getDisplayFullUsername(normalizedUser);
 	const avatar_url = normalizedUser
 		? normalizedUser.avatarUrl ?? (await Users.getAvatarUrl(normalizedUser))
 		: undefined;
@@ -513,105 +471,26 @@ async function typeToBody(jobData: any): Promise<any> {
 				: ""
 			: "";
 
-	switch (jobData.type) {
-		case "mention":
-			return {
-				username,
-				avatar_url,
-				content: `${username} から 呼びかけ${content}`,
-			};
-		case "unfollow":
-			return {
-				username,
-				avatar_url,
-				content: `${fullUsername} から リムーブされました`,
-			};
-		case "deletefollow":
-			return {
-				username,
-				avatar_url,
-				content: `${fullUsername} への フォローを解除させられました`,
-			};
-		case "rejectRequest":
-			return {
-				username,
-				avatar_url,
-				content: `${fullUsername} への フォロー申請が拒否されました`,
-			};
-		case "silentUnfollow":
-			return {
-				username,
-				avatar_url,
-				content: `💬 ${fullUsername} から リムーブされました`,
-			};
-		case "follow":
-			return {
-				username,
-				avatar_url,
-				content: `${fullUsername} の フォローに成功`,
-			};
-		case "followed":
-			return {
-				username,
-				avatar_url,
-				content: `${fullUsername} から フォローされました`,
-			};
-		case "note":
-			return {
-				username,
-				avatar_url,
-				content: `投稿に成功しました${content}`,
-			};
-		case "reply":
-			return {
-				username,
-				avatar_url,
-				content: `${username} から 返信${content}`,
-			};
-		case "renote":
-			return {
-				username,
-				avatar_url,
-				content: `${username} から ${body.note.text ? "引用" : "RT"}${content}`,
-			};
-		case "reaction":
-			return {
-				username,
-				avatar_url,
-				content: body.reaction?.emojiName === defaultReaction || body.reaction?.emojiName.startsWith(`${defaultReaction} (+`)
-					? `${username} から ふぁぼ${content}`
-					: `${username} から ${body.reaction?.emojiName.replaceAll(
-						/:(\w+):/g,
-						"：$1：",
-					)}${content}`,
-			};
-		case "antenna":
-			return {
-				username,
-				avatar_url,
-				content: `${body.antenna?.name}📡新着 : ${username}${
-					normalizedUser?.id !== normalizedNoteUser?.id
-						? ` : RT ${getUsername(normalizedNoteUser)}`
-						: ""
-				}${content}`,
-			};
-		case "userMessage":
-			return {
-				username,
-				avatar_url,
-				content: `${username} から チャット${content}`,
-			};
-		case "groupMessage":
-			return {
-				username,
-				avatar_url,
-				content: `${body.message.group.name} で ${username} から チャット${content}`,
-			};
-		default:
-			return {
-				content: `type : ${jobData.type}${content}`,
-			};
-	}
+	const rtPrefix =
+		normalizedUser?.id !== normalizedNoteUser?.id
+			? ` : RT ${getDisplayUsername(normalizedNoteUser)}`
+			: "";
+
+	return {
+		username,
+		avatar_url,
+		content: resolveWebhookTypeToBodyContent(jobData.type, {
+			username,
+			fullUsername,
+			noteExcerptSuffix: content,
+			reactionEmojiName: body.reaction?.emojiName,
+			antennaName: body.antenna?.name,
+			groupName: body.message?.group?.name,
+			noteHasText: Boolean(body.note?.text),
+			defaultReaction,
+			rtPrefix,
+		}),
+	};
 }
 
 export default async (job: Bull.Job<WebhookDeliverJobData>) => {

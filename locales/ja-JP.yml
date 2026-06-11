@@ -2609,6 +2609,8 @@ _notification:
     wasUnblocked: "【dev】ブロック解除"
     followedAccountWasDeleted: "アカウント削除"
   _actions:
+    view: "表示"
+    profile: "プロフィール"
     followBack: "フォローを返す"
     reply: "返信"
     renote: "RT"

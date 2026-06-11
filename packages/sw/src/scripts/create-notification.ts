@@ -7,15 +7,28 @@ import { swLang } from "@/scripts/lang";
 import { pushNotificationDataMap } from "@/types";
 import getUserName from "@/scripts/get-user-name";
 import { I18n } from "@/scripts/i18n";
-import { char2fileName } from "@/scripts/twemoji-base";
-import * as url from "@/scripts/url";
 import {
 	buildNotificationOptions,
-	getNoteNotificationImage,
+	DEFAULT_REACTION_BADGE,
+	getPushDisplayText,
+	getPushNotificationImage,
+	isDefaultInstanceReaction,
+	notificationBadgeUrl,
+	REACTION_BADGE_FALLBACK,
+	resolveAndValidateBadge,
+	resolveReactionNotificationBadge,
+	resolveReactionNotificationIcon,
 } from "@/scripts/notification-options";
-
-/** バッジ URL の存在確認キャッシュ（同一 URL の再 fetch を避ける） */
-const badgeUrlCache = new Map<string, boolean>();
+import {
+	finalizeNotificationActions,
+	hasValidNotificationUser,
+	profileAction,
+	r4Actions,
+	r5Actions,
+	replyAction,
+	type NotificationActionRule,
+	viewAction,
+} from "@/scripts/notification-actions";
 
 const closeNotificationsByTags = async (tags: string[]) => {
 	for (const n of (
@@ -26,9 +39,6 @@ const closeNotificationsByTags = async (tags: string[]) => {
 		n.close();
 	}
 };
-
-const iconUrl = (name: string) =>
-	`/static-assets/notification-badges/${name}.png`;
 
 /**
  * notifier が欠落したペイロードでも compose が落ちないよう表示名を返す。
@@ -53,6 +63,40 @@ function safeUserName(
 		name: user.name,
 		username: user.username,
 	});
+}
+
+type ComposeNotificationOptions = NotificationOptions & {
+	/** actions 補完ルール（省略時は R1） */
+	actionRule?: NotificationActionRule;
+};
+
+/**
+ * サーバー付与の displayTitle/Body を優先して OS 通知文面を組み立てる。
+ *
+ * @param data - push データ
+ * @param fallbackTitle - displayTitle 未設定時のタイトル
+ * @param t - i18n 関数
+ * @param options - 種別固有オプション
+ * @internal
+ */
+function composeWithDisplayText<
+	T extends { body: { displayTitle?: string | null; displayBody?: string | null } },
+>(
+	data: T,
+	fallbackTitle: string,
+	t: (key: string, ...args: unknown[]) => string,
+	options: ComposeNotificationOptions,
+): [string, NotificationOptions] {
+	const { actionRule = "r1", actions, ...rest } = options;
+	const display = getPushDisplayText(data.body);
+	return [
+		display?.title ?? fallbackTitle,
+		buildNotificationOptions(data, {
+			...rest,
+			body: display?.body ?? rest.body,
+			actions: finalizeNotificationActions(actions, actionRule, t),
+		}),
+	];
 }
 
 export async function createNotification<
@@ -83,195 +127,184 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				data
 			}];
 		*/
-		case "notification":
-			switch (data.body.type) {
+		case "notification": {
+			// pack 上は `note` だが実体は unreadAntenna のことがある
+			const notificationType =
+				data.body.type === "note" &&
+				typeof (data.body as { reaction?: string }).reaction ===
+					"string" &&
+				(data.body as { reaction?: string }).reaction
+					? "unreadAntenna"
+					: data.body.type;
+
+			switch (notificationType) {
 				case "follow":
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youWereFollowed"),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: getUserName(data.body.user),
 							icon: data.body.user.avatarUrl,
-							badge: iconUrl("user-plus"),
+							badge: notificationBadgeUrl("user-plus"),
 							tag: `follow:${data.body.userId}`,
 							data,
-							actions: [
-								{
-									action: "follow",
-									title: t("_notification._actions.followBack"),
-								},
-							],
-						}),
-					];
+							actions: r4Actions(
+								t,
+								hasValidNotificationUser(data.body.user),
+							),
+							actionRule: "r4",
+						},
+					);
 
 				case "userWasUnfollowed": {
 					const name = safeUserName(data.body.user);
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youWereUnfollowed"),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: name || undefined,
 							icon: data.body.user?.avatarUrl,
-							badge: iconUrl("user-plus"),
+							badge: notificationBadgeUrl("user-plus"),
 							tag: `unfollowed:${data.body.userId}`,
 							data,
-							...(name
-								? {
-										actions: [
-											{
-												action: "showUser",
-												title: name,
-											},
-										],
-									}
-								: {}),
-						}),
-					];
+							actions: r4Actions(
+								t,
+								hasValidNotificationUser(data.body.user),
+							),
+							actionRule: "r4",
+						},
+					);
 				}
 
 				case "wasForciblyUnfollowed": {
 					const name = safeUserName(data.body.user);
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youWereForciblyUnfollowed"),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: name || undefined,
 							icon: data.body.user?.avatarUrl,
-							badge: iconUrl("clock"),
+							badge: notificationBadgeUrl("clock"),
 							tag: `forcibly-unfollowed:${data.body.userId}`,
 							data,
-							...(name
-								? {
-										actions: [
-											{
-												action: "showUser",
-												title: name,
-											},
-										],
-									}
-								: {}),
-						}),
-					];
+							actions: r4Actions(
+								t,
+								hasValidNotificationUser(data.body.user),
+							),
+							actionRule: "r4",
+						},
+					);
 				}
 
 				case "wasBlocked": {
 					const name = safeUserName(data.body.user);
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youWereBlocked"),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: name || undefined,
 							icon: data.body.user?.avatarUrl,
-							badge: iconUrl("null"),
+							badge: notificationBadgeUrl("null"),
 							tag: `blocked:${data.body.userId}`,
 							data,
-							...(name
-								? {
-										actions: [
-											{
-												action: "showUser",
-												title: name,
-											},
-										],
-									}
-								: {}),
-						}),
-					];
+							actions: r4Actions(
+								t,
+								hasValidNotificationUser(data.body.user),
+							),
+							actionRule: "r4",
+						},
+					);
 				}
 
 				case "wasUnblocked": {
 					const name = safeUserName(data.body.user);
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youWereUnblocked"),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: name || undefined,
 							icon: data.body.user?.avatarUrl,
-							badge: iconUrl("check"),
+							badge: notificationBadgeUrl("check"),
 							tag: `unblocked:${data.body.userId}`,
 							data,
-							...(name
-								? {
-										actions: [
-											{
-												action: "showUser",
-												title: name,
-											},
-										],
-									}
-								: {}),
-						}),
-					];
+							actions: r4Actions(
+								t,
+								hasValidNotificationUser(data.body.user),
+							),
+							actionRule: "r4",
+						},
+					);
 				}
 
 				case "followedAccountWasDeleted": {
 					const name = safeUserName(data.body.user);
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.followedAccountWasDeleted", {
 							name: name || data.body.type,
 						}),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: name || undefined,
 							icon: data.body.user?.avatarUrl,
-							badge: iconUrl("null"),
+							badge: notificationBadgeUrl("null"),
 							tag: `followed-deleted:${data.body.userId}`,
 							data,
-							...(name
-								? {
-										actions: [
-											{
-												action: "showUser",
-												title: name,
-											},
-										],
-									}
-								: {}),
-						}),
-					];
+							actions: r4Actions(
+								t,
+								hasValidNotificationUser(data.body.user),
+							),
+							actionRule: "r4",
+						},
+					);
 				}
 
 				case "mention":
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youGotMention", {
 							name: getUserName(data.body.user),
 						}),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: data.body.note.text || "",
 							icon: data.body.user.avatarUrl,
-							badge: iconUrl("at"),
-							image: getNoteNotificationImage(data.body.note),
+							badge: notificationBadgeUrl("at"),
+							image: getPushNotificationImage(data.body),
 							tag: data.body.note?.id
 								? `note:${data.body.note.id}`
 								: undefined,
 							requireInteraction: true,
 							data,
-							actions: [
-								{
-									action: "reply",
-									title: t("_notification._actions.reply"),
-								},
-							],
-						}),
-					];
+							actions: [replyAction(t)],
+						},
+					);
 
 				case "reply":
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youGotReply", {
 							name: getUserName(data.body.user),
 						}),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: data.body.note.text || "",
 							icon: data.body.user.avatarUrl,
-							badge: iconUrl("reply"),
-							image: getNoteNotificationImage(data.body.note),
+							badge: notificationBadgeUrl("reply"),
+							image: getPushNotificationImage(data.body),
 							tag: data.body.note?.id
 								? `note:${data.body.note.id}`
 								: undefined,
 							requireInteraction: true,
 							data,
-							actions: [
-								{
-									action: "reply",
-									title: t("_notification._actions.reply"),
-								},
-							],
-						}),
-					];
+							actions: [replyAction(t)],
+						},
+					);
 
 				case "unreadAntenna": {
 					const bodyText =
@@ -283,207 +316,225 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					const antennaName =
 						(data.body as { antenna?: { name?: string } }).antenna?.name ??
 						data.body.reaction;
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youUnreadAntenna", {
 							name: antennaName,
 						}),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: `${getUserName(data.body.user)} : ${bodyText}` || "",
 							icon: data.body.user.avatarUrl,
-							badge: iconUrl("comments"),
+							badge: notificationBadgeUrl("comments"),
+							image: getPushNotificationImage(data.body),
 							tag: `antenna:${data.body.antenna.id}`,
 							data,
-						}),
-					];
+						},
+					);
 				}
 				case "renote":
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youRenoted", {
 							name: getUserName(data.body.user),
 						}),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: data.body.note.text || "",
 							icon: data.body.user.avatarUrl,
-							badge: iconUrl("retweet"),
-							image: getNoteNotificationImage(data.body.note),
+							badge: notificationBadgeUrl("retweet"),
+							image: getPushNotificationImage(data.body),
 							tag: data.body.note?.id
 								? `note:${data.body.note.id}`
 								: undefined,
 							data,
-							actions: [
-								{
-									action: "showUser",
-									title: getUserName(data.body.user),
-								},
-							],
-						}),
-					];
+							actions: hasValidNotificationUser(data.body.user)
+								? r5Actions(t)
+								: [viewAction(t)],
+							actionRule: hasValidNotificationUser(data.body.user)
+								? "r5"
+								: "r1",
+						},
+					);
 
 				case "quote":
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youGotQuote", {
 							name: getUserName(data.body.user),
 						}),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: data.body.note.text || "",
 							icon: data.body.user.avatarUrl,
-							badge: iconUrl("quote-right"),
-							image: getNoteNotificationImage(data.body.note),
+							badge: notificationBadgeUrl("quote-right"),
+							image: getPushNotificationImage(data.body),
 							tag: data.body.note?.id
 								? `note:${data.body.note.id}`
 								: undefined,
 							data,
-							actions: [
-								{
-									action: "reply",
-									title: t("_notification._actions.reply"),
-								},
-								...(data.body.note.visibility === "public" ||
-								data.body.note.visibility === "home"
-									? [
-											{
-												action: "renote",
-												title: t("_notification._actions.renote"),
-											},
-									  ]
-									: []),
-							],
-						}),
-					];
+							actions: [replyAction(t)],
+						},
+					);
 
-				case "reaction":
-					let reaction = data.body.reaction;
-					let badge: string | undefined;
+				case "reaction": {
+					const reactionBody = data.body as typeof data.body & {
+						defaultReaction?: string | null;
+						reactionIconUrl?: string | null;
+						reactionBadgeUrl?: string | null;
+					};
+					const defaultReaction =
+						reactionBody.defaultReaction ?? "⭐";
+					const reactionRaw = reactionBody.reaction ?? "";
+					const isDefault = isDefaultInstanceReaction(
+						reactionRaw,
+						defaultReaction,
+					);
 
-					if (reaction.startsWith(":")) {
-						// カスタム絵文字の場合
-						const customEmoji = data.body.note.emojis.find(
-							(x) => x.name === reaction.substr(1, reaction.length - 2),
-						);
-						if (customEmoji) {
-							if (reaction.includes("@")) {
-								reaction = `:${reaction.substr(1, reaction.indexOf("@") - 1)}:`;
-							}
-
-							const u = new URL(customEmoji.url);
-							if (u.href.startsWith(`${origin}/proxy/`)) {
-								// もう既にproxyっぽそうだったらsearchParams付けるだけ
-								u.searchParams.set("badge", "1");
-								badge = u.href;
-							} else {
-								const dummy = `${u.host}${u.pathname}`; // 拡張子がないとキャッシュしてくれないCDNがあるので
-								badge = `${origin}/proxy/${dummy}?${url.query({
-									url: u.href,
-									badge: "1",
-								})}`;
-							}
-						}
-					} else {
-						// Unicode絵文字の場合
-						badge = `/twemoji-badge/${char2fileName(reaction)}.png`;
+					// タイトル表示用にリモート絵文字名を短縮
+					let displayReaction = reactionRaw;
+					if (
+						displayReaction.startsWith(":") &&
+						displayReaction.includes("@")
+					) {
+						displayReaction = `:${displayReaction.slice(
+							1,
+							displayReaction.indexOf("@") - 1,
+						)}:`;
 					}
 
-					if (badge) {
-						let ok = badgeUrlCache.get(badge);
-						if (ok === undefined) {
-							ok = await fetch(badge)
-								.then((res) => res.status === 200)
-								.catch(() => false);
-							badgeUrlCache.set(badge, ok);
-						}
-						if (!ok) {
-							badge = iconUrl("plus");
-						}
-					}
+					const icon = isDefault
+						? data.body.user.avatarUrl
+						: (resolveReactionNotificationIcon(reactionBody) ??
+								data.body.user.avatarUrl);
 
-					return [
-						`${reaction} ${getUserName(data.body.user)}`,
-						buildNotificationOptions(data, {
+					const badge = isDefault
+						? notificationBadgeUrl(DEFAULT_REACTION_BADGE)
+						: await resolveAndValidateBadge(
+								reactionBody.reactionBadgeUrl ??
+									resolveReactionNotificationBadge(
+										reactionRaw,
+										reactionBody.note,
+									),
+								notificationBadgeUrl(REACTION_BADGE_FALLBACK),
+							);
+
+					return composeWithDisplayText(
+						data,
+						`${displayReaction} ${getUserName(data.body.user)}`,
+						t,
+						{
 							body: data.body.note.text || "",
-							icon: data.body.user.avatarUrl,
+							icon,
 							tag: `reaction:${data.body.note.id}`,
 							badge,
-							image: getNoteNotificationImage(data.body.note),
+							image: getPushNotificationImage(data.body),
 							data,
-							actions: [
-								{
-									action: "showUser",
-									title: getUserName(data.body.user),
-								},
-							],
-						}),
-					];
+							actions: hasValidNotificationUser(data.body.user)
+								? r5Actions(t)
+								: [viewAction(t)],
+							actionRule: hasValidNotificationUser(data.body.user)
+								? "r5"
+								: "r1",
+						},
+					);
+				}
 
-				case "pollVote":
-					return [
+				case "pollVote": {
+					const triggerId = data.body.user?.id;
+					const posterId =
+						data.body.note?.userId ??
+						(data.body.note as { user?: { id?: string } } | undefined)
+							?.user?.id;
+					const showProfileAction =
+						triggerId != null &&
+						posterId != null &&
+						triggerId !== posterId;
+					return composeWithDisplayText(
+						data,
 						t("_notification.youGotPoll", {
 							name: getUserName(data.body.user),
 						}),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: data.body.note.text || "",
 							icon: data.body.user.avatarUrl,
-							badge: iconUrl("poll-h"),
+							badge: notificationBadgeUrl("poll-h"),
 							tag: data.body.note?.id
 								? `note:${data.body.note.id}`
 								: undefined,
 							data,
-						}),
-					];
+							actions: showProfileAction
+								? [profileAction(t)]
+								: undefined,
+						},
+					);
+				}
 
 				case "pollEnded":
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.pollEnded"),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: data.body.note.text || "",
-							badge: iconUrl("clipboard-check-solid"),
+							badge: notificationBadgeUrl("clipboard-check-solid"),
 							tag: `poll:${data.body.note.id}`,
 							data,
-						}),
-					];
+						},
+					);
 
-				case "receiveFollowRequest":
-					return [
+				case "receiveFollowRequest": {
+					const hasUser = hasValidNotificationUser(data.body.user);
+					return composeWithDisplayText(
+						data,
 						t("_notification.youReceivedFollowRequest"),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: getUserName(data.body.user),
 							icon: data.body.user.avatarUrl,
-							badge: iconUrl("clock"),
+							badge: notificationBadgeUrl("clock"),
 							tag: `follow-request:${data.body.userId}`,
 							requireInteraction: true,
 							data,
 							actions: [
-								{
-									action: "accept",
-									title: t("accept"),
-								},
-								{
-									action: "reject",
-									title: t("reject"),
-								},
+								viewAction(t),
+								...(hasUser ? [profileAction(t)] : []),
 							],
-						}),
-					];
+							actionRule: "explicit",
+						},
+					);
+				}
 
 				case "followRequestAccepted":
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.yourFollowRequestAccepted"),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: getUserName(data.body.user),
 							icon: data.body.user.avatarUrl,
-							badge: iconUrl("check"),
+							badge: notificationBadgeUrl("check"),
 							tag: `follow-accepted:${data.body.userId}`,
 							data,
-						}),
-					];
+							actions: r4Actions(
+								t,
+								hasValidNotificationUser(data.body.user),
+							),
+							actionRule: "r4",
+						},
+					);
 
 				case "groupInvited":
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.youWereInvitedToGroup", {
 							userName: getUserName(data.body.user),
 						}),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: data.body.invitation.group.name,
-							badge: iconUrl("id-card-alt"),
+							badge: notificationBadgeUrl("id-card-alt"),
 							tag: `group-invite:${data.body.invitation.id}`,
 							requireInteraction: true,
 							data,
@@ -497,13 +548,16 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 									title: t("reject"),
 								},
 							],
-						}),
-					];
+							actionRule: "groupInvited",
+						},
+					);
 
 				case "app":
-					return [
+					return composeWithDisplayText(
+						data,
 						data.body.header || data.body.body,
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: data.body.header && data.body.body,
 							icon: data.body.icon,
 							tag:
@@ -511,17 +565,19 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 									? "push-test"
 									: undefined,
 							data,
-						}),
-					];
+						},
+					);
 
 				default: {
 					// 未対応種別・古い SW でも汎用通知を出す（compose 失敗を防ぐ）
 					const name = safeUserName(data.body.user);
 					const notifType =
 						typeof data.body.type === "string" ? data.body.type : "";
-					return [
+					return composeWithDisplayText(
+						data,
 						t("_notification.emptyPushNotificationMessage"),
-						buildNotificationOptions(data, {
+						t,
+						{
 							body: name || notifType || undefined,
 							icon: data.body.user?.avatarUrl,
 							tag: data.body.id
@@ -530,41 +586,48 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 									? `notification-type:${notifType}`
 									: undefined,
 							data,
-						}),
-					];
+						},
+					);
 				}
 			}
+		}
 		case "unreadMessagingMessage":
 			if (data.body.groupId === null) {
-				return [
+				return composeWithDisplayText(
+					data,
 					t("_notification.youGotMessagingMessageFromUser", {
 						name: getUserName(data.body.user),
 					}),
-					buildNotificationOptions(data, {
+					t,
+					{
 						body: data.body.text || "",
 						icon: data.body.user.avatarUrl,
-						badge: iconUrl("comments"),
+						badge: notificationBadgeUrl("comments"),
+						image: getPushNotificationImage(data.body),
 						tag: `messaging:user:${data.body.userId}`,
 						requireInteraction: true,
 						data,
 						renotify: true,
-					}),
-				];
+					},
+				);
 			}
-			return [
+			return composeWithDisplayText(
+				data,
 				t("_notification.youGotMessagingMessageFromGroup", {
 					name: data.body.group.name,
 				}),
-				buildNotificationOptions(data, {
+				t,
+				{
 					body: `${getUserName(data.body.user)} : ${data.body.text}` || "",
 					icon: data.body.user.avatarUrl,
-					badge: iconUrl("comments"),
+					badge: notificationBadgeUrl("comments"),
+					image: getPushNotificationImage(data.body),
 					tag: `messaging:group:${data.body.groupId}`,
 					requireInteraction: true,
 					data,
 					renotify: true,
-				}),
-			];
+				},
+			);
 		default:
 			return null;
 	}
@@ -580,7 +643,7 @@ export async function createEmptyNotification(data?) {
 			data ? data : t("_notification.emptyPushNotificationMessage"),
 			{
 				silent: true,
-				badge: iconUrl("null"),
+				badge: notificationBadgeUrl("null"),
 				tag: "read_notification",
 			},
 		);

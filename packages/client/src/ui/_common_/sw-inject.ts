@@ -4,6 +4,7 @@ import { defaultStore } from "@/store";
 import { getAccountFromId } from "@/scripts/get-account-from-id";
 import { mainRouter } from "@/router";
 import * as os from "@/os";
+import { refreshAppBadge } from "@/scripts/app-badge";
 import { reregisterPushSubscriptionAfterChange } from "@/scripts/push-subscription-register";
 import { i18n } from "@/i18n";
 
@@ -61,6 +62,11 @@ export function swInject() {
 			}
 		}
 
+		if (ev.data?.type === "app-badge-refresh") {
+			void refreshAppBadge();
+			return;
+		}
+
 		if (ev.data?.type === "in-app-notification") {
 			const data = ev.data.data;
 			// 他アカウント向けプッシュは表示しない（マルチアカウント）
@@ -76,6 +82,24 @@ export function swInject() {
 				return;
 			}
 			if (data?.type === "notification" && data.body != null) {
+				const body = data.body as {
+					displayTitle?: string;
+					displayBody?: string;
+					note?: { text?: string };
+				};
+				// サーバー付与の Webhook 風文言を優先
+				if (
+					typeof body.displayTitle === "string" &&
+					body.displayTitle.length > 0
+				) {
+					os.toast(
+						typeof body.displayBody === "string" &&
+							body.displayBody.length > 0
+							? `${body.displayTitle}\n${body.displayBody}`
+							: body.displayTitle,
+					);
+					return;
+				}
 				const typedToast = formatInAppNotificationToast(data.body);
 				os.toast(
 					typedToast ??
@@ -84,7 +108,23 @@ export function swInject() {
 				);
 				return;
 			}
-			if (data?.type === "unreadMessagingMessage") {
+			if (data?.type === "unreadMessagingMessage" && data.body != null) {
+				const body = data.body as {
+					displayTitle?: string;
+					displayBody?: string;
+				};
+				if (
+					typeof body.displayTitle === "string" &&
+					body.displayTitle.length > 0
+				) {
+					os.toast(
+						typeof body.displayBody === "string" &&
+							body.displayBody.length > 0
+							? `${body.displayTitle}\n${body.displayBody}`
+							: body.displayTitle,
+					);
+					return;
+				}
 				os.toast("新しいメッセージがあります");
 				return;
 			}

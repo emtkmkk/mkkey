@@ -63,7 +63,11 @@ import {
 	postDeveloperModeToSw,
 	postSuppressPushWhenForegroundToSw,
 } from "@/scripts/push-notification-sync";
-import { updateAppBadgeFromAccount } from "@/scripts/app-badge";
+import {
+	refreshAppBadge,
+	setupAppBadgeOnAppOpen,
+	updateAppBadgeFromAccount,
+} from "@/scripts/app-badge";
 import { reloadChannel } from "@/scripts/unison-reload";
 import { reactionPicker } from "@/scripts/reaction-picker";
 import { getUrlWithoutLoginId } from "@/scripts/login-id";
@@ -1380,7 +1384,6 @@ const initializeStream = () => {
 	main.on("readAllNotifications", () => {
 		updateAccount({ hasUnreadNotification: false });
 		postCloseNotificationsToSw({ kind: "readAllNotifications" });
-		updateAppBadgeFromAccount();
 	});
 
 	main.on("readNotifications", (notificationIds: string[]) => {
@@ -1392,7 +1395,6 @@ const initializeStream = () => {
 
 	main.on("unreadNotification", () => {
 		updateAccount({ hasUnreadNotification: true });
-		updateAppBadgeFromAccount();
 	});
 
 	main.on("unreadMention", () => {
@@ -1414,7 +1416,6 @@ const initializeStream = () => {
 	main.on("readAllMessagingMessages", () => {
 		updateAccount({ hasUnreadMessagingMessage: false });
 		postCloseNotificationsToSw({ kind: "readAllMessagingMessages" });
-		updateAppBadgeFromAccount();
 	});
 
 	main.on(
@@ -1430,7 +1431,6 @@ const initializeStream = () => {
 	main.on("unreadMessagingMessage", () => {
 		updateAccount({ hasUnreadMessagingMessage: true });
 		sound.play("chatBg");
-		updateAppBadgeFromAccount();
 	});
 
 	main.on("readAllAntennas", () => {
@@ -1477,7 +1477,19 @@ const initializeStream = () => {
 			},
 			{ immediate: true },
 		);
-		updateAppBadgeFromAccount();
+		// 受信カウント + サーバー未読フラグに OS バッジを追従させる
+		watch(
+			() =>
+				[
+					$i?.id,
+					$i?.hasUnreadNotification,
+					$i?.hasUnreadMessagingMessage,
+					$i?.hasUnreadMentions,
+				] as const,
+			() => updateAppBadgeFromAccount(),
+			{ immediate: true },
+		);
+		setupAppBadgeOnAppOpen();
 	});
 
 	// 起動時: 未読通知が無ければ OS 通知センターを整合

@@ -2542,6 +2542,8 @@ _notification:
     wasUnblocked: "Unblocked you (dev)"
     followedAccountWasDeleted: "Followed account was deleted"
   _actions:
+    view: "View"
+    profile: "Profile"
     followBack: "followed you back"
     reply: "Reply"
     renote: "Boosts"

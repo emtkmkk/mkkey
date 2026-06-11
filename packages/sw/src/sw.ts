@@ -10,8 +10,16 @@ import { swLang } from "@/scripts/lang";
 import { swNotificationRead } from "@/scripts/notification-read";
 import type { pushNotificationDataMap } from "@/types";
 import * as swos from "@/scripts/operations";
-import { acct as getAcct } from "@/filters/user";
+import {
+	resolveNotificationProfileAction,
+	resolveNotificationTapDefault,
+	resolveNotificationViewAction,
+} from "@/scripts/notification-click";
 import { set } from "idb-keyval";
+import {
+	incrementAppBadgeReceivedCount,
+	applyAppBadgeCountInSw,
+} from "@/scripts/app-badge-counter";
 import {
 	loadSuppressPushWhenForeground,
 	saveSuppressPushWhenForeground,
@@ -206,6 +214,23 @@ self.addEventListener("push", (ev) => {
 						return;
 					}
 
+					// 端末受信プッシュ件数（OS 表示の有無に関わらず加算）
+					const receivedCount = await incrementAppBadgeReceivedCount(
+						data.userId,
+					);
+					const focusedVisibleClient = await hasFocusedVisibleClient();
+
+					if (focusedVisibleClient) {
+						// 受信カウントの再計算はクライアント側（サーバー未読の最低 1 補正を含む）
+						const clients = await self.clients.matchAll({
+							type: "window",
+							includeUncontrolled: true,
+						});
+						for (const client of clients) {
+							client.postMessage({ type: "app-badge-refresh" });
+						}
+					}
+
 					// フォアグラウンドでは OS 通知を出さずクライアントへ転送（アカウント別設定）
 					const suppressForeground = await loadSuppressPushWhenForeground(
 						data.userId,
@@ -213,7 +238,7 @@ self.addEventListener("push", (ev) => {
 					);
 					if (
 						suppressForeground &&
-						(await hasFocusedVisibleClient())
+						focusedVisibleClient
 					) {
 						const clients = await self.clients.matchAll({
 							type: "window",
@@ -232,6 +257,11 @@ self.addEventListener("push", (ev) => {
 							}
 						}
 						return;
+					}
+
+					if (!focusedVisibleClient) {
+						// クライアント未起動時は受信数のみ反映（最低 1 補正は起動後にクライアントが行う）
+						applyAppBadgeCountInSw(receivedCount);
 					}
 
 					return createNotification(data);
@@ -282,88 +312,42 @@ self.addEventListener(
 				switch (data.type) {
 					case "notification":
 						switch (action) {
-							case "follow":
-								if ("userId" in data.body)
-									await swos.api("following/create", id, {
-										userId: data.body.userId,
-									});
+							case "view":
+								client = await resolveNotificationViewAction(data, id);
 								break;
-							case "showUser":
-								if ("user" in data.body)
-									client = await swos.openUser(getAcct(data.body.user), id);
+							case "profile":
+								client = await resolveNotificationProfileAction(data, id);
 								break;
 							case "reply":
 								if ("note" in data.body)
-									client = await swos.openPost({ reply: data.body.note }, id);
-								break;
-							case "renote":
-								if ("note" in data.body)
-									await swos.api("notes/create", id, {
-										renoteId: data.body.note.id,
-									});
+									client = await swos.openPost(
+										{ reply: data.body.note },
+										id,
+									);
 								break;
 							case "accept":
-								switch (data.body.type) {
-									case "receiveFollowRequest":
-										await swos.api("following/requests/accept", id, {
-											userId: data.body.userId,
-										});
-										break;
-									case "groupInvited":
-										await swos.api("users/groups/invitations/accept", id, {
-											invitationId: data.body.invitation.id,
-										});
-										break;
+								if (data.body.type === "groupInvited") {
+									await swos.api("users/groups/invitations/accept", id, {
+										invitationId: data.body.invitation.id,
+									});
 								}
 								break;
 							case "reject":
-								switch (data.body.type) {
-									case "receiveFollowRequest":
-										await swos.api("following/requests/reject", id, {
-											userId: data.body.userId,
-										});
-										break;
-									case "groupInvited":
-										await swos.api("users/groups/invitations/reject", id, {
-											invitationId: data.body.invitation.id,
-										});
-										break;
+								if (data.body.type === "groupInvited") {
+									await swos.api("users/groups/invitations/reject", id, {
+										invitationId: data.body.invitation.id,
+									});
 								}
-								break;
-							case "showFollowRequests":
-								client = await swos.openClient(
-									"push",
-									"/my/follow-requests",
-									id,
-								);
 								break;
 							default:
-								switch (data.body.type) {
-									case "receiveFollowRequest":
-										client = await swos.openClient(
-											"push",
-											"/my/follow-requests",
-											id,
-										);
-										break;
-									case "groupInvited":
-										client = await swos.openClient("push", "/my/groups", id);
-										break;
-									case "reaction":
-										client = await swos.openNote(data.body.note.id, id);
-										break;
-									default:
-										if ("note" in data.body) {
-											client = await swos.openNote(data.body.note.id, id);
-										} else if ("user" in data.body) {
-											client = await swos.openUser(getAcct(data.body.user), id);
-										}
-										break;
-								}
+								client = await resolveNotificationTapDefault(data, id);
+								break;
 						}
 						break;
 					case "unreadMessagingMessage":
-						client = await swos.openChat(data.body, id);
+						if (action === "view" || action === "") {
+							client = await swos.openChat(data.body, id);
+						}
 						break;
 				}
 

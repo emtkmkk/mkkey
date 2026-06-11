@@ -7,6 +7,8 @@ import { del, get, set } from "@/scripts/idb-proxy";
 import { apiUrl } from "@/config";
 import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 import { waiting, api, popup, popupMenu, success, alert } from "@/os";
+import { clearAppBadge } from "@/scripts/app-badge";
+import { resetAppBadgeReceivedCount } from "@/scripts/app-badge-counter";
 import { unisonReload, reloadChannel } from "@/scripts/unison-reload";
 
 // TODO: 他のタブと永続化されたstateを同期
@@ -36,8 +38,15 @@ function getCookieAttributes(maxAge?: number): string {
 
 export async function signout() {
 	waiting();
+	// ログアウト直後に前アカウントの未読バッジが OS に残らないよう先にクリアする
+	clearAppBadge();
+
 	const signingOutToken = $i?.token;
 	const signingOutUserId = $i?.id;
+
+	if (signingOutUserId != null) {
+		await resetAppBadgeReceivedCount(signingOutUserId);
+	}
 
 	if (signingOutUserId == null) {
 		localStorage.removeItem("account");

@@ -31,6 +31,17 @@ import {
 	logPushSend,
 	logPushSubscriptionChange,
 } from "@/services/push-audit-log.js";
+import {
+	resolveMessagingNotificationDisplayImageUrl,
+	resolveNoteNotificationDisplayImageUrl,
+	resolveReactionNotificationBadgeUrl,
+	resolveReactionNotificationIconUrl,
+} from "@/misc/notification-display-media.js";
+import {
+	resolveMessagingDisplayText,
+	resolveNotificationDisplayText,
+	type NotificationDisplayUser,
+} from "@/misc/notification-display-text.js";
 
 export type { pushNotificationsTypes };
 
@@ -84,9 +95,19 @@ async function ensureVapidDetails(): Promise<boolean> {
 
 // プッシュメッセージサーバーには文字数制限があるため、内容を削減します
 function truncateNotification(notification: Packed<"Notification">): any {
+	// renote の「表示」action 用に RT 先 noteId をトップレベルにも保持する
+	const renoteTargetNoteId =
+		notification.type === "renote" && notification.note != null
+			? notification.note.renoteId ??
+				(notification.note.renote as { id?: string } | null | undefined)?.id
+			: undefined;
+
 	if (notification.note) {
 		return {
 			...notification,
+			...(typeof renoteTargetNoteId === "string"
+				? { renoteTargetNoteId }
+				: {}),
 			note: {
 				...notification.note,
 				text: getNoteSummary(
@@ -150,6 +171,18 @@ export function buildMinimalNotificationPayloadForPush(
 				: undefined;
 	const user = minimalPushUser(minimal.user);
 
+	const note = minimal.note as
+		| { id?: string; userId?: string }
+		| null
+		| undefined;
+	const minimalNote =
+		note != null && typeof note.id === "string"
+			? {
+					id: note.id,
+					...(typeof note.userId === "string" ? { userId: note.userId } : {}),
+				}
+			: undefined;
+
 	return {
 		id: minimal.id,
 		type: minimal.type,
@@ -157,18 +190,266 @@ export function buildMinimalNotificationPayloadForPush(
 		body: minimal.body,
 		...(userId != null ? { userId } : {}),
 		...(user != null ? { user } : {}),
+		...(minimalNote != null ? { note: minimalNote } : {}),
+		...(typeof minimal.renoteTargetNoteId === "string"
+			? { renoteTargetNoteId: minimal.renoteTargetNoteId }
+			: {}),
+		...(typeof minimal.displayImageUrl === "string"
+			? { displayImageUrl: minimal.displayImageUrl }
+			: {}),
+		...(typeof minimal.displayTitle === "string"
+			? { displayTitle: minimal.displayTitle }
+			: {}),
+		...(typeof minimal.displayBody === "string"
+			? { displayBody: minimal.displayBody }
+			: {}),
+		...(typeof minimal.reaction === "string"
+			? { reaction: minimal.reaction }
+			: {}),
+		...(typeof minimal.defaultReaction === "string"
+			? { defaultReaction: minimal.defaultReaction }
+			: {}),
+		...(typeof minimal.reactionIconUrl === "string"
+			? { reactionIconUrl: minimal.reactionIconUrl }
+			: {}),
+		...(typeof minimal.reactionBadgeUrl === "string"
+			? { reactionBadgeUrl: minimal.reactionBadgeUrl }
+			: {}),
 	};
 }
 
-function buildPayload<T extends keyof pushNotificationsTypes>(
+/**
+ * pack 済み通知の実効種別（unreadAntenna が `note` になるケースを補正）。
+ *
+ * @param notification - 通知オブジェクト
+ * @internal
+ */
+export function resolveEffectiveNotificationType(
+	notification: Record<string, unknown>,
+): string {
+	const type = notification.type;
+	if (typeof type !== "string") return "unknown";
+	if (
+		type === "note" &&
+		typeof notification.reaction === "string" &&
+		notification.reaction.length > 0
+	) {
+		return "unreadAntenna";
+	}
+	return type;
+}
+
+/**
+ * プッシュ用に `displayTitle` / `displayBody` を付与する。
+ *
+ * @param notification - truncate 後の通知
+ * @param defaultReaction - 既定リアクション
+ * @internal
+ */
+export function attachDisplayTextToNotification(
+	notification: Record<string, unknown>,
+	defaultReaction: string,
+): Record<string, unknown> {
+	const note = notification.note as
+		| Parameters<typeof resolveNotificationDisplayText>[0]["note"]
+		| undefined;
+	const user = notification.user as NotificationDisplayUser | undefined;
+	const effectiveType = resolveEffectiveNotificationType(notification);
+
+	const resolved = resolveNotificationDisplayText({
+		type: effectiveType,
+		user,
+		note,
+		reaction:
+			typeof notification.reaction === "string"
+				? notification.reaction
+				: undefined,
+		antennaName:
+			typeof notification.reaction === "string"
+				? notification.reaction
+				: undefined,
+		notifierUser: (note as { user?: NotificationDisplayUser } | undefined)
+			?.user,
+		defaultReaction,
+	});
+
+	if (resolved == null) {
+		return notification;
+	}
+
+	return { ...notification, ...resolved };
+}
+
+/**
+ * DM プッシュ用に表示テキストを付与する。
+ *
+ * @param message - メッセージ pack
+ * @internal
+ */
+export function attachDisplayTextToMessagingMessage(
+	message: Record<string, unknown>,
+): Record<string, unknown> {
+	const user = message.user as NotificationDisplayUser | undefined;
+	const group = message.group as { name?: string } | null | undefined;
+
+	const resolved = resolveMessagingDisplayText({
+		user,
+		groupName: group?.name,
+		text: typeof message.text === "string" ? message.text : undefined,
+	});
+
+	if (resolved == null) {
+		return message;
+	}
+
+	return { ...message, ...resolved };
+}
+
+/**
+ * プッシュ用に `displayImageUrl` を付与する（Webhook と同じ選定）。
+ *
+ * @param notification - truncate 後の通知
+ * @param defaultReaction - インスタンス既定リアクション
+ * @internal
+ */
+export function attachDisplayImageUrlToNotification(
+	notification: Record<string, unknown>,
+	defaultReaction: string,
+): Record<string, unknown> {
+	const note = notification.note as
+		| Parameters<typeof resolveNoteNotificationDisplayImageUrl>[0]
+		| undefined;
+	if (note == null) {
+		return notification;
+	}
+
+	const displayImageUrl = resolveNoteNotificationDisplayImageUrl(note, {
+		reaction:
+			typeof notification.reaction === "string"
+				? notification.reaction
+				: undefined,
+		defaultReaction,
+	});
+
+	if (displayImageUrl == null) {
+		return notification;
+	}
+
+	return { ...notification, displayImageUrl };
+}
+
+/**
+ * DM プッシュ用に `displayImageUrl` を付与する。
+ *
+ * @param message - truncate 前後のメッセージ pack
+ * @internal
+ */
+export function attachDisplayImageUrlToMessagingMessage(
+	message: Record<string, unknown>,
+): Record<string, unknown> {
+	const displayImageUrl = resolveMessagingNotificationDisplayImageUrl(
+		message as Parameters<typeof resolveMessagingNotificationDisplayImageUrl>[0],
+		typeof (message as { emoji?: { publicUrl?: string } }).emoji?.publicUrl ===
+			"string"
+			? (message as { emoji: { publicUrl: string } }).emoji.publicUrl
+			: undefined,
+	);
+
+	if (displayImageUrl == null) {
+		return message;
+	}
+
+	return { ...message, displayImageUrl };
+}
+
+/**
+ * リアクション通知プッシュ用に icon/badge 解決結果を付与する。
+ *
+ * @param notification - truncate 後の通知
+ * @param defaultReaction - インスタンス既定リアクション
+ * @internal
+ */
+export function attachReactionPushDisplayExtras(
+	notification: Record<string, unknown>,
+	defaultReaction: string,
+): Record<string, unknown> {
+	if (notification.type !== "reaction") {
+		return notification;
+	}
+
+	const reaction =
+		typeof notification.reaction === "string"
+			? notification.reaction
+			: undefined;
+	const note = notification.note as
+		| Parameters<typeof resolveReactionNotificationIconUrl>[1]
+		| undefined;
+
+	const enriched: Record<string, unknown> = {
+		...notification,
+		defaultReaction,
+	};
+
+	if (reaction == null) {
+		return enriched;
+	}
+
+	const reactionIconUrl = resolveReactionNotificationIconUrl(
+		reaction,
+		note,
+		defaultReaction,
+	);
+	if (reactionIconUrl != null) {
+		enriched.reactionIconUrl = reactionIconUrl;
+	}
+
+	const reactionBadgeUrl = resolveReactionNotificationBadgeUrl(
+		reaction,
+		note,
+		defaultReaction,
+	);
+	if (reactionBadgeUrl != null) {
+		enriched.reactionBadgeUrl = reactionBadgeUrl;
+	}
+
+	return enriched;
+}
+
+async function buildPayload<T extends keyof pushNotificationsTypes>(
 	userId: string,
 	type: T,
 	body: pushNotificationsTypes[T],
-): string {
-	let truncatedBody =
+): Promise<string> {
+	let truncatedBody: pushNotificationsTypes[T] =
 		type === "notification"
 			? truncateNotification(body as Packed<"Notification">)
 			: body;
+
+	if (type === "notification" && truncatedBody != null && typeof truncatedBody === "object") {
+		const meta = await fetchMeta();
+		let enriched = attachDisplayImageUrlToNotification(
+			truncatedBody as Record<string, unknown>,
+			meta.defaultReaction,
+		);
+		enriched = attachDisplayTextToNotification(enriched, meta.defaultReaction);
+		enriched = attachReactionPushDisplayExtras(
+			enriched,
+			meta.defaultReaction,
+		);
+		truncatedBody = enriched as pushNotificationsTypes[T];
+	}
+
+	if (
+		type === "unreadMessagingMessage" &&
+		truncatedBody != null &&
+		typeof truncatedBody === "object"
+	) {
+		let enriched = attachDisplayImageUrlToMessagingMessage(
+			truncatedBody as Record<string, unknown>,
+		);
+		enriched = attachDisplayTextToMessagingMessage(enriched);
+		truncatedBody = enriched as pushNotificationsTypes[T];
+	}
 
 	const buildJson = () =>
 		JSON.stringify({
@@ -327,7 +608,7 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 	const subscriptions = await getSwSubscriptionsByUserId(userId);
 	if (subscriptions.length === 0) return;
 
-	const payload = buildPayload(userId, type, body);
+	const payload = await buildPayload(userId, type, body);
 
 	const tasks = subscriptions.map((subscription) =>
 		sendToSubscription(userId, type, payload, subscription),

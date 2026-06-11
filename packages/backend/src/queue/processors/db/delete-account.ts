@@ -7,8 +7,9 @@
  * - **役割**: アカウント削除キューで実行し、ユーザーに紐づくデータを順次削除する。
  * - フォロー解除は原則 `silent`。削除ユーザーがフォローしていた相手のうち、
  *   **フォロー返しがない**ローカルユーザーには `userWasUnfollowed` を送る。
- * - 削除ユーザーをフォローしていたローカルユーザーには `followedAccountWasDeleted` のみ
- *   （相互フォローでもフォロー先削除通知だけとし、フォロー解除通知は重ねない）。
+ * - 削除ユーザーをフォローしていたローカルユーザーへの `followedAccountWasDeleted` は
+ *   `isDeleted` 更新前に API 側で送る（{@link notifyFollowersAccountWasDeleted}）。
+ *   相互フォローでもフォロー先削除通知だけとし、フォロー解除通知は重ねない。
  *
  * @see {@link server/api/endpoints/i/delete-account} アカウント削除 API
  * @internal
@@ -54,8 +55,10 @@ export async function deleteAccount(
 		} ...`,
 	);
 
-	// ループ1で followedAccountWasDeleted を送ったローカルユーザー（相互フォロー判定用）
-	const followedDeletedNotified = new Set<string>();
+	// 削除前に followedAccountWasDeleted を送ったローカルユーザー（相互フォロー判定用）
+	const followedDeletedNotified = new Set<string>(
+		job.data.followedDeletedNotifiedIds ?? [],
+	);
 
 	try {
 		let tryCount = 0;
@@ -79,15 +82,7 @@ export async function deleteAccount(
 				try {
 					const follower = await getUser(x.followerId);
 					if (follower) {
-						if (Users.isLocalUser(follower)) {
-							followedDeletedNotified.add(follower.id);
-							void createNotification(
-								follower.id,
-								"followedAccountWasDeleted",
-								{ notifierId: user.id },
-								{ notifier: user },
-							);
-						}
+						// followedAccountWasDeleted は isDeleted 更新前に API 側で送済み
 						await deleteFollowing(follower, user, true);
 						deleteCount += 1;
 					}
@@ -228,16 +223,18 @@ export async function deleteAccount(
 				try {
 					const followee = await getUser(x.followeeId);
 					if (followee) {
-						// ループ1でフォロー先削除通知済みならフォロー解除通知は出さない
+						// ループ1相当でフォロー先削除通知済みならフォロー解除通知は出さない
 						if (
 							Users.isLocalUser(followee) &&
 							!followedDeletedNotified.has(followee.id)
 						) {
+							// ジョブ実行時点では isDeleted=true のため、表示用に削除前状態を渡す
+							const notifierBeforeDeletion = { ...user, isDeleted: false };
 							void createNotification(
 								followee.id,
 								"userWasUnfollowed",
 								{ notifierId: user.id },
-								{ notifier: user },
+								{ notifier: notifierBeforeDeletion },
 							);
 						}
 						await deleteFollowing(user, followee, true);

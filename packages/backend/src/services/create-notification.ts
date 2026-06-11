@@ -7,6 +7,7 @@
  * - **役割**: リアクション・フォロー・メンション等の通知を DB に保存し、ストリーム・プッシュ・メールで配信する。
  * - CHANGED: 種別ミュート（`isRead: true`）の通知はプッシュも送らない（設定 UI と整合）。
  * - NOTE: 実験的通知種別のプッシュ検証時は、設定で該当種別を ON（ミュート解除）してから試すこと。
+ * - NOTE: `options.notifier` を渡した場合は pack 時に再利用し、削除済みユーザーの表示名置換を避ける。
  *
  * @see {@link services/note/reaction/create} リアクション作成
  * @internal
@@ -105,7 +106,17 @@ export async function createNotification(
 		Notifications.findOneByOrFail(x.identifiers[0]),
 	);
 
-	const packed = await Notifications.pack(notification, {});
+	// 呼び出し元で notifier を渡している場合は pack 時に再利用する（削除済み置換前の表示を保持）
+	const notifierUserMap =
+		options?.notifier != null &&
+		data.notifierId != null &&
+		options.notifier.id === data.notifierId
+			? new Map<User["id"], User>([[options.notifier.id, options.notifier]])
+			: undefined;
+
+	const packed = await Notifications.pack(notification, {
+		_notifierUserMap_: notifierUserMap,
+	});
 
 	// 通知イベントを発行
 	publishMainStream(notifieeId, "notification", packed);

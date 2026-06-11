@@ -46,6 +46,8 @@ export type DbUserJobData = {
 export type DbUserDeleteJobData = {
 	user: ThinUser;
 	soft?: boolean;
+	/** 削除前に `followedAccountWasDeleted` を送ったローカルフォロワー ID（相互フォロー重複抑止用） */
+	followedDeletedNotifiedIds?: User["id"][];
 };
 
 export type DbUserImportJobData = {

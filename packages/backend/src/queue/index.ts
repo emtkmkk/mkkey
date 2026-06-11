@@ -32,6 +32,7 @@ import {
 	noteApDeliverQueue,
 } from "./queues.js";
 import type { NoteApDeliverJobData, ThinUser } from "./types.js";
+import type { User } from "@/models/entities/user.js";
 
 function renderError(e: Error): any {
 	return {
@@ -435,13 +436,17 @@ export function createImportCustomEmojisJob(
 
 export function createDeleteAccountJob(
 	user: ThinUser,
-	opts: { soft?: boolean } = {},
+	opts: {
+		soft?: boolean;
+		followedDeletedNotifiedIds?: User["id"][];
+	} = {},
 ) {
 	return dbQueue.add(
 		"deleteAccount",
 		{
 			user: user,
 			soft: opts.soft,
+			followedDeletedNotifiedIds: opts.followedDeletedNotifiedIds,
 		},
 		{
 			removeOnComplete: true,

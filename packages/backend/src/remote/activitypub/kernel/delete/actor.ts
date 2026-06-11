@@ -2,6 +2,7 @@ import { apLogger } from "../../logger.js";
 import { createDeleteAccountJob } from "@/queue/index.js";
 import type { CacheableRemoteUser } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
+import { notifyFollowersAccountWasDeleted } from "@/services/notify-followers-account-was-deleted.js";
 
 const logger = apLogger;
 
@@ -27,8 +28,13 @@ export async function deleteActor(
 		}`;
 	}
 
+	// isDeleted 更新前に通知内容を作成する
+	const followedDeletedNotified =
+		await notifyFollowersAccountWasDeleted(user);
+
 	const job = await createDeleteAccountJob(actor, {
 		soft: true, // リモートユーザーの削除は、完全にDBから物理削除してしまうと再度連合してきてアカウントが復活する可能性があるため、soft指定する
+		followedDeletedNotifiedIds: [...followedDeletedNotified],
 	});
 
 	await Users.update(actor.id, {

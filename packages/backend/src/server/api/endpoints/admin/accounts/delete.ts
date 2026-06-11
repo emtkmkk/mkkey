@@ -16,6 +16,7 @@ import { Users } from "@/models/index.js";
 import { doPostSuspend } from "@/services/suspend-user.js";
 import { publishUserEvent } from "@/services/stream.js";
 import { createDeleteAccountJob } from "@/queue/index.js";
+import { notifyFollowersAccountWasDeleted } from "@/services/notify-followers-account-was-deleted.js";
 
 export const meta = {
 	tags: ["admin"],
@@ -51,12 +52,22 @@ export default define(meta, paramDef, async (ps, me) => {
 		// 物理削除する前にDelete activityを送信する
 		await doPostSuspend(user).catch((e) => {});
 
+		// isDeleted 更新前に通知内容を作成する
+		const followedDeletedNotified =
+			await notifyFollowersAccountWasDeleted(user);
+
 		createDeleteAccountJob(user, {
 			soft: false,
+			followedDeletedNotifiedIds: [...followedDeletedNotified],
 		});
 	} else {
+		// isDeleted 更新前に通知内容を作成する
+		const followedDeletedNotified =
+			await notifyFollowersAccountWasDeleted(user);
+
 		createDeleteAccountJob(user, {
 			soft: true, // リモートユーザーの削除は、完全にDBから物理削除してしまうと再度連合してきてアカウントが復活する可能性があるため、soft指定する
+			followedDeletedNotifiedIds: [...followedDeletedNotified],
 		});
 	}
 

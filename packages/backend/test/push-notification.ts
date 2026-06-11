@@ -281,6 +281,23 @@ describe("push-notification", () => {
 		);
 	});
 
+	it("境界値: minimal ペイロードに viewNoteId が残る", () => {
+		const result = buildMinimalNotificationPayloadForPush({
+			id: "notif-reaction",
+			type: "reaction",
+			viewNoteId: "reacted-note-id",
+			note: {
+				id: "reacted-note-id",
+				text: "x".repeat(5000),
+			},
+		});
+
+		assert.strictEqual(
+			(result as { viewNoteId?: string }).viewNoteId,
+			"reacted-note-id",
+		);
+	});
+
 	it("境界値: minimal ペイロードに renoteTargetNoteId と note.id が残る", () => {
 		const result = buildMinimalNotificationPayloadForPush({
 			id: "notif-renote",

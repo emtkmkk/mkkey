@@ -29,6 +29,7 @@ import {
 	type NotificationActionRule,
 	viewAction,
 } from "@/scripts/notification-actions";
+import { withNotificationClickMeta } from "@/scripts/notification-click";
 
 const closeNotificationsByTags = async (tags: string[]) => {
 	for (const n of (
@@ -68,7 +69,32 @@ function safeUserName(
 type ComposeNotificationOptions = NotificationOptions & {
 	/** actions 補完ルール（省略時は R1） */
 	actionRule?: NotificationActionRule;
+	/** notificationclick 用メタ（実効種別・viewNoteId） */
+	clickMeta?: {
+		effectiveType: string;
+		viewNoteId?: string;
+	};
 };
+
+/**
+ * push body からクリック処理用の実効種別を推定する。
+ *
+ * @param body - notification body
+ * @internal
+ */
+function resolveEffectiveTypeFromBody(body: {
+	type?: string;
+	reaction?: string;
+}): string {
+	if (
+		body.type === "note" &&
+		typeof body.reaction === "string" &&
+		body.reaction.length > 0
+	) {
+		return "unreadAntenna";
+	}
+	return typeof body.type === "string" ? body.type : "";
+}
 
 /**
  * サーバー付与の displayTitle/Body を優先して OS 通知文面を組み立てる。
@@ -87,11 +113,29 @@ function composeWithDisplayText<
 	t: (key: string, ...args: unknown[]) => string,
 	options: ComposeNotificationOptions,
 ): [string, NotificationOptions] {
-	const { actionRule = "r1", actions, ...rest } = options;
-	const display = getPushDisplayText(data.body);
+	const { actionRule = "r1", actions, clickMeta, ...rest } = options;
+	let notificationData = data;
+	if ((data as { type?: string }).type === "notification") {
+		const pushData = data as pushNotificationDataMap["notification"];
+		const body = pushData.body as {
+			viewNoteId?: string;
+			type?: string;
+			reaction?: string;
+		};
+		notificationData = withNotificationClickMeta(
+			pushData,
+			clickMeta?.effectiveType ??
+				resolveEffectiveTypeFromBody(body),
+			{
+				viewNoteId:
+					clickMeta?.viewNoteId ?? body.viewNoteId,
+			},
+		);
+	}
+	const display = getPushDisplayText(notificationData.body);
 	return [
 		display?.title ?? fallbackTitle,
-		buildNotificationOptions(data, {
+		buildNotificationOptions(notificationData, {
 			...rest,
 			body: display?.body ?? rest.body,
 			actions: finalizeNotificationActions(actions, actionRule, t),
@@ -136,6 +180,12 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				(data.body as { reaction?: string }).reaction
 					? "unreadAntenna"
 					: data.body.type;
+
+			/** notificationclick 用の実効種別メタ */
+			const buildClickMeta = (extra?: { viewNoteId?: string }) => ({
+				effectiveType: notificationType,
+				...extra,
+			});
 
 			switch (notificationType) {
 				case "follow":
@@ -354,6 +404,21 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 							actionRule: hasValidNotificationUser(data.body.user)
 								? "r5"
 								: "r1",
+							clickMeta: buildClickMeta({
+								viewNoteId:
+									(
+										data.body as {
+											viewNoteId?: string;
+											renoteTargetNoteId?: string;
+										}
+									).viewNoteId ??
+									(
+										data.body as {
+											renoteTargetNoteId?: string;
+										}
+									).renoteTargetNoteId ??
+									data.body.note?.renoteId,
+							}),
 						},
 					);
 
@@ -428,7 +493,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 							icon,
 							tag: `reaction:${data.body.note.id}`,
 							badge,
-							image: getPushNotificationImage(data.body),
+							// NOTE: リアクション画像は icon で表示するため image は付けない
 							data,
 							actions: hasValidNotificationUser(data.body.user)
 								? r5Actions(t)
@@ -436,6 +501,11 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 							actionRule: hasValidNotificationUser(data.body.user)
 								? "r5"
 								: "r1",
+							clickMeta: buildClickMeta({
+								viewNoteId:
+									(data.body as { viewNoteId?: string })
+										.viewNoteId ?? data.body.note?.id,
+							}),
 						},
 					);
 				}

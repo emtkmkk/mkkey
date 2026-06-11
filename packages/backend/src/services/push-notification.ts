@@ -101,6 +101,14 @@ function truncateNotification(notification: Packed<"Notification">): any {
 			? notification.note.renoteId ??
 				(notification.note.renote as { id?: string } | null | undefined)?.id
 			: undefined;
+	// R5 の「表示」action 用 noteId（notification.data から note が落ちても残す）
+	const viewNoteId =
+		notification.type === "reaction" &&
+		typeof notification.note?.id === "string"
+			? notification.note.id
+			: typeof renoteTargetNoteId === "string"
+				? renoteTargetNoteId
+				: undefined;
 
 	if (notification.note) {
 		return {
@@ -108,6 +116,7 @@ function truncateNotification(notification: Packed<"Notification">): any {
 			...(typeof renoteTargetNoteId === "string"
 				? { renoteTargetNoteId }
 				: {}),
+			...(typeof viewNoteId === "string" ? { viewNoteId } : {}),
 			note: {
 				...notification.note,
 				text: getNoteSummary(
@@ -193,6 +202,9 @@ export function buildMinimalNotificationPayloadForPush(
 		...(minimalNote != null ? { note: minimalNote } : {}),
 		...(typeof minimal.renoteTargetNoteId === "string"
 			? { renoteTargetNoteId: minimal.renoteTargetNoteId }
+			: {}),
+		...(typeof minimal.viewNoteId === "string"
+			? { viewNoteId: minimal.viewNoteId }
 			: {}),
 		...(typeof minimal.displayImageUrl === "string"
 			? { displayImageUrl: minimal.displayImageUrl }
@@ -310,12 +322,19 @@ export function attachDisplayTextToMessagingMessage(
  *
  * @param notification - truncate 後の通知
  * @param defaultReaction - インスタンス既定リアクション
+ * @remarks
+ * `reaction` 種別は `icon` でリアクション画像を出すため、ここでは `displayImageUrl` を付けない。
  * @internal
  */
 export function attachDisplayImageUrlToNotification(
 	notification: Record<string, unknown>,
 	defaultReaction: string,
 ): Record<string, unknown> {
+	// NOTE: reaction は icon / badge で絵文字を出すため image 用 URL は付与しない
+	if (notification.type === "reaction") {
+		return notification;
+	}
+
 	const note = notification.note as
 		| Parameters<typeof resolveNoteNotificationDisplayImageUrl>[0]
 		| undefined;

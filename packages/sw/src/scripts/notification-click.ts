@@ -20,6 +20,73 @@ import {
 
 type NotificationPushData = pushNotificationDataMap["notification"];
 
+/** compose / push 時に付与するクリック用メタ（SW 内部） */
+type NotificationClickMetaBody = NotificationPushData["body"] & {
+	_clickEffectiveType?: string;
+	viewNoteId?: string;
+	renoteTargetNoteId?: string;
+};
+
+/**
+ * クリック処理用の実効種別を返す。
+ *
+ * @remarks
+ * notification.data から `type` が欠落しても compose 時の値を優先する。
+ *
+ * @param body - 通知 body
+ * @internal
+ */
+export function getEffectiveNotificationType(
+	body: NotificationClickMetaBody,
+): string {
+	if (typeof body._clickEffectiveType === "string") {
+		return body._clickEffectiveType;
+	}
+	return typeof body.type === "string" ? body.type : "";
+}
+
+/**
+ * R5 の「表示」action で開く noteId を返す。
+ *
+ * @param body - 通知 body
+ * @internal
+ */
+/**
+ * showNotification に渡す data にクリック用メタを付与する。
+ *
+ * @param data - 元の push データ
+ * @param effectiveType - compose 時点の実効種別
+ * @param meta - 追加メタ
+ * @public
+ */
+export function withNotificationClickMeta(
+	data: NotificationPushData,
+	effectiveType: string,
+	meta?: { viewNoteId?: string },
+): NotificationPushData {
+	return {
+		...data,
+		body: {
+			...data.body,
+			_clickEffectiveType: effectiveType,
+			...(meta?.viewNoteId != null ? { viewNoteId: meta.viewNoteId } : {}),
+		} as NotificationPushData["body"],
+	};
+}
+
+export function resolveR5ViewNoteId(
+	body: NotificationClickMetaBody,
+): string | undefined {
+	if (typeof body.viewNoteId === "string") {
+		return body.viewNoteId;
+	}
+	if (getEffectiveNotificationType(body) === "renote") {
+		return getRenoteTargetNoteId(body);
+	}
+	const note = "note" in body ? body.note : undefined;
+	return typeof note?.id === "string" ? note.id : undefined;
+}
+
 /**
  * RT 先ノート ID をペイロードから取得する。
  *
@@ -28,13 +95,10 @@ type NotificationPushData = pushNotificationDataMap["notification"];
  * @internal
  */
 function getRenoteTargetNoteId(
-	body: NotificationPushData["body"],
+	body: NotificationClickMetaBody,
 ): string | undefined {
-	const extended = body as NotificationPushData["body"] & {
-		renoteTargetNoteId?: string;
-	};
-	if (typeof extended.renoteTargetNoteId === "string") {
-		return extended.renoteTargetNoteId;
+	if (typeof body.renoteTargetNoteId === "string") {
+		return body.renoteTargetNoteId;
 	}
 	const note = "note" in body ? body.note : undefined;
 	if (note == null) return undefined;
@@ -67,17 +131,11 @@ async function openR5ViewNote(
 	data: NotificationPushData,
 	loginId: string,
 ): Promise<WindowClient | null> {
-	if (!("note" in data.body) || data.body.note == null) {
-		return null;
-	}
-	if (data.body.type === "renote") {
-		const renoteTargetNoteId = getRenoteTargetNoteId(data.body);
-		if (renoteTargetNoteId != null) {
-			return swos.openNote(renoteTargetNoteId, loginId);
-		}
-	}
-	if (typeof data.body.note.id === "string") {
-		return swos.openNote(data.body.note.id, loginId);
+	const viewNoteId = resolveR5ViewNoteId(
+		data.body as NotificationClickMetaBody,
+	);
+	if (viewNoteId != null) {
+		return swos.openNote(viewNoteId, loginId);
 	}
 	return null;
 }
@@ -94,7 +152,9 @@ export async function resolveNotificationTapDefault(
 	data: NotificationPushData,
 	loginId: string,
 ): Promise<WindowClient | null> {
-	const { type } = data.body;
+	const type = getEffectiveNotificationType(
+		data.body as NotificationClickMetaBody,
+	);
 
 	if (type === "receiveFollowRequest") {
 		return swos.openClient("push", "/my/follow-requests", loginId);
@@ -126,8 +186,13 @@ export async function resolveNotificationViewAction(
 	data: NotificationPushData,
 	loginId: string,
 ): Promise<WindowClient | null> {
-	if (isR5NotificationType(data.body.type)) {
-		return openR5ViewNote(data, loginId);
+	const body = data.body as NotificationClickMetaBody;
+	const type = getEffectiveNotificationType(body);
+
+	// R5: 「表示」は必ずノート。noteId が無いときはプロフィールに落とさず一覧へ
+	if (isR5NotificationType(type) || resolveR5ViewNoteId(body) != null) {
+		const client = await openR5ViewNote(data, loginId);
+		return client ?? openNotifications(loginId);
 	}
 	return resolveNotificationTapDefault(data, loginId);
 }

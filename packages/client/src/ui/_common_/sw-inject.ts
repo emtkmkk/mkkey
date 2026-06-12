@@ -76,7 +76,7 @@ export function swInject() {
 			if (
 				data?.type === "notification" &&
 				data.body?.type === "app" &&
-				data.body?.header === "プッシュ通知テスト"
+				(data.body as { isPushTest?: boolean }).isPushTest === true
 			) {
 				os.toast("プッシュ通知テスト: 届きました");
 				return;

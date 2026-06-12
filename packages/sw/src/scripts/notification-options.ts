@@ -233,15 +233,45 @@ export function buildNotificationOptions(
 	};
 }
 
+type ReactionNotificationEmoji = { name: string; url: string };
+
 type ReactionNotificationBody = {
 	reaction?: string | null;
 	defaultReaction?: string | null;
 	reactionIconUrl?: string | null;
 	reactionBadgeUrl?: string | null;
 	note?: {
-		emojis?: Array<{ name: string; url: string }>;
+		emojis?: ReactionNotificationEmoji[];
+		reactionEmojis?: ReactionNotificationEmoji[];
 	} | null;
 };
+
+/**
+ * カスタム絵文字リアクションの URL を複数リストから解決する。
+ *
+ * @param reaction - リアクション文字列（`:name:` 形式）
+ * @param emojiLists - 検索対象（`emojis` / `reactionEmojis` 等）
+ * @returns 画像 URL（見つからないとき undefined）
+ * @internal
+ */
+function findCustomEmojiUrl(
+	reaction: string,
+	emojiLists: Array<ReactionNotificationEmoji[] | null | undefined>,
+): string | undefined {
+	if (!reaction.startsWith(":")) return undefined;
+
+	let name = reaction.slice(1);
+	if (name.endsWith(":")) name = name.slice(0, -1);
+	if (name.includes("@")) name = name.split("@")[0]!;
+
+	for (const emojis of emojiLists) {
+		if (emojis == null) continue;
+		const custom = emojis.find((x) => x.name === name);
+		if (custom?.url) return custom.url;
+	}
+
+	return undefined;
+}
 
 /**
  * プッシュ `icon` 用のリアクション画像 URL を解決する。
@@ -264,13 +294,11 @@ export function resolveReactionNotificationIcon(
 	const note = body.note;
 	if (reaction == null || reaction === "") return undefined;
 
-	if (reaction.startsWith(":") && note?.emojis != null) {
-		let name = reaction.slice(1);
-		if (name.endsWith(":")) name = name.slice(0, -1);
-		if (name.includes("@")) name = name.split("@")[0]!;
-		const custom = note.emojis.find((x) => x.name === name);
-		if (custom?.url) return custom.url;
-		return undefined;
+	if (reaction.startsWith(":")) {
+		return findCustomEmojiUrl(reaction, [
+			note?.emojis,
+			note?.reactionEmojis,
+		]);
 	}
 
 	if (!reaction.startsWith(":")) {
@@ -293,18 +321,13 @@ export function resolveReactionNotificationBadge(
 	note: ReactionNotificationBody["note"],
 ): string | undefined {
 	if (reaction.startsWith(":")) {
-		if (note?.emojis == null) return undefined;
+		const customUrl = findCustomEmojiUrl(reaction, [
+			note?.emojis,
+			note?.reactionEmojis,
+		]);
+		if (customUrl == null) return undefined;
 
-		let emojiName = reaction.slice(1);
-		if (emojiName.endsWith(":")) emojiName = emojiName.slice(0, -1);
-		if (emojiName.includes("@")) {
-			emojiName = emojiName.split("@")[0]!;
-		}
-
-		const customEmoji = note.emojis.find((x) => x.name === emojiName);
-		if (customEmoji == null) return undefined;
-
-		const u = new URL(customEmoji.url);
+		const u = new URL(customUrl);
 		if (u.href.startsWith(`${origin}/proxy/`)) {
 			u.searchParams.set("badge", "1");
 			return u.href;

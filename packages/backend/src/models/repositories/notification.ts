@@ -19,6 +19,9 @@ import type { User } from "@/models/entities/user.js";
 import { aggregateNoteEmojis, prefetchEmojis } from "@/misc/populate-emojis.js";
 import { notificationTypes } from "@/types.js";
 import { db } from "@/db/postgre.js";
+import Logger from "@/services/logger.js";
+
+const notificationPackLogger = new Logger("notification-pack");
 import {
 	Users,
 	Notes,
@@ -40,7 +43,7 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			/** まとめ読み用: notifier の User（avatar/banner 付き）を id → 実体で渡す。渡すと drive_file の個別参照を避ける */
 			_notifierUserMap_?: Map<User["id"], User>;
 		} = {},
-	): Promise<Packed<"Notification">> {
+	): Promise<Packed<"Notification"> | null> {
 		const notification =
 			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
 		const token = notification.appAccessTokenId
@@ -301,7 +304,13 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 							? followBlockingMap
 							: undefined,
 					_notifierUserMap_: notifierUserMap,
-				}).catch((e) => null),
+				}).catch((e) => {
+					notificationPackLogger.warn("pack failed", {
+						notificationId: x.id,
+						error: e,
+					});
+					return null;
+				}),
 			),
 		);
 		return results.filter((x) => x != null);

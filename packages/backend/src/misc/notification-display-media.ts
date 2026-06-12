@@ -22,11 +22,17 @@ export type NotificationDisplayFile = {
 	properties?: { height?: number; width?: number };
 };
 
+/** カスタム絵文字の最小型 */
+export type NotificationDisplayEmoji = { name: string; url: string };
+
 /** ノートの最小型 */
 export type NotificationDisplayNote = {
 	cw?: string | null;
 	files?: NotificationDisplayFile[];
-	emojis?: Array<{ name: string; url: string }>;
+	/** ノート本文中のカスタム絵文字 */
+	emojis?: NotificationDisplayEmoji[];
+	/** ノートに付いたリアクションのカスタム絵文字 */
+	reactionEmojis?: NotificationDisplayEmoji[];
 };
 
 /** メッセージの最小型 */
@@ -131,14 +137,6 @@ export function resolveNoteDiscordEmbedVideo(
 }
 
 /**
- * カスタム絵文字リアクションの URL をノートの emojis から解決する。
- *
- * @param reaction - リアクション文字列
- * @param emojis - ノートに含まれる絵文字一覧
- * @returns publicUrl 相当
- * @internal
- */
-/**
  * インスタンス既定リアクション（ふぁぼ）かどうか。
  *
  * @param reaction - リアクション文字列
@@ -190,7 +188,7 @@ export function resolveReactionNotificationIconUrl(
 	}
 	if (reaction == null) return undefined;
 
-	const custom = resolveReactionEmojiImageUrl(reaction, note?.emojis);
+	const custom = resolveReactionEmojiImageUrlFromNote(reaction, note);
 	if (custom != null) return custom;
 
 	if (!reaction.startsWith(":")) {
@@ -220,7 +218,7 @@ export function resolveReactionNotificationBadgeUrl(
 	if (reaction == null) return undefined;
 
 	if (reaction.startsWith(":")) {
-		const emojiUrl = resolveReactionEmojiImageUrl(reaction, note?.emojis);
+		const emojiUrl = resolveReactionEmojiImageUrlFromNote(reaction, note);
 		if (emojiUrl == null) return undefined;
 
 		try {
@@ -242,9 +240,17 @@ export function resolveReactionNotificationBadgeUrl(
 	return `${config.url}/twemoji-badge/${unicodeEmojiToTwemojiFileName(reaction)}.png`;
 }
 
+/**
+ * カスタム絵文字リアクションの URL を絵文字一覧から解決する。
+ *
+ * @param reaction - リアクション文字列（`:name:` 形式）
+ * @param emojis - 検索対象の絵文字一覧
+ * @returns 画像 URL（見つからないとき undefined）
+ * @public
+ */
 export function resolveReactionEmojiImageUrl(
 	reaction: string | null | undefined,
-	emojis: NotificationDisplayNote["emojis"],
+	emojis: NotificationDisplayEmoji[] | null | undefined,
 ): string | undefined {
 	if (reaction == null || !reaction.startsWith(":") || emojis == null) {
 		return undefined;
@@ -258,6 +264,27 @@ export function resolveReactionEmojiImageUrl(
 	}
 	const custom = emojis.find((x) => x.name === name);
 	return custom?.url;
+}
+
+/**
+ * ノートの `emojis` と `reactionEmojis` からカスタム絵文字 URL を解決する。
+ *
+ * @remarks
+ * リアクション専用絵文字は `reactionEmojis` にのみ入るため、両方を順に検索する。
+ *
+ * @param reaction - リアクション文字列
+ * @param note - ノート
+ * @returns 画像 URL（見つからないとき undefined）
+ * @public
+ */
+export function resolveReactionEmojiImageUrlFromNote(
+	reaction: string | null | undefined,
+	note: NotificationDisplayNote | null | undefined,
+): string | undefined {
+	return (
+		resolveReactionEmojiImageUrl(reaction, note?.emojis) ??
+		resolveReactionEmojiImageUrl(reaction, note?.reactionEmojis)
+	);
 }
 
 /**
@@ -279,7 +306,7 @@ export function resolveNoteThumbnailUrl(
 
 	const reactionFromEmoji =
 		ctx.reaction != null
-			? resolveReactionEmojiImageUrl(ctx.reaction, note?.emojis)
+			? resolveReactionEmojiImageUrlFromNote(ctx.reaction, note)
 			: undefined;
 	if (reactionFromEmoji != null) return reactionFromEmoji;
 
@@ -333,7 +360,10 @@ export function resolveNoteNotificationDisplayImageUrl(
 		return ctx.customEmoji.publicUrl;
 	}
 
-	const reactionEmoji = resolveReactionEmojiImageUrl(ctx.reaction, note?.emojis);
+	const reactionEmoji = resolveReactionEmojiImageUrlFromNote(
+		ctx.reaction,
+		note,
+	);
 	if (reactionEmoji != null) return reactionEmoji;
 
 	if (noteAllowsMedia(note)) {

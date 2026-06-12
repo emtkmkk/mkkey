@@ -91,6 +91,7 @@ export default define(meta, paramDef, async (ps, me) => {
 			isRead: false,
 			header: "プッシュ通知テスト",
 			body: "通知が届きました。",
+			isPushTest: true,
 		} as Packed<"Notification">;
 	} else {
 		const packedUser = await Users.pack(me.id, { id: me.id });

@@ -357,15 +357,23 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					);
 
 				case "unreadAntenna": {
+					const noteUserId = data.body.note?.userId;
+					const noteUser = data.body.note?.user;
 					const bodyText =
-						data.body.user.id !== data.body.note.userId
-							? `RT ${getUserName(data.body.note.user)} : ${
-									data.body.note.text
-							  }`
-							: data.body.note.text;
+						noteUserId != null &&
+						data.body.user?.id != null &&
+						data.body.user.id !== noteUserId &&
+						noteUser != null
+							? `RT ${getUserName(noteUser)} : ${data.body.note.text ?? ""}`
+							: data.body.note?.text ?? "";
 					const antennaName =
 						(data.body as { antenna?: { name?: string } }).antenna?.name ??
-						data.body.reaction;
+						data.body.reaction ??
+						"";
+					const antennaTagKey =
+						(data.body as { antenna?: { id?: string } }).antenna?.id ??
+						data.body.reaction ??
+						data.body.id;
 					return composeWithDisplayText(
 						data,
 						t("_notification.youUnreadAntenna", {
@@ -374,10 +382,10 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						t,
 						{
 							body: `${getUserName(data.body.user)} : ${bodyText}` || "",
-							icon: data.body.user.avatarUrl,
+							icon: data.body.user?.avatarUrl,
 							badge: notificationBadgeUrl("comments"),
 							image: getPushNotificationImage(data.body),
-							tag: `antenna:${data.body.antenna.id}`,
+							tag: `antenna:${antennaTagKey}`,
 							data,
 						},
 					);
@@ -631,7 +639,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 							body: data.body.header && data.body.body,
 							icon: data.body.icon,
 							tag:
-								data.body.header === "プッシュ通知テスト"
+								(data.body as { isPushTest?: boolean }).isPushTest === true
 									? "push-test"
 									: undefined,
 							data,
@@ -703,23 +711,21 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 	}
 }
 
-export async function createEmptyNotification(data?) {
-	return new Promise<void>(async (res) => {
-		if (!swLang.i18n) swLang.fetchLocale();
-		const i18n = (await swLang.i18n) as I18n<any>;
-		const { t } = i18n;
+export async function createEmptyNotification(data?: string) {
+	if (!swLang.i18n) swLang.fetchLocale();
+	const i18n = (await swLang.i18n) as I18n<any>;
+	const { t } = i18n;
 
-		await self.registration.showNotification(
-			data ? data : t("_notification.emptyPushNotificationMessage"),
-			{
-				silent: true,
-				badge: notificationBadgeUrl("null"),
-				tag: "read_notification",
-			},
-		);
+	await self.registration.showNotification(
+		data ?? t("_notification.emptyPushNotificationMessage"),
+		{
+			silent: true,
+			badge: notificationBadgeUrl("null"),
+			tag: "read_notification",
+		},
+	);
 
-		res();
-
+	await new Promise<void>((resolve) => {
 		setTimeout(async () => {
 			try {
 				await closeNotificationsByTags([
@@ -727,7 +733,7 @@ export async function createEmptyNotification(data?) {
 					"read_notification",
 				]);
 			} finally {
-				res();
+				resolve();
 			}
 		}, 1000);
 	});

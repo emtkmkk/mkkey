@@ -6,8 +6,10 @@
  * @remarks
  * - **役割**: リアクション・フォロー・メンション等の通知を DB に保存し、ストリーム・プッシュ・メールで配信する。
  * - CHANGED: 種別ミュート（`isRead: true`）の通知はプッシュも送らない（設定 UI と整合）。
+ * - CHANGED: ユーザミュート・インスタンスミュート・サスペンドはプッシュ前に判定する。
  * - NOTE: 実験的通知種別のプッシュ検証時は、設定で該当種別を ON（ミュート解除）してから試すこと。
  * - NOTE: `options.notifier` を渡した場合は pack 時に再利用し、削除済みユーザーの表示名置換を避ける。
+ * - TODO: メール通知実装時に sendEmailNotification 呼び出しを復活すること。
  *
  * @see {@link services/note/reaction/create} リアクション作成
  * @internal
@@ -17,7 +19,6 @@ import { publishMainStream } from "@/services/stream.js";
 import { pushNotification } from "@/services/push-notification.js";
 import {
 	Notifications,
-	Mutings,
 	NoteThreadMutings,
 	UserProfiles,
 	Users,
@@ -26,8 +27,8 @@ import {
 import { genId } from "@/misc/gen-id.js";
 import type { User } from "@/models/entities/user.js";
 import type { Notification } from "@/models/entities/notification.js";
-import { sendEmailNotification } from "./send-email-notification.js";
 import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
+import { shouldDeliverDelayedNotification } from "@/services/should-deliver-delayed-notification.js";
 
 /**
  * 通知を作成する。
@@ -118,46 +119,33 @@ export async function createNotification(
 		_notifierUserMap_: notifierUserMap,
 	});
 
-	// 通知イベントを発行
-	publishMainStream(notifieeId, "notification", packed);
+	// フォローブロック等で pack が null のときは配信しない（DB には残る）
+	if (packed != null) {
+		publishMainStream(notifieeId, "notification", packed);
+	}
 
 	// 3秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
-	setTimeout(async () => {
-		const fresh = await Notifications.findOneBy({ id: notification.id });
-		if (fresh == null) return; // 既に削除されているかもしれない
-		// 種別ミュート・手動既読は isRead=true。プッシュもアプリ内表示と同様に抑止する
-		if (fresh.isRead) return;
+	if (packed != null) {
+		setTimeout(async () => {
+			try {
+				const fresh = await Notifications.findOneBy({ id: notification.id });
+				if (fresh == null) return; // 既に削除されているかもしれない
+				// 種別ミュート・手動既読は isRead=true。プッシュもアプリ内表示と同様に抑止する
+				if (fresh.isRead) return;
 
-		await pushNotification(notifieeId, "notification", packed);
+				const deliver = await shouldDeliverDelayedNotification(
+					notifieeId,
+					data.notifierId,
+				);
+				if (!deliver) return;
 
-		//#region ただしミュートしているユーザーからの通知なら無視
-		const isNotifierMuted =
-			data.notifierId != null
-				? await Mutings.exist({
-						where: {
-							muterId: notifieeId,
-							muteeId: data.notifierId,
-						},
-					})
-				: false;
-		if (isNotifierMuted) {
-			return;
-		}
-		//#endregion
-
-		publishMainStream(notifieeId, "unreadNotification", packed);
-
-		if (type === "follow")
-			sendEmailNotification.follow(
-				notifieeId,
-				await Users.findOneByOrFail({ id: data.notifierId! }),
-			);
-		if (type === "receiveFollowRequest")
-			sendEmailNotification.receiveFollowRequest(
-				notifieeId,
-				await Users.findOneByOrFail({ id: data.notifierId! }),
-			);
-	}, 3000);
+				await pushNotification(notifieeId, "notification", packed);
+				publishMainStream(notifieeId, "unreadNotification", packed);
+			} catch (err) {
+				console.error("delayed notification delivery failed", err);
+			}
+		}, 3000);
+	}
 
 	return notification;
 }

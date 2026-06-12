@@ -6,12 +6,13 @@
  * @remarks
  * - **API パス**: `notifications/mark-all-as-read`（POST `/api/notifications/mark-all-as-read` で呼び出し）
  * - 認証必須。未読通知を一括で既読にする。
+ * - {@link readAllNotifications} 経由で Redis キャッシュも更新する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
  */
-import { publishMainStream } from "@/services/stream.js";
 import { Notifications } from "@/models/index.js";
+import { readAllNotifications } from "../../common/read-notification.js";
 import define from "../../define.js";
 
 export const meta = {
@@ -29,16 +30,16 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// ドキュメントを更新する
-	await Notifications.update(
-		{
+	const latestUnread = await Notifications.findOne({
+		where: {
 			notifieeId: user.id,
 			isRead: false,
 		},
-		{
-			isRead: true,
-		},
-	);
+		order: { id: "DESC" },
+		select: ["id"],
+	});
 
-	publishMainStream(user.id, "readAllNotifications");
+	if (latestUnread == null) return;
+
+	await readAllNotifications(user.id, latestUnread.id);
 });

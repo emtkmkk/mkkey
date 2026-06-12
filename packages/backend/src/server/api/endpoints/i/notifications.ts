@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `i/notifications`（GET `/api/i/notifications` で呼び出し）
  * - 認証必須。未読含む通知をページネーションで返す。type や sinceId で絞り込み可能。
+ * - `markAsRead` + `includeTypes` 指定時は取得分のみ既読。フィルタなしは latestId 以前を一括既読。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -14,7 +15,10 @@ import { Brackets } from "typeorm";
 import { Notifications, Mutings, Users, UserProfiles } from "@/models/index.js";
 import { notificationTypes } from "@/types.js";
 import read from "@/services/note/read.js";
-import { readAllNotifications } from "../../common/read-notification.js";
+import {
+	readAllNotifications,
+	readNotification,
+} from "../../common/read-notification.js";
 import define from "../../define.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
@@ -106,18 +110,14 @@ export default define(meta, paramDef, async (ps, user) => {
 		.leftJoinAndSelect("notification.notifier", "notifier")
 		.leftJoinAndSelect("notification.note", "note")
 		.leftJoinAndSelect("notifier.avatar", "notifierAvatar")
-		.leftJoinAndSelect("notifier.banner", "notifierBanner")
 		.leftJoinAndSelect("note.user", "user")
 		.leftJoinAndSelect("user.avatar", "avatar")
-		.leftJoinAndSelect("user.banner", "banner")
 		.leftJoinAndSelect("note.reply", "reply")
 		.leftJoinAndSelect("note.renote", "renote")
 		.leftJoinAndSelect("reply.user", "replyUser")
 		.leftJoinAndSelect("replyUser.avatar", "replyUserAvatar")
-		.leftJoinAndSelect("replyUser.banner", "replyUserBanner")
 		.leftJoinAndSelect("renote.user", "renoteUser")
-		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar")
-		.leftJoinAndSelect("renoteUser.banner", "renoteUserBanner");
+		.leftJoinAndSelect("renoteUser.avatar", "renoteUserAvatar");
 
 	// ミュートユーザー
 	query.andWhere(
@@ -159,10 +159,6 @@ export default define(meta, paramDef, async (ps, user) => {
                 query.setParameters(followingCondition.parameters);
         }
 
-	if (false && !ps.allTypes) {
-		query.andWhere("notification.type <> 'unreadAntenna'");
-	}
-
 	if (ps.includeTypes && ps.includeTypes.length > 0) {
 		query.andWhere("notification.type IN (:...includeTypes)", {
 			includeTypes: ps.includeTypes,
@@ -179,14 +175,21 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const notifications = await query.take(ps.limit).getMany();
 
-	// すべて既読にする
+	// 既読にする（includeTypes 指定時は取得分のみ、それ以外は latestId 以前を一括既読）
 	if (notifications.length > 0 && ps.markAsRead) {
-		const latestNotificationId = notifications.reduce(
-			(latest, notification) =>
-				notification.id > latest ? notification.id : latest,
-			notifications[0].id,
-		);
-		readAllNotifications(user.id, latestNotificationId);
+		if (ps.includeTypes && ps.includeTypes.length > 0) {
+			await readNotification(
+				user.id,
+				notifications.map((notification) => notification.id),
+			);
+		} else {
+			const latestNotificationId = notifications.reduce(
+				(latest, notification) =>
+					notification.id > latest ? notification.id : latest,
+				notifications[0].id,
+			);
+			await readAllNotifications(user.id, latestNotificationId);
+		}
 	}
 
 	const notes = notifications

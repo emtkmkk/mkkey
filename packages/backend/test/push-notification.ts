@@ -96,6 +96,19 @@ describe("notification-display-media", () => {
 		assert.strictEqual(url, "https://example.com/blobcat.png");
 	});
 
+	it("正常系: reactionEmojis のみに URL があるカスタム絵文字を解決する", () => {
+		const url = resolveReactionNotificationIconUrl(":blobcat:", {
+			emojis: [],
+			reactionEmojis: [
+				{
+					name: "blobcat",
+					url: "https://example.com/reaction-blobcat.png",
+				},
+			],
+		}, "⭐");
+		assert.strictEqual(url, "https://example.com/reaction-blobcat.png");
+	});
+
 	it("正常系: 非デフォルト Unicode リアクションの badge URL を解決する", () => {
 		const url = resolveReactionNotificationBadgeUrl("😀", null, "⭐");
 		assert.strictEqual(
@@ -125,6 +138,29 @@ describe("notification-display-media", () => {
 		assert.strictEqual(
 			(out as { reactionBadgeUrl?: string }).reactionBadgeUrl,
 			`${config.url}/twemoji-badge/1f600.png`,
+		);
+	});
+
+	it("境界値: attachReactionPushDisplayExtras が reactionEmojis から reactionIconUrl を付与する", () => {
+		const out = attachReactionPushDisplayExtras(
+			{
+				type: "reaction",
+				reaction: ":blobcat:",
+				note: {
+					emojis: [],
+					reactionEmojis: [
+						{
+							name: "blobcat",
+							url: "https://example.com/reaction-blobcat.png",
+						},
+					],
+				},
+			},
+			"⭐",
+		);
+		assert.strictEqual(
+			(out as { reactionIconUrl?: string }).reactionIconUrl,
+			"https://example.com/reaction-blobcat.png",
 		);
 	});
 
@@ -278,6 +314,31 @@ describe("push-notification", () => {
 		assert.strictEqual(
 			(result as { reactionBadgeUrl?: string }).reactionBadgeUrl,
 			`${config.url}/twemoji-badge/1f600.png`,
+		);
+	});
+
+	it("境界値: minimal ペイロードに reactionEmojis が残る", () => {
+		const reactionEmojis = [
+			{ name: "blobcat", url: "https://example.com/reaction-blobcat.png" },
+		];
+		const result = buildMinimalNotificationPayloadForPush({
+			id: "notif-reaction-emoji",
+			type: "reaction",
+			reaction: ":blobcat:",
+			note: {
+				id: "note-id",
+				text: "x".repeat(5000),
+				reactionEmojis,
+			},
+		});
+
+		assert.deepStrictEqual(
+			(
+				result as {
+					note?: { reactionEmojis?: Array<{ name: string; url: string }> };
+				}
+			).note?.reactionEmojis,
+			reactionEmojis,
 		);
 	});
 

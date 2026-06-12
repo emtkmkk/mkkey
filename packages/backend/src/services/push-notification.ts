@@ -111,6 +111,23 @@ function truncateNotification(notification: Packed<"Notification">): any {
 				: undefined;
 
 	if (notification.note) {
+		// reaction 用: SW ローカル解決の保険として name+url のみ残す
+		const reactionEmojis =
+			notification.type === "reaction" &&
+			Array.isArray(
+				(notification.note as { reactionEmojis?: unknown }).reactionEmojis,
+			)
+				? (
+						(notification.note as { reactionEmojis: unknown[] })
+							.reactionEmojis as Array<{ name?: unknown; url?: unknown }>
+					)
+						.filter(
+							(e) =>
+								typeof e.name === "string" && typeof e.url === "string",
+						)
+						.map((e) => ({ name: e.name as string, url: e.url as string }))
+				: undefined;
+
 		return {
 			...notification,
 			...(typeof renoteTargetNoteId === "string"
@@ -128,6 +145,9 @@ function truncateNotification(notification: Packed<"Notification">): any {
 				reply: undefined,
 				renote: undefined,
 				user: undefined as any,
+				...(reactionEmojis != null && reactionEmojis.length > 0
+					? { reactionEmojis }
+					: {}),
 			},
 		};
 	}
@@ -181,14 +201,28 @@ export function buildMinimalNotificationPayloadForPush(
 	const user = minimalPushUser(minimal.user);
 
 	const note = minimal.note as
-		| { id?: string; userId?: string }
+		| {
+				id?: string;
+				userId?: string;
+				reactionEmojis?: Array<{ name: string; url: string }>;
+		  }
 		| null
 		| undefined;
+	const minimalReactionEmojis =
+		note != null && Array.isArray(note.reactionEmojis)
+			? note.reactionEmojis.filter(
+					(e) => typeof e.name === "string" && typeof e.url === "string",
+				)
+			: undefined;
 	const minimalNote =
 		note != null && typeof note.id === "string"
 			? {
 					id: note.id,
 					...(typeof note.userId === "string" ? { userId: note.userId } : {}),
+					...(minimalReactionEmojis != null &&
+					minimalReactionEmojis.length > 0
+						? { reactionEmojis: minimalReactionEmojis }
+						: {}),
 				}
 			: undefined;
 

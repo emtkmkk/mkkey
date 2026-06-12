@@ -280,6 +280,8 @@ export type Notification = {
 			header?: string | null;
 			body: string;
 			icon?: string | null;
+			/** プッシュ通知テスト用フラグ（SW / クライアント内部） */
+			isPushTest?: boolean;
 	  }
 );
 

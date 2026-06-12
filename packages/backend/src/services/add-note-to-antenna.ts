@@ -20,6 +20,9 @@ import { webhookDeliver } from "@/queue/index.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import type { User } from "@/models/entities/user.js";
 import { In } from "typeorm";
+import Logger from "@/services/logger.js";
+
+const addNoteToAntennaLogger = new Logger("add-note-to-antenna");
 
 /**
  * アンテナにノートを追加する。
@@ -98,22 +101,39 @@ export async function addNoteToAntenna(
 
 		// 3秒経っても既読にならなかったら通知
 		setTimeout(async () => {
-			const unread = await AntennaNotes.findOneBy({
-				antennaId: antenna.id,
-				read: false,
-			});
-			if (unread) {
+			try {
+				const unread = await AntennaNotes.findOneBy({
+					antennaId: antenna.id,
+					read: false,
+				});
+				if (!unread) return;
+
 				publishMainStream(antenna.userId, "unreadAntenna", antenna);
 
-				const __note = note.renoteId && !note.text ? hydratedNote.renote : note;
+				const __note =
+					note.renoteId && !note.text ? hydratedNote.renote : note;
+				if (__note == null || __note.id == null) {
+					addNoteToAntennaLogger.warn(
+						"skip unreadAntenna notification: note is missing",
+						{
+							antennaId: antenna.id,
+							noteId: note.id,
+						},
+					);
+					return;
+				}
 
-				// 通知を作成
-				createNotification(antenna.userId, "unreadAntenna", {
-					notifierId: noteUser.id,
-					note: __note,
-					noteId: __note.id,
-					reaction: antenna.name,
-				}, { notifier: hydratedNote.user ?? undefined });
+				await createNotification(
+					antenna.userId,
+					"unreadAntenna",
+					{
+						notifierId: noteUser.id,
+						note: __note,
+						noteId: __note.id,
+						reaction: antenna.name,
+					},
+					{ notifier: hydratedNote.user ?? undefined },
+				);
 
 				const webhooks = await getActiveWebhooks().then((webhooks) =>
 					webhooks.filter(
@@ -147,6 +167,8 @@ export async function addNoteToAntenna(
 					);
 					await Promise.all(webhookPromises);
 				}
+			} catch (err) {
+				addNoteToAntennaLogger.error("delayed antenna notification failed", err);
 			}
 		}, 3000);
 	}

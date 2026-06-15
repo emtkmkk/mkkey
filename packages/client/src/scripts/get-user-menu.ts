@@ -144,6 +144,17 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		});
 	}
 
+	async function togglePushMute(): Promise<void> {
+		os.apiWithDialog(
+			user.isPushMuted ? "push-mute/delete" : "push-mute/create",
+			{
+				userId: user.id,
+			},
+		).then(() => {
+			user.isPushMuted = !user.isPushMuted;
+		});
+	}
+
 	async function addHiddenIconUserIds(): Promise<void> {
 		let hiddenIconUserIds = defaultStore.state.hiddenIconUserIds;
 		hiddenIconUserIds.push(user.id);
@@ -413,6 +424,13 @@ export function getUserMenu(user, router: Router = mainRouter) {
 				: "ph-eye-slash ph-bold ph-lg",
 			text: user.isRenoteMuted ? i18n.ts.renoteUnmute : i18n.ts.renoteMute,
 			action: toggleRenoteMute,
+		},
+		{
+			icon: user.isPushMuted
+				? "ph-bell ph-bold ph-lg"
+				: "ph-bell-slash ph-bold ph-lg",
+			text: user.isPushMuted ? i18n.ts.unPushMute : i18n.ts.pushMute,
+			action: togglePushMute,
 		},
 	] as any;
 

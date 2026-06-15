@@ -55,6 +55,7 @@ import {
 	MessagingMessages,
 	Mutings,
 	RenoteMutings,
+	PushMutings,
 	Notes,
 	NoteUnreads,
 	Notifications,
@@ -106,6 +107,7 @@ export type UserRelation = {
         isBlocked: boolean;
         isMuted: boolean;
         isRenoteMuted: boolean;
+        isPushMuted: boolean;
         isFollowBlocking: boolean;
         isInviter: boolean;
 };
@@ -213,6 +215,7 @@ export const UserRepository = db.getRepository(User).extend({
                                 isBlocked: false,
                                 isMuted: false,
                                 isRenoteMuted: false,
+                                isPushMuted: false,
                                 isFollowBlocking: false,
                                 isInviter: false,
                         } as UserRelation;
@@ -260,6 +263,7 @@ export const UserRepository = db.getRepository(User).extend({
                                 isBlocked: false,
                                 isMuted: false,
                                 isRenoteMuted: false,
+                                isPushMuted: false,
                                 isFollowBlocking: false,
                                 isInviter: false,
                         });
@@ -274,6 +278,7 @@ export const UserRepository = db.getRepository(User).extend({
                         blockedBy,
                         mutings,
                         renoteMutings,
+                        pushMutings,
                         followBlockings,
                         invitees,
                 ] = await Promise.all([
@@ -306,6 +311,10 @@ export const UserRepository = db.getRepository(User).extend({
                                 muteeId: In(uniqueTargetIds),
                         }),
                         RenoteMutings.findBy({
+                                muterId: meId,
+                                muteeId: In(uniqueTargetIds),
+                        }),
+                        PushMutings.findBy({
                                 muterId: meId,
                                 muteeId: In(uniqueTargetIds),
                         }),
@@ -371,6 +380,11 @@ export const UserRepository = db.getRepository(User).extend({
                 for (const muting of renoteMutings) {
                         const relation = relationsMap.get(muting.muteeId);
                         if (relation) relation.isRenoteMuted = true;
+                }
+
+                for (const muting of pushMutings) {
+                        const relation = relationsMap.get(muting.muteeId);
+                        if (relation) relation.isPushMuted = true;
                 }
 
                 for (const followBlocking of followBlockings) {
@@ -1302,6 +1316,7 @@ export const UserRepository = db.getRepository(User).extend({
 						isBlocked: relation.isBlocked,
 						isMuted: relation.isMuted,
 						isRenoteMuted: relation.isRenoteMuted,
+						isPushMuted: relation.isPushMuted,
 						isFollowBlocking: relation.isFollowBlocking,
 						isInviter: relation.isInviter ? true : undefined,
 						followedMessage: relation.isFollowing && profile ? profile.followedMessage : undefined,
@@ -1311,6 +1326,13 @@ export const UserRepository = db.getRepository(User).extend({
 				meId && !relation && (opts.detail || opts.relation)
 				? {
 					isRenoteMuted: RenoteMutings.count({
+				where: {
+					muterId: meId,
+					muteeId: user.id,
+				},
+				take: 1,
+			}).then((n) => n > 0),
+					isPushMuted: PushMutings.count({
 				where: {
 					muterId: meId,
 					muteeId: user.id,

@@ -401,6 +401,11 @@ export const packedUserDetailedNotMeOnlySchema = {
 			nullable: false,
 			optional: true,
 		},
+		isPushMuted: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
 		//#endregion
 	},
 } as const;

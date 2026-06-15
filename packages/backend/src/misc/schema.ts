@@ -28,6 +28,7 @@ import { packedDriveFolderSchema } from "@/models/schema/drive-folder.js";
 import { packedFollowingSchema } from "@/models/schema/following.js";
 import { packedMutingSchema } from "@/models/schema/muting.js";
 import { packedRenoteMutingSchema } from "@/models/schema/renote-muting.js";
+import { packedPushMutingSchema } from "@/models/schema/push-muting.js";
 import { packedBlockingSchema } from "@/models/schema/blocking.js";
 import { packedFollowBlockingSchema } from "@/models/schema/follow-blocking.js";
 import { packedNoteReactionSchema } from "@/models/schema/note-reaction.js";
@@ -68,6 +69,7 @@ export const refs = {
 	Following: packedFollowingSchema,
 	Muting: packedMutingSchema,
 	RenoteMuting: packedRenoteMutingSchema,
+	PushMuting: packedPushMutingSchema,
 	FollowBlocking: packedFollowBlockingSchema,
 	Blocking: packedBlockingSchema,
 	Hashtag: packedHashtagSchema,

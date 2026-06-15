@@ -13,7 +13,7 @@
  */
 import push from "web-push";
 import config from "@/config/index.js";
-import { SwSubscriptions } from "@/models/index.js";
+import { PushMutings, SwSubscriptions } from "@/models/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import {
 	getSwSubscriptionsByUserId,
@@ -468,6 +468,62 @@ export function attachReactionPushDisplayExtras(
 	return enriched;
 }
 
+/**
+ * プッシュペイロードから通知元ユーザ ID を取り出す（プッシュミュート判定用）。
+ *
+ * @param type - プッシュ種別
+ * @param body - ペイロード本体
+ * @returns 通知元ユーザ ID。判定不要なら undefined
+ * @internal
+ */
+export function extractNotifierIdForPushMute(
+	type: keyof pushNotificationsTypes,
+	body: unknown,
+): string | undefined {
+	if (body == null || typeof body !== "object") return undefined;
+
+	const record = body as Record<string, unknown>;
+
+	if (type === "notification") {
+		if (typeof record.userId === "string") return record.userId;
+		if (typeof record.notifierId === "string") return record.notifierId;
+		return undefined;
+	}
+
+	if (type === "unreadMessagingMessage") {
+		if (typeof record.userId === "string") return record.userId;
+		const user = record.user;
+		if (user != null && typeof user === "object") {
+			const userId = (user as { id?: unknown }).id;
+			if (typeof userId === "string") return userId;
+		}
+	}
+
+	return undefined;
+}
+
+/**
+ * 通知先が通知元のプッシュ通知をミュートしているか。
+ *
+ * @param notifieeId - 通知先ユーザ ID
+ * @param notifierId - 通知元ユーザ ID
+ * @returns ミュート中なら true
+ * @internal
+ */
+export async function isNotifierPushMuted(
+	notifieeId: string,
+	notifierId: string,
+): Promise<boolean> {
+	if (notifieeId === notifierId) return false;
+
+	return PushMutings.exist({
+		where: {
+			muterId: notifieeId,
+			muteeId: notifierId,
+		},
+	});
+}
+
 async function buildPayload<T extends keyof pushNotificationsTypes>(
 	userId: string,
 	type: T,
@@ -650,6 +706,14 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 ): Promise<void> {
 	// read* 系は push では送らない（ストリーム + SW postMessage で同期）
 	if ((PUSH_READ_SYNC_TYPES as readonly string[]).includes(type)) {
+		return;
+	}
+
+	const notifierId = extractNotifierIdForPushMute(type, body);
+	if (
+		notifierId != null &&
+		(await isNotifierPushMuted(userId, notifierId))
+	) {
 		return;
 	}
 

@@ -37,6 +37,7 @@ import { Following } from "@/models/entities/following.js";
 import { Instance } from "@/models/entities/instance.js";
 import { Muting } from "@/models/entities/muting.js";
 import { RenoteMuting } from "@/models/entities/renote-muting.js";
+import { PushMuting } from "@/models/entities/push-muting.js";
 import { FollowBlocking } from "@/models/entities/follow-blocking.js";
 import { SwSubscription } from "@/models/entities/sw-subscription.js";
 import { Blocking } from "@/models/entities/blocking.js";
@@ -163,6 +164,7 @@ export const entities = [
 	FollowRequest,
 	Muting,
 	RenoteMuting,
+	PushMuting,
 	FollowBlocking,
 	Blocking,
 	Note,

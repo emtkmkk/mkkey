@@ -109,6 +109,43 @@ describe("notification-display-media", () => {
 		assert.strictEqual(url, "https://example.com/reaction-blobcat.png");
 	});
 
+	it("正常系: reactionEmojis の name が blobcat@. 形式でも解決する", () => {
+		const url = resolveReactionNotificationIconUrl(":blobcat:", {
+			emojis: [],
+			reactionEmojis: [
+				{
+					name: "blobcat@.",
+					url: "https://example.com/reaction-blobcat-at-dot.png",
+				},
+			],
+		}, "⭐");
+		assert.strictEqual(url, "https://example.com/reaction-blobcat-at-dot.png");
+	});
+
+	it("正常系: リモート絵文字 name blobcat@example.com を :blobcat@example.com: で解決する", () => {
+		const url = resolveReactionNotificationIconUrl(":blobcat@example.com:", {
+			reactionEmojis: [
+				{
+					name: "blobcat@example.com",
+					url: "https://example.com/remote-blobcat.png",
+				},
+			],
+		}, "⭐");
+		assert.strictEqual(url, "https://example.com/remote-blobcat.png");
+	});
+
+	it("正常系: リモート絵文字 name blobcat@example.com を :blobcat: でも解決する", () => {
+		const url = resolveReactionNotificationIconUrl(":blobcat:", {
+			reactionEmojis: [
+				{
+					name: "blobcat@example.com",
+					url: "https://example.com/remote-blobcat-stripped.png",
+				},
+			],
+		}, "⭐");
+		assert.strictEqual(url, "https://example.com/remote-blobcat-stripped.png");
+	});
+
 	it("正常系: 非デフォルト Unicode リアクションの badge URL を解決する", () => {
 		const url = resolveReactionNotificationBadgeUrl("😀", null, "⭐");
 		assert.strictEqual(

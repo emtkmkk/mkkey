@@ -94,6 +94,71 @@ function isVideoOrAudioType(type: string | null | undefined): boolean {
 	return t.startsWith("video") || t.startsWith("audio");
 }
 
+type ReactionNotificationEmoji = { name: string; url: string };
+
+/**
+ * カスタム絵文字リアクション文字列から名前部分（`@host` 含む）を取り出す。
+ *
+ * @param reaction - `:name:` / `:name@host:` 形式
+ * @returns 正規化した名前
+ * @internal
+ */
+function normalizeReactionEmojiName(reaction: string): string | undefined {
+	if (!reaction.startsWith(":")) return undefined;
+
+	let name = reaction.slice(1);
+	if (name.endsWith(":")) {
+		name = name.slice(0, -1);
+	}
+	return name.length > 0 ? name : undefined;
+}
+
+/**
+ * リアクション名と pack 済み絵文字名が同一のカスタム絵文字を指すか判定する。
+ *
+ * @remarks
+ * backend の {@link emojiNameMatches} と同じ比較規則（MkEmoji.vue 準拠）。
+ *
+ * @param reactionName - `normalizeReactionEmojiName` の結果
+ * @param entryName - 絵文字一覧要素の name
+ * @internal
+ */
+function emojiNameMatches(reactionName: string, entryName: string): boolean {
+	const stripHost = (s: string) => s.replace(/@.*$/, "");
+	const rBase = stripHost(reactionName);
+	const eBase = stripHost(entryName);
+
+	return (
+		entryName === reactionName ||
+		eBase === rBase ||
+		entryName === `${rBase}@.`
+	);
+}
+
+/**
+ * カスタム絵文字リアクションの URL を複数リストから解決する。
+ *
+ * @param reaction - リアクション文字列（`:name:` 形式）
+ * @param emojiLists - 検索対象（`emojis` / `reactionEmojis` 等）
+ * @returns 画像 URL（見つからないとき undefined）
+ * @internal
+ */
+function findCustomEmojiUrl(
+	reaction: string,
+	emojiLists: Array<ReactionNotificationEmoji[] | null | undefined>,
+): string | undefined {
+	const reactionName = normalizeReactionEmojiName(reaction);
+	if (reactionName == null) return undefined;
+
+	for (const emojis of emojiLists) {
+		if (emojis == null) continue;
+		const custom = emojis.find((x) => emojiNameMatches(reactionName, x.name));
+		if (custom?.url) return custom.url;
+	}
+
+	return undefined;
+}
+
 /**
  * ノート添付から表示用画像 URL を解決する（後方互換・displayImageUrl 未設定時）。
  *
@@ -107,7 +172,8 @@ export function getNoteNotificationImage(
 		| {
 				cw?: string | null;
 				files?: PushDisplayFile[];
-				emojis?: Array<{ name: string; url: string }>;
+				emojis?: ReactionNotificationEmoji[];
+				reactionEmojis?: ReactionNotificationEmoji[];
 		  }
 		| null
 		| undefined,
@@ -125,12 +191,12 @@ export function getNoteNotificationImage(
 		}
 	}
 
-	if (reaction != null && reaction.startsWith(":") && note.emojis != null) {
-		let name = reaction.slice(1);
-		if (name.endsWith(":")) name = name.slice(0, -1);
-		if (name.includes("@")) name = name.split("@")[0]!;
-		const custom = note.emojis.find((x) => x.name === name);
-		if (custom?.url) return custom.url;
+	if (reaction != null && reaction.startsWith(":")) {
+		const customUrl = findCustomEmojiUrl(reaction, [
+			note.emojis,
+			note.reactionEmojis,
+		]);
+		if (customUrl != null) return customUrl;
 	}
 
 	const second = note.files?.[1];
@@ -233,8 +299,6 @@ export function buildNotificationOptions(
 	};
 }
 
-type ReactionNotificationEmoji = { name: string; url: string };
-
 type ReactionNotificationBody = {
 	reaction?: string | null;
 	defaultReaction?: string | null;
@@ -245,33 +309,6 @@ type ReactionNotificationBody = {
 		reactionEmojis?: ReactionNotificationEmoji[];
 	} | null;
 };
-
-/**
- * カスタム絵文字リアクションの URL を複数リストから解決する。
- *
- * @param reaction - リアクション文字列（`:name:` 形式）
- * @param emojiLists - 検索対象（`emojis` / `reactionEmojis` 等）
- * @returns 画像 URL（見つからないとき undefined）
- * @internal
- */
-function findCustomEmojiUrl(
-	reaction: string,
-	emojiLists: Array<ReactionNotificationEmoji[] | null | undefined>,
-): string | undefined {
-	if (!reaction.startsWith(":")) return undefined;
-
-	let name = reaction.slice(1);
-	if (name.endsWith(":")) name = name.slice(0, -1);
-	if (name.includes("@")) name = name.split("@")[0]!;
-
-	for (const emojis of emojiLists) {
-		if (emojis == null) continue;
-		const custom = emojis.find((x) => x.name === name);
-		if (custom?.url) return custom.url;
-	}
-
-	return undefined;
-}
 
 /**
  * プッシュ `icon` 用のリアクション画像 URL を解決する。

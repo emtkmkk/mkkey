@@ -289,6 +289,9 @@ import * as ep___mute_list from "./endpoints/mute/list.js";
 import * as ep___renote_mute_create from "./endpoints/renote-mute/create.js";
 import * as ep___renote_mute_delete from "./endpoints/renote-mute/delete.js";
 import * as ep___renote_mute_list from "./endpoints/renote-mute/list.js";
+import * as ep___push_mute_create from "./endpoints/push-mute/create.js";
+import * as ep___push_mute_delete from "./endpoints/push-mute/delete.js";
+import * as ep___push_mute_list from "./endpoints/push-mute/list.js";
 import * as ep___follow_blocking_create from "./endpoints/follow-blocking/create.js";
 import * as ep___follow_blocking_delete from "./endpoints/follow-blocking/delete.js";
 import * as ep___follow_blocking_list from "./endpoints/follow-blocking/list.js";
@@ -745,6 +748,9 @@ const eps = [
 	["renote-mute/create", ep___renote_mute_create],
 	["renote-mute/delete", ep___renote_mute_delete],
 	["renote-mute/list", ep___renote_mute_list],
+	["push-mute/create", ep___push_mute_create],
+	["push-mute/delete", ep___push_mute_delete],
+	["push-mute/list", ep___push_mute_list],
 	["custom-motd", ep___customMOTD],
 	["custom-splash-icons", ep___customSplashIcons],
 	["latest-version", ep___latestVersion],

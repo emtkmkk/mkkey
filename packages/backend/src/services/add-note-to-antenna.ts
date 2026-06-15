@@ -47,7 +47,9 @@ export async function addNoteToAntenna(
 	// 通知しない設定になっているか、自分自身の投稿なら既読にする
 	const read = !antenna.notify || antenna.userId === noteUser.id;
 
-	AntennaNotes.insert({
+	// NOTE: 3秒後の setTimeout 内で当該 noteId の read 状態を参照するため、
+	// 競合を避けるため必ず await して insert を確定させる。
+	await AntennaNotes.insert({
 		id: genId(),
 		antennaId: antenna.id,
 		noteId: note.id,
@@ -102,8 +104,13 @@ export async function addNoteToAntenna(
 		// 3秒経っても既読にならなかったら通知
 		setTimeout(async () => {
 			try {
+				// FIXED: 以前は同 antenna に未読が一件でもあれば通知発火していたが、
+				// それでは「今追加したノート」が既読化されていても他の未読があれば push されるし、
+				// 逆に過去未読がない状態だと「今追加したノート」の通知発火可否が他の状況に左右される。
+				// 今回追加した AntennaNote 自身の read 状態だけを確認する。
 				const unread = await AntennaNotes.findOneBy({
 					antennaId: antenna.id,
+					noteId: note.id,
 					read: false,
 				});
 				if (!unread) return;

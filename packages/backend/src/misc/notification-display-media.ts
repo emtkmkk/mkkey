@@ -241,6 +241,51 @@ export function resolveReactionNotificationBadgeUrl(
 }
 
 /**
+ * カスタム絵文字リアクション文字列から名前部分（`@host` 含む）を取り出す。
+ *
+ * @param reaction - `:name:` / `:name@host:` 形式
+ * @returns 正規化した名前（`:foo@.:` → `foo@.`、`:foo:` → `foo`）
+ * @internal
+ */
+export function normalizeReactionEmojiName(
+	reaction: string,
+): string | undefined {
+	if (!reaction.startsWith(":")) return undefined;
+
+	let name = reaction.slice(1);
+	if (name.endsWith(":")) {
+		name = name.slice(0, -1);
+	}
+	return name.length > 0 ? name : undefined;
+}
+
+/**
+ * リアクション名と pack 済み絵文字名が同一のカスタム絵文字を指すか判定する。
+ *
+ * @remarks
+ * `populateEmojis` はリアクション由来で `blobcat@.` / `blobcat@example.com` のように
+ * `@host` 付き name を返す。reaction 側だけ host を剥がすと不一致になるため両側を正規化する。
+ *
+ * @param reactionName - `normalizeReactionEmojiName` の結果
+ * @param entryName - `note.emojis` / `reactionEmojis` 要素の name
+ * @internal
+ */
+export function emojiNameMatches(
+	reactionName: string,
+	entryName: string,
+): boolean {
+	const stripHost = (s: string) => s.replace(/@.*$/, "");
+	const rBase = stripHost(reactionName);
+	const eBase = stripHost(entryName);
+
+	return (
+		entryName === reactionName ||
+		eBase === rBase ||
+		entryName === `${rBase}@.`
+	);
+}
+
+/**
  * カスタム絵文字リアクションの URL を絵文字一覧から解決する。
  *
  * @param reaction - リアクション文字列（`:name:` 形式）
@@ -255,14 +300,11 @@ export function resolveReactionEmojiImageUrl(
 	if (reaction == null || !reaction.startsWith(":") || emojis == null) {
 		return undefined;
 	}
-	let name = reaction.slice(1);
-	if (name.endsWith(":")) {
-		name = name.slice(0, -1);
-	}
-	if (name.includes("@")) {
-		name = name.split("@")[0]!;
-	}
-	const custom = emojis.find((x) => x.name === name);
+
+	const reactionName = normalizeReactionEmojiName(reaction);
+	if (reactionName == null) return undefined;
+
+	const custom = emojis.find((x) => emojiNameMatches(reactionName, x.name));
 	return custom?.url;
 }
 

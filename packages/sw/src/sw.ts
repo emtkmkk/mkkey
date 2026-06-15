@@ -416,6 +416,12 @@ self.addEventListener(
 						return;
 					}
 
+					// クライアントから SW ビルド版数を問い合わせる
+					if (ev.data.type === "get-version") {
+						ev.ports[0]?.postMessage({ version: _VERSION_ });
+						return;
+					}
+
 					const otype = Object.prototype.toString
 						.call(ev.data)
 						.slice(8, -1)

@@ -75,6 +75,47 @@
 			</div>
 		</FormSection>
 		<FormSection>
+			<template #label>{{ i18n.ts.serviceWorker }}</template>
+
+			<div class="_gaps_s">
+				<div class="_caption">
+					{{ i18n.ts.clientVersion }}: {{ clientVersion }}
+				</div>
+				<div class="_caption">
+					{{ i18n.ts.serviceWorkerVersion }}:
+					{{ swVersion ?? i18n.ts.serviceWorkerVersionUnknown }}
+					<span
+						v-if="swVersion != null && swVersion === clientVersion"
+						class="_color"
+						style="color: var(--success)"
+					>
+						({{ i18n.ts.serviceWorkerVersionMatched }})
+					</span>
+				</div>
+				<div
+					v-if="swVersion != null && swVersion !== clientVersion"
+					class="_caption"
+					style="color: var(--warn)"
+				>
+					{{ i18n.ts.serviceWorkerVersionOutOfDate }}
+				</div>
+				<FormButton
+					class="_formBlock"
+					:disabled="updatingSw"
+					@click="handleUpdateServiceWorker"
+				>
+					{{ i18n.ts.updateServiceWorker }}
+				</FormButton>
+				<FormButton
+					v-if="swVersion != null && swVersion !== clientVersion"
+					class="_formBlock"
+					@click="reloadPage"
+				>
+					{{ i18n.ts.reloadPage }}
+				</FormButton>
+			</div>
+		</FormSection>
+		<FormSection>
 			<FormLink to="/settings/webhook" class="_formBlock"
 				><template #icon
 					><i class="ph-lightning ph-bold ph-lg"></i></template
@@ -92,11 +133,11 @@
 /**
  * @packageDocumentation
  *
- * 通知設定ページ。
+ * 通知設定ページ。プッシュ通知・Service Worker 版数・既読操作を提供する。
  *
  * @public
  */
-import { defineAsyncComponent, watch } from "vue";
+import { defineAsyncComponent, onMounted, watch } from "vue";
 import { notificationTypes } from "calckey-js";
 import FormButton from "@/components/MkButton.vue";
 import FormLink from "@/components/form/link.vue";
@@ -105,6 +146,7 @@ import FormSwitch from "@/components/form/switch.vue";
 import * as os from "@/os";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
+import { version as clientVersion } from "@/config";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 import MkPushNotificationAllowButton from "@/components/MkPushNotificationAllowButton.vue";
@@ -112,6 +154,10 @@ import {
 	buildMutingNotificationTypes,
 	getConfigurableNotificationTypes,
 } from "@/scripts/experimental-notification-types";
+import {
+	fetchSwVersion,
+	updateServiceWorker,
+} from "@/scripts/sw-version";
 
 let allowButton =
 	$shallowRef<InstanceType<typeof MkPushNotificationAllowButton>>();
@@ -147,6 +193,40 @@ let pushLogs = $ref<
 	}>
 >([]);
 let loadingLog = $ref(false);
+let swVersion = $ref<string | null>(null);
+let updatingSw = $ref(false);
+
+async function refreshSwVersion() {
+	swVersion = await fetchSwVersion();
+}
+
+async function handleUpdateServiceWorker() {
+	updatingSw = true;
+	try {
+		const result = await updateServiceWorker();
+		await refreshSwVersion();
+
+		if (result === "no-sw") {
+			os.alert({
+				type: "warning",
+				text: i18n.ts.serviceWorkerNotRegistered,
+			});
+			return;
+		}
+
+		os.toast(
+			result === "updated"
+				? i18n.ts.serviceWorkerUpdated
+				: i18n.ts.serviceWorkerNoUpdate,
+		);
+	} finally {
+		updatingSw = false;
+	}
+}
+
+function reloadPage() {
+	location.reload();
+}
 
 async function readAllUnreadNotes() {
 	await os.api("i/read-all-unread-notes");
@@ -233,6 +313,10 @@ watch(
 	},
 	{ immediate: true },
 );
+
+onMounted(() => {
+	void refreshSwVersion();
+});
 
 definePageMetadata({
 	title: i18n.ts.notifications,

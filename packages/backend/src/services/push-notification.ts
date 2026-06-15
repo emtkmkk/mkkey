@@ -486,7 +486,6 @@ export function extractNotifierIdForPushMute(
 
 	if (type === "notification") {
 		if (typeof record.userId === "string") return record.userId;
-		if (typeof record.notifierId === "string") return record.notifierId;
 		return undefined;
 	}
 
@@ -516,12 +515,17 @@ export async function isNotifierPushMuted(
 ): Promise<boolean> {
 	if (notifieeId === notifierId) return false;
 
-	return PushMutings.exist({
-		where: {
-			muterId: notifieeId,
-			muteeId: notifierId,
-		},
-	});
+	try {
+		return await PushMutings.exist({
+			where: {
+				muterId: notifieeId,
+				muteeId: notifierId,
+			},
+		});
+	} catch {
+		// NOTE: テーブル未作成・DB 障害時はプッシュを止めない（フェイルセーフ）
+		return false;
+	}
 }
 
 async function buildPayload<T extends keyof pushNotificationsTypes>(

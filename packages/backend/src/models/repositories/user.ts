@@ -1338,7 +1338,9 @@ export const UserRepository = db.getRepository(User).extend({
 					muteeId: user.id,
 				},
 				take: 1,
-			}).then((n) => n > 0),
+			})
+				.then((n) => n > 0)
+				.catch(() => false),
 				} : {}
 			)
 		} as Promiseable<Packed<"User">> as Promiseable<

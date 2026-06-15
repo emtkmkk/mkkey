@@ -630,21 +630,31 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						},
 					);
 
-				case "app":
+				case "app": {
+					const isPushTest =
+						(data.body as { isPushTest?: boolean }).isPushTest === true;
+					let notificationBody: string | undefined =
+						data.body.header && data.body.body
+							? data.body.body
+							: undefined;
+					if (isPushTest) {
+						const swVersionLine = `SW: ${_VERSION_}`;
+						notificationBody = notificationBody
+							? `${notificationBody}\n${swVersionLine}`
+							: swVersionLine;
+					}
 					return composeWithDisplayText(
 						data,
 						data.body.header || data.body.body,
 						t,
 						{
-							body: data.body.header && data.body.body,
+							body: notificationBody,
 							icon: data.body.icon,
-							tag:
-								(data.body as { isPushTest?: boolean }).isPushTest === true
-									? "push-test"
-									: undefined,
+							tag: isPushTest ? "push-test" : undefined,
 							data,
 						},
 					);
+				}
 
 				default: {
 					// 未対応種別・古い SW でも汎用通知を出す（compose 失敗を防ぐ）

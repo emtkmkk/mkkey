@@ -11,7 +11,7 @@
 				>
 					<div v-if="post" class="rkxwuolj">
 						<div class="files">
-							<div :key="gallery" class="file" @click.stop>
+							<div :key="post.id" class="file" @click.stop>
 								<template
 									v-for="file in post.files?.filter((x) =>
 										previewable(x)
@@ -153,7 +153,7 @@
 							</MkPagination>
 						</MkContainer>
 					</div>
-					<MkError v-else-if="error" @retry="fetch()" />
+					<MkError v-else-if="error" @retry="fetchPost()" />
 					<MkLoading v-else />
 				</transition>
 			</div>
@@ -162,12 +162,22 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineComponent, inject, watch } from "vue";
+/**
+ * @packageDocumentation
+ *
+ * ギャラリー投稿の詳細表示ページ。
+ *
+ * @remarks
+ * - 投稿のメディア・説明・いいね・共有を表示する
+ * - 所有者のみ編集ボタンをヘッダーと本文に表示する
+ *
+ * @public
+ */
+import { computed, watch } from "vue";
 import * as misskey from "calckey-js";
 import MkButton from "@/components/MkButton.vue";
 import * as os from "@/os";
 import MkContainer from "@/components/MkContainer.vue";
-import ImgWithBlurhash from "@/components/MkImgWithBlurhash.vue";
 import MkPagination from "@/components/MkPagination.vue";
 import MkGalleryPostPreview from "@/components/MkGalleryPostPreview.vue";
 import MkFollowButton from "@/components/MkFollowButton.vue";
@@ -178,6 +188,8 @@ import { shareAvailable } from "@/scripts/share-available";
 import XImage from "@/components/MkMediaImage.vue";
 import XVideo from "@/components/MkMediaVideo.vue";
 import { FILE_TYPE_BROWSERSAFE } from "@/const";
+import { useRouter } from "@/router";
+import { $i } from "@/account";
 
 const router = useRouter();
 
@@ -255,13 +267,17 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 
 watch(() => props.postId, fetchPost, { immediate: true });
 
-const headerActions = $computed(() => [
-	{
-		icon: "ph-pencil ph-bold ph-lg",
-		text: i18n.ts.edit,
-		handler: edit,
-	},
-]);
+const headerActions = $computed(() =>
+	post && $i && $i.id === post.user.id
+		? [
+				{
+					icon: "ph-pencil ph-bold ph-lg",
+					text: i18n.ts.edit,
+					handler: edit,
+				},
+		  ]
+		: [],
+);
 
 const headerTabs = $computed(() => []);
 

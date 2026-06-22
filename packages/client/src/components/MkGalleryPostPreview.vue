@@ -2,10 +2,14 @@
 	<MkA :to="`/gallery/${post.id}`" class="ttasepnz _panel" tabindex="-1">
 		<div class="thumbnail">
 			<ImgWithBlurhash
+				v-if="thumbnailFile"
 				class="img"
-				:src="post.files[0].thumbnailUrl"
-				:hash="post.files[0].blurhash"
+				:src="thumbnailFile.thumbnailUrl"
+				:hash="thumbnailFile.blurhash"
 			/>
+			<div v-else class="img no-image">
+				<i class="ph-image-square ph-bold ph-lg"></i>
+			</div>
 		</div>
 		<article>
 			<header>
@@ -19,13 +23,27 @@
 </template>
 
 <script lang="ts" setup>
-import {} from "vue";
-import { userName } from "@/filters/user";
+/**
+ * @packageDocumentation
+ *
+ * ギャラリー投稿のプレビューカード。
+ *
+ * @remarks
+ * - 一覧表示用のサムネイルとタイトルを表示する
+ * - 添付ファイルがない場合はプレースホルダーを表示する
+ *
+ * @public
+ */
+import { computed } from "vue";
+import * as misskey from "calckey-js";
 import ImgWithBlurhash from "@/components/MkImgWithBlurhash.vue";
 
 const props = defineProps<{
-	post: any;
+	post: misskey.entities.GalleryPost;
 }>();
+
+// サムネイル表示に使う先頭ファイル（存在しない場合は null）
+const thumbnailFile = computed(() => props.post.files?.[0] ?? null);
 </script>
 
 <style lang="scss" scoped>
@@ -61,6 +79,15 @@ const props = defineProps<{
 			width: 100%;
 			height: 100%;
 			object-fit: cover;
+
+			&.no-image {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background: var(--panel);
+				color: var(--fgTransparentWeak);
+				font-size: 2rem;
+			}
 		}
 	}
 

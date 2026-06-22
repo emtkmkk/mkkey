@@ -802,6 +802,12 @@ router.get("/@:user/pages/:page", async (ctx, next) => {
 	});
 
 	if (page) {
+		// 非公開ページは OGP 用の詳細レンダリングを行わない
+		if (!page.isPublic) {
+			await next();
+			return;
+		}
+
 		const _page = await Pages.pack(page);
 		const profile = await UserProfiles.findOneByOrFail({ userId: page.userId });
 		const meta = await fetchMeta();

@@ -32,7 +32,7 @@ export const meta = {
 		alreadyLiked: {
 			message: "The page has already been liked.",
 			code: "ALREADY_LIKED",
-			id: "cc98a8a2-0dc3-4123-b198-62c71df18ed3",
+			id: "f5e586b0-ce93-4050-b0e3-7f31af5259ee",
 		},
 	},
 } as const;
@@ -69,5 +69,5 @@ export default define(meta, paramDef, async (ps, user) => {
 		userId: user.id,
 	});
 
-	Pages.increment({ id: page.id }, "likedCount", 1);
+	await Pages.increment({ id: page.id }, "likedCount", 1);
 });

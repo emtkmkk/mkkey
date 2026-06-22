@@ -43,6 +43,26 @@
 					<MkFolder class="_gap">
 						<template #header
 							><i class="ph-fire-simple ph-bold ph-lg"></i>
+							{{ i18n.ts._pages.featured }}</template
+						>
+						<MkPagination
+							v-slot="{ items }"
+							:pagination="featuredPostsPagination"
+							:disable-auto-load="true"
+						>
+							<div class="vfpdbgtk">
+								<MkGalleryPostPreview
+									v-for="post in items"
+									:key="post.id"
+									:post="post"
+									class="post"
+								/>
+							</div>
+						</MkPagination>
+					</MkFolder>
+					<MkFolder class="_gap">
+						<template #header
+							><i class="ph-trend-up ph-bold ph-lg"></i>
 							{{ i18n.ts.popularPosts }}</template
 						>
 						<MkPagination
@@ -61,7 +81,7 @@
 						</MkPagination>
 					</MkFolder>
 				</swiper-slide>
-				<swiper-slide>
+				<swiper-slide v-if="$i">
 					<MkPagination
 						v-slot="{ items }"
 						:pagination="likedPostsPagination"
@@ -76,7 +96,7 @@
 						</div>
 					</MkPagination>
 				</swiper-slide>
-				<swiper-slide>
+				<swiper-slide v-if="$i">
 					<MkA to="/gallery/new" class="_link" style="margin: 1rem"
 						><i class="ph-plus ph-bold ph-lg"></i>
 						{{ i18n.ts.postToGallery }}</MkA
@@ -101,38 +121,54 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineComponent, watch, onMounted } from "vue";
+/**
+ * @packageDocumentation
+ *
+ * ギャラリー一覧（探索・いいね・自分の投稿）を表示するページ。
+ *
+ * @public
+ */
+import { computed, watch } from "vue";
 import { Virtual } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import MkFolder from "@/components/MkFolder.vue";
 import MkPagination from "@/components/MkPagination.vue";
 import MkGalleryPostPreview from "@/components/MkGalleryPostPreview.vue";
 import { definePageMetadata } from "@/scripts/page-metadata";
-import { deviceKind } from "@/scripts/device-kind";
 import { i18n } from "@/i18n";
 import { useRouter } from "@/router";
 import { defaultStore } from "@/store";
+import { $i } from "@/account";
 import "swiper/scss";
 import "swiper/scss/virtual";
 
 const router = useRouter();
 
-const props = defineProps<{
-	tag?: string;
-}>();
-
-const tabs = ["explore", "liked", "my"];
-let tab = $ref(tabs[0]);
+const tabs = $computed(() =>
+	$i ? ["explore", "liked", "my"] : ["explore"],
+);
+let tab = $ref("explore");
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
-
-let tagsRef = $ref();
+watch(
+	$$(tabs),
+	(newTabs) => {
+		if (!newTabs.includes(tab)) {
+			tab = newTabs[0];
+		}
+	},
+	{ immediate: true },
+);
 
 const recentPostsPagination = {
 	endpoint: "gallery/posts" as const,
 	limit: 6,
 };
-const popularPostsPagination = {
+const featuredPostsPagination = {
 	endpoint: "gallery/featured" as const,
+	limit: 5,
+};
+const popularPostsPagination = {
+	endpoint: "gallery/popular" as const,
 	limit: 5,
 };
 const myPostsPagination = {
@@ -144,13 +180,6 @@ const likedPostsPagination = {
 	limit: 5,
 };
 
-watch(
-	() => props.tag,
-	() => {
-		if (tagsRef) tagsRef.tags.toggleContent(props.tag == null);
-	}
-);
-
 const headerActions = $computed(() => [
 	{
 		icon: "ph-plus ph-bold ph-lg",
@@ -161,23 +190,30 @@ const headerActions = $computed(() => [
 	},
 ]);
 
-const headerTabs = $computed(() => [
-	{
-		key: "explore",
-		title: i18n.ts.gallery,
-		icon: "ph-image-square ph-bold ph-lg",
-	},
-	{
-		key: "liked",
-		title: i18n.ts._gallery.liked,
-		icon: "ph-heart ph-bold ph-lg",
-	},
-	{
-		key: "my",
-		title: i18n.ts._gallery.my,
-		icon: "ph-crown-simple ph-bold ph-lg",
-	},
-]);
+const headerTabs = $computed(() => {
+	const result = [
+		{
+			key: "explore",
+			title: i18n.ts.gallery,
+			icon: "ph-image-square ph-bold ph-lg",
+		},
+	];
+	if ($i) {
+		result.push(
+			{
+				key: "liked",
+				title: i18n.ts._gallery.liked,
+				icon: "ph-heart ph-bold ph-lg",
+			},
+			{
+				key: "my",
+				title: i18n.ts._gallery.my,
+				icon: "ph-crown-simple ph-bold ph-lg",
+			},
+		);
+	}
+	return result;
+});
 
 definePageMetadata({
 	title: i18n.ts.gallery,
@@ -196,12 +232,9 @@ function onSlideChange() {
 }
 
 function syncSlide(index) {
+	if (swiperRef == null) return;
 	swiperRef.slideTo(index);
 }
-
-onMounted(() => {
-	syncSlide(tabs.indexOf(swiperRef.activeIndex));
-});
 </script>
 
 <style lang="scss" scoped>

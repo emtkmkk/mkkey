@@ -35,7 +35,7 @@
 						</MkPagination>
 					</div>
 				</swiper-slide>
-				<swiper-slide>
+				<swiper-slide v-if="$i">
 					<div class="rknalgpo liked">
 						<MkPagination
 							key="liked"
@@ -52,7 +52,7 @@
 						</MkPagination>
 					</div>
 				</swiper-slide>
-				<swiper-slide>
+				<swiper-slide v-if="$i">
 					<div class="rknalgpo my">
 						<div class="buttoncontainer">
 							<MkButton class="new primary" @click="create()"
@@ -81,7 +81,14 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, onMounted } from "vue";
+/**
+ * @packageDocumentation
+ *
+ * ページ一覧（注目・いいね・自分のページ）を表示するページ。
+ *
+ * @public
+ */
+import { computed, watch } from "vue";
 import { Virtual } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import MkPagePreview from "@/components/MkPagePreview.vue";
@@ -90,16 +97,27 @@ import MkButton from "@/components/MkButton.vue";
 import { useRouter } from "@/router";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
-import { deviceKind } from "@/scripts/device-kind";
 import { defaultStore } from "@/store";
+import { $i } from "@/account";
 import "swiper/scss";
 import "swiper/scss/virtual";
 
 const router = useRouter();
 
 let tab = $ref("featured");
-const tabs = ["featured", "liked", "my"];
+const tabs = $computed(() =>
+	$i ? ["featured", "liked", "my"] : ["featured"],
+);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
+watch(
+	$$(tabs),
+	(newTabs) => {
+		if (!newTabs.includes(tab)) {
+			tab = newTabs[0];
+		}
+	},
+	{ immediate: true },
+);
 
 const featuredPagesPagination = {
 	endpoint: "pages/featured" as const,
@@ -126,23 +144,30 @@ const headerActions = $computed(() => [
 	},
 ]);
 
-const headerTabs = $computed(() => [
-	{
-		key: "featured",
-		title: i18n.ts._pages.featured,
-		icon: "ph-fire-simple ph-bold ph-lg",
-	},
-	{
-		key: "liked",
-		title: i18n.ts._pages.liked,
-		icon: "ph-heart ph-bold ph-lg",
-	},
-	{
-		key: "my",
-		title: i18n.ts._pages.my,
-		icon: "ph-crown-simple ph-bold ph-lg",
-	},
-]);
+const headerTabs = $computed(() => {
+	const result = [
+		{
+			key: "featured",
+			title: i18n.ts._pages.featured,
+			icon: "ph-fire-simple ph-bold ph-lg",
+		},
+	];
+	if ($i) {
+		result.push(
+			{
+				key: "liked",
+				title: i18n.ts._pages.liked,
+				icon: "ph-heart ph-bold ph-lg",
+			},
+			{
+				key: "my",
+				title: i18n.ts._pages.my,
+				icon: "ph-crown-simple ph-bold ph-lg",
+			},
+		);
+	}
+	return result;
+});
 
 definePageMetadata(
 	computed(() => ({
@@ -163,12 +188,9 @@ function onSlideChange() {
 }
 
 function syncSlide(index) {
+	if (swiperRef == null) return;
 	swiperRef.slideTo(index);
 }
-
-onMounted(() => {
-	syncSlide(tabs.indexOf(swiperRef.activeIndex));
-});
 </script>
 
 <style lang="scss" scoped>

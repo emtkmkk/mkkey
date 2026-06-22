@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * ギャラリー投稿の API 用パック済みスキーマ定義。
+ *
+ * @internal
+ */
 export const packedGalleryPostSchema = {
 	type: "object",
 	properties: {
@@ -89,6 +96,18 @@ export const packedGalleryPostSchema = {
 			optional: false,
 			nullable: false,
 			description: "センシティブ指定されているか。",
+		},
+		likedCount: {
+			type: "integer",
+			optional: false,
+			nullable: false,
+			description: "いいね数。",
+		},
+		isLiked: {
+			type: "boolean",
+			optional: true,
+			nullable: false,
+			description: "ログインユーザーがいいね済みか。",
 		},
 	},
 } as const;

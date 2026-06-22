@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * ページを更新する API エンドポイント。
+ *
+ * @remarks
+ * - 認証必須。所有者のみ更新可能
+ * - 更新後のページを pack して返す
+ *
+ * @internal
+ */
 import { Not } from "typeorm";
 import { Pages, DriveFiles } from "@/models/index.js";
 import define from "../../define.js";
@@ -14,6 +25,13 @@ export const meta = {
 	limit: {
 		duration: HOUR,
 		max: 300,
+	},
+
+	res: {
+		type: "object",
+		optional: false,
+		nullable: false,
+		ref: "Page",
 	},
 
 	errors: {
@@ -35,7 +53,7 @@ export const meta = {
 			id: "cfc23c7c-3887-490e-af30-0ed576703c82",
 		},
 		nameAlreadyExists: {
-			message: "Specified name already exists.",
+			message: "ページ名が重複しています。",
 			code: "NAME_ALREADY_EXISTS",
 			id: "2298a392-d4a1-44c5-9ebb-ac1aeaa5a9ab",
 		},
@@ -112,11 +130,11 @@ export default define(meta, paramDef, async (ps, user) => {
 		updatedAt: new Date(),
 		title: ps.title,
 		name: ps.name === undefined ? page.name : ps.name,
-		summary: ps.name === undefined ? page.summary : ps.summary,
+		summary: ps.summary === undefined ? page.summary : ps.summary,
 		content: ps.content,
 		variables: ps.variables,
 		script: ps.script,
-		isPublic: ps.isPublic,
+		isPublic: ps.isPublic === undefined ? page.isPublic : ps.isPublic,
 		alignCenter:
 			ps.alignCenter === undefined ? page.alignCenter : ps.alignCenter,
 		hideTitleWhenPinned:
@@ -131,4 +149,7 @@ export default define(meta, paramDef, async (ps, user) => {
 				? page.eyeCatchingImageId
 				: eyeCatchingImage!.id,
 	});
+
+	const updated = await Pages.findOneByOrFail({ id: page.id });
+	return await Pages.pack(updated, user);
 });

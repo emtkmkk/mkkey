@@ -69,5 +69,5 @@ export default define(meta, paramDef, async (ps, user) => {
 		userId: user.id,
 	});
 
-	GalleryPosts.increment({ id: post.id }, "likedCount", 1);
+	await GalleryPosts.increment({ id: post.id }, "likedCount", 1);
 });

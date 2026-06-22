@@ -199,6 +199,16 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ユーザーが作成したページの詳細表示。
+ *
+ * @remarks
+ * - いいね・共有・ピン留めなどの操作を提供する
+ *
+ * @public
+ */
 import { computed, watch } from "vue";
 import XPage from "@/components/page/page.vue";
 import MkButton from "@/components/MkButton.vue";

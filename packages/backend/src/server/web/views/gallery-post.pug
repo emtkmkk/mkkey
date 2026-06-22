@@ -18,7 +18,8 @@ block og
 		meta(property='og:title'       content= title)
 		meta(property='og:description' content= post.description)
 		meta(property='og:url'         content= url)
-		meta(property='og:image'       content= post.files[0].thumbnailUrl)
+		if post.files && post.files.length > 0
+			meta(property='og:image'       content= post.files[0].thumbnailUrl)
 		meta(property='twitter:card'  content='summary_large_image')
 		meta(property='note:card'      content='summary_large_image')
 

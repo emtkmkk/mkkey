@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * ギャラリー投稿を作成する API エンドポイント。
+ *
+ * @internal
+ */
 import define from "../../../define.js";
 import { DriveFiles, GalleryPosts } from "@/models/index.js";
 import { genId } from "../../../../../misc/gen-id.js";
@@ -25,7 +32,13 @@ export const meta = {
 		ref: "GalleryPost",
 	},
 
-	errors: {},
+	errors: {
+		noSuchFile: {
+			message: "そのファイルは存在しません。",
+			code: "NO_SUCH_FILE",
+			id: "a8f3c2e1-4b5d-6e7f-8a9b-0c1d2e3f4a5b",
+		},
+	},
 } as const;
 
 export const paramDef = {
@@ -61,7 +74,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	).filter((file): file is DriveFile => file != null);
 
 	if (files.length === 0) {
-		throw new Error();
+		throw new ApiError(meta.errors.noSuchFile);
 	}
 
 	const post = await GalleryPosts.insert(

@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * スコア順のおすすめページ一覧 API。
+ *
+ * @internal
+ */
 import { DAY } from "@/const.js";
 import { Pages } from "@/models/index.js";
 import define from "../../define.js";
@@ -34,7 +41,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
         const query = Pages.createQueryBuilder("page")
                 .innerJoinAndSelect("page.user", "user")
-				.addSelect("COALESCE(page.likedCount, 0) * 10 + COALESCE(page.userPv, 0)", "score")
+				.addSelect("COALESCE(page.likedCount, 0) * 10 + COALESCE(page.userpv, 0)", "score")
                 .where("page.visibility = 'public'")
                 .andWhere("page.isPublic = true")
                 .andWhere("user.isDeleted = false")
@@ -42,7 +49,7 @@ export default define(meta, paramDef, async (ps, me) => {
                         "(user.updatedAt IS NULL OR user.updatedAt >= :activeThreshold)",
                         { activeThreshold },
                 )
-				.andWhere("(COALESCE(page.likedCount, 0) * 10 + COALESCE(page.userPv, 0)) > 0")
+				.andWhere("(COALESCE(page.likedCount, 0) * 10 + COALESCE(page.userpv, 0)) > 0")
 				.orderBy("score", "DESC");
 
         const pages = await query.take(ps.limit || 10).getMany();

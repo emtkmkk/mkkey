@@ -62,5 +62,5 @@ export default define(meta, paramDef, async (ps, user) => {
 	// いいねを削除する
 	await GalleryLikes.delete(exist.id);
 
-	GalleryPosts.decrement({ id: post.id }, "likedCount", 1);
+	await GalleryPosts.decrement({ id: post.id }, "likedCount", 1);
 });

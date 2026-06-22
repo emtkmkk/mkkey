@@ -62,5 +62,5 @@ export default define(meta, paramDef, async (ps, user) => {
 	// いいねを削除する
 	await PageLikes.delete(exist.id);
 
-	Pages.decrement({ id: page.id }, "likedCount", 1);
+	await Pages.decrement({ id: page.id }, "likedCount", 1);
 });

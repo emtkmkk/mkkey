@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * 直近の注目ギャラリー投稿一覧 API。
+ *
+ * @internal
+ */
 import { DAY } from "@/const.js";
 import { GalleryPosts } from "@/models/index.js";
 import define from "../../define.js";
@@ -32,7 +39,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
         const query = GalleryPosts.createQueryBuilder("post")
                 .innerJoinAndSelect("post.user", "user")
-                .andWhere("post.createdAt > :date", {
+                .where("post.createdAt > :date", {
                         date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
                 })
                 .andWhere("post.likedCount > 0")

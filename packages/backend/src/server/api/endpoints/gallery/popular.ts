@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * 人気ギャラリー投稿一覧 API。
+ *
+ * @internal
+ */
 import { DAY } from "@/const.js";
 import { GalleryPosts } from "@/models/index.js";
 import define from "../../define.js";
@@ -32,7 +39,7 @@ export default define(meta, paramDef, async (ps, me) => {
 
         const query = GalleryPosts.createQueryBuilder("post")
                 .innerJoinAndSelect("post.user", "user")
-                .andWhere("post.likedCount > 0")
+                .where("post.likedCount > 0")
                 .andWhere("user.isDeleted = false")
                 .andWhere(
                         "(user.updatedAt IS NULL OR user.updatedAt >= :activeThreshold)",

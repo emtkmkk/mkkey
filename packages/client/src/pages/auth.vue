@@ -112,6 +112,19 @@ export default defineComponent({
 			const isMastodon = !!getUrlParams().mastodon;
 			if (this.session.app.callbackUrl && isMastodon) {
 				const callbackUrl = new URL(this.session.app.callbackUrl);
+				// GHSA-cc6r-chgr-8r5m 対策: 非 Mastodon 分岐と同様に、
+				// javascript: 等の危険なスキームのコールバック URL を拒否する
+				// （location.href への代入で XSS に繋がるため）。
+				if (
+					[
+						"javascript:",
+						"file:",
+						"data:",
+						"mailto:",
+						"tel:",
+					].includes(callbackUrl.protocol)
+				)
+					throw new Error("invalid url");
 				callbackUrl.searchParams.append("code", this.session.token);
 				if (!!getUrlParams().state)
 					callbackUrl.searchParams.append(

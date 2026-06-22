@@ -79,8 +79,11 @@ export async function updateQuestion(
 	//#endregion
 
 	// 新しい Question オブジェクトを解決
+	// GHSA-5h8r-gq97-xv69 対策: 埋め込みオブジェクト（value）をそのまま信頼すると、
+	// 攻撃者が対象ノートの uri を名乗りつつ任意の投票数を持つ Question を埋め込み、
+	// 票数を改ざんできる。必ず権威あるホスト（uri）から再取得した内容で更新する。
 	const _resolver = resolver ?? new Resolver();
-	const question = (await _resolver.resolve(value)) as IQuestion;
+	const question = (await _resolver.resolve(uri)) as IQuestion;
 	apLogger.debug(`fetched question: ${JSON.stringify(question, null, 2)}`);
 
 	if (question.type !== "Question") throw new Error("object is not a Question");

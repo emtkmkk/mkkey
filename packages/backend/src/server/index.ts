@@ -48,7 +48,11 @@ export const serverLogger = new Logger("server", "gray", false);
 
 // アプリ初期化
 const app = new Koa();
-app.proxy = true;
+// GHSA-wwrj-3hvj-prpm 対策: X-Forwarded-For を信頼するかを設定で切り替えられるようにする。
+// （信頼できないネットワークに直接公開する場合は config の trustProxy を false にすることで、
+//   X-Forwarded-For 偽装によるレートリミット回避を防げる）
+// 既定は後方互換のため true（リバースプロキシ配下運用を想定）。
+app.proxy = config.trustProxy ?? true;
 
 app.use(removeTrailingSlash());
 

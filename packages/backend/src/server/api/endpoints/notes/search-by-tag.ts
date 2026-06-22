@@ -116,7 +116,10 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	try {
 		if (ps.tag && !Array.isArray(ps.tag)) {
-			if (!safeForSql(normalizeForSearch(ps.tag))) throw "Injection";
+			// GHSA-cgwp-vmr4-wx4q 対策: タグ名は生 SQL に文字列連結されるため、
+			// 正規化後に危険文字が無いことを検証してから埋め込む。
+			if (!safeForSql(normalizeForSearch(ps.tag)))
+				throw new Error("Injection");
 			if (ps.userId) query.andWhere("note.userId = :id", { id: ps.userId });
 			query.andWhere(`'{"${normalizeForSearch(ps.tag)}"}' <@ note.tags`);
 		} else {
@@ -126,8 +129,11 @@ export default define(meta, paramDef, async (ps, me) => {
 						qb.orWhere(
 							new Brackets((qb) => {
 								for (const tag of tags) {
-									if (!safeForSql(normalizeForSearch(ps.tag)))
-										throw "Injection";
+									// NB: 検証対象はループ変数 `tag`。以前は `ps.tag` を
+									// 検証しており（この分岐では undefined）、検証が実質
+									// 機能していなかった（本家修正の写し漏れ）。
+									if (!safeForSql(normalizeForSearch(tag)))
+										throw new Error("Injection");
 									if (ps.userId) qb.andWhere("note.userId = :id", { id: ps.userId });
 									qb.andWhere(`'{"${normalizeForSearch(tag)}"}' <@ note.tags`);
 								}
@@ -138,7 +144,10 @@ export default define(meta, paramDef, async (ps, me) => {
 			);
 		}
 	} catch (e) {
-		if (e.message === "Injection") return [];
+		// Injection 検出時は安全側に倒して空配列を返す。
+		// NB: 以前は `throw "Injection"`（文字列）だったため e.message が undefined となり、
+		//     この判定が機能せず再 throw されていた。Error 化して正しく握れるようにした。
+		if (e instanceof Error && e.message === "Injection") return [];
 		throw e;
 	}
 

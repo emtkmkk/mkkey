@@ -156,6 +156,19 @@ export async function createNote(
 		throw new Error(`unexpected schema of note url: ${url}`);
 	}
 
+	// GHSA-6w2c-vf6f-xf26 (CVE-2024-52591 の不完全修正) 対策:
+	// note.url は表示用リンクとしてそのままクライアントへ渡るため、
+	// note.id（= 正規の AP オブジェクト URI）と異なるホストの url を許すと、
+	// 攻撃者が任意ホストへのリンクを持つ偽造ノートを連合させられる。
+	// url と id のホストが一致することを検証する。
+	if (url && note.id && extractDbHost(url) !== extractDbHost(note.id)) {
+		throw new Error(
+			`note url has different host. id host: ${extractDbHost(
+				note.id,
+			)}, url host: ${extractDbHost(url)}`,
+		);
+	}
+
 	logger.debug(`Note fetched: ${JSON.stringify(note, null, 2)}`);
 	logger.info(`Creating the Note: ${note.id}`);
 

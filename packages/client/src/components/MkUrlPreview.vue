@@ -1,6 +1,6 @@
 <template>
 	<div
-	  v-if="playerEnabled"
+	  v-if="playerEnabled && isPlayerUrlSafe"
 	  class="player"
 	  :style="`padding: ${
 		((player.height || 0) / (player.width || 1)) * 100
@@ -57,10 +57,10 @@
 		  <div
 			v-if="showThumbnailArea && thumbnailImageVisible"
 			class="thumbnail"
-			:style="`background-image: url('${thumbnail}')`"
+			:style="{ backgroundImage: `url('${thumbnail}')` }"
 		  >
 			<button
-			  v-if="!playerEnabled && player.url"
+			  v-if="!playerEnabled && player.url && isPlayerUrlSafe"
 			  class="_button"
 			  :title="i18n.ts.enablePlayer"
 			  @click.prevent="playerEnabled = true"
@@ -138,10 +138,10 @@
                   <div
                         v-if="showThumbnailArea && thumbnailImageVisible"
                         class="thumbnail"
-                        :style="`background-image: url('${thumbnail}')`"
+                        :style="{ backgroundImage: `url('${thumbnail}')` }"
                   >
                         <button
-                          v-if="!playerEnabled && player.url"
+                          v-if="!playerEnabled && player.url && isPlayerUrlSafe"
                           class="_button"
                           :title="i18n.ts.enablePlayer"
                           @click.prevent="playerEnabled = true"
@@ -266,10 +266,10 @@
 		  <div
 			v-if="showThumbnailArea && thumbnailImageVisible"
 			class="thumbnail"
-			:style="`background-image: url('${thumbnail}')`"
+			:style="{ backgroundImage: `url('${thumbnail}')` }"
 		  >
 			<button
-			  v-if="!playerEnabled && player.url"
+			  v-if="!playerEnabled && player.url && isPlayerUrlSafe"
 			  class="_button"
 			  :title="i18n.ts.enablePlayer"
 			  @click.prevent="playerEnabled = true"
@@ -524,6 +524,19 @@ function truncateByGrapheme(
       showThumbnailArea.value &&
       (!isSensitive || defaultStore.state.showSensitiveLinkPreviewThumbnail),
   );
+  /**
+   * 埋め込みプレイヤーの URL が http(s) かどうか。
+   *
+   * @remarks
+   * GHSA-vc39-c453-67g3 対策（多層防御）:
+   * サーバ側でもスキーマ検証しているが、クライアント側でも iframe の src が
+   * http(s) の場合のみプレイヤーを描画し、`javascript:` 等の危険なスキームを
+   * 埋め込まないようにする。
+   */
+  const isPlayerUrlSafe = computed(() => {
+    const u = player.url ?? "";
+    return u.startsWith("http://") || u.startsWith("https://");
+  });
   const amazonDisplayTitle = computed(() => {
     if (!title) return "";
     return truncateByGrapheme(title, 60).text;

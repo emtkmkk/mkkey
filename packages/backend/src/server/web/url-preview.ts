@@ -2575,13 +2575,26 @@ function isVRCUrl(url: string): string | null {
   }
 }
 
+/**
+ * サムネイル等の外部 URL をプロキシ URL へ変換する。
+ *
+ * @remarks
+ * GHSA-3p2w-xmv5-jm95 対策:
+ * 以前は http(s) 以外の URL（例: `javascript:` や CSS を破壊する文字列を含む URL）を
+ * そのままクライアントへ渡しており、`background-image: url('...')` への
+ * スタイルインジェクションに繋がっていた。
+ * サムネイルとして妥当なのは http(s) のみなので、それ以外は `null` を返して
+ * クライアントへ渡さないようにする。
+ *
+ * @param url - 変換対象 URL
+ * @returns http(s) の場合はプロキシ URL、それ以外は `null`
+ */
 function wrap(url?: string): string | null {
-  return url != null
-    ? url.match(/^https?:\/\//)
-      ? `${config.url}/proxy/preview.webp?${query({
-          url,
-          preview: "1",
-        })}`
-      : url
-    : null;
+  if (url == null) return null;
+  // http(s) 以外はサムネイルとして扱わない（スタイルインジェクション対策）
+  if (!url.match(/^https?:\/\//)) return null;
+  return `${config.url}/proxy/preview.webp?${query({
+    url,
+    preview: "1",
+  })}`;
 }

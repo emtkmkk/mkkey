@@ -6,8 +6,10 @@ import { httpAgent, httpsAgent, StatusError } from "./fetch.js";
 import config from "@/config/index.js";
 import chalk from "chalk";
 import Logger from "@/services/logger.js";
-import IPCIDR from "ip-cidr";
-import PrivateIp from "private-ip";
+import { isPrivateIp } from "./is-private-ip.js";
+
+// 後方互換のため re-export（既存の `download-url` 経由 import を維持する）
+export { isPrivateIp };
 
 const pipeline = util.promisify(stream.pipeline);
 
@@ -90,15 +92,4 @@ export async function downloadUrl(url: string, path: string): Promise<void> {
 	}
 
 	logger.succ(`Download finished: ${chalk.cyan(url)}`);
-}
-
-export function isPrivateIp(ip: string): boolean {
-	for (const net of config.allowedPrivateNetworks || []) {
-		const cidr = new IPCIDR(net);
-		if (cidr.contains(ip)) {
-			return false;
-		}
-	}
-
-	return PrivateIp(ip);
 }

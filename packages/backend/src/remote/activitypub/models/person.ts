@@ -32,7 +32,7 @@ import { genId } from "@/misc/gen-id.js";
 import { instanceChart, usersChart } from "@/services/chart/index.js";
 import { UserPublickey } from "@/models/entities/user-publickey.js";
 import { isDuplicateKeyValueError } from "@/misc/is-duplicate-key-value-error.js";
-import { toPuny } from "@/misc/convert-host.js";
+import { toPuny, extractDbHost } from "@/misc/convert-host.js";
 import { UserProfile } from "@/models/entities/user-profile.js";
 import { toArray } from "@/prelude/array.js";
 import { fetchInstanceMetadata } from "@/services/fetch-instance-metadata.js";
@@ -129,6 +129,32 @@ function validateActor(x: IObject, uri: string): IActor {
 			throw new Error("invalid Actor: publicKey.id has different host");
 		}
 	}
+
+	// GHSA-m2gq-69fp-6hv4 / GHSA-7vgr-p3vc-p4h2 対策:
+	// inbox/outbox/followers/following 等のエンドポイント URL は、AP の仕様上
+	// Actor 本体（id）と同一ホストに存在するはず。別ホストの URL を許すと、
+	// 配送先の乗っ取りやリモートアカウントのなりすましに繋がるため、
+	// 文字列で指定されている場合はホスト一致を検証する。
+	// （movedTo / alsoKnownAs はアカウント移行で別ホストを指すため対象外）
+	const validateActorUrlHost = (value: unknown, fieldName: string): void => {
+		if (typeof value !== "string" || value.length === 0) return;
+		let fieldHost: string;
+		try {
+			fieldHost = toPuny(new URL(value).hostname);
+		} catch {
+			throw new Error(`invalid Actor: ${fieldName} is not a valid URL`);
+		}
+		if (fieldHost !== expectHost) {
+			throw new Error(`invalid Actor: ${fieldName} has different host`);
+		}
+	};
+
+	validateActorUrlHost(x.inbox, "inbox");
+	validateActorUrlHost((x as any).sharedInbox, "sharedInbox");
+	validateActorUrlHost((x as any).endpoints?.sharedInbox, "endpoints.sharedInbox");
+	validateActorUrlHost((x as any).outbox, "outbox");
+	validateActorUrlHost((x as any).followers, "followers");
+	validateActorUrlHost((x as any).following, "following");
 
 	return x;
 }
@@ -332,6 +358,17 @@ export async function createPerson(
 
 	if (url && !url.startsWith("https://")) {
 		throw new Error(`unexpected schema of person url: ${url}`);
+	}
+
+	// GHSA-m2gq-69fp-6hv4 対策: person.url はプロフィールリンクとしてそのまま
+	// クライアントへ渡るため、id（正規の Actor URI）と異なるホストの url を
+	// 許すと、なりすましプロフィールから任意ホストへ誘導できてしまう。
+	if (url && person.id && extractDbHost(url) !== extractDbHost(person.id)) {
+		throw new Error(
+			`person url has different host. id host: ${extractDbHost(
+				person.id,
+			)}, url host: ${extractDbHost(url)}`,
+		);
 	}
 
 	let followersCount: number | undefined;
@@ -736,6 +773,17 @@ export async function updatePerson(
 
 	if (url && !url.startsWith("https://")) {
 		throw new Error(`unexpected schema of person url: ${url}`);
+	}
+
+	// GHSA-m2gq-69fp-6hv4 対策: person.url はプロフィールリンクとしてそのまま
+	// クライアントへ渡るため、id（正規の Actor URI）と異なるホストの url を
+	// 許すと、なりすましプロフィールから任意ホストへ誘導できてしまう。
+	if (url && person.id && extractDbHost(url) !== extractDbHost(person.id)) {
+		throw new Error(
+			`person url has different host. id host: ${extractDbHost(
+				person.id,
+			)}, url host: ${extractDbHost(url)}`,
+		);
 	}
 
 	let followersCount: number | undefined;

@@ -59,6 +59,23 @@ export type Source = {
 	proxySmtp?: string;
 	proxyBypassHosts?: string[];
 
+	/**
+	 * リバースプロキシが付与する `X-Forwarded-For` / `X-Forwarded-Proto` 等を信頼するか。
+	 *
+	 * @remarks
+	 * GHSA-wwrj-3hvj-prpm 関連:
+	 * `true` のとき Koa は `X-Forwarded-For` の値を信頼してクライアント IP を決定する。
+	 * 信頼できないリバースプロキシ配下、またはプロキシを介さず直接公開している場合に
+	 * `true` のままだと、攻撃者が `X-Forwarded-For` を偽装してログイン等のレート制限を
+	 * 回避できる（毎回別 IP に見せかけられる）。
+	 * - リバースプロキシ（nginx 等）配下で、プロキシ側が `X-Forwarded-For` を
+	 *   上書き設定している場合は `true`（既定）のままで問題ない。
+	 * - プロキシを介さず直接インターネットに公開する場合は `false` を推奨。
+	 *
+	 * 未指定時は後方互換のため `true`。
+	 */
+	trustProxy?: boolean;
+
 	allowedPrivateNetworks?: string[];
 
 	maxFileSize?: number;

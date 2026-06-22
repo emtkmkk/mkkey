@@ -115,16 +115,42 @@ export function applyTheme(theme: Theme, persist = true) {
 	globalEvents.emit("themeChanged");
 }
 
+// テーマ変数の参照（@prop / $const / :func）を解決する際の最大再帰深度。
+// 正常なテーマは数段で解決できるため、これを超える参照は循環参照とみなす。
+const THEME_COLOR_MAX_DEPTH = 10;
+
 function compile(theme: Theme): Record<string, string> {
-	function getColor(val: string): tinycolor.Instance {
+	/**
+	 * テーマの色定義（直値・`@prop`/`$const` 参照・`:func` 関数）を解決する。
+	 *
+	 * @remarks
+	 * GHSA-wmhf-m93m-rgmj 対策:
+	 * `@a` → `@b` → `@a` のような循環参照や、過度に深いネストを持つ悪意ある
+	 * カスタムテーマを読み込むと、この関数が無制御に再帰してスタックオーバーフロー
+	 * やフリーズ（DoS）を引き起こしていた。再帰深度を {@link THEME_COLOR_MAX_DEPTH}
+	 * で制限し、上限超過時や不正値時は安全なフォールバック色を返す。
+	 *
+	 * @param val - 解決対象の値
+	 * @param depth - 現在の再帰深度（内部用）
+	 */
+	function getColor(val: string, depth = 0): tinycolor.Instance {
+		// 不正値・上限超過時は安全側に倒して黒を返す（循環参照・無制御再帰対策）
+		if (
+			typeof val !== "string" ||
+			val.length === 0 ||
+			depth > THEME_COLOR_MAX_DEPTH
+		) {
+			return tinycolor("#000");
+		}
+
 		// ref (prop)
 		if (val[0] === "@") {
-			return getColor(theme.props[val.substr(1)]);
+			return getColor(theme.props[val.substr(1)], depth + 1);
 		}
 
 		// ref (const)
 		else if (val[0] === "$") {
-			return getColor(theme.props[val]);
+			return getColor(theme.props[val], depth + 1);
 		}
 
 		// func
@@ -132,7 +158,7 @@ function compile(theme: Theme): Record<string, string> {
 			const parts = val.split("<");
 			const func = parts.shift().substr(1);
 			const arg = parseFloat(parts.shift());
-			const color = getColor(parts.join("<"));
+			const color = getColor(parts.join("<"), depth + 1);
 
 			switch (func) {
 				case "darken":

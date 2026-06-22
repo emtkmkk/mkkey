@@ -22,6 +22,7 @@ import { updatePerson } from "../../models/person.js";
 import { getApLock } from "@/misc/app-lock.js";
 import { Notes } from "@/models/index.js";
 import { StatusError } from "@/misc/fetch.js";
+import { extractDbHost } from "@/misc/convert-host.js";
 
 /**
  * Update アクティビティを処理する
@@ -43,6 +44,17 @@ export default async (
 		apLogger.error(`Resolution failed: ${e}`);
 		throw e;
 	});
+
+	// GHSA-675w-hf2m-qwmj / GHSA-5h8r-gq97-xv69 対策:
+	// Update 対象オブジェクトが actor（送信者）と同一ホストに帰属することを検証する。
+	// これにより、他ホストのプロフィール/ノート/投票を書き換えるなりすましを防ぐ。
+	// （activity.object が埋め込みオブジェクトの場合、resolver は fetch せずそのまま
+	//   返すため、ここで id のホスト一致を確認することが重要）
+	if (typeof object.id === "string") {
+		if (extractDbHost(getApId(object)) !== extractDbHost(actor.uri!)) {
+			return "skip: object host does not match actor host";
+		}
+	}
 
 	if (isActor(object)) {
 		await updatePerson(actor.uri!, resolver, object);

@@ -176,10 +176,21 @@ export default async (
 		});
 	}
 
+	// アプリ（アクセストークン）経由のアクセスに対する権限チェック。
+	// GHSA-7pxq-6xx9-xpgm (CVE-2023-52139) 対策: 本家 Misskey 2023.12.1 相当。
+	// 以下のいずれかに該当する場合は、アプリに必要な権限が無いものとして拒否する。
+	//   1. エンドポイントに `kind`（権限）が設定されており、トークンがその権限を持たない。
+	//   2. エンドポイントに `kind` が無いが、認証/モデレータ/管理者を要求する。
+	//      （kind が無い＝アプリ向けに開放されていないため、管理 API 等を
+	//        アプリトークンで叩いて SMTP パスワードやオブジェクトストレージ鍵を
+	//        窃取される事態を防ぐ）
 	if (
 		token &&
-		ep.meta.kind &&
-		!token.permission.some((p) => p === ep.meta.kind)
+		((ep.meta.kind && !token.permission.some((p) => p === ep.meta.kind)) ||
+			(!ep.meta.kind &&
+				(ep.meta.requireCredential ||
+					ep.meta.requireModerator ||
+					ep.meta.requireAdmin)))
 	) {
 		throw new ApiError({
 			message:

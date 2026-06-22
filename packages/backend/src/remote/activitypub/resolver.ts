@@ -142,6 +142,14 @@ export default class Resolver {
 			throw new Error("invalid response");
 		}
 
+		// NOTE: GHSA-6w2c-vf6f-xf26（他ホストの id を名乗るオブジェクト偽造）対策は、
+		// 取得した object を実際に取り込む段階で行う。すなわち
+		// validateNote / validateActor / createNote / createPerson 側で
+		// 「object.id / url のホスト == 要求 URI のホスト」を検証している。
+		// ここ（resolver）で要求 URL と object.id のホスト一致を強制することも考えられるが、
+		// 本フォークの apGet はリダイレクト後の最終 URL を返さないため、apex→www や
+		// 独自ドメイン委譲のような正規のクロスホスト・リダイレクトを誤って拒否し、
+		// 連合を壊すおそれがある。そのため resolver 層では追加検証を行わない。
 		return object;
 	}
 

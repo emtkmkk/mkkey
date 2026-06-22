@@ -28,6 +28,7 @@ import { StatusError } from "@/misc/fetch.js";
 import { FILE_TYPE_BROWSERSAFE } from "@/const.js";
 import { serverLogger } from "../index.js";
 import { isMimeImage } from "@/misc/is-mime-image.js";
+import config from "@/config/index.js";
 
 export async function proxyMedia(ctx: Koa.Context) {
 	let url = "url" in ctx.query ? ctx.query.url : `https://${ctx.params.url}`;
@@ -48,8 +49,19 @@ export async function proxyMedia(ctx: Koa.Context) {
 
 	let resolvedIps;
 	try {
-		const { hostname } = new URL(url);
-		resolvedIps = await promises.resolve(hostname);
+		const parsed = new URL(url);
+
+		// GHSA-gq5q-c77c-v236 対策: 自インスタンス宛の URL をプロキシ対象にしない。
+		// 自分自身（特に /proxy や /files）を指す URL を許すと、プロキシが自分自身を
+		// 際限なく呼び出す「無制御な再帰」や、1 リクエストで多数の取得を誘発する
+		// 「増幅 (amplification) DoS」に悪用できてしまう。
+		if (parsed.host === new URL(config.url).host) {
+			ctx.status = 400;
+			ctx.body = { message: "Access to this URL is not allowed" };
+			return;
+		}
+
+		resolvedIps = await promises.resolve(parsed.hostname);
 	} catch (error) {
 		ctx.status = 400;
 		ctx.body = { message: "Invalid URL" };

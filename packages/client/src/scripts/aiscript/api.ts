@@ -24,6 +24,14 @@ export function createAiScriptEnv(opts) {
 			return confirm.canceled ? values.FALSE : values.TRUE;
 		}),
 		"Mk:api": values.FN_NATIVE(async ([ep, param, token]) => {
+			// GHSA-gmq6-738q-vjp2 対策: エンドポイント名に `://`（任意 URL 指定）や
+			// `..`（ディレクトリトラバーサル）を含む値を渡すと、os.api が `/api` 配下
+			// 以外（例: `/proxy/...` や外部 URL）へリクエストを送れてしまう。
+			// 文字列であることを保証した上で、これらを含むエンドポイントを拒否する。
+			utils.assertString(ep);
+			if (ep.value.includes("://") || ep.value.includes("..")) {
+				throw new Error("invalid endpoint");
+			}
 			if (token) {
 				utils.assertString(token);
 				// バグがあればundefinedもあり得るため念のため

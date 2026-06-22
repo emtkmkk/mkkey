@@ -11,11 +11,14 @@
  */
 import * as http from "node:http";
 import * as https from "node:https";
-import type { URL } from "node:url";
+import * as net from "node:net";
+import { promises as dns } from "node:dns";
+import { URL } from "node:url";
 import CacheableLookup from "cacheable-lookup";
 import fetch from "node-fetch";
 import { HttpProxyAgent, HttpsProxyAgent } from "hpagent";
 import config from "@/config/index.js";
+import { isPrivateIp } from "./is-private-ip.js";
 
 /**
  * URL から JSON を取得する。
@@ -104,6 +107,9 @@ export async function getResponse(args: {
 		? parseBearcaps(args.url)
 		: undefined;
 
+	// GHSA-5q3h-wpfw-hjjw / SSRF 対策: 取得先がプライベート IP に解決される場合は拒否する。
+	await assertNotPrivateAddress(bearcaps?.url ?? args.url);
+
 	const baseHeaders = { ...(args.headers ?? {}) };
 	const cookieHeaderKey = Object.keys(baseHeaders).find(
 		(key) => key.toLowerCase() === "cookie",
@@ -186,6 +192,64 @@ export async function getResponse(args: {
 			res.statusText,
 			undefined,
 			retryAfterHeader ?? undefined,
+		);
+	}
+}
+
+/**
+ * 取得先 URL がプライベート IP に解決される場合に例外を投げる（SSRF 対策）。
+ *
+ * @remarks
+ * GHSA-5q3h-wpfw-hjjw 対策:
+ * `getJson` / `getHtml` などの汎用取得（URL プレビュー等で広く利用される）に対して、
+ * `localhost` や 10.0.0.0/8 等の内部アドレスへのアクセスを禁止する。
+ * - 外向きプロキシ（`config.proxy`）利用時は egress 制御をプロキシ側に委ねるため確認しない。
+ * - 本番（production）/テスト（test）環境でのみ有効化し、開発環境のローカル取得は妨げない。
+ * - `config.allowedPrivateNetworks` に含まれる範囲は許可される（{@link isPrivateIp} 参照）。
+ *
+ * @remarks
+ * NOTE: DNS の解決結果と実接続先が食い違う「DNS リバインディング」までは完全には防げないが、
+ *       直接的なプライベート IP/ホスト名指定による SSRF を大きく抑止する。
+ *
+ * @param targetUrl - 取得先 URL
+ * @throws StatusError 解決先がプライベート IP の場合（403）
+ * @internal
+ */
+async function assertNotPrivateAddress(targetUrl: string): Promise<void> {
+	if (
+		!(process.env.NODE_ENV === "production" || process.env.NODE_ENV === "test")
+	) {
+		return;
+	}
+	// 外向きプロキシ利用時はプロキシ側で制御するため確認しない
+	if (config.proxy) return;
+
+	let hostname: string;
+	try {
+		hostname = new URL(targetUrl).hostname.replaceAll(/(\[)|(\])/g, "");
+	} catch {
+		// URL パース失敗は下流の fetch 側でエラーになるためここでは何もしない
+		return;
+	}
+
+	let addresses: string[];
+	if (net.isIP(hostname)) {
+		addresses = [hostname];
+	} else {
+		try {
+			const resolved = await dns.lookup(hostname, { all: true });
+			addresses = resolved.map((r) => r.address);
+		} catch {
+			// 名前解決に失敗した場合は下流の fetch に委ねる
+			return;
+		}
+	}
+
+	if (addresses.some((ip) => isPrivateIp(ip))) {
+		throw new StatusError(
+			"Access to this URL is not allowed",
+			403,
+			"Forbidden",
 		);
 	}
 }

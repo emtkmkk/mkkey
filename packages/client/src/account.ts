@@ -36,6 +36,29 @@ function getCookieAttributes(maxAge?: number): string {
 	return attrs.join("; ");
 }
 
+/**
+ * Bull Board（/queue）認証用 `token` Cookie の属性を生成する。
+ *
+ * @remarks
+ * GHSA-38w6-vx8g-67pp 対策:
+ * `token` Cookie は Bull Board の認証にのみ使われるため、
+ * - `path=/queue` … `/queue` 配下のリクエストにのみ送信し、漏洩面を最小化する。
+ * - `SameSite=Strict` … 他サイトからのクロスサイトリクエストでは送信されず、CSRF を防ぐ。
+ * とし、必要最小限のスコープに限定する。
+ *
+ * @param maxAge - Cookie の有効期間（秒）。削除時は 0 を指定する。
+ */
+function getBullBoardCookieAttributes(maxAge?: number): string {
+	const attrs = ["path=/queue", "SameSite=Strict"];
+	if (maxAge !== undefined) {
+		attrs.push(`max-age=${maxAge}`);
+	}
+	if (document.location.protocol.startsWith("https")) {
+		attrs.push("Secure");
+	}
+	return attrs.join("; ");
+}
+
 export async function signout() {
 	waiting();
 	// ログアウト直後に前アカウントの未読バッジが OS に残らないよう先にクリアする
@@ -51,6 +74,9 @@ export async function signout() {
 	if (signingOutUserId == null) {
 		localStorage.removeItem("account");
 		document.cookie = `igi=; ${getCookieAttributes(0)}`;
+		// token Cookie は path=/queue で発行しているため、その path で削除する。
+		// 旧 path=/ の残存 Cookie も併せて削除する（移行措置）。
+		document.cookie = `token=; ${getBullBoardCookieAttributes(0)}`;
 		document.cookie = `token=; ${getCookieAttributes(0)}`;
 		unisonReload("/");
 		return;
@@ -114,6 +140,9 @@ export async function signout() {
 	//#endregion
 
 	document.cookie = `igi=; ${getCookieAttributes(0)}`;
+	// token Cookie は path=/queue で発行しているため、その path で削除する。
+	// 旧 path=/ の残存 Cookie も併せて削除する（移行措置）。
+	document.cookie = `token=; ${getBullBoardCookieAttributes(0)}`;
 	document.cookie = `token=; ${getCookieAttributes(0)}`;
 
 	if (accounts.length > 0) login(accounts[0].token);
@@ -205,7 +234,11 @@ export async function login(token: Account["token"], redirect?: string) {
 	if (_DEV_) console.log("logging as token ", token);
 	const me = await fetchAccount(token);
 	localStorage.setItem("account", JSON.stringify(me));
-	document.cookie = `token=${token}; ${getCookieAttributes(31536000)}`; // bull dashboardの認証とかで使う
+	// Bull dashboard（/queue）の認証で使う。GHSA-38w6 対策で path=/queue・SameSite=Strict に限定。
+	document.cookie = `token=${token}; ${getBullBoardCookieAttributes(31536000)}`;
+	// 旧バージョンで path=/ ・SameSite=Lax として保存された token Cookie が残っていると
+	// CSRF 緩和が損なわれるため、ログイン時に併せて削除する（移行措置）。
+	document.cookie = `token=; ${getCookieAttributes(0)}`;
 	await addAccount(me.id, token);
 
 	if (redirect) {

@@ -12,15 +12,11 @@
 import * as crypto from "node:crypto";
 import jsonld from "jsonld";
 import { CONTEXTS, WellKnownContext } from "./contexts.js";
-import fetch from "node-fetch";
-import { httpAgent, httpsAgent } from "@/misc/fetch.js";
 
 // RsaSignature2017 は https://github.com/transmute-industries/RsaSignature2017 をベースにしている
 
 export class LdSignature {
 	public debug = false;
-	public preLoad = true;
-	public loderTimeout = 10 * 1000;
 
 	constructor() {}
 
@@ -109,48 +105,38 @@ export class LdSignature {
 		return await jsonld.compact(data, context, options);
 	}
 
+	/**
+	 * JSON-LD 正規化・compaction 用のドキュメントローダーを返す。
+	 *
+	 * @remarks
+	 * GHSA-38jx-423m-g387 (CVE-2026-47746, TOCTOU) / GHSA-w8x2-gpq6-jxvf 対策:
+	 * 以前は未知の `@context` URL を都度リモートからフェッチしていたため、
+	 * 攻撃者が「署名検証時」と「実処理（compaction）時」で異なる context 定義を
+	 * 返すことで、検証済みの内容と実際に処理される内容を食い違わせられた
+	 * （TOCTOU）。また、毎回のリモートフェッチは応答時間の差を生み、
+	 * タイミング情報の漏洩や SSRF 的な挙動にも繋がっていた。
+	 *
+	 * これを防ぐため、ローダーはプリロード済みの既知 context（{@link CONTEXTS}）
+	 * のみを返し、未知の context URL はリモート取得せずにエラーとする。
+	 * これにより、検証時と処理時で必ず同一の context 解釈が共有される。
+	 */
 	private getLoader() {
 		return async (url: string): Promise<any> => {
 			if (!url.match("^https?://")) throw new Error(`Invalid URL ${url}`);
 
-			if (this.preLoad) {
-				if (url in CONTEXTS) {
-					if (this.debug) console.debug(`HIT: ${url}`);
-					return {
-						contextUrl: null,
-						document: CONTEXTS[url],
-						documentUrl: url,
-					};
-				}
+			if (url in CONTEXTS) {
+				if (this.debug) console.debug(`HIT: ${url}`);
+				return {
+					contextUrl: null,
+					document: CONTEXTS[url],
+					documentUrl: url,
+				};
 			}
 
-			if (this.debug) console.debug(`MISS: ${url}`);
-			const document = await this.fetchDocument(url);
-			return {
-				contextUrl: null,
-				document: document,
-				documentUrl: url,
-			};
+			// 既知 context 以外はリモートから取得しない（TOCTOU・タイミング攻撃対策）。
+			if (this.debug) console.debug(`UNKNOWN CONTEXT (rejected): ${url}`);
+			throw new Error(`Unknown context URL is not allowed: ${url}`);
 		};
-	}
-
-	private async fetchDocument(url: string) {
-		const json = await fetch(url, {
-		headers: {
-			Accept: "application/ld+json, application/json",
-		},
-		// TODO: タイムアウトの設定
-		//timeout: this.loderTimeout,
-		agent: (u) => (u.protocol === "http:" ? httpAgent : httpsAgent),
-		}).then((res) => {
-			if (!res.ok) {
-				throw new Error(`${res.status} ${res.statusText}`);
-			} else {
-				return res.json();
-			}
-		});
-
-		return json;
 	}
 
 	public sha256(data: string): string {

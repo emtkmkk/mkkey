@@ -145,8 +145,12 @@
 		/>
 	</div>
 
-	<MkFolder v-else-if="c.type === 'folder'">
-		<template #header>{{ c.title }}</template>
+	<FormFolder
+		v-else-if="c.type === 'folder'"
+		class="_formBlock asui-folder"
+		:default-open="c.opened ?? true"
+	>
+		<template #label>{{ c.title }}</template>
 		<MkAsUi
 			v-for="childId in c.children ?? []"
 			:key="childId"
@@ -154,7 +158,7 @@
 			:components="components"
 			:align="align"
 		/>
-	</MkFolder>
+	</FormFolder>
 </template>
 
 <script lang="ts" setup>
@@ -167,6 +171,8 @@
  * Misskey Play 互換の {@link registerAsUiLib} が生成するコンポーネントを Vue UI に変換する。
  * `align` prop はページの中央寄せ設定や Ui:C:container の align を子へ伝播し、
  * flex 子要素（ボタン等）の横位置を決める。
+ * Ui:C:folder は設定画面と同じ FormFolder で描画する。
+ * NOTE: FormFolder は開閉状態を localStorage に保存しない（旧 MkFolder の persist-key 相当なし）。
  *
  * @public
  */
@@ -183,7 +189,7 @@ import MkInput from "@/components/form/input.vue";
 import MkSwitch from "@/components/form/switch.vue";
 import MkTextarea from "@/components/form/textarea.vue";
 import MkSelect from "@/components/form/select.vue";
-import MkFolder from "@/components/MkFolder.vue";
+import FormFolder from "@/components/form/folder.vue";
 import MkPostForm from "@/components/MkPostForm.vue";
 
 /** 横方向の配置（ページ設定・Ui:C:container 共通） */

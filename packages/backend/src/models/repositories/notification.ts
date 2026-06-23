@@ -5,6 +5,7 @@
  *
  * @remarks
  * - **役割**: 通知の pack/packMany と一覧取得を提供し、API の通知一覧・既読で利用する。
+ * - `followedAccountWasDeleted` は `customBody` の表示名スナップショットで `user.name` を上書きする。
  *
  * @see {@link models/entities/notification} 通知エンティティ
  * @internal
@@ -82,12 +83,22 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			userId: notification.notifierId,
 			customBody: notification.customBody || undefined,
 			user: notification.notifierId
-				? Users.pack(
-						options._notifierUserMap_?.get(notification.notifierId) ??
-								notification.notifier ??
-								notification.notifierId,
-						{ id: notification.notifieeId },
-				  )
+				? (async () => {
+						const packed = await Users.pack(
+							options._notifierUserMap_?.get(notification.notifierId) ??
+									notification.notifier ??
+									notification.notifierId!,
+							{ id: notification.notifieeId },
+						);
+						// アカウント削除通知は customBody に保存した表示名で上書きする
+						if (
+							notification.type === "followedAccountWasDeleted" &&
+							notification.customBody
+						) {
+							return { ...packed, name: notification.customBody };
+						}
+						return packed;
+				  })()
 				: null,
 			...(notification.type === "mention"
 				? {

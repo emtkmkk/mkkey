@@ -147,7 +147,7 @@
 					:to="userPage(notification.user)"
 					>{{
 						i18n.t("_notification.followedAccountWasDeleted", {
-							name: notificationUserName(notification.user),
+							name: notificationUserName(notification),
 						})
 					}}</MkA
 				>
@@ -439,8 +439,16 @@ const props = withDefaults(
 
 /** 通知の表示名（{@link i18n.t} の `{name}` 用） */
 function notificationUserName(
-	user: NonNullable<misskey.entities.Notification["user"]>,
+	notification: misskey.entities.Notification,
 ): string {
+	if (
+		notification.type === "followedAccountWasDeleted" &&
+		notification.customBody
+	) {
+		return notification.customBody;
+	}
+	const user = notification.user;
+	if (user == null) return "";
 	return user.name || user.username;
 }
 

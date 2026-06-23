@@ -36,7 +36,11 @@
 	</p>
 
 	<div v-else-if="c.type === 'mfm'" class="asui-mfm" :style="textStyle">
-		<Mfm :text="c.text ?? ''" :is-note="false" />
+		<Mfm
+			:text="c.text ?? ''"
+			:is-note="false"
+			@click-ev="onMfmClickEv"
+		/>
 	</div>
 
 	<MkButton
@@ -285,7 +289,8 @@ const buttonsStyle = computed(() => ({
 const textStyle = computed(() => {
 	if (c.type !== "text" && c.type !== "mfm") return undefined;
 	return {
-		fontSize: c.size ? `${c.size}px` : undefined,
+		// NOTE: size は本家 Misskey 互換で倍率（2 → 200%）
+		fontSize: c.size != null ? `${c.size * 100}%` : undefined,
 		fontWeight: c.bold ? "bold" : undefined,
 		color: c.color,
 		fontFamily:
@@ -296,6 +301,13 @@ const textStyle = computed(() => {
 					: undefined,
 	};
 });
+
+/** Ui:C:mfm の clickable クリックを AiScript onClickEv へ渡す（本家 Misskey 互換） */
+function onMfmClickEv(evId: string) {
+	if (c.type === "mfm" && c.onClickEv) {
+		void c.onClickEv(evId);
+	}
+}
 
 const valueForSwitch = ref(
 	c.type === "switch" && typeof c.default === "boolean" ? c.default : false,

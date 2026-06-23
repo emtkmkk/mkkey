@@ -20,6 +20,8 @@ import { mr_to_str } from "@/scripts/convert-mr";
 import { nyaize } from "@/scripts/nyaize.js";
 
 export default defineComponent({
+	emits: ["clickEv"],
+
 	props: {
 		text: {
 			type: String,
@@ -545,6 +547,25 @@ export default defineComponent({
 												countdown: !!token.props.args.countdown,
 											}),
 										],
+									);
+								}
+								// NOTE: Play UI 向け MFM。clickEv は MkAsUi が onClickEv で受け取る（本家 Misskey 互換）
+								case "clickable": {
+									return h(
+										"span",
+										{
+											style: "cursor: pointer;",
+											onClick: (ev: MouseEvent) => {
+												ev.stopPropagation();
+												ev.preventDefault();
+												const evId =
+													typeof token.props.args.ev === "string"
+														? token.props.args.ev
+														: "";
+												this.$emit("clickEv", evId);
+											},
+										},
+										genEl(token.children),
 									);
 								}
 							}

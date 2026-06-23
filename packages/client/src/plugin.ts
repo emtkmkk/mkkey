@@ -109,6 +109,46 @@ export function getPluginById(id: string): Plugin | undefined {
 	return getPlugins().find((p) => p.id === id);
 }
 
+/**
+ * プラグインの AiScript ソースを取得する。
+ *
+ * @remarks
+ * 一覧表示用オブジェクトとストレージの差分を吸収する。
+ *
+ * @param plugin - プラグイン
+ * @returns ソース文字列（未保存時は空文字）
+ * @public
+ */
+export function getPluginSource(plugin: Plugin): string {
+	return getPluginById(plugin.id)?.src ?? plugin.src ?? "";
+}
+
+/**
+ * プラグインソースをクリップボードへコピーする。
+ *
+ * @param plugin - プラグイン
+ * @returns コピー成功時 true
+ * @public
+ */
+export async function copyPluginSource(plugin: Plugin): Promise<boolean> {
+	const src = getPluginSource(plugin);
+	if (!src.trim()) return false;
+
+	try {
+		if (navigator.clipboard?.writeText) {
+			await navigator.clipboard.writeText(src);
+			return true;
+		}
+	} catch {
+		// legacy fallback へ
+	}
+
+	const { default: copyToClipboard } = await import(
+		"@/scripts/copy-to-clipboard"
+	);
+	return copyToClipboard(src);
+}
+
 /** プラグイン定義を部分更新する */
 export function updatePluginRecord(
 	id: string,

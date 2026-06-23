@@ -1557,6 +1557,9 @@ _plugin:
   handlerNoteView: "Note view interceptor"
   handlerNotePost: "Note post interceptor"
   handlerPageView: "Page view interceptor"
+  operations: "Operations"
+  sourceEmpty: "No source saved for this plugin"
+  copyFailed: "Failed to copy to clipboard"
 _preferencesBackups:
   list: "Created backups"
   saveNew: "Save new backup"
@@ -2064,6 +2067,9 @@ _widgets:
     streamStale: "Stream stale"
   aiscript: "AiScript console"
   aiscriptApp: "AiScript app"
+  aiscriptAppShowHeader: "Show header"
+  aiscriptAppRun: "Run"
+  aiscriptAppNoLogs: "No logs"
   profile: "Profile"
   instanceInfo: "Instance info"
   userList: "User list"
@@ -2323,6 +2329,8 @@ _pages:
       values: "List of choices separated by line breaks"
       default: "Default value"
   playMode:
+    enable: "Play mode"
+    enableDescription: "Build UI with script only. Blocks and variables are unavailable."
     switchToPlay: "Switch to Play mode"
     switchToBlock: "Switch back to Block mode"
     insertPreset: "Insert preset"

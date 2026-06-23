@@ -41,41 +41,6 @@
 					{{ i18n.ts._plugin.startupError }}
 				</span>
 
-				<div class="plugin-actions-top">
-					<MkButton inline @click="reload(plugin)">
-						<i class="ph-arrows-clockwise ph-bold ph-lg"></i>
-						{{ i18n.ts.reload }}
-					</MkButton>
-					<MkButton
-						v-if="plugin.config && Object.keys(plugin.config).length > 0"
-						inline
-						@click="saveConfig(plugin)"
-					>
-						<i class="ph-floppy-disk ph-bold ph-lg"></i>
-						{{ i18n.ts._plugin.saveConfig }}
-					</MkButton>
-					<MkButton inline @click="updateSource(plugin)">
-						<i class="ph-pencil ph-bold ph-lg"></i>
-						{{ i18n.ts._plugin.update }}
-					</MkButton>
-					<MkButton inline @click="exportPlugin(plugin)">
-						<i class="ph-export ph-bold ph-lg"></i>
-						{{ i18n.ts._plugin.export }}
-					</MkButton>
-					<MkButton
-						v-if="plugin.permissions?.length"
-						inline
-						@click="reauthorize(plugin)"
-					>
-						<i class="ph-key ph-bold ph-lg"></i>
-						{{ i18n.ts._plugin.reauthorize }}
-					</MkButton>
-					<MkButton inline danger @click="uninstall(plugin)">
-						<i class="ph-trash ph-bold ph-lg"></i>
-						{{ i18n.ts.uninstall }}
-					</MkButton>
-				</div>
-
 				<FormSwitch
 					class="_formBlock"
 					:model-value="plugin.active"
@@ -115,16 +80,54 @@
 					</template>
 				</MkKeyValue>
 
-				<MkPluginConfigForm
+				<div
 					v-if="plugin.config && Object.keys(plugin.config).length > 0"
-					class="_formBlock"
-					:form="plugin.config"
-					:model-value="configDrafts[plugin.id]"
-					@update:model-value="configDrafts[plugin.id] = $event"
-				/>
+					class="_formBlock plugin-settings-button"
+				>
+					<MkButton inline @click="openConfig(plugin)">
+						<i class="ph-gear-six ph-bold ph-lg"></i>
+						{{ i18n.ts.settings }}
+					</MkButton>
+				</div>
 
-				<MkFolder class="_formBlock" :expanded="false">
-					<template #header>{{ i18n.ts._plugin.logs }}</template>
+				<FormFolder class="_formBlock">
+					<template #label>{{ i18n.ts._plugin.operations }}</template>
+					<template #icon
+						><i class="ph-wrench ph-bold ph-lg"></i
+					></template>
+					<div class="plugin-operations">
+						<MkButton inline @click="reload(plugin)">
+							<i class="ph-arrows-clockwise ph-bold ph-lg"></i>
+							{{ i18n.ts.reload }}
+						</MkButton>
+						<MkButton inline @click="updateSource(plugin)">
+							<i class="ph-pencil ph-bold ph-lg"></i>
+							{{ i18n.ts._plugin.update }}
+						</MkButton>
+						<MkButton inline @click="exportPlugin(plugin)">
+							<i class="ph-export ph-bold ph-lg"></i>
+							{{ i18n.ts._plugin.export }}
+						</MkButton>
+						<MkButton
+							v-if="plugin.permissions?.length"
+							inline
+							@click="reauthorize(plugin)"
+						>
+							<i class="ph-key ph-bold ph-lg"></i>
+							{{ i18n.ts._plugin.reauthorize }}
+						</MkButton>
+						<MkButton inline danger @click="uninstall(plugin)">
+							<i class="ph-trash ph-bold ph-lg"></i>
+							{{ i18n.ts.uninstall }}
+						</MkButton>
+					</div>
+				</FormFolder>
+
+				<FormFolder class="_formBlock">
+					<template #label>{{ i18n.ts._plugin.logs }}</template>
+					<template #icon
+						><i class="ph-terminal-window ph-bold ph-lg"></i
+					></template>
 					<div class="plugin-logs">
 						<div
 							v-for="(log, i) in logs(plugin.id)"
@@ -144,12 +147,25 @@
 							{{ i18n.ts._plugin.noLogs }}
 						</div>
 					</div>
-				</MkFolder>
+				</FormFolder>
 
-				<MkFolder class="_formBlock" :expanded="false">
-					<template #header>{{ i18n.ts._plugin.viewSource }}</template>
-					<MkCode :code="plugin.src" lang="aiscript" />
-				</MkFolder>
+				<FormFolder class="_formBlock">
+					<template #label>{{ i18n.ts._plugin.viewSource }}</template>
+					<template #icon
+						><i class="ph-code ph-bold ph-lg"></i
+					></template>
+					<FormInfo
+						v-if="!getPluginSource(plugin).trim()"
+						class="_formBlock"
+					>
+						{{ i18n.ts._plugin.sourceEmpty }}
+					</FormInfo>
+					<MkCode
+						v-else
+						:code="getPluginSource(plugin)"
+						lang="aiscript"
+					/>
+				</FormFolder>
 			</div>
 		</FormSection>
 	</div>
@@ -162,28 +178,29 @@
  * インストール済み AiScript プラグインの管理画面。
  *
  * @remarks
- * Misskey 本家同様、一覧カード内の折りたたみでログ・ソースを表示する。
+ * mkkey 設定 UI 慣例（FormFolder / os.form）に合わせて構成する。
  *
  * @public
  */
-import { reactive, ref } from "vue";
+import { onMounted, ref } from "vue";
 import FormLink from "@/components/form/link.vue";
 import FormSwitch from "@/components/form/switch.vue";
 import FormSection from "@/components/form/section.vue";
+import FormFolder from "@/components/form/folder.vue";
 import FormInfo from "@/components/MkInfo.vue";
 import MkButton from "@/components/MkButton.vue";
 import MkKeyValue from "@/components/MkKeyValue.vue";
-import MkFolder from "@/components/MkFolder.vue";
 import MkCode from "@/components/MkCode.vue";
-import MkPluginConfigForm from "@/components/MkPluginConfigForm.vue";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
-import copyToClipboard from "@/scripts/copy-to-clipboard";
 import {
 	authorizePlugin,
 	changePluginActive,
+	copyPluginSource,
+	getPluginById,
 	getPluginLangVersion,
+	getPluginSource,
 	getPlugins,
 	pluginHandlerRegistrations,
 	pluginLaunchStatus,
@@ -197,35 +214,14 @@ import {
 } from "@/plugin";
 
 const plugins = ref<Plugin[]>(getPlugins());
-const configDrafts = reactive<Record<string, Record<string, unknown>>>({});
-
-function initConfigDrafts(): void {
-	for (const plugin of plugins.value) {
-		if (!configDrafts[plugin.id]) {
-			configDrafts[plugin.id] = buildConfigDraft(plugin);
-		}
-	}
-}
-
-function buildConfigDraft(plugin: Plugin): Record<string, unknown> {
-	const draft: Record<string, unknown> = {};
-	if (!plugin.config) return draft;
-	for (const key of Object.keys(plugin.config)) {
-		const field = plugin.config[key] as { default?: unknown };
-		draft[key] =
-			typeof plugin.configData[key] !== "undefined"
-				? plugin.configData[key]
-				: (field.default ?? null);
-	}
-	return draft;
-}
 
 function refreshPlugins(): void {
 	plugins.value = getPlugins();
-	initConfigDrafts();
 }
 
-initConfigDrafts();
+onMounted(() => {
+	refreshPlugins();
+});
 
 function langVersion(plugin: Plugin): string | null {
 	return getPluginLangVersion(plugin);
@@ -274,8 +270,32 @@ function changeActive(plugin: Plugin, active: boolean): void {
 	refreshPlugins();
 }
 
-function saveConfig(plugin: Plugin): void {
-	savePluginConfig(plugin, configDrafts[plugin.id] ?? {});
+/** プラグイン設定をポップアップで編集する（従来の mkkey 方式） */
+async function openConfig(plugin: Plugin): Promise<void> {
+	if (!plugin.config) return;
+
+	// NOTE: os.form 用に default を configData で上書きしたコピーを渡す
+	const form = JSON.parse(JSON.stringify(plugin.config)) as Record<
+		string,
+		{ default?: unknown }
+	>;
+	for (const key of Object.keys(form)) {
+		form[key].default =
+			typeof plugin.configData[key] !== "undefined"
+				? plugin.configData[key]
+				: form[key].default;
+	}
+
+	const { canceled, result } = (await os.form(
+		plugin.name,
+		form as never,
+	)) as { canceled: boolean; result: Record<string, unknown> };
+	if (canceled) return;
+
+	savePluginConfig(plugin, result);
+	const updated = getPluginById(plugin.id);
+	if (updated) reloadPlugin(updated);
+	refreshPlugins();
 	os.success();
 }
 
@@ -293,7 +313,8 @@ async function uninstall(plugin: Plugin): Promise<void> {
 async function reauthorize(plugin: Plugin): Promise<void> {
 	await authorizePlugin(plugin, true);
 	refreshPlugins();
-	reloadPlugin(getPlugins().find((p) => p.id === plugin.id)!);
+	const updated = getPluginById(plugin.id);
+	if (updated) reloadPlugin(updated);
 	os.success();
 }
 
@@ -301,7 +322,7 @@ async function updateSource(plugin: Plugin): Promise<void> {
 	const { canceled, result } = await os.inputParagraph({
 		title: i18n.ts._plugin.update,
 		text: i18n.ts._plugin.updateDescription,
-		default: plugin.src,
+		default: getPluginSource(plugin),
 	});
 	if (canceled || result == null) return;
 	try {
@@ -317,9 +338,18 @@ async function updateSource(plugin: Plugin): Promise<void> {
 	}
 }
 
-function exportPlugin(plugin: Plugin): void {
-	copyToClipboard(plugin.src);
-	os.success();
+async function exportPlugin(plugin: Plugin): Promise<void> {
+	if (!getPluginSource(plugin).trim()) {
+		os.alert({ type: "error", text: i18n.ts._plugin.sourceEmpty });
+		return;
+	}
+
+	const ok = await copyPluginSource(plugin);
+	if (ok) {
+		os.success();
+	} else {
+		os.alert({ type: "error", text: i18n.ts._plugin.copyFailed });
+	}
 }
 
 const headerActions = $computed(() => []);
@@ -374,11 +404,11 @@ definePageMetadata({
 	font-size: 0.85em;
 }
 
-.plugin-actions-top {
+.plugin-settings-button,
+.plugin-operations {
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--margin);
-	margin-bottom: 0.75rem;
 }
 
 .plugin-permissions,

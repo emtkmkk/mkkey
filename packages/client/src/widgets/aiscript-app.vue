@@ -29,7 +29,7 @@
  * @see {@link runPlayScript}
  * @public
  */
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import {
 	useWidgetPropsManager,
 	Widget,
@@ -53,6 +53,10 @@ import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { url } from "@/config";
 
+const MkAiscriptAppWidgetSettings = defineAsyncComponent(
+	() => import("@/components/MkAiscriptAppWidgetSettings.vue"),
+);
+
 // #region ウィジェット定義
 
 const name = "aiscriptApp";
@@ -75,12 +79,36 @@ type WidgetProps = GetFormResultType<typeof widgetPropsDef>;
 const props = defineProps<{ widget?: Widget<WidgetProps> }>();
 const emit = defineEmits<{ (ev: "updateProps", props: WidgetProps) }>();
 
-const { widgetProps, configure } = useWidgetPropsManager(
+const { widgetProps, save } = useWidgetPropsManager(
 	name,
 	widgetPropsDef,
 	props,
 	emit,
 );
+
+/** 設定ポップアップ（script / ログ / プレビュー）を開く */
+async function configure(): Promise<void> {
+	await new Promise<void>((resolve) => {
+		os.popup(
+			MkAiscriptAppWidgetSettings,
+			{
+				initialScript: widgetProps.script,
+				initialShowHeader: widgetProps.showHeader,
+				widgetId: props.widget?.id,
+			},
+			{
+				done: (value: { script: string; showHeader: boolean }) => {
+					widgetProps.script = value.script;
+					widgetProps.showHeader = value.showHeader;
+					save();
+					resolve();
+				},
+				closed: () => resolve(),
+			},
+			"closed",
+		);
+	});
+}
 
 // #endregion
 

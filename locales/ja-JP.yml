@@ -1561,6 +1561,9 @@ _plugin:
   handlerNoteView: "ノート表示の書き換え"
   handlerNotePost: "ノート投稿の書き換え"
   handlerPageView: "ページ表示の書き換え"
+  operations: "操作"
+  sourceEmpty: "ソースが保存されていません"
+  copyFailed: "クリップボードへのコピーに失敗しました"
 _preferencesBackups:
   list: "作成したバックアップ"
   saveNew: "新規保存"
@@ -2107,6 +2110,9 @@ _widgets:
     streamStale: "更新遅延時間"
   aiscript: "AiScriptコンソール"
   aiscriptApp: "AiScriptアプリ"
+  aiscriptAppShowHeader: "ヘッダーを表示"
+  aiscriptAppRun: "実行"
+  aiscriptAppNoLogs: "ログはありません"
   profile: "プロフィール"
   instanceInfo: "サーバー情報"
   userList: "ユーザーリスト"
@@ -2388,6 +2394,8 @@ _pages:
       values: "改行で区切った選択肢"
       default: "デフォルト値"
   playMode:
+    enable: "Play モード"
+    enableDescription: "ブロック・変数は使用せず、 script のみで UI を構築します。"
     switchToPlay: "Play モードに切り替え"
     switchToBlock: "ブロックモードに戻す"
     insertPreset: "プリセットを挿入"

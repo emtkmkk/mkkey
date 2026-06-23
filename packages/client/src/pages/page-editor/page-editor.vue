@@ -43,6 +43,18 @@
 
 			<div v-if="tab === 'settings'">
 				<div class="_formRoot">
+					<MkSwitch
+						v-if="!readonly"
+						class="_formBlock"
+						:model-value="isPlayMode"
+						@update:model-value="onPlayModeToggle"
+					>
+						{{ i18n.ts._pages.playMode.enable }}
+						<template #caption>{{
+							i18n.ts._pages.playMode.enableDescription
+						}}</template>
+					</MkSwitch>
+
 					<MkInput v-model="title" class="_formBlock">
 						<template #label>{{ i18n.ts._pages.title }}</template>
 					</MkInput>
@@ -61,11 +73,14 @@
 					<MkSwitch v-model="isPublic" class="_formBlock">{{
 						i18n.ts.public
 					}}</MkSwitch>
-					<MkSwitch v-model="alignCenter" class="_formBlock">{{
-						i18n.ts._pages.alignCenter
-					}}</MkSwitch>
+					<MkSwitch
+						v-if="!isPlayMode"
+						v-model="alignCenter"
+						class="_formBlock"
+						>{{ i18n.ts._pages.alignCenter }}</MkSwitch
+					>
 
-					<MkSelect v-model="font" class="_formBlock">
+					<MkSelect v-if="!isPlayMode" v-model="font" class="_formBlock">
 						<template #label>{{ i18n.ts._pages.font }}</template>
 						<option value="serif">
 							{{ i18n.ts._pages.fontSerif }}
@@ -153,37 +168,12 @@
 
 			<div v-else-if="tab === 'script'">
 				<div class="play-script-editor">
-					<div v-if="!readonly" class="play-mode-actions _gap">
-						<MkButton
-							v-if="!isPlayMode"
-							inline
-							@click="switchToPlayMode()"
-						>
-							<i class="ph-game-controller ph-bold ph-lg"></i>
-							{{ i18n.ts._pages.playMode.switchToPlay }}
-						</MkButton>
-						<MkButton
-							v-else
-							inline
-							@click="switchToBlockMode()"
-						>
-							<i class="ph-sticker ph-bold ph-lg"></i>
-							{{ i18n.ts._pages.playMode.switchToBlock }}
-						</MkButton>
-						<MkButton
-							v-if="isPlayMode"
-							inline
-							@click="insertPlayPreset()"
-						>
+					<div v-if="!readonly && isPlayMode" class="play-mode-actions _gap">
+						<MkButton inline @click="insertPlayPreset()">
 							<i class="ph-code ph-bold ph-lg"></i>
 							{{ i18n.ts._pages.playMode.insertPreset }}
 						</MkButton>
-						<MkButton
-							v-if="isPlayMode"
-							inline
-							primary
-							@click="previewPlayScript()"
-						>
+						<MkButton inline primary @click="previewPlayScript()">
 							<i class="ph-play ph-bold ph-lg"></i>
 							{{ i18n.ts._pages.playMode.preview }}
 						</MkButton>
@@ -325,6 +315,14 @@ async function switchToBlockMode() {
 	const id = uuid();
 	content = [{ id, type: "text", text: "" }];
 	tab = "contents";
+}
+
+async function onPlayModeToggle(enabled: boolean): Promise<void> {
+	if (enabled) {
+		await switchToPlayMode();
+	} else {
+		await switchToBlockMode();
+	}
 }
 
 function insertPlayPreset() {

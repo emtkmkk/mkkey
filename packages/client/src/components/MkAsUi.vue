@@ -1,12 +1,17 @@
 <template>
-	<template v-if="c.type === 'root'">
+	<div
+		v-if="c.type === 'root'"
+		class="asui-root"
+		:style="rootStyle"
+	>
 		<MkAsUi
 			v-for="childId in c.children ?? []"
 			:key="childId"
 			:component="g(childId)"
 			:components="components"
+			:align="align"
 		/>
-	</template>
+	</div>
 
 	<div
 		v-else-if="c.type === 'container' && !c.hidden"
@@ -18,6 +23,7 @@
 			:key="childId"
 			:component="g(childId)"
 			:components="components"
+			:align="containerChildAlign"
 		/>
 	</div>
 
@@ -35,6 +41,7 @@
 
 	<MkButton
 		v-else-if="c.type === 'button'"
+		inline
 		:primary="c.primary"
 		:rounded="c.rounded"
 		:disabled="c.disabled"
@@ -43,10 +50,15 @@
 		{{ c.text }}
 	</MkButton>
 
-	<div v-else-if="c.type === 'buttons'" class="asui-buttons">
+	<div
+		v-else-if="c.type === 'buttons'"
+		class="asui-buttons"
+		:style="buttonsStyle"
+	>
 		<MkButton
 			v-for="(button, i) in c.buttons ?? []"
 			:key="i"
+			inline
 			:primary="button.primary"
 			:rounded="button.rounded"
 			:disabled="button.disabled"
@@ -111,6 +123,7 @@
 
 	<MkButton
 		v-else-if="c.type === 'postFormButton'"
+		inline
 		:primary="c.primary"
 		:rounded="c.rounded"
 		@click="openPostForm"
@@ -135,6 +148,7 @@
 			:key="childId"
 			:component="g(childId)"
 			:components="components"
+			:align="align"
 		/>
 	</MkFolder>
 </template>
@@ -147,6 +161,8 @@
  *
  * @remarks
  * Misskey Play 互換の {@link registerAsUiLib} が生成するコンポーネントを Vue UI に変換する。
+ * `align` prop はページの中央寄せ設定や Ui:C:container の align を子へ伝播し、
+ * flex 子要素（ボタン等）の横位置を決める。
  *
  * @public
  */
@@ -166,12 +182,23 @@ import MkSelect from "@/components/form/select.vue";
 import MkFolder from "@/components/MkFolder.vue";
 import MkPostForm from "@/components/MkPostForm.vue";
 
-const props = defineProps<{
-	component: AsUiComponent;
-	components: Ref<AsUiComponent>[];
-}>();
+/** 横方向の配置（ページ設定・Ui:C:container 共通） */
+type AsUiAlign = "left" | "center" | "right";
+
+const props = withDefaults(
+	defineProps<{
+		component: AsUiComponent;
+		components: Ref<AsUiComponent>[];
+		/** ページ中央寄せなど、親から渡される既定の横配置 */
+		align?: AsUiAlign;
+	}>(),
+	{
+		align: "left",
+	},
+);
 
 const c = props.component;
+const align = computed(() => props.align);
 
 /** ID からコンポーネント定義を取得（見つからない場合はダミールート） */
 function g(id: string): AsUiComponent {
@@ -185,9 +212,42 @@ function g(id: string): AsUiComponent {
 	} as AsUiRoot;
 }
 
+/**
+ * align 文字列を flex の cross-axis / main-axis 用値へ変換する
+ *
+ * @param value - left / center / right
+ * @returns flex-start / center / flex-end
+ */
+function alignToFlex(value: AsUiAlign): string {
+	switch (value) {
+		case "center":
+			return "center";
+		case "right":
+			return "flex-end";
+		default:
+			return "flex-start";
+	}
+}
+
+/** ルートコンテナの flex 横配置（ページ alignCenter の主な適用先） */
+const rootStyle = computed(() => {
+	if (c.type !== "root") return undefined;
+
+	return {
+		alignItems: alignToFlex(align.value),
+	};
+});
+
+/** container 内の子へ渡す align（スクリプトの align が優先） */
+const containerChildAlign = computed((): AsUiAlign => {
+	if (c.type !== "container") return align.value;
+	return c.align ?? align.value;
+});
+
 const containerStyle = computed(() => {
 	if (c.type !== "container") return undefined;
 
+	const effectiveAlign = containerChildAlign.value;
 	const isBordered = c.borderWidth ?? c.borderColor ?? c.borderStyle;
 	const border = isBordered
 		? {
@@ -198,7 +258,8 @@ const containerStyle = computed(() => {
 		: undefined;
 
 	return {
-		textAlign: c.align,
+		textAlign: effectiveAlign,
+		alignItems: alignToFlex(effectiveAlign),
 		backgroundColor: c.bgColor,
 		color: c.fgColor,
 		padding: c.padding ? `${c.padding}px` : 0,
@@ -212,6 +273,11 @@ const containerStyle = computed(() => {
 		...border,
 	};
 });
+
+/** 横並びボタン行の main-axis 配置 */
+const buttonsStyle = computed(() => ({
+	justifyContent: alignToFlex(align.value),
+}));
 
 const textStyle = computed(() => {
 	if (c.type !== "text" && c.type !== "mfm") return undefined;
@@ -299,6 +365,12 @@ function openPostForm() {
 </script>
 
 <style lang="scss" scoped>
+.asui-root {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
 .asui-container {
 	display: flex;
 	flex-direction: column;

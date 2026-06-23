@@ -15,7 +15,11 @@
 		class="iroscrza asui-play-root"
 		:class="{ center: page.alignCenter }"
 	>
-		<MkAsUi :component="playRoot" :components="playComponents" />
+		<MkAsUi
+			:component="playRoot"
+			:components="playComponents"
+			:align="page.alignCenter ? 'center' : 'left'"
+		/>
 	</div>
 
 	<!-- ブロックモード: コンテンツブロック + 変数 + 補助 script -->
@@ -255,9 +259,5 @@ export default defineComponent({
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
-
-	&.center {
-		align-items: center;
-	}
 }
 </style>

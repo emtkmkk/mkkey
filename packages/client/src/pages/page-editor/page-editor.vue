@@ -230,6 +230,7 @@
 							<MkAsUi
 								:component="previewRoot"
 								:components="previewComponents"
+								:align="alignCenter ? 'center' : 'left'"
 							/>
 						</div>
 					</div>
@@ -853,7 +854,6 @@ definePageMetadata(
 
 			&.center {
 				text-align: center;
-				align-items: center;
 			}
 		}
 	}

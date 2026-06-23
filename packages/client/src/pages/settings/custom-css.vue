@@ -37,20 +37,26 @@
 					{{ i18n.ts.makeActive }}
 				</FormSwitch>
 
-				<div class="_formBlock snippet-actions">
-					<MkButton inline @click="editMetadata(snippet)">
-						<i class="ph-pencil ph-bold ph-lg"></i>
-						{{ i18n.ts._cssSnippet.editMetadata }}
-					</MkButton>
-					<MkButton inline @click="editCss(snippet)">
-						<i class="ph-code ph-bold ph-lg"></i>
-						{{ i18n.ts._cssSnippet.editCss }}
-					</MkButton>
-					<MkButton inline danger @click="removeSnippet(snippet)">
-						<i class="ph-trash ph-bold ph-lg"></i>
-						{{ i18n.ts.delete }}
-					</MkButton>
-				</div>
+				<FormFolder class="_formBlock">
+					<template #label>{{ i18n.ts._cssSnippet.operations }}</template>
+					<template #icon
+						><i class="ph-wrench ph-bold ph-lg"></i
+					></template>
+					<div class="snippet-operations">
+						<FormLink
+							:to="`/settings/custom-css/edit/${snippet.id}`"
+						>
+							<template #icon>
+								<i class="ph-pencil ph-bold ph-lg"></i>
+							</template>
+							{{ i18n.ts._cssSnippet.edit }}
+						</FormLink>
+						<MkButton inline danger @click="removeSnippet(snippet)">
+							<i class="ph-trash ph-bold ph-lg"></i>
+							{{ i18n.ts.delete }}
+						</MkButton>
+					</div>
+				</FormFolder>
 			</div>
 		</FormSection>
 	</div>
@@ -60,32 +66,34 @@
 /**
  * @packageDocumentation
  *
- * カスタム CSS スニペットの一覧・有効化・編集画面。
+ * カスタム CSS スニペットの一覧・有効化画面。
  *
  * @remarks
+ * - 編集は専用ページ（custom-css.edit.vue）へ遷移する。
  * - ON/OFF トグルはページ再読み込みなしで反映する。
- * - CSS 本文の変更後は従来どおり再読み込みを促す。
  *
  * @public
  */
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onActivated } from "vue";
 import FormSection from "@/components/form/section.vue";
+import FormFolder from "@/components/form/folder.vue";
+import FormLink from "@/components/form/link.vue";
 import FormSwitch from "@/components/form/switch.vue";
 import FormInfo from "@/components/MkInfo.vue";
 import MkButton from "@/components/MkButton.vue";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
-import { unisonReload } from "@/scripts/unison-reload";
+import { useRouter } from "@/router";
 import {
 	changeCssSnippetActive,
 	createCssSnippet,
 	deleteCssSnippet,
 	getCssSnippets,
-	updateCssSnippet,
 	type CssSnippet,
 } from "@/css-snippet";
 
+const router = useRouter();
 const snippets = ref<CssSnippet[]>([]);
 
 function refreshSnippets(): void {
@@ -96,78 +104,22 @@ onMounted(() => {
 	refreshSnippets();
 });
 
+onActivated(() => {
+	refreshSnippets();
+});
+
 function changeActive(snippet: CssSnippet, active: boolean): void {
 	changeCssSnippetActive(snippet.id, active);
 	refreshSnippets();
 }
 
-async function addSnippet(): Promise<void> {
-	const { canceled, result: name } = await os.inputText({
-		title: i18n.ts._cssSnippet.add,
-		placeholder: i18n.ts._cssSnippet.namePlaceholder,
-	});
-	if (canceled || !name?.trim()) return;
-
-	const { canceled: descCanceled, result: description } =
-		await os.inputParagraph({
-			title: i18n.ts._cssSnippet.description,
-			placeholder: i18n.ts._cssSnippet.descriptionPlaceholder,
-		});
-	if (descCanceled) return;
-
-	createCssSnippet({
-		name: name.trim(),
-		description: description?.trim() || undefined,
+function addSnippet(): void {
+	const snippet = createCssSnippet({
+		name: i18n.ts._cssSnippet.newSnippetName,
 		css: "",
 		active: true,
 	});
-	refreshSnippets();
-	os.success();
-}
-
-async function editMetadata(snippet: CssSnippet): Promise<void> {
-	const { canceled, result: name } = await os.inputText({
-		title: i18n.ts._cssSnippet.editMetadata,
-		default: snippet.name,
-	});
-	if (canceled || !name?.trim()) return;
-
-	const { canceled: descCanceled, result: description } =
-		await os.inputParagraph({
-			title: i18n.ts._cssSnippet.description,
-			default: snippet.description ?? "",
-			placeholder: i18n.ts._cssSnippet.descriptionPlaceholder,
-		});
-	if (descCanceled) return;
-
-	updateCssSnippet(snippet.id, {
-		name: name.trim(),
-		description: description?.trim() || undefined,
-	});
-	refreshSnippets();
-	os.success();
-}
-
-async function editCss(snippet: CssSnippet): Promise<void> {
-	const { canceled, result: css } = await os.inputParagraph({
-		title: i18n.ts._cssSnippet.editCss,
-		default: snippet.css,
-		placeholder: "CSS",
-	});
-	if (canceled) return;
-
-	updateCssSnippet(snippet.id, { css: css ?? "" });
-
-	const { canceled: reloadCanceled } = await os.confirm({
-		type: "info",
-		text: i18n.ts.reloadToApplySetting,
-	});
-	if (reloadCanceled) {
-		refreshSnippets();
-		return;
-	}
-
-	unisonReload();
+	router.push(`/settings/custom-css/edit/${snippet.id}`);
 }
 
 async function removeSnippet(snippet: CssSnippet): Promise<void> {
@@ -193,7 +145,15 @@ definePageMetadata({
 </script>
 
 <style lang="scss" scoped>
+.snippet-card {
+	padding: 1.25rem;
+}
+
 .snippet-card-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem;
 	margin-bottom: 0.5rem;
 }
 
@@ -203,9 +163,10 @@ definePageMetadata({
 	font-size: 0.9em;
 }
 
-.snippet-actions {
+.snippet-operations {
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--margin);
+	align-items: center;
 }
 </style>

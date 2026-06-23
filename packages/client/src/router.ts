@@ -178,6 +178,13 @@ export const routes = [
 				component: page(() => import("./pages/settings/theme.vue")),
 			},
 			{
+				path: "/custom-css/edit/:snippetId",
+				name: "custom-css-edit",
+				component: page(
+					() => import("./pages/settings/custom-css.edit.vue"),
+				),
+			},
+			{
 				path: "/custom-css",
 				name: "custom-css",
 				component: page(() => import("./pages/settings/custom-css.vue")),
@@ -302,6 +309,13 @@ export const routes = [
 				path: "/migration",
 				name: "migration",
 				component: page(() => import("./pages/settings/migration.vue")),
+			},
+			{
+				path: "/custom-css/edit/:snippetId",
+				name: "custom-css-edit",
+				component: page(
+					() => import("./pages/settings/custom-css.edit.vue"),
+				),
 			},
 			{
 				path: "/custom-css",

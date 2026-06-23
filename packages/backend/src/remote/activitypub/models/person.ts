@@ -38,7 +38,8 @@ import { toArray } from "@/prelude/array.js";
 import { fetchInstanceMetadata } from "@/services/fetch-instance-metadata.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import { truncate } from "@/misc/truncate.js";
-import { StatusError, getJson, getResponse } from "@/misc/fetch.js";
+import { StatusError } from "@/misc/fetch.js";
+import { appendMisskeyIoSkebFieldIfNeeded } from "./misskey-io-skeb-fields.js";
 import { uriPersonCache } from "@/services/user-cache.js";
 import { publishInternalEvent } from "@/services/stream.js";
 import { db } from "@/db/postgre.js";
@@ -160,6 +161,54 @@ function validateActor(x: IObject, uri: string): IActor {
 }
 
 /**
+ * コレクション URI から totalItems を取得する。
+ *
+ * @param uri - followers / following / outbox 等の URI
+ * @returns totalItems。取得失敗時は `undefined`
+ * @internal
+ */
+async function fetchCollectionTotalItems(
+	uri: string,
+): Promise<number | undefined> {
+	try {
+		const data = await fetch(uri, {
+			headers: { Accept: "application/json" },
+		});
+		const jsonData = JSON.parse(await data.text()) as { totalItems?: number };
+		return jsonData.totalItems;
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Person の followers / following / outbox 件数を並列取得する。
+ *
+ * @param person - ActivityPub Person
+ * @returns 各コレクションの totalItems（未取得は `undefined`）
+ * @internal
+ */
+async function resolvePersonCollectionCounts(person: IActor): Promise<{
+	followersCount: number | undefined;
+	followingCount: number | undefined;
+	notesCount: number | undefined;
+}> {
+	const [followersCount, followingCount, notesCount] = await Promise.all([
+		typeof person.followers === "string"
+			? fetchCollectionTotalItems(person.followers)
+			: Promise.resolve(undefined),
+		typeof person.following === "string"
+			? fetchCollectionTotalItems(person.following)
+			: Promise.resolve(undefined),
+		typeof person.outbox === "string"
+			? fetchCollectionTotalItems(person.outbox)
+			: Promise.resolve(undefined),
+	]);
+
+	return { followersCount, followingCount, notesCount };
+}
+
+/**
  * Person を取得する。
  *
  * 対象の Person が Calckey に登録されていればそれを返す。
@@ -222,129 +271,9 @@ export async function createPerson(
 
 	let { fields } = analyzeAttachments(person.attachment || []);
 
-	if (host === "misskey.io") {
-		try {
-			let userInfo = await (
-				await getResponse({
-					url: `https://${host}/api/users/search-by-username-and-host`,
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						"User-Agent": config.userAgent,
-						Accept: "application/json, */*",
-					},
-					body: JSON.stringify({
-						username: person.preferredUsername,
-						host,
-					}),
-					timeout: 5000,
-				})
-			).json();
-			if (Array.isArray(userInfo) && userInfo.length > 1) {
-				userInfo = userInfo.filter(
-					(x) =>
-						person.preferredUsername?.toLowerCase() ===
-						x.username.toLowerCase(),
-				);
-			}
-			if (Array.isArray(userInfo) && userInfo.length === 1 && userInfo[0].id) {
-				const skebInfo = (await getJson(
-					`https://${host}/api/users/get-skeb-status?userId=${userInfo[0].id}`,
-					"application/json, */*",
-					5000,
-				)) as Record<string, unknown>;
-				if (skebInfo) {
-					let status = "";
-
-					if (skebInfo.isAcceptable || skebInfo.isCreator) {
-						if (
-							skebInfo.isAcceptable &&
-							Array.isArray(skebInfo.skills) &&
-							skebInfo.skills.length > 0
-						) {
-							const amounts = new Map<string, string>();
-							const amounts_n = new Map<string, number>();
-							for (const skill of skebInfo.skills) {
-								if (skill !== null && typeof skill.amount === "number") {
-									const genre = getSkebGenreIcon(skill.genre);
-									const str = `${Math.ceil(skill.amount / 100) / 10}k`;
-									amounts.set(str, (amounts.get(str) ?? "") + genre);
-									amounts_n.set(str, (amounts_n.get(str) ?? 0) + 1);
-								}
-							}
-							if (amounts.size >= 1) {
-								status += `${amounts.get(Array.from(amounts.keys())[0])} ${
-									Array.from(amounts.keys())[0]
-								}`;
-								if (amounts.size === 2) {
-									status += ` ${amounts.get(Array.from(amounts.keys())[1])} ${
-										Array.from(amounts.keys())[1]
-									}`;
-								} else if (amounts.size > 2 && amounts_n.size > 0) {
-									status += ` (+${
-										skebInfo.skills.length -
-										(amounts_n.get(Array.from(amounts_n.keys())[0]) ?? 1)
-									})`;
-								}
-							}
-						}
-						if (
-							typeof skebInfo.creatorRequestCount === "number" &&
-							skebInfo.creatorRequestCount > 0
-						) {
-							if (skebInfo.isAcceptable) {
-								status += " | ";
-							}
-							status += `${skebInfo.creatorRequestCount.toLocaleString()}件`;
-						}
-						if (
-							fields?.length >= 16 &&
-							fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
-								.length < 16
-						) {
-							fields = fields.filter(
-								(x) => !x.name.toLowerCase().includes("skeb"),
-							);
-						}
-						if (fields?.length < 16) {
-							fields.push({
-								name: "★Skeb",
-								value: `[${skebInfo.isAcceptable ? "募集中" : "停止中"}${
-									status ? ` ${status}` : ""
-								}](https://skeb.jp/@${skebInfo.screenName})`,
-							});
-						}
-					} else {
-						if (
-							typeof skebInfo.clientRequestCount === "number" &&
-							skebInfo.clientRequestCount > 0
-						) {
-							status = `${skebInfo.clientRequestCount.toLocaleString()}件`;
-							if (
-								fields?.length >= 16 &&
-								fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
-									.length < 16
-							) {
-								fields = fields.filter(
-									(x) => !x.name.toLowerCase().includes("skeb"),
-								);
-							}
-							if (fields?.length < 16) {
-								fields.push({
-									name: "★Skeb",
-									value: `[クライアント${
-										status ? ` ${status}` : ""
-									}](https://skeb.jp/@${skebInfo.screenName})`,
-								});
-							}
-						}
-					}
-				}
-			}
-		} catch (e) {
-			logger.warn(`fetch AddUserInfo err : ${e}`);
-		}
-	}
+	fields = await appendMisskeyIoSkebFieldIfNeeded(person, fields, host, {
+		style: "create",
+	});
 
 	const tags = extractApHashtags(person.tag)
 		.map((tag) => normalizeForSearch(tag))
@@ -371,50 +300,8 @@ export async function createPerson(
 		);
 	}
 
-	let followersCount: number | undefined;
-
-	if (typeof person.followers === "string") {
-		try {
-			let data = await fetch(person.followers, {
-				headers: { Accept: "application/json" },
-			});
-			let json_data = JSON.parse(await data.text());
-
-			followersCount = json_data.totalItems;
-		} catch {
-			followersCount = undefined;
-		}
-	}
-
-	let followingCount: number | undefined;
-
-	if (typeof person.following === "string") {
-		try {
-			let data = await fetch(person.following, {
-				headers: { Accept: "application/json" },
-			});
-			let json_data = JSON.parse(await data.text());
-
-			followingCount = json_data.totalItems;
-		} catch (e) {
-			followingCount = undefined;
-		}
-	}
-
-	let notesCount: number | undefined;
-
-	if (typeof person.outbox === "string") {
-		try {
-			let data = await fetch(person.outbox, {
-				headers: { Accept: "application/json" },
-			});
-			let json_data = JSON.parse(await data.text());
-
-			notesCount = json_data.totalItems;
-		} catch (e) {
-			notesCount = undefined;
-		}
-	}
+	const { followersCount, followingCount, notesCount } =
+		await resolvePersonCollectionCounts(person);
 
 	let _description: string | null = null;
 
@@ -638,130 +525,9 @@ export async function updatePerson(
 
 	const host = exist.host;
 
-	if (host === "misskey.io") {
-		try {
-			let userInfo = await (
-				await getResponse({
-					url: `https://${host}/api/users/search-by-username-and-host`,
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						"User-Agent": config.userAgent2 ?? config.userAgent,
-						Accept: "application/json, */*",
-					},
-					body: JSON.stringify({
-						username: person.preferredUsername,
-						host,
-					}),
-					timeout: 5000,
-				})
-			).json();
-			if (Array.isArray(userInfo) && userInfo.length > 1) {
-				userInfo = userInfo.filter(
-					(x) =>
-						person.preferredUsername?.toLowerCase() ===
-						x.username.toLowerCase(),
-				);
-			}
-			if (Array.isArray(userInfo) && userInfo.length === 1 && userInfo[0].id) {
-				const skebInfo = (await getJson(
-					`https://${host}/api/users/get-skeb-status?userId=${userInfo[0].id}`,
-					"application/json, */*",
-					5000,
-					{"User-Agent": config.userAgent2 ?? config.userAgent},
-				)) as Record<string, unknown>;
-				if (skebInfo) {
-					let status = "";
-
-					if (skebInfo.isAcceptable || skebInfo.isCreator) {
-						if (
-							skebInfo.isAcceptable &&
-							Array.isArray(skebInfo.skills) &&
-							skebInfo.skills.length > 0
-						) {
-							const amounts = new Map<string, string>();
-							const amounts_n = new Map<string, number>();
-							for (const skill of skebInfo.skills) {
-								if (skill !== null && typeof skill.amount === "number") {
-									const genre = getSkebGenreIcon(skill.genre);
-									const str = `${Math.ceil(skill.amount / 100) / 10}k`;
-									amounts.set(str, (amounts.get(str) ?? "") + genre);
-									amounts_n.set(str, (amounts_n.get(str) ?? 0) + 1);
-								}
-							}
-							if (amounts.size >= 1) {
-								status += `${amounts.get(Array.from(amounts.keys())[0])} ${
-									Array.from(amounts.keys())[0]
-								}`;
-								if (amounts.size === 2) {
-									status += ` ${amounts.get(Array.from(amounts.keys())[1])} ${
-										Array.from(amounts.keys())[1]
-									}`;
-								} else if (amounts.size > 2 && amounts_n.size > 0) {
-									status += ` (+${
-										skebInfo.skills.length -
-										(amounts_n.get(Array.from(amounts_n.keys())[0]) ?? 1)
-									})`;
-								}
-							}
-						}
-						if (
-							typeof skebInfo.creatorRequestCount === "number" &&
-							skebInfo.creatorRequestCount > 0
-						) {
-							if (skebInfo.isAcceptable) {
-								status += " | ";
-							}
-							status += `${skebInfo.creatorRequestCount.toLocaleString()}件`;
-						}
-						if (
-							fields?.length >= 16 &&
-							fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
-								.length < 16
-						) {
-							fields = fields.filter(
-								(x) => !x.name.toLowerCase().includes("skeb"),
-							);
-						}
-						if (fields?.length < 16) {
-							fields.push({
-								name: "Skeb(自動)",
-								value: `[${skebInfo.isAcceptable ? "$[border.radius=5,color=FFF $[bg.color=F14668 $[fg.color=FFF  募集中 ]]]" : "$[border.radius=5,color=FFF $[bg.color=363636 $[fg.color=FFF  停止中 ]]]"}${
-									status ? ` ${status}` : ""
-								}](https://skeb.jp/@${skebInfo.screenName})`,
-							});
-						}
-					} else {
-						if (
-							typeof skebInfo.clientRequestCount === "number" &&
-							skebInfo.clientRequestCount > 0
-						) {
-							status = `${skebInfo.clientRequestCount.toLocaleString()}件`;
-							if (
-								fields?.length >= 16 &&
-								fields.filter((x) => !x.name.toLowerCase().includes("skeb"))
-									.length < 16
-							) {
-								fields = fields.filter(
-									(x) => !x.name.toLowerCase().includes("skeb"),
-								);
-							}
-							if (fields?.length < 16) {
-								fields.push({
-									name: "Skeb(自動)",
-									value: `[$[border.radius=5,color=FFF $[bg.color=363636 $[fg.color=FFF  クライアント ]]]${
-										status ? ` ${status}` : ""
-									}](https://skeb.jp/@${skebInfo.screenName})`,
-								});
-							}
-						}
-					}
-				}
-			}
-		} catch (e) {
-			logger.warn(`fetch AddUserInfo err : ${e}`);
-		}
-	}
+	fields = await appendMisskeyIoSkebFieldIfNeeded(person, fields, host, {
+		style: "update",
+	});
 
 	const tags = extractApHashtags(person.tag)
 		.map((tag) => normalizeForSearch(tag))
@@ -786,50 +552,8 @@ export async function updatePerson(
 		);
 	}
 
-	let followersCount: number | undefined;
-
-	if (typeof person.followers === "string") {
-		try {
-			let data = await fetch(person.followers, {
-				headers: { Accept: "application/json" },
-			});
-			let json_data = JSON.parse(await data.text());
-
-			followersCount = json_data.totalItems;
-		} catch {
-			followersCount = undefined;
-		}
-	}
-
-	let followingCount: number | undefined;
-
-	if (typeof person.following === "string") {
-		try {
-			let data = await fetch(person.following, {
-				headers: { Accept: "application/json" },
-			});
-			let json_data = JSON.parse(await data.text());
-
-			followingCount = json_data.totalItems;
-		} catch {
-			followingCount = undefined;
-		}
-	}
-
-	let notesCount: number | undefined;
-
-	if (typeof person.outbox === "string") {
-		try {
-			let data = await fetch(person.outbox, {
-				headers: { Accept: "application/json" },
-			});
-			let json_data = JSON.parse(await data.text());
-
-			notesCount = json_data.totalItems;
-		} catch (e) {
-			notesCount = undefined;
-		}
-	}
+	const { followersCount, followingCount, notesCount } =
+		await resolvePersonCollectionCounts(person);
 
 	let _description: string | null = null;
 
@@ -1095,25 +819,4 @@ export async function updateFeatured(userId: User["id"], resolver?: Resolver) {
                         }
                 }
         });
-}
-
-function getSkebGenreIcon(genre: string) {
-	switch (genre) {
-		case "art":
-			return "🎨";
-		case "comic":
-			return "🖼";
-		case "voice":
-			return "💬";
-		case "novel":
-			return "✒";
-		case "video":
-			return "🎞️";
-		case "music":
-			return "🎵";
-		case "correction":
-			return "⭐️";
-		default:
-			return "❓️";
-	}
 }

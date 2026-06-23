@@ -8,13 +8,14 @@
 		"format": "pnpm prettier --write '**/*.vue'"
 	},
 	"devDependencies": {
-		"@discordapp/twemoji": "14.0.2",
-		"@khmyznikov/pwa-install": "^0.2.6",
-		"@phosphor-icons/web": "^2.0.3",
+		"@discordapp/twemoji": "16.0.1",
+		"@khmyznikov/pwa-install": "^0.4.3",
+		"@phosphor-icons/web": "^2.1.1",
 		"@rollup/plugin-alias": "3.1.9",
 		"@rollup/plugin-json": "4.1.0",
 		"@rollup/pluginutils": "^4.2.1",
 		"@syuilo/aiscript": "0.16.0",
+		"@twemoji/parser": "16.0.0",
 		"@types/escape-regexp": "0.0.1",
 		"@types/glob": "8.0.0",
 		"@types/gulp": "4.0.10",
@@ -32,16 +33,15 @@
 		"autosize": "5.0.2",
 		"blurhash": "1.1.5",
 		"broadcast-channel": "5.3.0",
-		"browser-image-resizer": "github:misskey-dev/browser-image-resizer",
 		"calckey-js": "workspace:*",
-		"chart.js": "4.1.1",
+		"chart.js": "4.4.3",
 		"chartjs-adapter-date-fns": "2.0.1",
 		"chartjs-chart-matrix": "^2.0.1",
 		"chartjs-plugin-gradient": "0.5.1",
-		"chartjs-plugin-zoom": "1.2.1",
+		"chartjs-plugin-zoom": "2.0.1",
 		"city-timezones": "^1.2.1",
 		"compare-versions": "5.0.3",
-		"cropperjs": "2.0.0-beta.2",
+		"cropperjs": "2.0.1",
 		"cross-env": "7.0.3",
 		"cypress": "10.11.0",
 		"date-fns": "2.29.3",
@@ -75,7 +75,6 @@
 		"tinycolor2": "1.5.2",
 		"tsc-alias": "1.8.2",
 		"tsconfig-paths": "4.1.2",
-		"twemoji-parser": "14.0.0",
 		"typescript": "4.9.4",
 		"uuid": "9.0.0",
 		"vanilla-tilt": "1.8.0",
@@ -88,8 +87,9 @@
 		"vuedraggable": "4.1.0"
 	},
 	"dependencies": {
+		"@misskey-dev/browser-image-resizer": "2024.1.0",
 		"activate-power-mode": "github:emtkmkk/activate-power-mode",
 		"mfm-js": "github:emtkmkk/mfm.js#develop",
-		"sharp-read-bmp": "github:misskey-dev/sharp-read-bmp"
+		"vue3-colorpicker": "2.3.0"
 	}
 }

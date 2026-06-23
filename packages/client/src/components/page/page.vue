@@ -10,7 +10,11 @@
 
 	<!-- Play モード: content 空 + script あり → Ui: API で描画 -->
 
-	<div v-if="isPlayMode && playRoot" class="iroscrza asui-play-root">
+	<div
+		v-if="isPlayMode && playRoot"
+		class="iroscrza asui-play-root"
+		:class="{ center: page.alignCenter }"
+	>
 		<MkAsUi :component="playRoot" :components="playComponents" />
 	</div>
 
@@ -249,9 +253,11 @@ export default defineComponent({
 
 .asui-play-root {
 	display: flex;
-
 	flex-direction: column;
-
 	gap: 0.75rem;
+
+	&.center {
+		align-items: center;
+	}
 }
 </style>

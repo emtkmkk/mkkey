@@ -105,7 +105,6 @@
 					</MkSwitch>
 
 					<MkSwitch
-						v-if="!isPlayMode"
 						v-model="alignCenter"
 						class="_formBlock"
 						:disabled="readonly"
@@ -224,10 +223,15 @@
 						class="play-preview _panel _gap"
 					>
 						<h3>{{ i18n.ts._pages.playMode.previewTitle }}</h3>
-						<MkAsUi
-							:component="previewRoot"
-							:components="previewComponents"
-						/>
+						<div
+							class="play-preview-root iroscrza asui-play-root"
+							:class="{ center: alignCenter }"
+						>
+							<MkAsUi
+								:component="previewRoot"
+								:components="previewComponents"
+							/>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -335,6 +339,8 @@ async function switchToPlayMode() {
 
 	content = [];
 	variables = [];
+	// Play モードは Misskey Play に合わせてデフォルト中央寄せ
+	alignCenter = true;
 	if (!script.trim()) {
 		script = PLAY_SCRIPT_PRESET;
 	}
@@ -838,6 +844,17 @@ definePageMetadata(
 		> h3 {
 			margin: 0 0 0.75rem 0;
 			font-size: 0.95rem;
+		}
+
+		> .play-preview-root {
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+
+			&.center {
+				text-align: center;
+				align-items: center;
+			}
 		}
 	}
 }

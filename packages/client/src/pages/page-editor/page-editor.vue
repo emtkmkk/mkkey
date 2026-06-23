@@ -851,6 +851,7 @@ definePageMetadata(
 			display: flex;
 			flex-direction: column;
 			gap: 0.75rem;
+			width: 100%;
 
 			&.center {
 				text-align: center;

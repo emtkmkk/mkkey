@@ -234,6 +234,8 @@ const rootStyle = computed(() => {
 	if (c.type !== "root") return undefined;
 
 	return {
+		width: "100%",
+		textAlign: align.value,
 		alignItems: alignToFlex(align.value),
 	};
 });
@@ -258,6 +260,7 @@ const containerStyle = computed(() => {
 		: undefined;
 
 	return {
+		width: "100%",
 		textAlign: effectiveAlign,
 		alignItems: alignToFlex(effectiveAlign),
 		backgroundColor: c.bgColor,
@@ -369,12 +372,23 @@ function openPostForm() {
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
+	width: 100%;
 }
 
 .asui-container {
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
+	width: 100%;
+}
+
+.asui-text {
+	width: 100%;
+	margin: 0;
+}
+
+.asui-mfm {
+	width: 100%;
 }
 
 .asui-buttons {

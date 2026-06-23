@@ -71,7 +71,6 @@ export const PageRepository = db.getRepository(Page).extend({
 			isPublic: page.isPublic,
 			name: page.name,
 			summary: page.summary,
-			hideTitleWhenPinned: page.hideTitleWhenPinned,
 			alignCenter: page.alignCenter,
 			font: page.font,
 			script: page.script,

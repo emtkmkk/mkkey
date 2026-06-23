@@ -26,7 +26,11 @@
 					><i class="ph-floppy-disk-back ph-bold ph-lg"></i>
 					{{ i18n.ts.save }}</MkButton
 				>
-				<MkButton v-if="pageId" inline class="button" @click="duplicate"
+				<MkButton
+					v-if="pageId && !readonly"
+					inline
+					class="button"
+					@click="duplicate"
 					><i class="ph-clipboard-text ph-bold ph-lg"></i>
 					{{ i18n.ts.duplicate }}</MkButton
 				>
@@ -43,6 +47,40 @@
 
 			<div v-if="tab === 'settings'">
 				<div class="_formRoot">
+					<MkInput
+						v-model="title"
+						class="_formBlock"
+						:readonly="readonly"
+					>
+						<template #label>{{ i18n.ts._pages.title }}</template>
+					</MkInput>
+
+					<MkInput
+						v-model="summary"
+						class="_formBlock"
+						:readonly="readonly"
+					>
+						<template #label>{{ i18n.ts._pages.summary }}</template>
+					</MkInput>
+
+					<MkInput
+						v-model="name"
+						class="_formBlock"
+						:readonly="readonly"
+					>
+						<template #prefix
+							>{{ url }}/@{{ author.username }}/pages/</template
+						>
+						<template #label>{{ i18n.ts._pages.url }}</template>
+					</MkInput>
+
+					<MkSwitch
+						v-model="isPublic"
+						class="_formBlock"
+						:disabled="readonly"
+						>{{ i18n.ts.public }}</MkSwitch
+					>
+
 					<MkSwitch
 						v-if="!readonly"
 						class="_formBlock"
@@ -54,33 +92,32 @@
 							i18n.ts._pages.playMode.enableDescription
 						}}</template>
 					</MkSwitch>
+					<MkSwitch
+						v-else
+						class="_formBlock"
+						:model-value="isPlayMode"
+						disabled
+					>
+						{{ i18n.ts._pages.playMode.enable }}
+						<template #caption>{{
+							i18n.ts._pages.playMode.enableDescription
+						}}</template>
+					</MkSwitch>
 
-					<MkInput v-model="title" class="_formBlock">
-						<template #label>{{ i18n.ts._pages.title }}</template>
-					</MkInput>
-
-					<MkInput v-model="summary" class="_formBlock">
-						<template #label>{{ i18n.ts._pages.summary }}</template>
-					</MkInput>
-
-					<MkInput v-model="name" class="_formBlock">
-						<template #prefix
-							>{{ url }}/@{{ author.username }}/pages/</template
-						>
-						<template #label>{{ i18n.ts._pages.url }}</template>
-					</MkInput>
-
-					<MkSwitch v-model="isPublic" class="_formBlock">{{
-						i18n.ts.public
-					}}</MkSwitch>
 					<MkSwitch
 						v-if="!isPlayMode"
 						v-model="alignCenter"
 						class="_formBlock"
+						:disabled="readonly"
 						>{{ i18n.ts._pages.alignCenter }}</MkSwitch
 					>
 
-					<MkSelect v-if="!isPlayMode" v-model="font" class="_formBlock">
+					<MkSelect
+						v-if="!isPlayMode"
+						v-model="font"
+						class="_formBlock"
+						:disabled="readonly"
+					>
 						<template #label>{{ i18n.ts._pages.font }}</template>
 						<option value="serif">
 							{{ i18n.ts._pages.fontSerif }}
@@ -89,12 +126,6 @@
 							{{ i18n.ts._pages.fontSansSerif }}
 						</option>
 					</MkSelect>
-
-					<MkSwitch
-						v-model="hideTitleWhenPinned"
-						class="_formBlock"
-						>{{ i18n.ts._pages.hideTitleWhenPinned }}</MkSwitch
-					>
 
 					<div class="eyeCatch">
 						<MkButton
@@ -124,7 +155,12 @@
 
 			<div v-else-if="tab === 'contents'">
 				<div>
-					<XBlocks v-model="content" class="content" :hpml="hpml" />
+					<XBlocks
+						v-model="content"
+						class="content"
+						:hpml="hpml"
+						:readonly="readonly"
+					/>
 					<MkButton v-if="!readonly" @click="add()"
 						><i class="ph-plus ph-bold ph-lg"></i
 					></MkButton>
@@ -141,17 +177,18 @@
 						item-key="name"
 						handle=".drag-handle"
 						:group="{ name: 'variables' }"
+						:disabled="readonly"
 						animation="150"
 						swap-threshold="0.5"
 					>
 						<template #item="{ element }">
 							<XVariable
 								:model-value="element"
-								:removable="true"
+								:removable="!readonly"
 								:hpml="hpml"
 								:name="element.name"
 								:title="element.name"
-								:draggable="true"
+								:draggable="!readonly"
 								@remove="() => removeVariable(element)"
 							/>
 						</template>
@@ -181,7 +218,7 @@
 					<p v-if="isPlayMode" class="play-mode-hint">
 						{{ i18n.ts._pages.playMode.hint }}
 					</p>
-					<MkTextarea v-model="script" class="_code" />
+					<MkTextarea v-model="script" class="_code" :readonly="readonly" />
 					<div
 						v-if="isPlayMode && previewRoot"
 						class="play-preview _panel _gap"
@@ -251,7 +288,6 @@ let font = $ref("sans-serif");
 let content = $ref([]);
 let alignCenter = $ref(false);
 let isPublic = $ref(true);
-let hideTitleWhenPinned = $ref(false);
 let variables = $ref([]);
 let hpml = $ref(null);
 let script = $ref("");
@@ -302,7 +338,6 @@ async function switchToPlayMode() {
 	if (!script.trim()) {
 		script = PLAY_SCRIPT_PRESET;
 	}
-	tab = "script";
 }
 
 async function switchToBlockMode() {
@@ -314,7 +349,6 @@ async function switchToBlockMode() {
 
 	const id = uuid();
 	content = [{ id, type: "text", text: "" }];
-	tab = "contents";
 }
 
 async function onPlayModeToggle(enabled: boolean): Promise<void> {
@@ -346,7 +380,7 @@ async function previewPlayScript() {
 	}
 }
 
-provide("readonly", readonly);
+provide("readonly", computed(() => readonly));
 provide("getScriptBlockList", getScriptBlockList);
 provide("getPageBlockList", getPageBlockList);
 
@@ -367,7 +401,6 @@ function getSaveOptions() {
 		summary: summary,
 		font: font,
 		script: script,
-		hideTitleWhenPinned: hideTitleWhenPinned,
 		alignCenter: alignCenter,
 		isPublic: isPublic,
 		content: content,
@@ -630,7 +663,6 @@ async function init() {
 		summary = page.summary;
 		font = page.font;
 		script = page.script;
-		hideTitleWhenPinned = page.hideTitleWhenPinned;
 		alignCenter = page.alignCenter;
 		isPublic = page.isPublic;
 		content = page.content;

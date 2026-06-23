@@ -103,11 +103,6 @@ export const paramDef = {
 			default: true,
 			description: "true なら未認証でも閲覧可能。",
 		},
-		hideTitleWhenPinned: {
-			type: "boolean",
-			default: false,
-			description: "プロフィールにピン留めしたときにタイトルを隠すか。",
-		},
 	},
 	required: ["title", "name", "content", "variables", "script"],
 } as const;
@@ -149,7 +144,6 @@ export default define(meta, paramDef, async (ps, user) => {
 			userId: user.id,
 			visibility: "public",
 			alignCenter: ps.alignCenter,
-			hideTitleWhenPinned: ps.hideTitleWhenPinned,
 			font: ps.font,
 			isPublic: ps.isPublic,
 		}),

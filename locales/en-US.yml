@@ -1559,6 +1559,7 @@ _plugin:
   handlerPageView: "Page view interceptor"
   operations: "Operations"
   sourceEmpty: "No source saved for this plugin"
+  sourceLegacyAst: "This plugin was installed in a legacy format without saved source. Use \"Update source\" to paste it again."
   copyFailed: "Failed to copy to clipboard"
 _preferencesBackups:
   list: "Created backups"
@@ -2242,7 +2243,6 @@ _pages:
   url: "Page URL"
   summary: "Page summary"
   alignCenter: "Center elements"
-  hideTitleWhenPinned: "Hide Page title when pinned to profile"
   font: "Font"
   fontSerif: "Serif"
   fontSansSerif: "Sans Serif"
@@ -2543,7 +2543,6 @@ _categories:
   name: "Category display name"
   summary: "Category summary"
   alignCenter: "Center align"
-  hideTitleWhenPinned: "Hide title when pinned"
   font: "Font"
   fontSerif: "Serif"
   fontSansSerif: "Sans serif"

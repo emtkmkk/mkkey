@@ -81,12 +81,6 @@ export const packedPageSchema = {
 			nullable: false,
 			description: "公開ページか。",
 		},
-		hideTitleWhenPinned: {
-			type: "boolean",
-			optional: false,
-			nullable: false,
-			description: "ピン留め時にタイトルを隠すか。",
-		},
 		alignCenter: {
 			type: "boolean",
 			optional: false,

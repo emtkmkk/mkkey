@@ -1826,6 +1826,11 @@ export type Plugin = {
 	src: string;
 	token: string | null;
 	tokenId: string | null;
+	/**
+	 * 旧形式（ast のみ保存）でソース文字列がない場合 true。
+	 * 実行時の表示用。永続化フィールドではない。
+	 */
+	legacyAstOnly?: boolean;
 };
 
 /**

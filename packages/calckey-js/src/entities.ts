@@ -392,7 +392,6 @@ export type Page = {
 	title: string;
 	name: string;
 	summary: string | null;
-	hideTitleWhenPinned: boolean;
 	alignCenter: boolean;
 	font: string;
 	script: string;

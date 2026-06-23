@@ -371,6 +371,9 @@ definePageMetadata(
 				}
 
 				> .menu-actions {
+					display: flex;
+					align-items: center;
+					gap: 0.25rem;
 					-webkit-backdrop-filter: var(--blur, blur(8px));
 					backdrop-filter: var(--blur, blur(8px));
 					background: rgba(0, 0, 0, 0.2);
@@ -382,17 +385,23 @@ definePageMetadata(
 					left: 1rem;
 
 					> .menu {
-						vertical-align: bottom;
+						display: inline-flex;
+						align-items: center;
+						justify-content: center;
+						flex-shrink: 0;
 						height: 1.9375rem;
 						width: 1.9375rem;
 						color: #fff;
 						text-shadow: 0 0 0.5rem var(--shadow);
 						font-size: 1rem;
+
+						> i {
+							line-height: 1;
+						}
 					}
 
 					> .koudoku {
 						margin-left: 0.25rem;
-						vertical-align: bottom;
 					}
 				}
 			}

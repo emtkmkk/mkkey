@@ -5,6 +5,7 @@
 		item-key="id"
 		handle=".drag-handle"
 		:group="{ name: 'blocks' }"
+		:disabled="readonly"
 		animation="150"
 		swap-threshold="0.5"
 	>
@@ -68,6 +69,10 @@ export default defineComponent({
 		},
 		hpml: {
 			required: true,
+		},
+		readonly: {
+			type: Boolean,
+			default: false,
 		},
 	},
 

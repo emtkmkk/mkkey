@@ -61,11 +61,6 @@ export class Page {
 	@Column('boolean')
 	public isPublic: boolean;
 
-	@Column('boolean', {
-		default: false,
-	})
-	public hideTitleWhenPinned: boolean;
-
 	@Column('varchar', {
 		length: 32,
 	})

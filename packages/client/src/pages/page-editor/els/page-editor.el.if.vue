@@ -11,7 +11,7 @@
 		</template>
 
 		<section class="romcojzs">
-			<MkSelect v-model="value.var">
+			<MkSelect v-model="value.var" :disabled="readonly">
 				<template #label>{{
 					i18n.ts._pages.blocks._if.variable
 				}}</template>
@@ -39,7 +39,12 @@
 				</optgroup>
 			</MkSelect>
 
-			<XBlocks v-model="value.children" class="children" :hpml="hpml" />
+			<XBlocks
+				v-model="value.children"
+				class="children"
+				:hpml="hpml"
+				:readonly="readonly"
+			/>
 		</section>
 	</XContainer>
 </template>
@@ -53,6 +58,9 @@ import * as os from "@/os";
 import { i18n } from "@/i18n";
 
 const XBlocks = defineAsyncComponent(() => import("../page-editor.blocks.vue"));
+
+/** ソース閲覧時は子ブロックの編集を抑止する */
+const readonly = inject("readonly", false);
 
 const props = withDefaults(
 	defineProps<{

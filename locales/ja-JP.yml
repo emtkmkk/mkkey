@@ -1563,6 +1563,7 @@ _plugin:
   handlerPageView: "ページ表示の書き換え"
   operations: "操作"
   sourceEmpty: "ソースが保存されていません"
+  sourceLegacyAst: "旧形式でインストールされたためソースは保存されていません。「ソースを更新」から再貼り付けしてください。"
   copyFailed: "クリップボードへのコピーに失敗しました"
 _preferencesBackups:
   list: "作成したバックアップ"
@@ -2306,7 +2307,6 @@ _pages:
   url: "ページURL"
   summary: "ページの要約"
   alignCenter: "中央寄せ"
-  hideTitleWhenPinned: "ピン留めされているときにタイトルを非表示"
   font: "フォント"
   fontSerif: "セリフ"
   fontSansSerif: "サンセリフ"
@@ -2608,7 +2608,6 @@ _categories:
   name: "カテゴリ表示名"
   summary: "カテゴリの要約"
   alignCenter: "中央寄せ"
-  hideTitleWhenPinned: "ピン留めされているときにタイトルを非表示"
   font: "フォント"
   fontSerif: "セリフ"
   fontSansSerif: "サンセリフ"

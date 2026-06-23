@@ -155,7 +155,13 @@
 						><i class="ph-code ph-bold ph-lg"></i
 					></template>
 					<FormInfo
-						v-if="!getPluginSource(plugin).trim()"
+						v-if="isPluginLegacyAstOnly(plugin)"
+						class="_formBlock"
+					>
+						{{ i18n.ts._plugin.sourceLegacyAst }}
+					</FormInfo>
+					<FormInfo
+						v-else-if="isPluginSourceUnavailable(plugin)"
 						class="_formBlock"
 					>
 						{{ i18n.ts._plugin.sourceEmpty }}
@@ -202,6 +208,8 @@ import {
 	getPluginLangVersion,
 	getPluginSource,
 	getPlugins,
+	isPluginLegacyAstOnly,
+	isPluginSourceUnavailable,
 	pluginHandlerRegistrations,
 	pluginLaunchStatus,
 	pluginLogs,
@@ -339,7 +347,11 @@ async function updateSource(plugin: Plugin): Promise<void> {
 }
 
 async function exportPlugin(plugin: Plugin): Promise<void> {
-	if (!getPluginSource(plugin).trim()) {
+	if (isPluginLegacyAstOnly(plugin)) {
+		os.alert({ type: "error", text: i18n.ts._plugin.sourceLegacyAst });
+		return;
+	}
+	if (isPluginSourceUnavailable(plugin)) {
 		os.alert({ type: "error", text: i18n.ts._plugin.sourceEmpty });
 		return;
 	}

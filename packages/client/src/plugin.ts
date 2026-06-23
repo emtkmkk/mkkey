@@ -94,14 +94,50 @@ export const pluginHandlerRegistrations = ref(
 
 //#region ストレージヘルパー
 
+/** localStorage 上の旧プラグイン形式（ast のみ） */
+type LegacyPluginRecord = Plugin & { ast?: unknown };
+
+/**
+ * ストレージから読み込んだプラグインを正規化する。
+ *
+ * @remarks
+ * 旧 mkkey は `src` の代わりに `ast` のみ保存していた。
+ *
+ * @internal
+ */
+function normalizePlugin(raw: LegacyPluginRecord): Plugin {
+	const src = typeof raw.src === "string" ? raw.src : "";
+	const legacyAstOnly = !src.trim() && raw.ast != null;
+
+	return {
+		id: raw.id,
+		name: raw.name,
+		version: raw.version ?? "0.0.0",
+		author: raw.author,
+		description: raw.description,
+		permissions: raw.permissions,
+		config: raw.config,
+		active: raw.active ?? false,
+		configData: raw.configData ?? {},
+		src,
+		token: raw.token ?? null,
+		tokenId: raw.tokenId ?? null,
+		legacyAstOnly,
+	};
+}
+
 /** インストール済みプラグイン一覧を取得する */
 export function getPlugins(): Plugin[] {
-	return ColdDeviceStorage.get("plugins");
+	return (ColdDeviceStorage.get("plugins") as LegacyPluginRecord[]).map(
+		normalizePlugin,
+	);
 }
 
 /** プラグイン一覧を保存する */
 export function savePlugins(plugins: Plugin[]): void {
-	ColdDeviceStorage.set("plugins", plugins);
+	// legacyAstOnly は表示用のため永続化しない
+	const toStore = plugins.map(({ legacyAstOnly: _legacy, ...plugin }) => plugin);
+	ColdDeviceStorage.set("plugins", toStore);
 }
 
 /** ID でプラグインを取得する */
@@ -121,6 +157,29 @@ export function getPluginById(id: string): Plugin | undefined {
  */
 export function getPluginSource(plugin: Plugin): string {
 	return getPluginById(plugin.id)?.src ?? plugin.src ?? "";
+}
+
+/**
+ * 旧 ast 形式のみでソース文字列が保存されていないか。
+ *
+ * @param plugin - プラグイン
+ * @public
+ */
+export function isPluginLegacyAstOnly(plugin: Plugin): boolean {
+	return (
+		getPluginById(plugin.id)?.legacyAstOnly === true ||
+		plugin.legacyAstOnly === true
+	);
+}
+
+/**
+ * プラグインソースが表示・コピーできない状態か。
+ *
+ * @param plugin - プラグイン
+ * @public
+ */
+export function isPluginSourceUnavailable(plugin: Plugin): boolean {
+	return !getPluginSource(plugin).trim();
 }
 
 /**

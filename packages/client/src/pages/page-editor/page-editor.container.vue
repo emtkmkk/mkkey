@@ -3,11 +3,15 @@
 		<header>
 			<div class="title"><slot name="header"></slot></div>
 			<div class="buttons">
-				<slot name="func"></slot>
-				<button v-if="removable" class="_button" @click="remove()">
+				<slot v-if="!isReadonly" name="func"></slot>
+				<button
+					v-if="removable && !isReadonly"
+					class="_button"
+					@click="remove()"
+				>
 					<i class="ph-trash ph-bold ph-lg"></i>
 				</button>
-				<div v-if="draggable" class="drag-handle _button">
+				<div v-if="draggable && !isReadonly" class="drag-handle _button">
 					<i class="ph-list ph-bold ph-lg"></i>
 				</div>
 				<button class="_button" @click="toggleContent(!showBody)">
@@ -36,17 +40,26 @@
 				})
 			}}
 		</p>
-		<div v-show="showBody" class="body">
+		<div
+			v-show="showBody"
+			class="body"
+			:class="{ readonly: isReadonly }"
+		>
 			<slot></slot>
 		</div>
 	</div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, inject } from "vue";
 import { i18n } from "@/i18n";
 
 export default defineComponent({
+	setup() {
+		// ソース閲覧時は子要素の編集を抑止する
+		const isReadonly = inject("readonly", false);
+		return { isReadonly };
+	},
 	props: {
 		expanded: {
 			type: Boolean,
@@ -165,6 +178,11 @@ export default defineComponent({
 	}
 
 	> .body {
+		&.readonly {
+			pointer-events: none;
+			user-select: text;
+		}
+
 		::v-deep(.juejbjww),
 		::v-deep(.eiipwacr) {
 			&:not(.inline):first-child {

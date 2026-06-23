@@ -14,7 +14,12 @@
 		</template>
 
 		<section class="ilrvjyvi">
-			<XBlocks v-model="value.children" class="children" :hpml="hpml" />
+			<XBlocks
+				v-model="value.children"
+				class="children"
+				:hpml="hpml"
+				:readonly="readonly"
+			/>
 		</section>
 	</XContainer>
 </template>
@@ -27,6 +32,9 @@ import * as os from "@/os";
 import { i18n } from "@/i18n";
 
 const XBlocks = defineAsyncComponent(() => import("../page-editor.blocks.vue"));
+
+/** ソース閲覧時は子ブロックの編集を抑止する */
+const readonly = inject("readonly", false);
 
 const props = withDefaults(
 	defineProps<{

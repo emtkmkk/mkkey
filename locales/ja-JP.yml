@@ -2106,6 +2106,9 @@ _widgets:
     queueThroughput: "キュー処理速"
     streamStale: "更新遅延時間"
   aiscript: "AiScriptコンソール"
+  aiscriptApp: "AiScriptアプリ"
+  profile: "プロフィール"
+  instanceInfo: "サーバー情報"
   userList: "ユーザーリスト"
   tweets: "ツイート"
   _userList:

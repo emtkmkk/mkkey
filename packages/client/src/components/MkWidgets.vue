@@ -9,7 +9,7 @@
 				>
 					<template #label>{{ i18n.ts.selectWidget }}</template>
 					<option
-						v-for="widget in widgetDefs"
+						v-for="widget in availableWidgetDefs"
 						:key="widget"
 						:value="widget"
 					>
@@ -63,7 +63,7 @@
 		</template>
 		<component
 			:is="`mkw-${widget.name}`"
-			v-for="widget in widgets"
+			v-for="widget in visibleWidgets"
 			v-else
 			:key="widget.id"
 			:ref="(el) => (widgetRefs[widget.id] = el)"
@@ -80,9 +80,10 @@ import { defineAsyncComponent, reactive, ref, computed } from "vue";
 import { v4 as uuid } from "uuid";
 import MkSelect from "@/components/form/select.vue";
 import MkButton from "@/components/MkButton.vue";
-import { widgets as widgetDefs } from "@/widgets";
+import { widgets as widgetDefs, federationWidgets } from "@/widgets";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
+import { instance } from "@/instance";
 
 const XDraggable = defineAsyncComponent(() => import("vuedraggable"));
 
@@ -96,6 +97,24 @@ const props = defineProps<{
 	widgets: Widget[];
 	edit: boolean;
 }>();
+
+/** 連合無効時は federation 系ウィジェットを選択肢から除外する */
+const availableWidgetDefs = computed(() => {
+	const meta = instance as { federation?: string };
+	if (meta.federation === "none") {
+		return widgetDefs.filter(
+			(x) => !federationWidgets.includes(x as (typeof federationWidgets)[number]),
+		);
+	}
+	return widgetDefs;
+});
+
+/** 表示中ウィジェットも利用可能な定義に含まれるものだけに絞る */
+const visibleWidgets = computed(() =>
+	props.widgets.filter((x) =>
+		availableWidgetDefs.value.includes(x.name as (typeof widgetDefs)[number]),
+	),
+);
 
 const emit = defineEmits<{
 	(ev: "updateWidgets", widgets: Widget[]): void;

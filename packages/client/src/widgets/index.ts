@@ -101,7 +101,22 @@ export default function (app: App) {
 		"MkwHealthScore",
 		defineAsyncComponent(() => import("./health-score.vue")),
 	);
+	app.component(
+		"MkwProfile",
+		defineAsyncComponent(() => import("./profile.vue")),
+	);
+	app.component(
+		"MkwInstanceInfo",
+		defineAsyncComponent(() => import("./instance-info.vue")),
+	);
+	app.component(
+		"MkwAiscriptApp",
+		defineAsyncComponent(() => import("./aiscript-app.vue")),
+	);
 }
+
+/** 連合無効時に選択肢から除外するウィジェット名 */
+export const federationWidgets = ["federation", "instanceCloud"] as const;
 
 export const widgets = [
 	"memo",
@@ -129,4 +144,7 @@ export const widgets = [
 	"aiscript",
 	"tweets",
 	"healthScore",
+	"profile",
+	"instanceInfo",
+	"aiscriptApp",
 ];

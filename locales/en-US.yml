@@ -2063,6 +2063,9 @@ _widgets:
     queueThroughput: "Queue throughput"
     streamStale: "Stream stale"
   aiscript: "AiScript console"
+  aiscriptApp: "AiScript app"
+  profile: "Profile"
+  instanceInfo: "Instance info"
   userList: "User list"
   tweets: "Tweets"
   _userList:

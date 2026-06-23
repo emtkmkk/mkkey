@@ -1,6 +1,6 @@
 import tinycolor from "tinycolor2";
 import { Hpml } from "./evaluator";
-import { values, utils } from "@syuilo/aiscript";
+import type { AiscriptRuntime } from "../aiscript/runtime";
 import { Fn, HpmlScope } from ".";
 import { Expr } from "./expr";
 import seedrandom from "seedrandom";
@@ -20,10 +20,22 @@ Chart.pluginService.register({
 });
 */
 
-export function initAiLib(hpml: Hpml) {
+/**
+ * ブロックモード用 AiScript ライブラリ（MkPages:*）を構築する。
+ *
+ * @param hpml - HPML 評価器
+ * @param runtime - スクリプト注釈に応じた AiScript ランタイム
+ * @returns インタプリタに注入する定数マップ
+ * @internal
+ */
+export function initAiLib(
+	hpml: Hpml,
+	runtime: Pick<AiscriptRuntime, "utils" | "values">,
+) {
+	const { values, utils } = runtime;
 	return {
 		"MkPages:updated": values.FN_NATIVE(([callback]) => {
-			hpml.pageVarUpdatedCallback = callback as values.VFn;
+			hpml.pageVarUpdatedCallback = callback;
 		}),
 		"MkPages:get_canvas": values.FN_NATIVE(([id]) => {
 			utils.assertString(id);

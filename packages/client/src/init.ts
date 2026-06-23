@@ -770,13 +770,9 @@ const initializeReloadDialog = () => {
 };
 
 const initializePlugins = () => {
-	for (const plugin of ColdDeviceStorage.get("plugins").filter(
-		(p) => p.active,
-	)) {
-		import("./plugin").then(({ install }) => {
-			install(plugin);
-		});
-	}
+	import("./plugin").then(({ launchPlugins }) => {
+		void launchPlugins();
+	});
 };
 
 const initializeEmoji = async () => {

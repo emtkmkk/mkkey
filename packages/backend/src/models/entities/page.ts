@@ -107,7 +107,7 @@ export class Page {
 	public variables: Record<string, any>[];
 
 	@Column('varchar', {
-		length: 16384,
+		length: 65536,
 		default: '',
 	})
 	public script: string;

@@ -16,6 +16,13 @@
 			></MkButton>
 		</div>
 
+		<MkContainer v-if="playRoot" :foldable="true" class="_gap">
+			<template #header>{{ i18n.ts.scratchpadPlayUi }}</template>
+			<div class="asui-preview">
+				<MkAsUi :component="playRoot" :components="playComponents" />
+			</div>
+		</MkContainer>
+
 		<MkContainer :foldable="true" class="_gap">
 			<template #header>{{ i18n.ts.output }}</template>
 			<div class="bepmlvbi">
@@ -37,7 +44,18 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+/**
+ * @packageDocumentation
+ *
+ * AiScript スクラッチパッド。Play 互換の Ui: プレビューも提供する。
+ *
+ * @remarks
+ * - `Ui:render` を使うスクリプトはプレビュー領域に描画される
+ * - `print` / `<:` の出力は従来どおりテキストログに表示
+ *
+ * @public
+ */
+import { ref, watch, computed, onUnmounted } from "vue";
 import "prismjs";
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-clike";
@@ -45,19 +63,32 @@ import "prismjs/components/prism-javascript";
 import "prismjs/themes/prism-okaidia.css";
 import { PrismEditor } from "vue-prism-editor";
 import "vue-prism-editor/dist/prismeditor.min.css";
-import { Interpreter, Parser, utils } from "@syuilo/aiscript";
+import { utils } from "@syuilo/aiscript";
 import MkContainer from "@/components/MkContainer.vue";
 import MkButton from "@/components/MkButton.vue";
-import { createAiScriptEnv } from "@/scripts/aiscript/api";
+import MkAsUi from "@/components/MkAsUi.vue";
+import {
+	abortPlayScript,
+	createPlayScriptContext,
+	runPlayScript,
+} from "@/scripts/aiscript/play-runner";
 import * as os from "@/os";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
+import { url } from "@/config";
 
 const code = ref("");
-const logs = ref<any[]>([]);
-
-const parser = new Parser();
+const logs = ref<
+	{
+		id: number;
+		text: string;
+		print: boolean;
+	}[]
+>([]);
+const playCtx = createPlayScriptContext();
+const playRoot = computed(() => playCtx.root.value);
+const playComponents = computed(() => playCtx.components.value);
 
 const saved = localStorage.getItem("scratchpad");
 if (saved) {
@@ -68,23 +99,19 @@ watch(code, () => {
 	localStorage.setItem("scratchpad", code.value);
 });
 
+onUnmounted(() => {
+	abortPlayScript(playCtx);
+});
+
 async function run() {
 	logs.value = [];
-	const aiscript = new Interpreter(
-		createAiScriptEnv({
+
+	try {
+		await runPlayScript(code.value, playCtx, {
 			storageKey: "scratchpad",
+			thisId: "scratchpad",
+			thisUrl: url,
 			token: $i?.token,
-		}),
-		{
-			in: (q) => {
-				return new Promise((ok) => {
-					os.inputText({
-						title: q,
-					}).then(({ canceled, result: a }) => {
-						ok(a);
-					});
-				});
-			},
 			out: (value) => {
 				logs.value.push({
 					id: Math.random(),
@@ -96,59 +123,29 @@ async function run() {
 				});
 			},
 			log: (type, params) => {
-				switch (type) {
-					case "end":
-						logs.value.push({
-							id: Math.random(),
-							text: utils.valToString(params.val, true),
-							print: false,
-						});
-						break;
-					default:
-						break;
+				if (type === "end") {
+					logs.value.push({
+						id: Math.random(),
+						text: utils.valToString(params.val as never, true),
+						print: false,
+					});
 				}
 			},
-		}
-	);
-
-	let ast;
-	try {
-		ast = parser.parse(code.value);
-	} catch (err) {
+		});
+	} catch (err: any) {
 		const locationStr = err.location?.start
-			? `\nLine ${err.location.start.line} : ${
-					err.location.start.column
-			  } (${err.location.start.offset})${
-					err.location.start.offset + 1 === err.location.end.offset
-						? ""
-						: `\n- Line ${err.location.end.line} : ${err.location.end.column} (${err.location.end.offset})`
-			  }`
+			? `\nLine ${err.location.start.line} : ${err.location.start.column}`
 			: "";
 		os.alert({
 			type: "error",
-			text: `Syntax error!${locationStr}${
-				err.message ? ` \n${err.message}` : " \nno Message"
-			}`,
-		});
-		return;
-	}
-	try {
-		await aiscript.exec(ast);
-	} catch (error: any) {
-		os.alert({
-			type: "error",
-			text: error.message,
+			text: `${err.message ?? String(err)}${locationStr}`,
 		});
 	}
 }
 
-function highlighter(code) {
+function highlighter(code: string) {
 	return highlight(code, languages.js, "javascript");
 }
-
-const headerActions = $computed(() => []);
-
-const headerTabs = $computed(() => []);
 
 definePageMetadata({
 	title: i18n.ts.scratchpad,
@@ -163,6 +160,10 @@ definePageMetadata({
 	> .editor {
 		position: relative;
 	}
+}
+
+.asui-preview {
+	padding: 1rem;
 }
 
 .bepmlvbi {

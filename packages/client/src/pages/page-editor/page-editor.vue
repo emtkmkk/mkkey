@@ -152,8 +152,56 @@
 			</div>
 
 			<div v-else-if="tab === 'script'">
-				<div>
+				<div class="play-script-editor">
+					<div v-if="!readonly" class="play-mode-actions _gap">
+						<MkButton
+							v-if="!isPlayMode"
+							inline
+							@click="switchToPlayMode()"
+						>
+							<i class="ph-game-controller ph-bold ph-lg"></i>
+							{{ i18n.ts._pages.playMode.switchToPlay }}
+						</MkButton>
+						<MkButton
+							v-else
+							inline
+							@click="switchToBlockMode()"
+						>
+							<i class="ph-sticker ph-bold ph-lg"></i>
+							{{ i18n.ts._pages.playMode.switchToBlock }}
+						</MkButton>
+						<MkButton
+							v-if="isPlayMode"
+							inline
+							@click="insertPlayPreset()"
+						>
+							<i class="ph-code ph-bold ph-lg"></i>
+							{{ i18n.ts._pages.playMode.insertPreset }}
+						</MkButton>
+						<MkButton
+							v-if="isPlayMode"
+							inline
+							primary
+							@click="previewPlayScript()"
+						>
+							<i class="ph-play ph-bold ph-lg"></i>
+							{{ i18n.ts._pages.playMode.preview }}
+						</MkButton>
+					</div>
+					<p v-if="isPlayMode" class="play-mode-hint">
+						{{ i18n.ts._pages.playMode.hint }}
+					</p>
 					<MkTextarea v-model="script" class="_code" />
+					<div
+						v-if="isPlayMode && previewRoot"
+						class="play-preview _panel _gap"
+					>
+						<h3>{{ i18n.ts._pages.playMode.previewTitle }}</h3>
+						<MkAsUi
+							:component="previewRoot"
+							:components="previewComponents"
+						/>
+					</div>
 				</div>
 			</div>
 		</MkSpacer>
@@ -161,7 +209,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, computed, provide, watch } from "vue";
+import { defineAsyncComponent, computed, provide, watch, onUnmounted } from "vue";
 import { v4 as uuid } from "uuid";
 import XVariable from "./page-editor.script-block.vue";
 import XBlocks from "./page-editor.blocks.vue";
@@ -170,10 +218,17 @@ import MkButton from "@/components/MkButton.vue";
 import MkSelect from "@/components/form/select.vue";
 import MkSwitch from "@/components/form/switch.vue";
 import MkInput from "@/components/form/input.vue";
+import MkAsUi from "@/components/MkAsUi.vue";
 import { blockDefs } from "@/scripts/hpml/index";
 import { HpmlTypeChecker } from "@/scripts/hpml/type-checker";
 import { url } from "@/config";
 import { collectPageVars } from "@/scripts/collect-page-vars";
+import { isPagePlayMode } from "@/scripts/aiscript/page-mode";
+import {
+	abortPlayScript,
+	createPlayScriptContext,
+	runPlayScript,
+} from "@/scripts/aiscript/play-runner";
 import * as os from "@/os";
 import { selectFile } from "@/scripts/select-file";
 import { mainRouter } from "@/router";
@@ -210,6 +265,88 @@ let hideTitleWhenPinned = $ref(false);
 let variables = $ref([]);
 let hpml = $ref(null);
 let script = $ref("");
+
+/** content 空 + script ありで Play モード */
+const isPlayMode = $computed(() => isPagePlayMode({ content, script }));
+
+/** Play モードプレビュー用コンテキスト */
+const previewCtx = createPlayScriptContext();
+const previewRoot = $computed(() => previewCtx.root.value);
+const previewComponents = $computed(() => previewCtx.components.value);
+
+onUnmounted(() => {
+	abortPlayScript(previewCtx);
+});
+
+/** Misskey Play 互換の最小プリセット */
+const PLAY_SCRIPT_PRESET = `/// @ 0.16.0
+
+Ui:render([
+	Ui:C:container({
+		align: "center"
+		children: [
+			Ui:C:text({ text: "Hello, Play!" })
+			Ui:C:button({
+				text: "更新"
+				primary: true
+				onClick: @() {
+					Ui:render([
+						Ui:C:text({ text: "ボタンが押されました" })
+					])
+				}
+			})
+		]
+	})
+])
+`;
+
+async function switchToPlayMode() {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.ts._pages.playMode.switchToPlayConfirm,
+	});
+	if (canceled) return;
+
+	content = [];
+	variables = [];
+	if (!script.trim()) {
+		script = PLAY_SCRIPT_PRESET;
+	}
+	tab = "script";
+}
+
+async function switchToBlockMode() {
+	const { canceled } = await os.confirm({
+		type: "info",
+		text: i18n.ts._pages.playMode.switchToBlockConfirm,
+	});
+	if (canceled) return;
+
+	const id = uuid();
+	content = [{ id, type: "text", text: "" }];
+	tab = "contents";
+}
+
+function insertPlayPreset() {
+	script = PLAY_SCRIPT_PRESET;
+}
+
+async function previewPlayScript() {
+	if (!script.trim()) return;
+	try {
+		await runPlayScript(script, previewCtx, {
+			storageKey: `pages:preview:${pageId ?? "new"}`,
+			thisId: pageId ?? "preview",
+			thisUrl: `${url}/@${author?.username ?? "user"}/pages/${name}`,
+			token: $i?.token,
+		});
+	} catch (err: any) {
+		os.alert({
+			type: "error",
+			text: err.message ?? String(err),
+		});
+	}
+}
 
 provide("readonly", readonly);
 provide("getScriptBlockList", getScriptBlockList);
@@ -517,28 +654,35 @@ init();
 
 const headerActions = $computed(() => []);
 
-const headerTabs = $computed(() => [
-	{
-		key: "settings",
-		title: i18n.ts._pages.pageSetting,
-		icon: "ph-gear-six ph-bold ph-lg",
-	},
-	{
-		key: "contents",
-		title: i18n.ts._pages.contents,
-		icon: "ph-sticker ph-bold ph-lg",
-	},
-	{
-		key: "variables",
-		title: i18n.ts._pages.variables,
-		icon: "ph-magic-wand ph-bold ph-lg",
-	},
-	{
-		key: "script",
-		title: i18n.ts.script,
-		icon: "ph-code ph-bold ph-lg",
-	},
-]);
+const headerTabs = $computed(() => {
+	const tabs = [
+		{
+			key: "settings",
+			title: i18n.ts._pages.pageSetting,
+			icon: "ph-gear-six ph-bold ph-lg",
+		},
+		{
+			key: "contents",
+			title: i18n.ts._pages.contents,
+			icon: "ph-sticker ph-bold ph-lg",
+		},
+		{
+			key: "variables",
+			title: i18n.ts._pages.variables,
+			icon: "ph-magic-wand ph-bold ph-lg",
+		},
+		{
+			key: "script",
+			title: i18n.ts.script,
+			icon: "ph-code ph-bold ph-lg",
+		},
+	];
+
+	if (isPlayMode) {
+		return tabs.filter((t) => t.key === "settings" || t.key === "script");
+	}
+	return tabs;
+});
 
 definePageMetadata(
 	computed(() => {
@@ -640,6 +784,31 @@ definePageMetadata(
 
 	> .add {
 		margin-bottom: 1rem;
+	}
+}
+
+.play-script-editor {
+	> .play-mode-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-bottom: 0.75rem;
+	}
+
+	> .play-mode-hint {
+		margin: 0 0 0.75rem 0;
+		font-size: 0.875rem;
+		opacity: 0.8;
+	}
+
+	> .play-preview {
+		margin-top: 1rem;
+		padding: 1rem;
+
+		> h3 {
+			margin: 0 0 0.75rem 0;
+			font-size: 0.95rem;
+		}
 	}
 }
 </style>

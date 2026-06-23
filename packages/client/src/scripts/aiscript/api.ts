@@ -1,8 +1,35 @@
-import { utils, values } from "@syuilo/aiscript";
+/**
+ * @packageDocumentation
+ *
+ * AiScript ホスト API（Mk:* 等）を提供する。
+ *
+ * @public
+ */
+import { utils as defaultUtils, values as defaultValues } from "@syuilo/aiscript";
+import type { AiscriptRuntime } from "./runtime";
 import * as os from "@/os";
 import { $i } from "@/account";
 
-export function createAiScriptEnv(opts) {
+/** createAiScriptEnv のオプション */
+export type CreateAiScriptEnvOpts = {
+	storageKey: string;
+	token?: string | null;
+};
+
+/**
+ * AiScript インタプリタに注入する Mk:* 環境を構築する。
+ *
+ * @param opts - ストレージキー・API トークン
+ * @param runtime - 動的ロードしたランタイム（省略時は @syuilo/aiscript 0.19.x）
+ * @returns 定数マップ
+ * @public
+ */
+export function createAiScriptEnv(
+	opts: CreateAiScriptEnvOpts,
+	runtime?: Pick<AiscriptRuntime, "utils" | "values">,
+) {
+	const utils = runtime?.utils ?? defaultUtils;
+	const values = runtime?.values ?? defaultValues;
 	let apiRequests = 0;
 	return {
 		USER_ID: $i ? values.STR($i.id) : values.NULL,

@@ -81,7 +81,11 @@ export const paramDef = {
 				additionalProperties: true,
 			},
 		},
-		script: { type: "string" },
+		script: {
+			type: "string",
+			maxLength: 65536,
+			description: "ページの挙動を制御する AiScript コード。",
+		},
 		eyeCatchingImageId: {
 			type: "string",
 			format: "misskey:id",

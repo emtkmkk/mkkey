@@ -8,6 +8,7 @@ export const userActions = [];
 export const noteActions = [];
 export const noteViewInterruptors = [];
 export const notePostInterruptors = [];
+export const pageViewInterruptors = [];
 
 const menuOptions = [
 	"timeline",
@@ -1812,13 +1813,19 @@ export const defaultStore = markRaw(
 
 const PREFIX = "miux:";
 
-type Plugin = {
+export type Plugin = {
 	id: string;
 	name: string;
+	version: string;
+	author?: string;
+	description?: string;
+	permissions?: string[];
+	config?: Record<string, unknown>;
 	active: boolean;
-	configData: Record<string, any>;
-	token: string;
-	ast: any[];
+	configData: Record<string, unknown>;
+	src: string;
+	token: string | null;
+	tokenId: string | null;
 };
 
 /**

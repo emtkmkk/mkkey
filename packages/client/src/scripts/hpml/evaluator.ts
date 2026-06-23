@@ -2,8 +2,9 @@ import autobind from "autobind-decorator";
 import { HpmlError, HpmlScope } from ".";
 import type { Fn, PageVar, envVarsDef } from ".";
 import { version } from "@/config";
-import { Interpreter, utils, values } from "@syuilo/aiscript";
+import type { Interpreter } from "@syuilo/aiscript";
 import { createAiScriptEnv } from "../aiscript/api";
+import type { AiscriptRuntime } from "../aiscript/runtime";
 import { collectPageVars } from "../collect-page-vars";
 import { initHpmlLib, initAiLib } from "./lib";
 import * as os from "@/os";
@@ -12,14 +13,23 @@ import type { Expr, Variable } from "./expr";
 import { isLiteralValue } from "./expr";
 
 /**
- * Hpml evaluator
+ * HPML（ブロックモード）評価器。
+ *
+ * @remarks
+ * AiScript は {@link initAiscript} でバージョン別ランタイムを注入してから実行する。
+ *
+ * @public
  */
 export class Hpml {
 	private variables: Variable[];
 	private pageVars: PageVar[];
 	private envVars: Record<keyof typeof envVarsDef, any>;
 	public aiscript?: Interpreter;
-	public pageVarUpdatedCallback?: values.VFn;
+	/** {@link initAiscript} で注入した utils（aiScriptVar 評価用） */
+	private runtimeUtils?: AiscriptRuntime["utils"];
+	/** {@link initAiscript} で注入した values（コールバック実行用） */
+	private runtimeValues?: AiscriptRuntime["values"];
+	public pageVarUpdatedCallback?: unknown;
 	public canvases: Record<string, HTMLCanvasElement> = {};
 	public vars: Ref<Record<string, any>> = ref({});
 	public page: Record<string, any>;
@@ -37,37 +47,8 @@ export class Hpml {
 		this.pageVars = collectPageVars(this.page.content);
 		this.opts = opts;
 
-		if (this.opts.enableAiScript) {
-			this.aiscript = markRaw(
-				new Interpreter(
-					{
-						...createAiScriptEnv({
-							storageKey: `pages:${this.page.id}`,
-						}),
-						...initAiLib(this),
-					},
-					{
-						in: (q) => {
-							return new Promise((ok) => {
-								os.inputText({
-									title: q,
-								}).then(({ canceled, result: a }) => {
-									ok(a);
-								});
-							});
-						},
-						out: (value) => {
-							console.log(value);
-						},
-						log: (type, params) => {},
-					},
-				),
-			);
-
-			this.aiscript.scope.opts.onUpdated = (name, value) => {
-				this.eval();
-			};
-		}
+		// NOTE: AiScript インタプリタは script 注釈に応じた RT を page.vue 側で
+		// loadAiscriptRuntime した後、initAiscript で初期化する。
 
 		const date = new Date();
 
@@ -92,6 +73,53 @@ export class Hpml {
 		};
 
 		this.eval();
+	}
+
+	/**
+	 * スクリプト注釈に応じた AiScript ランタイムでインタプリタを初期化する。
+	 *
+	 * @param runtime - {@link loadAiscriptRuntime} の戻り値
+	 * @remarks enableAiScript が false のときは何もしない
+	 * @public
+	 */
+	@autobind
+	public initAiscript(runtime: AiscriptRuntime): void {
+		if (!this.opts.enableAiScript) return;
+
+		this.runtimeUtils = runtime.utils;
+		this.runtimeValues = runtime.values;
+		this.aiscript = markRaw(
+			new runtime.Interpreter(
+				{
+					...createAiScriptEnv(
+						{
+							storageKey: `pages:${this.page.id}`,
+						},
+						runtime,
+					),
+					...initAiLib(this, runtime),
+				},
+				{
+					in: (q) => {
+						return new Promise((ok) => {
+							os.inputText({
+								title: q,
+							}).then(({ canceled, result: a }) => {
+								ok(a);
+							});
+						});
+					},
+					out: (value) => {
+						console.log(value);
+					},
+					log: (_type, _params) => {},
+				},
+			),
+		);
+
+		this.aiscript.scope.opts.onUpdated = (_name, _value) => {
+			this.eval();
+		};
 	}
 
 	@autobind
@@ -133,10 +161,10 @@ export class Hpml {
 		if (pageVar !== undefined) {
 			pageVar.value = value;
 			if (this.pageVarUpdatedCallback) {
-				if (this.aiscript)
+				if (this.aiscript && this.runtimeValues && this.runtimeUtils)
 					this.aiscript.execFn(this.pageVarUpdatedCallback, [
-						values.STR(name),
-						utils.jsToVal(value),
+						this.runtimeValues.STR(name),
+						this.runtimeUtils.jsToVal(value),
 					]);
 			}
 		} else {
@@ -203,9 +231,11 @@ export class Hpml {
 			}
 
 			if (expr.type === "aiScriptVar") {
-				if (this.aiscript) {
+				if (this.aiscript && this.runtimeUtils) {
 					try {
-						return utils.valToJs(this.aiscript.scope.get(expr.value));
+						return this.runtimeUtils.valToJs(
+							this.aiscript.scope.get(expr.value),
+						);
 					} catch (err) {
 						console.error(err);
 						return null;

@@ -119,7 +119,8 @@ export default defineConfig({
 		},
 
 		build: {
-			target: ["chrome87", "firefox78", "safari14", "es2017"],
+			// AiScript 1.x が BigInt リテラルを使うため es2020 以上が必要
+			target: ["chrome87", "firefox78", "safari14", "es2020"],
 			manifest: "manifest.json",
 			rollupOptions: {
 				input: {

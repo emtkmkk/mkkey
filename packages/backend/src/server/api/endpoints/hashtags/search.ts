@@ -5,6 +5,7 @@ export const meta = {
 	tags: ["hashtags"],
 
 	requireCredential: true,
+	kind: "read:account",
 	requireCredentialPrivateMode: true,
 
 	res: {

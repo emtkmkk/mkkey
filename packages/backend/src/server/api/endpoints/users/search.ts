@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `users/search`（GET `/api/users/search` で呼び出し）
  * - 認証は不要（クエリで検索）。query・limit 等でユーザーを検索する。
+ * CHANGED: mkkey は認証必須のため `kind: read:account` を追加し、アプリトークンからの利用を許可する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -19,6 +20,7 @@ export const meta = {
 	tags: ["users"],
 
 	requireCredential: true,
+	kind: "read:account",
 	requireCredentialPrivateMode: true,
 
 	description:

@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `notes/timeline`（GET `/api/notes/timeline` で呼び出し）
  * - 認証必須。フォローしているユーザーのノートを時系列で取得する。
+ * CHANGED: 本家 Misskey 互換のため `kind: read:account` を追加し、アプリトークンからの利用を許可する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -31,6 +32,7 @@ export const meta = {
 	tags: ["notes"],
 
 	requireCredential: true,
+	kind: "read:account",
 
 	description:
 		"ホームタイムラインを取得する。フォローしているユーザーの投稿を時系列で返す。sinceId/untilId/limit でページネーション可能。含める・除外する投稿の条件（返信、ファイル付きなど）を指定できる。",

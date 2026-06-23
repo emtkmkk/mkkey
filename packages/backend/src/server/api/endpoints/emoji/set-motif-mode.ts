@@ -16,6 +16,7 @@ export const meta = {
 	tags: ["emoji"],
 
 	requireCredential: true,
+	kind: "write:account",
 
 	description:
 		"モチーフユーザ本人が、その絵文字の利用可能範囲（motifUserMode）のみを更新する。モチーフユーザの指定は変更できない。",

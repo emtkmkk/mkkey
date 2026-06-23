@@ -7,6 +7,7 @@ export const meta = {
 	tags: ["users"],
 
 	requireCredential: true,
+	kind: "read:account",
 	requireCredentialPrivateMode: true,
 
 	res: {

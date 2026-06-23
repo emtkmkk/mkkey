@@ -4,6 +4,7 @@ import { RegistryItems } from "@/models/index.js";
 
 export const meta = {
 	requireCredential: true,
+	kind: "read:account",
 
 	secure: false,
 

@@ -7,6 +7,7 @@
  * `needsModerationWarningPopup` は UTC 日付で変わるため **merged キャッシュには含めず**、応答直前に毎回付与する。
  * 当日 true の間は認証 API ルータで他エンドポイントが 403 となり、ユーザーは本レスポンスと `i/ack-moderation-warning`（および起動用 `auth/validate`）のみ利用可能。
  * 付与判定では認証済み `user.isModerationWarning` を使い、通常ユーザ向けに `user` 行の再読みを避ける（鮮度は認証キャッシュと同じ。管理側の付け外しは `localUserUpdated` でキャッシュ無効化）。
+ * CHANGED: 本家 Misskey 互換のため `kind: read:account` を追加し、アプリトークンからの利用を許可する。
  *
  * @internal
  */
@@ -32,6 +33,7 @@ export const meta = {
 	tags: ["account"],
 
 	requireCredential: true,
+	kind: "read:account",
 
 	res: {
 		type: "object",

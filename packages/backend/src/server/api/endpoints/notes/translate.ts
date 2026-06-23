@@ -10,6 +10,7 @@ export const meta = {
 	tags: ["notes"],
 
 	requireCredential: true,
+	kind: "read:account",
 	requireCredentialPrivateMode: true,
 
 	res: {

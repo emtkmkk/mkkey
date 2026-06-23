@@ -8,6 +8,7 @@ export const meta = {
 	tags: ["notes"],
 
 	requireCredential: true,
+	kind: "write:account",
 
 	errors: {
 		noSuchNote: {

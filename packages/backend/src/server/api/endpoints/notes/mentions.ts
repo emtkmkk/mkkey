@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `notes/mentions`（GET `/api/notes/mentions` で呼び出し）
  * - 認証必須。自分宛てのメンションを含むノートをページネーションで取得する。
+ * CHANGED: 本家 Misskey 互換のため `kind: read:account` を追加し、アプリトークンからの利用を許可する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -26,6 +27,7 @@ export const meta = {
 	tags: ["notes"],
 
 	requireCredential: true,
+	kind: "read:account",
 
 	res: {
 		type: "array",

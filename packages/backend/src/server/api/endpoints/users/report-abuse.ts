@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `users/report-abuse`（POST `/api/users/report-abuse` で呼び出し）
  * - 認証必須。userId と comment 等で対象ユーザーを通報する。
+ * CHANGED: 本家 Misskey 互換のため `kind: write:report-abuse` を追加し、アプリトークンからの利用を許可する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -24,6 +25,7 @@ export const meta = {
 	tags: ["users"],
 
 	requireCredential: true,
+	kind: "write:report-abuse",
 
 	description: "指定ユーザーを通報します。",
 

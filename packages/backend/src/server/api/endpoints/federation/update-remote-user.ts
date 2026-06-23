@@ -6,6 +6,7 @@ export const meta = {
 	tags: ["federation"],
 
 	requireCredential: true,
+	kind: "read:account",
 } as const;
 
 export const paramDef = {

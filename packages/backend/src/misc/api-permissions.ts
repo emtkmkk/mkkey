@@ -41,4 +41,6 @@ export const kinds = [
 	"write:gallery",
 	"read:gallery-likes",
 	"write:gallery-likes",
+	"write:report-abuse",
+	"read:federation",
 ];

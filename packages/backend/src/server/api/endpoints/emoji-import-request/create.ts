@@ -35,6 +35,7 @@ function getStartOfTodayUTC(): Date {
 export const meta = {
 	tags: ["emoji-import-request"],
 	requireCredential: true,
+	kind: "write:account",
 	errors: {
 		emojiDenied: {
 			message: "この絵文字名はインポート申請が否認されています。",

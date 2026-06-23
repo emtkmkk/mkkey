@@ -27,6 +27,7 @@ function getStartOfTodayUTC(): Date {
 export const meta = {
 	tags: ["emoji-import-request"],
 	requireCredential: true,
+	kind: "read:account",
 	res: {
 		type: "object",
 		optional: false,

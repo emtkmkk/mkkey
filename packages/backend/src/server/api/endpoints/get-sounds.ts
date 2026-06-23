@@ -4,6 +4,7 @@ import define from "../define.js";
 export const meta = {
 	tags: ["meta"],
 	requireCredential: true,
+	kind: "read:account",
 	requireCredentialPrivateMode: false,
 } as const;
 

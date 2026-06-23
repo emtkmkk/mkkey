@@ -4,6 +4,7 @@
  * クライアント起動時にキャッシュで入ってよいかを判定するために利用する。
  * requireCredential により認証層でトークン検証が行われるため、
  * ハンドラに到達すれば valid: true を返すだけとする。
+ * CHANGED: アプリトークンからの利用を許可するため `kind: read:account` を追加。
  *
  * @packageDocumentation
  */
@@ -14,6 +15,7 @@ export const meta = {
 	tags: ["auth"],
 
 	requireCredential: true,
+	kind: "read:account",
 
 	res: {
 		type: "object",

@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `notes/user-list-timeline`（GET `/api/notes/user-list-timeline` で呼び出し）
  * - 認証必須。listId で指定したユーザーリストに含まれるユーザーのノートを取得する。
+ * CHANGED: 本家 Misskey 互換のため `kind: read:account` を追加し、アプリトークンからの利用を許可する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -36,6 +37,7 @@ export const meta = {
 	tags: ["notes", "lists"],
 
 	requireCredential: true,
+	kind: "read:account",
 
 	res: {
 		type: "array",

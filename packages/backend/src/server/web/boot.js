@@ -157,9 +157,32 @@
 	}
 
 	const customCss = localStorage.getItem("customCss");
-	if (customCss && customCss.length > 0) {
+	const cssSnippetsRaw = localStorage.getItem("miux:cssSnippets");
+	let cssSnippetsInjected = false;
+
+	if (cssSnippetsRaw) {
+		try {
+			const snippets = JSON.parse(cssSnippetsRaw);
+			if (Array.isArray(snippets)) {
+				for (const snippet of snippets) {
+					if (snippet?.active && snippet?.css?.length > 0) {
+						const style = document.createElement("style");
+						style.setAttribute("data-mk-css-snippet", snippet.id);
+						style.textContent = snippet.css;
+						document.head.appendChild(style);
+						cssSnippetsInjected = true;
+					}
+				}
+			}
+		} catch {
+			// パース失敗時はレガシー fallback へ
+		}
+	}
+
+	if (!cssSnippetsInjected && customCss && customCss.length > 0) {
 		const style = document.createElement("style");
-		style.innerHTML = customCss;
+		style.setAttribute("data-mk-css-snippet-legacy", "");
+		style.textContent = customCss;
 		document.head.appendChild(style);
 	}
 

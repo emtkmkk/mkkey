@@ -45,6 +45,10 @@ import { $i, fetchAccount, login, updateAccount, signout } from "@/account";
 import { showModerationWarningDialogIfNeeded } from "@/scripts/show-moderation-warning-dialog";
 import { defaultStore, ColdDeviceStorage, userActions } from "@/store";
 import {
+	migrateLegacyCustomCssIfNeeded,
+	applyCssSnippets,
+} from "@/css-snippet";
+import {
 	emojiLoad,
 	fetchInstance,
 	fetchEmoji,
@@ -773,6 +777,12 @@ const initializePlugins = () => {
 	import("./plugin").then(({ launchPlugins }) => {
 		void launchPlugins();
 	});
+};
+
+/** カスタム CSS スニペットのレガシー移行と DOM 同期（boot.js 注入との二重注入を防ぐ） */
+const initializeCssSnippets = () => {
+	migrateLegacyCustomCssIfNeeded();
+	applyCssSnippets();
 };
 
 const initializeEmoji = async () => {
@@ -1642,6 +1652,8 @@ const ensureHealthModeInstanceFallback = () => {
 	initializeBlurEffect();
 
 	initializeReloadDialog();
+
+	initializeCssSnippets();
 
 	initializePlugins();
 

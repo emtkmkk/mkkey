@@ -1834,6 +1834,22 @@ export type Plugin = {
 };
 
 /**
+ * ユーザーが登録するカスタム CSS スニペット1件。
+ *
+ * @remarks
+ * 名前・説明・ON/OFF を個別に管理し、有効なものだけ DOM に注入する。
+ *
+ * @public
+ */
+export type CssSnippet = {
+	id: string;
+	name: string;
+	description?: string;
+	css: string;
+	active: boolean;
+};
+
+/**
  * 常にメモリにロードしておく必要がないような設定情報を保管するストレージ(非リアクティブ)
  */
 import lightTheme from "@/themes/l-rosepinedawn.json5";
@@ -1845,6 +1861,7 @@ export class ColdDeviceStorage {
 		darkTheme,
 		syncDeviceDarkMode: false,
 		plugins: [] as Plugin[],
+		cssSnippets: [] as CssSnippet[],
 		mediaVolume: 0.5,
 		sound_masterVolume: 0.3,
 		sound_note: { type: null, volume: 1 },

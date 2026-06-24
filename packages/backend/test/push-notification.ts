@@ -1,8 +1,6 @@
 process.env.NODE_ENV = "test";
 
 import * as assert from "assert";
-import * as childProcess from "child_process";
-import { async, signup, startServer, shutdownServer } from "./utils.js";
 import config from "../src/config/index.js";
 import {
 	isDefaultInstanceReaction,
@@ -18,7 +16,36 @@ import {
 	attachDisplayTextToNotification,
 	attachReactionPushDisplayExtras,
 	buildMinimalNotificationPayloadForPush,
+	truncateNotification,
 } from "../src/services/push-notification.js";
+
+/**
+ * buildPayload と同順で通知を enrich する（単体テスト用）。
+ *
+ * @param notification - pack 済み通知
+ * @param defaultReaction - 既定リアクション
+ * @internal
+ */
+function enrichNotificationForPush(
+	notification: Record<string, unknown>,
+	defaultReaction = "⭐",
+): Record<string, unknown> {
+	let enriched = attachDisplayImageUrlToNotification(
+		notification,
+		defaultReaction,
+	);
+	enriched = attachDisplayTextToNotification(enriched, defaultReaction);
+	enriched = attachReactionPushDisplayExtras(enriched, defaultReaction);
+	return truncateNotification(
+		enriched as Parameters<typeof truncateNotification>[0],
+	) as Record<string, unknown>;
+}
+
+/** displayBody 内の (📎N) 出現回数を数える */
+function countAttachmentMarkers(text: string | undefined): number {
+	if (text == null) return 0;
+	return (text.match(/\(📎\d+\)/g) ?? []).length;
+}
 
 describe("notification-display-media", () => {
 	it("正常系: 先頭添付が画像のとき url を返す", () => {
@@ -259,22 +286,101 @@ describe("notification-display-text", () => {
 			"Carol (carol@example.com) から リムーブされました",
 		);
 	});
+
+	it("正常系: 添付1件の mention で displayBody に (📎1) が1回だけ付く", () => {
+		const out = enrichNotificationForPush({
+			type: "mention",
+			user: { username: "alice", name: "Alice" },
+			note: {
+				text: "こんにちは",
+				files: [
+					{
+						type: "image/png",
+						url: "https://example.com/a.png",
+						isSensitive: false,
+					},
+				],
+			},
+		});
+
+		const displayBody = (out as { displayBody?: string }).displayBody;
+		assert.strictEqual(displayBody, "こんにちは (📎1)");
+		assert.strictEqual(countAttachmentMarkers(displayBody), 1);
+	});
+
+	it("境界値: 本文なし・添付のみで displayBody が (📎2) のみになる", () => {
+		const out = enrichNotificationForPush({
+			type: "reply",
+			user: { username: "bob", name: "Bob" },
+			note: {
+				text: "",
+				files: [
+					{
+						type: "image/png",
+						url: "https://example.com/a.png",
+						isSensitive: false,
+					},
+					{
+						type: "image/png",
+						url: "https://example.com/b.png",
+						isSensitive: false,
+					},
+				],
+			},
+		});
+
+		const displayBody = (out as { displayBody?: string }).displayBody;
+		assert.strictEqual(displayBody, "(📎2)");
+		assert.strictEqual(countAttachmentMarkers(displayBody), 1);
+	});
+
+	it("回帰: enrich 後も displayImageUrl と truncate 後の note.files 除去が維持される", () => {
+		const out = enrichNotificationForPush({
+			type: "mention",
+			user: { username: "alice", name: "Alice" },
+			note: {
+				text: "画像付き",
+				files: [
+					{
+						type: "image/png",
+						url: "https://example.com/n.png",
+						isSensitive: false,
+					},
+				],
+			},
+		});
+
+		assert.strictEqual(
+			(out as { displayImageUrl?: string }).displayImageUrl,
+			"https://example.com/n.png",
+		);
+		assert.strictEqual(
+			(out as { note?: { files?: unknown } }).note?.files,
+			undefined,
+		);
+		assert.strictEqual(
+			(out as { note?: { text?: string } }).note?.text,
+			(out as { displayBody?: string }).displayBody,
+		);
+	});
 });
 
 describe("push-notification", () => {
-	let p: childProcess.ChildProcess;
+	let p: import("child_process").ChildProcess;
 	let alice: { id: string; token: string };
 
 	before(async () => {
+		const { signup, startServer } = await import("./utils.js");
 		p = await startServer();
 		alice = await signup({ username: "push_alice" });
 	});
 
 	after(async () => {
+		const { shutdownServer } = await import("./utils.js");
 		await shutdownServer(p);
 	});
 
-	it("正常系: 購読が無い場合 test-push-notification は no_subscriptions を返す", async(async () => {
+	it("正常系: 購読が無い場合 test-push-notification は no_subscriptions を返す", async () => {
 		const res = await fetch("http://localhost:61812/api/i/test-push-notification", {
 			method: "POST",
 			headers: {
@@ -286,7 +392,7 @@ describe("push-notification", () => {
 		const body = await res.json();
 		assert.strictEqual(body.ok, false);
 		assert.strictEqual(body.subscriptionCount, 0);
-	}));
+	});
 
 	it("境界値: minimal ペイロードに userId と user が残る", () => {
 		const result = buildMinimalNotificationPayloadForPush({
@@ -437,7 +543,7 @@ describe("push-notification", () => {
 		);
 	});
 
-	it("正常系: dev モードでない場合 push-log は空配列", async(async () => {
+	it("正常系: dev モードでない場合 push-log は空配列", async () => {
 		const res = await fetch("http://localhost:61812/api/i/push-log", {
 			method: "POST",
 			headers: {
@@ -450,5 +556,5 @@ describe("push-notification", () => {
 		const body = await res.json();
 		assert.ok(Array.isArray(body));
 		assert.strictEqual(body.length, 0);
-	}));
+	});
 });

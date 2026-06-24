@@ -93,8 +93,18 @@ async function ensureVapidDetails(): Promise<boolean> {
 	return true;
 }
 
-// プッシュメッセージサーバーには文字数制限があるため、内容を削減します
-function truncateNotification(notification: Packed<"Notification">): any {
+/**
+ * プッシュペイロード用にノート本文を要約し、不要フィールドを落とす。
+ *
+ * @remarks
+ * {@link attachDisplayTextToNotification} より後に呼ぶこと。
+ * 先に truncate すると `note.text` が要約済みのまま `files` が残り、
+ * displayBody 生成時に添付数が二重付与される。
+ *
+ * @param notification - displayTitle/Body 付与済みの pack 通知
+ * @internal
+ */
+export function truncateNotification(notification: Packed<"Notification">): any {
 	// renote の「表示」action 用に RT 先 noteId をトップレベルにも保持する
 	const renoteTargetNoteId =
 		notification.type === "renote" && notification.note != null
@@ -128,6 +138,17 @@ function truncateNotification(notification: Packed<"Notification">): any {
 						.map((e) => ({ name: e.name as string, url: e.url as string }))
 				: undefined;
 
+		// displayBody があれば SW フォールバックの note.text と一致させる
+		const displayBody = (notification as { displayBody?: string }).displayBody;
+		const summarizedText =
+			typeof displayBody === "string"
+				? displayBody
+				: getNoteSummary(
+						notification.type === "renote"
+							? (notification.note.renote as Packed<"Note">)
+							: notification.note,
+					);
+
 		return {
 			...notification,
 			...(typeof renoteTargetNoteId === "string"
@@ -136,12 +157,10 @@ function truncateNotification(notification: Packed<"Notification">): any {
 			...(typeof viewNoteId === "string" ? { viewNoteId } : {}),
 			note: {
 				...notification.note,
-				text: getNoteSummary(
-					notification.type === "renote"
-						? (notification.note.renote as Packed<"Note">)
-						: notification.note,
-				),
+				text: summarizedText,
 				cw: undefined,
+				files: undefined,
+				poll: undefined,
 				reply: undefined,
 				renote: undefined,
 				user: undefined as any,
@@ -533,13 +552,11 @@ async function buildPayload<T extends keyof pushNotificationsTypes>(
 	type: T,
 	body: pushNotificationsTypes[T],
 ): Promise<string> {
-	let truncatedBody: pushNotificationsTypes[T] =
-		type === "notification"
-			? truncateNotification(body as Packed<"Notification">)
-			: body;
+	let truncatedBody: pushNotificationsTypes[T] = body;
 
 	if (type === "notification" && truncatedBody != null && typeof truncatedBody === "object") {
 		const meta = await fetchMeta();
+		// NOTE: 表示テキスト・画像 URL は生ノート（files / user 付き）で解決してから truncate する
 		let enriched = attachDisplayImageUrlToNotification(
 			truncatedBody as Record<string, unknown>,
 			meta.defaultReaction,
@@ -549,6 +566,9 @@ async function buildPayload<T extends keyof pushNotificationsTypes>(
 			enriched,
 			meta.defaultReaction,
 		);
+		enriched = truncateNotification(
+			enriched as Packed<"Notification">,
+		) as Record<string, unknown>;
 		truncatedBody = enriched as pushNotificationsTypes[T];
 	}
 

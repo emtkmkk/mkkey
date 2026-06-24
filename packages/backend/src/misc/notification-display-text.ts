@@ -84,7 +84,7 @@ export function getDisplayFullUsername(
 /**
  * ノート本文の抜粋（MFM 除去済み）。
  *
- * @param note - ノート
+ * @param note - ノート（生データ。要約済み text と files が混在すると添付数が二重になる）
  * @param maxLength - 最大文字数
  * @returns 抜粋
  * @internal
@@ -95,12 +95,14 @@ export function getNoteTextExcerpt(
 				text?: string | null;
 				cw?: string | null;
 				renote?: unknown;
+				files?: unknown[] | null;
 		  }
 		| null
 		| undefined,
 	maxLength: number = DEFAULT_PUSH_EXCERPT_LENGTH,
 ): string | undefined {
 	if (note == null) return undefined;
+	// 本文があるノート自身を優先。空のリノートは RT 先を要約する
 	const target = note.text ? note : (note.renote as typeof note | undefined);
 	if (target == null) return undefined;
 

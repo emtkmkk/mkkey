@@ -100,6 +100,14 @@ export type Source = {
 	inboxJobPerSec?: number;
 	deliverJobMaxAttempts?: number;
 	inboxJobMaxAttempts?: number;
+	/** deliver / noteApDeliver の 1 回あたりジョブ実行上限（ミリ秒）。未指定時は 60000（1分）。 */
+	deliverJobTimeoutMs?: number;
+	/** inbox の 1 回あたりジョブ実行上限（ミリ秒）。未指定時は 300000（5分）。 */
+	inboxJobTimeoutMs?: number;
+	/** apBackoff の初期待ち時間（ミリ秒）。未指定時は 60000（1分）。 */
+	apBackoffBaseDelayMs?: number;
+	/** apBackoff の最大待ち時間（ミリ秒）。未指定時は 28800000（8時間）。 */
+	apBackoffMaxDelayMs?: number;
 	queueAdaptiveThrottle?: {
 		enabled?: boolean;
 		latencyThresholdMs?: number;

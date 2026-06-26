@@ -20,6 +20,22 @@ import { queueLogger } from "./logger.js";
 import { getJobInfo } from "./get-job-info.js";
 import { clearDelayedRetry, markDelayedRetry } from "./delayed-retry-reason.js";
 import { adaptiveQueueWrap } from "./adaptive-queue-throttle.js";
+
+const DEFAULT_DELIVER_JOB_TIMEOUT_MS = 60 * 1000;
+const DEFAULT_INBOX_JOB_TIMEOUT_MS = 5 * 60 * 1000;
+const MIN_JOB_TIMEOUT_MS = 1000;
+
+/** deliver / noteApDeliver のジョブ timeout（ミリ秒）。未指定・異常値は既定に clamp。 */
+function getDeliverJobTimeoutMs(): number {
+	const ms = config.deliverJobTimeoutMs ?? DEFAULT_DELIVER_JOB_TIMEOUT_MS;
+	return ms >= MIN_JOB_TIMEOUT_MS ? ms : DEFAULT_DELIVER_JOB_TIMEOUT_MS;
+}
+
+/** inbox のジョブ timeout（ミリ秒）。未指定・異常値は既定に clamp。 */
+function getInboxJobTimeoutMs(): number {
+	const ms = config.inboxJobTimeoutMs ?? DEFAULT_INBOX_JOB_TIMEOUT_MS;
+	return ms >= MIN_JOB_TIMEOUT_MS ? ms : DEFAULT_INBOX_JOB_TIMEOUT_MS;
+}
 import {
 	systemQueue,
 	dbQueue,
@@ -209,7 +225,7 @@ export function deliver(
 
 	return deliverQueue.add(data, {
 		attempts: config.deliverJobMaxAttempts || 12,
-		timeout: 1 * 60 * 1000, // 1min
+		timeout: getDeliverJobTimeoutMs(),
 		backoff: {
 			type: "apBackoff",
 		},
@@ -231,7 +247,7 @@ export function inbox(
 
 	return inboxQueue.add(data, {
 		attempts: config.inboxJobMaxAttempts || 8,
-		timeout: 5 * 60 * 1000, // 5min
+		timeout: getInboxJobTimeoutMs(),
 		backoff: {
 			type: "apBackoff",
 		},
@@ -486,7 +502,7 @@ export function createIndexAllNotesJob(data = {}) {
 export function createNoteApDeliverJob(data: NoteApDeliverJobData) {
 	return noteApDeliverQueue.add(data, {
 		attempts: config.deliverJobMaxAttempts || 12,
-		timeout: 1 * 60 * 1000,
+		timeout: getDeliverJobTimeoutMs(),
 		backoff: {
 			type: "apBackoff",
 		},

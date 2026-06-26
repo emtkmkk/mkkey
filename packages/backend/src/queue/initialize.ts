@@ -44,9 +44,28 @@ export function initialize<T>(name: string, limitPerSec = -1) {
 	});
 }
 
-function apBackoff(attemptsMade: number, err: Error) {
-	const baseDelay = 60 * 1000; // 1 分
-	const maxBackoff = 8 * 60 * 60 * 1000; // 8 時間
+/** apBackoff の base / max を config から解決し、異常値は clamp する。 */
+function resolveApBackoffDelays(): { baseDelay: number; maxBackoff: number } {
+	const defaultBase = 60 * 1000;
+	const defaultMax = 8 * 60 * 60 * 1000;
+	const minBase = 1000;
+	let baseDelay = config.apBackoffBaseDelayMs ?? defaultBase;
+	let maxBackoff = config.apBackoffMaxDelayMs ?? defaultMax;
+	if (baseDelay < minBase) baseDelay = minBase;
+	if (maxBackoff < baseDelay) maxBackoff = baseDelay;
+	return { baseDelay, maxBackoff };
+}
+
+/**
+ * ActivityPub キュー用の指数バックオフ（失敗後の再試行までの待ち時間）。
+ *
+ * @param attemptsMade - これまでの試行回数
+ * @param _err - 失敗理由（現状は計算に未使用）
+ * @returns 待ち時間（ミリ秒）
+ * @internal
+ */
+function apBackoff(attemptsMade: number, _err: Error) {
+	const { baseDelay, maxBackoff } = resolveApBackoffDelays();
 	let backoff = (Math.pow(2, attemptsMade) - 1) * baseDelay;
 	backoff = Math.min(backoff, maxBackoff);
 	backoff += Math.round(backoff * Math.random() * 0.2);

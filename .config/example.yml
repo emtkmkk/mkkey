@@ -150,6 +150,19 @@ reservedUsernames: [
 # deliverJobMaxAttempts: 12
 # inboxJobMaxAttempts: 8
 
+# Job timeout (milliseconds)
+# deliver / noteApDeliver の 1 回あたり実行上限。未指定時は 60000（1分）
+#deliverJobTimeoutMs: 60000
+# inbox の 1 回あたり実行上限。未指定時は 300000（5分）
+#inboxJobTimeoutMs: 300000
+
+# Job backoff (apBackoff) — 失敗後の再試行までの指数バックオフ
+# 未指定時は base 60000（1分）、max 28800000（8時間）
+# NOTE: timeout 短縮と併用する場合は deliverJobPerSec / deliverJobConcurrency も下げること（再試行嵐防止）
+# NOTE: 既に Redis に積まれた delayed ジョブの待ち時間は変わらない（新規失敗分から反映）
+#apBackoffBaseDelayMs: 60000
+#apBackoffMaxDelayMs: 28800000
+
 # IP address family used for outgoing request (ipv4, ipv6 or dual)
 #outgoingAddressFamily: ipv4
 

@@ -261,7 +261,6 @@ import XShowMoreButton from "@/components/MkShowMoreButton.vue";
 import XCwButton from "@/components/MkCwButton.vue";
 import MkButton from "@/components/MkButton.vue";
 import MkFolder from "@/components/MkFolder.vue";
-import MkLoading from "@/components/MkLoading.vue";
 import { fetchRemoteReferences } from "@/composables/use-remote-references";
 import { extractUrlFromMfm } from "@/scripts/extract-url-from-mfm";
 import { extractMfmWithAnimation } from "@/scripts/extract-mfm";

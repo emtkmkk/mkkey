@@ -21,7 +21,11 @@ import renderEmoji from "./emoji.js";
 import renderMention from "./mention.js";
 import renderHashtag from "./hashtag.js";
 import renderDocument from "./document.js";
-import { getNote } from "@/server/api/common/getters.js";
+import {
+	fetchExposedReferences,
+	getReferenceUri,
+	type ReferenceExposureContext,
+} from "@/services/note/reference-visibility.js";
 
 export default async function renderNote(
 	note: Note,
@@ -249,51 +253,59 @@ export async function getEmojis(names: string[]): Promise<Emoji[]> {
 	return emojis.filter((emoji) => emoji != null) as Emoji[];
 }
 
-export async function getReferences(note: Note, page?: string | boolean | undefined) {
+export async function getReferences(
+	note: Note,
+	page?: string | boolean | undefined,
+	context: ReferenceExposureContext = { kind: "anonymous" },
+) {
+	const limit =
+		page !== undefined ||
+		!(["public", "home"].includes(note.visibility) && !note.localOnly)
+			? 100
+			: 5;
 
-	const limit = page !== undefined || !(["public", "home"].includes(note.visibility) && !note.localOnly) ? 100 : 5;
-
-	let referenceIds = [...(note.referenceIds ?? [])]
+	let referenceIds = [...(note.referenceIds ?? [])];
 
 	if (typeof page === "string") {
 		referenceIds = referenceIds.filter((x) => x > page);
 	}
 
-	// 「次のページ」があるかどうか
-	const inStock = referenceIds.length > limit;
+	const exposed = await fetchExposedReferences(referenceIds, context);
+	const exposedMap = new Map(exposed.map((n) => [n.id, n]));
+	const visibleOrderedIds = referenceIds.filter((id) => exposedMap.has(id));
 
-	if (inStock) referenceIds = referenceIds.sort((a,b) => a < b ? -1 : 1).slice(0, limit)
+	const inStock = visibleOrderedIds.length > limit;
+	const pageIds = inStock
+		? [...visibleOrderedIds].sort((a, b) => (a < b ? -1 : 1)).slice(0, limit)
+		: visibleOrderedIds;
 
-	let renderedReferenceUrls: string[] = [];
-
-	if (referenceIds?.length) {
-		renderedReferenceUrls = (await Promise.allSettled(
-			referenceIds.map(async (x) => {
-				const note = await getNote(x, null, true);
-				if (!note) throw new Error("Note not found");
-				return note.uri ?? `${config.url}/notes/${note.id}`;
-			})
-		)).filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
-			.map(result => result.value);
-	}
+	const renderedReferenceUrls = pageIds.map((id) =>
+		getReferenceUri(exposedMap.get(id)!),
+	);
 
 	const collectionPage = {
-		id: page ? `${config.url}/notes/${note.id}/references?${url.query({
-			page: "true",
-			cursor: typeof page === "string" ? page : undefined
-		})}` : `${config.url}/notes/${note.id}/references`,
+		id: page
+			? `${config.url}/notes/${note.id}/references?${url.query({
+					page: "true",
+					cursor: typeof page === "string" ? page : undefined,
+				})}`
+			: `${config.url}/notes/${note.id}/references`,
 		type: "CollectionPage",
-		next: inStock ? `${config.url}/notes/${note.id}/references?${url.query({
-			page: "true",
-			cursor: referenceIds.reduce((pre, cur) => pre > cur ? pre : cur)
-		})}` : undefined,
+		next: inStock
+			? `${config.url}/notes/${note.id}/references?${url.query({
+					page: "true",
+					cursor: pageIds.reduce((pre, cur) => (pre > cur ? pre : cur)),
+				})}`
+			: undefined,
 		partOf: `${config.url}/notes/${note.id}/references`,
 		items: renderedReferenceUrls,
-	}
-
-	return page ? collectionPage : {
-		id: `${config.url}/notes/${note.id}/references`,
-		type: "Collection",
-		first: collectionPage,
 	};
+
+	return page
+		? collectionPage
+		: {
+				id: `${config.url}/notes/${note.id}/references`,
+				type: "Collection",
+				first: collectionPage,
+			};
 }

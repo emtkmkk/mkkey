@@ -184,6 +184,7 @@ type Option = {
 	reply?: Note | null;
 	renote?: Note | null;
 	references?: string[] | null;
+	hasReferences?: boolean | null;
 	files?: DriveFile[] | null;
 	poll?: IPoll | null;
 	localOnly?: boolean | null;
@@ -1438,6 +1439,8 @@ async function insertNote(
 				: [],
 		attachedFileTypes: data.files ? data.files.map((file) => file.type) : [],
 		referenceIds: data.references || [],
+		hasReferences:
+			data.hasReferences === true || (data.references?.length ?? 0) > 0,
 		isPublicLikeList: data.isPublicLikeList ?? undefined,
 		isFirstNote: !!data.isFirstNote,
 		isBotMention,

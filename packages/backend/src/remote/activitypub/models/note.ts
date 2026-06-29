@@ -379,6 +379,7 @@ export async function createNote(
 
 	// 参照
 	let references = new Set<Note["id"]>();
+	const hasReferencesCollection = note.references != null;
 	if (note.references) {
 		// Collection オブジェクトに解決
 		const collection = await resolver.resolveCollection(note.references);
@@ -395,27 +396,27 @@ export async function createNote(
 				);
 				let next = collection.first.next;
 				while (next) {
-					let data = await fetch(next, {
-						headers: { Accept: "application/json" },
-					});
-					let json_data = JSON.parse(await data.text());
-					logger.info(
-						`references_next: ${JSON.stringify(json_data, undefined, "\t")}`,
+					const pageObj = (await resolver.resolve(next)) as Record<
+						string,
+						unknown
+					>;
+					const pageItems = toArray(
+						pageObj.items as string | string[] | undefined,
 					);
-
-					for (let i = 0; i < json_data.items?.length; i++) {
+					for (const item of pageItems) {
 						items = [
 							...items,
 							...(
 								await Promise.allSettled([
-									resolver?.resolve(json_data.items[i], true),
+									resolver?.resolve(item, true),
 								])
 							).flatMap((result) =>
 								result.status === "fulfilled" ? [result.value] : [],
 							),
 						];
 					}
-					next = json_data.next;
+					next =
+						typeof pageObj.next === "string" ? pageObj.next : undefined;
 				}
 
 				// Note を解決して登録
@@ -595,6 +596,7 @@ export async function createNote(
 			reply,
 			renote: quote,
 			references: Array.from(references),
+			hasReferences: hasReferencesCollection,
 			name: note.name,
 			cw,
 			text,

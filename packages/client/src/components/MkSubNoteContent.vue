@@ -179,16 +179,29 @@
 						<XNoteSimple :note="note.renote" nocolor />
 					</div>
 					<MkFolder
-						v-if="note.references?.length"
+						v-if="showReferencesFolder"
 						class="references"
 						:expanded="refExpand"
 						no-style
+						@toggle="onReferencesFolderToggle"
 					>
-						<template #header>{{
-							note.references.length + " 件の参照"
-						}}</template>
+						<template #header>{{ referencesHeader }}</template>
 						<div
-							v-for="reference in note.references"
+							v-if="isRemoteParentNote && remoteReferencesLoading"
+							class="references-loading"
+						>
+							<MkLoading mini />
+						</div>
+						<MkButton
+							v-else-if="isRemoteParentNote && remoteReferencesError"
+							class="references-retry"
+							@click.stop="retryRemoteReferences"
+						>
+							再試行
+						</MkButton>
+						<div
+							v-for="reference in displayReferences"
+							:key="reference.id"
 							class="reference"
 							@click.stop="emit('push', reference)"
 						>
@@ -224,7 +237,18 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+/**
+ * @packageDocumentation
+ *
+ * ノート本文の折りたたみ表示（リプライ・RN・参照フォルダ等）。
+ *
+ * @remarks
+ * - ローカル投稿: `pack.references` をそのまま表示。
+ * - リモート投稿: `hasReferences` でフォルダを出し、初回展開時のみ lazy API。以降はセッションキャッシュ。
+ *
+ * @public
+ */
+import { ref, watch, onMounted } from "vue";
 import * as misskey from "calckey-js";
 import * as mfm from "mfm-js";
 import * as os from "@/os";
@@ -237,6 +261,8 @@ import XShowMoreButton from "@/components/MkShowMoreButton.vue";
 import XCwButton from "@/components/MkCwButton.vue";
 import MkButton from "@/components/MkButton.vue";
 import MkFolder from "@/components/MkFolder.vue";
+import MkLoading from "@/components/MkLoading.vue";
+import { fetchRemoteReferences } from "@/composables/use-remote-references";
 import { extractUrlFromMfm } from "@/scripts/extract-url-from-mfm";
 import { extractMfmWithAnimation } from "@/scripts/extract-mfm";
 import { shouldEnableMfmCompat } from "@/scripts/mfm-compat";
@@ -290,6 +316,72 @@ const urls = props.note.text
 			.slice(0, 5)
 	: null;
 let refExpand = $ref(!!props.option?.includes("references"));
+
+/** リモート親投稿（参照 lazy 取得対象） */
+const isRemoteParentNote = $computed(
+	() =>
+		props.note.userHost != null ||
+		(props.note.user?.host != null && props.note.user.host !== config.host),
+);
+
+type NoteWithReferencesMeta = misskey.entities.Note & {
+	hasReferences?: boolean;
+	visibleReferencesCount?: number;
+};
+
+const showReferencesFolder = $computed(() => {
+	const note = props.note as NoteWithReferencesMeta;
+	if (isRemoteParentNote) return note.hasReferences === true;
+	return (note.references?.length ?? 0) > 0;
+});
+
+let loadedRemoteReferences = $ref<misskey.entities.Note[] | null>(null);
+let remoteReferencesLoading = $ref(false);
+let remoteReferencesError = $ref(false);
+
+const referencesHeader = $computed(() => {
+	const note = props.note as NoteWithReferencesMeta;
+	if (isRemoteParentNote) {
+		const count =
+			loadedRemoteReferences?.length ?? note.visibleReferencesCount ?? 0;
+		return count > 0 ? `${count} 件の参照` : "参照";
+	}
+	return `${note.references?.length ?? 0} 件の参照`;
+});
+
+const displayReferences = $computed(() => {
+	if (isRemoteParentNote) return loadedRemoteReferences ?? [];
+	return props.note.references ?? [];
+});
+
+async function loadRemoteReferences(): Promise<void> {
+	remoteReferencesLoading = true;
+	remoteReferencesError = false;
+	try {
+		loadedRemoteReferences = await fetchRemoteReferences(props.note.id);
+	} catch {
+		remoteReferencesError = true;
+	} finally {
+		remoteReferencesLoading = false;
+	}
+}
+
+function onReferencesFolderToggle(expanded: boolean): void {
+	if (!expanded || !isRemoteParentNote) return;
+	if (loadedRemoteReferences != null) return;
+	void loadRemoteReferences();
+}
+
+function retryRemoteReferences(): void {
+	loadedRemoteReferences = null;
+	void loadRemoteReferences();
+}
+
+onMounted(() => {
+	if (refExpand && isRemoteParentNote) {
+		void loadRemoteReferences();
+	}
+});
 
 let showContent = ref(!cwView);
 

@@ -31,12 +31,17 @@ import { APP_MAX_POLL_CHOICE_LENGTH } from "@/misc/hard-limits.js";
 import { noteVisibilities } from "../../../../types.js";
 import { ApiError } from "../../error.js";
 import { StatusError } from "@/misc/fetch.js";
+import { IdentifiableError } from "@/misc/identifiable-error.js";
 import define from "../../define.js";
 import { HOUR } from "@/const.js";
 import { getNote } from "../../common/getters.js";
 import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
 import { publishMainStream } from "@/services/stream.js";
 import { redisClient } from "@/db/redis.js";
+import {
+	NO_SUCH_REFERENCE_TARGET_ERROR_ID,
+	validateReferenceIds,
+} from "@/services/note/reference-visibility.js";
 
 const NOTES_CREATE_IDEMPOTENCY_TTL_SEC = 60 * 60;
 const NOTES_CREATE_IDEMPOTENCY_PENDING = "__pending__";
@@ -151,6 +156,12 @@ export const meta = {
 			message: "移行しました。アカウントがロックされています。",
 			code: "ACCOUNT_LOCKED",
 			id: "d390d7e1-8a5e-46ed-b625-06271cafd3d3",
+		},
+
+		noSuchReferenceTarget: {
+			message: "参照先が存在しないか閲覧できません。",
+			code: "NO_SUCH_REFERENCE_TARGET",
+			id: "a3f8c2e1-9b4d-4a7f-8e6c-1d5b0a9f3e72",
 		},
 	},
 } as const;
@@ -490,16 +501,17 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 			return renote;
 	})();
 
-	const referencePromises = ps.referenceIds?.length
-			? ps.referenceIds.map(noteId => getNote(noteId, user).catch((e) => {
-					return null;
-			}).then((reference) => {
-					if (reference?.renoteId && !reference.text && !reference.fileIds && !reference.hasPoll) {
-						return null;
-					}
-					return reference;
-			}))
-			: [];
+	const validatedReferenceIdsPromise = ps.referenceIds?.length
+		? validateReferenceIds(user, ps.referenceIds).catch((e) => {
+				if (
+					e instanceof IdentifiableError &&
+					e.id === NO_SUCH_REFERENCE_TARGET_ERROR_ID
+				) {
+					throw new ApiError(meta.errors.noSuchReferenceTarget);
+				}
+				throw e;
+			})
+		: Promise.resolve([] as Note["id"][]);
 
 	const replyPromise = (async (): Promise<{ reply: Note | null; additionalCcUsers: User[] }> => {
 			let reply: Note | null = null;
@@ -546,19 +558,23 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 			return { reply, additionalCcUsers };
 	})();
 
-	let [visibleUsers, ccUsers, files, channel, renote, replyResult] = await Promise.all([
+	let [visibleUsers, ccUsers, files, channel, renote, replyResult, validatedReferenceIds] = await Promise.all([
 			visibleUsersPromise,
 			ccUsersPromise,
 			filesPromise,
 			channelPromise,
 			renotePromise,
 			replyPromise,
-			//Promise.all(referencePromises),
+			validatedReferenceIdsPromise,
 	]);
 
 	const reply = replyResult.reply;
 	if (replyResult.additionalCcUsers.length > 0) {
 		ccUsers = [...ccUsers, ...replyResult.additionalCcUsers];
+	}
+
+	if (ps.referenceIds?.length && validatedReferenceIds.length === 0) {
+		throw new ApiError(meta.errors.noSuchReferenceTarget);
 	}
 
 	const choices = new Set()
@@ -638,7 +654,9 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 					text: ps.text || undefined,
 					reply,
 					renote,
-					references: ps.referenceIds?.length ? ps.referenceIds : undefined,
+					references: validatedReferenceIds.length
+						? validatedReferenceIds
+						: undefined,
 					cw: ps.cw,
 					localOnly: ps.localOnly,
 					visibility: ps.visibility,

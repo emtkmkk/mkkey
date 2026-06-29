@@ -67,7 +67,8 @@ export default defineComponent({
 		};
 	},
 	watch: {
-		showBody() {
+		showBody(val) {
+			this.$emit("toggle", val);
 			if (this.persistKey) {
 				localStorage.setItem(
 					localStoragePrefix + this.persistKey,

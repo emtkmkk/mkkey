@@ -259,5 +259,19 @@ export const packedNoteSchema = {
 			description:
 				"文頭でBot1件のみメンションしている投稿か。true のときのみキーが含まれる。TLフィルタで Bot が関わる返信として扱う。",
 		},
+		hasReferences: {
+			type: "boolean",
+			optional: true,
+			nullable: false,
+			description:
+				"参照 Collection が存在する（リモート投稿で items が空でも true のことがある）。",
+		},
+		visibleReferencesCount: {
+			type: "number",
+			optional: true,
+			nullable: false,
+			description:
+				"閲覧者から見えている参照件数（リモート投稿の lazy 表示用）。",
+		},
 	},
 } as const;

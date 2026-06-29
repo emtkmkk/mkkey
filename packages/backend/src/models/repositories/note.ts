@@ -39,6 +39,7 @@ import {
 	populateEmojis,
 	prefetchEmojis,
 } from "@/misc/populate-emojis.js";
+import { countVisibleReferencesBatch } from "@/services/note/reference-visibility.js";
 import { db } from "@/db/postgre.js";
 import { redisClient, subscriber } from "@/db/redis.js";
 import { Cache } from "@/misc/cache.js";
@@ -117,6 +118,8 @@ type NotePackHint = {
 	noteMap?: Map<Note["id"], Note>;
 	/** packMany 用: ノート添付ファイルを一括 pack した Map */
 	packedFileMap?: Map<DriveFile["id"], Packed<"DriveFile">>;
+	/** packMany 用: リモート投稿の閲覧者可視参照件数 */
+	visibleReferencesCountMap?: Map<Note["id"], number>;
 };
 
 const NOTE_PACK_CACHE_TTL_MS = 30 * 1000;
@@ -530,6 +533,7 @@ export const NoteRepository = db.getRepository(Note).extend({
                 const note =
                         typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
                 const host = note?.userHost;
+                const skipReferencePacking = !!host;
                 const hint: NotePackHint = opts._hint_ ?? (opts._hint_ = {});
                 let meUser = hint.me;
                 if (meId && !meUser) {
@@ -743,6 +747,15 @@ export const NoteRepository = db.getRepository(Note).extend({
 				? { renoteUserHost: note.renoteUserHost }
 				: {}),
 			referenceIds: note.referenceIds,
+			hasReferences: host
+				? note.hasReferences
+				: (note.referenceIds?.length ?? 0) > 0,
+			...(host
+				? {
+						visibleReferencesCount:
+							hint.visibleReferencesCountMap?.get(note.id) ?? 0,
+					}
+				: {}),
 			channelId: note.channelId || undefined,
 			channel: channel
 				? {
@@ -792,32 +805,53 @@ export const NoteRepository = db.getRepository(Note).extend({
                                                           )
                                                         : undefined,
 
-                                                references: note.referenceIds.filter(
-                                                        (x) => !/\W/.test(x) && x !== note.renoteId,
-                                                ).length
-                                                        ? (
-                                                                        await Promise.allSettled(
-                                                                                note.referenceIds
-                                                                                        .filter((x) => !/\W/.test(x) && x !== note.renoteId)
-                                                                                        .map(async (x) => {
-                                                                                                try {
-                                                                                                        return await this.pack(x, me, {
-                                                                                                                detail: true,
-                                                                                                                _hint_: opts._hint_,
-                                                                                                                showInvisible: false,
-                                                                                                                blockCheck: true,
-                                                                                                        });
-                                                                                                } catch (e) {
-													return null;
-												}
-											}),
-									)
-							  ).flatMap((result) =>
-									result.status === "fulfilled" ? [result.value] : [],
-							  ).filter(Boolean)
-							: undefined,
+                                                references:
+                                                        skipReferencePacking ||
+                                                        !note.referenceIds.filter(
+                                                                (x) =>
+                                                                        !/\W/.test(x) &&
+                                                                        x !== note.renoteId,
+                                                        ).length
+                                                                ? undefined
+                                                                : (
+                                                                                await Promise.allSettled(
+                                                                                        note.referenceIds
+                                                                                                .filter(
+                                                                                                        (x) =>
+                                                                                                                !/\W/.test(
+                                                                                                                        x,
+                                                                                                                ) &&
+                                                                                                                x !==
+                                                                                                                        note.renoteId,
+                                                                                                )
+                                                                                                .map(async (x) => {
+                                                                                                        try {
+                                                                                                                return await this.pack(
+                                                                                                                        x,
+                                                                                                                        me,
+                                                                                                                        {
+                                                                                                                                detail: true,
+                                                                                                                                _hint_: opts._hint_,
+                                                                                                                                showInvisible: false,
+                                                                                                                                blockCheck: true,
+                                                                                                                        },
+                                                                                                                );
+                                                                                                        } catch (e) {
+                                                                                                                return null;
+                                                                                                        }
+                                                                                                }),
+                                                                                )
+                                                                        ).flatMap(
+                                                                                (result) =>
+                                                                                        result.status ===
+                                                                                        "fulfilled"
+                                                                                                ? [
+                                                                                                                result.value,
+                                                                                                        ]
+                                                                                                : [],
+                                                                        ).filter(Boolean),
 
-						poll:
+                                                poll:
 							note.hasPoll && isVisible ? populatePoll(note, meId) : undefined,
 
                                                 ...(meId
@@ -1095,6 +1129,9 @@ export const NoteRepository = db.getRepository(Note).extend({
 
                 const channelMap = new Map(channelsForNotes.map((c) => [c.id, c]));
 
+                const visibleReferencesCountMap =
+                        await countVisibleReferencesBatch(notes, me);
+
                 const hint: NotePackHint = {
                         myReactions: myReactionsMap,
                         favorites: favoritedNoteIds,
@@ -1104,6 +1141,7 @@ export const NoteRepository = db.getRepository(Note).extend({
                         channelMap,
                         noteMap,
 			packedFileMap,
+                        visibleReferencesCountMap,
                 };
 
                 const promises = await Promise.allSettled(

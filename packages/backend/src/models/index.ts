@@ -76,11 +76,13 @@ import { PasskeyLoginChallenge } from "./entities/passkey-login-challenge.js";
 import { EmojiImportRequest } from "./entities/emoji-import-request.js";
 import { EmojiImportDenied } from "./entities/emoji-import-denied.js";
 import { ModerationWarningPopupAck } from "./entities/moderation-warning-popup-ack.js";
+import { NoteReferenceCache } from "./entities/note-reference-cache.js";
 
 export const Announcements = db.getRepository(Announcement);
 export const AnnouncementReads = db.getRepository(AnnouncementRead);
 export const Apps = AppRepository;
 export const Notes = NoteRepository;
+export const NoteReferenceCaches = db.getRepository(NoteReferenceCache);
 export const NoteEdits = db.getRepository(NoteEdit);
 export const NoteFavorites = NoteFavoriteRepository;
 export const NoteWatchings = db.getRepository(NoteWatching);

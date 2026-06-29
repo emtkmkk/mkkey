@@ -285,6 +285,12 @@ export class Note {
 	})
 	public referenceIds: Note["id"][];
 
+	@Column("boolean", {
+		default: false,
+		comment: "AP references Collection が存在する（リモート受信時。items 空でも true）",
+	})
+	public hasReferences: boolean;
+
 	@Column('timestamp with time zone', {
 		nullable: true,
 		comment: 'The updated date of the Note.',

@@ -357,24 +357,25 @@ router.get("/notes/:note/references", async (ctx, next) => {
                 return;
         }
 
+	const signatureUser = await getSignatureUser(ctx.req);
+
 	if (note.visibility === "followers" && (!note.channelId && note.localOnly)) {
 		serverLogger.debug(
 			"Responding to request for follower-only note, validating access...",
 		);
-		const remoteUser = await getSignatureUser(ctx.req);
 		serverLogger.debug("Local note author user:");
 		serverLogger.debug(JSON.stringify(note, null, 2));
 		serverLogger.debug("Authenticated remote user:");
-		serverLogger.debug(JSON.stringify(remoteUser, null, 2));
+		serverLogger.debug(JSON.stringify(signatureUser, null, 2));
 
-		if (remoteUser == null) {
+		if (signatureUser == null) {
 			serverLogger.debug("Rejecting: no user");
 			ctx.status = 401;
 			return;
 		}
 
             const relation = await Users.getRelation(
-                    remoteUser.user.id,
+                    signatureUser.user.id,
                     note.userId,
                     note.user ?? undefined,
             );
@@ -397,7 +398,17 @@ router.get("/notes/:note/references", async (ctx, next) => {
 		return;
 	}
 
-	ctx.body = renderActivity(await getReferences(note, (ctx.request.query.cursor || ctx.request.query.min_id) as string | undefined || !!ctx.request.query.page));
+	ctx.body = renderActivity(
+		await getReferences(
+			note,
+			((ctx.request.query.cursor || ctx.request.query.min_id) as
+				| string
+				| undefined) || !!ctx.request.query.page,
+			signatureUser
+				? { kind: "authenticated", user: signatureUser.user }
+				: { kind: "anonymous" },
+		),
+	);
 	const meta = await fetchMeta();
 	if (meta.secureMode || meta.privateMode) {
 		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");

@@ -575,14 +575,12 @@ router.get("/users/:user", async (ctx) => {
 });
 
 router.get("/notes/:note/references", async (ctx, next) => {
-	console.log("notereferences: " + ctx.params.note)
 	const note = await Notes.findOneBy({
 		id: ctx.params.note,
 	});
 
 	try {
 		if (note) {
-			console.log("notereferences: 2")
 			const user = await Users.findOneByOrFail({
 				id: note.userId,
 			});
@@ -602,10 +600,8 @@ router.get("/notes/:note/references", async (ctx, next) => {
 
 			const meta = await fetchMeta();
 			if (_note.referenceIds?.length) {
-				console.log("notereferences: 3")
 				let referenceNote;
 				for (const noteId of _note.referenceIds) {
-					console.log("notereferences: 4")
 					const note =
 						await Notes.findOneBy({
 							id: noteId,
@@ -617,7 +613,6 @@ router.get("/notes/:note/references", async (ctx, next) => {
 					break;
 				}
 				if (!referenceNote){
-					console.log("notereferences: 5")
 					await ctx.render("references", {
 						note: _note,
 						profile,
@@ -637,7 +632,6 @@ router.get("/notes/:note/references", async (ctx, next) => {
 					return;
 				}
 				const refNote = await Notes.pack(referenceNote)
-				console.log("notereferences: 6")
 				const referenceUser = await Users.findOneByOrFail({
 					id: referenceNote.userId,
 				});
@@ -651,7 +645,6 @@ router.get("/notes/:note/references", async (ctx, next) => {
 				let summary = ""
 				summary = getNoteSummary(await Notes.pack(referenceNote));
 				summary = [_note.referenceIds.length > 1 ? `他${_note.referenceIds.length - 1}件` : "", summary].filter(Boolean).join(" / ");
-				console.log("notereferences: 7")
 				await ctx.render("references", {
 					note: refNote || _note,
 					profile: refProfile || profile,

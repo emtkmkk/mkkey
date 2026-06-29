@@ -15,6 +15,11 @@ import { IdentifiableError } from "@/misc/identifiable-error.js";
 import type { Note } from "@/models/entities/note.js";
 import type { User } from "@/models/entities/user.js";
 import { Blockings, Notes } from "@/models/index.js";
+import { toArray } from "@/prelude/array.js";
+import type {
+	ICollection,
+	IOrderedCollection,
+} from "@/remote/activitypub/type.js";
 import { generateVisibilityQuery } from "@/server/api/common/generate-visibility-query.js";
 
 /** API エラー `noSuchReferenceTarget` と同じ ID */
@@ -59,6 +64,52 @@ export function isPureRenote(
  */
 export function getReferenceUri(note: Pick<Note, "id" | "uri">): string {
 	return note.uri ?? `${config.url}/notes/${note.id}`;
+}
+
+/**
+ * AP references Collection に実質的な参照が含まれるかどうか
+ *
+ * @param collection - resolve 済みの Collection / OrderedCollection
+ * @returns 空 shell のみなら false
+ * @remarks
+ * NOTE: `note.references != null` だけでは空の器も true になる。items / totalItems / next の有無で判定する。
+ * NOTE: Fedibird は全投稿に空 shell を付与するため、本判定はインスタンス・アカウントに依存しない。
+ * NOTE: followers 限定参照は totalItems > 0 で items が空でも true とする。
+ * @internal
+ */
+export function referencesCollectionHasSubstance(
+	collection: ICollection | IOrderedCollection | Record<string, unknown>,
+): boolean {
+	const c = collection as Record<string, unknown>;
+
+	const totalItems = c.totalItems;
+	if (typeof totalItems === "number" && totalItems > 0) return true;
+
+	if (typeof c.next === "string" && c.next.length > 0) return true;
+
+	const items = toArray(c.items as string | string[] | undefined);
+	if (items.length > 0) return true;
+
+	const orderedItems = toArray(
+		c.orderedItems as string | string[] | undefined,
+	);
+	if (orderedItems.length > 0) return true;
+
+	const first = c.first;
+	if (typeof first === "string" && first.length > 0) return true;
+
+	if (typeof first === "object" && first != null) {
+		const firstObj = first as Record<string, unknown>;
+		if (typeof firstObj.next === "string" && firstObj.next.length > 0) {
+			return true;
+		}
+		const firstItems = toArray(
+			firstObj.items as string | string[] | undefined,
+		);
+		if (firstItems.length > 0) return true;
+	}
+
+	return false;
 }
 
 function applyExposureFilter(

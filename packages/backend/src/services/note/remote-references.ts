@@ -13,7 +13,7 @@ import { IsNull } from "typeorm";
 import { genId } from "@/misc/gen-id.js";
 import type { Note } from "@/models/entities/note.js";
 import type { User } from "@/models/entities/user.js";
-import { NoteReferenceCaches, Notes, Users } from "@/models/index.js";
+import { NoteReferenceCaches, Users } from "@/models/index.js";
 import { apGet } from "@/remote/activitypub/request.js";
 import Resolver from "@/remote/activitypub/resolver.js";
 import { resolveNote } from "@/remote/activitypub/models/note.js";
@@ -63,7 +63,6 @@ async function fetchReferenceIdsFromOrigin(
 	viewer: ILocalUser,
 ): Promise<Note["id"][]> {
 	const referencesUrl = buildRemoteReferencesUrl(parentNote);
-	const keypair = await getUserKeypair(viewer.id);
 	const resolver = new Resolver({
 		user: viewer,
 	});

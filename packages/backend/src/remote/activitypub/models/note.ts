@@ -56,6 +56,7 @@ import { getApLock } from "@/misc/app-lock.js";
 import { createMessage } from "@/services/messages/create.js";
 import { parseAudience } from "../audience.js";
 import { extractApMentions } from "./mention.js";
+import { referencesCollectionHasSubstance } from "@/services/note/reference-visibility.js";
 import DbResolver from "../db-resolver.js";
 import { StatusError } from "@/misc/fetch.js";
 import { shouldBlockInstance } from "@/misc/should-block-instance.js";
@@ -379,22 +380,33 @@ export async function createNote(
 
 	// 参照
 	let references = new Set<Note["id"]>();
-	const hasReferencesCollection = note.references != null;
+	let collectionSubstance = false;
 	if (note.references) {
 		// Collection オブジェクトに解決
 		const collection = await resolver.resolveCollection(note.references);
 		if (isCollectionOrOrderedCollection(collection)) {
-			if (collection.first?.items) {
+			collectionSubstance = referencesCollectionHasSubstance(collection);
+			// first ページ（items が空配列でも next 走査できるよう first オブジェクトで分岐）
+			const firstPage = (collection as Record<string, unknown>).first;
+			if (
+				typeof firstPage === "object" &&
+				firstPage != null &&
+				!Array.isArray(firstPage)
+			) {
+				const firstPageObj = firstPage as Record<string, unknown>;
 				let items = (
 					await Promise.allSettled(
-						toArray(collection.first.items).map((x) =>
-							resolver?.resolve(x, true),
-						),
+						toArray(
+							firstPageObj.items as string | string[] | undefined,
+						).map((x) => resolver?.resolve(x, true)),
 					)
 				).flatMap((result) =>
 					result.status === "fulfilled" ? [result.value] : [],
 				);
-				let next = collection.first.next;
+				let next =
+					typeof firstPageObj.next === "string"
+						? firstPageObj.next
+						: undefined;
 				while (next) {
 					const pageObj = (await resolver.resolve(next)) as Record<
 						string,
@@ -596,7 +608,7 @@ export async function createNote(
 			reply,
 			renote: quote,
 			references: Array.from(references),
-			hasReferences: hasReferencesCollection,
+			hasReferences: references.size > 0 || collectionSubstance,
 			name: note.name,
 			cw,
 			text,

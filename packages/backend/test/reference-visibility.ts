@@ -5,6 +5,7 @@ import * as childProcess from "child_process";
 import {
 	isPureRenote,
 	NO_SUCH_REFERENCE_TARGET_ERROR_ID,
+	referencesCollectionHasSubstance,
 } from "../src/services/note/reference-visibility.js";
 import {
 	async,
@@ -38,6 +39,74 @@ describe("reference-visibility", () => {
 					hasPoll: false,
 				}),
 				false,
+			);
+		});
+	});
+
+	describe("referencesCollectionHasSubstance", () => {
+		it("正常系：Fedibird 典型の空 shell の場合、false になる", () => {
+			assert.strictEqual(
+				referencesCollectionHasSubstance({
+					type: "Collection",
+					first: { items: [] },
+				}),
+				false,
+			);
+		});
+
+		it("正常系：totalItems > 0 で items が空の場合、true になる", () => {
+			assert.strictEqual(
+				referencesCollectionHasSubstance({
+					type: "Collection",
+					totalItems: 3,
+					first: { items: [] },
+				}),
+				true,
+			);
+		});
+
+		it("正常系：first.items に URI がある場合、true になる", () => {
+			assert.strictEqual(
+				referencesCollectionHasSubstance({
+					type: "Collection",
+					first: {
+						items: ["https://example.com/users/a/status/1"],
+					},
+				}),
+				true,
+			);
+		});
+
+		it("正常系：first.next がある場合、true になる", () => {
+			assert.strictEqual(
+				referencesCollectionHasSubstance({
+					type: "Collection",
+					first: {
+						items: [],
+						next: "https://example.com/status/1/references?page=2",
+					},
+				}),
+				true,
+			);
+		});
+
+		it("正常系：Collection 直下の items がある場合、true になる", () => {
+			assert.strictEqual(
+				referencesCollectionHasSubstance({
+					type: "Collection",
+					items: ["https://example.com/users/a/status/1"],
+				}),
+				true,
+			);
+		});
+
+		it("正常系：first が URL 文字列の場合、true になる", () => {
+			assert.strictEqual(
+				referencesCollectionHasSubstance({
+					type: "Collection",
+					first: "https://example.com/status/1/references?page=1",
+				}),
+				true,
 			);
 		});
 	});

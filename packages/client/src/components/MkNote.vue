@@ -230,7 +230,7 @@
 						v-if="!hideToolbarNormalReply(appearNote)"
 						v-tooltip.bottom="i18n.ts.reply"
 						class="button _button"
-						@click="reply()"
+						@click="reply(false, $event)"
 					>
 						<i class="ph-arrow-u-up-left ph-bold ph-lg"></i>
 						<template v-if="appearNote.repliesCount > 0">
@@ -499,6 +499,7 @@ import {
 	hideToolbarNormalReply,
 	showToolbarAirReplyForNote,
 } from "@/scripts/stranger-air-reply-toolbar";
+import { openReplyWithChoice } from "@/scripts/reply-note";
 
 const router = useRouter();
 
@@ -799,13 +800,13 @@ useNoteCapture({
 	isDeletedRef: isDeleted,
 });
 
-function reply(viaKeyboard = false): void {
+function reply(viaKeyboard = false, ev?: MouseEvent): void {
 	pleaseLogin();
-	os.post({
-		reply: appearNote,
+	openReplyWithChoice(appearNote, {
+		viaKeyboard,
 		animation: !viaKeyboard,
-	}).then(() => {
-		focus();
+		src: ev?.currentTarget ?? (viaKeyboard ? footerEl.value : undefined),
+		onOpened: focus,
 	});
 }
 

@@ -544,10 +544,13 @@ const props = withDefaults(
 		key?: string;
 		airReply?: misskey.entities.Note;
 		forceSpecified?: boolean;
+		/** false のとき親本文のメンションをコピーせず著者のみ挿入する */
+		replyAllMentions?: boolean;
 	}>(),
 	{
 		initialVisibleUsers: () => [],
 		autofocus: true,
+		replyAllMentions: true,
 	}
 );
 
@@ -1549,7 +1552,7 @@ if (
 	} `;
 }
 
-if (reply && reply.text != null) {
+if (reply && reply.text != null && props.replyAllMentions !== false) {
 	const ast = mfm.parse(reply.text);
 	const otherHost = reply.user.host;
 

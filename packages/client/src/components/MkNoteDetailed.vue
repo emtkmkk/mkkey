@@ -96,6 +96,7 @@ import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { getNoteMenu } from "@/scripts/get-note-menu";
 import { useNoteCapture } from "@/scripts/use-note-capture";
+import { openReplyWithChoice } from "@/scripts/reply-note";
 import { deepClone } from "@/scripts/clone";
 import { stream } from "@/stream";
 import { NoteUpdatedEvent } from "calckey-js/built/streaming.types";
@@ -196,11 +197,11 @@ useNoteCapture({
 
 function reply(viaKeyboard = false): void {
 	pleaseLogin();
-	os.post({
-		reply: appearNote,
+	openReplyWithChoice(appearNote, {
+		viaKeyboard,
 		animation: !viaKeyboard,
-	}).then(() => {
-		focus();
+		src: viaKeyboard ? noteEl.value : undefined,
+		onOpened: focus,
 	});
 }
 

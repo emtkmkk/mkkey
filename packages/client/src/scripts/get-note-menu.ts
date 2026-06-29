@@ -21,6 +21,7 @@ import { noteActions } from "@/store";
 import { shareAvailable } from "@/scripts/share-available";
 import { defaultStore } from "@/store";
 import { hideToolbarNormalReply } from "@/scripts/stranger-air-reply-toolbar";
+import { getNoteMenuReplyItem } from "@/scripts/reply-note";
 
 export function getNoteMenu(props: {
 	note: misskey.entities.Note;
@@ -100,11 +101,8 @@ export function getNoteMenu(props: {
 	}
 
 	/** ツールバーから返信が隠れているとき用の通常返信（誤爆防止の逃げ道） */
-	function normalReply(): void {
-		pleaseLogin();
-		os.post({
-			reply: appearNote,
-		});
+	function getNormalReplyMenuItem() {
+		return getNoteMenuReplyItem(appearNote);
 	}
 
 	function delEdit(): void {
@@ -467,13 +465,7 @@ export function getNoteMenu(props: {
 						]
 					: []),
 				...(hideToolbarNormalReply(appearNote)
-					? [
-							{
-								icon: "ph-arrow-u-up-left ph-bold ph-lg",
-								text: i18n.ts.reply,
-								action: normalReply,
-							},
-						]
+					? [getNormalReplyMenuItem()]
 					: []),
 				defaultStore.state.enabledAirReply &&
 				(appearNote.visibility !== "specified" ||
@@ -754,13 +746,7 @@ export function getNoteMenu(props: {
 						]
 					: []),
 				...(hideToolbarNormalReply(appearNote)
-					? [
-							{
-								icon: "ph-arrow-u-up-left ph-bold ph-lg",
-								text: i18n.ts.reply,
-								action: normalReply,
-							},
-						]
+					? [getNormalReplyMenuItem()]
 					: []),
 				defaultStore.state.enabledAirReply &&
 				(appearNote.visibility !== "specified" ||

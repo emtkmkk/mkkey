@@ -42,6 +42,7 @@ const props = defineProps<{
 	autofocus?: boolean;
 	key?: string;
 	airReply?: misskey.entities.Note;
+	replyAllMentions?: boolean;
 }>();
 
 const emit = defineEmits<{

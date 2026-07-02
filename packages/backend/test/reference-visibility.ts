@@ -54,14 +54,14 @@ describe("reference-visibility", () => {
 			);
 		});
 
-		it("正常系：totalItems > 0 で items が空の場合、true になる", () => {
+		it("正常系：totalItems > 0 でも items が空の場合、false になる", () => {
 			assert.strictEqual(
 				referencesCollectionHasSubstance({
 					type: "Collection",
 					totalItems: 3,
 					first: { items: [] },
 				}),
-				true,
+				false,
 			);
 		});
 
@@ -77,7 +77,7 @@ describe("reference-visibility", () => {
 			);
 		});
 
-		it("正常系：first.next がある場合、true になる", () => {
+		it("正常系：first.next があるだけの場合、false になる", () => {
 			assert.strictEqual(
 				referencesCollectionHasSubstance({
 					type: "Collection",
@@ -86,7 +86,7 @@ describe("reference-visibility", () => {
 						next: "https://example.com/status/1/references?page=2",
 					},
 				}),
-				true,
+				false,
 			);
 		});
 
@@ -100,13 +100,23 @@ describe("reference-visibility", () => {
 			);
 		});
 
-		it("正常系：first が URL 文字列の場合、true になる", () => {
+		it("正常系：first が URL 文字列だけの場合、false になる", () => {
 			assert.strictEqual(
 				referencesCollectionHasSubstance({
 					type: "Collection",
 					first: "https://example.com/status/1/references?page=1",
 				}),
-				true,
+				false,
+			);
+		});
+
+		it("正常系：Collection 直下に next があるだけの場合、false になる", () => {
+			assert.strictEqual(
+				referencesCollectionHasSubstance({
+					type: "Collection",
+					next: "https://example.com/status/1/references?page=2",
+				}),
+				false,
 			);
 		});
 	});

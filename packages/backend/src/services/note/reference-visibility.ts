@@ -72,9 +72,9 @@ export function getReferenceUri(note: Pick<Note, "id" | "uri">): string {
  * @param collection - resolve 済みの Collection / OrderedCollection
  * @returns 空 shell のみなら false
  * @remarks
- * NOTE: `note.references != null` だけでは空の器も true になる。items / totalItems / next の有無で判定する。
- * NOTE: Fedibird は全投稿に空 shell を付与するため、本判定はインスタンス・アカウントに依存しない。
- * NOTE: followers 限定参照は totalItems > 0 で items が空でも true とする。
+ * NOTE: `note.references != null` だけでは空の器も true になるため、実体（items）だけで判定する。
+ * NOTE: 0件誤表示を防ぐため、first URL / next / totalItems は根拠に使わない。
+ * NOTE: followers 限定参照の取りこぼしは、誤表示防止を優先して許容する。
  * @internal
  */
 export function referencesCollectionHasSubstance(
@@ -82,11 +82,7 @@ export function referencesCollectionHasSubstance(
 ): boolean {
 	const c = collection as Record<string, unknown>;
 
-	const totalItems = c.totalItems;
-	if (typeof totalItems === "number" && totalItems > 0) return true;
-
-	if (typeof c.next === "string" && c.next.length > 0) return true;
-
+	// Collection 直下に items / orderedItems があるパターン
 	const items = toArray(c.items as string | string[] | undefined);
 	if (items.length > 0) return true;
 
@@ -95,14 +91,10 @@ export function referencesCollectionHasSubstance(
 	);
 	if (orderedItems.length > 0) return true;
 
+	// first がオブジェクトの場合のみ、その中の items を見る
 	const first = c.first;
-	if (typeof first === "string" && first.length > 0) return true;
-
 	if (typeof first === "object" && first != null) {
 		const firstObj = first as Record<string, unknown>;
-		if (typeof firstObj.next === "string" && firstObj.next.length > 0) {
-			return true;
-		}
 		const firstItems = toArray(
 			firstObj.items as string | string[] | undefined,
 		);

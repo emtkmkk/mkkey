@@ -12,11 +12,12 @@ import { createSystemUser } from "./create-system-user.js";
 import type { ILocalUser } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_SINGLETON } from "@/misc/cache-limits.js";
 import { IsNull } from "typeorm";
 
 const ACTOR_USERNAME = "instance.actor" as const;
 
-const cache = new Cache<ILocalUser>(Infinity);
+const cache = new Cache<ILocalUser>(Infinity, { maxEntries: CACHE_MAX_SINGLETON });
 
 export async function getInstanceActor(): Promise<ILocalUser> {
 	return await cache.fetch(null, async () => {

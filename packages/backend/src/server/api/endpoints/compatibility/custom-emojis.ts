@@ -14,6 +14,7 @@ import { IsNull, In } from "typeorm";
 import { FILE_TYPE_BROWSERSAFE } from "@/const.js";
 import define from "../../define.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_SMALL } from "@/misc/cache-limits.js";
 
 const CUSTOM_EMOJIS_CACHE_TTL_MS = 300_000;
 
@@ -25,7 +26,9 @@ type CustomEmojiRow = {
 	category: string | null;
 };
 
-const customEmojisListCache = new Cache<CustomEmojiRow[]>(CUSTOM_EMOJIS_CACHE_TTL_MS);
+const customEmojisListCache = new Cache<CustomEmojiRow[]>(CUSTOM_EMOJIS_CACHE_TTL_MS, {
+	maxEntries: CACHE_MAX_SMALL,
+});
 
 export const meta = {
 	requireCredential: false,

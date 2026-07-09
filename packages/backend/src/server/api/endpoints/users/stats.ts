@@ -16,6 +16,7 @@
  */
 import { Users } from "@/models/index.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_USER } from "@/misc/cache-limits.js";
 import {
 	buildUserStatsResultFromAggregates,
 	fetchUserStatsAggregates,
@@ -27,6 +28,7 @@ import { ApiError } from "../../error.js";
 const STATS_RESPONSE_CACHE_TTL_MS = 600 * 1000;
 const statsResponseCache = new Cache<Record<string, unknown>>(
 	STATS_RESPONSE_CACHE_TTL_MS,
+	{ maxEntries: CACHE_MAX_USER },
 );
 
 export const meta = {

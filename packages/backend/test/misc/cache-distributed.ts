@@ -11,6 +11,7 @@ import {
 	Cache,
 	setCacheDistributedAdapterForTests,
 } from "../../src/misc/cache.js";
+import { CACHE_MAX_SMALL } from "../../src/misc/cache-limits.js";
 import type { DistributedSingleflightAdapter } from "../../src/misc/distributed-singleflight.js";
 
 type InMemoryBus = {
@@ -65,7 +66,8 @@ function createAdapter(bus: InMemoryBus, disableSignal = false): DistributedSing
 }
 
 describe("cache / distributed inflight", () => {
-	const createCache = (): Cache<number> => new Cache<number>(60_000);
+	const createCache = (): Cache<number> =>
+		new Cache<number>(60_000, { maxEntries: CACHE_MAX_SMALL });
 	let originalCacheConfig: typeof config.cache;
 
 	beforeEach(() => {
@@ -75,6 +77,7 @@ describe("cache / distributed inflight", () => {
 					distributedInflight: config.cache.distributedInflight
 						? { ...config.cache.distributedInflight }
 						: undefined,
+					memory: config.cache.memory ? { ...config.cache.memory } : undefined,
 			  }
 			: undefined;
 		config.cache = {
@@ -82,6 +85,10 @@ describe("cache / distributed inflight", () => {
 			distributedInflight: {
 				...(config.cache?.distributedInflight ?? {}),
 				enabled: true,
+			},
+			memory: {
+				...(config.cache?.memory ?? {}),
+				sweepIntervalMs: 0,
 			},
 		};
 	});
@@ -144,7 +151,7 @@ describe("cache / distributed inflight", () => {
 	it("正常系：fetchMaybe で undefined はキャッシュされない", async () => {
 		const bus = createBus();
 		setCacheDistributedAdapterForTests(createAdapter(bus));
-		const cache = new Cache<number>(60_000);
+		const cache = new Cache<number>(60_000, { maxEntries: CACHE_MAX_SMALL });
 		let calls = 0;
 
 		const first = await cache.fetchMaybe("maybe-key", async () => {
@@ -164,8 +171,8 @@ describe("cache / distributed inflight", () => {
 	it("正常系：fetchMaybe で undefined でも別インスタンス間で1回だけ実行される", async () => {
 		const bus = createBus();
 		setCacheDistributedAdapterForTests(createAdapter(bus));
-		const cacheA = new Cache<number>(60_000);
-		const cacheB = new Cache<number>(60_000);
+		const cacheA = new Cache<number>(60_000, { maxEntries: CACHE_MAX_SMALL });
+		const cacheB = new Cache<number>(60_000, { maxEntries: CACHE_MAX_SMALL });
 		let calls = 0;
 
 		const [a, b] = await Promise.all([
@@ -203,7 +210,7 @@ describe("cache / distributed inflight", () => {
 			waitForSignal: async () => null,
 		};
 		setCacheDistributedAdapterForTests(adapter);
-		const cache = new Cache<bigint>(60_000);
+		const cache = new Cache<bigint>(60_000, { maxEntries: CACHE_MAX_SMALL });
 		let calls = 0;
 
 		let thrown = false;

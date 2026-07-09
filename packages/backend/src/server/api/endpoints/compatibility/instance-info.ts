@@ -20,12 +20,14 @@ import {
 } from "@/const.js";
 import define from "../../define.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_SMALL } from "@/misc/cache-limits.js";
 
 /** Mastodon 互換 instance 情報の短 TTL キャッシュ（秒）。 */
 const INSTANCE_INFO_CACHE_TTL_MS = 120_000;
 
 const instanceInfoResponseCache = new Cache<Record<string, unknown>>(
 	INSTANCE_INFO_CACHE_TTL_MS,
+	{ maxEntries: CACHE_MAX_SMALL },
 );
 
 export const meta = {

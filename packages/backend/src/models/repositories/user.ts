@@ -34,6 +34,7 @@ import {
 	USER_SUPERSLEEP_THRESHOLD,
 } from "@/const.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_HOST } from "@/misc/cache-limits.js";
 import { db } from "@/db/postgre.js";
 import { isActor, getApId } from "@/remote/activitypub/type.js";
 import DbResolver from "@/remote/activitypub/db-resolver.js";
@@ -81,7 +82,9 @@ const ME_DETAILED_BASE_CACHE_TTL_SEC = 60 * 20;
 const ME_DETAILED_VOLATILE_CACHE_TTL_SEC = 30;
 const ME_DETAILED_MERGED_CACHE_TTL_SEC = 45;
 
-const userInstanceCache = new Cache<Instance | null>(1000 * 60 * 60 * 3);
+const userInstanceCache = new Cache<Instance | null>(1000 * 60 * 60 * 3, {
+	maxEntries: CACHE_MAX_HOST,
+});
 
 type IsUserDetailed<Detailed extends boolean> = Detailed extends true
 	? Packed<"UserDetailed">

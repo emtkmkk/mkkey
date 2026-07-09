@@ -14,6 +14,7 @@
 import { URL } from "node:url";
 import config from "@/config/index.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_USER } from "@/misc/cache-limits.js";
 import { getJson, getResponse } from "@/misc/fetch.js";
 import type { IActor } from "../type.js";
 import { apLogger } from "../logger.js";
@@ -44,7 +45,9 @@ type SkebInfo = {
 	screenName?: string;
 };
 
-const skebStatusCache = new Cache<SkebInfo | null>(SKEB_STATUS_CACHE_TTL_MS);
+const skebStatusCache = new Cache<SkebInfo | null>(SKEB_STATUS_CACHE_TTL_MS, {
+	maxEntries: CACHE_MAX_USER,
+});
 
 /**
  * Skeb フィールドの表示スタイル。

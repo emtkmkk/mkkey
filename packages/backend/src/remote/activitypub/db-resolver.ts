@@ -26,6 +26,7 @@ import {
 	MessagingMessages,
 } from "@/models/index.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_USER } from "@/misc/cache-limits.js";
 import {
 	fetchUriPersonCache,
 	fetchUserByIdCache,
@@ -36,8 +37,12 @@ import { getApId } from "./type.js";
 import { resolvePerson, updatePerson } from "./models/person.js";
 
 
-const publicKeyCache = new Cache<UserPublickey | null>(Infinity);
-const publicKeyByUserIdCache = new Cache<UserPublickey | null>(Infinity);
+const publicKeyCache = new Cache<UserPublickey | null>(Infinity, {
+	maxEntries: CACHE_MAX_USER,
+});
+const publicKeyByUserIdCache = new Cache<UserPublickey | null>(Infinity, {
+	maxEntries: CACHE_MAX_USER,
+});
 
 export type UriParseResult =
 	| {

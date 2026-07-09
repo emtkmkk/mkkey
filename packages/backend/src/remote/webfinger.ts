@@ -14,6 +14,7 @@ import { URL } from "node:url";
 import { getJson } from "@/misc/fetch.js";
 import { query as urlQuery } from "@/prelude/url.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_HOST } from "@/misc/cache-limits.js";
 
 const WEBFINGER_CACHE_TTL_MS = 600_000;
 
@@ -27,7 +28,9 @@ type IWebFinger = {
 	subject: string;
 };
 
-const webfingerResponseCache = new Cache<IWebFinger>(WEBFINGER_CACHE_TTL_MS);
+const webfingerResponseCache = new Cache<IWebFinger>(WEBFINGER_CACHE_TTL_MS, {
+	maxEntries: CACHE_MAX_HOST,
+});
 
 function webfingerCacheKey(query: string): string {
 	return createHash("sha256").update(query, "utf8").digest("hex");

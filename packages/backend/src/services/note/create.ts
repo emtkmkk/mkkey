@@ -80,6 +80,7 @@ import { getAntennas } from "@/misc/antenna-cache.js";
 import { endedPollNotificationQueue } from "@/queue/queues.js";
 import { createNoteApDeliverJob, webhookDeliver } from "@/queue/index.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_SINGLETON } from "@/misc/cache-limits.js";
 import type { UserProfile } from "@/models/entities/user-profile.js";
 import { db } from "@/db/postgre.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
@@ -93,7 +94,7 @@ import { DB_MAX_POLL_CHOICE_LENGTH } from "@/misc/hard-limits.js";
 
 const mutedWordsCache = new Cache<
 	{ userId: UserProfile["userId"]; mutedWords: UserProfile["mutedWords"] }[]
->(1000 * 60 * 5);
+>(1000 * 60 * 5, { maxEntries: CACHE_MAX_SINGLETON });
 
 type NotificationType = "reply" | "renote" | "quote" | "mention";
 

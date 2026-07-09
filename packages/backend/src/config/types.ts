@@ -246,6 +246,17 @@ export type Source = {
 			lockExtendIntervalMs?: number;
 			maxLockExtendCount?: number;
 		};
+		/**
+		 * 汎用 `Cache` のインメモリ上限・定期 sweep 設定。
+		 *
+		 * @remarks
+		 * - `defaultMaxEntries`: `maxEntries` 未指定の `Cache` インスタンスに適用する既定件数上限。
+		 * - `sweepIntervalMs`: 失効エントリを一括削除する間隔。`0` 以下で無効。
+		 */
+		memory?: {
+			defaultMaxEntries?: number;
+			sweepIntervalMs?: number;
+		};
 	};
 	userAgent2?: string;
 	specialServerHosts?: string[];

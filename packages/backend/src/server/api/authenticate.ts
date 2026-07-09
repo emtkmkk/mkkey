@@ -22,12 +22,13 @@ import type { CacheableLocalUser, ILocalUser } from "@/models/entities/user.js";
 import { Users, AccessTokens, Apps } from "@/models/index.js";
 import type { AccessToken } from "@/models/entities/access-token.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_APP } from "@/misc/cache-limits.js";
 import type { App } from "@/models/entities/app.js";
 import { fetchAuthUserByTokenCache } from "@/services/user-cache.js";
 import { maybeInvalidateDormantFollowerCacheOnActivity } from "@/remote/activitypub/dormant-follower-check.js";
 import { hydrateModerationWarningPopupAtForAuthUser } from "@/misc/moderation-warning-ack.js";
 
-const appCache = new Cache<App>(Infinity);
+const appCache = new Cache<App>(Infinity, { maxEntries: CACHE_MAX_APP });
 
 export class AuthenticationError extends Error {
 	constructor(message: string) {

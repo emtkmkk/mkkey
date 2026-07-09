@@ -21,12 +21,13 @@ import type { ILocalUser, User } from "@/models/entities/user.js";
 import { Users, Relays } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_SINGLETON } from "@/misc/cache-limits.js";
 import type { Relay } from "@/models/entities/relay.js";
 import { createSystemUser } from "./create-system-user.js";
 
 const ACTOR_USERNAME = "relay.actor" as const;
 
-const relaysCache = new Cache<Relay[]>(1000 * 60 * 10);
+const relaysCache = new Cache<Relay[]>(1000 * 60 * 10, { maxEntries: CACHE_MAX_SINGLETON });
 
 export async function getRelayActor(): Promise<ILocalUser> {
 	const user = await Users.findOneBy({

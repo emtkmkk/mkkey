@@ -46,6 +46,10 @@ import { countVisibleReferencesBatch } from "@/services/note/reference-visibilit
 import { db } from "@/db/postgre.js";
 import { redisClient, subscriber } from "@/db/redis.js";
 import { Cache } from "@/misc/cache.js";
+import {
+	CACHE_MAX_USER,
+	CACHE_MAX_USER_NOTE,
+} from "@/misc/cache-limits.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 
 export async function populatePoll(note: Note, meId: User["id"] | null) {
@@ -175,11 +179,19 @@ const NOTE_PACK_CACHE_TTL_MS = 30 * 1000;
 const NOTE_PACK_USER_PROFILE_CACHE_TTL_SEC = 60;
 const NOTE_PACK_USER_PROFILE_CACHE_KEY_PREFIX = "note:pack:user";
 
-const meUserCache = new Cache<User>(NOTE_PACK_CACHE_TTL_MS);
-const followingsMapCache = new Cache<Map<User["id"], boolean>>(NOTE_PACK_CACHE_TTL_MS);
-const myReactionPointCache = new Cache<NoteReaction[]>(NOTE_PACK_CACHE_TTL_MS);
-const favoritePointCache = new Cache<boolean>(NOTE_PACK_CACHE_TTL_MS);
-const notePackUserProfileCache = new Cache<Packed<"User">>(NOTE_PACK_CACHE_TTL_MS);
+const meUserCache = new Cache<User>(NOTE_PACK_CACHE_TTL_MS, { maxEntries: CACHE_MAX_USER });
+const followingsMapCache = new Cache<Map<User["id"], boolean>>(NOTE_PACK_CACHE_TTL_MS, {
+	maxEntries: CACHE_MAX_USER,
+});
+const myReactionPointCache = new Cache<NoteReaction[]>(NOTE_PACK_CACHE_TTL_MS, {
+	maxEntries: CACHE_MAX_USER_NOTE,
+});
+const favoritePointCache = new Cache<boolean>(NOTE_PACK_CACHE_TTL_MS, {
+	maxEntries: CACHE_MAX_USER_NOTE,
+});
+const notePackUserProfileCache = new Cache<Packed<"User">>(NOTE_PACK_CACHE_TTL_MS, {
+	maxEntries: CACHE_MAX_USER,
+});
 
 function getUserNoteCacheKey(userId: User["id"], noteId: Note["id"]): string {
 	return `${userId}:${noteId}`;

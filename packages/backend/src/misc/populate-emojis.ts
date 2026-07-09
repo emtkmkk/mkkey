@@ -14,12 +14,13 @@ import { Emojis } from "@/models/index.js";
 import type { Emoji } from "@/models/entities/emoji.js";
 import type { Note } from "@/models/entities/note.js";
 import { Cache } from "./cache.js";
+import { CACHE_MAX_USER } from "./cache-limits.js";
 import { isSelfHost, toPunyNullable } from "./convert-host.js";
 import { decodeReaction } from "./reaction-lib.js";
 import config from "@/config/index.js";
 import { query } from "@/prelude/url.js";
 
-const cache = new Cache<Emoji | null>(1000 * 60 * 60 * 4);
+const cache = new Cache<Emoji | null>(1000 * 60 * 60 * 4, { maxEntries: CACHE_MAX_USER });
 
 /**
  * 添付用絵文字情報。host は hiddenForViewer 判定（ローカル＝モチーフ）に利用する。

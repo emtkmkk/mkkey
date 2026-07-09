@@ -17,12 +17,14 @@ import {
 } from "@/models/repositories/emoji.js";
 import { Emoji } from "@/models/entities/emoji.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_SMALL } from "@/misc/cache-limits.js";
 import define from "../define.js";
 
 /** 応答全体のキャッシュ（TTL 5 分）。キーは me・ps に依存。 */
 const EMOJI_RESPONSE_CACHE_TTL_MS = 5 * 60 * 1000;
 const emojiResponseCache = new Cache<Record<string, unknown>>(
 	EMOJI_RESPONSE_CACHE_TTL_MS,
+	{ maxEntries: CACHE_MAX_SMALL },
 );
 
 /** リモート絵文字用: 追加パラメータを値の有無にかかわらずフィールドごと削除 */

@@ -21,6 +21,7 @@ import {
 	MAX_REACTION_PER_ACCOUNT,
 } from "@/const.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_SINGLETON } from "@/misc/cache-limits.js";
 import { getLocalNotesCount } from "@/services/note/local-notes-count-cache.js";
 
 const router = new Router();
@@ -118,7 +119,9 @@ const nodeinfo2 = async () => {
 	};
 };
 
-const cache = new Cache<Awaited<ReturnType<typeof nodeinfo2>>>(1000 * 60 * 10);
+const cache = new Cache<Awaited<ReturnType<typeof nodeinfo2>>>(1000 * 60 * 10, {
+	maxEntries: CACHE_MAX_SINGLETON,
+});
 
 router.get(nodeinfo2_1path, async (ctx) => {
 	const base = await cache.fetch(null, () => nodeinfo2());

@@ -13,8 +13,9 @@ import { Instances } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { toPuny } from "@/misc/convert-host.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_HOST } from "@/misc/cache-limits.js";
 
-const cache = new Cache<Instance>(1000 * 60 * 60);
+const cache = new Cache<Instance>(1000 * 60 * 60, { maxEntries: CACHE_MAX_HOST });
 
 export async function registerOrFetchInstanceDoc(
 	host: string,

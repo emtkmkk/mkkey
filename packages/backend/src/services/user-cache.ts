@@ -6,6 +6,7 @@ import type {
 } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_USER } from "@/misc/cache-limits.js";
 import { redisClient, subscriber } from "@/db/redis.js";
 
 const LOCAL_MAP_TTL_MS = 30 * 1000;
@@ -113,15 +114,23 @@ async function fetchThroughRedis<T>(
 	return fetched;
 }
 
-export const userByIdCache = new Cache<CacheableUser>(LOCAL_MAP_TTL_MS);
+export const userByIdCache = new Cache<CacheableUser>(LOCAL_MAP_TTL_MS, {
+	maxEntries: CACHE_MAX_USER,
+});
 export const localUserByNativeTokenCache = new Cache<CacheableLocalUser | null>(
 	LOCAL_MAP_TTL_MS,
+	{ maxEntries: CACHE_MAX_USER },
 );
 export const authUserByTokenCache = new Cache<CacheableLocalUser | null>(
 	LOCAL_MAP_TTL_MS,
+	{ maxEntries: CACHE_MAX_USER },
 );
-export const localUserByIdCache = new Cache<CacheableLocalUser>(LOCAL_MAP_TTL_MS);
-export const uriPersonCache = new Cache<CacheableUser | null>(LOCAL_MAP_TTL_MS);
+export const localUserByIdCache = new Cache<CacheableLocalUser>(LOCAL_MAP_TTL_MS, {
+	maxEntries: CACHE_MAX_USER,
+});
+export const uriPersonCache = new Cache<CacheableUser | null>(LOCAL_MAP_TTL_MS, {
+	maxEntries: CACHE_MAX_USER,
+});
 
 export async function fetchUserByIdCacheMaybe(
 	id: string,

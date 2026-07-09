@@ -7,6 +7,8 @@
  * - **役割**: インメモリの TTL 付きキャッシュ。get で未ヒット時は fetch を呼び、set で保存する。stats 等で利用。
  * - **インフライト結合**: `fetch` / `fetchMaybe` は同一キーでキャッシュミスが重なったとき `fetcher` を 1 本にまとめる。まず同一プロセス内で結合し、続いて Redis を使ったワーカー横断結合を試みる。
  * - **障害時方針**: 分散ロックで失敗してもフェイルオープンで `fetcher` を実行する（機能を止めない）。
+ * - **メモリ上限**: `maxEntries` で LRU 追い出し。失効エントリは `sweepExpired` と定期 sweep で削除する。
+ *
  * - **注意**: `fetcher` 内で同一インスタンス・同一キーの `fetch` を再帰的に `await` するとデッドロックし得る（通常の利用では起きにくい）。
  *
  * @internal
@@ -37,9 +39,26 @@ type CacheDistributedOpts = {
 	maxLockExtendCount: number;
 };
 
+type CacheMemoryOpts = {
+	defaultMaxEntries: number;
+	sweepIntervalMs: number;
+};
+
 type DistributedMaybeEnvelope<T> =
 	| { hasValue: false }
 	| { hasValue: true; value: T };
+
+/**
+ * `Cache` コンストラクタのオプション。
+ *
+ * @public
+ */
+export type CacheOptions<T> = {
+	/** 保持するエントリ数の上限（LRU で追い出し）。未指定時は config の既定値。 */
+	maxEntries?: number;
+	/** 分散 singleflight 用の値コーデック。 */
+	codec?: CacheValueCodec<T>;
+};
 
 type CacheValueCodec<T> = {
 	/**
@@ -202,6 +221,66 @@ function getCacheDistributedOpts(): CacheDistributedOpts {
 	};
 }
 
+/** 定期 sweep 対象として登録された `Cache` インスタンス */
+const registeredCaches = new Set<Cache<unknown>>();
+let globalSweepTimerStarted = false;
+
+/**
+ * `config.cache.memory` を正規化して返す。
+ *
+ * @returns 件数上限・sweep 間隔の既定値込みの設定
+ * @internal
+ */
+function getCacheMemoryOpts(): CacheMemoryOpts {
+	const memoryConfig = config.cache?.memory;
+	const defaultMaxEntriesRaw = Number(memoryConfig?.defaultMaxEntries ?? "");
+	const sweepIntervalMsRaw = Number(memoryConfig?.sweepIntervalMs ?? "");
+
+	return {
+		defaultMaxEntries:
+			Number.isFinite(defaultMaxEntriesRaw) && defaultMaxEntriesRaw > 0
+				? defaultMaxEntriesRaw
+				: 10_000,
+		sweepIntervalMs: Number.isFinite(sweepIntervalMsRaw) ? sweepIntervalMsRaw : 60_000,
+	};
+}
+
+/**
+ * コンストラクタ引数または config から件数上限を決める。
+ *
+ * @param maxEntries - 呼び出し側が指定した上限
+ * @returns 正の整数の上限
+ * @internal
+ */
+function resolveMaxEntries(maxEntries?: number): number {
+	if (maxEntries != null && Number.isFinite(maxEntries) && maxEntries > 0) {
+		return maxEntries;
+	}
+	return getCacheMemoryOpts().defaultMaxEntries;
+}
+
+/**
+ * 全登録 `Cache` に対する定期 sweep タイマーを 1 本だけ起動する。
+ *
+ * @remarks
+ * NOTE: `sweepIntervalMs <= 0` のときは tick 内で何もしない（テスト無効化用）。
+ * @internal
+ */
+function startGlobalSweepTimerIfNeeded(): void {
+	if (globalSweepTimerStarted) return;
+	globalSweepTimerStarted = true;
+
+	const { sweepIntervalMs } = getCacheMemoryOpts();
+	if (sweepIntervalMs <= 0) return;
+
+	setInterval(() => {
+		if (getCacheMemoryOpts().sweepIntervalMs <= 0) return;
+		for (const cache of registeredCaches) {
+			cache.sweepExpired();
+		}
+	}, sweepIntervalMs);
+}
+
 let cacheDistributedAdapterOverride: DistributedSingleflightAdapter | null = null;
 let cacheDistributedAdapterPromise: Promise<DistributedSingleflightAdapter> | null = null;
 
@@ -229,6 +308,7 @@ export function setCacheDistributedAdapterForTests(
 export class Cache<T> {
 	public cache: Map<string | null, { date: number; value: T }>;
 	private lifetime: number;
+	private maxEntries: number;
 	private scopeName: string;
 	private codec: CacheValueCodec<T>;
 
@@ -240,18 +320,84 @@ export class Cache<T> {
 	 */
 	private inflightByOp = new Map<string, Promise<unknown>>();
 
-	constructor(
-		lifetime: Cache<never>["lifetime"],
-		codec?: CacheValueCodec<T>,
-	) {
+	/**
+	 * @param lifetime - エントリの TTL（ミリ秒）。`Infinity` で期限なし。
+	 * @param options - 件数上限・コーデックなどのオプション
+	 */
+	constructor(lifetime: number, options?: CacheOptions<T>) {
 		this.cache = new Map();
 		this.lifetime = lifetime;
+		this.maxEntries = resolveMaxEntries(options?.maxEntries);
 		const callsite = new Error().stack?.split("\n")[2]?.trim() ?? "unknown";
 		this.scopeName = crypto.createHash("sha256").update(callsite, "utf8").digest("hex").slice(0, 16);
-		this.codec = codec ?? {
+		this.codec = options?.codec ?? {
 			serialize: (value) => JSON.stringify(encodeCacheValue(value)),
 			deserialize: (raw) => decodeCacheValue(JSON.parse(raw) as EncodedCacheValue) as T,
 		};
+		registeredCaches.add(this as Cache<unknown>);
+		startGlobalSweepTimerIfNeeded();
+	}
+
+	/** 現在保持しているエントリ数 */
+	public get size(): number {
+		return this.cache.size;
+	}
+
+	/**
+	 * エントリが TTL 失効済みかどうか。
+	 *
+	 * @param entry - 判定対象
+	 * @returns 失効していれば true
+	 * @internal
+	 */
+	private isEntryExpired(entry: { date: number; value: T }): boolean {
+		return Number.isFinite(this.lifetime) && Date.now() - entry.date > this.lifetime;
+	}
+
+	/**
+	 * LRU 順序を更新する（参照されたキーを末尾へ移動）。
+	 *
+	 * @param key - 対象キー
+	 * @param entry - エントリ本体
+	 * @internal
+	 */
+	private touchKey(key: string | null, entry: { date: number; value: T }): void {
+		this.cache.delete(key);
+		this.cache.set(key, entry);
+	}
+
+	/**
+	 * 件数上限を超えた分を LRU 順（Map 先頭）から追い出す。
+	 *
+	 * @internal
+	 */
+	private evictOverflow(): void {
+		while (this.cache.size > this.maxEntries) {
+			const oldestKey = this.cache.keys().next().value as string | null | undefined;
+			if (oldestKey === undefined) break;
+			this.cache.delete(oldestKey);
+		}
+	}
+
+	/**
+	 * TTL 失効済みエントリを一括削除する。
+	 *
+	 * @returns 削除した件数
+	 * @remarks
+	 * NOTE: 再アクセスされない失効キーのメモリ解放用。有効エントリの LRU 順序は変えない。
+	 */
+	public sweepExpired(): number {
+		if (!Number.isFinite(this.lifetime)) return 0;
+
+		const now = Date.now();
+		let removed = 0;
+		for (const [key, entry] of this.cache) {
+			if (now - entry.date > this.lifetime) {
+				this.cache.delete(key);
+				removed += 1;
+			}
+		}
+		return removed;
 	}
 
 	/**
@@ -384,19 +530,26 @@ export class Cache<T> {
 	}
 
 	public set(key: string | null, value: T): void {
+		// 既存キーは delete してから set し、挿入順序（LRU）を末尾へ寄せる
+		if (this.cache.has(key)) {
+			this.cache.delete(key);
+		}
 		this.cache.set(key, {
 			date: Date.now(),
 			value,
 		});
+		this.evictOverflow();
 	}
 
 	public get(key: string | null): T | undefined {
 		const cached = this.cache.get(key);
 		if (cached == null) return undefined;
-		if (Date.now() - cached.date > this.lifetime) {
+		if (this.isEntryExpired(cached)) {
 			this.cache.delete(key);
 			return undefined;
 		}
+		// ヒット時に LRU 順序を更新する
+		this.touchKey(key, cached);
 		return cached.value;
 	}
 

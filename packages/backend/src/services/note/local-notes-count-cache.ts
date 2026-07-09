@@ -10,12 +10,15 @@
  * @internal
  */
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_SINGLETON } from "@/misc/cache-limits.js";
 import { Notes } from "@/models/index.js";
 import { IsNull } from "typeorm";
 
 const LOCAL_NOTES_COUNT_TTL_MS = 1000 * 60 * 5;
 
-const localNotesCountCache = new Cache<number>(LOCAL_NOTES_COUNT_TTL_MS);
+const localNotesCountCache = new Cache<number>(LOCAL_NOTES_COUNT_TTL_MS, {
+	maxEntries: CACHE_MAX_SINGLETON,
+});
 
 const localNotesCountCacheMetrics = {
 	cacheHits: 0,

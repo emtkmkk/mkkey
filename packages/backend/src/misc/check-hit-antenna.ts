@@ -6,10 +6,11 @@ import { getFullApAccount } from "./convert-host.js";
 import * as Acct from "@/misc/acct.js";
 import type { Packed } from "./schema.js";
 import { Cache } from "./cache.js";
+import { CACHE_MAX_USER } from "./cache-limits.js";
 import config from "@/config/index.js";
 import { fetchGroupMembers, fetchListMembers } from "./antenna-members-cache.js";
 
-const blockingCache = new Cache<User["id"][]>(1000 * 60 * 5);
+const blockingCache = new Cache<User["id"][]>(1000 * 60 * 5, { maxEntries: CACHE_MAX_USER });
 
 // NOTE: フォローしているユーザーのノート、リストのユーザーのノート、グループのユーザーのノート指定はパフォーマンス上の理由で無効になっている
 

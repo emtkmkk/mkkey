@@ -18,6 +18,7 @@ import pLimit from "p-limit";
 import config from "@/config/index.js";
 import { redisClient } from "@/db/redis.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_URL } from "@/misc/cache-limits.js";
 import {
 	runDistributedSingleflight,
 } from "@/misc/distributed-singleflight.js";
@@ -104,7 +105,9 @@ let memoryOkCache: Cache<string> | null = null;
 
 function getMemoryOkCache(): Cache<string> {
 	if (!memoryOkCache) {
-		memoryOkCache = new Cache<string>(getUrlPreviewOpts().memoryOkTtlMs);
+		memoryOkCache = new Cache<string>(getUrlPreviewOpts().memoryOkTtlMs, {
+			maxEntries: CACHE_MAX_URL,
+		});
 	}
 	return memoryOkCache;
 }
@@ -376,7 +379,7 @@ let shortUrlCache: Cache<string> | null = null;
 function getShortUrlCache(): Cache<string> {
 	const ttlMs = getUrlPreviewOpts().shortUrlResolveTtlSec * 1000;
 	if (!shortUrlCache) {
-		shortUrlCache = new Cache<string>(ttlMs);
+		shortUrlCache = new Cache<string>(ttlMs, { maxEntries: CACHE_MAX_URL });
 	}
 	return shortUrlCache;
 }

@@ -50,13 +50,16 @@ import type { UserProfile } from "@/models/entities/user-profile.js";
 import { checkReactionMute } from "@/misc/check-word-mute.js";
 import { buildReactionDeliverManager } from "./deliver.js";
 import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_USER } from "@/misc/cache-limits.js";
 
 const INSTANCE_MAX_REACTIONS_CACHE_TTL_MS = 30 * 1000;
 const instanceMaxReactionsPerAccountCache = new Cache<number>(
 	INSTANCE_MAX_REACTIONS_CACHE_TTL_MS,
+	{ maxEntries: CACHE_MAX_USER },
 );
 const localUserDriveCapacityCache = new Cache<number | null>(
 	INSTANCE_MAX_REACTIONS_CACHE_TTL_MS,
+	{ maxEntries: CACHE_MAX_USER },
 );
 
 export function normalizeReactionMuteResult(

@@ -198,6 +198,8 @@ const APP_ROUTE_EXACT = new Set([
 	"/cli",
 	"/flush",
 	"/sc",
+	"/share",
+	"/share/",
 ]);
 
 function isAppRoute(pathname: string): boolean {

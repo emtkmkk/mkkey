@@ -3,6 +3,7 @@ process.env.NODE_ENV = "test";
 import * as assert from "assert";
 import * as childProcess from "child_process";
 import { Note } from "../src/models/entities/note.js";
+import { User } from "../src/models/entities/user.js";
 import {
 	async,
 	signup,
@@ -18,6 +19,7 @@ import {
 describe("Note", () => {
 	let p: childProcess.ChildProcess;
 	let Notes: any;
+	let Users: any;
 
 	let alice: any;
 	let bob: any;
@@ -26,6 +28,7 @@ describe("Note", () => {
 		p = await startServer();
 		const connection = await initTestDb(true);
 		Notes = connection.getRepository(Note);
+		Users = connection.getRepository(User);
 		alice = await signup({ username: "alice" });
 		bob = await signup({ username: "bob" });
 	});
@@ -666,6 +669,47 @@ describe("Note", () => {
 			assert.strictEqual(deleteTwoRes.status, 204);
 			mainNote = await Notes.findOneBy({ id: mainNoteRes.body.createdNote.id });
 			assert.strictEqual(mainNote.repliesCount, 0);
+		}));
+
+		it("他ユーザーの引用リノートがカスケード削除される場合、対象投稿者の notesCount が減る", async(async () => {
+			const aliceMainRes = await api(
+				"notes/create",
+				{
+					text: "alice main post",
+				},
+				alice,
+			);
+			const bobQuoteRes = await api(
+				"notes/create",
+				{
+					text: "bob quote post",
+					renoteId: aliceMainRes.body.createdNote.id,
+				},
+				bob,
+			);
+
+			const aliceBefore = await Users.findOneByOrFail({ id: alice.id });
+			const bobBefore = await Users.findOneByOrFail({ id: bob.id });
+
+			const deleteRes = await api(
+				"notes/delete",
+				{
+					noteId: aliceMainRes.body.createdNote.id,
+				},
+				alice,
+			);
+			assert.strictEqual(deleteRes.status, 204);
+
+			// カスケード削除後は削除者と引用投稿者がそれぞれ 1 件ずつ減ること
+			const aliceAfter = await Users.findOneByOrFail({ id: alice.id });
+			const bobAfter = await Users.findOneByOrFail({ id: bob.id });
+			assert.strictEqual(aliceAfter.notesCount, aliceBefore.notesCount - 1);
+			assert.strictEqual(bobAfter.notesCount, bobBefore.notesCount - 1);
+
+			const deletedMain = await Notes.findOneBy({ id: aliceMainRes.body.createdNote.id });
+			const deletedQuote = await Notes.findOneBy({ id: bobQuoteRes.body.createdNote.id });
+			assert.strictEqual(deletedMain, null);
+			assert.strictEqual(deletedQuote, null);
 		}));
 	});
 });

@@ -129,7 +129,10 @@ export default async function (
 					),
 				);
 				deliverToConcerned(cascadingNote.user, cascadingNote, content);
-				if (cascadingNote.visibility !== "specified") decNotesCountOfUser(user);
+				// カスケード対象ノートの投稿者本人のノート数を減算する
+				if (cascadingNote.visibility !== "specified") {
+					decNotesCountOfUser(cascadingNote.user);
+				}
 			}
 			//#endregion
 

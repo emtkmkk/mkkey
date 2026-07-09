@@ -56,6 +56,14 @@ type DistributedMaybeEnvelope<T> =
 export type CacheOptions<T> = {
 	/** 保持するエントリ数の上限（LRU で追い出し）。未指定時は config の既定値。 */
 	maxEntries?: number;
+	/**
+	 * 分散 singleflight のキー接頭辞。
+	 *
+	 * @remarks
+	 * NOTE: 既定の stack 由来 fallback は、ビルド差異や callsite 変化で衝突・変動し得るため、
+	 * 取り違えを避けたいキャッシュは明示指定を推奨する。
+	 */
+	scopeName?: string;
 	/** 分散 singleflight 用の値コーデック。 */
 	codec?: CacheValueCodec<T>;
 };
@@ -84,11 +92,18 @@ type EncodedCacheValue =
 	| string
 	| EncodedCacheValue[]
 	| { [key: string]: EncodedCacheValue }
+	| { __cacheType: "Date"; iso: string }
 	| { __cacheType: "Map"; entries: [EncodedCacheValue, EncodedCacheValue][] }
 	| { __cacheType: "Set"; values: EncodedCacheValue[] };
 
+type EncodedDateValue = { __cacheType: "Date"; iso: string };
 type EncodedMapValue = { __cacheType: "Map"; entries: [EncodedCacheValue, EncodedCacheValue][] };
 type EncodedSetValue = { __cacheType: "Set"; values: EncodedCacheValue[] };
+
+//#region エンコード済み値の型ガード
+function isEncodedDateValue(value: EncodedCacheValue): value is EncodedDateValue {
+	return typeof value === "object" && value !== null && "__cacheType" in value && value.__cacheType === "Date";
+}
 
 function isEncodedMapValue(value: EncodedCacheValue): value is EncodedMapValue {
 	return typeof value === "object" && value !== null && "__cacheType" in value && value.__cacheType === "Map";
@@ -97,6 +112,7 @@ function isEncodedMapValue(value: EncodedCacheValue): value is EncodedMapValue {
 function isEncodedSetValue(value: EncodedCacheValue): value is EncodedSetValue {
 	return typeof value === "object" && value !== null && "__cacheType" in value && value.__cacheType === "Set";
 }
+//#endregion
 
 /**
  * 分散 singleflight 向けに `Map` / `Set` を壊さず JSON へ変換する。
@@ -134,6 +150,12 @@ function encodeCacheValue(value: unknown): EncodedCacheValue {
 		return {
 			__cacheType: "Set",
 			values: Array.from(value.values()).map((item) => encodeCacheValue(item)),
+		};
+	}
+	if (value instanceof Date) {
+		return {
+			__cacheType: "Date",
+			iso: value.toISOString(),
 		};
 	}
 	if (value && typeof value === "object") {
@@ -176,6 +198,9 @@ function decodeCacheValue(value: EncodedCacheValue): unknown {
 	}
 	if (isEncodedSetValue(value)) {
 		return new Set(value.values.map((item) => decodeCacheValue(item)));
+	}
+	if (isEncodedDateValue(value)) {
+		return new Date(value.iso);
 	}
 	const decodedObject: Record<string, unknown> = {};
 	for (const [key, objectValue] of Object.entries(value)) {
@@ -328,8 +353,7 @@ export class Cache<T> {
 		this.cache = new Map();
 		this.lifetime = lifetime;
 		this.maxEntries = resolveMaxEntries(options?.maxEntries);
-		const callsite = new Error().stack?.split("\n")[2]?.trim() ?? "unknown";
-		this.scopeName = crypto.createHash("sha256").update(callsite, "utf8").digest("hex").slice(0, 16);
+		this.scopeName = options?.scopeName ?? this.deriveDefaultScopeName();
 		this.codec = options?.codec ?? {
 			serialize: (value) => JSON.stringify(encodeCacheValue(value)),
 			deserialize: (raw) => decodeCacheValue(JSON.parse(raw) as EncodedCacheValue) as T,
@@ -424,6 +448,22 @@ export class Cache<T> {
 	private distributedKey(op: "fetch" | "fetchMaybe", key: string | null): string {
 		const base = key === null ? INFLIGHT_KEY_FOR_NULL : key;
 		return `${this.scopeName}\0${op}\0${base}`;
+	}
+
+	/**
+	 * `scopeName` 未指定時の fallback 値を生成する。
+	 *
+	 * @remarks
+	 * NOTE: 既存運用との互換維持のため stack ベースを残している。
+	 * scope 衝突回避が必要な箇所では `CacheOptions.scopeName` を明示すること。
+	 *
+	 * @returns 既定 scope 名
+	 * @internal
+	 */
+	private deriveDefaultScopeName(): string {
+		// 既存実装と互換な stack 行ハッシュを使う（段階移行のため）。
+		const callsite = new Error().stack?.split("\n")[2]?.trim() ?? "unknown";
+		return crypto.createHash("sha256").update(callsite, "utf8").digest("hex").slice(0, 16);
 	}
 
 	/**

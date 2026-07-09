@@ -179,18 +179,25 @@ const NOTE_PACK_CACHE_TTL_MS = 30 * 1000;
 const NOTE_PACK_USER_PROFILE_CACHE_TTL_SEC = 60;
 const NOTE_PACK_USER_PROFILE_CACHE_KEY_PREFIX = "note:pack:user";
 
-const meUserCache = new Cache<User>(NOTE_PACK_CACHE_TTL_MS, { maxEntries: CACHE_MAX_USER });
+const meUserCache = new Cache<User>(NOTE_PACK_CACHE_TTL_MS, {
+	maxEntries: CACHE_MAX_USER,
+	scopeName: "note:pack:me-user",
+});
 const followingsMapCache = new Cache<Map<User["id"], boolean>>(NOTE_PACK_CACHE_TTL_MS, {
 	maxEntries: CACHE_MAX_USER,
+	scopeName: "note:pack:followings",
 });
 const myReactionPointCache = new Cache<NoteReaction[]>(NOTE_PACK_CACHE_TTL_MS, {
 	maxEntries: CACHE_MAX_USER_NOTE,
+	scopeName: "note:pack:my-reactions",
 });
 const favoritePointCache = new Cache<boolean>(NOTE_PACK_CACHE_TTL_MS, {
 	maxEntries: CACHE_MAX_USER_NOTE,
+	scopeName: "note:pack:favorites",
 });
 const notePackUserProfileCache = new Cache<Packed<"User">>(NOTE_PACK_CACHE_TTL_MS, {
 	maxEntries: CACHE_MAX_USER,
+	scopeName: "note:pack:user-profile",
 });
 
 function getUserNoteCacheKey(userId: User["id"], noteId: Note["id"]): string {

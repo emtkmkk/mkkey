@@ -123,6 +123,38 @@ describe("cache / distributed inflight", () => {
 		assert.strictEqual(calls, 1);
 	});
 
+	it("回帰：Date を含む値を follower 側でも Date のまま受け取れる", async () => {
+		const bus = createBus();
+		setCacheDistributedAdapterForTests(createAdapter(bus));
+		const cacheA = new Cache<{ createdAt: Date }>(60_000, {
+			maxEntries: CACHE_MAX_SMALL,
+			scopeName: "test:date-preserve",
+		});
+		const cacheB = new Cache<{ createdAt: Date }>(60_000, {
+			maxEntries: CACHE_MAX_SMALL,
+			scopeName: "test:date-preserve",
+		});
+		let calls = 0;
+
+		const [a, b] = await Promise.all([
+			cacheA.fetch("same-key", async () => {
+				calls += 1;
+				await new Promise((r) => setTimeout(r, 20));
+				return { createdAt: new Date("2026-01-02T03:04:05.000Z") };
+			}),
+			cacheB.fetch("same-key", async () => {
+				calls += 1;
+				await new Promise((r) => setTimeout(r, 20));
+				return { createdAt: new Date("2026-01-02T03:04:05.000Z") };
+			}),
+		]);
+
+		assert.strictEqual(calls, 1);
+		assert.strictEqual(a.createdAt instanceof Date, true);
+		assert.strictEqual(b.createdAt instanceof Date, true);
+		assert.strictEqual(a.createdAt.getTime(), b.createdAt.getTime());
+	});
+
 	it("フォールバック：通知不達時はポーリング経由で結果を取得できる", async () => {
 		const bus = createBus();
 		setCacheDistributedAdapterForTests(createAdapter(bus, true));
@@ -255,6 +287,60 @@ describe("cache / distributed inflight", () => {
 		const value = await cache.fetch("disabled-distributed", async () => 99);
 		assert.strictEqual(value, 99);
 		assert.strictEqual(lockCalls, 0);
+	});
+
+	it("正常系：scopeName が同じ場合だけ分散インフライトを共有する", async () => {
+		const bus = createBus();
+		setCacheDistributedAdapterForTests(createAdapter(bus));
+		let calls = 0;
+
+		const sharedScopeA = new Cache<number>(60_000, {
+			maxEntries: CACHE_MAX_SMALL,
+			scopeName: "test:scope-shared",
+		});
+		const sharedScopeB = new Cache<number>(60_000, {
+			maxEntries: CACHE_MAX_SMALL,
+			scopeName: "test:scope-shared",
+		});
+		const [sharedA, sharedB] = await Promise.all([
+			sharedScopeA.fetch("scope-key", async () => {
+				calls += 1;
+				await new Promise((r) => setTimeout(r, 15));
+				return 1;
+			}),
+			sharedScopeB.fetch("scope-key", async () => {
+				calls += 1;
+				await new Promise((r) => setTimeout(r, 15));
+				return 1;
+			}),
+		]);
+		assert.strictEqual(sharedA, 1);
+		assert.strictEqual(sharedB, 1);
+		assert.strictEqual(calls, 1);
+
+		const isolatedScopeA = new Cache<number>(60_000, {
+			maxEntries: CACHE_MAX_SMALL,
+			scopeName: "test:scope-a",
+		});
+		const isolatedScopeB = new Cache<number>(60_000, {
+			maxEntries: CACHE_MAX_SMALL,
+			scopeName: "test:scope-b",
+		});
+		const [isolatedA, isolatedB] = await Promise.all([
+			isolatedScopeA.fetch("scope-key", async () => {
+				calls += 1;
+				await new Promise((r) => setTimeout(r, 15));
+				return 2;
+			}),
+			isolatedScopeB.fetch("scope-key", async () => {
+				calls += 1;
+				await new Promise((r) => setTimeout(r, 15));
+				return 2;
+			}),
+		]);
+		assert.strictEqual(isolatedA, 2);
+		assert.strictEqual(isolatedB, 2);
+		assert.strictEqual(calls, 3);
 	});
 
 	it("設定反映：lockTtlSec が lock 取得 TTL ミリ秒に反映される", async () => {

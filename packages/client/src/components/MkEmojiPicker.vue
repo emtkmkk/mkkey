@@ -1201,6 +1201,10 @@ import { FocusTrap } from "focus-trap-vue";
 import { $i } from "@/account";
 import { unisonReload } from "@/scripts/unison-reload";
 import { get, set, del } from "@/scripts/idb-proxy";
+import {
+	getFolloweeIdsForMotifCheck,
+	needsMotifAnyFollowCheck,
+} from "@/scripts/emoji-motif-follow-cache";
 
 const props = withDefaults(
 	defineProps<{
@@ -1291,15 +1295,11 @@ const customEmojis = computed(() => instance.emojis);
 /** モチーフ判定用: 自分がフォローしているユーザー ID の集合。未取得の場合は空で「フォローしていない」とみなす。 */
 const followeeIds = ref(new Set<string>());
 onMounted(() => {
-	if ($i) {
-		os.api("users/following", { userId: $i.id, limit: 100 })
-			.then((list: { followeeId?: string; id?: string }[]) => {
-				followeeIds.value = new Set(
-					list.map((x) => x.followeeId ?? x.id).filter(Boolean) as string[],
-				);
-			})
-			.catch(() => {});
-	}
+	if (!$i) return;
+	if (!needsMotifAnyFollowCheck(customEmojis.value)) return;
+	void getFolloweeIdsForMotifCheck($i.id).then((ids) => {
+		followeeIds.value = ids;
+	});
 });
 
 /**

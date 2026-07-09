@@ -8,8 +8,10 @@ import { computed, reactive } from "vue";
 import { api, queueApi, toast } from "./os";
 import { stream } from "@/stream";
 import type * as Misskey from "calckey-js";
+import { $i } from "@/account";
 import { get, set } from "./scripts/idb-proxy";
 import { defaultStore } from "./store";
+import { preloadFolloweeIdsIfNeeded } from "@/scripts/emoji-motif-follow-cache";
 
 // TODO: 他のタブと永続化されたstateを同期
 
@@ -81,6 +83,7 @@ export async function emojiLoad() {
         if (cachedEmojiData?.emojiFetchDate) {
                 instance.emojiFetchDate = cachedEmojiData.emojiFetchDate;
         }
+	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
 
         if (!localStorage.getItem("followCategoriesTime") || Date.now() - localStorage.getItem("followCategoriesTime") > 60 * 60 * 1000) {
                 await fetchCustomCategory()
@@ -212,6 +215,7 @@ export async function fetchEmoji() {
         for (const [k, v] of Object.entries(storedMeta)) {
                 instance[k] = v;
         }
+	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
 }
 
 type EmojiFetchOptions = {
@@ -278,6 +282,7 @@ export async function fetchPlusEmoji(options?: EmojiFetchOptions) {
                         (e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
                 );
         }
+	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
 }
 
 export async function fetchAllEmoji(options?: EmojiFetchOptions) {
@@ -322,6 +327,7 @@ export async function fetchAllEmoji(options?: EmojiFetchOptions) {
                         (e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
                 );
         }
+	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
 }
 
 export async function fetchAllEmojiNoCache(options?: EmojiFetchOptions) {
@@ -352,6 +358,7 @@ export async function fetchAllEmojiNoCache(options?: EmojiFetchOptions) {
                         (e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
                 );
         }
+	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
 }
 
 export async function fetchEmojiStats(limit) {

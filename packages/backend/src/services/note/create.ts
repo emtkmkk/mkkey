@@ -965,9 +965,6 @@ export default async (
 
 		// 投稿に含まれるカスタム絵文字の使用権限（usageVisibility・モチーフ）をチェック（ローカルユーザ＋ローカル絵文字のみ。リモートは対象外）
 		if (emojis && emojis.length > 0 && !user.host) {
-			const followings = await Followings.findBy({ followerId: user.id });
-			const followeeIds = new Set(followings.map((f) => f.followeeId));
-
 			// 使用 (name, host) を一意に列挙して 1 回で一括取得
 			const emojiKeySet = new Map<string, { name: string; host: string | null }>();
 			for (const emojiName of emojis) {
@@ -997,6 +994,29 @@ export default async (
 				const emojiMap = new Map<string, (typeof foundEmojis)[number]>();
 				for (const e of foundEmojis) {
 					emojiMap.set(`${e.name}\t${e.host ?? ""}`, e);
+				}
+				const localEmojis = [...emojiMap.values()].filter((emoji) => emoji.host == null);
+				const motifFollowUserIds = [
+					...new Set(
+						localEmojis
+							.filter(
+								(emoji) =>
+									emoji.motifUserId != null &&
+									(emoji.motifUserMode ?? "any") === "follow",
+							)
+							.map((emoji) => emoji.motifUserId!),
+					),
+				];
+				let followeeIds = new Set<string>();
+				if (motifFollowUserIds.length > 0) {
+					const followings = await Followings.find({
+						where: {
+							followerId: user.id,
+							followeeId: In(motifFollowUserIds),
+						},
+						select: ["followeeId"],
+					});
+					followeeIds = new Set(followings.map((f) => f.followeeId));
 				}
 				for (const emojiName of emojis) {
 					const at = emojiName.indexOf("@");

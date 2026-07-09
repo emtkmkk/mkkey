@@ -8,6 +8,7 @@
  * - 認証不要。インスタンスのスポットライトに表示するノートを取得する。
  * - NOTE: フォロー人数が多いとき、`note.userId IN (:…数百)` は PostgreSQL が **Nested Loop × インデックス探索**を選びやすく遅くなる。
  *   `SET enable_nestloop = off` で速くなる事象と同種のため、フォロー集合は **`EXISTS(following)` と本人一致**で表現する。
+ * - NOTE: スコア閾値の段階分けには認証済み {@link CacheableLocalUser.followingCount} を使う。フォロー先 ID の全行取得は不要。
  * - NOTE: **`untilId` のみ**のページングでは {@link makePaginationQuery} が `id < untilId` だけとなり **id 下限が無い**。
  *   厳しいフィルタでは逆方向スキャンがタイムアウト級になりうるため、`scoreWindowMinId`（7日窓の下限）で **`note.id` の下限**を付ける。
  * - 投票枠（`createPollIdQuery`）は **`poll.expiresAt` が過ぎた投票**を含めない（`expiresAt` 未設定は期限なし。期限ありは `expiresAt >= サーバ現在` を未終了とし、投票 API の期限判定に揃える）。
@@ -17,7 +18,7 @@
  */
 import { Brackets, In } from "typeorm";
 import { Poll } from "@/models/entities/poll.js";
-import { Notes, Followings, PollVotes } from "@/models/index.js";
+import { Notes, PollVotes } from "@/models/index.js";
 import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
@@ -152,10 +153,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	*/
 
-	const followees = await Followings.createQueryBuilder("following")
-		.select("following.followeeId")
-		.where("following.followerId = :followerId", { followerId: user.id })
-		.getMany();
+	// 認証時に読み込まれた followingCount を閾値分岐に使う（フォロー集合の SQL は EXISTS）
+	const followeeCount = user.followingCount;
 
 	// もこきーのスコア計算
 	// ローカルユーザー RT : 9 Reaction : 3
@@ -165,20 +164,20 @@ export default define(meta, paramDef, async (ps, user) => {
 	let localScore = 40;
 	let globalScore = 60;
 
-	// 人数が多いほど閾値を上げる。**大きい条件から**評価しないと >=50 が先に当たり以降が死ぬ
-	if (followees.length >= 500) {
+	// followeeCount が多いほど閾値を上げる。**大きい条件から**評価しないと >=50 が先に当たり以降が死ぬ
+	if (followeeCount >= 500) {
 		followeeScore = 80;
 		localScore = 120;
 		globalScore = 180;
-	} else if (followees.length >= 300) {
+	} else if (followeeCount >= 300) {
 		followeeScore = 60;
 		localScore = 80;
 		globalScore = 135;
-	} else if (followees.length >= 150) {
+	} else if (followeeCount >= 150) {
 		followeeScore = 40;
 		localScore = 60;
 		globalScore = 90;
-	} else if (followees.length >= 50) {
+	} else if (followeeCount >= 50) {
 		followeeScore = 28;
 		localScore = 48;
 		globalScore = 60;
@@ -271,7 +270,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		);
 		applyCommonTimelineFilters(query);
 
-		if (followees.length > 0) {
+		if (followeeCount > 0) {
 			const followingNetworksQuery = Notes.createQueryBuilder("note")
 				.select("note.renoteUserId")
 				.distinct(true)

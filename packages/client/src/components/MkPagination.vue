@@ -710,11 +710,45 @@ function toBottom() {
 	scrollToBottom(unref(contentEl));
 }
 
+/** reversed 初回表示時の最下部追従用 ResizeObserver */
+let bottomResizeObserver: ResizeObserver | null = null;
+let bottomResizeStableTimer: ReturnType<typeof setTimeout> | null = null;
+
+function stopReversedBottomTracking(): void {
+	bottomResizeObserver?.disconnect();
+	bottomResizeObserver = null;
+	if (bottomResizeStableTimer != null) {
+		clearTimeout(bottomResizeStableTimer);
+		bottomResizeStableTimer = null;
+	}
+}
+
+/** コンテンツ高さの変化に追従して最下部へスクロールする */
+function startReversedBottomTracking(): void {
+	const el = unref(contentEl);
+	if (!el) return;
+
+	const scrollDown = () => scrollToBottom(el);
+	scrollDown();
+
+	bottomResizeObserver = new ResizeObserver(() => {
+		scrollDown();
+		if (bottomResizeStableTimer != null) {
+			clearTimeout(bottomResizeStableTimer);
+		}
+		// 高さが安定したら observer を解除
+		bottomResizeStableTimer = setTimeout(() => {
+			stopReversedBottomTracking();
+		}, 150);
+	});
+	bottomResizeObserver.observe(el);
+}
+
 onMounted(() => {
 	inited.then(() => {
 		if (props.pagination.reversed) {
 			nextTick(() => {
-				setTimeout(toBottom, 800);
+				startReversedBottomTracking();
 
 				// scrollToBottomでmoreFetchingボタンが画面外まで出るまで
 				// more = trueを遅らせる
@@ -727,6 +761,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+	stopReversedBottomTracking();
 	if (timerForSetPause) {
 		clearTimeout(timerForSetPause);
 		timerForSetPause = null;
@@ -735,10 +770,18 @@ onBeforeUnmount(() => {
 });
 
 defineExpose({
-	items,
-	queue,
-	backed,
-	active: isTop() && !isPausingUpdate,
+	get items() {
+		return items.value;
+	},
+	get queue() {
+		return queue.value;
+	},
+	get backed() {
+		return backed;
+	},
+	get active() {
+		return isTop() && !isPausingUpdate;
+	},
 	reload,
 	refresh,
 	prepend,

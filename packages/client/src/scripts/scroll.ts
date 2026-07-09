@@ -1,45 +1,144 @@
+/**
+ * @packageDocumentation
+ *
+ * スクロール位置の取得・判定・移動ユーティリティ。
+ *
+ * @remarks
+ * NOTE: 底判定はコンテナ基準（scrollHeight - scrollTop - clientHeight）で統一している。
+ *
+ * @public
+ */
+
 type ScrollBehavior = "auto" | "smooth" | "instant";
 
-// Scroll Behaviorのポリフィルを追加
-const smoothScrollSupported = 'scrollBehavior' in document.documentElement.style;
+/** overflow-y でスクロール可能とみなす値 */
+const SCROLLABLE_OVERFLOW_Y = new Set(["scroll", "auto", "overlay"]);
 
+// Scroll Behaviorのポリフィルを追加
+const smoothScrollSupported =
+	"scrollBehavior" in document.documentElement.style;
+
+/**
+ * 要素が縦方向に実際にスクロール可能かどうか
+ *
+ * @param el - 判定対象要素
+ * @returns スクロール可能なら true
+ * @internal
+ */
+function isVerticallyScrollable(el: HTMLElement): boolean {
+	const overflow = window.getComputedStyle(el).getPropertyValue("overflow-y");
+	return SCROLLABLE_OVERFLOW_Y.has(overflow) && el.scrollHeight > el.clientHeight;
+}
+
+/**
+ * 要素から最も近いスクロール可能な祖先を返す
+ *
+ * @param el - 起点要素
+ * @returns スクロールコンテナ。window スクロールの場合は null
+ * @public
+ */
 export function getScrollContainer(el: HTMLElement | null): HTMLElement | null {
 	if (!el || el.tagName === "HTML") return null;
-	const overflow = window.getComputedStyle(el).getPropertyValue("overflow-y");
-	if (overflow === "scroll" || overflow === "auto") {
+	if (isVerticallyScrollable(el)) {
 		return el;
 	}
-		if (el.parentElement instanceof HTMLElement) {
-			return getScrollContainer(el.parentElement);
-		}
-			return null;
+	if (el.parentElement instanceof HTMLElement) {
+		return getScrollContainer(el.parentElement);
+	}
+	return null;
 }
+
+/**
+ * document のスクロール要素を返す
+ *
+ * @returns scrollingElement
+ * @internal
+ */
+function getScrollingElement(): Element {
+	return document.scrollingElement ?? document.documentElement;
+}
+
+/**
+ * 不正なスクロール対象を開発ビルドで警告する
+ *
+ * @param fn - 呼び出し元関数名
+ * @param el - 対象要素
+ * @internal
+ */
+function warnInvalidScrollTarget(fn: string, el: unknown): void {
+	if (import.meta.env.DEV && (el == null || !(el instanceof HTMLElement))) {
+		console.warn(`[scroll] ${fn}: invalid element`, el);
+	}
+}
+
+/**
+ * 要素基準の現在スクロール位置を返す
+ *
+ * @param el - 起点要素
+ * @returns scrollTop または window.scrollY
+ * @public
+ */
 export function getScrollPosition(el: HTMLElement | null): number {
 	const container = getScrollContainer(el);
 	return container == null ? window.scrollY : container.scrollTop;
 }
 
+/**
+ * 先頭付近までスクロールしているかどうか
+ *
+ * @param el - 起点要素
+ * @param tolerance - 許容誤差（px）
+ * @returns 先頭付近なら true
+ * @public
+ */
 export function isTopVisible(el: HTMLElement | null, tolerance = 1): boolean {
 	const scrollTop = getScrollPosition(el);
 	return scrollTop <= tolerance;
 }
 
+/**
+ * 最下部付近までスクロールしているかどうか
+ *
+ * @param el - 起点要素（互換性のため受け取るが判定はコンテナ基準）
+ * @param tolerance - 許容誤差（px）
+ * @param container - スクロールコンテナ（省略時は el から探索）
+ * @returns 最下部付近なら true
+ * @public
+ */
 export function isBottomVisible(
-	el: HTMLElement,
+	el: HTMLElement | null,
 	tolerance = 1,
-	container: HTMLElement | null = getScrollContainer(el),
+	container: HTMLElement | null = el ? getScrollContainer(el) : null,
 ): boolean {
-	if (!el || !el.scrollHeight) return false;
+	if (!el) return false;
 	if (container) {
 		return (
-			el.scrollHeight <=
-			container.clientHeight + Math.abs(container.scrollTop) + tolerance
+			container.scrollHeight - container.scrollTop - container.clientHeight <=
+			tolerance
 		);
 	}
-	return el.scrollHeight <= window.innerHeight + window.scrollY + tolerance;
+	const scrollingEl = getScrollingElement();
+	return (
+		scrollingEl.scrollHeight - window.scrollY - window.innerHeight <= tolerance
+	);
 }
 
-export function onScrollTop(el: HTMLElement, cb: () => void, tolerance = 1, once = false) {
+/**
+ * 先頭到達時にコールバックを呼ぶ
+ *
+ * @param el - 起点要素
+ * @param cb - 先頭到達時のコールバック
+ * @param tolerance - 許容誤差（px）
+ * @param once - 一度だけ呼ぶか
+ * @returns リスナー解除関数
+ * @public
+ */
+export function onScrollTop(
+	el: HTMLElement,
+	cb: () => void,
+	tolerance = 1,
+	once = false,
+) {
 	if (!el.isConnected || !document.body.contains(el)) return;
 
 	if (isTopVisible(el)) {
@@ -64,6 +163,16 @@ export function onScrollTop(el: HTMLElement, cb: () => void, tolerance = 1, once
 	return removeListener;
 }
 
+/**
+ * 最下部到達時にコールバックを呼ぶ
+ *
+ * @param el - 起点要素
+ * @param cb - 最下部到達時のコールバック
+ * @param tolerance - 許容誤差（px）
+ * @param once - 一度だけ呼ぶか
+ * @returns リスナー解除関数
+ * @public
+ */
 export function onScrollBottom(
 	el: HTMLElement,
 	cb: () => void,
@@ -95,6 +204,15 @@ export function onScrollBottom(
 	return removeListener;
 }
 
+/**
+ * sticky ヘッダーの高さを加算する
+ *
+ * @param el - 起点要素
+ * @param container - スクロールコンテナ
+ * @param top - 累積オフセット
+ * @returns sticky 分を加算したオフセット
+ * @public
+ */
 export function getStickyTop(
 	el: HTMLElement,
 	container: HTMLElement | null = null,
@@ -107,6 +225,13 @@ export function getStickyTop(
 	return getStickyTop(el.parentElement, container, newTop);
 }
 
+/**
+ * 要素または window を任意位置へスクロールする
+ *
+ * @param el - 起点要素
+ * @param options - scrollTo オプション
+ * @public
+ */
 export function scroll(el: HTMLElement, options?: ScrollToOptions | null) {
 	const container = getScrollContainer(el);
 	if (container == null) {
@@ -124,20 +249,48 @@ export function scroll(el: HTMLElement, options?: ScrollToOptions | null) {
 	}
 }
 
+/**
+ * 先頭へスクロールする
+ *
+ * @param el - 起点要素
+ * @param options - behavior 等
+ * @public
+ */
 export function scrollToTop(
-	el: HTMLElement,
+	el: HTMLElement | null,
 	options: { behavior?: ScrollBehavior } = {},
 ) {
+	if (!el) {
+		warnInvalidScrollTarget("scrollToTop", el);
+		return;
+	}
 	scroll(el, { top: 0, ...options });
 }
 
+/**
+ * 最下部へスクロールする
+ *
+ * @param el - 起点要素
+ * @param options - scrollTo オプション
+ * @param container - スクロールコンテナ（省略時は el から探索）
+ * @public
+ */
 export function scrollToBottom(
-	el: HTMLElement,
+	el: HTMLElement | null,
 	options: ScrollToOptions = {},
-	container: HTMLElement | null = getScrollContainer(el),
+	container: HTMLElement | null = el ? getScrollContainer(el) : null,
 ) {
-	if (!el || !el.scrollHeight) return;
-	const topPosition = el.scrollHeight - (container ? container.clientHeight : window.innerHeight) + getStickyTop(el, container);
+	if (!el || !el.scrollHeight) {
+		warnInvalidScrollTarget("scrollToBottom", el);
+		return;
+	}
+	const topPosition = container
+		? container.scrollHeight -
+		  container.clientHeight +
+		  getStickyTop(el, container)
+		: getScrollingElement().scrollHeight -
+		  window.innerHeight +
+		  getStickyTop(el, null);
 	if (container) {
 		if (smoothScrollSupported && options.behavior) {
 			container.scroll({ top: topPosition, ...options });
@@ -153,16 +306,25 @@ export function scrollToBottom(
 	}
 }
 
-export function isBottom(el: HTMLElement, asobi = 0): boolean {
-	const container = getScrollContainer(el);
-	const current = container
-		? container.scrollTop + container.clientHeight
-		: window.scrollY + window.innerHeight;
-	const max = container ? el.scrollHeight : document.body.scrollHeight;
-	return current >= max - asobi;
+/**
+ * 最下部付近までスクロールしているかどうか（{@link isBottomVisible} のエイリアス）
+ *
+ * @param el - 起点要素
+ * @param tolerance - 許容誤差（px）
+ * @returns 最下部付近なら true
+ * @public
+ */
+export function isBottom(el: HTMLElement, tolerance = 0): boolean {
+	return isBottomVisible(el, tolerance);
 }
 
 // https://ja.javascript.info/size-and-scroll-window#ref-932
+/**
+ * body / documentElement の最大スクロール高さを返す
+ *
+ * @returns スクロール高さ（px）
+ * @public
+ */
 export function getBodyScrollHeight(): number {
 	return Math.max(
 		document.body.scrollHeight,

@@ -11,6 +11,11 @@ import { provide, ComputedRef } from "vue";
 import XCommon from "./_common_/common.vue";
 import { mainRouter } from "@/router";
 import {
+	scrollContainerKey,
+	createWindowScrollContainer,
+	setScrollContainerApi,
+} from "@/scripts/scroll-container";
+import {
 	PageMetadata,
 	provideMetadataReceiver,
 	setPageMetadata,
@@ -20,6 +25,9 @@ import { instanceName } from "@/config";
 let pageMetadata = $ref<null | ComputedRef<PageMetadata>>();
 
 provide("router", mainRouter);
+const scrollContainer = createWindowScrollContainer();
+setScrollContainerApi(scrollContainer);
+provide(scrollContainerKey, scrollContainer);
 provideMetadataReceiver((info) => {
 	pageMetadata = info;
 	if (pageMetadata.value) {

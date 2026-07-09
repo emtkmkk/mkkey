@@ -307,7 +307,7 @@ function onDeleted(id) {
 
 function thisScrollToBottom() {
 	if (window.location.href.includes("my/messaging/")) {
-		scrollToBottom(null, { behavior: "smooth" });
+		scrollToBottom(rootEl, { behavior: "smooth" });
 	}
 }
 

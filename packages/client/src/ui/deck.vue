@@ -177,6 +177,11 @@ import XSidebar from "@/ui/_common_/navbar.vue";
 import XDrawerMenu from "@/ui/_common_/navbar-for-mobile.vue";
 import MkButton from "@/components/MkButton.vue";
 import { getScrollContainer } from "@/scripts/scroll";
+import {
+	scrollContainerKey,
+	createDeckScrollContainer,
+	setScrollContainerApi,
+} from "@/scripts/scroll-container";
 import * as os from "@/os";
 import { navbarItemDef } from "@/navbar";
 import { $i } from "@/account";
@@ -187,6 +192,10 @@ import { defaultStore } from "@/store";
 const XStatusBars = defineAsyncComponent(
 	() => import("@/ui/_common_/statusbars.vue")
 );
+
+const deckScrollContainer = createDeckScrollContainer();
+setScrollContainerApi(deckScrollContainer);
+provide(scrollContainerKey, deckScrollContainer);
 
 mainRouter.navHook = (path, flag): boolean => {
 	if (flag === "forcePage") return false;

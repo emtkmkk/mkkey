@@ -192,6 +192,11 @@ import { i18n } from "@/i18n";
 import { $i } from "@/account";
 import { mainRouter } from "@/router";
 import {
+	scrollContainerKey,
+	createWindowScrollContainer,
+	setScrollContainerApi,
+} from "@/scripts/scroll-container";
+import {
 	provideMetadataReceiver,
 	setPageMetadata,
 } from "@/scripts/page-metadata";
@@ -229,6 +234,9 @@ const widgetsShowing = $ref(false);
 const navFooter = $shallowRef<HTMLElement>();
 
 provide("router", mainRouter);
+const scrollContainer = createWindowScrollContainer();
+setScrollContainerApi(scrollContainer);
+provide(scrollContainerKey, scrollContainer);
 provideMetadataReceiver((info) => {
 	pageMetadata = info;
 	if (pageMetadata.value) {

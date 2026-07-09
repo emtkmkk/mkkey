@@ -64,6 +64,11 @@ import { StickySidebar } from "@/scripts/sticky-sidebar";
 import * as os from "@/os";
 import { mainRouter } from "@/router";
 import {
+	scrollContainerKey,
+	createWindowScrollContainer,
+	setScrollContainerApi,
+} from "@/scripts/scroll-container";
+import {
 	provideMetadataReceiver,
 	setPageMetadata,
 } from "@/scripts/page-metadata";
@@ -89,6 +94,9 @@ let widgetsLeft = $ref();
 let widgetsRight = $ref();
 
 provide("router", mainRouter);
+const scrollContainer = createWindowScrollContainer();
+setScrollContainerApi(scrollContainer);
+provide(scrollContainerKey, scrollContainer);
 provideMetadataReceiver((info) => {
 	pageMetadata = info;
 	if (pageMetadata.value) {

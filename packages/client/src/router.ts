@@ -1,5 +1,7 @@
 import { AsyncComponentLoader, defineAsyncComponent, inject } from "vue";
+import { throttle } from "throttle-debounce";
 import { Router } from "@/nirax";
+import { getScrollContainerApi, onScrollActivity } from "@/scripts/scroll-container";
 import { $i, iAmModerator } from "@/account";
 import MkLoading from "@/pages/_loading_.vue";
 import MkError from "@/pages/_error_.vue";
@@ -821,32 +823,73 @@ window.history.replaceState(
 	location.href,
 );
 
-// TODO: このファイルでスクロール位置も管理する設計だとdeckに対応できないのでなんとかする
-// スクロール位置取得+スクロール位置設定関数をprovideする感じでも良いかも
+// NOTE: スクロール位置は scroll-container API 経由で管理する（deck 対応済み）。
+// UI シェルが provide する ScrollContainerApi を router が参照する。
 
 const scrollPosStore = new Map<string, number>();
 
-// スクロール位置を定期的に保存する
-window.setInterval(() => {
+/** ユーザーが最後にスクロール操作した時刻（復元キャンセル判定用） */
+let lastUserScrollAt = 0;
+
+/** 復元処理中の履歴キー */
+let restoringKey: string | null = null;
+
+/** 現在の履歴キーにスクロール位置を保存する */
+function saveScrollPosition(): void {
 	const key = window.history.state?.key;
 	if (key) {
-		scrollPosStore.set(key, window.scrollY);
+		scrollPosStore.set(key, getScrollContainerApi().getScrollPosition());
 	}
-}, 1000);
+}
 
-function restoreScrollPosition(key: string) {
+const saveScrollPositionThrottled = throttle(200, saveScrollPosition);
+
+window.addEventListener(
+	"scroll",
+	() => {
+		lastUserScrollAt = Date.now();
+		saveScrollPositionThrottled();
+	},
+	{ passive: true },
+);
+
+// deck 列内スクロールも位置保存の対象にする
+onScrollActivity(() => {
+	lastUserScrollAt = Date.now();
+	saveScrollPositionThrottled();
+});
+
+/** 順方向遷移時にページ先頭へスクロールする */
+function scrollToTop(): void {
+	getScrollContainerApi().scrollToTop("instant");
+}
+
+function restoreScrollPosition(key: string): void {
 	const scrollPos = scrollPosStore.get(key) ?? 0;
-	window.scrollTo({ top: scrollPos, behavior: "instant" });
-	// 遷移直後はタイミングによってはコンポーネントが復元し切ってない可能性も考えられるため少し時間を空けて再度スクロール
-	window.setTimeout(() => {
-		window.scrollTo({ top: scrollPos, behavior: "instant" });
-	}, 100);
+	restoringKey = key;
+	const restoreStartedAt = Date.now();
+
+	getScrollContainerApi().setScrollPosition(scrollPos, "instant");
+
+	// 遷移直後はコンポーネント復元が完了していない場合があるため、非ゼロ位置のみ再試行する
+	if (scrollPos !== 0) {
+		window.setTimeout(() => {
+			if (restoringKey !== key) return;
+			// ユーザーが復元開始後にスクロール操作した場合は中止
+			if (lastUserScrollAt > restoreStartedAt) return;
+			getScrollContainerApi().setScrollPosition(scrollPos, "instant");
+			restoringKey = null;
+		}, 100);
+	} else {
+		restoringKey = null;
+	}
 }
 
 mainRouter.addListener("push", (ctx) => {
 	try {
+		saveScrollPosition();
 		window.history.pushState({ key: ctx.key }, "", ctx.path);
-		restoreScrollPosition(ctx.key);
+		scrollToTop();
 	} catch (error) {
 		console.error("Error in push listener:", error);
 	}
@@ -854,7 +897,9 @@ mainRouter.addListener("push", (ctx) => {
 
 mainRouter.addListener("replace", (ctx) => {
 	try {
+		saveScrollPosition();
 		window.history.replaceState({ key: ctx.key }, "", ctx.path);
+		scrollToTop();
 	} catch (error) {
 		console.error("Error in replace listener:", error);
 	}
@@ -862,7 +907,7 @@ mainRouter.addListener("replace", (ctx) => {
 
 mainRouter.addListener("same", () => {
 	try {
-		window.scrollTo({ top: 0, behavior: "smooth" });
+		getScrollContainerApi().scrollToTop("smooth");
 	} catch (error) {
 		console.error("Error in same listener:", error);
 	}
@@ -870,6 +915,7 @@ mainRouter.addListener("same", () => {
 
 window.addEventListener("popstate", (event) => {
 	try {
+		saveScrollPosition();
 		const key = event.state?.key;
 		if (key) {
 			mainRouter.replace(
@@ -879,7 +925,7 @@ window.addEventListener("popstate", (event) => {
 			);
 			restoreScrollPosition(key);
 		} else {
-			window.scrollTo({ top: 0, behavior: "instant" });
+			getScrollContainerApi().scrollToTop("instant");
 		}
 	} catch (error) {
 		console.error("Error in popstate listener:", error);

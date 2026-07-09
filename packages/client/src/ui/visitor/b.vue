@@ -85,6 +85,11 @@ import MkButton from "@/components/MkButton.vue";
 import { ColdDeviceStorage, defaultStore } from "@/store";
 import { mainRouter } from "@/router";
 import {
+	scrollContainerKey,
+	createWindowScrollContainer,
+	setScrollContainerApi,
+} from "@/scripts/scroll-container";
+import {
 	PageMetadata,
 	provideMetadataReceiver,
 	setPageMetadata,
@@ -96,6 +101,9 @@ const DESKTOP_THRESHOLD = 1000;
 let pageMetadata = $ref<null | ComputedRef<PageMetadata>>();
 
 provide("router", mainRouter);
+const scrollContainer = createWindowScrollContainer();
+setScrollContainerApi(scrollContainer);
+provide(scrollContainerKey, scrollContainer);
 provideMetadataReceiver((info) => {
 	pageMetadata = info;
 	if (pageMetadata.value) {

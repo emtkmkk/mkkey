@@ -72,6 +72,10 @@ import {
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { MenuItem } from "@/types/menu";
+import {
+	registerDeckColumnScrollBody,
+	unregisterDeckColumnScrollBody,
+} from "@/scripts/scroll-container";
 
 provide("shouldHeaderThin", true);
 provide("shouldOmitHeaderTitle", true);
@@ -121,9 +125,17 @@ const keymap = $computed(() => ({
 onMounted(() => {
 	os.deckGlobalEvents.on("column.dragStart", onOtherDragStart);
 	os.deckGlobalEvents.on("column.dragEnd", onOtherDragEnd);
+	if (body) {
+		registerDeckColumnScrollBody(
+			props.column.id,
+			body,
+			props.column.type === "main",
+		);
+	}
 });
 
 onBeforeUnmount(() => {
+	unregisterDeckColumnScrollBody(props.column.id);
 	os.deckGlobalEvents.off("column.dragStart", onOtherDragStart);
 	os.deckGlobalEvents.off("column.dragEnd", onOtherDragEnd);
 });

@@ -43,9 +43,10 @@
 						:threshold="$store.state.swipeThreshold"
 						:centeredSlides="$store.state.swipeCenteredSlides"
 						:space-between="20"
-						:allow-touch-move="allowTouchMove"
+						:allow-touch-move="!!defaultStore.state.swipeOnDesktop"
 						@swiper="setSwiperRef"
 						@slide-change="onSlideChange"
+						@touchStart="onSwiperTouchStart"
 					>
 						<swiper-slide
 							v-for="index in timelines"
@@ -81,12 +82,12 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, ref, onMounted, onBeforeUnmount } from "vue";
+import { computed, watch, ref, onMounted } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import XTutorial from "@/components/MkTutorialDialog.vue";
 import XTimeline from "@/components/MkTimeline.vue";
 import XPostForm from "@/components/MkPostForm.vue";
-import { scroll, isTopVisible, getScrollContainer } from "@/scripts/scroll";
+import { scroll, isTopVisible } from "@/scripts/scroll";
 import * as os from "@/os";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
@@ -113,8 +114,6 @@ const isGlobalTimelineAvailable =
 const keymap = {
 	t: focus,
 };
-let queueActive = $ref(false);
-
 let timelines = [];
 
 if (
@@ -169,36 +168,8 @@ window.addEventListener("resize", () => {
 
 const tlComponent = ref<InstanceType<typeof XTimeline>>();
 const rootEl = $ref<HTMLElement>();
-const isTimelineAtTop = ref(true);
-let removeScrollListener: (() => void) | null = null;
 
 let queue = $ref(0);
-const allowTouchMove = computed(() => {
-	if (!defaultStore.state.swipeOnDesktop) {
-		return false;
-	}
-	if (!defaultStore.state.notTopToSwipeStop) {
-		return true;
-	}
-	const pagingComponent = tlComponent.value?.tlComponent?.pagingComponent;
-	const isPagingActive =
-		(pagingComponent?.active || pagingComponent?.backed) ?? false;
-	return (
-		isTimelineAtTop.value &&
-		queue === 0 &&
-		!queueActive &&
-		!isPagingActive
-	);
-});
-
-const applyAllowTouchMove = (value: boolean) => {
-	if (!swiperRef) return;
-	swiperRef.allowTouchMove = value;
-};
-
-watch(allowTouchMove, (value) => {
-	applyAllowTouchMove(value);
-});
 const src = $computed({
 	get: () => {
 		if (timelines.includes(defaultStore.reactiveState.tl.value.src)) {
@@ -215,13 +186,8 @@ const src = $computed({
 
 watch($$(src), () => (queue = 0));
 
-function updateTopState(): void {
-	isTimelineAtTop.value = isTopVisible(rootEl);
-}
-
-function queueUpdated(q: number, a): void {
+function queueUpdated(q: number): void {
 	queue = q;
-	queueActive = a;
 }
 
 function top(): void {
@@ -618,7 +584,19 @@ let swiperRef: any = null;
 function setSwiperRef(swiper) {
 	swiperRef = swiper;
 	syncSlide(timelines.indexOf(src));
-	applyAllowTouchMove(allowTouchMove.value);
+}
+
+/** タッチ開始時にその場で先頭判定し、Swiper 8.x の動的 props 非対応を回避する */
+function onSwiperTouchStart(swiper): void {
+	if (!defaultStore.state.swipeOnDesktop) {
+		swiper.allowTouchMove = false;
+		return;
+	}
+	if (!defaultStore.state.notTopToSwipeStop) {
+		swiper.allowTouchMove = true;
+		return;
+	}
+	swiper.allowTouchMove = isTopVisible(rootEl) && queue === 0;
 }
 
 function onSlideChange() {
@@ -633,17 +611,6 @@ onMounted(() => {
 	syncSlide(
 		timelines.indexOf(defaultStore.state.tl?.src || swiperRef.activeIndex)
 	);
-	updateTopState();
-	const container = getScrollContainer(rootEl) ?? window;
-	const onScroll = () => updateTopState();
-	container.addEventListener("scroll", onScroll, { passive: true });
-	removeScrollListener = () => {
-		container.removeEventListener("scroll", onScroll);
-	};
-});
-
-onBeforeUnmount(() => {
-	removeScrollListener?.();
 });
 </script>
 

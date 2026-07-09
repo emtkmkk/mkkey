@@ -46,6 +46,8 @@ self.addEventListener("activate", (ev) => {
 						.map((name) => caches.delete(name)),
 				),
 			)
+			// NOTE: skipWaiting + 旧キャッシュ全削除により、SW 更新時にクライアントバンドルが
+			// 古いまま残る問題を抑止する。iOS PWA で挙動が古い場合は手動で再インストールを案内する。
 			.then(() => self.clients.claim()),
 	);
 });
